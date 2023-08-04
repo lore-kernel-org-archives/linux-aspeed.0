@@ -1,37 +1,35 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Thu,  3 Aug 2023 16:03:24 -0700
-Subject: [PATCH 3/3] ARM: dts: aspeed: wedge400: Set eMMC max frequency
-In-Reply-To: <20230803230324.731268-1-rentao.bupt@gmail.com>
-References: <20230803230324.731268-1-rentao.bupt@gmail.com>
-Message-ID: <20230803230324.731268-4-rentao.bupt@gmail.com>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Fri,  4 Aug 2023 18:04:35 +0800
+Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite V4 board
+In-Reply-To: <20230804100438.1983745-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20230804100438.1983745-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20230804100438.1983745-2-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+Document the new compatibles used on Facebook Yosemite V4.
 
-Set eMMC max frequency to 25MHz to prevent intermittent eMMC access
-failures.
-
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-wedge400.dts | 1 +
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-wedge400.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-wedge400.dts
-index 5c55afed946f..d17b977fee9b 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-wedge400.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-wedge400.dts
-@@ -367,6 +367,7 @@ &uhci {
- };
- 
- &sdhci1 {
-+	max-frequency = <25000000>;
- 	/*
- 	 * DMA mode needs to be disabled to avoid conflicts with UHCI
- 	 * Controller in AST2500 SoC.
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index e0eff4c05879..2ef6821e3648 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+               - facebook,greatlakes-bmc
++              - facebook,yosemitev4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
 -- 
-2.40.1
+2.25.1
 
