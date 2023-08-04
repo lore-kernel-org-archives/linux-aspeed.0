@@ -1,17 +1,17 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Date: Fri, 4 Aug 2023 10:51:27 +0100
-Subject: [PATCH v2 17/23] firmware: Explicitly include correct DT includes
-In-Reply-To: <20230803-dt-header-cleanups-for-soc-v2-17-d8de2cc88bff@kernel.org>
+From: Jernej Škrabec <jernej.skrabec@gmail.com>
+Date: Fri, 04 Aug 2023 16:38:11 +0200
+Subject: [PATCH v2 21/23] soc: sunxi: Explicitly include correct DT includes
+In-Reply-To: <20230803-dt-header-cleanups-for-soc-v2-21-d8de2cc88bff@kernel.org>
 References: <20230803-dt-header-cleanups-for-soc-v2-0-d8de2cc88bff@kernel.org>
- <20230803-dt-header-cleanups-for-soc-v2-17-d8de2cc88bff@kernel.org>
-Message-ID: <20230804095127.w74m6aphiwkaqlim@bogus>
+ <20230803-dt-header-cleanups-for-soc-v2-21-d8de2cc88bff@kernel.org>
+Message-ID: <2690872.mvXUDI8C0e@jernej-laptop>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 03, 2023 at 04:42:57PM -0600, Rob Herring wrote:
+Dne petek, 04. avgust 2023 ob 00:43:01 CEST je Rob Herring napisal(a):
 > The DT of_device.h and of_platform.h date back to the separate
 > of_platform_bus_type before it as merged into the regular platform bus.
 > As part of that merge prepping Arm DT support 13 years ago, they
@@ -21,17 +21,35 @@ On Thu, Aug 03, 2023 at 04:42:57PM -0600, Rob Herring wrote:
 > replace the implicit includes with struct declarations, users need to
 > explicitly include the correct includes.
 > 
-> Acked-by: Dinh Nguyen <dinguyen@kernel.org>
-> Acked-by: Thierry Reding <treding@nvidia.com>
 > Signed-off-by: Rob Herring <robh@kernel.org>
+
+Acked-by: Jernej Skrabec <jernej.skrabec@gmail.com>
+
+Should I take this through sunxi tree?
+
+Best regards,
+Jernej
+
 > ---
->  drivers/firmware/arm_scmi/driver.c | 4 ++--
->  drivers/firmware/scpi_pm_domain.c  | 3 ++-
+> v2:
+>  - Drop sun20i-ppu.c which moved
+> ---
+>  drivers/soc/sunxi/sunxi_sram.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/soc/sunxi/sunxi_sram.c b/drivers/soc/sunxi/sunxi_sram.c
+> index 4c4864cd2342..4458b2e0562b 100644
+> --- a/drivers/soc/sunxi/sunxi_sram.c
+> +++ b/drivers/soc/sunxi/sunxi_sram.c
+> @@ -15,7 +15,7 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> -#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/regmap.h>
 
-(For SCMI changes)
 
-Acked-by:  Sudeep Holla <sudeep.holla@arm.com>
 
--- 
-Regards,
-Sudeep
+
