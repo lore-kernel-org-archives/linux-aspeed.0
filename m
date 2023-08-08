@@ -1,24 +1,37 @@
-From: Heiko Stübner <heiko@sntech.de>
-Date: Sun, 06 Aug 2023 15:41:22 +0200
-Subject: [PATCH v2 12/23] ARM: rockchip: Drop unused includes
-In-Reply-To: <20230803-dt-header-cleanups-for-soc-v2-12-d8de2cc88bff@kernel.org>
-References: <20230803-dt-header-cleanups-for-soc-v2-0-d8de2cc88bff@kernel.org>
- <20230803-dt-header-cleanups-for-soc-v2-12-d8de2cc88bff@kernel.org>
-Message-ID: <21971720.EfDdHjke4D@diego>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Tue,  8 Aug 2023 15:29:56 +0800
+Subject: [PATCH v6 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite 4 board
+In-Reply-To: <20230808073000.989942-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20230808073000.989942-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20230808073000.989942-2-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am Freitag, 4. August 2023, 00:42:52 CEST schrieb Rob Herring:
-> Several includes are not needed, so drop them.
-> 
-> of_platform.h is not needed, but it implicitly includes of.h which is
-> needed.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
+Document the new compatibles used on Facebook Yosemite 4.
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Changelog:
+v6 - Change project name from yosemitev4 to yosemite4
 
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index e0eff4c05879..23ee325bfed0 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+               - facebook,greatlakes-bmc
++              - facebook,yosemite4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
+-- 
+2.25.1
 
