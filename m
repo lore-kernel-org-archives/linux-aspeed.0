@@ -1,26 +1,28 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 8 Aug 2023 10:53:43 +0200
-Subject: [PATCH v7 2/2] ARM: dts: aspeed: yosemitev4: add Facebook
- Yosemite 4 BMC
-In-Reply-To: <20230808084248.1415678-3-Delphine_CC_Chiu@wiwynn.com>
-References: <20230808084248.1415678-1-Delphine_CC_Chiu@wiwynn.com>
- <20230808084248.1415678-3-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <56593261-6e7d-9694-91d0-dfbac24aefa3@linaro.org>
+From: Dylan Hung <dylan_hung@aspeedtech.com>
+Date: Tue, 8 Aug 2023 23:42:38 +0800
+Subject: [PATCH 0/3] Add Aspeed AST2600 I3C support
+Message-ID: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 08/08/2023 10:42, Delphine CC Chiu wrote:
-> Add linux device tree entry related to
-> Yosemite 4 specific devices connected to BMC SoC.
-> 
-> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> ---
+This patch series introduces the necessary changes to enable I3C support
+for the Aspeed AST2600 I3C controller. Specifically, it addresses the
+missing pinctrl configuration and reset control for the I3C
+functionality.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Dylan Hung (3):
+  ARM: dts: pinctrl-aspeed-g6: Add I3C1 and I3C2 control pins
+  dt-bindings: i3c: ast2600: Add resets and reset-names
+  i3c: ast2600: Add reset deassertion for global registers
 
-Best regards,
-Krzysztof
+ .../devicetree/bindings/i3c/aspeed,ast2600-i3c.yaml  | 12 ++++++++++--
+ arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi      | 10 ++++++++++
+ drivers/i3c/master/ast2600-i3c-master.c              |  9 +++++++++
+ 3 files changed, 29 insertions(+), 2 deletions(-)
+
+-- 
+2.25.1
 
