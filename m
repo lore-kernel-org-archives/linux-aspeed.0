@@ -1,28 +1,56 @@
 From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Tue, 8 Aug 2023 23:42:38 +0800
-Subject: [PATCH 0/3] Add Aspeed AST2600 I3C support
-Message-ID: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
+Date: Tue, 8 Aug 2023 23:42:41 +0800
+Subject: [PATCH 3/3] i3c: ast2600: Add reset deassertion for global registers
+In-Reply-To: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
+References: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
+Message-ID: <20230808154241.749641-4-dylan_hung@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series introduces the necessary changes to enable I3C support
-for the Aspeed AST2600 I3C controller. Specifically, it addresses the
-missing pinctrl configuration and reset control for the I3C
-functionality.
+Add missing reset deassertion of the I3C global control registers.
 
-Dylan Hung (3):
-  ARM: dts: pinctrl-aspeed-g6: Add I3C1 and I3C2 control pins
-  dt-bindings: i3c: ast2600: Add resets and reset-names
-  i3c: ast2600: Add reset deassertion for global registers
+Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+---
+ drivers/i3c/master/ast2600-i3c-master.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
- .../devicetree/bindings/i3c/aspeed,ast2600-i3c.yaml  | 12 ++++++++++--
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi      | 10 ++++++++++
- drivers/i3c/master/ast2600-i3c-master.c              |  9 +++++++++
- 3 files changed, 29 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/i3c/master/ast2600-i3c-master.c b/drivers/i3c/master/ast2600-i3c-master.c
+index 09ed19d489e9..5d9d060134e0 100644
+--- a/drivers/i3c/master/ast2600-i3c-master.c
++++ b/drivers/i3c/master/ast2600-i3c-master.c
+@@ -11,6 +11,7 @@
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/regmap.h>
++#include <linux/reset.h>
+ 
+ #include "dw-i3c-master.h"
+ 
+@@ -128,6 +129,7 @@ static int ast2600_i3c_probe(struct platform_device *pdev)
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct of_phandle_args gspec;
+ 	struct ast2600_i3c *i3c;
++	struct reset_control *rst;
+ 	int rc;
+ 
+ 	i3c = devm_kzalloc(&pdev->dev, sizeof(*i3c), GFP_KERNEL);
+@@ -156,6 +158,13 @@ static int ast2600_i3c_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "invalid sda-pullup value %d\n",
+ 			i3c->sda_pullup);
+ 
++	rst = devm_reset_control_get_shared(&pdev->dev, "global_rst");
++	if (IS_ERR(rst)) {
++		dev_err(&pdev->dev, "missing of invalid reset entry");
++		return PTR_ERR(rst);
++	}
++	reset_control_deassert(rst);
++
+ 	i3c->dw.platform_ops = &ast2600_i3c_ops;
+ 	i3c->dw.ibi_capable = true;
+ 	return dw_i3c_common_probe(&i3c->dw, pdev);
 -- 
 2.25.1
 
