@@ -1,56 +1,67 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 8 Aug 2023 18:00:01 +0200
-Subject: [PATCH 3/3] i3c: ast2600: Add reset deassertion for global
- registers
-In-Reply-To: <20230808154241.749641-4-dylan_hung@aspeedtech.com>
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Wed, 09 Aug 2023 08:07:58 +0800
+Subject: [PATCH 0/3] Add Aspeed AST2600 I3C support
+In-Reply-To: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
 References: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
- <20230808154241.749641-4-dylan_hung@aspeedtech.com>
-Message-ID: <f85df327-c321-8c1e-2043-c60210fbed56@linaro.org>
+Message-ID: <d8d577e91779e045d5a2c7d701f65133a15b5d64.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 08/08/2023 17:42, Dylan Hung wrote:
-> Add missing reset deassertion of the I3C global control registers.
-> 
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> ---
->  drivers/i3c/master/ast2600-i3c-master.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/drivers/i3c/master/ast2600-i3c-master.c b/drivers/i3c/master/ast2600-i3c-master.c
-> index 09ed19d489e9..5d9d060134e0 100644
-> --- a/drivers/i3c/master/ast2600-i3c-master.c
-> +++ b/drivers/i3c/master/ast2600-i3c-master.c
-> @@ -11,6 +11,7 @@
->  #include <linux/of_device.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
-> +#include <linux/reset.h>
->  
->  #include "dw-i3c-master.h"
->  
-> @@ -128,6 +129,7 @@ static int ast2600_i3c_probe(struct platform_device *pdev)
->  	struct device_node *np = pdev->dev.of_node;
->  	struct of_phandle_args gspec;
->  	struct ast2600_i3c *i3c;
-> +	struct reset_control *rst;
->  	int rc;
->  
->  	i3c = devm_kzalloc(&pdev->dev, sizeof(*i3c), GFP_KERNEL);
-> @@ -156,6 +158,13 @@ static int ast2600_i3c_probe(struct platform_device *pdev)
->  		dev_err(&pdev->dev, "invalid sda-pullup value %d\n",
->  			i3c->sda_pullup);
->  
-> +	rst = devm_reset_control_get_shared(&pdev->dev, "global_rst");
-> +	if (IS_ERR(rst)) {
-> +		dev_err(&pdev->dev, "missing of invalid reset entry");
-> +		return PTR_ERR(rst);
+Hi Dylan,
 
-return dev_err_probe
+> This patch series introduces the necessary changes to enable I3C
+> support for the Aspeed AST2600 I3C controller. Specifically, it addresses the
+> missing pinctrl configuration and reset control for the I3C
+> functionality.
 
-Best regards,
-Krzysztof
++1 for the pinctrl changes for the I3C1 and I3C2 controllers (I'll
+review and ack separately). I have been testing on I3C3 and up, but just
+not with the HVI3C on 1 & 2, hence no pinctrl definition there.
 
+However, I don't think the other two are needed.
+
+For 2/3 and 3/3, you're adding a reset control for the global register
+block within the per-controller driver, but we can already do that on a
+global basis with the existing syscon device. Hence this earlier change:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/mfd/syscon.c?id=7d1e3bd94828ad9fc86f55253cd6fec8edd65394
+
+For this, I have:
+
+    &i3c {
+        i3c_global: i3c-global {
+            compatible = "aspeed,ast2600-i3c-global", "simple-mfd", "syscon";
+            resets = <&syscon ASPEED_RESET_I3C_DMA>;
+            reg = <0x0 0x1000>;
+        };
+
+        i3c2: i3c-master at 4000 {
+            compatible = "aspeed,ast2600-i3c";
+            reg = <0x4000 0x1000>;
+            clocks = <&syscon ASPEED_CLK_GATE_I3C2CLK>;
+            pinctrl-names = "default";
+            pinctrl-0 = <&pinctrl_i3c3_default>;
+            interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
+            aspeed,global-regs = <&i3c_global 2>;
+            status = "disabled";
+        };
+
+        /* ... */
+    };
+
+- with no changes needed to any bindings. I haven't needed any other
+resets; are there per-controller resets specified in the HW docs you
+have?
+
+Does that work for you? If you'd like to test, feel free to use my
+sample dts at:
+
+  https://github.com/CodeConstruct/linux/commit/05cac24705fa62d2176ecbbbf15d955cfe86e753
+
+Cheers,
+
+
+Jeremy
