@@ -1,9 +1,10 @@
 From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Wed, 09 Aug 2023 08:07:58 +0800
+Date: Wed, 09 Aug 2023 08:28:57 +0800
 Subject: [PATCH 0/3] Add Aspeed AST2600 I3C support
-In-Reply-To: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
+In-Reply-To: <d8d577e91779e045d5a2c7d701f65133a15b5d64.camel@codeconstruct.com.au>
 References: <20230808154241.749641-1-dylan_hung@aspeedtech.com>
-Message-ID: <d8d577e91779e045d5a2c7d701f65133a15b5d64.camel@codeconstruct.com.au>
+	 <d8d577e91779e045d5a2c7d701f65133a15b5d64.camel@codeconstruct.com.au>
+Message-ID: <a670192024911f7f2d676e245f5f240e9ed5126b.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,54 +13,14 @@ Content-Transfer-Encoding: 7bit
 
 Hi Dylan,
 
-> This patch series introduces the necessary changes to enable I3C
-> support for the Aspeed AST2600 I3C controller. Specifically, it addresses the
-> missing pinctrl configuration and reset control for the I3C
-> functionality.
+> - with no changes needed to any bindings. I haven't needed any other
+> resets; are there per-controller resets specified in the HW docs you
+> have?
 
-+1 for the pinctrl changes for the I3C1 and I3C2 controllers (I'll
-review and ack separately). I have been testing on I3C3 and up, but just
-not with the HVI3C on 1 & 2, hence no pinctrl definition there.
+... keeping in mind the reset control that the aspeed SCU driver
+already provides for you, when you enable the appropriate clock gate:
 
-However, I don't think the other two are needed.
-
-For 2/3 and 3/3, you're adding a reset control for the global register
-block within the per-controller driver, but we can already do that on a
-global basis with the existing syscon device. Hence this earlier change:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/mfd/syscon.c?id=7d1e3bd94828ad9fc86f55253cd6fec8edd65394
-
-For this, I have:
-
-    &i3c {
-        i3c_global: i3c-global {
-            compatible = "aspeed,ast2600-i3c-global", "simple-mfd", "syscon";
-            resets = <&syscon ASPEED_RESET_I3C_DMA>;
-            reg = <0x0 0x1000>;
-        };
-
-        i3c2: i3c-master at 4000 {
-            compatible = "aspeed,ast2600-i3c";
-            reg = <0x4000 0x1000>;
-            clocks = <&syscon ASPEED_CLK_GATE_I3C2CLK>;
-            pinctrl-names = "default";
-            pinctrl-0 = <&pinctrl_i3c3_default>;
-            interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
-            aspeed,global-regs = <&i3c_global 2>;
-            status = "disabled";
-        };
-
-        /* ... */
-    };
-
-- with no changes needed to any bindings. I haven't needed any other
-resets; are there per-controller resets specified in the HW docs you
-have?
-
-Does that work for you? If you'd like to test, feel free to use my
-sample dts at:
-
-  https://github.com/CodeConstruct/linux/commit/05cac24705fa62d2176ecbbbf15d955cfe86e753
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/clk/clk-aspeed.c#n224
 
 Cheers,
 
