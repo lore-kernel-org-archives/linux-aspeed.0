@@ -1,42 +1,39 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 10 Aug 2023 11:44:17 +0800
-Subject: [PATCH v8 0/2] ARM: dts: Facebook Yosemite 4 platform
-Message-ID: <20230810034421.742166-1-Delphine_CC_Chiu@wiwynn.com>
+Date: Thu, 10 Aug 2023 11:44:18 +0800
+Subject: [PATCH v8 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite 4 board
+In-Reply-To: <20230810034421.742166-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20230810034421.742166-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20230810034421.742166-2-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add linux device tree entry related to
-Yosemite 4 specific devices connected to BMC SoC.
+Document the new compatibles used on Facebook Yosemite 4.
 
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
 Changelog:
-v8 - Add description of Yosemite 4
-   - Remove unsupported ncsi config
-   - Revise i2c-mux config
-   - Correct power sensor i2c address
-   - Restore i2c 11 bus-frequency to default
 v7 - Revise changelog format
 v6 - Change project name from yosemitev4 to yosemite4
-v5 - Revise rtc setting
-   - Remove duplicated multi-master setting
-v4 - Resend with cover letter
-v3 - Revise the bootargs to stdout-path
-   - Revise i2c devices
-v2 - Revise the DTS node name
-v1 - Add binding document
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Delphine CC Chiu (2):
-  dt-bindings: arm: aspeed: add Facebook Yosemite 4 board
-  ARM: dts: aspeed: yosemite4: add Facebook Yosemite 4 BMC
-
- .../bindings/arm/aspeed/aspeed.yaml           |   1 +
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 627 ++++++++++++++++++
- 3 files changed, 629 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index e0eff4c05879..23ee325bfed0 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+               - facebook,greatlakes-bmc
++              - facebook,yosemite4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
 -- 
 2.25.1
 
