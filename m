@@ -1,46 +1,54 @@
-From: Rob Herring <robh@kernel.org>
-Date: Thu, 10 Aug 2023 14:40:41 -0600
-Subject: [PATCH v9 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite 4
- board
-In-Reply-To: <169165202180.3911788.1110313008758620193.robh@kernel.org>
-References: <20230810070032.335161-1-Delphine_CC_Chiu@wiwynn.com>
- <20230810070032.335161-2-Delphine_CC_Chiu@wiwynn.com>
- <169165202180.3911788.1110313008758620193.robh@kernel.org>
-Message-ID: <20230810204041.GA1135827-robh@kernel.org>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 11 Aug 2023 00:14:00 +0000
+Subject: [PATCH v2] ARM: dts: pinctrl-aspeed-g6: Add I3C1 and I3C2 control pins
+In-Reply-To: <20230809134413.3614535-1-dylan_hung@aspeedtech.com>
+References: <20230809134413.3614535-1-dylan_hung@aspeedtech.com>
+Message-ID: <CACPK8XcwcufQRYj+QX9KLyGDEXMFQeK816iDknZnT58sTDk+Mw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 10, 2023 at 01:20:21AM -0600, Rob Herring wrote:
-> 
-> On Thu, 10 Aug 2023 15:00:29 +0800, Delphine CC Chiu wrote:
-> > Document the new compatibles used on Facebook Yosemite 4.
-> > 
-> > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> > Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> > ---
-> > Changelog:
-> > v7 - Revise changelog format
-> > v6 - Change project name from yosemitev4 to yosemite4
-> > ---
-> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> 
-> My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-> on your patch (DT_CHECKER_FLAGS is new in v5.13):
-> 
-> yamllint warnings/errors:
-> 
-> dtschema/dtc warnings/errors:
-> 
-> 
-> doc reference errors (make refcheckdocs):
-> 
-> See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230810070032.335161-2-Delphine_CC_Chiu at wiwynn.com
+On Wed, 9 Aug 2023 at 13:44, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
+>
+> Add pinctrl support for the I3C1 and I3C2 pins.
+>
+> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+> Reviewed-by: Jeremy Kerr <jk@codeconstruct.com.au>
+> ---
+> changes in v2:
+> There are no code or message changes in v2. This commit is being made as
+> a standalone patch separate from the original patch series, as the other
+> patches from the original series are no longer necessary.
 
-The bot was having an issue. This can be ignored.
+Thanks, I've applied this.
 
-Rob
+>
+>  arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+> index 7cd4f075e325..289668f051eb 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+> @@ -297,6 +297,16 @@ pinctrl_i2c9_default: i2c9_default {
+>                 groups = "I2C9";
+>         };
+>
+> +       pinctrl_i3c1_default: i3c1_default {
+> +               function = "I3C1";
+> +               groups = "I3C1";
+> +       };
+> +
+> +       pinctrl_i3c2_default: i3c2_default {
+> +               function = "I3C2";
+> +               groups = "I3C2";
+> +       };
+> +
+>         pinctrl_i3c3_default: i3c3_default {
+>                 function = "I3C3";
+>                 groups = "I3C3";
+> --
+> 2.25.1
+>
