@@ -1,54 +1,44 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 11 Aug 2023 00:14:00 +0000
-Subject: [PATCH v2] ARM: dts: pinctrl-aspeed-g6: Add I3C1 and I3C2 control pins
-In-Reply-To: <20230809134413.3614535-1-dylan_hung@aspeedtech.com>
-References: <20230809134413.3614535-1-dylan_hung@aspeedtech.com>
-Message-ID: <CACPK8XcwcufQRYj+QX9KLyGDEXMFQeK816iDknZnT58sTDk+Mw@mail.gmail.com>
+From: Tommy Huang <tommy_huang@aspeedtech.com>
+Date: Mon, 14 Aug 2023 19:15:34 +0800
+Subject: [PATCH] drivers:i2c:add controller reset when the timeout occurred
+Message-ID: <20230814111534.2771900-1-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 9 Aug 2023 at 13:44, Dylan Hung <dylan_hung@aspeedtech.com> wrote:
->
-> Add pinctrl support for the I3C1 and I3C2 pins.
->
-> Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
-> Reviewed-by: Jeremy Kerr <jk@codeconstruct.com.au>
-> ---
-> changes in v2:
-> There are no code or message changes in v2. This commit is being made as
-> a standalone patch separate from the original patch series, as the other
-> patches from the original series are no longer necessary.
+1.Call i2c controller reset when the i2c transfer timeout occurred.
+The rest of interrupts and device should be reset avoid unperdicted
+controller behavior occurred.
 
-Thanks, I've applied this.
+Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
->
->  arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-> index 7cd4f075e325..289668f051eb 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-> @@ -297,6 +297,16 @@ pinctrl_i2c9_default: i2c9_default {
->                 groups = "I2C9";
->         };
->
-> +       pinctrl_i3c1_default: i3c1_default {
-> +               function = "I3C1";
-> +               groups = "I3C1";
-> +       };
-> +
-> +       pinctrl_i3c2_default: i3c2_default {
-> +               function = "I3C2";
-> +               groups = "I3C2";
-> +       };
-> +
->         pinctrl_i3c3_default: i3c3_default {
->                 function = "I3C3";
->                 groups = "I3C3";
-> --
-> 2.25.1
->
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 2e5acfeb76c8..1900954deb55 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -699,12 +699,16 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
+ 	if (time_left == 0) {
+ 		/*
+ 		 * If timed out and bus is still busy in a multi master
+-		 * environment, attempt recovery at here.
++		 * environment, attempt recovery at here. Even the bus is
++		 * idle, we still need reset i2c controller avoid rest of
++		 * interrupts.
+ 		 */
+ 		if (bus->multi_master &&
+ 		    (readl(bus->base + ASPEED_I2C_CMD_REG) &
+ 		     ASPEED_I2CD_BUS_BUSY_STS))
+ 			aspeed_i2c_recover_bus(bus);
++		else
++			aspeed_i2c_reset(bus);
+ 
+ 		/*
+ 		 * If timed out and the state is still pending, drop the pending
+-- 
+2.25.1
+
