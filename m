@@ -1,29 +1,24 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed, 16 Aug 2023 11:31:31 +0800
-Subject: [PATCH v10 1/2] dt-bindings: arm: aspeed: add Facebook Yosemite 4 board
-In-Reply-To: <20230816033134.3750232-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20230816033134.3750232-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20230816033134.3750232-2-Delphine_CC_Chiu@wiwynn.com>
+Date: Wed, 16 Aug 2023 14:05:46 +0800
+Subject: [PATCH linux dev-6.1 v1 1/2] dt-bindings: arm: aspeed: add Meta Yosemite 4 board
+In-Reply-To: <20230816060547.40489-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20230816060547.40489-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20230816060547.40489-2-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the new compatibles used on Facebook Yosemite 4.
+Document the new compatibles used on Meta Yosemite 4.
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
-Changelog:
- v7 - Revise changelog format
- v6 - Change project name from yosemitev4 to yosemite4
 ---
  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index e0eff4c05879..23ee325bfed0 100644
+index fb4ce5df2fa0..6b0a6683ccae 100644
 --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
 +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
 @@ -79,6 +79,7 @@ properties:
