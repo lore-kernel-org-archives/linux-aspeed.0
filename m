@@ -1,71 +1,285 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 18 Aug 2023 02:57:08 +0800
-Subject: [PATCH v7 2/2] hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED
- g6 PWM/Fan tach
-In-Reply-To: <20230817120029.221484-3-billy_tsai@aspeedtech.com>
-References: <20230817120029.221484-3-billy_tsai@aspeedtech.com>
-Message-ID: <202308180218.lgWU1tp1-lkp@intel.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Thu, 17 Aug 2023 13:30:22 -0700
+Subject: [PATCH] clk: Annotate struct clk_hw_onecell_data with __counted_by
+Message-ID: <20230817203019.never.795-kees@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy,
+Prepare for the coming implementation by GCC and Clang of the __counted_by
+attribute. Flexible array members annotated with __counted_by can have
+their accesses bounds-checked at run-time checking via CONFIG_UBSAN_BOUNDS
+(for array indexing) and CONFIG_FORTIFY_SOURCE (for strcpy/memcpy-family
+functions).
 
-kernel test robot noticed the following build warnings:
+As found with Coccinelle[1], add __counted_by for struct clk_hw_onecell_data.
+Additionally, since the element count member must be set before accessing
+the annotated flexible array member, move its initialization earlier.
 
-[auto build test WARNING on groeck-staging/hwmon-next]
-[also build test WARNING on linus/master v6.5-rc6 next-20230817]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+[1] https://github.com/kees/kernel-tools/blob/trunk/coccinelle/examples/counted_by.cocci
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Billy-Tsai/dt-bindings-hwmon-Support-Aspeed-g6-PWM-TACH-Control/20230817-200427
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git hwmon-next
-patch link:    https://lore.kernel.org/r/20230817120029.221484-3-billy_tsai%40aspeedtech.com
-patch subject: [PATCH v7 2/2] hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED g6 PWM/Fan tach
-config: powerpc-randconfig-r011-20230818 (https://download.01.org/0day-ci/archive/20230818/202308180218.lgWU1tp1-lkp at intel.com/config)
-compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project.git 4a5ac14ee968ff0ad5d2cc1ffa0299048db4c88a)
-reproduce: (https://download.01.org/0day-ci/archive/20230818/202308180218.lgWU1tp1-lkp at intel.com/reproduce)
+Cc: Michael Turquette <mturquette@baylibre.com>
+Cc: Stephen Boyd <sboyd@kernel.org>
+Cc: Joel Stanley <joel@jms.id.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>
+Cc: Taichi Sugaya <sugaya.taichi@socionext.com>
+Cc: Takao Orito <orito.takao@socionext.com>
+Cc: Qin Jian <qinjian@cqplus1.com>
+Cc: Andrew Lunn <andrew@lunn.ch>
+Cc: Gregory Clement <gregory.clement@bootlin.com>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Andy Gross <agross@kernel.org>
+Cc: Bjorn Andersson <andersson@kernel.org>
+Cc: Konrad Dybcio <konrad.dybcio@linaro.org>
+Cc: Sergio Paracuellos <sergio.paracuellos@gmail.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
+Cc: Maxime Ripard <mripard@kernel.org>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Jernej Skrabec <jernej.skrabec@gmail.com>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Samuel Holland <samuel@sholland.org>
+Cc: Vinod Koul <vkoul@kernel.org>
+Cc: Kishon Vijay Abraham I <kishon@kernel.org>
+Cc: linux-clk at vger.kernel.org
+Cc: linux-arm-kernel at lists.infradead.org
+Cc: linux-aspeed at lists.ozlabs.org
+Cc: linux-arm-msm at vger.kernel.org
+Cc: linux-mediatek at lists.infradead.org
+Cc: dri-devel at lists.freedesktop.org
+Cc: linux-sunxi at lists.linux.dev
+Cc: linux-phy at lists.infradead.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/clk/clk-aspeed.c                    | 3 +--
+ drivers/clk/clk-ast2600.c                   | 2 +-
+ drivers/clk/clk-gemini.c                    | 2 +-
+ drivers/clk/clk-milbeaut.c                  | 3 +--
+ drivers/clk/clk-sp7021.c                    | 3 +--
+ drivers/clk/mvebu/cp110-system-controller.c | 2 +-
+ drivers/clk/qcom/clk-cpu-8996.c             | 2 +-
+ drivers/clk/ralink/clk-mt7621.c             | 3 +--
+ drivers/gpu/drm/sun4i/sun8i_tcon_top.c      | 3 +--
+ drivers/phy/qualcomm/phy-qcom-edp.c         | 2 +-
+ include/linux/clk-provider.h                | 2 +-
+ 11 files changed, 11 insertions(+), 16 deletions(-)
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202308180218.lgWU1tp1-lkp at intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> drivers/hwmon/aspeed-g6-pwm-tach.c:431:6: warning: variable 'ret' set but not used [-Wunused-but-set-variable]
-     431 |         int ret, count;
-         |             ^
-   1 warning generated.
-
-
-vim +/ret +431 drivers/hwmon/aspeed-g6-pwm-tach.c
-
-   426	
-   427	static int aspeed_tach_create_fan(struct device *dev,
-   428					  struct aspeed_pwm_tach_data *priv)
-   429	{
-   430		u8 *tach_ch;
- > 431		int ret, count;
-   432	
-   433		count = of_property_count_u8_elems(dev->of_node, "aspeed,fan-tach-ch");
-   434		if (count < 1)
-   435			return -EINVAL;
-   436		tach_ch = devm_kcalloc(dev, count, sizeof(*tach_ch), GFP_KERNEL);
-   437		if (!tach_ch)
-   438			return -ENOMEM;
-   439		ret = of_property_read_u8_array(dev->of_node, "aspeed,fan-tach-ch",
-   440						tach_ch, count);
-   441	
-   442		aspeed_present_fan_tach(priv, tach_ch, count);
-   443	
-   444		return 0;
-   445	}
-   446	
-
+diff --git a/drivers/clk/clk-aspeed.c b/drivers/clk/clk-aspeed.c
+index 284710adaef5..ff84191d0fe8 100644
+--- a/drivers/clk/clk-aspeed.c
++++ b/drivers/clk/clk-aspeed.c
+@@ -701,6 +701,7 @@ static void __init aspeed_cc_init(struct device_node *np)
+ 				  GFP_KERNEL);
+ 	if (!aspeed_clk_data)
+ 		return;
++	aspeed_clk_data->num = ASPEED_NUM_CLKS;
+ 
+ 	/*
+ 	 * This way all clocks fetched before the platform device probes,
+@@ -732,8 +733,6 @@ static void __init aspeed_cc_init(struct device_node *np)
+ 		aspeed_ast2500_cc(map);
+ 	else
+ 		pr_err("unknown platform, failed to add clocks\n");
+-
+-	aspeed_clk_data->num = ASPEED_NUM_CLKS;
+ 	ret = of_clk_add_hw_provider(np, of_clk_hw_onecell_get, aspeed_clk_data);
+ 	if (ret)
+ 		pr_err("failed to add DT provider: %d\n", ret);
+diff --git a/drivers/clk/clk-ast2600.c b/drivers/clk/clk-ast2600.c
+index f9e27f95a967..909c3137c428 100644
+--- a/drivers/clk/clk-ast2600.c
++++ b/drivers/clk/clk-ast2600.c
+@@ -839,6 +839,7 @@ static void __init aspeed_g6_cc_init(struct device_node *np)
+ 				      ASPEED_G6_NUM_CLKS), GFP_KERNEL);
+ 	if (!aspeed_g6_clk_data)
+ 		return;
++	aspeed_g6_clk_data->num = ASPEED_G6_NUM_CLKS;
+ 
+ 	/*
+ 	 * This way all clocks fetched before the platform device probes,
+@@ -860,7 +861,6 @@ static void __init aspeed_g6_cc_init(struct device_node *np)
+ 	}
+ 
+ 	aspeed_g6_cc(map);
+-	aspeed_g6_clk_data->num = ASPEED_G6_NUM_CLKS;
+ 	ret = of_clk_add_hw_provider(np, of_clk_hw_onecell_get, aspeed_g6_clk_data);
+ 	if (ret)
+ 		pr_err("failed to add DT provider: %d\n", ret);
+diff --git a/drivers/clk/clk-gemini.c b/drivers/clk/clk-gemini.c
+index a23fa6d47ef1..2572d15aadd0 100644
+--- a/drivers/clk/clk-gemini.c
++++ b/drivers/clk/clk-gemini.c
+@@ -404,6 +404,7 @@ static void __init gemini_cc_init(struct device_node *np)
+ 				  GFP_KERNEL);
+ 	if (!gemini_clk_data)
+ 		return;
++	gemini_clk_data->num = GEMINI_NUM_CLKS;
+ 
+ 	/*
+ 	 * This way all clock fetched before the platform device probes,
+@@ -457,7 +458,6 @@ static void __init gemini_cc_init(struct device_node *np)
+ 	gemini_clk_data->hws[GEMINI_CLK_APB] = hw;
+ 
+ 	/* Register the clocks to be accessed by the device tree */
+-	gemini_clk_data->num = GEMINI_NUM_CLKS;
+ 	of_clk_add_hw_provider(np, of_clk_hw_onecell_get, gemini_clk_data);
+ }
+ CLK_OF_DECLARE_DRIVER(gemini_cc, "cortina,gemini-syscon", gemini_cc_init);
+diff --git a/drivers/clk/clk-milbeaut.c b/drivers/clk/clk-milbeaut.c
+index 050fd4fb588f..18c20aff45f7 100644
+--- a/drivers/clk/clk-milbeaut.c
++++ b/drivers/clk/clk-milbeaut.c
+@@ -618,6 +618,7 @@ static void __init m10v_cc_init(struct device_node *np)
+ 
+ 	if (!m10v_clk_data)
+ 		return;
++	m10v_clk_data->num = M10V_NUM_CLKS;
+ 
+ 	base = of_iomap(np, 0);
+ 	if (!base) {
+@@ -654,8 +655,6 @@ static void __init m10v_cc_init(struct device_node *np)
+ 					base + CLKSEL(1), 0, 3, 0, rclk_table,
+ 					&m10v_crglock, NULL);
+ 	m10v_clk_data->hws[M10V_RCLK_ID] = hw;
+-
+-	m10v_clk_data->num = M10V_NUM_CLKS;
+ 	of_clk_add_hw_provider(np, of_clk_hw_onecell_get, m10v_clk_data);
+ }
+ CLK_OF_DECLARE_DRIVER(m10v_cc, "socionext,milbeaut-m10v-ccu", m10v_cc_init);
+diff --git a/drivers/clk/clk-sp7021.c b/drivers/clk/clk-sp7021.c
+index 11d22043ddd7..01d3c4c7b0b2 100644
+--- a/drivers/clk/clk-sp7021.c
++++ b/drivers/clk/clk-sp7021.c
+@@ -621,6 +621,7 @@ static int sp7021_clk_probe(struct platform_device *pdev)
+ 				GFP_KERNEL);
+ 	if (!clk_data)
+ 		return -ENOMEM;
++	clk_data->num = CLK_MAX;
+ 
+ 	hws = clk_data->hws;
+ 	pd_ext.index = 0;
+@@ -688,8 +689,6 @@ static int sp7021_clk_probe(struct platform_device *pdev)
+ 			return PTR_ERR(hws[i]);
+ 	}
+ 
+-	clk_data->num = CLK_MAX;
+-
+ 	return devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clk_data);
+ }
+ 
+diff --git a/drivers/clk/mvebu/cp110-system-controller.c b/drivers/clk/mvebu/cp110-system-controller.c
+index 84c8900542e4..03c59bf22106 100644
+--- a/drivers/clk/mvebu/cp110-system-controller.c
++++ b/drivers/clk/mvebu/cp110-system-controller.c
+@@ -240,9 +240,9 @@ static int cp110_syscon_common_probe(struct platform_device *pdev,
+ 				      GFP_KERNEL);
+ 	if (!cp110_clk_data)
+ 		return -ENOMEM;
++	cp110_clk_data->num = CP110_CLK_NUM;
+ 
+ 	cp110_clks = cp110_clk_data->hws;
+-	cp110_clk_data->num = CP110_CLK_NUM;
+ 
+ 	/* Register the PLL0 which is the root of the hw tree */
+ 	pll0_name = ap_cp_unique_name(dev, syscon_node, "pll0");
+diff --git a/drivers/clk/qcom/clk-cpu-8996.c b/drivers/clk/qcom/clk-cpu-8996.c
+index 592c7c3cdeb7..72689448a653 100644
+--- a/drivers/clk/qcom/clk-cpu-8996.c
++++ b/drivers/clk/qcom/clk-cpu-8996.c
+@@ -590,6 +590,7 @@ static int qcom_cpu_clk_msm8996_driver_probe(struct platform_device *pdev)
+ 	data = devm_kzalloc(dev, struct_size(data, hws, 2), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
++	data->num = 2;
+ 
+ 	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(base))
+@@ -605,7 +606,6 @@ static int qcom_cpu_clk_msm8996_driver_probe(struct platform_device *pdev)
+ 
+ 	data->hws[0] = &pwrcl_pmux.clkr.hw;
+ 	data->hws[1] = &perfcl_pmux.clkr.hw;
+-	data->num = 2;
+ 
+ 	return devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, data);
+ }
+diff --git a/drivers/clk/ralink/clk-mt7621.c b/drivers/clk/ralink/clk-mt7621.c
+index d95a33293b0a..92d14350c4b3 100644
+--- a/drivers/clk/ralink/clk-mt7621.c
++++ b/drivers/clk/ralink/clk-mt7621.c
+@@ -521,6 +521,7 @@ static int mt7621_clk_probe(struct platform_device *pdev)
+ 				GFP_KERNEL);
+ 	if (!clk_data)
+ 		return -ENOMEM;
++	clk_data->num = count;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(mt7621_clks_base); i++)
+ 		clk_data->hws[i] = mt7621_clk_early[i];
+@@ -537,8 +538,6 @@ static int mt7621_clk_probe(struct platform_device *pdev)
+ 		goto unreg_clk_fixed;
+ 	}
+ 
+-	clk_data->num = count;
+-
+ 	ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clk_data);
+ 	if (ret) {
+ 		dev_err(dev, "Couldn't add clk hw provider\n");
+diff --git a/drivers/gpu/drm/sun4i/sun8i_tcon_top.c b/drivers/gpu/drm/sun4i/sun8i_tcon_top.c
+index 6f076cf4b403..a1ca3916f42b 100644
+--- a/drivers/gpu/drm/sun4i/sun8i_tcon_top.c
++++ b/drivers/gpu/drm/sun4i/sun8i_tcon_top.c
+@@ -141,6 +141,7 @@ static int sun8i_tcon_top_bind(struct device *dev, struct device *master,
+ 				GFP_KERNEL);
+ 	if (!clk_data)
+ 		return -ENOMEM;
++	clk_data->num = CLK_NUM;
+ 	tcon_top->clk_data = clk_data;
+ 
+ 	spin_lock_init(&tcon_top->reg_lock);
+@@ -213,8 +214,6 @@ static int sun8i_tcon_top_bind(struct device *dev, struct device *master,
+ 			goto err_unregister_gates;
+ 		}
+ 
+-	clk_data->num = CLK_NUM;
+-
+ 	ret = of_clk_add_hw_provider(dev->of_node, of_clk_hw_onecell_get,
+ 				     clk_data);
+ 	if (ret)
+diff --git a/drivers/phy/qualcomm/phy-qcom-edp.c b/drivers/phy/qualcomm/phy-qcom-edp.c
+index e0e722b9be31..8e5078304646 100644
+--- a/drivers/phy/qualcomm/phy-qcom-edp.c
++++ b/drivers/phy/qualcomm/phy-qcom-edp.c
+@@ -744,6 +744,7 @@ static int qcom_edp_clks_register(struct qcom_edp *edp, struct device_node *np)
+ 	data = devm_kzalloc(edp->dev, struct_size(data, hws, 2), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
++	data->num = 2;
+ 
+ 	snprintf(name, sizeof(name), "%s::link_clk", dev_name(edp->dev));
+ 	init.ops = &qcom_edp_dp_link_clk_ops;
+@@ -763,7 +764,6 @@ static int qcom_edp_clks_register(struct qcom_edp *edp, struct device_node *np)
+ 
+ 	data->hws[0] = &edp->dp_link_hw;
+ 	data->hws[1] = &edp->dp_pixel_hw;
+-	data->num = 2;
+ 
+ 	return devm_of_clk_add_hw_provider(edp->dev, of_clk_hw_onecell_get, data);
+ }
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index 0f0cd01906b4..ec32ec58c59f 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -1379,7 +1379,7 @@ struct clk_onecell_data {
+ 
+ struct clk_hw_onecell_data {
+ 	unsigned int num;
+-	struct clk_hw *hws[];
++	struct clk_hw *hws[] __counted_by(num);
+ };
+ 
+ #define CLK_OF_DECLARE(name, compat, fn) \
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+
