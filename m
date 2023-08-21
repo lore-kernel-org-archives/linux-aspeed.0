@@ -1,37 +1,25 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 21 Aug 2023 12:32:49 +0200
-Subject: [PATCH] dt-bindings: pinctrl: aspeed: Allow only defined pin mux
- node properties
-In-Reply-To: <20230819010907.916061-1-robh@kernel.org>
-References: <20230819010907.916061-1-robh@kernel.org>
-Message-ID: <CACRpkdZQVry-p90AZSfrJHJuscN3CuJU-ySKU2+zCHbVt-Z1Kg@mail.gmail.com>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Mon, 21 Aug 2023 13:35:24 -0500
+Subject: [PATCH v1 0/1] Host side BMC device driver
+Message-ID: <20230821183525.3427144-1-ninad@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Aug 19, 2023 at 3:09?AM Rob Herring <robh@kernel.org> wrote:
+Hello,
+This patch includes support for host side BMC device driver.
 
-> The Aspeed pinctrl bindings are missing an additionalProperties/
-> unevaluatedProperties schemas on the child pin mux nodes which means any
-> undefined properties are allowed. In addition, using
-> 'additionalProperties' for child nodes with any name works better than a
-> pattern matching everything with an if/then schema to select nodes only.
->
-> With 'additionalProperties' added, 'pins' and 'bias-disable'
-> properties need to be added as they were not defined. A $ref to
-> pinmux-node.yaml which defines the common property types was also
-> missing.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
+Ninad Palsule (1):
+  soc/aspeed: Add host side BMC device driver
 
-Patch applied!
+ drivers/soc/aspeed/Kconfig               |   9 +
+ drivers/soc/aspeed/Makefile              |   1 +
+ drivers/soc/aspeed/aspeed-host-bmc-dev.c | 251 +++++++++++++++++++++++
+ 3 files changed, 261 insertions(+)
+ create mode 100644 drivers/soc/aspeed/aspeed-host-bmc-dev.c
 
-> Really 'pins' should have some constraints, but I don't know what the
-> possible values are. Happy to add if someone can tell me what.
+-- 
+2.39.2
 
-Aspeed folks: put this on your TODO!
-
-Yours,
-Linus Walleij
