@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:16 +0800
-Subject: [PATCH -next 04/25] spi: ath79: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:21 +0800
+Subject: [PATCH -next 09/25] spi: spi-cavium-thunderx: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-5-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-10-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,53 +18,47 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-ath79.c | 11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+ drivers/spi/spi-cavium-thunderx.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/spi/spi-ath79.c b/drivers/spi/spi-ath79.c
-index 1b6d977d111c..c9f1d1e1dcf7 100644
---- a/drivers/spi/spi-ath79.c
-+++ b/drivers/spi/spi-ath79.c
-@@ -200,20 +200,16 @@ static int ath79_spi_probe(struct platform_device *pdev)
- 		goto err_put_host;
+diff --git a/drivers/spi/spi-cavium-thunderx.c b/drivers/spi/spi-cavium-thunderx.c
+index f7c378a5f1bc..337aef12abcc 100644
+--- a/drivers/spi/spi-cavium-thunderx.c
++++ b/drivers/spi/spi-cavium-thunderx.c
+@@ -49,16 +49,12 @@ static int thunderx_spi_probe(struct pci_dev *pdev,
+ 	p->regs.tx = 0x1010;
+ 	p->regs.data = 0x1080;
+ 
+-	p->clk = devm_clk_get(dev, NULL);
++	p->clk = devm_clk_get_enabled(dev, NULL);
+ 	if (IS_ERR(p->clk)) {
+ 		ret = PTR_ERR(p->clk);
+ 		goto error;
  	}
  
--	sp->clk = devm_clk_get(&pdev->dev, "ahb");
-+	sp->clk = devm_clk_get_enabled(&pdev->dev, "ahb");
- 	if (IS_ERR(sp->clk)) {
- 		ret = PTR_ERR(sp->clk);
- 		goto err_put_host;
- 	}
- 
--	ret = clk_prepare_enable(sp->clk);
+-	ret = clk_prepare_enable(p->clk);
 -	if (ret)
--		goto err_put_host;
+-		goto error;
 -
- 	rate = DIV_ROUND_UP(clk_get_rate(sp->clk), MHZ);
- 	if (!rate) {
- 		ret = -EINVAL;
--		goto err_clk_disable;
-+		goto err_put_host;
- 	}
+ 	p->sys_freq = clk_get_rate(p->clk);
+ 	if (!p->sys_freq)
+ 		p->sys_freq = SYS_FREQ_DEFAULT;
+@@ -82,7 +78,6 @@ static int thunderx_spi_probe(struct pci_dev *pdev,
+ 	return 0;
  
- 	sp->rrw_delay = ATH79_SPI_RRW_DELAY_FACTOR / rate;
-@@ -229,8 +225,6 @@ static int ath79_spi_probe(struct platform_device *pdev)
- 
- err_disable:
- 	ath79_spi_disable(sp);
--err_clk_disable:
--	clk_disable_unprepare(sp->clk);
- err_put_host:
+ error:
+-	clk_disable_unprepare(p->clk);
+ 	pci_release_regions(pdev);
  	spi_controller_put(host);
+ 	return ret;
+@@ -97,7 +92,6 @@ static void thunderx_spi_remove(struct pci_dev *pdev)
+ 	if (!p)
+ 		return;
  
-@@ -243,7 +237,6 @@ static void ath79_spi_remove(struct platform_device *pdev)
- 
- 	spi_bitbang_stop(&sp->bitbang);
- 	ath79_spi_disable(sp);
--	clk_disable_unprepare(sp->clk);
- 	spi_controller_put(sp->bitbang.master);
- }
- 
+-	clk_disable_unprepare(p->clk);
+ 	pci_release_regions(pdev);
+ 	/* Put everything in a known state. */
+ 	writeq(0, p->register_base + OCTEON_SPI_CFG(p));
 -- 
 2.34.1
 
