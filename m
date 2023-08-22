@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:27 +0800
-Subject: [PATCH -next 15/25] spi: meson-spicc: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:23 +0800
+Subject: [PATCH -next 11/25] spi: dw-bt1: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-16-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-12-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,100 +18,71 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-meson-spicc.c | 33 ++++++---------------------------
- 1 file changed, 6 insertions(+), 27 deletions(-)
+ drivers/spi/spi-dw-bt1.c | 23 +++++------------------
+ 1 file changed, 5 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/spi/spi-meson-spicc.c b/drivers/spi/spi-meson-spicc.c
-index 43d134f4b42b..1f2d26254e03 100644
---- a/drivers/spi/spi-meson-spicc.c
-+++ b/drivers/spi/spi-meson-spicc.c
-@@ -820,7 +820,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 		goto out_master;
- 	}
+diff --git a/drivers/spi/spi-dw-bt1.c b/drivers/spi/spi-dw-bt1.c
+index 5e1c01822967..5391bcac305c 100644
+--- a/drivers/spi/spi-dw-bt1.c
++++ b/drivers/spi/spi-dw-bt1.c
+@@ -269,43 +269,32 @@ static int dw_spi_bt1_probe(struct platform_device *pdev)
  
--	spicc->core = devm_clk_get(&pdev->dev, "core");
-+	spicc->core = devm_clk_get_enabled(&pdev->dev, "core");
- 	if (IS_ERR(spicc->core)) {
- 		dev_err(&pdev->dev, "core clock request failed\n");
- 		ret = PTR_ERR(spicc->core);
-@@ -828,7 +828,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 	}
+ 	dws->paddr = mem->start;
  
- 	if (spicc->data->has_pclk) {
--		spicc->pclk = devm_clk_get(&pdev->dev, "pclk");
-+		spicc->pclk = devm_clk_get_enabled(&pdev->dev, "pclk");
- 		if (IS_ERR(spicc->pclk)) {
- 			dev_err(&pdev->dev, "pclk clock request failed\n");
- 			ret = PTR_ERR(spicc->pclk);
-@@ -836,22 +836,10 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 		}
- 	}
+-	dwsbt1->clk = devm_clk_get(&pdev->dev, NULL);
++	dwsbt1->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(dwsbt1->clk))
+ 		return PTR_ERR(dwsbt1->clk);
  
--	ret = clk_prepare_enable(spicc->core);
--	if (ret) {
--		dev_err(&pdev->dev, "core clock enable failed\n");
--		goto out_master;
--	}
+-	ret = clk_prepare_enable(dwsbt1->clk);
+-	if (ret)
+-		return ret;
 -
--	ret = clk_prepare_enable(spicc->pclk);
--	if (ret) {
--		dev_err(&pdev->dev, "pclk clock enable failed\n");
--		goto out_core_clk;
+ 	dws->bus_num = pdev->id;
+ 	dws->reg_io_width = 4;
+ 	dws->max_freq = clk_get_rate(dwsbt1->clk);
+-	if (!dws->max_freq) {
+-		ret = -EINVAL;
+-		goto err_disable_clk;
 -	}
--
- 	spicc->pinctrl = devm_pinctrl_get(&pdev->dev);
- 	if (IS_ERR(spicc->pinctrl)) {
- 		ret = PTR_ERR(spicc->pinctrl);
--		goto out_clk;
-+		goto out_master;
- 	}
++	if (!dws->max_freq)
++		return -EINVAL;
  
- 	device_reset_optional(&pdev->dev);
-@@ -878,31 +866,25 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 	ret = meson_spicc_pow2_clk_init(spicc);
+ 	init_func = device_get_match_data(&pdev->dev);
+ 	ret = init_func(pdev, dwsbt1);
+ 	if (ret)
+-		goto err_disable_clk;
++		return ret;
+ 
+ 	pm_runtime_enable(&pdev->dev);
+ 
+ 	ret = dw_spi_add_host(&pdev->dev, dws);
  	if (ret) {
- 		dev_err(&pdev->dev, "pow2 clock registration failed\n");
--		goto out_clk;
-+		goto out_master;
+ 		pm_runtime_disable(&pdev->dev);
+-		goto err_disable_clk;
++		return ret;
  	}
  
- 	if (spicc->data->has_enhance_clk_div) {
- 		ret = meson_spicc_enh_clk_init(spicc);
- 		if (ret) {
- 			dev_err(&pdev->dev, "clock registration failed\n");
--			goto out_clk;
-+			goto out_master;
- 		}
- 	}
- 
- 	ret = devm_spi_register_master(&pdev->dev, master);
- 	if (ret) {
- 		dev_err(&pdev->dev, "spi master registration failed\n");
--		goto out_clk;
-+		goto out_master;
- 	}
+ 	platform_set_drvdata(pdev, dwsbt1);
  
  	return 0;
- 
--out_clk:
--	clk_disable_unprepare(spicc->pclk);
 -
--out_core_clk:
--	clk_disable_unprepare(spicc->core);
+-err_disable_clk:
+-	clk_disable_unprepare(dwsbt1->clk);
 -
- out_master:
- 	spi_master_put(master);
- 
-@@ -916,9 +898,6 @@ static void meson_spicc_remove(struct platform_device *pdev)
- 	/* Disable SPI */
- 	writel(0, spicc->base + SPICC_CONREG);
- 
--	clk_disable_unprepare(spicc->core);
--	clk_disable_unprepare(spicc->pclk);
--
- 	spi_master_put(spicc->master);
+-	return ret;
  }
  
+ static void dw_spi_bt1_remove(struct platform_device *pdev)
+@@ -315,8 +304,6 @@ static void dw_spi_bt1_remove(struct platform_device *pdev)
+ 	dw_spi_remove_host(&dwsbt1->dws);
+ 
+ 	pm_runtime_disable(&pdev->dev);
+-
+-	clk_disable_unprepare(dwsbt1->clk);
+ }
+ 
+ static const struct of_device_id dw_spi_bt1_of_match[] = {
 -- 
 2.34.1
 
