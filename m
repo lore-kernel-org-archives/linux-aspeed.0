@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:34 +0800
-Subject: [PATCH -next 22/25] spi: pic32-sqi: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:19 +0800
+Subject: [PATCH -next 07/25] spi: bcm2835aux: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-23-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-8-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,80 +18,78 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-pic32-sqi.c | 27 +++------------------------
- 1 file changed, 3 insertions(+), 24 deletions(-)
+ drivers/spi/spi-bcm2835aux.c | 23 ++++-------------------
+ 1 file changed, 4 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/spi/spi-pic32-sqi.c b/drivers/spi/spi-pic32-sqi.c
-index 5cbebcf26a2a..d894b99e4104 100644
---- a/drivers/spi/spi-pic32-sqi.c
-+++ b/drivers/spi/spi-pic32-sqi.c
-@@ -593,33 +593,20 @@ static int pic32_sqi_probe(struct platform_device *pdev)
- 	}
+diff --git a/drivers/spi/spi-bcm2835aux.c b/drivers/spi/spi-bcm2835aux.c
+index 6d2a5d9f2498..06fe155a70c9 100644
+--- a/drivers/spi/spi-bcm2835aux.c
++++ b/drivers/spi/spi-bcm2835aux.c
+@@ -512,7 +512,7 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bs->regs))
+ 		return PTR_ERR(bs->regs);
  
- 	/* clocks */
--	sqi->sys_clk = devm_clk_get(&pdev->dev, "reg_ck");
-+	sqi->sys_clk = devm_clk_get_enabled(&pdev->dev, "reg_ck");
- 	if (IS_ERR(sqi->sys_clk)) {
- 		ret = PTR_ERR(sqi->sys_clk);
- 		dev_err(&pdev->dev, "no sys_clk ?\n");
- 		goto err_free_master;
- 	}
+-	bs->clk = devm_clk_get(&pdev->dev, NULL);
++	bs->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(bs->clk)) {
+ 		err = PTR_ERR(bs->clk);
+ 		dev_err(&pdev->dev, "could not get clk: %d\n", err);
+@@ -523,19 +523,11 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
+ 	if (bs->irq < 0)
+ 		return bs->irq;
  
--	sqi->base_clk = devm_clk_get(&pdev->dev, "spi_ck");
-+	sqi->base_clk = devm_clk_get_enabled(&pdev->dev, "spi_ck");
- 	if (IS_ERR(sqi->base_clk)) {
- 		ret = PTR_ERR(sqi->base_clk);
- 		dev_err(&pdev->dev, "no base clk ?\n");
- 		goto err_free_master;
- 	}
- 
--	ret = clk_prepare_enable(sqi->sys_clk);
--	if (ret) {
--		dev_err(&pdev->dev, "sys clk enable failed\n");
--		goto err_free_master;
+-	/* this also enables the HW block */
+-	err = clk_prepare_enable(bs->clk);
+-	if (err) {
+-		dev_err(&pdev->dev, "could not prepare clock: %d\n", err);
+-		return err;
 -	}
 -
--	ret = clk_prepare_enable(sqi->base_clk);
--	if (ret) {
--		dev_err(&pdev->dev, "base clk enable failed\n");
--		clk_disable_unprepare(sqi->sys_clk);
--		goto err_free_master;
--	}
--
- 	init_completion(&sqi->xfer_done);
- 
- 	/* initialize hardware */
-@@ -629,7 +616,7 @@ static int pic32_sqi_probe(struct platform_device *pdev)
- 	ret = ring_desc_ring_alloc(sqi);
- 	if (ret) {
- 		dev_err(&pdev->dev, "ring alloc failed\n");
--		goto err_disable_clk;
-+		goto err_free_master;
+ 	/* just checking if the clock returns a sane value */
+ 	clk_hz = clk_get_rate(bs->clk);
+ 	if (!clk_hz) {
+ 		dev_err(&pdev->dev, "clock returns 0 Hz\n");
+-		err = -ENODEV;
+-		goto out_clk_disable;
++		return -ENODEV;
  	}
  
- 	/* install irq handlers */
-@@ -669,10 +656,6 @@ static int pic32_sqi_probe(struct platform_device *pdev)
- err_free_ring:
- 	ring_desc_ring_free(sqi);
+ 	/* reset SPI-HW block */
+@@ -547,22 +539,18 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
+ 			       dev_name(&pdev->dev), host);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "could not request IRQ: %d\n", err);
+-		goto out_clk_disable;
++		return err;
+ 	}
  
--err_disable_clk:
--	clk_disable_unprepare(sqi->base_clk);
--	clk_disable_unprepare(sqi->sys_clk);
+ 	err = spi_register_controller(host);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "could not register SPI host: %d\n", err);
+-		goto out_clk_disable;
++		return err;
+ 	}
+ 
+ 	bcm2835aux_debugfs_create(bs, dev_name(&pdev->dev));
+ 
+ 	return 0;
 -
- err_free_master:
- 	spi_master_put(master);
- 	return ret;
-@@ -685,10 +668,6 @@ static void pic32_sqi_remove(struct platform_device *pdev)
- 	/* release resources */
- 	free_irq(sqi->irq, sqi);
- 	ring_desc_ring_free(sqi);
--
--	/* disable clk */
--	clk_disable_unprepare(sqi->base_clk);
--	clk_disable_unprepare(sqi->sys_clk);
+-out_clk_disable:
+-	clk_disable_unprepare(bs->clk);
+-	return err;
  }
  
- static const struct of_device_id pic32_sqi_of_ids[] = {
+ static void bcm2835aux_spi_remove(struct platform_device *pdev)
+@@ -575,9 +563,6 @@ static void bcm2835aux_spi_remove(struct platform_device *pdev)
+ 	spi_unregister_controller(host);
+ 
+ 	bcm2835aux_spi_reset_hw(bs);
+-
+-	/* disable the HW block by releasing the clock */
+-	clk_disable_unprepare(bs->clk);
+ }
+ 
+ static const struct of_device_id bcm2835aux_spi_match[] = {
 -- 
 2.34.1
 
