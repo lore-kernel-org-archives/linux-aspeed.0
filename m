@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:15 +0800
-Subject: [PATCH -next 03/25] spi: aspeed: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:34 +0800
+Subject: [PATCH -next 22/25] spi: pic32-sqi: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-4-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-23-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,59 +18,80 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-aspeed-smc.c | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
+ drivers/spi/spi-pic32-sqi.c | 27 +++------------------------
+ 1 file changed, 3 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-index 21b0fa646c7d..bbd417c55e7f 100644
---- a/drivers/spi/spi-aspeed-smc.c
-+++ b/drivers/spi/spi-aspeed-smc.c
-@@ -748,7 +748,7 @@ static int aspeed_spi_probe(struct platform_device *pdev)
- 	aspi->ahb_window_size = resource_size(res);
- 	aspi->ahb_base_phy = res->start;
- 
--	aspi->clk = devm_clk_get(&pdev->dev, NULL);
-+	aspi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(aspi->clk)) {
- 		dev_err(dev, "missing clock\n");
- 		return PTR_ERR(aspi->clk);
-@@ -760,12 +760,6 @@ static int aspeed_spi_probe(struct platform_device *pdev)
- 		return -EINVAL;
+diff --git a/drivers/spi/spi-pic32-sqi.c b/drivers/spi/spi-pic32-sqi.c
+index 5cbebcf26a2a..d894b99e4104 100644
+--- a/drivers/spi/spi-pic32-sqi.c
++++ b/drivers/spi/spi-pic32-sqi.c
+@@ -593,33 +593,20 @@ static int pic32_sqi_probe(struct platform_device *pdev)
  	}
  
--	ret = clk_prepare_enable(aspi->clk);
+ 	/* clocks */
+-	sqi->sys_clk = devm_clk_get(&pdev->dev, "reg_ck");
++	sqi->sys_clk = devm_clk_get_enabled(&pdev->dev, "reg_ck");
+ 	if (IS_ERR(sqi->sys_clk)) {
+ 		ret = PTR_ERR(sqi->sys_clk);
+ 		dev_err(&pdev->dev, "no sys_clk ?\n");
+ 		goto err_free_master;
+ 	}
+ 
+-	sqi->base_clk = devm_clk_get(&pdev->dev, "spi_ck");
++	sqi->base_clk = devm_clk_get_enabled(&pdev->dev, "spi_ck");
+ 	if (IS_ERR(sqi->base_clk)) {
+ 		ret = PTR_ERR(sqi->base_clk);
+ 		dev_err(&pdev->dev, "no base clk ?\n");
+ 		goto err_free_master;
+ 	}
+ 
+-	ret = clk_prepare_enable(sqi->sys_clk);
 -	if (ret) {
--		dev_err(dev, "can not enable the clock\n");
--		return ret;
+-		dev_err(&pdev->dev, "sys clk enable failed\n");
+-		goto err_free_master;
 -	}
 -
- 	/* IRQ is for DMA, which the driver doesn't support yet */
- 
- 	ctlr->mode_bits = SPI_RX_DUAL | SPI_TX_DUAL | data->mode_bits;
-@@ -777,14 +771,9 @@ static int aspeed_spi_probe(struct platform_device *pdev)
- 	ctlr->dev.of_node = dev->of_node;
- 
- 	ret = devm_spi_register_controller(dev, ctlr);
+-	ret = clk_prepare_enable(sqi->base_clk);
 -	if (ret) {
-+	if (ret)
- 		dev_err(&pdev->dev, "spi_register_controller failed\n");
--		goto disable_clk;
+-		dev_err(&pdev->dev, "base clk enable failed\n");
+-		clk_disable_unprepare(sqi->sys_clk);
+-		goto err_free_master;
 -	}
--	return 0;
+-
+ 	init_completion(&sqi->xfer_done);
  
--disable_clk:
--	clk_disable_unprepare(aspi->clk);
+ 	/* initialize hardware */
+@@ -629,7 +616,7 @@ static int pic32_sqi_probe(struct platform_device *pdev)
+ 	ret = ring_desc_ring_alloc(sqi);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "ring alloc failed\n");
+-		goto err_disable_clk;
++		goto err_free_master;
+ 	}
+ 
+ 	/* install irq handlers */
+@@ -669,10 +656,6 @@ static int pic32_sqi_probe(struct platform_device *pdev)
+ err_free_ring:
+ 	ring_desc_ring_free(sqi);
+ 
+-err_disable_clk:
+-	clk_disable_unprepare(sqi->base_clk);
+-	clk_disable_unprepare(sqi->sys_clk);
+-
+ err_free_master:
+ 	spi_master_put(master);
  	return ret;
+@@ -685,10 +668,6 @@ static void pic32_sqi_remove(struct platform_device *pdev)
+ 	/* release resources */
+ 	free_irq(sqi->irq, sqi);
+ 	ring_desc_ring_free(sqi);
+-
+-	/* disable clk */
+-	clk_disable_unprepare(sqi->base_clk);
+-	clk_disable_unprepare(sqi->sys_clk);
  }
  
-@@ -793,7 +782,6 @@ static void aspeed_spi_remove(struct platform_device *pdev)
- 	struct aspeed_spi *aspi = platform_get_drvdata(pdev);
- 
- 	aspeed_spi_enable(aspi, false);
--	clk_disable_unprepare(aspi->clk);
- }
- 
- /*
+ static const struct of_device_id pic32_sqi_of_ids[] = {
 -- 
 2.34.1
 
