@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:35 +0800
-Subject: [PATCH -next 23/25] spi: pic32: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:30 +0800
+Subject: [PATCH -next 18/25] spi: microchip-core: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-24-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-19-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,46 +18,43 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-pic32.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ drivers/spi/spi-microchip-core.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/spi/spi-pic32.c b/drivers/spi/spi-pic32.c
-index e9b4c9cb97fb..2b0680974cba 100644
---- a/drivers/spi/spi-pic32.c
-+++ b/drivers/spi/spi-pic32.c
-@@ -730,17 +730,13 @@ static int pic32_spi_hw_probe(struct platform_device *pdev,
- 		return pic32s->tx_irq;
+diff --git a/drivers/spi/spi-microchip-core.c b/drivers/spi/spi-microchip-core.c
+index b451cd4860ec..becdcdc9e6d1 100644
+--- a/drivers/spi/spi-microchip-core.c
++++ b/drivers/spi/spi-microchip-core.c
+@@ -539,22 +539,16 @@ static int mchp_corespi_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, ret,
+ 				     "could not request irq\n");
  
- 	/* get clock */
--	pic32s->clk = devm_clk_get(&pdev->dev, "mck0");
-+	pic32s->clk = devm_clk_get_enabled(&pdev->dev, "mck0");
- 	if (IS_ERR(pic32s->clk)) {
- 		dev_err(&pdev->dev, "clk not found\n");
- 		ret = PTR_ERR(pic32s->clk);
- 		goto err_unmap_mem;
- 	}
+-	spi->clk = devm_clk_get(&pdev->dev, NULL);
++	spi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(spi->clk))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(spi->clk),
+ 				     "could not get clk\n");
  
--	ret = clk_prepare_enable(pic32s->clk);
+-	ret = clk_prepare_enable(spi->clk);
 -	if (ret)
--		goto err_unmap_mem;
+-		return dev_err_probe(&pdev->dev, ret,
+-				     "failed to enable clock\n");
 -
- 	pic32_spi_hw_init(pic32s);
+ 	mchp_corespi_init(master, spi);
  
- 	return 0;
-@@ -837,7 +833,6 @@ static int pic32_spi_probe(struct platform_device *pdev)
+ 	ret = devm_spi_register_master(&pdev->dev, master);
+ 	if (ret) {
+ 		mchp_corespi_disable(spi);
+-		clk_disable_unprepare(spi->clk);
+ 		return dev_err_probe(&pdev->dev, ret,
+ 				     "unable to register master for SPI controller\n");
+ 	}
+@@ -570,7 +564,6 @@ static void mchp_corespi_remove(struct platform_device *pdev)
+ 	struct mchp_corespi *spi = spi_master_get_devdata(master);
  
- err_bailout:
- 	pic32_spi_dma_unprep(pic32s);
--	clk_disable_unprepare(pic32s->clk);
- err_master:
- 	spi_master_put(master);
- 	return ret;
-@@ -849,7 +844,6 @@ static void pic32_spi_remove(struct platform_device *pdev)
- 
- 	pic32s = platform_get_drvdata(pdev);
- 	pic32_spi_disable(pic32s);
--	clk_disable_unprepare(pic32s->clk);
- 	pic32_spi_dma_unprep(pic32s);
+ 	mchp_corespi_disable_ints(spi);
+-	clk_disable_unprepare(spi->clk);
+ 	mchp_corespi_disable(spi);
  }
  
 -- 
