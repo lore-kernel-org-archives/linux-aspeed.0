@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:23 +0800
-Subject: [PATCH -next 11/25] spi: dw-bt1: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:18 +0800
+Subject: [PATCH -next 06/25] spi: bcm2835: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-12-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-7-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,71 +18,56 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-dw-bt1.c | 23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+ drivers/spi/spi-bcm2835.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/spi/spi-dw-bt1.c b/drivers/spi/spi-dw-bt1.c
-index 5e1c01822967..5391bcac305c 100644
---- a/drivers/spi/spi-dw-bt1.c
-+++ b/drivers/spi/spi-dw-bt1.c
-@@ -269,43 +269,32 @@ static int dw_spi_bt1_probe(struct platform_device *pdev)
+diff --git a/drivers/spi/spi-bcm2835.c b/drivers/spi/spi-bcm2835.c
+index e7bb2714678a..a457ad2f7db1 100644
+--- a/drivers/spi/spi-bcm2835.c
++++ b/drivers/spi/spi-bcm2835.c
+@@ -1352,7 +1352,7 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bs->regs))
+ 		return PTR_ERR(bs->regs);
  
- 	dws->paddr = mem->start;
+-	bs->clk = devm_clk_get(&pdev->dev, NULL);
++	bs->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(bs->clk))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(bs->clk),
+ 				     "could not get clk\n");
+@@ -1363,14 +1363,11 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
+ 	if (bs->irq < 0)
+ 		return bs->irq;
  
--	dwsbt1->clk = devm_clk_get(&pdev->dev, NULL);
-+	dwsbt1->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(dwsbt1->clk))
- 		return PTR_ERR(dwsbt1->clk);
+-	err = clk_prepare_enable(bs->clk);
+-	if (err)
+-		return err;
+ 	bs->clk_hz = clk_get_rate(bs->clk);
  
--	ret = clk_prepare_enable(dwsbt1->clk);
--	if (ret)
--		return ret;
--
- 	dws->bus_num = pdev->id;
- 	dws->reg_io_width = 4;
- 	dws->max_freq = clk_get_rate(dwsbt1->clk);
--	if (!dws->max_freq) {
--		ret = -EINVAL;
--		goto err_disable_clk;
--	}
-+	if (!dws->max_freq)
-+		return -EINVAL;
+ 	err = bcm2835_dma_init(ctlr, &pdev->dev, bs);
+ 	if (err)
+-		goto out_clk_disable;
++		return err;
  
- 	init_func = device_get_match_data(&pdev->dev);
- 	ret = init_func(pdev, dwsbt1);
- 	if (ret)
--		goto err_disable_clk;
-+		return ret;
+ 	/* initialise the hardware with the default polarities */
+ 	bcm2835_wr(bs, BCM2835_SPI_CS,
+@@ -1396,8 +1393,6 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
  
- 	pm_runtime_enable(&pdev->dev);
- 
- 	ret = dw_spi_add_host(&pdev->dev, dws);
- 	if (ret) {
- 		pm_runtime_disable(&pdev->dev);
--		goto err_disable_clk;
-+		return ret;
- 	}
- 
- 	platform_set_drvdata(pdev, dwsbt1);
- 
- 	return 0;
--
--err_disable_clk:
--	clk_disable_unprepare(dwsbt1->clk);
--
--	return ret;
+ out_dma_release:
+ 	bcm2835_dma_release(ctlr, bs);
+-out_clk_disable:
+-	clk_disable_unprepare(bs->clk);
+ 	return err;
  }
  
- static void dw_spi_bt1_remove(struct platform_device *pdev)
-@@ -315,8 +304,6 @@ static void dw_spi_bt1_remove(struct platform_device *pdev)
- 	dw_spi_remove_host(&dwsbt1->dws);
- 
- 	pm_runtime_disable(&pdev->dev);
+@@ -1415,8 +1410,6 @@ static void bcm2835_spi_remove(struct platform_device *pdev)
+ 	/* Clear FIFOs, and disable the HW block */
+ 	bcm2835_wr(bs, BCM2835_SPI_CS,
+ 		   BCM2835_SPI_CS_CLEAR_RX | BCM2835_SPI_CS_CLEAR_TX);
 -
--	clk_disable_unprepare(dwsbt1->clk);
+-	clk_disable_unprepare(bs->clk);
  }
  
- static const struct of_device_id dw_spi_bt1_of_match[] = {
+ static const struct of_device_id bcm2835_spi_match[] = {
 -- 
 2.34.1
 
