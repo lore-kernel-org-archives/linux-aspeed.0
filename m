@@ -1,103 +1,81 @@
-From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:17 +0800
-Subject: [PATCH -next 05/25] spi: spi-axi-spi-engine: Use helper function devm_clk_get_enabled()
-In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
-References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-6-lizetao1@huawei.com>
+From: Ninad Palsule <ninad@linux.vnet.ibm.com>
+Date: Tue, 22 Aug 2023 11:14:15 -0500
+Subject: [PATCH v1 1/1] soc/aspeed: Add host side BMC device driver
+In-Reply-To: <5159abb8-1b4c-4576-b370-4dd9db142beb@lunn.ch>
+References: <20230821183525.3427144-1-ninad@linux.ibm.com>
+ <20230821183525.3427144-2-ninad@linux.ibm.com>
+ <5159abb8-1b4c-4576-b370-4dd9db142beb@lunn.ch>
+Message-ID: <6cea8ee7-f845-6ef3-631f-3f252ff5e949@linux.vnet.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
-and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
-replaced by devm_clk_get_enabled() when driver enables (and possibly
-prepares) the clocks for the whole lifetime of the device. Moreover, it is
-no longer necessary to unprepare and disable the clocks explicitly.
+Hello Andrew,
 
-Signed-off-by: Li Zetao <lizetao1@huawei.com>
----
- drivers/spi/spi-axi-spi-engine.c | 25 +++++--------------------
- 1 file changed, 5 insertions(+), 20 deletions(-)
+Thanks for the review.
 
-diff --git a/drivers/spi/spi-axi-spi-engine.c b/drivers/spi/spi-axi-spi-engine.c
-index 0258c9a72fdc..b96e55f59d1a 100644
---- a/drivers/spi/spi-axi-spi-engine.c
-+++ b/drivers/spi/spi-axi-spi-engine.c
-@@ -485,30 +485,22 @@ static int spi_engine_probe(struct platform_device *pdev)
- 
- 	spin_lock_init(&spi_engine->lock);
- 
--	spi_engine->clk = devm_clk_get(&pdev->dev, "s_axi_aclk");
-+	spi_engine->clk = devm_clk_get_enabled(&pdev->dev, "s_axi_aclk");
- 	if (IS_ERR(spi_engine->clk)) {
- 		ret = PTR_ERR(spi_engine->clk);
- 		goto err_put_host;
- 	}
- 
--	spi_engine->ref_clk = devm_clk_get(&pdev->dev, "spi_clk");
-+	spi_engine->ref_clk = devm_clk_get_enabled(&pdev->dev, "spi_clk");
- 	if (IS_ERR(spi_engine->ref_clk)) {
- 		ret = PTR_ERR(spi_engine->ref_clk);
- 		goto err_put_host;
- 	}
- 
--	ret = clk_prepare_enable(spi_engine->clk);
--	if (ret)
--		goto err_put_host;
--
--	ret = clk_prepare_enable(spi_engine->ref_clk);
--	if (ret)
--		goto err_clk_disable;
--
- 	spi_engine->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(spi_engine->base)) {
- 		ret = PTR_ERR(spi_engine->base);
--		goto err_ref_clk_disable;
-+		goto err_put_host;
- 	}
- 
- 	version = readl(spi_engine->base + SPI_ENGINE_REG_VERSION);
-@@ -518,7 +510,7 @@ static int spi_engine_probe(struct platform_device *pdev)
- 			SPI_ENGINE_VERSION_MINOR(version),
- 			SPI_ENGINE_VERSION_PATCH(version));
- 		ret = -ENODEV;
--		goto err_ref_clk_disable;
-+		goto err_put_host;
- 	}
- 
- 	writel_relaxed(0x00, spi_engine->base + SPI_ENGINE_REG_RESET);
-@@ -527,7 +519,7 @@ static int spi_engine_probe(struct platform_device *pdev)
- 
- 	ret = request_irq(irq, spi_engine_irq, 0, pdev->name, host);
- 	if (ret)
--		goto err_ref_clk_disable;
-+		goto err_put_host;
- 
- 	host->dev.of_node = pdev->dev.of_node;
- 	host->mode_bits = SPI_CPOL | SPI_CPHA | SPI_3WIRE;
-@@ -545,10 +537,6 @@ static int spi_engine_probe(struct platform_device *pdev)
- 	return 0;
- err_free_irq:
- 	free_irq(irq, host);
--err_ref_clk_disable:
--	clk_disable_unprepare(spi_engine->ref_clk);
--err_clk_disable:
--	clk_disable_unprepare(spi_engine->clk);
- err_put_host:
- 	spi_controller_put(host);
- 	return ret;
-@@ -569,9 +557,6 @@ static void spi_engine_remove(struct platform_device *pdev)
- 	writel_relaxed(0xff, spi_engine->base + SPI_ENGINE_REG_INT_PENDING);
- 	writel_relaxed(0x00, spi_engine->base + SPI_ENGINE_REG_INT_ENABLE);
- 	writel_relaxed(0x01, spi_engine->base + SPI_ENGINE_REG_RESET);
--
--	clk_disable_unprepare(spi_engine->ref_clk);
--	clk_disable_unprepare(spi_engine->clk);
- }
- 
- static const struct of_device_id spi_engine_match_table[] = {
--- 
-2.34.1
+On 8/21/23 2:29 PM, Andrew Lunn wrote:
+>> Testing:
+>>    - This is tested on IBM rainier system with BMC. It requires BMC side
+>>      BMC device driver which is available in the ASPEED's 5.15 SDK
+>>      kernel.
+> How relevant is that? To the host side, it just appears to be an
+> 16550A. Is the SDK emulating an 16550A? If you where to use a
+> different kernel, is it still guaranteed to be an 16550A? I also
+> notice there is a mainline
+> drivers/tty/serial/8250/8250_aspeed_vuart.c. Could that be used on the
+> BMC? That would be a better testing target than the vendor kernel.
+
+This is just to indicate how I tested my code.
+
+Yes, aspeed chip (in this case ast2600) is compatible with 16550 UART.
+
+I am guessing it should work with different kernel too as 16550 standard 
+is used.
+
+The 8250_aspeed_vuart.c is a BMC side driver for accessing VUART over 
+LPC bus and
+
+this is a host side driver to access VUART over PCIe bus.
+
+>> +config ASPEED_HOST_BMC_DEV
+>> +	bool "ASPEED SoC Host BMC device driver"
+>> +	default ARCH_ASPEED
+>> +	select SOC_BUS
+>> +	default ARCH_ASPEED
+> same default twice?
+Removed.
+>
+>> +static int __init aspeed_host_bmc_device_init(void)
+>> +{
+>> +	int ret;
+>> +
+>> +	/* register pci driver */
+>> +	ret = pci_register_driver(&aspeed_host_bmc_dev_driver);
+>> +	if (ret < 0) {
+>> +		pr_err("pci-driver: can't register pci driver\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	return 0;
+>> +
+>> +}
+>> +
+>> +static void aspeed_host_bmc_device_exit(void)
+>> +{
+>> +	/* unregister pci driver */
+>> +	pci_unregister_driver(&aspeed_host_bmc_dev_driver);
+>> +}
+>> +
+>> +late_initcall(aspeed_host_bmc_device_init);
+>> +module_exit(aspeed_host_bmc_device_exit);
+> It looks like you can use module_pci_driver() ?
+yes, It should work unless the late initcall is important. I will test 
+it and see.
+
+Thanks & Regards,
+
+Ninad Palsule
 
