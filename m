@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:26 +0800
-Subject: [PATCH -next 14/25] spi: lantiq-ssc: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:17 +0800
+Subject: [PATCH -next 05/25] spi: spi-axi-spi-engine: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-15-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-6-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,55 +18,86 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-lantiq-ssc.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/spi/spi-axi-spi-engine.c | 25 +++++--------------------
+ 1 file changed, 5 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/spi/spi-lantiq-ssc.c b/drivers/spi/spi-lantiq-ssc.c
-index 938e9e577e4f..18a46569ba46 100644
---- a/drivers/spi/spi-lantiq-ssc.c
-+++ b/drivers/spi/spi-lantiq-ssc.c
-@@ -932,14 +932,11 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
- 	if (err)
- 		goto err_host_put;
+diff --git a/drivers/spi/spi-axi-spi-engine.c b/drivers/spi/spi-axi-spi-engine.c
+index 0258c9a72fdc..b96e55f59d1a 100644
+--- a/drivers/spi/spi-axi-spi-engine.c
++++ b/drivers/spi/spi-axi-spi-engine.c
+@@ -485,30 +485,22 @@ static int spi_engine_probe(struct platform_device *pdev)
  
--	spi->spi_clk = devm_clk_get(dev, "gate");
-+	spi->spi_clk = devm_clk_get_enabled(dev, "gate");
- 	if (IS_ERR(spi->spi_clk)) {
- 		err = PTR_ERR(spi->spi_clk);
- 		goto err_host_put;
+ 	spin_lock_init(&spi_engine->lock);
+ 
+-	spi_engine->clk = devm_clk_get(&pdev->dev, "s_axi_aclk");
++	spi_engine->clk = devm_clk_get_enabled(&pdev->dev, "s_axi_aclk");
+ 	if (IS_ERR(spi_engine->clk)) {
+ 		ret = PTR_ERR(spi_engine->clk);
+ 		goto err_put_host;
  	}
--	err = clk_prepare_enable(spi->spi_clk);
--	if (err)
--		goto err_host_put;
  
- 	/*
- 	 * Use the old clk_get_fpi() function on Lantiq platform, till it
-@@ -952,7 +949,7 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
- #endif
- 	if (IS_ERR(spi->fpi_clk)) {
- 		err = PTR_ERR(spi->fpi_clk);
+-	spi_engine->ref_clk = devm_clk_get(&pdev->dev, "spi_clk");
++	spi_engine->ref_clk = devm_clk_get_enabled(&pdev->dev, "spi_clk");
+ 	if (IS_ERR(spi_engine->ref_clk)) {
+ 		ret = PTR_ERR(spi_engine->ref_clk);
+ 		goto err_put_host;
+ 	}
+ 
+-	ret = clk_prepare_enable(spi_engine->clk);
+-	if (ret)
+-		goto err_put_host;
+-
+-	ret = clk_prepare_enable(spi_engine->ref_clk);
+-	if (ret)
 -		goto err_clk_disable;
-+		goto err_host_put;
+-
+ 	spi_engine->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(spi_engine->base)) {
+ 		ret = PTR_ERR(spi_engine->base);
+-		goto err_ref_clk_disable;
++		goto err_put_host;
  	}
  
- 	num_cs = 8;
-@@ -1010,8 +1007,6 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
- 	destroy_workqueue(spi->wq);
- err_clk_put:
- 	clk_put(spi->fpi_clk);
+ 	version = readl(spi_engine->base + SPI_ENGINE_REG_VERSION);
+@@ -518,7 +510,7 @@ static int spi_engine_probe(struct platform_device *pdev)
+ 			SPI_ENGINE_VERSION_MINOR(version),
+ 			SPI_ENGINE_VERSION_PATCH(version));
+ 		ret = -ENODEV;
+-		goto err_ref_clk_disable;
++		goto err_put_host;
+ 	}
+ 
+ 	writel_relaxed(0x00, spi_engine->base + SPI_ENGINE_REG_RESET);
+@@ -527,7 +519,7 @@ static int spi_engine_probe(struct platform_device *pdev)
+ 
+ 	ret = request_irq(irq, spi_engine_irq, 0, pdev->name, host);
+ 	if (ret)
+-		goto err_ref_clk_disable;
++		goto err_put_host;
+ 
+ 	host->dev.of_node = pdev->dev.of_node;
+ 	host->mode_bits = SPI_CPOL | SPI_CPHA | SPI_3WIRE;
+@@ -545,10 +537,6 @@ static int spi_engine_probe(struct platform_device *pdev)
+ 	return 0;
+ err_free_irq:
+ 	free_irq(irq, host);
+-err_ref_clk_disable:
+-	clk_disable_unprepare(spi_engine->ref_clk);
 -err_clk_disable:
--	clk_disable_unprepare(spi->spi_clk);
- err_host_put:
+-	clk_disable_unprepare(spi_engine->clk);
+ err_put_host:
  	spi_controller_put(host);
- 
-@@ -1029,7 +1024,6 @@ static void lantiq_ssc_remove(struct platform_device *pdev)
- 	hw_enter_config_mode(spi);
- 
- 	destroy_workqueue(spi->wq);
--	clk_disable_unprepare(spi->spi_clk);
- 	clk_put(spi->fpi_clk);
+ 	return ret;
+@@ -569,9 +557,6 @@ static void spi_engine_remove(struct platform_device *pdev)
+ 	writel_relaxed(0xff, spi_engine->base + SPI_ENGINE_REG_INT_PENDING);
+ 	writel_relaxed(0x00, spi_engine->base + SPI_ENGINE_REG_INT_ENABLE);
+ 	writel_relaxed(0x01, spi_engine->base + SPI_ENGINE_REG_RESET);
+-
+-	clk_disable_unprepare(spi_engine->ref_clk);
+-	clk_disable_unprepare(spi_engine->clk);
  }
  
+ static const struct of_device_id spi_engine_match_table[] = {
 -- 
 2.34.1
 
