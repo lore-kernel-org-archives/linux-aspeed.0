@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:29 +0800
-Subject: [PATCH -next 17/25] spi: microchip-core-qspi: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:27 +0800
+Subject: [PATCH -next 15/25] spi: meson-spicc: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-18-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-16-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,78 +18,100 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-microchip-core-qspi.c | 29 +++++++--------------------
- 1 file changed, 7 insertions(+), 22 deletions(-)
+ drivers/spi/spi-meson-spicc.c | 33 ++++++---------------------------
+ 1 file changed, 6 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/spi/spi-microchip-core-qspi.c b/drivers/spi/spi-microchip-core-qspi.c
-index 4f76ddf97b10..396dfc0fa278 100644
---- a/drivers/spi/spi-microchip-core-qspi.c
-+++ b/drivers/spi/spi-microchip-core-qspi.c
-@@ -518,30 +518,23 @@ static int mchp_coreqspi_probe(struct platform_device *pdev)
- 		return dev_err_probe(&pdev->dev, PTR_ERR(qspi->regs),
- 				     "failed to map registers\n");
- 
--	qspi->clk = devm_clk_get(&pdev->dev, NULL);
-+	qspi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(qspi->clk))
- 		return dev_err_probe(&pdev->dev, PTR_ERR(qspi->clk),
- 				     "could not get clock\n");
- 
--	ret = clk_prepare_enable(qspi->clk);
--	if (ret)
--		return dev_err_probe(&pdev->dev, ret,
--				     "failed to enable clock\n");
--
- 	init_completion(&qspi->data_completion);
- 	mutex_init(&qspi->op_lock);
- 
- 	qspi->irq = platform_get_irq(pdev, 0);
--	if (qspi->irq < 0) {
--		ret = qspi->irq;
--		goto out;
--	}
-+	if (qspi->irq < 0)
-+		return qspi->irq;
- 
- 	ret = devm_request_irq(&pdev->dev, qspi->irq, mchp_coreqspi_isr,
- 			       IRQF_SHARED, pdev->name, qspi);
- 	if (ret) {
- 		dev_err(&pdev->dev, "request_irq failed %d\n", ret);
--		goto out;
-+		return ret;
+diff --git a/drivers/spi/spi-meson-spicc.c b/drivers/spi/spi-meson-spicc.c
+index 43d134f4b42b..1f2d26254e03 100644
+--- a/drivers/spi/spi-meson-spicc.c
++++ b/drivers/spi/spi-meson-spicc.c
+@@ -820,7 +820,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 		goto out_master;
  	}
  
- 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
-@@ -552,18 +545,11 @@ static int mchp_coreqspi_probe(struct platform_device *pdev)
- 	ctlr->dev.of_node = np;
+-	spicc->core = devm_clk_get(&pdev->dev, "core");
++	spicc->core = devm_clk_get_enabled(&pdev->dev, "core");
+ 	if (IS_ERR(spicc->core)) {
+ 		dev_err(&pdev->dev, "core clock request failed\n");
+ 		ret = PTR_ERR(spicc->core);
+@@ -828,7 +828,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 	}
  
- 	ret = devm_spi_register_controller(&pdev->dev, ctlr);
+ 	if (spicc->data->has_pclk) {
+-		spicc->pclk = devm_clk_get(&pdev->dev, "pclk");
++		spicc->pclk = devm_clk_get_enabled(&pdev->dev, "pclk");
+ 		if (IS_ERR(spicc->pclk)) {
+ 			dev_err(&pdev->dev, "pclk clock request failed\n");
+ 			ret = PTR_ERR(spicc->pclk);
+@@ -836,22 +836,10 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	ret = clk_prepare_enable(spicc->core);
 -	if (ret) {
--		dev_err_probe(&pdev->dev, ret,
--			      "spi_register_controller failed\n");
--		goto out;
+-		dev_err(&pdev->dev, "core clock enable failed\n");
+-		goto out_master;
 -	}
-+	if (ret)
-+		return dev_err_probe(&pdev->dev, ret,
-+				     "spi_register_controller failed\n");
+-
+-	ret = clk_prepare_enable(spicc->pclk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "pclk clock enable failed\n");
+-		goto out_core_clk;
+-	}
+-
+ 	spicc->pinctrl = devm_pinctrl_get(&pdev->dev);
+ 	if (IS_ERR(spicc->pinctrl)) {
+ 		ret = PTR_ERR(spicc->pinctrl);
+-		goto out_clk;
++		goto out_master;
+ 	}
+ 
+ 	device_reset_optional(&pdev->dev);
+@@ -878,31 +866,25 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 	ret = meson_spicc_pow2_clk_init(spicc);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "pow2 clock registration failed\n");
+-		goto out_clk;
++		goto out_master;
+ 	}
+ 
+ 	if (spicc->data->has_enhance_clk_div) {
+ 		ret = meson_spicc_enh_clk_init(spicc);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "clock registration failed\n");
+-			goto out_clk;
++			goto out_master;
+ 		}
+ 	}
+ 
+ 	ret = devm_spi_register_master(&pdev->dev, master);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "spi master registration failed\n");
+-		goto out_clk;
++		goto out_master;
+ 	}
  
  	return 0;
+ 
+-out_clk:
+-	clk_disable_unprepare(spicc->pclk);
 -
--out:
--	clk_disable_unprepare(qspi->clk);
+-out_core_clk:
+-	clk_disable_unprepare(spicc->core);
 -
--	return ret;
+ out_master:
+ 	spi_master_put(master);
+ 
+@@ -916,9 +898,6 @@ static void meson_spicc_remove(struct platform_device *pdev)
+ 	/* Disable SPI */
+ 	writel(0, spicc->base + SPICC_CONREG);
+ 
+-	clk_disable_unprepare(spicc->core);
+-	clk_disable_unprepare(spicc->pclk);
+-
+ 	spi_master_put(spicc->master);
  }
  
- static void mchp_coreqspi_remove(struct platform_device *pdev)
-@@ -574,7 +560,6 @@ static void mchp_coreqspi_remove(struct platform_device *pdev)
- 	mchp_coreqspi_disable_ints(qspi);
- 	control &= ~CONTROL_ENABLE;
- 	writel_relaxed(control, qspi->regs + REG_CONTROL);
--	clk_disable_unprepare(qspi->clk);
- }
- 
- static const struct of_device_id mchp_coreqspi_of_match[] = {
 -- 
 2.34.1
 
