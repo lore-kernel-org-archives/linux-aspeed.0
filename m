@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:20 +0800
-Subject: [PATCH -next 08/25] spi: spi-cadence: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:25 +0800
+Subject: [PATCH -next 13/25] spi: spi-fsl-dspi: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-9-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-14-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,68 +18,61 @@ no longer necessary to unprepare and disable the clocks explicitly.
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-cadence.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
+ drivers/spi/spi-fsl-dspi.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/spi/spi-cadence.c b/drivers/spi/spi-cadence.c
-index 3c9813ad064b..174476bbdf54 100644
---- a/drivers/spi/spi-cadence.c
-+++ b/drivers/spi/spi-cadence.c
-@@ -576,31 +576,19 @@ static int cdns_spi_probe(struct platform_device *pdev)
- 		goto remove_ctlr;
- 	}
- 
--	xspi->pclk = devm_clk_get(&pdev->dev, "pclk");
-+	xspi->pclk = devm_clk_get_enabled(&pdev->dev, "pclk");
- 	if (IS_ERR(xspi->pclk)) {
- 		dev_err(&pdev->dev, "pclk clock not found.\n");
- 		ret = PTR_ERR(xspi->pclk);
- 		goto remove_ctlr;
- 	}
- 
--	ret = clk_prepare_enable(xspi->pclk);
--	if (ret) {
--		dev_err(&pdev->dev, "Unable to enable APB clock.\n");
--		goto remove_ctlr;
--	}
--
- 	if (!spi_controller_is_target(ctlr)) {
--		xspi->ref_clk = devm_clk_get(&pdev->dev, "ref_clk");
-+		xspi->ref_clk = devm_clk_get_enabled(&pdev->dev, "ref_clk");
- 		if (IS_ERR(xspi->ref_clk)) {
- 			dev_err(&pdev->dev, "ref_clk clock not found.\n");
- 			ret = PTR_ERR(xspi->ref_clk);
--			goto clk_dis_apb;
--		}
--
--		ret = clk_prepare_enable(xspi->ref_clk);
--		if (ret) {
--			dev_err(&pdev->dev, "Unable to enable device clock.\n");
--			goto clk_dis_apb;
-+			goto remove_ctlr;
+diff --git a/drivers/spi/spi-fsl-dspi.c b/drivers/spi/spi-fsl-dspi.c
+index 8318249f8a1f..c9eae046f66c 100644
+--- a/drivers/spi/spi-fsl-dspi.c
++++ b/drivers/spi/spi-fsl-dspi.c
+@@ -1372,19 +1372,16 @@ static int dspi_probe(struct platform_device *pdev)
  		}
- 
- 		pm_runtime_use_autosuspend(&pdev->dev);
-@@ -674,10 +662,7 @@ static int cdns_spi_probe(struct platform_device *pdev)
- 	if (!spi_controller_is_target(ctlr)) {
- 		pm_runtime_set_suspended(&pdev->dev);
- 		pm_runtime_disable(&pdev->dev);
--		clk_disable_unprepare(xspi->ref_clk);
  	}
--clk_dis_apb:
--	clk_disable_unprepare(xspi->pclk);
- remove_ctlr:
+ 
+-	dspi->clk = devm_clk_get(&pdev->dev, "dspi");
++	dspi->clk = devm_clk_get_enabled(&pdev->dev, "dspi");
+ 	if (IS_ERR(dspi->clk)) {
+ 		ret = PTR_ERR(dspi->clk);
+ 		dev_err(&pdev->dev, "unable to get clock\n");
+ 		goto out_ctlr_put;
+ 	}
+-	ret = clk_prepare_enable(dspi->clk);
+-	if (ret)
+-		goto out_ctlr_put;
+ 
+ 	ret = dspi_init(dspi);
+ 	if (ret)
+-		goto out_clk_put;
++		goto out_ctlr_put;
+ 
+ 	dspi->irq = platform_get_irq(pdev, 0);
+ 	if (dspi->irq <= 0) {
+@@ -1400,7 +1397,7 @@ static int dspi_probe(struct platform_device *pdev)
+ 				   IRQF_SHARED, pdev->name, dspi);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "Unable to attach DSPI interrupt\n");
+-		goto out_clk_put;
++		goto out_ctlr_put;
+ 	}
+ 
+ poll_mode:
+@@ -1432,8 +1429,6 @@ static int dspi_probe(struct platform_device *pdev)
+ out_free_irq:
+ 	if (dspi->irq)
+ 		free_irq(dspi->irq, dspi);
+-out_clk_put:
+-	clk_disable_unprepare(dspi->clk);
+ out_ctlr_put:
  	spi_controller_put(ctlr);
- 	return ret;
-@@ -698,8 +683,6 @@ static void cdns_spi_remove(struct platform_device *pdev)
  
- 	cdns_spi_write(xspi, CDNS_SPI_ER, CDNS_SPI_ER_DISABLE);
+@@ -1458,7 +1453,6 @@ static void dspi_remove(struct platform_device *pdev)
+ 	dspi_release_dma(dspi);
+ 	if (dspi->irq)
+ 		free_irq(dspi->irq, dspi);
+-	clk_disable_unprepare(dspi->clk);
+ }
  
--	clk_disable_unprepare(xspi->ref_clk);
--	clk_disable_unprepare(xspi->pclk);
- 	pm_runtime_set_suspended(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
- 
+ static void dspi_shutdown(struct platform_device *pdev)
 -- 
 2.34.1
 
