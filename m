@@ -1,9 +1,9 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Tue, 22 Aug 2023 21:12:28 +0800
-Subject: [PATCH -next 16/25] spi: spi-meson-spifc: Use helper function devm_clk_get_enabled()
+Date: Tue, 22 Aug 2023 21:12:15 +0800
+Subject: [PATCH -next 03/25] spi: aspeed: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230822131237.1022815-17-lizetao1@huawei.com>
+Message-ID: <20230822131237.1022815-4-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,65 +15,62 @@ and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
 replaced by devm_clk_get_enabled() when driver enables (and possibly
 prepares) the clocks for the whole lifetime of the device. Moreover, it is
 no longer necessary to unprepare and disable the clocks explicitly.
-Moreover, the lable "out_clk" no longer makes sense, rename it to "out_pm".
 
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
- drivers/spi/spi-meson-spifc.c | 17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ drivers/spi/spi-aspeed-smc.c | 16 ++--------------
+ 1 file changed, 2 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/spi/spi-meson-spifc.c b/drivers/spi/spi-meson-spifc.c
-index 06626f406f68..d70a18885b49 100644
---- a/drivers/spi/spi-meson-spifc.c
-+++ b/drivers/spi/spi-meson-spifc.c
-@@ -312,19 +312,13 @@ static int meson_spifc_probe(struct platform_device *pdev)
- 		goto out_err;
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index 21b0fa646c7d..bbd417c55e7f 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -748,7 +748,7 @@ static int aspeed_spi_probe(struct platform_device *pdev)
+ 	aspi->ahb_window_size = resource_size(res);
+ 	aspi->ahb_base_phy = res->start;
+ 
+-	aspi->clk = devm_clk_get(&pdev->dev, NULL);
++	aspi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(aspi->clk)) {
+ 		dev_err(dev, "missing clock\n");
+ 		return PTR_ERR(aspi->clk);
+@@ -760,12 +760,6 @@ static int aspeed_spi_probe(struct platform_device *pdev)
+ 		return -EINVAL;
  	}
  
--	spifc->clk = devm_clk_get(spifc->dev, NULL);
-+	spifc->clk = devm_clk_get_enabled(spifc->dev, NULL);
- 	if (IS_ERR(spifc->clk)) {
- 		dev_err(spifc->dev, "missing clock\n");
- 		ret = PTR_ERR(spifc->clk);
- 		goto out_err;
- 	}
- 
--	ret = clk_prepare_enable(spifc->clk);
+-	ret = clk_prepare_enable(aspi->clk);
 -	if (ret) {
--		dev_err(spifc->dev, "can't prepare clock\n");
--		goto out_err;
+-		dev_err(dev, "can not enable the clock\n");
+-		return ret;
 -	}
 -
- 	rate = clk_get_rate(spifc->clk);
+ 	/* IRQ is for DMA, which the driver doesn't support yet */
  
- 	master->num_chipselect = 1;
-@@ -343,12 +337,11 @@ static int meson_spifc_probe(struct platform_device *pdev)
- 	ret = devm_spi_register_master(spifc->dev, master);
- 	if (ret) {
- 		dev_err(spifc->dev, "failed to register spi master\n");
--		goto out_clk;
-+		goto out_pm;
- 	}
+ 	ctlr->mode_bits = SPI_RX_DUAL | SPI_TX_DUAL | data->mode_bits;
+@@ -777,14 +771,9 @@ static int aspeed_spi_probe(struct platform_device *pdev)
+ 	ctlr->dev.of_node = dev->of_node;
  
- 	return 0;
--out_clk:
--	clk_disable_unprepare(spifc->clk);
-+out_pm:
- 	pm_runtime_disable(spifc->dev);
- out_err:
- 	spi_master_put(master);
-@@ -357,11 +350,7 @@ static int meson_spifc_probe(struct platform_device *pdev)
+ 	ret = devm_spi_register_controller(dev, ctlr);
+-	if (ret) {
++	if (ret)
+ 		dev_err(&pdev->dev, "spi_register_controller failed\n");
+-		goto disable_clk;
+-	}
+-	return 0;
  
- static void meson_spifc_remove(struct platform_device *pdev)
- {
--	struct spi_master *master = platform_get_drvdata(pdev);
--	struct meson_spifc *spifc = spi_master_get_devdata(master);
--
- 	pm_runtime_get_sync(&pdev->dev);
--	clk_disable_unprepare(spifc->clk);
- 	pm_runtime_disable(&pdev->dev);
+-disable_clk:
+-	clk_disable_unprepare(aspi->clk);
+ 	return ret;
  }
  
+@@ -793,7 +782,6 @@ static void aspeed_spi_remove(struct platform_device *pdev)
+ 	struct aspeed_spi *aspi = platform_get_drvdata(pdev);
+ 
+ 	aspeed_spi_enable(aspi, false);
+-	clk_disable_unprepare(aspi->clk);
+ }
+ 
+ /*
 -- 
 2.34.1
 
