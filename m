@@ -1,93 +1,74 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:13 +0800
-Subject: [PATCH -next v2 00/25] spi: Use devm_clk_get_*() helper function to simplify the drivers.
-In-Reply-To: <20230822131237.1022815-1-lizetao1@huawei.com>
+Date: Wed, 23 Aug 2023 21:39:17 +0800
+Subject: [PATCH -next v2 04/25] spi: ath79: Use helper function devm_clk_get_enabled()
+In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-1-lizetao1@huawei.com>
+ <20230823133938.1359106-1-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-5-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
-and enabled clocks") provides a new helper function for prepared and
-enabled clocks when a driver keeps a clock prepared (or enabled) during
-the whole lifetime of the driver. So where drivers get clocks and enable
-them immediately, it can be combined into a single function
-devm_clk_get_*(). Moreover, the unprepare and disable function
-has been registered to devm_clk_state, and before devm_clk_state is
-released, the clocks will be unprepareed and disable, so it is unnecessary
-to unprepare and disable clocks explicitly when remove drivers or in the
-error handling path.
+Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
+and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
+replaced by devm_clk_get_enabled() when driver enables (and possibly
+prepares) the clocks for the whole lifetime of the device. Moreover, it is
+no longer necessary to unprepare and disable the clocks explicitly.
 
-Change log:
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Li Zetao <lizetao1@huawei.com>
+---
+v1 -> v2: None
 
-v2:
- - Remove empty function a3700_spi_remove(), while is nothing to do.
- - Return directly instead of calling reset_control_deassert(), because
-   the reset control handler hasn't been requested yet in
-   dw_spi_mmio_probe(). And use the "out_reset" label instead of "out"
-   before calling pm_runtime_enable().
- - Delete the modification of odd formatting, it should probably be a
-   separate patch.
+ drivers/spi/spi-ath79.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-v1: https://lore.kernel.org/all/20230822131237.1022815-1-lizetao1 at huawei.com/
-
-Li Zetao (25):
-  spi: ar934x: Use helper function devm_clk_get_enabled()
-  spi: armada-3700: Use helper function devm_clk_get_prepared()
-  spi: aspeed: Use helper function devm_clk_get_enabled()
-  spi: ath79: Use helper function devm_clk_get_enabled()
-  spi: spi-axi-spi-engine: Use helper function devm_clk_get_enabled()
-  spi: bcm2835: Use helper function devm_clk_get_enabled()
-  spi: bcm2835aux: Use helper function devm_clk_get_enabled()
-  spi: spi-cadence: Use helper function devm_clk_get_enabled()
-  spi: spi-cavium-thunderx: Use helper function devm_clk_get_enabled()
-  spi: davinci: Use helper function devm_clk_get_enabled()
-  spi: dw-bt1: Use helper function devm_clk_get_enabled()
-  spi: dw-mmio: Use helper function devm_clk_get_*()
-  spi: spi-fsl-dspi: Use helper function devm_clk_get_enabled()
-  spi: lantiq-ssc: Use helper function devm_clk_get_enabled()
-  spi: meson-spicc: Use helper function devm_clk_get_enabled()
-  spi: spi-meson-spifc: Use helper function devm_clk_get_enabled()
-  spi: microchip-core-qspi: Use helper function devm_clk_get_enabled()
-  spi: microchip-core: Use helper function devm_clk_get_enabled()
-  spi: mtk-snfi: Use helper function devm_clk_get_enabled()
-  spi: npcm-fiu: Use helper function devm_clk_get_enabled()
-  spi: orion: Use helper function devm_clk_get_enabled()
-  spi: pic32-sqi: Use helper function devm_clk_get_enabled()
-  spi: pic32: Use helper function devm_clk_get_enabled()
-  spi: spl022: Use helper function devm_clk_get_enabled()
-  spi: rockchip: Use helper function devm_clk_get_enabled()
-
- drivers/spi/spi-ar934x.c              | 22 ++--------
- drivers/spi/spi-armada-3700.c         | 23 ++--------
- drivers/spi/spi-aspeed-smc.c          | 16 +------
- drivers/spi/spi-ath79.c               | 11 +----
- drivers/spi/spi-axi-spi-engine.c      | 25 +++--------
- drivers/spi/spi-bcm2835.c             | 11 +----
- drivers/spi/spi-bcm2835aux.c          | 23 ++--------
- drivers/spi/spi-cadence.c             | 23 ++--------
- drivers/spi/spi-cavium-thunderx.c     |  8 +---
- drivers/spi/spi-davinci.c             | 11 +----
- drivers/spi/spi-dw-bt1.c              | 23 +++-------
- drivers/spi/spi-dw-mmio.c             | 31 ++++----------
- drivers/spi/spi-fsl-dspi.c            | 12 ++----
- drivers/spi/spi-lantiq-ssc.c          | 10 +----
- drivers/spi/spi-meson-spicc.c         | 33 +++------------
- drivers/spi/spi-meson-spifc.c         | 17 ++------
- drivers/spi/spi-microchip-core-qspi.c | 29 +++----------
- drivers/spi/spi-microchip-core.c      |  9 +---
- drivers/spi/spi-mtk-snfi.c            | 61 ++++-----------------------
- drivers/spi/spi-npcm-fiu.c            | 14 ++----
- drivers/spi/spi-orion.c               | 11 +----
- drivers/spi/spi-pic32-sqi.c           | 27 ++----------
- drivers/spi/spi-pic32.c               |  8 +---
- drivers/spi/spi-pl022.c               | 11 +----
- drivers/spi/spi-rockchip.c            | 30 +++----------
- 25 files changed, 87 insertions(+), 412 deletions(-)
-
+diff --git a/drivers/spi/spi-ath79.c b/drivers/spi/spi-ath79.c
+index 1b6d977d111c..c9f1d1e1dcf7 100644
+--- a/drivers/spi/spi-ath79.c
++++ b/drivers/spi/spi-ath79.c
+@@ -200,20 +200,16 @@ static int ath79_spi_probe(struct platform_device *pdev)
+ 		goto err_put_host;
+ 	}
+ 
+-	sp->clk = devm_clk_get(&pdev->dev, "ahb");
++	sp->clk = devm_clk_get_enabled(&pdev->dev, "ahb");
+ 	if (IS_ERR(sp->clk)) {
+ 		ret = PTR_ERR(sp->clk);
+ 		goto err_put_host;
+ 	}
+ 
+-	ret = clk_prepare_enable(sp->clk);
+-	if (ret)
+-		goto err_put_host;
+-
+ 	rate = DIV_ROUND_UP(clk_get_rate(sp->clk), MHZ);
+ 	if (!rate) {
+ 		ret = -EINVAL;
+-		goto err_clk_disable;
++		goto err_put_host;
+ 	}
+ 
+ 	sp->rrw_delay = ATH79_SPI_RRW_DELAY_FACTOR / rate;
+@@ -229,8 +225,6 @@ static int ath79_spi_probe(struct platform_device *pdev)
+ 
+ err_disable:
+ 	ath79_spi_disable(sp);
+-err_clk_disable:
+-	clk_disable_unprepare(sp->clk);
+ err_put_host:
+ 	spi_controller_put(host);
+ 
+@@ -243,7 +237,6 @@ static void ath79_spi_remove(struct platform_device *pdev)
+ 
+ 	spi_bitbang_stop(&sp->bitbang);
+ 	ath79_spi_disable(sp);
+-	clk_disable_unprepare(sp->clk);
+ 	spi_controller_put(sp->bitbang.master);
+ }
+ 
 -- 
 2.34.1
 
