@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:21 +0800
-Subject: [PATCH -next v2 08/25] spi: spi-cadence: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:20 +0800
+Subject: [PATCH -next v2 07/25] spi: bcm2835aux: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-9-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-8-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,68 +22,78 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-cadence.c | 23 +++--------------------
- 1 file changed, 3 insertions(+), 20 deletions(-)
+ drivers/spi/spi-bcm2835aux.c | 23 ++++-------------------
+ 1 file changed, 4 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/spi/spi-cadence.c b/drivers/spi/spi-cadence.c
-index 12c940ba074a..1f2f8c717df6 100644
---- a/drivers/spi/spi-cadence.c
-+++ b/drivers/spi/spi-cadence.c
-@@ -581,31 +581,19 @@ static int cdns_spi_probe(struct platform_device *pdev)
- 		goto remove_ctlr;
- 	}
+diff --git a/drivers/spi/spi-bcm2835aux.c b/drivers/spi/spi-bcm2835aux.c
+index 6d2a5d9f2498..06fe155a70c9 100644
+--- a/drivers/spi/spi-bcm2835aux.c
++++ b/drivers/spi/spi-bcm2835aux.c
+@@ -512,7 +512,7 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bs->regs))
+ 		return PTR_ERR(bs->regs);
  
--	xspi->pclk = devm_clk_get(&pdev->dev, "pclk");
-+	xspi->pclk = devm_clk_get_enabled(&pdev->dev, "pclk");
- 	if (IS_ERR(xspi->pclk)) {
- 		dev_err(&pdev->dev, "pclk clock not found.\n");
- 		ret = PTR_ERR(xspi->pclk);
- 		goto remove_ctlr;
- 	}
+-	bs->clk = devm_clk_get(&pdev->dev, NULL);
++	bs->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(bs->clk)) {
+ 		err = PTR_ERR(bs->clk);
+ 		dev_err(&pdev->dev, "could not get clk: %d\n", err);
+@@ -523,19 +523,11 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
+ 	if (bs->irq < 0)
+ 		return bs->irq;
  
--	ret = clk_prepare_enable(xspi->pclk);
--	if (ret) {
--		dev_err(&pdev->dev, "Unable to enable APB clock.\n");
--		goto remove_ctlr;
+-	/* this also enables the HW block */
+-	err = clk_prepare_enable(bs->clk);
+-	if (err) {
+-		dev_err(&pdev->dev, "could not prepare clock: %d\n", err);
+-		return err;
 -	}
 -
- 	if (!spi_controller_is_target(ctlr)) {
--		xspi->ref_clk = devm_clk_get(&pdev->dev, "ref_clk");
-+		xspi->ref_clk = devm_clk_get_enabled(&pdev->dev, "ref_clk");
- 		if (IS_ERR(xspi->ref_clk)) {
- 			dev_err(&pdev->dev, "ref_clk clock not found.\n");
- 			ret = PTR_ERR(xspi->ref_clk);
--			goto clk_dis_apb;
--		}
--
--		ret = clk_prepare_enable(xspi->ref_clk);
--		if (ret) {
--			dev_err(&pdev->dev, "Unable to enable device clock.\n");
--			goto clk_dis_apb;
-+			goto remove_ctlr;
- 		}
- 
- 		pm_runtime_use_autosuspend(&pdev->dev);
-@@ -679,10 +667,7 @@ static int cdns_spi_probe(struct platform_device *pdev)
- 	if (!spi_controller_is_target(ctlr)) {
- 		pm_runtime_set_suspended(&pdev->dev);
- 		pm_runtime_disable(&pdev->dev);
--		clk_disable_unprepare(xspi->ref_clk);
+ 	/* just checking if the clock returns a sane value */
+ 	clk_hz = clk_get_rate(bs->clk);
+ 	if (!clk_hz) {
+ 		dev_err(&pdev->dev, "clock returns 0 Hz\n");
+-		err = -ENODEV;
+-		goto out_clk_disable;
++		return -ENODEV;
  	}
--clk_dis_apb:
--	clk_disable_unprepare(xspi->pclk);
- remove_ctlr:
- 	spi_controller_put(ctlr);
- 	return ret;
-@@ -703,8 +688,6 @@ static void cdns_spi_remove(struct platform_device *pdev)
  
- 	cdns_spi_write(xspi, CDNS_SPI_ER, CDNS_SPI_ER_DISABLE);
+ 	/* reset SPI-HW block */
+@@ -547,22 +539,18 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
+ 			       dev_name(&pdev->dev), host);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "could not request IRQ: %d\n", err);
+-		goto out_clk_disable;
++		return err;
+ 	}
  
--	clk_disable_unprepare(xspi->ref_clk);
--	clk_disable_unprepare(xspi->pclk);
- 	pm_runtime_set_suspended(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
+ 	err = spi_register_controller(host);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "could not register SPI host: %d\n", err);
+-		goto out_clk_disable;
++		return err;
+ 	}
  
+ 	bcm2835aux_debugfs_create(bs, dev_name(&pdev->dev));
+ 
+ 	return 0;
+-
+-out_clk_disable:
+-	clk_disable_unprepare(bs->clk);
+-	return err;
+ }
+ 
+ static void bcm2835aux_spi_remove(struct platform_device *pdev)
+@@ -575,9 +563,6 @@ static void bcm2835aux_spi_remove(struct platform_device *pdev)
+ 	spi_unregister_controller(host);
+ 
+ 	bcm2835aux_spi_reset_hw(bs);
+-
+-	/* disable the HW block by releasing the clock */
+-	clk_disable_unprepare(bs->clk);
+ }
+ 
+ static const struct of_device_id bcm2835aux_spi_match[] = {
 -- 
 2.34.1
 
