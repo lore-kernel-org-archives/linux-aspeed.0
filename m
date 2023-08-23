@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:22 +0800
-Subject: [PATCH -next v2 09/25] spi: spi-cavium-thunderx: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:29 +0800
+Subject: [PATCH -next v2 16/25] spi: spi-meson-spifc: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-10-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-17-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,53 +16,68 @@ and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
 replaced by devm_clk_get_enabled() when driver enables (and possibly
 prepares) the clocks for the whole lifetime of the device. Moreover, it is
 no longer necessary to unprepare and disable the clocks explicitly.
+Moreover, the lable "out_clk" no longer makes sense, rename it to "out_pm".
 
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-cavium-thunderx.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ drivers/spi/spi-meson-spifc.c | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/spi/spi-cavium-thunderx.c b/drivers/spi/spi-cavium-thunderx.c
-index f7c378a5f1bc..337aef12abcc 100644
---- a/drivers/spi/spi-cavium-thunderx.c
-+++ b/drivers/spi/spi-cavium-thunderx.c
-@@ -49,16 +49,12 @@ static int thunderx_spi_probe(struct pci_dev *pdev,
- 	p->regs.tx = 0x1010;
- 	p->regs.data = 0x1080;
- 
--	p->clk = devm_clk_get(dev, NULL);
-+	p->clk = devm_clk_get_enabled(dev, NULL);
- 	if (IS_ERR(p->clk)) {
- 		ret = PTR_ERR(p->clk);
- 		goto error;
+diff --git a/drivers/spi/spi-meson-spifc.c b/drivers/spi/spi-meson-spifc.c
+index 06626f406f68..d70a18885b49 100644
+--- a/drivers/spi/spi-meson-spifc.c
++++ b/drivers/spi/spi-meson-spifc.c
+@@ -312,19 +312,13 @@ static int meson_spifc_probe(struct platform_device *pdev)
+ 		goto out_err;
  	}
  
--	ret = clk_prepare_enable(p->clk);
--	if (ret)
--		goto error;
+-	spifc->clk = devm_clk_get(spifc->dev, NULL);
++	spifc->clk = devm_clk_get_enabled(spifc->dev, NULL);
+ 	if (IS_ERR(spifc->clk)) {
+ 		dev_err(spifc->dev, "missing clock\n");
+ 		ret = PTR_ERR(spifc->clk);
+ 		goto out_err;
+ 	}
+ 
+-	ret = clk_prepare_enable(spifc->clk);
+-	if (ret) {
+-		dev_err(spifc->dev, "can't prepare clock\n");
+-		goto out_err;
+-	}
 -
- 	p->sys_freq = clk_get_rate(p->clk);
- 	if (!p->sys_freq)
- 		p->sys_freq = SYS_FREQ_DEFAULT;
-@@ -82,7 +78,6 @@ static int thunderx_spi_probe(struct pci_dev *pdev,
+ 	rate = clk_get_rate(spifc->clk);
+ 
+ 	master->num_chipselect = 1;
+@@ -343,12 +337,11 @@ static int meson_spifc_probe(struct platform_device *pdev)
+ 	ret = devm_spi_register_master(spifc->dev, master);
+ 	if (ret) {
+ 		dev_err(spifc->dev, "failed to register spi master\n");
+-		goto out_clk;
++		goto out_pm;
+ 	}
+ 
  	return 0;
+-out_clk:
+-	clk_disable_unprepare(spifc->clk);
++out_pm:
+ 	pm_runtime_disable(spifc->dev);
+ out_err:
+ 	spi_master_put(master);
+@@ -357,11 +350,7 @@ static int meson_spifc_probe(struct platform_device *pdev)
  
- error:
--	clk_disable_unprepare(p->clk);
- 	pci_release_regions(pdev);
- 	spi_controller_put(host);
- 	return ret;
-@@ -97,7 +92,6 @@ static void thunderx_spi_remove(struct pci_dev *pdev)
- 	if (!p)
- 		return;
+ static void meson_spifc_remove(struct platform_device *pdev)
+ {
+-	struct spi_master *master = platform_get_drvdata(pdev);
+-	struct meson_spifc *spifc = spi_master_get_devdata(master);
+-
+ 	pm_runtime_get_sync(&pdev->dev);
+-	clk_disable_unprepare(spifc->clk);
+ 	pm_runtime_disable(&pdev->dev);
+ }
  
--	clk_disable_unprepare(p->clk);
- 	pci_release_regions(pdev);
- 	/* Put everything in a known state. */
- 	writeq(0, p->register_base + OCTEON_SPI_CFG(p));
 -- 
 2.34.1
 
