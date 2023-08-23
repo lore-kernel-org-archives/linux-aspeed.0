@@ -1,107 +1,84 @@
-From: Serge Semin <fancer.lancer@gmail.com>
-Date: Wed, 23 Aug 2023 17:35:35 +0300
-Subject: [PATCH -next v2 11/25] spi: dw-bt1: Use helper function
- devm_clk_get_enabled()
-In-Reply-To: <20230823133938.1359106-12-lizetao1@huawei.com>
-References: <20230822131237.1022815-1-lizetao1@huawei.com>
- <20230823133938.1359106-1-lizetao1@huawei.com>
- <20230823133938.1359106-12-lizetao1@huawei.com>
-Message-ID: <xxosi2ymo7otqyfbmjlubezzedqw6ulwwhdmbdjbto7yaqw673@q673weupq67y>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 23 Aug 2023 12:09:46 -0500
+Subject: [PATCH] Title: Select GPIO command source.
+In-Reply-To: <20230823160810.1067102-1-peteryin.openbmc@gmail.com>
+References: <20230823160810.1067102-1-peteryin.openbmc@gmail.com>
+Message-ID: <169281058628.2496450.12875634767226591718.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 23, 2023 at 09:39:24PM +0800, Li Zetao wrote:
-> Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
-> and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
-> replaced by devm_clk_get_enabled() when driver enables (and possibly
-> prepares) the clocks for the whole lifetime of the device. Moreover, it is
-> no longer necessary to unprepare and disable the clocks explicitly.
+
+On Thu, 24 Aug 2023 00:08:10 +0800, peteryin wrote:
+> From: peteryin <peter.yin@quantatw.com>
 > 
-
-> Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Acked-by: Serge Semin <fancer.lancer@gmail.com>
-> Signed-off-by: Li Zetao <lizetao1@huawei.com>
-
-Just for the record, the tags order is normally supposed to reflect a
-patch route. Even though AFAICS it's explicitly defined for the Sob
-tags only (see Documentation/process/submitting-patches.rst), but
-almost all kernel developers apply that rule to all the tags. See the
-kernel git log as the brightest example. So your Sob tag should have
-been kept first, then either my Ab or Jonathan' Rb tags.
-
--Serge(y)
-
+> Description:
+>   The capability to choose the GPIO command source
+> between ARM LPC and Coprocessor CPU is supported.
+> 
+> Test Plan:
+> Get Bank gpio command source
+>   e.g.
+>   cd /sys/bus/platform/drivers/aspeed-command-source/
+>   cat 1e780000.gpio-command-source/bank_abcd
+>   ARM ARM ARM ARM
+> 
+> Set Bank gpio command source.
+>   e.g.
+>   cd /sys/bus/platform/drivers/aspeed-command-source/
+> 
+>   echo "A ARM" > 1e780000.gpio-command-source/bank_abcd
+>   or
+>   echo "A LPC" > 1e780000.gpio-command-source/bank_abcd
+>   or$
+>   echo "A COP" > 1e780000.gpio-command-source/bank_abcd
+> 
+> Signed-off-by: peteryin <peteryin.openbmc@gmail.com>
 > ---
-> v1 -> v2: None
+>  .../sysfs-driver-aspeed-gpio-command-source   |  24 ++
+>  .../soc/aspeed/gpio-command-source.yaml       |  58 ++++
+>  drivers/soc/aspeed/Kconfig                    |   9 +
+>  drivers/soc/aspeed/Makefile                   |   1 +
+>  drivers/soc/aspeed/aspeed-command-source.c    | 266 ++++++++++++++++++
+>  5 files changed, 358 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-driver-aspeed-gpio-command-source
+>  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.yaml
+>  create mode 100644 drivers/soc/aspeed/aspeed-command-source.c
 > 
->  drivers/spi/spi-dw-bt1.c | 23 +++++------------------
->  1 file changed, 5 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/spi/spi-dw-bt1.c b/drivers/spi/spi-dw-bt1.c
-> index 5e1c01822967..5391bcac305c 100644
-> --- a/drivers/spi/spi-dw-bt1.c
-> +++ b/drivers/spi/spi-dw-bt1.c
-> @@ -269,43 +269,32 @@ static int dw_spi_bt1_probe(struct platform_device *pdev)
->  
->  	dws->paddr = mem->start;
->  
-> -	dwsbt1->clk = devm_clk_get(&pdev->dev, NULL);
-> +	dwsbt1->clk = devm_clk_get_enabled(&pdev->dev, NULL);
->  	if (IS_ERR(dwsbt1->clk))
->  		return PTR_ERR(dwsbt1->clk);
->  
-> -	ret = clk_prepare_enable(dwsbt1->clk);
-> -	if (ret)
-> -		return ret;
-> -
->  	dws->bus_num = pdev->id;
->  	dws->reg_io_width = 4;
->  	dws->max_freq = clk_get_rate(dwsbt1->clk);
-> -	if (!dws->max_freq) {
-> -		ret = -EINVAL;
-> -		goto err_disable_clk;
-> -	}
-> +	if (!dws->max_freq)
-> +		return -EINVAL;
->  
->  	init_func = device_get_match_data(&pdev->dev);
->  	ret = init_func(pdev, dwsbt1);
->  	if (ret)
-> -		goto err_disable_clk;
-> +		return ret;
->  
->  	pm_runtime_enable(&pdev->dev);
->  
->  	ret = dw_spi_add_host(&pdev->dev, dws);
->  	if (ret) {
->  		pm_runtime_disable(&pdev->dev);
-> -		goto err_disable_clk;
-> +		return ret;
->  	}
->  
->  	platform_set_drvdata(pdev, dwsbt1);
->  
->  	return 0;
-> -
-> -err_disable_clk:
-> -	clk_disable_unprepare(dwsbt1->clk);
-> -
-> -	return ret;
->  }
->  
->  static void dw_spi_bt1_remove(struct platform_device *pdev)
-> @@ -315,8 +304,6 @@ static void dw_spi_bt1_remove(struct platform_device *pdev)
->  	dw_spi_remove_host(&dwsbt1->dws);
->  
->  	pm_runtime_disable(&pdev->dev);
-> -
-> -	clk_disable_unprepare(dwsbt1->clk);
->  }
->  
->  static const struct of_device_id dw_spi_bt1_of_match[] = {
-> -- 
-> 2.34.1
-> 
+
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
+
+yamllint warnings/errors:
+./Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.yaml:38:3: [error] syntax error: expected <block end>, but found '?' (syntax)
+./Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.yaml:39:6: [error] missing starting space in comment (comments)
+
+dtschema/dtc warnings/errors:
+make[2]: *** Deleting file 'Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.example.dts'
+Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.yaml:38:3: expected <block end>, but found '?'
+make[2]: *** [Documentation/devicetree/bindings/Makefile:26: Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.example.dts] Error 1
+make[2]: *** Waiting for unfinished jobs....
+./Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.yaml:38:3: expected <block end>, but found '?'
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/soc/aspeed/gpio-command-source.yaml: ignoring, error parsing file
+make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1500: dt_binding_check] Error 2
+make: *** [Makefile:234: __sub-make] Error 2
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230823160810.1067102-1-peteryin.openbmc at gmail.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
