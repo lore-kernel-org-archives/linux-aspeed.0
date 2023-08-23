@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:31 +0800
-Subject: [PATCH -next v2 18/25] spi: microchip-core: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:34 +0800
+Subject: [PATCH -next v2 21/25] spi: orion: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-19-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-22-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,45 +22,54 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-microchip-core.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/spi/spi-orion.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/spi/spi-microchip-core.c b/drivers/spi/spi-microchip-core.c
-index b451cd4860ec..becdcdc9e6d1 100644
---- a/drivers/spi/spi-microchip-core.c
-+++ b/drivers/spi/spi-microchip-core.c
-@@ -539,22 +539,16 @@ static int mchp_corespi_probe(struct platform_device *pdev)
- 		return dev_err_probe(&pdev->dev, ret,
- 				     "could not request irq\n");
+diff --git a/drivers/spi/spi-orion.c b/drivers/spi/spi-orion.c
+index 1f10f5c8e34d..eee9ff4bfa5b 100644
+--- a/drivers/spi/spi-orion.c
++++ b/drivers/spi/spi-orion.c
+@@ -688,21 +688,17 @@ static int orion_spi_probe(struct platform_device *pdev)
+ 	devdata = devdata ? devdata : &orion_spi_dev_data;
+ 	spi->devdata = devdata;
  
 -	spi->clk = devm_clk_get(&pdev->dev, NULL);
 +	spi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(spi->clk))
- 		return dev_err_probe(&pdev->dev, PTR_ERR(spi->clk),
- 				     "could not get clk\n");
- 
--	ret = clk_prepare_enable(spi->clk);
--	if (ret)
--		return dev_err_probe(&pdev->dev, ret,
--				     "failed to enable clock\n");
--
- 	mchp_corespi_init(master, spi);
- 
- 	ret = devm_spi_register_master(&pdev->dev, master);
- 	if (ret) {
- 		mchp_corespi_disable(spi);
--		clk_disable_unprepare(spi->clk);
- 		return dev_err_probe(&pdev->dev, ret,
- 				     "unable to register master for SPI controller\n");
+ 	if (IS_ERR(spi->clk)) {
+ 		status = PTR_ERR(spi->clk);
+ 		goto out;
  	}
-@@ -570,7 +564,6 @@ static void mchp_corespi_remove(struct platform_device *pdev)
- 	struct mchp_corespi *spi = spi_master_get_devdata(master);
  
- 	mchp_corespi_disable_ints(spi);
+-	status = clk_prepare_enable(spi->clk);
+-	if (status)
+-		goto out;
+-
+ 	/* The following clock is only used by some SoCs */
+ 	spi->axi_clk = devm_clk_get(&pdev->dev, "axi");
+ 	if (PTR_ERR(spi->axi_clk) == -EPROBE_DEFER) {
+ 		status = -EPROBE_DEFER;
+-		goto out_rel_clk;
++		goto out;
+ 	}
+ 	if (!IS_ERR(spi->axi_clk))
+ 		clk_prepare_enable(spi->axi_clk);
+@@ -795,8 +791,6 @@ static int orion_spi_probe(struct platform_device *pdev)
+ 	pm_runtime_disable(&pdev->dev);
+ out_rel_axi_clk:
+ 	clk_disable_unprepare(spi->axi_clk);
+-out_rel_clk:
 -	clk_disable_unprepare(spi->clk);
- 	mchp_corespi_disable(spi);
- }
+ out:
+ 	spi_controller_put(host);
+ 	return status;
+@@ -810,7 +804,6 @@ static void orion_spi_remove(struct platform_device *pdev)
  
+ 	pm_runtime_get_sync(&pdev->dev);
+ 	clk_disable_unprepare(spi->axi_clk);
+-	clk_disable_unprepare(spi->clk);
+ 
+ 	spi_unregister_controller(host);
+ 	pm_runtime_disable(&pdev->dev);
 -- 
 2.34.1
 
