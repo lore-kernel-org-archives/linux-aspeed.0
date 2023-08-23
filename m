@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:24 +0800
-Subject: [PATCH -next v2 11/25] spi: dw-bt1: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:30 +0800
+Subject: [PATCH -next v2 17/25] spi: microchip-core-qspi: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-12-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-18-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -18,76 +18,82 @@ prepares) the clocks for the whole lifetime of the device. Moreover, it is
 no longer necessary to unprepare and disable the clocks explicitly.
 
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Acked-by: Serge Semin <fancer.lancer@gmail.com>
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-dw-bt1.c | 23 +++++------------------
- 1 file changed, 5 insertions(+), 18 deletions(-)
+ drivers/spi/spi-microchip-core-qspi.c | 29 +++++++--------------------
+ 1 file changed, 7 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/spi/spi-dw-bt1.c b/drivers/spi/spi-dw-bt1.c
-index 5e1c01822967..5391bcac305c 100644
---- a/drivers/spi/spi-dw-bt1.c
-+++ b/drivers/spi/spi-dw-bt1.c
-@@ -269,43 +269,32 @@ static int dw_spi_bt1_probe(struct platform_device *pdev)
+diff --git a/drivers/spi/spi-microchip-core-qspi.c b/drivers/spi/spi-microchip-core-qspi.c
+index 4f76ddf97b10..396dfc0fa278 100644
+--- a/drivers/spi/spi-microchip-core-qspi.c
++++ b/drivers/spi/spi-microchip-core-qspi.c
+@@ -518,30 +518,23 @@ static int mchp_coreqspi_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(qspi->regs),
+ 				     "failed to map registers\n");
  
- 	dws->paddr = mem->start;
+-	qspi->clk = devm_clk_get(&pdev->dev, NULL);
++	qspi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(qspi->clk))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(qspi->clk),
+ 				     "could not get clock\n");
  
--	dwsbt1->clk = devm_clk_get(&pdev->dev, NULL);
-+	dwsbt1->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(dwsbt1->clk))
- 		return PTR_ERR(dwsbt1->clk);
- 
--	ret = clk_prepare_enable(dwsbt1->clk);
+-	ret = clk_prepare_enable(qspi->clk);
 -	if (ret)
--		return ret;
+-		return dev_err_probe(&pdev->dev, ret,
+-				     "failed to enable clock\n");
 -
- 	dws->bus_num = pdev->id;
- 	dws->reg_io_width = 4;
- 	dws->max_freq = clk_get_rate(dwsbt1->clk);
--	if (!dws->max_freq) {
--		ret = -EINVAL;
--		goto err_disable_clk;
+ 	init_completion(&qspi->data_completion);
+ 	mutex_init(&qspi->op_lock);
+ 
+ 	qspi->irq = platform_get_irq(pdev, 0);
+-	if (qspi->irq < 0) {
+-		ret = qspi->irq;
+-		goto out;
 -	}
-+	if (!dws->max_freq)
-+		return -EINVAL;
++	if (qspi->irq < 0)
++		return qspi->irq;
  
- 	init_func = device_get_match_data(&pdev->dev);
- 	ret = init_func(pdev, dwsbt1);
- 	if (ret)
--		goto err_disable_clk;
-+		return ret;
- 
- 	pm_runtime_enable(&pdev->dev);
- 
- 	ret = dw_spi_add_host(&pdev->dev, dws);
+ 	ret = devm_request_irq(&pdev->dev, qspi->irq, mchp_coreqspi_isr,
+ 			       IRQF_SHARED, pdev->name, qspi);
  	if (ret) {
- 		pm_runtime_disable(&pdev->dev);
--		goto err_disable_clk;
+ 		dev_err(&pdev->dev, "request_irq failed %d\n", ret);
+-		goto out;
 +		return ret;
  	}
  
- 	platform_set_drvdata(pdev, dwsbt1);
+ 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
+@@ -552,18 +545,11 @@ static int mchp_coreqspi_probe(struct platform_device *pdev)
+ 	ctlr->dev.of_node = np;
+ 
+ 	ret = devm_spi_register_controller(&pdev->dev, ctlr);
+-	if (ret) {
+-		dev_err_probe(&pdev->dev, ret,
+-			      "spi_register_controller failed\n");
+-		goto out;
+-	}
++	if (ret)
++		return dev_err_probe(&pdev->dev, ret,
++				     "spi_register_controller failed\n");
  
  	return 0;
 -
--err_disable_clk:
--	clk_disable_unprepare(dwsbt1->clk);
+-out:
+-	clk_disable_unprepare(qspi->clk);
 -
 -	return ret;
  }
  
- static void dw_spi_bt1_remove(struct platform_device *pdev)
-@@ -315,8 +304,6 @@ static void dw_spi_bt1_remove(struct platform_device *pdev)
- 	dw_spi_remove_host(&dwsbt1->dws);
- 
- 	pm_runtime_disable(&pdev->dev);
--
--	clk_disable_unprepare(dwsbt1->clk);
+ static void mchp_coreqspi_remove(struct platform_device *pdev)
+@@ -574,7 +560,6 @@ static void mchp_coreqspi_remove(struct platform_device *pdev)
+ 	mchp_coreqspi_disable_ints(qspi);
+ 	control &= ~CONTROL_ENABLE;
+ 	writel_relaxed(control, qspi->regs + REG_CONTROL);
+-	clk_disable_unprepare(qspi->clk);
  }
  
- static const struct of_device_id dw_spi_bt1_of_match[] = {
+ static const struct of_device_id mchp_coreqspi_of_match[] = {
 -- 
 2.34.1
 
