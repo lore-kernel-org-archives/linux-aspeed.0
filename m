@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:20 +0800
-Subject: [PATCH -next v2 07/25] spi: bcm2835aux: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:23 +0800
+Subject: [PATCH -next v2 10/25] spi: davinci: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-8-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-11-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,78 +22,56 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-bcm2835aux.c | 23 ++++-------------------
- 1 file changed, 4 insertions(+), 19 deletions(-)
+ drivers/spi/spi-davinci.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/spi/spi-bcm2835aux.c b/drivers/spi/spi-bcm2835aux.c
-index 6d2a5d9f2498..06fe155a70c9 100644
---- a/drivers/spi/spi-bcm2835aux.c
-+++ b/drivers/spi/spi-bcm2835aux.c
-@@ -512,7 +512,7 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
- 	if (IS_ERR(bs->regs))
- 		return PTR_ERR(bs->regs);
+diff --git a/drivers/spi/spi-davinci.c b/drivers/spi/spi-davinci.c
+index c457b550d3ad..5688be245c68 100644
+--- a/drivers/spi/spi-davinci.c
++++ b/drivers/spi/spi-davinci.c
+@@ -915,14 +915,11 @@ static int davinci_spi_probe(struct platform_device *pdev)
  
--	bs->clk = devm_clk_get(&pdev->dev, NULL);
-+	bs->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(bs->clk)) {
- 		err = PTR_ERR(bs->clk);
- 		dev_err(&pdev->dev, "could not get clk: %d\n", err);
-@@ -523,19 +523,11 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
- 	if (bs->irq < 0)
- 		return bs->irq;
+ 	dspi->bitbang.master = host;
  
--	/* this also enables the HW block */
--	err = clk_prepare_enable(bs->clk);
--	if (err) {
--		dev_err(&pdev->dev, "could not prepare clock: %d\n", err);
--		return err;
--	}
--
- 	/* just checking if the clock returns a sane value */
- 	clk_hz = clk_get_rate(bs->clk);
- 	if (!clk_hz) {
- 		dev_err(&pdev->dev, "clock returns 0 Hz\n");
--		err = -ENODEV;
--		goto out_clk_disable;
-+		return -ENODEV;
+-	dspi->clk = devm_clk_get(&pdev->dev, NULL);
++	dspi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(dspi->clk)) {
+ 		ret = -ENODEV;
+ 		goto free_host;
  	}
+-	ret = clk_prepare_enable(dspi->clk);
+-	if (ret)
+-		goto free_host;
  
- 	/* reset SPI-HW block */
-@@ -547,22 +539,18 @@ static int bcm2835aux_spi_probe(struct platform_device *pdev)
- 			       dev_name(&pdev->dev), host);
- 	if (err) {
- 		dev_err(&pdev->dev, "could not request IRQ: %d\n", err);
--		goto out_clk_disable;
-+		return err;
+ 	host->use_gpio_descriptors = true;
+ 	host->dev.of_node = pdev->dev.of_node;
+@@ -947,7 +944,7 @@ static int davinci_spi_probe(struct platform_device *pdev)
+ 
+ 	ret = davinci_spi_request_dma(dspi);
+ 	if (ret == -EPROBE_DEFER) {
+-		goto free_clk;
++		goto free_host;
+ 	} else if (ret) {
+ 		dev_info(&pdev->dev, "DMA is not supported (%d)\n", ret);
+ 		dspi->dma_rx = NULL;
+@@ -991,8 +988,6 @@ static int davinci_spi_probe(struct platform_device *pdev)
+ 		dma_release_channel(dspi->dma_rx);
+ 		dma_release_channel(dspi->dma_tx);
  	}
+-free_clk:
+-	clk_disable_unprepare(dspi->clk);
+ free_host:
+ 	spi_controller_put(host);
+ err:
+@@ -1018,8 +1013,6 @@ static void davinci_spi_remove(struct platform_device *pdev)
  
- 	err = spi_register_controller(host);
- 	if (err) {
- 		dev_err(&pdev->dev, "could not register SPI host: %d\n", err);
--		goto out_clk_disable;
-+		return err;
- 	}
+ 	spi_bitbang_stop(&dspi->bitbang);
  
- 	bcm2835aux_debugfs_create(bs, dev_name(&pdev->dev));
- 
- 	return 0;
+-	clk_disable_unprepare(dspi->clk);
 -
--out_clk_disable:
--	clk_disable_unprepare(bs->clk);
--	return err;
- }
- 
- static void bcm2835aux_spi_remove(struct platform_device *pdev)
-@@ -575,9 +563,6 @@ static void bcm2835aux_spi_remove(struct platform_device *pdev)
- 	spi_unregister_controller(host);
- 
- 	bcm2835aux_spi_reset_hw(bs);
--
--	/* disable the HW block by releasing the clock */
--	clk_disable_unprepare(bs->clk);
- }
- 
- static const struct of_device_id bcm2835aux_spi_match[] = {
+ 	if (dspi->dma_rx) {
+ 		dma_release_channel(dspi->dma_rx);
+ 		dma_release_channel(dspi->dma_tx);
 -- 
 2.34.1
 
