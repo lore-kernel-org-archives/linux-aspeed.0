@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:28 +0800
-Subject: [PATCH -next v2 15/25] spi: meson-spicc: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:25 +0800
+Subject: [PATCH -next v2 12/25] spi: dw-mmio: Use helper function devm_clk_get_*()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-16-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-13-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,105 +15,88 @@ Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
 and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
 replaced by devm_clk_get_enabled() when driver enables (and possibly
 prepares) the clocks for the whole lifetime of the device. Moreover, it is
-no longer necessary to unprepare and disable the clocks explicitly.
+no longer necessary to unprepare and disable the clocks explicitly. Also,
+devm_clk_get_optional() and clk_prepare_enable() can now be replaced by
+devm_clk_get_optional_enabled(). Moreover, the lable "out_clk" no longer
+makes sense, rename it to "out_reset".
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
-v1 -> v2: None
+v1 -> v2: Return directly instead of calling reset_control_deassert()
+before the reset control handler has been requested. And use the
+"out_reset" label instead of "out" before calling pm_runtime_enable().
 
- drivers/spi/spi-meson-spicc.c | 33 ++++++---------------------------
- 1 file changed, 6 insertions(+), 27 deletions(-)
+ drivers/spi/spi-dw-mmio.c | 31 +++++++++----------------------
+ 1 file changed, 9 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/spi/spi-meson-spicc.c b/drivers/spi/spi-meson-spicc.c
-index 43d134f4b42b..1f2d26254e03 100644
---- a/drivers/spi/spi-meson-spicc.c
-+++ b/drivers/spi/spi-meson-spicc.c
-@@ -820,7 +820,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 		goto out_master;
- 	}
+diff --git a/drivers/spi/spi-dw-mmio.c b/drivers/spi/spi-dw-mmio.c
+index 805264c9c65c..46801189a651 100644
+--- a/drivers/spi/spi-dw-mmio.c
++++ b/drivers/spi/spi-dw-mmio.c
+@@ -340,29 +340,20 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
+ 	if (dws->irq < 0)
+ 		return dws->irq; /* -ENXIO */
  
--	spicc->core = devm_clk_get(&pdev->dev, "core");
-+	spicc->core = devm_clk_get_enabled(&pdev->dev, "core");
- 	if (IS_ERR(spicc->core)) {
- 		dev_err(&pdev->dev, "core clock request failed\n");
- 		ret = PTR_ERR(spicc->core);
-@@ -828,7 +828,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 	}
+-	dwsmmio->clk = devm_clk_get(&pdev->dev, NULL);
++	dwsmmio->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(dwsmmio->clk))
+ 		return PTR_ERR(dwsmmio->clk);
+-	ret = clk_prepare_enable(dwsmmio->clk);
+-	if (ret)
+-		return ret;
  
- 	if (spicc->data->has_pclk) {
--		spicc->pclk = devm_clk_get(&pdev->dev, "pclk");
-+		spicc->pclk = devm_clk_get_enabled(&pdev->dev, "pclk");
- 		if (IS_ERR(spicc->pclk)) {
- 			dev_err(&pdev->dev, "pclk clock request failed\n");
- 			ret = PTR_ERR(spicc->pclk);
-@@ -836,22 +836,10 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	ret = clk_prepare_enable(spicc->core);
--	if (ret) {
--		dev_err(&pdev->dev, "core clock enable failed\n");
--		goto out_master;
+ 	/* Optional clock needed to access the registers */
+-	dwsmmio->pclk = devm_clk_get_optional(&pdev->dev, "pclk");
+-	if (IS_ERR(dwsmmio->pclk)) {
+-		ret = PTR_ERR(dwsmmio->pclk);
+-		goto out_clk;
 -	}
--
--	ret = clk_prepare_enable(spicc->pclk);
--	if (ret) {
--		dev_err(&pdev->dev, "pclk clock enable failed\n");
--		goto out_core_clk;
+-	ret = clk_prepare_enable(dwsmmio->pclk);
+-	if (ret)
+-		goto out_clk;
++	dwsmmio->pclk = devm_clk_get_optional_enabled(&pdev->dev, "pclk");
++	if (IS_ERR(dwsmmio->pclk))
++		return PTR_ERR(dwsmmio->pclk);
+ 
+ 	/* find an optional reset controller */
+ 	dwsmmio->rstc = devm_reset_control_get_optional_exclusive(&pdev->dev, "spi");
+-	if (IS_ERR(dwsmmio->rstc)) {
+-		ret = PTR_ERR(dwsmmio->rstc);
+-		goto out_clk;
 -	}
--
- 	spicc->pinctrl = devm_pinctrl_get(&pdev->dev);
- 	if (IS_ERR(spicc->pinctrl)) {
- 		ret = PTR_ERR(spicc->pinctrl);
--		goto out_clk;
-+		goto out_master;
++	if (IS_ERR(dwsmmio->rstc))
++		return PTR_ERR(dwsmmio->rstc);
++
+ 	reset_control_deassert(dwsmmio->rstc);
+ 
+ 	dws->bus_num = pdev->id;
+@@ -383,7 +374,7 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
+ 	if (init_func) {
+ 		ret = init_func(pdev, dwsmmio);
+ 		if (ret)
+-			goto out;
++			goto out_reset;
  	}
  
- 	device_reset_optional(&pdev->dev);
-@@ -878,31 +866,25 @@ static int meson_spicc_probe(struct platform_device *pdev)
- 	ret = meson_spicc_pow2_clk_init(spicc);
- 	if (ret) {
- 		dev_err(&pdev->dev, "pow2 clock registration failed\n");
--		goto out_clk;
-+		goto out_master;
- 	}
+ 	pm_runtime_enable(&pdev->dev);
+@@ -397,9 +388,7 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
  
- 	if (spicc->data->has_enhance_clk_div) {
- 		ret = meson_spicc_enh_clk_init(spicc);
- 		if (ret) {
- 			dev_err(&pdev->dev, "clock registration failed\n");
--			goto out_clk;
-+			goto out_master;
- 		}
- 	}
- 
- 	ret = devm_spi_register_master(&pdev->dev, master);
- 	if (ret) {
- 		dev_err(&pdev->dev, "spi master registration failed\n");
--		goto out_clk;
-+		goto out_master;
- 	}
- 
- 	return 0;
- 
+ out:
+ 	pm_runtime_disable(&pdev->dev);
+-	clk_disable_unprepare(dwsmmio->pclk);
 -out_clk:
--	clk_disable_unprepare(spicc->pclk);
--
--out_core_clk:
--	clk_disable_unprepare(spicc->core);
--
- out_master:
- 	spi_master_put(master);
+-	clk_disable_unprepare(dwsmmio->clk);
++out_reset:
+ 	reset_control_assert(dwsmmio->rstc);
  
-@@ -916,9 +898,6 @@ static void meson_spicc_remove(struct platform_device *pdev)
- 	/* Disable SPI */
- 	writel(0, spicc->base + SPICC_CONREG);
+ 	return ret;
+@@ -411,8 +400,6 @@ static void dw_spi_mmio_remove(struct platform_device *pdev)
  
--	clk_disable_unprepare(spicc->core);
--	clk_disable_unprepare(spicc->pclk);
--
- 	spi_master_put(spicc->master);
+ 	dw_spi_remove_host(&dwsmmio->dws);
+ 	pm_runtime_disable(&pdev->dev);
+-	clk_disable_unprepare(dwsmmio->pclk);
+-	clk_disable_unprepare(dwsmmio->clk);
+ 	reset_control_assert(dwsmmio->rstc);
  }
  
 -- 
