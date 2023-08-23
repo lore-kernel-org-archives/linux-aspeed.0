@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:18 +0800
-Subject: [PATCH -next v2 05/25] spi: spi-axi-spi-engine: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:22 +0800
+Subject: [PATCH -next v2 09/25] spi: spi-cavium-thunderx: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-6-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-10-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,86 +22,47 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-axi-spi-engine.c | 25 +++++--------------------
- 1 file changed, 5 insertions(+), 20 deletions(-)
+ drivers/spi/spi-cavium-thunderx.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/spi/spi-axi-spi-engine.c b/drivers/spi/spi-axi-spi-engine.c
-index 0258c9a72fdc..b96e55f59d1a 100644
---- a/drivers/spi/spi-axi-spi-engine.c
-+++ b/drivers/spi/spi-axi-spi-engine.c
-@@ -485,30 +485,22 @@ static int spi_engine_probe(struct platform_device *pdev)
+diff --git a/drivers/spi/spi-cavium-thunderx.c b/drivers/spi/spi-cavium-thunderx.c
+index f7c378a5f1bc..337aef12abcc 100644
+--- a/drivers/spi/spi-cavium-thunderx.c
++++ b/drivers/spi/spi-cavium-thunderx.c
+@@ -49,16 +49,12 @@ static int thunderx_spi_probe(struct pci_dev *pdev,
+ 	p->regs.tx = 0x1010;
+ 	p->regs.data = 0x1080;
  
- 	spin_lock_init(&spi_engine->lock);
- 
--	spi_engine->clk = devm_clk_get(&pdev->dev, "s_axi_aclk");
-+	spi_engine->clk = devm_clk_get_enabled(&pdev->dev, "s_axi_aclk");
- 	if (IS_ERR(spi_engine->clk)) {
- 		ret = PTR_ERR(spi_engine->clk);
- 		goto err_put_host;
+-	p->clk = devm_clk_get(dev, NULL);
++	p->clk = devm_clk_get_enabled(dev, NULL);
+ 	if (IS_ERR(p->clk)) {
+ 		ret = PTR_ERR(p->clk);
+ 		goto error;
  	}
  
--	spi_engine->ref_clk = devm_clk_get(&pdev->dev, "spi_clk");
-+	spi_engine->ref_clk = devm_clk_get_enabled(&pdev->dev, "spi_clk");
- 	if (IS_ERR(spi_engine->ref_clk)) {
- 		ret = PTR_ERR(spi_engine->ref_clk);
- 		goto err_put_host;
- 	}
- 
--	ret = clk_prepare_enable(spi_engine->clk);
+-	ret = clk_prepare_enable(p->clk);
 -	if (ret)
--		goto err_put_host;
+-		goto error;
 -
--	ret = clk_prepare_enable(spi_engine->ref_clk);
--	if (ret)
--		goto err_clk_disable;
--
- 	spi_engine->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(spi_engine->base)) {
- 		ret = PTR_ERR(spi_engine->base);
--		goto err_ref_clk_disable;
-+		goto err_put_host;
- 	}
- 
- 	version = readl(spi_engine->base + SPI_ENGINE_REG_VERSION);
-@@ -518,7 +510,7 @@ static int spi_engine_probe(struct platform_device *pdev)
- 			SPI_ENGINE_VERSION_MINOR(version),
- 			SPI_ENGINE_VERSION_PATCH(version));
- 		ret = -ENODEV;
--		goto err_ref_clk_disable;
-+		goto err_put_host;
- 	}
- 
- 	writel_relaxed(0x00, spi_engine->base + SPI_ENGINE_REG_RESET);
-@@ -527,7 +519,7 @@ static int spi_engine_probe(struct platform_device *pdev)
- 
- 	ret = request_irq(irq, spi_engine_irq, 0, pdev->name, host);
- 	if (ret)
--		goto err_ref_clk_disable;
-+		goto err_put_host;
- 
- 	host->dev.of_node = pdev->dev.of_node;
- 	host->mode_bits = SPI_CPOL | SPI_CPHA | SPI_3WIRE;
-@@ -545,10 +537,6 @@ static int spi_engine_probe(struct platform_device *pdev)
+ 	p->sys_freq = clk_get_rate(p->clk);
+ 	if (!p->sys_freq)
+ 		p->sys_freq = SYS_FREQ_DEFAULT;
+@@ -82,7 +78,6 @@ static int thunderx_spi_probe(struct pci_dev *pdev,
  	return 0;
- err_free_irq:
- 	free_irq(irq, host);
--err_ref_clk_disable:
--	clk_disable_unprepare(spi_engine->ref_clk);
--err_clk_disable:
--	clk_disable_unprepare(spi_engine->clk);
- err_put_host:
+ 
+ error:
+-	clk_disable_unprepare(p->clk);
+ 	pci_release_regions(pdev);
  	spi_controller_put(host);
  	return ret;
-@@ -569,9 +557,6 @@ static void spi_engine_remove(struct platform_device *pdev)
- 	writel_relaxed(0xff, spi_engine->base + SPI_ENGINE_REG_INT_PENDING);
- 	writel_relaxed(0x00, spi_engine->base + SPI_ENGINE_REG_INT_ENABLE);
- 	writel_relaxed(0x01, spi_engine->base + SPI_ENGINE_REG_RESET);
--
--	clk_disable_unprepare(spi_engine->ref_clk);
--	clk_disable_unprepare(spi_engine->clk);
- }
+@@ -97,7 +92,6 @@ static void thunderx_spi_remove(struct pci_dev *pdev)
+ 	if (!p)
+ 		return;
  
- static const struct of_device_id spi_engine_match_table[] = {
+-	clk_disable_unprepare(p->clk);
+ 	pci_release_regions(pdev);
+ 	/* Put everything in a known state. */
+ 	writeq(0, p->register_base + OCTEON_SPI_CFG(p));
 -- 
 2.34.1
 
