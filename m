@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:38 +0800
-Subject: [PATCH -next v2 25/25] spi: rockchip: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:15 +0800
+Subject: [PATCH -next v2 02/25] spi: armada-3700: Use helper function devm_clk_get_prepared()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-26-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-3-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,104 +12,85 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
-and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
-replaced by devm_clk_get_enabled() when driver enables (and possibly
-prepares) the clocks for the whole lifetime of the device. Moreover, it is
-no longer necessary to unprepare and disable the clocks explicitly.
+and enabled clocks"), devm_clk_get() and clk_prepare() can now be replaced
+by devm_clk_get_prepared() when driver prepares the clocks for the whole
+lifetime of the device. Moreover, it is no longer necessary to unprepare
+the clocks explicitly.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
-v1 -> v2: None
+v1 -> v2: Drop the empty remove function a3700_spi_remove().
 
- drivers/spi/spi-rockchip.c | 30 +++++-------------------------
- 1 file changed, 5 insertions(+), 25 deletions(-)
+ drivers/spi/spi-armada-3700.c | 23 +++--------------------
+ 1 file changed, 3 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/spi/spi-rockchip.c b/drivers/spi/spi-rockchip.c
-index 5b010094dace..4b9669da2cf3 100644
---- a/drivers/spi/spi-rockchip.c
-+++ b/drivers/spi/spi-rockchip.c
-@@ -782,42 +782,30 @@ static int rockchip_spi_probe(struct platform_device *pdev)
- 		goto err_put_ctlr;
+diff --git a/drivers/spi/spi-armada-3700.c b/drivers/spi/spi-armada-3700.c
+index 0103ac0158c0..3c9ed412932f 100644
+--- a/drivers/spi/spi-armada-3700.c
++++ b/drivers/spi/spi-armada-3700.c
+@@ -865,18 +865,12 @@ static int a3700_spi_probe(struct platform_device *pdev)
+ 
+ 	init_completion(&spi->done);
+ 
+-	spi->clk = devm_clk_get(dev, NULL);
++	spi->clk = devm_clk_get_prepared(dev, NULL);
+ 	if (IS_ERR(spi->clk)) {
+ 		dev_err(dev, "could not find clk: %ld\n", PTR_ERR(spi->clk));
+ 		goto error;
  	}
  
--	rs->apb_pclk = devm_clk_get(&pdev->dev, "apb_pclk");
-+	rs->apb_pclk = devm_clk_get_enabled(&pdev->dev, "apb_pclk");
- 	if (IS_ERR(rs->apb_pclk)) {
- 		dev_err(&pdev->dev, "Failed to get apb_pclk\n");
- 		ret = PTR_ERR(rs->apb_pclk);
- 		goto err_put_ctlr;
- 	}
- 
--	rs->spiclk = devm_clk_get(&pdev->dev, "spiclk");
-+	rs->spiclk = devm_clk_get_enabled(&pdev->dev, "spiclk");
- 	if (IS_ERR(rs->spiclk)) {
- 		dev_err(&pdev->dev, "Failed to get spi_pclk\n");
- 		ret = PTR_ERR(rs->spiclk);
- 		goto err_put_ctlr;
- 	}
- 
--	ret = clk_prepare_enable(rs->apb_pclk);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "Failed to enable apb_pclk\n");
--		goto err_put_ctlr;
+-	ret = clk_prepare(spi->clk);
+-	if (ret) {
+-		dev_err(dev, "could not prepare clk: %d\n", ret);
+-		goto error;
 -	}
 -
--	ret = clk_prepare_enable(rs->spiclk);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "Failed to enable spi_clk\n");
--		goto err_disable_apbclk;
--	}
--
- 	spi_enable_chip(rs, false);
- 
- 	ret = platform_get_irq(pdev, 0);
- 	if (ret < 0)
--		goto err_disable_spiclk;
-+		goto err_put_ctlr;
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, ret, rockchip_spi_isr, NULL,
- 			IRQF_ONESHOT, dev_name(&pdev->dev), ctlr);
- 	if (ret)
--		goto err_disable_spiclk;
-+		goto err_put_ctlr;
- 
- 	rs->dev = &pdev->dev;
- 	rs->freq = clk_get_rate(rs->spiclk);
-@@ -843,7 +831,7 @@ static int rockchip_spi_probe(struct platform_device *pdev)
- 	if (!rs->fifo_len) {
- 		dev_err(&pdev->dev, "Failed to get fifo length\n");
- 		ret = -EINVAL;
--		goto err_disable_spiclk;
-+		goto err_put_ctlr;
+ 	host->max_speed_hz = min_t(unsigned long, A3700_SPI_MAX_SPEED_HZ,
+ 					clk_get_rate(spi->clk));
+ 	host->min_speed_hz = DIV_ROUND_UP(clk_get_rate(spi->clk),
+@@ -888,40 +882,29 @@ static int a3700_spi_probe(struct platform_device *pdev)
+ 			       dev_name(dev), host);
+ 	if (ret) {
+ 		dev_err(dev, "could not request IRQ: %d\n", ret);
+-		goto error_clk;
++		goto error;
  	}
  
- 	pm_runtime_set_autosuspend_delay(&pdev->dev, ROCKCHIP_AUTOSUSPEND_TIMEOUT);
-@@ -937,10 +925,6 @@ static int rockchip_spi_probe(struct platform_device *pdev)
- 		dma_release_channel(ctlr->dma_tx);
- err_disable_pm_runtime:
- 	pm_runtime_disable(&pdev->dev);
--err_disable_spiclk:
--	clk_disable_unprepare(rs->spiclk);
--err_disable_apbclk:
--	clk_disable_unprepare(rs->apb_pclk);
- err_put_ctlr:
- 	spi_controller_put(ctlr);
+ 	ret = devm_spi_register_controller(dev, host);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to register host\n");
+-		goto error_clk;
++		goto error;
+ 	}
  
-@@ -950,13 +934,9 @@ static int rockchip_spi_probe(struct platform_device *pdev)
- static void rockchip_spi_remove(struct platform_device *pdev)
- {
- 	struct spi_controller *ctlr = spi_controller_get(platform_get_drvdata(pdev));
--	struct rockchip_spi *rs = spi_controller_get_devdata(ctlr);
+ 	return 0;
  
- 	pm_runtime_get_sync(&pdev->dev);
+-error_clk:
+-	clk_unprepare(spi->clk);
+ error:
+ 	spi_controller_put(host);
+ out:
+ 	return ret;
+ }
  
--	clk_disable_unprepare(rs->spiclk);
--	clk_disable_unprepare(rs->apb_pclk);
+-static void a3700_spi_remove(struct platform_device *pdev)
+-{
+-	struct spi_controller *host = platform_get_drvdata(pdev);
+-	struct a3700_spi *spi = spi_controller_get_devdata(host);
 -
- 	pm_runtime_put_noidle(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
- 	pm_runtime_set_suspended(&pdev->dev);
+-	clk_unprepare(spi->clk);
+-}
+-
+ static struct platform_driver a3700_spi_driver = {
+ 	.driver = {
+ 		.name	= DRIVER_NAME,
+ 		.of_match_table = of_match_ptr(a3700_spi_dt_ids),
+ 	},
+ 	.probe		= a3700_spi_probe,
+-	.remove_new	= a3700_spi_remove,
+ };
+ 
+ module_platform_driver(a3700_spi_driver);
 -- 
 2.34.1
 
