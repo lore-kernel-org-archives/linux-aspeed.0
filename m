@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:27 +0800
-Subject: [PATCH -next v2 14/25] spi: lantiq-ssc: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:28 +0800
+Subject: [PATCH -next v2 15/25] spi: meson-spicc: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-15-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-16-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,53 +22,98 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-lantiq-ssc.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/spi/spi-meson-spicc.c | 33 ++++++---------------------------
+ 1 file changed, 6 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/spi/spi-lantiq-ssc.c b/drivers/spi/spi-lantiq-ssc.c
-index 938e9e577e4f..18a46569ba46 100644
---- a/drivers/spi/spi-lantiq-ssc.c
-+++ b/drivers/spi/spi-lantiq-ssc.c
-@@ -932,14 +932,11 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
- 	if (err)
- 		goto err_host_put;
- 
--	spi->spi_clk = devm_clk_get(dev, "gate");
-+	spi->spi_clk = devm_clk_get_enabled(dev, "gate");
- 	if (IS_ERR(spi->spi_clk)) {
- 		err = PTR_ERR(spi->spi_clk);
- 		goto err_host_put;
- 	}
--	err = clk_prepare_enable(spi->spi_clk);
--	if (err)
--		goto err_host_put;
- 
- 	/*
- 	 * Use the old clk_get_fpi() function on Lantiq platform, till it
-@@ -952,7 +949,7 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
- #endif
- 	if (IS_ERR(spi->fpi_clk)) {
- 		err = PTR_ERR(spi->fpi_clk);
--		goto err_clk_disable;
-+		goto err_host_put;
+diff --git a/drivers/spi/spi-meson-spicc.c b/drivers/spi/spi-meson-spicc.c
+index 43d134f4b42b..1f2d26254e03 100644
+--- a/drivers/spi/spi-meson-spicc.c
++++ b/drivers/spi/spi-meson-spicc.c
+@@ -820,7 +820,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 		goto out_master;
  	}
  
- 	num_cs = 8;
-@@ -1010,8 +1007,6 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
- 	destroy_workqueue(spi->wq);
- err_clk_put:
- 	clk_put(spi->fpi_clk);
--err_clk_disable:
--	clk_disable_unprepare(spi->spi_clk);
- err_host_put:
- 	spi_controller_put(host);
+-	spicc->core = devm_clk_get(&pdev->dev, "core");
++	spicc->core = devm_clk_get_enabled(&pdev->dev, "core");
+ 	if (IS_ERR(spicc->core)) {
+ 		dev_err(&pdev->dev, "core clock request failed\n");
+ 		ret = PTR_ERR(spicc->core);
+@@ -828,7 +828,7 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 	}
  
-@@ -1029,7 +1024,6 @@ static void lantiq_ssc_remove(struct platform_device *pdev)
- 	hw_enter_config_mode(spi);
+ 	if (spicc->data->has_pclk) {
+-		spicc->pclk = devm_clk_get(&pdev->dev, "pclk");
++		spicc->pclk = devm_clk_get_enabled(&pdev->dev, "pclk");
+ 		if (IS_ERR(spicc->pclk)) {
+ 			dev_err(&pdev->dev, "pclk clock request failed\n");
+ 			ret = PTR_ERR(spicc->pclk);
+@@ -836,22 +836,10 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 		}
+ 	}
  
- 	destroy_workqueue(spi->wq);
--	clk_disable_unprepare(spi->spi_clk);
- 	clk_put(spi->fpi_clk);
+-	ret = clk_prepare_enable(spicc->core);
+-	if (ret) {
+-		dev_err(&pdev->dev, "core clock enable failed\n");
+-		goto out_master;
+-	}
+-
+-	ret = clk_prepare_enable(spicc->pclk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "pclk clock enable failed\n");
+-		goto out_core_clk;
+-	}
+-
+ 	spicc->pinctrl = devm_pinctrl_get(&pdev->dev);
+ 	if (IS_ERR(spicc->pinctrl)) {
+ 		ret = PTR_ERR(spicc->pinctrl);
+-		goto out_clk;
++		goto out_master;
+ 	}
+ 
+ 	device_reset_optional(&pdev->dev);
+@@ -878,31 +866,25 @@ static int meson_spicc_probe(struct platform_device *pdev)
+ 	ret = meson_spicc_pow2_clk_init(spicc);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "pow2 clock registration failed\n");
+-		goto out_clk;
++		goto out_master;
+ 	}
+ 
+ 	if (spicc->data->has_enhance_clk_div) {
+ 		ret = meson_spicc_enh_clk_init(spicc);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "clock registration failed\n");
+-			goto out_clk;
++			goto out_master;
+ 		}
+ 	}
+ 
+ 	ret = devm_spi_register_master(&pdev->dev, master);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "spi master registration failed\n");
+-		goto out_clk;
++		goto out_master;
+ 	}
+ 
+ 	return 0;
+ 
+-out_clk:
+-	clk_disable_unprepare(spicc->pclk);
+-
+-out_core_clk:
+-	clk_disable_unprepare(spicc->core);
+-
+ out_master:
+ 	spi_master_put(master);
+ 
+@@ -916,9 +898,6 @@ static void meson_spicc_remove(struct platform_device *pdev)
+ 	/* Disable SPI */
+ 	writel(0, spicc->base + SPICC_CONREG);
+ 
+-	clk_disable_unprepare(spicc->core);
+-	clk_disable_unprepare(spicc->pclk);
+-
+ 	spi_master_put(spicc->master);
  }
  
 -- 
