@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:26 +0800
-Subject: [PATCH -next v2 13/25] spi: spi-fsl-dspi: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:27 +0800
+Subject: [PATCH -next v2 14/25] spi: lantiq-ssc: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-14-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-15-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,61 +22,55 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-fsl-dspi.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/spi/spi-lantiq-ssc.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/spi/spi-fsl-dspi.c b/drivers/spi/spi-fsl-dspi.c
-index 8318249f8a1f..c9eae046f66c 100644
---- a/drivers/spi/spi-fsl-dspi.c
-+++ b/drivers/spi/spi-fsl-dspi.c
-@@ -1372,19 +1372,16 @@ static int dspi_probe(struct platform_device *pdev)
- 		}
+diff --git a/drivers/spi/spi-lantiq-ssc.c b/drivers/spi/spi-lantiq-ssc.c
+index 938e9e577e4f..18a46569ba46 100644
+--- a/drivers/spi/spi-lantiq-ssc.c
++++ b/drivers/spi/spi-lantiq-ssc.c
+@@ -932,14 +932,11 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
+ 	if (err)
+ 		goto err_host_put;
+ 
+-	spi->spi_clk = devm_clk_get(dev, "gate");
++	spi->spi_clk = devm_clk_get_enabled(dev, "gate");
+ 	if (IS_ERR(spi->spi_clk)) {
+ 		err = PTR_ERR(spi->spi_clk);
+ 		goto err_host_put;
+ 	}
+-	err = clk_prepare_enable(spi->spi_clk);
+-	if (err)
+-		goto err_host_put;
+ 
+ 	/*
+ 	 * Use the old clk_get_fpi() function on Lantiq platform, till it
+@@ -952,7 +949,7 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
+ #endif
+ 	if (IS_ERR(spi->fpi_clk)) {
+ 		err = PTR_ERR(spi->fpi_clk);
+-		goto err_clk_disable;
++		goto err_host_put;
  	}
  
--	dspi->clk = devm_clk_get(&pdev->dev, "dspi");
-+	dspi->clk = devm_clk_get_enabled(&pdev->dev, "dspi");
- 	if (IS_ERR(dspi->clk)) {
- 		ret = PTR_ERR(dspi->clk);
- 		dev_err(&pdev->dev, "unable to get clock\n");
- 		goto out_ctlr_put;
- 	}
--	ret = clk_prepare_enable(dspi->clk);
--	if (ret)
--		goto out_ctlr_put;
+ 	num_cs = 8;
+@@ -1010,8 +1007,6 @@ static int lantiq_ssc_probe(struct platform_device *pdev)
+ 	destroy_workqueue(spi->wq);
+ err_clk_put:
+ 	clk_put(spi->fpi_clk);
+-err_clk_disable:
+-	clk_disable_unprepare(spi->spi_clk);
+ err_host_put:
+ 	spi_controller_put(host);
  
- 	ret = dspi_init(dspi);
- 	if (ret)
--		goto out_clk_put;
-+		goto out_ctlr_put;
+@@ -1029,7 +1024,6 @@ static void lantiq_ssc_remove(struct platform_device *pdev)
+ 	hw_enter_config_mode(spi);
  
- 	dspi->irq = platform_get_irq(pdev, 0);
- 	if (dspi->irq <= 0) {
-@@ -1400,7 +1397,7 @@ static int dspi_probe(struct platform_device *pdev)
- 				   IRQF_SHARED, pdev->name, dspi);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Unable to attach DSPI interrupt\n");
--		goto out_clk_put;
-+		goto out_ctlr_put;
- 	}
- 
- poll_mode:
-@@ -1432,8 +1429,6 @@ static int dspi_probe(struct platform_device *pdev)
- out_free_irq:
- 	if (dspi->irq)
- 		free_irq(dspi->irq, dspi);
--out_clk_put:
--	clk_disable_unprepare(dspi->clk);
- out_ctlr_put:
- 	spi_controller_put(ctlr);
- 
-@@ -1458,7 +1453,6 @@ static void dspi_remove(struct platform_device *pdev)
- 	dspi_release_dma(dspi);
- 	if (dspi->irq)
- 		free_irq(dspi->irq, dspi);
--	clk_disable_unprepare(dspi->clk);
+ 	destroy_workqueue(spi->wq);
+-	clk_disable_unprepare(spi->spi_clk);
+ 	clk_put(spi->fpi_clk);
  }
  
- static void dspi_shutdown(struct platform_device *pdev)
 -- 
 2.34.1
 
