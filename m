@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:29 +0800
-Subject: [PATCH -next v2 16/25] spi: spi-meson-spifc: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:31 +0800
+Subject: [PATCH -next v2 18/25] spi: microchip-core: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-17-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-19-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,66 +16,49 @@ and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
 replaced by devm_clk_get_enabled() when driver enables (and possibly
 prepares) the clocks for the whole lifetime of the device. Moreover, it is
 no longer necessary to unprepare and disable the clocks explicitly.
-Moreover, the lable "out_clk" no longer makes sense, rename it to "out_pm".
 
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-meson-spifc.c | 17 +++--------------
- 1 file changed, 3 insertions(+), 14 deletions(-)
+ drivers/spi/spi-microchip-core.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/spi/spi-meson-spifc.c b/drivers/spi/spi-meson-spifc.c
-index 06626f406f68..d70a18885b49 100644
---- a/drivers/spi/spi-meson-spifc.c
-+++ b/drivers/spi/spi-meson-spifc.c
-@@ -312,19 +312,13 @@ static int meson_spifc_probe(struct platform_device *pdev)
- 		goto out_err;
- 	}
+diff --git a/drivers/spi/spi-microchip-core.c b/drivers/spi/spi-microchip-core.c
+index b451cd4860ec..becdcdc9e6d1 100644
+--- a/drivers/spi/spi-microchip-core.c
++++ b/drivers/spi/spi-microchip-core.c
+@@ -539,22 +539,16 @@ static int mchp_corespi_probe(struct platform_device *pdev)
+ 		return dev_err_probe(&pdev->dev, ret,
+ 				     "could not request irq\n");
  
--	spifc->clk = devm_clk_get(spifc->dev, NULL);
-+	spifc->clk = devm_clk_get_enabled(spifc->dev, NULL);
- 	if (IS_ERR(spifc->clk)) {
- 		dev_err(spifc->dev, "missing clock\n");
- 		ret = PTR_ERR(spifc->clk);
- 		goto out_err;
- 	}
+-	spi->clk = devm_clk_get(&pdev->dev, NULL);
++	spi->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(spi->clk))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(spi->clk),
+ 				     "could not get clk\n");
  
--	ret = clk_prepare_enable(spifc->clk);
--	if (ret) {
--		dev_err(spifc->dev, "can't prepare clock\n");
--		goto out_err;
--	}
+-	ret = clk_prepare_enable(spi->clk);
+-	if (ret)
+-		return dev_err_probe(&pdev->dev, ret,
+-				     "failed to enable clock\n");
 -
- 	rate = clk_get_rate(spifc->clk);
+ 	mchp_corespi_init(master, spi);
  
- 	master->num_chipselect = 1;
-@@ -343,12 +337,11 @@ static int meson_spifc_probe(struct platform_device *pdev)
- 	ret = devm_spi_register_master(spifc->dev, master);
+ 	ret = devm_spi_register_master(&pdev->dev, master);
  	if (ret) {
- 		dev_err(spifc->dev, "failed to register spi master\n");
--		goto out_clk;
-+		goto out_pm;
+ 		mchp_corespi_disable(spi);
+-		clk_disable_unprepare(spi->clk);
+ 		return dev_err_probe(&pdev->dev, ret,
+ 				     "unable to register master for SPI controller\n");
  	}
+@@ -570,7 +564,6 @@ static void mchp_corespi_remove(struct platform_device *pdev)
+ 	struct mchp_corespi *spi = spi_master_get_devdata(master);
  
- 	return 0;
--out_clk:
--	clk_disable_unprepare(spifc->clk);
-+out_pm:
- 	pm_runtime_disable(spifc->dev);
- out_err:
- 	spi_master_put(master);
-@@ -357,11 +350,7 @@ static int meson_spifc_probe(struct platform_device *pdev)
- 
- static void meson_spifc_remove(struct platform_device *pdev)
- {
--	struct spi_master *master = platform_get_drvdata(pdev);
--	struct meson_spifc *spifc = spi_master_get_devdata(master);
--
- 	pm_runtime_get_sync(&pdev->dev);
--	clk_disable_unprepare(spifc->clk);
- 	pm_runtime_disable(&pdev->dev);
+ 	mchp_corespi_disable_ints(spi);
+-	clk_disable_unprepare(spi->clk);
+ 	mchp_corespi_disable(spi);
  }
  
 -- 
