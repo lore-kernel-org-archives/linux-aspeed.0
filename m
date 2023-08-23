@@ -1,75 +1,113 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 23 Aug 2023 08:13:34 -0500
-Subject: [PATCH v7 1/2] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
- Control
-In-Reply-To: <20230817120029.221484-2-billy_tsai@aspeedtech.com>
-References: <20230817120029.221484-1-billy_tsai@aspeedtech.com>
- <20230817120029.221484-2-billy_tsai@aspeedtech.com>
-Message-ID: <20230823131334.GA2059582-robh@kernel.org>
+From: Serge Semin <fancer.lancer@gmail.com>
+Date: Wed, 23 Aug 2023 17:20:12 +0300
+Subject: [PATCH -next v2 12/25] spi: dw-mmio: Use helper function
+ devm_clk_get_*()
+In-Reply-To: <20230823133938.1359106-13-lizetao1@huawei.com>
+References: <20230822131237.1022815-1-lizetao1@huawei.com>
+ <20230823133938.1359106-1-lizetao1@huawei.com>
+ <20230823133938.1359106-13-lizetao1@huawei.com>
+Message-ID: <pflv2canelmm3ea7zpqgxrzj3s7cl56crpdbupkgqlabfnasjj@dkfyiubao2gj>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 17, 2023 at 08:00:28PM +0800, Billy Tsai wrote:
-> Document the compatible for aspeed,ast2600-pwm-tach device, which can
-> support upto 16 PWM outputs and 16 fan tach input.
+On Wed, Aug 23, 2023 at 09:39:25PM +0800, Li Zetao wrote:
+> Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
+> and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
+> replaced by devm_clk_get_enabled() when driver enables (and possibly
+> prepares) the clocks for the whole lifetime of the device. Moreover, it is
+> no longer necessary to unprepare and disable the clocks explicitly. Also,
+> devm_clk_get_optional() and clk_prepare_enable() can now be replaced by
+> devm_clk_get_optional_enabled(). Moreover, the lable "out_clk" no longer
+> makes sense, rename it to "out_reset".
 > 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> Signed-off-by: Li Zetao <lizetao1@huawei.com>
 > ---
->  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 57 +++++++++++++++++++
->  1 file changed, 57 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> v1 -> v2: Return directly instead of calling reset_control_deassert()
+> before the reset control handler has been requested. And use the
+> "out_reset" label instead of "out" before calling pm_runtime_enable().
+
+LGTM. Thanks!
+Acked-by: Serge Semin <fancer.lancer@gmail.com>
+
+-Serge(y)
+
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> new file mode 100644
-> index 000000000000..1666304d0b0f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> @@ -0,0 +1,57 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2021 Aspeed, Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>  drivers/spi/spi-dw-mmio.c | 31 +++++++++----------------------
+>  1 file changed, 9 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/spi/spi-dw-mmio.c b/drivers/spi/spi-dw-mmio.c
+> index 805264c9c65c..46801189a651 100644
+> --- a/drivers/spi/spi-dw-mmio.c
+> +++ b/drivers/spi/spi-dw-mmio.c
+> @@ -340,29 +340,20 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
+>  	if (dws->irq < 0)
+>  		return dws->irq; /* -ENXIO */
+>  
+> -	dwsmmio->clk = devm_clk_get(&pdev->dev, NULL);
+> +	dwsmmio->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+>  	if (IS_ERR(dwsmmio->clk))
+>  		return PTR_ERR(dwsmmio->clk);
+> -	ret = clk_prepare_enable(dwsmmio->clk);
+> -	if (ret)
+> -		return ret;
+>  
+>  	/* Optional clock needed to access the registers */
+> -	dwsmmio->pclk = devm_clk_get_optional(&pdev->dev, "pclk");
+> -	if (IS_ERR(dwsmmio->pclk)) {
+> -		ret = PTR_ERR(dwsmmio->pclk);
+> -		goto out_clk;
+> -	}
+> -	ret = clk_prepare_enable(dwsmmio->pclk);
+> -	if (ret)
+> -		goto out_clk;
+> +	dwsmmio->pclk = devm_clk_get_optional_enabled(&pdev->dev, "pclk");
+> +	if (IS_ERR(dwsmmio->pclk))
+> +		return PTR_ERR(dwsmmio->pclk);
+>  
+>  	/* find an optional reset controller */
+>  	dwsmmio->rstc = devm_reset_control_get_optional_exclusive(&pdev->dev, "spi");
+> -	if (IS_ERR(dwsmmio->rstc)) {
+> -		ret = PTR_ERR(dwsmmio->rstc);
+> -		goto out_clk;
+> -	}
+> +	if (IS_ERR(dwsmmio->rstc))
+> +		return PTR_ERR(dwsmmio->rstc);
 > +
-> +title: ASPEED G6 PWM and Fan Tach controller device driver
-> +
-> +maintainers:
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +description: |
-> +  The ASPEED PWM controller can support upto 16 PWM outputs.
-> +  The ASPEED Fan Tacho controller can support upto 16 fan tach input.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-pwm-tach
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  resets:
-> +    maxItems: 1
-> +
-> +  "#pwm-cells":
-> +    const: 3
-> +
-> +  aspeed,fan-tach-ch:
-> +    description: Specify the Fan tach input channels.
-> +    $ref: "/schemas/types.yaml#/definitions/uint8-array"
-
-This property is already defined in aspeed-pwm-tacho.txt as a single u8 
-that goes in a fan node. You can't redefine its type and location here.
-
-To repeat what I've said in previous versions, work with others to 
-define a common fan and fan controller binding. Otherwise, anything new 
-with fan related properties is simply going to be rejected.
-
-Rob
+>  	reset_control_deassert(dwsmmio->rstc);
+>  
+>  	dws->bus_num = pdev->id;
+> @@ -383,7 +374,7 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
+>  	if (init_func) {
+>  		ret = init_func(pdev, dwsmmio);
+>  		if (ret)
+> -			goto out;
+> +			goto out_reset;
+>  	}
+>  
+>  	pm_runtime_enable(&pdev->dev);
+> @@ -397,9 +388,7 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
+>  
+>  out:
+>  	pm_runtime_disable(&pdev->dev);
+> -	clk_disable_unprepare(dwsmmio->pclk);
+> -out_clk:
+> -	clk_disable_unprepare(dwsmmio->clk);
+> +out_reset:
+>  	reset_control_assert(dwsmmio->rstc);
+>  
+>  	return ret;
+> @@ -411,8 +400,6 @@ static void dw_spi_mmio_remove(struct platform_device *pdev)
+>  
+>  	dw_spi_remove_host(&dwsmmio->dws);
+>  	pm_runtime_disable(&pdev->dev);
+> -	clk_disable_unprepare(dwsmmio->pclk);
+> -	clk_disable_unprepare(dwsmmio->clk);
+>  	reset_control_assert(dwsmmio->rstc);
+>  }
+>  
+> -- 
+> 2.34.1
+> 
