@@ -1,113 +1,32 @@
-From: Serge Semin <fancer.lancer@gmail.com>
-Date: Wed, 23 Aug 2023 17:20:12 +0300
-Subject: [PATCH -next v2 12/25] spi: dw-mmio: Use helper function
- devm_clk_get_*()
-In-Reply-To: <20230823133938.1359106-13-lizetao1@huawei.com>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 23 Aug 2023 15:33:37 +0100
+Subject: [PATCH -next v2 00/25] spi: Use devm_clk_get_*() helper function
+ to simplify the drivers.
+In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
- <20230823133938.1359106-13-lizetao1@huawei.com>
-Message-ID: <pflv2canelmm3ea7zpqgxrzj3s7cl56crpdbupkgqlabfnasjj@dkfyiubao2gj>
+Message-ID: <027ab9d7-4c05-4ce6-a4c8-14a79ce8a11a@sirena.org.uk>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 23, 2023 at 09:39:25PM +0800, Li Zetao wrote:
-> Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
-> and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
-> replaced by devm_clk_get_enabled() when driver enables (and possibly
-> prepares) the clocks for the whole lifetime of the device. Moreover, it is
-> no longer necessary to unprepare and disable the clocks explicitly. Also,
-> devm_clk_get_optional() and clk_prepare_enable() can now be replaced by
-> devm_clk_get_optional_enabled(). Moreover, the lable "out_clk" no longer
-> makes sense, rename it to "out_reset".
-> 
-> Signed-off-by: Li Zetao <lizetao1@huawei.com>
-> ---
-> v1 -> v2: Return directly instead of calling reset_control_deassert()
-> before the reset control handler has been requested. And use the
-> "out_reset" label instead of "out" before calling pm_runtime_enable().
+On Wed, Aug 23, 2023 at 09:39:13PM +0800, Li Zetao wrote:
+> Commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
+> and enabled clocks") provides a new helper function for prepared and
+> enabled clocks when a driver keeps a clock prepared (or enabled) during
+> the whole lifetime of the driver. So where drivers get clocks and enable
+> them immediately, it can be combined into a single function
 
-LGTM. Thanks!
-Acked-by: Serge Semin <fancer.lancer@gmail.com>
-
--Serge(y)
-
-> 
->  drivers/spi/spi-dw-mmio.c | 31 +++++++++----------------------
->  1 file changed, 9 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/spi/spi-dw-mmio.c b/drivers/spi/spi-dw-mmio.c
-> index 805264c9c65c..46801189a651 100644
-> --- a/drivers/spi/spi-dw-mmio.c
-> +++ b/drivers/spi/spi-dw-mmio.c
-> @@ -340,29 +340,20 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
->  	if (dws->irq < 0)
->  		return dws->irq; /* -ENXIO */
->  
-> -	dwsmmio->clk = devm_clk_get(&pdev->dev, NULL);
-> +	dwsmmio->clk = devm_clk_get_enabled(&pdev->dev, NULL);
->  	if (IS_ERR(dwsmmio->clk))
->  		return PTR_ERR(dwsmmio->clk);
-> -	ret = clk_prepare_enable(dwsmmio->clk);
-> -	if (ret)
-> -		return ret;
->  
->  	/* Optional clock needed to access the registers */
-> -	dwsmmio->pclk = devm_clk_get_optional(&pdev->dev, "pclk");
-> -	if (IS_ERR(dwsmmio->pclk)) {
-> -		ret = PTR_ERR(dwsmmio->pclk);
-> -		goto out_clk;
-> -	}
-> -	ret = clk_prepare_enable(dwsmmio->pclk);
-> -	if (ret)
-> -		goto out_clk;
-> +	dwsmmio->pclk = devm_clk_get_optional_enabled(&pdev->dev, "pclk");
-> +	if (IS_ERR(dwsmmio->pclk))
-> +		return PTR_ERR(dwsmmio->pclk);
->  
->  	/* find an optional reset controller */
->  	dwsmmio->rstc = devm_reset_control_get_optional_exclusive(&pdev->dev, "spi");
-> -	if (IS_ERR(dwsmmio->rstc)) {
-> -		ret = PTR_ERR(dwsmmio->rstc);
-> -		goto out_clk;
-> -	}
-> +	if (IS_ERR(dwsmmio->rstc))
-> +		return PTR_ERR(dwsmmio->rstc);
-> +
->  	reset_control_deassert(dwsmmio->rstc);
->  
->  	dws->bus_num = pdev->id;
-> @@ -383,7 +374,7 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
->  	if (init_func) {
->  		ret = init_func(pdev, dwsmmio);
->  		if (ret)
-> -			goto out;
-> +			goto out_reset;
->  	}
->  
->  	pm_runtime_enable(&pdev->dev);
-> @@ -397,9 +388,7 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
->  
->  out:
->  	pm_runtime_disable(&pdev->dev);
-> -	clk_disable_unprepare(dwsmmio->pclk);
-> -out_clk:
-> -	clk_disable_unprepare(dwsmmio->clk);
-> +out_reset:
->  	reset_control_assert(dwsmmio->rstc);
->  
->  	return ret;
-> @@ -411,8 +400,6 @@ static void dw_spi_mmio_remove(struct platform_device *pdev)
->  
->  	dw_spi_remove_host(&dwsmmio->dws);
->  	pm_runtime_disable(&pdev->dev);
-> -	clk_disable_unprepare(dwsmmio->pclk);
-> -	clk_disable_unprepare(dwsmmio->clk);
->  	reset_control_assert(dwsmmio->rstc);
->  }
->  
-> -- 
-> 2.34.1
-> 
+Please don't send new patches in reply to old patches or serieses, this
+makes it harder for both people and tools to understand what is going
+on - it can bury things in mailboxes and make it difficult to keep track
+of what current patches are, both for the new patches and the old ones.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230823/4dea15d8/attachment.sig>
