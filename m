@@ -1,10 +1,10 @@
 From: Li Zetao <lizetao1@huawei.com>
-Date: Wed, 23 Aug 2023 21:39:14 +0800
-Subject: [PATCH -next v2 01/25] spi: ar934x: Use helper function devm_clk_get_enabled()
+Date: Wed, 23 Aug 2023 21:39:19 +0800
+Subject: [PATCH -next v2 06/25] spi: bcm2835: Use helper function devm_clk_get_enabled()
 In-Reply-To: <20230823133938.1359106-1-lizetao1@huawei.com>
 References: <20230822131237.1022815-1-lizetao1@huawei.com>
  <20230823133938.1359106-1-lizetao1@huawei.com>
-Message-ID: <20230823133938.1359106-2-lizetao1@huawei.com>
+Message-ID: <20230823133938.1359106-7-lizetao1@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -22,70 +22,56 @@ Signed-off-by: Li Zetao <lizetao1@huawei.com>
 ---
 v1 -> v2: None
 
- drivers/spi/spi-ar934x.c | 22 +++-------------------
- 1 file changed, 3 insertions(+), 19 deletions(-)
+ drivers/spi/spi-bcm2835.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/spi/spi-ar934x.c b/drivers/spi/spi-ar934x.c
-index 58b98cea31d9..5ba988720851 100644
---- a/drivers/spi/spi-ar934x.c
-+++ b/drivers/spi/spi-ar934x.c
-@@ -168,27 +168,21 @@ static int ar934x_spi_probe(struct platform_device *pdev)
- 	struct ar934x_spi *sp;
- 	void __iomem *base;
- 	struct clk *clk;
--	int ret;
+diff --git a/drivers/spi/spi-bcm2835.c b/drivers/spi/spi-bcm2835.c
+index e7bb2714678a..a457ad2f7db1 100644
+--- a/drivers/spi/spi-bcm2835.c
++++ b/drivers/spi/spi-bcm2835.c
+@@ -1352,7 +1352,7 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
+ 	if (IS_ERR(bs->regs))
+ 		return PTR_ERR(bs->regs);
  
- 	base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(base))
- 		return PTR_ERR(base);
+-	bs->clk = devm_clk_get(&pdev->dev, NULL);
++	bs->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(bs->clk))
+ 		return dev_err_probe(&pdev->dev, PTR_ERR(bs->clk),
+ 				     "could not get clk\n");
+@@ -1363,14 +1363,11 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
+ 	if (bs->irq < 0)
+ 		return bs->irq;
  
--	clk = devm_clk_get(&pdev->dev, NULL);
-+	clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(clk)) {
- 		dev_err(&pdev->dev, "failed to get clock\n");
- 		return PTR_ERR(clk);
- 	}
+-	err = clk_prepare_enable(bs->clk);
+-	if (err)
+-		return err;
+ 	bs->clk_hz = clk_get_rate(bs->clk);
  
--	ret = clk_prepare_enable(clk);
--	if (ret)
--		return ret;
--
- 	ctlr = devm_spi_alloc_host(&pdev->dev, sizeof(*sp));
- 	if (!ctlr) {
- 		dev_info(&pdev->dev, "failed to allocate spi controller\n");
--		ret = -ENOMEM;
--		goto err_clk_disable;
-+		return -ENOMEM;
- 	}
+ 	err = bcm2835_dma_init(ctlr, &pdev->dev, bs);
+ 	if (err)
+-		goto out_clk_disable;
++		return err;
  
- 	/* disable flash mapping and expose spi controller registers */
-@@ -212,25 +206,15 @@ static int ar934x_spi_probe(struct platform_device *pdev)
- 	sp->clk_freq = clk_get_rate(clk);
- 	sp->ctlr = ctlr;
+ 	/* initialise the hardware with the default polarities */
+ 	bcm2835_wr(bs, BCM2835_SPI_CS,
+@@ -1396,8 +1393,6 @@ static int bcm2835_spi_probe(struct platform_device *pdev)
  
--	ret = spi_register_controller(ctlr);
--	if (!ret)
--		return 0;
--
--err_clk_disable:
--	clk_disable_unprepare(clk);
--	return ret;
-+	return spi_register_controller(ctlr);
+ out_dma_release:
+ 	bcm2835_dma_release(ctlr, bs);
+-out_clk_disable:
+-	clk_disable_unprepare(bs->clk);
+ 	return err;
  }
  
- static void ar934x_spi_remove(struct platform_device *pdev)
- {
- 	struct spi_controller *ctlr;
--	struct ar934x_spi *sp;
- 
- 	ctlr = dev_get_drvdata(&pdev->dev);
--	sp = spi_controller_get_devdata(ctlr);
+@@ -1415,8 +1410,6 @@ static void bcm2835_spi_remove(struct platform_device *pdev)
+ 	/* Clear FIFOs, and disable the HW block */
+ 	bcm2835_wr(bs, BCM2835_SPI_CS,
+ 		   BCM2835_SPI_CS_CLEAR_RX | BCM2835_SPI_CS_CLEAR_TX);
 -
- 	spi_unregister_controller(ctlr);
--	clk_disable_unprepare(sp->clk);
+-	clk_disable_unprepare(bs->clk);
  }
  
- static struct platform_driver ar934x_spi_driver = {
+ static const struct of_device_id bcm2835_spi_match[] = {
 -- 
 2.34.1
 
