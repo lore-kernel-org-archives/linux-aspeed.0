@@ -1,92 +1,357 @@
-From: Ninad Palsule <ninad@linux.vnet.ibm.com>
-Date: Wed, 23 Aug 2023 12:32:35 -0500
-Subject: [PATCH v1 1/1] soc/aspeed: Add host side BMC device driver
-In-Reply-To: <6cea8ee7-f845-6ef3-631f-3f252ff5e949@linux.vnet.ibm.com>
-References: <20230821183525.3427144-1-ninad@linux.ibm.com>
- <20230821183525.3427144-2-ninad@linux.ibm.com>
- <5159abb8-1b4c-4576-b370-4dd9db142beb@lunn.ch>
- <6cea8ee7-f845-6ef3-631f-3f252ff5e949@linux.vnet.ibm.com>
-Message-ID: <5c918888-6933-7661-45f0-32ae4521aa2c@linux.vnet.ibm.com>
+From: peteryin <peteryin.openbmc@gmail.com>
+Date: Fri, 25 Aug 2023 11:29:45 +0800
+Subject: [PATCH] Add Meta openBMC Minerva dts file.
+Message-ID: <20230825032945.1649050-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Andrew,
+This is for Meta openBMC Minerva dts.
 
-On 8/22/23 11:14 AM, Ninad Palsule wrote:
-> Hello Andrew,
->
-> Thanks for the review.
->
-> On 8/21/23 2:29 PM, Andrew Lunn wrote:
->>> Testing:
->>> ?? - This is tested on IBM rainier system with BMC. It requires BMC 
->>> side
->>> ???? BMC device driver which is available in the ASPEED's 5.15 SDK
->>> ???? kernel.
->> How relevant is that? To the host side, it just appears to be an
->> 16550A. Is the SDK emulating an 16550A? If you where to use a
->> different kernel, is it still guaranteed to be an 16550A? I also
->> notice there is a mainline
->> drivers/tty/serial/8250/8250_aspeed_vuart.c. Could that be used on the
->> BMC? That would be a better testing target than the vendor kernel.
->
-> This is just to indicate how I tested my code.
->
-> Yes, aspeed chip (in this case ast2600) is compatible with 16550 UART.
->
-> I am guessing it should work with different kernel too as 16550 
-> standard is used.
->
-> The 8250_aspeed_vuart.c is a BMC side driver for accessing VUART over 
-> LPC bus and
->
-> this is a host side driver to access VUART over PCIe bus.
->
->>> +config ASPEED_HOST_BMC_DEV
->>> +??? bool "ASPEED SoC Host BMC device driver"
->>> +??? default ARCH_ASPEED
->>> +??? select SOC_BUS
->>> +??? default ARCH_ASPEED
->> same default twice?
-> Removed.
->>
->>> +static int __init aspeed_host_bmc_device_init(void)
->>> +{
->>> +??? int ret;
->>> +
->>> +??? /* register pci driver */
->>> +??? ret = pci_register_driver(&aspeed_host_bmc_dev_driver);
->>> +??? if (ret < 0) {
->>> +??????? pr_err("pci-driver: can't register pci driver\n");
->>> +??????? return ret;
->>> +??? }
->>> +
->>> +??? return 0;
->>> +
->>> +}
->>> +
->>> +static void aspeed_host_bmc_device_exit(void)
->>> +{
->>> +??? /* unregister pci driver */
->>> +??? pci_unregister_driver(&aspeed_host_bmc_dev_driver);
->>> +}
->>> +
->>> +late_initcall(aspeed_host_bmc_device_init);
->>> +module_exit(aspeed_host_bmc_device_exit);
->> It looks like you can use module_pci_driver() ?
-> yes, It should work unless the late initcall is important. I will test 
-> it and see.
+Signed-off-by: peteryin <peteryin.openbmc@gmail.com>
+---
+ .../boot/dts/aspeed-bmc-facebook-minerva.dts  | 330 ++++++++++++++++++
+ 1 file changed, 330 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
 
-I will not be able to use module_pci_driver() as it doesn't support late 
-initcall which is required otherwise
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
+new file mode 100644
+index 000000000000..4fb9b5f72942
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
+@@ -0,0 +1,330 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2023 Facebook Inc.
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++
++/ {
++	model = "Facebook Minerva";
++	compatible = "facebook, minerva-bmc", "aspeed,ast2600";
++
++	aliases {
++		serial0 = &uart1;
++		serial4 = &uart5;
++	};
++
++	chosen {
++		bootargs = "console=ttyS4,57600n8";
++	};
++
++	memory at 80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
++
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
++			<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
++			<&adc1 2>;
++	};
++
++};
++
++// HOST BIOS Debug
++&uart1 {
++	status = "okay";
++};
++
++
++// SOL Host Console
++&uart2 {
++	status = "okay";
++	pinctrl-0 = <>;
++
++};
++
++// SOL BMC Console
++&uart4 {
++	status = "okay";
++	pinctrl-0 = <>;
++};
++
++// BMC Debug Console
++&uart5 {
++	status = "okay";
++};
++
++//MTIA
++&uart6 {
++	status = "okay";
++};
++
++&uart_routing {
++	status = "okay";
++};
++
++&vuart1 {
++	status = "okay";
++	virtual;
++	port=<0x3e8>;
++	sirq = <7>;
++	sirq-polarity = <0>;
++	dma-mode;
++	dma-channel = <12>;
++};
++
++&wdt1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdtrst1_default>;
++	aspeed,reset-type = "soc";
++	aspeed,external-signal;
++	aspeed,ext-push-pull;
++	aspeed,ext-active-high;
++	aspeed,ext-pulse-duration = <256>;
++};
++
++
++&mac3 {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii4_default>;
++	no-hw-checksum;
++	use-ncsi;
++	ncsi-ctrl,start-redo-probe;
++	ncsi-ctrl,no-channel-monitor;
++	mlx,multi-host;
++	ncsi-package = <1>;
++	ncsi-channel = <1>;
++	ncsi-rexmit = <1>;
++	ncsi-timeout = <2>;
++};
++
++&rtc {
++	status = "okay";
++};
++
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bmc";
++		spi-max-frequency = <50000000>;
++#include "openbmc-flash-layout-128.dtsi"
++	};
++	flash at 1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "alt-bmc";
++		spi-max-frequency = <50000000>;
++	};
++};
++
++
++//BIOS Flash
++&spi2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi2_default>;
++
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "pnor";
++		spi-max-frequency = <12000000>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
++	};
++};
++
++
++&kcs2 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xca8>;
++};
++
++&kcs3 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xca2>;
++};
++
++
++&lpc_snoop {
++	status = "okay";
++	snoop-ports = <0x80>;
++};
++
++&peci0 {
++	status = "okay";
++	clock-frequency = <1000000>;
++};
++
++&sgpiom0 {
++	status = "okay";
++	max-ngpios = <128>;
++	ngpios = <128>;
++	bus-frequency = <2000000>;
++	gpio-line-names =
++	/*in - out - in - out */
++	/*A0-A7*/   "","","","","","enable_sensors","","",
++	/*A0-A7*/   "","","","","","","","",
++	/*B0-B7*/   "","","","","","","","",
++	/*B0-B7*/   "","","","","","","","",
++	/*C0-C7*/   "","","","","","","","",
++	/*C0-C7*/   "","","","","","","","",
++	/*D0-D7*/   "","","","","","","","",
++	/*D0-D7*/   "","","","","","","","",
++	/*E0-E7*/   "","","","","","","","",
++	/*E0-E7*/   "","","","","","","","",
++	/*F0-F7*/   "","","","","","","","",
++	/*F0-F7*/   "","","","","","","","",
++	/*G0-G7*/   "","","","","","","","",
++	/*G0-G7*/   "","","","","","","","",
++	/*H0-H7*/   "","","","","","","","",
++	/*H0-H7*/   "","","","","","","","";
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++	tmp75 at 4B {
++		compatible = "ti,tmp75";
++		reg = <0x4B>;
++	};
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&i2c3 {
++	status = "okay";
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&i2c5 {
++	status = "okay";
++};
++
++&i2c6 {
++	status = "okay";
++};
++
++&i2c7 {
++	status = "okay";
++};
++
++&i2c8 {
++	status = "okay";
++};
++
++&i2c9 {
++	status = "okay";
++};
++
++&i2c11 {
++	status = "okay";
++};
++
++&i2c12 {
++	status = "okay";
++};
++
++&i2c13 {
++	status = "okay";
++};
++
++// To Debug card
++&i2c14 {
++	status = "okay";
++	multi-master;
++	aspeed,hw-timeout-ms = <1000>;
++};
++
++&i2c15 {
++	status = "okay";
++	// SCM FRU
++	eeprom at 50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++	// BSM FRU
++	eeprom at 56 {
++		compatible = "atmel,24c64";
++		reg = <0x56>;
++	};
++
++};
++
++&adc0 {
++	ref_voltage = <2500>;
++	status = "okay";
++
++	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
++		&pinctrl_adc2_default &pinctrl_adc3_default
++		&pinctrl_adc4_default &pinctrl_adc5_default
++		&pinctrl_adc6_default &pinctrl_adc7_default>;
++};
++
++&adc1 {
++	ref_voltage = <2500>;
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc10_default>;
++};
++
++&jtag1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_jtagm_default>;
++};
++
++&ehci1 {
++	status = "okay";
++};
++
++&gpio0 {
++	pinctrl-names = "default";
++	gpio-line-names =
++	/*A0-A7*/	"","","","","","","","",
++	/*B0-B7*/	"","","","","","","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"","","SOL_UART_SET","","","","","",
++	/*E0-E7*/	"","","","","","","","",
++	/*F0-F7*/	"","","","","","","","",
++	/*G0-G7*/	"","","","","","","","",
++	/*H0-H7*/	"","","","","","","","",
++	/*I0-I7*/	"","","","","","","","",
++	/*J0-J7*/	"","","","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","","","","","",
++	/*M0-M7*/	"","","","","","","","",
++	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
++			"LED_POSTCODE_2","LED_POSTCODE_3",
++			"LED_POSTCODE_4","LED_POSTCODE_5",
++			"LED_POSTCODE_6","LED_POSTCODE_7",
++	/*O0-O7*/	"","","","","","","","",
++	/*P0-P7*/	"","","","","","","","",
++	/*Q0-Q7*/	"","","","","","","","",
++	/*R0-R7*/	"","","","","","","","",
++	/*S0-S7*/	"","","","","","","","",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","","","",
++	/*V0-V7*/	"","","","","","","","",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","","","","","",
++	/*Y0-Y7*/	"","","","","","","","",
++	/*Z0-Z7*/	"","","","","","","","";
++};
++
+-- 
+2.25.1
 
-8250 registration fails. So I am not making this change.
-
->
-> Thanks & Regards,
->
-> Ninad Palsule
->
