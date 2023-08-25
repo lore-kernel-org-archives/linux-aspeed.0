@@ -1,357 +1,137 @@
-From: peteryin <peteryin.openbmc@gmail.com>
-Date: Fri, 25 Aug 2023 11:29:45 +0800
-Subject: [PATCH] Add Meta openBMC Minerva dts file.
-Message-ID: <20230825032945.1649050-1-peteryin.openbmc@gmail.com>
+From: Serge Semin <fancer.lancer@gmail.com>
+Date: Fri, 25 Aug 2023 21:01:44 +0300
+Subject: [PATCH -next v2 11/25] spi: dw-bt1: Use helper function
+ devm_clk_get_enabled()
+In-Reply-To: <20230823181344.000026bd@Huawei.com>
+References: <20230822131237.1022815-1-lizetao1@huawei.com>
+ <20230823133938.1359106-1-lizetao1@huawei.com>
+ <20230823133938.1359106-12-lizetao1@huawei.com>
+ <xxosi2ymo7otqyfbmjlubezzedqw6ulwwhdmbdjbto7yaqw673@q673weupq67y>
+ <20230823181344.000026bd@Huawei.com>
+Message-ID: <cgw2bpsh47p4vz3hectcwsz53dhmffpurufw2prxzg43ra2fpc@7xklvkozre6g>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is for Meta openBMC Minerva dts.
+On Wed, Aug 23, 2023 at 06:13:44PM +0100, Jonathan Cameron wrote:
+> On Wed, 23 Aug 2023 17:35:35 +0300
+> Serge Semin <fancer.lancer@gmail.com> wrote:
+> 
+> > On Wed, Aug 23, 2023 at 09:39:24PM +0800, Li Zetao wrote:
+> > > Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
+> > > and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
+> > > replaced by devm_clk_get_enabled() when driver enables (and possibly
+> > > prepares) the clocks for the whole lifetime of the device. Moreover, it is
+> > > no longer necessary to unprepare and disable the clocks explicitly.
+> > >   
+> > 
+> > > Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > > Acked-by: Serge Semin <fancer.lancer@gmail.com>
+> > > Signed-off-by: Li Zetao <lizetao1@huawei.com>  
+> > 
+> > Just for the record, the tags order is normally supposed to reflect a
+> > patch route. Even though AFAICS it's explicitly defined for the Sob
+> > tags only (see Documentation/process/submitting-patches.rst), but
+> > almost all kernel developers apply that rule to all the tags. See the
+> > kernel git log as the brightest example. So your Sob tag should have
+> > been kept first, then either my Ab or Jonathan' Rb tags.
+> 
 
-Signed-off-by: peteryin <peteryin.openbmc@gmail.com>
----
- .../boot/dts/aspeed-bmc-facebook-minerva.dts  | 330 ++++++++++++++++++
- 1 file changed, 330 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
+> There have been far too many discussions about this over the years.
+> There is an argument (I'm not saying I agree with it) that tags given
+> on an earlier version than the one posted should be before the SoB of
+> the author on basis that the SoB is occurring later (as it's on the new
+> version).  That is a slightly stronger argument if there are changes
+> to the patch, but then things get inconsistent between patches with minor
+> changes and those without. *sigh*
+> 
+> So this pattern is fairly common if a bit weird in my view :)
 
-diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
-new file mode 100644
-index 000000000000..4fb9b5f72942
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
-@@ -0,0 +1,330 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright (c) 2023 Facebook Inc.
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "Facebook Minerva";
-+	compatible = "facebook, minerva-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		serial0 = &uart1;
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		bootargs = "console=ttyS4,57600n8";
-+	};
-+
-+	memory at 80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x80000000>;
-+	};
-+
-+	iio-hwmon {
-+		compatible = "iio-hwmon";
-+		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
-+			<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
-+			<&adc1 2>;
-+	};
-+
-+};
-+
-+// HOST BIOS Debug
-+&uart1 {
-+	status = "okay";
-+};
-+
-+
-+// SOL Host Console
-+&uart2 {
-+	status = "okay";
-+	pinctrl-0 = <>;
-+
-+};
-+
-+// SOL BMC Console
-+&uart4 {
-+	status = "okay";
-+	pinctrl-0 = <>;
-+};
-+
-+// BMC Debug Console
-+&uart5 {
-+	status = "okay";
-+};
-+
-+//MTIA
-+&uart6 {
-+	status = "okay";
-+};
-+
-+&uart_routing {
-+	status = "okay";
-+};
-+
-+&vuart1 {
-+	status = "okay";
-+	virtual;
-+	port=<0x3e8>;
-+	sirq = <7>;
-+	sirq-polarity = <0>;
-+	dma-mode;
-+	dma-channel = <12>;
-+};
-+
-+&wdt1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-+	aspeed,reset-type = "soc";
-+	aspeed,external-signal;
-+	aspeed,ext-push-pull;
-+	aspeed,ext-active-high;
-+	aspeed,ext-pulse-duration = <256>;
-+};
-+
-+
-+&mac3 {
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rmii4_default>;
-+	no-hw-checksum;
-+	use-ncsi;
-+	ncsi-ctrl,start-redo-probe;
-+	ncsi-ctrl,no-channel-monitor;
-+	mlx,multi-host;
-+	ncsi-package = <1>;
-+	ncsi-channel = <1>;
-+	ncsi-rexmit = <1>;
-+	ncsi-timeout = <2>;
-+};
-+
-+&rtc {
-+	status = "okay";
-+};
-+
-+&fmc {
-+	status = "okay";
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-max-frequency = <50000000>;
-+#include "openbmc-flash-layout-128.dtsi"
-+	};
-+	flash at 1 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "alt-bmc";
-+		spi-max-frequency = <50000000>;
-+	};
-+};
-+
-+
-+//BIOS Flash
-+&spi2 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi2_default>;
-+
-+	flash at 0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "pnor";
-+		spi-max-frequency = <12000000>;
-+		spi-tx-bus-width = <2>;
-+		spi-rx-bus-width = <2>;
-+	};
-+};
-+
-+
-+&kcs2 {
-+	status = "okay";
-+	aspeed,lpc-io-reg = <0xca8>;
-+};
-+
-+&kcs3 {
-+	status = "okay";
-+	aspeed,lpc-io-reg = <0xca2>;
-+};
-+
-+
-+&lpc_snoop {
-+	status = "okay";
-+	snoop-ports = <0x80>;
-+};
-+
-+&peci0 {
-+	status = "okay";
-+	clock-frequency = <1000000>;
-+};
-+
-+&sgpiom0 {
-+	status = "okay";
-+	max-ngpios = <128>;
-+	ngpios = <128>;
-+	bus-frequency = <2000000>;
-+	gpio-line-names =
-+	/*in - out - in - out */
-+	/*A0-A7*/   "","","","","","enable_sensors","","",
-+	/*A0-A7*/   "","","","","","","","",
-+	/*B0-B7*/   "","","","","","","","",
-+	/*B0-B7*/   "","","","","","","","",
-+	/*C0-C7*/   "","","","","","","","",
-+	/*C0-C7*/   "","","","","","","","",
-+	/*D0-D7*/   "","","","","","","","",
-+	/*D0-D7*/   "","","","","","","","",
-+	/*E0-E7*/   "","","","","","","","",
-+	/*E0-E7*/   "","","","","","","","",
-+	/*F0-F7*/   "","","","","","","","",
-+	/*F0-F7*/   "","","","","","","","",
-+	/*G0-G7*/   "","","","","","","","",
-+	/*G0-G7*/   "","","","","","","","",
-+	/*H0-H7*/   "","","","","","","","",
-+	/*H0-H7*/   "","","","","","","","";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+};
-+
-+&i2c1 {
-+	status = "okay";
-+	tmp75 at 4B {
-+		compatible = "ti,tmp75";
-+		reg = <0x4B>;
-+	};
-+};
-+
-+&i2c2 {
-+	status = "okay";
-+};
-+
-+&i2c3 {
-+	status = "okay";
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+};
-+
-+&i2c5 {
-+	status = "okay";
-+};
-+
-+&i2c6 {
-+	status = "okay";
-+};
-+
-+&i2c7 {
-+	status = "okay";
-+};
-+
-+&i2c8 {
-+	status = "okay";
-+};
-+
-+&i2c9 {
-+	status = "okay";
-+};
-+
-+&i2c11 {
-+	status = "okay";
-+};
-+
-+&i2c12 {
-+	status = "okay";
-+};
-+
-+&i2c13 {
-+	status = "okay";
-+};
-+
-+// To Debug card
-+&i2c14 {
-+	status = "okay";
-+	multi-master;
-+	aspeed,hw-timeout-ms = <1000>;
-+};
-+
-+&i2c15 {
-+	status = "okay";
-+	// SCM FRU
-+	eeprom at 50 {
-+		compatible = "atmel,24c64";
-+		reg = <0x50>;
-+	};
-+	// BSM FRU
-+	eeprom at 56 {
-+		compatible = "atmel,24c64";
-+		reg = <0x56>;
-+	};
-+
-+};
-+
-+&adc0 {
-+	ref_voltage = <2500>;
-+	status = "okay";
-+
-+	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
-+		&pinctrl_adc2_default &pinctrl_adc3_default
-+		&pinctrl_adc4_default &pinctrl_adc5_default
-+		&pinctrl_adc6_default &pinctrl_adc7_default>;
-+};
-+
-+&adc1 {
-+	ref_voltage = <2500>;
-+	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_adc10_default>;
-+};
-+
-+&jtag1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_jtagm_default>;
-+};
-+
-+&ehci1 {
-+	status = "okay";
-+};
-+
-+&gpio0 {
-+	pinctrl-names = "default";
-+	gpio-line-names =
-+	/*A0-A7*/	"","","","","","","","",
-+	/*B0-B7*/	"","","","","","","","",
-+	/*C0-C7*/	"","","","","","","","",
-+	/*D0-D7*/	"","","SOL_UART_SET","","","","","",
-+	/*E0-E7*/	"","","","","","","","",
-+	/*F0-F7*/	"","","","","","","","",
-+	/*G0-G7*/	"","","","","","","","",
-+	/*H0-H7*/	"","","","","","","","",
-+	/*I0-I7*/	"","","","","","","","",
-+	/*J0-J7*/	"","","","","","","","",
-+	/*K0-K7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","","","","","",
-+	/*M0-M7*/	"","","","","","","","",
-+	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
-+			"LED_POSTCODE_2","LED_POSTCODE_3",
-+			"LED_POSTCODE_4","LED_POSTCODE_5",
-+			"LED_POSTCODE_6","LED_POSTCODE_7",
-+	/*O0-O7*/	"","","","","","","","",
-+	/*P0-P7*/	"","","","","","","","",
-+	/*Q0-Q7*/	"","","","","","","","",
-+	/*R0-R7*/	"","","","","","","","",
-+	/*S0-S7*/	"","","","","","","","",
-+	/*T0-T7*/	"","","","","","","","",
-+	/*U0-U7*/	"","","","","","","","",
-+	/*V0-V7*/	"","","","","","","","",
-+	/*W0-W7*/	"","","","","","","","",
-+	/*X0-X7*/	"","","","","","","","",
-+	/*Y0-Y7*/	"","","","","","","","",
-+	/*Z0-Z7*/	"","","","","","","","";
-+};
-+
--- 
-2.25.1
+Ah, I didn't know it was a holy-warring topic.) My judgement was based
+on the vast majority of commits in the kernel git log and on my
+experience in the patches review. Anyway in order not to raise it
+again let's consider my comment as a general note with no obligation
+towards the patch author.)
 
+-Serge(y)
+
+> 
+> Jonathan
+> 
+> > 
+> > -Serge(y)
+> > 
+> > > ---
+> > > v1 -> v2: None
+> > > 
+> > >  drivers/spi/spi-dw-bt1.c | 23 +++++------------------
+> > >  1 file changed, 5 insertions(+), 18 deletions(-)
+> > > 
+> > > diff --git a/drivers/spi/spi-dw-bt1.c b/drivers/spi/spi-dw-bt1.c
+> > > index 5e1c01822967..5391bcac305c 100644
+> > > --- a/drivers/spi/spi-dw-bt1.c
+> > > +++ b/drivers/spi/spi-dw-bt1.c
+> > > @@ -269,43 +269,32 @@ static int dw_spi_bt1_probe(struct platform_device *pdev)
+> > >  
+> > >  	dws->paddr = mem->start;
+> > >  
+> > > -	dwsbt1->clk = devm_clk_get(&pdev->dev, NULL);
+> > > +	dwsbt1->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+> > >  	if (IS_ERR(dwsbt1->clk))
+> > >  		return PTR_ERR(dwsbt1->clk);
+> > >  
+> > > -	ret = clk_prepare_enable(dwsbt1->clk);
+> > > -	if (ret)
+> > > -		return ret;
+> > > -
+> > >  	dws->bus_num = pdev->id;
+> > >  	dws->reg_io_width = 4;
+> > >  	dws->max_freq = clk_get_rate(dwsbt1->clk);
+> > > -	if (!dws->max_freq) {
+> > > -		ret = -EINVAL;
+> > > -		goto err_disable_clk;
+> > > -	}
+> > > +	if (!dws->max_freq)
+> > > +		return -EINVAL;
+> > >  
+> > >  	init_func = device_get_match_data(&pdev->dev);
+> > >  	ret = init_func(pdev, dwsbt1);
+> > >  	if (ret)
+> > > -		goto err_disable_clk;
+> > > +		return ret;
+> > >  
+> > >  	pm_runtime_enable(&pdev->dev);
+> > >  
+> > >  	ret = dw_spi_add_host(&pdev->dev, dws);
+> > >  	if (ret) {
+> > >  		pm_runtime_disable(&pdev->dev);
+> > > -		goto err_disable_clk;
+> > > +		return ret;
+> > >  	}
+> > >  
+> > >  	platform_set_drvdata(pdev, dwsbt1);
+> > >  
+> > >  	return 0;
+> > > -
+> > > -err_disable_clk:
+> > > -	clk_disable_unprepare(dwsbt1->clk);
+> > > -
+> > > -	return ret;
+> > >  }
+> > >  
+> > >  static void dw_spi_bt1_remove(struct platform_device *pdev)
+> > > @@ -315,8 +304,6 @@ static void dw_spi_bt1_remove(struct platform_device *pdev)
+> > >  	dw_spi_remove_host(&dwsbt1->dws);
+> > >  
+> > >  	pm_runtime_disable(&pdev->dev);
+> > > -
+> > > -	clk_disable_unprepare(dwsbt1->clk);
+> > >  }
+> > >  
+> > >  static const struct of_device_id dw_spi_bt1_of_match[] = {
+> > > -- 
+> > > 2.34.1
+> > >   
+> 
