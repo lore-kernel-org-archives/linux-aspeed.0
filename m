@@ -1,95 +1,48 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 25 Aug 2023 08:19:28 +0200
-Subject: [PATCH] Add Meta openBMC Minerva dts file.
-In-Reply-To: <20230825032945.1649050-1-peteryin.openbmc@gmail.com>
-References: <20230825032945.1649050-1-peteryin.openbmc@gmail.com>
-Message-ID: <fb09f5e6-8381-312f-2f1e-f2b471cec68a@linaro.org>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 25 Aug 2023 17:24:35 +0800
+Subject: [PATCH v11 0/2] ARM: dts: Facebook Yosemite 4 platform
+Message-ID: <20230825092438.2082402-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 25/08/2023 05:29, peteryin wrote:
-> This is for Meta openBMC Minerva dts.
-> 
-> Signed-off-by: peteryin <peteryin.openbmc@gmail.com>
-> ---
->  .../boot/dts/aspeed-bmc-facebook-minerva.dts  | 330 ++++++++++++++++++>  1 file changed, 330 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
-> new file mode 100644
-> index 000000000000..4fb9b5f72942
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
-> @@ -0,0 +1,330 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright (c) 2023 Facebook Inc.
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +
-> +/ {
-> +	model = "Facebook Minerva";
-> +	compatible = "facebook, minerva-bmc", "aspeed,ast2600";
+Add linux device tree entry related to
+Yosemite 4 specific devices connected to BMC SoC.
 
-Missing bindings and that's not correct compatible.
+Changelog:
+v11 - Add imux configs for i2c-mux
+    - Add gpio and eeprom devices
+    - Remove temperature-sensor 11-004a and 11-004b
+    - Change power-sensor ina230 to ina233
+v10 - Change to 128MB flash layout from 64MB
+ v9 - Remove mac2/mac3 duplicated setting about no-hw-checksum
+ v8 - Add description of Yosemite 4
+    - Remove unsupported ncsi config
+    - Revise i2c-mux config
+    - Correct power sensor i2c address
+    - Restore i2c 11 bus-frequency to default
+ v7 - Revise changelog format
+ v6 - Change project name from yosemitev4 to yosemite4
+ v5 - Revise rtc setting
+    - Remove duplicated multi-master setting
+ v4 - Resend with cover letter
+ v3 - Revise the bootargs to stdout-path
+    - Revise i2c devices
+ v2 - Revise the DTS node name
+ v1 - Add binding document
 
-> +
-> +	aliases {
-> +		serial0 = &uart1;
-> +		serial4 = &uart5;
-> +	};
-> +
-> +	chosen {
-> +		bootargs = "console=ttyS4,57600n8";
+Delphine CC Chiu (2):
+  dt-bindings: arm: aspeed: add Facebook Yosemite 4 board
+  ARM: dts: aspeed: yosemite4: add Facebook Yosemite 4 BMC
 
-Drop, use stdout path instead.
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1083 +++++++++++++++++
+ 3 files changed, 1085 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 
-> +	};
-> +
-
-...
-
-> +&gpio0 {
-> +	pinctrl-names = "default";
-> +	gpio-line-names =
-> +	/*A0-A7*/	"","","","","","","","",
-> +	/*B0-B7*/	"","","","","","","","",
-> +	/*C0-C7*/	"","","","","","","","",
-> +	/*D0-D7*/	"","","SOL_UART_SET","","","","","",
-> +	/*E0-E7*/	"","","","","","","","",
-> +	/*F0-F7*/	"","","","","","","","",
-> +	/*G0-G7*/	"","","","","","","","",
-> +	/*H0-H7*/	"","","","","","","","",
-> +	/*I0-I7*/	"","","","","","","","",
-> +	/*J0-J7*/	"","","","","","","","",
-> +	/*K0-K7*/	"","","","","","","","",
-> +	/*L0-L7*/	"","","","","","","","",
-> +	/*M0-M7*/	"","","","","","","","",
-> +	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
-> +			"LED_POSTCODE_2","LED_POSTCODE_3",
-> +			"LED_POSTCODE_4","LED_POSTCODE_5",
-> +			"LED_POSTCODE_6","LED_POSTCODE_7",
-> +	/*O0-O7*/	"","","","","","","","",
-> +	/*P0-P7*/	"","","","","","","","",
-> +	/*Q0-Q7*/	"","","","","","","","",
-> +	/*R0-R7*/	"","","","","","","","",
-> +	/*S0-S7*/	"","","","","","","","",
-> +	/*T0-T7*/	"","","","","","","","",
-> +	/*U0-U7*/	"","","","","","","","",
-> +	/*V0-V7*/	"","","","","","","","",
-> +	/*W0-W7*/	"","","","","","","","",
-> +	/*X0-X7*/	"","","","","","","","",
-> +	/*Y0-Y7*/	"","","","","","","","",
-> +	/*Z0-Z7*/	"","","","","","","","";
-> +};
-> +
-
-Stray blank line.
-
-Best regards,
-Krzysztof
+-- 
+2.25.1
 
