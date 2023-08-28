@@ -1,137 +1,100 @@
-From: Serge Semin <fancer.lancer@gmail.com>
-Date: Fri, 25 Aug 2023 21:01:44 +0300
-Subject: [PATCH -next v2 11/25] spi: dw-bt1: Use helper function
- devm_clk_get_enabled()
-In-Reply-To: <20230823181344.000026bd@Huawei.com>
-References: <20230822131237.1022815-1-lizetao1@huawei.com>
- <20230823133938.1359106-1-lizetao1@huawei.com>
- <20230823133938.1359106-12-lizetao1@huawei.com>
- <xxosi2ymo7otqyfbmjlubezzedqw6ulwwhdmbdjbto7yaqw673@q673weupq67y>
- <20230823181344.000026bd@Huawei.com>
-Message-ID: <cgw2bpsh47p4vz3hectcwsz53dhmffpurufw2prxzg43ra2fpc@7xklvkozre6g>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 28 Aug 2023 04:02:56 +0000
+Subject: [PATCH v7 1/2] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
+ Control
+In-Reply-To: <20230823131334.GA2059582-robh@kernel.org>
+References: <20230817120029.221484-1-billy_tsai@aspeedtech.com>
+ <20230817120029.221484-2-billy_tsai@aspeedtech.com>
+ <20230823131334.GA2059582-robh@kernel.org>
+Message-ID: <SG2PR06MB33659FFB0CBFFA55295E6A098B1DA@SG2PR06MB3365.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 23, 2023 at 06:13:44PM +0100, Jonathan Cameron wrote:
-> On Wed, 23 Aug 2023 17:35:35 +0300
-> Serge Semin <fancer.lancer@gmail.com> wrote:
-> 
-> > On Wed, Aug 23, 2023 at 09:39:24PM +0800, Li Zetao wrote:
-> > > Since commit 7ef9651e9792 ("clk: Provide new devm_clk helpers for prepared
-> > > and enabled clocks"), devm_clk_get() and clk_prepare_enable() can now be
-> > > replaced by devm_clk_get_enabled() when driver enables (and possibly
-> > > prepares) the clocks for the whole lifetime of the device. Moreover, it is
-> > > no longer necessary to unprepare and disable the clocks explicitly.
-> > >   
-> > 
-> > > Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> > > Acked-by: Serge Semin <fancer.lancer@gmail.com>
-> > > Signed-off-by: Li Zetao <lizetao1@huawei.com>  
-> > 
-> > Just for the record, the tags order is normally supposed to reflect a
-> > patch route. Even though AFAICS it's explicitly defined for the Sob
-> > tags only (see Documentation/process/submitting-patches.rst), but
-> > almost all kernel developers apply that rule to all the tags. See the
-> > kernel git log as the brightest example. So your Sob tag should have
-> > been kept first, then either my Ab or Jonathan' Rb tags.
-> 
+On Thu, Aug 17, 2023 at 08:00:28PM +0800, Billy Tsai wrote:
+>> Document the compatible for aspeed,ast2600-pwm-tach device, which can
+>> support upto 16 PWM outputs and 16 fan tach input.
+>>
+>> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+>> ---
+>>  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 57 +++++++++++++++++++
+>>  1 file changed, 57 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+>> new file mode 100644
+>> index 000000000000..1666304d0b0f
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+>> @@ -0,0 +1,57 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +# Copyright (C) 2021 Aspeed, Inc.
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: ASPEED G6 PWM and Fan Tach controller device driver
+>> +
+>> +maintainers:
+>> +  - Billy Tsai <billy_tsai@aspeedtech.com>
+>> +
+>> +description: |
+>> +  The ASPEED PWM controller can support upto 16 PWM outputs.
+>> +  The ASPEED Fan Tacho controller can support upto 16 fan tach input.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - aspeed,ast2600-pwm-tach
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  clocks:
+>> +    maxItems: 1
+>> +
+>> +  resets:
+>> +    maxItems: 1
+>> +
+>> +  "#pwm-cells":
+>> +    const: 3
+>> +
+>> +  aspeed,fan-tach-ch:
+>> +    description: Specify the Fan tach input channels.
+>> +    $ref: "/schemas/types.yaml#/definitions/uint8-array"
 
-> There have been far too many discussions about this over the years.
-> There is an argument (I'm not saying I agree with it) that tags given
-> on an earlier version than the one posted should be before the SoB of
-> the author on basis that the SoB is occurring later (as it's on the new
-> version).  That is a slightly stronger argument if there are changes
-> to the patch, but then things get inconsistent between patches with minor
-> changes and those without. *sigh*
-> 
-> So this pattern is fairly common if a bit weird in my view :)
+>This property is already defined in aspeed-pwm-tacho.txt as a single u8
+>that goes in a fan node. You can't redefine its type and location here.
 
-Ah, I didn't know it was a holy-warring topic.) My judgement was based
-on the vast majority of commits in the kernel git log and on my
-experience in the patches review. Anyway in order not to raise it
-again let's consider my comment as a general note with no obligation
-towards the patch author.)
+Hi Rob,
 
--Serge(y)
+I didn't redefine the type of property. The type of the aspeed,fan-tach-ch is unit8-array
+in aspeed-pwm-tacho.txt.
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt#L48
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt#L71
 
-> 
-> Jonathan
-> 
-> > 
-> > -Serge(y)
-> > 
-> > > ---
-> > > v1 -> v2: None
-> > > 
-> > >  drivers/spi/spi-dw-bt1.c | 23 +++++------------------
-> > >  1 file changed, 5 insertions(+), 18 deletions(-)
-> > > 
-> > > diff --git a/drivers/spi/spi-dw-bt1.c b/drivers/spi/spi-dw-bt1.c
-> > > index 5e1c01822967..5391bcac305c 100644
-> > > --- a/drivers/spi/spi-dw-bt1.c
-> > > +++ b/drivers/spi/spi-dw-bt1.c
-> > > @@ -269,43 +269,32 @@ static int dw_spi_bt1_probe(struct platform_device *pdev)
-> > >  
-> > >  	dws->paddr = mem->start;
-> > >  
-> > > -	dwsbt1->clk = devm_clk_get(&pdev->dev, NULL);
-> > > +	dwsbt1->clk = devm_clk_get_enabled(&pdev->dev, NULL);
-> > >  	if (IS_ERR(dwsbt1->clk))
-> > >  		return PTR_ERR(dwsbt1->clk);
-> > >  
-> > > -	ret = clk_prepare_enable(dwsbt1->clk);
-> > > -	if (ret)
-> > > -		return ret;
-> > > -
-> > >  	dws->bus_num = pdev->id;
-> > >  	dws->reg_io_width = 4;
-> > >  	dws->max_freq = clk_get_rate(dwsbt1->clk);
-> > > -	if (!dws->max_freq) {
-> > > -		ret = -EINVAL;
-> > > -		goto err_disable_clk;
-> > > -	}
-> > > +	if (!dws->max_freq)
-> > > +		return -EINVAL;
-> > >  
-> > >  	init_func = device_get_match_data(&pdev->dev);
-> > >  	ret = init_func(pdev, dwsbt1);
-> > >  	if (ret)
-> > > -		goto err_disable_clk;
-> > > +		return ret;
-> > >  
-> > >  	pm_runtime_enable(&pdev->dev);
-> > >  
-> > >  	ret = dw_spi_add_host(&pdev->dev, dws);
-> > >  	if (ret) {
-> > >  		pm_runtime_disable(&pdev->dev);
-> > > -		goto err_disable_clk;
-> > > +		return ret;
-> > >  	}
-> > >  
-> > >  	platform_set_drvdata(pdev, dwsbt1);
-> > >  
-> > >  	return 0;
-> > > -
-> > > -err_disable_clk:
-> > > -	clk_disable_unprepare(dwsbt1->clk);
-> > > -
-> > > -	return ret;
-> > >  }
-> > >  
-> > >  static void dw_spi_bt1_remove(struct platform_device *pdev)
-> > > @@ -315,8 +304,6 @@ static void dw_spi_bt1_remove(struct platform_device *pdev)
-> > >  	dw_spi_remove_host(&dwsbt1->dws);
-> > >  
-> > >  	pm_runtime_disable(&pdev->dev);
-> > > -
-> > > -	clk_disable_unprepare(dwsbt1->clk);
-> > >  }
-> > >  
-> > >  static const struct of_device_id dw_spi_bt1_of_match[] = {
-> > > -- 
-> > > 2.34.1
-> > >   
-> 
+>To repeat what I've said in previous versions, work with others to
+>define a common fan and fan controller binding. Otherwise, anything new
+>with fan related properties is simply going to be rejected.
+
+Okay I will try to work with Naresh for defining a common fan binding.
+
+Thanks for your suggestion.
+
+Hi Naresh,
+
+As Rob mentioned, it would be advisable for my dt-bindings to reference the common fan bindings instead of introducing specific properties.
+I noticed that you have already submitted a related patch to the community, which seems to be pending for around 10 months.
+https://lore.kernel.org/lkml/20221116213615.1256297-2-Naresh.Solanki at 9elements.com/
+Do you have plans to send the next version of the patch? Alternatively, can I proceed to cherry-pick this version of the patch and continue with
+the upstreaming process in my patch serial?
+
+Thanks
+Best Regards,
+Billy Tsai
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230828/97f9a230/attachment.htm>
