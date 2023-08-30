@@ -1,186 +1,457 @@
-From: Naresh Solanki <naresh.solanki@9elements.com>
-Date: Mon, 28 Aug 2023 13:23:33 +0530
-Subject: [PATCH v7 1/2] dt-bindings: hwmon: Support Aspeed g6 PWM TACH Control
-In-Reply-To: <SG2PR06MB33659FFB0CBFFA55295E6A098B1DA@SG2PR06MB3365.apcprd06.prod.outlook.com>
-References: <20230817120029.221484-1-billy_tsai@aspeedtech.com>
- <20230817120029.221484-2-billy_tsai@aspeedtech.com> <20230823131334.GA2059582-robh@kernel.org>
- <SG2PR06MB33659FFB0CBFFA55295E6A098B1DA@SG2PR06MB3365.apcprd06.prod.outlook.com>
-Message-ID: <CABqG17g-s4h810JO-MO_TRRJhPkP=RMLDm7Jq6Sx4Gm1hRKqLg@mail.gmail.com>
+From: peteryin <peteryin.openbmc@gmail.com>
+Date: Wed, 30 Aug 2023 10:51:33 +0800
+Subject: [PATCH v3 1/1] ARM: dts: aspeed: Minerva: Add Facebook Minerva (AST2600) BMC
+Message-ID: <20230830025133.3756506-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy,
+Add linux device tree entry related to
+Minerva specific devices connected to BMC SoC.
 
+Signed-off-by: peteryin <peteryin.openbmc@gmail.com>
+---
+v1 link : https://lore.kernel.org/all/fb09f5e6-8381-312f-2f1e-f2b471cec68a at linaro.org/
+v2 link : https://lore.kernel.org/lkml/9f499fe5-db59-f4c8-6a50-93725b7287fd at linaro.org/
 
-On Mon, 28 Aug 2023 at 09:33, Billy Tsai <billy_tsai@aspeedtech.com> wrote:
->
-> On Thu, Aug 17, 2023 at 08:00:28PM +0800, Billy Tsai wrote:
->
-> >> Document the compatible for aspeed,ast2600-pwm-tach device, which can
->
-> >> support upto 16 PWM outputs and 16 fan tach input.
->
-> >>
->
-> >> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
->
-> >> ---
->
-> >>  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 57 +++++++++++++++++++
->
-> >>  1 file changed, 57 insertions(+)
->
-> >>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
->
-> >>
->
-> >> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
->
-> >> new file mode 100644
->
-> >> index 000000000000..1666304d0b0f
->
-> >> --- /dev/null
->
-> >> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
->
-> >> @@ -0,0 +1,57 @@
->
-> >> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->
-> >> +# Copyright (C) 2021 Aspeed, Inc.
->
-> >> +%YAML 1.2
->
-> >> +---
->
-> >> +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
->
-> >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->
-> >> +
->
-> >> +title: ASPEED G6 PWM and Fan Tach controller device driver
->
-> >> +
->
-> >> +maintainers:
->
-> >> +  - Billy Tsai <billy_tsai@aspeedtech.com>
->
-> >> +
->
-> >> +description: |
->
-> >> +  The ASPEED PWM controller can support upto 16 PWM outputs.
->
-> >> +  The ASPEED Fan Tacho controller can support upto 16 fan tach input.
->
-> >> +
->
-> >> +properties:
->
-> >> +  compatible:
->
-> >> +    enum:
->
-> >> +      - aspeed,ast2600-pwm-tach
->
-> >> +
->
-> >> +  reg:
->
-> >> +    maxItems: 1
->
-> >> +
->
-> >> +  clocks:
->
-> >> +    maxItems: 1
->
-> >> +
->
-> >> +  resets:
->
-> >> +    maxItems: 1
->
-> >> +
->
-> >> +  "#pwm-cells":
->
-> >> +    const: 3
->
-> >> +
->
-> >> +  aspeed,fan-tach-ch:
->
-> >> +    description: Specify the Fan tach input channels.
->
-> >> +    $ref: "/schemas/types.yaml#/definitions/uint8-array"
->
->
->
-> >This property is already defined in aspeed-pwm-tacho.txt as a single u8
->
-> >that goes in a fan node. You can't redefine its type and location here.
->
->
->
-> Hi Rob,
->
->
->
-> I didn't redefine the type of property. The type of the aspeed,fan-tach-ch is unit8-array
->
-> in aspeed-pwm-tacho.txt.
->
-> https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt#L48
->
-> https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt#L71
->
->
->
-> >To repeat what I've said in previous versions, work with others to
->
-> >define a common fan and fan controller binding. Otherwise, anything new
->
-> >with fan related properties is simply going to be rejected.
->
->
->
-> Okay I will try to work with Naresh for defining a common fan binding.
->
->
->
-> Thanks for your suggestion.
->
->
->
-> Hi Naresh,
->
->
->
-> As Rob mentioned, it would be advisable for my dt-bindings to reference the common fan bindings instead of introducing specific properties.
->
-> I noticed that you have already submitted a related patch to the community, which seems to be pending for around 10 months.
->
-> https://lore.kernel.org/lkml/20221116213615.1256297-2-Naresh.Solanki at 9elements.com/
->
-> Do you have plans to send the next version of the patch? Alternatively, can I proceed to cherry-pick this version of the patch and continue with
->
-> the upstreaming process in my patch serial?
-Sure, go ahead.
+Change log:
 
-Regards,
-Naresh
->
->
->
-> Thanks
->
-> Best Regards,
->
-> Billy Tsai
+v3:
+    1.Fixed commit description.
+    2.Add sgpio line name to sgpioP.
+    3.Add ipmb debug card bus.
+
+v2:
+    1.Add facebook,minerva-bmc in aspeed.yaml
+    2.Use stdout-path
+    3.Add Makefile
+
+v1:
+    1. Create minerva dts file.
+
+---
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/Makefile                    |   1 +
+ .../boot/dts/aspeed-bmc-facebook-minerva.dts  | 384 ++++++++++++++++++
+ 3 files changed, 386 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
+
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index fb4ce5df2fa0..9d1b26e7ca6b 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+               - facebook,greatlakes-bmc
++              - facebook,minerva-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
+               - ibm,tacoma-bmc
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index 6a897ff40ff0..e7c00905a08b 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -1603,6 +1603,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-facebook-wedge400.dtb \
+ 	aspeed-bmc-facebook-yamp.dtb \
+ 	aspeed-bmc-facebook-yosemitev2.dtb \
++	aspeed-bmc-facebook-minerva.dtb \
+ 	aspeed-bmc-ibm-bonnell.dtb \
+ 	aspeed-bmc-ibm-everest.dtb \
+ 	aspeed-bmc-ibm-rainier.dtb \
+diff --git a/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
+new file mode 100644
+index 000000000000..2798ba02abd2
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed-bmc-facebook-minerva.dts
+@@ -0,0 +1,384 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2023 Facebook Inc.
++/dts-v1/;
++
++#include "aspeed-g6.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++
++/ {
++	model = "Facebook Minerva";
++	compatible = "facebook,minerva-bmc", "aspeed,ast2600";
++
++	aliases {
++		serial0 = &uart1;
++		serial4 = &uart5;
++	};
++
++	chosen {
++		stdout-path = &uart5;
++	};
++
++	memory at 80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
++
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
++			<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
++			<&adc1 2>;
++	};
++
++};
++
++// HOST BIOS Debug
++&uart1 {
++	status = "okay";
++};
++
++
++// SOL Host Console
++&uart2 {
++	status = "okay";
++	pinctrl-0 = <>;
++
++};
++
++// SOL BMC Console
++&uart4 {
++	status = "okay";
++	pinctrl-0 = <>;
++};
++
++// BMC Debug Console
++&uart5 {
++	status = "okay";
++};
++
++//MTIA
++&uart6 {
++	status = "okay";
++};
++
++&uart_routing {
++	status = "okay";
++};
++
++&vuart1 {
++	status = "okay";
++	virtual;
++	port=<0x3e8>;
++	sirq = <7>;
++	sirq-polarity = <0>;
++	dma-mode;
++	dma-channel = <12>;
++};
++
++&wdt1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdtrst1_default>;
++	aspeed,reset-type = "soc";
++	aspeed,external-signal;
++	aspeed,ext-push-pull;
++	aspeed,ext-active-high;
++	aspeed,ext-pulse-duration = <256>;
++};
++
++
++&mac3 {
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_rmii4_default>;
++	no-hw-checksum;
++	use-ncsi;
++	ncsi-ctrl,start-redo-probe;
++	ncsi-ctrl,no-channel-monitor;
++	mlx,multi-host;
++	ncsi-package = <1>;
++	ncsi-channel = <1>;
++	ncsi-rexmit = <1>;
++	ncsi-timeout = <2>;
++};
++
++&rtc {
++	status = "okay";
++};
++
++&fmc {
++	status = "okay";
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bmc";
++		spi-max-frequency = <50000000>;
++#include "openbmc-flash-layout-128.dtsi"
++	};
++	flash at 1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "alt-bmc";
++		spi-max-frequency = <50000000>;
++	};
++};
++
++
++//BIOS Flash
++&spi2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_spi2_default>;
++
++	flash at 0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "pnor";
++		spi-max-frequency = <12000000>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
++	};
++};
++
++
++&kcs2 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xca8>;
++};
++
++&kcs3 {
++	status = "okay";
++	aspeed,lpc-io-reg = <0xca2>;
++};
++
++
++&lpc_snoop {
++	status = "okay";
++	snoop-ports = <0x80>;
++};
++
++&peci0 {
++	status = "okay";
++	clock-frequency = <1000000>;
++};
++
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c1 {
++	status = "okay";
++	tmp75 at 4B {
++		compatible = "ti,tmp75";
++		reg = <0x4B>;
++	};
++};
++
++&i2c2 {
++	status = "okay";
++};
++
++&i2c3 {
++	status = "okay";
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&i2c5 {
++	status = "okay";
++};
++
++&i2c6 {
++	status = "okay";
++};
++
++&i2c7 {
++	status = "okay";
++};
++
++&i2c8 {
++	status = "okay";
++};
++
++&i2c9 {
++	status = "okay";
++};
++
++&i2c11 {
++	status = "okay";
++};
++
++&i2c12 {
++	status = "okay";
++};
++
++&i2c13 {
++	status = "okay";
++};
++
++// To Debug card
++&i2c14 {
++	status = "okay";
++	multi-master;
++
++	ipmb at 10 {
++		compatible = "ipmb-dev";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++		i2c-protocol;
++	};
++};
++
++&i2c15 {
++	status = "okay";
++	// SCM FRU
++	eeprom at 50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++	// BSM FRU
++	eeprom at 56 {
++		compatible = "atmel,24c64";
++		reg = <0x56>;
++	};
++};
++
++&adc0 {
++	ref_voltage = <2500>;
++	status = "okay";
++
++	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
++		&pinctrl_adc2_default &pinctrl_adc3_default
++		&pinctrl_adc4_default &pinctrl_adc5_default
++		&pinctrl_adc6_default &pinctrl_adc7_default>;
++};
++
++&adc1 {
++	ref_voltage = <2500>;
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc10_default>;
++};
++
++&jtag1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_jtagm_default>;
++};
++
++&ehci1 {
++	status = "okay";
++};
++
++&gpio0 {
++	pinctrl-names = "default";
++	gpio-line-names =
++	/*A0-A7*/	"","","","","","","","",
++	/*B0-B7*/	"","","","","","FM_ID_LED_N","","",
++	/*C0-C7*/	"","","","","","","","",
++	/*D0-D7*/	"","","SOL_UART_SET","","","","","",
++	/*E0-E7*/	"","","","","","","","",
++	/*F0-F7*/	"","","","","","","","",
++	/*G0-G7*/	"","","","","","","","",
++	/*H0-H7*/	"","","","","","","","",
++	/*I0-I7*/	"","","","","","","","",
++	/*J0-J7*/	"","","","","","","","",
++	/*K0-K7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","","","","","",
++	/*M0-M7*/	"","","","","","","","",
++	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
++			"LED_POSTCODE_2","LED_POSTCODE_3",
++			"LED_POSTCODE_4","LED_POSTCODE_5",
++			"LED_POSTCODE_6","LED_POSTCODE_7",
++	/*O0-O7*/	"","","","","","","","",
++	/*P0-P7*/	"FP_SYS_PWRBTN_IN_N","BMC_SYS_PWRBTN_OUT_N",
++			"FP_RST_BTN_IN_N","","","","","",
++	/*Q0-Q7*/	"","","","","","","","",
++	/*R0-R7*/	"","","","","","","","",
++	/*S0-S7*/	"","","","","","","","",
++	/*T0-T7*/	"","","","","","","","",
++	/*U0-U7*/	"","","","","","","","",
++	/*V0-V7*/	"","","","","","","","",
++	/*W0-W7*/	"","","","","","","","",
++	/*X0-X7*/	"","","","","","","","",
++	/*Y0-Y7*/	"","","","","","","","",
++	/*Z0-Z7*/	"","","","","","","","";
++};
++
++&sgpiom0 {
++	status = "okay";
++	max-ngpios = <128>;
++	ngpios = <128>;
++	bus-frequency = <2000000>;
++	gpio-line-names =
++	/*in - out - in - out */
++	/*A0-A3 line 0-7*/
++	"","","","","","ENABLE_SENSORS","","",
++	/*A4-A7 line 8-15*/
++	"","","","","","","","",
++	/*B0-B3 line 16-23*/
++	"","","","","","BMC_RST_BTN_OUT_N","","",
++	/*B4-B7 line 24-31*/
++	"","","","","","","","",
++	/*C0-C3 line 32-39*/
++	"","","","","","","","",
++	/*C4-C7 line 40-47*/
++	"","","","","","","","",
++	/*D0-D3 line 48-55*/
++	"","","","","","","","",
++	/*D4-D7 line 56-63*/
++	"","","","","","","","",
++	/*E0-E3 line 64-71*/
++	"","","","","","","","",
++	/*E4-E7 line 72-79*/
++	"","","","","","","","",
++	/*F0-F3 line 80-87*/
++	"","","","","","","","",
++	/*F4-F7 line 88-95*/
++	"","","","","","","","",
++	/*G0-G3 line 96-103*/
++	"","","","","","","","",
++	/*G4-G7 line 104-111*/
++	"","","","","","","","",
++	/*H0-H3 line 112-119*/
++	"","","","","PLD_SYS_POWER_GOOD","","","",
++	/*H4-H7 line 120-127*/
++	"","","","","","","","",
++	/*I0-I3 line 128-135*/
++	"","","","","","","","",
++	/*I4-I7 line 136-143*/
++	"","","","","","","","",
++	/*J0-J3 line 144-151*/
++	"","","PLD_BIOS_POST_CMPLT_N","","","","","",
++	/*J4-J7 line 152-159*/
++	"","","","","","","","",
++	/*K0-K3 line 160-167*/
++	"","","","","","","","",
++	/*K4-K7 line 168-175*/
++	"","","","","","","","",
++	/*L0-L3 line 176-183*/
++	"","","","","","","","",
++	/*L4-L7 line 184-191*/
++	"","","","","","","","",
++	/*M0-M3 line 192-199*/
++	"","","","","","","","",
++	/*M4-M7 line 200-207*/
++	"","","","","","","","",
++	/*N0-N3 line 208-215*/
++	"","","","","","","","",
++	/*N4-N7 line 216-223*/
++	"","","","","","","","",
++	/*O0-O3 line 224-231*/
++	"","","","","","","","",
++	/*O4-O7 line 232-239*/
++	"","","","","","","","",
++	/*P0-P3 line 240-247*/
++	"","","","","","","","",
++	/*P4-P7 line 248-255*/
++	"","","","","","","","";
++};
++
+-- 
+2.25.1
+
