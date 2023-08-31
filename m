@@ -1,51 +1,82 @@
-From: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Date: Wed, 29 Aug 2018 21:52:57 -0300
-Subject: [PATCH 4/4] media: platform: Add Aspeed Video Engine driver
-In-Reply-To: <1535576973-8067-5-git-send-email-eajames@linux.vnet.ibm.com>
-References: <1535576973-8067-1-git-send-email-eajames@linux.vnet.ibm.com>
- <1535576973-8067-5-git-send-email-eajames@linux.vnet.ibm.com>
-Message-ID: <CAAEAJfBpmFPLTMAr+Azc-53JXHPkCU4bjtwqE6nDWUvm=J_x-A@mail.gmail.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Thu, 31 Aug 2023 17:18:26 +0300
+Subject: [PATCH v12 2/2] i2c: aspeed: support ast2600 i2c new register
+ mode driver
+In-Reply-To: <SEZPR06MB5269A43F801EF04F39461174F2E5A@SEZPR06MB5269.apcprd06.prod.outlook.com>
+References: <20230714074522.23827-1-ryan_chen@aspeedtech.com>
+ <20230714074522.23827-3-ryan_chen@aspeedtech.com>
+ <ZLENe5B3gi/oNTQp@smile.fi.intel.com>
+ <SEZPR06MB5269A43F801EF04F39461174F2E5A@SEZPR06MB5269.apcprd06.prod.outlook.com>
+Message-ID: <ZPChMrsKrOQppY1F@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Eddie,
+On Thu, Aug 31, 2023 at 06:04:30AM +0000, Ryan Chen wrote:
+> > On Fri, Jul 14, 2023 at 03:45:22PM +0800, Ryan Chen wrote:
 
-On 29 August 2018 at 18:09, Eddie James <eajames@linux.vnet.ibm.com> wrote:
-> The Video Engine (VE) embedded in the Aspeed AST2400 and AST2500 SOCs
-> can capture and compress video data from digital or analog sources. With
-> the Aspeed chip acting a service processor, the Video Engine can capture
-> the host processor graphics output.
->
-> Add a V4L2 driver to capture video data and compress it to JPEG images,
-> making the data available through a standard read interface.
->
-> Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
-> ---
->  drivers/media/platform/Kconfig        |    8 +
->  drivers/media/platform/Makefile       |    1 +
->  drivers/media/platform/aspeed-video.c | 1307 +++++++++++++++++++++++++++++++++
->  3 files changed, 1316 insertions(+)
->  create mode 100644 drivers/media/platform/aspeed-video.c
->
-> diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
-> index 94c1fe0..e599245 100644
-> --- a/drivers/media/platform/Kconfig
-> +++ b/drivers/media/platform/Kconfig
-> @@ -32,6 +32,14 @@ source "drivers/media/platform/davinci/Kconfig"
->
->  source "drivers/media/platform/omap/Kconfig"
->
-> +config VIDEO_ASPEED
-> +       tristate "Aspeed AST2400 and AST2500 Video Engine driver"
-> +       depends on VIDEO_V4L2
+Stop overquoting! Remove the context you are not answering to.
 
-It seems you are not using videobuf2. I think it should simplify the read
-I/O part and at the same time expose the other capture methods.
+...
 
-There are plenty of examples to follow.
+> > > +				if (--i % 4 != 3)
+> > > +					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
+> > > +				writel(AST2600_I2CC_SET_TX_BUF_LEN(xfer_len),
+> > > +				       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
+> > 
+> > Wrong memory accessors. You should use something from asm/byteorder.h
+> > which includes linux/byteorder/generic.h.
+> > 
+> 
+> Are you preferring add comment to explain more by following?
+> 				/*
+> 				 * The controller's buffer register supports dword writes only.
+> 				 * Therefore, write dwords to the buffer register in a 4-byte aligned,
+> 				 * and write the remaining unaligned data at the end.
+> 				 */
 
-Regards,
-Eze
+This does not explain endianess bug (or feature) it has.
+You are using CPU side byteorder for the aligned data.
+This is not okay, on top of the code looking ugly and
+prone to errors. Note, that somebody may refer to your
+code, once accepted, in educational purposes, but since
+the code is not good written, it makes a false positive
+impression that this is the right thing to do in the similar
+case elsewhere.
+
+Please, fix this.
+
+> 				for (i = 0; i < xfer_len; i++) {
+> 					wbuf[i % 4] = msg->buf[i2c_bus->master_xfer_cnt + i];
+> 					/* accumulating 4 bytes of data, write as a Dword to the buffer register */
+> 					if (i % 4 == 3)
+> 						writel(*(u32 *)wbuf, i2c_bus->buf_base + i - 3);
+> 				}
+> 				/* less than 4 bytes of remaining data, write the remaining part as a Dword */
+> 				if (--i % 4 != 3)
+> 					writel(*(u32 *)wbuf, i2c_bus->buf_base + i - (i % 4));
+> 				writel(AST2600_I2CC_SET_TX_BUF_LEN(xfer_len),
+> 				       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
+> 
+> Or more columns (use get_unaligned_le32(wbuf); ) by following.
+> 
+> 	for (i = 0; i < xfer_len; i++) {
+> 		wbuf[i % 4] = msg->buf[i2c_bus->master_xfer_cnt + i];
+> 		if (i % 4 == 3) {
+> 			wbuf_dword = get_unaligned_le32(wbuf);
+> 			writel(wbuf_dword, i2c_bus->buf_base + i - 3);
+> 		}
+> 	}
+> 
+> 	if (--i % 4 != 3) {
+> 		wbuf_dword = get_unaligned_le32(wbuf);
+> 		writel(wbuf_dword, i2c_bus->buf_base + i - (i % 4));
+> 	}
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
