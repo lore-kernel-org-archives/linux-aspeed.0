@@ -1,199 +1,296 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 2 Sep 2023 04:42:33 +0800
-Subject: [PATCH v2 1/1] soc/aspeed: Add host side BMC device driver
-In-Reply-To: <20230823173104.3219128-2-ninad@linux.ibm.com>
-References: <20230823173104.3219128-2-ninad@linux.ibm.com>
-Message-ID: <202309020400.PQMeauEC-lkp@intel.com>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Fri,  1 Sep 2023 16:39:56 -0700
+Subject: [RFT PATCH 5/6] drm: Call drm_atomic_helper_shutdown() at shutdown/remove time for misc drivers
+In-Reply-To: <20230901234015.566018-1-dianders@chromium.org>
+References: <20230901234015.566018-1-dianders@chromium.org>
+Message-ID: <20230901163944.RFT.5.I771eb4bd03d8772b19e7dcfaef3e2c167bce5846@changeid>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ninad,
+Based on grepping through the source code these drivers appear to be
+missing a call to drm_atomic_helper_shutdown() at system shutdown time
+and at driver remove (or unbind) time. Among other things, this means
+that if a panel is in use that it won't be cleanly powered off at
+system shutdown time.
 
-kernel test robot noticed the following build errors:
+The fact that we should call drm_atomic_helper_shutdown() in the case
+of OS shutdown/restart and at driver remove (or unbind) time comes
+straight out of the kernel doc "driver instance overview" in
+drm_drv.c.
 
-[auto build test ERROR on soc/for-next]
-[also build test ERROR on linus/master v6.5 next-20230831]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+A few notes about these fixes:
+- I confirmed that these drivers were all DRIVER_MODESET type drivers,
+  which I believe makes this relevant.
+- I confirmed that these drivers were all DRIVER_ATOMIC.
+- When adding drm_atomic_helper_shutdown() to the remove/unbind path,
+  I added it after drm_kms_helper_poll_fini() when the driver had
+  it. This seemed to be what other drivers did. If
+  drm_kms_helper_poll_fini() wasn't there I added it straight after
+  drm_dev_unregister().
+- This patch deals with drivers using the component model in similar
+  ways as the patch ("drm: Call drm_atomic_helper_shutdown() at
+  shutdown time for misc drivers")
+- These fixes rely on the patch ("drm/atomic-helper:
+  drm_atomic_helper_shutdown(NULL) should be a noop") to simplify
+  shutdown.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Ninad-Palsule/soc-aspeed-Add-host-side-BMC-device-driver/20230824-013703
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git for-next
-patch link:    https://lore.kernel.org/r/20230823173104.3219128-2-ninad%40linux.ibm.com
-patch subject: [PATCH v2 1/1] soc/aspeed: Add host side BMC device driver
-config: m68k-randconfig-r004-20230902 (https://download.01.org/0day-ci/archive/20230902/202309020400.PQMeauEC-lkp at intel.com/config)
-compiler: m68k-linux-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230902/202309020400.PQMeauEC-lkp at intel.com/reproduce)
+Suggested-by: Maxime Ripard <mripard@kernel.org>
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
+---
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202309020400.PQMeauEC-lkp at intel.com/
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c |  7 +++++++
+ drivers/gpu/drm/mgag200/mgag200_drv.c   |  8 ++++++++
+ drivers/gpu/drm/pl111/pl111_drv.c       |  7 +++++++
+ drivers/gpu/drm/stm/drv.c               |  7 +++++++
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c     | 11 ++++++++++-
+ drivers/gpu/drm/tve200/tve200_drv.c     |  7 +++++++
+ drivers/gpu/drm/vboxvideo/vbox_drv.c    | 10 ++++++++++
+ 7 files changed, 56 insertions(+), 1 deletion(-)
 
-All errors (new ones prefixed by >>):
-
-   drivers/soc/aspeed/aspeed-host-bmc-dev.c: In function 'aspeed_pci_host_bmc_device_probe':
->> drivers/soc/aspeed/aspeed-host-bmc-dev.c:98:22: error: implicit declaration of function 'pci_request_region'; did you mean 'pci_request_regions'? [-Werror=implicit-function-declaration]
-      98 |                 rc = pci_request_region(pdev, i, DRIVER_NAME);
-         |                      ^~~~~~~~~~~~~~~~~~
-         |                      pci_request_regions
->> drivers/soc/aspeed/aspeed-host-bmc-dev.c:176:17: error: implicit declaration of function 'pci_free_irq_vectors'; did you mean 'pci_alloc_irq_vectors'? [-Werror=implicit-function-declaration]
-     176 |                 pci_free_irq_vectors(pdev);
-         |                 ^~~~~~~~~~~~~~~~~~~~
-         |                 pci_alloc_irq_vectors
-   cc1: some warnings being treated as errors
-
-
-vim +98 drivers/soc/aspeed/aspeed-host-bmc-dev.c
-
-    42	
-    43	static int aspeed_pci_host_bmc_device_probe(struct pci_dev *pdev,
-    44			const struct pci_device_id *ent)
-    45	{
-    46		struct uart_8250_port uart;
-    47		struct device *dev = &pdev->dev;
-    48		struct aspeed_pci_bmc_dev *pci_bmc_dev;
-    49		int rc = 0;
-    50		int i = 0;
-    51		int nr_entries;
-    52		u16 config_cmd_val;
-    53	
-    54		pci_bmc_dev = kzalloc(sizeof(*pci_bmc_dev), GFP_KERNEL);
-    55		if (!pci_bmc_dev) {
-    56			rc = -ENOMEM;
-    57			dev_err(dev, "kmalloc() returned NULL memory.\n");
-    58			goto out_err;
-    59		}
-    60	
-    61		rc = pcim_enable_device(pdev);
-    62		if (rc != 0) {
-    63			dev_err(dev, "pcim_enable_device() returned error %d\n", rc);
-    64			goto out_free0;
-    65		}
-    66	
-    67		/* set PCI host mastering  */
-    68		pci_set_master(pdev);
-    69	
-    70		/*
-    71		 * Try to allocate max MSI. If multiple MSI is not possible then use
-    72		 * the legacy interrupt. Note: PowerPC doesn't support multiple MSI.
-    73		 */
-    74		nr_entries = pci_alloc_irq_vectors(pdev, 1, BMC_MULTI_MSI,
-    75					PCI_IRQ_MSIX | PCI_IRQ_MSI);
-    76		if (nr_entries < 0) {
-    77			pci_bmc_dev->legacy_irq = 1;
-    78			pci_read_config_word(pdev, PCI_COMMAND, &config_cmd_val);
-    79			config_cmd_val &= ~PCI_COMMAND_INTX_DISABLE;
-    80			pci_write_config_word((struct pci_dev *)pdev, PCI_COMMAND, config_cmd_val);
-    81	
-    82		} else {
-    83			pci_bmc_dev->legacy_irq = 0;
-    84			pci_read_config_word(pdev, PCI_COMMAND, &config_cmd_val);
-    85			config_cmd_val |= PCI_COMMAND_INTX_DISABLE;
-    86			pci_write_config_word((struct pci_dev *)pdev, PCI_COMMAND, config_cmd_val);
-    87			rc = pci_irq_vector(pdev, BMC_MSI_IDX_BASE);
-    88			if (rc < 0) {
-    89				dev_err(dev, "pci_irq_vector() returned error %d msi=%u msix=%u\n",
-    90					-rc, pdev->msi_enabled, pdev->msix_enabled);
-    91				goto out_free1;
-    92			}
-    93			pdev->irq = rc;
-    94		}
-    95	
-    96		/* Get access to the BARs */
-    97		for (i = 0; i < BAR_MAX; i++) {
-  > 98			rc = pci_request_region(pdev, i, DRIVER_NAME);
-    99			if (rc < 0) {
-   100				dev_err(dev, "pci_request_region(%d) returned error %d\n", i, rc);
-   101				goto out_unreg;
-   102			}
-   103	
-   104			pci_bmc_dev->bars[i].bar_base = pci_resource_start(pdev, i);
-   105			pci_bmc_dev->bars[i].bar_size = pci_resource_len(pdev, i);
-   106			pci_bmc_dev->bars[i].bar_ioremap = pci_ioremap_bar(pdev, i);
-   107			if (pci_bmc_dev->bars[i].bar_ioremap == NULL) {
-   108				dev_err(dev, "pci_ioremap_bar(%d) failed\n", i);
-   109				rc = -ENOMEM;
-   110				goto out_unreg;
-   111			}
-   112		}
-   113	
-   114		/* ERRTA40: dummy read */
-   115		(void)__raw_readl((void __iomem *)pci_bmc_dev->bars[BAR_MSG].bar_ioremap);
-   116	
-   117		pci_set_drvdata(pdev, pci_bmc_dev);
-   118	
-   119		for (i = 0; i < VUART_MAX_PARMS; i++)
-   120			pci_bmc_dev->lines[i] = -1;
-   121	
-   122		/* setup VUART */
-   123		for (i = 0; i < VUART_MAX_PARMS; i++) {
-   124			memset(&uart, 0, sizeof(uart));
-   125			vuart_ioport[i] = 0x3F8 - (i * 0x100);
-   126			vuart_sirq[i] = 0x10 + 4 - i - BMC_MSI_IDX_BASE;
-   127			uart.port.flags = UPF_SKIP_TEST | UPF_BOOT_AUTOCONF | UPF_SHARE_IRQ;
-   128			uart.port.uartclk = 115200 * 16;
-   129	
-   130			if (pci_bmc_dev->legacy_irq) {
-   131				uart.port.irq = pdev->irq;
-   132			} else {
-   133				rc = pci_irq_vector(pdev, vuart_sirq[i]);
-   134				if (rc < 0) {
-   135					dev_err(dev,
-   136						"pci_irq_vector() returned error %d msi=%u msix=%u\n",
-   137						-rc, pdev->msi_enabled, pdev->msix_enabled);
-   138					goto out_unreg;
-   139				}
-   140				uart.port.irq = rc;
-   141			}
-   142			uart.port.dev = dev;
-   143			uart.port.iotype = UPIO_MEM32;
-   144			uart.port.iobase = 0;
-   145			uart.port.mapbase =
-   146					pci_bmc_dev->bars[BAR_MSG].bar_base + (vuart_ioport[i] << 2);
-   147			uart.port.membase =
-   148					pci_bmc_dev->bars[BAR_MSG].bar_ioremap + (vuart_ioport[i] << 2);
-   149			uart.port.type = PORT_16550A;
-   150			uart.port.flags |= (UPF_IOREMAP | UPF_FIXED_PORT | UPF_FIXED_TYPE);
-   151			uart.port.regshift = 2;
-   152	
-   153			rc = serial8250_register_8250_port(&uart);
-   154			if (rc < 0) {
-   155				dev_err(dev,
-   156					"cannot setup VUART@%xh over PCIe, rc=%d\n",
-   157					vuart_ioport[i], -rc);
-   158				goto out_unreg;
-   159			}
-   160			pci_bmc_dev->lines[i] = rc;
-   161		}
-   162	
-   163		return 0;
-   164	
-   165	out_unreg:
-   166		for (i = 0; i < VUART_MAX_PARMS; i++) {
-   167			if (pci_bmc_dev->lines[i] >= 0)
-   168				serial8250_unregister_port(pci_bmc_dev->lines[i]);
-   169		}
-   170	
-   171		pci_release_regions(pdev);
-   172	out_free1:
-   173		if (pci_bmc_dev->legacy_irq)
-   174			free_irq(pdev->irq, pdev);
-   175		else
- > 176			pci_free_irq_vectors(pdev);
-   177	
-   178		pci_clear_master(pdev);
-   179	out_free0:
-   180		kfree(pci_bmc_dev);
-   181	out_err:
-   182	
-   183		return rc;
-   184	}
-   185	
-
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index d207b03f8357..78122b35a0cb 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -358,11 +358,18 @@ static void aspeed_gfx_remove(struct platform_device *pdev)
+ 	sysfs_remove_group(&pdev->dev.kobj, &aspeed_sysfs_attr_group);
+ 	drm_dev_unregister(drm);
+ 	aspeed_gfx_unload(drm);
++	drm_atomic_helper_shutdown(drm);
++}
++
++static void aspeed_gfx_shutdown(struct platform_device *pdev)
++{
++	drm_atomic_helper_shutdown(platform_get_drvdata(pdev));
+ }
+ 
+ static struct platform_driver aspeed_gfx_platform_driver = {
+ 	.probe		= aspeed_gfx_probe,
+ 	.remove_new	= aspeed_gfx_remove,
++	.shutdown	= aspeed_gfx_shutdown,
+ 	.driver = {
+ 		.name = "aspeed_gfx",
+ 		.of_match_table = aspeed_gfx_match,
+diff --git a/drivers/gpu/drm/mgag200/mgag200_drv.c b/drivers/gpu/drm/mgag200/mgag200_drv.c
+index abddf37f0ea1..2fb18b782b05 100644
+--- a/drivers/gpu/drm/mgag200/mgag200_drv.c
++++ b/drivers/gpu/drm/mgag200/mgag200_drv.c
+@@ -10,6 +10,7 @@
+ #include <linux/pci.h>
+ 
+ #include <drm/drm_aperture.h>
++#include <drm/drm_atomic_helper.h>
+ #include <drm/drm_drv.h>
+ #include <drm/drm_fbdev_generic.h>
+ #include <drm/drm_file.h>
+@@ -278,6 +279,12 @@ static void mgag200_pci_remove(struct pci_dev *pdev)
+ 	struct drm_device *dev = pci_get_drvdata(pdev);
+ 
+ 	drm_dev_unregister(dev);
++	drm_atomic_helper_shutdown(dev);
++}
++
++static void mgag200_pci_shutdown(struct pci_dev *pdev)
++{
++	drm_atomic_helper_shutdown(pci_get_drvdata(pdev));
+ }
+ 
+ static struct pci_driver mgag200_pci_driver = {
+@@ -285,6 +292,7 @@ static struct pci_driver mgag200_pci_driver = {
+ 	.id_table = mgag200_pciidlist,
+ 	.probe = mgag200_pci_probe,
+ 	.remove = mgag200_pci_remove,
++	.shutdown = mgag200_pci_shutdown,
+ };
+ 
+ drm_module_pci_driver_if_modeset(mgag200_pci_driver, mgag200_modeset);
+diff --git a/drivers/gpu/drm/pl111/pl111_drv.c b/drivers/gpu/drm/pl111/pl111_drv.c
+index ba3b5b5f0cdf..02e6b74d5016 100644
+--- a/drivers/gpu/drm/pl111/pl111_drv.c
++++ b/drivers/gpu/drm/pl111/pl111_drv.c
+@@ -323,12 +323,18 @@ static void pl111_amba_remove(struct amba_device *amba_dev)
+ 	struct pl111_drm_dev_private *priv = drm->dev_private;
+ 
+ 	drm_dev_unregister(drm);
++	drm_atomic_helper_shutdown(drm);
+ 	if (priv->panel)
+ 		drm_panel_bridge_remove(priv->bridge);
+ 	drm_dev_put(drm);
+ 	of_reserved_mem_device_release(dev);
+ }
+ 
++static void pl111_amba_shutdown(struct amba_device *amba_dev)
++{
++	drm_atomic_helper_shutdown(amba_get_drvdata(amba_dev));
++}
++
+ /*
+  * This early variant lacks the 565 and 444 pixel formats.
+  */
+@@ -431,6 +437,7 @@ static struct amba_driver pl111_amba_driver __maybe_unused = {
+ 	},
+ 	.probe = pl111_amba_probe,
+ 	.remove = pl111_amba_remove,
++	.shutdown = pl111_amba_shutdown,
+ 	.id_table = pl111_id_table,
+ };
+ 
+diff --git a/drivers/gpu/drm/stm/drv.c b/drivers/gpu/drm/stm/drv.c
+index c68c831136c9..e8523abef27a 100644
+--- a/drivers/gpu/drm/stm/drv.c
++++ b/drivers/gpu/drm/stm/drv.c
+@@ -114,6 +114,7 @@ static void drv_unload(struct drm_device *ddev)
+ 	DRM_DEBUG("%s\n", __func__);
+ 
+ 	drm_kms_helper_poll_fini(ddev);
++	drm_atomic_helper_shutdown(ddev);
+ 	ltdc_unload(ddev);
+ }
+ 
+@@ -225,6 +226,11 @@ static void stm_drm_platform_remove(struct platform_device *pdev)
+ 	drm_dev_put(ddev);
+ }
+ 
++static void stm_drm_platform_shutdown(struct platform_device *pdev)
++{
++	drm_atomic_helper_shutdown(platform_get_drvdata(pdev));
++}
++
+ static const struct of_device_id drv_dt_ids[] = {
+ 	{ .compatible = "st,stm32-ltdc"},
+ 	{ /* end node */ },
+@@ -234,6 +240,7 @@ MODULE_DEVICE_TABLE(of, drv_dt_ids);
+ static struct platform_driver stm_drm_platform_driver = {
+ 	.probe = stm_drm_platform_probe,
+ 	.remove_new = stm_drm_platform_remove,
++	.shutdown = stm_drm_platform_shutdown,
+ 	.driver = {
+ 		.name = "stm32-display",
+ 		.of_match_table = drv_dt_ids,
+diff --git a/drivers/gpu/drm/tilcdc/tilcdc_drv.c b/drivers/gpu/drm/tilcdc/tilcdc_drv.c
+index fe56beea3e93..8ebd7134ee21 100644
+--- a/drivers/gpu/drm/tilcdc/tilcdc_drv.c
++++ b/drivers/gpu/drm/tilcdc/tilcdc_drv.c
+@@ -175,6 +175,7 @@ static void tilcdc_fini(struct drm_device *dev)
+ 		drm_dev_unregister(dev);
+ 
+ 	drm_kms_helper_poll_fini(dev);
++	drm_atomic_helper_shutdown(dev);
+ 	tilcdc_irq_uninstall(dev);
+ 	drm_mode_config_cleanup(dev);
+ 
+@@ -389,6 +390,7 @@ static int tilcdc_init(const struct drm_driver *ddrv, struct device *dev)
+ 
+ init_failed:
+ 	tilcdc_fini(ddev);
++	platform_set_drvdata(pdev, NULL);
+ 
+ 	return ret;
+ }
+@@ -537,7 +539,8 @@ static void tilcdc_unbind(struct device *dev)
+ 	if (!ddev->dev_private)
+ 		return;
+ 
+-	tilcdc_fini(dev_get_drvdata(dev));
++	tilcdc_fini(ddev);
++	dev_set_drvdata(dev, NULL);
+ }
+ 
+ static const struct component_master_ops tilcdc_comp_ops = {
+@@ -582,6 +585,11 @@ static int tilcdc_pdev_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static void tilcdc_pdev_shutdown(struct platform_device *pdev)
++{
++	drm_atomic_helper_shutdown(platform_get_drvdata(pdev));
++}
++
+ static const struct of_device_id tilcdc_of_match[] = {
+ 		{ .compatible = "ti,am33xx-tilcdc", },
+ 		{ .compatible = "ti,da850-tilcdc", },
+@@ -592,6 +600,7 @@ MODULE_DEVICE_TABLE(of, tilcdc_of_match);
+ static struct platform_driver tilcdc_platform_driver = {
+ 	.probe      = tilcdc_pdev_probe,
+ 	.remove     = tilcdc_pdev_remove,
++	.shutdown   = tilcdc_pdev_shutdown,
+ 	.driver     = {
+ 		.name   = "tilcdc",
+ 		.pm     = pm_sleep_ptr(&tilcdc_pm_ops),
+diff --git a/drivers/gpu/drm/tve200/tve200_drv.c b/drivers/gpu/drm/tve200/tve200_drv.c
+index 0bb56d063536..acce210e2554 100644
+--- a/drivers/gpu/drm/tve200/tve200_drv.c
++++ b/drivers/gpu/drm/tve200/tve200_drv.c
+@@ -242,6 +242,7 @@ static void tve200_remove(struct platform_device *pdev)
+ 	struct tve200_drm_dev_private *priv = drm->dev_private;
+ 
+ 	drm_dev_unregister(drm);
++	drm_atomic_helper_shutdown(drm);
+ 	if (priv->panel)
+ 		drm_panel_bridge_remove(priv->bridge);
+ 	drm_mode_config_cleanup(drm);
+@@ -249,6 +250,11 @@ static void tve200_remove(struct platform_device *pdev)
+ 	drm_dev_put(drm);
+ }
+ 
++static void tve200_shutdown(struct platform_device *pdev)
++{
++	drm_atomic_helper_shutdown(platform_get_drvdata(pdev));
++}
++
+ static const struct of_device_id tve200_of_match[] = {
+ 	{
+ 		.compatible = "faraday,tve200",
+@@ -263,6 +269,7 @@ static struct platform_driver tve200_driver = {
+ 	},
+ 	.probe = tve200_probe,
+ 	.remove_new = tve200_remove,
++	.shutdown = tve200_shutdown,
+ };
+ drm_module_platform_driver(tve200_driver);
+ 
+diff --git a/drivers/gpu/drm/vboxvideo/vbox_drv.c b/drivers/gpu/drm/vboxvideo/vbox_drv.c
+index 4fee15c97c34..047b95812334 100644
+--- a/drivers/gpu/drm/vboxvideo/vbox_drv.c
++++ b/drivers/gpu/drm/vboxvideo/vbox_drv.c
+@@ -12,6 +12,7 @@
+ #include <linux/vt_kern.h>
+ 
+ #include <drm/drm_aperture.h>
++#include <drm/drm_atomic_helper.h>
+ #include <drm/drm_drv.h>
+ #include <drm/drm_fbdev_generic.h>
+ #include <drm/drm_file.h>
+@@ -97,11 +98,19 @@ static void vbox_pci_remove(struct pci_dev *pdev)
+ 	struct vbox_private *vbox = pci_get_drvdata(pdev);
+ 
+ 	drm_dev_unregister(&vbox->ddev);
++	drm_atomic_helper_shutdown(&vbox->ddev);
+ 	vbox_irq_fini(vbox);
+ 	vbox_mode_fini(vbox);
+ 	vbox_hw_fini(vbox);
+ }
+ 
++static void vbox_pci_shutdown(struct pci_dev *pdev)
++{
++	struct vbox_private *vbox = pci_get_drvdata(pdev);
++
++	drm_atomic_helper_shutdown(&vbox->ddev);
++}
++
+ static int vbox_pm_suspend(struct device *dev)
+ {
+ 	struct vbox_private *vbox = dev_get_drvdata(dev);
+@@ -165,6 +174,7 @@ static struct pci_driver vbox_pci_driver = {
+ 	.id_table = pciidlist,
+ 	.probe = vbox_pci_probe,
+ 	.remove = vbox_pci_remove,
++	.shutdown = vbox_pci_shutdown,
+ 	.driver.pm = pm_sleep_ptr(&vbox_pm_ops),
+ };
+ 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.42.0.283.g2d96d420d3-goog
+
