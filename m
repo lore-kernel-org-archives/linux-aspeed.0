@@ -1,12 +1,7 @@
-From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 1 Sep 2023 07:55:24 +0000
-Subject: [PATCH v12 2/2] ARM: dts: aspeed: yosemite4: add Facebook
- Yosemite 4 BMC
-In-Reply-To: <CAL_JsqKvZPSp3cHkxTq6Dq_djSoPSs6AueM2VF_UPz_gG8tVVA@mail.gmail.com>
-References: <20230828065137.2332953-1-Delphine_CC_Chiu@wiwynn.com>
- <20230828065137.2332953-3-Delphine_CC_Chiu@wiwynn.com>
- <CAL_JsqKvZPSp3cHkxTq6Dq_djSoPSs6AueM2VF_UPz_gG8tVVA@mail.gmail.com>
-Message-ID: <PS2PR04MB35925FAD891417B26C2A8C5FB7E4A@PS2PR04MB3592.apcprd04.prod.outlook.com>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Fri,  1 Sep 2023 16:39:51 -0700
+Subject: [RFT PATCH 0/6] drm: drm-misc drivers call drm_atomic_helper_shutdown() at the right times
+Message-ID: <20230901234015.566018-1-dianders@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,1015 +9,134 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
+NOTE: in order to avoid email sending limits on the cover letter, I've
+split this patch series in two. Patches that target drm-misc and ones
+that don't. The cover letter of the two is identical other than this note.
 
-> -----Original Message-----
-> From: Rob Herring <robh+dt@kernel.org>
-> Sent: Tuesday, August 29, 2023 10:14 PM
-> To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-> Cc: patrick at stwcx.xyz; Krzysztof Kozlowski
-> <krzysztof.kozlowski+dt@linaro.org>; Conor Dooley <conor+dt@kernel.org>;
-> Joel Stanley <joel@jms.id.au>; Andrew Jeffery <andrew@aj.id.au>;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v12 2/2] ARM: dts: aspeed: yosemite4: add Facebook
-> Yosemite 4 BMC
-> 
->   Security Reminder: Please be aware that this email is sent by an external
-> sender.
-> 
-> On Mon, Aug 28, 2023 at 1:52?AM Delphine CC Chiu
-> <Delphine_CC_Chiu@wiwynn.com> wrote:
-> >
-> > Add linux device tree entry for Yosemite 4 devices connected to BMC.
-> > The Yosemite 4 is a Meta multi-node server platform, based on AST2600
-> SoC.
-> 
-> This was already applied and sent upstream on Aug 10 by Joel. You'll need
-> incremental patches.
-I'll rebase the master and generate incremental patches in next time contribution,
-thank you for the correction.
-> 
-> >
-> > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> > ---
-> > Changelog:
-> > v12 - Add spi gpio config
-> > v11 - Add imux configs for i2c-mux
-> >     - Add gpio and eeprom devices
-> >     - Remove temperature-sensor 11-004a and 11-004b
-> >     - Change power-sensor ina230 to ina233
-> > v10 - Change to 128MB flash layout from 64MB
-> >  v9 - Remove mac2/mac3 duplicated setting about no-hw-checksum
-> >  v8 - Add description of Yosemite 4
-> >     - Remove unsupported ncsi config
-> >     - Revise i2c-mux config
-> >     - Correct power sensor i2c address
-> >     - Restore i2c 11 bus-frequency to default
-> >  v7 - Revise changelog format
-> >  v6 - Change project name from yosemitev4 to yosemite4
-> >  v5 - Revise rtc setting
-> >     - Remove duplicated multi-master setting
-> >  v3 - Revise the bootargs to stdout-path
-> >     - Revise i2c devices
-> >  v2 - Revise the DTS node name
-> > ---
-> >  arch/arm/boot/dts/aspeed/Makefile             |    1 +
-> >  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1102
-> > +++++++++++++++++
-> >  2 files changed, 1103 insertions(+)
-> >  create mode 100644
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed/Makefile
-> > b/arch/arm/boot/dts/aspeed/Makefile
-> > index c68984322a86..5b9264b823f3 100644
-> > --- a/arch/arm/boot/dts/aspeed/Makefile
-> > +++ b/arch/arm/boot/dts/aspeed/Makefile
-> > @@ -26,6 +26,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
-> >         aspeed-bmc-facebook-wedge400.dtb \
-> >         aspeed-bmc-facebook-yamp.dtb \
-> >         aspeed-bmc-facebook-yosemitev2.dtb \
-> > +       aspeed-bmc-facebook-yosemite4.dtb \
-> >         aspeed-bmc-ibm-bonnell.dtb \
-> >         aspeed-bmc-ibm-everest.dtb \
-> >         aspeed-bmc-ibm-rainier.dtb \
-> > diff --git
-> > a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > new file mode 100644
-> > index 000000000000..851091a512dd
-> > --- /dev/null
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > @@ -0,0 +1,1102 @@
-> > +// SPDX-License-Identifier: GPL-2.0-or-later // Copyright 2022
-> > +Facebook Inc.
-> > +
-> > +/dts-v1/;
-> > +#include "aspeed-g6.dtsi"
-> > +#include <dt-bindings/gpio/aspeed-gpio.h> #include
-> > +<dt-bindings/leds/leds-pca955x.h>
-> > +#include <dt-bindings/i2c/i2c.h>
-> > +
-> > +/ {
-> > +       model = "Facebook Yosemite 4 BMC";
-> > +       compatible = "facebook,yosemite4-bmc", "aspeed,ast2600";
-> > +
-> > +       aliases {
-> > +               serial4 = &uart5;
-> > +               serial5 = &uart6;
-> > +               serial6 = &uart7;
-> > +               serial7 = &uart8;
-> > +               serial8 = &uart9;
-> > +
-> > +               i2c16 = &imux16;
-> > +               i2c17 = &imux17;
-> > +               i2c18 = &imux18;
-> > +               i2c19 = &imux19;
-> > +               i2c20 = &imux20;
-> > +               i2c21 = &imux21;
-> > +               i2c22 = &imux22;
-> > +               i2c23 = &imux23;
-> > +               i2c24 = &imux24;
-> > +               i2c25 = &imux25;
-> > +               i2c26 = &imux26;
-> > +               i2c27 = &imux27;
-> > +               i2c28 = &imux28;
-> > +               i2c29 = &imux29;
-> > +               i2c30 = &imux30;
-> > +               i2c31 = &imux31;
-> > +               i2c32 = &imux32;
-> > +               i2c33 = &imux33;
-> > +       };
-> > +
-> > +       chosen {
-> > +               stdout-path = "serial4:57600n8";
-> > +       };
-> > +
-> > +       memory at 80000000 {
-> > +               device_type = "memory";
-> > +               reg = <0x80000000 0x80000000>;
-> > +       };
-> > +
-> > +       iio-hwmon {
-> > +               compatible = "iio-hwmon";
-> > +               io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>,
-> <&adc0 3>,
-> > +                               <&adc0 4>, <&adc0 5>, <&adc0 6>,
-> <&adc0 7>,
-> > +                               <&adc1 0>, <&adc1 1>;
-> > +       };
-> > +
-> > +       spi_gpio: spi-gpio {
-> > +               status = "okay";
-> > +               compatible = "spi-gpio";
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               gpio-sck = <&gpio0 ASPEED_GPIO(X, 3)
-> GPIO_ACTIVE_HIGH>;
-> > +               gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4)
-> GPIO_ACTIVE_HIGH>;
-> > +               gpio-miso = <&gpio0 ASPEED_GPIO(X, 5)
-> GPIO_ACTIVE_HIGH>;
-> > +               num-chipselects = <1>;
-> > +               cs-gpios = <&gpio0 ASPEED_GPIO(X, 0)
-> GPIO_ACTIVE_LOW>;
-> > +
-> > +               tpmdev at 0 {
-> > +                       compatible = "tcg,tpm_tis-spi";
-> > +                       spi-max-frequency = <33000000>;
-> > +                       reg = <0>;
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&uart1 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart2 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart3 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart4 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart5 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart6 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart7 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart8 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&uart9 {
-> > +       status = "okay";
-> > +};
-> > +
-> > +&wdt1 {
-> > +       status = "okay";
-> > +       pinctrl-names = "default";
-> > +       pinctrl-0 = <&pinctrl_wdtrst1_default>;
-> > +       aspeed,reset-type = "soc";
-> > +       aspeed,external-signal;
-> > +       aspeed,ext-push-pull;
-> > +       aspeed,ext-active-high;
-> > +       aspeed,ext-pulse-duration = <256>; };
-> > +
-> > +&mac2 {
-> > +       status = "okay";
-> > +       pinctrl-names = "default";
-> > +       pinctrl-0 = <&pinctrl_rmii3_default>;
-> > +       use-ncsi;
-> > +       mlx,multi-host;
-> > +};
-> > +
-> > +&mac3 {
-> > +       status = "okay";
-> > +       pinctrl-names = "default";
-> > +       pinctrl-0 = <&pinctrl_rmii4_default>;
-> > +       use-ncsi;
-> > +       mlx,multi-host;
-> > +};
-> > +
-> > +&fmc {
-> > +       status = "okay";
-> > +       flash at 0 {
-> > +               status = "okay";
-> > +               m25p,fast-read;
-> > +               label = "bmc";
-> > +               spi-rx-bus-width = <4>;
-> > +               spi-max-frequency = <50000000>; #include
-> > +"openbmc-flash-layout-128.dtsi"
-> > +       };
-> > +       flash at 1 {
-> > +               status = "okay";
-> > +               m25p,fast-read;
-> > +               label = "bmc2";
-> > +               spi-rx-bus-width = <4>;
-> > +               spi-max-frequency = <50000000>;
-> > +       };
-> > +};
-> > +
-> > +&i2c0 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c1 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c2 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c3 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c4 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c5 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c6 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c7 {
-> > +       status = "okay";
-> > +       mctp-controller;
-> > +       bus-frequency = <400000>;
-> > +       multi-master;
-> > +
-> > +       mctp at 10 {
-> > +               compatible = "mctp-i2c-controller";
-> > +               reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "adi,adm1278";
-> > +               reg = <0x40>;
-> > +       };
-> > +};
-> > +
-> > +&i2c8 {
-> > +       status = "okay";
-> > +       bus-frequency = <400000>;
-> > +       i2c-mux at 70 {
-> > +               compatible = "nxp,pca9544";
-> > +               idle-state = <0>;
-> > +               i2c-mux-idle-disconnect;
-> > +               reg = <0x70>;
-> > +
-> > +               imux16: i2c at 0 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <0>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +
-> > +               imux17: i2c at 1 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <1>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +
-> > +               imux18: i2c at 2 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <2>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +
-> > +               imux19: i2c at 3 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <3>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&i2c9 {
-> > +       status = "okay";
-> > +       bus-frequency = <400000>;
-> > +       i2c-mux at 71 {
-> > +               compatible = "nxp,pca9544";
-> > +               idle-state = <0>;
-> > +               i2c-mux-idle-disconnect;
-> > +               reg = <0x71>;
-> > +
-> > +               imux20: i2c at 0 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <0>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +
-> > +               imux21: i2c at 1 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <1>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +
-> > +               imux22: i2c at 2 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <2>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +
-> > +               imux23: i2c at 3 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <3>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 49 {
-> > +                               compatible = "nxp,pca9537";
-> > +                               reg = <0x49>;
-> > +                       };
-> > +
-> > +                       eeprom at 50 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x50>;
-> > +                       };
-> > +
-> > +                       eeprom at 51 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x51>;
-> > +                       };
-> > +
-> > +                       eeprom at 54 {
-> > +                               compatible = "atmel,24c128";
-> > +                               reg = <0x54>;
-> > +                       };
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&i2c10 {
-> > +       status = "okay";
-> > +       bus-frequency = <400000>;
-> > +       i2c-mux at 74 {
-> > +               compatible = "nxp,pca9544";
-> > +               idle-state = <0>;
-> > +               i2c-mux-idle-disconnect;
-> > +               reg = <0x74>;
-> > +
-> > +               imux28: i2c at 0 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <0>;
-> > +               };
-> > +
-> > +               imux29: i2c at 1 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <1>;
-> > +                       gpio at 20 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x20>;
-> > +                       };
-> > +
-> > +                       gpio at 21 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x21>;
-> > +                       };
-> > +
-> > +                       gpio at 22 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x22>;
-> > +                       };
-> > +
-> > +                       gpio at 23 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x23>;
-> > +                       };
-> > +
-> > +                       gpio at 24 {
-> > +                               compatible = "nxp,pca9506";
-> > +                               reg = <0x24>;
-> > +                       };
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +&i2c11 {
-> > +       status = "okay";
-> > +       power-sensor at 10 {
-> > +               compatible = "adi, adm1272";
-> > +               reg = <0x10>;
-> > +       };
-> > +
-> > +       power-sensor at 12 {
-> > +               compatible = "adi, adm1272";
-> > +               reg = <0x12>;
-> > +       };
-> > +
-> > +       gpio at 20 {
-> > +               compatible = "nxp,pca9555";
-> > +               reg = <0x20>;
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +       };
-> > +
-> > +       gpio at 21 {
-> > +               compatible = "nxp,pca9555";
-> > +               reg = <0x21>;
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +       };
-> > +
-> > +       gpio at 22 {
-> > +               compatible = "nxp,pca9555";
-> > +               reg = <0x22>;
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +       };
-> > +
-> > +       gpio at 23 {
-> > +               compatible = "nxp,pca9555";
-> > +               reg = <0x23>;
-> > +               gpio-controller;
-> > +               #gpio-cells = <2>;
-> > +       };
-> > +
-> > +       temperature-sensor at 48 {
-> > +               compatible = "ti,tmp75";
-> > +               reg = <0x48>;
-> > +       };
-> > +
-> > +       temperature-sensor at 49 {
-> > +               compatible = "ti,tmp75";
-> > +               reg = <0x49>;
-> > +       };
-> > +
-> > +       eeprom at 54 {
-> > +               compatible = "atmel,24c256";
-> > +               reg = <0x54>;
-> > +       };
-> > +};
-> > +
-> > +&i2c12 {
-> > +       status = "okay";
-> > +       bus-frequency = <400000>;
-> > +
-> > +       temperature-sensor at 48 {
-> > +               compatible = "ti,tmp75";
-> > +               reg = <0x48>;
-> > +       };
-> > +
-> > +       eeprom at 50 {
-> > +               compatible = "atmel,24c128";
-> > +               reg = <0x50>;
-> > +       };
-> > +
-> > +       eeprom at 54 {
-> > +               compatible = "atmel,24c64";
-> > +               reg = <0x54>;
-> > +       };
-> > +
-> > +       rtc at 6f {
-> > +               compatible = "nuvoton,nct3018y";
-> > +               reg = <0x6f>;
-> > +       };
-> > +};
-> > +
-> > +&i2c13 {
-> > +       status = "okay";
-> > +       bus-frequency = <400000>;
-> > +       gpio at 20 {
-> > +               compatible = "nxp,pca9506";
-> > +               reg = <0x20>;
-> > +       };
-> > +
-> > +       gpio at 21 {
-> > +               compatible = "nxp,pca9506";
-> > +               reg = <0x21>;
-> > +       };
-> > +
-> > +       gpio at 22 {
-> > +               compatible = "nxp,pca9506";
-> > +               reg = <0x22>;
-> > +       };
-> > +
-> > +       gpio at 23 {
-> > +               compatible = "nxp,pca9506";
-> > +               reg = <0x23>;
-> > +       };
-> > +};
-> > +
-> > +&i2c14 {
-> > +       status = "okay";
-> > +       bus-frequency = <400000>;
-> > +       adc at 1d {
-> > +               compatible = "ti,adc128d818";
-> > +               reg = <0x1d>;
-> > +               ti,mode = /bits/ 8 <2>;
-> > +       };
-> > +
-> > +       adc at 35 {
-> > +               compatible = "ti,adc128d818";
-> > +               reg = <0x35>;
-> > +               ti,mode = /bits/ 8 <2>;
-> > +       };
-> > +
-> > +       adc at 37 {
-> > +               compatible = "ti,adc128d818";
-> > +               reg = <0x37>;
-> > +               ti,mode = /bits/ 8 <2>;
-> > +       };
-> > +
-> > +       power-sensor at 40 {
-> > +               compatible = "ti,ina233";
-> > +               reg = <0x40>;
-> > +       };
-> > +
-> > +       power-sensor at 41 {
-> > +               compatible = "ti,ina233";
-> > +               reg = <0x41>;
-> > +       };
-> > +
-> > +       power-sensor at 42 {
-> > +               compatible = "ti,ina233";
-> > +               reg = <0x42>;
-> > +       };
-> > +
-> > +       power-sensor at 43 {
-> > +               compatible = "ti,ina233";
-> > +               reg = <0x43>;
-> > +       };
-> > +
-> > +       power-sensor at 44 {
-> > +               compatible = "ti,ina233";
-> > +               reg = <0x44>;
-> > +       };
-> > +
-> > +       temperature-sensor at 4e {
-> > +               compatible = "ti,tmp75";
-> > +               reg = <0x4e>;
-> > +       };
-> > +
-> > +       temperature-sensor at 4f {
-> > +               compatible = "ti,tmp75";
-> > +               reg = <0x4f>;
-> > +       };
-> > +
-> > +       eeprom at 51 {
-> > +               compatible = "atmel,24c128";
-> > +               reg = <0x51>;
-> > +       };
-> > +
-> > +       i2c-mux at 71 {
-> > +               compatible = "nxp,pca9846";
-> > +               #address-cells = <1>;
-> > +               #size-cells = <0>;
-> > +
-> > +               idle-state = <0>;
-> > +               i2c-mux-idle-disconnect;
-> > +               reg = <0x71>;
-> > +
-> > +               imux30: i2c at 0 {
-> > +                       #address-cells = <1>;
-> > +                       #size-cells = <0>;
-> > +                       reg = <0>;
-> > +
-> > +                       adc at 1f {
-> > +                               compatible = "ti,adc128d818";
-> > +                               reg = <0x1f>;
-> > +                               ti,mode = /bits/ 8 <2>;
-> > +                       };
-> > +
-> > +                       pwm at 20{
-> > +                               compatible = "max31790";
-> 
-> This is not documented. It also needs a vendor prefix.
-The vendor prefix will be added in next time contribution,
-and this device seems has been used in former projects.
-Would you please to tell that whether I should inform the driver's author or add the binding document on my own ?
-> 
-> > +                               reg = <0x20>;
-> > +                               #address-cells = <1>;
-> > +                               #size-cells = <0>;
-> 
-> These 2 are for child nodes, but you don't have any. And a PWM probably
-> never will.
-I'll remove the redundant config in next time contribution,
-thank you for the correction.
-> 
-> Rob
+This patch series came about after a _long_ discussion between me and
+Maxime Ripard in response to a different patch I sent out [1]. As part
+of that discussion, we realized that it would be good if DRM drivers
+consistently called drm_atomic_helper_shutdown() properly at shutdown
+and driver remove time as it's documented that they should do. The
+eventual goal of this would be to enable removing some hacky code from
+panel drivers where they had to hook into shutdown themselves because
+the DRM driver wasn't calling them.
+
+It turns out that quite a lot of drivers seemed to be missing
+drm_atomic_helper_shutdown() in one or both places that it was
+supposed to be. This patch series attempts to fix all the drivers that
+I was able to identify.
+
+NOTE: fixing this wasn't exactly cookie cutter. Each driver has its
+own unique way of setting itself up and tearing itself down. Some
+drivers also use the component model, which adds extra fun. I've made
+my best guess at solving this and I've run a bunch of compile tests
+(specifically, allmodconfig for amd64, arm64, and powerpc). That being
+said, these code changes are not totally trivial and I've done zero
+real testing on them. Making these patches was also a little mind
+numbing and I'm certain my eyes glazed over at several points when
+writing them. What I'm trying to say is to please double-check that I
+didn't do anything too silly, like cast your driver's drvdata to the
+wrong type. Even better, test these patches!
+
+I've organized this series like this:
+1. One patch for all simple cases of just needing a call at shutdown
+   time for drivers that go through drm-misc.
+2. A separate patch for "drm/vc4", even though it goes through
+   drm-misc, since I wanted to leave an extra note for that one.
+3. Patches for drivers that just needed a call at shutdown time for
+   drivers that _don't_ go through drm-misc.
+4. Patches for the few drivers that had the call at shutdown time but
+   lacked it at remove time.
+5. One patch for all simple cases of needing a call at shutdown and
+   remove (or unbind) time for drivers that go through drm-misc.
+6. A separate patch for "drm/hisilicon/kirin", even though it goes
+   through drm-misc, since I wanted to leave an extra note for that
+   one.
+7. Patches for drivers that needed a call at shutdown and remove (or
+   unbind) time for drivers that _don't_ go through drm-misc.
+
+I've labeled this patch series as RFT (request for testing) to help
+call attention to the fact that I didn't personally test any of these
+patches.
+
+If you're a maintainer of one of these drivers and you think that the
+patch for your driver looks fabulous, you've tested it, and you'd like
+to land it right away then please do. For non-drm-misc drivers there
+are no dependencies here. Some of the drm-misc drivers depend on the
+first patch, AKA ("drm/atomic-helper: drm_atomic_helper_shutdown(NULL)
+should be a noop"). I've tried to call this out but it also should be
+obvious once you know to look for it.
+
+I'd like to call out a few drivers that I _didn't_ fix in this series
+and why. If any of these drivers should be fixed then please yell.
+- DRM driers backed by usb_driver (like gud, gm12u320, udl): I didn't
+add the call to drm_atomic_helper_shutdown() at shutdown time
+because there's no ".shutdown" callback for them USB drivers. Given
+that USB is hotpluggable, I'm assuming that they are robust against
+this and the special shutdown callback isn't needed.
+- ofdrm and simpledrm: These didn't have drm_atomic_helper_shutdown()
+in either shutdown or remove, but I didn't add it. I think that's OK
+since they're sorta special and not really directly controlling
+hardware power sequencing.
+- virtio, vkms, vmwgfx, xen: I believe these are all virtual (thus
+they wouldn't directly drive a panel) and adding the shutdown
+didn't look straightforward, so I skipped them.
+
+I've let each patch in the series get CCed straight from
+get_maintainer. That means not everyone will have received every patch
+but everyone should be on the cover letter. I know some people dislike
+this but when touching this many drivers there's not much
+choice. dri-devel and lkml have been CCed and lore/lei exist, so
+hopefully that's enough for folks. I'm happy to add people to the
+whole series for future posts.
+
+[1] https://lore.kernel.org/lkml/20230804140605.RFC.4.I930069a32baab6faf46d6b234f89613b5cec0f14 at changeid
+
+
+Douglas Anderson (6):
+  drm/atomic-helper: drm_atomic_helper_shutdown(NULL) should be a noop
+  drm: Call drm_atomic_helper_shutdown() at shutdown time for misc
+    drivers
+  drm/vc4: Call drm_atomic_helper_shutdown() at shutdown time
+  drm/ssd130x: Call drm_atomic_helper_shutdown() at remove time
+  drm: Call drm_atomic_helper_shutdown() at shutdown/remove time for
+    misc drivers
+  drm/hisilicon/kirin: Call drm_atomic_helper_shutdown() at
+    shutdown/unbind time
+
+ .../gpu/drm/arm/display/komeda/komeda_drv.c   |  9 +++++
+ .../gpu/drm/arm/display/komeda/komeda_kms.c   |  7 ++++
+ .../gpu/drm/arm/display/komeda/komeda_kms.h   |  1 +
+ drivers/gpu/drm/arm/hdlcd_drv.c               |  6 ++++
+ drivers/gpu/drm/arm/malidp_drv.c              |  6 ++++
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c       |  7 ++++
+ drivers/gpu/drm/ast/ast_drv.c                 |  6 ++++
+ drivers/gpu/drm/atmel-hlcdc/atmel_hlcdc_dc.c  |  6 ++++
+ drivers/gpu/drm/drm_atomic_helper.c           |  3 ++
+ drivers/gpu/drm/fsl-dcu/fsl_dcu_drm_drv.c     |  8 +++++
+ .../gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   |  6 ++++
+ .../gpu/drm/hisilicon/kirin/kirin_drm_drv.c   |  9 +++++
+ drivers/gpu/drm/hyperv/hyperv_drm_drv.c       |  6 ++++
+ drivers/gpu/drm/logicvc/logicvc_drm.c         |  9 +++++
+ drivers/gpu/drm/loongson/lsdc_drv.c           |  6 ++++
+ drivers/gpu/drm/mcde/mcde_drv.c               |  9 +++++
+ drivers/gpu/drm/mgag200/mgag200_drv.c         |  8 +++++
+ drivers/gpu/drm/omapdrm/omap_drv.c            |  8 +++++
+ drivers/gpu/drm/pl111/pl111_drv.c             |  7 ++++
+ drivers/gpu/drm/qxl/qxl_drv.c                 |  7 ++++
+ drivers/gpu/drm/solomon/ssd130x.c             |  1 +
+ drivers/gpu/drm/sti/sti_drv.c                 |  7 ++++
+ drivers/gpu/drm/stm/drv.c                     |  7 ++++
+ drivers/gpu/drm/sun4i/sun4i_drv.c             |  6 ++++
+ drivers/gpu/drm/tilcdc/tilcdc_drv.c           | 11 +++++-
+ drivers/gpu/drm/tiny/bochs.c                  |  6 ++++
+ drivers/gpu/drm/tiny/cirrus.c                 |  6 ++++
+ drivers/gpu/drm/tve200/tve200_drv.c           |  7 ++++
+ drivers/gpu/drm/vboxvideo/vbox_drv.c          | 10 ++++++
+ drivers/gpu/drm/vc4/vc4_drv.c                 | 36 ++++++++++++-------
+ 30 files changed, 217 insertions(+), 14 deletions(-)
+
+-- 
+2.42.0.283.g2d96d420d3-goog
+
