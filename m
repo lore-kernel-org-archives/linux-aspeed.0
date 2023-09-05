@@ -1,122 +1,157 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 5 Sep 2023 12:07:35 -0500
-Subject: [PATCH v8 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
- Control
-In-Reply-To: <20230830123202.3408318-3-billy_tsai@aspeedtech.com>
+Date: Tue, 5 Sep 2023 12:00:10 -0500
+Subject: [PATCH v8 1/3] dt-bindings: hwmon: fan: Add fan binding to schema
+In-Reply-To: <20230830123202.3408318-2-billy_tsai@aspeedtech.com>
 References: <20230830123202.3408318-1-billy_tsai@aspeedtech.com>
- <20230830123202.3408318-3-billy_tsai@aspeedtech.com>
-Message-ID: <20230905170735.GA3528724-robh@kernel.org>
+ <20230830123202.3408318-2-billy_tsai@aspeedtech.com>
+Message-ID: <20230905170010.GA3505375-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 30, 2023 at 08:32:01PM +0800, Billy Tsai wrote:
-> Document the compatible for aspeed,ast2600-pwm-tach device, which can
-> support up to 16 PWM outputs and 16 fan tach input.
+On Wed, Aug 30, 2023 at 08:32:00PM +0800, Billy Tsai wrote:
+> From: Naresh Solanki <naresh.solanki@9elements.com>
 > 
+> Add common fan properties bindings to a schema.
+> 
+> Bindings for fan controllers can reference the common schema for the
+> fan
+> 
+> child nodes:
+> 
+>   patternProperties:
+>     "^fan@[0-2]":
+>       type: object
+>       $ref: fan-common.yaml#
+
+        unevaluatedProperties: false
+
+
+> 
+> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 67 +++++++++++++++++++
->  1 file changed, 67 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+>  .../devicetree/bindings/hwmon/fan-common.yaml | 63 +++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
 > new file mode 100644
-> index 000000000000..95bac5588c04
+> index 000000000000..a69b4d553e45
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> @@ -0,0 +1,67 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2021 Aspeed, Inc.
+> +++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
+> @@ -0,0 +1,63 @@
+> +# SPDX-License-Identifier: GPL-2.0-or-later OR BSD-2-Clause
 
-A few years out of date.
+Drop 'or-later'. It's GPL2 only.
 
 > +%YAML 1.2
 > +---
-> +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
+> +$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
 > +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +title: ASPEED G6 PWM and Fan Tach controller device driver
+> +title: Common Fan Properties
 > +
 > +maintainers:
+> +  - Naresh Solanki <naresh.solanki@9elements.com>
 > +  - Billy Tsai <billy_tsai@aspeedtech.com>
 > +
-> +description: |
-> +  The ASPEED PWM controller can support up to 16 PWM outputs.
-> +  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
-
-Are PWM and tach channels independent? Would be useful to know here.
-
-> +
 > +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-pwm-tach
+> +  max-rpm:
+> +    description:
+> +      Max RPM supported by fan.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+
+Physics will limit this to something much less than 2^32. Add some 
+constraints. 10000?
+
 > +
-> +  reg:
-> +    maxItems: 1
+> +  min-rpm:
+> +    description:
+> +      Min RPM supported by fan.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+
+ditto
+
 > +
-> +  clocks:
-> +    maxItems: 1
+> +  pulses-per-revolution:
+> +    description:
+> +      The number of pulse from fan sensor per revolution.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+
+Needs constraints. I assume this is never more than 4 (or 2 even)?
+
+> +  div:
+
+Too generic of a name.
+
+> +    description:
+> +      Fan clock divisor
+
+But what is a fan clock?
+
+> +    $ref: /schemas/types.yaml#/definitions/uint32
 > +
-> +  resets:
-> +    maxItems: 1
+> +  target-rpm:
+> +    description:
+> +      Target RPM the fan should be configured during driver probe.
+
+What driver? By the time the OS driver runs, a bunch of other boot 
+software has already run on modern systems. So this value would likely 
+be used much earlier. The point is that when exactly is outside the 
+scope of DT. This is "what RPM do I use in case of no other information 
+(e.g. temperature)".
+
+> +    $ref: /schemas/types.yaml#/definitions/uint32
 > +
-> +  "#pwm-cells":
-> +    const: 3
+> +  mode:
+
+Too generic.
+
+> +    description:
+> +      Select the operational mode of the fan.
+
+What are modes? Spin and don't spin?
+
+> +    $ref: /schemas/types.yaml#/definitions/uint32
 > +
-> +patternProperties:
-> +  "^fan[0-9a-f]_hwmon+$":
+> +  pwms:
+> +    description:
+> +      PWM provider.
 
-Drop 'hwmon'. Standard practice for naming without 'reg' is 
-'^fan-[0-9]+$'.
+maxItems: 1
 
-> +    $ref: fan-common.yaml#
+I don't think there are fans with more than 1 PWM input?
 
-       unevaluatedProperties: false
-
-> +    required:
-> +      - tach-ch
 > +
-> +required:
-> +  - reg
-> +  - clocks
-> +  - resets
-> +  - "#pwm-cells"
-> +  - compatible
+> +  tach-ch:
+> +    description:
+> +      The tach channel used for the fan.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+
+The existing ASpeed version of this property allows more than 1 entry. I 
+don't understand how a fan would have 2 tach signals, but if so, the 
+generic property should allow for that.
+
+Perhaps 'reg' should be defined in here with some text saying 'reg' 
+corresponds to the fan controller specific id which may be the PWM+TACH 
+channel, PWM channel (deprecated), or TACH channel. I think there are 
+examples of all 3 of these cases.
+
 > +
-> +additionalProperties: false
+> +  label:
+> +    description:
+> +      Optional fan label
 > +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    pwm_tach: pwm-tach-controller at 1e610000 {
-> +      compatible = "aspeed,ast2600-pwm-tach";
-> +      reg = <0x1e610000 0x100>;
-> +      clocks = <&syscon ASPEED_CLK_AHB>;
-> +      resets = <&syscon ASPEED_RESET_PWM>;
-> +      #pwm-cells = <3>;
-
-Blank line.
-
-> +      fan0_hwmon {
-> +        tach-ch = <0x0>;
-
-Don't you need 'pwms'?
-
-> +      };
-
-Blank line.
-
-> +      fan1_hwmon {
-> +        tach-ch = <0x1>;
-> +      };
-> +      fan2_hwmon {
-> +        tach-ch = <0x2>;
-> +      };
-> +    };
+> +  fan-supply:
+> +    description:
+> +      Power supply for fan.
+> +
+> +additionalProperties: true
+> +
+> +...
 > -- 
 > 2.25.1
 > 
