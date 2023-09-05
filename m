@@ -1,157 +1,41 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 5 Sep 2023 12:00:10 -0500
-Subject: [PATCH v8 1/3] dt-bindings: hwmon: fan: Add fan binding to schema
-In-Reply-To: <20230830123202.3408318-2-billy_tsai@aspeedtech.com>
-References: <20230830123202.3408318-1-billy_tsai@aspeedtech.com>
- <20230830123202.3408318-2-billy_tsai@aspeedtech.com>
-Message-ID: <20230905170010.GA3505375-robh@kernel.org>
+Date: Tue, 5 Sep 2023 13:16:37 -0500
+Subject: [PATCH v8 2/2] dt-bindings: arm: aspeed: add Meta Minerva board
+In-Reply-To: <20230905062223.774871-3-peteryin.openbmc@gmail.com>
+References: <20230905062223.774871-1-peteryin.openbmc@gmail.com>
+ <20230905062223.774871-3-peteryin.openbmc@gmail.com>
+Message-ID: <20230905181637.GA3742088-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 30, 2023 at 08:32:00PM +0800, Billy Tsai wrote:
-> From: Naresh Solanki <naresh.solanki@9elements.com>
+On Tue, Sep 05, 2023 at 02:22:22PM +0800, Peter Yin wrote:
+> Document the new compatibles used on Meta Minerva.
 > 
-> Add common fan properties bindings to a schema.
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 > 
-> Bindings for fan controllers can reference the common schema for the
-> fan
-> 
-> child nodes:
-> 
->   patternProperties:
->     "^fan@[0-2]":
->       type: object
->       $ref: fan-common.yaml#
 
-        unevaluatedProperties: false
+You should not have blank lines between tags. 
 
-
-> 
-> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
->  .../devicetree/bindings/hwmon/fan-common.yaml | 63 +++++++++++++++++++
->  1 file changed, 63 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
-> new file mode 100644
-> index 000000000000..a69b4d553e45
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
-> @@ -0,0 +1,63 @@
-> +# SPDX-License-Identifier: GPL-2.0-or-later OR BSD-2-Clause
-
-Drop 'or-later'. It's GPL2 only.
-
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Common Fan Properties
-> +
-> +maintainers:
-> +  - Naresh Solanki <naresh.solanki@9elements.com>
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +properties:
-> +  max-rpm:
-> +    description:
-> +      Max RPM supported by fan.
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-
-Physics will limit this to something much less than 2^32. Add some 
-constraints. 10000?
-
-> +
-> +  min-rpm:
-> +    description:
-> +      Min RPM supported by fan.
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-
-ditto
-
-> +
-> +  pulses-per-revolution:
-> +    description:
-> +      The number of pulse from fan sensor per revolution.
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-
-Needs constraints. I assume this is never more than 4 (or 2 even)?
-
-> +  div:
-
-Too generic of a name.
-
-> +    description:
-> +      Fan clock divisor
-
-But what is a fan clock?
-
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +
-> +  target-rpm:
-> +    description:
-> +      Target RPM the fan should be configured during driver probe.
-
-What driver? By the time the OS driver runs, a bunch of other boot 
-software has already run on modern systems. So this value would likely 
-be used much earlier. The point is that when exactly is outside the 
-scope of DT. This is "what RPM do I use in case of no other information 
-(e.g. temperature)".
-
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +
-> +  mode:
-
-Too generic.
-
-> +    description:
-> +      Select the operational mode of the fan.
-
-What are modes? Spin and don't spin?
-
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +
-> +  pwms:
-> +    description:
-> +      PWM provider.
-
-maxItems: 1
-
-I don't think there are fans with more than 1 PWM input?
-
-> +
-> +  tach-ch:
-> +    description:
-> +      The tach channel used for the fan.
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-
-The existing ASpeed version of this property allows more than 1 entry. I 
-don't understand how a fan would have 2 tach signals, but if so, the 
-generic property should allow for that.
-
-Perhaps 'reg' should be defined in here with some text saying 'reg' 
-corresponds to the fan controller specific id which may be the PWM+TACH 
-channel, PWM channel (deprecated), or TACH channel. I think there are 
-examples of all 3 of these cases.
-
-> +
-> +  label:
-> +    description:
-> +      Optional fan label
-> +
-> +  fan-supply:
-> +    description:
-> +      Power supply for fan.
-> +
-> +additionalProperties: true
-> +
-> +...
+> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> index 68f717670f78..32582ee56264 100644
+> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> @@ -79,6 +79,7 @@ properties:
+>                - facebook,elbert-bmc
+>                - facebook,fuji-bmc
+>                - facebook,greatlakes-bmc
+> +              - facebook,minerva-bmc
+>                - facebook,yosemite4-bmc
+>                - ibm,everest-bmc
+>                - ibm,rainier-bmc
 > -- 
 > 2.25.1
 > 
