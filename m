@@ -1,45 +1,28 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 15 Sep 2023 10:19:17 +0200
-Subject: [PATCH 3/3] ARM: dts: aspeed: yosemite4: use proper "mellanox" DT vendor prefix
-In-Reply-To: <20230915081917.22368-1-krzysztof.kozlowski@linaro.org>
-References: <20230915081917.22368-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <20230915081917.22368-3-krzysztof.kozlowski@linaro.org>
+From: yangchen.openbmc@gmail.com <yangchen.openbmc@gmail.com>
+Date: Tue, 12 Sep 2023 22:05:30 +0800
+Subject: [PATCH 0/2] Add CMC of Facebook Minerva platform
+Message-ID: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-"mlx" Devicetree vendor prefix is not documented and instead "mellanox"
-should be used.
+From: Yang Chen <yangchen.openbmc@gmail.com>
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Add linux device tree entry related to Minerva Chassis Management Controller
+(CMC) specific devices connected to the Aspeed SoC (AST2600).
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 64075cc41d92..1bd555a6c3ba 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -88,7 +88,7 @@ &mac2 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rmii3_default>;
- 	use-ncsi;
--	mlx,multi-host;
-+	mellanox,multi-host;
- };
- 
- &mac3 {
-@@ -96,7 +96,7 @@ &mac3 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rmii4_default>;
- 	use-ncsi;
--	mlx,multi-host;
-+	mellanox,multi-host;
- };
- 
- &fmc {
+Yang Chen (2):
+  dt-bindings: arm: aspeed: document board compatibles
+  ARM: dts: aspeed: Minerva: Add Facebook Minerva CMC board
+
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../aspeed-bmc-facebook-minerva-cmc.dts       | 265 ++++++++++++++++++
+ 3 files changed, 267 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva-cmc.dts
+
 -- 
 2.34.1
 
