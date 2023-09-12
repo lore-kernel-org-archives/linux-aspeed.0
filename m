@@ -1,75 +1,30 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Tue, 12 Sep 2023 19:55:40 +0300
-Subject: [PATCH v1 1/1] serial: 8250_aspeed_vuart: Use dev_err_probe() instead of dev_err()
-Message-ID: <20230912165540.402504-1-andriy.shevchenko@linux.intel.com>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Tue, 12 Sep 2023 17:09:21 -0500
+Subject: [PATCH v3 0/2] soc/aspeed: Add host side BMC device driver
+Message-ID: <20230912220923.3701688-1-ninad@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The probe process may generate EPROBE_DEFER. In this case
-dev_err_probe() can still record err information. Otherwise
-it may pollute logs on that occasion.
+Hello,
+Please review a version 3 of patchset.
+    - Fixed warning reported by kernel test robot.
+    - Added MAINTAINER for new file.
+    - Fixed check patch warning.
 
-This also helps simplifing code and standardizing the error output.
+Ninad Palsule (2):
+  soc/aspeed: Add host side BMC device driver
+  MAINTAINERS: Added maintainer for host bmc DD
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/tty/serial/8250/8250_aspeed_vuart.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ MAINTAINERS                              |   7 +
+ drivers/soc/aspeed/Kconfig               |  11 +
+ drivers/soc/aspeed/Makefile              |   1 +
+ drivers/soc/aspeed/aspeed-host-bmc-dev.c | 250 +++++++++++++++++++++++
+ 4 files changed, 269 insertions(+)
+ create mode 100644 drivers/soc/aspeed/aspeed-host-bmc-dev.c
 
-diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-index 4a9e71b2dbbc..7a4537a1d66c 100644
---- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-+++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-@@ -415,6 +415,7 @@ static int aspeed_vuart_map_irq_polarity(u32 dt)
- static int aspeed_vuart_probe(struct platform_device *pdev)
- {
- 	struct of_phandle_args sirq_polarity_sense_args;
-+	struct device *dev = &pdev->dev;
- 	struct uart_8250_port port;
- 	struct aspeed_vuart *vuart;
- 	struct device_node *np;
-@@ -455,9 +456,8 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 	if (of_property_read_u32(np, "clock-frequency", &clk)) {
- 		vuart->clk = devm_clk_get(&pdev->dev, NULL);
- 		if (IS_ERR(vuart->clk)) {
--			dev_warn(&pdev->dev,
--				"clk or clock-frequency not defined\n");
--			rc = PTR_ERR(vuart->clk);
-+			rc = dev_err_probe(dev, PTR_ERR(vuart->clk),
-+					   "clk or clock-frequency not defined\n");
- 			goto err_sysfs_remove;
- 		}
- 
-@@ -533,7 +533,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 
- 	rc = aspeed_vuart_set_lpc_address(vuart, prop);
- 	if (rc < 0) {
--		dev_err(&pdev->dev, "invalid value in aspeed,lpc-io-reg property\n");
-+		dev_err_probe(dev, rc, "invalid value in aspeed,lpc-io-reg property\n");
- 		goto err_clk_disable;
- 	}
- 
-@@ -545,14 +545,14 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 
- 	rc = aspeed_vuart_set_sirq(vuart, sirq[0]);
- 	if (rc < 0) {
--		dev_err(&pdev->dev, "invalid sirq number in aspeed,lpc-interrupts property\n");
-+		dev_err_probe(dev, rc, "invalid sirq number in aspeed,lpc-interrupts property\n");
- 		goto err_clk_disable;
- 	}
- 
- 	sirq_polarity = aspeed_vuart_map_irq_polarity(sirq[1]);
- 	if (sirq_polarity < 0) {
--		dev_err(&pdev->dev, "invalid sirq polarity in aspeed,lpc-interrupts property\n");
--		rc = sirq_polarity;
-+		rc = dev_err_probe(dev, sirq_polarity,
-+				   "invalid sirq polarity in aspeed,lpc-interrupts property\n");
- 		goto err_clk_disable;
- 	}
- 
 -- 
-2.40.0.1.gaa8946217a0b
+2.39.2
 
