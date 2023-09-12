@@ -1,175 +1,75 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 12 Sep 2023 10:11:27 -0500
-Subject: [PATCH v8 1/3] dt-bindings: hwmon: fan: Add fan binding to schema
-In-Reply-To: <SG2PR06MB3365B916E3AD2CE331A0D4258BEDA@SG2PR06MB3365.apcprd06.prod.outlook.com>
-References: <20230830123202.3408318-1-billy_tsai@aspeedtech.com>
- <20230830123202.3408318-2-billy_tsai@aspeedtech.com>
- <20230905170010.GA3505375-robh@kernel.org>
- <SG2PR06MB336567E43537C7F4947E342F8BEEA@SG2PR06MB3365.apcprd06.prod.outlook.com>
- <20230907194351.GA2033402-robh@kernel.org>
- <SG2PR06MB3365B916E3AD2CE331A0D4258BEDA@SG2PR06MB3365.apcprd06.prod.outlook.com>
-Message-ID: <20230912151127.GA752403-robh@kernel.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 12 Sep 2023 19:55:40 +0300
+Subject: [PATCH v1 1/1] serial: 8250_aspeed_vuart: Use dev_err_probe() instead of dev_err()
+Message-ID: <20230912165540.402504-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 08, 2023 at 08:49:25AM +0000, Billy Tsai wrote:
-> On Thu, Sep 07, 2023 at 07:17:55AM +0000, Billy Tsai wrote:
-> > > On Wed, Aug 30, 2023 at 08:32:00PM +0800, Billy Tsai wrote:
-> > > >> From: Naresh Solanki <naresh.solanki@9elements.com>
-> > > >> 
-> > > >> Add common fan properties bindings to a schema.
-> > > >> 
-> > > >> Bindings for fan controllers can reference the common schema for the
-> > > >> fan
-> 
-> 
-> > > >> +properties:
-> > > >> +  max-rpm:
-> > > >> +    description:
-> > > >> +      Max RPM supported by fan.
-> > > >> +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > 
-> > > > Physics will limit this to something much less than 2^32. Add some 
-> > > > constraints. 10000?
-> > > 
-> > > 
-> > > >> +
-> > > >> +  min-rpm:
-> > > >> +    description:
-> > > >> +      Min RPM supported by fan.
-> > > >> +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > 
-> > > > ditto
-> > > 
-> > > >> +
-> > > >> +  pulses-per-revolution:
-> > > >> +    description:
-> > > >> +      The number of pulse from fan sensor per revolution.
-> > > >> +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > 
-> > > >Needs constraints. I assume this is never more than 4 (or 2 even)?
-> > > 
-> > > Do you think we should add the contraint in the common binding?
-> > > In my option, the limit of the max/min rpm should be declared by
-> > > the binding if necessary, because the usage of each fan monitor is
-> > > based on the connection of the tach pin.
-> 
-> > Yes, I think we should have default limits.
-> 
-> > Unless we go as far as a schema for every specific fan model, then there 
-> > is actually no way we can have specific limits unless the fan 
-> > controllers have some limits.
-> 
-> > The most I see in tree for pulses-per-revolution is 2. There's no value 
-> > in more. So set the max to 4 and then if anyone needs more they can bump 
-> > the value.
-> 
-> > Or maybe there's some electrical/mechanical design reason fans are 1 or 
-> > 2 pulses and we'll never see anything else? This document[1] seems to 
-> > indicate that is indeed the case. (First hit googling "fan tach signal 
-> > pulses")
-> 
-> OK, I will add the maximum value for the max-rpm, min-rpm and pulses-per-revolution.
-> 
-> > > 
-> > > 
-> > > >> +  div:
-> > > 
-> > > > Too generic of a name.
-> > > 
-> > > >> +    description:
-> > > >> +      Fan clock divisor
-> > > 
-> > > > But what is a fan clock?
-> > > 
-> > > This is the divisor for the tachometer sampling clock, which determines the sensitivity of the tach pin.
-> > > So, if the name of the property changes to 'tach-div,' is it acceptable to you?
-> 
-> > That sounds like a property of the controller, not the fan, so it 
-> > belongs in the controller binding. Is this really a common thing?
-> 
-> Yes, I believe this is a common feature for fans. You can refer to the Documentation/hwmon/sysfs-interface.rst,
-> where the fan divisor is defined for users, determining the fan's sensitivity.
+The probe process may generate EPROBE_DEFER. In this case
+dev_err_probe() can still record err information. Otherwise
+it may pollute logs on that occasion.
 
-It's a feature of the controller, but I guess since it may be a per 
-fan or tach channel setting having it in the fan node is fine. 
-'tach-div' is fine.
+This also helps simplifing code and standardizing the error output.
 
->  
-> > > >> +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > >> +
-> > > >> +  target-rpm:
-> > > >> +    description:
-> > > >> +      Target RPM the fan should be configured during driver probe.
-> > > 
-> > > > What driver? By the time the OS driver runs, a bunch of other boot 
-> > > > software has already run on modern systems. So this value would likely 
-> > > > be used much earlier. The point is that when exactly is outside the 
-> > > > scope of DT. This is "what RPM do I use in case of no other information 
-> > > > (e.g. temperature)".
-> > > 
-> > > So, the description should be changed to 'The default desired fan speed in RPM,'
-> > > and we shouldn't mention the timing of the property's operation in the DT, is that correct?
-> 
-> > Correct.
-> 
-> > > 
-> > > >> +    $ref: /schemas/types.yaml#/definitions/uint32
-> > > >> +
-> > > >> +  mode:
-> > > 
-> > > > Too generic.
-> > > 
-> > > >> +    description:
-> > > >> +      Select the operational mode of the fan.
-> > > 
-> > > > What are modes? Spin and don't spin?
-> > > 
-> > > The mode is used to indicate the driving mode of the fan (DC, PWM and so on).
-> > > So, if the name of the property changes to 'fan-driving-mode,' is it acceptable to you?
-> 
-> > I tend to think that should be implied from the parent node and/or other 
-> > properties. PWM if "pwms" property is present. DC if the supply is 
-> > variable. We could also use compatible strings in the fan nodes if 
-> > there's a need.
-> 
-> So, it looks that this property isn't necessary for the fan. And it should be determined by the
-> present of the driving source. is that correct?
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-Looking back, I see Guenter asked for something like this. So I guess it 
-is fine to keep if he still thinks we need it. I think it could also be 
-implied a bit more clearly if we do 'cooling-levels' as below. The fan 
-controller should know what modes it can do. Duty cycle vs. voltage in 
-uV is pretty easy to distinguish.
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 4a9e71b2dbbc..7a4537a1d66c 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -415,6 +415,7 @@ static int aspeed_vuart_map_irq_polarity(u32 dt)
+ static int aspeed_vuart_probe(struct platform_device *pdev)
+ {
+ 	struct of_phandle_args sirq_polarity_sense_args;
++	struct device *dev = &pdev->dev;
+ 	struct uart_8250_port port;
+ 	struct aspeed_vuart *vuart;
+ 	struct device_node *np;
+@@ -455,9 +456,8 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 	if (of_property_read_u32(np, "clock-frequency", &clk)) {
+ 		vuart->clk = devm_clk_get(&pdev->dev, NULL);
+ 		if (IS_ERR(vuart->clk)) {
+-			dev_warn(&pdev->dev,
+-				"clk or clock-frequency not defined\n");
+-			rc = PTR_ERR(vuart->clk);
++			rc = dev_err_probe(dev, PTR_ERR(vuart->clk),
++					   "clk or clock-frequency not defined\n");
+ 			goto err_sysfs_remove;
+ 		}
+ 
+@@ -533,7 +533,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 
+ 	rc = aspeed_vuart_set_lpc_address(vuart, prop);
+ 	if (rc < 0) {
+-		dev_err(&pdev->dev, "invalid value in aspeed,lpc-io-reg property\n");
++		dev_err_probe(dev, rc, "invalid value in aspeed,lpc-io-reg property\n");
+ 		goto err_clk_disable;
+ 	}
+ 
+@@ -545,14 +545,14 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 
+ 	rc = aspeed_vuart_set_sirq(vuart, sirq[0]);
+ 	if (rc < 0) {
+-		dev_err(&pdev->dev, "invalid sirq number in aspeed,lpc-interrupts property\n");
++		dev_err_probe(dev, rc, "invalid sirq number in aspeed,lpc-interrupts property\n");
+ 		goto err_clk_disable;
+ 	}
+ 
+ 	sirq_polarity = aspeed_vuart_map_irq_polarity(sirq[1]);
+ 	if (sirq_polarity < 0) {
+-		dev_err(&pdev->dev, "invalid sirq polarity in aspeed,lpc-interrupts property\n");
+-		rc = sirq_polarity;
++		rc = dev_err_probe(dev, sirq_polarity,
++				   "invalid sirq polarity in aspeed,lpc-interrupts property\n");
+ 		goto err_clk_disable;
+ 	}
+ 
+-- 
+2.40.0.1.gaa8946217a0b
 
-> 
-> > That reminds me, both of these modes probably need a table of 
-> > voltage/duty-cycle to RPMs. I imagine it's not always a linear response.  
-> > Naresh also privately sent me (don't do that) an updated common binding 
-> > which we discussed the need for this. I expect him to comment further 
-> > with details.
-> 
-> For this purpose, we should add the speed-map like the usage of the gpio-fan, right?
-> https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/hwmon/gpio-fan.txt
-
-That should be fine. I guess it comes down to whether we want one 
-property or 3 depending on whether the control is voltage, duty-cycle, 
-GPIO pins state, etc. Unfortunately, it's "gpio-fan,speed-map", not 
-"speed-map", so we can't use that as-is. There's also "cooling-levels" 
-which can accomplish the same thing. We don't know RPMs with that, but 
-do we need to? Maybe, as it seems some drivers want to set speed in RPMs 
-from userspace. Could also do something like this:
-
-cooling-levels = < 33   66  100>;
-rpm-levels =     <500 1000 1500>;
-
-"rpm-levels" would replace the min-rpm/max-rpm properties.
-
-
-Also, looking at gpio-fan.txt, it looks like you should add 
-"#cooling-cells" as well.
-
-Rob
