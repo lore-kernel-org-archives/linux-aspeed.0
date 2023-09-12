@@ -1,7 +1,9 @@
 From: yangchen.openbmc@gmail.com <yangchen.openbmc@gmail.com>
-Date: Tue, 12 Sep 2023 22:05:30 +0800
-Subject: [PATCH 0/2] Add CMC of Facebook Minerva platform
-Message-ID: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
+Date: Tue, 12 Sep 2023 22:05:31 +0800
+Subject: [PATCH 1/2] dt-bindings: arm: aspeed: document board compatibles
+In-Reply-To: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
+References: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
+Message-ID: <20230912140532.3797736-2-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,19 +12,26 @@ Content-Transfer-Encoding: 7bit
 
 From: Yang Chen <yangchen.openbmc@gmail.com>
 
-Add linux device tree entry related to Minerva Chassis Management Controller
-(CMC) specific devices connected to the Aspeed SoC (AST2600).
+Document the new compatibles used on the Facebook Minerva Chassis
+Management Controller (CMC).
 
-Yang Chen (2):
-  dt-bindings: arm: aspeed: document board compatibles
-  ARM: dts: aspeed: Minerva: Add Facebook Minerva CMC board
+Signed-off-by: Yang Chen <yangchen.openbmc@gmail.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../bindings/arm/aspeed/aspeed.yaml           |   1 +
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../aspeed-bmc-facebook-minerva-cmc.dts       | 265 ++++++++++++++++++
- 3 files changed, 267 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva-cmc.dts
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 68f717670f78..749ee54a3ff8 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+               - facebook,greatlakes-bmc
++              - facebook,minerva-cmc
+               - facebook,yosemite4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
 -- 
 2.34.1
 
