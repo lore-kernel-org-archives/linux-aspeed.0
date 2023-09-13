@@ -1,82 +1,64 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 13 Sep 2023 12:09:01 +0200
-Subject: [PATCH] ARM: dts: aspeed: drop unused ref_voltage ADC property
-Message-ID: <20230913100901.100365-1-krzysztof.kozlowski@linaro.org>
+Date: Wed, 13 Sep 2023 17:41:57 +0200
+Subject: [PATCH 2/2] ARM: dts: aspeed: Minerva: Add Facebook Minerva CMC
+ board
+In-Reply-To: <CALFa7M_GvCgmEZxvo_ZSYoCPOe+9-tQt3KHn=_cu3n7psP+PTA@mail.gmail.com>
+References: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
+ <20230912140532.3797736-3-yangchen.openbmc@gmail.com>
+ <1bfdc230-e358-6aa4-7d60-03b5477a6be9@linaro.org>
+ <CALFa7M_GvCgmEZxvo_ZSYoCPOe+9-tQt3KHn=_cu3n7psP+PTA@mail.gmail.com>
+Message-ID: <11c822f3-96f1-17d6-6c2a-feaa950aeea1@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Aspeed ADC "ref_voltage" property is neither documented nor used.
+On 13/09/2023 15:57, Yang Chen wrote:
+> Hi Krzysztof,
+> 
+>> +
+>> +&i2c15 {
+>> +     status = "okay";
+>> +
+>> +     eeprom at 50 {
+>> +             compatible = "atmel,24c128";
+>> +             reg = <0x50>;
+>> +     };
+>> +};
+>> +
+>> +&adc0 {
+>> +     ref_voltage = <2500>;
+> 
+> There is no such property in the bindings.
 
-Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 2 --
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts | 2 --
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 2 --
- 3 files changed, 6 deletions(-)
+Fix your email setup. This is my response, not yours.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-index 0715cb9ab30c..d7baa02e4666 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-@@ -541,7 +541,6 @@ bmc_ast2600_cpu: temperature-sensor at 35 {
- };
- 
- &adc0 {
--	ref_voltage = <2500>;
- 	status = "okay";
- 
- 	pinctrl-names = "default";
-@@ -552,7 +551,6 @@ &pinctrl_adc4_default &pinctrl_adc5_default
- };
- 
- &adc1 {
--	ref_voltage = <2500>;
- 	status = "okay";
- 
- 	pinctrl-names = "default";
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts
-index 7a53f54833a0..a86bc75a9182 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts
-@@ -211,7 +211,6 @@ &i2c13 {
- };
- 
- &adc0 {
--	ref_voltage = <2500>;
- 	status = "okay";
- 	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
- 			&pinctrl_adc2_default &pinctrl_adc3_default
-@@ -220,7 +219,6 @@ &pinctrl_adc4_default &pinctrl_adc5_default
- };
- 
- &adc1 {
--	ref_voltage = <2500>;
- 	status = "okay";
- 	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc10_default
- 			&pinctrl_adc11_default &pinctrl_adc12_default
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 64075cc41d92..4097e3d355cb 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -596,7 +596,6 @@ i2c-mux@72 {
- };
- 
- &adc0 {
--	ref_voltage = <2500>;
- 	status = "okay";
- 	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
- 			&pinctrl_adc2_default &pinctrl_adc3_default
-@@ -605,7 +604,6 @@ &pinctrl_adc4_default &pinctrl_adc5_default
- };
- 
- &adc1 {
--	ref_voltage = <2500>;
- 	status = "okay";
- 	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>;
- };
--- 
-2.34.1
+> 
+>> +     status = "okay";
+>> +     pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
+>> +             &pinctrl_adc2_default &pinctrl_adc3_default
+>> +             &pinctrl_adc4_default &pinctrl_adc5_default
+>> +             &pinctrl_adc6_default &pinctrl_adc7_default>;
+>> +};
+>> +
+>> +&adc1 {
+>> +     ref_voltage = <2500>;
+> 
+> NAK, there is no such property.
+> 
+
+So who says what?
+
+> Thanks for your advice, I will change this property to
+> "aspeed,int-vref-microvolt" which is defined in the binding in the v2 patch.
+
+No, why? Drop it. There is no user.
+
+Also, do not top post.
+
+
+
+Best regards,
+Krzysztof
 
