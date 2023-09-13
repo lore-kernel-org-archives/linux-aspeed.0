@@ -1,10 +1,11 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 13 Sep 2023 10:20:14 +0200
-Subject: [PATCH 1/2] dt-bindings: arm: aspeed: document board compatibles
-In-Reply-To: <20230912140532.3797736-2-yangchen.openbmc@gmail.com>
+Date: Wed, 13 Sep 2023 10:21:19 +0200
+Subject: [PATCH 2/2] ARM: dts: aspeed: Minerva: Add Facebook Minerva CMC
+ board
+In-Reply-To: <20230912140532.3797736-3-yangchen.openbmc@gmail.com>
 References: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
- <20230912140532.3797736-2-yangchen.openbmc@gmail.com>
-Message-ID: <26a53f62-d8d0-9583-e675-a3db99c60c8a@linaro.org>
+ <20230912140532.3797736-3-yangchen.openbmc@gmail.com>
+Message-ID: <f3100f6c-926a-7fb8-793a-d930e6b720c5@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,12 +15,12 @@ Content-Transfer-Encoding: 7bit
 On 12/09/2023 16:05, yangchen.openbmc at gmail.com wrote:
 > From: Yang Chen <yangchen.openbmc@gmail.com>
 > 
-> Document the new compatibles used on the Facebook Minerva Chassis
-> Management Controller (CMC).
+> Add linux device tree entry related to the Minerva Chassis Management
+> Controller (CMC) specific devices connected to the Aspeed SoC (AST2600).
+> 
+> Signed-off-by: Yang Chen <yangchen.openbmc@gmail.com>
 
-How is this related to
-https://lore.kernel.org/all/20230907064514.1764010-3-peteryin.openbmc at gmail.com/
-? Looks like duplicate :/
+Also looks like a duplicate.
 
 Best regards,
 Krzysztof
