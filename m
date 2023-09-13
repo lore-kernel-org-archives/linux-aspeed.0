@@ -1,61 +1,28 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 13 Sep 2023 12:04:52 +0200
-Subject: [PATCH 2/2] ARM: dts: aspeed: Minerva: Add Facebook Minerva CMC
- board
-In-Reply-To: <20230912140532.3797736-3-yangchen.openbmc@gmail.com>
+Date: Wed, 13 Sep 2023 12:05:13 +0200
+Subject: [PATCH 1/2] dt-bindings: arm: aspeed: document board compatibles
+In-Reply-To: <CALFa7M_Gov4jd3wxrXWhxuPKbDr+cp8xmuWJCQH_N=a+q03M1A@mail.gmail.com>
 References: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
- <20230912140532.3797736-3-yangchen.openbmc@gmail.com>
-Message-ID: <1bfdc230-e358-6aa4-7d60-03b5477a6be9@linaro.org>
+ <20230912140532.3797736-2-yangchen.openbmc@gmail.com>
+ <26a53f62-d8d0-9583-e675-a3db99c60c8a@linaro.org>
+ <CALFa7M_Gov4jd3wxrXWhxuPKbDr+cp8xmuWJCQH_N=a+q03M1A@mail.gmail.com>
+Message-ID: <605e4577-1e01-cd0b-9d42-34401bd7f3a7@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/09/2023 16:05, yangchen.openbmc at gmail.com wrote:
-> From: Yang Chen <yangchen.openbmc@gmail.com>
+On 13/09/2023 11:52, Yang Chen wrote:
+> Hi Krzysztof,
 > 
-> Add linux device tree entry related to the Minerva Chassis Management
-> Controller (CMC) specific devices connected to the Aspeed SoC (AST2600).
-> 
-> Signed-off-by: Yang Chen <yangchen.openbmc@gmail.com>
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../aspeed-bmc-facebook-minerva-cmc.dts       | 265 ++++++++++++++++++
->  2 files changed, 266 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva-cmc.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/
+> Thanks for your reply, Minerva is a project of Facebook server that
+> includes two types of boards. One is the motherboard that includes a BMC
+> and another is the Chassis Management Board that includes a CMC and both
+> use the Aspeed SoC (AST2600). These patches are for the CMC and the link
+> you provided is for the BMC and they need to use different DTS.
 
-
-> +
-> +&i2c15 {
-> +	status = "okay";
-> +
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c128";
-> +		reg = <0x50>;
-> +	};
-> +};
-> +
-> +&adc0 {
-> +	ref_voltage = <2500>;
-
-There is no such property in the bindings.
-
-> +	status = "okay";
-> +	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
-> +		&pinctrl_adc2_default &pinctrl_adc3_default
-> +		&pinctrl_adc4_default &pinctrl_adc5_default
-> +		&pinctrl_adc6_default &pinctrl_adc7_default>;
-> +};
-> +
-> +&adc1 {
-> +	ref_voltage = <2500>;
-
-NAK, there is no such property.
-
-
+Are they similar? Maybe you should share board DTSI?
 
 Best regards,
 Krzysztof
