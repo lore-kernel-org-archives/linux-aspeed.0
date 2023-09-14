@@ -1,64 +1,71 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 13 Sep 2023 17:41:57 +0200
-Subject: [PATCH 2/2] ARM: dts: aspeed: Minerva: Add Facebook Minerva CMC
- board
-In-Reply-To: <CALFa7M_GvCgmEZxvo_ZSYoCPOe+9-tQt3KHn=_cu3n7psP+PTA@mail.gmail.com>
-References: <20230912140532.3797736-1-yangchen.openbmc@gmail.com>
- <20230912140532.3797736-3-yangchen.openbmc@gmail.com>
- <1bfdc230-e358-6aa4-7d60-03b5477a6be9@linaro.org>
- <CALFa7M_GvCgmEZxvo_ZSYoCPOe+9-tQt3KHn=_cu3n7psP+PTA@mail.gmail.com>
-Message-ID: <11c822f3-96f1-17d6-6c2a-feaa950aeea1@linaro.org>
+From: John Ogness <john.ogness@linutronix.de>
+Date: Thu, 14 Sep 2023 20:43:21 +0206
+Subject: [PATCH tty v1 04/74] serial: 8250_aspeed_vuart: Use port lock wrappers
+In-Reply-To: <20230914183831.587273-1-john.ogness@linutronix.de>
+References: <20230914183831.587273-1-john.ogness@linutronix.de>
+Message-ID: <20230914183831.587273-5-john.ogness@linutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 13/09/2023 15:57, Yang Chen wrote:
-> Hi Krzysztof,
-> 
->> +
->> +&i2c15 {
->> +     status = "okay";
->> +
->> +     eeprom at 50 {
->> +             compatible = "atmel,24c128";
->> +             reg = <0x50>;
->> +     };
->> +};
->> +
->> +&adc0 {
->> +     ref_voltage = <2500>;
-> 
-> There is no such property in the bindings.
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Fix your email setup. This is my response, not yours.
+When a serial port is used for kernel console output, then all
+modifications to the UART registers which are done from other contexts,
+e.g. getty, termios, are interference points for the kernel console.
 
-> 
->> +     status = "okay";
->> +     pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
->> +             &pinctrl_adc2_default &pinctrl_adc3_default
->> +             &pinctrl_adc4_default &pinctrl_adc5_default
->> +             &pinctrl_adc6_default &pinctrl_adc7_default>;
->> +};
->> +
->> +&adc1 {
->> +     ref_voltage = <2500>;
-> 
-> NAK, there is no such property.
-> 
+So far this has been ignored and the printk output is based on the
+principle of hope. The rework of the console infrastructure which aims to
+support threaded and atomic consoles, requires to mark sections which
+modify the UART registers as unsafe. This allows the atomic write function
+to make informed decisions and eventually to restore operational state. It
+also allows to prevent the regular UART code from modifying UART registers
+while printk output is in progress.
 
-So who says what?
+All modifications of UART registers are guarded by the UART port lock,
+which provides an obvious synchronization point with the console
+infrastructure.
 
-> Thanks for your advice, I will change this property to
-> "aspeed,int-vref-microvolt" which is defined in the binding in the v2 patch.
+To avoid adding this functionality to all UART drivers, wrap the
+spin_[un]lock*() invocations for uart_port::lock into helper functions
+which just contain the spin_[un]lock*() invocations for now. In a
+subsequent step these helpers will gain the console synchronization
+mechanisms.
 
-No, why? Drop it. There is no user.
+Converted with coccinelle. No functional change.
 
-Also, do not top post.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-
-
-Best regards,
-Krzysztof
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 4a9e71b2dbbc..021949f252f8 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -288,9 +288,9 @@ static void aspeed_vuart_set_throttle(struct uart_port *port, bool throttle)
+ 	struct uart_8250_port *up = up_to_u8250p(port);
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&port->lock, flags);
++	uart_port_lock_irqsave(port, &flags);
+ 	__aspeed_vuart_set_throttle(up, throttle);
+-	spin_unlock_irqrestore(&port->lock, flags);
++	uart_port_unlock_irqrestore(port, flags);
+ }
+ 
+ static void aspeed_vuart_throttle(struct uart_port *port)
+@@ -340,7 +340,7 @@ static int aspeed_vuart_handle_irq(struct uart_port *port)
+ 	if (iir & UART_IIR_NO_INT)
+ 		return 0;
+ 
+-	spin_lock_irqsave(&port->lock, flags);
++	uart_port_lock_irqsave(port, &flags);
+ 
+ 	lsr = serial_port_in(port, UART_LSR);
+ 
+-- 
+2.39.2
 
