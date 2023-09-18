@@ -1,62 +1,85 @@
 From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Mon, 18 Sep 2023 21:50:44 +0200
-Subject: [PATCH net-next 01/19] net: mdio: aspeed: Convert to platform remove callback returning void
-In-Reply-To: <20230918195102.1302746-1-u.kleine-koenig@pengutronix.de>
-References: <20230918195102.1302746-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <20230918195102.1302746-2-u.kleine-koenig@pengutronix.de>
+Date: Mon, 18 Sep 2023 21:50:43 +0200
+Subject: [PATCH net-next 00/19] net: mdio: Convert to platform remove callback returning void
+Message-ID: <20230918195102.1302746-1-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is ignored (apart
-from emitting a warning) and this typically results in resource leaks.
-To improve here there is a quest to make the remove callback return
-void. In the first step of this quest all drivers are converted to
-.remove_new() which already returns void. Eventually after all drivers
-are converted, .remove_new() is renamed to .remove().
+Hello,
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+this series convert all platform drivers below drivers/net/mdio to
+use remove_new. The motivation is to get rid of an integer return code
+that is (mostly) ignored by the platform driver core and error prone on
+the driver side.
 
-Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
----
- drivers/net/mdio/mdio-aspeed.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+See commit 5c5a7680e67b ("platform: Provide a remove callback that
+returns no value") for an extended explanation and the eventual goal.
 
-diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
-index c727103c8b05..70edeeb7771e 100644
---- a/drivers/net/mdio/mdio-aspeed.c
-+++ b/drivers/net/mdio/mdio-aspeed.c
-@@ -177,15 +177,13 @@ static int aspeed_mdio_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int aspeed_mdio_remove(struct platform_device *pdev)
-+static void aspeed_mdio_remove(struct platform_device *pdev)
- {
- 	struct mii_bus *bus = (struct mii_bus *)platform_get_drvdata(pdev);
- 	struct aspeed_mdio *ctx = bus->priv;
- 
- 	reset_control_assert(ctx->reset);
- 	mdiobus_unregister(bus);
--
--	return 0;
- }
- 
- static const struct of_device_id aspeed_mdio_of_match[] = {
-@@ -200,7 +198,7 @@ static struct platform_driver aspeed_mdio_driver = {
- 		.of_match_table = aspeed_mdio_of_match,
- 	},
- 	.probe = aspeed_mdio_probe,
--	.remove = aspeed_mdio_remove,
-+	.remove_new = aspeed_mdio_remove,
- };
- 
- module_platform_driver(aspeed_mdio_driver);
+There are no interdependencies between the patches. As there are still
+quite a few drivers to convert, I'm happy about every patch that makes
+it in. So even if there is a merge conflict with one patch until you
+apply, please apply the remainder of this series anyhow.
+
+Best regards
+Uwe
+
+Uwe Kleine-K?nig (19):
+  net: mdio: aspeed: Convert to platform remove callback returning void
+  net: mdio: bcm-iproc: Convert to platform remove callback returning
+    void
+  net: mdio: bcm-unimac: Convert to platform remove callback returning
+    void
+  net: mdio: gpio: Convert to platform remove callback returning void
+  net: mdio: hisi-femac: Convert to platform remove callback returning
+    void
+  net: mdio: ipq4019: Convert to platform remove callback returning void
+  net: mdio: ipq8064: Convert to platform remove callback returning void
+  net: mdio: moxart: Convert to platform remove callback returning void
+  net: mdio: mscc-miim: Convert to platform remove callback returning
+    void
+  net: mdio: mux-bcm-iproc: Convert to platform remove callback
+    returning void
+  net: mdio: mux-bcm6368: Convert to platform remove callback returning
+    void
+  net: mdio: mux-gpio: Convert to platform remove callback returning
+    void
+  net: mdio: mux-meson-g12a: Convert to platform remove callback
+    returning void
+  net: mdio: mux-meson-gxl: Convert to platform remove callback
+    returning void
+  net: mdio: mux-mmioreg: Convert to platform remove callback returning
+    void
+  net: mdio: mux-multiplexer: Convert to platform remove callback
+    returning void
+  net: mdio: octeon: Convert to platform remove callback returning void
+  net: mdio: sun4i: Convert to platform remove callback returning void
+  net: mdio: xgene: Convert to platform remove callback returning void
+
+ drivers/net/mdio/mdio-aspeed.c          | 6 ++----
+ drivers/net/mdio/mdio-bcm-iproc.c       | 6 ++----
+ drivers/net/mdio/mdio-bcm-unimac.c      | 6 ++----
+ drivers/net/mdio/mdio-gpio.c            | 6 ++----
+ drivers/net/mdio/mdio-hisi-femac.c      | 6 ++----
+ drivers/net/mdio/mdio-ipq4019.c         | 6 ++----
+ drivers/net/mdio/mdio-ipq8064.c         | 7 ++-----
+ drivers/net/mdio/mdio-moxart.c          | 6 ++----
+ drivers/net/mdio/mdio-mscc-miim.c       | 6 ++----
+ drivers/net/mdio/mdio-mux-bcm-iproc.c   | 6 ++----
+ drivers/net/mdio/mdio-mux-bcm6368.c     | 6 ++----
+ drivers/net/mdio/mdio-mux-gpio.c        | 5 ++---
+ drivers/net/mdio/mdio-mux-meson-g12a.c  | 6 ++----
+ drivers/net/mdio/mdio-mux-meson-gxl.c   | 6 ++----
+ drivers/net/mdio/mdio-mux-mmioreg.c     | 6 ++----
+ drivers/net/mdio/mdio-mux-multiplexer.c | 6 ++----
+ drivers/net/mdio/mdio-octeon.c          | 5 ++---
+ drivers/net/mdio/mdio-sun4i.c           | 6 ++----
+ drivers/net/mdio/mdio-xgene.c           | 6 ++----
+ 19 files changed, 38 insertions(+), 75 deletions(-)
+
+base-commit: 7fc7222d9680366edeecc219c21ca96310bdbc10
 -- 
 2.40.1
 
