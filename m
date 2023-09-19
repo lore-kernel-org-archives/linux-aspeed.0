@@ -1,85 +1,80 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Mon, 18 Sep 2023 21:50:43 +0200
-Subject: [PATCH net-next 00/19] net: mdio: Convert to platform remove callback returning void
-Message-ID: <20230918195102.1302746-1-u.kleine-koenig@pengutronix.de>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 19 Sep 2023 22:54:50 +0300
+Subject: [PATCH v1 1/1] serial: 8250_aspeed_vuart: Use devm_clk_get_enabled()
+Message-ID: <20230919195450.3197881-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Use devm_clk_get_enabled() to simplify the code.
 
-this series convert all platform drivers below drivers/net/mdio to
-use remove_new. The motivation is to get rid of an integer return code
-that is (mostly) ignored by the platform driver core and error prone on
-the driver side.
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
+---
+ drivers/tty/serial/8250/8250_aspeed_vuart.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
-See commit 5c5a7680e67b ("platform: Provide a remove callback that
-returns no value") for an extended explanation and the eventual goal.
-
-There are no interdependencies between the patches. As there are still
-quite a few drivers to convert, I'm happy about every patch that makes
-it in. So even if there is a merge conflict with one patch until you
-apply, please apply the remainder of this series anyhow.
-
-Best regards
-Uwe
-
-Uwe Kleine-K?nig (19):
-  net: mdio: aspeed: Convert to platform remove callback returning void
-  net: mdio: bcm-iproc: Convert to platform remove callback returning
-    void
-  net: mdio: bcm-unimac: Convert to platform remove callback returning
-    void
-  net: mdio: gpio: Convert to platform remove callback returning void
-  net: mdio: hisi-femac: Convert to platform remove callback returning
-    void
-  net: mdio: ipq4019: Convert to platform remove callback returning void
-  net: mdio: ipq8064: Convert to platform remove callback returning void
-  net: mdio: moxart: Convert to platform remove callback returning void
-  net: mdio: mscc-miim: Convert to platform remove callback returning
-    void
-  net: mdio: mux-bcm-iproc: Convert to platform remove callback
-    returning void
-  net: mdio: mux-bcm6368: Convert to platform remove callback returning
-    void
-  net: mdio: mux-gpio: Convert to platform remove callback returning
-    void
-  net: mdio: mux-meson-g12a: Convert to platform remove callback
-    returning void
-  net: mdio: mux-meson-gxl: Convert to platform remove callback
-    returning void
-  net: mdio: mux-mmioreg: Convert to platform remove callback returning
-    void
-  net: mdio: mux-multiplexer: Convert to platform remove callback
-    returning void
-  net: mdio: octeon: Convert to platform remove callback returning void
-  net: mdio: sun4i: Convert to platform remove callback returning void
-  net: mdio: xgene: Convert to platform remove callback returning void
-
- drivers/net/mdio/mdio-aspeed.c          | 6 ++----
- drivers/net/mdio/mdio-bcm-iproc.c       | 6 ++----
- drivers/net/mdio/mdio-bcm-unimac.c      | 6 ++----
- drivers/net/mdio/mdio-gpio.c            | 6 ++----
- drivers/net/mdio/mdio-hisi-femac.c      | 6 ++----
- drivers/net/mdio/mdio-ipq4019.c         | 6 ++----
- drivers/net/mdio/mdio-ipq8064.c         | 7 ++-----
- drivers/net/mdio/mdio-moxart.c          | 6 ++----
- drivers/net/mdio/mdio-mscc-miim.c       | 6 ++----
- drivers/net/mdio/mdio-mux-bcm-iproc.c   | 6 ++----
- drivers/net/mdio/mdio-mux-bcm6368.c     | 6 ++----
- drivers/net/mdio/mdio-mux-gpio.c        | 5 ++---
- drivers/net/mdio/mdio-mux-meson-g12a.c  | 6 ++----
- drivers/net/mdio/mdio-mux-meson-gxl.c   | 6 ++----
- drivers/net/mdio/mdio-mux-mmioreg.c     | 6 ++----
- drivers/net/mdio/mdio-mux-multiplexer.c | 6 ++----
- drivers/net/mdio/mdio-octeon.c          | 5 ++---
- drivers/net/mdio/mdio-sun4i.c           | 6 ++----
- drivers/net/mdio/mdio-xgene.c           | 6 ++----
- 19 files changed, 38 insertions(+), 75 deletions(-)
-
-base-commit: 7fc7222d9680366edeecc219c21ca96310bdbc10
+diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+index 7a4537a1d66c..270b3a710eb6 100644
+--- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
++++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
+@@ -34,7 +34,6 @@
+ 
+ struct aspeed_vuart {
+ 	struct device		*dev;
+-	struct clk		*clk;
+ 	int			line;
+ 	struct timer_list	unthrottle_timer;
+ 	struct uart_8250_port	*port;
+@@ -422,6 +421,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	u32 clk, prop, sirq[2];
+ 	int rc, sirq_polarity;
++	struct clk *vclk;
+ 
+ 	np = pdev->dev.of_node;
+ 
+@@ -454,18 +454,13 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 		return rc;
+ 
+ 	if (of_property_read_u32(np, "clock-frequency", &clk)) {
+-		vuart->clk = devm_clk_get(&pdev->dev, NULL);
+-		if (IS_ERR(vuart->clk)) {
+-			rc = dev_err_probe(dev, PTR_ERR(vuart->clk),
+-					   "clk or clock-frequency not defined\n");
++		vclk = devm_clk_get_enabled(dev, NULL);
++		if (IS_ERR(vclk)) {
++			rc = dev_err_probe(dev, PTR_ERR(vclk), "clk or clock-frequency not defined\n");
+ 			goto err_sysfs_remove;
+ 		}
+ 
+-		rc = clk_prepare_enable(vuart->clk);
+-		if (rc < 0)
+-			goto err_sysfs_remove;
+-
+-		clk = clk_get_rate(vuart->clk);
++		clk = clk_get_rate(vclk);
+ 	}
+ 
+ 	/* If current-speed was set, then try not to change it. */
+@@ -565,7 +560,6 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ err_clk_disable:
+-	clk_disable_unprepare(vuart->clk);
+ 	irq_dispose_mapping(port.port.irq);
+ err_sysfs_remove:
+ 	sysfs_remove_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
+@@ -580,7 +574,6 @@ static int aspeed_vuart_remove(struct platform_device *pdev)
+ 	aspeed_vuart_set_enabled(vuart, false);
+ 	serial8250_unregister_port(vuart->line);
+ 	sysfs_remove_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
+-	clk_disable_unprepare(vuart->clk);
+ 
+ 	return 0;
+ }
 -- 
-2.40.1
+2.40.0.1.gaa8946217a0b
 
