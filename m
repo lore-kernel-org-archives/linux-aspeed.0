@@ -1,80 +1,61 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Tue, 19 Sep 2023 22:54:50 +0300
-Subject: [PATCH v1 1/1] serial: 8250_aspeed_vuart: Use devm_clk_get_enabled()
-Message-ID: <20230919195450.3197881-1-andriy.shevchenko@linux.intel.com>
+From: Doug Anderson <dianders@chromium.org>
+Date: Thu, 21 Sep 2023 11:48:01 -0700
+Subject: [RFT PATCH 5/6] drm: Call drm_atomic_helper_shutdown() at
+ shutdown/remove time for misc drivers
+In-Reply-To: <20230901163944.RFT.5.I771eb4bd03d8772b19e7dcfaef3e2c167bce5846@changeid>
+References: <20230901234015.566018-1-dianders@chromium.org> <20230901163944.RFT.5.I771eb4bd03d8772b19e7dcfaef3e2c167bce5846@changeid>
+Message-ID: <CAD=FV=Vvqd76m-i2vbpVoiTir18S4ceFTd17nGdH1yU+9jhfDw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use devm_clk_get_enabled() to simplify the code.
+Hi,
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
----
- drivers/tty/serial/8250/8250_aspeed_vuart.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+On Fri, Sep 1, 2023 at 4:41?PM Douglas Anderson <dianders@chromium.org> wrote:
+>
+> Based on grepping through the source code these drivers appear to be
+> missing a call to drm_atomic_helper_shutdown() at system shutdown time
+> and at driver remove (or unbind) time. Among other things, this means
+> that if a panel is in use that it won't be cleanly powered off at
+> system shutdown time.
+>
+> The fact that we should call drm_atomic_helper_shutdown() in the case
+> of OS shutdown/restart and at driver remove (or unbind) time comes
+> straight out of the kernel doc "driver instance overview" in
+> drm_drv.c.
+>
+> A few notes about these fixes:
+> - I confirmed that these drivers were all DRIVER_MODESET type drivers,
+>   which I believe makes this relevant.
+> - I confirmed that these drivers were all DRIVER_ATOMIC.
+> - When adding drm_atomic_helper_shutdown() to the remove/unbind path,
+>   I added it after drm_kms_helper_poll_fini() when the driver had
+>   it. This seemed to be what other drivers did. If
+>   drm_kms_helper_poll_fini() wasn't there I added it straight after
+>   drm_dev_unregister().
+> - This patch deals with drivers using the component model in similar
+>   ways as the patch ("drm: Call drm_atomic_helper_shutdown() at
+>   shutdown time for misc drivers")
+> - These fixes rely on the patch ("drm/atomic-helper:
+>   drm_atomic_helper_shutdown(NULL) should be a noop") to simplify
+>   shutdown.
+>
+> Suggested-by: Maxime Ripard <mripard@kernel.org>
+> Signed-off-by: Douglas Anderson <dianders@chromium.org>
+> ---
+>
+>  drivers/gpu/drm/aspeed/aspeed_gfx_drv.c |  7 +++++++
+>  drivers/gpu/drm/mgag200/mgag200_drv.c   |  8 ++++++++
+>  drivers/gpu/drm/pl111/pl111_drv.c       |  7 +++++++
+>  drivers/gpu/drm/stm/drv.c               |  7 +++++++
+>  drivers/gpu/drm/tilcdc/tilcdc_drv.c     | 11 ++++++++++-
+>  drivers/gpu/drm/tve200/tve200_drv.c     |  7 +++++++
+>  drivers/gpu/drm/vboxvideo/vbox_drv.c    | 10 ++++++++++
+>  7 files changed, 56 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/8250/8250_aspeed_vuart.c b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-index 7a4537a1d66c..270b3a710eb6 100644
---- a/drivers/tty/serial/8250/8250_aspeed_vuart.c
-+++ b/drivers/tty/serial/8250/8250_aspeed_vuart.c
-@@ -34,7 +34,6 @@
- 
- struct aspeed_vuart {
- 	struct device		*dev;
--	struct clk		*clk;
- 	int			line;
- 	struct timer_list	unthrottle_timer;
- 	struct uart_8250_port	*port;
-@@ -422,6 +421,7 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	u32 clk, prop, sirq[2];
- 	int rc, sirq_polarity;
-+	struct clk *vclk;
- 
- 	np = pdev->dev.of_node;
- 
-@@ -454,18 +454,13 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 		return rc;
- 
- 	if (of_property_read_u32(np, "clock-frequency", &clk)) {
--		vuart->clk = devm_clk_get(&pdev->dev, NULL);
--		if (IS_ERR(vuart->clk)) {
--			rc = dev_err_probe(dev, PTR_ERR(vuart->clk),
--					   "clk or clock-frequency not defined\n");
-+		vclk = devm_clk_get_enabled(dev, NULL);
-+		if (IS_ERR(vclk)) {
-+			rc = dev_err_probe(dev, PTR_ERR(vclk), "clk or clock-frequency not defined\n");
- 			goto err_sysfs_remove;
- 		}
- 
--		rc = clk_prepare_enable(vuart->clk);
--		if (rc < 0)
--			goto err_sysfs_remove;
--
--		clk = clk_get_rate(vuart->clk);
-+		clk = clk_get_rate(vclk);
- 	}
- 
- 	/* If current-speed was set, then try not to change it. */
-@@ -565,7 +560,6 @@ static int aspeed_vuart_probe(struct platform_device *pdev)
- 	return 0;
- 
- err_clk_disable:
--	clk_disable_unprepare(vuart->clk);
- 	irq_dispose_mapping(port.port.irq);
- err_sysfs_remove:
- 	sysfs_remove_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
-@@ -580,7 +574,6 @@ static int aspeed_vuart_remove(struct platform_device *pdev)
- 	aspeed_vuart_set_enabled(vuart, false);
- 	serial8250_unregister_port(vuart->line);
- 	sysfs_remove_group(&vuart->dev->kobj, &aspeed_vuart_attr_group);
--	clk_disable_unprepare(vuart->clk);
- 
- 	return 0;
- }
--- 
-2.40.0.1.gaa8946217a0b
+Landed on drm-misc-next:
 
+3c4babae3c4a drm: Call drm_atomic_helper_shutdown() at shutdown/remove
+time for misc drivers
