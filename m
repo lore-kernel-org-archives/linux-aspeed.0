@@ -1,48 +1,36 @@
-From: Joe Wang <joe_wang@aspeedtech.com>
-Date: Wed, 20 Sep 2023 18:33:32 +0800
-Subject: [PATCH] pinctrl: pinctrl-aspeed-g6: Add more settings for USB2AHP function
-Message-ID: <20230920103332.274151-1-joe_wang@aspeedtech.com>
+From: Simon Horman <horms@kernel.org>
+Date: Thu, 21 Sep 2023 16:04:32 +0100
+Subject: [PATCH net-next 00/19] net: mdio: Convert to platform remove
+ callback returning void
+In-Reply-To: <20230918195102.1302746-1-u.kleine-koenig@pengutronix.de>
+References: <20230918195102.1302746-1-u.kleine-koenig@pengutronix.de>
+Message-ID: <20230921150432.GP224399@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2600 USB2AHP (USB PortA: PCIe EHCI to PHY) function needs to set the
-register SCUC20[16]. Set it to enable the PCIe EHCI device on PCIe bus.
-Besides, also add USB2AHP signal expressions into pin declarations.
+On Mon, Sep 18, 2023 at 09:50:43PM +0200, Uwe Kleine-K?nig wrote:
+> Hello,
+> 
+> this series convert all platform drivers below drivers/net/mdio to
+> use remove_new. The motivation is to get rid of an integer return code
+> that is (mostly) ignored by the platform driver core and error prone on
+> the driver side.
+> 
+> See commit 5c5a7680e67b ("platform: Provide a remove callback that
+> returns no value") for an extended explanation and the eventual goal.
+> 
+> There are no interdependencies between the patches. As there are still
+> quite a few drivers to convert, I'm happy about every patch that makes
+> it in. So even if there is a merge conflict with one patch until you
+> apply, please apply the remainder of this series anyhow.
+> 
+> Best regards
+> Uwe
 
-Signed-off-by: Joe Wang <joe_wang@aspeedtech.com>
----
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+For series,
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-index 80838dc54b3a..d376fa7114d1 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
-@@ -1592,9 +1592,10 @@ SIG_EXPR_LIST_DECL_SEMG(A4, USB2ADPDP, USBA, USB2ADP, USB2ADP_DESC,
- 			SIG_DESC_SET(SCUC20, 16));
- SIG_EXPR_LIST_DECL_SEMG(A4, USB2ADDP, USBA, USB2AD, USB2AD_DESC);
- SIG_EXPR_LIST_DECL_SEMG(A4, USB2AHDP, USBA, USB2AH, USB2AH_DESC);
--SIG_EXPR_LIST_DECL_SEMG(A4, USB2AHPDP, USBA, USB2AHP, USB2AHP_DESC);
-+SIG_EXPR_LIST_DECL_SEMG(A4, USB2AHPDP, USBA, USB2AHP, USB2AHP_DESC,
-+			SIG_DESC_SET(SCUC20, 16));
- PIN_DECL_(A4, SIG_EXPR_LIST_PTR(A4, USB2ADPDP), SIG_EXPR_LIST_PTR(A4, USB2ADDP),
--	  SIG_EXPR_LIST_PTR(A4, USB2AHDP));
-+	  SIG_EXPR_LIST_PTR(A4, USB2AHDP), SIG_EXPR_LIST_PTR(A4, USB2AHPDP));
- 
- #define B4 253
- SIG_EXPR_LIST_DECL_SEMG(B4, USB2ADPDN, USBA, USB2ADP, USB2ADP_DESC);
-@@ -1602,7 +1603,7 @@ SIG_EXPR_LIST_DECL_SEMG(B4, USB2ADDN, USBA, USB2AD, USB2AD_DESC);
- SIG_EXPR_LIST_DECL_SEMG(B4, USB2AHDN, USBA, USB2AH, USB2AH_DESC);
- SIG_EXPR_LIST_DECL_SEMG(B4, USB2AHPDN, USBA, USB2AHP, USB2AHP_DESC);
- PIN_DECL_(B4, SIG_EXPR_LIST_PTR(B4, USB2ADPDN), SIG_EXPR_LIST_PTR(B4, USB2ADDN),
--	  SIG_EXPR_LIST_PTR(B4, USB2AHDN));
-+	  SIG_EXPR_LIST_PTR(B4, USB2AHDN), SIG_EXPR_LIST_PTR(B4, USB2AHPDN));
- 
- GROUP_DECL(USBA, A4, B4);
- 
--- 
-2.34.1
+Reviewed-by: Simon Horman <horms@kernel.org>
 
