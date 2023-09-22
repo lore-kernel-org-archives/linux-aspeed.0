@@ -1,61 +1,99 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Fri, 22 Sep 2023 03:42:34 -0700
-Subject: [PATCH 2/2] watchdog: aspeed: Add support for aspeed,reset-mask DT property
-In-Reply-To: <20230922104231.1434-4-zev@bewilderbeest.net>
-References: <20230922104231.1434-4-zev@bewilderbeest.net>
-Message-ID: <20230922104231.1434-6-zev@bewilderbeest.net>
+From: Jian Zhang <zhangjian.3032@bytedance.com>
+Date: Fri, 22 Sep 2023 10:39:13 -0400
+Subject: [External] Re: [PATCH] i2c: aspeed: Fix i2c bus hang in slave read
+In-Reply-To: <CACPK8XfWKLS_4nBC+NCSw=21iQeaHzBXOROmz9T+S0qZHCBKeg@mail.gmail.com>
+References: <20230810072155.3726352-1-zhangjian.3032@bytedance.com> <CACPK8XfWKLS_4nBC+NCSw=21iQeaHzBXOROmz9T+S0qZHCBKeg@mail.gmail.com>
+Message-ID: <CA+J-oUtxiQBOT+VM3fbOUM8HL5TX-C4HqtbbT__b4_KsGAJy1w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This property allows the device-tree to specify how the Aspeed
-watchdog timer's reset mask register(s) should be set, so that
-peripherals can be individually exempted from (or opted in to) being
-reset when the watchdog timer expires.
+> From: "Joel Stanley"<joel@jms.id.au>
+> Date:? Fri, Sep 22, 2023, 14:48
+> Subject:? [External] Re: [PATCH] i2c: aspeed: Fix i2c bus hang in slave read
+> To: "Jian Zhang"<zhangjian.3032@bytedance.com>, "Tommy Huang"<tommy_huang@aspeedtech.com>
+> Cc: <brendan.higgins@linux.dev>, <benh@kernel.crashing.org>, <andrew@aj.id.au>, <zhangjian3032@gmail.com>, <yulei.sh@bytedance.com>, <xiexinnan@bytedance.com>, "open list:ARM/ASPEED I2C DRIVER"<linux-i2c@vger.kernel.org>, "moderated list:ARM/ASPEED I2C DRIVER"<openbmc@lists.ozlabs.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-aspeed@lists.ozlabs.org>, "open list"<linux-kernel@vger.kernel.org>
+> On Thu, 10 Aug 2023 at 07:22, Jian Zhang <zhangjian.3032@bytedance.com> wrote:
+> >
+> > When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
+> > as a slave, a situation arises where the master sends a START signal
+> > without the accompanying STOP signal. This action results in a
+> > persistent I2C bus timeout. The core issue stems from the fact that
+> > the i2c controller remains in a slave read state without a timeout
+> > mechanism. As a consequence, the bus perpetually experiences timeouts.
+> >
+> > This proposed patch addresses this problem by introducing a status
+> > check during i2c transmit timeouts. In the event that the controller
+> > is in a slave read state, the i2c controller will be reset to restore
+> > proper functionality and allow the I2C bus to resume normal operation.
+> >
+> > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
+>
+> Tommy has submitted a similar fix:
+>
+>? https://lore.kernel.org/linux-i2c/20230906004910.4157305-1-tommy_huang at aspeedtech.com/
+>
+> His change is very heavy handed; it reinitialises the bus including
+> re-parsing the device tree (!).
+>
+> Should we have merged this fix instead? If not, are you able to
+> confirm that his change fixes your issue?
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
- drivers/watchdog/aspeed_wdt.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+I feel it's for solving the same issue, but I think this patch is
+missing the action
+`bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;`,
+?which means it can't resolve my problem. @Tommy, can you help confirm this?
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index b72a858bbac7..b4773a6aaf8c 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -79,6 +79,8 @@ MODULE_DEVICE_TABLE(of, aspeed_wdt_of_table);
- #define   WDT_TIMEOUT_STATUS_BOOT_SECONDARY	BIT(1)
- #define WDT_CLEAR_TIMEOUT_STATUS	0x14
- #define   WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION	BIT(0)
-+#define WDT_RESET_MASK1		0x1c
-+#define WDT_RESET_MASK2		0x20
- 
- /*
-  * WDT_RESET_WIDTH controls the characteristics of the external pulse (if
-@@ -402,6 +404,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 
- 	if ((of_device_is_compatible(np, "aspeed,ast2500-wdt")) ||
- 		(of_device_is_compatible(np, "aspeed,ast2600-wdt"))) {
-+		u32 reset_mask[2];
-+		size_t nrstmask = of_device_is_compatible(np, "aspeed,ast2600-wdt") ? 2 : 1;
- 		u32 reg = readl(wdt->base + WDT_RESET_WIDTH);
- 
- 		reg &= wdt->cfg->ext_pulse_width_mask;
-@@ -419,6 +423,13 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 			reg |= WDT_OPEN_DRAIN_MAGIC;
- 
- 		writel(reg, wdt->base + WDT_RESET_WIDTH);
-+
-+		ret = of_property_read_u32_array(np, "aspeed,reset-mask", reset_mask, nrstmask);
-+		if (!ret) {
-+			writel(reset_mask[0], wdt->base + WDT_RESET_MASK1);
-+			if (nrstmask > 1)
-+				writel(reset_mask[1], wdt->base + WDT_RESET_MASK2);
-+		}
- 	}
- 
- 	if (!of_property_read_u32(np, "aspeed,ext-pulse-duration", &duration)) {
--- 
-2.40.0.5.gf6e3b97ba6d2.dirty
+Thanks,
 
+Jian
+
+>
+> Cheers,
+>
+> Joel
+>
+> > ---
+> >? drivers/i2c/busses/i2c-aspeed.c | 17 +++++++++++++++++
+> >? 1 file changed, 17 insertions(+)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> > index e76befe3f60f..1a95205fc946 100644
+> > --- a/drivers/i2c/busses/i2c-aspeed.c
+> > +++ b/drivers/i2c/busses/i2c-aspeed.c
+> > @@ -113,6 +113,7 @@
+> > ? ? ? ? ? ? ? ?? ASPEED_I2CD_M_RX_CMD | ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?? \
+> > ? ? ? ? ? ? ? ?? ASPEED_I2CD_M_TX_CMD | ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?? \
+> > ? ? ? ? ? ? ? ?? ASPEED_I2CD_M_START_CMD)
+> > +#define ASPEED_I2CD_SLAVE_CMDS_MASK ? ? ? ? ? ? ? ? ?? GENMASK(31, 29)
+> >
+> >? /* 0x18 : I2CD Slave Device Address Register ? */
+> >? #define ASPEED_I2CD_DEV_ADDR_MASK ? ? ? ? ? ? ? ? ? ?? GENMASK(6, 0)
+> > @@ -706,6 +707,22 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
+> > ? ? ? ? ? ? ? ? ? ?? ASPEED_I2CD_BUS_BUSY_STS))
+> > ? ? ? ? ? ? ? ? ? ? ? ? aspeed_i2c_recover_bus(bus);
+> >
+> > +#if IS_ENABLED(CONFIG_I2C_SLAVE)
+> > + ? ? ? ? ? ? ? /*
+> > + ? ? ? ? ? ? ?? * If master timed out and bus is in slave mode.
+> > + ? ? ? ? ? ? ?? * reset the slave mode.
+> > + ? ? ? ? ? ? ?? */
+> > + ? ? ? ? ? ? ? if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_SLAVE_CMDS_MASK) {
+> > + ? ? ? ? ? ? ? ? ? ? ? spin_lock_irqsave(&bus->lock, flags);
+> > + ? ? ? ? ? ? ? ? ? ? ? u32 func_ctrl_reg_val = readl(bus->base + ASPEED_I2C_FUN_CTRL_REG);
+> > +
+> > + ? ? ? ? ? ? ? ? ? ? ? writel(0, bus->base + ASPEED_I2C_FUN_CTRL_REG);
+> > + ? ? ? ? ? ? ? ? ? ? ? writel(func_ctrl_reg_val, bus->base + ASPEED_I2C_FUN_CTRL_REG);
+> > + ? ? ? ? ? ? ? ? ? ? ? bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+> > + ? ? ? ? ? ? ? ? ? ? ? spin_unlock_irqrestore(&bus->lock, flags);
+> > + ? ? ? ? ? ? ? }
+> > +#endif
+> > +
+> > ? ? ? ? ? ? ? ? /*
+> > ? ? ? ? ? ? ? ?? * If timed out and the state is still pending, drop the pending
+> > ? ? ? ? ? ? ? ?? * master command.
+> > --
+> > 2.30.2
+> >
