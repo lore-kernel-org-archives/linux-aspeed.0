@@ -1,99 +1,44 @@
-From: Jian Zhang <zhangjian.3032@bytedance.com>
-Date: Fri, 22 Sep 2023 10:39:13 -0400
-Subject: [External] Re: [PATCH] i2c: aspeed: Fix i2c bus hang in slave read
-In-Reply-To: <CACPK8XfWKLS_4nBC+NCSw=21iQeaHzBXOROmz9T+S0qZHCBKeg@mail.gmail.com>
-References: <20230810072155.3726352-1-zhangjian.3032@bytedance.com> <CACPK8XfWKLS_4nBC+NCSw=21iQeaHzBXOROmz9T+S0qZHCBKeg@mail.gmail.com>
-Message-ID: <CA+J-oUtxiQBOT+VM3fbOUM8HL5TX-C4HqtbbT__b4_KsGAJy1w@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 23 Sep 2023 03:08:37 +0800
+Subject: [PATCH v1 1/1] ARM: dts: aspeed: yosemite4: Add i2c-mux/eeprom
+ devices
+In-Reply-To: <20230922064127.283625-2-Delphine_CC_Chiu@wiwynn.com>
+References: <20230922064127.283625-2-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <202309230217.cHc3qLuk-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> From: "Joel Stanley"<joel@jms.id.au>
-> Date:? Fri, Sep 22, 2023, 14:48
-> Subject:? [External] Re: [PATCH] i2c: aspeed: Fix i2c bus hang in slave read
-> To: "Jian Zhang"<zhangjian.3032@bytedance.com>, "Tommy Huang"<tommy_huang@aspeedtech.com>
-> Cc: <brendan.higgins@linux.dev>, <benh@kernel.crashing.org>, <andrew@aj.id.au>, <zhangjian3032@gmail.com>, <yulei.sh@bytedance.com>, <xiexinnan@bytedance.com>, "open list:ARM/ASPEED I2C DRIVER"<linux-i2c@vger.kernel.org>, "moderated list:ARM/ASPEED I2C DRIVER"<openbmc@lists.ozlabs.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-aspeed@lists.ozlabs.org>, "open list"<linux-kernel@vger.kernel.org>
-> On Thu, 10 Aug 2023 at 07:22, Jian Zhang <zhangjian.3032@bytedance.com> wrote:
-> >
-> > When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
-> > as a slave, a situation arises where the master sends a START signal
-> > without the accompanying STOP signal. This action results in a
-> > persistent I2C bus timeout. The core issue stems from the fact that
-> > the i2c controller remains in a slave read state without a timeout
-> > mechanism. As a consequence, the bus perpetually experiences timeouts.
-> >
-> > This proposed patch addresses this problem by introducing a status
-> > check during i2c transmit timeouts. In the event that the controller
-> > is in a slave read state, the i2c controller will be reset to restore
-> > proper functionality and allow the I2C bus to resume normal operation.
-> >
-> > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
->
-> Tommy has submitted a similar fix:
->
->? https://lore.kernel.org/linux-i2c/20230906004910.4157305-1-tommy_huang at aspeedtech.com/
->
-> His change is very heavy handed; it reinitialises the bus including
-> re-parsing the device tree (!).
->
-> Should we have merged this fix instead? If not, are you able to
-> confirm that his change fixes your issue?
+Hi Delphine,
 
-I feel it's for solving the same issue, but I think this patch is
-missing the action
-`bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;`,
-?which means it can't resolve my problem. @Tommy, can you help confirm this?
+kernel test robot noticed the following build errors:
 
-Thanks,
+[auto build test ERROR on krzk/for-next]
+[also build test ERROR on linus/master v6.6-rc2 next-20230921]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Jian
+url:    https://github.com/intel-lab-lkp/linux/commits/Delphine-CC-Chiu/ARM-dts-aspeed-yosemite4-Add-i2c-mux-eeprom-devices/20230922-144218
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux.git for-next
+patch link:    https://lore.kernel.org/r/20230922064127.283625-2-Delphine_CC_Chiu%40wiwynn.com
+patch subject: [PATCH v1 1/1] ARM: dts: aspeed: yosemite4: Add i2c-mux/eeprom devices
+config: arm-defconfig (https://download.01.org/0day-ci/archive/20230923/202309230217.cHc3qLuk-lkp at intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20230923/202309230217.cHc3qLuk-lkp at intel.com/reproduce)
 
->
-> Cheers,
->
-> Joel
->
-> > ---
-> >? drivers/i2c/busses/i2c-aspeed.c | 17 +++++++++++++++++
-> >? 1 file changed, 17 insertions(+)
-> >
-> > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> > index e76befe3f60f..1a95205fc946 100644
-> > --- a/drivers/i2c/busses/i2c-aspeed.c
-> > +++ b/drivers/i2c/busses/i2c-aspeed.c
-> > @@ -113,6 +113,7 @@
-> > ? ? ? ? ? ? ? ?? ASPEED_I2CD_M_RX_CMD | ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?? \
-> > ? ? ? ? ? ? ? ?? ASPEED_I2CD_M_TX_CMD | ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?? \
-> > ? ? ? ? ? ? ? ?? ASPEED_I2CD_M_START_CMD)
-> > +#define ASPEED_I2CD_SLAVE_CMDS_MASK ? ? ? ? ? ? ? ? ?? GENMASK(31, 29)
-> >
-> >? /* 0x18 : I2CD Slave Device Address Register ? */
-> >? #define ASPEED_I2CD_DEV_ADDR_MASK ? ? ? ? ? ? ? ? ? ?? GENMASK(6, 0)
-> > @@ -706,6 +707,22 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
-> > ? ? ? ? ? ? ? ? ? ?? ASPEED_I2CD_BUS_BUSY_STS))
-> > ? ? ? ? ? ? ? ? ? ? ? ? aspeed_i2c_recover_bus(bus);
-> >
-> > +#if IS_ENABLED(CONFIG_I2C_SLAVE)
-> > + ? ? ? ? ? ? ? /*
-> > + ? ? ? ? ? ? ?? * If master timed out and bus is in slave mode.
-> > + ? ? ? ? ? ? ?? * reset the slave mode.
-> > + ? ? ? ? ? ? ?? */
-> > + ? ? ? ? ? ? ? if (readl(bus->base + ASPEED_I2C_CMD_REG) & ASPEED_I2CD_SLAVE_CMDS_MASK) {
-> > + ? ? ? ? ? ? ? ? ? ? ? spin_lock_irqsave(&bus->lock, flags);
-> > + ? ? ? ? ? ? ? ? ? ? ? u32 func_ctrl_reg_val = readl(bus->base + ASPEED_I2C_FUN_CTRL_REG);
-> > +
-> > + ? ? ? ? ? ? ? ? ? ? ? writel(0, bus->base + ASPEED_I2C_FUN_CTRL_REG);
-> > + ? ? ? ? ? ? ? ? ? ? ? writel(func_ctrl_reg_val, bus->base + ASPEED_I2C_FUN_CTRL_REG);
-> > + ? ? ? ? ? ? ? ? ? ? ? bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
-> > + ? ? ? ? ? ? ? ? ? ? ? spin_unlock_irqrestore(&bus->lock, flags);
-> > + ? ? ? ? ? ? ? }
-> > +#endif
-> > +
-> > ? ? ? ? ? ? ? ? /*
-> > ? ? ? ? ? ? ? ?? * If timed out and the state is still pending, drop the pending
-> > ? ? ? ? ? ? ? ?? * master command.
-> > --
-> > 2.30.2
-> >
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202309230217.cHc3qLuk-lkp at intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> Error: arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1229.1-7 Label or path jtag1 not found
+>> FATAL ERROR: Syntax error parsing input tree
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
