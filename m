@@ -1,11 +1,11 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 26 Sep 2023 11:02:21 +0930
-Subject: [PATCH 03/40] soc/aspeed: aspeed-p2a-ctrl: Convert to platform remove
+Date: Tue, 26 Sep 2023 11:03:23 +0930
+Subject: [PATCH 01/40] soc/aspeed: aspeed-lpc-ctrl: Convert to platform remove
  callback returning void
-In-Reply-To: <20230925095532.1984344-4-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20230925095532.1984344-2-u.kleine-koenig@pengutronix.de>
 References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
- <20230925095532.1984344-4-u.kleine-koenig@pengutronix.de>
-Message-ID: <e447ec5b-ae06-42cb-957b-30442bf4d85f@app.fastmail.com>
+ <20230925095532.1984344-2-u.kleine-koenig@pengutronix.de>
+Message-ID: <97424091-2784-4daf-b7a2-062fde210c2d@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
