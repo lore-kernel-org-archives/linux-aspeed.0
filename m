@@ -1,29 +1,32 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Tue, 26 Sep 2023 10:46:54 +0930
-Subject: [PATCH] pinctrl: pinctrl-aspeed-g6: Add more settings for
- USB2AHP function
-In-Reply-To: <CACRpkdaZb+V-Zx_Uw9MCqRqE+N-0gd__xEFV3BTpkG7icU9W+A@mail.gmail.com>
-References: <20230920103332.274151-1-joe_wang@aspeedtech.com>
-	 <CACRpkdaZb+V-Zx_Uw9MCqRqE+N-0gd__xEFV3BTpkG7icU9W+A@mail.gmail.com>
-Message-ID: <e3c4013eca1b7cb6edd6724be37e2ec86fc408dd.camel@codeconstruct.com.au>
+From: Andrew Jeffery <andrew@aj.id.au>
+Date: Tue, 26 Sep 2023 11:02:21 +0930
+Subject: [PATCH 03/40] soc/aspeed: aspeed-p2a-ctrl: Convert to platform remove
+ callback returning void
+In-Reply-To: <20230925095532.1984344-4-u.kleine-koenig@pengutronix.de>
+References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
+ <20230925095532.1984344-4-u.kleine-koenig@pengutronix.de>
+Message-ID: <e447ec5b-ae06-42cb-957b-30442bf4d85f@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2023-09-25 at 15:15 +0200, Linus Walleij wrote:
-> On Wed, Sep 20, 2023 at 12:33?PM Joe Wang <joe_wang@aspeedtech.com> wrote:
-> 
-> > AST2600 USB2AHP (USB PortA: PCIe EHCI to PHY) function needs to set the
-> > register SCUC20[16]. Set it to enable the PCIe EHCI device on PCIe bus.
-> > Besides, also add USB2AHP signal expressions into pin declarations.
-> > 
-> > Signed-off-by: Joe Wang <joe_wang@aspeedtech.com>
-> 
-> Patch applied!
 
-Thanks. I hope to improve my review responsiveness for Aspeed patches
-over recent times.
 
-Andrew
+On Mon, 25 Sep 2023, at 19:24, Uwe Kleine-K?nig wrote:
+> The .remove() callback for a platform driver returns an int which makes
+> many driver authors wrongly assume it's possible to do error handling by
+> returning an error code. However the value returned is ignored (apart
+> from emitting a warning) and this typically results in resource leaks.
+> To improve here there is a quest to make the remove callback return
+> void. In the first step of this quest all drivers are converted to
+> .remove_new() which already returns void. Eventually after all drivers
+> are converted, .remove_new() will be renamed to .remove().
+>
+> Trivially convert this driver from always returning zero in the remove
+> callback to the void returning variant.
+>
+> Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+
+Reviewed-by: Andrew Jeffery <andrew@aj.id.au>
