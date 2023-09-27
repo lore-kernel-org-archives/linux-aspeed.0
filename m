@@ -1,39 +1,35 @@
 From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 27 Sep 2023 02:25:56 +0000
-Subject: [PATCH 00/40] soc: Convert to platform remove callback returning void
-In-Reply-To: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
-References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <CACPK8XeROYz_XaB3TvUhdXm7Vm8fjC8yU+mfvA58=_FiDrBy-g@mail.gmail.com>
+Date: Wed, 27 Sep 2023 02:42:46 +0000
+Subject: [External] Re: [PATCH] i2c: aspeed: Fix i2c bus hang in slave read
+In-Reply-To: <CA+J-oUtxiQBOT+VM3fbOUM8HL5TX-C4HqtbbT__b4_KsGAJy1w@mail.gmail.com>
+References: <20230810072155.3726352-1-zhangjian.3032@bytedance.com>
+ <CACPK8XfWKLS_4nBC+NCSw=21iQeaHzBXOROmz9T+S0qZHCBKeg@mail.gmail.com> <CA+J-oUtxiQBOT+VM3fbOUM8HL5TX-C4HqtbbT__b4_KsGAJy1w@mail.gmail.com>
+Message-ID: <CACPK8XeO404ok+B+k4U_bdFE3yYebzT-UNcTqcHStJfEnDh6jg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 25 Sept 2023 at 09:55, Uwe Kleine-K?nig
-<u.kleine-koenig@pengutronix.de> wrote:
+On Fri, 22 Sept 2023 at 14:39, Jian Zhang <zhangjian.3032@bytedance.com> wrote:
+> >
+> > Tommy has submitted a similar fix:
+> >
+> >  https://lore.kernel.org/linux-i2c/20230906004910.4157305-1-tommy_huang at aspeedtech.com/
+> >
+> > His change is very heavy handed; it reinitialises the bus including
+> > re-parsing the device tree (!).
+> >
+> > Should we have merged this fix instead? If not, are you able to
+> > confirm that his change fixes your issue?
 >
-> Hello,
->
-> this series converts all platform drivers below drivers/soc to use
-> .remove_new(). The motivation is to get rid of an integer return code
-> that is (mostly) ignored by the platform driver core and error prone on
-> the driver side.
->
-> See commit 5c5a7680e67b ("platform: Provide a remove callback that
-> returns no value") for an extended explanation and the eventual goal.
->
-> As there is no single maintainer team for drivers/soc, I suggest the
-> individual maintainers to pick up "their" patches.
+> I feel it's for solving the same issue, but I think this patch is
+> missing the action
+> `bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;`,
+>  which means it can't resolve my problem. @Tommy, can you help confirm this?
 
-I'd be happy if Arnd merged the lot at once. Arnd, what do you think?
+You're right, it doesn't change the slave_state at all.
 
-If that will be too messy then I understand. I have queued the aspeed
-ones locally and will push that out if we decide that's the best way
-to go.
-
-Thanks for doing this cleanup Uwe.
-
-Cheers,
-
-Joel
+Unfortunately, despite no acks from the maintainers, this patch has
+now been merged and backported to stable. We should complete the fix,
+or revert it asap.
