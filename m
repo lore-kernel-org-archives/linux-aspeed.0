@@ -1,47 +1,41 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 27 Sep 2023 12:40:18 +0200
-Subject: [PATCH] MAINTAINERS: aspeed: Update Andrew's email address
-In-Reply-To: <7a7d5a7f19fc793f157508fec7fbc09ca8c4cc4b.camel@codeconstruct.com.au>
-References: <20230925030647.40283-1-andrew@codeconstruct.com.au>
- <CAPDyKFrFxYxSTa=z2VnCk4m_d-wEgd17wBokzyNCCRLtSUnFKw@mail.gmail.com> <7a7d5a7f19fc793f157508fec7fbc09ca8c4cc4b.camel@codeconstruct.com.au>
-Message-ID: <CAPDyKFquBkoA2NN7MLwkOeAsykUfp9q3RrbdnAFNNkErEiseMg@mail.gmail.com>
+From: Jian Zhang <zhangjian.3032@bytedance.com>
+Date: Wed, 27 Sep 2023 23:42:43 +0800
+Subject: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave read
+Message-ID: <20230927154244.3774670-1-zhangjian.3032@bytedance.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 27 Sept 2023 at 01:22, Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> On Tue, 2023-09-26 at 17:03 +0200, Ulf Hansson wrote:
-> > On Mon, 25 Sept 2023 at 05:07, Andrew Jeffery
-> > <andrew@codeconstruct.com.au> wrote:
-> > >
-> > > I've changed employers, have company email that deals with patch-based
-> > > workflows without too much of a headache, and am trying to steer some
-> > > content out of my personal mail.
-> > >
-> > > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> >
-> > I guess it doesn't really matter what tree this gets funneled through,
-> > so I decided to pick this up via my mmc tree.
-> >
-> > So, applied for next, thanks!
->
-> Ah, thanks for being so prompt! However, Joel has sent a PR to Arnd
-> with the patch:
->
-> https://lore.kernel.org/all/CACPK8Xc+D=YBc2Dhk-6-gOuvKN0xGgZYNop6oJVa=VNgaEYOHw at mail.gmail.com/
->
-> I thought I'd left a note under the fold asking Joel to do that so
-> people knew how it would get into the tree, but that clearly isn't the
-> case. Sorry about that, I must have rolled the patch off again after I
-> put the note into the original.
+When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
+as a slave, a situation arises where the master sends a START signal
+without the accompanying STOP signal. This action results in a
+persistent I2C bus timeout. The core issue stems from the fact that
+the i2c controller remains in a slave read state without a timeout
+mechanism. As a consequence, the bus perpetually experiences timeouts.
 
-Np, I have dropped the patch from my tree now.
+In this case, the i2c bus will be reset, but the slave_state reset is
+missing.
 
-[...]
+Fixes: fee465150b45 ("i2c: aspeed: Reset the i2c controller when timeout occurs")
+Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Kind regards
-Uffe
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 5a416b39b818..18f618625472 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -933,6 +933,7 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
+ 	/* If slave has already been registered, re-enable it. */
+ 	if (bus->slave)
+ 		__aspeed_i2c_reg_slave(bus, bus->slave->addr);
++	bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+ #endif /* CONFIG_I2C_SLAVE */
+
+ 	/* Set interrupt generation of I2C controller */
+--
+2.30.2
+
