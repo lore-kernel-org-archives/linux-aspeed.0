@@ -1,44 +1,47 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Wed, 27 Sep 2023 08:18:05 +0200
-Subject: [External] Re: [PATCH] i2c: aspeed: Fix i2c bus hang in slave
- read
-In-Reply-To: <CACPK8XeO404ok+B+k4U_bdFE3yYebzT-UNcTqcHStJfEnDh6jg@mail.gmail.com>
-References: <20230810072155.3726352-1-zhangjian.3032@bytedance.com>
- <CACPK8XfWKLS_4nBC+NCSw=21iQeaHzBXOROmz9T+S0qZHCBKeg@mail.gmail.com>
- <CA+J-oUtxiQBOT+VM3fbOUM8HL5TX-C4HqtbbT__b4_KsGAJy1w@mail.gmail.com>
- <CACPK8XeO404ok+B+k4U_bdFE3yYebzT-UNcTqcHStJfEnDh6jg@mail.gmail.com>
-Message-ID: <ZRPJHQXLb0nPUjwF@ninjato>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Wed, 27 Sep 2023 12:40:18 +0200
+Subject: [PATCH] MAINTAINERS: aspeed: Update Andrew's email address
+In-Reply-To: <7a7d5a7f19fc793f157508fec7fbc09ca8c4cc4b.camel@codeconstruct.com.au>
+References: <20230925030647.40283-1-andrew@codeconstruct.com.au>
+ <CAPDyKFrFxYxSTa=z2VnCk4m_d-wEgd17wBokzyNCCRLtSUnFKw@mail.gmail.com> <7a7d5a7f19fc793f157508fec7fbc09ca8c4cc4b.camel@codeconstruct.com.au>
+Message-ID: <CAPDyKFquBkoA2NN7MLwkOeAsykUfp9q3RrbdnAFNNkErEiseMg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Joel!
+On Wed, 27 Sept 2023 at 01:22, Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> On Tue, 2023-09-26 at 17:03 +0200, Ulf Hansson wrote:
+> > On Mon, 25 Sept 2023 at 05:07, Andrew Jeffery
+> > <andrew@codeconstruct.com.au> wrote:
+> > >
+> > > I've changed employers, have company email that deals with patch-based
+> > > workflows without too much of a headache, and am trying to steer some
+> > > content out of my personal mail.
+> > >
+> > > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> >
+> > I guess it doesn't really matter what tree this gets funneled through,
+> > so I decided to pick this up via my mmc tree.
+> >
+> > So, applied for next, thanks!
+>
+> Ah, thanks for being so prompt! However, Joel has sent a PR to Arnd
+> with the patch:
+>
+> https://lore.kernel.org/all/CACPK8Xc+D=YBc2Dhk-6-gOuvKN0xGgZYNop6oJVa=VNgaEYOHw at mail.gmail.com/
+>
+> I thought I'd left a note under the fold asking Joel to do that so
+> people knew how it would get into the tree, but that clearly isn't the
+> case. Sorry about that, I must have rolled the patch off again after I
+> put the note into the original.
 
-> Unfortunately, despite no acks from the maintainers, this patch has
-> now been merged and backported to stable.
+Np, I have dropped the patch from my tree now.
 
-To explain my reasoning: given the list of unreviewed patches for
-aspeed[1], I thought that the driver maintainers were busy or similar.
-This happens all the time, so it would be no surprise. Andi is the
-driver-comaintainer meanwhile, so an ack from him counts for me as well.
+[...]
 
-[1] http://patchwork.ozlabs.org/project/linux-i2c/list/?series=&submitter=&state=&q=aspeed&archive=&delegate=
-
-> We should complete the fix, or revert it asap.
-
-Agreed. We can always revert if you guys need more time fixing the issue
-properly.
-
-Thanks,
-
-   Wolfram
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20230927/b51529bd/attachment.sig>
+Kind regards
+Uffe
