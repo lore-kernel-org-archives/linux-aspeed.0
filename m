@@ -1,208 +1,174 @@
 From: Konstantin Aladyshev <aladyshev22@gmail.com>
-Date: Thu, 28 Sep 2023 15:30:08 +0300
-Subject: [PATCH 2/3] ipmi: Create header with KCS interface defines
+Date: Thu, 28 Sep 2023 15:30:07 +0300
+Subject: [PATCH 1/3] ipmi: Move KCS headers to common include folder
 In-Reply-To: <20230928123009.2913-1-aladyshev22@gmail.com>
 References: <20230928123009.2913-1-aladyshev22@gmail.com>
-Message-ID: <20230928123009.2913-3-aladyshev22@gmail.com>
+Message-ID: <20230928123009.2913-2-aladyshev22@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Some definitions from the current kcs_bmc_cdev_ipmi driver can be also
-utilized by the MTCP KCS binding driver. Move such definitions to the
-common header file.
+The current KCS header files can be utilized by both IPMI drivers
+(drivers/char/ipmi) and MCTP driver (drivers/net/mctp). To be able to
+use them in both cases move the headers to 'include/linux' folder.
 
 Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
 ---
- drivers/char/ipmi/kcs_bmc_cdev_ipmi.c | 71 +-----------------------
- include/linux/ipmi_kcs.h              | 80 +++++++++++++++++++++++++++
- 2 files changed, 81 insertions(+), 70 deletions(-)
- create mode 100644 include/linux/ipmi_kcs.h
+ drivers/char/ipmi/kcs_bmc.c                           | 8 +++-----
+ drivers/char/ipmi/kcs_bmc_aspeed.c                    | 3 +--
+ drivers/char/ipmi/kcs_bmc_cdev_ipmi.c                 | 2 +-
+ drivers/char/ipmi/kcs_bmc_npcm7xx.c                   | 2 +-
+ drivers/char/ipmi/kcs_bmc_serio.c                     | 2 +-
+ {drivers/char/ipmi => include/linux}/kcs_bmc.h        | 0
+ {drivers/char/ipmi => include/linux}/kcs_bmc_client.h | 3 +--
+ {drivers/char/ipmi => include/linux}/kcs_bmc_device.h | 3 +--
+ 8 files changed, 9 insertions(+), 14 deletions(-)
+ rename {drivers/char/ipmi => include/linux}/kcs_bmc.h (100%)
+ rename {drivers/char/ipmi => include/linux}/kcs_bmc_client.h (97%)
+ rename {drivers/char/ipmi => include/linux}/kcs_bmc_device.h (96%)
 
+diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
+index 8b1161d5194a..d29a8505d6ed 100644
+--- a/drivers/char/ipmi/kcs_bmc.c
++++ b/drivers/char/ipmi/kcs_bmc.c
+@@ -5,15 +5,13 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/kcs_bmc.h>
++#include <linux/kcs_bmc_client.h>
++#include <linux/kcs_bmc_device.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ 
+-#include "kcs_bmc.h"
+-
+-/* Implement both the device and client interfaces here */
+-#include "kcs_bmc_device.h"
+-#include "kcs_bmc_client.h"
+ 
+ /* Record registered devices and drivers */
+ static DEFINE_MUTEX(kcs_bmc_lock);
+diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+index 72640da55380..3dc0dfb448f5 100644
+--- a/drivers/char/ipmi/kcs_bmc_aspeed.c
++++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+@@ -10,6 +10,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
++#include <linux/kcs_bmc_device.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -21,8 +22,6 @@
+ #include <linux/slab.h>
+ #include <linux/timer.h>
+ 
+-#include "kcs_bmc_device.h"
+-
+ 
+ #define DEVICE_NAME     "ast-kcs-bmc"
+ 
 diff --git a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
-index bf1001130a6c..f158f676114c 100644
+index cf670e891966..bf1001130a6c 100644
 --- a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
 +++ b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
 @@ -8,6 +8,7 @@
  #include <linux/errno.h>
  #include <linux/io.h>
  #include <linux/ipmi_bmc.h>
-+#include <linux/ipmi_kcs.h>
- #include <linux/kcs_bmc_client.h>
++#include <linux/kcs_bmc_client.h>
  #include <linux/list.h>
  #include <linux/miscdevice.h>
-@@ -19,53 +20,6 @@
+ #include <linux/module.h>
+@@ -17,7 +18,6 @@
+ #include <linux/sched.h>
  #include <linux/slab.h>
  
+-#include "kcs_bmc_client.h"
  
--/* Different phases of the KCS BMC module.
-- *  KCS_PHASE_IDLE:
-- *            BMC should not be expecting nor sending any data.
-- *  KCS_PHASE_WRITE_START:
-- *            BMC is receiving a WRITE_START command from system software.
-- *  KCS_PHASE_WRITE_DATA:
-- *            BMC is receiving a data byte from system software.
-- *  KCS_PHASE_WRITE_END_CMD:
-- *            BMC is waiting a last data byte from system software.
-- *  KCS_PHASE_WRITE_DONE:
-- *            BMC has received the whole request from system software.
-- *  KCS_PHASE_WAIT_READ:
-- *            BMC is waiting the response from the upper IPMI service.
-- *  KCS_PHASE_READ:
-- *            BMC is transferring the response to system software.
-- *  KCS_PHASE_ABORT_ERROR1:
-- *            BMC is waiting error status request from system software.
-- *  KCS_PHASE_ABORT_ERROR2:
-- *            BMC is waiting for idle status afer error from system software.
-- *  KCS_PHASE_ERROR:
-- *            BMC has detected a protocol violation at the interface level.
-- */
--enum kcs_ipmi_phases {
--	KCS_PHASE_IDLE,
--
--	KCS_PHASE_WRITE_START,
--	KCS_PHASE_WRITE_DATA,
--	KCS_PHASE_WRITE_END_CMD,
--	KCS_PHASE_WRITE_DONE,
--
--	KCS_PHASE_WAIT_READ,
--	KCS_PHASE_READ,
--
--	KCS_PHASE_ABORT_ERROR1,
--	KCS_PHASE_ABORT_ERROR2,
--	KCS_PHASE_ERROR
--};
--
--/* IPMI 2.0 - Table 9-4, KCS Interface Status Codes */
--enum kcs_ipmi_errors {
--	KCS_NO_ERROR                = 0x00,
--	KCS_ABORTED_BY_COMMAND      = 0x01,
--	KCS_ILLEGAL_CONTROL_CODE    = 0x02,
--	KCS_LENGTH_ERROR            = 0x06,
--	KCS_UNSPECIFIED_ERROR       = 0xFF
--};
--
- struct kcs_bmc_ipmi {
+ /* Different phases of the KCS BMC module.
+  *  KCS_PHASE_IDLE:
+diff --git a/drivers/char/ipmi/kcs_bmc_npcm7xx.c b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+index 7961fec56476..160553248a93 100644
+--- a/drivers/char/ipmi/kcs_bmc_npcm7xx.c
++++ b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+@@ -10,6 +10,7 @@
+ #include <linux/errno.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
++#include <linux/kcs_bmc_device.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+@@ -17,7 +18,6 @@
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+ 
+-#include "kcs_bmc_device.h"
+ 
+ #define DEVICE_NAME	"npcm-kcs-bmc"
+ #define KCS_CHANNEL_MAX	3
+diff --git a/drivers/char/ipmi/kcs_bmc_serio.c b/drivers/char/ipmi/kcs_bmc_serio.c
+index 1793358be782..24df7144a189 100644
+--- a/drivers/char/ipmi/kcs_bmc_serio.c
++++ b/drivers/char/ipmi/kcs_bmc_serio.c
+@@ -5,12 +5,12 @@
+ #include <linux/device.h>
+ #include <linux/errno.h>
+ #include <linux/list.h>
++#include <linux/kcs_bmc_client.h>
+ #include <linux/module.h>
+ #include <linux/sched/signal.h>
+ #include <linux/serio.h>
+ #include <linux/slab.h>
+ 
+-#include "kcs_bmc_client.h"
+ 
+ struct kcs_bmc_serio {
  	struct list_head entry;
+diff --git a/drivers/char/ipmi/kcs_bmc.h b/include/linux/kcs_bmc.h
+similarity index 100%
+rename from drivers/char/ipmi/kcs_bmc.h
+rename to include/linux/kcs_bmc.h
+diff --git a/drivers/char/ipmi/kcs_bmc_client.h b/include/linux/kcs_bmc_client.h
+similarity index 97%
+rename from drivers/char/ipmi/kcs_bmc_client.h
+rename to include/linux/kcs_bmc_client.h
+index 6fdcde0a7169..f6350c9366dd 100644
+--- a/drivers/char/ipmi/kcs_bmc_client.h
++++ b/include/linux/kcs_bmc_client.h
+@@ -5,8 +5,7 @@
+ #define __KCS_BMC_CONSUMER_H__
  
-@@ -95,29 +49,6 @@ struct kcs_bmc_ipmi {
- 
- #define KCS_MSG_BUFSIZ    1000
- 
--#define KCS_ZERO_DATA     0
+ #include <linux/irqreturn.h>
 -
--/* IPMI 2.0 - Table 9-1, KCS Interface Status Register Bits */
--#define KCS_STATUS_STATE(state) (state << 6)
--#define KCS_STATUS_STATE_MASK   GENMASK(7, 6)
--#define KCS_STATUS_CMD_DAT      BIT(3)
--#define KCS_STATUS_SMS_ATN      BIT(2)
--#define KCS_STATUS_IBF          BIT(1)
--#define KCS_STATUS_OBF          BIT(0)
--
--/* IPMI 2.0 - Table 9-2, KCS Interface State Bits */
--enum kcs_states {
--	IDLE_STATE  = 0,
--	READ_STATE  = 1,
--	WRITE_STATE = 2,
--	ERROR_STATE = 3,
--};
--
--/* IPMI 2.0 - Table 9-3, KCS Interface Control Codes */
--#define KCS_CMD_GET_STATUS_ABORT  0x60
--#define KCS_CMD_WRITE_START       0x61
--#define KCS_CMD_WRITE_END         0x62
--#define KCS_CMD_READ_BYTE         0x68
+-#include "kcs_bmc.h"
++#include <linux/kcs_bmc.h>
  
- static inline void set_state(struct kcs_bmc_ipmi *priv, u8 state)
- {
-diff --git a/include/linux/ipmi_kcs.h b/include/linux/ipmi_kcs.h
-new file mode 100644
-index 000000000000..30c4b6e4d689
---- /dev/null
-+++ b/include/linux/ipmi_kcs.h
-@@ -0,0 +1,80 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (c) 2015-2018, Intel Corporation.
-+ */
-+
-+#ifndef __IPMI_KCS_H__
-+#define __IPMI_KCS_H__
-+
-+/* Different phases of the KCS BMC module.
-+ *  KCS_PHASE_IDLE:
-+ *            BMC should not be expecting nor sending any data.
-+ *  KCS_PHASE_WRITE_START:
-+ *            BMC is receiving a WRITE_START command from system software.
-+ *  KCS_PHASE_WRITE_DATA:
-+ *            BMC is receiving a data byte from system software.
-+ *  KCS_PHASE_WRITE_END_CMD:
-+ *            BMC is waiting a last data byte from system software.
-+ *  KCS_PHASE_WRITE_DONE:
-+ *            BMC has received the whole request from system software.
-+ *  KCS_PHASE_WAIT_READ:
-+ *            BMC is waiting the response from the upper IPMI service.
-+ *  KCS_PHASE_READ:
-+ *            BMC is transferring the response to system software.
-+ *  KCS_PHASE_ABORT_ERROR1:
-+ *            BMC is waiting error status request from system software.
-+ *  KCS_PHASE_ABORT_ERROR2:
-+ *            BMC is waiting for idle status afer error from system software.
-+ *  KCS_PHASE_ERROR:
-+ *            BMC has detected a protocol violation@the interface level.
-+ */
-+enum kcs_ipmi_phases {
-+	KCS_PHASE_IDLE,
-+
-+	KCS_PHASE_WRITE_START,
-+	KCS_PHASE_WRITE_DATA,
-+	KCS_PHASE_WRITE_END_CMD,
-+	KCS_PHASE_WRITE_DONE,
-+
-+	KCS_PHASE_WAIT_READ,
-+	KCS_PHASE_READ,
-+
-+	KCS_PHASE_ABORT_ERROR1,
-+	KCS_PHASE_ABORT_ERROR2,
-+	KCS_PHASE_ERROR
-+};
-+
-+/* IPMI 2.0 - Table 9-4, KCS Interface Status Codes */
-+enum kcs_ipmi_errors {
-+	KCS_NO_ERROR                = 0x00,
-+	KCS_ABORTED_BY_COMMAND      = 0x01,
-+	KCS_ILLEGAL_CONTROL_CODE    = 0x02,
-+	KCS_LENGTH_ERROR            = 0x06,
-+	KCS_UNSPECIFIED_ERROR       = 0xFF
-+};
-+
-+#define KCS_ZERO_DATA     0
-+
-+/* IPMI 2.0 - Table 9-1, KCS Interface Status Register Bits */
-+#define KCS_STATUS_STATE(state) (state << 6)
-+#define KCS_STATUS_STATE_MASK   GENMASK(7, 6)
-+#define KCS_STATUS_CMD_DAT      BIT(3)
-+#define KCS_STATUS_SMS_ATN      BIT(2)
-+#define KCS_STATUS_IBF          BIT(1)
-+#define KCS_STATUS_OBF          BIT(0)
-+
-+/* IPMI 2.0 - Table 9-2, KCS Interface State Bits */
-+enum kcs_states {
-+	IDLE_STATE  = 0,
-+	READ_STATE  = 1,
-+	WRITE_STATE = 2,
-+	ERROR_STATE = 3,
-+};
-+
-+/* IPMI 2.0 - Table 9-3, KCS Interface Control Codes */
-+#define KCS_CMD_GET_STATUS_ABORT  0x60
-+#define KCS_CMD_WRITE_START       0x61
-+#define KCS_CMD_WRITE_END         0x62
-+#define KCS_CMD_READ_BYTE         0x68
-+
-+#endif /* __IPMI_KCS_H__ */
+ struct kcs_bmc_driver_ops {
+ 	int (*add_device)(struct kcs_bmc_device *kcs_bmc);
+diff --git a/drivers/char/ipmi/kcs_bmc_device.h b/include/linux/kcs_bmc_device.h
+similarity index 96%
+rename from drivers/char/ipmi/kcs_bmc_device.h
+rename to include/linux/kcs_bmc_device.h
+index 17c572f25c54..65333b68c0af 100644
+--- a/drivers/char/ipmi/kcs_bmc_device.h
++++ b/include/linux/kcs_bmc_device.h
+@@ -5,8 +5,7 @@
+ #define __KCS_BMC_DEVICE_H__
+ 
+ #include <linux/irqreturn.h>
+-
+-#include "kcs_bmc.h"
++#include <linux/kcs_bmc.h>
+ 
+ struct kcs_bmc_device_ops {
+ 	void (*irq_mask_update)(struct kcs_bmc_device *kcs_bmc, u8 mask, u8 enable);
 -- 
 2.25.1
 
