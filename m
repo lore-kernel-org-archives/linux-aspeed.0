@@ -1,75 +1,55 @@
-From: Corentin Labbe <clabbe@baylibre.com>
-Date: Sun,  1 Oct 2023 20:13:57 +0000
-Subject: [PATCH] crypto: Move akcipher_request_cast helper to crypto header
-Message-ID: <20231001201357.2052949-1-clabbe@baylibre.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 2 Oct 2023 02:30:43 +0000
+Subject: [PATCH v1] iio: adc: aspeed: Support deglitch feature.
+In-Reply-To: <20230930174501.039095da@jic23-huawei>
+References: <20230925081845.4147424-1-billy_tsai@aspeedtech.com>
+ <20230930174501.039095da@jic23-huawei>
+Message-ID: <SG2PR06MB3365E89B1543B770AC2EE7E78BC5A@SG2PR06MB3365.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-There is already 2 driver implementing their own akcipher_request_cast.
-In the future there will be also rockchip and allwinner driver that will
-need this.
-This is sufficient to move it in crypto headers.
+On Mon, 25 Sep 2023 16:18:45 +0800
+Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
----
- drivers/crypto/aspeed/aspeed-acry.c | 6 ------
- drivers/crypto/ccp/ccp-crypto-rsa.c | 6 ------
- include/crypto/akcipher.h           | 7 +++++++
- 3 files changed, 7 insertions(+), 12 deletions(-)
+> > Create event sysfs for applying the deglitch condition. When
+> > in_voltageY_thresh_rising_en/in_voltageY_thresh_falling_en is set to true,
+> > the driver will use the in_voltageY_thresh_rising_value and
+> > in_voltageY_thresh_falling_value as threshold values. If the ADC value
+> > falls outside this threshold, the driver will wait for the ADC sampling
+> > period and perform an additional read once to achieve the deglitching
+> > purpose.
+> >
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
-index 247c568aa8df..ecb6e984367b 100644
---- a/drivers/crypto/aspeed/aspeed-acry.c
-+++ b/drivers/crypto/aspeed/aspeed-acry.c
-@@ -137,12 +137,6 @@ enum aspeed_rsa_key_mode {
- 	ASPEED_RSA_DATA_MODE,
- };
- 
--static inline struct akcipher_request *
--	akcipher_request_cast(struct crypto_async_request *req)
--{
--	return container_of(req, struct akcipher_request, base);
--}
--
- static int aspeed_acry_do_fallback(struct akcipher_request *req)
- {
- 	struct crypto_akcipher *cipher = crypto_akcipher_reqtfm(req);
-diff --git a/drivers/crypto/ccp/ccp-crypto-rsa.c b/drivers/crypto/ccp/ccp-crypto-rsa.c
-index a14f85512cf4..32c9f524f3d5 100644
---- a/drivers/crypto/ccp/ccp-crypto-rsa.c
-+++ b/drivers/crypto/ccp/ccp-crypto-rsa.c
-@@ -19,12 +19,6 @@
- 
- #include "ccp-crypto.h"
- 
--static inline struct akcipher_request *akcipher_request_cast(
--	struct crypto_async_request *req)
--{
--	return container_of(req, struct akcipher_request, base);
--}
--
- static inline int ccp_copy_and_save_keypart(u8 **kpbuf, unsigned int *kplen,
- 					    const u8 *buf, size_t sz)
- {
-diff --git a/include/crypto/akcipher.h b/include/crypto/akcipher.h
-index 670508f1dca1..4b6e610db18d 100644
---- a/include/crypto/akcipher.h
-+++ b/include/crypto/akcipher.h
-@@ -498,4 +498,11 @@ static inline int crypto_akcipher_set_priv_key(struct crypto_akcipher *tfm,
- 
- 	return alg->set_priv_key(tfm, key, keylen);
- }
-+
-+static inline struct akcipher_request *
-+	akcipher_request_cast(struct crypto_async_request *req)
-+{
-+	return container_of(req, struct akcipher_request, base);
-+}
-+
- #endif
--- 
-2.41.0
+> Hi Billy
 
+> This is pushing the meaning of the events interface too far.
+> You can't use it to hide a value you don't like from userspace.
+
+> If you can explain what the condition is that you are seeing
+> and what you need to prevent happening if it is seen that would help
+> us figure out if there is another way to do this.
+
+> Jonathan
+
+Hi Jonathan,
+
+Currently, we are experiencing some voltage glitches while reading from our
+controller, but we do not wish to report these false alarms to the user space.
+Instead, we want to retry the operation as soon as possible. This is why the
+driver requires this patch to handle retries internally, rather than relying on user
+space which could introduce unpredictable timing for retrying the reading process.
+This software approach aims to minimize the possibility of false alarms as much as possible.
+
+If you have any suggestions or recommendations regarding this situation, please feel free to
+share them with me.
+
+Thanks 
+
+> > ---
+> >  drivers/iio/adc/aspeed_adc.c | 193 ++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 189 insertions(+), 4 deletions(-)
+> >
