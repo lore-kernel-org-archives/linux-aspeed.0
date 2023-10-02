@@ -1,114 +1,26 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 2 Oct 2023 10:28:19 -0500
-Subject: [PATCH v9 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
- Control
-In-Reply-To: <20230918064111.2221594-3-billy_tsai@aspeedtech.com>
-References: <20230918064111.2221594-1-billy_tsai@aspeedtech.com>
- <20230918064111.2221594-3-billy_tsai@aspeedtech.com>
-Message-ID: <20231002152819.GB1747496-robh@kernel.org>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 2 Oct 2023 15:30:11 -0700
+Subject: [PATCH v2 3/3] mctp: Add MCTP-over-KCS transport binding
+In-Reply-To: <20231002143441.545-4-aladyshev22@gmail.com>
+References: <20231002143441.545-1-aladyshev22@gmail.com>
+	<20231002143441.545-4-aladyshev22@gmail.com>
+Message-ID: <20231002153011.5444fd83@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 18, 2023 at 02:41:10PM +0800, Billy Tsai wrote:
-> Document the compatible for aspeed,ast2600-pwm-tach device, which can
-> support up to 16 PWM outputs and 16 fan tach input.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 69 +++++++++++++++++++
->  1 file changed, 69 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> new file mode 100644
-> index 000000000000..5a679f4ad2fa
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> @@ -0,0 +1,69 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +# Copyright (C) 2023 Aspeed, Inc.
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED G6 PWM and Fan Tach controller device driver
+On Mon,  2 Oct 2023 17:34:41 +0300 Konstantin Aladyshev wrote:
+> This change adds a MCTP KCS transport binding, as defined by the DMTF
+> specificiation DSP0254 - "MCTP KCS Transport Binding".
+> A MCTP protocol network device is created for each KCS channel found in
+> the system.
+> The interrupt code for the KCS state machine is based on the current
+> IPMI KCS driver.
 
-This is binding for the h/w, not a 'device driver'.
-
-> +
-> +maintainers:
-> +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> +
-> +description: |
-> +  The ASPEED PWM controller can support up to 16 PWM outputs.
-> +  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
-> +  They are independent hardware blocks, which are different from the
-> +  previous version of the ASPEED chip.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-pwm-tach
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  resets:
-> +    maxItems: 1
-> +
-> +  "#pwm-cells":
-> +    const: 3
-> +
-> +patternProperties:
-> +  "^fan-[0-9a-f]+$":
-
-foo-<index> naming is decimal, not hex. (unit-addresses are hex)
-
-But if 0 and 1 correspond to something in the h/w, then you should 
-probably be using 'reg' instead (which means a unit-address too).
-
-> +    $ref: fan-common.yaml#
-> +    unevaluatedProperties: false
-> +    required:
-> +      - tach-ch
-> +
-> +required:
-> +  - reg
-> +  - clocks
-> +  - resets
-> +  - "#pwm-cells"
-> +  - compatible
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    pwm_tach: pwm-tach-controller at 1e610000 {
-> +      compatible = "aspeed,ast2600-pwm-tach";
-> +      reg = <0x1e610000 0x100>;
-> +      clocks = <&syscon ASPEED_CLK_AHB>;
-> +      resets = <&syscon ASPEED_RESET_PWM>;
-> +      #pwm-cells = <3>;
-> +
-> +      fan-0 {
-> +        tach-ch = /bits/ 8 <0x0>;
-
-What about the PWM connection?
-
-> +      };
-> +
-> +      fan-1 {
-> +        tach-ch = /bits/ 8 <0x1 0x2>;
-> +      };
-> +    };
-> -- 
-> 2.25.1
-> 
+Still doesn't build, please make sure W=1 C=1 build is clean with both
+GCC and Clang (you can point them at a specific path to avoid building
+the entire kernel with the warnings enabled).
+-- 
+pw-bot: cr
