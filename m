@@ -1,175 +1,54 @@
-From: Konstantin Aladyshev <aladyshev22@gmail.com>
-Date: Tue, 3 Oct 2023 16:21:32 +0300
-Subject: [PATCH v2 3/3] mctp: Add MCTP-over-KCS transport binding
-In-Reply-To: <202310030640.tYeSJjeI-lkp@intel.com>
-References: <20231002143441.545-4-aladyshev22@gmail.com> <202310030640.tYeSJjeI-lkp@intel.com>
-Message-ID: <CACSj6VXZ5V7akgibJcZYxqUy3zFKWA_N_5ua7gzXoEHWRBkkkg@mail.gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue,  3 Oct 2023 16:50:46 +0200
+Subject: [PATCH 08/36] gpio: aspeed: use new pinctrl GPIO helpers
+In-Reply-To: <20231003145114.21637-1-brgl@bgdev.pl>
+References: <20231003145114.21637-1-brgl@bgdev.pl>
+Message-ID: <20231003145114.21637-9-brgl@bgdev.pl>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Oops, sorry about that.
-I've introduced this new warning when I've refactored my code to use
-'dev_err_probe'.
-I've sent the v3 series to correct the issue, I hope now everything is clear.
-I haven't figured out how to run clang in my yocto environment where I
-develop code, but the
-```
-make W=1 C=1 drivers/net/mctp/mctp-kcs.o
-```
-runs without any issues now.
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Best regards,
-Konstantin Aladyshev
+Replace the pinctrl helpers taking the global GPIO number as argument
+with the improved variants that instead take a pointer to the GPIO chip
+and the controller-relative offset.
 
-On Tue, Oct 3, 2023 at 2:05?AM kernel test robot <lkp@intel.com> wrote:
->
-> Hi Konstantin,
->
-> kernel test robot noticed the following build warnings:
->
-> [auto build test WARNING on cminyard-ipmi/for-next]
-> [also build test WARNING on linus/master v6.6-rc4 next-20230929]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch#_base_tree_information]
->
-> url:    https://github.com/intel-lab-lkp/linux/commits/Konstantin-Aladyshev/ipmi-Move-KCS-headers-to-common-include-folder/20231002-223632
-> base:   https://github.com/cminyard/linux-ipmi for-next
-> patch link:    https://lore.kernel.org/r/20231002143441.545-4-aladyshev22%40gmail.com
-> patch subject: [PATCH v2 3/3] mctp: Add MCTP-over-KCS transport binding
-> config: sh-allyesconfig (https://download.01.org/0day-ci/archive/20231003/202310030640.tYeSJjeI-lkp at intel.com/config)
-> compiler: sh4-linux-gcc (GCC) 13.2.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231003/202310030640.tYeSJjeI-lkp at intel.com/reproduce)
->
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202310030640.tYeSJjeI-lkp at intel.com/
->
-> All warnings (new ones prefixed by >>):
->
->    drivers/net/mctp/mctp-kcs.c: In function 'kcs_bmc_mctp_add_device':
-> >> drivers/net/mctp/mctp-kcs.c:494:31: warning: passing argument 2 of 'dev_err_probe' makes integer from pointer without a cast [-Wint-conversion]
->      494 |                               "alloc_netdev failed for KCS channel %d\n",
->          |                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->          |                               |
->          |                               char *
->    In file included from include/linux/device.h:15,
->                     from include/linux/acpi.h:14,
->                     from include/linux/i2c.h:13,
->                     from drivers/net/mctp/mctp-kcs.c:16:
->    include/linux/dev_printk.h:277:64: note: expected 'int' but argument is of type 'char *'
->      277 | __printf(3, 4) int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
->          |                                                            ~~~~^~~
-> >> drivers/net/mctp/mctp-kcs.c:495:38: warning: passing argument 3 of 'dev_err_probe' makes pointer from integer without a cast [-Wint-conversion]
->      495 |                               kcs_bmc->channel);
->          |                               ~~~~~~~^~~~~~~~~
->          |                                      |
->          |                                      u32 {aka unsigned int}
->    include/linux/dev_printk.h:277:81: note: expected 'const char *' but argument is of type 'u32' {aka 'unsigned int'}
->      277 | __printf(3, 4) int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
->          |                                                                     ~~~~~~~~~~~~^~~
->    drivers/net/mctp/mctp-kcs.c:507:25: warning: passing argument 2 of 'dev_err_probe' makes integer from pointer without a cast [-Wint-conversion]
->      507 |                         "failed to allocate data_in buffer for KCS channel %d\n",
->          |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->          |                         |
->          |                         char *
->    include/linux/dev_printk.h:277:64: note: expected 'int' but argument is of type 'char *'
->      277 | __printf(3, 4) int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
->          |                                                            ~~~~^~~
->    drivers/net/mctp/mctp-kcs.c:508:32: warning: passing argument 3 of 'dev_err_probe' makes pointer from integer without a cast [-Wint-conversion]
->      508 |                         kcs_bmc->channel);
->          |                         ~~~~~~~^~~~~~~~~
->          |                                |
->          |                                u32 {aka unsigned int}
->    include/linux/dev_printk.h:277:81: note: expected 'const char *' but argument is of type 'u32' {aka 'unsigned int'}
->      277 | __printf(3, 4) int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
->          |                                                                     ~~~~~~~~~~~~^~~
->    drivers/net/mctp/mctp-kcs.c:516:25: warning: passing argument 2 of 'dev_err_probe' makes integer from pointer without a cast [-Wint-conversion]
->      516 |                         "failed to allocate data_out buffer for KCS channel %d\n",
->          |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->          |                         |
->          |                         char *
->    include/linux/dev_printk.h:277:64: note: expected 'int' but argument is of type 'char *'
->      277 | __printf(3, 4) int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
->          |                                                            ~~~~^~~
->    drivers/net/mctp/mctp-kcs.c:517:32: warning: passing argument 3 of 'dev_err_probe' makes pointer from integer without a cast [-Wint-conversion]
->      517 |                         kcs_bmc->channel);
->          |                         ~~~~~~~^~~~~~~~~
->          |                                |
->          |                                u32 {aka unsigned int}
->    include/linux/dev_printk.h:277:81: note: expected 'const char *' but argument is of type 'u32' {aka 'unsigned int'}
->      277 | __printf(3, 4) int dev_err_probe(const struct device *dev, int err, const char *fmt, ...);
->          |                                                                     ~~~~~~~~~~~~^~~
->
->
-> vim +/dev_err_probe +494 drivers/net/mctp/mctp-kcs.c
->
->    481
->    482  static int kcs_bmc_mctp_add_device(struct kcs_bmc_device *kcs_bmc)
->    483  {
->    484          struct mctp_kcs *mkcs;
->    485          struct net_device *ndev;
->    486          char name[32];
->    487          int rc;
->    488
->    489          snprintf(name, sizeof(name), "mctpkcs%d", kcs_bmc->channel);
->    490
->    491          ndev = alloc_netdev(sizeof(*mkcs), name, NET_NAME_ENUM, mctp_kcs_setup);
->    492          if (!ndev) {
->    493                  dev_err_probe(kcs_bmc->dev,
->  > 494                                "alloc_netdev failed for KCS channel %d\n",
->  > 495                                kcs_bmc->channel);
->    496                  return -ENOMEM;
->    497          }
->    498
->    499          mkcs = netdev_priv(ndev);
->    500          mkcs->netdev = ndev;
->    501          mkcs->client.dev = kcs_bmc;
->    502          mkcs->client.ops = &kcs_bmc_mctp_client_ops;
->    503          mkcs->data_in = devm_kmalloc(kcs_bmc->dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
->    504          if (!mkcs->data_in) {
->    505                  dev_err_probe(
->    506                          kcs_bmc->dev,
->    507                          "failed to allocate data_in buffer for KCS channel %d\n",
->    508                          kcs_bmc->channel);
->    509                  rc = -ENOMEM;
->    510                  goto free_netdev;
->    511          }
->    512          mkcs->data_out = devm_kmalloc(kcs_bmc->dev, KCS_MSG_BUFSIZ, GFP_KERNEL);
->    513          if (!mkcs->data_out) {
->    514                  dev_err_probe(
->    515                          kcs_bmc->dev,
->    516                          "failed to allocate data_out buffer for KCS channel %d\n",
->    517                          kcs_bmc->channel);
->    518                  rc = -ENOMEM;
->    519                  goto free_netdev;
->    520          }
->    521
->    522          INIT_WORK(&mkcs->rx_work, mctp_kcs_rx_work);
->    523
->    524          rc = register_netdev(ndev);
->    525          if (rc)
->    526                  goto free_netdev;
->    527
->    528          spin_lock_irq(&kcs_bmc_mctp_instances_lock);
->    529          list_add(&mkcs->entry, &kcs_bmc_mctp_instances);
->    530          spin_unlock_irq(&kcs_bmc_mctp_instances_lock);
->    531
->    532          dev_info(kcs_bmc->dev, "Add MCTP client for the KCS channel %d",
->    533                   kcs_bmc->channel);
->    534          return 0;
->    535
->    536  free_netdev:
->    537          free_netdev(ndev);
->    538
->    539          return rc;
->    540  }
->    541
->
-> --
-> 0-DAY CI Kernel Test Service
-> https://github.com/intel/lkp-tests/wiki
+Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+ drivers/gpio/gpio-aspeed.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index da33bbbdacb9..d3aa1cfd4ace 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -750,12 +750,12 @@ static int aspeed_gpio_request(struct gpio_chip *chip, unsigned int offset)
+ 	if (!have_gpio(gpiochip_get_data(chip), offset))
+ 		return -ENODEV;
+ 
+-	return pinctrl_gpio_request(chip->base + offset);
++	return pinctrl_gpio_request_new(chip, offset);
+ }
+ 
+ static void aspeed_gpio_free(struct gpio_chip *chip, unsigned int offset)
+ {
+-	pinctrl_gpio_free(chip->base + offset);
++	pinctrl_gpio_free_new(chip, offset);
+ }
+ 
+ static int usecs_to_cycles(struct aspeed_gpio *gpio, unsigned long usecs,
+@@ -973,7 +973,7 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
+ 	else if (param == PIN_CONFIG_BIAS_DISABLE ||
+ 			param == PIN_CONFIG_BIAS_PULL_DOWN ||
+ 			param == PIN_CONFIG_DRIVE_STRENGTH)
+-		return pinctrl_gpio_set_config(offset, config);
++		return pinctrl_gpio_set_config_new(chip, offset, config);
+ 	else if (param == PIN_CONFIG_DRIVE_OPEN_DRAIN ||
+ 			param == PIN_CONFIG_DRIVE_OPEN_SOURCE)
+ 		/* Return -ENOTSUPP to trigger emulation, as per datasheet */
+-- 
+2.39.2
+
