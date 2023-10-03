@@ -1,72 +1,54 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Thu, 5 Oct 2023 15:07:53 +0100
-Subject: [PATCH v1] iio: adc: aspeed: Support deglitch feature.
-In-Reply-To: <SG2PR06MB336557EDAAE2950D192E40838BCBA@SG2PR06MB3365.apcprd06.prod.outlook.com>
-References: <20230925081845.4147424-1-billy_tsai@aspeedtech.com>
-	<20230930174501.039095da@jic23-huawei>
-	<SG2PR06MB3365E89B1543B770AC2EE7E78BC5A@SG2PR06MB3365.apcprd06.prod.outlook.com>
-	<20231002103940.00001dbd@Huawei.com>
-	<SG2PR06MB336557EDAAE2950D192E40838BCBA@SG2PR06MB3365.apcprd06.prod.outlook.com>
-Message-ID: <20231005150753.38e79c20@jic23-huawei>
+From: Bjorn Andersson <andersson@kernel.org>
+Date: Mon,  2 Oct 2023 18:10:02 -0700
+Subject: (subset) [PATCH 00/40] soc: Convert to platform remove callback returning void
+In-Reply-To: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
+References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
+Message-ID: <169629539848.1944895.16954663145011378401.b4-ty@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 4 Oct 2023 17:38:10 +0000
-Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 
-> > > > > Create event sysfs for applying the deglitch condition. When
-> > > > > in_voltageY_thresh_rising_en/in_voltageY_thresh_falling_en is set to true,
-> > > > > the driver will use the in_voltageY_thresh_rising_value and
-> > > > > in_voltageY_thresh_falling_value as threshold values. If the ADC value
-> > > > > falls outside this threshold, the driver will wait for the ADC sampling
-> > > > > period and perform an additional read once to achieve the deglitching
-> > > > > purpose.
-> > > > >
-> > > > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>  
-> > >  
-> > > > Hi Billy  
-> > >  
-> > > > This is pushing the meaning of the events interface too far.
-> > > > You can't use it to hide a value you don't like from userspace.  
-> > >  
-> > > > If you can explain what the condition is that you are seeing
-> > > > and what you need to prevent happening if it is seen that would help
-> > > > us figure out if there is another way to do this.  
-> > >  
-> > > > Jonathan  
-> > >
-> > > Hi Jonathan,
-> > >
-> > > Currently, we are experiencing some voltage glitches while reading from our
-> > > controller, but we do not wish to report these false alarms to the user space.
-> > > Instead, we want to retry the operation as soon as possible. This is why the
-> > > driver requires this patch to handle retries internally, rather than relying on user
-> > > space which could introduce unpredictable timing for retrying the reading process.
-> > > This software approach aims to minimize the possibility of false alarms as much as possible.  
+On Mon, 25 Sep 2023 11:54:51 +0200, Uwe Kleine-K?nig wrote:
+> this series converts all platform drivers below drivers/soc to use
+> .remove_new(). The motivation is to get rid of an integer return code
+> that is (mostly) ignored by the platform driver core and error prone on
+> the driver side.
 > 
-> > Thanks for the extra detail. Perhaps share more of that in the cover letter for v2.  
+> See commit 5c5a7680e67b ("platform: Provide a remove callback that
+> returns no value") for an extended explanation and the eventual goal.
 > 
-> Okay, I will incorporate more details into my commit message for v2.
-> 
-> > >
-> > > If you have any suggestions or recommendations regarding this situation, please feel free to
-> > > share them with me.  
-> 
-> > Why do you need userspace control for the thresholds?
-> > Perhaps this is something that belongs in DT for a particular board design?  
-> 
-> If the input voltage remains constant, these settings can be incorporated into the DTS properties for configuring the threshold. However, if the input voltage is subject to change, adding user-space control may offer more flexibility.
+> [...]
 
-My concern is that it's an interface userspace probably won't know how to use, or
-will misuse given this seems to be papering over bad hardware.
+Applied, thanks!
 
-If there is a 'safe' value to put in DT I'd prefer to see that. I guess it might be per
-channel thing to adjust for different expected voltage ranges?
+[18/40] soc/qcom: icc-bwmon: Convert to platform remove callback returning void
+        commit: dd714c568ed4e6f79017be45077de71e9908af03
+[19/40] soc/qcom: llcc-qcom: Convert to platform remove callback returning void
+        commit: d85a9d18a58156fc8b5ab185e00e078adaaeefde
+[20/40] soc/qcom: ocmem: Convert to platform remove callback returning void
+        commit: 0b742c498bcd7d215501b10fe9df72a16237735a
+[21/40] soc/qcom: pmic_glink: Convert to platform remove callback returning void
+        commit: 4b3373e42dc2caa34394ac090c8c70bed49badd6
+[22/40] soc/qcom: qcom_aoss: Convert to platform remove callback returning void
+        commit: ffbe84a514f863a46a85c1e47b2b6d930b1b463e
+[23/40] soc/qcom: qcom_gsbi: Convert to platform remove callback returning void
+        commit: 57b31729bd2c72b00d400106e18db91e9d95d3c3
+[24/40] soc/qcom: qcom_stats: Convert to platform remove callback returning void
+        commit: a47ff90bf2f93ce4ca99858948a74a0c10a2bc45
+[25/40] soc/qcom: rmtfs_mem: Convert to platform remove callback returning void
+        commit: 7c93da5b8b69d4e4e7270c33ba3206af43930e1d
+[26/40] soc/qcom: smem: Convert to platform remove callback returning void
+        commit: 4b8dee9a34d51a61f60add996fae6a7140a20ae5
+[27/40] soc/qcom: smp2p: Convert to platform remove callback returning void
+        commit: 1cd966c2dc19654ed08c843e5c933db8c1349636
+[28/40] soc/qcom: smsm: Convert to platform remove callback returning void
+        commit: bdd7cc62cf69fe989557445d65d6c8cb2f956518
+[29/40] soc/qcom: socinfo: Convert to platform remove callback returning void
+        commit: c0989f7d1264b2b1885345a28a32fd5e1e61f9c7
 
-Jonathan
-
-> 
-> Thanks
+Best regards,
+-- 
+Bjorn Andersson <andersson@kernel.org>
