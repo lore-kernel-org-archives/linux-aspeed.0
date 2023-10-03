@@ -1,30 +1,60 @@
-From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Date: Tue, 3 Oct 2023 17:21:16 +0100
-Subject: [PATCH 3/3] mctp: Add MCTP-over-KCS transport binding
-In-Reply-To: <1fd97872-446e-42f3-84ad-6e490d63e12d@app.fastmail.com>
-References: <20230928123009.2913-1-aladyshev22@gmail.com>
-	<20230928123009.2913-4-aladyshev22@gmail.com>
-	<20230929120835.0000108e@Huawei.com>
-	<1fd97872-446e-42f3-84ad-6e490d63e12d@app.fastmail.com>
-Message-ID: <20231003172116.0000736e@Huawei.com>
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Wed, 4 Oct 2023 00:54:31 +0200
+Subject: [External] Re: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave
+ read
+In-Reply-To: <CA+J-oUsgZuFmKor_thfehf2T8Y9T4NHcDp713YHyZC=fQvvZgA@mail.gmail.com>
+References: <20230927154244.3774670-1-zhangjian.3032@bytedance.com>
+ <20230928145128.tjflbgvena4apivs@zenone.zhora.eu>
+ <CA+J-oUsgZuFmKor_thfehf2T8Y9T4NHcDp713YHyZC=fQvvZgA@mail.gmail.com>
+Message-ID: <20231003225431.owtpcds7rrijj7yf@zenone.zhora.eu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Jian,
 
-> Thanks for the drive-by comments!
+On Thu, Sep 28, 2023 at 11:04:23AM -0400, Jian Zhang wrote:
+> > From: "Andi Shyti"<andi.shyti@kernel.org>
+> > Date:? Thu, Sep 28, 2023, 22:51
+> > Subject:? [External] Re: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave read
+> > To: "Jian Zhang"<zhangjian.3032@bytedance.com>
+> > Cc: <brendan.higgins@linux.dev>, <benh@kernel.crashing.org>, <joel@jms.id.au>, <andrew@aj.id.au>, <zhangjian3032@gmail.com>, <yulei.sh@bytedance.com>, <xiexinnan@bytedance.com>, "Tommy Huang"<tommy_huang@aspeedtech.com>, "Wolfram Sang"<wsa@kernel.org>, "open list:ARM/ASPEED I2C DRIVER"<linux-i2c@vger.kernel.org>, "moderated list:ARM/ASPEED I2C DRIVER"<openbmc@lists.ozlabs.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-aspeed@lists.ozlabs.org>, "open list"<linux-kernel@vger.kernel.org>
+> > Hi Jian,
+> >
+> > On Wed, Sep 27, 2023 at 11:42:43PM +0800, Jian Zhang wrote:
+> > > When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
+> > > as a slave, a situation arises where the master sends a START signal
+> > > without the accompanying STOP signal. This action results in a
+> > > persistent I2C bus timeout. The core issue stems from the fact that
+> > > the i2c controller remains in a slave read state without a timeout
+> > > mechanism. As a consequence, the bus perpetually experiences timeouts.
+> > >
+> > > In this case, the i2c bus will be reset, but the slave_state reset is
+> > > missing.
 
-No problem and keep up the good work in tidying this up.
-Many dark and interesting corners in the kernel and not all of them get
-the work they deserve :)
+Acked-by: Andi Shyti <andi.shyti@kernel.org> 
 
-Feel free to CC me and I'll take a look at any cleanup you propose.
-At least KCS is small so there aren't 100s of drivers to change :)
+I checked the flow in the driver and makes sense to me. I'd also
+love a last minute comment from Brendan or Benjamin or Joel.
 
-Jonathan
-
+> > > Fixes: fee465150b45 ("i2c: aspeed: Reset the i2c controller when timeout occurs")
+> > > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
+> >
+> > Why I'm failing to find your v1 patch? And where is the
+> > changelog?
+> Sorry, something was missing,
+> v2:
+> * remove the i2c slave reset and only move the `bus->slave_state =
+> ASPEED_I2C_SLAVE_INACTIVE` to the aspeed_i2c_init
 > 
-> Andrew
+> [0]: https://lore.kernel.org/linux-arm-kernel/20230810072155.3726352-1-zhangjian.3032 at bytedance.com/T/
 
+Thanks! I should really check my filters here.
+
+Andi
+
+> Jian
+> >
+> > Andi
