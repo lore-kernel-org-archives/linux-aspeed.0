@@ -1,86 +1,123 @@
 From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 03 Oct 2023 17:22:45 +1030
-Subject: [PATCH v1] iio: adc: aspeed: Support deglitch feature.
-In-Reply-To: <SG2PR06MB336555C2C52E24FCCDE72C748BC5A@SG2PR06MB3365.apcprd06.prod.outlook.com>
-References: <20230925081845.4147424-1-billy_tsai@aspeedtech.com>
- <a310aba3-0f04-4549-a776-36ff8cef736e@app.fastmail.com>
- <SG2PR06MB336555C2C52E24FCCDE72C748BC5A@SG2PR06MB3365.apcprd06.prod.outlook.com>
-Message-ID: <4bee3205-212b-4032-a105-9b8f1fb1fa22@app.fastmail.com>
+Date: Tue, 03 Oct 2023 17:52:33 +1030
+Subject: [PATCH 3/3] mctp: Add MCTP-over-KCS transport binding
+In-Reply-To: <20230929120835.0000108e@Huawei.com>
+References: <20230928123009.2913-1-aladyshev22@gmail.com>
+ <20230928123009.2913-4-aladyshev22@gmail.com>
+ <20230929120835.0000108e@Huawei.com>
+Message-ID: <1fd97872-446e-42f3-84ad-6e490d63e12d@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy,
+Hi Jonathan,
 
-On Mon, 2 Oct 2023, at 19:20, Billy Tsai wrote:
-> On Mon, 25 Sep 2023, at 17:48, Billy Tsai wrote:
->> > Create event sysfs for applying the deglitch condition. When
->> > in_voltageY_thresh_rising_en/in_voltageY_thresh_falling_en is set to true,
->> > the driver will use the in_voltageY_thresh_rising_value and
->> > in_voltageY_thresh_falling_value as threshold values. If the ADC value
->> > falls outside this threshold, the driver will wait for the ADC sampling
->> > period and perform an additional read once to achieve the deglitching
->> > purpose.
->> >
->> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
->> > ---
->> >  drivers/iio/adc/aspeed_adc.c | 193 ++++++++++++++++++++++++++++++++++-
->> >  1 file changed, 189 insertions(+), 4 deletions(-)
->> >
->> > diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
->> > index 998e8bcc06e1..9e746c81d916 100644
->> > --- a/drivers/iio/adc/aspeed_adc.c
->> > +++ b/drivers/iio/adc/aspeed_adc.c
->> > @@ -95,6 +95,7 @@ struct aspeed_adc_model_data {
->> >       bool wait_init_sequence;
->> >       bool need_prescaler;
->> >       bool bat_sense_sup;
->> > +     bool require_extra_eoc;
+On Fri, 29 Sep 2023, at 20:38, Jonathan Cameron wrote:
+> On Thu, 28 Sep 2023 15:30:09 +0300
+> Konstantin Aladyshev <aladyshev22@gmail.com> wrote:
 >
->> What is "eoc"? Can we use a better name or add an explanatory comment?
+>> This change adds a MCTP KCS transport binding, as defined by the DMTF
+>> specificiation DSP0254 - "MCTP KCS Transport Binding".
+>> A MCTP protocol network device is created for each KCS channel found in
+>> the system.
+>> The interrupt code for the KCS state machine is based on the current
+>> IPMI KCS driver.
+>> 
+>> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
 >
-> Hi Andrew,
-> This is the signal name for our ADC controller, it means "End Of 
-> Conversion".
-> The appearance of this signal period indicates that the ADC value is 
-> valid and being updated to the register.
+> Drive by review as I was curious and might as well comment whilst reading.
+> Some comments seem to equally apply to other kcs drivers so maybe I'm
+> missing something...
+>
 
-Okay, searching for "conversion" in the datasheet didn't turn up anything like this. It seems I wasn't off-track with asking. If you go forward with the patch in some manner, can you add a comment to the code documenting the meaning of 'eoc'?
+I doubt you're missing anything. I reworked the KCS stuff a while back to make it a bit more general. Prior to Konstantin's work here the subsystem lived in its own little dark corner and might have benefitted from broader review. Some of the concerns with Konstantin's work are likely concerns with what I'd done, which he probably used as a guide. For reference the rework series is here:
+
+https://lore.kernel.org/all/20210608104757.582199-1-andrew at aj.id.au/
+
+>> +
+>> +static DEFINE_SPINLOCK(kcs_bmc_mctp_instances_lock);
+>> +static LIST_HEAD(kcs_bmc_mctp_instances);
+> As mentioned below, this seems to be only used to find some data again
+> in remove. Lots of cleaner ways to do that than a list in the driver.
+> I'd explore the alternatives.
+
+Yeah, it's a little clumsy. I'll look into better ways to address the problem.
+
+> 
+>> +	if (!ndev) {
+>> +		dev_err(kcs_bmc->dev,
+>> +			"alloc_netdev failed for KCS channel %d\n",
+>> +			kcs_bmc->channel);
+> No idea if the kcs subsystem handles deferred probing right, but in general
+> anything called just in 'probe' routines can use dev_err_probe() to pretty
+> print errors and also register any deferred cases with the logging stuff that
+> lets you find out why they were deferred.
+
+Let me see if there's work to do in the KCS subsystem to deal with deferred probing. I expect that there is.
 
 >
->> >       /* Register ADC clock prescaler with source specified by device tree.
->> > */
->> >       spin_lock_init(&data->clk_lock);
->> >       snprintf(clk_parent_name, ARRAY_SIZE(clk_parent_name), "%s",
->> > @@ -632,7 +806,14 @@ static int aspeed_adc_probe(struct platform_device
->> > *pdev)
->> >       adc_engine_control_reg_val |= ASPEED_ADC_CTRL_CHANNEL;
->> >       writel(adc_engine_control_reg_val,
->> >              data->base + ASPEED_REG_ENGINE_CONTROL);
->> > -
->> > +     adc_engine_control_reg_val =
->> > +             FIELD_GET(ASPEED_ADC_CTRL_CHANNEL,
->> > +                       readl(data->base + ASPEED_REG_ENGINE_CONTROL));
->> > +     data->required_eoc_num = hweight_long(adc_engine_control_reg_val);
->> > +     if (data->model_data->require_extra_eoc &&
->> > +         (adc_engine_control_reg_val &
->> > +          BIT(data->model_data->num_channels - 1)))
->> > +             data->required_eoc_num += 12;
 >
->> Why 12? Why add a value to the number of engines enabled? Have I misunderstood?
+>> +	if (rc)
+>> +		goto free_netdev;
+>> +
+>> +	spin_lock_irq(&kcs_bmc_mctp_instances_lock);
+>> +	list_add(&mkcs->entry, &kcs_bmc_mctp_instances);
 >
-> This behavior is specified by the hardware. In our ADC, it requires 12 
-> dummy sampling
-> periods to switch the sampling channel from CH7 to CH0. Hence, this 
-> condition checks
-> the enable status of channel 7 to determine the necessary delay period 
-> for obtaining the
-> updated ADC values for each channel.
+> Add a callback and devm_add_action_or_reset() to unwind this as well.
 
-Okay, I feel using a magic value '12' with what you wrote above as an explanation is asking a bit much of the reader. Again, if you go forward with this patch in some fashion, can you document the meaning of 12 in a comment (and possibly use a macro to name it)?
+I'll check the other KCS users as well.
 
-Cheers,
+>
+>
+>
+>> +	devm_kfree(kcs_bmc->dev, mkcs->data_in);
+>> +	devm_kfree(kcs_bmc->dev, mkcs->data_out);
+>
+> Alarm bells occur whenever an explicit devm_kfree turns up in
+> except in complex corner cases. Please look at how devm based
+> resource management works. These should not be here.
+
+Ah, I think this was an oversight in how I reworked the drivers a while back. I changed the arrangement of the structures but retained the devm_* approach to resource management. Let me page the KCS stuff back in so I can clean that up.
+
+>
+> Also, remove_device should either do things in the opposite order
+> to add_device, or it should have comments saying why not!
+
++1
+
+>
+>
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct kcs_bmc_driver_ops kcs_bmc_mctp_driver_ops = {
+>> +	.add_device = kcs_bmc_mctp_add_device,
+>> +	.remove_device = kcs_bmc_mctp_remove_device,
+>> +};
+>> +
+>> +static struct kcs_bmc_driver kcs_bmc_mctp_driver = {
+>> +	.ops = &kcs_bmc_mctp_driver_ops,
+>> +};
+>> +
+>> +static int __init mctp_kcs_init(void)
+>> +{
+>> +	kcs_bmc_register_driver(&kcs_bmc_mctp_driver);
+>> +	return 0;
+>> +}
+>> +
+>> +static void __exit mctp_kcs_exit(void)
+>> +{
+>> +	kcs_bmc_unregister_driver(&kcs_bmc_mctp_driver);
+>> +}
+>
+> Hmm. So kcs is a very small subsystem hence no one has done the usual
+> module_kcs_driver() wrapper (see something like module_i2c_driver)
+> for an example. 
+
+I'll probably deal with this in the course of the rest of the poking around.
+
+Thanks for the drive-by comments!
 
 Andrew
