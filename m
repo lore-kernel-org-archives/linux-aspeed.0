@@ -1,60 +1,59 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Wed, 4 Oct 2023 00:54:31 +0200
-Subject: [External] Re: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave
- read
-In-Reply-To: <CA+J-oUsgZuFmKor_thfehf2T8Y9T4NHcDp713YHyZC=fQvvZgA@mail.gmail.com>
-References: <20230927154244.3774670-1-zhangjian.3032@bytedance.com>
- <20230928145128.tjflbgvena4apivs@zenone.zhora.eu>
- <CA+J-oUsgZuFmKor_thfehf2T8Y9T4NHcDp713YHyZC=fQvvZgA@mail.gmail.com>
-Message-ID: <20231003225431.owtpcds7rrijj7yf@zenone.zhora.eu>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 04 Oct 2023 10:00:38 +1030
+Subject: [PATCH 08/36] gpio: aspeed: use new pinctrl GPIO helpers
+In-Reply-To: <20231003145114.21637-9-brgl@bgdev.pl>
+References: <20231003145114.21637-1-brgl@bgdev.pl>
+	 <20231003145114.21637-9-brgl@bgdev.pl>
+Message-ID: <6608b6ea673454672fb5930b57e9e7a5570d96d5.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jian,
-
-On Thu, Sep 28, 2023 at 11:04:23AM -0400, Jian Zhang wrote:
-> > From: "Andi Shyti"<andi.shyti@kernel.org>
-> > Date:? Thu, Sep 28, 2023, 22:51
-> > Subject:? [External] Re: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave read
-> > To: "Jian Zhang"<zhangjian.3032@bytedance.com>
-> > Cc: <brendan.higgins@linux.dev>, <benh@kernel.crashing.org>, <joel@jms.id.au>, <andrew@aj.id.au>, <zhangjian3032@gmail.com>, <yulei.sh@bytedance.com>, <xiexinnan@bytedance.com>, "Tommy Huang"<tommy_huang@aspeedtech.com>, "Wolfram Sang"<wsa@kernel.org>, "open list:ARM/ASPEED I2C DRIVER"<linux-i2c@vger.kernel.org>, "moderated list:ARM/ASPEED I2C DRIVER"<openbmc@lists.ozlabs.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-arm-kernel@lists.infradead.org>, "moderated list:ARM/ASPEED MACHINE SUPPORT"<linux-aspeed@lists.ozlabs.org>, "open list"<linux-kernel@vger.kernel.org>
-> > Hi Jian,
-> >
-> > On Wed, Sep 27, 2023 at 11:42:43PM +0800, Jian Zhang wrote:
-> > > When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
-> > > as a slave, a situation arises where the master sends a START signal
-> > > without the accompanying STOP signal. This action results in a
-> > > persistent I2C bus timeout. The core issue stems from the fact that
-> > > the i2c controller remains in a slave read state without a timeout
-> > > mechanism. As a consequence, the bus perpetually experiences timeouts.
-> > >
-> > > In this case, the i2c bus will be reset, but the slave_state reset is
-> > > missing.
-
-Acked-by: Andi Shyti <andi.shyti@kernel.org> 
-
-I checked the flow in the driver and makes sense to me. I'd also
-love a last minute comment from Brendan or Benjamin or Joel.
-
-> > > Fixes: fee465150b45 ("i2c: aspeed: Reset the i2c controller when timeout occurs")
-> > > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
-> >
-> > Why I'm failing to find your v1 patch? And where is the
-> > changelog?
-> Sorry, something was missing,
-> v2:
-> * remove the i2c slave reset and only move the `bus->slave_state =
-> ASPEED_I2C_SLAVE_INACTIVE` to the aspeed_i2c_init
+On Tue, 2023-10-03 at 16:50 +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 > 
-> [0]: https://lore.kernel.org/linux-arm-kernel/20230810072155.3726352-1-zhangjian.3032 at bytedance.com/T/
+> Replace the pinctrl helpers taking the global GPIO number as argument
+> with the improved variants that instead take a pointer to the GPIO chip
+> and the controller-relative offset.
+> 
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> ---
+>  drivers/gpio/gpio-aspeed.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+> index da33bbbdacb9..d3aa1cfd4ace 100644
+> --- a/drivers/gpio/gpio-aspeed.c
+> +++ b/drivers/gpio/gpio-aspeed.c
+> @@ -750,12 +750,12 @@ static int aspeed_gpio_request(struct gpio_chip *chip, unsigned int offset)
+>  	if (!have_gpio(gpiochip_get_data(chip), offset))
+>  		return -ENODEV;
+>  
+> -	return pinctrl_gpio_request(chip->base + offset);
+> +	return pinctrl_gpio_request_new(chip, offset);
+>  }
+>  
+>  static void aspeed_gpio_free(struct gpio_chip *chip, unsigned int offset)
+>  {
+> -	pinctrl_gpio_free(chip->base + offset);
+> +	pinctrl_gpio_free_new(chip, offset);
+>  }
+>  
+>  static int usecs_to_cycles(struct aspeed_gpio *gpio, unsigned long usecs,
+> @@ -973,7 +973,7 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
+>  	else if (param == PIN_CONFIG_BIAS_DISABLE ||
+>  			param == PIN_CONFIG_BIAS_PULL_DOWN ||
+>  			param == PIN_CONFIG_DRIVE_STRENGTH)
+> -		return pinctrl_gpio_set_config(offset, config);
+> +		return pinctrl_gpio_set_config_new(chip, offset, config);
 
-Thanks! I should really check my filters here.
+Ah, this looks like it removes a bug too. Nice.
 
-Andi
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-> Jian
-> >
-> > Andi
+>  	else if (param == PIN_CONFIG_DRIVE_OPEN_DRAIN ||
+>  			param == PIN_CONFIG_DRIVE_OPEN_SOURCE)
+>  		/* Return -ENOTSUPP to trigger emulation, as per datasheet */
+
