@@ -1,86 +1,60 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Wed,  4 Oct 2023 15:12:33 +0200
-Subject: [PATCH 00/21] EDAC: Convert to platform remove callback returning void
-Message-ID: <20231004131254.2673842-1-u.kleine-koenig@pengutronix.de>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Wed, 4 Oct 2023 17:38:10 +0000
+Subject: [PATCH v1] iio: adc: aspeed: Support deglitch feature.
+In-Reply-To: <20231002103940.00001dbd@Huawei.com>
+References: <20230925081845.4147424-1-billy_tsai@aspeedtech.com>
+	<20230930174501.039095da@jic23-huawei>
+	<SG2PR06MB3365E89B1543B770AC2EE7E78BC5A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+ <20231002103940.00001dbd@Huawei.com>
+Message-ID: <SG2PR06MB336557EDAAE2950D192E40838BCBA@SG2PR06MB3365.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
 
-this series converts all platform drivers below drivers/edac to use
-.remove_new(). The motivation is to get rid of an integer return code
-that is (mostly) ignored by the platform driver core and error prone on
-the driver side. However none of the edac drivers suffered from the easy
-to make bug, so all drivers are converted in a trivial way.
+> > > > Create event sysfs for applying the deglitch condition. When
+> > > > in_voltageY_thresh_rising_en/in_voltageY_thresh_falling_en is set to true,
+> > > > the driver will use the in_voltageY_thresh_rising_value and
+> > > > in_voltageY_thresh_falling_value as threshold values. If the ADC value
+> > > > falls outside this threshold, the driver will wait for the ADC sampling
+> > > > period and perform an additional read once to achieve the deglitching
+> > > > purpose.
+> > > >
+> > > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> >
+> > > Hi Billy
+> >
+> > > This is pushing the meaning of the events interface too far.
+> > > You can't use it to hide a value you don't like from userspace.
+> >
+> > > If you can explain what the condition is that you are seeing
+> > > and what you need to prevent happening if it is seen that would help
+> > > us figure out if there is another way to do this.
+> >
+> > > Jonathan
+> >
+> > Hi Jonathan,
+> >
+> > Currently, we are experiencing some voltage glitches while reading from our
+> > controller, but we do not wish to report these false alarms to the user space.
+> > Instead, we want to retry the operation as soon as possible. This is why the
+> > driver requires this patch to handle retries internally, rather than relying on user
+> > space which could introduce unpredictable timing for retrying the reading process.
+> > This software approach aims to minimize the possibility of false alarms as much as possible.
 
-See commit 5c5a7680e67b ("platform: Provide a remove callback that
-returns no value") for an extended explanation and the eventual goal.
+> Thanks for the extra detail. Perhaps share more of that in the cover letter for v2.
 
-The patch for npcm was already sent back in June
-(https://lore.kernel.org/linux-edac/20230628071354.665300-1-u.kleine-koenig at pengutronix.de)
-but didn't result in enthusiastic review comments and it wasn't picked
-up.
+Okay, I will incorporate more details into my commit message for v2.
 
-There are no interdependencies between the patches. As there are still
-quite a few drivers to convert, I'm happy about every patch that makes
-it in. So even if there is a merge conflict with one patch until you
-apply, please apply the remainder of this series anyhow. I'll come back
-to the part that you (maybe) skipped at a later point.
+> >
+> > If you have any suggestions or recommendations regarding this situation, please feel free to
+> > share them with me.
 
-Best regards
-Uwe
+> Why do you need userspace control for the thresholds?
+> Perhaps this is something that belongs in DT for a particular board design?
 
-Uwe Kleine-K?nig (21):
-  EDAC/altera: Convert to platform remove callback returning void
-  EDAC/armada_xp: Convert to platform remove callback returning void
-  EDAC/aspeed: Convert to platform remove callback returning void
-  EDAC/bluefield: Convert to platform remove callback returning void
-  EDAC/cell: Convert to platform remove callback returning void
-  EDAC/cpc925: Convert to platform remove callback returning void
-  EDAC/dmc520: Convert to platform remove callback returning void
-  EDAC/highbank_l2: Convert to platform remove callback returning void
-  EDAC/highbank_mc: Convert to platform remove callback returning void
-  EDAC/mpc85xx: Convert to platform remove callback returning void
-  EDAC/npcm: Convert to platform remove callback returning void
-  EDAC/octeon-l2c: Convert to platform remove callback returning void
-  EDAC/octeon-lmc: Convert to platform remove callback returning void
-  EDAC/octeon-pc: Convert to platform remove callback returning void
-  EDAC/octeon-pci: Convert to platform remove callback returning void
-  EDAC/ppc4xx: Convert to platform remove callback returning void
-  EDAC/qcom: Convert to platform remove callback returning void
-  EDAC/synopsys: Convert to platform remove callback returning void
-  EDAC/ti: Convert to platform remove callback returning void
-  EDAC/xgene: Convert to platform remove callback returning void
-  EDAC/zynqmp: Convert to platform remove callback returning void
+If the input voltage remains constant, these settings can be incorporated into the DTS properties for configuring the threshold. However, if the input voltage is subject to change, adding user-space control may offer more flexibility.
 
- drivers/edac/altera_edac.c      | 12 ++++--------
- drivers/edac/armada_xp_edac.c   | 12 ++++--------
- drivers/edac/aspeed_edac.c      |  6 ++----
- drivers/edac/bluefield_edac.c   |  6 ++----
- drivers/edac/cell_edac.c        |  5 ++---
- drivers/edac/cpc925_edac.c      |  6 ++----
- drivers/edac/dmc520_edac.c      |  6 ++----
- drivers/edac/highbank_l2_edac.c |  5 ++---
- drivers/edac/highbank_mc_edac.c |  5 ++---
- drivers/edac/mpc85xx_edac.c     | 11 ++++-------
- drivers/edac/npcm_edac.c        |  6 ++----
- drivers/edac/octeon_edac-l2c.c  |  6 ++----
- drivers/edac/octeon_edac-lmc.c  |  5 ++---
- drivers/edac/octeon_edac-pc.c   |  5 ++---
- drivers/edac/octeon_edac-pci.c  |  6 ++----
- drivers/edac/ppc4xx_edac.c      |  7 ++-----
- drivers/edac/qcom_edac.c        |  6 ++----
- drivers/edac/synopsys_edac.c    |  6 ++----
- drivers/edac/ti_edac.c          |  6 ++----
- drivers/edac/xgene_edac.c       |  6 ++----
- drivers/edac/zynqmp_edac.c      |  6 ++----
- 21 files changed, 48 insertions(+), 91 deletions(-)
-
-
-base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
--- 
-2.40.1
-
+Thanks
