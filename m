@@ -1,28 +1,426 @@
-From: Andy Shevchenko <andy@kernel.org>
-Date: Tue, 3 Oct 2023 11:54:55 +0300
-Subject: [PATCH] gpio: aspeed: fix the GPIO number passed to
- pinctrl_gpio_set_config()
-In-Reply-To: <20231003073926.10771-1-brgl@bgdev.pl>
-References: <20231003073926.10771-1-brgl@bgdev.pl>
-Message-ID: <ZRvW31qf/cbd5fYT@smile.fi.intel.com>
+From: PeterYin <peteryin.openbmc@gmail.com>
+Date: Wed, 4 Oct 2023 09:46:03 +0800
+Subject: [PATCH v9 1/2] ARM: dts: aspeed: Minerva: Add Facebook Minerva
+ (AST2600) BMC
+In-Reply-To: <20230907064514.1764010-2-peteryin.openbmc@gmail.com>
+References: <20230907064514.1764010-1-peteryin.openbmc@gmail.com>
+ <20230907064514.1764010-2-peteryin.openbmc@gmail.com>
+Message-ID: <02b596d2-c169-899b-bcba-5aff2dbd5113@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 03, 2023 at 09:39:26AM +0200, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> 
-> pinctrl_gpio_set_config() expects the GPIO number from the global GPIO
-> numberspace, not the controller-relative offset, which needs to be added
-> to the chip base.
 
-Right, because it has no clue what chip this offset is related to.
-Reviewed-by: Andy Shevchenko <andy@kernel.org>
+On 9/7/23 14:45, Peter Yin wrote:
+> Add linux device tree entry related to Minerva
+> specific devices connected to BMC SoC.
+>
+> Signed-off-by: Peter Yin<peteryin.openbmc@gmail.com>
+> ---
+>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>   .../aspeed/aspeed-bmc-facebook-minerva.dts    | 371 ++++++++++++++++++
+>   2 files changed, 372 insertions(+)
+>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+>
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index 23cbc7203a8e..b1da302dbcd6 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -19,6 +19,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>   	aspeed-bmc-facebook-fuji.dtb \
+>   	aspeed-bmc-facebook-galaxy100.dtb \
+>   	aspeed-bmc-facebook-greatlakes.dtb \
+> +	aspeed-bmc-facebook-minerva.dtb \
+>   	aspeed-bmc-facebook-minipack.dtb \
+>   	aspeed-bmc-facebook-tiogapass.dtb \
+>   	aspeed-bmc-facebook-wedge40.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+> new file mode 100644
+> index 000000000000..4834473c3c39
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+> @@ -0,0 +1,371 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +// Copyright (c) 2023 Facebook Inc.
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/i2c/i2c.h>
+> +
+> +/ {
+> +	model = "Facebook Minerva";
+> +	compatible = "facebook,minerva-bmc", "aspeed,ast2600";
+> +
+> +	aliases {
+> +		serial0 = &uart1;
+> +		serial4 = &uart5;
+> +	};
+> +
+> +	chosen {
+> +		stdout-path = &uart5;
+> +	};
+> +
+> +	memory at 80000000 {
+> +		device_type = "memory";
+> +		reg = <0x80000000 0x80000000>;
+> +	};
+> +
+> +	iio-hwmon {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+> +			<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+> +			<&adc1 2>;
+> +	};
+> +};
+> +
+> +// HOST BIOS Debug
+> +&uart1 {
+> +	status = "okay";
+> +};
+> +
+> +// SOL Host Console
+> +&uart2 {
+> +	status = "okay";
+> +	pinctrl-0 = <>;
+> +};
+> +
+> +// SOL BMC Console
+> +&uart4 {
+> +	status = "okay";
+> +	pinctrl-0 = <>;
+> +};
+> +
+> +// BMC Debug Console
+> +&uart5 {
+> +	status = "okay";
+> +};
+> +
+> +// MTIA
+> +&uart6 {
+> +	status = "okay";
+> +};
+> +
+> +&uart_routing {
+> +	status = "okay";
+> +};
+> +
+> +&vuart1 {
+> +	status = "okay";
+> +	virtual;
+> +	port=<0x3e8>;
+> +	sirq = <7>;
+> +	sirq-polarity = <0>;
+> +	dma-mode;
+> +	dma-channel = <12>;
+> +};
+> +
+> +&wdt1 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_wdtrst1_default>;
+> +	aspeed,reset-type = "soc";
+> +	aspeed,external-signal;
+> +	aspeed,ext-push-pull;
+> +	aspeed,ext-active-high;
+> +	aspeed,ext-pulse-duration = <256>;
+> +};
+> +
+> +&mac3 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii4_default>;
+> +	no-hw-checksum;
+> +	use-ncsi;
+> +	ncsi-ctrl,start-redo-probe;
+> +	ncsi-ctrl,no-channel-monitor;
+> +	mlx,multi-host;
+> +	ncsi-package = <1>;
+> +	ncsi-channel = <1>;
+> +	ncsi-rexmit = <1>;
+> +	ncsi-timeout = <2>;
+> +};
+> +
+> +&rtc {
+> +	status = "okay";
+> +};
+> +
+> +&fmc {
+> +	status = "okay";
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "bmc";
+> +		spi-max-frequency = <50000000>;
+> +#include "openbmc-flash-layout-128.dtsi"
+> +	};
+> +
+> +	flash at 1 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "alt-bmc";
+> +		spi-max-frequency = <50000000>;
+> +	};
+> +};
+> +
+> +// BIOS Flash
+> +&spi2 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_spi2_default>;
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "pnor";
+> +		spi-max-frequency = <12000000>;
+> +		spi-tx-bus-width = <2>;
+> +		spi-rx-bus-width = <2>;
+> +	};
+> +};
+> +
+> +&kcs2 {
+> +	status = "okay";
+> +	aspeed,lpc-io-reg = <0xca8>;
+> +};
+> +
+> +&kcs3 {
+> +	status = "okay";
+> +	aspeed,lpc-io-reg = <0xca2>;
+> +};
+> +
+> +&lpc_snoop {
+> +	status = "okay";
+> +	snoop-ports = <0x80>;
+> +};
+> +
+> +&peci0 {
+> +	status = "okay";
+> +	clock-frequency = <1000000>;
+> +};
+> +
+> +&i2c0 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c1 {
+> +	status = "okay";
+> +
+> +	tmp75 at 4B {
+> +		compatible = "ti,tmp75";
+> +		reg = <0x4B>;
+> +	};
+> +};
+> +
+> +&i2c2 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c3 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c4 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c5 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c6 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c7 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c8 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c9 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c11 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c12 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c13 {
+> +	status = "okay";
+> +};
+> +
+> +// To Debug card
+> +&i2c14 {
+> +	status = "okay";
+> +	multi-master;
+> +
+> +	ipmb at 10 {
+> +		compatible = "ipmb-dev";
+> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
+> +		i2c-protocol;
+> +	};
+> +};
+> +
+> +&i2c15 {
+> +	status = "okay";
+> +
+> +	// SCM FRU
+> +	eeprom at 50 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x50>;
+> +	};
+> +	// BSM FRU
+> +	eeprom at 56 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x56>;
+> +	};
+> +};
+> +
+> +&adc0 {
+> +	ref_voltage = <2500>;
+> +	status = "okay";
+> +	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
+> +		&pinctrl_adc2_default &pinctrl_adc3_default
+> +		&pinctrl_adc4_default &pinctrl_adc5_default
+> +		&pinctrl_adc6_default &pinctrl_adc7_default>;
+> +};
+> +
+> +&adc1 {
+> +	ref_voltage = <2500>;
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_adc10_default>;
+> +};
+> +
+> +&ehci1 {
+> +	status = "okay";
+> +};
+> +
+> +&gpio0 {
+> +	pinctrl-names = "default";
+> +	gpio-line-names =
+> +	/*A0-A7*/	"","","","","","","","",
+> +	/*B0-B7*/	"","","","","","FM_ID_LED_N","","",
+> +	/*C0-C7*/	"","","","","","","","",
+> +	/*D0-D7*/	"","","SOL_UART_SET","","","","","",
+> +	/*E0-E7*/	"","","","","","","","",
+> +	/*F0-F7*/	"","","","","","","","",
+> +	/*G0-G7*/	"","","","","","","","",
+> +	/*H0-H7*/	"","","","","","","","",
+> +	/*I0-I7*/	"","","","","","","","",
+> +	/*J0-J7*/	"","","","","","","","",
+> +	/*K0-K7*/	"","","","","","","","",
+> +	/*L0-L7*/	"","","","","","","","",
+> +	/*M0-M7*/	"","","","","","","","",
+> +	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
+> +			"LED_POSTCODE_2","LED_POSTCODE_3",
+> +			"LED_POSTCODE_4","LED_POSTCODE_5",
+> +			"LED_POSTCODE_6","LED_POSTCODE_7",
+> +	/*O0-O7*/	"","","","","","","","",
+> +	/*P0-P7*/	"FP_SYS_PWRBTN_IN_N","BMC_SYS_PWRBTN_OUT_N",
+> +			"FP_RST_BTN_IN_N","","","","","",
+> +	/*Q0-Q7*/	"","","","","","","","",
+> +	/*R0-R7*/	"","","","","","","","",
+> +	/*S0-S7*/	"","","","","","","","",
+> +	/*T0-T7*/	"","","","","","","","",
+> +	/*U0-U7*/	"","","","","","","","",
+> +	/*V0-V7*/	"","","","","","","","",
+> +	/*W0-W7*/	"","","","","","","","",
+> +	/*X0-X7*/	"","","","","","","","",
+> +	/*Y0-Y7*/	"","","","","","","","",
+> +	/*Z0-Z7*/	"","","","","","","","";
+> +};
+> +
+> +&sgpiom0 {
+> +	status = "okay";
+> +	max-ngpios = <128>;
+> +	ngpios = <128>;
+> +	bus-frequency = <2000000>;
+> +	gpio-line-names =
+> +	/*in - out - in - out */
+> +	/*A0-A3 line 0-7*/
+> +	"","","","","","ENABLE_SENSORS","","",
+> +	/*A4-A7 line 8-15*/
+> +	"","","","","","","","",
+> +	/*B0-B3 line 16-23*/
+> +	"","","","","","BMC_RST_BTN_OUT_N","","",
+> +	/*B4-B7 line 24-31*/
+> +	"","","","","","","","",
+> +	/*C0-C3 line 32-39*/
+> +	"","","","","","","","",
+> +	/*C4-C7 line 40-47*/
+> +	"","","","","","","","",
+> +	/*D0-D3 line 48-55*/
+> +	"","","","","","","","",
+> +	/*D4-D7 line 56-63*/
+> +	"","","","","","","","",
+> +	/*E0-E3 line 64-71*/
+> +	"","","","","","","","",
+> +	/*E4-E7 line 72-79*/
+> +	"","","","","","","","",
+> +	/*F0-F3 line 80-87*/
+> +	"","","","","","","","",
+> +	/*F4-F7 line 88-95*/
+> +	"","","","","","","","",
+> +	/*G0-G3 line 96-103*/
+> +	"","","","","","","","",
+> +	/*G4-G7 line 104-111*/
+> +	"","","","","","","","",
+> +	/*H0-H3 line 112-119*/
+> +	"","","","","PLD_SYS_POWER_GOOD","","","",
+> +	/*H4-H7 line 120-127*/
+> +	"","","","","","","","",
+> +	/*I0-I3 line 128-135*/
+> +	"","","","","","","","",
+> +	/*I4-I7 line 136-143*/
+> +	"","","","","","","","",
+> +	/*J0-J3 line 144-151*/
+> +	"","","PLD_BIOS_POST_CMPLT_N","","","","","",
+> +	/*J4-J7 line 152-159*/
+> +	"","","","","","","","",
+> +	/*K0-K3 line 160-167*/
+> +	"","","","","","","","",
+> +	/*K4-K7 line 168-175*/
+> +	"","","","","","","","",
+> +	/*L0-L3 line 176-183*/
+> +	"","","","","","","","",
+> +	/*L4-L7 line 184-191*/
+> +	"","","","","","","","",
+> +	/*M0-M3 line 192-199*/
+> +	"","","","","","","","",
+> +	/*M4-M7 line 200-207*/
+> +	"","","","","","","","",
+> +	/*N0-N3 line 208-215*/
+> +	"","","","","","","","",
+> +	/*N4-N7 line 216-223*/
+> +	"","","","","","","","",
+> +	/*O0-O3 line 224-231*/
+> +	"","","","","","","","",
+> +	/*O4-O7 line 232-239*/
+> +	"","","","","","","","",
+> +	/*P0-P3 line 240-247*/
+> +	"","","","","","","","",
+> +	/*P4-P7 line 248-255*/
+> +	"","","","","","","","";
+> +};
 
--- 
-With Best Regards,
-Andy Shevchenko
+Hello Maintainer,
+
+Are there any recommendations or modifications that you consider necessary?
+
+Thank you.
 
 
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231004/b51e13bd/attachment-0001.htm>
