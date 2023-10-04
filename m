@@ -1,422 +1,74 @@
-From: PeterYin <peteryin.openbmc@gmail.com>
-Date: Wed, 4 Oct 2023 10:22:03 +0800
-Subject: [PATCH v9 1/2] ARM: dts: aspeed: Minerva: Add Facebook Minerva
- (AST2600) BMC
-In-Reply-To: <20230907064514.1764010-2-peteryin.openbmc@gmail.com>
-References: <20230907064514.1764010-1-peteryin.openbmc@gmail.com>
- <20230907064514.1764010-2-peteryin.openbmc@gmail.com>
-Message-ID: <634eefdd-b3af-8f8b-ab43-6037194ad522@gmail.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 04 Oct 2023 16:38:38 +1030
+Subject: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave read
+In-Reply-To: <ZRZ/ObZmntMLw2r+@ninjato>
+References: <20230927154244.3774670-1-zhangjian.3032@bytedance.com>
+	 <ZRZ/ObZmntMLw2r+@ninjato>
+Message-ID: <975c69de32eefb124fe668e921e8dbda86962deb.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-Peter Yin ? 9/7/23 14:45 ??:
-> Add linux device tree entry related to Minerva
-> specific devices connected to BMC SoC.
+On Fri, 2023-09-29 at 09:39 +0200, Wolfram Sang wrote:
+> On Wed, Sep 27, 2023 at 11:42:43PM +0800, Jian Zhang wrote:
+> > When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
+> > as a slave, a situation arises where the master sends a START signal
+> > without the accompanying STOP signal. This action results in a
+> > persistent I2C bus timeout. The core issue stems from the fact that
+> > the i2c controller remains in a slave read state without a timeout
+> > mechanism. As a consequence, the bus perpetually experiences timeouts.
+> > 
+> > In this case, the i2c bus will be reset, but the slave_state reset is
+> > missing.
+> > 
+> > Fixes: fee465150b45 ("i2c: aspeed: Reset the i2c controller when timeout occurs")
+> > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
 > 
-> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
-> ---
->   arch/arm/boot/dts/aspeed/Makefile             |   1 +
->   .../aspeed/aspeed-bmc-facebook-minerva.dts    | 371 ++++++++++++++++++
->   2 files changed, 372 insertions(+)
->   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+> Somebody wants to add tags here? I think it should go to my pull request
+> this week.
 > 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index 23cbc7203a8e..b1da302dbcd6 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -19,6 +19,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->   	aspeed-bmc-facebook-fuji.dtb \
->   	aspeed-bmc-facebook-galaxy100.dtb \
->   	aspeed-bmc-facebook-greatlakes.dtb \
-> +	aspeed-bmc-facebook-minerva.dtb \
->   	aspeed-bmc-facebook-minipack.dtb \
->   	aspeed-bmc-facebook-tiogapass.dtb \
->   	aspeed-bmc-facebook-wedge40.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-> new file mode 100644
-> index 000000000000..4834473c3c39
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-> @@ -0,0 +1,371 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright (c) 2023 Facebook Inc.
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/i2c/i2c.h>
-> +
-> +/ {
-> +	model = "Facebook Minerva";
-> +	compatible = "facebook,minerva-bmc", "aspeed,ast2600";
-> +
-> +	aliases {
-> +		serial0 = &uart1;
-> +		serial4 = &uart5;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = &uart5;
-> +	};
-> +
-> +	memory at 80000000 {
-> +		device_type = "memory";
-> +		reg = <0x80000000 0x80000000>;
-> +	};
-> +
-> +	iio-hwmon {
-> +		compatible = "iio-hwmon";
-> +		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
-> +			<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
-> +			<&adc1 2>;
-> +	};
-> +};
-> +
-> +// HOST BIOS Debug
-> +&uart1 {
-> +	status = "okay";
-> +};
-> +
-> +// SOL Host Console
-> +&uart2 {
-> +	status = "okay";
-> +	pinctrl-0 = <>;
-> +};
-> +
-> +// SOL BMC Console
-> +&uart4 {
-> +	status = "okay";
-> +	pinctrl-0 = <>;
-> +};
-> +
-> +// BMC Debug Console
-> +&uart5 {
-> +	status = "okay";
-> +};
-> +
-> +// MTIA
-> +&uart6 {
-> +	status = "okay";
-> +};
-> +
-> +&uart_routing {
-> +	status = "okay";
-> +};
-> +
-> +&vuart1 {
-> +	status = "okay";
-> +	virtual;
-> +	port=<0x3e8>;
-> +	sirq = <7>;
-> +	sirq-polarity = <0>;
-> +	dma-mode;
-> +	dma-channel = <12>;
-> +};
-> +
-> +&wdt1 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_wdtrst1_default>;
-> +	aspeed,reset-type = "soc";
-> +	aspeed,external-signal;
-> +	aspeed,ext-push-pull;
-> +	aspeed,ext-active-high;
-> +	aspeed,ext-pulse-duration = <256>;
-> +};
-> +
-> +&mac3 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rmii4_default>;
-> +	no-hw-checksum;
-> +	use-ncsi;
-> +	ncsi-ctrl,start-redo-probe;
-> +	ncsi-ctrl,no-channel-monitor;
-> +	mlx,multi-host;
-> +	ncsi-package = <1>;
-> +	ncsi-channel = <1>;
-> +	ncsi-rexmit = <1>;
-> +	ncsi-timeout = <2>;
-> +};
-> +
-> +&rtc {
-> +	status = "okay";
-> +};
-> +
-> +&fmc {
-> +	status = "okay";
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "bmc";
-> +		spi-max-frequency = <50000000>;
-> +#include "openbmc-flash-layout-128.dtsi"
-> +	};
-> +
-> +	flash at 1 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "alt-bmc";
-> +		spi-max-frequency = <50000000>;
-> +	};
-> +};
-> +
-> +// BIOS Flash
-> +&spi2 {
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_spi2_default>;
-> +
-> +	flash at 0 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "pnor";
-> +		spi-max-frequency = <12000000>;
-> +		spi-tx-bus-width = <2>;
-> +		spi-rx-bus-width = <2>;
-> +	};
-> +};
-> +
-> +&kcs2 {
-> +	status = "okay";
-> +	aspeed,lpc-io-reg = <0xca8>;
-> +};
-> +
-> +&kcs3 {
-> +	status = "okay";
-> +	aspeed,lpc-io-reg = <0xca2>;
-> +};
-> +
-> +&lpc_snoop {
-> +	status = "okay";
-> +	snoop-ports = <0x80>;
-> +};
-> +
-> +&peci0 {
-> +	status = "okay";
-> +	clock-frequency = <1000000>;
-> +};
-> +
-> +&i2c0 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c1 {
-> +	status = "okay";
-> +
-> +	tmp75 at 4B {
-> +		compatible = "ti,tmp75";
-> +		reg = <0x4B>;
-> +	};
-> +};
-> +
-> +&i2c2 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c3 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c4 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c5 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c6 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c7 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c8 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c9 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c11 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c12 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c13 {
-> +	status = "okay";
-> +};
-> +
-> +// To Debug card
-> +&i2c14 {
-> +	status = "okay";
-> +	multi-master;
-> +
-> +	ipmb at 10 {
-> +		compatible = "ipmb-dev";
-> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> +		i2c-protocol;
-> +	};
-> +};
-> +
-> +&i2c15 {
-> +	status = "okay";
-> +
-> +	// SCM FRU
-> +	eeprom at 50 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x50>;
-> +	};
-> +	// BSM FRU
-> +	eeprom at 56 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x56>;
-> +	};
-> +};
-> +
-> +&adc0 {
-> +	ref_voltage = <2500>;
-> +	status = "okay";
-> +	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
-> +		&pinctrl_adc2_default &pinctrl_adc3_default
-> +		&pinctrl_adc4_default &pinctrl_adc5_default
-> +		&pinctrl_adc6_default &pinctrl_adc7_default>;
-> +};
-> +
-> +&adc1 {
-> +	ref_voltage = <2500>;
-> +	status = "okay";
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_adc10_default>;
-> +};
-> +
-> +&ehci1 {
-> +	status = "okay";
-> +};
-> +
-> +&gpio0 {
-> +	pinctrl-names = "default";
-> +	gpio-line-names =
-> +	/*A0-A7*/	"","","","","","","","",
-> +	/*B0-B7*/	"","","","","","FM_ID_LED_N","","",
-> +	/*C0-C7*/	"","","","","","","","",
-> +	/*D0-D7*/	"","","SOL_UART_SET","","","","","",
-> +	/*E0-E7*/	"","","","","","","","",
-> +	/*F0-F7*/	"","","","","","","","",
-> +	/*G0-G7*/	"","","","","","","","",
-> +	/*H0-H7*/	"","","","","","","","",
-> +	/*I0-I7*/	"","","","","","","","",
-> +	/*J0-J7*/	"","","","","","","","",
-> +	/*K0-K7*/	"","","","","","","","",
-> +	/*L0-L7*/	"","","","","","","","",
-> +	/*M0-M7*/	"","","","","","","","",
-> +	/*N0-N7*/	"LED_POSTCODE_0","LED_POSTCODE_1",
-> +			"LED_POSTCODE_2","LED_POSTCODE_3",
-> +			"LED_POSTCODE_4","LED_POSTCODE_5",
-> +			"LED_POSTCODE_6","LED_POSTCODE_7",
-> +	/*O0-O7*/	"","","","","","","","",
-> +	/*P0-P7*/	"FP_SYS_PWRBTN_IN_N","BMC_SYS_PWRBTN_OUT_N",
-> +			"FP_RST_BTN_IN_N","","","","","",
-> +	/*Q0-Q7*/	"","","","","","","","",
-> +	/*R0-R7*/	"","","","","","","","",
-> +	/*S0-S7*/	"","","","","","","","",
-> +	/*T0-T7*/	"","","","","","","","",
-> +	/*U0-U7*/	"","","","","","","","",
-> +	/*V0-V7*/	"","","","","","","","",
-> +	/*W0-W7*/	"","","","","","","","",
-> +	/*X0-X7*/	"","","","","","","","",
-> +	/*Y0-Y7*/	"","","","","","","","",
-> +	/*Z0-Z7*/	"","","","","","","","";
-> +};
-> +
-> +&sgpiom0 {
-> +	status = "okay";
-> +	max-ngpios = <128>;
-> +	ngpios = <128>;
-> +	bus-frequency = <2000000>;
-> +	gpio-line-names =
-> +	/*in - out - in - out */
-> +	/*A0-A3 line 0-7*/
-> +	"","","","","","ENABLE_SENSORS","","",
-> +	/*A4-A7 line 8-15*/
-> +	"","","","","","","","",
-> +	/*B0-B3 line 16-23*/
-> +	"","","","","","BMC_RST_BTN_OUT_N","","",
-> +	/*B4-B7 line 24-31*/
-> +	"","","","","","","","",
-> +	/*C0-C3 line 32-39*/
-> +	"","","","","","","","",
-> +	/*C4-C7 line 40-47*/
-> +	"","","","","","","","",
-> +	/*D0-D3 line 48-55*/
-> +	"","","","","","","","",
-> +	/*D4-D7 line 56-63*/
-> +	"","","","","","","","",
-> +	/*E0-E3 line 64-71*/
-> +	"","","","","","","","",
-> +	/*E4-E7 line 72-79*/
-> +	"","","","","","","","",
-> +	/*F0-F3 line 80-87*/
-> +	"","","","","","","","",
-> +	/*F4-F7 line 88-95*/
-> +	"","","","","","","","",
-> +	/*G0-G3 line 96-103*/
-> +	"","","","","","","","",
-> +	/*G4-G7 line 104-111*/
-> +	"","","","","","","","",
-> +	/*H0-H3 line 112-119*/
-> +	"","","","","PLD_SYS_POWER_GOOD","","","",
-> +	/*H4-H7 line 120-127*/
-> +	"","","","","","","","",
-> +	/*I0-I3 line 128-135*/
-> +	"","","","","","","","",
-> +	/*I4-I7 line 136-143*/
-> +	"","","","","","","","",
-> +	/*J0-J3 line 144-151*/
-> +	"","","PLD_BIOS_POST_CMPLT_N","","","","","",
-> +	/*J4-J7 line 152-159*/
-> +	"","","","","","","","",
-> +	/*K0-K3 line 160-167*/
-> +	"","","","","","","","",
-> +	/*K4-K7 line 168-175*/
-> +	"","","","","","","","",
-> +	/*L0-L3 line 176-183*/
-> +	"","","","","","","","",
-> +	/*L4-L7 line 184-191*/
-> +	"","","","","","","","",
-> +	/*M0-M3 line 192-199*/
-> +	"","","","","","","","",
-> +	/*M4-M7 line 200-207*/
-> +	"","","","","","","","",
-> +	/*N0-N3 line 208-215*/
-> +	"","","","","","","","",
-> +	/*N4-N7 line 216-223*/
-> +	"","","","","","","","",
-> +	/*O0-O3 line 224-231*/
-> +	"","","","","","","","",
-> +	/*O4-O7 line 232-239*/
-> +	"","","","","","","","",
-> +	/*P0-P3 line 240-247*/
-> +	"","","","","","","","",
-> +	/*P4-P7 line 248-255*/
-> +	"","","","","","","","";
-> +};
-Hello Maintainer,
-  Are there any recommendations or modifications that you consider 
-necessary?
 
-Thanks.
+I've tested this patch applied on top of fee465150b45 on an AST2600 and
+the the system behaviour doesn't seem worse. However, I can still lock 
+the bus up and trigger a hung task panic by surprise-unplugging things.
+I'll poke around to see if I can get to the bottom of that.
+
+Resetting the slave state makes sense, so with the above observation 
+aside:
+
+Tested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+
+That said I do wonder whether we should update the slave state in the 
+same place we're updating the hardware state. It would cover off the 
+gap identified by Jian if it were to ever occur anywhere else.
+Something like:
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-
+aspeed.c
+index 5a416b39b818..28e2a5fc4528 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -749,6 +749,8 @@ static void __aspeed_i2c_reg_slave(struct
+aspeed_i2c_bus *bus, u16 slave_addr)
+        func_ctrl_reg_val = readl(bus->base + ASPEED_I2C_FUN_CTRL_REG);
+        func_ctrl_reg_val |= ASPEED_I2CD_SLAVE_EN;
+        writel(func_ctrl_reg_val, bus->base + ASPEED_I2C_FUN_CTRL_REG);
++
++       bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+ }
+ 
+ static int aspeed_i2c_reg_slave(struct i2c_client *client)
+@@ -765,7 +767,6 @@ static int aspeed_i2c_reg_slave(struct i2c_client
+*client)
+        __aspeed_i2c_reg_slave(bus, client->addr);
+ 
+        bus->slave = client;
+-       bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+        spin_unlock_irqrestore(&bus->lock, flags);
+ 
+        return 0;
+
 
