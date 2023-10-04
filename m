@@ -1,67 +1,110 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Wed, 4 Oct 2023 09:13:49 +0200
-Subject: [PATCH 08/36] gpio: aspeed: use new pinctrl GPIO helpers
-In-Reply-To: <6608b6ea673454672fb5930b57e9e7a5570d96d5.camel@codeconstruct.com.au>
-References: <20231003145114.21637-1-brgl@bgdev.pl> <20231003145114.21637-9-brgl@bgdev.pl>
- <6608b6ea673454672fb5930b57e9e7a5570d96d5.camel@codeconstruct.com.au>
-Message-ID: <CAMRc=MfrJHWppvWv=Gh0cQRjFG69UoqLyguu-zE2NB6Yga-3xA@mail.gmail.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Wed,  4 Oct 2023 00:16:06 -0700
+Subject: [PATCH] pinctrl: aspeed: Allow changing hardware strap defaults
+Message-ID: <20231004071605.21323-2-zev@bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 4, 2023 at 1:30?AM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> On Tue, 2023-10-03 at 16:50 +0200, Bartosz Golaszewski wrote:
-> > From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> >
-> > Replace the pinctrl helpers taking the global GPIO number as argument
-> > with the improved variants that instead take a pointer to the GPIO chip
-> > and the controller-relative offset.
-> >
-> > Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> > ---
-> >  drivers/gpio/gpio-aspeed.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> > index da33bbbdacb9..d3aa1cfd4ace 100644
-> > --- a/drivers/gpio/gpio-aspeed.c
-> > +++ b/drivers/gpio/gpio-aspeed.c
-> > @@ -750,12 +750,12 @@ static int aspeed_gpio_request(struct gpio_chip *chip, unsigned int offset)
-> >       if (!have_gpio(gpiochip_get_data(chip), offset))
-> >               return -ENODEV;
-> >
-> > -     return pinctrl_gpio_request(chip->base + offset);
-> > +     return pinctrl_gpio_request_new(chip, offset);
-> >  }
-> >
-> >  static void aspeed_gpio_free(struct gpio_chip *chip, unsigned int offset)
-> >  {
-> > -     pinctrl_gpio_free(chip->base + offset);
-> > +     pinctrl_gpio_free_new(chip, offset);
-> >  }
-> >
-> >  static int usecs_to_cycles(struct aspeed_gpio *gpio, unsigned long usecs,
-> > @@ -973,7 +973,7 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
-> >       else if (param == PIN_CONFIG_BIAS_DISABLE ||
-> >                       param == PIN_CONFIG_BIAS_PULL_DOWN ||
-> >                       param == PIN_CONFIG_DRIVE_STRENGTH)
-> > -             return pinctrl_gpio_set_config(offset, config);
-> > +             return pinctrl_gpio_set_config_new(chip, offset, config);
->
-> Ah, this looks like it removes a bug too. Nice.
->
-> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
->
-> >       else if (param == PIN_CONFIG_DRIVE_OPEN_DRAIN ||
-> >                       param == PIN_CONFIG_DRIVE_OPEN_SOURCE)
-> >               /* Return -ENOTSUPP to trigger emulation, as per datasheet */
->
+Previously we've generally assumed that the defaults in the hardware
+strapping register are in fact appropriate for the system and thus
+have avoided making any changes to its contents (with the exception of
+the bits controlling the GPIO passthrough feature).
 
-I sent a separate patch that fixes this issue for backporting, once
-the other one is in next, we can update this series.
+Unfortunately, on some platforms corrections from software are
+required as the hardware strapping is simply incorrect for the system
+(such as the SPI1 interface being configured for passthrough mode when
+master mode is in fact the only useful configuration for it).  We thus
+remove the checks preventing changes to the strap register so that the
+pinctrl subsystem can be used for such corrections.
 
-Bart
+Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c | 21 ---------------------
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 21 ---------------------
+ drivers/pinctrl/aspeed/pinmux-aspeed.h     |  3 ---
+ 3 files changed, 45 deletions(-)
+
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
+index bfed0e274643..7ecfe3e4280e 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
+@@ -2556,27 +2556,6 @@ static int aspeed_g4_sig_expr_set(struct aspeed_pinmux_data *ctx,
+ 		if (!ctx->maps[desc->ip])
+ 			return -ENODEV;
+ 
+-		/*
+-		 * Strap registers are configured in hardware or by early-boot
+-		 * firmware. Treat them as read-only despite that we can write
+-		 * them. This may mean that certain functions cannot be
+-		 * deconfigured and is the reason we re-evaluate after writing
+-		 * all descriptor bits.
+-		 *
+-		 * Port D and port E GPIO loopback modes are the only exception
+-		 * as those are commonly used with front-panel buttons to allow
+-		 * normal operation of the host when the BMC is powered off or
+-		 * fails to boot. Once the BMC has booted, the loopback mode
+-		 * must be disabled for the BMC to control host power-on and
+-		 * reset.
+-		 */
+-		if (desc->ip == ASPEED_IP_SCU && desc->reg == HW_STRAP1 &&
+-		    !(desc->mask & (BIT(21) | BIT(22))))
+-			continue;
+-
+-		if (desc->ip == ASPEED_IP_SCU && desc->reg == HW_STRAP2)
+-			continue;
+-
+ 		ret = regmap_update_bits(ctx->maps[desc->ip], desc->reg,
+ 					 desc->mask, val);
+ 
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+index 4c0d26606b6c..3e57e76c2eb7 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+@@ -2735,27 +2735,6 @@ static int aspeed_g5_sig_expr_set(struct aspeed_pinmux_data *ctx,
+ 			return PTR_ERR(map);
+ 		}
+ 
+-		/*
+-		 * Strap registers are configured in hardware or by early-boot
+-		 * firmware. Treat them as read-only despite that we can write
+-		 * them. This may mean that certain functions cannot be
+-		 * deconfigured and is the reason we re-evaluate after writing
+-		 * all descriptor bits.
+-		 *
+-		 * Port D and port E GPIO loopback modes are the only exception
+-		 * as those are commonly used with front-panel buttons to allow
+-		 * normal operation of the host when the BMC is powered off or
+-		 * fails to boot. Once the BMC has booted, the loopback mode
+-		 * must be disabled for the BMC to control host power-on and
+-		 * reset.
+-		 */
+-		if (desc->ip == ASPEED_IP_SCU && desc->reg == HW_STRAP1 &&
+-		    !(desc->mask & (BIT(21) | BIT(22))))
+-			continue;
+-
+-		if (desc->ip == ASPEED_IP_SCU && desc->reg == HW_STRAP2)
+-			continue;
+-
+ 		/* On AST2500, Set bits in SCU70 are cleared from SCU7C */
+ 		if (desc->ip == ASPEED_IP_SCU && desc->reg == HW_STRAP1) {
+ 			u32 value = ~val & desc->mask;
+diff --git a/drivers/pinctrl/aspeed/pinmux-aspeed.h b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+index aaa78a613196..e9068acd5879 100644
+--- a/drivers/pinctrl/aspeed/pinmux-aspeed.h
++++ b/drivers/pinctrl/aspeed/pinmux-aspeed.h
+@@ -16,9 +16,6 @@
+  * bits. Some difficulty arises as the pin's function bit masks for each
+  * priority level are frequently not the same (i.e. cannot just flip a bit to
+  * change from a high to low priority signal), or even in the same register.
+- * Further, not all signals can be unmuxed, as some expressions depend on
+- * values in the hardware strapping register (which may be treated as
+- * read-only).
+  *
+  * SoC Multi-function Pin Expression Examples
+  * ------------------------------------------
+-- 
+2.42.0
+
