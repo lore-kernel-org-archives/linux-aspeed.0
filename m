@@ -1,64 +1,86 @@
 From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Wed,  4 Oct 2023 15:12:36 +0200
-Subject: [PATCH 03/21] EDAC/aspeed: Convert to platform remove callback returning void
-In-Reply-To: <20231004131254.2673842-1-u.kleine-koenig@pengutronix.de>
-References: <20231004131254.2673842-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <20231004131254.2673842-4-u.kleine-koenig@pengutronix.de>
+Date: Wed,  4 Oct 2023 15:12:33 +0200
+Subject: [PATCH 00/21] EDAC: Convert to platform remove callback returning void
+Message-ID: <20231004131254.2673842-1-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is ignored (apart
-from emitting a warning) and this typically results in resource leaks.
+Hello,
 
-To improve here there is a quest to make the remove callback return
-void. In the first step of this quest all drivers are converted to
-.remove_new(), which already returns void. Eventually after all drivers
-are converted, .remove_new() will be renamed to .remove().
+this series converts all platform drivers below drivers/edac to use
+.remove_new(). The motivation is to get rid of an integer return code
+that is (mostly) ignored by the platform driver core and error prone on
+the driver side. However none of the edac drivers suffered from the easy
+to make bug, so all drivers are converted in a trivial way.
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+See commit 5c5a7680e67b ("platform: Provide a remove callback that
+returns no value") for an extended explanation and the eventual goal.
 
-Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
----
- drivers/edac/aspeed_edac.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+The patch for npcm was already sent back in June
+(https://lore.kernel.org/linux-edac/20230628071354.665300-1-u.kleine-koenig at pengutronix.de)
+but didn't result in enthusiastic review comments and it wasn't picked
+up.
 
-diff --git a/drivers/edac/aspeed_edac.c b/drivers/edac/aspeed_edac.c
-index 6bd5f8815919..157a480eb761 100644
---- a/drivers/edac/aspeed_edac.c
-+++ b/drivers/edac/aspeed_edac.c
-@@ -357,7 +357,7 @@ static int aspeed_probe(struct platform_device *pdev)
- }
- 
- 
--static int aspeed_remove(struct platform_device *pdev)
-+static void aspeed_remove(struct platform_device *pdev)
- {
- 	struct mem_ctl_info *mci;
- 
-@@ -369,8 +369,6 @@ static int aspeed_remove(struct platform_device *pdev)
- 	mci = edac_mc_del_mc(&pdev->dev);
- 	if (mci)
- 		edac_mc_free(mci);
--
--	return 0;
- }
- 
- 
-@@ -389,7 +387,7 @@ static struct platform_driver aspeed_driver = {
- 		.of_match_table = aspeed_of_match
- 	},
- 	.probe		= aspeed_probe,
--	.remove		= aspeed_remove
-+	.remove_new	= aspeed_remove
- };
- module_platform_driver(aspeed_driver);
- 
+There are no interdependencies between the patches. As there are still
+quite a few drivers to convert, I'm happy about every patch that makes
+it in. So even if there is a merge conflict with one patch until you
+apply, please apply the remainder of this series anyhow. I'll come back
+to the part that you (maybe) skipped at a later point.
+
+Best regards
+Uwe
+
+Uwe Kleine-K?nig (21):
+  EDAC/altera: Convert to platform remove callback returning void
+  EDAC/armada_xp: Convert to platform remove callback returning void
+  EDAC/aspeed: Convert to platform remove callback returning void
+  EDAC/bluefield: Convert to platform remove callback returning void
+  EDAC/cell: Convert to platform remove callback returning void
+  EDAC/cpc925: Convert to platform remove callback returning void
+  EDAC/dmc520: Convert to platform remove callback returning void
+  EDAC/highbank_l2: Convert to platform remove callback returning void
+  EDAC/highbank_mc: Convert to platform remove callback returning void
+  EDAC/mpc85xx: Convert to platform remove callback returning void
+  EDAC/npcm: Convert to platform remove callback returning void
+  EDAC/octeon-l2c: Convert to platform remove callback returning void
+  EDAC/octeon-lmc: Convert to platform remove callback returning void
+  EDAC/octeon-pc: Convert to platform remove callback returning void
+  EDAC/octeon-pci: Convert to platform remove callback returning void
+  EDAC/ppc4xx: Convert to platform remove callback returning void
+  EDAC/qcom: Convert to platform remove callback returning void
+  EDAC/synopsys: Convert to platform remove callback returning void
+  EDAC/ti: Convert to platform remove callback returning void
+  EDAC/xgene: Convert to platform remove callback returning void
+  EDAC/zynqmp: Convert to platform remove callback returning void
+
+ drivers/edac/altera_edac.c      | 12 ++++--------
+ drivers/edac/armada_xp_edac.c   | 12 ++++--------
+ drivers/edac/aspeed_edac.c      |  6 ++----
+ drivers/edac/bluefield_edac.c   |  6 ++----
+ drivers/edac/cell_edac.c        |  5 ++---
+ drivers/edac/cpc925_edac.c      |  6 ++----
+ drivers/edac/dmc520_edac.c      |  6 ++----
+ drivers/edac/highbank_l2_edac.c |  5 ++---
+ drivers/edac/highbank_mc_edac.c |  5 ++---
+ drivers/edac/mpc85xx_edac.c     | 11 ++++-------
+ drivers/edac/npcm_edac.c        |  6 ++----
+ drivers/edac/octeon_edac-l2c.c  |  6 ++----
+ drivers/edac/octeon_edac-lmc.c  |  5 ++---
+ drivers/edac/octeon_edac-pc.c   |  5 ++---
+ drivers/edac/octeon_edac-pci.c  |  6 ++----
+ drivers/edac/ppc4xx_edac.c      |  7 ++-----
+ drivers/edac/qcom_edac.c        |  6 ++----
+ drivers/edac/synopsys_edac.c    |  6 ++----
+ drivers/edac/ti_edac.c          |  6 ++----
+ drivers/edac/xgene_edac.c       |  6 ++----
+ drivers/edac/zynqmp_edac.c      |  6 ++----
+ 21 files changed, 48 insertions(+), 91 deletions(-)
+
+
+base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
 -- 
 2.40.1
 
