@@ -1,125 +1,47 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 5 Oct 2023 01:26:45 +0000
-Subject: [PATCH v9 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
- Control
-In-Reply-To: <20231002152819.GB1747496-robh@kernel.org>
-References: <20230918064111.2221594-1-billy_tsai@aspeedtech.com>
- <20230918064111.2221594-3-billy_tsai@aspeedtech.com>
- <20231002152819.GB1747496-robh@kernel.org>
-Message-ID: <SG2PR06MB33650A58039DF915E4E868E68BCAA@SG2PR06MB3365.apcprd06.prod.outlook.com>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Wed, 4 Oct 2023 19:27:38 -0700
+Subject: [PATCH] pinctrl: aspeed: Allow changing hardware strap defaults
+In-Reply-To: <e5f0a67e05cf477bdb4ec6efd9c554f4aaa2cf8b.camel@codeconstruct.com.au>
+References: <20231004071605.21323-2-zev@bewilderbeest.net>
+ <e5f0a67e05cf477bdb4ec6efd9c554f4aaa2cf8b.camel@codeconstruct.com.au>
+Message-ID: <f9b5694a-5859-4999-bb2d-0e6a79b35c95@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
->> Document the compatible for aspeed,ast2600-pwm-tach device, which can
->> support up to 16 PWM outputs and 16 fan tach input.
+On Wed, Oct 04, 2023 at 06:17:50PM PDT, Andrew Jeffery wrote:
+>On Wed, 2023-10-04 at 00:16 -0700, Zev Weiss wrote:
+>> Previously we've generally assumed that the defaults in the hardware
+>> strapping register are in fact appropriate for the system and thus
+>> have avoided making any changes to its contents (with the exception of
+>> the bits controlling the GPIO passthrough feature).
 >>
->> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
->> ---
->>  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 69 +++++++++++++++++++
->>  1 file changed, 69 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/>bindings/hwmon/aspeed,g6-pwm-tach.yaml
->> new file mode 100644
->> index 000000000000..5a679f4ad2fa
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
->> @@ -0,0 +1,69 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +# Copyright (C) 2023 Aspeed, Inc.
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: ASPEED G6 PWM and Fan Tach controller device driver
+>> Unfortunately, on some platforms corrections from software are
+>> required as the hardware strapping is simply incorrect for the system
+>> (such as the SPI1 interface being configured for passthrough mode when
+>> master mode is in fact the only useful configuration for it).  We thus
+>> remove the checks preventing changes to the strap register so that the
+>> pinctrl subsystem can be used for such corrections.
+>
+>So the strapping for the SPI1 configuration seems to be prone to
+>(copy/paste?) mistakes. Is there evidence that motivates dropping all
+>the protection instead of poking a hole for SPI1 like we did for the
+>passthrough GPIOs?
+>
+>I'm still a little attached to the policy that software should be
+>beholden to the strapping, and to try to mitigate software mistakes
+>given the smattering of bits required to drive the Aspeed pinmux.
+>
 
-> This is binding for the h/w, not a 'device driver'.
+I have no idea what else might be lurking out there so I took a broader 
+(perhaps overly heavy-handed) approach, but the SPI1 mode bits are the 
+only ones I've personally encountered being strapped wrong, so sure, I'd 
+be fine with just extending the "hole-punch" a bit to add those bits.  
+I'll send a v2 doing that shortly.
 
-Okay, I will remove the 'device driver'.
 
->> +
->> +maintainers:
->> +  - Billy Tsai <billy_tsai@aspeedtech.com>
->> +
->> +description: |
->> +  The ASPEED PWM controller can support up to 16 PWM outputs.
->> +  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
->> +  They are independent hardware blocks, which are different from the
->> +  previous version of the ASPEED chip.
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - aspeed,ast2600-pwm-tach
->> +
->> +  reg:
->> +    maxItems: 1
->> +
->> +  clocks:
->> +    maxItems: 1
->> +
->> +  resets:
->> +    maxItems: 1
->> +
->> +  "#pwm-cells":
->> +    const: 3
->> +
->> +patternProperties:
->> +  "^fan-[0-9a-f]+$":
+Thanks,
+Zev
 
-> foo-<index> naming is decimal, not hex. (unit-addresses are hex)
-
-Okay, I will change it to the decimal.
-
-> But if 0 and 1 correspond to something in the h/w, then you should
-> probably be using 'reg' instead (which means a unit-address too).
-
-The number doesn't unrelate to the hardware.
-
->> +    $ref: fan-common.yaml#
->> +    unevaluatedProperties: false
->> +    required:
->> +      - tach-ch
->> +
->> +required:
->> +  - reg
->> +  - clocks
->> +  - resets
->> +  - "#pwm-cells"
->> +  - compatible
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    #include <dt-bindings/clock/aspeed-clock.h>
->> +    pwm_tach: pwm-tach-controller at 1e610000 {
->> +      compatible = "aspeed,ast2600-pwm-tach";
->> +      reg = <0x1e610000 0x100>;
->> +      clocks = <&syscon ASPEED_CLK_AHB>;
->> +      resets = <&syscon ASPEED_RESET_PWM>;
->> +      #pwm-cells = <3>;
->> +
->> +      fan-0 {
->> +        tach-ch = /bits/ 8 <0x0>;
-
-> What about the PWM connection?
-
-I only want to create the fan monitor without fan control.
-So, the PWM connection is unnecessary.
-
-Thanks
-
->> +      };
->> +
->> +      fan-1 {
->> +        tach-ch = /bits/ 8 <0x1 0x2>;
->> +      };
->> +    };
->> --
->> 2.25.1
->>
