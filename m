@@ -1,46 +1,49 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Thu, 5 Oct 2023 08:42:54 +0200
-Subject: [PATCH] gpio: aspeed: fix the GPIO number passed to pinctrl_gpio_set_config()
-In-Reply-To: <20231003073926.10771-1-brgl@bgdev.pl>
-References: <20231003073926.10771-1-brgl@bgdev.pl>
-Message-ID: <CAMRc=Me9QjuM41iRJ9NjQ8kZUJ_yJ5MKXmMhViOka6j71+jVfw@mail.gmail.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 5 Oct 2023 09:31:23 +0200
+Subject: [PATCH 4/7] ARM: dts: aspeed: mtmitchell: Add LEDs
+In-Reply-To: <20231005035525.19036-5-chanh@os.amperecomputing.com>
+References: <20231005035525.19036-1-chanh@os.amperecomputing.com>
+ <20231005035525.19036-5-chanh@os.amperecomputing.com>
+Message-ID: <65a610df-5030-4dd0-9f04-2089dfe09a3d@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 3, 2023 at 9:39?AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
->
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->
-> pinctrl_gpio_set_config() expects the GPIO number from the global GPIO
-> numberspace, not the controller-relative offset, which needs to be added
-> to the chip base.
->
-> Fixes: 5ae4cb94b313 ("gpio: aspeed: Add debounce support")
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+On 05/10/2023 05:55, Chanh Nguyen wrote:
+> Use gpio-leds to configure GPIOW5 to GPIO_ACTIVE_HIGH and
+> GPIO_TRANSITORY flags as a bmc ready led. The GPIOW5 pin
+> is reset when watchdog timeout occurs.
+> 
+> Configure the GPIOS3 to GPIO_ACTIVE_HIGH as an identify led.
+> 
+> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
 > ---
->  drivers/gpio/gpio-aspeed.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index da33bbbdacb9..58f107194fda 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -973,7 +973,7 @@ static int aspeed_gpio_set_config(struct gpio_chip *chip, unsigned int offset,
->         else if (param == PIN_CONFIG_BIAS_DISABLE ||
->                         param == PIN_CONFIG_BIAS_PULL_DOWN ||
->                         param == PIN_CONFIG_DRIVE_STRENGTH)
-> -               return pinctrl_gpio_set_config(offset, config);
-> +               return pinctrl_gpio_set_config(chip->base + offset, config);
->         else if (param == PIN_CONFIG_DRIVE_OPEN_DRAIN ||
->                         param == PIN_CONFIG_DRIVE_OPEN_SOURCE)
->                 /* Return -ENOTSUPP to trigger emulation, as per datasheet */
-> --
-> 2.39.2
->
+>  .../dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts     | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+> index b7c4f7cfad07..88693c2b2dbe 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+> @@ -51,6 +51,19 @@
+>  		};
+>  	};
+>  
+> +	leds {
+> +		compatible = "gpio-leds";
+> +
+> +		bmc-ready {
 
-Queued for fixes.
+Missing led name.
 
-Bart
+It does not look like you tested the DTS against bindings. Please run
+`make dtbs_check W=1` (see
+Documentation/devicetree/bindings/writing-schema.rst or
+https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
+for instructions).
+
+Best regards,
+Krzysztof
+
