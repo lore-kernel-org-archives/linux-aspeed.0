@@ -1,49 +1,50 @@
 From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Thu,  5 Oct 2023 10:55:21 +0700
-Subject: [PATCH 3/7] ARM: dts: aspeed: mtjade: Add the gpio-hog
+Date: Thu,  5 Oct 2023 10:55:22 +0700
+Subject: [PATCH 4/7] ARM: dts: aspeed: mtmitchell: Add LEDs
 In-Reply-To: <20231005035525.19036-1-chanh@os.amperecomputing.com>
 References: <20231005035525.19036-1-chanh@os.amperecomputing.com>
-Message-ID: <20231005035525.19036-4-chanh@os.amperecomputing.com>
+Message-ID: <20231005035525.19036-5-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the GPIOR5 as a gpio-hog with output high so that can
-power the OCP card once the BMC booting.
+Use gpio-leds to configure GPIOW5 to GPIO_ACTIVE_HIGH and
+GPIO_TRANSITORY flags as a bmc ready led. The GPIOW5 pin
+is reset when watchdog timeout occurs.
 
-Add the GPIOAC5 as a gpio-hog with output high to notice
-the BMC state.
+Configure the GPIOS3 to GPIO_ACTIVE_HIGH as an identify led.
 
 Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dts   | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ .../dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts     | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dts
-index c87be433bdd0..8ab5f301f926 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dts
-@@ -805,4 +805,18 @@
- 		output-high;
- 		line-name = "i2c4-o-en";
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+index b7c4f7cfad07..88693c2b2dbe 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+@@ -51,6 +51,19 @@
+ 		};
  	};
+ 
++	leds {
++		compatible = "gpio-leds";
 +
-+	ocp-aux-pwren-hog {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(R, 3) GPIO_ACTIVE_HIGH>;
-+		output-high;
-+		line-name = "ocp-aux-pwren";
++		bmc-ready {
++			gpios = <&gpio0 ASPEED_GPIO(W, 5) (GPIO_ACTIVE_HIGH |
++			 GPIO_TRANSITORY)>;
++		};
++
++		identify {
++			gpios = <&gpio0 ASPEED_GPIO(S, 3) GPIO_ACTIVE_HIGH>;
++		};
 +	};
 +
-+	bmc-ready {
-+		gpio-hog;
-+		gpios = <ASPEED_GPIO(AC, 5) GPIO_ACTIVE_HIGH>;
-+		output-high;
-+		line-name = "bmc-ready";
-+	};
- };
+ 	voltage_mon_reg: voltage-mon-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "ltc2497_reg";
 -- 
 2.17.1
 
