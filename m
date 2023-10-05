@@ -1,27 +1,29 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 05 Oct 2023 13:44:54 +1030
-Subject: [PATCH v2] pinctrl: aspeed: Allow changing SPI mode from
- hardware strap defaults
-In-Reply-To: <20231005030849.11352-2-zev@bewilderbeest.net>
-References: <20231005030849.11352-2-zev@bewilderbeest.net>
-Message-ID: <3bf55144b8169a8f44c67e9a6b63cc67a2edfa50.camel@codeconstruct.com.au>
+From: Chanh Nguyen <chanh@os.amperecomputing.com>
+Date: Thu,  5 Oct 2023 10:55:18 +0700
+Subject: [PATCH 0/7] Update the device tree for Ampere's BMC platform
+Message-ID: <20231005035525.19036-1-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2023-10-04 at 20:08 -0700, Zev Weiss wrote:
-> Some platforms unfortunately have their SPI mode selection bits
-> strapped incorrectly (such as being configured for passthrough mode
-> when master mode is in fact the only useful configuration for it) and
-> thus require correction in software.  Add the SPI mode bits to the
-> GPIO passthrough bits as the exceptions to the read-only rule for the
-> hardware strap register so that the pinctrl subsystem can be used for
-> such corrections.
-> 
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+Updates the device tree to support some features on Ampere's
+Mt.Mitchell BMC and Ampere's Mt.Jade BMC.
 
-Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Chanh Nguyen (7):
+  ARM: dts: aspeed: mtjade, mtmitchell: Update gpio-line-names
+  ARM: dts: aspeed: mtjade, mtmitchell: Add new gpio-line-names
+  ARM: dts: aspeed: mtjade: Add the gpio-hog
+  ARM: dts: aspeed: mtmitchell: Add LEDs
+  ARM: dts: aspeed: mtmitchell: Add inlet temperature sensor
+  ARM: dts: aspeed: mtmitchell: Remove redundant ADC configurations
+  ARM: dts: aspeed: mtmitchell: Add I2C NVMe alias port
 
-Thanks!
+ .../dts/aspeed/aspeed-bmc-ampere-mtjade.dts   |  66 ++--
+ .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 315 ++++++++++++++++--
+ 2 files changed, 334 insertions(+), 47 deletions(-)
+
+-- 
+2.17.1
+
