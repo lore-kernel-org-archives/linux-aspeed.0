@@ -1,81 +1,104 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Thu, 5 Oct 2023 14:56:16 +0300
-Subject: [PATCH v12 2/2] i2c: aspeed: support ast2600 i2c new register
- mode driver
-In-Reply-To: <SEZPR06MB52699EC5463397F4BFF244DBF2CAA@SEZPR06MB5269.apcprd06.prod.outlook.com>
-References: <20230714074522.23827-1-ryan_chen@aspeedtech.com>
- <20230714074522.23827-3-ryan_chen@aspeedtech.com>
- <ZLENe5B3gi/oNTQp@smile.fi.intel.com>
- <SEZPR06MB5269831E049E2267661F181FF2E8A@SEZPR06MB5269.apcprd06.prod.outlook.com>
- <ZPcXJ4adUNMv4LDr@smile.fi.intel.com>
- <SEZPR06MB52699EC5463397F4BFF244DBF2CAA@SEZPR06MB5269.apcprd06.prod.outlook.com>
-Message-ID: <ZR6kYMOB67+WJonG@smile.fi.intel.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Fri, 06 Oct 2023 10:49:55 +1030
+Subject: [PATCH v2] i2c: aspeed: Fix i2c bus hang in slave read
+In-Reply-To: <052ccd48-2541-1ef3-1f33-75b7d49611ad@os.amperecomputing.com>
+References: <20230927154244.3774670-1-zhangjian.3032@bytedance.com>
+	 <ZRZ/ObZmntMLw2r+@ninjato>
+	 <975c69de32eefb124fe668e921e8dbda86962deb.camel@codeconstruct.com.au>
+	 <052ccd48-2541-1ef3-1f33-75b7d49611ad@os.amperecomputing.com>
+Message-ID: <9407cee639b3eeb715a953c33b26a9a3830a64f8.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 05, 2023 at 06:21:35AM +0000, Ryan Chen wrote:
-> > From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > Sent: Tuesday, September 5, 2023 7:55 PM
-> > On Tue, Sep 05, 2023 at 06:52:37AM +0000, Ryan Chen wrote:
-> > > > From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > > > Sent: Friday, July 14, 2023 4:55 PM
-> > > > On Fri, Jul 14, 2023 at 03:45:22PM +0800, Ryan Chen wrote:
-
-...
-
-> > > 			divisor = DIV_ROUND_UP(base_clk[3],
-> > i2c_bus->timing_info.bus_freq_hz);
-> > > 			for_each_set_bit(divisor, &divisor, 32) {
-> > 
-> > This is wrong.
-> > 
-> > > 				if ((divisor + 1) <= 32)
-> > > 					break;
-> > 
-> > > 				divisor >>= 1;
-> > 
-> > And this.
-> > 
-> > > 				baseclk_idx++;
-> > 
-> > > 			}
-> > 
-> > for_each_set_bit() should use two different variables.
+On Thu, 2023-10-05 at 14:55 +0700, Quan Nguyen wrote:
 > 
-> Will update by following.
+> On 04/10/2023 13:08, Andrew Jeffery wrote:
+> > On Fri, 2023-09-29 at 09:39 +0200, Wolfram Sang wrote:
+> > > On Wed, Sep 27, 2023 at 11:42:43PM +0800, Jian Zhang wrote:
+> > > > When the `CONFIG_I2C_SLAVE` option is enabled and the device operates
+> > > > as a slave, a situation arises where the master sends a START signal
+> > > > without the accompanying STOP signal. This action results in a
+> > > > persistent I2C bus timeout. The core issue stems from the fact that
+> > > > the i2c controller remains in a slave read state without a timeout
+> > > > mechanism. As a consequence, the bus perpetually experiences timeouts.
+> > > > 
+> > > > In this case, the i2c bus will be reset, but the slave_state reset is
+> > > > missing.
+> > > > 
+> > > > Fixes: fee465150b45 ("i2c: aspeed: Reset the i2c controller when timeout occurs")
+> > > > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
+> > > 
+> > > Somebody wants to add tags here? I think it should go to my pull request
+> > > this week.
+> > > 
+> > 
+> > I've tested this patch applied on top of fee465150b45 on an AST2600 and
+> > the the system behaviour doesn't seem worse. However, I can still lock
+> > the bus up and trigger a hung task panic by surprise-unplugging things.
+> > I'll poke around to see if I can get to the bottom of that.
+> > 
+> > Resetting the slave state makes sense, so with the above observation
+> > aside:
+> > 
+> > Tested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> > Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> > 
+> > That said I do wonder whether we should update the slave state in the
+> > same place we're updating the hardware state. It would cover off the
+> > gap identified by Jian if it were to ever occur anywhere else.
+> > Something like:
+> > 
+> > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-
+> > aspeed.c
+> > index 5a416b39b818..28e2a5fc4528 100644
+> > --- a/drivers/i2c/busses/i2c-aspeed.c
+> > +++ b/drivers/i2c/busses/i2c-aspeed.c
+> > @@ -749,6 +749,8 @@ static void __aspeed_i2c_reg_slave(struct
+> > aspeed_i2c_bus *bus, u16 slave_addr)
+> >          func_ctrl_reg_val = readl(bus->base + ASPEED_I2C_FUN_CTRL_REG);
+> >          func_ctrl_reg_val |= ASPEED_I2CD_SLAVE_EN;
+> >          writel(func_ctrl_reg_val, bus->base + ASPEED_I2C_FUN_CTRL_REG);
+> > +
+> > +       bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+> >   }
+> >   
+> >   static int aspeed_i2c_reg_slave(struct i2c_client *client)
+> > @@ -765,7 +767,6 @@ static int aspeed_i2c_reg_slave(struct i2c_client
+> > *client)
+> >          __aspeed_i2c_reg_slave(bus, client->addr);
+> >   
+> >          bus->slave = client;
+> > -       bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+> >          spin_unlock_irqrestore(&bus->lock, flags);
+> >   
+> >          return 0;
+> > 
+> > 
 > 
-> for_each_set_bit(bit, &divisor, 32) {
->     divisor >>= 1;
->     baseclk_idx++;
-> }
+> We tested both Jian's patch and Andrew's patch on our MCTP-i2c bus 
+> (ast2600 based BMC) and see both patches work well.
+> 
+> We currently use upstream i2c-aspeed.c driver with the commit [1] 
+> backported. Without that commit, we frequently experienced the bus hang 
+> (due to bus arbitration) and it is unable to recover.
+> 
+> But, by reverting that commit and with Jian or Andrew's patch, we see 
+> the bus could be able to recover so we think both changes are good.
+> 
+> [1] 
+> https://github.com/AspeedTech-BMC/linux/commit/11a94e5918aa0f87c828d63fd254dd60ab2505e5
+> 
+> Anyway, I would prefer Andrew's way because the bus->slave_state must 
+> always be reset to ASPEED_I2C_SLAVE_INACTIVE everytime 
+> __aspeed_i2c_reg_slave() is called.
 
-It's unclear what you are trying to achieve here as the code is not equivalent
-to the above.
+Jian, what's your preference? Are you happy to do a v3 along the lines
+of my suggestion above?
 
-> > > 		} else {
-> > > 			baseclk_idx = i + 1;
-> > > 			divisor = DIV_ROUND_UP(base_clk[i],
-> > i2c_bus->timing_info.bus_freq_hz);
-> > > 		}
-> > > 	}
+Otherwise Wolfram can take v2 and we can always do the cleanup in a
+follow-up patch.
 
-...
-
-> > > 	divisor = min_t(unsigned long, divisor, 32);
-> > 
-> > Can't you use min()? min_t is a beast with some subtle corner cases.
-> > 
-> Will update to 
-> divisor = min(divisor, (unsigned long)32);
-
-No, the idea behind min() is that _both_ arguments are of the same type,
-the proposed above is wrong.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Andrew
