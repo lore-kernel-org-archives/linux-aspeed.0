@@ -1,64 +1,71 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri,  6 Oct 2023 16:39:17 -0500
-Subject: [PATCH] crypto: aspeed-hace: Use device_get_match_data()
-Message-ID: <20231006213917.333702-1-robh@kernel.org>
+From: Jinjie Ruan <ruanjinjie@huawei.com>
+Date: Sat, 7 Oct 2023 16:43:39 +0800
+Subject: [PATCH v2] media: aspeed: Drop unnecessary error check for debugfs_create_file()
+Message-ID: <20231007084339.3160130-1-ruanjinjie@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use preferred device_get_match_data() instead of of_match_device() to
-get the driver match data. With this, adjust the includes to explicitly
-include the correct headers.
+debugfs_create_file() return ERR_PTR and never return NULL.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
+When calling debugfs functions, there is no need to ever check the
+return value. The function can work or not, but the code logic should
+never do something different based on this.
+
+Fixes: 52fed10ad756 ("media: aspeed: add debugfs")
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+Suggested-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
 ---
- drivers/crypto/aspeed/aspeed-hace.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+v2:
+- Remove the err check instead of using IS_ERR to replace NULL check.
+- Add suggested-by.
+- Update the commit title and message.
+---
+ drivers/media/platform/aspeed/aspeed-video.c | 15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace.c b/drivers/crypto/aspeed/aspeed-hace.c
-index 8f7aab82e1d8..d9da04fb816e 100644
---- a/drivers/crypto/aspeed/aspeed-hace.c
-+++ b/drivers/crypto/aspeed/aspeed-hace.c
-@@ -12,11 +12,9 @@
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/of_address.h>
--#include <linux/of_device.h>
--#include <linux/of_irq.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
-+#include <linux/property.h>
+diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+index a9c2c69b2ed9..d08aa7f73d4f 100644
+--- a/drivers/media/platform/aspeed/aspeed-video.c
++++ b/drivers/media/platform/aspeed/aspeed-video.c
+@@ -1970,22 +1970,15 @@ static void aspeed_video_debugfs_remove(struct aspeed_video *video)
+ 	debugfs_entry = NULL;
+ }
  
- #ifdef CONFIG_CRYPTO_DEV_ASPEED_DEBUG
- #define HACE_DBG(d, fmt, ...)	\
-@@ -101,7 +99,6 @@ static const struct of_device_id aspeed_hace_of_matches[] = {
- static int aspeed_hace_probe(struct platform_device *pdev)
+-static int aspeed_video_debugfs_create(struct aspeed_video *video)
++static void aspeed_video_debugfs_create(struct aspeed_video *video)
  {
- 	struct aspeed_engine_crypto *crypto_engine;
--	const struct of_device_id *hace_dev_id;
- 	struct aspeed_engine_hash *hash_engine;
- 	struct aspeed_hace_dev *hace_dev;
- 	int rc;
-@@ -111,14 +108,13 @@ static int aspeed_hace_probe(struct platform_device *pdev)
- 	if (!hace_dev)
- 		return -ENOMEM;
+ 	debugfs_entry = debugfs_create_file(DEVICE_NAME, 0444, NULL,
+ 					    video,
+ 					    &aspeed_video_debugfs_fops);
+-	if (!debugfs_entry)
+-		aspeed_video_debugfs_remove(video);
+-
+-	return !debugfs_entry ? -EIO : 0;
+ }
+ #else
+ static void aspeed_video_debugfs_remove(struct aspeed_video *video) { }
+-static int aspeed_video_debugfs_create(struct aspeed_video *video)
+-{
+-	return 0;
+-}
++static void aspeed_video_debugfs_create(struct aspeed_video *video) { }
+ #endif /* CONFIG_DEBUG_FS */
  
--	hace_dev_id = of_match_device(aspeed_hace_of_matches, &pdev->dev);
--	if (!hace_dev_id) {
-+	hace_dev->version = (uintptr_t)device_get_match_data(&pdev->dev);
-+	if (!hace_dev->version) {
- 		dev_err(&pdev->dev, "Failed to match hace dev id\n");
- 		return -EINVAL;
+ static int aspeed_video_setup_video(struct aspeed_video *video)
+@@ -2198,9 +2191,7 @@ static int aspeed_video_probe(struct platform_device *pdev)
+ 		return rc;
  	}
  
- 	hace_dev->dev = &pdev->dev;
--	hace_dev->version = (unsigned long)hace_dev_id->data;
- 	hash_engine = &hace_dev->hash_engine;
- 	crypto_engine = &hace_dev->crypto_engine;
+-	rc = aspeed_video_debugfs_create(video);
+-	if (rc)
+-		dev_err(video->dev, "debugfs create failed\n");
++	aspeed_video_debugfs_create(video);
  
+ 	return 0;
+ }
 -- 
-2.40.1
+2.34.1
 
