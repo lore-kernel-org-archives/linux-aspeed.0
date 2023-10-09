@@ -1,71 +1,39 @@
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-Date: Sat, 7 Oct 2023 16:43:39 +0800
-Subject: [PATCH v2] media: aspeed: Drop unnecessary error check for debugfs_create_file()
-Message-ID: <20231007084339.3160130-1-ruanjinjie@huawei.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Mon, 9 Oct 2023 11:45:05 +0200
+Subject: [PATCH 08/36] gpio: aspeed: use new pinctrl GPIO helpers
+In-Reply-To: <20231003145114.21637-9-brgl@bgdev.pl>
+References: <20231003145114.21637-1-brgl@bgdev.pl>
+ <20231003145114.21637-9-brgl@bgdev.pl>
+Message-ID: <20231009094505.7dqr7bqchsfacob2@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-debugfs_create_file() return ERR_PTR and never return NULL.
+On Tue, Oct 03, 2023 at 04:50:46PM +0200, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+> 
+> Replace the pinctrl helpers taking the global GPIO number as argument
+> with the improved variants that instead take a pointer to the GPIO chip
+> and the controller-relative offset.
+> 
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-When calling debugfs functions, there is no need to ever check the
-return value. The function can work or not, but the code logic should
-never do something different based on this.
+LGTM,
 
-Fixes: 52fed10ad756 ("media: aspeed: add debugfs")
-Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
-Suggested-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
----
-v2:
-- Remove the err check instead of using IS_ERR to replace NULL check.
-- Add suggested-by.
-- Update the commit title and message.
----
- drivers/media/platform/aspeed/aspeed-video.c | 15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+Acked-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
 
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index a9c2c69b2ed9..d08aa7f73d4f 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -1970,22 +1970,15 @@ static void aspeed_video_debugfs_remove(struct aspeed_video *video)
- 	debugfs_entry = NULL;
- }
- 
--static int aspeed_video_debugfs_create(struct aspeed_video *video)
-+static void aspeed_video_debugfs_create(struct aspeed_video *video)
- {
- 	debugfs_entry = debugfs_create_file(DEVICE_NAME, 0444, NULL,
- 					    video,
- 					    &aspeed_video_debugfs_fops);
--	if (!debugfs_entry)
--		aspeed_video_debugfs_remove(video);
--
--	return !debugfs_entry ? -EIO : 0;
- }
- #else
- static void aspeed_video_debugfs_remove(struct aspeed_video *video) { }
--static int aspeed_video_debugfs_create(struct aspeed_video *video)
--{
--	return 0;
--}
-+static void aspeed_video_debugfs_create(struct aspeed_video *video) { }
- #endif /* CONFIG_DEBUG_FS */
- 
- static int aspeed_video_setup_video(struct aspeed_video *video)
-@@ -2198,9 +2191,7 @@ static int aspeed_video_probe(struct platform_device *pdev)
- 		return rc;
- 	}
- 
--	rc = aspeed_video_debugfs_create(video);
--	if (rc)
--		dev_err(video->dev, "debugfs create failed\n");
-+	aspeed_video_debugfs_create(video);
- 
- 	return 0;
- }
+Thanks
+Uwe
+
 -- 
-2.34.1
-
+Pengutronix e.K.                           | Uwe Kleine-K?nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231009/ec9612e6/attachment.sig>
