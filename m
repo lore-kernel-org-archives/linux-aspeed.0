@@ -1,9 +1,11 @@
-From: Bjorn Andersson <andersson@kernel.org>
-Date: Mon,  2 Oct 2023 18:10:02 -0700
-Subject: (subset) [PATCH 00/40] soc: Convert to platform remove callback returning void
-In-Reply-To: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
-References: <20230925095532.1984344-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <169629539848.1944895.16954663145011378401.b4-ty@kernel.org>
+From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
+Date: Tue, 10 Oct 2023 10:28:19 +0700
+Subject: [PATCH 4/7] ARM: dts: aspeed: mtmitchell: Add LEDs
+In-Reply-To: <65a610df-5030-4dd0-9f04-2089dfe09a3d@linaro.org>
+References: <20231005035525.19036-1-chanh@os.amperecomputing.com>
+ <20231005035525.19036-5-chanh@os.amperecomputing.com>
+ <65a610df-5030-4dd0-9f04-2089dfe09a3d@linaro.org>
+Message-ID: <b46467de-8ddf-4ff5-a133-c18613d2a34b@amperemail.onmicrosoft.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,44 +13,44 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On Mon, 25 Sep 2023 11:54:51 +0200, Uwe Kleine-K?nig wrote:
-> this series converts all platform drivers below drivers/soc to use
-> .remove_new(). The motivation is to get rid of an integer return code
-> that is (mostly) ignored by the platform driver core and error prone on
-> the driver side.
+
+On 05/10/2023 14:31, Krzysztof Kozlowski wrote:
+> On 05/10/2023 05:55, Chanh Nguyen wrote:
+>> Use gpio-leds to configure GPIOW5 to GPIO_ACTIVE_HIGH and
+>> GPIO_TRANSITORY flags as a bmc ready led. The GPIOW5 pin
+>> is reset when watchdog timeout occurs.
+>>
+>> Configure the GPIOS3 to GPIO_ACTIVE_HIGH as an identify led.
+>>
+>> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+>> ---
+>>   .../dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts     | 13 +++++++++++++
+>>   1 file changed, 13 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+>> index b7c4f7cfad07..88693c2b2dbe 100644
+>> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
+>> @@ -51,6 +51,19 @@
+>>   		};
+>>   	};
+>>   
+>> +	leds {
+>> +		compatible = "gpio-leds";
+>> +
+>> +		bmc-ready {
 > 
-> See commit 5c5a7680e67b ("platform: Provide a remove callback that
-> returns no value") for an extended explanation and the eventual goal.
+> Missing led name.
 > 
-> [...]
+> It does not look like you tested the DTS against bindings. Please run
+> `make dtbs_check W=1` (see
+> Documentation/devicetree/bindings/writing-schema.rst or
+> https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
+> for instructions).
+> 
+> Best regards,
+> Krzysztof
+> 
 
-Applied, thanks!
-
-[18/40] soc/qcom: icc-bwmon: Convert to platform remove callback returning void
-        commit: dd714c568ed4e6f79017be45077de71e9908af03
-[19/40] soc/qcom: llcc-qcom: Convert to platform remove callback returning void
-        commit: d85a9d18a58156fc8b5ab185e00e078adaaeefde
-[20/40] soc/qcom: ocmem: Convert to platform remove callback returning void
-        commit: 0b742c498bcd7d215501b10fe9df72a16237735a
-[21/40] soc/qcom: pmic_glink: Convert to platform remove callback returning void
-        commit: 4b3373e42dc2caa34394ac090c8c70bed49badd6
-[22/40] soc/qcom: qcom_aoss: Convert to platform remove callback returning void
-        commit: ffbe84a514f863a46a85c1e47b2b6d930b1b463e
-[23/40] soc/qcom: qcom_gsbi: Convert to platform remove callback returning void
-        commit: 57b31729bd2c72b00d400106e18db91e9d95d3c3
-[24/40] soc/qcom: qcom_stats: Convert to platform remove callback returning void
-        commit: a47ff90bf2f93ce4ca99858948a74a0c10a2bc45
-[25/40] soc/qcom: rmtfs_mem: Convert to platform remove callback returning void
-        commit: 7c93da5b8b69d4e4e7270c33ba3206af43930e1d
-[26/40] soc/qcom: smem: Convert to platform remove callback returning void
-        commit: 4b8dee9a34d51a61f60add996fae6a7140a20ae5
-[27/40] soc/qcom: smp2p: Convert to platform remove callback returning void
-        commit: 1cd966c2dc19654ed08c843e5c933db8c1349636
-[28/40] soc/qcom: smsm: Convert to platform remove callback returning void
-        commit: bdd7cc62cf69fe989557445d65d6c8cb2f956518
-[29/40] soc/qcom: socinfo: Convert to platform remove callback returning void
-        commit: c0989f7d1264b2b1885345a28a32fd5e1e61f9c7
-
-Best regards,
--- 
-Bjorn Andersson <andersson@kernel.org>
+Thank Krzysztof! I'll test the DTS against bindings and update it in 
+patch series v2.
