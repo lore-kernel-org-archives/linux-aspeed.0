@@ -1,59 +1,187 @@
-From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
-Date: Wed, 11 Oct 2023 18:27:39 +0700
-Subject: [PATCH 0/7] Update the device tree for Ampere's BMC platform
-In-Reply-To: <CACPK8Xeo+7hTmfYR-eR9H4teUFqs5vOcSRm_VvDoVOqP4D6+NQ@mail.gmail.com>
-References: <20231005035525.19036-1-chanh@os.amperecomputing.com>
- <CACPK8Xeo+7hTmfYR-eR9H4teUFqs5vOcSRm_VvDoVOqP4D6+NQ@mail.gmail.com>
-Message-ID: <92b76d7f-8eaa-48a8-bad0-714101c558d8@amperemail.onmicrosoft.com>
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+Date: Wed, 11 Oct 2023 12:31:23 +0100
+Subject: [PATCH v5 1/3] ipmi: Move KCS headers to common include folder
+In-Reply-To: <20231010122321.823-2-aladyshev22@gmail.com>
+References: <20231010122321.823-1-aladyshev22@gmail.com>
+	<20231010122321.823-2-aladyshev22@gmail.com>
+Message-ID: <20231011123123.00000394@Huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, 10 Oct 2023 15:23:19 +0300
+Konstantin Aladyshev <aladyshev22@gmail.com> wrote:
 
-
-On 11/10/2023 15:31, Joel Stanley wrote:
-> On Thu, 5 Oct 2023 at 14:26, Chanh Nguyen <chanh@os.amperecomputing.com> wrote:
->>
->> Updates the device tree to support some features on Ampere's
->> Mt.Mitchell BMC and Ampere's Mt.Jade BMC.
->>
->> Chanh Nguyen (7):
->>    ARM: dts: aspeed: mtjade, mtmitchell: Update gpio-line-names
->>    ARM: dts: aspeed: mtjade, mtmitchell: Add new gpio-line-names
->>    ARM: dts: aspeed: mtjade: Add the gpio-hog
->>    ARM: dts: aspeed: mtmitchell: Add LEDs
->>    ARM: dts: aspeed: mtmitchell: Add inlet temperature sensor
->>    ARM: dts: aspeed: mtmitchell: Remove redundant ADC configurations
->>    ARM: dts: aspeed: mtmitchell: Add I2C NVMe alias port
+> The current KCS header files can be utilized by both IPMI drivers
+> (drivers/char/ipmi) and MCTP driver (drivers/net/mctp). To be able to
+> use them in both cases move the headers to 'include/linux' folder.
 > 
-> I'll merge all patches except patch 4. Please resend that on its own
-> once you've added names.
+> Signed-off-by: Konstantin Aladyshev <aladyshev22@gmail.com>
+Not particularly important but I wonder if
+include/linux/kcs/bmc.h
+include/linux/kcs/bmc_client.h
+include/linux/kcs/bmc_device.h
 
-Thank Joel very much! Please also help me push them up at 
-https://github.com/openbmc/linux !
+might be a cleaner choice given that you are moving them.
 
-I'll resend patch 4 later.
+I don't care that much though so up to you :)
 
+Jonathan
+
+> ---
+>  drivers/char/ipmi/kcs_bmc.c                           | 8 +++-----
+>  drivers/char/ipmi/kcs_bmc_aspeed.c                    | 3 +--
+>  drivers/char/ipmi/kcs_bmc_cdev_ipmi.c                 | 2 +-
+>  drivers/char/ipmi/kcs_bmc_npcm7xx.c                   | 2 +-
+>  drivers/char/ipmi/kcs_bmc_serio.c                     | 2 +-
+>  {drivers/char/ipmi => include/linux}/kcs_bmc.h        | 0
+>  {drivers/char/ipmi => include/linux}/kcs_bmc_client.h | 3 +--
+>  {drivers/char/ipmi => include/linux}/kcs_bmc_device.h | 3 +--
+>  8 files changed, 9 insertions(+), 14 deletions(-)
+>  rename {drivers/char/ipmi => include/linux}/kcs_bmc.h (100%)
+>  rename {drivers/char/ipmi => include/linux}/kcs_bmc_client.h (97%)
+>  rename {drivers/char/ipmi => include/linux}/kcs_bmc_device.h (96%)
 > 
-> We should consider creating openbmc documenatiton on recommended LED
-> names. Would you be able to help with that?
-> 
-> Cheers,
-> 
-> Joel
-> 
+> diff --git a/drivers/char/ipmi/kcs_bmc.c b/drivers/char/ipmi/kcs_bmc.c
+> index 8b1161d5194a..d29a8505d6ed 100644
+> --- a/drivers/char/ipmi/kcs_bmc.c
+> +++ b/drivers/char/ipmi/kcs_bmc.c
+> @@ -5,15 +5,13 @@
+>   */
+>  
+>  #include <linux/device.h>
+> +#include <linux/kcs_bmc.h>
+> +#include <linux/kcs_bmc_client.h>
+> +#include <linux/kcs_bmc_device.h>
+>  #include <linux/list.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+>  
+> -#include "kcs_bmc.h"
+> -
+> -/* Implement both the device and client interfaces here */
+> -#include "kcs_bmc_device.h"
+> -#include "kcs_bmc_client.h"
+>  
+>  /* Record registered devices and drivers */
+>  static DEFINE_MUTEX(kcs_bmc_lock);
+> diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
+> index 72640da55380..3dc0dfb448f5 100644
+> --- a/drivers/char/ipmi/kcs_bmc_aspeed.c
+> +++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/io.h>
+>  #include <linux/irq.h>
+> +#include <linux/kcs_bmc_device.h>
+>  #include <linux/mfd/syscon.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> @@ -21,8 +22,6 @@
+>  #include <linux/slab.h>
+>  #include <linux/timer.h>
+>  
+> -#include "kcs_bmc_device.h"
+> -
+>  
+>  #define DEVICE_NAME     "ast-kcs-bmc"
+>  
+> diff --git a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+> index cf670e891966..bf1001130a6c 100644
+> --- a/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+> +++ b/drivers/char/ipmi/kcs_bmc_cdev_ipmi.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/errno.h>
+>  #include <linux/io.h>
+>  #include <linux/ipmi_bmc.h>
+> +#include <linux/kcs_bmc_client.h>
+>  #include <linux/list.h>
+>  #include <linux/miscdevice.h>
+>  #include <linux/module.h>
+> @@ -17,7 +18,6 @@
+>  #include <linux/sched.h>
+>  #include <linux/slab.h>
+>  
+> -#include "kcs_bmc_client.h"
+>  
+>  /* Different phases of the KCS BMC module.
+>   *  KCS_PHASE_IDLE:
+> diff --git a/drivers/char/ipmi/kcs_bmc_npcm7xx.c b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+> index 7961fec56476..160553248a93 100644
+> --- a/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+> +++ b/drivers/char/ipmi/kcs_bmc_npcm7xx.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/errno.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/io.h>
+> +#include <linux/kcs_bmc_device.h>
+>  #include <linux/mfd/syscon.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> @@ -17,7 +18,6 @@
+>  #include <linux/regmap.h>
+>  #include <linux/slab.h>
+>  
+> -#include "kcs_bmc_device.h"
+>  
+>  #define DEVICE_NAME	"npcm-kcs-bmc"
+>  #define KCS_CHANNEL_MAX	3
+> diff --git a/drivers/char/ipmi/kcs_bmc_serio.c b/drivers/char/ipmi/kcs_bmc_serio.c
+> index 1793358be782..24df7144a189 100644
+> --- a/drivers/char/ipmi/kcs_bmc_serio.c
+> +++ b/drivers/char/ipmi/kcs_bmc_serio.c
+> @@ -5,12 +5,12 @@
+>  #include <linux/device.h>
+>  #include <linux/errno.h>
+>  #include <linux/list.h>
+> +#include <linux/kcs_bmc_client.h>
+>  #include <linux/module.h>
+>  #include <linux/sched/signal.h>
+>  #include <linux/serio.h>
+>  #include <linux/slab.h>
+>  
+> -#include "kcs_bmc_client.h"
+>  
+>  struct kcs_bmc_serio {
+>  	struct list_head entry;
+> diff --git a/drivers/char/ipmi/kcs_bmc.h b/include/linux/kcs_bmc.h
+> similarity index 100%
+> rename from drivers/char/ipmi/kcs_bmc.h
+> rename to include/linux/kcs_bmc.h
+> diff --git a/drivers/char/ipmi/kcs_bmc_client.h b/include/linux/kcs_bmc_client.h
+> similarity index 97%
+> rename from drivers/char/ipmi/kcs_bmc_client.h
+> rename to include/linux/kcs_bmc_client.h
+> index 6fdcde0a7169..f6350c9366dd 100644
+> --- a/drivers/char/ipmi/kcs_bmc_client.h
+> +++ b/include/linux/kcs_bmc_client.h
+> @@ -5,8 +5,7 @@
+>  #define __KCS_BMC_CONSUMER_H__
+>  
+>  #include <linux/irqreturn.h>
+> -
+> -#include "kcs_bmc.h"
+> +#include <linux/kcs_bmc.h>
+>  
+>  struct kcs_bmc_driver_ops {
+>  	int (*add_device)(struct kcs_bmc_device *kcs_bmc);
+> diff --git a/drivers/char/ipmi/kcs_bmc_device.h b/include/linux/kcs_bmc_device.h
+> similarity index 96%
+> rename from drivers/char/ipmi/kcs_bmc_device.h
+> rename to include/linux/kcs_bmc_device.h
+> index 17c572f25c54..65333b68c0af 100644
+> --- a/drivers/char/ipmi/kcs_bmc_device.h
+> +++ b/include/linux/kcs_bmc_device.h
+> @@ -5,8 +5,7 @@
+>  #define __KCS_BMC_DEVICE_H__
+>  
+>  #include <linux/irqreturn.h>
+> -
+> -#include "kcs_bmc.h"
+> +#include <linux/kcs_bmc.h>
+>  
+>  struct kcs_bmc_device_ops {
+>  	void (*irq_mask_update)(struct kcs_bmc_device *kcs_bmc, u8 mask, u8 enable);
 
-Yes Joel! I'm glad to help that.
-
-
-> 
->>
->>   .../dts/aspeed/aspeed-bmc-ampere-mtjade.dts   |  66 ++--
->>   .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 315 ++++++++++++++++--
->>   2 files changed, 334 insertions(+), 47 deletions(-)
->>
->> --
->> 2.17.1
->>
