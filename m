@@ -1,9 +1,9 @@
 From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Fri, 20 Oct 2023 09:55:29 +0200
-Subject: [PATCH 07/42] crypto: aspeed-hace - Convert to platform remove callback returning void
+Date: Fri, 20 Oct 2023 09:55:28 +0200
+Subject: [PATCH 06/42] crypto: aspeed-acry - Convert to platform remove callback returning void
 In-Reply-To: <20231020075521.2121571-44-u.kleine-koenig@pengutronix.de>
 References: <20231020075521.2121571-44-u.kleine-koenig@pengutronix.de>
-Message-ID: <20231020075521.2121571-51-u.kleine-koenig@pengutronix.de>
+Message-ID: <20231020075521.2121571-50-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -25,39 +25,39 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
 ---
- drivers/crypto/aspeed/aspeed-hace.c | 6 ++----
+ drivers/crypto/aspeed/aspeed-acry.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace.c b/drivers/crypto/aspeed/aspeed-hace.c
-index d9da04fb816e..062f2a66dd23 100644
---- a/drivers/crypto/aspeed/aspeed-hace.c
-+++ b/drivers/crypto/aspeed/aspeed-hace.c
-@@ -245,7 +245,7 @@ static int aspeed_hace_probe(struct platform_device *pdev)
+diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
+index 247c568aa8df..b4613bd4ad96 100644
+--- a/drivers/crypto/aspeed/aspeed-acry.c
++++ b/drivers/crypto/aspeed/aspeed-acry.c
+@@ -794,7 +794,7 @@ static int aspeed_acry_probe(struct platform_device *pdev)
  	return rc;
  }
  
--static int aspeed_hace_remove(struct platform_device *pdev)
-+static void aspeed_hace_remove(struct platform_device *pdev)
+-static int aspeed_acry_remove(struct platform_device *pdev)
++static void aspeed_acry_remove(struct platform_device *pdev)
  {
- 	struct aspeed_hace_dev *hace_dev = platform_get_drvdata(pdev);
- 	struct aspeed_engine_crypto *crypto_engine = &hace_dev->crypto_engine;
-@@ -260,15 +260,13 @@ static int aspeed_hace_remove(struct platform_device *pdev)
- 	tasklet_kill(&crypto_engine->done_task);
+ 	struct aspeed_acry_dev *acry_dev = platform_get_drvdata(pdev);
  
- 	clk_disable_unprepare(hace_dev->clk);
+@@ -802,15 +802,13 @@ static int aspeed_acry_remove(struct platform_device *pdev)
+ 	crypto_engine_exit(acry_dev->crypt_engine_rsa);
+ 	tasklet_kill(&acry_dev->done_task);
+ 	clk_disable_unprepare(acry_dev->clk);
 -
 -	return 0;
  }
  
- MODULE_DEVICE_TABLE(of, aspeed_hace_of_matches);
+ MODULE_DEVICE_TABLE(of, aspeed_acry_of_matches);
  
- static struct platform_driver aspeed_hace_driver = {
- 	.probe		= aspeed_hace_probe,
--	.remove		= aspeed_hace_remove,
-+	.remove_new	= aspeed_hace_remove,
- 	.driver         = {
+ static struct platform_driver aspeed_acry_driver = {
+ 	.probe		= aspeed_acry_probe,
+-	.remove		= aspeed_acry_remove,
++	.remove_new	= aspeed_acry_remove,
+ 	.driver		= {
  		.name   = KBUILD_MODNAME,
- 		.of_match_table = aspeed_hace_of_matches,
+ 		.of_match_table = aspeed_acry_of_matches,
 -- 
 2.42.0
 
