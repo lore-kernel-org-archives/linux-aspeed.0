@@ -1,63 +1,292 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Fri, 20 Oct 2023 09:55:28 +0200
-Subject: [PATCH 06/42] crypto: aspeed-acry - Convert to platform remove callback returning void
-In-Reply-To: <20231020075521.2121571-44-u.kleine-koenig@pengutronix.de>
-References: <20231020075521.2121571-44-u.kleine-koenig@pengutronix.de>
-Message-ID: <20231020075521.2121571-50-u.kleine-koenig@pengutronix.de>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 20 Oct 2023 07:52:13 -0500
+Subject: [PATCH] drm: Use device_get_match_data()
+Message-ID: <20231020125214.2930329-1-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is ignored (apart
-from emitting a warning) and this typically results in resource leaks.
+Use preferred device_get_match_data() instead of of_match_device() to
+get the driver match data in a single step. With this, adjust the
+includes to explicitly include the correct headers. That also serves as
+preparation to remove implicit includes within the DT headers
+(of_device.h in particular).
 
-To improve here there is a quest to make the remove callback return
-void. In the first step of this quest all drivers are converted to
-.remove_new(), which already returns void. Eventually after all drivers
-are converted, .remove_new() will be renamed to .remove().
-
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
-
-Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/crypto/aspeed/aspeed-acry.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/armada/armada_crtc.c    | 24 +++++++-----------------
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 10 ++++------
+ drivers/gpu/drm/exynos/exynos_drm_gsc.c |  9 +++++----
+ drivers/gpu/drm/imx/ipuv3/imx-ldb.c     |  9 ++++-----
+ drivers/gpu/drm/mxsfb/mxsfb_drv.c       | 10 +++-------
+ drivers/gpu/drm/omapdrm/dss/dispc.c     |  4 ++--
+ drivers/gpu/drm/omapdrm/dss/dss.c       |  5 +++--
+ 7 files changed, 28 insertions(+), 43 deletions(-)
 
-diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
-index 247c568aa8df..b4613bd4ad96 100644
---- a/drivers/crypto/aspeed/aspeed-acry.c
-+++ b/drivers/crypto/aspeed/aspeed-acry.c
-@@ -794,7 +794,7 @@ static int aspeed_acry_probe(struct platform_device *pdev)
- 	return rc;
- }
+diff --git a/drivers/gpu/drm/armada/armada_crtc.c b/drivers/gpu/drm/armada/armada_crtc.c
+index 15dd667aa2e7..f2886e6f631b 100644
+--- a/drivers/gpu/drm/armada/armada_crtc.c
++++ b/drivers/gpu/drm/armada/armada_crtc.c
+@@ -7,8 +7,9 @@
+ #include <linux/clk.h>
+ #include <linux/component.h>
+ #include <linux/module.h>
+-#include <linux/of_device.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
++#include <linux/property.h>
  
--static int aspeed_acry_remove(struct platform_device *pdev)
-+static void aspeed_acry_remove(struct platform_device *pdev)
- {
- 	struct aspeed_acry_dev *acry_dev = platform_get_drvdata(pdev);
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_atomic_helper.h>
+@@ -1012,26 +1013,17 @@ armada_lcd_bind(struct device *dev, struct device *master, void *data)
+ 	int irq = platform_get_irq(pdev, 0);
+ 	const struct armada_variant *variant;
+ 	struct device_node *port = NULL;
++	struct device_node *np, *parent = dev->of_node;
  
-@@ -802,15 +802,13 @@ static int aspeed_acry_remove(struct platform_device *pdev)
- 	crypto_engine_exit(acry_dev->crypt_engine_rsa);
- 	tasklet_kill(&acry_dev->done_task);
- 	clk_disable_unprepare(acry_dev->clk);
+ 	if (irq < 0)
+ 		return irq;
+ 
+-	if (!dev->of_node) {
+-		const struct platform_device_id *id;
+ 
+-		id = platform_get_device_id(pdev);
+-		if (!id)
+-			return -ENXIO;
 -
--	return 0;
- }
+-		variant = (const struct armada_variant *)id->driver_data;
+-	} else {
+-		const struct of_device_id *match;
+-		struct device_node *np, *parent = dev->of_node;
+-
+-		match = of_match_device(dev->driver->of_match_table, dev);
+-		if (!match)
+-			return -ENXIO;
++	variant = device_get_match_data(dev);
++	if (!variant)
++		return -ENXIO;
  
- MODULE_DEVICE_TABLE(of, aspeed_acry_of_matches);
++	if (parent) {
+ 		np = of_get_child_by_name(parent, "ports");
+ 		if (np)
+ 			parent = np;
+@@ -1041,8 +1033,6 @@ armada_lcd_bind(struct device *dev, struct device *master, void *data)
+ 			dev_err(dev, "no port node found in %pOF\n", parent);
+ 			return -ENXIO;
+ 		}
+-
+-		variant = match->data;
+ 	}
  
- static struct platform_driver aspeed_acry_driver = {
- 	.probe		= aspeed_acry_probe,
--	.remove		= aspeed_acry_remove,
-+	.remove_new	= aspeed_acry_remove,
- 	.driver		= {
- 		.name   = KBUILD_MODNAME,
- 		.of_match_table = aspeed_acry_of_matches,
+ 	return armada_drm_crtc_create(drm, dev, res, irq, variant, port);
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 78122b35a0cb..a7a6b70220eb 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -6,10 +6,10 @@
+ #include <linux/irq.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+-#include <linux/of.h>
+-#include <linux/of_device.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/of_reserved_mem.h>
+ #include <linux/platform_device.h>
++#include <linux/property.h>
+ #include <linux/regmap.h>
+ #include <linux/reset.h>
+ 
+@@ -143,7 +143,6 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+ 	struct device_node *np = pdev->dev.of_node;
+ 	const struct aspeed_gfx_config *config;
+-	const struct of_device_id *match;
+ 	struct resource *res;
+ 	int ret;
+ 
+@@ -152,10 +151,9 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	if (IS_ERR(priv->base))
+ 		return PTR_ERR(priv->base);
+ 
+-	match = of_match_device(aspeed_gfx_match, &pdev->dev);
+-	if (!match)
++	config = device_get_match_data(&pdev->dev);
++	if (!config)
+ 		return -EINVAL;
+-	config = match->data;
+ 
+ 	priv->dac_reg = config->dac_reg;
+ 	priv->int_clr_reg = config->int_clear_reg;
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_gsc.c b/drivers/gpu/drm/exynos/exynos_drm_gsc.c
+index 34cdabc30b4f..35771fb4e85d 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_gsc.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_gsc.c
+@@ -11,9 +11,10 @@
+ #include <linux/component.h>
+ #include <linux/kernel.h>
+ #include <linux/mfd/syscon.h>
+-#include <linux/of_device.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/property.h>
+ #include <linux/regmap.h>
+ 
+ #include <drm/drm_fourcc.h>
+@@ -103,7 +104,7 @@ struct gsc_context {
+ 	unsigned int			num_formats;
+ 
+ 	void __iomem	*regs;
+-	const char	**clk_names;
++	const char	*const *clk_names;
+ 	struct clk	*clocks[GSC_MAX_CLOCKS];
+ 	int		num_clocks;
+ 	struct gsc_scaler	sc;
+@@ -1217,7 +1218,7 @@ static const unsigned int gsc_tiled_formats[] = {
+ static int gsc_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct gsc_driverdata *driver_data;
++	const struct gsc_driverdata *driver_data;
+ 	struct exynos_drm_ipp_formats *formats;
+ 	struct gsc_context *ctx;
+ 	int num_formats, ret, i, j;
+@@ -1226,7 +1227,7 @@ static int gsc_probe(struct platform_device *pdev)
+ 	if (!ctx)
+ 		return -ENOMEM;
+ 
+-	driver_data = (struct gsc_driverdata *)of_device_get_match_data(dev);
++	driver_data = device_get_match_data(dev);
+ 	ctx->dev = dev;
+ 	ctx->num_clocks = driver_data->num_clocks;
+ 	ctx->clk_names = driver_data->clk_names;
+diff --git a/drivers/gpu/drm/imx/ipuv3/imx-ldb.c b/drivers/gpu/drm/imx/ipuv3/imx-ldb.c
+index 989eca32d325..53840ab054c7 100644
+--- a/drivers/gpu/drm/imx/ipuv3/imx-ldb.c
++++ b/drivers/gpu/drm/imx/ipuv3/imx-ldb.c
+@@ -12,8 +12,10 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/mfd/syscon/imx6q-iomuxc-gpr.h>
+ #include <linux/module.h>
+-#include <linux/of_device.h>
++#include <linux/of.h>
+ #include <linux/of_graph.h>
++#include <linux/platform_device.h>
++#include <linux/property.h>
+ #include <linux/regmap.h>
+ #include <linux/videodev2.h>
+ 
+@@ -617,7 +619,6 @@ static int imx_ldb_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = dev->of_node;
+-	const struct of_device_id *of_id = of_match_device(imx_ldb_dt_ids, dev);
+ 	struct device_node *child;
+ 	struct imx_ldb *imx_ldb;
+ 	int dual;
+@@ -638,9 +639,7 @@ static int imx_ldb_probe(struct platform_device *pdev)
+ 	regmap_write(imx_ldb->regmap, IOMUXC_GPR2, 0);
+ 
+ 	imx_ldb->dev = dev;
+-
+-	if (of_id)
+-		imx_ldb->lvds_mux = of_id->data;
++	imx_ldb->lvds_mux = device_get_match_data(dev);
+ 
+ 	dual = of_property_read_bool(np, "fsl,dual-channel");
+ 	if (dual)
+diff --git a/drivers/gpu/drm/mxsfb/mxsfb_drv.c b/drivers/gpu/drm/mxsfb/mxsfb_drv.c
+index 625c1bfc4173..b483ef48216a 100644
+--- a/drivers/gpu/drm/mxsfb/mxsfb_drv.c
++++ b/drivers/gpu/drm/mxsfb/mxsfb_drv.c
+@@ -11,9 +11,10 @@
+ #include <linux/clk.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/io.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+-#include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/property.h>
+ #include <linux/pm_runtime.h>
+ 
+ #include <drm/drm_atomic_helper.h>
+@@ -346,18 +347,13 @@ MODULE_DEVICE_TABLE(of, mxsfb_dt_ids);
+ static int mxsfb_probe(struct platform_device *pdev)
+ {
+ 	struct drm_device *drm;
+-	const struct of_device_id *of_id =
+-			of_match_device(mxsfb_dt_ids, &pdev->dev);
+ 	int ret;
+ 
+-	if (!pdev->dev.of_node)
+-		return -ENODEV;
+-
+ 	drm = drm_dev_alloc(&mxsfb_driver, &pdev->dev);
+ 	if (IS_ERR(drm))
+ 		return PTR_ERR(drm);
+ 
+-	ret = mxsfb_load(drm, of_id->data);
++	ret = mxsfb_load(drm, device_get_match_data(&pdev->dev));
+ 	if (ret)
+ 		goto err_free;
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/dispc.c b/drivers/gpu/drm/omapdrm/dss/dispc.c
+index c26aab4939fa..993691b3cc7e 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dispc.c
++++ b/drivers/gpu/drm/omapdrm/dss/dispc.c
+@@ -22,11 +22,11 @@
+ #include <linux/hardirq.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/property.h>
+ #include <linux/sizes.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/regmap.h>
+ #include <linux/of.h>
+-#include <linux/of_device.h>
+ #include <linux/component.h>
+ #include <linux/sys_soc.h>
+ #include <drm/drm_fourcc.h>
+@@ -4765,7 +4765,7 @@ static int dispc_bind(struct device *dev, struct device *master, void *data)
+ 	if (soc)
+ 		dispc->feat = soc->data;
+ 	else
+-		dispc->feat = of_match_device(dispc_of_match, &pdev->dev)->data;
++		dispc->feat = device_get_match_data(&pdev->dev);
+ 
+ 	r = dispc_errata_i734_wa_init(dispc);
+ 	if (r)
+diff --git a/drivers/gpu/drm/omapdrm/dss/dss.c b/drivers/gpu/drm/omapdrm/dss/dss.c
+index 02955f976845..988888e164d7 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dss.c
++++ b/drivers/gpu/drm/omapdrm/dss/dss.c
+@@ -22,12 +22,13 @@
+ #include <linux/pinctrl/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
++#include <linux/property.h>
+ #include <linux/gfp.h>
+ #include <linux/sizes.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/regmap.h>
+ #include <linux/of.h>
+-#include <linux/of_device.h>
++#include <linux/of_platform.h>
+ #include <linux/of_graph.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/suspend.h>
+@@ -1445,7 +1446,7 @@ static int dss_probe(struct platform_device *pdev)
+ 	if (soc)
+ 		dss->feat = soc->data;
+ 	else
+-		dss->feat = of_match_device(dss_of_match, &pdev->dev)->data;
++		dss->feat = device_get_match_data(&pdev->dev);
+ 
+ 	/* Map I/O registers, get and setup clocks. */
+ 	dss->base = devm_platform_ioremap_resource(pdev, 0);
 -- 
 2.42.0
 
