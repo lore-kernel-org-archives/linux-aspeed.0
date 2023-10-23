@@ -1,11 +1,11 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 23 Oct 2023 13:05:30 +1030
-Subject: [PATCH 06/42] crypto: aspeed-acry - Convert to platform remove
+Date: Mon, 23 Oct 2023 13:06:42 +1030
+Subject: [PATCH 07/42] crypto: aspeed-hace - Convert to platform remove
  callback returning void
-In-Reply-To: <20231020075521.2121571-50-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20231020075521.2121571-51-u.kleine-koenig@pengutronix.de>
 References: <20231020075521.2121571-44-u.kleine-koenig@pengutronix.de>
-	 <20231020075521.2121571-50-u.kleine-koenig@pengutronix.de>
-Message-ID: <5201a2fc9fc9bdbdc3f76e504b3a2a2d6d4d21d4.camel@codeconstruct.com.au>
+	 <20231020075521.2121571-51-u.kleine-koenig@pengutronix.de>
+Message-ID: <8980a7fbe644bf00d1840a114e4745395f13b6df.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
