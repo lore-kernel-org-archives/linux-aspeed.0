@@ -1,46 +1,48 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed,  1 Nov 2023 18:05:57 +0800
-Subject: [PATCH v1 00/10] Add i2c-mux and eeprom devices for Meta Yosemite 4
-Message-ID: <20231101100609.2516844-1-Delphine_CC_Chiu@wiwynn.com>
+Date: Wed,  1 Nov 2023 18:05:59 +0800
+Subject: [PATCH v1 02/10] ARM: dts: aspeed: yosemite4: Enable adc15
+In-Reply-To: <20231101100609.2516844-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20231101100609.2516844-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20231101100609.2516844-3-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Changelog:
-    - Add gpio and eeprom behind i2c-mux
-    - Remove redundant idle-state setting for i2c-mux
-    - Enable adc 15, wdt2,spi gpio for yosemite4 use
-    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
-    - Revise power sensor adm1281 for yosemite4 schematic change
-    - Add gpio pca9506 I/O expander for yosemite4 use
-    - remove space for adm1272 compatible
-    - enable interrupt setting for pca9555
-    - add eeprom for yosemite4 medusa board/BSM use
-    - remove temperature sensor for yosemite4 schematic change
-    - add power sensor for power module reading
-    - Revise adc128d818 adc mode for yosemite4 schematic change
-    - Revise ina233 for yosemite4 schematic change
-    - Remove idle state setting for yosemite4 NIC connection
-    - Initialize bmc gpio state
+Enable Yosemite 4 adc15 config
 
-Delphine CC Chiu (10):
-  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
-  ARM: dts: aspeed: yosemite4: Enable adc15
-  ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
-  ARM: dts: aspeed: yosemite4: Enable watchdog2
-  ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
-  ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
-    change
-  ARM: dts: aspeed: yosemite4: Add gpio pca9506
-  ARM: dts: aspeed: yosemite4: Revise i2c11 and i2c12 schematic change
-  ARM: dts: aspeed: yosemite4: Revise i2c14 and i2c15 schematic change
-  ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1026 +++++++++++++++--
- 1 file changed, 949 insertions(+), 77 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index a5b4585e81e6..c540523d5588 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -51,7 +51,7 @@ iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+ 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+-				<&adc1 0>, <&adc1 1>;
++				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+ 	};
+ };
+ 
+@@ -920,10 +920,10 @@ &pinctrl_adc4_default &pinctrl_adc5_default
+ &adc1 {
+ 	ref_voltage = <2500>;
+ 	status = "okay";
+-	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>;
++	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default
++	    &pinctrl_adc15_default>;
+ };
+ 
+-
+ &ehci0 {
+ 	status = "okay";
+ };
 -- 
 2.25.1
 
