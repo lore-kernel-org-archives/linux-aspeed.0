@@ -1,118 +1,64 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 8 Nov 2023 10:38:27 -0800
-Subject: [PATCH RESEND v10 1/3] dt-bindings: hwmon: fan: Add fan binding
- to schema
-In-Reply-To: <20231108181654.GA2664986-robh@kernel.org>
-References: <20231107105025.1480561-1-billy_tsai@aspeedtech.com>
- <20231107105025.1480561-2-billy_tsai@aspeedtech.com>
- <20231108181654.GA2664986-robh@kernel.org>
-Message-ID: <d3204361-2d4c-41f9-8365-5826195aa884@roeck-us.net>
+From: Alexander Hansen <alexander.hansen@9elements.com>
+Date: Fri,  3 Nov 2023 11:30:55 +0100
+Subject: [PATCH v1 1/1] hwmon: (aspeed-pwm-tacho) mutex for tach reading
+Message-ID: <121d888762a1232ef403cf35230ccf7b3887083a.1699007401.git.alexander.hansen@9elements.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/8/23 10:16, Rob Herring wrote:
-> On Tue, Nov 07, 2023 at 06:50:23PM +0800, Billy Tsai wrote:
->> From: Naresh Solanki <naresh.solanki@9elements.com>
->>
->> Add common fan properties bindings to a schema.
->>
->> Bindings for fan controllers can reference the common schema for the
->> fan
->>
->> child nodes:
->>
->>    patternProperties:
->>      "^fan@[0-2]":
->>        type: object
->>        $ref: fan-common.yaml#
->>        unevaluatedProperties: false
->>
->> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
->> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
->> ---
->>   .../devicetree/bindings/hwmon/fan-common.yaml | 78 +++++++++++++++++++
->>   1 file changed, 78 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
-> 
-> Looking pretty good to me. It's disappointing that no one else
-> interested in upstreaming their fan controller can be bothered to
-> comment.
-> 
+From: Loic Prylli <lprylli@netflix.com>
 
-FWIW, I declined to comment since it basically looks ok to me
-and because at this point I'd rather have something (whatever it is)
-instead of nothing.
+the ASPEED_PTCR_RESULT Register can only hold the result for a
+single fan input. Adding a mutex to protect the register until the
+reading is done.
 
->>
->> diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
->> new file mode 100644
->> index 000000000000..be4ce3bd7f22
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
->> @@ -0,0 +1,78 @@
->> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Common Fan Properties
->> +
->> +maintainers:
->> +  - Naresh Solanki <naresh.solanki@9elements.com>
->> +  - Billy Tsai <billy_tsai@aspeedtech.com>
->> +
->> +properties:
->> +  max-rpm:
->> +    description:
->> +      Max RPM supported by fan.
->> +    $ref: /schemas/types.yaml#/definitions/uint32
->> +    maximum: 100000
->> +
->> +  min-rpm:
->> +    description:
->> +      Min RPM supported by fan.
->> +    $ref: /schemas/types.yaml#/definitions/uint32
->> +    maximum: 1000
->> +
->> +  pulses-per-revolution:
->> +    description:
->> +      The number of pulse from fan sensor per revolution.
->> +    $ref: /schemas/types.yaml#/definitions/uint32
->> +    maximum: 4
->> +
->> +  tach-div:
->> +    description:
->> +      Divisor for the tach sampling clock, which determines the sensitivity of the tach pin.
->> +    $ref: /schemas/types.yaml#/definitions/uint32
->> +
->> +  target-rpm:
->> +    description:
->> +      The default desired fan speed in RPM.
->> +    $ref: /schemas/types.yaml#/definitions/uint32
->> +
->> +  fan-driving-mode:
->> +    description:
->> +      Select the driving mode of the fan.(DC, PWM and so on)
->> +    $ref: /schemas/types.yaml#/definitions/string
-> 
-> You need to define the possible values. I assume it's:
-> 
-> enum:
->    - dc
->    - pwm
->    - anything else???
-> 
+Signed-off-by: Loic Prylli <lprylli@netflix.com>
+Signed-off-by: Alexander Hansen <alexander.hansen@9elements.com>
+---
+ drivers/hwmon/aspeed-pwm-tacho.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-I am not aware of any other possible method. dc and pwm is all
-I have ever seen.
-
-Guenter
-
-> With that,
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+index 997df4b40509..b2ae2176f11f 100644
+--- a/drivers/hwmon/aspeed-pwm-tacho.c
++++ b/drivers/hwmon/aspeed-pwm-tacho.c
+@@ -193,6 +193,8 @@ struct aspeed_pwm_tacho_data {
+ 	u8 fan_tach_ch_source[16];
+ 	struct aspeed_cooling_device *cdev[8];
+ 	const struct attribute_group *groups[3];
++	/* protects access to shared ASPEED_PTCR_RESULT */
++	struct mutex tach_lock;
+ };
+ 
+ enum type { TYPEM, TYPEN, TYPEO };
+@@ -527,6 +529,8 @@ static int aspeed_get_fan_tach_ch_rpm(struct aspeed_pwm_tacho_data *priv,
+ 	u8 fan_tach_ch_source, type, mode, both;
+ 	int ret;
+ 
++	mutex_lock(&priv->tach_lock);
++
+ 	regmap_write(priv->regmap, ASPEED_PTCR_TRIGGER, 0);
+ 	regmap_write(priv->regmap, ASPEED_PTCR_TRIGGER, 0x1 << fan_tach_ch);
+ 
+@@ -544,6 +548,8 @@ static int aspeed_get_fan_tach_ch_rpm(struct aspeed_pwm_tacho_data *priv,
+ 		ASPEED_RPM_STATUS_SLEEP_USEC,
+ 		usec);
+ 
++	mutex_unlock(&priv->tach_lock);
++
+ 	/* return -ETIMEDOUT if we didn't get an answer. */
+ 	if (ret)
+ 		return ret;
+@@ -903,6 +909,7 @@ static int aspeed_pwm_tacho_probe(struct platform_device *pdev)
+ 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+ 	if (!priv)
+ 		return -ENOMEM;
++	mutex_init(&priv->tach_lock);
+ 	priv->regmap = devm_regmap_init(dev, NULL, (__force void *)regs,
+ 			&aspeed_pwm_tacho_regmap_config);
+ 	if (IS_ERR(priv->regmap))
+-- 
+2.42.0
 
