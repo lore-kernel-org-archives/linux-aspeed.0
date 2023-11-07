@@ -1,122 +1,34 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 7 Nov 2023 18:39:53 +0800
-Subject: [PATCH v10 1/3] dt-bindings: hwmon: fan: Add fan binding to schema
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Tue, 7 Nov 2023 11:42:54 +0100
+Subject: [PATCH v10 0/3] Support pwm/tach driver for aspeed ast26xx
 In-Reply-To: <20231107103955.1166655-1-billy_tsai@aspeedtech.com>
 References: <20231107103955.1166655-1-billy_tsai@aspeedtech.com>
-Message-ID: <20231107103955.1166655-2-billy_tsai@aspeedtech.com>
+Message-ID: <3d9e50db-19f0-43b3-8042-2f80a1e7b79e@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Naresh Solanki <naresh.solanki@9elements.com>
+On 07/11/2023 11:39, Billy Tsai wrote:
+> Unlike the old design that the register setting of the TACH should based
+> on the configure of the PWM. In ast26xx, the dependency between pwm and
+> tach controller is eliminated and becomes a separate hardware block. One
+> is used to provide pwm output and another is used to monitor the frequency
+> of the input. This driver implements them by exposing two kernel
+> subsystems: PWM and HWMON. The PWM subsystem can be utilized alongside
+> existing drivers for controlling elements such as fans (pwm-fan.c),
+> beepers (pwm-beeper.c) and so on. Through the HWMON subsystem, the driver
+> provides sysfs interfaces for fan.
+> 
+> Changes since v9:
+> Change the type of fan-driving-mode to string
+> Fix some typos and formatting issues.
 
-Add common fan properties bindings to a schema.
+Please run scripts/checkpatch.pl and fix reported warnings. Some
+warnings can be ignored, but the code here looks like it needs a fix.
+Feel free to get in touch if the warning is not clear.
 
-Bindings for fan controllers can reference the common schema for the
-fan
-
-child nodes:
-
-  patternProperties:
-    "^fan@[0-2]":
-      type: object
-      $ref: fan-common.yaml#
-      unevaluatedProperties: false
-
-Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-Change-Id: Id8915b6fa18d59e5a0770ac279d893b0c9e891f3
----
- .../devicetree/bindings/hwmon/fan-common.yaml | 78 +++++++++++++++++++
- 1 file changed, 78 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
-
-diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
-new file mode 100644
-index 000000000000..be4ce3bd7f22
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
-@@ -0,0 +1,78 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Common Fan Properties
-+
-+maintainers:
-+  - Naresh Solanki <naresh.solanki@9elements.com>
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+properties:
-+  max-rpm:
-+    description:
-+      Max RPM supported by fan.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    maximum: 100000
-+
-+  min-rpm:
-+    description:
-+      Min RPM supported by fan.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    maximum: 1000
-+
-+  pulses-per-revolution:
-+    description:
-+      The number of pulse from fan sensor per revolution.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    maximum: 4
-+
-+  tach-div:
-+    description:
-+      Divisor for the tach sampling clock, which determines the sensitivity of the tach pin.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  target-rpm:
-+    description:
-+      The default desired fan speed in RPM.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  fan-driving-mode:
-+    description:
-+      Select the driving mode of the fan.(DC, PWM and so on)
-+    $ref: /schemas/types.yaml#/definitions/string
-+
-+  pwms:
-+    description:
-+      PWM provider.
-+    maxItems: 1
-+
-+  "#cooling-cells":
-+    const: 2
-+
-+  cooling-levels:
-+    description:
-+      The control value which correspond to thermal cooling states.
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+
-+  tach-ch:
-+    description:
-+      The tach channel used for the fan.
-+    $ref: /schemas/types.yaml#/definitions/uint8-array
-+
-+  label:
-+    description:
-+      Optional fan label
-+
-+  fan-supply:
-+    description:
-+      Power supply for fan.
-+
-+  reg:
-+    maxItems: 1
-+
-+additionalProperties: true
-+
-+...
--- 
-2.25.1
+Best regards,
+Krzysztof
 
