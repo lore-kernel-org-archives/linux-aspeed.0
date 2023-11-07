@@ -1,240 +1,112 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed,  1 Nov 2023 18:06:07 +0800
-Subject: [PATCH v1 10/10] ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
-In-Reply-To: <20231101100609.2516844-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20231101100609.2516844-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20231101100609.2516844-11-Delphine_CC_Chiu@wiwynn.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Tue, 7 Nov 2023 18:39:52 +0800
+Subject: [PATCH v10 0/3] Support pwm/tach driver for aspeed ast26xx
+Message-ID: <20231107103955.1166655-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Initialize bmc gpio state
+Unlike the old design that the register setting of the TACH should based
+on the configure of the PWM. In ast26xx, the dependency between pwm and
+tach controller is eliminated and becomes a separate hardware block. One
+is used to provide pwm output and another is used to monitor the frequency
+of the input. This driver implements them by exposing two kernel
+subsystems: PWM and HWMON. The PWM subsystem can be utilized alongside
+existing drivers for controlling elements such as fans (pwm-fan.c),
+beepers (pwm-beeper.c) and so on. Through the HWMON subsystem, the driver
+provides sysfs interfaces for fan.
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 196 ++++++++++++++++++
- 1 file changed, 196 insertions(+)
+Changes since v9:
+Change the type of fan-driving-mode to string
+Fix some typos and formatting issues.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index a0f0424457fa..2947abfb0b46 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1271,6 +1271,7 @@ temperature-sensor at 1f {
- 	};
- };
- 
-+
- &adc0 {
- 	ref_voltage = <2500>;
- 	status = "okay";
-@@ -1287,6 +1288,7 @@ &adc1 {
-             &pinctrl_adc15_default>;
- };
- 
-+
- &ehci0 {
- 	status = "okay";
- };
-@@ -1298,3 +1300,197 @@ &ehci1 {
- &uhci {
- 	status = "okay";
- };
-+
-+&sgpiom0 {
-+	status = "okay";
-+	ngpios = <128>;
-+	bus-frequency = <48000>;
-+};
-+
-+&gpio0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_gpiu2_default &pinctrl_gpiu3_default
-+		     &pinctrl_gpiu4_default &pinctrl_gpiu5_default
-+		     &pinctrl_gpiu6_default>;
-+	gpio-line-names =
-+	/*A0-A7*/       "","","","","","","","",
-+	/*B0-B7*/       "FLT_HSC_SERVER_SLOT8_N","AC_ON_OFF_BTN_CPLD_SLOT5_N",
-+			"PWRGD_SLOT1_STBY","PWRGD_SLOT2_STBY",
-+			"PWRGD_SLOT3_STBY","PWRGD_SLOT4_STBY","","",
-+	/*C0-C7*/       "PRSNT_NIC3_N","","","","FM_NIC0_WAKE_N",
-+			"FM_NIC1_WAKE_N","","RST_PCIE_SLOT2_N",
-+	/*D0-D7*/       "","","","","","","","",
-+	/*E0-E7*/       "PRSNT_NIC1_N","PRSNT_NIC2_N","","RST_PCIE_SLOT1_N",
-+			"","","","",
-+	/*F0-F7*/       "FM_RESBTN_SLOT1_BMC_N","FM_RESBTN_SLOT2_BMC_N",
-+			"FM_RESBTN_SLOT3_BMC_N","FM_RESBTN_SLOT4_BMC_N",
-+			"PRSNT_SB_SLOT1_N","PRSNT_SB_SLOT2_N",
-+			"PRSNT_SB_SLOT3_N","PRSNT_SB_SLOT4_N",
-+	/*G0-G7*/       "","","","","","","","",
-+	/*H0-H7*/       "","","","","","","","",
-+	/*I0-I7*/       "","","","","","ALT_MEDUSA_ADC_N",
-+			"ALT_SMB_BMC_CPLD2_N",
-+			"INT_SPIDER_ADC_R_N",
-+	/*J0-J7*/       "","","","","","","","",
-+	/*K0-K7*/       "","","","","","","","",
-+	/*L0-L7*/       "","","","","","","ALT_MEDUSA_P12V_EFUSE_N","",
-+	/*M0-M7*/       "EN_NIC0_POWER_BMC_R","EN_NIC1_POWER_BMC_R",
-+			"INT_MEDUSA_IOEXP_TEMP_N","FLT_P12V_NIC0_N",
-+			"INT_SMB_BMC_SLOT1_4_BMC_N",
-+			"AC_ON_OFF_BTN_CPLD_SLOT6_N","","",
-+	/*N0-N7*/       "FLT_HSC_SERVER_SLOT1_N","FLT_HSC_SERVER_SLOT2_N",
-+			"FLT_HSC_SERVER_SLOT3_N","FLT_HSC_SERVER_SLOT4_N",
-+			"FM_BMC_READY_R2","FLT_P12V_STBY_BMC_N","","",
-+	/*O0-O7*/       "AC_ON_OFF_BTN_CPLD_SLOT8_N","RST_SMB_NIC1_R_N",
-+			"RST_SMB_NIC2_R_N","RST_SMB_NIC3_R_N",
-+			"FLT_P3V3_NIC2_N","FLT_P3V3_NIC3_N",
-+			"","",
-+	/*P0-P7*/       "ALT_SMB_BMC_CPLD1_N","'BTN_BMC_R2_N",
-+			"EN_P3V_BAT_SCALED_R","PWRGD_P5V_USB_BMC",
-+			"FM_BMC_RTCRST_R","RST_USB_HUB_R_N",
-+			"FLAG_P5V_USB_BMC_N","",
-+	/*Q0-Q7*/       "AC_ON_OFF_BTN_CPLD_SLOT1_N","AC_ON_OFF_BTN_CPLD_SLOT2_N",
-+			"AC_ON_OFF_BTN_CPLD_SLOT3_N","AC_ON_OFF_BTN_CPLD_SLOT4_N",
-+			"PRSNT_SB_SLOT5_N","PRSNT_SB_SLOT6_N",
-+			"PRSNT_SB_SLOT7_N","PRSNT_SB_SLOT8_N",
-+	/*R0-R7*/       "AC_ON_OFF_BTN_CPLD_SLOT7_N","INT_SMB_BMC_SLOT5_8_BMC_N",
-+			"FM_PWRBRK_NIC_BMC_R2","RST_PCIE_SLOT4_N",
-+			"RST_PCIE_SLOT5_N","RST_PCIE_SLOT6_N",
-+			"RST_PCIE_SLOT7_N","RST_PCIE_SLOT8_N",
-+	/*S0-S7*/       "FM_NIC2_WAKE_N","FM_NIC3_WAKE_N",
-+			"EN_NIC3_POWER_BMC_R","SEL_BMC_JTAG_MUX_R",
-+			"","ALT_P12V_AUX_N","FAST_PROCHOT_N",
-+			"SPI_WP_DISABLE_STATUS_R_N",
-+	/*T0-T7*/       "","","","","","","","",
-+	/*U0-U7*/       "","","FLT_P3V3_NIC1_N","FLT_P12V_NIC1_N",
-+			"FLT_P12V_NIC2_N","FLT_P12V_NIC3_N",
-+			"FLT_P3V3_NIC0_N","",
-+	/*V0-V7*/       "FM_RESBTN_SLOT5_BMC_N","FM_RESBTN_SLOT6_BMC_N",
-+			"FM_RESBTN_SLOT7_BMC_N","FM_RESBTN_SLOT8_BMC_N",
-+			"","","","",
-+	/*W0-W7*/       "PRSNT_TPM_BMC_N","PRSNT_OCP_DEBUG_BMC_N","ALT_TEMP_BMC_N","ALT_RTC_BMC_N",
-+			"","","","",
-+	/*X0-X7*/       "","LT_HSC_SERVER_SLOT6_N","FLT_HSC_SERVER_SLOT7_N","","","",
-+			"PWRGD_SLOT5_STBY","PWRGD_SLOT6_STBY",
-+	/*Y0-Y7*/       "","","SPI_LOCK_REQ_BMC_N","PWRGD_SLOT7_STBY",
-+			"","","EN_NIC2_POWER_BMC_R","",
-+	/*Z0-Z7*/       "EN_P5V_USB_CPLD_R","'FLT_HSC_SERVER_SLOT5_N",
-+			"PWRGD_SLOT8_STBY","","","","","";
-+
-+	pin_gpio_b4 {
-+		gpios = <ASPEED_GPIO(B, 4) GPIO_ACTIVE_HIGH>;
-+		input;
-+	};
-+	pin_gpio_b5 {
-+		gpios = <ASPEED_GPIO(B, 5) GPIO_ACTIVE_HIGH>;
-+		input;
-+	};
-+	pin_gpio_f0 {
-+		gpios = <ASPEED_GPIO(F, 0) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_f1 {
-+		gpios = <ASPEED_GPIO(F, 1) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_f2 {
-+		gpios = <ASPEED_GPIO(F, 2) GPIO_ACTIVE_LOW>;
-+		input;
-+		};
-+	pin_gpio_f3 {
-+		gpios = <ASPEED_GPIO(F, 3) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_f4 {
-+		gpios = <ASPEED_GPIO(F, 4) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_f5 {
-+		gpios = <ASPEED_GPIO(F, 5) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_f6 {
-+		gpios = <ASPEED_GPIO(F, 6) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_f7 {
-+		gpios = <ASPEED_GPIO(F, 7) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_l6 {
-+		gpios = <ASPEED_GPIO(L, 6) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_l7 {
-+		gpios = <ASPEED_GPIO(L, 7) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_s0 {
-+		gpios = <ASPEED_GPIO(S, 0) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_s1 {
-+		gpios = <ASPEED_GPIO(S, 1) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_v0 {
-+		gpios = <ASPEED_GPIO(V, 0) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_v1 {
-+		gpios = <ASPEED_GPIO(V, 1) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_v2 {
-+		gpios = <ASPEED_GPIO(V, 2) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_v3 {
-+		gpios = <ASPEED_GPIO(V, 3) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w0 {
-+		gpios = <ASPEED_GPIO(W, 0) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w1 {
-+		gpios = <ASPEED_GPIO(W, 1) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w2 {
-+		gpios = <ASPEED_GPIO(W, 2) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w3 {
-+		gpios = <ASPEED_GPIO(W, 3) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w4 {
-+		gpios = <ASPEED_GPIO(W, 4) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w5 {
-+		gpios = <ASPEED_GPIO(W, 5) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w6 {
-+		gpios = <ASPEED_GPIO(W, 6) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_w7 {
-+		gpios = <ASPEED_GPIO(W, 7) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_z3 {
-+		gpios = <ASPEED_GPIO(Z, 3) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_z4 {
-+		gpios = <ASPEED_GPIO(Z, 4) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+	pin_gpio_z5 {
-+		gpios = <ASPEED_GPIO(Z, 5) GPIO_ACTIVE_LOW>;
-+		input;
-+	};
-+};
+Changes since v8:
+Fix the fail of fan div register setting. (FIELD_GET -> FIELD_PREP)
+Change the type of tach-ch from uint32_t to uint8-array
+Add additional properties and apply constraints to certain properties.
+
+Changes since v7:
+Cherry-pick the fan-common.yaml and add the following properties:
+- min-rpm
+- div
+- mode
+- tach-ch
+Fix the warning which is reported by the kernel test robot.
+
+Changes since v6:
+Consolidate the PWM and TACH functionalities into a unified driver.
+
+Changes since v5:
+- pwm/tach:
+  - Remove the utilization of common resources from the parent node.
+  - Change the concept to 16 PWM/TACH controllers, each with one channel,
+  instead of 1 PWM/TACH controller with 16 channels.
+- dt-binding:
+  - Eliminate the usage of simple-mfd.
+
+Changes since v4:
+- pwm:
+  - Fix the return type of get_status function.
+- tach:
+  - read clk source once and re-use it
+  - Remove the constants variables
+  - Allocate tach_channel as array
+  - Use dev->parent
+- dt-binding:
+  - Fix the order of the patches
+  - Add example and description for tach child node
+  - Remove pwm extension property
+
+Changes since v3:
+- pwm:
+  - Remove unnecessary include header
+  - Fix warning Prefer "GPL" over "GPL v2"
+- tach:
+  - Remove the paremeter min_rpm and max_rpm and return the tach value 
+  directly without any polling or delay.
+  - Fix warning Prefer "GPL" over "GPL v2"
+- dt-binding:
+  - Replace underscore in node names with dashes
+  - Split per subsystem
+
+Changes since v2:
+- pwm:
+  - Use devm_* api to simplify the error cleanup
+  - Fix the multi-line alignment problem
+- tach:
+  - Add tach-aspeed-ast2600 to index.rst
+  - Fix the multi-line alignment problem
+  - Remove the tach enable/disable when read the rpm
+  - Fix some coding format issue
+
+Changes since v1:
+- tach:
+  - Add the document tach-aspeed-ast2600.rst
+  - Use devm_* api to simplify the error cleanup.
+  - Change hwmon register api to devm_hwmon_device_register_with_info
+
+Billy Tsai (2):
+  dt-bindings: hwmon: Support Aspeed g6 PWM TACH Control
+  hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED g6 PWM/Fan tach
+
+Naresh Solanki (1):
+  dt-bindings: hwmon: fan: Add fan binding to schema
+
+ .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    |  69 +++
+ .../devicetree/bindings/hwmon/fan-common.yaml |  78 +++
+ Documentation/hwmon/aspeed-g6-pwm-tach.rst    |  26 +
+ Documentation/hwmon/index.rst                 |   1 +
+ drivers/hwmon/Kconfig                         |  11 +
+ drivers/hwmon/Makefile                        |   1 +
+ drivers/hwmon/aspeed-g6-pwm-tach.c            | 539 ++++++++++++++++++
+ 7 files changed, 725 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+ create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
+ create mode 100644 Documentation/hwmon/aspeed-g6-pwm-tach.rst
+ create mode 100644 drivers/hwmon/aspeed-g6-pwm-tach.c
+
 -- 
 2.25.1
 
