@@ -1,32 +1,104 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Tue, 7 Nov 2023 11:02:43 -0800
-Subject: [PATCH RESEND v10 0/3] Support pwm/tach driver for aspeed ast26xx
-In-Reply-To: <20231107105025.1480561-1-billy_tsai@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 8 Nov 2023 12:16:54 -0600
+Subject: [PATCH RESEND v10 1/3] dt-bindings: hwmon: fan: Add fan binding
+ to schema
+In-Reply-To: <20231107105025.1480561-2-billy_tsai@aspeedtech.com>
 References: <20231107105025.1480561-1-billy_tsai@aspeedtech.com>
-Message-ID: <3ea9ef0c-27c0-4304-8bf7-26710224c3b1@roeck-us.net>
+ <20231107105025.1480561-2-billy_tsai@aspeedtech.com>
+Message-ID: <20231108181654.GA2664986-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/7/23 02:50, Billy Tsai wrote:
-> Unlike the old design that the register setting of the TACH should based
-> on the configure of the PWM. In ast26xx, the dependency between pwm and
-> tach controller is eliminated and becomes a separate hardware block. One
-> is used to provide pwm output and another is used to monitor the frequency
-> of the input. This driver implements them by exposing two kernel
-> subsystems: PWM and HWMON. The PWM subsystem can be utilized alongside
-> existing drivers for controlling elements such as fans (pwm-fan.c),
-> beepers (pwm-beeper.c) and so on. Through the HWMON subsystem, the driver
-> provides sysfs interfaces for fan.
+On Tue, Nov 07, 2023 at 06:50:23PM +0800, Billy Tsai wrote:
+> From: Naresh Solanki <naresh.solanki@9elements.com>
 > 
-> Changes since v9:
-> Change the type of fan-driving-mode to string
-> Fix some typos and formatting issues.
+> Add common fan properties bindings to a schema.
 > 
+> Bindings for fan controllers can reference the common schema for the
+> fan
+> 
+> child nodes:
+> 
+>   patternProperties:
+>     "^fan@[0-2]":
+>       type: object
+>       $ref: fan-common.yaml#
+>       unevaluatedProperties: false
+> 
+> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/hwmon/fan-common.yaml | 78 +++++++++++++++++++
+>  1 file changed, 78 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
 
-What is the resend about ?
+Looking pretty good to me. It's disappointing that no one else 
+interested in upstreaming their fan controller can be bothered to 
+comment.
 
-Guenter
+> 
+> diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
+> new file mode 100644
+> index 000000000000..be4ce3bd7f22
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
+> @@ -0,0 +1,78 @@
+> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Common Fan Properties
+> +
+> +maintainers:
+> +  - Naresh Solanki <naresh.solanki@9elements.com>
+> +  - Billy Tsai <billy_tsai@aspeedtech.com>
+> +
+> +properties:
+> +  max-rpm:
+> +    description:
+> +      Max RPM supported by fan.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    maximum: 100000
+> +
+> +  min-rpm:
+> +    description:
+> +      Min RPM supported by fan.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    maximum: 1000
+> +
+> +  pulses-per-revolution:
+> +    description:
+> +      The number of pulse from fan sensor per revolution.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    maximum: 4
+> +
+> +  tach-div:
+> +    description:
+> +      Divisor for the tach sampling clock, which determines the sensitivity of the tach pin.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +
+> +  target-rpm:
+> +    description:
+> +      The default desired fan speed in RPM.
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +
+> +  fan-driving-mode:
+> +    description:
+> +      Select the driving mode of the fan.(DC, PWM and so on)
+> +    $ref: /schemas/types.yaml#/definitions/string
 
+You need to define the possible values. I assume it's:
+
+enum:
+  - dc
+  - pwm
+  - anything else???
+
+With that,
+
+Reviewed-by: Rob Herring <robh@kernel.org>
