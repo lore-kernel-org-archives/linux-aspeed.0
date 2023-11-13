@@ -1,64 +1,111 @@
-From: Alexander Hansen <alexander.hansen@9elements.com>
-Date: Fri,  3 Nov 2023 11:30:55 +0100
-Subject: [PATCH v1 1/1] hwmon: (aspeed-pwm-tacho) mutex for tach reading
-Message-ID: <121d888762a1232ef403cf35230ccf7b3887083a.1699007401.git.alexander.hansen@9elements.com>
+From: Gustavo A. R. Silva <gustavoars@kernel.org>
+Date: Mon, 13 Nov 2023 13:38:12 -0600
+Subject: [PATCH][next] hwmon: (aspeed-pwm-tacho) Fix -Wstringop-overflow
+ warning in aspeed_create_fan_tach_channel()
+Message-ID: <ZVJ7JBFoULzY3VGx@work>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Loic Prylli <lprylli@netflix.com>
+Based on the documentation below, the maximum number of Fan tach
+channels is 16:
 
-the ASPEED_PTCR_RESULT Register can only hold the result for a
-single fan input. Adding a mutex to protect the register until the
-reading is done.
+Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt:45:
+ 45 - aspeed,fan-tach-ch : should specify the Fan tach input channel.
+ 46                 integer value in the range 0 through 15, with 0 indicating
+ 47                 Fan tach channel 0 and 15 indicating Fan tach channel 15.
+ 48                 At least one Fan tach input channel is required.
 
-Signed-off-by: Loic Prylli <lprylli@netflix.com>
-Signed-off-by: Alexander Hansen <alexander.hansen@9elements.com>
+However, the compiler doesn't know that, and legitimaly warns about a potential
+overwrite in array `u8 fan_tach_ch_source[16]` in `struct aspeed_pwm_tacho_data`,
+in case `index` takes a value outside the boundaries of the array:
+
+drivers/hwmon/aspeed-pwm-tacho.c:
+179 struct aspeed_pwm_tacho_data {
+...
+184         bool fan_tach_present[16];
+...
+193         u8 fan_tach_ch_source[16];
+...
+196 };
+
+In function ?aspeed_create_fan_tach_channel?,
+    inlined from ?aspeed_create_fan? at drivers/hwmon/aspeed-pwm-tacho.c:877:2,
+    inlined from ?aspeed_pwm_tacho_probe? at drivers/hwmon/aspeed-pwm-tacho.c:936:9:
+drivers/hwmon/aspeed-pwm-tacho.c:751:49: warning: writing 1 byte into a region of size 0 [-Wstringop-overflow=]
+  751 |                 priv->fan_tach_ch_source[index] = pwm_source;
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+drivers/hwmon/aspeed-pwm-tacho.c: In function ?aspeed_pwm_tacho_probe?:
+drivers/hwmon/aspeed-pwm-tacho.c:193:12: note: at offset [48, 255] into destination object ?fan_tach_ch_source? of size 16
+  193 |         u8 fan_tach_ch_source[16];
+      |            ^~~~~~~~~~~~~~~~~~
+
+Fix this by sanity checking `index` before using it to index arrays of
+size 16 elements in `struct aspeed_pwm_tacho_data`. Also, and just for
+completeness, add a `pr_err()` message to display in the unlikely case
+`0 > index >= 16`.
+
+This is probably the last remaining -Wstringop-overflow issue in the
+kernel, and this patch helps with the ongoing efforts to enable such
+compiler option globally.
+
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 ---
- drivers/hwmon/aspeed-pwm-tacho.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/hwmon/aspeed-pwm-tacho.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-index 997df4b40509..b2ae2176f11f 100644
+index 997df4b40509..092a81916325 100644
 --- a/drivers/hwmon/aspeed-pwm-tacho.c
 +++ b/drivers/hwmon/aspeed-pwm-tacho.c
-@@ -193,6 +193,8 @@ struct aspeed_pwm_tacho_data {
- 	u8 fan_tach_ch_source[16];
+@@ -166,6 +166,8 @@
+ 
+ #define MAX_CDEV_NAME_LEN 16
+ 
++#define MAX_ASPEED_FAN_TACH_CHANNELS 16
++
+ struct aspeed_cooling_device {
+ 	char name[16];
+ 	struct aspeed_pwm_tacho_data *priv;
+@@ -181,7 +183,7 @@ struct aspeed_pwm_tacho_data {
+ 	struct reset_control *rst;
+ 	unsigned long clk_freq;
+ 	bool pwm_present[8];
+-	bool fan_tach_present[16];
++	bool fan_tach_present[MAX_ASPEED_FAN_TACH_CHANNELS];
+ 	u8 type_pwm_clock_unit[3];
+ 	u8 type_pwm_clock_division_h[3];
+ 	u8 type_pwm_clock_division_l[3];
+@@ -190,7 +192,7 @@ struct aspeed_pwm_tacho_data {
+ 	u16 type_fan_tach_unit[3];
+ 	u8 pwm_port_type[8];
+ 	u8 pwm_port_fan_ctrl[8];
+-	u8 fan_tach_ch_source[16];
++	u8 fan_tach_ch_source[MAX_ASPEED_FAN_TACH_CHANNELS];
  	struct aspeed_cooling_device *cdev[8];
  	const struct attribute_group *groups[3];
-+	/* protects access to shared ASPEED_PTCR_RESULT */
-+	struct mutex tach_lock;
  };
+@@ -746,10 +748,14 @@ static void aspeed_create_fan_tach_channel(struct aspeed_pwm_tacho_data *priv,
  
- enum type { TYPEM, TYPEN, TYPEO };
-@@ -527,6 +529,8 @@ static int aspeed_get_fan_tach_ch_rpm(struct aspeed_pwm_tacho_data *priv,
- 	u8 fan_tach_ch_source, type, mode, both;
- 	int ret;
+ 	for (val = 0; val < count; val++) {
+ 		index = fan_tach_ch[val];
+-		aspeed_set_fan_tach_ch_enable(priv->regmap, index, true);
+-		priv->fan_tach_present[index] = true;
+-		priv->fan_tach_ch_source[index] = pwm_source;
+-		aspeed_set_fan_tach_ch_source(priv->regmap, index, pwm_source);
++		if (index < MAX_ASPEED_FAN_TACH_CHANNELS) {
++			aspeed_set_fan_tach_ch_enable(priv->regmap, index, true);
++			priv->fan_tach_present[index] = true;
++			priv->fan_tach_ch_source[index] = pwm_source;
++			aspeed_set_fan_tach_ch_source(priv->regmap, index, pwm_source);
++		} else {
++			pr_err("Invalid Fan Tach input channel %u\n.", index);
++		}
+ 	}
+ }
  
-+	mutex_lock(&priv->tach_lock);
-+
- 	regmap_write(priv->regmap, ASPEED_PTCR_TRIGGER, 0);
- 	regmap_write(priv->regmap, ASPEED_PTCR_TRIGGER, 0x1 << fan_tach_ch);
- 
-@@ -544,6 +548,8 @@ static int aspeed_get_fan_tach_ch_rpm(struct aspeed_pwm_tacho_data *priv,
- 		ASPEED_RPM_STATUS_SLEEP_USEC,
- 		usec);
- 
-+	mutex_unlock(&priv->tach_lock);
-+
- 	/* return -ETIMEDOUT if we didn't get an answer. */
- 	if (ret)
- 		return ret;
-@@ -903,6 +909,7 @@ static int aspeed_pwm_tacho_probe(struct platform_device *pdev)
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
-+	mutex_init(&priv->tach_lock);
- 	priv->regmap = devm_regmap_init(dev, NULL, (__force void *)regs,
- 			&aspeed_pwm_tacho_regmap_config);
- 	if (IS_ERR(priv->regmap))
 -- 
-2.42.0
+2.34.1
 
