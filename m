@@ -1,11 +1,11 @@
 From: Zev Weiss <zev@bewilderbeest.net>
-Date: Tue, 14 Nov 2023 14:21:49 -0800
+Date: Tue, 14 Nov 2023 14:37:08 -0800
 Subject: [PATCH 2/2] ARM: dts: aspeed: Add ASRock E3C256D4I BMC
 In-Reply-To: <cde26249-1d47-496f-b198-a0c4c02bed5c@linaro.org>
 References: <20231114112722.28506-4-zev@bewilderbeest.net>
  <20231114112722.28506-6-zev@bewilderbeest.net>
  <cde26249-1d47-496f-b198-a0c4c02bed5c@linaro.org>
-Message-ID: <b06b2b9e-8185-41e8-89b5-e6bc8d09d948@hatter.bewilderbeest.net>
+Message-ID: <e766e663-0985-4a2e-8023-26ad0228157d@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -94,9 +94,8 @@ Ack.
 >for instructions).
 >
 
-Au contraire -- I did, and it exited 0 with no output, which I 
-interpreted as a clean pass.  Are there particular shortcomings beside 
-what you've already pointed out that you would have expected it to flag?
+As with my spc621d8hm3 dts patch, I did run that and got no output, so 
+if there are other specific problems please let me know what they are.
 
 >> +			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_LOW>;
 >> +			linux,default-trigger = "timer";
