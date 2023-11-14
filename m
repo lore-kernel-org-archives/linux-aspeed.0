@@ -1,99 +1,103 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 14 Nov 2023 21:35:37 +0100
-Subject: [PATCH 2/2] ARM: dts: aspeed: Add ASRock E3C256D4I BMC
-In-Reply-To: <20231114112722.28506-6-zev@bewilderbeest.net>
-References: <20231114112722.28506-4-zev@bewilderbeest.net>
- <20231114112722.28506-6-zev@bewilderbeest.net>
-Message-ID: <cde26249-1d47-496f-b198-a0c4c02bed5c@linaro.org>
+From: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Date: Tue, 14 Nov 2023 15:20:45 -0600
+Subject: [PATCH][next] hwmon: (aspeed-pwm-tacho) Fix -Wstringop-overflow
+ warning in aspeed_create_fan_tach_channel()
+In-Reply-To: <6a28c219-b047-411b-ab43-02fc8f1824db@roeck-us.net>
+References: <ZVJ7JBFoULzY3VGx@work>
+ <6a28c219-b047-411b-ab43-02fc8f1824db@roeck-us.net>
+Message-ID: <c353ba94-0712-422b-bfbb-f166c7690cf8@embeddedor.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/11/2023 12:27, Zev Weiss wrote:
-> Like the E3C246D4I, this is a reasonably affordable off-the-shelf
-> mini-ITX AST2500/Xeon motherboard with good potential as an OpenBMC
-> development platform.  Booting the host requires a modicum of eSPI
-> support that's not yet in the mainline kernel, but most other basic
-> BMC functionality is available with this device-tree.
+
+
+On 11/14/23 08:52, Guenter Roeck wrote:
+> On Mon, Nov 13, 2023 at 01:38:12PM -0600, Gustavo A. R. Silva wrote:
+>> Based on the documentation below, the maximum number of Fan tach
+>> channels is 16:
+>>
+>> Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt:45:
+>>   45 - aspeed,fan-tach-ch : should specify the Fan tach input channel.
+>>   46                 integer value in the range 0 through 15, with 0 indicating
+>>   47                 Fan tach channel 0 and 15 indicating Fan tach channel 15.
+>>   48                 At least one Fan tach input channel is required.
+>>
+>> However, the compiler doesn't know that, and legitimaly warns about a potential
+>> overwrite in array `u8 fan_tach_ch_source[16]` in `struct aspeed_pwm_tacho_data`,
+>> in case `index` takes a value outside the boundaries of the array:
+>>
 > 
-> Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../aspeed/aspeed-bmc-asrock-e3c256d4i.dts    | 314 ++++++++++++++++++
->  2 files changed, 315 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
+> All that doesn't warrant introducing checkpatch warnings.
+
+Do you mean this?
+
+WARNING: Prefer a maximum 75 chars per line (possible unwrapped commit description?)
+#17:
+  46                 integer value in the range 0 through 15, with 0 indicating
+
+I honestly didn't consider that relevant, and I didn't want to alter the format of
+the Doc text.
+
+However, if you want me to split any offending line, that's not a problem. Just let
+me know. :)
+
 > 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index d3ac20e316d0..3398ee53f034 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -9,6 +9,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-ampere-mtmitchell.dtb \
->  	aspeed-bmc-arm-stardragon4800-rep2.dtb \
->  	aspeed-bmc-asrock-e3c246d4i.dtb \
-> +	aspeed-bmc-asrock-e3c256d4i.dtb \
->  	aspeed-bmc-asrock-romed8hm3.dtb \
->  	aspeed-bmc-bytedance-g220a.dtb \
->  	aspeed-bmc-delta-ahe50dc.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-> new file mode 100644
-> index 000000000000..4c55272afd4f
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-> @@ -0,0 +1,314 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/dts-v1/;
-> +
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/i2c/i2c.h>
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +#include <dt-bindings/watchdog/aspeed-wdt.h>
-> +
-> +/{
-> +	model = "ASRock E3C256D4I BMC";
-> +	compatible = "asrock,e3c256d4i-bmc", "aspeed,ast2500";
-> +
-> +	aliases {
-> +		serial4 = &uart5;
-> +
-> +		i2c20 = &i2c2mux0ch0;
-> +		i2c21 = &i2c2mux0ch1;
-> +		i2c22 = &i2c2mux0ch2;
-> +		i2c23 = &i2c2mux0ch3;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = &uart5;
-> +		bootargs = "console=tty0 console=ttyS4,115200 earlycon";
+>> drivers/hwmon/aspeed-pwm-tacho.c:
+>> 179 struct aspeed_pwm_tacho_data {
+>> ...
+>> 184         bool fan_tach_present[16];
+>> ...
+>> 193         u8 fan_tach_ch_source[16];
+>> ...
+>> 196 };
+>>
+>> In function ?aspeed_create_fan_tach_channel?,
+>>      inlined from ?aspeed_create_fan? at drivers/hwmon/aspeed-pwm-tacho.c:877:2,
+>>      inlined from ?aspeed_pwm_tacho_probe? at drivers/hwmon/aspeed-pwm-tacho.c:936:9:
+>> drivers/hwmon/aspeed-pwm-tacho.c:751:49: warning: writing 1 byte into a region of size 0 [-Wstringop-overflow=]
+>>    751 |                 priv->fan_tach_ch_source[index] = pwm_source;
+>>        |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+>> drivers/hwmon/aspeed-pwm-tacho.c: In function ?aspeed_pwm_tacho_probe?:
+>> drivers/hwmon/aspeed-pwm-tacho.c:193:12: note: at offset [48, 255] into destination object ?fan_tach_ch_source? of size 16
+>>    193 |         u8 fan_tach_ch_source[16];
+>>        |            ^~~~~~~~~~~~~~~~~~
+>>
+>> Fix this by sanity checking `index` before using it to index arrays of
+>> size 16 elements in `struct aspeed_pwm_tacho_data`. Also, and just for
+>> completeness, add a `pr_err()` message to display in the unlikely case
+>> `0 > index >= 16`.
+>>
+>> This is probably the last remaining -Wstringop-overflow issue in the
+>> kernel, and this patch helps with the ongoing efforts to enable such
+>> compiler option globally.
+>>
+> 
+> I am sorry, but this description almost completely misses the point.
+> The real issue is that the values in aspeed,fan-tach-ch are not range
+> checked, which can cause real problems if is elements are set to values
+> larger than 15. This is a real problem and has nothing to do with string
+> overflows.
 
-Drop bootargs.
+Yeah, the above paragraph was extra, and I removed it in v2[1]. The rest
+of the changelog text describes the issue in the code.
 
-> +	};
-> +
-> +	memory at 80000000 {
-> +		reg = <0x80000000 0x20000000>;
-> +	};
-> +
-> +	leds {
-> +		compatible = "gpio-leds";
-> +
-> +		heartbeat {
+> 
+> This should use dev_err() (and, yes, that means dev needs to be passed
+> as argument), and the function should return -EINVAL if this is
+> encountered. Also, error handling should come first.
+> 
+> 		if (index >= MAX_ASPEED_FAN_TACH_CHANNELS) {
+> 			dev_err(dev, "Invalid Fan Tach input channel %u\n.", index);
+> 			return -EINVAL;
+> 		}
 
-It does not look like you tested the DTS against bindings. Please run
-`make dtbs_check W=1` (see
-Documentation/devicetree/bindings/writing-schema.rst or
-https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
-for instructions).
+Done in v2.
 
-> +			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_LOW>;
-> +			linux,default-trigger = "timer";
+Thanks a lot for the feedback.
+--
+Gustavo
 
-Missing function and color.
-
-
-Best regards,
-Krzysztof
-
+[1] https://lore.kernel.org/linux-hardening/ZVPQJIP26dIzRAr6 at work/
