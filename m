@@ -1,111 +1,129 @@
-From: Gustavo A. R. Silva <gustavoars@kernel.org>
-Date: Mon, 13 Nov 2023 13:38:12 -0600
-Subject: [PATCH][next] hwmon: (aspeed-pwm-tacho) Fix -Wstringop-overflow
- warning in aspeed_create_fan_tach_channel()
-Message-ID: <ZVJ7JBFoULzY3VGx@work>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Tue, 14 Nov 2023 03:11:32 +0000
+Subject: [PATCH RESEND v10 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM
+ TACH Control
+In-Reply-To: <20231108182135.GA2698015-robh@kernel.org>
+References: <20231107105025.1480561-1-billy_tsai@aspeedtech.com>
+ <20231107105025.1480561-3-billy_tsai@aspeedtech.com>
+ <20231108182135.GA2698015-robh@kernel.org>
+Message-ID: <SG2PR06MB33655734700697E8F6FD0D1B8BB2A@SG2PR06MB3365.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Based on the documentation below, the maximum number of Fan tach
-channels is 16:
+> > Document the compatible for aspeed,ast2600-pwm-tach device, which can
+> > support up to 16 PWM outputs and 16 fan tach input.
+> >
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> > ---
+> >  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 69 +++++++++++++++++++
+> >  1 file changed, 69 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> >
+> > diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> > new file mode 100644
+> > index 000000000000..c615fb10705c
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> > @@ -0,0 +1,69 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +# Copyright (C) 2023 Aspeed, Inc.
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: ASPEED G6 PWM and Fan Tach controller
+> > +
+> > +maintainers:
+> > +  - Billy Tsai <billy_tsai@aspeedtech.com>
+> > +
+> > +description: |
+> > +  The ASPEED PWM controller can support up to 16 PWM outputs.
+> > +  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
+> > +  They are independent hardware blocks, which are different from the
+> > +  previous version of the ASPEED chip.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2600-pwm-tach
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  clocks:
+> > +    maxItems: 1
+> > +
+> > +  resets:
+> > +    maxItems: 1
+> > +
+> > +  "#pwm-cells":
+> > +    const: 3
+> > +
+> > +patternProperties:
+> > +  "^fan-[0-9]+$":
+> > +    $ref: fan-common.yaml#
+> > +    unevaluatedProperties: false
+> > +    required:
+> > +      - tach-ch
+> > +
+> > +required:
+> > +  - reg
+> > +  - clocks
+> > +  - resets
+> > +  - "#pwm-cells"
+> > +  - compatible
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/clock/aspeed-clock.h>
+> > +    pwm_tach: pwm-tach-controller at 1e610000 {
+> > +      compatible = "aspeed,ast2600-pwm-tach";
+> > +      reg = <0x1e610000 0x100>;
+> > +      clocks = <&syscon ASPEED_CLK_AHB>;
+> > +      resets = <&syscon ASPEED_RESET_PWM>;
+> > +      #pwm-cells = <3>;
+> > +
+> > +      fan-0 {
 
-Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt:45:
- 45 - aspeed,fan-tach-ch : should specify the Fan tach input channel.
- 46                 integer value in the range 0 through 15, with 0 indicating
- 47                 Fan tach channel 0 and 15 indicating Fan tach channel 15.
- 48                 At least one Fan tach input channel is required.
+> I assume there's a PWM connection here? How do you know which PWM? You
+> said the tach channel is independent, so it is not that.
 
-However, the compiler doesn't know that, and legitimaly warns about a potential
-overwrite in array `u8 fan_tach_ch_source[16]` in `struct aspeed_pwm_tacho_data`,
-in case `index` takes a value outside the boundaries of the array:
+> It should not be 0 from 'fan-0' because that's just a meaningless index.
 
-drivers/hwmon/aspeed-pwm-tacho.c:
-179 struct aspeed_pwm_tacho_data {
-...
-184         bool fan_tach_present[16];
-...
-193         u8 fan_tach_ch_source[16];
-...
-196 };
+> You either need 'pwms' here or you can use 'reg' and the reg value is
+> the PWM channel.
 
-In function ?aspeed_create_fan_tach_channel?,
-    inlined from ?aspeed_create_fan? at drivers/hwmon/aspeed-pwm-tacho.c:877:2,
-    inlined from ?aspeed_pwm_tacho_probe? at drivers/hwmon/aspeed-pwm-tacho.c:936:9:
-drivers/hwmon/aspeed-pwm-tacho.c:751:49: warning: writing 1 byte into a region of size 0 [-Wstringop-overflow=]
-  751 |                 priv->fan_tach_ch_source[index] = pwm_source;
-      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
-drivers/hwmon/aspeed-pwm-tacho.c: In function ?aspeed_pwm_tacho_probe?:
-drivers/hwmon/aspeed-pwm-tacho.c:193:12: note: at offset [48, 255] into destination object ?fan_tach_ch_source? of size 16
-  193 |         u8 fan_tach_ch_source[16];
-      |            ^~~~~~~~~~~~~~~~~~
+Hi Rob, this binding is used to export the PWM provider and the Fan monitor (i.e., Tach).
+If the user wants to add the PWM connection for the fan, it can be done as follows:
 
-Fix this by sanity checking `index` before using it to index arrays of
-size 16 elements in `struct aspeed_pwm_tacho_data`. Also, and just for
-completeness, add a `pr_err()` message to display in the unlikely case
-`0 > index >= 16`.
+fan0: pwm-fan0 {
+        compatible = "pwm-fan";
+        pwms = <&pwm_tach 0 40000 0>; 
+        cooling-min-state = <0>;
+        cooling-max-state = <3>;
+        #cooling-cells = <2>;
+        cooling-levels = <0 15 128 255>;
+};
 
-This is probably the last remaining -Wstringop-overflow issue in the
-kernel, and this patch helps with the ongoing efforts to enable such
-compiler option globally.
+This will reuse the existing PWM fan driver (e.g., pwm-fan.c).
 
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- drivers/hwmon/aspeed-pwm-tacho.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+Thanks
 
-diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
-index 997df4b40509..092a81916325 100644
---- a/drivers/hwmon/aspeed-pwm-tacho.c
-+++ b/drivers/hwmon/aspeed-pwm-tacho.c
-@@ -166,6 +166,8 @@
- 
- #define MAX_CDEV_NAME_LEN 16
- 
-+#define MAX_ASPEED_FAN_TACH_CHANNELS 16
-+
- struct aspeed_cooling_device {
- 	char name[16];
- 	struct aspeed_pwm_tacho_data *priv;
-@@ -181,7 +183,7 @@ struct aspeed_pwm_tacho_data {
- 	struct reset_control *rst;
- 	unsigned long clk_freq;
- 	bool pwm_present[8];
--	bool fan_tach_present[16];
-+	bool fan_tach_present[MAX_ASPEED_FAN_TACH_CHANNELS];
- 	u8 type_pwm_clock_unit[3];
- 	u8 type_pwm_clock_division_h[3];
- 	u8 type_pwm_clock_division_l[3];
-@@ -190,7 +192,7 @@ struct aspeed_pwm_tacho_data {
- 	u16 type_fan_tach_unit[3];
- 	u8 pwm_port_type[8];
- 	u8 pwm_port_fan_ctrl[8];
--	u8 fan_tach_ch_source[16];
-+	u8 fan_tach_ch_source[MAX_ASPEED_FAN_TACH_CHANNELS];
- 	struct aspeed_cooling_device *cdev[8];
- 	const struct attribute_group *groups[3];
- };
-@@ -746,10 +748,14 @@ static void aspeed_create_fan_tach_channel(struct aspeed_pwm_tacho_data *priv,
- 
- 	for (val = 0; val < count; val++) {
- 		index = fan_tach_ch[val];
--		aspeed_set_fan_tach_ch_enable(priv->regmap, index, true);
--		priv->fan_tach_present[index] = true;
--		priv->fan_tach_ch_source[index] = pwm_source;
--		aspeed_set_fan_tach_ch_source(priv->regmap, index, pwm_source);
-+		if (index < MAX_ASPEED_FAN_TACH_CHANNELS) {
-+			aspeed_set_fan_tach_ch_enable(priv->regmap, index, true);
-+			priv->fan_tach_present[index] = true;
-+			priv->fan_tach_ch_source[index] = pwm_source;
-+			aspeed_set_fan_tach_ch_source(priv->regmap, index, pwm_source);
-+		} else {
-+			pr_err("Invalid Fan Tach input channel %u\n.", index);
-+		}
- 	}
- }
- 
--- 
-2.34.1
+Billy
 
+> > +        tach-ch = /bits/ 8 <0x0>;
+> > +      };
+> > +
+> > +      fan-1 {
+> > +        tach-ch = /bits/ 8 <0x1 0x2>;
+> > +      };
+> > +    };
+> > --
+> > 2.25.1
+> >
