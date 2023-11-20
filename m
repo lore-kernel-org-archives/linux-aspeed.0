@@ -1,44 +1,67 @@
-From: Borislav Petkov <bp@alien8.de>
-Date: Mon, 20 Nov 2023 23:36:51 +0100
-Subject: [PATCH 00/21] EDAC: Convert to platform remove callback
- returning void
-In-Reply-To: <20231004131254.2673842-1-u.kleine-koenig@pengutronix.de>
-References: <20231004131254.2673842-1-u.kleine-koenig@pengutronix.de>
-Message-ID: <20231120223651.GIZVvfg1amJyXdmYKQ@fat_crate.local>
+From: Cosmo Chou <chou.cosmo@gmail.com>
+Date: Mon, 20 Nov 2023 17:17:46 +0800
+Subject: [PATCH] i2c: aspeed: Acknowledge Tx ack late when in SLAVE_READ_PROCESSED
+Message-ID: <20231120091746.2866232-1-chou.cosmo@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 04, 2023 at 03:12:33PM +0200, Uwe Kleine-K?nig wrote:
-> Uwe Kleine-K?nig (21):
->   EDAC/altera: Convert to platform remove callback returning void
->   EDAC/armada_xp: Convert to platform remove callback returning void
->   EDAC/aspeed: Convert to platform remove callback returning void
->   EDAC/bluefield: Convert to platform remove callback returning void
->   EDAC/cell: Convert to platform remove callback returning void
->   EDAC/cpc925: Convert to platform remove callback returning void
->   EDAC/dmc520: Convert to platform remove callback returning void
->   EDAC/highbank_l2: Convert to platform remove callback returning void
->   EDAC/highbank_mc: Convert to platform remove callback returning void
->   EDAC/mpc85xx: Convert to platform remove callback returning void
->   EDAC/npcm: Convert to platform remove callback returning void
->   EDAC/octeon-l2c: Convert to platform remove callback returning void
->   EDAC/octeon-lmc: Convert to platform remove callback returning void
->   EDAC/octeon-pc: Convert to platform remove callback returning void
->   EDAC/octeon-pci: Convert to platform remove callback returning void
->   EDAC/ppc4xx: Convert to platform remove callback returning void
->   EDAC/qcom: Convert to platform remove callback returning void
->   EDAC/synopsys: Convert to platform remove callback returning void
->   EDAC/ti: Convert to platform remove callback returning void
->   EDAC/xgene: Convert to platform remove callback returning void
->   EDAC/zynqmp: Convert to platform remove callback returning void
+commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early
+in interrupt handler") moved most interrupt acknowledgments to the
+start of the interrupt handler to avoid race conditions. However,
+slave Tx ack status shouldn't be cleared before SLAVE_READ_PROCESSED
+is handled.
 
-All applied, thanks.
+Acknowledge Tx ack status after handling SLAVE_READ_PROCESSED to fix
+the problem that the next byte is not sent correctly.
 
+Fixes: 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in interrupt handler")
+Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 28e2a5fc4528..c2d74e4b7e50 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -337,6 +337,12 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 		break;
+ 	}
+ 
++	/* Ack Tx ack */
++	if (irq_handled & ASPEED_I2CD_INTR_TX_ACK) {
++		writel(ASPEED_I2CD_INTR_TX_ACK, bus->base + ASPEED_I2C_INTR_STS_REG);
++		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
++	}
++
+ 	return irq_handled;
+ }
+ #endif /* CONFIG_I2C_SLAVE */
+@@ -602,13 +608,18 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+ {
+ 	struct aspeed_i2c_bus *bus = dev_id;
+-	u32 irq_received, irq_remaining, irq_handled;
++	u32 irq_received, irq_remaining, irq_handled, irq_acked;
+ 
+ 	spin_lock(&bus->lock);
+ 	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+ 	/* Ack all interrupts except for Rx done */
+-	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+-	       bus->base + ASPEED_I2C_INTR_STS_REG);
++	irq_acked = irq_received & ~ASPEED_I2CD_INTR_RX_DONE;
++#if IS_ENABLED(CONFIG_I2C_SLAVE)
++	/* shouldn't ack Slave Tx Ack before it's handled */
++	if (bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED)
++		irq_acked &= ~ASPEED_I2CD_INTR_TX_ACK;
++#endif
++	writel(irq_acked, bus->base + ASPEED_I2C_INTR_STS_REG);
+ 	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+ 	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
+ 	irq_remaining = irq_received;
 -- 
-Regards/Gruss,
-    Boris.
+2.34.1
 
-https://people.kernel.org/tglx/notes-about-netiquette
