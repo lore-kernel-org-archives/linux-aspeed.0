@@ -1,67 +1,39 @@
-From: Cosmo Chou <chou.cosmo@gmail.com>
-Date: Mon, 20 Nov 2023 17:17:46 +0800
-Subject: [PATCH] i2c: aspeed: Acknowledge Tx ack late when in SLAVE_READ_PROCESSED
-Message-ID: <20231120091746.2866232-1-chou.cosmo@gmail.com>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Wed, 22 Nov 2023 11:22:32 +0800
+Subject: [PATCH v2 0/2] Add Facebook Minerva Harma (AST2600) BMC
+Message-ID: <20231122032234.744144-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early
-in interrupt handler") moved most interrupt acknowledgments to the
-start of the interrupt handler to avoid race conditions. However,
-slave Tx ack status shouldn't be cleared before SLAVE_READ_PROCESSED
-is handled.
+Summary:
+Add linux device tree entry related to Minerva Harma
+specific devices connected to BMC SoC.
 
-Acknowledge Tx ack status after handling SLAVE_READ_PROCESSED to fix
-the problem that the next byte is not sent correctly.
+Change log
+v1 -> v2:
+  - Add Power sensors
+  - Modify ehci number
+  - Add Led
+  - Modify SGPIO line-name
+v1:
+  - Create minerva harma dts file.
 
-Fixes: 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in interrupt handler")
-Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
+Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- drivers/i2c/busses/i2c-aspeed.c | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+Peter Yin (2):
+  dt-bindings: arm: aspeed: add Meta Minerva Harma board
+  ARM: dts: aspeed: Minerva Harma: Add Facebook Minerva Harma (AST2600)
+    BMC
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 28e2a5fc4528..c2d74e4b7e50 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -337,6 +337,12 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		break;
- 	}
- 
-+	/* Ack Tx ack */
-+	if (irq_handled & ASPEED_I2CD_INTR_TX_ACK) {
-+		writel(ASPEED_I2CD_INTR_TX_ACK, bus->base + ASPEED_I2C_INTR_STS_REG);
-+		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-+	}
-+
- 	return irq_handled;
- }
- #endif /* CONFIG_I2C_SLAVE */
-@@ -602,13 +608,18 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- {
- 	struct aspeed_i2c_bus *bus = dev_id;
--	u32 irq_received, irq_remaining, irq_handled;
-+	u32 irq_received, irq_remaining, irq_handled, irq_acked;
- 
- 	spin_lock(&bus->lock);
- 	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
- 	/* Ack all interrupts except for Rx done */
--	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
--	       bus->base + ASPEED_I2C_INTR_STS_REG);
-+	irq_acked = irq_received & ~ASPEED_I2CD_INTR_RX_DONE;
-+#if IS_ENABLED(CONFIG_I2C_SLAVE)
-+	/* shouldn't ack Slave Tx Ack before it's handled */
-+	if (bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED)
-+		irq_acked &= ~ASPEED_I2CD_INTR_TX_ACK;
-+#endif
-+	writel(irq_acked, bus->base + ASPEED_I2C_INTR_STS_REG);
- 	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
- 	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
- 	irq_remaining = irq_received;
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../aspeed-bmc-facebook-minerva-harma.dts     | 533 ++++++++++++++++++
+ 3 files changed, 535 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva-harma.dts
+
 -- 
-2.34.1
+2.25.1
 
