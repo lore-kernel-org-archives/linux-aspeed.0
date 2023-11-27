@@ -1,50 +1,79 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 27 Nov 2023 13:26:33 -0600
-Subject: [PATCH 13/55] media: aspeed: Stop abusing of min_buffers_needed
- field
-In-Reply-To: <20231127165454.166373-14-benjamin.gaignard@collabora.com>
-References: <20231127165454.166373-1-benjamin.gaignard@collabora.com>
- <20231127165454.166373-14-benjamin.gaignard@collabora.com>
-Message-ID: <986edf2e-10ac-211b-417c-cb2818a7fbe0@linux.ibm.com>
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Mon, 27 Nov 2023 23:25:22 +0100
+Subject: [PATCH] i2c: aspeed: Acknowledge Tx ack late when in
+ SLAVE_READ_PROCESSED
+In-Reply-To: <20231120091746.2866232-1-chou.cosmo@gmail.com>
+References: <20231120091746.2866232-1-chou.cosmo@gmail.com>
+Message-ID: <20231127222522.wjdd6btbug6shd7y@zenone.zhora.eu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Cosmo,
 
-On 11/27/23 10:54, Benjamin Gaignard wrote:
-> 'min_buffers_needed' is suppose to be used to indicate the number
-> of buffers needed by DMA engine to start streaming.
-> aspeed doesn't use DMA engine and just want to specify
-> the minimum number of buffers to allocate when calling VIDIOC_REQBUFS.
-> That 'min_reqbufs_allocation' field purpose so use it.
-
-
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
->
-> Signed-off-by: Benjamin Gaignard <benjamin.gaignard@collabora.com>
-> CC: Eddie James <eajames@linux.ibm.com> (maintainer:ASPEED VIDEO ENGINE DRIVER)
-> CC: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
-> CC: Andrew Jeffery <andrew@codeconstruct.com.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
-> CC: openbmc at lists.ozlabs.org (moderated list:ASPEED VIDEO ENGINE DRIVER)
-> CC: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
+On Mon, Nov 20, 2023 at 05:17:46PM +0800, Cosmo Chou wrote:
+> commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early
+> in interrupt handler") moved most interrupt acknowledgments to the
+> start of the interrupt handler to avoid race conditions. However,
+> slave Tx ack status shouldn't be cleared before SLAVE_READ_PROCESSED
+> is handled.
+> 
+> Acknowledge Tx ack status after handling SLAVE_READ_PROCESSED to fix
+> the problem that the next byte is not sent correctly.
+> 
+> Fixes: 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in interrupt handler")
+> Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
 > ---
->   drivers/media/platform/aspeed/aspeed-video.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-> index d08aa7f73d4f..c28b10808cda 100644
-> --- a/drivers/media/platform/aspeed/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed/aspeed-video.c
-> @@ -2034,7 +2034,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
->   	vbq->drv_priv = video;
->   	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
->   	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
-> -	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
-> +	vbq->min_reqbufs_allocation = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
->   
->   	rc = vb2_queue_init(vbq);
->   	if (rc) {
+>  drivers/i2c/busses/i2c-aspeed.c | 17 ++++++++++++++---
+>  1 file changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index 28e2a5fc4528..c2d74e4b7e50 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -337,6 +337,12 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>  		break;
+>  	}
+>  
+> +	/* Ack Tx ack */
+> +	if (irq_handled & ASPEED_I2CD_INTR_TX_ACK) {
+> +		writel(ASPEED_I2CD_INTR_TX_ACK, bus->base + ASPEED_I2C_INTR_STS_REG);
+> +		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> +	}
+> +
+>  	return irq_handled;
+>  }
+>  #endif /* CONFIG_I2C_SLAVE */
+> @@ -602,13 +608,18 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>  static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>  {
+>  	struct aspeed_i2c_bus *bus = dev_id;
+> -	u32 irq_received, irq_remaining, irq_handled;
+> +	u32 irq_received, irq_remaining, irq_handled, irq_acked;
+>  
+>  	spin_lock(&bus->lock);
+>  	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+>  	/* Ack all interrupts except for Rx done */
+> -	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+> -	       bus->base + ASPEED_I2C_INTR_STS_REG);
+> +	irq_acked = irq_received & ~ASPEED_I2CD_INTR_RX_DONE;
+> +#if IS_ENABLED(CONFIG_I2C_SLAVE)
+> +	/* shouldn't ack Slave Tx Ack before it's handled */
+> +	if (bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED)
+> +		irq_acked &= ~ASPEED_I2CD_INTR_TX_ACK;
+> +#endif
+> +	writel(irq_acked, bus->base + ASPEED_I2C_INTR_STS_REG);
+
+which branch are you? You don't look like being in the latest.
+Please update your branch.
+
+Andi
+
+>  	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+>  	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
+>  	irq_remaining = irq_received;
+> -- 
+> 2.34.1
+> 
