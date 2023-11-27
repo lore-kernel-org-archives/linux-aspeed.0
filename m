@@ -1,12 +1,11 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 27 Nov 2023 15:08:02 +0700
-Subject: [PATCH] i2c: aspeed: Acknowledge Tx ack late when in
- SLAVE_READ_PROCESSED
-In-Reply-To: <CAOeEDyumVdi-3O3apMUFJ695V3YcZqZQ7wvzYL2YfU88XJ3Dxw@mail.gmail.com>
-References: <20231120091746.2866232-1-chou.cosmo@gmail.com>
- <fdd884426497486c6b17795b4edc66243bdc7350.camel@codeconstruct.com.au>
- <CAOeEDyumVdi-3O3apMUFJ695V3YcZqZQ7wvzYL2YfU88XJ3Dxw@mail.gmail.com>
-Message-ID: <854762fb-1767-4208-a7fc-10580730c1f3@os.amperecomputing.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Mon, 27 Nov 2023 13:26:33 -0600
+Subject: [PATCH 13/55] media: aspeed: Stop abusing of min_buffers_needed
+ field
+In-Reply-To: <20231127165454.166373-14-benjamin.gaignard@collabora.com>
+References: <20231127165454.166373-1-benjamin.gaignard@collabora.com>
+ <20231127165454.166373-14-benjamin.gaignard@collabora.com>
+Message-ID: <986edf2e-10ac-211b-417c-cb2818a7fbe0@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,48 +13,38 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-
-On 27/11/2023 14:04, Cosmo Chou wrote:
-> Andrew Jeffery <andrew@codeconstruct.com.au> wrote on Mon, 2023-11-27
-> at 11:23 AM:
->>
->> On Mon, 2023-11-20 at 17:17 +0800, Cosmo Chou wrote:
->>> commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early
->>> in interrupt handler") moved most interrupt acknowledgments to the
->>> start of the interrupt handler to avoid race conditions. However,
->>> slave Tx ack status shouldn't be cleared before SLAVE_READ_PROCESSED
->>> is handled.
->>>
->>> Acknowledge Tx ack status after handling SLAVE_READ_PROCESSED to fix
->>> the problem that the next byte is not sent correctly.
->>
->> What does this mean in practice? Can you provide more details? It
->> sounds like you've seen concrete problems and it would be nice to
->> capture what it was that occurred.
->>
->> Andrew
-> 
-> For a normal slave transaction, a master attempts to read out N bytes
-> from BMC: (BMC addr: 0x20)
-> [S] [21] [A] [1st_B] [1_ack] [2nd_B] [2_ack] ... [Nth_B] [N] [P]
-> 
-> T1: when [21] [A]: Both INTR_SLAVE_MATCH and INTR_RX_DONE rise,
-> INTR_RX_DONE is not cleared until BMC is ready to send the 1st_B:
-> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-aspeed.c#L294
-> That is, BMC stretches the SCL until ready to send the 1st_B.
-> 
-> T2: when [1_ack]: INTR_TX_ACK rises, but it's cleared at the start of
-> the ISR, so that BMC does not stretch the SCL, the master continues
-> to read 2nd_B before BMC is ready to send the 2nd_B.
-> 
-> To fix this, do not clear INTR_TX_ACK until BMC is ready to send data:
-> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-aspeed.c#L302
-> 
-
-This looks like the same issue, but we chose to ack them late. Same with 
-INTR_RX_DONE.
-
-https://lore.kernel.org/all/20210616031046.2317-3-quan at os.amperecomputing.com/
+On 11/27/23 10:54, Benjamin Gaignard wrote:
+> 'min_buffers_needed' is suppose to be used to indicate the number
+> of buffers needed by DMA engine to start streaming.
+> aspeed doesn't use DMA engine and just want to specify
+> the minimum number of buffers to allocate when calling VIDIOC_REQBUFS.
+> That 'min_reqbufs_allocation' field purpose so use it.
 
 
-- Quan
+Reviewed-by: Eddie James <eajames@linux.ibm.com>
+
+
+>
+> Signed-off-by: Benjamin Gaignard <benjamin.gaignard@collabora.com>
+> CC: Eddie James <eajames@linux.ibm.com> (maintainer:ASPEED VIDEO ENGINE DRIVER)
+> CC: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
+> CC: Andrew Jeffery <andrew@codeconstruct.com.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
+> CC: openbmc at lists.ozlabs.org (moderated list:ASPEED VIDEO ENGINE DRIVER)
+> CC: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
+> ---
+>   drivers/media/platform/aspeed/aspeed-video.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+> index d08aa7f73d4f..c28b10808cda 100644
+> --- a/drivers/media/platform/aspeed/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed/aspeed-video.c
+> @@ -2034,7 +2034,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+>   	vbq->drv_priv = video;
+>   	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
+>   	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+> -	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+> +	vbq->min_reqbufs_allocation = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+>   
+>   	rc = vb2_queue_init(vbq);
+>   	if (rc) {
