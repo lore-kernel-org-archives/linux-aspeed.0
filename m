@@ -1,36 +1,44 @@
-From: Andi Shyti <andi.shyti@linux.intel.com>
-Date: Thu, 23 Nov 2023 00:23:28 +0100
-Subject: [PATCH 03/52] serial: 8250: Convert to platform remove callback
- returning void
-In-Reply-To: <20231110152927.70601-4-u.kleine-koenig@pengutronix.de>
-References: <20231110152927.70601-1-u.kleine-koenig@pengutronix.de>
- <20231110152927.70601-4-u.kleine-koenig@pengutronix.de>
-Message-ID: <ZV6NcAXBUcj5wYx8@ashyti-mobl2.lan>
+From: Benjamin Gaignard <benjamin.gaignard@collabora.com>
+Date: Mon, 27 Nov 2023 17:54:12 +0100
+Subject: [PATCH 13/55] media: aspeed: Stop abusing of min_buffers_needed field
+In-Reply-To: <20231127165454.166373-1-benjamin.gaignard@collabora.com>
+References: <20231127165454.166373-1-benjamin.gaignard@collabora.com>
+Message-ID: <20231127165454.166373-14-benjamin.gaignard@collabora.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Uwe,
+'min_buffers_needed' is suppose to be used to indicate the number
+of buffers needed by DMA engine to start streaming.
+aspeed doesn't use DMA engine and just want to specify
+the minimum number of buffers to allocate when calling VIDIOC_REQBUFS.
+That 'min_reqbufs_allocation' field purpose so use it.
 
-On Fri, Nov 10, 2023 at 04:29:31PM +0100, Uwe Kleine-K?nig wrote:
-> The .remove() callback for a platform driver returns an int which makes
-> many driver authors wrongly assume it's possible to do error handling by
-> returning an error code. However the value returned is ignored (apart
-> from emitting a warning) and this typically results in resource leaks.
-> 
-> To improve here there is a quest to make the remove callback return
-> void. In the first step of this quest all drivers are converted to
-> .remove_new(), which already returns void. Eventually after all drivers
-> are converted, .remove_new() will be renamed to .remove().
-> 
-> Trivially convert this driver from always returning zero in the remove
-> callback to the void returning variant.
-> 
-> Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Benjamin Gaignard <benjamin.gaignard@collabora.com>
+CC: Eddie James <eajames@linux.ibm.com> (maintainer:ASPEED VIDEO ENGINE DRIVER)
+CC: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
+CC: Andrew Jeffery <andrew@codeconstruct.com.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
+CC: openbmc at lists.ozlabs.org (moderated list:ASPEED VIDEO ENGINE DRIVER)
+CC: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
+---
+ drivers/media/platform/aspeed/aspeed-video.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
+diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+index d08aa7f73d4f..c28b10808cda 100644
+--- a/drivers/media/platform/aspeed/aspeed-video.c
++++ b/drivers/media/platform/aspeed/aspeed-video.c
+@@ -2034,7 +2034,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+ 	vbq->drv_priv = video;
+ 	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
+ 	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+-	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
++	vbq->min_reqbufs_allocation = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+ 
+ 	rc = vb2_queue_init(vbq);
+ 	if (rc) {
+-- 
+2.39.2
 
-Thanks,
-Andi
