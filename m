@@ -1,158 +1,48 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 27 Nov 2023 05:45:48 +0000
-Subject: [PATCH RESEND v10 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM
- TACH Control
-In-Reply-To: <CAL_JsqL=2-dD5yFWWDDHu1svcCF-EMZqcYz92Pr7L5ntppNQVA@mail.gmail.com>
-References: <20231107105025.1480561-1-billy_tsai@aspeedtech.com>
- <20231107105025.1480561-3-billy_tsai@aspeedtech.com>
- <20231108182135.GA2698015-robh@kernel.org>
- <SG2PR06MB33655734700697E8F6FD0D1B8BB2A@SG2PR06MB3365.apcprd06.prod.outlook.com>
- <CAL_JsqL=2-dD5yFWWDDHu1svcCF-EMZqcYz92Pr7L5ntppNQVA@mail.gmail.com>
-Message-ID: <SG2PR06MB3365CAEE9CE3F691DA1CA1E28BB9A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+From: Cosmo Chou <chou.cosmo@gmail.com>
+Date: Mon, 27 Nov 2023 15:04:51 +0800
+Subject: [PATCH] i2c: aspeed: Acknowledge Tx ack late when in SLAVE_READ_PROCESSED
+In-Reply-To: <fdd884426497486c6b17795b4edc66243bdc7350.camel@codeconstruct.com.au>
+References: <20231120091746.2866232-1-chou.cosmo@gmail.com> <fdd884426497486c6b17795b4edc66243bdc7350.camel@codeconstruct.com.au>
+Message-ID: <CAOeEDyumVdi-3O3apMUFJ695V3YcZqZQ7wvzYL2YfU88XJ3Dxw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > > > Document the compatible for aspeed,ast2600-pwm-tach device, which can
-> > > > support up to 16 PWM outputs and 16 fan tach input.
-> > > >
-> > > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> > > > ---
-> > > >  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 69 +++++++++++++++++++
-> > > >  1 file changed, 69 insertions(+)
-> > > >  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> > > > new file mode 100644
-> > > > index 000000000000..c615fb10705c
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> > > > @@ -0,0 +1,69 @@
-> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > > +# Copyright (C) 2023 Aspeed, Inc.
-> > > > +%YAML 1.2
-> > > > +---
-> > > > +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-> > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > > > +
-> > > > +title: ASPEED G6 PWM and Fan Tach controller
-> > > > +
-> > > > +maintainers:
-> > > > +  - Billy Tsai <billy_tsai@aspeedtech.com>
-> > > > +
-> > > > +description: |
-> > > > +  The ASPEED PWM controller can support up to 16 PWM outputs.
-> > > > +  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
-> > > > +  They are independent hardware blocks, which are different from the
-> > > > +  previous version of the ASPEED chip.
-> > > > +
-> > > > +properties:
-> > > > +  compatible:
-> > > > +    enum:
-> > > > +      - aspeed,ast2600-pwm-tach
-> > > > +
-> > > > +  reg:
-> > > > +    maxItems: 1
-> > > > +
-> > > > +  clocks:
-> > > > +    maxItems: 1
-> > > > +
-> > > > +  resets:
-> > > > +    maxItems: 1
-> > > > +
-> > > > +  "#pwm-cells":
-> > > > +    const: 3
-> > > > +
-> > > > +patternProperties:
-> > > > +  "^fan-[0-9]+$":
-> > > > +    $ref: fan-common.yaml#
-> > > > +    unevaluatedProperties: false
-> > > > +    required:
-> > > > +      - tach-ch
-> > > > +
-> > > > +required:
-> > > > +  - reg
-> > > > +  - clocks
-> > > > +  - resets
-> > > > +  - "#pwm-cells"
-> > > > +  - compatible
-> > > > +
-> > > > +additionalProperties: false
-> > > > +
-> > > > +examples:
-> > > > +  - |
-> > > > +    #include <dt-bindings/clock/aspeed-clock.h>
-> > > > +    pwm_tach: pwm-tach-controller at 1e610000 {
-> > > > +      compatible = "aspeed,ast2600-pwm-tach";
-> > > > +      reg = <0x1e610000 0x100>;
-> > > > +      clocks = <&syscon ASPEED_CLK_AHB>;
-> > > > +      resets = <&syscon ASPEED_RESET_PWM>;
-> > > > +      #pwm-cells = <3>;
-> > > > +
-> > > > +      fan-0 {
+Andrew Jeffery <andrew@codeconstruct.com.au> wrote on Mon, 2023-11-27
+at 11:23 AM:
+>
+> On Mon, 2023-11-20 at 17:17 +0800, Cosmo Chou wrote:
+> > commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early
+> > in interrupt handler") moved most interrupt acknowledgments to the
+> > start of the interrupt handler to avoid race conditions. However,
+> > slave Tx ack status shouldn't be cleared before SLAVE_READ_PROCESSED
+> > is handled.
 > >
-> > > I assume there's a PWM connection here? How do you know which PWM? You
-> > > said the tach channel is independent, so it is not that.
-> >
-> > > It should not be 0 from 'fan-0' because that's just a meaningless index.
-> >
-> > > You either need 'pwms' here or you can use 'reg' and the reg value is
-> > > the PWM channel.
-> >
-> > Hi Rob, this binding is used to export the PWM provider and the Fan monitor (i.e., Tach).
-> > If the user wants to add the PWM connection for the fan, it can be done as follows:
-> >
-> > fan0: pwm-fan0 {
-> >         compatible = "pwm-fan";
-> >         pwms = <&pwm_tach 0 40000 0>;
-> >         cooling-min-state = <0>;
-> >         cooling-max-state = <3>;
-> >         #cooling-cells = <2>;
-> >         cooling-levels = <0 15 128 255>;
-> > };
-> >
-> > This will reuse the existing PWM fan driver (e.g., pwm-fan.c).
+> > Acknowledge Tx ack status after handling SLAVE_READ_PROCESSED to fix
+> > the problem that the next byte is not sent correctly.
+>
+> What does this mean in practice? Can you provide more details? It
+> sounds like you've seen concrete problems and it would be nice to
+> capture what it was that occurred.
+>
+> Andrew
 
-> I'm confused now. So what are the child nodes you have? You are
-> defining the fan in 2 places? The "pwm-fan" driver supports a tach via
-> an interrupt, so how would this work in your case?
+For a normal slave transaction, a master attempts to read out N bytes
+from BMC: (BMC addr: 0x20)
+[S] [21] [A] [1st_B] [1_ack] [2nd_B] [2_ack] ... [Nth_B] [N] [P]
 
-Hi Rob,
+T1: when [21] [A]: Both INTR_SLAVE_MATCH and INTR_RX_DONE rise,
+INTR_RX_DONE is not cleared until BMC is ready to send the 1st_B:
+https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-aspeed.c#L294
+That is, BMC stretches the SCL until ready to send the 1st_B.
 
-The tach interrupt for the pwm-fan is option. In our case, the dts just reuse the pwm control function
-of the pwm-fan, and the part of the tach monitor will be created by our fan child nodes.
-So the dts will like followings:
+T2: when [1_ack]: INTR_TX_ACK rises, but it's cleared at the start of
+the ISR, so that BMC does not stretch the SCL, the master continues
+to read 2nd_B before BMC is ready to send the 2nd_B.
 
-// Use to declare the tach monitor for fan.
-&pwm_tach {
-        fan-0 {
-		tach-ch = /bits/ 8 <0x0>;
-	};
-	fan-1 {
-		tach-ch = /bits/ 8 <0x1>;
-	};
-        ...
-}
+To fix this, do not clear INTR_TX_ACK until BMC is ready to send data:
+https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-aspeed.c#L302
 
-// Reuse the pwm-fan.c to control the behavior of the PWM for fan.
-fan0: pwm-fan0 {
-        compatible = "pwm-fan";
-        pwms = <&pwm_tach 0 40000 0>;   /* Target freq:25 kHz */
-        cooling-min-state = <0>;
-        cooling-max-state = <3>;
-        #cooling-cells = <2>;
-        cooling-levels = <0 15 128 255>;
-};
-
-fan1: pwm-fan1 {
-        compatible = "pwm-fan";
-        pwms = <&pwm_tach 1 40000 0>;   /* Target freq:25 kHz */
-        cooling-min-state = <0>;
-        cooling-max-state = <3>;
-        #cooling-cells = <2>;
-        cooling-levels = <0 15 128 255>;
-};
-
-Thanks
+Cosmo
