@@ -1,43 +1,62 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Tue, 28 Nov 2023 14:52:34 +0700
-Subject: [PATCH v2 RESEND 0/2] i2c: aspeed: Late ack Tx done irqs and fix unhandled Tx done with NAK
-Message-ID: <20231128075236.2724038-1-quan@os.amperecomputing.com>
+Date: Tue, 28 Nov 2023 14:52:35 +0700
+Subject: [PATCH v2 RESEND 1/2] i2c: aspeed: Fix unhandled Tx done with NAK
+In-Reply-To: <20231128075236.2724038-1-quan@os.amperecomputing.com>
+References: <20231128075236.2724038-1-quan@os.amperecomputing.com>
+Message-ID: <20231128075236.2724038-2-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rebase on the v6.7-rc3 and resend the series as per discussion at
-https://lore.kernel.org/all/d0773df55a6fe8a5c9b1a3d7c8dd2e1343643272.camel at codeconstruct.com.au/
+Under normal conditions, after the last byte is sent by the Slave, the
+TX_NAK interrupt is raised.  However, it is also observed that
+sometimes the Master issues the next transaction too quickly while the
+Slave IRQ handler is not yet invoked and the TX_NAK interrupt for the
+last byte of the previous READ_PROCESSED state has not been ack?ed.
+This TX_NAK interrupt is then raised together with SLAVE_MATCH interrupt
+and RX_DONE interrupt of the next coming transaction from Master. The
+Slave IRQ handler currently handles the SLAVE_MATCH and RX_DONE, but
+ignores the TX_NAK, causing complaints such as
+"aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
+0x00000086, but was 0x00000084"
 
-The prior discussion could be found at
-https://lore.kernel.org/all/20210616031046.2317-1-quan at os.amperecomputing.com/
+This commit adds code to handle this case by emitting a SLAVE_STOP event
+for the TX_NAK before processing the RX_DONE for the coming transaction
+from the Master.
 
-This series consists of two patches to fix the below issues observed
-when testing with slave mode:
-  + Unhandled Tx done with NAK
-  + Early ack'ed of Tx done (ACK and NAK) causing "Unexpected Ack on
-  read request".
-
+Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
+Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+---
 v2:
-  + Split these patches to separate series [Joel]
-  + Added the Fixes lines [Joel]
-  + Fixed multiline comment [Joel]
-  + Refactor irq clearing code [Joel, Guenter]
-  + Revised commit message [Joel, Quan]
+  + Split to separate series [Joel]
+  + Added the Fixes line [Joel]
+  + Revised commit message [Quan]
 
 v1:
-  + These patches are first introduced from this disscusstion
+  + First introduced in
 https://lore.kernel.org/all/20210519074934.20712-1-quan at os.amperecomputing.com/
+---
+ drivers/i2c/busses/i2c-aspeed.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Quan Nguyen (2):
-  i2c: aspeed: Fix unhandled Tx done with NAK
-  i2c: aspeed: Acknowledge Tx done with and without ACK irq late
-
- drivers/i2c/busses/i2c-aspeed.c | 22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
-
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 28e2a5fc4528..79476b46285b 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -253,6 +253,11 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 
+ 	/* Slave was requested, restart state machine. */
+ 	if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH) {
++		if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
++		    bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
++			irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
++			i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
++		}
+ 		irq_handled |= ASPEED_I2CD_INTR_SLAVE_MATCH;
+ 		bus->slave_state = ASPEED_I2C_SLAVE_START;
+ 	}
 -- 
 2.35.1
 
