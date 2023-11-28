@@ -1,111 +1,71 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 28 Nov 2023 08:38:56 +0100
-Subject: [PATCH 2/2] ARM: dts: aspeed: asrock: Add ASRock X570D4U BMC
-In-Reply-To: <20231128013136.2699317-3-renze@rnplus.nl>
-References: <20231128013136.2699317-1-renze@rnplus.nl>
- <20231128013136.2699317-3-renze@rnplus.nl>
-Message-ID: <c9f8c072-de00-4f4a-b675-b42a5cbd4922@linaro.org>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Tue, 28 Nov 2023 14:49:57 +0700
+Subject: [PATCH] i2c: aspeed: Acknowledge Tx ack late when in
+ SLAVE_READ_PROCESSED
+In-Reply-To: <d0773df55a6fe8a5c9b1a3d7c8dd2e1343643272.camel@codeconstruct.com.au>
+References: <20231120091746.2866232-1-chou.cosmo@gmail.com>
+ <fdd884426497486c6b17795b4edc66243bdc7350.camel@codeconstruct.com.au>
+ <CAOeEDyumVdi-3O3apMUFJ695V3YcZqZQ7wvzYL2YfU88XJ3Dxw@mail.gmail.com>
+ <854762fb-1767-4208-a7fc-10580730c1f3@os.amperecomputing.com>
+ <d0773df55a6fe8a5c9b1a3d7c8dd2e1343643272.camel@codeconstruct.com.au>
+Message-ID: <878e8af6-25c7-428a-8fee-f924744382c1@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 28/11/2023 02:30, Renze Nicolai wrote:
-> This is a relatively low-cost AST2500-based Amd Ryzen 5000 Series
-> micro-ATX board that we hope can provide a decent platform for OpenBMC
-> development.
+
+
+On 28/11/2023 06:00, Andrew Jeffery wrote:
+> On Mon, 2023-11-27 at 15:08 +0700, Quan Nguyen wrote:
+>>
+>> On 27/11/2023 14:04, Cosmo Chou wrote:
+>>> Andrew Jeffery <andrew@codeconstruct.com.au> wrote on Mon, 2023-11-27
+>>> at 11:23 AM:
+>>>>
+>>>> On Mon, 2023-11-20 at 17:17 +0800, Cosmo Chou wrote:
+>>>>> commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early
+>>>>> in interrupt handler") moved most interrupt acknowledgments to the
+>>>>> start of the interrupt handler to avoid race conditions. However,
+>>>>> slave Tx ack status shouldn't be cleared before SLAVE_READ_PROCESSED
+>>>>> is handled.
+>>>>>
+>>>>> Acknowledge Tx ack status after handling SLAVE_READ_PROCESSED to fix
+>>>>> the problem that the next byte is not sent correctly.
+>>>>
+>>>> What does this mean in practice? Can you provide more details? It
+>>>> sounds like you've seen concrete problems and it would be nice to
+>>>> capture what it was that occurred.
+>>>>
+>>>> Andrew
+>>>
+>>> For a normal slave transaction, a master attempts to read out N bytes
+>>> from BMC: (BMC addr: 0x20)
+>>> [S] [21] [A] [1st_B] [1_ack] [2nd_B] [2_ack] ... [Nth_B] [N] [P]
+>>>
+>>> T1: when [21] [A]: Both INTR_SLAVE_MATCH and INTR_RX_DONE rise,
+>>> INTR_RX_DONE is not cleared until BMC is ready to send the 1st_B:
+>>> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-aspeed.c#L294
+>>> That is, BMC stretches the SCL until ready to send the 1st_B.
+>>>
+>>> T2: when [1_ack]: INTR_TX_ACK rises, but it's cleared at the start of
+>>> the ISR, so that BMC does not stretch the SCL, the master continues
+>>> to read 2nd_B before BMC is ready to send the 2nd_B.
+>>>
+>>> To fix this, do not clear INTR_TX_ACK until BMC is ready to send data:
+>>> https://github.com/torvalds/linux/blob/master/drivers/i2c/busses/i2c-aspeed.c#L302
+>>>
+>>
+>> This looks like the same issue, but we chose to ack them late. Same with
+>> INTR_RX_DONE.
+>>
+>> https://lore.kernel.org/all/20210616031046.2317-3-quan at os.amperecomputing.com/
 > 
-> This initial device-tree provides the necessary configuration for
-> basic BMC functionality such as serial console, KVM support
-> and POST code snooping.
+>  From a brief inspection I prefer the descriptions in your series Quan.
+> Looks like we dropped the ball a bit there though on the review - can
+> you resend your series based on 6.7-rc1 or so and Cc Cosmo?
 > 
-> Signed-off-by: Renze Nicolai <renze@rnplus.nl>
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../dts/aspeed/aspeed-bmc-asrock-x570d4u.dts  | 344 ++++++++++++++++++
->  2 files changed, 345 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index d3ac20e316d0..2205bd079d0c 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-arm-stardragon4800-rep2.dtb \
->  	aspeed-bmc-asrock-e3c246d4i.dtb \
->  	aspeed-bmc-asrock-romed8hm3.dtb \
-> +	aspeed-bmc-asrock-x570d4u.dtb \
->  	aspeed-bmc-bytedance-g220a.dtb \
->  	aspeed-bmc-delta-ahe50dc.dtb \
->  	aspeed-bmc-facebook-bletchley.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts
-> new file mode 100644
-> index 000000000000..9fb1d76abacb
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts
-> @@ -0,0 +1,344 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/dts-v1/;
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +
-> +/ {
-> +	model = "Asrock Rack X570D4U BMC";
-> +	compatible = "asrock,x570d4u-bmc";
-> +
-> +	chosen {
-> +			stdout-path = &uart5;
-> +			bootargs = "console=ttyS4,115200 earlycon";
-
-Drop console. stdout-path defines the console and earlycon is for debugging.
-
-> +	};
-> +
-> +	memory at 80000000 {
-> +			reg = <0x80000000 0x20000000>;
-
-You have messed up indentation everywhere.
-
-> +	};
-> +
-> +	reserved-memory {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges;
-> +
-> +			pci_memory: region at 9A000000 {
-> +				no-map;
-> +				reg = <0x9A000000 0x00010000>; /* 64K */
-> +			};
-> +
-> +			video_engine_memory: jpegbuffer {
-> +				size = <0x02800000>;	/* 40M */
-> +				alignment = <0x01000000>;
-> +				compatible = "shared-dma-pool";
-> +				reusable;
-> +			};
-> +
-> +			gfx_memory: framebuffer {
-> +				size = <0x01000000>;
-> +				alignment = <0x01000000>;
-> +				compatible = "shared-dma-pool";
-> +				reusable;
-> +			};
-> +	};
-> +
-> +	leds {
-> +		compatible = "gpio-leds";
-> +
-> +		heartbeat {
-
-It does not look like you tested the DTS against bindings. Please run
-`make dtbs_check W=1` (see
-Documentation/devicetree/bindings/writing-schema.rst or
-https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
-for instructions).
-
-
-Best regards,
-Krzysztof
-
+Yes, sure, I'll rebase on v6.7 and resend the series shortly.
+Thanks,
+- Quan
