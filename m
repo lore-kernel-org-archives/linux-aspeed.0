@@ -1,72 +1,34 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Wed, 29 Nov 2023 01:35:42 +0100
-Subject: [PATCH v2 RESEND 1/2] i2c: aspeed: Fix unhandled Tx done with NAK
-In-Reply-To: <20231128075236.2724038-2-quan@os.amperecomputing.com>
-References: <20231128075236.2724038-1-quan@os.amperecomputing.com>
- <20231128075236.2724038-2-quan@os.amperecomputing.com>
-Message-ID: <20231129003542.jfhhotebweb3uwyb@zenone.zhora.eu>
+From: Renze Nicolai <renze@rnplus.nl>
+Date: Wed, 29 Nov 2023 00:23:16 +0100
+Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: add Asrock X570D4U board
+In-Reply-To: <20231128232456.2932350-1-renze@rnplus.nl>
+References: <20231128232456.2932350-1-renze@rnplus.nl>
+Message-ID: <20231128232456.2932350-2-renze@rnplus.nl>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Quan,
+Document Asrock X570D4U compatible.
 
-On Tue, Nov 28, 2023 at 02:52:35PM +0700, Quan Nguyen wrote:
-> Under normal conditions, after the last byte is sent by the Slave, the
-> TX_NAK interrupt is raised.  However, it is also observed that
-> sometimes the Master issues the next transaction too quickly while the
-> Slave IRQ handler is not yet invoked and the TX_NAK interrupt for the
-> last byte of the previous READ_PROCESSED state has not been ack?ed.
-> This TX_NAK interrupt is then raised together with SLAVE_MATCH interrupt
-> and RX_DONE interrupt of the next coming transaction from Master. The
-> Slave IRQ handler currently handles the SLAVE_MATCH and RX_DONE, but
-> ignores the TX_NAK, causing complaints such as
-> "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
-> 0x00000086, but was 0x00000084"
-> 
-> This commit adds code to handle this case by emitting a SLAVE_STOP event
-> for the TX_NAK before processing the RX_DONE for the coming transaction
-> from the Master.
-> 
-> Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
-> v2:
->   + Split to separate series [Joel]
->   + Added the Fixes line [Joel]
->   + Revised commit message [Quan]
-> 
-> v1:
->   + First introduced in
-> https://lore.kernel.org/all/20210519074934.20712-1-quan at os.amperecomputing.com/
-> ---
->  drivers/i2c/busses/i2c-aspeed.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> index 28e2a5fc4528..79476b46285b 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -253,6 +253,11 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
->  
->  	/* Slave was requested, restart state machine. */
->  	if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH) {
-> +		if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
-> +		    bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
-> +			irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
-> +			i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
-> +		}
+Signed-off-by: Renze Nicolai <renze@rnplus.nl>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-this is a duplicate of a later "if (...)" satement. What is the
-need for having them both?
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 749ee54a3ff8..81ed678905fa 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -36,6 +36,7 @@ properties:
+               - aspeed,ast2500-evb
+               - asrock,e3c246d4i-bmc
+               - asrock,romed8hm3-bmc
++              - asrock,x570d4u-bmc
+               - bytedance,g220a-bmc
+               - facebook,cmm-bmc
+               - facebook,minipack-bmc
+-- 
+2.43.0
 
-Andi
-
->  		irq_handled |= ASPEED_I2CD_INTR_SLAVE_MATCH;
->  		bus->slave_state = ASPEED_I2C_SLAVE_START;
->  	}
-> -- 
-> 2.35.1
-> 
