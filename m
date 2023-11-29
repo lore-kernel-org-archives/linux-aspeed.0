@@ -1,11 +1,11 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Wed, 29 Nov 2023 16:03:11 +0700
+Date: Wed, 29 Nov 2023 16:03:53 +0700
 Subject: [PATCH v2 RESEND 1/2] i2c: aspeed: Fix unhandled Tx done with NAK
-In-Reply-To: <20231129003542.jfhhotebweb3uwyb@zenone.zhora.eu>
+In-Reply-To: <4a9fe86f0349106adaa4e0c04c5839bab631f26c.camel@codeconstruct.com.au>
 References: <20231128075236.2724038-1-quan@os.amperecomputing.com>
  <20231128075236.2724038-2-quan@os.amperecomputing.com>
- <20231129003542.jfhhotebweb3uwyb@zenone.zhora.eu>
-Message-ID: <3f37c359-1c71-421f-b7d9-054696735adc@os.amperecomputing.com>
+ <4a9fe86f0349106adaa4e0c04c5839bab631f26c.camel@codeconstruct.com.au>
+Message-ID: <99dff4f2-cfe1-4a3d-a10b-313b9e7a29b3@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,10 +14,8 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 29/11/2023 07:35, Andi Shyti wrote:
-> Hi Quan,
-> 
-> On Tue, Nov 28, 2023 at 02:52:35PM +0700, Quan Nguyen wrote:
+On 29/11/2023 07:19, Andrew Jeffery wrote:
+> On Tue, 2023-11-28 at 14:52 +0700, Quan Nguyen wrote:
 >> Under normal conditions, after the last byte is sent by the Slave, the
 >> TX_NAK interrupt is raised.  However, it is also observed that
 >> sometimes the Master issues the next transaction too quickly while the
@@ -63,39 +61,122 @@ On 29/11/2023 07:35, Andi Shyti wrote:
 >> +			i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
 >> +		}
 > 
-> this is a duplicate of a later "if (...)" satement. What is the
-> need for having them both?
+> So we're already (partially) processing this a bit later on line 287:
 > 
-Thanks Andi for the review.
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/i2c/busses/i2c-aspeed.c?h=v6.7-rc3#n287
+> 
 
-I assumed the if statement you mentioned is here in [1]. If so, then 
-that is not duplicate.
+Thanks Andrew for the review.
 
-[1] 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/i2c/busses/i2c-aspeed.c?h=v6.7-rc3#n287
+I think it's worth noting that the byte mode is used in this case.
 
+About the code you mentioned, it is for the general process of single 
+Slave transmission with NAK which should be interpret as I2C_SLAVE_STOP 
+event.
 
-The if statement is to process the case when Slave sending data to 
-Master but being NAK, the I2C_SLAVE_STOP event will emit later in 
-switch-case statement. But it is only for the case INTR_TX_NAK without 
-INTR_SLAVE_MATCH.
+In this case, there is a mix of Slave events:
 
-The new code is for the case of INTR_TX_NAK with INTR_SLAVE_MATCH. What 
-it does is to detect if there is a mix of INTR_TX_NAK of previous i2c 
-transaction and the start of new i2c transaction, indicate by 
-INTR_SLAVE_MATCH which is only raised when Slave found its address 
-matched on the first byte it received. If so, the new code will try to 
-emit the I2C_SLAVE_STOP first to complete the previous transaction and 
-process the rest as a new request.
+   + I2C_SLAVE_STOP (due to INTR_TX_NAK, BIT(1) of previous transaction)
+   + Followed by I2C_SLAVE_[READ|WRITE]_REQUESTED (due to 
+INTR_SLAVE_MATCH and INTR_RX_DONE, BIT(7) and BIT(2), of next transaction)
 
-So if this was the case (with INTR_SLAVE_MATCH), the INTR_RX_DONE should 
-always raise with INTR_SLAVE_MATCH because Slave did receive the data 
-which matched with its Slave address. And this will be translated into 
-either I2C_SLAVE_[READ|WRITE]_REQUESTED and that make the if statement 
-you mentioned [1] evaluate to false and skip.
+That is the reason we need to emit the I2C_SLAVE_STOP first for Slave 
+backend to process.
 
-So, in short, the new code is trying to handle the case of INTR_TX_NAK 
-with INTR_SLAVE_MATCH first before let the rest process as normal.
+>  From the description of the problem in the commit message it sounds
+> like the ordering of the interrupt processing is incorrect. 
 
-Thanks,
-- Quan
+Yes, this is correct as per my explanation above.
+
+Prior to
+> this patch we have the following abstract ordering of interrupt
+> processing:
+> 
+> 1. Process ASPEED_I2CD_INTR_SLAVE_MATCH
+> 2. Process ASPEED_I2CD_INTR_TX_NAK when in ASPEED_I2C_SLAVE_READ_PROCESSED
+> 
+
+ From my test, the flow is as below:
+
+   1. Process ASPEED_I2CD_INTR_SLAVE_MATCH, slave_state is set to 
+ASPEED_I2C_SLAVE_START
+   2. As there is INTR_RX_DONE and slave_state is 
+ASPEED_I2C_SLAVE_START, depends on the data received, the slave_state 
+moves to either ASPEED_I2C_SLAVE_[READ|WRITE]_REQUESTED.
+   3. When reach to the if statement to process INTR_TX_NAK, slave_state 
+is already moves to either ASPEED_I2C_SLAVE_[READ|WRITE]_REQUESTED, not 
+in ASPEED_I2C_SLAVE_READ_PROCESSED anymore. This eventually evaluate as 
+false and the if statement is bypass. IOW, this INTR_TX_NAK is not process.
+
+> With this patch we have:
+> 
+> 1. If ASPEED_I2CD_INTR_SLAVE_MATCH then process ASPEED_I2CD_INTR_TX_NAK when in ASPEED_I2C_SLAVE_READ_PROCESSED
+> 2. Process ASPEED_I2CD_INTR_SLAVE_MATCH
+> 3. Process ASPEED_I2CD_INTR_TX_NAK when in ASPEED_I2C_SLAVE_READ_PROCESSED
+> 
+
+With this patch:
+
+   0. The I2C_SLAVE_STOP is emitted to backend Slave driver first to 
+complete the previous transaction. And let the rest process as before 
+this patch.
+
+   1. Process ASPEED_I2CD_INTR_SLAVE_MATCH, slave_state is set to 
+ASPEED_I2C_SLAVE_START
+   2. As there is INTR_RX_DONE and slave_state is 
+ASPEED_I2C_SLAVE_START, depends on the data received, the slave_state 
+moves to either ASPEED_I2C_SLAVE_[READ|WRITE]_REQUESTED.
+   3. When reach to the if statement to process INTR_TX_NAK, slave_state 
+is already moves to either ASPEED_I2C_SLAVE_[READ|WRITE]_REQUESTED, not 
+in ASPEED_I2C_SLAVE_READ_PROCESSED anymore. This eventually evaluated as 
+false and the if statement is bypass. IOW, this INTR_TX_NAK is not process.
+
+> That feels a bit complex and redundant. What I think we can have is:
+> 
+> 1. Process ASPEED_I2CD_INTR_TX_NAK when in ASPEED_I2C_SLAVE_READ_PROCESSED
+> 1. Process ASPEED_I2CD_INTR_SLAVE_MATCH
+> 
+> Moving back from the abstract to the concrete, implementing what I
+> believe we need would look something like this patch:
+> 
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index 28e2a5fc4528..98dd0f35c9d3 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -251,6 +251,14 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   
+>          command = readl(bus->base + ASPEED_I2C_CMD_REG);
+>   
+> +       /* Complete any active read */
+> +       if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
+> +           bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
+> +               irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
+> +               i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
+> +               bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+> +       }
+> +
+
+It is not confirmed through test yet but I'm afraid the switch case part 
+will emit another I2C_SLAVE_STOP event in case there is no mix of 
+interrupts.
+
+>          /* Slave was requested, restart state machine. */
+>          if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH) {
+>                  irq_handled |= ASPEED_I2CD_INTR_SLAVE_MATCH;
+> @@ -284,11 +292,6 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>                  irq_handled |= ASPEED_I2CD_INTR_NORMAL_STOP;
+>                  bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+>          }
+> -       if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
+> -           bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
+> -               irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
+> -               bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+> -       }
+>   
+>          switch (bus->slave_state) {
+>          case ASPEED_I2C_SLAVE_READ_REQUESTED:
+> 
+> Thoughts? I haven't tested it, it's just something to throw darts at.
+> 
+> Andrew
+> 
