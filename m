@@ -1,116 +1,117 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Wed, 29 Nov 2023 22:25:52 +0100
-Subject: [PATCH v2 RESEND 1/2] i2c: aspeed: Fix unhandled Tx done with NAK
-In-Reply-To: <3f37c359-1c71-421f-b7d9-054696735adc@os.amperecomputing.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Thu, 30 Nov 2023 09:14:37 +1030
+Subject: [PATCH v2 RESEND 2/2] i2c: aspeed: Acknowledge Tx done with and
+ without ACK irq late
+In-Reply-To: <66dcea57-db0b-4686-9eaf-746db637f31c@os.amperecomputing.com>
 References: <20231128075236.2724038-1-quan@os.amperecomputing.com>
- <20231128075236.2724038-2-quan@os.amperecomputing.com>
- <20231129003542.jfhhotebweb3uwyb@zenone.zhora.eu>
- <3f37c359-1c71-421f-b7d9-054696735adc@os.amperecomputing.com>
-Message-ID: <20231129212552.3uy7oqm5fz5h2m6b@zenone.zhora.eu>
+	 <20231128075236.2724038-3-quan@os.amperecomputing.com>
+	 <2186c3b9ac92f03c68e8a2dd9fda871f80a6d664.camel@codeconstruct.com.au>
+	 <66dcea57-db0b-4686-9eaf-746db637f31c@os.amperecomputing.com>
+Message-ID: <cb6043dfa13a269eb287a38521dc1b7722a237cc.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Quan,
-
-> On 29/11/2023 07:35, Andi Shyti wrote:
-> > Hi Quan,
-> > 
-> > On Tue, Nov 28, 2023 at 02:52:35PM +0700, Quan Nguyen wrote:
-> > > Under normal conditions, after the last byte is sent by the Slave, the
-> > > TX_NAK interrupt is raised.  However, it is also observed that
-> > > sometimes the Master issues the next transaction too quickly while the
-> > > Slave IRQ handler is not yet invoked and the TX_NAK interrupt for the
-> > > last byte of the previous READ_PROCESSED state has not been ack?ed.
-> > > This TX_NAK interrupt is then raised together with SLAVE_MATCH interrupt
-> > > and RX_DONE interrupt of the next coming transaction from Master. The
-> > > Slave IRQ handler currently handles the SLAVE_MATCH and RX_DONE, but
-> > > ignores the TX_NAK, causing complaints such as
-> > > "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
-> > > 0x00000086, but was 0x00000084"
-> > > 
-> > > This commit adds code to handle this case by emitting a SLAVE_STOP event
-> > > for the TX_NAK before processing the RX_DONE for the coming transaction
-> > > from the Master.
-> > > 
-> > > Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
-> > > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> > > ---
-> > > v2:
-> > >    + Split to separate series [Joel]
-> > >    + Added the Fixes line [Joel]
-> > >    + Revised commit message [Quan]
-> > > 
-> > > v1:
-> > >    + First introduced in
-> > > https://lore.kernel.org/all/20210519074934.20712-1-quan at os.amperecomputing.com/
-> > > ---
-> > >   drivers/i2c/busses/i2c-aspeed.c | 5 +++++
-> > >   1 file changed, 5 insertions(+)
-> > > 
+On Wed, 2023-11-29 at 16:02 +0700, Quan Nguyen wrote:
+> 
+> On 29/11/2023 07:33, Andrew Jeffery wrote:
+> > On Tue, 2023-11-28 at 14:52 +0700, Quan Nguyen wrote:
 > > > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> > > index 28e2a5fc4528..79476b46285b 100644
+> > > index 79476b46285b..3231f430e335 100644
 > > > --- a/drivers/i2c/busses/i2c-aspeed.c
 > > > +++ b/drivers/i2c/busses/i2c-aspeed.c
-> > > @@ -253,6 +253,11 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
-> > >   	/* Slave was requested, restart state machine. */
-> > >   	if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH) {
-> > > +		if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
-> > > +		    bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
-> > > +			irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
-> > > +			i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
-> > > +		}
+> > > @@ -611,8 +611,9 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+> > >   
+> > >   	spin_lock(&bus->lock);
+> > >   	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> > > -	/* Ack all interrupts except for Rx done */
+> > > -	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+> > > +	/* Ack all interrupts except for Rx done and Tx done with/without ACK */
 > > 
-> > this is a duplicate of a later "if (...)" satement. What is the
-> > need for having them both?
+> > I'm not a huge fan of this comment, it just says what the code does. It
+> > would be much better to explain *why* the code does what it does.
 > > 
-> Thanks Andi for the review.
+> > I realise describing what the code does was already the gist of the
+> > comment and that you're just updating it to match the change to the
+> > code, but that's my entire problem with it. We'd be better off deleting
+> > it if we're not going to explain why the masking is necessary.
+> > 
 > 
-> I assumed the if statement you mentioned is here in [1]. If so, then that is
-> not duplicate.
+> Thanks for the comment Andrew.
 > 
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/i2c/busses/i2c-aspeed.c?h=v6.7-rc3#n287
+> I would prefer to delete it.
 > 
+> But if to put some comment, how about:
 > 
-> The if statement is to process the case when Slave sending data to Master
-> but being NAK, the I2C_SLAVE_STOP event will emit later in switch-case
-> statement. But it is only for the case INTR_TX_NAK without INTR_SLAVE_MATCH.
+> /* Early ack INTR_RX_DONE, INTR_TX_[ACK|NAK] would indicate HW to start 
+> receiving/sending new data and may cause a race condition as irq handler 
+> not yet to handle these irqs but being acked. Let ack them late in the 
+> end of irq handler when those are truly processed */
+
+Please update the patch with this comment. It at least goes some way to
+explain why.
+
 > 
-> The new code is for the case of INTR_TX_NAK with INTR_SLAVE_MATCH. What it
-> does is to detect if there is a mix of INTR_TX_NAK of previous i2c
-> transaction and the start of new i2c transaction, indicate by
-> INTR_SLAVE_MATCH which is only raised when Slave found its address matched
-> on the first byte it received. If so, the new code will try to emit the
-> I2C_SLAVE_STOP first to complete the previous transaction and process the
-> rest as a new request.
+> > > +	writel(irq_received &
+> > > +	       ~(ASPEED_I2CD_INTR_RX_DONE | ASPEED_I2CD_INTR_TX_ACK | ASPEED_I2CD_INTR_TX_NAK),
+> > >   	       bus->base + ASPEED_I2C_INTR_STS_REG);
+> > >   	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> > >   	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
+> > > @@ -657,12 +658,12 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+> > >   			"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
+> > >   			irq_received, irq_handled);
+> > >   
+> > > -	/* Ack Rx done */
+> > > -	if (irq_received & ASPEED_I2CD_INTR_RX_DONE) {
+> > > -		writel(ASPEED_I2CD_INTR_RX_DONE,
+> > > -		       bus->base + ASPEED_I2C_INTR_STS_REG);
+> > > -		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> > > -	}
+> > > +	/* Ack Rx done and Tx done with/without ACK */
+> > > +	writel(irq_received &
+> > > +	       (ASPEED_I2CD_INTR_RX_DONE | ASPEED_I2CD_INTR_TX_ACK | ASPEED_I2CD_INTR_TX_NAK),
+> > > +	       bus->base + ASPEED_I2C_INTR_STS_REG);
+> > > +	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> > 
+> > I'm not sure why the write was conditional, but I'm not sure that
+> > making it unconditional is valid either? Why the change? Why not add
+> > the extra interrupt bits to the condition in addition to the value mask
+> > for the write?
+> > 
 > 
-> So if this was the case (with INTR_SLAVE_MATCH), the INTR_RX_DONE should
-> always raise with INTR_SLAVE_MATCH because Slave did receive the data which
-> matched with its Slave address. And this will be translated into either
-> I2C_SLAVE_[READ|WRITE]_REQUESTED and that make the if statement you
-> mentioned [1] evaluate to false and skip.
+> In original code, only INTR_RX_DONE was acked late. So the check 
+> (irq_received & ASPEED_I2CD_INTR_RX_DONE) is need and that help to save 
+> one write() then read() if there was no such irq.
 > 
-> So, in short, the new code is trying to handle the case of INTR_TX_NAK with
-> INTR_SLAVE_MATCH first before let the rest process as normal.
+> In the new code, there is no such check and the drawback is that there 
+> always be one write() and one read() for all cases, include the case 
+> where there is no irq at all, ie writing 0 into ASPEED_I2C_INTR_STS_REG.
+> 
+> And yes, your concern maybe right, we can not say of writing 0 into 
+> ASPEED_I2C_INTR_STS_REG is good or not.
+> 
+> I checked back my debug log and seeing that irq always come with at 
+> least one of INTR_RX_DONE BIT(2), INTR_TX_ACK BIT(0), INTR_TX_NAK BIT(1) 
+> raised. So it seems like the case of writing 0 into 
+> ASPEED_I2C_INTR_STS_REG is indeed rarely to happen.
+> 
+> Do you think we should change it to:
+> 
+> if (irq_received & (INTR_RX_DONE | INTR_TX_ACK | INTR_TX_NAK)) {
+> 	writel( irq_received & (INTR_RX_DONE| INTR_TX_ACK| INTR_TX_NAK),
+> 		bus->base + ASPEED_I2C_INTR_STS_REG);
+> 	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+> }
 
-yes, I saw that, but wasn't it easier to do something like this:
+This is less different from the existing strategy and doesn't require
+any explanation beyond what you're already trying to achieve in the
+patch, so I think you should switch to this approach.
 
-	if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
-	    bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
-		irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
-		bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+If someone wants to work out why it was done conditionally and argue
+for its removal then they can do that separately.
 
-		if (irq_status & ASPEED_I2CD_INTR_SLAVE_MATCH)
-			i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
+Cheers,
 
-	}
-
-But I see that Andrew has done some similar comment, also for
-patch 2. You can answer both in the same mail, not to duplicate
-the answer :-)
-
-We can wait for him to reply.
-
-Andi
+Andrew
