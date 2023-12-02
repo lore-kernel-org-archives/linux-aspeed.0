@@ -1,35 +1,37 @@
 From: Renze Nicolai <renze@rnplus.nl>
-Date: Sat,  2 Dec 2023 01:38:44 +0100
-Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add Asrock X570D4U board
-In-Reply-To: <20231202003908.3635695-1-renze@rnplus.nl>
-References: <20231202003908.3635695-1-renze@rnplus.nl>
-Message-ID: <20231202003908.3635695-2-renze@rnplus.nl>
+Date: Sat,  2 Dec 2023 01:38:43 +0100
+Subject: [PATCH v3 0/2] ARM: dts: aspeed: asrock: Add ASRock X570D4U BMC
+Message-ID: <20231202003908.3635695-1-renze@rnplus.nl>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document Asrock X570D4U compatible.
+Hello,
 
-Signed-off-by: Renze Nicolai <renze@rnplus.nl>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+These patches add a device-tree (and a bindings update) for the
+Aspeed BMC on the ASRock X570D4U, so that it can be added as a
+supported OpenBMC platform.
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 749ee54a3ff8..81ed678905fa 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -36,6 +36,7 @@ properties:
-               - aspeed,ast2500-evb
-               - asrock,e3c246d4i-bmc
-               - asrock,romed8hm3-bmc
-+              - asrock,x570d4u-bmc
-               - bytedance,g220a-bmc
-               - facebook,cmm-bmc
-               - facebook,minipack-bmc
+Changes since v2:
+  - Renamed leds to led-0 and led-1 to match Documentation/devicetree/bindings/leds/leds-gpio.yaml
+  - Added aliasses and labels for the i2c-mux on i2c bus 4
+  - Added the missing blank line between the ehci1 and uhci nodes
+
+Greetings,
+Renze Nicolai
+
+Renze Nicolai (2):
+  dt-bindings: arm: aspeed: add Asrock X570D4U board
+  ARM: dts: aspeed: asrock: Add ASRock X570D4U BMC
+
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../dts/aspeed/aspeed-bmc-asrock-x570d4u.dts  | 377 ++++++++++++++++++
+ 3 files changed, 379 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts
+
 -- 
 2.43.0
 
