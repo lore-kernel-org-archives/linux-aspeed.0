@@ -1,19 +1,17 @@
 From: PeterYin <peteryin.openbmc@gmail.com>
-Date: Mon, 4 Dec 2023 17:14:45 +0800
+Date: Mon, 4 Dec 2023 17:16:58 +0800
 Subject: [PATCH v5 0/2] Add Facebook Minerva Harma (AST2600) BMC
 In-Reply-To: <f2519d16-1b34-4d77-be69-cf80fa3415a1@linaro.org>
 References: <20231204081029.2272626-1-peteryin.openbmc@gmail.com>
  <fddcbad4-5368-4c2a-ba87-f4c4326a8385@linaro.org>
  <3ff5dcd7-69a3-4098-92c6-ed1e8f0bd8f9@gmail.com>
  <f2519d16-1b34-4d77-be69-cf80fa3415a1@linaro.org>
-Message-ID: <ad6fb2a1-c376-4e03-8b18-12b228799bcc@gmail.com>
+Message-ID: <bf3f2195-2d26-4817-ac5d-1608722c23f6@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-
-
 
 Krzysztof Kozlowski ? 12/4/23 17:06 ??:
 > On 04/12/2023 09:46, PeterYin wrote:
