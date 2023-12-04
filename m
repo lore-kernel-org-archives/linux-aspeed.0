@@ -1,51 +1,57 @@
-From: PeterYin <peteryin.openbmc@gmail.com>
-Date: Mon, 4 Dec 2023 17:16:58 +0800
-Subject: [PATCH v5 0/2] Add Facebook Minerva Harma (AST2600) BMC
-In-Reply-To: <f2519d16-1b34-4d77-be69-cf80fa3415a1@linaro.org>
-References: <20231204081029.2272626-1-peteryin.openbmc@gmail.com>
- <fddcbad4-5368-4c2a-ba87-f4c4326a8385@linaro.org>
- <3ff5dcd7-69a3-4098-92c6-ed1e8f0bd8f9@gmail.com>
- <f2519d16-1b34-4d77-be69-cf80fa3415a1@linaro.org>
-Message-ID: <bf3f2195-2d26-4817-ac5d-1608722c23f6@gmail.com>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Mon, 4 Dec 2023 15:59:02 +0100
+Subject: [PATCH v2 25/36] media: aspeed: Fix misuse of min_buffers_needed
+ field
+In-Reply-To: <20231204132323.22811-26-benjamin.gaignard@collabora.com>
+References: <20231204132323.22811-1-benjamin.gaignard@collabora.com>
+ <20231204132323.22811-26-benjamin.gaignard@collabora.com>
+Message-ID: <e920d35c-dd2f-48f6-aad8-5c7dd4a4987d@xs4all.nl>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Krzysztof Kozlowski ? 12/4/23 17:06 ??:
-> On 04/12/2023 09:46, PeterYin wrote:
->>
->> Krzysztof Kozlowski ? 12/4/23 16:20 ??:
->>> On 04/12/2023 09:10, Peter Yin wrote:
->>>> Summary:
->>>> Add linux device tree entry related to Minerva Harma
->>>> specific devices connected to BMC SoC.
->>>>
->>>> v4:https://lore.kernel.org/all/20231204054131.1845775-3-peter.yin at quantatw.com/
->>>> v3:https://lore.kernel.org/all/20231123050415.3441429-3-peteryin.openbmc at gmail.com/
->>>> v2:https://lore.kernel.org/all/cdbc75b9-3be1-4017-9bee-c8f161b6843c at linaro.org/
->>>> v1:https://lore.kernel.org/all/20231024082404.735843-3-peteryin.openbmc at gmail.com/
->>>>
->>>> Change log
->>>> v4 -> v5
->>>>     - Rename document and file from minerva-harma to harma.
->>>
->>> You must explain that you dropped people's review for some reason.
->>>
->>> Best regards,
->>> Krzysztof
->>>
->> Due to changes in the project name and content, please assist in
->> reviewing it.
+On 04/12/2023 14:23, Benjamin Gaignard wrote:
+> 'min_buffers_needed' is suppose to be used to indicate the number
+> of buffers needed by DMA engine to start streaming.
+> aspeed doesn't use DMA engine and just want to specify
+> the minimum number of buffers to allocate when calling VIDIOC_REQBUFS.
+> That 'min_reqbufs_allocation' field purpose so use it.
 > 
-> When dropping people's tag, the patch changelog (---) should say that
-> you dropped people's tag.
+> Signed-off-by: Benjamin Gaignard <benjamin.gaignard@collabora.com>
+> Reviewed-by: Eddie James <eajames@linux.ibm.com>
+> CC: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
+> CC: Andrew Jeffery <andrew@codeconstruct.com.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
+> CC: openbmc at lists.ozlabs.org (moderated list:ASPEED VIDEO ENGINE DRIVER)
+> CC: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
+> ---
+>  drivers/media/platform/aspeed/aspeed-video.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Best regards,
-> Krzysztof
-> 
-Thank you for your explanation. I will pay attention to it next time.
+> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
+> index d08aa7f73d4f..c28b10808cda 100644
+> --- a/drivers/media/platform/aspeed/aspeed-video.c
+> +++ b/drivers/media/platform/aspeed/aspeed-video.c
+> @@ -2034,7 +2034,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
+>  	vbq->drv_priv = video;
+>  	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
+>  	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
+> -	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+> +	vbq->min_reqbufs_allocation = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
 
-Thanks,
-Peter.
+Looking at the start_streaming code I think min_buffers_needed should be 1, since
+otherwise start_streaming would return -EPROTO.
+
+But clearly the intent is also that 3 buffers minimum are allocated.
+
+So in this case both fields should be set.
+
+Regards,
+
+	Hans
+
+>  
+>  	rc = vb2_queue_init(vbq);
+>  	if (rc) {
+
