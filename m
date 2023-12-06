@@ -1,57 +1,48 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Mon, 4 Dec 2023 15:59:02 +0100
-Subject: [PATCH v2 25/36] media: aspeed: Fix misuse of min_buffers_needed
- field
-In-Reply-To: <20231204132323.22811-26-benjamin.gaignard@collabora.com>
-References: <20231204132323.22811-1-benjamin.gaignard@collabora.com>
- <20231204132323.22811-26-benjamin.gaignard@collabora.com>
-Message-ID: <e920d35c-dd2f-48f6-aad8-5c7dd4a4987d@xs4all.nl>
+From: Joel Stanley <joel@jms.id.au>
+Date: Wed, 6 Dec 2023 17:16:15 +1030
+Subject: [PATCH v3 0/2] ARM: dts: aspeed: asrock: Add ASRock X570D4U BMC
+In-Reply-To: <20231202003908.3635695-1-renze@rnplus.nl>
+References: <20231202003908.3635695-1-renze@rnplus.nl>
+Message-ID: <CACPK8XfhK8eSjYvEd=7WshOh+Sj6vrERxwgAYGitVALw0pUf8w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 04/12/2023 14:23, Benjamin Gaignard wrote:
-> 'min_buffers_needed' is suppose to be used to indicate the number
-> of buffers needed by DMA engine to start streaming.
-> aspeed doesn't use DMA engine and just want to specify
-> the minimum number of buffers to allocate when calling VIDIOC_REQBUFS.
-> That 'min_reqbufs_allocation' field purpose so use it.
-> 
-> Signed-off-by: Benjamin Gaignard <benjamin.gaignard@collabora.com>
-> Reviewed-by: Eddie James <eajames@linux.ibm.com>
-> CC: Joel Stanley <joel@jms.id.au> (supporter:ARM/ASPEED MACHINE SUPPORT)
-> CC: Andrew Jeffery <andrew@codeconstruct.com.au> (reviewer:ARM/ASPEED MACHINE SUPPORT)
-> CC: openbmc at lists.ozlabs.org (moderated list:ASPEED VIDEO ENGINE DRIVER)
-> CC: linux-aspeed at lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
-> ---
->  drivers/media/platform/aspeed/aspeed-video.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-> index d08aa7f73d4f..c28b10808cda 100644
-> --- a/drivers/media/platform/aspeed/aspeed-video.c
-> +++ b/drivers/media/platform/aspeed/aspeed-video.c
-> @@ -2034,7 +2034,7 @@ static int aspeed_video_setup_video(struct aspeed_video *video)
->  	vbq->drv_priv = video;
->  	vbq->buf_struct_size = sizeof(struct aspeed_video_buffer);
->  	vbq->timestamp_flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC;
-> -	vbq->min_buffers_needed = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
-> +	vbq->min_reqbufs_allocation = ASPEED_VIDEO_V4L2_MIN_BUF_REQ;
+On Sat, 2 Dec 2023 at 11:09, Renze Nicolai <renze@rnplus.nl> wrote:
+>
+> Hello,
+>
+> These patches add a device-tree (and a bindings update) for the
+> Aspeed BMC on the ASRock X570D4U, so that it can be added as a
+> supported OpenBMC platform.
 
-Looking at the start_streaming code I think min_buffers_needed should be 1, since
-otherwise start_streaming would return -EPROTO.
+Looks great!
 
-But clearly the intent is also that 3 buffers minimum are allocated.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-So in this case both fields should be set.
+I've also added this to the openbmc tree, so no need to send the patches there..
 
-Regards,
-
-	Hans
-
->  
->  	rc = vb2_queue_init(vbq);
->  	if (rc) {
-
+>
+> Changes since v2:
+>   - Renamed leds to led-0 and led-1 to match Documentation/devicetree/bindings/leds/leds-gpio.yaml
+>   - Added aliasses and labels for the i2c-mux on i2c bus 4
+>   - Added the missing blank line between the ehci1 and uhci nodes
+>
+> Greetings,
+> Renze Nicolai
+>
+> Renze Nicolai (2):
+>   dt-bindings: arm: aspeed: add Asrock X570D4U board
+>   ARM: dts: aspeed: asrock: Add ASRock X570D4U BMC
+>
+>  .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+>  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>  .../dts/aspeed/aspeed-bmc-asrock-x570d4u.dts  | 377 ++++++++++++++++++
+>  3 files changed, 379 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts
+>
+> --
+> 2.43.0
+>
