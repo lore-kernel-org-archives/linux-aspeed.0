@@ -1,11 +1,11 @@
 From: Andi Shyti <andi.shyti@kernel.org>
-Date: Sat, 9 Dec 2023 21:28:10 +0100
-Subject: [PATCH v3 1/2] i2c: aspeed: Handle the coalesced stop conditions
- with the start conditions.
-In-Reply-To: <20231208033142.1673232-2-quan@os.amperecomputing.com>
+Date: Sat, 9 Dec 2023 21:44:55 +0100
+Subject: [PATCH v3 2/2] i2c: aspeed: Acknowledge Tx done with and without
+ ACK irq late
+In-Reply-To: <20231208033142.1673232-3-quan@os.amperecomputing.com>
 References: <20231208033142.1673232-1-quan@os.amperecomputing.com>
- <20231208033142.1673232-2-quan@os.amperecomputing.com>
-Message-ID: <20231209202810.r7kkz2hlaonyibha@zenone.zhora.eu>
+ <20231208033142.1673232-3-quan@os.amperecomputing.com>
+Message-ID: <20231209204455.jxize3muvx7hhpos@zenone.zhora.eu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,19 +14,30 @@ Content-Transfer-Encoding: 7bit
 
 Hi Quan,
 
-On Fri, Dec 08, 2023 at 10:31:41AM +0700, Quan Nguyen wrote:
-> Some masters may drive the transfers with low enough latency between
-> the nak/stop phase of the current command and the start/address phase
-> of the following command that the interrupts are coalesced by the
-> time we process them.
-> Handle the stop conditions before processing SLAVE_MATCH to fix the
-> complaints that sometimes occur below.
-> 
-> "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
-> 0x00000086, but was 0x00000084"
-> 
-> Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+[...]
+
+> -	/* Ack all interrupts except for Rx done */
+> -	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+> -	       bus->base + ASPEED_I2C_INTR_STS_REG);
+> +
+> +	/*
+> +	 * Early acking of INTR_RX_DONE and INTR_TX_[ACK|NAK] would indicate HW to
+> +	 * start receiving or sending new data, and this may cause a race condition
+> +	 * as the irq handler has not yet handled these irqs but is being acked.
+> +	 * Let's ack them late at the end of the irq handler when those are truly processed.
+> +	 */
+> +	irq_ack_last = ASPEED_I2CD_INTR_RX_DONE | ASPEED_I2CD_INTR_TX_ACK | ASPEED_I2CD_INTR_TX_NAK;
+> +	writel(irq_received & ~irq_ack_last, bus->base + ASPEED_I2C_INTR_STS_REG);
+
+I like Andrews suggestion of having irq_ack_last as a define that
+is already negated, instead of negating it in the writel, which
+makes it a bit difficult to read.
+
+Besides, ack_last, as a name is not very meaningful, I'd rather
+call it irq_ack_rx_tx (or something similar).
+
+But I'm not going to block it for this, up to you if you want to
+send a new version.
 
 Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
 
