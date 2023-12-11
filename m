@@ -1,11 +1,12 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 11 Dec 2023 11:06:27 +0700
+Date: Mon, 11 Dec 2023 11:06:45 +0700
 Subject: [PATCH v3 2/2] i2c: aspeed: Acknowledge Tx done with and without
  ACK irq late
-In-Reply-To: <20231208033142.1673232-3-quan@os.amperecomputing.com>
+In-Reply-To: <20231209204455.jxize3muvx7hhpos@zenone.zhora.eu>
 References: <20231208033142.1673232-1-quan@os.amperecomputing.com>
  <20231208033142.1673232-3-quan@os.amperecomputing.com>
-Message-ID: <c868594e-834f-462d-ade0-94c6b133cfbd@os.amperecomputing.com>
+ <20231209204455.jxize3muvx7hhpos@zenone.zhora.eu>
+Message-ID: <8822a211-678f-49e5-8e6b-50b46dfc61b3@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,125 +15,66 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 08/12/2023 10:31, Quan Nguyen wrote:
-> Commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in
-> interrupt handler") acknowledges most interrupts early before the slave
-> irq handler is executed, except for the "Receive Done Interrupt status"
-> which is acknowledged late in the interrupt.
-> However, it has been observed that the early acknowledgment of "Transmit
-> Done Interrupt Status" (with ACK or NACK) often causes the interrupt to
-> be raised in READ REQUEST state, that shows the
-> "Unexpected ACK on read request." complaint messages.
+On 10/12/2023 03:44, Andi Shyti wrote:
+> Hi Quan,
 > 
-> Assuming that the "Transmit Done" interrupt should only be acknowledged
-> once it is truly processed, this commit fixes that issue by acknowledging
-> interrupts for both ACK and NACK cases late in the interrupt handler.
+> [...]
 > 
-> Fixes: 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in interrupt handler")
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> ---
-> v3:
->    + Fix the unconditinal write when ack the irqs               [Andrew]
->    + Refactor the code to enhance code readability                [Quan]
->    + Fix grammar in commit message                                [Quan]
+>> -	/* Ack all interrupts except for Rx done */
+>> -	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
+>> -	       bus->base + ASPEED_I2C_INTR_STS_REG);
+>> +
+>> +	/*
+>> +	 * Early acking of INTR_RX_DONE and INTR_TX_[ACK|NAK] would indicate HW to
+>> +	 * start receiving or sending new data, and this may cause a race condition
+>> +	 * as the irq handler has not yet handled these irqs but is being acked.
+>> +	 * Let's ack them late at the end of the irq handler when those are truly processed.
+>> +	 */
+>> +	irq_ack_last = ASPEED_I2CD_INTR_RX_DONE | ASPEED_I2CD_INTR_TX_ACK | ASPEED_I2CD_INTR_TX_NAK;
+>> +	writel(irq_received & ~irq_ack_last, bus->base + ASPEED_I2C_INTR_STS_REG);
 > 
-> v2:
->    + Split to separate series                                     [Joel]
->    + Added the Fixes line                                         [Joel]
->    + Fixed multiline comment                                      [Joel]
->    + Refactor irq clearing code                          [Joel, Guenter]
->    + Revised commit message                                       [Joel]
->    + Revised commit message                                       [Quan]
->    + About a note to remind why the readl() should immediately follow the
-> writel() to fix the race condition when clearing irq status from commit
-> c926c87b8e36 ("i2c: aspeed: Avoid i2c interrupt status clear race
-> condition"), I think it looks straight forward in this patch and decided
-> not to add that note.                                            [Joel]
+> I like Andrews suggestion of having irq_ack_last as a define that
+> is already negated, instead of negating it in the writel, which
+> makes it a bit difficult to read.
 > 
-> v1:
->    + First introduced in
-> https://lore.kernel.org/all/20210519074934.20712-1-quan at os.amperecomputing.com/
-> ---
->   drivers/i2c/busses/i2c-aspeed.c | 21 +++++++++++++--------
->   1 file changed, 13 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-> index 1c2a4f4c4e1b..967a26dd4ffa 100644
-> --- a/drivers/i2c/busses/i2c-aspeed.c
-> +++ b/drivers/i2c/busses/i2c-aspeed.c
-> @@ -617,13 +617,19 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
->   static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
->   {
->   	struct aspeed_i2c_bus *bus = dev_id;
-> -	u32 irq_received, irq_remaining, irq_handled;
-> +	u32 irq_received, irq_remaining, irq_handled, irq_ack_last;
->   
->   	spin_lock(&bus->lock);
->   	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-> -	/* Ack all interrupts except for Rx done */
-> -	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
-> -	       bus->base + ASPEED_I2C_INTR_STS_REG);
-> +
-> +	/*
-> +	 * Early acking of INTR_RX_DONE and INTR_TX_[ACK|NAK] would indicate HW to
-> +	 * start receiving or sending new data, and this may cause a race condition
-> +	 * as the irq handler has not yet handled these irqs but is being acked.
-> +	 * Let's ack them late at the end of the irq handler when those are truly processed.
-> +	 */
-> +	irq_ack_last = ASPEED_I2CD_INTR_RX_DONE | ASPEED_I2CD_INTR_TX_ACK | ASPEED_I2CD_INTR_TX_NAK;
-> +	writel(irq_received & ~irq_ack_last, bus->base + ASPEED_I2C_INTR_STS_REG);
 
-As there will be v4, I'd like to improve this line of code a bit.
+Yes, but the it still need to negate again when do the write to late ack 
+them later in the end of irq handler. So I'll keep the define as below 
+in my v4:
 
-During debug, there are significant number of times when the 
-irq_received has the value of 0x00000004 (INTR_RX_DONE) or 0x00000001 
-(INTR_TX_ACK). This makes the "irq_received & ~irq_ack_last" turn out to 
-be 0.
-
-AFAIK, it does not make sense to keep repeatedly writing the 0 to the HW 
-then try to re-read it with readl() every time. I'd like to change this 
-HW access conditionally to avoid those unnecessary access.
-
-The change would looks like below:
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c 
-b/drivers/i2c/busses/i2c-aspeed.c
-index 5511fd46a65e..0f67218cf04a 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -93,6 +93,10 @@
-  		 ASPEED_I2CD_INTR_RX_DONE | \
-  		 ASPEED_I2CD_INTR_TX_NAK |  \
-  		 ASPEED_I2CD_INTR_TX_ACK)
-+#define ASPEED_I2CD_INTR_ACK_RX_TX         \
++#define ASPEED_I2CD_INTR_ACK_RX_TX	    \
 +		(ASPEED_I2CD_INTR_RX_DONE | \
 +		 ASPEED_I2CD_INTR_TX_ACK |  \
 +		 ASPEED_I2CD_INTR_TX_NAK)
 
-  /* 0x14 : I2CD Command/Status Register   */
-  #define ASPEED_I2CD_SCL_LINE_STS			BIT(18)
-@@ -622,10 +626,19 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, 
-void *dev_id)
+The early ack will look like this:
 
-  	spin_lock(&bus->lock);
-  	irq_received = readl(bus->base + ASPEED_I2C_INTR_STS_REG);
--	/* Ack all interrupts except for Rx done */
--	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
--	       bus->base + ASPEED_I2C_INTR_STS_REG);
--	readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-+
-+	/*
-+	 * Early acking of INTR_RX_DONE and INTR_TX_[ACK|NAK] would
-+        ...
-+	 */
-+	if (irq_received & ~ASPEED_I2CD_INTR_ACK_RX_TX) {
 +		writel(irq_received & ~ASPEED_I2CD_INTR_ACK_RX_TX,
 +		       bus->base + ASPEED_I2C_INTR_STS_REG);
 +		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-+	}
-+
-  	irq_received &= ASPEED_I2CD_INTR_RECV_MASK;
-  	irq_remaining = irq_received;
 
-Thanks,
+And the late ack:
+
+-	/* Ack Rx done */
+-	if (irq_received & ASPEED_I2CD_INTR_RX_DONE) {
+-		writel(ASPEED_I2CD_INTR_RX_DONE,
++	if (irq_received & ASPEED_I2CD_INTR_ACK_RX_TX) {
++		writel(irq_received & ASPEED_I2CD_INTR_ACK_RX_TX,
+  		       bus->base + ASPEED_I2C_INTR_STS_REG);
+  		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
+  	}
+
+> Besides, ack_last, as a name is not very meaningful, I'd rather
+> call it irq_ack_rx_tx (or something similar).
+> 
+> But I'm not going to block it for this, up to you if you want to
+> send a new version.
+> 
+> Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
+> 
+
+Thanks, Andi for the comments.
+
+I will send out v4 to address those.
+
 - Quan
