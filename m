@@ -1,12 +1,12 @@
 From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 11 Dec 2023 11:06:45 +0700
-Subject: [PATCH v3 2/2] i2c: aspeed: Acknowledge Tx done with and without
- ACK irq late
-In-Reply-To: <20231209204455.jxize3muvx7hhpos@zenone.zhora.eu>
+Date: Mon, 11 Dec 2023 11:08:52 +0700
+Subject: [PATCH v3 1/2] i2c: aspeed: Handle the coalesced stop conditions
+ with the start conditions.
+In-Reply-To: <79ce9162faeb113ecb13efeb58d95f8a71e1a060.camel@codeconstruct.com.au>
 References: <20231208033142.1673232-1-quan@os.amperecomputing.com>
- <20231208033142.1673232-3-quan@os.amperecomputing.com>
- <20231209204455.jxize3muvx7hhpos@zenone.zhora.eu>
-Message-ID: <8822a211-678f-49e5-8e6b-50b46dfc61b3@os.amperecomputing.com>
+ <20231208033142.1673232-2-quan@os.amperecomputing.com>
+ <79ce9162faeb113ecb13efeb58d95f8a71e1a060.camel@codeconstruct.com.au>
+Message-ID: <43c99449-8a4b-4db5-8b1e-bc7ae920db76@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,66 +15,85 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 10/12/2023 03:44, Andi Shyti wrote:
-> Hi Quan,
-> 
-> [...]
-> 
->> -	/* Ack all interrupts except for Rx done */
->> -	writel(irq_received & ~ASPEED_I2CD_INTR_RX_DONE,
->> -	       bus->base + ASPEED_I2C_INTR_STS_REG);
->> +
+On 08/12/2023 10:56, Andrew Jeffery wrote:
+> On Fri, 2023-12-08 at 10:31 +0700, Quan Nguyen wrote:
+>> Some masters may drive the transfers with low enough latency between
+>> the nak/stop phase of the current command and the start/address phase
+>> of the following command that the interrupts are coalesced by the
+>> time we process them.
+>> Handle the stop conditions before processing SLAVE_MATCH to fix the
+>> complaints that sometimes occur below.
+>>
+>> "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
+>> 0x00000086, but was 0x00000084"
+>>
+>> Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
+>> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+>> ---
+>> v3:
+>>    + Change to handle the coalesced stop condition with the start
+>> conditions                                                            [Andrew]
+>>    + Revised commit message                                              [Quan]
+>>
+>> v2:
+>>    + Split to separate series                                            [Joel]
+>>    + Added the Fixes line                                                [Joel]
+>>    + Revised commit message                                              [Quan]
+>>
+>> v1:
+>>    + First introduced in
+>> https://lore.kernel.org/all/20210519074934.20712-1-quan at os.amperecomputing.com/
+>> ---
+>>   drivers/i2c/busses/i2c-aspeed.c | 47 ++++++++++++++++++++++-----------
+>>   1 file changed, 31 insertions(+), 16 deletions(-)
+>>
+>> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+>> index 28e2a5fc4528..1c2a4f4c4e1b 100644
+>> --- a/drivers/i2c/busses/i2c-aspeed.c
+>> +++ b/drivers/i2c/busses/i2c-aspeed.c
+>> @@ -249,18 +249,45 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>>   	if (!slave)
+>>   		return 0;
+>>   
+>> -	command = readl(bus->base + ASPEED_I2C_CMD_REG);
 >> +	/*
->> +	 * Early acking of INTR_RX_DONE and INTR_TX_[ACK|NAK] would indicate HW to
->> +	 * start receiving or sending new data, and this may cause a race condition
->> +	 * as the irq handler has not yet handled these irqs but is being acked.
->> +	 * Let's ack them late at the end of the irq handler when those are truly processed.
+>> +	 * Handle stop conditions early, prior to SLAVE_MATCH. Some masters may drive
+>> +	 * transfers with low enough latency between the nak/stop phase of the current
+>> +	 * command and the start/address phase of the following command that the
+>> +	 * interrupts are coalesced by the time we process them.
 >> +	 */
->> +	irq_ack_last = ASPEED_I2CD_INTR_RX_DONE | ASPEED_I2CD_INTR_TX_ACK | ASPEED_I2CD_INTR_TX_NAK;
->> +	writel(irq_received & ~irq_ack_last, bus->base + ASPEED_I2C_INTR_STS_REG);
+>> +	if (irq_status & ASPEED_I2CD_INTR_NORMAL_STOP) {
+>> +		irq_handled |= ASPEED_I2CD_INTR_NORMAL_STOP;
+>> +		bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+>> +	}
+>>   
+>> -	/* Slave was requested, restart state machine. */
+>> +	if (irq_status & ASPEED_I2CD_INTR_TX_NAK &&
+>> +	    bus->slave_state == ASPEED_I2C_SLAVE_READ_PROCESSED) {
+>> +		irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
+>> +		bus->slave_state = ASPEED_I2C_SLAVE_STOP;
+>> +	}
+>> +
+>> +	/* Propagate any stop conditions to the slave implementation. */
+>> +	if (bus->slave_state == ASPEED_I2C_SLAVE_STOP) {
+>> +		i2c_slave_event(slave, I2C_SLAVE_STOP, &value);
+>> +		bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+>> +	}
+>> +	/*
 > 
-> I like Andrews suggestion of having irq_ack_last as a define that
-> is already negated, instead of negating it in the writel, which
-> makes it a bit difficult to read.
+> If there's a reason to do a v4 then an extra empty line above the
+> comment would be nice. But let's not get hung up on that if everyone
+> else is happy.
 > 
-
-Yes, but the it still need to negate again when do the write to late ack 
-them later in the end of irq handler. So I'll keep the define as below 
-in my v4:
-
-+#define ASPEED_I2CD_INTR_ACK_RX_TX	    \
-+		(ASPEED_I2CD_INTR_RX_DONE | \
-+		 ASPEED_I2CD_INTR_TX_ACK |  \
-+		 ASPEED_I2CD_INTR_TX_NAK)
-
-The early ack will look like this:
-
-+		writel(irq_received & ~ASPEED_I2CD_INTR_ACK_RX_TX,
-+		       bus->base + ASPEED_I2C_INTR_STS_REG);
-+		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-
-And the late ack:
-
--	/* Ack Rx done */
--	if (irq_received & ASPEED_I2CD_INTR_RX_DONE) {
--		writel(ASPEED_I2CD_INTR_RX_DONE,
-+	if (irq_received & ASPEED_I2CD_INTR_ACK_RX_TX) {
-+		writel(irq_received & ASPEED_I2CD_INTR_ACK_RX_TX,
-  		       bus->base + ASPEED_I2C_INTR_STS_REG);
-  		readl(bus->base + ASPEED_I2C_INTR_STS_REG);
-  	}
-
-> Besides, ack_last, as a name is not very meaningful, I'd rather
-> call it irq_ack_rx_tx (or something similar).
+> Thanks for the fixes!
 > 
-> But I'm not going to block it for this, up to you if you want to
-> send a new version.
-> 
-> Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
+> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 > 
 
-Thanks, Andi for the comments.
+Thanks Andrew,
 
-I will send out v4 to address those.
+I'll add your Reviewed-by in my v4 with that extra empty lime before the 
+comment.
 
+Thanks for the review
 - Quan
