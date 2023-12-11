@@ -1,102 +1,106 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 11 Dec 2023 10:49:40 +0800
-Subject: [PATCH v2 09/14] ARM: dts: aspeed: yosemite4: Revise i2c14 and i2c15 schematic change
+Date: Mon, 11 Dec 2023 10:49:42 +0800
+Subject: [PATCH v2 11/14] ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
 In-Reply-To: <20231211024947.3990898-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20231211024947.3990898-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20231211024947.3990898-10-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20231211024947.3990898-12-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise i2c14 and i2c15 schematic change:
-- Revise adc128d818 adc mode for yosemite4 schematic change
-- Revise ina233 for yosemite4 schematic change
-- Remove idle state setting for yosemite4 NIC connection
+Revise fan tach config for max31790 driver change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 31 ++++++++++++-------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 48 +++++++++++++++++--
+ 1 file changed, 44 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index ccb5ecd8d9a6..ed2b1200603d 100644
+index eb3687bfd632..073f27f1e35f 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1010,44 +1010,54 @@ &i2c14 {
- 	adc at 1d {
- 		compatible = "ti,adc128d818";
- 		reg = <0x1d>;
--		ti,mode = /bits/ 8 <2>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
+@@ -1095,8 +1095,18 @@ adc at 1f {
  
--	adc at 35 {
-+	adc at 36 {
- 		compatible = "ti,adc128d818";
--		reg = <0x35>;
--		ti,mode = /bits/ 8 <2>;
-+		reg = <0x36>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
+ 			pwm at 20{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x20>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
  
- 	adc at 37 {
- 		compatible = "ti,adc128d818";
- 		reg = <0x37>;
--		ti,mode = /bits/ 8 <2>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
+ 			gpio at 22{
+@@ -1108,8 +1118,18 @@ gpio at 22{
  
- 	power-sensor at 40 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x40>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
+ 			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x2f>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
  
- 	power-sensor at 41 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x41>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
+ 			adc at 33 {
+@@ -1145,8 +1165,18 @@ adc at 1f {
  
- 	power-sensor at 42 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x42>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
+ 			pwm at 20{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x20>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
  
- 	power-sensor at 43 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x43>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
+ 			gpio at 22{
+@@ -1158,8 +1188,18 @@ gpio at 22{
  
- 	power-sensor at 44 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x44>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
+ 			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x2f>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
  
- 	temperature-sensor at 4e {
-@@ -1217,7 +1227,6 @@ mctp at 10 {
- 
- 	i2c-mux at 72 {
- 		compatible = "nxp,pca9544";
--		i2c-mux-idle-disconnect;
- 		reg = <0x72>;
- 
- 		imux24: i2c at 0 {
+ 			adc at 33 {
 -- 
 2.25.1
 
