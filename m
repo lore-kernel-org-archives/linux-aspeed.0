@@ -1,71 +1,56 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 11 Dec 2023 09:05:43 +0100
-Subject: [PATCH v2 12/14] ARM: dts: aspeed: yosemite4: add mctp config for
- NIC
-In-Reply-To: <20231211024947.3990898-13-Delphine_CC_Chiu@wiwynn.com>
-References: <20231211024947.3990898-1-Delphine_CC_Chiu@wiwynn.com>
- <20231211024947.3990898-13-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <415438f8-04fe-4e30-a643-ca13278987a0@linaro.org>
+From: Quan Nguyen <quan@os.amperecomputing.com>
+Date: Mon, 11 Dec 2023 17:22:15 +0700
+Subject: [PATCH v4 0/2] i2c: aspeed: Late ack Tx done irqs and handle coalesced start with stop conditions
+Message-ID: <20231211102217.2436294-1-quan@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/12/2023 03:49, Delphine CC Chiu wrote:
-> add mctp config for NIC
-> 
-> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> ---
->  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 +++++++++++++++++++
->  1 file changed, 24 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index 073f27f1e35f..c8e3a85b7a11 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -1273,40 +1273,64 @@ imux24: i2c at 0 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
->  			reg = <0>;
-> +			mctp-controller;
->  			temperature-sensor at 1f {
->  				compatible = "ti,tmp421";
->  				reg = <0x1f>;
->  			};
-> +
-> +			emc1403 at 3c {
+This series consists of two patches to handle the below issues observed
+when testing with slave mode:
+  + The coalesced stop condition with the start conditions
+  + Early ack'ed of Tx done (ACK and NAK) causing "Unexpected Ack on
+  read request".
 
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+This series was verified with ast2500 and ast2600.
 
+The prior discussion could be found at:
+https://lore.kernel.org/all/20231208033142.1673232-1-quan at os.amperecomputing.com/
 
-> +				compatible = "smsc,emc1403";
-> +				reg = <0x3c>;
-> +			};
->  		};
->  
->  		imux25: i2c at 1 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
->  			reg = <1>;
-> +			mctp-controller;
->  			temperature-sensor at 1f {
->  				compatible = "ti,tmp421";
->  				reg = <0x1f>;
->  			};
-> +
-> +			emc1403 at 3c {
+v4:
+  + Switch to use define macro instead of variable             [Andrew]
+  + Make the early ack conditionally to avoid unnecessary
+writel()/readl()                                                 [Quan]
+  + Add an extra empty line before the comment in patch 1      [Andrew]
 
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+v3:
+  + Fix the unconditional write when ack the irqs              [Andrew]
+  + Handle the coalesced stop condition with the
+start conditions                                               [Andrew]
+  + Refactor the code to enhance code readability                [Quan]
+  + Revised commit message                                       [Quan]
 
+v2:
+  + Split these patches to separate series                       [Joel]
+  + Added the Fixes lines                                        [Joel]
+  + Fixed multiline comment                                      [Joel]
+  + Refactor irq clearing code                          [Joel, Guenter]
+  + Revised commit message                                 [Joel, Quan]
 
+v1:
+  + These patches are first introduced from this disscusstion
+https://lore.kernel.org/all/20210519074934.20712-1-quan at os.amperecomputing.com/
 
-In other places as well.
+Quan Nguyen (2):
+  i2c: aspeed: Handle the coalesced stop conditions with the start
+    conditions.
+  i2c: aspeed: Acknowledge Tx done with and without ACK irq late
 
-Best regards,
-Krzysztof
+ drivers/i2c/busses/i2c-aspeed.c | 75 +++++++++++++++++++++++----------
+ 1 file changed, 52 insertions(+), 23 deletions(-)
+
+-- 
+2.35.1
 
