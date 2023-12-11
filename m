@@ -1,42 +1,62 @@
-From: Quan Nguyen <quan@os.amperecomputing.com>
-Date: Mon, 11 Dec 2023 11:09:08 +0700
-Subject: [PATCH v3 1/2] i2c: aspeed: Handle the coalesced stop conditions
- with the start conditions.
-In-Reply-To: <20231209202810.r7kkz2hlaonyibha@zenone.zhora.eu>
-References: <20231208033142.1673232-1-quan@os.amperecomputing.com>
- <20231208033142.1673232-2-quan@os.amperecomputing.com>
- <20231209202810.r7kkz2hlaonyibha@zenone.zhora.eu>
-Message-ID: <ffcacd0f-85a3-4c9f-9d0d-50425fec4775@os.amperecomputing.com>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Mon, 11 Dec 2023 13:47:15 +0800
+Subject: [PATCH v3 00/14] Add i2c-mux and eeprom devices for Meta Yosemite 4
+Message-ID: <20231211054730.208588-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Changelog:
+  - v3
+    - Correct patch for revising gpio name
+  - v2
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
+  - v1
+    - Add gpio and eeprom behind i2c-mux
+    - Remove redundant idle-state setting for i2c-mux
+    - Enable adc 15, wdt2,spi gpio for yosemite4 use
+    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+    - Revise power sensor adm1281 for yosemite4 schematic change
+    - Add gpio pca9506 I/O expander for yosemite4 use
+    - remove space for adm1272 compatible
+    - enable interrupt setting for pca9555
+    - add eeprom for yosemite4 medusa board/BSM use
+    - remove temperature sensor for yosemite4 schematic change
+    - add power sensor for power module reading
+    - Revise adc128d818 adc mode for yosemite4 schematic change
+    - Revise ina233 for yosemite4 schematic change
+    - Remove idle state setting for yosemite4 NIC connection
+    - Initialize bmc gpio state
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
 
+Delphine CC Chiu (14):
+  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+  ARM: dts: aspeed: yosemite4: Enable adc15
+  ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+  ARM: dts: aspeed: yosemite4: Enable watchdog2
+  ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
+  ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
+    change
+  ARM: dts: aspeed: yosemite4: Add gpio pca9506
+  ARM: dts: aspeed: yosemite4: Revise i2c11 and i2c12 schematic change
+  ARM: dts: aspeed: yosemite4: Revise i2c14 and i2c15 schematic change
+  ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
+  ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
+  ARM: dts: aspeed: yosemite4: add mctp config for NIC
+  ARM: dts: aspeed: yosemite4: support mux to cpld
+  ARM: dts: aspeed: yosemite4: Revise gpio name
 
-On 10/12/2023 03:28, Andi Shyti wrote:
-> Hi Quan,
-> 
-> On Fri, Dec 08, 2023 at 10:31:41AM +0700, Quan Nguyen wrote:
->> Some masters may drive the transfers with low enough latency between
->> the nak/stop phase of the current command and the start/address phase
->> of the following command that the interrupts are coalesced by the
->> time we process them.
->> Handle the stop conditions before processing SLAVE_MATCH to fix the
->> complaints that sometimes occur below.
->>
->> "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
->> 0x00000086, but was 0x00000084"
->>
->> Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
->> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> 
-> Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
-> 
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1215 +++++++++++++++--
+ 1 file changed, 1091 insertions(+), 124 deletions(-)
 
-Thanks Andi,
-I'll add your Reviewed-by in v4
+-- 
+2.25.1
 
-Thanks,
-- Quan
