@@ -1,62 +1,112 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Tue, 12 Dec 2023 17:10:10 -0000
-Subject: [PATCH v1 1/8] dt-bindings: arm: aspeed: add IBM system1-bmc
-In-Reply-To: <20231212164004.1683589-2-ninad@linux.ibm.com>
+Date: Tue, 12 Dec 2023 17:14:38 -0000
+Subject: [PATCH v1 2/8] dt-bindings: tpm: Add schema for TIS I2C devices
+In-Reply-To: <20231212164004.1683589-3-ninad@linux.ibm.com>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-2-ninad@linux.ibm.com>
-Message-ID: <20231212-thrower-ebook-d29a85a6ed96@spud>
+ <20231212164004.1683589-3-ninad@linux.ibm.com>
+Message-ID: <20231212-amusement-elevation-28e42bcccc35@spud>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 12, 2023 at 10:39:57AM -0600, Ninad Palsule wrote:
-> Document the new compatibles used on IBM system1-bmc
-> 
-> Tested:
->     This board is tested using the simics simulator.
+Hey,
 
-I don't see how this is relevant to dt-bindings patches.
-
+On Tue, Dec 12, 2023 at 10:39:58AM -0600, Ninad Palsule wrote:
+> From: Johannes Holland <johannes.holland@infineon.com>
 > 
+> Add a dt schema to support device tree bindings
+
+"Add bindings for..."
+
+> for the generic I2C
+> physical layer. Refer to the TCG PC Client Platform TPM Profile (PTP)
+> Specification for TPM 2.0 v1.04 Revision 14.
+> 
+> This includes descriptions for the Nuvoton and Infineon devices.
+> 
+
+> OpenBMC-Staging-Count: 3
+
+I have no idea what this is, but it needs to be removed from the patch.
+
+> Signed-off-by: Johannes Holland <johannes.holland@infineon.com>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 > ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  Documentation/devicetree/bindings/trivial-devices.yaml   | 2 ++
+>  .../bindings/security/tpm/tpm-tis-i2c.yaml    | 50 +++++++++++++++++++
+>  1 file changed, 50 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
+> new file mode 100644
+> index 000000000000..de1e34065748
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
+> @@ -0,0 +1,50 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/security/tpm/tpm-tis-i2c.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: I2C PTP based TPM Devices
+> +
+> +maintainers:
+> +  - Johannes Holland <johannes.holland@infineon.com>
+> +
+> +description:
+> +  Device Tree Bindings for I2C based Trusted Platform Module (TPM).
 
-IMO these should be split into two patches.
+s/Device Tree Bindings for //. Doesn't dt_binding_check now complain if
+you have this in a title or description?
+
+> +properties:
+> +  $nodename:
+> +    pattern: "^tpm(@[0-9a-f]+)?$"
+> +
+> +  compatible:
+> +    oneOf:
+> +      - description: Infineon's Trusted Platform Module (TPM) (SLB9673).
+> +        items:
+> +          - const: infineon,slb9673
+> +          - const: tcg,tpm-tis-i2c
+> +      - description: Nuvoton's Trusted Platform Module (TPM) (NPCT75x).
+> +        items:
+> +          - const: nuvoton,npct75x
+> +          - const: tcg,tpm-tis-i2c
+
+> +      - const: tcg,tpm-tis-i2c
+
+IMO this should be removed and this fallback should only be used in
+combination with device specific compatibles, like you have here for the
+infineon and nuvoton devices.
 
 Cheers,
 Conor.
 
->  2 files changed, 3 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> index 6f7543463d89..ebebe14c42aa 100644
-> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> @@ -85,6 +85,7 @@ properties:
->                - facebook,yosemite4-bmc
->                - ibm,everest-bmc
->                - ibm,rainier-bmc
-> +              - ibm,system1-bmc
->                - ibm,tacoma-bmc
->                - inventec,starscream-bmc
->                - inventec,transformer-bmc
-> diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
-> index 441b55723675..b12a60d2eb0f 100644
-> --- a/Documentation/devicetree/bindings/trivial-devices.yaml
-> +++ b/Documentation/devicetree/bindings/trivial-devices.yaml
-> @@ -135,6 +135,8 @@ properties:
->            - ibm,cffps1
->              # IBM Common Form Factor Power Supply Versions 2
->            - ibm,cffps2
-> +            # Infineon barometric pressure and temperature sensor
-> +          - infineon,dps310
->              # Infineon IR36021 digital POL buck controller
->            - infineon,ir36021
->              # Infineon IR38060 Voltage Regulator
+> +  reg:
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    i2c {
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +
+> +      tpm at 2e {
+> +        compatible = "nuvoton,npct75x", "tcg,tpm-tis-i2c";
+> +        reg = <0x2e>;
+> +      };
+> +    };
+> +...
 > -- 
 > 2.39.2
 > 
@@ -66,4 +116,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231212/6650f52e/attachment-0001.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231212/bd67d6c0/attachment-0001.sig>
