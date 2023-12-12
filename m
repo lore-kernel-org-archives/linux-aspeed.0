@@ -1,112 +1,57 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Tue, 12 Dec 2023 17:14:38 -0000
-Subject: [PATCH v1 2/8] dt-bindings: tpm: Add schema for TIS I2C devices
-In-Reply-To: <20231212164004.1683589-3-ninad@linux.ibm.com>
+Date: Tue, 12 Dec 2023 17:16:03 -0000
+Subject: [PATCH v1 7/8] tpm: tis-i2c: Add more compatible strings
+In-Reply-To: <20231212164004.1683589-8-ninad@linux.ibm.com>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-3-ninad@linux.ibm.com>
-Message-ID: <20231212-amusement-elevation-28e42bcccc35@spud>
+ <20231212164004.1683589-8-ninad@linux.ibm.com>
+Message-ID: <20231212-avid-grill-dbead068fac8@spud>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey,
-
-On Tue, Dec 12, 2023 at 10:39:58AM -0600, Ninad Palsule wrote:
-> From: Johannes Holland <johannes.holland@infineon.com>
+On Tue, Dec 12, 2023 at 10:40:03AM -0600, Ninad Palsule wrote:
+> From: Joel Stanley <joel@jms.id.au>
 > 
-> Add a dt schema to support device tree bindings
-
-"Add bindings for..."
-
-> for the generic I2C
-> physical layer. Refer to the TCG PC Client Platform TPM Profile (PTP)
-> Specification for TPM 2.0 v1.04 Revision 14.
+> The NPCT75x TPM is TIS compatible. It has an I2C and SPI interface.
 > 
-> This includes descriptions for the Nuvoton and Infineon devices.
+> https://www.nuvoton.com/products/cloud-computing/security/trusted-platform-module-tpm/
 > 
-
+> Add a compatible string for it, and the generic compatible.
+> 
 > OpenBMC-Staging-Count: 3
 
-I have no idea what this is, but it needs to be removed from the patch.
+Delete this from every patch that it appears from.
 
-> Signed-off-by: Johannes Holland <johannes.holland@infineon.com>
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
+> Link: https://lore.kernel.org/r/20220928043957.2636877-4-joel at jms.id.au
 > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 > ---
->  .../bindings/security/tpm/tpm-tis-i2c.yaml    | 50 +++++++++++++++++++
->  1 file changed, 50 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
+>  drivers/char/tpm/tpm_tis_i2c.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
-> new file mode 100644
-> index 000000000000..de1e34065748
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
-> @@ -0,0 +1,50 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/security/tpm/tpm-tis-i2c.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: I2C PTP based TPM Devices
-> +
-> +maintainers:
-> +  - Johannes Holland <johannes.holland@infineon.com>
-> +
-> +description:
-> +  Device Tree Bindings for I2C based Trusted Platform Module (TPM).
+> diff --git a/drivers/char/tpm/tpm_tis_i2c.c b/drivers/char/tpm/tpm_tis_i2c.c
+> index a897402cc36a..9511c0d50185 100644
+> --- a/drivers/char/tpm/tpm_tis_i2c.c
+> +++ b/drivers/char/tpm/tpm_tis_i2c.c
+> @@ -383,6 +383,8 @@ MODULE_DEVICE_TABLE(i2c, tpm_tis_i2c_id);
+>  #ifdef CONFIG_OF
+>  static const struct of_device_id of_tis_i2c_match[] = {
+>  	{ .compatible = "infineon,slb9673", },
+> +	{ .compatible = "nuvoton,npct75x", },
+> +	{ .compatible = "tcg,tpm-tis-i2c", },
 
-s/Device Tree Bindings for //. Doesn't dt_binding_check now complain if
-you have this in a title or description?
+What's the point of the generic compatible if you are adding the device
+specific ones to the driver anyway?
 
-> +properties:
-> +  $nodename:
-> +    pattern: "^tpm(@[0-9a-f]+)?$"
-> +
-> +  compatible:
-> +    oneOf:
-> +      - description: Infineon's Trusted Platform Module (TPM) (SLB9673).
-> +        items:
-> +          - const: infineon,slb9673
-> +          - const: tcg,tpm-tis-i2c
-> +      - description: Nuvoton's Trusted Platform Module (TPM) (NPCT75x).
-> +        items:
-> +          - const: nuvoton,npct75x
-> +          - const: tcg,tpm-tis-i2c
-
-> +      - const: tcg,tpm-tis-i2c
-
-IMO this should be removed and this fallback should only be used in
-combination with device specific compatibles, like you have here for the
-infineon and nuvoton devices.
-
-Cheers,
+Thanks,
 Conor.
 
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    i2c {
-> +      #address-cells = <1>;
-> +      #size-cells = <0>;
-> +
-> +      tpm at 2e {
-> +        compatible = "nuvoton,npct75x", "tcg,tpm-tis-i2c";
-> +        reg = <0x2e>;
-> +      };
-> +    };
-> +...
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(of, of_tis_i2c_match);
 > -- 
 > 2.39.2
 > 
@@ -116,4 +61,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231212/bd67d6c0/attachment-0001.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231212/4cb4290a/attachment-0001.sig>
