@@ -1,83 +1,69 @@
-From: Lukas Wunner <lukas@wunner.de>
-Date: Sat, 23 Dec 2023 09:36:23 +0100
-Subject: [PATCH v8] ARM: dts: aspeed: Adding Facebook Bletchley BMC
-In-Reply-To: <ZYYP1C0h4ms9kEjA@heinlein.vulture-banana.ts.net>
-References: <20231220080733.GA30641@wunner.de>
- <F444BFCC-1D44-4AF6-A0E1-B153A217FFE3@stwcx.xyz>
- <20231220170012.GA10387@wunner.de>
- <ZYYP1C0h4ms9kEjA@heinlein.vulture-banana.ts.net>
-Message-ID: <20231223083623.GA17734@wunner.de>
+From: Conor Dooley <conor@kernel.org>
+Date: Tue, 12 Dec 2023 17:10:10 -0000
+Subject: [PATCH v1 1/8] dt-bindings: arm: aspeed: add IBM system1-bmc
+In-Reply-To: <20231212164004.1683589-2-ninad@linux.ibm.com>
+References: <20231212164004.1683589-1-ninad@linux.ibm.com>
+ <20231212164004.1683589-2-ninad@linux.ibm.com>
+Message-ID: <20231212-thrower-ebook-d29a85a6ed96@spud>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 22, 2023 at 04:38:12PM -0600, Patrick Williams wrote:
-> On Wed, Dec 20, 2023 at 06:00:12PM +0100, Lukas Wunner wrote:
-> > If chips are dual-sourced or triple-sourced, as you say, and they
-> > behave identically, then I think it is fine to specify all of their
-> > compatible strings plus the generic compatible.  
+On Tue, Dec 12, 2023 at 10:39:57AM -0600, Ninad Palsule wrote:
+> Document the new compatibles used on IBM system1-bmc
 > 
-> This has explicitly been rejected before; having multiple incompatible
-> chips listed in the same compatible.  I've tried to search lore but I
-> can't find a reference unfortunately.
+> Tested:
+>     This board is tested using the simics simulator.
 
-I'll let devicetree maintainers comment on that.
+I don't see how this is relevant to dt-bindings patches.
 
-
-> Furthermore, what you're suggesting does not jive with what is in the
-> devicetree binding documentation for tpm_tis-spi [2]:
 > 
-> - compatible: should be **one** of the following (emphasis mine)
+> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  Documentation/devicetree/bindings/trivial-devices.yaml   | 2 ++
 
-That's superseded by:
+IMO these should be split into two patches.
 
-https://lore.kernel.org/all/cover.1702806810.git.lukas at wunner.de/
+Cheers,
+Conor.
 
-I don't really have a dog in this fight, I merely stepped up to
-convert TPM DT bindings to YAML.  There have been multiple attempts
-to convert them in the past but none of them have been pursued into
-mainline.
-
-I looked at compatible string usage in arch/arm{,64}/boot/dts
-and was under the impression that the majority of devicetrees
-use a combo matching this pattern:
-"vendor,chip", "tcg,tpm[_-]tis-{spi,i2c,mmio}"
-
-So that's what I went for in the conversion.  It would be inconsistent
-to enforce a generic compatible for i2c and mmio, but not for spi.
-
-I ran the validator against all arm/arm64 devicetrees and there are
-four devicetrees which only use a generic compatible and not a
-"vendor,chip" compatible:
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
-arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
-arch/arm/boot/dts/am335x-moxa-uc-2100-common.dtsi
-
-So, three Aspeed Facebook and one Moxa.  There's a fifth case (phyTEC)
-but the devicetree author clarified it's an Infineon SLB9670.
-The authors of the other four devicetrees listed above did not respond.
-
-Patches to fix up schema violations are here:
-https://github.com/l1k/linux/commit/7813a455ed15393df7d9d353173635b98ae23387
-https://github.com/l1k/linux/commit/a958be44952b1de170100be1007780a72ce7d861
-
-
-> As I said,
-> these are pluggable modules and not simply second-source builds.  There
-> are a collection of modules that can all be plugged into the same header.
-> They might not even be shipped with the device...
-
-If those TPM modules might not even be plugged in or are interchangeable,
-I think they ought to be represented as DT overlays.
-
-Honestly I'm wondering how common the scenario you're describing is.
-If it's an edge case, it might not be worth holding up the YAML
-conversion because of it.  The missing YAML conversion is a constant
-cause of pain for a lot of people.
-
-Thanks,
-
-Lukas
+>  2 files changed, 3 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> index 6f7543463d89..ebebe14c42aa 100644
+> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> @@ -85,6 +85,7 @@ properties:
+>                - facebook,yosemite4-bmc
+>                - ibm,everest-bmc
+>                - ibm,rainier-bmc
+> +              - ibm,system1-bmc
+>                - ibm,tacoma-bmc
+>                - inventec,starscream-bmc
+>                - inventec,transformer-bmc
+> diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
+> index 441b55723675..b12a60d2eb0f 100644
+> --- a/Documentation/devicetree/bindings/trivial-devices.yaml
+> +++ b/Documentation/devicetree/bindings/trivial-devices.yaml
+> @@ -135,6 +135,8 @@ properties:
+>            - ibm,cffps1
+>              # IBM Common Form Factor Power Supply Versions 2
+>            - ibm,cffps2
+> +            # Infineon barometric pressure and temperature sensor
+> +          - infineon,dps310
+>              # Infineon IR36021 digital POL buck controller
+>            - infineon,ir36021
+>              # Infineon IR38060 Voltage Regulator
+> -- 
+> 2.39.2
+> 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231212/6650f52e/attachment-0001.sig>
