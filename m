@@ -1,36 +1,50 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Tue, 12 Dec 2023 15:32:09 +1030
-Subject: [PATCH v4 0/2] i2c: aspeed: Late ack Tx done irqs and handle
- coalesced start with stop conditions
-In-Reply-To: <CACPK8Xc6-M9fsx3AUPobzvG6sjCrr8Sj5B3Q4Onp5wGvMm_BrA@mail.gmail.com>
-References: <20231211102217.2436294-1-quan@os.amperecomputing.com>
-	 <CACPK8Xc6-M9fsx3AUPobzvG6sjCrr8Sj5B3Q4Onp5wGvMm_BrA@mail.gmail.com>
-Message-ID: <c11d2365e67299dcc5ff7319a1856dbaa985d61e.camel@codeconstruct.com.au>
+From: Yang Chen <yangchen.openbmc@gmail.com>
+Date: Tue, 12 Dec 2023 15:51:49 +0800
+Subject: [PATCH 00/11] Modify DTS of META Minerva CMM BMC(AST2600)
+Message-ID: <20231212075200.983536-1-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2023-12-12 at 13:09 +1030, Joel Stanley wrote:
-> On Mon, 11 Dec 2023 at 20:52, Quan Nguyen <quan@os.amperecomputing.com> wrote:
-> > 
-> > This series consists of two patches to handle the below issues observed
-> > when testing with slave mode:
-> >   + The coalesced stop condition with the start conditions
-> >   + Early ack'ed of Tx done (ACK and NAK) causing "Unexpected Ack on
-> >   read request".
-> 
-> Looks good. I've reached out to a few people who use slave mode to ask
-> for review and testing on hardware. As long as they don't come back
-> with issues, we should get this merged and backported to stable.
-> 
-> Reviewed-by: Joel Stanley <joel@jms.id.au>
+This series modifies the DTS of the Minerva CMM which is the board on the
+META platform that uses the ASPEED SoC(AST2600).
 
-I've dropped a build with the patches onto an AST2600 EVB and lightly
-exercised the affected paths using NVMe-MI over MCTP to a Micron 7450.
+Changelog:
+- v1:
+    - Rename the name of the DTS from aspeed-bmc-facebook-minerva-cmc.dts
+      to aspeed-bmc-facebook-minerva.dts.
+    - Revise the setting of the mac3.
+    - Change the sgpio use from sgpiom1 to sgpiom0.
+    - Enable power monitor device (INA230 and LTC2945) on the i2c bus 0.
+    - Add one temperature sensor on the i2c bus 1.
+    - Correct the address of the eeprom on the i2c bus 1.
+    - Add bus labels and aliases for the Fan Controller Board connect to
+      the i2c-mux on the i2c bus 2.
+    - Add led of the fan for the fan fault.
+    - Name the gpio and the sgpio.
 
-Tested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Yang Chen (11):
+  ARM: dts: aspeed: minerva: Revise the name of DTS
+  ARM: dts: aspeed: minerva: Modify mac3 setting
+  ARM: dts: aspeed: minerva: Change sgpio use
+  ARM: dts: aspeed: minerva: Enable power monitor device
+  ARM: dts: aspeed: minerva: Add temperature sensor
+  ARM: dts: aspeed: minerva: correct the address of eeprom
+  ARM: dts: aspeed: minerva: add bus labels and aliases
+  ARM: dts: aspeed: minerva: add fan rpm controller
+  ARM: dts: aspeed: minerva: Add led-fan-fault gpio
+  ARM: dts: aspeed: minerva: add gpio line name
+  ARM: dts: aspeed: minerva: add sgpio line name
 
-Andrew
+ arch/arm/boot/dts/aspeed/Makefile             |   2 +-
+ .../aspeed-bmc-facebook-minerva-cmc.dts       | 265 ---------
+ .../aspeed/aspeed-bmc-facebook-minerva.dts    | 543 ++++++++++++++++++
+ 3 files changed, 544 insertions(+), 266 deletions(-)
+ delete mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva-cmc.dts
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+
+-- 
+2.34.1
 
