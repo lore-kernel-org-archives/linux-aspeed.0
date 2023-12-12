@@ -1,180 +1,45 @@
-From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Tue, 12 Dec 2023 15:52:00 +0800
-Subject: [PATCH 11/11] ARM: dts: aspeed: minerva: add sgpio line name
-In-Reply-To: <20231212075200.983536-1-yangchen.openbmc@gmail.com>
-References: <20231212075200.983536-1-yangchen.openbmc@gmail.com>
-Message-ID: <20231212075200.983536-12-yangchen.openbmc@gmail.com>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Tue, 12 Dec 2023 10:40:03 -0600
+Subject: [PATCH v1 7/8] tpm: tis-i2c: Add more compatible strings
+In-Reply-To: <20231212164004.1683589-1-ninad@linux.ibm.com>
+References: <20231212164004.1683589-1-ninad@linux.ibm.com>
+Message-ID: <20231212164004.1683589-8-ninad@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the SGPIO line name that the project's function can use by the
-meaningful name.
+From: Joel Stanley <joel@jms.id.au>
 
-Signed-off-by: Yang Chen <yangchen.openbmc@gmail.com>
+The NPCT75x TPM is TIS compatible. It has an I2C and SPI interface.
+
+https://www.nuvoton.com/products/cloud-computing/security/trusted-platform-module-tpm/
+
+Add a compatible string for it, and the generic compatible.
+
+OpenBMC-Staging-Count: 3
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Acked-by: Jarkko Sakkinen <jarkko@kernel.org>
+Link: https://lore.kernel.org/r/20220928043957.2636877-4-joel at jms.id.au
+Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 ---
- .../aspeed/aspeed-bmc-facebook-minerva.dts    | 149 ++++++++++++++++++
- 1 file changed, 149 insertions(+)
+ drivers/char/tpm/tpm_tis_i2c.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index 31197183cc59..942e53d5c714 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -392,3 +392,152 @@ &gpio0 {
- 	/*Y0-Y7*/	"","","","","","","","",
- 	/*Z0-Z7*/	"","","","","","","","";
+diff --git a/drivers/char/tpm/tpm_tis_i2c.c b/drivers/char/tpm/tpm_tis_i2c.c
+index a897402cc36a..9511c0d50185 100644
+--- a/drivers/char/tpm/tpm_tis_i2c.c
++++ b/drivers/char/tpm/tpm_tis_i2c.c
+@@ -383,6 +383,8 @@ MODULE_DEVICE_TABLE(i2c, tpm_tis_i2c_id);
+ #ifdef CONFIG_OF
+ static const struct of_device_id of_tis_i2c_match[] = {
+ 	{ .compatible = "infineon,slb9673", },
++	{ .compatible = "nuvoton,npct75x", },
++	{ .compatible = "tcg,tpm-tis-i2c", },
+ 	{}
  };
-+
-+&sgpiom0 {
-+	gpio-line-names =
-+	/*"input pin","output pin"*/
-+	/*A0 - A7*/
-+	"PRSNT_MTIA_BLADE0_N","PWREN_MTIA_BLADE0_EN",
-+	"PRSNT_MTIA_BLADE1_N","PWREN_MTIA_BLADE1_EN",
-+	"PRSNT_MTIA_BLADE2_N","PWREN_MTIA_BLADE2_EN",
-+	"PRSNT_MTIA_BLADE3_N","PWREN_MTIA_BLADE3_EN",
-+	"PRSNT_MTIA_BLADE4_N","PWREN_MTIA_BLADE4_EN",
-+	"PRSNT_MTIA_BLADE5_N","PWREN_MTIA_BLADE5_EN",
-+	"PRSNT_MTIA_BLADE6_N","PWREN_MTIA_BLADE6_EN",
-+	"PRSNT_MTIA_BLADE7_N","PWREN_MTIA_BLADE7_EN",
-+	/*B0 - B7*/
-+	"PRSNT_MTIA_BLADE8_N","PWREN_MTIA_BLADE8_EN",
-+	"PRSNT_MTIA_BLADE9_N","PWREN_MTIA_BLADE9_EN",
-+	"PRSNT_MTIA_BLADE10_N","PWREN_MTIA_BLADE10_EN",
-+	"PRSNT_MTIA_BLADE11_N","PWREN_MTIA_BLADE11_EN",
-+	"PRSNT_MTIA_BLADE12_N","PWREN_MTIA_BLADE12_EN",
-+	"PRSNT_MTIA_BLADE13_N","PWREN_MTIA_BLADE13_EN",
-+	"PRSNT_MTIA_BLADE14_N","PWREN_MTIA_BLADE14_EN",
-+	"PRSNT_MTIA_BLADE15_N","PWREN_MTIA_BLADE15_EN",
-+	/*C0 - C7*/
-+	"PRSNT_NW_BLADE0_N","PWREN_NW_BLADE0_EN",
-+	"PRSNT_NW_BLADE1_N","PWREN_NW_BLADE1_EN",
-+	"PRSNT_NW_BLADE2_N","PWREN_NW_BLADE2_EN",
-+	"PRSNT_NW_BLADE3_N","PWREN_NW_BLADE3_EN",
-+	"PRSNT_NW_BLADE4_N","PWREN_NW_BLADE4_EN",
-+	"PRSNT_NW_BLADE5_N","PWREN_NW_BLADE5_EN",
-+	"PRSNT_FCB_TOP_0_N","PWREN_MTIA_BLADE0_HSC_EN",
-+	"PRSNT_FCB_TOP_1_N","PWREN_MTIA_BLADE1_HSC_EN",
-+	/*D0 - D7*/
-+	"PRSNT_FCB_MIDDLE_0_N","PWREN_MTIA_BLADE2_HSC_EN",
-+	"PRSNT_FCB_MIDDLE_1_N","PWREN_MTIA_BLADE3_HSC_EN",
-+	"PRSNT_FCB_BOTTOM_0_N","PWREN_MTIA_BLADE4_HSC_EN",
-+	"PRSNT_FCB_BOTTOM_1_N","PWREN_MTIA_BLADE5_HSC_EN",
-+	"PWRGD_MTIA_BLADE0_PWROK_L_BUF","PWREN_MTIA_BLADE6_HSC_EN",
-+	"PWRGD_MTIA_BLADE1_PWROK_L_BUF","PWREN_MTIA_BLADE7_HSC_EN",
-+	"PWRGD_MTIA_BLADE2_PWROK_L_BUF","PWREN_MTIA_BLADE8_HSC_EN",
-+	"PWRGD_MTIA_BLADE3_PWROK_L_BUF","PWREN_MTIA_BLADE9_HSC_EN",
-+	/*E0 - E7*/
-+	"PWRGD_MTIA_BLADE4_PWROK_L_BUF","PWREN_MTIA_BLADE10_HSC_EN",
-+	"PWRGD_MTIA_BLADE5_PWROK_L_BUF","PWREN_MTIA_BLADE11_HSC_EN",
-+	"PWRGD_MTIA_BLADE6_PWROK_L_BUF","PWREN_MTIA_BLADE12_HSC_EN",
-+	"PWRGD_MTIA_BLADE7_PWROK_L_BUF","PWREN_MTIA_BLADE13_HSC_EN",
-+	"PWRGD_MTIA_BLADE8_PWROK_L_BUF","PWREN_MTIA_BLADE14_HSC_EN",
-+	"PWRGD_MTIA_BLADE9_PWROK_L_BUF","PWREN_MTIA_BLADE15_HSC_EN",
-+	"PWRGD_MTIA_BLADE10_PWROK_L_BUF","PWREN_NW_BLADE0_HSC_EN",
-+	"PWRGD_MTIA_BLADE11_PWROK_L_BUF","PWREN_NW_BLADE1_HSC_EN",
-+	/*F0 - F7*/
-+	"PWRGD_MTIA_BLADE12_PWROK_L_BUF","PWREN_NW_BLADE2_HSC_EN",
-+	"PWRGD_MTIA_BLADE13_PWROK_L_BUF","PWREN_NW_BLADE3_HSC_EN",
-+	"PWRGD_MTIA_BLADE14_PWROK_L_BUF","PWREN_NW_BLADE4_HSC_EN",
-+	"PWRGD_MTIA_BLADE15_PWROK_L_BUF","PWREN_NW_BLADE5_HSC_EN",
-+	"PWRGD_NW_BLADE0_PWROK_L_BUF","PWREN_FCB_TOP_L_EN",
-+	"PWRGD_NW_BLADE1_PWROK_L_BUF","PWREN_FCB_TOP_R_EN",
-+	"PWRGD_NW_BLADE2_PWROK_L_BUF","PWREN_FCB_MIDDLE_L_EN",
-+	"PWRGD_NW_BLADE3_PWROK_L_BUF","PWREN_FCB_MIDDLE_R_EN",
-+	/*G0 - G7*/
-+	"PWRGD_NW_BLADE4_PWROK_L_BUF","PWREN_FCB_BOTTOM_L_EN",
-+	"PWRGD_NW_BLADE5_PWROK_L_BUF","PWREN_FCB_BOTTOM_R_EN",
-+	"PWRGD_FCB_TOP_0_PWROK_L_BUF","FM_CMM_AC_CYCLE_N",
-+	"PWRGD_FCB_TOP_1_PWROK_L_BUF","MGMT_SFP_TX_DIS",
-+	"PWRGD_FCB_MIDDLE_0_PWROK_L_BUF","",
-+	"PWRGD_FCB_MIDDLE_1_PWROK_L_BUF","RST_I2CRST_MTIA_BLADE0_1_N",
-+	"PWRGD_FCB_BOTTOM_0_PWROK_L_BUF","RST_I2CRST_MTIA_BLADE2_3_N",
-+	"PWRGD_FCB_BOTTOM_1_PWROK_L_BUF","RST_I2CRST_MTIA_BLADE4_5_N",
-+	/*H0 - H7*/
-+	"LEAK_DETECT_MTIA_BLADE0_N_BUF","RST_I2CRST_MTIA_BLADE6_7_N",
-+	"LEAK_DETECT_MTIA_BLADE1_N_BUF","RST_I2CRST_MTIA_BLADE8_9_N",
-+	"LEAK_DETECT_MTIA_BLADE2_N_BUF","RST_I2CRST_MTIA_BLADE10_11_N",
-+	"LEAK_DETECT_MTIA_BLADE3_N_BUF","RST_I2CRST_MTIA_BLADE12_13_N",
-+	"LEAK_DETECT_MTIA_BLADE4_N_BUF","RST_I2CRST_MTIA_BLADE14_15_N",
-+	"LEAK_DETECT_MTIA_BLADE5_N_BUF","RST_I2CRST_NW_BLADE0_1_2_N",
-+	"LEAK_DETECT_MTIA_BLADE6_N_BUF","RST_I2CRST_NW_BLADE3_4_5_N",
-+	"LEAK_DETECT_MTIA_BLADE7_N_BUF","RST_I2CRST_FCB_N",
-+	/*I0 - I7*/
-+	"LEAK_DETECT_MTIA_BLADE8_N_BUF","RST_I2CRST_FCB_B_L_N",
-+	"LEAK_DETECT_MTIA_BLADE9_N_BUF","RST_I2CRST_FCB_B_R_N",
-+	"LEAK_DETECT_MTIA_BLADE10_N_BUF","RST_I2CRST_FCB_M_L_N",
-+	"LEAK_DETECT_MTIA_BLADE11_N_BUF","RST_I2CRST_FCB_M_R_N",
-+	"LEAK_DETECT_MTIA_BLADE12_N_BUF","RST_I2CRST_FCB_T_L_N",
-+	"LEAK_DETECT_MTIA_BLADE13_N_BUF","RST_I2CRST_FCB_T_R_N",
-+	"LEAK_DETECT_MTIA_BLADE14_N_BUF","BMC_READY",
-+	"LEAK_DETECT_MTIA_BLADE15_N_BUF","wFM_88E6393X_BIN_UPDATE_EN_N",
-+	/*J0 - J7*/
-+	"LEAK_DETECT_NW_BLADE0_N_BUF","WATER_VALVE_CLOSED_N",
-+	"LEAK_DETECT_NW_BLADE1_N_BUF","",
-+	"LEAK_DETECT_NW_BLADE2_N_BUF","",
-+	"LEAK_DETECT_NW_BLADE3_N_BUF","",
-+	"LEAK_DETECT_NW_BLADE4_N_BUF","",
-+	"LEAK_DETECT_NW_BLADE5_N_BUF","",
-+	"MTIA_BLADE0_STATUS_LED","",
-+	"MTIA_BLADE1_STATUS_LED","",
-+	/*K0 - K7*/
-+	"MTIA_BLADE2_STATUS_LED","",
-+	"MTIA_BLADE3_STATUS_LED","",
-+	"MTIA_BLADE4_STATUS_LED","",
-+	"MTIA_BLADE5_STATUS_LED","",
-+	"MTIA_BLADE6_STATUS_LED","",
-+	"MTIA_BLADE7_STATUS_LED","",
-+	"MTIA_BLADE8_STATUS_LED","",
-+	"MTIA_BLADE9_STATUS_LED","",
-+	/*L0 - L7*/
-+	"MTIA_BLADE10_STATUS_LED","",
-+	"MTIA_BLADE11_STATUS_LED","",
-+	"MTIA_BLADE12_STATUS_LED","",
-+	"MTIA_BLADE13_STATUS_LED","",
-+	"MTIA_BLADE14_STATUS_LED","",
-+	"MTIA_BLADE15_STATUS_LED","",
-+	"NW_BLADE0_STATUS_LED","",
-+	"NW_BLADE1_STATUS_LED","",
-+	/*M0 - M7*/
-+	"NW_BLADE2_STATUS_LED","",
-+	"NW_BLADE3_STATUS_LED","",
-+	"NW_BLADE4_STATUS_LED","",
-+	"NW_BLADE5_STATUS_LED","",
-+	"RPU_READY","",
-+	"IT_GEAR_RPU_LINK_N","",
-+	"IT_GEAR_LEAK","",
-+	"WATER_VALVE_CLOSED_N","",
-+	/*N0 - N7*/
-+	"VALVE_STS0","",
-+	"VALVE_STS1","",
-+	"VALVE_STS2","",
-+	"VALVE_STS3","",
-+	"CR_TOGGLE_BOOT_BUF_N","",
-+	"CMM_LC_RDY_LED_N","",
-+	"CMM_LC_UNRDY_LED_N","",
-+	"CMM_CABLE_CARTRIDGE_PRSNT_BOT_N","",
-+	/*O0 - O7*/
-+	"CMM_CABLE_CARTRIDGE_PRSNT_TOP_N","",
-+	"BOT_BCB_CABLE_PRSNT_N","",
-+	"TOP_BCB_CABLE_PRSNT_N","",
-+	"CHASSIS0_LEAK_Q_N","",
-+	"CHASSIS1_LEAK_Q_N","",
-+	"LEAK0_DETECT","",
-+	"LEAK1_DETECT","",
-+	"MGMT_SFP_PRSNT_N","",
-+	/*P0 - P7*/
-+	"MGMT_SFP_TX_FAULT","",
-+	"MGMT_SFP_RX_LOS","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","";
-+};
+ MODULE_DEVICE_TABLE(of, of_tis_i2c_match);
 -- 
-2.34.1
+2.39.2
 
