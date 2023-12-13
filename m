@@ -1,105 +1,99 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Wed, 13 Dec 2023 12:38:22 -0600
-Subject: [PATCH v1 2/8] dt-bindings: tpm: Add schema for TIS I2C devices
-In-Reply-To: <CXNEWTC7G66C.8KM5X4BWMK7P@suppilovahvero>
+Date: Wed, 13 Dec 2023 13:02:06 -0600
+Subject: [PATCH v1 8/8] ARM: dts: aspeed: System1: PS, sensor and more
+In-Reply-To: <5b98538a-8ffe-42ec-b020-514dcfcebba3@linaro.org>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-3-ninad@linux.ibm.com>
- <CXNEWTC7G66C.8KM5X4BWMK7P@suppilovahvero>
-Message-ID: <719949a9-ddd5-451f-a765-d875cea85ba5@linux.ibm.com>
+ <20231212164004.1683589-9-ninad@linux.ibm.com>
+ <5b98538a-8ffe-42ec-b020-514dcfcebba3@linaro.org>
+Message-ID: <44abff4a-0a8e-499b-8b98-a4a1680cb431@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Jarkko,
+Hello Krzysztof,
 
-On 12/13/23 12:20, Jarkko Sakkinen wrote:
-> On Tue Dec 12, 2023 at 6:39 PM EET, Ninad Palsule wrote:
->> From: Johannes Holland <johannes.holland@infineon.com>
+On 12/12/23 14:26, Krzysztof Kozlowski wrote:
+> On 12/12/2023 17:40, Ninad Palsule wrote:
+>> This drop adds following devices in the device tree.
+>> - EEPROM/VPD
+>> - Power supplies
+>> - Humidity, pressure and temperature sensors.
+>> - Trusted platform module(TPM) chip
 >>
->> Add a dt schema to support device tree bindings for the generic I2C
->> physical layer. Refer to the TCG PC Client Platform TPM Profile (PTP)
->> Specification for TPM 2.0 v1.04 Revision 14.
+>> Tested:
+>>      This board is tested using the simics simulator.
 >>
->> This includes descriptions for the Nuvoton and Infineon devices.
->>
->> OpenBMC-Staging-Count: 3
-> Please don't invent your own tags.
+>> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+>> ---
+> Don't mix DTS with drivers. DTS and drivers go via different subsystems
+> and cannot have dependencies, so why DTS is patch #6, then driver #7 and
+> now again DTS #7?
 
-Yes, Sorry. I have cherry-picked this commit from openbmc. Now I have 
-removed this line.
+There is a dependency on driver code as patch #8 uses the compatibility 
+string added in driver patch #7.? I have now moved driver patch at the 
+start. Is that ok? OR you are suggesting something else?
+
+v1-0001-tpm-tis-i2c-Add-more-compatible-strings.patch
+ ??? ??? ??? ??? ??? ??? |
+v1-0009-ARM-dts-aspeed-System1-PS-sensor-and-more.patch
+
+>
+>>   .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 76 +++++++++++++++++++
+>>   1 file changed, 76 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> index 75562aa63701..d960b938fe8d 100644
+>> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> @@ -461,6 +461,11 @@ &kcs3 {
+>>   &i2c0 {
+>>   	status = "okay";
+>>   
+>> +	eeprom at 50 {
+>> +		compatible = "atmel,24c64";
+>> +		reg = <0x50>;
+>> +	};
+>> +
+>>   	regulator at 60 {
+>>   		compatible = "maxim,max8952";
+>>   		reg = <0x60>;
+>> @@ -655,6 +660,25 @@ pca0: pca9539 at 74 {
+>>   
+>>   &i2c2 {
+>>   	status = "okay";
+>> +
+>> +	power-supply at 58 {
+>> +		compatible = "ibm,cffps";
+>> +		reg = <0x58>;
+>> +	};
+>> +
+>> +	power-supply at 59 {
+>> +		compatible = "ibm,cffps";
+>> +		reg = <0x59>;
+>> +	};
+>> +
+>> +	power-supply at 5a {
+>> +		compatible = "ibm,cffps";
+>> +		reg = <0x5a>;
+>> +	};
+> Missing blank line
+
+Fixed it.
 
 Thanks for the review.
 
-Thanks & Regards,
+Regards,
 
 Ninad
 
 >
->> Signed-off-by: Johannes Holland <johannes.holland@infineon.com>
->> Signed-off-by: Joel Stanley <joel@jms.id.au>
->> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
->> ---
->>   .../bindings/security/tpm/tpm-tis-i2c.yaml    | 50 +++++++++++++++++++
->>   1 file changed, 50 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
->> new file mode 100644
->> index 000000000000..de1e34065748
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
->> @@ -0,0 +1,50 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/security/tpm/tpm-tis-i2c.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: I2C PTP based TPM Devices
->> +
->> +maintainers:
->> +  - Johannes Holland <johannes.holland@infineon.com>
->> +
->> +description:
->> +  Device Tree Bindings for I2C based Trusted Platform Module (TPM).
->> +
->> +properties:
->> +  $nodename:
->> +    pattern: "^tpm(@[0-9a-f]+)?$"
->> +
->> +  compatible:
->> +    oneOf:
->> +      - description: Infineon's Trusted Platform Module (TPM) (SLB9673).
->> +        items:
->> +          - const: infineon,slb9673
->> +          - const: tcg,tpm-tis-i2c
->> +      - description: Nuvoton's Trusted Platform Module (TPM) (NPCT75x).
->> +        items:
->> +          - const: nuvoton,npct75x
->> +          - const: tcg,tpm-tis-i2c
->> +      - const: tcg,tpm-tis-i2c
->> +  reg:
->> +    maxItems: 1
->> +
->> +required:
->> +  - compatible
->> +  - reg
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    i2c {
->> +      #address-cells = <1>;
->> +      #size-cells = <0>;
->> +
->> +      tpm at 2e {
->> +        compatible = "nuvoton,npct75x", "tcg,tpm-tis-i2c";
->> +        reg = <0x2e>;
->> +      };
->> +    };
->> +...
+>> +	power-supply at 5b {
+>> +		compatible = "ibm,cffps";
+>> +		reg = <0x5b>;
+>> +	};
 >
-> BR, Jarkko
+> Best regards,
+> Krzysztof
+>
