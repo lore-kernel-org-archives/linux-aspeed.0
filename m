@@ -1,102 +1,74 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 14 Dec 2023 09:37:20 -0600
-Subject: [PATCH v1 2/8] dt-bindings: tpm: Add schema for TIS I2C devices
-In-Reply-To: <874d4416-86e5-48cc-9c84-97357e4caefe@roeck-us.net>
+Date: Thu, 14 Dec 2023 10:30:55 -0600
+Subject: [PATCH v1 5/8] ARM: dts: aspeed: System1: Voltage regulators
+In-Reply-To: <6a3d4551-66a2-411a-9d5f-cffb57ee0ce2@linaro.org>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-3-ninad@linux.ibm.com>
- <20231212-amusement-elevation-28e42bcccc35@spud>
- <874d4416-86e5-48cc-9c84-97357e4caefe@roeck-us.net>
-Message-ID: <46fcba11-5766-4c7c-91dd-0dfb5ae0e110@linux.ibm.com>
+ <20231212164004.1683589-6-ninad@linux.ibm.com>
+ <6a3d4551-66a2-411a-9d5f-cffb57ee0ce2@linaro.org>
+Message-ID: <e1ec02cf-072b-4678-8986-336c1cb8ca92@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Guenter,
+Hello Krzysztof,
 
-On 12/12/23 12:20, Guenter Roeck wrote:
-> On Tue, Dec 12, 2023 at 05:14:26PM +0000, Conor Dooley wrote:
->> Hey,
+On 12/12/23 14:22, Krzysztof Kozlowski wrote:
+> On 12/12/2023 17:40, Ninad Palsule wrote:
+>> This commit adds different voltage regulators.
 >>
->> On Tue, Dec 12, 2023 at 10:39:58AM -0600, Ninad Palsule wrote:
->>> From: Johannes Holland <johannes.holland@infineon.com>
->>>
->>> Add a dt schema to support device tree bindings
->> "Add bindings for..."
+>> Tested:
+>>      This board is tested using the simics simulator.
 >>
->>> for the generic I2C
->>> physical layer. Refer to the TCG PC Client Platform TPM Profile (PTP)
->>> Specification for TPM 2.0 v1.04 Revision 14.
->>>
->>> This includes descriptions for the Nuvoton and Infineon devices.
->>>
->>> OpenBMC-Staging-Count: 3
->> I have no idea what this is, but it needs to be removed from the patch.
->>
->>> Signed-off-by: Johannes Holland <johannes.holland@infineon.com>
->>> Signed-off-by: Joel Stanley <joel@jms.id.au>
->>> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
->>> ---
->>>   .../bindings/security/tpm/tpm-tis-i2c.yaml    | 50 +++++++++++++++++++
->>>   1 file changed, 50 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
->>>
->>> diff --git a/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
->>> new file mode 100644
->>> index 000000000000..de1e34065748
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
->>> @@ -0,0 +1,50 @@
->>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->>> +%YAML 1.2
->>> +---
->>> +$id: http://devicetree.org/schemas/security/tpm/tpm-tis-i2c.yaml#
->>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->>> +
->>> +title: I2C PTP based TPM Devices
->>> +
->>> +maintainers:
->>> +  - Johannes Holland <johannes.holland@infineon.com>
->>> +
->>> +description:
->>> +  Device Tree Bindings for I2C based Trusted Platform Module (TPM).
->> s/Device Tree Bindings for //. Doesn't dt_binding_check now complain if
->> you have this in a title or description?
->>
->>> +properties:
->>> +  $nodename:
->>> +    pattern: "^tpm(@[0-9a-f]+)?$"
->>> +
->>> +  compatible:
->>> +    oneOf:
->>> +      - description: Infineon's Trusted Platform Module (TPM) (SLB9673).
->>> +        items:
->>> +          - const: infineon,slb9673
->>> +          - const: tcg,tpm-tis-i2c
->>> +      - description: Nuvoton's Trusted Platform Module (TPM) (NPCT75x).
->>> +        items:
->>> +          - const: nuvoton,npct75x
->>> +          - const: tcg,tpm-tis-i2c
->>> +      - const: tcg,tpm-tis-i2c
->> IMO this should be removed and this fallback should only be used in
->> combination with device specific compatibles, like you have here for the
->> infineon and nuvoton devices.
-> As mentioned in my response to the other patch, "only" isn't sufficient
-> since the tacoma devicetree file only references the generic entry.
-> It would also make support for chips from other vendors unnecessarily
-> complex.
+>> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+>> ---
+>>   .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 266 ++++++++++++++++++
+> Squash it.
+Done.
 >
-> Question should in my opinion be if the non-fallback entries are really
-> needed.
+>>   1 file changed, 266 insertions(+)
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> index 0557bff9f36a..b8e7e52d4600 100644
+>> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> @@ -114,10 +114,127 @@ vga_memory: region at bf000000 {
+>>   		};
+>>   	};
+>>   
+>> +	iio-hwmon {
+>> +		compatible = "iio-hwmon";
+>> +		io-channels = <&p12v_vd 0>, <&p5v_aux_vd 0>,
+>> +			<&p5v_bmc_aux_vd 0>, <&p3v3_aux_vd 0>,
+>> +			<&p3v3_bmc_aux_vd 0>, <&p1v8_bmc_aux_vd 0>,
+>> +			<&adc1 4>, <&adc0 2>, <&adc1 0>,
+>> +			<&p2V5_aux_vd 0>, <&adc1 7>;
+>> +	};
+>> +
+>> +	p12v_vd: voltage_divider1 {
+> Same comments as in other patches.
+Fixed.
+>
+>> +		compatible = "voltage-divider";
+>> +		io-channels = <&adc1 3>;
+>> +		#io-channel-cells = <1>;
+>> +
+>> +		/* Scale the system voltage by 1127/127 to fit the ADC range.
+> Use Linux coding style comments. /* and blank line
 
-Thanks for the response. I think generic option is in-case we have a 
-chip whose specific driver is not available.
+Fixed.
+
+Thanks for the review.
 
 Regards,
 
 Ninad
 
 >
-> Thanks,
-> Guenter
+>
+> ....
+>
+> Best regards,
+> Krzysztof
+>
