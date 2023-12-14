@@ -1,92 +1,87 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Thu, 14 Dec 2023 14:13:04 -0600
-Subject: [PATCH v1 2/8] dt-bindings: tpm: Add schema for TIS I2C devices
-In-Reply-To: <20231214-stopper-bounce-ca9002869293@spud>
-References: <20231212164004.1683589-1-ninad@linux.ibm.com> <20231212164004.1683589-3-ninad@linux.ibm.com>
- <20231212-amusement-elevation-28e42bcccc35@spud> <d8b5df1c-c732-4cf3-ae28-cc2017d3b0b6@linux.ibm.com>
- <20231214-stopper-bounce-ca9002869293@spud>
-Message-ID: <CAL_JsqJCbRREnUyKkvkutyWP2GYK2ZqzfC1TS1pwQ=4xY_1J5w@mail.gmail.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Fri, 15 Dec 2023 08:51:03 +1030
+Subject: [PATCH v4 2/2] i2c: aspeed: Acknowledge Tx done with and
+ without ACK irq late
+In-Reply-To: <2eab42cde34723a195e7a0287db08b25f8388a3b.camel@codeconstruct.com.au>
+References: <20231211102217.2436294-1-quan@os.amperecomputing.com>
+	 <20231211102217.2436294-3-quan@os.amperecomputing.com>
+	 <2eab42cde34723a195e7a0287db08b25f8388a3b.camel@codeconstruct.com.au>
+Message-ID: <54cba87a0df233b8762e43b742afe8e44a77a60c.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 14, 2023 at 10:35?AM Conor Dooley <conor@kernel.org> wrote:
->
-> On Thu, Dec 14, 2023 at 09:34:39AM -0600, Ninad Palsule wrote:
-> > Hello Conor,
-> >
-> > On 12/12/23 11:14, Conor Dooley wrote:
-> > > Hey,
-> > >
-> > > On Tue, Dec 12, 2023 at 10:39:58AM -0600, Ninad Palsule wrote:
-> > > > From: Johannes Holland <johannes.holland@infineon.com>
-> > > >
-> > > > Add a dt schema to support device tree bindings
-> > > "Add bindings for..."
-> > Fixed.
-> > >
-> > > > for the generic I2C
-> > > > physical layer. Refer to the TCG PC Client Platform TPM Profile (PTP)
-> > > > Specification for TPM 2.0 v1.04 Revision 14.
-> > > >
-> > > > This includes descriptions for the Nuvoton and Infineon devices.
-> > > >
-> > > > OpenBMC-Staging-Count: 3
-> > > I have no idea what this is, but it needs to be removed from the patch.
-> > Removed.
-> > >
-> > > > Signed-off-by: Johannes Holland <johannes.holland@infineon.com>
-> > > > Signed-off-by: Joel Stanley <joel@jms.id.au>
-> > > > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> > > > ---
-> > > >   .../bindings/security/tpm/tpm-tis-i2c.yaml    | 50 +++++++++++++++++++
-> > > >   1 file changed, 50 insertions(+)
-> > > >   create mode 100644 Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
-> > > > new file mode 100644
-> > > > index 000000000000..de1e34065748
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
-> > > > @@ -0,0 +1,50 @@
-> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > > +%YAML 1.2
-> > > > +---
-> > > > +$id: http://devicetree.org/schemas/security/tpm/tpm-tis-i2c.yaml#
-> > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > > > +
-> > > > +title: I2C PTP based TPM Devices
-> > > > +
-> > > > +maintainers:
-> > > > +  - Johannes Holland <johannes.holland@infineon.com>
-> > > > +
-> > > > +description:
-> > > > +  Device Tree Bindings for I2C based Trusted Platform Module (TPM).
-> > > s/Device Tree Bindings for //. Doesn't dt_binding_check now complain if
-> > > you have this in a title or description?
-> > Fixed.
-> > >
-> > > > +properties:
-> > > > +  $nodename:
-> > > > +    pattern: "^tpm(@[0-9a-f]+)?$"
-> > > > +
-> > > > +  compatible:
-> > > > +    oneOf:
-> > > > +      - description: Infineon's Trusted Platform Module (TPM) (SLB9673).
-> > > > +        items:
-> > > > +          - const: infineon,slb9673
-> > > > +          - const: tcg,tpm-tis-i2c
-> > > > +      - description: Nuvoton's Trusted Platform Module (TPM) (NPCT75x).
-> > > > +        items:
-> > > > +          - const: nuvoton,npct75x
-> > > > +          - const: tcg,tpm-tis-i2c
->
-> Also, another thought - the bus is not usually encoded in the compatible
-> string, so it would be good to remove that.
+> On Mon, 2023-12-11 at 17:22 +0700, Quan Nguyen wrote:
+> > Commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in
+> > interrupt handler") acknowledges most interrupts early before the slave
+> > irq handler is executed, except for the "Receive Done Interrupt status"
+> > which is acknowledged late in the interrupt.
+> > However, it has been observed that the early acknowledgment of "Transmit
+> > Done Interrupt Status" (with ACK or NACK) often causes the interrupt to
+> > be raised in READ REQUEST state, that shows the
+> > "Unexpected ACK on read request." complaint messages.
+> > 
+> > Assuming that the "Transmit Done" interrupt should only be acknowledged
+> > once it is truly processed, this commit fixes that issue by acknowledging
+> > interrupts for both ACK and NACK cases late in the interrupt handler.
+> > 
+> > Fixes: 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in interrupt handler")
+> > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
+> 
+> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-True, but we already have 3 different bus variants in this case. So
-that ship has sailed.
+So I just booted this series on v6.7-rc5 under qemu v8.2.0-rc4 and
+found this:
 
-Rob
+```
+$ qemu-system-arm \
+	-M ast2600-evb \
+	-kernel build.aspeed_g5/arch/arm/boot/zImage \
+	-dtb build.aspeed_g5/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dtb \
+	-initrd ~/src/buildroot.org/buildroot/output/images/rootfs.cpio.xz \
+	-nographic 2>&1 \
+	| ts -s
+...
+00:00:03 [    1.089187] Freeing initrd memory: 3308K
+00:00:05 smbus: error: Unexpected send start condition in state 1
+00:00:05 smbus: error: Unexpected write in state -1
+00:00:06 [    3.685731] aspeed-i2c-bus 1e78a400.i2c-bus: i2c bus 7 registered, irq 48
+00:00:06 [    3.688918] aspeed-i2c-bus 1e78a480.i2c-bus: i2c bus 8 registered, irq 49
+00:00:06 [    3.692326] aspeed-i2c-bus 1e78a500.i2c-bus: i2c bus 9 registered, irq 50
+00:00:06 [    3.693757] aspeed-i2c-bus 1e78a680.i2c-bus: i2c bus 12 registered, irq 51
+00:00:06 [    3.695070] aspeed-i2c-bus 1e78a700.i2c-bus: i2c bus 13 registered, irq 52
+00:00:06 [    3.696184] aspeed-i2c-bus 1e78a780.i2c-bus: i2c bus 14 registered, irq 53
+00:00:06 [    3.697144] aspeed-i2c-bus 1e78a800.i2c-bus: i2c bus 15 registered, irq 54
+00:00:06 [    3.699061] aspeed-video 1e700000.video: irq 55
+00:00:06 [    3.699254] aspeed-video 1e700000.video: assigned reserved memory node video
+00:00:06 [    3.702755] aspeed-video 1e700000.video: alloc mem size(24576) at 0xbc000000 for jpeg header
+00:00:06 [    3.706139] Driver for 1-wire Dallas network protocol.
+00:00:07 smbus: error: Unexpected send start condition in state -1
+00:00:07 smbus: error: Unexpected write in state -1
+00:00:10 smbus: error: Unexpected send start condition in state -1
+00:00:10 smbus: error: Unexpected write in state -1
+00:00:12 smbus: error: Unexpected send start condition in state -1
+00:00:12 smbus: error: Unexpected write in state -1
+00:00:14 smbus: error: Unexpected send start condition in state -1
+00:00:14 smbus: error: Unexpected write in state -1
+00:00:17 smbus: error: Unexpected send start condition in state -1
+00:00:17 smbus: error: Unexpected write in state -1
+00:00:18 [   14.080141] adt7475 7-002e: Error configuring attenuator bypass
+00:00:19 smbus: error: Unexpected send start condition in state -1
+00:00:19 smbus: error: Unexpected write in state -1
+00:00:21 smbus: error: Unexpected send start condition in state -1
+00:00:21 smbus: error: Unexpected write in state -1
+00:00:24 smbus: error: Unexpected send start condition in state -1
+00:00:24 smbus: error: Unexpected write in state -1
+```
+
+The smbus errors do not occur if I revert this patch.
+
+Can you look into qemu to see if it's a bug in the aspeed i2c
+controller model's state machine?
+
+Cheers,
+
+Andrew
