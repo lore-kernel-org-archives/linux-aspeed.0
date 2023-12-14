@@ -1,91 +1,91 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 14 Dec 2023 09:06:54 -0600
-Subject: [PATCH v1 3/8] ARM: dts: aspeed: System1: IBM system1 BMC board
-In-Reply-To: <81d90c0d-9d7e-43a9-ade8-16b85a242b48@linaro.org>
+Date: Thu, 14 Dec 2023 09:34:39 -0600
+Subject: [PATCH v1 2/8] dt-bindings: tpm: Add schema for TIS I2C devices
+In-Reply-To: <20231212-amusement-elevation-28e42bcccc35@spud>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-4-ninad@linux.ibm.com>
- <81d90c0d-9d7e-43a9-ade8-16b85a242b48@linaro.org>
-Message-ID: <e8e4e5fe-5fa6-4098-97fc-7c6a48da9c4e@linux.ibm.com>
+ <20231212164004.1683589-3-ninad@linux.ibm.com>
+ <20231212-amusement-elevation-28e42bcccc35@spud>
+Message-ID: <d8b5df1c-c732-4cf3-ae28-cc2017d3b0b6@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Krzysztof,
+Hello Conor,
 
-
-On 12/12/23 14:20, Krzysztof Kozlowski wrote:
-> On 12/12/2023 17:39, Ninad Palsule wrote:
->> From: Andrew Geissler <geissonator@yahoo.com>
+On 12/12/23 11:14, Conor Dooley wrote:
+> Hey,
+>
+> On Tue, Dec 12, 2023 at 10:39:58AM -0600, Ninad Palsule wrote:
+>> From: Johannes Holland <johannes.holland@infineon.com>
 >>
->> Add a device tree for IBM system1 BMC board. It uses AST2600 SOC.
+>> Add a dt schema to support device tree bindings
+> "Add bindings for..."
+Fixed.
+>
+>> for the generic I2C
+>> physical layer. Refer to the TCG PC Client Platform TPM Profile (PTP)
+>> Specification for TPM 2.0 v1.04 Revision 14.
 >>
->> Tested:
->>      This board is tested using the simics simulator.
+>> This includes descriptions for the Nuvoton and Infineon devices.
 >>
->> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+>> OpenBMC-Staging-Count: 3
+> I have no idea what this is, but it needs to be removed from the patch.
+Removed.
+>
+>> Signed-off-by: Johannes Holland <johannes.holland@infineon.com>
+>> Signed-off-by: Joel Stanley <joel@jms.id.au>
 >> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 >> ---
->>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
->>   .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 188 ++++++++++++++++++
->>   2 files changed, 189 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>>   .../bindings/security/tpm/tpm-tis-i2c.yaml    | 50 +++++++++++++++++++
+>>   1 file changed, 50 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
 >>
->> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
->> index 3e3e6b96cb79..6f7ed11978ff 100644
->> --- a/arch/arm/boot/dts/aspeed/Makefile
->> +++ b/arch/arm/boot/dts/aspeed/Makefile
->> @@ -35,6 +35,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>   	aspeed-bmc-ibm-rainier.dtb \
->>   	aspeed-bmc-ibm-rainier-1s4u.dtb \
->>   	aspeed-bmc-ibm-rainier-4u.dtb \
->> +	aspeed-bmc-ibm-system1.dtb \
->>   	aspeed-bmc-intel-s2600wf.dtb \
->>   	aspeed-bmc-inspur-fp5280g2.dtb \
->>   	aspeed-bmc-inspur-nf5280m6.dtb \
->> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> diff --git a/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
 >> new file mode 100644
->> index 000000000000..01291b407f59
+>> index 000000000000..de1e34065748
 >> --- /dev/null
->> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
->> @@ -0,0 +1,188 @@
->> +// SPDX-License-Identifier: GPL-2.0-or-later
->> +// Copyright 2023 IBM Corp.
->> +/dts-v1/;
+>> +++ b/Documentation/devicetree/bindings/security/tpm/tpm-tis-i2c.yaml
+>> @@ -0,0 +1,50 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/security/tpm/tpm-tis-i2c.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 >> +
->> +#include "aspeed-g6.dtsi"
->> +#include <dt-bindings/gpio/aspeed-gpio.h>
->> +#include <dt-bindings/i2c/i2c.h>
->> +#include <dt-bindings/leds/leds-pca955x.h>
+>> +title: I2C PTP based TPM Devices
 >> +
->> +/ {
->> +	model = "System1";
->> +	compatible = "ibm,system1-bmc", "aspeed,ast2600";
+>> +maintainers:
+>> +  - Johannes Holland <johannes.holland@infineon.com>
 >> +
->> +	chosen {
->> +		stdout-path = &uart5;
->> +		bootargs = "console=ttyS4,115200n8 earlycon";
-> Drop early con, debugging feature not release. Then use stdout path
-> alone, so drop console as well.
-Fixed as per your suggestion.
->
->> +	};
->> +
->> +	memory at 80000000 {
->> +		device_type = "memory";
->> +		reg = <0x80000000 0x40000000>;
->> +	};
->> +
->> +	reserved-memory {
->> +		#address-cells = <1>;
->> +		#size-cells = <1>;
->> +		ranges;
->> +
->> +		event_log: tcg_event_log at b3d00000 {
-> No underscores in node names.
-
+>> +description:
+>> +  Device Tree Bindings for I2C based Trusted Platform Module (TPM).
+> s/Device Tree Bindings for //. Doesn't dt_binding_check now complain if
+> you have this in a title or description?
 Fixed.
+>
+>> +properties:
+>> +  $nodename:
+>> +    pattern: "^tpm(@[0-9a-f]+)?$"
+>> +
+>> +  compatible:
+>> +    oneOf:
+>> +      - description: Infineon's Trusted Platform Module (TPM) (SLB9673).
+>> +        items:
+>> +          - const: infineon,slb9673
+>> +          - const: tcg,tpm-tis-i2c
+>> +      - description: Nuvoton's Trusted Platform Module (TPM) (NPCT75x).
+>> +        items:
+>> +          - const: nuvoton,npct75x
+>> +          - const: tcg,tpm-tis-i2c
+>> +      - const: tcg,tpm-tis-i2c
+> IMO this should be removed and this fallback should only be used in
+> combination with device specific compatibles, like you have here for the
+> infineon and nuvoton devices.
+
+As Guenter mentioned I need to keep it as tacoma board is just using 
+this string.
 
 Thanks for the review.
 
@@ -94,7 +94,30 @@ Regards,
 Ninad
 
 >
+> Cheers,
+> Conor.
 >
-> Best regards,
-> Krzysztof
->
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +
+>> +additionalProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    i2c {
+>> +      #address-cells = <1>;
+>> +      #size-cells = <0>;
+>> +
+>> +      tpm at 2e {
+>> +        compatible = "nuvoton,npct75x", "tcg,tpm-tis-i2c";
+>> +        reg = <0x2e>;
+>> +      };
+>> +    };
+>> +...
+>> -- 
+>> 2.39.2
+>>
