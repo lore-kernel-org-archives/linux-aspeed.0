@@ -1,11 +1,11 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 14 Dec 2023 09:04:41 -0600
-Subject: [PATCH v1 8/8] ARM: dts: aspeed: System1: PS, sensor and more
-In-Reply-To: <5b98538a-8ffe-42ec-b020-514dcfcebba3@linaro.org>
+Date: Thu, 14 Dec 2023 09:06:54 -0600
+Subject: [PATCH v1 3/8] ARM: dts: aspeed: System1: IBM system1 BMC board
+In-Reply-To: <81d90c0d-9d7e-43a9-ade8-16b85a242b48@linaro.org>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-9-ninad@linux.ibm.com>
- <5b98538a-8ffe-42ec-b020-514dcfcebba3@linaro.org>
-Message-ID: <7b14aa01-24c2-425c-8bf3-48e5b7890b95@linux.ibm.com>
+ <20231212164004.1683589-4-ninad@linux.ibm.com>
+ <81d90c0d-9d7e-43a9-ade8-16b85a242b48@linaro.org>
+Message-ID: <e8e4e5fe-5fa6-4098-97fc-7c6a48da9c4e@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,67 +14,78 @@ Content-Transfer-Encoding: 7bit
 
 Hello Krzysztof,
 
-On 12/12/23 14:26, Krzysztof Kozlowski wrote:
-> On 12/12/2023 17:40, Ninad Palsule wrote:
->> This drop adds following devices in the device tree.
->> - EEPROM/VPD
->> - Power supplies
->> - Humidity, pressure and temperature sensors.
->> - Trusted platform module(TPM) chip
+
+On 12/12/23 14:20, Krzysztof Kozlowski wrote:
+> On 12/12/2023 17:39, Ninad Palsule wrote:
+>> From: Andrew Geissler <geissonator@yahoo.com>
+>>
+>> Add a device tree for IBM system1 BMC board. It uses AST2600 SOC.
 >>
 >> Tested:
 >>      This board is tested using the simics simulator.
 >>
+>> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
 >> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 >> ---
-> Don't mix DTS with drivers. DTS and drivers go via different subsystems
-> and cannot have dependencies, so why DTS is patch #6, then driver #7 and
-> now again DTS #7?
-I have sent a driver patch as a separate patchset and removed it from 
-this patchset.
->
->
->>   .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 76 +++++++++++++++++++
->>   1 file changed, 76 insertions(+)
+>>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>>   .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 188 ++++++++++++++++++
+>>   2 files changed, 189 insertions(+)
+>>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
 >>
+>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>> index 3e3e6b96cb79..6f7ed11978ff 100644
+>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>> @@ -35,6 +35,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>   	aspeed-bmc-ibm-rainier.dtb \
+>>   	aspeed-bmc-ibm-rainier-1s4u.dtb \
+>>   	aspeed-bmc-ibm-rainier-4u.dtb \
+>> +	aspeed-bmc-ibm-system1.dtb \
+>>   	aspeed-bmc-intel-s2600wf.dtb \
+>>   	aspeed-bmc-inspur-fp5280g2.dtb \
+>>   	aspeed-bmc-inspur-nf5280m6.dtb \
 >> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
->> index 75562aa63701..d960b938fe8d 100644
->> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> new file mode 100644
+>> index 000000000000..01291b407f59
+>> --- /dev/null
 >> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
->> @@ -461,6 +461,11 @@ &kcs3 {
->>   &i2c0 {
->>   	status = "okay";
->>   
->> +	eeprom at 50 {
->> +		compatible = "atmel,24c64";
->> +		reg = <0x50>;
+>> @@ -0,0 +1,188 @@
+>> +// SPDX-License-Identifier: GPL-2.0-or-later
+>> +// Copyright 2023 IBM Corp.
+>> +/dts-v1/;
+>> +
+>> +#include "aspeed-g6.dtsi"
+>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>> +#include <dt-bindings/i2c/i2c.h>
+>> +#include <dt-bindings/leds/leds-pca955x.h>
+>> +
+>> +/ {
+>> +	model = "System1";
+>> +	compatible = "ibm,system1-bmc", "aspeed,ast2600";
+>> +
+>> +	chosen {
+>> +		stdout-path = &uart5;
+>> +		bootargs = "console=ttyS4,115200n8 earlycon";
+> Drop early con, debugging feature not release. Then use stdout path
+> alone, so drop console as well.
+Fixed as per your suggestion.
+>
 >> +	};
 >> +
->>   	regulator at 60 {
->>   		compatible = "maxim,max8952";
->>   		reg = <0x60>;
->> @@ -655,6 +660,25 @@ pca0: pca9539 at 74 {
->>   
->>   &i2c2 {
->>   	status = "okay";
->> +
->> +	power-supply at 58 {
->> +		compatible = "ibm,cffps";
->> +		reg = <0x58>;
+>> +	memory at 80000000 {
+>> +		device_type = "memory";
+>> +		reg = <0x80000000 0x40000000>;
 >> +	};
 >> +
->> +	power-supply at 59 {
->> +		compatible = "ibm,cffps";
->> +		reg = <0x59>;
->> +	};
+>> +	reserved-memory {
+>> +		#address-cells = <1>;
+>> +		#size-cells = <1>;
+>> +		ranges;
 >> +
->> +	power-supply at 5a {
->> +		compatible = "ibm,cffps";
->> +		reg = <0x5a>;
->> +	};
-> Missing blank line
+>> +		event_log: tcg_event_log at b3d00000 {
+> No underscores in node names.
 
-Fixed it.
+Fixed.
 
 Thanks for the review.
 
@@ -83,10 +94,6 @@ Regards,
 Ninad
 
 >
->> +	power-supply at 5b {
->> +		compatible = "ibm,cffps";
->> +		reg = <0x5b>;
->> +	};
 >
 > Best regards,
 > Krzysztof
