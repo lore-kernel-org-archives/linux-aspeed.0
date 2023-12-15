@@ -1,11 +1,11 @@
 From: Andi Shyti <andi.shyti@kernel.org>
-Date: Fri, 15 Dec 2023 02:42:48 +0100
-Subject: [PATCH v4 1/2] i2c: aspeed: Handle the coalesced stop conditions
- with the start conditions.
-In-Reply-To: <20231211102217.2436294-2-quan@os.amperecomputing.com>
+Date: Fri, 15 Dec 2023 02:45:05 +0100
+Subject: [PATCH v4 2/2] i2c: aspeed: Acknowledge Tx done with and without
+ ACK irq late
+In-Reply-To: <20231211102217.2436294-3-quan@os.amperecomputing.com>
 References: <20231211102217.2436294-1-quan@os.amperecomputing.com>
- <20231211102217.2436294-2-quan@os.amperecomputing.com>
-Message-ID: <20231215014248.6f7sqh6n4kmhe4js@zenone.zhora.eu>
+ <20231211102217.2436294-3-quan@os.amperecomputing.com>
+Message-ID: <20231215014505.he6ozzxd5jnjgvol@zenone.zhora.eu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,32 +14,24 @@ Content-Transfer-Encoding: 7bit
 
 Hi Quan,
 
-On Mon, Dec 11, 2023 at 05:22:16PM +0700, Quan Nguyen wrote:
-> Some masters may drive the transfers with low enough latency between
-> the nak/stop phase of the current command and the start/address phase
-> of the following command that the interrupts are coalesced by the
-> time we process them.
-> Handle the stop conditions before processing SLAVE_MATCH to fix the
-> complaints that sometimes occur below.
+On Mon, Dec 11, 2023 at 05:22:17PM +0700, Quan Nguyen wrote:
+> Commit 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in
+> interrupt handler") acknowledges most interrupts early before the slave
+> irq handler is executed, except for the "Receive Done Interrupt status"
+> which is acknowledged late in the interrupt.
+> However, it has been observed that the early acknowledgment of "Transmit
+> Done Interrupt Status" (with ACK or NACK) often causes the interrupt to
+> be raised in READ REQUEST state, that shows the
+> "Unexpected ACK on read request." complaint messages.
 > 
-> "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
-> 0x00000086, but was 0x00000084"
+> Assuming that the "Transmit Done" interrupt should only be acknowledged
+> once it is truly processed, this commit fixes that issue by acknowledging
+> interrupts for both ACK and NACK cases late in the interrupt handler.
 > 
-> Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
+> Fixes: 2be6b47211e1 ("i2c: aspeed: Acknowledge most interrupts early in interrupt handler")
 > Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
-> ---
-> v4:
->   + Add an extra empty line before the comment                        [Andrew]
-> 
-> Note: I'd like to keep adding Reviewed-by Andrew and Andi for this patch
-> eventhough there is an extra empty line added before the comment as mentioned
-> above. Thanks for the review.
 
-that's OK and you should. You would remove the r-b/a-b only if
-you do some major changes. Besides, this change was asked both by
-me and Andrew.
+Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
 
 Thanks,
 Andi
