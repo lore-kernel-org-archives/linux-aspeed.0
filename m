@@ -1,41 +1,27 @@
-From: Wolfram Sang <wsa@kernel.org>
-Date: Tue, 19 Dec 2023 21:55:58 +0100
-Subject: [PATCH v4 1/2] i2c: aspeed: Handle the coalesced stop conditions
- with the start conditions.
-In-Reply-To: <20231211102217.2436294-2-quan@os.amperecomputing.com>
-References: <20231211102217.2436294-1-quan@os.amperecomputing.com>
- <20231211102217.2436294-2-quan@os.amperecomputing.com>
-Message-ID: <ZYIDXru48jqk6MH0@shikoro>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Wed, 20 Dec 2023 09:07:33 +0100
+Subject: [PATCH v8] ARM: dts: aspeed: Adding Facebook Bletchley BMC
+In-Reply-To: <20211207094923.422422-1-howard.chiu@quantatw.com>
+References: <20211207094923.422422-1-howard.chiu@quantatw.com>
+Message-ID: <20231220080733.GA30641@wunner.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 11, 2023 at 05:22:16PM +0700, Quan Nguyen wrote:
-> Some masters may drive the transfers with low enough latency between
-> the nak/stop phase of the current command and the start/address phase
-> of the following command that the interrupts are coalesced by the
-> time we process them.
-> Handle the stop conditions before processing SLAVE_MATCH to fix the
-> complaints that sometimes occur below.
-> 
-> "aspeed-i2c-bus 1e78a040.i2c-bus: irq handled != irq. Expected
-> 0x00000086, but was 0x00000084"
-> 
-> Fixes: f9eb91350bb2 ("i2c: aspeed: added slave support for Aspeed I2C driver")
-> Signed-off-by: Quan Nguyen <quan@os.amperecomputing.com>
-> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Reviewed-by: Andi Shyti <andi.shyti@kernel.org>
+On Tue, Dec 07, 2021 at 05:49:24PM +0800, Howard Chiu wrote:
+> Initial introduction of Facebook Bletchley equipped with
+> Aspeed 2600 BMC SoC.
+[...]
+> +		tpmdev at 0 {
+> +			compatible = "tcg,tpm_tis-spi";
 
-Applied to for-current, thanks!
+What's the chip used on this board?  Going forward, the DT schema for TPMs
+requires the exact chip name in addition to the generic "tcg,tpm_tis-spi".
 
-I'll wait with patch 2. It seems there are issues to be solved before.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20231219/acfacb3b/attachment.sig>
+> +			spi-max-frequency = <33000000>;
+> +			reg = <0>;
+> +		};
+> +	};
