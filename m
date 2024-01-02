@@ -1,129 +1,55 @@
-From: Andrew Jeffery <andrew@aj.id.au>
-Date: Tue, 18 Jul 2017 14:54:53 +0930
-Subject: [PATCH v2 4/4] pinctrl: aspeed: g5: Add USB device and host support
-In-Reply-To: <20170718052453.14316-1-andrew@aj.id.au>
-References: <20170718052453.14316-1-andrew@aj.id.au>
-Message-ID: <20170718052453.14316-5-andrew@aj.id.au>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Tue,  2 Jan 2024 12:44:05 +0800
+Subject: [PATCH v1 1/5] ARM: dts: aspeed: Harma: Revise SGPIO line name.
+In-Reply-To: <20240102044409.3810873-1-peteryin.openbmc@gmail.com>
+References: <20240102044409.3810873-1-peteryin.openbmc@gmail.com>
+Message-ID: <20240102044409.3810873-2-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Implement the AST2500 USB functions as described by the devicetree
-bindings. The AST2500 exposes five USB controllers through two USB
-ports. Similar to the AST2400, the pins exposing USB are outliers with
-respect to the rest of the pinmux as they not capable of GPIO.
+The same name as reset-control-smb-e1s
+change to reset-control-smb-e1s-0 and reset-control-smb-e1s-0.
 
-Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 58 +++++++++++++++++++++++++++++-
- 1 file changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-index 68aa04664a62..634b371da43a 100644
---- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-+++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-@@ -25,7 +25,7 @@
- #include "../pinctrl-utils.h"
- #include "pinctrl-aspeed.h"
- 
--#define ASPEED_G5_NR_PINS 232
-+#define ASPEED_G5_NR_PINS 236
- 
- #define COND1		{ ASPEED_IP_SCU, SCU90, BIT(6), 0, 0 }
- #define COND2		{ ASPEED_IP_SCU, SCU94, GENMASK(1, 0), 0, 0 }
-@@ -1724,6 +1724,48 @@ FUNC_GROUP_DECL(LPCRST, G22);
- 
- FUNC_GROUP_DECL(ESPI, G21, G20, D22, E22, C22, F21, F22, G22);
- 
-+#define A7 232
-+SIG_EXPR_LIST_DECL_SINGLE(USB2AHDP, USB2AH, SIG_DESC_SET(SCU90, 29));
-+SIG_EXPR_LIST_DECL_SINGLE(USB2ADDP, USB2AD, SIG_DESC_BIT(SCU90, 29, 0));
-+MS_PIN_DECL_(A7, SIG_EXPR_LIST_PTR(USB2AHDP), SIG_EXPR_LIST_PTR(USB2ADDP));
-+
-+#define A8 233
-+SIG_EXPR_LIST_DECL_SINGLE(USB2AHDN, USB2AH, SIG_DESC_SET(SCU90, 29));
-+SIG_EXPR_LIST_DECL_SINGLE(USB2ADDN, USB2AD, SIG_DESC_BIT(SCU90, 29, 0));
-+MS_PIN_DECL_(A8, SIG_EXPR_LIST_PTR(USB2AHDN), SIG_EXPR_LIST_PTR(USB2ADDN));
-+
-+FUNC_GROUP_DECL(USB2AH, A7, A8);
-+FUNC_GROUP_DECL(USB2AD, A7, A8);
-+
-+#define USB11BHID_DESC  { ASPEED_IP_SCU, SCU94, GENMASK(14, 13), 0, 0 }
-+#define USB2BD_DESC   { ASPEED_IP_SCU, SCU94, GENMASK(14, 13), 1, 0 }
-+#define USB2BH1_DESC { ASPEED_IP_SCU, SCU94, GENMASK(14, 13), 2, 0 }
-+#define USB2BH2_DESC { ASPEED_IP_SCU, SCU94, GENMASK(14, 13), 3, 0 }
-+
-+#define B6 234
-+SIG_EXPR_LIST_DECL_SINGLE(USB11BDP, USB11BHID, USB11BHID_DESC);
-+SIG_EXPR_LIST_DECL_SINGLE(USB2BDDP, USB2BD, USB2BD_DESC);
-+SIG_EXPR_DECL(USB2BHDP1, USB2BH, USB2BH1_DESC);
-+SIG_EXPR_DECL(USB2BHDP2, USB2BH, USB2BH2_DESC);
-+SIG_EXPR_LIST_DECL(USB2BHDP, SIG_EXPR_PTR(USB2BHDP1, USB2BH),
-+		SIG_EXPR_PTR(USB2BHDP2, USB2BH));
-+MS_PIN_DECL_(B6, SIG_EXPR_LIST_PTR(USB11BDP), SIG_EXPR_LIST_PTR(USB2BDDP),
-+		SIG_EXPR_LIST_PTR(USB2BHDP));
-+
-+#define A6 235
-+SIG_EXPR_LIST_DECL_SINGLE(USB11BDN, USB11BHID, USB11BHID_DESC);
-+SIG_EXPR_LIST_DECL_SINGLE(USB2BDN, USB2BD, USB2BD_DESC);
-+SIG_EXPR_DECL(USB2BHDN1, USB2BH, USB2BH1_DESC);
-+SIG_EXPR_DECL(USB2BHDN2, USB2BH, USB2BH2_DESC);
-+SIG_EXPR_LIST_DECL(USB2BHDN, SIG_EXPR_PTR(USB2BHDN1, USB2BH),
-+		SIG_EXPR_PTR(USB2BHDN2, USB2BH));
-+MS_PIN_DECL_(A6, SIG_EXPR_LIST_PTR(USB11BDN), SIG_EXPR_LIST_PTR(USB2BDN),
-+		SIG_EXPR_LIST_PTR(USB2BHDN));
-+
-+FUNC_GROUP_DECL(USB11BHID, B6, A6);
-+FUNC_GROUP_DECL(USB2BD, B6, A6);
-+FUNC_GROUP_DECL(USB2BH, B6, A6);
-+
- /* Pins, groups and functions are sort(1):ed alphabetically for sanity */
- 
- static struct pinctrl_pin_desc aspeed_g5_pins[ASPEED_G5_NR_PINS] = {
-@@ -1743,6 +1785,9 @@ static struct pinctrl_pin_desc aspeed_g5_pins[ASPEED_G5_NR_PINS] = {
- 	ASPEED_PINCTRL_PIN(A3),
- 	ASPEED_PINCTRL_PIN(A4),
- 	ASPEED_PINCTRL_PIN(A5),
-+	ASPEED_PINCTRL_PIN(A6),
-+	ASPEED_PINCTRL_PIN(A7),
-+	ASPEED_PINCTRL_PIN(A8),
- 	ASPEED_PINCTRL_PIN(A9),
- 	ASPEED_PINCTRL_PIN(AA1),
- 	ASPEED_PINCTRL_PIN(AA19),
-@@ -1777,6 +1822,7 @@ static struct pinctrl_pin_desc aspeed_g5_pins[ASPEED_G5_NR_PINS] = {
- 	ASPEED_PINCTRL_PIN(B3),
- 	ASPEED_PINCTRL_PIN(B4),
- 	ASPEED_PINCTRL_PIN(B5),
-+	ASPEED_PINCTRL_PIN(B6),
- 	ASPEED_PINCTRL_PIN(B9),
- 	ASPEED_PINCTRL_PIN(C1),
- 	ASPEED_PINCTRL_PIN(C11),
-@@ -2111,6 +2157,11 @@ static const struct aspeed_pin_group aspeed_g5_groups[] = {
- 	ASPEED_PINCTRL_GROUP(TXD3),
- 	ASPEED_PINCTRL_GROUP(TXD4),
- 	ASPEED_PINCTRL_GROUP(UART6),
-+	ASPEED_PINCTRL_GROUP(USB11BHID),
-+	ASPEED_PINCTRL_GROUP(USB2AD),
-+	ASPEED_PINCTRL_GROUP(USB2AH),
-+	ASPEED_PINCTRL_GROUP(USB2BD),
-+	ASPEED_PINCTRL_GROUP(USB2BH),
- 	ASPEED_PINCTRL_GROUP(USBCKI),
- 	ASPEED_PINCTRL_GROUP(VGABIOSROM),
- 	ASPEED_PINCTRL_GROUP(VGAHS),
-@@ -2275,6 +2326,11 @@ static const struct aspeed_pin_function aspeed_g5_functions[] = {
- 	ASPEED_PINCTRL_FUNC(TXD3),
- 	ASPEED_PINCTRL_FUNC(TXD4),
- 	ASPEED_PINCTRL_FUNC(UART6),
-+	ASPEED_PINCTRL_FUNC(USB11BHID),
-+	ASPEED_PINCTRL_FUNC(USB2AD),
-+	ASPEED_PINCTRL_FUNC(USB2AH),
-+	ASPEED_PINCTRL_FUNC(USB2BD),
-+	ASPEED_PINCTRL_FUNC(USB2BH),
- 	ASPEED_PINCTRL_FUNC(USBCKI),
- 	ASPEED_PINCTRL_FUNC(VGABIOSROM),
- 	ASPEED_PINCTRL_FUNC(VGAHS),
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
+
+Base on : https://lore.kernel.org/all/CACPK8XePx+PvDKzPMjPRn_g9z8yrtAmLvP8Qbepm1AVjuCbaKw at mail.gmail.com/
+
+Change log:
+
+v1
+  - Patch 0001 - Revise SGPIO line name.
+  - Patch 0002 - Mapping ttyS2 to UART4.
+  - Patch 0003 - Remove Vuart.
+  - Patch 0004 - Add cpu power good line name.
+  - Patch 0005 - Add spi-gpio.
+
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+index 7db3f9eb0016..8a173863ef24 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+@@ -505,9 +505,9 @@ &sgpiom0 {
+ 	"","reset-control-cpu0-p1-mux",
+ 	"","reset-control-e1s-mux",
+ 	"power-host-good","reset-control-mb-mux",
+-	"","reset-control-smb-e1s",
++	"","reset-control-smb-e1s-0",
+ 	/*E0-E3 line 64-71*/
+-	"","reset-control-smb-e1s",
++	"","reset-control-smb-e1s-1",
+ 	"host-ready-n","reset-control-srst",
+ 	"presence-e1s-0","reset-control-usb-hub",
+ 	"","reset-control",
 -- 
-2.11.0
+2.25.1
 
