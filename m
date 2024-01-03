@@ -1,61 +1,39 @@
-From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Tue,  2 Jan 2024 12:44:09 +0800
-Subject: [PATCH v1 5/5] ARM: dts: aspeed: Harma: Add spi-gpio
-In-Reply-To: <20240102044409.3810873-1-peteryin.openbmc@gmail.com>
-References: <20240102044409.3810873-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240102044409.3810873-6-peteryin.openbmc@gmail.com>
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Tue, 2 Jan 2024 16:11:28 -0800
+Subject: [PATCH v2 3/6] ARM: dts: aspeed: Common dtsi for Facebook
+ AST2600 Network BMCs
+In-Reply-To: <20231220081402.GA3831@wunner.de>
+References: <20210805222818.8391-1-rentao.bupt@gmail.com>
+ <20210805222818.8391-4-rentao.bupt@gmail.com>
+ <20231220081402.GA3831@wunner.de>
+Message-ID: <ZZSmMJ//l972Qbxu@fedora>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add spi-gpio for tpm device.
+Hi Lukas,
 
-Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
----
- .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 21 +++++++++++++++++++
- 1 file changed, 21 insertions(+)
+On Wed, Dec 20, 2023 at 09:14:02AM +0100, Lukas Wunner wrote:
+> On Thu, Aug 05, 2021 at 03:28:15PM -0700, rentao.bupt at gmail.com wrote:
+> > This common descirption is included by all Facebook AST2600 Network BMC
+> > platforms to minimize duplicated device entries across Facebook Network
+> > BMC device trees.
+> [...]
+> > --- /dev/null
+> > +++ b/arch/arm/boot/dts/ast2600-facebook-netbmc-common.dtsi
+> [...]
+> > +		tpmdev at 0 {
+> > +			compatible = "tcg,tpm_tis-spi";
+> 
+> What's the chip used on this board?  Going forward, the DT schema for TPMs
+> requires the exact chip name in addition to the generic "tcg,tpm_tis-spi".
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 36aad01dda20..25ae044cd176 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -28,6 +28,8 @@ aliases {
- 		i2c29 = &imux29;
- 		i2c30 = &imux30;
- 		i2c31 = &imux31;
-+
-+		spi1 = &spi_gpio;
- 	};
- 
- 	chosen {
-@@ -67,6 +69,25 @@ led-2 {
- 			gpios = <&gpio0 124 GPIO_ACTIVE_HIGH>;
- 		};
- 	};
-+
-+	spi_gpio: spi-gpio {
-+		status = "okay";
-+		compatible = "spi-gpio";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-sck = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
-+		gpio-mosi = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
-+		gpio-miso = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
-+		num-chipselects = <1>;
-+		cs-gpios = <&gpio0 ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
-+
-+		tpmdev at 0 {
-+			compatible = "tcg,tpm_tis-spi";
-+			spi-max-frequency = <33000000>;
-+			reg = <0>;
-+		};
-+	};
- };
- 
- // HOST BIOS Debug
--- 
-2.25.1
+Sorry about the late response. It's "infineon,slb9670", and I will
+submit a patch for fix it soon.
 
+
+Cheers,
+
+- Tao
