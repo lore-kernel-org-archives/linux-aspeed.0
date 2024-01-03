@@ -1,35 +1,81 @@
-From: Tao Ren <rentao.bupt@gmail.com>
-Date: Tue, 2 Jan 2024 22:04:47 -0800
-Subject: [PATCH 5/5] ARM: dts: aspeed: Add Facebook Wedge400 BMC
-In-Reply-To: <20231220082714.GA17989@wunner.de>
-References: <20200824211948.12852-1-rentao.bupt@gmail.com>
- <20200824211948.12852-6-rentao.bupt@gmail.com>
- <20231220082714.GA17989@wunner.de>
-Message-ID: <ZZT4/w2eVzMhtsPx@fedora>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Wed, 3 Jan 2024 06:17:10 -0600
+Subject: [PATCH v1 5/5] ARM: dts: aspeed: Harma: Add spi-gpio
+In-Reply-To: <20240102044409.3810873-6-peteryin.openbmc@gmail.com>
+References: <20240102044409.3810873-1-peteryin.openbmc@gmail.com>
+ <20240102044409.3810873-6-peteryin.openbmc@gmail.com>
+Message-ID: <ZZVQRgTe57G4Tc_w@heinlein.vulture-banana.ts.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Lukas,
-
-On Wed, Dec 20, 2023 at 09:27:14AM +0100, Lukas Wunner wrote:
-> On Mon, Aug 24, 2020 at 02:19:48PM -0700, rentao.bupt at gmail.com wrote:
-> > Add initial version of device tree for Facebook Wedge400 (AST2500) BMC.
-> [...]
-> > --- /dev/null
-> > +++ b/arch/arm/boot/dts/aspeed-bmc-facebook-wedge400.dts
-> [...]
-> > +		tpmdev at 0 {
-> > +			compatible = "tcg,tpm_tis-spi";
+On Tue, Jan 02, 2024 at 12:44:09PM +0800, Peter Yin wrote:
+> Add spi-gpio for tpm device.
 > 
-> What's the chip used on this board?  Going forward, the DT schema for TPMs
-> requires the exact chip name in addition to the generic "tcg,tpm_tis-spi".
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
+> ---
+>  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 21 +++++++++++++++++++
+>  1 file changed, 21 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> index 36aad01dda20..25ae044cd176 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> @@ -28,6 +28,8 @@ aliases {
+>  		i2c29 = &imux29;
+>  		i2c30 = &imux30;
+>  		i2c31 = &imux31;
+> +
+> +		spi1 = &spi_gpio;
+>  	};
+>  
+>  	chosen {
+> @@ -67,6 +69,25 @@ led-2 {
+>  			gpios = <&gpio0 124 GPIO_ACTIVE_HIGH>;
+>  		};
+>  	};
+> +
+> +	spi_gpio: spi-gpio {
+> +		status = "okay";
+> +		compatible = "spi-gpio";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		gpio-sck = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
+> +		gpio-mosi = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
+> +		gpio-miso = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
+> +		num-chipselects = <1>;
+> +		cs-gpios = <&gpio0 ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
+> +
+> +		tpmdev at 0 {
+> +			compatible = "tcg,tpm_tis-spi";
 
-Most likely it is "infineon,slb9670", but let me double confirm and will
-prepare a patch for fix later.
+Due to other pending changes, there is a request that all tpm_tis-spi
+also contain a compatible with a chip vendor.  Please add
+"infineon,slb9670".
 
-Cheers,
+See https://lore.kernel.org/lkml/ZZTS0p1hdAchIbKp at heinlein.vulture-banana.ts.net/
+for more context.
 
-- Tao
+> +			spi-max-frequency = <33000000>;
+> +			reg = <0>;
+> +		};
+> +	};
+>  };
+>  
+>  // HOST BIOS Debug
+> -- 
+> 2.25.1
+> 
+
+-- 
+Patrick Williams
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240103/2a756861/attachment.sig>
