@@ -1,5 +1,5 @@
-From: Patrick Williams <patrick@stwcx.xyz>
-Date: Wed, 3 Jan 2024 09:48:51 -0600
+From: Tao Ren <rentao.bupt@gmail.com>
+Date: Wed, 3 Jan 2024 10:16:37 -0800
 Subject: [PATCH v2 3/6] ARM: dts: aspeed: Common dtsi for Facebook
  AST2600 Network BMCs
 In-Reply-To: <20240103124502.GB23899@wunner.de>
@@ -8,12 +8,14 @@ References: <20210805222818.8391-1-rentao.bupt@gmail.com>
  <20231220081402.GA3831@wunner.de>
  <ZZSmMJ//l972Qbxu@fedora>
  <20240103124502.GB23899@wunner.de>
-Message-ID: <ZZWB4wRiAyDtlLJM@heinlein.vulture-banana.ts.net>
+Message-ID: <ZZWkhaiDFOGvcPQy@fedora>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+
+Hi Lukas,
 
 On Wed, Jan 03, 2024 at 01:45:02PM +0100, Lukas Wunner wrote:
 > On Tue, Jan 02, 2024 at 04:11:28PM -0800, Tao Ren wrote:
@@ -44,11 +46,6 @@ On Wed, Jan 03, 2024 at 01:45:02PM +0100, Lukas Wunner wrote:
 > 
 >   e95bdbc arm64: dts: Fix TPM schema violations
 >   63e5dfd ARM: dts: Fix TPM schema violations
-
-Feel free to add to "63e5dfd (ARM: dts: Fix TPM schema violations)":
-
-Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
-
 > 
 > I've now amended the ARM commit to use "infineon,slb9670" for:
 > 
@@ -65,12 +62,14 @@ Reviewed-by: Patrick Williams <patrick@stwcx.xyz>
 > 
 > Lukas
 
--- 
-Patrick Williams
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240103/27f5a874/attachment-0001.sig>
+I've confirmed it's "infineon,slb9670" for both wedge400 and
+ast2600-facebook-netbmc-common.
+
+Pleasr free to add to "63e5dfd (ARM: dts: Fix TPM schema violations)":
+
+Reviewed-by: Tao Ren <rentao.bupt@gmail.com>
+
+
+Cheers,
+
+- Tao
