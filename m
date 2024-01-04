@@ -1,99 +1,59 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 4 Jan 2024 11:41:19 +0800
-Subject: [PATCH v11 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH Control
-In-Reply-To: <20240104034120.3516290-1-billy_tsai@aspeedtech.com>
-References: <20240104034120.3516290-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240104034120.3516290-3-billy_tsai@aspeedtech.com>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Thu,  4 Jan 2024 21:45:27 +0800
+Subject: [PATCH v2 1/6] ARM: dts: aspeed: Harma: Revise SGPIO line name.
+In-Reply-To: <20240104134532.536793-1-peteryin.openbmc@gmail.com>
+References: <20240104134532.536793-1-peteryin.openbmc@gmail.com>
+Message-ID: <20240104134532.536793-2-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the compatible for aspeed,ast2600-pwm-tach device, which can
-support up to 16 PWM outputs and 16 fan tach input.
+The same name as reset-control-smb-e1s
+change to reset-control-smb-e1s-0 and reset-control-smb-e1s-0.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 69 +++++++++++++++++++
- 1 file changed, 69 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
 
-diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-new file mode 100644
-index 000000000000..c615fb10705c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-@@ -0,0 +1,69 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2023 Aspeed, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED G6 PWM and Fan Tach controller
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+description: |
-+  The ASPEED PWM controller can support up to 16 PWM outputs.
-+  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
-+  They are independent hardware blocks, which are different from the
-+  previous version of the ASPEED chip.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-pwm-tach
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  "#pwm-cells":
-+    const: 3
-+
-+patternProperties:
-+  "^fan-[0-9]+$":
-+    $ref: fan-common.yaml#
-+    unevaluatedProperties: false
-+    required:
-+      - tach-ch
-+
-+required:
-+  - reg
-+  - clocks
-+  - resets
-+  - "#pwm-cells"
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/aspeed-clock.h>
-+    pwm_tach: pwm-tach-controller at 1e610000 {
-+      compatible = "aspeed,ast2600-pwm-tach";
-+      reg = <0x1e610000 0x100>;
-+      clocks = <&syscon ASPEED_CLK_AHB>;
-+      resets = <&syscon ASPEED_RESET_PWM>;
-+      #pwm-cells = <3>;
-+
-+      fan-0 {
-+        tach-ch = /bits/ 8 <0x0>;
-+      };
-+
-+      fan-1 {
-+        tach-ch = /bits/ 8 <0x1 0x2>;
-+      };
-+    };
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
+
+Base on : https://lore.kernel.org/all/CACPK8XePx+PvDKzPMjPRn_g9z8yrtAmLvP8Qbepm1AVjuCbaKw at mail.gmail.com/
+
+Change log:
+
+v1 -> v2
+  - Add infineon,slb9670 information for tpm.
+  - Patch 0006 - Add PDB temperature.
+
+v1
+  - Patch 0001 - Revise SGPIO line name.
+  - Patch 0002 - Mapping ttyS2 to UART4.
+  - Patch 0003 - Remove Vuart.
+  - Patch 0004 - Add cpu power good line name.
+  - Patch 0005 - Add spi-gpio.
+
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+index 7db3f9eb0016..8a173863ef24 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+@@ -505,9 +505,9 @@ &sgpiom0 {
+ 	"","reset-control-cpu0-p1-mux",
+ 	"","reset-control-e1s-mux",
+ 	"power-host-good","reset-control-mb-mux",
+-	"","reset-control-smb-e1s",
++	"","reset-control-smb-e1s-0",
+ 	/*E0-E3 line 64-71*/
+-	"","reset-control-smb-e1s",
++	"","reset-control-smb-e1s-1",
+ 	"host-ready-n","reset-control-srst",
+ 	"presence-e1s-0","reset-control-usb-hub",
+ 	"","reset-control",
 -- 
 2.25.1
 
