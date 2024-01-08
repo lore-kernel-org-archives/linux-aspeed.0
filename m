@@ -1,57 +1,122 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 5 Jan 2024 03:01:51 +0800
-Subject: [PATCH v11 3/3] hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED
- g6 PWM/Fan tach
-In-Reply-To: <20240104034120.3516290-4-billy_tsai@aspeedtech.com>
-References: <20240104034120.3516290-4-billy_tsai@aspeedtech.com>
-Message-ID: <202401050234.nDBceclJ-lkp@intel.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 8 Jan 2024 15:43:46 +0800
+Subject: [PATCH v12 1/3] dt-bindings: hwmon: fan: Add fan binding to schema
+In-Reply-To: <20240108074348.735014-1-billy_tsai@aspeedtech.com>
+References: <20240108074348.735014-1-billy_tsai@aspeedtech.com>
+Message-ID: <20240108074348.735014-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy,
+From: Naresh Solanki <naresh.solanki@9elements.com>
 
-kernel test robot noticed the following build errors:
+Add common fan properties bindings to a schema.
 
-[auto build test ERROR on groeck-staging/hwmon-next]
-[also build test ERROR on linus/master v6.7-rc8 next-20240104]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Bindings for fan controllers can reference the common schema for the
+fan
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Billy-Tsai/dt-bindings-hwmon-fan-Add-fan-binding-to-schema/20240104-114552
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git hwmon-next
-patch link:    https://lore.kernel.org/r/20240104034120.3516290-4-billy_tsai%40aspeedtech.com
-patch subject: [PATCH v11 3/3] hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED g6 PWM/Fan tach
-config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20240105/202401050234.nDBceclJ-lkp at intel.com/config)
-compiler: ClangBuiltLinux clang version 17.0.6 (https://github.com/llvm/llvm-project 6009708b4367171ccdbf4b5905cb6a803753fe18)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240105/202401050234.nDBceclJ-lkp at intel.com/reproduce)
+child nodes:
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202401050234.nDBceclJ-lkp at intel.com/
+  patternProperties:
+    "^fan@[0-2]":
+      type: object
+      $ref: fan-common.yaml#
+      unevaluatedProperties: false
 
-All errors (new ones prefixed by >>):
+Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../devicetree/bindings/hwmon/fan-common.yaml | 79 +++++++++++++++++++
+ 1 file changed, 79 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
 
->> drivers/hwmon/aspeed-g6-pwm-tach.c:270:3: error: field designator 'owner' does not refer to any field in type 'const struct pwm_ops'
-     270 |         .owner = THIS_MODULE,
-         |         ~^~~~~~~~~~~~~~~~~~~
-   1 error generated.
-
-
-vim +270 drivers/hwmon/aspeed-g6-pwm-tach.c
-
-   266	
-   267	static const struct pwm_ops aspeed_pwm_ops = {
-   268		.apply = aspeed_pwm_apply,
-   269		.get_state = aspeed_pwm_get_state,
- > 270		.owner = THIS_MODULE,
-   271	};
-   272	
-
+diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
+new file mode 100644
+index 000000000000..0fb738081699
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
+@@ -0,0 +1,79 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Common Fan Properties
++
++maintainers:
++  - Naresh Solanki <naresh.solanki@9elements.com>
++  - Billy Tsai <billy_tsai@aspeedtech.com>
++
++properties:
++  max-rpm:
++    description:
++      Max RPM supported by fan.
++    $ref: /schemas/types.yaml#/definitions/uint32
++    maximum: 100000
++
++  min-rpm:
++    description:
++      Min RPM supported by fan.
++    $ref: /schemas/types.yaml#/definitions/uint32
++    maximum: 1000
++
++  pulses-per-revolution:
++    description:
++      The number of pulse from fan sensor per revolution.
++    $ref: /schemas/types.yaml#/definitions/uint32
++    maximum: 4
++
++  tach-div:
++    description:
++      Divisor for the tach sampling clock, which determines the sensitivity of the tach pin.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  target-rpm:
++    description:
++      The default desired fan speed in RPM.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  fan-driving-mode:
++    description:
++      Select the driving mode of the fan.(DC, PWM and so on)
++    $ref: /schemas/types.yaml#/definitions/string
++    enum: [ dc, pwm ]
++
++  pwms:
++    description:
++      PWM provider.
++    maxItems: 1
++
++  "#cooling-cells":
++    const: 2
++
++  cooling-levels:
++    description:
++      The control value which correspond to thermal cooling states.
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++
++  tach-ch:
++    description:
++      The tach channel used for the fan.
++    $ref: /schemas/types.yaml#/definitions/uint8-array
++
++  label:
++    description:
++      Optional fan label
++
++  fan-supply:
++    description:
++      Power supply for fan.
++
++  reg:
++    maxItems: 1
++
++additionalProperties: true
++
++...
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.25.1
+
