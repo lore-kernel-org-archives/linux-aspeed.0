@@ -1,41 +1,34 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Mon, 8 Jan 2024 14:05:53 -0600
-Subject: [PATCH v1 7/8] tpm: tis-i2c: Add more compatible strings
-In-Reply-To: <2946fbb1-2a47-4d21-83dc-8e45bf6ba5a9@roeck-us.net>
-References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-8-ninad@linux.ibm.com>
- <20231212-avid-grill-dbead068fac8@spud>
- <73381bb0-7fa7-4a9e-88df-ab0063058e26@roeck-us.net>
- <20231212-mouth-choice-40a83caa34ec@spud>
- <2946fbb1-2a47-4d21-83dc-8e45bf6ba5a9@roeck-us.net>
-Message-ID: <60c8bbdb-4e08-44f0-88d4-ab164d4843b5@linux.ibm.com>
+Date: Mon,  8 Jan 2024 14:41:12 -0600
+Subject: [PATCH v2 1/3] dt-bindings: arm: aspeed: add IBM system1-bmc
+In-Reply-To: <20240108204114.1041390-1-ninad@linux.ibm.com>
+References: <20240108204114.1041390-1-ninad@linux.ibm.com>
+Message-ID: <20240108204114.1041390-2-ninad@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Guenter,
+Document the new compatibles used on IBM system1-bmc
 
-On 12/12/23 13:50, Guenter Roeck wrote:
-> On 12/12/23 10:51, Conor Dooley wrote:
->> On Tue, Dec 12, 2023 at 10:00:39AM -0800, Guenter Roeck wrote:
->>> On Tue, Dec 12, 2023 at 05:15:51PM +0000, Conor Dooley wrote:
->>>> On Tue, Dec 12, 2023 at 10:40:03AM -0600, Ninad Palsule wrote:
->>>>> From: Joel Stanley <joel@jms.id.au>
->>>>>
->>>>> The NPCT75x TPM is TIS compatible. It has an I2C and SPI interface.
->>>>>
->>>>> https://www.nuvoton.com/products/cloud-computing/security/trusted-platform-module-tpm/ 
->>>>>
->>>>>
->>>>> Add a compatible string for it, and the generic compatible.
->>>>>
->>>>> OpenBMC-Staging-Count: 3
->>>>
->>>> Delete this from every patch that it appears from.
+Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-
-I have send it as a separate commit. 
-https://lore.kernel.org/linux-kernel/20231214144954.3833998-1-ninad at linux.ibm.com/
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 68f717670f78..093b28f4ecba 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -82,6 +82,7 @@ properties:
+               - facebook,yosemite4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
++              - ibm,system1-bmc
+               - ibm,tacoma-bmc
+               - inventec,starscream-bmc
+               - inventec,transformer-bmc
+-- 
+2.39.2
 
