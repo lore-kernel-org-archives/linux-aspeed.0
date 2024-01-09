@@ -1,39 +1,48 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 8 Jan 2024 21:34:47 +0000
-Subject: [PATCH v2 3/3] ARM: dts: aspeed: System1: IBM system1 BMC board
-In-Reply-To: <20240108204114.1041390-4-ninad@linux.ibm.com>
-References: <20240108204114.1041390-1-ninad@linux.ibm.com>
- <20240108204114.1041390-4-ninad@linux.ibm.com>
-Message-ID: <b09d6e54-66e9-482f-8f45-38381fa6b62e@sirena.org.uk>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Tue,  9 Jan 2024 15:20:34 +0800
+Subject: [PATCH v4 02/19] ARM: dts: aspeed: yosemite4: Enable adc15
+In-Reply-To: <20240109072053.3980855-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240109072053.3980855-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240109072053.3980855-3-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 08, 2024 at 02:41:14PM -0600, Ninad Palsule wrote:
+Enable Yosemite 4 adc15 config
 
-> +	regulator at 60 {
-> +		compatible = "maxim,max8952";
-> +		reg = <0x60>;
-> +
-> +		max8952,default-mode = <0>;
-> +		max8952,dvs-mode-microvolt = <1250000>, <1200000>,
-> +						<1050000>, <950000>;
-> +		max8952,sync-freq = <0>;
-> +		max8952,ramp-speed = <0>;
-> +
-> +		regulator-name = "VR_1.0V";
-> +		regulator-min-microvolt = <770000>;
-> +		regulator-max-microvolt = <1400000>;
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-A regulator labelled VR_1.0V can vary between 0.77V and 1.4V and has
-exactly the same configuration as another regulator labelled VR_1.2V?
-That seems...  odd?
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240108/958e027d/attachment.sig>
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index dac58d3ea63c..6846aab893ad 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -51,7 +51,7 @@ iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+ 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+-				<&adc1 0>, <&adc1 1>;
++				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+ 	};
+ };
+ 
+@@ -920,10 +920,10 @@ &pinctrl_adc4_default &pinctrl_adc5_default
+ &adc1 {
+ 	ref_voltage = <2500>;
+ 	status = "okay";
+-	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>;
++	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default
++	    &pinctrl_adc15_default>;
+ };
+ 
+-
+ &ehci0 {
+ 	status = "okay";
+ };
+-- 
+2.25.1
+
