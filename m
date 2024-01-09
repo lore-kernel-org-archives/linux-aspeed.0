@@ -1,5 +1,5 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Tue, 9 Jan 2024 17:55:08 -0600
+Date: Tue, 9 Jan 2024 17:55:43 -0600
 Subject: [PATCH v1 7/8] tpm: tis-i2c: Add more compatible strings
 In-Reply-To: <20240109-pep-coerce-2a86ae88753d@spud>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
@@ -10,14 +10,14 @@ References: <20231212164004.1683589-1-ninad@linux.ibm.com>
  <2946fbb1-2a47-4d21-83dc-8e45bf6ba5a9@roeck-us.net>
  <60c8bbdb-4e08-44f0-88d4-ab164d4843b5@linux.ibm.com>
  <20240109-pep-coerce-2a86ae88753d@spud>
-Message-ID: <43a9b568-69b3-4f59-9f7b-c85880a55929@linux.ibm.com>
+Message-ID: <01974929-dfbf-4989-ba39-369e521827d0@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Conor,
+Hello Conor,
 
 On 1/9/24 11:14, Conor Dooley wrote:
 > On Mon, Jan 08, 2024 at 02:05:53PM -0600, Ninad Palsule wrote:
@@ -54,6 +54,4 @@ Regards,
 
 Ninad
 
->
-> Thanks,
-> Conor.
+
