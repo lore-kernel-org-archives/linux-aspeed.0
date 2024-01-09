@@ -1,55 +1,44 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Tue, 9 Jan 2024 17:14:29 +0000
-Subject: [PATCH v1 7/8] tpm: tis-i2c: Add more compatible strings
-In-Reply-To: <60c8bbdb-4e08-44f0-88d4-ab164d4843b5@linux.ibm.com>
-References: <20231212164004.1683589-1-ninad@linux.ibm.com>
- <20231212164004.1683589-8-ninad@linux.ibm.com>
- <20231212-avid-grill-dbead068fac8@spud>
- <73381bb0-7fa7-4a9e-88df-ab0063058e26@roeck-us.net>
- <20231212-mouth-choice-40a83caa34ec@spud>
- <2946fbb1-2a47-4d21-83dc-8e45bf6ba5a9@roeck-us.net>
- <60c8bbdb-4e08-44f0-88d4-ab164d4843b5@linux.ibm.com>
-Message-ID: <20240109-pep-coerce-2a86ae88753d@spud>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Tue, 9 Jan 2024 17:36:05 -0600
+Subject: [PATCH v2 3/3] ARM: dts: aspeed: System1: IBM system1 BMC board
+In-Reply-To: <b09d6e54-66e9-482f-8f45-38381fa6b62e@sirena.org.uk>
+References: <20240108204114.1041390-1-ninad@linux.ibm.com>
+ <20240108204114.1041390-4-ninad@linux.ibm.com>
+ <b09d6e54-66e9-482f-8f45-38381fa6b62e@sirena.org.uk>
+Message-ID: <aeabec28-a3a8-4ce1-b95b-a548cd27d626@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 08, 2024 at 02:05:53PM -0600, Ninad Palsule wrote:
-> Hello Guenter,
-> 
-> On 12/12/23 13:50, Guenter Roeck wrote:
-> > On 12/12/23 10:51, Conor Dooley wrote:
-> > > On Tue, Dec 12, 2023 at 10:00:39AM -0800, Guenter Roeck wrote:
-> > > > On Tue, Dec 12, 2023 at 05:15:51PM +0000, Conor Dooley wrote:
-> > > > > On Tue, Dec 12, 2023 at 10:40:03AM -0600, Ninad Palsule wrote:
-> > > > > > From: Joel Stanley <joel@jms.id.au>
-> > > > > > 
-> > > > > > The NPCT75x TPM is TIS compatible. It has an I2C and SPI interface.
-> > > > > > 
-> > > > > > https://www.nuvoton.com/products/cloud-computing/security/trusted-platform-module-tpm/
-> > > > > > 
-> > > > > > 
-> > > > > > Add a compatible string for it, and the generic compatible.
-> > > > > > 
-> > > > > > OpenBMC-Staging-Count: 3
-> > > > > 
-> > > > > Delete this from every patch that it appears from.
-> 
-> 
-> I have send it as a separate commit. https://lore.kernel.org/linux-kernel/20231214144954.3833998-1-ninad at linux.ibm.com/
+Hello Mark,
 
-Why did you do that? It now just adds undocumented compatibles to the
-driver. Please, as Rob requested, work with Lukas on his series to make
-sure that these devices are documented.
+On 1/8/24 15:34, Mark Brown wrote:
+> On Mon, Jan 08, 2024 at 02:41:14PM -0600, Ninad Palsule wrote:
+>
+>> +	regulator at 60 {
+>> +		compatible = "maxim,max8952";
+>> +		reg = <0x60>;
+>> +
+>> +		max8952,default-mode = <0>;
+>> +		max8952,dvs-mode-microvolt = <1250000>, <1200000>,
+>> +						<1050000>, <950000>;
+>> +		max8952,sync-freq = <0>;
+>> +		max8952,ramp-speed = <0>;
+>> +
+>> +		regulator-name = "VR_1.0V";
+>> +		regulator-min-microvolt = <770000>;
+>> +		regulator-max-microvolt = <1400000>;
+> A regulator labelled VR_1.0V can vary between 0.77V and 1.4V and has
+> exactly the same configuration as another regulator labelled VR_1.2V?
+> That seems...  odd?
 
-Thanks,
-Conor.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240109/a7caf3ea/attachment.sig>
+That was a typo. I fixed it.
+
+Thanks for the review.
+
+Regards,
+
+Ninad
+
