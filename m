@@ -1,5 +1,5 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 10 Jan 2024 21:36:45 +0100
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 10 Jan 2024 13:41:45 -0800
 Subject: [PATCH v1 7/8] tpm: tis-i2c: Add more compatible strings
 In-Reply-To: <32d46b64-d4a5-437a-8737-c2d172608559@linaro.org>
 References: <20231212164004.1683589-1-ninad@linux.ibm.com>
@@ -18,14 +18,26 @@ References: <20231212164004.1683589-1-ninad@linux.ibm.com>
  <d56b1e3e-72c4-427f-937d-8c8146bf5b28@linaro.org>
  <3830c26d-96be-4084-a04d-8edb9ccbab5e@roeck-us.net>
  <32d46b64-d4a5-437a-8737-c2d172608559@linaro.org>
-Message-ID: <eef0aa5a-a9bb-43e4-9066-febf48fce46d@linaro.org>
+Message-ID: <92625821-d79d-4aba-9bef-148f154be427@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/01/2024 21:34, Krzysztof Kozlowski wrote:
+On 1/10/24 12:34, Krzysztof Kozlowski wrote:
+> On 10/01/2024 20:06, Guenter Roeck wrote:
+>> On 1/10/24 09:54, Krzysztof Kozlowski wrote:
+>>> On 10/01/2024 16:54, Ninad Palsule wrote:
+>>>> Hello Krzysztof,
+>>>>
+>>>>
+>>>> On 1/10/24 09:37, Krzysztof Kozlowski wrote:
+>>>>> On 10/01/2024 15:31, Ninad Palsule wrote:
+>>>>>> Hello Krzysztof,
+>>>>>>
+>>>>>>
+>>>>>>
 >>>>>>>>>> I have send it as a separate commit. https://lore.kernel.org/linux-kernel/20231214144954.3833998-1-ninad at linux.ibm.com/
 >>>>>>>>> Why did you do that? It now just adds undocumented compatibles to the
 >>>>>>>>> driver. Please, as Rob requested, work with Lukas on his series to make
@@ -76,10 +88,26 @@ On 10/01/2024 21:34, Krzysztof Kozlowski wrote:
 >> Should I not apply dts patches submitted as part of a patch series ?
 > 
 > No, please do not apply them.
+> 
+>> If so, it would help to have some documentation I can point to to explain
+>> the rationale to submitters (and myself). Also, in that case, how is the
+> 
+> Yes, it would. I can try to create something.
+> 
+>> synchronization between device tree patches and driver patches supposed
+>> to happen ?
+> 
+> There should not be synchronization. Just to remind: we talk about DTS
+> (so also DTSI and DTSO), thus everything being in arch/*/boot/dts/. We
+> do not talk about DT bindings, right? The bindings are obvious (and
+> documented): preferably go via driver subsystem, with fallback/special
+> cases via SoC tree and fallback to Rob.
+> 
 
-Eh, English can be confusing. Let's make it easier to grasp:
-"Please do not apply DTS patches to a driver subsystem."
+Sorry, misunderstanding on my side. I do not and never did apply patches
+in arch/*/boot/dts/. I referred to patches in Documentation/devicetree/
 
-Best regards,
-Krzysztof
+Sorry, I though you also referred to bindings. My bad.
+
+Guenter
 
