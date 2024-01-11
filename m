@@ -1,60 +1,78 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Thu, 11 Jan 2024 11:03:14 +0100
-Subject: [PATCH] usb: gadget: aspeed: Check return value of kasprintf in
- ast_vhub_alloc_epn
-In-Reply-To: <346b631c-8b46-4b41-9188-8cbaaa1ff178@kylinos.cn>
-References: <20231122014212.304254-1-chentao@kylinos.cn>
- <2023112236-bullseye-pranker-491e@gregkh>
- <346b631c-8b46-4b41-9188-8cbaaa1ff178@kylinos.cn>
-Message-ID: <2024011132-gigolo-cornmeal-844f@gregkh>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Thu, 11 Jan 2024 10:23:29 -0600
+Subject: [PATCH v1 1/1] soc/aspeed: Add host side BMC device driver
+In-Reply-To: <5c918888-6933-7661-45f0-32ae4521aa2c@linux.vnet.ibm.com>
+References: <20230821183525.3427144-1-ninad@linux.ibm.com>
+ <20230821183525.3427144-2-ninad@linux.ibm.com>
+ <5159abb8-1b4c-4576-b370-4dd9db142beb@lunn.ch>
+ <6cea8ee7-f845-6ef3-631f-3f252ff5e949@linux.vnet.ibm.com>
+ <5c918888-6933-7661-45f0-32ae4521aa2c@linux.vnet.ibm.com>
+Message-ID: <c5a4cde9-cc30-48f7-8da0-7c0e71d7d2aa@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 11, 2024 at 05:31:35PM +0800, Kunwu Chan wrote:
-> Sorry, I didn't find out about this email until now because it was
-> intercepted by my company's email server.
-> 
-> On 2023/11/22 20:10, Greg KH wrote:
-> > On Wed, Nov 22, 2023 at 09:42:12AM +0800, Kunwu Chan wrote:
-> > > kasprintf() returns a pointer to dynamically allocated memory
-> > > which can be NULL upon failure. Ensure the allocation was successful
-> > > by checking the pointer validity.
-> > > 
-> > > Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
-> > > ---
-> > >   drivers/usb/gadget/udc/aspeed-vhub/epn.c | 2 ++
-> > >   1 file changed, 2 insertions(+)
-> > > 
-> > > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/epn.c b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-> > > index 148d7ec3ebf4..e0854e878411 100644
-> > > --- a/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-> > > +++ b/drivers/usb/gadget/udc/aspeed-vhub/epn.c
-> > > @@ -826,6 +826,8 @@ struct ast_vhub_ep *ast_vhub_alloc_epn(struct ast_vhub_dev *d, u8 addr)
-> > >   	ep->vhub = vhub;
-> > >   	ep->ep.ops = &ast_vhub_epn_ops;
-> > >   	ep->ep.name = kasprintf(GFP_KERNEL, "ep%d", addr);
-> > > +	if (!ep->ep.name)
-> > > +		return NULL;
-> > 
-> > This will break things if this ever triggers.  How was this tested?  The
-> It's my fault, I think it's too simplistic. Compiled test only.
-> Cause I don't know how to test effectively. I didn't find a way to test this
-> in 'Documentation/usb/gadget-testing.rst'.
-> > "slot" for this device will still be seen as used and so the resources
-> > never freed and then you can run out of space for real devices, right?
-> > 
-> > Looks like the other error handling in this function below this call is
-> > also broken, can you fix that up too?Yes, after reading the relevant code, I found that this is indeed a problem.
-> So I write the v2 patch below, but the same question bothering me, about how
-> to test effectively and what hardware equipment is needed? I'm new to this
-> area, do you have any suggestions?
+Hello Andrew,
 
-That is up to you, but you need to test stuff like this if you wish to
-change it as your previous patch obviously would have broken things.
+On 8/23/23 12:32, Ninad Palsule wrote:
+> Hello Andrew,
+>
+> On 8/22/23 11:14 AM, Ninad Palsule wrote:
+>> Hello Andrew,
+>>
+>> Thanks for the review.
+>>
+>> On 8/21/23 2:29 PM, Andrew Lunn wrote:
+>>>> Testing:
+>>>> ?? - This is tested on IBM rainier system with BMC. It requires BMC 
+>>>> side
+>>>> ???? BMC device driver which is available in the ASPEED's 5.15 SDK
+>>>> ???? kernel.
+>>> How relevant is that? To the host side, it just appears to be an
+>>> 16550A. Is the SDK emulating an 16550A? If you where to use a
+>>> different kernel, is it still guaranteed to be an 16550A? I also
+>>> notice there is a mainline
+>>> drivers/tty/serial/8250/8250_aspeed_vuart.c. Could that be used on the
+>>> BMC? That would be a better testing target than the vendor kernel.
+>>
+>> This is just to indicate how I tested my code.
+>>
+>> Yes, aspeed chip (in this case ast2600) is compatible with 16550 UART.
+>>
+>> I am guessing it should work with different kernel too as 16550 
+>> standard is used.
+>>
+>> The 8250_aspeed_vuart.c is a BMC side driver for accessing VUART over 
+>> LPC bus and
+>>
+>> this is a host side driver to access VUART over PCIe bus.
+>>
+>>>> +config ASPEED_HOST_BMC_DEV
+>>>> +??? bool "ASPEED SoC Host BMC device driver"
+>>>> +??? default ARCH_ASPEED
+>>>> +??? select SOC_BUS
+>>>> +??? default ARCH_ASPEED
+>>> same default twice?
+>> Removed.
+>>
+>>>> +late_initcall(aspeed_host_bmc_device_init);
+>>>> +module_exit(aspeed_host_bmc_device_exit);
+>>> It looks like you can use module_pci_driver() ?
+>> yes, It should work unless the late initcall is important. I will 
+>> test it and see.
+>
+> I will not be able to use module_pci_driver() as it doesn't support 
+> late initcall which is required otherwise
+>
+> 8250 registration fails. So I am not making this change.
 
-good luck!
+Please let me know if you are fine with this.
 
-greg k-h
+Thanks for the review.
+
+Regards,
+
+Ninad
+
