@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 11 Jan 2024 20:40:52 +0100
-Subject: [PATCH v3 1/3] dt-bindings: arm: aspeed: add IBM system1-bmc
-In-Reply-To: <20240111181251.1817582-2-ninad@linux.ibm.com>
+Date: Thu, 11 Jan 2024 20:40:58 +0100
+Subject: [PATCH v3 2/3] dt-bindings: Add DPS310 as trivial device
+In-Reply-To: <20240111181251.1817582-3-ninad@linux.ibm.com>
 References: <20240111181251.1817582-1-ninad@linux.ibm.com>
- <20240111181251.1817582-2-ninad@linux.ibm.com>
-Message-ID: <709a516c-d843-4ed3-8e41-468933f4a022@linaro.org>
+ <20240111181251.1817582-3-ninad@linux.ibm.com>
+Message-ID: <1cf1f0dd-c453-4733-a5f4-0d2cc22498e2@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,12 +12,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 11/01/2024 19:12, Ninad Palsule wrote:
-> Document the new compatibles used on IBM system1-bmc
+> Infineon DPS310 is a barometric pressure and temperature sensor.
 > 
 > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  1 file changed, 1 insertion(+)
 
 This is a friendly reminder during the review process.
 
