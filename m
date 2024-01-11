@@ -1,56 +1,40 @@
-From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 11 Jan 2024 12:12:48 -0600
-Subject: [PATCH v3 0/3] Add device tree for IBM system1 BMC
-Message-ID: <20240111181251.1817582-1-ninad@linux.ibm.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 11 Jan 2024 20:40:52 +0100
+Subject: [PATCH v3 1/3] dt-bindings: arm: aspeed: add IBM system1-bmc
+In-Reply-To: <20240111181251.1817582-2-ninad@linux.ibm.com>
+References: <20240111181251.1817582-1-ninad@linux.ibm.com>
+ <20240111181251.1817582-2-ninad@linux.ibm.com>
+Message-ID: <709a516c-d843-4ed3-8e41-468933f4a022@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patchset adds device tree for IBM system1 bmc board.
+On 11/01/2024 19:12, Ninad Palsule wrote:
+> Document the new compatibles used on IBM system1-bmc
+> 
+> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 
-Change log:
-v1:
- - Added device binding for IBM system1-bmc
- - Added device binding for TIS I2C devices
- - Added device tree for IBM system1 BMC board
- - Added i2c and muxes
- - Added voltage regulators
- - Added GPIO, Fan ctrl, Led
- - Added more compatible strings for tpm_tis_i2c
- - Added power supplies, sensors, EEPROMS, TPM and more
+This is a friendly reminder during the review process.
 
-v2:
- - Incorporated review comments from Conor Dooley, Jarkko Sakkinen,
-   Guenter Roeck, Rob Herring, Krzysztof Kozlowski
- - Merge all patches into single patch.
- - Split the trivial device patch.
- - Cleanup commit messages.
- - Fixed bootargs string.
- - Fixed node names.
- - Dropped tpm schema patch as it is covered by Lukas's patch.
- - Dropped "tpm: tis-i2c: Add more compatible strings" patch and
-   send it as a separate patch.
+It looks like you received a tag and forgot to add it.
 
-v3:
- - Fixed voltage-regulators names.
- - Updated commit message about TPM compatibility string.
+If you do not know the process, here is a short explanation:
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new
+versions, under or above your Signed-off-by tag. Tag is "received", when
+provided in a message replied to you on the mailing list. Tools like b4
+can help here. However, there's no need to repost patches *only* to add
+the tags. The upstream maintainer will do that for tags received on the
+version they apply.
 
-Andrew Geissler (1):
-  ARM: dts: aspeed: System1: IBM system1 BMC board
+https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
 
-Ninad Palsule (2):
-  dt-bindings: arm: aspeed: add IBM system1-bmc
-  dt-bindings: Add DPS310 as trivial device
+If a tag was not added on purpose, please state why and what changed.
 
- .../bindings/arm/aspeed/aspeed.yaml           |    1 +
- .../devicetree/bindings/trivial-devices.yaml  |    2 +
- arch/arm/boot/dts/aspeed/Makefile             |    1 +
- .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 1623 +++++++++++++++++
- 4 files changed, 1627 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-
--- 
-2.39.2
+Best regards,
+Krzysztof
 
