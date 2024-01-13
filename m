@@ -1,44 +1,153 @@
-From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 11 Jan 2024 13:50:10 -0600
-Subject: [PATCH v3 2/3] dt-bindings: Add DPS310 as trivial device
-In-Reply-To: <1cf1f0dd-c453-4733-a5f4-0d2cc22498e2@linaro.org>
-References: <20240111181251.1817582-1-ninad@linux.ibm.com>
- <20240111181251.1817582-3-ninad@linux.ibm.com>
- <1cf1f0dd-c453-4733-a5f4-0d2cc22498e2@linaro.org>
-Message-ID: <f21d5e90-7da1-4f65-819d-a02bede53597@linux.ibm.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 12 Jan 2024 19:53:48 -0600
+Subject: [PATCH RESEND v10 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM
+ TACH Control
+In-Reply-To: <SG2PR06MB3365CAEE9CE3F691DA1CA1E28BB9A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+References: <20231107105025.1480561-1-billy_tsai@aspeedtech.com>
+ <20231107105025.1480561-3-billy_tsai@aspeedtech.com> <20231108182135.GA2698015-robh@kernel.org>
+ <SG2PR06MB33655734700697E8F6FD0D1B8BB2A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+ <CAL_JsqL=2-dD5yFWWDDHu1svcCF-EMZqcYz92Pr7L5ntppNQVA@mail.gmail.com> <SG2PR06MB3365CAEE9CE3F691DA1CA1E28BB9A@SG2PR06MB3365.apcprd06.prod.outlook.com>
+Message-ID: <CAL_JsqJrqOZ9nYrWUkuRVyY0OkJG6m-YY45f1ZeYKNAyYv_tMQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Krzysztof,
-
-On 1/11/24 13:40, Krzysztof Kozlowski wrote:
-> On 11/01/2024 19:12, Ninad Palsule wrote:
->> Infineon DPS310 is a barometric pressure and temperature sensor.
->>
->> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> This is a friendly reminder during the review process.
+On Sun, Nov 26, 2023 at 11:45?PM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
 >
-> It looks like you received a tag and forgot to add it.
+> > > > > Document the compatible for aspeed,ast2600-pwm-tach device, which can
+> > > > > support up to 16 PWM outputs and 16 fan tach input.
+> > > > >
+> > > > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> > > > > ---
+> > > > >  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 69 +++++++++++++++++++
+> > > > >  1 file changed, 69 insertions(+)
+> > > > >  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> > > > >
+> > > > > diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> > > > > new file mode 100644
+> > > > > index 000000000000..c615fb10705c
+> > > > > --- /dev/null
+> > > > > +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> > > > > @@ -0,0 +1,69 @@
+> > > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > > > > +# Copyright (C) 2023 Aspeed, Inc.
+> > > > > +%YAML 1.2
+> > > > > +---
+> > > > > +$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
+> > > > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > > > +
+> > > > > +title: ASPEED G6 PWM and Fan Tach controller
+> > > > > +
+> > > > > +maintainers:
+> > > > > +  - Billy Tsai <billy_tsai@aspeedtech.com>
+> > > > > +
+> > > > > +description: |
+> > > > > +  The ASPEED PWM controller can support up to 16 PWM outputs.
+> > > > > +  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
+> > > > > +  They are independent hardware blocks, which are different from the
+> > > > > +  previous version of the ASPEED chip.
+> > > > > +
+> > > > > +properties:
+> > > > > +  compatible:
+> > > > > +    enum:
+> > > > > +      - aspeed,ast2600-pwm-tach
+> > > > > +
+> > > > > +  reg:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  clocks:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  resets:
+> > > > > +    maxItems: 1
+> > > > > +
+> > > > > +  "#pwm-cells":
+> > > > > +    const: 3
+> > > > > +
+> > > > > +patternProperties:
+> > > > > +  "^fan-[0-9]+$":
+> > > > > +    $ref: fan-common.yaml#
+> > > > > +    unevaluatedProperties: false
+> > > > > +    required:
+> > > > > +      - tach-ch
+> > > > > +
+> > > > > +required:
+> > > > > +  - reg
+> > > > > +  - clocks
+> > > > > +  - resets
+> > > > > +  - "#pwm-cells"
+> > > > > +  - compatible
+> > > > > +
+> > > > > +additionalProperties: false
+> > > > > +
+> > > > > +examples:
+> > > > > +  - |
+> > > > > +    #include <dt-bindings/clock/aspeed-clock.h>
+> > > > > +    pwm_tach: pwm-tach-controller at 1e610000 {
+> > > > > +      compatible = "aspeed,ast2600-pwm-tach";
+> > > > > +      reg = <0x1e610000 0x100>;
+> > > > > +      clocks = <&syscon ASPEED_CLK_AHB>;
+> > > > > +      resets = <&syscon ASPEED_RESET_PWM>;
+> > > > > +      #pwm-cells = <3>;
+> > > > > +
+> > > > > +      fan-0 {
+> > >
+> > > > I assume there's a PWM connection here? How do you know which PWM? You
+> > > > said the tach channel is independent, so it is not that.
+> > >
+> > > > It should not be 0 from 'fan-0' because that's just a meaningless index.
+> > >
+> > > > You either need 'pwms' here or you can use 'reg' and the reg value is
+> > > > the PWM channel.
+> > >
+> > > Hi Rob, this binding is used to export the PWM provider and the Fan monitor (i.e., Tach).
+> > > If the user wants to add the PWM connection for the fan, it can be done as follows:
+> > >
+> > > fan0: pwm-fan0 {
+> > >         compatible = "pwm-fan";
+> > >         pwms = <&pwm_tach 0 40000 0>;
+> > >         cooling-min-state = <0>;
+> > >         cooling-max-state = <3>;
+> > >         #cooling-cells = <2>;
+> > >         cooling-levels = <0 15 128 255>;
+> > > };
+> > >
+> > > This will reuse the existing PWM fan driver (e.g., pwm-fan.c).
 >
-> If you do not know the process, here is a short explanation:
-> Please add Acked-by/Reviewed-by/Tested-by tags when posting new
-> versions, under or above your Signed-off-by tag. Tag is "received", when
-> provided in a message replied to you on the mailing list. Tools like b4
-> can help here. However, there's no need to repost patches *only* to add
-> the tags. The upstream maintainer will do that for tags received on the
-> version they apply.
+> > I'm confused now. So what are the child nodes you have? You are
+> > defining the fan in 2 places? The "pwm-fan" driver supports a tach via
+> > an interrupt, so how would this work in your case?
 >
-> https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
+> Hi Rob,
 >
-> If a tag was not added on purpose, please state why and what changed.
+> The tach interrupt for the pwm-fan is option. In our case, the dts just reuse the pwm control function
+> of the pwm-fan, and the part of the tach monitor will be created by our fan child nodes.
+> So the dts will like followings:
+>
+> // Use to declare the tach monitor for fan.
+> &pwm_tach {
+>         fan-0 {
+>                 tach-ch = /bits/ 8 <0x0>;
+>         };
+>         fan-1 {
+>                 tach-ch = /bits/ 8 <0x1>;
+>         };
+>         ...
+> }
+>
+> // Reuse the pwm-fan.c to control the behavior of the PWM for fan.
+> fan0: pwm-fan0 {
+>         compatible = "pwm-fan";
+>         pwms = <&pwm_tach 0 40000 0>;   /* Target freq:25 kHz */
+>         cooling-min-state = <0>;
+>         cooling-max-state = <3>;
+>         #cooling-cells = <2>;
+>         cooling-levels = <0 15 128 255>;
+> };
 
-This is a mistake from my side. Sorry about that. I will remember it 
-next time.
+No, you can't have a fan described by 2 different nodes. Can't you
+just merge everything from the pwm-fan0 node into the fan-0 node?
 
-Thanks & Regards,
-
-Ninad
-
+Rob
