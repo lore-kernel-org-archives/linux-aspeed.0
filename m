@@ -1,103 +1,58 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 24 Jan 2024 14:07:04 +0800
-Subject: [PATCH v13 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH Control
-In-Reply-To: <20240124060705.1342461-1-billy_tsai@aspeedtech.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 24 Jan 2024 01:39:45 -0600
+Subject: [PATCH v13 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
+ Control
+In-Reply-To: <20240124060705.1342461-3-billy_tsai@aspeedtech.com>
 References: <20240124060705.1342461-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240124060705.1342461-3-billy_tsai@aspeedtech.com>
+ <20240124060705.1342461-3-billy_tsai@aspeedtech.com>
+Message-ID: <170608198415.3412038.3874422575074669118.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the compatible for aspeed,ast2600-pwm-tach device, which can
-support up to 16 PWM outputs and 16 fan tach input.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 73 +++++++++++++++++++
- 1 file changed, 73 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+On Wed, 24 Jan 2024 14:07:04 +0800, Billy Tsai wrote:
+> Document the compatible for aspeed,ast2600-pwm-tach device, which can
+> support up to 16 PWM outputs and 16 fan tach input.
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+>  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 73 +++++++++++++++++++
+>  1 file changed, 73 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> 
 
-diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-new file mode 100644
-index 000000000000..7d2b020ec693
---- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-@@ -0,0 +1,73 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2023 Aspeed, Inc.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED G6 PWM and Fan Tach controller
-+
-+maintainers:
-+  - Billy Tsai <billy_tsai@aspeedtech.com>
-+
-+description: |
-+  The ASPEED PWM controller can support up to 16 PWM outputs.
-+  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
-+  They are independent hardware blocks, which are different from the
-+  previous version of the ASPEED chip.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-pwm-tach
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  "#pwm-cells":
-+    const: 3
-+
-+patternProperties:
-+  "^fan-[0-9]+$":
-+    $ref: fan-common.yaml#
-+    unevaluatedProperties: false
-+    required:
-+      - tach-ch
-+
-+required:
-+  - reg
-+  - clocks
-+  - resets
-+  - "#pwm-cells"
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/aspeed-clock.h>
-+    pwm_tach: pwm-tach-controller at 1e610000 {
-+      compatible = "aspeed,ast2600-pwm-tach";
-+      reg = <0x1e610000 0x100>;
-+      clocks = <&syscon ASPEED_CLK_AHB>;
-+      resets = <&syscon ASPEED_RESET_PWM>;
-+      #pwm-cells = <3>;
-+
-+      fan-0 {
-+        tach-ch = /bits/ 8 <0x0>;
-+        compatible = "pwm-fan";
-+        pwms = <&pwm_tach 0 40000 0>;
-+      };
-+
-+      fan-1 {
-+        tach-ch = /bits/ 8 <0x1 0x2>;
-+        compatible = "pwm-fan";
-+        pwms = <&pwm_tach 1 40000 0>;
-+      };
-+    };
--- 
-2.25.1
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
+
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: pwm-tach-controller at 1e610000: fan-0: Unevaluated properties are not allowed ('compatible' was unexpected)
+	from schema $id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: pwm-tach-controller at 1e610000: fan-1: Unevaluated properties are not allowed ('compatible' was unexpected)
+	from schema $id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: fan-0: 'tach-ch' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/hwmon/pwm-fan.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: fan-1: 'tach-ch' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/hwmon/pwm-fan.yaml#
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240124060705.1342461-3-billy_tsai at aspeedtech.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
