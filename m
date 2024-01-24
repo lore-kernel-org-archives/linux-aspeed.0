@@ -1,58 +1,102 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 24 Jan 2024 01:39:45 -0600
-Subject: [PATCH v13 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH
- Control
-In-Reply-To: <20240124060705.1342461-3-billy_tsai@aspeedtech.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Wed, 24 Jan 2024 10:45:59 +0100
+Subject: [PATCH v13 3/3] hwmon: (aspeed-g6-pwm-tacho): Support for
+ ASPEED g6 PWM/Fan tach
+In-Reply-To: <20240124060705.1342461-4-billy_tsai@aspeedtech.com>
 References: <20240124060705.1342461-1-billy_tsai@aspeedtech.com>
- <20240124060705.1342461-3-billy_tsai@aspeedtech.com>
-Message-ID: <170608198415.3412038.3874422575074669118.robh@kernel.org>
+	 <20240124060705.1342461-4-billy_tsai@aspeedtech.com>
+Message-ID: <dccb808a2ba6ccb0fd0b4e7ccfe40cd871886b6b.camel@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Mi, 2024-01-24 at 14:07 +0800, Billy Tsai wrote:
+[...]
+> +static int aspeed_pwm_tach_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev, *hwmon;
+> +	int ret;
+> +	struct device_node *child;
+> +	struct aspeed_pwm_tach_data *priv;
+> +
+> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +	priv->dev = dev;
+> +	priv->base = devm_platform_ioremap_resource(pdev, 0);
+> +	if (IS_ERR(priv->base))
+> +		return PTR_ERR(priv->base);
+> +
+> +	priv->clk = devm_clk_get_enabled(dev, NULL);
+> +	if (IS_ERR(priv->clk))
+> +		return dev_err_probe(dev, PTR_ERR(priv->clk),
+> +				     "Couldn't get clock\n");
+> +	priv->clk_rate = clk_get_rate(priv->clk);
+> +	priv->reset = devm_reset_control_get_exclusive(dev, NULL);
+> +	if (IS_ERR(priv->reset))
+> +		return dev_err_probe(dev, PTR_ERR(priv->reset),
+> +				     "Couldn't get reset control\n");
+> +
+> +	ret = reset_control_deassert(priv->reset);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret,
+> +				     "Couldn't deassert reset control\n");
 
-On Wed, 24 Jan 2024 14:07:04 +0800, Billy Tsai wrote:
-> Document the compatible for aspeed,ast2600-pwm-tach device, which can
-> support up to 16 PWM outputs and 16 fan tach input.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 73 +++++++++++++++++++
->  1 file changed, 73 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> 
+Consider using devm_add_action_or_reset() to assert the reset in the
+error paths and on driver unbind.
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+> +
+> +	priv->chip.dev = dev;
+> +	priv->chip.ops = &aspeed_pwm_ops;
+> +	priv->chip.npwm = PWM_ASPEED_NR_PWMS;
+> +
+> +	ret = devm_pwmchip_add(dev, &priv->chip);
+> +	if (ret < 0) {
+> +		reset_control_assert(priv->reset);
 
-yamllint warnings/errors:
+Then this ...
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: pwm-tach-controller at 1e610000: fan-0: Unevaluated properties are not allowed ('compatible' was unexpected)
-	from schema $id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: pwm-tach-controller at 1e610000: fan-1: Unevaluated properties are not allowed ('compatible' was unexpected)
-	from schema $id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: fan-0: 'tach-ch' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/hwmon/pwm-fan.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb: fan-1: 'tach-ch' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/hwmon/pwm-fan.yaml#
+> +		return dev_err_probe(dev, ret, "Failed to add PWM chip\n");
+> +	}
+> +
+> +	for_each_child_of_node(dev->of_node, child) {
+> +		ret = aspeed_tach_create_fan(dev, child, priv);
+> +		if (ret < 0) {
+> +			of_node_put(child);
+> +			dev_warn(dev, "Failed to create fan %d", ret);
+> +			return 0;
+> +		}
+> +	}
+> +
+> +	of_platform_populate(dev->of_node, NULL, NULL, dev);
+> +
+> +	hwmon = devm_hwmon_device_register_with_info(dev, "aspeed_tach", priv,
+> +						     &aspeed_tach_chip_info, NULL);
+> +	ret = PTR_ERR_OR_ZERO(hwmon);
+> +	if (ret) {
+> +		reset_control_assert(priv->reset);
 
-doc reference errors (make refcheckdocs):
+... and this ...
 
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240124060705.1342461-3-billy_tsai at aspeedtech.com
+> +		return dev_err_probe(dev, ret,
+> +				     "Failed to register hwmon device\n");
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_pwm_tach_remove(struct platform_device *pdev)
+> +{
+> +	struct aspeed_pwm_tach_data *priv = platform_get_drvdata(pdev);
+> +
+> +	reset_control_assert(priv->reset);
+> +
+> +	return 0;
+> +}
 
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
+... and this could be dropped.
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+regards
+Philipp
