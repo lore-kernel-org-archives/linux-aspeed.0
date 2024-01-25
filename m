@@ -1,62 +1,62 @@
 From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 25 Jan 2024 15:23:56 -0600
-Subject: [PATCH v4 3/3] ARM: dts: aspeed: System1: IBM system1 BMC board
-In-Reply-To: <20240116190321.GA102334@bhelgaas>
-References: <20240116190321.GA102334@bhelgaas>
-Message-ID: <b5b0e7bd-25e5-49a4-8ac2-349020c2344b@linux.ibm.com>
+Date: Thu, 25 Jan 2024 15:21:52 -0600
+Subject: [PATCH v5 0/2] Add device tree for IBM system1 BMC
+Message-ID: <20240125212154.4028640-1-ninad@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Bjorn,
+This patchset adds device tree for IBM system1 bmc board.
 
-On 1/16/24 13:03, Bjorn Helgaas wrote:
-> On Tue, Jan 16, 2024 at 12:37:34PM -0600, Ninad Palsule wrote:
->> From: Andrew Geissler <geissonator@yahoo.com>
->>
->> Add a device tree for IBM system1 BMC board. It uses AST2600 SOC.
->> - Added base board
-> s/Added/Add/ to match first sentence.
-Fixed
->
->> - Added i2c devices and muxes.
->> - Added different voltage regulators.
->> - Added GPIO pin assignements, GPIO expansion devices
->> - Added LED brinker devices
-> "brinker"?  "blinker" maybe (no idea what it actually is).
-Fixed. Its blinker.
->> - Added Fan controllers
-> s/Fan/fan/
-Fixed.
->
->> - Added EEPROM/VPD
->> - Added Power supplies
-> s/Power/power/
-Fixed.
->
->> - Added Humidity, pressure and temperature sensors.
-> s/Humidity/humidity/
-Fixed.
->
->> - Added Trusted platform module(TPM) chip.
-> s/Trusted platform module/Trusted Platform Module /
-Fixed
->
->> Tested:
->>      This board is tested using the simics simulator.
->>
->> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
->> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
-> Your sign-off should be last since you are sending the series.
+Change log:
+v1:
+ - Added device binding for IBM system1-bmc
+ - Added device binding for TIS I2C devices
+ - Added device tree for IBM system1 BMC board 
+ - Added i2c and muxes
+ - Added voltage regulators
+ - Added GPIO, Fan ctrl, Led
+ - Added more compatible strings for tpm_tis_i2c
+ - Added power supplies, sensors, EEPROMS, TPM and more
 
-Fixed.
+v2:
+ - Incorporated review comments from Conor Dooley, Jarkko Sakkinen,
+   Guenter Roeck, Rob Herring, Krzysztof Kozlowski
+ - Merge all patches into single patch.
+ - Split the trivial device patch.
+ - Cleanup commit messages.
+ - Fixed bootargs string.
+ - Fixed node names.
+ - Dropped tpm schema patch as it is covered by Lukas's patch.
+ - Dropped "tpm: tis-i2c: Add more compatible strings" patch and
+   send it as a separate patch.
 
-Thanks for the review.
+v3:
+ - Fixed voltage-regulators names.
+ - Updated commit message about TPM compatibility string.
 
-Regards,
+v4:
+ - Removed compatibility string "nuvoton,npct75x" from TPM
 
-Ninad Palsule
+v5:
+  - Fixed commit message as per reeview comment by Bjorn
+  - Dropped following commit from patchset as it is already merged.
+    -> dt-bindings-Add-DPS310-as-trivial-device.patch
 
+Andrew Geissler (1):
+  ARM: dts: aspeed: System1: IBM system1 BMC board
+
+Ninad Palsule (1):
+  dt-bindings: arm: aspeed: add IBM system1-bmc
+
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 1623 +++++++++++++++++
+ 3 files changed, 1625 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+
+-- 
+2.39.2
 
