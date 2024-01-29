@@ -1,62 +1,41 @@
-From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Thu, 25 Jan 2024 15:21:52 -0600
-Subject: [PATCH v5 0/2] Add device tree for IBM system1 BMC
-Message-ID: <20240125212154.4028640-1-ninad@linux.ibm.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Mon, 29 Jan 2024 16:46:04 +0100
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: add mac config for
+ Yosemite 4
+In-Reply-To: <20240118060041.1923700-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240118060041.1923700-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <70f31372-7840-47e0-ba4d-d1b4896928d3@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patchset adds device tree for IBM system1 bmc board.
+On 18/01/2024 07:00, Delphine CC Chiu wrote:
+> Add start-redo-probe and no-channel-monitor property in mac config
+> to fix Mellanox cx7 nic card cannot't get mac address after nic card
+> re-plug.
+> 
+> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> ---
+>  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> index 64075cc41d92..33c01d79e5e0 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> @@ -89,6 +89,8 @@ &mac2 {
+>  	pinctrl-0 = <&pinctrl_rmii3_default>;
+>  	use-ncsi;
+>  	mlx,multi-host;
+> +	ncsi-ctrl,start-redo-probe;
+> +	ncsi-ctrl,no-channel-monitor;
 
-Change log:
-v1:
- - Added device binding for IBM system1-bmc
- - Added device binding for TIS I2C devices
- - Added device tree for IBM system1 BMC board 
- - Added i2c and muxes
- - Added voltage regulators
- - Added GPIO, Fan ctrl, Led
- - Added more compatible strings for tpm_tis_i2c
- - Added power supplies, sensors, EEPROMS, TPM and more
+There are no such properties.
 
-v2:
- - Incorporated review comments from Conor Dooley, Jarkko Sakkinen,
-   Guenter Roeck, Rob Herring, Krzysztof Kozlowski
- - Merge all patches into single patch.
- - Split the trivial device patch.
- - Cleanup commit messages.
- - Fixed bootargs string.
- - Fixed node names.
- - Dropped tpm schema patch as it is covered by Lukas's patch.
- - Dropped "tpm: tis-i2c: Add more compatible strings" patch and
-   send it as a separate patch.
+NAK
 
-v3:
- - Fixed voltage-regulators names.
- - Updated commit message about TPM compatibility string.
-
-v4:
- - Removed compatibility string "nuvoton,npct75x" from TPM
-
-v5:
-  - Fixed commit message as per reeview comment by Bjorn
-  - Dropped following commit from patchset as it is already merged.
-    -> dt-bindings-Add-DPS310-as-trivial-device.patch
-
-Andrew Geissler (1):
-  ARM: dts: aspeed: System1: IBM system1 BMC board
-
-Ninad Palsule (1):
-  dt-bindings: arm: aspeed: add IBM system1-bmc
-
- .../bindings/arm/aspeed/aspeed.yaml           |    1 +
- arch/arm/boot/dts/aspeed/Makefile             |    1 +
- .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 1623 +++++++++++++++++
- 3 files changed, 1625 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-
--- 
-2.39.2
+Best regards,
+Krzysztof
 
