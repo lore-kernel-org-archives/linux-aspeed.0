@@ -1,9 +1,9 @@
 From: 'gregkh@linuxfoundation.org' <gregkh@linuxfoundation.org>
-Date: Tue, 30 Jan 2024 15:40:56 -0800
+Date: Tue, 30 Jan 2024 15:43:17 -0800
 Subject: [PATCH 30 1/7] Add JTAG core driver
 In-Reply-To: <LV8PR11MB846358B901CA67965197C4AB8B7D2@LV8PR11MB8463.namprd11.prod.outlook.com>
 References: <LV8PR11MB846358B901CA67965197C4AB8B7D2@LV8PR11MB8463.namprd11.prod.outlook.com>
-Message-ID: <2024013050-humped-tibia-50a9@gregkh>
+Message-ID: <2024013039-tractor-subside-4535@gregkh>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,36 +11,29 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Tue, Jan 30, 2024 at 11:26:19PM +0000, Corona, Ernesto wrote:
-> JTAG class driver provide infrastructure to support hardware/software JTAG platform drivers. It provide user layer API interface for flashing and debugging external devices which equipped with JTAG interface using standard transactions.
+> +/**
+> + * union pad_config - Padding Configuration:
+> + *
+> + * @type: transfer type
+> + * @pre_pad_number: Number of prepadding bits bit[11:0]
+> + * @post_pad_number: Number of prepadding bits bit[23:12]
+> + * @pad_data : Bit value to be used by pre and post padding bit[24]
+> + * @int_value: unsigned int packed padding configuration value bit[32:0]
+> + *
+> + * Structure provide pre and post padding configuration in a single __u32
+> + */
+> +union pad_config {
 
-Again, properly wrap your changelog please.
+Bad name for a global structure, don't you think?
 
-And your patch series isn't even threaded, how did you send this?  Just
-use 'git send-email' please.
+> +	struct {
+> +		__u32 pre_pad_number	: 12;
+> +		__u32 post_pad_number	: 12;
+> +		__u32 pad_data		: 1;
+> +		__u32 rsvd		: 7;
+> +	};
 
-> 
-> Driver exposes set of IOCTL to user space for:
-> - XFER:
->   SIR (Scan Instruction Register, IEEE 1149.1 Data Register scan);
->   SDR (Scan Data Register, IEEE 1149.1 Instruction Register scan);
-> - GIOCSTATUS read the current TAPC state of the JTAG controller
-> - SIOCSTATE Forces the JTAG TAPC to go into a particular state.
-> - SIOCFREQ/GIOCFREQ for setting and reading JTAG frequency.
-> - IOCBITBANG for low level control of JTAG signals.
-> 
-> Driver core provides set of internal APIs for allocation and
-> registration:
-> - jtag_register;
-> - jtag_unregister;
-> - jtag_alloc;
-> - jtag_free;
-> 
-> Platform driver on registration with jtag-core creates the next
-> entry in dev folder:
-> /dev/jtagX
-
-That's a lot for a single patch to do, please break this up into
-reviewable chunks.
+This obviously does not work, please don't do that.
 
 thanks,
 
