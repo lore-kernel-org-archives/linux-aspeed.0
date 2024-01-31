@@ -1,340 +1,41 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed, 31 Jan 2024 16:41:18 +0800
-Subject: [PATCH v5 07/21] ARM: dts: aspeed: yosemite4: Add gpio pca9506
+Date: Wed, 31 Jan 2024 16:41:19 +0800
+Subject: [PATCH v5 08/21] ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
 In-Reply-To: <20240131084134.328307-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240131084134.328307-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240131084134.328307-8-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240131084134.328307-9-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add gpio pca9506 I/O expander for yv4 use
+Remove space for adm1272 compatible
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 251 ++++++++++++++++++
- 1 file changed, 251 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index af9f7067c57c..b1775b5a6782 100644
+index b1775b5a6782..cbf385e72e57 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -175,6 +175,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -193,6 +221,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -211,6 +267,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -229,6 +313,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -247,6 +359,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -265,6 +405,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -283,6 +451,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -301,6 +497,34 @@ mctp at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 	};
- 
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
- 	power-sensor at 40 {
- 		compatible = "adi,adm1281";
- 		reg = <0x40>;
-@@ -683,6 +907,33 @@ rtc at 6f {
- &i2c13 {
+@@ -821,12 +821,12 @@ imux29: i2c at 1 {
+ &i2c11 {
  	status = "okay";
- 	bus-frequency = <400000>;
-+	gpio at 20 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 21 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 22 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	gpio at 23 {
-+		compatible = "nxp,pca9506";
-+		reg = <0x23>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
- };
+ 	power-sensor at 10 {
+-		compatible = "adi, adm1272";
++		compatible = "adi,adm1272";
+ 		reg = <0x10>;
+ 	};
  
- &i2c14 {
+ 	power-sensor at 12 {
+-		compatible = "adi, adm1272";
++		compatible = "adi,adm1272";
+ 		reg = <0x12>;
+ 	};
+ 
 -- 
 2.25.1
 
