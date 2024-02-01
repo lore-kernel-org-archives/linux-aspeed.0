@@ -1,129 +1,176 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Wed, 31 Jan 2024 08:58:50 -0700
-Subject: [PATCH 30 4/7] Add ABI documentation
-In-Reply-To: <LV8PR11MB8463E4402495BACB9E3ACE588B7D2@LV8PR11MB8463.namprd11.prod.outlook.com>
-References: <LV8PR11MB8463E4402495BACB9E3ACE588B7D2@LV8PR11MB8463.namprd11.prod.outlook.com>
-Message-ID: <87mssl7av9.fsf@meer.lwn.net>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Thu, 01 Feb 2024 14:16:24 +1030
+Subject: [PATCH v5 01/21] ARM: dts: aspeed: yosemite4: Revise i2c-mux
+ devices
+In-Reply-To: <20240131084134.328307-2-Delphine_CC_Chiu@wiwynn.com>
+References: <20240131084134.328307-1-Delphine_CC_Chiu@wiwynn.com>
+	 <20240131084134.328307-2-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <ff1df8af596c907e969d9011ce2f42ef96974d37.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-"Corona, Ernesto" <ernesto.corona@intel.com> writes:
+Hi Delphine,
 
-> Added document that describe the ABI for JTAG class driver
+On Wed, 2024-01-31 at 16:41 +0800, Delphine CC Chiu wrote:
+> Revise Yosemite 4 devicetree for devices behind i2c-mux
+> - Add gpio and eeprom behind i2c-mux
+> - Remove redundant idle-state setting for i2c-mux
 
-A few comments
+Generally if you find yourself listing things the patch does in the
+commit message it's an indicator you should split the patch up.
 
-> diff --git a/Documentation/jtag/index.rst b/Documentation/jtag/index.rst
-> new file mode 100644
-> index 000000000000..8a2761d1c17e
-> --- /dev/null
-> +++ b/Documentation/jtag/index.rst
+It looks like there's a lot of stuff to be fixed, but it doesn't need
+to all be fixed in the one commit (as 01/21 suggests I guess). The
+devicetree is already inaccurate, it's okay if a subset of the
+inaccuracies survive for another patch or so.
 
-Please, let's not create another top-level directory for this; this
-looks like information that belongs in the userspace-api book.
+Otherwise, if they must be changed together, it would be good to have a
+description of *why*. Broadly, the commit message should explain *why*
+the change is need regardless, not discuss *what* the patch changes
+(that's evident from the patch itself).
 
-> @@ -0,0 +1,18 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +==============================
-> +Joint Test Action Group (JTAG)
-> +==============================
-> +
-> +.. toctree::
-> +   :maxdepth: 1
-> +
-> +   jtag-summary
-> +   jtagdev
-> +
-> +.. only::  subproject and html
-> +
-> +   Indices
-> +   =======
-> +
-> +   * :ref:`genindex`
-> diff --git a/Documentation/jtag/jtag-summary.rst b/Documentation/jtag/jtag-summary.rst
-> new file mode 100644
-> index 000000000000..07cfa7a761d7
-> --- /dev/null
-> +++ b/Documentation/jtag/jtag-summary.rst
-> @@ -0,0 +1,49 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +====================================
-> +Linux kernel JTAG support
-> +====================================
-> +
-> +Introduction to JTAG
-> +====================
-> +
-> +JTAG is an industry standard for verifying hardware. JTAG provides access to
-> +many logic signals of a complex integrated circuit, including the device pins.
-> +
-> +A JTAG interface is a special interface added to a chip.
-> +Depending on the version of JTAG, two, four, or five pins are added.
-> +
-> +The connector pins are:
-> + * TDI (Test Data In)
-> + * TDO (Test Data Out)
-> + * TCK (Test Clock)
-> + * TMS (Test Mode Select)
-> + * TRST (Test Reset) optional
-> +
-> +JTAG interface is designed to have two parts - basic core driver and
-> +hardware specific driver. The basic driver introduces a general interface
-> +which is not dependent of specific hardware. It provides communication
-> +between user space and hardware specific driver.
-> +Each JTAG device is represented as a char device from (jtag0, jtag1, ...).
-> +Access to a JTAG device is performed through IOCTL calls.
-> +
-> +Call flow example:
-> +::
+> 
+> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> ---
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 381 ++++++++++++++++--
+>  1 file changed, 347 insertions(+), 34 deletions(-)
+> 
+>  
+> -	i2c-mux at 71 {
+> -		compatible = "nxp,pca9846";
+> +	i2c-mux at 74 {
+> +		compatible = "nxp,pca9546";
 
-You can express this more readably as just
+Aside from splitting the patch on adding more devices and removing the
+redundant idle-state settings, things like this should probably be
+separate too.
 
-  Call flow example::
+Why was the address changed? Was it always wrong? Or has there been a
+new revision of the board? A separate commit with some explanation here
+would be useful.
 
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+> -
+> -		idle-state = <0>;
+>  		i2c-mux-idle-disconnect;
+> -		reg = <0x71>;
+> +		reg = <0x74>;
+>  
+> -		i2c at 0 {
+> +		imux30: i2c at 0 {
+>  			#address-cells = <1>;
+>  			#size-cells = <0>;
+>  			reg = <0>;
+> @@ -450,26 +726,26 @@ i2c at 0 {
+>  			adc at 1f {
+>  				compatible = "ti,adc128d818";
+>  				reg = <0x1f>;
+> -				ti,mode = /bits/ 8 <2>;
+> +				ti,mode = /bits/ 8 <1>;
 
+This isn't discussed anywhere. There should probably be a separate
+change for anything adc128d818-related that explains what's going on
+here.
 
-> +
-> +	User: open  -> /dev/jatgX -> JTAG core driver -> JTAG hardware specific driver
-> +	User: ioctl -> /dev/jtagX -> JTAG core driver -> JTAG hardware specific driver
-> +	User: close -> /dev/jatgX -> JTAG core driver -> JTAG hardware specific driver
-> +
-> +
-> +THANKS TO
-> +---------
-> +Contributors to Linux-JTAG discussions include (in alphabetical order,
-> +by last name):
-> +
-> +- Omar Castro
-> +- Ernesto Corona
-> +- Steven Filary
-> +- Vadim Pasternak
-> +- Jiri Pirko
-> +- Oleksandr Shamray
-> +- Billy Tsai
-> \ No newline at end of file
+>  			};
+>  
+>  			pwm at 20{
+> -				compatible = "max31790";
+> +				compatible = "maxim,max31790";
+> +				pwm-as-tach = <4 5>;
+>  				reg = <0x20>;
+> -				#address-cells = <1>;
+> -				#size-cells = <0>;
 
-Files should end in a newline
+This also isn't discussed anywhere. There should probably be a separate
+change for anything max31790-related that explains what's going on
+here.
 
-[...]
+>  			};
+>  
+>  			gpio at 22{
+>  				compatible = "ti,tca6424";
+>  				reg = <0x22>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
 
-> +===============  =========  =======  =====================================================
-> +Bit Field        Bit begin  Bit end  Description
-> +===============  =========  =======  =====================================================
-> +rsvd             25         31       Reserved, not used
-> +pad data         24         24       Value used for pre and post padding. Either 1 or 0.
-> +post pad count   12         23       Number of padding bits to be executed after transfer.
-> +pre pad count    0          11       Number of padding bit to be executed before transfer.
-> +===============  =========  =======  =====================================================
+Also not discussed. Separate change for anything tca6424-related that
+explains what's going on here.
 
-You should be able to wrap the final column of the table, avoiding these
-long lines.
+>  			};
+>  
+> -			pwm at 23{
+> -				compatible = "max31790";
+> -				reg = <0x23>;
+> -				#address-cells = <1>;
+> -				#size-cells = <0>;
+> +			pwm at 2f{
+> +				compatible = "maxim,max31790";
+> +				pwm-as-tach = <4 5>;
+> +				reg = <0x2f>;
+>  			};
 
-Thanks,
+Should go in the max31790-related patch.
 
-jon
+>  
+>  			adc at 33 {
+> @@ -492,34 +768,34 @@ gpio at 61 {
+>  			};
+>  		};
+>  
+> -		i2c at 1 {
+> +		imux31: i2c at 1 {
+>  			#address-cells = <1>;
+>  			#size-cells = <0>;
+> -			reg = <0>;
+> +			reg = <1>;
+>  
+>  			adc at 1f {
+>  				compatible = "ti,adc128d818";
+>  				reg = <0x1f>;
+> -				ti,mode = /bits/ 8 <2>;
+> +				ti,mode = /bits/ 8 <1>;
+
+Should go in the adc128d818 patch
+
+>  			};
+>  
+>  			pwm at 20{
+> -				compatible = "max31790";
+> +				compatible = "maxim,max31790";
+> +				pwm-as-tach = <4 5>;
+>  				reg = <0x20>;
+> -				#address-cells = <1>;
+> -				#size-cells = <0>;
+>  			};
+
+Should go in the max31790 patch
+
+>  
+>  			gpio at 22{
+>  				compatible = "ti,tca6424";
+>  				reg = <0x22>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
+
+Should go in the tca6424 patch
+
+>  			};
+>  
+> -			pwm at 23{
+> -				compatible = "max31790";
+> -				reg = <0x23>;
+> -				#address-cells = <1>;
+> -				#size-cells = <0>;
+> +			pwm at 2f{
+> +				compatible = "maxim,max31790";
+> +				pwm-as-tach = <4 5>;
+> +				reg = <0x2f>;
+
+Should go in the max31790 patch
+
+Andrew
