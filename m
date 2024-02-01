@@ -1,10 +1,11 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 01 Feb 2024 14:43:12 +1030
-Subject: [PATCH v5 02/21] ARM: dts: aspeed: yosemite4: Enable adc15
-In-Reply-To: <20240131084134.328307-3-Delphine_CC_Chiu@wiwynn.com>
+Date: Thu, 01 Feb 2024 14:45:29 +1030
+Subject: [PATCH v5 03/21] ARM: dts: aspeed: yosemite4: Enable spi-gpio
+ setting
+In-Reply-To: <20240131084134.328307-4-Delphine_CC_Chiu@wiwynn.com>
 References: <20240131084134.328307-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240131084134.328307-3-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <3050b9cb85cc2d308ada602794fd2ba09014334f.camel@codeconstruct.com.au>
+	 <20240131084134.328307-4-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <c14428e5b6fc863cf29606842f49895a82fa3539.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,13 +13,12 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Wed, 2024-01-31 at 16:41 +0800, Delphine CC Chiu wrote:
-> Enable Yosemite 4 adc15 config
+> enable spi-gpio setting for spi flash
 
-This should have a description. What's motivating the change? Why make
-it? What are we monitoring with ADC15? Why wasn't it necessary
-previously?
+I suspect I know what's motivating this as a design, but can you add an
+explanation to the commit message?
 
-The expectations on commit messages are outlined here:
+Again, expectations on commit messages are outlined here:
 
 https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst?h=v6.7#n45
 
@@ -27,33 +27,36 @@ Andrew
 > 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 > ---
->  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index dac58d3ea63c..6846aab893ad 100644
+> index 6846aab893ad..ea8fd3ec0982 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -51,7 +51,7 @@ iio-hwmon {
->  		compatible = "iio-hwmon";
->  		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+> @@ -53,6 +53,24 @@ iio-hwmon {
 >  				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
-> -				<&adc1 0>, <&adc1 1>;
-> +				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+>  				<&adc1 0>, <&adc1 1>, <&adc1 7>;
 >  	};
+> +
+> +	spi_gpio: spi-gpio {
+> +		compatible = "spi-gpio";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
+> +		gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
+> +		gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
+> +		num-chipselects = <1>;
+> +		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
+> +
+> +		tpmdev at 0 {
+> +			compatible = "tcg,tpm_tis-spi";
+> +			spi-max-frequency = <33000000>;
+> +			reg = <0>;
+> +		};
+> +	};
 >  };
 >  
-> @@ -920,10 +920,10 @@ &pinctrl_adc4_default &pinctrl_adc5_default
->  &adc1 {
->  	ref_voltage = <2500>;
->  	status = "okay";
-> -	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>;
-> +	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default
-> +	    &pinctrl_adc15_default>;
->  };
->  
-> -
->  &ehci0 {
->  	status = "okay";
->  };
+>  &uart1 {
 
