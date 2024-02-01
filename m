@@ -1,55 +1,53 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 01 Feb 2024 16:23:31 +1030
-Subject: [PATCH v5 18/21] ARM: dts: aspeed: yosemite4: add mctp config
- for NIC
-In-Reply-To: <20240131084134.328307-19-Delphine_CC_Chiu@wiwynn.com>
-References: <20240131084134.328307-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240131084134.328307-19-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <6f39a2cc2a853b45624553d5fdc66c3b65830721.camel@codeconstruct.com.au>
+From: 'andriy.shevchenko@linux.intel.com' <andriy.shevchenko@linux.intel.com>
+Date: Thu, 1 Feb 2024 13:32:57 +0200
+Subject: [PATCH 30 7/7] Add AST2500 and AST2600 JTAG device in DTS
+In-Reply-To: <ZbuBOmtyYdlmnCBa@smile.fi.intel.com>
+References: <LV8PR11MB8463F88C2364A08DEF3ABAC28B7D2@LV8PR11MB8463.namprd11.prod.outlook.com>
+ <ZbuBOmtyYdlmnCBa@smile.fi.intel.com>
+Message-ID: <ZbuBaRyZJR9-ZS-K@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-01-31 at 16:41 +0800, Delphine CC Chiu wrote:
-> add mctp config for NIC
-
-How does this integrate into the MCTP network(s)? It would be good to
-have more of a description.
-
+On Thu, Feb 01, 2024 at 01:32:11PM +0200, 'andriy.shevchenko at linux.intel.com' wrote:
+> On Tue, Jan 30, 2024 at 11:32:48PM +0000, Corona, Ernesto wrote:
+> > Adding aspeed jtag device to device tree
+> > 
+> > Signed-off-by: Ernesto Corona <ernesto.corona@intel.com>
+> > Signed-off-by: Omar Castro <omar.eduardo.castro@linux.intel.com>
+> > Acked-by: Arnd Bergmann <arnd@arndb.de>
 > 
-> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> ---
-> Changelog:
->   - v4
->     - Revise device node name
->   - v2
->     - Add patch for NIC mctp config
-> ---
->  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 +++++++++++++++++++
->  1 file changed, 24 insertions(+)
+> First of all, please use --thread to git-format-patch when preparing the
+> series.
 > 
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index 7c7c9e85bb92..b9b6fe729cd6 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -1273,40 +1273,64 @@ imux24: i2c at 0 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
->  			reg = <0>;
-> +			mctp-controller;
->  			temperature-sensor at 1f {
->  				compatible = "ti,tmp421";
->  				reg = <0x1f>;
->  			};
-> +
-> +			temperature-sensor at 3c {
-> +				compatible = "smsc,emc1403";
-> +				reg = <0x3c>;
-> +			};
+> > Cc: Jiri Pirko <jiri@nvidia.com>
+> > Cc: Vadim Pasternak <vadimp@mellanox.com>
+> > Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: David S. Miller <davem@davemloft.net>
+> > Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+> > Cc: Rob Herring <robh@kernel.org>
+> > Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+> > Cc: Steven Filary <steven.a.filary@intel.com>
+> > Cc: Amithash Prasad <amithash@fb.com>
+> > Cc: Patrick Williams <patrickw3@fb.com>
+> > Cc: Luke Chen <luke_chen@aspeedtech.com>
+> > Cc: Billy Tsai <billy_tsai@aspeedtech.com>
+> 
+> Second, please avoid flooding commit message with unneeded details, i.e. move
+> these Cc:s to...
+> 
+> > ---
+> ...the after this cutter line.
 
-This is unrelated to the MCTP configuration? Same with the other nodes
-in the patch.
+Also, you may use standard versioning pattern by using -v31 next time for
+git-format-patch (31 is an example, you may choose the correct version).
 
-Andrew
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
