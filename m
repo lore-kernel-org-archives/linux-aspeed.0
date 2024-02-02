@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Fri,  2 Feb 2024 13:39:16 -0500
-Subject: [PATCH AUTOSEL 6.7 20/23] ARM: dts: Fix TPM schema violations
-In-Reply-To: <20240202183926.540467-1-sashal@kernel.org>
-References: <20240202183926.540467-1-sashal@kernel.org>
-Message-ID: <20240202183926.540467-20-sashal@kernel.org>
+Date: Fri,  2 Feb 2024 13:40:06 -0500
+Subject: [PATCH AUTOSEL 6.6 19/21] ARM: dts: Fix TPM schema violations
+In-Reply-To: <20240202184015.540966-1-sashal@kernel.org>
+References: <20240202184015.540966-1-sashal@kernel.org>
+Message-ID: <20240202184015.540966-19-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -121,10 +121,10 @@ index 31590d3186a2..00e5887c926f 100644
  			reg = <0>;
  		};
 diff --git a/arch/arm/boot/dts/nxp/imx/imx6ull-phytec-tauri.dtsi b/arch/arm/boot/dts/nxp/imx/imx6ull-phytec-tauri.dtsi
-index 44cc4ff1d0df..d12fb44aeb14 100644
+index ea627638e40c..7dd1fe5a2fb7 100644
 --- a/arch/arm/boot/dts/nxp/imx/imx6ull-phytec-tauri.dtsi
 +++ b/arch/arm/boot/dts/nxp/imx/imx6ull-phytec-tauri.dtsi
-@@ -116,7 +116,7 @@ &ecspi1 {
+@@ -121,7 +121,7 @@ &ecspi1 {
  	tpm_tis: tpm at 1 {
  		pinctrl-names = "default";
  		pinctrl-0 = <&pinctrl_tpm>;
