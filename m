@@ -1,41 +1,25 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Sat, 3 Feb 2024 07:13:08 -0800
-Subject: [PATCH v13 1/3] dt-bindings: hwmon: fan: Add fan binding to
- schema
-In-Reply-To: <20240124060705.1342461-2-billy_tsai@aspeedtech.com>
-References: <20240124060705.1342461-1-billy_tsai@aspeedtech.com>
- <20240124060705.1342461-2-billy_tsai@aspeedtech.com>
-Message-ID: <e1b1c69f-a2ff-4fa5-80a6-3ff0a3de6ce6@roeck-us.net>
+Date: Sat, 3 Feb 2024 07:14:58 -0800
+Subject: [PATCH v1 1/1] hwmon: (aspeed-pwm-tacho) mutex for tach reading
+In-Reply-To: <121d888762a1232ef403cf35230ccf7b3887083a.1699007401.git.alexander.hansen@9elements.com>
+References: <121d888762a1232ef403cf35230ccf7b3887083a.1699007401.git.alexander.hansen@9elements.com>
+Message-ID: <a70d020a-6289-4087-81eb-a4d6ea339b92@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 24, 2024 at 02:07:03PM +0800, Billy Tsai wrote:
-> From: Naresh Solanki <naresh.solanki@9elements.com>
+On Fri, Nov 03, 2023 at 11:30:55AM +0100, Alexander Hansen wrote:
+> From: Loic Prylli <lprylli@netflix.com>
 > 
-> Add common fan properties bindings to a schema.
+> the ASPEED_PTCR_RESULT Register can only hold the result for a
+> single fan input. Adding a mutex to protect the register until the
+> reading is done.
 > 
-> Bindings for fan controllers can reference the common schema for the
-> fan
-> 
-> child nodes:
-> 
->   patternProperties:
->     "^fan@[0-2]":
->       type: object
->       $ref: fan-common.yaml#
->       unevaluatedProperties: false
-> 
-> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> Signed-off-by: Loic Prylli <lprylli@netflix.com>
+> Signed-off-by: Alexander Hansen <alexander.hansen@9elements.com>
 
-v12 of this patch got a Reviewed-by: tag from Rob.
-The tag is gone in this version, presumably meaning that there
-was a substantial change.
-
-I don't normally do this, but I downloaded v12 and v13 and did not
-find a single change. Why did you drop Rob's Reviewed-by: tag ?
+Somehow this patch got lost. Sorry for that. Applied.
 
 Guenter
