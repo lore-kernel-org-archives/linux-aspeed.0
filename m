@@ -1,28 +1,21 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 29 Feb 2024 13:01:19 +0100
-Subject: [PATCH v4 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
-In-Reply-To: <TYZPR04MB65960D379D89A5C3C4A0B13B9D5F2@TYZPR04MB6596.apcprd04.prod.outlook.com>
-References: <20240229090913.1892215-1-Kelly_Hung@asus.com>
- <7f60e293-8076-4a06-9b6b-35f9c19578c4@linaro.org>
- <TYZPR04MB65960D379D89A5C3C4A0B13B9D5F2@TYZPR04MB6596.apcprd04.prod.outlook.com>
-Message-ID: <1286ec46-b721-4c44-92f1-a79229e1c08b@linaro.org>
+From: Shawn Guo <shawn.gsc@gmail.com>
+Date: Mon, 05 Feb 2024 09:50:23 -0000
+Subject: [PATCH 2/3] arm64: dts: imx93: drop "master" I3C node name suffix
+In-Reply-To: <20240117075618.81932-2-krzysztof.kozlowski@linaro.org>
+References: <20240117075618.81932-1-krzysztof.kozlowski@linaro.org>
+ <20240117075618.81932-2-krzysztof.kozlowski@linaro.org>
+Message-ID: <ZcCvUJNslxafvCab@t480>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 29/02/2024 12:18, Kelly Hung(???) wrote:
-> Hi, Krzysztof,
+On Wed, Jan 17, 2024 at 08:56:17AM +0100, Krzysztof Kozlowski wrote:
+> Following change in the I3C bindings, the "master" suffix in I3C
+> controller node name is discouraged (it is "controller" now) and not
+> accurate (if device supports also target mode).
 > 
-> I also confused, if I lost all from v1 to v4 change log? If the answer is yes, I had added them in v5.
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-I asked to add proper tags and gave you link to exact paragraph
-explaining this.
-
-Open the email and inline, not top-posting, answer to each sentence you
-find there. You were ignoring all them and not responding...
-
-Best regards,
-Krzysztof
-
+Applied, thanks!
