@@ -1,48 +1,36 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Mon, 5 Feb 2024 06:59:27 +0000
-Subject: [PATCH v13 1/3] dt-bindings: hwmon: fan: Add fan binding to
- schema
-In-Reply-To: <e1b1c69f-a2ff-4fa5-80a6-3ff0a3de6ce6@roeck-us.net>
-References: <20240124060705.1342461-1-billy_tsai@aspeedtech.com>
- <20240124060705.1342461-2-billy_tsai@aspeedtech.com>
- <e1b1c69f-a2ff-4fa5-80a6-3ff0a3de6ce6@roeck-us.net>
-Message-ID: <OSQPR06MB72522452AF463172AD54D4EA8B472@OSQPR06MB7252.apcprd06.prod.outlook.com>
+From: Dinh Nguyen <dinguyen@kernel.org>
+Date: Mon, 5 Feb 2024 21:11:03 -0600
+Subject: [PATCH 3/3] arm64: dts: intel: agilex5: drop "master" I3C node
+ name suffix
+In-Reply-To: <20240117075618.81932-3-krzysztof.kozlowski@linaro.org>
+References: <20240117075618.81932-1-krzysztof.kozlowski@linaro.org>
+ <20240117075618.81932-3-krzysztof.kozlowski@linaro.org>
+Message-ID: <f3ae2e5a-1850-461f-aa9c-2c7bceac8318@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > From: Naresh Solanki <naresh.solanki@9elements.com>
-> >
-> > Add common fan properties bindings to a schema.
-> >
-> > Bindings for fan controllers can reference the common schema for the
-> > fan
-> >
-> > child nodes:
-> >
-> >   patternProperties:
-> >     "^fan@[0-2]":
-> >       type: object
-> >       $ref: fan-common.yaml#
-> >       unevaluatedProperties: false
-> >
-> > Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+On 1/17/24 01:56, Krzysztof Kozlowski wrote:
+> Following change in the I3C bindings, the "master" suffix in I3C
+> controller node name is discouraged (it is "controller" now) and not
+> accurate (if device supports also target mode).
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
+> ---
+> 
+> The change can be applied through independent trees, if the I3C bindings
+> change is applied.  Therefore please take it once I3C bindings is
+> applied.
+> ---
+>   arch/arm64/boot/dts/intel/socfpga_agilex5.dtsi | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
 
-> v12 of this patch got a Reviewed-by: tag from Rob.
-> The tag is gone in this version, presumably meaning that there
-> was a substantial change.
+Applied.
 
-> I don't normally do this, but I downloaded v12 and v13 and did not
-> find a single change. Why did you drop Rob's Reviewed-by: tag ?
+Thanks,
+Dinh
 
-Hi Guenter,
-
-The fan DT-binding for version 12 is identical to that of version 13. I
-apologize for forgetting to include the 'Reviewed-by' from Rob when
-preparing version 13. I will make sure to include it when sending
-version 14.
-
-Thanks
