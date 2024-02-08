@@ -1,36 +1,26 @@
-From: Dinh Nguyen <dinguyen@kernel.org>
-Date: Mon, 5 Feb 2024 21:11:03 -0600
-Subject: [PATCH 3/3] arm64: dts: intel: agilex5: drop "master" I3C node
- name suffix
-In-Reply-To: <20240117075618.81932-3-krzysztof.kozlowski@linaro.org>
-References: <20240117075618.81932-1-krzysztof.kozlowski@linaro.org>
- <20240117075618.81932-3-krzysztof.kozlowski@linaro.org>
-Message-ID: <f3ae2e5a-1850-461f-aa9c-2c7bceac8318@kernel.org>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Fri, 09 Feb 2024 08:18:54 +1030
+Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD Onyx
+ Platform
+In-Reply-To: <d4fe8b55-a1ea-4ce7-89ac-ce17e8ff4e45@amd.com>
+References: <20240110033543.799919-1-supreeth.venkatesh@amd.com>
+	 <d4fe8b55-a1ea-4ce7-89ac-ce17e8ff4e45@amd.com>
+Message-ID: <d5d488f2777b34d744d07fbd94f525ae381dca44.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 1/17/24 01:56, Krzysztof Kozlowski wrote:
-> Following change in the I3C bindings, the "master" suffix in I3C
-> controller node name is discouraged (it is "controller" now) and not
-> accurate (if device supports also target mode).
+On Thu, 2024-02-08 at 08:57 -0600, Supreeth Venkatesh wrote:
+> This patch is pending for a month now.
 > 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> 
-> ---
-> 
-> The change can be applied through independent trees, if the I3C bindings
-> change is applied.  Therefore please take it once I3C bindings is
-> applied.
-> ---
->   arch/arm64/boot/dts/intel/socfpga_agilex5.dtsi | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
+> Can DT maintainers please help review this and provide feedback?
 
-Applied.
+Joel's on leave and I'm having to manage some personal concerns as well
+as other professional priorities.
 
-Thanks,
-Dinh
+I'm trying to find time to address the BMC patch backlog but it really
+is a best-effort thing at the moment.
 
+Andrew
