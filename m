@@ -1,81 +1,750 @@
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 13 Feb 2024 19:35:16 -0000
-Subject: [PATCH 1/6] arm64: dts: freescale: Disable interrupt_map check
+Date: Tue, 13 Feb 2024 19:35:17 -0000
+Subject: [PATCH 2/6] arm: dts: Fix dtc interrupt_provider warnings
 In-Reply-To: <20240213-arm-dt-cleanups-v1-0-f2dee1292525@kernel.org>
 References: <20240213-arm-dt-cleanups-v1-0-f2dee1292525@kernel.org>
-Message-ID: <20240213-arm-dt-cleanups-v1-1-f2dee1292525@kernel.org>
+Message-ID: <20240213-arm-dt-cleanups-v1-2-f2dee1292525@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Several Freescale Layerscape platforms extirq binding use a malformed
-interrupt-map property missing parent address cells. These are
-documented in of_irq_imap_abusers list in drivers/of/irq.c. In order to
-enable dtc interrupt_map check tree wide, we need to disable it for
-these platforms which will not be fixed (as that would break
-compatibility).
+The dtc interrupt_provider warning is off by default. Fix all the warnings
+so it can be enabled.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm64/boot/dts/freescale/Makefile | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm/boot/dts/amazon/alpine.dtsi                   |  1 -
+ arch/arm/boot/dts/aspeed/aspeed-g4.dtsi                | 14 --------------
+ arch/arm/boot/dts/aspeed/aspeed-g5.dtsi                | 15 +--------------
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi                | 18 ++----------------
+ arch/arm/boot/dts/broadcom/bcm-cygnus.dtsi             |  3 +++
+ arch/arm/boot/dts/broadcom/bcm-hr2.dtsi                |  1 +
+ arch/arm/boot/dts/broadcom/bcm-nsp.dtsi                |  2 ++
+ arch/arm/boot/dts/marvell/kirkwood-l-50.dts            |  2 ++
+ arch/arm/boot/dts/nuvoton/nuvoton-wpcm450.dtsi         |  2 ++
+ arch/arm/boot/dts/nvidia/tegra30-apalis-v1.1.dtsi      |  1 -
+ arch/arm/boot/dts/nvidia/tegra30-apalis.dtsi           |  1 -
+ arch/arm/boot/dts/nvidia/tegra30-colibri.dtsi          |  1 -
+ arch/arm/boot/dts/nxp/imx/imx6q-b850v3.dts             |  3 ---
+ arch/arm/boot/dts/nxp/imx/imx6q-bx50v3.dtsi            |  2 +-
+ arch/arm/boot/dts/nxp/imx/imx6qdl-apalis.dtsi          |  1 -
+ arch/arm/boot/dts/nxp/imx/imx6qdl-colibri.dtsi         |  1 -
+ arch/arm/boot/dts/nxp/imx/imx6qdl-emcon.dtsi           |  1 -
+ arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-pfla02.dtsi   |  1 +
+ .../boot/dts/nxp/imx/imx6qdl-phytec-phycore-som.dtsi   |  1 +
+ arch/arm/boot/dts/nxp/imx/imx7d-pico-dwarf.dts         |  1 +
+ arch/arm/boot/dts/nxp/vf/vf610-zii-dev-rev-b.dts       |  1 +
+ arch/arm/boot/dts/st/stm32429i-eval.dts                |  1 -
+ arch/arm/boot/dts/st/stm32mp157c-dk2.dts               |  1 -
+ arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts      |  1 -
+ 24 files changed, 18 insertions(+), 58 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 2e027675d7bb..2cb0212b63c6 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -20,23 +20,41 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1046a-frwy.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1046a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1046a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1046a-tqmls1046a-mbls10xxa.dtb
-+DTC_FLAGS_fsl-ls1088a-qds := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1088a-qds.dtb
-+DTC_FLAGS_fsl-ls1088a-rdb := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1088a-rdb.dtb
-+DTC_FLAGS_fsl-ls1088a-ten64 := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1088a-ten64.dtb
-+DTC_FLAGS_fsl-ls1088a-tqmls1088a-mbls10xxa := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1088a-tqmls1088a-mbls10xxa.dtb
-+DTC_FLAGS_fsl-ls2080a-qds := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-qds.dtb
-+DTC_FLAGS_fsl-ls2080a-rdb := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
-+DTC_FLAGS_fsl-ls2081a-rdb := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2081a-rdb.dtb
-+DTC_FLAGS_fsl-ls2080a-simu := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
-+DTC_FLAGS_fsl-ls2088a-qds := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
-+DTC_FLAGS_fsl-ls2088a-rdb := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-+DTC_FLAGS_fsl-lx2160a-bluebox3 := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-bluebox3.dtb
-+DTC_FLAGS_fsl-lx2160a-bluebox3-rev-a := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-bluebox3-rev-a.dtb
-+DTC_FLAGS_fsl-lx2160a-clearfog-cx := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-clearfog-cx.dtb
-+DTC_FLAGS_fsl-lx2160a-honeycomb := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-honeycomb.dtb
-+DTC_FLAGS_fsl-lx2160a-qds := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-qds.dtb
-+DTC_FLAGS_fsl-lx2160a-rdb := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-+DTC_FLAGS_fsl-lx2162a-clearfog := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2162a-clearfog.dtb
-+DTC_FLAGS_fsl-lx2162a-qds := -Wno-interrupt_map
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2162a-qds.dtb
+diff --git a/arch/arm/boot/dts/amazon/alpine.dtsi b/arch/arm/boot/dts/amazon/alpine.dtsi
+index ff68dfb4eb78..90bd12feac01 100644
+--- a/arch/arm/boot/dts/amazon/alpine.dtsi
++++ b/arch/arm/boot/dts/amazon/alpine.dtsi
+@@ -167,7 +167,6 @@ pcie at fbc00000 {
+ 		msix: msix at fbe00000 {
+ 			compatible = "al,alpine-msix";
+ 			reg = <0x0 0xfbe00000 0x0 0x100000>;
+-			interrupt-controller;
+ 			msi-controller;
+ 			al,msi-base-spi = <96>;
+ 			al,msi-num-spis = <64>;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
+index 530491ae5eb2..857cb26ed6d7 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
+@@ -466,7 +466,6 @@ i2c_ic: interrupt-controller at 0 {
+ 	i2c0: i2c-bus at 40 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
  
- fsl-ls1028a-qds-13bb-dtbs := fsl-ls1028a-qds.dtb fsl-ls1028a-qds-13bb.dtbo
-@@ -53,6 +71,7 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1028a-qds-85bb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1028a-qds-899b.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls1028a-qds-9999.dtb
+ 		reg = <0x40 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -482,7 +481,6 @@ i2c0: i2c-bus at 40 {
+ 	i2c1: i2c-bus at 80 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
  
-+DTC_FLAGS_fsl-lx2160a-tqmlx2160a-mblx2160a := -Wno-interrupt_map
- fsl-lx2160a-tqmlx2160a-mblx2160a-12-11-x-dtbs := fsl-lx2160a-tqmlx2160a-mblx2160a.dtb \
- 	fsl-lx2160a-tqmlx2160a-mblx2160a_12_x_x.dtbo \
- 	fsl-lx2160a-tqmlx2160a-mblx2160a_x_11_x.dtbo
+ 		reg = <0x80 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -498,7 +496,6 @@ i2c1: i2c-bus at 80 {
+ 	i2c2: i2c-bus at c0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0xc0 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -515,7 +512,6 @@ i2c2: i2c-bus at c0 {
+ 	i2c3: i2c-bus at 100 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x100 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -532,7 +528,6 @@ i2c3: i2c-bus at 100 {
+ 	i2c4: i2c-bus at 140 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x140 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -549,7 +544,6 @@ i2c4: i2c-bus at 140 {
+ 	i2c5: i2c-bus at 180 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x180 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -566,7 +560,6 @@ i2c5: i2c-bus at 180 {
+ 	i2c6: i2c-bus at 1c0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x1c0 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -583,7 +576,6 @@ i2c6: i2c-bus at 1c0 {
+ 	i2c7: i2c-bus at 300 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x300 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -600,7 +592,6 @@ i2c7: i2c-bus at 300 {
+ 	i2c8: i2c-bus at 340 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x340 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -617,7 +608,6 @@ i2c8: i2c-bus at 340 {
+ 	i2c9: i2c-bus at 380 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x380 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -634,7 +624,6 @@ i2c9: i2c-bus at 380 {
+ 	i2c10: i2c-bus at 3c0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x3c0 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -651,7 +640,6 @@ i2c10: i2c-bus at 3c0 {
+ 	i2c11: i2c-bus at 400 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x400 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -668,7 +656,6 @@ i2c11: i2c-bus at 400 {
+ 	i2c12: i2c-bus at 440 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x440 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+@@ -685,7 +672,6 @@ i2c12: i2c-bus at 440 {
+ 	i2c13: i2c-bus at 480 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x480 0x40>;
+ 		compatible = "aspeed,ast2400-i2c-bus";
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
+index 04f98d1dbb97..e6f3cf3c721e 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
+@@ -363,6 +363,7 @@ sgpio: sgpio at 1e780200 {
+ 				interrupts = <40>;
+ 				reg = <0x1e780200 0x0100>;
+ 				clocks = <&syscon ASPEED_CLK_APB>;
++				#interrupt-cells = <2>;
+ 				interrupt-controller;
+ 				bus-frequency = <12000000>;
+ 				pinctrl-names = "default";
+@@ -594,7 +595,6 @@ i2c_ic: interrupt-controller at 0 {
+ 	i2c0: i2c-bus at 40 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x40 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -610,7 +610,6 @@ i2c0: i2c-bus at 40 {
+ 	i2c1: i2c-bus at 80 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x80 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -626,7 +625,6 @@ i2c1: i2c-bus at 80 {
+ 	i2c2: i2c-bus at c0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0xc0 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -643,7 +641,6 @@ i2c2: i2c-bus at c0 {
+ 	i2c3: i2c-bus at 100 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x100 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -660,7 +657,6 @@ i2c3: i2c-bus at 100 {
+ 	i2c4: i2c-bus at 140 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x140 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -677,7 +673,6 @@ i2c4: i2c-bus at 140 {
+ 	i2c5: i2c-bus at 180 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x180 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -694,7 +689,6 @@ i2c5: i2c-bus at 180 {
+ 	i2c6: i2c-bus at 1c0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x1c0 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -711,7 +705,6 @@ i2c6: i2c-bus at 1c0 {
+ 	i2c7: i2c-bus at 300 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x300 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -728,7 +721,6 @@ i2c7: i2c-bus at 300 {
+ 	i2c8: i2c-bus at 340 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x340 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -745,7 +737,6 @@ i2c8: i2c-bus at 340 {
+ 	i2c9: i2c-bus at 380 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x380 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -762,7 +753,6 @@ i2c9: i2c-bus at 380 {
+ 	i2c10: i2c-bus at 3c0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x3c0 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -779,7 +769,6 @@ i2c10: i2c-bus at 3c0 {
+ 	i2c11: i2c-bus at 400 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x400 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -796,7 +785,6 @@ i2c11: i2c-bus at 400 {
+ 	i2c12: i2c-bus at 440 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x440 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+@@ -813,7 +801,6 @@ i2c12: i2c-bus at 440 {
+ 	i2c13: i2c-bus at 480 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 
+ 		reg = <0x480 0x40>;
+ 		compatible = "aspeed,ast2500-i2c-bus";
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index c4d1faade8be..29f94696d8b1 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -474,6 +474,7 @@ sgpiom0: sgpiom at 1e780500 {
+ 				reg = <0x1e780500 0x100>;
+ 				interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&syscon ASPEED_CLK_APB2>;
++				#interrupt-cells = <2>;
+ 				interrupt-controller;
+ 				bus-frequency = <12000000>;
+ 				pinctrl-names = "default";
+@@ -488,6 +489,7 @@ sgpiom1: sgpiom at 1e780600 {
+ 				reg = <0x1e780600 0x100>;
+ 				interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&syscon ASPEED_CLK_APB2>;
++				#interrupt-cells = <2>;
+ 				interrupt-controller;
+ 				bus-frequency = <12000000>;
+ 				pinctrl-names = "default";
+@@ -902,7 +904,6 @@ &i2c {
+ 	i2c0: i2c-bus at 80 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x80 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -917,7 +918,6 @@ i2c0: i2c-bus at 80 {
+ 	i2c1: i2c-bus at 100 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x100 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -932,7 +932,6 @@ i2c1: i2c-bus at 100 {
+ 	i2c2: i2c-bus at 180 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x180 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -947,7 +946,6 @@ i2c2: i2c-bus at 180 {
+ 	i2c3: i2c-bus at 200 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x200 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -962,7 +960,6 @@ i2c3: i2c-bus at 200 {
+ 	i2c4: i2c-bus at 280 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x280 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -977,7 +974,6 @@ i2c4: i2c-bus at 280 {
+ 	i2c5: i2c-bus at 300 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x300 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -992,7 +988,6 @@ i2c5: i2c-bus at 300 {
+ 	i2c6: i2c-bus at 380 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x380 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1007,7 +1002,6 @@ i2c6: i2c-bus at 380 {
+ 	i2c7: i2c-bus at 400 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x400 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1022,7 +1016,6 @@ i2c7: i2c-bus at 400 {
+ 	i2c8: i2c-bus at 480 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x480 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1037,7 +1030,6 @@ i2c8: i2c-bus at 480 {
+ 	i2c9: i2c-bus at 500 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x500 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1052,7 +1044,6 @@ i2c9: i2c-bus at 500 {
+ 	i2c10: i2c-bus at 580 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x580 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1067,7 +1058,6 @@ i2c10: i2c-bus at 580 {
+ 	i2c11: i2c-bus at 600 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x600 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1082,7 +1072,6 @@ i2c11: i2c-bus at 600 {
+ 	i2c12: i2c-bus at 680 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x680 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1097,7 +1086,6 @@ i2c12: i2c-bus at 680 {
+ 	i2c13: i2c-bus at 700 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x700 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1112,7 +1100,6 @@ i2c13: i2c-bus at 700 {
+ 	i2c14: i2c-bus at 780 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x780 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+@@ -1127,7 +1114,6 @@ i2c14: i2c-bus at 780 {
+ 	i2c15: i2c-bus at 800 {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		#interrupt-cells = <1>;
+ 		reg = <0x800 0x80>;
+ 		compatible = "aspeed,ast2600-i2c-bus";
+ 		clocks = <&syscon ASPEED_CLK_APB2>;
+diff --git a/arch/arm/boot/dts/broadcom/bcm-cygnus.dtsi b/arch/arm/boot/dts/broadcom/bcm-cygnus.dtsi
+index f9f79ed82518..07ca0d993c9f 100644
+--- a/arch/arm/boot/dts/broadcom/bcm-cygnus.dtsi
++++ b/arch/arm/boot/dts/broadcom/bcm-cygnus.dtsi
+@@ -167,6 +167,7 @@ gpio_crmu: gpio at 3024800 {
+ 			#gpio-cells = <2>;
+ 			gpio-controller;
+ 			interrupt-controller;
++			#interrupt-cells = <2>;
+ 			interrupt-parent = <&mailbox>;
+ 			interrupts = <0>;
+ 		};
+@@ -247,6 +248,7 @@ gpio_ccm: gpio at 1800a000 {
+ 			gpio-controller;
+ 			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+ 			interrupt-controller;
++			#interrupt-cells = <2>;
+ 		};
+ 
+ 		i2c1: i2c at 1800b000 {
+@@ -518,6 +520,7 @@ gpio_asiu: gpio at 180a5000 {
+ 			gpio-controller;
+ 
+ 			interrupt-controller;
++			#interrupt-cells = <2>;
+ 			interrupts = <GIC_SPI 174 IRQ_TYPE_LEVEL_HIGH>;
+ 			gpio-ranges = <&pinctrl 0 42 1>,
+ 					<&pinctrl 1 44 3>,
+diff --git a/arch/arm/boot/dts/broadcom/bcm-hr2.dtsi b/arch/arm/boot/dts/broadcom/bcm-hr2.dtsi
+index 788a6806191a..75545b10ef2f 100644
+--- a/arch/arm/boot/dts/broadcom/bcm-hr2.dtsi
++++ b/arch/arm/boot/dts/broadcom/bcm-hr2.dtsi
+@@ -200,6 +200,7 @@ gpiob: gpio at 30000 {
+ 			gpio-controller;
+ 			ngpios = <4>;
+ 			interrupt-controller;
++			#interrupt-cells = <2>;
+ 			interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
+diff --git a/arch/arm/boot/dts/broadcom/bcm-nsp.dtsi b/arch/arm/boot/dts/broadcom/bcm-nsp.dtsi
+index 9d20ba3b1ffb..6a4482c93167 100644
+--- a/arch/arm/boot/dts/broadcom/bcm-nsp.dtsi
++++ b/arch/arm/boot/dts/broadcom/bcm-nsp.dtsi
+@@ -180,6 +180,7 @@ gpioa: gpio at 20 {
+ 			gpio-controller;
+ 			ngpios = <32>;
+ 			interrupt-controller;
++			#interrupt-cells = <2>;
+ 			interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
+ 			gpio-ranges = <&pinctrl 0 0 32>;
+ 		};
+@@ -352,6 +353,7 @@ gpiob: gpio at 30000 {
+ 			gpio-controller;
+ 			ngpios = <4>;
+ 			interrupt-controller;
++			#interrupt-cells = <2>;
+ 			interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
+diff --git a/arch/arm/boot/dts/marvell/kirkwood-l-50.dts b/arch/arm/boot/dts/marvell/kirkwood-l-50.dts
+index dffb9f84e67c..c841eb8e7fb1 100644
+--- a/arch/arm/boot/dts/marvell/kirkwood-l-50.dts
++++ b/arch/arm/boot/dts/marvell/kirkwood-l-50.dts
+@@ -65,6 +65,7 @@ i2c at 11000 {
+ 			gpio2: gpio-expander at 20 {
+ 				#gpio-cells = <2>;
+ 				#interrupt-cells = <2>;
++				interrupt-controller;
+ 				compatible = "semtech,sx1505q";
+ 				reg = <0x20>;
+ 
+@@ -79,6 +80,7 @@ gpio2: gpio-expander at 20 {
+ 			gpio3: gpio-expander at 21 {
+ 				#gpio-cells = <2>;
+ 				#interrupt-cells = <2>;
++				interrupt-controller;
+ 				compatible = "semtech,sx1505q";
+ 				reg = <0x21>;
+ 
+diff --git a/arch/arm/boot/dts/nuvoton/nuvoton-wpcm450.dtsi b/arch/arm/boot/dts/nuvoton/nuvoton-wpcm450.dtsi
+index fd671c7a1e5d..6e1f0f164cb4 100644
+--- a/arch/arm/boot/dts/nuvoton/nuvoton-wpcm450.dtsi
++++ b/arch/arm/boot/dts/nuvoton/nuvoton-wpcm450.dtsi
+@@ -120,6 +120,7 @@ gpio0: gpio at 0 {
+ 				interrupts = <2 IRQ_TYPE_LEVEL_HIGH>,
+ 					     <3 IRQ_TYPE_LEVEL_HIGH>,
+ 					     <4 IRQ_TYPE_LEVEL_HIGH>;
++				#interrupt-cells = <2>;
+ 				interrupt-controller;
+ 			};
+ 
+@@ -128,6 +129,7 @@ gpio1: gpio at 1 {
+ 				gpio-controller;
+ 				#gpio-cells = <2>;
+ 				interrupts = <5 IRQ_TYPE_LEVEL_HIGH>;
++				#interrupt-cells = <2>;
+ 				interrupt-controller;
+ 			};
+ 
+diff --git a/arch/arm/boot/dts/nvidia/tegra30-apalis-v1.1.dtsi b/arch/arm/boot/dts/nvidia/tegra30-apalis-v1.1.dtsi
+index 1640763fd4af..ff0d684622f7 100644
+--- a/arch/arm/boot/dts/nvidia/tegra30-apalis-v1.1.dtsi
++++ b/arch/arm/boot/dts/nvidia/tegra30-apalis-v1.1.dtsi
+@@ -997,7 +997,6 @@ touchscreen at 41 {
+ 			compatible = "st,stmpe811";
+ 			reg = <0x41>;
+ 			irq-gpio = <&gpio TEGRA_GPIO(V, 0) GPIO_ACTIVE_LOW>;
+-			interrupt-controller;
+ 			id = <0>;
+ 			blocks = <0x5>;
+ 			irq-trigger = <0x1>;
+diff --git a/arch/arm/boot/dts/nvidia/tegra30-apalis.dtsi b/arch/arm/boot/dts/nvidia/tegra30-apalis.dtsi
+index 3b6fad273cab..d38f1dd38a90 100644
+--- a/arch/arm/boot/dts/nvidia/tegra30-apalis.dtsi
++++ b/arch/arm/boot/dts/nvidia/tegra30-apalis.dtsi
+@@ -980,7 +980,6 @@ touchscreen at 41 {
+ 			compatible = "st,stmpe811";
+ 			reg = <0x41>;
+ 			irq-gpio = <&gpio TEGRA_GPIO(V, 0) GPIO_ACTIVE_LOW>;
+-			interrupt-controller;
+ 			id = <0>;
+ 			blocks = <0x5>;
+ 			irq-trigger = <0x1>;
+diff --git a/arch/arm/boot/dts/nvidia/tegra30-colibri.dtsi b/arch/arm/boot/dts/nvidia/tegra30-colibri.dtsi
+index 4eb526fe9c55..81c8a5fd92cc 100644
+--- a/arch/arm/boot/dts/nvidia/tegra30-colibri.dtsi
++++ b/arch/arm/boot/dts/nvidia/tegra30-colibri.dtsi
+@@ -861,7 +861,6 @@ touchscreen at 41 {
+ 			compatible = "st,stmpe811";
+ 			reg = <0x41>;
+ 			irq-gpio = <&gpio TEGRA_GPIO(V, 0) GPIO_ACTIVE_LOW>;
+-			interrupt-controller;
+ 			id = <0>;
+ 			blocks = <0x5>;
+ 			irq-trigger = <0x1>;
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6q-b850v3.dts b/arch/arm/boot/dts/nxp/imx/imx6q-b850v3.dts
+index db8c332df6a1..cad112e05475 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6q-b850v3.dts
++++ b/arch/arm/boot/dts/nxp/imx/imx6q-b850v3.dts
+@@ -227,7 +227,6 @@ bridge at 1,0 {
+ 
+ 		#address-cells = <3>;
+ 		#size-cells = <2>;
+-		#interrupt-cells = <1>;
+ 
+ 		bridge at 2,1 {
+ 			compatible = "pci10b5,8605";
+@@ -235,7 +234,6 @@ bridge at 2,1 {
+ 
+ 			#address-cells = <3>;
+ 			#size-cells = <2>;
+-			#interrupt-cells = <1>;
+ 
+ 			/* Intel Corporation I210 Gigabit Network Connection */
+ 			ethernet at 3,0 {
+@@ -250,7 +248,6 @@ bridge at 2,2 {
+ 
+ 			#address-cells = <3>;
+ 			#size-cells = <2>;
+-			#interrupt-cells = <1>;
+ 
+ 			/* Intel Corporation I210 Gigabit Network Connection */
+ 			switch_nic: ethernet at 4,0 {
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6q-bx50v3.dtsi b/arch/arm/boot/dts/nxp/imx/imx6q-bx50v3.dtsi
+index 99f4f6ac71d4..c1ae7c47b442 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6q-bx50v3.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6q-bx50v3.dtsi
+@@ -245,6 +245,7 @@ pca9539: pca9539 at 74 {
+ 				reg = <0x74>;
+ 				gpio-controller;
+ 				#gpio-cells = <2>;
++				#interrupt-cells = <2>;
+ 				interrupt-controller;
+ 				interrupt-parent = <&gpio2>;
+ 				interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+@@ -390,7 +391,6 @@ pci_root: root at 0,0 {
+ 
+ 		#address-cells = <3>;
+ 		#size-cells = <2>;
+-		#interrupt-cells = <1>;
+ 	};
+ };
+ 
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6qdl-apalis.dtsi b/arch/arm/boot/dts/nxp/imx/imx6qdl-apalis.dtsi
+index 2ae93f57fe5a..ea40623d12e5 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6qdl-apalis.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6qdl-apalis.dtsi
+@@ -626,7 +626,6 @@ stmpe811 at 41 {
+ 		blocks = <0x5>;
+ 		id = <0>;
+ 		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
+-		interrupt-controller;
+ 		interrupt-parent = <&gpio4>;
+ 		irq-trigger = <0x1>;
+ 		pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6qdl-colibri.dtsi b/arch/arm/boot/dts/nxp/imx/imx6qdl-colibri.dtsi
+index 55c90f6393ad..d3a7a6eeb8e0 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6qdl-colibri.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6qdl-colibri.dtsi
+@@ -550,7 +550,6 @@ stmpe811 at 41 {
+ 		blocks = <0x5>;
+ 		interrupts = <20 IRQ_TYPE_LEVEL_LOW>;
+ 		interrupt-parent = <&gpio6>;
+-		interrupt-controller;
+ 		id = <0>;
+ 		irq-trigger = <0x1>;
+ 		pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6qdl-emcon.dtsi b/arch/arm/boot/dts/nxp/imx/imx6qdl-emcon.dtsi
+index a63e73adc1fc..42b2ba23aefc 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6qdl-emcon.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6qdl-emcon.dtsi
+@@ -225,7 +225,6 @@ da9063: pmic at 58 {
+ 		pinctrl-0 = <&pinctrl_pmic>;
+ 		interrupt-parent = <&gpio2>;
+ 		interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
+-		interrupt-controller;
+ 
+ 		onkey {
+ 			compatible = "dlg,da9063-onkey";
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-pfla02.dtsi b/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-pfla02.dtsi
+index 113974520d54..c0c47adc5866 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-pfla02.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-pfla02.dtsi
+@@ -124,6 +124,7 @@ pmic at 58 {
+ 		reg = <0x58>;
+ 		interrupt-parent = <&gpio2>;
+ 		interrupts = <9 IRQ_TYPE_LEVEL_LOW>; /* active-low GPIO2_9 */
++		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 
+ 		regulators {
+diff --git a/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-phycore-som.dtsi b/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-phycore-som.dtsi
+index 86b4269e0e01..85e278eb2016 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-phycore-som.dtsi
++++ b/arch/arm/boot/dts/nxp/imx/imx6qdl-phytec-phycore-som.dtsi
+@@ -100,6 +100,7 @@ pmic: pmic at 58 {
+ 		interrupt-parent = <&gpio1>;
+ 		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
+ 		interrupt-controller;
++		#interrupt-cells = <2>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 
+diff --git a/arch/arm/boot/dts/nxp/imx/imx7d-pico-dwarf.dts b/arch/arm/boot/dts/nxp/imx/imx7d-pico-dwarf.dts
+index 12361fcbe24a..1b965652291b 100644
+--- a/arch/arm/boot/dts/nxp/imx/imx7d-pico-dwarf.dts
++++ b/arch/arm/boot/dts/nxp/imx/imx7d-pico-dwarf.dts
+@@ -63,6 +63,7 @@ pca9554: io-expander at 25 {
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 		#interrupt-cells = <2>;
++		interrupt-controller;
+ 		reg = <0x25>;
+ 	};
+ 
+diff --git a/arch/arm/boot/dts/nxp/vf/vf610-zii-dev-rev-b.dts b/arch/arm/boot/dts/nxp/vf/vf610-zii-dev-rev-b.dts
+index b0ed68af0546..029f49be40e3 100644
+--- a/arch/arm/boot/dts/nxp/vf/vf610-zii-dev-rev-b.dts
++++ b/arch/arm/boot/dts/nxp/vf/vf610-zii-dev-rev-b.dts
+@@ -338,6 +338,7 @@ gpio6: io-expander at 22 {
+ 		reg = <0x22>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
++		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		interrupt-parent = <&gpio3>;
+ 		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
+diff --git a/arch/arm/boot/dts/st/stm32429i-eval.dts b/arch/arm/boot/dts/st/stm32429i-eval.dts
+index 576235ec3c51..afa417b34b25 100644
+--- a/arch/arm/boot/dts/st/stm32429i-eval.dts
++++ b/arch/arm/boot/dts/st/stm32429i-eval.dts
+@@ -222,7 +222,6 @@ stmpe1600: stmpe1600 at 42 {
+ 		reg = <0x42>;
+ 		interrupts = <8 3>;
+ 		interrupt-parent = <&gpioi>;
+-		interrupt-controller;
+ 		wakeup-source;
+ 
+ 		stmpegpio: stmpe_gpio {
+diff --git a/arch/arm/boot/dts/st/stm32mp157c-dk2.dts b/arch/arm/boot/dts/st/stm32mp157c-dk2.dts
+index 510cca5acb79..7a701f7ef0c7 100644
+--- a/arch/arm/boot/dts/st/stm32mp157c-dk2.dts
++++ b/arch/arm/boot/dts/st/stm32mp157c-dk2.dts
+@@ -64,7 +64,6 @@ touchscreen at 38 {
+ 		reg = <0x38>;
+ 		interrupts = <2 2>;
+ 		interrupt-parent = <&gpiof>;
+-		interrupt-controller;
+ 		touchscreen-size-x = <480>;
+ 		touchscreen-size-y = <800>;
+ 		status = "okay";
+diff --git a/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts b/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
+index c8e55642f9c6..3e834fc7e370 100644
+--- a/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
++++ b/arch/arm/boot/dts/ti/omap/am5729-beagleboneai.dts
+@@ -415,7 +415,6 @@ stmpe811 at 41 {
+ 		reg = <0x41>;
+ 		interrupts = <30 IRQ_TYPE_LEVEL_LOW>;
+ 		interrupt-parent = <&gpio2>;
+-		interrupt-controller;
+ 		id = <0>;
+ 		blocks = <0x5>;
+ 		irq-trigger = <0x1>;
 
 -- 
 2.43.0
