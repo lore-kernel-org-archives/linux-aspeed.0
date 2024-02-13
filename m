@@ -1,131 +1,86 @@
-From: Zev Weiss <zev@bewilderbeest.net>
-Date: Mon, 12 Feb 2024 17:51:36 -0800
-Subject: [PATCH] ARM: dts: aspeed: asrock: Add BIOS SPI flash chips
-Message-ID: <20240213015138.12452-2-zev@bewilderbeest.net>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 13 Feb 2024 09:40:13 -0600
+Subject: [PATCH] Add eSPI device driver (flash channel)
+In-Reply-To: <20240213-espi_driver-v1-1-92741c812843@gmail.com>
+References: <20240213-espi_driver-v1-1-92741c812843@gmail.com>
+Message-ID: <170783881259.1420281.1418000696740064343.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On e3c246d4i, e3c256d4i, romed8hm3, and spc621d8hm3 the host firmware
-flash is accessible to the BMC via the AST2500 SPI1 interface with an
-external GPIO-controlled mux switching the flash chip between the host
-and the BMC.
 
-The default state of the mux GPIO leaves it connected to the host, so
-the BMC's attempt to bind a driver to it during its boot sequence will
-fail, but a write to a sysfs 'bind' file after toggling the mux GPIO
-(along with whatever other preparatory steps are required) can later
-allow it to be attached and accessed by the BMC.  It's not an ideal
-arrangement, but in the absence of DT overlays or any other
-alternative it is at least a functional one, if somewhat clumsily so.
+On Tue, 13 Feb 2024 20:06:08 +0530, Manojkiran Eda wrote:
+> This patch adds the driver support for the eSPI controller of
+> Aspeed 5/6th generation SoCs. This controller is a slave device
+> communicating with a master over Enhanced Serial Peripheral
+> Interface (eSPI).
+> 
+> eSPI supports 4 channels, namely peripheral, virtual wire,
+> out-of-band, and flash, and operates at max frequency of 66MHz.
+> 
+> But at the moment, this patch set only supports the flash channel.
+> 
+> Signed-off-by: Manojkiran Eda <manojkiran.eda@gmail.com>
+> ---
+> Hello everyone,
+> 
+> I'm presenting a revised version of the eSPI device driver patch series found at the following link:
+> 
+> https://lore.kernel.org/openbmc/20220516005412.4844-1-chiawei_wang at aspeedtech.com/
+> 
+> This update addresses the issues identified during the review process.
+> 
+> While the previous patch series attempted to incorporate support for all four different channels of eSPI,
+> this new series focuses on upstreaming the flash channel initially, ensuring that all review comments are
+> duly addressed, before progressing further.
+> 
+> Results:
+> 
+> Successfully conducted a flash update via eSPI.
+> 
+> Note:
+> 
+> This marks my inaugural endeavor in contributing code to the kernel subsystem. I kindly request reviewers
+> to incorporate as many details as possible in the review comments.
+> ---
+>  .../devicetree/bindings/soc/aspeed/espi.yaml       | 125 ++++++
+>  arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |  16 +-
+>  drivers/mtd/mtdcore.c                              |   2 +-
+>  drivers/soc/aspeed/Kconfig                         |  10 +
+>  drivers/soc/aspeed/Makefile                        |   3 +
+>  drivers/soc/aspeed/aspeed-espi-ctrl.c              | 197 +++++++++
+>  drivers/soc/aspeed/aspeed-espi-ctrl.h              | 169 ++++++++
+>  drivers/soc/aspeed/aspeed-espi-flash.c             | 466 +++++++++++++++++++++
+>  drivers/soc/aspeed/aspeed-espi-flash.h             |  45 ++
+>  include/uapi/linux/espi/aspeed-espi-ioc.h          | 103 +++++
+>  10 files changed, 1134 insertions(+), 2 deletions(-)
+> 
 
-Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
----
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-Note that this patch is based on Joel's for-next tree, since the
-e3c256d4i and spc621d8hm3 device-trees haven't been merged in mainline
-yet.
+yamllint warnings/errors:
+./Documentation/devicetree/bindings/soc/aspeed/espi.yaml:5:6: [error] string value is redundantly quoted with any quotes (quoted-strings)
+./Documentation/devicetree/bindings/soc/aspeed/espi.yaml:6:10: [error] string value is redundantly quoted with any quotes (quoted-strings)
 
- .../boot/dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts  | 12 ++++++++++++
- .../boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts  | 12 ++++++++++++
- .../boot/dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts  | 12 ++++++++++++
- .../dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dts     | 12 ++++++++++++
- 4 files changed, 48 insertions(+)
+dtschema/dtc warnings/errors:
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts
-index c4b2efbfdf56..557ce20e305d 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts
-@@ -68,6 +68,18 @@ flash at 0 {
- 	};
- };
- 
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		label = "bios";
-+		m25p,fast-read;
-+		spi-max-frequency = <25000000>; /* 25 MHz */
-+	};
-+};
-+
- &uart5 {
- 	status = "okay";
- };
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-index 263fcc8106ff..bf752ff8204f 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-@@ -69,6 +69,18 @@ flash at 0 {
- 	};
- };
- 
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		label = "bios";
-+		m25p,fast-read;
-+		spi-max-frequency = <25000000>; /* 25 MHz */
-+	};
-+};
-+
- &uart1 {
- 	status = "okay";
- };
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts
-index 4554abf0c7cd..8dff2cbf042b 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts
-@@ -56,6 +56,18 @@ flash at 0 {
- 	};
- };
- 
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		label = "bios";
-+		m25p,fast-read;
-+		spi-max-frequency = <33000000>; /* 33 MHz */
-+	};
-+};
-+
- &uart5 {
- 	status = "okay";
- };
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dts
-index 555485871e7a..54b40776c7e3 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dts
-@@ -66,6 +66,18 @@ flash at 0 {
- 	};
- };
- 
-+&spi1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_spi1_default>;
-+	flash at 0 {
-+		status = "okay";
-+		label = "bios";
-+		m25p,fast-read;
-+		spi-max-frequency = <17000000>; /* 17 MHz */
-+	};
-+};
-+
- &uart5 {
- 	status = "okay";
- };
--- 
-2.43.0
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240213-espi_driver-v1-1-92741c812843 at gmail.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
