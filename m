@@ -1,28 +1,35 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Fri, 16 Feb 2024 12:26:12 +0100
-Subject: [PATCH 1/3] dt-bindings: i3c: drop "master" node name suffix
-In-Reply-To: <20240117075618.81932-1-krzysztof.kozlowski@linaro.org>
-References: <20240117075618.81932-1-krzysztof.kozlowski@linaro.org>
-Message-ID: <00d6a0d5-6787-4777-8fb2-dcad4304a724@linaro.org>
+From: Tommy Huang <tommy_huang@aspeedtech.com>
+Date: Fri, 16 Feb 2024 20:04:55 +0800
+Subject: [PATCH] i2c: aspeed: Fix the dummy irq expected print
+Message-ID: <20240216120455.4138642-1-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 17/01/2024 08:56, Krzysztof Kozlowski wrote:
-> Drop the requirement of "-master" suffix in node names because:
-> 1. "Master" word is discouraged and MIPI Alliance renamed it to
->    "Controller".
-> 2. Some devices can operate in Controller (Master) or Target mode, thus
->    the name is not accurate in such cases.
-> 3. Other buses, like I2C controllers, use simple "i2c".
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> ---
+When the i2c error condition occurred and master state was not idle,
+the master irq function will goto complete state without any other
+interrupt handling. It would cause dummy irq expected print. Under
+this condition, assign the irq_status into irq_handle.
 
-Rob, can you pick this one up? It seems Alexandre did not take it.
+Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
+---
+ drivers/i2c/busses/i2c-aspeed.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Best regards,
-Krzysztof
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index 5511fd46a65e..ce8c4846b7fa 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -445,6 +445,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+ 			irq_status);
+ 		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
+ 		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
++			irq_handled = irq_status;
+ 			bus->cmd_err = ret;
+ 			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
+ 			goto out_complete;
+-- 
+2.25.1
 
