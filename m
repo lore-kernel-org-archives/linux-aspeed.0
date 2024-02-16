@@ -1,36 +1,61 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 16 Feb 2024 10:47:36 +1030
-Subject: [PATCH] mmc: host: replace 1st argument to struct device * for
- mmc_of_parse_clk_phase()
-In-Reply-To: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
-References: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
-Message-ID: <ae876e697ba16ba2925ec217c6b4e3d8ffea4ab3.camel@codeconstruct.com.au>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Fri, 16 Feb 2024 02:20:37 -0800
+Subject: [PATCH] Add eSPI device driver (flash channel)
+In-Reply-To: <20240213-espi_driver-v1-1-92741c812843@gmail.com>
+References: <20240213-espi_driver-v1-1-92741c812843@gmail.com>
+Message-ID: <f63c3077-f8cc-4f05-92ef-9b2303b181f4@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2024-02-15 at 19:03 +0800, Yang Xiwen via B4 Relay wrote:
-> From: Yang Xiwen <forbidden405@outlook.com>
-> 
-> Parsing dt usaully happens very early, sometimes even bofore struct
-> mmc_host is allocated (e.g. dw_mci_probe() and dw_mci_parse_dt() in
-> dw_mmc.c). Looking at the source of mmc_of_parse_clk_phase(), it's
-> actually not mandatory to have a initialized mmc_host first, instead we
-> can pass struct device * to it directly.
-> 
-> Also fix the only current user (sdhci-of-aspeed.c).
-> 
-> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
-> ---
->  drivers/mmc/core/host.c            | 4 +---
->  drivers/mmc/host/sdhci-of-aspeed.c | 2 +-
+On Tue, Feb 13, 2024 at 06:36:08AM PST, Manojkiran Eda wrote:
+>This patch adds the driver support for the eSPI controller of
+>Aspeed 5/6th generation SoCs. This controller is a slave device
+>communicating with a master over Enhanced Serial Peripheral
+>Interface (eSPI).
+>
+>eSPI supports 4 channels, namely peripheral, virtual wire,
+>out-of-band, and flash, and operates at max frequency of 66MHz.
+>
+>But at the moment, this patch set only supports the flash channel.
+>
+>Signed-off-by: Manojkiran Eda <manojkiran.eda@gmail.com>
 
-So I think I wrote the mmc_of_parse_clk_phase() prototype with `struct
-mmc_host *` simply because mmc_of_parse() took `struct mmc_host *`.
+Hi Manojkiran,
 
-I'll defer to Ulf for whether what you're proposing is desirable, but
-in terms of the impact on the Aspeed driver it seems okay.
+Glad to see this progressing again!  It sounds like there may still be 
+some open questions regarding the approach, and as others have noted 
+there are things included here that should be split out into separate 
+patches.
 
-Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+I did try it out in its current form though, and encountered a few 
+problems...
+
+Firstly, the calls to dev_notice() all appear to be missing the struct 
+device * as their first argument and hence don't compile (I hacked 
+around this to get it to build).
+
+Second, the device-tree updates only include aspeed-g6.dtsi, so I 
+manually imported the corresponding aspeed-g5.dtsi change from the last 
+version Chia-Wei posted [1] and used that for the AST2500 system I need 
+eSPI support on.
+
+[1] https://lore.kernel.org/linux-arm-kernel/20220516005412.4844-1-chiawei_wang at aspeedtech.com/
+
+And finally, after making the above changes and running it I got the 
+following during boot:
+
+[    0.288079] aspeed-espi-ctrl 1e6ee000.espi-ctrl: something went wrong
+[    0.288120] aspeed-espi-ctrl 1e6ee000.espi-ctrl: failed to allocate flash channel
+
+I'm not sure if there's some change in this new version such that the 
+dtsi patch I imported from the old one no longer works, but if nothing 
+else it might at least suggest that the error messages could be made a 
+bit more informative.
+
+
+Thanks,
+Zev
+
