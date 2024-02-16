@@ -1,49 +1,36 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Thu, 15 Feb 2024 17:12:50 +0000
-Subject: =?utf-8?B?5Zue6KaG?= =?utf-8?Q?=3A?= [PATCH] Add eSPI device
- driver (flash channel)
-In-Reply-To: <TYZPR06MB6640F82C539F0B17BCDCC55E914D2@TYZPR06MB6640.apcprd06.prod.outlook.com>
-References: <20240213-espi_driver-v1-1-92741c812843@gmail.com>
- <KL1PR06MB665234A65DB334B3BDF6AFA6914E2@KL1PR06MB6652.apcprd06.prod.outlook.com>
- <20240214-yoyo-platinum-dcd0e7e16a22@spud>
- <TYZPR06MB6640F82C539F0B17BCDCC55E914D2@TYZPR06MB6640.apcprd06.prod.outlook.com>
-Message-ID: <20240215-probable-gimmick-83d5dcbc4729@spud>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Fri, 16 Feb 2024 10:47:36 +1030
+Subject: [PATCH] mmc: host: replace 1st argument to struct device * for
+ mmc_of_parse_clk_phase()
+In-Reply-To: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
+References: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
+Message-ID: <ae876e697ba16ba2925ec217c6b4e3d8ffea4ab3.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 15, 2024 at 01:56:00AM +0000, ChiaWei Wang wrote:
-> > 
-> > On Wed, Feb 14, 2024 at 11:34:31AM +0000, ChiaWei Wang wrote:
-> > > We appreciate that you are willing to help on the open source contribution.
-> > > However, please co-work with Aspeed before submitting drivers of Aspeed
-> > HW.
-> > > Otherwise, a misleading driver on the community are going to bring tons of
-> > customer issues to Aspeed.
-> > 
-> > It may not apply in this particular case as Aspeed did write the original driver
-> > and it is polite to work with previous authors when respinning a patchset, but in
-> > general there is no need to work with a hardware vendor before writing drivers
-> > for their hardware.
-> > 
-> > Blocking a driver because that company might receive more support requests
-> > is not the kernel's problem.
+On Thu, 2024-02-15 at 19:03 +0800, Yang Xiwen via B4 Relay wrote:
+> From: Yang Xiwen <forbidden405@outlook.com>
 > 
-> I agree with that and Aspeed will not refuse to support.
+> Parsing dt usaully happens very early, sometimes even bofore struct
+> mmc_host is allocated (e.g. dw_mci_probe() and dw_mci_parse_dt() in
+> dw_mmc.c). Looking at the source of mmc_of_parse_clk_phase(), it's
+> actually not mandatory to have a initialized mmc_host first, instead we
+> can pass struct device * to it directly.
 > 
-> However, in this case, the authors, IBM, and Aspeed already have discussion (at least 4 times) before and foresee "issues" on practical eSPI SAFS use.
-> If there is already a known issue of the driver, why ignoring the previous discussion and push it?
-> A compromise is to ask for driver renaming to espi-mafs to avoid confusion.
-> Otherwise we need to explain, again, why the driver does not fulfill the SAFS expectation.
+> Also fix the only current user (sdhci-of-aspeed.c).
+> 
+> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
+> ---
+>  drivers/mmc/core/host.c            | 4 +---
+>  drivers/mmc/host/sdhci-of-aspeed.c | 2 +-
 
-To be clear, in case you misunderstood, I was making a general point and
-not about this particular patchset.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240215/21edebee/attachment.sig>
+So I think I wrote the mmc_of_parse_clk_phase() prototype with `struct
+mmc_host *` simply because mmc_of_parse() took `struct mmc_host *`.
+
+I'll defer to Ulf for whether what you're proposing is desirable, but
+in terms of the impact on the Aspeed driver it seems okay.
+
+Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
