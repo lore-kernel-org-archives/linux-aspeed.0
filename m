@@ -1,39 +1,61 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Sat, 17 Feb 2024 14:42:25 +0100
-Subject: [PATCH 1/3] dt-bindings: i3c: drop "master" node name suffix
-In-Reply-To: <2024021712422352187ad4@mail.local>
-References: <20240117075618.81932-1-krzysztof.kozlowski@linaro.org>
- <00d6a0d5-6787-4777-8fb2-dcad4304a724@linaro.org>
- <2024021712422352187ad4@mail.local>
-Message-ID: <4b34c495-4aaa-4dd3-b7b0-b9d54baf9338@linaro.org>
+From: ChiaWei Wang <chiawei_wang@aspeedtech.com>
+Date: Sun, 18 Feb 2024 09:36:27 +0000
+Subject: =?utf-8?B?UkU6IOWbnuimhjogW1BBVENIXSBBZGQgZVNQSSBkZXZpY2UgZHJpdmVyIChm?=
+ =?utf-8?Q?lash_channel)?=
+In-Reply-To: <20240215-probable-gimmick-83d5dcbc4729@spud>
+References: <20240213-espi_driver-v1-1-92741c812843@gmail.com>
+ <KL1PR06MB665234A65DB334B3BDF6AFA6914E2@KL1PR06MB6652.apcprd06.prod.outlook.com>
+ <20240214-yoyo-platinum-dcd0e7e16a22@spud>
+ <TYZPR06MB6640F82C539F0B17BCDCC55E914D2@TYZPR06MB6640.apcprd06.prod.outlook.com>
+ <20240215-probable-gimmick-83d5dcbc4729@spud>
+Message-ID: <KL1PR06MB6652F1A2D8652B727D5F581A91522@KL1PR06MB6652.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 17/02/2024 13:42, Alexandre Belloni wrote:
-> On 16/02/2024 12:26:12+0100, Krzysztof Kozlowski wrote:
->> On 17/01/2024 08:56, Krzysztof Kozlowski wrote:
->>> Drop the requirement of "-master" suffix in node names because:
->>> 1. "Master" word is discouraged and MIPI Alliance renamed it to
->>>    "Controller".
->>> 2. Some devices can operate in Controller (Master) or Target mode, thus
->>>    the name is not accurate in such cases.
->>> 3. Other buses, like I2C controllers, use simple "i2c".
->>>
->>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
->>> ---
->>
->> Rob, can you pick this one up? It seems Alexandre did not take it.
->>
+> From: Conor Dooley <conor@kernel.org>
+> Sent: Friday, February 16, 2024 1:13 AM
 > 
-> I'll take it but I don't think it is super urgent.
+> On Thu, Feb 15, 2024 at 01:56:00AM +0000, ChiaWei Wang wrote:
+> > >
+> > > On Wed, Feb 14, 2024 at 11:34:31AM +0000, ChiaWei Wang wrote:
+> > > > We appreciate that you are willing to help on the open source
+> contribution.
+> > > > However, please co-work with Aspeed before submitting drivers of
+> > > > Aspeed
+> > > HW.
+> > > > Otherwise, a misleading driver on the community are going to bring
+> > > > tons of
+> > > customer issues to Aspeed.
+> > >
+> > > It may not apply in this particular case as Aspeed did write the
+> > > original driver and it is polite to work with previous authors when
+> > > respinning a patchset, but in general there is no need to work with
+> > > a hardware vendor before writing drivers for their hardware.
+> > >
+> > > Blocking a driver because that company might receive more support
+> > > requests is not the kernel's problem.
+> >
+> > I agree with that and Aspeed will not refuse to support.
+> >
+> > However, in this case, the authors, IBM, and Aspeed already have discussion
+> (at least 4 times) before and foresee "issues" on practical eSPI SAFS use.
+> > If there is already a known issue of the driver, why ignoring the previous
+> discussion and push it?
+> > A compromise is to ask for driver renaming to espi-mafs to avoid confusion.
+> > Otherwise we need to explain, again, why the driver does not fulfill the SAFS
+> expectation.
+> 
+> To be clear, in case you misunderstood, I was making a general point and not
+> about this particular patchset.
 
-It's not, but it was almost two weeks and we are also getting to end of
-applying cycle of some maintainers, so I was going through my pending
-stuff. Apologies if this was too pingi-ping.
+Thanks for the clarification and I understand your point.
 
-Best regards,
-Krzysztof
+Most Aspeed-related drivers are from the Aspeed SDK.
+And we keep revising the SDK based on our customers' feedback and issues reported.
+We only wish that the version submitted to the community will not result in unnecessary misunderstanding and thus more customer issues.
 
+Regards,
+Chiawei
