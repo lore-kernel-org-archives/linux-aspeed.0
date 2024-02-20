@@ -1,68 +1,95 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 20 Feb 2024 16:51:21 +0100
-Subject: [PATCH] ipmi: kcs: Update OBF poll timeout to reduce latency
-In-Reply-To: <20240220123615.963916-1-geissonator@gmail.com>
-References: <20240220123615.963916-1-geissonator@gmail.com>
-Message-ID: <a9169894-6972-49c0-a1d4-d80863f5b511@molgen.mpg.de>
+Date: Tue, 20 Feb 2024 18:16:37 +0100
+Subject: [PATCH] mmc: host: replace 1st argument to struct device * for
+ mmc_of_parse_clk_phase()
+In-Reply-To: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
+References: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
+Message-ID: <26acdacd-e63b-494f-bf7d-215b8643a0c5@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Andrew,
+Dear Yang,
 
 
-Thank you for your patch. Some style suggestions.
+Thank you very much for your patch. Some nits from my side.
 
-Am 20.02.24 um 13:36 schrieb Andrew Geissler:
-> From: Andrew Geissler <geissonator@yahoo.com>
+For the summary, I suggest:
 
-(Oh no, Yahoo. (ignore))
+ > mmc: host: mmc_of_parse_clk_phase(): Pass struct device * instead of 
+mmc_host *
 
-You could be more specific in the git commit message by using *Double*:
-
- > ipmi: kcs: Double OBF poll timeout to reduce latency
-
- > ipmi: kcs: Double OBF poll timeout to 200 us to reduce latency
-
-> Commit f90bc0f97f2b ("ipmi: kcs: Poll OBF briefly to reduce OBE
-> latency") introduced an optimization to poll when the host has
-> read the output data register (ODR). Testing has shown that the 100us
-> timeout was not always enough. When we miss that 100us window, it
-> results in 10x the time to get the next message from the BMC to the
-> host. When you're sending 100's of messages between the BMC and Host,
-
-I do not understand, how this poll timeout can result in such an 
-increase, and why a quite big timeout hurts, but I do not know the 
-implementation.
-
-> this results in a server boot taking 50% longer for IBM P10 machines.
+Am 15.02.24 um 12:03 schrieb Yang Xiwen via B4 Relay:
+> From: Yang Xiwen <forbidden405@outlook.com>
 > 
-> Started with 1000 and worked it down until the issue started to reoccur.
-> 200 was the sweet spot in my testing. 150 showed the issue
-> intermittently.
+> Parsing dt usaully happens very early, sometimes even bofore struct
 
-I?d add a blank line here.
+1.  us*ua*lly
+2.  b*e*fore
 
-> Signed-off-by: Andrew Geissler <geissonator@yahoo.com>
+> mmc_host is allocated (e.g. dw_mci_probe() and dw_mci_parse_dt() in
+> dw_mmc.c). Looking at the source of mmc_of_parse_clk_phase(), it's
+> actually not mandatory to have a initialized mmc_host first, instead we
+
+a*n*
+
+> can pass struct device * to it directly.
+> 
+> Also fix the only current user (sdhci-of-aspeed.c).
+> 
+> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
 > ---
->   drivers/char/ipmi/kcs_bmc_aspeed.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/mmc/core/host.c            | 4 +---
+>   drivers/mmc/host/sdhci-of-aspeed.c | 2 +-
+>   include/linux/mmc/host.h           | 2 +-
+>   3 files changed, 3 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
-> index 72640da55380..af1eae6153f6 100644
-> --- a/drivers/char/ipmi/kcs_bmc_aspeed.c
-> +++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
-> @@ -422,7 +422,7 @@ static void aspeed_kcs_irq_mask_update(struct kcs_bmc_device *kcs_bmc, u8 mask,
->   			 * missed the event.
->   			 */
->   			rc = read_poll_timeout_atomic(aspeed_kcs_inb, str,
-> -						      !(str & KCS_BMC_STR_OBF), 1, 100, false,
-> +						      !(str & KCS_BMC_STR_OBF), 1, 200, false,
->   						      &priv->kcs_bmc, priv->kcs_bmc.ioreg.str);
->   			/* Time for the slow path? */
->   			if (rc == -ETIMEDOUT)
+> diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
+> index cf396e8f34e9..8b2844ac5dc5 100644
+> --- a/drivers/mmc/core/host.c
+> +++ b/drivers/mmc/core/host.c
+> @@ -234,10 +234,8 @@ static void mmc_of_parse_timing_phase(struct device *dev, const char *prop,
+>   }
+>   
+>   void
+> -mmc_of_parse_clk_phase(struct mmc_host *host, struct mmc_clk_phase_map *map)
+> +mmc_of_parse_clk_phase(struct device *dev, struct mmc_clk_phase_map *map)
+>   {
+> -	struct device *dev = host->parent;
+> -
+>   	mmc_of_parse_timing_phase(dev, "clk-phase-legacy",
+>   				  &map->phase[MMC_TIMING_LEGACY]);
+>   	mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs",
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+> index 42d54532cabe..430c1f90037b 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> @@ -435,7 +435,7 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
+>   		goto err_sdhci_add;
+>   
+>   	if (dev->phase_desc)
+> -		mmc_of_parse_clk_phase(host->mmc, &dev->phase_map);
+> +		mmc_of_parse_clk_phase(&pdev->dev, &dev->phase_map);
+>   
+>   	ret = sdhci_add_host(host);
+>   	if (ret)
+> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> index 2f445c651742..5894bf912f7b 100644
+> --- a/include/linux/mmc/host.h
+> +++ b/include/linux/mmc/host.h
+> @@ -539,7 +539,7 @@ struct mmc_host *devm_mmc_alloc_host(struct device *dev, int extra);
+>   int mmc_add_host(struct mmc_host *);
+>   void mmc_remove_host(struct mmc_host *);
+>   void mmc_free_host(struct mmc_host *);
+> -void mmc_of_parse_clk_phase(struct mmc_host *host,
+> +void mmc_of_parse_clk_phase(struct device *dev,
+>   			    struct mmc_clk_phase_map *map);
+>   int mmc_of_parse(struct mmc_host *host);
+>   int mmc_of_parse_voltage(struct mmc_host *host, u32 *mask);
+
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
 
 Kind regards,
