@@ -1,28 +1,66 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 16 Feb 2024 11:00:30 -0000
-Subject: [PATCH 2/6] arm: dts: Fix dtc interrupt_provider warnings
-In-Reply-To: <20240213-arm-dt-cleanups-v1-2-f2dee1292525@kernel.org>
-References: <20240213-arm-dt-cleanups-v1-0-f2dee1292525@kernel.org>
- <20240213-arm-dt-cleanups-v1-2-f2dee1292525@kernel.org>
-Message-ID: <CZ6G9AYXMMHZ.3ABQKCJUHPSLU@gmail.com>
+From: Hugo Villeneuve <hugo@hugovil.com>
+Date: Wed, 21 Feb 2024 19:25:48 -0000
+Subject: [PATCH v1 01/14] serial: core: Move struct uart_port::quirks
+ closer to possible values
+In-Reply-To: <20240221183442.4124354-2-andriy.shevchenko@linux.intel.com>
+References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
+	<20240221183442.4124354-2-andriy.shevchenko@linux.intel.com>
+Message-ID: <20240221135452.6fdeb71e60509cca1be016c3@hugovil.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue Feb 13, 2024 at 8:34 PM CET, Rob Herring wrote:
-[...]
->  arch/arm/boot/dts/nvidia/tegra30-apalis-v1.1.dtsi      |  1 -
->  arch/arm/boot/dts/nvidia/tegra30-apalis.dtsi           |  1 -
->  arch/arm/boot/dts/nvidia/tegra30-colibri.dtsi          |  1 -
-[...]
+On Wed, 21 Feb 2024 20:31:17 +0200
+Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
 
-Acked-by: Thierry Reding <treding@nvidia.com>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 833 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240216/d27d871d/attachment-0001.sig>
+> Currently it's not crystal clear what UPIO_* and UPQ_* definitions
+> belong two. Reindent the code, so it will be easy to read and understand.
+
+two -> to.
+
+Hugo V.
+
+
+> No functional changes intended.
+> 
+> Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  include/linux/serial_core.h | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+> index 55b1f3ba48ac..2d2ec99eca93 100644
+> --- a/include/linux/serial_core.h
+> +++ b/include/linux/serial_core.h
+> @@ -467,8 +467,8 @@ struct uart_port {
+>  	unsigned int		fifosize;		/* tx fifo size */
+>  	unsigned char		x_char;			/* xon/xoff char */
+>  	unsigned char		regshift;		/* reg offset shift */
+> +
+>  	unsigned char		iotype;			/* io access style */
+> -	unsigned char		quirks;			/* internal quirks */
+>  
+>  #define UPIO_PORT		(SERIAL_IO_PORT)	/* 8b I/O port access */
+>  #define UPIO_HUB6		(SERIAL_IO_HUB6)	/* Hub6 ISA card */
+> @@ -479,7 +479,9 @@ struct uart_port {
+>  #define UPIO_MEM32BE		(SERIAL_IO_MEM32BE)	/* 32b big endian */
+>  #define UPIO_MEM16		(SERIAL_IO_MEM16)	/* 16b little endian */
+>  
+> -	/* quirks must be updated while holding port mutex */
+> +	unsigned char		quirks;			/* internal quirks */
+> +
+> +	/* internal quirks must be updated while holding port mutex */
+>  #define UPQ_NO_TXEN_TEST	BIT(0)
+>  
+>  	unsigned int		read_status_mask;	/* driver specific */
+> -- 
+> 2.43.0.rc1.1.gbec44491f096
+> 
+> 
+
+
+-- 
+Hugo Villeneuve
