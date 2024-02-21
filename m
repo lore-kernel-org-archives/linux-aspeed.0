@@ -1,113 +1,35 @@
-From: Yang Xiwen <forbidden405@outlook.com>
-Date: Thu, 15 Feb 2024 17:16:02 -0000
-Subject: [PATCH] mmc: host: replace 1st argument to struct device * for
- mmc_of_parse_clk_phase()
-In-Reply-To: <CAPDyKFo9NpKSuBnrcOseuD-jDA64CMyRxpH-OUoozOQDYHj1mQ@mail.gmail.com>
-References: <20240215-mmc_phase-v1-1-f27644ee13e4@outlook.com>
- <CAPDyKFo9NpKSuBnrcOseuD-jDA64CMyRxpH-OUoozOQDYHj1mQ@mail.gmail.com>
-Message-ID: <SEZPR06MB6959FF28D99A99BA2524C9D4964D2@SEZPR06MB6959.apcprd06.prod.outlook.com>
+From: Yang Xiwen via B4 Relay <devnull+forbidden405.outlook.com@kernel.org>
+Date: Wed, 21 Feb 2024 12:45:50 -0000
+Subject: [PATCH v6 2/5] mmc: dw_mmc-hi3798cv200: remove MODULE_ALIAS()
+In-Reply-To: <20240221-b4-mmc-hi3798mv200-v6-0-bc41bf6a9769@outlook.com>
+References: <20240221-b4-mmc-hi3798mv200-v6-0-bc41bf6a9769@outlook.com>
+Message-ID: <20240221-b4-mmc-hi3798mv200-v6-2-bc41bf6a9769@outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2/16/2024 12:47 AM, Ulf Hansson wrote:
-> On Thu, 15 Feb 2024 at 12:03, Yang Xiwen via B4 Relay
-> <devnull+forbidden405.outlook.com@kernel.org> wrote:
->> From: Yang Xiwen <forbidden405@outlook.com>
->>
->> Parsing dt usaully happens very early, sometimes even bofore struct
->> mmc_host is allocated (e.g. dw_mci_probe() and dw_mci_parse_dt() in
->> dw_mmc.c). Looking at the source of mmc_of_parse_clk_phase(), it's
->> actually not mandatory to have a initialized mmc_host first, instead we
->> can pass struct device * to it directly.
->>
->> Also fix the only current user (sdhci-of-aspeed.c).
-> Is there a problem? I don't see it, can please elaborate.
+From: Yang Xiwen <forbidden405@outlook.com>
 
-My pleasure.
+The alias is not used and should be removed.
 
-Just look into dw_mci_parse_dt() in dw_mmc.c, this function calls 
-specific extension's .parse_dt() function. And this function is called 
-very early even before struct mmc_host is allocated. Thus it'll be 
-impossible to retrieve host->slot->dev right now since host->slot is 
-still NULL. As a result, We are unable to call mmc_of_parse_clk_phase() 
-in our own .parse_dt() because it needs an initialized struct mmc_host. 
-But mmc_of_parse_clk_phase is intended to be invoked there since this is 
-where the driver is supposed to parse dt. dw_mci_probe() allocates 
-struct mmc_host and calls mmc_of_parse() very late(in 
-dw_mci_init_slot()) and provides us no chance to insert our own dt 
-parsing extensions after that.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
+---
+ drivers/mmc/host/dw_mmc-hi3798cv200.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-The key is that mmc_of_parse_clk_phase() is a very simple function which 
-only extracts a few dt props. It is supposed to be called early in the 
-driver before struct mmc_host is allocated. Unlike mmc_of_parse() which 
-fills in a lot of fields in struct mmc_host, it does not need this struct.
-
-> Kind regards
-> Uffe
->
->> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
->> ---
->>   drivers/mmc/core/host.c            | 4 +---
->>   drivers/mmc/host/sdhci-of-aspeed.c | 2 +-
->>   include/linux/mmc/host.h           | 2 +-
->>   3 files changed, 3 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/mmc/core/host.c b/drivers/mmc/core/host.c
->> index cf396e8f34e9..8b2844ac5dc5 100644
->> --- a/drivers/mmc/core/host.c
->> +++ b/drivers/mmc/core/host.c
->> @@ -234,10 +234,8 @@ static void mmc_of_parse_timing_phase(struct device *dev, const char *prop,
->>   }
->>
->>   void
->> -mmc_of_parse_clk_phase(struct mmc_host *host, struct mmc_clk_phase_map *map)
->> +mmc_of_parse_clk_phase(struct device *dev, struct mmc_clk_phase_map *map)
->>   {
->> -       struct device *dev = host->parent;
->> -
->>          mmc_of_parse_timing_phase(dev, "clk-phase-legacy",
->>                                    &map->phase[MMC_TIMING_LEGACY]);
->>          mmc_of_parse_timing_phase(dev, "clk-phase-mmc-hs",
->> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
->> index 42d54532cabe..430c1f90037b 100644
->> --- a/drivers/mmc/host/sdhci-of-aspeed.c
->> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
->> @@ -435,7 +435,7 @@ static int aspeed_sdhci_probe(struct platform_device *pdev)
->>                  goto err_sdhci_add;
->>
->>          if (dev->phase_desc)
->> -               mmc_of_parse_clk_phase(host->mmc, &dev->phase_map);
->> +               mmc_of_parse_clk_phase(&pdev->dev, &dev->phase_map);
->>
->>          ret = sdhci_add_host(host);
->>          if (ret)
->> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
->> index 2f445c651742..5894bf912f7b 100644
->> --- a/include/linux/mmc/host.h
->> +++ b/include/linux/mmc/host.h
->> @@ -539,7 +539,7 @@ struct mmc_host *devm_mmc_alloc_host(struct device *dev, int extra);
->>   int mmc_add_host(struct mmc_host *);
->>   void mmc_remove_host(struct mmc_host *);
->>   void mmc_free_host(struct mmc_host *);
->> -void mmc_of_parse_clk_phase(struct mmc_host *host,
->> +void mmc_of_parse_clk_phase(struct device *dev,
->>                              struct mmc_clk_phase_map *map);
->>   int mmc_of_parse(struct mmc_host *host);
->>   int mmc_of_parse_voltage(struct mmc_host *host, u32 *mask);
->>
->> ---
->> base-commit: 9d64bf433c53cab2f48a3fff7a1f2a696bc5229a
->> change-id: 20240215-mmc_phase-26e85511285d
->>
->> Best regards,
->> --
->> Yang Xiwen <forbidden405@outlook.com>
->>
+diff --git a/drivers/mmc/host/dw_mmc-hi3798cv200.c b/drivers/mmc/host/dw_mmc-hi3798cv200.c
+index e9470c50a348..61923a518369 100644
+--- a/drivers/mmc/host/dw_mmc-hi3798cv200.c
++++ b/drivers/mmc/host/dw_mmc-hi3798cv200.c
+@@ -201,4 +201,3 @@ module_platform_driver(dw_mci_hi3798cv200_driver);
+ 
+ MODULE_DESCRIPTION("HiSilicon Hi3798CV200 Specific DW-MSHC Driver Extension");
+ MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS("platform:dwmmc_hi3798cv200");
 
 -- 
-Regards,
-Yang Xiwen
+2.43.0
 
