@@ -1,50 +1,51 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 21 Feb 2024 08:22:27 +0100
-Subject: [PATCH] dt-bindings: gpio: Convert Aspeed binding to YAML schema
-In-Reply-To: <18dfd5f2eff5049fa5e3a098490dc601cf146f96.camel@codeconstruct.com.au>
-References: <20240220052918.742793-1-andrew@codeconstruct.com.au>
- <0d1dd262-b6dd-4d71-9239-8b0aec8cceff@linaro.org>
- <18dfd5f2eff5049fa5e3a098490dc601cf146f96.camel@codeconstruct.com.au>
-Message-ID: <9393d46b-6bb1-4aef-84ac-b22abeac7656@linaro.org>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Wed, 21 Feb 2024 17:39:15 +0800
+Subject: [PATCH v3 0/9] Revise Meta(Facebook) Harma BMC(AST2600)
+Message-ID: <20240221093925.2393604-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 21/02/2024 03:41, Andrew Jeffery wrote:
->>>>> +
->>>>> +properties:
->>>>> +  compatible:
->>>>> +    enum:
->>>>> +      - aspeed,ast2400-gpio
->>>>> +      - aspeed,ast2500-gpio
->>>>> +      - aspeed,ast2600-gpio
->>>>> +
->>>>> +  reg:
->>>>> +    maxItems: 1
->>>>> +
->>>>> +  clocks:
->>>>> +    maxItems: 1
->>>>> +    description: The clock to use for debounce timings
->>>>> +
->>>>> +  interrupts:
->>>>> +    maxItems: 1
->>>>> +
->>>>> +  interrupt-controller: true
->>>>> +
->>>>> +  "#interrupt-cells":
->>>>> +    const: 2
->>>>> +
->>>
->>> ngpios with some constraints
-> 
-> Is this just with regard to the constraints I have under allOf above?
+Summary:
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
 
-You miss ngpios.
+Base on : https://lore.kernel.org/all/CACPK8XePx+PvDKzPMjPRn_g9z8yrtAmLvP8Qbepm1AVjuCbaKw at mail.gmail.com/
 
+Change log:
 
+v2 -> v3
+  - Patch 0007 - Revise max31790 address
+  - Patch 0008 - Harma: Add NIC Fru device
+  - Patch 0009 - Add ltc4286 device
 
-Best regards,
-Krzysztof
+v1 -> v2
+  - Add infineon,slb9670 information for tpm.
+  - Patch 0006 - Add PDB temperature.
+
+v1
+  - Patch 0001 - Revise SGPIO line name.
+  - Patch 0002 - Mapping ttyS2 to UART4.
+  - Patch 0003 - Remove Vuart.
+  - Patch 0004 - Add cpu power good line name.
+  - Patch 0005 - Add spi-gpio.
+
+Peter Yin (9):
+  ARM: dts: aspeed: Harma: Revise SGPIO line name.
+  ARM: dts: aspeed: Harma: mapping ttyS2 to UART4.
+  ARM: dts: aspeed: Harma: Remove Vuart
+  ARM: dts: aspeed: Harma: Add cpu power good line name
+  ARM: dts: aspeed: Harma: Add spi-gpio
+  ARM: dts: aspeed: Harma: Add PDB temperature
+  ARM: dts: aspeed: Harma: Revise max31790 address
+  ARM: dts: aspeed: Harma: Add NIC Fru device
+  ARM: dts: aspeed: Harma: Add ltc4286 device
+
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 59 +++++++++++++++----
+ 1 file changed, 47 insertions(+), 12 deletions(-)
+
+-- 
+2.25.1
 
