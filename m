@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Wed, 21 Feb 2024 20:31:29 +0200
-Subject: [PATCH v1 13/14] serial: 8250_tegra: Switch to use uart_read_port_properties()
+Date: Wed, 21 Feb 2024 20:31:25 +0200
+Subject: [PATCH v1 09/14] serial: 8250_lpc18xx: Switch to use uart_read_port_properties()
 In-Reply-To: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
 References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240221183442.4124354-14-andriy.shevchenko@linux.intel.com>
+Message-ID: <20240221183442.4124354-10-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,61 +15,60 @@ use it instead of sparse home grown solution.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/tty/serial/8250/8250_tegra.c | 26 +++++++++-----------------
- 1 file changed, 9 insertions(+), 17 deletions(-)
+ drivers/tty/serial/8250/8250_lpc18xx.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_tegra.c b/drivers/tty/serial/8250/8250_tegra.c
-index ba352262df75..ce48d02dfa0d 100644
---- a/drivers/tty/serial/8250/8250_tegra.c
-+++ b/drivers/tty/serial/8250/8250_tegra.c
-@@ -57,25 +57,11 @@ static int tegra_uart_probe(struct platform_device *pdev)
- 	port = &port8250.port;
- 	spin_lock_init(&port->lock);
+diff --git a/drivers/tty/serial/8250/8250_lpc18xx.c b/drivers/tty/serial/8250/8250_lpc18xx.c
+index 8d728a6a5991..e4a6b7b4caf2 100644
+--- a/drivers/tty/serial/8250/8250_lpc18xx.c
++++ b/drivers/tty/serial/8250/8250_lpc18xx.c
+@@ -92,11 +92,7 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
+ 	struct lpc18xx_uart_data *data;
+ 	struct uart_8250_port uart;
+ 	struct resource *res;
+-	int irq, ret;
+-
+-	irq = platform_get_irq(pdev, 0);
+-	if (irq < 0)
+-		return irq;
++	int ret;
  
--	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_FIXED_PORT |
--		      UPF_FIXED_TYPE;
--	port->iotype = UPIO_MEM32;
--	port->regshift = 2;
-+	port->flags = UPF_BOOT_AUTOCONF | UPF_FIXED_PORT | UPF_FIXED_TYPE;
- 	port->type = PORT_TEGRA;
--	port->irqflags |= IRQF_SHARED;
- 	port->dev = &pdev->dev;
- 	port->handle_break = tegra_uart_handle_break;
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+@@ -139,19 +135,12 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
+ 		goto dis_clk_reg;
+ 	}
  
 -	ret = of_alias_get_id(pdev->dev.of_node, "serial");
 -	if (ret >= 0)
--		port->line = ret;
+-		uart.port.line = ret;
 -
--	ret = platform_get_irq(pdev, 0);
--	if (ret < 0)
--		return ret;
--
--	port->irq = ret;
--
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res)
- 		return -ENODEV;
-@@ -88,12 +74,18 @@ static int tegra_uart_probe(struct platform_device *pdev)
- 	port->mapbase = res->start;
- 	port->mapsize = resource_size(res);
+ 	data->dma.rx_param = data;
+ 	data->dma.tx_param = data;
  
-+	ret = uart_read_port_properties(port, true);
+ 	spin_lock_init(&uart.port.lock);
+ 	uart.port.dev = &pdev->dev;
+-	uart.port.irq = irq;
+-	uart.port.iotype = UPIO_MEM32;
+ 	uart.port.mapbase = res->start;
+-	uart.port.regshift = 2;
+ 	uart.port.type = PORT_16550A;
+ 	uart.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SKIP_TEST;
+ 	uart.port.uartclk = clk_get_rate(data->clk_uart);
+@@ -160,6 +149,13 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
+ 	uart.port.rs485_supported = lpc18xx_rs485_supported;
+ 	uart.port.serial_out = lpc18xx_uart_serial_out;
+ 
++	ret = uart_read_port_properties(&uart.port, true);
 +	if (ret)
 +		return ret;
 +
-+	port->iotype = UPIO_MEM32;
-+	port->regshift = 2;
++	uart.port.iotype = UPIO_MEM32;
++	uart.port.regshift = 2;
 +
- 	uart->rst = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
- 	if (IS_ERR(uart->rst))
- 		return PTR_ERR(uart->rst);
- 
--	if (device_property_read_u32(&pdev->dev, "clock-frequency",
--				     &port->uartclk)) {
-+	if (!port->uartclk) {
- 		uart->clk = devm_clk_get(&pdev->dev, NULL);
- 		if (IS_ERR(uart->clk)) {
- 			dev_err(&pdev->dev, "failed to get clock!\n");
+ 	uart.dma = &data->dma;
+ 	uart.dma->rxconf.src_maxburst = 1;
+ 	uart.dma->txconf.dst_maxburst = 1;
 -- 
 2.43.0.rc1.1.gbec44491f096
 
