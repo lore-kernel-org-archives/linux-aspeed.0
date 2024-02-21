@@ -1,123 +1,101 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 21 Feb 2024 18:40:23 +0800
-Subject: [PATCH v14 1/3] dt-bindings: hwmon: fan: Add fan binding to schema
+Date: Wed, 21 Feb 2024 18:40:24 +0800
+Subject: [PATCH v14 2/3] dt-bindings: hwmon: Support Aspeed g6 PWM TACH Control
 In-Reply-To: <20240221104025.1306227-1-billy_tsai@aspeedtech.com>
 References: <20240221104025.1306227-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240221104025.1306227-2-billy_tsai@aspeedtech.com>
+Message-ID: <20240221104025.1306227-3-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Naresh Solanki <naresh.solanki@9elements.com>
+Document the compatible for aspeed,ast2600-pwm-tach device, which can
+support up to 16 PWM outputs and 16 fan tach input.
 
-Add common fan properties bindings to a schema.
-
-Bindings for fan controllers can reference the common schema for the
-fan
-
-child nodes:
-
-  patternProperties:
-    "^fan@[0-2]":
-      type: object
-      $ref: fan-common.yaml#
-      unevaluatedProperties: false
-
-Reviewed-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- .../devicetree/bindings/hwmon/fan-common.yaml | 79 +++++++++++++++++++
- 1 file changed, 79 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/hwmon/fan-common.yaml
+ .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 71 +++++++++++++++++++
+ 1 file changed, 71 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
 
-diff --git a/Documentation/devicetree/bindings/hwmon/fan-common.yaml b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
 new file mode 100644
-index 000000000000..0fb738081699
+index 000000000000..9e5ed901ae54
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/hwmon/fan-common.yaml
-@@ -0,0 +1,79 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+@@ -0,0 +1,71 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (C) 2023 Aspeed, Inc.
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/hwmon/fan-common.yaml#
++$id: http://devicetree.org/schemas/hwmon/aspeed,g6-pwm-tach.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Common Fan Properties
++title: ASPEED G6 PWM and Fan Tach controller
 +
 +maintainers:
-+  - Naresh Solanki <naresh.solanki@9elements.com>
 +  - Billy Tsai <billy_tsai@aspeedtech.com>
 +
++description: |
++  The ASPEED PWM controller can support up to 16 PWM outputs.
++  The ASPEED Fan Tacho controller can support up to 16 fan tach input.
++  They are independent hardware blocks, which are different from the
++  previous version of the ASPEED chip.
++
 +properties:
-+  max-rpm:
-+    description:
-+      Max RPM supported by fan.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    maximum: 100000
-+
-+  min-rpm:
-+    description:
-+      Min RPM supported by fan.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    maximum: 1000
-+
-+  pulses-per-revolution:
-+    description:
-+      The number of pulse from fan sensor per revolution.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    maximum: 4
-+
-+  tach-div:
-+    description:
-+      Divisor for the tach sampling clock, which determines the sensitivity of the tach pin.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  target-rpm:
-+    description:
-+      The default desired fan speed in RPM.
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  fan-driving-mode:
-+    description:
-+      Select the driving mode of the fan.(DC, PWM and so on)
-+    $ref: /schemas/types.yaml#/definitions/string
-+    enum: [ dc, pwm ]
-+
-+  pwms:
-+    description:
-+      PWM provider.
-+    maxItems: 1
-+
-+  "#cooling-cells":
-+    const: 2
-+
-+  cooling-levels:
-+    description:
-+      The control value which correspond to thermal cooling states.
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+
-+  tach-ch:
-+    description:
-+      The tach channel used for the fan.
-+    $ref: /schemas/types.yaml#/definitions/uint8-array
-+
-+  label:
-+    description:
-+      Optional fan label
-+
-+  fan-supply:
-+    description:
-+      Power supply for fan.
++  compatible:
++    enum:
++      - aspeed,ast2600-pwm-tach
 +
 +  reg:
 +    maxItems: 1
 +
-+additionalProperties: true
++  clocks:
++    maxItems: 1
 +
-+...
++  resets:
++    maxItems: 1
++
++  "#pwm-cells":
++    const: 3
++
++patternProperties:
++  "^fan-[0-9]+$":
++    $ref: fan-common.yaml#
++    unevaluatedProperties: false
++    required:
++      - tach-ch
++
++required:
++  - reg
++  - clocks
++  - resets
++  - "#pwm-cells"
++  - compatible
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/aspeed-clock.h>
++    pwm_tach: pwm-tach-controller at 1e610000 {
++      compatible = "aspeed,ast2600-pwm-tach";
++      reg = <0x1e610000 0x100>;
++      clocks = <&syscon ASPEED_CLK_AHB>;
++      resets = <&syscon ASPEED_RESET_PWM>;
++      #pwm-cells = <3>;
++
++      fan-0 {
++        tach-ch = /bits/ 8 <0x0>;
++        pwms = <&pwm_tach 0 40000 0>;
++      };
++
++      fan-1 {
++        tach-ch = /bits/ 8 <0x1 0x2>;
++        pwms = <&pwm_tach 1 40000 0>;
++      };
++    };
 -- 
 2.25.1
 
