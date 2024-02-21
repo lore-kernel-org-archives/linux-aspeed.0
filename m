@@ -1,74 +1,42 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Wed, 21 Feb 2024 20:31:25 +0200
-Subject: [PATCH v1 09/14] serial: 8250_lpc18xx: Switch to use uart_read_port_properties()
-In-Reply-To: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Wed, 21 Feb 2024 10:47:13 -0800
+Subject: [PATCH v1 02/14] serial: core: Add UPIO_UNSET constant for unset
+ port type
+In-Reply-To: <20240221183442.4124354-3-andriy.shevchenko@linux.intel.com>
 References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240221183442.4124354-10-andriy.shevchenko@linux.intel.com>
+ <20240221183442.4124354-3-andriy.shevchenko@linux.intel.com>
+Message-ID: <d18d4488-aa48-4156-8087-a117664cea7b@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since we have now a common helper to read port properties
-use it instead of sparse home grown solution.
+On 2/21/24 10:31, Andy Shevchenko wrote:
+> In some APIs we would like to assign the special value to iotype
+> and compare against it in another places. Introduce UPIO_UNSET
+> for this purpose.
+> 
+> Note, we can't use 0, because it's a valid value for IO port access.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>   include/linux/serial_core.h | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+> index 2d2ec99eca93..2b0526ae1fac 100644
+> --- a/include/linux/serial_core.h
+> +++ b/include/linux/serial_core.h
+> @@ -470,6 +470,7 @@ struct uart_port {
+>   
+>   	unsigned char		iotype;			/* io access style */
+>   
+> +#define UPIO_UNSET		((unsigned char)~0U)	/* UCHAR_MAX */
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/tty/serial/8250/8250_lpc18xx.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/tty/serial/8250/8250_lpc18xx.c b/drivers/tty/serial/8250/8250_lpc18xx.c
-index 8d728a6a5991..e4a6b7b4caf2 100644
---- a/drivers/tty/serial/8250/8250_lpc18xx.c
-+++ b/drivers/tty/serial/8250/8250_lpc18xx.c
-@@ -92,11 +92,7 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
- 	struct lpc18xx_uart_data *data;
- 	struct uart_8250_port uart;
- 	struct resource *res;
--	int irq, ret;
--
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
--		return irq;
-+	int ret;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res) {
-@@ -139,19 +135,12 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
- 		goto dis_clk_reg;
- 	}
- 
--	ret = of_alias_get_id(pdev->dev.of_node, "serial");
--	if (ret >= 0)
--		uart.port.line = ret;
--
- 	data->dma.rx_param = data;
- 	data->dma.tx_param = data;
- 
- 	spin_lock_init(&uart.port.lock);
- 	uart.port.dev = &pdev->dev;
--	uart.port.irq = irq;
--	uart.port.iotype = UPIO_MEM32;
- 	uart.port.mapbase = res->start;
--	uart.port.regshift = 2;
- 	uart.port.type = PORT_16550A;
- 	uart.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SKIP_TEST;
- 	uart.port.uartclk = clk_get_rate(data->clk_uart);
-@@ -160,6 +149,13 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
- 	uart.port.rs485_supported = lpc18xx_rs485_supported;
- 	uart.port.serial_out = lpc18xx_uart_serial_out;
- 
-+	ret = uart_read_port_properties(&uart.port, true);
-+	if (ret)
-+		return ret;
-+
-+	uart.port.iotype = UPIO_MEM32;
-+	uart.port.regshift = 2;
-+
- 	uart.dma = &data->dma;
- 	uart.dma->rxconf.src_maxburst = 1;
- 	uart.dma->txconf.dst_maxburst = 1;
+Nit: I would name this UPIO_UNKNOWN, or UPIO_NOTSET, unset means to me 
+that it was previously set and we undid that action, whereas unknown or 
+not set means we never did.
 -- 
-2.43.0.rc1.1.gbec44491f096
+Florian
 
