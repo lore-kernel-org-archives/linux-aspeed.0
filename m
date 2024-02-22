@@ -1,37 +1,661 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 22 Feb 2024 15:44:20 +1030
-Subject: [PATCH] dt-bindings: arm: aspeed: add ASUS X4TF board
-In-Reply-To: <20240222032504.1147489-2-Kelly_Hung@asus.com>
+Date: Thu, 22 Feb 2024 16:22:42 +1030
+Subject: [PATCH] ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
+In-Reply-To: <20240222032504.1147489-1-Kelly_Hung@asus.com>
 References: <20240222032504.1147489-1-Kelly_Hung@asus.com>
-	 <20240222032504.1147489-2-Kelly_Hung@asus.com>
-Message-ID: <2ab9b3924dbe07039e934d4580ab7dd397a31728.camel@codeconstruct.com.au>
+Message-ID: <a4bb9821f672729941e988db20bf8bc275f37279.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Kelly,
-
 On Thu, 2024-02-22 at 11:25 +0800, Kelly Hung wrote:
-> Document the new compatibles used on ASUS X4TF.
+> Base on aspeed-g6.dtsi and can boot into BMC console.
 > 
 > Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
 > ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  1 file changed, 1 insertion(+)
+>  arch/arm/boot/dts/aspeed/Makefile             |   3 +-
+>  .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 651 ++++++++++++++++++
+>  2 files changed, 653 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> index 749ee54a3ff8..60a494b7aaaf 100644
-> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> @@ -74,6 +74,7 @@ properties:
->                - ampere,mtmitchell-bmc
->                - aspeed,ast2600-evb
->                - aspeed,ast2600-evb-a1
-> +              - asus, x4tf
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index d3ac20e316d0..f7cc69b636fc 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -62,4 +62,5 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-ufispace-ncplite.dtb \
+>  	aspeed-bmc-vegman-n110.dtb \
+>  	aspeed-bmc-vegman-rx20.dtb \
+> -	aspeed-bmc-vegman-sx20.dtb
+> +	aspeed-bmc-vegman-sx20.dtb \
+> +	aspeed-bmc-asus-x4tf.dtb
 
-You need to remove the space after the comma. This should be
-`asus,x4tf`.
+Please keep the list sorted alphabetically.
+
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+> new file mode 100644
+> index 000000000000..fbe39eaec154
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+> @@ -0,0 +1,651 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +// Copyright 2024 ASUS Corp.
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +#include "aspeed-g6-pinctrl.dtsi"
+> +#include <dt-bindings/i2c/i2c.h>
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +	model = "ASUS-X4TF";
+> +	compatible = "asus,x4tf", "aspeed,ast2600";
+> +
+> +	aliases {
+> +		serial4 = &uart5;
+> +	};
+> +
+> +	chosen {
+> +		stdout-path = "serial4:115200n8";
+> +	};
+> +
+> +	memory at 80000000 {
+> +		device_type = "memory";
+> +		reg = <0x80000000 0x40000000>;
+> +	};
+> +
+> +	reserved-memory {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +
+> +		video_engine_memory: video {
+> +			size = <0x04000000>;
+> +			alignment = <0x01000000>;
+> +			compatible = "shared-dma-pool";
+> +			reusable;
+> +		};
+> +	};
+> +
+> +	iio-hwmon {
+> +		compatible = "iio-hwmon";
+> +		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+> +				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+> +				<&adc1 0>, <&adc1 1>, <&adc1 2>, <&adc1 3>,
+> +				<&adc1 4>, <&adc1 5>, <&adc1 6>, <&adc1 7>;
+> +	};
+> +
+> +	leds {
+> +		compatible = "gpio-leds";
+> +
+> +		led-heartbeat {
+> +			gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_LOW>;
+> +			linux,default-trigger = "heartbeat";
+> +		};
+> +
+> +		led-uid {
+> +			gpios = <&gpio0 ASPEED_GPIO(P, 1) (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+> +			default-state = "off";
+> +		};
+> +
+> +		led-status_Y {
+> +			gpios = <&gpio1 ASPEED_GPIO(B, 1) GPIO_ACTIVE_LOW>;
+> +			default-state = "off";
+> +		};
+> +
+> +		led-sys_boot_status {
+> +			gpios = <&gpio1 ASPEED_GPIO(B, 0) GPIO_ACTIVE_LOW>;
+> +			default-state = "off";
+> +		};
+> +	};
+> +};
+> +
+> +&adc0 {
+> +	vref = <2500>;
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
+> +		&pinctrl_adc2_default &pinctrl_adc3_default
+> +		&pinctrl_adc4_default &pinctrl_adc5_default
+> +		&pinctrl_adc6_default &pinctrl_adc7_default>;
+> +};
+> +
+> +&adc1 {
+> +	vref = <2500>;
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default
+> +		&pinctrl_adc10_default &pinctrl_adc11_default
+> +		&pinctrl_adc12_default &pinctrl_adc13_default
+> +		&pinctrl_adc14_default &pinctrl_adc15_default>;
+> +};
+> +
+> +&peci0 {
+> +	status = "okay";
+> +};
+> +
+> +&lpc_snoop {
+> +	snoop-ports = <0x80>;
+> +	status = "okay";
+> +};
+> +
+> +&mdio2 {
+> +	status = "okay";
+> +
+> +	ethphy2: ethernet-phy at 0 {
+> +		compatible = "ethernet-phy-ieee802.3-c22";
+> +		reg = <0>;
+> +	};
+> +};
+> +
+> +&mdio3 {
+> +	status = "okay";
+> +
+> +	ethphy3: ethernet-phy at 0 {
+> +		compatible = "ethernet-phy-ieee802.3-c22";
+> +		reg = <0>;
+> +	};
+> +};
+
+Are these necessary given you have `use-ncsi` specified for the MACs
+below?
+
+> +
+> +&mac2 {
+> +	status = "okay";
+> +	phy-mode = "rmii";
+> +	use-ncsi;
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii3_default>;
+> +};
+> +
+> +&mac3 {
+> +	status = "okay";
+> +	phy-mode = "rmii";
+> +	use-ncsi;
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_rmii4_default>;
+> +};
+> +
+> +&fmc {
+> +	status = "okay";
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "bmc-spi";
+> +		spi-max-frequency = <50000000>;
+> +
+> +		partitions {
+> +			compatible = "fixed-partitions";
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +
+> +			bmc at 0 {
+> +				label = "bmc";
+> +				reg = <0x0 0x4000000>;
+> +			};
+> +
+> +			u-boot at 0 {
+> +				label = "u-boot";
+> +				reg = <0x0 0x200000>;
+> +			};
+> +
+> +			u-boot-env at 1f0000 {
+> +				label = "u-boot-env";
+> +				reg = <0x1f0000 0x10000>;
+> +			};
+> +
+> +			kernel at 200000 {
+> +				label = "kernel";
+> +				reg = <0x200000 0xc00000>;
+> +			};
+> +
+> +			rofs at a00000 {
+> +				label = "rofs";
+> +				reg = <0xa00000 0x2a00000>;
+> +			};
+> +
+> +			rwfs at 2a00000 {
+> +				label = "rwfs";
+> +				reg = <0x2a00000 0x43f0000>;
+> +			};
+
+Is this different to the default OpenBMC layouts? Can you use the
+appropriate DTSI?
+
+> +		};
+> +	};
+> +};
+> +
+> +&spi1 {
+> +	status = "okay";
+> +	pinctrl-names = "default";
+> +	pinctrl-0 = <&pinctrl_spi1_default>;
+> +
+> +	flash at 0 {
+> +		status = "okay";
+> +		label = "bios-spi";
+> +		spi-max-frequency = <50000000>;
+> +
+> +		partitions {
+> +			compatible = "fixed-partitions";
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +
+> +			biosfullimg at 0 {
+> +				reg = <0x0 0x2000000>; //32768 *1024 = 32 MB
+> +				label = "biosfullimg";
+> +			};
+> +		};
+> +	};
+> +};
+> +
+> +&i2c0 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c1 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c2 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c3 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c4 {
+> +	status = "okay";
+> +
+> +	temperature-sensor at 48 {
+> +		compatible = "ti,tmp75";
+> +		reg = <0x48>;
+> +	};
+> +
+> +	temperature-sensor at 49 {
+> +		compatible = "ti,tmp75";
+> +		reg = <0x49>;
+> +	};
+> +
+> +	pca9555_4_20: gpio at 20 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x20>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +
+> +	pca9555_4_22: gpio at 22 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x22>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +
+> +	pca9555_4_24: gpio at 24 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x24>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		gpio-line-names =
+> +		/*A0 - A3 0*/	"", "STRAP_BMC_BATTERY_GPIO1", "", "",
+> +		/*A4 - A7 4*/	"", "", "", "",
+> +		/*B0 - B7 8*/	"", "", "", "", "", "", "", "";
+> +	};
+> +
+> +	pca9555_4_26: gpio at 26 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x26>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +
+> +	i2c-mux at 70 {
+> +		compatible = "nxp,pca9546";
+> +		status = "okay";
+> +		reg = <0x70>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		channel_1: i2c at 0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0>;
+> +		};
+> +
+> +		channel_2: i2c at 1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +		};
+> +
+> +		channel_3: i2c at 2 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <2>;
+> +		};
+> +
+> +		channel_4: i2c at 3 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <3>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c5 {
+> +	status = "okay";
+> +
+> +	pca9555_5_24: gpio at 24 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x24>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +
+> +	i2c-mux at 70  {
+> +		compatible = "nxp,pca9546";
+> +		status = "okay";
+> +		reg = <0x70 >;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		channel_5: i2c at 0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0>;
+> +
+> +			pca9555_5_5_20: gpio at 20 {
+> +				compatible = "nxp,pca9555";
+> +				reg = <0x20>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
+> +				gpio-line-names =
+> +					"", "", "", "", "", "", "", "",
+> +					"", "", "SYS_FAN6", "SYS_FAN5",
+> +					"SYS_FAN4", "SYS_FAN3",
+> +					"SYS_FAN2", "SYS_FAN1";
+> +			};
+> +
+> +			pca9555_5_5_21: gpio at 21 {
+> +				compatible = "nxp,pca9555";
+> +				reg = <0x21>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
+> +			};
+> +
+> +			power-monitor at 44 {
+> +				compatible = "ti,ina219";
+> +				reg = <0x44>;
+> +				shunt-resistor = <2>;
+> +			};
+> +		};
+> +
+> +		channel_6: i2c at 1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +		};
+> +
+> +		channel_7: i2c at 2 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <2>;
+> +		};
+> +
+> +		channel_8: i2c at 3 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <3>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c6 {
+> +	status = "okay";
+> +
+> +	pca9555_6_27: gpio at 27 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x27>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +
+> +	pca9555_6_20: gpio at 20 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x20>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		gpio-line-names =
+> +		/*A0 0*/	"", "", "", "", "", "", "", "",
+> +		/*B0 8*/	"Drive_NVMe1", "Drive_NVMe2", "", "",
+> +		/*B4 12*/	"", "", "", "";
+> +	};
+> +
+> +	pca9555_6_21: gpio at 21 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x21>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +};
+> +
+> +&i2c7 {
+> +	status = "okay";
+> +
+> +	i2c-mux at 70 {
+> +		compatible = "nxp,pca9546";
+> +		status = "okay";
+> +		reg = <0x70>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		idle-state = <1>;
+> +
+> +		channel_9: i2c at 0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0>;
+> +
+> +			temperature-sensor at 48 {
+> +				compatible = "ti,tmp75";
+> +				reg = <0x48>;
+> +			};
+> +
+> +			temperature-sensor at 49 {
+> +				compatible = "ti,tmp75";
+> +				reg = <0x49>;
+> +			};
+> +
+> +			power-monitor at 40 {
+> +				compatible = "ti,ina219";
+> +				reg = <0x40>;
+> +				shunt-resistor = <2>;
+> +			};
+> +
+> +			power-monitor at 41 {
+> +				compatible = "ti,ina219";
+> +				reg = <0x41>;
+> +				shunt-resistor = <5>;
+> +			};
+> +		};
+> +
+> +		channel_10: i2c at 1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +		};
+> +
+> +		channel_11: i2c at 2 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <2>;
+> +		};
+> +
+> +		channel_12: i2c at 3 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <3>;
+> +		};
+> +	};
+> +
+> +	i2c-mux at 71 {
+> +		compatible = "nxp,pca9546";
+> +		status = "okay";
+> +		reg = <0x71>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		channel_13: i2c at 0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0>;
+> +		};
+> +
+> +		channel_14: i2c at 1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +		};
+> +
+> +		channel_15: i2c at 2 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <2>;
+> +		};
+> +
+> +		channel_16: i2c at 3 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <3>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c8 {
+> +	status = "okay";
+> +
+> +	i2c-mux at 70 {
+> +		compatible = "nxp,pca9546";
+> +		status = "okay";
+> +		reg = <0x70>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		channel_17: i2c at 0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <0>;
+> +		};
+> +
+> +		channel_18: i2c at 1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +
+> +			temperature-sensor at 48 {
+> +				compatible = "ti,tmp75";
+> +				reg = <0x48>;
+> +			};
+> +
+> +			power-monitor at 41 {
+> +				compatible = "ti,ina219";
+> +				reg = <0x41>;
+> +				shunt-resistor = <5>;
+> +			};
+> +		};
+> +
+> +		channel_19: i2c at 2 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <2>;
+> +		};
+> +
+> +		channel_20: i2c at 3 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <3>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c9 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c10 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c11 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c14 {
+> +	status = "okay";
+> +	multi-master;
+> +
+> +	eeprom at 50 {
+> +		compatible = "atmel,24c08";
+> +		reg = <0x50>;
+> +	};
+> +
+> +	eeprom at 51 {
+> +		compatible = "atmel,24c08";
+> +		reg = <0x51>;
+> +	};
+> +};
+> +
+> +&sgpiom0 {
+> +	status = "okay";
+> +	ngpios = <128>;
+> +};
+> +
+> +&video {
+> +	status = "okay";
+> +	memory-region = <&video_engine_memory>;
+> +};
+> +
+> +&sdc {
+> +	status = "okay";
+> +};
+> +
+> +&lpc_snoop {
+> +	status = "okay";
+> +	snoop-ports = <0x80>;
+> +};
+> +
+> +&kcs1 {
+> +	aspeed,lpc-io-reg = <0xca0>;
+> +	status = "okay";
+> +};
+> +
+> +&kcs2 {
+> +	aspeed,lpc-io-reg = <0xca8>;
+> +	status = "okay";
+> +};
+> +
+> +&kcs3 {
+> +	aspeed,lpc-io-reg = <0xca2>;
+> +	status = "okay";
+> +};
+> +
+> +&uart3 {
+> +	status = "okay";
+> +};
+> +
+> +&uart4 {
+> +	status = "okay";
+> +	/* GPIOB6 will be used in ASD function, do not set to be TXD4 */
+> +	pinctrl-0 = <&pinctrl_txd2_default &pinctrl_rxd2_default>;
+
+Are you sure this works? You're configuring the pins for UART2 on the
+node for UART4. Enable UART2 instead?
 
 Andrew
