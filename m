@@ -1,126 +1,109 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 22 Feb 2024 11:07:05 +1030
-Subject: [PATCH v1 10/14] serial: 8250_of: Switch to use
- uart_read_port_properties()
-In-Reply-To: <20240221183442.4124354-11-andriy.shevchenko@linux.intel.com>
-References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
-	 <20240221183442.4124354-11-andriy.shevchenko@linux.intel.com>
-Message-ID: <0a828f2c50de712940fb9a881702ac1678a35b7c.camel@codeconstruct.com.au>
+From: Tommy Huang <tommy_huang@aspeedtech.com>
+Date: Thu, 22 Feb 2024 01:10:39 +0000
+Subject: [PATCH] i2c: aspeed: Fix the dummy irq expected print
+In-Reply-To: <nbkkaktcozbhly44hii3zwie7ivsra3qxzdibyzhyhooxrudvb@zik6skmkki2c>
+References: <20240216120455.4138642-1-tommy_huang@aspeedtech.com>
+ <nbkkaktcozbhly44hii3zwie7ivsra3qxzdibyzhyhooxrudvb@zik6skmkki2c>
+Message-ID: <TYZPR06MB61911F076C8719C6A7D57B97E1562@TYZPR06MB6191.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-02-21 at 20:31 +0200, Andy Shevchenko wrote:
-> Since we have now a common helper to read port properties
-> use it instead of sparse home grown solution.
+Hi Andy,
 
-I did some brief testing of the series for the Aspeed machines under
-qemu, building them on top of v6.8-rc5:
+	Thanks for your comment.
 
-export ARCH=arm
-export CROSS_COMPILE=arm-linux-gnueabihf-
-make aspeed_g5_defconfig
-make -j$(nproc)
-qemu-system-arm -M rainier-bmc -nographic -no-reboot -kernel arch/arm/boot/zImage -dtb arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb -initrd ...
+> -----Original Message-----
+> From: Andi Shyti <andi.shyti@kernel.org>
+> Sent: Thursday, February 22, 2024 5:15 AM
+> To: Tommy Huang <tommy_huang@aspeedtech.com>
+> Cc: brendan.higgins at linux.dev; p.zabel at pengutronix.de;
+> linux-i2c at vger.kernel.org; openbmc at lists.ozlabs.org;
+> benh at kernel.crashing.org; joel at jms.id.au; andrew at aj.id.au;
+> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
+> linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH] i2c: aspeed: Fix the dummy irq expected print
+> 
+> Hi Tommy,
+> 
+> On Fri, Feb 16, 2024 at 08:04:55PM +0800, Tommy Huang wrote:
+> > When the i2c error condition occurred and master state was not idle,
+> > the master irq function will goto complete state without any other
+> > interrupt handling. It would cause dummy irq expected print. Under
+> > this condition, assign the irq_status into irq_handle.
+> 
+> I'm sorry, but I don't understand much from your log here.
+> 
+> Do you mean that irq_handled in aspeed_i2c_master_irq() is left with some
+> states that is not supposed to have and then you end up printing here:
+> 
+> 	dev_err(bus->dev,
+> 		"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
+> 		irq_received, irq_handled);
+> 
+> Can you please explain better?
+> 
 
-I got an oops during boot, which bisected to this change:
+Yes. If the platform met any irq error condition and the i2c wasn't stated under ASPEED_I2C_MASTER_INACTIVE.
+Then the code flow would goto the end of aspeed_i2c_master_irq.
 
-[    0.314946] 8<--- cut here ---
-[    0.315051] Unable to handle kernel paging request at virtual address fee00000 when write
-[    0.315201] [fee00000] *pgd=00000000
-[    0.315593] Internal error: Oops: 805 [#1] SMP ARM
-[    0.315847] CPU: 1 PID: 1 Comm: swapper/0 Not tainted 6.8.0-rc5-00010-g8a2c8fe174cf #13
-[    0.316071] Hardware name: Generic DT based system
-[    0.316216] PC is at io_serial_out+0x18/0x20
-[    0.316677] LR is@serial8250_do_set_mctrl+0x54/0x90
-[    0.316781] pc : [<8060eea8>]    lr : [<806108b0>]    psr: 40000093
-[    0.316891] sp : bf815b08  ip : 00000000  fp : 00000026
-[    0.316987] r10: 81698240  r9 : 40000013  r8 : 81cae600
-[    0.317087] r7 : 81d7d1a8  r6 : 81d7d110  r5 : 81008158  r4 : 00000000
-[    0.317197] r3 : fee00000  r2 : 00000000  r1 : 00000004  r0 : 81008158
-[    0.317350] Flags: nZcv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment none
-[    0.317471] Control: 10c5387d  Table: 8000406a  DAC: 00000051
-[    0.317593] Register r0 information: non-slab/vmalloc memory
-[    0.317892] Register r1 information: non-paged memory
-[    0.317996] Register r2 information: NULL pointer
-[    0.318080] Register r3 information: vmalloc memory
-[    0.318176] Register r4 information: NULL pointer
-[    0.318264] Register r5 information: non-slab/vmalloc memory
-[    0.318362] Register r6 information: slab kmalloc-2k start 81d7d000 pointer offset 272 size 2048
-[    0.318701] Register r7 information: slab kmalloc-2k start 81d7d000 pointer offset 424 size 2048
-[    0.318860] Register r8 information: slab kmalloc-512 start 81cae600 pointer offset 0 size 512
-[    0.319095] Register r9 information: non-paged memory
-[    0.319194] Register r10 information: slab kmalloc-64 start 81698240 pointer offset 0 size 64
-[    0.319266] Freeing initrd memory: 13684K
-[    0.319384] Register r11 information: non-paged memory
-[    0.319593] Register r12 information: NULL pointer
-[    0.319703] Process swapper/0 (pid: 1, stack limit = 0x(ptrval))
-[    0.320006] Stack: (0xbf815b08 to 0xbf816000)
-[    0.320157] 5b00:                   81008158 80f85a88 81d7d110 8060cb78 bf815b34 00000026
-[    0.320313] 5b20: 0016e360 80cba110 81e65e80 80cfcdf4 00000003 204f2f49 00307830 00000000
-[    0.320457] 5b40: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.320600] 5b60: 00000000 00000000 00000000 00000000 00000000 ed1677db 81008158 81008158
-[    0.320744] 5b80: bf815c00 81e5c5c0 81008304 81007f58 bf815d2c bf815dac 00000000 8060e1f4
-[    0.320890] 5ba0: 80cba4ec 8081e2c4 bf815dfc 00000001 00000000 81cf5400 81cf5410 81e65e00
-[    0.321030] 5bc0: 00000004 00000000 00000001 80616538 00000000 00000000 00000000 00000000
-[    0.321176] 5be0: 1e784000 1e784fff bd7c1a94 00000200 00000000 00000000 00000000 00000000
-[    0.321325] 5c00: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.321469] 5c20: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.321624] 5c40: 00000000 00000000 8060fb34 00000000 00000000 00000000 00000026 00000000
-[    0.321777] 5c60: 016e3600 00000000 00000200 00000000 00000000 00000000 00000000 00000000
-[    0.321920] 5c80: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.322063] 5ca0: 00000000 00000000 b9000040 00000000 00000000 00000000 00000000 00000000
-[    0.322204] 5cc0: 00000004 00000000 00000000 00000004 00000000 1e784000 00001000 81cf5410
-[    0.322347] 5ce0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.322492] 5d00: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000037
-[    0.322640] 5d20: 00000001 00000001 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.322800] 5d40: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.322957] 5d60: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.323114] 5d80: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.323271] 5da0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.323422] 5dc0: 00000000 00000000 806111c8 80610eb4 00000000 00000000 00000000 00000000
-[    0.323573] 5de0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.323723] 5e00: 00000000 ed1677db 00000000 81cf5410 80f85cf8 00000000 00000000 81e5c638
-[    0.323878] 5e20: 80e66f48 8067f888 81cf5410 00000000 80f85cf8 00000000 00000000 8067ca08
-[    0.324029] 5e40: 81cf5410 00000000 81cf5410 81cf5410 80f85cf8 81cf5454 81cf5410 8067cda8
-[    0.324181] 5e60: 60000013 81e5c638 81008d4c 81008d54 81cf5454 81cf5410 00000000 8067cf3c
-[    0.324337] 5e80: 81cf5410 80f85cf8 81cf5454 814cec00 00000000 8067d21c 00000000 80f85cf8
-[    0.324494] 5ea0: 8067d11c 8067aa04 814cec00 814cec58 816a4bb4 ed1677db 814cec00 81e5c600
-[    0.324646] 5ec0: 00000000 80f85cf8 814cec00 8067bc6c 80cba524 00000000 00000006 80f85cf8
-[    0.324795] 5ee0: 8158b480 00000006 bf815f14 00000000 80d19438 8067e284 80e221c4 8158b480
-[    0.324945] 5f00: 00000006 80e01414 80d2d3b0 000000db 8173ad17 00000000 00000000 00000000
-[    0.325096] 5f20: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.325247] 5f40: 00000000 00000000 00000000 00000000 00000000 ed1677db 8173ad00 00000020
-[    0.325403] 5f60: 00000006 80e3b83c 80e3b860 80e01750 00000006 00000006 00000000 80e004f8
-[    0.325553] 5f80: 80f05cc0 80a50e18 00000000 00000000 00000000 00000000 00000000 80a50e34
-[    0.325699] 5fa0: 00000000 80a50e18 00000000 8010016c 00000000 00000000 00000000 00000000
-[    0.325848] 5fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.325995] 5fe0: 00000000 00000000 00000000 00000000 00000013 00000000 00000000 00000000
-[    0.326531]  io_serial_out from serial8250_do_set_mctrl+0x54/0x90
-[    0.326761]  serial8250_do_set_mctrl from serial_core_register_port+0x4c4/0x694
-[    0.326917]  serial_core_register_port from serial8250_register_8250_port+0x310/0x4bc
-[    0.327063]  serial8250_register_8250_port from of_platform_serial_probe+0x300/0x45c
-[    0.327242]  of_platform_serial_probe from platform_probe+0x60/0xb8
-[    0.327367]  platform_probe from really_probe+0xd4/0x3e4
-[    0.327471]  really_probe from __driver_probe_device+0x90/0x1ec
-[    0.327568]  __driver_probe_device from driver_probe_device+0x38/0xd0
-[    0.327674]  driver_probe_device from __driver_attach+0x100/0x1dc
-[    0.327793]  __driver_attach from bus_for_each_dev+0x84/0xd4
-[    0.327906]  bus_for_each_dev from bus_add_driver+0xec/0x1f0
-[    0.328015]  bus_add_driver from driver_register+0x84/0x11c
-[    0.328126]  driver_register from do_one_initcall+0x84/0x1c8
-[    0.328297]  do_one_initcall from kernel_init_freeable+0x19c/0x22c
-[    0.328419]  kernel_init_freeable from kernel_init+0x1c/0x138
-[    0.328534]  kernel_init from ret_from_fork+0x14/0x28
-[    0.328656] Exception stack(0xbf815fb0 to 0xbf815ff8)
-[    0.328755] 5fa0:                                     00000000 00000000 00000000 00000000
-[    0.328901] 5fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    0.329112] 5fe0: 00000000 00000000 00000000 00000000 00000013 00000000
-[    0.329413] Code: e3a03000 ee073f9a e2433612 e6ef2072 (e5c32000)
-[    0.329824] ---[ end trace 0000000000000000 ]---
-[    0.336692] Kernel panic - not syncing: Fatal exception
+	ret = aspeed_i2c_is_irq_error(irq_status);
+	if (ret) {
+		...
+		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
+		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
+			bus->cmd_err = ret;
+			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
+			goto out_complete;
+		}
+	}
 
-Andrew
+Some master interrupt states were not handled under this situation.
+The fake irq not equaled message would be filled into whole of demsg.
+It's most like below example.
 
+...
+aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was 0x00000020
+aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was 0x00000020
+aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was 0x00000020
+...
+
+I thought the bus->cmd_err has been filled error reason and it would be returned to upper layer.
+So, I didn't think the print should be existed.
+
+> If that's the case, wouldn't it make more sense to check for
+> bus->master_state != ASPEED_I2C_MASTER_INACTIVE) earlier?
+> 
+
+Did you suggest to add "bus->master_state != ASPEED_I2C_MASTER_INACTIVE" judgement before print the irq not equal print?
+
+> And, still, If that's the case, I believe you might need the Fixes tag. It's true that
+> you are not really failing, but you are not reporting a failure by mistake.
+> 
+> Thanks,
+> Andi
+> 
+> > Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
+> > ---
+> >  drivers/i2c/busses/i2c-aspeed.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-aspeed.c
+> > b/drivers/i2c/busses/i2c-aspeed.c index 5511fd46a65e..ce8c4846b7fa
+> > 100644
+> > --- a/drivers/i2c/busses/i2c-aspeed.c
+> > +++ b/drivers/i2c/busses/i2c-aspeed.c
+> > @@ -445,6 +445,7 @@ static u32 aspeed_i2c_master_irq(struct
+> aspeed_i2c_bus *bus, u32 irq_status)
+> >  			irq_status);
+> >  		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
+> >  		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
+> > +			irq_handled = irq_status;
+> >  			bus->cmd_err = ret;
+> >  			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
+> >  			goto out_complete;
+> > --
+> > 2.25.1
+> >
