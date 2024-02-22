@@ -1,48 +1,46 @@
-From: Jiri Slaby <jirislaby@kernel.org>
-Date: Thu, 22 Feb 2024 07:58:32 +0100
-Subject: [PATCH v1 02/14] serial: core: Add UPIO_UNSET constant for unset
- port type
-In-Reply-To: <20240221183442.4124354-3-andriy.shevchenko@linux.intel.com>
-References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
- <20240221183442.4124354-3-andriy.shevchenko@linux.intel.com>
-Message-ID: <5aeee02f-45a6-48e5-a6f4-e55b76d4b959@kernel.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 22 Feb 2024 09:13:00 +0100
+Subject: [PATCH] dt-bindings: arm: aspeed: add ASUS X4TF board
+In-Reply-To: <TYZPR04MB6596F2EBAF65F7F53809C2259D562@TYZPR04MB6596.apcprd04.prod.outlook.com>
+References: <20240222032504.1147489-1-Kelly_Hung@asus.com>
+ <20240222032504.1147489-2-Kelly_Hung@asus.com>
+ <2ab9b3924dbe07039e934d4580ab7dd397a31728.camel@codeconstruct.com.au>
+ <TYZPR04MB6596F2EBAF65F7F53809C2259D562@TYZPR04MB6596.apcprd04.prod.outlook.com>
+Message-ID: <40925c33-0b1d-4eb7-8f83-85efb6aeae4d@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 21. 02. 24, 19:31, Andy Shevchenko wrote:
-> In some APIs we would like to assign the special value to iotype
-> and compare against it in another places. Introduce UPIO_UNSET
-> for this purpose.
-> 
-> Note, we can't use 0, because it's a valid value for IO port access.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->   include/linux/serial_core.h | 1 +
->   1 file changed, 1 insertion(+)
-> 
-> diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-> index 2d2ec99eca93..2b0526ae1fac 100644
-> --- a/include/linux/serial_core.h
-> +++ b/include/linux/serial_core.h
-> @@ -470,6 +470,7 @@ struct uart_port {
->   
->   	unsigned char		iotype;			/* io access style */
->   
-> +#define UPIO_UNSET		((unsigned char)~0U)	/* UCHAR_MAX */
+On 22/02/2024 08:32, Kelly Hung(???) wrote:
+> External email : Ensure your email is secure before opening links and attachments.
 
-Perhaps making the var u8 and this U8_MAX then? It would make more sense 
-to me.
+Please send proper patchsets. Patchset includes all necessary patches:
+First binding then DTS.
 
->   #define UPIO_PORT		(SERIAL_IO_PORT)	/* 8b I/O port access */
->   #define UPIO_HUB6		(SERIAL_IO_HUB6)	/* Hub6 ISA card */
->   #define UPIO_MEM		(SERIAL_IO_MEM)		/* driver-specific */
+Version your patches and provide changelog under ---.
 
-thanks,
--- 
-js
-suse labs
+> 
+> Document the new compatibles used on ASUS X4TF.
+> 
+> Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
+
+...
+
+> 
+> Andrew
+> 
+> <p></p>
+> ===================================================================================================================================
+> This email and any attachments to it contain confidential information and are intended solely for the use of the individual to whom it is addressed. If you are not the 
+
+Sorry, we cannot work with confidential information.
+
+
+If you do not understand why, please also see:
+https://www.youtube.com/live/fMeH7wqOwXA?si=GY7igfbda6vnjXlJ&t=835
+
+Best regards,
+Krzysztof
 
