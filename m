@@ -1,83 +1,33 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Thu, 22 Feb 2024 09:57:54 +0100
-Subject: [PATCH] i2c: aspeed: Fix the dummy irq expected print
-In-Reply-To: <TYZPR06MB61911F076C8719C6A7D57B97E1562@TYZPR06MB6191.apcprd06.prod.outlook.com>
-References: <20240216120455.4138642-1-tommy_huang@aspeedtech.com>
- <nbkkaktcozbhly44hii3zwie7ivsra3qxzdibyzhyhooxrudvb@zik6skmkki2c>
- <TYZPR06MB61911F076C8719C6A7D57B97E1562@TYZPR06MB6191.apcprd06.prod.outlook.com>
-Message-ID: <v4nawwb4rwjiy2g7xv2sfyhc545mhk4izb3g22f7jupcevjuzb@nxmqgf2zjyqs>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Thu, 22 Feb 2024 15:21:45 +0200
+Subject: [PATCH v1 02/14] serial: core: Add UPIO_UNSET constant for unset
+ port type
+In-Reply-To: <5aeee02f-45a6-48e5-a6f4-e55b76d4b959@kernel.org>
+References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
+ <20240221183442.4124354-3-andriy.shevchenko@linux.intel.com>
+ <5aeee02f-45a6-48e5-a6f4-e55b76d4b959@kernel.org>
+Message-ID: <ZddKaaB7HO0CyldD@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Tommy,
+On Thu, Feb 22, 2024 at 07:58:32AM +0100, Jiri Slaby wrote:
+> On 21. 02. 24, 19:31, Andy Shevchenko wrote:
 
-On Thu, Feb 22, 2024 at 01:10:39AM +0000, Tommy Huang wrote:
-> > On Fri, Feb 16, 2024 at 08:04:55PM +0800, Tommy Huang wrote:
-> > > When the i2c error condition occurred and master state was not idle,
-> > > the master irq function will goto complete state without any other
-> > > interrupt handling. It would cause dummy irq expected print. Under
-> > > this condition, assign the irq_status into irq_handle.
-> > 
-> > I'm sorry, but I don't understand much from your log here.
-> > 
-> > Do you mean that irq_handled in aspeed_i2c_master_irq() is left with some
-> > states that is not supposed to have and then you end up printing here:
-> > 
-> > 	dev_err(bus->dev,
-> > 		"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
-> > 		irq_received, irq_handled);
-> > 
-> > Can you please explain better?
-> > 
+...
+
+> >   	unsigned char		iotype;			/* io access style */
+> > +#define UPIO_UNSET		((unsigned char)~0U)	/* UCHAR_MAX */
 > 
-> Yes. If the platform met any irq error condition and the i2c wasn't stated under ASPEED_I2C_MASTER_INACTIVE.
-> Then the code flow would goto the end of aspeed_i2c_master_irq.
-> 
-> 	ret = aspeed_i2c_is_irq_error(irq_status);
-> 	if (ret) {
-> 		...
-> 		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
-> 		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
-> 			bus->cmd_err = ret;
-> 			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
-> 			goto out_complete;
-> 		}
-> 	}
-> 
-> Some master interrupt states were not handled under this situation.
-> The fake irq not equaled message would be filled into whole of demsg.
-> It's most like below example.
-> 
-> ...
-> aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was 0x00000020
-> aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was 0x00000020
-> aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was 0x00000020
-> ...
-> 
-> I thought the bus->cmd_err has been filled error reason and it would be returned to upper layer.
-> So, I didn't think the print should be existed.
+> Perhaps making the var u8 and this U8_MAX then? It would make more sense to
+> me.
 
-thanks! Can you please write a commit that explains better the
-fix you are doing?
+WFM, should it be a separate change? Btw, how can I justify it?
 
-> > If that's the case, wouldn't it make more sense to check for
-> > bus->master_state != ASPEED_I2C_MASTER_INACTIVE) earlier?
-> 
-> Did you suggest to add "bus->master_state != ASPEED_I2C_MASTER_INACTIVE" judgement before print the irq not equal print?
+-- 
+With Best Regards,
+Andy Shevchenko
 
-no, not really, but nevermind, on a second look, what I'm
-suggesting doesn't make much sense.
 
-If you want, please reword the commit message as reply to this
-e-mail and I will take care of it.
-
-> > And, still, If that's the case, I believe you might need the Fixes tag. It's true that
-> > you are not really failing, but you are not reporting a failure by mistake.
-
-Please, also consider adding the Fixes tag if you see it
-necessary; I think you should, but it's borderline.
-
-Andi
