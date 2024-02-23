@@ -1,54 +1,42 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Fri, 23 Feb 2024 16:59:24 +0200
-Subject: [PATCH v1 02/14] serial: core: Add UPIO_UNSET constant for unset
- port type
-In-Reply-To: <fa46f220-a1c4-43f4-91e1-5929ff335be0@kernel.org>
-References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
- <20240221183442.4124354-3-andriy.shevchenko@linux.intel.com>
- <5aeee02f-45a6-48e5-a6f4-e55b76d4b959@kernel.org>
- <ZddKaaB7HO0CyldD@smile.fi.intel.com>
- <fa46f220-a1c4-43f4-91e1-5929ff335be0@kernel.org>
-Message-ID: <ZdiyzKMZPlkN462G@smile.fi.intel.com>
+Date: Fri, 23 Feb 2024 17:01:43 +0200
+Subject: [PATCH v1 06/14] serial: 8250_bcm7271: Switch to use
+ uart_read_port_properties()
+In-Reply-To: <202402231238.AWqLyIoM-lkp@intel.com>
+References: <20240221183442.4124354-7-andriy.shevchenko@linux.intel.com>
+ <202402231238.AWqLyIoM-lkp@intel.com>
+Message-ID: <ZdizV7sbAtCZ4AyO@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 23, 2024 at 06:42:15AM +0100, Jiri Slaby wrote:
-> On 22. 02. 24, 14:21, Andy Shevchenko wrote:
-> > On Thu, Feb 22, 2024 at 07:58:32AM +0100, Jiri Slaby wrote:
-> > > On 21. 02. 24, 19:31, Andy Shevchenko wrote:
-
-...
-
-> > > >    	unsigned char		iotype;			/* io access style */
-> > > > +#define UPIO_UNSET		((unsigned char)~0U)	/* UCHAR_MAX */
-> > > 
-> > > Perhaps making the var u8 and this U8_MAX then? It would make more sense to
-> > > me.
-> > 
-> > WFM, should it be a separate change?
+On Fri, Feb 23, 2024 at 12:14:38PM +0800, kernel test robot wrote:
+> Hi Andy,
 > 
-> Likely.
+> kernel test robot noticed the following build warnings:
 
-Then I need a commit message, because I'm unable to justify this change myself.
-
-> > Btw, how can I justify it?
+> If you fix the issue in a separate patch/commit (i.e. not just a new version of
+> the same patch/commit), kindly add following tags
+> | Reported-by: kernel test robot <lkp@intel.com>
+> | Closes: https://lore.kernel.org/oe-kbuild-all/202402231238.AWqLyIoM-lkp at intel.com/
 > 
-> Hmm, thinking about it, why is it not an enum?
+> All warnings (new ones prefixed by >>):
+> 
 
-Maybe, but it is a replica of UAPI definitions, do we want to see it as a enum?
-To me it will be a bit ugly looking.
+>    In file included from arch/hexagon/include/asm/io.h:328:
+>    include/asm-generic/io.h:547:31: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+>      547 |         val = __raw_readb(PCI_IOBASE + addr);
+>          |                           ~~~~~~~~~~ ^
 
-> But it could be also an u8 because you want it be exactly 8 bits as you want
-> to be sure values up to 255 fit.
+Okay, the above is well known issue with hexagon arch, not related to the series.
 
-Depends on what we assume UAPI does with those flags. It maybe even less than
-8 bits, or great than, currently 8 bits is enough...
+> >> drivers/tty/serial/8250/8250_bcm7271.c:938:22: warning: unused variable 'np' [-Wunused-variable]
+>      938 |         struct device_node *np = pdev->dev.of_node;
+>          |                             ^~
 
-TL;DR: I would rather take a patch from you and incorporate into the series
-than trying hard to invent a justification and proper type.
+This one is a good catch! Will be fixed in a new version.
 
 -- 
 With Best Regards,
