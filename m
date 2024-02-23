@@ -1,74 +1,125 @@
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-Date: Thu, 22 Feb 2024 11:54:46 -0800
-Subject: [PATCH v1 10/14] serial: 8250_of: Switch to use
- uart_read_port_properties()
-In-Reply-To: <e5fd9d8b-84eb-4ef9-82ab-ff4ecc41c0d5@broadcom.com>
-References: <20240221183442.4124354-1-andriy.shevchenko@linux.intel.com>
- <20240221183442.4124354-11-andriy.shevchenko@linux.intel.com>
- <0a828f2c50de712940fb9a881702ac1678a35b7c.camel@codeconstruct.com.au>
- <ZddKzHplwOX7naLv@smile.fi.intel.com> <Zdd5m2xIPlGI0_Qv@smile.fi.intel.com>
- <Zdd6lnXwvpPPUhRR@smile.fi.intel.com>
- <e5fd9d8b-84eb-4ef9-82ab-ff4ecc41c0d5@broadcom.com>
-Message-ID: <ad91eec0-39da-4b9c-8da7-f1e98bb4565b@broadcom.com>
+From: Tommy Huang <tommy_huang@aspeedtech.com>
+Date: Fri, 23 Feb 2024 03:49:17 +0000
+Subject: [PATCH] i2c: aspeed: Fix the dummy irq expected print
+In-Reply-To: <v4nawwb4rwjiy2g7xv2sfyhc545mhk4izb3g22f7jupcevjuzb@nxmqgf2zjyqs>
+References: <20240216120455.4138642-1-tommy_huang@aspeedtech.com>
+ <nbkkaktcozbhly44hii3zwie7ivsra3qxzdibyzhyhooxrudvb@zik6skmkki2c>
+ <TYZPR06MB61911F076C8719C6A7D57B97E1562@TYZPR06MB6191.apcprd06.prod.outlook.com>
+ <v4nawwb4rwjiy2g7xv2sfyhc545mhk4izb3g22f7jupcevjuzb@nxmqgf2zjyqs>
+Message-ID: <TYZPR06MB61912715EE2869DDB7C3763DE1552@TYZPR06MB6191.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2/22/24 09:39, Florian Fainelli wrote:
-> On 2/22/24 08:47, Andy Shevchenko wrote:
->> On Thu, Feb 22, 2024 at 06:43:08PM +0200, Andy Shevchenko wrote:
->>> On Thu, Feb 22, 2024 at 03:23:24PM +0200, Andy Shevchenko wrote:
->>>> On Thu, Feb 22, 2024 at 11:07:05AM +1030, Andrew Jeffery wrote:
->>>>> On Wed, 2024-02-21 at 20:31 +0200, Andy Shevchenko wrote:
->>>>>> Since we have now a common helper to read port properties
->>>>>> use it instead of sparse home grown solution.
->>>>>
->>>>> I did some brief testing of the series for the Aspeed machines under
->>>>> qemu, building them on top of v6.8-rc5:
->>>>>
->>>>> export ARCH=arm
->>>>> export CROSS_COMPILE=arm-linux-gnueabihf-
->>>>> make aspeed_g5_defconfig
->>>>> make -j$(nproc)
->>>>> qemu-system-arm -M rainier-bmc -nographic -no-reboot -kernel 
->>>>> arch/arm/boot/zImage -dtb 
->>>>> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb -initrd ...
->>>>>
->>>>> I got an oops during boot, which bisected to this change:
->>>>
->>>> Thank you for prompt testing! I will look at it.
->>>
->>> I found the issue, will be fixed in next version.
->>
->> Whoever is going to test this series, the
->>
->> -??????? port->iotype = use_defaults ? UPIO_MEM : port->iotype;
->> +??????? port->iotype = UPIO_MEM;
->>
->> should be applied to uart_read_port_properties() implementation.
->>
-> 
-> Thanks, on 8250_bcm7271.c with the above hunk applied, I did not spot 
-> any differences between the values returned by stty or a cat 
-> /sys/class/tty/ttyS0/* before or after, the console remained fully 
-> functional. I will see if I can run an additional test where I removed 
-> the DT's "clocks" property and confirm that the fall back to 
-> "clock-frequency" works.
-> 
-> Thanks Andy!
+Hi Andi,
 
-Also appears to work properly on a Raspberry Pi 4 with the console using 
-the bcm2835-aux driver, will provide Tested-by tags on the next 
-submission, thanks!
--- 
-Florian
+	Sure~
+	Below is my re-word commit and fixes tag.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 4221 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240222/f8cc7634/attachment.p7s>
+	When the i2c error condition occurred and master state was not
+	idle, the master irq function will goto complete state without any
+    other interrupt handling. It would cause dummy irq expected print.
+    Under this condition, assign the irq_status into irq_handle.
+
+	For example, when the abnormal start / stop occurred (bit 5) with normal stop
+	status (bit 4) at same time. Then the normal stop status would not be handled 
+	and it would cause irq expected print in the aspeed_i2c_bus_irq.
+
+	...
+	aspeed-i2c-bus xxxxxxxx. i2c-bus: irq handled != irq. Expected 0x00000030, but was 0x00000020
+	...
+ 
+	Fixes: 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
+	Cc: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+
+	Tommy
+
+> -----Original Message-----
+> From: Andi Shyti <andi.shyti@kernel.org>
+> Sent: Thursday, February 22, 2024 4:58 PM
+> To: Tommy Huang <tommy_huang@aspeedtech.com>
+> Cc: brendan.higgins at linux.dev; p.zabel at pengutronix.de;
+> linux-i2c at vger.kernel.org; openbmc at lists.ozlabs.org;
+> benh at kernel.crashing.org; joel at jms.id.au; andrew at aj.id.au;
+> linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org;
+> linux-kernel at vger.kernel.org; BMC-SW <BMC-SW@aspeedtech.com>
+> Subject: Re: [PATCH] i2c: aspeed: Fix the dummy irq expected print
+> 
+> Hi Tommy,
+> 
+> On Thu, Feb 22, 2024 at 01:10:39AM +0000, Tommy Huang wrote:
+> > > On Fri, Feb 16, 2024 at 08:04:55PM +0800, Tommy Huang wrote:
+> > > > When the i2c error condition occurred and master state was not
+> > > > idle, the master irq function will goto complete state without any
+> > > > other interrupt handling. It would cause dummy irq expected print.
+> > > > Under this condition, assign the irq_status into irq_handle.
+> > >
+> > > I'm sorry, but I don't understand much from your log here.
+> > >
+> > > Do you mean that irq_handled in aspeed_i2c_master_irq() is left with
+> > > some states that is not supposed to have and then you end up printing
+> here:
+> > >
+> > > 	dev_err(bus->dev,
+> > > 		"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
+> > > 		irq_received, irq_handled);
+> > >
+> > > Can you please explain better?
+> > >
+> >
+> > Yes. If the platform met any irq error condition and the i2c wasn't stated
+> under ASPEED_I2C_MASTER_INACTIVE.
+> > Then the code flow would goto the end of aspeed_i2c_master_irq.
+> >
+> > 	ret = aspeed_i2c_is_irq_error(irq_status);
+> > 	if (ret) {
+> > 		...
+> > 		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
+> > 		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
+> > 			bus->cmd_err = ret;
+> > 			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
+> > 			goto out_complete;
+> > 		}
+> > 	}
+> >
+> > Some master interrupt states were not handled under this situation.
+> > The fake irq not equaled message would be filled into whole of demsg.
+> > It's most like below example.
+> >
+> > ...
+> > aspeed-i2c-bus 1e78a780. i2c-bus: irq handled != irq. expected
+> > 0x00000030, but was 0x00000020 aspeed-i2c-bus 1e78a780. i2c-bus: irq
+> > handled != irq. expected 0x00000030, but was 0x00000020 aspeed-i2c-bus
+> > 1e78a780. i2c-bus: irq handled != irq. expected 0x00000030, but was
+> 0x00000020 ...
+> >
+> > I thought the bus->cmd_err has been filled error reason and it would be
+> returned to upper layer.
+> > So, I didn't think the print should be existed.
+> 
+> thanks! Can you please write a commit that explains better the fix you are
+> doing?
+> 
+> > > If that's the case, wouldn't it make more sense to check for
+> > > bus->master_state != ASPEED_I2C_MASTER_INACTIVE) earlier?
+> >
+> > Did you suggest to add "bus->master_state !=
+> ASPEED_I2C_MASTER_INACTIVE" judgement before print the irq not equal
+> print?
+> 
+> no, not really, but nevermind, on a second look, what I'm suggesting doesn't
+> make much sense.
+> 
+> If you want, please reword the commit message as reply to this e-mail and I
+> will take care of it.
+> 
+> > > And, still, If that's the case, I believe you might need the Fixes
+> > > tag. It's true that you are not really failing, but you are not reporting a
+> failure by mistake.
+> 
+> Please, also consider adding the Fixes tag if you see it necessary; I think you
+> should, but it's borderline.
+> 
+> Andi
