@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 26 Feb 2024 16:19:24 +0200
-Subject: [PATCH v2 08/14] serial: 8250_ingenic: Switch to use uart_read_port_properties()
+Date: Mon, 26 Feb 2024 16:19:28 +0200
+Subject: [PATCH v2 12/14] serial: 8250_pxa: Switch to use uart_read_port_properties()
 In-Reply-To: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
 References: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240226142514.1485246-9-andriy.shevchenko@linux.intel.com>
+Message-ID: <20240226142514.1485246-13-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,61 +15,56 @@ use it instead of sparse home grown solution.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/tty/serial/8250/8250_ingenic.c | 20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
+ drivers/tty/serial/8250/8250_pxa.c | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_ingenic.c b/drivers/tty/serial/8250/8250_ingenic.c
-index a12f737924c0..7603129f1c07 100644
---- a/drivers/tty/serial/8250/8250_ingenic.c
-+++ b/drivers/tty/serial/8250/8250_ingenic.c
-@@ -234,7 +234,7 @@ static int ingenic_uart_probe(struct platform_device *pdev)
- 	struct ingenic_uart_data *data;
- 	const struct ingenic_uart_config *cdata;
- 	struct resource *regs;
--	int irq, err, line;
-+	int err;
- 
- 	cdata = of_device_get_match_data(&pdev->dev);
- 	if (!cdata) {
-@@ -242,10 +242,6 @@ static int ingenic_uart_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
+diff --git a/drivers/tty/serial/8250/8250_pxa.c b/drivers/tty/serial/8250/8250_pxa.c
+index 77686da42ce8..0c9140b93414 100644
+--- a/drivers/tty/serial/8250/8250_pxa.c
++++ b/drivers/tty/serial/8250/8250_pxa.c
+@@ -92,11 +92,7 @@ static int serial_pxa_probe(struct platform_device *pdev)
+ 	struct uart_8250_port uart = {};
+ 	struct pxa8250_data *data;
+ 	struct resource *mmres;
+-	int irq, ret;
+-
 -	irq = platform_get_irq(pdev, 0);
 -	if (irq < 0)
 -		return irq;
++	int ret;
+ 
+ 	mmres = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!mmres)
+@@ -114,21 +110,21 @@ static int serial_pxa_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = of_alias_get_id(pdev->dev.of_node, "serial");
+-	if (ret >= 0)
+-		uart.port.line = ret;
 -
- 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!regs) {
- 		dev_err(&pdev->dev, "no registers defined\n");
-@@ -259,21 +255,19 @@ static int ingenic_uart_probe(struct platform_device *pdev)
- 	spin_lock_init(&uart.port.lock);
- 	uart.port.type = PORT_16550A;
- 	uart.port.flags = UPF_SKIP_TEST | UPF_IOREMAP | UPF_FIXED_TYPE;
--	uart.port.iotype = UPIO_MEM;
- 	uart.port.mapbase = regs->start;
+ 	uart.port.type = PORT_XSCALE;
+-	uart.port.iotype = UPIO_MEM32;
+ 	uart.port.mapbase = mmres->start;
 -	uart.port.regshift = 2;
- 	uart.port.serial_out = ingenic_uart_serial_out;
- 	uart.port.serial_in = ingenic_uart_serial_in;
 -	uart.port.irq = irq;
+-	uart.port.fifosize = 64;
+ 	uart.port.flags = UPF_IOREMAP | UPF_SKIP_TEST | UPF_FIXED_TYPE;
  	uart.port.dev = &pdev->dev;
--	uart.port.fifosize = cdata->fifosize;
- 	uart.tx_loadsz = cdata->tx_loadsz;
- 	uart.capabilities = UART_CAP_FIFO | UART_CAP_RTOIE;
- 
--	/* Check for a fixed line number */
--	line = of_alias_get_id(pdev->dev.of_node, "serial");
--	if (line >= 0)
--		uart.port.line = line;
-+	err = uart_read_port_properties(&uart.port, true);
-+	if (err)
-+		return err;
+ 	uart.port.uartclk = clk_get_rate(data->clk);
+ 	uart.port.pm = serial_pxa_pm;
+ 	uart.port.private_data = data;
 +
++	ret = uart_read_port_properties(&uart.port, true);
++	if (ret)
++		return ret;
++
++	uart.port.iotype = UPIO_MEM32;
 +	uart.port.regshift = 2;
-+	uart.port.fifosize = cdata->fifosize;
++	uart.port.fifosize = 64;
+ 	uart.dl_write = serial_pxa_dl_write;
  
- 	uart.port.membase = devm_ioremap(&pdev->dev, regs->start,
- 					 resource_size(regs));
+ 	ret = serial8250_register_8250_port(&uart);
 -- 
 2.43.0.rc1.1.gbec44491f096
 
