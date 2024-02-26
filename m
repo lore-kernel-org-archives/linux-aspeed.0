@@ -1,68 +1,44 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 26 Feb 2024 08:08:42 +0100
-Subject: [PATCH v3] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to DT
- schema
-In-Reply-To: <20240226051645.414935-1-andrew@codeconstruct.com.au>
-References: <20240226051645.414935-1-andrew@codeconstruct.com.au>
-Message-ID: <458becdb-fb1e-4808-87b6-3037ec945647@linaro.org>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 26 Feb 2024 08:10:24 +0100
+Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD Onyx
+ Platform
+In-Reply-To: <572d53516dee6db5af7089090056185abb4e78c7.camel@codeconstruct.com.au>
+References: <20240110033543.799919-1-supreeth.venkatesh@amd.com>
+ <572d53516dee6db5af7089090056185abb4e78c7.camel@codeconstruct.com.au>
+Message-ID: <74cd8a61-3d9f-437e-8e3a-22139e23bda5@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 26/02/2024 06:16, Andrew Jeffery wrote:
-> Squash warnings such as:
-> 
-> ```
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/apb at 1e600000/gpio at 1e780000: failed to match any schema with compatible: ['aspeed,ast2400-gpio']
-> ```
-> 
-> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-
-...
-
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +    description: The clock to use for debounce timings
-> +
-> +  gpio-controller: true
-> +  gpio-line-names: true
-
-min/maxItems
-
-> +  gpio-ranges: true
-> +
-> +  "#gpio-cells":
-> +    const: 2
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +  interrupt-controller: true
-> +
-> +  "#interrupt-cells":
-> +    const: 2
-> +
-> +  ngpios: true
-
-Where are the constraints I asked? minimum, maximum.
-
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupts
-> +  - interrupt-controller
-> +  - "#interrupt-cells"
-> +  - gpio-controller
-> +  - "#gpio-cells"
-> +
+Dear Supreeth,
 
 
-Best regards,
-Krzysztof
+Thank you for your patch. Should you resent three more nits.
 
+Am 26.02.24 um 07:55 schrieb Andrew Jeffery:
+> On Tue, 2024-01-09 at 21:35 -0600, Supreeth Venkatesh wrote:
+>> This patch adds initial device tree and makefile updates for
+>> AMD Onyx platform.
+>>
+>> AMD Onyx platform is an AMD customer reference board with an Aspeed
+>> ast2600 BMC manufactured by AMD.
+>> It describes I2c devices, Fans, Kcs devices, Uarts, Mac, LEDs, etc.
+>> present on AMD Onyx platform.
+
+I?d capitalize I2Cs, UARTs, and MAC, but would write fans.
+
+Also, could you please make the summary a statement by adding a verb in 
+imperative mood. Maybe:
+
+Add initial device tree for AMD Onyx Platform
+
+I?d also add spaces after the colons in the commit message summary.
+
+[?]
+
+
+Kind regards,
+
+Paul
