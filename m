@@ -1,180 +1,124 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 26 Feb 2024 15:46:45 +1030
-Subject: [PATCH v3] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to DT schema
-Message-ID: <20240226051645.414935-1-andrew@codeconstruct.com.au>
+Date: Mon, 26 Feb 2024 17:25:03 +1030
+Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD Onyx
+ Platform
+In-Reply-To: <20240110033543.799919-1-supreeth.venkatesh@amd.com>
+References: <20240110033543.799919-1-supreeth.venkatesh@amd.com>
+Message-ID: <572d53516dee6db5af7089090056185abb4e78c7.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Squash warnings such as:
+On Tue, 2024-01-09 at 21:35 -0600, Supreeth Venkatesh wrote:
+> This patch adds initial device tree and makefile updates for
+> AMD Onyx platform.
+> 
+> AMD Onyx platform is an AMD customer reference board with an Aspeed
+> ast2600 BMC manufactured by AMD.
+> It describes I2c devices, Fans, Kcs devices, Uarts, Mac, LEDs, etc.
+> present on AMD Onyx platform.
+> 
+> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+> ---
+>  arch/arm/boot/dts/aspeed/Makefile             |  1 +
+>  .../boot/dts/aspeed/aspeed-bmc-amd-onyx.dts   | 98 +++++++++++++++++++
+>  2 files changed, 99 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index fb9cc95f1b60..2b27d377aae2 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -5,6 +5,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-ast2600-evb.dtb \
+>  	aspeed-bmc-amd-daytonax.dtb \
+>  	aspeed-bmc-amd-ethanolx.dtb \
+> +	aspeed-bmc-amd-onyx.dtb \
+>  	aspeed-bmc-ampere-mtjade.dtb \
+>  	aspeed-bmc-ampere-mtmitchell.dtb \
+>  	aspeed-bmc-arm-stardragon4800-rep2.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+> new file mode 100644
+> index 000000000000..a7056cd29553
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+> @@ -0,0 +1,98 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +// Copyright (c) 2021 - 2024 AMD Inc.
+> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +       model = "AMD Onyx BMC";
+> +       compatible = "amd,onyx-bmc", "aspeed,ast2600";
+> +
+> +       aliases {
+> +               serial0 = &uart1;
+> +               serial4 = &uart5;
+> +      };
+> +
+> +       chosen {
+> +               stdout-path = &uart5;
+> +               bootargs = "console=ttyS4,115200 earlyprintk vmalloc=512MB";
 
-```
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/apb at 1e600000/gpio at 1e780000: failed to match any schema with compatible: ['aspeed,ast2400-gpio']
-```
+Why `vmalloc=512MB`? Can you add a comment explaining the need for
+that?
 
-Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
----
-v3: Base on v6.8-rc6, fix yamllint warning
+That said, setting bootargs in the devicetree is generally discouraged.
 
-    Rob's bot picked the missing `#interrupt-cells` in the example on v2[1]. The
-    patch was based on v6.8-rc1, and going back over my shell history I missed
-    the following output from `make dt_binding_check`:
+> +       };
+> +
+> +       memory at 80000000 {
+> +               device_type = "memory";
+> +               reg = <0x80000000 0x80000000>;
+> +       };
+> +
+> +};
+> +
+> +&mdio0 {
+> +       status = "okay";
+> +
+> +       ethphy0: ethernet-phy at 0 {
+> +               compatible = "ethernet-phy-ieee802.3-c22";
+> +               reg = <0>;
+> +       };
+> +};
+> +
+> +&mac3 {
+> +       status = "okay";
+> +       phy-mode = "rgmii";
+> +       phy-handle = <&ethphy0>;
+> +
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pinctrl_rgmii4_default>;
+> +};
+> +
+> +
+> +
+> +&fmc {
+> +       status = "okay";
+> +       flash at 0 {
+> +               compatible = "jedec,spi-nor";
+> +               status = "okay";
+> +               #include "openbmc-flash-layout-128.dtsi"
+> +       };
+> +};
+> +
+> +//Host Console
+> +&uart1 {
+> +       status = "okay";
+> +};
 
-    ```
-    ...
-      LINT    Documentation/devicetree/bindings
-      usage: yamllint [-h] [-] [-c CONFIG_FILE | -d CONFIG_DATA] [--list-files] [-f {parsable,standard,colored,github,auto}] [-s] [--no-warnings] [-v] [FILE_OR_DIR ...]
-      yamllint: error: one of the arguments FILE_OR_DIR - is required   
-    ...
-    ```
+How are you managing the host console? Enabling UART1 for that on the
+BMC piques my interest :)
 
-    I've rebased on v6.8-rc6 and no-longer see the issue with the invocation
-    of `yamllint`.
+Apologies for the delay in reviewing.
 
-[1]: https://lore.kernel.org/all/170892197611.2260479.15343562563553959436.robh at kernel.org/
-
-v2: https://lore.kernel.org/all/20240226031951.284847-1-andrew at codeconstruct.com.au/
-
-    Address feedback from Krzysztof:
-    https://lore.kernel.org/all/0d1dd262-b6dd-4d71-9239-8b0aec8cceff at linaro.org/
-
-v1: https://lore.kernel.org/all/20240220052918.742793-1-andrew at codeconstruct.com.au/
-
- .../bindings/gpio/aspeed,ast2400-gpio.yaml    | 74 +++++++++++++++++++
- .../devicetree/bindings/gpio/gpio-aspeed.txt  | 39 ----------
- 2 files changed, 74 insertions(+), 39 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
- delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-
-diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-new file mode 100644
-index 000000000000..31fa8959c0e0
---- /dev/null
-+++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-@@ -0,0 +1,74 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed GPIO controller
-+
-+maintainers:
-+  - Andrew Jeffery <andrew@codeconstruct.com.au>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2400-gpio
-+      - aspeed,ast2500-gpio
-+      - aspeed,ast2600-gpio
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+    description: The clock to use for debounce timings
-+
-+  gpio-controller: true
-+  gpio-line-names: true
-+  gpio-ranges: true
-+
-+  "#gpio-cells":
-+    const: 2
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+  "#interrupt-cells":
-+    const: 2
-+
-+  ngpios: true
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - interrupt-controller
-+  - "#interrupt-cells"
-+  - gpio-controller
-+  - "#gpio-cells"
-+
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: aspeed,ast2600-gpio
-+    then:
-+      required:
-+        - ngpios
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    gpio at 1e780000 {
-+        compatible = "aspeed,ast2400-gpio";
-+        reg = <0x1e780000 0x1000>;
-+        interrupts = <20>;
-+        interrupt-controller;
-+        #interrupt-cells = <2>;
-+        gpio-controller;
-+        #gpio-cells = <2>;
-+    };
-diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-deleted file mode 100644
-index b2033fc3a71a..000000000000
---- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
-+++ /dev/null
-@@ -1,39 +0,0 @@
--Aspeed GPIO controller Device Tree Bindings
---------------------------------------------
--
--Required properties:
--- compatible		: Either "aspeed,ast2400-gpio", "aspeed,ast2500-gpio",
--					or "aspeed,ast2600-gpio".
--
--- #gpio-cells 		: Should be two
--			  - First cell is the GPIO line number
--			  - Second cell is used to specify optional
--			    parameters (unused)
--
--- reg			: Address and length of the register set for the device
--- gpio-controller	: Marks the device node as a GPIO controller.
--- interrupts		: Interrupt specifier (see interrupt bindings for
--			  details)
--- interrupt-controller	: Mark the GPIO controller as an interrupt-controller
--
--Optional properties:
--
--- clocks		: A phandle to the clock to use for debounce timings
--- ngpios		: Number of GPIOs controlled by this controller. Should	be set
--				  when there are multiple GPIO controllers on a SoC (ast2600).
--
--The gpio and interrupt properties are further described in their respective
--bindings documentation:
--
--- Documentation/devicetree/bindings/gpio/gpio.txt
--- Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
--
--  Example:
--	gpio at 1e780000 {
--		#gpio-cells = <2>;
--		compatible = "aspeed,ast2400-gpio";
--		gpio-controller;
--		interrupts = <20>;
--		reg = <0x1e780000 0x1000>;
--		interrupt-controller;
--	};
-
-base-commit: d206a76d7d2726f3b096037f2079ce0bd3ba329b
--- 
-2.39.2
+Andrew
 
