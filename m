@@ -1,33 +1,39 @@
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-Date: Mon, 26 Feb 2024 10:24:30 -0800
-Subject: [PATCH v2 10/14] serial: 8250_of: Switch to use
- uart_read_port_properties()
-In-Reply-To: <20240226142514.1485246-11-andriy.shevchenko@linux.intel.com>
-References: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
- <20240226142514.1485246-11-andriy.shevchenko@linux.intel.com>
-Message-ID: <caa79772-6a54-48fd-ada2-5e7647b597ba@broadcom.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Tue, 27 Feb 2024 08:58:52 +1030
+Subject: [PATCH] ARM: dts: aspeed: ahe50dc: Update lm25066 regulator name
+In-Reply-To: <170896502304.859066.13236138723073669130.robh@kernel.org>
+References: <20240226091754.16027-2-zev@bewilderbeest.net>
+	 <170896502304.859066.13236138723073669130.robh@kernel.org>
+Message-ID: <afee602b57f95a2d3162a601832d3a087ea5f0d6.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2/26/24 06:19, Andy Shevchenko wrote:
-> Since we have now a common helper to read port properties
-> use it instead of sparse home grown solution.
+On Mon, 2024-02-26 at 10:54 -0600, Rob Herring wrote:
+> On Mon, 26 Feb 2024 01:17:53 -0800, Zev Weiss wrote:
+> > A recent change to the lm25066 driver changed the name of its
+> > regulator from vout0 to vout; device-tree users of lm25066's regulator
+> > functionality (of which ahe50dc is the only one) thus require a
+> > corresponding update.
+> > 
+> > Signed-off-by: Zev Weiss <zev@bewilderbeest.net>
+> > Cc: Conor Dooley <conor+dt@kernel.org>
+> > Cc: Guenter Roeck <linux@roeck-us.net>
+> > ---
+> >  arch/arm/boot/dts/aspeed/aspeed-bmc-delta-ahe50dc.dts | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
 > 
-> Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> 
+> My bot found new DT warnings on the .dts files added or changed in this
+> series.
+> 
 
-Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
-Tested-by: Florian Fainelli <florian.fainelli@broadcom.com>
--- 
-Florian
+For what it's worth I've put together a set of patches that resolve
+almost all the warnings in the Aspeed DTSIs. My current approach is to
+progressively send them out - I'm starting slow so where possible I can
+avoid making the same mistake multiple times.
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 4221 bytes
-Desc: S/MIME Cryptographic Signature
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240226/c75ecc58/attachment-0001.p7s>
+Andrew
