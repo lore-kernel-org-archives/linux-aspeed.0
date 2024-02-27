@@ -1,28 +1,33 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 27 Feb 2024 11:01:35 +0100
-Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
-In-Reply-To: <20240227092922.1734998-1-Kelly_Hung@asus.com>
-References: <20240227092922.1734998-1-Kelly_Hung@asus.com>
-Message-ID: <60d048df-9a54-4239-8a8b-a8eb9a59dde9@linaro.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 27 Feb 2024 16:55:17 +0200
+Subject: [PATCH v2 10/14] serial: 8250_of: Switch to use
+ uart_read_port_properties()
+In-Reply-To: <caa79772-6a54-48fd-ada2-5e7647b597ba@broadcom.com>
+References: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
+ <20240226142514.1485246-11-andriy.shevchenko@linux.intel.com>
+ <caa79772-6a54-48fd-ada2-5e7647b597ba@broadcom.com>
+Message-ID: <Zd331VOwxzU5YUCO@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 27/02/2024 10:29, Kelly Hung wrote:
-> Document the new compatibles used on ASUS X4TF.
+On Mon, Feb 26, 2024 at 10:24:30AM -0800, Florian Fainelli wrote:
+> On 2/26/24 06:19, Andy Shevchenko wrote:
+> > Since we have now a common helper to read port properties
+> > use it instead of sparse home grown solution.
+> > 
+> > Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > 
-> Changelog
-> Changes in v3
-> - correct string to asus,x4tf-bmc
+> Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
+> Tested-by: Florian Fainelli <florian.fainelli@broadcom.com>
 
-Changelog goes after ---.
+Thank you for testing!
 
-Again: what happened with the tags? Why aren't you responding to
-comments you receive?
+-- 
+With Best Regards,
+Andy Shevchenko
 
-
-Best regards,
-Krzysztof
 
