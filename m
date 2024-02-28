@@ -1,327 +1,276 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 27 Feb 2024 16:16:18 +0100
-Subject: [PATCH v6 3/5] mmc: dw_mmc: add support for hi3798mv200
-In-Reply-To: <20240221-b4-mmc-hi3798mv200-v6-3-bc41bf6a9769@outlook.com>
-References: <20240221-b4-mmc-hi3798mv200-v6-0-bc41bf6a9769@outlook.com> <20240221-b4-mmc-hi3798mv200-v6-3-bc41bf6a9769@outlook.com>
-Message-ID: <CAPDyKFosUX7giCYbFJpKRjSDHKEyO6FATna5VnDg7tHEzagWBg@mail.gmail.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 28 Feb 2024 11:00:43 +1030
+Subject: [PATCH v6] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to DT schema
+Message-ID: <20240228003043.1167394-1-andrew@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Feb 2024 at 13:45, Yang Xiwen via B4 Relay
-<devnull+forbidden405.outlook.com@kernel.org> wrote:
->
-> From: Yang Xiwen <forbidden405@outlook.com>
->
-> Add support for Hi3798MV200 specific extension.
->
-> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
-> ---
->  drivers/mmc/host/Kconfig              |   9 ++
->  drivers/mmc/host/Makefile             |   1 +
->  drivers/mmc/host/dw_mmc-hi3798mv200.c | 239 ++++++++++++++++++++++++++++++++++
->  3 files changed, 249 insertions(+)
->
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index 81f2c4e05287..aebc587f77a7 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -798,6 +798,15 @@ config MMC_DW_HI3798CV200
->           Synopsys DesignWare Memory Card Interface driver. Select this option
->           for platforms based on HiSilicon Hi3798CV200 SoC.
->
-> +config MMC_DW_HI3798MV200
-> +       tristate "Hi3798MV200 specific extensions for Synopsys DW Memory Card Interface"
-> +       depends on MMC_DW
-> +       select MMC_DW_PLTFM
-> +       help
-> +         This selects support for HiSilicon Hi3798MV200 SoC specific extensions to the
-> +         Synopsys DesignWare Memory Card Interface driver. Select this option
-> +         for platforms based on HiSilicon Hi3798MV200 SoC.
-> +
->  config MMC_DW_K3
->         tristate "K3 specific extensions for Synopsys DW Memory Card Interface"
->         depends on MMC_DW
-> diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-> index d0be4465f3ec..f53f86d200ac 100644
-> --- a/drivers/mmc/host/Makefile
-> +++ b/drivers/mmc/host/Makefile
-> @@ -51,6 +51,7 @@ obj-$(CONFIG_MMC_DW_PLTFM)    += dw_mmc-pltfm.o
->  obj-$(CONFIG_MMC_DW_BLUEFIELD) += dw_mmc-bluefield.o
->  obj-$(CONFIG_MMC_DW_EXYNOS)    += dw_mmc-exynos.o
->  obj-$(CONFIG_MMC_DW_HI3798CV200) += dw_mmc-hi3798cv200.o
-> +obj-$(CONFIG_MMC_DW_HI3798MV200) += dw_mmc-hi3798mv200.o
->  obj-$(CONFIG_MMC_DW_K3)                += dw_mmc-k3.o
->  obj-$(CONFIG_MMC_DW_PCI)       += dw_mmc-pci.o
->  obj-$(CONFIG_MMC_DW_ROCKCHIP)  += dw_mmc-rockchip.o
-> diff --git a/drivers/mmc/host/dw_mmc-hi3798mv200.c b/drivers/mmc/host/dw_mmc-hi3798mv200.c
-> new file mode 100644
-> index 000000000000..73aaa21040ea
-> --- /dev/null
-> +++ b/drivers/mmc/host/dw_mmc-hi3798mv200.c
-> @@ -0,0 +1,239 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Modified from dw_mmc-hi3798cv200.c
-> + *
-> + * Copyright (c) 2024 Yang Xiwen <forbidden405@outlook.com>
-> + * Copyright (c) 2018 HiSilicon Technologies Co., Ltd.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/mfd/syscon.h>
-> +#include <linux/mmc/host.h>
-> +#include <linux/module.h>
-> +#include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +
-> +#include "dw_mmc.h"
-> +#include "dw_mmc-pltfm.h"
-> +
-> +#define SDMMC_TUNING_CTRL      0x118
-> +#define SDMMC_TUNING_FIND_EDGE BIT(5)
-> +
-> +#define ALL_INT_CLR            0x1ffff
-> +
-> +/* DLL ctrl reg */
-> +#define SAP_DLL_CTRL_DLLMODE   BIT(16)
-> +
-> +struct dw_mci_hi3798mv200_priv {
-> +       struct clk *sample_clk;
-> +       struct clk *drive_clk;
-> +       struct regmap *crg_reg;
-> +       u32 sap_dll_offset;
-> +       struct mmc_clk_phase_map phase_map;
-> +};
-> +
-> +static void dw_mci_hi3798mv200_set_ios(struct dw_mci *host, struct mmc_ios *ios)
-> +{
-> +       struct dw_mci_hi3798mv200_priv *priv = host->priv;
-> +       struct mmc_clk_phase phase = priv->phase_map.phase[ios->timing];
-> +       u32 val;
-> +
-> +       val = mci_readl(host, ENABLE_SHIFT);
-> +       if (ios->timing == MMC_TIMING_MMC_DDR52
-> +           || ios->timing == MMC_TIMING_UHS_DDR50)
-> +               val |= SDMMC_ENABLE_PHASE;
-> +       else
-> +               val &= ~SDMMC_ENABLE_PHASE;
-> +       mci_writel(host, ENABLE_SHIFT, val);
-> +
-> +       val = mci_readl(host, DDR_REG);
-> +       if (ios->timing == MMC_TIMING_MMC_HS400)
-> +               val |= SDMMC_DDR_HS400;
-> +       else
-> +               val &= ~SDMMC_DDR_HS400;
-> +       mci_writel(host, DDR_REG, val);
-> +
-> +       if (clk_set_rate(host->ciu_clk, ios->clock))
-> +               dev_warn(host->dev, "Failed to set rate to %u\n", ios->clock);
-> +       else
-> +               // CLK_MUX_ROUND_NEAREST is enabled for this clock
-> +               // The actual clock rate is not what we setted, but a rounded value
-> +               // so we should get the rate once again
+Squash warnings such as:
 
-Please use proper comments sections (/* .... */) and not "//".
+```
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/apb at 1e600000/gpio at 1e780000: failed to match any schema with compatible: ['aspeed,ast2400-gpio']
+```
 
-> +               host->bus_hz = clk_get_rate(host->ciu_clk);
-> +
-> +       if (phase.valid) {
-> +               clk_set_phase(priv->drive_clk, phase.out_deg);
-> +               clk_set_phase(priv->sample_clk, phase.in_deg);
-> +       } else {
-> +               dev_warn(host->dev,
-> +                        "The phase entry for timing mode %d is missing in device tree.\n",
-> +                        ios->timing);
-> +       }
-> +}
-> +
-> +static inline int dw_mci_hi3798mv200_enable_tuning(struct dw_mci_slot *slot)
-> +{
-> +       struct dw_mci_hi3798mv200_priv *priv = slot->host->priv;
-> +
-> +       return regmap_clear_bits(priv->crg_reg, priv->sap_dll_offset, SAP_DLL_CTRL_DLLMODE);
-> +}
-> +
-> +static inline int dw_mci_hi3798mv200_disable_tuning(struct dw_mci_slot *slot)
-> +{
-> +       struct dw_mci_hi3798mv200_priv *priv = slot->host->priv;
-> +
-> +       return regmap_set_bits(priv->crg_reg, priv->sap_dll_offset, SAP_DLL_CTRL_DLLMODE);
-> +}
-> +
-> +static int dw_mci_hi3798mv200_execute_tuning_mix_mode(struct dw_mci_slot *slot,
-> +                                            u32 opcode)
-> +{
-> +       static const int degrees[] = { 0, 45, 90, 135, 180, 225, 270, 315 };
-> +       struct dw_mci *host = slot->host;
-> +       struct dw_mci_hi3798mv200_priv *priv = host->priv;
-> +       int raise_point = -1, fall_point = -1;
-> +       int err, prev_err = -1;
-> +       int found = 0;
-> +       int regval;
-> +       int i;
-> +       int ret;
-> +
-> +       // enable tuning
+Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+---
+v6: Address more constraint feedback from Krzysztof:
+    https://lore.kernel.org/all/f69ef2ad-8ace-40c8-b923-4dde20eda2ec at linaro.org/
 
-Looks like a redundant comment, please drop it.
+v5: https://lore.kernel.org/all/20240227052353.1060306-1-andrew at codeconstruct.com.au/
 
-> +       ret = dw_mci_hi3798mv200_enable_tuning(slot);
-> +       if (ret < 0)
-> +               return ret;
+    Resolve macro definition clashes from aspeed clock headers in examples
+    identified by Rob's bot:
 
-A newline here would improve the readability I think.
+    https://lore.kernel.org/all/170900020204.2360855.790404478830111761.robh at kernel.org/
 
-> +       for (i = 0; i < ARRAY_SIZE(degrees); i++) {
-> +               clk_set_phase(priv->sample_clk, degrees[i]);
-> +               mci_writel(host, RINTSTS, ALL_INT_CLR);
-> +
-> +               err = mmc_send_tuning(slot->mmc, opcode, NULL);
-> +               if (!err) {
-> +                       regval = mci_readl(host, TUNING_CTRL);
-> +                       if (regval & SDMMC_TUNING_FIND_EDGE)
-> +                               err = 1;
-> +                       else
-> +                               found = 1;
-> +               };
-> +
-> +               if (i > 0) {
-> +                       if (err && !prev_err)
-> +                               fall_point = i - 1;
-> +                       if (!err && prev_err)
-> +                               raise_point = i;
-> +               }
-> +
-> +               if (raise_point != -1 && fall_point != -1)
-> +                       goto tuning_out;
-> +
-> +               prev_err = err;
-> +               err = 0;
-> +       }
-> +
-> +tuning_out:
-> +       ret = dw_mci_hi3798mv200_disable_tuning(slot);
-> +       if (ret < 0)
-> +               return ret;
-> +       if (found) {
-> +               if (raise_point == -1)
-> +                       raise_point = 0;
-> +               if (fall_point == -1)
-> +                       fall_point = ARRAY_SIZE(degrees) - 1;
-> +               if (fall_point < raise_point) {
-> +                       if ((raise_point + fall_point) >
-> +                           (ARRAY_SIZE(degrees) - 1))
-> +                               i = fall_point / 2;
-> +                       else
-> +                               i = (raise_point + ARRAY_SIZE(degrees) - 1) / 2;
-> +               } else {
-> +                       i = (raise_point + fall_point) / 2;
-> +               }
-> +
-> +               // use the same phase table for both HS200 and HS400
+    Clearly I missed running `make dt_binding_check` on the final iteration of
+    the v4 patch I sent. Hopefully I'm running out of rakes to step on here!
 
-Don't use "//" for comments.
+v4: https://lore.kernel.org/all/20240227004414.841391-1-andrew at codeconstruct.com.au/
 
-> +               priv->phase_map.phase[MMC_TIMING_MMC_HS200].in_deg = degrees[i];
-> +               priv->phase_map.phase[MMC_TIMING_MMC_HS400].in_deg = degrees[i];
-> +
-> +               clk_set_phase(priv->sample_clk, degrees[i]);
-> +               dev_dbg(host->dev, "Tuning clk_sample[%d, %d], set[%d]\n",
-> +                       raise_point, fall_point, degrees[i]);
-> +               err = 0;
-> +       } else {
-> +               dev_err(host->dev, "No valid clk_sample shift! use default\n");
-> +               err = -EINVAL;
-> +       }
-> +
-> +       mci_writel(host, RINTSTS, ALL_INT_CLR);
-> +       return err;
+    Add constraints for gpio-line-names, ngpios as requested by Krzysztof:
+    https://lore.kernel.org/all/458becdb-fb1e-4808-87b6-3037ec945647 at linaro.org/
 
-The entire code in dw_mci_hi3798mv200_execute_tuning_mix_mode() looks
-rather messy to me. A lot of variables are being used, set and reset
-from everywhere.
+    Add more examples to exercise constraints.
 
-Would you mind having a closer look and try to improve it a bit, so it
-becomes easier to follow what is going on?
+v3: https://lore.kernel.org/all/20240226051645.414935-1-andrew at codeconstruct.com.au/
 
-> +}
-> +
-> +static int dw_mci_hi3798mv200_init(struct dw_mci *host)
-> +{
-> +       struct dw_mci_hi3798mv200_priv *priv;
-> +       struct device_node *np = host->dev->of_node;
-> +       int ret;
-> +
-> +       priv = devm_kzalloc(host->dev, sizeof(*priv), GFP_KERNEL);
-> +       if (!priv)
-> +               return -ENOMEM;
-> +
-> +       mmc_of_parse_clk_phase(host->dev, &priv->phase_map);
-> +
-> +       priv->sample_clk = devm_clk_get_enabled(host->dev, "ciu-sample");
-> +       if (IS_ERR(priv->sample_clk))
-> +               return dev_err_probe(host->dev, PTR_ERR(priv->sample_clk),
-> +                                    "failed to get enabled ciu-sample clock\n");
-> +
-> +       priv->drive_clk = devm_clk_get_enabled(host->dev, "ciu-drive");
-> +       if (IS_ERR(priv->drive_clk))
-> +               return dev_err_probe(host->dev, PTR_ERR(priv->drive_clk),
-> +                                    "failed to get enabled ciu-drive clock\n");
-> +
-> +       priv->crg_reg = syscon_regmap_lookup_by_phandle(np, "hisilicon,sap-dll-reg");
-> +       if (IS_ERR(priv->crg_reg))
-> +               return dev_err_probe(host->dev, PTR_ERR(priv->crg_reg),
-> +                                    "failed to get CRG reg\n");
-> +
-> +       ret = of_property_read_u32_index(np, "hisilicon,sap-dll-reg", 1, &priv->sap_dll_offset);
-> +       if (ret)
-> +               return dev_err_probe(host->dev, ret, "failed to get sample DLL register offset\n");
-> +
-> +       host->priv = priv;
-> +       return 0;
-> +}
-> +
-> +static const struct dw_mci_drv_data hi3798mv200_data = {
-> +       .common_caps = MMC_CAP_CMD23,
-> +       .init = dw_mci_hi3798mv200_init,
-> +       .set_ios = dw_mci_hi3798mv200_set_ios,
-> +       .execute_tuning = dw_mci_hi3798mv200_execute_tuning_mix_mode,
-> +};
-> +
-> +static const struct of_device_id dw_mci_hi3798mv200_match[] = {
-> +       { .compatible = "hisilicon,hi3798mv200-dw-mshc" },
-> +       {},
-> +};
-> +
-> +static int dw_mci_hi3798mv200_probe(struct platform_device *pdev)
-> +{
-> +       return dw_mci_pltfm_register(pdev, &hi3798mv200_data);
-> +}
-> +
-> +static void dw_mci_hi3798mv200_remove(struct platform_device *pdev)
-> +{
-> +       dw_mci_pltfm_remove(pdev);
-> +}
-> +
-> +MODULE_DEVICE_TABLE(of, dw_mci_hi3798mv200_match);
-> +static struct platform_driver dw_mci_hi3798mv200_driver = {
-> +       .probe = dw_mci_hi3798mv200_probe,
-> +       .remove_new = dw_mci_hi3798mv200_remove,
-> +       .driver = {
-> +               .name = "dwmmc_hi3798mv200",
-> +               .probe_type = PROBE_PREFER_ASYNCHRONOUS,
-> +               .of_match_table = dw_mci_hi3798mv200_match,
-> +       },
-> +};
-> +module_platform_driver(dw_mci_hi3798mv200_driver);
-> +
-> +MODULE_DESCRIPTION("HiSilicon Hi3798MV200 Specific DW-MSHC Driver Extension");
-> +MODULE_LICENSE("GPL");
->
+    Base on v6.8-rc6, fix yamllint warning
 
-Kind regards
-Uffe
+    Rob's bot picked the missing `#interrupt-cells` in the example on v2[1]. The
+    patch was based on v6.8-rc1, and going back over my shell history I missed
+    the following output from `make dt_binding_check`:
+
+    ```
+    ...
+      LINT    Documentation/devicetree/bindings
+      usage: yamllint [-h] [-] [-c CONFIG_FILE | -d CONFIG_DATA] [--list-files] [-f {parsable,standard,colored,github,auto}] [-s] [--no-warnings] [-v] [FILE_OR_DIR ...]
+      yamllint: error: one of the arguments FILE_OR_DIR - is required   
+    ...
+    ```
+
+    I've rebased on v6.8-rc6 and no-longer see the issue with the invocation
+    of `yamllint`.
+
+[1]: https://lore.kernel.org/all/170892197611.2260479.15343562563553959436.robh at kernel.org/
+
+v2: https://lore.kernel.org/all/20240226031951.284847-1-andrew at codeconstruct.com.au/
+
+    Address feedback from Krzysztof:
+    https://lore.kernel.org/all/0d1dd262-b6dd-4d71-9239-8b0aec8cceff at linaro.org/
+
+v1: https://lore.kernel.org/all/20240220052918.742793-1-andrew at codeconstruct.com.au/
+
+ .../bindings/gpio/aspeed,ast2400-gpio.yaml    | 148 ++++++++++++++++++
+ .../devicetree/bindings/gpio/gpio-aspeed.txt  |  39 -----
+ 2 files changed, 148 insertions(+), 39 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+ delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+
+diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+new file mode 100644
+index 000000000000..cf11aa7ec8c7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+@@ -0,0 +1,148 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed GPIO controller
++
++maintainers:
++  - Andrew Jeffery <andrew@codeconstruct.com.au>
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-gpio
++      - aspeed,ast2500-gpio
++      - aspeed,ast2600-gpio
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++    description: The clock to use for debounce timings
++
++  gpio-controller: true
++  gpio-line-names:
++    minItems: 36
++    maxItems: 232
++
++  gpio-ranges: true
++
++  "#gpio-cells":
++    const: 2
++
++  interrupts:
++    maxItems: 1
++
++  interrupt-controller: true
++
++  "#interrupt-cells":
++    const: 2
++
++  ngpios:
++    minimum: 36
++    maximum: 232
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - interrupt-controller
++  - "#interrupt-cells"
++  - gpio-controller
++  - "#gpio-cells"
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: aspeed,ast2400-gpio
++    then:
++      properties:
++        gpio-line-names:
++          minItems: 220
++          maxItems: 220
++        ngpios:
++          const: 220
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: aspeed,ast2500-gpio
++    then:
++      properties:
++        gpio-line-names:
++          minItems: 232
++          maxItems: 232
++        ngpios:
++          const: 232
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: aspeed,ast2600-gpio
++    then:
++      properties:
++        gpio-line-names:
++          minItems: 36
++          maxItems: 208
++        ngpios:
++          enum: [ 36, 208 ]
++      required:
++        - ngpios
++
++additionalProperties: false
++
++examples:
++  - |
++    gpio at 1e780000 {
++        compatible = "aspeed,ast2400-gpio";
++        reg = <0x1e780000 0x1000>;
++        interrupts = <20>;
++        interrupt-controller;
++        #interrupt-cells = <2>;
++        gpio-controller;
++        #gpio-cells = <2>;
++    };
++  - |
++    gpio: gpio at 1e780000 {
++        compatible = "aspeed,ast2500-gpio";
++        reg = <0x1e780000 0x200>;
++        interrupts = <20>;
++        interrupt-controller;
++        #interrupt-cells = <2>;
++        gpio-controller;
++        #gpio-cells = <2>;
++        gpio-ranges = <&pinctrl 0 0 232>;
++    };
++  - |
++    #include <dt-bindings/clock/ast2600-clock.h>
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++    gpio0: gpio at 1e780000 {
++        compatible = "aspeed,ast2600-gpio";
++        reg = <0x1e780000 0x400>;
++        clocks = <&syscon ASPEED_CLK_APB2>;
++        interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
++        interrupt-controller;
++        #interrupt-cells = <2>;
++        #gpio-cells = <2>;
++        gpio-controller;
++        gpio-ranges = <&pinctrl 0 0 208>;
++        ngpios = <208>;
++    };
++    gpio1: gpio at 1e780800 {
++        compatible = "aspeed,ast2600-gpio";
++        reg = <0x1e780800 0x800>;
++        clocks = <&syscon ASPEED_CLK_APB1>;
++        interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
++        interrupt-controller;
++        #interrupt-cells = <2>;
++        gpio-controller;
++        #gpio-cells = <2>;
++        gpio-ranges = <&pinctrl 0 208 36>;
++        ngpios = <36>;
++    };
+diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+deleted file mode 100644
+index b2033fc3a71a..000000000000
+--- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
++++ /dev/null
+@@ -1,39 +0,0 @@
+-Aspeed GPIO controller Device Tree Bindings
+--------------------------------------------
+-
+-Required properties:
+-- compatible		: Either "aspeed,ast2400-gpio", "aspeed,ast2500-gpio",
+-					or "aspeed,ast2600-gpio".
+-
+-- #gpio-cells 		: Should be two
+-			  - First cell is the GPIO line number
+-			  - Second cell is used to specify optional
+-			    parameters (unused)
+-
+-- reg			: Address and length of the register set for the device
+-- gpio-controller	: Marks the device node as a GPIO controller.
+-- interrupts		: Interrupt specifier (see interrupt bindings for
+-			  details)
+-- interrupt-controller	: Mark the GPIO controller as an interrupt-controller
+-
+-Optional properties:
+-
+-- clocks		: A phandle to the clock to use for debounce timings
+-- ngpios		: Number of GPIOs controlled by this controller. Should	be set
+-				  when there are multiple GPIO controllers on a SoC (ast2600).
+-
+-The gpio and interrupt properties are further described in their respective
+-bindings documentation:
+-
+-- Documentation/devicetree/bindings/gpio/gpio.txt
+-- Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
+-
+-  Example:
+-	gpio at 1e780000 {
+-		#gpio-cells = <2>;
+-		compatible = "aspeed,ast2400-gpio";
+-		gpio-controller;
+-		interrupts = <20>;
+-		reg = <0x1e780000 0x1000>;
+-		interrupt-controller;
+-	};
+
+base-commit: d206a76d7d2726f3b096037f2079ce0bd3ba329b
+-- 
+2.39.2
+
