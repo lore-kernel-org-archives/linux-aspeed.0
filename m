@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Thu, 29 Feb 2024 15:36:59 -0500
-Subject: [PATCH AUTOSEL 6.7 19/24] arm: dts: Fix dtc interrupt_provider warnings
-In-Reply-To: <20240229203729.2860356-1-sashal@kernel.org>
-References: <20240229203729.2860356-1-sashal@kernel.org>
-Message-ID: <20240229203729.2860356-19-sashal@kernel.org>
+Date: Thu, 29 Feb 2024 15:39:11 -0500
+Subject: [PATCH AUTOSEL 6.6 18/22] arm: dts: Fix dtc interrupt_provider warnings
+In-Reply-To: <20240229203933.2861006-1-sashal@kernel.org>
+References: <20240229203933.2861006-1-sashal@kernel.org>
+Message-ID: <20240229203933.2861006-18-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
