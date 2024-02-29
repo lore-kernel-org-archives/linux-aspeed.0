@@ -1,316 +1,705 @@
-From: Yang Xiwen via B4 Relay <devnull+forbidden405.outlook.com@kernel.org>
-Date: Thu, 29 Feb 2024 01:37:01 -0000
-Subject: [PATCH v7 5/5] mmc: dw_mmc: add support for hi3798mv200
-In-Reply-To: <20240229-b4-mmc-hi3798mv200-v7-0-10c03f316285@outlook.com>
-References: <20240229-b4-mmc-hi3798mv200-v7-0-10c03f316285@outlook.com>
-Message-ID: <20240229-b4-mmc-hi3798mv200-v7-5-10c03f316285@outlook.com>
+From: Kelly Hung(洪嘉莉) <Kelly_Hung@asus.com>
+Date: Thu, 29 Feb 2024 07:23:49 -0000
+Subject: [PATCH 2/2] ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
+In-Reply-To: <20240223215620.GA9299@packtop>
+References: <20240222085914.1218037-1-Kelly_Hung@asus.com>
+ <20240222085914.1218037-2-Kelly_Hung@asus.com>
+ <20240223215620.GA9299@packtop>
+Message-ID: <TYZPR04MB65969645367EEDF9667FE8339D5F2@TYZPR04MB6596.apcprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Yang Xiwen <forbidden405@outlook.com>
+Hi, Zev,
 
-Add support for Hi3798MV200 specific extension.
+>+      flash at 0 {
+>+              status = "okay";
+>+              m25p,fast-read;
+>+              label = "bmc-spi";
 
-Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
----
- drivers/mmc/host/Kconfig              |   9 ++
- drivers/mmc/host/Makefile             |   1 +
- drivers/mmc/host/dw_mmc-hi3798mv200.c | 251 ++++++++++++++++++++++++++++++++++
- 3 files changed, 261 insertions(+)
+Is this specific label needed or desired for some particular reason?
+Most OpenBMC platforms just call it "bmc", and I think some of the firmware-update machinery may have assumptions about that baked in, so I wouldn't be surprised if this naming breaks things...
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 81f2c4e05287..aebc587f77a7 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -798,6 +798,15 @@ config MMC_DW_HI3798CV200
- 	  Synopsys DesignWare Memory Card Interface driver. Select this option
- 	  for platforms based on HiSilicon Hi3798CV200 SoC.
- 
-+config MMC_DW_HI3798MV200
-+	tristate "Hi3798MV200 specific extensions for Synopsys DW Memory Card Interface"
-+	depends on MMC_DW
-+	select MMC_DW_PLTFM
-+	help
-+	  This selects support for HiSilicon Hi3798MV200 SoC specific extensions to the
-+	  Synopsys DesignWare Memory Card Interface driver. Select this option
-+	  for platforms based on HiSilicon Hi3798MV200 SoC.
-+
- config MMC_DW_K3
- 	tristate "K3 specific extensions for Synopsys DW Memory Card Interface"
- 	depends on MMC_DW
-diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-index d0be4465f3ec..f53f86d200ac 100644
---- a/drivers/mmc/host/Makefile
-+++ b/drivers/mmc/host/Makefile
-@@ -51,6 +51,7 @@ obj-$(CONFIG_MMC_DW_PLTFM)	+= dw_mmc-pltfm.o
- obj-$(CONFIG_MMC_DW_BLUEFIELD)	+= dw_mmc-bluefield.o
- obj-$(CONFIG_MMC_DW_EXYNOS)	+= dw_mmc-exynos.o
- obj-$(CONFIG_MMC_DW_HI3798CV200) += dw_mmc-hi3798cv200.o
-+obj-$(CONFIG_MMC_DW_HI3798MV200) += dw_mmc-hi3798mv200.o
- obj-$(CONFIG_MMC_DW_K3)		+= dw_mmc-k3.o
- obj-$(CONFIG_MMC_DW_PCI)	+= dw_mmc-pci.o
- obj-$(CONFIG_MMC_DW_ROCKCHIP)	+= dw_mmc-rockchip.o
-diff --git a/drivers/mmc/host/dw_mmc-hi3798mv200.c b/drivers/mmc/host/dw_mmc-hi3798mv200.c
-new file mode 100644
-index 000000000000..989ae8dda722
---- /dev/null
-+++ b/drivers/mmc/host/dw_mmc-hi3798mv200.c
-@@ -0,0 +1,251 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Modified from dw_mmc-hi3798cv200.c
-+ *
-+ * Copyright (c) 2024 Yang Xiwen <forbidden405@outlook.com>
-+ * Copyright (c) 2018 HiSilicon Technologies Co., Ltd.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/mmc/host.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
-+#include "dw_mmc.h"
-+#include "dw_mmc-pltfm.h"
-+
-+#define SDMMC_TUNING_CTRL	0x118
-+#define SDMMC_TUNING_FIND_EDGE	BIT(5)
-+
-+#define ALL_INT_CLR		0x1ffff
-+
-+/* DLL ctrl reg */
-+#define SAP_DLL_CTRL_DLLMODE	BIT(16)
-+
-+struct dw_mci_hi3798mv200_priv {
-+	struct clk *sample_clk;
-+	struct clk *drive_clk;
-+	struct regmap *crg_reg;
-+	u32 sap_dll_offset;
-+	struct mmc_clk_phase_map phase_map;
-+};
-+
-+static void dw_mci_hi3798mv200_set_ios(struct dw_mci *host, struct mmc_ios *ios)
-+{
-+	struct dw_mci_hi3798mv200_priv *priv = host->priv;
-+	struct mmc_clk_phase phase = priv->phase_map.phase[ios->timing];
-+	u32 val;
-+
-+	val = mci_readl(host, ENABLE_SHIFT);
-+	if (ios->timing == MMC_TIMING_MMC_DDR52
-+	    || ios->timing == MMC_TIMING_UHS_DDR50)
-+		val |= SDMMC_ENABLE_PHASE;
-+	else
-+		val &= ~SDMMC_ENABLE_PHASE;
-+	mci_writel(host, ENABLE_SHIFT, val);
-+
-+	val = mci_readl(host, DDR_REG);
-+	if (ios->timing == MMC_TIMING_MMC_HS400)
-+		val |= SDMMC_DDR_HS400;
-+	else
-+		val &= ~SDMMC_DDR_HS400;
-+	mci_writel(host, DDR_REG, val);
-+
-+	if (clk_set_rate(host->ciu_clk, ios->clock))
-+		dev_warn(host->dev, "Failed to set rate to %u\n", ios->clock);
-+	else
-+		/*
-+		 * CLK_MUX_ROUND_NEAREST is enabled for this clock
-+		 * The actual clock rate is not what we set, but a rounded value
-+		 * so we should get the rate once again
-+		 */
-+		host->bus_hz = clk_get_rate(host->ciu_clk);
-+
-+	if (phase.valid) {
-+		clk_set_phase(priv->drive_clk, phase.out_deg);
-+		clk_set_phase(priv->sample_clk, phase.in_deg);
-+	} else {
-+		dev_warn(host->dev,
-+			 "The phase entry for timing mode %d is missing in device tree.\n",
-+			 ios->timing);
-+	}
-+}
-+
-+static inline int dw_mci_hi3798mv200_enable_tuning(struct dw_mci_slot *slot)
-+{
-+	struct dw_mci_hi3798mv200_priv *priv = slot->host->priv;
-+
-+	return regmap_clear_bits(priv->crg_reg, priv->sap_dll_offset, SAP_DLL_CTRL_DLLMODE);
-+}
-+
-+static inline int dw_mci_hi3798mv200_disable_tuning(struct dw_mci_slot *slot)
-+{
-+	struct dw_mci_hi3798mv200_priv *priv = slot->host->priv;
-+
-+	return regmap_set_bits(priv->crg_reg, priv->sap_dll_offset, SAP_DLL_CTRL_DLLMODE);
-+}
-+
-+static int dw_mci_hi3798mv200_execute_tuning_mix_mode(struct dw_mci_slot *slot,
-+					     u32 opcode)
-+{
-+	static const int degrees[] = { 0, 45, 90, 135, 180, 225, 270, 315 };
-+	struct dw_mci *host = slot->host;
-+	struct dw_mci_hi3798mv200_priv *priv = host->priv;
-+	int raise_point = -1, fall_point = -1, mid;
-+	int err, prev_err = -1;
-+	int found = 0;
-+	int regval;
-+	int i;
-+	int ret;
-+
-+	ret = dw_mci_hi3798mv200_enable_tuning(slot);
-+	if (ret < 0)
-+		return ret;
-+
-+	for (i = 0; i < ARRAY_SIZE(degrees); i++) {
-+		clk_set_phase(priv->sample_clk, degrees[i]);
-+		mci_writel(host, RINTSTS, ALL_INT_CLR);
-+
-+		/*
-+		 * HiSilicon implemented a tuning mechanism.
-+		 * It needs special interaction with the DLL.
-+		 *
-+		 * Treat edge(flip) found as an error too.
-+		 */
-+		err = mmc_send_tuning(slot->mmc, opcode, NULL);
-+		regval = mci_readl(host, TUNING_CTRL);
-+		if (err || (regval & SDMMC_TUNING_FIND_EDGE))
-+			err = 1;
-+		else
-+			found = 1;
-+
-+		if (i > 0) {
-+			if (err && !prev_err)
-+				fall_point = i - 1;
-+			if (!err && prev_err)
-+				raise_point = i;
-+		}
-+
-+		if (raise_point != -1 && fall_point != -1)
-+			goto tuning_out;
-+
-+		prev_err = err;
-+		err = 0;
-+	}
-+
-+tuning_out:
-+	ret = dw_mci_hi3798mv200_disable_tuning(slot);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (found) {
-+		if (raise_point == -1)
-+			raise_point = 0;
-+		if (fall_point == -1)
-+			fall_point = ARRAY_SIZE(degrees) - 1;
-+		if (fall_point < raise_point) {
-+			if ((raise_point + fall_point) >
-+			    (ARRAY_SIZE(degrees) - 1))
-+				mid = fall_point / 2;
-+			else
-+				mid = (raise_point + ARRAY_SIZE(degrees) - 1) / 2;
-+		} else {
-+			mid = (raise_point + fall_point) / 2;
-+		}
-+
-+		/*
-+		 * We don't care what timing we are tuning for,
-+		 * simply use the same phase for all timing needs tuning.
-+		 */
-+		priv->phase_map.phase[MMC_TIMING_MMC_HS200].in_deg = degrees[mid];
-+		priv->phase_map.phase[MMC_TIMING_MMC_HS400].in_deg = degrees[mid];
-+		priv->phase_map.phase[MMC_TIMING_UHS_SDR104].in_deg = degrees[mid];
-+
-+		clk_set_phase(priv->sample_clk, degrees[mid]);
-+		dev_dbg(host->dev, "Tuning clk_sample[%d, %d], set[%d]\n",
-+			raise_point, fall_point, degrees[mid]);
-+		ret = 0;
-+	} else {
-+		dev_err(host->dev, "No valid clk_sample shift!\n");
-+		ret = -EINVAL;
-+	}
-+
-+	mci_writel(host, RINTSTS, ALL_INT_CLR);
-+
-+	return ret;
-+}
-+
-+static int dw_mci_hi3798mv200_init(struct dw_mci *host)
-+{
-+	struct dw_mci_hi3798mv200_priv *priv;
-+	struct device_node *np = host->dev->of_node;
-+	int ret;
-+
-+	priv = devm_kzalloc(host->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	mmc_of_parse_clk_phase(host->dev, &priv->phase_map);
-+
-+	priv->sample_clk = devm_clk_get_enabled(host->dev, "ciu-sample");
-+	if (IS_ERR(priv->sample_clk))
-+		return dev_err_probe(host->dev, PTR_ERR(priv->sample_clk),
-+				     "failed to get enabled ciu-sample clock\n");
-+
-+	priv->drive_clk = devm_clk_get_enabled(host->dev, "ciu-drive");
-+	if (IS_ERR(priv->drive_clk))
-+		return dev_err_probe(host->dev, PTR_ERR(priv->drive_clk),
-+				     "failed to get enabled ciu-drive clock\n");
-+
-+	priv->crg_reg = syscon_regmap_lookup_by_phandle(np, "hisilicon,sap-dll-reg");
-+	if (IS_ERR(priv->crg_reg))
-+		return dev_err_probe(host->dev, PTR_ERR(priv->crg_reg),
-+				     "failed to get CRG reg\n");
-+
-+	ret = of_property_read_u32_index(np, "hisilicon,sap-dll-reg", 1, &priv->sap_dll_offset);
-+	if (ret)
-+		return dev_err_probe(host->dev, ret, "failed to get sample DLL register offset\n");
-+
-+	host->priv = priv;
-+	return 0;
-+}
-+
-+static const struct dw_mci_drv_data hi3798mv200_data = {
-+	.common_caps = MMC_CAP_CMD23,
-+	.init = dw_mci_hi3798mv200_init,
-+	.set_ios = dw_mci_hi3798mv200_set_ios,
-+	.execute_tuning = dw_mci_hi3798mv200_execute_tuning_mix_mode,
-+};
-+
-+static const struct of_device_id dw_mci_hi3798mv200_match[] = {
-+	{ .compatible = "hisilicon,hi3798mv200-dw-mshc" },
-+	{},
-+};
-+
-+static int dw_mci_hi3798mv200_probe(struct platform_device *pdev)
-+{
-+	return dw_mci_pltfm_register(pdev, &hi3798mv200_data);
-+}
-+
-+static void dw_mci_hi3798mv200_remove(struct platform_device *pdev)
-+{
-+	dw_mci_pltfm_remove(pdev);
-+}
-+
-+MODULE_DEVICE_TABLE(of, dw_mci_hi3798mv200_match);
-+static struct platform_driver dw_mci_hi3798mv200_driver = {
-+	.probe = dw_mci_hi3798mv200_probe,
-+	.remove_new = dw_mci_hi3798mv200_remove,
-+	.driver = {
-+		.name = "dwmmc_hi3798mv200",
-+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
-+		.of_match_table = dw_mci_hi3798mv200_match,
-+	},
-+};
-+module_platform_driver(dw_mci_hi3798mv200_driver);
-+
-+MODULE_DESCRIPTION("HiSilicon Hi3798MV200 Specific DW-MSHC Driver Extension");
-+MODULE_LICENSE("GPL");
+>+              spi-max-frequency = <50000000>;
+>+#include "openbmc-flash-layout-128.dtsi"
 
--- 
-2.43.0
+Just to confirm, this is actually a 128MB flash chip?  I ask because the previous version of this patch had some indication of it being 64MB (though there was a lot that looked wonky with the partition layout, so maybe that was wrong too).
 
+>+      };
+>+};
+
+Reply by Kelly:
+I will correct the label with "bmc" and use 64M patition then update in v3 patch.
+
+
+>+      flash at 0 {
+>+              status = "okay";
+>+              m25p,fast-read;
+>+              label = "bmc-spi";
+
+Is this specific label needed or desired for some particular reason?
+Most OpenBMC platforms just call it "bmc", and I think some of the firmware-update machinery may have assumptions about that baked in, so I wouldn't be surprised if this naming breaks things...
+
+>+              spi-max-frequency = <50000000>;
+>+#include "openbmc-flash-layout-128.dtsi"
+
+Just to confirm, this is actually a 128MB flash chip?  I ask because the previous version of this patch had some indication of it being 64MB (though there was a lot that looked wonky with the partition layout, so maybe that was wrong too).
+
+>+      };
+
+Reply by Kelly:
+I also remove bios partition section and rename label with "bios".
+
+
+Thanks for review.
+
+Best Regards
+Kelly
+-----Original Message-----
+From: Zev Weiss <zweiss@equinix.com>
+Sent: Saturday, February 24, 2024 5:57 AM
+To: Kelly Hung <ppighouse@gmail.com>
+Cc: robh+dt at kernel.org; devicetree at vger.kernel.org; conor+dt at kernel.org; linux-aspeed at lists.ozlabs.org; openbmc at lists.ozlabs.org; linux-kernel at vger.kernel.org; Kelly Hung(???) <Kelly_Hung@asus.com>; joel at jms.id.au; krzysztof.kozlowski+dt at linaro.org; AllenYY Hsu(???) <AllenYY_Hsu@asus.com>; linux-arm-kernel at lists.infradead.org
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
+
+External email : Ensure your email is secure before opening links and attachments.
+
+On Thu, Feb 22, 2024 at 12:59:14AM PST, Kelly Hung wrote:
+>Base on aspeed-g6.dtsi and can boot into BMC console.
+>
+>Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
+>---
+> arch/arm/boot/dts/aspeed/Makefile             |   1 +
+> .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 592 ++++++++++++++++++
+> 2 files changed, 593 insertions(+)
+> create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+>
+>diff --git a/arch/arm/boot/dts/aspeed/Makefile
+>b/arch/arm/boot/dts/aspeed/Makefile
+>index d3ac20e31..32c41f3d9 100644
+>--- a/arch/arm/boot/dts/aspeed/Makefile
+>+++ b/arch/arm/boot/dts/aspeed/Makefile
+>@@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>       aspeed-bmc-arm-stardragon4800-rep2.dtb \
+>       aspeed-bmc-asrock-e3c246d4i.dtb \
+>       aspeed-bmc-asrock-romed8hm3.dtb \
+>+      aspeed-bmc-asus-x4tf.dtb \
+>       aspeed-bmc-bytedance-g220a.dtb \
+>       aspeed-bmc-delta-ahe50dc.dtb \
+>       aspeed-bmc-facebook-bletchley.dtb \
+>diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+>b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+>new file mode 100644
+>index 000000000..1bda14a66
+>--- /dev/null
+>+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+>@@ -0,0 +1,592 @@
+>+// SPDX-License-Identifier: GPL-2.0-or-later // Copyright 2024 ASUS
+>+Corp.
+>+
+>+/dts-v1/;
+>+
+>+#include "aspeed-g6.dtsi"
+>+#include "aspeed-g6-pinctrl.dtsi"
+>+#include <dt-bindings/i2c/i2c.h>
+>+#include <dt-bindings/gpio/aspeed-gpio.h>
+>+
+>+/ {
+>+      model = "ASUS-X4TF";
+>+      compatible = "asus,x4tf", "aspeed,ast2600";
+>+
+>+      aliases {
+>+              serial4 = &uart5;
+>+      };
+>+
+>+      chosen {
+>+              stdout-path = "serial4:115200n8";
+>+      };
+>+
+>+      memory at 80000000 {
+>+              device_type = "memory";
+>+              reg = <0x80000000 0x40000000>;
+>+      };
+>+
+>+      reserved-memory {
+>+              #address-cells = <1>;
+>+              #size-cells = <1>;
+>+              ranges;
+>+
+>+              video_engine_memory: video {
+>+                      size = <0x04000000>;
+>+                      alignment = <0x01000000>;
+>+                      compatible = "shared-dma-pool";
+>+                      reusable;
+>+              };
+>+      };
+>+
+>+      iio-hwmon {
+>+              compatible = "iio-hwmon";
+>+              io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+>+                              <&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+>+                              <&adc1 0>, <&adc1 1>, <&adc1 2>, <&adc1 3>,
+>+                              <&adc1 4>, <&adc1 5>, <&adc1 6>, <&adc1 7>;
+>+      };
+>+
+>+      leds {
+>+              compatible = "gpio-leds";
+>+
+>+              led-heartbeat {
+>+                      gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_LOW>;
+>+                      linux,default-trigger = "heartbeat";
+>+              };
+>+
+>+              led-uid {
+>+                      gpios = <&gpio0 ASPEED_GPIO(P, 1) (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+>+                      default-state = "off";
+>+              };
+>+
+>+              led-status_Y {
+>+                      gpios = <&gpio1 ASPEED_GPIO(B, 1) GPIO_ACTIVE_LOW>;
+>+                      default-state = "off";
+>+              };
+>+
+>+              led-sys_boot_status {
+>+                      gpios = <&gpio1 ASPEED_GPIO(B, 0) GPIO_ACTIVE_LOW>;
+>+                      default-state = "off";
+>+              };
+>+      };
+>+};
+>+
+>+&adc0 {
+>+      vref = <2500>;
+>+      status = "okay";
+>+      pinctrl-names = "default";
+>+      pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
+>+              &pinctrl_adc2_default &pinctrl_adc3_default
+>+              &pinctrl_adc4_default &pinctrl_adc5_default
+>+              &pinctrl_adc6_default &pinctrl_adc7_default>; };
+>+
+>+&adc1 {
+>+      vref = <2500>;
+>+      status = "okay";
+>+      pinctrl-names = "default";
+>+      pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default
+>+              &pinctrl_adc10_default &pinctrl_adc11_default
+>+              &pinctrl_adc12_default &pinctrl_adc13_default
+>+              &pinctrl_adc14_default &pinctrl_adc15_default>; };
+>+
+>+&peci0 {
+>+      status = "okay";
+>+};
+>+
+>+&lpc_snoop {
+>+      snoop-ports = <0x80>;
+>+      status = "okay";
+>+};
+>+
+>+&mac2 {
+>+      status = "okay";
+>+      phy-mode = "rmii";
+>+      use-ncsi;
+>+      pinctrl-names = "default";
+>+      pinctrl-0 = <&pinctrl_rmii3_default>; };
+>+
+>+&mac3 {
+>+      status = "okay";
+>+      phy-mode = "rmii";
+>+      use-ncsi;
+>+      pinctrl-names = "default";
+>+      pinctrl-0 = <&pinctrl_rmii4_default>; };
+>+
+>+&fmc {
+>+      status = "okay";
+>+
+>+      flash at 0 {
+>+              status = "okay";
+>+              m25p,fast-read;
+>+              label = "bmc-spi";
+
+Is this specific label needed or desired for some particular reason?
+Most OpenBMC platforms just call it "bmc", and I think some of the firmware-update machinery may have assumptions about that baked in, so I wouldn't be surprised if this naming breaks things...
+
+>+              spi-max-frequency = <50000000>;
+>+#include "openbmc-flash-layout-128.dtsi"
+
+Just to confirm, this is actually a 128MB flash chip?  I ask because the previous version of this patch had some indication of it being 64MB (though there was a lot that looked wonky with the partition layout, so maybe that was wrong too).
+
+>+      };
+>+};
+>+
+>+&spi1 {
+>+      status = "okay";
+>+      pinctrl-names = "default";
+>+      pinctrl-0 = <&pinctrl_spi1_default>;
+>+
+>+      flash at 0 {
+>+              status = "okay";
+>+              label = "bios-spi";
+>+              spi-max-frequency = <50000000>;
+>+
+>+              partitions {
+>+                      compatible = "fixed-partitions";
+>+                      #address-cells = <1>;
+>+                      #size-cells = <1>;
+>+
+>+                      biosfullimg at 0 {
+>+                              reg = <0x0 0x2000000>; //32768 *1024 = 32 MB
+>+                              label = "biosfullimg";
+>+                      };
+>+              };
+
+If there's only one partition that's just covering the whole chip there's no need to include the 'partitions' child node.
+
+>+      };
+>+};
+>+
+>+&i2c0 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c1 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c2 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c3 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c4 {
+>+      status = "okay";
+>+
+>+      temperature-sensor at 48 {
+>+              compatible = "ti,tmp75";
+>+              reg = <0x48>;
+>+      };
+>+
+>+      temperature-sensor at 49 {
+>+              compatible = "ti,tmp75";
+>+              reg = <0x49>;
+>+      };
+>+
+>+      pca9555_4_20: gpio at 20 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x20>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+      };
+>+
+>+      pca9555_4_22: gpio at 22 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x22>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+      };
+>+
+>+      pca9555_4_24: gpio at 24 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x24>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+              gpio-line-names =
+>+              /*A0 - A3 0*/   "", "STRAP_BMC_BATTERY_GPIO1", "", "",
+>+              /*A4 - A7 4*/   "", "", "", "",
+>+              /*B0 - B7 8*/   "", "", "", "", "", "", "", "";
+>+      };
+>+
+>+      pca9555_4_26: gpio at 26 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x26>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+      };
+>+
+>+      i2c-mux at 70 {
+>+              compatible = "nxp,pca9546";
+>+              status = "okay";
+>+              reg = <0x70>;
+>+              #address-cells = <1>;
+>+              #size-cells = <0>;
+>+
+>+              channel_1: i2c at 0 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <0>;
+>+              };
+>+
+>+              channel_2: i2c at 1 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <1>;
+>+              };
+>+
+>+              channel_3: i2c at 2 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <2>;
+>+              };
+>+
+>+              channel_4: i2c at 3 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <3>;
+>+              };
+>+      };
+>+};
+>+
+>+&i2c5 {
+>+      status = "okay";
+>+
+>+      pca9555_5_24: gpio at 24 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x24>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+      };
+>+
+>+      i2c-mux at 70  {
+>+              compatible = "nxp,pca9546";
+>+              status = "okay";
+>+              reg = <0x70 >;
+>+              #address-cells = <1>;
+>+              #size-cells = <0>;
+>+
+>+              channel_5: i2c at 0 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <0>;
+>+
+>+                      pca9555_5_5_20: gpio at 20 {
+>+                              compatible = "nxp,pca9555";
+>+                              reg = <0x20>;
+>+                              gpio-controller;
+>+                              #gpio-cells = <2>;
+>+                              gpio-line-names =
+>+                                      "", "", "", "", "", "", "", "",
+>+                                      "", "", "SYS_FAN6", "SYS_FAN5",
+>+                                      "SYS_FAN4", "SYS_FAN3",
+>+                                      "SYS_FAN2", "SYS_FAN1";
+>+                      };
+>+
+>+                      pca9555_5_5_21: gpio at 21 {
+>+                              compatible = "nxp,pca9555";
+>+                              reg = <0x21>;
+>+                              gpio-controller;
+>+                              #gpio-cells = <2>;
+>+                      };
+>+
+>+                      power-monitor at 44 {
+>+                              compatible = "ti,ina219";
+>+                              reg = <0x44>;
+>+                              shunt-resistor = <2>;
+>+                      };
+>+              };
+>+
+>+              channel_6: i2c at 1 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <1>;
+>+              };
+>+
+>+              channel_7: i2c at 2 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <2>;
+>+              };
+>+
+>+              channel_8: i2c at 3 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <3>;
+>+              };
+>+      };
+>+};
+>+
+>+&i2c6 {
+>+      status = "okay";
+>+
+>+      pca9555_6_27: gpio at 27 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x27>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+      };
+>+
+>+      pca9555_6_20: gpio at 20 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x20>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+              gpio-line-names =
+>+              /*A0 0*/        "", "", "", "", "", "", "", "",
+>+              /*B0 8*/        "Drive_NVMe1", "Drive_NVMe2", "", "",
+>+              /*B4 12*/       "", "", "", "";
+>+      };
+>+
+>+      pca9555_6_21: gpio at 21 {
+>+              compatible = "nxp,pca9555";
+>+              reg = <0x21>;
+>+              gpio-controller;
+>+              #gpio-cells = <2>;
+>+      };
+>+};
+>+
+>+&i2c7 {
+>+      status = "okay";
+>+
+>+      i2c-mux at 70 {
+>+              compatible = "nxp,pca9546";
+>+              status = "okay";
+>+              reg = <0x70>;
+>+              #address-cells = <1>;
+>+              #size-cells = <0>;
+>+              idle-state = <1>;
+>+
+>+              channel_9: i2c at 0 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <0>;
+>+
+>+                      temperature-sensor at 48 {
+>+                              compatible = "ti,tmp75";
+>+                              reg = <0x48>;
+>+                      };
+>+
+>+                      temperature-sensor at 49 {
+>+                              compatible = "ti,tmp75";
+>+                              reg = <0x49>;
+>+                      };
+>+
+>+                      power-monitor at 40 {
+>+                              compatible = "ti,ina219";
+>+                              reg = <0x40>;
+>+                              shunt-resistor = <2>;
+>+                      };
+>+
+>+                      power-monitor at 41 {
+>+                              compatible = "ti,ina219";
+>+                              reg = <0x41>;
+>+                              shunt-resistor = <5>;
+>+                      };
+>+              };
+>+
+>+              channel_10: i2c at 1 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <1>;
+>+              };
+>+
+>+              channel_11: i2c at 2 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <2>;
+>+              };
+>+
+>+              channel_12: i2c at 3 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <3>;
+>+              };
+>+      };
+>+
+>+      i2c-mux at 71 {
+>+              compatible = "nxp,pca9546";
+>+              status = "okay";
+>+              reg = <0x71>;
+>+              #address-cells = <1>;
+>+              #size-cells = <0>;
+>+              i2c-mux-idle-disconnect;
+>+
+>+              channel_13: i2c at 0 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <0>;
+>+              };
+>+
+>+              channel_14: i2c at 1 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <1>;
+>+              };
+>+
+>+              channel_15: i2c at 2 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <2>;
+>+              };
+>+
+>+              channel_16: i2c at 3 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <3>;
+>+              };
+>+      };
+>+};
+>+
+>+&i2c8 {
+>+      status = "okay";
+>+
+>+      i2c-mux at 70 {
+>+              compatible = "nxp,pca9546";
+>+              status = "okay";
+>+              reg = <0x70>;
+>+              #address-cells = <1>;
+>+              #size-cells = <0>;
+>+              i2c-mux-idle-disconnect;
+>+
+>+              channel_17: i2c at 0 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <0>;
+>+              };
+>+
+>+              channel_18: i2c at 1 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <1>;
+>+
+>+                      temperature-sensor at 48 {
+>+                              compatible = "ti,tmp75";
+>+                              reg = <0x48>;
+>+                      };
+>+
+>+                      power-monitor at 41 {
+>+                              compatible = "ti,ina219";
+>+                              reg = <0x41>;
+>+                              shunt-resistor = <5>;
+>+                      };
+>+              };
+>+
+>+              channel_19: i2c at 2 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <2>;
+>+              };
+>+
+>+              channel_20: i2c at 3 {
+>+                      #address-cells = <1>;
+>+                      #size-cells = <0>;
+>+                      reg = <3>;
+>+              };
+>+      };
+>+};
+>+
+>+&i2c9 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c10 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c11 {
+>+      status = "okay";
+>+};
+>+
+>+&i2c14 {
+>+      status = "okay";
+>+      multi-master;
+>+
+>+      eeprom at 50 {
+>+              compatible = "atmel,24c08";
+>+              reg = <0x50>;
+>+      };
+>+
+>+      eeprom at 51 {
+>+              compatible = "atmel,24c08";
+>+              reg = <0x51>;
+>+      };
+>+};
+>+
+>+&sgpiom0 {
+>+      status = "okay";
+>+      ngpios = <128>;
+>+};
+>+
+>+&video {
+>+      status = "okay";
+>+      memory-region = <&video_engine_memory>; };
+>+
+>+&sdc {
+>+      status = "okay";
+>+};
+>+
+>+&lpc_snoop {
+>+      status = "okay";
+>+      snoop-ports = <0x80>;
+>+};
+>+
+>+&kcs1 {
+>+      aspeed,lpc-io-reg = <0xca0>;
+>+      status = "okay";
+>+};
+>+
+>+&kcs2 {
+>+      aspeed,lpc-io-reg = <0xca8>;
+>+      status = "okay";
+>+};
+>+
+>+&kcs3 {
+>+      aspeed,lpc-io-reg = <0xca2>;
+>+      status = "okay";
+>+};
+>+
+>+&uart3 {
+>+      status = "okay";
+>+};
+>+
+>+&uart5 {
+>+      status = "okay";
+>+};
+>+
+>+&uart_routing {
+>+      status = "okay";
+>+};
+>+
+>+&vhub {
+>+      status = "okay";
+>+};
+>+
+>+&gpio0 {
+>+      gpio-line-names =
+>+      /*A0 0*/        "", "", "", "", "", "", "", "",
+>+      /*B0 8*/        "", "", "", "", "", "", "PS_PWROK", "",
+>+      /*C0 16*/       "", "", "", "", "", "", "", "",
+>+      /*D0 24*/       "", "", "", "", "", "", "", "",
+>+      /*E0 32*/       "", "", "", "", "", "", "", "",
+>+      /*F0 40*/       "", "", "", "", "", "", "", "",
+>+      /*G0 48*/       "", "", "", "", "", "", "", "",
+>+      /*H0 56*/       "", "", "", "", "", "", "", "",
+>+      /*I0 64*/       "", "", "", "", "", "", "", "",
+>+      /*J0 72*/       "", "", "", "", "", "", "", "",
+>+      /*K0 80*/       "", "", "", "", "", "", "", "",
+>+      /*L0 88*/       "", "", "", "", "", "", "", "",
+>+      /*M0 96*/       "", "", "", "", "", "", "", "",
+>+      /*N0 104*/      "", "", "", "",
+>+      /*N4 108*/      "POST_COMPLETE", "ESR1_GPIO_AST_SPISEL", "", "",
+>+      /*O0 112*/      "", "", "", "", "", "", "", "",
+>+      /*P0 120*/      "ID_BUTTON", "ID_OUT", "POWER_BUTTON", "POWER_OUT",
+>+      /*P4 124*/      "RESET_BUTTON", "RESET_OUT", "", "HEARTBEAT",
+>+      /*Q0 128*/      "", "", "", "", "", "", "", "",
+>+      /*R0 136*/      "", "", "", "", "", "", "", "",
+>+      /*S0 144*/      "", "", "", "", "", "", "", "",
+>+      /*T0 152*/      "", "", "", "", "", "", "", "",
+>+      /*U0 160*/      "", "", "", "", "", "", "", "",
+>+      /*V0 168*/      "", "", "", "", "", "", "", "",
+>+      /*W0 176*/      "", "", "", "", "", "", "", "",
+>+      /*X0 184*/      "", "", "", "", "", "", "", "",
+>+      /*Y0 192*/      "", "", "", "", "", "", "", "",
+>+      /*Z0 200*/      "", "", "", "", "", "", "", "";
+>+};
+>--
+>2.25.1
+>
+<p></p>
+
+===================================================================================================================================
+This email and any attachments to it contain confidential information and are intended solely for the use of the individual to whom it is addressed. If you are not the intended recipient or receive it accidentally, please immediately notify the sender by e-mail and delete the message and any attachments from your computer system, and destroy all hard copies. Please be advised that any unauthorized disclosure, copying, distribution or any action taken or omitted in reliance on this, is illegal and prohibited. Any views or opinions expressed are solely those of the author and do not represent those of ASUSTeK.
+
+For pricing information, ASUS is only entitled to set a recommendation resale price. All customers are free to set their own price as they wish.
+===================================================================================================================================
