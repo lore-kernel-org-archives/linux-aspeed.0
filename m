@@ -1,39 +1,35 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 29 Feb 2024 13:51:45 +1030
-Subject: [PATCH v6] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to
- DT schema
-In-Reply-To: <c2060450-4b76-4740-afe4-d14717245f01@linaro.org>
-References: <20240228003043.1167394-1-andrew@codeconstruct.com.au>
-	 <c2060450-4b76-4740-afe4-d14717245f01@linaro.org>
-Message-ID: <16ddd99007176da3f84462de217cb76c8fa4e1bd.camel@codeconstruct.com.au>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 29 Feb 2024 08:56:16 +0100
+Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
+In-Reply-To: <TYZPR04MB65964904A9624AF3BE05198D9D5F2@TYZPR04MB6596.apcprd04.prod.outlook.com>
+References: <20240227092922.1734998-1-Kelly_Hung@asus.com>
+ <60d048df-9a54-4239-8a8b-a8eb9a59dde9@linaro.org>
+ <TYZPR04MB65964904A9624AF3BE05198D9D5F2@TYZPR04MB6596.apcprd04.prod.outlook.com>
+Message-ID: <df9c05aa-6744-4954-9918-8b2abf59bbc0@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-02-28 at 08:47 +0100, Krzysztof Kozlowski wrote:
-> On 28/02/2024 01:30, Andrew Jeffery wrote:
-> > Squash warnings such as:
-> > 
-> > ```
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/apb at 1e600000/gpio at 1e780000: failed to match any schema with compatible: ['aspeed,ast2400-gpio']
-> > ```
-> > 
-> > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> > ---
-> > v6: Address more constraint feedback from Krzysztof:
-> >     https://lore.kernel.org/all/f69ef2ad-8ace-40c8-b923-4dde20eda2ec at linaro.org/
+On 29/02/2024 08:45, Kelly Hung(???) wrote:
+> Hi, Krzysztof,
 > 
-> You still have way too many examples. One is enough, two is still okay.
-> We really do not want more of examples with minor differences.
-
-Noted, I'll keep them to a minimum in the future.
-
+> I correct my change log
+>> Document the new compatibles used on ASUS X4TF.
+>>
+>> Changelog
+>> Changes in v3
+>> --- The new compatible is a BMC for a ASUS X4TF server which use a ast2600-a3 chip, so correct string to asus,x4tf-bmc
 > 
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Do I need to resend v3 patch again with the correct change log?
 
-Thanks for the feedback.
+You need to send v4 with correct changelog and tags.
 
-Andrew
+https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
+
+If a tag was not added on purpose, please state why and what changed.
+
+Best regards,
+Krzysztof
 
