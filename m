@@ -1,80 +1,43 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 01 Mar 2024 10:31:47 +1030
-Subject: [PATCH v5 2/2] ARM: dts: aspeed: x4tf: Add dts for asus x4tf
- project
-In-Reply-To: <20240229111123.1932504-2-Kelly_Hung@asus.com>
-References: <20240229111123.1932504-1-Kelly_Hung@asus.com>
-	 <20240229111123.1932504-2-Kelly_Hung@asus.com>
-Message-ID: <cc13d3f4fc7f117d0f29cf18a085066fd4b560cc.camel@codeconstruct.com.au>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Fri, 1 Mar 2024 09:18:01 +0100
+Subject: [PATCH v6] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to DT schema
+In-Reply-To: <e55aa1321ccac8e6391ab65a5a439b49d265bfce.camel@codeconstruct.com.au>
+References: <20240228003043.1167394-1-andrew@codeconstruct.com.au>
+ <c2060450-4b76-4740-afe4-d14717245f01@linaro.org> <16ddd99007176da3f84462de217cb76c8fa4e1bd.camel@codeconstruct.com.au>
+ <CAMRc=MeEyo7y-G1saydxtTRedNtHPaEeLANuzXt6KsiDU2jOWw@mail.gmail.com> <e55aa1321ccac8e6391ab65a5a439b49d265bfce.camel@codeconstruct.com.au>
+Message-ID: <CAMRc=Mfa1uUhkPNpLdcMsGC4=G+_MGzaxXRL7UVdfKJD_zF0+w@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2024-02-29 at 19:11 +0800, Kelly Hung wrote:
-> Base on aspeed-g6.dtsi and can boot into BMC console.
-> 
-> Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
-> 
-> ---
-> V4 -> V5: None
-> V3 -> V4: None
-> V2 -> V3:
-> - fmc lable change to bmc.
-> - use 64M partition layout.
-> - rename spi1 label to bios.
-> - remove bios partition section.
-> V1 -> V2:
-> - do schema check and remove all warings.
-> - remove all unnecessary sections.
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 581 ++++++++++++++++++
->  2 files changed, 582 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index d3ac20e31..32c41f3d9 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -10,6 +10,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-arm-stardragon4800-rep2.dtb \
->  	aspeed-bmc-asrock-e3c246d4i.dtb \
->  	aspeed-bmc-asrock-romed8hm3.dtb \
-> +	aspeed-bmc-asus-x4tf.dtb \
->  	aspeed-bmc-bytedance-g220a.dtb \
->  	aspeed-bmc-delta-ahe50dc.dtb \
->  	aspeed-bmc-facebook-bletchley.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
-> new file mode 100644
-> index 000000000..64f4ed07c
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
-> @@ -0,0 +1,581 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright 2024 ASUS Corp.
-> +
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include "aspeed-g6-pinctrl.dtsi"
+On Fri, Mar 1, 2024 at 12:23?AM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> On Thu, 2024-02-29 at 09:52 +0100, Bartosz Golaszewski wrote:
+> > On Thu, Feb 29, 2024 at 4:21?AM Andrew Jeffery
+> > <andrew@codeconstruct.com.au> wrote:
+> > >
+> > > On Wed, 2024-02-28 at 08:47 +0100, Krzysztof Kozlowski wrote:
+> > > >
+> > > > You still have way too many examples. One is enough, two is still okay.
+> > > > We really do not want more of examples with minor differences.
+> > >
+> > > Noted, I'll keep them to a minimum in the future.
+> > >
+> >
+> > As in: I'll still send a v7? I can trim the examples when applying,
+> > just tell me which ones to drop.
+>
+> Ah, thanks. I wasn't planning to send a v7 given the R-b tag from
+> Krzysztof for v6. I intended for "in the future" to mean for patches
+> converting other bindings to DT schema. But if you're keen to trim some
+> examples out I'd drop the aspeed,ast2400-gpio and aspeed,ast2500-gpio
+> nodes, keeping just the aspeed,ast2600-gpio example.
+>
+> Andrew
 
-aspeed-g6.dtsi already includes aspeed-g6-pinctrl.dtsi, so the include
-here is unnecessary.
+It's ok, I applied it as is.
 
-Other than that the patch looks okay to me. There are bunch of issues
-exposed by `make CHECK_DTBS=y aspeed/aspeed-bmc-asus-x4tf.dtb`, however
-they're almost all generic issues with aspeed-g6.dtsi or deficient
-binding definitions for the Aspeed controllers. I've put together a
-patch stack to clean them up and am working to upstream them.
-
-So for now:
-
-Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-
-I'll put v5 in a tree for Joel to pick up if he doesn't have any
-concerns. I'll drop the redundant include when applying the patch
-there.
-
-Andrew
+Bart
