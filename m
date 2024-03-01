@@ -1,51 +1,131 @@
-From: Chia Li Hung <ppighouse@gmail.com>
-Date: Wed, 27 Mar 2024 01:55:03 -0000
-Subject: [PATCH v6 0/2] Add Reviewed-by and Acked-by tags
-In-Reply-To: <eb4171d9c46dba2aabca90319028ee6be8c80d55.camel@codeconstruct.com.au>
-References: <20240326103549.2413515-1-Kelly_Hung@asus.com> <eb4171d9c46dba2aabca90319028ee6be8c80d55.camel@codeconstruct.com.au>
-Message-ID: <CAK=2Bxv=SPCG5ZSVAe3pt_hXNWe8Yc78LOSN0+5bcXnbTu6Gsw@mail.gmail.com>
+From: Supreeth Venkatesh <supvenka@amd.com>
+Date: Fri, 01 Mar 2024 20:57:37 -0000
+Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD Onyx
+ Platform
+In-Reply-To: <572d53516dee6db5af7089090056185abb4e78c7.camel@codeconstruct.com.au>
+References: <20240110033543.799919-1-supreeth.venkatesh@amd.com>
+ <572d53516dee6db5af7089090056185abb4e78c7.camel@codeconstruct.com.au>
+Message-ID: <a29a3906-8c01-4940-9aac-30e6c70df94c@amd.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi, Andrew,
-Thanks a lot. I got it.
 
-Best Regards
-Kelly
-
-Andrew Jeffery <andrew@codeconstruct.com.au> ? 2024?3?27? ?? ??9:46???
-
-> Hi Kelly,
+On 2/26/24 00:55, Andrew Jeffery wrote:
+> Caution: This message originated from an External Source. Use proper caution when opening attachments, clicking links, or responding.
 >
-> On Tue, 2024-03-26 at 18:35 +0800, Kelly Hung wrote:
-> > There are no changes to the Patch file, just the reviewed and acked tags
-> are added.
-> > PATCH v5 has been merged into the next branch.
 >
-> As others have said, please don't add tags that have not been
-> explicitly given for your patches.
+> On Tue, 2024-01-09 at 21:35 -0600, Supreeth Venkatesh wrote:
+>> This patch adds initial device tree and makefile updates for
+>> AMD Onyx platform.
+>>
+>> AMD Onyx platform is an AMD customer reference board with an Aspeed
+>> ast2600 BMC manufactured by AMD.
+>> It describes I2c devices, Fans, Kcs devices, Uarts, Mac, LEDs, etc.
+>> present on AMD Onyx platform.
+>>
+>> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+>> ---
+>>   arch/arm/boot/dts/aspeed/Makefile             |  1 +
+>>   .../boot/dts/aspeed/aspeed-bmc-amd-onyx.dts   | 98 +++++++++++++++++++
+>>   2 files changed, 99 insertions(+)
+>>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>> index fb9cc95f1b60..2b27d377aae2 100644
+>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>> @@ -5,6 +5,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>        aspeed-ast2600-evb.dtb \
+>>        aspeed-bmc-amd-daytonax.dtb \
+>>        aspeed-bmc-amd-ethanolx.dtb \
+>> +     aspeed-bmc-amd-onyx.dtb \
+>>        aspeed-bmc-ampere-mtjade.dtb \
+>>        aspeed-bmc-ampere-mtmitchell.dtb \
+>>        aspeed-bmc-arm-stardragon4800-rep2.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>> new file mode 100644
+>> index 000000000000..a7056cd29553
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>> @@ -0,0 +1,98 @@
+>> +// SPDX-License-Identifier: GPL-2.0+
+>> +// Copyright (c) 2021 - 2024 AMD Inc.
+>> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+>> +
+>> +/dts-v1/;
+>> +
+>> +#include "aspeed-g6.dtsi"
+>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>> +
+>> +/ {
+>> +       model = "AMD Onyx BMC";
+>> +       compatible = "amd,onyx-bmc", "aspeed,ast2600";
+>> +
+>> +       aliases {
+>> +               serial0 = &uart1;
+>> +               serial4 = &uart5;
+>> +      };
+>> +
+>> +       chosen {
+>> +               stdout-path = &uart5;
+>> +               bootargs = "console=ttyS4,115200 earlyprintk vmalloc=512MB";
+> Why `vmalloc=512MB`? Can you add a comment explaining the need for
+> that?
 >
-> Further, if a patch has been added to any upstream "next" branches it's
-> not necessary to resend the patches beyond that point, unless there are
-> errors that need correcting.
+> That said, setting bootargs in the devicetree is generally discouraged.
 >
-> Joel had added an earlier revision of your patches to a branch of
-> candidate patches to upstream, and I've updated those in my own that
-> I'm maintaining while he's on leave. I'd also added your patches to the
-> OpenBMC kernel tree as a consequence, but you shouldn't apply tags to
-> your upstream patches that other people didn't provide you on that
-> basis.
+Thank you. will remove in v2.
+>> +       };
+>> +
+>> +       memory at 80000000 {
+>> +               device_type = "memory";
+>> +               reg = <0x80000000 0x80000000>;
+>> +       };
+>> +
+>> +};
+>> +
+>> +&mdio0 {
+>> +       status = "okay";
+>> +
+>> +       ethphy0: ethernet-phy at 0 {
+>> +               compatible = "ethernet-phy-ieee802.3-c22";
+>> +               reg = <0>;
+>> +       };
+>> +};
+>> +
+>> +&mac3 {
+>> +       status = "okay";
+>> +       phy-mode = "rgmii";
+>> +       phy-handle = <&ethphy0>;
+>> +
+>> +       pinctrl-names = "default";
+>> +       pinctrl-0 = <&pinctrl_rgmii4_default>;
+>> +};
+>> +
+>> +
+>> +
+>> +&fmc {
+>> +       status = "okay";
+>> +       flash at 0 {
+>> +               compatible = "jedec,spi-nor";
+>> +               status = "okay";
+>> +               #include "openbmc-flash-layout-128.dtsi"
+>> +       };
+>> +};
+>> +
+>> +//Host Console
+>> +&uart1 {
+>> +       status = "okay";
+>> +};
+> How are you managing the host console? Enabling UART1 for that on the
+> BMC piques my interest :)
+UART1 [BMC side] <-> UART 4 [Host side].
 >
-> As for the concerns reported by Rob's bot, I've got a series that
-> cleans up many of them. I'm working to find time to send them out.
-> Hopefully these help reduce the noise in the future.
+> Apologies for the delay in reviewing.
+No problem. Thanks for reviewing. Sending v2 shortly.
 >
 > Andrew
 >
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240327/08e926d1/attachment-0001.htm>
