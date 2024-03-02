@@ -1,64 +1,197 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Sat, 2 Mar 2024 17:25:46 +0100
-Subject: [PATCH 1/1] ARM:dts:aspeed: Initial device tree for AMD Onyx
- Platform
-In-Reply-To: <023f6f6c-dadd-4933-ac2c-15dfe77bd90e@amd.com>
-References: <20240110033543.799919-1-supreeth.venkatesh@amd.com>
- <d4fe8b55-a1ea-4ce7-89ac-ce17e8ff4e45@amd.com>
- <dda6c22e-8f35-4c18-9fea-6a6295dee3a1@linaro.org>
- <023f6f6c-dadd-4933-ac2c-15dfe77bd90e@amd.com>
-Message-ID: <66a2e36e-2fde-4041-8a1d-b0f7ae0b3f6b@linaro.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Sat, 2 Mar 2024 21:58:53 +0100
+Subject: [PATCH v2 03/14] serial: port: Introduce a common helper to read
+ properties
+In-Reply-To: <20240226142514.1485246-4-andriy.shevchenko@linux.intel.com>
+References: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
+ <20240226142514.1485246-4-andriy.shevchenko@linux.intel.com>
+Message-ID: <2024030259-playback-starlit-a472@gregkh>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 01/03/2024 22:02, Supreeth Venkatesh wrote:
->>>> ---
->>>>    arch/arm/boot/dts/aspeed/Makefile             |  1 +
->>>>    .../boot/dts/aspeed/aspeed-bmc-amd-onyx.dts   | 98 +++++++++++++++++++
->>>>    2 files changed, 99 insertions(+)
->>>>    create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
->>>>
->>>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
->>>> index fb9cc95f1b60..2b27d377aae2 100644
->>>> --- a/arch/arm/boot/dts/aspeed/Makefile
->>>> +++ b/arch/arm/boot/dts/aspeed/Makefile
->>>> @@ -5,6 +5,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>>>       aspeed-ast2600-evb.dtb \
->>>>       aspeed-bmc-amd-daytonax.dtb \
->>>>       aspeed-bmc-amd-ethanolx.dtb \
->>>> +    aspeed-bmc-amd-onyx.dtb \
->>>>       aspeed-bmc-ampere-mtjade.dtb \
->>>>       aspeed-bmc-ampere-mtmitchell.dtb \
->>>>       aspeed-bmc-arm-stardragon4800-rep2.dtb \
->>>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
->>>> new file mode 100644
->>>> index 000000000000..a7056cd29553
->>>> --- /dev/null
->>>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
->>>> @@ -0,0 +1,98 @@
->>>> +// SPDX-License-Identifier: GPL-2.0+
->>>> +// Copyright (c) 2021 - 2024 AMD Inc.
->>>> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
->>>> +
->>>> +/dts-v1/;
->>>> +
->>>> +#include "aspeed-g6.dtsi"
->>>> +#include <dt-bindings/gpio/aspeed-gpio.h>
->>>> +
->>>> +/ {
->>>> +       model = "AMD Onyx BMC";
->>>> +       compatible = "amd,onyx-bmc", "aspeed,ast2600";
->> Undocumented compatibles.
-> This is a new device tree file.
+On Mon, Feb 26, 2024 at 04:19:19PM +0200, Andy Shevchenko wrote:
+> Several serial drivers want to read the same or similar set of
+> the port properties. Make a common helper for them.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/tty/serial/serial_port.c | 134 +++++++++++++++++++++++++++++++
+>  include/linux/serial_core.h      |   1 +
+>  2 files changed, 135 insertions(+)
+> 
+> diff --git a/drivers/tty/serial/serial_port.c b/drivers/tty/serial/serial_port.c
+> index 88975a4df306..ecc980e9dba6 100644
+> --- a/drivers/tty/serial/serial_port.c
+> +++ b/drivers/tty/serial/serial_port.c
+> @@ -8,7 +8,10 @@
+>  
+>  #include <linux/device.h>
+>  #include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/property.h>
+>  #include <linux/serial_core.h>
+>  #include <linux/spinlock.h>
+>  
+> @@ -82,6 +85,137 @@ void uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
+>  }
+>  EXPORT_SYMBOL(uart_remove_one_port);
+>  
+> +/**
+> + * uart_read_port_properties - read firmware properties of the given UART port
 
-It's obvious, so what does it even mean?
+I like, but:
 
-Anyway, fix warnings.
+> + * @port: corresponding port
+> + * @use_defaults: apply defaults (when %true) or validate the values (when %false)
+
+Using random booleans in a function is horrid.  Every time you see the
+function call, or want to call it, you need to go and look up what the
+boolean is and means.
+
+Make 2 public functions here, one that does it with use_defaults=true
+and one =false and then have them both call this one static function,
+that way the function names themselves are easy to read and understand
+and maintain over time.
+
+thanks,
+
+greg k-h
 
 
-Best regards,
-Krzysztof
+> + *
+> + * The following device properties are supported:
+> + *   - clock-frequency (optional)
+> + *   - fifo-size (optional)
+> + *   - no-loopback-test (optional)
+> + *   - reg-shift (defaults may apply)
+> + *   - reg-offset (value may be validated)
+> + *   - reg-io-width (defaults may apply or value may be validated)
+> + *   - interrupts (OF only)
+> + *   - serial [alias ID] (OF only)
+> + *
+> + * If the port->dev is of struct platform_device type the interrupt line
+> + * will be retrieved via platform_get_irq() call against that device.
+> + * Otherwise it will be assigned by fwnode_irq_get() call. In both cases
+> + * the index 0 of the resource is used.
+> + *
+> + * The caller is responsible to initialize the following fields of the @port
+> + *   ->dev (must be valid)
+> + *   ->flags
+> + *   ->mapbase
+> + *   ->mapsize
+> + *   ->regshift (if @use_defaults is false)
+> + * before calling this function. Alternatively the above mentioned fields
+> + * may be zeroed, in such case the only ones, that have associated properties
+> + * found, will be set to the respective values.
+> + *
+> + * If no error happened, the ->irq, ->mapbase, ->mapsize will be altered.
+> + * The ->iotype is always altered.
+> + *
+> + * When @use_defaults is true and the respective property is not found
+> + * the following values will be applied:
+> + *   ->regshift = 0
+> + * In this case IRQ must be provided, otherwise an error will be returned.
+> + *
+> + * When @use_defaults is false and the respective property is found
+> + * the following values will be validated:
+> + *   - reg-io-width (->iotype)
+> + *   - reg-offset (->mapsize against ->mapbase)
+> + *
+> + * Returns: 0 on success or negative errno on failure
+> + */
+> +int uart_read_port_properties(struct uart_port *port, bool use_defaults)
+> +{
+> +	struct device *dev = port->dev;
+> +	u32 value;
+> +	int ret;
+> +
+> +	/* Read optional UART functional clock frequency */
+> +	device_property_read_u32(dev, "clock-frequency", &port->uartclk);
+> +
+> +	/* Read the registers alignment (default: 8-bit) */
+> +	ret = device_property_read_u32(dev, "reg-shift", &value);
+> +	if (ret)
+> +		port->regshift = use_defaults ? 0 : port->regshift;
+> +	else
+> +		port->regshift = value;
+> +
+> +	/* Read the registers I/O access type (default: MMIO 8-bit) */
+> +	ret = device_property_read_u32(dev, "reg-io-width", &value);
+> +	if (ret) {
+> +		port->iotype = UPIO_MEM;
+> +	} else {
+> +		switch (value) {
+> +		case 1:
+> +			port->iotype = UPIO_MEM;
+> +			break;
+> +		case 2:
+> +			port->iotype = UPIO_MEM16;
+> +			break;
+> +		case 4:
+> +			port->iotype = device_is_big_endian(dev) ? UPIO_MEM32BE : UPIO_MEM32;
+> +			break;
+> +		default:
+> +			if (!use_defaults) {
+> +				dev_err(dev, "Unsupported reg-io-width (%u)\n", value);
+> +				return -EINVAL;
+> +			}
+> +			port->iotype = UPIO_UNKNOWN;
+> +			break;
+> +		}
+> +	}
+> +
+> +	/* Read the address mapping base offset (default: no offset) */
+> +	ret = device_property_read_u32(dev, "reg-offset", &value);
+> +	if (ret)
+> +		value = 0;
+> +
+> +	/* Check for shifted address mapping overflow */
+> +	if (!use_defaults && port->mapsize < value) {
+> +		dev_err(dev, "reg-offset %u exceeds region size %pa\n", value, &port->mapsize);
+> +		return -EINVAL;
+> +	}
+> +
+> +	port->mapbase += value;
+> +	port->mapsize -= value;
+> +
+> +	/* Read optional FIFO size */
+> +	device_property_read_u32(dev, "fifo-size", &port->fifosize);
+> +
+> +	if (device_property_read_bool(dev, "no-loopback-test"))
+> +		port->flags |= UPF_SKIP_TEST;
+> +
+> +	/* Get index of serial line, if found in DT aliases */
+> +	ret = of_alias_get_id(dev_of_node(dev), "serial");
+> +	if (ret >= 0)
+> +		port->line = ret;
+> +
+> +	if (dev_is_platform(dev))
+> +		ret = platform_get_irq(to_platform_device(dev), 0);
+> +	else
+> +		ret = fwnode_irq_get(dev_fwnode(dev), 0);
+> +	if (ret == -EPROBE_DEFER)
+> +		return ret;
+> +	if (ret > 0)
+> +		port->irq = ret;
+> +	else if (use_defaults)
+> +		/* By default IRQ support is mandatory */
+> +		return ret;
+> +	else
+> +		port->irq = 0;
+> +
+> +	port->flags |= UPF_SHARE_IRQ;
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(uart_read_port_properties);
 
+EXPORT_SYMBOL_GPL()?  I have to ask :)
+
+thanks,
+
+greg k-h
