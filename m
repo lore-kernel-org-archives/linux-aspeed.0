@@ -1,54 +1,26 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 4 Mar 2024 13:09:07 +0200
-Subject: [PATCH v2 03/14] serial: port: Introduce a common helper to read
- properties
-In-Reply-To: <2024030259-playback-starlit-a472@gregkh>
-References: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
- <20240226142514.1485246-4-andriy.shevchenko@linux.intel.com>
- <2024030259-playback-starlit-a472@gregkh>
-Message-ID: <ZeWr06YWj5cDHfWL@smile.fi.intel.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Mon, 4 Mar 2024 12:23:20 +0100
+Subject: [PATCH] ARM: dts: aspeed: asus: Add ASUS X4TF BMC
+In-Reply-To: <TYZPR04MB659655F98C755C9DE55FD4AB9D232@TYZPR04MB6596.apcprd04.prod.outlook.com>
+References: <20240130085652.198010-1-Kelly_Hung@asus.com>
+ <20240130085652.198010-2-Kelly_Hung@asus.com>
+ <3edf1a47-9f73-4e99-98ea-182248102346@linaro.org>
+ <TYZPR04MB659655F98C755C9DE55FD4AB9D232@TYZPR04MB6596.apcprd04.prod.outlook.com>
+Message-ID: <d2426e1f-a09c-466f-a490-40fb7daf406c@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Mar 02, 2024 at 09:58:53PM +0100, Greg Kroah-Hartman wrote:
-> On Mon, Feb 26, 2024 at 04:19:19PM +0200, Andy Shevchenko wrote:
-
-...
-
-> > + * uart_read_port_properties - read firmware properties of the given UART port
+On 04/03/2024 11:45, Kelly Hung(???) wrote:
+> Hi, Krzysztof,
 > 
-> I like, but:
-> 
-> > + * @port: corresponding port
-> > + * @use_defaults: apply defaults (when %true) or validate the values (when %false)
-> 
-> Using random booleans in a function is horrid.  Every time you see the
-> function call, or want to call it, you need to go and look up what the
-> boolean is and means.
-> 
-> Make 2 public functions here, one that does it with use_defaults=true
-> and one =false and then have them both call this one static function,
-> that way the function names themselves are easy to read and understand
-> and maintain over time.
+> Thanks for review, I notice there were a lot of errors. I've corrected them and done a schema and patch check, then resend the patch on 2/22.
 
-Okay! I'll redo that.
+And what happened with my other messages? Why you were not replying to
+them? Why only some parts were implemented?
 
-...
-
-> > +EXPORT_SYMBOL(uart_read_port_properties);
-> 
-> EXPORT_SYMBOL_GPL()?  I have to ask :)
-
-No clue, the rest in this file is EXPORT_SYMBOL, but I admit I followed the
-cargo cult. I'll check the modified code and see if I may use _GPL version.
-
-Thank you for review!
-
--- 
-With Best Regards,
-Andy Shevchenko
-
+Best regards,
+Krzysztof
 
