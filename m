@@ -1,50 +1,54 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 04 Mar 2024 14:06:55 +1030
-Subject: [PATCH v6] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to
- DT schema
-In-Reply-To: <CAMRc=Mfa1uUhkPNpLdcMsGC4=G+_MGzaxXRL7UVdfKJD_zF0+w@mail.gmail.com>
-References: <20240228003043.1167394-1-andrew@codeconstruct.com.au>
-	 <c2060450-4b76-4740-afe4-d14717245f01@linaro.org>
-	 <16ddd99007176da3f84462de217cb76c8fa4e1bd.camel@codeconstruct.com.au>
-	 <CAMRc=MeEyo7y-G1saydxtTRedNtHPaEeLANuzXt6KsiDU2jOWw@mail.gmail.com>
-	 <e55aa1321ccac8e6391ab65a5a439b49d265bfce.camel@codeconstruct.com.au>
-	 <CAMRc=Mfa1uUhkPNpLdcMsGC4=G+_MGzaxXRL7UVdfKJD_zF0+w@mail.gmail.com>
-Message-ID: <33f423783b71a4e4dd6e8c37a8909a69c25fb24c.camel@codeconstruct.com.au>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Mon, 4 Mar 2024 13:09:07 +0200
+Subject: [PATCH v2 03/14] serial: port: Introduce a common helper to read
+ properties
+In-Reply-To: <2024030259-playback-starlit-a472@gregkh>
+References: <20240226142514.1485246-1-andriy.shevchenko@linux.intel.com>
+ <20240226142514.1485246-4-andriy.shevchenko@linux.intel.com>
+ <2024030259-playback-starlit-a472@gregkh>
+Message-ID: <ZeWr06YWj5cDHfWL@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-03-01 at 09:18 +0100, Bartosz Golaszewski wrote:
-> On Fri, Mar 1, 2024 at 12:23?AM Andrew Jeffery
-> <andrew@codeconstruct.com.au> wrote:
-> > 
-> > On Thu, 2024-02-29 at 09:52 +0100, Bartosz Golaszewski wrote:
-> > > On Thu, Feb 29, 2024 at 4:21?AM Andrew Jeffery
-> > > <andrew@codeconstruct.com.au> wrote:
-> > > > 
-> > > > On Wed, 2024-02-28 at 08:47 +0100, Krzysztof Kozlowski wrote:
-> > > > > 
-> > > > > You still have way too many examples. One is enough, two is still okay.
-> > > > > We really do not want more of examples with minor differences.
-> > > > 
-> > > > Noted, I'll keep them to a minimum in the future.
-> > > > 
-> > > 
-> > > As in: I'll still send a v7? I can trim the examples when applying,
-> > > just tell me which ones to drop.
-> > 
-> > Ah, thanks. I wasn't planning to send a v7 given the R-b tag from
-> > Krzysztof for v6. I intended for "in the future" to mean for patches
-> > converting other bindings to DT schema. But if you're keen to trim some
-> > examples out I'd drop the aspeed,ast2400-gpio and aspeed,ast2500-gpio
-> > nodes, keeping just the aspeed,ast2600-gpio example.
-> > 
-> > Andrew
+On Sat, Mar 02, 2024 at 09:58:53PM +0100, Greg Kroah-Hartman wrote:
+> On Mon, Feb 26, 2024 at 04:19:19PM +0200, Andy Shevchenko wrote:
+
+...
+
+> > + * uart_read_port_properties - read firmware properties of the given UART port
 > 
-> It's ok, I applied it as is.
+> I like, but:
+> 
+> > + * @port: corresponding port
+> > + * @use_defaults: apply defaults (when %true) or validate the values (when %false)
+> 
+> Using random booleans in a function is horrid.  Every time you see the
+> function call, or want to call it, you need to go and look up what the
+> boolean is and means.
+> 
+> Make 2 public functions here, one that does it with use_defaults=true
+> and one =false and then have them both call this one static function,
+> that way the function names themselves are easy to read and understand
+> and maintain over time.
 
-Thanks!
+Okay! I'll redo that.
 
-Andrew
+...
+
+> > +EXPORT_SYMBOL(uart_read_port_properties);
+> 
+> EXPORT_SYMBOL_GPL()?  I have to ask :)
+
+No clue, the rest in this file is EXPORT_SYMBOL, but I admit I followed the
+cargo cult. I'll check the modified code and see if I may use _GPL version.
+
+Thank you for review!
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
