@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon,  4 Mar 2024 14:27:10 +0200
-Subject: [PATCH v3 09/14] serial: 8250_lpc18xx: Switch to use uart_read_port_properties()
+Date: Mon,  4 Mar 2024 14:27:07 +0200
+Subject: [PATCH v3 06/14] serial: 8250_bcm7271: Switch to use uart_read_port_properties()
 In-Reply-To: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
 References: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240304123035.758700-10-andriy.shevchenko@linux.intel.com>
+Message-ID: <20240304123035.758700-7-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,61 +14,117 @@ Since we have now a common helper to read port properties
 use it instead of sparse home grown solution.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
+Tested-by: Florian Fainelli <florian.fainelli@broadcom.com>
 ---
- drivers/tty/serial/8250/8250_lpc18xx.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+ drivers/tty/serial/8250/8250_bcm7271.c | 56 +++++++++-----------------
+ 1 file changed, 19 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_lpc18xx.c b/drivers/tty/serial/8250/8250_lpc18xx.c
-index 8d728a6a5991..7984ee05af1d 100644
---- a/drivers/tty/serial/8250/8250_lpc18xx.c
-+++ b/drivers/tty/serial/8250/8250_lpc18xx.c
-@@ -92,11 +92,7 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
- 	struct lpc18xx_uart_data *data;
- 	struct uart_8250_port uart;
- 	struct resource *res;
--	int irq, ret;
--
+diff --git a/drivers/tty/serial/8250/8250_bcm7271.c b/drivers/tty/serial/8250/8250_bcm7271.c
+index 1532fa2e8ec4..5daa38d9c64e 100644
+--- a/drivers/tty/serial/8250/8250_bcm7271.c
++++ b/drivers/tty/serial/8250/8250_bcm7271.c
+@@ -935,17 +935,14 @@ static void brcmuart_init_debugfs(struct brcmuart_priv *priv,
+ static int brcmuart_probe(struct platform_device *pdev)
+ {
+ 	struct resource *regs;
+-	struct device_node *np = pdev->dev.of_node;
+ 	const struct of_device_id *of_id = NULL;
+ 	struct uart_8250_port *new_port;
+ 	struct device *dev = &pdev->dev;
+ 	struct brcmuart_priv *priv;
+ 	struct clk *baud_mux_clk;
+ 	struct uart_8250_port up;
+-	int irq;
+ 	void __iomem *membase = NULL;
+ 	resource_size_t mapbase = 0;
+-	u32 clk_rate = 0;
+ 	int ret;
+ 	int x;
+ 	int dma_irq;
+@@ -953,15 +950,12 @@ static int brcmuart_probe(struct platform_device *pdev)
+ 		"uart", "dma_rx", "dma_tx", "dma_intr2", "dma_arb"
+ 	};
+ 
 -	irq = platform_get_irq(pdev, 0);
 -	if (irq < 0)
 -		return irq;
-+	int ret;
+ 	priv = devm_kzalloc(dev, sizeof(struct brcmuart_priv),
+ 			GFP_KERNEL);
+ 	if (!priv)
+ 		return -ENOMEM;
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res) {
-@@ -139,19 +135,12 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
- 		goto dis_clk_reg;
+-	of_id = of_match_node(brcmuart_dt_ids, np);
++	of_id = of_match_node(brcmuart_dt_ids, dev->of_node);
+ 	if (!of_id || !of_id->data)
+ 		priv->rate_table = brcmstb_rate_table;
+ 	else
+@@ -1011,7 +1005,23 @@ static int brcmuart_probe(struct platform_device *pdev)
+ 		}
  	}
  
--	ret = of_alias_get_id(pdev->dev.of_node, "serial");
--	if (ret >= 0)
--		uart.port.line = ret;
--
- 	data->dma.rx_param = data;
- 	data->dma.tx_param = data;
- 
- 	spin_lock_init(&uart.port.lock);
- 	uart.port.dev = &pdev->dev;
--	uart.port.irq = irq;
--	uart.port.iotype = UPIO_MEM32;
- 	uart.port.mapbase = res->start;
--	uart.port.regshift = 2;
- 	uart.port.type = PORT_16550A;
- 	uart.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SKIP_TEST;
- 	uart.port.uartclk = clk_get_rate(data->clk_uart);
-@@ -160,6 +149,13 @@ static int lpc18xx_serial_probe(struct platform_device *pdev)
- 	uart.port.rs485_supported = lpc18xx_rs485_supported;
- 	uart.port.serial_out = lpc18xx_uart_serial_out;
- 
-+	ret = uart_read_port_properties(&uart.port);
+-	of_property_read_u32(np, "clock-frequency", &clk_rate);
++	dev_dbg(dev, "DMA is %senabled\n", priv->dma_enabled ? "" : "not ");
++
++	memset(&up, 0, sizeof(up));
++	up.port.type = PORT_BCM7271;
++	up.port.dev = dev;
++	up.port.mapbase = mapbase;
++	up.port.membase = membase;
++	up.port.handle_irq = brcmuart_handle_irq;
++	up.port.flags = UPF_BOOT_AUTOCONF | UPF_FIXED_PORT | UPF_FIXED_TYPE;
++	up.port.private_data = priv;
++
++	ret = uart_read_port_properties(&up.port);
 +	if (ret)
-+		return ret;
++		goto release_dma;
 +
-+	uart.port.iotype = UPIO_MEM32;
-+	uart.port.regshift = 2;
-+
- 	uart.dma = &data->dma;
- 	uart.dma->rxconf.src_maxburst = 1;
- 	uart.dma->txconf.dst_maxburst = 1;
++	up.port.regshift = 2;
++	up.port.iotype = device_is_big_endian(dev) ? UPIO_MEM32BE : UPIO_MEM32;
+ 
+ 	/* See if a Baud clock has been specified */
+ 	baud_mux_clk = devm_clk_get_optional_enabled(dev, "sw_baud");
+@@ -1023,39 +1033,11 @@ static int brcmuart_probe(struct platform_device *pdev)
+ 
+ 		priv->baud_mux_clk = baud_mux_clk;
+ 		init_real_clk_rates(dev, priv);
+-		clk_rate = priv->default_mux_rate;
++		up.port.uartclk = priv->default_mux_rate;
+ 	} else {
+ 		dev_dbg(dev, "BAUD MUX clock not specified\n");
+ 	}
+ 
+-	if (clk_rate == 0) {
+-		ret = dev_err_probe(dev, -EINVAL, "clock-frequency or clk not defined\n");
+-		goto release_dma;
+-	}
+-
+-	dev_dbg(dev, "DMA is %senabled\n", priv->dma_enabled ? "" : "not ");
+-
+-	memset(&up, 0, sizeof(up));
+-	up.port.type = PORT_BCM7271;
+-	up.port.uartclk = clk_rate;
+-	up.port.dev = dev;
+-	up.port.mapbase = mapbase;
+-	up.port.membase = membase;
+-	up.port.irq = irq;
+-	up.port.handle_irq = brcmuart_handle_irq;
+-	up.port.regshift = 2;
+-	up.port.iotype = of_device_is_big_endian(np) ?
+-		UPIO_MEM32BE : UPIO_MEM32;
+-	up.port.flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF
+-		| UPF_FIXED_PORT | UPF_FIXED_TYPE;
+-	up.port.dev = dev;
+-	up.port.private_data = priv;
+-
+-	/* Check for a fixed line number */
+-	ret = of_alias_get_id(np, "serial");
+-	if (ret >= 0)
+-		up.port.line = ret;
+-
+ 	/* setup HR timer */
+ 	hrtimer_init(&priv->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+ 	priv->hrt.function = brcmuart_hrtimer_func;
 -- 
 2.43.0.rc1.1.gbec44491f096
 
