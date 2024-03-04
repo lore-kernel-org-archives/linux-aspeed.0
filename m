@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon,  4 Mar 2024 14:27:12 +0200
-Subject: [PATCH v3 11/14] serial: 8250_omap: Switch to use uart_read_port_properties()
+Date: Mon,  4 Mar 2024 14:27:08 +0200
+Subject: [PATCH v3 07/14] serial: 8250_dw: Switch to use uart_read_port_properties()
 In-Reply-To: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
 References: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240304123035.758700-12-andriy.shevchenko@linux.intel.com>
+Message-ID: <20240304123035.758700-8-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,83 +13,143 @@ Content-Transfer-Encoding: 7bit
 Since we have now a common helper to read port properties
 use it instead of sparse home grown solution.
 
+Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/tty/serial/8250/8250_omap.c | 29 ++++++++++-------------------
- 1 file changed, 10 insertions(+), 19 deletions(-)
+ drivers/tty/serial/8250/8250_dw.c | 67 +++++++++++++------------------
+ 1 file changed, 27 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
-index 6942990a333c..66901d93089a 100644
---- a/drivers/tty/serial/8250/8250_omap.c
-+++ b/drivers/tty/serial/8250/8250_omap.c
-@@ -1394,11 +1394,7 @@ static int omap8250_probe(struct platform_device *pdev)
- 	struct uart_8250_port up;
- 	struct resource *regs;
- 	void __iomem *membase;
--	int irq, ret;
--
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
--		return irq;
-+	int ret;
+diff --git a/drivers/tty/serial/8250/8250_dw.c b/drivers/tty/serial/8250/8250_dw.c
+index 062718615944..9ac4be748596 100644
+--- a/drivers/tty/serial/8250/8250_dw.c
++++ b/drivers/tty/serial/8250/8250_dw.c
+@@ -17,7 +17,6 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/module.h>
+ #include <linux/notifier.h>
+-#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/property.h>
+@@ -449,12 +448,7 @@ static void dw8250_quirks(struct uart_port *p, struct dw8250_data *data)
  
- 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!regs) {
-@@ -1419,7 +1415,6 @@ static int omap8250_probe(struct platform_device *pdev)
- 	up.port.dev = &pdev->dev;
- 	up.port.mapbase = regs->start;
- 	up.port.membase = membase;
--	up.port.irq = irq;
- 	/*
- 	 * It claims to be 16C750 compatible however it is a little different.
- 	 * It has EFR and has no FCR7_64byte bit. The AFE (which it claims to
-@@ -1429,13 +1424,9 @@ static int omap8250_probe(struct platform_device *pdev)
- 	 * or pm callback.
- 	 */
- 	up.port.type = PORT_8250;
--	up.port.iotype = UPIO_MEM;
--	up.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SOFT_FLOW |
--		UPF_HARD_FLOW;
-+	up.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SOFT_FLOW | UPF_HARD_FLOW;
- 	up.port.private_data = priv;
+ 	if (np) {
+ 		unsigned int quirks = data->pdata->quirks;
+-		int id;
  
--	up.port.regshift = OMAP_UART_REGSHIFT;
--	up.port.fifosize = 64;
- 	up.tx_loadsz = 64;
- 	up.capabilities = UART_CAP_FIFO;
- #ifdef CONFIG_PM
-@@ -1461,14 +1452,14 @@ static int omap8250_probe(struct platform_device *pdev)
- 	up.rs485_stop_tx = serial8250_em485_stop_tx;
- 	up.port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_8250_CONSOLE);
- 
--	ret = of_alias_get_id(np, "serial");
--	if (ret < 0) {
--		dev_err(&pdev->dev, "failed to get alias\n");
-+	ret = uart_read_port_properties(&up.port);
-+	if (ret)
- 		return ret;
--	}
--	up.port.line = ret;
- 
--	if (of_property_read_u32(np, "clock-frequency", &up.port.uartclk)) {
-+	up.port.regshift = OMAP_UART_REGSHIFT;
-+	up.port.fifosize = 64;
-+
-+	if (!up.port.uartclk) {
- 		struct clk *clk;
- 
- 		clk = devm_clk_get(&pdev->dev, NULL);
-@@ -1560,8 +1551,8 @@ static int omap8250_probe(struct platform_device *pdev)
- 	}
+-		/* get index of serial line, if found in DT aliases */
+-		id = of_alias_get_id(np, "serial");
+-		if (id >= 0)
+-			p->line = id;
+ #ifdef CONFIG_64BIT
+ 		if (quirks & DW_UART_QUIRK_OCTEON) {
+ 			p->serial_in = dw8250_serial_inq;
+@@ -465,12 +459,6 @@ static void dw8250_quirks(struct uart_port *p, struct dw8250_data *data)
+ 		}
  #endif
  
--	irq_set_status_flags(irq, IRQ_NOAUTOEN);
--	ret = devm_request_irq(&pdev->dev, irq, omap8250_irq, 0,
-+	irq_set_status_flags(up.port.irq, IRQ_NOAUTOEN);
-+	ret = devm_request_irq(&pdev->dev, up.port.irq, omap8250_irq, 0,
- 			       dev_name(&pdev->dev), priv);
- 	if (ret < 0)
- 		return ret;
+-		if (of_device_is_big_endian(np)) {
+-			p->iotype = UPIO_MEM32BE;
+-			p->serial_in = dw8250_serial_in32be;
+-			p->serial_out = dw8250_serial_out32be;
+-		}
+-
+ 		if (quirks & DW_UART_QUIRK_ARMADA_38X)
+ 			p->serial_out = dw8250_serial_out38x;
+ 		if (quirks & DW_UART_QUIRK_SKIP_SET_RATE)
+@@ -510,39 +498,21 @@ static int dw8250_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct dw8250_data *data;
+ 	struct resource *regs;
+-	int irq;
+ 	int err;
+-	u32 val;
+ 
+ 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!regs)
+ 		return dev_err_probe(dev, -EINVAL, "no registers defined\n");
+ 
+-	irq = platform_get_irq_optional(pdev, 0);
+-	/* no interrupt -> fall back to polling */
+-	if (irq == -ENXIO)
+-		irq = 0;
+-	if (irq < 0)
+-		return irq;
+-
+ 	spin_lock_init(&p->lock);
+-	p->mapbase	= regs->start;
+-	p->irq		= irq;
+ 	p->handle_irq	= dw8250_handle_irq;
+ 	p->pm		= dw8250_do_pm;
+ 	p->type		= PORT_8250;
+-	p->flags	= UPF_SHARE_IRQ | UPF_FIXED_PORT;
++	p->flags	= UPF_FIXED_PORT;
+ 	p->dev		= dev;
+-	p->iotype	= UPIO_MEM;
+-	p->serial_in	= dw8250_serial_in;
+-	p->serial_out	= dw8250_serial_out;
+ 	p->set_ldisc	= dw8250_set_ldisc;
+ 	p->set_termios	= dw8250_set_termios;
+ 
+-	p->membase = devm_ioremap(dev, regs->start, resource_size(regs));
+-	if (!p->membase)
+-		return -ENOMEM;
+-
+ 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+@@ -554,15 +524,35 @@ static int dw8250_probe(struct platform_device *pdev)
+ 	data->uart_16550_compatible = device_property_read_bool(dev,
+ 						"snps,uart-16550-compatible");
+ 
+-	err = device_property_read_u32(dev, "reg-shift", &val);
+-	if (!err)
+-		p->regshift = val;
++	p->mapbase = regs->start;
++	p->mapsize = resource_size(regs);
+ 
+-	err = device_property_read_u32(dev, "reg-io-width", &val);
+-	if (!err && val == 4) {
+-		p->iotype = UPIO_MEM32;
++	p->membase = devm_ioremap(dev, p->mapbase, p->mapsize);
++	if (!p->membase)
++		return -ENOMEM;
++
++	err = uart_read_port_properties(p);
++	/* no interrupt -> fall back to polling */
++	if (err == -ENXIO)
++		err = 0;
++	if (err)
++		return err;
++
++	switch (p->iotype) {
++	case UPIO_MEM:
++		p->serial_in = dw8250_serial_in;
++		p->serial_out = dw8250_serial_out;
++		break;
++	case UPIO_MEM32:
+ 		p->serial_in = dw8250_serial_in32;
+ 		p->serial_out = dw8250_serial_out32;
++		break;
++	case UPIO_MEM32BE:
++		p->serial_in = dw8250_serial_in32be;
++		p->serial_out = dw8250_serial_out32be;
++		break;
++	default:
++		return -ENODEV;
+ 	}
+ 
+ 	if (device_property_read_bool(dev, "dcd-override")) {
+@@ -589,9 +579,6 @@ static int dw8250_probe(struct platform_device *pdev)
+ 		data->msr_mask_off |= UART_MSR_TERI;
+ 	}
+ 
+-	/* Always ask for fixed clock rate from a property. */
+-	device_property_read_u32(dev, "clock-frequency", &p->uartclk);
+-
+ 	/* If there is separate baudclk, get the rate from it. */
+ 	data->clk = devm_clk_get_optional_enabled(dev, "baudclk");
+ 	if (data->clk == NULL)
 -- 
 2.43.0.rc1.1.gbec44491f096
 
