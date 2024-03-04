@@ -1,182 +1,179 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon,  4 Mar 2024 14:27:11 +0200
-Subject: [PATCH v3 10/14] serial: 8250_of: Switch to use uart_read_port_properties()
-In-Reply-To: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
-References: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240304123035.758700-11-andriy.shevchenko@linux.intel.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Mon, 4 Mar 2024 20:23:27 +0000
+Subject: [PATCH v2] dt-bindings: gpio: aspeed,ast2400-gpio: Convert to DT
+ schema
+In-Reply-To: <20240226031951.284847-1-andrew@codeconstruct.com.au>
+References: <20240226031951.284847-1-andrew@codeconstruct.com.au>
+Message-ID: <20240304-radio-urban-9843704f374e@spud>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since we have now a common helper to read port properties
-use it instead of sparse home grown solution.
+On Mon, Feb 26, 2024 at 01:49:51PM +1030, Andrew Jeffery wrote:
+> Squash warnings such as:
+> 
+> ```
+> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/apb at 1e600000/gpio at 1e780000: failed to match any schema with compatible: ['aspeed,ast2400-gpio']
+> ```
+> 
+> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> ---
+> v2: Address feedback from Krzysztof:
+>     https://lore.kernel.org/all/0d1dd262-b6dd-4d71-9239-8b0aec8cceff at linaro.org/
+> 
+> v1: https://lore.kernel.org/all/20240220052918.742793-1-andrew at codeconstruct.com.au/
+> 
+>  .../bindings/gpio/aspeed,ast2400-gpio.yaml    | 73 +++++++++++++++++++
+>  .../devicetree/bindings/gpio/gpio-aspeed.txt  | 39 ----------
+>  2 files changed, 73 insertions(+), 39 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+> new file mode 100644
+> index 000000000000..74d376567dfc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+> @@ -0,0 +1,73 @@
+> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Aspeed GPIO controller
+> +
+> +maintainers:
+> +  - Andrew Jeffery <andrew@codeconstruct.com.au>
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2400-gpio
+> +      - aspeed,ast2500-gpio
+> +      - aspeed,ast2600-gpio
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +    description: The clock to use for debounce timings
 
-Reviewed-by: Andi Shyti <andi.shyti@linux.intel.com>
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
-Tested-by: Florian Fainelli <florian.fainelli@broadcom.com>
----
- drivers/tty/serial/8250/8250_of.c | 105 +++++++-----------------------
- 1 file changed, 22 insertions(+), 83 deletions(-)
+The original binding does not require this clock, but I can't help but
+wonder if it should be required. I suspect that this peripheral does
+not actually work if a clock is not provided to it. Whether or not the
+rate of the clock is then used by the driver for debounce timings or
+whatever is a different question.
 
-diff --git a/drivers/tty/serial/8250/8250_of.c b/drivers/tty/serial/8250/8250_of.c
-index 9dcc17e33269..5d1dd992d8fb 100644
---- a/drivers/tty/serial/8250/8250_of.c
-+++ b/drivers/tty/serial/8250/8250_of.c
-@@ -69,37 +69,22 @@ static int of_platform_serial_setup(struct platform_device *ofdev,
- 	struct device *dev = &ofdev->dev;
- 	struct device_node *np = dev->of_node;
- 	struct uart_port *port = &up->port;
--	u32 clk, spd, prop;
--	int ret, irq;
-+	u32 spd;
-+	int ret;
- 
- 	memset(port, 0, sizeof *port);
- 
- 	pm_runtime_enable(&ofdev->dev);
- 	pm_runtime_get_sync(&ofdev->dev);
- 
--	if (of_property_read_u32(np, "clock-frequency", &clk)) {
--
--		/* Get clk rate through clk driver if present */
--		info->clk = devm_clk_get_enabled(dev, NULL);
--		if (IS_ERR(info->clk)) {
--			ret = dev_err_probe(dev, PTR_ERR(info->clk), "failed to get clock\n");
--			goto err_pmruntime;
--		}
--
--		clk = clk_get_rate(info->clk);
--	}
--	/* If current-speed was set, then try not to change it. */
--	if (of_property_read_u32(np, "current-speed", &spd) == 0)
--		port->custom_divisor = clk / (16 * spd);
--
- 	ret = of_address_to_resource(np, 0, &resource);
- 	if (ret) {
- 		dev_err_probe(dev, ret, "invalid address\n");
- 		goto err_pmruntime;
- 	}
- 
--	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_FIXED_PORT |
--				  UPF_FIXED_TYPE;
-+	port->dev = &ofdev->dev;
-+	port->flags = UPF_BOOT_AUTOCONF | UPF_FIXED_PORT | UPF_FIXED_TYPE;
- 	spin_lock_init(&port->lock);
- 
- 	if (resource_type(&resource) == IORESOURCE_IO) {
-@@ -108,70 +93,31 @@ static int of_platform_serial_setup(struct platform_device *ofdev,
- 	} else {
- 		port->mapbase = resource.start;
- 		port->mapsize = resource_size(&resource);
--
--		/* Check for shifted address mapping */
--		if (of_property_read_u32(np, "reg-offset", &prop) == 0) {
--			if (prop >= port->mapsize) {
--				ret = dev_err_probe(dev, -EINVAL, "reg-offset %u exceeds region size %pa\n",
--						    prop, &port->mapsize);
--				goto err_pmruntime;
--			}
--
--			port->mapbase += prop;
--			port->mapsize -= prop;
--		}
--
--		port->iotype = UPIO_MEM;
--		if (of_property_read_u32(np, "reg-io-width", &prop) == 0) {
--			switch (prop) {
--			case 1:
--				port->iotype = UPIO_MEM;
--				break;
--			case 2:
--				port->iotype = UPIO_MEM16;
--				break;
--			case 4:
--				port->iotype = of_device_is_big_endian(np) ?
--					       UPIO_MEM32BE : UPIO_MEM32;
--				break;
--			default:
--				ret = dev_err_probe(dev, -EINVAL, "unsupported reg-io-width (%u)\n",
--						    prop);
--				goto err_pmruntime;
--			}
--		}
- 		port->flags |= UPF_IOREMAP;
- 	}
- 
-+	ret = uart_read_and_validate_port_properties(port);
-+	if (ret)
-+		goto err_pmruntime;
-+
-+	/* Get clk rate through clk driver if present */
-+	if (!port->uartclk) {
-+		info->clk = devm_clk_get_enabled(dev, NULL);
-+		if (IS_ERR(info->clk)) {
-+			ret = dev_err_probe(dev, PTR_ERR(info->clk), "failed to get clock\n");
-+			goto err_pmruntime;
-+		}
-+
-+		port->uartclk = clk_get_rate(info->clk);
-+	}
-+	/* If current-speed was set, then try not to change it. */
-+	if (of_property_read_u32(np, "current-speed", &spd) == 0)
-+		port->custom_divisor = port->uartclk / (16 * spd);
-+
- 	/* Compatibility with the deprecated pxa driver and 8250_pxa drivers. */
- 	if (of_device_is_compatible(np, "mrvl,mmp-uart"))
- 		port->regshift = 2;
- 
--	/* Check for registers offset within the devices address range */
--	if (of_property_read_u32(np, "reg-shift", &prop) == 0)
--		port->regshift = prop;
--
--	/* Check for fifo size */
--	if (of_property_read_u32(np, "fifo-size", &prop) == 0)
--		port->fifosize = prop;
--
--	/* Check for a fixed line number */
--	ret = of_alias_get_id(np, "serial");
--	if (ret >= 0)
--		port->line = ret;
--
--	irq = of_irq_get(np, 0);
--	if (irq < 0) {
--		if (irq == -EPROBE_DEFER) {
--			ret = -EPROBE_DEFER;
--			goto err_pmruntime;
--		}
--		/* IRQ support not mandatory */
--		irq = 0;
--	}
--
--	port->irq = irq;
--
- 	info->rst = devm_reset_control_get_optional_shared(&ofdev->dev, NULL);
- 	if (IS_ERR(info->rst)) {
- 		ret = PTR_ERR(info->rst);
-@@ -183,12 +129,6 @@ static int of_platform_serial_setup(struct platform_device *ofdev,
- 		goto err_pmruntime;
- 
- 	port->type = type;
--	port->uartclk = clk;
--
--	if (of_property_read_bool(np, "no-loopback-test"))
--		port->flags |= UPF_SKIP_TEST;
--
--	port->dev = &ofdev->dev;
- 	port->rs485_config = serial8250_em485_config;
- 	port->rs485_supported = serial8250_em485_supported;
- 	up->rs485_start_tx = serial8250_em485_start_tx;
-@@ -280,7 +220,6 @@ static int of_platform_serial_probe(struct platform_device *ofdev)
- 	platform_set_drvdata(ofdev, info);
- 	return 0;
- err_dispose:
--	irq_dispose_mapping(port8250.port.irq);
- 	pm_runtime_put_sync(&ofdev->dev);
- 	pm_runtime_disable(&ofdev->dev);
- err_free:
--- 
-2.43.0.rc1.1.gbec44491f096
+Otherwise though, this looks fine to me.
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
+Cheers,
+Conor.
+
+> +  "#gpio-cells":
+> +    const: 2
+> +
+> +  gpio-controller: true
+> +  gpio-line-names: true
+> +  gpio-ranges: true
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  interrupt-controller: true
+> +
+> +  "#interrupt-cells":
+> +    const: 2
+> +
+> +  ngpios: true
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +  - interrupt-controller
+> +  - "#interrupt-cells"
+> +  - "#gpio-cells"
+> +  - gpio-controller
+> +
+> +allOf:
+> +  - if:
+> +      properties:
+> +        compatible:
+> +          contains:
+> +            const: aspeed,ast2600-gpio
+> +    then:
+> +      required:
+> +        - ngpios
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    gpio at 1e780000 {
+> +        compatible = "aspeed,ast2400-gpio";
+> +        reg = <0x1e780000 0x1000>;
+> +        interrupts = <20>;
+> +        interrupt-controller;
+> +        #gpio-cells = <2>;
+> +        gpio-controller;
+> +    };
+> diff --git a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt b/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+> deleted file mode 100644
+> index b2033fc3a71a..000000000000
+> --- a/Documentation/devicetree/bindings/gpio/gpio-aspeed.txt
+> +++ /dev/null
+> @@ -1,39 +0,0 @@
+> -Aspeed GPIO controller Device Tree Bindings
+> --------------------------------------------
+> -
+> -Required properties:
+> -- compatible		: Either "aspeed,ast2400-gpio", "aspeed,ast2500-gpio",
+> -					or "aspeed,ast2600-gpio".
+> -
+> -- #gpio-cells 		: Should be two
+> -			  - First cell is the GPIO line number
+> -			  - Second cell is used to specify optional
+> -			    parameters (unused)
+> -
+> -- reg			: Address and length of the register set for the device
+> -- gpio-controller	: Marks the device node as a GPIO controller.
+> -- interrupts		: Interrupt specifier (see interrupt bindings for
+> -			  details)
+> -- interrupt-controller	: Mark the GPIO controller as an interrupt-controller
+> -
+> -Optional properties:
+> -
+> -- clocks		: A phandle to the clock to use for debounce timings
+> -- ngpios		: Number of GPIOs controlled by this controller. Should	be set
+> -				  when there are multiple GPIO controllers on a SoC (ast2600).
+> -
+> -The gpio and interrupt properties are further described in their respective
+> -bindings documentation:
+> -
+> -- Documentation/devicetree/bindings/gpio/gpio.txt
+> -- Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
+> -
+> -  Example:
+> -	gpio at 1e780000 {
+> -		#gpio-cells = <2>;
+> -		compatible = "aspeed,ast2400-gpio";
+> -		gpio-controller;
+> -		interrupts = <20>;
+> -		reg = <0x1e780000 0x1000>;
+> -		interrupt-controller;
+> -	};
+> -- 
+> 2.39.2
+> 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240304/38367245/attachment.sig>
