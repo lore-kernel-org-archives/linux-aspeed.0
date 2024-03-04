@@ -1,9 +1,9 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon,  4 Mar 2024 14:27:07 +0200
-Subject: [PATCH v3 06/14] serial: 8250_bcm7271: Switch to use uart_read_port_properties()
+Date: Mon,  4 Mar 2024 14:27:12 +0200
+Subject: [PATCH v3 11/14] serial: 8250_omap: Switch to use uart_read_port_properties()
 In-Reply-To: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
 References: <20240304123035.758700-1-andriy.shevchenko@linux.intel.com>
-Message-ID: <20240304123035.758700-7-andriy.shevchenko@linux.intel.com>
+Message-ID: <20240304123035.758700-12-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,117 +14,82 @@ Since we have now a common helper to read port properties
 use it instead of sparse home grown solution.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Florian Fainelli <florian.fainelli@broadcom.com>
-Tested-by: Florian Fainelli <florian.fainelli@broadcom.com>
 ---
- drivers/tty/serial/8250/8250_bcm7271.c | 56 +++++++++-----------------
- 1 file changed, 19 insertions(+), 37 deletions(-)
+ drivers/tty/serial/8250/8250_omap.c | 29 ++++++++++-------------------
+ 1 file changed, 10 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_bcm7271.c b/drivers/tty/serial/8250/8250_bcm7271.c
-index 1532fa2e8ec4..5daa38d9c64e 100644
---- a/drivers/tty/serial/8250/8250_bcm7271.c
-+++ b/drivers/tty/serial/8250/8250_bcm7271.c
-@@ -935,17 +935,14 @@ static void brcmuart_init_debugfs(struct brcmuart_priv *priv,
- static int brcmuart_probe(struct platform_device *pdev)
- {
- 	struct resource *regs;
--	struct device_node *np = pdev->dev.of_node;
- 	const struct of_device_id *of_id = NULL;
- 	struct uart_8250_port *new_port;
- 	struct device *dev = &pdev->dev;
- 	struct brcmuart_priv *priv;
- 	struct clk *baud_mux_clk;
+diff --git a/drivers/tty/serial/8250/8250_omap.c b/drivers/tty/serial/8250/8250_omap.c
+index 6942990a333c..66901d93089a 100644
+--- a/drivers/tty/serial/8250/8250_omap.c
++++ b/drivers/tty/serial/8250/8250_omap.c
+@@ -1394,11 +1394,7 @@ static int omap8250_probe(struct platform_device *pdev)
  	struct uart_8250_port up;
--	int irq;
- 	void __iomem *membase = NULL;
- 	resource_size_t mapbase = 0;
--	u32 clk_rate = 0;
- 	int ret;
- 	int x;
- 	int dma_irq;
-@@ -953,15 +950,12 @@ static int brcmuart_probe(struct platform_device *pdev)
- 		"uart", "dma_rx", "dma_tx", "dma_intr2", "dma_arb"
- 	};
- 
+ 	struct resource *regs;
+ 	void __iomem *membase;
+-	int irq, ret;
+-
 -	irq = platform_get_irq(pdev, 0);
 -	if (irq < 0)
 -		return irq;
- 	priv = devm_kzalloc(dev, sizeof(struct brcmuart_priv),
- 			GFP_KERNEL);
- 	if (!priv)
- 		return -ENOMEM;
++	int ret;
  
--	of_id = of_match_node(brcmuart_dt_ids, np);
-+	of_id = of_match_node(brcmuart_dt_ids, dev->of_node);
- 	if (!of_id || !of_id->data)
- 		priv->rate_table = brcmstb_rate_table;
- 	else
-@@ -1011,7 +1005,23 @@ static int brcmuart_probe(struct platform_device *pdev)
- 		}
- 	}
+ 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!regs) {
+@@ -1419,7 +1415,6 @@ static int omap8250_probe(struct platform_device *pdev)
+ 	up.port.dev = &pdev->dev;
+ 	up.port.mapbase = regs->start;
+ 	up.port.membase = membase;
+-	up.port.irq = irq;
+ 	/*
+ 	 * It claims to be 16C750 compatible however it is a little different.
+ 	 * It has EFR and has no FCR7_64byte bit. The AFE (which it claims to
+@@ -1429,13 +1424,9 @@ static int omap8250_probe(struct platform_device *pdev)
+ 	 * or pm callback.
+ 	 */
+ 	up.port.type = PORT_8250;
+-	up.port.iotype = UPIO_MEM;
+-	up.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SOFT_FLOW |
+-		UPF_HARD_FLOW;
++	up.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SOFT_FLOW | UPF_HARD_FLOW;
+ 	up.port.private_data = priv;
  
--	of_property_read_u32(np, "clock-frequency", &clk_rate);
-+	dev_dbg(dev, "DMA is %senabled\n", priv->dma_enabled ? "" : "not ");
-+
-+	memset(&up, 0, sizeof(up));
-+	up.port.type = PORT_BCM7271;
-+	up.port.dev = dev;
-+	up.port.mapbase = mapbase;
-+	up.port.membase = membase;
-+	up.port.handle_irq = brcmuart_handle_irq;
-+	up.port.flags = UPF_BOOT_AUTOCONF | UPF_FIXED_PORT | UPF_FIXED_TYPE;
-+	up.port.private_data = priv;
-+
+-	up.port.regshift = OMAP_UART_REGSHIFT;
+-	up.port.fifosize = 64;
+ 	up.tx_loadsz = 64;
+ 	up.capabilities = UART_CAP_FIFO;
+ #ifdef CONFIG_PM
+@@ -1461,14 +1452,14 @@ static int omap8250_probe(struct platform_device *pdev)
+ 	up.rs485_stop_tx = serial8250_em485_stop_tx;
+ 	up.port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_8250_CONSOLE);
+ 
+-	ret = of_alias_get_id(np, "serial");
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "failed to get alias\n");
 +	ret = uart_read_port_properties(&up.port);
 +	if (ret)
-+		goto release_dma;
-+
-+	up.port.regshift = 2;
-+	up.port.iotype = device_is_big_endian(dev) ? UPIO_MEM32BE : UPIO_MEM32;
- 
- 	/* See if a Baud clock has been specified */
- 	baud_mux_clk = devm_clk_get_optional_enabled(dev, "sw_baud");
-@@ -1023,39 +1033,11 @@ static int brcmuart_probe(struct platform_device *pdev)
- 
- 		priv->baud_mux_clk = baud_mux_clk;
- 		init_real_clk_rates(dev, priv);
--		clk_rate = priv->default_mux_rate;
-+		up.port.uartclk = priv->default_mux_rate;
- 	} else {
- 		dev_dbg(dev, "BAUD MUX clock not specified\n");
- 	}
- 
--	if (clk_rate == 0) {
--		ret = dev_err_probe(dev, -EINVAL, "clock-frequency or clk not defined\n");
--		goto release_dma;
+ 		return ret;
 -	}
--
--	dev_dbg(dev, "DMA is %senabled\n", priv->dma_enabled ? "" : "not ");
--
--	memset(&up, 0, sizeof(up));
--	up.port.type = PORT_BCM7271;
--	up.port.uartclk = clk_rate;
--	up.port.dev = dev;
--	up.port.mapbase = mapbase;
--	up.port.membase = membase;
--	up.port.irq = irq;
--	up.port.handle_irq = brcmuart_handle_irq;
--	up.port.regshift = 2;
--	up.port.iotype = of_device_is_big_endian(np) ?
--		UPIO_MEM32BE : UPIO_MEM32;
--	up.port.flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF
--		| UPF_FIXED_PORT | UPF_FIXED_TYPE;
--	up.port.dev = dev;
--	up.port.private_data = priv;
--
--	/* Check for a fixed line number */
--	ret = of_alias_get_id(np, "serial");
--	if (ret >= 0)
--		up.port.line = ret;
--
- 	/* setup HR timer */
- 	hrtimer_init(&priv->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
- 	priv->hrt.function = brcmuart_hrtimer_func;
+-	up.port.line = ret;
+ 
+-	if (of_property_read_u32(np, "clock-frequency", &up.port.uartclk)) {
++	up.port.regshift = OMAP_UART_REGSHIFT;
++	up.port.fifosize = 64;
++
++	if (!up.port.uartclk) {
+ 		struct clk *clk;
+ 
+ 		clk = devm_clk_get(&pdev->dev, NULL);
+@@ -1560,8 +1551,8 @@ static int omap8250_probe(struct platform_device *pdev)
+ 	}
+ #endif
+ 
+-	irq_set_status_flags(irq, IRQ_NOAUTOEN);
+-	ret = devm_request_irq(&pdev->dev, irq, omap8250_irq, 0,
++	irq_set_status_flags(up.port.irq, IRQ_NOAUTOEN);
++	ret = devm_request_irq(&pdev->dev, up.port.irq, omap8250_irq, 0,
+ 			       dev_name(&pdev->dev), priv);
+ 	if (ret < 0)
+ 		return ret;
 -- 
 2.43.0.rc1.1.gbec44491f096
 
