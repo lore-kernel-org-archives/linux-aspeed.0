@@ -1,48 +1,92 @@
-From: Tommy Huang <tommy_huang@aspeedtech.com>
-Date: Tue, 5 Mar 2024 09:19:06 +0800
-Subject: [PATCH v2] i2c: aspeed: Fix the dummy irq expected print
-Message-ID: <20240305011906.2745639-1-tommy_huang@aspeedtech.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 5 Mar 2024 13:14:38 +0100
+Subject: [PATCH v7 0/5] mmc: add hi3798mv200 specific extensions of DWMMC
+In-Reply-To: <20240229-b4-mmc-hi3798mv200-v7-0-10c03f316285@outlook.com>
+References: <20240229-b4-mmc-hi3798mv200-v7-0-10c03f316285@outlook.com>
+Message-ID: <CAPDyKFrKiJBONLhOj2KDWZug_BSZngUUxtrEnF+H+imfEctETg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When the i2c error condition occurred and master state was not
-idle, the master irq function will goto complete state without any
-other interrupt handling. It would cause dummy irq expected print.
-Under this condition, assign the irq_status into irq_handle.
+On Thu, 29 Feb 2024 at 02:36, Yang Xiwen via B4 Relay
+<devnull+forbidden405.outlook.com@kernel.org> wrote:
+>
+> it's modified from hi3798cv200 driver, but quite a lot of code gets
+> rewritten because of the hardware differences. Actually cv200 DWMMC core
+> is called HIMCIV200 while mv200 DWMMC core is called HIMCIV300 in
+> downstream.
+>
+> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
 
-For example, when the abnormal start / stop occurred (bit 5) with
-normal stop status (bit 4) at same time. Then the normal stop status
-would not be handled and it would cause irq expected print in
-the aspeed_i2c_bus_irq.
+The series, applied for next, thanks!
 
-...
-aspeed-i2c-bus x. i2c-bus: irq handled != irq.
-Expected 0x00000030, but was 0x00000020
-...
+Note that, I took the liberty of updating/clarifying the commit
+message of patch1, please let me know if there is anything you don't
+like with that.
 
-Fixes: 3e9efc3299dd ("i2c: aspeed: Handle master/slave combined irq events properly")
-Cc: Jae Hyun Yoo <jae.hyun.yoo@linux.intel.com>
+Kind regards
+Uffe
 
-Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 5511fd46a65e..ce8c4846b7fa 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -445,6 +445,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 			irq_status);
- 		irq_handled |= (irq_status & ASPEED_I2CD_INTR_MASTER_ERRORS);
- 		if (bus->master_state != ASPEED_I2C_MASTER_INACTIVE) {
-+			irq_handled = irq_status;
- 			bus->cmd_err = ret;
- 			bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
- 			goto out_complete;
--- 
-2.25.1
-
+> ---
+> Changes in v7:
+> - driver: simplify tuning logic (Ulf Hansson)
+> - bindings: fix patch order (Ulf Hansson)
+> - Link to v6: https://lore.kernel.org/r/20240221-b4-mmc-hi3798mv200-v6-0-bc41bf6a9769 at outlook.com
+>
+> Changes in v6:
+> - apply the comments to the first patch, add their trailers
+> - Link to v5: https://lore.kernel.org/r/20240220-b4-mmc-hi3798mv200-v5-0-f506c55f8e43 at outlook.com
+>
+> Changes in v5:
+> - pick the dependant patch: https://lore.kernel.org/all/20240215-mmc_phase-v1-1-f27644ee13e4 at outlook.com/
+>   to fix the bot build error.
+> - edit the semantic meaning of hisilicon,sap-dll-reg property (Rob Herring)
+>   The suggestion is from the CRG driver side:
+>   https://lore.kernel.org/all/20240218205741.GA1561527-robh at kernel.org/
+> - Link to v4: https://lore.kernel.org/r/20240217-b4-mmc-hi3798mv200-v4-0-0fdd9bd48532 at outlook.com
+>
+> Changes in v4:
+> - rename dw_mmc-hi3798 back to hi3798cv200 - Suggested by Krzysztof Kozlowski.
+> - add r-bs to patch 1 and 2 - Reviewed by Krzysztof Kozlowski.
+> - Link to v3: https://lore.kernel.org/r/20240217-b4-mmc-hi3798mv200-v3-0-f15464176947 at outlook.com
+>
+> Changes in v3:
+> - dw_mmc-hi3798: fix bot error (Rob Herring)
+> - Link to v2: https://lore.kernel.org/r/20240216-b4-mmc-hi3798mv200-v2-0-010d63e6a1d5 at outlook.com
+>
+> Changes in v2:
+> - dw_mmc-hi3798mv200: use dev_err_probe() helper - Suggested by Krzysztof Kozlowski.
+> - dw_mmc-hi3798mv200: add missing err=0;
+> - dw_mmc-hi3798c(m)v200: remove unused MODULE_ALIAS() - Suggested by Krzysztof Kozlowski.
+> - binding: rename the binding, a lot of tweaks suggested by Krzysztof Kozlowski.
+> - Link to v1: https://lore.kernel.org/r/20240216-b4-mmc-hi3798mv200-v1-0-7d46db845ae6 at outlook.com
+>
+> ---
+> Yang Xiwen (5):
+>       mmc: host: mmc_of_parse_clk_phase(): Pass struct device * instead of mmc_host *
+>       mmc: dw_mmc-hi3798cv200: remove MODULE_ALIAS()
+>       dt-bindings: mmc: dw-mshc-hi3798cv200: convert to YAML
+>       dt-bindings: mmc: hisilicon,hi3798cv200-dw-mshc: add Hi3798MV200 binding
+>       mmc: dw_mmc: add support for hi3798mv200
+>
+>  .../bindings/mmc/hi3798cv200-dw-mshc.txt           |  40 ----
+>  .../mmc/hisilicon,hi3798cv200-dw-mshc.yaml         |  97 ++++++++
+>  drivers/mmc/core/host.c                            |   4 +-
+>  drivers/mmc/host/Kconfig                           |   9 +
+>  drivers/mmc/host/Makefile                          |   1 +
+>  drivers/mmc/host/dw_mmc-hi3798cv200.c              |   1 -
+>  drivers/mmc/host/dw_mmc-hi3798mv200.c              | 251 +++++++++++++++++++++
+>  drivers/mmc/host/sdhci-of-aspeed.c                 |   2 +-
+>  include/linux/mmc/host.h                           |   2 +-
+>  9 files changed, 361 insertions(+), 46 deletions(-)
+> ---
+> base-commit: d206a76d7d2726f3b096037f2079ce0bd3ba329b
+> change-id: 20240121-b4-mmc-hi3798mv200-a5730edf122c
+>
+> Best regards,
+> --
+> Yang Xiwen <forbidden405@outlook.com>
+>
