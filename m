@@ -1,11 +1,11 @@
 From: Kelly Hung(洪嘉莉) <Kelly_Hung@asus.com>
-Date: Mon, 04 Mar 2024 10:45:20 -0000
+Date: Tue, 05 Mar 2024 03:52:30 -0000
 Subject: [PATCH] ARM: dts: aspeed: asus: Add ASUS X4TF BMC
 In-Reply-To: <3edf1a47-9f73-4e99-98ea-182248102346@linaro.org>
 References: <20240130085652.198010-1-Kelly_Hung@asus.com>
  <20240130085652.198010-2-Kelly_Hung@asus.com>
  <3edf1a47-9f73-4e99-98ea-182248102346@linaro.org>
-Message-ID: <TYZPR04MB659655F98C755C9DE55FD4AB9D232@TYZPR04MB6596.apcprd04.prod.outlook.com>
+Message-ID: <TYZPR04MB6596434F7EC912FF025A2B029D222@TYZPR04MB6596.apcprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,8 +13,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 Hi, Krzysztof,
+Please see my response below.
 
-Thanks for review, I notice there were a lot of errors. I've corrected them and done a schema and patch check, then resend the patch on 2/22.
+Thanks a log.
 
 Best Regards
 Kelly
@@ -42,6 +43,8 @@ On 30/01/2024 09:56, Kelly Hung wrote:
 
 It's impossible to test this file. You miss Makefile.
 
+Kelly: I've add aspeed-bmc-asus-x4tf.dtb in Makefle.
+
 >
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
 > b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
@@ -68,6 +71,8 @@ It's impossible to test this file. You miss Makefile.
 > +             bootargs = "console=ttyS4,115200n8 earlycon";
 
 earlycon is a debugging feature, not mainline. Also, move console to stdout-path, so entire bootargs can be dropped.
+
+Kelly: I've moved "bootargs" into "stdout-path" and resend my patch.
 
 > +     };
 > +
@@ -106,6 +111,8 @@ earlycon is a debugging feature, not mainline. Also, move console to stdout-path
 
 No underscores in node names. This applies everywhere.
 
+Kelly: Yes, thanks for reminding, I've removed it and resent my patch.
+
 
 > +                     size = <0x00100000>;
 > +                     alignment = <0x00100000>;
@@ -137,6 +144,7 @@ No underscores in node names. This applies everywhere.
 > +             status = "disabled";
 
 Why? It makes it entirely pointless.
+Kelly: I've removed it and loaded into our X4TF platform and it boot into BMC console. I have resent my patch.
 
 > +             regulator-name = "SDHCI0 Vcc";
 > +             regulator-min-microvolt = <3300000>;
@@ -150,6 +158,7 @@ Why? It makes it entirely pointless.
 > +             status = "disabled";
 
 Pointless node.
+Kelly: I've removed it and loaded into our X4TF platform and it boot into BMC console. I have resent my patch.
 
 > +             regulator-name = "SDHCI0 VccQ";
 > +             regulator-min-microvolt = <1800000>;
@@ -165,7 +174,7 @@ Pointless node.
 > +             status = "disabled";
 
 Pointless node.
-
+Kelly: I've removed it and loaded into our X4TF platform and it boot into BMC console. I have resent my patch.
 
 > +             regulator-name = "SDHCI1 Vcc";
 > +             regulator-min-microvolt = <3300000>;
@@ -179,6 +188,7 @@ Pointless node.
 > +             status = "disabled";
 
 Pointless node.
+Kelly: I've removed it and loaded into our X4TF platform and it boot into BMC console. I have resent my patch.
 
 > +             regulator-name = "SDHCI1 VccQ";
 > +             regulator-min-microvolt = <1800000>;
@@ -190,6 +200,8 @@ Pointless node.
 > +     };
 
 Missing blank line.
+Kelly: I've review our dts and add blank line or remove redundant blank lines.
+
 
 > +     iio-hwmon {
 > +             compatible = "iio-hwmon";
@@ -205,6 +217,8 @@ Wrong placement. Also tools would tell you that.
 It does not look like you tested the DTS against bindings. Please run `make dtbs_check W=1` (see Documentation/devicetree/bindings/writing-schema.rst or https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
 for instructions).
 
+Kelly: I've checked our dts, removed unnecessary parts and run the DTS check script.
+
 > +             compatible = "aspeed,ast2600-video-engine";
 > +             reg = <0x1e700000 0x20000>;
 > +             clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
@@ -214,6 +228,8 @@ for instructions).
 > +             //resets = <&syscon ASPEED_RESET_VIDEO>;
 
 Dead code.
+
+Kelly: I have removed this part and resent the patch.
 
 > +     };
 > +
@@ -225,6 +241,8 @@ Dead code.
 It does not look like you tested the DTS against bindings. Please run `make dtbs_check W=1` (see Documentation/devicetree/bindings/writing-schema.rst or https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
 for instructions).
 
+Kelly: I added led- for all LED configurations. Heartbeat will be led-heartbeat.
+
 > +                     gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_LOW>;
 > +                     linux,default-trigger = "heartbeat";
 > +             };
@@ -233,11 +251,15 @@ for instructions).
 It does not look like you tested the DTS against bindings. Please run `make dtbs_check W=1` (see Documentation/devicetree/bindings/writing-schema.rst or https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
 for instructions).
 
+Kelly: I added led- for all LED configurations.
+
 > +                     gpios = <&gpio0 ASPEED_GPIO(P, 1) (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
 > +                     default-state = "off";
 > +             };
 
 Missing blank line, everywhere.
+
+Kelly: I've review our dts and add blank line or remove redundant blank lines.
 
 > +             status_Y {
 > +                     gpios = <&gpio1 ASPEED_GPIO(B, 1) GPIO_ACTIVE_LOW>;
@@ -253,10 +275,11 @@ Missing blank line, everywhere.
 It does not look like you tested the DTS against bindings. Please run `make dtbs_check W=1` (see Documentation/devicetree/bindings/writing-schema.rst or https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
 for instructions).
 
-
 > +             status = "okay";
 
 Why?
+
+Kelly: I've removed spigpio and tested on our X4TF platform and it boots to the BMC console. I've resent our new patch.
 
 > +             compatible = "spi-gpio";
 > +             #address-cells = <1>;
@@ -271,6 +294,8 @@ Why?
 > +
 
 Redundant blank line.
+
+Kelly: I've review our dts and add blank line or remove redundant blank lines.
 
 > +};
 > +
@@ -306,6 +331,8 @@ Redundant blank line.
 > +
 
 Redundant blank line. Clean this code before sending upstream from such trivialities.
+
+Kelly: I've review our dts and add blank line or remove redundant blank lines.
 
 > +&mdio0 {
 > +     status = "disabled";
@@ -354,6 +381,7 @@ Redundant blank line. Clean this code before sending upstream from such triviali
 > +
 
 Ditto
+Kelly: I've review our dts and add blank line or remove redundant blank lines.
 
 > +&mac3 {
 > +     status = "okay";
@@ -366,6 +394,7 @@ Ditto
 > +
 
 Ditto
+Kelly: I've review our dts and add blank line or remove redundant blank lines.
 
 > +&syscon {
 > +     uart-clock-high-speed;
@@ -374,6 +403,8 @@ That's a syscon property?
 
 It does not look like you tested the DTS against bindings. Please run `make dtbs_check W=1` (see Documentation/devicetree/bindings/writing-schema.rst or https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
 for instructions).
+
+Kelly: I've removed syscon and tested on our X4TF platform and it boots to the BMC console. I've resent our new patch.
 
 > +     status = "okay";
 > +};
@@ -389,6 +420,7 @@ for instructions).
 
 Drop. Everywhere where it is not needed.
 
+Kelly: I've adjusted fmc config and resent the patch.
 
 > +             m25p,fast-read;
 > +             label = "bmc-spi";
@@ -482,6 +514,9 @@ Node names should be generic. See also an explanation and list of examples (not 
 https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
 
 I am going to skip the rest. Please fix all the trivialities and test your patches with tools.
+
+Kelly: I have renamed tmp75 as temperature-sensor.
+I've checked our dts, removed unnecessary parts and run the DTS check script.
 
 Best regards,
 Krzysztof
