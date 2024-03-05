@@ -1,92 +1,47 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 5 Mar 2024 13:14:38 +0100
-Subject: [PATCH v7 0/5] mmc: add hi3798mv200 specific extensions of DWMMC
-In-Reply-To: <20240229-b4-mmc-hi3798mv200-v7-0-10c03f316285@outlook.com>
-References: <20240229-b4-mmc-hi3798mv200-v7-0-10c03f316285@outlook.com>
-Message-ID: <CAPDyKFrKiJBONLhOj2KDWZug_BSZngUUxtrEnF+H+imfEctETg@mail.gmail.com>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Tue,  5 Mar 2024 17:26:57 +0100
+Subject: [PATCH 0/6] ipmi: Convert to platform remove callback returning void
+Message-ID: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 29 Feb 2024 at 02:36, Yang Xiwen via B4 Relay
-<devnull+forbidden405.outlook.com@kernel.org> wrote:
->
-> it's modified from hi3798cv200 driver, but quite a lot of code gets
-> rewritten because of the hardware differences. Actually cv200 DWMMC core
-> is called HIMCIV200 while mv200 DWMMC core is called HIMCIV300 in
-> downstream.
->
-> Signed-off-by: Yang Xiwen <forbidden405@outlook.com>
+Hello,
 
-The series, applied for next, thanks!
+this series converts all drivers below drivers/char/ipmi to struct
+platform_driver::remove_new(). See commit 5c5a7680e67b ("platform: Provide a
+remove callback that returns no value") for an extended explanation and the
+eventual goal.
 
-Note that, I took the liberty of updating/clarifying the commit
-message of patch1, please let me know if there is anything you don't
-like with that.
+All conversations are trivial, because their .remove() callbacks
+returned zero unconditionally.
 
-Kind regards
-Uffe
+There are no interdependencies between these patches, so they could be
+picked up individually. But I'd hope that they get picked up all
+together by Corey.
 
+Best regards
+Uwe
 
-> ---
-> Changes in v7:
-> - driver: simplify tuning logic (Ulf Hansson)
-> - bindings: fix patch order (Ulf Hansson)
-> - Link to v6: https://lore.kernel.org/r/20240221-b4-mmc-hi3798mv200-v6-0-bc41bf6a9769 at outlook.com
->
-> Changes in v6:
-> - apply the comments to the first patch, add their trailers
-> - Link to v5: https://lore.kernel.org/r/20240220-b4-mmc-hi3798mv200-v5-0-f506c55f8e43 at outlook.com
->
-> Changes in v5:
-> - pick the dependant patch: https://lore.kernel.org/all/20240215-mmc_phase-v1-1-f27644ee13e4 at outlook.com/
->   to fix the bot build error.
-> - edit the semantic meaning of hisilicon,sap-dll-reg property (Rob Herring)
->   The suggestion is from the CRG driver side:
->   https://lore.kernel.org/all/20240218205741.GA1561527-robh at kernel.org/
-> - Link to v4: https://lore.kernel.org/r/20240217-b4-mmc-hi3798mv200-v4-0-0fdd9bd48532 at outlook.com
->
-> Changes in v4:
-> - rename dw_mmc-hi3798 back to hi3798cv200 - Suggested by Krzysztof Kozlowski.
-> - add r-bs to patch 1 and 2 - Reviewed by Krzysztof Kozlowski.
-> - Link to v3: https://lore.kernel.org/r/20240217-b4-mmc-hi3798mv200-v3-0-f15464176947 at outlook.com
->
-> Changes in v3:
-> - dw_mmc-hi3798: fix bot error (Rob Herring)
-> - Link to v2: https://lore.kernel.org/r/20240216-b4-mmc-hi3798mv200-v2-0-010d63e6a1d5 at outlook.com
->
-> Changes in v2:
-> - dw_mmc-hi3798mv200: use dev_err_probe() helper - Suggested by Krzysztof Kozlowski.
-> - dw_mmc-hi3798mv200: add missing err=0;
-> - dw_mmc-hi3798c(m)v200: remove unused MODULE_ALIAS() - Suggested by Krzysztof Kozlowski.
-> - binding: rename the binding, a lot of tweaks suggested by Krzysztof Kozlowski.
-> - Link to v1: https://lore.kernel.org/r/20240216-b4-mmc-hi3798mv200-v1-0-7d46db845ae6 at outlook.com
->
-> ---
-> Yang Xiwen (5):
->       mmc: host: mmc_of_parse_clk_phase(): Pass struct device * instead of mmc_host *
->       mmc: dw_mmc-hi3798cv200: remove MODULE_ALIAS()
->       dt-bindings: mmc: dw-mshc-hi3798cv200: convert to YAML
->       dt-bindings: mmc: hisilicon,hi3798cv200-dw-mshc: add Hi3798MV200 binding
->       mmc: dw_mmc: add support for hi3798mv200
->
->  .../bindings/mmc/hi3798cv200-dw-mshc.txt           |  40 ----
->  .../mmc/hisilicon,hi3798cv200-dw-mshc.yaml         |  97 ++++++++
->  drivers/mmc/core/host.c                            |   4 +-
->  drivers/mmc/host/Kconfig                           |   9 +
->  drivers/mmc/host/Makefile                          |   1 +
->  drivers/mmc/host/dw_mmc-hi3798cv200.c              |   1 -
->  drivers/mmc/host/dw_mmc-hi3798mv200.c              | 251 +++++++++++++++++++++
->  drivers/mmc/host/sdhci-of-aspeed.c                 |   2 +-
->  include/linux/mmc/host.h                           |   2 +-
->  9 files changed, 361 insertions(+), 46 deletions(-)
-> ---
-> base-commit: d206a76d7d2726f3b096037f2079ce0bd3ba329b
-> change-id: 20240121-b4-mmc-hi3798mv200-a5730edf122c
->
-> Best regards,
-> --
-> Yang Xiwen <forbidden405@outlook.com>
->
+Uwe Kleine-K?nig (6):
+  ipmi: bt-bmc: Convert to platform remove callback returning void
+  ipmi: ipmi_powernv: Convert to platform remove callback returning void
+  ipmi: ipmi_si_platform: Convert to platform remove callback returning void
+  ipmi: ipmi_ssif: Convert to platform remove callback returning void
+  ipmi: kcs_bmc_aspeed: Convert to platform remove callback returning void
+  ipmi: kcs_bmc_npcm7xx: Convert to platform remove callback returning void
+
+ drivers/char/ipmi/bt-bmc.c           | 5 ++---
+ drivers/char/ipmi/ipmi_powernv.c     | 6 ++----
+ drivers/char/ipmi/ipmi_si_platform.c | 6 ++----
+ drivers/char/ipmi/ipmi_ssif.c        | 5 ++---
+ drivers/char/ipmi/kcs_bmc_aspeed.c   | 6 ++----
+ drivers/char/ipmi/kcs_bmc_npcm7xx.c  | 6 ++----
+ 6 files changed, 12 insertions(+), 22 deletions(-)
+
+base-commit: 11afac187274a6177a7ac82997f8691c0f469e41
+-- 
+2.43.0
+
