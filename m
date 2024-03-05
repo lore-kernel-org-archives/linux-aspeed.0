@@ -1,9 +1,9 @@
 From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Tue,  5 Mar 2024 17:27:02 +0100
-Subject: [PATCH 5/6] ipmi: kcs_bmc_aspeed: Convert to platform remove callback returning void
-In-Reply-To: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
-References: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
-Message-ID: <d125e83788ddc27fc52a3f11b2c329b40cbdd6f9.1709655755.git.u.kleine-koenig@pengutronix.de>
+Date: Tue,  5 Mar 2024 22:20:57 +0100
+Subject: [PATCH 1/4] fsi: master-aspeed: Convert to platform remove callback returning void
+In-Reply-To: <cover.1709673414.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1709673414.git.u.kleine-koenig@pengutronix.de>
+Message-ID: <de0f2d4cb529a433d4620ca0e8fda0dfb1e950db.1709673414.git.u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -25,40 +25,38 @@ callback to the void returning variant.
 
 Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
 ---
- drivers/char/ipmi/kcs_bmc_aspeed.c | 6 ++----
+ drivers/fsi/fsi-master-aspeed.c | 6 ++----
  1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/char/ipmi/kcs_bmc_aspeed.c b/drivers/char/ipmi/kcs_bmc_aspeed.c
-index 72640da55380..227bf06c7ca4 100644
---- a/drivers/char/ipmi/kcs_bmc_aspeed.c
-+++ b/drivers/char/ipmi/kcs_bmc_aspeed.c
-@@ -641,7 +641,7 @@ static int aspeed_kcs_probe(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index f0a19cd451a0..b0b624c3717b 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -646,14 +646,12 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
+ 	return rc;
  }
  
--static int aspeed_kcs_remove(struct platform_device *pdev)
-+static void aspeed_kcs_remove(struct platform_device *pdev)
+-static int fsi_master_aspeed_remove(struct platform_device *pdev)
++static void fsi_master_aspeed_remove(struct platform_device *pdev)
  {
- 	struct aspeed_kcs_bmc *priv = platform_get_drvdata(pdev);
- 	struct kcs_bmc_device *kcs_bmc = &priv->kcs_bmc;
-@@ -656,8 +656,6 @@ static int aspeed_kcs_remove(struct platform_device *pdev)
- 	priv->obe.remove = true;
- 	spin_unlock_irq(&priv->obe.lock);
- 	del_timer_sync(&priv->obe.timer);
+ 	struct fsi_master_aspeed *aspeed = platform_get_drvdata(pdev);
+ 
+ 	fsi_master_unregister(&aspeed->master);
+ 	clk_disable_unprepare(aspeed->clk);
 -
 -	return 0;
  }
  
- static const struct of_device_id ast_kcs_bmc_match[] = {
-@@ -674,7 +672,7 @@ static struct platform_driver ast_kcs_bmc_driver = {
- 		.of_match_table = ast_kcs_bmc_match,
+ static const struct of_device_id fsi_master_aspeed_match[] = {
+@@ -668,7 +666,7 @@ static struct platform_driver fsi_master_aspeed_driver = {
+ 		.of_match_table	= fsi_master_aspeed_match,
  	},
- 	.probe  = aspeed_kcs_probe,
--	.remove = aspeed_kcs_remove,
-+	.remove_new = aspeed_kcs_remove,
+ 	.probe	= fsi_master_aspeed_probe,
+-	.remove = fsi_master_aspeed_remove,
++	.remove_new = fsi_master_aspeed_remove,
  };
- module_platform_driver(ast_kcs_bmc_driver);
  
+ module_platform_driver(fsi_master_aspeed_driver);
 -- 
 2.43.0
 
