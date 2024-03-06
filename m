@@ -1,33 +1,39 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 06 Mar 2024 12:27:55 +1030
-Subject: [PATCH 5/6] ipmi: kcs_bmc_aspeed: Convert to platform remove
- callback returning void
-In-Reply-To: <d125e83788ddc27fc52a3f11b2c329b40cbdd6f9.1709655755.git.u.kleine-koenig@pengutronix.de>
-References: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
-	 <d125e83788ddc27fc52a3f11b2c329b40cbdd6f9.1709655755.git.u.kleine-koenig@pengutronix.de>
-Message-ID: <9b390f91102100f1e91098e9d49d6f200aa8a6fd.camel@codeconstruct.com.au>
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Wed, 06 Mar 2024 12:55:41 +0100
+Subject: [PATCH v2] i2c: aspeed: Fix the dummy irq expected print
+In-Reply-To: <20240305011906.2745639-1-tommy_huang@aspeedtech.com>
+References: <20240305011906.2745639-1-tommy_huang@aspeedtech.com>
+Message-ID: <170972614153.1712532.8035778125665215281.b4-ty@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-03-05 at 17:27 +0100, Uwe Kleine-K?nig wrote:
-> The .remove() callback for a platform driver returns an int which makes
-> many driver authors wrongly assume it's possible to do error handling by
-> returning an error code. However the value returned is ignored (apart
-> from emitting a warning) and this typically results in resource leaks.
-> 
-> To improve here there is a quest to make the remove callback return
-> void. In the first step of this quest all drivers are converted to
-> .remove_new(), which already returns void. Eventually after all drivers
-> are converted, .remove_new() will be renamed to .remove().
-> 
-> Trivially convert this driver from always returning zero in the remove
-> callback to the void returning variant.
-> 
-> Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+Hi
 
-Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+On Tue, 05 Mar 2024 09:19:06 +0800, Tommy Huang wrote:
+> When the i2c error condition occurred and master state was not
+> idle, the master irq function will goto complete state without any
+> other interrupt handling. It would cause dummy irq expected print.
+> Under this condition, assign the irq_status into irq_handle.
+> 
+> For example, when the abnormal start / stop occurred (bit 5) with
+> normal stop status (bit 4) at same time. Then the normal stop status
+> would not be handled and it would cause irq expected print in
+> the aspeed_i2c_bus_irq.
+> 
+> [...]
 
-Thanks!
+Applied to i2c/i2c-host-fixes on
+
+git://git.kernel.org/pub/scm/linux/kernel/git/andi.shyti/linux.git
+
+Thank you,
+Andi
+
+Patches applied
+===============
+[1/1] i2c: aspeed: Fix the dummy irq expected print
+      commit: 94e889260a5bae7d4c06de90f1724aeb8b1175c6
+
