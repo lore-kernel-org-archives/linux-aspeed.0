@@ -1,43 +1,254 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 12 Mar 2024 14:15:54 +0800
-Subject: [PATCH v6 22/22] ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 12 Mar 2024 08:33:06 -0600
+Subject: [PATCH v6 00/22] Add i2c-mux and eeprom devices for Meta
+ Yosemite 4
 In-Reply-To: <20240312061556.496605-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240312061556.496605-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240312061556.496605-23-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <171025376449.2190602.9706298044805249290.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise duty cycle SMB11 and SMB16 to high: 40%, low: 60%,
-to meet 400kHz-i2c clock low time spec (> 1.3 us) from EE request
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 ++
- 1 file changed, 2 insertions(+)
+On Tue, 12 Mar 2024 14:15:32 +0800, Delphine CC Chiu wrote:
+> Changelog:
+>   - v6
+>     - Revise i2c duty-cycle for meeting 400khz spec
+>   - v5
+>     - Support medusa board adc sensors
+>     - support NIC eeprom
+>   - v4
+>     - Re-format gpio linename
+>     - Revise i2c device node names
+>     - Split patches by logic changes
+>   - v3
+>     - Correct patch for revising gpio name
+>   - v2
+>     - Revise mx31790 fan tach config
+>     - Add mctp config for NIC
+>     - Support mux to cpld
+>     - Revise gpio name
+>   - v1
+>     - Add gpio and eeprom behind i2c-mux
+>     - Remove redundant idle-state setting for i2c-mux
+>     - Enable adc 15, wdt2,spi gpio for yosemite4 use
+>     - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+>     - Revise power sensor adm1281 for yosemite4 schematic change
+>     - Add gpio pca9506 I/O expander for yosemite4 use
+>     - remove space for adm1272 compatible
+>     - enable interrupt setting for pca9555
+>     - add eeprom for yosemite4 medusa board/BSM use
+>     - remove temperature sensor for yosemite4 schematic change
+>     - add power sensor for power module reading
+>     - Revise adc128d818 adc mode for yosemite4 schematic change
+>     - Revise ina233 for yosemite4 schematic change
+>     - Remove idle state setting for yosemite4 NIC connection
+>     - Initialize bmc gpio state
+>     - Revise mx31790 fan tach config
+>     - Add mctp config for NIC
+>     - Support mux to cpld
+>     - Revise gpio name
+> 
+> Delphine CC Chiu (22):
+>   ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+>   ARM: dts: aspeed: yosemite4: Enable adc15
+>   ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+>   ARM: dts: aspeed: yosemite4: Enable watchdog2
+>   ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
+>   ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
+>     change
+>   ARM: dts: aspeed: yosemite4: Add gpio pca9506
+>   ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
+>   ARM: dts: aspeed: yosemite4: Enable interrupt setting for pca9555
+>   ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
+>   ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
+>   ARM: dts: aspeed: yosemite4: Remove temperature sensor for yosemite4
+>     schematic change
+>   ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4
+>     schematic change
+>   ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4
+>     schematic change
+>   ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4
+>     NIC connection
+>   ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
+>   ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
+>   ARM: dts: aspeed: yosemite4: add mctp config for NIC
+>   ARM: dts: aspeed: yosemite4: support mux to cpld
+>   ARM: dts: aspeed: yosemite4: support medusa board adc sensors
+>   ARM: dts: aspeed: yosemite4: support NIC eeprom
+>   ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
+> 
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1258 +++++++++++++++--
+>  1 file changed, 1151 insertions(+), 107 deletions(-)
+> 
+> --
+> 2.25.1
+> 
+> 
+> 
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index c2d184b21567..c86e4a5397c4 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -761,6 +761,7 @@ eeprom at 54 {
- &i2c10 {
- 	status = "okay";
- 	bus-frequency = <400000>;
-+	i2c-clk-high-min-percent = <40>;
- 	i2c-mux at 74 {
- 		compatible = "nxp,pca9544";
- 		i2c-mux-idle-disconnect;
-@@ -1306,6 +1307,7 @@ &i2c15 {
- 	mctp-controller;
- 	multi-master;
- 	bus-frequency = <400000>;
-+	i2c-clk-high-min-percent = <40>;
- 
- 	mctp at 10 {
- 		compatible = "mctp-i2c-controller";
--- 
-2.25.1
+
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
+
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-facebook-yosemite4.dtb' for 20240312061556.496605-1-Delphine_CC_Chiu at wiwynn.com:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:550.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 0:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:576.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 1:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:601.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 2:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:626.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 3:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:661.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 0:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:686.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 1:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:711.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 2:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:736.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 3:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:773.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 580/i2c-mux at 74/i2c at 0:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:821.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 580/i2c-mux at 74/i2c at 1:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:980.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 0:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1006.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 1:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1012.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 2:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1018.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 3:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1324.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 0:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1345.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 1:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1366.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 2:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1387.4-14: Warning (reg_format): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 3:reg: property has invalid length (4 bytes) (#address-cells == 2, #size-cells == 1)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: Warning (pci_device_reg): Failed prerequisite 'reg_format'
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: Warning (pci_device_bus_num): Failed prerequisite 'reg_format'
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: Warning (i2c_bus_reg): Failed prerequisite 'reg_format'
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: Warning (spi_bus_reg): Failed prerequisite 'reg_format'
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:547.17-571.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 0: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:547.17-571.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 0: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:573.17-596.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 1: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:573.17-596.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 1: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:598.17-621.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 2: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:598.17-621.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 2: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:623.17-646.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 3: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:623.17-646.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 480/i2c-mux at 70/i2c at 3: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:658.17-681.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 0: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:658.17-681.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 0: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:683.17-706.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 1: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:683.17-706.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 1: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:708.17-731.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 2: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:708.17-731.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 2: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:733.17-757.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 3: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:733.17-757.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 500/i2c-mux at 71/i2c at 3: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:770.17-816.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 580/i2c-mux at 74/i2c at 0: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:770.17-816.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 580/i2c-mux at 74/i2c at 0: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:818.17-822.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 580/i2c-mux at 74/i2c at 1: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:818.17-822.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 580/i2c-mux at 74/i2c at 1: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:977.17-1001.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 0: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:977.17-1001.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 0: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1003.17-1007.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 1: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1003.17-1007.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 1: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1009.17-1013.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 2: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1009.17-1013.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 2: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1015.17-1019.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 3: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1015.17-1019.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 680/i2c-mux at 70/i2c at 3: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1321.17-1340.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 0: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1321.17-1340.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 0: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1342.17-1361.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 1: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1342.17-1361.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 1: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1363.17-1382.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 2: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1363.17-1382.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 2: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1384.17-1403.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 3: Relying on default #address-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1384.17-1403.5: Warning (avoid_default_addr_size): /ahb/apb/bus at 1e78a000/i2c-bus at 800/i2c-mux at 72/i2c at 3: Relying on default #size-cells value
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1553.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_b4:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1552.14-1555.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_b4: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/usb2bd_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1557.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_b5:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1556.14-1559.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_b5: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/interrupt-controller at 560 or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1561.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f0:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1560.14-1563.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f0: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/txd1_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1565.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f1:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1564.14-1567.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f1: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/rxd1_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1569.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f2:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1568.14-1571.5: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f2: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/wdtrst1_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1573.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f3:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1572.14-1575.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f3: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/wdtrst2_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1577.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f4:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1576.14-1579.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f4: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/emmc_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1581.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f5:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1580.14-1583.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f5: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/txd2_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1585.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f6:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1584.14-1587.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f6: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/rxd2_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1589.3-29: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f7:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1588.14-1591.4: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_f7: Missing property '#gpio-cells' in node /ahb/apb/syscon at 1e6e2000/pinctrl/txd3_default or bad phandle (referred from gpios[0])
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1593.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_l6:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1593.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_l6:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1597.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_l7:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1597.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_l7:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1601.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_s0:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1601.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_s0:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1605.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_s1:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1605.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_s1:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1609.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v0:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1609.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v0:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1613.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v1:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1613.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v1:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1617.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v2:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1617.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v2:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1621.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v3:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1621.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_v3:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1625.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w0:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1625.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w0:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1629.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w1:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1629.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w1:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1633.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w2:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1633.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w2:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1637.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w3:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1637.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w3:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1641.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w4:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1641.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w4:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1645.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w5:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1645.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w5:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1649.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w6:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1649.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w6:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1653.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w7:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1653.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_w7:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1657.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_z3:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1657.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_z3:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1661.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_z4:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1661.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_z4:gpios: Could not get phandle node for (cell 0)
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1665.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_z5:gpios: cell 0 is not a phandle reference
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:1665.3-30: Warning (gpios_property): /ahb/apb/gpio at 1e780000/pin_gpio_z5:gpios: Could not get phandle node for (cell 0)
+Traceback (most recent call last):
+  File "/home/rob/.local/bin/dt-validate", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/rob/proj/dt-schema/dtschema/dtb_validate.py", line 144, in main
+    sg.check_dtb(filename)
+  File "/home/rob/proj/dt-schema/dtschema/dtb_validate.py", line 87, in check_dtb
+    dt = self.validator.decode_dtb(f.read())
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rob/proj/dt-schema/dtschema/validator.py", line 518, in decode_dtb
+    return [dtschema.dtb.fdt_unflatten(self, dtb)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rob/proj/dt-schema/dtschema/dtb.py", line 492, in fdt_unflatten
+    fixup_gpios(dt)
+  File "/home/rob/proj/dt-schema/dtschema/dtb.py", line 381, in fixup_gpios
+    fixup_gpios(v)
+  File "/home/rob/proj/dt-schema/dtschema/dtb.py", line 381, in fixup_gpios
+    fixup_gpios(v)
+  File "/home/rob/proj/dt-schema/dtschema/dtb.py", line 381, in fixup_gpios
+    fixup_gpios(v)
+  [Previous line repeated 1 more time]
+  File "/home/rob/proj/dt-schema/dtschema/dtb.py", line 402, in fixup_gpios
+    node = phandles[phandle]
+           ~~~~~~~~^^^^^^^^^
+KeyError: 94
+
+
+
+
 
