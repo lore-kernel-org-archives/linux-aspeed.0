@@ -1,70 +1,46 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 12 Mar 2024 14:15:46 +0800
-Subject: [PATCH v6 14/22] ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4 schematic change
+Date: Tue, 12 Mar 2024 14:15:52 +0800
+Subject: [PATCH v6 20/22] ARM: dts: aspeed: yosemite4: support medusa board adc sensors
 In-Reply-To: <20240312061556.496605-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240312061556.496605-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240312061556.496605-15-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240312061556.496605-21-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise ina233 config for yosemite4 schematic change
+Add ina233/ina28 support for medusa board adc sensors
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts    | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 4cf4b0ca1024..f0e93c74003a 100644
+index d85c29cbb286..db195213a848 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1026,28 +1026,38 @@ adc at 37 {
- 	};
- 
- 	power-sensor at 40 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
+@@ -915,6 +915,19 @@ power-sensor at 40 {
  		reg = <0x40>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
  	};
  
- 	power-sensor at 41 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x41>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 42 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x42>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 43 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x43>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 44 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x44>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	temperature-sensor at 4e {
++	power-sensor at 41 {
++			compatible = "ti,ina233";
++			resistor-calibration = /bits/ 16 <0x0a00>;
++			current-lsb= /bits/ 16 <0x0001>;
++			reg = <0x41>;
++	};
++
++	power-sensor at 44 {
++			compatible = "ti,ina238";
++			shunt-resistor = <1000>;
++			reg = <0x44>;
++	};
++
+ 	temperature-sensor at 48 {
+ 		compatible = "ti,tmp75";
+ 		reg = <0x48>;
 -- 
 2.25.1
 
