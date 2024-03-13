@@ -1,18 +1,18 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed, 13 Mar 2024 10:42:10 +0800
-Subject: [PATCH v1] pinctrl: pinctrl-aspeed-g6: correct the offset of SCU630
-Message-ID: <20240313024210.31452-1-Delphine_CC_Chiu@wiwynn.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Wed, 13 Mar 2024 13:20:27 +0800
+Subject: [PATCH] pinctrl: pinctrl-aspeed-g6: Fix register offset.
+Message-ID: <20240313052027.1320489-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Description:
-Correct the offset of "Disable GPIO Internal Pull-Down #4" register that
-should be 630h according to the AST2620 datasheet.
+The register offset to disable the internal pull-down of GPIOR~T is 0x630
+instead of 0x620.
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Fixes: 15711ba6ff19 ("pinctrl: aspeed-g6: Add AST2600 pinconf support")
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 34 +++++++++++-----------
  1 file changed, 17 insertions(+), 17 deletions(-)
