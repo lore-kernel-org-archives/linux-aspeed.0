@@ -1,127 +1,52 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Mon, 18 Mar 2024 08:58:24 +0100
-Subject: [PATCH v2] drivers: watchdog: ast2600 support bootstatus
-In-Reply-To: <20240318055219.3460121-1-peteryin.openbmc@gmail.com>
-References: <20240318055219.3460121-1-peteryin.openbmc@gmail.com>
-Message-ID: <d94a4833-3fe2-4dfa-be88-9508971d12bd@linaro.org>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Mon, 18 Mar 2024 17:09:49 +0100
+Subject: [PATCH 1/2] hwmon: (aspeed-g6-pwm-tacho): Make use of pwmchip_parent() accessor
+In-Reply-To: <cover.1710777536.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1710777536.git.u.kleine-koenig@pengutronix.de>
+Message-ID: <5c6a11dd10cd29e0f7bfaa1fdef145523347cb58.1710777536.git.u.kleine-koenig@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 18/03/2024 06:52, Peter Yin wrote:
-> Add WDIOF_EXTERN1 and WDIOF_CARDRESET bootstatus in ast2600
-> 
-> Regarding the AST2600 specification, the WDTn Timeout Status Register
-> (WDT10) has bit 1 reserved. To verify the second boot source,
-> we need to check SEC14 bit 12 and bit 13.
-> The bits 8-23 in the WDTn Timeout Status Register are the Watchdog
-> Event Count, which we can use to verify WDIOF_EXTERN1.
-> 
-> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
-> ---
-> Change log:
-> 
-> v1 -> v2
->   - Add comment and support WDIOF_CARDRESET in ast2600
-> 
-> v1
->   - Patch 0001 - Add WDIOF_EXTERN1 bootstatus
-> ---
->  arch/arm/boot/dts/aspeed/aspeed-g6.dtsi |  8 ++---
+struct pwm_chip::dev is about to change. To not have to touch this
+driver in the same commit as struct pwm_chip::dev, use the accessor
+function provided for exactly this purpose.
 
-No, DTS is always separate patchset.
+Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/hwmon/aspeed-g6-pwm-tach.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
->  drivers/watchdog/aspeed_wdt.c           | 45 ++++++++++++++++++++++---
->  2 files changed, 44 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> index e0b44498269f..23ae7f0430e9 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> @@ -556,24 +556,24 @@ uart5: serial at 1e784000 {
->  
->  			wdt1: watchdog at 1e785000 {
->  				compatible = "aspeed,ast2600-wdt";
-> -				reg = <0x1e785000 0x40>;
-> +				reg = <0x1e785000 0x40>, <0x1e6f2000 0x20>;
-
-And how does it pass dtbs_check? Where did you update the bindings?
-
->  			};
->  
->  			wdt2: watchdog at 1e785040 {
->  				compatible = "aspeed,ast2600-wdt";
-> -				reg = <0x1e785040 0x40>;
-> +				reg = <0x1e785040 0x40>, <0x1e6f2000 0x020>;
->  				status = "disabled";
->  			};
->  
->  			wdt3: watchdog at 1e785080 {
->  				compatible = "aspeed,ast2600-wdt";
-> -				reg = <0x1e785080 0x40>;
-> +				reg = <0x1e785080 0x40>, <0x1e6f2000 0x020>;
->  				status = "disabled";
->  			};
->  
->  			wdt4: watchdog at 1e7850c0 {
->  				compatible = "aspeed,ast2600-wdt";
-> -				reg = <0x1e7850C0 0x40>;
-> +				reg = <0x1e7850C0 0x40>, <0x1e6f2000 0x020>;
->  				status = "disabled";
->  			};
->  
-> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-> index b4773a6aaf8c..65118e461130 100644
-> --- a/drivers/watchdog/aspeed_wdt.c
-> +++ b/drivers/watchdog/aspeed_wdt.c
-> @@ -33,6 +33,7 @@ struct aspeed_wdt {
->  	void __iomem		*base;
->  	u32			ctrl;
->  	const struct aspeed_wdt_config *cfg;
-> +	void __iomem		*sec_base;
->  };
->  
->  static const struct aspeed_wdt_config ast2400_config = {
-> @@ -82,6 +83,15 @@ MODULE_DEVICE_TABLE(of, aspeed_wdt_of_table);
->  #define WDT_RESET_MASK1		0x1c
->  #define WDT_RESET_MASK2		0x20
->  
-> +/*
-> + * Only Ast2600 support
-> + */
-> +#define   WDT_EVENT_COUNTER_MASK	(0xFFF << 8)
-> +#define   WDT_SECURE_ENGINE_STATUS	(0x14)
-> +#define   ABR_IMAGE_SOURCE		BIT(12)
-> +#define   ABR_IMAGE_SOURCE_SPI		BIT(13)
-> +#define   SECOND_BOOT_ENABLE		BIT(14)
-> +
->  /*
->   * WDT_RESET_WIDTH controls the characteristics of the external pulse (if
->   * enabled), specifically:
-> @@ -313,6 +323,7 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
->  	const char *reset_type;
->  	u32 duration;
->  	u32 status;
-> +	u32 sec_st;
->  	int ret;
->  
->  	wdt = devm_kzalloc(dev, sizeof(*wdt), GFP_KERNEL);
-> @@ -330,6 +341,12 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
->  	if (IS_ERR(wdt->base))
->  		return PTR_ERR(wdt->base);
->  
-> +	if (of_device_is_compatible(np, "aspeed,ast2600-wdt")) {
-
-
-> +		wdt->sec_base = devm_platform_ioremap_resource(pdev, 1);
-> +		if (IS_ERR(wdt->sec_base))
-> +			return PTR_ERR(wdt->sec_base);
-> +	}
-
-NAK, ABI break without clear reason.
-
-Best regards,
-Krzysztof
+diff --git a/drivers/hwmon/aspeed-g6-pwm-tach.c b/drivers/hwmon/aspeed-g6-pwm-tach.c
+index 597b3b019d49..64def5e4cdf6 100644
+--- a/drivers/hwmon/aspeed-g6-pwm-tach.c
++++ b/drivers/hwmon/aspeed-g6-pwm-tach.c
+@@ -195,7 +195,7 @@ static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ 
+ 	expect_period = div64_u64(ULLONG_MAX, (u64)priv->clk_rate);
+ 	expect_period = min(expect_period, state->period);
+-	dev_dbg(chip->dev, "expect period: %lldns, duty_cycle: %lldns",
++	dev_dbg(pwmchip_parent(chip), "expect period: %lldns, duty_cycle: %lldns",
+ 		expect_period, state->duty_cycle);
+ 	/*
+ 	 * Pick the smallest value for div_h so that div_l can be the biggest
+@@ -218,12 +218,12 @@ static int aspeed_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ 	if (div_l > 255)
+ 		div_l = 255;
+ 
+-	dev_dbg(chip->dev, "clk source: %ld div_h %lld, div_l : %lld\n",
++	dev_dbg(pwmchip_parent(chip), "clk source: %ld div_h %lld, div_l : %lld\n",
+ 		priv->clk_rate, div_h, div_l);
+ 	/* duty_pt = duty_cycle * (PERIOD + 1) / period */
+ 	duty_pt = div64_u64(state->duty_cycle * priv->clk_rate,
+ 			    (u64)NSEC_PER_SEC * (div_l + 1) << div_h);
+-	dev_dbg(chip->dev, "duty_cycle = %lld, duty_pt = %d\n",
++	dev_dbg(pwmchip_parent(chip), "duty_cycle = %lld, duty_pt = %d\n",
+ 		state->duty_cycle, duty_pt);
+ 
+ 	/*
+-- 
+2.43.0
 
