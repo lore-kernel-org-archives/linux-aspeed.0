@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 19 Mar 2024 10:51:00 +0100
-Subject: [PATCH v2 2/4] mtd: Replace module_init with subsys_initcall
-In-Reply-To: <20240319093405.39833-3-manojkiran.eda@gmail.com>
+Date: Tue, 19 Mar 2024 10:56:39 +0100
+Subject: [PATCH v2 4/4] dt-bindings: aspeed: Add eSPI controller
+In-Reply-To: <20240319093405.39833-5-manojkiran.eda@gmail.com>
 References: <20240319093405.39833-1-manojkiran.eda@gmail.com>
- <20240319093405.39833-3-manojkiran.eda@gmail.com>
-Message-ID: <4e3fbff7-6edc-4196-bc72-1095f14d0dfa@linaro.org>
+ <20240319093405.39833-5-manojkiran.eda@gmail.com>
+Message-ID: <bad5df79-e040-4868-9db6-701110894ea3@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,17 +12,153 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 19/03/2024 10:34, Manojkiran Eda wrote:
-> While engaged in development on the espi kernel device driver[1],
-> I noticed that the espi flash driver, utilizing the mtd subsystem,
-> appears to initialize before the mtdcore subsystem registers the
+> This commit adds the device tree bindings for aspeed eSPI
+> controller.
+> 
+> Although aspeed eSPI hardware supports 4 different channels,
+> this commit only adds the support for flash channel, the
+> bindings for other channels could be upstreamed when the driver
+> support for those are added.
+> 
+> Signed-off-by: Manojkiran Eda <manojkiran.eda@gmail.com>
+> ---
+>  .../bindings/soc/aspeed/aspeed,espi.yaml      | 94 +++++++++++++++++++
+>  1 file changed, 94 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml b/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
+> new file mode 100644
+> index 000000000000..3d3ad528e3b3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
 
-NAK
+Why Rob's comments got ignored?
 
-You incorrectly ordered your call, so now to fix this you incorrectly
-re-order rest of kernel. No. Fix your code to handle modules, probe
-deferrals and device links.
+This is not a soc component.
+
+> @@ -0,0 +1,94 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# # Copyright (c) 2024 IBM Corporation.
+> +# # Copyright (c) 2021 Aspeed Technology Inc.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/soc/aspeed/aspeed,espi.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Aspeed eSPI Controller
+> +
+> +maintainers:
+> +  - Manojkiran Eda <manojkiran.eda@gmail.com>
+> +  - Patrick Rudolph <patrick.rudolph@9elements.com>
+> +  - Chia-Wei Wang <chiawei_wang@aspeedtech.com>
+> +  - Ryan Chen <ryan_chen@aspeedtech.com>
+> +
+> +description:
+> +  Aspeed eSPI controller implements a device side eSPI endpoint device
+> +  supporting the flash channel.
+
+Explain what is eSPI.
+
+> +
+> +properties:
+> +  compatible:
+> +    items:
+> +      - enum:
+> +          - aspeed,ast2500-espi
+> +          - aspeed,ast2600-espi
+> +      - const: simple-mfd
 
 
+That's not simple-mfd. You have driver for this. Drop.
+
+> +      - const: syscon
+
+That's not syscon. Why do you have ranges then? Where is any explanation
+of hardware which would justify such combination?
+
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  "#address-cells":
+> +    const: 1
+> +
+> +  "#size-cells":
+> +    const: 1
+> +
+> +  ranges: true
+> +
+> +patternProperties:
+> +  "^espi-ctrl@[0-9a-f]+$":
+> +    type: object
+> +
+> +    description: Controls the flash channel of eSPI hardware
+
+That explains nothing. Unless you wanted to use here MTD bindings.
+
+This binding did not improve much. I don't understand why this is not
+SPI (nothing in commit msg, nothing in description), what is eSPI, why
+do you need child device, what are other children (commit msg is quite
+vague here). Why there is no MTD bindings here?
+
+All this looks like crafted for your driver, instead of using existing
+DT bindings like SPI or MTD/NAND. This is a strong no-go.
+
+> +
+> +    properties:
+> +      compatible:
+> +        items:
+
+No items, just use enum.
+
+> +          - enum:
+> +              - aspeed,ast2500-espi-ctrl
+> +              - aspeed,ast2600-espi-ctrl
+> +
+> +      interrupts:
+> +        maxItems: 1
+> +
+> +      clocks:
+> +        maxItems: 1
+> +
+> +    required:
+> +      - compatible
+> +      - interrupts
+> +      - clocks
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - "#address-cells"
+> +  - "#size-cells"
+> +  - ranges
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/clock/ast2600-clock.h>
+> +
+> +    espi: espi at 1e6ee000 {
+> +        compatible = "aspeed,ast2600-espi", "simple-mfd", "syscon";
+> +        reg = <0x1e6ee000 0x1000>;
+> +
+> +        #address-cells = <1>;
+> +        #size-cells = <1>;
+> +        ranges = <0x0 0x1e6ee000 0x1000>;
+> +
+> +        espi_ctrl: espi-ctrl at 0 {
+> +            compatible = "aspeed,ast2600-espi-ctrl";
+> +            reg = <0x0 0x800>,<0x0 0x4000000>;
+
+Fix your style in DTS. There is always a space after ','.
+
+> +            reg-names = "espi_ctrl","espi_flash";
+> +            interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+> +            clocks = <&syscon ASPEED_CLK_GATE_ESPICLK>;
+> +        };
+> +    };
 
 Best regards,
 Krzysztof
