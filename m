@@ -1,76 +1,179 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Mon, 18 Mar 2024 09:45:34 -0700
-Subject: [PATCH 2/2] hwmon: (aspeed-g6-pwm-tacho): Make use of
- devm_pwmchip_alloc() function
-In-Reply-To: <e95e41eea5a138ae206c9116ba3cb1d9e0178284.1710777536.git.u.kleine-koenig@pengutronix.de>
-References: <cover.1710777536.git.u.kleine-koenig@pengutronix.de>
- <e95e41eea5a138ae206c9116ba3cb1d9e0178284.1710777536.git.u.kleine-koenig@pengutronix.de>
-Message-ID: <b07680fe-969a-49aa-9995-aa51261f1bee@roeck-us.net>
+Date: Mon, 18 Mar 2024 17:46:48 -0700
+Subject: [PATCH v2] drivers: watchdog: ast2600 support bootstatus
+In-Reply-To: <20240318055219.3460121-1-peteryin.openbmc@gmail.com>
+References: <20240318055219.3460121-1-peteryin.openbmc@gmail.com>
+Message-ID: <13640a07-7395-4521-9c5d-748599202361@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 3/18/24 09:09, Uwe Kleine-K?nig wrote:
-> This prepares the aspeed-g6-pwm-tacho driver to further changes of the
-> pwm core outlined in the commit introducing devm_pwmchip_alloc(). There
-> is no intended semantical change and the driver should behave as before.
+On 3/17/24 22:52, Peter Yin wrote:
+> Add WDIOF_EXTERN1 and WDIOF_CARDRESET bootstatus in ast2600
 > 
-> Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+> Regarding the AST2600 specification, the WDTn Timeout Status Register
+> (WDT10) has bit 1 reserved. To verify the second boot source,
+> we need to check SEC14 bit 12 and bit 13.
+> The bits 8-23 in the WDTn Timeout Status Register are the Watchdog
+> Event Count, which we can use to verify WDIOF_EXTERN1.
+> 
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+You'll have to separate dts and yaml file changes from driver changes.
 
 > ---
->   drivers/hwmon/aspeed-g6-pwm-tach.c | 15 +++++++++------
->   1 file changed, 9 insertions(+), 6 deletions(-)
+> Change log:
 > 
-> diff --git a/drivers/hwmon/aspeed-g6-pwm-tach.c b/drivers/hwmon/aspeed-g6-pwm-tach.c
-> index 64def5e4cdf6..332c02216668 100644
-> --- a/drivers/hwmon/aspeed-g6-pwm-tach.c
-> +++ b/drivers/hwmon/aspeed-g6-pwm-tach.c
-> @@ -136,7 +136,6 @@ struct aspeed_pwm_tach_data {
->   	struct clk *clk;
->   	struct reset_control *reset;
->   	unsigned long clk_rate;
-> -	struct pwm_chip chip;
->   	bool tach_present[TACH_ASPEED_NR_TACHS];
->   	u32 tach_divisor;
+> v1 -> v2
+>    - Add comment and support WDIOF_CARDRESET in ast2600
+> 
+> v1
+>    - Patch 0001 - Add WDIOF_EXTERN1 bootstatus
+> ---
+>   arch/arm/boot/dts/aspeed/aspeed-g6.dtsi |  8 ++---
+>   drivers/watchdog/aspeed_wdt.c           | 45 ++++++++++++++++++++++---
+>   2 files changed, 44 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+> index e0b44498269f..23ae7f0430e9 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+> @@ -556,24 +556,24 @@ uart5: serial at 1e784000 {
+>   
+>   			wdt1: watchdog at 1e785000 {
+>   				compatible = "aspeed,ast2600-wdt";
+> -				reg = <0x1e785000 0x40>;
+> +				reg = <0x1e785000 0x40>, <0x1e6f2000 0x20>;
+>   			};
+>   
+>   			wdt2: watchdog at 1e785040 {
+>   				compatible = "aspeed,ast2600-wdt";
+> -				reg = <0x1e785040 0x40>;
+> +				reg = <0x1e785040 0x40>, <0x1e6f2000 0x020>;
+>   				status = "disabled";
+>   			};
+>   
+>   			wdt3: watchdog at 1e785080 {
+>   				compatible = "aspeed,ast2600-wdt";
+> -				reg = <0x1e785080 0x40>;
+> +				reg = <0x1e785080 0x40>, <0x1e6f2000 0x020>;
+>   				status = "disabled";
+>   			};
+>   
+>   			wdt4: watchdog at 1e7850c0 {
+>   				compatible = "aspeed,ast2600-wdt";
+> -				reg = <0x1e7850C0 0x40>;
+> +				reg = <0x1e7850C0 0x40>, <0x1e6f2000 0x020>;
+>   				status = "disabled";
+>   			};
+>   
+> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+> index b4773a6aaf8c..65118e461130 100644
+> --- a/drivers/watchdog/aspeed_wdt.c
+> +++ b/drivers/watchdog/aspeed_wdt.c
+> @@ -33,6 +33,7 @@ struct aspeed_wdt {
+>   	void __iomem		*base;
+>   	u32			ctrl;
+>   	const struct aspeed_wdt_config *cfg;
+> +	void __iomem		*sec_base;
 >   };
-> @@ -144,7 +143,7 @@ struct aspeed_pwm_tach_data {
->   static inline struct aspeed_pwm_tach_data *
->   aspeed_pwm_chip_to_data(struct pwm_chip *chip)
->   {
-> -	return container_of(chip, struct aspeed_pwm_tach_data, chip);
-> +	return pwmchip_get_drvdata(chip);
->   }
 >   
->   static int aspeed_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
-> @@ -459,6 +458,7 @@ static int aspeed_pwm_tach_probe(struct platform_device *pdev)
->   	int ret;
->   	struct device_node *child;
->   	struct aspeed_pwm_tach_data *priv;
-> +	struct pwm_chip *chip;
+>   static const struct aspeed_wdt_config ast2400_config = {
+> @@ -82,6 +83,15 @@ MODULE_DEVICE_TABLE(of, aspeed_wdt_of_table);
+>   #define WDT_RESET_MASK1		0x1c
+>   #define WDT_RESET_MASK2		0x20
 >   
->   	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->   	if (!priv)
-> @@ -487,11 +487,14 @@ static int aspeed_pwm_tach_probe(struct platform_device *pdev)
->   	if (ret)
->   		return ret;
->   
-> -	priv->chip.dev = dev;
-> -	priv->chip.ops = &aspeed_pwm_ops;
-> -	priv->chip.npwm = PWM_ASPEED_NR_PWMS;
-> +	chip = devm_pwmchip_alloc(dev, PWM_ASPEED_NR_PWMS, 0);
-> +	if (IS_ERR(chip))
-> +		return PTR_ERR(chip);
->   
-> -	ret = devm_pwmchip_add(dev, &priv->chip);
-> +	pwmchip_set_drvdata(chip, priv);
-> +	chip->ops = &aspeed_pwm_ops;
+> +/*
+> + * Only Ast2600 support
+> + */
+> +#define   WDT_EVENT_COUNTER_MASK	(0xFFF << 8)
+> +#define   WDT_SECURE_ENGINE_STATUS	(0x14)
+> +#define   ABR_IMAGE_SOURCE		BIT(12)
+> +#define   ABR_IMAGE_SOURCE_SPI		BIT(13)
+> +#define   SECOND_BOOT_ENABLE		BIT(14)
 > +
-> +	ret = devm_pwmchip_add(dev, chip);
->   	if (ret)
->   		return dev_err_probe(dev, ret, "Failed to add PWM chip\n");
+>   /*
+>    * WDT_RESET_WIDTH controls the characteristics of the external pulse (if
+>    * enabled), specifically:
+> @@ -313,6 +323,7 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>   	const char *reset_type;
+>   	u32 duration;
+>   	u32 status;
+> +	u32 sec_st;
+>   	int ret;
 >   
+>   	wdt = devm_kzalloc(dev, sizeof(*wdt), GFP_KERNEL);
+> @@ -330,6 +341,12 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>   	if (IS_ERR(wdt->base))
+>   		return PTR_ERR(wdt->base);
+>   
+> +	if (of_device_is_compatible(np, "aspeed,ast2600-wdt")) {
+> +		wdt->sec_base = devm_platform_ioremap_resource(pdev, 1);
+> +		if (IS_ERR(wdt->sec_base))
+> +			return PTR_ERR(wdt->sec_base);
+> +	}
+> +
+>   	wdt->wdd.info = &aspeed_wdt_info;
+>   
+>   	if (wdt->cfg->irq_mask) {
+> @@ -459,12 +476,30 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>   	}
+>   
+>   	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
+> -	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
+> -		wdt->wdd.bootstatus = WDIOF_CARDRESET;
+>   
+> -		if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
+> -		    of_device_is_compatible(np, "aspeed,ast2500-wdt"))
+> -			wdt->wdd.groups = bswitch_groups;
+> +	if (of_device_is_compatible(np, "aspeed,ast2600-wdt")) {
+> +		/*
+> +		 * The WDTn Timeout Status Register bit 1 is reserved.
+> +		 * To verify the second boot source,
+> +		 * we need to check SEC14 bit 12 and bit 13.
+> +		 */
+> +		sec_st = readl(wdt->sec_base + WDT_SECURE_ENGINE_STATUS);
+> +		if( sec_st & SECOND_BOOT_ENABLE)
+> +			if (sec_st & ABR_IMAGE_SOURCE ||
+> +			    sec_st & ABR_IMAGE_SOURCE_SPI)
+
+I am sure that checkpatch as something to say here. Either case, I would very
+much prefer a single if() statement such as
+
+		if (sec_st & SECOND_BOOT_ENABLE &&
+		    sec_st & (ABR_IMAGE_SOURCE | ABR_IMAGE_SOURCE_SPI))
+
+> +				wdt->wdd.bootstatus |= WDIOF_CARDRESET;
+> +
+> +		/*
+> +		 * To check Watchdog Event Count for WDIOF_EXTERN1
+> +		 */
+> +		if (status & WDT_EVENT_COUNTER_MASK) {
+> +			wdt->wdd.bootstatus |= WDIOF_EXTERN1;
+> +		}
+
+Unnecessary { }
+
+... but does this really indicate that there was a reset due to some event ?
+This reads three 8-bit counters. Wouldn't it make more sense to check bit 0
+instead ?
+
+I am also not sure if reading the watchdog status from WDT_SECURE_ENGINE_STATUS
+adds any value over the status reported in the watchdog status register.
+You'll have to explain why the added complexity is necessary or even adds
+value.
+
+Never mind, though ...
+
+Looking into the datasheets, the current code is quite completely wrong anyway.
+Bit 1 of the status register indicates on ast2500 if the boot was from the second
+boot source. It does not indicate that the most recent reset was triggered by
+the watchdog. The code should just be changed to set WDIOF_CARDRESET if bit 0
+of the status register is set. The boot source is out of scope for the watchdog
+status bits.
+
+Thanks,
+Guenter
 
