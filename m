@@ -1,212 +1,166 @@
-From: PeterYin <peteryin.openbmc@gmail.com>
-Date: Wed, 20 Mar 2024 17:05:28 +0800
-Subject: [PATCH v2] drivers: watchdog: ast2600 support bootstatus
-In-Reply-To: <13640a07-7395-4521-9c5d-748599202361@roeck-us.net>
-References: <20240318055219.3460121-1-peteryin.openbmc@gmail.com>
- <13640a07-7395-4521-9c5d-748599202361@roeck-us.net>
-Message-ID: <924c4402-af14-4b7a-9a4e-4317c50482cd@gmail.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed, 20 Mar 2024 15:44:41 +0100
+Subject: [PATCH v2 4/4] dt-bindings: aspeed: Add eSPI controller
+In-Reply-To: <a9faa9b4-9bf6-49b6-b7eb-f642e2d261c3@gmail.com>
+References: <20240319093405.39833-1-manojkiran.eda@gmail.com>
+ <20240319093405.39833-5-manojkiran.eda@gmail.com>
+ <bad5df79-e040-4868-9db6-701110894ea3@linaro.org>
+ <a9faa9b4-9bf6-49b6-b7eb-f642e2d261c3@gmail.com>
+Message-ID: <f2a487c4-eba3-4a78-9a14-67c8754c8b61@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-Guenter Roeck ? 3/19/24 08:46 ??:
-> On 3/17/24 22:52, Peter Yin wrote:
->> Add WDIOF_EXTERN1 and WDIOF_CARDRESET bootstatus in ast2600
+On 20/03/2024 10:59, Manojkiran Eda wrote:
+> 
+> On 19/03/24 3:26 pm, Krzysztof Kozlowski wrote:
+>> On 19/03/2024 10:34, Manojkiran Eda wrote:
+>>> This commit adds the device tree bindings for aspeed eSPI
+>>> controller.
+>>>
+>>> Although aspeed eSPI hardware supports 4 different channels,
+>>> this commit only adds the support for flash channel, the
+>>> bindings for other channels could be upstreamed when the driver
+>>> support for those are added.
+>>>
+>>> Signed-off-by: Manojkiran Eda<manojkiran.eda@gmail.com>
+>>> ---
+>>>   .../bindings/soc/aspeed/aspeed,espi.yaml      | 94 +++++++++++++++++++
+>>>   1 file changed, 94 insertions(+)
+>>>   create mode 100644 Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml b/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
+>>> new file mode 100644
+>>> index 000000000000..3d3ad528e3b3
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
+>> Why Rob's comments got ignored?
 >>
->> Regarding the AST2600 specification, the WDTn Timeout Status Register
->> (WDT10) has bit 1 reserved. To verify the second boot source,
->> we need to check SEC14 bit 12 and bit 13.
->> The bits 8-23 in the WDTn Timeout Status Register are the Watchdog
->> Event Count, which we can use to verify WDIOF_EXTERN1.
+>> This is not a soc component.
+> I did not mean to ignore, i have few reasons listed below that provides 
+> information on why i felt this belongs into soc.
+
+soc is dumping ground of things which are purely SoC specific, not
+covered by existing hardware structure in bindings. Maybe indeed this
+does not have any other place, but did you actually look?
+
+Anyway, please CC SPI maintainers on future submission.
+
 >>
->> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
-> 
-> You'll have to separate dts and yaml file changes from driver changes.
-> 
->> ---
->> Change log:
+>>> @@ -0,0 +1,94 @@
+>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>> +# # Copyright (c) 2024 IBM Corporation.
+>>> +# # Copyright (c) 2021 Aspeed Technology Inc.
+>>> +%YAML 1.2
+>>> +---
+>>> +$id:http://devicetree.org/schemas/soc/aspeed/aspeed,espi.yaml#
+>>> +$schema:http://devicetree.org/meta-schemas/core.yaml#
+>>> +
+>>> +title: Aspeed eSPI Controller
+>>> +
+>>> +maintainers:
+>>> +  - Manojkiran Eda<manojkiran.eda@gmail.com>
+>>> +  - Patrick Rudolph<patrick.rudolph@9elements.com>
+>>> +  - Chia-Wei Wang<chiawei_wang@aspeedtech.com>
+>>> +  - Ryan Chen<ryan_chen@aspeedtech.com>
+>>> +
+>>> +description:
+>>> +  Aspeed eSPI controller implements a device side eSPI endpoint device
+>>> +  supporting the flash channel.
+>> Explain what is eSPI.
+> eSPI is a serial bus interface for client and server platforms that is 
+
+Explain in description of the hardware.
+
+> based on SPI,? using the same master and slave topology but operates 
+> with a different protocol to meet new requirements. For instance, eSPI 
+> uses I/O, or input/output, communication, instead of MOSI/MISO used in 
+> SPI. It also includes a transaction layer on top of the SPI protocol, 
+> defining packets such as command and response packets that allow both 
+> the master and slave to initiate alert and reset signals. eSPI supports 
+> communication between Embedded Controller (EC), Baseboard Management 
+> Controller (BMC), Super-I/O (SIO) and Port-80 debug cards. I could add 
+> this to the commit message as well in the next patchset.
 >>
->> v1 -> v2
->> ?? - Add comment and support WDIOF_CARDRESET in ast2600
+>>> +
+>>> +properties:
+>>> +  compatible:
+>>> +    items:
+>>> +      - enum:
+>>> +          - aspeed,ast2500-espi
+>>> +          - aspeed,ast2600-espi
+>>> +      - const: simple-mfd
 >>
->> v1
->> ?? - Patch 0001 - Add WDIOF_EXTERN1 bootstatus
->> ---
->> ? arch/arm/boot/dts/aspeed/aspeed-g6.dtsi |? 8 ++---
->> ? drivers/watchdog/aspeed_wdt.c?????????? | 45 ++++++++++++++++++++++---
->> ? 2 files changed, 44 insertions(+), 9 deletions(-)
+>> That's not simple-mfd. You have driver for this. Drop.
 >>
->> diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi 
->> b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
->> index e0b44498269f..23ae7f0430e9 100644
->> --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
->> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
->> @@ -556,24 +556,24 @@ uart5: serial at 1e784000 {
->> ????????????? wdt1: watchdog at 1e785000 {
->> ????????????????? compatible = "aspeed,ast2600-wdt";
->> -??????????????? reg = <0x1e785000 0x40>;
->> +??????????????? reg = <0x1e785000 0x40>, <0x1e6f2000 0x20>;
->> ????????????? };
->> ????????????? wdt2: watchdog at 1e785040 {
->> ????????????????? compatible = "aspeed,ast2600-wdt";
->> -??????????????? reg = <0x1e785040 0x40>;
->> +??????????????? reg = <0x1e785040 0x40>, <0x1e6f2000 0x020>;
->> ????????????????? status = "disabled";
->> ????????????? };
->> ????????????? wdt3: watchdog at 1e785080 {
->> ????????????????? compatible = "aspeed,ast2600-wdt";
->> -??????????????? reg = <0x1e785080 0x40>;
->> +??????????????? reg = <0x1e785080 0x40>, <0x1e6f2000 0x020>;
->> ????????????????? status = "disabled";
->> ????????????? };
->> ????????????? wdt4: watchdog at 1e7850c0 {
->> ????????????????? compatible = "aspeed,ast2600-wdt";
->> -??????????????? reg = <0x1e7850C0 0x40>;
->> +??????????????? reg = <0x1e7850C0 0x40>, <0x1e6f2000 0x020>;
->> ????????????????? status = "disabled";
->> ????????????? };
->> diff --git a/drivers/watchdog/aspeed_wdt.c 
->> b/drivers/watchdog/aspeed_wdt.c
->> index b4773a6aaf8c..65118e461130 100644
->> --- a/drivers/watchdog/aspeed_wdt.c
->> +++ b/drivers/watchdog/aspeed_wdt.c
->> @@ -33,6 +33,7 @@ struct aspeed_wdt {
->> ????? void __iomem??????? *base;
->> ????? u32??????????? ctrl;
->> ????? const struct aspeed_wdt_config *cfg;
->> +??? void __iomem??????? *sec_base;
->> ? };
->> ? static const struct aspeed_wdt_config ast2400_config = {
->> @@ -82,6 +83,15 @@ MODULE_DEVICE_TABLE(of, aspeed_wdt_of_table);
->> ? #define WDT_RESET_MASK1??????? 0x1c
->> ? #define WDT_RESET_MASK2??????? 0x20
->> +/*
->> + * Only Ast2600 support
->> + */
->> +#define?? WDT_EVENT_COUNTER_MASK??? (0xFFF << 8)
->> +#define?? WDT_SECURE_ENGINE_STATUS??? (0x14)
->> +#define?? ABR_IMAGE_SOURCE??????? BIT(12)
->> +#define?? ABR_IMAGE_SOURCE_SPI??????? BIT(13)
->> +#define?? SECOND_BOOT_ENABLE??????? BIT(14)
->> +
->> ? /*
->> ?? * WDT_RESET_WIDTH controls the characteristics of the external 
->> pulse (if
->> ?? * enabled), specifically:
->> @@ -313,6 +323,7 @@ static int aspeed_wdt_probe(struct platform_device 
->> *pdev)
->> ????? const char *reset_type;
->> ????? u32 duration;
->> ????? u32 status;
->> +??? u32 sec_st;
->> ????? int ret;
->> ????? wdt = devm_kzalloc(dev, sizeof(*wdt), GFP_KERNEL);
->> @@ -330,6 +341,12 @@ static int aspeed_wdt_probe(struct 
->> platform_device *pdev)
->> ????? if (IS_ERR(wdt->base))
->> ????????? return PTR_ERR(wdt->base);
->> +??? if (of_device_is_compatible(np, "aspeed,ast2600-wdt")) {
->> +??????? wdt->sec_base = devm_platform_ioremap_resource(pdev, 1);
->> +??????? if (IS_ERR(wdt->sec_base))
->> +??????????? return PTR_ERR(wdt->sec_base);
->> +??? }
->> +
->> ????? wdt->wdd.info = &aspeed_wdt_info;
->> ????? if (wdt->cfg->irq_mask) {
->> @@ -459,12 +476,30 @@ static int aspeed_wdt_probe(struct 
->> platform_device *pdev)
->> ????? }
->> ????? status = readl(wdt->base + WDT_TIMEOUT_STATUS);
->> -??? if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
->> -??????? wdt->wdd.bootstatus = WDIOF_CARDRESET;
->> -??????? if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
->> -??????????? of_device_is_compatible(np, "aspeed,ast2500-wdt"))
->> -??????????? wdt->wdd.groups = bswitch_groups;
->> +??? if (of_device_is_compatible(np, "aspeed,ast2600-wdt")) {
->> +??????? /*
->> +???????? * The WDTn Timeout Status Register bit 1 is reserved.
->> +???????? * To verify the second boot source,
->> +???????? * we need to check SEC14 bit 12 and bit 13.
->> +???????? */
->> +??????? sec_st = readl(wdt->sec_base + WDT_SECURE_ENGINE_STATUS);
->> +??????? if( sec_st & SECOND_BOOT_ENABLE)
->> +??????????? if (sec_st & ABR_IMAGE_SOURCE ||
->> +??????????????? sec_st & ABR_IMAGE_SOURCE_SPI)
+>>> +      - const: syscon
+>> That's not syscon. Why do you have ranges then? Where is any explanation
+>> of hardware which would justify such combination?
+>>
+>>> +
+>>> +  reg:
+>>> +    maxItems: 1
+>>> +
+>>> +  "#address-cells":
+>>> +    const: 1
+>>> +
+>>> +  "#size-cells":
+>>> +    const: 1
+>>> +
+>>> +  ranges: true
+>>> +
+>>> +patternProperties:
+>>> +  "^espi-ctrl@[0-9a-f]+$":
+>>> +    type: object
+>>> +
+>>> +    description: Controls the flash channel of eSPI hardware
+>> That explains nothing. Unless you wanted to use here MTD bindings.
+>>
+>> This binding did not improve much. I don't understand why this is not
+>> SPI (nothing in commit msg, nothing in description), what is eSPI,
 > 
-> I am sure that checkpatch as something to say here. Either case, I would 
-> very
-> much prefer a single if() statement such as
-> 
->  ??????? if (sec_st & SECOND_BOOT_ENABLE &&
->  ??????????? sec_st & (ABR_IMAGE_SOURCE | ABR_IMAGE_SOURCE_SPI))
-> 
->> +??????????????? wdt->wdd.bootstatus |= WDIOF_CARDRESET;
->> +
->> +??????? /*
->> +???????? * To check Watchdog Event Count for WDIOF_EXTERN1
->> +???????? */
->> +??????? if (status & WDT_EVENT_COUNTER_MASK) {
->> +??????????? wdt->wdd.bootstatus |= WDIOF_EXTERN1;
->> +??????? }
-> 
-> Unnecessary { }
-> 
-> ... but does this really indicate that there was a reset due to some 
-> event ?
-> This reads three 8-bit counters. Wouldn't it make more sense to check bit 0
-> instead ?
-> 
-> I am also not sure if reading the watchdog status from 
-> WDT_SECURE_ENGINE_STATUS
-> adds any value over the status reported in the watchdog status register.
-> You'll have to explain why the added complexity is necessary or even adds
-> value.
-> 
-> Never mind, though ...
-> 
-> Looking into the datasheets, the current code is quite completely wrong 
-> anyway.
-> Bit 1 of the status register indicates on ast2500 if the boot was from 
-> the second
-> boot source. It does not indicate that the most recent reset was 
-> triggered by
-> the watchdog. The code should just be changed to set WDIOF_CARDRESET if 
-> bit 0
-> of the status register is set. The boot source is out of scope for the 
-> watchdog
-> status bits.
-> 
-> Thanks,
-> Guenter
-> 
-Ast2600 has external reset flag on scu74 bit 1
-Can I modify the code like this?
+> eSPI uses Peripheral, Virtual Wire, Out of Band, and Flash Access 
+> channels to communicate different sets of data.
 
-To set WDIOF_EXTERN1 if EXTERN_RESET_FLAG is set,
-To set WDIOF_CARDRESET if WDT_TIMEOUT_STATUS_EVENT(bit0) is set
+And what are these channels? What does it mean a "channel"? Is it just
+how you organize transfers and classes of devices? Or some sort of
+addressable instance on the bus?
+
+The channels feel like some sort of software or logical concept, not
+physical. Physical would be endpoint with peripheral. Or flash memory.
+How do they fit here?
+> 
+>   * The *Peripheral* Channel is used for communication between eSPI host
+>     bridge located on the master side and eSPI endpoints located on the
+>     slave side. LPC Host and LPC Peripherals are an example of eSPI host
+>     bridge and eSPI endpoints respectively.
+>   * *Virtual Wire* Channel: The Virtual Wire channel is used to
+>     communicate the state of sideband pins or GPIO tunneled through eSPI
+>     as in-band messages. Serial IRQ interrupts are communicated through
+>     this channel as in-band messages.
+>   * *OOB* Channel: The SMBus packets are tunneled through eSPI as
+>     Out-Of-Band (OOB) messages. The whole SMBus packet is embedded
+>     inside the eSPI OOB message as data.
+>   * *Flash Access* Channel: The Flash Access channel provides a path
+>     allowing the flash components to be shared run-time between chipset
+>     and the eSPI slaves that require flash accesses such as EC (Embedded
+>     Controller) and BMC.
+
+Please make binding complete, so define all of the channels.
+
+> 
+> Although , eSPI reuses the timing and electrical specification of Serial 
+> Peripheral Interface (SPI) but it runs an entirely different protocol to 
+> meet a set of different requirements. Which is why i felt probably 
+> placing this in soc was a better choice rather than spi. Do you think 
+> otherwise ?
+
+soc is dumping ground for things do not fit other places. Are there any
+other buses / IP blocks similar to this one?
 
 
-#define   WDT_TIMEOUT_STATUS_EVENT	BIT(0)
-#define   EXTERN_RESET_FLAG		BIT(1)
-#define   ASPEED_SYSTEM_RESET_EVENT	(0x74)
+Best regards,
+Krzysztof
 
-	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
-	if (status & WDT_TIMEOUT_STATUS_EVENT)
-		wdt->wdd.bootstatus = WDIOF_CARDRESET;
-
-	if (of_device_is_compatible(np, "aspeed,ast2600-wdt")) {
-		status = readl(wdt->scu_base + ASPEED_SYSTEM_RESET_EVENT);
-		if (status & EXTERN_RESET_FLAG)
-			/*
-			 * Reset cause by Extern Reset
-			 */
-			wdt->wdd.bootstatus |= WDIOF_EXTERN1;
-	} else {
-			wdt->wdd.groups = bswitch_groups;
-	}
-Thanks,
-Peter.
