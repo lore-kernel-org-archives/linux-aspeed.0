@@ -1,40 +1,47 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 21 Mar 2024 10:12:16 +0800
-Subject: [PATCH v7 04/22] ARM: dts: aspeed: yosemite4: Enable watchdog2
+Date: Thu, 21 Mar 2024 10:12:17 +0800
+Subject: [PATCH v7 05/22] ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
 In-Reply-To: <20240321021236.1823693-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240321021236.1823693-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240321021236.1823693-5-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240321021236.1823693-6-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-enable watchdog2 setting
+Revise quad mode to dual mode to avoid WP pin influnece the SPI
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
+ .../arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index ea8fd3ec0982..f8bfdefbefc6 100644
+index f8bfdefbefc6..23006dca5f26 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -120,6 +120,13 @@ &wdt1 {
- 	aspeed,ext-pulse-duration = <256>;
+@@ -149,15 +149,17 @@ flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc";
+-		spi-rx-bus-width = <4>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
+ 		spi-max-frequency = <50000000>;
+-#include "openbmc-flash-layout-64.dtsi"
++#include "openbmc-flash-layout-128.dtsi"
+ 	};
+ 	flash at 1 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc2";
+-		spi-rx-bus-width = <4>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
+ 		spi-max-frequency = <50000000>;
+ 	};
  };
- 
-+&wdt2 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst2_default>;
-+	aspeed,reset-type = "system";
-+};
-+
- &mac2 {
- 	status = "okay";
- 	pinctrl-names = "default";
 -- 
 2.25.1
 
