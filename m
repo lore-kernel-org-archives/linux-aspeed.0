@@ -1,53 +1,85 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 20 Mar 2024 10:40:48 -0500
-Subject: [PATCH v2 4/4] dt-bindings: aspeed: Add eSPI controller
-In-Reply-To: <a9faa9b4-9bf6-49b6-b7eb-f642e2d261c3@gmail.com>
-References: <20240319093405.39833-1-manojkiran.eda@gmail.com>
- <20240319093405.39833-5-manojkiran.eda@gmail.com>
- <bad5df79-e040-4868-9db6-701110894ea3@linaro.org>
- <a9faa9b4-9bf6-49b6-b7eb-f642e2d261c3@gmail.com>
-Message-ID: <20240320154048.GA1777957-robh@kernel.org>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Thu, 21 Mar 2024 10:12:12 +0800
+Subject: [PATCH v7 00/22] Add i2c-mux and eeprom devices for Meta Yosemite 4
+Message-ID: <20240321021236.1823693-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 20, 2024 at 03:29:15PM +0530, Manojkiran Eda wrote:
->    On 19/03/24 3:26 pm, Krzysztof Kozlowski wrote:
-> 
-> On 19/03/2024 10:34, Manojkiran Eda wrote:
-> 
-> This commit adds the device tree bindings for aspeed eSPI
-> controller.
-> 
-> Although aspeed eSPI hardware supports 4 different channels,
-> this commit only adds the support for flash channel, the
-> bindings for other channels could be upstreamed when the driver
-> support for those are added.
-> 
-> Signed-off-by: Manojkiran Eda [1]<manojkiran.eda@gmail.com>
-> ---
->  .../bindings/soc/aspeed/aspeed,espi.yaml      | 94 +++++++++++++++++++
->  1 file changed, 94 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yam
-> l
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml b/Doc
-> umentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
-> new file mode 100644
-> index 000000000000..3d3ad528e3b3
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/aspeed/aspeed,espi.yaml
-> 
-> Why Rob's comments got ignored?
-> 
-> This is not a soc component.
-> 
->    I did not mean to ignore, i have few reasons listed below that provides
->    information on why i felt this belongs into soc.
+Changelog:
+  - v7
+    - Revise pca9506 i2c address
+  - v6
+    - Revise i2c duty-cycle for meeting 400khz spec
+  - v5
+    - Support medusa board adc sensors
+    - support NIC eeprom
+  - v4
+    - Re-format gpio linename
+    - Revise i2c device node names
+    - Split patches by logic changes
+  - v3
+    - Correct patch for revising gpio name
+  - v2
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
+  - v1
+    - Add gpio and eeprom behind i2c-mux
+    - Remove redundant idle-state setting for i2c-mux
+    - Enable adc 15, wdt2,spi gpio for yosemite4 use
+    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+    - Revise power sensor adm1281 for yosemite4 schematic change
+    - Add gpio pca9506 I/O expander for yosemite4 use
+    - remove space for adm1272 compatible
+    - enable interrupt setting for pca9555
+    - add eeprom for yosemite4 medusa board/BSM use
+    - remove temperature sensor for yosemite4 schematic change
+    - add power sensor for power module reading
+    - Revise adc128d818 adc mode for yosemite4 schematic change
+    - Revise ina233 for yosemite4 schematic change
+    - Remove idle state setting for yosemite4 NIC connection
+    - Initialize bmc gpio state
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
 
-Fix you email program to not send multi-part (txt plus html) emails. 
-Plain text only on maillists.
+Delphine CC Chiu (22):
+  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+  ARM: dts: aspeed: yosemite4: Enable adc15
+  ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+  ARM: dts: aspeed: yosemite4: Enable watchdog2
+  ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
+  ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
+    change
+  ARM: dts: aspeed: yosemite4: Add gpio pca9506
+  ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
+  ARM: dts: aspeed: yosemite4: Enable interrupt setting for pca9555
+  ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
+  ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
+  ARM: dts: aspeed: yosemite4: Remove temperature sensor for yosemite4
+    schematic change
+  ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4
+    schematic change
+  ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4
+    schematic change
+  ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4
+    NIC connection
+  ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
+  ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
+  ARM: dts: aspeed: yosemite4: add mctp config for NIC
+  ARM: dts: aspeed: yosemite4: support mux to cpld
+  ARM: dts: aspeed: yosemite4: support medusa board adc sensors
+  ARM: dts: aspeed: yosemite4: support NIC eeprom
+  ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
 
-Rob
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1258 +++++++++++++++--
+ 1 file changed, 1151 insertions(+), 107 deletions(-)
+
+-- 
+2.25.1
+
