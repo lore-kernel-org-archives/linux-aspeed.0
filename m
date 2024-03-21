@@ -1,47 +1,114 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 21 Mar 2024 10:12:17 +0800
-Subject: [PATCH v7 05/22] ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
+Date: Thu, 21 Mar 2024 10:12:18 +0800
+Subject: [PATCH v7 06/22] ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic change
 In-Reply-To: <20240321021236.1823693-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240321021236.1823693-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240321021236.1823693-6-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240321021236.1823693-7-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise quad mode to dual mode to avoid WP pin influnece the SPI
+Revise power sensor adm1281 for yosemite4 schematic change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index f8bfdefbefc6..23006dca5f26 100644
+index 23006dca5f26..af9f7067c57c 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -149,15 +149,17 @@ flash at 0 {
- 		status = "okay";
- 		m25p,fast-read;
- 		label = "bmc";
--		spi-rx-bus-width = <4>;
-+		spi-tx-bus-width = <2>;
-+		spi-rx-bus-width = <2>;
- 		spi-max-frequency = <50000000>;
--#include "openbmc-flash-layout-64.dtsi"
-+#include "openbmc-flash-layout-128.dtsi"
+@@ -176,8 +176,9 @@ mctp at 10 {
  	};
- 	flash at 1 {
- 		status = "okay";
- 		m25p,fast-read;
- 		label = "bmc2";
--		spi-rx-bus-width = <4>;
-+		spi-tx-bus-width = <2>;
-+		spi-rx-bus-width = <2>;
- 		spi-max-frequency = <50000000>;
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
  	};
  };
+ 
+@@ -193,8 +194,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -210,8 +212,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -227,8 +230,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -244,8 +248,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -261,8 +266,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -278,8 +284,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -295,8 +302,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
 -- 
 2.25.1
 
