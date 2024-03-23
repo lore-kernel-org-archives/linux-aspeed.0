@@ -1,128 +1,66 @@
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Date: Fri, 22 Mar 2024 14:24:58 +0100
-Subject: [PATCH 05/64] i2c: aspeed: reword according to newest specification
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Sat, 23 Mar 2024 10:20:32 +0100
+Subject: [PATCH 00/64] i2c: reword i2c_algorithm according to newest
+ specification
 In-Reply-To: <20240322132619.6389-1-wsa+renesas@sang-engineering.com>
 References: <20240322132619.6389-1-wsa+renesas@sang-engineering.com>
-Message-ID: <20240322132619.6389-6-wsa+renesas@sang-engineering.com>
+Message-ID: <ug266trshvhhbsln3eoh53fmsuj3l63ziz6gavcl7rv2jhjr5t@3av5givh5n7m>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Match the wording of this driver wrt. the newest I2C v7, SMBus 3.2, I3C
-specifications and replace "master/slave" with more appropriate terms.
-They are also more specific because we distinguish now between a remote
-entity ("client") and a local one ("target").
+Hi Wolfram,
 
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+On Fri, Mar 22, 2024 at 02:24:53PM +0100, Wolfram Sang wrote:
+> Okay, we need to begin somewhere...
+> 
+> Start changing the wording of the I2C main header wrt. the newest I2C
+> v7, SMBus 3.2, I3C specifications and replace "master/slave" with more
+> appropriate terms. This first step renames the members of struct
+> i2c_algorithm. Once all in-tree users are converted, the anonymous union
+> will go away again. All this work will also pave the way for finally
+> seperating the monolithic header into more fine-grained headers like
+> "i2c/clients.h" etc. So, this is not a simple renaming-excercise but
+> also a chance to update the I2C core to recent Linux standards.
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index ce8c4846b7fa..4e6ea4a5cab9 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -159,7 +159,7 @@ struct aspeed_i2c_bus {
- 	bool				send_stop;
- 	int				cmd_err;
- 	/* Protected only by i2c_lock_bus */
--	int				master_xfer_result;
-+	int				xfer_result;
- 	/* Multi-master */
- 	bool				multi_master;
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
-@@ -608,9 +608,9 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- out_complete:
- 	bus->msgs = NULL;
- 	if (bus->cmd_err)
--		bus->master_xfer_result = bus->cmd_err;
-+		bus->xfer_result = bus->cmd_err;
- 	else
--		bus->master_xfer_result = bus->msgs_index + 1;
-+		bus->xfer_result = bus->msgs_index + 1;
- 	complete(&bus->cmd_complete);
- out_no_complete:
- 	return irq_handled;
-@@ -679,7 +679,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 	return irq_remaining ? IRQ_NONE : IRQ_HANDLED;
- }
- 
--static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
-+static int aspeed_i2c_xfer(struct i2c_adapter *adap,
- 				  struct i2c_msg *msgs, int num)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(adap);
-@@ -738,7 +738,7 @@ static int aspeed_i2c_master_xfer(struct i2c_adapter *adap,
- 		return -ETIMEDOUT;
- 	}
- 
--	return bus->master_xfer_result;
-+	return bus->xfer_result;
- }
- 
- static u32 aspeed_i2c_functionality(struct i2c_adapter *adap)
-@@ -748,7 +748,7 @@ static u32 aspeed_i2c_functionality(struct i2c_adapter *adap)
- 
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- /* precondition: bus.lock has been acquired. */
--static void __aspeed_i2c_reg_slave(struct aspeed_i2c_bus *bus, u16 slave_addr)
-+static void __aspeed_i2c_reg_target(struct aspeed_i2c_bus *bus, u16 slave_addr)
- {
- 	u32 addr_reg_val, func_ctrl_reg_val;
- 
-@@ -770,7 +770,7 @@ static void __aspeed_i2c_reg_slave(struct aspeed_i2c_bus *bus, u16 slave_addr)
- 	bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
- }
- 
--static int aspeed_i2c_reg_slave(struct i2c_client *client)
-+static int aspeed_i2c_reg_target(struct i2c_client *client)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(client->adapter);
- 	unsigned long flags;
-@@ -781,7 +781,7 @@ static int aspeed_i2c_reg_slave(struct i2c_client *client)
- 		return -EINVAL;
- 	}
- 
--	__aspeed_i2c_reg_slave(bus, client->addr);
-+	__aspeed_i2c_reg_target(bus, client->addr);
- 
- 	bus->slave = client;
- 	spin_unlock_irqrestore(&bus->lock, flags);
-@@ -789,7 +789,7 @@ static int aspeed_i2c_reg_slave(struct i2c_client *client)
- 	return 0;
- }
- 
--static int aspeed_i2c_unreg_slave(struct i2c_client *client)
-+static int aspeed_i2c_unreg_target(struct i2c_client *client)
- {
- 	struct aspeed_i2c_bus *bus = i2c_get_adapdata(client->adapter);
- 	u32 func_ctrl_reg_val;
-@@ -814,11 +814,11 @@ static int aspeed_i2c_unreg_slave(struct i2c_client *client)
- #endif /* CONFIG_I2C_SLAVE */
- 
- static const struct i2c_algorithm aspeed_i2c_algo = {
--	.master_xfer	= aspeed_i2c_master_xfer,
-+	.xfer	= aspeed_i2c_xfer,
- 	.functionality	= aspeed_i2c_functionality,
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
--	.reg_slave	= aspeed_i2c_reg_slave,
--	.unreg_slave	= aspeed_i2c_unreg_slave,
-+	.reg_target	= aspeed_i2c_reg_target,
-+	.unreg_target	= aspeed_i2c_unreg_target,
- #endif /* CONFIG_I2C_SLAVE */
- };
- 
-@@ -950,7 +950,7 @@ static int aspeed_i2c_init(struct aspeed_i2c_bus *bus,
- #if IS_ENABLED(CONFIG_I2C_SLAVE)
- 	/* If slave has already been registered, re-enable it. */
- 	if (bus->slave)
--		__aspeed_i2c_reg_slave(bus, bus->slave->addr);
-+		__aspeed_i2c_reg_target(bus, bus->slave->addr);
- #endif /* CONFIG_I2C_SLAVE */
- 
- 	/* Set interrupt generation of I2C controller */
--- 
-2.43.0
+yes, very good! It's clearly stated in all three documentations
+that Target replaces Slave and Controller replaces Master (i3c is
+at the 1.1.1 version).
 
+> My motivation is to improve the I2C core API, in general. My motivation
+> is not to clean each and every driver. I think this is impossible
+> because register names based on official documentation will need to stay
+> as they are. But the Linux-internal names should be updated IMO.
+
+Also because some drivers have been written based on previous
+specifications where master/slave was used.
+
+> That being said, I worked on 62 drivers in this series beyond plain
+> renames inside 'struct i2c_algorithm' because the fruits were so
+> low-hanging. Before this series, 112 files in the 'busses/' directory
+> contained 'master' and/or 'slave'. After the series, only 57. Why not?
+> 
+> Next step is updating the drivers outside the 'i2c'-folder regarding
+> 'struct i2c_algorithm' so we can remove the anonymous union ASAP. To be
+> able to work on this with minimal dependencies, I'd like to apply this
+> series between -rc1 and -rc2.
+> 
+> I hope this will work for you guys. The changes are really minimal. If
+> you are not comfortable with changes to your driver or need more time to
+> review, please NACK the patch and I will drop the patch and/or address
+> the issues separeately.
+> 
+> @Andi: are you okay with this approach? It means you'd need to merge
+> -rc2 into your for-next branch. Or rebase if all fails.
+
+I think it's a good plan, I'll try to support you with it.
+
+> Speaking of Andi, thanks a lot to him taking care of the controller
+> drivers these days. His work really gives me the freedom to work on I2C
+> core issues again.
+
+Thank you, Wolfram!
+
+Andi
