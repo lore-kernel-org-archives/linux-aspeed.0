@@ -1,10 +1,11 @@
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 26 Mar 2024 12:36:50 +0100
-Subject: [PATCH v6 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
-In-Reply-To: <20240326103549.2413515-2-Kelly_Hung@asus.com>
+Date: Tue, 26 Mar 2024 12:39:08 +0100
+Subject: [PATCH v6 2/2] ARM: dts: aspeed: x4tf: Add dts for asus x4tf
+ project
+In-Reply-To: <20240326103549.2413515-3-Kelly_Hung@asus.com>
 References: <20240326103549.2413515-1-Kelly_Hung@asus.com>
- <20240326103549.2413515-2-Kelly_Hung@asus.com>
-Message-ID: <32cd6f33-b4e9-4b7a-bcea-b1f2e421d67e@linaro.org>
+ <20240326103549.2413515-3-Kelly_Hung@asus.com>
+Message-ID: <79ba66c5-a564-416d-b7bf-747422803aa6@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,22 +13,22 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 26/03/2024 11:35, Kelly Hung wrote:
-> Document the new compatibles used on ASUS X4TF.
+> Base on aspeed-g6.dtsi and can boot into BMC console.
 > 
 > Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
 > Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-> Reviewed-by: Rob Herring <robh@kernel.org>
 
-Where did it happen? Where did you receive this tag? Please provide link
-to lore.
+That's not true.
 
+Please provide a link to lore.kernel.org which will prove that you
+received this tag.
 
-> Reviewed-by: Zev Weiss <zweiss@equinix.com>
+> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-Where did it happen? Where did you receive this tag? Please provide link
-to lore.
+Please provide a link to lore.kernel.org which will prove that you
+received this tag.
 
-
+Did you read the documentation I was sharing with you?
 
 Best regards,
 Krzysztof
