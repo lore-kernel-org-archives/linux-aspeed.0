@@ -1,45 +1,26 @@
-From: Kelly Hung(洪嘉莉) <Kelly_Hung@asus.com>
-Date: Tue, 05 Mar 2024 04:15:10 -0000
-Subject: [PATCH] ARM: dts: aspeed: asus: Add ASUS X4TF BMC
-In-Reply-To: <57419138-9c80-46c3-9341-b55576a3f7d2@linaro.org>
-References: <20240130085652.198010-1-Kelly_Hung@asus.com>
- <57419138-9c80-46c3-9341-b55576a3f7d2@linaro.org>
-Message-ID: <TYZPR04MB659609383D503E6DD3AEA3D29D222@TYZPR04MB6596.apcprd04.prod.outlook.com>
+From: Kelly Hung <ppighouse@gmail.com>
+Date: Tue, 26 Mar 2024 10:36:03 -0000
+Subject: [PATCH v6 0/2] Add Reviewed-by and Acked-by tags
+Message-ID: <20240326103549.2413515-1-Kelly_Hung@asus.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi, Krzysztof,
-Thanks for reminding. I've finished and corrected my theme prefix.
+There are no changes to the Patch file, just the reviewed and acked tags are added.
+PATCH v5 has been merged into the next branch.
 
-Best Regards
-Kelly
------Original Message-----
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Sent: Tuesday, January 30, 2024 6:35 PM
-To: Kelly Hung <ppighouse@gmail.com>; robh+dt at kernel.org
-Cc: krzysztof.kozlowski+dt at linaro.org; conor+dt at kernel.org; joel at jms.id.au; andrew at codeconstruct.com.au; devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org; linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org; Kelly Hung(???) <Kelly_Hung@asus.com>
-Subject: Re: [PATCH] ARM: dts: aspeed: asus: Add ASUS X4TF BMC
+Kelly Hung (2):
+  dt-bindings: arm: aspeed: add ASUS X4TF board
+  ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
 
-External email : Ensure your email is secure before opening links and attachments.
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 581 ++++++++++++++++++
+ 3 files changed, 583 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
 
-On 30/01/2024 09:56, Kelly Hung wrote:
-> This initial device-tree provides the necessary configuration for
-> basic BMC functionality and work on ASUS X4TF production.
->
-> Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
+-- 
+2.25.1
 
-Please use subject prefixes matching the subsystem. You can get them for example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory your patch is touching.
-
-Best regards,
-Krzysztof
-
-
-<p></p>
-===================================================================================================================================
-This email and any attachments to it contain confidential information and are intended solely for the use of the individual to whom it is addressed. If you are not the intended recipient or receive it accidentally, please immediately notify the sender by e-mail and delete the message and any attachments from your computer system, and destroy all hard copies. Please be advised that any unauthorized disclosure, copying, distribution or any action taken or omitted in reliance on this, is illegal and prohibited. Any views or opinions expressed are solely those of the author and do not represent those of ASUSTeK.
-
-For pricing information, ASUS is only entitled to set a recommendation resale price. All customers are free to set their own price as they wish.
-===================================================================================================================================
