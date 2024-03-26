@@ -1,35 +1,48 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 26 Mar 2024 12:39:08 +0100
-Subject: [PATCH v6 2/2] ARM: dts: aspeed: x4tf: Add dts for asus x4tf
- project
-In-Reply-To: <20240326103549.2413515-3-Kelly_Hung@asus.com>
-References: <20240326103549.2413515-1-Kelly_Hung@asus.com>
- <20240326103549.2413515-3-Kelly_Hung@asus.com>
-Message-ID: <79ba66c5-a564-416d-b7bf-747422803aa6@linaro.org>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Tue, 26 Mar 2024 23:00:23 +0800
+Subject: [PATCH v3 0/4] drivers: watchdog: ast2500 and ast2600 support bootstatus
+Message-ID: <20240326150027.3015958-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 26/03/2024 11:35, Kelly Hung wrote:
-> Base on aspeed-g6.dtsi and can boot into BMC console.
-> 
-> Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
-> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Add WDIOF_EXTERN1 and WDIOF_CARDRESET bootstatus in ast2500/ast2600
 
-That's not true.
+Regarding the AST2600 specification, the WDTn Timeout Status Register
+(WDT10) has bit 1 reserved. Bit 1 of the status register indicates
+on ast2500 if the boot was from the second boot source.
+It does not indicate that the most recent reset was triggered by
+the watchdog. The code should just be changed to set WDIOF_CARDRESET
+if bit 0 of the status register is set.
 
-Please provide a link to lore.kernel.org which will prove that you
-received this tag.
+Include SCU register to veriy WDIOF_EXTERN1 in ast2600 SCU74 or
+ast2500 SCU3C when bit1 is set.
 
-> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+v2 -> v3
+  - Fixed WDIOF_CARDRESET status bit check and added support
+  for WDIOF_EXTERN1 on ast2500 and ast2600.
 
-Please provide a link to lore.kernel.org which will prove that you
-received this tag.
+v1 -> v2
+  - Add comment and support WDIOF_CARDRESET in ast2600
 
-Did you read the documentation I was sharing with you?
+v1
+  - Patch 0001 - Add WDIOF_EXTERN1 bootstatus
+---
 
-Best regards,
-Krzysztof
+Peter Yin (4):
+  ARM: dts: aspeed: Add the AST2500 WDT with SCU register
+  ARM: dts: aspeed: Add the AST2600 WDT with SCU register
+  dt-bindings: watchdog: aspeed-wdt: Add aspeed,scu
+  drivers: watchdog: ast2500 and ast2600 support bootstatus
+
+ .../bindings/watchdog/aspeed-wdt.txt          |  4 ++
+ arch/arm/boot/dts/aspeed/aspeed-g5.dtsi       |  3 ++
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi       |  4 ++
+ drivers/watchdog/aspeed_wdt.c                 | 53 +++++++++++++------
+ 4 files changed, 48 insertions(+), 16 deletions(-)
+
+-- 
+2.25.1
 
