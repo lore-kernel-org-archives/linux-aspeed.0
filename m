@@ -1,33 +1,34 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 26 Mar 2024 15:17:13 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: set bus13 frequency to 100k
-Message-ID: <20240326071713.2786206-1-Delphine_CC_Chiu@wiwynn.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Tue, 26 Mar 2024 12:36:50 +0100
+Subject: [PATCH v6 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
+In-Reply-To: <20240326103549.2413515-2-Kelly_Hung@asus.com>
+References: <20240326103549.2413515-1-Kelly_Hung@asus.com>
+ <20240326103549.2413515-2-Kelly_Hung@asus.com>
+Message-ID: <32cd6f33-b4e9-4b7a-bcea-b1f2e421d67e@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since the ocp debug card only supports 100k, the bus is also set to 100k.
+On 26/03/2024 11:35, Kelly Hung wrote:
+> Document the new compatibles used on ASUS X4TF.
+> 
+> Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
+> Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Where did it happen? Where did you receive this tag? Please provide link
+to lore.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 64075cc41d92..98e58e3fea77 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -369,7 +369,7 @@ rtc at 6f {
- 
- &i2c13 {
- 	status = "okay";
--	bus-frequency = <400000>;
-+	bus-frequency = <100000>;
- };
- 
- &i2c14 {
--- 
-2.25.1
+
+> Reviewed-by: Zev Weiss <zweiss@equinix.com>
+
+Where did it happen? Where did you receive this tag? Please provide link
+to lore.
+
+
+
+Best regards,
+Krzysztof
 
