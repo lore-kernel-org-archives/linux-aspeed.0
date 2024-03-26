@@ -1,55 +1,50 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Tue, 26 Mar 2024 23:00:25 +0800
-Subject: [PATCH v3 2/4] ARM: dts: aspeed: Add the AST2600 WDT with SCU register
+Date: Tue, 26 Mar 2024 23:00:26 +0800
+Subject: [PATCH v3 3/4] dt-bindings: watchdog: aspeed-wdt: Add aspeed,scu
 In-Reply-To: <20240326150027.3015958-1-peteryin.openbmc@gmail.com>
 References: <20240326150027.3015958-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240326150027.3015958-3-peteryin.openbmc@gmail.com>
+Message-ID: <20240326150027.3015958-4-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 Watchdog Timer (WDT) references
-the System Control Unit (SCU) register for its operation.
+To use the SCU register to obtain reset flags for supporting
+bootstatus.
 
 Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 4 ++++
+ Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-index 5f640b7d6b6d..2f7788f2f153 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-@@ -558,23 +558,27 @@ uart5: serial at 1e784000 {
- 			wdt1: watchdog at 1e785000 {
- 				compatible = "aspeed,ast2600-wdt";
- 				reg = <0x1e785000 0x40>;
-+				aspeed,scu = <&syscon>;
- 			};
+diff --git a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+index 3208adb3e52e..80a1f58b5a2e 100644
+--- a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
++++ b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+@@ -8,6 +8,8 @@ Required properties:
  
- 			wdt2: watchdog at 1e785040 {
- 				compatible = "aspeed,ast2600-wdt";
- 				reg = <0x1e785040 0x40>;
-+				aspeed,scu = <&syscon>;
- 				status = "disabled";
- 			};
+  - reg: physical base address of the controller and length of memory mapped
+    region
++ - aspeed,scu: a reference to the System Control Unit node of the Aspeed
++   SOC.
  
- 			wdt3: watchdog at 1e785080 {
- 				compatible = "aspeed,ast2600-wdt";
- 				reg = <0x1e785080 0x40>;
-+				aspeed,scu = <&syscon>;
- 				status = "disabled";
- 			};
+ Optional properties:
  
- 			wdt4: watchdog at 1e7850c0 {
- 				compatible = "aspeed,ast2600-wdt";
- 				reg = <0x1e7850C0 0x40>;
-+				aspeed,scu = <&syscon>;
- 				status = "disabled";
- 			};
+@@ -62,6 +64,7 @@ Examples:
+ 		reg = <0x1e785000 0x1c>;
+ 		aspeed,reset-type = "system";
+ 		aspeed,external-signal;
++		aspeed,scu = <&syscon>;
+ 	};
  
+ 	#include <dt-bindings/watchdog/aspeed-wdt.h>
+@@ -70,4 +73,5 @@ Examples:
+ 		reg = <0x1e785040 0x40>;
+ 		aspeed,reset-mask = <AST2600_WDT_RESET1_DEFAULT
+ 				     (AST2600_WDT_RESET2_DEFAULT & ~AST2600_WDT_RESET2_LPC)>;
++		aspeed,scu = <&syscon>;
+ 	};
 -- 
 2.25.1
 
