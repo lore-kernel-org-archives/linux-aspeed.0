@@ -1,28 +1,33 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Tue, 26 Mar 2024 01:36:41 +0100
-Subject: [PATCH 00/64] i2c: reword i2c_algorithm according to newest
- specification
-In-Reply-To: <ug266trshvhhbsln3eoh53fmsuj3l63ziz6gavcl7rv2jhjr5t@3av5givh5n7m>
-References: <20240322132619.6389-1-wsa+renesas@sang-engineering.com>
- <ug266trshvhhbsln3eoh53fmsuj3l63ziz6gavcl7rv2jhjr5t@3av5givh5n7m>
-Message-ID: <j2l7tu24itjelylrgwe6gdsy3mfrw3dnve4rdofmri3z7xdroc@se56t5ylmdak>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Tue, 26 Mar 2024 15:17:13 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: set bus13 frequency to 100k
+Message-ID: <20240326071713.2786206-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Wolfram,
+Since the ocp debug card only supports 100k, the bus is also set to 100k.
 
-> > @Andi: are you okay with this approach? It means you'd need to merge
-> > -rc2 into your for-next branch. Or rebase if all fails.
-> 
-> I think it's a good plan, I'll try to support you with it.
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Do you feel more comfortable if I take the patches as soon as
-they are reviewd?
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index 64075cc41d92..98e58e3fea77 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -369,7 +369,7 @@ rtc at 6f {
+ 
+ &i2c13 {
+ 	status = "okay";
+-	bus-frequency = <400000>;
++	bus-frequency = <100000>;
+ };
+ 
+ &i2c14 {
+-- 
+2.25.1
 
-So far I have tagged patch 1-4 and I can already merge 2,3,4 as
-long as you merge patch 1.
-
-Andi
