@@ -1,7 +1,7 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Thu, 28 Mar 2024 09:32:45 +0800
+Date: Thu, 28 Mar 2024 09:32:58 +0800
 Subject: [PATCH v5 0/4] drivers: watchdog: ast2500 and ast2600 support bootstatus
-Message-ID: <20240328013249.3609225-1-peteryin.openbmc@gmail.com>
+Message-ID: <20240328013303.3609385-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
