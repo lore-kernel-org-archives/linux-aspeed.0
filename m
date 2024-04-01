@@ -1,42 +1,42 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@Wiwynn.com>
-Date: Mon,  1 Apr 2024 17:05:09 +0800
-Subject: [PATCH v1] Revise duty cycle for SMB9 and SMB10
-Message-ID: <20240401090509.2338027-1-Delphine_CC_Chiu@Wiwynn.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 1 Apr 2024 08:56:37 -0500
+Subject: [PATCH v6 3/4] dt-bindings: watchdog: aspeed-wdt: Add aspeed,scu
+In-Reply-To: <20240328022231.3649741-4-peteryin.openbmc@gmail.com>
+References: <20240328022231.3649741-1-peteryin.openbmc@gmail.com>
+ <20240328022231.3649741-4-peteryin.openbmc@gmail.com>
+Message-ID: <20240401135637.GA342928-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-ARM: dts: aspeed: yosemite4:
-Revise duty cycle for SMB9 and SMB10 to 40:60
-To meet 400kHz-i2c clock low time spec (> 1.3 us).
+On Thu, Mar 28, 2024 at 10:22:30AM +0800, Peter Yin wrote:
+> To use the SCU register to obtain reset flags for supporting
+> bootstatus.
+> 
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> index 3208adb3e52e..80a1f58b5a2e 100644
+> --- a/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> +++ b/Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> @@ -8,6 +8,8 @@ Required properties:
+>  
+>   - reg: physical base address of the controller and length of memory mapped
+>     region
+> + - aspeed,scu: a reference to the System Control Unit node of the Aspeed
+> +   SOC.
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@Wiwynn.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 ++
- 1 file changed, 2 insertions(+)
+You cannot add new required properties as that is an ABI break.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 64075cc41d92..b3a2aa8f53a5 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -257,6 +257,7 @@ power-sensor at 40 {
- &i2c8 {
- 	status = "okay";
- 	bus-frequency = <400000>;
-+	i2c-clk-high-min-percent = <40>;
- 	i2c-mux at 70 {
- 		compatible = "nxp,pca9544";
- 		idle-state = <0>;
-@@ -268,6 +269,7 @@ i2c-mux at 70 {
- &i2c9 {
- 	status = "okay";
- 	bus-frequency = <400000>;
-+	i2c-clk-high-min-percent = <40>;
- 	i2c-mux at 71 {
- 		compatible = "nxp,pca9544";
- 		idle-state = <0>;
--- 
-2.25.1
+If there's only 1 SCU instance, you can just fetch its node by 
+compatible with no DT change.
 
+What's the plan for converting this binding to schema? This is the 2nd 
+new property in 6 months.
+
+Rob
