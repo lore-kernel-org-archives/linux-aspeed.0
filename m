@@ -1,19 +1,19 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 03 Apr 2024 09:40:51 +1030
+Date: Wed, 03 Apr 2024 10:09:37 +1030
 Subject: [PATCH] dt-bindings: watchdog: Convert Aspeed binding to DT
  schema
-In-Reply-To: <20240402180718.GA358505-robh@kernel.org>
+In-Reply-To: <65722a59-2e94-4616-81e1-835615b0e600@hatter.bewilderbeest.net>
 References: <20240402120118.282035-1-andrew@codeconstruct.com.au>
-	 <20240402180718.GA358505-robh@kernel.org>
-Message-ID: <37d2cc0d19cc4ace869eace13c8452525bad8609.camel@codeconstruct.com.au>
+	 <65722a59-2e94-4616-81e1-835615b0e600@hatter.bewilderbeest.net>
+Message-ID: <99fa05be32787c88150c6df2f882e31582aebf90.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-04-02 at 13:07 -0500, Rob Herring wrote:
-> On Tue, Apr 02, 2024 at 10:31:18PM +1030, Andrew Jeffery wrote:
+On Tue, 2024-04-02 at 16:30 -0700, Zev Weiss wrote:
+> On Tue, Apr 02, 2024 at 05:01:18AM PDT, Andrew Jeffery wrote:
 > > Squash warnings such as:
 > > 
 > > ```
@@ -22,11 +22,11 @@ On Tue, 2024-04-02 at 13:07 -0500, Rob Herring wrote:
 > > 
 > > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 > > ---
-> >  .../bindings/watchdog/aspeed,ast2400-wdt.yaml | 130 ++++++++++++++++++
-> >  .../bindings/watchdog/aspeed-wdt.txt          |  73 ----------
-> >  2 files changed, 130 insertions(+), 73 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
-> >  delete mode 100644 Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
+> > .../bindings/watchdog/aspeed,ast2400-wdt.yaml | 130 ++++++++++++++++++
+> > .../bindings/watchdog/aspeed-wdt.txt          |  73 ----------
+> > 2 files changed, 130 insertions(+), 73 deletions(-)
+> > create mode 100644 Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> > delete mode 100644 Documentation/devicetree/bindings/watchdog/aspeed-wdt.txt
 > > 
 > > diff --git a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
 > > new file mode 100644
@@ -56,18 +56,6 @@ On Tue, 2024-04-02 at 13:07 -0500, Rob Herring wrote:
 > > +    maxItems: 1
 > > +
 > > +  clocks: true
-> 
-> # and order/function if more than 1 must be defined.
-
-Ack.
-
-> 
-> Please note it was missing from the original binding in the commit 
-> message.
-
-Ack.
-
-> 
 > > +
 > > +  aspeed,reset-type:
 > > +    enum:
@@ -82,31 +70,31 @@ Ack.
 > > +      Specifying 'cpu' will only reset the processor on a timeout event.
 > > +
 > > +      Specifying 'soc' will reset a configurable subset of the SoC's controllers
+> 
+> Might be worth clarifying that it's configurable only on ast2500 & 
+> ast2600, and which property (aspeed,reset-mask) configures it?
+
+Good point, will do.
+
+> 
 > > +      on a timeout event. Controllers critical to the SoC's operation may remain untouched.
 > > +
 > > +      Specifying 'system' will reset all controllers on a timeout event, as if EXTRST had been asserted.
 > > +      Specifying "none" will cause the timeout event to have no reset effect.
-> > +      Another watchdog engine on the chip must be used for chip reset operations.
-> > +
-> > +      The default reset type is "system"
 > 
-> Express as schema:
-> 
-> default: system
+> Tiny nit: quoting (single vs. double) is slightly inconsistent between 
+> values here.
 
 Ack.
 
 > 
+> > +      Another watchdog engine on the chip must be used for chip reset operations.
+> > +
+> > +      The default reset type is "system"
 > > +
 > > +  aspeed,alt-boot:
 > > +    $ref: /schemas/types.yaml#/definitions/flag
 > > +    description: |
-> 
-> Don't need '|' if no formatting to preserve.
-
-Ack.
-
-> 
 > > +      Direct the watchdog to configure the SoC to boot from the alternative boot
 > > +      region if a timeout occurs.
 > > +
@@ -120,12 +108,6 @@ Ack.
 > > +    $ref: /schemas/types.yaml#/definitions/uint32
 > > +    description: |
 > > +      The duration, in microseconds, of the pulse emitted on the external signal pin
-> 
-> Wrap at <80. Period@end needed.
-
-Ack for both.
-
-> 
 > > +
 > > +  aspeed,ext-push-pull:
 > > +    $ref: /schemas/types.yaml#/definitions/flag
@@ -147,47 +129,11 @@ Ack for both.
 > > +    maxItems: 2
 > > +    description: |
 > > +      A bitmaks indicating which peripherals will be reset if the watchdog
-> > +      timer expires. On AST2500 SoCs this should be a single word defined using
-> > +      the AST2500_WDT_RESET_* macros; on AST2600 SoCs this should be a two-word
-> > +      array with the first word defined using the AST2600_WDT_RESET1_* macros,
-> > +      and the second word defined using the AST2600_WDT_RESET2_* macros.
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +
-> > +allOf:
-> > +  - if:
-> > +      anyOf:
-> > +        - required:
-> > +            - aspeed,ext-push-pull
-> > +        - required:
-> > +            - aspeed,ext-active-high
-> > +        - required:
-> > +            - aspeed,reset-mask
-> > +    then:
-> > +      properties:
-> > +        compatible:
-> > +          enum:
-> > +            - aspeed,ast2500-wdt
-> > +            - aspeed,ast2600-wdt
-> > +  - if:
-> > +      required:
-> > +        - aspeed,ext-active-high
-> > +    then:
-> > +      required:
-> > +        - aspeed,ext-push-pull
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    wdt1: watchdog at 1e785000 {
 > 
-> Drop unused labels.
+> Typo: "bitmask"
 
-Ack.
+Good catch.
 
-Thanks for the feedback.
+Thanks,
 
 Andrew
