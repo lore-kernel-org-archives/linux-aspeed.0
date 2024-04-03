@@ -1,24 +1,23 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 03 Apr 2024 14:00:20 +1030
-Subject: [PATCH 3/3] ARM: dts: Modify I2C bus configuration
-In-Reply-To: <20240329130152.878944-4-renze@rnplus.nl>
-References: <20240329130152.878944-1-renze@rnplus.nl>
-	 <20240329130152.878944-4-renze@rnplus.nl>
-Message-ID: <3593e51f6e63dfd2b163d422032203d75e8bfb25.camel@codeconstruct.com.au>
+From: PeterYin <peteryin.openbmc@gmail.com>
+Date: Wed, 3 Apr 2024 17:18:29 +0800
+Subject: [PATCH v6 3/4] dt-bindings: watchdog: aspeed-wdt: Add aspeed,scu
+In-Reply-To: <ab76b0549172cf3e33d6242fa9ea3e6a87b4a58e.camel@codeconstruct.com.au>
+References: <20240328022231.3649741-1-peteryin.openbmc@gmail.com>
+ <20240328022231.3649741-4-peteryin.openbmc@gmail.com>
+ <20240401135637.GA342928-robh@kernel.org>
+ <ab76b0549172cf3e33d6242fa9ea3e6a87b4a58e.camel@codeconstruct.com.au>
+Message-ID: <79b7e2ef-6f53-4642-ad3f-99b8ce780a7f@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Renze,
+Thanks, I can wait you update it and send a new version for wdt driver.
 
-On Fri, 2024-03-29 at 14:01 +0100, Renze Nicolai wrote:
-> This commit enables I2C bus 8 which is exposed on the IPMB_1 connector on the X570D4U mainboard.
-> Additionally it adds a descriptive comment to I2C busses 1 and 5.
-
-checkpatch on this one too :)
-
-Cheers,
-
-Andrew
+Andrew Jeffery ? 4/2/24 20:09 ??:
+> I had a patch converting it in a local branch which I've now sent:
+> 
+> https://lore.kernel.org/all/20240402120118.282035-1-andrew at codeconstruct.com.au/
+> 
+> Perhaps we can pull it into this series?
