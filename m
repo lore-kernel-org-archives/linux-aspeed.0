@@ -1,23 +1,35 @@
-From: PeterYin <peteryin.openbmc@gmail.com>
-Date: Wed, 3 Apr 2024 17:18:29 +0800
-Subject: [PATCH v6 3/4] dt-bindings: watchdog: aspeed-wdt: Add aspeed,scu
-In-Reply-To: <ab76b0549172cf3e33d6242fa9ea3e6a87b4a58e.camel@codeconstruct.com.au>
-References: <20240328022231.3649741-1-peteryin.openbmc@gmail.com>
- <20240328022231.3649741-4-peteryin.openbmc@gmail.com>
- <20240401135637.GA342928-robh@kernel.org>
- <ab76b0549172cf3e33d6242fa9ea3e6a87b4a58e.camel@codeconstruct.com.au>
-Message-ID: <79b7e2ef-6f53-4642-ad3f-99b8ce780a7f@gmail.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Wed,  3 Apr 2024 12:04:04 +0200
+Subject: [PATCH 1/4] ARM: dts: aspeed: greatlakes: correct Mellanox multi-host property
+In-Reply-To: <20231209104412.12916-1-krzysztof.kozlowski@linaro.org>
+References: <20231209104412.12916-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <171213860535.16780.4635499105199545058.b4-ty@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks, I can wait you update it and send a new version for wdt driver.
 
-Andrew Jeffery ? 4/2/24 20:09 ??:
-> I had a patch converting it in a local branch which I've now sent:
+On Sat, 09 Dec 2023 11:44:09 +0100, Krzysztof Kozlowski wrote:
+> "mlx,multi-host" is using incorrect vendor prefix and is not documented.
 > 
-> https://lore.kernel.org/all/20240402120118.282035-1-andrew at codeconstruct.com.au/
 > 
-> Perhaps we can pull it into this series?
+
+These wait for ~4 months and they were not picked up. Let me know if anyone
+else wants to take these.
+
+Applied, thanks!
+
+[1/4] ARM: dts: aspeed: greatlakes: correct Mellanox multi-host property
+      https://git.kernel.org/krzk/linux-dt/c/7da85354c4fa35b862294dbbb450baeb405b5a92
+[2/4] ARM: dts: aspeed: minerva-cmc: correct Mellanox multi-host property
+      https://git.kernel.org/krzk/linux-dt/c/e515719c17beb9625a90039f6c45fa36d58bdda2
+[3/4] ARM: dts: aspeed: yosemite4: correct Mellanox multi-host property
+      https://git.kernel.org/krzk/linux-dt/c/af3deaf9bcb4571feb89a4050c7ad75de9aa8e1e
+[4/4] ARM: dts: aspeed: yosemitev2: correct Mellanox multi-host property
+      https://git.kernel.org/krzk/linux-dt/c/cac1c1dda6130771e06ace030b1b0ed62096a912
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
