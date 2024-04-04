@@ -1,52 +1,51 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 04 Apr 2024 11:47:38 +1030
-Subject: [PATCH v2 1/3] ARM: dts: Modify GPIO table for Asrock X570D4U
- BMC
-In-Reply-To: <20240403133037.37782-2-renze@rnplus.nl>
-References: <20240403133037.37782-1-renze@rnplus.nl>
-	 <20240403133037.37782-2-renze@rnplus.nl>
-Message-ID: <77829355a18f2afd64343e7e19498473d9263ef6.camel@codeconstruct.com.au>
+Date: Thu, 04 Apr 2024 12:11:48 +1030
+Subject: [PATCH 1/4] ARM: dts: aspeed: greatlakes: correct Mellanox
+ multi-host property
+In-Reply-To: <171213860535.16780.4635499105199545058.b4-ty@linaro.org>
+References: <20231209104412.12916-1-krzysztof.kozlowski@linaro.org>
+	 <171213860535.16780.4635499105199545058.b4-ty@linaro.org>
+Message-ID: <8610e0a8aa5c2916fa04292a10e8a843862ff0ee.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Renze,
-
-In the future, the start of the subject should also include 'aspeed: ',
-so:
-
-    ARM: dts: aspeed: Modify GPIO table for Asrock X570D4U BMC
-
-On Wed, 2024-04-03 at 15:28 +0200, Renze Nicolai wrote:
-> Restructure GPIO table to fit maximum line length.
+On Wed, 2024-04-03 at 12:04 +0200, Krzysztof Kozlowski wrote:
+> On Sat, 09 Dec 2023 11:44:09 +0100, Krzysztof Kozlowski wrote:
+> > "mlx,multi-host" is using incorrect vendor prefix and is not documented.
+> > 
+> > 
 > 
-> Fix mistakes found while working on OpenBMC
-> userland configuration and based on probing
-> the board.
+> These wait for ~4 months and they were not picked up. Let me know if anyone
+> else wants to take these.
 > 
-> Schematic for this board is not available.
-> Because of this the choice was made to
-> use a descriptive method for naming the
-> GPIOs.
+> Applied, thanks!
 > 
->  - Push-pull outputs start with output-*
->  - Open-drain outputs start with control-*
->  - LED outputs start with led-*
->  - Inputs start with input-*
->  - Button inputs start with button-*
->  - Active low signals end with *-n
+> [1/4] ARM: dts: aspeed: greatlakes: correct Mellanox multi-host property
+>       https://git.kernel.org/krzk/linux-dt/c/7da85354c4fa35b862294dbbb450baeb405b5a92
+> [2/4] ARM: dts: aspeed: minerva-cmc: correct Mellanox multi-host property
+>       https://git.kernel.org/krzk/linux-dt/c/e515719c17beb9625a90039f6c45fa36d58bdda2
+> [3/4] ARM: dts: aspeed: yosemite4: correct Mellanox multi-host property
+>       https://git.kernel.org/krzk/linux-dt/c/af3deaf9bcb4571feb89a4050c7ad75de9aa8e1e
+> [4/4] ARM: dts: aspeed: yosemitev2: correct Mellanox multi-host property
+>       https://git.kernel.org/krzk/linux-dt/c/cac1c1dda6130771e06ace030b1b0ed62096a912
+> 
+> Best regards,
 
-This seems to be a bit of a mix of following conventions in [1] and
-not. It might be helpful to weigh in on that document with your ideas.
+Ah, my apologies. Joel's on leave and I'm accumulating patches in a
+tree for him in the mean time. I've had some things going on
+professionally (changed jobs) and personally, and these fell into a bit
+of a hole.
 
-[1]: https://github.com/openbmc/docs/blob/master/designs/device-tree-gpio-naming.md
+I'm okay for these patches to be integrated through your tree, given
+you've already applied them. Feel free to add acks if your branch
+allows:
 
-I'll put this series in a tree for Joel for now though, with the
-subject fix mentioned above.
+Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-I've also re-wrapped the commit messages as it seems you stopped a bit
-short of the allowable line length.
+I'm working to stay on top of things a bit more now than I have in the
+recent past, so hopefully I won't miss patches again in the future.
 
 Andrew
