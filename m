@@ -1,9 +1,10 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 Date: Mon, 08 Apr 2024 15:53:20 -0000
-Subject: [PATCH 3/9] dt-bindings: rtc: lpc32xx-rtc: move to trivial-rtc
+Subject: [PATCH 2/9] dt-bindings: rtc: google,goldfish-rtc: move to
+ trivial-rtc
 In-Reply-To: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
 References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
-Message-ID: <20240408-rtc_dtschema-v1-3-c447542fc362@gmail.com>
+Message-ID: <20240408-rtc_dtschema-v1-2-c447542fc362@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,44 +16,46 @@ which makes it suitable for a direct conversion into trivial-rtc.
 
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt  | 15 ---------------
- Documentation/devicetree/bindings/rtc/trivial-rtc.yaml |  2 ++
- 2 files changed, 2 insertions(+), 15 deletions(-)
+ .../devicetree/bindings/rtc/google,goldfish-rtc.txt     | 17 -----------------
+ Documentation/devicetree/bindings/rtc/trivial-rtc.yaml  |  2 ++
+ 2 files changed, 2 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+diff --git a/Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt b/Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt
 deleted file mode 100644
-index a87a1e9bc060..000000000000
---- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+index 634312dd95ca..000000000000
+--- a/Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt
 +++ /dev/null
-@@ -1,15 +0,0 @@
--* NXP LPC32xx SoC Real Time Clock controller
+@@ -1,17 +0,0 @@
+-Android Goldfish RTC
+-
+-Android Goldfish RTC device used by Android emulator.
 -
 -Required properties:
--- compatible: must be "nxp,lpc3220-rtc"
--- reg: physical base address of the controller and length of memory mapped
--  region.
--- interrupts: The RTC interrupt
+-
+-- compatible : should contain "google,goldfish-rtc"
+-- reg        : <registers mapping>
+-- interrupts : <interrupt mapping>
 -
 -Example:
 -
--	rtc at 40024000 {
--		compatible = "nxp,lpc3220-rtc";
--		reg = <0x40024000 0x1000>;
--		interrupts = <52 0>;
+-	goldfish_timer at 9020000 {
+-		compatible = "google,goldfish-rtc";
+-		reg = <0x9020000 0x1000>;
+-		interrupts = <0x3>;
 -	};
 diff --git a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
-index b889b9317a41..d6ce7ac29033 100644
+index 5e63c8f7f618..b889b9317a41 100644
 --- a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
 +++ b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
-@@ -55,6 +55,8 @@ properties:
-       - microcrystal,rv3029
-       # Real Time Clock
-       - microcrystal,rv8523
-+      # NXP LPC32xx SoC Real-time Clock
-+      - nxp,lpc3220-rtc
-       # Real-time Clock Module
-       - pericom,pt7c4338
-       # I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
+@@ -41,6 +41,8 @@ properties:
+       - epson,rx8571
+       # I2C-BUS INTERFACE REAL TIME CLOCK MODULE
+       - epson,rx8581
++      # Android Goldfish Real-time Clock
++      - google,goldfish-rtc
+       # Intersil ISL1208 Low Power RTC with Battery Backed SRAM
+       - isil,isl1208
+       # Intersil ISL1218 Low Power RTC with Battery Backed SRAM
 
 -- 
 2.40.1
