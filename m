@@ -1,92 +1,59 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Mon, 08 Apr 2024 15:53:25 -0000
-Subject: [PATCH 6/9] dt-bindings: rtc: pxa-rtc: convert to dtschema
+Date: Mon, 08 Apr 2024 15:53:27 -0000
+Subject: [PATCH 7/9] dt-bindings: rtc: spear-rtc: move to trivial-rtc
 In-Reply-To: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
 References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
-Message-ID: <20240408-rtc_dtschema-v1-6-c447542fc362@gmail.com>
+Message-ID: <20240408-rtc_dtschema-v1-7-c447542fc362@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert existing binding to dtschema to support validation.
-
-The missing 'reg' and 'interrupts' properties have been added, taking
-the 2 supported interrupts into account to fix the example.
+The RTC documented in this binding requires a compatible, a reg
+and a single interrupt, which makes it suitable for a direct
+conversion into trivial-rtc.
 
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 ++++++++++++++++++++++
- Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 --------
- 2 files changed, 40 insertions(+), 14 deletions(-)
+ Documentation/devicetree/bindings/rtc/spear-rtc.txt    | 15 ---------------
+ Documentation/devicetree/bindings/rtc/trivial-rtc.yaml |  2 ++
+ 2 files changed, 2 insertions(+), 15 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml b/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml
-new file mode 100644
-index 000000000000..43d68681a1bf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml
-@@ -0,0 +1,40 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/rtc/marvell,pxa-rtc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: PXA Real Time Clock
-+
-+maintainers:
-+  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
-+
-+allOf:
-+  - $ref: rtc.yaml#
-+
-+properties:
-+  compatible:
-+    const: marvell,pxa-rtc
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    items:
-+      - description: 1 Hz
-+      - description: Alarm
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    rtc at 40900000 {
-+        compatible = "marvell,pxa-rtc";
-+        reg = <0x40900000 0x3c>;
-+        interrupts = <30>, <31>;
-+    };
-diff --git a/Documentation/devicetree/bindings/rtc/pxa-rtc.txt b/Documentation/devicetree/bindings/rtc/pxa-rtc.txt
+diff --git a/Documentation/devicetree/bindings/rtc/spear-rtc.txt b/Documentation/devicetree/bindings/rtc/spear-rtc.txt
 deleted file mode 100644
-index 8c6672a1b7d7..000000000000
---- a/Documentation/devicetree/bindings/rtc/pxa-rtc.txt
+index fecf8e4ad4b4..000000000000
+--- a/Documentation/devicetree/bindings/rtc/spear-rtc.txt
 +++ /dev/null
-@@ -1,14 +0,0 @@
--* PXA RTC
--
--PXA specific RTC driver.
+@@ -1,15 +0,0 @@
+-* SPEAr RTC
 -
 -Required properties:
--- compatible : Should be "marvell,pxa-rtc"
+-- compatible : "st,spear600-rtc"
+-- reg : Address range of the rtc registers
+-- interrupt: Should contain the rtc interrupt number
 -
--Examples:
+-Example:
 -
--rtc at 40900000 {
--	compatible = "marvell,pxa-rtc";
--	reg = <0x40900000 0x3c>;
--	interrupts = <30 31>;
--};
+-	rtc at fc000000 {
+-		compatible = "st,spear600-rtc";
+-		reg = <0xfc000000 0x1000>;
+-		interrupt-parent = <&vic1>;
+-		interrupts = <12>;
+-	};
+diff --git a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
+index 0f773167d32a..d75c93ad2e92 100644
+--- a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
++++ b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
+@@ -81,6 +81,8 @@ properties:
+       - ricoh,rv5c387a
+       # 2-wire CMOS real-time clock
+       - sii,s35390a
++      # ST SPEAr Real-time Clock
++      - st,spear600-rtc
+       # I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
+       - whwave,sd3078
+       # Xircom X1205 I2C RTC
 
 -- 
 2.40.1
