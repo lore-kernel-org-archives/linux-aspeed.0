@@ -1,70 +1,92 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Mon, 08 Apr 2024 15:53:23 -0000
-Subject: [PATCH 5/9] dt-bindings: rtc: rtc-aspeed: move to trivial-rtc
+Date: Mon, 08 Apr 2024 15:53:25 -0000
+Subject: [PATCH 6/9] dt-bindings: rtc: pxa-rtc: convert to dtschema
 In-Reply-To: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
 References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
-Message-ID: <20240408-rtc_dtschema-v1-5-c447542fc362@gmail.com>
+Message-ID: <20240408-rtc_dtschema-v1-6-c447542fc362@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The RTCs documented in this binding require a compatible, a reg
-and a single interrupt, which make them suitable for a direct
-conversion into trivial-rtc.
+Convert existing binding to dtschema to support validation.
+
+The missing 'reg' and 'interrupts' properties have been added, taking
+the 2 supported interrupts into account to fix the example.
 
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- .../devicetree/bindings/rtc/rtc-aspeed.txt         | 22 ----------------------
- .../devicetree/bindings/rtc/trivial-rtc.yaml       |  6 ++++++
- 2 files changed, 6 insertions(+), 22 deletions(-)
+ .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 ++++++++++++++++++++++
+ Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 --------
+ 2 files changed, 40 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt b/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
+diff --git a/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml b/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml
+new file mode 100644
+index 000000000000..43d68681a1bf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml
+@@ -0,0 +1,40 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/rtc/marvell,pxa-rtc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: PXA Real Time Clock
++
++maintainers:
++  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
++
++allOf:
++  - $ref: rtc.yaml#
++
++properties:
++  compatible:
++    const: marvell,pxa-rtc
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    items:
++      - description: 1 Hz
++      - description: Alarm
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    rtc at 40900000 {
++        compatible = "marvell,pxa-rtc";
++        reg = <0x40900000 0x3c>;
++        interrupts = <30>, <31>;
++    };
+diff --git a/Documentation/devicetree/bindings/rtc/pxa-rtc.txt b/Documentation/devicetree/bindings/rtc/pxa-rtc.txt
 deleted file mode 100644
-index 2e956b3dc276..000000000000
---- a/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
+index 8c6672a1b7d7..000000000000
+--- a/Documentation/devicetree/bindings/rtc/pxa-rtc.txt
 +++ /dev/null
-@@ -1,22 +0,0 @@
--ASPEED BMC RTC
--==============
+@@ -1,14 +0,0 @@
+-* PXA RTC
+-
+-PXA specific RTC driver.
 -
 -Required properties:
-- - compatible: should be one of the following
--   * aspeed,ast2400-rtc for the ast2400
--   * aspeed,ast2500-rtc for the ast2500
--   * aspeed,ast2600-rtc for the ast2600
+-- compatible : Should be "marvell,pxa-rtc"
 -
-- - reg: physical base address of the controller and length of memory mapped
--   region
+-Examples:
 -
-- - interrupts: The interrupt number
--
--Example:
--
--   rtc at 1e781000 {
--           compatible = "aspeed,ast2400-rtc";
--           reg = <0x1e781000 0x18>;
--           interrupts = <22>;
--           status = "disabled";
--   };
-diff --git a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
-index 710b096fe6f7..0f773167d32a 100644
---- a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
-+++ b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
-@@ -24,6 +24,12 @@ properties:
-       - abracon,abb5zes3
-       # AB-RTCMC-32.768kHz-EOZ9: Real Time Clock/Calendar Module with I2C Interface
-       - abracon,abeoz9
-+      # ASPEED BMC ast2400 Real-time Clock
-+      - aspeed,ast2400-rtc
-+      # ASPEED BMC ast2500 Real-time Clock
-+      - aspeed,ast2500-rtc
-+      # ASPEED BMC ast2600 Real-time Clock
-+      - aspeed,ast2600-rtc
-       # I2C, 32-Bit Binary Counter Watchdog RTC with Trickle Charger and Reset Input/Output
-       - dallas,ds1374
-       # Dallas DS1672 Real-time Clock
+-rtc at 40900000 {
+-	compatible = "marvell,pxa-rtc";
+-	reg = <0x40900000 0x3c>;
+-	interrupts = <30 31>;
+-};
 
 -- 
 2.40.1
