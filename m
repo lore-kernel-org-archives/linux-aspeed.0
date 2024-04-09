@@ -1,72 +1,72 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Tue,  9 Apr 2024 10:55:53 +0200
-Subject: [PATCH] hwmon: (aspeed-g6-pwm-tach) Convert to platform remove callback returning void
-Message-ID: <20240409085552.19868-2-u.kleine-koenig@pengutronix.de>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Tue, 9 Apr 2024 11:40:38 +0200
+Subject: [PATCH 3/9] dt-bindings: rtc: lpc32xx-rtc: move to trivial-rtc
+In-Reply-To: <6dc808bf-682f-4e91-aac7-7ce6f05a0ab4@gmail.com>
+References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
+ <20240408-rtc_dtschema-v1-3-c447542fc362@gmail.com>
+ <dd5e9837-0dcf-4b0e-8d11-f8bed868cdf2@linaro.org>
+ <6dc808bf-682f-4e91-aac7-7ce6f05a0ab4@gmail.com>
+Message-ID: <ea5a9c80-c43f-49e9-b9ac-da27c74a32bb@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The .remove() callback for a platform driver returns an int which makes
-many driver authors wrongly assume it's possible to do error handling by
-returning an error code. However the value returned is ignored (apart
-from emitting a warning) and this typically results in resource leaks.
-To improve here there is a quest to make the remove callback return
-void. In the first step of this quest all drivers are converted to
-.remove_new() which already returns void. Eventually after all drivers
-are converted, .remove_new() is renamed to .remove().
+On 09/04/2024 10:52, Javier Carrasco wrote:
+> On 4/9/24 09:34, Krzysztof Kozlowski wrote:
+>> On 08/04/2024 17:53, Javier Carrasco wrote:
+>>> This RTC requires a compatible, a reg and a single interrupt,
+>>> which makes it suitable for a direct conversion into trivial-rtc.
+>>>
+>>> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+>>> ---
+>>>  Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt  | 15 ---------------
+>>>  Documentation/devicetree/bindings/rtc/trivial-rtc.yaml |  2 ++
+>>>  2 files changed, 2 insertions(+), 15 deletions(-)
+>>
+>> This one no... and if you tested DTS you would see errors, although you
+>> need to test specific lpc config, not multi_v7.
+>>
+>> It does not look like you tested the DTS against bindings. Please run
+>> `make dtbs_check W=1` (see
+>> Documentation/devicetree/bindings/writing-schema.rst or
+>> https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
+>> for instructions).
+>>
+>> Anyway, you *must* check all DTS before moving anything to trivial.
+>>
+>> Does it mean all other bindings were not checked against DTS at all?
+>>
+>> Best regards,
+>> Krzysztof
+>>
+> Hi,
+> 
+> I did check the conversion against nxp/lpc/lpc3250-phy3250.dts, which
+> throws a message about the 'clocks' property.
+> 
+> That property is not documented in the original binding, and even though
+> it could be missing, I could not find any function to get a clock (i.e.
 
-Trivially convert this driver from always returning zero in the remove
-callback to the void returning variant.
+Old bindings are not really accurate.
 
-Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
----
-Hello,
+> any form of clk_get()) in rtc-lpc32xx.c, which is the only file where
+> the compatible can be found.
+> 
+> Is therefore the property not useless in the dts? My apologies if I am
+> missing something here.
 
-most of drivers/hwmon was already converted to struct
-platform_driver::remove_new during the v6.7 development cycle. This
-driver was added for v6.9-rc1 still using the old prototype.
+Useless for whom? For Linux yes. For U-Boot or out-of-tree users of DTS,
+I don't know. Anyway the true question is if there is a clock or there
+is no. If there is a clock, then it should be in the binding even if
+Linux driver does not use it.
 
-There are still more drivers to be converted, so there is from my side
-no need to get this into v6.9, but the next merge window would be nice.
+I propose to add it and be done with it.
 
-Best regards
-Uwe
 
- drivers/hwmon/aspeed-g6-pwm-tach.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hwmon/aspeed-g6-pwm-tach.c b/drivers/hwmon/aspeed-g6-pwm-tach.c
-index 597b3b019d49..262d46fed3aa 100644
---- a/drivers/hwmon/aspeed-g6-pwm-tach.c
-+++ b/drivers/hwmon/aspeed-g6-pwm-tach.c
-@@ -516,13 +516,11 @@ static int aspeed_pwm_tach_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int aspeed_pwm_tach_remove(struct platform_device *pdev)
-+static void aspeed_pwm_tach_remove(struct platform_device *pdev)
- {
- 	struct aspeed_pwm_tach_data *priv = platform_get_drvdata(pdev);
- 
- 	reset_control_assert(priv->reset);
--
--	return 0;
- }
- 
- static const struct of_device_id aspeed_pwm_tach_match[] = {
-@@ -535,7 +533,7 @@ MODULE_DEVICE_TABLE(of, aspeed_pwm_tach_match);
- 
- static struct platform_driver aspeed_pwm_tach_driver = {
- 	.probe = aspeed_pwm_tach_probe,
--	.remove = aspeed_pwm_tach_remove,
-+	.remove_new = aspeed_pwm_tach_remove,
- 	.driver	= {
- 		.name = "aspeed-g6-pwm-tach",
- 		.of_match_table = aspeed_pwm_tach_match,
 
-base-commit: 4cece764965020c22cff7665b18a012006359095
--- 
-2.43.0
+Best regards,
+Krzysztof
 
