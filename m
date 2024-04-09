@@ -1,67 +1,52 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Tue, 9 Apr 2024 14:11:53 +0200
-Subject: [PATCH 3/9] dt-bindings: rtc: lpc32xx-rtc: move to trivial-rtc
-In-Reply-To: <6dc808bf-682f-4e91-aac7-7ce6f05a0ab4@gmail.com>
-References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
- <20240408-rtc_dtschema-v1-3-c447542fc362@gmail.com>
- <dd5e9837-0dcf-4b0e-8d11-f8bed868cdf2@linaro.org>
- <6dc808bf-682f-4e91-aac7-7ce6f05a0ab4@gmail.com>
-Message-ID: <20240409121153e2941468@mail.local>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 09 Apr 2024 08:38:37 -0500
+Subject: [PATCH v2 1/5] ARM: dts: aspeed: greatlakes: correct Mellanox
+ multi-host property
+In-Reply-To: <20240405064624.18997-1-krzysztof.kozlowski@linaro.org>
+References: <20240405064624.18997-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <171266958251.1032405.3082451019333889181.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/04/2024 10:52:54+0200, Javier Carrasco wrote:
-> On 4/9/24 09:34, Krzysztof Kozlowski wrote:
-> > On 08/04/2024 17:53, Javier Carrasco wrote:
-> >> This RTC requires a compatible, a reg and a single interrupt,
-> >> which makes it suitable for a direct conversion into trivial-rtc.
-> >>
-> >> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-> >> ---
-> >>  Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt  | 15 ---------------
-> >>  Documentation/devicetree/bindings/rtc/trivial-rtc.yaml |  2 ++
-> >>  2 files changed, 2 insertions(+), 15 deletions(-)
-> > 
-> > This one no... and if you tested DTS you would see errors, although you
-> > need to test specific lpc config, not multi_v7.
-> > 
-> > It does not look like you tested the DTS against bindings. Please run
-> > `make dtbs_check W=1` (see
-> > Documentation/devicetree/bindings/writing-schema.rst or
-> > https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
-> > for instructions).
-> > 
-> > Anyway, you *must* check all DTS before moving anything to trivial.
-> > 
-> > Does it mean all other bindings were not checked against DTS at all?
-> > 
-> > Best regards,
-> > Krzysztof
-> > 
-> Hi,
-> 
-> I did check the conversion against nxp/lpc/lpc3250-phy3250.dts, which
-> throws a message about the 'clocks' property.
-> 
-> That property is not documented in the original binding, and even though
-> it could be missing, I could not find any function to get a clock (i.e.
-> any form of clk_get()) in rtc-lpc32xx.c, which is the only file where
-> the compatible can be found.
-> 
-> Is therefore the property not useless in the dts? My apologies if I am
-> missing something here.
 
-The bindings doesn't document the driver but the hardware. In this case,
-the only input clock seems to be a 32kHz crystal.
-
+On Fri, 05 Apr 2024 08:46:20 +0200, Krzysztof Kozlowski wrote:
+> "mlx,multi-host" is using incorrect vendor prefix and is not documented.
 > 
-> Thanks and best regards,
-> Javier Carrasco
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> 
+> ---
+> 
+> Changes in v2:
+> 1. None
+> ---
+>  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
+
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ampere-mtmitchell.dtb aspeed/aspeed-bmc-facebook-greatlakes.dtb aspeed/aspeed-bmc-facebook-harma.dtb aspeed/aspeed-bmc-facebook-yosemite4.dtb aspeed/aspeed-bmc-facebook-yosemitev2.dtb' for 20240405064624.18997-1-krzysztof.kozlowski at linaro.org:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ftgmac at 1e690000: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'mellanox,multi-host' were unexpected)
+	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml#
+
+
+
+
+
