@@ -1,72 +1,68 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 9 Apr 2024 11:40:38 +0200
-Subject: [PATCH 3/9] dt-bindings: rtc: lpc32xx-rtc: move to trivial-rtc
-In-Reply-To: <6dc808bf-682f-4e91-aac7-7ce6f05a0ab4@gmail.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Date: Tue, 9 Apr 2024 12:26:58 +0200
+Subject: [PATCH 0/9] rtc: convert multiple bindings into dtschema
+In-Reply-To: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
 References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
- <20240408-rtc_dtschema-v1-3-c447542fc362@gmail.com>
- <dd5e9837-0dcf-4b0e-8d11-f8bed868cdf2@linaro.org>
- <6dc808bf-682f-4e91-aac7-7ce6f05a0ab4@gmail.com>
-Message-ID: <ea5a9c80-c43f-49e9-b9ac-da27c74a32bb@linaro.org>
+Message-ID: <20240409102658d86fb2bd@mail.local>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/04/2024 10:52, Javier Carrasco wrote:
-> On 4/9/24 09:34, Krzysztof Kozlowski wrote:
->> On 08/04/2024 17:53, Javier Carrasco wrote:
->>> This RTC requires a compatible, a reg and a single interrupt,
->>> which makes it suitable for a direct conversion into trivial-rtc.
->>>
->>> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
->>> ---
->>>  Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt  | 15 ---------------
->>>  Documentation/devicetree/bindings/rtc/trivial-rtc.yaml |  2 ++
->>>  2 files changed, 2 insertions(+), 15 deletions(-)
->>
->> This one no... and if you tested DTS you would see errors, although you
->> need to test specific lpc config, not multi_v7.
->>
->> It does not look like you tested the DTS against bindings. Please run
->> `make dtbs_check W=1` (see
->> Documentation/devicetree/bindings/writing-schema.rst or
->> https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
->> for instructions).
->>
->> Anyway, you *must* check all DTS before moving anything to trivial.
->>
->> Does it mean all other bindings were not checked against DTS at all?
->>
->> Best regards,
->> Krzysztof
->>
-> Hi,
+On 08/04/2024 17:53:00+0200, Javier Carrasco wrote:
+> This series converts the following bindings into dtschema, moving them
+> to trivial-rtc whenever possible:
 > 
-> I did check the conversion against nxp/lpc/lpc3250-phy3250.dts, which
-> throws a message about the 'clocks' property.
+> - orion-rtc: trival-rtc, referenced in arm arch.
+> - google,goldfish-rtc: trivial-rtc, referenced in mips arch.
+> - lpc32xx-rtc: trival-rtc, referenced in arm arch.
+> - maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
+> - rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
+> - pxa-rtc: add missing properties and convert. Referenced in arm arch.
+> - st,spear600-rtc: trivial-rtc, referenced in arm arch.
+> - stmp3xxx-rtc: convert, referenced in arm arch.
+> - via,vt8500-rtc: trivial-rtc, referenced in arm arch.
+
+Probably all the moves to trivial-rtc can be squashed.
+
 > 
-> That property is not documented in the original binding, and even though
-> it could be missing, I could not find any function to get a clock (i.e.
-
-Old bindings are not really accurate.
-
-> any form of clk_get()) in rtc-lpc32xx.c, which is the only file where
-> the compatible can be found.
+> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+> ---
+> Javier Carrasco (9):
+>       dt-bindings: rtc: orion-rtc: move to trivial-rtc
+>       dt-bindings: rtc: google,goldfish-rtc: move to trivial-rtc
+>       dt-bindings: rtc: lpc32xx-rtc: move to trivial-rtc
+>       dt-bindings: rtc: maxim,ds1742: move to trivial-rtc
+>       dt-bindings: rtc: rtc-aspeed: move to trivial-rtc
+>       dt-bindings: rtc: pxa-rtc: convert to dtschema
+>       dt-bindings: rtc: spear-rtc: move to trivial-rtc
+>       dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
+>       dt-bindings: rtc: via,vt8500-rtc: move to trivial-rtc
 > 
-> Is therefore the property not useless in the dts? My apologies if I am
-> missing something here.
+>  .../devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml  | 45 ++++++++++++++++++++++
+>  .../bindings/rtc/google,goldfish-rtc.txt           | 17 --------
+>  .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
+>  .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 +++++++++++++++++++
+>  .../devicetree/bindings/rtc/maxim,ds1742.txt       | 12 ------
+>  .../devicetree/bindings/rtc/orion-rtc.txt          | 18 ---------
+>  Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 -------
+>  .../devicetree/bindings/rtc/rtc-aspeed.txt         | 22 -----------
+>  .../devicetree/bindings/rtc/spear-rtc.txt          | 15 --------
+>  .../devicetree/bindings/rtc/stmp3xxx-rtc.txt       | 21 ----------
+>  .../devicetree/bindings/rtc/trivial-rtc.yaml       | 18 +++++++++
+>  .../devicetree/bindings/rtc/via,vt8500-rtc.txt     | 15 --------
+>  12 files changed, 103 insertions(+), 149 deletions(-)
+> ---
+> base-commit: fec50db7033ea478773b159e0e2efb135270e3b7
+> change-id: 20240406-rtc_dtschema-302824d1ec20
+> 
+> Best regards,
+> -- 
+> Javier Carrasco <javier.carrasco.cruz@gmail.com>
+> 
 
-Useless for whom? For Linux yes. For U-Boot or out-of-tree users of DTS,
-I don't know. Anyway the true question is if there is a clock or there
-is no. If there is a clock, then it should be in the binding even if
-Linux driver does not use it.
-
-I propose to add it and be done with it.
-
-
-
-
-Best regards,
-Krzysztof
-
+-- 
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
