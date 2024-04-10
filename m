@@ -1,109 +1,99 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Wed, 10 Apr 2024 15:55:56 -0000
-Subject: [PATCH v2 4/4] dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
-In-Reply-To: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+Date: Wed, 10 Apr 2024 20:56:40 -0000
+Subject: [PATCH v2 2/4] dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
+In-Reply-To: <202404102043571b7450b5@mail.local>
 References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
-Message-ID: <20240410-rtc_dtschema-v2-4-d32a11ab0745@gmail.com>
+ <20240410-rtc_dtschema-v2-2-d32a11ab0745@gmail.com>
+ <202404102043571b7450b5@mail.local>
+Message-ID: <6d1f0fbf-ea53-47e2-92e5-131da010be0b@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert existing binding to dtschema to support validation and
-add the undocumented compatible 'fsl,imx23-rtc'.
+On 4/10/24 22:43, Alexandre Belloni wrote:
+> On 10/04/2024 17:55:34+0200, Javier Carrasco wrote:
+>> Convert existing binding to dtschema to support validation.
+>>
+>> Add the undocumented 'clocks' property.
+>>
+>> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+>> ---
+>>  .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
+>>  .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 ++++++++++++++++++++++
+>>  2 files changed, 41 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+>> deleted file mode 100644
+>> index a87a1e9bc060..000000000000
+>> --- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+>> +++ /dev/null
+>> @@ -1,15 +0,0 @@
+>> -* NXP LPC32xx SoC Real Time Clock controller
+>> -
+>> -Required properties:
+>> -- compatible: must be "nxp,lpc3220-rtc"
+>> -- reg: physical base address of the controller and length of memory mapped
+>> -  region.
+>> -- interrupts: The RTC interrupt
+>> -
+>> -Example:
+>> -
+>> -	rtc at 40024000 {
+>> -		compatible = "nxp,lpc3220-rtc";
+>> -		reg = <0x40024000 0x1000>;
+>> -		interrupts = <52 0>;
+>> -	};
+>> diff --git a/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
+>> new file mode 100644
+>> index 000000000000..62ddeef961e9
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
+>> @@ -0,0 +1,41 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/rtc/nxp,lpc32xx-rtc.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: NXP LPC32xx SoC Real Time Clock
+>> +
+>> +maintainers:
+>> +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
+>> +
+>> +allOf:
+>> +  - $ref: rtc.yaml#
+>> +
+>> +properties:
+>> +  compatible:
+>> +    const: nxp,lpc3220-rtc
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  clocks:
+>> +    maxItems: 1
+> 
+> As I explained the clock doesn't really exist, there is no control over
+> it, it is a fixed 32768 Hz crystal, there is no point in describing it
+> as this is already the input clock of the SoC.
+> 
+> 
 
-Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
----
- .../devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml  | 51 ++++++++++++++++++++++
- .../devicetree/bindings/rtc/stmp3xxx-rtc.txt       | 21 ---------
- 2 files changed, 51 insertions(+), 21 deletions(-)
+In that case the first approach was right, and it should be moved to
+trivial-rtc.
+I made the mistake of mentioning the driver and what it does not
+support, but strictly talking about the device description, the 'clocks'
+property was pointless in the dts where it was added.
 
-diff --git a/Documentation/devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml b/Documentation/devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml
-new file mode 100644
-index 000000000000..534de4196a4f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml
-@@ -0,0 +1,51 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/rtc/fsl,stmp3xxx-rtc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: STMP3xxx/i.MX28 Time Clock Controller
-+
-+maintainers:
-+  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
-+
-+allOf:
-+  - $ref: rtc.yaml#
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - fsl,imx28-rtc
-+              - fsl,imx23-rtc
-+          - const: fsl,stmp3xxx-rtc
-+      - const: fsl,stmp3xxx-rtc
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  stmp,crystal-freq:
-+    description:
-+      Override crystal frequency as determined from fuse bits.
-+      Use <0> for "no crystal".
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [0, 32000, 32768]
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    rtc at 80056000 {
-+        compatible = "fsl,imx28-rtc", "fsl,stmp3xxx-rtc";
-+        reg = <0x80056000 2000>;
-+        interrupts = <29>;
-+    };
-diff --git a/Documentation/devicetree/bindings/rtc/stmp3xxx-rtc.txt b/Documentation/devicetree/bindings/rtc/stmp3xxx-rtc.txt
-deleted file mode 100644
-index fa6a94226669..000000000000
---- a/Documentation/devicetree/bindings/rtc/stmp3xxx-rtc.txt
-+++ /dev/null
-@@ -1,21 +0,0 @@
--* STMP3xxx/i.MX28 Time Clock controller
--
--Required properties:
--- compatible: should be one of the following.
--    * "fsl,stmp3xxx-rtc"
--- reg: physical base address of the controller and length of memory mapped
--  region.
--- interrupts: rtc alarm interrupt
--
--Optional properties:
--- stmp,crystal-freq: override crystal frequency as determined from fuse bits.
--  Only <32000> and <32768> are possible for the hardware.  Use <0> for
--  "no crystal".
--
--Example:
--
--rtc at 80056000 {
--	compatible = "fsl,imx28-rtc", "fsl,stmp3xxx-rtc";
--	reg = <0x80056000 2000>;
--	interrupts = <29>;
--};
+If we leave it undocumented, the error I discussed with Krzysztof will
+have to stay unless the 'clocks' property gets removed from the dts.
 
--- 
-2.40.1
+Best regards,
+Javier Carrasco
+
 
