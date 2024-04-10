@@ -1,36 +1,94 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Tue, 09 Apr 2024 12:02:44 -0000
-Subject: [PATCH 0/9] rtc: convert multiple bindings into dtschema
-In-Reply-To: <20240409102658d86fb2bd@mail.local>
-References: <20240408-rtc_dtschema-v1-0-c447542fc362@gmail.com>
- <20240409102658d86fb2bd@mail.local>
-Message-ID: <a4283479-2c4a-4f8f-b224-999dd12ba009@gmail.com>
+Date: Wed, 10 Apr 2024 15:55:52 -0000
+Subject: [PATCH v2 2/4] dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
+In-Reply-To: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+Message-ID: <20240410-rtc_dtschema-v2-2-d32a11ab0745@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/9/24 12:26, Alexandre Belloni wrote:
-> On 08/04/2024 17:53:00+0200, Javier Carrasco wrote:
->> This series converts the following bindings into dtschema, moving them
->> to trivial-rtc whenever possible:
->>
->> - orion-rtc: trival-rtc, referenced in arm arch.
->> - google,goldfish-rtc: trivial-rtc, referenced in mips arch.
->> - lpc32xx-rtc: trival-rtc, referenced in arm arch.
->> - maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
->> - rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
->> - pxa-rtc: add missing properties and convert. Referenced in arm arch.
->> - st,spear600-rtc: trivial-rtc, referenced in arm arch.
->> - stmp3xxx-rtc: convert, referenced in arm arch.
->> - via,vt8500-rtc: trivial-rtc, referenced in arm arch.
-> 
-> Probably all the moves to trivial-rtc can be squashed.
-> 
+Convert existing binding to dtschema to support validation.
 
-Sure, I will squash them for v2.
+Add the undocumented 'clocks' property.
 
-Best regards,
-Javier Carrasco
+Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+---
+ .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
+ .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 ++++++++++++++++++++++
+ 2 files changed, 41 insertions(+), 15 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+deleted file mode 100644
+index a87a1e9bc060..000000000000
+--- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
++++ /dev/null
+@@ -1,15 +0,0 @@
+-* NXP LPC32xx SoC Real Time Clock controller
+-
+-Required properties:
+-- compatible: must be "nxp,lpc3220-rtc"
+-- reg: physical base address of the controller and length of memory mapped
+-  region.
+-- interrupts: The RTC interrupt
+-
+-Example:
+-
+-	rtc at 40024000 {
+-		compatible = "nxp,lpc3220-rtc";
+-		reg = <0x40024000 0x1000>;
+-		interrupts = <52 0>;
+-	};
+diff --git a/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
+new file mode 100644
+index 000000000000..62ddeef961e9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
+@@ -0,0 +1,41 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/rtc/nxp,lpc32xx-rtc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: NXP LPC32xx SoC Real Time Clock
++
++maintainers:
++  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
++
++allOf:
++  - $ref: rtc.yaml#
++
++properties:
++  compatible:
++    const: nxp,lpc3220-rtc
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupts
++
++unevaluatedProperties: false
++
++examples:
++  - |
++    rtc at 40024000 {
++        compatible = "nxp,lpc3220-rtc";
++        reg = <0x40024000 0x1000>;
++        interrupts = <52 0>;
++    };
+
+-- 
+2.40.1
 
