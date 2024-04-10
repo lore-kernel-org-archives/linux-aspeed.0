@@ -1,63 +1,233 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 Date: Wed, 10 Apr 2024 15:55:52 -0000
-Subject: [PATCH v2 0/4] rtc: convert multiple bindings into dtschema
-Message-ID: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+Subject: [PATCH v2 1/4] dt-bindings: rtc: convert trivial devices into
+ dtschema
+In-Reply-To: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+Message-ID: <20240410-rtc_dtschema-v2-1-d32a11ab0745@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series converts the following bindings into dtschema, moving them
-to trivial-rtc whenever possible:
+These RTCs meet the requirements for a direct conversion into
+trivial-rtc:
 
-- orion-rtc: trival-rtc, referenced in arm arch.
-- google,goldfish-rtc: trivial-rtc, referenced in mips arch.
-- lpc32xx-rtc: add missing property and convert, referenced in arm arch.
-- maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
-- rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
-- pxa-rtc: add missing properties and convert. Referenced in arm arch.
-- st,spear600-rtc: trivial-rtc, referenced in arm arch.
-- stmp3xxx-rtc: add compatibles and convert, referenced in arm arch.
-- via,vt8500-rtc: trivial-rtc, referenced in arm arch.
+- orion-rtc
+- google,goldfish-rtc
+- maxim,ds1742
+- rtc-aspped
+- spear-rtc
+- via,vt8500-rtc
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
-Changes in v2:
-- General: squash all moves to trivial-rtc into a single patch.
-- MAINTAINERS: remove reference to google,goldfish-rtc.txt
-- lpc32xx-rtc: create own binding to add the undocumented 'clocks'
-  property.
-- fsl,stmp3xxx-rtc.yaml: document missing compatibles.
-- Link to v1: https://lore.kernel.org/r/20240408-rtc_dtschema-v1-0-c447542fc362 at gmail.com
-
----
-Javier Carrasco (4):
-      dt-bindings: rtc: convert trivial devices into dtschema
-      dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
-      dt-bindings: rtc: pxa-rtc: convert to dtschema
-      dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
-
- .../devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml  | 51 ++++++++++++++++++++++
- .../bindings/rtc/google,goldfish-rtc.txt           | 17 --------
- .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 -------
- .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 +++++++++++++++++
- .../devicetree/bindings/rtc/maxim,ds1742.txt       | 12 -----
- .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 +++++++++++++++++
- .../devicetree/bindings/rtc/orion-rtc.txt          | 18 --------
- Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 ------
- .../devicetree/bindings/rtc/rtc-aspeed.txt         | 22 ----------
- .../devicetree/bindings/rtc/spear-rtc.txt          | 15 -------
- .../devicetree/bindings/rtc/stmp3xxx-rtc.txt       | 21 ---------
- .../devicetree/bindings/rtc/trivial-rtc.yaml       | 16 +++++++
- .../devicetree/bindings/rtc/via,vt8500-rtc.txt     | 15 -------
+ .../bindings/rtc/google,goldfish-rtc.txt           | 17 -----------------
+ .../devicetree/bindings/rtc/maxim,ds1742.txt       | 12 ------------
+ .../devicetree/bindings/rtc/orion-rtc.txt          | 18 ------------------
+ .../devicetree/bindings/rtc/rtc-aspeed.txt         | 22 ----------------------
+ .../devicetree/bindings/rtc/spear-rtc.txt          | 15 ---------------
+ .../devicetree/bindings/rtc/trivial-rtc.yaml       | 16 ++++++++++++++++
+ .../devicetree/bindings/rtc/via,vt8500-rtc.txt     | 15 ---------------
  MAINTAINERS                                        |  1 -
- 14 files changed, 148 insertions(+), 150 deletions(-)
----
-base-commit: fec50db7033ea478773b159e0e2efb135270e3b7
-change-id: 20240406-rtc_dtschema-302824d1ec20
+ 8 files changed, 16 insertions(+), 100 deletions(-)
 
-Best regards,
+diff --git a/Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt b/Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt
+deleted file mode 100644
+index 634312dd95ca..000000000000
+--- a/Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt
++++ /dev/null
+@@ -1,17 +0,0 @@
+-Android Goldfish RTC
+-
+-Android Goldfish RTC device used by Android emulator.
+-
+-Required properties:
+-
+-- compatible : should contain "google,goldfish-rtc"
+-- reg        : <registers mapping>
+-- interrupts : <interrupt mapping>
+-
+-Example:
+-
+-	goldfish_timer at 9020000 {
+-		compatible = "google,goldfish-rtc";
+-		reg = <0x9020000 0x1000>;
+-		interrupts = <0x3>;
+-	};
+diff --git a/Documentation/devicetree/bindings/rtc/maxim,ds1742.txt b/Documentation/devicetree/bindings/rtc/maxim,ds1742.txt
+deleted file mode 100644
+index d0f937c355b5..000000000000
+--- a/Documentation/devicetree/bindings/rtc/maxim,ds1742.txt
++++ /dev/null
+@@ -1,12 +0,0 @@
+-* Maxim (Dallas) DS1742/DS1743 Real Time Clock
+-
+-Required properties:
+-- compatible: Should contain "maxim,ds1742".
+-- reg: Physical base address of the RTC and length of memory
+-  mapped region.
+-
+-Example:
+-	rtc: rtc at 10000000 {
+-		compatible = "maxim,ds1742";
+-		reg = <0x10000000 0x800>;
+-	};
+diff --git a/Documentation/devicetree/bindings/rtc/orion-rtc.txt b/Documentation/devicetree/bindings/rtc/orion-rtc.txt
+deleted file mode 100644
+index 3bf63ffa5160..000000000000
+--- a/Documentation/devicetree/bindings/rtc/orion-rtc.txt
++++ /dev/null
+@@ -1,18 +0,0 @@
+-* Mvebu Real Time Clock
+-
+-RTC controller for the Kirkwood, the Dove, the Armada 370 and the
+-Armada XP SoCs
+-
+-Required properties:
+-- compatible : Should be "marvell,orion-rtc"
+-- reg: physical base address of the controller and length of memory mapped
+-  region.
+-- interrupts: IRQ line for the RTC.
+-
+-Example:
+-
+-rtc at 10300 {
+-        compatible = "marvell,orion-rtc";
+-        reg = <0xd0010300 0x20>;
+-        interrupts = <50>;
+-};
+diff --git a/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt b/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
+deleted file mode 100644
+index 2e956b3dc276..000000000000
+--- a/Documentation/devicetree/bindings/rtc/rtc-aspeed.txt
++++ /dev/null
+@@ -1,22 +0,0 @@
+-ASPEED BMC RTC
+-==============
+-
+-Required properties:
+- - compatible: should be one of the following
+-   * aspeed,ast2400-rtc for the ast2400
+-   * aspeed,ast2500-rtc for the ast2500
+-   * aspeed,ast2600-rtc for the ast2600
+-
+- - reg: physical base address of the controller and length of memory mapped
+-   region
+-
+- - interrupts: The interrupt number
+-
+-Example:
+-
+-   rtc at 1e781000 {
+-           compatible = "aspeed,ast2400-rtc";
+-           reg = <0x1e781000 0x18>;
+-           interrupts = <22>;
+-           status = "disabled";
+-   };
+diff --git a/Documentation/devicetree/bindings/rtc/spear-rtc.txt b/Documentation/devicetree/bindings/rtc/spear-rtc.txt
+deleted file mode 100644
+index fecf8e4ad4b4..000000000000
+--- a/Documentation/devicetree/bindings/rtc/spear-rtc.txt
++++ /dev/null
+@@ -1,15 +0,0 @@
+-* SPEAr RTC
+-
+-Required properties:
+-- compatible : "st,spear600-rtc"
+-- reg : Address range of the rtc registers
+-- interrupt: Should contain the rtc interrupt number
+-
+-Example:
+-
+-	rtc at fc000000 {
+-		compatible = "st,spear600-rtc";
+-		reg = <0xfc000000 0x1000>;
+-		interrupt-parent = <&vic1>;
+-		interrupts = <12>;
+-	};
+diff --git a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
+index c9e3c5262c21..b590bf35d440 100644
+--- a/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
++++ b/Documentation/devicetree/bindings/rtc/trivial-rtc.yaml
+@@ -24,6 +24,12 @@ properties:
+       - abracon,abb5zes3
+       # AB-RTCMC-32.768kHz-EOZ9: Real Time Clock/Calendar Module with I2C Interface
+       - abracon,abeoz9
++      # ASPEED BMC ast2400 Real-time Clock
++      - aspeed,ast2400-rtc
++      # ASPEED BMC ast2500 Real-time Clock
++      - aspeed,ast2500-rtc
++      # ASPEED BMC ast2600 Real-time Clock
++      - aspeed,ast2600-rtc
+       # I2C, 32-Bit Binary Counter Watchdog RTC with Trickle Charger and Reset Input/Output
+       - dallas,ds1374
+       # Dallas DS1672 Real-time Clock
+@@ -41,10 +47,16 @@ properties:
+       - epson,rx8571
+       # I2C-BUS INTERFACE REAL TIME CLOCK MODULE
+       - epson,rx8581
++      # Android Goldfish Real-time Clock
++      - google,goldfish-rtc
+       # Intersil ISL1208 Low Power RTC with Battery Backed SRAM
+       - isil,isl1208
+       # Intersil ISL1218 Low Power RTC with Battery Backed SRAM
+       - isil,isl1218
++      # Mvebu Real-time Clock
++      - marvell,orion-rtc
++      # Maxim DS1742/DS1743 Real-time Clock
++      - maxim,ds1742
+       # SPI-BUS INTERFACE REAL TIME CLOCK MODULE
+       - maxim,mcp795
+       # Real Time Clock Module with I2C-Bus
+@@ -67,6 +79,10 @@ properties:
+       - ricoh,rv5c387a
+       # 2-wire CMOS real-time clock
+       - sii,s35390a
++      # ST SPEAr Real-time Clock
++      - st,spear600-rtc
++      # VIA/Wondermedia VT8500 Real-time Clock
++      - via,vt8500-rtc
+       # I2C bus SERIAL INTERFACE REAL-TIME CLOCK IC
+       - whwave,sd3078
+       # Xircom X1205 I2C RTC
+diff --git a/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt b/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
+deleted file mode 100644
+index 3c0484c49582..000000000000
+--- a/Documentation/devicetree/bindings/rtc/via,vt8500-rtc.txt
++++ /dev/null
+@@ -1,15 +0,0 @@
+-VIA/Wondermedia VT8500 Realtime Clock Controller
+------------------------------------------------------
+-
+-Required properties:
+-- compatible : "via,vt8500-rtc"
+-- reg : Should contain 1 register ranges(address and length)
+-- interrupts : alarm interrupt
+-
+-Example:
+-
+-	rtc at d8100000 {
+-		compatible = "via,vt8500-rtc";
+-		reg = <0xd8100000 0x10000>;
+-		interrupts = <48>;
+-	};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index aea47e04c3a5..f24469714f1e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1442,7 +1442,6 @@ F:	drivers/irqchip/irq-goldfish-pic.c
+ ANDROID GOLDFISH RTC DRIVER
+ M:	Jiaxun Yang <jiaxun.yang@flygoat.com>
+ S:	Supported
+-F:	Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt
+ F:	drivers/rtc/rtc-goldfish.c
+ 
+ AOA (Apple Onboard Audio) ALSA DRIVER
+
 -- 
-Javier Carrasco <javier.carrasco.cruz@gmail.com>
+2.40.1
 
