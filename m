@@ -1,40 +1,37 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-Date: Wed, 10 Apr 2024 15:55:54 -0000
-Subject: [PATCH v2 3/4] dt-bindings: rtc: pxa-rtc: convert to dtschema
+Date: Wed, 10 Apr 2024 15:55:56 -0000
+Subject: [PATCH v2 4/4] dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
 In-Reply-To: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
 References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
-Message-ID: <20240410-rtc_dtschema-v2-3-d32a11ab0745@gmail.com>
+Message-ID: <20240410-rtc_dtschema-v2-4-d32a11ab0745@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert existing binding to dtschema to support validation.
+Convert existing binding to dtschema to support validation and
+add the undocumented compatible 'fsl,imx23-rtc'.
 
-The missing 'reg' and 'interrupts' properties have been added, taking
-the 2 supported interrupts into account to fix the example.
-
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 ++++++++++++++++++++++
- Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 --------
- 2 files changed, 40 insertions(+), 14 deletions(-)
+ .../devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml  | 51 ++++++++++++++++++++++
+ .../devicetree/bindings/rtc/stmp3xxx-rtc.txt       | 21 ---------
+ 2 files changed, 51 insertions(+), 21 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml b/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml
+diff --git a/Documentation/devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml b/Documentation/devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml
 new file mode 100644
-index 000000000000..43d68681a1bf
+index 000000000000..534de4196a4f
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/marvell,pxa-rtc.yaml
-@@ -0,0 +1,40 @@
++++ b/Documentation/devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml
+@@ -0,0 +1,51 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/rtc/marvell,pxa-rtc.yaml#
++$id: http://devicetree.org/schemas/rtc/fsl,stmp3xxx-rtc.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: PXA Real Time Clock
++title: STMP3xxx/i.MX28 Time Clock Controller
 +
 +maintainers:
 +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
@@ -44,15 +41,26 @@ index 000000000000..43d68681a1bf
 +
 +properties:
 +  compatible:
-+    const: marvell,pxa-rtc
++    oneOf:
++      - items:
++          - enum:
++              - fsl,imx28-rtc
++              - fsl,imx23-rtc
++          - const: fsl,stmp3xxx-rtc
++      - const: fsl,stmp3xxx-rtc
 +
 +  reg:
 +    maxItems: 1
 +
 +  interrupts:
-+    items:
-+      - description: 1 Hz
-+      - description: Alarm
++    maxItems: 1
++
++  stmp,crystal-freq:
++    description:
++      Override crystal frequency as determined from fuse bits.
++      Use <0> for "no crystal".
++    $ref: /schemas/types.yaml#/definitions/uint32
++    enum: [0, 32000, 32768]
 +
 +required:
 +  - compatible
@@ -63,30 +71,37 @@ index 000000000000..43d68681a1bf
 +
 +examples:
 +  - |
-+    rtc at 40900000 {
-+        compatible = "marvell,pxa-rtc";
-+        reg = <0x40900000 0x3c>;
-+        interrupts = <30>, <31>;
++    rtc at 80056000 {
++        compatible = "fsl,imx28-rtc", "fsl,stmp3xxx-rtc";
++        reg = <0x80056000 2000>;
++        interrupts = <29>;
 +    };
-diff --git a/Documentation/devicetree/bindings/rtc/pxa-rtc.txt b/Documentation/devicetree/bindings/rtc/pxa-rtc.txt
+diff --git a/Documentation/devicetree/bindings/rtc/stmp3xxx-rtc.txt b/Documentation/devicetree/bindings/rtc/stmp3xxx-rtc.txt
 deleted file mode 100644
-index 8c6672a1b7d7..000000000000
---- a/Documentation/devicetree/bindings/rtc/pxa-rtc.txt
+index fa6a94226669..000000000000
+--- a/Documentation/devicetree/bindings/rtc/stmp3xxx-rtc.txt
 +++ /dev/null
-@@ -1,14 +0,0 @@
--* PXA RTC
--
--PXA specific RTC driver.
+@@ -1,21 +0,0 @@
+-* STMP3xxx/i.MX28 Time Clock controller
 -
 -Required properties:
--- compatible : Should be "marvell,pxa-rtc"
+-- compatible: should be one of the following.
+-    * "fsl,stmp3xxx-rtc"
+-- reg: physical base address of the controller and length of memory mapped
+-  region.
+-- interrupts: rtc alarm interrupt
 -
--Examples:
+-Optional properties:
+-- stmp,crystal-freq: override crystal frequency as determined from fuse bits.
+-  Only <32000> and <32768> are possible for the hardware.  Use <0> for
+-  "no crystal".
 -
--rtc at 40900000 {
--	compatible = "marvell,pxa-rtc";
--	reg = <0x40900000 0x3c>;
--	interrupts = <30 31>;
+-Example:
+-
+-rtc at 80056000 {
+-	compatible = "fsl,imx28-rtc", "fsl,stmp3xxx-rtc";
+-	reg = <0x80056000 2000>;
+-	interrupts = <29>;
 -};
 
 -- 
