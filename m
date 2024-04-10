@@ -1,94 +1,63 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 Date: Wed, 10 Apr 2024 15:55:52 -0000
-Subject: [PATCH v2 2/4] dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
-In-Reply-To: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
-References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
-Message-ID: <20240410-rtc_dtschema-v2-2-d32a11ab0745@gmail.com>
+Subject: [PATCH v2 0/4] rtc: convert multiple bindings into dtschema
+Message-ID: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert existing binding to dtschema to support validation.
+This series converts the following bindings into dtschema, moving them
+to trivial-rtc whenever possible:
 
-Add the undocumented 'clocks' property.
+- orion-rtc: trival-rtc, referenced in arm arch.
+- google,goldfish-rtc: trivial-rtc, referenced in mips arch.
+- lpc32xx-rtc: add missing property and convert, referenced in arm arch.
+- maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
+- rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
+- pxa-rtc: add missing properties and convert. Referenced in arm arch.
+- st,spear600-rtc: trivial-rtc, referenced in arm arch.
+- stmp3xxx-rtc: add compatibles and convert, referenced in arm arch.
+- via,vt8500-rtc: trivial-rtc, referenced in arm arch.
 
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
- .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
- .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 ++++++++++++++++++++++
- 2 files changed, 41 insertions(+), 15 deletions(-)
+Changes in v2:
+- General: squash all moves to trivial-rtc into a single patch.
+- MAINTAINERS: remove reference to google,goldfish-rtc.txt
+- lpc32xx-rtc: create own binding to add the undocumented 'clocks'
+  property.
+- fsl,stmp3xxx-rtc.yaml: document missing compatibles.
+- Link to v1: https://lore.kernel.org/r/20240408-rtc_dtschema-v1-0-c447542fc362 at gmail.com
 
-diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
-deleted file mode 100644
-index a87a1e9bc060..000000000000
---- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
-+++ /dev/null
-@@ -1,15 +0,0 @@
--* NXP LPC32xx SoC Real Time Clock controller
--
--Required properties:
--- compatible: must be "nxp,lpc3220-rtc"
--- reg: physical base address of the controller and length of memory mapped
--  region.
--- interrupts: The RTC interrupt
--
--Example:
--
--	rtc at 40024000 {
--		compatible = "nxp,lpc3220-rtc";
--		reg = <0x40024000 0x1000>;
--		interrupts = <52 0>;
--	};
-diff --git a/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
-new file mode 100644
-index 000000000000..62ddeef961e9
---- /dev/null
-+++ b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
-@@ -0,0 +1,41 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/rtc/nxp,lpc32xx-rtc.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: NXP LPC32xx SoC Real Time Clock
-+
-+maintainers:
-+  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
-+
-+allOf:
-+  - $ref: rtc.yaml#
-+
-+properties:
-+  compatible:
-+    const: nxp,lpc3220-rtc
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    rtc at 40024000 {
-+        compatible = "nxp,lpc3220-rtc";
-+        reg = <0x40024000 0x1000>;
-+        interrupts = <52 0>;
-+    };
+---
+Javier Carrasco (4):
+      dt-bindings: rtc: convert trivial devices into dtschema
+      dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
+      dt-bindings: rtc: pxa-rtc: convert to dtschema
+      dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
 
+ .../devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml  | 51 ++++++++++++++++++++++
+ .../bindings/rtc/google,goldfish-rtc.txt           | 17 --------
+ .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 -------
+ .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 +++++++++++++++++
+ .../devicetree/bindings/rtc/maxim,ds1742.txt       | 12 -----
+ .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 +++++++++++++++++
+ .../devicetree/bindings/rtc/orion-rtc.txt          | 18 --------
+ Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 ------
+ .../devicetree/bindings/rtc/rtc-aspeed.txt         | 22 ----------
+ .../devicetree/bindings/rtc/spear-rtc.txt          | 15 -------
+ .../devicetree/bindings/rtc/stmp3xxx-rtc.txt       | 21 ---------
+ .../devicetree/bindings/rtc/trivial-rtc.yaml       | 16 +++++++
+ .../devicetree/bindings/rtc/via,vt8500-rtc.txt     | 15 -------
+ MAINTAINERS                                        |  1 -
+ 14 files changed, 148 insertions(+), 150 deletions(-)
+---
+base-commit: fec50db7033ea478773b159e0e2efb135270e3b7
+change-id: 20240406-rtc_dtschema-302824d1ec20
+
+Best regards,
 -- 
-2.40.1
+Javier Carrasco <javier.carrasco.cruz@gmail.com>
 
