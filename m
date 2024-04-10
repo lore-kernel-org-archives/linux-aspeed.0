@@ -1,43 +1,33 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Tue, 9 Apr 2024 11:08:10 -0700
-Subject: [PATCH v6 4/4] drivers: watchdog: ast2500 and ast2600 support
- bootstatus
-In-Reply-To: <47835475-36de-4682-84ae-0163d45d0bac@gmail.com>
-References: <20240328022231.3649741-1-peteryin.openbmc@gmail.com>
- <20240328022231.3649741-5-peteryin.openbmc@gmail.com>
- <47835475-36de-4682-84ae-0163d45d0bac@gmail.com>
-Message-ID: <01a07242-22ca-4abe-80f9-72ac4de93fb7@roeck-us.net>
+Date: Wed, 10 Apr 2024 08:06:11 -0700
+Subject: [PATCH] hwmon: (aspeed-g6-pwm-tach) Convert to platform remove
+ callback returning void
+In-Reply-To: <20240409085552.19868-2-u.kleine-koenig@pengutronix.de>
+References: <20240409085552.19868-2-u.kleine-koenig@pengutronix.de>
+Message-ID: <1bc1f772-1576-4496-af4d-5123869838bf@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 10, 2024 at 12:28:44AM +0800, PeterYin wrote:
-[ ... ]
+On Tue, Apr 09, 2024 at 10:55:53AM +0200, Uwe Kleine-K?nig wrote:
+> The .remove() callback for a platform driver returns an int which makes
+> many driver authors wrongly assume it's possible to do error handling by
+> returning an error code. However the value returned is ignored (apart
+> from emitting a warning) and this typically results in resource leaks.
+> To improve here there is a quest to make the remove callback return
+> void. In the first step of this quest all drivers are converted to
+> .remove_new() which already returns void. Eventually after all drivers
+> are converted, .remove_new() is renamed to .remove().
 > 
-> Hi Guenter,
->    Could you help me understand the definition of WDIOF_CARDRESET in the
-> kernel? If it resets the CPU, should all values be reset to default? Should
-
-Documentation/watchdog/watchdog-api.rst says:
-
-	"Card previously reset the CPU"
-
-This is a bit historic and was probably defined when watchdogs were
-not typically integrated. The appropriate description, applied to
-current watchdog devices, would be something like "The most recent
-reset was triggered by this watchdog".
-
-Not sure I understand "If it resets the CPU...". It doesn't _do_
-anything, it just reports if the most recent reset was triggered
-by the watchdog.
-
-> we check the POR (RstPwr Power on reset SRST# flag) flag in SCU 0x74
-> register bit 0 in ast2600?
+> Trivially convert this driver from always returning zero in the remove
+> callback to the void returning variant.
 > 
+> Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
+> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-Only if it indicates that the most recent reset was triggered by the
-watchdog.
+Applied.
 
+Thanks,
 Guenter
