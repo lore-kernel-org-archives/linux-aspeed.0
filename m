@@ -1,92 +1,45 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 11 Apr 2024 08:17:55 +0200
-Subject: [PATCH v2 2/4] dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
-In-Reply-To: <202404102043571b7450b5@mail.local>
-References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
- <20240410-rtc_dtschema-v2-2-d32a11ab0745@gmail.com>
- <202404102043571b7450b5@mail.local>
-Message-ID: <130d47d8-3294-44be-9a8c-8474d342cb12@linaro.org>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Thu, 11 Apr 2024 09:13:38 +0200
+Subject: [PATCH 0/4] fsi: Convert to platform remove callback returning
+ void
+In-Reply-To: <cover.1709673414.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1709673414.git.u.kleine-koenig@pengutronix.de>
+Message-ID: <pd2qn2zqhdd4hv2vn6g3p6kzcer343f6xm75tcj2xi5qgk7h5l@uv6uaa7zj7mu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/04/2024 22:43, Alexandre Belloni wrote:
-> On 10/04/2024 17:55:34+0200, Javier Carrasco wrote:
->> Convert existing binding to dtschema to support validation.
->>
->> Add the undocumented 'clocks' property.
->>
->> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
->> ---
->>  .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
->>  .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 ++++++++++++++++++++++
->>  2 files changed, 41 insertions(+), 15 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
->> deleted file mode 100644
->> index a87a1e9bc060..000000000000
->> --- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
->> +++ /dev/null
->> @@ -1,15 +0,0 @@
->> -* NXP LPC32xx SoC Real Time Clock controller
->> -
->> -Required properties:
->> -- compatible: must be "nxp,lpc3220-rtc"
->> -- reg: physical base address of the controller and length of memory mapped
->> -  region.
->> -- interrupts: The RTC interrupt
->> -
->> -Example:
->> -
->> -	rtc at 40024000 {
->> -		compatible = "nxp,lpc3220-rtc";
->> -		reg = <0x40024000 0x1000>;
->> -		interrupts = <52 0>;
->> -	};
->> diff --git a/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
->> new file mode 100644
->> index 000000000000..62ddeef961e9
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
->> @@ -0,0 +1,41 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/rtc/nxp,lpc32xx-rtc.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: NXP LPC32xx SoC Real Time Clock
->> +
->> +maintainers:
->> +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
->> +
->> +allOf:
->> +  - $ref: rtc.yaml#
->> +
->> +properties:
->> +  compatible:
->> +    const: nxp,lpc3220-rtc
->> +
->> +  reg:
->> +    maxItems: 1
->> +
->> +  interrupts:
->> +    maxItems: 1
->> +
->> +  clocks:
->> +    maxItems: 1
+Hello,
+
+On Tue, Mar 05, 2024 at 10:20:56PM +0100, Uwe Kleine-K?nig wrote:
+> this series converts all drivers below drivers/fsi to struct
+> platform_driver::remove_new(). See commit 5c5a7680e67b ("platform:
+> Provide a remove callback that returns no value") for an extended
+> explanation and the eventual goal.
 > 
-> As I explained the clock doesn't really exist, there is no control over
-> it, it is a fixed 32768 Hz crystal, there is no point in describing it
-> as this is already the input clock of the SoC.
+> All conversations are trivial, because their .remove() callbacks
+> returned zero unconditionally.
+> 
+> There are no interdependencies between these patches, so they could be
+> picked up individually. But I'd hope that they get picked up all
+> together.
 
-That's common for many SoCs but it is still (at least for them) input to
-the RTC. On some SoC boards 32 kHz is controllable.
+I didn't get any feedback on this patch set. As the conversion of
+platform_driver::remove depends on these, it would be great if they made
+it in during the next merge window.
 
-But if you think it is not correct here, then we should drop it from DTS.
+Best regards
+Uwe
 
-Best regards,
-Krzysztof
-
+-- 
+Pengutronix e.K.                           | Uwe Kleine-K?nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240411/565d5027/attachment-0001.sig>
