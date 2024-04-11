@@ -1,587 +1,92 @@
-From: rentao.bupt@gmail.com <rentao.bupt@gmail.com>
-Date: Wed, 10 Apr 2024 21:56:18 -0700
-Subject: [PATCH] ARM: dts: aspeed: Remove Facebook Cloudripper dts
-Message-ID: <20240411045622.7915-1-rentao.bupt@gmail.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 11 Apr 2024 08:17:55 +0200
+Subject: [PATCH v2 2/4] dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
+In-Reply-To: <202404102043571b7450b5@mail.local>
+References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
+ <20240410-rtc_dtschema-v2-2-d32a11ab0745@gmail.com>
+ <202404102043571b7450b5@mail.local>
+Message-ID: <130d47d8-3294-44be-9a8c-8474d342cb12@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Tao Ren <rentao.bupt@gmail.com>
+On 10/04/2024 22:43, Alexandre Belloni wrote:
+> On 10/04/2024 17:55:34+0200, Javier Carrasco wrote:
+>> Convert existing binding to dtschema to support validation.
+>>
+>> Add the undocumented 'clocks' property.
+>>
+>> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
+>> ---
+>>  .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
+>>  .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 ++++++++++++++++++++++
+>>  2 files changed, 41 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+>> deleted file mode 100644
+>> index a87a1e9bc060..000000000000
+>> --- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
+>> +++ /dev/null
+>> @@ -1,15 +0,0 @@
+>> -* NXP LPC32xx SoC Real Time Clock controller
+>> -
+>> -Required properties:
+>> -- compatible: must be "nxp,lpc3220-rtc"
+>> -- reg: physical base address of the controller and length of memory mapped
+>> -  region.
+>> -- interrupts: The RTC interrupt
+>> -
+>> -Example:
+>> -
+>> -	rtc at 40024000 {
+>> -		compatible = "nxp,lpc3220-rtc";
+>> -		reg = <0x40024000 0x1000>;
+>> -		interrupts = <52 0>;
+>> -	};
+>> diff --git a/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
+>> new file mode 100644
+>> index 000000000000..62ddeef961e9
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
+>> @@ -0,0 +1,41 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/rtc/nxp,lpc32xx-rtc.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: NXP LPC32xx SoC Real Time Clock
+>> +
+>> +maintainers:
+>> +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
+>> +
+>> +allOf:
+>> +  - $ref: rtc.yaml#
+>> +
+>> +properties:
+>> +  compatible:
+>> +    const: nxp,lpc3220-rtc
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  clocks:
+>> +    maxItems: 1
+> 
+> As I explained the clock doesn't really exist, there is no control over
+> it, it is a fixed 32768 Hz crystal, there is no point in describing it
+> as this is already the input clock of the SoC.
 
-Remove Facebook Cloudripper dts because the switch platform is not
-actively maintained (all the units are deprecated).
+That's common for many SoCs but it is still (at least for them) input to
+the RTC. On some SoC boards 32 kHz is controllable.
 
-Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
----
- arch/arm/boot/dts/aspeed/Makefile             |   1 -
- .../aspeed-bmc-facebook-cloudripper.dts       | 544 ------------------
- 2 files changed, 545 deletions(-)
- delete mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-cloudripper.dts
+But if you think it is not correct here, then we should drop it from DTS.
 
-diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-index d3ac20e316d0..1c0e08c9ed3e 100644
---- a/arch/arm/boot/dts/aspeed/Makefile
-+++ b/arch/arm/boot/dts/aspeed/Makefile
-@@ -13,7 +13,6 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-bytedance-g220a.dtb \
- 	aspeed-bmc-delta-ahe50dc.dtb \
- 	aspeed-bmc-facebook-bletchley.dtb \
--	aspeed-bmc-facebook-cloudripper.dtb \
- 	aspeed-bmc-facebook-cmm.dtb \
- 	aspeed-bmc-facebook-elbert.dtb \
- 	aspeed-bmc-facebook-fuji.dtb \
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-cloudripper.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-cloudripper.dts
-deleted file mode 100644
-index d49328fa487a..000000000000
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-cloudripper.dts
-+++ /dev/null
-@@ -1,544 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0+
--// Copyright (c) 2020 Facebook Inc.
--
--/dts-v1/;
--
--#include <dt-bindings/leds/common.h>
--#include "ast2600-facebook-netbmc-common.dtsi"
--
--/ {
--	model = "Facebook Cloudripper BMC";
--	compatible = "facebook,cloudripper-bmc", "aspeed,ast2600";
--
--	aliases {
--		/*
--		 * PCA9548 (1-0070) provides 8 channels connecting to
--		 * SMB (Switch Main Board).
--		 */
--		i2c16 = &imux16;
--		i2c17 = &imux17;
--		i2c18 = &imux18;
--		i2c19 = &imux19;
--		i2c20 = &imux20;
--		i2c21 = &imux21;
--		i2c22 = &imux22;
--		i2c23 = &imux23;
--
--		/*
--		 * PCA9548 (2-0070) provides 8 channels connecting to
--		 * SCM (System Controller Module).
--		 */
--		i2c24 = &imux24;
--		i2c25 = &imux25;
--		i2c26 = &imux26;
--		i2c27 = &imux27;
--		i2c28 = &imux28;
--		i2c29 = &imux29;
--		i2c30 = &imux30;
--		i2c31 = &imux31;
--
--		/*
--		 * PCA9548 (3-0070) provides 8 channels connecting to
--		 * SMB (Switch Main Board).
--		 */
--		i2c32 = &imux32;
--		i2c33 = &imux33;
--		i2c34 = &imux34;
--		i2c35 = &imux35;
--		i2c36 = &imux36;
--		i2c37 = &imux37;
--		i2c38 = &imux38;
--		i2c39 = &imux39;
--
--		/*
--		 * PCA9548 (8-0070) provides 8 channels connecting to
--		 * PDB (Power Delivery Board).
--		 */
--		i2c40 = &imux40;
--		i2c41 = &imux41;
--		i2c42 = &imux42;
--		i2c43 = &imux43;
--		i2c44 = &imux44;
--		i2c45 = &imux45;
--		i2c46 = &imux46;
--		i2c47 = &imux47;
--
--		/*
--		 * PCA9548 (15-0076) provides 8 channels connecting to
--		 * FCM (Fan Controller Module).
--		 */
--		i2c48 = &imux48;
--		i2c49 = &imux49;
--		i2c50 = &imux50;
--		i2c51 = &imux51;
--		i2c52 = &imux52;
--		i2c53 = &imux53;
--		i2c54 = &imux54;
--		i2c55 = &imux55;
--	};
--
--	spi_gpio: spi {
--		num-chipselects = <2>;
--		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>,
--			   <&gpio0 ASPEED_GPIO(X, 1) GPIO_ACTIVE_HIGH>;
--
--		eeprom at 1 {
--			compatible = "atmel,at93c46d";
--			spi-max-frequency = <250000>;
--			data-size = <16>;
--			spi-cs-high;
--			reg = <1>;
--		};
--	};
--};
--
--&ehci1 {
--	status = "okay";
--};
--
--/*
-- * "mdio1" is connected to the MDC/MDIO interface of the on-board
-- * management switch (whose ports are connected to BMC, Host and front
-- * panel ethernet port).
-- */
--&mdio1 {
--	status = "okay";
--};
--
--&mdio3 {
--	status = "okay";
--
--	ethphy1: ethernet-phy at 13 {
--		compatible = "ethernet-phy-ieee802.3-c22";
--		reg = <0x0d>;
--	};
--};
--
--&mac3 {
--	status = "okay";
--	phy-mode = "rgmii";
--	phy-handle = <&ethphy1>;
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_rgmii4_default>;
--};
--
--&i2c0 {
--	multi-master;
--	bus-frequency = <1000000>;
--};
--
--&i2c1 {
--	/*
--	 * PCA9548 (1-0070) provides 8 channels connecting to SMB (Switch
--	 * Main Board).
--	 */
--	i2c-mux at 70 {
--		compatible = "nxp,pca9548";
--		#address-cells = <1>;
--		#size-cells = <0>;
--		reg = <0x70>;
--		i2c-mux-idle-disconnect;
--
--		imux16: i2c at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--		};
--
--		imux17: i2c at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--		};
--
--		imux18: i2c at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--		};
--
--		imux19: i2c at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--		};
--
--		imux20: i2c at 4 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <4>;
--		};
--
--		imux21: i2c at 5 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <5>;
--		};
--
--		imux22: i2c at 6 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <6>;
--		};
--
--		imux23: i2c at 7 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <7>;
--		};
--	};
--};
--
--&i2c2 {
--	/*
--	 * PCA9548 (2-0070) provides 8 channels connecting to SCM (System
--	 * Controller Module).
--	 */
--	i2c-mux at 70 {
--		compatible = "nxp,pca9548";
--		#address-cells = <1>;
--		#size-cells = <0>;
--		reg = <0x70>;
--		i2c-mux-idle-disconnect;
--
--		imux24: i2c at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--		};
--
--		imux25: i2c at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--		};
--
--		imux26: i2c at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--		};
--
--		imux27: i2c at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--		};
--
--		imux28: i2c at 4 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <4>;
--		};
--
--		imux29: i2c at 5 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <5>;
--		};
--
--		imux30: i2c at 6 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <6>;
--		};
--
--		imux31: i2c at 7 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <7>;
--		};
--	};
--};
--
--&i2c3 {
--	/*
--	 * PCA9548 (3-0070) provides 8 channels connecting to SMB (Switch
--	 * Main Board).
--	 */
--	i2c-mux at 70 {
--		compatible = "nxp,pca9548";
--		#address-cells = <1>;
--		#size-cells = <0>;
--		reg = <0x70>;
--		i2c-mux-idle-disconnect;
--
--		imux32: i2c at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--		};
--
--		imux33: i2c at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--		};
--
--		imux34: i2c at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--		};
--
--		imux35: i2c at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--		};
--
--		imux36: i2c at 4 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <4>;
--		};
--
--		imux37: i2c at 5 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <5>;
--		};
--
--		imux38: i2c at 6 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <6>;
--		};
--
--		imux39: i2c at 7 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <7>;
--		};
--	};
--};
--
--&i2c6 {
--	lp5012 at 14 {
--		compatible = "ti,lp5012";
--		reg = <0x14>;
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		multi-led at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--			color = <LED_COLOR_ID_MULTI>;
--			function = LED_FUNCTION_ACTIVITY;
--			label = "sys";
--
--			led at 0 {
--				reg = <0>;
--				color = <LED_COLOR_ID_RED>;
--			};
--
--			led at 1 {
--				reg = <1>;
--				color = <LED_COLOR_ID_BLUE>;
--			};
--
--			led at 2 {
--				reg = <2>;
--				color = <LED_COLOR_ID_GREEN>;
--			};
--		};
--
--		multi-led at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--			color = <LED_COLOR_ID_MULTI>;
--			function = LED_FUNCTION_ACTIVITY;
--			label = "fan";
--
--			led at 0 {
--				reg = <0>;
--				color = <LED_COLOR_ID_RED>;
--			};
--
--			led at 1 {
--				reg = <1>;
--				color = <LED_COLOR_ID_BLUE>;
--			};
--
--			led at 2 {
--				reg = <2>;
--				color = <LED_COLOR_ID_GREEN>;
--			};
--		};
--
--		multi-led at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--			color = <LED_COLOR_ID_MULTI>;
--			function = LED_FUNCTION_ACTIVITY;
--			label = "psu";
--
--			led at 0 {
--				reg = <0>;
--				color = <LED_COLOR_ID_RED>;
--			};
--
--			led at 1 {
--				reg = <1>;
--				color = <LED_COLOR_ID_BLUE>;
--			};
--
--			led at 2 {
--				reg = <2>;
--				color = <LED_COLOR_ID_GREEN>;
--			};
--		};
--
--		multi-led at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--			color = <LED_COLOR_ID_MULTI>;
--			function = LED_FUNCTION_ACTIVITY;
--			label = "scm";
--
--			led at 0 {
--				reg = <0>;
--				color = <LED_COLOR_ID_RED>;
--			};
--
--			led at 1 {
--				reg = <1>;
--				color = <LED_COLOR_ID_BLUE>;
--			};
--
--			led at 2 {
--				reg = <2>;
--				color = <LED_COLOR_ID_GREEN>;
--			};
--		};
--	};
--};
--
--&i2c8 {
--	/*
--	 * PCA9548 (8-0070) provides 8 channels connecting to PDB (Power
--	 * Delivery Board).
--	 */
--	i2c-mux at 70 {
--		compatible = "nxp,pca9548";
--		#address-cells = <1>;
--		#size-cells = <0>;
--		reg = <0x70>;
--		i2c-mux-idle-disconnect;
--
--		imux40: i2c at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--		};
--
--		imux41: i2c at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--		};
--
--		imux42: i2c at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--		};
--
--		imux43: i2c at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--		};
--
--		imux44: i2c at 4 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <4>;
--		};
--
--		imux45: i2c at 5 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <5>;
--		};
--
--		imux46: i2c at 6 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <6>;
--		};
--
--		imux47: i2c at 7 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <7>;
--		};
--
--	};
--};
--
--&i2c15 {
--	/*
--	 * PCA9548 (15-0076) provides 8 channels connecting to FCM (Fan
--	 * Controller Module).
--	 */
--	i2c-mux at 76 {
--		compatible = "nxp,pca9548";
--		#address-cells = <1>;
--		#size-cells = <0>;
--		reg = <0x76>;
--		i2c-mux-idle-disconnect;
--
--		imux48: i2c at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--		};
--
--		imux49: i2c at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--		};
--
--		imux50: i2c at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--		};
--
--		imux51: i2c at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--		};
--
--		imux52: i2c at 4 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <4>;
--		};
--
--		imux53: i2c at 5 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <5>;
--		};
--
--		imux54: i2c at 6 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <6>;
--		};
--
--		imux55: i2c at 7 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <7>;
--		};
--	};
--};
--- 
-2.44.0
+Best regards,
+Krzysztof
 
