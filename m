@@ -1,47 +1,50 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri, 12 Apr 2024 17:15:54 +0800
-Subject: [PATCH v5 06/12] ARM: dts: aspeed: Harma: Add PDB temperature
+Date: Fri, 12 Apr 2024 17:15:55 +0800
+Subject: [PATCH v5 07/12] ARM: dts: aspeed: Harma: Revise max31790 address
 In-Reply-To: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
 References: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240412091600.2534693-7-peteryin.openbmc@gmail.com>
+Message-ID: <20240412091600.2534693-8-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add PDB temperature sensor.
+Revise max31790 address from 0x30 to 0x5e
 
 Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index ca3052cce0e0..5c3fa8bbaced 100644
+index 5c3fa8bbaced..7e98af5836cf 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -203,7 +203,7 @@ max31790 at 30{
- &i2c1 {
+@@ -192,9 +192,9 @@ &kcs3 {
+ &i2c0 {
  	status = "okay";
  
--	tmp75 at 4b {
-+	temperature-sensor at 4b {
- 		compatible = "ti,tmp75";
- 		reg = <0x4b>;
+-	max31790 at 30{
++	max31790 at 5e{
+ 		compatible = "max31790";
+-		reg = <0x30>;
++		reg = <0x5e>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
  	};
-@@ -260,6 +260,11 @@ delta_brick at 69 {
- 		compatible = "pmbus";
- 		reg = <0x69>;
- 	};
-+
-+	temperature-sensor at 49 {
-+		compatible = "ti,tmp75";
-+		reg = <0x49>;
-+	};
- };
+@@ -212,9 +212,9 @@ temperature-sensor at 4b {
+ &i2c2 {
+ 	status = "okay";
  
- &i2c5 {
+-	max31790 at 30{
++	max31790 at 5e{
+ 		compatible = "max31790";
+-		reg = <0x30>;
++		reg = <0x5e>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 	};
 -- 
 2.25.1
 
