@@ -1,48 +1,119 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri, 12 Apr 2024 17:15:59 +0800
-Subject: [PATCH v5 11/12] ARM: dts: aspeed: Harma: Add retimer device
+Date: Fri, 12 Apr 2024 17:16:00 +0800
+Subject: [PATCH v5 12/12] ARM: dts: aspeed: Harma: Modify GPIO line name
 In-Reply-To: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
 References: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240412091600.2534693-12-peteryin.openbmc@gmail.com>
+Message-ID: <20240412091600.2534693-13-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add pt5161l device in i2c bus12 and bus21.
+Add:
+"reset-cause-platrst", "cpu0-err-alert", "leakage-detect-alert",
+"presence-post-card", "ac-power-button", "P0_I3C_APML_ALERT_L",
+"irq-uv-detect-alert", "irq-hsc-alert", "cpu0-prochot-alert",
+"cpu0-thermtrip-alert", "reset-cause-pcie", "pvdd11-ocp-alert"
+
+Rename:
+"power-cpu-good" to "host0-ready",
+"host-ready-n" to "post-end-n
 
 Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 38 ++++++++++++++-----
+ 1 file changed, 29 insertions(+), 9 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 530f69005857..a5abb16e5d8b 100644
+index a5abb16e5d8b..e7f4823ca4b3 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -250,6 +250,10 @@ imux21: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-+			retimer at 24 {
-+				compatible = "asteralabs,pt5161l";
-+				reg = <0x24>;
-+			};
- 		};
+@@ -332,6 +332,12 @@ gpio at 31 {
+ 		reg = <0x31>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
++
++		gpio-line-names =
++		"","","","",
++		"","","presence-cmm","",
++		"","","","",
++		"","","","";
  	};
- };
-@@ -370,6 +374,10 @@ &i2c11 {
  
- &i2c12 {
- 	status = "okay";
-+	retimer at 24 {
-+		compatible = "asteralabs,pt5161l";
-+		reg = <0x24>;
-+	};
+ 	i2c-mux at 71 {
+@@ -471,7 +477,8 @@ &gpio0 {
+ 	/*A0-A7*/	"","","","","","","","",
+ 	/*B0-B7*/	"","","","",
+ 			"bmc-spi-mux-select-0","led-identify","","",
+-	/*C0-C7*/	"","","","","","","","",
++	/*C0-C7*/	"reset-cause-platrst","","","","",
++			"cpu0-err-alert","","",
+ 	/*D0-D7*/	"","","sol-uart-select","","","","","",
+ 	/*E0-E7*/	"","","","","","","","",
+ 	/*F0-F7*/	"","","","","","","","",
+@@ -480,7 +487,8 @@ &gpio0 {
+ 	/*I0-I7*/	"","","","","","","","",
+ 	/*J0-J7*/	"","","","","","","","",
+ 	/*K0-K7*/	"","","","","","","","",
+-	/*L0-L7*/	"","","","","","","","",
++	/*L0-L7*/	"","","","",
++			"leakage-detect-alert","","","",
+ 	/*M0-M7*/	"","","","","","","","",
+ 	/*N0-N7*/	"led-postcode-0","led-postcode-1",
+ 			"led-postcode-2","led-postcode-3",
+@@ -499,7 +507,16 @@ &gpio0 {
+ 	/*W0-W7*/	"","","","","","","","",
+ 	/*X0-X7*/	"","","","","","","","",
+ 	/*Y0-Y7*/	"","","","","","","","",
+-	/*Z0-Z7*/	"","","","","","","","";
++	/*Z0-Z7*/	"","","","","","","presence-post-card","";
++};
++
++&gpio1 {
++	gpio-line-names =
++	/*18A0-18A7*/ "ac-power-button","","","","","","","",
++	/*18B0-18B7*/ "","","","","","","","",
++	/*18C0-18C7*/ "","","","","","","","",
++	/*18D0-18D7*/ "","","","","","","","",
++	/*18E0-18E3*/ "","","","","","","","";
  };
  
- &i2c13 {
+ &sgpiom0 {
+@@ -548,10 +565,10 @@ &sgpiom0 {
+ 	"","reset-control-cpu0-p1-mux",
+ 	"","reset-control-e1s-mux",
+ 	"power-host-good","reset-control-mb-mux",
+-	"power-cpu-good","reset-control-smb-e1s-0",
++	"host0-ready","reset-control-smb-e1s-0",
+ 	/*E0-E3 line 64-71*/
+ 	"","reset-control-smb-e1s-1",
+-	"host-ready-n","reset-control-srst",
++	"post-end-n","reset-control-srst",
+ 	"presence-e1s-0","reset-control-usb-hub",
+ 	"","reset-control",
+ 	/*E4-E7 line 72-79*/
+@@ -602,13 +619,16 @@ &sgpiom0 {
+ 	"SLOT_ID_BCB_2","",
+ 	"SLOT_ID_BCB_3","",
+ 	/*K0-K3 line 160-167*/
+-	"","","","","","","","",
++	"","","","","","","P0_I3C_APML_ALERT_L","",
+ 	/*K4-K7 line 168-175*/
+-	"","","","","","","","",
++	"","","","","","","irq-uv-detect-alert","",
+ 	/*L0-L3 line 176-183*/
+-	"","","","","","","","",
++	"irq-hsc-alert","",
++	"cpu0-prochot-alert","",
++	"cpu0-thermtrip-alert","",
++	"reset-cause-pcie","",
+ 	/*L4-L7 line 184-191*/
+-	"","","","","","","","",
++	"pvdd11-ocp-alert","","","","","","","",
+ 	/*M0-M3 line 192-199*/
+ 	"","","","","","","","",
+ 	/*M4-M7 line 200-207*/
 -- 
 2.25.1
 
