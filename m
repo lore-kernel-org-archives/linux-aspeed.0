@@ -1,119 +1,29 @@
-From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri, 12 Apr 2024 17:16:00 +0800
-Subject: [PATCH v5 12/12] ARM: dts: aspeed: Harma: Modify GPIO line name
-In-Reply-To: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
-References: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240412091600.2534693-13-peteryin.openbmc@gmail.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Fri, 12 Apr 2024 09:43:55 -0500
+Subject: [PATCH 0/3] fsi: sbefifo: Prevent async FFDC collection for Odyssey SBEFIFOs
+Message-ID: <20240412144358.204129-1-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add:
-"reset-cause-platrst", "cpu0-err-alert", "leakage-detect-alert",
-"presence-post-card", "ac-power-button", "P0_I3C_APML_ALERT_L",
-"irq-uv-detect-alert", "irq-hsc-alert", "cpu0-prochot-alert",
-"cpu0-thermtrip-alert", "reset-cause-pcie", "pvdd11-ocp-alert"
+Newer SBEs will return any async FFDC in the next transaction, so
+collecting the FFDC is unnecessary and results in unexpected behavior.
+Turn off the async collection for newer SBEFIFOs.
 
-Rename:
-"power-cpu-good" to "host0-ready",
-"host-ready-n" to "post-end-n
+Eddie James (3):
+  dt-bindings: fsi: Document the IBM SBEFIFO engine
+  fsi: sbefifo: Prevent async FFDC collection for Odyssey SBEFIFOs
+  ARM: dts: aspeed: Update Odyssey SBEFIFO compatible strings
 
-Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
----
- .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 38 ++++++++++++++-----
- 1 file changed, 29 insertions(+), 9 deletions(-)
+ .../devicetree/bindings/fsi/ibm,sbefifo.yaml  | 39 +++++++++++
+ .../dts/aspeed/aspeed-bmc-ibm-everest.dts     | 64 +++++++++----------
+ .../arm/boot/dts/aspeed/ibm-power10-quad.dtsi | 64 +++++++++----------
+ drivers/fsi/fsi-sbefifo.c                     | 37 +++++++++++
+ 4 files changed, 140 insertions(+), 64 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index a5abb16e5d8b..e7f4823ca4b3 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -332,6 +332,12 @@ gpio at 31 {
- 		reg = <0x31>;
- 		gpio-controller;
- 		#gpio-cells = <2>;
-+
-+		gpio-line-names =
-+		"","","","",
-+		"","","presence-cmm","",
-+		"","","","",
-+		"","","","";
- 	};
- 
- 	i2c-mux at 71 {
-@@ -471,7 +477,8 @@ &gpio0 {
- 	/*A0-A7*/	"","","","","","","","",
- 	/*B0-B7*/	"","","","",
- 			"bmc-spi-mux-select-0","led-identify","","",
--	/*C0-C7*/	"","","","","","","","",
-+	/*C0-C7*/	"reset-cause-platrst","","","","",
-+			"cpu0-err-alert","","",
- 	/*D0-D7*/	"","","sol-uart-select","","","","","",
- 	/*E0-E7*/	"","","","","","","","",
- 	/*F0-F7*/	"","","","","","","","",
-@@ -480,7 +487,8 @@ &gpio0 {
- 	/*I0-I7*/	"","","","","","","","",
- 	/*J0-J7*/	"","","","","","","","",
- 	/*K0-K7*/	"","","","","","","","",
--	/*L0-L7*/	"","","","","","","","",
-+	/*L0-L7*/	"","","","",
-+			"leakage-detect-alert","","","",
- 	/*M0-M7*/	"","","","","","","","",
- 	/*N0-N7*/	"led-postcode-0","led-postcode-1",
- 			"led-postcode-2","led-postcode-3",
-@@ -499,7 +507,16 @@ &gpio0 {
- 	/*W0-W7*/	"","","","","","","","",
- 	/*X0-X7*/	"","","","","","","","",
- 	/*Y0-Y7*/	"","","","","","","","",
--	/*Z0-Z7*/	"","","","","","","","";
-+	/*Z0-Z7*/	"","","","","","","presence-post-card","";
-+};
-+
-+&gpio1 {
-+	gpio-line-names =
-+	/*18A0-18A7*/ "ac-power-button","","","","","","","",
-+	/*18B0-18B7*/ "","","","","","","","",
-+	/*18C0-18C7*/ "","","","","","","","",
-+	/*18D0-18D7*/ "","","","","","","","",
-+	/*18E0-18E3*/ "","","","","","","","";
- };
- 
- &sgpiom0 {
-@@ -548,10 +565,10 @@ &sgpiom0 {
- 	"","reset-control-cpu0-p1-mux",
- 	"","reset-control-e1s-mux",
- 	"power-host-good","reset-control-mb-mux",
--	"power-cpu-good","reset-control-smb-e1s-0",
-+	"host0-ready","reset-control-smb-e1s-0",
- 	/*E0-E3 line 64-71*/
- 	"","reset-control-smb-e1s-1",
--	"host-ready-n","reset-control-srst",
-+	"post-end-n","reset-control-srst",
- 	"presence-e1s-0","reset-control-usb-hub",
- 	"","reset-control",
- 	/*E4-E7 line 72-79*/
-@@ -602,13 +619,16 @@ &sgpiom0 {
- 	"SLOT_ID_BCB_2","",
- 	"SLOT_ID_BCB_3","",
- 	/*K0-K3 line 160-167*/
--	"","","","","","","","",
-+	"","","","","","","P0_I3C_APML_ALERT_L","",
- 	/*K4-K7 line 168-175*/
--	"","","","","","","","",
-+	"","","","","","","irq-uv-detect-alert","",
- 	/*L0-L3 line 176-183*/
--	"","","","","","","","",
-+	"irq-hsc-alert","",
-+	"cpu0-prochot-alert","",
-+	"cpu0-thermtrip-alert","",
-+	"reset-cause-pcie","",
- 	/*L4-L7 line 184-191*/
--	"","","","","","","","",
-+	"pvdd11-ocp-alert","","","","","","","",
- 	/*M0-M3 line 192-199*/
- 	"","","","","","","","",
- 	/*M4-M7 line 200-207*/
 -- 
-2.25.1
+2.39.3
 
