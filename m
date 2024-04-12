@@ -1,61 +1,47 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri, 12 Apr 2024 17:15:53 +0800
-Subject: [PATCH v5 05/12] ARM: dts: aspeed: Harma: Add spi-gpio
+Date: Fri, 12 Apr 2024 17:15:54 +0800
+Subject: [PATCH v5 06/12] ARM: dts: aspeed: Harma: Add PDB temperature
 In-Reply-To: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
 References: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240412091600.2534693-6-peteryin.openbmc@gmail.com>
+Message-ID: <20240412091600.2534693-7-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add spi-gpio for tpm device.
+Add PDB temperature sensor.
 
 Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 21 +++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 36aad01dda20..ca3052cce0e0 100644
+index ca3052cce0e0..5c3fa8bbaced 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -28,6 +28,8 @@ aliases {
- 		i2c29 = &imux29;
- 		i2c30 = &imux30;
- 		i2c31 = &imux31;
-+
-+		spi1 = &spi_gpio;
- 	};
+@@ -203,7 +203,7 @@ max31790 at 30{
+ &i2c1 {
+ 	status = "okay";
  
- 	chosen {
-@@ -67,6 +69,25 @@ led-2 {
- 			gpios = <&gpio0 124 GPIO_ACTIVE_HIGH>;
- 		};
+-	tmp75 at 4b {
++	temperature-sensor at 4b {
+ 		compatible = "ti,tmp75";
+ 		reg = <0x4b>;
+ 	};
+@@ -260,6 +260,11 @@ delta_brick at 69 {
+ 		compatible = "pmbus";
+ 		reg = <0x69>;
  	};
 +
-+	spi_gpio: spi-gpio {
-+		status = "okay";
-+		compatible = "spi-gpio";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-sck = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
-+		gpio-mosi = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
-+		gpio-miso = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
-+		num-chipselects = <1>;
-+		cs-gpios = <&gpio0 ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
-+
-+		tpmdev at 0 {
-+			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
-+			spi-max-frequency = <33000000>;
-+			reg = <0>;
-+		};
++	temperature-sensor at 49 {
++		compatible = "ti,tmp75";
++		reg = <0x49>;
 +	};
  };
  
- // HOST BIOS Debug
+ &i2c5 {
 -- 
 2.25.1
 
