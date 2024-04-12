@@ -1,46 +1,62 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Fri, 12 Apr 2024 09:15:41 +0200
-Subject: [PATCH] hwmon: (aspeed-g6-pwm-tacho): Drop cpp define only used
- once
-In-Reply-To: <0787f458-c4ff-4498-820e-15e19796cbe6@roeck-us.net>
-References: <20240411160136.247138-2-u.kleine-koenig@pengutronix.de>
- <0787f458-c4ff-4498-820e-15e19796cbe6@roeck-us.net>
-Message-ID: <i37iuube65656euro5kuxgmfae6hdtlp5a6jsowwfalnmzckkv@bnre5uu6s75r>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Fri, 12 Apr 2024 17:15:48 +0800
+Subject: [PATCH v5 00/12] Revise Meta(Facebook) Harma BMC(AST2600)
+Message-ID: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 11, 2024 at 11:15:05AM -0700, Guenter Roeck wrote:
-> On Thu, Apr 11, 2024 at 06:01:36PM +0200, Uwe Kleine-K?nig wrote:
-> > The macro PWM_ASPEED_NR_PWMS is only used once, just use it's value in
-> > this single code line.
-> 
-> I am not part of the thou-shalt-not-use-defines-if-only-used-once
-> crowd, so I won't take this patch, sorry.
+Summary:
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
 
-My patch wasn't about religion. It's more that I was annoyed that
+Base on : https://lore.kernel.org/all/CACPK8XePx+PvDKzPMjPRn_g9z8yrtAmLvP8Qbepm1AVjuCbaKw at mail.gmail.com/
 
-	git grep pwmchip_alloc next/master drivers/hwmon
+Change log:
 
-doesn't give me the number of PWM channels. That PWM_ASPEED_NR_PWMS is
-only used once then only the detail that makes it easy to actually
-change that.
+v4 -> v5
+  - Patch 0011 - Add retimer device
+  - Patch 0012 - Modify gpio line name
 
-So in my eyes there is no advantage in this define and the only effect
-is that it hides information.
+v3 -> v4
+  - Patch 0010 - Revise node name
+  - fixed PDB temperature node name in Patch 0006
 
-Best regards
-Uwe
+v2 -> v3
+  - Patch 0007 - Revise max31790 address
+  - Patch 0008 - Harma: Add NIC Fru device
+  - Patch 0009 - Add ltc4286 device
+
+v1 -> v2
+  - Add infineon,slb9670 information for tpm.
+  - Patch 0006 - Add PDB temperature.
+
+v1
+  - Patch 0001 - Revise SGPIO line name.
+  - Patch 0002 - Mapping ttyS2 to UART4.
+  - Patch 0003 - Remove Vuart.
+  - Patch 0004 - Add cpu power good line name.
+  - Patch 0005 - Add spi-gpio.
+
+Peter Yin (12):
+  ARM: dts: aspeed: Harma: Revise SGPIO line name.
+  ARM: dts: aspeed: Harma: mapping ttyS2 to UART4.
+  ARM: dts: aspeed: Harma: Remove Vuart
+  ARM: dts: aspeed: Harma: Add cpu power good line name
+  ARM: dts: aspeed: Harma: Add spi-gpio
+  ARM: dts: aspeed: Harma: Add PDB temperature
+  ARM: dts: aspeed: Harma: Revise max31790 address
+  ARM: dts: aspeed: Harma: Add NIC Fru device
+  ARM: dts: aspeed: Harma: Add ltc4286 device
+  ARM: dts: aspeed: Harma: Revise node name
+  ARM: dts: aspeed: Harma: Add retimer device
+  ARM: dts: aspeed: Harma: Modify GPIO line name
+
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 107 ++++++++++++++----
+ 1 file changed, 85 insertions(+), 22 deletions(-)
 
 -- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240412/1e2a33d2/attachment.sig>
+2.25.1
+
