@@ -1,114 +1,69 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 12 Apr 2024 09:43:57 -0500
-Subject: [PATCH 2/3] fsi: sbefifo: Prevent async FFDC collection for Odyssey SBEFIFOs
+Date: Fri, 12 Apr 2024 09:43:56 -0500
+Subject: [PATCH 1/3] dt-bindings: fsi: Document the IBM SBEFIFO engine
 In-Reply-To: <20240412144358.204129-1-eajames@linux.ibm.com>
 References: <20240412144358.204129-1-eajames@linux.ibm.com>
-Message-ID: <20240412144358.204129-3-eajames@linux.ibm.com>
+Message-ID: <20240412144358.204129-2-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Newer SBEs will return any async FFDC in the next transaction, so
-collecting the FFDC is unnecessary and results in unexpected behavior.
-Turn off the async collection for newer SBEFIFOs.
+The SBEFIFO engine provides an interface to the POWER processor
+Self Boto Engine (SBE).
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-sbefifo.c | 37 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ .../devicetree/bindings/fsi/ibm,sbefifo.yaml  | 39 +++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
 
-diff --git a/drivers/fsi/fsi-sbefifo.c b/drivers/fsi/fsi-sbefifo.c
-index 0385476bfb03..706b98b49d08 100644
---- a/drivers/fsi/fsi-sbefifo.c
-+++ b/drivers/fsi/fsi-sbefifo.c
-@@ -125,6 +125,7 @@ struct sbefifo {
- 	struct mutex		lock;
- 	bool			broken;
- 	bool			dead;
-+	bool			need_async;
- 	bool			async_ffdc;
- 	bool			timed_out;
- 	u32			timeout_in_cmd_ms;
-@@ -141,6 +142,10 @@ struct sbefifo_user {
- 	u32			read_timeout_ms;
- };
- 
-+struct sbefifo_data {
-+	bool need_async;
-+};
+diff --git a/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
+new file mode 100644
+index 000000000000..d70012e42d79
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
+@@ -0,0 +1,39 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fsi/ibm,sbefifo.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- static DEFINE_MUTEX(sbefifo_ffdc_mutex);
- 
- static ssize_t timeout_show(struct device *dev, struct device_attribute *attr,
-@@ -317,6 +322,10 @@ static int sbefifo_check_sbe_state(struct sbefifo *sbefifo)
- 		return -ESHUTDOWN;
- 	}
- 
-+	/* Newer SBEFIFOs don't need async FFDC collection */
-+	if (!sbefifo->need_async)
-+		return 0;
++title: IBM FSI-attached SBEFIFO engine
 +
- 	/* Is there async FFDC available ? Remember it */
- 	if (sbm & CFAM_SBM_SBE_ASYNC_FFDC)
- 		sbefifo->async_ffdc = true;
-@@ -1031,6 +1040,7 @@ static void sbefifo_free(struct device *dev)
- 
- static int sbefifo_probe(struct device *dev)
- {
-+	const struct sbefifo_data *md = of_device_get_match_data(dev);
- 	struct fsi_device *fsi_dev = to_fsi_dev(dev);
- 	struct sbefifo *sbefifo;
- 	struct device_node *np;
-@@ -1044,6 +1054,11 @@ static int sbefifo_probe(struct device *dev)
- 	if (!sbefifo)
- 		return -ENOMEM;
- 
-+	if (md)
-+		sbefifo->need_async = md->need_async;
-+	else
-+		sbefifo->need_async = true;
++maintainers:
++  - Eddie James <eajames@linux.ibm.com>
 +
- 	/* Grab a reference to the device (parent of our cdev), we'll drop it later */
- 	if (!get_device(dev)) {
- 		kfree(sbefifo);
-@@ -1128,6 +1143,27 @@ static int sbefifo_remove(struct device *dev)
- 	return 0;
- }
- 
-+static const struct sbefifo_data p9_sbefifo_data = {
-+	.need_async = true,
-+};
++description: |
++  This binding describes an FSI CFAM engine called the SBEFIFO. Therefore this
++  node will always be a child of an FSI CFAM node; see fsi.txt for details on
++  FSI slave and CFAM nodes. This SBEFIFO engine provides an interface to the
++  POWER processor Self Boot Engine (SBE).
 +
-+static const struct sbefifo_data ody_sbefifo_data = {
-+	.need_async = false,
-+};
++properties:
++  compatible:
++    enum:
++      - ibm,p9-sbefifo
++      - ibm,ody-sbefifo
 +
-+static const struct of_device_id sbefifo_of_ids[] = {
-+	{
-+		.compatible = "ibm,p9-sbefifo",
-+		.data = &p9_sbefifo_data,
-+	},
-+	{
-+		.compatible = "ibm,ody-sbefifo",
-+		.data = &ody_sbefifo_data,
-+	},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sbefifo_of_ids);
++  reg:
++    items:
++      - description: FSI slave address
 +
- static const struct fsi_device_id sbefifo_ids[] = {
- 	{
- 		.engine_type = FSI_ENGID_SBE,
-@@ -1141,6 +1177,7 @@ static struct fsi_driver sbefifo_drv = {
- 	.drv = {
- 		.name = DEVICE_NAME,
- 		.bus = &fsi_bus_type,
-+		.of_match_table = sbefifo_of_ids,
- 		.probe = sbefifo_probe,
- 		.remove = sbefifo_remove,
- 	}
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    sbefifo at 2400 {
++        compatible = "ibm,p9-sbefifo";
++        reg = <0x2400 0x400>;
++    };
 -- 
 2.39.3
 
