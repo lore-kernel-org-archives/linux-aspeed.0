@@ -1,110 +1,61 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Fri, 12 Apr 2024 23:43:00 +0200
-Subject: [PATCH v2 2/4] dt-bindings: rtc: lpc32xx-rtc: convert to dtschema
-In-Reply-To: <130d47d8-3294-44be-9a8c-8474d342cb12@linaro.org>
-References: <20240410-rtc_dtschema-v2-0-d32a11ab0745@gmail.com>
- <20240410-rtc_dtschema-v2-2-d32a11ab0745@gmail.com>
- <202404102043571b7450b5@mail.local>
- <130d47d8-3294-44be-9a8c-8474d342cb12@linaro.org>
-Message-ID: <20240412214300a31799c2@mail.local>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Sat, 13 Apr 2024 09:47:32 +0200
+Subject: [PATCH 1/3] dt-bindings: fsi: Document the IBM SBEFIFO engine
+In-Reply-To: <20240412144358.204129-2-eajames@linux.ibm.com>
+References: <20240412144358.204129-1-eajames@linux.ibm.com>
+ <20240412144358.204129-2-eajames@linux.ibm.com>
+Message-ID: <2a3e4ef9-1e4b-4f9e-a2f3-0ac95db42fdf@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/04/2024 08:17:55+0200, Krzysztof Kozlowski wrote:
-> On 10/04/2024 22:43, Alexandre Belloni wrote:
-> > On 10/04/2024 17:55:34+0200, Javier Carrasco wrote:
-> >> Convert existing binding to dtschema to support validation.
-> >>
-> >> Add the undocumented 'clocks' property.
-> >>
-> >> Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
-> >> ---
-> >>  .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 --------
-> >>  .../devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml   | 41 ++++++++++++++++++++++
-> >>  2 files changed, 41 insertions(+), 15 deletions(-)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt b/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
-> >> deleted file mode 100644
-> >> index a87a1e9bc060..000000000000
-> >> --- a/Documentation/devicetree/bindings/rtc/lpc32xx-rtc.txt
-> >> +++ /dev/null
-> >> @@ -1,15 +0,0 @@
-> >> -* NXP LPC32xx SoC Real Time Clock controller
-> >> -
-> >> -Required properties:
-> >> -- compatible: must be "nxp,lpc3220-rtc"
-> >> -- reg: physical base address of the controller and length of memory mapped
-> >> -  region.
-> >> -- interrupts: The RTC interrupt
-> >> -
-> >> -Example:
-> >> -
-> >> -	rtc at 40024000 {
-> >> -		compatible = "nxp,lpc3220-rtc";
-> >> -		reg = <0x40024000 0x1000>;
-> >> -		interrupts = <52 0>;
-> >> -	};
-> >> diff --git a/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
-> >> new file mode 100644
-> >> index 000000000000..62ddeef961e9
-> >> --- /dev/null
-> >> +++ b/Documentation/devicetree/bindings/rtc/nxp,lpc32xx-rtc.yaml
-> >> @@ -0,0 +1,41 @@
-> >> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> >> +%YAML 1.2
-> >> +---
-> >> +$id: http://devicetree.org/schemas/rtc/nxp,lpc32xx-rtc.yaml#
-> >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> >> +
-> >> +title: NXP LPC32xx SoC Real Time Clock
-> >> +
-> >> +maintainers:
-> >> +  - Javier Carrasco <javier.carrasco.cruz@gmail.com>
-> >> +
-> >> +allOf:
-> >> +  - $ref: rtc.yaml#
-> >> +
-> >> +properties:
-> >> +  compatible:
-> >> +    const: nxp,lpc3220-rtc
-> >> +
-> >> +  reg:
-> >> +    maxItems: 1
-> >> +
-> >> +  interrupts:
-> >> +    maxItems: 1
-> >> +
-> >> +  clocks:
-> >> +    maxItems: 1
-> > 
-> > As I explained the clock doesn't really exist, there is no control over
-> > it, it is a fixed 32768 Hz crystal, there is no point in describing it
-> > as this is already the input clock of the SoC.
+On 12/04/2024 16:43, Eddie James wrote:
+> The SBEFIFO engine provides an interface to the POWER processor
+> Self Boto Engine (SBE).
+
+Boot?
+
 > 
-> That's common for many SoCs but it is still (at least for them) input to
-> the RTC. On some SoC boards 32 kHz is controllable.
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
+>  .../devicetree/bindings/fsi/ibm,sbefifo.yaml  | 39 +++++++++++++++++++
+>  1 file changed, 39 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
 > 
+> diff --git a/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
+> new file mode 100644
+> index 000000000000..d70012e42d79
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
+> @@ -0,0 +1,39 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/fsi/ibm,sbefifo.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: IBM FSI-attached SBEFIFO engine
+> +
+> +maintainers:
+> +  - Eddie James <eajames@linux.ibm.com>
+> +
+> +description: |
+> +  This binding describes an FSI CFAM engine called the SBEFIFO. Therefore this
 
-There is n way this can be controlled at the board level as the soc
-mandates a crystal. There is a control for the oscillator but it is not
-functional. This would be bit 5 of RTC_CTRL which is documented as such:
+Don't describe the binding, but the hardware. Drop redundant "This
+binding" and say what is the hardware here.
 
-"5 Not used. Write is don?t care, Read returns random value."
+> +  node will always be a child of an FSI CFAM node; see fsi.txt for details on
+> +  FSI slave and CFAM nodes. This SBEFIFO engine provides an interface to the
+> +  POWER processor Self Boot Engine (SBE).
+> +
 
-Even so, the clock wouldn't be an input to the RTC but it is provided by
-the RTC.
+With these two changes:
 
-I guess because it was easer to d so, the clock is defined in the clock
-controller driver:
-https://elixir.bootlin.com/linux/latest/source/drivers/clk/nxp/clk-lpc32xx.c#L1222
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-but, from an HW point of view, this is not correct.
+Best regards,
+Krzysztof
 
-
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
