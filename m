@@ -1,61 +1,52 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Sat, 13 Apr 2024 09:47:32 +0200
-Subject: [PATCH 1/3] dt-bindings: fsi: Document the IBM SBEFIFO engine
-In-Reply-To: <20240412144358.204129-2-eajames@linux.ibm.com>
-References: <20240412144358.204129-1-eajames@linux.ibm.com>
- <20240412144358.204129-2-eajames@linux.ibm.com>
-Message-ID: <2a3e4ef9-1e4b-4f9e-a2f3-0ac95db42fdf@kernel.org>
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Sat, 13 Apr 2024 10:33:53 +0200
+Subject: [PATCH 0/2] hwmon: (aspeed-g6-pwm-tacho): Prepare for further
+ pwm core changes
+In-Reply-To: <cover.1710777536.git.u.kleine-koenig@pengutronix.de>
+References: <cover.1710777536.git.u.kleine-koenig@pengutronix.de>
+Message-ID: <f43gbxbyjik76dzlwmjkcvfwdijzotctyngoidh7zb3xgog3ox@krm3avhdolhf>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/04/2024 16:43, Eddie James wrote:
-> The SBEFIFO engine provides an interface to the POWER processor
-> Self Boto Engine (SBE).
+Hello,
 
-Boot?
-
+On Mon, Mar 18, 2024 at 05:09:48PM +0100, Uwe Kleine-K?nig wrote:
+> there is a pending rework for the pwm framework[1] that requires a
+> preparatory change for all pwm drivers. When creating them I wasn't
+> aware of the aspeed-g6-pwm-tacho driver, just found this now while doing
+> build tests with my series.
 > 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  .../devicetree/bindings/fsi/ibm,sbefifo.yaml  | 39 +++++++++++++++++++
->  1 file changed, 39 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
+> To not delay application of my series, I'd like to take the two patches
+> from this series via my pwm tree.
 > 
-> diff --git a/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
-> new file mode 100644
-> index 000000000000..d70012e42d79
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/fsi/ibm,sbefifo.yaml
-> @@ -0,0 +1,39 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/fsi/ibm,sbefifo.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: IBM FSI-attached SBEFIFO engine
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +
-> +description: |
-> +  This binding describes an FSI CFAM engine called the SBEFIFO. Therefore this
+> To state the (maybe) obvious: This series depends on the following commits:
+> 
+> 	7e1449cd15d1 "hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED g6 PWM/Fan tach"
+> 	024913dbf99f pwm: Provide pwmchip_alloc() function and a devm variant of it
+> 	4e59267c7a20 pwm: Provide an inline function to get the parent device of a given chip
+> 
+> The earliest commit containing all those is:
+> 
+> 	15223fdbdf4f "Merge tag 'hwmon-for-v6.9' of git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging"
 
-Don't describe the binding, but the hardware. Drop redundant "This
-binding" and say what is the hardware here.
+I applied this series with Guenter's ack to my branch at
+https://git.kernel.org/pub/scm/linux/kernel/git/ukleinek/linux.git pwm/for-next
+. (Honestly I already did that a while ago, only noticed now that I
+didn't explicitly tell about that.)
 
-> +  node will always be a child of an FSI CFAM node; see fsi.txt for details on
-> +  FSI slave and CFAM nodes. This SBEFIFO engine provides an interface to the
-> +  POWER processor Self Boot Engine (SBE).
-> +
+Thanks
+Uwe
 
-With these two changes:
-
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-Best regards,
-Krzysztof
-
+-- 
+Pengutronix e.K.                           | Uwe Kleine-K?nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240413/382e61e4/attachment.sig>
