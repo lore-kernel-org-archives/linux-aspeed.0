@@ -1,75 +1,38 @@
 From: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 Date: Sat, 13 Apr 2024 20:22:51 -0000
-Subject: [PATCH v3 0/4] rtc: convert multiple bindings into dtschema
-Message-ID: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
+Subject: [PATCH v3 1/4] arm: dts: nxp: lpc: lpc32xx: drop 'clocks' form rtc
+In-Reply-To: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
+References: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
+Message-ID: <20240413-rtc_dtschema-v3-1-eff368bcc471@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series converts the following bindings into dtschema, moving them
-to trivial-rtc whenever possible:
-
-- google,goldfish-rtc: trivial-rtc, referenced in mips arch.
-- lpc32xx-rtc: trivial-rtc, referenced in arm arch.
-- maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
-- orion-rtc: trival-rtc, referenced in arm arch.
-- pxa-rtc: add missing properties and convert. Referenced in arm arch.
-- rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
-- st,spear600-rtc: trivial-rtc, referenced in arm arch.
-- stmp3xxx-rtc: add compatibles and convert, referenced in arm arch.
-- via,vt8500-rtc: trivial-rtc, referenced in arm arch.
-
-The only reference to the lpc32xx RTC makes use of a 'clocks' property
-that does not describe a controllable signal (it is in fact a fixed
-32768 Hz crystal, the input clock of the SoC). Remove this property to
-better describe the device and avoid errors when checking the dts
-against the RTC binding.
+The RTC does not provide a controllable clock signal (it uses a fixed
+32768 Hz crystal, the input clock of the SoC). Remove the 'clocks'
+property to better describe the device and avoid errors when checking
+the dts against the nxp,lpc3220-rtc binding.
 
 Signed-off-by: Javier Carrasco <javier.carrasco.cruz@gmail.com>
 ---
-Changes in v3:
-- Fix typo in commit description (rtc-aspeed).
-- Move lpc32xx-rtc to trivial-rtc again.
-- Remove 'clocks' property from the rtc node in lpc32xx.dtsi.
-- Link to v2: https://lore.kernel.org/r/20240410-rtc_dtschema-v2-0-d32a11ab0745 at gmail.com
+ arch/arm/boot/dts/nxp/lpc/lpc32xx.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
 
-Changes in v2:
-- General: squash all moves to trivial-rtc into a single patch.
-- MAINTAINERS: remove reference to google,goldfish-rtc.txt
-- lpc32xx-rtc: create own binding to add the undocumented 'clocks'
-  property.
-- fsl,stmp3xxx-rtc.yaml: document missing compatibles.
-- Link to v1: https://lore.kernel.org/r/20240408-rtc_dtschema-v1-0-c447542fc362 at gmail.com
+diff --git a/arch/arm/boot/dts/nxp/lpc/lpc32xx.dtsi b/arch/arm/boot/dts/nxp/lpc/lpc32xx.dtsi
+index 974410918f35..f78d67e672b4 100644
+--- a/arch/arm/boot/dts/nxp/lpc/lpc32xx.dtsi
++++ b/arch/arm/boot/dts/nxp/lpc/lpc32xx.dtsi
+@@ -384,7 +384,6 @@ rtc: rtc at 40024000 {
+ 				reg = <0x40024000 0x1000>;
+ 				interrupt-parent = <&sic1>;
+ 				interrupts = <20 IRQ_TYPE_LEVEL_HIGH>;
+-				clocks = <&clk LPC32XX_CLK_RTC>;
+ 			};
+ 
+ 			gpio: gpio at 40028000 {
 
----
-Javier Carrasco (4):
-      arm: dts: nxp: lpc: lpc32xx: drop 'clocks' form rtc
-      dt-bindings: rtc: convert trivial devices into dtschema
-      dt-bindings: rtc: pxa-rtc: convert to dtschema
-      dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
-
- .../devicetree/bindings/rtc/fsl,stmp3xxx-rtc.yaml  | 51 ++++++++++++++++++++++
- .../bindings/rtc/google,goldfish-rtc.txt           | 17 --------
- .../devicetree/bindings/rtc/lpc32xx-rtc.txt        | 15 -------
- .../devicetree/bindings/rtc/marvell,pxa-rtc.yaml   | 40 +++++++++++++++++
- .../devicetree/bindings/rtc/maxim,ds1742.txt       | 12 -----
- .../devicetree/bindings/rtc/orion-rtc.txt          | 18 --------
- Documentation/devicetree/bindings/rtc/pxa-rtc.txt  | 14 ------
- .../devicetree/bindings/rtc/rtc-aspeed.txt         | 22 ----------
- .../devicetree/bindings/rtc/spear-rtc.txt          | 15 -------
- .../devicetree/bindings/rtc/stmp3xxx-rtc.txt       | 21 ---------
- .../devicetree/bindings/rtc/trivial-rtc.yaml       | 18 ++++++++
- .../devicetree/bindings/rtc/via,vt8500-rtc.txt     | 15 -------
- MAINTAINERS                                        |  1 -
- arch/arm/boot/dts/nxp/lpc/lpc32xx.dtsi             |  1 -
- 14 files changed, 109 insertions(+), 151 deletions(-)
----
-base-commit: fec50db7033ea478773b159e0e2efb135270e3b7
-change-id: 20240406-rtc_dtschema-302824d1ec20
-
-Best regards,
 -- 
-Javier Carrasco <javier.carrasco.cruz@gmail.com>
+2.40.1
 
