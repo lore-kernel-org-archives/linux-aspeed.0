@@ -1,26 +1,73 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 15 Apr 2024 11:03:58 +0930
-Subject: [PATCH] ARM: dts: aspeed: Remove Facebook Cloudripper dts
-In-Reply-To: <20240411045622.7915-1-rentao.bupt@gmail.com>
-References: <20240411045622.7915-1-rentao.bupt@gmail.com>
-Message-ID: <7af48dcfba938ea45a78e8a23088a09a8eeeabdd.camel@codeconstruct.com.au>
+Date: Mon, 15 Apr 2024 11:30:14 +0930
+Subject: [PATCH v5 00/12] Revise Meta(Facebook) Harma BMC(AST2600)
+In-Reply-To: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
+References: <20240412091600.2534693-1-peteryin.openbmc@gmail.com>
+Message-ID: <3eb80a2f21a96cc0fc275db60631f673bb14e77f.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-04-10 at 21:56 -0700, rentao.bupt at gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
+On Fri, 2024-04-12 at 17:15 +0800, Peter Yin wrote:
+> Summary:
+> Revise linux device tree entry related to Meta(Facebook) Harma
+> specific devices connected to BMC(AST2600) SoC.
 > 
-> Remove Facebook Cloudripper dts because the switch platform is not
-> actively maintained (all the units are deprecated).
+> Base on : https://lore.kernel.org/all/CACPK8XePx+PvDKzPMjPRn_g9z8yrtAmLvP8Qbepm1AVjuCbaKw at mail.gmail.com/
 > 
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> Change log:
+> 
+> v4 -> v5
+>   - Patch 0011 - Add retimer device
+>   - Patch 0012 - Modify gpio line name
+> 
+> v3 -> v4
+>   - Patch 0010 - Revise node name
+>   - fixed PDB temperature node name in Patch 0006
+> 
+> v2 -> v3
+>   - Patch 0007 - Revise max31790 address
+>   - Patch 0008 - Harma: Add NIC Fru device
+>   - Patch 0009 - Add ltc4286 device
+> 
+> v1 -> v2
+>   - Add infineon,slb9670 information for tpm.
+>   - Patch 0006 - Add PDB temperature.
+> 
+> v1
+>   - Patch 0001 - Revise SGPIO line name.
+>   - Patch 0002 - Mapping ttyS2 to UART4.
+>   - Patch 0003 - Remove Vuart.
+>   - Patch 0004 - Add cpu power good line name.
+>   - Patch 0005 - Add spi-gpio.
+> 
+> Peter Yin (12):
+>   ARM: dts: aspeed: Harma: Revise SGPIO line name.
+>   ARM: dts: aspeed: Harma: mapping ttyS2 to UART4.
+>   ARM: dts: aspeed: Harma: Remove Vuart
+>   ARM: dts: aspeed: Harma: Add cpu power good line name
+>   ARM: dts: aspeed: Harma: Add spi-gpio
+>   ARM: dts: aspeed: Harma: Add PDB temperature
+>   ARM: dts: aspeed: Harma: Revise max31790 address
+>   ARM: dts: aspeed: Harma: Add NIC Fru device
+>   ARM: dts: aspeed: Harma: Add ltc4286 device
+>   ARM: dts: aspeed: Harma: Revise node name
+>   ARM: dts: aspeed: Harma: Add retimer device
+>   ARM: dts: aspeed: Harma: Modify GPIO line name
+> 
+>  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 107 ++++++++++++++----
+>  1 file changed, 85 insertions(+), 22 deletions(-)
+> 
 
-I've applied this to my tree to be picked up by Joel.
+Joel had applied an earlier version of this series to his for-next
+branch. I'm collecting patches targeting it while he's on leave. I've
+updated the series he'd applied to the v5 you've posted here.
+
+Can you please post any further changes as patches on top? You can find
+my branch here:
+
+https://github.com/amboar/linux/tree/for/bmc/dt-6.10
 
 Andrew
-
-PS: Sorry if you already have mail saying as much, I ran into issues
-with our mail server late last week.
