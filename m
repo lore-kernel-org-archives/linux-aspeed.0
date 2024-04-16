@@ -1,57 +1,52 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Tue, 16 Apr 2024 09:32:30 +0930
-Subject: [PATCH v2] ARM: dts: aspeed: Add IBM P11 BMC boards
-In-Reply-To: <20240415154931.10775-1-eajames@linux.ibm.com>
-References: <20240415154931.10775-1-eajames@linux.ibm.com>
-Message-ID: <48ad6bcccae315e68bc0aa10669eed645c495139.camel@codeconstruct.com.au>
+Date: Tue, 16 Apr 2024 09:36:33 +0930
+Subject: [PATCH 3/3] ARM: dts: aspeed: Update Odyssey SBEFIFO compatible
+ strings
+In-Reply-To: <0363badd-f5b0-42bd-bdd5-de6e7b5ee8c6@linux.ibm.com>
+References: <20240412144358.204129-1-eajames@linux.ibm.com>
+	 <20240412144358.204129-4-eajames@linux.ibm.com>
+	 <5c6f58cc13492988d307504d55cc5d31a512ab8c.camel@codeconstruct.com.au>
+	 <0363badd-f5b0-42bd-bdd5-de6e7b5ee8c6@linux.ibm.com>
+Message-ID: <90ced7e271213da481f7c0ec883d0189671563e8.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2024-04-15 at 10:49 -0500, Eddie James wrote:
-> Add the Blueridge and Fuji BMC systems.
+On Mon, 2024-04-15 at 09:59 -0500, Eddie James wrote:
+> On 4/14/24 19:54, Andrew Jeffery wrote:
+> > On Fri, 2024-04-12 at 09:43 -0500, Eddie James wrote:
+> > > Set the new compatible string for Odyssey SBEFIFOs so that they
+> > > don't collect async FFDC.
+> > > 
+> > > Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> > > ---
+> > >   .../dts/aspeed/aspeed-bmc-ibm-everest.dts     | 64 +++++++++----------
+> > >   .../arm/boot/dts/aspeed/ibm-power10-quad.dtsi | 64 +++++++++----------
+> > >   2 files changed, 64 insertions(+), 64 deletions(-)
+> > > 
+> > > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+> > > index 214b2e6a4c6d..3a2bfdf035cb 100644
+> > > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+> > > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+> > > @@ -2545,7 +2545,7 @@ scom500: scom at 1000 {
+> > >   						};
+> > >   
+> > >   						sbefifo500: sbefifo at 2400 {
+> > > -							compatible = "ibm,p9-sbefifo";
+> > > +							compatible = "ibm,ody-sbefifo";
+> > >   							reg = <0x2400 0x400>;
+> > >   							#address-cells = <1>;
+> > >   							#size-cells = <0>;
+> > 
+> > Bit of a drive-by comment as I'm not really holding any stakes here,
+> > but did the hardware actually change?
 > 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
-> Changes since v1:
->  - Change "ody" to "odyssey"
 > 
->  arch/arm/boot/dts/aspeed/Makefile             |    2 +
->  .../dts/aspeed/aspeed-bmc-ibm-blueridge.dts   | 1752 +++++++
->  .../boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts   | 4016 +++++++++++++++++
->  .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 1704 +++++++
->  4 files changed, 7474 insertions(+)
+> Yes, the hardware did change in the Odyssey version.
 
-A few points:
-
-- Altogether this patch is pretty large. Can we do one for each of the
-FSI topology and the platforms?
-
-- The only list to which you've sent the patch is linux-aspeed, which
-doesn't appear to be archived on lore. Can you please add at least one
-that is? There are a few that should probably be included regardless.
-
-- I don't plan to merge the patch until it has had review from ideally
-more than one other IBMer
-
-On the review front:
-
-It looks like you still need to update
-Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml with the new
-platform compatible strings.
-
-Also, can you please run?
-
-```
-make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-{blueridge,fuji}.dtb
-```
-
-and address the warnings? This is best done by first applying the patch
-on top of my tree below. It goes some way to eliminating many of the
-warnings currently produced for the Aspeed BMC SoCs:
-
-https://github.com/amboar/linux/tree/dt-warnings/all
+Should there not be a new platform DTS then? Seems a bit puzzling, but
+again this is a bit of a drive-by comment.
 
 Andrew
