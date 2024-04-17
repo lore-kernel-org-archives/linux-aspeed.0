@@ -1,42 +1,62 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 17 Apr 2024 06:45:54 +0800
-Subject: [PATCH 2/9] dt-bindings: rtc: google,goldfish-rtc: move to
- trivial-rtc
-In-Reply-To: <20240408-rtc_dtschema-v1-2-c447542fc362@gmail.com>
-References: <20240408-rtc_dtschema-v1-2-c447542fc362@gmail.com>
-Message-ID: <202404170656.LoL9eBYs-lkp@intel.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 17 Apr 2024 16:32:01 +0930
+Subject: [PATCH 3/3] ARM: dts: aspeed: Update Odyssey SBEFIFO compatible
+ strings
+In-Reply-To: <2ee4084d-1891-4ea4-ba3d-b99ee1d7b5fb@linux.ibm.com>
+References: <20240412144358.204129-1-eajames@linux.ibm.com>
+	 <20240412144358.204129-4-eajames@linux.ibm.com>
+	 <5c6f58cc13492988d307504d55cc5d31a512ab8c.camel@codeconstruct.com.au>
+	 <0363badd-f5b0-42bd-bdd5-de6e7b5ee8c6@linux.ibm.com>
+	 <90ced7e271213da481f7c0ec883d0189671563e8.camel@codeconstruct.com.au>
+	 <2ee4084d-1891-4ea4-ba3d-b99ee1d7b5fb@linux.ibm.com>
+Message-ID: <a935d2a6ec3b0ab847b662d05bcea8408077511d.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Javier,
+On Tue, 2024-04-16 at 09:48 -0500, Eddie James wrote:
+> On 4/15/24 19:06, Andrew Jeffery wrote:
+> > On Mon, 2024-04-15 at 09:59 -0500, Eddie James wrote:
+> > > On 4/14/24 19:54, Andrew Jeffery wrote:
+> > > > On Fri, 2024-04-12 at 09:43 -0500, Eddie James wrote:
+> > > > > Set the new compatible string for Odyssey SBEFIFOs so that they
+> > > > > don't collect async FFDC.
+> > > > > 
+> > > > > Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> > > > > ---
+> > > > >    .../dts/aspeed/aspeed-bmc-ibm-everest.dts     | 64 +++++++++----------
+> > > > >    .../arm/boot/dts/aspeed/ibm-power10-quad.dtsi | 64 +++++++++----------
+> > > > >    2 files changed, 64 insertions(+), 64 deletions(-)
+> > > > > 
+> > > > > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+> > > > > index 214b2e6a4c6d..3a2bfdf035cb 100644
+> > > > > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+> > > > > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+> > > > > @@ -2545,7 +2545,7 @@ scom500: scom at 1000 {
+> > > > >    						};
+> > > > >    
+> > > > >    						sbefifo500: sbefifo at 2400 {
+> > > > > -							compatible = "ibm,p9-sbefifo";
+> > > > > +							compatible = "ibm,ody-sbefifo";
+> > > > >    							reg = <0x2400 0x400>;
+> > > > >    							#address-cells = <1>;
+> > > > >    							#size-cells = <0>;
+> > > > Bit of a drive-by comment as I'm not really holding any stakes here,
+> > > > but did the hardware actually change?
+> > > 
+> > > Yes, the hardware did change in the Odyssey version.
+> > Should there not be a new platform DTS then? Seems a bit puzzling, but
+> > again this is a bit of a drive-by comment.
+> 
+> 
+> Ah, I should clarify. The SBE hardware was changed between P9/P10 and 
+> Odyssey versions. The Odyssey hasn't changed. The difference in the SBE 
+> wasn't apparent when we initially added support for Odyssey, so this is 
+> effectively a bug fix on the new hardware. There is no new platform.
 
-kernel test robot noticed the following build warnings:
+That sounds like good info for the commit message. Do you mind updating
+it?
 
-[auto build test WARNING on fec50db7033ea478773b159e0e2efb135270e3b7]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Javier-Carrasco/dt-bindings-rtc-orion-rtc-move-to-trivial-rtc/20240408-235612
-base:   fec50db7033ea478773b159e0e2efb135270e3b7
-patch link:    https://lore.kernel.org/r/20240408-rtc_dtschema-v1-2-c447542fc362%40gmail.com
-patch subject: [PATCH 2/9] dt-bindings: rtc: google,goldfish-rtc: move to trivial-rtc
-reproduce: (https://download.01.org/0day-ci/archive/20240417/202404170656.LoL9eBYs-lkp at intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202404170656.LoL9eBYs-lkp at intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   Warning: Documentation/devicetree/bindings/power/wakeup-source.txt references a file that doesn't exist: Documentation/devicetree/bindings/input/qcom,pm8xxx-keypad.txt
-   Warning: Documentation/devicetree/bindings/regulator/siliconmitus,sm5703-regulator.yaml references a file that doesn't exist: Documentation/devicetree/bindings/mfd/siliconmitus,sm5703.yaml
-   Warning: Documentation/devicetree/bindings/sound/fsl-asoc-card.txt references a file that doesn't exist: Documentation/devicetree/bindings/sound/fsl,asrc.txt
-   Warning: Documentation/gpu/amdgpu/display/display-contributing.rst references a file that doesn't exist: Documentation/GPU/amdgpu/display/mpo-overview.rst
->> Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/rtc/google,goldfish-rtc.txt
-   Using alabaster theme
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Andrew
