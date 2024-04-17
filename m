@@ -1,44 +1,26 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Wed, 17 Apr 2024 21:36:31 +0200
-Subject: (subset) [PATCH v3 0/4] rtc: convert multiple bindings into
- dtschema
-In-Reply-To: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
-References: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
-Message-ID: <171338250318.37347.8193747079895691565.b4-ty@bootlin.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Thu, 18 Apr 2024 09:11:47 +0930
+Subject: [PATCH] peci: aspeed: Clear clock_divider value before setting
+ it
+In-Reply-To: <20240417134849.5793-1-iwona.winiarska@intel.com>
+References: <20240417134849.5793-1-iwona.winiarska@intel.com>
+Message-ID: <7b0ef5c90138e8c1d1829de249a480709170141b.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 13 Apr 2024 22:22:15 +0200, Javier Carrasco wrote:
-> This series converts the following bindings into dtschema, moving them
-> to trivial-rtc whenever possible:
+Hi Iwona,
+
+On Wed, 2024-04-17 at 15:48 +0200, Iwona Winiarska wrote:
+> PECI clock divider is programmed on 10:8 bits of PECI Control register.
+> Before setting a new value, clear bits read from hardware.
 > 
-> - google,goldfish-rtc: trivial-rtc, referenced in mips arch.
-> - lpc32xx-rtc: trivial-rtc, referenced in arm arch.
-> - maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
-> - orion-rtc: trival-rtc, referenced in arm arch.
-> - pxa-rtc: add missing properties and convert. Referenced in arm arch.
-> - rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
-> - st,spear600-rtc: trivial-rtc, referenced in arm arch.
-> - stmp3xxx-rtc: add compatibles and convert, referenced in arm arch.
-> - via,vt8500-rtc: trivial-rtc, referenced in arm arch.
-> 
-> [...]
+> Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
 
-Applied, thanks!
+I think it would be best to add a Fixes: tag and Cc: stable in
+accordance with the stable tree rules. Are you happy to do so?
 
-[3/4] dt-bindings: rtc: pxa-rtc: convert to dtschema
-      https://git.kernel.org/abelloni/c/bbd3e43662d7
-[4/4] dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
-      https://git.kernel.org/abelloni/c/c3a0ee85f6e3
-[2/4] dt-bindings: rtc: convert trivial devices into dtschema
-      https://git.kernel.org/abelloni/c/1c431b92e21b
+Andrew
 
-Best regards,
-
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
