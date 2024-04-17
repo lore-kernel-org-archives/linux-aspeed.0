@@ -1,33 +1,44 @@
-From: Iwona Winiarska <iwona.winiarska@intel.com>
-Date: Wed, 17 Apr 2024 15:48:49 +0200
-Subject: [PATCH] peci: aspeed: Clear clock_divider value before setting it
-Message-ID: <20240417134849.5793-1-iwona.winiarska@intel.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Date: Wed, 17 Apr 2024 21:36:31 +0200
+Subject: (subset) [PATCH v3 0/4] rtc: convert multiple bindings into
+ dtschema
+In-Reply-To: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
+References: <20240413-rtc_dtschema-v3-0-eff368bcc471@gmail.com>
+Message-ID: <171338250318.37347.8193747079895691565.b4-ty@bootlin.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-PECI clock divider is programmed on 10:8 bits of PECI Control register.
-Before setting a new value, clear bits read from hardware.
+On Sat, 13 Apr 2024 22:22:15 +0200, Javier Carrasco wrote:
+> This series converts the following bindings into dtschema, moving them
+> to trivial-rtc whenever possible:
+> 
+> - google,goldfish-rtc: trivial-rtc, referenced in mips arch.
+> - lpc32xx-rtc: trivial-rtc, referenced in arm arch.
+> - maxim,ds1742: trivial-rtc, not referenced in arch, cheap conversion.
+> - orion-rtc: trival-rtc, referenced in arm arch.
+> - pxa-rtc: add missing properties and convert. Referenced in arm arch.
+> - rtc-aspeed: 3 devices to trivial-rtc, all referenced in arm arch.
+> - st,spear600-rtc: trivial-rtc, referenced in arm arch.
+> - stmp3xxx-rtc: add compatibles and convert, referenced in arm arch.
+> - via,vt8500-rtc: trivial-rtc, referenced in arm arch.
+> 
+> [...]
 
-Signed-off-by: Iwona Winiarska <iwona.winiarska@intel.com>
----
- drivers/peci/controller/peci-aspeed.c | 1 +
- 1 file changed, 1 insertion(+)
+Applied, thanks!
 
-diff --git a/drivers/peci/controller/peci-aspeed.c b/drivers/peci/controller/peci-aspeed.c
-index 7fdc25afcf2f..de7046e6b9c4 100644
---- a/drivers/peci/controller/peci-aspeed.c
-+++ b/drivers/peci/controller/peci-aspeed.c
-@@ -351,6 +351,7 @@ static int clk_aspeed_peci_set_rate(struct clk_hw *hw, unsigned long rate,
- 	clk_aspeed_peci_find_div_values(this_rate, &msg_timing, &clk_div_exp);
- 
- 	val = readl(aspeed_peci->base + ASPEED_PECI_CTRL);
-+	val &= ~ASPEED_PECI_CTRL_CLK_DIV_MASK;
- 	val |= FIELD_PREP(ASPEED_PECI_CTRL_CLK_DIV_MASK, clk_div_exp);
- 	writel(val, aspeed_peci->base + ASPEED_PECI_CTRL);
- 
+[3/4] dt-bindings: rtc: pxa-rtc: convert to dtschema
+      https://git.kernel.org/abelloni/c/bbd3e43662d7
+[4/4] dt-bindings: rtc: stmp3xxx-rtc: convert to dtschema
+      https://git.kernel.org/abelloni/c/c3a0ee85f6e3
+[2/4] dt-bindings: rtc: convert trivial devices into dtschema
+      https://git.kernel.org/abelloni/c/1c431b92e21b
+
+Best regards,
+
 -- 
-2.44.0
-
+Alexandre Belloni, co-owner and COO, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
