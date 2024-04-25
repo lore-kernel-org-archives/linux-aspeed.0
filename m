@@ -1,145 +1,95 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 25 Apr 2024 16:36:55 -0500
-Subject: [PATCH v3 08/14] dt-bindings: fsi: ast2600-fsi-master: Switch to yaml format
+Date: Thu, 25 Apr 2024 16:36:52 -0500
+Subject: [PATCH v3 05/14] dt-bindings: fsi: Document the IBM SBEFIFO engine
 In-Reply-To: <20240425213701.655540-1-eajames@linux.ibm.com>
 References: <20240425213701.655540-1-eajames@linux.ibm.com>
-Message-ID: <20240425213701.655540-9-eajames@linux.ibm.com>
+Message-ID: <20240425213701.655540-6-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Switch to yaml for the AST2600 FSI master documentation.
+The SBEFIFO engine provides an interface to the POWER processor
+Self Boot Engine (SBE).
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 ---
- .../fsi/aspeed,ast2600-fsi-master.yaml        | 72 +++++++++++++++++++
- .../bindings/fsi/fsi-master-aspeed.txt        | 36 ----------
- 2 files changed, 72 insertions(+), 36 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
- delete mode 100644 Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
+Changes since v1:
+ - Chance "ody" to "odyssey"
+ - Fix typo in commit message
+ - Reword description to describe the hardware only
 
-diff --git a/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+Changes since v2:
+ - Rename file
+ - Remove '|' after description
+ - Change generic node name to match fsi.txt
+
+Changes since sending in the Odyssey SBEFIFO series:
+ - Add occ child node documentation
+
+ .../bindings/fsi/ibm,p9-sbefifo.yaml          | 50 +++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
+
+diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
 new file mode 100644
-index 000000000000..f053e3e1d259
+index 000000000000..72569147db2a
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
-@@ -0,0 +1,72 @@
++++ b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
+@@ -0,0 +1,50 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
++$id: http://devicetree.org/schemas/fsi/ibm,p9-sbefifo.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Aspeed FSI master
++title: IBM FSI-attached SBEFIFO engine
 +
 +maintainers:
 +  - Eddie James <eajames@linux.ibm.com>
 +
 +description:
-+  The AST2600 and later contain two identical FSI masters. They share a
-+  clock and have a separate interrupt line and output pins.
++  The SBEFIFO is an FSI CFAM engine that provides an interface to the
++  POWER processor Self Boot Engine (SBE). This node will always be a child
++  of an FSI CFAM node; see fsi.txt for details on FSI slave and CFAM
++  nodes.
 +
 +properties:
 +  compatible:
 +    enum:
-+      - "aspeed,ast2600-fsi-master"
-+      - "aspeed,ast2700-fsi-master"
++      - ibm,p9-sbefifo
++      - ibm,odyssey-sbefifo
 +
 +  reg:
-+    maxItems: 1
++    items:
++      - description: FSI slave address
 +
-+  clocks:
-+    maxItems: 1
++  "#address-cells":
++    const: 1
 +
-+  cfam-reset-gpios:
-+    maxItems: 1
-+    description:
-+      Output GPIO pin for CFAM reset
++  "#size-cells":
++    const: 0
 +
-+  fsi-routing-gpios:
-+    maxItems: 1
-+    description:
-+      Output GPIO pin for setting the FSI mux (internal or cabled)
-+
-+  fsi-mux-gpios:
-+    maxItems: 1
-+    description:
-+      Input GPIO pin for detecting the desired FSI mux state
-+
-+  interrupts:
-+    maxItems: 1
-+
-+allOf:
-+  - $ref: fsi-controller.yaml#
++patternProperties:
++  "^occ(@.*)?":
++    type: object
++    $ref: ibm,p9-occ.yaml#
 +
 +required:
 +  - compatible
 +  - reg
-+  - clocks
-+  - interrupts
 +
-+unevaluatedProperties: false
++additionalProperties: false
 +
 +examples:
 +  - |
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+    #include <dt-bindings/gpio/aspeed-gpio.h>
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    fsi-master at 1e79b000 {
-+        compatible = "aspeed,ast2600-fsi-master";
-+        reg = <0x1e79b000 0x94>;
-+        interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_fsi1_default>;
-+        clocks = <&syscon ASPEED_CLK_GATE_FSICLK>;
-+        fsi-routing-gpios = <&gpio0 ASPEED_GPIO(Q, 7) GPIO_ACTIVE_HIGH>;
-+        fsi-mux-gpios = <&gpio0 ASPEED_GPIO(B, 0) GPIO_ACTIVE_HIGH>;
-+        cfam-reset-gpios = <&gpio0 ASPEED_GPIO(Q, 0) GPIO_ACTIVE_LOW>;
++    fsi-slave-engine at 2400 {
++        compatible = "ibm,p9-sbefifo";
++        reg = <0x2400 0x400>;
 +    };
-diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt b/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
-deleted file mode 100644
-index 9853fefff5d8..000000000000
---- a/Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
-+++ /dev/null
-@@ -1,36 +0,0 @@
--Device-tree bindings for AST2600 FSI master
---------------------------------------------
--
--The AST2600 contains two identical FSI masters. They share a clock and have a
--separate interrupt line and output pins.
--
--Required properties:
-- - compatible: "aspeed,ast2600-fsi-master"
-- - reg: base address and length
-- - clocks: phandle and clock number
-- - interrupts: platform dependent interrupt description
-- - pinctrl-0: phandle to pinctrl node
-- - pinctrl-names: pinctrl state
--
--Optional properties:
-- - cfam-reset-gpios: GPIO for CFAM reset
--
-- - fsi-routing-gpios: GPIO for setting the FSI mux (internal or cabled)
-- - fsi-mux-gpios: GPIO for detecting the desired FSI mux state
--
--
--Examples:
--
--    fsi-master {
--        compatible = "aspeed,ast2600-fsi-master", "fsi-master";
--        reg = <0x1e79b000 0x94>;
--	interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_fsi1_default>;
--	clocks = <&syscon ASPEED_CLK_GATE_FSICLK>;
--
--	fsi-routing-gpios = <&gpio0 ASPEED_GPIO(Q, 7) GPIO_ACTIVE_HIGH>;
--	fsi-mux-gpios = <&gpio0 ASPEED_GPIO(B, 0) GPIO_ACTIVE_HIGH>;
--
--	cfam-reset-gpios = <&gpio0 ASPEED_GPIO(Q, 0) GPIO_ACTIVE_LOW>;
--    };
 -- 
 2.39.3
 
