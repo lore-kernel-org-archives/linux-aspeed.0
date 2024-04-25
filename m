@@ -1,46 +1,32 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 25 Apr 2024 16:36:49 -0500
-Subject: [PATCH v3 02/14] dt-bindings: fsi: fsi2spi: Document SPI controller child nodes
-In-Reply-To: <20240425213701.655540-1-eajames@linux.ibm.com>
-References: <20240425213701.655540-1-eajames@linux.ibm.com>
-Message-ID: <20240425213701.655540-3-eajames@linux.ibm.com>
+Date: Thu, 25 Apr 2024 16:38:36 -0500
+Subject: [PATCH v3 1/3] dt-bindings: fsi: Document the IBM SBEFIFO engine
+In-Reply-To: <0aec6a507b9288cdc0f890164951c730f6f430d1.camel@codeconstruct.com.au>
+References: <20240419211143.1039868-1-eajames@linux.ibm.com>
+ <20240419211143.1039868-2-eajames@linux.ibm.com>
+ <0aec6a507b9288cdc0f890164951c730f6f430d1.camel@codeconstruct.com.au>
+Message-ID: <6c2f8ee1-ec59-4ec4-8d0c-507d98225dd6@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The FSI2SPI bridge has several SPI controllers behind it, which
-should be documented. Also, therefore the node needs to specify
-address and size cells.
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- .../devicetree/bindings/fsi/ibm,fsi2spi.yaml          | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+On 4/21/24 18:02, Andrew Jeffery wrote:
+> On Fri, 2024-04-19 at 16:11 -0500, Eddie James wrote:
+>> The SBEFIFO engine provides an interface to the POWER processor
+>> Self Boot Engine (SBE).
+>>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-diff --git a/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml b/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
-index e2ca0b000471..512d6d4dff3c 100644
---- a/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
-+++ b/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
-@@ -24,6 +24,17 @@ properties:
-     items:
-       - description: FSI slave address
- 
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+patternProperties:
-+  "^spi@[0-9a-f]+$":
-+    $ref: /schemas/spi/ibm,p10-spi.yaml
-+    description: Child node describing underlying SPI controller
-+
- required:
-   - compatible
-   - reg
--- 
-2.39.3
+
+I'm sending this patch in my new series for P11 BMC systems, with an 
+additional change for the OCC child nodes. Hopefully that's OK, I kept 
+the tags.
+
+
+Eddie
+
 
