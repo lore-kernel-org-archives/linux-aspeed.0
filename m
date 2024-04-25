@@ -1,11 +1,11 @@
 From: Rob Herring <robh@kernel.org>
-Date: Thu, 25 Apr 2024 18:39:57 -0500
-Subject: [PATCH v3 01/14] dt-bindings: spi: Document the IBM Power SPI
- controller
-In-Reply-To: <20240425213701.655540-2-eajames@linux.ibm.com>
+Date: Thu, 25 Apr 2024 18:40:00 -0500
+Subject: [PATCH v3 06/14] dt-bindings: fsi: Document the FSI controller
+ common properties
+In-Reply-To: <20240425213701.655540-7-eajames@linux.ibm.com>
 References: <20240425213701.655540-1-eajames@linux.ibm.com>
- <20240425213701.655540-2-eajames@linux.ibm.com>
-Message-ID: <171408839602.3902645.11975304379095234562.robh@kernel.org>
+ <20240425213701.655540-7-eajames@linux.ibm.com>
+Message-ID: <171408839666.3902693.1860621022882259895.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,14 +13,16 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On Thu, 25 Apr 2024 16:36:48 -0500, Eddie James wrote:
-> The IBM Power chips have a basic SPI controller. Document it.
+On Thu, 25 Apr 2024 16:36:53 -0500, Eddie James wrote:
+> Since there are multiple FSI controllers documented, the common
+> properties should be documented separately and then referenced
+> from the specific controller documentation.
 > 
 > Signed-off-by: Eddie James <eajames@linux.ibm.com>
 > ---
->  .../devicetree/bindings/spi/ibm,p10-spi.yaml  | 56 +++++++++++++++++++
->  1 file changed, 56 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/spi/ibm,p10-spi.yaml
+>  .../bindings/fsi/fsi-controller.yaml          | 65 +++++++++++++++++++
+>  1 file changed, 65 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/fsi/fsi-controller.yaml
 > 
 
 My bot found errors running 'make dt_binding_check' on your patch:
@@ -28,12 +30,11 @@ My bot found errors running 'make dt_binding_check' on your patch:
 yamllint warnings/errors:
 
 dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/spi/ibm,p10-spi.example.dtb: fsi2spi at 1c00: '#address-cells', '#size-cells', 'spi at 0' do not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/fsi/ibm,fsi2spi.yaml#
+Documentation/devicetree/bindings/fsi/fsi-controller.example.dtb: /example-0/fsi at 3400: failed to match any schema with compatible: ['fsi-controller']
 
 doc reference errors (make refcheckdocs):
 
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240425213701.655540-2-eajames at linux.ibm.com
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240425213701.655540-7-eajames at linux.ibm.com
 
 The base for the series is generally the latest rc1. A different dependency
 should be noted in *this* patch.
