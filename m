@@ -1,134 +1,71 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 25 Apr 2024 16:36:57 -0500
-Subject: [PATCH v3 10/14] dt-bindings: i2c: i2c-fsi: Switch to yaml format
+Date: Thu, 25 Apr 2024 16:36:56 -0500
+Subject: [PATCH v3 09/14] dt-bindings: fsi: Document the FSI Hub Controller
 In-Reply-To: <20240425213701.655540-1-eajames@linux.ibm.com>
 References: <20240425213701.655540-1-eajames@linux.ibm.com>
-Message-ID: <20240425213701.655540-11-eajames@linux.ibm.com>
+Message-ID: <20240425213701.655540-10-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Switch to yaml for the FSI-attached I2C controller.
+Document the FSI Hub Controller CFAM engine.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- .../devicetree/bindings/i2c/i2c-fsi.txt       | 40 -------------
- .../devicetree/bindings/i2c/ibm,i2c-fsi.yaml  | 59 +++++++++++++++++++
- 2 files changed, 59 insertions(+), 40 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-fsi.txt
- create mode 100644 Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
+ .../bindings/fsi/ibm,hub-fsi-controller.yaml  | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fsi/ibm,hub-fsi-controller.yaml
 
-diff --git a/Documentation/devicetree/bindings/i2c/i2c-fsi.txt b/Documentation/devicetree/bindings/i2c/i2c-fsi.txt
-deleted file mode 100644
-index b1be2ceb7e69..000000000000
---- a/Documentation/devicetree/bindings/i2c/i2c-fsi.txt
-+++ /dev/null
-@@ -1,40 +0,0 @@
--Device-tree bindings for FSI-attached I2C master and busses
-------------------------------------------------------------
--
--Required properties:
-- - compatible = "ibm,i2c-fsi";
-- - reg = < address size >;		: The FSI CFAM address and address
--					  space size.
-- - #address-cells = <1>;		: Number of address cells in child
--					  nodes.
-- - #size-cells = <0>;			: Number of size cells in child nodes.
-- - child nodes				: Nodes to describe busses off the I2C
--					  master.
--
--Child node required properties:
-- - reg = < port number >		: The port number on the I2C master.
--
--Child node optional properties:
-- - child nodes				: Nodes to describe devices on the I2C
--					  bus.
--
--Examples:
--
--    i2c at 1800 {
--        compatible = "ibm,i2c-fsi";
--        reg = < 0x1800 0x400 >;
--        #address-cells = <1>;
--        #size-cells = <0>;
--
--        i2c-bus at 0 {
--            reg = <0>;
--        };
--
--        i2c-bus at 1 {
--            reg = <1>;
--
--            eeprom at 50 {
--                compatible = "vendor,dev-name";
--            };
--        };
--    };
-diff --git a/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
+diff --git a/Documentation/devicetree/bindings/fsi/ibm,hub-fsi-controller.yaml b/Documentation/devicetree/bindings/fsi/ibm,hub-fsi-controller.yaml
 new file mode 100644
-index 000000000000..473a45de1b6c
+index 000000000000..d96d777d4d9f
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
-@@ -0,0 +1,59 @@
++++ b/Documentation/devicetree/bindings/fsi/ibm,hub-fsi-controller.yaml
+@@ -0,0 +1,44 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/i2c/ibm,i2c-fsi.yaml#
++$id: http://devicetree.org/schemas/fsi/ibm,hub-fsi-controller.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: IBM FSI-attached I2C controller
++title: IBM FSI-attached FSI Hub Controller
 +
 +maintainers:
 +  - Eddie James <eajames@linux.ibm.com>
 +
-+description:
-+  This I2C controller is an FSI CFAM engine, providing access to a number of
-+  I2C busses. Therefore this node will always be a child of an FSI CFAM node;
-+  see fsi.txt for details on FSI slave and CFAM nodes.
++description: |
++  The FSI Hub Controller is an FSI controller, providing a number of FSI links,
++  located on a CFAM. Therefore this node will always be a child of an FSI CFAM
++  node.
 +
 +properties:
 +  compatible:
 +    enum:
-+      - ibm,i2c-fsi
++      - ibm,hub-fsi-controller
 +
 +  reg:
 +    items:
 +      - description: FSI slave address
 +
-+required:
-+  - compatible
-+  - reg
-+
 +allOf:
-+  - $ref: /schemas/i2c/i2c-controller.yaml#
++  - $ref: fsi-controller.yaml#
 +
 +unevaluatedProperties: false
 +
 +examples:
 +  - |
-+    i2c at 1800 {
-+        compatible = "ibm,i2c-fsi";
-+        reg = <0x1800 0x400>;
-+        #address-cells = <1>;
++   fsi at 3400 {
++        #address-cells = <2>;
 +        #size-cells = <0>;
++        compatible = "ibm,hub-fsi-controller";
++        reg = <0x3400 0x400>;
 +
-+        i2c-bus at 0 {
++        cfam at 0,0 {
 +            #address-cells = <1>;
-+            #size-cells = <0>;
-+            reg = <0>;
-+        };
-+
-+        i2c-bus at 1 {
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+            reg = <1>;
-+
-+            eeprom at 50 {
-+                compatible = "atmel,24c64";
-+                reg = <0x50>;
-+            };
++            #size-cells = <1>;
++            reg = <0 0>;
 +        };
 +    };
 -- 
