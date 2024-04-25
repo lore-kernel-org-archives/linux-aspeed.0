@@ -1,32 +1,36 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 25 Apr 2024 16:38:36 -0500
-Subject: [PATCH v3 1/3] dt-bindings: fsi: Document the IBM SBEFIFO engine
-In-Reply-To: <0aec6a507b9288cdc0f890164951c730f6f430d1.camel@codeconstruct.com.au>
-References: <20240419211143.1039868-1-eajames@linux.ibm.com>
- <20240419211143.1039868-2-eajames@linux.ibm.com>
- <0aec6a507b9288cdc0f890164951c730f6f430d1.camel@codeconstruct.com.au>
-Message-ID: <6c2f8ee1-ec59-4ec4-8d0c-507d98225dd6@linux.ibm.com>
+Date: Thu, 25 Apr 2024 16:36:58 -0500
+Subject: [PATCH v3 11/14] dt-bindings: arm: aspeed: add IBM P11 BMC boards
+In-Reply-To: <20240425213701.655540-1-eajames@linux.ibm.com>
+References: <20240425213701.655540-1-eajames@linux.ibm.com>
+Message-ID: <20240425213701.655540-12-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Document two new AST2600 BMC boards for IBM P11 systems.
 
-On 4/21/24 18:02, Andrew Jeffery wrote:
-> On Fri, 2024-04-19 at 16:11 -0500, Eddie James wrote:
->> The SBEFIFO engine provides an interface to the POWER processor
->> Self Boot Engine (SBE).
->>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
 
-
-I'm sending this patch in my new series for P11 BMC systems, with an 
-additional change for the OCC child nodes. Hopefully that's OK, I kept 
-the tags.
-
-
-Eddie
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 9a47c4ed4d17..2df91dd1b6a7 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -86,7 +86,9 @@ properties:
+               - facebook,harma-bmc
+               - facebook,minerva-cmc
+               - facebook,yosemite4-bmc
++              - ibm,blueridge-bmc
+               - ibm,everest-bmc
++              - ibm,fuji-bmc
+               - ibm,rainier-bmc
+               - ibm,system1-bmc
+               - ibm,tacoma-bmc
+-- 
+2.39.3
 
