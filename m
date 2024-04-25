@@ -1,164 +1,56 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 25 Apr 2024 14:06:24 +0800
-Subject: [PATCH v1 1/2] Revise mux and hardware in yosemite4 dts
-In-Reply-To: <20240425060626.2558515-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240425060626.2558515-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240425060626.2558515-2-Delphine_CC_Chiu@wiwynn.com>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Thu, 25 Apr 2024 17:07:25 +0800
+Subject: [PATCH v7 0/1] drivers: watchdog: revise watchdog bootstatus
+Message-ID: <20240425090727.3787160-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-ARM: dts: aspeed: yosemite4:
-Change hardware configuration, consequently modifying the mux in the dts.
+Regarding the AST2600 specification, the WDTn Timeout Status Register
+(WDT10) has bit 1 reserved. Bit 1 of the status register indicates
+on ast2500 if the boot was from the second boot source.
+It does not indicate that the most recent reset was triggered by
+the watchdog. The code should just be changed to set WDIOF_CARDRESET
+if bit 0 of the status register is set. However, this bit can be clear when
+watchdog register 0x0c bit1(Reset System after timeout) is enabled.
+Thereforce include SCU register to veriy WDIOF_EXTERN1 and WDIOF_CARDRESET
+in ast2600 SCU74 or ast2400/ast2500 SCU3C.
 
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Change Log:
+
+v6 -> v7
+   - To use syscon_regmap_lookup_by_compatibleys to get scu base
+   - Power on reset is set when triggered by AC or SRSRST.
+     Thereforce, we clear flag to ensure next boot cause is a real watchdog case.
+     We use the external reset flag to determine
+     if it is an external reset or card reset.
+
+v5 -> v6
+  - Fixed missing WDT_TIMEOUT_STATUS_EVENT.
+
+v4 -> v5
+  - Revert indentation.
+
+v3 -> v4
+  - Add error handling for syscon_regmap_lookup_by_phandle and
+  regmap_read.
+
+v2 -> v3
+  - Fixed WDIOF_CARDRESET status bit check and added support
+  for WDIOF_EXTERN1 on ast2500 and ast2600.
+
+v1 -> v2
+  - Add comment and support WDIOF_CARDRESET in ast2600
+
+v1
+  - Patch 0001 - Add WDIOF_EXTERN1 bootstatus
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 78 ++++++++++++++-----
- 1 file changed, 58 insertions(+), 20 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 64075cc41d92..e45293762316 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -433,16 +433,14 @@ eeprom at 51 {
- 		reg = <0x51>;
- 	};
- 
--	i2c-mux at 71 {
--		compatible = "nxp,pca9846";
-+	i2c-mux at 74 {
-+		compatible = "nxp,pca9546";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--
--		idle-state = <0>;
- 		i2c-mux-idle-disconnect;
--		reg = <0x71>;
-+		reg = <0x74>;
- 
--		i2c at 0 {
-+		inux30: i2c at 0{
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-@@ -450,26 +448,46 @@ i2c at 0 {
- 			adc at 1f {
- 				compatible = "ti,adc128d818";
- 				reg = <0x1f>;
--				ti,mode = /bits/ 8 <2>;
-+				ti,mode = /bits/ 8 <1>;
- 			};
- 
- 			pwm at 20{
--				compatible = "max31790";
--				reg = <0x20>;
-+				compatible = "maxim,max31790";
- 				#address-cells = <1>;
- 				#size-cells = <0>;
-+				reg = <0x20>;
-+				channel at 4 {
-+					reg = <4>;
-+					sensor-type = "TACH";
-+				};
-+
-+				channel at 5 {
-+					reg = <5>;
-+					sensor-type = "TACH";
-+				};
- 			};
- 
- 			gpio at 22{
- 				compatible = "ti,tca6424";
- 				reg = <0x22>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
- 			};
- 
--			pwm at 23{
--				compatible = "max31790";
--				reg = <0x23>;
-+			pwm at 2f{
-+				compatible = "maxim,max31790";
- 				#address-cells = <1>;
- 				#size-cells = <0>;
-+				reg = <0x2f>;
-+				channel at 4 {
-+					reg = <4>;
-+					sensor-type = "TACH";
-+				};
-+
-+				channel at 5 {
-+					reg = <5>;
-+					sensor-type = "TACH";
-+				};
- 			};
- 
- 			adc at 33 {
-@@ -492,34 +510,54 @@ gpio at 61 {
- 			};
- 		};
- 
--		i2c at 1 {
-+		imux31: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			reg = <0>;
-+			reg = <1>;
- 
- 			adc at 1f {
- 				compatible = "ti,adc128d818";
- 				reg = <0x1f>;
--				ti,mode = /bits/ 8 <2>;
-+				ti,mode = /bits/ 8 <1>;
- 			};
- 
- 			pwm at 20{
--				compatible = "max31790";
--				reg = <0x20>;
-+				compatible = "maxim,max31790";
- 				#address-cells = <1>;
- 				#size-cells = <0>;
-+				reg = <0x20>;
-+				channel at 4 {
-+					reg = <4>;
-+					sensor-type = "TACH";
-+				};
-+
-+				channel at 5 {
-+					reg = <5>;
-+					sensor-type = "TACH";
-+				};
- 			};
- 
- 			gpio at 22{
- 				compatible = "ti,tca6424";
- 				reg = <0x22>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
- 			};
- 
--			pwm at 23{
--				compatible = "max31790";
--				reg = <0x23>;
-+			pwm at 2f{
-+				compatible = "maxim,max31790";
- 				#address-cells = <1>;
- 				#size-cells = <0>;
-+				reg = <0x2f>;
-+				channel at 4 {
-+					reg = <4>;
-+					sensor-type = "TACH";
-+				};
-+
-+				channel at 5 {
-+					reg = <5>;
-+					sensor-type = "TACH";
-+				};
- 			};
- 
- 			adc at 33 {
+ drivers/watchdog/aspeed_wdt.c | 109 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 103 insertions(+), 6 deletions(-)
+
 -- 
 2.25.1
 
