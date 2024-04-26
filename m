@@ -1,107 +1,81 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Fri, 26 Apr 2024 10:23:30 -0500
-Subject: [PATCH v3 10/14] dt-bindings: i2c: i2c-fsi: Switch to yaml format
-In-Reply-To: <f84ddcdb-8f8a-4cf6-a851-243baa1745ac@kernel.org>
-References: <20240425213701.655540-1-eajames@linux.ibm.com>
- <20240425213701.655540-11-eajames@linux.ibm.com>
- <f84ddcdb-8f8a-4cf6-a851-243baa1745ac@kernel.org>
-Message-ID: <bc58a063-9eaf-4bcb-b538-a95d8d03ea24@linux.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Date: Fri, 26 Apr 2024 09:23:30 -0700
+Subject: [PATCH v7 1/1] drivers: watchdog: revise watchdog bootstatus
+In-Reply-To: <CAPSyxFTa6k3FzUmDoZ6HMpAfwZGK_yPrQKGSvSdtj_JqsnMVrA@mail.gmail.com>
+References: <20240425090727.3787160-1-peteryin.openbmc@gmail.com>
+ <20240425090727.3787160-2-peteryin.openbmc@gmail.com>
+ <5ed8bfd6ce559a7d00ec89f1bd7ae1aea90e3ae7.camel@codeconstruct.com.au>
+ <CAPSyxFTa6k3FzUmDoZ6HMpAfwZGK_yPrQKGSvSdtj_JqsnMVrA@mail.gmail.com>
+Message-ID: <cb473967-5cd7-44fd-99ea-fd5572e5963d@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On 4/26/24 07:45, Chia Hsing Yin wrote:
+> I can include reset condition in struct maybe like this
+> 
+> static const struct aspeed_wdt_config ast2600_config = {
+> .ext_pulse_width_mask = 0xfffff,
+> .irq_shift = 0,
+> .irq_mask = GENMASK(31, 10),
+> .compatible = "aspeed,ast2600-scu",
+> .reset_event = AST2600_SYSTEM_RESET_EVENT,
+> .watchdog_reset_flag = AST2600_WATCHDOG_RESET_FLAG,
+> .extern_reset_flag = EXTERN_RESET_FLAG,
+> .reset_flag_clear = AST2600_RESET_FLAG_CLEAR,
+> };
+> 
+> in probe( ) we  just call
+> 
+> scu_base = syscon_regmap_lookup_by_compatible(wdt->cfg->compatible);
+> if (IS_ERR(scu_base))
+>      return PTR_ERR(scu_base);
+> 
+> ret = regmap_read(scu_base, wdt->cfg->reset_event, &status);
+> if (ret)
+>      return ret;
+> 
+> if ((status & POWERON_RESET_FLAG) == 0 &&
 
-On 4/26/24 01:29, Krzysztof Kozlowski wrote:
-> On 25/04/2024 23:36, Eddie James wrote:
->> Switch to yaml for the FSI-attached I2C controller.
+If you do that, please use
+	if (!(status & POWERON_RESET_FLAG) && ...
+
+>       status & wdt->cfg->watchdog_reset_flag)
+>      wdt->wdd.bootstatus = (status & wdt->cfg->extern_reset_flag) ?
+>      WDIOF_EXTERN1 : WDIOF_CARDRESET;
+> 
+> status = wdt->cfg->watchdog_reset_flag | POWERON_RESET_FLAG |
+> wdt->cfg->extern_reset_flag;
+> 
+> ret = regmap_write(scu_base, wdt->cfg->reset_event, status);
+> 
+> Does this meet your expectations?
+> 
+> On Fri, Apr 26, 2024 at 8:42?AM Andrew Jeffery
+> <andrew@codeconstruct.com.au> wrote:
 >>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Please use scripts/get_maintainers.pl to get a list of necessary people
-> and lists to CC (and consider --no-git-fallback argument). It might
-> happen, that command when run on an older kernel, gives you outdated
-> entries. Therefore please be sure you base your patches on recent Linux
-> kernel.
->
-> Tools like b4 or scripts/get_maintainer.pl provide you proper list of
-> people, so fix your workflow. Tools might also fail if you work on some
-> ancient tree (don't, instead use mainline), work on fork of kernel
-> (don't, instead use mainline) or you ignore some maintainers (really
-> don't). Just use b4 and everything should be fine, although remember
-> about `b4 prep --auto-to-cc` if you added new patches to the patchset.
->
->> ---
->>   .../devicetree/bindings/i2c/i2c-fsi.txt       | 40 -------------
->>   .../devicetree/bindings/i2c/ibm,i2c-fsi.yaml  | 59 +++++++++++++++++++
->>   2 files changed, 59 insertions(+), 40 deletions(-)
->>   delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-fsi.txt
->>   create mode 100644 Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
+>> On Thu, 2024-04-25 at 17:07 +0800, Peter Yin wrote:
+>>> Regarding the AST2600 specification, the WDTn Timeout Status Register
+>>> (WDT10) has bit 1 reserved. Bit 1 of the status register indicates
+>>> on ast2500 if the boot was from the second boot source.
+>>> It does not indicate that the most recent reset was triggered by
+>>> the watchdog. The code should just be changed to set WDIOF_CARDRESET
+>>> if bit 0 of the status register is set. However, this bit can be clear when
+>>> watchdog register 0x0c bit1(Reset System after timeout) is enabled.
+>>> Thereforce include SCU register to veriy WDIOF_EXTERN1 and WDIOF_CARDRESET
+>>> in ast2600 SCU74 or ast2400/ast2500 SCU3C.
+>>>
+>>> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
+>>> ---
+>>>   drivers/watchdog/aspeed_wdt.c | 109 ++++++++++++++++++++++++++++++++--
+>>>   1 file changed, 103 insertions(+), 6 deletions(-)
 >>
->
->> -    };
->> diff --git a/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
->> new file mode 100644
->> index 000000000000..473a45de1b6c
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
->> @@ -0,0 +1,59 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/i2c/ibm,i2c-fsi.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: IBM FSI-attached I2C controller
->> +
->> +maintainers:
->> +  - Eddie James <eajames@linux.ibm.com>
->> +
->> +description:
->> +  This I2C controller is an FSI CFAM engine, providing access to a number of
->> +  I2C busses. Therefore this node will always be a child of an FSI CFAM node;
->> +  see fsi.txt for details on FSI slave and CFAM nodes.
-> Here and in all other schemas - remove reference to fsi.txt. You are
-> going to drop this file once you convert everything, right?
+>> After this patch the probe() implementation is ~250loc with a whole
+>> bunch of conditional behaviours based on the SoC version. Maybe it's
+>> time to break it up into version-specific functions that are called
+>> from the probe() implementation?
+>>
+>> Andrew
 
-
-Good point, yes.
-
-
->
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - ibm,i2c-fsi
->> +
->> +  reg:
->> +    items:
->> +      - description: FSI slave address
->> +
->> +required:
->> +  - compatible
->> +  - reg
->> +
->> +allOf:
->> +  - $ref: /schemas/i2c/i2c-controller.yaml#
->> +
->> +unevaluatedProperties: false
->> +
->> +examples:
->> +  - |
->> +    i2c at 1800 {
-> So no wrapper node is needed. Drop the wrapper node in previous patchset
-> where you introduced one with warning.
-
-
-The other one is actually a child node of the equivalent spi controller, 
-so it does need some sort of wrapper (address-cells and size-cells don't 
-match).
-
-
->
->
-> Best regards,
-> Krzysztof
->
