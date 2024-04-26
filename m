@@ -1,11 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 26 Apr 2024 08:15:00 +0200
-Subject: [PATCH v3 01/14] dt-bindings: spi: Document the IBM Power SPI
- controller
-In-Reply-To: <20240425213701.655540-2-eajames@linux.ibm.com>
+Date: Fri, 26 Apr 2024 08:17:07 +0200
+Subject: [PATCH v3 03/14] dt-bindings: fsi: Document the FSI2PIB engine
+In-Reply-To: <20240425213701.655540-4-eajames@linux.ibm.com>
 References: <20240425213701.655540-1-eajames@linux.ibm.com>
- <20240425213701.655540-2-eajames@linux.ibm.com>
-Message-ID: <e2b52bfb-0742-4baf-8269-86075b5cc54e@kernel.org>
+ <20240425213701.655540-4-eajames@linux.ibm.com>
+Message-ID: <39bdf357-76c8-4ae4-9a06-d00ba9ce16e3@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,72 +12,31 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 25/04/2024 23:36, Eddie James wrote:
-> The IBM Power chips have a basic SPI controller. Document it.
-
-Please use subject prefixes matching the subsystem. You can get them for
-example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
-your patch is touching.
-
+> The FSI2PIB or SCOM engine provides an interface to the POWER processor
+> PIB (Pervasive Interconnect Bus).
 > 
 > Signed-off-by: Eddie James <eajames@linux.ibm.com>
 > ---
->  .../devicetree/bindings/spi/ibm,p10-spi.yaml  | 56 +++++++++++++++++++
->  1 file changed, 56 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/spi/ibm,p10-spi.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/spi/ibm,p10-spi.yaml b/Documentation/devicetree/bindings/spi/ibm,p10-spi.yaml
-> new file mode 100644
-> index 000000000000..9bf57b621c1f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/spi/ibm,p10-spi.yaml
-> @@ -0,0 +1,56 @@
-> +# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/spi/ibm,p10-spi.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: IBM SPI Controller
-
-IBM P10 SPI Controller
-
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +
-> +description:
-> +  A basic SPI controller found on IBM Power chips, accessed over FSI. This
-> +  node will always be a child node of an ibm,fsi2spi node.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - ibm,p10-spi
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +allOf:
-> +  - $ref: spi-controller.yaml#
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    fsi2spi at 1c00 {
-> +        compatible = "ibm,fsi2spi";
-> +        reg = <0x1c00 0x400>;
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-
-Use rather some simple wrapper instead of node causing warnings, e.g.
-fsi {} with only address/size cells.
 
 
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+
+---
+
+This is an automated instruction, just in case, because many review tags
+are being ignored. If you know the process, you can skip it (please do
+not feel offended by me posting it here - no bad intentions intended).
+If you do not know the process, here is a short explanation:
+
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new
+versions, under or above your Signed-off-by tag. Tag is "received", when
+provided in a message replied to you on the mailing list. Tools like b4
+can help here. However, there's no need to repost patches *only* to add
+the tags. The upstream maintainer will do that for tags received on the
+version they apply.
+
+https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
 
 Best regards,
 Krzysztof
