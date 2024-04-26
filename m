@@ -1,35 +1,108 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 26 Apr 2024 10:11:57 +0930
-Subject: [PATCH v7 1/1] drivers: watchdog: revise watchdog bootstatus
-In-Reply-To: <20240425090727.3787160-2-peteryin.openbmc@gmail.com>
-References: <20240425090727.3787160-1-peteryin.openbmc@gmail.com>
-	 <20240425090727.3787160-2-peteryin.openbmc@gmail.com>
-Message-ID: <5ed8bfd6ce559a7d00ec89f1bd7ae1aea90e3ae7.camel@codeconstruct.com.au>
+Date: Fri, 26 Apr 2024 10:21:45 +0930
+Subject: [PATCH v1 1/2] Revise mux and hardware in yosemite4 dts
+In-Reply-To: <20240425060626.2558515-2-Delphine_CC_Chiu@wiwynn.com>
+References: <20240425060626.2558515-1-Delphine_CC_Chiu@wiwynn.com>
+	 <20240425060626.2558515-2-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <f355ad1adb96cd8398c4ac81d1c72df289a2aaf0.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2024-04-25 at 17:07 +0800, Peter Yin wrote:
-> Regarding the AST2600 specification, the WDTn Timeout Status Register
-> (WDT10) has bit 1 reserved. Bit 1 of the status register indicates
-> on ast2500 if the boot was from the second boot source.
-> It does not indicate that the most recent reset was triggered by
-> the watchdog. The code should just be changed to set WDIOF_CARDRESET
-> if bit 0 of the status register is set. However, this bit can be clear when
-> watchdog register 0x0c bit1(Reset System after timeout) is enabled.
-> Thereforce include SCU register to veriy WDIOF_EXTERN1 and WDIOF_CARDRESET
-> in ast2600 SCU74 or ast2400/ast2500 SCU3C.
-> 
-> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
-> ---
->  drivers/watchdog/aspeed_wdt.c | 109 ++++++++++++++++++++++++++++++++--
->  1 file changed, 103 insertions(+), 6 deletions(-)
+On Thu, 2024-04-25 at 14:06 +0800, Delphine CC Chiu wrote:
+> ARM: dts: aspeed: yosemite4:
 
-After this patch the probe() implementation is ~250loc with a whole
-bunch of conditional behaviours based on the SoC version. Maybe it's
-time to break it up into version-specific functions that are called
-from the probe() implementation?
+This should be in the patch subject, not the body of the commit
+message.
+
+> Change hardware configuration, consequently modifying the mux in the dts.
+
+Perhaps "We have a new iteration of the hardware design, so update the
+devicetree to match."?
+
+> 
+> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+
+Overall it feels a bit untidy updating the description of distinct
+devices in the one patch.
+
+> ---
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 78 ++++++++++++++-----
+>  1 file changed, 58 insertions(+), 20 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> index 64075cc41d92..e45293762316 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> @@ -433,16 +433,14 @@ eeprom at 51 {
+>  		reg = <0x51>;
+>  	};
+>  
+> -	i2c-mux at 71 {
+> -		compatible = "nxp,pca9846";
+> +	i2c-mux at 74 {
+> +		compatible = "nxp,pca9546";
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+> -
+> -		idle-state = <0>;
+>  		i2c-mux-idle-disconnect;
+> -		reg = <0x71>;
+> +		reg = <0x74>;
+>  
+> -		i2c at 0 {
+> +		inux30: i2c at 0{
+
+'inux'? 'imux'?
+
+>  			#address-cells = <1>;
+>  			#size-cells = <0>;
+>  			reg = <0>;
+> @@ -450,26 +448,46 @@ i2c at 0 {
+>  			adc at 1f {
+>  				compatible = "ti,adc128d818";
+>  				reg = <0x1f>;
+> -				ti,mode = /bits/ 8 <2>;
+> +				ti,mode = /bits/ 8 <1>;
+>  			};
+>  
+>  			pwm at 20{
+> -				compatible = "max31790";
+> -				reg = <0x20>;
+> +				compatible = "maxim,max31790";
+
+This looks like a change motivated by binding validation or a driver
+change rather than hardware design :)
+
+>  				#address-cells = <1>;
+>  				#size-cells = <0>;
+> +				reg = <0x20>;
+> +				channel at 4 {
+> +					reg = <4>;
+> +					sensor-type = "TACH";
+> +				};
+> +
+> +				channel at 5 {
+> +					reg = <5>;
+> +					sensor-type = "TACH";
+> +				};
+>  			};
+>  
+>  			gpio at 22{
+>  				compatible = "ti,tca6424";
+>  				reg = <0x22>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
+>  			};
+>  
+> -			pwm at 23{
+> -				compatible = "max31790";
+> -				reg = <0x23>;
+> +			pwm at 2f{
+> +				compatible = "maxim,max31790";
+
+Again here
 
 Andrew
