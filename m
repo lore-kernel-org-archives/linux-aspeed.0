@@ -1,102 +1,84 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Mon, 29 Apr 2024 16:01:20 -0500
-Subject: [PATCH v4 06/17] dt-bindings: fsi: Document the FSI controller common properties
+Date: Mon, 29 Apr 2024 16:01:16 -0500
+Subject: [PATCH v4 02/17] dt-bindings: fsi: fsi2spi: Document SPI controller child nodes
 In-Reply-To: <20240429210131.373487-1-eajames@linux.ibm.com>
 References: <20240429210131.373487-1-eajames@linux.ibm.com>
-Message-ID: <20240429210131.373487-7-eajames@linux.ibm.com>
+Message-ID: <20240429210131.373487-3-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Since there are multiple FSI controllers documented, the common
-properties should be documented separately and then referenced
-from the specific controller documentation.
+The FSI2SPI bridge has several SPI controllers behind it, which
+should be documented. Also, therefore the node needs to specify
+address and size cells.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
-Changes since v3:
- - Add chip-id description
- - Use a real compatible
- - Re-order example properties
+ .../devicetree/bindings/fsi/ibm,fsi2spi.yaml  | 36 ++++++++++++++++---
+ 1 file changed, 32 insertions(+), 4 deletions(-)
 
- .../bindings/fsi/fsi-controller.yaml          | 66 +++++++++++++++++++
- 1 file changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/fsi/fsi-controller.yaml
-
-diff --git a/Documentation/devicetree/bindings/fsi/fsi-controller.yaml b/Documentation/devicetree/bindings/fsi/fsi-controller.yaml
-new file mode 100644
-index 000000000000..fd624181c030
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fsi/fsi-controller.yaml
-@@ -0,0 +1,66 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fsi/fsi-controller.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: FSI Controller Common Properties
-+
-+maintainers:
-+  - Eddie James <eajames@linux.ibm.com>
-+
+diff --git a/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml b/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
+index e2ca0b000471..ad5c83f48425 100644
+--- a/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
++++ b/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
+@@ -9,11 +9,10 @@ title: IBM FSI-attached SPI controllers
+ maintainers:
+   - Eddie James <eajames@linux.ibm.com>
+ 
+-description: |
 +description:
-+  FSI (FRU (Field Replaceable Unit) Service Interface) is a two wire bus. The
-+  FSI bus is connected to a CFAM (Common FRU Access Macro) which contains
-+  various engines such as I2C controllers, SPI controllers, etc.
-+
-+properties:
+   This binding describes an FSI CFAM engine called the FSI2SPI. Therefore this
+-  node will always be a child of an FSI CFAM node; see fsi.txt for details on
+-  FSI slave and CFAM nodes. This FSI2SPI engine provides access to a number of
+-  SPI controllers.
++  node will always be a child of an FSI CFAM node. This FSI2SPI engine provides
++  access to a number of SPI controllers.
+ 
+ properties:
+   compatible:
+@@ -24,6 +23,17 @@ properties:
+     items:
+       - description: FSI slave address
+ 
 +  "#address-cells":
-+    const: 2
++    const: 1
 +
 +  "#size-cells":
 +    const: 0
 +
-+  no-scan-on-init:
-+    $ref: /schemas/types.yaml#/definitions/flag
-+    description:
-+      The FSI controller cannot scan the bus during initialization.
-+
 +patternProperties:
-+  "cfam@[0-9a-f],[0-9a-f]":
++  "^spi@[0-9a-f]+$":
 +    type: object
-+    properties:
-+      chip-id:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description:
-+          Processor index
++    $ref: /schemas/spi/ibm,spi-fsi.yaml
 +
-+      reg:
-+        maxItems: 1
-+
-+      "#address-cells":
-+        const: 1
-+
-+      "#size-cells":
-+        const: 1
-+
-+    required:
-+      - reg
-+
-+    additionalProperties: true
-+
-+additionalProperties: true
-+
-+examples:
-+  - |
-+    fsi {
-+        #address-cells = <2>;
+ required:
+   - compatible
+   - reg
+@@ -35,4 +45,22 @@ examples:
+     fsi2spi at 1c00 {
+         compatible = "ibm,fsi2spi";
+         reg = <0x1c00 0x400>;
++        #address-cells = <1>;
 +        #size-cells = <0>;
 +
-+        cfam at 0,0 {
-+            reg = <0 0>;
++        spi at 0 {
++            compatible = "ibm,spi-fsi";
++            reg = <0>;
 +            #address-cells = <1>;
-+            #size-cells = <1>;
-+            chip-id = <0>;
++            #size-cells = <0>;
++
++            eeprom at 0 {
++                compatible = "atmel,at25";
++                reg = <0>;
++                address-width = <24>;
++                pagesize = <256>;
++                size = <0x80000>;
++                spi-max-frequency = <1000000>;
++            };
 +        };
-+    };
+     };
 -- 
 2.39.3
 
