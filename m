@@ -1,42 +1,64 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 30 Apr 2024 08:48:09 +0200
-Subject: [PATCH v7 0/2] modify Signed-off-by field
-In-Reply-To: <20240430045853.3894633-1-Kelly_Hung@asus.com>
-References: <20240430045853.3894633-1-Kelly_Hung@asus.com>
-Message-ID: <a21672d7-82dd-44a9-b301-94aa1537b75c@molgen.mpg.de>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 30 Apr 2024 09:01:50 +0200
+Subject: [PATCH v4 06/17] dt-bindings: fsi: Document the FSI controller
+ common properties
+In-Reply-To: <20240429210131.373487-7-eajames@linux.ibm.com>
+References: <20240429210131.373487-1-eajames@linux.ibm.com>
+ <20240429210131.373487-7-eajames@linux.ibm.com>
+Message-ID: <3bcc9143-6896-496b-aa30-7ac0fc2d8e51@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Dear Kelly,
+On 29/04/2024 23:01, Eddie James wrote:
+> +
+> +patternProperties:
+> +  "cfam@[0-9a-f],[0-9a-f]":
+> +    type: object
+> +    properties:
+> +      chip-id:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description:
+> +          Processor index
+
+fsi.txt tells a bit more about it, so extend the description.
 
 
-Am 30.04.24 um 06:58 schrieb Kelly Hung:
-> For the warning message:
-> From: Kelly Hung '<ppighouse@gmail.com>' != 'Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>'
-> 
-> I replaced Kelly_Hung at asus.com with my private Gmail account.
-> 
-> Due to a security issue with ASUS's mail server, I am unable to use
-> ASUS's mail system to send patches out from my build server.
-> So I executed git send-email using my private gmail account.
+> +
+> +      reg:
+> +        maxItems: 1
+> +
+> +      "#address-cells":
+> +        const: 1
+> +
+> +      "#size-cells":
+> +        const: 1
+> +
+> +    required:
+> +      - reg
+> +
+> +    additionalProperties: true
+> +
+> +additionalProperties: true
+> +
+> +examples:
+> +  - |
+> +    fsi {
+> +        #address-cells = <2>;
+> +        #size-cells = <0>;
+> +
+> +        cfam at 0,0 {
+> +            reg = <0 0>;
+> +            #address-cells = <1>;
+> +            #size-cells = <1>;
+> +            chip-id = <0>;
+> +        };
+> +    };
 
-To put light on ASUS? upstream work, using your company address would be 
-nice in my opinion. Do you have it configured everything in git 
-(`~/.gitconfig`)?
+Drop the example, it's not being validated/used.
 
-     git config --global user.name "Kelly Hung"
-     git config --global user.email Kelly_Hung at asus.com
+Best regards,
+Krzysztof
 
-Then `git format-patch` and `git send-email` should put
-
-From: Kelly Hung <Kelly_Hung@asus.com>
-
-at the top of the message.
-
-
-Kind regards,
-
-Paul
