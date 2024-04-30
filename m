@@ -1,92 +1,42 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Tue, 30 Apr 2024 08:54:32 +0200
-Subject: [PATCH v4 05/17] dt-bindings: fsi: Document the IBM SBEFIFO
- engine
-In-Reply-To: <20240429210131.373487-6-eajames@linux.ibm.com>
-References: <20240429210131.373487-1-eajames@linux.ibm.com>
- <20240429210131.373487-6-eajames@linux.ibm.com>
-Message-ID: <b89bb761-49dc-4e76-9b80-c45e2b7e7638@kernel.org>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 30 Apr 2024 08:48:09 +0200
+Subject: [PATCH v7 0/2] modify Signed-off-by field
+In-Reply-To: <20240430045853.3894633-1-Kelly_Hung@asus.com>
+References: <20240430045853.3894633-1-Kelly_Hung@asus.com>
+Message-ID: <a21672d7-82dd-44a9-b301-94aa1537b75c@molgen.mpg.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 29/04/2024 23:01, Eddie James wrote:
-> The SBEFIFO engine provides an interface to the POWER processor
-> Self Boot Engine (SBE).
+Dear Kelly,
+
+
+Am 30.04.24 um 06:58 schrieb Kelly Hung:
+> For the warning message:
+> From: Kelly Hung '<ppighouse@gmail.com>' != 'Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>'
 > 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> ---
-> Changes since v3:
->  - Drop occ unit address
+> I replaced Kelly_Hung at asus.com with my private Gmail account.
 > 
->  .../bindings/fsi/ibm,p9-sbefifo.yaml          | 51 +++++++++++++++++++
->  1 file changed, 51 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
-> new file mode 100644
-> index 000000000000..24903829fca1
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
-> @@ -0,0 +1,51 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/fsi/ibm,p9-sbefifo.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: IBM FSI-attached SBEFIFO engine
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +
-> +description:
-> +  The SBEFIFO is an FSI CFAM engine that provides an interface to the
-> +  POWER processor Self Boot Engine (SBE). This node will always be a child
-> +  of an FSI CFAM node.
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - ibm,p9-sbefifo
-> +      - ibm,odyssey-sbefifo
-> +
-> +  reg:
-> +    items:
-> +      - description: FSI slave address
-> +
-> +patternProperties:
-> +  "^occ":
+> Due to a security issue with ASUS's mail server, I am unable to use
+> ASUS's mail system to send patches out from my build server.
+> So I executed git send-email using my private gmail account.
 
-Same questions as patch #4.
+To put light on ASUS? upstream work, using your company address would be 
+nice in my opinion. Do you have it configured everything in git 
+(`~/.gitconfig`)?
 
-> +    type: object
-> +    $ref: ibm,p9-occ.yaml#
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    fsi-slave-engine at 2400 {
-> +        compatible = "ibm,p9-sbefifo";
-> +        reg = <0x2400 0x400>;
-> +
-> +        occ {
-> +            compatible = "ibm,p9-occ";
-> +
-> +            hwmon {
-> +                compatible = "ibm,p9-occ-hwmon";
+     git config --global user.name "Kelly Hung"
+     git config --global user.email Kelly_Hung at asus.com
 
-Three nodes which should be just one node.
+Then `git format-patch` and `git send-email` should put
 
-Best regards,
-Krzysztof
+From: Kelly Hung <Kelly_Hung@asus.com>
 
+at the top of the message.
+
+
+Kind regards,
+
+Paul
