@@ -1,11 +1,11 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Tue, 30 Apr 2024 09:31:29 +0200
-Subject: [PATCH v4 09/17] dt-bindings: fsi: Document the FSI Hub
- Controller
-In-Reply-To: <20240429210131.373487-10-eajames@linux.ibm.com>
+Date: Tue, 30 Apr 2024 09:35:03 +0200
+Subject: [PATCH v4 10/17] dt-bindings: i2c: i2c-fsi: Convert to
+ json-schema
+In-Reply-To: <20240429210131.373487-11-eajames@linux.ibm.com>
 References: <20240429210131.373487-1-eajames@linux.ibm.com>
- <20240429210131.373487-10-eajames@linux.ibm.com>
-Message-ID: <3544b83e-f441-4d1e-9794-21dd637b898d@kernel.org>
+ <20240429210131.373487-11-eajames@linux.ibm.com>
+Message-ID: <bbf12675-e0f5-4150-96d1-097eb7abd81a@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,15 +13,86 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 29/04/2024 23:01, Eddie James wrote:
-> Document the FSI Hub Controller CFAM engine.
+> Convert to json-schema for the FSI-attached I2C controller.
 > 
 > Signed-off-by: Eddie James <eajames@linux.ibm.com>
 > ---
 > Changes since v3:
->  - Change name from ibm,hub-fsi-controller to ibm,p9-fsi-controller
+>  - Update MAINTAINERS
+>  - Change commit message to match similar commits
+> 
+>  .../devicetree/bindings/i2c/i2c-fsi.txt       | 40 -------------
+>  .../devicetree/bindings/i2c/ibm,i2c-fsi.yaml  | 58 +++++++++++++++++++
+
+
+Please split independent patches to separate patchsets, so they can be
+reviewed and picked up by respective maintainers.
+
+I don't see any dependency here. Neither in 1st patch.
+
+
+>  MAINTAINERS                                   |  2 +-
+>  3 files changed, 59 insertions(+), 41 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-fsi.txt
+>  create mode 100644 Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
 > 
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+...
+
+> diff --git a/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
+> new file mode 100644
+> index 000000000000..8ff5585a3aa5
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
+> @@ -0,0 +1,58 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/i2c/ibm,i2c-fsi.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: IBM FSI-attached I2C controller
+> +
+> +maintainers:
+> +  - Eddie James <eajames@linux.ibm.com>
+> +
+> +description:
+> +  This I2C controller is an FSI CFAM engine, providing access to a number of
+> +  I2C busses. Therefore this node will always be a child of an FSI CFAM node.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ibm,i2c-fsi
+> +
+> +  reg:
+> +    items:
+> +      - description: FSI slave address
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +allOf:
+> +  - $ref: /schemas/i2c/i2c-controller.yaml#
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    i2c at 1800 {
+> +        compatible = "ibm,i2c-fsi";
+> +        reg = <0x1800 0x400>;
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +
+> +        i2c-bus at 0 {
+> +            reg = <0>;
+> +            #address-cells = <1>;
+> +            #size-cells = <0>;
+
+This does not look right. Why do you have multiple i2c-bus children? I
+do not think i2c-controller.yaml schema allows this.
 
 Best regards,
 Krzysztof
