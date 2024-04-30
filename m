@@ -1,41 +1,43 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Tue, 30 Apr 2024 11:08:17 +0930
-Subject: [PATCH v8 1/1] drivers: watchdog: revise watchdog bootstatus
-In-Reply-To: <CAPSyxFRG8mooBg1QWZk8sw=cWzoUQqk=WnyAtgPfRBmQRKtvaQ@mail.gmail.com>
-References: <20240428142937.785925-1-peteryin.openbmc@gmail.com>
-	 <20240428142937.785925-2-peteryin.openbmc@gmail.com>
-	 <d231737bfa9f3dd3c0a4370ab2e86557a407980d.camel@codeconstruct.com.au>
-	 <CAPSyxFRG8mooBg1QWZk8sw=cWzoUQqk=WnyAtgPfRBmQRKtvaQ@mail.gmail.com>
-Message-ID: <e694ba58197687dce68d568dfcb078ff3a6c6fed.camel@codeconstruct.com.au>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 30 Apr 2024 08:50:36 +0200
+Subject: [PATCH v4 01/17] spi: dt-bindings: Document the IBM FSI-attached
+ SPI controller
+In-Reply-To: <20240429210131.373487-2-eajames@linux.ibm.com>
+References: <20240429210131.373487-1-eajames@linux.ibm.com>
+ <20240429210131.373487-2-eajames@linux.ibm.com>
+Message-ID: <8543fdc3-66b2-4d90-afd6-677e0b84c1fa@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2024-04-29 at 22:54 +0800, Peter Yin wrote:
-> Hi Andrew,
->     I am not sure how to add the Fixes tag, Is it like this?
+On 29/04/2024 23:01, Eddie James wrote:
+> IBM Power processors have a SPI controller that can be accessed
+> over FSI from a service processor. Document it.
 > 
-> Fixes: 6a6c7b006e5c (watchdog: aspeed: Add support for
-> aspeed,reset-mask DT property).
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
 
-Approximately, yes, but it must not be wrapped.
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Some more info is provided in the submitting-patches documentation:
 
-https://docs.kernel.org/process/submitting-patches.html#describe-your-changes
+---
 
-> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
-> 
-> Is it the correct commit ID or should I base on which commit ID?
-> 
+This is an automated instruction, just in case, because many review tags
+are being ignored. If you know the process, you can skip it (please do
+not feel offended by me posting it here - no bad intentions intended).
+If you do not know the process, here is a short explanation:
 
-The correct commit ID to use is the one that introduces the problem.
-Using `git blame drivers/watchdog/aspeed_wdt.c` it appears you're
-changing the behaviour that was introduced in 49d4d277ca54 ("aspeed:
-watchdog: Set bootstatus during probe"):
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new
+versions, under or above your Signed-off-by tag. Tag is "received", when
+provided in a message replied to you on the mailing list. Tools like b4
+can help here. However, there's no need to repost patches *only* to add
+the tags. The upstream maintainer will do that for tags received on the
+version they apply.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49d4d277ca54e04170d39484c8758a0ea9bca37d
+https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
 
-Andrew
+Best regards,
+Krzysztof
+
