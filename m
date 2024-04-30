@@ -1,11 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Tue, 30 Apr 2024 08:51:18 +0200
-Subject: [PATCH v4 02/17] dt-bindings: fsi: fsi2spi: Document SPI
- controller child nodes
-In-Reply-To: <20240429210131.373487-3-eajames@linux.ibm.com>
+Date: Tue, 30 Apr 2024 08:53:23 +0200
+Subject: [PATCH v4 04/17] dt-bindings: fsi: p9-occ: Convert to json-schema
+In-Reply-To: <20240429210131.373487-5-eajames@linux.ibm.com>
 References: <20240429210131.373487-1-eajames@linux.ibm.com>
- <20240429210131.373487-3-eajames@linux.ibm.com>
-Message-ID: <3b516d27-a676-4d6f-9076-76bebb74ff47@kernel.org>
+ <20240429210131.373487-5-eajames@linux.ibm.com>
+Message-ID: <0fcadbe6-7615-498e-89c0-e3b072c4828c@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,14 +12,102 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 29/04/2024 23:01, Eddie James wrote:
-> The FSI2SPI bridge has several SPI controllers behind it, which
-> should be documented. Also, therefore the node needs to specify
-> address and size cells.
+> Conver to json-schema for the OCC documentation. Also document the fact
+> that the OCC "bridge" device will often have the hwmon node as a
+> child.
 > 
 > Signed-off-by: Eddie James <eajames@linux.ibm.com>
 > ---
+> Changes since v3:
+>  - Move required below other properties
+>  - Drop "occ-" in child node
+>  - Drop hwmon unit address
+>  - Complete example
+>  - Change commit message to match similar commits
+> 
+>  .../devicetree/bindings/fsi/ibm,p9-occ.txt    | 16 --------
+>  .../devicetree/bindings/fsi/ibm,p9-occ.yaml   | 41 +++++++++++++++++++
+>  2 files changed, 41 insertions(+), 16 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
+>  create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
+> deleted file mode 100644
+> index e73358075a90..000000000000
+> --- a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
+> +++ /dev/null
+> @@ -1,16 +0,0 @@
+> -Device-tree bindings for FSI-attached POWER9/POWER10 On-Chip Controller (OCC)
+> ------------------------------------------------------------------------------
+> -
+> -This is the binding for the P9 or P10 On-Chip Controller accessed over FSI from
+> -a service processor. See fsi.txt for details on bindings for FSI slave and CFAM
+> -nodes. The OCC is not an FSI slave device itself, rather it is accessed
+> -through the SBE FIFO.
+> -
+> -Required properties:
+> - - compatible = "ibm,p9-occ" or "ibm,p10-occ"
+> -
+> -Examples:
+> -
+> -    occ {
+> -        compatible = "ibm,p9-occ";
+> -    };
+> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+> new file mode 100644
+> index 000000000000..3ab2582cb8a0
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+> @@ -0,0 +1,41 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/fsi/ibm,p9-occ.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: IBM FSI-attached On-Chip Controller (OCC)
+> +
+> +maintainers:
+> +  - Eddie James <eajames@linux.ibm.com>
+> +
+> +description:
+> +  The POWER processor On-Chip Controller (OCC) helps manage power and
+> +  thermals for the system, accessed through the FSI-attached SBEFIFO
+> +  from a service processor.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ibm,p9-occ
+> +      - ibm,p10-occ
+> +
+> +patternProperties:
+> +  "^hwmon":
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+And now it raises questions:
+1. Other devices on FSI bus have unit addresses, so why this does not?
+2. This suggest only one hwmon, so ^hwmon$, which is then not a
+patternProperty but property.
+3. But the true problem why do you even need two empty nodes? These
+should be combined into one node.
+
+> +    type: object
+> +    $ref: /schemas/hwmon/ibm,occ-hwmon.yaml
+> +
+> +required:
+> +  - compatible
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    occ {
+> +        compatible = "ibm,p9-occ";
+> +
+> +        hwmon {
+> +            compatible = "ibm,p9-occ-hwmon";
+> +        };
+> +    };
 
 Best regards,
 Krzysztof
