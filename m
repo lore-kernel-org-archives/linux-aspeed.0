@@ -1,44 +1,41 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Tue, 30 Apr 2024 10:58:57 +0930
-Subject: [PATCH v6 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
-In-Reply-To: <20240326103549.2413515-2-Kelly_Hung@asus.com>
-References: <20240326103549.2413515-1-Kelly_Hung@asus.com>
-	 <20240326103549.2413515-2-Kelly_Hung@asus.com>
-Message-ID: <6b69a2bbfa713374e0bbd9f306ee554ee99f70d3.camel@codeconstruct.com.au>
+Date: Tue, 30 Apr 2024 11:08:17 +0930
+Subject: [PATCH v8 1/1] drivers: watchdog: revise watchdog bootstatus
+In-Reply-To: <CAPSyxFRG8mooBg1QWZk8sw=cWzoUQqk=WnyAtgPfRBmQRKtvaQ@mail.gmail.com>
+References: <20240428142937.785925-1-peteryin.openbmc@gmail.com>
+	 <20240428142937.785925-2-peteryin.openbmc@gmail.com>
+	 <d231737bfa9f3dd3c0a4370ab2e86557a407980d.camel@codeconstruct.com.au>
+	 <CAPSyxFRG8mooBg1QWZk8sw=cWzoUQqk=WnyAtgPfRBmQRKtvaQ@mail.gmail.com>
+Message-ID: <e694ba58197687dce68d568dfcb078ff3a6c6fed.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-03-26 at 18:35 +0800, Kelly Hung wrote:
-> Document the new compatibles used on ASUS X4TF.
+On Mon, 2024-04-29 at 22:54 +0800, Peter Yin wrote:
+> Hi Andrew,
+>     I am not sure how to add the Fixes tag, Is it like this?
 > 
-> Signed-off-by: Kelly Hung <Kelly_Hung@asus.com>
+> Fixes: 6a6c7b006e5c (watchdog: aspeed: Add support for
+> aspeed,reset-mask DT property).
 
-In addition to the concerns of others, your author email is not the
-same as your SoB email. checkpatch warns:
+Approximately, yes, but it must not be wrapped.
 
-```
-WARNING: From:/Signed-off-by: email address mismatch: 'From: Kelly Hung
-<ppighouse@gmail.com>' != 'Signed-off-by: Kelly Hung
-<Kelly_Hung@asus.com>'
+Some more info is provided in the submitting-patches documentation:
 
-total: 0 errors, 1 warnings, 7 lines checked
+https://docs.kernel.org/process/submitting-patches.html#describe-your-changes
 
-NOTE: For some of the reported defects, checkpatch may be able to
-      mechanically convert to the typical style using --fix or --fix-
-inplace.
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
+> 
+> Is it the correct commit ID or should I base on which commit ID?
+> 
 
-Commit bb035db4c70a ("dt-bindings: arm: aspeed: add ASUS X4TF board")
-has style problems, please review.
+The correct commit ID to use is the one that introduces the problem.
+Using `git blame drivers/watchdog/aspeed_wdt.c` it appears you're
+changing the behaviour that was introduced in 49d4d277ca54 ("aspeed:
+watchdog: Set bootstatus during probe"):
 
-NOTE: If any of the errors are false positives, please report
-      them to the maintainer, see CHECKPATCH in MAINTAINERS.
-```
-
-Please fix this issue for both patches in the series and resend.
-
-Thanks,
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=49d4d277ca54e04170d39484c8758a0ea9bca37d
 
 Andrew
