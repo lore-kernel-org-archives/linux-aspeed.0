@@ -1,10 +1,10 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Wed, 01 May 2024 12:48:50 -0000
-Subject: [PATCH 01/21] pinctrl: ti: iodelay: Use scope based of_node_put()
+Date: Wed, 01 May 2024 12:49:13 -0000
+Subject: [PATCH 02/21] pinctrl: tegra: Use scope based of_node_put()
  cleanups
 In-Reply-To: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
-Message-ID: <20240501-pinctrl-cleanup-v1-1-797ceca46e5c@nxp.com>
+Message-ID: <20240501-pinctrl-cleanup-v1-2-797ceca46e5c@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,98 +17,83 @@ Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/pinctrl/ti/pinctrl-ti-iodelay.c | 37 +++++++++++++--------------------
- 1 file changed, 14 insertions(+), 23 deletions(-)
+ drivers/pinctrl/tegra/pinctrl-tegra-xusb.c |  7 ++-----
+ drivers/pinctrl/tegra/pinctrl-tegra.c      | 10 +++-------
+ 2 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
-index 040f2c46a868..1032bc9c36aa 100644
---- a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
-+++ b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
-@@ -822,53 +822,48 @@ MODULE_DEVICE_TABLE(of, ti_iodelay_of_match);
- static int ti_iodelay_probe(struct platform_device *pdev)
+diff --git a/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c b/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
+index 96ef57a7d385..49c5edeba87f 100644
+--- a/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
++++ b/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
+@@ -238,20 +238,17 @@ static int tegra_xusb_padctl_dt_node_to_map(struct pinctrl_dev *pinctrl,
  {
- 	struct device *dev = &pdev->dev;
--	struct device_node *np = of_node_get(dev->of_node);
-+	struct device_node *np __free(device_node) = of_node_get(dev->of_node);
- 	struct resource *res;
- 	struct ti_iodelay_device *iod;
--	int ret = 0;
-+	int ret;
+ 	struct tegra_xusb_padctl *padctl = pinctrl_dev_get_drvdata(pinctrl);
+ 	unsigned int reserved_maps = 0;
+-	struct device_node *np;
+ 	int err;
  
- 	if (!np) {
--		ret = -EINVAL;
- 		dev_err(dev, "No OF node\n");
--		goto exit_out;
-+		return -EINVAL;
+ 	*num_maps = 0;
+ 	*maps = NULL;
+ 
+-	for_each_child_of_node(parent, np) {
++	for_each_child_of_node_scoped(parent, np) {
+ 		err = tegra_xusb_padctl_parse_subnode(padctl, np, maps,
+ 						      &reserved_maps,
+ 						      num_maps);
+-		if (err < 0) {
+-			of_node_put(np);
++		if (err < 0)
+ 			return err;
+-		}
  	}
  
- 	iod = devm_kzalloc(dev, sizeof(*iod), GFP_KERNEL);
--	if (!iod) {
--		ret = -ENOMEM;
--		goto exit_out;
--	}
-+	if (!iod)
-+		return -ENOMEM;
-+
- 	iod->dev = dev;
- 	iod->reg_data = device_get_match_data(dev);
- 	if (!iod->reg_data) {
--		ret = -EINVAL;
- 		dev_err(dev, "No DATA match\n");
--		goto exit_out;
-+		return -EINVAL;
+ 	return 0;
+diff --git a/drivers/pinctrl/tegra/pinctrl-tegra.c b/drivers/pinctrl/tegra/pinctrl-tegra.c
+index ccfa3870a67d..69088609a0c8 100644
+--- a/drivers/pinctrl/tegra/pinctrl-tegra.c
++++ b/drivers/pinctrl/tegra/pinctrl-tegra.c
+@@ -188,20 +188,18 @@ static int tegra_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 					unsigned *num_maps)
+ {
+ 	unsigned reserved_maps;
+-	struct device_node *np;
+ 	int ret;
+ 
+ 	reserved_maps = 0;
+ 	*map = NULL;
+ 	*num_maps = 0;
+ 
+-	for_each_child_of_node(np_config, np) {
++	for_each_child_of_node_scoped(np_config, np) {
+ 		ret = tegra_pinctrl_dt_subnode_to_map(pctldev, np, map,
+ 						      &reserved_maps, num_maps);
+ 		if (ret < 0) {
+ 			pinctrl_utils_free_map(pctldev, *map,
+ 				*num_maps);
+-			of_node_put(np);
+ 			return ret;
+ 		}
  	}
+@@ -759,17 +757,15 @@ DEFINE_NOIRQ_DEV_PM_OPS(tegra_pinctrl_pm, tegra_pinctrl_suspend, tegra_pinctrl_r
  
- 	/* So far We can assume there is only 1 bank of registers */
- 	iod->reg_base = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
--	if (IS_ERR(iod->reg_base)) {
--		ret = PTR_ERR(iod->reg_base);
--		goto exit_out;
--	}
-+	if (IS_ERR(iod->reg_base))
-+		return PTR_ERR(iod->reg_base);
-+
- 	iod->phys_base = res->start;
+ static bool tegra_pinctrl_gpio_node_has_range(struct tegra_pmx *pmx)
+ {
+-	struct device_node *np;
++	struct device_node *np __free(device_node) =
++		of_find_compatible_node(NULL, NULL, pmx->soc->gpio_compatible);
+ 	bool has_prop = false;
  
- 	iod->regmap = devm_regmap_init_mmio(dev, iod->reg_base,
- 					    iod->reg_data->regmap_config);
- 	if (IS_ERR(iod->regmap)) {
- 		dev_err(dev, "Regmap MMIO init failed.\n");
--		ret = PTR_ERR(iod->regmap);
--		goto exit_out;
-+		return PTR_ERR(iod->regmap);
- 	}
+-	np = of_find_compatible_node(NULL, NULL, pmx->soc->gpio_compatible);
+ 	if (!np)
+ 		return has_prop;
  
- 	ret = ti_iodelay_pinconf_init_dev(iod);
- 	if (ret)
--		goto exit_out;
-+		return ret;
+ 	has_prop = of_find_property(np, "gpio-ranges", NULL);
  
- 	ret = ti_iodelay_alloc_pins(dev, iod, res->start);
- 	if (ret)
--		goto exit_out;
-+		return ret;
- 
- 	iod->desc.pctlops = &ti_iodelay_pinctrl_ops;
- 	/* no pinmux ops - we are pinconf */
-@@ -879,16 +874,12 @@ static int ti_iodelay_probe(struct platform_device *pdev)
- 	ret = pinctrl_register_and_init(&iod->desc, dev, iod, &iod->pctl);
- 	if (ret) {
- 		dev_err(dev, "Failed to register pinctrl\n");
--		goto exit_out;
-+		return ret;
- 	}
- 
- 	platform_set_drvdata(pdev, iod);
- 
- 	return pinctrl_enable(iod->pctl);
--
--exit_out:
 -	of_node_put(np);
--	return ret;
+-
+ 	return has_prop;
  }
  
- /**
 
 -- 
 2.37.1
