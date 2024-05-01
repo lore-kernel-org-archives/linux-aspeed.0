@@ -1,56 +1,29 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 01 May 2024 16:35:11 -0000
-Subject: [PATCH 08/21] pinctrl: samsung: Use scope based of_node_put()
- cleanups
-In-Reply-To: <20240501-pinctrl-cleanup-v1-8-797ceca46e5c@nxp.com>
+From: Dan Carpenter <dan.carpenter@linaro.org>
+Date: Wed, 01 May 2024 17:17:05 -0000
+Subject: [PATCH 10/21] pinctrl: st: Use scope based of_node_put() cleanups
+In-Reply-To: <20240501-pinctrl-cleanup-v1-10-797ceca46e5c@nxp.com>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
- <20240501-pinctrl-cleanup-v1-8-797ceca46e5c@nxp.com>
-Message-ID: <34193501-5b7b-4ffd-8549-a04c6930d02d@kernel.org>
+ <20240501-pinctrl-cleanup-v1-10-797ceca46e5c@nxp.com>
+Message-ID: <f6aa3a17-90d2-42e3-8c55-639dfcdbf8ca@moroto.mountain>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 01/05/2024 14:56, Peng Fan (OSS) wrote:
-> From: Peng Fan <peng.fan@nxp.com>
-> 
-> Use scope based of_node_put() cleanup to simplify code.
-> 
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> ---
->  drivers/pinctrl/samsung/pinctrl-exynos-arm.c |  3 +--
->  drivers/pinctrl/samsung/pinctrl-exynos.c     | 16 ++++------------
->  drivers/pinctrl/samsung/pinctrl-s3c64xx.c    |  8 ++------
->  drivers/pinctrl/samsung/pinctrl-samsung.c    | 26 +++++++-------------------
->  4 files changed, 14 insertions(+), 39 deletions(-)
-> 
-> diff --git a/drivers/pinctrl/samsung/pinctrl-exynos-arm.c b/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> index 85ddf49a5188..9a57b3ceb536 100644
-> --- a/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> +++ b/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> @@ -56,7 +56,7 @@ s5pv210_retention_init(struct samsung_pinctrl_drv_data *drvdata,
->  		       const struct samsung_retention_data *data)
->  {
->  	struct samsung_retention_ctrl *ctrl;
-> -	struct device_node *np;
-> +	struct device_node *np __free(device_node) = NULL;
->  	void __iomem *clk_base;
+On Wed, May 01, 2024 at 08:56:08PM +0800, Peng Fan (OSS) wrote:
+> @@ -1224,8 +1221,7 @@ static int st_pctl_dt_parse_groups(struct device_node *np,
+>  	grp->pin_conf = devm_kcalloc(dev, npins, sizeof(*grp->pin_conf), GFP_KERNEL);
 >  
->  	ctrl = devm_kzalloc(drvdata->dev, sizeof(*ctrl), GFP_KERNEL);
-> @@ -71,7 +71,6 @@ s5pv210_retention_init(struct samsung_pinctrl_drv_data *drvdata,
+>  	if (!grp->pins || !grp->pin_conf) {
+> -		ret = -ENOMEM;
+> -		goto out_put_node;
+> +		return -ENOMEM;
 >  	}
->  
->  	clk_base = of_iomap(np, 0);
-> -	of_node_put(np);
 
-I don't think the code as simpler. Previous was very easy to read,
-obvious, no error paths.
+You could delete the curly braces as well.
 
-To me any conversion of such of_node_get immediately followed by
-of_node_put is unwelcomed. Easy code is being  converted to complicated one.
+regards,
+dan carpenter
 
-
-Best regards,
-Krzysztof
 
