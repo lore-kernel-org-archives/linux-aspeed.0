@@ -1,65 +1,67 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 1 May 2024 18:45:43 +0200
-Subject: [PATCH] ARM: dts: aspeed-g6: Add nodes for i3c controllers
-In-Reply-To: <09ed10182e2282d7e408a4fef7994da010fe058e.camel@codeconstruct.com.au>
-References: <20240501033832.1529340-1-jk@codeconstruct.com.au>
- <65af46c3-e48f-4eae-8390-2bc01332ccbf@kernel.org>
- <09ed10182e2282d7e408a4fef7994da010fe058e.camel@codeconstruct.com.au>
-Message-ID: <c5331cf8-7295-4e6a-ba39-e0751a2c357e@kernel.org>
+From: Zev Weiss <zev@bewilderbeest.net>
+Date: Wed, 1 May 2024 16:15:35 -0700
+Subject: [PATCH v2 2/2] ARM: dts: aspeed: Add ASRock SPC621D8HM3 BMC
+In-Reply-To: <CACPK8Xf6vRKJZHuovMXd2h=nnuKW4m5mcRrfZaTsY987Ai6huQ@mail.gmail.com>
+References: <20231120121954.19926-4-zev@bewilderbeest.net>
+ <20231120121954.19926-6-zev@bewilderbeest.net>
+ <CACPK8Xf6vRKJZHuovMXd2h=nnuKW4m5mcRrfZaTsY987Ai6huQ@mail.gmail.com>
+Message-ID: <561b69da-f4e4-49df-ac3e-db0003d549e0@hatter.bewilderbeest.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 01/05/2024 13:17, Jeremy Kerr wrote:
-> Hi Krzysztof,
-> 
->>> --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
->>> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
->>> @@ -866,6 +866,13 @@ i2c: bus at 1e78a000 {
->>> ????????????????????????????????ranges = <0 0x1e78a000 0x1000>;
->>> ????????????????????????};
->>> ?
->>> +???????????????????????i3c: bus at 1e7a0000 {
->>> +???????????????????????????????compatible = "simple-bus";
+On Mon, Apr 29, 2024 at 06:23:27PM PDT, Joel Stanley wrote:
+>Hi Zev,
+>
+>On Mon, 20 Nov 2023 at 22:50, Zev Weiss <zev@bewilderbeest.net> wrote:
 >>
->> What bus is it? Why is it even needed? If it is i3c, then for sure
->> compatible is wrong.
-> 
-> This is not the i3c bus, it's the MMIO mapping that allows us to specify
-> the individual i3c controller mappings as sensible offsets into the main
-> address space. Did you miss the ranges property there?
-> 
-> This is following the existing design for the i2c controllers.
-> 
->>> +???????????????????????????????#address-cells = <1>;
->>> +???????????????????????????????#size-cells = <1>;
->>> +???????????????????????????????ranges = <0 0x1e7a0000 0x8000>;
->>> +???????????????????????};
->>> +
->>> ????????????????????????fsim0: fsi at 1e79b000 {
->>> ????????????????????????????????compatible = "aspeed,ast2600-fsi-master", "fsi-master";
->>> ????????????????????????????????reg = <0x1e79b000 0x94>;
->>> @@ -1125,3 +1132,89 @@ i2c15: i2c-bus at 800 {
->>> ????????????????status = "disabled";
->>> ????????};
->>> ?};
->>> +
->>> +&i3c {
->>
->> ????
->>
->> That's not how we construct DTS.? Overrides/extends of nodes are for
->> boards, not within DTSI.
-> 
-> The overrides are occurring at the &i3cX labels, not &i3c. Platform
-> level dts just connect at those labels to define overrides for each bus:
+>> This is a Xeon board broadly similar (aside from CPU vendor) to the
+>> already-support romed8hm3 (half-width, single-socket, ast2500).  It
+>> doesn't require anything terribly special for OpenBMC support, so this
+>> device-tree should provide everything necessary for basic
+>> functionality with it.
+>
+>We've had these in the aspeed tree for a while, but as I was on leave
+>there was no pull request. I'm just putting one together now and
+>noticed some unusual looking device tree compatibles:
+>
+>WARNING: DT compatible string "renesas,isl69269" appears un-documented
+>-- check ./Documentation/devicetree/bindings/
+>#220: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts:181:
+>+        compatible = "renesas,isl69269", "isl69269";
+>
+>WARNING: DT compatible string "isl69269" appears un-documented --
+>check ./Documentation/devicetree/bindings/
+>#220: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts:181:
+>+        compatible = "renesas,isl69269", "isl69269";
+>
+>WARNING: DT compatible string "st,24c128" appears un-documented --
+>check ./Documentation/devicetree/bindings/
+>#230: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts:191:
+>+        compatible = "st,24c128", "atmel,24c128";
+>
+>
+>Can you update the patch to be checkpatch clean when applied to v6.9?
+>
+>Cheers,
+>
+>Joel
 
-You miss the point. Look how DTS is constructed, read DTS coding style.
+Hi Joel,
 
-Your first node is empty and that is not readable.
+After looking at it a bit, I *think* the third warning above (st,24c128) 
+is a false positive due to the checkpatch script's ad-hoc grep of the DT 
+binding files not picking up on the regex-based compatible definition in 
+Documentation/devicetree/bindings/eeprom/at24.yaml -- AFAICT, the 
+compatible strings match what's described in the comment in that file 
+(and the actual regex itself I believe).
 
-Best regards,
-Krzysztof
+The isl69269 warnings are certainly legitimate though; I'll submit a v3 
+with that added to trivial-devices.yml.
+
+
+Thanks,
+Zev
 
