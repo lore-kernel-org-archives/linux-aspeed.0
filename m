@@ -1,119 +1,65 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 1 May 2024 11:16:22 -0500
-Subject: [PATCH v4 10/17] dt-bindings: i2c: i2c-fsi: Convert to
- json-schema
-In-Reply-To: <bbf12675-e0f5-4150-96d1-097eb7abd81a@kernel.org>
-References: <20240429210131.373487-1-eajames@linux.ibm.com>
- <20240429210131.373487-11-eajames@linux.ibm.com>
- <bbf12675-e0f5-4150-96d1-097eb7abd81a@kernel.org>
-Message-ID: <1ebaaa48-9812-467e-9189-c1cd3369b6cb@linux.ibm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 1 May 2024 18:45:43 +0200
+Subject: [PATCH] ARM: dts: aspeed-g6: Add nodes for i3c controllers
+In-Reply-To: <09ed10182e2282d7e408a4fef7994da010fe058e.camel@codeconstruct.com.au>
+References: <20240501033832.1529340-1-jk@codeconstruct.com.au>
+ <65af46c3-e48f-4eae-8390-2bc01332ccbf@kernel.org>
+ <09ed10182e2282d7e408a4fef7994da010fe058e.camel@codeconstruct.com.au>
+Message-ID: <c5331cf8-7295-4e6a-ba39-e0751a2c357e@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-On 4/30/24 02:35, Krzysztof Kozlowski wrote:
-> On 29/04/2024 23:01, Eddie James wrote:
->> Convert to json-schema for the FSI-attached I2C controller.
+On 01/05/2024 13:17, Jeremy Kerr wrote:
+> Hi Krzysztof,
+> 
+>>> --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+>>> +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+>>> @@ -866,6 +866,13 @@ i2c: bus at 1e78a000 {
+>>> ????????????????????????????????ranges = <0 0x1e78a000 0x1000>;
+>>> ????????????????????????};
+>>> ?
+>>> +???????????????????????i3c: bus at 1e7a0000 {
+>>> +???????????????????????????????compatible = "simple-bus";
 >>
->> Signed-off-by: Eddie James <eajames@linux.ibm.com>
->> ---
->> Changes since v3:
->>   - Update MAINTAINERS
->>   - Change commit message to match similar commits
+>> What bus is it? Why is it even needed? If it is i3c, then for sure
+>> compatible is wrong.
+> 
+> This is not the i3c bus, it's the MMIO mapping that allows us to specify
+> the individual i3c controller mappings as sensible offsets into the main
+> address space. Did you miss the ranges property there?
+> 
+> This is following the existing design for the i2c controllers.
+> 
+>>> +???????????????????????????????#address-cells = <1>;
+>>> +???????????????????????????????#size-cells = <1>;
+>>> +???????????????????????????????ranges = <0 0x1e7a0000 0x8000>;
+>>> +???????????????????????};
+>>> +
+>>> ????????????????????????fsim0: fsi at 1e79b000 {
+>>> ????????????????????????????????compatible = "aspeed,ast2600-fsi-master", "fsi-master";
+>>> ????????????????????????????????reg = <0x1e79b000 0x94>;
+>>> @@ -1125,3 +1132,89 @@ i2c15: i2c-bus at 800 {
+>>> ????????????????status = "disabled";
+>>> ????????};
+>>> ?};
+>>> +
+>>> +&i3c {
 >>
->>   .../devicetree/bindings/i2c/i2c-fsi.txt       | 40 -------------
->>   .../devicetree/bindings/i2c/ibm,i2c-fsi.yaml  | 58 +++++++++++++++++++
->
-> Please split independent patches to separate patchsets, so they can be
-> reviewed and picked up by respective maintainers.
->
-> I don't see any dependency here. Neither in 1st patch.
-
-
-OK, I guess that makes it complicated for Andrew to pull together with 
-the device tree changes in a way that avoids warnings, but I agree there 
-is no direct dependency.
-
-
->
->
->>   MAINTAINERS                                   |  2 +-
->>   3 files changed, 59 insertions(+), 41 deletions(-)
->>   delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-fsi.txt
->>   create mode 100644 Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
+>> ????
 >>
-> ...
->
->> diff --git a/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
->> new file mode 100644
->> index 000000000000..8ff5585a3aa5
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
->> @@ -0,0 +1,58 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/i2c/ibm,i2c-fsi.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: IBM FSI-attached I2C controller
->> +
->> +maintainers:
->> +  - Eddie James <eajames@linux.ibm.com>
->> +
->> +description:
->> +  This I2C controller is an FSI CFAM engine, providing access to a number of
->> +  I2C busses. Therefore this node will always be a child of an FSI CFAM node.
->> +
->> +properties:
->> +  compatible:
->> +    enum:
->> +      - ibm,i2c-fsi
->> +
->> +  reg:
->> +    items:
->> +      - description: FSI slave address
->> +
->> +required:
->> +  - compatible
->> +  - reg
->> +
->> +allOf:
->> +  - $ref: /schemas/i2c/i2c-controller.yaml#
->> +
->> +unevaluatedProperties: false
->> +
->> +examples:
->> +  - |
->> +    i2c at 1800 {
->> +        compatible = "ibm,i2c-fsi";
->> +        reg = <0x1800 0x400>;
->> +        #address-cells = <1>;
->> +        #size-cells = <0>;
->> +
->> +        i2c-bus at 0 {
->> +            reg = <0>;
->> +            #address-cells = <1>;
->> +            #size-cells = <0>;
-> This does not look right. Why do you have multiple i2c-bus children? I
-> do not think i2c-controller.yaml schema allows this.
+>> That's not how we construct DTS.? Overrides/extends of nodes are for
+>> boards, not within DTSI.
+> 
+> The overrides are occurring at the &i3cX labels, not &i3c. Platform
+> level dts just connect at those labels to define overrides for each bus:
 
+You miss the point. Look how DTS is constructed, read DTS coding style.
 
-It does seem to allow it, as this validates here and in the device tree. 
-It is this way because the I2C controller provides multiple busses. 
-Should I change it so to add "bus" pattern properties that reference 
-i2c-controller.yaml?
+Your first node is empty and that is not readable.
 
+Best regards,
+Krzysztof
 
-Thanks,
-
-Eddie
-
-
->
-> Best regards,
-> Krzysztof
->
