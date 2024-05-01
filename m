@@ -1,12 +1,12 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 1 May 2024 11:06:02 -0500
-Subject: [PATCH v4 06/17] dt-bindings: fsi: Document the FSI controller
- common properties
-In-Reply-To: <3bcc9143-6896-496b-aa30-7ac0fc2d8e51@kernel.org>
+Date: Wed, 1 May 2024 11:12:40 -0500
+Subject: [PATCH v4 08/17] dt-bindings: fsi: ast2600-fsi-master: Convert to
+ json-schema
+In-Reply-To: <af51132f-e4a3-4f45-b066-24b8c348eb28@kernel.org>
 References: <20240429210131.373487-1-eajames@linux.ibm.com>
- <20240429210131.373487-7-eajames@linux.ibm.com>
- <3bcc9143-6896-496b-aa30-7ac0fc2d8e51@kernel.org>
-Message-ID: <366b0cb8-1309-4f15-b4f0-077dfaf4250c@linux.ibm.com>
+ <20240429210131.373487-9-eajames@linux.ibm.com>
+ <af51132f-e4a3-4f45-b066-24b8c348eb28@kernel.org>
+Message-ID: <a7ca71c0-971c-49ab-b9f3-f6e6b32e9567@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -14,66 +14,79 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 4/30/24 02:01, Krzysztof Kozlowski wrote:
+On 4/30/24 02:04, Krzysztof Kozlowski wrote:
 > On 29/04/2024 23:01, Eddie James wrote:
->> +
->> +patternProperties:
->> +  "cfam@[0-9a-f],[0-9a-f]":
->> +    type: object
->> +    properties:
->> +      chip-id:
->> +        $ref: /schemas/types.yaml#/definitions/uint32
->> +        description:
->> +          Processor index
-> fsi.txt tells a bit more about it, so extend the description.
+>> Convert to json-schema for the AST2600 FSI master documentation.
+> Please mention all the changes from pure conversion.
 
 
-Ack.
-
-
-Thanks,
-
-Eddie
+Sure.
 
 
 >
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> ---
+>> Changes since v3:
+>>   - Remove quotes around compatible strings
+>>   - Re-order allOf to below required
+>>   - Add child node in the example
+>>   - Change commit message to match similar commits
+>>
+>>   .../fsi/aspeed,ast2600-fsi-master.yaml        | 81 +++++++++++++++++++
+>>   .../bindings/fsi/fsi-master-aspeed.txt        | 36 ---------
+>>   2 files changed, 81 insertions(+), 36 deletions(-)
+>>   create mode 100644 Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+>>   delete mode 100644 Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+>> new file mode 100644
+>> index 000000000000..fcf7c4b93b78
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+>> @@ -0,0 +1,81 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Aspeed FSI master
+>> +
+>> +maintainers:
+>> +  - Eddie James <eajames@linux.ibm.com>
+>> +
+>> +description:
+>> +  The AST2600 and later contain two identical FSI masters. They share a
+>> +  clock and have a separate interrupt line and output pins.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - aspeed,ast2600-fsi-master
+>> +      - aspeed,ast2700-fsi-master
+> There was no such compatible before.
+>
+> How does this even validate? Where is fsi-master? You dropped a
+> compatible without any explanation.
+
+
+I can make it a separate change to add ast2700.
+
+
+I suppose I don't understand having two compatibles... Aspeed master 
+shouldn't use "fsi-master" as that is too generic, right? Why wouldn't 
+it validate? Devicetrees using "fsi-master" also use 
+"aspeed,ast2600-fsi-master" so they should be OK...
+
+
 >
 >> +
->> +      reg:
->> +        maxItems: 1
+>> +  reg:
+>> +    maxItems: 1
 >> +
->> +      "#address-cells":
->> +        const: 1
+>> +  clocks:
+>> +    maxItems: 1
 >> +
->> +      "#size-cells":
->> +        const: 1
->> +
->> +    required:
->> +      - reg
->> +
->> +    additionalProperties: true
->> +
->> +additionalProperties: true
->> +
->> +examples:
->> +  - |
->> +    fsi {
->> +        #address-cells = <2>;
->> +        #size-cells = <0>;
->> +
->> +        cfam at 0,0 {
->> +            reg = <0 0>;
->> +            #address-cells = <1>;
->> +            #size-cells = <1>;
->> +            chip-id = <0>;
->> +        };
->> +    };
-> Drop the example, it's not being validated/used.
-
-
-Ack.
-
-
 >
 > Best regards,
 > Krzysztof
