@@ -1,11 +1,12 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 1 May 2024 10:59:54 -0500
-Subject: [PATCH v4 04/17] dt-bindings: fsi: p9-occ: Convert to json-schema
-In-Reply-To: <0fcadbe6-7615-498e-89c0-e3b072c4828c@kernel.org>
+Date: Wed, 1 May 2024 11:03:31 -0500
+Subject: [PATCH v4 05/17] dt-bindings: fsi: Document the IBM SBEFIFO
+ engine
+In-Reply-To: <b89bb761-49dc-4e76-9b80-c45e2b7e7638@kernel.org>
 References: <20240429210131.373487-1-eajames@linux.ibm.com>
- <20240429210131.373487-5-eajames@linux.ibm.com>
- <0fcadbe6-7615-498e-89c0-e3b072c4828c@kernel.org>
-Message-ID: <e3601656-84d3-47e1-9cbd-d2cb0dde5f51@linux.ibm.com>
+ <20240429210131.373487-6-eajames@linux.ibm.com>
+ <b89bb761-49dc-4e76-9b80-c45e2b7e7638@kernel.org>
+Message-ID: <4fd58344-d9fa-49c5-a89c-a0ebc11f3ac3@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,115 +14,93 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 4/30/24 01:53, Krzysztof Kozlowski wrote:
+On 4/30/24 01:54, Krzysztof Kozlowski wrote:
 > On 29/04/2024 23:01, Eddie James wrote:
->> Conver to json-schema for the OCC documentation. Also document the fact
->> that the OCC "bridge" device will often have the hwmon node as a
->> child.
+>> The SBEFIFO engine provides an interface to the POWER processor
+>> Self Boot Engine (SBE).
 >>
 >> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+>> Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 >> ---
 >> Changes since v3:
->>   - Move required below other properties
->>   - Drop "occ-" in child node
->>   - Drop hwmon unit address
->>   - Complete example
->>   - Change commit message to match similar commits
+>>   - Drop occ unit address
 >>
->>   .../devicetree/bindings/fsi/ibm,p9-occ.txt    | 16 --------
->>   .../devicetree/bindings/fsi/ibm,p9-occ.yaml   | 41 +++++++++++++++++++
->>   2 files changed, 41 insertions(+), 16 deletions(-)
->>   delete mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
->>   create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+>>   .../bindings/fsi/ibm,p9-sbefifo.yaml          | 51 +++++++++++++++++++
+>>   1 file changed, 51 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
 >>
->> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
->> deleted file mode 100644
->> index e73358075a90..000000000000
->> --- a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
->> +++ /dev/null
->> @@ -1,16 +0,0 @@
->> -Device-tree bindings for FSI-attached POWER9/POWER10 On-Chip Controller (OCC)
->> ------------------------------------------------------------------------------
->> -
->> -This is the binding for the P9 or P10 On-Chip Controller accessed over FSI from
->> -a service processor. See fsi.txt for details on bindings for FSI slave and CFAM
->> -nodes. The OCC is not an FSI slave device itself, rather it is accessed
->> -through the SBE FIFO.
->> -
->> -Required properties:
->> - - compatible = "ibm,p9-occ" or "ibm,p10-occ"
->> -
->> -Examples:
->> -
->> -    occ {
->> -        compatible = "ibm,p9-occ";
->> -    };
->> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+>> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
 >> new file mode 100644
->> index 000000000000..3ab2582cb8a0
+>> index 000000000000..24903829fca1
 >> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
->> @@ -0,0 +1,41 @@
+>> +++ b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
+>> @@ -0,0 +1,51 @@
 >> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 >> +%YAML 1.2
 >> +---
->> +$id: http://devicetree.org/schemas/fsi/ibm,p9-occ.yaml#
+>> +$id: http://devicetree.org/schemas/fsi/ibm,p9-sbefifo.yaml#
 >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 >> +
->> +title: IBM FSI-attached On-Chip Controller (OCC)
+>> +title: IBM FSI-attached SBEFIFO engine
 >> +
 >> +maintainers:
 >> +  - Eddie James <eajames@linux.ibm.com>
 >> +
 >> +description:
->> +  The POWER processor On-Chip Controller (OCC) helps manage power and
->> +  thermals for the system, accessed through the FSI-attached SBEFIFO
->> +  from a service processor.
+>> +  The SBEFIFO is an FSI CFAM engine that provides an interface to the
+>> +  POWER processor Self Boot Engine (SBE). This node will always be a child
+>> +  of an FSI CFAM node.
 >> +
 >> +properties:
 >> +  compatible:
 >> +    enum:
->> +      - ibm,p9-occ
->> +      - ibm,p10-occ
+>> +      - ibm,p9-sbefifo
+>> +      - ibm,odyssey-sbefifo
+>> +
+>> +  reg:
+>> +    items:
+>> +      - description: FSI slave address
 >> +
 >> +patternProperties:
->> +  "^hwmon":
-> And now it raises questions:
-> 1. Other devices on FSI bus have unit addresses, so why this does not?
-> 2. This suggest only one hwmon, so ^hwmon$, which is then not a
-> patternProperty but property.
-> 3. But the true problem why do you even need two empty nodes? These
-> should be combined into one node.
-
-
-1. This is not truly on the FSI bus. It is on the SBEFIFO "bus"
-
-2. True enough, I'll change it to property.
-
-3. If this binding was being designed now, I'd agree with you, but the 
-two nodes (occ and occ-hwmon) are already documented, I'm just changing 
-to yaml here... Changing that would require a lot of changes and would 
-break the two drivers.
-
-
+>> +  "^occ":
+> Same questions as patch #4.
 >
 >> +    type: object
->> +    $ref: /schemas/hwmon/ibm,occ-hwmon.yaml
+>> +    $ref: ibm,p9-occ.yaml#
 >> +
 >> +required:
 >> +  - compatible
+>> +  - reg
 >> +
 >> +additionalProperties: false
 >> +
 >> +examples:
 >> +  - |
->> +    occ {
->> +        compatible = "ibm,p9-occ";
+>> +    fsi-slave-engine at 2400 {
+>> +        compatible = "ibm,p9-sbefifo";
+>> +        reg = <0x2400 0x400>;
 >> +
->> +        hwmon {
->> +            compatible = "ibm,p9-occ-hwmon";
->> +        };
->> +    };
+>> +        occ {
+>> +            compatible = "ibm,p9-occ";
+>> +
+>> +            hwmon {
+>> +                compatible = "ibm,p9-occ-hwmon";
+> Three nodes which should be just one node.
+
+
+The other two are already documented... The SBEFIFO should have 
+documented a long time ago, and designed accordingly. However keep in 
+mind, the OCC nodes are optional on SBEFIFOs, since the Odyssey chip 
+SBEFIFOs are not connected to OCCs.
+
+
+Thanks for your detailed review.
+
+Eddie
+
+
+>
 > Best regards,
 > Krzysztof
 >
