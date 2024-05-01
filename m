@@ -1,74 +1,40 @@
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Wed, 01 May 2024 19:17:29 +0800
-Subject: [PATCH] ARM: dts: aspeed-g6: Add nodes for i3c controllers
-In-Reply-To: <65af46c3-e48f-4eae-8390-2bc01332ccbf@kernel.org>
-References: <20240501033832.1529340-1-jk@codeconstruct.com.au>
-	 <65af46c3-e48f-4eae-8390-2bc01332ccbf@kernel.org>
-Message-ID: <09ed10182e2282d7e408a4fef7994da010fe058e.camel@codeconstruct.com.au>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 1 May 2024 07:39:48 -0500
+Subject: [PATCH] dt-bindings: mfd: aspeed: Drop 'oneOf' for pinctrl node
+In-Reply-To: <4f3ce3439e3d996471085e906902e508528308d3.camel@codeconstruct.com.au>
+References: <20240430172520.535179-1-robh@kernel.org> <4f3ce3439e3d996471085e906902e508528308d3.camel@codeconstruct.com.au>
+Message-ID: <CAL_JsqJmciSKp4H2KXcqv78Vga5gDi0JU_PY4Dth7LJrq6swMA@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
+On Tue, Apr 30, 2024 at 7:40?PM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> On Tue, 2024-04-30 at 12:25 -0500, Rob Herring (Arm) wrote:
+> > The use of 'oneOf' to include 1 of 3 possible child node schemas results
+> > in error messages containing the actual error message(s) for the correct
+> > SoC buried in the tons of error messages from the 2 schemas that don't
+> > apply. It also causes the pinctrl schema to be applied twice as it will
+> > be applied when the compatible matches.
+> >
+> > All that's really needed in the parent schema is to ensure one of the
+> > possible compatible strings is present in the pinctrl node so that its
+> > schema will be applied separately.
+>
+> Thanks, I think it improves the readability of intent in the binding as
+> well.
+>
+> To understand the impact better I grabbed the patch and diffed the
+> output of `make CHECK_DTBS=y aspeed/aspeed-ast2600-evb.dtb` before and
+> after applying it, but there was no significant difference in output.
+> Should that not demonstrate the errors being cleaned up? If not, what
+> should?
 
-> > --- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-> > @@ -866,6 +866,13 @@ i2c: bus at 1e78a000 {
-> > ????????????????????????????????ranges = <0 0x1e78a000 0x1000>;
-> > ????????????????????????};
-> > ?
-> > +???????????????????????i3c: bus at 1e7a0000 {
-> > +???????????????????????????????compatible = "simple-bus";
-> 
-> What bus is it? Why is it even needed? If it is i3c, then for sure
-> compatible is wrong.
+Try it on one of the new boards posted in the last 1-2 days. It showed
+up on my testing dtbs_check on patches. I didn't send a report because
+there was so much noise in it.
 
-This is not the i3c bus, it's the MMIO mapping that allows us to specify
-the individual i3c controller mappings as sensible offsets into the main
-address space. Did you miss the ranges property there?
-
-This is following the existing design for the i2c controllers.
-
-> > +???????????????????????????????#address-cells = <1>;
-> > +???????????????????????????????#size-cells = <1>;
-> > +???????????????????????????????ranges = <0 0x1e7a0000 0x8000>;
-> > +???????????????????????};
-> > +
-> > ????????????????????????fsim0: fsi at 1e79b000 {
-> > ????????????????????????????????compatible = "aspeed,ast2600-fsi-master", "fsi-master";
-> > ????????????????????????????????reg = <0x1e79b000 0x94>;
-> > @@ -1125,3 +1132,89 @@ i2c15: i2c-bus at 800 {
-> > ????????????????status = "disabled";
-> > ????????};
-> > ?};
-> > +
-> > +&i3c {
-> 
-> ????
-> 
-> That's not how we construct DTS.? Overrides/extends of nodes are for
-> boards, not within DTSI.
-
-The overrides are occurring at the &i3cX labels, not &i3c. Platform
-level dts just connect at those labels to define overrides for each bus:
-
-    &i3c0 {
-            status = "okay";
-            mctp-controller;
-    };
-
-    &i3c1 {
-            status = "okay";
-            mctp-controller;
-    };
-
-There is existing precedence for this layout; the i2c and pinctrl
-mappings already use dtsi-internal labels. It keeps the bus definitions
-more manageable.
-
-Cheers,
-
-
-Jeremy
+Rob
