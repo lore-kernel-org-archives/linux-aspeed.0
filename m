@@ -1,10 +1,10 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Wed, 01 May 2024 12:49:45 -0000
-Subject: [PATCH 04/21] pinctrl: stm32: Use scope based of_node_put()
+Date: Wed, 01 May 2024 12:50:04 -0000
+Subject: [PATCH 05/21] pinctrl: starfive: Use scope based of_node_put()
  cleanups
 In-Reply-To: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
-Message-ID: <20240501-pinctrl-cleanup-v1-4-797ceca46e5c@nxp.com>
+Message-ID: <20240501-pinctrl-cleanup-v1-5-797ceca46e5c@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,52 +17,210 @@ Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/pinctrl/stm32/pinctrl-stm32.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c | 27 +++++++++-------------
+ drivers/pinctrl/starfive/pinctrl-starfive-jh7110.c | 18 +++++++--------
+ 2 files changed, 19 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/pinctrl/stm32/pinctrl-stm32.c b/drivers/pinctrl/stm32/pinctrl-stm32.c
-index 978ccdbaf3d3..ca163a91e724 100644
---- a/drivers/pinctrl/stm32/pinctrl-stm32.c
-+++ b/drivers/pinctrl/stm32/pinctrl-stm32.c
-@@ -670,7 +670,6 @@ static int stm32_pctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
- 				 struct device_node *np_config,
- 				 struct pinctrl_map **map, unsigned *num_maps)
+diff --git a/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c b/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
+index 6df7a310c7ed..27f99183d994 100644
+--- a/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
++++ b/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
+@@ -480,7 +480,6 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
  {
--	struct device_node *np;
- 	unsigned reserved_maps;
- 	int ret;
+ 	struct starfive_pinctrl *sfp = pinctrl_dev_get_drvdata(pctldev);
+ 	struct device *dev = sfp->gc.parent;
+-	struct device_node *child;
+ 	struct pinctrl_map *map;
+ 	const char **pgnames;
+ 	const char *grpname;
+@@ -492,20 +491,18 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
  
-@@ -678,12 +677,11 @@ static int stm32_pctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
- 	*num_maps = 0;
- 	reserved_maps = 0;
+ 	nmaps = 0;
+ 	ngroups = 0;
+-	for_each_available_child_of_node(np, child) {
++	for_each_available_child_of_node_scoped(np, child) {
+ 		int npinmux = of_property_count_u32_elems(child, "pinmux");
+ 		int npins   = of_property_count_u32_elems(child, "pins");
  
--	for_each_child_of_node(np_config, np) {
-+	for_each_child_of_node_scoped(np_config, np) {
- 		ret = stm32_pctrl_dt_subnode_to_map(pctldev, np, map,
- 				&reserved_maps, num_maps);
- 		if (ret < 0) {
- 			pinctrl_utils_free_map(pctldev, *map, *num_maps);
--			of_node_put(np);
- 			return ret;
+ 		if (npinmux > 0 && npins > 0) {
+ 			dev_err(dev, "invalid pinctrl group %pOFn.%pOFn: both pinmux and pins set\n",
+ 				np, child);
+-			of_node_put(child);
+ 			return -EINVAL;
  		}
- 	}
-@@ -1401,7 +1399,7 @@ static int stm32_gpiolib_register_bank(struct stm32_pinctrl *pctl, struct fwnode
- static struct irq_domain *stm32_pctrl_get_irq_domain(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
--	struct device_node *parent;
-+	struct device_node *parent __free(device_node) = NULL;
- 	struct irq_domain *domain;
+ 		if (npinmux == 0 && npins == 0) {
+ 			dev_err(dev, "invalid pinctrl group %pOFn.%pOFn: neither pinmux nor pins set\n",
+ 				np, child);
+-			of_node_put(child);
+ 			return -EINVAL;
+ 		}
  
- 	if (!of_property_present(np, "interrupt-parent"))
-@@ -1412,7 +1410,6 @@ static struct irq_domain *stm32_pctrl_get_irq_domain(struct platform_device *pde
- 		return ERR_PTR(-ENXIO);
+@@ -527,14 +524,14 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	nmaps = 0;
+ 	ngroups = 0;
+ 	mutex_lock(&sfp->mutex);
+-	for_each_available_child_of_node(np, child) {
++	for_each_available_child_of_node_scoped(np, child) {
+ 		int npins;
+ 		int i;
  
- 	domain = irq_find_host(parent);
--	of_node_put(parent);
- 	if (!domain)
- 		/* domain not registered yet */
- 		return ERR_PTR(-EPROBE_DEFER);
+ 		grpname = devm_kasprintf(dev, GFP_KERNEL, "%pOFn.%pOFn", np, child);
+ 		if (!grpname) {
+ 			ret = -ENOMEM;
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		pgnames[ngroups++] = grpname;
+@@ -543,18 +540,18 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 			pins = devm_kcalloc(dev, npins, sizeof(*pins), GFP_KERNEL);
+ 			if (!pins) {
+ 				ret = -ENOMEM;
+-				goto put_child;
++				goto free_map;
+ 			}
+ 
+ 			pinmux = devm_kcalloc(dev, npins, sizeof(*pinmux), GFP_KERNEL);
+ 			if (!pinmux) {
+ 				ret = -ENOMEM;
+-				goto put_child;
++				goto free_map;
+ 			}
+ 
+ 			ret = of_property_read_u32_array(child, "pinmux", pinmux, npins);
+ 			if (ret)
+-				goto put_child;
++				goto free_map;
+ 
+ 			for (i = 0; i < npins; i++) {
+ 				unsigned int gpio = starfive_pinmux_to_gpio(pinmux[i]);
+@@ -570,7 +567,7 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 			pins = devm_kcalloc(dev, npins, sizeof(*pins), GFP_KERNEL);
+ 			if (!pins) {
+ 				ret = -ENOMEM;
+-				goto put_child;
++				goto free_map;
+ 			}
+ 
+ 			pinmux = NULL;
+@@ -580,18 +577,18 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 
+ 				ret = of_property_read_u32_index(child, "pins", i, &v);
+ 				if (ret)
+-					goto put_child;
++					goto free_map;
+ 				pins[i] = v;
+ 			}
+ 		} else {
+ 			ret = -EINVAL;
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		ret = pinctrl_generic_add_group(pctldev, grpname, pins, npins, pinmux);
+ 		if (ret < 0) {
+ 			dev_err(dev, "error adding group %s: %d\n", grpname, ret);
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		ret = pinconf_generic_parse_dt_config(child, pctldev,
+@@ -600,7 +597,7 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 		if (ret) {
+ 			dev_err(dev, "error parsing pin config of group %s: %d\n",
+ 				grpname, ret);
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		/* don't create a map if there are no pinconf settings */
+@@ -623,8 +620,6 @@ static int starfive_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	mutex_unlock(&sfp->mutex);
+ 	return 0;
+ 
+-put_child:
+-	of_node_put(child);
+ free_map:
+ 	pinctrl_utils_free_map(pctldev, map, nmaps);
+ 	mutex_unlock(&sfp->mutex);
+diff --git a/drivers/pinctrl/starfive/pinctrl-starfive-jh7110.c b/drivers/pinctrl/starfive/pinctrl-starfive-jh7110.c
+index 9609eb1ecc3d..4ce080caa233 100644
+--- a/drivers/pinctrl/starfive/pinctrl-starfive-jh7110.c
++++ b/drivers/pinctrl/starfive/pinctrl-starfive-jh7110.c
+@@ -150,7 +150,7 @@ static int jh7110_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	nmaps = 0;
+ 	ngroups = 0;
+ 	mutex_lock(&sfp->mutex);
+-	for_each_available_child_of_node(np, child) {
++	for_each_available_child_of_node_scoped(np, child) {
+ 		int npins = of_property_count_u32_elems(child, "pinmux");
+ 		int *pins;
+ 		u32 *pinmux;
+@@ -161,13 +161,13 @@ static int jh7110_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 				"invalid pinctrl group %pOFn.%pOFn: pinmux not set\n",
+ 				np, child);
+ 			ret = -EINVAL;
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		grpname = devm_kasprintf(dev, GFP_KERNEL, "%pOFn.%pOFn", np, child);
+ 		if (!grpname) {
+ 			ret = -ENOMEM;
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		pgnames[ngroups++] = grpname;
+@@ -175,18 +175,18 @@ static int jh7110_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 		pins = devm_kcalloc(dev, npins, sizeof(*pins), GFP_KERNEL);
+ 		if (!pins) {
+ 			ret = -ENOMEM;
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		pinmux = devm_kcalloc(dev, npins, sizeof(*pinmux), GFP_KERNEL);
+ 		if (!pinmux) {
+ 			ret = -ENOMEM;
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		ret = of_property_read_u32_array(child, "pinmux", pinmux, npins);
+ 		if (ret)
+-			goto put_child;
++			goto free_map;
+ 
+ 		for (i = 0; i < npins; i++)
+ 			pins[i] = jh7110_pinmux_pin(pinmux[i]);
+@@ -200,7 +200,7 @@ static int jh7110_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 						pins, npins, pinmux);
+ 		if (ret < 0) {
+ 			dev_err(dev, "error adding group %s: %d\n", grpname, ret);
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		ret = pinconf_generic_parse_dt_config(child, pctldev,
+@@ -209,7 +209,7 @@ static int jh7110_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 		if (ret) {
+ 			dev_err(dev, "error parsing pin config of group %s: %d\n",
+ 				grpname, ret);
+-			goto put_child;
++			goto free_map;
+ 		}
+ 
+ 		/* don't create a map if there are no pinconf settings */
+@@ -233,8 +233,6 @@ static int jh7110_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	*num_maps = nmaps;
+ 	return 0;
+ 
+-put_child:
+-	of_node_put(child);
+ free_map:
+ 	pinctrl_utils_free_map(pctldev, map, nmaps);
+ 	mutex_unlock(&sfp->mutex);
 
 -- 
 2.37.1
