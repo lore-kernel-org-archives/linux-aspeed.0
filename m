@@ -1,10 +1,10 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Wed, 01 May 2024 12:49:13 -0000
-Subject: [PATCH 02/21] pinctrl: tegra: Use scope based of_node_put()
+Date: Wed, 01 May 2024 12:49:14 -0000
+Subject: [PATCH 03/21] pinctrl: sunplus: Use scope based of_node_put()
  cleanups
 In-Reply-To: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
-Message-ID: <20240501-pinctrl-cleanup-v1-2-797ceca46e5c@nxp.com>
+Message-ID: <20240501-pinctrl-cleanup-v1-3-797ceca46e5c@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,81 +17,36 @@ Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/pinctrl/tegra/pinctrl-tegra-xusb.c |  7 ++-----
- drivers/pinctrl/tegra/pinctrl-tegra.c      | 10 +++-------
- 2 files changed, 5 insertions(+), 12 deletions(-)
+ drivers/pinctrl/sunplus/sppctl.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c b/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
-index 96ef57a7d385..49c5edeba87f 100644
---- a/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
-+++ b/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
-@@ -238,20 +238,17 @@ static int tegra_xusb_padctl_dt_node_to_map(struct pinctrl_dev *pinctrl,
- {
- 	struct tegra_xusb_padctl *padctl = pinctrl_dev_get_drvdata(pinctrl);
- 	unsigned int reserved_maps = 0;
--	struct device_node *np;
- 	int err;
- 
- 	*num_maps = 0;
- 	*maps = NULL;
- 
--	for_each_child_of_node(parent, np) {
-+	for_each_child_of_node_scoped(parent, np) {
- 		err = tegra_xusb_padctl_parse_subnode(padctl, np, maps,
- 						      &reserved_maps,
- 						      num_maps);
--		if (err < 0) {
--			of_node_put(np);
-+		if (err < 0)
- 			return err;
--		}
- 	}
- 
- 	return 0;
-diff --git a/drivers/pinctrl/tegra/pinctrl-tegra.c b/drivers/pinctrl/tegra/pinctrl-tegra.c
-index ccfa3870a67d..69088609a0c8 100644
---- a/drivers/pinctrl/tegra/pinctrl-tegra.c
-+++ b/drivers/pinctrl/tegra/pinctrl-tegra.c
-@@ -188,20 +188,18 @@ static int tegra_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
- 					unsigned *num_maps)
- {
- 	unsigned reserved_maps;
--	struct device_node *np;
- 	int ret;
- 
- 	reserved_maps = 0;
- 	*map = NULL;
- 	*num_maps = 0;
- 
--	for_each_child_of_node(np_config, np) {
-+	for_each_child_of_node_scoped(np_config, np) {
- 		ret = tegra_pinctrl_dt_subnode_to_map(pctldev, np, map,
- 						      &reserved_maps, num_maps);
- 		if (ret < 0) {
- 			pinctrl_utils_free_map(pctldev, *map,
- 				*num_maps);
--			of_node_put(np);
- 			return ret;
+diff --git a/drivers/pinctrl/sunplus/sppctl.c b/drivers/pinctrl/sunplus/sppctl.c
+index ae156f779a16..604256ec9079 100644
+--- a/drivers/pinctrl/sunplus/sppctl.c
++++ b/drivers/pinctrl/sunplus/sppctl.c
+@@ -823,7 +823,7 @@ static int sppctl_dt_node_to_map(struct pinctrl_dev *pctldev, struct device_node
+ 	int nmG = of_property_count_strings(np_config, "groups");
+ 	const struct sppctl_func *f = NULL;
+ 	u8 pin_num, pin_type, pin_func;
+-	struct device_node *parent;
++	struct device_node *parent __free(device_node) = NULL;
+ 	unsigned long *configs;
+ 	struct property *prop;
+ 	const char *s_f, *s_g;
+@@ -964,7 +964,6 @@ static int sppctl_dt_node_to_map(struct pinctrl_dev *pctldev, struct device_node
  		}
  	}
-@@ -759,17 +757,15 @@ DEFINE_NOIRQ_DEV_PM_OPS(tegra_pinctrl_pm, tegra_pinctrl_suspend, tegra_pinctrl_r
  
- static bool tegra_pinctrl_gpio_node_has_range(struct tegra_pmx *pmx)
- {
--	struct device_node *np;
-+	struct device_node *np __free(device_node) =
-+		of_find_compatible_node(NULL, NULL, pmx->soc->gpio_compatible);
- 	bool has_prop = false;
+-	of_node_put(parent);
+ 	dev_dbg(pctldev->dev, "%d pins mapped\n", *num_maps);
+ 	return 0;
  
--	np = of_find_compatible_node(NULL, NULL, pmx->soc->gpio_compatible);
- 	if (!np)
- 		return has_prop;
- 
- 	has_prop = of_find_property(np, "gpio-ranges", NULL);
- 
--	of_node_put(np);
--
- 	return has_prop;
+@@ -973,7 +972,6 @@ static int sppctl_dt_node_to_map(struct pinctrl_dev *pctldev, struct device_node
+ 		if ((*map)[i].type == PIN_MAP_TYPE_CONFIGS_PIN)
+ 			kfree((*map)[i].data.configs.configs);
+ 	kfree(*map);
+-	of_node_put(parent);
+ 	return -ENOMEM;
  }
  
 
