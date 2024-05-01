@@ -1,40 +1,127 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 1 May 2024 07:39:48 -0500
-Subject: [PATCH] dt-bindings: mfd: aspeed: Drop 'oneOf' for pinctrl node
-In-Reply-To: <4f3ce3439e3d996471085e906902e508528308d3.camel@codeconstruct.com.au>
-References: <20240430172520.535179-1-robh@kernel.org> <4f3ce3439e3d996471085e906902e508528308d3.camel@codeconstruct.com.au>
-Message-ID: <CAL_JsqJmciSKp4H2KXcqv78Vga5gDi0JU_PY4Dth7LJrq6swMA@mail.gmail.com>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Wed, 1 May 2024 10:59:54 -0500
+Subject: [PATCH v4 04/17] dt-bindings: fsi: p9-occ: Convert to json-schema
+In-Reply-To: <0fcadbe6-7615-498e-89c0-e3b072c4828c@kernel.org>
+References: <20240429210131.373487-1-eajames@linux.ibm.com>
+ <20240429210131.373487-5-eajames@linux.ibm.com>
+ <0fcadbe6-7615-498e-89c0-e3b072c4828c@kernel.org>
+Message-ID: <e3601656-84d3-47e1-9cbd-d2cb0dde5f51@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 30, 2024 at 7:40?PM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> On Tue, 2024-04-30 at 12:25 -0500, Rob Herring (Arm) wrote:
-> > The use of 'oneOf' to include 1 of 3 possible child node schemas results
-> > in error messages containing the actual error message(s) for the correct
-> > SoC buried in the tons of error messages from the 2 schemas that don't
-> > apply. It also causes the pinctrl schema to be applied twice as it will
-> > be applied when the compatible matches.
-> >
-> > All that's really needed in the parent schema is to ensure one of the
-> > possible compatible strings is present in the pinctrl node so that its
-> > schema will be applied separately.
->
-> Thanks, I think it improves the readability of intent in the binding as
-> well.
->
-> To understand the impact better I grabbed the patch and diffed the
-> output of `make CHECK_DTBS=y aspeed/aspeed-ast2600-evb.dtb` before and
-> after applying it, but there was no significant difference in output.
-> Should that not demonstrate the errors being cleaned up? If not, what
-> should?
 
-Try it on one of the new boards posted in the last 1-2 days. It showed
-up on my testing dtbs_check on patches. I didn't send a report because
-there was so much noise in it.
+On 4/30/24 01:53, Krzysztof Kozlowski wrote:
+> On 29/04/2024 23:01, Eddie James wrote:
+>> Conver to json-schema for the OCC documentation. Also document the fact
+>> that the OCC "bridge" device will often have the hwmon node as a
+>> child.
+>>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> ---
+>> Changes since v3:
+>>   - Move required below other properties
+>>   - Drop "occ-" in child node
+>>   - Drop hwmon unit address
+>>   - Complete example
+>>   - Change commit message to match similar commits
+>>
+>>   .../devicetree/bindings/fsi/ibm,p9-occ.txt    | 16 --------
+>>   .../devicetree/bindings/fsi/ibm,p9-occ.yaml   | 41 +++++++++++++++++++
+>>   2 files changed, 41 insertions(+), 16 deletions(-)
+>>   delete mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
+>>   create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
+>> deleted file mode 100644
+>> index e73358075a90..000000000000
+>> --- a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
+>> +++ /dev/null
+>> @@ -1,16 +0,0 @@
+>> -Device-tree bindings for FSI-attached POWER9/POWER10 On-Chip Controller (OCC)
+>> ------------------------------------------------------------------------------
+>> -
+>> -This is the binding for the P9 or P10 On-Chip Controller accessed over FSI from
+>> -a service processor. See fsi.txt for details on bindings for FSI slave and CFAM
+>> -nodes. The OCC is not an FSI slave device itself, rather it is accessed
+>> -through the SBE FIFO.
+>> -
+>> -Required properties:
+>> - - compatible = "ibm,p9-occ" or "ibm,p10-occ"
+>> -
+>> -Examples:
+>> -
+>> -    occ {
+>> -        compatible = "ibm,p9-occ";
+>> -    };
+>> diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+>> new file mode 100644
+>> index 000000000000..3ab2582cb8a0
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+>> @@ -0,0 +1,41 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/fsi/ibm,p9-occ.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: IBM FSI-attached On-Chip Controller (OCC)
+>> +
+>> +maintainers:
+>> +  - Eddie James <eajames@linux.ibm.com>
+>> +
+>> +description:
+>> +  The POWER processor On-Chip Controller (OCC) helps manage power and
+>> +  thermals for the system, accessed through the FSI-attached SBEFIFO
+>> +  from a service processor.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - ibm,p9-occ
+>> +      - ibm,p10-occ
+>> +
+>> +patternProperties:
+>> +  "^hwmon":
+> And now it raises questions:
+> 1. Other devices on FSI bus have unit addresses, so why this does not?
+> 2. This suggest only one hwmon, so ^hwmon$, which is then not a
+> patternProperty but property.
+> 3. But the true problem why do you even need two empty nodes? These
+> should be combined into one node.
 
-Rob
+
+1. This is not truly on the FSI bus. It is on the SBEFIFO "bus"
+
+2. True enough, I'll change it to property.
+
+3. If this binding was being designed now, I'd agree with you, but the 
+two nodes (occ and occ-hwmon) are already documented, I'm just changing 
+to yaml here... Changing that would require a lot of changes and would 
+break the two drivers.
+
+
+>
+>> +    type: object
+>> +    $ref: /schemas/hwmon/ibm,occ-hwmon.yaml
+>> +
+>> +required:
+>> +  - compatible
+>> +
+>> +additionalProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    occ {
+>> +        compatible = "ibm,p9-occ";
+>> +
+>> +        hwmon {
+>> +            compatible = "ibm,p9-occ-hwmon";
+>> +        };
+>> +    };
+> Best regards,
+> Krzysztof
+>
