@@ -1,65 +1,99 @@
-From: Dan Carpenter <dan.carpenter@linaro.org>
-Date: Thu, 02 May 2024 07:05:46 -0000
-Subject: [PATCH 01/21] pinctrl: ti: iodelay: Use scope based
- of_node_put() cleanups
-In-Reply-To: <DU0PR04MB9417AD5892A1A45E6AE18D8688182@DU0PR04MB9417.eurprd04.prod.outlook.com>
+From: Peng Fan <peng.fan@nxp.com>
+Date: Thu, 02 May 2024 11:53:01 -0000
+Subject: [PATCH 20/21] pinctrl: aspeed: g5: Use scope based of_node_put()
+ cleanups
+In-Reply-To: <eda5b1da03d4adfa5761c49527a9232ec7facae3.camel@codeconstruct.com.au>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
- <20240501-pinctrl-cleanup-v1-1-797ceca46e5c@nxp.com>
- <ee5c8637-b8b2-491b-b011-e399942691dc@moroto.mountain>
- <DU0PR04MB9417AD5892A1A45E6AE18D8688182@DU0PR04MB9417.eurprd04.prod.outlook.com>
-Message-ID: <26aab31b-8085-49e0-862d-24c26ff4d02c@moroto.mountain>
+	 <20240501-pinctrl-cleanup-v1-20-797ceca46e5c@nxp.com>
+ <eda5b1da03d4adfa5761c49527a9232ec7facae3.camel@codeconstruct.com.au>
+Message-ID: <DU0PR04MB9417870C10E47E1AF8557ECD88182@DU0PR04MB9417.eurprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 02, 2024 at 12:28:42AM +0000, Peng Fan wrote:
-> > Subject: Re: [PATCH 01/21] pinctrl: ti: iodelay: Use scope based of_node_put()
-> > cleanups
-> > 
-> > On Wed, May 01, 2024 at 08:55:59PM +0800, Peng Fan (OSS) wrote:
-> > > @@ -879,16 +874,12 @@ static int ti_iodelay_probe(struct
-> > platform_device *pdev)
-> > >  	ret = pinctrl_register_and_init(&iod->desc, dev, iod, &iod->pctl);
-> > >  	if (ret) {
-> > >  		dev_err(dev, "Failed to register pinctrl\n");
-> > > -		goto exit_out;
-> > > +		return ret;
-> > >  	}
-> > >
-> > >  	platform_set_drvdata(pdev, iod);
-> > >
-> > >  	return pinctrl_enable(iod->pctl);
-> > > -
-> > > -exit_out:
-> > > -	of_node_put(np);
-> > > -	return ret;
-> > >  }
-> > 
-> > This will call of_node_put() on the success path so it's a behavior change.  The
-> > original code is buggy, it's supposed to call of_node_put() on the success path
-> > here or in ti_iodelay_remove().
-> > 
-> > If it's supposed to call of_node_put() here, then fine, this is bugfix but if it's
-> > supposed to call it in ti_iodelay_remove() then we need to save the pointer
-> > somewhere using no_free_ptr().  Probably saving ->np is the safest choice?
-> > 
-> > The original code is already a little bit buggy because it doesn't check for
-> > pinctrl_enable() errors and cleanup.
-> 
-> It was introduced by 
-> commit 6118714275f0a313ecc296a87ed1af32d9691bed (tag: pinctrl-v4.11-4)
-> Author: Tony Lindgren <tony@atomide.com>
-> Date:   Thu Mar 30 09:16:39 2017 -0700
-> 
->     pinctrl: core: Fix pinctrl_register_and_init() with pinctrl_enable()
-> 
-> of_node_put is expected in probe, not in remove.
-> 
+> Subject: Re: [PATCH 20/21] pinctrl: aspeed: g5: Use scope based
+> of_node_put() cleanups
+>
+> On Wed, 2024-05-01 at 20:56 +0800, Peng Fan (OSS) wrote:
+> > From: Peng Fan <peng.fan@nxp.com>
+> >
+> > Use scope based of_node_put() cleanup to simplify code.
+> >
+> > Signed-off-by: Peng Fan <peng.fan@nxp.com>
+> > ---
+> >  drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 6 ++----
+> >  1 file changed, 2 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+> > b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+> > index 5bb8fd0d1e41..61fbfddb5938 100644
+> > --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+> > +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+> > @@ -2629,14 +2629,13 @@ static struct regmap
+> *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
+> >             return ctx->maps[ip];
+> >
+> >     if (ip == ASPEED_IP_GFX) {
+> > -           struct device_node *node;
+> > +           struct device_node *node __free(device_node) = NULL;
+> >             struct regmap *map;
+> >
+> >             node = of_parse_phandle(ctx->dev->of_node,
+> >                                     "aspeed,external-nodes", 0);
+> >             if (node) {
+> >                     map = syscon_node_to_regmap(node);
+> > -                   of_node_put(node);
+> >                     if (IS_ERR(map))
+> >                             return map;
+> >             } else
+> > @@ -2648,7 +2647,7 @@ static struct regmap
+> *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
+> >     }
+> >
+> >     if (ip == ASPEED_IP_LPC) {
+> > -           struct device_node *np;
+> > +           struct device_node *np __free(device_node) = NULL;
+> >             struct regmap *map;
+> >
+> >             np = of_parse_phandle(ctx->dev->of_node,
+> > @@ -2660,7 +2659,6 @@ static struct regmap
+> *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
+> >                             return ERR_PTR(-ENODEV);
+> >
+> >                     map = syscon_node_to_regmap(np->parent);
+> > -                   of_node_put(np);
+> >                     if (IS_ERR(map))
+> >                             return map;
+>
+> I think I agree with Krzysztof's feedback on the Samsung patch[1], and that I
+> prefer the existing approach for the Aspeed driver. My reasoning suggests the
+> existing implementation does the right thing. That said, the code could be
+> adjusted to use early returns and consistent variable names, which might
+> make it easier to reason about.
 
-Ah, right.  You'll add that for the Fixes tag obviously...
+No problem, let's keep the code as it is.
 
-regards,
-dan carpenter
+Thanks,
+Peng
+
+I'll consider a follow-up patch to address that.
+>
+> Regardless, thanks for taking the time to explore the cleanup.
+>
+> Andrew
+>
+> [1]:
+> https://lore.ke/
+> rnel.org%2Flkml%2F34193501-5b7b-4ffd-8549-
+> a04c6930d02d%40kernel.org%2F&data=05%7C02%7Cpeng.fan%40nxp.com
+> %7C44ef77e479264eccd73f08dc6a4263c6%7C686ea1d3bc2b4c6fa92cd99c5
+> c301635%7C0%7C0%7C638502080600849943%7CUnknown%7CTWFpbGZs
+> b3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn
+> 0%3D%7C0%7C%7C%7C&sdata=tuUu1IeqM5sQjqiN1fwzPAbSoZw%2FUNEd2
+> u%2BzpaBhJ4M%3D&reserved=0
+>
+> >             } else
+> >
 
