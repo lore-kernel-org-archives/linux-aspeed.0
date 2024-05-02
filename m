@@ -1,68 +1,102 @@
 From: Peng Fan <peng.fan@nxp.com>
-Date: Wed, 01 May 2024 23:25:51 -0000
-Subject: [PATCH 08/21] pinctrl: samsung: Use scope based of_node_put()
+Date: Thu, 02 May 2024 00:29:06 -0000
+Subject: [PATCH 01/21] pinctrl: ti: iodelay: Use scope based of_node_put()
  cleanups
-In-Reply-To: <34193501-5b7b-4ffd-8549-a04c6930d02d@kernel.org>
+In-Reply-To: <ee5c8637-b8b2-491b-b011-e399942691dc@moroto.mountain>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
- <20240501-pinctrl-cleanup-v1-8-797ceca46e5c@nxp.com>
- <34193501-5b7b-4ffd-8549-a04c6930d02d@kernel.org>
-Message-ID: <DU0PR04MB941755376CA87C2EC70FDF7088192@DU0PR04MB9417.eurprd04.prod.outlook.com>
+ <20240501-pinctrl-cleanup-v1-1-797ceca46e5c@nxp.com>
+ <ee5c8637-b8b2-491b-b011-e399942691dc@moroto.mountain>
+Message-ID: <DU0PR04MB9417AD5892A1A45E6AE18D8688182@DU0PR04MB9417.eurprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Subject: Re: [PATCH 08/21] pinctrl: samsung: Use scope based of_node_put()
+> Subject: Re: [PATCH 01/21] pinctrl: ti: iodelay: Use scope based of_node_put()
 > cleanups
 > 
-> On 01/05/2024 14:56, Peng Fan (OSS) wrote:
-> > From: Peng Fan <peng.fan@nxp.com>
-> >
-> > Use scope based of_node_put() cleanup to simplify code.
-> >
-> > Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> > ---
-> >  drivers/pinctrl/samsung/pinctrl-exynos-arm.c |  3 +--
-> >  drivers/pinctrl/samsung/pinctrl-exynos.c     | 16 ++++------------
-> >  drivers/pinctrl/samsung/pinctrl-s3c64xx.c    |  8 ++------
-> >  drivers/pinctrl/samsung/pinctrl-samsung.c    | 26 +++++++-------------------
-> >  4 files changed, 14 insertions(+), 39 deletions(-)
-> >
-> > diff --git a/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> > b/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> > index 85ddf49a5188..9a57b3ceb536 100644
-> > --- a/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> > +++ b/drivers/pinctrl/samsung/pinctrl-exynos-arm.c
-> > @@ -56,7 +56,7 @@ s5pv210_retention_init(struct
-> samsung_pinctrl_drv_data *drvdata,
-> >  		       const struct samsung_retention_data *data)  {
-> >  	struct samsung_retention_ctrl *ctrl;
-> > -	struct device_node *np;
-> > +	struct device_node *np __free(device_node) = NULL;
-> >  	void __iomem *clk_base;
-> >
-> >  	ctrl = devm_kzalloc(drvdata->dev, sizeof(*ctrl), GFP_KERNEL); @@
-> > -71,7 +71,6 @@ s5pv210_retention_init(struct samsung_pinctrl_drv_data
-> *drvdata,
+> On Wed, May 01, 2024 at 08:55:59PM +0800, Peng Fan (OSS) wrote:
+> > @@ -879,16 +874,12 @@ static int ti_iodelay_probe(struct
+> platform_device *pdev)
+> >  	ret = pinctrl_register_and_init(&iod->desc, dev, iod, &iod->pctl);
+> >  	if (ret) {
+> >  		dev_err(dev, "Failed to register pinctrl\n");
+> > -		goto exit_out;
+> > +		return ret;
 > >  	}
 > >
-> >  	clk_base = of_iomap(np, 0);
+> >  	platform_set_drvdata(pdev, iod);
+> >
+> >  	return pinctrl_enable(iod->pctl);
+> > -
+> > -exit_out:
 > > -	of_node_put(np);
+> > -	return ret;
+> >  }
 > 
-> I don't think the code as simpler. Previous was very easy to read, obvious, no
-> error paths.
+> This will call of_node_put() on the success path so it's a behavior change.  The
+> original code is buggy, it's supposed to call of_node_put() on the success path
+> here or in ti_iodelay_remove().
 > 
-> To me any conversion of such of_node_get immediately followed by
-> of_node_put is unwelcomed. Easy code is being  converted to complicated
-> one.
+> If it's supposed to call of_node_put() here, then fine, this is bugfix but if it's
+> supposed to call it in ti_iodelay_remove() then we need to save the pointer
+> somewhere using no_free_ptr().  Probably saving ->np is the safest choice?
+> 
+> The original code is already a little bit buggy because it doesn't check for
+> pinctrl_enable() errors and cleanup.
 
-ok. I will drop the changes to code pieces as you commented.
+It was introduced by 
+commit 6118714275f0a313ecc296a87ed1af32d9691bed (tag: pinctrl-v4.11-4)
+Author: Tony Lindgren <tony@atomide.com>
+Date:   Thu Mar 30 09:16:39 2017 -0700
+
+    pinctrl: core: Fix pinctrl_register_and_init() with pinctrl_enable()
+
+of_node_put is expected in probe, not in remove.
 
 Thanks,
 Peng.
+
 > 
 > 
-> Best regards,
-> Krzysztof
+> diff --git a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c b/drivers/pinctrl/ti/pinctrl-ti-
+> iodelay.c
+> index 040f2c46a868..f40a1476e4ff 100644
+> --- a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
+> +++ b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
+> @@ -156,6 +156,7 @@ struct ti_iodelay_device {
+> 
+>  	const struct ti_iodelay_reg_data *reg_data;
+>  	struct ti_iodelay_reg_values reg_init_conf_values;
+> +	struct device_node *np;
+>  };
+> 
+>  /**
+> @@ -884,7 +885,12 @@ static int ti_iodelay_probe(struct platform_device
+> *pdev)
+> 
+>  	platform_set_drvdata(pdev, iod);
+> 
+> -	return pinctrl_enable(iod->pctl);
+> +	ret = pinctrl_enable(iod->pctl);
+> +	if (ret)
+> +		goto exit_out;
+> +
+> +	iod->np = no_free_ptr(np);
+> +	return 0;
+> 
+>  exit_out:
+>  	of_node_put(np);
+> @@ -903,6 +909,7 @@ static void ti_iodelay_remove(struct platform_device
+> *pdev)
+>  		pinctrl_unregister(iod->pctl);
+> 
+>  	ti_iodelay_pinconf_deinit_dev(iod);
+> +	of_node_put(iod->np);
+> 
+>  	/* Expect other allocations to be freed by devm */  }
+> 
+> 
+> 
 
