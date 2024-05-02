@@ -1,77 +1,67 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 02 May 2024 00:54:15 -0000
-Subject: [PATCH 20/21] pinctrl: aspeed: g5: Use scope based
- of_node_put() cleanups
-In-Reply-To: <20240501-pinctrl-cleanup-v1-20-797ceca46e5c@nxp.com>
+From: Damien Le Moal <dlemoal@kernel.org>
+Date: Thu, 02 May 2024 09:45:23 -0000
+Subject: [PATCH 12/21] pinctrl: k210: Use scope based of_node_put()
+ cleanups
+In-Reply-To: <20240501-pinctrl-cleanup-v1-12-797ceca46e5c@nxp.com>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
-	 <20240501-pinctrl-cleanup-v1-20-797ceca46e5c@nxp.com>
-Message-ID: <eda5b1da03d4adfa5761c49527a9232ec7facae3.camel@codeconstruct.com.au>
+ <20240501-pinctrl-cleanup-v1-12-797ceca46e5c@nxp.com>
+Message-ID: <dfde41a3-9d7d-4253-8297-c7684372f6f0@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-05-01 at 20:56 +0800, Peng Fan (OSS) wrote:
+On 5/1/24 21:56, Peng Fan (OSS) wrote:
 > From: Peng Fan <peng.fan@nxp.com>
 > 
 > Use scope based of_node_put() cleanup to simplify code.
 > 
 > Signed-off-by: Peng Fan <peng.fan@nxp.com>
 > ---
->  drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+>  drivers/pinctrl/pinctrl-k210.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> index 5bb8fd0d1e41..61fbfddb5938 100644
-> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
-> @@ -2629,14 +2629,13 @@ static struct regmap *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
->  		return ctx->maps[ip];
+> diff --git a/drivers/pinctrl/pinctrl-k210.c b/drivers/pinctrl/pinctrl-k210.c
+> index b6d1ed9ec9a3..2753e14c3e38 100644
+> --- a/drivers/pinctrl/pinctrl-k210.c
+> +++ b/drivers/pinctrl/pinctrl-k210.c
+> @@ -849,7 +849,6 @@ static int k210_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+>  				       unsigned int *num_maps)
+>  {
+>  	unsigned int reserved_maps;
+> -	struct device_node *np;
+>  	int ret;
 >  
->  	if (ip == ASPEED_IP_GFX) {
-> -		struct device_node *node;
-> +		struct device_node *node __free(device_node) = NULL;
->  		struct regmap *map;
+>  	reserved_maps = 0;
+> @@ -861,13 +860,11 @@ static int k210_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+>  	if (ret < 0)
+>  		goto err;
 >  
->  		node = of_parse_phandle(ctx->dev->of_node,
->  					"aspeed,external-nodes", 0);
->  		if (node) {
->  			map = syscon_node_to_regmap(node);
-> -			of_node_put(node);
->  			if (IS_ERR(map))
->  				return map;
->  		} else
-> @@ -2648,7 +2647,7 @@ static struct regmap *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
->  	}
->  
->  	if (ip == ASPEED_IP_LPC) {
-> -		struct device_node *np;
-> +		struct device_node *np __free(device_node) = NULL;
->  		struct regmap *map;
->  
->  		np = of_parse_phandle(ctx->dev->of_node,
-> @@ -2660,7 +2659,6 @@ static struct regmap *aspeed_g5_acquire_regmap(struct aspeed_pinmux_data *ctx,
->  				return ERR_PTR(-ENODEV);
->  
->  			map = syscon_node_to_regmap(np->parent);
+> -	for_each_available_child_of_node(np_config, np) {
+> +	for_each_available_child_of_node_scoped(np_config, np) {
+>  		ret = k210_pinctrl_dt_subnode_to_map(pctldev, np, map,
+>  						     &reserved_maps, num_maps);
+> -		if (ret < 0) {
 > -			of_node_put(np);
->  			if (IS_ERR(map))
->  				return map;
 
-I think I agree with Krzysztof's feedback on the Samsung patch[1], and
-that I prefer the existing approach for the Aspeed driver. My reasoning
-suggests the existing implementation does the right thing. That said,
-the code could be adjusted to use early returns and consistent variable
-names, which might make it easier to reason about. I'll consider a
-follow-up patch to address that.
+Personally, I am really not a fan of things that hide code like that scoped
+thing... If I want a language that hides code, I would be doing C++ :)
+That said, I am not opposed to this so I will let Linus (Walleij) decide.
 
-Regardless, thanks for taking the time to explore the cleanup.
+Also, I think that "for_each_available_child_of_node" is a bad name... It really
+should be something like for_each_available_child_of_node_get() to make it clear
+that a of_node_put() is needed.
 
-Andrew
-
-[1]: https://lore.kernel.org/lkml/34193501-5b7b-4ffd-8549-a04c6930d02d at kernel.org/
-
->  		} else
+> +		if (ret < 0)
+>  			goto err;
+> -		}
+>  	}
+>  	return 0;
+>  
 > 
+
+-- 
+Damien Le Moal
+Western Digital Research
 
