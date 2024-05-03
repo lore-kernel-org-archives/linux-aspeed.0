@@ -1,67 +1,40 @@
-From: Damien Le Moal <dlemoal@kernel.org>
-Date: Thu, 02 May 2024 09:45:23 -0000
-Subject: [PATCH 12/21] pinctrl: k210: Use scope based of_node_put()
- cleanups
-In-Reply-To: <20240501-pinctrl-cleanup-v1-12-797ceca46e5c@nxp.com>
+From: Peng Fan <peng.fan@nxp.com>
+Date: Fri, 03 May 2024 23:12:05 -0000
+Subject: [PATCH 00/21] pinctrl: Use scope based of_node_put() cleanups
+In-Reply-To: <CACRpkdaRpJw=kHtya2iww7vvm+Bt6-oPMmz-6VzfhZniSoMP3w@mail.gmail.com>
 References: <20240501-pinctrl-cleanup-v1-0-797ceca46e5c@nxp.com>
- <20240501-pinctrl-cleanup-v1-12-797ceca46e5c@nxp.com>
-Message-ID: <dfde41a3-9d7d-4253-8297-c7684372f6f0@kernel.org>
+ <CACRpkdaRpJw=kHtya2iww7vvm+Bt6-oPMmz-6VzfhZniSoMP3w@mail.gmail.com>
+Message-ID: <DU0PR04MB9417D5D76707C413ABC0BAC0881F2@DU0PR04MB9417.eurprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 5/1/24 21:56, Peng Fan (OSS) wrote:
-> From: Peng Fan <peng.fan@nxp.com>
+Hi Linus,
+
+> Subject: Re: [PATCH 00/21] pinctrl: Use scope based of_node_put() cleanups
 > 
-> Use scope based of_node_put() cleanup to simplify code.
+> Hi Peng,
 > 
-> Signed-off-by: Peng Fan <peng.fan@nxp.com>
-> ---
->  drivers/pinctrl/pinctrl-k210.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
+> thanks for doing this! I am very much in favor of using scoped management
+> of resources where it makes it easier to do the right thing.
 > 
-> diff --git a/drivers/pinctrl/pinctrl-k210.c b/drivers/pinctrl/pinctrl-k210.c
-> index b6d1ed9ec9a3..2753e14c3e38 100644
-> --- a/drivers/pinctrl/pinctrl-k210.c
-> +++ b/drivers/pinctrl/pinctrl-k210.c
-> @@ -849,7 +849,6 @@ static int k210_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
->  				       unsigned int *num_maps)
->  {
->  	unsigned int reserved_maps;
-> -	struct device_node *np;
->  	int ret;
->  
->  	reserved_maps = 0;
-> @@ -861,13 +860,11 @@ static int k210_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
->  	if (ret < 0)
->  		goto err;
->  
-> -	for_each_available_child_of_node(np_config, np) {
-> +	for_each_available_child_of_node_scoped(np_config, np) {
->  		ret = k210_pinctrl_dt_subnode_to_map(pctldev, np, map,
->  						     &reserved_maps, num_maps);
-> -		if (ret < 0) {
-> -			of_node_put(np);
+> I agree with Krzysztof's comment that we should avoid scoping in cases where
+> there is a clear path grab/use/release so the code is easy to read already as it
+> is. Let's drop those.
+Yeah, will drop them in v2.
 
-Personally, I am really not a fan of things that hide code like that scoped
-thing... If I want a language that hides code, I would be doing C++ :)
-That said, I am not opposed to this so I will let Linus (Walleij) decide.
-
-Also, I think that "for_each_available_child_of_node" is a bad name... It really
-should be something like for_each_available_child_of_node_get() to make it clear
-that a of_node_put() is needed.
-
-> +		if (ret < 0)
->  			goto err;
-> -		}
->  	}
->  	return 0;
->  
 > 
+> I saw there was some patch that was even a fix, perhaps I should pick that
+> one separately for fixes, but probably it is non-urgent.
 
--- 
-Damien Le Moal
-Western Digital Research
+Not urgent, I will add fix tag in v2.
 
+Thanks,
+Peng.
+> 
+> I suppose we will just apply v2 after people had some time to look at it!
+> 
+> Yours,
+> Linus Walleij
