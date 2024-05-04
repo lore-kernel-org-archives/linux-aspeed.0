@@ -1,97 +1,80 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Sat, 04 May 2024 13:12:46 -0000
-Subject: [PATCH v2 00/20] pinctrl: Use scope based of_node_put() cleanups
-Message-ID: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
+Date: Sat, 04 May 2024 13:13:11 -0000
+Subject: [PATCH v2 02/20] pinctrl: tegra: Use scope based of_node_put()
+ cleanups
+In-Reply-To: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
+References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
+Message-ID: <20240504-pinctrl-cleanup-v2-2-26c5f2dc1181@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use scope based of_node_put() to simplify code. It reduces the chance
-of forgetting of_node_put(), and also simplifies error handling path.
-I not able to test the changes on all the hardwares, so driver owners,
-please help review when you have time.
+From: Peng Fan <peng.fan@nxp.com>
 
-This patchset was inspired from Dan's comments on pinctrl-scmi-imx.c,
-thanks.
+Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
-Changes in v2:
-- Drop aspeed changes per Andrew Jeffery
-- Drop changes to code pattern that of_node_get(or other refcount
-increasing) followed by of_node_put. That said, but I still have a
-change for samsung pinctrl that drops several of_node_put places. If
-this is not welcomed, patch 20/20 could be dropped.
-- Add Fix tag for patch 1
-- Add A-b for patch 4
-- Drop unneeded {} in patch 8 Per Dan Carpenter
-- Add a new patch 18.
-- Moved patch [19,20]/20, in case people are not happy with the changes,
-the two patch could be dropped when apply if no v3 patchset.
-- Link to v1: https://lore.kernel.org/r/20240501-pinctrl-cleanup-v1-0-797ceca46e5c at nxp.com
+ drivers/pinctrl/tegra/pinctrl-tegra-xusb.c | 7 ++-----
+ drivers/pinctrl/tegra/pinctrl-tegra.c      | 4 +---
+ 2 files changed, 3 insertions(+), 8 deletions(-)
 
----
-Peng Fan (20):
-      pinctrl: ti: iodelay: Use scope based of_node_put() cleanups
-      pinctrl: tegra: Use scope based of_node_put() cleanups
-      pinctrl: stm32: Use scope based of_node_put() cleanups
-      pinctrl: starfive: Use scope based of_node_put() cleanups
-      pinctrl: sprd: Use scope based of_node_put() cleanups
-      pinctrl: spear: Use scope based of_node_put() cleanups
-      pinctrl: renesas: Use scope based of_node_put() cleanups
-      pinctrl: st: Use scope based of_node_put() cleanups
-      pinctrl: rockchip: Use scope based of_node_put() cleanups
-      pinctrl: equilibrium: Use scope based of_node_put() cleanups
-      pinctrl: at91: Use scope based of_node_put() cleanups
-      pinctrl: s32cc: Use scope based of_node_put() cleanups
-      pinctrl: nomadik: Use scope based of_node_put() cleanups
-      pinctrl: mediatek: Use scope based of_node_put() cleanups
-      pinctrl: freescale: Use scope based of_node_put() cleanups
-      pinctrl: bcm: bcm63xx: Use scope based of_node_put() cleanups
-      pinctrl: pinconf-generic: Use scope based of_node_put() cleanups
-      pinctrl: freescale: mxs: Fix refcount of child
-      pinctrl: k210: Use scope based of_node_put() cleanups
-      pinctrl: samsung: Use scope based of_node_put() cleanups
+diff --git a/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c b/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
+index 96ef57a7d385..49c5edeba87f 100644
+--- a/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
++++ b/drivers/pinctrl/tegra/pinctrl-tegra-xusb.c
+@@ -238,20 +238,17 @@ static int tegra_xusb_padctl_dt_node_to_map(struct pinctrl_dev *pinctrl,
+ {
+ 	struct tegra_xusb_padctl *padctl = pinctrl_dev_get_drvdata(pinctrl);
+ 	unsigned int reserved_maps = 0;
+-	struct device_node *np;
+ 	int err;
+ 
+ 	*num_maps = 0;
+ 	*maps = NULL;
+ 
+-	for_each_child_of_node(parent, np) {
++	for_each_child_of_node_scoped(parent, np) {
+ 		err = tegra_xusb_padctl_parse_subnode(padctl, np, maps,
+ 						      &reserved_maps,
+ 						      num_maps);
+-		if (err < 0) {
+-			of_node_put(np);
++		if (err < 0)
+ 			return err;
+-		}
+ 	}
+ 
+ 	return 0;
+diff --git a/drivers/pinctrl/tegra/pinctrl-tegra.c b/drivers/pinctrl/tegra/pinctrl-tegra.c
+index ccfa3870a67d..c83e5a65e680 100644
+--- a/drivers/pinctrl/tegra/pinctrl-tegra.c
++++ b/drivers/pinctrl/tegra/pinctrl-tegra.c
+@@ -188,20 +188,18 @@ static int tegra_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 					unsigned *num_maps)
+ {
+ 	unsigned reserved_maps;
+-	struct device_node *np;
+ 	int ret;
+ 
+ 	reserved_maps = 0;
+ 	*map = NULL;
+ 	*num_maps = 0;
+ 
+-	for_each_child_of_node(np_config, np) {
++	for_each_child_of_node_scoped(np_config, np) {
+ 		ret = tegra_pinctrl_dt_subnode_to_map(pctldev, np, map,
+ 						      &reserved_maps, num_maps);
+ 		if (ret < 0) {
+ 			pinctrl_utils_free_map(pctldev, *map,
+ 				*num_maps);
+-			of_node_put(np);
+ 			return ret;
+ 		}
+ 	}
 
- drivers/pinctrl/bcm/pinctrl-bcm63xx.c              |  4 +--
- drivers/pinctrl/freescale/pinctrl-imx.c            | 25 ++++-----------
- drivers/pinctrl/freescale/pinctrl-imx1-core.c      | 16 +++-------
- drivers/pinctrl/freescale/pinctrl-mxs.c            | 18 ++++-------
- drivers/pinctrl/mediatek/pinctrl-mtk-common.c      |  4 +--
- drivers/pinctrl/mediatek/pinctrl-paris.c           |  4 +--
- drivers/pinctrl/nomadik/pinctrl-abx500.c           |  4 +--
- drivers/pinctrl/nomadik/pinctrl-nomadik.c          |  4 +--
- drivers/pinctrl/nxp/pinctrl-s32cc.c                | 31 ++++++------------
- drivers/pinctrl/pinconf-generic.c                  |  7 ++--
- drivers/pinctrl/pinctrl-at91-pio4.c                |  7 ++--
- drivers/pinctrl/pinctrl-at91.c                     | 14 +++-----
- drivers/pinctrl/pinctrl-equilibrium.c              | 21 +++---------
- drivers/pinctrl/pinctrl-k210.c                     |  7 ++--
- drivers/pinctrl/pinctrl-rockchip.c                 | 11 ++-----
- drivers/pinctrl/pinctrl-st.c                       | 37 +++++++---------------
- drivers/pinctrl/renesas/pinctrl-rza1.c             | 14 +++-----
- drivers/pinctrl/renesas/pinctrl-rzg2l.c            |  7 ++--
- drivers/pinctrl/renesas/pinctrl-rzn1.c             | 23 ++++----------
- drivers/pinctrl/renesas/pinctrl-rzv2m.c            |  7 ++--
- drivers/pinctrl/renesas/pinctrl.c                  |  7 ++--
- drivers/pinctrl/samsung/pinctrl-exynos.c           | 16 +++-------
- drivers/pinctrl/samsung/pinctrl-samsung.c          | 19 +++--------
- drivers/pinctrl/spear/pinctrl-spear.c              | 13 +++-----
- drivers/pinctrl/sprd/pinctrl-sprd.c                | 14 +++-----
- drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c | 27 +++++++---------
- drivers/pinctrl/starfive/pinctrl-starfive-jh7110.c | 18 +++++------
- drivers/pinctrl/stm32/pinctrl-stm32.c              |  4 +--
- drivers/pinctrl/tegra/pinctrl-tegra-xusb.c         |  7 ++--
- drivers/pinctrl/tegra/pinctrl-tegra.c              |  4 +--
- drivers/pinctrl/ti/pinctrl-ti-iodelay.c            | 37 ++++++++--------------
- 31 files changed, 133 insertions(+), 298 deletions(-)
----
-base-commit: bb7a2467e6beef44a80a17d45ebf2931e7631083
-change-id: 20240429-pinctrl-cleanup-e4d461c32648
-
-Best regards,
 -- 
-Peng Fan <peng.fan@nxp.com>
+2.37.1
 
