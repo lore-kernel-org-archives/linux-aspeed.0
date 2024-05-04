@@ -1,58 +1,116 @@
-From: Corey Minyard <corey@minyard.net>
-Date: Sat, 25 May 2024 14:39:48 -0000
-Subject: [PATCH 0/6] ipmi: Convert to platform remove callback returning
- void
-In-Reply-To: <sjgseqireuaswtbuwl3rvcszpsjzph4opq52x2kbudczxutz7o@2tua2oueufdd>
-References: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
- <3uhfeeahn2u23mxyumyxcyx4kmcxzczipkan7eqh4aslsmhxyz@zgsmwj2jvb2v>
- <Zhf9mQx/KgXOzPTs@mail.minyard.net>
- <sjgseqireuaswtbuwl3rvcszpsjzph4opq52x2kbudczxutz7o@2tua2oueufdd>
-Message-ID: <ZlH4KFZ3MYzelzZK@mail.minyard.net>
+From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
+Date: Sat, 04 May 2024 13:12:48 -0000
+Subject: [PATCH v2 01/20] pinctrl: ti: iodelay: Use scope based
+ of_node_put() cleanups
+In-Reply-To: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
+References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
+Message-ID: <20240504-pinctrl-cleanup-v2-1-26c5f2dc1181@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, May 25, 2024 at 12:10:38PM +0200, Uwe Kleine-K?nig wrote:
-> Hello Corey,
-> 
-> On Thu, Apr 11, 2024 at 10:11:21AM -0500, Corey Minyard wrote:
-> > On Thu, Apr 11, 2024 at 09:15:03AM +0200, Uwe Kleine-K?nig wrote:
-> > > Hello,
-> > > 
-> > > On Tue, Mar 05, 2024 at 05:26:57PM +0100, Uwe Kleine-K?nig wrote:
-> > > > this series converts all drivers below drivers/char/ipmi to struct
-> > > > platform_driver::remove_new(). See commit 5c5a7680e67b ("platform: Provide a
-> > > > remove callback that returns no value") for an extended explanation and the
-> > > > eventual goal.
-> > > > 
-> > > > All conversations are trivial, because their .remove() callbacks
-> > > > returned zero unconditionally.
-> > > > 
-> > > > There are no interdependencies between these patches, so they could be
-> > > > picked up individually. But I'd hope that they get picked up all
-> > > > together by Corey.
-> > 
-> > Yeah, I was kind of waiting for more reviews, but this is pretty
-> > straightforward.  I've pulled this into my tree.
-> 
-> These changes are in next since a while but didn't land in Linus tree
-> for v6.10-rc1. I intend to send a PR to Greg early next week changing
-> platform_driver::remove to match remove_new. If these commits don't make
-> it in in time, I'll be so bold and just include the commits from your
-> for-next branch in my PR.
+From: Peng Fan <peng.fan@nxp.com>
 
-I sent them to Linus right after 6.9 dropped, let me resend...
+Use scope based of_node_put() cleanup to simplify code.
 
--corey
+Fixes: 6118714275f0 ("pinctrl: core: Fix pinctrl_register_and_init() with pinctrl_enable()")
+Signed-off-by: Peng Fan <peng.fan@nxp.com>
+---
+ drivers/pinctrl/ti/pinctrl-ti-iodelay.c | 37 +++++++++++++--------------------
+ 1 file changed, 14 insertions(+), 23 deletions(-)
 
-> 
-> Best regards
-> Uwe
-> 
-> -- 
-> Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-> Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+diff --git a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
+index 040f2c46a868..1032bc9c36aa 100644
+--- a/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
++++ b/drivers/pinctrl/ti/pinctrl-ti-iodelay.c
+@@ -822,53 +822,48 @@ MODULE_DEVICE_TABLE(of, ti_iodelay_of_match);
+ static int ti_iodelay_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *np = of_node_get(dev->of_node);
++	struct device_node *np __free(device_node) = of_node_get(dev->of_node);
+ 	struct resource *res;
+ 	struct ti_iodelay_device *iod;
+-	int ret = 0;
++	int ret;
+ 
+ 	if (!np) {
+-		ret = -EINVAL;
+ 		dev_err(dev, "No OF node\n");
+-		goto exit_out;
++		return -EINVAL;
+ 	}
+ 
+ 	iod = devm_kzalloc(dev, sizeof(*iod), GFP_KERNEL);
+-	if (!iod) {
+-		ret = -ENOMEM;
+-		goto exit_out;
+-	}
++	if (!iod)
++		return -ENOMEM;
++
+ 	iod->dev = dev;
+ 	iod->reg_data = device_get_match_data(dev);
+ 	if (!iod->reg_data) {
+-		ret = -EINVAL;
+ 		dev_err(dev, "No DATA match\n");
+-		goto exit_out;
++		return -EINVAL;
+ 	}
+ 
+ 	/* So far We can assume there is only 1 bank of registers */
+ 	iod->reg_base = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
+-	if (IS_ERR(iod->reg_base)) {
+-		ret = PTR_ERR(iod->reg_base);
+-		goto exit_out;
+-	}
++	if (IS_ERR(iod->reg_base))
++		return PTR_ERR(iod->reg_base);
++
+ 	iod->phys_base = res->start;
+ 
+ 	iod->regmap = devm_regmap_init_mmio(dev, iod->reg_base,
+ 					    iod->reg_data->regmap_config);
+ 	if (IS_ERR(iod->regmap)) {
+ 		dev_err(dev, "Regmap MMIO init failed.\n");
+-		ret = PTR_ERR(iod->regmap);
+-		goto exit_out;
++		return PTR_ERR(iod->regmap);
+ 	}
+ 
+ 	ret = ti_iodelay_pinconf_init_dev(iod);
+ 	if (ret)
+-		goto exit_out;
++		return ret;
+ 
+ 	ret = ti_iodelay_alloc_pins(dev, iod, res->start);
+ 	if (ret)
+-		goto exit_out;
++		return ret;
+ 
+ 	iod->desc.pctlops = &ti_iodelay_pinctrl_ops;
+ 	/* no pinmux ops - we are pinconf */
+@@ -879,16 +874,12 @@ static int ti_iodelay_probe(struct platform_device *pdev)
+ 	ret = pinctrl_register_and_init(&iod->desc, dev, iod, &iod->pctl);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to register pinctrl\n");
+-		goto exit_out;
++		return ret;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, iod);
+ 
+ 	return pinctrl_enable(iod->pctl);
+-
+-exit_out:
+-	of_node_put(np);
+-	return ret;
+ }
+ 
+ /**
 
+-- 
+2.37.1
 
