@@ -1,10 +1,10 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Sat, 04 May 2024 13:16:50 -0000
-Subject: [PATCH v2 16/20] pinctrl: bcm: bcm63xx: Use scope based
+Date: Sat, 04 May 2024 13:17:08 -0000
+Subject: [PATCH v2 17/20] pinctrl: pinconf-generic: Use scope based
  of_node_put() cleanups
 In-Reply-To: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
 References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
-Message-ID: <20240504-pinctrl-cleanup-v2-16-26c5f2dc1181@nxp.com>
+Message-ID: <20240504-pinctrl-cleanup-v2-17-26c5f2dc1181@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,35 +17,37 @@ Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/pinctrl/bcm/pinctrl-bcm63xx.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/pinctrl/pinconf-generic.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/pinctrl/bcm/pinctrl-bcm63xx.c b/drivers/pinctrl/bcm/pinctrl-bcm63xx.c
-index e1285fe2fbc0..59d2ce8462d8 100644
---- a/drivers/pinctrl/bcm/pinctrl-bcm63xx.c
-+++ b/drivers/pinctrl/bcm/pinctrl-bcm63xx.c
-@@ -67,7 +67,6 @@ int bcm63xx_pinctrl_probe(struct platform_device *pdev,
+diff --git a/drivers/pinctrl/pinconf-generic.c b/drivers/pinctrl/pinconf-generic.c
+index 80de389199bd..a499b8af5c1f 100644
+--- a/drivers/pinctrl/pinconf-generic.c
++++ b/drivers/pinctrl/pinconf-generic.c
+@@ -382,7 +382,6 @@ int pinconf_generic_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 		unsigned int *num_maps, enum pinctrl_map_type type)
  {
- 	struct device *dev = &pdev->dev;
- 	struct bcm63xx_pinctrl *pc;
--	struct device_node *node;
- 	int err;
+ 	unsigned int reserved_maps;
+-	struct device_node *np;
+ 	int ret;
  
- 	pc = devm_kzalloc(dev, sizeof(*pc), GFP_KERNEL);
-@@ -94,12 +93,11 @@ int bcm63xx_pinctrl_probe(struct platform_device *pdev,
- 	if (IS_ERR(pc->pctl_dev))
- 		return PTR_ERR(pc->pctl_dev);
+ 	reserved_maps = 0;
+@@ -394,13 +393,11 @@ int pinconf_generic_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	if (ret < 0)
+ 		goto exit;
  
--	for_each_child_of_node(dev->parent->of_node, node) {
-+	for_each_child_of_node_scoped(dev->parent->of_node, node) {
- 		if (of_match_node(bcm63xx_gpio_of_match, node)) {
- 			err = bcm63xx_gpio_probe(dev, node, soc, pc);
- 			if (err) {
- 				dev_err(dev, "could not add GPIO chip\n");
--				of_node_put(node);
- 				return err;
- 			}
- 		}
+-	for_each_available_child_of_node(np_config, np) {
++	for_each_available_child_of_node_scoped(np_config, np) {
+ 		ret = pinconf_generic_dt_subnode_to_map(pctldev, np, map,
+ 					&reserved_maps, num_maps, type);
+-		if (ret < 0) {
+-			of_node_put(np);
++		if (ret < 0)
+ 			goto exit;
+-		}
+ 	}
+ 	return 0;
+ 
 
 -- 
 2.37.1
