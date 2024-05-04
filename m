@@ -1,10 +1,10 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Sat, 04 May 2024 13:15:10 -0000
-Subject: [PATCH v2 09/20] pinctrl: rockchip: Use scope based of_node_put()
- cleanups
+Date: Sat, 04 May 2024 13:15:11 -0000
+Subject: [PATCH v2 10/20] pinctrl: equilibrium: Use scope based
+ of_node_put() cleanups
 In-Reply-To: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
 References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
-Message-ID: <20240504-pinctrl-cleanup-v2-9-26c5f2dc1181@nxp.com>
+Message-ID: <20240504-pinctrl-cleanup-v2-10-26c5f2dc1181@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,62 +17,104 @@ Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/pinctrl/pinctrl-rockchip.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/pinctrl/pinctrl-equilibrium.c | 21 +++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/pinctrl/pinctrl-rockchip.c b/drivers/pinctrl/pinctrl-rockchip.c
-index 3bedf36a0019..68391d6497c9 100644
---- a/drivers/pinctrl/pinctrl-rockchip.c
-+++ b/drivers/pinctrl/pinctrl-rockchip.c
-@@ -3057,7 +3057,6 @@ static int rockchip_pinctrl_parse_functions(struct device_node *np,
- 						u32 index)
+diff --git a/drivers/pinctrl/pinctrl-equilibrium.c b/drivers/pinctrl/pinctrl-equilibrium.c
+index 6e1be38865c3..e727257bb697 100644
+--- a/drivers/pinctrl/pinctrl-equilibrium.c
++++ b/drivers/pinctrl/pinctrl-equilibrium.c
+@@ -588,14 +588,13 @@ static int funcs_utils(struct device *dev, struct eqbr_pmx_func *funcs,
+ 		       unsigned int *nr_funcs, funcs_util_ops op)
  {
- 	struct device *dev = info->dev;
--	struct device_node *child;
- 	struct rockchip_pmx_func *func;
- 	struct rockchip_pin_group *grp;
- 	int ret;
-@@ -3078,14 +3077,12 @@ static int rockchip_pinctrl_parse_functions(struct device_node *np,
- 	if (!func->groups)
- 		return -ENOMEM;
- 
--	for_each_child_of_node(np, child) {
-+	for_each_child_of_node_scoped(np, child) {
- 		func->groups[i] = child->name;
- 		grp = &info->groups[grp_index++];
- 		ret = rockchip_pinctrl_parse_groups(child, grp, info, i++);
--		if (ret) {
--			of_node_put(child);
-+		if (ret)
- 			return ret;
--		}
- 	}
- 
- 	return 0;
-@@ -3096,7 +3093,6 @@ static int rockchip_pinctrl_parse_dt(struct platform_device *pdev,
- {
- 	struct device *dev = &pdev->dev;
- 	struct device_node *np = dev->of_node;
--	struct device_node *child;
- 	int ret;
- 	int i;
- 
-@@ -3115,14 +3111,13 @@ static int rockchip_pinctrl_parse_dt(struct platform_device *pdev,
+ 	struct device_node *node = dev->of_node;
+-	struct device_node *np;
+ 	struct property *prop;
+ 	const char *fn_name;
+ 	unsigned int fid;
+ 	int i, j;
  
  	i = 0;
- 
--	for_each_child_of_node(np, child) {
-+	for_each_child_of_node_scoped(np, child) {
- 		if (of_match_node(rockchip_bank_match, child))
+-	for_each_child_of_node(node, np) {
++	for_each_child_of_node_scoped(node, np) {
+ 		prop = of_find_property(np, "groups", NULL);
+ 		if (!prop)
  			continue;
+@@ -633,7 +632,6 @@ static int funcs_utils(struct device *dev, struct eqbr_pmx_func *funcs,
+ 			break;
  
- 		ret = rockchip_pinctrl_parse_functions(child, info, i++);
- 		if (ret) {
- 			dev_err(dev, "failed to parse function\n");
--			of_node_put(child);
- 			return ret;
+ 		default:
+-			of_node_put(np);
+ 			return -EINVAL;
  		}
- 	}
+ 		i++;
+@@ -706,11 +704,10 @@ static int eqbr_build_groups(struct eqbr_pinctrl_drv_data *drvdata)
+ 	struct device_node *node = dev->of_node;
+ 	unsigned int *pins, *pinmux, pin_id, pinmux_id;
+ 	struct pingroup group, *grp = &group;
+-	struct device_node *np;
+ 	struct property *prop;
+ 	int j, err;
+ 
+-	for_each_child_of_node(node, np) {
++	for_each_child_of_node_scoped(node, np) {
+ 		prop = of_find_property(np, "groups", NULL);
+ 		if (!prop)
+ 			continue;
+@@ -718,42 +715,35 @@ static int eqbr_build_groups(struct eqbr_pinctrl_drv_data *drvdata)
+ 		err = of_property_count_u32_elems(np, "pins");
+ 		if (err < 0) {
+ 			dev_err(dev, "No pins in the group: %s\n", prop->name);
+-			of_node_put(np);
+ 			return err;
+ 		}
+ 		grp->npins = err;
+ 		grp->name = prop->value;
+ 		pins = devm_kcalloc(dev, grp->npins, sizeof(*pins), GFP_KERNEL);
+-		if (!pins) {
+-			of_node_put(np);
++		if (!pins)
+ 			return -ENOMEM;
+-		}
++
+ 		grp->pins = pins;
+ 
+ 		pinmux = devm_kcalloc(dev, grp->npins, sizeof(*pinmux), GFP_KERNEL);
+-		if (!pinmux) {
+-			of_node_put(np);
++		if (!pinmux)
+ 			return -ENOMEM;
+-		}
+ 
+ 		for (j = 0; j < grp->npins; j++) {
+ 			if (of_property_read_u32_index(np, "pins", j, &pin_id)) {
+ 				dev_err(dev, "Group %s: Read intel pins id failed\n",
+ 					grp->name);
+-				of_node_put(np);
+ 				return -EINVAL;
+ 			}
+ 			if (pin_id >= drvdata->pctl_desc.npins) {
+ 				dev_err(dev, "Group %s: Invalid pin ID, idx: %d, pin %u\n",
+ 					grp->name, j, pin_id);
+-				of_node_put(np);
+ 				return -EINVAL;
+ 			}
+ 			pins[j] = pin_id;
+ 			if (of_property_read_u32_index(np, "pinmux", j, &pinmux_id)) {
+ 				dev_err(dev, "Group %s: Read intel pinmux id failed\n",
+ 					grp->name);
+-				of_node_put(np);
+ 				return -EINVAL;
+ 			}
+ 			pinmux[j] = pinmux_id;
+@@ -764,7 +754,6 @@ static int eqbr_build_groups(struct eqbr_pinctrl_drv_data *drvdata)
+ 						pinmux);
+ 		if (err < 0) {
+ 			dev_err(dev, "Failed to register group %s\n", grp->name);
+-			of_node_put(np);
+ 			return err;
+ 		}
+ 		memset(&group, 0, sizeof(group));
 
 -- 
 2.37.1
