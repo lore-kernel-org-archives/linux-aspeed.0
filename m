@@ -1,10 +1,10 @@
 From: Peng Fan (OSS) <peng.fan@oss.nxp.com>
-Date: Sat, 04 May 2024 13:13:47 -0000
-Subject: [PATCH v2 05/20] pinctrl: sprd: Use scope based of_node_put()
+Date: Sat, 04 May 2024 13:14:20 -0000
+Subject: [PATCH v2 06/20] pinctrl: spear: Use scope based of_node_put()
  cleanups
 In-Reply-To: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
 References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
-Message-ID: <20240504-pinctrl-cleanup-v2-5-26c5f2dc1181@nxp.com>
+Message-ID: <20240504-pinctrl-cleanup-v2-6-26c5f2dc1181@nxp.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,51 +17,50 @@ Use scope based of_node_put() cleanup to simplify code.
 
 Signed-off-by: Peng Fan <peng.fan@nxp.com>
 ---
- drivers/pinctrl/sprd/pinctrl-sprd.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/pinctrl/spear/pinctrl-spear.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/pinctrl/sprd/pinctrl-sprd.c b/drivers/pinctrl/sprd/pinctrl-sprd.c
-index d0b6d3e655a2..c4a1d99dfed0 100644
---- a/drivers/pinctrl/sprd/pinctrl-sprd.c
-+++ b/drivers/pinctrl/sprd/pinctrl-sprd.c
-@@ -934,7 +934,6 @@ static int sprd_pinctrl_parse_dt(struct sprd_pinctrl *sprd_pctl)
+diff --git a/drivers/pinctrl/spear/pinctrl-spear.c b/drivers/pinctrl/spear/pinctrl-spear.c
+index b8caaa5a2d4e..a8c5fe973cd4 100644
+--- a/drivers/pinctrl/spear/pinctrl-spear.c
++++ b/drivers/pinctrl/spear/pinctrl-spear.c
+@@ -151,24 +151,19 @@ static int spear_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 					unsigned *num_maps)
  {
- 	struct sprd_pinctrl_soc_info *info = sprd_pctl->info;
- 	struct device_node *np = sprd_pctl->dev->of_node;
--	struct device_node *child, *sub_child;
- 	struct sprd_pin_group *grp;
- 	const char **temp;
- 	int ret;
-@@ -962,25 +961,20 @@ static int sprd_pinctrl_parse_dt(struct sprd_pinctrl *sprd_pctl)
- 	temp = info->grp_names;
- 	grp = info->groups;
+ 	struct spear_pmx *pmx = pinctrl_dev_get_drvdata(pctldev);
+-	struct device_node *np;
+ 	struct property *prop;
+ 	const char *function, *group;
+ 	int ret, index = 0, count = 0;
  
--	for_each_child_of_node(np, child) {
-+	for_each_child_of_node_scoped(np, child) {
- 		ret = sprd_pinctrl_parse_groups(child, sprd_pctl, grp);
--		if (ret) {
--			of_node_put(child);
-+		if (ret)
+ 	/* calculate number of maps required */
+-	for_each_child_of_node(np_config, np) {
++	for_each_child_of_node_scoped(np_config, np) {
+ 		ret = of_property_read_string(np, "st,function", &function);
+-		if (ret < 0) {
+-			of_node_put(np);
++		if (ret < 0)
  			return ret;
 -		}
  
- 		*temp++ = grp->name;
- 		grp++;
+ 		ret = of_property_count_strings(np, "st,pins");
+-		if (ret < 0) {
+-			of_node_put(np);
++		if (ret < 0)
+ 			return ret;
+-		}
  
- 		if (of_get_child_count(child) > 0) {
--			for_each_child_of_node(child, sub_child) {
-+			for_each_child_of_node_scoped(child, sub_child) {
- 				ret = sprd_pinctrl_parse_groups(sub_child,
- 								sprd_pctl, grp);
--				if (ret) {
--					of_node_put(sub_child);
--					of_node_put(child);
-+				if (ret)
- 					return ret;
--				}
+ 		count += ret;
+ 	}
+@@ -182,7 +177,7 @@ static int spear_pinctrl_dt_node_to_map(struct pinctrl_dev *pctldev,
+ 	if (!*map)
+ 		return -ENOMEM;
  
- 				*temp++ = grp->name;
- 				grp++;
+-	for_each_child_of_node(np_config, np) {
++	for_each_child_of_node_scoped(np_config, np) {
+ 		of_property_read_string(np, "st,function", &function);
+ 		of_property_for_each_string(np, "st,pins", prop, group) {
+ 			(*map)[index].type = PIN_MAP_TYPE_MUX_GROUP;
 
 -- 
 2.37.1
