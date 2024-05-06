@@ -1,182 +1,120 @@
-From: Dylan Hung <dylan_hung@aspeedtech.com>
-Date: Mon, 6 May 2024 18:51:19 +0800
-Subject: [PATCH 1/2] [RFC] ARM: dts: aspeed-g6: Add AST2600 I3Cs
-In-Reply-To: <20240506105120.3028083-1-dylan_hung@aspeedtech.com>
-References: <20240506105120.3028083-1-dylan_hung@aspeedtech.com>
-Message-ID: <20240506105120.3028083-2-dylan_hung@aspeedtech.com>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Mon,  6 May 2024 19:33:06 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: add I3C config in DTS
+Message-ID: <20240506113306.1283179-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2600 has 6 I3Cs which are based on dw-i3c along with Aspeed
-proprietary enhancements.
+Set I3C config in yosemite4 DTS.
 
-Signed-off-by: Dylan Hung <dylan_hung@aspeedtech.com>
+Test plan:
+Tested with aspeed I3C patches and I3C hub driver.
+
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 137 ++++++++++++++++++++++++
- 1 file changed, 137 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 86 +++++++++++++++++++
+ 1 file changed, 86 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-index 29f94696d8b1..d0d685747b74 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-@@ -13,6 +13,12 @@ / {
- 	interrupt-parent = <&gic>;
- 
- 	aliases {
-+		i3c0 = &i3c0;
-+		i3c1 = &i3c1;
-+		i3c2 = &i3c2;
-+		i3c3 = &i3c3;
-+		i3c4 = &i3c4;
-+		i3c5 = &i3c5;
- 		i2c0 = &i2c0;
- 		i2c1 = &i2c1;
- 		i2c2 = &i2c2;
-@@ -579,6 +585,13 @@ wdt4: watchdog at 1e7850c0 {
- 				status = "disabled";
- 			};
- 
-+			i3c: bus at 1e7a0000 {
-+				compatible = "simple-bus";
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				ranges = <0 0x1e7a0000 0x8000>;
-+			};
-+
- 			peci0: peci-controller at 1e78b000 {
- 				compatible = "aspeed,ast2600-peci";
- 				reg = <0x1e78b000 0x100>;
-@@ -1125,3 +1138,127 @@ i2c15: i2c-bus at 800 {
- 		status = "disabled";
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index 64075cc41d92..6a30c424d745 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -595,6 +595,92 @@ i2c-mux at 72 {
  	};
  };
+ 
++&i3c0 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i3c1_default>;
++	i3c-pp-scl-hi-period-ns = <40>;
++	i3c-pp-scl-lo-period-ns = <40>;
++	i3c-od-scl-hi-period-ns = <380>;
++	i3c-od-scl-lo-period-ns = <620>;
++	sda-tx-hold-ns = <10>;
 +
-+&i3c {
-+	i3c_global: i3c-global {
-+		compatible = "aspeed,ast2600-i3c-global", "simple-mfd", "syscon";
-+		resets = <&syscon ASPEED_RESET_I3C>;
-+		reg = <0x0 0x1000>;
-+	};
++	mctp-controller;
++	hub at 0x70 {
++		reg = <0x70 0x3c0 0x00700000>;
++		cp0-ldo-en = "enabled";
++		cp1-ldo-en = "enabled";
++		cp0-ldo-volt = "1.2V";
++		cp1-ldo-volt = "1.2V";
++		tp0145-ldo-en = "enabled";
++		tp2367-ldo-en = "enabled";
++		tp0145-ldo-volt = "1.2V";
++		tp2367-ldo-volt = "1.2V";
++		tp0145-pullup = "2k";
++		tp2367-pullup = "2k";
 +
-+	i3c0: i3c at 2000 {
-+		compatible = "aspeed,ast2600-i3c";
-+		reg = <0x2000 0x1000>;
-+		clocks = <&syscon ASPEED_CLK_GATE_I3C0CLK>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_i3c1_default>;
-+		interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
-+		aspeed,global-regs = <&i3c_global 0>;
-+		status = "disabled";
-+
-+		i2c-scl-hz = <1000000>;
-+		i3c-scl-hz = <2000000>;
-+		i3c-od-scl-hi-period-ns = <380>;
-+		i3c-od-scl-lo-period-ns = <620>;
-+		i3c-pp-scl-hi-period-ns = <250>;
-+		i3c-pp-scl-lo-period-ns = <250>;
-+		sda-tx-hold-ns = <70>;
-+		sda-pullup-ohms = <2000>;
-+	};
-+
-+	i3c1: i3c at 3000 {
-+		compatible = "aspeed,ast2600-i3c";
-+		reg = <0x3000 0x1000>;
-+		clocks = <&syscon ASPEED_CLK_GATE_I3C1CLK>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_i3c2_default>;
-+		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
-+		aspeed,global-regs = <&i3c_global 1>;
-+		status = "disabled";
-+
-+		i2c-scl-hz = <1000000>;
-+		i3c-scl-hz = <2000000>;
-+		i3c-od-scl-hi-period-ns = <380>;
-+		i3c-od-scl-lo-period-ns = <620>;
-+		i3c-pp-scl-hi-period-ns = <250>;
-+		i3c-pp-scl-lo-period-ns = <250>;
-+		sda-tx-hold-ns = <70>;
-+		sda-pullup-ohms = <2000>;
-+	};
-+
-+	i3c2: i3c at 4000 {
-+		compatible = "aspeed,ast2600-i3c";
-+		reg = <0x4000 0x1000>;
-+		clocks = <&syscon ASPEED_CLK_GATE_I3C2CLK>;
-+		interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
-+		aspeed,global-regs = <&i3c_global 2>;
-+		status = "disabled";
-+
-+		i2c-scl-hz = <1000000>;
-+		i3c-scl-hz = <2000000>;
-+		i3c-od-scl-hi-period-ns = <380>;
-+		i3c-od-scl-lo-period-ns = <620>;
-+		i3c-pp-scl-hi-period-ns = <250>;
-+		i3c-pp-scl-lo-period-ns = <250>;
-+		sda-tx-hold-ns = <70>;
-+		sda-pullup-ohms = <2000>;
-+	};
-+
-+	i3c3: i3c at 5000 {
-+		compatible = "aspeed,ast2600-i3c";
-+		reg = <0x5000 0x1000>;
-+		clocks = <&syscon ASPEED_CLK_GATE_I3C3CLK>;
-+		interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
-+		aspeed,global-regs = <&i3c_global 3>;
-+		status = "disabled";
-+
-+		i2c-scl-hz = <1000000>;
-+		i3c-scl-hz = <2000000>;
-+		i3c-od-scl-hi-period-ns = <380>;
-+		i3c-od-scl-lo-period-ns = <620>;
-+		i3c-pp-scl-hi-period-ns = <250>;
-+		i3c-pp-scl-lo-period-ns = <250>;
-+		sda-tx-hold-ns = <70>;
-+		sda-pullup-ohms = <2000>;
-+	};
-+
-+	i3c4: i3c at 6000 {
-+		compatible = "aspeed,ast2600-i3c";
-+		reg = <0x6000 0x1000>;
-+		clocks = <&syscon ASPEED_CLK_GATE_I3C4CLK>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_i3c5_default>;
-+		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
-+		aspeed,global-regs = <&i3c_global 4>;
-+		status = "disabled";
-+
-+		i2c-scl-hz = <1000000>;
-+		i3c-scl-hz = <2000000>;
-+		i3c-od-scl-hi-period-ns = <380>;
-+		i3c-od-scl-lo-period-ns = <620>;
-+		i3c-pp-scl-hi-period-ns = <250>;
-+		i3c-pp-scl-lo-period-ns = <250>;
-+		sda-tx-hold-ns = <70>;
-+		sda-pullup-ohms = <2000>;
-+	};
-+
-+	i3c5: i3c at 7000 {
-+		compatible = "aspeed,ast2600-i3c";
-+		reg = <0x7000 0x1000>;
-+		clocks = <&syscon ASPEED_CLK_GATE_I3C5CLK>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_i3c6_default>;
-+		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
-+		aspeed,global-regs = <&i3c_global 5>;
-+		status = "disabled";
-+
-+		i2c-scl-hz = <1000000>;
-+		i3c-scl-hz = <2000000>;
-+		i3c-od-scl-hi-period-ns = <380>;
-+		i3c-od-scl-lo-period-ns = <620>;
-+		i3c-pp-scl-hi-period-ns = <250>;
-+		i3c-pp-scl-lo-period-ns = <250>;
-+		sda-tx-hold-ns = <70>;
-+		sda-pullup-ohms = <2000>;
++		target-port at 0 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++		target-port at 1 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++		target-port at 2 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++		target-port at 3 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
 +	};
 +};
++
++&i3c1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i3c2_default>;
++	i3c-pp-scl-hi-period-ns = <40>;
++	i3c-pp-scl-lo-period-ns = <40>;
++	i3c-od-scl-hi-period-ns = <380>;
++	i3c-od-scl-lo-period-ns = <620>;
++	sda-tx-hold-ns = <10>;
++
++	mctp-controller;
++	hub at 0x70 {
++		reg = <0x70 0x3c0 0x00700000>;
++		cp0-ldo-en = "enabled";
++		cp1-ldo-en = "enabled";
++		cp0-ldo-volt = "1.2V";
++		cp1-ldo-volt = "1.2V";
++		tp0145-ldo-en = "enabled";
++		tp2367-ldo-en = "enabled";
++		tp0145-ldo-volt = "1.2V";
++		tp2367-ldo-volt = "1.2V";
++		tp0145-pullup = "2k";
++		tp2367-pullup = "2k";
++
++		target-port at 0 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++		target-port at 1 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++		target-port at 2 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++		target-port at 3 {
++			mode = "i3c";
++			pullup = "enabled";
++		};
++	};
++};
++
+ &adc0 {
+ 	ref_voltage = <2500>;
+ 	status = "okay";
 -- 
 2.25.1
 
