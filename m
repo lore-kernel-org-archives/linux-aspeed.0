@@ -1,52 +1,26 @@
 From: Kelly Hung <KellyHung@asus.com>
-Date: Tue, 07 May 2024 09:22:31 -0000
-Subject: [PATCH v8 1/2] dt-bindings: arm: aspeed: add ASUS X4TF board
-In-Reply-To: <20240507092109.6018-1-KellyHung@asus.com>
-References: <20240507092109.6018-1-KellyHung@asus.com>
-Message-ID: <20240507092109.6018-2-KellyHung@asus.com>
+Date: Tue, 07 May 2024 09:22:53 -0000
+Subject: [PATCH v8 0/2] Change email sender
+Message-ID: <20240507092109.6018-1-KellyHung@asus.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the new compatibles used on ASUS X4TF.
+Requesting assistance from ASUS IT, I obtained a new smtp account.
+So send the patch again using new smtp account.
 
-Signed-off-by: Kelly Hung <KellyHung@asus.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
----
-v7 -> v8:
-- Modify Signed-off-by field with new ASUS smtp account.
-- Add back Acked-by tag.
-v6 -> v7:
-- Remove incorrect tags.
-- Modify Signed-off-by field.
-v5 -> v6:
-- Add Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-- Add Reviewed-by: Rob Herring <robh@kernel.org>
-- Add Reviewed-by: Zev Weiss <zweiss@equinix.com>
-- Add Acked-by: Conor Dooley <conor.dooley@microchip.com>
-V4 -> V5: Update all changelog from v1 to v5.
-V3 -> V4: The new compatible is a BMC for a ASUS X4TF server which use
-a ast2600-a3 chip, so correct string to asus,x4tf-bmc.
-V2 -> V3: Add a label to indicate it is new compatible for bmc.
-V1 -> V2: Remove blank in front of the string x4tf.
----
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Kelly Hung (2):
+  dt-bindings: arm: aspeed: add ASUS X4TF board
+  ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 749ee54a3..0047eb4ab 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -74,6 +74,7 @@ properties:
-               - ampere,mtmitchell-bmc
-               - aspeed,ast2600-evb
-               - aspeed,ast2600-evb-a1
-+              - asus,x4tf-bmc
-               - facebook,bletchley-bmc
-               - facebook,cloudripper-bmc
-               - facebook,elbert-bmc
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 581 ++++++++++++++++++
+ 3 files changed, 583 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+
 --
 2.25.1
 
