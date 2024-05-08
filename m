@@ -1,44 +1,50 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 7 May 2024 20:12:51 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: add I3C config in DTS
-In-Reply-To: <20240506113306.1283179-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240506113306.1283179-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <202405072003.qTcMKOm3-lkp@intel.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 08 May 2024 10:30:28 +0930
+Subject: [PATCH v8 0/2] Change email sender
+In-Reply-To: <20240507092109.6018-1-KellyHung@asus.com>
+References: <20240507092109.6018-1-KellyHung@asus.com>
+Message-ID: <db966c501288c73ac50a86aa2e5884e6cfc28715.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Delphine,
+Hi Kelly,
 
-kernel test robot noticed the following build errors:
+On Tue, 2024-05-07 at 17:21 +0800, Kelly Hung wrote:
+> Requesting assistance from ASUS IT, I obtained a new smtp account.
+> So send the patch again using new smtp account.
 
-[auto build test ERROR on robh/for-next]
-[also build test ERROR on linus/master v6.9-rc7 next-20240507]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Ah, thanks, however Joel's already sent a PR to the ARM SoC maintainers
+with your patches. Sorry that we didn't communicate that too well.
+Here's the PR:
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Delphine-CC-Chiu/ARM-dts-aspeed-yosemite4-add-I3C-config-in-DTS/20240506-193458
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git for-next
-patch link:    https://lore.kernel.org/r/20240506113306.1283179-1-Delphine_CC_Chiu%40wiwynn.com
-patch subject: [PATCH v1] ARM: dts: aspeed: yosemite4: add I3C config in DTS
-config: arm-multi_v5_defconfig (https://download.01.org/0day-ci/archive/20240507/202405072003.qTcMKOm3-lkp at intel.com/config)
-compiler: arm-linux-gnueabi-gcc (GCC) 13.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240507/202405072003.qTcMKOm3-lkp at intel.com/reproduce)
+https://lore.kernel.org/lkml/CACPK8Xd2Qc9MQUJ-8GuRjmyU50oMHpmmHPHLqAh9W_1Gyqi2ug at mail.gmail.com/
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202405072003.qTcMKOm3-lkp at intel.com/
+> 
+> Kelly Hung (2):
+>   dt-bindings: arm: aspeed: add ASUS X4TF board
+>   ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
+> 
+>  .../bindings/arm/aspeed/aspeed.yaml           |   1 +
+>  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>  .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 581 ++++++++++++++++++
+>  3 files changed, 583 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
+> 
+> --
+> 2.25.1
+> 
+> ===================================================================================================================================
+> This email and any attachments to it contain confidential information and are intended solely for the use of the individual to whom it is addressed. If you are not the intended recipient or receive it accidentally, please immediately notify the sender by e-mail and delete the message and any attachments from your computer system, and destroy all hard copies. Please be advised that any unauthorized disclosure, copying, distribution or any action taken or omitted in reliance on this, is illegal and prohibited. Any views or opinions expressed are solely those of the author and do not represent those of ASUSTeK.
+> 
+> For pricing information, ASUS is only entitled to set a recommendation resale price. All customers are free to set their own price as they wish.
+> ===================================================================================================================================
 
-All errors (new ones prefixed by >>):
+Unfortunately these footers aren't helpful. The kernel's mailing list
+etiquette documentation has more info:
 
->> Error: arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:598.1-6 Label or path i3c0 not found
->> Error: arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts:641.1-6 Label or path i3c1 not found
-   FATAL ERROR: Syntax error parsing input tree
+https://subspace.kernel.org/etiquette.html#do-not-include-confidentiality-disclaimers
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Andrew
