@@ -1,50 +1,108 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 08 May 2024 10:30:28 +0930
-Subject: [PATCH v8 0/2] Change email sender
-In-Reply-To: <20240507092109.6018-1-KellyHung@asus.com>
-References: <20240507092109.6018-1-KellyHung@asus.com>
-Message-ID: <db966c501288c73ac50a86aa2e5884e6cfc28715.camel@codeconstruct.com.au>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Tue, 14 May 2024 10:38:52 -0500
+Subject: [PATCH v4 08/17] dt-bindings: fsi: ast2600-fsi-master: Convert to
+ json-schema
+In-Reply-To: <0a43b522-7c07-43a0-b4b0-155c3cf94177@kernel.org>
+References: <20240429210131.373487-1-eajames@linux.ibm.com>
+ <20240429210131.373487-9-eajames@linux.ibm.com>
+ <af51132f-e4a3-4f45-b066-24b8c348eb28@kernel.org>
+ <a7ca71c0-971c-49ab-b9f3-f6e6b32e9567@linux.ibm.com>
+ <0a43b522-7c07-43a0-b4b0-155c3cf94177@kernel.org>
+Message-ID: <18011b0e-a479-4d93-947a-a71fe4efdcb5@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Kelly,
 
-On Tue, 2024-05-07 at 17:21 +0800, Kelly Hung wrote:
-> Requesting assistance from ASUS IT, I obtained a new smtp account.
-> So send the patch again using new smtp account.
+On 5/4/24 06:55, Krzysztof Kozlowski wrote:
+> On 01/05/2024 18:12, Eddie James wrote:
+>> On 4/30/24 02:04, Krzysztof Kozlowski wrote:
+>>> On 29/04/2024 23:01, Eddie James wrote:
+>>>> Convert to json-schema for the AST2600 FSI master documentation.
+>>> Please mention all the changes from pure conversion.
+>>
+>> Sure.
+>>
+>>
+>>>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>>>> ---
+>>>> Changes since v3:
+>>>>    - Remove quotes around compatible strings
+>>>>    - Re-order allOf to below required
+>>>>    - Add child node in the example
+>>>>    - Change commit message to match similar commits
+>>>>
+>>>>    .../fsi/aspeed,ast2600-fsi-master.yaml        | 81 +++++++++++++++++++
+>>>>    .../bindings/fsi/fsi-master-aspeed.txt        | 36 ---------
+>>>>    2 files changed, 81 insertions(+), 36 deletions(-)
+>>>>    create mode 100644 Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+>>>>    delete mode 100644 Documentation/devicetree/bindings/fsi/fsi-master-aspeed.txt
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+>>>> new file mode 100644
+>>>> index 000000000000..fcf7c4b93b78
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
+>>>> @@ -0,0 +1,81 @@
+>>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>>> +%YAML 1.2
+>>>> +---
+>>>> +$id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
+>>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>>>> +
+>>>> +title: Aspeed FSI master
+>>>> +
+>>>> +maintainers:
+>>>> +  - Eddie James <eajames@linux.ibm.com>
+>>>> +
+>>>> +description:
+>>>> +  The AST2600 and later contain two identical FSI masters. They share a
+>>>> +  clock and have a separate interrupt line and output pins.
+>>>> +
+>>>> +properties:
+>>>> +  compatible:
+>>>> +    enum:
+>>>> +      - aspeed,ast2600-fsi-master
+>>>> +      - aspeed,ast2700-fsi-master
+>>> There was no such compatible before.
+>>>
+>>> How does this even validate? Where is fsi-master? You dropped a
+>>> compatible without any explanation.
+>>
+>> I can make it a separate change to add ast2700.
+>>
+>>
+>> I suppose I don't understand having two compatibles... Aspeed master
+>> shouldn't use "fsi-master" as that is too generic, right? Why wouldn't
+> Not necessarily, depends. Dropping it silently is confusing. What about
+> other users? firmware, bootloaders, out-of-tree, other OS? Did you
+> investigate all of them?
 
-Ah, thanks, however Joel's already sent a PR to the ARM SoC maintainers
-with your patches. Sorry that we didn't communicate that too well.
-Here's the PR:
 
-https://lore.kernel.org/lkml/CACPK8Xd2Qc9MQUJ-8GuRjmyU50oMHpmmHPHLqAh9W_1Gyqi2ug at mail.gmail.com/
+The old format file actually only used fsi-master in the example, not in 
+the actual properties description. So I didn't really drop a compatible. 
+Device trees using "fsi-master" are just buggy and should be fixed 
+eventually, but I don't think it needs to be part of this series.
 
-> 
-> Kelly Hung (2):
->   dt-bindings: arm: aspeed: add ASUS X4TF board
->   ARM: dts: aspeed: x4tf: Add dts for asus x4tf project
-> 
->  .../bindings/arm/aspeed/aspeed.yaml           |   1 +
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts  | 581 ++++++++++++++++++
->  3 files changed, 583 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dts
-> 
-> --
-> 2.25.1
-> 
-> ===================================================================================================================================
-> This email and any attachments to it contain confidential information and are intended solely for the use of the individual to whom it is addressed. If you are not the intended recipient or receive it accidentally, please immediately notify the sender by e-mail and delete the message and any attachments from your computer system, and destroy all hard copies. Please be advised that any unauthorized disclosure, copying, distribution or any action taken or omitted in reliance on this, is illegal and prohibited. Any views or opinions expressed are solely those of the author and do not represent those of ASUSTeK.
-> 
-> For pricing information, ASUS is only entitled to set a recommendation resale price. All customers are free to set their own price as they wish.
-> ===================================================================================================================================
 
-Unfortunately these footers aren't helpful. The kernel's mailing list
-etiquette documentation has more info:
+Thanks,
 
-https://subspace.kernel.org/etiquette.html#do-not-include-confidentiality-disclaimers
+Eddie
 
-Andrew
+
+
+>
+>> it validate? Devicetrees using "fsi-master" also use
+>> "aspeed,ast2600-fsi-master" so they should be OK...
+> No, because the compatibles do not match. Run validation and you will
+> see the errors.
+>
+> I am fine with dropping such compatible, which is not used by current
+> kernel ABI, but first DTS must be fixed and second some explanation and
+> justification is needed.
+>
+> Best regards,
+> Krzysztof
+>
