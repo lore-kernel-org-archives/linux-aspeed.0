@@ -1,51 +1,25 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 14 May 2024 16:35:09 -0500
-Subject: [PATCH v5 3/4] ARM: dts: aspeed: Add IBM P11 Blueridge 4U BMC system
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Wed, 15 May 2024 16:10:32 +0200
+Subject: [PATCH v5 0/4] ARM: dts: aspeed: Add IBM P11 BMC systems
 In-Reply-To: <20240514213510.159144-1-eajames@linux.ibm.com>
 References: <20240514213510.159144-1-eajames@linux.ibm.com>
-Message-ID: <20240514213510.159144-4-eajames@linux.ibm.com>
+Message-ID: <b99b61bd-a271-4dc8-b8fc-ab72df65dc1b@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The 4U Blueridge is identical to the Blueridge system but has two extra
-power supplies.
+On 14/05/2024 23:35, Eddie James wrote:
+> This series was previously included in
+> https://lore.kernel.org/all/20240429210131.373487-1-eajames at linux.ibm.com/
+> The series now depends on
+> https://lore.kernel.org/all/20240514212555.158788-1-eajames at linux.ibm.com/
 
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- .../aspeed/aspeed-bmc-ibm-blueridge-4u.dts    | 21 +++++++++++++++++++
- 1 file changed, 21 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dts
+No, it does not work like this. Bindings come with the user. Do not
+create fake dependencies and DTS must be send TOGETHER with the board
+binding.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dts
-new file mode 100644
-index 0000000000000..839aad4ddd917
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dts
-@@ -0,0 +1,21 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2024 IBM Corp.
-+/dts-v1/;
-+
-+#include "aspeed-bmc-ibm-blueridge.dts"
-+
-+/ {
-+	model = "Blueridge 4U";
-+};
-+
-+&i2c3 {
-+	power-supply at 6a {
-+		compatible = "ibm,cffps";
-+		reg = <0x6a>;
-+	};
-+
-+	power-supply at 6b {
-+		compatible = "ibm,cffps";
-+		reg = <0x6b>;
-+	};
-+};
--- 
-2.39.3
+Best regards,
+Krzysztof
 
