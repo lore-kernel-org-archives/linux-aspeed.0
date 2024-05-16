@@ -1,60 +1,44 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:18:40 -0500
-Subject: [PATCH v3 13/40] fsi: core: Disable relative addressing during scan
+Date: Thu, 16 May 2024 13:18:48 -0500
+Subject: [PATCH v3 21/40] fsi: aspeed: Disable relative addressing and IPOLL for cfam reset
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-14-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-22-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Relative addressing is not allowed during slave ID initialization, so
-turn it off during the FSI scan procedure.
+Need to disable these for the master reset after cfam reset.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-core.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/fsi/fsi-master-aspeed.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
-index bfb147de90efc..8b402149acbe9 100644
---- a/drivers/fsi/fsi-core.c
-+++ b/drivers/fsi/fsi-core.c
-@@ -1223,8 +1223,20 @@ static int fsi_master_break(struct fsi_master *master, int link)
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index 176e596b4391b..c9f6d84e1a372 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -402,11 +402,18 @@ static ssize_t cfam_reset_store(struct device *dev, struct device_attribute *att
  
- static int fsi_master_scan(struct fsi_master *master)
- {
-+	bool set_mmode = false;
- 	int link, rc;
- 
-+	/* relative addressing is not allowed during slave ID initialization */
-+	if (master->map && (master->flags & FSI_MASTER_FLAG_RELA)) {
-+		u32 mmode = master->mmode & ~FSI_MMODE_RELA;
+ 	trace_fsi_master_aspeed_cfam_reset(true);
+ 	spin_lock_irqsave(&aspeed->lock, flags);
 +
-+		rc = regmap_write(master->map, FSI_MMODE, mmode);
-+		if (rc)
-+			return rc;
++	regmap_write(aspeed->master.map, FSI_MMODE,
++		     aspeed->master.mmode & ~(FSI_MMODE_EIP | FSI_MMODE_RELA));
 +
-+		set_mmode = true;
-+	}
+ 	gpiod_set_value(aspeed->cfam_reset_gpio, 1);
+ 	udelay(900);
+ 	gpiod_set_value(aspeed->cfam_reset_gpio, 0);
+ 	udelay(900);
 +
- 	trace_fsi_master_scan(master, true);
- 	for (link = 0; link < master->n_links; link++) {
- 		rc = _fsi_master_link_enable(master, link);
-@@ -1246,6 +1258,12 @@ static int fsi_master_scan(struct fsi_master *master)
- 			fsi_master_link_disable(master, link);
- 	}
- 
-+	if (set_mmode) {
-+		rc = regmap_write(master->map, FSI_MMODE, master->mmode);
-+		if (rc)
-+			return rc;
-+	}
+ 	regmap_write(aspeed->master.map, FSI_MRESP0, FSI_MRESP_RST_ALL_MASTER);
++	regmap_write(aspeed->master.map, FSI_MMODE, aspeed->master.mmode);
 +
- 	return 0;
- }
+ 	spin_unlock_irqrestore(&aspeed->lock, flags);
+ 	trace_fsi_master_aspeed_cfam_reset(false);
  
 -- 
 2.39.3
