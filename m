@@ -1,97 +1,215 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:18:36 -0500
-Subject: [PATCH v3 09/40] fsi: aspeed: Add AST2700 support
+Date: Thu, 16 May 2024 13:18:33 -0500
+Subject: [PATCH v3 06/40] fsi: core: Improve master read/write/error traces
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-10-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-7-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-AST2700 requires a few bits set differently in the OPB retry
-counter register, so add some match data and set the register
-accordingly.
+Consolidate the master read and write traces into one trace and
+change the result trace into an error trace for less spam.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-aspeed.c | 33 ++++++++++++++++++++++++++++++---
- 1 file changed, 30 insertions(+), 3 deletions(-)
+ drivers/fsi/fsi-core.c     |  26 +++++----
+ include/trace/events/fsi.h | 112 ++++++++++++-------------------------
+ 2 files changed, 51 insertions(+), 87 deletions(-)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index f0a19cd451a07..3d15e867237df 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -18,6 +18,10 @@
- 
- #include "fsi-master.h"
- 
-+struct fsi_master_aspeed_data {
-+	u32 opb_retry_counter;
-+};
-+
- struct fsi_master_aspeed {
- 	struct fsi_master	master;
- 	struct mutex		lock;	/* protect HW access */
-@@ -81,6 +85,13 @@ static const u32 fsi_base = 0xa0000000;
- #define XFER_HALFWORD	(BIT(0))
- #define XFER_BYTE	(0)
- 
-+/* OPB_RETRY_COUNTER */
-+#define OPB_RC_FSI_OPB		BIT(19)	/* Access FSI space over OPB, not AHB (AST27xx+) */
-+#define OPB_RC_CTRL_OPB		BIT(18)	/* Access controller over OPB, not AHB (AST27xx+) */
-+#define OPB_RC_XFER_ACK_EN	BIT(16)	/* Enable OPBx xfer ack bit without mask */
-+#define OPB_RC_COUNT		GENMASK(15, 0)	/* Number of retries */
-+#define OPB_RC_DEFAULT		0x10
-+
- #define CREATE_TRACE_POINTS
- #include <trace/events/fsi_master_aspeed.h>
- 
-@@ -536,6 +547,8 @@ static int tacoma_cabled_fsi_fixup(struct device *dev)
- 
- static int fsi_master_aspeed_probe(struct platform_device *pdev)
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index 44875f2350b04..b3029f9c05e4a 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -1116,14 +1116,15 @@ static int fsi_master_read(struct fsi_master *master, int link,
  {
-+	const struct fsi_master_aspeed_data *md = of_device_get_match_data(&pdev->dev);
-+	u32 opb_retry_counter = md ? md->opb_retry_counter : OPB_RC_DEFAULT;
- 	struct fsi_master_aspeed *aspeed;
- 	int rc, links, reg;
- 	__be32 raw;
-@@ -579,8 +592,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
- 	writel(OPB1_XFER_ACK_EN | OPB0_XFER_ACK_EN,
- 			aspeed->base + OPB_IRQ_MASK);
+ 	int rc;
  
--	/* TODO: determine an appropriate value */
--	writel(0x10, aspeed->base + OPB_RETRY_COUNTER);
-+	writel(opb_retry_counter, aspeed->base + OPB_RETRY_COUNTER);
+-	trace_fsi_master_read(master, link, slave_id, addr, size);
+-
+ 	rc = fsi_check_access(addr, size);
+-	if (!rc)
++	if (!rc) {
+ 		rc = master->read(master, link, slave_id, addr, val, size);
+-
+-	trace_fsi_master_rw_result(master, link, slave_id, addr, size,
+-			false, val, rc);
++		if (rc)
++			trace_fsi_master_error(master->idx, link, slave_id, addr, size, val, rc,
++					       true);
++		else
++			trace_fsi_master_xfer(master->idx, link, slave_id, addr, size, val, true);
++	}
  
- 	writel(ctrl_base, aspeed->base + OPB_CTRL_BASE);
- 	writel(fsi_base, aspeed->base + OPB_FSI_BASE);
-@@ -656,8 +668,23 @@ static int fsi_master_aspeed_remove(struct platform_device *pdev)
- 	return 0;
+ 	return rc;
  }
+@@ -1133,14 +1134,15 @@ static int fsi_master_write(struct fsi_master *master, int link,
+ {
+ 	int rc;
  
-+static const struct fsi_master_aspeed_data fsi_master_ast2600_data = {
-+	.opb_retry_counter = OPB_RC_DEFAULT,
-+};
-+
-+static const struct fsi_master_aspeed_data fsi_master_ast2700_data = {
-+	.opb_retry_counter = OPB_RC_FSI_OPB | OPB_RC_CTRL_OPB | OPB_RC_DEFAULT,
-+};
-+
- static const struct of_device_id fsi_master_aspeed_match[] = {
--	{ .compatible = "aspeed,ast2600-fsi-master" },
-+	{
-+		.compatible = "aspeed,ast2600-fsi-master",
-+		.data = &fsi_master_ast2600_data,
-+	},
-+	{
-+		.compatible = "aspeed,ast2700-fsi-master",
-+		.data = &fsi_master_ast2700_data,
-+	},
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, fsi_master_aspeed_match);
+-	trace_fsi_master_write(master, link, slave_id, addr, size, val);
+-
+ 	rc = fsi_check_access(addr, size);
+-	if (!rc)
++	if (!rc) {
+ 		rc = master->write(master, link, slave_id, addr, val, size);
+-
+-	trace_fsi_master_rw_result(master, link, slave_id, addr, size,
+-			true, val, rc);
++		if (rc)
++			trace_fsi_master_error(master->idx, link, slave_id, addr, size, val, rc,
++					       false);
++		else
++			trace_fsi_master_xfer(master->idx, link, slave_id, addr, size, val, false);
++	}
+ 
+ 	return rc;
+ }
+diff --git a/include/trace/events/fsi.h b/include/trace/events/fsi.h
+index 5ff15126ad9d5..fed8835f438e5 100644
+--- a/include/trace/events/fsi.h
++++ b/include/trace/events/fsi.h
+@@ -8,101 +8,63 @@
+ 
+ #include <linux/tracepoint.h>
+ 
+-TRACE_EVENT(fsi_master_read,
+-	TP_PROTO(const struct fsi_master *master, int link, int id,
+-			uint32_t addr, size_t size),
+-	TP_ARGS(master, link, id, addr, size),
++TRACE_EVENT(fsi_master_xfer,
++	TP_PROTO(int master_idx, int link, int id, uint32_t addr, size_t size, const void *data,
++		 bool read),
++	TP_ARGS(master_idx, link, id, addr, size, data, read),
+ 	TP_STRUCT__entry(
+-		__field(int,	master_idx)
+-		__field(int,	link)
+-		__field(int,	id)
+-		__field(__u32,	addr)
+-		__field(size_t,	size)
++		__field(int, master_idx)
++		__field(int, link)
++		__field(int, id)
++		__field(uint32_t, addr)
++		__field(int, size)
++		__field(uint32_t, data)
++		__field(bool, read)
+ 	),
+ 	TP_fast_assign(
+-		__entry->master_idx = master->idx;
++		__entry->master_idx = master_idx;
+ 		__entry->link = link;
+ 		__entry->id = id;
+ 		__entry->addr = addr;
+-		__entry->size = size;
+-	),
+-	TP_printk("fsi%d:%02d:%02d %08x[%zu]",
+-		__entry->master_idx,
+-		__entry->link,
+-		__entry->id,
+-		__entry->addr,
+-		__entry->size
+-	)
+-);
+-
+-TRACE_EVENT(fsi_master_write,
+-	TP_PROTO(const struct fsi_master *master, int link, int id,
+-			uint32_t addr, size_t size, const void *data),
+-	TP_ARGS(master, link, id, addr, size, data),
+-	TP_STRUCT__entry(
+-		__field(int,	master_idx)
+-		__field(int,	link)
+-		__field(int,	id)
+-		__field(__u32,	addr)
+-		__field(size_t,	size)
+-		__field(__u32,	data)
+-	),
+-	TP_fast_assign(
+-		__entry->master_idx = master->idx;
+-		__entry->link = link;
+-		__entry->id = id;
+-		__entry->addr = addr;
+-		__entry->size = size;
++		__entry->size = (int)size;
+ 		__entry->data = 0;
+ 		memcpy(&__entry->data, data, size);
++		__entry->read = read;
+ 	),
+-	TP_printk("fsi%d:%02d:%02d %08x[%zu] <= {%*ph}",
+-		__entry->master_idx,
+-		__entry->link,
+-		__entry->id,
+-		__entry->addr,
+-		__entry->size,
+-		(int)__entry->size, &__entry->data
+-	)
++	TP_printk("fsi%d:%02d:%02d %s %08x {%*ph}", __entry->master_idx, __entry->link,
++		  __entry->id, __entry->read ? "read" : "write", __entry->addr, __entry->size,
++		  &__entry->data)
+ );
+ 
+-TRACE_EVENT(fsi_master_rw_result,
+-	TP_PROTO(const struct fsi_master *master, int link, int id,
+-			uint32_t addr, size_t size,
+-			bool write, const void *data, int ret),
+-	TP_ARGS(master, link, id, addr, size, write, data, ret),
++TRACE_EVENT(fsi_master_error,
++	TP_PROTO(int master_idx, int link, int id, uint32_t addr, size_t size, const void *data,
++		 int ret, bool read),
++	TP_ARGS(master_idx, link, id, addr, size, data, ret, read),
+ 	TP_STRUCT__entry(
+-		__field(int,	master_idx)
+-		__field(int,	link)
+-		__field(int,	id)
+-		__field(__u32,	addr)
+-		__field(size_t,	size)
+-		__field(bool,	write)
+-		__field(__u32,	data)
+-		__field(int,	ret)
++		__field(int, master_idx)
++		__field(int, link)
++		__field(int, id)
++		__field(uint32_t, addr)
++		__field(int, size)
++		__field(uint32_t, data)
++		__field(int, ret)
++		__field(bool, read)
+ 	),
+ 	TP_fast_assign(
+-		__entry->master_idx = master->idx;
++		__entry->master_idx = master_idx;
+ 		__entry->link = link;
+ 		__entry->id = id;
+ 		__entry->addr = addr;
+-		__entry->size = size;
+-		__entry->write = write;
++		__entry->size = (int)size;
+ 		__entry->data = 0;
+-		__entry->ret = ret;
+-		if (__entry->write || !__entry->ret)
++		if (!read)
+ 			memcpy(&__entry->data, data, size);
++		__entry->ret = ret;
++		__entry->read = read;
+ 	),
+-	TP_printk("fsi%d:%02d:%02d %08x[%zu] %s {%*ph} ret %d",
+-		__entry->master_idx,
+-		__entry->link,
+-		__entry->id,
+-		__entry->addr,
+-		__entry->size,
+-		__entry->write ? "<=" : "=>",
+-		(int)__entry->size, &__entry->data,
+-		__entry->ret
+-	)
++	TP_printk("fsi%d:%02d:%02d %s %08x {%*ph} %d", __entry->master_idx, __entry->link,
++		  __entry->id, __entry->read ? "read" : "write", __entry->addr, __entry->size,
++		  &__entry->data, __entry->ret)
+ );
+ 
+ TRACE_EVENT(fsi_master_break,
 -- 
 2.39.3
 
