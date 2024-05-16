@@ -1,35 +1,75 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:19:03 -0500
-Subject: [PATCH v3 36/40] fsi: i2cr: Adjust virtual CFAM ID to match Odyssey chip
+Date: Thu, 16 May 2024 13:18:49 -0500
+Subject: [PATCH v3 22/40] fsi: aspeed: Use common master error handler
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-37-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-23-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The CFAM ID for the I2CR should be the same as the Odyssey chip.
+This will do the correct mmode manipulation to do the master
+reset.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-i2cr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/fsi/fsi-master-aspeed.c | 27 ++++-----------------------
+ 1 file changed, 4 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/fsi/fsi-master-i2cr.c b/drivers/fsi/fsi-master-i2cr.c
-index 40f1f4d231e52..c032ba7938815 100644
---- a/drivers/fsi/fsi-master-i2cr.c
-+++ b/drivers/fsi/fsi-master-i2cr.c
-@@ -22,7 +22,7 @@
- #define I2CR_LOG_CMD		0x60008
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index c9f6d84e1a372..eecd64bc29512 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -226,27 +226,6 @@ static int opb_readb(struct fsi_master_aspeed *aspeed, uint32_t addr, u8 *out)
+ 	return __opb_read(aspeed, addr, XFER_BYTE, (void *)out);
+ }
  
- static const u8 i2cr_cfam[] = {
--	0xc0, 0x02, 0x0d, 0xa6,
-+	0xc0, 0x01, 0x0c, 0x07,
- 	0x80, 0x01, 0x10, 0x02,
- 	0x80, 0x01, 0x10, 0x02,
- 	0x80, 0x01, 0x10, 0x02,
+-static int check_errors(struct fsi_master_aspeed *aspeed, int err)
+-{
+-	int ret;
+-
+-	if (err == -EIO) {
+-		/* Check MAEB (0x70) ? */
+-
+-		/* Then clear errors in master */
+-		ret = opb_writel(aspeed, ctrl_base + FSI_MRESP0,
+-				cpu_to_be32(FSI_MRESP_RST_ALL_MASTER));
+-		if (ret) {
+-			/* TODO: log? return different code? */
+-			return ret;
+-		}
+-		/* TODO: confirm that 0x70 was okay */
+-	}
+-
+-	/* This will pass through timeout errors */
+-	return err;
+-}
+-
+ static int aspeed_master_read(struct fsi_master *master, int link,
+ 			uint8_t id, uint32_t addr, void *val, size_t size)
+ {
+@@ -277,7 +256,8 @@ static int aspeed_master_read(struct fsi_master *master, int link,
+ 		goto done;
+ 	}
+ 
+-	ret = check_errors(aspeed, ret);
++	if (ret == -EIO)
++		fsi_master_error(&aspeed->master, link);
+ done:
+ 	spin_unlock_irqrestore(&aspeed->lock, flags);
+ 	return ret;
+@@ -313,7 +293,8 @@ static int aspeed_master_write(struct fsi_master *master, int link,
+ 		goto done;
+ 	}
+ 
+-	ret = check_errors(aspeed, ret);
++	if (ret == -EIO)
++		fsi_master_error(&aspeed->master, link);
+ done:
+ 	spin_unlock_irqrestore(&aspeed->lock, flags);
+ 	return ret;
 -- 
 2.39.3
 
