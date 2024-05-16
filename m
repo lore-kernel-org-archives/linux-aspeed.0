@@ -1,242 +1,244 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:18:41 -0500
-Subject: [PATCH v3 14/40] fsi: hub: Use common initialization and link enable
+Date: Thu, 16 May 2024 13:19:02 -0500
+Subject: [PATCH v3 35/40] fsi: core: Add slave register read-only sysfs
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-15-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-36-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Set up an FSI regmap for the hub master to use the new common
-master initialization and link enable procedures.
+The slave registers are commonly used for debugging or diagnosis
+so provide them in sysfs files.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-hub.c | 142 ++++++-----------------------------
- 1 file changed, 23 insertions(+), 119 deletions(-)
+ drivers/fsi/fsi-core.c  | 144 +++++++++++++++++++++++++++++++++++++---
+ drivers/fsi/fsi-slave.h |  21 ++++++
+ 2 files changed, 155 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/fsi/fsi-master-hub.c b/drivers/fsi/fsi-master-hub.c
-index eea8649fee74d..91ad6b7728fa2 100644
---- a/drivers/fsi/fsi-master-hub.c
-+++ b/drivers/fsi/fsi-master-hub.c
-@@ -9,6 +9,7 @@
- #include <linux/fsi.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/regmap.h>
- #include <linux/slab.h>
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index 096b26c6421f2..3d2bedb3ad51b 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -887,22 +887,146 @@ static ssize_t cfam_id_show(struct device *dev,
  
- #include "fsi-master.h"
-@@ -16,8 +17,6 @@
+ static DEVICE_ATTR_RO(cfam_id);
  
- #define FSI_ENGID_HUB_MASTER		0x1c
- 
--#define FSI_LINK_ENABLE_SETUP_TIME	10	/* in mS */
--
- /*
-  * FSI hub master support
-  *
-@@ -78,134 +77,33 @@ static int hub_master_break(struct fsi_master *master, int link)
- 	return hub_master_write(master, link, 0, addr, &cmd, sizeof(cmd));
- }
- 
--static int hub_master_link_enable(struct fsi_master *master, int link,
--				  bool enable)
--{
--	struct fsi_master_hub *hub = to_fsi_master_hub(master);
--	int idx, bit;
--	__be32 reg;
--	int rc;
--
--	idx = link / 32;
--	bit = link % 32;
--
--	reg = cpu_to_be32(0x80000000 >> bit);
--
--	if (!enable)
--		return fsi_device_write(hub->upstream, FSI_MCENP0 + (4 * idx),
--					&reg, 4);
--
--	rc = fsi_device_write(hub->upstream, FSI_MSENP0 + (4 * idx), &reg, 4);
--	if (rc)
--		return rc;
--
--	mdelay(FSI_LINK_ENABLE_SETUP_TIME);
--
--	return 0;
--}
--
- static void hub_master_release(struct device *dev)
- {
- 	struct fsi_master_hub *hub = to_fsi_master_hub(to_fsi_master(dev));
- 
-+	regmap_exit(hub->master.map);
- 	kfree(hub);
- }
- 
--/* mmode encoders */
--static inline u32 fsi_mmode_crs0(u32 x)
--{
--	return (x & FSI_MMODE_CRS0MASK) << FSI_MMODE_CRS0SHFT;
--}
--
--static inline u32 fsi_mmode_crs1(u32 x)
--{
--	return (x & FSI_MMODE_CRS1MASK) << FSI_MMODE_CRS1SHFT;
--}
--
--static int hub_master_init(struct fsi_master_hub *hub)
--{
--	struct fsi_device *dev = hub->upstream;
--	__be32 reg;
--	int rc;
--
--	reg = cpu_to_be32(FSI_MRESP_RST_ALL_MASTER | FSI_MRESP_RST_ALL_LINK
--			| FSI_MRESP_RST_MCR | FSI_MRESP_RST_PYE);
--	rc = fsi_device_write(dev, FSI_MRESP0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	/* Initialize the MFSI (hub master) engine */
--	reg = cpu_to_be32(FSI_MRESP_RST_ALL_MASTER | FSI_MRESP_RST_ALL_LINK
--			| FSI_MRESP_RST_MCR | FSI_MRESP_RST_PYE);
--	rc = fsi_device_write(dev, FSI_MRESP0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	reg = cpu_to_be32(FSI_MECTRL_EOAE | FSI_MECTRL_P8_AUTO_TERM);
--	rc = fsi_device_write(dev, FSI_MECTRL, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	reg = cpu_to_be32(FSI_MMODE_EIP | FSI_MMODE_ECRC | FSI_MMODE_EPC
--			| fsi_mmode_crs0(1) | fsi_mmode_crs1(1)
--			| FSI_MMODE_P8_TO_LSB);
--	rc = fsi_device_write(dev, FSI_MMODE, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	reg = cpu_to_be32(0xffff0000);
--	rc = fsi_device_write(dev, FSI_MDLYR, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	reg = cpu_to_be32(~0);
--	rc = fsi_device_write(dev, FSI_MSENP0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	/* Leave enabled long enough for master logic to set up */
--	mdelay(FSI_LINK_ENABLE_SETUP_TIME);
--
--	rc = fsi_device_write(dev, FSI_MCENP0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	rc = fsi_device_read(dev, FSI_MAEB, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	reg = cpu_to_be32(FSI_MRESP_RST_ALL_MASTER | FSI_MRESP_RST_ALL_LINK);
--	rc = fsi_device_write(dev, FSI_MRESP0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	rc = fsi_device_read(dev, FSI_MLEVP0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	/* Reset the master bridge */
--	reg = cpu_to_be32(FSI_MRESB_RST_GEN);
--	rc = fsi_device_write(dev, FSI_MRESB0, &reg, sizeof(reg));
--	if (rc)
--		return rc;
--
--	reg = cpu_to_be32(FSI_MRESB_RST_ERR);
--	return fsi_device_write(dev, FSI_MRESB0, &reg, sizeof(reg));
--}
--
- static int hub_master_probe(struct device *dev)
- {
-+	struct regmap_config hub_master_regmap_config;
- 	struct fsi_device *fsi_dev = to_fsi_dev(dev);
- 	struct fsi_master_hub *hub;
-+	struct regmap *map;
- 	uint32_t reg, links;
--	__be32 __reg;
- 	int rc;
- 
--	rc = fsi_device_read(fsi_dev, FSI_MVER, &__reg, sizeof(__reg));
-+	fsi_master_regmap_config(&hub_master_regmap_config);
-+	hub_master_regmap_config.reg_base = fsi_dev->addr;
-+	map = regmap_init_fsi(fsi_dev, &hub_master_regmap_config);
-+	if (IS_ERR(map))
-+		return PTR_ERR(map);
+-static struct attribute *cfam_attr[] = {
++static ssize_t config_table_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	const unsigned int end = engine_page_size / sizeof(u32);
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	__be32 data;
++	int len = 0;
++	u32 conf;
++	int rc;
 +
-+	rc = regmap_read(map, FSI_MVER, &reg);
- 	if (rc)
--		return rc;
-+		goto err_regmap;
- 
--	reg = be32_to_cpu(__reg);
- 	links = (reg >> 8) & 0xff;
- 	dev_dbg(dev, "hub version %08x (%d links)\n", reg, links);
- 
-@@ -213,7 +111,7 @@ static int hub_master_probe(struct device *dev)
- 			FSI_HUB_LINK_SIZE * links);
- 	if (rc) {
- 		dev_err(dev, "can't claim slave address range for links");
--		return rc;
-+		goto err_regmap;
- 	}
- 
- 	hub = kzalloc(sizeof(*hub), GFP_KERNEL);
-@@ -229,22 +127,24 @@ static int hub_master_probe(struct device *dev)
- 	hub->master.dev.parent = dev;
- 	hub->master.dev.release = hub_master_release;
- 	hub->master.dev.of_node = of_node_get(dev_of_node(dev));
-+	hub->master.map = map;
- 
- 	hub->master.idx = fsi_dev->slave->link + 1;
- 	hub->master.n_links = links;
--	hub->master.flags = FSI_MASTER_FLAG_NO_BREAK_SID;
-+	hub->master.flags = FSI_MASTER_FLAG_NO_BREAK_SID | FSI_MASTER_FLAG_INTERRUPT;
- 	hub->master.read = hub_master_read;
- 	hub->master.write = hub_master_write;
- 	hub->master.send_break = hub_master_break;
--	hub->master.link_enable = hub_master_link_enable;
- 
- 	dev_set_drvdata(dev, hub);
- 
--	hub_master_init(hub);
-+	rc = fsi_master_init(&hub->master, fsi_dev->slave->master->clock_frequency);
++	for (unsigned int i = 0; i < end; ++i) {
++		rc = fsi_slave_read(slave, i * sizeof(data), &data, sizeof(data));
++		if (rc)
++			return rc;
++
++		conf = be32_to_cpu(data);
++		if (crc4(0, conf, 32))
++			return -EBADMSG;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", conf);
++		if (!(conf & FSI_SLAVE_CONF_NEXT_MASK))
++			break;
++	}
++
++	return len;
++}
++
++static DEVICE_ATTR_RO(config_table);
++
++struct fsi_slave_attribute {
++	struct device_attribute attr;
++	int reg;
++};
++
++static ssize_t slave_reg_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_slave_attribute *fattr = container_of(attr, struct fsi_slave_attribute, attr);
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	__be32 data;
++	int rc;
++
++	rc = fsi_slave_read(slave, FSI_SLAVE_BASE + fattr->reg, &data, sizeof(data));
 +	if (rc)
-+		goto err_free;
++		return rc;
++
++	return sysfs_emit(buf, "%08x\n", be32_to_cpu(data));
++}
++
++static ssize_t slave_reg_8bpp_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_slave_attribute *fattr = container_of(attr, struct fsi_slave_attribute, attr);
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	__be32 data;
++	int len = 0;
++	int rc;
++	int i;
++
++	for (i = 0; i < 2; ++i) {
++		rc = fsi_slave_read(slave, FSI_SLAVE_BASE + fattr->reg + (i * 4), &data,
++				    sizeof(data));
++		if (rc)
++			return rc;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", be32_to_cpu(data));
++	}
++
++	return len;
++}
++
++#define FSI_SLAVE_ATTR(name, reg) \
++	struct fsi_slave_attribute dev_attr_##name = { __ATTR(name, 0444, slave_reg_show, NULL), reg }
++#define FSI_SLAVE_ATTR_8BPP(name, reg) \
++	struct fsi_slave_attribute dev_attr_##name = { __ATTR(name, 0444, slave_reg_8bpp_show, NULL), reg }
++
++static FSI_SLAVE_ATTR(smode, FSI_SMODE);
++static FSI_SLAVE_ATTR(sdma, FSI_SDMA);
++static FSI_SLAVE_ATTR(sisc, FSI_SISC);
++static FSI_SLAVE_ATTR(sism, FSI_SISM);
++static FSI_SLAVE_ATTR(siss, FSI_SISS);
++static FSI_SLAVE_ATTR(sstat, FSI_SSTAT);
++static FSI_SLAVE_ATTR(si1m, FSI_SI1M);
++static FSI_SLAVE_ATTR(si1s, FSI_SI1S);
++static FSI_SLAVE_ATTR(sic, FSI_SIC);
++static FSI_SLAVE_ATTR(si2m, FSI_SI2M);
++static FSI_SLAVE_ATTR(si2s, FSI_SI2S);
++static FSI_SLAVE_ATTR(scmdt, FSI_SCMDT);
++static FSI_SLAVE_ATTR(sdata, FSI_SDATA);
++static FSI_SLAVE_ATTR(slastd, FSI_SLASTD);
++static FSI_SLAVE_ATTR(smbl, FSI_SMBL);
++static FSI_SLAVE_ATTR(soml, FSI_SOML);
++static FSI_SLAVE_ATTR(snml, FSI_SNML);
++static FSI_SLAVE_ATTR(smbr, FSI_SMBR);
++static FSI_SLAVE_ATTR(somr, FSI_SOMR);
++static FSI_SLAVE_ATTR(snmr, FSI_SNMR);
++static FSI_SLAVE_ATTR_8BPP(scrsic, FSI_ScRSIC0);
++static FSI_SLAVE_ATTR_8BPP(scrsim, FSI_ScRSIM0);
++static FSI_SLAVE_ATTR_8BPP(scrsis, FSI_ScRSIS0);
++static FSI_SLAVE_ATTR_8BPP(srsic, FSI_SRSIC0);
++static FSI_SLAVE_ATTR_8BPP(srsim, FSI_SRSIM0);
++static FSI_SLAVE_ATTR_8BPP(srsis, FSI_SRSIS0);
++static FSI_SLAVE_ATTR(llmode, FSI_LLMODE);
++static FSI_SLAVE_ATTR(llstat, FSI_LLSTAT);
++
++static struct attribute *cfam_attrs[] = {
+ 	&dev_attr_send_echo_delays.attr,
+ 	&dev_attr_chip_id.attr,
+ 	&dev_attr_cfam_id.attr,
+ 	&dev_attr_send_term.attr,
++	&dev_attr_config_table.attr,
++	&dev_attr_smode.attr.attr,
++	&dev_attr_sdma.attr.attr,
++	&dev_attr_sisc.attr.attr,
++	&dev_attr_sism.attr.attr,
++	&dev_attr_siss.attr.attr,
++	&dev_attr_sstat.attr.attr,
++	&dev_attr_si1m.attr.attr,
++	&dev_attr_si1s.attr.attr,
++	&dev_attr_sic.attr.attr,
++	&dev_attr_si2m.attr.attr,
++	&dev_attr_si2s.attr.attr,
++	&dev_attr_scmdt.attr.attr,
++	&dev_attr_sdata.attr.attr,
++	&dev_attr_slastd.attr.attr,
++	&dev_attr_smbl.attr.attr,
++	&dev_attr_soml.attr.attr,
++	&dev_attr_snml.attr.attr,
++	&dev_attr_smbr.attr.attr,
++	&dev_attr_somr.attr.attr,
++	&dev_attr_snmr.attr.attr,
++	&dev_attr_scrsic.attr.attr,
++	&dev_attr_scrsim.attr.attr,
++	&dev_attr_scrsis.attr.attr,
++	&dev_attr_srsic.attr.attr,
++	&dev_attr_srsim.attr.attr,
++	&dev_attr_srsis.attr.attr,
++	&dev_attr_llmode.attr.attr,
++	&dev_attr_llstat.attr.attr,
+ 	NULL,
+ };
  
- 	rc = fsi_master_register(&hub->master);
- 	if (rc)
--		goto err_release;
-+		goto err_free;
+-static const struct attribute_group cfam_attr_group = {
+-	.attrs = cfam_attr,
+-};
+-
+-static const struct attribute_group *cfam_attr_groups[] = {
+-	&cfam_attr_group,
+-	NULL,
+-};
++ATTRIBUTE_GROUPS(cfam);
  
- 	/* At this point, fsi_master_register performs the device_initialize(),
- 	 * and holds the sole reference on master.dev. This means the device
-@@ -256,9 +156,13 @@ static int hub_master_probe(struct device *dev)
- 	get_device(&hub->master.dev);
- 	return 0;
+ static char *cfam_devnode(const struct device *dev, umode_t *mode,
+ 			  kuid_t *uid, kgid_t *gid)
+@@ -919,7 +1043,7 @@ static char *cfam_devnode(const struct device *dev, umode_t *mode,
+ static const struct device_type cfam_type = {
+ 	.name = "cfam",
+ 	.devnode = cfam_devnode,
+-	.groups = cfam_attr_groups
++	.groups = cfam_groups
+ };
  
-+err_free:
-+	kfree(hub);
- err_release:
- 	fsi_slave_release_range(fsi_dev->slave, FSI_HUB_LINK_OFFSET,
- 			FSI_HUB_LINK_SIZE * links);
-+err_regmap:
-+	regmap_exit(map);
- 	return rc;
- }
+ static char *fsi_cdev_devnode(const struct device *dev, umode_t *mode,
+diff --git a/drivers/fsi/fsi-slave.h b/drivers/fsi/fsi-slave.h
+index 0468ec1c60db2..1478ee561b85c 100644
+--- a/drivers/fsi/fsi-slave.h
++++ b/drivers/fsi/fsi-slave.h
+@@ -14,6 +14,7 @@
+  * FSI slave engine control register offsets
+  */
+ #define FSI_SMODE		0x0	/* R/W: Mode register */
++#define FSI_SDMA		0x4	/* R/W: DMA control */
+ #define FSI_SISC		0x8	/* R  : Interrupt condition */
+ #define FSI_SCISC		0x8	/* C  : Clear interrupt condition */
+ #define FSI_SISM		0xc	/* R/W: Interrupt mask */
+@@ -21,11 +22,30 @@
+ #define FSI_SSISM		0x10	/* S  : Set interrupt mask */
+ #define FSI_SCISM		0x14	/* C  : Clear interrupt mask */
+ #define FSI_SSTAT		0x14	/* R  : Slave status */
++#define FSI_SI1M		0x18	/* R/W: Interrupt 1 mask */
+ #define FSI_SI1S		0x1c	/* R  : Slave interrupt 1 status */
+ #define FSI_SSI1M		0x1c	/* S  : Set slave interrupt 1 mask */
++#define FSI_SIC			0x20	/* R  : Interrupt 1 condition */
+ #define FSI_SCI1M		0x20	/* C  : Clear slave interrupt 1 mask */
++#define FSI_SI2M		0x24	/* R/W: Interrupt 2 mask */
++#define FSI_SI2S		0x28	/* R  : Interrupt 2 status */
++#define FSI_SCMDT		0x2c	/* R  : Last command trace */
++#define FSI_SDATA		0x30	/* R  : Last data trace */
+ #define FSI_SLBUS		0x30	/* W  : LBUS Ownership */
++#define FSI_SLASTD		0x34	/* R  : Last data sent */
+ #define FSI_SRES		0x34	/* W  : Reset */
++#define FSI_SMBL		0x38
++#define FSI_SOML		0x3c
++#define FSI_SNML		0x40
++#define FSI_SMBR		0x44
++#define FSI_SOMR		0x48
++#define FSI_SNMR		0x4c
++#define FSI_ScRSIC0		0x50
++#define FSI_ScRSIC4		0x54
++#define FSI_ScRSIM0		0x58
++#define FSI_ScRSIM4		0x5c
++#define FSI_ScRSIS0		0x60
++#define FSI_ScRSIS4		0x64
+ #define FSI_SRSIC0		0x68	/* C  : Clear remote interrupt condition */
+ #define FSI_SRSIC4		0x6c	/* C  : Clear remote interrupt condition */
+ #define FSI_SRSIM0		0x70	/* R/W: Remote interrupt mask */
+@@ -33,6 +53,7 @@
+ #define FSI_SRSIS0		0x78	/* R  : Remote interrupt status */
+ #define FSI_SRSIS4		0x7c	/* R  : Remote interrupt status */
+ #define FSI_LLMODE		0x100	/* R/W: Link layer mode register */
++#define FSI_LLSTAT		0x104
  
+ /*
+  * SMODE fields
 -- 
 2.39.3
 
