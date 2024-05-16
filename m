@@ -1,62 +1,62 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 15 May 2024 16:11:21 +0200
-Subject: [PATCH v5 2/4] ARM: dts: aspeed: Add IBM P11 Blueridge BMC system
-In-Reply-To: <20240514213510.159144-3-eajames@linux.ibm.com>
-References: <20240514213510.159144-1-eajames@linux.ibm.com>
- <20240514213510.159144-3-eajames@linux.ibm.com>
-Message-ID: <52bf83a5-f62a-4758-999b-9245d4a0ceab@kernel.org>
+From: Eddie James <eajames@linux.ibm.com>
+Date: Thu, 16 May 2024 13:18:31 -0500
+Subject: [PATCH v3 04/40] fsi: Use a defined value for default echo delay
+In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
+References: <20240516181907.3468796-1-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-5-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 14/05/2024 23:35, Eddie James wrote:
-> Add the device tree for the new BMC system. The Blueridge is a
-> P11 system with four processors.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |    1 +
->  .../dts/aspeed/aspeed-bmc-ibm-blueridge.dts   | 1691 +++++++++++++++++
->  2 files changed, 1692 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index e51c6d2037255..f3db9ee156429 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -32,6 +32,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-facebook-yamp.dtb \
->  	aspeed-bmc-facebook-yosemitev2.dtb \
->  	aspeed-bmc-facebook-yosemite4.dtb \
-> +	aspeed-bmc-ibm-blueridge.dtb \
->  	aspeed-bmc-ibm-bonnell.dtb \
->  	aspeed-bmc-ibm-everest.dtb \
->  	aspeed-bmc-ibm-rainier.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
-> new file mode 100644
-> index 0000000000000..418eaf0a46146
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
-> @@ -0,0 +1,1691 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright 2024 IBM Corp.
-> +/dts-v1/;
-> +
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/i2c/i2c.h>
-> +#include <dt-bindings/leds/leds-pca955x.h>
-> +#include "aspeed-g6.dtsi"
-> +#include "ibm-power11-quad.dtsi"
-> +
-> +/ {
-> +	model = "Blueridge";
-> +	compatible = "ibm,blueridge-bmc", "aspeed,ast2600";
+Avoid hardcoding '16' several times.
 
-Undocumented binding.
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+---
+ drivers/fsi/fsi-core.c  | 6 +++---
+ drivers/fsi/fsi-slave.h | 2 ++
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-
-Best regards,
-Krzysztof
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index e8dbf5e95c234..27235583183e5 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -1008,8 +1008,8 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
+ 	slave->link = link;
+ 	slave->id = id;
+ 	slave->size = FSI_SLAVE_SIZE_23b;
+-	slave->t_send_delay = 16;
+-	slave->t_echo_delay = 16;
++	slave->t_send_delay = FSI_SMODE_SD_DEFAULT;
++	slave->t_echo_delay = FSI_SMODE_ED_DEFAULT;
+ 
+ 	/* Get chip ID if any */
+ 	slave->chip_id = -1;
+@@ -1160,7 +1160,7 @@ static int fsi_master_break(struct fsi_master *master, int link)
+ 	if (master->send_break)
+ 		rc = master->send_break(master, link);
+ 	if (master->link_config)
+-		master->link_config(master, link, 16, 16);
++		master->link_config(master, link, FSI_SMODE_SD_DEFAULT, FSI_SMODE_ED_DEFAULT);
+ 
+ 	return rc;
+ }
+diff --git a/drivers/fsi/fsi-slave.h b/drivers/fsi/fsi-slave.h
+index f6cca04131a92..45190b06fa027 100644
+--- a/drivers/fsi/fsi-slave.h
++++ b/drivers/fsi/fsi-slave.h
+@@ -42,8 +42,10 @@
+ #define FSI_SMODE_SID_BREAK	3		/* ID after break command */
+ #define FSI_SMODE_ED_SHIFT	20		/* Echo delay shift */
+ #define FSI_SMODE_ED_MASK	0xf		/* Echo delay mask */
++#define FSI_SMODE_ED_DEFAULT	 16		/* Default echo delay */
+ #define FSI_SMODE_SD_SHIFT	16		/* Send delay shift */
+ #define FSI_SMODE_SD_MASK	0xf		/* Send delay mask */
++#define FSI_SMODE_SD_DEFAULT	 16		/* Default send delay */
+ #define FSI_SMODE_LBCRR_SHIFT	8		/* Clk ratio shift */
+ #define FSI_SMODE_LBCRR_MASK	0xf		/* Clk ratio mask */
+ 
+-- 
+2.39.3
 
