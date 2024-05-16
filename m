@@ -1,324 +1,198 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:19:07 -0500
-Subject: [PATCH v3 40/40] ARM: dts: aspeed: P10: Bump SPI max frequencies
+Date: Thu, 16 May 2024 13:18:52 -0500
+Subject: [PATCH v3 25/40] fsi: hub: Add interrupt support
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-41-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-26-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These parts support 10MHZ.
+The hub master receives it's interrupts from the local slave register
+space, which is handled in the FSI core. Therefore, just route the remote
+slave interrupts to the hub link device interrupts.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- .../dts/aspeed/aspeed-bmc-ibm-everest.dts     | 32 +++++++++----------
- .../arm/boot/dts/aspeed/ibm-power10-dual.dtsi | 16 +++++-----
- .../arm/boot/dts/aspeed/ibm-power10-quad.dtsi | 16 +++++-----
- 3 files changed, 32 insertions(+), 32 deletions(-)
+ drivers/fsi/fsi-master-hub.c | 119 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 116 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
-index 214b2e6a4c6df..1365dc95f1352 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
-@@ -2797,7 +2797,7 @@ eeprom at 0 {
+diff --git a/drivers/fsi/fsi-master-hub.c b/drivers/fsi/fsi-master-hub.c
+index 91ad6b7728fa2..4dbc542500bbd 100644
+--- a/drivers/fsi/fsi-master-hub.c
++++ b/drivers/fsi/fsi-master-hub.c
+@@ -7,8 +7,10 @@
  
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
+ #include <linux/delay.h>
+ #include <linux/fsi.h>
++#include <linux/irqchip/chained_irq.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_irq.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
  
-@@ -2813,7 +2813,7 @@ eeprom at 0 {
+@@ -35,9 +37,10 @@
+  */
+ struct fsi_master_hub {
+ 	struct fsi_master	master;
++	struct irq_domain	*irq_domain;
+ 	struct fsi_device	*upstream;
+-	uint32_t		addr, size;	/* slave-relative addr of */
+-						/* master address space */
++	uint32_t		addr;
++	uint32_t		size;
+ };
  
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
+ #define to_fsi_master_hub(m) container_of(m, struct fsi_master_hub, master)
+@@ -77,10 +80,81 @@ static int hub_master_break(struct fsi_master *master, int link)
+ 	return hub_master_write(master, link, 0, addr, &cmd, sizeof(cmd));
+ }
  
-@@ -2830,7 +2830,7 @@ eeprom at 0 {
++static int hub_master_link_enable(struct fsi_master *master, int link,
++				  bool enable)
++{
++	struct fsi_master_hub *hub = to_fsi_master_hub(master);
++	u32 srsim = 0xff000000 >> (8 * (link % 4));
++	int slave_idx = 4 * (link / 4);
++	__be32 srsim_be;
++	int ret;
++
++	ret = fsi_slave_read(hub->upstream->slave, FSI_SLAVE_BASE + FSI_SRSIM0 + slave_idx,
++			     &srsim_be, sizeof(srsim_be));
++	if (ret)
++		return ret;
++
++	if (enable) {
++		ret = fsi_master_link_enable(master, link, enable);
++		if (ret)
++			return ret;
++
++		srsim |= be32_to_cpu(srsim_be);
++		srsim_be = cpu_to_be32(srsim);
++		ret = fsi_slave_write(hub->upstream->slave,
++				      FSI_SLAVE_BASE + FSI_SRSIM0 + slave_idx, &srsim_be,
++				      sizeof(srsim_be));
++	} else {
++		srsim = be32_to_cpu(srsim_be) & ~srsim;
++		srsim_be = cpu_to_be32(srsim);
++		ret = fsi_slave_write(hub->upstream->slave,
++				      FSI_SLAVE_BASE + FSI_SRSIM0 + slave_idx, &srsim_be,
++				      sizeof(srsim_be));
++		if (ret)
++			return ret;
++
++		ret = fsi_master_link_enable(master, link, enable);
++	}
++
++	return ret;
++}
++
++static irqreturn_t hub_master_irq(int irq, void *data)
++{
++	struct fsi_master_hub *hub = data;
++	struct fsi_master *parent = hub->upstream->slave->master;
++	unsigned int link = 0;
++
++	for (; link < FSI_HUB_MASTER_MAX_LINKS; ++link) {
++		if (parent->remote_interrupt_status & (1 << link))
++			fsi_master_irq(&hub->master, hub->irq_domain, link);
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int hub_master_irqd_map(struct irq_domain *domain, unsigned int irq,
++			       irq_hw_number_t hwirq)
++{
++	struct fsi_master_hub *hub = domain->host_data;
++
++	irq_set_chip_and_handler(irq, &hub->master.irq_chip, handle_simple_irq);
++	irq_set_chip_data(irq, &hub->master);
++
++	return 0;
++}
++
++static const struct irq_domain_ops hub_master_irq_domain_ops = {
++	.map = hub_master_irqd_map,
++};
++
+ static void hub_master_release(struct device *dev)
+ {
+ 	struct fsi_master_hub *hub = to_fsi_master_hub(to_fsi_master(dev));
  
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
++	if (hub->irq_domain)
++		irq_domain_remove(hub->irq_domain);
++
+ 	regmap_exit(hub->master.map);
+ 	kfree(hub);
+ }
+@@ -135,6 +209,7 @@ static int hub_master_probe(struct device *dev)
+ 	hub->master.read = hub_master_read;
+ 	hub->master.write = hub_master_write;
+ 	hub->master.send_break = hub_master_break;
++	hub->master.link_enable = hub_master_link_enable;
  
-@@ -2847,7 +2847,7 @@ eeprom at 0 {
+ 	dev_set_drvdata(dev, hub);
  
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-@@ -3170,7 +3170,7 @@ eeprom at 0 {
+@@ -142,9 +217,44 @@ static int hub_master_probe(struct device *dev)
+ 	if (rc)
+ 		goto err_free;
  
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
++	if (of_property_read_bool(dev->of_node, "interrupt-controller")) {
++		struct device_node *parent = of_irq_find_parent(dev->of_node);
++
++		if (parent) {
++			struct irq_fwspec fwspec;
++			unsigned int irq;
++
++			fwspec.fwnode = of_node_to_fwnode(parent);
++			fwspec.param_count = 1;
++			fwspec.param[0] = (fsi_dev->slave->link * FSI_IRQ_COUNT) + 8;
++			irq = irq_create_fwspec_mapping(&fwspec);
++			if (irq) {
++				unsigned int size = links * FSI_IRQ_COUNT;
++
++				hub->irq_domain = irq_domain_add_linear(dev->of_node, size,
++									&hub_master_irq_domain_ops,
++									hub);
++
++				if (hub->irq_domain) {
++					rc = devm_request_irq(dev, irq, hub_master_irq, 0,
++							      dev_name(dev), hub);
++					if (rc) {
++						dev_warn(dev, "failed to request irq:%u\n", irq);
++						irq_domain_remove(hub->irq_domain);
++						hub->irq_domain = NULL;
++					} else {
++						dev_info(dev, "enabling interrupts irq:%u\n", irq);
++					}
++				} else {
++					dev_warn(dev, "failed to create irq domain\n");
++				}
++			}
++		}
++	}
++
+ 	rc = fsi_master_register(&hub->master);
+ 	if (rc)
+-		goto err_free;
++		goto err_irq;
  
-@@ -3186,7 +3186,7 @@ eeprom at 0 {
+ 	/* At this point, fsi_master_register performs the device_initialize(),
+ 	 * and holds the sole reference on master.dev. This means the device
+@@ -156,6 +266,9 @@ static int hub_master_probe(struct device *dev)
+ 	get_device(&hub->master.dev);
+ 	return 0;
  
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3203,7 +3203,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3220,7 +3220,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-@@ -3543,7 +3543,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3559,7 +3559,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3576,7 +3576,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3593,7 +3593,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-@@ -3916,7 +3916,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3932,7 +3932,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3949,7 +3949,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -3966,7 +3966,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-diff --git a/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi b/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi
-index 44e48e39e6e96..e11354bb384c2 100644
---- a/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi
-+++ b/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi
-@@ -94,7 +94,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -110,7 +110,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -127,7 +127,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -144,7 +144,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-@@ -261,7 +261,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -277,7 +277,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -294,7 +294,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -311,7 +311,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-diff --git a/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi b/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi
-index 57494c744b5d0..0ffb4ae6423fc 100644
---- a/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi
-+++ b/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi
-@@ -744,7 +744,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -760,7 +760,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -777,7 +777,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -794,7 +794,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
-@@ -1117,7 +1117,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -1133,7 +1133,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -1150,7 +1150,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 
-@@ -1167,7 +1167,7 @@ eeprom at 0 {
- 
- 					compatible = "atmel,at25";
- 					reg = <0>;
--					spi-max-frequency = <1000000>;
-+					spi-max-frequency = <10000000>;
- 				};
- 			};
- 		};
++err_irq:
++	if (hub->irq_domain)
++		irq_domain_remove(hub->irq_domain);
+ err_free:
+ 	kfree(hub);
+ err_release:
 -- 
 2.39.3
 
