@@ -1,115 +1,65 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:18:38 -0500
-Subject: [PATCH v3 11/40] fsi: core: Allow cfam device type aliases
+Date: Thu, 16 May 2024 13:18:34 -0500
+Subject: [PATCH v3 07/40] fsi: core: Add slave error trace
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-12-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-8-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Other FSI devices can uses aliases for the device numbering, so
-modify the function to get a new minor to allow the cfam type
-to use aliases too.
+Trace out the FSI slave status and interrupt status.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-core.c | 59 +++++++++++++++++++++---------------------
- 1 file changed, 29 insertions(+), 30 deletions(-)
+ drivers/fsi/fsi-core.c     |  1 +
+ include/trace/events/fsi.h | 19 +++++++++++++++++++
+ 2 files changed, 20 insertions(+)
 
 diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
-index 660f89b743235..36e31eafad3d0 100644
+index b3029f9c05e4a..93bbdcf50a89a 100644
 --- a/drivers/fsi/fsi-core.c
 +++ b/drivers/fsi/fsi-core.c
-@@ -884,12 +884,37 @@ static int fsi_adjust_index(int index)
- #endif
- }
+@@ -185,6 +185,7 @@ static int fsi_slave_report_and_clear_errors(struct fsi_slave *slave)
  
--static int __fsi_get_new_minor(struct fsi_slave *slave, enum fsi_dev_type type,
--			       dev_t *out_dev, int *out_index)
-+static const char *const fsi_dev_type_names[] = {
-+	"cfam",
-+	"sbefifo",
-+	"scom",
-+	"occ",
-+};
+ 	dev_dbg(&slave->dev, "status: 0x%08x, sisc: 0x%08x\n",
+ 			be32_to_cpu(stat), be32_to_cpu(irq));
++	trace_fsi_slave_error(slave, be32_to_cpu(irq), be32_to_cpu(stat));
+ 
+ 	/* clear interrupts */
+ 	return fsi_master_write(master, link, id, FSI_SLAVE_BASE + FSI_SISC,
+diff --git a/include/trace/events/fsi.h b/include/trace/events/fsi.h
+index fed8835f438e5..5509afc98ee8b 100644
+--- a/include/trace/events/fsi.h
++++ b/include/trace/events/fsi.h
+@@ -115,6 +115,25 @@ TRACE_EVENT(fsi_master_unregister,
+ 	TP_printk("fsi%d (%d links)", __entry->master_idx, __entry->n_links)
+ );
+ 
++TRACE_EVENT(fsi_slave_error,
++	TP_PROTO(const struct fsi_slave *slave, uint32_t sisc, uint32_t sstat),
++	TP_ARGS(slave, sisc, sstat),
++	TP_STRUCT__entry(
++		__field(int, master_idx)
++		__field(int, link)
++		__field(uint32_t, sisc)
++		__field(uint32_t, sstat)
++	),
++	TP_fast_assign(
++		__entry->master_idx = slave->master->idx;
++		__entry->link = slave->link;
++		__entry->sisc = sisc;
++		__entry->sstat = sstat;
++	),
++	TP_printk("fsi%d:%02d sisc:%08x sstat:%08x", __entry->master_idx, __entry->link,
++		  __entry->sisc, __entry->sstat)
++);
 +
-+static int __fsi_get_new_minor(struct fsi_slave *slave, struct device_node *np,
-+			       enum fsi_dev_type type, dev_t *out_dev, int *out_index)
- {
- 	int cid = slave->chip_id;
- 	int id;
- 
-+	if (np && type < 4) {
-+		int aid = of_alias_get_id(np, fsi_dev_type_names[type]);
-+
-+		if (aid >= 0) {
-+			/* Use the same scheme as the legacy numbers. */
-+			id = (aid << 2) | type;
-+			id = ida_alloc_range(&fsi_minor_ida, id, id, GFP_KERNEL);
-+			if (id >= 0) {
-+				*out_index = aid;
-+				*out_dev = fsi_base_dev + id;
-+				return 0;
-+			}
-+
-+			if (id != -ENOSPC)
-+				return id;
-+		}
-+	}
-+
- 	/* Check if we qualify for legacy numbering */
- 	if (cid >= 0 && cid < 16 && type < 4) {
- 		/*
-@@ -918,36 +943,10 @@ static int __fsi_get_new_minor(struct fsi_slave *slave, enum fsi_dev_type type,
- 	return 0;
- }
- 
--static const char *const fsi_dev_type_names[] = {
--	"cfam",
--	"sbefifo",
--	"scom",
--	"occ",
--};
--
- int fsi_get_new_minor(struct fsi_device *fdev, enum fsi_dev_type type,
- 		      dev_t *out_dev, int *out_index)
- {
--	if (fdev->dev.of_node) {
--		int aid = of_alias_get_id(fdev->dev.of_node, fsi_dev_type_names[type]);
--
--		if (aid >= 0) {
--			/* Use the same scheme as the legacy numbers. */
--			int id = (aid << 2) | type;
--
--			id = ida_alloc_range(&fsi_minor_ida, id, id, GFP_KERNEL);
--			if (id >= 0) {
--				*out_index = aid;
--				*out_dev = fsi_base_dev + id;
--				return 0;
--			}
--
--			if (id != -ENOSPC)
--				return id;
--		}
--	}
--
--	return __fsi_get_new_minor(fdev->slave, type, out_dev, out_index);
-+	return __fsi_get_new_minor(fdev->slave, fdev->dev.of_node, type, out_dev, out_index);
- }
- EXPORT_SYMBOL_GPL(fsi_get_new_minor);
- 
-@@ -1059,7 +1058,7 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
- 	}
- 
- 	/* Allocate a minor in the FSI space */
--	rc = __fsi_get_new_minor(slave, fsi_dev_cfam, &slave->dev.devt,
-+	rc = __fsi_get_new_minor(slave, slave->dev.of_node, fsi_dev_cfam, &slave->dev.devt,
- 				 &slave->cdev_idx);
- 	if (rc)
- 		goto err_free;
+ TRACE_EVENT(fsi_slave_init,
+ 	TP_PROTO(const struct fsi_slave *slave),
+ 	TP_ARGS(slave),
 -- 
 2.39.3
 
