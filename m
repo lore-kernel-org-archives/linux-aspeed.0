@@ -1,138 +1,65 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Thu, 16 May 2024 13:18:47 -0500
-Subject: [PATCH v3 20/40] fsi: aspeed: Switch to spinlock
+Date: Thu, 16 May 2024 13:19:00 -0500
+Subject: [PATCH v3 33/40] fsi: hub master: Reset hub master after errors
 In-Reply-To: <20240516181907.3468796-1-eajames@linux.ibm.com>
 References: <20240516181907.3468796-1-eajames@linux.ibm.com>
-Message-ID: <20240516181907.3468796-21-eajames@linux.ibm.com>
+Message-ID: <20240516181907.3468796-34-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In preparation for interrupt support, switch to a spinlock rather
-than a mutex.
+The hub master driver wasn't clearing errors after accessing remote
+slaves. Perform the standard master reset procedure to clear errors
+to fully recover.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-aspeed.c | 25 ++++++++++++++-----------
- 1 file changed, 14 insertions(+), 11 deletions(-)
+ drivers/fsi/fsi-master-hub.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 10ca23cf58c2e..176e596b4391b 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -8,11 +8,11 @@
- #include <linux/io.h>
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
-+#include <linux/spinlock.h>
- #include <linux/iopoll.h>
- #include <linux/gpio/consumer.h>
- 
-@@ -24,7 +24,7 @@ struct fsi_master_aspeed_data {
- 
- struct fsi_master_aspeed {
- 	struct fsi_master	master;
--	struct mutex		lock;	/* protect HW access */
-+	spinlock_t		lock;	/* protect HW access */
- 	struct device		*dev;
- 	void __iomem		*base;
- 	void __iomem		*ctrl;
-@@ -251,6 +251,7 @@ static int aspeed_master_read(struct fsi_master *master, int link,
+diff --git a/drivers/fsi/fsi-master-hub.c b/drivers/fsi/fsi-master-hub.c
+index 4dbc542500bbd..1bd53b1e52a91 100644
+--- a/drivers/fsi/fsi-master-hub.c
++++ b/drivers/fsi/fsi-master-hub.c
+@@ -49,24 +49,34 @@ static int hub_master_read(struct fsi_master *master, int link,
  			uint8_t id, uint32_t addr, void *val, size_t size)
  {
- 	struct fsi_master_aspeed *aspeed = to_fsi_master_aspeed(master);
-+	unsigned long flags;
- 	int ret;
+ 	struct fsi_master_hub *hub = to_fsi_master_hub(master);
++	int rc;
  
- 	if (id > 0x3)
-@@ -259,7 +260,7 @@ static int aspeed_master_read(struct fsi_master *master, int link,
- 	addr |= id << 21;
- 	addr += link * FSI_HUB_LINK_SIZE;
+ 	if (id != 0)
+ 		return -EINVAL;
  
--	mutex_lock(&aspeed->lock);
-+	spin_lock_irqsave(&aspeed->lock, flags);
- 
- 	switch (size) {
- 	case 1:
-@@ -278,7 +279,7 @@ static int aspeed_master_read(struct fsi_master *master, int link,
- 
- 	ret = check_errors(aspeed, ret);
- done:
--	mutex_unlock(&aspeed->lock);
-+	spin_unlock_irqrestore(&aspeed->lock, flags);
- 	return ret;
+ 	addr += hub->addr + (link * FSI_HUB_LINK_SIZE);
+-	return fsi_slave_read(hub->upstream->slave, addr, val, size);
++	rc = fsi_slave_read(hub->upstream->slave, addr, val, size);
++	if (rc)
++		fsi_master_error(master, link);
++
++	return rc;
  }
  
-@@ -286,6 +287,7 @@ static int aspeed_master_write(struct fsi_master *master, int link,
+ static int hub_master_write(struct fsi_master *master, int link,
  			uint8_t id, uint32_t addr, const void *val, size_t size)
  {
- 	struct fsi_master_aspeed *aspeed = to_fsi_master_aspeed(master);
-+	unsigned long flags;
- 	int ret;
+ 	struct fsi_master_hub *hub = to_fsi_master_hub(master);
++	int rc;
  
- 	if (id > 0x3)
-@@ -294,7 +296,7 @@ static int aspeed_master_write(struct fsi_master *master, int link,
- 	addr |= id << 21;
- 	addr += link * FSI_HUB_LINK_SIZE;
+ 	if (id != 0)
+ 		return -EINVAL;
  
--	mutex_lock(&aspeed->lock);
-+	spin_lock_irqsave(&aspeed->lock, flags);
- 
- 	switch (size) {
- 	case 1:
-@@ -313,7 +315,7 @@ static int aspeed_master_write(struct fsi_master *master, int link,
- 
- 	ret = check_errors(aspeed, ret);
- done:
--	mutex_unlock(&aspeed->lock);
-+	spin_unlock_irqrestore(&aspeed->lock, flags);
- 	return ret;
+ 	addr += hub->addr + (link * FSI_HUB_LINK_SIZE);
+-	return fsi_slave_write(hub->upstream->slave, addr, val, size);
++	rc = fsi_slave_write(hub->upstream->slave, addr, val, size);
++	if (rc)
++		fsi_master_error(master, link);
++
++	return rc;
  }
  
-@@ -396,15 +398,16 @@ static ssize_t cfam_reset_store(struct device *dev, struct device_attribute *att
- 				const char *buf, size_t count)
- {
- 	struct fsi_master_aspeed *aspeed = dev_get_drvdata(dev);
-+	unsigned long flags;
- 
- 	trace_fsi_master_aspeed_cfam_reset(true);
--	mutex_lock(&aspeed->lock);
-+	spin_lock_irqsave(&aspeed->lock, flags);
- 	gpiod_set_value(aspeed->cfam_reset_gpio, 1);
--	usleep_range(900, 1000);
-+	udelay(900);
- 	gpiod_set_value(aspeed->cfam_reset_gpio, 0);
--	usleep_range(900, 1000);
-+	udelay(900);
- 	regmap_write(aspeed->master.map, FSI_MRESP0, FSI_MRESP_RST_ALL_MASTER);
--	mutex_unlock(&aspeed->lock);
-+	spin_unlock_irqrestore(&aspeed->lock, flags);
- 	trace_fsi_master_aspeed_cfam_reset(false);
- 
- 	return count;
-@@ -498,6 +501,7 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	aspeed->dev = &pdev->dev;
-+	spin_lock_init(&aspeed->lock);
- 
- 	aspeed->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(aspeed->base)) {
-@@ -583,7 +587,6 @@ static int fsi_master_aspeed_probe(struct platform_device *pdev)
- 
- 	dev_set_drvdata(&pdev->dev, aspeed);
- 
--	mutex_init(&aspeed->lock);
- 	rc = fsi_master_init(&aspeed->master, clk_get_rate(aspeed->clk));
- 	if (rc)
- 		goto err_regmap;
+ static int hub_master_break(struct fsi_master *master, int link)
 -- 
 2.39.3
 
