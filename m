@@ -1,85 +1,68 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 22 May 2024 14:25:06 -0500
-Subject: [PATCH v6 02/20] dt-bindings: fsi: fsi2spi: Document SPI controller child nodes
+Date: Wed, 22 May 2024 14:25:07 -0500
+Subject: [PATCH v6 03/20] dt-bindings: fsi: Document the IBM SCOM engine
 In-Reply-To: <20240522192524.3286237-1-eajames@linux.ibm.com>
 References: <20240522192524.3286237-1-eajames@linux.ibm.com>
-Message-ID: <20240522192524.3286237-3-eajames@linux.ibm.com>
+Message-ID: <20240522192524.3286237-4-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The FSI2SPI bridge has several SPI controllers behind it, which
-should be documented. Also, therefore the node needs to specify
-address and size cells.
+The SCOM engine provides an interface to the POWER processor PIB
+(Pervasive Interconnect Bus).
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- .../devicetree/bindings/fsi/ibm,fsi2spi.yaml  | 36 ++++++++++++++++---
- 1 file changed, 32 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/fsi/ibm,p9-scom.yaml  | 37 +++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-scom.yaml
 
-diff --git a/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml b/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
-index e2ca0b0004714..ad5c83f484255 100644
---- a/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
-+++ b/Documentation/devicetree/bindings/fsi/ibm,fsi2spi.yaml
-@@ -9,11 +9,10 @@ title: IBM FSI-attached SPI controllers
- maintainers:
-   - Eddie James <eajames@linux.ibm.com>
- 
--description: |
+diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-scom.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-scom.yaml
+new file mode 100644
+index 0000000000000..8cd14a70bedf9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fsi/ibm,p9-scom.yaml
+@@ -0,0 +1,37 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fsi/ibm,p9-scom.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: IBM FSI-attached SCOM engine
++
++maintainers:
++  - Eddie James <eajames@linux.ibm.com>
++
 +description:
-   This binding describes an FSI CFAM engine called the FSI2SPI. Therefore this
--  node will always be a child of an FSI CFAM node; see fsi.txt for details on
--  FSI slave and CFAM nodes. This FSI2SPI engine provides access to a number of
--  SPI controllers.
-+  node will always be a child of an FSI CFAM node. This FSI2SPI engine provides
-+  access to a number of SPI controllers.
- 
- properties:
-   compatible:
-@@ -24,6 +23,17 @@ properties:
-     items:
-       - description: FSI slave address
- 
-+  "#address-cells":
-+    const: 1
++  The SCOM engine is an interface to the POWER processor PIB (Pervasive
++  Interconnect Bus). This node will always be a child of an FSI CFAM node.
 +
-+  "#size-cells":
-+    const: 0
++properties:
++  compatible:
++    enum:
++      - ibm,p9-scom
++      - ibm,i2cr-scom
 +
-+patternProperties:
-+  "^spi@[0-9a-f]+$":
-+    type: object
-+    $ref: /schemas/spi/ibm,spi-fsi.yaml
++  reg:
++    items:
++      - description: FSI slave address
 +
- required:
-   - compatible
-   - reg
-@@ -35,4 +45,22 @@ examples:
-     fsi2spi at 1c00 {
-         compatible = "ibm,fsi2spi";
-         reg = <0x1c00 0x400>;
-+        #address-cells = <1>;
-+        #size-cells = <0>;
++required:
++  - compatible
++  - reg
 +
-+        spi at 0 {
-+            compatible = "ibm,spi-fsi";
-+            reg = <0>;
-+            #address-cells = <1>;
-+            #size-cells = <0>;
++additionalProperties: false
 +
-+            eeprom at 0 {
-+                compatible = "atmel,at25";
-+                reg = <0>;
-+                address-width = <24>;
-+                pagesize = <256>;
-+                size = <0x80000>;
-+                spi-max-frequency = <1000000>;
-+            };
-+        };
-     };
++examples:
++  - |
++    scom at 1000 {
++        compatible = "ibm,p9-scom";
++        reg = <0x1000 0x400>;
++    };
 -- 
 2.39.3
 
