@@ -1,96 +1,76 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 22 May 2024 14:25:13 -0500
-Subject: [PATCH v6 09/20] dt-bindings: fsi: Document the AST2700 FSI controller
+Date: Wed, 22 May 2024 14:25:09 -0500
+Subject: [PATCH v6 05/20] dt-bindings: fsi: Document the IBM SBEFIFO engine
 In-Reply-To: <20240522192524.3286237-1-eajames@linux.ibm.com>
 References: <20240522192524.3286237-1-eajames@linux.ibm.com>
-Message-ID: <20240522192524.3286237-10-eajames@linux.ibm.com>
+Message-ID: <20240522192524.3286237-6-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the appropriate compatible string, and document the new reg
-properties of the AST2700 FSI controller, which can directly access
-the FSI controller registers as well as the FSI link address space.
+The SBEFIFO engine provides an interface to the POWER processor
+Self Boot Engine (SBE).
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 ---
-Changes since v5:
- - Add the AST2700-specific regs properties since that controller can
-   map the FSI control registers and FSI link space.
+ .../bindings/fsi/ibm,p9-sbefifo.yaml          | 46 +++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
 
- .../fsi/aspeed,ast2600-fsi-master.yaml        | 47 +++++++++++++++++--
- 1 file changed, 44 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
-index 2f531c47994bc..dfcc2fafa68dc 100644
---- a/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
-+++ b/Documentation/devicetree/bindings/fsi/aspeed,ast2600-fsi-master.yaml
-@@ -17,9 +17,7 @@ properties:
-   compatible:
-     enum:
-       - aspeed,ast2600-fsi-master
--
--  reg:
--    maxItems: 1
-+      - aspeed,ast2700-fsi-master
- 
-   clocks:
-     maxItems: 1
-@@ -42,6 +40,30 @@ properties:
-   interrupts:
-     maxItems: 1
- 
-+if:
-+  properties:
-+    compatible:
-+      contains:
-+        enum:
-+          - aspeed,ast2600-fsi-master
-+then:
-+  properties:
-+    reg:
-+      maxItems: 1
-+else:
-+  properties:
-+    reg:
-+      minItems: 1
-+      items:
-+        - description: OPB control registers
-+        - description: FSI controller registers
-+        - description: FSI link address space
-+    reg-names:
-+      items:
-+        - const: opb
-+        - const: ctrl
-+        - const: fsi
+diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
+new file mode 100644
+index 0000000000000..3cd966fb3c0df
+--- /dev/null
++++ b/Documentation/devicetree/bindings/fsi/ibm,p9-sbefifo.yaml
+@@ -0,0 +1,46 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/fsi/ibm,p9-sbefifo.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- required:
-   - compatible
-   - reg
-@@ -78,3 +100,22 @@ examples:
-             chip-id = <0>;
-         };
-     };
++title: IBM FSI-attached SBEFIFO engine
++
++maintainers:
++  - Eddie James <eajames@linux.ibm.com>
++
++description:
++  The SBEFIFO is an FSI CFAM engine that provides an interface to the
++  POWER processor Self Boot Engine (SBE). This node will always be a child
++  of an FSI CFAM node.
++
++properties:
++  compatible:
++    enum:
++      - ibm,p9-sbefifo
++      - ibm,odyssey-sbefifo
++
++  reg:
++    items:
++      - description: FSI slave address
++
++  occ:
++    type: object
++    $ref: ibm,p9-occ.yaml#
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
 +  - |
-+    bus {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
++    fsi-slave-engine at 2400 {
++        compatible = "ibm,p9-sbefifo";
++        reg = <0x2400 0x400>;
 +
-+        fsi-master at 21800000 {
-+            compatible = "aspeed,ast2700-fsi-master";
-+            reg = <0x0 0x21800000 0x0 0x100>,
-+                  <0x0 0x21000000 0x0 0x1000>,
-+                  <0x0 0x20000000 0x0 0x1000000>;
-+            reg-names = "opb", "ctrl", "fsi";
-+            #interrupt-cells = <1>;
-+            interrupt-controller;
-+            interrupts-extended = <&intc 6>;
-+            pinctrl-names = "default";
-+            pinctrl-0 = <&pinctrl_fsi0_default>;
-+            clocks = <&syscon 40>;
++        occ {
++            compatible = "ibm,p9-occ";
 +        };
 +    };
 -- 
