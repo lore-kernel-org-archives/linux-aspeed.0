@@ -1,96 +1,65 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed, 22 May 2024 14:25:08 -0500
-Subject: [PATCH v6 04/20] dt-bindings: fsi: p9-occ: Convert to json-schema
+Date: Wed, 22 May 2024 14:25:21 -0500
+Subject: [PATCH v6 17/20] ARM: dts: aspeed: Add IBM Huygens BMC system
 In-Reply-To: <20240522192524.3286237-1-eajames@linux.ibm.com>
 References: <20240522192524.3286237-1-eajames@linux.ibm.com>
-Message-ID: <20240522192524.3286237-5-eajames@linux.ibm.com>
+Message-ID: <20240522192524.3286237-18-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Conver to json-schema for the OCC documentation. Also document the fact
-that the OCC "bridge" device will often have the hwmon node as a
-child.
+The Huygens is a Rainier with modifed FSI wiring.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- .../devicetree/bindings/fsi/ibm,p9-occ.txt    | 16 --------
- .../devicetree/bindings/fsi/ibm,p9-occ.yaml   | 40 +++++++++++++++++++
- 2 files changed, 40 insertions(+), 16 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
- create mode 100644 Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+ arch/arm/boot/dts/aspeed/Makefile             |  1 +
+ .../dts/aspeed/aspeed-bmc-ibm-huygens.dts     | 23 +++++++++++++++++++
+ 2 files changed, 24 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-huygens.dts
 
-diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
-deleted file mode 100644
-index e73358075a903..0000000000000
---- a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.txt
-+++ /dev/null
-@@ -1,16 +0,0 @@
--Device-tree bindings for FSI-attached POWER9/POWER10 On-Chip Controller (OCC)
-------------------------------------------------------------------------------
--
--This is the binding for the P9 or P10 On-Chip Controller accessed over FSI from
--a service processor. See fsi.txt for details on bindings for FSI slave and CFAM
--nodes. The OCC is not an FSI slave device itself, rather it is accessed
--through the SBE FIFO.
--
--Required properties:
-- - compatible = "ibm,p9-occ" or "ibm,p10-occ"
--
--Examples:
--
--    occ {
--        compatible = "ibm,p9-occ";
--    };
-diff --git a/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
+diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+index 5e3392621697a..ac2804c96554a 100644
+--- a/arch/arm/boot/dts/aspeed/Makefile
++++ b/arch/arm/boot/dts/aspeed/Makefile
+@@ -36,6 +36,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-ibm-bonnell.dtb \
+ 	aspeed-bmc-ibm-everest.dtb \
+ 	aspeed-bmc-ibm-fuji.dtb \
++	aspeed-bmc-ibm-huygens.dtb \
+ 	aspeed-bmc-ibm-rainier.dtb \
+ 	aspeed-bmc-ibm-rainier-1s4u.dtb \
+ 	aspeed-bmc-ibm-rainier-4u.dtb \
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-huygens.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-huygens.dts
 new file mode 100644
-index 0000000000000..537eac70447c0
+index 0000000000000..4a731b772fc0b
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/fsi/ibm,p9-occ.yaml
-@@ -0,0 +1,40 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fsi/ibm,p9-occ.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-huygens.dts
+@@ -0,0 +1,23 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++// Copyright 2024 IBM Corp.
++/dts-v1/;
 +
-+title: IBM FSI-attached On-Chip Controller (OCC)
++#include "aspeed-bmc-ibm-rainier.dts"
 +
-+maintainers:
-+  - Eddie James <eajames@linux.ibm.com>
++/ {
++	model = "Huygens";
++};
 +
-+description:
-+  The POWER processor On-Chip Controller (OCC) helps manage power and
-+  thermals for the system, accessed through the FSI-attached SBEFIFO
-+  from a service processor.
++&fsim0 {
++	/delete-node/ cfam at 0,0;
++	/delete-property/ cfam-reset-gpios;
 +
-+properties:
-+  compatible:
-+    enum:
-+      - ibm,p9-occ
-+      - ibm,p10-occ
++	bus-frequency = <100000000>;
++};
 +
-+  hwmon:
-+    type: object
-+    $ref: /schemas/hwmon/ibm,occ-hwmon.yaml
-+
-+required:
-+  - compatible
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    occ {
-+        compatible = "ibm,p9-occ";
-+
-+        hwmon {
-+            compatible = "ibm,p9-occ-hwmon";
-+        };
-+    };
++&fsim1 {
++	#address-cells = <2>;
++	#size-cells = <0>;
++	status = "okay";
++	bus-frequency = <100000000>;
++};
 -- 
 2.39.3
 
