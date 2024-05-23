@@ -1,29 +1,33 @@
-From: Markus Elfring <Markus.Elfring@web.de>
-Date: Thu, 23 May 2024 21:46:48 +0200
-Subject: [v6 17/20] ARM: dts: aspeed: Add IBM Huygens BMC system
-In-Reply-To: <20240523-rinse-sturdily-7c78d8517884@spud>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Thu, 23 May 2024 22:24:10 +0200
+Subject: [PATCH v6 17/20] ARM: dts: aspeed: Add IBM Huygens BMC system
+In-Reply-To: <910b18b7-3717-4087-b028-fcaf5f2a604b@linux.ibm.com>
 References: <20240522192524.3286237-18-eajames@linux.ibm.com>
  <2fe45df6-01a2-488b-99fb-5ee20491554c@web.de>
  <910b18b7-3717-4087-b028-fcaf5f2a604b@linux.ibm.com>
- <398bf753-6701-4925-b814-781a68a75cc5@web.de>
- <20240523-rinse-sturdily-7c78d8517884@spud>
-Message-ID: <d6289d1c-deae-49a3-9fc9-98a2f2e57802@web.de>
+Message-ID: <acced98c-79fb-4c32-abf3-66fe93031f36@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
->> Would you like to mention in the changelog that a hardware description
->> should be extended anyhow?
->> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst?h=v6.9#n94
->
-> You are talking absolute crap here. Stop harassing contributors with
-> your inane comments.
+On 23/05/2024 21:00, Eddie James wrote:
+> 
+> On 5/23/24 13:45, Markus Elfring wrote:
+>>> The Huygens is a Rainier with modifed FSI wiring.
+>> Will imperative wordings become helpful for a better commit message here?
+> 
+> 
+> This statement is a description of hardware. I cannot word that 
+> imperatively. The commit message is imperative - "Add Huygens system".
 
-Why do you interpret my patch review contributions in this direction
-when the official Linux development documentation provides special advice
-on affected wording details?
+Feel free to ignore all comments coming from Markus (or implement,
+entirely up to you).
 
-Regards,
-Markus
+Markus is banned from mailing lists and most of maintainers already
+ignore him or already marked as spam.
+
+Best regards,
+Krzysztof
+
