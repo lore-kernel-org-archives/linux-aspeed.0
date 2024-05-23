@@ -1,87 +1,70 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 23 May 2024 16:03:23 +0800
-Subject: [PATCH v8 18/23] ARM: dts: aspeed: yosemite4: add mctp config for NIC
+Date: Thu, 23 May 2024 16:03:26 +0800
+Subject: [PATCH v8 21/23] ARM: dts: aspeed: yosemite4: support NIC eeprom
 In-Reply-To: <20240523080330.1860074-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240523080330.1860074-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240523080330.1860074-19-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240523080330.1860074-22-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-add mctp config for NIC
+Add NIC eeprom devicetree config
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 +++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 +++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 59615a6958ec..83c9d76f5a11 100644
+index bacaa2208734..62dfe935cbcd 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1281,40 +1281,64 @@ imux24: i2c at 0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
+@@ -1338,6 +1338,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
  			};
 +
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
 +			};
  		};
  
  		imux25: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
+@@ -1354,6 +1359,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
  			};
 +
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
 +			};
  		};
  
  		imux26: i2c at 2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
+@@ -1370,6 +1380,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
  			};
 +
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
 +			};
  		};
  
  		imux27: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <3>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
+@@ -1386,6 +1401,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
  			};
 +
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
 +			};
  		};
  	};
