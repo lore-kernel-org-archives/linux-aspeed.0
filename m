@@ -1,40 +1,114 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 23 May 2024 16:03:09 +0800
-Subject: [PATCH v8 04/23] ARM: dts: aspeed: yosemite4: Enable watchdog2
+Date: Thu, 23 May 2024 16:03:11 +0800
+Subject: [PATCH v8 06/23] ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic change
 In-Reply-To: <20240523080330.1860074-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240523080330.1860074-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240523080330.1860074-5-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240523080330.1860074-7-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-enable watchdog2 setting
+Revise power sensor adm1281 for yosemite4 schematic change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index effc2af636a4..b0643e8aefee 100644
+index a708e56b7ec3..f0f714c7bc77 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -120,6 +120,13 @@ &wdt1 {
- 	aspeed,ext-pulse-duration = <256>;
+@@ -176,8 +176,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
  };
  
-+&wdt2 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst2_default>;
-+	aspeed,reset-type = "system";
-+};
-+
- &mac2 {
- 	status = "okay";
- 	pinctrl-names = "default";
+@@ -193,8 +194,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -210,8 +212,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -227,8 +230,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -244,8 +248,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -261,8 +266,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -278,8 +284,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -295,8 +302,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
 -- 
 2.25.1
 
