@@ -1,46 +1,74 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 23 May 2024 17:18:07 +0800
-Subject: [PATCH v8 20/23] ARM: dts: aspeed: yosemite4: support medusa board adc sensors
+Date: Thu, 23 May 2024 17:18:08 +0800
+Subject: [PATCH v8 21/23] ARM: dts: aspeed: yosemite4: support NIC eeprom
 In-Reply-To: <20240523091812.2032933-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240523091812.2032933-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240523091812.2032933-21-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240523091812.2032933-22-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add ina233/ina28 support for medusa board adc sensors
+Add NIC eeprom devicetree config
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts    | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 +++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index f4e37187bd5b..bacaa2208734 100644
+index bacaa2208734..62dfe935cbcd 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -915,6 +915,19 @@ power-sensor at 40 {
- 		reg = <0x40>;
- 	};
+@@ -1338,6 +1338,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
+ 			};
++
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
+ 		};
  
-+	power-sensor at 41 {
-+			compatible = "ti,ina233";
-+			resistor-calibration = /bits/ 16 <0x0a00>;
-+			current-lsb= /bits/ 16 <0x0001>;
-+			reg = <0x41>;
-+	};
+ 		imux25: i2c at 1 {
+@@ -1354,6 +1359,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
+ 			};
 +
-+	power-sensor at 44 {
-+			compatible = "ti,ina238";
-+			shunt-resistor = <1000>;
-+			reg = <0x44>;
-+	};
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
+ 		};
+ 
+ 		imux26: i2c at 2 {
+@@ -1370,6 +1380,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
+ 			};
 +
- 	temperature-sensor at 48 {
- 		compatible = "ti,tmp75";
- 		reg = <0x48>;
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
+ 		};
+ 
+ 		imux27: i2c at 3 {
+@@ -1386,6 +1401,11 @@ temperature-sensor at 3c {
+ 				compatible = "smsc,emc1403";
+ 				reg = <0x3c>;
+ 			};
++
++			eeprom at 50 {
++				compatible = "atmel,24c64";
++				reg = <0x50>;
++			};
+ 		};
+ 	};
+ };
 -- 
 2.25.1
 
