@@ -1,34 +1,28 @@
-From: Naresh Solanki <naresh.solanki@9elements.com>
-Date: Fri, 24 May 2024 16:29:23 +0530
+From: Conor Dooley <conor@kernel.org>
+Date: Fri, 24 May 2024 19:20:00 +0100
 Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
-Message-ID: <20240524105929.557129-1-naresh.solanki@9elements.com>
+In-Reply-To: <20240524105929.557129-1-naresh.solanki@9elements.com>
+References: <20240524105929.557129-1-naresh.solanki@9elements.com>
+Message-ID: <20240524-engraving-scrimmage-4b7e470fe5db@spud>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the new compatibles used on IBM SBP1.
+On Fri, May 24, 2024 at 04:29:23PM +0530, Naresh Solanki wrote:
+> Document the new compatibles used on IBM SBP1.
+> 
+> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
 
-Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
----
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 749ee54a3ff8..307232336629 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -83,6 +83,7 @@ properties:
-               - facebook,yosemite4-bmc
-               - ibm,everest-bmc
-               - ibm,rainier-bmc
-+              - ibm,sbp1-bmc
-               - ibm,tacoma-bmc
-               - inventec,starscream-bmc
-               - inventec,transformer-bmc
-
-base-commit: d976c6f4b32c2d273d44ff9ad7099efe16279a39
--- 
-2.42.0
-
+Cheers,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240524/08244c2d/attachment.sig>
