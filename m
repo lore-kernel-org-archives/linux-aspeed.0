@@ -1,98 +1,57 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 24 May 2024 09:31:10 +0930
-Subject: [PATCH v8 00/23] Add i2c-mux and eeprom devices for Meta
- Yosemite 4
-In-Reply-To: <20240523091812.2032933-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240523091812.2032933-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <6cf99700841ac27c74821e92b5d7d9fe778b9e67.camel@codeconstruct.com.au>
+From: Markus Elfring <Markus.Elfring@web.de>
+Date: Fri, 24 May 2024 08:38:08 +0200
+Subject: [v6 17/20] ARM: dts: aspeed: Add IBM Huygens BMC system
+In-Reply-To: <20240523203339.GS2118490@ZenIV>
+References: <20240522192524.3286237-18-eajames@linux.ibm.com>
+ <2fe45df6-01a2-488b-99fb-5ee20491554c@web.de>
+ <910b18b7-3717-4087-b028-fcaf5f2a604b@linux.ibm.com>
+ <398bf753-6701-4925-b814-781a68a75cc5@web.de>
+ <20240523-rinse-sturdily-7c78d8517884@spud>
+ <d6289d1c-deae-49a3-9fc9-98a2f2e57802@web.de>
+ <20240523203339.GS2118490@ZenIV>
+Message-ID: <8a92a08c-2a57-454d-a7ff-3edb3528b78e@web.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-There's still no response to my comments (either replies or adjustments
-to the patches) on v5, and we're now at v8.
+>> Why do you interpret my patch review contributions in this direction
+>> when the official Linux development documentation provides special advice
+>> on affected wording details?
+>
+> Your "contributions" are garbage in general,
 
-Upstreaming the patches won't progress if you don't engage with the
-feedback.
+My contributions are also varying (as usual) through the years.
 
-Andrew
 
-On Thu, 2024-05-23 at 17:17 +0800, Delphine CC Chiu wrote:
-> Changelog:
->   - v8
->     - add fan led config
->   - v7
->     - Revise pca9506 i2c address
->   - v6
->     - Revise i2c duty-cycle for meeting 400khz spec
->   - v5
->     - Support medusa board adc sensors
->     - support NIC eeprom
->   - v4
->     - Re-format gpio linename
->     - Revise i2c device node names
->     - Split patches by logic changes
->   - v3
->     - Correct patch for revising gpio name
->   - v2
->     - Revise mx31790 fan tach config
->     - Add mctp config for NIC
->     - Support mux to cpld
->     - Revise gpio name
->   - v1
->     - Add gpio and eeprom behind i2c-mux
->     - Remove redundant idle-state setting for i2c-mux
->     - Enable adc 15, wdt2,spi gpio for yosemite4 use
->     - Revise quad mode to dual mode to avoid WP pin influnece the SPI
->     - Revise power sensor adm1281 for yosemite4 schematic change
->     - Add gpio pca9506 I/O expander for yosemite4 use
->     - remove space for adm1272 compatible
->     - enable interrupt setting for pca9555
->     - add eeprom for yosemite4 medusa board/BSM use
->     - remove temperature sensor for yosemite4 schematic change
->     - add power sensor for power module reading
->     - Revise adc128d818 adc mode for yosemite4 schematic change
->     - Revise ina233 for yosemite4 schematic change
->     - Remove idle state setting for yosemite4 NIC connection
->     - Initialize bmc gpio state
->     - Revise mx31790 fan tach config
->     - Add mctp config for NIC
->     - Support mux to cpld
->     - Revise gpio name
-> 
-> Delphine CC Chiu (23):
->   ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
->   ARM: dts: aspeed: yosemite4: Enable adc15
->   ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
->   ARM: dts: aspeed: yosemite4: Enable watchdog2
->   ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
->   ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
->     change
->   ARM: dts: aspeed: yosemite4: Add gpio pca9506
->   ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
->   ARM: dts: aspeed: yosemite4: Enable interrupt setting for pca9555
->   ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
->   ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
->   ARM: dts: aspeed: yosemite4: Remove temperature sensor for yosemite4
->     schematic change
->   ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4
->     schematic change
->   ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4
->     schematic change
->   ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4
->     NIC connection
->   ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
->   ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
->   ARM: dts: aspeed: yosemite4: add mctp config for NIC
->   ARM: dts: aspeed: yosemite4: support mux to cpld
->   ARM: dts: aspeed: yosemite4: support medusa board adc sensors
->   ARM: dts: aspeed: yosemite4: support NIC eeprom
->   ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
->   ARM: dts: aspeed: yosemite4: add fan led config
-> 
->  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1410 +++++++++++++++--
->  1 file changed, 1301 insertions(+), 109 deletions(-)
-> 
+>                                              and this thread is not an exception.
 
+It is just another example for involved communication challenges.
+
+
+> More specifically, you are picking an advice
+
+Some development activities are reminders according to known information sources.
+
+
+>                                              that is inapplicable,
+> transforming it into a question and "contributing" the result.
+>
+> And your entire modus operandi fits that pattern - you spew random garbage and
+> expect the contributors to spend their time and efforts on checking if your
+> (contents-free) "advice" happens to make any sense.
+
+Do you express special concerns here which can be reconsidered because of
+advices and requirements from software development guidelines?
+
+
+?
+>                           Unfortunately, the kernel development is clearly
+> not among those.
+
+How does such a view fit to an other data representation?
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=author&q=Elfring
+
+Regards,
+Markus
