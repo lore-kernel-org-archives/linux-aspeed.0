@@ -1,57 +1,34 @@
-From: Markus Elfring <Markus.Elfring@web.de>
-Date: Fri, 24 May 2024 08:38:08 +0200
-Subject: [v6 17/20] ARM: dts: aspeed: Add IBM Huygens BMC system
-In-Reply-To: <20240523203339.GS2118490@ZenIV>
-References: <20240522192524.3286237-18-eajames@linux.ibm.com>
- <2fe45df6-01a2-488b-99fb-5ee20491554c@web.de>
- <910b18b7-3717-4087-b028-fcaf5f2a604b@linux.ibm.com>
- <398bf753-6701-4925-b814-781a68a75cc5@web.de>
- <20240523-rinse-sturdily-7c78d8517884@spud>
- <d6289d1c-deae-49a3-9fc9-98a2f2e57802@web.de>
- <20240523203339.GS2118490@ZenIV>
-Message-ID: <8a92a08c-2a57-454d-a7ff-3edb3528b78e@web.de>
+From: Naresh Solanki <naresh.solanki@9elements.com>
+Date: Fri, 24 May 2024 16:29:23 +0530
+Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
+Message-ID: <20240524105929.557129-1-naresh.solanki@9elements.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
->> Why do you interpret my patch review contributions in this direction
->> when the official Linux development documentation provides special advice
->> on affected wording details?
->
-> Your "contributions" are garbage in general,
+Document the new compatibles used on IBM SBP1.
 
-My contributions are also varying (as usual) through the years.
+Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 749ee54a3ff8..307232336629 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -83,6 +83,7 @@ properties:
+               - facebook,yosemite4-bmc
+               - ibm,everest-bmc
+               - ibm,rainier-bmc
++              - ibm,sbp1-bmc
+               - ibm,tacoma-bmc
+               - inventec,starscream-bmc
+               - inventec,transformer-bmc
 
->                                              and this thread is not an exception.
+base-commit: d976c6f4b32c2d273d44ff9ad7099efe16279a39
+-- 
+2.42.0
 
-It is just another example for involved communication challenges.
-
-
-> More specifically, you are picking an advice
-
-Some development activities are reminders according to known information sources.
-
-
->                                              that is inapplicable,
-> transforming it into a question and "contributing" the result.
->
-> And your entire modus operandi fits that pattern - you spew random garbage and
-> expect the contributors to spend their time and efforts on checking if your
-> (contents-free) "advice" happens to make any sense.
-
-Do you express special concerns here which can be reconsidered because of
-advices and requirements from software development guidelines?
-
-
-?
->                           Unfortunately, the kernel development is clearly
-> not among those.
-
-How does such a view fit to an other data representation?
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/log/?qt=author&q=Elfring
-
-Regards,
-Markus
