@@ -1,45 +1,81 @@
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Date: Sun, 26 May 2024 12:24:58 +0200
-Subject: [PATCH 0/6] ipmi: Convert to platform remove callback returning
- void
-In-Reply-To: <ZlH4KFZ3MYzelzZK@mail.minyard.net>
-References: <cover.1709655755.git.u.kleine-koenig@pengutronix.de>
- <3uhfeeahn2u23mxyumyxcyx4kmcxzczipkan7eqh4aslsmhxyz@zgsmwj2jvb2v>
- <Zhf9mQx/KgXOzPTs@mail.minyard.net>
- <sjgseqireuaswtbuwl3rvcszpsjzph4opq52x2kbudczxutz7o@2tua2oueufdd>
- <ZlH4KFZ3MYzelzZK@mail.minyard.net>
-Message-ID: <nkhpr2ddrc4i7ai6gwamxrednx327atigoaxmamwq763bgpi46@fghhdinrqda7>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Tue, 28 May 2024 09:08:02 -0500
+Subject: [PATCH v6 16/20] ARM: dts: aspeed: Add IBM P11 Fuji BMC system
+In-Reply-To: <20240522192524.3286237-17-eajames@linux.ibm.com>
+References: <20240522192524.3286237-1-eajames@linux.ibm.com>
+ <20240522192524.3286237-17-eajames@linux.ibm.com>
+Message-ID: <3ac517f0-0394-4310-8840-d806de5ec082@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello Corey,
+Hi Eddie,
 
-On Sat, May 25, 2024 at 09:39:36AM -0500, Corey Minyard wrote:
-> On Sat, May 25, 2024 at 12:10:38PM +0200, Uwe Kleine-K?nig wrote:
-> > These changes are in next since a while but didn't land in Linus tree
-> > for v6.10-rc1. I intend to send a PR to Greg early next week changing
-> > platform_driver::remove to match remove_new. If these commits don't make
-> > it in in time, I'll be so bold and just include the commits from your
-> > for-next branch in my PR.
-> 
-> I sent them to Linus right after 6.9 dropped, let me resend...
+> +
+> +		led at 6 {
+> +			reg = <6>;
+> +			default-state = "keep";
+> +			label = "opencapi-connector5";
+> +			retain-state-shutdown;
+> +			type = <PCA955X_TYPE_LED>;
+> +		};
+is led at 7 not connected?
+> +
+> +		led at 8 {
+> +			reg = <8>;
+> +			default-state = "keep";
+> +			label = "vrm4";
+> +			retain-state-shutdown;
+> +			type = <PCA955X_TYPE_LED>;
+> +		};
+> +
+> +		led at 9 {
+> +			reg = <9>;
+> +			default-state = "keep";
+> +			label = "vrm5";
+> +			retain-state-shutdown;
+> +			type = <PCA955X_TYPE_LED>;
+> +		};
+> +
+> +		led at 10 {
+> +			reg = <10>;
+> +			default-state = "keep";
+> +			label = "vrm6";
+> +			retain-state-shutdown;
+> +			type = <PCA955X_TYPE_LED>;
+> +		};
+> +
+> +		led at 11 {
+> +			reg = <11>;
+> +			default-state = "keep";
+> +			label = "vrm7";
+> +			retain-state-shutdown;
+> +			type = <PCA955X_TYPE_LED>;
+> +		};
+> +
+> +		led at 12 {
+> +			reg = <12>;
+> +			default-state = "keep";
+> +			label = "vrm12";
+> +			retain-state-shutdown;
+> +			type = <PCA955X_TYPE_LED>;
+> +		};
+curious about label jump from vrm7 to vrm12.
+>
+> +			cfam4_i2c10: i2c-bus at a {
+> +				reg = <10>;	/* OP3A */
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +
+> It will be more readable to have "reg" value in hex too. I have seen similar stuff in this FSI nodes. It will be consistent with other places.
+> +
 
-That worked, they landed now in Linus' tree. Thanks, that makes it a bit
-less ugly for me.
+Reviewed-by: Ninad Palsule <ninad@linux.ibm.com>
 
-Best regards
-Uwe
 
--- 
-Pengutronix e.K.                           | Uwe Kleine-K?nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
 -------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240526/4b5c41b1/attachment.sig>
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240528/f7298839/attachment.htm>
