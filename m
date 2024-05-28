@@ -1,48 +1,37 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 28 May 2024 09:50:51 -0500
-Subject: [PATCH v6 14/20] ARM: dts: aspeed: Add IBM P11 Blueridge BMC
- system
-In-Reply-To: <dca4ac91-c18b-4271-a3f9-fbf3b5a3c43d@linux.ibm.com>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Tue, 28 May 2024 09:52:10 -0500
+Subject: [PATCH v6 11/20] dt-bindings: i2c: i2c-fsi: Convert to
+ json-schema
+In-Reply-To: <20240522192524.3286237-12-eajames@linux.ibm.com>
 References: <20240522192524.3286237-1-eajames@linux.ibm.com>
- <20240522192524.3286237-15-eajames@linux.ibm.com>
- <dca4ac91-c18b-4271-a3f9-fbf3b5a3c43d@linux.ibm.com>
-Message-ID: <45724dae-ebe6-48f9-8cb7-d6e27d5fdad9@linux.ibm.com>
+ <20240522192524.3286237-12-eajames@linux.ibm.com>
+Message-ID: <3c7fd737-c410-40a3-9994-282f214bad61@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Eddie,
 
-On 5/24/24 17:47, Ninad Palsule wrote:
->> +		led at 6 {
->> +			reg = <6>;
->> +			default-state = "keep";
->> +			label = "cpu-vrm1";
->> +			retain-state-shutdown;
->> +			type = <PCA955X_TYPE_LED>;
->> +		};
->> +
-> Is there a specific reason for skipping led at 7? Its not connected?
-
-
-Yes, again not connected.
-
-
->> +		led at 8 {
->> +			reg = <8>;
->> +			default-state = "keep";
->> +			label = "lcd-russel";
->> +			retain-state-shutdown;
->> +			type = <PCA955X_TYPE_LED>;
->> +		};
->> +	};
->> +
+On 5/22/24 14:25, Eddie James wrote:
+> Convert to json-schema for the FSI-attached I2C controller.
 >
-> Reviewed-by: Ninad Palsule <ninad@linux.ibm.com>
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> ---
+> Changes since v5:
+>   - Use more specific regex for node names
 >
+>   .../devicetree/bindings/i2c/i2c-fsi.txt       | 40 ----------
+>   .../devicetree/bindings/i2c/ibm,i2c-fsi.yaml  | 76 +++++++++++++++++++
+>   MAINTAINERS                                   |  2 +-
+>   3 files changed, 77 insertions(+), 41 deletions(-)
+>   delete mode 100644 Documentation/devicetree/bindings/i2c/i2c-fsi.txt
+>   create mode 100644 Documentation/devicetree/bindings/i2c/ibm,i2c-fsi.yaml
 
-Thanks,
 
-Eddie
+Reviewed-by: Ninad Palsule <ninad@linux.ibm.com>
+
+Thanks & Regards,
+Ninad
 
