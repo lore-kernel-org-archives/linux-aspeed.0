@@ -1,43 +1,62 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 29 May 2024 14:43:19 +0930
-Subject: [PATCH 0/4] dt-bindings: gpio: aspeed,sgpio: Miscellaneous
- cleanups
-Message-ID: <20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-0-91c42976833b@codeconstruct.com.au>
+Date: Wed, 29 May 2024 14:43:20 +0930
+Subject: [PATCH 1/4] dt-bindings: gpio: aspeed,sgpio: Order properties by
+ DTS style
+In-Reply-To: <20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-0-91c42976833b@codeconstruct.com.au>
+References: <20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-0-91c42976833b@codeconstruct.com.au>
+Message-ID: <20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-1-91c42976833b@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Tidy up the list of required properties and the example node by ordering
+the properties in terms of the DTS coding style.
 
-This short series fixes some SGPIO-related devicetree warnings currently
-emitted by `make dtbs_check` for Aspeed devicetrees.
-
-One change documents `#interrupt-cells` and a subseqent change makes
-it required. The property should have been both documented and marked
-as required from the start. As the change is technically not backwards
-compatible, I've split it such that we can debate the required status
-separately.
-
-Please review!
-
-Andrew
-
+Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 ---
-Andrew Jeffery (4):
-      dt-bindings: gpio: aspeed,sgpio: Order properties by DTS style
-      dt-bindings: gpio: aspeed,sgpio: Specify gpio-line-names
-      dt-bindings: gpio: aspeed,sgpio: Specify #interrupt-cells
-      dt-bindings: gpio: aspeed,sgpio: Require #interrupt-cells
+ Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- .../devicetree/bindings/gpio/aspeed,sgpio.yaml     | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
----
-base-commit: 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0
-change-id: 20240528-dt-warnings-gpio-sgpio-interrupt-cells-685a0efd2c0b
+diff --git a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+index 46bb121360dc..6b15a3a3fb66 100644
+--- a/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
++++ b/Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml
+@@ -51,12 +51,12 @@ properties:
+ required:
+   - compatible
+   - reg
+-  - gpio-controller
+-  - '#gpio-cells'
++  - clocks
+   - interrupts
+   - interrupt-controller
++  - gpio-controller
++  - '#gpio-cells'
+   - ngpios
+-  - clocks
+   - bus-frequency
+ 
+ additionalProperties: false
+@@ -65,13 +65,13 @@ examples:
+   - |
+     #include <dt-bindings/clock/aspeed-clock.h>
+     sgpio: sgpio at 1e780200 {
+-        #gpio-cells = <2>;
+         compatible = "aspeed,ast2500-sgpio";
+-        gpio-controller;
+-        interrupts = <40>;
+         reg = <0x1e780200 0x0100>;
+         clocks = <&syscon ASPEED_CLK_APB>;
++        interrupts = <40>;
+         interrupt-controller;
++        gpio-controller;
++        #gpio-cells = <2>;
+         ngpios = <80>;
+         bus-frequency = <12000000>;
+     };
 
-Best regards,
 -- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+2.39.2
 
