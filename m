@@ -1,29 +1,42 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 30 May 2024 10:24:03 +0930
-Subject: [PATCH 4/4] dt-bindings: gpio: aspeed,sgpio: Require
- #interrupt-cells
-In-Reply-To: <35b39da8-4efd-44ae-bcc1-7f4d501e0873@kernel.org>
-References: <20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-0-91c42976833b@codeconstruct.com.au>
-	 <20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-4-91c42976833b@codeconstruct.com.au>
-	 <35b39da8-4efd-44ae-bcc1-7f4d501e0873@kernel.org>
-Message-ID: <957a8999b0b0ed31949619913887c944bdae1a9a.camel@codeconstruct.com.au>
+Date: Thu, 30 May 2024 11:09:47 +0930
+Subject: [PATCH v2 0/2] dt-bindings: gpio: aspeed,sgpio: Miscellaneous
+ cleanups
+Message-ID: <20240530-dt-warnings-gpio-sgpio-interrupt-cells-v2-0-912cd16e641f@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-05-29 at 09:28 +0200, Krzysztof Kozlowski wrote:
-> On 29/05/2024 07:13, Andrew Jeffery wrote:
-> > It shouldn't have been the case that it wasn't required. The kernel
-> > devicetrees already specified it where compatible nodes were defined,
-> > and u-boot pulls in the kernel devicetrees, so this should have minimal
-> > practical impact.
-> > 
-> 
-> This should be squashed with previous patch.
-> 
+Hello,
 
-Sure, will do.
+This short series fixes some SGPIO-related devicetree warnings currently
+emitted by `make dtbs_check` for Aspeed devicetrees.
+
+Please review!
 
 Andrew
+
+---
+Changes in v2:
+- Dropped 1/4 from v1 as it was considered noise (Krzysztof)
+- Squashed 4/4 into 3/4 from v1 (Krzysztof)
+- Addressed remaining comments and applied tags (Krzysztof)
+- Link to v1: https://lore.kernel.org/r/20240529-dt-warnings-gpio-sgpio-interrupt-cells-v1-0-91c42976833b at codeconstruct.com.au
+
+---
+Andrew Jeffery (2):
+      dt-bindings: gpio: aspeed,sgpio: Specify gpio-line-names
+      dt-bindings: gpio: aspeed,sgpio: Specify #interrupt-cells
+
+ Documentation/devicetree/bindings/gpio/aspeed,sgpio.yaml | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+---
+base-commit: 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0
+change-id: 20240528-dt-warnings-gpio-sgpio-interrupt-cells-685a0efd2c0b
+
+Best regards,
+-- 
+Andrew Jeffery <andrew@codeconstruct.com.au>
+
