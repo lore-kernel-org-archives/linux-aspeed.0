@@ -1,37 +1,51 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 05 Jun 2024 10:17:13 +0930
-Subject: [PATCH 1/3] dt-bindings: pinctrl: aspeed: Use block syntax for
- function and groups
-In-Reply-To: <20240604192755.GA1065421-robh@kernel.org>
-References: <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-0-a6fe2281a1b8@codeconstruct.com.au>
-	 <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-1-a6fe2281a1b8@codeconstruct.com.au>
-	 <20240604192755.GA1065421-robh@kernel.org>
-Message-ID: <0908995dfd2181e687181bd1b075c4cb27624e94.camel@codeconstruct.com.au>
+From: Rob Herring (Arm) <robh@kernel.org>
+Date: Wed, 05 Jun 2024 07:11:32 -0600
+Subject: [PATCH v1] ARM: dts: aspeed: System1: Updates to BMC board
+In-Reply-To: <20240604215939.1967329-1-ninad@linux.ibm.com>
+References: <20240604215939.1967329-1-ninad@linux.ibm.com>
+Message-ID: <171759284804.2200781.9915039390039475490.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-06-04 at 14:27 -0500, Rob Herring wrote:
-> On Fri, May 31, 2024 at 12:32:47PM +0930, Andrew Jeffery wrote:
-> > The expansion makes the documents a lot longer, but it's easier to
-> > review changes to functions and groups when we're not having to deal
-> > with line wrapping.
+
+On Tue, 04 Jun 2024 16:59:39 -0500, Ninad Palsule wrote:
+> - Added new power monitor device max5970
+> - Changed temperature sensor monitor chip from tmp423 to tmp432
 > 
-> Do you really expect to be updating this frequently? I would leave it 
-> as-is, but whatever you decide.
-
-I don't expect to be updating it frequently. However it's happened
-occasionally in the past and the diff chaos irks me. So I prefer we
-explode it.
-
+> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+> ---
+>  arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
 > 
-> > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> > ---
-> 
-> Acked-by: Rob Herring (Arm) <robh@kernel.org>
 
-Thanks.
 
-Andrew
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
+
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-system1.dtb' for 20240604215939.1967329-1-ninad at linux.ibm.com:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: power-monitor at 3a: 'regulators' is a required property
+	from schema $id: http://devicetree.org/schemas/mfd/maxim,max5970.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: power-monitor at 3a: 'vss1-supply' is a required property
+	from schema $id: http://devicetree.org/schemas/mfd/maxim,max5970.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: power-monitor at 3a: 'vss2-supply' is a required property
+	from schema $id: http://devicetree.org/schemas/mfd/maxim,max5970.yaml#
+
+
+
+
+
