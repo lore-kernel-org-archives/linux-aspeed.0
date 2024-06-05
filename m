@@ -1,45 +1,79 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed,  5 Jun 2024 16:22:53 -0500
-Subject: [PATCH v4 21/40] fsi: aspeed: Disable relative addressing and IPOLL for cfam reset
+Date: Wed,  5 Jun 2024 16:23:02 -0500
+Subject: [PATCH v4 30/40] i2c: fsi: Define a function to check status error bits
 In-Reply-To: <20240605212312.349188-1-eajames@linux.ibm.com>
 References: <20240605212312.349188-1-eajames@linux.ibm.com>
-Message-ID: <20240605212312.349188-22-eajames@linux.ibm.com>
+Message-ID: <20240605212312.349188-31-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Need to disable these for the master reset after cfam reset.
+This will be used more than once with interrupt support, so split
+the error bit checks into a function.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-aspeed.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/i2c/busses/i2c-fsi.c | 38 ++++++++++++++++++++----------------
+ 1 file changed, 21 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 176e596b4391b..c9f6d84e1a372 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -402,11 +402,18 @@ static ssize_t cfam_reset_store(struct device *dev, struct device_attribute *att
+diff --git a/drivers/i2c/busses/i2c-fsi.c b/drivers/i2c/busses/i2c-fsi.c
+index f3b97bf88d0f9..022f1287aa0e3 100644
+--- a/drivers/i2c/busses/i2c-fsi.c
++++ b/drivers/i2c/busses/i2c-fsi.c
+@@ -507,6 +507,26 @@ static int fsi_i2c_abort(struct fsi_i2c_port *port, u32 status)
+ 	return -ETIMEDOUT;
+ }
  
- 	trace_fsi_master_aspeed_cfam_reset(true);
- 	spin_lock_irqsave(&aspeed->lock, flags);
++static int fsi_i2c_error_status_to_rc(u32 status)
++{
++	if (status & I2C_STAT_INV_CMD)
++		return -EINVAL;
 +
-+	regmap_write(aspeed->master.map, FSI_MMODE,
-+		     aspeed->master.mmode & ~(FSI_MMODE_EIP | FSI_MMODE_RELA));
++	if (status & (I2C_STAT_PARITY | I2C_STAT_BE_OVERRUN | I2C_STAT_BE_ACCESS))
++		return -EPROTO;
 +
- 	gpiod_set_value(aspeed->cfam_reset_gpio, 1);
- 	udelay(900);
- 	gpiod_set_value(aspeed->cfam_reset_gpio, 0);
- 	udelay(900);
++	if (status & I2C_STAT_NACK)
++		return -ENXIO;
 +
- 	regmap_write(aspeed->master.map, FSI_MRESP0, FSI_MRESP_RST_ALL_MASTER);
-+	regmap_write(aspeed->master.map, FSI_MMODE, aspeed->master.mmode);
++	if (status & I2C_STAT_LOST_ARB)
++		return -EAGAIN;
 +
- 	spin_unlock_irqrestore(&aspeed->lock, flags);
- 	trace_fsi_master_aspeed_cfam_reset(false);
++	if (status & I2C_STAT_STOP_ERR)
++		return -EBADMSG;
++
++	return -EIO;
++}
++
+ static int fsi_i2c_handle_status(struct fsi_i2c_port *port,
+ 				 struct i2c_msg *msg, u32 status)
+ {
+@@ -518,23 +538,7 @@ static int fsi_i2c_handle_status(struct fsi_i2c_port *port,
+ 		if (rc)
+ 			return rc;
  
+-		if (status & I2C_STAT_INV_CMD)
+-			return -EINVAL;
+-
+-		if (status & (I2C_STAT_PARITY | I2C_STAT_BE_OVERRUN |
+-		    I2C_STAT_BE_ACCESS))
+-			return -EPROTO;
+-
+-		if (status & I2C_STAT_NACK)
+-			return -ENXIO;
+-
+-		if (status & I2C_STAT_LOST_ARB)
+-			return -EAGAIN;
+-
+-		if (status & I2C_STAT_STOP_ERR)
+-			return -EBADMSG;
+-
+-		return -EIO;
++		return fsi_i2c_error_status_to_rc(status);
+ 	}
+ 
+ 	if (status & I2C_STAT_DAT_REQ) {
 -- 
 2.39.3
 
