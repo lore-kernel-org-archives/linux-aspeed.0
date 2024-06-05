@@ -1,30 +1,107 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 26 Jun 2024 10:40:58 -0000
-Subject: (subset) [PATCH v2 20/20] pinctrl: samsung: Use scope based
- of_node_put() cleanups
-In-Reply-To: <171939733731.25849.13373950874840419376.b4-ty@linaro.org>
-References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com>
- <20240504-pinctrl-cleanup-v2-20-26c5f2dc1181@nxp.com> <171939733731.25849.13373950874840419376.b4-ty@linaro.org>
-Message-ID: <CACRpkdastCME_0BWjcaNc0Fw8qsLAGgoQUMi7g8sEP+xT=T_tQ@mail.gmail.com>
+From: Jeff Johnson <quic_jjohnson@quicinc.com>
+Date: Wed, 05 Jun 2024 23:24:03 -0000
+Subject: [PATCH] fsi: add missing MODULE_DESCRIPTION() macros
+Message-ID: <20240605-md-drivers-fsi-v1-1-fefc82d81b12@quicinc.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 26, 2024 at 12:22?PM Krzysztof Kozlowski
-<krzysztof.kozlowski@linaro.org> wrote:
-> On Sat, 04 May 2024 21:20:18 +0800, Peng Fan (OSS) wrote:
-> > Use scope based of_node_put() cleanup to simplify code.
-> >
-> >
->
-> Applied, thanks!
->
-> [20/20] pinctrl: samsung: Use scope based of_node_put() cleanups
->         https://git.kernel.org/pinctrl/samsung/c/707807f4c1128e39442519e849e4ce0b7c29b110
+make allmodconfig && make W=1 C=1 reports:
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-core.o
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-hub.o
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-aspeed.o
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-gpio.o
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-ast-cf.o
+WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-scom.o
 
-OK I dropped it from my queue!
+Add the missing invocations of the MODULE_DESCRIPTION() macro, and fix the
+copy/paste of the module description comment in fsi-master-ast-cf.c.
 
-Yours,
-Linus Walleij
+Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+---
+ drivers/fsi/fsi-core.c          | 1 +
+ drivers/fsi/fsi-master-aspeed.c | 1 +
+ drivers/fsi/fsi-master-ast-cf.c | 3 ++-
+ drivers/fsi/fsi-master-gpio.c   | 1 +
+ drivers/fsi/fsi-master-hub.c    | 1 +
+ drivers/fsi/fsi-scom.c          | 1 +
+ 6 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index 097d5a780264..716a924269ee 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -1444,5 +1444,6 @@ static void fsi_exit(void)
+ }
+ module_exit(fsi_exit);
+ module_param(discard_errors, int, 0664);
++MODULE_DESCRIPTION("FSI core driver");
+ MODULE_LICENSE("GPL");
+ MODULE_PARM_DESC(discard_errors, "Don't invoke error handling on bus accesses");
+diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
+index f0a19cd451a0..b454587790a2 100644
+--- a/drivers/fsi/fsi-master-aspeed.c
++++ b/drivers/fsi/fsi-master-aspeed.c
+@@ -672,4 +672,5 @@ static struct platform_driver fsi_master_aspeed_driver = {
+ };
+ 
+ module_platform_driver(fsi_master_aspeed_driver);
++MODULE_DESCRIPTION("FSI master driver for AST2600");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/fsi/fsi-master-ast-cf.c b/drivers/fsi/fsi-master-ast-cf.c
+index 812dfa9a9140..85096559dda3 100644
+--- a/drivers/fsi/fsi-master-ast-cf.c
++++ b/drivers/fsi/fsi-master-ast-cf.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ // Copyright 2018 IBM Corp
+ /*
+- * A FSI master controller, using a simple GPIO bit-banging interface
++ * A FSI master based on Aspeed ColdFire coprocessor
+  */
+ 
+ #include <linux/crc4.h>
+@@ -1440,5 +1440,6 @@ static struct platform_driver fsi_master_acf = {
+ };
+ 
+ module_platform_driver(fsi_master_acf);
++MODULE_DESCRIPTION("A FSI master based on Aspeed ColdFire coprocessor");
+ MODULE_LICENSE("GPL");
+ MODULE_FIRMWARE(FW_FILE_NAME);
+diff --git a/drivers/fsi/fsi-master-gpio.c b/drivers/fsi/fsi-master-gpio.c
+index ed03da4f2447..d32dcc98e85b 100644
+--- a/drivers/fsi/fsi-master-gpio.c
++++ b/drivers/fsi/fsi-master-gpio.c
+@@ -894,4 +894,5 @@ static struct platform_driver fsi_master_gpio_driver = {
+ };
+ 
+ module_platform_driver(fsi_master_gpio_driver);
++MODULE_DESCRIPTION("A FSI master controller, using a simple GPIO bit-banging interface");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/fsi/fsi-master-hub.c b/drivers/fsi/fsi-master-hub.c
+index 6d8b6e8854e5..6568fed7db3c 100644
+--- a/drivers/fsi/fsi-master-hub.c
++++ b/drivers/fsi/fsi-master-hub.c
+@@ -295,4 +295,5 @@ static struct fsi_driver hub_master_driver = {
+ };
+ 
+ module_fsi_driver(hub_master_driver);
++MODULE_DESCRIPTION("FSI hub master driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/fsi/fsi-scom.c b/drivers/fsi/fsi-scom.c
+index 61dbda9dbe2b..411ddc018cd8 100644
+--- a/drivers/fsi/fsi-scom.c
++++ b/drivers/fsi/fsi-scom.c
+@@ -625,4 +625,5 @@ static void scom_exit(void)
+ 
+ module_init(scom_init);
+ module_exit(scom_exit);
++MODULE_DESCRIPTION("SCOM FSI Client device driver");
+ MODULE_LICENSE("GPL");
+
+---
+base-commit: 19ca0d8a433ff37018f9429f7e7739e9f3d3d2b4
+change-id: 20240605-md-drivers-fsi-0a34d82a85da
+
