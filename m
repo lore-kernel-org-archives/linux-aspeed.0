@@ -1,209 +1,115 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed,  5 Jun 2024 16:23:00 -0500
-Subject: [PATCH v4 28/40] i2c: fsi: Change fsi_i2c_write_reg to accept data instead of a pointer
+Date: Wed,  5 Jun 2024 16:22:43 -0500
+Subject: [PATCH v4 11/40] fsi: core: Allow cfam device type aliases
 In-Reply-To: <20240605212312.349188-1-eajames@linux.ibm.com>
 References: <20240605212312.349188-1-eajames@linux.ibm.com>
-Message-ID: <20240605212312.349188-29-eajames@linux.ibm.com>
+Message-ID: <20240605212312.349188-12-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-There's no use passing a pointer here.
+Other FSI devices can uses aliases for the device numbering, so
+modify the function to get a new minor to allow the cfam type
+to use aliases too.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/i2c/busses/i2c-fsi.c | 47 +++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 27 deletions(-)
+ drivers/fsi/fsi-core.c | 59 +++++++++++++++++++++---------------------
+ 1 file changed, 29 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-fsi.c b/drivers/i2c/busses/i2c-fsi.c
-index 8fb5b51b74a4d..44aa750278100 100644
---- a/drivers/i2c/busses/i2c-fsi.c
-+++ b/drivers/i2c/busses/i2c-fsi.c
-@@ -177,9 +177,9 @@ static int fsi_i2c_read_reg(struct fsi_device *fsi, unsigned int reg,
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index 660f89b743235..36e31eafad3d0 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -884,12 +884,37 @@ static int fsi_adjust_index(int index)
+ #endif
  }
  
- static int fsi_i2c_write_reg(struct fsi_device *fsi, unsigned int reg,
--			     u32 *data)
-+			     u32 data)
+-static int __fsi_get_new_minor(struct fsi_slave *slave, enum fsi_dev_type type,
+-			       dev_t *out_dev, int *out_index)
++static const char *const fsi_dev_type_names[] = {
++	"cfam",
++	"sbefifo",
++	"scom",
++	"occ",
++};
++
++static int __fsi_get_new_minor(struct fsi_slave *slave, struct device_node *np,
++			       enum fsi_dev_type type, dev_t *out_dev, int *out_index)
  {
--	__be32 data_be = cpu_to_be32p(data);
-+	__be32 data_be = cpu_to_be32(data);
+ 	int cid = slave->chip_id;
+ 	int id;
  
- 	return fsi_device_write(fsi, reg, &data_be, sizeof(data_be));
++	if (np && type < 4) {
++		int aid = of_alias_get_id(np, fsi_dev_type_names[type]);
++
++		if (aid >= 0) {
++			/* Use the same scheme as the legacy numbers. */
++			id = (aid << 2) | type;
++			id = ida_alloc_range(&fsi_minor_ida, id, id, GFP_KERNEL);
++			if (id >= 0) {
++				*out_index = aid;
++				*out_dev = fsi_base_dev + id;
++				return 0;
++			}
++
++			if (id != -ENOSPC)
++				return id;
++		}
++	}
++
+ 	/* Check if we qualify for legacy numbering */
+ 	if (cid >= 0 && cid < 16 && type < 4) {
+ 		/*
+@@ -918,36 +943,10 @@ static int __fsi_get_new_minor(struct fsi_slave *slave, enum fsi_dev_type type,
+ 	return 0;
  }
-@@ -188,17 +188,16 @@ static int fsi_i2c_dev_init(struct fsi_i2c_master *i2c)
+ 
+-static const char *const fsi_dev_type_names[] = {
+-	"cfam",
+-	"sbefifo",
+-	"scom",
+-	"occ",
+-};
+-
+ int fsi_get_new_minor(struct fsi_device *fdev, enum fsi_dev_type type,
+ 		      dev_t *out_dev, int *out_index)
  {
- 	u32 mode = I2C_MODE_ENHANCED;
- 	u32 extended_status;
--	u32 interrupt = 0;
- 	u32 watermark;
- 	int rc;
- 
- 	/* since we use polling, disable interrupts */
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, &interrupt);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, 0);
- 	if (rc)
- 		return rc;
- 
- 	mode |= FIELD_PREP(I2C_MODE_CLKDIV, i2c->clock_div);
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_MODE, &mode);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_MODE, mode);
- 	if (rc)
- 		return rc;
- 
-@@ -211,13 +210,12 @@ static int fsi_i2c_dev_init(struct fsi_i2c_master *i2c)
- 			       i2c->fifo_size - I2C_FIFO_HI_LVL);
- 	watermark |= FIELD_PREP(I2C_WATERMARK_LO, I2C_FIFO_LO_LVL);
- 
--	return fsi_i2c_write_reg(i2c->fsi, I2C_FSI_WATER_MARK, &watermark);
-+	return fsi_i2c_write_reg(i2c->fsi, I2C_FSI_WATER_MARK, watermark);
+-	if (fdev->dev.of_node) {
+-		int aid = of_alias_get_id(fdev->dev.of_node, fsi_dev_type_names[type]);
+-
+-		if (aid >= 0) {
+-			/* Use the same scheme as the legacy numbers. */
+-			int id = (aid << 2) | type;
+-
+-			id = ida_alloc_range(&fsi_minor_ida, id, id, GFP_KERNEL);
+-			if (id >= 0) {
+-				*out_index = aid;
+-				*out_dev = fsi_base_dev + id;
+-				return 0;
+-			}
+-
+-			if (id != -ENOSPC)
+-				return id;
+-		}
+-	}
+-
+-	return __fsi_get_new_minor(fdev->slave, type, out_dev, out_index);
++	return __fsi_get_new_minor(fdev->slave, fdev->dev.of_node, type, out_dev, out_index);
  }
+ EXPORT_SYMBOL_GPL(fsi_get_new_minor);
  
- static int fsi_i2c_set_port(struct fsi_i2c_port *port)
- {
- 	struct fsi_device *fsi = port->master->fsi;
--	u32 dummy = 0;
- 	u32 mode;
- 	int rc;
- 
-@@ -229,12 +227,12 @@ static int fsi_i2c_set_port(struct fsi_i2c_port *port)
- 		return 0;
- 
- 	mode = (mode & ~I2C_MODE_PORT) | FIELD_PREP(I2C_MODE_PORT, port->port);
--	rc = fsi_i2c_write_reg(fsi, I2C_FSI_MODE, &mode);
-+	rc = fsi_i2c_write_reg(fsi, I2C_FSI_MODE, mode);
- 	if (rc)
- 		return rc;
- 
- 	/* reset engine when port is changed */
--	return fsi_i2c_write_reg(fsi, I2C_FSI_RESET_ERR, &dummy);
-+	return fsi_i2c_write_reg(fsi, I2C_FSI_RESET_ERR, 0);
- }
- 
- static int fsi_i2c_start(struct fsi_i2c_port *port, struct i2c_msg *msg,
-@@ -253,7 +251,7 @@ static int fsi_i2c_start(struct fsi_i2c_port *port, struct i2c_msg *msg,
- 	cmd |= FIELD_PREP(I2C_CMD_ADDR, msg->addr);
- 	cmd |= FIELD_PREP(I2C_CMD_LEN, msg->len);
- 
--	return fsi_i2c_write_reg(port->master->fsi, I2C_FSI_CMD, &cmd);
-+	return fsi_i2c_write_reg(port->master->fsi, I2C_FSI_CMD, cmd);
- }
- 
- static int fsi_i2c_get_op_bytes(int op_bytes)
-@@ -340,12 +338,11 @@ static int fsi_i2c_get_scl(struct i2c_adapter *adap)
- static void fsi_i2c_set_scl(struct i2c_adapter *adap, int val)
- {
- 	struct fsi_i2c_port *port = adap->algo_data;
--	u32 dummy = 0;
- 
- 	if (val)
--		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_SET_SCL, &dummy);
-+		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_SET_SCL, 0);
- 	else
--		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_RESET_SCL, &dummy);
-+		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_RESET_SCL, 0);
- }
- 
- static int fsi_i2c_get_sda(struct i2c_adapter *adap)
-@@ -361,12 +358,11 @@ static int fsi_i2c_get_sda(struct i2c_adapter *adap)
- static void fsi_i2c_set_sda(struct i2c_adapter *adap, int val)
- {
- 	struct fsi_i2c_port *port = adap->algo_data;
--	u32 dummy = 0;
- 
- 	if (val)
--		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_SET_SDA, &dummy);
-+		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_SET_SDA, 0);
- 	else
--		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_RESET_SDA, &dummy);
-+		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_RESET_SDA, 0);
- }
- 
- static void fsi_i2c_prepare_recovery(struct i2c_adapter *adap)
-@@ -380,7 +376,7 @@ static void fsi_i2c_prepare_recovery(struct i2c_adapter *adap)
- 		return;
- 
- 	mode |= I2C_MODE_DIAG;
--	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_MODE, &mode);
-+	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_MODE, mode);
- }
- 
- static void fsi_i2c_unprepare_recovery(struct i2c_adapter *adap)
-@@ -394,13 +390,12 @@ static void fsi_i2c_unprepare_recovery(struct i2c_adapter *adap)
- 		return;
- 
- 	mode &= ~I2C_MODE_DIAG;
--	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_MODE, &mode);
-+	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_MODE, mode);
- }
- 
- static int fsi_i2c_reset_bus(struct fsi_i2c_master *i2c,
- 			     struct fsi_i2c_port *port)
- {
--	u32 dummy = 0;
- 	u32 stat;
- 	int rc;
- 
-@@ -408,7 +403,7 @@ static int fsi_i2c_reset_bus(struct fsi_i2c_master *i2c,
- 	i2c_recover_bus(&port->adapter);
- 
- 	/* reset errors */
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_ERR, &dummy);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_ERR, 0);
- 	if (rc)
- 		return rc;
- 
-@@ -423,7 +418,7 @@ static int fsi_i2c_reset_bus(struct fsi_i2c_master *i2c,
- 		return 0;
- 
- 	/* failed to get command complete; reset engine again */
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_I2C, &dummy);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_I2C, 0);
- 	if (rc)
- 		return rc;
- 
-@@ -433,12 +428,11 @@ static int fsi_i2c_reset_bus(struct fsi_i2c_master *i2c,
- 
- static int fsi_i2c_reset_engine(struct fsi_i2c_master *i2c, u16 port)
- {
--	u32 dummy = 0;
- 	u32 mode;
- 	int rc;
- 
- 	/* reset engine */
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_I2C, &dummy);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_I2C, 0);
- 	if (rc)
- 		return rc;
- 
-@@ -455,14 +449,13 @@ static int fsi_i2c_reset_engine(struct fsi_i2c_master *i2c, u16 port)
- 	if (port) {
- 		mode &= ~I2C_MODE_PORT;
- 		mode |= FIELD_PREP(I2C_MODE_PORT, port);
--		rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_MODE, &mode);
-+		rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_MODE, mode);
- 		if (rc)
- 			return rc;
+@@ -1059,7 +1058,7 @@ static int fsi_slave_init(struct fsi_master *master, int link, uint8_t id)
  	}
  
- 	/* reset busy register; hw workaround */
--	dummy = I2C_PORT_BUSY_RESET;
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_PORT_BUSY, &dummy);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_PORT_BUSY, I2C_PORT_BUSY_RESET);
+ 	/* Allocate a minor in the FSI space */
+-	rc = __fsi_get_new_minor(slave, fsi_dev_cfam, &slave->dev.devt,
++	rc = __fsi_get_new_minor(slave, slave->dev.of_node, fsi_dev_cfam, &slave->dev.devt,
+ 				 &slave->cdev_idx);
  	if (rc)
- 		return rc;
- 
-@@ -497,7 +490,7 @@ static int fsi_i2c_abort(struct fsi_i2c_port *port, u32 status)
- 		return 0;
- 
- 	/* write stop command */
--	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_CMD, &cmd);
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_CMD, cmd);
- 	if (rc)
- 		return rc;
- 
+ 		goto err_free;
 -- 
 2.39.3
 
