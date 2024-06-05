@@ -1,75 +1,230 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed,  5 Jun 2024 16:22:54 -0500
-Subject: [PATCH v4 22/40] fsi: aspeed: Use common master error handler
+Date: Wed,  5 Jun 2024 16:23:06 -0500
+Subject: [PATCH v4 34/40] fsi: core: Add master register read-only sysfs
 In-Reply-To: <20240605212312.349188-1-eajames@linux.ibm.com>
 References: <20240605212312.349188-1-eajames@linux.ibm.com>
-Message-ID: <20240605212312.349188-23-eajames@linux.ibm.com>
+Message-ID: <20240605212312.349188-35-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This will do the correct mmode manipulation to do the master
-reset.
+The master registers are commonly used for debugging or diagnosis so
+provide them in sysfs files.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-aspeed.c | 27 ++++-----------------------
- 1 file changed, 4 insertions(+), 23 deletions(-)
+ drivers/fsi/fsi-core.c   | 144 +++++++++++++++++++++++++++++++++++++++
+ drivers/fsi/fsi-master.h |   6 ++
+ 2 files changed, 150 insertions(+)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index c9f6d84e1a372..eecd64bc29512 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -226,27 +226,6 @@ static int opb_readb(struct fsi_master_aspeed *aspeed, uint32_t addr, u8 *out)
- 	return __opb_read(aspeed, addr, XFER_BYTE, (void *)out);
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index 58cb6bc6ccc91..4d2e14e2a9148 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -1392,6 +1392,141 @@ static ssize_t master_break_store(struct device *dev,
+ 
+ static DEVICE_ATTR(break, 0200, NULL, master_break_store);
+ 
++struct fsi_master_attribute {
++	struct device_attribute attr;
++	int reg;
++};
++
++static ssize_t master_reg_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_master_attribute *fattr = container_of(attr, struct fsi_master_attribute, attr);
++	struct fsi_master *master = to_fsi_master(dev);
++	unsigned int reg;
++	int rc;
++	
++	rc = regmap_read(master->map, fattr->reg, &reg);
++	if (rc)
++		return rc;
++
++	return sysfs_emit(buf, "%08x\n", reg);
++}
++
++static ssize_t master_reg_1bpp_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_master_attribute *fattr = container_of(attr, struct fsi_master_attribute, attr);
++	struct fsi_master *master = to_fsi_master(dev);
++	unsigned int count = (master->n_links + 31) / 32;
++	unsigned int reg;
++	unsigned int i;
++	int len = 0;
++	int rc;
++	
++	for (i = 0; i < count; ++i) {
++		rc = regmap_read(master->map, fattr->reg + (i * 4), &reg);
++		if (rc)
++			return rc;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", reg);
++	}
++
++	return len;
++}
++
++static ssize_t master_reg_4bpp_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_master_attribute *fattr = container_of(attr, struct fsi_master_attribute, attr);
++	struct fsi_master *master = to_fsi_master(dev);
++	unsigned int count = (master->n_links + 7) / 8;
++	unsigned int reg;
++	unsigned int i;
++	int len = 0;
++	int rc;
++	
++	for (i = 0; i < count; ++i) {
++		rc = regmap_read(master->map, fattr->reg + (i * 4), &reg);
++		if (rc)
++			return rc;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", reg);
++	}
++
++	return len;
++}
++
++static ssize_t master_reg_32bpp_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_master_attribute *fattr = container_of(attr, struct fsi_master_attribute, attr);
++	struct fsi_master *master = to_fsi_master(dev);
++	unsigned int reg;
++	int len = 0;
++	int rc;
++	int i;
++	
++	for (i = 0; i < master->n_links; ++i) {
++		rc = regmap_read(master->map, fattr->reg + (i * 4), &reg);
++		if (rc)
++			return rc;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", reg);
++	}
++
++	return len;
++}
++
++#define FSI_MASTER_ATTR(name, reg) \
++	struct fsi_master_attribute dev_attr_##name = { __ATTR(name, 0444, master_reg_show, NULL), reg }
++#define FSI_MASTER_ATTR_1BPP(name, reg) \
++	struct fsi_master_attribute dev_attr_##name = { __ATTR(name, 0444, master_reg_1bpp_show, NULL), reg }
++#define FSI_MASTER_ATTR_4BPP(name, reg) \
++	struct fsi_master_attribute dev_attr_##name = { __ATTR(name, 0444, master_reg_4bpp_show, NULL), reg }
++#define FSI_MASTER_ATTR_32BPP(name, reg) \
++	struct fsi_master_attribute dev_attr_##name = { __ATTR(name, 0444, master_reg_32bpp_show, NULL), reg }
++
++static FSI_MASTER_ATTR(mmode, FSI_MMODE);
++static FSI_MASTER_ATTR(mdlyr, FSI_MDLYR);
++static FSI_MASTER_ATTR_1BPP(mcrsp, FSI_MCRSP);
++static FSI_MASTER_ATTR_1BPP(menp, FSI_MENP0);
++static FSI_MASTER_ATTR_1BPP(mlevp, FSI_MLEVP0);
++static FSI_MASTER_ATTR_1BPP(mrefp, FSI_MREFP0);
++static FSI_MASTER_ATTR_1BPP(mhpmp, FSI_MHPMP0);
++static FSI_MASTER_ATTR_4BPP(msiep, FSI_MSIEP0);
++static FSI_MASTER_ATTR_1BPP(maesp, FSI_MAESP0);
++static FSI_MASTER_ATTR(maeb, FSI_MAEB);
++static FSI_MASTER_ATTR(mver, FSI_MVER);
++static FSI_MASTER_ATTR_1BPP(mbsyp, FSI_MBSYP0);
++static FSI_MASTER_ATTR_32BPP(mstap, FSI_MSTAP0);
++static FSI_MASTER_ATTR(mesrb, FSI_MESRB0);
++static FSI_MASTER_ATTR(mscsb, FSI_MSCSB0);
++static FSI_MASTER_ATTR(matrb, FSI_MATRB0);
++static FSI_MASTER_ATTR(mdtrb, FSI_MDTRB0);
++static FSI_MASTER_ATTR(mectrl, FSI_MECTRL);
++
++static struct attribute *master_mapped_attrs[] = {
++	&dev_attr_mmode.attr.attr,
++	&dev_attr_mdlyr.attr.attr,
++	&dev_attr_mcrsp.attr.attr,
++	&dev_attr_menp.attr.attr,
++	&dev_attr_mlevp.attr.attr,
++	&dev_attr_mrefp.attr.attr,
++	&dev_attr_mhpmp.attr.attr,
++	&dev_attr_msiep.attr.attr,
++	&dev_attr_maesp.attr.attr,
++	&dev_attr_maeb.attr.attr,
++	&dev_attr_mver.attr.attr,
++	&dev_attr_mbsyp.attr.attr,
++	&dev_attr_mstap.attr.attr,
++	&dev_attr_mesrb.attr.attr,
++	&dev_attr_mscsb.attr.attr,
++	&dev_attr_matrb.attr.attr,
++	&dev_attr_mdtrb.attr.attr,
++	&dev_attr_mectrl.attr.attr,
++	NULL
++};
++
++static const struct attribute_group master_mapped_group = {
++	.attrs = master_mapped_attrs,
++};
++
+ static struct attribute *master_attrs[] = {
+ 	&dev_attr_break.attr,
+ 	&dev_attr_rescan.attr,
+@@ -1665,6 +1800,12 @@ int fsi_master_register(struct fsi_master *master)
+ 	}
+ out:
+ 	mutex_unlock(&master->scan_lock);
++
++	if (!rc && master->map) {
++		if (!sysfs_create_group(&master->dev.kobj, &master_mapped_group))
++			master->groups = true;
++	}
++
+ 	return rc;
  }
+ EXPORT_SYMBOL_GPL(fsi_master_register);
+@@ -1675,6 +1816,9 @@ void fsi_master_unregister(struct fsi_master *master)
  
--static int check_errors(struct fsi_master_aspeed *aspeed, int err)
--{
--	int ret;
--
--	if (err == -EIO) {
--		/* Check MAEB (0x70) ? */
--
--		/* Then clear errors in master */
--		ret = opb_writel(aspeed, ctrl_base + FSI_MRESP0,
--				cpu_to_be32(FSI_MRESP_RST_ALL_MASTER));
--		if (ret) {
--			/* TODO: log? return different code? */
--			return ret;
--		}
--		/* TODO: confirm that 0x70 was okay */
--	}
--
--	/* This will pass through timeout errors */
--	return err;
--}
--
- static int aspeed_master_read(struct fsi_master *master, int link,
- 			uint8_t id, uint32_t addr, void *val, size_t size)
- {
-@@ -277,7 +256,8 @@ static int aspeed_master_read(struct fsi_master *master, int link,
- 		goto done;
- 	}
+ 	trace_fsi_master_unregister(master);
  
--	ret = check_errors(aspeed, ret);
-+	if (ret == -EIO)
-+		fsi_master_error(&aspeed->master, link);
- done:
- 	spin_unlock_irqrestore(&aspeed->lock, flags);
- 	return ret;
-@@ -313,7 +293,8 @@ static int aspeed_master_write(struct fsi_master *master, int link,
- 		goto done;
- 	}
++	if (master->groups)
++		sysfs_remove_group(&master->dev.kobj, &master_mapped_group);
++
+ 	mutex_lock(&master->scan_lock);
+ 	fsi_master_unscan(master);
+ 	master->n_links = 0;
+diff --git a/drivers/fsi/fsi-master.h b/drivers/fsi/fsi-master.h
+index 2104902091e05..1fa101a477899 100644
+--- a/drivers/fsi/fsi-master.h
++++ b/drivers/fsi/fsi-master.h
+@@ -12,6 +12,7 @@
+ #include <linux/device.h>
+ #include <linux/irq.h>
+ #include <linux/mutex.h>
++#include <linux/sysfs.h>
  
--	ret = check_errors(aspeed, ret);
-+	if (ret == -EIO)
-+		fsi_master_error(&aspeed->master, link);
- done:
- 	spin_unlock_irqrestore(&aspeed->lock, flags);
- 	return ret;
+ /*
+  * Master registers
+@@ -27,12 +28,16 @@
+ #define FSI_MENP0		0x10		/* R/W: enable */
+ #define FSI_MLEVP0		0x18		/* R: plug detect */
+ #define FSI_MSENP0		0x18		/* S: Set enable */
++#define FSI_MREFP0		0x20		/* R: Plug reference */
+ #define FSI_MCENP0		0x20		/* C: Clear enable */
++#define FSI_MHPMP0		0x28		/* R: Plug monitor */
+ #define FSI_MSIEP0		0x30		/* R/W: interrupt enable */
++#define FSI_MAESP0		0x50		/* R: Any error port */
+ #define FSI_MSSIEP0		0x50		/* S: Set interrupt enable */
+ #define FSI_MCSIEP0		0x70		/* C: Clear interrupt enable */
+ #define FSI_MAEB		0x70		/* R: Error address */
+ #define FSI_MVER		0x74		/* R: master version/type */
++#define FSI_MBSYP0		0x78		/* R: Port busy */
+ #define FSI_MSTAP0		0xd0		/* R: Port status */
+ #define FSI_MRESP0		0xd0		/* W: Port reset */
+ #define FSI_MESRB0		0x1d0		/* R: Master error status */
+@@ -151,6 +156,7 @@ struct fsi_master {
+ 	int		(*link_config)(struct fsi_master *, int link,
+ 				       u8 t_send_delay, u8 t_echo_delay);
+ 	u8		remote_interrupt_status;
++	bool		groups;
+ };
+ 
+ #define to_fsi_master(d) container_of(d, struct fsi_master, dev)
 -- 
 2.39.3
 
