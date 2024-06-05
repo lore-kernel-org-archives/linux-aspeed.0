@@ -1,64 +1,37 @@
-From: Ninad Palsule <ninad@linux.ibm.com>
-Date: Tue,  4 Jun 2024 16:59:39 -0500
-Subject: [PATCH v1] ARM: dts: aspeed: System1: Updates to BMC board
-Message-ID: <20240604215939.1967329-1-ninad@linux.ibm.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 05 Jun 2024 10:17:13 +0930
+Subject: [PATCH 1/3] dt-bindings: pinctrl: aspeed: Use block syntax for
+ function and groups
+In-Reply-To: <20240604192755.GA1065421-robh@kernel.org>
+References: <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-0-a6fe2281a1b8@codeconstruct.com.au>
+	 <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-1-a6fe2281a1b8@codeconstruct.com.au>
+	 <20240604192755.GA1065421-robh@kernel.org>
+Message-ID: <0908995dfd2181e687181bd1b075c4cb27624e94.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-- Added new power monitor device max5970
-- Changed temperature sensor monitor chip from tmp423 to tmp432
+On Tue, 2024-06-04 at 14:27 -0500, Rob Herring wrote:
+> On Fri, May 31, 2024 at 12:32:47PM +0930, Andrew Jeffery wrote:
+> > The expansion makes the documents a lot longer, but it's easier to
+> > review changes to functions and groups when we're not having to deal
+> > with line wrapping.
+> 
+> Do you really expect to be updating this frequently? I would leave it 
+> as-is, but whatever you decide.
 
-Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+I don't expect to be updating it frequently. However it's happened
+occasionally in the past and the diff chaos irks me. So I prefer we
+explode it.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-index dcbc16308ab50..e09a6b383ba49 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-@@ -753,6 +753,11 @@ &i2c4 {
- &i2c5 {
- 	status = "okay";
- 
-+	power-monitor at 3a {
-+		compatible = "maxim,max5970";
-+		reg = <0x3a>;
-+	};
-+
- 	regulator at 42 {
- 		compatible = "infineon,ir38263";
- 		reg = <0x42>;
-@@ -1138,7 +1143,7 @@ i2c8mux0chn6: i2c at 6 {
- 			reg = <6>;
- 
- 			temperature-sensor at 4c {
--				compatible = "ti,tmp423";
-+				compatible = "ti,tmp432";
- 				reg = <0x4c>;
- 			};
- 		};
-@@ -1599,7 +1604,7 @@ i2c15mux0chn6: i2c at 6 {
- 			reg = <6>;
- 
- 			temperature-sensor at 4c {
--				compatible = "ti,tmp423";
-+				compatible = "ti,tmp432";
- 				reg = <0x4c>;
- 			};
- 		};
-@@ -1615,7 +1620,7 @@ regulator at 40 {
- 			};
- 
- 			temperature-sensor at 4c {
--				compatible = "ti,tmp423";
-+				compatible = "ti,tmp432";
- 				reg = <0x4c>;
- 			};
- 		};
--- 
-2.40.1
+> 
+> > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> > ---
+> 
+> Acked-by: Rob Herring (Arm) <robh@kernel.org>
 
+Thanks.
+
+Andrew
