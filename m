@@ -1,194 +1,398 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed,  5 Jun 2024 16:22:49 -0500
-Subject: [PATCH v4 17/40] fsi: aspeed: Refactor trace functions
+Date: Wed,  5 Jun 2024 16:22:59 -0500
+Subject: [PATCH v4 27/40] i2c: fsi: Improve formatting
 In-Reply-To: <20240605212312.349188-1-eajames@linux.ibm.com>
 References: <20240605212312.349188-1-eajames@linux.ibm.com>
-Message-ID: <20240605212312.349188-18-eajames@linux.ibm.com>
+Message-ID: <20240605212312.349188-28-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove the opb error trace, add a timeout trace, and combine the
-read/write traces.
+No functional change. Remove holes in the master structure. Re-order
+local variables to look pretty. Remove some local variables in favor of
+using their containing structure.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/fsi/fsi-master-aspeed.c          | 29 +++------
- include/trace/events/fsi_master_aspeed.h | 80 ++++++++----------------
- 2 files changed, 34 insertions(+), 75 deletions(-)
+Changes since v2:
+ - Add detail to commit message.
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index 29932037c9866..04aa5cb9b6fad 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -122,16 +122,17 @@ static int __opb_write(struct fsi_master_aspeed *aspeed, u32 addr,
+ drivers/i2c/busses/i2c-fsi.c | 125 +++++++++++++++++------------------
+ 1 file changed, 60 insertions(+), 65 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-fsi.c b/drivers/i2c/busses/i2c-fsi.c
+index 2404ace8c56fa..8fb5b51b74a4d 100644
+--- a/drivers/i2c/busses/i2c-fsi.c
++++ b/drivers/i2c/busses/i2c-fsi.c
+@@ -148,10 +148,10 @@
  
- 	status = readl(base + OPB0_STATUS);
+ struct fsi_i2c_master {
+ 	struct fsi_device	*fsi;
+-	u8			fifo_size;
+ 	struct list_head	ports;
+ 	struct mutex		lock;
+ 	u32			clock_div;
++	u8			fifo_size;
+ };
  
--	trace_fsi_master_aspeed_opb_write(addr, val, transfer_size, status, reg);
+ struct fsi_i2c_port {
+@@ -165,15 +165,14 @@ struct fsi_i2c_port {
+ static int fsi_i2c_read_reg(struct fsi_device *fsi, unsigned int reg,
+ 			    u32 *data)
+ {
+-	int rc;
+ 	__be32 data_be;
++	int rc;
+ 
+ 	rc = fsi_device_read(fsi, reg, &data_be, sizeof(data_be));
+ 	if (rc)
+ 		return rc;
+ 
+ 	*data = be32_to_cpu(data_be);
 -
- 	/* Return error when poll timed out */
--	if (ret)
-+	if (ret) {
-+		trace_fsi_master_aspeed_timeout(reg, status, false);
- 		return ret;
-+	}
- 
- 	/* Command failed, master will reset */
- 	if (status & STATUS_ERR_ACK)
- 		return -EIO;
- 
-+	trace_fsi_master_aspeed_opb_xfer(addr, transfer_size + 1, val, false);
  	return 0;
  }
  
-@@ -175,13 +176,11 @@ static int __opb_read(struct fsi_master_aspeed *aspeed, uint32_t addr,
+@@ -187,9 +186,11 @@ static int fsi_i2c_write_reg(struct fsi_device *fsi, unsigned int reg,
  
- 	result = readl(base + OPB0_FSI_DATA_R);
+ static int fsi_i2c_dev_init(struct fsi_i2c_master *i2c)
+ {
+-	int rc;
+-	u32 mode = I2C_MODE_ENHANCED, extended_status, watermark;
++	u32 mode = I2C_MODE_ENHANCED;
++	u32 extended_status;
+ 	u32 interrupt = 0;
++	u32 watermark;
++	int rc;
  
--	trace_fsi_master_aspeed_opb_read(addr, transfer_size, result,
--			readl(base + OPB0_STATUS),
--			reg);
+ 	/* since we use polling, disable interrupts */
+ 	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, &interrupt);
+@@ -215,9 +216,10 @@ static int fsi_i2c_dev_init(struct fsi_i2c_master *i2c)
+ 
+ static int fsi_i2c_set_port(struct fsi_i2c_port *port)
+ {
+-	int rc;
+ 	struct fsi_device *fsi = port->master->fsi;
+-	u32 mode, dummy = 0;
++	u32 dummy = 0;
++	u32 mode;
++	int rc;
+ 
+ 	rc = fsi_i2c_read_reg(fsi, I2C_FSI_MODE, &mode);
+ 	if (rc)
+@@ -238,7 +240,6 @@ static int fsi_i2c_set_port(struct fsi_i2c_port *port)
+ static int fsi_i2c_start(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 			 bool stop)
+ {
+-	struct fsi_i2c_master *i2c = port->master;
+ 	u32 cmd = I2C_CMD_WITH_START | I2C_CMD_WITH_ADDR;
+ 
+ 	port->xfrd = 0;
+@@ -252,7 +253,7 @@ static int fsi_i2c_start(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 	cmd |= FIELD_PREP(I2C_CMD_ADDR, msg->addr);
+ 	cmd |= FIELD_PREP(I2C_CMD_LEN, msg->len);
+ 
+-	return fsi_i2c_write_reg(i2c->fsi, I2C_FSI_CMD, &cmd);
++	return fsi_i2c_write_reg(port->master->fsi, I2C_FSI_CMD, &cmd);
+ }
+ 
+ static int fsi_i2c_get_op_bytes(int op_bytes)
+@@ -268,18 +269,17 @@ static int fsi_i2c_get_op_bytes(int op_bytes)
+ static int fsi_i2c_write_fifo(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 			      u8 fifo_count)
+ {
++	int bytes_to_write = port->master->fifo_size - fifo_count;
++	int bytes_remaining = msg->len - port->xfrd;
+ 	int write;
+ 	int rc;
+-	struct fsi_i2c_master *i2c = port->master;
+-	int bytes_to_write = i2c->fifo_size - fifo_count;
+-	int bytes_remaining = msg->len - port->xfrd;
+ 
+ 	bytes_to_write = min(bytes_to_write, bytes_remaining);
+ 
+ 	while (bytes_to_write) {
+ 		write = fsi_i2c_get_op_bytes(bytes_to_write);
+ 
+-		rc = fsi_device_write(i2c->fsi, I2C_FSI_FIFO,
++		rc = fsi_device_write(port->master->fsi, I2C_FSI_FIFO,
+ 				      &msg->buf[port->xfrd], write);
+ 		if (rc)
+ 			return rc;
+@@ -294,12 +294,11 @@ static int fsi_i2c_write_fifo(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ static int fsi_i2c_read_fifo(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 			     u8 fifo_count)
+ {
+-	int read;
+-	int rc;
+-	struct fsi_i2c_master *i2c = port->master;
+-	int bytes_to_read;
+ 	int xfr_remaining = msg->len - port->xfrd;
++	int bytes_to_read;
+ 	u32 dummy;
++	int read;
++	int rc;
+ 
+ 	bytes_to_read = min_t(int, fifo_count, xfr_remaining);
+ 
+@@ -307,7 +306,7 @@ static int fsi_i2c_read_fifo(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 		read = fsi_i2c_get_op_bytes(bytes_to_read);
+ 
+ 		if (xfr_remaining) {
+-			rc = fsi_device_read(i2c->fsi, I2C_FSI_FIFO,
++			rc = fsi_device_read(port->master->fsi, I2C_FSI_FIFO,
+ 					     &msg->buf[port->xfrd], read);
+ 			if (rc)
+ 				return rc;
+@@ -316,8 +315,8 @@ static int fsi_i2c_read_fifo(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 			xfr_remaining -= read;
+ 		} else {
+ 			/* no more buffer but data in fifo, need to clear it */
+-			rc = fsi_device_read(i2c->fsi, I2C_FSI_FIFO, &dummy,
+-					     read);
++			rc = fsi_device_read(port->master->fsi, I2C_FSI_FIFO,
++					     &dummy, read);
+ 			if (rc)
+ 				return rc;
+ 		}
+@@ -330,85 +329,80 @@ static int fsi_i2c_read_fifo(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 
+ static int fsi_i2c_get_scl(struct i2c_adapter *adap)
+ {
+-	u32 stat = 0;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *i2c = port->master;
++	u32 stat;
+ 
+-	fsi_i2c_read_reg(i2c->fsi, I2C_FSI_STAT, &stat);
++	fsi_i2c_read_reg(port->master->fsi, I2C_FSI_STAT, &stat);
+ 
+ 	return !!(stat & I2C_STAT_SCL_IN);
+ }
+ 
+ static void fsi_i2c_set_scl(struct i2c_adapter *adap, int val)
+ {
+-	u32 dummy = 0;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *i2c = port->master;
++	u32 dummy = 0;
+ 
+ 	if (val)
+-		fsi_i2c_write_reg(i2c->fsi, I2C_FSI_SET_SCL, &dummy);
++		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_SET_SCL, &dummy);
+ 	else
+-		fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_SCL, &dummy);
++		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_RESET_SCL, &dummy);
+ }
+ 
+ static int fsi_i2c_get_sda(struct i2c_adapter *adap)
+ {
+-	u32 stat = 0;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *i2c = port->master;
++	u32 stat;
+ 
+-	fsi_i2c_read_reg(i2c->fsi, I2C_FSI_STAT, &stat);
++	fsi_i2c_read_reg(port->master->fsi, I2C_FSI_STAT, &stat);
+ 
+ 	return !!(stat & I2C_STAT_SDA_IN);
+ }
+ 
+ static void fsi_i2c_set_sda(struct i2c_adapter *adap, int val)
+ {
+-	u32 dummy = 0;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *i2c = port->master;
++	u32 dummy = 0;
+ 
+ 	if (val)
+-		fsi_i2c_write_reg(i2c->fsi, I2C_FSI_SET_SDA, &dummy);
++		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_SET_SDA, &dummy);
+ 	else
+-		fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_SDA, &dummy);
++		fsi_i2c_write_reg(port->master->fsi, I2C_FSI_RESET_SDA, &dummy);
+ }
+ 
+ static void fsi_i2c_prepare_recovery(struct i2c_adapter *adap)
+ {
+-	int rc;
+-	u32 mode;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *i2c = port->master;
++	u32 mode;
++	int rc;
+ 
+-	rc = fsi_i2c_read_reg(i2c->fsi, I2C_FSI_MODE, &mode);
++	rc = fsi_i2c_read_reg(port->master->fsi, I2C_FSI_MODE, &mode);
+ 	if (rc)
+ 		return;
+ 
+ 	mode |= I2C_MODE_DIAG;
+-	fsi_i2c_write_reg(i2c->fsi, I2C_FSI_MODE, &mode);
++	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_MODE, &mode);
+ }
+ 
+ static void fsi_i2c_unprepare_recovery(struct i2c_adapter *adap)
+ {
+-	int rc;
+-	u32 mode;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *i2c = port->master;
++	u32 mode;
++	int rc;
+ 
+-	rc = fsi_i2c_read_reg(i2c->fsi, I2C_FSI_MODE, &mode);
++	rc = fsi_i2c_read_reg(port->master->fsi, I2C_FSI_MODE, &mode);
+ 	if (rc)
+ 		return;
+ 
+ 	mode &= ~I2C_MODE_DIAG;
+-	fsi_i2c_write_reg(i2c->fsi, I2C_FSI_MODE, &mode);
++	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_MODE, &mode);
+ }
+ 
+ static int fsi_i2c_reset_bus(struct fsi_i2c_master *i2c,
+ 			     struct fsi_i2c_port *port)
+ {
++	u32 dummy = 0;
++	u32 stat;
+ 	int rc;
+-	u32 stat, dummy = 0;
+ 
+ 	/* force bus reset, ignore errors */
+ 	i2c_recover_bus(&port->adapter);
+@@ -439,8 +433,9 @@ static int fsi_i2c_reset_bus(struct fsi_i2c_master *i2c,
+ 
+ static int fsi_i2c_reset_engine(struct fsi_i2c_master *i2c, u16 port)
+ {
++	u32 dummy = 0;
++	u32 mode;
+ 	int rc;
+-	u32 mode, dummy = 0;
+ 
+ 	/* reset engine */
+ 	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_RESET_I2C, &dummy);
+@@ -476,18 +471,17 @@ static int fsi_i2c_reset_engine(struct fsi_i2c_master *i2c, u16 port)
+ 
+ static int fsi_i2c_abort(struct fsi_i2c_port *port, u32 status)
+ {
+-	int rc;
+-	unsigned long start;
++	struct fsi_i2c_master *i2c = port->master;
+ 	u32 cmd = I2C_CMD_WITH_STOP;
++	unsigned long start;
+ 	u32 stat;
+-	struct fsi_i2c_master *i2c = port->master;
+-	struct fsi_device *fsi = i2c->fsi;
++	int rc;
+ 
+ 	rc = fsi_i2c_reset_engine(i2c, port->port);
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = fsi_i2c_read_reg(fsi, I2C_FSI_STAT, &stat);
++	rc = fsi_i2c_read_reg(i2c->fsi, I2C_FSI_STAT, &stat);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -503,15 +497,14 @@ static int fsi_i2c_abort(struct fsi_i2c_port *port, u32 status)
+ 		return 0;
+ 
+ 	/* write stop command */
+-	rc = fsi_i2c_write_reg(fsi, I2C_FSI_CMD, &cmd);
++	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_CMD, &cmd);
+ 	if (rc)
+ 		return rc;
+ 
+ 	/* wait until we see command complete in the master */
+ 	start = jiffies;
 -
- 	/* Return error when poll timed out */
--	if (ret)
-+	if (ret) {
-+		trace_fsi_master_aspeed_timeout(reg, status, true);
- 		return ret;
-+	}
+ 	do {
+-		rc = fsi_i2c_read_reg(fsi, I2C_FSI_STAT, &status);
++		rc = fsi_i2c_read_reg(i2c->fsi, I2C_FSI_STAT, &status);
+ 		if (rc)
+ 			return rc;
  
- 	/* Command failed, master will reset */
- 	if (status & STATUS_ERR_ACK)
-@@ -204,6 +203,7 @@ static int __opb_read(struct fsi_master_aspeed *aspeed, uint32_t addr,
+@@ -527,8 +520,8 @@ static int fsi_i2c_abort(struct fsi_i2c_port *port, u32 status)
+ static int fsi_i2c_handle_status(struct fsi_i2c_port *port,
+ 				 struct i2c_msg *msg, u32 status)
+ {
+-	int rc;
+ 	u8 fifo_count;
++	int rc;
  
+ 	if (status & I2C_STAT_ERR) {
+ 		rc = fsi_i2c_abort(port, status);
+@@ -576,9 +569,9 @@ static int fsi_i2c_handle_status(struct fsi_i2c_port *port,
+ static int fsi_i2c_wait(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ 			unsigned long timeout)
+ {
+-	u32 status = 0;
+-	int rc;
+ 	unsigned long start = jiffies;
++	u32 status;
++	int rc;
+ 
+ 	do {
+ 		rc = fsi_i2c_read_reg(port->master->fsi, I2C_FSI_STAT,
+@@ -608,13 +601,13 @@ static int fsi_i2c_wait(struct fsi_i2c_port *port, struct i2c_msg *msg,
+ static int fsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
+ 			int num)
+ {
+-	int i, rc;
+-	unsigned long start_time;
+ 	struct fsi_i2c_port *port = adap->algo_data;
+-	struct fsi_i2c_master *master = port->master;
++	unsigned long start_time;
+ 	struct i2c_msg *msg;
++	int rc;
++	int i;
+ 
+-	mutex_lock(&master->lock);
++	mutex_lock(&port->master->lock);
+ 
+ 	rc = fsi_i2c_set_port(port);
+ 	if (rc)
+@@ -635,7 +628,7 @@ static int fsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
  	}
  
-+	trace_fsi_master_aspeed_opb_xfer(addr, transfer_size + 1, result, true);
+ unlock:
+-	mutex_unlock(&master->lock);
++	mutex_unlock(&port->master->lock);
+ 	return rc ? : num;
+ }
+ 
+@@ -681,8 +674,10 @@ static int fsi_i2c_probe(struct device *dev)
+ 	struct fsi_i2c_master *i2c;
+ 	struct fsi_i2c_port *port;
+ 	struct device_node *np;
+-	u32 port_no, ports, stat;
++	u32 port_no;
++	u32 ports;
+ 	u32 lbus;
++	u32 stat;
+ 	int rc;
+ 
+ 	i2c = devm_kzalloc(dev, sizeof(*i2c), GFP_KERNEL);
+@@ -752,14 +747,14 @@ static int fsi_i2c_probe(struct device *dev)
+ 	}
+ 
+ 	dev_set_drvdata(dev, i2c);
+-
  	return 0;
  }
  
-@@ -226,19 +226,6 @@ static int check_errors(struct fsi_master_aspeed *aspeed, int err)
+ static int fsi_i2c_remove(struct device *dev)
  {
- 	int ret;
+ 	struct fsi_i2c_master *i2c = dev_get_drvdata(dev);
+-	struct fsi_i2c_port *port, *tmp;
++	struct fsi_i2c_port *port;
++	struct fsi_i2c_port *tmp;
  
--	if (trace_fsi_master_aspeed_opb_error_enabled()) {
--		__be32 mresp0, mstap0, mesrb0;
--
--		opb_readl(aspeed, ctrl_base + FSI_MRESP0, &mresp0);
--		opb_readl(aspeed, ctrl_base + FSI_MSTAP0, &mstap0);
--		opb_readl(aspeed, ctrl_base + FSI_MESRB0, &mesrb0);
--
--		trace_fsi_master_aspeed_opb_error(
--				be32_to_cpu(mresp0),
--				be32_to_cpu(mstap0),
--				be32_to_cpu(mesrb0));
--	}
--
- 	if (err == -EIO) {
- 		/* Check MAEB (0x70) ? */
- 
-diff --git a/include/trace/events/fsi_master_aspeed.h b/include/trace/events/fsi_master_aspeed.h
-index 0fff873775f19..7eeecbfec7f09 100644
---- a/include/trace/events/fsi_master_aspeed.h
-+++ b/include/trace/events/fsi_master_aspeed.h
-@@ -8,69 +8,41 @@
- 
- #include <linux/tracepoint.h>
- 
--TRACE_EVENT(fsi_master_aspeed_opb_read,
--	TP_PROTO(uint32_t addr, size_t size, uint32_t result, uint32_t status, uint32_t irq_status),
--	TP_ARGS(addr, size, result, status, irq_status),
-+TRACE_EVENT(fsi_master_aspeed_opb_xfer,
-+	TP_PROTO(uint32_t addr, uint32_t size, uint32_t data, bool read),
-+	TP_ARGS(addr, size, data, read),
- 	TP_STRUCT__entry(
--		__field(uint32_t,  addr)
--		__field(size_t,    size)
--		__field(uint32_t,  result)
--		__field(uint32_t,  status)
--		__field(uint32_t,  irq_status)
--		),
-+		__field(uint32_t, addr)
-+		__field(uint32_t, size)
-+		__field(uint32_t, data)
-+		__field(bool, read)
-+	),
- 	TP_fast_assign(
- 		__entry->addr = addr;
- 		__entry->size = size;
--		__entry->result = result;
--		__entry->status = status;
--		__entry->irq_status = irq_status;
--		),
--	TP_printk("addr %08x size %zu: result %08x sts: %08x irq_sts: %08x",
--		__entry->addr, __entry->size, __entry->result,
--		__entry->status, __entry->irq_status
--	   )
-+		__entry->data = data;
-+		__entry->read = read;
-+	),
-+	TP_printk("%s addr %08x size %u data %08x", __entry->read ? "read" : "write",
-+		  __entry->addr, __entry->size, __entry->data)
- );
- 
--TRACE_EVENT(fsi_master_aspeed_opb_write,
--	TP_PROTO(uint32_t addr, uint32_t val, size_t size, uint32_t status, uint32_t irq_status),
--	TP_ARGS(addr, val, size, status, irq_status),
-+TRACE_EVENT(fsi_master_aspeed_timeout,
-+	TP_PROTO(uint32_t irq, uint32_t status, bool read),
-+	TP_ARGS(irq, status, read),
- 	TP_STRUCT__entry(
--		__field(uint32_t,    addr)
--		__field(uint32_t,    val)
--		__field(size_t,    size)
--		__field(uint32_t,  status)
--		__field(uint32_t,  irq_status)
--		),
-+		__field(uint32_t, irq)
-+		__field(uint32_t, status)
-+		__field(bool, read)
-+	),
- 	TP_fast_assign(
--		__entry->addr = addr;
--		__entry->val = val;
--		__entry->size = size;
-+		__entry->irq = irq;
- 		__entry->status = status;
--		__entry->irq_status = irq_status;
--		),
--	TP_printk("addr %08x val %08x size %zu status: %08x irq_sts: %08x",
--		__entry->addr, __entry->val, __entry->size,
--		__entry->status, __entry->irq_status
--		)
--	);
--
--TRACE_EVENT(fsi_master_aspeed_opb_error,
--	TP_PROTO(uint32_t mresp0, uint32_t mstap0, uint32_t mesrb0),
--	TP_ARGS(mresp0, mstap0, mesrb0),
--	TP_STRUCT__entry(
--		__field(uint32_t,  mresp0)
--		__field(uint32_t,  mstap0)
--		__field(uint32_t,  mesrb0)
--		),
--	TP_fast_assign(
--		__entry->mresp0 = mresp0;
--		__entry->mstap0 = mstap0;
--		__entry->mesrb0 = mesrb0;
--		),
--	TP_printk("mresp0 %08x mstap0 %08x mesrb0 %08x",
--		__entry->mresp0, __entry->mstap0, __entry->mesrb0
--		)
--	);
-+		__entry->read = read;
-+	),
-+	TP_printk("%s irq %08x status %08x", __entry->read ? "read" : "write", __entry->irq,
-+		  __entry->status)
-+);
- 
- TRACE_EVENT(fsi_master_aspeed_cfam_reset,
- 	TP_PROTO(bool start),
+ 	list_for_each_entry_safe(port, tmp, &i2c->ports, list) {
+ 		list_del(&port->list);
 -- 
 2.39.3
 
