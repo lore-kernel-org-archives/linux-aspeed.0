@@ -1,434 +1,244 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Wed,  5 Jun 2024 16:23:04 -0500
-Subject: [PATCH v4 32/40] i2c: fsi: Add interrupt support
+Date: Wed,  5 Jun 2024 16:23:07 -0500
+Subject: [PATCH v4 35/40] fsi: core: Add slave register read-only sysfs
 In-Reply-To: <20240605212312.349188-1-eajames@linux.ibm.com>
 References: <20240605212312.349188-1-eajames@linux.ibm.com>
-Message-ID: <20240605212312.349188-33-eajames@linux.ibm.com>
+Message-ID: <20240605212312.349188-36-eajames@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Optionally support interrupts from the I2C controller so that
-the driver can wait rather than poll the status register.
+The slave registers are commonly used for debugging or diagnosis
+so provide them in sysfs files.
 
 Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- drivers/i2c/busses/i2c-fsi.c   | 215 ++++++++++++++++++++++++++++++---
- include/trace/events/i2c_fsi.h |  45 +++++++
- 2 files changed, 245 insertions(+), 15 deletions(-)
- create mode 100644 include/trace/events/i2c_fsi.h
+ drivers/fsi/fsi-core.c  | 144 +++++++++++++++++++++++++++++++++++++---
+ drivers/fsi/fsi-slave.h |  21 ++++++
+ 2 files changed, 155 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-fsi.c b/drivers/i2c/busses/i2c-fsi.c
-index 614d830419bb8..f8d9bc178ef5b 100644
---- a/drivers/i2c/busses/i2c-fsi.c
-+++ b/drivers/i2c/busses/i2c-fsi.c
-@@ -23,6 +23,7 @@
- #include <linux/mutex.h>
- #include <linux/of.h>
- #include <linux/slab.h>
-+#include <linux/wait.h>
+diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
+index 4d2e14e2a9148..62a14a7f28498 100644
+--- a/drivers/fsi/fsi-core.c
++++ b/drivers/fsi/fsi-core.c
+@@ -887,22 +887,146 @@ static ssize_t cfam_id_show(struct device *dev,
  
- #define FSI_ENGID_I2C		0x7
+ static DEVICE_ATTR_RO(cfam_id);
  
-@@ -87,6 +88,7 @@
- #define I2C_INT_STOP_ERR	BIT(7)
- #define I2C_INT_BUSY		BIT(6)
- #define I2C_INT_IDLE		BIT(5)
-+#define I2C_INT_ANY		GENMASK(15, 7)
- 
- /* status register */
- #define I2C_STAT_INV_CMD	BIT(31)
-@@ -148,21 +150,35 @@
- /* choose timeout length from legacy driver; it's well tested */
- #define I2C_ABORT_TIMEOUT	msecs_to_jiffies(100)
- 
-+struct fsi_i2c_port;
+-static struct attribute *cfam_attr[] = {
++static ssize_t config_table_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	const unsigned int end = engine_page_size / sizeof(u32);
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	__be32 data;
++	int len = 0;
++	u32 conf;
++	int rc;
 +
- struct fsi_i2c_master {
- 	struct fsi_device	*fsi;
-+	struct fsi_i2c_port	*port;
- 	struct mutex		lock;
-+	wait_queue_head_t	wait;
- 	u32			clock_div;
- 	u8			fifo_size;
-+	bool			interrupts;
- 	bool			skip_stop;
-+	bool			abort;
- };
- 
- struct fsi_i2c_port {
- 	struct i2c_adapter	adapter;
- 	struct fsi_i2c_master	*master;
-+	struct i2c_msg		*msgs;
-+	int			nmsgs;
-+	int			rc;
-+	int			i;
- 	u16			port;
- 	u16			xfrd;
-+	bool			wake;
- };
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/i2c_fsi.h>
-+
- static int fsi_i2c_read_reg(struct fsi_device *fsi, unsigned int reg,
- 			    u32 *data)
- {
-@@ -192,7 +208,7 @@ static int fsi_i2c_dev_init(struct fsi_i2c_master *i2c)
- 	u32 watermark;
- 	int rc;
- 
--	/* since we use polling, disable interrupts */
-+	/* start with interrupts disabled */
- 	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, 0);
- 	if (rc)
- 		return rc;
-@@ -236,22 +252,24 @@ static int fsi_i2c_set_port(struct fsi_i2c_port *port)
- 	return fsi_i2c_write_reg(fsi, I2C_FSI_RESET_ERR, 0);
- }
- 
--static int fsi_i2c_start(struct fsi_i2c_port *port, struct i2c_msg *msg,
--			 bool stop)
-+static int fsi_i2c_start(struct fsi_i2c_port *port)
- {
- 	u32 cmd = I2C_CMD_WITH_START | I2C_CMD_WITH_ADDR;
-+	struct i2c_msg *msg = &port->msgs[port->i];
- 
- 	port->xfrd = 0;
- 
- 	if (msg->flags & I2C_M_RD)
- 		cmd |= I2C_CMD_READ;
- 
--	if (stop || msg->flags & I2C_M_STOP)
-+	if ((port->i == (port->nmsgs - 1)) || (msg->flags & I2C_M_STOP))
- 		cmd |= I2C_CMD_WITH_STOP;
- 
- 	cmd |= FIELD_PREP(I2C_CMD_ADDR, msg->addr);
- 	cmd |= FIELD_PREP(I2C_CMD_LEN, msg->len);
- 
-+	trace_i2c_fsi_start(port, cmd);
-+
- 	return fsi_i2c_write_reg(port->master->fsi, I2C_FSI_CMD, cmd);
- }
- 
-@@ -489,11 +507,38 @@ static int fsi_i2c_abort(struct fsi_i2c_port *port)
- 	if (i2c->skip_stop)
- 		return 0;
- 
-+	if (i2c->interrupts) {
-+		i2c->abort = true;
-+		port->wake = false;
-+
-+		rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, I2C_INT_ANY);
++	for (unsigned int i = 0; i < end; ++i) {
++		rc = fsi_slave_read(slave, i * sizeof(data), &data, sizeof(data));
 +		if (rc)
 +			return rc;
++
++		conf = be32_to_cpu(data);
++		if (crc4(0, conf, 32))
++			return -EBADMSG;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", conf);
++		if (!(conf & FSI_SLAVE_CONF_NEXT_MASK))
++			break;
 +	}
 +
- 	/* write stop command */
- 	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_CMD, cmd);
- 	if (rc)
- 		return rc;
- 
-+	if (i2c->interrupts) {
-+		rc = wait_event_interruptible_timeout(i2c->wait, port->wake, I2C_ABORT_TIMEOUT);
-+		if (rc > 0)
-+			return port->rc;
-+
-+		fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, 0);
-+
-+		if (!rc) {
-+			rc = fsi_i2c_read_reg(i2c->fsi, I2C_FSI_STAT, &status);
-+			if (!rc && (status & I2C_STAT_CMD_COMP))
-+				rc = 0;
-+			else
-+				rc = -ETIMEDOUT;
-+		}
-+
-+		return rc;
-+	}
-+
- 	/* wait until we see command complete in the master */
- 	start = jiffies;
- 	do {
-@@ -564,8 +609,59 @@ static int fsi_i2c_handle_status(struct fsi_i2c_port *port,
- 	return 0;
- }
- 
--static int fsi_i2c_wait(struct fsi_i2c_port *port, struct i2c_msg *msg,
--			unsigned long timeout)
-+static int fsi_i2c_wait_irq(struct fsi_i2c_port *port, unsigned long timeout)
-+{
-+	int rc;
-+
-+	port->wake = false;
-+
-+	rc = fsi_i2c_write_reg(port->master->fsi, I2C_FSI_INT_MASK, I2C_INT_ANY);
-+	if (rc)
-+		return rc;
-+
-+	rc = wait_event_interruptible_timeout(port->master->wait, port->wake, timeout);
-+	if (rc > 0) {
-+		rc = port->rc;
-+
-+		if (port->master->abort) {
-+			int rc2 = fsi_i2c_abort(port);
-+
-+			if (rc2)
-+				return rc2;
-+		}
-+
-+		return rc;
-+	}
-+
-+	/*
-+	 * The interrupt handler should turn off interrupts once it's done, but in this
-+	 * case we timed out or were interrupted, so mask them off here.
-+	 */
-+	fsi_i2c_write_reg(port->master->fsi, I2C_FSI_INT_MASK, 0);
-+
-+	if (!rc) {
-+		u32 status;
-+
-+		rc = fsi_i2c_read_reg(port->master->fsi, I2C_FSI_STAT, &status);
-+		if (!rc && (status & I2C_STAT_ANY_RESP)) {
-+			rc = fsi_i2c_handle_status(port, &port->msgs[port->i], status);
-+			if (rc < 0)
-+				return rc;
-+
-+			/* cmd complete and all data xfrd */
-+			if (rc == port->msgs[port->i].len)
-+				return 0;
-+
-+			rc = -ETIMEDOUT;
-+		} else {
-+			rc = -ETIMEDOUT;
-+		}
-+	}
-+
-+	return rc;
++	return len;
 +}
 +
-+static int fsi_i2c_wait_poll(struct fsi_i2c_port *port, unsigned long timeout)
- {
- 	unsigned long start = jiffies;
- 	u32 status;
-@@ -578,12 +674,12 @@ static int fsi_i2c_wait(struct fsi_i2c_port *port, struct i2c_msg *msg,
- 			return rc;
- 
- 		if (status & I2C_STAT_ANY_RESP) {
--			rc = fsi_i2c_handle_status(port, msg, status);
-+			rc = fsi_i2c_handle_status(port, &port->msgs[port->i], status);
- 			if (rc < 0)
- 				return rc;
- 
- 			/* cmd complete and all data xfrd */
--			if (rc == msg->len)
-+			if (rc == port->msgs[port->i].len)
- 				return 0;
- 
- 			/* need to xfr more data, but maybe don't need wait */
-@@ -601,9 +697,7 @@ static int fsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
- {
- 	struct fsi_i2c_port *port = i2c_get_adapdata(adap);
- 	unsigned long start_time;
--	struct i2c_msg *msg;
- 	int rc;
--	int i;
- 
- 	mutex_lock(&port->master->lock);
- 
-@@ -611,21 +705,28 @@ static int fsi_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
- 	if (rc)
- 		goto unlock;
- 
--	for (i = 0; i < num; i++) {
--		msg = msgs + i;
-+	port->master->port = port;
-+	port->master->abort = false;
-+	port->msgs = msgs;
-+	port->nmsgs = num;
-+	for (port->i = 0; port->i < num; ++port->i) {
- 		start_time = jiffies;
- 
--		rc = fsi_i2c_start(port, msg, i == num - 1);
-+		rc = fsi_i2c_start(port);
- 		if (rc)
- 			goto unlock;
- 
--		rc = fsi_i2c_wait(port, msg,
--				  adap->timeout - (jiffies - start_time));
-+		if (port->master->interrupts)
-+			rc = fsi_i2c_wait_irq(port, adap->timeout - (jiffies - start_time));
-+		else
-+			rc = fsi_i2c_wait_poll(port, adap->timeout - (jiffies - start_time));
- 		if (rc)
- 			goto unlock;
- 	}
- 
- unlock:
-+	port->msgs = NULL;
-+	port->master->port = NULL;
- 	mutex_unlock(&port->master->lock);
- 	return rc ? : num;
- }
-@@ -636,6 +737,85 @@ static u32 fsi_i2c_functionality(struct i2c_adapter *adap)
- 		I2C_FUNC_SMBUS_EMUL | I2C_FUNC_SMBUS_BLOCK_DATA;
- }
- 
-+static irqreturn_t fsi_i2c_irq(int irq, void *data)
++static DEVICE_ATTR_RO(config_table);
++
++struct fsi_slave_attribute {
++	struct device_attribute attr;
++	int reg;
++};
++
++static ssize_t slave_reg_show(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	struct fsi_i2c_master *i2c = data;
-+	struct fsi_i2c_port *port;
-+	struct i2c_msg *msg;
-+	u32 status;
++	struct fsi_slave_attribute *fattr = container_of(attr, struct fsi_slave_attribute, attr);
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	__be32 data;
 +	int rc;
 +
-+	rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, 0);
++	rc = fsi_slave_read(slave, FSI_SLAVE_BASE + fattr->reg, &data, sizeof(data));
 +	if (rc)
-+		return IRQ_NONE;
++		return rc;
 +
-+	if (!i2c->port)
-+		return IRQ_HANDLED;
-+
-+	port = i2c->port;
-+	rc = fsi_i2c_read_reg(i2c->fsi, I2C_FSI_STAT, &status);
-+	if (rc)
-+		goto wake;
-+
-+	trace_i2c_fsi_irq(port, status);
-+
-+	if (i2c->abort) {
-+		if (status & I2C_STAT_CMD_COMP) {
-+			port->wake = true;
-+			goto done;
-+		} else {
-+			rc = fsi_i2c_error_status_to_rc(status);
-+			goto wake;
-+		}
-+	}
-+
-+	if (status & I2C_STAT_ERR) {
-+		i2c->abort = true;
-+		i2c->skip_stop = status & I2C_STAT_SKIP_STOP;
-+		rc = fsi_i2c_error_status_to_rc(status);
-+		goto wake;
-+	}
-+
-+	if (!port->msgs || port->i >= port->nmsgs) {
-+		rc = -ENODEV;
-+		goto wake;
-+	}
-+
-+	msg = &port->msgs[port->i];
-+	if (status & I2C_STAT_DAT_REQ) {
-+		u8 fifo_count = FIELD_GET(I2C_STAT_FIFO_COUNT, status);
-+
-+		if (msg->flags & I2C_M_RD)
-+			rc = fsi_i2c_read_fifo(port, msg, fifo_count);
-+		else
-+			rc = fsi_i2c_write_fifo(port, msg, fifo_count);
-+	} else if (status & I2C_STAT_CMD_COMP) {
-+		if (port->xfrd < msg->len) {
-+			rc = -ENODATA;
-+		} else {
-+			++port->i;
-+			if (port->i < port->nmsgs) {
-+				rc = fsi_i2c_start(port);
-+			} else {
-+				port->wake = true;
-+				goto done;
-+			}
-+		}
-+	}
-+
-+	if (!rc)
-+		rc = fsi_i2c_write_reg(i2c->fsi, I2C_FSI_INT_MASK, I2C_INT_ANY);
-+
-+wake:
-+	if (rc)
-+		port->wake = true;
-+done:
-+	port->rc = rc;
-+	if (port->wake)
-+		wake_up_interruptible_all(&i2c->wait);
-+	return IRQ_HANDLED;
++	return sysfs_emit(buf, "%08x\n", be32_to_cpu(data));
 +}
 +
- static struct i2c_bus_recovery_info fsi_i2c_bus_recovery_info = {
- 	.recover_bus = i2c_generic_scl_recovery,
- 	.get_scl = fsi_i2c_get_scl,
-@@ -683,6 +863,7 @@ static int fsi_i2c_probe(struct device *dev)
- 		return -ENOMEM;
++static ssize_t slave_reg_8bpp_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct fsi_slave_attribute *fattr = container_of(attr, struct fsi_slave_attribute, attr);
++	struct fsi_slave *slave = to_fsi_slave(dev);
++	__be32 data;
++	int len = 0;
++	int rc;
++	int i;
++
++	for (i = 0; i < 2; ++i) {
++		rc = fsi_slave_read(slave, FSI_SLAVE_BASE + fattr->reg + (i * 4), &data,
++				    sizeof(data));
++		if (rc)
++			return rc;
++
++		len += sysfs_emit_at(buf, len, "%08x\n", be32_to_cpu(data));
++	}
++
++	return len;
++}
++
++#define FSI_SLAVE_ATTR(name, reg) \
++	struct fsi_slave_attribute dev_attr_##name = { __ATTR(name, 0444, slave_reg_show, NULL), reg }
++#define FSI_SLAVE_ATTR_8BPP(name, reg) \
++	struct fsi_slave_attribute dev_attr_##name = { __ATTR(name, 0444, slave_reg_8bpp_show, NULL), reg }
++
++static FSI_SLAVE_ATTR(smode, FSI_SMODE);
++static FSI_SLAVE_ATTR(sdma, FSI_SDMA);
++static FSI_SLAVE_ATTR(sisc, FSI_SISC);
++static FSI_SLAVE_ATTR(sism, FSI_SISM);
++static FSI_SLAVE_ATTR(siss, FSI_SISS);
++static FSI_SLAVE_ATTR(sstat, FSI_SSTAT);
++static FSI_SLAVE_ATTR(si1m, FSI_SI1M);
++static FSI_SLAVE_ATTR(si1s, FSI_SI1S);
++static FSI_SLAVE_ATTR(sic, FSI_SIC);
++static FSI_SLAVE_ATTR(si2m, FSI_SI2M);
++static FSI_SLAVE_ATTR(si2s, FSI_SI2S);
++static FSI_SLAVE_ATTR(scmdt, FSI_SCMDT);
++static FSI_SLAVE_ATTR(sdata, FSI_SDATA);
++static FSI_SLAVE_ATTR(slastd, FSI_SLASTD);
++static FSI_SLAVE_ATTR(smbl, FSI_SMBL);
++static FSI_SLAVE_ATTR(soml, FSI_SOML);
++static FSI_SLAVE_ATTR(snml, FSI_SNML);
++static FSI_SLAVE_ATTR(smbr, FSI_SMBR);
++static FSI_SLAVE_ATTR(somr, FSI_SOMR);
++static FSI_SLAVE_ATTR(snmr, FSI_SNMR);
++static FSI_SLAVE_ATTR_8BPP(scrsic, FSI_ScRSIC0);
++static FSI_SLAVE_ATTR_8BPP(scrsim, FSI_ScRSIM0);
++static FSI_SLAVE_ATTR_8BPP(scrsis, FSI_ScRSIS0);
++static FSI_SLAVE_ATTR_8BPP(srsic, FSI_SRSIC0);
++static FSI_SLAVE_ATTR_8BPP(srsim, FSI_SRSIM0);
++static FSI_SLAVE_ATTR_8BPP(srsis, FSI_SRSIS0);
++static FSI_SLAVE_ATTR(llmode, FSI_LLMODE);
++static FSI_SLAVE_ATTR(llstat, FSI_LLSTAT);
++
++static struct attribute *cfam_attrs[] = {
+ 	&dev_attr_send_echo_delays.attr,
+ 	&dev_attr_chip_id.attr,
+ 	&dev_attr_cfam_id.attr,
+ 	&dev_attr_send_term.attr,
++	&dev_attr_config_table.attr,
++	&dev_attr_smode.attr.attr,
++	&dev_attr_sdma.attr.attr,
++	&dev_attr_sisc.attr.attr,
++	&dev_attr_sism.attr.attr,
++	&dev_attr_siss.attr.attr,
++	&dev_attr_sstat.attr.attr,
++	&dev_attr_si1m.attr.attr,
++	&dev_attr_si1s.attr.attr,
++	&dev_attr_sic.attr.attr,
++	&dev_attr_si2m.attr.attr,
++	&dev_attr_si2s.attr.attr,
++	&dev_attr_scmdt.attr.attr,
++	&dev_attr_sdata.attr.attr,
++	&dev_attr_slastd.attr.attr,
++	&dev_attr_smbl.attr.attr,
++	&dev_attr_soml.attr.attr,
++	&dev_attr_snml.attr.attr,
++	&dev_attr_smbr.attr.attr,
++	&dev_attr_somr.attr.attr,
++	&dev_attr_snmr.attr.attr,
++	&dev_attr_scrsic.attr.attr,
++	&dev_attr_scrsim.attr.attr,
++	&dev_attr_scrsis.attr.attr,
++	&dev_attr_srsic.attr.attr,
++	&dev_attr_srsim.attr.attr,
++	&dev_attr_srsis.attr.attr,
++	&dev_attr_llmode.attr.attr,
++	&dev_attr_llstat.attr.attr,
+ 	NULL,
+ };
  
- 	mutex_init(&i2c->lock);
-+	init_waitqueue_head(&i2c->wait);
- 	i2c->fsi = to_fsi_dev(dev);
- 	i2c->clock_div = I2C_DEFAULT_CLK_DIV;
+-static const struct attribute_group cfam_attr_group = {
+-	.attrs = cfam_attr,
+-};
+-
+-static const struct attribute_group *cfam_attr_groups[] = {
+-	&cfam_attr_group,
+-	NULL,
+-};
++ATTRIBUTE_GROUPS(cfam);
  
-@@ -706,6 +887,10 @@ static int fsi_i2c_probe(struct device *dev)
- 	if (rc)
- 		return rc;
+ static char *cfam_devnode(const struct device *dev, umode_t *mode,
+ 			  kuid_t *uid, kgid_t *gid)
+@@ -919,7 +1043,7 @@ static char *cfam_devnode(const struct device *dev, umode_t *mode,
+ static const struct device_type cfam_type = {
+ 	.name = "cfam",
+ 	.devnode = cfam_devnode,
+-	.groups = cfam_attr_groups
++	.groups = cfam_groups
+ };
  
-+	rc = fsi_device_request_irq(i2c->fsi, fsi_i2c_irq, i2c);
-+	if (!rc)
-+		i2c->interrupts = true;
-+
- 	ports = FIELD_GET(I2C_STAT_MAX_PORT, stat) + 1;
- 	dev_dbg(dev, "I2C master has %d ports\n", ports);
+ static char *fsi_cdev_devnode(const struct device *dev, umode_t *mode,
+diff --git a/drivers/fsi/fsi-slave.h b/drivers/fsi/fsi-slave.h
+index 762636e7c8633..ccc394e92a93f 100644
+--- a/drivers/fsi/fsi-slave.h
++++ b/drivers/fsi/fsi-slave.h
+@@ -14,6 +14,7 @@
+  * FSI slave engine control register offsets
+  */
+ #define FSI_SMODE		0x0	/* R/W: Mode register */
++#define FSI_SDMA		0x4	/* R/W: DMA control */
+ #define FSI_SISC		0x8	/* R  : Interrupt condition */
+ #define FSI_SCISC		0x8	/* C  : Clear interrupt condition */
+ #define FSI_SISM		0xc	/* R/W: Interrupt mask */
+@@ -21,11 +22,30 @@
+ #define FSI_SSISM		0x10	/* S  : Set interrupt mask */
+ #define FSI_SCISM		0x14	/* C  : Clear interrupt mask */
+ #define FSI_SSTAT		0x14	/* R  : Slave status */
++#define FSI_SI1M		0x18	/* R/W: Interrupt 1 mask */
+ #define FSI_SI1S		0x1c	/* R  : Slave interrupt 1 status */
+ #define FSI_SSI1M		0x1c	/* S  : Set slave interrupt 1 mask */
++#define FSI_SIC			0x20	/* R  : Interrupt 1 condition */
+ #define FSI_SCI1M		0x20	/* C  : Clear slave interrupt 1 mask */
++#define FSI_SI2M		0x24	/* R/W: Interrupt 2 mask */
++#define FSI_SI2S		0x28	/* R  : Interrupt 2 status */
++#define FSI_SCMDT		0x2c	/* R  : Last command trace */
++#define FSI_SDATA		0x30	/* R  : Last data trace */
+ #define FSI_SLBUS		0x30	/* W  : LBUS Ownership */
++#define FSI_SLASTD		0x34	/* R  : Last data sent */
+ #define FSI_SRES		0x34	/* W  : Reset */
++#define FSI_SMBL		0x38
++#define FSI_SOML		0x3c
++#define FSI_SNML		0x40
++#define FSI_SMBR		0x44
++#define FSI_SOMR		0x48
++#define FSI_SNMR		0x4c
++#define FSI_ScRSIC0		0x50
++#define FSI_ScRSIC4		0x54
++#define FSI_ScRSIM0		0x58
++#define FSI_ScRSIM4		0x5c
++#define FSI_ScRSIS0		0x60
++#define FSI_ScRSIS4		0x64
+ #define FSI_SRSIC0		0x68	/* C  : Clear remote interrupt condition */
+ #define FSI_SRSIC4		0x6c	/* C  : Clear remote interrupt condition */
+ #define FSI_SRSIM0		0x70	/* R/W: Remote interrupt mask */
+@@ -33,6 +53,7 @@
+ #define FSI_SRSIS0		0x78	/* R  : Remote interrupt status */
+ #define FSI_SRSIS4		0x7c	/* R  : Remote interrupt status */
+ #define FSI_LLMODE		0x100	/* R/W: Link layer mode register */
++#define FSI_LLSTAT		0x104
  
-diff --git a/include/trace/events/i2c_fsi.h b/include/trace/events/i2c_fsi.h
-new file mode 100644
-index 0000000000000..ac49ae9be356b
---- /dev/null
-+++ b/include/trace/events/i2c_fsi.h
-@@ -0,0 +1,45 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM i2c_fsi
-+
-+#if !defined(_TRACE_I2C_FSI_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_I2C_FSI_H
-+
-+#include <linux/tracepoint.h>
-+
-+TRACE_EVENT(i2c_fsi_irq,
-+	TP_PROTO(const struct fsi_i2c_port *port, uint32_t status),
-+	TP_ARGS(port, status),
-+	TP_STRUCT__entry(
-+		__field(int, bus)
-+		__field(int, msg_idx)
-+		__field(uint32_t, status)
-+	),
-+	TP_fast_assign(
-+		__entry->bus = port->adapter.nr;
-+		__entry->msg_idx = port->i;
-+		__entry->status = status;
-+	),
-+	TP_printk("i2c-%d [%d] status:%08x", __entry->bus, __entry->msg_idx, __entry->status)
-+);
-+
-+TRACE_EVENT(i2c_fsi_start,
-+	TP_PROTO(const struct fsi_i2c_port *port, uint32_t command),
-+	TP_ARGS(port, command),
-+	TP_STRUCT__entry(
-+		__field(int, bus)
-+		__field(int, msg_idx)
-+		__field(uint32_t, command)
-+	),
-+	TP_fast_assign(
-+		__entry->bus = port->adapter.nr;
-+		__entry->msg_idx = port->i;
-+		__entry->command = command;
-+	),
-+	TP_printk("i2c-%d [%d] command:%08x", __entry->bus, __entry->msg_idx, __entry->command)
-+);
-+
-+#endif
-+
-+#include <trace/define_trace.h>
+ /*
+  * SMODE fields
 -- 
 2.39.3
 
