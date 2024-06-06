@@ -1,55 +1,24 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 06 Jun 2024 10:32:27 +0930
-Subject: [PATCH v4 00/40] fsi: Add interrupt support
-In-Reply-To: <20240605212312.349188-1-eajames@linux.ibm.com>
-References: <20240605212312.349188-1-eajames@linux.ibm.com>
-Message-ID: <21490f28ab110ae2eca59ec23591fc9c676361cc.camel@codeconstruct.com.au>
+Date: Thu, 06 Jun 2024 10:53:06 +0930
+Subject: [PATCH v2] ARM: dts: aspeed: System1: Updates to BMC board
+In-Reply-To: <4c0eddbf-5397-490c-8c70-a581c7949b49@linux.ibm.com>
+References: <20240605160604.2135840-1-ninad@linux.ibm.com>
+	 <4c0eddbf-5397-490c-8c70-a581c7949b49@linux.ibm.com>
+Message-ID: <4faf9b73f1d896b5c65c1934c6f6b95051b49b31.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-06-05 at 16:22 -0500, Eddie James wrote:
-> Eddie James (40):
-
-...
-
+On Wed, 2024-06-05 at 11:29 -0500, Eddie James wrote:
+> On 6/5/24 11:06, Ninad Palsule wrote:
+> > - Changed temperature sensor monitor chip from tmp423 to tmp432
 > 
->  .../dts/aspeed/aspeed-bmc-ibm-everest.dts     |  32 +-
->  .../boot/dts/aspeed/aspeed-bmc-opp-tacoma.dts |   1 +
->  .../arm/boot/dts/aspeed/ibm-power10-dual.dtsi |  17 +-
->  .../arm/boot/dts/aspeed/ibm-power10-quad.dtsi |  16 +-
->  drivers/fsi/Kconfig                           |   2 +
->  drivers/fsi/fsi-core.c                        | 888 +++++++++++++++---
->  drivers/fsi/fsi-master-aspeed.c               | 431 +++++----
->  drivers/fsi/fsi-master-hub.c                  | 244 ++---
->  drivers/fsi/fsi-master-i2cr.c                 |   2 +-
->  drivers/fsi/fsi-master.h                      |  33 +
->  drivers/fsi/fsi-slave.h                       | 117 +++
->  drivers/i2c/busses/i2c-fsi.c                  | 463 ++++++---
->  drivers/spi/spi-fsi.c                         |  33 +-
->  include/linux/fsi.h                           |   3 +
->  include/trace/events/fsi.h                    | 171 ++--
->  include/trace/events/fsi_master_aspeed.h      |  86 +-
->  include/trace/events/i2c_fsi.h                |  45 +
->  17 files changed, 1897 insertions(+), 687 deletions(-)
->  create mode 100644 include/trace/events/i2c_fsi.h
+> 
+> Reviewed-by: Eddie James <eajames@linux.ibm.com>
 
-
-That's a lot of patches, that span the trees of several maintainers.
-
-What's your expectation for those who should be merging work in this
-combined series? Have you had any feedback in that regard?
-
-I'm asking because I need to make a call on what I do with respect to
-the Aspeed devicetrees. I think it would clarify responsibility if this
-series were split by subsystem. That way I can apply the devicetree
-patches and the rest can go through their respective trees.
-
-If there are dependencies that require merging all or none, then it
-would be helpful if they were outlined in the cover letter. Even then,
-merging the leaves and waiting a cycle might make everyone's lives
-easier?
+Thanks, I've applied this to a tree for Joel to pick up.
 
 Andrew
+
