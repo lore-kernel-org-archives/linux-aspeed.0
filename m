@@ -1,49 +1,71 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 17 Jun 2024 16:51:00 +0930
-Subject: [PATCH 1/3] dt-bindings: pinctrl: aspeed: Use block syntax for
- function and groups
-In-Reply-To: <0908995dfd2181e687181bd1b075c4cb27624e94.camel@codeconstruct.com.au>
-References: <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-0-a6fe2281a1b8@codeconstruct.com.au>
-	 <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-1-a6fe2281a1b8@codeconstruct.com.au>
-	 <20240604192755.GA1065421-robh@kernel.org>
-	 <0908995dfd2181e687181bd1b075c4cb27624e94.camel@codeconstruct.com.au>
-Message-ID: <5bf8e1dddd2b958a102e7b1b9f9c080a34f9deff.camel@codeconstruct.com.au>
+Date: Mon, 17 Jun 2024 17:03:11 +0930
+Subject: [PATCH 1/1] pinctrl: aspeed-g6: Add NCSI pin group config
+In-Reply-To: <20240613080725.2531580-1-potin.lai.pt@gmail.com>
+References: <20240613080725.2531580-1-potin.lai.pt@gmail.com>
+Message-ID: <946f44526e3016f595bfe463cf0a7f5b4eaa084a.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Linus,
+On Thu, 2024-06-13 at 16:07 +0800, Potin Lai wrote:
+> In the NCSI pin table, the reference clock output pin (RMIIXRCLKO) is not
+> needed on the management controller side.
+> 
+> To optimize pin usage, add new NCSI pin groupis that excludes RMIIXRCLKO,
+> reducing the number of required pins.
 
-On Wed, 2024-06-05 at 10:17 +0930, Andrew Jeffery wrote:
-> On Tue, 2024-06-04 at 14:27 -0500, Rob Herring wrote:
-> > On Fri, May 31, 2024 at 12:32:47PM +0930, Andrew Jeffery wrote:
-> > > The expansion makes the documents a lot longer, but it's easier to
-> > > review changes to functions and groups when we're not having to deal
-> > > with line wrapping.
-> > 
-> > Do you really expect to be updating this frequently? I would leave it 
-> > as-is, but whatever you decide.
-> 
-> I don't expect to be updating it frequently. However it's happened
-> occasionally in the past and the diff chaos irks me. So I prefer we
-> explode it.
-> 
-> > 
-> > > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> > > ---
-> > 
-> > Acked-by: Rob Herring (Arm) <robh@kernel.org>
-> 
-> Thanks.
-> 
+Hmm, I'm not convinced this is specific to NCSI (and it's an
+unfortunate mistake on my part), but we do need to call the groups
+something different than RMII[34]. Did you have any other suggestions?
 
-Are you okay to apply these (I see they're not yet in linux-pinctrl.git
-for-next)? Turns out there's another concern lurking in the AST2600
-RMII pin groups[1], and it would be nice if we could rework the patch
-for that on top of this series.
+> 
+> Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+> ---
+>  drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> index 7938741136a2c..31e4e0b342a00 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> @@ -249,7 +249,9 @@ PIN_DECL_2(E26, GPIOD3, RGMII3RXD3, RMII3RXER);
+>  
+>  FUNC_GROUP_DECL(RGMII3, H24, J22, H22, H23, G22, F22, G23, G24, F23, F26, F25,
+>  		E26);
+> -FUNC_GROUP_DECL(RMII3, H24, J22, H22, H23, G23, F23, F26, F25, E26);
+> +GROUP_DECL(RMII3, H24, J22, H22, H23, G23, F23, F26, F25, E26);
+> +GROUP_DECL(NCSI3, J22, H22, H23, G23, F23, F26, F25, E26);
+> +FUNC_DECL_2(RMII3, RMII3, NCSI3);
+>  
+>  #define F24 28
+>  SIG_EXPR_LIST_DECL_SESG(F24, NCTS3, NCTS3, SIG_DESC_SET(SCU410, 28));
+> @@ -355,7 +357,9 @@ FUNC_GROUP_DECL(NRTS4, B24);
+>  
+>  FUNC_GROUP_DECL(RGMII4, F24, E23, E24, E25, D26, D24, C25, C26, C24, B26, B25,
+>  		B24);
+> -FUNC_GROUP_DECL(RMII4, F24, E23, E24, E25, C25, C24, B26, B25, B24);
+> +GROUP_DECL(RMII4, F24, E23, E24, E25, C25, C24, B26, B25, B24);
+> +GROUP_DECL(NCSI4, E23, E24, E25, C25, C24, B26, B25, B24);
+> +FUNC_DECL_2(RMII4, RMII4, NCSI4);
+>  
+>  #define D22 40
+>  SIG_EXPR_LIST_DECL_SESG(D22, SD1CLK, SD1, SIG_DESC_SET(SCU414, 8));
+> @@ -1976,6 +1980,8 @@ static const struct aspeed_pin_group aspeed_g6_groups[] = {
+>  	ASPEED_PINCTRL_GROUP(MDIO2),
+>  	ASPEED_PINCTRL_GROUP(MDIO3),
+>  	ASPEED_PINCTRL_GROUP(MDIO4),
+> +	ASPEED_PINCTRL_GROUP(NCSI3),
+> +	ASPEED_PINCTRL_GROUP(NCSI4),
 
-[1]: https://lore.kernel.org/linux-gpio/20240613080725.2531580-1-potin.lai.pt at gmail.com/
+You will need to update the binding document as well. I've poked Linus
+W about a series I sent that re-formats the binding function and group
+lists - it would be nice if you rework the patch on top of that:
+
+https://lore.kernel.org/lkml/5bf8e1dddd2b958a102e7b1b9f9c080a34f9deff.camel at codeconstruct.com.au/
+
+Cheers,
 
 Andrew
