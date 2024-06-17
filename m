@@ -1,31 +1,112 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 17 Jun 2024 17:06:16 +0930
-Subject: [PATCH 0/3] dt-bindings: pinctrl: aspeed: Define missing
- functions and groups
-In-Reply-To: <CACRpkdanSAkR-czs=OUKLh6dpiRk0QDLR-T0ECrG-Y4cY9=Vmg@mail.gmail.com>
-References: <20240531-dt-warnings-gpio-ast2600-pinctrl-funcs-groups-v1-0-a6fe2281a1b8@codeconstruct.com.au>
-	 <CACRpkdanSAkR-czs=OUKLh6dpiRk0QDLR-T0ECrG-Y4cY9=Vmg@mail.gmail.com>
-Message-ID: <28297cafdf748dd3e2da3e6b54012bf3c88a1be1.camel@codeconstruct.com.au>
+Date: Mon, 17 Jun 2024 17:11:27 +0930
+Subject: [PATCH v1 7/7] ARM: dts: aspeed: Harma: remove pca9546
+In-Reply-To: <20240613152425.1582059-8-peteryin.openbmc@gmail.com>
+References: <20240613152425.1582059-1-peteryin.openbmc@gmail.com>
+	 <20240613152425.1582059-8-peteryin.openbmc@gmail.com>
+Message-ID: <643e0e9bbab98d442add8e6ef0c39c923942e9d0.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2024-06-17 at 09:34 +0200, Linus Walleij wrote:
-> On Fri, May 31, 2024 at 5:03?AM Andrew Jeffery
-> <andrew@codeconstruct.com.au> wrote:
-> 
-> > This short series cleans up a collection of binding warnings concerning
-> > use of undefined pinctrl functions and groups. Together they make a
-> > reasonable dent in the volume of output from `make dtbs_check` for the
-> > Aspeed devicetrees.
-> 
-> All patches applied.
-> 
-> Thanks Andrew!
+Hi Peter,
 
-That was quick! Thanks!
+On Thu, 2024-06-13 at 23:24 +0800, Peter Yin wrote:
+> remove pca9546 and add Aegis fru device
+
+Is there some relationship between these two things? Can you elaborate?
+
+You also add a couple of GPIO expanders that aren't mentioned here?
 
 Andrew
+
+> 
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
+> ---
+>  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 56 +++++++++----------
+>  1 file changed, 25 insertions(+), 31 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> index d892e646fced..4ff9e0104bbe 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> @@ -20,10 +20,6 @@ aliases {
+>  		i2c21 = &imux21;
+>  		i2c22 = &imux22;
+>  		i2c23 = &imux23;
+> -		i2c24 = &imux24;
+> -		i2c25 = &imux25;
+> -		i2c26 = &imux26;
+> -		i2c27 = &imux27;
+>  		i2c28 = &imux28;
+>  		i2c29 = &imux29;
+>  		i2c30 = &imux30;
+> @@ -391,33 +387,6 @@ gpio at 31 {
+>  		"","","","";
+>  	};
+>  
+> -	i2c-mux at 71 {
+> -		compatible = "nxp,pca9546";
+> -		reg = <0x71>;
+> -		#address-cells = <1>;
+> -		#size-cells = <0>;
+> -
+> -		imux24: i2c at 0 {
+> -			#address-cells = <1>;
+> -			#size-cells = <0>;
+> -			reg = <0>;
+> -		};
+> -		imux25: i2c at 1 {
+> -			#address-cells = <1>;
+> -			#size-cells = <0>;
+> -			reg = <1>;
+> -		};
+> -		imux26: i2c at 2 {
+> -			#address-cells = <1>;
+> -			#size-cells = <0>;
+> -			reg = <2>;
+> -		};
+> -		imux27: i2c at 3 {
+> -			#address-cells = <1>;
+> -			#size-cells = <0>;
+> -			reg = <3>;
+> -		};
+> -	};
+>  	// PTTV FRU
+>  	eeprom at 52 {
+>  		compatible = "atmel,24c64";
+> @@ -427,6 +396,31 @@ eeprom at 52 {
+>  
+>  &i2c11 {
+>  	status = "okay";
+> +
+> +	gpio at 30 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x30>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +	};
+> +	gpio at 31 {
+> +		compatible = "nxp,pca9555";
+> +		reg = <0x31>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +
+> +		gpio-line-names =
+> +		"","","","",
+> +		"","","presence-cmm","",
+> +		"","","","",
+> +		"","","","";
+> +	};
+> +
+> +	// Aegis FRU
+> +	eeprom at 52 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x52>;
+> +	};
+>  };
+>  
+>  &i2c12 {
 
