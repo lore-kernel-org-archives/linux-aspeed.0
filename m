@@ -1,107 +1,115 @@
-From: Jeff Johnson <quic_jjohnson@quicinc.com>
-Date: Wed, 05 Jun 2024 23:24:03 -0000
-Subject: [PATCH] fsi: add missing MODULE_DESCRIPTION() macros
-Message-ID: <20240605-md-drivers-fsi-v1-1-fefc82d81b12@quicinc.com>
+From: David Lechner <dlechner@baylibre.com>
+Date: Fri, 21 Jun 2024 22:12:12 -0000
+Subject: [PATCH 05/10] iio: adc: ltc2309: use devm_regulator_get_enable_read_voltage()
+In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
+References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
+Message-ID: <20240621-iio-regulator-refactor-round-2-v1-5-49e50cd0b99a@baylibre.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-make allmodconfig && make W=1 C=1 reports:
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-core.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-hub.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-aspeed.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-gpio.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-master-ast-cf.o
-WARNING: modpost: missing MODULE_DESCRIPTION() in drivers/fsi/fsi-scom.o
+Use devm_regulator_get_enable_read_voltage() to simplify the code.
+Error message is changed since there is only one error return now.
+LTC2309_INTERNAL_REF_MV macro is added to make the internal reference
+voltage value self-documenting.
 
-Add the missing invocations of the MODULE_DESCRIPTION() macro, and fix the
-copy/paste of the module description comment in fsi-master-ast-cf.c.
-
-Signed-off-by: Jeff Johnson <quic_jjohnson@quicinc.com>
+Signed-off-by: David Lechner <dlechner@baylibre.com>
 ---
- drivers/fsi/fsi-core.c          | 1 +
- drivers/fsi/fsi-master-aspeed.c | 1 +
- drivers/fsi/fsi-master-ast-cf.c | 3 ++-
- drivers/fsi/fsi-master-gpio.c   | 1 +
- drivers/fsi/fsi-master-hub.c    | 1 +
- drivers/fsi/fsi-scom.c          | 1 +
- 6 files changed, 7 insertions(+), 1 deletion(-)
+ drivers/iio/adc/ltc2309.c | 43 ++++++-------------------------------------
+ 1 file changed, 6 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/fsi/fsi-core.c b/drivers/fsi/fsi-core.c
-index 097d5a780264..716a924269ee 100644
---- a/drivers/fsi/fsi-core.c
-+++ b/drivers/fsi/fsi-core.c
-@@ -1444,5 +1444,6 @@ static void fsi_exit(void)
- }
- module_exit(fsi_exit);
- module_param(discard_errors, int, 0664);
-+MODULE_DESCRIPTION("FSI core driver");
- MODULE_LICENSE("GPL");
- MODULE_PARM_DESC(discard_errors, "Don't invoke error handling on bus accesses");
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index f0a19cd451a0..b454587790a2 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -672,4 +672,5 @@ static struct platform_driver fsi_master_aspeed_driver = {
- };
+diff --git a/drivers/iio/adc/ltc2309.c b/drivers/iio/adc/ltc2309.c
+index 8b3a89c1b840..888a71454070 100644
+--- a/drivers/iio/adc/ltc2309.c
++++ b/drivers/iio/adc/ltc2309.c
+@@ -16,6 +16,7 @@
+ #include <linux/regulator/consumer.h>
  
- module_platform_driver(fsi_master_aspeed_driver);
-+MODULE_DESCRIPTION("FSI master driver for AST2600");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/fsi/fsi-master-ast-cf.c b/drivers/fsi/fsi-master-ast-cf.c
-index 812dfa9a9140..85096559dda3 100644
---- a/drivers/fsi/fsi-master-ast-cf.c
-+++ b/drivers/fsi/fsi-master-ast-cf.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0+
- // Copyright 2018 IBM Corp
- /*
-- * A FSI master controller, using a simple GPIO bit-banging interface
-+ * A FSI master based on Aspeed ColdFire coprocessor
+ #define LTC2309_ADC_RESOLUTION	12
++#define LTC2309_INTERNAL_REF_MV 4096
+ 
+ #define LTC2309_DIN_CH_MASK	GENMASK(7, 4)
+ #define LTC2309_DIN_SDN		BIT(7)
+@@ -29,14 +30,12 @@
+  * struct ltc2309 - internal device data structure
+  * @dev:	Device reference
+  * @client:	I2C reference
+- * @vref:	External reference source
+  * @lock:	Lock to serialize data access
+  * @vref_mv:	Internal voltage reference
   */
- 
- #include <linux/crc4.h>
-@@ -1440,5 +1440,6 @@ static struct platform_driver fsi_master_acf = {
+ struct ltc2309 {
+ 	struct device		*dev;
+ 	struct i2c_client	*client;
+-	struct regulator	*vref;
+ 	struct mutex		lock; /* serialize data access */
+ 	int			vref_mv;
+ };
+@@ -157,11 +156,6 @@ static const struct iio_info ltc2309_info = {
+ 	.read_raw = ltc2309_read_raw,
  };
  
- module_platform_driver(fsi_master_acf);
-+MODULE_DESCRIPTION("A FSI master based on Aspeed ColdFire coprocessor");
- MODULE_LICENSE("GPL");
- MODULE_FIRMWARE(FW_FILE_NAME);
-diff --git a/drivers/fsi/fsi-master-gpio.c b/drivers/fsi/fsi-master-gpio.c
-index ed03da4f2447..d32dcc98e85b 100644
---- a/drivers/fsi/fsi-master-gpio.c
-+++ b/drivers/fsi/fsi-master-gpio.c
-@@ -894,4 +894,5 @@ static struct platform_driver fsi_master_gpio_driver = {
- };
+-static void ltc2309_regulator_disable(void *regulator)
+-{
+-	regulator_disable(regulator);
+-}
+-
+ static int ltc2309_probe(struct i2c_client *client)
+ {
+ 	struct iio_dev *indio_dev;
+@@ -175,7 +169,6 @@ static int ltc2309_probe(struct i2c_client *client)
+ 	ltc2309 = iio_priv(indio_dev);
+ 	ltc2309->dev = &indio_dev->dev;
+ 	ltc2309->client = client;
+-	ltc2309->vref_mv = 4096; /* Default to the internal ref */
  
- module_platform_driver(fsi_master_gpio_driver);
-+MODULE_DESCRIPTION("A FSI master controller, using a simple GPIO bit-banging interface");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/fsi/fsi-master-hub.c b/drivers/fsi/fsi-master-hub.c
-index 6d8b6e8854e5..6568fed7db3c 100644
---- a/drivers/fsi/fsi-master-hub.c
-+++ b/drivers/fsi/fsi-master-hub.c
-@@ -295,4 +295,5 @@ static struct fsi_driver hub_master_driver = {
- };
+ 	indio_dev->name = "ltc2309";
+ 	indio_dev->modes = INDIO_DIRECT_MODE;
+@@ -183,36 +176,12 @@ static int ltc2309_probe(struct i2c_client *client)
+ 	indio_dev->num_channels = ARRAY_SIZE(ltc2309_channels);
+ 	indio_dev->info = &ltc2309_info;
  
- module_fsi_driver(hub_master_driver);
-+MODULE_DESCRIPTION("FSI hub master driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/fsi/fsi-scom.c b/drivers/fsi/fsi-scom.c
-index 61dbda9dbe2b..411ddc018cd8 100644
---- a/drivers/fsi/fsi-scom.c
-+++ b/drivers/fsi/fsi-scom.c
-@@ -625,4 +625,5 @@ static void scom_exit(void)
+-	ltc2309->vref = devm_regulator_get_optional(&client->dev, "vref");
+-	if (IS_ERR(ltc2309->vref)) {
+-		ret = PTR_ERR(ltc2309->vref);
+-		if (ret == -ENODEV)
+-			ltc2309->vref = NULL;
+-		else
+-			return ret;
+-	}
++	ret = devm_regulator_get_enable_read_voltage(&client->dev, "vref");
++	if (ret < 0 && ret != -ENODEV)
++		return dev_err_probe(ltc2309->dev, ret,
++				     "failed to get vref voltage\n");
  
- module_init(scom_init);
- module_exit(scom_exit);
-+MODULE_DESCRIPTION("SCOM FSI Client device driver");
- MODULE_LICENSE("GPL");
+-	if (ltc2309->vref) {
+-		ret = regulator_enable(ltc2309->vref);
+-		if (ret)
+-			return dev_err_probe(ltc2309->dev, ret,
+-					     "failed to enable vref\n");
+-
+-		ret = devm_add_action_or_reset(ltc2309->dev,
+-					       ltc2309_regulator_disable,
+-					       ltc2309->vref);
+-		if (ret) {
+-			return dev_err_probe(ltc2309->dev, ret,
+-					     "failed to add regulator_disable action: %d\n",
+-					     ret);
+-		}
+-
+-		ret = regulator_get_voltage(ltc2309->vref);
+-		if (ret < 0)
+-			return ret;
+-
+-		ltc2309->vref_mv = ret / 1000;
+-	}
++	ltc2309->vref_mv = ret == -ENODEV ? LTC2309_INTERNAL_REF_MV : ret / 1000;
+ 
+ 	mutex_init(&ltc2309->lock);
+ 
 
----
-base-commit: 19ca0d8a433ff37018f9429f7e7739e9f3d3d2b4
-change-id: 20240605-md-drivers-fsi-0a34d82a85da
+-- 
+2.45.2
 
