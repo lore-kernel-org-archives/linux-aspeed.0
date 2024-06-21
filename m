@@ -1,90 +1,75 @@
 From: David Lechner <dlechner@baylibre.com>
 Date: Fri, 21 Jun 2024 22:12:12 -0000
-Subject: [PATCH 04/10] iio: adc: hx711: use dev_err_probe()
+Subject: [PATCH 07/10] iio: adc: ti-adc108s102: use devm_regulator_get_enable_read_voltage()
 In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
 References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-Message-ID: <20240621-iio-regulator-refactor-round-2-v1-4-49e50cd0b99a@baylibre.com>
+Message-ID: <20240621-iio-regulator-refactor-round-2-v1-7-49e50cd0b99a@baylibre.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use dev_err_probe() to simplify error returns in the probe function.
+Use devm_regulator_get_enable_read_voltage() to simplify the code.
 
 Signed-off-by: David Lechner <dlechner@baylibre.com>
 ---
- drivers/iio/adc/hx711.c | 35 +++++++++++++----------------------
- 1 file changed, 13 insertions(+), 22 deletions(-)
+ drivers/iio/adc/ti-adc108s102.c | 28 +++-------------------------
+ 1 file changed, 3 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/iio/adc/hx711.c b/drivers/iio/adc/hx711.c
-index 8461b1fe6bad..b3372ccff7d5 100644
---- a/drivers/iio/adc/hx711.c
-+++ b/drivers/iio/adc/hx711.c
-@@ -464,10 +464,8 @@ static int hx711_probe(struct platform_device *pdev)
- 	int i;
+diff --git a/drivers/iio/adc/ti-adc108s102.c b/drivers/iio/adc/ti-adc108s102.c
+index 69fcbbc7e418..9758ac801310 100644
+--- a/drivers/iio/adc/ti-adc108s102.c
++++ b/drivers/iio/adc/ti-adc108s102.c
+@@ -58,7 +58,6 @@
  
- 	indio_dev = devm_iio_device_alloc(dev, sizeof(struct hx711_data));
--	if (!indio_dev) {
--		dev_err(dev, "failed to allocate IIO device\n");
--		return -ENOMEM;
--	}
-+	if (!indio_dev)
-+		return dev_err_probe(dev, -ENOMEM, "failed to allocate IIO device\n");
+ struct adc108s102_state {
+ 	struct spi_device		*spi;
+-	struct regulator		*reg;
+ 	u32				va_millivolt;
+ 	/* SPI transfer used by triggered buffer handler*/
+ 	struct spi_transfer		ring_xfer;
+@@ -216,11 +215,6 @@ static const struct iio_info adc108s102_info = {
+ 	.update_scan_mode	= &adc108s102_update_scan_mode,
+ };
  
- 	hx711_data = iio_priv(indio_dev);
- 	hx711_data->dev = dev;
-@@ -479,22 +477,18 @@ static int hx711_probe(struct platform_device *pdev)
- 	 * in the driver it is an output
- 	 */
- 	hx711_data->gpiod_pd_sck = devm_gpiod_get(dev, "sck", GPIOD_OUT_LOW);
--	if (IS_ERR(hx711_data->gpiod_pd_sck)) {
--		dev_err(dev, "failed to get sck-gpiod: err=%ld\n",
--					PTR_ERR(hx711_data->gpiod_pd_sck));
--		return PTR_ERR(hx711_data->gpiod_pd_sck);
--	}
-+	if (IS_ERR(hx711_data->gpiod_pd_sck))
-+		return dev_err_probe(dev, PTR_ERR(hx711_data->gpiod_pd_sck),
-+				     "failed to get sck-gpiod\n");
+-static void adc108s102_reg_disable(void *reg)
+-{
+-	regulator_disable(reg);
+-}
+-
+ static int adc108s102_probe(struct spi_device *spi)
+ {
+ 	struct adc108s102_state *st;
+@@ -236,25 +230,9 @@ static int adc108s102_probe(struct spi_device *spi)
+ 	if (ACPI_COMPANION(&spi->dev)) {
+ 		st->va_millivolt = ADC108S102_VA_MV_ACPI_DEFAULT;
+ 	} else {
+-		st->reg = devm_regulator_get(&spi->dev, "vref");
+-		if (IS_ERR(st->reg))
+-			return PTR_ERR(st->reg);
+-
+-		ret = regulator_enable(st->reg);
+-		if (ret < 0) {
+-			dev_err(&spi->dev, "Cannot enable vref regulator\n");
+-			return ret;
+-		}
+-		ret = devm_add_action_or_reset(&spi->dev, adc108s102_reg_disable,
+-					       st->reg);
+-		if (ret)
+-			return ret;
+-
+-		ret = regulator_get_voltage(st->reg);
+-		if (ret < 0) {
+-			dev_err(&spi->dev, "vref get voltage failed\n");
+-			return ret;
+-		}
++		ret = devm_regulator_get_enable_read_voltage(&spi->dev, "vref");
++		if (ret < 0)
++			return dev_err_probe(&spi->dev, ret, "failed get vref voltage\n");
  
- 	/*
- 	 * DOUT stands for serial data output of HX711
- 	 * for the driver it is an input
- 	 */
- 	hx711_data->gpiod_dout = devm_gpiod_get(dev, "dout", GPIOD_IN);
--	if (IS_ERR(hx711_data->gpiod_dout)) {
--		dev_err(dev, "failed to get dout-gpiod: err=%ld\n",
--					PTR_ERR(hx711_data->gpiod_dout));
--		return PTR_ERR(hx711_data->gpiod_dout);
--	}
-+	if (IS_ERR(hx711_data->gpiod_dout))
-+		return dev_err_probe(dev, PTR_ERR(hx711_data->gpiod_dout),
-+				     "failed to get dout-gpiod\n");
- 
- 	ret = devm_regulator_get_enable_read_voltage(dev, "avdd");
- 	if (ret < 0)
-@@ -548,16 +542,13 @@ static int hx711_probe(struct platform_device *pdev)
- 	ret = devm_iio_triggered_buffer_setup(dev, indio_dev,
- 					      iio_pollfunc_store_time,
- 					      hx711_trigger, NULL);
--	if (ret < 0) {
--		dev_err(dev, "setup of iio triggered buffer failed\n");
--		return ret;
--	}
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret,
-+				     "setup of iio triggered buffer failed\n");
- 
- 	ret = devm_iio_device_register(dev, indio_dev);
--	if (ret < 0) {
--		dev_err(dev, "Couldn't register the device\n");
--		return ret;
--	}
-+	if (ret < 0)
-+		return dev_err_probe(dev, ret, "Couldn't register the device\n");
- 
- 	return 0;
- }
+ 		st->va_millivolt = ret / 1000;
+ 	}
 
 -- 
 2.45.2
