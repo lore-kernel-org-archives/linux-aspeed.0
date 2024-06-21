@@ -1,76 +1,87 @@
 From: David Lechner <dlechner@baylibre.com>
 Date: Fri, 21 Jun 2024 22:12:11 -0000
-Subject: [PATCH 06/10] iio: adc: max1363: use devm_regulator_get_enable_read_voltage()
+Subject: [PATCH 03/10] iio: adc: hx711: remove hx711_remove()
 In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
 References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-Message-ID: <20240621-iio-regulator-refactor-round-2-v1-6-49e50cd0b99a@baylibre.com>
+Message-ID: <20240621-iio-regulator-refactor-round-2-v1-3-49e50cd0b99a@baylibre.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use devm_regulator_get_enable_read_voltage() to simplify the code.
+By using a few more devm_ functions, we can remove the hx711_remove()
+function in the hx711 driver.
+
+platform_set_drvdata() is also removed since there are no more
+callers of platform_get_drvdata().
 
 Signed-off-by: David Lechner <dlechner@baylibre.com>
 ---
- drivers/iio/adc/max1363.c | 28 ++++------------------------
- 1 file changed, 4 insertions(+), 24 deletions(-)
+ drivers/iio/adc/hx711.c | 27 +++++----------------------
+ 1 file changed, 5 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/iio/adc/max1363.c b/drivers/iio/adc/max1363.c
-index 8b5bc96cb9fb..bf4b6dc53fd2 100644
---- a/drivers/iio/adc/max1363.c
-+++ b/drivers/iio/adc/max1363.c
-@@ -1561,18 +1561,12 @@ static const struct of_device_id max1363_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, max1363_of_match);
+diff --git a/drivers/iio/adc/hx711.c b/drivers/iio/adc/hx711.c
+index 6efdc971689c..8461b1fe6bad 100644
+--- a/drivers/iio/adc/hx711.c
++++ b/drivers/iio/adc/hx711.c
+@@ -539,43 +539,27 @@ static int hx711_probe(struct platform_device *pdev)
+ 	hx711_data->data_ready_delay_ns =
+ 				1000000000 / hx711_data->clock_frequency;
  
--static void max1363_reg_disable(void *reg)
--{
--	regulator_disable(reg);
+-	platform_set_drvdata(pdev, indio_dev);
+-
+ 	indio_dev->name = "hx711";
+ 	indio_dev->info = &hx711_iio_info;
+ 	indio_dev->modes = INDIO_DIRECT_MODE;
+ 	indio_dev->channels = hx711_chan_spec;
+ 	indio_dev->num_channels = ARRAY_SIZE(hx711_chan_spec);
+ 
+-	ret = iio_triggered_buffer_setup(indio_dev, iio_pollfunc_store_time,
+-							hx711_trigger, NULL);
++	ret = devm_iio_triggered_buffer_setup(dev, indio_dev,
++					      iio_pollfunc_store_time,
++					      hx711_trigger, NULL);
+ 	if (ret < 0) {
+ 		dev_err(dev, "setup of iio triggered buffer failed\n");
+ 		return ret;
+ 	}
+ 
+-	ret = iio_device_register(indio_dev);
++	ret = devm_iio_device_register(dev, indio_dev);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Couldn't register the device\n");
+-		goto error_buffer;
++		return ret;
+ 	}
+ 
+ 	return 0;
+-
+-error_buffer:
+-	iio_triggered_buffer_cleanup(indio_dev);
+-
+-	return ret;
 -}
 -
- static int max1363_probe(struct i2c_client *client)
- {
- 	const struct i2c_device_id *id = i2c_client_get_device_id(client);
- 	int ret;
- 	struct max1363_state *st;
- 	struct iio_dev *indio_dev;
--	struct regulator *vref;
- 
- 	indio_dev = devm_iio_device_alloc(&client->dev,
- 					  sizeof(struct max1363_state));
-@@ -1589,26 +1583,12 @@ static int max1363_probe(struct i2c_client *client)
- 	st->chip_info = i2c_get_match_data(client);
- 	st->client = client;
- 
--	st->vref_uv = st->chip_info->int_vref_mv * 1000;
--	vref = devm_regulator_get_optional(&client->dev, "vref");
--	if (!IS_ERR(vref)) {
--		int vref_uv;
+-static void hx711_remove(struct platform_device *pdev)
+-{
+-	struct iio_dev *indio_dev;
 -
--		ret = regulator_enable(vref);
--		if (ret)
--			return ret;
+-	indio_dev = platform_get_drvdata(pdev);
 -
--		ret = devm_add_action_or_reset(&client->dev, max1363_reg_disable, vref);
--		if (ret)
--			return ret;
-+	ret = devm_regulator_get_enable_read_voltage(&client->dev, "vref");
-+	if (ret < 0 && ret != -ENODEV)
-+		return ret;
+-	iio_device_unregister(indio_dev);
+-	iio_triggered_buffer_cleanup(indio_dev);
+ }
  
--		st->vref = vref;
--		vref_uv = regulator_get_voltage(vref);
--		if (vref_uv <= 0)
--			return -EINVAL;
+ static const struct of_device_id of_hx711_match[] = {
+@@ -587,7 +571,6 @@ MODULE_DEVICE_TABLE(of, of_hx711_match);
  
--		st->vref_uv = vref_uv;
--	}
-+	st->vref_uv = ret == -ENODEV ? st->chip_info->int_vref_mv * 1000 : ret;
- 
- 	if (i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
- 		st->send = i2c_master_send;
+ static struct platform_driver hx711_driver = {
+ 	.probe		= hx711_probe,
+-	.remove_new	= hx711_remove,
+ 	.driver		= {
+ 		.name		= "hx711-gpio",
+ 		.of_match_table	= of_hx711_match,
 
 -- 
 2.45.2
