@@ -1,80 +1,34 @@
-From: David Lechner <dlechner@baylibre.com>
-Date: Fri, 21 Jun 2024 22:12:13 -0000
-Subject: [PATCH 10/10] iio: dac: ad3552r: use devm_regulator_get_enable_read_voltage()
-In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-Message-ID: <20240621-iio-regulator-refactor-round-2-v1-10-49e50cd0b99a@baylibre.com>
+From: Ma Ke <make24@iscas.ac.cn>
+Date: Sat, 22 Jun 2024 10:04:13 -0000
+Subject: [PATCH] usb: gadget: aspeed_udc: validate endpoint index for ast udc
+Message-ID: <20240622095618.1890093-1-make24@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use devm_regulator_get_enable_read_voltage() to simplify the code.
-Error message is slightly changed since there is only one error return
-now.
+We should verify the bound of the array to assure that host
+may not manipulate the index to point past endpoint array.
 
-Signed-off-by: David Lechner <dlechner@baylibre.com>
+Signed-off-by: Ma Ke <make24@iscas.ac.cn>
 ---
- drivers/iio/dac/ad3552r.c | 28 ++++------------------------
- 1 file changed, 4 insertions(+), 24 deletions(-)
+ drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/iio/dac/ad3552r.c b/drivers/iio/dac/ad3552r.c
-index ddc6c262f801..bd37d304ca70 100644
---- a/drivers/iio/dac/ad3552r.c
-+++ b/drivers/iio/dac/ad3552r.c
-@@ -857,15 +857,9 @@ static int ad3552r_configure_custom_gain(struct ad3552r_desc *dac,
- 	return 0;
- }
- 
--static void ad3552r_reg_disable(void *reg)
--{
--	regulator_disable(reg);
--}
--
- static int ad3552r_configure_device(struct ad3552r_desc *dac)
- {
- 	struct device *dev = &dac->spi->dev;
--	struct regulator *vref;
- 	int err, cnt = 0, voltage, delta = 100000;
- 	u32 vals[2], val, ch;
- 
-@@ -874,30 +868,16 @@ static int ad3552r_configure_device(struct ad3552r_desc *dac)
- 		return dev_err_probe(dev, PTR_ERR(dac->gpio_ldac),
- 				     "Error getting gpio ldac");
- 
--	vref = devm_regulator_get_optional(dev, "vref");
--	if (IS_ERR(vref)) {
--		if (PTR_ERR(vref) != -ENODEV)
--			return dev_err_probe(dev, PTR_ERR(vref),
--					     "Error getting vref");
-+	voltage = devm_regulator_get_enable_read_voltage(dev, "vref");
-+	if (voltage < 0 && voltage != -ENODEV)
-+		return dev_err_probe(dev, voltage, "Error getting vref voltage\n");
- 
-+	if (voltage == -ENODEV) {
- 		if (device_property_read_bool(dev, "adi,vref-out-en"))
- 			val = AD3552R_INTERNAL_VREF_PIN_2P5V;
- 		else
- 			val = AD3552R_INTERNAL_VREF_PIN_FLOATING;
- 	} else {
--		err = regulator_enable(vref);
--		if (err) {
--			dev_err(dev, "Failed to enable external vref supply\n");
--			return err;
--		}
--
--		err = devm_add_action_or_reset(dev, ad3552r_reg_disable, vref);
--		if (err) {
--			regulator_disable(vref);
--			return err;
--		}
--
--		voltage = regulator_get_voltage(vref);
- 		if (voltage > 2500000 + delta || voltage < 2500000 - delta) {
- 			dev_warn(dev, "vref-supply must be 2.5V");
- 			return -EINVAL;
-
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index 3916c8e2ba01..95060592c231 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -1009,6 +1009,8 @@ static void ast_udc_getstatus(struct ast_udc_dev *udc)
+ 		break;
+ 	case USB_RECIP_ENDPOINT:
+ 		epnum = crq.wIndex & USB_ENDPOINT_NUMBER_MASK;
++		if (epnum >= USB_MAX_ENDPOINTS)
++			goto stall;
+ 		status = udc->ep[epnum].stopped;
+ 		break;
+ 	default:
 -- 
-2.45.2
+2.25.1
 
