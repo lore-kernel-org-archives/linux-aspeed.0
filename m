@@ -1,54 +1,29 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Sun, 23 Jun 2024 11:12:47 +0100
-Subject: [PATCH 00/10] iio: use devm_regulator_get_enable_read_voltage
- round 2
-In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-Message-ID: <20240623111247.1c4a5e2a@jic23-huawei>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Date: Sun, 23 Jun 2024 14:21:51 +0200
+Subject: [PATCH] arm: dts: aspeed: Use standard 'i2c' bus node name
+In-Reply-To: <20240531193115.3814887-1-robh@kernel.org>
+References: <20240531193115.3814887-1-robh@kernel.org>
+Message-ID: <171914524817.46635.13681344434936708370.b4-ty@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 21 Jun 2024 17:11:47 -0500
-David Lechner <dlechner@baylibre.com> wrote:
 
-> This is the second round of patches making use of the new helper
-> devm_regulator_get_enable_read_voltage() to simplify drivers.
+On Fri, 31 May 2024 14:31:14 -0500, Rob Herring (Arm) wrote:
+> The standard node name for I2C buses is 'i2c'.
 > 
-> All of the changes in this round should be fairly straight forward.
-> And as a bonus, there are a few patches to get rid of driver .remove
-> callbacks.
-
-LGTM.  Obviously only been on list for a short time though and
-some of these have active maintainers so I won't pick them up just yet.
-
-Jonathan
-
 > 
-> ---
-> David Lechner (10):
->       iio: adc: aspeed_adc: use devm_regulator_get_enable_read_voltage()
->       iio: adc: hx711: use devm_regulator_get_enable_read_voltage()
->       iio: adc: hx711: remove hx711_remove()
->       iio: adc: hx711: use dev_err_probe()
->       iio: adc: ltc2309: use devm_regulator_get_enable_read_voltage()
->       iio: adc: max1363: use devm_regulator_get_enable_read_voltage()
->       iio: adc: ti-adc108s102: use devm_regulator_get_enable_read_voltage()
->       iio: adc: ti-ads8688: use devm_regulator_get_enable_read_voltage()
->       iio: adc: ti-ads8688: drop ads8688_remove()
->       iio: dac: ad3552r: use devm_regulator_get_enable_read_voltage()
-> 
->  drivers/iio/adc/aspeed_adc.c    | 30 +++++-----------
->  drivers/iio/adc/hx711.c         | 78 ++++++++++-------------------------------
->  drivers/iio/adc/ltc2309.c       | 43 ++++-------------------
->  drivers/iio/adc/max1363.c       | 28 +++------------
->  drivers/iio/adc/ti-adc108s102.c | 28 ++-------------
->  drivers/iio/adc/ti-ads8688.c    | 59 ++++++-------------------------
->  drivers/iio/dac/ad3552r.c       | 28 +++------------
->  7 files changed, 53 insertions(+), 241 deletions(-)
-> ---
-> base-commit: 7db8a847f98caae68c70bdab9ba92d1af38e5656
-> change-id: 20240621-iio-regulator-refactor-round-2-28a1e129a42d
 
+This one is waiting for 3 weeks and I think it wasn't applied. Let me know if
+someone else should take it instead.
+
+Applied, thanks!
+
+[1/1] arm: dts: aspeed: Use standard 'i2c' bus node name
+      https://git.kernel.org/krzk/linux-dt/c/11afaf16a6540754d618179bd01791fc03480146
+
+Best regards,
+-- 
+Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
