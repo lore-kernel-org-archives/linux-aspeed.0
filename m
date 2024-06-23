@@ -1,43 +1,54 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sun, 23 Jun 2024 08:16:20 +0200
-Subject: [PATCH] usb: gadget: aspeed_udc: validate endpoint index for ast
- udc
-In-Reply-To: <bb23a7b0-dce6-4359-995a-2c12cf30cfff@web.de>
-References: <20240622095618.1890093-1-make24@iscas.ac.cn>
- <bb23a7b0-dce6-4359-995a-2c12cf30cfff@web.de>
-Message-ID: <2024062313-automated-theology-3f62@gregkh>
+From: Jonathan Cameron <jic23@kernel.org>
+Date: Sun, 23 Jun 2024 11:12:47 +0100
+Subject: [PATCH 00/10] iio: use devm_regulator_get_enable_read_voltage
+ round 2
+In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
+References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
+Message-ID: <20240623111247.1c4a5e2a@jic23-huawei>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jun 22, 2024 at 05:24:25PM +0200, Markus Elfring wrote:
-> > We should verify the bound of the array to assure that host
-> > may not manipulate the index to point past endpoint array.
+On Fri, 21 Jun 2024 17:11:47 -0500
+David Lechner <dlechner@baylibre.com> wrote:
+
+> This is the second round of patches making use of the new helper
+> devm_regulator_get_enable_read_voltage() to simplify drivers.
 > 
-> * Can an imperative wording be more desirable for such a change description?
->   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst?h=v6.10-rc4#n94
+> All of the changes in this round should be fairly straight forward.
+> And as a bonus, there are a few patches to get rid of driver .remove
+> callbacks.
+
+LGTM.  Obviously only been on list for a short time though and
+some of these have active maintainers so I won't pick them up just yet.
+
+Jonathan
+
 > 
-> * Will any tags (like ?Fixes?) become relevant here?
+> ---
+> David Lechner (10):
+>       iio: adc: aspeed_adc: use devm_regulator_get_enable_read_voltage()
+>       iio: adc: hx711: use devm_regulator_get_enable_read_voltage()
+>       iio: adc: hx711: remove hx711_remove()
+>       iio: adc: hx711: use dev_err_probe()
+>       iio: adc: ltc2309: use devm_regulator_get_enable_read_voltage()
+>       iio: adc: max1363: use devm_regulator_get_enable_read_voltage()
+>       iio: adc: ti-adc108s102: use devm_regulator_get_enable_read_voltage()
+>       iio: adc: ti-ads8688: use devm_regulator_get_enable_read_voltage()
+>       iio: adc: ti-ads8688: drop ads8688_remove()
+>       iio: dac: ad3552r: use devm_regulator_get_enable_read_voltage()
+> 
+>  drivers/iio/adc/aspeed_adc.c    | 30 +++++-----------
+>  drivers/iio/adc/hx711.c         | 78 ++++++++++-------------------------------
+>  drivers/iio/adc/ltc2309.c       | 43 ++++-------------------
+>  drivers/iio/adc/max1363.c       | 28 +++------------
+>  drivers/iio/adc/ti-adc108s102.c | 28 ++-------------
+>  drivers/iio/adc/ti-ads8688.c    | 59 ++++++-------------------------
+>  drivers/iio/dac/ad3552r.c       | 28 +++------------
+>  7 files changed, 53 insertions(+), 241 deletions(-)
+> ---
+> base-commit: 7db8a847f98caae68c70bdab9ba92d1af38e5656
+> change-id: 20240621-iio-regulator-refactor-round-2-28a1e129a42d
 
-Hi,
-
-This is the semi-friendly patch-bot of Greg Kroah-Hartman.
-
-Markus, you seem to have sent a nonsensical or otherwise pointless
-review comment to a patch submission on a Linux kernel developer mailing
-list.  I strongly suggest that you not do this anymore.  Please do not
-bother developers who are actively working to produce patches and
-features with comments that, in the end, are a waste of time.
-
-Patch submitter, please ignore Markus's suggestion; you do not need to
-follow it at all.  The person/bot/AI that sent it is being ignored by
-almost all Linux kernel maintainers for having a persistent pattern of
-behavior of producing distracting and pointless commentary, and
-inability to adapt to feedback.  Please feel free to also ignore emails
-from them.
-
-thanks,
-
-greg k-h's patch email bot
