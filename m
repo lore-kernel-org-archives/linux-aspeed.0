@@ -1,36 +1,69 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Mon, 24 Jun 2024 06:46:57 +0200
-Subject: [PATCH] arm: dts: aspeed: Use standard 'i2c' bus node name
-In-Reply-To: <CACPK8Xes5vp+3YpQ3L5ix=LaDv7oWtqGFVc8moQf4D+o3rnLjg@mail.gmail.com>
-References: <20240531193115.3814887-1-robh@kernel.org>
- <CACPK8Xes5vp+3YpQ3L5ix=LaDv7oWtqGFVc8moQf4D+o3rnLjg@mail.gmail.com>
-Message-ID: <8dabf3d1-2d23-4adc-a804-2b7aa5fe16e9@kernel.org>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Mon, 24 Jun 2024 16:21:13 +0200
+Subject: [PATCH v2] usb: gadget: aspeed_udc: validate endpoint index for
+ ast udc
+In-Reply-To: <20240624015314.2249128-1-make24@iscas.ac.cn>
+References: <20240624015314.2249128-1-make24@iscas.ac.cn>
+Message-ID: <2024062400-yearning-curfew-3c9d@gregkh>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 24/06/2024 03:55, Joel Stanley wrote:
-> On Sat, 1 Jun 2024 at 05:01, Rob Herring (Arm) <robh@kernel.org> wrote:
->>
->> The standard node name for I2C buses is 'i2c'.
+On Mon, Jun 24, 2024 at 09:53:13AM +0800, Ma Ke wrote:
+> We should verify the bound of the array to assure that host
+> may not manipulate the index to point past endpoint array.
 > 
-> Unfortunately this can't be merged, as it will break userspace. There
-> is a lot of code out there that looks up devices based on the device
-> tree node path:
+> Found by static analysis.
 > 
-> https://github.com/openbmc/phosphor-state-manager/blob/3c1351cc2b63178876ef68f4107c9804d2e17dcc/meson.options#L140
+> Signed-off-by: Ma Ke <make24@iscas.ac.cn>
+> ---
+>  drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+> index 3916c8e2ba01..d972ef4644bc 100644
+> --- a/drivers/usb/gadget/udc/aspeed_udc.c
+> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
+> @@ -1009,6 +1009,8 @@ static void ast_udc_getstatus(struct ast_udc_dev *udc)
+>  		break;
+>  	case USB_RECIP_ENDPOINT:
+>  		epnum = crq.wIndex & USB_ENDPOINT_NUMBER_MASK;
+> +		if (epnum >= AST_UDC_NUM_ENDPOINTS)
+> +			goto stall;
+>  		status = udc->ep[epnum].stopped;
+>  		break;
+>  	default:
+> -- 
+> 2.25.1
+> 
+> 
 
-Eh, thanks for sharing.
+Hi,
 
-That's totally stupid user-space. The sysfs path to /sys/devices, or
-some grep by compatible, would be fine, but iterating over firmware/DT
-is just wrong.
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
 
-Reminds me USB and ChromeOS. They could fix their userspace, so probably
-folks here can as well. I filled a bug.
+You are receiving this message because of the following common error(s)
+as indicated below:
 
-Best regards,
-Krzysztof
+- This looks like a new version of a previously submitted patch, but you
+  did not list below the --- line any changes from the previous version.
+  Please read the section entitled "The canonical patch format" in the
+  kernel file, Documentation/process/submitting-patches.rst for what
+  needs to be done here to properly describe this.
 
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot
