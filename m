@@ -1,29 +1,27 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Sun, 23 Jun 2024 14:21:51 +0200
-Subject: [PATCH] arm: dts: aspeed: Use standard 'i2c' bus node name
-In-Reply-To: <20240531193115.3814887-1-robh@kernel.org>
-References: <20240531193115.3814887-1-robh@kernel.org>
-Message-ID: <171914524817.46635.13681344434936708370.b4-ty@linaro.org>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Mon, 24 Jun 2024 09:58:17 +0930
+Subject: [PATCH 01/10] iio: adc: aspeed_adc: use
+ devm_regulator_get_enable_read_voltage()
+In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-1-49e50cd0b99a@baylibre.com>
+References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
+	 <20240621-iio-regulator-refactor-round-2-v1-1-49e50cd0b99a@baylibre.com>
+Message-ID: <b522733009008a22dd8975a92ad6d0b1c038c452.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-On Fri, 31 May 2024 14:31:14 -0500, Rob Herring (Arm) wrote:
-> The standard node name for I2C buses is 'i2c'.
+On Fri, 2024-06-21 at 17:11 -0500, David Lechner wrote:
+> This makes use of the devm_regulator_get_enable_read_voltage() helper
+> function to simplify the code.
 > 
+> The error return is moved closer to the function call to make it easier
+> to follow the logic. And a few blank lines are added for readability.
 > 
+> Signed-off-by: David Lechner <dlechner@baylibre.com>
 
-This one is waiting for 3 weeks and I think it wasn't applied. Let me know if
-someone else should take it instead.
+Nice cleanup!
 
-Applied, thanks!
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-[1/1] arm: dts: aspeed: Use standard 'i2c' bus node name
-      https://git.kernel.org/krzk/linux-dt/c/11afaf16a6540754d618179bd01791fc03480146
-
-Best regards,
--- 
-Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
