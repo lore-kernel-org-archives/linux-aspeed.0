@@ -1,36 +1,25 @@
-From: Ma Ke <make24@iscas.ac.cn>
-Date: Mon, 24 Jun 2024 01:53:38 -0000
-Subject: [PATCH v2] usb: gadget: aspeed_udc: validate endpoint index for ast udc
-Message-ID: <20240624015314.2249128-1-make24@iscas.ac.cn>
+From: Andreas Klinger <ak@it-klinger.de>
+Date: Mon, 24 Jun 2024 06:05:15 -0000
+Subject: [PATCH 04/10] iio: adc: hx711: use dev_err_probe()
+In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-4-49e50cd0b99a@baylibre.com>
+Message-ID: <ZnkMlWIewq8s_XeS@mail.your-server.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We should verify the bound of the array to assure that host
-may not manipulate the index to point past endpoint array.
+On Fri, 2024-06-21 at 22:11 +0000, David Lechner wrote:
+> Use dev_err_probe() to simplify error returns in the probe function.
+> Signed-off-by: David Lechner <dlechner@baylibre.com>
 
-Found by static analysis.
+Reviewed-by: Andreas Klinger <ak@it-klinger.de>
 
-Signed-off-by: Ma Ke <make24@iscas.ac.cn>
----
- drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index 3916c8e2ba01..d972ef4644bc 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -1009,6 +1009,8 @@ static void ast_udc_getstatus(struct ast_udc_dev *udc)
- 		break;
- 	case USB_RECIP_ENDPOINT:
- 		epnum = crq.wIndex & USB_ENDPOINT_NUMBER_MASK;
-+		if (epnum >= AST_UDC_NUM_ENDPOINTS)
-+			goto stall;
- 		status = udc->ep[epnum].stopped;
- 		break;
- 	default:
 -- 
-2.25.1
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 659 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240624/a7c142d8/attachment-0001.sig>
