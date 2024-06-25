@@ -1,9 +1,9 @@
 From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Tue, 25 Jun 2024 20:18:24 +0800
-Subject: [PATCH 06/17] ARM: dts: aspeed: minerva: enable mdio3
+Date: Tue, 25 Jun 2024 20:18:25 +0800
+Subject: [PATCH 07/17] ARM: dts: aspeed: minerva: remove unused bus and device
 In-Reply-To: <20240625121835.751013-1-yangchen.openbmc@gmail.com>
 References: <20240625121835.751013-1-yangchen.openbmc@gmail.com>
-Message-ID: <20240625121835.751013-7-yangchen.openbmc@gmail.com>
+Message-ID: <20240625121835.751013-8-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,33 +12,22 @@ Content-Transfer-Encoding: 7bit
 
 From: Yang Chen <yang.chen@quantatw.com>
 
-Change usage of I2C bus 11 to mdio3.
+Remove unused bus and device.
 
 Signed-off-by: Yang Chen <yang.chen@quantatw.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index 32400284479e..4d67ef29023c 100644
+index 4d67ef29023c..a80c46c1962d 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -99,6 +99,10 @@ fixed-link {
+@@ -336,10 +336,6 @@ rtc at 51 {
  	};
  };
  
-+&mdio3 {
-+	status = "okay";
-+};
-+
- &fmc {
- 	status = "okay";
- 	flash at 0 {
-@@ -336,10 +340,6 @@ &i2c10 {
- 	status = "okay";
- };
- 
--&i2c11 {
+-&i2c10 {
 -	status = "okay";
 -};
 -
