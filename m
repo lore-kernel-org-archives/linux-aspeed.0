@@ -1,27 +1,27 @@
 From: Ma Ke <make24@iscas.ac.cn>
-Date: Tue, 25 Jun 2024 02:04:00 -0000
-Subject: [PATCH v3] usb: gadget: aspeed_udc: validate endpoint index for ast udc
-Message-ID: <20240625020326.2564860-1-make24@iscas.ac.cn>
+Date: Tue, 25 Jun 2024 02:23:16 -0000
+Subject: [PATCH v4] usb: gadget: aspeed_udc: validate endpoint index for ast udc
+Message-ID: <20240625022306.2568122-1-make24@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ma Ke <make_ruc2021@163.com>
-
 We should verify the bound of the array to assure that host
 may not manipulate the index to point past endpoint array.
 
 Found by static analysis.
 
-Signed-off-by: Ma Ke <make_ruc2021@163.com>
+Signed-off-by: Ma Ke <make24@iscas.ac.cn>
 ---
+Changes in v4:
+- used a consistent email address to send patches, sorry for my negligence.
 Changes in v3:
 - added the changelog as suggested.
 Changes in v2:
-- use correct macro-defined constants as suggested;
-- explain the method for finding and testing vulnearabilities.
+- used the correct macro-defined constants as suggested;
+- explained the method for finding and testing vulnerabilities.
 ---
  drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
  1 file changed, 2 insertions(+)
