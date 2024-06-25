@@ -1,9 +1,9 @@
 From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Tue, 25 Jun 2024 20:18:26 +0800
-Subject: [PATCH 08/17] ARM: dts: aspeed: minerva: Define the LEDs node name
+Date: Tue, 25 Jun 2024 20:18:27 +0800
+Subject: [PATCH 09/17] ARM: dts: aspeed: minerva: Add adc sensors for fan board
 In-Reply-To: <20240625121835.751013-1-yangchen.openbmc@gmail.com>
 References: <20240625121835.751013-1-yangchen.openbmc@gmail.com>
-Message-ID: <20240625121835.751013-9-yangchen.openbmc@gmail.com>
+Message-ID: <20240625121835.751013-10-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,55 +12,203 @@ Content-Transfer-Encoding: 7bit
 
 From: Yang Chen <yang.chen@quantatw.com>
 
-Define the LEDs node name.
+Add ina238 support to read the sensors in front of fans.
 
 Signed-off-by: Yang Chen <yang.chen@quantatw.com>
 ---
- .../aspeed/aspeed-bmc-facebook-minerva.dts    | 28 +++++++++++++++++--
- 1 file changed, 26 insertions(+), 2 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-minerva.dts    | 144 ++++++++++++++++++
+ 1 file changed, 144 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index a80c46c1962d..bea389d1e90b 100644
+index bea389d1e90b..60beda2737a1 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -46,11 +46,35 @@ iio-hwmon {
- 	leds {
- 		compatible = "gpio-leds";
- 
--		led-fan-fault {
--			label = "led-fan-fault";
-+		led-0 {
-+			label = "bmc_heartbeat_amber";
-+			gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_LOW>;
-+			linux,default-trigger = "heartbeat";
-+		};
+@@ -228,6 +228,30 @@ pwm at 5e{
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 			};
 +
-+		led-1 {
-+			label = "fp_id_amber";
-+			default-state = "off";
-+			gpios = <&gpio0 ASPEED_GPIO(B, 5) GPIO_ACTIVE_HIGH>;
-+		};
++			power-sensor at 40 {
++				compatible = "ti,ina238";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
 +
-+		led-2 {
-+			label = "power_blue";
-+			default-state = "off";
-+			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
-+		};
++			power-sensor at 41 {
++				compatible = "ti,ina238";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
 +
-+		led-3 {
-+			label = "fan_status_led";
- 			gpios = <&leds_gpio 9 GPIO_ACTIVE_HIGH>;
- 			default-state = "off";
++			power-sensor at 44 {
++				compatible = "ti,ina238";
++				reg = <0x44>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 45 {
++				compatible = "ti,ina238";
++				reg = <0x45>;
++				shunt-resistor = <1000>;
++			};
  		};
-+
-+		led-4 {
-+			label = "fan_fault_led_n";
-+			gpios = <&leds_gpio 10 GPIO_ACTIVE_LOW>;
-+			default-state = "off";
-+		};
- 	};
  
- 	spi_gpio: spi-gpio {
+ 		imux17: i2c at 1 {
+@@ -246,6 +270,30 @@ pwm at 5e{
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 			};
++
++			power-sensor at 40 {
++				compatible = "ti,ina238";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 41 {
++				compatible = "ti,ina238";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 44 {
++				compatible = "ti,ina238";
++				reg = <0x44>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 45 {
++				compatible = "ti,ina238";
++				reg = <0x45>;
++				shunt-resistor = <1000>;
++			};
+ 		};
+ 
+ 		imux18: i2c at 2 {
+@@ -264,6 +312,30 @@ pwm at 5e{
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 			};
++
++			power-sensor at 40 {
++				compatible = "ti,ina238";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 41 {
++				compatible = "ti,ina238";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 44 {
++				compatible = "ti,ina238";
++				reg = <0x44>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 45 {
++				compatible = "ti,ina238";
++				reg = <0x45>;
++				shunt-resistor = <1000>;
++			};
+ 		};
+ 
+ 		imux19: i2c at 3 {
+@@ -282,6 +354,30 @@ pwm at 5e{
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 			};
++
++			power-sensor at 40 {
++				compatible = "ti,ina238";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 41 {
++				compatible = "ti,ina238";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 44 {
++				compatible = "ti,ina238";
++				reg = <0x44>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 45 {
++				compatible = "ti,ina238";
++				reg = <0x45>;
++				shunt-resistor = <1000>;
++			};
+ 		};
+ 
+ 		imux20: i2c at 4 {
+@@ -300,6 +396,30 @@ pwm at 5e{
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 			};
++
++			power-sensor at 40 {
++				compatible = "ti,ina238";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 41 {
++				compatible = "ti,ina238";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 44 {
++				compatible = "ti,ina238";
++				reg = <0x44>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 45 {
++				compatible = "ti,ina238";
++				reg = <0x45>;
++				shunt-resistor = <1000>;
++			};
+ 		};
+ 
+ 		imux21: i2c at 5 {
+@@ -318,6 +438,30 @@ pwm at 5e{
+ 				#address-cells = <1>;
+ 				#size-cells = <0>;
+ 			};
++
++			power-sensor at 40 {
++				compatible = "ti,ina238";
++				reg = <0x40>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 41 {
++				compatible = "ti,ina238";
++				reg = <0x41>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 44 {
++				compatible = "ti,ina238";
++				reg = <0x44>;
++				shunt-resistor = <1000>;
++			};
++
++			power-sensor at 45 {
++				compatible = "ti,ina238";
++				reg = <0x45>;
++				shunt-resistor = <1000>;
++			};
+ 		};
+ 	};
+ };
 -- 
 2.34.1
 
