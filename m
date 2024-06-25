@@ -1,9 +1,9 @@
 From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Tue, 25 Jun 2024 20:18:22 +0800
-Subject: [PATCH 04/17] ARM: dts: aspeed: minerva: add eeprom on i2c bus
+Date: Tue, 25 Jun 2024 20:18:23 +0800
+Subject: [PATCH 05/17] ARM: dts: aspeed: minerva: change RTC reference
 In-Reply-To: <20240625121835.751013-1-yangchen.openbmc@gmail.com>
 References: <20240625121835.751013-1-yangchen.openbmc@gmail.com>
-Message-ID: <20240625121835.751013-5-yangchen.openbmc@gmail.com>
+Message-ID: <20240625121835.751013-6-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,41 +12,41 @@ Content-Transfer-Encoding: 7bit
 
 From: Yang Chen <yang.chen@quantatw.com>
 
-Add eeprom on the i2c-9 address 0x50 and i2c-15 address 0x56.
+Change the RTC reference from on-chip to externel on i2c bus 9 and address
+is 0x51.
 
 Signed-off-by: Yang Chen <yang.chen@quantatw.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts    | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index b0643d1d549b..19f609cfd026 100644
+index 19f609cfd026..32400284479e 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -324,6 +324,11 @@ &i2c8 {
+@@ -116,10 +116,6 @@ flash at 1 {
+ 	};
+ };
  
- &i2c9 {
+-&rtc {
+-	status = "okay";
+-};
+-
+ &sgpiom0 {
  	status = "okay";
+ 	ngpios = <128>;
+@@ -329,6 +325,11 @@ eeprom at 50 {
+ 		compatible = "atmel,24c64";
+ 		reg = <0x50>;
+ 	};
 +
-+	eeprom at 50 {
-+		compatible = "atmel,24c64";
-+		reg = <0x50>;
++	rtc at 51 {
++		compatible = "nxp,pcf8563";
++		reg = <0x51>;
 +	};
  };
  
  &i2c10 {
-@@ -360,6 +365,11 @@ eeprom at 50 {
- 		compatible = "atmel,24c128";
- 		reg = <0x50>;
- 	};
-+
-+	eeprom at 56 {
-+		compatible = "atmel,24c64";
-+		reg = <0x56>;
-+	};
- };
- 
- &adc0 {
 -- 
 2.34.1
 
