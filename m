@@ -1,25 +1,44 @@
-From: Nuno Sá <noname.nuno@gmail.com>
-Date: Mon, 24 Jun 2024 08:18:16 -0000
-Subject: [PATCH 10/10] iio: dac: ad3552r: use
- devm_regulator_get_enable_read_voltage()
-In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-10-49e50cd0b99a@baylibre.com>
-References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-	 <20240621-iio-regulator-refactor-round-2-v1-10-49e50cd0b99a@baylibre.com>
-Message-ID: <d95fee6fe2da5f4fb068f83975b383b1ba0b9bf0.camel@gmail.com>
+From: Ma Ke <make24@iscas.ac.cn>
+Date: Tue, 25 Jun 2024 02:04:00 -0000
+Subject: [PATCH v3] usb: gadget: aspeed_udc: validate endpoint index for ast udc
+Message-ID: <20240625020326.2564860-1-make24@iscas.ac.cn>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-06-21 at 17:11 -0500, David Lechner wrote:
-> Use devm_regulator_get_enable_read_voltage() to simplify the code.
-> Error message is slightly changed since there is only one error return
-> now.
-> 
-> Signed-off-by: David Lechner <dlechner@baylibre.com>
-> ---
+From: Ma Ke <make_ruc2021@163.com>
 
-Reviewed-by: Nuno Sa <nuno.sa@analog.com>
+We should verify the bound of the array to assure that host
+may not manipulate the index to point past endpoint array.
 
+Found by static analysis.
+
+Signed-off-by: Ma Ke <make_ruc2021@163.com>
+---
+Changes in v3:
+- added the changelog as suggested.
+Changes in v2:
+- use correct macro-defined constants as suggested;
+- explain the method for finding and testing vulnearabilities.
+---
+ drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index 3916c8e2ba01..d972ef4644bc 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -1009,6 +1009,8 @@ static void ast_udc_getstatus(struct ast_udc_dev *udc)
+ 		break;
+ 	case USB_RECIP_ENDPOINT:
+ 		epnum = crq.wIndex & USB_ENDPOINT_NUMBER_MASK;
++		if (epnum >= AST_UDC_NUM_ENDPOINTS)
++			goto stall;
+ 		status = udc->ep[epnum].stopped;
+ 		break;
+ 	default:
+-- 
+2.25.1
 
