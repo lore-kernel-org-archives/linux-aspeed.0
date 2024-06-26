@@ -1,32 +1,95 @@
-From: Markus Elfring <Markus.Elfring@web.de>
-Date: Wed, 26 Jun 2024 10:55:38 +0200
-Subject: [RFC] usb: Patch review processes?
-In-Reply-To: <2024062553-koala-granddad-50f1@gregkh>
-References: <20240625022306.2568122-1-make24@iscas.ac.cn>
- <edeaa699-7cfe-44ed-abde-7cf3d3efe3bf@web.de>
- <2024062556-ladder-canister-1ab1@gregkh>
- <ff2aaf0d-5456-43d1-af52-78986b3401f9@web.de>
- <2024062532-strep-president-44d7@gregkh>
- <5fa430f5-3e18-4c20-93d4-6733afd6bdcf@web.de>
- <2024062553-koala-granddad-50f1@gregkh>
-Message-ID: <95612a56-63ee-4ba8-beaa-4b773ccca5e8@web.de>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Wed, 26 Jun 2024 17:07:16 +0800
+Subject: [PATCH v9 00/26] Add i2c-mux and eeprom devices for Meta Yosemite 4
+Message-ID: <20240626090744.174351-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
->> You indicated concerns according to patch review processes,
->> didn't you?
->>
->> See also:
->> * Patch submission notes
->>   https://elixir.bootlin.com/linux/v6.10-rc5/source/Documentation/process/maintainer-tip.rst#L100
->
-> This is not the tip tree.
+Changelog:
+  - v9
+    - add XDP710 support
+    - add RTQ6056 support
+    - add MP5990 support
+  - v8
+    - add fan led config
+  - v7
+    - Revise pca9506 i2c address
+  - v6
+    - Revise i2c duty-cycle for meeting 400khz spec
+  - v5
+    - Support medusa board adc sensors
+    - support NIC eeprom
+  - v4
+    - Re-format gpio linename
+    - Revise i2c device node names
+    - Split patches by logic changes
+  - v3
+    - Correct patch for revising gpio name
+  - v2
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
+  - v1
+    - Add gpio and eeprom behind i2c-mux
+    - Remove redundant idle-state setting for i2c-mux
+    - Enable adc 15, wdt2,spi gpio for yosemite4 use
+    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+    - Revise power sensor adm1281 for yosemite4 schematic change
+    - Add gpio pca9506 I/O expander for yosemite4 use
+    - remove space for adm1272 compatible
+    - enable interrupt setting for pca9555
+    - add eeprom for yosemite4 medusa board/BSM use
+    - remove temperature sensor for yosemite4 schematic change
+    - add power sensor for power module reading
+    - Revise adc128d818 adc mode for yosemite4 schematic change
+    - Revise ina233 for yosemite4 schematic change
+    - Remove idle state setting for yosemite4 NIC connection
+    - Initialize bmc gpio state
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
 
-Would you eventually like to support the creation and maintenance of a document
-like ?Documentation/process/maintainer-usb.rst??
+Delphine CC Chiu (26):
+  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+  ARM: dts: aspeed: yosemite4: Enable adc15
+  ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+  ARM: dts: aspeed: yosemite4: Enable watchdog2
+  ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
+  ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
+    change
+  ARM: dts: aspeed: yosemite4: Add gpio pca9506
+  ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
+  ARM: dts: aspeed: yosemite4: Enable interrupt setting for pca9555
+  ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
+  ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
+  ARM: dts: aspeed: yosemite4: Remove temperature sensor for yosemite4
+    schematic change
+  ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4
+    schematic change
+  ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4
+    schematic change
+  ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4
+    NIC connection
+  ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
+  ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
+  ARM: dts: aspeed: yosemite4: add mctp config for NIC
+  ARM: dts: aspeed: yosemite4: support mux to cpld
+  ARM: dts: aspeed: yosemite4: support medusa board adc sensors
+  ARM: dts: aspeed: yosemite4: support NIC eeprom
+  ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
+  ARM: dts: aspeed: yosemite4: add fan led config
+  ARM: dts: aspeed: yosemite4: add XDP710
+  ARM: dts: aspeed: yosemite4: add RTQ6056 support
+  ARM: dts: aspeed: yosemite4: add MP5990 support
 
-Regards,
-Markus
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1410 +++++++++++++++--
+ 1 file changed, 1306 insertions(+), 104 deletions(-)
+
+-- 
+2.25.1
+
