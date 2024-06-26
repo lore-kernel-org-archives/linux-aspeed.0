@@ -1,91 +1,46 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed, 26 Jun 2024 17:07:34 +0800
-Subject: [PATCH v9 18/26] ARM: dts: aspeed: yosemite4: add mctp config for NIC
+Date: Wed, 26 Jun 2024 17:07:36 +0800
+Subject: [PATCH v9 20/26] ARM: dts: aspeed: yosemite4: support medusa board adc sensors
 In-Reply-To: <20240626090744.174351-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240626090744.174351-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240626090744.174351-19-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240626090744.174351-21-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-add mctp config for NIC
+Add ina233/ina28 support for medusa board adc sensors
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 +++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts    | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 59615a6958ec..83c9d76f5a11 100644
+index f4e37187bd5b..bacaa2208734 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1281,40 +1281,64 @@ imux24: i2c at 0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
- 		};
- 
- 		imux25: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
- 		};
- 
- 		imux26: i2c at 2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
- 		};
- 
- 		imux27: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <3>;
-+			mctp-controller;
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
- 		};
+@@ -915,6 +915,19 @@ power-sensor at 40 {
+ 		reg = <0x40>;
  	};
- };
+ 
++	power-sensor at 41 {
++			compatible = "ti,ina233";
++			resistor-calibration = /bits/ 16 <0x0a00>;
++			current-lsb= /bits/ 16 <0x0001>;
++			reg = <0x41>;
++	};
++
++	power-sensor at 44 {
++			compatible = "ti,ina238";
++			shunt-resistor = <1000>;
++			reg = <0x44>;
++	};
++
+ 	temperature-sensor at 48 {
+ 		compatible = "ti,tmp75";
+ 		reg = <0x48>;
 -- 
 2.25.1
 
