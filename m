@@ -1,40 +1,36 @@
 From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Wed, 26 Jun 2024 21:03:30 +0800
-Subject: [PATCH v1 15/17] ARM: dts: aspeed: minerva: remove unused power device
+Date: Wed, 26 Jun 2024 21:03:31 +0800
+Subject: [PATCH v1 16/17] ARM: dts: aspeed: minerva: add ltc4287 device
 In-Reply-To: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
 References: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
-Message-ID: <20240626130332.929534-16-yangchen.openbmc@gmail.com>
+Message-ID: <20240626130332.929534-17-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove unused power device.
+Enable LTC4287 device on i2c-0.
 
 Signed-off-by: Yang Chen <yangchen.openbmc@gmail.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts    | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index 8f3f15a5c148..093305b598dc 100644
+index 093305b598dc..8180fa5c1854 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -144,16 +144,6 @@ power-monitor at 41 {
+@@ -144,6 +144,12 @@ power-monitor at 41 {
  		shunt-resistor = <1000>;
  	};
  
--	power-monitor at 67 {
--		compatible = "adi,ltc2945";
--		reg = <0x67>;
--	};
--
--	power-monitor at 68 {
--		compatible = "adi,ltc2945";
--		reg = <0x68>;
--	};
--
++	power-monitor at 44 {
++		compatible = "lltc,ltc4287";
++		reg = <0x44>;
++		shunt-resistor-micro-ohms = <2000>;
++	};
++
  	power-monitor at 43 {
  		compatible = "infineon,xdp710";
  		reg = <0x43>;
