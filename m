@@ -1,9 +1,9 @@
 From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Wed, 26 Jun 2024 21:03:16 +0800
-Subject: [PATCH v1 01/17] ARM: dts: aspeed: minerva: change the address of tmp75
+Date: Wed, 26 Jun 2024 21:03:17 +0800
+Subject: [PATCH v1 02/17] ARM: dts: aspeed: minerva: change aliases for uart
 In-Reply-To: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
 References: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
-Message-ID: <20240626130332.929534-2-yangchen.openbmc@gmail.com>
+Message-ID: <20240626130332.929534-3-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,30 +12,27 @@ Content-Transfer-Encoding: 7bit
 
 From: Yang Chen <yang.chen@quantatw.com>
 
-Revise the address of tmp75 on I2C bus 1 from 0x48 to 0x4f due to design
-change.
+Change and add aliases name for uart interface.
 
 Signed-off-by: Yang Chen <yang.chen@quantatw.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index 942e53d5c714..e20e31917d6c 100644
+index e20e31917d6c..ca3e417d2c7e 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -145,9 +145,9 @@ temperature-sensor at 4b {
- 		reg = <0x4b>;
- 	};
+@@ -11,7 +11,8 @@ / {
+ 	compatible = "facebook,minerva-cmc", "aspeed,ast2600";
  
--	temperature-sensor at 48 {
-+	temperature-sensor at 4f {
- 		compatible = "ti,tmp75";
--		reg = <0x48>;
-+		reg = <0x4f>;
- 	};
- 
- 	eeprom at 54 {
+ 	aliases {
+-		serial5 = &uart5;
++		serial4 = &uart5;
++		serial5 = &uart6;
+ 		/*
+ 		 * PCA9548 (2-0077) provides 8 channels connecting to
+ 		 * 6 pcs of FCB (Fan Controller Board).
 -- 
 2.34.1
 
