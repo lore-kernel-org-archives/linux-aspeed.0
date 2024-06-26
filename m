@@ -1,108 +1,91 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed, 26 Jun 2024 17:07:35 +0800
-Subject: [PATCH v9 19/26] ARM: dts: aspeed: yosemite4: support mux to cpld
+Date: Wed, 26 Jun 2024 17:07:34 +0800
+Subject: [PATCH v9 18/26] ARM: dts: aspeed: yosemite4: add mctp config for NIC
 In-Reply-To: <20240626090744.174351-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240626090744.174351-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240626090744.174351-20-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240626090744.174351-19-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mux pca9544 to cpld was added on EVT HW schematic design,
-so add dts setting for devices behind mux pca9544 to cpld
+add mctp config for NIC
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 64 ++++++++++++++-----
- 1 file changed, 49 insertions(+), 15 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 +++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 83c9d76f5a11..f4e37187bd5b 100644
+index 59615a6958ec..83c9d76f5a11 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -36,6 +36,10 @@ aliases {
- 		i2c31 = &imux31;
- 		i2c32 = &imux32;
- 		i2c33 = &imux33;
-+		i2c34 = &imux34;
-+		i2c35 = &imux35;
-+		i2c36 = &imux36;
-+		i2c37 = &imux37;
- 	};
- 
- 	chosen {
-@@ -951,24 +955,54 @@ &i2c12 {
- 	status = "okay";
- 	bus-frequency = <400000>;
- 
--	temperature-sensor at 48 {
--		compatible = "ti,tmp75";
--		reg = <0x48>;
--	};
-+	i2c-mux at 70 {
-+		compatible = "nxp,pca9544";
-+		i2c-mux-idle-disconnect;
-+		reg = <0x70>;
- 
--	eeprom at 50 {
--		compatible = "atmel,24c128";
--		reg = <0x50>;
--	};
-+		imux34: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
- 
--	eeprom at 54 {
--		compatible = "atmel,24c64";
--		reg = <0x54>;
--	};
-+			temperature-sensor at 48 {
-+				compatible = "ti,tmp75";
-+				reg = <0x48>;
+@@ -1281,40 +1281,64 @@ imux24: i2c at 0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
++			mctp-controller;
+ 			temperature-sensor at 1f {
+ 				compatible = "ti,tmp421";
+ 				reg = <0x1f>;
+ 			};
++
++			temperature-sensor at 3c {
++				compatible = "smsc,emc1403";
++				reg = <0x3c>;
 +			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c128";
-+				reg = <0x50>;
-+			};
+ 		};
  
--	rtc at 6f {
--		compatible = "nuvoton,nct3018y";
--		reg = <0x6f>;
-+			eeprom at 54 {
-+				compatible = "atmel,24c64";
-+				reg = <0x54>;
+ 		imux25: i2c at 1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <1>;
++			mctp-controller;
+ 			temperature-sensor at 1f {
+ 				compatible = "ti,tmp421";
+ 				reg = <0x1f>;
+ 			};
++
++			temperature-sensor at 3c {
++				compatible = "smsc,emc1403";
++				reg = <0x3c>;
 +			};
+ 		};
+ 
+ 		imux26: i2c at 2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
++			mctp-controller;
+ 			temperature-sensor at 1f {
+ 				compatible = "ti,tmp421";
+ 				reg = <0x1f>;
+ 			};
 +
-+			rtc at 6f {
-+				compatible = "nuvoton,nct3018y";
-+				reg = <0x6f>;
++			temperature-sensor at 3c {
++				compatible = "smsc,emc1403";
++				reg = <0x3c>;
 +			};
-+		};
+ 		};
+ 
+ 		imux27: i2c at 3 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <3>;
++			mctp-controller;
+ 			temperature-sensor at 1f {
+ 				compatible = "ti,tmp421";
+ 				reg = <0x1f>;
+ 			};
 +
-+		imux35: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
-+		};
-+
-+		imux36: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
-+		};
-+
-+		imux37: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
-+		};
++			temperature-sensor at 3c {
++				compatible = "smsc,emc1403";
++				reg = <0x3c>;
++			};
+ 		};
  	};
  };
- 
 -- 
 2.25.1
 
