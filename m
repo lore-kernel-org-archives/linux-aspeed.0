@@ -1,88 +1,44 @@
-From: David Lechner <dlechner@baylibre.com>
-Date: Fri, 21 Jun 2024 22:12:11 -0000
-Subject: [PATCH 03/10] iio: adc: hx711: remove hx711_remove()
-In-Reply-To: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-References: <20240621-iio-regulator-refactor-round-2-v1-0-49e50cd0b99a@baylibre.com>
-Message-ID: <20240621-iio-regulator-refactor-round-2-v1-3-49e50cd0b99a@baylibre.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 26 Jun 2024 10:02:27 -0000
+Subject: [PATCH v2 00/20] pinctrl: Use scope based of_node_put() cleanups
+In-Reply-To: <AM6PR04MB594163BAB898D8689A94056F88CE2@AM6PR04MB5941.eurprd04.prod.outlook.com>
+References: <20240504-pinctrl-cleanup-v2-0-26c5f2dc1181@nxp.com> <AM6PR04MB594163BAB898D8689A94056F88CE2@AM6PR04MB5941.eurprd04.prod.outlook.com>
+Message-ID: <CACRpkdb17buPQVupCRDthvAgMKpvKvRWEN5GbA7pyF9NxymGEg@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-By using a few more devm_ functions, we can remove the hx711_remove()
-function in the hx711 driver.
+On Tue, Jun 18, 2024 at 1:52?PM Peng Fan <peng.fan@nxp.com> wrote:
 
-platform_set_drvdata() is also removed since there are no more
-callers of platform_get_drvdata().
+> > Subject: [PATCH v2 00/20] pinctrl: Use scope based of_node_put()
+> > cleanups
+>
+> st/stm32/renesas patches are picked. Would you handle the remaining
+> ones?
 
-Signed-off-by: David Lechner <dlechner@baylibre.com>
----
- drivers/iio/adc/hx711.c | 27 +++++----------------------
- 1 file changed, 5 insertions(+), 22 deletions(-)
+Hm right, I applied all that apply cleanly:
+971c8b4c08e7 (HEAD -> devel) pinctrl: samsung: Use scope based
+of_node_put() cleanups
+3a882554a3bb pinctrl: k210: Use scope based of_node_put() cleanups
+7f500f2011c0 pinctrl: freescale: mxs: Fix refcount of child
+d7f5120a944a pinctrl: pinconf-generic: Use scope based of_node_put() cleanups
+240c5f238d59 pinctrl: bcm: bcm63xx: Use scope based of_node_put() cleanups
+3a0278cfb448 pinctrl: mediatek: Use scope based of_node_put() cleanups
+c957ae7e7e68 pinctrl: nomadik: Use scope based of_node_put() cleanups
+3dcc01b36f18 pinctrl: s32cc: Use scope based of_node_put() cleanups
+7c2aabb56f92 pinctrl: at91: Use scope based of_node_put() cleanups
+56c42f6c7b2c pinctrl: rockchip: Use scope based of_node_put() cleanups
+8c5dc2a5b3a7 pinctrl: spear: Use scope based of_node_put() cleanups
+794e5dc533b0 pinctrl: sprd: Use scope based of_node_put() cleanups
+8fa99c00351c pinctrl: starfive: Use scope based of_node_put() cleanups
+11eefc0ac884 pinctrl: tegra: Use scope based of_node_put() cleanups
 
-diff --git a/drivers/iio/adc/hx711.c b/drivers/iio/adc/hx711.c
-index 6efdc971689c..8461b1fe6bad 100644
---- a/drivers/iio/adc/hx711.c
-+++ b/drivers/iio/adc/hx711.c
-@@ -539,43 +539,27 @@ static int hx711_probe(struct platform_device *pdev)
- 	hx711_data->data_ready_delay_ns =
- 				1000000000 / hx711_data->clock_frequency;
- 
--	platform_set_drvdata(pdev, indio_dev);
--
- 	indio_dev->name = "hx711";
- 	indio_dev->info = &hx711_iio_info;
- 	indio_dev->modes = INDIO_DIRECT_MODE;
- 	indio_dev->channels = hx711_chan_spec;
- 	indio_dev->num_channels = ARRAY_SIZE(hx711_chan_spec);
- 
--	ret = iio_triggered_buffer_setup(indio_dev, iio_pollfunc_store_time,
--							hx711_trigger, NULL);
-+	ret = devm_iio_triggered_buffer_setup(dev, indio_dev,
-+					      iio_pollfunc_store_time,
-+					      hx711_trigger, NULL);
- 	if (ret < 0) {
- 		dev_err(dev, "setup of iio triggered buffer failed\n");
- 		return ret;
- 	}
- 
--	ret = iio_device_register(indio_dev);
-+	ret = devm_iio_device_register(dev, indio_dev);
- 	if (ret < 0) {
- 		dev_err(dev, "Couldn't register the device\n");
--		goto error_buffer;
-+		return ret;
- 	}
- 
- 	return 0;
--
--error_buffer:
--	iio_triggered_buffer_cleanup(indio_dev);
--
--	return ret;
--}
--
--static void hx711_remove(struct platform_device *pdev)
--{
--	struct iio_dev *indio_dev;
--
--	indio_dev = platform_get_drvdata(pdev);
--
--	iio_device_unregister(indio_dev);
--	iio_triggered_buffer_cleanup(indio_dev);
- }
- 
- static const struct of_device_id of_hx711_match[] = {
-@@ -587,7 +571,6 @@ MODULE_DEVICE_TABLE(of, of_hx711_match);
- 
- static struct platform_driver hx711_driver = {
- 	.probe		= hx711_probe,
--	.remove_new	= hx711_remove,
- 	.driver		= {
- 		.name		= "hx711-gpio",
- 		.of_match_table	= of_hx711_match,
+Can you look into rebasing the remaining ones?
 
--- 
-2.45.2
+I am a bit unsure about Samsung, Krzysztof usually pick these, but no big
+deal I guess, if he objects I can just take it out again.
 
+Yours,
+Linus Walleij
