@@ -1,21 +1,42 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 26 Jun 2024 12:10:15 +0200
-Subject: [PATCH v4 0/2] add ast2600 NCSI pin groups
-In-Reply-To: <20240621093142.698529-1-potin.lai.pt@gmail.com>
-References: <20240621093142.698529-1-potin.lai.pt@gmail.com>
-Message-ID: <CACRpkdZ4+pJTSu+GZ=BSfY6G-3Pj=81275AMEewAvoDFpACYMw@mail.gmail.com>
+From: Yang Chen <yangchen.openbmc@gmail.com>
+Date: Wed, 26 Jun 2024 21:03:15 +0800
+Subject: [PATCH v1 00/17] Revise Facebook Minerva BMC DTS
+Message-ID: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 21, 2024 at 11:33?AM Potin Lai <potin.lai.pt@gmail.com> wrote:
+Revise the Linux device tree entry related to Facebook platform Minerva
+specific devices connected to the Aspeed AST2600 BMC.
 
-> In the NCSI pin table, the reference clock output pin (RMIIXRCLKO) is not
-> needed on the management controller side.
+Changelog:
+- v1:
+  - Modify the properties of spi to match the schema.
 
-This v4 patch set applied!
+Yang Chen (17):
+  ARM: dts: aspeed: minerva: change the address of tmp75
+  ARM: dts: aspeed: minerva: change aliases for uart
+  ARM: dts: aspeed: minerva: add eeprom on i2c bus
+  ARM: dts: aspeed: minerva: change RTC reference
+  ARM: dts: aspeed: minerva: enable mdio3
+  ARM: dts: aspeed: minerva: remove unused bus and device
+  ARM: dts: aspeed: minerva: Define the LEDs node name
+  ARM: dts: aspeed: minerva: Add adc sensors for fan board
+  ARM: dts: aspeed: minerva: add linename of two pins
+  ARM: dts: aspeed: minerva: enable ehci0 for USB
+  ARM: dts: aspeed: minerva: add tmp75 sensor
+  ARM: dts: aspeed: minerva: add power monitor xdp710
+  ARM: dts: aspeed: minerva: revise sgpio line name
+  ARM: dts: aspeed: minerva: Switch the i2c bus number
+  ARM: dts: aspeed: minerva: remove unused power device
+  ARM: dts: aspeed: minerva: add ltc4287 device
+  ARM: dts: aspeed: minerva: Add spi-gpio
 
-Yours,
-Linus Walleij
+ .../aspeed/aspeed-bmc-facebook-minerva.dts    | 516 +++++++++++++-----
+ 1 file changed, 373 insertions(+), 143 deletions(-)
+
+-- 
+2.34.1
+
