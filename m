@@ -1,9 +1,9 @@
 From: Yang Chen <yangchen.openbmc@gmail.com>
-Date: Wed, 26 Jun 2024 21:03:27 +0800
-Subject: [PATCH v1 12/17] ARM: dts: aspeed: minerva: add power monitor xdp710
+Date: Wed, 26 Jun 2024 21:03:29 +0800
+Subject: [PATCH v1 14/17] ARM: dts: aspeed: minerva: Switch the i2c bus number
 In-Reply-To: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
 References: <20240626130332.929534-1-yangchen.openbmc@gmail.com>
-Message-ID: <20240626130332.929534-13-yangchen.openbmc@gmail.com>
+Message-ID: <20240626130332.929534-15-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,29 +12,35 @@ Content-Transfer-Encoding: 7bit
 
 From: Yang Chen <yang.chen@quantatw.com>
 
-Add HSC xdp710 on i2c bus0.
+Switch the i2c bus number to map the i2c tag according to the hardware design.
 
 Signed-off-by: Yang Chen <yang.chen@quantatw.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-index 3d80993885b7..0c305ddf7011 100644
+index 7a790e347853..8f3f15a5c148 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
-@@ -154,6 +154,11 @@ power-monitor at 68 {
- 		reg = <0x68>;
- 	};
+@@ -384,7 +384,7 @@ temperature-sensor at 4b {
+ 			};
+ 		};
  
-+	power-monitor at 43 {
-+		compatible = "infineon,xdp710";
-+		reg = <0x43>;
-+	};
-+
- 	leds_gpio: gpio at 19 {
- 		compatible = "nxp,pca9555";
- 		reg = <0x19>;
+-		imux20: i2c at 4 {
++		imux20: i2c at 5 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <4>;
+@@ -430,7 +430,7 @@ temperature-sensor at 4b {
+ 			};
+ 		};
+ 
+-		imux21: i2c at 5 {
++		imux21: i2c at 4 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <5>;
 -- 
 2.34.1
 
