@@ -1,61 +1,85 @@
-From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Thu, 27 Jun 2024 15:00:12 +0800
-Subject: [PATCH v2 10/10] ARM: dts: aspeed: Harma: fixed dtb_check warning
+From: Rob Herring (Arm) <robh@kernel.org>
+Date: Thu, 27 Jun 2024 08:48:47 -0600
+Subject: [PATCH v2 00/10] Revise Meta(Facebook) Harma BMC(AST2600)
 In-Reply-To: <20240627070013.2509150-1-peteryin.openbmc@gmail.com>
 References: <20240627070013.2509150-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240627070013.2509150-11-peteryin.openbmc@gmail.com>
+Message-ID: <171949936638.3312359.3954253966631367606.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-1. revise spi-gpio node and property name.
-2. revise tpm node name
-3. remove max-ngpios
 
-Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
----
- .../arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+On Thu, 27 Jun 2024 15:00:02 +0800, Peter Yin wrote:
+> Summary:
+> Revise linux device tree entry related to Meta(Facebook) Harma
+> specific devices connected to BMC(AST2600) SoC.
+> 
+> Base on: https://lore.kernel.org/all/CAPSyxFRj0twCJG6Lr5UZpznrUHyd_L0Reo=kZSFwCw3FNQ+x+A at mail.gmail.com/
+> 
+> Change log:
+> 
+> v1 -> v2
+>   - Patch 0007  - add fru device
+>   - Patch 0008  - add temperature device
+>   - Patch 0009  - enable mctp controller
+>   - Patch 00010 - fixed dtb_check warning
+> 
+> v1
+>   - Patch 0001 - revise hsc chip
+>   - Patch 0002 - add VR device
+>   - Patch 0003 - add sgpio name
+>   - Patch 0004 - add ina238
+>   - Patch 0005 - add power monitor xdp710
+>   - Patch 0006 - remove multi-host property
+>   - Patch 0007 - remove pca9546
+> 
+> Peter Yin (10):
+>   ARM: dts: aspeed: Harma: revise hsc chip
+>   ARM: dts: aspeed: Harma: add VR device
+>   ARM: dts: aspeed: Harma: add sgpio name
+>   ARM: dts: aspeed: Harma: add ina238
+>   ARM: dts: aspeed: Harma: add power monitor xdp710
+>   ARM: dts: aspeed: Harma: remove multi-host property
+>   ARM: dts: aspeed: Harma: add fru device
+>   ARM: dts: aspeed: Harma: add temperature device
+>   ARM: dts: aspeed: Harma: enable mctp controller
+>   ARM: dts: aspeed: Harma: fixed dtb_check warning
+> 
+>  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 146 ++++++++++++++++--
+>  1 file changed, 132 insertions(+), 14 deletions(-)
+> 
+> --
+> 2.25.1
+> 
+> 
+> 
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 0dd0566bbf27..4421822eb134 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -70,19 +70,19 @@ led-2 {
- 		};
- 	};
- 
--	spi_gpio: spi-gpio {
-+	spi_gpio: spi {
- 		status = "okay";
- 		compatible = "spi-gpio";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		gpio-sck = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
--		gpio-mosi = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
--		gpio-miso = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
-+		sck-gpios = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
-+		mosi-gpios = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
-+		miso-gpios = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
- 		num-chipselects = <1>;
- 		cs-gpios = <&gpio0 ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
- 
--		tpmdev at 0 {
-+		tpm at 0 {
- 			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
- 			spi-max-frequency = <33000000>;
- 			reg = <0>;
-@@ -640,7 +640,6 @@ &gpio1 {
- 
- &sgpiom0 {
- 	status = "okay";
--	max-ngpios = <128>;
- 	ngpios = <128>;
- 	bus-frequency = <2000000>;
- 	gpio-line-names =
--- 
-2.25.1
+
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
+
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-facebook-harma.dtb' for 20240627070013.2509150-1-peteryin.openbmc at gmail.com:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ftgmac at 1e690000: Unevaluated properties are not allowed ('#address-cells', '#size-cells' were unexpected)
+	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 61: failed to match any schema with compatible: ['isil,isl69260']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 62: failed to match any schema with compatible: ['isil,isl69260']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 63: failed to match any schema with compatible: ['isil,isl69260']
+
+
+
+
 
