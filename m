@@ -1,85 +1,64 @@
-From: Rob Herring (Arm) <robh@kernel.org>
-Date: Thu, 27 Jun 2024 08:48:47 -0600
-Subject: [PATCH v2 00/10] Revise Meta(Facebook) Harma BMC(AST2600)
-In-Reply-To: <20240627070013.2509150-1-peteryin.openbmc@gmail.com>
-References: <20240627070013.2509150-1-peteryin.openbmc@gmail.com>
-Message-ID: <171949936638.3312359.3954253966631367606.robh@kernel.org>
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Thu, 27 Jun 2024 17:25:33 +0200
+Subject: [PATCH v2] i2c: aspeed: Update the stop sw state when the bus
+ recovery occurs
+In-Reply-To: <20240608043653.4086647-1-tommy_huang@aspeedtech.com>
+References: <20240608043653.4086647-1-tommy_huang@aspeedtech.com>
+Message-ID: <pbsrfzbd237k5inof3wy6qabdmolmweozkn5kq7jlvstj2nkvo@nzp2sbrxpn44>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Tommy,
 
-On Thu, 27 Jun 2024 15:00:02 +0800, Peter Yin wrote:
-> Summary:
-> Revise linux device tree entry related to Meta(Facebook) Harma
-> specific devices connected to BMC(AST2600) SoC.
+any update on this patch?
+
+Andi
+
+On Sat, Jun 08, 2024 at 12:36:53PM GMT, Tommy Huang wrote:
+> When the i2c bus recovery occurs, driver will send i2c stop command
+> in the scl low condition. In this case the sw state will still keep
+> original situation. Under multi-master usage, i2c bus recovery will
+> be called when i2c transfer timeout occurs. Update the stop command
+> calling with aspeed_i2c_do_stop function to update master_state.
 > 
-> Base on: https://lore.kernel.org/all/CAPSyxFRj0twCJG6Lr5UZpznrUHyd_L0Reo=kZSFwCw3FNQ+x+A at mail.gmail.com/
+> Fixes: f327c686d3ba ("i2c: aspeed: added driver for Aspeed I2C")
 > 
-> Change log:
+> Cc: <stable@vger.kernel.org> # v4.13+
+> Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> v1 -> v2
->   - Patch 0007  - add fru device
->   - Patch 0008  - add temperature device
->   - Patch 0009  - enable mctp controller
->   - Patch 00010 - fixed dtb_check warning
-> 
-> v1
->   - Patch 0001 - revise hsc chip
->   - Patch 0002 - add VR device
->   - Patch 0003 - add sgpio name
->   - Patch 0004 - add ina238
->   - Patch 0005 - add power monitor xdp710
->   - Patch 0006 - remove multi-host property
->   - Patch 0007 - remove pca9546
-> 
-> Peter Yin (10):
->   ARM: dts: aspeed: Harma: revise hsc chip
->   ARM: dts: aspeed: Harma: add VR device
->   ARM: dts: aspeed: Harma: add sgpio name
->   ARM: dts: aspeed: Harma: add ina238
->   ARM: dts: aspeed: Harma: add power monitor xdp710
->   ARM: dts: aspeed: Harma: remove multi-host property
->   ARM: dts: aspeed: Harma: add fru device
->   ARM: dts: aspeed: Harma: add temperature device
->   ARM: dts: aspeed: Harma: enable mctp controller
->   ARM: dts: aspeed: Harma: fixed dtb_check warning
-> 
->  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 146 ++++++++++++++++--
->  1 file changed, 132 insertions(+), 14 deletions(-)
-> 
-> --
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index ce8c4846b7fa..be64e419adf0 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -25,6 +25,8 @@
+>  #include <linux/reset.h>
+>  #include <linux/slab.h>
+>  
+> +static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus);
+> +
+>  /* I2C Register */
+>  #define ASPEED_I2C_FUN_CTRL_REG				0x00
+>  #define ASPEED_I2C_AC_TIMING_REG1			0x04
+> @@ -187,7 +189,7 @@ static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
+>  			command);
+>  
+>  		reinit_completion(&bus->cmd_complete);
+> -		writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+> +		aspeed_i2c_do_stop(bus);
+>  		spin_unlock_irqrestore(&bus->lock, flags);
+>  
+>  		time_left = wait_for_completion_timeout(
+> -- 
 > 2.25.1
 > 
 > 
-> 
-
-
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-facebook-harma.dtb' for 20240627070013.2509150-1-peteryin.openbmc at gmail.com:
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ftgmac at 1e690000: Unevaluated properties are not allowed ('#address-cells', '#size-cells' were unexpected)
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 61: failed to match any schema with compatible: ['isil,isl69260']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 62: failed to match any schema with compatible: ['isil,isl69260']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 63: failed to match any schema with compatible: ['isil,isl69260']
-
-
-
-
-
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
