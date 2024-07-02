@@ -1,44 +1,34 @@
 From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Tue, 02 Jul 2024 08:39:48 -0000
-Subject: [PATCH 2/9] mtd: add mtd_is_master helper
-In-Reply-To: <b97bf565-bef5-fbc7-63c5-f174880ad9ab@gmail.com>
+Date: Tue, 02 Jul 2024 09:16:14 -0000
+Subject: [PATCH 9/9] eeprom: at24: remove deprecated Kconfig symbol
+In-Reply-To: <CAMRc=McP=K0jSD56JdCR9DPJmJN39Z74mjAo0qX2mEnTBN1GAA@mail.gmail.com>
 References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
- <20240701-b4-v6-10-topic-usbc-tcpci-v1-2-3fd5f4a193cc@pengutronix.de>
- <b97bf565-bef5-fbc7-63c5-f174880ad9ab@gmail.com>
-Message-ID: <20240702082251.ljdaz2b7agabbm76@pengutronix.de>
+ <20240701-b4-v6-10-topic-usbc-tcpci-v1-9-3fd5f4a193cc@pengutronix.de>
+ <CAMRc=McP=K0jSD56JdCR9DPJmJN39Z74mjAo0qX2mEnTBN1GAA@mail.gmail.com>
+Message-ID: <20240702091514.jjdahaseml6fpnrz@pengutronix.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 24-07-01, Sergei Shtylyov wrote:
-> On 7/1/24 4:53 PM, Marco Felsch wrote:
-> 
-> > Provide a simple helper to make it easy to detect an master mtd device.
-> > 
-> > Signed-off-by: Marco Felsch <m.felsch@pengutronix.de>
-> > ---
-> >  include/linux/mtd/mtd.h | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> > 
-> > diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-> > index 8d10d9d2e830..bf3fc2ea7230 100644
-> > --- a/include/linux/mtd/mtd.h
-> > +++ b/include/linux/mtd/mtd.h
-> > @@ -408,6 +408,11 @@ static inline struct mtd_info *mtd_get_master(struct mtd_info *mtd)
-> >  	return mtd;
-> >  }
-> >  
-> > +static inline bool mtd_is_master(struct mtd_info *mtd)
-> > +{
-> > +	return mtd->parent ? false : true;
-> 
->    Perhaps:
-> 
-> 	return !mtd->parent;
+Hi,
 
-Sure, if you prefer this style rather I will change it.
+On 24-07-02, Bartosz Golaszewski wrote:
+> On Mon, Jul 1, 2024 at 3:54?PM Marco Felsch <m.felsch@pengutronix.de> wrote:
+> >
+> > All kernel users are shifted to the new MTD_EEPROM_AT24 Kconfig symbol
+> > so we can drop the old one.
+> >
+> 
+> Nope, with this series arm64 still selects the old symbol.
 
-Regards,
+sry. I must have forgotten to add the arm64 hunk :/ I also noticed one
+powerpc config which still select the old symbol. I will fix this in v2.
+
+Thank you,
   Marco
+
+> 
+> Bart
+> 
