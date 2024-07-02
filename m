@@ -1,248 +1,106 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 2 Jul 2024 12:47:09 +0200
-Subject: [PATCH v1 3/3] ARM: dts: aspeed: Add IEISystems NF5280M7 BMC
- machine
-In-Reply-To: <20240701105259.972135-3-liuxiwei@ieisystem.com>
-References: <20240701105259.972135-1-liuxiwei@ieisystem.com>
- <20240701105259.972135-3-liuxiwei@ieisystem.com>
-Message-ID: <d7281992-821b-4eee-b028-7402a58524e3@linaro.org>
+From: Simon Horman <horms@kernel.org>
+Date: Tue, 2 Jul 2024 14:00:24 +0100
+Subject: [PATCH v1 1/1] net/ncsi: specify maximum package to probe
+In-Reply-To: <20240701154336.3536924-1-peteryin.openbmc@gmail.com>
+References: <20240701154336.3536924-1-peteryin.openbmc@gmail.com>
+Message-ID: <20240702130024.GJ598357@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 01/07/2024 12:52, George Liu wrote:
-> The IEISystems NF5280M7 is an x86 platform server with an
-> AST2600-based BMC.
-> This dts file provides a basic configuration for its OpenBMC
-> development.
+[ As this seems to relate to: DT, ASPEED and ARM, CC:
+  Rob Herring, Krzysztof Kozlowski, Conor Dooley, Joel Stanley, Andrew Jeffery,
+  devicetree, linux-arm-kernel, linux-aspeed. ]
+
+On Mon, Jul 01, 2024 at 11:43:36PM +0800, Peter Yin wrote:
+> Most NICs have a single package. For OCP3.0 NICs, the package ID is
+> determined by the slot ID. Probing all 8 package IDs is usually
+> unnecessary. To reduce probe time, add properties to specify the
+> maximum number of packages.
 > 
-
-...
-
-> +		i2c613 = &i2c6s1ch3;
-> +		i2c614 = &i2c6s1ch4;
-> +		i2c615 = &i2c6s1ch5;
-> +		i2c616 = &i2c6s1ch6;
-> +		i2c617 = &i2c6s1ch7;
-> +		i2c620 = &i2c6s2ch0;
-> +		i2c621 = &i2c6s2ch1;
-> +		i2c622 = &i2c6s2ch2;
-> +		i2c623 = &i2c6s2ch3;
-> +		i2c624 = &i2c6s2ch4;
-> +		i2c625 = &i2c6s2ch5;
-> +		i2c626 = &i2c6s2ch6;
-> +		i2c627 = &i2c6s2ch7;
-> +	};
+> Signed-off-by: Cosmo Chou <cosmo.chou@quantatw.com>
+> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
+> ---
+>  net/ncsi/internal.h    |  1 +
+>  net/ncsi/ncsi-manage.c | 16 ++++++++++++----
+>  2 files changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/net/ncsi/internal.h b/net/ncsi/internal.h
+> index ef0f8f73826f..bd7ad0bf803f 100644
+> --- a/net/ncsi/internal.h
+> +++ b/net/ncsi/internal.h
+> @@ -341,6 +341,7 @@ struct ncsi_dev_priv {
+>  #define NCSI_MAX_VLAN_VIDS	15
+>  	struct list_head    vlan_vids;       /* List of active VLAN IDs */
+>  
+> +	unsigned int        max_package;     /* Num of packages to probe   */
+>  	bool                multi_package;   /* Enable multiple packages   */
+>  	bool                mlx_multi_host;  /* Enable multi host Mellanox */
+>  	u32                 package_whitelist; /* Packages to configure    */
+> diff --git a/net/ncsi/ncsi-manage.c b/net/ncsi/ncsi-manage.c
+> index 5ecf611c8820..159943ee1317 100644
+> --- a/net/ncsi/ncsi-manage.c
+> +++ b/net/ncsi/ncsi-manage.c
+> @@ -1358,12 +1358,12 @@ static void ncsi_probe_channel(struct ncsi_dev_priv *ndp)
+>  		nd->state = ncsi_dev_state_probe_deselect;
+>  		fallthrough;
+>  	case ncsi_dev_state_probe_deselect:
+> -		ndp->pending_req_num = 8;
+> +		ndp->pending_req_num = ndp->max_package;
+>  
+>  		/* Deselect all possible packages */
+>  		nca.type = NCSI_PKT_CMD_DP;
+>  		nca.channel = NCSI_RESERVED_CHANNEL;
+> -		for (index = 0; index < 8; index++) {
+> +		for (index = 0; index < ndp->max_package; index++) {
+>  			nca.package = index;
+>  			ret = ncsi_xmit_cmd(&nca);
+>  			if (ret)
+> @@ -1491,7 +1491,7 @@ static void ncsi_probe_channel(struct ncsi_dev_priv *ndp)
+>  
+>  		/* Probe next package */
+>  		ndp->package_probe_id++;
+> -		if (ndp->package_probe_id >= 8) {
+> +		if (ndp->package_probe_id >= ndp->max_package) {
+>  			/* Probe finished */
+>  			ndp->flags |= NCSI_DEV_PROBED;
+>  			break;
+> @@ -1746,7 +1746,7 @@ struct ncsi_dev *ncsi_register_dev(struct net_device *dev,
+>  	struct platform_device *pdev;
+>  	struct device_node *np;
+>  	unsigned long flags;
+> -	int i;
+> +	int i, ret;
+>  
+>  	/* Check if the device has been registered or not */
+>  	nd = ncsi_find_dev(dev);
+> @@ -1795,6 +1795,14 @@ struct ncsi_dev *ncsi_register_dev(struct net_device *dev,
+>  		if (np && (of_property_read_bool(np, "mellanox,multi-host") ||
+>  			   of_property_read_bool(np, "mlx,multi-host")))
+>  			ndp->mlx_multi_host = true;
 > +
-> +	chosen {
-> +		stdout-path = &uart5;
-> +		bootargs = "console=ttyS4,115200n8 earlycon";
 
-earlycon is debugging tool, not production, drop. This leads to totally
-redundant bootargs, so drop it entirely.
+Should the "ncsi-package" (and above multi-host properties) be
+documented in DT bindings somewhere? I was unable to locate such
+documentation.
 
-> +	};
-> +
-> +	memory at 80000000 {
-> +		device_type = "memory";
-> +		reg = <0x80000000 0x80000000>;
-> +	};
-> +
+> +		if (np) {
+> +			ret = of_property_read_u32(np, "ncsi-package",
+> +						   &ndp->max_package);
+> +			if (ret || !ndp->max_package ||
+> +			    ndp->max_package > NCSI_MAX_PACKAGE)
+> +				ndp->max_package = NCSI_MAX_PACKAGE;
+> +		}
+>  	}
 
-...
+It seems that ndp->max_package will be 0 unless pdev != NULL and np != NULL.
+Would it be better set to NCSI_MAX_PACKAGE in such cases?
 
-
-> +&i2c2 {
-> +	status = "okay";
-
-Missing blank line (everywhere)
-
-> +	pca9546 at 70{
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-> +		compatible = "nxp,pca9546";
-> +		reg = <0x70>;
-> +		bus2_mux70_0: i2c at 2{
-> +			reg = <0>;
-> +			tmp112 at 49{
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-Everywhere: missing space before {
-
-
-> +				compatible = "ti,tmp112";
-> +				reg = <0x49>;
-> +				label = "Inlet_Temp";
-> +			};
-
-Missing blank line
-
-> +			emc1413 at 4c{
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-> +				compatible = "microchip,emc1413";
-> +				reg = <0x4c>;
-> +				label = "Outlet_Temp";
-> +			};
-> +		};
-> +	};
-> +};
-> +
-> +&i2c4 {
-> +	multi-master;
-> +	status = "okay";
-> +	ipmb0 at 10 {
-> +		compatible = "ipmb-dev";
-> +		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-> +		i2c-protocol;
-> +	};
-> +};
-> +
-> +&i2c5 {
-> +	bus-frequency = <1000000>;
-> +	multi-master;
-> +	status = "okay";
-> +	pca9546 at 70{
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-Above comment applies to multiple places.
-
-> +		compatible = "nxp,pca9546";
-> +		reg = <0x70>;
-> +		bus5_mux00: i2c at 0 {
-> +			reg = <0>;
-> +			status = "okay";
-
-Where is it disabled?
-
-> +			vrmp2888 at 76 {
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-> +				compatible = "mps,mp2888";
-> +				reg = <0x76>;
-> +			};
-> +			vrmp2888 at 72 {
-> +				compatible = "mps,mp2888";
-> +				reg = <0x72>;
-> +			};
-> +			vrmp2888 at 62{
-> +				compatible = "mps,mp2888";
-> +				reg = <0x62>;
-> +			};
-> +		};
-> +		bus5_mux01: i2c at 1{
-> +			reg = <1>;
-> +			status = "okay";
-
-Where is it disabled?
-
-> +			vrmp2888 at 76{
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-> +				compatible = "mps,mp2888";
-> +				reg = <0x76>;
-> +			};
-> +			vrmp2888 at 72 {
-> +				compatible = "mps,mp2888";
-> +				reg = <0x72>;
-> +			};
-> +			vrmp2888 at 62{
-> +				compatible = "mps,mp2888";
-> +				reg = <0x62>;
-> +			};
-> +		};
-> +		bus5_mux02: i2c at 2{
-> +			reg = <2>;
-> +		};
-> +		bus5_mux03: i2c at 3{
-> +			reg = <3>;
-> +		};
-> +	};
-> +};
-> +
-> +&i2c6 {
-> +	multi-master;
-> +	status = "okay";
-> +
-> +	i2c-switch at 70 {
-> +		compatible = "nxp,pca9548";
-> +		reg = <0x70>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		i2c6s0ch0: i2c at 0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0>;
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c256";
-> +				reg = <0x50>;
-> +			};
-> +			pca9548 at 71 {
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-> +				compatible = "nxp,pca9548";
-> +				reg = <0x71>;
-> +				i2c-mux-idle-disconnect;
-> +
-> +				i2c6s1ch0: i2c at 0 {
-
-
-
-
-> +		};
-> +	};
-> +};
-> +
-> +&i2c7 {
-> +	multi-master;
-> +	#retries = <3>;
-> +	status = "okay";
-> +
-> +	adc128d818 at 1d {
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
-> +		compatible = "ti,adc128d818";
-> +		reg = <0x1d>;
-> +		ti,mode = /bits/ 8 <0x01>;
-> +	};
-
-
-
-Best regards,
-Krzysztof
-
+>  
+>  	return nd;
+> -- 
+> 2.25.1
+> 
+> 
