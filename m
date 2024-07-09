@@ -1,27 +1,42 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Tue, 9 Jul 2024 08:40:16 +0200
-Subject: [PATCH v3] dt-bindings: vendor-prefixes: Add prefix for ieisystem
-In-Reply-To: <20240709012243.44810-1-liuxiwei@ieisystem.com>
-References: <20240709012243.44810-1-liuxiwei@ieisystem.com>
-Message-ID: <14f85202-6c08-4d03-9d8b-4ab7e42cd230@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 9 Jul 2024 10:25:41 -0600
+Subject: [PATCH v2] dt-bindings: arm: aspeed: add IEIT x86 platform BMC
+ boards
+In-Reply-To: <20240708034848.100930-1-liuxiwei@ieisystem.com>
+References: <20240708034848.100930-1-liuxiwei@ieisystem.com>
+Message-ID: <20240709162541.GA3680692-robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/07/2024 03:22, George Liu wrote:
-> Add a vendor prefix entry for ieisystem
+On Mon, Jul 08, 2024 at 11:48:48AM +0800, George Liu wrote:
+> Document the new compatibles used on the ieisystems
 > 
-> Signed-off-by: George Liu <liuxiwei1013@gmail.com>
+> Signed-off-by: George Liu <liuxiwei@ieisystem.com>
+
+Still confused with the 3 names: ieisystems, ieisystem, and ieit
+
+The preference for vendor prefixes is domain names, but if ieit is a 
+better identifier please explain why (in the commit msg).
+
 > ---
-> v2 -> v3
->  - match Signed-off-by email
-> ---
-
-You fixed two out of three issues that I pointed out. So let's be
-specific: how did you fix broken mail threading?
-
-Best regards,
-Krzysztof
-
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> index e386d0ebfb14..818fbe9c45fc 100644
+> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> @@ -92,6 +92,7 @@ properties:
+>                - ibm,rainier-bmc
+>                - ibm,system1-bmc
+>                - ibm,tacoma-bmc
+> +              - ieit,nf5280m7-bmc
+>                - inventec,starscream-bmc
+>                - inventec,transformer-bmc
+>                - jabil,rbp-bmc
+> -- 
+> 2.34.1
+> 
