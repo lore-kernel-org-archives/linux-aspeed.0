@@ -1,32 +1,35 @@
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Wed, 10 Jul 2024 10:28:43 +0200
-Subject: [PATCH v4] dt-bindings: vendor-prefixes: Add prefix for ieisystem
-In-Reply-To: <20240710022249.72234-1-liuxiwei@ieisystem.com>
-References: <20240710022249.72234-1-liuxiwei@ieisystem.com>
-Message-ID: <56042a1c-074c-42b4-9ede-1b9927e5199a@linaro.org>
+From: Yang Chen <yangchen.openbmc@gmail.com>
+Date: Thu, 11 Jul 2024 21:05:01 +0800
+Subject: [PATCH v1 1/1] ARM: dts: aspeed: minerva: add host0-ready pin
+In-Reply-To: <20240711130501.2900301-1-yangchen.openbmc@gmail.com>
+References: <20240711130501.2900301-1-yangchen.openbmc@gmail.com>
+Message-ID: <20240711130501.2900301-2-yangchen.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/07/2024 04:22, George Liu wrote:
-> Add a vendor prefix entry for ieisystem
-> 
-> Link: https://en.ieisystem.com/
-> 
-> Signed-off-by: George Liu <liuxiwei1013@gmail.com>
-> ---
-> v2 -> v3
->  - match Signed-off-by email
-> v3 -> v4
->  - add link
+Add host0-ready pin for phosphor-state-manager.
 
-For the third time: please thread your patches correctly. You have one
-patchset, not three. git format-patch -3 -v4 && git send-email.
+Signed-off-by: Yang Chen <yangchen.openbmc@gmail.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Or just use b4.
-
-Best regards,
-Krzysztof
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+index f5ac248097b4..41e2246cfbd1 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dts
+@@ -613,7 +613,7 @@ &gpio0 {
+ 	/*P0-P7*/	"","","","","","","","",
+ 	/*Q0-Q7*/	"","","","","","power-chassis-control","","",
+ 	/*R0-R7*/	"","","","","","","","",
+-	/*S0-S7*/	"","","","","","","","",
++	/*S0-S7*/	"","","","","","","","host0-ready",
+ 	/*T0-T7*/	"","","","","","","","",
+ 	/*U0-U7*/	"","","","","","","","",
+ 	/*V0-V7*/	"","","","","BAT_DETECT","","power-chassis-good","",
+-- 
+2.34.1
 
