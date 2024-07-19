@@ -1,48 +1,67 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 19 Jul 2024 13:58:53 +0800
-Subject: [PATCH v10 24/27] ARM: dts: aspeed: yosemite4: add XDP710
+Date: Fri, 19 Jul 2024 13:58:54 +0800
+Subject: [PATCH v10 25/27] ARM: dts: aspeed: yosemite4: add RTQ6056 support
 In-Reply-To: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240719055859.4166887-25-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240719055859.4166887-26-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add XDP710 in yosemite4 DTS.
+Add RTQ6056 (spider board 3rd source) support in yosemite4 DTS.
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 2cbb210ed53e..05f109687ee2 100644
+index 05f109687ee2..b0eb38f9aa7e 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -978,11 +978,21 @@ power-sensor at 10 {
- 		reg = <0x10>;
+@@ -1240,35 +1240,35 @@ adc at 37 {
  	};
  
-+	power-sensor at 11 {
-+		compatible = "infineon,xdp710";
-+		reg = <0x11>;
-+	};
-+
- 	power-sensor at 12 {
- 		compatible = "adi,adm1272";
- 		reg = <0x12>;
+ 	power-sensor at 40 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x40>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
  	};
  
-+	power-sensor at 13 {
-+		compatible = "infineon,xdp710";
-+		reg = <0x13>;
-+	};
-+
- 	gpio at 20 {
- 		compatible = "nxp,pca9555";
- 		pinctrl-names = "default";
+ 	power-sensor at 41 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x41>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 42 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x42>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 43 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x43>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 44 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x44>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
 -- 
 2.25.1
 
