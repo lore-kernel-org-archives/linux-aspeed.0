@@ -1,67 +1,98 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 19 Jul 2024 13:58:54 +0800
-Subject: [PATCH v10 25/27] ARM: dts: aspeed: yosemite4: add RTQ6056 support
+Date: Fri, 19 Jul 2024 13:58:55 +0800
+Subject: [PATCH v10 26/27] ARM: dts: aspeed: yosemite4: add MP5990 support
 In-Reply-To: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240719055859.4166887-26-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240719055859.4166887-27-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add RTQ6056 (spider board 3rd source) support in yosemite4 DTS.
+Add MP5990 in yosemite4 DTS.
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 05f109687ee2..b0eb38f9aa7e 100644
+index b0eb38f9aa7e..7ad080e3f432 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1240,35 +1240,35 @@ adc at 37 {
+@@ -356,7 +356,7 @@ gpio at 24 {
  	};
  
  	power-sensor at 40 {
--		compatible = "ti,ina233";
-+		compatible = "ti,ina233", "richtek,rtq6056";
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
  		reg = <0x40>;
- 		resistor-calibration = /bits/ 16 <0x0a00>;
- 		current-lsb= /bits/ 16 <0x0001>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -402,7 +402,7 @@ gpio at 24 {
  	};
  
- 	power-sensor at 41 {
--		compatible = "ti,ina233";
-+		compatible = "ti,ina233", "richtek,rtq6056";
- 		reg = <0x41>;
- 		resistor-calibration = /bits/ 16 <0x0a00>;
- 		current-lsb= /bits/ 16 <0x0001>;
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -448,7 +448,7 @@ gpio at 24 {
  	};
  
- 	power-sensor at 42 {
--		compatible = "ti,ina233";
-+		compatible = "ti,ina233", "richtek,rtq6056";
- 		reg = <0x42>;
- 		resistor-calibration = /bits/ 16 <0x0a00>;
- 		current-lsb= /bits/ 16 <0x0001>;
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -494,7 +494,7 @@ gpio at 24 {
  	};
  
- 	power-sensor at 43 {
--		compatible = "ti,ina233";
-+		compatible = "ti,ina233", "richtek,rtq6056";
- 		reg = <0x43>;
- 		resistor-calibration = /bits/ 16 <0x0a00>;
- 		current-lsb= /bits/ 16 <0x0001>;
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -540,7 +540,7 @@ gpio at 24 {
  	};
  
- 	power-sensor at 44 {
--		compatible = "ti,ina233";
-+		compatible = "ti,ina233", "richtek,rtq6056";
- 		reg = <0x44>;
- 		resistor-calibration = /bits/ 16 <0x0a00>;
- 		current-lsb= /bits/ 16 <0x0001>;
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -586,7 +586,7 @@ gpio at 24 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -632,7 +632,7 @@ gpio at 24 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
+@@ -678,7 +678,7 @@ gpio at 24 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1281";
++		compatible = "adi,adm1281", "mps,mp5990";
+ 		reg = <0x40>;
+ 		shunt-resistor-micro-ohms = <500>;
+ 	};
 -- 
 2.25.1
 
