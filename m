@@ -1,199 +1,43 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 19 Jul 2024 13:58:52 +0800
-Subject: [PATCH v10 23/27] ARM: dts: aspeed: yosemite4: add fan led config
+Date: Fri, 19 Jul 2024 13:58:51 +0800
+Subject: [PATCH v10 22/27] ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
 In-Reply-To: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240719055859.4166887-24-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240719055859.4166887-23-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Set fan led config in yosemite4 DTS.
+Revise duty cycle SMB11 and SMB16 to high: 40%, low: 60%,
+to meet 400kHz-i2c clock low time spec (> 1.3 us) from EE request
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 152 +++++++++++++++++-
- 1 file changed, 150 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 21ca22281ef8..2cbb210ed53e 100644
+index 62dfe935cbcd..21ca22281ef8 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -75,6 +75,154 @@ tpmdev at 0 {
- 			reg = <0>;
- 		};
- 	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		fan0_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 4 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan0_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 5 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan1_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 10 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan1_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 11 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan2_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 4 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan2_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 5 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan3_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 10 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan3_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 11 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan4_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 2 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan4_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 3 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan5_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 8 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan5_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 9 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan6_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 2 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan6_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 3 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan7_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 8 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan7_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 9 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan8_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan8_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 1 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan9_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 6 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan9_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 7 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan10_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan10_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 1 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan11_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 6 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan11_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 7 GPIO_ACTIVE_HIGH>;
-+		};
-+	};
- };
+@@ -761,6 +761,7 @@ eeprom at 54 {
+ &i2c10 {
+ 	status = "okay";
+ 	bus-frequency = <400000>;
++	i2c-clk-high-min-percent = <40>;
+ 	i2c-mux at 74 {
+ 		compatible = "nxp,pca9544";
+ 		i2c-mux-idle-disconnect;
+@@ -1314,6 +1315,7 @@ &i2c15 {
+ 	mctp-controller;
+ 	multi-master;
+ 	bus-frequency = <400000>;
++	i2c-clk-high-min-percent = <40>;
  
- &uart1 {
-@@ -1198,7 +1346,7 @@ eeprom at 52 {
- 				reg = <0x52>;
- 			};
- 
--			gpio at 61 {
-+			led_gpio0: gpio at 61 {
- 				compatible = "nxp,pca9552";
- 				reg = <0x61>;
- 				#address-cells = <1>;
-@@ -1268,7 +1416,7 @@ eeprom at 52 {
- 				reg = <0x52>;
- 			};
- 
--			gpio at 61 {
-+			led_gpio1: gpio at 61 {
- 				compatible = "nxp,pca9552";
- 				reg = <0x61>;
- 				#address-cells = <1>;
+ 	mctp at 10 {
+ 		compatible = "mctp-i2c-controller";
 -- 
 2.25.1
 
