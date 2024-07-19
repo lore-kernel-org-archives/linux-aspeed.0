@@ -1,47 +1,65 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 19 Jul 2024 13:58:40 +0800
-Subject: [PATCH v10 11/27] ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
+Date: Fri, 19 Jul 2024 13:58:39 +0800
+Subject: [PATCH v10 10/27] ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
 In-Reply-To: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240719055859.4166887-12-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240719055859.4166887-11-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add eeprom for yosemite4 use
+Add power sensor for power module reading
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 25 +++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 2ac872878acd..9a14f0220cf6 100644
+index 92733a8ecf0b..2ac872878acd 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -932,7 +932,7 @@ temperature-sensor at 4b {
+@@ -906,6 +906,11 @@ gpio at 23 {
+ 		"HSC7-ALERT2-R-N","HSC8-ALERT2-R-N";
  	};
  
- 	eeprom at 54 {
--		compatible = "atmel,24c256";
-+		compatible = "atmel,24c128";
- 		reg = <0x54>;
- 	};
- 
-@@ -971,6 +971,11 @@ eeprom at 50 {
- 		reg = <0x50>;
- 	};
- 
-+	eeprom at 54 {
-+		compatible = "atmel,24c64";
-+		reg = <0x54>;
++	power-sensor at 40 {
++		compatible = "mps,mp5023";
++		reg = <0x40>;
 +	};
 +
- 	rtc at 6f {
- 		compatible = "nuvoton,nct3018y";
- 		reg = <0x6f>;
+ 	temperature-sensor at 48 {
+ 		compatible = "ti,tmp75";
+ 		reg = <0x48>;
+@@ -930,6 +935,26 @@ eeprom at 54 {
+ 		compatible = "atmel,24c256";
+ 		reg = <0x54>;
+ 	};
++
++	power-sensor at 62 {
++		compatible = "pmbus";
++		reg = <0x62>;
++	};
++
++	power-sensor at 64 {
++		compatible = "pmbus";
++		reg = <0x64>;
++	};
++
++	power-sensor at 65 {
++		compatible = "pmbus";
++		reg = <0x65>;
++	};
++
++	power-sensor at 68 {
++		compatible = "pmbus";
++		reg = <0x68>;
++	};
+ };
+ 
+ &i2c12 {
 -- 
 2.25.1
 
