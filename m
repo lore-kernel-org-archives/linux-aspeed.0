@@ -1,51 +1,40 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 19 Jul 2024 13:58:32 +0800
-Subject: [PATCH v10 03/27] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+Date: Fri, 19 Jul 2024 13:58:33 +0800
+Subject: [PATCH v10 04/27] ARM: dts: aspeed: yosemite4: Enable watchdog2
 In-Reply-To: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240719055859.4166887-4-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240719055859.4166887-5-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-enable spi-gpio setting for spi flash
+enable watchdog2 setting
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index dd88be47d1c8..effc2af636a4 100644
+index effc2af636a4..b0643e8aefee 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -53,6 +53,24 @@ iio-hwmon {
- 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
- 				<&adc1 0>, <&adc1 1>, <&adc1 7>;
- 	};
-+
-+	spi_gpio: spi-gpio {
-+		compatible = "spi-gpio";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
-+		gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
-+		gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
-+		num-chipselects = <1>;
-+		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
-+
-+		tpmdev at 0 {
-+			compatible = "tcg,tpm_tis-spi";
-+			spi-max-frequency = <33000000>;
-+			reg = <0>;
-+		};
-+	};
+@@ -120,6 +120,13 @@ &wdt1 {
+ 	aspeed,ext-pulse-duration = <256>;
  };
  
- &uart1 {
++&wdt2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdtrst2_default>;
++	aspeed,reset-type = "system";
++};
++
+ &mac2 {
+ 	status = "okay";
+ 	pinctrl-names = "default";
 -- 
 2.25.1
 
