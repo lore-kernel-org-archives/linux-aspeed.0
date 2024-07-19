@@ -1,51 +1,70 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 19 Jul 2024 13:58:42 +0800
-Subject: [PATCH v10 13/27] ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4 schematic change
+Date: Fri, 19 Jul 2024 13:58:43 +0800
+Subject: [PATCH v10 14/27] ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4 schematic change
 In-Reply-To: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240719055859.4166887-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240719055859.4166887-14-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240719055859.4166887-15-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise adc128d818 adc mode for yosemite4 schematic change
+Revise ina233 config for yosemite4 schematic change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 8f3bbdd1bbc5..0c7d85ff4360 100644
+index 0c7d85ff4360..67e3c787d675 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1018,19 +1018,19 @@ &i2c14 {
- 	adc at 1d {
- 		compatible = "ti,adc128d818";
- 		reg = <0x1d>;
--		ti,mode = /bits/ 8 <2>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
- 
--	adc at 35 {
-+	adc at 36 {
- 		compatible = "ti,adc128d818";
--		reg = <0x35>;
--		ti,mode = /bits/ 8 <2>;
-+		reg = <0x36>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
- 
- 	adc at 37 {
- 		compatible = "ti,adc128d818";
- 		reg = <0x37>;
--		ti,mode = /bits/ 8 <2>;
-+		ti,mode = /bits/ 8 <1>;
+@@ -1034,28 +1034,38 @@ adc at 37 {
  	};
  
  	power-sensor at 40 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x40>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 41 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x41>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 42 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x42>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 43 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x43>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 44 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x44>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	temperature-sensor at 4e {
 -- 
 2.25.1
 
