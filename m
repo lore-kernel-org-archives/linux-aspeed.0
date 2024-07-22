@@ -1,26 +1,34 @@
 From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Mon, 22 Jul 2024 22:58:55 +0800
-Subject: [PATCH 0/2] Add Meta(Facebook) Catalina BMC(AST2600)
-Message-ID: <20240722145857.2131100-1-potin.lai.pt@gmail.com>
+Date: Mon, 22 Jul 2024 22:58:56 +0800
+Subject: [PATCH 1/2] dt-bindings: arm: aspeed: add Meta Catalina board
+In-Reply-To: <20240722145857.2131100-1-potin.lai.pt@gmail.com>
+References: <20240722145857.2131100-1-potin.lai.pt@gmail.com>
+Message-ID: <20240722145857.2131100-2-potin.lai.pt@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add Linux device tree entry related to Meta(Facebook) Catalina specific
-devices connected to BMC(AST2600) SoC.
+Document the new compatibles used on Meta Catalina.
 
-Potin Lai (2):
-  dt-bindings: arm: aspeed: add Meta Catalina board
-  ARM: dts: aspeed: catalina: add Meta Catalina BMC
+Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../bindings/arm/aspeed/aspeed.yaml           |    1 +
- arch/arm/boot/dts/aspeed/Makefile             |    1 +
- .../aspeed/aspeed-bmc-facebook-catalina.dts   | 1032 +++++++++++++++++
- 3 files changed, 1034 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index e386d0ebfb14a..2f92b8ab08fa2 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - aspeed,ast2600-evb-a1
+               - asus,x4tf-bmc
+               - facebook,bletchley-bmc
++              - facebook,catalina-bmc
+               - facebook,cloudripper-bmc
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
 -- 
 2.31.1
 
