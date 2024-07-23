@@ -1,65 +1,70 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 23 Jul 2024 17:22:51 +0800
-Subject: [PATCH v11 10/27] ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
+Date: Tue, 23 Jul 2024 17:22:55 +0800
+Subject: [PATCH v11 14/27] ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4 schematic change
 In-Reply-To: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240723092310.3565410-11-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240723092310.3565410-15-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add power sensor for power module reading
+Revise ina233 config for yosemite4 schematic change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 25 +++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 09bbbcb192f5..139a09de24cf 100644
+index 1765a0bb70d7..df389b506b4b 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -906,6 +906,11 @@ gpio at 23 {
- 		"HSC7_ALERT2_R_N","HSC8_ALERT2_R_N";
+@@ -1034,28 +1034,38 @@ adc at 37 {
  	};
  
-+	power-sensor at 40 {
-+		compatible = "mps,mp5023";
-+		reg = <0x40>;
-+	};
-+
- 	temperature-sensor at 48 {
- 		compatible = "ti,tmp75";
- 		reg = <0x48>;
-@@ -930,6 +935,26 @@ eeprom at 54 {
- 		compatible = "atmel,24c256";
- 		reg = <0x54>;
+ 	power-sensor at 40 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x40>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
  	};
-+
-+	power-sensor at 62 {
-+		compatible = "pmbus";
-+		reg = <0x62>;
-+	};
-+
-+	power-sensor at 64 {
-+		compatible = "pmbus";
-+		reg = <0x64>;
-+	};
-+
-+	power-sensor at 65 {
-+		compatible = "pmbus";
-+		reg = <0x65>;
-+	};
-+
-+	power-sensor at 68 {
-+		compatible = "pmbus";
-+		reg = <0x68>;
-+	};
- };
  
- &i2c12 {
+ 	power-sensor at 41 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x41>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 42 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x42>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 43 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x43>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 44 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x44>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	temperature-sensor at 4e {
 -- 
 2.25.1
 
