@@ -1,70 +1,47 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 23 Jul 2024 17:22:55 +0800
-Subject: [PATCH v11 14/27] ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4 schematic change
+Date: Tue, 23 Jul 2024 17:22:52 +0800
+Subject: [PATCH v11 11/27] ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
 In-Reply-To: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240723092310.3565410-15-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240723092310.3565410-12-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise ina233 config for yosemite4 schematic change
+Add eeprom for yosemite4 use
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 1765a0bb70d7..df389b506b4b 100644
+index 139a09de24cf..e83cb51ac19d 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1034,28 +1034,38 @@ adc at 37 {
+@@ -932,7 +932,7 @@ temperature-sensor at 4b {
  	};
  
- 	power-sensor at 40 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x40>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
+ 	eeprom at 54 {
+-		compatible = "atmel,24c256";
++		compatible = "atmel,24c128";
+ 		reg = <0x54>;
  	};
  
- 	power-sensor at 41 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x41>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
+@@ -971,6 +971,11 @@ eeprom at 50 {
+ 		reg = <0x50>;
  	};
  
- 	power-sensor at 42 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x42>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 43 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x43>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 44 {
--		compatible = "ti,ina230";
-+		compatible = "ti,ina233";
- 		reg = <0x44>;
-+		resistor-calibration = /bits/ 16 <0x0a00>;
-+		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	temperature-sensor at 4e {
++	eeprom at 54 {
++		compatible = "atmel,24c64";
++		reg = <0x54>;
++	};
++
+ 	rtc at 6f {
+ 		compatible = "nuvoton,nct3018y";
+ 		reg = <0x6f>;
 -- 
 2.25.1
 
