@@ -1,51 +1,47 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 23 Jul 2024 17:22:44 +0800
-Subject: [PATCH v11 03/27] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+Date: Tue, 23 Jul 2024 17:22:46 +0800
+Subject: [PATCH v11 05/27] ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
 In-Reply-To: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240723092310.3565410-4-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240723092310.3565410-6-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-enable spi-gpio setting for spi flash
+Revise quad mode to dual mode to avoid WP pin influnece the SPI
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ .../arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 0d659ee2bc19..575abdd530df 100644
+index 51b4e9ae13cc..e5354efbb903 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -53,6 +53,24 @@ iio-hwmon {
- 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
- 				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+@@ -149,15 +149,17 @@ flash at 0 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc";
+-		spi-rx-bus-width = <4>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
+ 		spi-max-frequency = <50000000>;
+-#include "openbmc-flash-layout-64.dtsi"
++#include "openbmc-flash-layout-128.dtsi"
  	};
-+
-+	spi_gpio: spi-gpio {
-+		compatible = "spi-gpio";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
-+		gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
-+		gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
-+		num-chipselects = <1>;
-+		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
-+
-+		tpmdev at 0 {
-+			compatible = "tcg,tpm_tis-spi";
-+			spi-max-frequency = <33000000>;
-+			reg = <0>;
-+		};
-+	};
+ 	flash at 1 {
+ 		status = "okay";
+ 		m25p,fast-read;
+ 		label = "bmc2";
+-		spi-rx-bus-width = <4>;
++		spi-tx-bus-width = <2>;
++		spi-rx-bus-width = <2>;
+ 		spi-max-frequency = <50000000>;
+ 	};
  };
- 
- &uart1 {
 -- 
 2.25.1
 
