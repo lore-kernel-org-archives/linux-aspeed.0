@@ -1,108 +1,199 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 23 Jul 2024 17:23:00 +0800
-Subject: [PATCH v11 19/27] ARM: dts: aspeed: yosemite4: support mux to cpld
+Date: Tue, 23 Jul 2024 17:23:04 +0800
+Subject: [PATCH v11 23/27] ARM: dts: aspeed: yosemite4: add fan led config
 In-Reply-To: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240723092310.3565410-20-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240723092310.3565410-24-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mux pca9544 to cpld was added on EVT HW schematic design,
-so add dts setting for devices behind mux pca9544 to cpld
+Set fan led config in yosemite4 DTS.
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 64 ++++++++++++++-----
- 1 file changed, 49 insertions(+), 15 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 152 +++++++++++++++++-
+ 1 file changed, 150 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 7b8a2384d99d..98eeee49b082 100644
+index c940d23c8a4b..2f4e9c5edd5a 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -36,6 +36,10 @@ aliases {
- 		i2c31 = &imux31;
- 		i2c32 = &imux32;
- 		i2c33 = &imux33;
-+		i2c34 = &imux34;
-+		i2c35 = &imux35;
-+		i2c36 = &imux36;
-+		i2c37 = &imux37;
+@@ -75,6 +75,154 @@ tpmdev at 0 {
+ 			reg = <0>;
+ 		};
  	};
- 
- 	chosen {
-@@ -951,24 +955,54 @@ &i2c12 {
- 	status = "okay";
- 	bus-frequency = <400000>;
- 
--	temperature-sensor at 48 {
--		compatible = "ti,tmp75";
--		reg = <0x48>;
--	};
-+	i2c-mux at 70 {
-+		compatible = "nxp,pca9544";
-+		i2c-mux-idle-disconnect;
-+		reg = <0x70>;
- 
--	eeprom at 50 {
--		compatible = "atmel,24c128";
--		reg = <0x50>;
--	};
-+		imux34: i2c at 0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0>;
- 
--	eeprom at 54 {
--		compatible = "atmel,24c64";
--		reg = <0x54>;
--	};
-+			temperature-sensor at 48 {
-+				compatible = "ti,tmp75";
-+				reg = <0x48>;
-+			};
 +
-+			eeprom at 50 {
-+				compatible = "atmel,24c128";
-+				reg = <0x50>;
-+			};
- 
--	rtc at 6f {
--		compatible = "nuvoton,nct3018y";
--		reg = <0x6f>;
-+			eeprom at 54 {
-+				compatible = "atmel,24c64";
-+				reg = <0x54>;
-+			};
++	leds {
++		compatible = "gpio-leds";
 +
-+			rtc at 6f {
-+				compatible = "nuvoton,nct3018y";
-+				reg = <0x6f>;
-+			};
++		fan0_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 4 GPIO_ACTIVE_HIGH>;
 +		};
 +
-+		imux35: i2c at 1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
++		fan0_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 5 GPIO_ACTIVE_HIGH>;
 +		};
 +
-+		imux36: i2c at 2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <2>;
++		fan1_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 10 GPIO_ACTIVE_HIGH>;
 +		};
 +
-+		imux37: i2c at 3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3>;
++		fan1_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 11 GPIO_ACTIVE_HIGH>;
 +		};
- 	};
++
++		fan2_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 4 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan2_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 5 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan3_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 10 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan3_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 11 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan4_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 2 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan4_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 3 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan5_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 8 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan5_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 9 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan6_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 2 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan6_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 3 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan7_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 8 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan7_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 9 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan8_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 0 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan8_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 1 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan9_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 6 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan9_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 7 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan10_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 0 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan10_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 1 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan11_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 6 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan11_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 7 GPIO_ACTIVE_HIGH>;
++		};
++	};
  };
  
+ &uart1 {
+@@ -1198,7 +1346,7 @@ eeprom at 52 {
+ 				reg = <0x52>;
+ 			};
+ 
+-			gpio at 61 {
++			led_gpio0: gpio at 61 {
+ 				compatible = "nxp,pca9552";
+ 				reg = <0x61>;
+ 				#address-cells = <1>;
+@@ -1268,7 +1416,7 @@ eeprom at 52 {
+ 				reg = <0x52>;
+ 			};
+ 
+-			gpio at 61 {
++			led_gpio1: gpio at 61 {
+ 				compatible = "nxp,pca9552";
+ 				reg = <0x61>;
+ 				#address-cells = <1>;
 -- 
 2.25.1
 
