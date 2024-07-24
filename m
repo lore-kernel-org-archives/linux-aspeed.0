@@ -1,71 +1,39 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 24 Jul 2024 09:59:51 +0200
-Subject: [PATCH v2 2/2] ARM: dts: aspeed: catalina: add Meta Catalina BMC
-In-Reply-To: <20240724-potin-catalina-dts-v2-2-ba8d475c4073@gmail.com>
-References: <20240724-potin-catalina-dts-v2-0-ba8d475c4073@gmail.com>
- <20240724-potin-catalina-dts-v2-2-ba8d475c4073@gmail.com>
-Message-ID: <f691d555-839c-4f80-9097-eac27823a35c@kernel.org>
+From: Potin Lai <potin.lai.pt@gmail.com>
+Date: Thu, 25 Jul 2024 00:19:17 +0800
+Subject: [PATCH v3 0/2] Add Meta(Facebook) Catalina BMC(AST2600)
+Message-ID: <20240725-potin-catalina-dts-v3-0-3a5b5d9e6dbc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 24/07/2024 09:41, Potin Lai wrote:
-> Add linux device tree entry for Meta(Facebook) Catalina compute-tray
-> BMC using AT2600 SoC.
-> 
-> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+Add Linux device tree entry related to Meta(Facebook) Catalina specific
+devices connected to BMC(AST2600) SoC.
 
-Thank you for your patch. There is something to discuss/improve.
+Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+---
+Changes in v3:
+- rename tmp75 nodes to temperature-sensor
+- rename tmp421 nodes to temperature-sensor
+- rename ina230 nodes to power-sensor
+- rename io_expanderX nodes to io-expanderX
+- Link to v2: https://lore.kernel.org/r/20240724-potin-catalina-dts-v2-0-ba8d475c4073 at gmail.com
 
-> +		i2c1mux0ch4: i2c at 4 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x4>;
-> +
-> +			power-monitor at 42 {
-> +				compatible = "lltc,ltc4287";
-> +				reg = <0x42>;
-> +				shunt-resistor-micro-ohms = <200>;
-> +			};
-> +			power-monitor at 43 {
-> +				compatible = "lltc,ltc4287";
-> +				reg = <0x43>;
-> +				shunt-resistor-micro-ohms = <200>;
-> +			};
-> +		};
-> +		i2c1mux0ch5: i2c at 5 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x5>;
-> +
-> +			// PDB FRU EEPROM
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c64";
-> +				reg = <0x54>;
-> +			};
-> +
-> +			// PDB TEMP SENSOR
-> +			tmp75 at 4f {
+---
+Potin Lai (2):
+      dt-bindings: arm: aspeed: add Meta Catalina board
+      ARM: dts: aspeed: catalina: add Meta Catalina BMC
 
-<form letter>
-This is a friendly reminder during the review process.
-
-It seems my or other reviewer's previous comments were not fully
-addressed. Maybe the feedback got lost between the quotes, maybe you
-just forgot to apply it. Please go back to the previous discussion and
-either implement all requested changes or keep discussing them.
-
-Thank you.
-</form letter>
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-
+ .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
+ arch/arm/boot/dts/aspeed/Makefile                  |    1 +
+ .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 1020 ++++++++++++++++++++
+ 3 files changed, 1022 insertions(+)
+---
+base-commit: 0c3836482481200ead7b416ca80c68a29cfdaabd
+change-id: 20240724-potin-catalina-dts-fda1ea3297b1
 
 Best regards,
-Krzysztof
+-- 
+Potin Lai <potin.lai.pt@gmail.com>
 
