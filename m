@@ -1,37 +1,36 @@
 From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Wed, 24 Jul 2024 15:41:44 +0800
-Subject: [PATCH v2 0/2] Add Meta(Facebook) Catalina BMC(AST2600)
-Message-ID: <20240724-potin-catalina-dts-v2-0-ba8d475c4073@gmail.com>
+Date: Wed, 24 Jul 2024 15:41:45 +0800
+Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: add Meta Catalina board
+In-Reply-To: <20240724-potin-catalina-dts-v2-0-ba8d475c4073@gmail.com>
+References: <20240724-potin-catalina-dts-v2-0-ba8d475c4073@gmail.com>
+Message-ID: <20240724-potin-catalina-dts-v2-1-ba8d475c4073@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add Linux device tree entry related to Meta(Facebook) Catalina specific
-devices connected to BMC(AST2600) SoC.
-
-changes v1 --> v2:
-- drop commented code in dts
-- rename i2c-mux channel nodes as i2c1muxXchY
-- rename gpio expander as io_expanderX
-- use "stdout-path" instead of "bootargs"
+Document the new compatibles used on Meta Catalina.
 
 Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
-Potin Lai (2):
-      dt-bindings: arm: aspeed: add Meta Catalina board
-      ARM: dts: aspeed: catalina: add Meta Catalina BMC
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
- arch/arm/boot/dts/aspeed/Makefile                  |    1 +
- .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 1020 ++++++++++++++++++++
- 3 files changed, 1022 insertions(+)
----
-base-commit: 0c3836482481200ead7b416ca80c68a29cfdaabd
-change-id: 20240724-potin-catalina-dts-fda1ea3297b1
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 95113df178cc..f1bc2bb7b670 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -79,6 +79,7 @@ properties:
+               - aspeed,ast2600-evb-a1
+               - asus,x4tf-bmc
+               - facebook,bletchley-bmc
++              - facebook,catalina-bmc
+               - facebook,cloudripper-bmc
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
 
-Best regards,
 -- 
-Potin Lai <potin.lai.pt@gmail.com>
+2.31.1
 
