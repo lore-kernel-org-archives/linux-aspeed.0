@@ -1,65 +1,59 @@
-From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Thu, 18 Jul 2024 09:20:01 -0000
-Subject: [PATCH 4/9] mtd: devices: add AT24 eeprom support
-In-Reply-To: <20240717101948.2e99f472@xps-13>
-References: <07b701a9-7b52-45b7-8dba-1c25d77cbf15@linaro.org>
- <mafs0ikxnykpr.fsf@kernel.org>
- <20240702-congenial-vigilant-boar-aeae44@houat>
- <mafs0ed8byj5z.fsf@kernel.org>
- <20240702-mighty-brilliant-eel-b0d9fa@houat>
- <20240708084440.70186564@xps-13>
- <20240709092214.omr7ccphdzdk7z7j@pengutronix.de>
- <20240709114302.3c604ef3@xps-13>
- <20240709103841.7x7n4hdtqrunyoc3@pengutronix.de>
- <20240717101948.2e99f472@xps-13>
-Message-ID: <20240718091753.apwsrvmekn2vvo4k@pengutronix.de>
+From: Kevin Chen <kevin_chen@aspeedtech.com>
+Date: Fri, 26 Jul 2024 11:09:34 -0000
+Subject: [PATCH v1 00/10] Introduce ASPEED AST27XX BMC SoC
+Message-ID: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Miquel,
+This patchset adds initial support for the ASPEED.
+AST27XX Board Management controller (BMC) SoC family.
 
-On 24-07-17, Miquel Raynal wrote:
-> Hi Marco,
-> 
-> > > > > Overall I think the idea of getting rid of these misc/ drivers is goes
-> > > > > into the right direction, but registering directly into NVMEM makes
-> > > > > more sense IMO.    
-> > > > 
-> > > > So you propose to have two places for the partition handling (one for
-> > > > MTD and one for NVMEM) instead of one and moving the code into NVMEM
-> > > > directly?  
-> > > 
-> > > Why two places for the partitions handling? Just one, in NVMEM. Also  
-> > 
-> > Without checking the details I think that converting the MTD
-> > partitioning code into NVMEM partitioning code is a bigger task. As you
-> > said below there are many legacy code paths you need to consider so they
-> > still work afterwards as well.
-> > 
-> > > usually EEPROMs don't require very advanced partitioning schemes,
-> > > unlike flashes (which are the most common MTD devices today).  
-> > 
-> > As said in my cover letter EEPROMs can become quite large and MTD
-> > supports partitioning storage devices which is very handy for large
-> > EEPROMs as well.
-> 
-> Did you had a look at nvmem-layouts ? In particular the fixed-layout.
+AST2700 is ASPEED's 8th-generation server management processor.
+Featuring a quad-core ARM Cortex A35 64-bit processor and two
+independent ARM Cortex M4 processors
 
-Yes I had a look at nvmem-layouts and we use them within a
-mtd-partition. Using them instead of a mtd-partition is not sufficient
-since they:
- 1) don't support user-space write (I send a patch for it but it doesn't
-    seem to be accepted soon).
- 2) If write would be supported the user-space need to write the
-    complete cell e.g. no partial writes.
+This patchset adds minimal architecture and drivers such as:
+Clocksource, Clock and Reset
 
-> Is there anything you would like to achieve already that is not
-> possible with nvmem but is with mtd?
+This patchset was tested on the ASPEED AST2700 evaluation board.
 
-Please see above.
+Kevin Chen (10):
+  dt-binding: mfd: aspeed,ast2x00-scu: Add binding for ASPEED AST2700
+    SCU
+  dt-binding: clk: ast2700: Add binding for Aspeed AST27xx Clock
+  clk: ast2700: add clock controller
+  dt-bindings: reset: ast2700: Add binding for ASPEED AST2700 Reset
+  dt-bindings: arm: aspeed: Add maintainer
+  dt-bindings: arm: aspeed: Add aspeed,ast2700-evb compatible string
+  arm64: aspeed: Add support for ASPEED AST2700 BMC SoC
+  arm64: dts: aspeed: Add initial AST27XX device tree
+  arm64: dts: aspeed: Add initial AST2700 EVB device tree
+  arm64: defconfig: Add ASPEED AST2700 family support
 
-Regards,
-  Marco
+ .../bindings/arm/aspeed/aspeed.yaml           |    6 +
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml      |    3 +
+ MAINTAINERS                                   |    3 +
+ arch/arm64/Kconfig.platforms                  |   14 +
+ arch/arm64/boot/dts/Makefile                  |    1 +
+ arch/arm64/boot/dts/aspeed/Makefile           |    4 +
+ arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi     |  217 +++
+ arch/arm64/boot/dts/aspeed/ast2700-evb.dts    |   50 +
+ arch/arm64/configs/defconfig                  |    1 +
+ drivers/clk/Makefile                          |    1 +
+ drivers/clk/clk-ast2700.c                     | 1166 +++++++++++++++++
+ .../dt-bindings/clock/aspeed,ast2700-clk.h    |  180 +++
+ .../dt-bindings/reset/aspeed,ast2700-reset.h  |  126 ++
+ 13 files changed, 1772 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
+ create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
+ create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+ create mode 100644 drivers/clk/clk-ast2700.c
+ create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
+ create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
+
+-- 
+2.34.1
+
