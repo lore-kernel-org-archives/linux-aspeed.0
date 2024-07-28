@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sun, 28 Jul 2024 12:04:57 -0400
-Subject: [PATCH AUTOSEL 6.10 16/23] usb: gadget: aspeed_udc: validate endpoint index for ast udc
-In-Reply-To: <20240728160538.2051879-1-sashal@kernel.org>
-References: <20240728160538.2051879-1-sashal@kernel.org>
-Message-ID: <20240728160538.2051879-16-sashal@kernel.org>
+Date: Sun, 28 Jul 2024 12:06:48 -0400
+Subject: [PATCH AUTOSEL 6.6 12/17] usb: gadget: aspeed_udc: validate endpoint index for ast udc
+In-Reply-To: <20240728160709.2052627-1-sashal@kernel.org>
+References: <20240728160709.2052627-1-sashal@kernel.org>
+Message-ID: <20240728160709.2052627-12-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -30,7 +30,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+)
 
 diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index 821a6ab5da56f..f4781e611aaa2 100644
+index fc2ead0fe6217..4868286574a1c 100644
 --- a/drivers/usb/gadget/udc/aspeed_udc.c
 +++ b/drivers/usb/gadget/udc/aspeed_udc.c
 @@ -1009,6 +1009,8 @@ static void ast_udc_getstatus(struct ast_udc_dev *udc)
