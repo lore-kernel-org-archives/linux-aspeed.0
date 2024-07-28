@@ -1,96 +1,47 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 26 Jul 2024 15:33:59 +0200
-Subject: [PATCH v1 00/10] Introduce ASPEED AST27XX BMC SoC
-In-Reply-To: <172199921352.1507193.4411331020670815695.robh@kernel.org>
-References: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
- <172199921352.1507193.4411331020670815695.robh@kernel.org>
-Message-ID: <241ceb9b-b29f-41fd-8987-2feba2e5e08e@kernel.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sun, 28 Jul 2024 12:04:57 -0400
+Subject: [PATCH AUTOSEL 6.10 16/23] usb: gadget: aspeed_udc: validate endpoint index for ast udc
+In-Reply-To: <20240728160538.2051879-1-sashal@kernel.org>
+References: <20240728160538.2051879-1-sashal@kernel.org>
+Message-ID: <20240728160538.2051879-16-sashal@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 26/07/2024 15:09, Rob Herring (Arm) wrote:
-> 
-> On Fri, 26 Jul 2024 19:03:45 +0800, Kevin Chen wrote:
->> This patchset adds initial support for the ASPEED.
->> AST27XX Board Management controller (BMC) SoC family.
->>
->> AST2700 is ASPEED's 8th-generation server management processor.
->> Featuring a quad-core ARM Cortex A35 64-bit processor and two
->> independent ARM Cortex M4 processors
->>
->> This patchset adds minimal architecture and drivers such as:
->> Clocksource, Clock and Reset
->>
->> This patchset was tested on the ASPEED AST2700 evaluation board.
->>
->> Kevin Chen (10):
->>   dt-binding: mfd: aspeed,ast2x00-scu: Add binding for ASPEED AST2700
->>     SCU
->>   dt-binding: clk: ast2700: Add binding for Aspeed AST27xx Clock
->>   clk: ast2700: add clock controller
->>   dt-bindings: reset: ast2700: Add binding for ASPEED AST2700 Reset
->>   dt-bindings: arm: aspeed: Add maintainer
->>   dt-bindings: arm: aspeed: Add aspeed,ast2700-evb compatible string
->>   arm64: aspeed: Add support for ASPEED AST2700 BMC SoC
->>   arm64: dts: aspeed: Add initial AST27XX device tree
->>   arm64: dts: aspeed: Add initial AST2700 EVB device tree
->>   arm64: defconfig: Add ASPEED AST2700 family support
->>
->>  .../bindings/arm/aspeed/aspeed.yaml           |    6 +
->>  .../bindings/mfd/aspeed,ast2x00-scu.yaml      |    3 +
->>  MAINTAINERS                                   |    3 +
->>  arch/arm64/Kconfig.platforms                  |   14 +
->>  arch/arm64/boot/dts/Makefile                  |    1 +
->>  arch/arm64/boot/dts/aspeed/Makefile           |    4 +
->>  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi     |  217 +++
->>  arch/arm64/boot/dts/aspeed/ast2700-evb.dts    |   50 +
->>  arch/arm64/configs/defconfig                  |    1 +
->>  drivers/clk/Makefile                          |    1 +
->>  drivers/clk/clk-ast2700.c                     | 1166 +++++++++++++++++
->>  .../dt-bindings/clock/aspeed,ast2700-clk.h    |  180 +++
->>  .../dt-bindings/reset/aspeed,ast2700-reset.h  |  126 ++
->>  13 files changed, 1772 insertions(+)
->>  create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
->>  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
->>  create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
->>  create mode 100644 drivers/clk/clk-ast2700.c
->>  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
->>  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
->>
->> --
->> 2.34.1
->>
->>
->>
-> 
-> 
-> My bot found new DTB warnings on the .dts files added or changed in this
-> series.
-> 
-> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-> are fixed by another series. Ultimately, it is up to the platform
-> maintainer whether these warnings are acceptable or not. No need to reply
-> unless the platform maintainer has comments.
-> 
-> If you already ran DT checks and didn't see these error(s), then
-> make sure dt-schema is up to date:
-> 
->   pip3 install dtschema --upgrade
-> 
-> 
-> New warnings running 'make CHECK_DTBS=y aspeed/ast2700-evb.dtb' for 20240726110355.2181563-1-kevin_chen at aspeedtech.com:
+From: Ma Ke <make24@iscas.ac.cn>
 
-Kevin,
-Just to clarify. Looking at the patches it was quite obvious you did not
-test it with dtbs_check. For a new arm64 platform without any legacy,
-having 0 warnings is a must.
+[ Upstream commit ee0d382feb44ec0f445e2ad63786cd7f3f6a8199 ]
 
-Consider Documentation/process/maintainer-soc-clean-dts.rst being
-implied for this platform.
+We should verify the bound of the array to assure that host
+may not manipulate the index to point past endpoint array.
 
-Best regards,
-Krzysztof
+Found by static analysis.
+
+Signed-off-by: Ma Ke <make24@iscas.ac.cn>
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Link: https://lore.kernel.org/r/20240625022306.2568122-1-make24 at iscas.ac.cn
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/usb/gadget/udc/aspeed_udc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index 821a6ab5da56f..f4781e611aaa2 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -1009,6 +1009,8 @@ static void ast_udc_getstatus(struct ast_udc_dev *udc)
+ 		break;
+ 	case USB_RECIP_ENDPOINT:
+ 		epnum = crq.wIndex & USB_ENDPOINT_NUMBER_MASK;
++		if (epnum >= AST_UDC_NUM_ENDPOINTS)
++			goto stall;
+ 		status = udc->ep[epnum].stopped;
+ 		break;
+ 	default:
+-- 
+2.43.0
 
