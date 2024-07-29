@@ -1,75 +1,72 @@
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Mon, 29 Jul 2024 09:50:08 +0800
-Subject: [PATCH v5 0/2] Add Meta(Facebook) Catalina BMC(AST2600)
-In-Reply-To: <6d73dcf20c726ad59e2aa16e507af17b3af59c42.camel@codeconstruct.com.au>
-References: <20240726-potin-catalina-dts-v5-0-8f02305af527@gmail.com>
- <172199921421.1507234.14901757413141840919.robh@kernel.org> <6d73dcf20c726ad59e2aa16e507af17b3af59c42.camel@codeconstruct.com.au>
-Message-ID: <CAGfYmwVSd846mX=WwhPu9dzZ0-d92jEzWG=dbDA+hQP+25uC9A@mail.gmail.com>
+From: Patrick Williams <patrick@stwcx.xyz>
+Date: Mon, 29 Jul 2024 17:09:28 -0500
+Subject: [PATCH v11 22/27] ARM: dts: aspeed: yosemite4: Revise i2c
+ duty-cycle
+In-Reply-To: <20240723092310.3565410-23-Delphine_CC_Chiu@wiwynn.com>
+References: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
+ <20240723092310.3565410-23-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <ZqgTGJ40wuaCJVe3@heinlein.vulture-banana.ts.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 29, 2024 at 9:17?AM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> Hi Potin,
->
-> On Fri, 2024-07-26 at 08:09 -0500, Rob Herring (Arm) wrote:
-> > On Fri, 26 Jul 2024 18:26:48 +0800, Potin Lai wrote:
-> > > Add Linux device tree entry related to Meta(Facebook) Catalina specific
-> > > devices connected to BMC(AST2600) SoC.
-> >
-> ...
-> >
-> > My bot found new DTB warnings on the .dts files added or changed in this
-> > series.
-> >
-> > Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-> > are fixed by another series. Ultimately, it is up to the platform
-> > maintainer whether these warnings are acceptable or not. No need to reply
-> > unless the platform maintainer has comments.
-> >
-> > If you already ran DT checks and didn't see these error(s), then
-> > make sure dt-schema is up to date:
-> >
-> >   pip3 install dtschema --upgrade
-> >
-> >
-> > New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-facebook-catalina.dtb' for 20240726-potin-catalina-dts-v5-0-8f02305af527 at gmail.com:
-> >
-> >
-> ...
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: /ahb/apb/bus at 1e78a000/i2c at 100/i2c-mux at 70/i2c at 2/pwm at 21: failed to match any schema with compatible: ['maxim,max31790']
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: /ahb/apb/bus at 1e78a000/i2c at 100/i2c-mux at 70/i2c at 2/pwm at 27: failed to match any schema with compatible: ['maxim,max31790']
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: /ahb/apb/bus at 1e78a000/i2c at 100/i2c-mux at 70/i2c at 3/vrm at 60: failed to match any schema with compatible: ['isil,raa228004']
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: /ahb/apb/bus at 1e78a000/i2c at 100/i2c-mux at 70/i2c at 3/vrm at 61: failed to match any schema with compatible: ['isil,raa228004']
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: /ahb/apb/bus at 1e78a000/i2c at 100/i2c-mux at 70/i2c at 3/vrm at 62: failed to match any schema with compatible: ['isil,raa228004']
-> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: /ahb/apb/bus at 1e78a000/i2c at 400/ipmb at 10: failed to match any schema with compatible: ['ipmb-dev']
-> ...
->
-> The snipped errors are mostly from the DTSI, but these errors above are
-> specific to your DTS. Can you please address them?
->
-> Andrew
+On Tue, Jul 23, 2024 at 05:23:03PM +0800, Delphine CC Chiu wrote:
+> Revise duty cycle SMB11 and SMB16 to high: 40%, low: 60%,
+> to meet 400kHz-i2c clock low time spec (> 1.3 us) from EE request
+> 
+> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> ---
+>  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> index c2994651e747..c940d23c8a4b 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> @@ -761,6 +761,7 @@ eeprom at 54 {
+>  &i2c10 {
+>  	status = "okay";
+>  	bus-frequency = <400000>;
+> +	i2c-clk-high-min-percent = <40>;
 
-Hi Andrew,
+I don't see upstream code referencing this property.
 
-I tried to follow exist dts files to add the compatible strings, but
-all of them are showing error when I manual running "make ARCH=arm
-CHECK_DTBS=y aspeed/aspeed-bmc-facebook-catalina.dtb".
+It looks like this problem has been reported by Rob's bot multiple times
+before when you've submitted this:
 
-- "ipmb-dev": arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts at line 432
-- "max31790": arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts at line 196
-- "maxim,max31790": arch/arm/boot/dts/nuvoton/nuvoton-npcm730-kudo.dts
-at line 511
-- "isil,raa229004": arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts
-at line 512
+https://lore.kernel.org/lkml/171198916336.1093653.5612835610479588096.robh at kernel.org/
 
-And there is no .yaml file for these drivers to check the proper
-compatible string.
-Do you have any suggestions in this case? Thank you.
+Is there a reason we aren't fixing this?
 
-Best Regards,
-Potin
+Maybe we are depending on this commit?  I think we need to reference it
+somehow here.
+
+https://lore.kernel.org/lkml/47e7eb15-e38d-ead3-de84-b7454e2c6eb8 at gmail.com/
+
+
+>  	i2c-mux at 74 {
+>  		compatible = "nxp,pca9544";
+>  		i2c-mux-idle-disconnect;
+> @@ -1314,6 +1315,7 @@ &i2c15 {
+>  	mctp-controller;
+>  	multi-master;
+>  	bus-frequency = <400000>;
+> +	i2c-clk-high-min-percent = <40>;
+>  
+>  	mctp at 10 {
+>  		compatible = "mctp-i2c-controller";
+> -- 
+> 2.25.1
+> 
+
+-- 
+Patrick Williams
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 833 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240729/abe3c04b/attachment.sig>
