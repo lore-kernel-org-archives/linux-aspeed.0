@@ -1,62 +1,74 @@
 From: Patrick Williams <patrick@stwcx.xyz>
-Date: Mon, 29 Jul 2024 17:09:28 -0500
-Subject: [PATCH v11 22/27] ARM: dts: aspeed: yosemite4: Revise i2c
- duty-cycle
-In-Reply-To: <20240723092310.3565410-23-Delphine_CC_Chiu@wiwynn.com>
+Date: Mon, 29 Jul 2024 17:03:23 -0500
+Subject: [PATCH v11 25/27] ARM: dts: aspeed: yosemite4: add RTQ6056
+ support
+In-Reply-To: <20240723092310.3565410-26-Delphine_CC_Chiu@wiwynn.com>
 References: <20240723092310.3565410-1-Delphine_CC_Chiu@wiwynn.com>
- <20240723092310.3565410-23-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <ZqgTGJ40wuaCJVe3@heinlein.vulture-banana.ts.net>
+ <20240723092310.3565410-26-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <ZqgRq4h0HWClxSEW@heinlein.vulture-banana.ts.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 23, 2024 at 05:23:03PM +0800, Delphine CC Chiu wrote:
-> Revise duty cycle SMB11 and SMB16 to high: 40%, low: 60%,
-> to meet 400kHz-i2c clock low time spec (> 1.3 us) from EE request
+On Tue, Jul 23, 2024 at 05:23:06PM +0800, Delphine CC Chiu wrote:
+> Add RTQ6056 (spider board 3rd source) support in yosemite4 DTS.
 > 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 > ---
->  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 ++
->  1 file changed, 2 insertions(+)
+>  .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index c2994651e747..c940d23c8a4b 100644
+> index f73719b3c2f1..03a1e41312e3 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -761,6 +761,7 @@ eeprom at 54 {
->  &i2c10 {
->  	status = "okay";
->  	bus-frequency = <400000>;
-> +	i2c-clk-high-min-percent = <40>;
-
-I don't see upstream code referencing this property.
-
-It looks like this problem has been reported by Rob's bot multiple times
-before when you've submitted this:
-
-https://lore.kernel.org/lkml/171198916336.1093653.5612835610479588096.robh at kernel.org/
-
-Is there a reason we aren't fixing this?
-
-Maybe we are depending on this commit?  I think we need to reference it
-somehow here.
-
-https://lore.kernel.org/lkml/47e7eb15-e38d-ead3-de84-b7454e2c6eb8 at gmail.com/
-
-
->  	i2c-mux at 74 {
->  		compatible = "nxp,pca9544";
->  		i2c-mux-idle-disconnect;
-> @@ -1314,6 +1315,7 @@ &i2c15 {
->  	mctp-controller;
->  	multi-master;
->  	bus-frequency = <400000>;
-> +	i2c-clk-high-min-percent = <40>;
+> @@ -1240,35 +1240,35 @@ adc at 37 {
+>  	};
 >  
->  	mctp at 10 {
->  		compatible = "mctp-i2c-controller";
+>  	power-sensor at 40 {
+> -		compatible = "ti,ina233";
+> +		compatible = "ti,ina233", "richtek,rtq6056";
+
+Is this legal to have two chips both listed as compatible?  I thought
+this approach has been rejected before.
+
+>  		reg = <0x40>;
+>  		resistor-calibration = /bits/ 16 <0x0a00>;
+>  		current-lsb= /bits/ 16 <0x0001>;
+>  	};
+>  
+>  	power-sensor at 41 {
+> -		compatible = "ti,ina233";
+> +		compatible = "ti,ina233", "richtek,rtq6056";
+>  		reg = <0x41>;
+>  		resistor-calibration = /bits/ 16 <0x0a00>;
+>  		current-lsb= /bits/ 16 <0x0001>;
+>  	};
+>  
+>  	power-sensor at 42 {
+> -		compatible = "ti,ina233";
+> +		compatible = "ti,ina233", "richtek,rtq6056";
+>  		reg = <0x42>;
+>  		resistor-calibration = /bits/ 16 <0x0a00>;
+>  		current-lsb= /bits/ 16 <0x0001>;
+>  	};
+>  
+>  	power-sensor at 43 {
+> -		compatible = "ti,ina233";
+> +		compatible = "ti,ina233", "richtek,rtq6056";
+>  		reg = <0x43>;
+>  		resistor-calibration = /bits/ 16 <0x0a00>;
+>  		current-lsb= /bits/ 16 <0x0001>;
+>  	};
+>  
+>  	power-sensor at 44 {
+> -		compatible = "ti,ina233";
+> +		compatible = "ti,ina233", "richtek,rtq6056";
+>  		reg = <0x44>;
+>  		resistor-calibration = /bits/ 16 <0x0a00>;
+>  		current-lsb= /bits/ 16 <0x0001>;
 > -- 
 > 2.25.1
 > 
@@ -69,4 +81,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 833 bytes
 Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240729/abe3c04b/attachment.sig>
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240729/4efab799/attachment.sig>
