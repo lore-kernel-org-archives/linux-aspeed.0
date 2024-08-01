@@ -1,71 +1,70 @@
-From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri,  2 Aug 2024 00:01:35 +0800
-Subject: [PATCH v3 11/11] ARM: dts: aspeed: Harma: remove pca9546
-In-Reply-To: <20240801160136.1281291-1-peteryin.openbmc@gmail.com>
-References: <20240801160136.1281291-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240801160136.1281291-12-peteryin.openbmc@gmail.com>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Thu, 1 Aug 2024 11:24:47 -0500
+Subject: [PATCH v1 0/1] ARM: dts: aspeed: system1: IBM System1 BMC update
+In-Reply-To: <172252600790.120672.12772438670145461296.robh@kernel.org>
+References: <20240731214737.986010-1-ninad@linux.ibm.com>
+ <172252600790.120672.12772438670145461296.robh@kernel.org>
+Message-ID: <4d5b8958-2d33-42df-ac97-82bb63fdff38@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove pca9546 device from i2c bus 9.
+Hi Rob,
 
-Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
----
- .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 31 -------------------
- 1 file changed, 31 deletions(-)
+On 8/1/24 10:29, Rob Herring (Arm) wrote:
+> On Wed, 31 Jul 2024 16:47:28 -0500, Ninad Palsule wrote:
+>> Hello,
+>>
+>> This patch only applies to openbmc/linux. The max31785 pmbus driver
+>> changes are not available in the upstream yet. I will try to send those
+>> changes upstream.
+>>
+>> Ninad Palsule (1):
+>>    ARM: dts: aspeed: system1: IBM System1 BMC update
+>>
+>>   .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 96 +++++++++++++++++++
+>>   1 file changed, 96 insertions(+)
+>>
+>> --
+>> 2.43.0
+>>
+>>
+>>
+>
+> My bot found new DTB warnings on the .dts files added or changed in this
+> series.
+>
+> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+> are fixed by another series. Ultimately, it is up to the platform
+> maintainer whether these warnings are acceptable or not. No need to reply
+> unless the platform maintainer has comments.
+>
+> If you already ran DT checks and didn't see these error(s), then
+> make sure dt-schema is up to date:
+>
+>    pip3 install dtschema --upgrade
+>
+>
+> New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-system1.dtb' for 20240731214737.986010-1-ninad at linux.ibm.com:
+>
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 0: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 1: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 2: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 3: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 4: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 54/fan at 0: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 54/fan at 1: failed to match any schema with compatible: ['pmbus-fan']
+>
+I have seen these warning. I am not sure how to fix them as it is 
+already documented in the following file.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 4421822eb134..cf3f807a38fe 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -20,10 +20,6 @@ aliases {
- 		i2c21 = &imux21;
- 		i2c22 = &imux22;
- 		i2c23 = &imux23;
--		i2c24 = &imux24;
--		i2c25 = &imux25;
--		i2c26 = &imux26;
--		i2c27 = &imux27;
- 		i2c28 = &imux28;
- 		i2c29 = &imux29;
- 		i2c30 = &imux30;
-@@ -409,33 +405,6 @@ gpio at 31 {
- 		"","","","";
- 	};
- 
--	i2c-mux at 71 {
--		compatible = "nxp,pca9546";
--		reg = <0x71>;
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		imux24: i2c at 0 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <0>;
--		};
--		imux25: i2c at 1 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <1>;
--		};
--		imux26: i2c at 2 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <2>;
--		};
--		imux27: i2c at 3 {
--			#address-cells = <1>;
--			#size-cells = <0>;
--			reg = <3>;
--		};
--	};
- 	// PTTV FRU
- 	eeprom at 52 {
- 		compatible = "atmel,24c64";
--- 
-2.25.1
+Documentation/devicetree/bindings/hwmon/pmbus/max31785.txt
+
+May be because its not converted to YAML yet?
+
+Thanks & Rehads,
+
+Ninad Palsule
 
