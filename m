@@ -1,10 +1,9 @@
 From: Rob Herring (Arm) <robh@kernel.org>
-Date: Thu, 01 Aug 2024 09:29:35 -0600
-Subject: [PATCH v1 0/1] ARM: dts: aspeed: system1: IBM System1 BMC
- update
-In-Reply-To: <20240731214737.986010-1-ninad@linux.ibm.com>
-References: <20240731214737.986010-1-ninad@linux.ibm.com>
-Message-ID: <172252600790.120672.12772438670145461296.robh@kernel.org>
+Date: Thu, 01 Aug 2024 09:29:38 -0600
+Subject: [PATCH 0/6] Update the device tree for Ampere's BMC platform
+In-Reply-To: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
+References: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
+Message-ID: <172252600912.120761.16384387883905749466.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,18 +11,21 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On Wed, 31 Jul 2024 16:47:28 -0500, Ninad Palsule wrote:
-> Hello,
+On Thu, 01 Aug 2024 09:12:10 +0000, Chanh Nguyen wrote:
+> Updates the device tree to support some features on Ampere's
+> Mt.Mitchell BMC and Ampere's Mt.Jade BMC.
 > 
-> This patch only applies to openbmc/linux. The max31785 pmbus driver
-> changes are not available in the upstream yet. I will try to send those
-> changes upstream.
+> Chanh Nguyen (6):
+>   ARM: dts: aspeed: mtjade, mtmitchell: Add OCP temperature sensors
+>   ARM: dts: aspeed: mtmitchell: Add I2C temperature sensor alias ports
+>   ARM: dts: aspeed: mtmitchell: Add I2C Riser card alias ports
+>   ARM: dts: aspeed: mtmitchell: Enable i2c10 and i2c15
+>   ARM: dts: aspeed: mtmitchell: Add LEDs
+>   ARM: dts: aspeed: mtmitchell: Add I2C FAN controllers
 > 
-> Ninad Palsule (1):
->   ARM: dts: aspeed: system1: IBM System1 BMC update
-> 
->  .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 96 +++++++++++++++++++
->  1 file changed, 96 insertions(+)
+>  .../dts/aspeed/aspeed-bmc-ampere-mtjade.dts   |  16 ++
+>  .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 152 ++++++++++++++++++
+>  2 files changed, 168 insertions(+)
 > 
 > --
 > 2.43.0
@@ -46,15 +48,10 @@ make sure dt-schema is up to date:
   pip3 install dtschema --upgrade
 
 
-New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-system1.dtb' for 20240731214737.986010-1-ninad at linux.ibm.com:
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ampere-mtjade.dtb aspeed/aspeed-bmc-ampere-mtmitchell.dtb' for 20240801091217.1408809-1-chanh at os.amperecomputing.com:
 
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 0: failed to match any schema with compatible: ['pmbus-fan']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 1: failed to match any schema with compatible: ['pmbus-fan']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 2: failed to match any schema with compatible: ['pmbus-fan']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 3: failed to match any schema with compatible: ['pmbus-fan']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 52/fan at 4: failed to match any schema with compatible: ['pmbus-fan']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 54/fan at 0: failed to match any schema with compatible: ['pmbus-fan']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: /ahb/apb/bus at 1e78a000/i2c at 380/fan-controller at 54/fan at 1: failed to match any schema with compatible: ['pmbus-fan']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: /ahb/apb/bus at 1e78a000/i2c at 480/fan-controller0 at 20: failed to match any schema with compatible: ['maxim,max31790']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: /ahb/apb/bus at 1e78a000/i2c at 480/fan-controller1 at 2f: failed to match any schema with compatible: ['maxim,max31790']
 
 
 
