@@ -1,65 +1,43 @@
 From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Thu,  1 Aug 2024 09:12:15 +0000
-Subject: [PATCH 5/6] ARM: dts: aspeed: mtmitchell: Add LEDs
+Date: Thu,  1 Aug 2024 09:12:16 +0000
+Subject: [PATCH 6/6] ARM: dts: aspeed: mtmitchell: Add I2C FAN controllers
 In-Reply-To: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
 References: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
-Message-ID: <20240801091217.1408809-6-chanh@os.amperecomputing.com>
+Message-ID: <20240801091217.1408809-7-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add LED nodes as the gpio-leds devices. They are led-bmc-ready,
-led-sw-heartbeat, led-identify, led-fault, led-fan-fault, led-psu-fault
+Add the MAX31790 nodes as fan I2C controllers.
 
 Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
 ---
- .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 31 +++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ .../boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-index 119e82637023..093b746c010f 100644
+index 093b746c010f..b3e7a306901b 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-@@ -113,6 +113,37 @@ vga_memory: region at bf000000 {
+@@ -672,6 +672,16 @@ bmc-ocp0-en-hog {
+ 			line-name = "bmc-ocp0-en-n";
  		};
  	};
- 
-+	leds {
-+		compatible = "gpio-leds";
-+		/*
-+		 * Use gpio-leds to configure GPIOW5 (bmc-ready) pin to be reseted when
-+		 * watchdog timeout.
-+		 */
-+		led-bmc-ready {
-+			gpios = <&gpio0 ASPEED_GPIO(W, 5) (GPIO_ACTIVE_HIGH | GPIO_TRANSITORY)>;
-+		};
 +
-+		led-sw-heartbeat {
-+			gpios = <&gpio0 ASPEED_GPIO(N, 3) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-identify {
-+			gpios = <&gpio0 ASPEED_GPIO(S, 3) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fault {
-+			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan-fault {
-+			gpios = <&gpio_expander1 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-psu-fault {
-+			gpios = <&gpio_expander1 1 GPIO_ACTIVE_HIGH>;
-+		};
++	fan-controller0 at 20 {
++		compatible = "maxim,max31790";
++		reg = <0x20>;
 +	};
 +
- 	voltage_mon_reg: voltage-mon-regulator {
- 		compatible = "regulator-fixed";
- 		regulator-name = "ltc2497_reg";
++	fan-controller1 at 2f {
++		compatible = "maxim,max31790";
++		reg = <0x2f>;
++	};
+ };
+ 
+ &i2c9 {
 -- 
 2.43.0
 
