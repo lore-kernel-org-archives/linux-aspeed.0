@@ -1,64 +1,65 @@
 From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Thu,  1 Aug 2024 09:12:14 +0000
-Subject: [PATCH 4/6] ARM: dts: aspeed: mtmitchell: Enable i2c10 and i2c15
+Date: Thu,  1 Aug 2024 09:12:15 +0000
+Subject: [PATCH 5/6] ARM: dts: aspeed: mtmitchell: Add LEDs
 In-Reply-To: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
 References: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
-Message-ID: <20240801091217.1408809-5-chanh@os.amperecomputing.com>
+Message-ID: <20240801091217.1408809-6-chanh@os.amperecomputing.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Enable the BMC I2C10.
-Enable the BMC I2C15 and add the GPIO Expander as a child node.
+Add LED nodes as the gpio-leds devices. They are led-bmc-ready,
+led-sw-heartbeat, led-identify, led-fault, led-fan-fault, led-psu-fault
 
 Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
 ---
- .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 23 +++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 31 +++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-index 0703b77e438b..119e82637023 100644
+index 119e82637023..093b746c010f 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-@@ -878,6 +878,10 @@ nvme_m2_1: i2c at 1 {
+@@ -113,6 +113,37 @@ vga_memory: region at bf000000 {
+ 		};
  	};
- };
  
-+&i2c10 {
-+	status = "okay";
-+};
++	leds {
++		compatible = "gpio-leds";
++		/*
++		 * Use gpio-leds to configure GPIOW5 (bmc-ready) pin to be reseted when
++		 * watchdog timeout.
++		 */
++		led-bmc-ready {
++			gpios = <&gpio0 ASPEED_GPIO(W, 5) (GPIO_ACTIVE_HIGH | GPIO_TRANSITORY)>;
++		};
 +
- &i2c11 {
- 	status = "okay";
- 	ssif-bmc at 10 {
-@@ -900,6 +904,25 @@ bmc_ast2600_cpu: temperature-sensor at 35 {
- 	};
- };
- 
-+&i2c15 {
-+	status = "okay";
-+	gpio_expander1: gpio-expander at 22 {
-+		compatible = "nxp,pca9535";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		gpio-line-names =
-+			"fan-fault","psu-fault",
-+			"","",
-+			"","",
-+			"","",
-+			"","",
-+			"","",
-+			"","",
-+			"","";
++		led-sw-heartbeat {
++			gpios = <&gpio0 ASPEED_GPIO(N, 3) GPIO_ACTIVE_HIGH>;
++		};
++
++		led-identify {
++			gpios = <&gpio0 ASPEED_GPIO(S, 3) GPIO_ACTIVE_HIGH>;
++		};
++
++		led-fault {
++			gpios = <&gpio0 ASPEED_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
++		};
++
++		led-fan-fault {
++			gpios = <&gpio_expander1 0 GPIO_ACTIVE_HIGH>;
++		};
++
++		led-psu-fault {
++			gpios = <&gpio_expander1 1 GPIO_ACTIVE_HIGH>;
++		};
 +	};
-+};
 +
- &adc0 {
- 	status = "okay";
- 
+ 	voltage_mon_reg: voltage-mon-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "ltc2497_reg";
 -- 
 2.43.0
 
