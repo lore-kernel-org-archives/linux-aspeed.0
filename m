@@ -1,43 +1,42 @@
-From: Chanh Nguyen <chanh@os.amperecomputing.com>
-Date: Thu,  1 Aug 2024 09:12:16 +0000
-Subject: [PATCH 6/6] ARM: dts: aspeed: mtmitchell: Add I2C FAN controllers
-In-Reply-To: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
-References: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
-Message-ID: <20240801091217.1408809-7-chanh@os.amperecomputing.com>
+From: Ninad Palsule <ninad@linux.ibm.com>
+Date: Thu, 1 Aug 2024 09:32:08 -0500
+Subject: [PATCH v1 1/1] ARM: dts: aspeed: system1: IBM System1 BMC update
+In-Reply-To: <5d86ab31-7b29-4f5e-9c9f-be904c128497@linux.ibm.com>
+References: <20240731214737.986010-1-ninad@linux.ibm.com>
+ <20240731214737.986010-2-ninad@linux.ibm.com>
+ <5d86ab31-7b29-4f5e-9c9f-be904c128497@linux.ibm.com>
+Message-ID: <b7eeefed-8d84-4f14-9d72-ea16d4e1458f@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the MAX31790 nodes as fan I2C controllers.
+Hi Eddie,
 
-Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
----
- .../boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+On 7/31/24 16:57, Eddie James wrote:
+>
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts 
+>> b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> index f3efecc7eb8d0..f96b299d743ba 100644
+>> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
+>> @@ -764,17 +764,113 @@ regulator at 43 {
+>> ????? };
+>> ? };
+>> ? +
+>
+>
+> Don't really need the white space here, but no worries.
+I have fixed the whitespace in version 2.
+>
+>
+> Reviewed-by: Eddie James <eajames@linux.ibm.com>
+>
+>
+Thank you for the review!
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-index 093b746c010f..b3e7a306901b 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-@@ -672,6 +672,16 @@ bmc-ocp0-en-hog {
- 			line-name = "bmc-ocp0-en-n";
- 		};
- 	};
-+
-+	fan-controller0 at 20 {
-+		compatible = "maxim,max31790";
-+		reg = <0x20>;
-+	};
-+
-+	fan-controller1 at 2f {
-+		compatible = "maxim,max31790";
-+		reg = <0x2f>;
-+	};
- };
- 
- &i2c9 {
--- 
-2.43.0
+Regards,
+
+Ninad Palsule
 
