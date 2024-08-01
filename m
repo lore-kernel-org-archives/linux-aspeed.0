@@ -1,61 +1,71 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri,  2 Aug 2024 00:01:34 +0800
-Subject: [PATCH v3 10/11] ARM: dts: aspeed: Harma: fixed dtb_check warning
+Date: Fri,  2 Aug 2024 00:01:35 +0800
+Subject: [PATCH v3 11/11] ARM: dts: aspeed: Harma: remove pca9546
 In-Reply-To: <20240801160136.1281291-1-peteryin.openbmc@gmail.com>
 References: <20240801160136.1281291-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240801160136.1281291-11-peteryin.openbmc@gmail.com>
+Message-ID: <20240801160136.1281291-12-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-1. revise spi-gpio node and property name.
-2. revise tpm node name
-3. remove max-ngpios
+Remove pca9546 device from i2c bus 9.
 
 Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
 ---
- .../arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 31 -------------------
+ 1 file changed, 31 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 0dd0566bbf27..4421822eb134 100644
+index 4421822eb134..cf3f807a38fe 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -70,19 +70,19 @@ led-2 {
- 		};
+@@ -20,10 +20,6 @@ aliases {
+ 		i2c21 = &imux21;
+ 		i2c22 = &imux22;
+ 		i2c23 = &imux23;
+-		i2c24 = &imux24;
+-		i2c25 = &imux25;
+-		i2c26 = &imux26;
+-		i2c27 = &imux27;
+ 		i2c28 = &imux28;
+ 		i2c29 = &imux29;
+ 		i2c30 = &imux30;
+@@ -409,33 +405,6 @@ gpio at 31 {
+ 		"","","","";
  	};
  
--	spi_gpio: spi-gpio {
-+	spi_gpio: spi {
- 		status = "okay";
- 		compatible = "spi-gpio";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		gpio-sck = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
--		gpio-mosi = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
--		gpio-miso = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
-+		sck-gpios = <&gpio0 ASPEED_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
-+		mosi-gpios = <&gpio0 ASPEED_GPIO(Z, 4) GPIO_ACTIVE_HIGH>;
-+		miso-gpios = <&gpio0 ASPEED_GPIO(Z, 5) GPIO_ACTIVE_HIGH>;
- 		num-chipselects = <1>;
- 		cs-gpios = <&gpio0 ASPEED_GPIO(Z, 0) GPIO_ACTIVE_LOW>;
- 
--		tpmdev at 0 {
-+		tpm at 0 {
- 			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
- 			spi-max-frequency = <33000000>;
- 			reg = <0>;
-@@ -640,7 +640,6 @@ &gpio1 {
- 
- &sgpiom0 {
- 	status = "okay";
--	max-ngpios = <128>;
- 	ngpios = <128>;
- 	bus-frequency = <2000000>;
- 	gpio-line-names =
+-	i2c-mux at 71 {
+-		compatible = "nxp,pca9546";
+-		reg = <0x71>;
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		imux24: i2c at 0 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <0>;
+-		};
+-		imux25: i2c at 1 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <1>;
+-		};
+-		imux26: i2c at 2 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <2>;
+-		};
+-		imux27: i2c at 3 {
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <3>;
+-		};
+-	};
+ 	// PTTV FRU
+ 	eeprom at 52 {
+ 		compatible = "atmel,24c64";
 -- 
 2.25.1
 
