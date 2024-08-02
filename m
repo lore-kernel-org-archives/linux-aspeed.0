@@ -1,99 +1,45 @@
-From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Fri, 02 Aug 2024 09:06:31 -0000
-Subject: [PATCH v2 9/9] arm64: dts: aspeed: Add initial AST2700 EVB device tree
-In-Reply-To: <20240802090544.2741206-1-kevin_chen@aspeedtech.com>
-References: <20240802090544.2741206-1-kevin_chen@aspeedtech.com>
-Message-ID: <20240802090544.2741206-11-kevin_chen@aspeedtech.com>
+From: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Date: Fri, 02 Aug 2024 19:20:57 -0000
+Subject: [PATCH v2 7/9] arm64: defconfig: Add ASPEED AST2700 family support
+In-Reply-To: <20240802090544.2741206-9-kevin_chen@aspeedtech.com>
+References: <20240802090544.2741206-1-kevin_chen@aspeedtech.com> <20240802090544.2741206-9-kevin_chen@aspeedtech.com>
+Message-ID: <CAA8EJprcmQvE3PjySxBKq7Qv3JHJHhic2aQ5MDnwZaf-D=K2Rw@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add EVB board of AST2700 in ASPEED G7 Architecture.
+On Fri, 2 Aug 2024 at 12:05, Kevin Chen <kevin_chen@aspeedtech.com> wrote:
+>
+> Enable CONFIG_ARCH_ASPEED in arm64 defconfig.
 
-Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
----
- arch/arm64/boot/dts/aspeed/Makefile        |  4 ++
- arch/arm64/boot/dts/aspeed/ast2700-evb.dts | 58 ++++++++++++++++++++++
- 2 files changed, 62 insertions(+)
- create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
- create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+Why? Usually the defconfig changes have "Enable CONFIG_FOO as it is
+used on the Bar Baz platform" commit message.
 
-diff --git a/arch/arm64/boot/dts/aspeed/Makefile b/arch/arm64/boot/dts/aspeed/Makefile
-new file mode 100644
-index 000000000000..ffe7e15017cc
---- /dev/null
-+++ b/arch/arm64/boot/dts/aspeed/Makefile
-@@ -0,0 +1,4 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+dtb-$(CONFIG_ARCH_ASPEED) += \
-+	ast2700-evb.dtb
-diff --git a/arch/arm64/boot/dts/aspeed/ast2700-evb.dts b/arch/arm64/boot/dts/aspeed/ast2700-evb.dts
-new file mode 100644
-index 000000000000..09c9569c0f7b
---- /dev/null
-+++ b/arch/arm64/boot/dts/aspeed/ast2700-evb.dts
-@@ -0,0 +1,58 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+/dts-v1/;
-+
-+#include "aspeed-g7.dtsi"
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "AST2700A1-EVB";
-+	compatible = "aspeed,ast2700-evb", "aspeed,ast2700";
-+
-+	aliases {
-+		serial4 = &uart4;
-+	};
-+
-+	chosen {
-+		bootargs = "console=ttyS4,115200n8";
-+		stdout-path = &uart4;
-+	};
-+
-+	firmware {
-+		optee: optee {
-+			compatible = "linaro,optee-tz";
-+			method = "smc";
-+		};
-+	};
-+
-+	memory at 400000000 {
-+		device_type = "memory";
-+		reg = <0x4 0x00000000 0x0 0x40000000>;
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		mcu_fw: mcu-firmware at 42fe00000 {
-+			reg = <0x4 0x2fe00000 0x0 0x200000>;
-+			no-map;
-+		};
-+
-+		atf: trusted-firmware-a at 430000000 {
-+			reg = <0x4 0x30000000 0x0 0x80000>;
-+			no-map;
-+		};
-+
-+		optee_core: optee_core at 430080000 {
-+			reg = <0x4 0x30080000 0x0 0x1000000>;
-+			no-map;
-+		};
-+	};
-+};
-+
-+&uart4 {
-+	status = "okay";
-+};
-+
+>
+> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+> ---
+>  arch/arm64/configs/defconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+> index 7d32fca64996..b393735a695f 100644
+> --- a/arch/arm64/configs/defconfig
+> +++ b/arch/arm64/configs/defconfig
+> @@ -38,6 +38,7 @@ CONFIG_ARCH_AIROHA=y
+>  CONFIG_ARCH_SUNXI=y
+>  CONFIG_ARCH_ALPINE=y
+>  CONFIG_ARCH_APPLE=y
+> +CONFIG_ARCH_ASPEED=y
+>  CONFIG_ARCH_BCM=y
+>  CONFIG_ARCH_BCM2835=y
+>  CONFIG_ARCH_BCM_IPROC=y
+> --
+> 2.34.1
+>
+
+
 -- 
-2.34.1
-
+With best wishes
+Dmitry
