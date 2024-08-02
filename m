@@ -1,11 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 2 Aug 2024 11:15:52 +0200
-Subject: [PATCH v2 3/9] dt-bindings: clk: ast2700: Add ASPEED AST27XX
- Clock schema
-In-Reply-To: <20240802090544.2741206-5-kevin_chen@aspeedtech.com>
+Date: Fri, 2 Aug 2024 11:16:17 +0200
+Subject: [PATCH v2 4/9] clk: ast2700: add clock controller
+In-Reply-To: <20240802090544.2741206-6-kevin_chen@aspeedtech.com>
 References: <20240802090544.2741206-1-kevin_chen@aspeedtech.com>
- <20240802090544.2741206-5-kevin_chen@aspeedtech.com>
-Message-ID: <f6823ec7-5a33-483b-ba95-6583d18281ff@kernel.org>
+ <20240802090544.2741206-6-kevin_chen@aspeedtech.com>
+Message-ID: <7a1769a0-7273-4995-863a-5db9e201c4f0@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,20 +12,16 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 02/08/2024 11:05, Kevin Chen wrote:
-> Add Clock schema for AST2700.
+> Add support for ast2700 clock controller.
 > 
 > Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+> ---
+>  drivers/clk/Makefile      |    1 +
+>  drivers/clk/clk-ast2700.c | 1173 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 1174 insertions(+)
+>  create mode 100644 drivers/clk/clk-ast2700.c
 
-<form letter>
-This is a friendly reminder during the review process.
-
-It seems my or other reviewer's previous comments were not fully
-addressed. Maybe the feedback got lost between the quotes, maybe you
-just forgot to apply it. Please go back to the previous discussion and
-either implement all requested changes or keep discussing them.
-
-Thank you.
-</form letter>
+Missing bindings.
 
 Best regards,
 Krzysztof
