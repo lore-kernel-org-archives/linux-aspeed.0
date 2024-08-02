@@ -1,83 +1,64 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 02 Aug 2024 16:06:47 +0930
-Subject: [PATCH v3 02/11] ARM: dts: aspeed: Harma: add VR device
-In-Reply-To: <20240801160136.1281291-3-peteryin.openbmc@gmail.com>
-References: <20240801160136.1281291-1-peteryin.openbmc@gmail.com>
-	 <20240801160136.1281291-3-peteryin.openbmc@gmail.com>
-Message-ID: <7bf4cb57f2b0b41c79f2efea3e0b0211988c0896.camel@codeconstruct.com.au>
+From: Potin Lai <potin.lai.pt@gmail.com>
+Date: Fri, 02 Aug 2024 17:07:46 +0800
+Subject: [PATCH v6 0/2] Add Meta(Facebook) Catalina BMC(AST2600)
+Message-ID: <20240802-potin-catalina-dts-v6-0-0b8f61b80688@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-08-02 at 00:01 +0800, Peter Yin wrote:
-> Add isl69260, xdpe152c4 device
-> 
-> Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
-> ---
->  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 24 +++++++++++++++++++
->  1 file changed, 24 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-> index d99fba321379..8fb30029e46c 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-> @@ -398,6 +398,30 @@ imux28: i2c at 0 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
->  			reg = <0>;
-> +			power-monitor at 61 {
-> +				compatible = "isil,isl69260";
-> +				reg = <0x61>;
-> +			};
-> +			power-monitor at 62 {
-> +				compatible = "isil,isl69260";
-> +				reg = <0x62>;
-> +			};
-> +			power-monitor at 63 {
-> +				compatible = "isil,isl69260";
-> +				reg = <0x63>;
-> +			};
+Add Linux device tree entry related to Meta(Facebook) Catalina specific
+devices connected to BMC(AST2600) SoC.
 
-As of v6.11-rc1 this gives me:
+Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+---
+Changes in v6:
+- move i2c-mux at 70 node from 33-0070 to 30-0070 due to bus change
+- fix wrong gpio-line-names in io_expander6
+- remove all max31790 nodes
+- remove all raa228004 nodes
+- remove ipmb-dev node
+- remove unused mdio0 node
+- Link to v5: https://lore.kernel.org/r/20240726-potin-catalina-dts-v5-0-8f02305af527 at gmail.com
 
-```
-$ ./scripts/checkpatch.pl --strict -g HEAD
-...
-WARNING: DT compatible string "isil,isl69260" appears un-documented -- check ./Documentation/devicetree/bindings/
-#24: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts:402:
-+                               compatible = "isil,isl69260";
+Changes in v5:
+- fix spi1_gpio node name and properties
+- remove undefind properties in mac3, i2c7 & i2c11
+- Link to v4: https://lore.kernel.org/r/20240725-potin-catalina-dts-v4-0-aa6f235a2e78 at gmail.com
 
-WARNING: DT compatible string "isil,isl69260" appears un-documented -- check ./Documentation/devicetree/bindings/
-#28: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts:406:
-+                               compatible = "isil,isl69260";
+Changes in v4:
+- change back io_expanderX due to parser error, build passed in v4 version.
+- Link to v3: https://lore.kernel.org/r/20240725-potin-catalina-dts-v3-0-3a5b5d9e6dbc at gmail.com
 
-WARNING: DT compatible string "isil,isl69260" appears un-documented -- check ./Documentation/devicetree/bindings/
-#32: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts:410:
-+                               compatible = "isil,isl69260";
+Changes in v3:
+- rename tmp75 nodes to temperature-sensor
+- rename tmp421 nodes to temperature-sensor
+- rename ina230 nodes to power-sensor
+- rename io_expanderX nodes to io-expanderX
+- Link to v2: https://lore.kernel.org/r/20240724-potin-catalina-dts-v2-0-ba8d475c4073 at gmail.com
 
-total: 0 errors, 3 warnings, 0 checks, 30 lines checked
-```
+Changes in v2:
+- drop commented code in dts
+- rename i2c-mux channel nodes as i2c1muxXchY
+- rename gpio expander as io_expanderX
+- use "stdout-path" instead of "bootargs"
+- Link to v1: https://lore.kernel.org/all/20240722145857.2131100-1-potin.lai.pt at gmail.com/
 
-and
+---
+Potin Lai (2):
+      dt-bindings: arm: aspeed: add Meta Catalina board
+      ARM: dts: aspeed: catalina: add Meta Catalina BMC
 
-```
-$ make CHECK_DTBS=y aspeed/aspeed-bmc-facebook-harma.dtb 2>&1 | grep isil
-...
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 61: failed to match any schema with compatible: ['isil,isl69260']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 62: failed to match any schema with compatible: ['isil,isl69260']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: /ahb/apb/bus at 1e78a000/i2c at 700/i2c-mux at 70/i2c at 0/power-monitor at 63: failed to match any schema with compatible: ['isil,isl69260']
-```
+ .../devicetree/bindings/arm/aspeed/aspeed.yaml     |   1 +
+ arch/arm/boot/dts/aspeed/Makefile                  |   1 +
+ .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 965 +++++++++++++++++++++
+ 3 files changed, 967 insertions(+)
+---
+base-commit: 0c3836482481200ead7b416ca80c68a29cfdaabd
+change-id: 20240724-potin-catalina-dts-fda1ea3297b1
 
-While there's already an Aspeed-based Quanta platform that also
-specifies this device, let's not add to the problems of the Aspeed
-devicetrees.
+Best regards,
+-- 
+Potin Lai <potin.lai.pt@gmail.com>
 
-Please make sure to run `make dtbs_check ...` and checkpatch on your
-changes. Regarding `make dtbs_check` and related tests, this blog post
-is helpful:
-
-https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
-
-Andrew
