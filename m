@@ -1,53 +1,44 @@
-From: Rob Herring (Arm) <robh@kernel.org>
-Date: Fri, 02 Aug 2024 04:29:15 -0600
-Subject: [PATCH v2 1/9] dt-bindings: mfd: aspeed,ast2x00-scu: Add
- ASPEED AST2700-SCUX schema
-In-Reply-To: <20240802090544.2741206-3-kevin_chen@aspeedtech.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 02 Aug 2024 21:25:17 +0200
+Subject: [PATCH v2 7/9] arm64: defconfig: Add ASPEED AST2700 family support
+In-Reply-To: <CAA8EJprcmQvE3PjySxBKq7Qv3JHJHhic2aQ5MDnwZaf-D=K2Rw@mail.gmail.com>
 References: <20240802090544.2741206-1-kevin_chen@aspeedtech.com>
- <20240802090544.2741206-3-kevin_chen@aspeedtech.com>
-Message-ID: <172259455507.2558656.18344933444213909682.robh@kernel.org>
+ <20240802090544.2741206-9-kevin_chen@aspeedtech.com>
+ <CAA8EJprcmQvE3PjySxBKq7Qv3JHJHhic2aQ5MDnwZaf-D=K2Rw@mail.gmail.com>
+Message-ID: <9795437d-b409-4105-9583-4dcb24b5a06c@app.fastmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, Aug 2, 2024, at 21:20, Dmitry Baryshkov wrote:
+> On Fri, 2 Aug 2024 at 12:05, Kevin Chen <kevin_chen@aspeedtech.com> wrote:
+>>
+>> Enable CONFIG_ARCH_ASPEED in arm64 defconfig.
+>
+> Why? Usually the defconfig changes have "Enable CONFIG_FOO as it is
+> used on the Bar Baz platform" commit message.
 
-On Fri, 02 Aug 2024 17:05:36 +0800, Kevin Chen wrote:
-> Add compatible for two SCU of SCU0 and SCU1 in AST2700.
-> 
-> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
-> ---
->  .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 70 +++++++++++++------
->  1 file changed, 50 insertions(+), 20 deletions(-)
-> 
+I would also expect to see aspeed specific device drivers
+to get enabled in the same commit. On arm32, I see
 
-My bot found errors running 'make dt_binding_check' on your patch:
+CONFIG_ASPEED_KCS_IPMI_BMC=m
+CONFIG_ASPEED_BT_IPMI_BMC=m
+CONFIG_I2C_ASPEED=m
+CONFIG_SPI_ASPEED_SMC=m
+CONFIG_GPIO_ASPEED_SGPIO=y
+CONFIG_SENSORS_ASPEED=m
+CONFIG_VIDEO_ASPEED=m
+CONFIG_DRM_ASPEED_GFX=m
+CONFIG_USB_ASPEED_VHUB=m
+CONFIG_RTC_DRV_ASPEED=m
+CONFIG_ASPEED_LPC_CTRL=m
+CONFIG_ASPEED_LPC_SNOOP=m
+CONFIG_ASPEED_P2A_CTRL=m
+CONFIG_ASPEED_ADC=m
+CONFIG_FSI_MASTER_ASPEED=m
 
-yamllint warnings/errors:
+Presumably not all but a lot of these are also used on AST2700.
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml: 'scu at ast2xx00-scu' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'dependentRequired', 'dependentSchemas', 'patternProperties', 'properties', 'not', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select', '$ref']
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml: 'scu at ast2xx00-scux' is not one of ['$id', '$schema', 'title', 'description', 'examples', 'required', 'allOf', 'anyOf', 'oneOf', 'definitions', '$defs', 'additionalProperties', 'dependencies', 'dependentRequired', 'dependentSchemas', 'patternProperties', 'properties', 'not', 'if', 'then', 'else', 'unevaluatedProperties', 'deprecated', 'maintainers', 'select', '$ref']
-	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml: scu at ast2xx00-scu: Missing additionalProperties/unevaluatedProperties constraint
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml: scu at ast2xx00-scux: Missing additionalProperties/unevaluatedProperties constraint
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240802090544.2741206-3-kevin_chen at aspeedtech.com
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+     Arnd
