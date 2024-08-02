@@ -1,11 +1,11 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 2 Aug 2024 11:12:10 +0200
-Subject: [PATCH v2 8/9] arm64: dts: aspeed: Add initial AST27XX device
- tree
-In-Reply-To: <20240802090544.2741206-10-kevin_chen@aspeedtech.com>
+Date: Fri, 2 Aug 2024 11:13:52 +0200
+Subject: [PATCH v2 1/9] dt-bindings: mfd: aspeed,ast2x00-scu: Add ASPEED
+ AST2700-SCUX schema
+In-Reply-To: <20240802090544.2741206-3-kevin_chen@aspeedtech.com>
 References: <20240802090544.2741206-1-kevin_chen@aspeedtech.com>
- <20240802090544.2741206-10-kevin_chen@aspeedtech.com>
-Message-ID: <34d1b859-dfee-475a-8838-feb4907985c8@kernel.org>
+ <20240802090544.2741206-3-kevin_chen@aspeedtech.com>
+Message-ID: <1b420e2e-6983-49fb-946c-a4bbf7fa54eb@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,50 +13,62 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 02/08/2024 11:05, Kevin Chen wrote:
-> Add aspeed-g7.dtsi to be AST27XX device tree.
-
-Hardware description is missing, e.g. answering why you have two "soc"
-nodes.
+> Add compatible for two SCU of SCU0 and SCU1 in AST2700.
 > 
 > Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+> ---
+
+A nit, subject: drop second/last, redundant "schema". The "dt-bindings"
+prefix is already stating that these are bindings in the schema.
+See also:
+https://elixir.bootlin.com/linux/v6.7-rc8/source/Documentation/devicetree/bindings/submitting-patches.rst#L18
 
 
+>  .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 70 +++++++++++++------
+>  1 file changed, 50 insertions(+), 20 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> index 86ee69c0f45b..3426b1c84132 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> @@ -13,33 +13,62 @@ description:
+>  maintainers:
+>    - Joel Stanley <joel@jms.id.au>
+>    - Andrew Jeffery <andrew@aj.id.au>
+> +  - Kevin Chen <kevin_chen@aspeedtech.com>
+>  
+> -properties:
+> -  compatible:
+> -    items:
+> -      - enum:
+> -          - aspeed,ast2400-scu
+> -          - aspeed,ast2500-scu
+> -          - aspeed,ast2600-scu
+> -      - const: syscon
+> -      - const: simple-mfd
+> +scu at ast2xx00-scu:
+> +  properties:
+> +    compatible:
+> +      items:
+> +        - enum:
+> +            - aspeed,ast2400-scu
+> +            - aspeed,ast2500-scu
+> +            - aspeed,ast2600-scu
+> +        - const: syscon
+> +        - const: simple-mfd
 
-> +	soc0: soc at 10000000 {
-> +		compatible = "simple-bus";
-> +		reg = <0x0 0x10000000 0x0 0x10000000>;
-> +		#address-cells = <2>;
-> +		#size-cells = <2>;
-> +		ranges;
-> +
-> +		gic: interrupt-controller at 12200000 {
-> +			compatible = "arm,gic-v3";
-> +			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +			#interrupt-cells = <3>;
-> +			interrupt-controller;
-> +			interrupt-parent = <&gic>;
-> +			reg = <0 0x12200000 0 0x10000>, /* GICD */
-> +				  <0 0x12280000 0 0x80000>, /* GICR */
-> +				  <0 0x40440000 0 0x1000>;  /* GICC */
+No, no, no, this code is neither correct nor makes any sense.
 
-Still the same things to fix... Please go to the DTS coding style and
-read what is the order of properties.
+>  
+> -  reg:
+> -    maxItems: 1
+> +    reg:
+> +      maxItems: 1
+>  
+> -  ranges: true
+> +    ranges: true
 
-<form letter>
-This is a friendly reminder during the review process.
-
-It seems my or other reviewer's previous comments were not fully
-addressed. Maybe the feedback got lost between the quotes, maybe you
-just forgot to apply it. Please go back to the previous discussion and
-either implement all requested changes or keep discussing them.
-
-Thank you.
-</form letter>
-
-
-> +			#address-cells = <2>;
-> +			#size-cells = <2>;
-> +		};
+What?
 
 
 Best regards,
