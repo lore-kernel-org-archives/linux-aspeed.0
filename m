@@ -1,44 +1,131 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 02 Aug 2024 15:06:29 +0930
-Subject: [PATCH 0/2] dt-bindings: interrupt-controller: Convert Aspeed
- (C)VIC to DT schema
-Message-ID: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-0-8cd4266d2094@codeconstruct.com.au>
+Date: Fri, 02 Aug 2024 15:06:30 +0930
+Subject: [PATCH 1/2] dt-bindings: interrupt-controller: aspeed,ast2400-vic:
+ Convert to DT schema
+In-Reply-To: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-0-8cd4266d2094@codeconstruct.com.au>
+References: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-0-8cd4266d2094@codeconstruct.com.au>
+Message-ID: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-1-8cd4266d2094@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello,
+Squash warnings such as:
 
-This short series converts the Aspeed VIC and CVIC bindings over to DT
-schema. The CVIC has historically been documented under "misc" as it's
-the interrupt controller for the Coldfire co-processor embedded in the
-SoCs, and not for the main ARM core. Regardless, I've updated both in
-this series.
+    arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/interrupt-controller at 1e6c0080: failed to match any schema with compatible: ['aspeed,ast2400-vic']
 
-I tried to document the historical oddities and conversion quirks in the
-commit messages where appropriate.
+The YAML DT schema defines an optional property, valid-sources, which
+was not previously described in the prose binding. It is added to
+document existing practice in the Aspeed devicetrees. Unfortunately
+the property seems to predate the requirement that vendor-specific
+properties be prefixed.
 
-Please review!
-
-Andrew
-
+Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 ---
-Andrew Jeffery (2):
-      dt-bindings: interrupt-controller: aspeed,ast2400-vic: Convert to DT schema
-      dt-bindings: misc: aspeed,ast2400-cvic: Convert to DT schema
-
  .../interrupt-controller/aspeed,ast2400-vic.txt    | 23 --------
  .../interrupt-controller/aspeed,ast2400-vic.yaml   | 63 ++++++++++++++++++++++
- .../bindings/misc/aspeed,ast2400-cvic.yaml         | 60 +++++++++++++++++++++
- .../devicetree/bindings/misc/aspeed,cvic.txt       | 35 ------------
- 4 files changed, 123 insertions(+), 58 deletions(-)
----
-base-commit: 8400291e289ee6b2bf9779ff1c83a291501f017b
-change-id: 20240802-dt-warnings-irq-aspeed-dt-schema-5f5efd5d431a
+ 2 files changed, 63 insertions(+), 23 deletions(-)
 
-Best regards,
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-vic.txt b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-vic.txt
+deleted file mode 100644
+index e3fea0758d25..000000000000
+--- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-vic.txt
++++ /dev/null
+@@ -1,23 +0,0 @@
+-Aspeed Vectored Interrupt Controller
+-
+-These bindings are for the Aspeed interrupt controller. The AST2400 and
+-AST2500 SoC families include a legacy register layout before a re-designed
+-layout, but the bindings do not prescribe the use of one or the other.
+-
+-Required properties:
+-
+-- compatible : "aspeed,ast2400-vic"
+-               "aspeed,ast2500-vic"
+-
+-- interrupt-controller : Identifies the node as an interrupt controller
+-- #interrupt-cells : Specifies the number of cells needed to encode an
+-  interrupt source. The value shall be 1.
+-
+-Example:
+-
+- vic: interrupt-controller at 1e6c0080 {
+-      compatible = "aspeed,ast2400-vic";
+-      interrupt-controller;
+-      #interrupt-cells = <1>;
+-      reg = <0x1e6c0080 0x80>;
+- };
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-vic.yaml b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-vic.yaml
+new file mode 100644
+index 000000000000..1ecbc55571e2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-vic.yaml
+@@ -0,0 +1,63 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2400-vic.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Vectored Interrupt Controller
++
++maintainers:
++  - Andrew Jeffery <andrew@codeconstruct.com.au>
++
++description:
++  The AST2400 and AST2500 SoC families include a legacy register layout before
++  a redesigned layout, but the bindings do not prescribe the use of one or the
++  other.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-vic
++      - aspeed,ast2500-vic
++
++  interrupt-controller: true
++
++  "#interrupt-cells":
++    const: 1
++    description:
++      Specifies the number of cells needed to encode an interrupt source. It
++      must be 1 as the VIC has no configuration options for interrupt sources.
++      The single cell defines the interrupt number.
++
++  valid-sources:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    description:
++      One cell, bitmap of support sources for the implementation.
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupt-controller
++  - "#interrupt-cells"
++
++allOf:
++  - $ref: /schemas/interrupt-controller.yaml
++
++additionalProperties: false
++
++examples:
++  - |
++    interrupt-controller at 1e6c0080 {
++         compatible = "aspeed,ast2400-vic";
++         reg = <0x1e6c0080 0x80>;
++         interrupt-controller;
++         #interrupt-cells = <1>;
++    };
++
++...
+
 -- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+2.39.2
 
