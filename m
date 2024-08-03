@@ -1,44 +1,74 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 02 Aug 2024 21:25:17 +0200
-Subject: [PATCH v2 7/9] arm64: defconfig: Add ASPEED AST2700 family support
-In-Reply-To: <CAA8EJprcmQvE3PjySxBKq7Qv3JHJHhic2aQ5MDnwZaf-D=K2Rw@mail.gmail.com>
-References: <20240802090544.2741206-1-kevin_chen@aspeedtech.com>
- <20240802090544.2741206-9-kevin_chen@aspeedtech.com>
- <CAA8EJprcmQvE3PjySxBKq7Qv3JHJHhic2aQ5MDnwZaf-D=K2Rw@mail.gmail.com>
-Message-ID: <9795437d-b409-4105-9583-4dcb24b5a06c@app.fastmail.com>
+From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
+Date: Sat, 3 Aug 2024 10:49:09 +0700
+Subject: [PATCH 0/6] Update the device tree for Ampere's BMC platform
+In-Reply-To: <172252600912.120761.16384387883905749466.robh@kernel.org>
+References: <20240801091217.1408809-1-chanh@os.amperecomputing.com>
+ <172252600912.120761.16384387883905749466.robh@kernel.org>
+Message-ID: <1c2dca43-444d-44a7-b304-5fbd59b788a8@amperemail.onmicrosoft.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 2, 2024, at 21:20, Dmitry Baryshkov wrote:
-> On Fri, 2 Aug 2024 at 12:05, Kevin Chen <kevin_chen@aspeedtech.com> wrote:
+
+
+On 01/08/2024 22:29, Rob Herring (Arm) wrote:
+> 
+> On Thu, 01 Aug 2024 09:12:10 +0000, Chanh Nguyen wrote:
+>> Updates the device tree to support some features on Ampere's
+>> Mt.Mitchell BMC and Ampere's Mt.Jade BMC.
 >>
->> Enable CONFIG_ARCH_ASPEED in arm64 defconfig.
->
-> Why? Usually the defconfig changes have "Enable CONFIG_FOO as it is
-> used on the Bar Baz platform" commit message.
+>> Chanh Nguyen (6):
+>>    ARM: dts: aspeed: mtjade, mtmitchell: Add OCP temperature sensors
+>>    ARM: dts: aspeed: mtmitchell: Add I2C temperature sensor alias ports
+>>    ARM: dts: aspeed: mtmitchell: Add I2C Riser card alias ports
+>>    ARM: dts: aspeed: mtmitchell: Enable i2c10 and i2c15
+>>    ARM: dts: aspeed: mtmitchell: Add LEDs
+>>    ARM: dts: aspeed: mtmitchell: Add I2C FAN controllers
+>>
+>>   .../dts/aspeed/aspeed-bmc-ampere-mtjade.dts   |  16 ++
+>>   .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 152 ++++++++++++++++++
+>>   2 files changed, 168 insertions(+)
+>>
+>> --
+>> 2.43.0
+>>
+>>
+>>
+> 
+> 
+> My bot found new DTB warnings on the .dts files added or changed in this
+> series.
+> 
+> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+> are fixed by another series. Ultimately, it is up to the platform
+> maintainer whether these warnings are acceptable or not. No need to reply
+> unless the platform maintainer has comments.
+> 
+> If you already ran DT checks and didn't see these error(s), then
+> make sure dt-schema is up to date:
+> 
+>    pip3 install dtschema --upgrade
+> 
+> 
+> New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ampere-mtjade.dtb aspeed/aspeed-bmc-ampere-mtmitchell.dtb' for 20240801091217.1408809-1-chanh at os.amperecomputing.com:
+> 
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: /ahb/apb/bus at 1e78a000/i2c at 480/fan-controller0 at 20: failed to match any schema with compatible: ['maxim,max31790']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: /ahb/apb/bus at 1e78a000/i2c at 480/fan-controller1 at 2f: failed to match any schema with compatible: ['maxim,max31790']
+> 
+> 
 
-I would also expect to see aspeed specific device drivers
-to get enabled in the same commit. On arm32, I see
+Thank Rob for your review!
 
-CONFIG_ASPEED_KCS_IPMI_BMC=m
-CONFIG_ASPEED_BT_IPMI_BMC=m
-CONFIG_I2C_ASPEED=m
-CONFIG_SPI_ASPEED_SMC=m
-CONFIG_GPIO_ASPEED_SGPIO=y
-CONFIG_SENSORS_ASPEED=m
-CONFIG_VIDEO_ASPEED=m
-CONFIG_DRM_ASPEED_GFX=m
-CONFIG_USB_ASPEED_VHUB=m
-CONFIG_RTC_DRV_ASPEED=m
-CONFIG_ASPEED_LPC_CTRL=m
-CONFIG_ASPEED_LPC_SNOOP=m
-CONFIG_ASPEED_P2A_CTRL=m
-CONFIG_ASPEED_ADC=m
-CONFIG_FSI_MASTER_ASPEED=m
+I am aware of the new warnings you mentioned. For more information, the 
+schema binding of "maxim,max31790" is being progressed by other series? 
+https://lore.kernel.org/lkml/20240414042246.8681-2-chanh at os.amperecomputing.com/ 
 
-Presumably not all but a lot of these are also used on AST2700.
 
-     Arnd
+Best regards,
+Chanh
+
+> 
+> 
+> 
