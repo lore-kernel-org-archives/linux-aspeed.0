@@ -1,28 +1,94 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Tue, 06 Aug 2024 12:31:38 +0930
-Subject: [PATCH v7 0/2] Add Meta(Facebook) Catalina BMC(AST2600)
-In-Reply-To: <20240805-potin-catalina-dts-v7-0-286bfd2ab93b@gmail.com>
-References: <20240805-potin-catalina-dts-v7-0-286bfd2ab93b@gmail.com>
-Message-ID: <1c6598d080d488005b14e127396dd7db72bc4ca4.camel@codeconstruct.com.au>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 6 Aug 2024 08:07:55 +0200
+Subject: [PATCH 1/2] dt-bindings: interrupt-controller:
+ aspeed,ast2400-vic: Convert to DT schema
+In-Reply-To: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-1-8cd4266d2094@codeconstruct.com.au>
+References: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-0-8cd4266d2094@codeconstruct.com.au>
+ <20240802-dt-warnings-irq-aspeed-dt-schema-v1-1-8cd4266d2094@codeconstruct.com.au>
+Message-ID: <c51fb027-f8bd-4b10-b9c0-dbbe8e8cf4c1@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2024-08-05 at 23:46 +0800, Potin Lai wrote:
-> Add Linux device tree entry related to Meta(Facebook) Catalina specific
-> devices connected to BMC(AST2600) SoC.
+On 02/08/2024 07:36, Andrew Jeffery wrote:
+> Squash warnings such as:
 > 
-> Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
-> ---
-> Changes in v7:
-> - drop 'pinctrl-names' in gpio0 node
-> - change 'vref' to 'vref-supply' in adc0 & adc1 nodes
-> - add p1v8_bmc_aux & p2v5_bmc_aux nodes
-> - change Signed-off tag email as same as sender.
-> - Link to v6: https://lore.kernel.org/r/20240802-potin-catalina-dts-v6-0-0b8f61b80688 at gmail.com
+>     arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/interrupt-controller at 1e6c0080: failed to match any schema with compatible: ['aspeed,ast2400-vic']
+> 
+> The YAML DT schema defines an optional property, valid-sources, which
+> was not previously described in the prose binding. It is added to
+> document existing practice in the Aspeed devicetrees. Unfortunately
+> the property seems to predate the requirement that vendor-specific
+> properties be prefixed.
+> 
+> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
-Thanks, I've applied these to be picked up via the BMC tree.
 
-Andrew
+> +
+> +description:
+> +  The AST2400 and AST2500 SoC families include a legacy register layout before
+> +  a redesigned layout, but the bindings do not prescribe the use of one or the
+> +  other.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2400-vic
+> +      - aspeed,ast2500-vic
+> +
+> +  interrupt-controller: true
+> +
+> +  "#interrupt-cells":
+> +    const: 1
+> +    description:
+> +      Specifies the number of cells needed to encode an interrupt source. It
+> +      must be 1 as the VIC has no configuration options for interrupt sources.
+> +      The single cell defines the interrupt number.
+> +
+> +  valid-sources:
+> +    $ref: /schemas/types.yaml#/definitions/uint32-array
+> +    description:
+> +      One cell, bitmap of support sources for the implementation.
+
+maxItems: 2
+What does "one cell" mean? uint32? DTS has two items.
+
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+
+Is this correct? DTS does not have parent interrupt controller for this
+device.
+
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupt-controller
+> +  - "#interrupt-cells"
+> +
+> +allOf:
+> +  - $ref: /schemas/interrupt-controller.yaml
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    interrupt-controller at 1e6c0080 {
+> +         compatible = "aspeed,ast2400-vic";
+> +         reg = <0x1e6c0080 0x80>;
+> +         interrupt-controller;
+> +         #interrupt-cells = <1>;
+
+Make the example complete - add valid-sources interupts.
+
+
+
+Best regards,
+Krzysztof
+
