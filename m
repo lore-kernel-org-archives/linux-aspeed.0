@@ -1,106 +1,37 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 6 Aug 2024 11:29:17 -0600
-Subject: [PATCH 2/2] dt-bindings: misc: aspeed,ast2400-cvic: Convert to
- DT schema
-In-Reply-To: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-2-8cd4266d2094@codeconstruct.com.au>
-References: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-0-8cd4266d2094@codeconstruct.com.au>
- <20240802-dt-warnings-irq-aspeed-dt-schema-v1-2-8cd4266d2094@codeconstruct.com.au>
-Message-ID: <20240806172917.GA1836473-robh@kernel.org>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 07 Aug 2024 11:38:48 +0930
+Subject: [PATCH v2 0/5] Update the device tree for Ampere's BMC platform
+In-Reply-To: <20240806071806.1666550-1-chanh@os.amperecomputing.com>
+References: <20240806071806.1666550-1-chanh@os.amperecomputing.com>
+Message-ID: <5218da67149847bb803081b9f59ed031ffd7b43c.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 02, 2024 at 03:06:31PM +0930, Andrew Jeffery wrote:
-> Address warnings such as:
+On Tue, 2024-08-06 at 07:18 +0000, Chanh Nguyen wrote:
+> Updates the device tree to support some features on Ampere's
+> Mt.Mitchell BMC and Ampere's Mt.Jade BMC.
 > 
->     arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: interrupt-controller at 1e6c0080: 'valid-sources' does not match any of the regexes: 'pinctrl-[0-9]+'
+> Changes in v2:
+>  - Add eeprom nodes to the riser cards and update commit message   [Chanh]
+>  - Remove the "Add I2C Fan controllers"                            [Andrew]
+>    
+> Chanh Nguyen (5):
+>   ARM: dts: aspeed: mtjade, mtmitchell: Add OCP temperature sensors
+>   ARM: dts: aspeed: mtmitchell: Add I2C temperature sensor alias ports
+>   ARM: dts: aspeed: mtmitchell: Add Riser cards
+>   ARM: dts: aspeed: mtmitchell: Enable i2c10 and i2c15
+>   ARM: dts: aspeed: mtmitchell: Add LEDs
 > 
-> and
+>  .../dts/aspeed/aspeed-bmc-ampere-mtjade.dts   |  16 ++
+>  .../aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 154 ++++++++++++++++++
+>  2 files changed, 170 insertions(+)
 > 
->     arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/copro-interrupt-controller at 1e6c2000: failed to match any schema with compatible: ['aspeed,ast2400-cvic', 'aspeed-cvic']
-> 
-> Note that the conversion to DT schema causes some further warnings to
-> be emitted, because the Aspeed devicetrees are not in great shape. These
-> new warnings are resolved in a separate series:
-> 
-> https://lore.kernel.org/lkml/20240802-dt-warnings-bmc-dts-cleanups-v1-0-1cb1378e5fcd at codeconstruct.com.au/
-> 
-> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> ---
->  .../bindings/misc/aspeed,ast2400-cvic.yaml         | 60 ++++++++++++++++++++++
->  .../devicetree/bindings/misc/aspeed,cvic.txt       | 35 -------------
->  2 files changed, 60 insertions(+), 35 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/misc/aspeed,ast2400-cvic.yaml b/Documentation/devicetree/bindings/misc/aspeed,ast2400-cvic.yaml
-> new file mode 100644
-> index 000000000000..3c85b4924c05
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/misc/aspeed,ast2400-cvic.yaml
-> @@ -0,0 +1,60 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/misc/aspeed,ast2400-cvic.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed Coprocessor Vectored Interrupt Controller
-> +
-> +maintainers:
-> +  - Andrew Jeffery <andrew@codeconstruct.com.au>
-> +
-> +description:
-> +  The Aspeed AST2400 and AST2500 SoCs have a controller that provides interrupts
-> +  to the ColdFire coprocessor. It's not a normal interrupt controller and it
-> +  would be rather inconvenient to create an interrupt tree for it, as it
-> +  somewhat shares some of the same sources as the main ARM interrupt controller
-> +  but with different numbers.
-> +
-> +  The AST2500 also supports a software generated interrupt.
-> +
-> +properties:
-> +  compatible:
-> +    items:
-> +      - enum:
-> +          - aspeed,ast2400-cvic
-> +          - aspeed,ast2500-cvic
-> +      - const: aspeed,cvic
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  valid-sources:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    description:
-> +      One cell, bitmap of support sources for the implementation.
-> +
-> +  copro-sw-interrupts:
-> +    $ref: /schemas/types.yaml#/definitions/uint32-array
-> +    description:
-> +      A list of interrupt numbers that can be used as software interrupts from
-> +      the ARM to the coprocessor.
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - valid-sources
-> +
-> +allOf:
-> +  - $ref: /schemas/interrupt-controller.yaml#
 
-Doesn't really look like this schema applies to this binding. Drop the 
-ref.
+I've applied these to be merged via the BMC tree.
 
+Thanks,
 
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    interrupt-controller at 1e6c2000 {
-> +        compatible = "aspeed,ast2500-cvic", "aspeed,cvic";
-> +        reg = <0x1e6c2000 0x80>;
-> +        valid-sources = <0xffffffff>;
-> +        copro-sw-interrupts = <1>;
-> +    };
+Andrew
