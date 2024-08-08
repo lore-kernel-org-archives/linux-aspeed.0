@@ -1,10 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Thu, 8 Aug 2024 12:17:12 +0200
-Subject: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock bindings
-In-Reply-To: <20240808075937.2756733-4-ryan_chen@aspeedtech.com>
+Date: Thu, 8 Aug 2024 12:18:00 +0200
+Subject: [PATCH 4/4] dt-bindings: clock: Add AST2700 clock bindings
+In-Reply-To: <20240808075937.2756733-5-ryan_chen@aspeedtech.com>
 References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
- <20240808075937.2756733-4-ryan_chen@aspeedtech.com>
-Message-ID: <5d8dd391-fc6f-4133-86a1-d536416f9ae5@kernel.org>
+ <20240808075937.2756733-5-ryan_chen@aspeedtech.com>
+Message-ID: <b089c9e5-8640-47f3-a6a3-8919b610f49d@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,10 +16,9 @@ On 08/08/2024 09:59, Ryan Chen wrote:
 > 
 > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 
-NAK, why did you ignore all previous comments? Where is the changelog
-and proper versioning?
+NAK, that's wrong on so many levels. There are no bindings here!
 
-Is there total mess in Aspeed that you all do the same in the same time?
+You ignored previous feedback given to Assped.
 
 Best regards,
 Krzysztof
