@@ -1,93 +1,161 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 8 Aug 2024 15:59:34 +0800
-Subject: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+Date: Thu, 8 Aug 2024 15:59:35 +0800
+Subject: [PATCH 2/4] dt-bindings: reset Add AST2700 reset bindings
 In-Reply-To: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
 References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
-Message-ID: <20240808075937.2756733-2-ryan_chen@aspeedtech.com>
+Message-ID: <20240808075937.2756733-3-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add compatible support for AST2700 clk, reset, pinctrl, silicon-id
-and example for AST2700 scu.
+Add dt bindings for AST2700 reset driver.
 
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
- .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 31 +++++++++++++++++--
- 1 file changed, 29 insertions(+), 2 deletions(-)
+ .../dt-bindings/reset/aspeed,ast2700-reset.h  | 132 ++++++++++++++++++
+ 1 file changed, 132 insertions(+)
+ create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-index 86ee69c0f45b..c0965f08ae8c 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-@@ -21,6 +21,8 @@ properties:
-           - aspeed,ast2400-scu
-           - aspeed,ast2500-scu
-           - aspeed,ast2600-scu
-+          - aspeed,ast2700-scu0
-+          - aspeed,ast2700-scu1
-       - const: syscon
-       - const: simple-mfd
- 
-@@ -30,10 +32,12 @@ properties:
-   ranges: true
- 
-   '#address-cells':
--    const: 1
-+    minimum: 1
-+    maximum: 2
- 
-   '#size-cells':
--    const: 1
-+    minimum: 1
-+    maximum: 2
- 
-   '#clock-cells':
-     const: 1
-@@ -56,6 +60,8 @@ patternProperties:
-             - aspeed,ast2400-pinctrl
-             - aspeed,ast2500-pinctrl
-             - aspeed,ast2600-pinctrl
-+            - aspeed,ast2700-soc0-pinctrl
-+            - aspeed,ast2700-soc1-pinctrl
- 
-     required:
-       - compatible
-@@ -76,6 +82,7 @@ patternProperties:
-               - aspeed,ast2400-silicon-id
-               - aspeed,ast2500-silicon-id
-               - aspeed,ast2600-silicon-id
-+              - aspeed,ast2700-silicon-id
-           - const: aspeed,silicon-id
- 
-       reg:
-@@ -115,4 +122,24 @@ examples:
-             reg = <0x7c 0x4>, <0x150 0x8>;
-         };
-     };
-+  - |
-+    soc0 {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+        syscon at 12c02000 {
-+            compatible = "aspeed,ast2700-scu0", "syscon", "simple-mfd";
-+            reg = <0x0 0x12c02000 0x0 0x1000>;
-+            #clock-cells = <1>;
-+            #reset-cells = <1>;
+diff --git a/include/dt-bindings/reset/aspeed,ast2700-reset.h b/include/dt-bindings/reset/aspeed,ast2700-reset.h
+new file mode 100644
+index 000000000000..ea261108abfb
+--- /dev/null
++++ b/include/dt-bindings/reset/aspeed,ast2700-reset.h
+@@ -0,0 +1,132 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Device Tree binding constants for AST2700 reset controller.
++ *
++ * Copyright (c) 2024 Aspeed Technology Inc.
++ */
 +
-+            #address-cells = <2>;
-+            #size-cells = <2>;
-+            ranges = <0x0 0x0 0 0x12c02000 0 0x1000>;
++#ifndef _MACH_ASPEED_AST2700_RESET_H_
++#define _MACH_ASPEED_AST2700_RESET_H_
 +
-+            silicon-id at 0 {
-+                compatible = "aspeed,ast2700-silicon-id", "aspeed,silicon-id";
-+                reg = <0x0 0x0 0x0 0x4>;
-+            };
-+        };
-+    };
- ...
++/* SOC0 */
++#define SCU0_RESET_SDRAM		(0)
++#define SCU0_RESET_DDRPHY		(1)
++#define SCU0_RESET_RSA			(2)
++#define SCU0_RESET_SHA3			(3)
++#define SCU0_RESET_HACE			(4)
++#define SCU0_RESET_SOC			(5)
++#define SCU0_RESET_VIDEO		(6)
++#define SCU0_RESET_2D			(7)
++#define SCU0_RESET_PCIS			(8)
++#define SCU0_RESET_RVAS0		(9)
++#define SCU0_RESET_RVAS1		(10)
++#define SCU0_RESET_SM3			(11)
++#define SCU0_RESET_SM4			(12)
++#define SCU0_RESET_CRT0			(13)
++#define SCU0_RESET_ECC			(14)
++#define SCU0_RESET_DP_PCI		(15)
++#define SCU0_RESET_UFS			(16)
++#define SCU0_RESET_EMMC			(17)
++#define SCU0_RESET_PCIE1RST		(18)
++#define SCU0_RESET_PCIE1RSTOE		(19)
++#define SCU0_RESET_PCIE0RST		(20)
++#define SCU0_RESET_PCIE0RSTOE		(21)
++#define SCU0_RESET_JTAG			(22)
++#define SCU0_RESET_MCTP0		(23)
++#define SCU0_RESET_MCTP1		(24)
++#define SCU0_RESET_XDMA0		(25)
++#define SCU0_RESET_XDMA1		(26)
++#define SCU0_RESET_H2X1			(27)
++#define SCU0_RESET_DP			(28)
++#define SCU0_RESET_DP_MCU		(29)
++#define SCU0_RESET_SSP			(30)
++#define SCU0_RESET_H2X0			(31)
++#define SCU0_RESET_PORTA_VHUB1		(32)
++#define SCU0_RESET_PORTA_PHY3		(33)
++#define SCU0_RESET_PORTA_XHCI		(34)
++#define SCU0_RESET_PORTB_VHUB1		(35)
++#define SCU0_RESET_PORTB_PHY3		(36)
++#define SCU0_RESET_PORTB_XHCI		(37)
++#define SCU0_RESET_PORTA_EHCI		(38)
++#define SCU0_RESET_PORTA_VHUB0		(38)
++#define SCU0_RESET_PORTB_EHCI		(39)
++#define SCU0_RESET_PORTB_VHUB0		(39)
++#define SCU0_RESET_UHCI			(40)
++#define SCU0_RESET_TSP			(41)
++#define SCU0_RESET_E2M0			(42)
++#define SCU0_RESET_E2M1			(43)
++#define SCU0_RESET_VLINK		(44)
++
++#define SCU0_RESET_NUMS		(SCU0_RESET_VLINK + 1)
++
++/* SOC1 */
++#define SCU1_RESET_LPC0			(0)
++#define SCU1_RESET_LPC1			(1)
++#define SCU1_RESET_MII			(2)
++#define SCU1_RESET_PECI			(3)
++#define SCU1_RESET_PWM			(4)
++#define SCU1_RESET_MAC0			(5)
++#define SCU1_RESET_MAC1			(6)
++#define SCU1_RESET_MAC2			(7)
++#define SCU1_RESET_ADC			(8)
++#define SCU1_RESET_SD			(9)
++#define SCU1_RESET_ESPI0		(10)
++#define SCU1_RESET_ESPI1		(11)
++#define SCU1_RESET_JTAG1		(12)
++#define SCU1_RESET_SPI0			(13)
++#define SCU1_RESET_SPI1			(14)
++#define SCU1_RESET_SPI2			(15)
++#define SCU1_RESET_I3C0			(16)
++#define SCU1_RESET_I3C1			(17)
++#define SCU1_RESET_I3C2			(18)
++#define SCU1_RESET_I3C3			(19)
++#define SCU1_RESET_I3C4			(20)
++#define SCU1_RESET_I3C5			(21)
++#define SCU1_RESET_I3C6			(22)
++#define SCU1_RESET_I3C7			(23)
++#define SCU1_RESET_I3C8			(24)
++#define SCU1_RESET_I3C9			(25)
++#define SCU1_RESET_I3C10		(26)
++#define SCU1_RESET_I3C11		(27)
++#define SCU1_RESET_I3C12		(28)
++#define SCU1_RESET_I3C13		(29)
++#define SCU1_RESET_I3C14		(30)
++#define SCU1_RESET_I3C15		(31)
++#define SCU1_RESET_I3C15		(31)
++#define SCU1_RESET_MCU0			(32)
++#define SCU1_RESET_MCU1			(33)
++#define SCU1_RESET_H2A_SPI1		(34)
++#define SCU1_RESET_H2A_SPI2		(35)
++#define SCU1_RESET_UART0		(36)
++#define SCU1_RESET_UART1		(37)
++#define SCU1_RESET_UART2		(38)
++#define SCU1_RESET_UART3		(39)
++#define SCU1_RESET_I2C_FILTER		(40)
++#define SCU1_RESET_CALIPTRA		(41)
++#define SCU1_RESET_XDMA			(42)
++/* reserved 43 */
++#define SCU1_RESET_FSI			(44)
++#define SCU1_RESET_CAN			(45)
++#define SCU1_RESET_MCTP			(46)
++#define SCU1_RESET_I2C			(47)
++#define SCU1_RESET_UART6		(48)
++#define SCU1_RESET_UART7		(49)
++#define SCU1_RESET_UART8		(50)
++#define SCU1_RESET_UART9		(51)
++#define SCU1_RESET_LTPI			(52)
++#define SCU1_RESET_VGAL			(53)
++#define SCU1_RESET_LTPI1		(54)
++#define SCU1_RESET_ACE			(55)
++#define SCU1_RESET_E2M			(56)
++#define SCU1_RESET_UHCI			(57)
++#define SCU1_RESET_PORTC_EHCI		(58)
++#define SCU1_RESET_PORTC_VHUB		(59)
++#define SCU1_RESET_PORTD_EHCI		(60)
++#define SCU1_RESET_PORTD_VHUB		(61)
++#define SCU1_RESET_H2X			(62)
++#define SCU1_RESET_I3CDMA		(63)
++#define SCU1_RESET_PCIE2RST		(64)
++
++#define SCU1_RESET_NUMS		(SCU1_RESET_PCIE2RST + 1)
++
++#endif  /* _MACH_ASPEED_AST2700_RESET_H_ */
 -- 
 2.34.1
 
