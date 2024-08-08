@@ -1,35 +1,93 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 8 Aug 2024 15:59:33 +0800
-Subject: [PATCH 0/4] Add support for AST2700 clk driver
-Message-ID: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
+Date: Thu, 8 Aug 2024 15:59:34 +0800
+Subject: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+In-Reply-To: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
+References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
+Message-ID: <20240808075937.2756733-2-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series is add clk driver for AST2700.
+Add compatible support for AST2700 clk, reset, pinctrl, silicon-id
+and example for AST2700 scu.
 
-AST2700 is the 8th generation of Integrated Remote Management Processor
-introduced by ASPEED Technology Inc. Which is Board Management controller
-(BMC) SoC family.
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 31 +++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
-Ryan Chen (4):
-  dt-bindings: mfd: aspeed: support for AST2700
-  dt-bindings: reset Add AST2700 reset bindings
-  dt-bindings: clock: Add AST2700 clock bindings
-  dt-bindings: clock: Add AST2700 clock bindings
-
- .../bindings/mfd/aspeed,ast2x00-scu.yaml      |   31 +-
- drivers/clk/Makefile                          |    1 +
- drivers/clk/clk-ast2700.c                     | 1091 +++++++++++++++++
- .../dt-bindings/clock/aspeed,ast2700-clk.h    |  175 +++
- .../dt-bindings/reset/aspeed,ast2700-reset.h  |  132 ++
- 5 files changed, 1428 insertions(+), 2 deletions(-)
- create mode 100644 drivers/clk/clk-ast2700.c
- create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
- create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
-
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+index 86ee69c0f45b..c0965f08ae8c 100644
+--- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+@@ -21,6 +21,8 @@ properties:
+           - aspeed,ast2400-scu
+           - aspeed,ast2500-scu
+           - aspeed,ast2600-scu
++          - aspeed,ast2700-scu0
++          - aspeed,ast2700-scu1
+       - const: syscon
+       - const: simple-mfd
+ 
+@@ -30,10 +32,12 @@ properties:
+   ranges: true
+ 
+   '#address-cells':
+-    const: 1
++    minimum: 1
++    maximum: 2
+ 
+   '#size-cells':
+-    const: 1
++    minimum: 1
++    maximum: 2
+ 
+   '#clock-cells':
+     const: 1
+@@ -56,6 +60,8 @@ patternProperties:
+             - aspeed,ast2400-pinctrl
+             - aspeed,ast2500-pinctrl
+             - aspeed,ast2600-pinctrl
++            - aspeed,ast2700-soc0-pinctrl
++            - aspeed,ast2700-soc1-pinctrl
+ 
+     required:
+       - compatible
+@@ -76,6 +82,7 @@ patternProperties:
+               - aspeed,ast2400-silicon-id
+               - aspeed,ast2500-silicon-id
+               - aspeed,ast2600-silicon-id
++              - aspeed,ast2700-silicon-id
+           - const: aspeed,silicon-id
+ 
+       reg:
+@@ -115,4 +122,24 @@ examples:
+             reg = <0x7c 0x4>, <0x150 0x8>;
+         };
+     };
++  - |
++    soc0 {
++        #address-cells = <2>;
++        #size-cells = <2>;
++        syscon at 12c02000 {
++            compatible = "aspeed,ast2700-scu0", "syscon", "simple-mfd";
++            reg = <0x0 0x12c02000 0x0 0x1000>;
++            #clock-cells = <1>;
++            #reset-cells = <1>;
++
++            #address-cells = <2>;
++            #size-cells = <2>;
++            ranges = <0x0 0x0 0 0x12c02000 0 0x1000>;
++
++            silicon-id at 0 {
++                compatible = "aspeed,ast2700-silicon-id", "aspeed,silicon-id";
++                reg = <0x0 0x0 0x0 0x4>;
++            };
++        };
++    };
+ ...
 -- 
 2.34.1
 
