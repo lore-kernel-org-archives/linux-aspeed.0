@@ -1,161 +1,204 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 8 Aug 2024 15:59:35 +0800
-Subject: [PATCH 2/4] dt-bindings: reset Add AST2700 reset bindings
+Date: Thu, 8 Aug 2024 15:59:36 +0800
+Subject: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock bindings
 In-Reply-To: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
 References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
-Message-ID: <20240808075937.2756733-3-ryan_chen@aspeedtech.com>
+Message-ID: <20240808075937.2756733-4-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add dt bindings for AST2700 reset driver.
+Add dt bindings for AST2700 clock controller
 
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
- .../dt-bindings/reset/aspeed,ast2700-reset.h  | 132 ++++++++++++++++++
- 1 file changed, 132 insertions(+)
- create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
+ .../dt-bindings/clock/aspeed,ast2700-clk.h    | 175 ++++++++++++++++++
+ 1 file changed, 175 insertions(+)
+ create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
 
-diff --git a/include/dt-bindings/reset/aspeed,ast2700-reset.h b/include/dt-bindings/reset/aspeed,ast2700-reset.h
+diff --git a/include/dt-bindings/clock/aspeed,ast2700-clk.h b/include/dt-bindings/clock/aspeed,ast2700-clk.h
 new file mode 100644
-index 000000000000..ea261108abfb
+index 000000000000..facf72352c3e
 --- /dev/null
-+++ b/include/dt-bindings/reset/aspeed,ast2700-reset.h
-@@ -0,0 +1,132 @@
++++ b/include/dt-bindings/clock/aspeed,ast2700-clk.h
+@@ -0,0 +1,175 @@
 +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
 +/*
-+ * Device Tree binding constants for AST2700 reset controller.
++ * Device Tree binding constants for AST2700 clock controller.
 + *
 + * Copyright (c) 2024 Aspeed Technology Inc.
 + */
 +
-+#ifndef _MACH_ASPEED_AST2700_RESET_H_
-+#define _MACH_ASPEED_AST2700_RESET_H_
++#ifndef __DT_BINDINGS_CLOCK_AST2700_H
++#define __DT_BINDINGS_CLOCK_AST2700_H
 +
-+/* SOC0 */
-+#define SCU0_RESET_SDRAM		(0)
-+#define SCU0_RESET_DDRPHY		(1)
-+#define SCU0_RESET_RSA			(2)
-+#define SCU0_RESET_SHA3			(3)
-+#define SCU0_RESET_HACE			(4)
-+#define SCU0_RESET_SOC			(5)
-+#define SCU0_RESET_VIDEO		(6)
-+#define SCU0_RESET_2D			(7)
-+#define SCU0_RESET_PCIS			(8)
-+#define SCU0_RESET_RVAS0		(9)
-+#define SCU0_RESET_RVAS1		(10)
-+#define SCU0_RESET_SM3			(11)
-+#define SCU0_RESET_SM4			(12)
-+#define SCU0_RESET_CRT0			(13)
-+#define SCU0_RESET_ECC			(14)
-+#define SCU0_RESET_DP_PCI		(15)
-+#define SCU0_RESET_UFS			(16)
-+#define SCU0_RESET_EMMC			(17)
-+#define SCU0_RESET_PCIE1RST		(18)
-+#define SCU0_RESET_PCIE1RSTOE		(19)
-+#define SCU0_RESET_PCIE0RST		(20)
-+#define SCU0_RESET_PCIE0RSTOE		(21)
-+#define SCU0_RESET_JTAG			(22)
-+#define SCU0_RESET_MCTP0		(23)
-+#define SCU0_RESET_MCTP1		(24)
-+#define SCU0_RESET_XDMA0		(25)
-+#define SCU0_RESET_XDMA1		(26)
-+#define SCU0_RESET_H2X1			(27)
-+#define SCU0_RESET_DP			(28)
-+#define SCU0_RESET_DP_MCU		(29)
-+#define SCU0_RESET_SSP			(30)
-+#define SCU0_RESET_H2X0			(31)
-+#define SCU0_RESET_PORTA_VHUB1		(32)
-+#define SCU0_RESET_PORTA_PHY3		(33)
-+#define SCU0_RESET_PORTA_XHCI		(34)
-+#define SCU0_RESET_PORTB_VHUB1		(35)
-+#define SCU0_RESET_PORTB_PHY3		(36)
-+#define SCU0_RESET_PORTB_XHCI		(37)
-+#define SCU0_RESET_PORTA_EHCI		(38)
-+#define SCU0_RESET_PORTA_VHUB0		(38)
-+#define SCU0_RESET_PORTB_EHCI		(39)
-+#define SCU0_RESET_PORTB_VHUB0		(39)
-+#define SCU0_RESET_UHCI			(40)
-+#define SCU0_RESET_TSP			(41)
-+#define SCU0_RESET_E2M0			(42)
-+#define SCU0_RESET_E2M1			(43)
-+#define SCU0_RESET_VLINK		(44)
++/* SOC0 clk-gate */
++#define SCU0_CLK_GATE_MCLK	(0)
++#define SCU0_CLK_GATE_ECLK	(1)
++#define SCU0_CLK_GATE_2DCLK	(2)
++#define SCU0_CLK_GATE_VCLK	(3)
++#define SCU0_CLK_GATE_BCLK	(4)
++#define SCU0_CLK_GATE_VGA0CLK	(5)
++#define SCU0_CLK_GATE_REFCLK	(6)
++#define SCU0_CLK_GATE_PORTBUSB2CLK	(7)
++#define SCU0_CLK_GATE_RSV8	(8)
++#define SCU0_CLK_GATE_UHCICLK	(9)
++#define SCU0_CLK_GATE_VGA1CLK	(10)
++#define SCU0_CLK_GATE_DDRPHYCLK	(11)
++#define SCU0_CLK_GATE_E2M0CLK	(12)
++#define SCU0_CLK_GATE_HACCLK	(13)
++#define SCU0_CLK_GATE_PORTAUSB2CLK	(14)
++#define SCU0_CLK_GATE_UART4CLK	(15)
++#define SCU0_CLK_GATE_SLICLK	(16)
++#define SCU0_CLK_GATE_DACCLK	(17)
++#define SCU0_CLK_GATE_DP	(18)
++#define SCU0_CLK_GATE_E2M1CLK	(19)
++#define SCU0_CLK_GATE_CRT0CLK	(20)
++#define SCU0_CLK_GATE_CRT1CLK	(21)
++#define SCU0_CLK_GATE_VLCLK	(22)
++#define SCU0_CLK_GATE_ECDSACLK	(23)
++#define SCU0_CLK_GATE_RSACLK	(24)
++#define SCU0_CLK_GATE_RVAS0CLK	(25)
++#define SCU0_CLK_GATE_UFSCLK	(26)
++#define SCU0_CLK_GATE_EMMCCLK	(27)
++#define SCU0_CLK_GATE_RVAS1CLK	(28)
++/* reserved 29 ~ 31*/
++#define SCU0_CLK_GATE_NUM	(SCU0_CLK_GATE_RVAS1CLK + 1)
 +
-+#define SCU0_RESET_NUMS		(SCU0_RESET_VLINK + 1)
++/* SOC0 clk */
++#define SCU0_CLKIN		(SCU0_CLK_GATE_NUM + 0)
++#define SCU0_CLK_24M		(SCU0_CLK_GATE_NUM + 1)
++#define SCU0_CLK_192M		(SCU0_CLK_GATE_NUM + 2)
++#define SCU0_CLK_UART		(SCU0_CLK_GATE_NUM + 3)
++#define SCU0_CLK_PSP		(SCU0_CLK_GATE_NUM + 4)
++#define SCU0_CLK_HPLL		(SCU0_CLK_GATE_NUM + 5)
++#define SCU0_CLK_HPLL_DIV2	(SCU0_CLK_GATE_NUM + 6)
++#define SCU0_CLK_HPLL_DIV4	(SCU0_CLK_GATE_NUM + 7)
++#define SCU0_CLK_DPLL		(SCU0_CLK_GATE_NUM + 8)
++#define SCU0_CLK_MPLL		(SCU0_CLK_GATE_NUM + 9)
++#define SCU0_CLK_MPLL_DIV2	(SCU0_CLK_GATE_NUM + 10)
++#define SCU0_CLK_MPLL_DIV4	(SCU0_CLK_GATE_NUM + 11)
++#define SCU0_CLK_MPLL_DIV8	(SCU0_CLK_GATE_NUM + 12)
++#define SCU0_CLK_VGA0		(SCU0_CLK_GATE_NUM + 13)
++#define SCU0_CLK_VGA1		(SCU0_CLK_GATE_NUM + 14)
++#define SCU0_CLK_CRT0		(SCU0_CLK_GATE_NUM + 15)
++#define SCU0_CLK_CRT1		(SCU0_CLK_GATE_NUM + 16)
++#define SCU0_CLK_MPHY		(SCU0_CLK_GATE_NUM + 17)
++#define SCU0_CLK_AXI0		(SCU0_CLK_GATE_NUM + 18)
++#define SCU0_CLK_AXI1		(SCU0_CLK_GATE_NUM + 19)
++#define SCU0_CLK_AHB		(SCU0_CLK_GATE_NUM + 20)
++#define SCU0_CLK_APB		(SCU0_CLK_GATE_NUM + 21)
++#define SCU0_CLK_MCLK		(SCU0_CLK_GATE_NUM + 22)
++#define SCU0_CLK_ECLK		(SCU0_CLK_GATE_NUM + 23)
++#define SCU0_CLK_VCLK		(SCU0_CLK_GATE_NUM + 24)
++#define SCU0_CLK_BCLK		(SCU0_CLK_GATE_NUM + 25)
++#define SCU0_CLK_REF		(SCU0_CLK_GATE_NUM + 26)
++#define SCU0_CLK_UART4		(SCU0_CLK_GATE_NUM + 27)
++#define SCU0_CLK_SLI		(SCU0_CLK_GATE_NUM + 28)
++#define SCU0_CLK_UFS		(SCU0_CLK_GATE_NUM + 29)
++#define SCU0_CLK_EMMCMUX	(SCU0_CLK_GATE_NUM + 30)
++#define SCU0_CLK_EMMC		(SCU0_CLK_GATE_NUM + 31)
++#define SCU0_CLK_U2PHY_CLK12M	(SCU0_CLK_GATE_NUM + 32)
++#define SCU0_CLK_U2PHY_REFCLK	(SCU0_CLK_GATE_NUM + 33)
 +
-+/* SOC1 */
-+#define SCU1_RESET_LPC0			(0)
-+#define SCU1_RESET_LPC1			(1)
-+#define SCU1_RESET_MII			(2)
-+#define SCU1_RESET_PECI			(3)
-+#define SCU1_RESET_PWM			(4)
-+#define SCU1_RESET_MAC0			(5)
-+#define SCU1_RESET_MAC1			(6)
-+#define SCU1_RESET_MAC2			(7)
-+#define SCU1_RESET_ADC			(8)
-+#define SCU1_RESET_SD			(9)
-+#define SCU1_RESET_ESPI0		(10)
-+#define SCU1_RESET_ESPI1		(11)
-+#define SCU1_RESET_JTAG1		(12)
-+#define SCU1_RESET_SPI0			(13)
-+#define SCU1_RESET_SPI1			(14)
-+#define SCU1_RESET_SPI2			(15)
-+#define SCU1_RESET_I3C0			(16)
-+#define SCU1_RESET_I3C1			(17)
-+#define SCU1_RESET_I3C2			(18)
-+#define SCU1_RESET_I3C3			(19)
-+#define SCU1_RESET_I3C4			(20)
-+#define SCU1_RESET_I3C5			(21)
-+#define SCU1_RESET_I3C6			(22)
-+#define SCU1_RESET_I3C7			(23)
-+#define SCU1_RESET_I3C8			(24)
-+#define SCU1_RESET_I3C9			(25)
-+#define SCU1_RESET_I3C10		(26)
-+#define SCU1_RESET_I3C11		(27)
-+#define SCU1_RESET_I3C12		(28)
-+#define SCU1_RESET_I3C13		(29)
-+#define SCU1_RESET_I3C14		(30)
-+#define SCU1_RESET_I3C15		(31)
-+#define SCU1_RESET_I3C15		(31)
-+#define SCU1_RESET_MCU0			(32)
-+#define SCU1_RESET_MCU1			(33)
-+#define SCU1_RESET_H2A_SPI1		(34)
-+#define SCU1_RESET_H2A_SPI2		(35)
-+#define SCU1_RESET_UART0		(36)
-+#define SCU1_RESET_UART1		(37)
-+#define SCU1_RESET_UART2		(38)
-+#define SCU1_RESET_UART3		(39)
-+#define SCU1_RESET_I2C_FILTER		(40)
-+#define SCU1_RESET_CALIPTRA		(41)
-+#define SCU1_RESET_XDMA			(42)
-+/* reserved 43 */
-+#define SCU1_RESET_FSI			(44)
-+#define SCU1_RESET_CAN			(45)
-+#define SCU1_RESET_MCTP			(46)
-+#define SCU1_RESET_I2C			(47)
-+#define SCU1_RESET_UART6		(48)
-+#define SCU1_RESET_UART7		(49)
-+#define SCU1_RESET_UART8		(50)
-+#define SCU1_RESET_UART9		(51)
-+#define SCU1_RESET_LTPI			(52)
-+#define SCU1_RESET_VGAL			(53)
-+#define SCU1_RESET_LTPI1		(54)
-+#define SCU1_RESET_ACE			(55)
-+#define SCU1_RESET_E2M			(56)
-+#define SCU1_RESET_UHCI			(57)
-+#define SCU1_RESET_PORTC_EHCI		(58)
-+#define SCU1_RESET_PORTC_VHUB		(59)
-+#define SCU1_RESET_PORTD_EHCI		(60)
-+#define SCU1_RESET_PORTD_VHUB		(61)
-+#define SCU1_RESET_H2X			(62)
-+#define SCU1_RESET_I3CDMA		(63)
-+#define SCU1_RESET_PCIE2RST		(64)
++#define SCU0_NUM_CLKS		(SCU0_CLK_U2PHY_REFCLK + 1)
 +
-+#define SCU1_RESET_NUMS		(SCU1_RESET_PCIE2RST + 1)
++/* SOC1 clk gate */
++#define SCU1_CLK_GATE_LCLK0		(0)
++#define SCU1_CLK_GATE_LCLK1		(1)
++#define SCU1_CLK_GATE_ESPI0CLK		(2)
++#define SCU1_CLK_GATE_ESPI1CLK		(3)
++#define SCU1_CLK_GATE_SDCLK		(4)
++#define SCU1_CLK_GATE_IPEREFCLK		(5)	/* io die pcie ref clk */
++#define SCU1_CLK_GATE_RSV5CLK		(6)
++#define SCU1_CLK_GATE_LPCHCLK		(7)
++#define SCU1_CLK_GATE_MAC0CLK		(8)
++#define SCU1_CLK_GATE_MAC1CLK		(9)
++#define SCU1_CLK_GATE_MAC2CLK		(10)
++#define SCU1_CLK_GATE_UART0CLK		(11)
++#define SCU1_CLK_GATE_UART1CLK		(12)
++#define SCU1_CLK_GATE_UART2CLK		(13)
++#define SCU1_CLK_GATE_UART3CLK		(14)
++#define SCU1_CLK_GATE_I2CCLK		(15)
++#define SCU1_CLK_GATE_I3C0CLK		(16)
++#define SCU1_CLK_GATE_I3C1CLK		(17)
++#define SCU1_CLK_GATE_I3C2CLK		(18)
++#define SCU1_CLK_GATE_I3C3CLK		(19)
++#define SCU1_CLK_GATE_I3C4CLK		(20)
++#define SCU1_CLK_GATE_I3C5CLK		(21)
++#define SCU1_CLK_GATE_I3C6CLK		(22)
++#define SCU1_CLK_GATE_I3C7CLK		(23)
++#define SCU1_CLK_GATE_I3C8CLK		(24)
++#define SCU1_CLK_GATE_I3C9CLK		(25)
++#define SCU1_CLK_GATE_I3C10CLK		(26)
++#define SCU1_CLK_GATE_I3C11CLK		(27)
++#define SCU1_CLK_GATE_I3C12CLK		(28)
++#define SCU1_CLK_GATE_I3C13CLK		(29)
++#define SCU1_CLK_GATE_I3C14CLK		(30)
++#define SCU1_CLK_GATE_I3C15CLK		(31)
 +
-+#endif  /* _MACH_ASPEED_AST2700_RESET_H_ */
++#define SCU1_CLK_GATE_UART5CLK		(32 + 0)
++#define SCU1_CLK_GATE_UART6CLK		(32 + 1)
++#define SCU1_CLK_GATE_UART7CLK		(32 + 2)
++#define SCU1_CLK_GATE_UART8CLK		(32 + 3)
++#define SCU1_CLK_GATE_UART9CLK		(32 + 4)
++#define SCU1_CLK_GATE_UART10CLK		(32 + 5)
++#define SCU1_CLK_GATE_UART11CLK		(32 + 6)
++#define SCU1_CLK_GATE_UART12CLK		(32 + 7)
++#define SCU1_CLK_GATE_FSICLK		(32 + 8)
++#define SCU1_CLK_GATE_LTPIPHYCLK	(32 + 9)
++#define SCU1_CLK_GATE_LTPICLK		(32 + 10)
++#define SCU1_CLK_GATE_VGALCLK		(32 + 11)
++#define SCU1_CLK_GATE_USBUARTCLK	(32 + 12)
++#define SCU1_CLK_GATE_CANCLK		(32 + 13)
++#define SCU1_CLK_GATE_PCICLK		(32 + 14)
++#define SCU1_CLK_GATE_SLICLK		(32 + 15)
++#define SCU1_CLK_GATE_E2MCLK		(32 + 16)
++#define SCU1_CLK_GATE_PORTCUSB2CLK	(32 + 17)
++#define SCU1_CLK_GATE_PORTDUSB2CLK	(32 + 18)
++#define SCU1_CLK_GATE_LTPI1TXCLK	(32 + 19)
++
++#define SCU1_CLK_GATE_NUM	(SCU1_CLK_GATE_LTPI1TXCLK + 1)
++
++/* SOC1 clk */
++#define SCU1_CLKIN		(SCU1_CLK_GATE_NUM + 0)
++#define SCU1_CLK_HPLL		(SCU1_CLK_GATE_NUM + 1)
++#define SCU1_CLK_APLL		(SCU1_CLK_GATE_NUM + 2)
++#define SCU1_CLK_APLL_DIV2	(SCU1_CLK_GATE_NUM + 3)
++#define SCU1_CLK_APLL_DIV4	(SCU1_CLK_GATE_NUM + 4)
++#define SCU1_CLK_DPLL		(SCU1_CLK_GATE_NUM + 5)
++#define SCU1_CLK_UXCLK		(SCU1_CLK_GATE_NUM + 6)
++#define SCU1_CLK_HUXCLK		(SCU1_CLK_GATE_NUM + 7)
++#define SCU1_CLK_UARTX		(SCU1_CLK_GATE_NUM + 8)
++#define SCU1_CLK_HUARTX		(SCU1_CLK_GATE_NUM + 9)
++#define SCU1_CLK_AHB		(SCU1_CLK_GATE_NUM + 10)
++#define SCU1_CLK_APB		(SCU1_CLK_GATE_NUM + 11)
++#define SCU1_CLK_UART0		(SCU1_CLK_GATE_NUM + 12)
++#define SCU1_CLK_UART1		(SCU1_CLK_GATE_NUM + 13)
++#define SCU1_CLK_UART2		(SCU1_CLK_GATE_NUM + 14)
++#define SCU1_CLK_UART3		(SCU1_CLK_GATE_NUM + 15)
++#define SCU1_CLK_UART5		(SCU1_CLK_GATE_NUM + 16)
++#define SCU1_CLK_UART6		(SCU1_CLK_GATE_NUM + 17)
++#define SCU1_CLK_UART7		(SCU1_CLK_GATE_NUM + 18)
++#define SCU1_CLK_UART8		(SCU1_CLK_GATE_NUM + 19)
++#define SCU1_CLK_UART9		(SCU1_CLK_GATE_NUM + 20)
++#define SCU1_CLK_UART10		(SCU1_CLK_GATE_NUM + 21)
++#define SCU1_CLK_UART11		(SCU1_CLK_GATE_NUM + 22)
++#define SCU1_CLK_UART12		(SCU1_CLK_GATE_NUM + 23)
++#define SCU1_CLK_APLL_DIVN	(SCU1_CLK_GATE_NUM + 24)
++#define SCU1_CLK_SDMUX		(SCU1_CLK_GATE_NUM + 25)
++#define SCU1_CLK_SDCLK		(SCU1_CLK_GATE_NUM + 26)
++#define SCU1_CLK_RMII		(SCU1_CLK_GATE_NUM + 27)
++#define SCU1_CLK_RGMII		(SCU1_CLK_GATE_NUM + 28)
++#define SCU1_CLK_MACHCLK	(SCU1_CLK_GATE_NUM + 29)
++#define SCU1_CLK_MAC0RCLK	(SCU1_CLK_GATE_NUM + 30)
++#define SCU1_CLK_MAC1RCLK	(SCU1_CLK_GATE_NUM + 31)
++
++#define SCU1_NUM_CLKS		(SCU1_CLK_MAC1RCLK + 1)
++
++#endif
 -- 
 2.34.1
 
