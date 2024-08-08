@@ -1,106 +1,75 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 08 Aug 2024 11:32:04 +0930
-Subject: [PATCH 1/2] dt-bindings: interrupt-controller:
- aspeed,ast2400-vic: Convert to DT schema
-In-Reply-To: <c51fb027-f8bd-4b10-b9c0-dbbe8e8cf4c1@kernel.org>
+Date: Thu, 08 Aug 2024 11:36:28 +0930
+Subject: [PATCH 2/2] dt-bindings: misc: aspeed,ast2400-cvic: Convert to
+ DT schema
+In-Reply-To: <ec19fe07-84bd-4c32-a886-e6126af52f4c@kernel.org>
 References: <20240802-dt-warnings-irq-aspeed-dt-schema-v1-0-8cd4266d2094@codeconstruct.com.au>
-	 <20240802-dt-warnings-irq-aspeed-dt-schema-v1-1-8cd4266d2094@codeconstruct.com.au>
-	 <c51fb027-f8bd-4b10-b9c0-dbbe8e8cf4c1@kernel.org>
-Message-ID: <18a932d777d1b3b86af15e80af82b50d2189872f.camel@codeconstruct.com.au>
+	 <20240802-dt-warnings-irq-aspeed-dt-schema-v1-2-8cd4266d2094@codeconstruct.com.au>
+	 <ec19fe07-84bd-4c32-a886-e6126af52f4c@kernel.org>
+Message-ID: <4d26bde0bda7cb1d44958d967c4b0c2da5b2abc4.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-08-06 at 08:07 +0200, Krzysztof Kozlowski wrote:
+On Tue, 2024-08-06 at 08:12 +0200, Krzysztof Kozlowski wrote:
 > On 02/08/2024 07:36, Andrew Jeffery wrote:
-> > Squash warnings such as:
+> > Address warnings such as:
 > > 
-> >     arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-galaxy100.dtb: /ahb/interrupt-controller at 1e6c0080: failed to match any schema with compatible: ['aspeed,ast2400-vic']
-> > 
-> > The YAML DT schema defines an optional property, valid-sources, which
-> > was not previously described in the prose binding. It is added to
-> > document existing practice in the Aspeed devicetrees. Unfortunately
-> > the property seems to predate the requirement that vendor-specific
-> > properties be prefixed.
-> > 
-> > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 > 
 > 
-> > +
 > > +description:
-> > +  The AST2400 and AST2500 SoC families include a legacy register layout before
-> > +  a redesigned layout, but the bindings do not prescribe the use of one or the
-> > +  other.
+> > +  The Aspeed AST2400 and AST2500 SoCs have a controller that provides interrupts
+> > +  to the ColdFire coprocessor. It's not a normal interrupt controller and it
+> > +  would be rather inconvenient to create an interrupt tree for it, as it
+> > +  somewhat shares some of the same sources as the main ARM interrupt controller
+> > +  but with different numbers.
+> > +
+> > +  The AST2500 also supports a software generated interrupt.
 > > +
 > > +properties:
 > > +  compatible:
-> > +    enum:
-> > +      - aspeed,ast2400-vic
-> > +      - aspeed,ast2500-vic
+> > +    items:
+> > +      - enum:
+> > +          - aspeed,ast2400-cvic
+> > +          - aspeed,ast2500-cvic
+> > +      - const: aspeed,cvic
 > > +
-> > +  interrupt-controller: true
-> > +
-> > +  "#interrupt-cells":
-> > +    const: 1
-> > +    description:
-> > +      Specifies the number of cells needed to encode an interrupt source. It
-> > +      must be 1 as the VIC has no configuration options for interrupt sources.
-> > +      The single cell defines the interrupt number.
+> > +  reg:
+> > +    maxItems: 1
 > > +
 > > +  valid-sources:
 > > +    $ref: /schemas/types.yaml#/definitions/uint32-array
 > > +    description:
 > > +      One cell, bitmap of support sources for the implementation.
 > 
-> maxItems: 2
+> maxItems: 1
+> (and drop "One cell" - no need to repeat constraints in free form text)
 
-Ack.
+Ack to both.
 
-> What does "one cell" mean? uint32? DTS has two items.
+> 
+> BTW, for both bindings, I do not see any user in the kernel. Why is this
+> property needed in the DTS?
 
-Hah, I think that was a process error :) Two is correct here. I'll
-rework the description.
+Good question. This is a hangover from when benh was involved in the
+Aspeed kernel port.
+
+Given it's specified in the prose binding and the devicetrees contain
+the property I'll leaving it in for now, but I think it's something we
+could consider removing down the track.
 
 > 
 > > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  interrupts:
-> > +    maxItems: 1
+> > +  copro-sw-interrupts:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32-array
 > 
-> Is this correct? DTS does not have parent interrupt controller for this
-> device.
+> uint32? I do not see anywhere usage as an array. The in-kernel driver
+> explicitly reads just uint32.
 
-I'll removed it, it's not necessary.
-
-> 
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - interrupt-controller
-> > +  - "#interrupt-cells"
-> > +
-> > +allOf:
-> > +  - $ref: /schemas/interrupt-controller.yaml
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    interrupt-controller at 1e6c0080 {
-> > +         compatible = "aspeed,ast2400-vic";
-> > +         reg = <0x1e6c0080 0x80>;
-> > +         interrupt-controller;
-> > +         #interrupt-cells = <1>;
-> 
-> Make the example complete - add valid-sources interupts.
-> 
-
-Ack.
+You're right, and in the context of the hardware an array doesn't make
+sense here. I'll switch it to a uint32.
 
 Thanks for the review.
 
