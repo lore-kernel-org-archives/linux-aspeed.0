@@ -1,32 +1,38 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 9 Aug 2024 08:07:23 +0200
+Date: Fri, 9 Aug 2024 08:08:10 +0200
 Subject: [PATCH 2/4] dt-bindings: reset Add AST2700 reset bindings
-In-Reply-To: <OS8PR06MB7541E0944EAD547DED2AE561F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+In-Reply-To: <OS8PR06MB7541B5A820F68E2232377775F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
  <20240808075937.2756733-3-ryan_chen@aspeedtech.com>
- <0f227033-4818-4ff5-9140-851c6d802fb2@wanadoo.fr>
- <OS8PR06MB7541E0944EAD547DED2AE561F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Message-ID: <4f1c275d-63bd-4649-9517-17ac4f20e3bf@kernel.org>
+ <f12dd5c4-3b0f-4997-8368-1eef919d0cb0@kernel.org>
+ <OS8PR06MB7541B5A820F68E2232377775F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <5b63ce40-780c-457a-a292-4e7b310c567f@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/08/2024 07:42, Ryan Chen wrote:
->>> +#define SCU0_RESET_PORTA_EHCI              (38)
->>> +#define SCU0_RESET_PORTA_VHUB0             (38)
+On 09/08/2024 08:06, Ryan Chen wrote:
+>> Subject: Re: [PATCH 2/4] dt-bindings: reset Add AST2700 reset bindings
 >>
->> Is having 38 twice expected?
->> If not, why not use an enum, BTW?
+>> On 08/08/2024 09:59, Ryan Chen wrote:
+>>> Add dt bindings for AST2700 reset driver.
+>>>
+>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 >>
-> Yes, it is expected. Due to 38 is shared reset for 2 usb controller.
-> One for EHCI, another is for vhub0. So I do define the same value.
-> That I can do more clear in dtsi description.
-> The following will be expected dtsi file descript.
-
-No, that's confusing. Don't do this. You are hiding information that one
-reset is shared. Terrible idea.
+>>
+>> No, that's not how it works. Aspeed already sent it and recieved feedback. Do
+>> not send duplicated patches, without history/changelog. You keep avoiding
+>> discussion, do not reply and then send something again without changes.
+>>
+>> Respond to feedback you got and implement it.
+>>
+>> NAK
+> Apologize for your mis-lead, I do the internal discussion, it should not send "Introduce ASPEED AST27XX BMC SoC" series patch. it should be separate series patch.
+> Not mess together like previous "Introduce ASPEED AST27XX BMC SoC".
+> It should be bite by bite, example clk driver patches, platform patches, interrupt patches.
+> That the reason I send clk driver patch series in separate.
 
 Best regards,
 Krzysztof
