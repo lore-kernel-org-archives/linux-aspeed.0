@@ -1,39 +1,162 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 9 Aug 2024 08:08:10 +0200
-Subject: [PATCH 2/4] dt-bindings: reset Add AST2700 reset bindings
-In-Reply-To: <OS8PR06MB7541B5A820F68E2232377775F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Fri, 9 Aug 2024 06:10:22 +0000
+Subject: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+In-Reply-To: <10809e91-31be-4110-86c1-1e1ccb05b664@kernel.org>
 References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
- <20240808075937.2756733-3-ryan_chen@aspeedtech.com>
- <f12dd5c4-3b0f-4997-8368-1eef919d0cb0@kernel.org>
- <OS8PR06MB7541B5A820F68E2232377775F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Message-ID: <5b63ce40-780c-457a-a292-4e7b310c567f@kernel.org>
+ <20240808075937.2756733-2-ryan_chen@aspeedtech.com>
+ <2f27285e-6aa5-4e42-b361-224d8d164113@kernel.org>
+ <OS8PR06MB75416FAD2A1A16E7BE2D255DF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <10809e91-31be-4110-86c1-1e1ccb05b664@kernel.org>
+Message-ID: <OS8PR06MB7541F4F740FDB17F50EBCACBF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/08/2024 08:06, Ryan Chen wrote:
->> Subject: Re: [PATCH 2/4] dt-bindings: reset Add AST2700 reset bindings
->>
->> On 08/08/2024 09:59, Ryan Chen wrote:
->>> Add dt bindings for AST2700 reset driver.
->>>
->>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
->>
->>
->> No, that's not how it works. Aspeed already sent it and recieved feedback. Do
->> not send duplicated patches, without history/changelog. You keep avoiding
->> discussion, do not reply and then send something again without changes.
->>
->> Respond to feedback you got and implement it.
->>
->> NAK
-> Apologize for your mis-lead, I do the internal discussion, it should not send "Introduce ASPEED AST27XX BMC SoC" series patch. it should be separate series patch.
-> Not mess together like previous "Introduce ASPEED AST27XX BMC SoC".
-> It should be bite by bite, example clk driver patches, platform patches, interrupt patches.
-> That the reason I send clk driver patch series in separate.
+> Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+>
+> On 09/08/2024 07:55, Ryan Chen wrote:
+> >> Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support for
+> >> AST2700
+> >>
+> >> On 08/08/2024 09:59, Ryan Chen wrote:
+> >>> Add compatible support for AST2700 clk, reset, pinctrl, silicon-id
+> >>> and example for AST2700 scu.
+> >>>
+> >>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> >>> ---
+> >>>  .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 31
+> >> +++++++++++++++++--
+> >>>  1 file changed, 29 insertions(+), 2 deletions(-)
+> >>>
+> >>> diff --git
+> >>> a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> >>> b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> >>> index 86ee69c0f45b..c0965f08ae8c 100644
+> >>> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> >>> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> >>> @@ -21,6 +21,8 @@ properties:
+> >>>            - aspeed,ast2400-scu
+> >>>            - aspeed,ast2500-scu
+> >>>            - aspeed,ast2600-scu
+> >>> +          - aspeed,ast2700-scu0
+> >>> +          - aspeed,ast2700-scu1
+> >>
+> >> What are the differences between these two?
+> >
+> > The next [PATCH 4/4] is scu driver that include ast2700-scu0 and
+> > ast2700-scu1 CLK_OF_DECLARE_DRIVER(ast2700_soc0,
+> > "aspeed,ast2700-scu0", ast2700_soc0_clk_init);
+> > CLK_OF_DECLARE_DRIVER(ast2700_soc1, "aspeed,ast2700-scu1",
+> > ast2700_soc1_clk_init);
+>
+> What are hardware differences? Entirely different devices?
 
-Best regards,
-Krzysztof
+AST2700 have two soc die connected each other.
+Each soc die have it own scu, so the naming is ast2700-scu0 for soc0, another is ast2700-scu1 for soc1.
 
+>
+> > So I add these two.
+> >
+> >>
+> >>>        - const: syscon
+> >>>        - const: simple-mfd
+> >>>
+> >>> @@ -30,10 +32,12 @@ properties:
+> >>>    ranges: true
+> >>>
+> >>>    '#address-cells':
+> >>> -    const: 1
+> >>> +    minimum: 1
+> >>> +    maximum: 2
+> >>>
+> >>>    '#size-cells':
+> >>> -    const: 1
+> >>> +    minimum: 1
+> >>> +    maximum: 2
+> >>>
+> >>>    '#clock-cells':
+> >>>      const: 1
+> >>> @@ -56,6 +60,8 @@ patternProperties:
+> >>>              - aspeed,ast2400-pinctrl
+> >>>              - aspeed,ast2500-pinctrl
+> >>>              - aspeed,ast2600-pinctrl
+> >>> +            - aspeed,ast2700-soc0-pinctrl
+> >>> +            - aspeed,ast2700-soc1-pinctrl
+> >>>
+> >>>      required:
+> >>>        - compatible
+> >>> @@ -76,6 +82,7 @@ patternProperties:
+> >>>                - aspeed,ast2400-silicon-id
+> >>>                - aspeed,ast2500-silicon-id
+> >>>                - aspeed,ast2600-silicon-id
+> >>> +              - aspeed,ast2700-silicon-id
+> >>>            - const: aspeed,silicon-id
+> >>>
+> >>>        reg:
+> >>> @@ -115,4 +122,24 @@ examples:
+> >>>              reg = <0x7c 0x4>, <0x150 0x8>;
+> >>>          };
+> >>>      };
+> >>> +  - |
+> >>> +    soc0 {
+> >>> +        #address-cells = <2>;
+> >>> +        #size-cells = <2>;
+> >>
+> >> That's the same example as previous, right? The drop, no need.
+> >
+> > AST2700 is 64bits address mode platform, that the reason.
+> > So I add example for 64bits platform descript in dtsi I have to add
+> > soc0 to be address-cells and size-cells to be <2> Then I can define
+> > the register to be 64bits address and size.
+>
+> That's trivial. Drop.
+Do you mean, I don?t need add example for ast2700-scu0?
+
+Or delete #address-cells = <2>;  #size-cells = <2>;
+If I remove it will make dt_binding_check fail.
+>
+> >>
+> >> Best regards,
+> >> Krzysztof
+> >
+> > ************* Email Confidentiality Notice ********************
+> > ????:
+> > ???(????)????????????????? ?????
+> ??????????????????????, ?????????
+> ?????????????????????!
+> >
+> > DISCLAIMER:
+> > This message (and any attachments) may contain legally privileged and/or
+> other confidential information. If you have received it in error, please notify the
+> sender by reply e-mail and immediately delete the e-mail and any
+> attachments without copying or disclosing the contents. Thank you.
+>
+> Maybe I am the intended recipient of your message, maybe not. I don't want
+> to have any legal questions regarding upstream, public collaboration, thus
+> probably I should just remove your messages.
+>
+> Please talk with your IT that such disclaimers in open-source are not desired
+> (and maybe even harmful).
+> If you do not understand why, please also see:
+> https://www.youtube.com/live/fMeH7wqOwXA?si=GY7igfbda6vnjXlJ&t=835
+>
+> If you need to go around company SMTP server, then consider using b4
+> web-relay: https://b4.docs.kernel.org/en/latest/contributor/send.html
+>
+> I will not respond to any other confidential emails. That's the last one you got.
+>
+> To be clear: all messages from your company will be made published. By
+> responding to this email you agree that all communications from you and/or
+> your company is made public.
+>
+> Best regards,
+> Krzysztof
+
+************* Email Confidentiality Notice ********************
+????:
+???(????)????????????????? ???????????????????????????, ??????????????????????????????!
+
+DISCLAIMER:
+This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
