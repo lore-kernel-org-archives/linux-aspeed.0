@@ -1,263 +1,124 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 13 Aug 2024 11:35:25 +0200
-Subject: [PATCH v1 2/2] irqchip/aspeed-intc: Add support for 10 INTC
- interrupts on AST27XX platforms
-In-Reply-To: <20240813074338.969883-3-kevin_chen@aspeedtech.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 13 Aug 2024 11:48:30 +0200
+Subject: =?UTF-8?B?UmU6IOWbnuimhjogW1BBVENIIHYxIDIvMl0gaXJxY2hpcC9hc3BlZWQt?=
+ =?UTF-8?Q?intc=3A_Add_support_for_10_INTC_interrupts_on_AST27XX_platforms?=
+In-Reply-To: <PSAPR06MB4949680EBF66DCD47F2B4CF889862@PSAPR06MB4949.apcprd06.prod.outlook.com>
 References: <20240813074338.969883-1-kevin_chen@aspeedtech.com>
  <20240813074338.969883-3-kevin_chen@aspeedtech.com>
-Message-ID: <87h6borciq.ffs@tglx>
+ <315f9095-8928-44a9-bab7-a924a070eded@kernel.org>
+ <PSAPR06MB4949680EBF66DCD47F2B4CF889862@PSAPR06MB4949.apcprd06.prod.outlook.com>
+Message-ID: <13e6625f-9f62-4973-b8f2-e825bd7665ee@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Aug 13 2024 at 15:43, Kevin Chen wrote:
-> There are 10 interrupt source of soc0_intc in CPU die INTC.
->   1. 6 interrupt sources in IO die of soc1_intc0~soc1_intc5.
->   2. 2 interrupt sources in LTPI of ltpi0_intc0 and ltpi0_intc1.
->   3. 2 interrupt sources in LTPI of ltpi1_intc0 and ltpi1_intc1.
-> Request GIC interrupt to check each bit in status register to do next
-> level INTC handler.
->
-> In next level INTC handler of IO die or LTPI INTC using soc1_intcX combining
-> 32 interrupt sources into soc0_intc11 in CPU die. In soc1_intcX, handler
-> would check 32 bit of status register to do the requested device
-> handler.
+On 13/08/2024 11:44, Kevin Chen wrote:
+> Hi Krzk,
+> 
+> In ASPEED, ast2400/2500/2600 use arm architecture with KCONFIG_ARCH_ASPEED which slect MACH_ASPEED_G4/G5/G6 in arch/arm/mach-aspeed/Kconfig.
+> In the fureture, there would be ast2800/2900/... using arm64. We need to clarify the IC generation between 7th/8th/9th/....
+> 
+> Maybe change ARCH_ASPEED/MACH_ASPEEDG7 to ARCH_ASPEED first.
+> Or, do you have better Kconfig usage?
 
-I can't figure out what this word salad is trying to tell me. Nothing in
-the code does any combining. The handler reads the very same
-INTC_INT_STATUS_REG.
+Fix your quotes and do not top-post.
 
->
+Please respond inline, instead of top-posting, because it makes your
+emails hard to follow.
+https://elixir.bootlin.com/linux/v6.8-rc7/source/Documentation/process/submitting-patches.rst#L340
 
-This lacks a Signed-off-by: tag. See Documentation/process/
+> 
+> 
+>> +config ARCH_ASPEED
+>> +     bool "Aspeed SoC family"
+>> +     select MACH_ASPEED_G7
+>> +     help
+>> +       Say yes if you intend to run on an Aspeed ast2700 or similar
+>> +       seventh generation Aspeed BMCs.
+>> +
+>> +config MACH_ASPEED_G7
+>> +     bool "Aspeed SoC AST2700"
+> 
+> There are no MACHines for arm64. Look at this code. Do you see MACH
+> anywhere else? No. Then why Aspeed must be different?
 
-> ---
->  drivers/irqchip/Makefile          |   1 +
->  drivers/irqchip/irq-aspeed-intc.c | 198 ++++++++++++++++++++++++++++++
-> +
-> +#define INTC_INT_ENABLE_REG	0x00
-> +#define INTC_INT_STATUS_REG	0x04
-> +
-> +struct aspeed_intc_ic {
-> +	void __iomem		*base;
-> +	raw_spinlock_t		gic_lock;
-> +	raw_spinlock_t		intc_lock;
-> +	struct irq_domain	*irq_domain;
-> +};
-> +
-> +static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
-> +{
-> +	struct aspeed_intc_ic *intc_ic = irq_desc_get_handler_data(desc);
-> +	struct irq_chip *chip = irq_desc_get_chip(desc);
-> +	unsigned long bit, status, flags;
-> +
-> +	chained_irq_enter(chip, desc);
-> +
-> +	raw_spin_lock_irqsave(&intc_ic->gic_lock, flags);
+What is this?
 
-There is no point for irqsave(). This code is invoked with interrupts
-disabled and please convert to:
+> 
+> --
+> Best Regards,
+> Kevin. Chen
+> 
+> ________________________________
+> ???: Krzysztof Kozlowski <krzk@kernel.org>
+> ????: 2024?8?13? ?? 04:50
+> ???: Kevin Chen <kevin_chen@aspeedtech.com>; tglx at linutronix.de <tglx@linutronix.de>; robh at kernel.org <robh@kernel.org>; krzk+dt at kernel.org <krzk+dt@kernel.org>; conor+dt at kernel.org <conor+dt@kernel.org>; joel at jms.id.au <joel@jms.id.au>; andrew at codeconstruct.com.au <andrew@codeconstruct.com.au>; linux-kernel at vger.kernel.org <linux-kernel@vger.kernel.org>; devicetree at vger.kernel.org <devicetree@vger.kernel.org>; linux-arm-kernel at lists.infradead.org <linux-arm-kernel@lists.infradead.org>; linux-aspeed at lists.ozlabs.org <linux-aspeed@lists.ozlabs.org>
+> ??: Re: [PATCH v1 2/2] irqchip/aspeed-intc: Add support for 10 INTC interrupts on AST27XX platforms
+> 
 
-        scoped_guard(raw_spinlock, &intc_ic->gic_lock) {
+...
 
-> +	status = readl(intc_ic->base + INTC_INT_STATUS_REG);
-> +	for_each_set_bit(bit, &status, 32) {
+>> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+>> index 15635812b2d6..d2fe686ae018 100644
+>> --- a/drivers/irqchip/Makefile
+>> +++ b/drivers/irqchip/Makefile
+>> @@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)                     += irq-mvebu-sei.o
+>>  obj-$(CONFIG_LS_EXTIRQ)                      += irq-ls-extirq.o
+>>  obj-$(CONFIG_LS_SCFG_MSI)            += irq-ls-scfg-msi.o
+>>  obj-$(CONFIG_ARCH_ASPEED)            += irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
+>> +obj-$(CONFIG_MACH_ASPEED_G7)         += irq-aspeed-intc.o
+> 
+> There is no such thing as CONFIG_MACH_ASPEED_G7. And there will never be.
+> 
+> You already received feedback on this, so why do you keep pushing your
+> solution? You did not respond to any feedback given, just send the same
+> and the same till we agree?
+> 
+> NAK.
 
-Please use a define and not a hardcoded number.
+And this?
 
-> +		generic_handle_domain_irq(intc_ic->irq_domain, bit);
-> +		writel(BIT(bit), intc_ic->base + INTC_INT_STATUS_REG);
-> +	}
+> 
+>>  obj-$(CONFIG_STM32MP_EXTI)           += irq-stm32mp-exti.o
+>>  obj-$(CONFIG_STM32_EXTI)              += irq-stm32-exti.o
+>>  obj-$(CONFIG_QCOM_IRQ_COMBINER)              += qcom-irq-combiner.o
+>> diff --git a/drivers/irqchip/irq-aspeed-intc.c b/drivers/irqchip/irq-aspeed-intc.c
+>> new file mode 100644
+>> index 000000000000..71407475fb27
+> 
 
-        }
+...
 
-> +	raw_spin_unlock_irqrestore(&intc_ic->gic_lock, flags);
-> +
-> +	chained_irq_exit(chip, desc);
-> +}
-> +
-> +static void aspeed_intc_irq_mask(struct irq_data *data)
-> +{
-> +	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
-> +	unsigned int mask = readl(intc_ic->base + INTC_INT_ENABLE_REG) & ~BIT(data->hwirq);
-> +	unsigned long flags;
+> 
+> ************* Email Confidentiality Notice ********************
+> ????:
+> ???(????)????????????????? ???????????????????????????, ??????????????????????????????!
+> 
+> DISCLAIMER:
+> This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
 
-Invoked with interrupts disabled too.
+Maybe I am the intended recipient of your message, maybe not. I don't
+want to have any legal questions regarding upstream, public
+collaboration, thus probably I should just remove your messages.
 
-> +	raw_spin_lock_irqsave(&intc_ic->intc_lock, flags);
-> +	writel(mask, intc_ic->base + INTC_INT_ENABLE_REG);
-> +	raw_spin_unlock_irqrestore(&intc_ic->intc_lock, flags);
+Please talk with your IT that such disclaimers in open-source are not
+desired (and maybe even harmful).
+If you do not understand why, please also see:
+https://www.youtube.com/live/fMeH7wqOwXA?si=GY7igfbda6vnjXlJ&t=835
 
-        guard(raw_spinlock)(&intc_ic->intc_lock);
-	writel(mask, intc_ic->base + INTC_INT_ENABLE_REG);
+If you need to go around company SMTP server, then consider using b4
+web-relay: https://b4.docs.kernel.org/en/latest/contributor/send.html
 
-> +}
-> +
-> +static void aspeed_intc_irq_unmask(struct irq_data *data)
-> +{
-> +	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
-> +	unsigned int unmask = readl(intc_ic->base + INTC_INT_ENABLE_REG) | BIT(data->hwirq);
-> +	unsigned long flags;
+Please be informed that by responding to this email you agree that all
+communications from you and/or your company is made public. In other
+words, all messages originating from you and/or your company will be
+made public.
 
-Ditto.
+You already received exactly this feedback. Around three times. If you
+keep ignoring feedback, I will keep NAKing your patches.
 
-> +	raw_spin_lock_irqsave(&intc_ic->intc_lock, flags);
-> +	writel(unmask, intc_ic->base + INTC_INT_ENABLE_REG);
-> +	raw_spin_unlock_irqrestore(&intc_ic->intc_lock, flags);
-> +}
-> +
-> +static int aspeed_intc_irq_set_affinity(struct irq_data *data, const struct cpumask *dest,
-> +					bool force)
-> +{
-> +	return -EINVAL;
-> +}
+Best regards,
+Krzysztof
 
-No point for this stub, just leave irq_set_affinity uninitialized. The
-core code checks that pointer for NULL. Aside of that this stub and the
-assignment would need a #ifdef CONFIG_SMP guard.
-
-> +static struct irq_chip aspeed_intc_chip = {
-> +	.name			= "ASPEED INTC",
-> +	.irq_mask		= aspeed_intc_irq_mask,
-> +	.irq_unmask		= aspeed_intc_irq_unmask,
-> +	.irq_set_affinity	= aspeed_intc_irq_set_affinity,
-> +};
-> +
-> +static int aspeed_intc_ic_map_irq_domain(struct irq_domain *domain, unsigned int irq,
-> +					 irq_hw_number_t hwirq)
-> +{
-> +	irq_set_chip_and_handler(irq, &aspeed_intc_chip, handle_level_irq);
-> +	irq_set_chip_data(irq, domain->host_data);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct irq_domain_ops aspeed_intc_ic_irq_domain_ops = {
-> +	.map = aspeed_intc_ic_map_irq_domain,
-
-	.map	= aspeed_intc_ic_map_irq_domain,
-
-> +};
-> +
-> +static int __init aspeed_intc_ic_of_init(struct device_node *node, struct device_node *parent)
-> +{
-> +	struct aspeed_intc_ic *intc_ic;
-> +	int ret = 0;
-> +	int irq;
-
-        int irq, ret;
-
-No point in initializing ret.
-
-> +	intc_ic = kzalloc(sizeof(*intc_ic), GFP_KERNEL);
-> +	if (!intc_ic)
-> +		return -ENOMEM;
-> +
-> +	intc_ic->base = of_iomap(node, 0);
-> +	if (!intc_ic->base) {
-> +		pr_err("Failed to iomap intc_ic base\n");
-> +		ret = -ENOMEM;
-> +		goto err_free_ic;
-> +	}
-> +	writel(0xffffffff, intc_ic->base + INTC_INT_STATUS_REG);
-> +	writel(0x0, intc_ic->base + INTC_INT_ENABLE_REG);
-> +
-> +	irq = irq_of_parse_and_map(node, 0);
-> +	if (!irq) {
-> +		pr_err("Failed to get irq number\n");
-> +		ret = -EINVAL;
-> +		goto err_iounmap;
-> +	}
-> +
-> +	intc_ic->irq_domain = irq_domain_add_linear(node, 32,
-> +						    &aspeed_intc_ic_irq_domain_ops, intc_ic);
-> +	if (!intc_ic->irq_domain) {
-> +		ret = -ENOMEM;
-> +		goto err_iounmap;
-> +	}
-> +
-> +	raw_spin_lock_init(&intc_ic->gic_lock);
-> +	raw_spin_lock_init(&intc_ic->intc_lock);
-> +
-> +	intc_ic->irq_domain->name = "aspeed-intc-domain";
-
-See above.
-
-> +	irq_set_chained_handler_and_data(irq,
-> +					 aspeed_intc_ic_irq_handler, intc_ic);
-> +
-> +	return 0;
-> +
-> +err_iounmap:
-> +	iounmap(intc_ic->base);
-> +err_free_ic:
-> +	kfree(intc_ic);
-> +	return ret;
-> +}
-> +
-> +static int __init aspeed_intc_ic_of_init_v2(struct device_node *node,
-> +					    struct device_node *parent)
-> +{
-> +	struct aspeed_intc_ic *intc_ic;
-> +	int ret = 0;
-> +	int irq, i;
-> +
-> +	intc_ic = kzalloc(sizeof(*intc_ic), GFP_KERNEL);
-> +	if (!intc_ic)
-> +		return -ENOMEM;
-> +
-> +	intc_ic->base = of_iomap(node, 0);
-> +	if (!intc_ic->base) {
-> +		pr_err("Failed to iomap intc_ic base\n");
-> +		ret = -ENOMEM;
-> +		goto err_free_ic;
-> +	}
-> +	writel(0xffffffff, intc_ic->base + INTC_INT_STATUS_REG);
-> +	writel(0x0, intc_ic->base + INTC_INT_ENABLE_REG);
-> +
-> +	intc_ic->irq_domain = irq_domain_add_linear(node, 32,
-> +						    &aspeed_intc_ic_irq_domain_ops, intc_ic);
-> +	if (!intc_ic->irq_domain) {
-> +		ret = -ENOMEM;
-> +		goto err_iounmap;
-> +	}
-> +
-> +	raw_spin_lock_init(&intc_ic->gic_lock);
-> +	raw_spin_lock_init(&intc_ic->intc_lock);
-> +
-> +	intc_ic->irq_domain->name = "aspeed-intc-domain";
-
-So up to this point aspeed_intc_ic_of_init_v2() is a verbatim copy of
-aspeed_intc_ic_of_init(). Why can't you reuse that function? It's not
-rocket science to make that work.
-
-> +	for (i = 0; i < of_irq_count(node); i++) {
-> +		irq = irq_of_parse_and_map(node, i);
-> +		if (!irq) {
-> +			pr_err("Failed to get irq number\n");
-> +			ret = -EINVAL;
-> +			goto err_iounmap;
-
-Assume #0 and #1 succeed. #2 fails and leaves the chained handlers and
-the irqdomain around, but then unmaps the base and frees the data which
-the handler and the domain code needs. Seriously?
-
-> +		} else {
-
-Pointless else as the if clause terminates with a goto.
-
-> +			irq_set_chained_handler_and_data(irq, aspeed_intc_ic_irq_handler, intc_ic);
-
-So if I understand the code correctly then the hardware coalesces the
-pending bits into a single status register, but depending on which part
-of the SoC raised the interrupt one of the demultiplex interrupts is
-raised in the GIC.
-
-Any of those demultiplex interrupt handles _all_ pending bits and
-therefore you need gic_lock to serialize them, right?
-
-Thanks,
-
-        tglx
