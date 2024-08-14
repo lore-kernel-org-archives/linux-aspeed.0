@@ -1,180 +1,35 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Tue, 13 Aug 2024 10:33:59 +0000
-Subject: =?big5?B?pl7C0Dogpl7C0DogW1BBVENIIHYxIDIvMl0gaXJxY2hpcC9hc3BlZWQtaW50Yzog?=
- =?big5?B?QWRkIHN1cHBvcnQgZm9yIDEwIElOVEMgaW50ZXJydXB0cyBvbiBBU1QyN1hYIHBs?=
- =?big5?Q?atforms?=
-In-Reply-To: <13e6625f-9f62-4973-b8f2-e825bd7665ee@kernel.org>
-References: <20240813074338.969883-1-kevin_chen@aspeedtech.com>
- <20240813074338.969883-3-kevin_chen@aspeedtech.com>
- <315f9095-8928-44a9-bab7-a924a070eded@kernel.org>
- <PSAPR06MB4949680EBF66DCD47F2B4CF889862@PSAPR06MB4949.apcprd06.prod.outlook.com>
- <13e6625f-9f62-4973-b8f2-e825bd7665ee@kernel.org>
-Message-ID: <PSAPR06MB494928071577A5A8E537BF0189862@PSAPR06MB4949.apcprd06.prod.outlook.com>
+Date: Wed, 14 Aug 2024 19:41:03 +0800
+Subject: [PATCH v1 0/2] Add support for AST2700 INTC driver
+Message-ID: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzk,
+Introduce to the AST27XX INTC modules, which contain two conponents in
+CPU die(12nm) and IO die(40mm) comunicating by SLI or LTPI protocol.
 
->> Hi Krzk,
->>
->> In ASPEED, ast2400/2500/2600 use arm architecture with KCONFIG_ARCH_ASPEED which slect MACH_ASPEED_G4/G5/G6 in arch/arm/mach-aspeed/Kconfig.
->> In the fureture, there would be ast2800/2900/... using arm64. We need to clarify the IC generation between 7th/8th/9th/....
->>
->> Maybe change ARCH_ASPEED/MACH_ASPEEDG7 to ARCH_ASPEED first.
->> Or, do you have better Kconfig usage?
->
->Fix your quotes and do not top-post.
->
->Please respond inline, instead of top-posting, because it makes your
->emails hard to follow.
->https://elixir.bootlin.com/linux/v6.8-rc7/source/Documentation/process/submitting-patches.rst#L340
->
->>
->>
->>> +config ARCH_ASPEED
->>> +     bool "Aspeed SoC family"
->>> +     select MACH_ASPEED_G7
->>> +     help
->>> +       Say yes if you intend to run on an Aspeed ast2700 or similar
->>> +       seventh generation Aspeed BMCs.
->>> +
->>> +config MACH_ASPEED_G7
->>> +     bool "Aspeed SoC AST2700"
->>
->> There are no MACHines for arm64. Look at this code. Do you see MACH
->> anywhere else? No. Then why Aspeed must be different?
->
->What is this?
+There are lots of device in IO die, which need to be serviced in
+requested interrupt handler. As two die ICs, combine 32 interrupt source
+in IO die into 1 interrupt in CPU die.
 
-OK. I will remove MACH_ASPEED_G7 and  save ARCH_ASPEED for use.
+soc0_intc11 represent CPU die INTC, which each bit mapping to soc1_intcX.
+soc1_intcX represent IO die INTC, which combines 32 interrupt sources.
 
---
-Best Regards,
-Kevin. Chen
+Kevin Chen (2):
+  dt-bindings: interrupt-controller: Add support for ASPEED AST27XX INTC
+  irqchip/aspeed-intc: Add support for 10 INTC interrupts on AST27XX
+    platforms
 
-________________________________
-???: Krzysztof Kozlowski <krzk@kernel.org>
-????: 2024?8?13? ?? 05:48
-???: Kevin Chen <kevin_chen@aspeedtech.com>; tglx at linutronix.de <tglx@linutronix.de>; robh at kernel.org <robh@kernel.org>; krzk+dt at kernel.org <krzk+dt@kernel.org>; conor+dt at kernel.org <conor+dt@kernel.org>; joel at jms.id.au <joel@jms.id.au>; andrew at codeconstruct.com.au <andrew@codeconstruct.com.au>; linux-kernel at vger.kernel.org <linux-kernel@vger.kernel.org>; devicetree at vger.kernel.org <devicetree@vger.kernel.org>; linux-arm-kernel at lists.infradead.org <linux-arm-kernel@lists.infradead.org>; linux-aspeed at lists.ozlabs.org <linux-aspeed@lists.ozlabs.org>
-??: Re: ??: [PATCH v1 2/2] irqchip/aspeed-intc: Add support for 10 INTC interrupts on AST27XX platforms
+ .../aspeed,ast2700-intc.yaml                  | 120 +++++++++++
+ drivers/irqchip/Makefile                      |   1 +
+ drivers/irqchip/irq-aspeed-intc.c             | 198 ++++++++++++++++++
+ 3 files changed, 319 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
+ create mode 100644 drivers/irqchip/irq-aspeed-intc.c
 
-On 13/08/2024 11:44, Kevin Chen wrote:
-> Hi Krzk,
->
-> In ASPEED, ast2400/2500/2600 use arm architecture with KCONFIG_ARCH_ASPEED which slect MACH_ASPEED_G4/G5/G6 in arch/arm/mach-aspeed/Kconfig.
-> In the fureture, there would be ast2800/2900/... using arm64. We need to clarify the IC generation between 7th/8th/9th/....
->
-> Maybe change ARCH_ASPEED/MACH_ASPEEDG7 to ARCH_ASPEED first.
-> Or, do you have better Kconfig usage?
+-- 
+2.34.1
 
-Fix your quotes and do not top-post.
-
-Please respond inline, instead of top-posting, because it makes your
-emails hard to follow.
-https://elixir.bootlin.com/linux/v6.8-rc7/source/Documentation/process/submitting-patches.rst#L340
-
->
->
->> +config ARCH_ASPEED
->> +     bool "Aspeed SoC family"
->> +     select MACH_ASPEED_G7
->> +     help
->> +       Say yes if you intend to run on an Aspeed ast2700 or similar
->> +       seventh generation Aspeed BMCs.
->> +
->> +config MACH_ASPEED_G7
->> +     bool "Aspeed SoC AST2700"
->
-> There are no MACHines for arm64. Look at this code. Do you see MACH
-> anywhere else? No. Then why Aspeed must be different?
-
-What is this?
-
->
-> --
-> Best Regards,
-> Kevin. Chen
->
-> ________________________________
-> ???: Krzysztof Kozlowski <krzk@kernel.org>
-> ????: 2024?8?13? ?? 04:50
-> ???: Kevin Chen <kevin_chen@aspeedtech.com>; tglx at linutronix.de <tglx@linutronix.de>; robh at kernel.org <robh@kernel.org>; krzk+dt at kernel.org <krzk+dt@kernel.org>; conor+dt at kernel.org <conor+dt@kernel.org>; joel at jms.id.au <joel@jms.id.au>; andrew at codeconstruct.com.au <andrew@codeconstruct.com.au>; linux-kernel at vger.kernel.org <linux-kernel@vger.kernel.org>; devicetree at vger.kernel.org <devicetree@vger.kernel.org>; linux-arm-kernel at lists.infradead.org <linux-arm-kernel@lists.infradead.org>; linux-aspeed at lists.ozlabs.org <linux-aspeed@lists.ozlabs.org>
-> ??: Re: [PATCH v1 2/2] irqchip/aspeed-intc: Add support for 10 INTC interrupts on AST27XX platforms
->
-
-...
-
->> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
->> index 15635812b2d6..d2fe686ae018 100644
->> --- a/drivers/irqchip/Makefile
->> +++ b/drivers/irqchip/Makefile
->> @@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)                     += irq-mvebu-sei.o
->>  obj-$(CONFIG_LS_EXTIRQ)                      += irq-ls-extirq.o
->>  obj-$(CONFIG_LS_SCFG_MSI)            += irq-ls-scfg-msi.o
->>  obj-$(CONFIG_ARCH_ASPEED)            += irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
->> +obj-$(CONFIG_MACH_ASPEED_G7)         += irq-aspeed-intc.o
->
-> There is no such thing as CONFIG_MACH_ASPEED_G7. And there will never be.
->
-> You already received feedback on this, so why do you keep pushing your
-> solution? You did not respond to any feedback given, just send the same
-> and the same till we agree?
->
-> NAK.
-
-And this?
-
->
->>  obj-$(CONFIG_STM32MP_EXTI)           += irq-stm32mp-exti.o
->>  obj-$(CONFIG_STM32_EXTI)              += irq-stm32-exti.o
->>  obj-$(CONFIG_QCOM_IRQ_COMBINER)              += qcom-irq-combiner.o
->> diff --git a/drivers/irqchip/irq-aspeed-intc.c b/drivers/irqchip/irq-aspeed-intc.c
->> new file mode 100644
->> index 000000000000..71407475fb27
->
-
-...
-
->
-> ************* Email Confidentiality Notice ********************
-> ????:
-> ???(????)????????????????? ???????????????????????????, ??????????????????????????????!
->
-> DISCLAIMER:
-> This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
-
-Maybe I am the intended recipient of your message, maybe not. I don't
-want to have any legal questions regarding upstream, public
-collaboration, thus probably I should just remove your messages.
-
-Please talk with your IT that such disclaimers in open-source are not
-desired (and maybe even harmful).
-If you do not understand why, please also see:
-https://www.youtube.com/live/fMeH7wqOwXA?si=GY7igfbda6vnjXlJ&t=835
-
-If you need to go around company SMTP server, then consider using b4
-web-relay: https://b4.docs.kernel.org/en/latest/contributor/send.html
-
-Please be informed that by responding to this email you agree that all
-communications from you and/or your company is made public. In other
-words, all messages originating from you and/or your company will be
-made public.
-
-You already received exactly this feedback. Around three times. If you
-keep ignoring feedback, I will keep NAKing your patches.
-
-Best regards,
-Krzysztof
-
-************* Email Confidentiality Notice ********************
-????:
-???(????)????????????????? ???????????????????????????, ??????????????????????????????!
-
-DISCLAIMER:
-This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240813/a51d2c53/attachment-0001.htm>
