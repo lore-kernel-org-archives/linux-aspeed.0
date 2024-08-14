@@ -1,32 +1,36 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Wed, 14 Aug 2024 19:41:03 +0800
-Subject: [PATCH v1 0/2] Add support for AST2700 INTC driver
-Message-ID: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
+Date: Wed, 14 Aug 2024 19:41:04 +0800
+Subject: [PATCH v2 0/2] Add support for AST2700 INTC
+In-Reply-To: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
+References: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
+Message-ID: <20240814114106.2809876-2-kevin_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Introduce to the AST27XX INTC modules, which contain two conponents in
-CPU die(12nm) and IO die(40mm) comunicating by SLI or LTPI protocol.
+Support for the Aspeed Interrupt Controller found on Aspeed 7th Geration Silicon
+SoCs.
 
-There are lots of device in IO die, which need to be serviced in
-requested interrupt handler. As two die ICs, combine 32 interrupt source
-in IO die into 1 interrupt in CPU die.
+ASPEED interrupt controller(INTC) maps the internal interrupt sources of
+the AST27XX devices to an parent interrupt controller.
 
-soc0_intc11 represent CPU die INTC, which each bit mapping to soc1_intcX.
-soc1_intcX represent IO die INTC, which combines 32 interrupt sources.
+Changes since v2:
+Combine the aspeed_intc_ic_of_init and aspeed_intc_ic_of_init_v2.
+Switch raw_spin_lock_irqsave to scoped_guard and guard.
+Fix the error of make dt_binding_check.
+Refine the aspeed,ast2700-intc.yaml.
+
 
 Kevin Chen (2):
   dt-bindings: interrupt-controller: Add support for ASPEED AST27XX INTC
-  irqchip/aspeed-intc: Add support for 10 INTC interrupts on AST27XX
-    platforms
+  irqchip/aspeed-intc: Add support for AST27XX INTC
 
- .../aspeed,ast2700-intc.yaml                  | 120 +++++++++++
+ .../aspeed,ast2700-intc.yaml                  |  71 +++++++++
  drivers/irqchip/Makefile                      |   1 +
- drivers/irqchip/irq-aspeed-intc.c             | 198 ++++++++++++++++++
- 3 files changed, 319 insertions(+)
+ drivers/irqchip/irq-aspeed-intc.c             | 137 ++++++++++++++++++
+ 3 files changed, 209 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
  create mode 100644 drivers/irqchip/irq-aspeed-intc.c
 
