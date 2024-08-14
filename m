@@ -1,11 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Wed, 14 Aug 2024 16:04:51 +0200
-Subject: [PATCH v2 1/2] dt-bindings: interrupt-controller: Add support for
- ASPEED AST27XX INTC
-In-Reply-To: <20240814114106.2809876-3-kevin_chen@aspeedtech.com>
+Date: Wed, 14 Aug 2024 16:06:00 +0200
+Subject: [PATCH v2 2/2] irqchip/aspeed-intc: Add support for AST27XX INTC
+In-Reply-To: <20240814114106.2809876-4-kevin_chen@aspeedtech.com>
 References: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
- <20240814114106.2809876-3-kevin_chen@aspeedtech.com>
-Message-ID: <31635635-b743-446d-a94e-b3b8082c06a2@kernel.org>
+ <20240814114106.2809876-4-kevin_chen@aspeedtech.com>
+Message-ID: <4817e23e-a726-4557-b756-e0cbc54eebaa@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,66 +12,32 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 14/08/2024 13:41, Kevin Chen wrote:
-> The ASPEED AST27XX interrupt controller(INTC) contain second level and
-> third level interrupt controller. The third level INTC combines 32 interrupt
-> sources into 1 interrupt into parent interrupt controller. The second
-> level INTC doing hand shake with third level INTC.
+> Support for the Aspeed Interrupt Controller found on Aspeed Silicon SoCs,
+> such as the AST2700, which is arm64 architecture.
+> 
+> To support ASPEED interrupt controller(INTC) maps the internal interrupt
+> sources of the AST27XX device to an parent interrupt controller.
+> ---
+>  drivers/irqchip/Makefile          |   1 +
+>  drivers/irqchip/irq-aspeed-intc.c | 137 ++++++++++++++++++++++++++++++
+>  2 files changed, 138 insertions(+)
+>  create mode 100644 drivers/irqchip/irq-aspeed-intc.c
+> 
+> diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+> index 15635812b2d6..5da3f2f4eede 100644
+> --- a/drivers/irqchip/Makefile
+> +++ b/drivers/irqchip/Makefile
+> @@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)			+= irq-mvebu-sei.o
+>  obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
+>  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+>  obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
+> +obj-$(CONFIG_ASPEED_G7_INTC)		+= irq-aspeed-intc.o
 
 
-> +maintainers:
-> +  - Kevin Chen <kevin_chen@aspeedtech.com>
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2700-intc-ic
-> +
-> +  reg:
-> +    minItems: 1
+There is no such config symbol.
 
-That's unconstrained. Instead: maxItems: 1
-
-> +
-> +  interrupt-controller: true
-> +
-> +  '#interrupt-cells':
-> +    const: 2
-> +
-> +  interrupts:
-> +    minItems: 1
-> +    maxItems: 10
-> +    description:
-> +      It contains two types of interrupt controller. The first type is multiple
-> +      interrupt sources into parent interrupt controller. The second type is 
-> +      1 interrupt source to parent interrupt controller.
-
-I think I asked already - list the items with description.
-
-Why the number is flexible?
-
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupt-controller
-> +  - '#interrupt-cells'
-> +  - interrupts
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +
-> +    bus {
-> +        #address-cells = <2>;
-> +        #size-cells = <2>;
-> +    
-> +        interrupt-controller at 12101b00 {
-> +          compatible = "aspeed,ast2700-intc-ic";
-
-Messed indentation.
-
+You already got this exact comment. Replacing one broken code with other
+broken code is not the solution.
 
 
 Best regards,
