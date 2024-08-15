@@ -1,181 +1,120 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Wed, 14 Aug 2024 19:41:06 +0800
-Subject: [PATCH v2 2/2] irqchip/aspeed-intc: Add support for AST27XX INTC
-In-Reply-To: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
+Date: Thu, 15 Aug 2024 03:19:24 +0000
+Subject: =?big5?B?pl7C0DogW1BBVENIIHYyIDAvMl0gQWRkIHN1cHBvcnQgZm9yIEFTVDI3MDAgSU5U?=
+ =?big5?Q?C?=
+In-Reply-To: <1bf9edfe-5b32-4382-83d4-5be91e6c036e@kernel.org>
 References: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
-Message-ID: <20240814114106.2809876-4-kevin_chen@aspeedtech.com>
+ <20240814114106.2809876-2-kevin_chen@aspeedtech.com>
+ <1bf9edfe-5b32-4382-83d4-5be91e6c036e@kernel.org>
+Message-ID: <PSAPR06MB494959EA1822E0DE5AEF36CD89802@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Support for the Aspeed Interrupt Controller found on Aspeed Silicon SoCs,
-such as the AST2700, which is arm64 architecture.
+Hi Krzk,
 
-To support ASPEED interrupt controller(INTC) maps the internal interrupt
-sources of the AST27XX device to an parent interrupt controller.
----
- drivers/irqchip/Makefile          |   1 +
- drivers/irqchip/irq-aspeed-intc.c | 137 ++++++++++++++++++++++++++++++
- 2 files changed, 138 insertions(+)
- create mode 100644 drivers/irqchip/irq-aspeed-intc.c
+>> Support for the Aspeed Interrupt Controller found on Aspeed 7th Geration Silicon
+>> SoCs.
+>>
+>> ASPEED interrupt controller(INTC) maps the internal interrupt sources of
+>> the AST27XX devices to an parent interrupt controller.
+>>
+>> Changes since v2:
+>> Combine the aspeed_intc_ic_of_init and aspeed_intc_ic_of_init_v2.
+>> Switch raw_spin_lock_irqsave to scoped_guard and guard.
+>> Fix the error of make dt_binding_check.
+>> Refine the aspeed,ast2700-intc.yaml.
+>
+>It seems that entire Aspeed has troubles working with people in the
+>community. You do not address feedback, you ignore it and asks us to
+>re-review the same crap.
+Sorry.
 
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 15635812b2d6..5da3f2f4eede 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)			+= irq-mvebu-sei.o
- obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
- obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
-+obj-$(CONFIG_ASPEED_G7_INTC)		+= irq-aspeed-intc.o
- obj-$(CONFIG_STM32MP_EXTI)		+= irq-stm32mp-exti.o
- obj-$(CONFIG_STM32_EXTI) 		+= irq-stm32-exti.o
- obj-$(CONFIG_QCOM_IRQ_COMBINER)		+= qcom-irq-combiner.o
-diff --git a/drivers/irqchip/irq-aspeed-intc.c b/drivers/irqchip/irq-aspeed-intc.c
-new file mode 100644
-index 000000000000..748cc30b1485
---- /dev/null
-+++ b/drivers/irqchip/irq-aspeed-intc.c
-@@ -0,0 +1,137 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ *  Aspeed Interrupt Controller.
-+ *
-+ *  Copyright (C) 2023 ASPEED Technology Inc.
-+ */
-+
-+#include <linux/bitops.h>
-+#include <linux/irq.h>
-+#include <linux/irqchip.h>
-+#include <linux/irqchip/chained_irq.h>
-+#include <linux/irqdomain.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/io.h>
-+#include <linux/spinlock.h>
-+
-+#define INTC_INT_ENABLE_REG	0x00
-+#define INTC_INT_STATUS_REG	0x04
-+#define IRQS_PER_WORD 32
-+
-+struct aspeed_intc_ic {
-+	void __iomem		*base;
-+	raw_spinlock_t		gic_lock;
-+	raw_spinlock_t		intc_lock;
-+	struct irq_domain	*irq_domain;
-+};
-+
-+static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
-+{
-+	struct aspeed_intc_ic *intc_ic = irq_desc_get_handler_data(desc);
-+	struct irq_chip *chip = irq_desc_get_chip(desc);
-+	unsigned long bit, status;
-+
-+	chained_irq_enter(chip, desc);
-+
-+	scoped_guard(raw_spinlock, &intc_ic->gic_lock) {
-+		status = readl(intc_ic->base + INTC_INT_STATUS_REG);
-+		for_each_set_bit(bit, &status, IRQS_PER_WORD) {
-+			generic_handle_domain_irq(intc_ic->irq_domain, bit);
-+			writel(BIT(bit), intc_ic->base + INTC_INT_STATUS_REG);
-+		}
-+	}
-+
-+	chained_irq_exit(chip, desc);
-+}
-+
-+static void aspeed_intc_irq_mask(struct irq_data *data)
-+{
-+	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
-+	unsigned int mask = readl(intc_ic->base + INTC_INT_ENABLE_REG) & ~BIT(data->hwirq);
-+
-+	guard(raw_spinlock)(&intc_ic->intc_lock);
-+	writel(mask, intc_ic->base + INTC_INT_ENABLE_REG);
-+}
-+
-+static void aspeed_intc_irq_unmask(struct irq_data *data)
-+{
-+	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
-+	unsigned int unmask = readl(intc_ic->base + INTC_INT_ENABLE_REG) | BIT(data->hwirq);
-+
-+	guard(raw_spinlock)(&intc_ic->intc_lock);
-+	writel(unmask, intc_ic->base + INTC_INT_ENABLE_REG);
-+}
-+
-+static struct irq_chip aspeed_intc_chip = {
-+	.name			= "ASPEED INTC",
-+	.irq_mask		= aspeed_intc_irq_mask,
-+	.irq_unmask		= aspeed_intc_irq_unmask,
-+};
-+
-+static int aspeed_intc_ic_map_irq_domain(struct irq_domain *domain, unsigned int irq,
-+					 irq_hw_number_t hwirq)
-+{
-+	irq_set_chip_and_handler(irq, &aspeed_intc_chip, handle_level_irq);
-+	irq_set_chip_data(irq, domain->host_data);
-+
-+	return 0;
-+}
-+
-+static const struct irq_domain_ops aspeed_intc_ic_irq_domain_ops = {
-+	.map = aspeed_intc_ic_map_irq_domain,
-+};
-+
-+static int __init aspeed_intc_ic_of_init(struct device_node *node,
-+					    struct device_node *parent)
-+{
-+	struct aspeed_intc_ic *intc_ic;
-+	int ret = 0;
-+	int irq, i;
-+
-+	intc_ic = kzalloc(sizeof(*intc_ic), GFP_KERNEL);
-+	if (!intc_ic)
-+		return -ENOMEM;
-+
-+	intc_ic->base = of_iomap(node, 0);
-+	if (!intc_ic->base) {
-+		pr_err("Failed to iomap intc_ic base\n");
-+		ret = -ENOMEM;
-+		goto err_free_ic;
-+	}
-+	writel(0xffffffff, intc_ic->base + INTC_INT_STATUS_REG);
-+	writel(0x0, intc_ic->base + INTC_INT_ENABLE_REG);
-+
-+	intc_ic->irq_domain = irq_domain_add_linear(node, 32,
-+						    &aspeed_intc_ic_irq_domain_ops, intc_ic);
-+	if (!intc_ic->irq_domain) {
-+		ret = -ENOMEM;
-+		goto err_iounmap;
-+	}
-+
-+	raw_spin_lock_init(&intc_ic->gic_lock);
-+	raw_spin_lock_init(&intc_ic->intc_lock);
-+
-+	intc_ic->irq_domain->name = "aspeed-intc-domain";
-+
-+	for (i = 0; i < of_irq_count(node); i++) {
-+		irq = irq_of_parse_and_map(node, i);
-+		if (!irq) {
-+			pr_err("Failed to get irq number\n");
-+			ret = -EINVAL;
-+			goto err_iounmap;
-+		} else {
-+			irq_set_chained_handler_and_data(irq, aspeed_intc_ic_irq_handler, intc_ic);
-+		}
-+	}
-+
-+	return 0;
-+
-+err_iounmap:
-+	iounmap(intc_ic->base);
-+err_free_ic:
-+	kfree(intc_ic);
-+	return ret;
-+}
-+
-+IRQCHIP_DECLARE(ast2700_intc_ic, "aspeed,ast2700-intc-ic", aspeed_intc_ic_of_init);
--- 
-2.34.1
+>Before we proceed further:
+>1. Answer, inline, without confidentiality notice (after asking you this
+>5 times, I think you should fix it finally) that you:
+> - agree (ack/ok/agree)
+> - disagree with explanation why
+Agree, I will reply all previous feedbacks. Sorry to bother you for previous new patches wihout feedback.
 
+>2. Then double check that your new version implements everything above.
+Agree
+
+>3. Then send new version (max once per 24h) with changelog and
+>versioning (just use `b4`).
+I will try to use b4, but I need to check the usage with our ASPEED MIS.
+I studied the b4 as the following:
+# first patches
+b4 prep -n ast27xx-intc
+b4 send -o /tmp/tosend
+b4 prep --auto-to-cc
+b4 prep --edit-cover
+b4 send -o /tmp/tosend
+./scripts/checkpatch.pl /tmp/tosend/xxx.patch
+b4 send --reflect
+b4 send --web-auth-new
+b4 send --web-auth-verify xxx
+b4 send
+# new patches
+b4 prep --edit-cover
+b4 send v2
+
+
+>If you keep ignoring step 1 and 2, you will annoy reviewers up to the
+>point of automatic NAK or being ignored.
+I will follow the rules. Thanks for your kind reminder.
+
+--
+Best Regards,
+Kevin. Chen
+________________________________
+???: Krzysztof Kozlowski <krzk@kernel.org>
+????: 2024?8?14? ?? 11:14
+???: Kevin Chen <kevin_chen@aspeedtech.com>; tglx at linutronix.de <tglx@linutronix.de>; robh at kernel.org <robh@kernel.org>; krzk+dt at kernel.org <krzk+dt@kernel.org>; conor+dt at kernel.org <conor+dt@kernel.org>; joel at jms.id.au <joel@jms.id.au>; andrew at codeconstruct.com.au <andrew@codeconstruct.com.au>; linux-kernel at vger.kernel.org <linux-kernel@vger.kernel.org>; devicetree at vger.kernel.org <devicetree@vger.kernel.org>; linux-arm-kernel at lists.infradead.org <linux-arm-kernel@lists.infradead.org>; linux-aspeed at lists.ozlabs.org <linux-aspeed@lists.ozlabs.org>
+??: Re: [PATCH v2 0/2] Add support for AST2700 INTC
+
+On 14/08/2024 13:41, Kevin Chen wrote:
+> Support for the Aspeed Interrupt Controller found on Aspeed 7th Geration Silicon
+> SoCs.
+>
+> ASPEED interrupt controller(INTC) maps the internal interrupt sources of
+> the AST27XX devices to an parent interrupt controller.
+>
+> Changes since v2:
+> Combine the aspeed_intc_ic_of_init and aspeed_intc_ic_of_init_v2.
+> Switch raw_spin_lock_irqsave to scoped_guard and guard.
+> Fix the error of make dt_binding_check.
+> Refine the aspeed,ast2700-intc.yaml.
+
+It seems that entire Aspeed has troubles working with people in the
+community. You do not address feedback, you ignore it and asks us to
+re-review the same crap.
+
+Before we proceed further:
+1. Answer, inline, without confidentiality notice (after asking you this
+5 times, I think you should fix it finally) that you:
+ - agree (ack/ok/agree)
+ - disagree with explanation why
+
+2. Then double check that your new version implements everything above.
+
+3. Then send new version (max once per 24h) with changelog and
+versioning (just use `b4`).
+
+If you keep ignoring step 1 and 2, you will annoy reviewers up to the
+point of automatic NAK or being ignored.
+
+Best regards,
+Krzysztof
+
+************* Email Confidentiality Notice ********************
+????:
+???(????)????????????????? ???????????????????????????, ??????????????????????????????!
+
+DISCLAIMER:
+This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240815/c7edeaa0/attachment-0001.htm>
