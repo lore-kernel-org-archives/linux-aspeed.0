@@ -1,12 +1,11 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Fri, 16 Aug 2024 04:06:55 +0000
-Subject: [PATCH v1 02/10] dt-binding: clk: ast2700: Add binding for Aspeed
- AST27xx Clock
-In-Reply-To: <e13c16db-e1a7-4ee0-867b-b184d421de7f@kernel.org>
+Date: Fri, 16 Aug 2024 04:06:58 +0000
+Subject: [PATCH v1 03/10] clk: ast2700: add clock controller
+In-Reply-To: <fb3489cf-b288-426e-ace0-abf1d6b0fe0c@kernel.org>
 References: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
- <20240726110355.2181563-3-kevin_chen@aspeedtech.com>
- <e13c16db-e1a7-4ee0-867b-b184d421de7f@kernel.org>
-Message-ID: <PSAPR06MB49499A057A333009AFB61B7289812@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <20240726110355.2181563-4-kevin_chen@aspeedtech.com>
+ <fb3489cf-b288-426e-ace0-abf1d6b0fe0c@kernel.org>
+Message-ID: <PSAPR06MB49494F02CBA521CBA34132E689812@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,96 +16,140 @@ Hi Krzk,
 
 I will separate clock part in the v3 patch into Ryan's clock series.
 >
-> Missing commit msg.
->
-> A nit, subject: drop second/last, redundant "bindings". The "dt-bindings" prefix
-> is already stating that these are bindings.
-> See also:
-> https://elixir.bootlin.com/linux/v6.7-rc8/source/Documentation/devicetree/bin
-> dings/submitting-patches.rst#L18
->
-> Please use subject prefixes matching the subsystem. You can get them for
-> example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory your
-> patch is touching. For bindings, the preferred subjects are explained here:
-> https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patch
-> es.html#i-for-patch-submitters
-Agree, already fixed in another commit in Ryan's series.
-https://patchwork.kernel.org/project/linux-clk/patch/20240808075937.2756733-4-ryan_chen at aspeedtech.com/
-
->
->
+> So you did not write commit msgs to none of the commits?
 >
 > > ---
-> >  .../dt-bindings/clock/aspeed,ast2700-clk.h    | 180 ++++++++++++++++++
->
-> This is supposed to be part of bindings adding the clock controller.
->
-> >  1 file changed, 180 insertions(+)
-> >  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
+> >  drivers/clk/Makefile      |    1 +
+> >  drivers/clk/clk-ast2700.c | 1166
+> > +++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 1167 insertions(+)
+> >  create mode 100644 drivers/clk/clk-ast2700.c
 > >
-> > diff --git a/include/dt-bindings/clock/aspeed,ast2700-clk.h
-> > b/include/dt-bindings/clock/aspeed,ast2700-clk.h
-> > new file mode 100644
-> > index 000000000000..5ca85503736d
-> > --- /dev/null
-> > +++ b/include/dt-bindings/clock/aspeed,ast2700-clk.h
-> > @@ -0,0 +1,180 @@
-> > +/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
-> > +/*
-> > + * Device Tree binding constants for AST2700 clock controller.
-> > + *
-> > + * Copyright (c) 2023 Aspeed Technology Inc.
-> > + */
+> > diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile index
+> > f793a16cad40..0d5992ea0fa4 100644
+> > --- a/drivers/clk/Makefile
+> > +++ b/drivers/clk/Makefile
+> > @@ -38,6 +38,7 @@ obj-$(CONFIG_COMMON_CLK_FSL_SAI)  += clk-fsl-sai.o
+> >  obj-$(CONFIG_COMMON_CLK_GEMINI)            += clk-gemini.o
+> >  obj-$(CONFIG_COMMON_CLK_ASPEED)            += clk-aspeed.o
+> >  obj-$(CONFIG_MACH_ASPEED_G6)               += clk-ast2600.o
+> > +obj-$(CONFIG_MACH_ASPEED_G7)               += clk-ast2700.o
+>
+> ...
+>
 > > +
-> > +#ifndef __DT_BINDINGS_CLOCK_AST2700_H #define
-> > +__DT_BINDINGS_CLOCK_AST2700_H
+> > +static const char *const pspclk_sel[] = {
+> > +   "soc0-mpll",
+> > +   "soc0-hpll",
+> > +};
 > > +
-> > +/* SOC0 clk-gate */
-> > +#define SCU0_CLK_GATE_MCLK (0)
-> > +#define SCU0_CLK_GATE_ECLK (1)
+> > +static const char *const soc0_uartclk_sel[] = {
+> > +   "soc0-clk24Mhz",
+> > +   "soc0-clk192Mhz",
+> > +};
+> > +
+> > +static const char *const emmcclk_sel[] = {
+> > +   "soc0-mpll_div4",
+> > +   "soc0-hpll_div4",
+> > +};
+> > +
+> > +static int ast2700_soc0_clk_init(struct device_node *soc0_node) {
+> > +   struct clk_hw_onecell_data *clk_data;
+> > +   void __iomem *clk_base;
+> > +   struct ast2700_reset *reset;
+> > +   struct clk_hw **clks;
+> > +   int div;
+> > +   u32 val;
+> > +   int ret;
+> > +
+> > +   clk_data = kzalloc(struct_size(clk_data, hws, SOC0_NUM_CLKS),
+> GFP_KERNEL);
+> > +   if (!clk_data)
+> > +           return -ENOMEM;
+> > +
+> > +   clk_data->num = SOC0_NUM_CLKS;
+> > +   clks = clk_data->hws;
+> > +
+> > +   clk_base = of_iomap(soc0_node, 0);
+> > +   if (WARN_ON(IS_ERR(clk_base)))
 >
-> Drop all (). Not needed, not useful.
->
-> > +#define SCU0_CLK_GATE_GCLK (2)
-> > +#define SCU0_CLK_GATE_VCLK (3)
-> > +#define SCU0_CLK_GATE_BCLK (4)
-> > +#define SCU0_CLK_GATE_D1CLK        (5)
-> > +#define SCU0_CLK_GATE_REFCLK       (6)
-> > +#define SCU0_CLK_GATE_USB0CLK      (7)
-> > +#define SCU0_CLK_GATE_RSV8 (8)
-> > +#define SCU0_CLK_GATE_USB1CLK      (9)
-> > +#define SCU0_CLK_GATE_D2CLK        (10)
-> > +#define SCU0_CLK_GATE_RSV11        (11)
-> > +#define SCU0_CLK_GATE_RSV12        (12)
-> > +#define SCU0_CLK_GATE_YCLK (13)
-> > +#define SCU0_CLK_GATE_USB2CLK      (14)
-> > +#define SCU0_CLK_GATE_UART4CLK     (15)
-> > +#define SCU0_CLK_GATE_SLICLK       (16)
-> > +#define SCU0_CLK_GATE_DACCLK       (17)
-> > +#define SCU0_CLK_GATE_DP   (18)
-> > +#define SCU0_CLK_GATE_RSV19        (19)
-> > +#define SCU0_CLK_GATE_CRT1CLK      (20)
-> > +#define SCU0_CLK_GATE_CRT2CLK      (21)
-> > +#define SCU0_CLK_GATE_VLCLK        (22)
-> > +#define SCU0_CLK_GATE_ECCCLK       (23)
-> > +#define SCU0_CLK_GATE_RSACLK       (24)
-> > +#define SCU0_CLK_GATE_RVAS0CLK     (25)
-> > +#define SCU0_CLK_GATE_UFSCLK       (26)
-> > +#define SCU0_CLK_GATE_EMMCCLK      (27)
-> > +#define SCU0_CLK_GATE_RVAS1CLK     (28)
-> > +/* reserved 29 ~ 31*/
->
-> IDs cannot be reserved. It is a binding, not a hardware number.
-Agree, already fixed in another commit in Ryan's series.
-https://patchwork.kernel.org/project/linux-clk/patch/20240808075937.2756733-4-ryan_chen at aspeedtech.com/
+> Drop WARN_ON
+I remind Ryan for this fix. He will reply in these series.
+https://patchwork.kernel.org/project/linux-clk/patch/20240808075937.2756733-5-ryan_chen at aspeedtech.com/
 
 >
-> > +#define SOC0_CLK_GATE_NUM  (SCU0_CLK_GATE_RVAS1CLK + 1)
+> > +           return PTR_ERR(clk_base);
+> > +
+> > +   reset = kzalloc(sizeof(*reset), GFP_KERNEL);
+> > +   if (!reset)
+> > +           return -ENOMEM;
+> > +
+> > +   reset->base = clk_base;
+> > +
+> > +   reset->rcdev.owner = THIS_MODULE;
+> > +   reset->rcdev.nr_resets = SOC0_RESET_NUMS;
+> > +   reset->rcdev.ops = &ast2700_reset_ops;
+> > +   reset->rcdev.of_node = soc0_node;
+> > +
+> > +   ret = reset_controller_register(&reset->rcdev);
+> > +   if (ret) {
+> > +           pr_err("soc0 failed to register reset controller\n");
+> > +           return ret;
+> > +   }
+> > +
+> > +   //refclk
 >
-> No drop. Others as well.
-Agree, already fixed in another commit in Ryan's series.
-https://patchwork.kernel.org/project/linux-clk/patch/20240808075937.2756733-4-ryan_chen at aspeedtech.com/
+> Weird comment. Please read Coding Style.
+I remind Ryan for this fix. He will reply in these series.
+https://patchwork.kernel.org/project/linux-clk/patch/20240808075937.2756733-5-ryan_chen at aspeedtech.com/
 
+>
+>
+> > +   clks[SCU0_CLKIN] =
+> > +           clk_hw_register_fixed_rate(NULL, "soc0-clkin", NULL, 0,
+> > +SCU_CLK_25MHZ);
+> > +
+> > +   clks[SCU0_CLK_24M] =
+> > +           clk_hw_register_fixed_rate(NULL, "soc0-clk24Mhz", NULL, 0,
+> > +SCU_CLK_24MHZ);
+> > +
+> > +   clks[SCU0_CLK_192M] =
+> > +           clk_hw_register_fixed_rate(NULL, "soc0-clk192Mhz", NULL, 0,
+> > +SCU_CLK_192MHZ);
+> > +
+> > +   //hpll
+> > +   val = readl(clk_base + SCU0_HWSTRAP1);
+> > +   if ((val & GENMASK(3, 2)) != 0) {
+> > +           switch ((val & GENMASK(3, 2)) >> 2) {
+> > +           case 1:
+> > +                   clks[SCU0_CLK_HPLL] =
+> > +                           clk_hw_register_fixed_rate(NULL, "soc0-hpll", NULL, 0,
+> 1900000000);
+> > +                   break;
+> > +           case 2:
+> > +                   clks[SCU0_CLK_HPLL] =
+> > +                           clk_hw_register_fixed_rate(NULL, "soc0-hpll", NULL, 0,
+> 1800000000);
+> > +                   break;
+> > +           case 3:
+> > +                   clks[SCU0_CLK_HPLL] =
+> > +                           clk_hw_register_fixed_rate(NULL, "soc0-hpll", NULL, 0,
+> 1700000000);
+> > +                   break;
+> > +           }
+> > +   } else {
+> > +           val = readl(clk_base + SCU0_HPLL_PARAM);
+> > +           clks[SCU0_CLK_HPLL] = ast2700_soc0_hw_pll("soc0-hpll",
+> "soc0-clkin", val);
+> > +   }
+> > +   clks[SCU0_CLK_HPLL_DIV2] = clk_hw_register_fixed_factor(NULL,
+> "soc0-hpll_div2", "soc0-hpll", 0, 1, 2);
+> > +   clks[SCU0_CLK_HPLL_DIV4] = clk_hw_register_fixed_factor(NULL,
+> > +"soc0-hpll_div4", "soc0-hpll", 0, 1, 4);
+> > +
+> > +   //dpll
+>
+>
 >
 > Best regards,
 > Krzysztof
