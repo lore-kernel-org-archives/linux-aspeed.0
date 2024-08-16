@@ -1,43 +1,34 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 16 Aug 2024 17:23:59 +0800
-Subject: [PATCH v12 12/28] ARM: dts: aspeed: yosemite4: Remove temperature sensor for yosemite4 schematic change
+Date: Fri, 16 Aug 2024 17:24:02 +0800
+Subject: [PATCH v12 15/28] ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4 NIC connection
 In-Reply-To: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240816092417.3651434-13-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240816092417.3651434-16-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove temperature sensor for yosemite4 schematic change
+Remove idle state setting for yosemite4 NIC connection
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 ----------
- 1 file changed, 10 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index e83cb51ac19d..2c0c37b3ee5b 100644
+index df389b506b4b..c0497a1aa93e 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -921,16 +921,6 @@ temperature-sensor at 49 {
- 		reg = <0x49>;
- 	};
+@@ -1235,7 +1235,6 @@ mctp at 10 {
  
--	temperature-sensor at 4a {
--		compatible = "ti,tmp75";
--		reg = <0x4a>;
--	};
--
--	temperature-sensor at 4b {
--		compatible = "ti,tmp75";
--		reg = <0x4b>;
--	};
--
- 	eeprom at 54 {
- 		compatible = "atmel,24c128";
- 		reg = <0x54>;
+ 	i2c-mux at 72 {
+ 		compatible = "nxp,pca9544";
+-		i2c-mux-idle-disconnect;
+ 		reg = <0x72>;
+ 
+ 		imux24: i2c at 0 {
 -- 
 2.25.1
 
