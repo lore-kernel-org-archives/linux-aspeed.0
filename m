@@ -1,55 +1,48 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 16 Aug 2024 07:17:15 +0200
-Subject: [PATCH v1 06/10] dt-bindings: arm: aspeed: Add aspeed,ast2700-evb
- compatible string
-In-Reply-To: <PSAPR06MB4949F7F617DB4A371567EB4789812@PSAPR06MB4949.apcprd06.prod.outlook.com>
-References: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
- <20240726110355.2181563-7-kevin_chen@aspeedtech.com>
- <371a7c7b-de32-4f97-b4c7-3c0ad0732e1a@kernel.org>
- <PSAPR06MB4949F7F617DB4A371567EB4789812@PSAPR06MB4949.apcprd06.prod.outlook.com>
-Message-ID: <2b40d7e4-10f5-406a-9ac9-f9292a52a659@kernel.org>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 16 Aug 2024 17:23:49 +0800
+Subject: [PATCH v12 02/28] ARM: dts: aspeed: yosemite4: Enable adc15
+In-Reply-To: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240816092417.3651434-3-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 16/08/2024 06:08, Kevin Chen wrote:
-> Hi Krzk,
-> 
->>> ---
->>>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 5 +++++
->>>  1 file changed, 5 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> index 71c31c08a8ad..b21551817f44 100644
->>> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>> @@ -99,4 +99,9 @@ properties:
->>>                - ufispace,ncplite-bmc
->>>            - const: aspeed,ast2600
->>>
->>> +      - description: AST2700 based boards
->>> +        items:
->>> +          - enum:
->>> +              - aspeed,ast2700-evb
->>
->> NAK, this cannot be alone. Look at all other examples. Why are you doing
->> things differently?
-> Disagree, ast2700-evb is 7th generation IC in ASPEED.
+Enable Yosemite 4 adc15 config
 
-I gave you argument and you just respond "disagree" with unrelated
-statement?
-> It not in the sub-set of AST2400/AST2500/AST2600 based boards.
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-
-? That does not answer at all my concerns. Bring me any example doing
-this that way: single board compatible.
-
-Answer to the argument, instead of bringing useless text "ast is a
-board". Yeah, of course it is. What else could it be? A ship? A car?
-
-Best regards,
-Krzysztof
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index ce206e2c461b..0d659ee2bc19 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -51,7 +51,7 @@ iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+ 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+-				<&adc1 0>, <&adc1 1>;
++				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+ 	};
+ };
+ 
+@@ -925,10 +925,10 @@ &pinctrl_adc4_default &pinctrl_adc5_default
+ 
+ &adc1 {
+ 	status = "okay";
+-	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>;
++	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>
++			&pinctrl_adc15_default>;
+ };
+ 
+-
+ &ehci0 {
+ 	status = "okay";
+ };
+-- 
+2.25.1
 
