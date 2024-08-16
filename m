@@ -1,105 +1,51 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 16 Aug 2024 17:23:47 +0800
-Subject: [PATCH v12 00/28] Add i2c-mux and eeprom devices for Meta Yosemite 4
-Message-ID: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 16 Aug 2024 17:23:50 +0800
+Subject: [PATCH v12 03/28] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+In-Reply-To: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240816092417.3651434-4-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Changelog:
-  - v12
-    - Fix GPIO linename typo and add missing GPIO pin initial state.
-  - v11
-    - Revise all GPIO line name with bottom line
-  - v10
-    - adjust mgm cpld ioexp bus
-    - add GPIOO7 name
-    - remove mctp driver
-  - v9
-    - add XDP710 support
-    - add RTQ6056 support
-    - add MP5990 support
-  - v8
-    - add fan led config
-  - v7
-    - Revise pca9506 i2c address
-  - v6
-    - Revise i2c duty-cycle for meeting 400khz spec
-  - v5
-    - Support medusa board adc sensors
-    - support NIC eeprom
-  - v4
-    - Re-format gpio linename
-    - Revise i2c device node names
-    - Split patches by logic changes
-  - v3
-    - Correct patch for revising gpio name
-  - v2
-    - Revise mx31790 fan tach config
-    - Add mctp config for NIC
-    - Support mux to cpld
-    - Revise gpio name
-  - v1
-    - Add gpio and eeprom behind i2c-mux
-    - Remove redundant idle-state setting for i2c-mux
-    - Enable adc 15, wdt2,spi gpio for yosemite4 use
-    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
-    - Revise power sensor adm1281 for yosemite4 schematic change
-    - Add gpio pca9506 I/O expander for yosemite4 use
-    - remove space for adm1272 compatible
-    - enable interrupt setting for pca9555
-    - add eeprom for yosemite4 medusa board/BSM use
-    - remove temperature sensor for yosemite4 schematic change
-    - add power sensor for power module reading
-    - Revise adc128d818 adc mode for yosemite4 schematic change
-    - Revise ina233 for yosemite4 schematic change
-    - Remove idle state setting for yosemite4 NIC connection
-    - Initialize bmc gpio state
-    - Revise mx31790 fan tach config
-    - Add mctp config for NIC
-    - Support mux to cpld
-    - Revise gpio name
+enable spi-gpio setting for spi flash
 
-Delphine CC Chiu (28):
-  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
-  ARM: dts: aspeed: yosemite4: Enable adc15
-  ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
-  ARM: dts: aspeed: yosemite4: Enable watchdog2
-  ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
-  ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic
-    change
-  ARM: dts: aspeed: yosemite4: Add gpio pca9506
-  ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
-  ARM: dts: aspeed: yosemite4: Enable interrupt setting for pca9555
-  ARM: dts: aspeed: yosemite4: Add power sensor for power module reading
-  ARM: dts: aspeed: yosemite4: Add eeprom for yosemite4 use
-  ARM: dts: aspeed: yosemite4: Remove temperature sensor for yosemite4
-    schematic change
-  ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4
-    schematic change
-  ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4
-    schematic change
-  ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4
-    NIC connection
-  ARM: dts: aspeed: yosemite4: Initialize bmc gpio state
-  ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
-  ARM: dts: aspeed: yosemite4: add mctp config for NIC
-  ARM: dts: aspeed: yosemite4: support mux to cpld
-  ARM: dts: aspeed: yosemite4: support medusa board adc sensors
-  ARM: dts: aspeed: yosemite4: support NIC eeprom
-  ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
-  ARM: dts: aspeed: yosemite4: add fan led config
-  ARM: dts: aspeed: yosemite4: add XDP710
-  ARM: dts: aspeed: yosemite4: add RTQ6056 support
-  ARM: dts: aspeed: yosemite4: add MP5990 support
-  ARM: dts: aspeed: yosemite4: Adjust ioexp bus and remove mctp driver
-  ARM: dts: aspeed: yosemite4: fix GPIO linename typo
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 1749 ++++++++++++++++-
- 1 file changed, 1653 insertions(+), 96 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index 0d659ee2bc19..575abdd530df 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -53,6 +53,24 @@ iio-hwmon {
+ 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+ 				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+ 	};
++
++	spi_gpio: spi-gpio {
++		compatible = "spi-gpio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
++		gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
++		gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
++		num-chipselects = <1>;
++		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
++
++		tpmdev at 0 {
++			compatible = "tcg,tpm_tis-spi";
++			spi-max-frequency = <33000000>;
++			reg = <0>;
++		};
++	};
+ };
+ 
+ &uart1 {
 -- 
 2.25.1
 
