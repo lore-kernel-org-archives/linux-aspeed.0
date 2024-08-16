@@ -1,40 +1,41 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 16 Aug 2024 17:23:51 +0800
-Subject: [PATCH v12 04/28] ARM: dts: aspeed: yosemite4: Enable watchdog2
+Date: Fri, 16 Aug 2024 17:23:55 +0800
+Subject: [PATCH v12 08/28] ARM: dts: aspeed: yosemite4: Remove space for adm1272 compatible
 In-Reply-To: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240816092417.3651434-5-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240816092417.3651434-9-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-enable watchdog2 setting
+Remove space for adm1272 compatible
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 575abdd530df..51b4e9ae13cc 100644
+index f4d27f1ffdb8..b11951c2f71e 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -120,6 +120,13 @@ &wdt1 {
- 	aspeed,ext-pulse-duration = <256>;
- };
- 
-+&wdt2 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_wdtrst2_default>;
-+	aspeed,reset-type = "system";
-+};
-+
- &mac2 {
+@@ -821,12 +821,12 @@ imux29: i2c at 1 {
+ &i2c11 {
  	status = "okay";
- 	pinctrl-names = "default";
+ 	power-sensor at 10 {
+-		compatible = "adi, adm1272";
++		compatible = "adi,adm1272";
+ 		reg = <0x10>;
+ 	};
+ 
+ 	power-sensor at 12 {
+-		compatible = "adi, adm1272";
++		compatible = "adi,adm1272";
+ 		reg = <0x12>;
+ 	};
+ 
 -- 
 2.25.1
 
