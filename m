@@ -1,12 +1,11 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Fri, 16 Aug 2024 04:07:44 +0000
-Subject: [PATCH v1 04/10] dt-bindings: reset: ast2700: Add binding for
- ASPEED AST2700 Reset
-In-Reply-To: <3b6777d8-14b4-4076-9877-4c71657a49e6@kernel.org>
+Date: Fri, 16 Aug 2024 04:07:52 +0000
+Subject: [PATCH v1 05/10] dt-bindings: arm: aspeed: Add maintainer
+In-Reply-To: <7f3f7255-e177-4689-a2f1-b5f3196ed1a5@kernel.org>
 References: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
- <20240726110355.2181563-5-kevin_chen@aspeedtech.com>
- <3b6777d8-14b4-4076-9877-4c71657a49e6@kernel.org>
-Message-ID: <PSAPR06MB494977BF6BAD22E4D4C3436389812@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <20240726110355.2181563-6-kevin_chen@aspeedtech.com>
+ <7f3f7255-e177-4689-a2f1-b5f3196ed1a5@kernel.org>
+Message-ID: <PSAPR06MB4949F7EC3AF7B75BB5B8A39289812@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,17 +14,14 @@ Content-Transfer-Encoding: 7bit
 
 Hi Krzk,
 
-I will separate clock part in the v3 patch into Ryan's clock series.
+>
+> Why?
+Agree, I will remove it.
+
+>
 > > ---
->
-> Sorry, that's not acceptable. This does not have even SoB.
-Agree.
-
->
-> All previous comments apply.
-Agree.
-
->
+> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+> >  1 file changed, 1 insertion(+)
 > Best regards,
 > Krzysztof
 
