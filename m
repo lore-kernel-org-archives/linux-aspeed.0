@@ -1,48 +1,38 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 19 Aug 2024 10:00:29 +0930
-Subject: [PATCH v12 10/28] ARM: dts: aspeed: yosemite4: Add power sensor
- for power module reading
-In-Reply-To: <20240816092417.3651434-11-Delphine_CC_Chiu@wiwynn.com>
+Date: Mon, 19 Aug 2024 10:02:57 +0930
+Subject: [PATCH v12 14/28] ARM: dts: aspeed: yosemite4: Revise ina233
+ config for yosemite4 schematic change
+In-Reply-To: <20240816092417.3651434-15-Delphine_CC_Chiu@wiwynn.com>
 References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240816092417.3651434-11-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <729e650fc7716b8507b19d43979782a7f2c420cb.camel@codeconstruct.com.au>
+	 <20240816092417.3651434-15-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <2aaf4cc4de2c3ed96400fc5d98e9873ea5ec1411.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-08-16 at 17:23 +0800, Delphine CC Chiu wrote:
-> Add power sensor for power module reading
+On Fri, 2024-08-16 at 17:24 +0800, Delphine CC Chiu wrote:
+> Revise ina233 config for yosemite4 schematic change
 > 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 > ---
->  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 25 +++++++++++++++++++
->  1 file changed, 25 insertions(+)
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index 09bbbcb192f5..139a09de24cf 100644
+> index 1765a0bb70d7..df389b506b4b 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -906,6 +906,11 @@ gpio at 23 {
->  		"HSC7_ALERT2_R_N","HSC8_ALERT2_R_N";
+> @@ -1034,28 +1034,38 @@ adc at 37 {
 >  	};
 >  
-> +	power-sensor at 40 {
-> +		compatible = "mps,mp5023";
-> +		reg = <0x40>;
-> +	};
-> +
+>  	power-sensor at 40 {
+> -		compatible = "ti,ina230";
+> +		compatible = "ti,ina233";
 
-This appears to be supported by hmwon but there's no binding for the
-driver[1]. I'm hesitant to accept it and add more warnings to the
-Aspeed devicetrees, but at the same time I'm sympathetic to leaving it
-in.
+Can you please address my previous comment?
 
-Can you perhaps send a patch for
-Documentation/devicetree/bindings/trivial-devices.yaml along with this
-series?
+https://lore.kernel.org/all/86a3b58d00fc475065ad51458504a636e2f67e02.camel at codeconstruct.com.au/
 
 Andrew
-
-[1]: https://lore.kernel.org/all/20211217155206.GA3015782 at roeck-us.net/
