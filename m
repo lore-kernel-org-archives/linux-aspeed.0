@@ -1,11 +1,11 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 19 Aug 2024 10:02:57 +0930
-Subject: [PATCH v12 14/28] ARM: dts: aspeed: yosemite4: Revise ina233
- config for yosemite4 schematic change
-In-Reply-To: <20240816092417.3651434-15-Delphine_CC_Chiu@wiwynn.com>
+Date: Mon, 19 Aug 2024 10:16:47 +0930
+Subject: [PATCH v12 18/28] ARM: dts: aspeed: yosemite4: add mctp config
+ for NIC
+In-Reply-To: <20240816092417.3651434-19-Delphine_CC_Chiu@wiwynn.com>
 References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240816092417.3651434-15-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <2aaf4cc4de2c3ed96400fc5d98e9873ea5ec1411.camel@codeconstruct.com.au>
+	 <20240816092417.3651434-19-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <aa4a9c154f54a2f1b5b55fa80bdd2e14aa3d1b3b.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,26 +13,38 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Fri, 2024-08-16 at 17:24 +0800, Delphine CC Chiu wrote:
-> Revise ina233 config for yosemite4 schematic change
+> add mctp config for NIC
 > 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 > ---
->  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
->  1 file changed, 15 insertions(+), 5 deletions(-)
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 +++++++++++++++++++
+>  1 file changed, 24 insertions(+)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index 1765a0bb70d7..df389b506b4b 100644
+> index b46a0b9940e2..7b8a2384d99d 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -1034,28 +1034,38 @@ adc at 37 {
->  	};
->  
->  	power-sensor at 40 {
-> -		compatible = "ti,ina230";
-> +		compatible = "ti,ina233";
+> @@ -1281,40 +1281,64 @@ imux24: i2c at 0 {
+>  			#address-cells = <1>;
+>  			#size-cells = <0>;
+>  			reg = <0>;
+> +			mctp-controller;
+>  			temperature-sensor at 1f {
+>  				compatible = "ti,tmp421";
+>  				reg = <0x1f>;
+>  			};
+> +
+> +			temperature-sensor at 3c {
+> +				compatible = "smsc,emc1403";
+> +				reg = <0x3c>;
+> +			};
 
-Can you please address my previous comment?
+These nodes are unrelated to MCTP? Given we're assembling the puzzle
+via the jigsaw pieces in the rest of the series, please split the
+addition of these nodes out to a separate patch.
 
-https://lore.kernel.org/all/86a3b58d00fc475065ad51458504a636e2f67e02.camel at codeconstruct.com.au/
+Further, the EMC1403 compatible is undocumented as of v6.11-rc1, and a
+brief search didn't turn up anything on the lists. Please send a patch
+adding it to the trivial-devices binding document.
 
 Andrew
