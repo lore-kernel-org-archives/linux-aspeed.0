@@ -1,41 +1,37 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Mon, 19 Aug 2024 07:12:17 +0000
-Subject: [PATCH 4/4] dt-bindings: clock: Add AST2700 clock bindings
-In-Reply-To: <e0162031-f20f-4eef-9f7e-08c7dbf92b7a@kernel.org>
-References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
- <20240808075937.2756733-5-ryan_chen@aspeedtech.com>
- <b089c9e5-8640-47f3-a6a3-8919b610f49d@kernel.org>
- <OS8PR06MB7541B310B81108B9A801AEFEF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <e0162031-f20f-4eef-9f7e-08c7dbf92b7a@kernel.org>
-Message-ID: <OS8PR06MB7541950B1E249E07FA542B90F28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+Date: Mon, 19 Aug 2024 16:08:57 +0800
+Subject: [PATCH v5 0/2] media: aspeed: Allow to capture from SoC display (GFX)
+Message-ID: <20240819080859.1304671-1-jammy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Subject: Re: [PATCH 4/4] dt-bindings: clock: Add AST2700 clock bindings
-> 
-> On 19/08/2024 07:57, Ryan Chen wrote:
-> >> Subject: Re: [PATCH 4/4] dt-bindings: clock: Add AST2700 clock bindings
-> >>
-> >> On 08/08/2024 09:59, Ryan Chen wrote:
-> >>> Add dt bindings for AST2700 clock controller
-> >>>
-> >>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> >>
-> >> NAK, that's wrong on so many levels. There are no bindings here!
-> >>
-> >> You ignored previous feedback given to Assped.
-> >
-> > Will modify subject to "clk: aspeed: add ast2700 clk driver"
-> 
-> Respond and implement first feedback which was given to Aspeed.
-> 
-Sorry, I check your first feedback, I will remove "Drop WARN_ON", "Weird comment"
-https://patchwork.kernel.org/project/linux-clk/patch/20240726110355.2181563-4-kevin_chen at aspeedtech.com/
-What else I miss with your response?
+ v5 changes:
+  - Remove dts.
+  - Add doc, aspeed,video.yaml.
+  - Simplify aspeed_regmap_lookup.
+ v4 changes:
+  - Use scoped/cleanup to make aspeed_regmap_lookup simpler.
+  - Update dts
+ v3 changes:
+  - Update for enum_input.
+ v2 changes:
+  - Update patch subject and comments.
 
-> Best regards,
-> Krzysztof
+Jammy Huang (2):
+  dt-bindings: arm: aspeed: Add aspeed,video binding
+  media: aspeed: Allow to capture from SoC display (GFX)
+
+ .../bindings/arm/aspeed/aspeed,video.yaml     |  81 ++++++++
+ drivers/media/platform/aspeed/aspeed-video.c  | 189 +++++++++++++++---
+ include/uapi/linux/aspeed-video.h             |   7 +
+ 3 files changed, 249 insertions(+), 28 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/aspeed/aspeed,video.yaml
+
+
+base-commit: 47ac09b91befbb6a235ab620c32af719f8208399
+-- 
+2.25.1
 
