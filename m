@@ -1,11 +1,11 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 19 Aug 2024 09:55:11 +0930
-Subject: [PATCH v12 01/28] ARM: dts: aspeed: yosemite4: Revise i2c-mux
- devices
-In-Reply-To: <20240816092417.3651434-2-Delphine_CC_Chiu@wiwynn.com>
+Date: Mon, 19 Aug 2024 10:00:29 +0930
+Subject: [PATCH v12 10/28] ARM: dts: aspeed: yosemite4: Add power sensor
+ for power module reading
+In-Reply-To: <20240816092417.3651434-11-Delphine_CC_Chiu@wiwynn.com>
 References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240816092417.3651434-2-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <bdeba6fae8db2dd73ae668f6e228f8378fa439bd.camel@codeconstruct.com.au>
+	 <20240816092417.3651434-11-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <729e650fc7716b8507b19d43979782a7f2c420cb.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,418 +13,36 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Fri, 2024-08-16 at 17:23 +0800, Delphine CC Chiu wrote:
-> Revise Yosemite 4 devicetree for devices behind i2c-mux
-> - Add gpio and eeprom behind i2c-mux
-> - Remove redundant idle-state setting for i2c-mux
+> Add power sensor for power module reading
 > 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 > ---
->  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 381 ++++++++++++++++--
->  1 file changed, 347 insertions(+), 34 deletions(-)
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 25 +++++++++++++++++++
+>  1 file changed, 25 insertions(+)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index 98477792aa00..ce206e2c461b 100644
+> index 09bbbcb192f5..139a09de24cf 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -17,6 +17,25 @@ aliases {
->  		serial6 = &uart7;
->  		serial7 = &uart8;
->  		serial8 = &uart9;
-> +
-> +		i2c16 = &imux16;
-> +		i2c17 = &imux17;
-> +		i2c18 = &imux18;
-> +		i2c19 = &imux19;
-> +		i2c20 = &imux20;
-> +		i2c21 = &imux21;
-> +		i2c22 = &imux22;
-> +		i2c23 = &imux23;
-> +		i2c24 = &imux24;
-> +		i2c25 = &imux25;
-> +		i2c26 = &imux26;
-> +		i2c27 = &imux27;
-> +		i2c28 = &imux28;
-> +		i2c29 = &imux29;
-> +		i2c30 = &imux30;
-> +		i2c31 = &imux31;
-> +		i2c32 = &imux32;
-> +		i2c33 = &imux33;
+> @@ -906,6 +906,11 @@ gpio at 23 {
+>  		"HSC7_ALERT2_R_N","HSC8_ALERT2_R_N";
 >  	};
 >  
->  	chosen {
-> @@ -259,9 +278,109 @@ &i2c8 {
->  	bus-frequency = <400000>;
->  	i2c-mux at 70 {
->  		compatible = "nxp,pca9544";
-> -		idle-state = <0>;
->  		i2c-mux-idle-disconnect;
->  		reg = <0x70>;
-> +
-> +		imux16: i2c at 0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0>;
-> +
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
-> +
-> +		imux17: i2c at 1 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <1>;
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
-> +
-> +		imux18: i2c at 2 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <2>;
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
-> +
-> +		imux19: i2c at 3 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <3>;
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
->  	};
->  };
->  
-> @@ -270,15 +389,174 @@ &i2c9 {
->  	bus-frequency = <400000>;
->  	i2c-mux at 71 {
->  		compatible = "nxp,pca9544";
-> -		idle-state = <0>;
->  		i2c-mux-idle-disconnect;
->  		reg = <0x71>;
-> +
-> +		imux20: i2c at 0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0>;
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
-> +
-> +		imux21: i2c at 1 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <1>;
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
-> +
-> +		imux22: i2c at 2 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <2>;
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
-> +
-> +		imux23: i2c at 3 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <3>;
-> +
-> +			gpio at 49 {
-> +				compatible = "nxp,pca9537";
-> +				reg = <0x49>;
-> +			};
-> +
-> +			eeprom at 50 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x50>;
-> +			};
-> +
-> +			eeprom at 51 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x51>;
-> +			};
-> +
-> +			eeprom at 54 {
-> +				compatible = "atmel,24c128";
-> +				reg = <0x54>;
-> +			};
-> +		};
->  	};
->  };
->  
->  &i2c10 {
->  	status = "okay";
->  	bus-frequency = <400000>;
-> +	i2c-mux at 74 {
-> +		compatible = "nxp,pca9544";
-> +		i2c-mux-idle-disconnect;
-> +		reg = <0x74>;
-> +
-> +		imux28: i2c at 0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0>;
-> +
-> +			gpio at 20 {
-> +				compatible = "nxp,pca9506";
-> +				reg = <0x20>;
-> +				gpio-controller;
-> +				#gpio-cells = <2>;
-> +			};
-> +
-> +			gpio at 21 {
-> +				compatible = "nxp,pca9506";
-> +				reg = <0x21>;
-> +				gpio-controller;
-> +				#gpio-cells = <2>;
-> +			};
-> +
-> +			gpio at 22 {
-> +				compatible = "nxp,pca9506";
-> +				reg = <0x22>;
-> +				gpio-controller;
-> +				#gpio-cells = <2>;
-> +			};
-> +
-> +			gpio at 23 {
-> +				compatible = "nxp,pca9506";
-> +				reg = <0x23>;
-> +				gpio-controller;
-> +				#gpio-cells = <2>;
-> +			};
-> +
-> +			gpio at 24 {
-> +				compatible = "nxp,pca9506";
-> +				reg = <0x24>;
-> +				gpio-controller;
-> +				#gpio-cells = <2>;
-> +				gpio-line-names =
-> +				"","","","",
-> +				"NIC0_MAIN_PWR_EN","NIC1_MAIN_PWR_EN",
-> +				"NIC2_MAIN_PWR_EN","NIC3_MAIN_PWR_EN",
-> +				"","","","","","","","",
-> +				"","","","","","","","",
-> +				"","","","","","","","";
-> +			};
-> +		};
-> +
-> +		imux29: i2c at 1 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <1>;
-> +		};
+> +	power-sensor at 40 {
+> +		compatible = "mps,mp5023";
+> +		reg = <0x40>;
 > +	};
->  };
->  
->  &i2c11 {
-> @@ -440,16 +718,14 @@ eeprom at 51 {
->  		reg = <0x51>;
->  	};
->  
-> -	i2c-mux at 71 {
-> -		compatible = "nxp,pca9846";
-> +	i2c-mux at 74 {
-> +		compatible = "nxp,pca9546";
->  		#address-cells = <1>;
->  		#size-cells = <0>;
-> -
-> -		idle-state = <0>;
->  		i2c-mux-idle-disconnect;
-> -		reg = <0x71>;
-> +		reg = <0x74>;
->  
-> -		i2c at 0 {
-> +		imux30: i2c at 0 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
->  			reg = <0>;
-> @@ -457,26 +733,26 @@ i2c at 0 {
->  			adc at 1f {
->  				compatible = "ti,adc128d818";
->  				reg = <0x1f>;
-> -				ti,mode = /bits/ 8 <2>;
-> +				ti,mode = /bits/ 8 <1>;
->  			};
->  
->  			pwm at 20{
-> -				compatible = "max31790";
-> +				compatible = "maxim,max31790";
-> +				pwm-as-tach = <4 5>;
->  				reg = <0x20>;
-> -				#address-cells = <1>;
-> -				#size-cells = <0>;
->  			};
->  
->  			gpio at 22{
->  				compatible = "ti,tca6424";
->  				reg = <0x22>;
-> +				gpio-controller;
-> +				#gpio-cells = <2>;
->  			};
->  
-> -			pwm at 23{
-> -				compatible = "max31790";
-> -				reg = <0x23>;
-> -				#address-cells = <1>;
-> -				#size-cells = <0>;
-> +			pwm at 2f{
-> +				compatible = "maxim,max31790";
-> +				pwm-as-tach = <4 5>;
-> +				reg = <0x2f>;
->  			};
->  
->  			adc at 33 {
-> @@ -499,34 +775,34 @@ gpio at 61 {
->  			};
->  		};
->  
-> -		i2c at 1 {
-> +		imux31: i2c at 1 {
->  			#address-cells = <1>;
->  			#size-cells = <0>;
-> -			reg = <0>;
-> +			reg = <1>;
->  
->  			adc at 1f {
->  				compatible = "ti,adc128d818";
->  				reg = <0x1f>;
-> -				ti,mode = /bits/ 8 <2>;
-> +				ti,mode = /bits/ 8 <1>;
->  			};
->  
->  			pwm at 20{
-> -				compatible = "max31790";
-> +				compatible = "maxim,max31790";
+> +
 
-The max31790 binding isn't yet upstream[1]. Please drop these nodes
-entirely until the binding has been accepted. You can send a follow-up
-patch adding them once it is merged.
+This appears to be supported by hmwon but there's no binding for the
+driver[1]. I'm hesitant to accept it and add more warnings to the
+Aspeed devicetrees, but at the same time I'm sympathetic to leaving it
+in.
 
-Please make sure to run `./scripts/checkpatch.pl` and `make dtbs_check`
-on your changes.
+Can you perhaps send a patch for
+Documentation/devicetree/bindings/trivial-devices.yaml along with this
+series?
 
 Andrew
 
-[1]: https://lore.kernel.org/all/20240813084152.25002-1-chanh at os.amperecomputing.com/
+[1]: https://lore.kernel.org/all/20211217155206.GA3015782 at roeck-us.net/
