@@ -1,36 +1,103 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 19 Aug 2024 10:39:25 +0930
-Subject: [PATCH v12 00/28] Add i2c-mux and eeprom devices for Meta
- Yosemite 4
-In-Reply-To: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240816092417.3651434-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <0935f710c5d4e306f616bb2a35bd0d75dd9e84c8.camel@codeconstruct.com.au>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Mon, 19 Aug 2024 03:05:45 +0000
+Subject: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+In-Reply-To: <OS8PR06MB754121818B9431941C18E09DF2802@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
+	 <20240808075937.2756733-2-ryan_chen@aspeedtech.com>
+	 <2f27285e-6aa5-4e42-b361-224d8d164113@kernel.org>
+	 <OS8PR06MB75416FAD2A1A16E7BE2D255DF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <10809e91-31be-4110-86c1-1e1ccb05b664@kernel.org>
+	 <OS8PR06MB7541F4F740FDB17F50EBCACBF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <20240813191454.GA1570645-robh@kernel.org>
+	 <OS8PR06MB7541BB03AEE90B090AB990B3F2872@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <7e1dc98e0f69a095a8f7725b742df3c8d8436a67.camel@codeconstruct.com.au>
+ <OS8PR06MB754121818B9431941C18E09DF2802@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <OS8PR06MB7541C54CA074410C50BA419AF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-08-16 at 17:23 +0800, Delphine CC Chiu wrote:
-> Changelog:
->   - v12
->     - Fix GPIO linename typo and add missing GPIO pin initial state.
+> > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+> >
+> > On Wed, 2024-08-14 at 06:35 +0000, Ryan Chen wrote:
+> > > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support for
+> > > > AST2700
+> > > >
+> > > > On Fri, Aug 09, 2024 at 06:10:22AM +0000, Ryan Chen wrote:
+> > > > > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support for
+> > > > > > AST2700
+> > > > > >
+> > > > > > On 09/08/2024 07:55, Ryan Chen wrote:
+> > > > > > > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support
+> > > > > > > > for
+> > > > > > > > AST2700
+> > > > > > > >
+> > > > > > > > On 08/08/2024 09:59, Ryan Chen wrote:
+> > > > > > > > > Add compatible support for AST2700 clk, reset, pinctrl,
+> > > > > > > > > silicon-id and example for AST2700 scu.
+> > > > > > > > >
+> > > > > > > > > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> > > > > > > > > ---
+> > > > > > > > > ?.../bindings/mfd/aspeed,ast2x00-scu.yaml      | 31
+> > > > > > > > +++++++++++++++++--
+> > > > > > > > > ?1 file changed, 29 insertions(+), 2 deletions(-)
+> > > > > > > > >
+> > > > > > > > > diff --git
+> > > > > > > > > a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-
+> > > > > > > > > scu.yaml
+> > > > > > > > > b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-
+> > > > > > > > > scu.yaml
+> > > > > > > > > index 86ee69c0f45b..c0965f08ae8c 100644
+> > > > > > > > > ---
+> > > > > > > > > a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-
+> > > > > > > > > scu.yaml
+> > > > > > > > > +++
+> > > > > > > > > b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-
+> > > > > > > > > scu.y
+> > > > > > > > > +++ aml
+> > > > > > > > > @@ -21,6 +21,8 @@ properties:
+> > > > > > > > > ???????????- aspeed,ast2400-scu
+> > > > > > > > > ???????????- aspeed,ast2500-scu
+> > > > > > > > > ???????????- aspeed,ast2600-scu
+> > > > > > > > > +          - aspeed,ast2700-scu0
+> > > > > > > > > +          - aspeed,ast2700-scu1
+> > > > > > > >
+> > > > > > > > What are the differences between these two?
+> > > > > > >
+> > > > > > > The next [PATCH 4/4] is scu driver that include ast2700-scu0
+> > > > > > > and
+> > > > > > > ast2700-scu1 CLK_OF_DECLARE_DRIVER(ast2700_soc0,
+> > > > > > > "aspeed,ast2700-scu0", ast2700_soc0_clk_init);
+> > > > > > > CLK_OF_DECLARE_DRIVER(ast2700_soc1, "aspeed,ast2700-scu1",
+> > > > > > > ast2700_soc1_clk_init);
+> > > > > >
+> > > > > > What are hardware differences? Entirely different devices?
+> > > > >
+> > > > > AST2700 have two soc die connected each other.
+> > > > > Each soc die have it own scu, so the naming is ast2700-scu0 for
+> > > > > soc0,
+> > > > another is ast2700-scu1 for soc1.
+> > > >
+> > > > Didn't I see in another patch one die is cpu and one is io? Use
+> > > > those in the compatible rather than 0 and 1 if so.
+> > > >
+> > > Sorry, I want to align with our datasheet description.
+> > > It will but scu0 and scu1 register setting.
+> >
+> > Can we document that relationship in the binding? Rob's suggestion
+> > seems more descriptive.
+> Hello,
+> 	Do you want me document it in yaml file or just in commit message?
 
-Please make sure to run `./scripts/checkpatch.pl` and `make dtbs_check`
-over each patch in your series before sending it. Also, please respond
-to review comments. Either acknowledge them and change your work, or
-discuss the problems to get consensus on how the changes should
-proceed.
+Hello Rob, Andrew,
+	I will add in yaml file in description. Like following.
 
-Your patches will not be merged if you don't engage with the feedback
-from the people reviewing them.
+description:
+  The Aspeed System Control Unit manages the global behaviour of the SoC,
+  configuring elements such as clocks, pinmux, and reset.
++  In AST2700, it has two soc combination. Each soc include its own scu register control.
++  ast2700-scu0 for soc0, ast2700-scu1 for soc1.
 
-Finally, as it stands, the additions in the series amount to 75% of the
-existing devicetree. I feel like it would be more effective to replace
-it in a single patch or rename the existing devicetree out of the way,
-and not try to maintain a 28-patch series. I assume all these changes
-correspond to an iteration of the hardware design rather than some set
-of incremental changes in their own right, in which case a new
-devicetree seems appropriate.
-
-Andrew
+Is that will be better way ?
