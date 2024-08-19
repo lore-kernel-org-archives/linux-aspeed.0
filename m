@@ -1,145 +1,96 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Mon, 19 Aug 2024 10:24:17 +0200
-Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: Add aspeed,video binding
-In-Reply-To: <20240819080859.1304671-2-jammy_huang@aspeedtech.com>
-References: <20240819080859.1304671-1-jammy_huang@aspeedtech.com>
- <20240819080859.1304671-2-jammy_huang@aspeedtech.com>
-Message-ID: <nnjcjt2kuplsy5bbxujuubkn2xdtpifjeiqt5qfvktdmaorzuz@x444p5ezcoch>
+Date: Mon, 19 Aug 2024 10:45:14 +0200
+Subject: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock bindings
+In-Reply-To: <OS8PR06MB7541672B4F9BCAA37E0D4005F28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
+ <OS8PR06MB7541CA018C86E262F826B9E5F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <OS8PR06MB7541B0D9A43B989DC1738F68F2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <5081c41b-dfbd-49ad-a993-b983d4c339f0@kernel.org>
+ <OS8PR06MB7541196D3058904998820CFFF2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <9465f8c0-5270-46df-af4b-e9ee78db63d1@kernel.org>
+ <OS8PR06MB7541CC40B6B8877B2656182CF2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <OS8PR06MB75415EC7A912DBD4D21A0035F2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <e3733148-142c-40a1-b250-4502e8726f0c@kernel.org>
+ <OS8PR06MB7541D5AB85D8E44E89389BC3F2862@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <26988bcd-4d58-4100-b89c-00e8ef879329@kernel.org>
+ <OS8PR06MB7541A7E690A2D72BA671622EF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <929c322e-7385-48da-b925-7f363cf5b6f7@kernel.org>
+ <OS8PR06MB7541672B4F9BCAA37E0D4005F28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <a0398ebc-c85c-44b4-afda-5e99a4299b34@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 19, 2024 at 04:08:58PM +0800, Jammy Huang wrote:
-> The Video Engine block in ASPEED Silicon SoCs is responsible for video
-> compressions with a wide range of video quality and compression
-> ratio options. It can capture and compress video data from digital or
-> analog sources.
-> 
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> ---
->  .../bindings/arm/aspeed/aspeed,video.yaml     | 81 +++++++++++++++++++
+On 19/08/2024 08:42, Ryan Chen wrote:
+>> Subject: Re: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock bindings
+>>
+>> On 19/08/2024 07:55, Ryan Chen wrote:
+>>>> Subject: Re: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock
+>>>> bindings
+>>>>
+>>>> On 13/08/2024 03:53, Ryan Chen wrote:
+>>>>>> Drop the define for number of clocks from the header, because it is
+>>>>>> not a
+>>>>
+>>>> *NUMBER OF CLOCKS*
+>>>>
+>>>>>> binding. You can put it in the driver or not, I don't care and do
+>>>>>> not provide guidance on this because I don't know if it makes sense at all.
+>>>>>> What I know is that number of clocks is not related to binding. It
+>>>>>> is not needed
+>>>>
+>>>> *NUMBER OF CLOCKS*
+>>>>
+>>>>>> in the binding, either.
+>>>>>
+>>>>> Sorry, I am confused.
+>>>>> if you think that number of clocks is not related to binding.
+>>>>
+>>>> *NUMBER OF CLOCKS*
+>>>>
+>>>>> How dtsi claim for clk?
+>>>>> For example in dtsi.
+>>>>> include <dt-bindings/clock/aspeed,ast2700-clk.h>
+>>>>> usb3bhp: usb3bhp {
+>>>>> ....
+>>>>> clocks = <&syscon0 SCU0_CLK_GATE_PORTAUSB>;
+>>>>
+>>>> And where is *NUMBER OF CLOCKS* here? I don't see any problem. No
+>>>> useless SCU0_CLK_GATE_NUM define here.
+>>>>
+>>> Understood now, I will remove those *NUMBER OF CLOCKS*.
+>>> And will replace to
+>>> #define SCU0_CLK_END  34
+>>
+>> NAK, it's like you keep ignoring my comments entirely. Even if you call it
+>> "SCU0_CLK_NOT_END" it does not change. Do you understand that it is not
+>> about name? Read my first comment.
+>>
+>>>
+>>> Refer:
+>>> https://github.com/torvalds/linux/blob/master/include/dt-bindings/cloc
+>>> k/imx8-clock.h#L87
+>>
+>> So you found a bug and this allows you to create the same bug?
+>>
+> Sorry, I don't see this is a bug.
 
-Why are you adding duplicated binding? Please read the first comments -
-you need to first convert TXT to DT schema. Then you add new properties
-in a new patch.
+No, it's not a bug, but I do not agree for using arguments like "someone
+did it, so I can do the same". Why did you pick up exactly this example
+instead of others who removed the clock number?
 
->  1 file changed, 81 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/aspeed/aspeed,video.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed,video.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed,video.yaml
-> new file mode 100644
-> index 000000000000..bef7bd2f310a
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed,video.yaml
+> But I try to understand your point, you prefer following for clock nums, am I correct?
+> https://github.com/torvalds/linux/blob/master/drivers/clk/meson/g12a.c#L5558-L5559
 
-Filename matching compatible.
+I said that this is not a binding. Don't add to the binding things which
+are not a binding.
 
-> @@ -0,0 +1,81 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/arm/aspeed/aspeed,video.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED Video Engine
-
-ASPEED or Aspeed?
-
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +  - Jammy Huang <jammy_huang@aspeedtech.com>
-> +
-> +description: |
-
-Drop |
-
-> +  The ASPEED video engine can be configured to capture and compress video
-> +  data from digital or analog sources.
-> +
-> +select:
-> +  properties:
-> +    compatible:
-> +      pattern: "^aspeed,ast[0-9]+-video-engine$"
-> +  required:
-> +    - compatible
-
-Drop entire select. No clue what is this.
-
-> +
-> +properties:
-> +  compatible:
-> +    oneOf:
-> +      - description: Preferred naming style for compatibles of video components
-> +        pattern: "^aspeed,ast[0-9]+-video-engine$"
-
-???
-
-No, drop.
-
-> +
-> +      - enum:
-> +          - aspeed,ast2400-video-engine
-> +          - aspeed,ast2500-video-engine
-> +          - aspeed,ast2600-video-engine
-> +
-> +  reg:
-> +    minItems: 1
-
-No, maxItems.
-
-> +
-> +  clocks:
-> +    minItems: 2
-
-No. maxItems.
-
-> +
-> +  clock-names:
-> +    items:
-> +      - const: vclk
-> +      - const: eclk
-> +
-> +  interrupts:
-> +    minItems: 1
-
-maxItems
-
-> +
-> +  aspeed,scu:
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +    description: |
-> +      Specifies the scu node that is needed if video wants to capture
-> +      from sources other than Host VGA.
-> +
-> +  aspeed,gfx:
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +    description: |
-> +      Specifies the Soc Display(gfx) node that needs to be queried to get
-> +      related information if video wants to use gfx as capture source.
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +  - clock-names
-> +  - interrupts
-> +
-> +additionalProperties: true
-
-NAK, this cannot be true. Where do you see any device binding having it
-true?
+I don't care how do you implement in drivers - there are several ways
+how to achieve it.
 
 
-> +
-> +examples:
-> +  - |
-> +    video: video at 1e700000 {
+Best regards,
+Krzysztof
 
-Drop unused label
-
-> +          	compatible = "aspeed,ast2600-video-engine";
-
-Fix indentation, this is supposed 4 spaces.
