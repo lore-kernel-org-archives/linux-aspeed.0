@@ -1,75 +1,33 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Mon, 19 Aug 2024 08:01:15 +0200
-Subject: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock bindings
-In-Reply-To: <OS8PR06MB7541A7E690A2D72BA671622EF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Date: Mon, 19 Aug 2024 08:01:43 +0200
+Subject: [PATCH 4/4] dt-bindings: clock: Add AST2700 clock bindings
+In-Reply-To: <OS8PR06MB7541B310B81108B9A801AEFEF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
- <OS8PR06MB75413728F0FCEE022B4B4F5BF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <eec21668-3674-40c6-b443-90c7c02262e3@kernel.org>
- <OS8PR06MB7541CA018C86E262F826B9E5F2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <OS8PR06MB7541B0D9A43B989DC1738F68F2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <5081c41b-dfbd-49ad-a993-b983d4c339f0@kernel.org>
- <OS8PR06MB7541196D3058904998820CFFF2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <9465f8c0-5270-46df-af4b-e9ee78db63d1@kernel.org>
- <OS8PR06MB7541CC40B6B8877B2656182CF2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <OS8PR06MB75415EC7A912DBD4D21A0035F2852@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <e3733148-142c-40a1-b250-4502e8726f0c@kernel.org>
- <OS8PR06MB7541D5AB85D8E44E89389BC3F2862@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <26988bcd-4d58-4100-b89c-00e8ef879329@kernel.org>
- <OS8PR06MB7541A7E690A2D72BA671622EF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Message-ID: <929c322e-7385-48da-b925-7f363cf5b6f7@kernel.org>
+ <20240808075937.2756733-5-ryan_chen@aspeedtech.com>
+ <b089c9e5-8640-47f3-a6a3-8919b610f49d@kernel.org>
+ <OS8PR06MB7541B310B81108B9A801AEFEF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <e0162031-f20f-4eef-9f7e-08c7dbf92b7a@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19/08/2024 07:55, Ryan Chen wrote:
->> Subject: Re: [PATCH 3/4] dt-bindings: clock: Add AST2700 clock bindings
+On 19/08/2024 07:57, Ryan Chen wrote:
+>> Subject: Re: [PATCH 4/4] dt-bindings: clock: Add AST2700 clock bindings
 >>
->> On 13/08/2024 03:53, Ryan Chen wrote:
->>>> Drop the define for number of clocks from the header, because it is
->>>> not a
->>
->> *NUMBER OF CLOCKS*
->>
->>>> binding. You can put it in the driver or not, I don't care and do not
->>>> provide guidance on this because I don't know if it makes sense at all.
->>>> What I know is that number of clocks is not related to binding. It is
->>>> not needed
->>
->> *NUMBER OF CLOCKS*
->>
->>>> in the binding, either.
+>> On 08/08/2024 09:59, Ryan Chen wrote:
+>>> Add dt bindings for AST2700 clock controller
 >>>
->>> Sorry, I am confused.
->>> if you think that number of clocks is not related to binding.
+>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 >>
->> *NUMBER OF CLOCKS*
+>> NAK, that's wrong on so many levels. There are no bindings here!
 >>
->>> How dtsi claim for clk?
->>> For example in dtsi.
->>> include <dt-bindings/clock/aspeed,ast2700-clk.h>
->>> usb3bhp: usb3bhp {
->>> ....
->>> clocks = <&syscon0 SCU0_CLK_GATE_PORTAUSB>;
->>
->> And where is *NUMBER OF CLOCKS* here? I don't see any problem. No
->> useless SCU0_CLK_GATE_NUM define here.
->>
-> Understood now, I will remove those *NUMBER OF CLOCKS*.
-> And will replace to 
-> #define SCU0_CLK_END  34
-
-NAK, it's like you keep ignoring my comments entirely. Even if you call
-it "SCU0_CLK_NOT_END" it does not change. Do you understand that it is
-not about name? Read my first comment.
-
+>> You ignored previous feedback given to Assped.
 > 
-> Refer:
-> https://github.com/torvalds/linux/blob/master/include/dt-bindings/clock/imx8-clock.h#L87
+> Will modify subject to "clk: aspeed: add ast2700 clk driver"
 
-So you found a bug and this allows you to create the same bug?
-
+Respond and implement first feedback which was given to Aspeed.
 
 Best regards,
 Krzysztof
