@@ -1,53 +1,133 @@
-From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Fri, 16 Aug 2024 04:08:05 +0000
-Subject: [PATCH v1 06/10] dt-bindings: arm: aspeed: Add aspeed,ast2700-evb
- compatible string
-In-Reply-To: <371a7c7b-de32-4f97-b4c7-3c0ad0732e1a@kernel.org>
-References: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
- <20240726110355.2181563-7-kevin_chen@aspeedtech.com>
- <371a7c7b-de32-4f97-b4c7-3c0ad0732e1a@kernel.org>
-Message-ID: <PSAPR06MB4949F7F617DB4A371567EB4789812@PSAPR06MB4949.apcprd06.prod.outlook.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Tue, 20 Aug 2024 10:16:30 +0930
+Subject: [PATCH 1/4] dt-bindings: mfd: aspeed: support for AST2700
+In-Reply-To: <OS8PR06MB7541C54CA074410C50BA419AF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20240808075937.2756733-1-ryan_chen@aspeedtech.com>
+	 <20240808075937.2756733-2-ryan_chen@aspeedtech.com>
+	 <2f27285e-6aa5-4e42-b361-224d8d164113@kernel.org>
+	 <OS8PR06MB75416FAD2A1A16E7BE2D255DF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <10809e91-31be-4110-86c1-1e1ccb05b664@kernel.org>
+	 <OS8PR06MB7541F4F740FDB17F50EBCACBF2BA2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <20240813191454.GA1570645-robh@kernel.org>
+	 <OS8PR06MB7541BB03AEE90B090AB990B3F2872@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <7e1dc98e0f69a095a8f7725b742df3c8d8436a67.camel@codeconstruct.com.au>
+	 <OS8PR06MB754121818B9431941C18E09DF2802@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <OS8PR06MB7541C54CA074410C50BA419AF28C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <64d13efd3119429ed876ad7ea499cff62e100fb9.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzk,
+On Mon, 2024-08-19 at 03:05 +0000, Ryan Chen wrote:
+> > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support for
+> > > AST2700
+> > > 
+> > > On Wed, 2024-08-14 at 06:35 +0000, Ryan Chen wrote:
+> > > > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed: support
+> > > > > for
+> > > > > AST2700
+> > > > > 
+> > > > > On Fri, Aug 09, 2024 at 06:10:22AM +0000, Ryan Chen wrote:
+> > > > > > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed:
+> > > > > > > support for
+> > > > > > > AST2700
+> > > > > > > 
+> > > > > > > On 09/08/2024 07:55, Ryan Chen wrote:
+> > > > > > > > > Subject: Re: [PATCH 1/4] dt-bindings: mfd: aspeed:
+> > > > > > > > > support
+> > > > > > > > > for
+> > > > > > > > > AST2700
+> > > > > > > > > 
+> > > > > > > > > On 08/08/2024 09:59, Ryan Chen wrote:
+> > > > > > > > > > Add compatible support for AST2700 clk, reset,
+> > > > > > > > > > pinctrl,
+> > > > > > > > > > silicon-id and example for AST2700 scu.
+> > > > > > > > > > 
+> > > > > > > > > > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> > > > > > > > > > ---
+> > > > > > > > > > ?.../bindings/mfd/aspeed,ast2x00-scu.yaml      | 31
+> > > > > > > > > +++++++++++++++++--
+> > > > > > > > > > ?1 file changed, 29 insertions(+), 2 deletions(-)
+> > > > > > > > > > 
+> > > > > > > > > > diff --git
+> > > > > > > > > > a/Documentation/devicetree/bindings/mfd/aspeed,ast2
+> > > > > > > > > > x00-
+> > > > > > > > > > scu.yaml
+> > > > > > > > > > b/Documentation/devicetree/bindings/mfd/aspeed,ast2
+> > > > > > > > > > x00-
+> > > > > > > > > > scu.yaml
+> > > > > > > > > > index 86ee69c0f45b..c0965f08ae8c 100644
+> > > > > > > > > > ---
+> > > > > > > > > > a/Documentation/devicetree/bindings/mfd/aspeed,ast2
+> > > > > > > > > > x00-
+> > > > > > > > > > scu.yaml
+> > > > > > > > > > +++
+> > > > > > > > > > b/Documentation/devicetree/bindings/mfd/aspeed,ast2
+> > > > > > > > > > x00-
+> > > > > > > > > > scu.y
+> > > > > > > > > > +++ aml
+> > > > > > > > > > @@ -21,6 +21,8 @@ properties:
+> > > > > > > > > > ???????????- aspeed,ast2400-scu
+> > > > > > > > > > ???????????- aspeed,ast2500-scu
+> > > > > > > > > > ???????????- aspeed,ast2600-scu
+> > > > > > > > > > +          - aspeed,ast2700-scu0
+> > > > > > > > > > +          - aspeed,ast2700-scu1
+> > > > > > > > > 
+> > > > > > > > > What are the differences between these two?
+> > > > > > > > 
+> > > > > > > > The next [PATCH 4/4] is scu driver that include
+> > > > > > > > ast2700-scu0
+> > > > > > > > and
+> > > > > > > > ast2700-scu1 CLK_OF_DECLARE_DRIVER(ast2700_soc0,
+> > > > > > > > "aspeed,ast2700-scu0", ast2700_soc0_clk_init);
+> > > > > > > > CLK_OF_DECLARE_DRIVER(ast2700_soc1, "aspeed,ast2700-
+> > > > > > > > scu1",
+> > > > > > > > ast2700_soc1_clk_init);
+> > > > > > > 
+> > > > > > > What are hardware differences? Entirely different
+> > > > > > > devices?
+> > > > > > 
+> > > > > > AST2700 have two soc die connected each other.
+> > > > > > Each soc die have it own scu, so the naming is ast2700-scu0
+> > > > > > for
+> > > > > > soc0,
+> > > > > another is ast2700-scu1 for soc1.
+> > > > > 
+> > > > > Didn't I see in another patch one die is cpu and one is io?
+> > > > > Use
+> > > > > those in the compatible rather than 0 and 1 if so.
+> > > > > 
+> > > > Sorry, I want to align with our datasheet description.
+> > > > It will but scu0 and scu1 register setting.
+> > > 
+> > > Can we document that relationship in the binding? Rob's
+> > > suggestion
+> > > seems more descriptive.
+> > Hello,
+> > 	Do you want me document it in yaml file or just in commit
+> > message?
+> 
+> Hello Rob, Andrew,
+> 	I will add in yaml file in description. Like following.
+> 
+> description:
+> ??The Aspeed System Control Unit manages the global behaviour of the
+> SoC,
+> ??configuring elements such as clocks, pinmux, and reset.
+> +  In AST2700, it has two soc combination. Each soc include its own
+> scu register control.
+> +  ast2700-scu0 for soc0, ast2700-scu1 for soc1.
+> 
+> Is that will be better way ?
 
-> > ---
-> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > index 71c31c08a8ad..b21551817f44 100644
-> > --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > @@ -99,4 +99,9 @@ properties:
-> >                - ufispace,ncplite-bmc
-> >            - const: aspeed,ast2600
-> >
-> > +      - description: AST2700 based boards
-> > +        items:
-> > +          - enum:
-> > +              - aspeed,ast2700-evb
->
-> NAK, this cannot be alone. Look at all other examples. Why are you doing
-> things differently?
-Disagree, ast2700-evb is 7th generation IC in ASPEED.
-It not in the sub-set of AST2400/AST2500/AST2600 based boards.
+What Rob is suggesting is to add the compatibles "aspeed,ast2700-scu-
+cpu" and "aspeed,ast2700-scu-io", and then in the description say
+something like:
 
->
-> Best regards,
-> Krzysztof
+   The AST2700 integrates both a CPU and an IO die, each with their own
+   SCU. The "aspeed,ast2700-scu-cpu" and "aspeed,ast2700-scu-io"
+   compatibles correspond to SCU0 and SCU1 respectively.
 
---
-Best Regards,
-Kevin.Chen
-************* Email Confidentiality Notice ********************
-????:
-???(????)????????????????? ???????????????????????????, ??????????????????????????????!
-
-DISCLAIMER:
-This message (and any attachments) may contain legally privileged and/or other confidential information. If you have received it in error, please notify the sender by reply e-mail and immediately delete the e-mail and any attachments without copying or disclosing the contents. Thank you.
+Andrew
