@@ -1,9 +1,9 @@
 From: Lei Liu <liulei.rjpt@vivo.com>
-Date: Wed, 21 Aug 2024 20:10:41 +0800
-Subject: [PATCH 3/5] usb: r8a66597-udc: Use devm_clk_get_enabled() helpers
+Date: Wed, 21 Aug 2024 20:10:43 +0800
+Subject: [PATCH 5/5] usb: ux500: Use devm_clk_get_enabled() helpers
 In-Reply-To: <20240821121048.31566-1-liulei.rjpt@vivo.com>
 References: <20240821121048.31566-1-liulei.rjpt@vivo.com>
-Message-ID: <20240821121048.31566-4-liulei.rjpt@vivo.com>
+Message-ID: <20240821121048.31566-6-liulei.rjpt@vivo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,73 +19,72 @@ This simplifies the code and avoids calls to clk_disable_unprepare().
 
 Signed-off-by: Lei Liu <liulei.rjpt@vivo.com>
 ---
- drivers/usb/gadget/udc/r8a66597-udc.c | 16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ drivers/usb/musb/ux500.c | 18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/r8a66597-udc.c b/drivers/usb/gadget/udc/r8a66597-udc.c
-index db4a10a979f9..bdbe5ead741e 100644
---- a/drivers/usb/gadget/udc/r8a66597-udc.c
-+++ b/drivers/usb/gadget/udc/r8a66597-udc.c
-@@ -1812,10 +1812,6 @@ static void r8a66597_remove(struct platform_device *pdev)
- 	usb_del_gadget_udc(&r8a66597->gadget);
- 	del_timer_sync(&r8a66597->timer);
- 	r8a66597_free_request(&r8a66597->ep[0].ep, r8a66597->ep0_req);
--
--	if (r8a66597->pdata->on_chip) {
--		clk_disable_unprepare(r8a66597->clk);
+diff --git a/drivers/usb/musb/ux500.c b/drivers/usb/musb/ux500.c
+index c8d9d2a1d2f0..51ce67678c0c 100644
+--- a/drivers/usb/musb/ux500.c
++++ b/drivers/usb/musb/ux500.c
+@@ -246,19 +246,13 @@ static int ux500_probe(struct platform_device *pdev)
+ 		goto err0;
+ 	}
+ 
+-	clk = devm_clk_get(&pdev->dev, NULL);
++	clk = clk_prepare_enable(&pdev->dev, NULL);
+ 	if (IS_ERR(clk)) {
+ 		dev_err(&pdev->dev, "failed to get clock\n");
+ 		ret = PTR_ERR(clk);
+ 		goto err1;
+ 	}
+ 
+-	ret = clk_prepare_enable(clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to enable clock\n");
+-		goto err1;
 -	}
+-
+ 	musb->dev.parent		= &pdev->dev;
+ 	musb->dev.dma_mask		= &pdev->dev.coherent_dma_mask;
+ 	musb->dev.coherent_dma_mask	= pdev->dev.coherent_dma_mask;
+@@ -276,26 +270,23 @@ static int ux500_probe(struct platform_device *pdev)
+ 	ret = platform_device_add_resources(musb, pdev->resource, pdev->num_resources);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to add resources\n");
+-		goto err2;
++		goto err1;
+ 	}
+ 
+ 	ret = platform_device_add_data(musb, pdata, sizeof(*pdata));
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to add platform_data\n");
+-		goto err2;
++		goto err1;
+ 	}
+ 
+ 	ret = platform_device_add(musb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to register musb device\n");
+-		goto err2;
++		goto err1;
+ 	}
+ 
+ 	return 0;
+ 
+-err2:
+-	clk_disable_unprepare(clk);
+-
+ err1:
+ 	platform_device_put(musb);
+ 
+@@ -308,7 +299,6 @@ static void ux500_remove(struct platform_device *pdev)
+ 	struct ux500_glue	*glue = platform_get_drvdata(pdev);
+ 
+ 	platform_device_unregister(glue->musb);
+-	clk_disable_unprepare(glue->clk);
  }
  
- static void nop_completion(struct usb_ep *ep, struct usb_request *r)
-@@ -1876,18 +1872,17 @@ static int r8a66597_probe(struct platform_device *pdev)
- 
- 	if (r8a66597->pdata->on_chip) {
- 		snprintf(clk_name, sizeof(clk_name), "usb%d", pdev->id);
--		r8a66597->clk = devm_clk_get(dev, clk_name);
-+		r8a66597->clk = devm_clk_get_enabled(dev, clk_name);
- 		if (IS_ERR(r8a66597->clk)) {
- 			dev_err(dev, "cannot get clock \"%s\"\n", clk_name);
- 			return PTR_ERR(r8a66597->clk);
- 		}
--		clk_prepare_enable(r8a66597->clk);
- 	}
- 
- 	if (r8a66597->pdata->sudmac) {
- 		ret = r8a66597_sudmac_ioremap(r8a66597, pdev);
- 		if (ret < 0)
--			goto clean_up2;
-+			goto err_add_udc;
- 	}
- 
- 	disable_controller(r8a66597); /* make sure controller is disabled */
-@@ -1896,7 +1891,7 @@ static int r8a66597_probe(struct platform_device *pdev)
- 			       udc_name, r8a66597);
- 	if (ret < 0) {
- 		dev_err(dev, "request_irq error (%d)\n", ret);
--		goto clean_up2;
-+		goto err_add_udc;
- 	}
- 
- 	INIT_LIST_HEAD(&r8a66597->gadget.ep_list);
-@@ -1939,7 +1934,7 @@ static int r8a66597_probe(struct platform_device *pdev)
- 							GFP_KERNEL);
- 	if (r8a66597->ep0_req == NULL) {
- 		ret = -ENOMEM;
--		goto clean_up2;
-+		goto err_add_udc;
- 	}
- 	r8a66597->ep0_req->complete = nop_completion;
- 
-@@ -1952,9 +1947,6 @@ static int r8a66597_probe(struct platform_device *pdev)
- 
- err_add_udc:
- 	r8a66597_free_request(&r8a66597->ep[0].ep, r8a66597->ep0_req);
--clean_up2:
--	if (r8a66597->pdata->on_chip)
--		clk_disable_unprepare(r8a66597->clk);
- 
- 	if (r8a66597->ep0_req)
- 		r8a66597_free_request(&r8a66597->ep[0].ep, r8a66597->ep0_req);
+ #ifdef CONFIG_PM_SLEEP
 -- 
 2.34.1
 
