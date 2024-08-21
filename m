@@ -1,51 +1,106 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Wed, 21 Aug 2024 17:40:24 +0800
-Subject: [PATCH v13 13/29] ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode for yosemite4 schematic change
+Date: Wed, 21 Aug 2024 17:40:28 +0800
+Subject: [PATCH v13 17/29] ARM: dts: aspeed: yosemite4: Revise mx31790 fan tach config
 In-Reply-To: <20240821094043.4126132-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240821094043.4126132-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240821094043.4126132-14-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240821094043.4126132-18-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise adc128d818 adc mode for yosemite4 schematic change
+Revise fan tach config for max31790 driver change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 48 +++++++++++++++++--
+ 1 file changed, 44 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 2c0c37b3ee5b..1765a0bb70d7 100644
+index 60743f9829a5..b46a0b9940e2 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1018,19 +1018,19 @@ &i2c14 {
- 	adc at 1d {
- 		compatible = "ti,adc128d818";
- 		reg = <0x1d>;
--		ti,mode = /bits/ 8 <2>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
+@@ -1103,8 +1103,18 @@ adc at 1f {
  
--	adc at 35 {
-+	adc at 36 {
- 		compatible = "ti,adc128d818";
--		reg = <0x35>;
--		ti,mode = /bits/ 8 <2>;
-+		reg = <0x36>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
+ 			pwm at 20{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x20>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
  
- 	adc at 37 {
- 		compatible = "ti,adc128d818";
- 		reg = <0x37>;
--		ti,mode = /bits/ 8 <2>;
-+		ti,mode = /bits/ 8 <1>;
- 	};
+ 			gpio at 22{
+@@ -1116,8 +1126,18 @@ gpio at 22{
  
- 	power-sensor at 40 {
+ 			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x2f>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
+ 
+ 			adc at 33 {
+@@ -1153,8 +1173,18 @@ adc at 1f {
+ 
+ 			pwm at 20{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x20>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
+ 
+ 			gpio at 22{
+@@ -1166,8 +1196,18 @@ gpio at 22{
+ 
+ 			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				pwm-as-tach = <4 5>;
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x2f>;
++				channel at 4 {
++					reg = <4>;
++					sensor-type = "TACH";
++				};
++
++				channel at 5 {
++					reg = <5>;
++					sensor-type = "TACH";
++				};
+ 			};
+ 
+ 			adc at 33 {
 -- 
 2.25.1
 
