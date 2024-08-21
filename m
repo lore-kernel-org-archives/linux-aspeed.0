@@ -1,9 +1,9 @@
 From: Lei Liu <liulei.rjpt@vivo.com>
-Date: Wed, 21 Aug 2024 20:10:39 +0800
-Subject: [PATCH 1/5] usb: aspeed_udc: Use devm_clk_get_enabled() helpers
+Date: Wed, 21 Aug 2024 20:10:40 +0800
+Subject: [PATCH 2/5] usb: pxa27x_udc: Use devm_clk_get_enabled() helpers
 In-Reply-To: <20240821121048.31566-1-liulei.rjpt@vivo.com>
 References: <20240821121048.31566-1-liulei.rjpt@vivo.com>
-Message-ID: <20240821121048.31566-2-liulei.rjpt@vivo.com>
+Message-ID: <20240821121048.31566-3-liulei.rjpt@vivo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -19,40 +19,29 @@ This simplifies the code and avoids calls to clk_disable_unprepare().
 
 Signed-off-by: Lei Liu <liulei.rjpt@vivo.com>
 ---
- drivers/usb/gadget/udc/aspeed_udc.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/usb/gadget/udc/pxa27x_udc.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index f4781e611aaa..a362e31f7550 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -1459,8 +1459,6 @@ static void ast_udc_remove(struct platform_device *pdev)
- 	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
- 	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
- 
--	clk_disable_unprepare(udc->clk);
--
- 	spin_unlock_irqrestore(&udc->lock, flags);
- 
- 	if (udc->ep0_buf)
-@@ -1500,16 +1498,11 @@ static int ast_udc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, udc);
+diff --git a/drivers/usb/gadget/udc/pxa27x_udc.c b/drivers/usb/gadget/udc/pxa27x_udc.c
+index 1a6317e4b2a3..6e99e75f1acb 100644
+--- a/drivers/usb/gadget/udc/pxa27x_udc.c
++++ b/drivers/usb/gadget/udc/pxa27x_udc.c
+@@ -2398,14 +2398,10 @@ static int pxa_udc_probe(struct platform_device *pdev)
+ 	if (udc->gpiod)
+ 		gpiod_direction_output(udc->gpiod, 0);
  
 -	udc->clk = devm_clk_get(&pdev->dev, NULL);
-+	udc->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(udc->clk)) {
- 		rc = PTR_ERR(udc->clk);
- 		goto err;
- 	}
--	rc = clk_prepare_enable(udc->clk);
--	if (rc) {
--		dev_err(&pdev->dev, "Failed to enable clock (0x%x)\n", rc);
--		goto err;
--	}
++	udc->clk = clk_prepare_enable(&pdev->dev, NULL);
+ 	if (IS_ERR(udc->clk))
+ 		return PTR_ERR(udc->clk);
  
- 	/* Check if we need to limit the HW to USB1 */
- 	max_speed = usb_get_maximum_speed(&pdev->dev);
+-	retval = clk_prepare(udc->clk);
+-	if (retval)
+-		return retval;
+-
+ 	udc->vbus_sensed = 0;
+ 
+ 	the_controller = udc;
 -- 
 2.34.1
 
