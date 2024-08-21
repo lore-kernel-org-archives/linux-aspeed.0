@@ -1,31 +1,109 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Wed, 21 Aug 2024 13:28:28 +0100
-Subject: [PATCH 4/5] usb: mpfs: Use devm_clk_get_enabled() helpers
-In-Reply-To: <20240821121048.31566-5-liulei.rjpt@vivo.com>
-References: <20240821121048.31566-1-liulei.rjpt@vivo.com>
- <20240821121048.31566-5-liulei.rjpt@vivo.com>
-Message-ID: <20240821-velocity-tribune-726bb3546ba8@spud>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 22 Aug 2024 04:51:03 +0800
+Subject: [PATCH v1 2/2] gpio: Add G7 Aspeed gpio controller driver
+In-Reply-To: <20240821070740.2378602-3-billy_tsai@aspeedtech.com>
+References: <20240821070740.2378602-3-billy_tsai@aspeedtech.com>
+Message-ID: <202408220439.BUcaNSTv-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 21, 2024 at 08:10:42PM +0800, Lei Liu wrote:
-> The devm_clk_get_enabled() helpers:
->     - call devm_clk_get()
->     - call clk_prepare_enable() and register what is needed in order to
->      call clk_disable_unprepare() when needed, as a managed resource.
-> 
-> This simplifies the code and avoids calls to clk_disable_unprepare().
-> 
-> Signed-off-by: Lei Liu <liulei.rjpt@vivo.com>
+Hi Billy,
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240821/49844545/attachment.sig>
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on brgl/gpio/for-next]
+[also build test WARNING on linus/master v6.11-rc4 next-20240821]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Billy-Tsai/dt-bindings-gpio-aspeed-ast2400-gpio-Support-ast2700/20240821-150951
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git gpio/for-next
+patch link:    https://lore.kernel.org/r/20240821070740.2378602-3-billy_tsai%40aspeedtech.com
+patch subject: [PATCH v1 2/2] gpio: Add G7 Aspeed gpio controller driver
+config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20240822/202408220439.BUcaNSTv-lkp at intel.com/config)
+compiler: alpha-linux-gcc (GCC) 13.3.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240822/202408220439.BUcaNSTv-lkp at intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202408220439.BUcaNSTv-lkp at intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   drivers/gpio/gpio-aspeed-g7.c: In function 'aspeed_gpio_g7_request':
+>> drivers/gpio/gpio-aspeed-g7.c:474:48: warning: passing argument 1 of 'pinctrl_gpio_request' makes pointer from integer without a cast [-Wint-conversion]
+     474 |         return pinctrl_gpio_request(chip->base + offset);
+         |                                     ~~~~~~~~~~~^~~~~~~~
+         |                                                |
+         |                                                unsigned int
+   In file included from drivers/gpio/gpio-aspeed-g7.c:16:
+   include/linux/pinctrl/consumer.h:30:44: note: expected 'struct gpio_chip *' but argument is of type 'unsigned int'
+      30 | int pinctrl_gpio_request(struct gpio_chip *gc, unsigned int offset);
+         |                          ~~~~~~~~~~~~~~~~~~^~
+   drivers/gpio/gpio-aspeed-g7.c:474:16: error: too few arguments to function 'pinctrl_gpio_request'
+     474 |         return pinctrl_gpio_request(chip->base + offset);
+         |                ^~~~~~~~~~~~~~~~~~~~
+   include/linux/pinctrl/consumer.h:30:5: note: declared here
+      30 | int pinctrl_gpio_request(struct gpio_chip *gc, unsigned int offset);
+         |     ^~~~~~~~~~~~~~~~~~~~
+   drivers/gpio/gpio-aspeed-g7.c: In function 'aspeed_gpio_g7_free':
+>> drivers/gpio/gpio-aspeed-g7.c:479:38: warning: passing argument 1 of 'pinctrl_gpio_free' makes pointer from integer without a cast [-Wint-conversion]
+     479 |         pinctrl_gpio_free(chip->base + offset);
+         |                           ~~~~~~~~~~~^~~~~~~~
+         |                                      |
+         |                                      unsigned int
+   include/linux/pinctrl/consumer.h:31:42: note: expected 'struct gpio_chip *' but argument is of type 'unsigned int'
+      31 | void pinctrl_gpio_free(struct gpio_chip *gc, unsigned int offset);
+         |                        ~~~~~~~~~~~~~~~~~~^~
+   drivers/gpio/gpio-aspeed-g7.c:479:9: error: too few arguments to function 'pinctrl_gpio_free'
+     479 |         pinctrl_gpio_free(chip->base + offset);
+         |         ^~~~~~~~~~~~~~~~~
+   include/linux/pinctrl/consumer.h:31:6: note: declared here
+      31 | void pinctrl_gpio_free(struct gpio_chip *gc, unsigned int offset);
+         |      ^~~~~~~~~~~~~~~~~
+   drivers/gpio/gpio-aspeed-g7.c: In function 'aspeed_gpio_g7_set_config':
+>> drivers/gpio/gpio-aspeed-g7.c:676:48: warning: passing argument 1 of 'pinctrl_gpio_set_config' makes pointer from integer without a cast [-Wint-conversion]
+     676 |                 return pinctrl_gpio_set_config(offset, config);
+         |                                                ^~~~~~
+         |                                                |
+         |                                                unsigned int
+   include/linux/pinctrl/consumer.h:36:47: note: expected 'struct gpio_chip *' but argument is of type 'unsigned int'
+      36 | int pinctrl_gpio_set_config(struct gpio_chip *gc, unsigned int offset,
+         |                             ~~~~~~~~~~~~~~~~~~^~
+   drivers/gpio/gpio-aspeed-g7.c:676:24: error: too few arguments to function 'pinctrl_gpio_set_config'
+     676 |                 return pinctrl_gpio_set_config(offset, config);
+         |                        ^~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/pinctrl/consumer.h:36:5: note: declared here
+      36 | int pinctrl_gpio_set_config(struct gpio_chip *gc, unsigned int offset,
+         |     ^~~~~~~~~~~~~~~~~~~~~~~
+   drivers/gpio/gpio-aspeed-g7.c: In function 'aspeed_gpio_g7_request':
+   drivers/gpio/gpio-aspeed-g7.c:475:1: warning: control reaches end of non-void function [-Wreturn-type]
+     475 | }
+         | ^
+
+
+vim +/pinctrl_gpio_request +474 drivers/gpio/gpio-aspeed-g7.c
+
+   468	
+   469	static int aspeed_gpio_g7_request(struct gpio_chip *chip, unsigned int offset)
+   470	{
+   471		if (!have_gpio(gpiochip_get_data(chip), offset))
+   472			return -ENODEV;
+   473	
+ > 474		return pinctrl_gpio_request(chip->base + offset);
+   475	}
+   476	
+   477	static void aspeed_gpio_g7_free(struct gpio_chip *chip, unsigned int offset)
+   478	{
+ > 479		pinctrl_gpio_free(chip->base + offset);
+   480	}
+   481	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
