@@ -1,7 +1,9 @@
 From: Jinjie Ruan <ruanjinjie@huawei.com>
-Date: Thu, 22 Aug 2024 14:29:48 +0800
-Subject: [PATCH -next 0/8] hwmon: Simplify with scoped for each OF child
-Message-ID: <20240822062956.3490387-1-ruanjinjie@huawei.com>
+Date: Thu, 22 Aug 2024 14:29:50 +0800
+Subject: [PATCH -next 2/8] hwmon: (aspeed-pwm-tacho): Simplify with scoped for each OF child loop
+In-Reply-To: <20240822062956.3490387-1-ruanjinjie@huawei.com>
+References: <20240822062956.3490387-1-ruanjinjie@huawei.com>
+Message-ID: <20240822062956.3490387-3-ruanjinjie@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,27 +13,39 @@ Content-Transfer-Encoding: 7bit
 Use scoped for_each_child_of_node_scoped() when iterating over device
 nodes to make code a bit simpler.
 
-Jinjie Ruan (8):
-  hwmon: (aspeed-g6-pwm-tacho): Simplify with scoped for each OF child
-    loop
-  hwmon: (aspeed-pwm-tacho): Simplify with scoped for each OF child loop
-  hwmon: (ina3221): Simplify with scoped for each OF child loop
-  hwmon: (lm90): Simplify with scoped for each OF child loop
-  hwmon: (nct7802): Simplify with scoped for each OF child loop
-  hwmon: (npcm750-pwm-fan): Simplify with scoped for each OF child loop
-  hwmon: (tmp421): Simplify with scoped for each OF child loop
-  hwmon: (tmp464): Simplify with scoped for each OF child loop
+Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
+---
+ drivers/hwmon/aspeed-pwm-tacho.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
- drivers/hwmon/aspeed-g6-pwm-tach.c | 4 +---
- drivers/hwmon/aspeed-pwm-tacho.c   | 8 +++-----
- drivers/hwmon/ina3221.c            | 7 ++-----
- drivers/hwmon/lm90.c               | 7 ++-----
- drivers/hwmon/nct7802.c            | 7 ++-----
- drivers/hwmon/npcm750-pwm-fan.c    | 5 ++---
- drivers/hwmon/tmp421.c             | 7 ++-----
- drivers/hwmon/tmp464.c             | 7 ++-----
- 8 files changed, 16 insertions(+), 36 deletions(-)
-
+diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+index 4acc1858d8ac..aa159bf158a3 100644
+--- a/drivers/hwmon/aspeed-pwm-tacho.c
++++ b/drivers/hwmon/aspeed-pwm-tacho.c
+@@ -907,7 +907,7 @@ static void aspeed_pwm_tacho_remove(void *data)
+ static int aspeed_pwm_tacho_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *np, *child;
++	struct device_node *np;
+ 	struct aspeed_pwm_tacho_data *priv;
+ 	void __iomem *regs;
+ 	struct device *hwmon;
+@@ -951,12 +951,10 @@ static int aspeed_pwm_tacho_probe(struct platform_device *pdev)
+ 
+ 	aspeed_create_type(priv);
+ 
+-	for_each_child_of_node(np, child) {
++	for_each_child_of_node_scoped(np, child) {
+ 		ret = aspeed_create_fan(dev, child, priv);
+-		if (ret) {
+-			of_node_put(child);
++		if (ret)
+ 			return ret;
+-		}
+ 	}
+ 
+ 	priv->groups[0] = &pwm_dev_group;
 -- 
 2.34.1
 
