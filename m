@@ -1,9 +1,9 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 22 Aug 2024 11:55:51 +0800
+Date: Thu, 22 Aug 2024 12:16:23 +0800
 Subject: [PATCH 2/5] usb: pxa27x_udc: Use devm_clk_get_enabled() helpers
 In-Reply-To: <20240821121048.31566-3-liulei.rjpt@vivo.com>
 References: <20240821121048.31566-3-liulei.rjpt@vivo.com>
-Message-ID: <202408221155.UveHbLu0-lkp@intel.com>
+Message-ID: <202408221126.F1eulsSr-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -24,30 +24,39 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Lei-Liu/usb-aspeed_udc-Us
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git usb-testing
 patch link:    https://lore.kernel.org/r/20240821121048.31566-3-liulei.rjpt%40vivo.com
 patch subject: [PATCH 2/5] usb: pxa27x_udc: Use devm_clk_get_enabled() helpers
-config: x86_64-randconfig-161-20240822 (https://download.01.org/0day-ci/archive/20240822/202408221155.UveHbLu0-lkp at intel.com/config)
-compiler: clang version 18.1.5 (https://github.com/llvm/llvm-project 617a15a9eac96088ae5e9134248d8236e34b91b1)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240822/202408221155.UveHbLu0-lkp at intel.com/reproduce)
+config: s390-allyesconfig (https://download.01.org/0day-ci/archive/20240822/202408221126.F1eulsSr-lkp at intel.com/config)
+compiler: s390-linux-gcc (GCC) 14.1.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240822/202408221126.F1eulsSr-lkp at intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202408221155.UveHbLu0-lkp at intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202408221126.F1eulsSr-lkp at intel.com/
 
 All errors (new ones prefixed by >>):
 
->> drivers/usb/gadget/udc/pxa27x_udc.c:2401:44: error: too many arguments to function call, expected single argument 'clk', have 2 arguments
+   drivers/usb/gadget/udc/pxa27x_udc.c: In function 'pxa_udc_probe':
+   drivers/usb/gadget/udc/pxa27x_udc.c:2401:39: error: passing argument 1 of 'clk_prepare_enable' from incompatible pointer type [-Wincompatible-pointer-types]
     2401 |         udc->clk = clk_prepare_enable(&pdev->dev, NULL);
-         |                    ~~~~~~~~~~~~~~~~~~             ^~~~
-   include/linux/stddef.h:8:14: note: expanded from macro 'NULL'
-       8 | #define NULL ((void *)0)
-         |              ^~~~~~~~~~~
-   include/linux/clk.h:1107:19: note: 'clk_prepare_enable' declared here
+         |                                       ^~~~~~~~~~
+         |                                       |
+         |                                       struct device *
+   In file included from drivers/usb/gadget/udc/pxa27x_udc.c:18:
+   include/linux/clk.h:1107:50: note: expected 'struct clk *' but argument is of type 'struct device *'
     1107 | static inline int clk_prepare_enable(struct clk *clk)
-         |                   ^                  ~~~~~~~~~~~~~~~
-   1 error generated.
+         |                                      ~~~~~~~~~~~~^~~
+   drivers/usb/gadget/udc/pxa27x_udc.c:2401:20: error: too many arguments to function 'clk_prepare_enable'
+    2401 |         udc->clk = clk_prepare_enable(&pdev->dev, NULL);
+         |                    ^~~~~~~~~~~~~~~~~~
+   include/linux/clk.h:1107:19: note: declared here
+    1107 | static inline int clk_prepare_enable(struct clk *clk)
+         |                   ^~~~~~~~~~~~~~~~~~
+>> drivers/usb/gadget/udc/pxa27x_udc.c:2401:18: error: assignment to 'struct clk *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+    2401 |         udc->clk = clk_prepare_enable(&pdev->dev, NULL);
+         |                  ^
 
 
-vim +/clk +2401 drivers/usb/gadget/udc/pxa27x_udc.c
+vim +2401 drivers/usb/gadget/udc/pxa27x_udc.c
 
   2345	
   2346	/**
