@@ -1,9 +1,9 @@
 From: Jinjie Ruan <ruanjinjie@huawei.com>
-Date: Thu, 22 Aug 2024 14:29:53 +0800
-Subject: [PATCH -next 5/8] hwmon: (nct7802): Simplify with scoped for each OF child loop
+Date: Thu, 22 Aug 2024 14:29:52 +0800
+Subject: [PATCH -next 4/8] hwmon: (lm90): Simplify with scoped for each OF child loop
 In-Reply-To: <20240822062956.3490387-1-ruanjinjie@huawei.com>
 References: <20240822062956.3490387-1-ruanjinjie@huawei.com>
-Message-ID: <20240822062956.3490387-6-ruanjinjie@huawei.com>
+Message-ID: <20240822062956.3490387-5-ruanjinjie@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -15,33 +15,35 @@ nodes to make code a bit simpler.
 
 Signed-off-by: Jinjie Ruan <ruanjinjie@huawei.com>
 ---
- drivers/hwmon/nct7802.c | 7 ++-----
+ drivers/hwmon/lm90.c | 7 ++-----
  1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/hwmon/nct7802.c b/drivers/hwmon/nct7802.c
-index 5e83504800a3..8c9351da12c6 100644
---- a/drivers/hwmon/nct7802.c
-+++ b/drivers/hwmon/nct7802.c
-@@ -1129,17 +1129,14 @@ static int nct7802_configure_channels(struct device *dev,
+diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
+index ca5c52b38c0f..511d95a0efb3 100644
+--- a/drivers/hwmon/lm90.c
++++ b/drivers/hwmon/lm90.c
+@@ -2674,19 +2674,16 @@ static int lm90_parse_dt_channel_info(struct i2c_client *client,
+ 				      struct lm90_data *data)
  {
- 	/* Enable local temperature sensor by default */
- 	u8 mode_mask = MODE_LTD_EN, mode_val = MODE_LTD_EN;
--	struct device_node *node;
  	int err;
+-	struct device_node *child;
+ 	struct device *dev = &client->dev;
+ 	const struct device_node *np = dev->of_node;
  
- 	if (dev->of_node) {
--		for_each_child_of_node(dev->of_node, node) {
-+		for_each_child_of_node_scoped(dev->of_node, node) {
- 			err = nct7802_get_channel_config(dev, node, &mode_mask,
- 							 &mode_val);
--			if (err) {
--				of_node_put(node);
-+			if (err)
- 				return err;
--			}
- 		}
+-	for_each_child_of_node(np, child) {
++	for_each_child_of_node_scoped(np, child) {
+ 		if (strcmp(child->name, "channel"))
+ 			continue;
+ 
+ 		err = lm90_probe_channel_from_dt(client, child, data);
+-		if (err) {
+-			of_node_put(child);
++		if (err)
+ 			return err;
+-		}
  	}
  
+ 	return 0;
 -- 
 2.34.1
 
