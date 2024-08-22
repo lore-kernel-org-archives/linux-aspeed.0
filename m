@@ -1,9 +1,9 @@
 From: Lei Liu <liulei.rjpt@vivo.com>
-Date: Thu, 22 Aug 2024 12:07:27 +0800
-Subject: [PATCH v1 2/5] usb: pxa27x_udc: Use devm_clk_get_enabled() helpers
+Date: Thu, 22 Aug 2024 12:07:28 +0800
+Subject: [PATCH v1 3/5] usb: r8a66597-udc: Use devm_clk_get_enabled() helpers
 In-Reply-To: <20240822040734.29412-1-liulei.rjpt@vivo.com>
 References: <20240822040734.29412-1-liulei.rjpt@vivo.com>
-Message-ID: <20240822040734.29412-3-liulei.rjpt@vivo.com>
+Message-ID: <20240822040734.29412-4-liulei.rjpt@vivo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -17,36 +17,75 @@ The devm_clk_get_enabled() helpers:
 
 This simplifies the code and avoids calls to clk_disable_unprepare().
 
----
-v0 -> v1
-Incorrect usage of clk_prepare_enable() should be 
-corrected to devm_clk_get_enabled().
-
 Signed-off-by: Lei Liu <liulei.rjpt@vivo.com>
 ---
- drivers/usb/gadget/udc/pxa27x_udc.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/usb/gadget/udc/r8a66597-udc.c | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/pxa27x_udc.c b/drivers/usb/gadget/udc/pxa27x_udc.c
-index 1a6317e4b2a3..6e99e75f1acb 100644
---- a/drivers/usb/gadget/udc/pxa27x_udc.c
-+++ b/drivers/usb/gadget/udc/pxa27x_udc.c
-@@ -2398,14 +2398,10 @@ static int pxa_udc_probe(struct platform_device *pdev)
- 	if (udc->gpiod)
- 		gpiod_direction_output(udc->gpiod, 0);
- 
--	udc->clk = devm_clk_get(&pdev->dev, NULL);
-+	udc->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(udc->clk))
- 		return PTR_ERR(udc->clk);
- 
--	retval = clk_prepare(udc->clk);
--	if (retval)
--		return retval;
+diff --git a/drivers/usb/gadget/udc/r8a66597-udc.c b/drivers/usb/gadget/udc/r8a66597-udc.c
+index db4a10a979f9..bdbe5ead741e 100644
+--- a/drivers/usb/gadget/udc/r8a66597-udc.c
++++ b/drivers/usb/gadget/udc/r8a66597-udc.c
+@@ -1812,10 +1812,6 @@ static void r8a66597_remove(struct platform_device *pdev)
+ 	usb_del_gadget_udc(&r8a66597->gadget);
+ 	del_timer_sync(&r8a66597->timer);
+ 	r8a66597_free_request(&r8a66597->ep[0].ep, r8a66597->ep0_req);
 -
- 	udc->vbus_sensed = 0;
+-	if (r8a66597->pdata->on_chip) {
+-		clk_disable_unprepare(r8a66597->clk);
+-	}
+ }
  
- 	the_controller = udc;
+ static void nop_completion(struct usb_ep *ep, struct usb_request *r)
+@@ -1876,18 +1872,17 @@ static int r8a66597_probe(struct platform_device *pdev)
+ 
+ 	if (r8a66597->pdata->on_chip) {
+ 		snprintf(clk_name, sizeof(clk_name), "usb%d", pdev->id);
+-		r8a66597->clk = devm_clk_get(dev, clk_name);
++		r8a66597->clk = devm_clk_get_enabled(dev, clk_name);
+ 		if (IS_ERR(r8a66597->clk)) {
+ 			dev_err(dev, "cannot get clock \"%s\"\n", clk_name);
+ 			return PTR_ERR(r8a66597->clk);
+ 		}
+-		clk_prepare_enable(r8a66597->clk);
+ 	}
+ 
+ 	if (r8a66597->pdata->sudmac) {
+ 		ret = r8a66597_sudmac_ioremap(r8a66597, pdev);
+ 		if (ret < 0)
+-			goto clean_up2;
++			goto err_add_udc;
+ 	}
+ 
+ 	disable_controller(r8a66597); /* make sure controller is disabled */
+@@ -1896,7 +1891,7 @@ static int r8a66597_probe(struct platform_device *pdev)
+ 			       udc_name, r8a66597);
+ 	if (ret < 0) {
+ 		dev_err(dev, "request_irq error (%d)\n", ret);
+-		goto clean_up2;
++		goto err_add_udc;
+ 	}
+ 
+ 	INIT_LIST_HEAD(&r8a66597->gadget.ep_list);
+@@ -1939,7 +1934,7 @@ static int r8a66597_probe(struct platform_device *pdev)
+ 							GFP_KERNEL);
+ 	if (r8a66597->ep0_req == NULL) {
+ 		ret = -ENOMEM;
+-		goto clean_up2;
++		goto err_add_udc;
+ 	}
+ 	r8a66597->ep0_req->complete = nop_completion;
+ 
+@@ -1952,9 +1947,6 @@ static int r8a66597_probe(struct platform_device *pdev)
+ 
+ err_add_udc:
+ 	r8a66597_free_request(&r8a66597->ep[0].ep, r8a66597->ep0_req);
+-clean_up2:
+-	if (r8a66597->pdata->on_chip)
+-		clk_disable_unprepare(r8a66597->clk);
+ 
+ 	if (r8a66597->ep0_req)
+ 		r8a66597_free_request(&r8a66597->ep[0].ep, r8a66597->ep0_req);
 -- 
 2.34.1
 
