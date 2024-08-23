@@ -1,54 +1,75 @@
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Fri, 23 Aug 2024 14:41:11 +0800
-Subject: [PATCH 2/2] ARM: dts: aspeed: catalina: update io_expander7 &
- io_expander8 line name
-In-Reply-To: <20240823-catalina-ioexp-update-v1-0-4bfd8dad819c@gmail.com>
-References: <20240823-catalina-ioexp-update-v1-0-4bfd8dad819c@gmail.com>
-Message-ID: <20240823-catalina-ioexp-update-v1-2-4bfd8dad819c@gmail.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Fri, 23 Aug 2024 17:03:19 +0300
+Subject: [PATCH v13 2/3] i2c: aspeed: support AST2600 i2c new register
+ mode driver
+In-Reply-To: <OS8PR06MB75419F3E3A222AE941DE3007F2882@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20240819092850.1590758-1-ryan_chen@aspeedtech.com>
+ <20240819092850.1590758-3-ryan_chen@aspeedtech.com>
+ <ZsNT7LPZ7-szrgBJ@smile.fi.intel.com>
+ <OS8PR06MB7541EE5BA5B400445FE0295EF28E2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <ZsXVU2qy0GIANFrc@smile.fi.intel.com>
+ <OS8PR06MB7541945591A62B956DA28AD9F28F2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <Zsc9_UddBybdnM1Z@smile.fi.intel.com>
+ <OS8PR06MB75419F3E3A222AE941DE3007F2882@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <ZsiWp5ENQ0BeBjMn@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-io_expander7
-- P1-5: MCU_GPIO
-- P1-6: MCU_RST_N
-- P1-7: MCU_RECOVERY_N
+On Fri, Aug 23, 2024 at 06:23:54AM +0000, Ryan Chen wrote:
+> > On Thu, Aug 22, 2024 at 02:24:26AM +0000, Ryan Chen wrote:
+> > > > On Wed, Aug 21, 2024 at 06:43:01AM +0000, Ryan Chen wrote:
+> > > > > > On Mon, Aug 19, 2024 at 05:28:49PM +0800, Ryan Chen wrote:
 
-io_expander8
-- P1-5: SEC_MCU_GPIO
-- P1-6: SEC_MCU_RST_N
-- P1-7: SEC_MCU_RECOVERY_N
+...
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> > > > > > > +	if (i2c_bus->mode == BUFF_MODE) {
+> > > > > > > +		i2c_bus->buf_base =
+> > > > > > devm_platform_get_and_ioremap_resource(pdev, 1, &res);
+> > > > > > > +		if (!IS_ERR_OR_NULL(i2c_bus->buf_base))
+> > > > > > > +			i2c_bus->buf_size = resource_size(res) / 2;
+> > > > > > > +		else
+> > > > > > > +			i2c_bus->mode = BYTE_MODE;
+> > > > > >
+> > > > > > What's wrong with positive conditional? And is it even possible
+> > > > > > to have NULL here?
+> > > > > >
+> > > > > Yes, if dtsi fill not following yaml example have reg 1, that will
+> > > > > failure at buffer
+> > > > mode.
+> > > > > And I can swith to byte mode.
+> > > > >
+> > > > > reg = <0x80 0x80>, <0xc00 0x20>;
+> > > >
+> > > > I was asking about if (!IS_ERR_OR_NULL(...)) line:
+> > > > 1) Why 'if (!foo) {} else {}' instead of 'if (foo) {} else {}'?
+> > > I will update to following.
+> > > 		if (IS_ERR(i2c_bus->buf_base))
+> > > 			i2c_bus->mode = BYTE_MODE;
+> > > 		else
+> > > 			i2c_bus->buf_size = resource_size(res) / 2;
+> > >
+> > > > 2) Why _NULL?
+> > > 	If dtsi file is claim only 1 reg offset. reg = <0x80 0x80>; that will goto byte
+> > mode.
+> > > 	reg = <0x80 0x80>, <0xc00 0x20>; can support buffer mode.
+> > > 	due to 2nd is buffer register offset.
+> > 
+> > I have asked why IS_ERR_OR_NULL() and not IS_ERR().
+> > 
+> OH, I will doing by this.
+> 		if (IS_ERR_OR_NULL(i2c_bus->buf_base))
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-index 3a00182084a5..82835e96317d 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-@@ -1024,7 +1024,7 @@ &io_expander7 {
- 		"CX_TWARN_CX0_L","CX_TWARN_CX1_L",
- 		"CX_OVT_SHDN_CX0","CX_OVT_SHDN_CX1",
- 		"FNP_L_CX0","FNP_L_CX1",
--		"","","","";
-+		"","MCU_GPIO","MCU_RST_N","MCU_RECOVERY_N";
- };
- 
- &io_expander8 {
-@@ -1035,7 +1035,7 @@ &io_expander8 {
- 		"SEC_CX_TWARN_CX0_L","SEC_CX_TWARN_CX1_L",
- 		"SEC_CX_OVT_SHDN_CX0","SEC_CX_OVT_SHDN_CX1",
- 		"SEC_FNP_L_CX0","SEC_FNP_L_CX1",
--		"","","","";
-+		"","SEC_MCU_GPIO","SEC_MCU_RST_N","SEC_MCU_RECOVERY_N";
- };
- 
- &io_expander9 {
+The question about _NULL remains unanswered...
+
+> 			i2c_bus->mode = BYTE_MODE;
+> 		else
+> 			i2c_bus->buf_size = resource_size(res) / 2;
 
 -- 
-2.31.1
+With Best Regards,
+Andy Shevchenko
+
 
