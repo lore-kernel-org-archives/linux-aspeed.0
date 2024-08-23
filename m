@@ -1,43 +1,26 @@
-From: Lei Liu <liulei.rjpt@vivo.com>
-Date: Thu, 22 Aug 2024 12:46:10 +0800
-Subject: [PATCH v1 0/5] usb drivers use devm_clk_get_enabled() helpers
-In-Reply-To: <2024082210-stadium-sly-cf06@gregkh>
-References: <20240822040734.29412-1-liulei.rjpt@vivo.com>
- <2024082210-stadium-sly-cf06@gregkh>
-Message-ID: <b356bdb2-fc17-44ef-b0e5-3868b452a8c2@vivo.com>
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Fri, 23 Aug 2024 02:47:51 +0200
+Subject: [PATCH] dt-bindings: i2c: aspeed: drop redundant multi-master
+In-Reply-To: <20240822132708.51884-1-krzysztof.kozlowski@linaro.org>
+References: <20240822132708.51884-1-krzysztof.kozlowski@linaro.org>
+Message-ID: <htpetam5ykc622qcc5xrnl45d2qqniuucqf62ogoqq4esqnkvx@36lblj4ptzib>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Krzysztof,
 
-on 2024/8/22 12:27, Greg Kroah-Hartman wrote:
-> On Thu, Aug 22, 2024 at 12:07:25PM +0800, Lei Liu wrote:
->> The devm_clk_get_enabled() helpers:
->>      - call devm_clk_get()
->>      - call clk_prepare_enable() and register what is needed in order to
->>       call clk_disable_unprepare() when needed, as a managed resource.
->>
->> This simplifies the code and avoids calls to clk_disable_unprepare().
->>
->> ---
->> The files ux500.c, mpfs.c, and pxa27x_udc.c have incorrect usage of
->> certain interfaces due to the lack of synchronization during the
->> commit updates. These issues have been corrected in the v1 version.
->>
->> version 1 changes
->> 1.ux500: Incorrect usage of clk_prepare_enable() should be corrected to
->>    devm_clk_get_enabled().
->> 2.mpfs: Incorrect usage of devm_clk_get_enable() should be corrected to
->>    devm_clk_get_enabled().
->> 3.pxa27x_udc: Incorrect usage of clk_prepare_enable() should be
->>    corrected to devm_clk_get_enabled().
-> Patch versions start at 1, this should be 2, right?
+On Thu, Aug 22, 2024 at 03:27:08PM GMT, Krzysztof Kozlowski wrote:
+> 'multi-master' property is defined by core i2c-controller schema in
+> dtschema package, so binding which references it and has
+> unevaluatedProperties:false, does not need to mention it.  It is
+> completely redundant here.
+> 
+> Suggested-by: Andi Shyti <andi.shyti@kernel.org>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-Hi?Do I need to update the patch from v1 to v2 again?
+Thanks for taking care of this! Merged to i2c/i2c-host.
 
-Lei Liu
-
-
->
+Andi
