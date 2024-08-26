@@ -1,63 +1,52 @@
-From: Marco Felsch <m.felsch@pengutronix.de>
-Date: Mon, 26 Aug 2024 09:51:10 +0200
-Subject: [PATCH 0/9] AT24 EEPROM MTD Support
-In-Reply-To: <Zsi3s9XithGEROwX@smile.fi.intel.com>
-References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
- <Zsi3s9XithGEROwX@smile.fi.intel.com>
-Message-ID: <20240826075110.u3cxc6dootou72eq@pengutronix.de>
+From: Lei Liu <liulei.rjpt@vivo.com>
+Date: Mon, 26 Aug 2024 16:18:56 +0800
+Subject: [PATCH v3 0/5] usb drivers use devm_clk_get_enabled() helpers
+Message-ID: <20240826081900.2284-1-liulei.rjpt@vivo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Andy,
+The devm_clk_get_enabled() helpers:
+    - call devm_clk_get()
+    - call clk_prepare_enable() and register what is needed in order to
+     call clk_disable_unprepare() when needed, as a managed resource.
 
-On 24-08-23, Andy Shevchenko wrote:
-> On Mon, Jul 01, 2024 at 03:53:39PM +0200, Marco Felsch wrote:
-> > This series adds the intial support to handle EEPROMs via the MTD layer
-> > as well. This allow the user-space to have separate paritions since
-> > EEPROMs can become quite large nowadays.
-> > 
-> > With this patchset applied EEPROMs can be accessed via:
-> >   - legacy 'eeprom' device
-> >   - nvmem device
-> >   - mtd device(s)
-> > 
-> > The patchset targets only the AT24 (I2C) EEPROMs since I have no access
-> > to AT25 (SPI) EEPROMs nor to one of the other misc/eeprom/* devices.
-> > 
-> > Note: I'm not familiar with Kconfig symbol migration so I don't know if
-> > the last patch is required at the moment. Please be notified that the
-> > list of recipients is quite large due to the defconfig changes.
-> 
-> FWIW, I think that MTD is *not* the place for EEPROMs.
-> 
-> Yeah, we have the driver spread over the kernel for EEPROMs (mostly due to
-> historical reasons and absence an umbrella subsystem for them), but it's not
-> the reason to hack them into something which is not quite suitable.
+This simplifies the code and avoids calls to clk_disable_unprepare().
 
-Thank you for you input. There are two things to mention:
- 1st) I send a RFC patch and asked for feedback and all I got was: looks
-      okay, please send a proper patch [1] which I did.
- 2nd) I don't see the hacky part in this patchset.
+---
+version 3 changes
+Fix the email thread.
 
-Anyway the customer doesn't need the nvmem-partitions anymore and
-therefore this patchset can be seen as obsolote.
+---
+version 2 changes
 
-Regards,
-  Marco
+The files ux500.c, mpfs.c, and pxa27x_udc.c have incorrect usage of 
+certain interfaces due to the lack of synchronization during the 
+commit updates. These issues have been corrected in the v1 version.
 
-[1] https://lore.kernel.org/lkml/20231201144441.imk7rrjnv2dugo7p at pengutronix.de/T/#m1e0e5778448971b50a883f62bd95622f6422b9a2
+1.ux500: Incorrect usage of clk_prepare_enable() should be corrected to
+  devm_clk_get_enabled().
+2.mpfs: Incorrect usage of devm_clk_get_enable() should be corrected to
+  devm_clk_get_enabled().
+3.pxa27x_udc: Incorrect usage of clk_prepare_enable() should be
+  corrected to devm_clk_get_enabled().
 
-> 
-> If NVMEM needs to be updated and may cover these cases after all (and do not
-> forget about *small* size EEPROMs that most likely appear on the devices with
-> limited amount of resources!) in a reasonable size and performance, why not?
-> 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
-> 
-> 
-> 
+Lei Liu (5):
+  usb: aspeed_udc: Use devm_clk_get_enabled() helpers
+  usb: pxa27x_udc: Use devm_clk_get_enabled() helpers
+  usb: r8a66597-udc: Use devm_clk_get_enabled() helpers
+  usb: mpfs: Use devm_clk_get_enabled() helpers
+  sb: ux500: Use devm_clk_get_enabled() helpers
+
+ drivers/usb/gadget/udc/aspeed_udc.c   |  9 +--------
+ drivers/usb/gadget/udc/pxa27x_udc.c   |  6 +-----
+ drivers/usb/gadget/udc/r8a66597-udc.c | 16 ++++------------
+ drivers/usb/musb/mpfs.c               | 22 ++++++----------------
+ drivers/usb/musb/ux500.c              | 18 ++++--------------
+ 5 files changed, 16 insertions(+), 55 deletions(-)
+
+-- 
+2.34.1
+
