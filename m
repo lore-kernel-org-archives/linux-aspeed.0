@@ -1,58 +1,70 @@
-From: Lei Liu <liulei.rjpt@vivo.com>
-Date: Mon, 26 Aug 2024 16:21:39 +0800
-Subject: [PATCH v3 1/5] usb: aspeed_udc: Use devm_clk_get_enabled() helpers
-In-Reply-To: <20240826081900.2284-1-liulei.rjpt@vivo.com>
-References: <20240826081900.2284-1-liulei.rjpt@vivo.com>
-Message-ID: <20240826082140.2311-1-liulei.rjpt@vivo.com>
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+Date: Mon, 26 Aug 2024 13:32:26 +0300
+Subject: [PATCH 0/9] AT24 EEPROM MTD Support
+In-Reply-To: <20240826075110.u3cxc6dootou72eq@pengutronix.de>
+References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
+ <Zsi3s9XithGEROwX@smile.fi.intel.com>
+ <20240826075110.u3cxc6dootou72eq@pengutronix.de>
+Message-ID: <ZsxZuvY9MLyjog-y@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The devm_clk_get_enabled() helpers:
-    - call devm_clk_get()
-    - call clk_prepare_enable() and register what is needed in order to
-     call clk_disable_unprepare() when needed, as a managed resource.
+On Mon, Aug 26, 2024 at 09:51:10AM +0200, Marco Felsch wrote:
+> On 24-08-23, Andy Shevchenko wrote:
+> > On Mon, Jul 01, 2024 at 03:53:39PM +0200, Marco Felsch wrote:
+> > > This series adds the intial support to handle EEPROMs via the MTD layer
+> > > as well. This allow the user-space to have separate paritions since
+> > > EEPROMs can become quite large nowadays.
+> > > 
+> > > With this patchset applied EEPROMs can be accessed via:
+> > >   - legacy 'eeprom' device
+> > >   - nvmem device
+> > >   - mtd device(s)
+> > > 
+> > > The patchset targets only the AT24 (I2C) EEPROMs since I have no access
+> > > to AT25 (SPI) EEPROMs nor to one of the other misc/eeprom/* devices.
+> > > 
+> > > Note: I'm not familiar with Kconfig symbol migration so I don't know if
+> > > the last patch is required at the moment. Please be notified that the
+> > > list of recipients is quite large due to the defconfig changes.
+> > 
+> > FWIW, I think that MTD is *not* the place for EEPROMs.
+> > 
+> > Yeah, we have the driver spread over the kernel for EEPROMs (mostly due to
+> > historical reasons and absence an umbrella subsystem for them), but it's not
+> > the reason to hack them into something which is not quite suitable.
+> 
+> Thank you for you input. There are two things to mention:
+>  1st) I send a RFC patch and asked for feedback and all I got was: looks
+>       okay, please send a proper patch [1] which I did.
 
-This simplifies the code and avoids calls to clk_disable_unprepare().
+I was on a long vacation, I haven't had time or even wishes to look at the
+patches or patch series. Sorry for that.
 
-Signed-off-by: Lei Liu <liulei.rjpt@vivo.com>
----
- drivers/usb/gadget/udc/aspeed_udc.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+Second point, RFC means "request for comments", here is mine. It's up to the
+maintainers and you on how to proceed it.
 
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index f4781e611aaa..a362e31f7550 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -1459,8 +1459,6 @@ static void ast_udc_remove(struct platform_device *pdev)
- 	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
- 	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
- 
--	clk_disable_unprepare(udc->clk);
--
- 	spin_unlock_irqrestore(&udc->lock, flags);
- 
- 	if (udc->ep0_buf)
-@@ -1500,16 +1498,11 @@ static int ast_udc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, udc);
- 
--	udc->clk = devm_clk_get(&pdev->dev, NULL);
-+	udc->clk = devm_clk_get_enabled(&pdev->dev, NULL);
- 	if (IS_ERR(udc->clk)) {
- 		rc = PTR_ERR(udc->clk);
- 		goto err;
- 	}
--	rc = clk_prepare_enable(udc->clk);
--	if (rc) {
--		dev_err(&pdev->dev, "Failed to enable clock (0x%x)\n", rc);
--		goto err;
--	}
- 
- 	/* Check if we need to limit the HW to USB1 */
- 	max_speed = usb_get_maximum_speed(&pdev->dev);
+>  2nd) I don't see the hacky part in this patchset.
+
+I haven't talked about patchset, I have talked about architectural / design
+point of view. I read the discussion and to me it seems like it solves the
+issue with a quite big hammer. If you can prove that on embedded systems with
+limited resources it is not a problem, just mention that in the cover letter.
+
+> Anyway the customer doesn't need the nvmem-partitions anymore and
+> therefore this patchset can be seen as obsolote.
+> 
+> [1] https://lore.kernel.org/lkml/20231201144441.imk7rrjnv2dugo7p at pengutronix.de/T/#m1e0e5778448971b50a883f62bd95622f6422b9a2
+> 
+> > If NVMEM needs to be updated and may cover these cases after all (and do not
+> > forget about *small* size EEPROMs that most likely appear on the devices with
+> > limited amount of resources!) in a reasonable size and performance, why not?
+
 -- 
-2.34.1
+With Best Regards,
+Andy Shevchenko
+
 
