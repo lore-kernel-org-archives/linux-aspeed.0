@@ -1,51 +1,114 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 26 Aug 2024 14:23:37 +0800
-Subject: [PATCH v14 03/31] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+Date: Mon, 26 Aug 2024 14:23:40 +0800
+Subject: [PATCH v14 06/31] ARM: dts: aspeed: yosemite4: Revise power sensor adm1281 for schematic change
 In-Reply-To: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240826062408.2885174-4-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240826062408.2885174-7-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-enable spi-gpio setting for spi flash
+Revise power sensor adm1281 for yosemite4 schematic change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 24 ++++++++++++-------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 0d659ee2bc19..575abdd530df 100644
+index e5354efbb903..7b79fcd77c8c 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -53,6 +53,24 @@ iio-hwmon {
- 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
- 				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+@@ -176,8 +176,9 @@ mctp at 10 {
  	};
-+
-+	spi_gpio: spi-gpio {
-+		compatible = "spi-gpio";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpio-sck = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
-+		gpio-mosi = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
-+		gpio-miso = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
-+		num-chipselects = <1>;
-+		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
-+
-+		tpmdev at 0 {
-+			compatible = "tcg,tpm_tis-spi";
-+			spi-max-frequency = <33000000>;
-+			reg = <0>;
-+		};
-+	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
  };
  
- &uart1 {
+@@ -193,8 +194,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -210,8 +212,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -227,8 +230,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -244,8 +248,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -261,8 +266,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -278,8 +284,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
+@@ -295,8 +302,9 @@ mctp at 10 {
+ 	};
+ 
+ 	power-sensor at 40 {
+-		compatible = "adi,adm1278";
++		compatible = "adi,adm1281";
+ 		reg = <0x40>;
++		shunt-resistor-micro-ohms = <500>;
+ 	};
+ };
+ 
 -- 
 2.25.1
 
