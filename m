@@ -1,70 +1,33 @@
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-Date: Mon, 26 Aug 2024 13:32:26 +0300
-Subject: [PATCH 0/9] AT24 EEPROM MTD Support
-In-Reply-To: <20240826075110.u3cxc6dootou72eq@pengutronix.de>
-References: <20240701-b4-v6-10-topic-usbc-tcpci-v1-0-3fd5f4a193cc@pengutronix.de>
- <Zsi3s9XithGEROwX@smile.fi.intel.com>
- <20240826075110.u3cxc6dootou72eq@pengutronix.de>
-Message-ID: <ZsxZuvY9MLyjog-y@smile.fi.intel.com>
+From: Liao Chen <liaochen4@huawei.com>
+Date: Mon, 26 Aug 2024 12:48:51 +0000
+Subject: [PATCH -next] mmc: sdhci-of-aspeed: fix module autoloading
+Message-ID: <20240826124851.379759-1-liaochen4@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 26, 2024 at 09:51:10AM +0200, Marco Felsch wrote:
-> On 24-08-23, Andy Shevchenko wrote:
-> > On Mon, Jul 01, 2024 at 03:53:39PM +0200, Marco Felsch wrote:
-> > > This series adds the intial support to handle EEPROMs via the MTD layer
-> > > as well. This allow the user-space to have separate paritions since
-> > > EEPROMs can become quite large nowadays.
-> > > 
-> > > With this patchset applied EEPROMs can be accessed via:
-> > >   - legacy 'eeprom' device
-> > >   - nvmem device
-> > >   - mtd device(s)
-> > > 
-> > > The patchset targets only the AT24 (I2C) EEPROMs since I have no access
-> > > to AT25 (SPI) EEPROMs nor to one of the other misc/eeprom/* devices.
-> > > 
-> > > Note: I'm not familiar with Kconfig symbol migration so I don't know if
-> > > the last patch is required at the moment. Please be notified that the
-> > > list of recipients is quite large due to the defconfig changes.
-> > 
-> > FWIW, I think that MTD is *not* the place for EEPROMs.
-> > 
-> > Yeah, we have the driver spread over the kernel for EEPROMs (mostly due to
-> > historical reasons and absence an umbrella subsystem for them), but it's not
-> > the reason to hack them into something which is not quite suitable.
-> 
-> Thank you for you input. There are two things to mention:
->  1st) I send a RFC patch and asked for feedback and all I got was: looks
->       okay, please send a proper patch [1] which I did.
+Add MODULE_DEVICE_TABLE(), so modules could be properly autoloaded
+based on the alias from of_device_id table.
 
-I was on a long vacation, I haven't had time or even wishes to look at the
-patches or patch series. Sorry for that.
+Signed-off-by: Liao Chen <liaochen4@huawei.com>
+---
+ drivers/mmc/host/sdhci-of-aspeed.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Second point, RFC means "request for comments", here is mine. It's up to the
-maintainers and you on how to proceed it.
-
->  2nd) I don't see the hacky part in this patchset.
-
-I haven't talked about patchset, I have talked about architectural / design
-point of view. I read the discussion and to me it seems like it solves the
-issue with a quite big hammer. If you can prove that on embedded systems with
-limited resources it is not a problem, just mention that in the cover letter.
-
-> Anyway the customer doesn't need the nvmem-partitions anymore and
-> therefore this patchset can be seen as obsolote.
-> 
-> [1] https://lore.kernel.org/lkml/20231201144441.imk7rrjnv2dugo7p at pengutronix.de/T/#m1e0e5778448971b50a883f62bd95622f6422b9a2
-> 
-> > If NVMEM needs to be updated and may cover these cases after all (and do not
-> > forget about *small* size EEPROMs that most likely appear on the devices with
-> > limited amount of resources!) in a reasonable size and performance, why not?
-
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 430c1f90037b..37240895ffaa 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -510,6 +510,7 @@ static const struct of_device_id aspeed_sdhci_of_match[] = {
+ 	{ .compatible = "aspeed,ast2600-sdhci", .data = &ast2600_sdhci_pdata, },
+ 	{ }
+ };
++MODULE_DEVICE_TABLE(of, aspeed_sdhci_of_match);
+ 
+ static struct platform_driver aspeed_sdhci_driver = {
+ 	.driver		= {
 -- 
-With Best Regards,
-Andy Shevchenko
-
+2.34.1
 
