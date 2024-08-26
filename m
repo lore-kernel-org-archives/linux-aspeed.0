@@ -1,33 +1,47 @@
-From: Markus Elfring <Markus.Elfring@web.de>
-Date: Mon, 26 Aug 2024 12:56:19 +0200
-Subject: [PATCH 2/2] gpio: Add G7 Aspeed gpio controller driver
-In-Reply-To: <20240821070740.2378602-3-billy_tsai@aspeedtech.com>
-References: <20240821070740.2378602-3-billy_tsai@aspeedtech.com>
-Message-ID: <42c569f4-9171-46e0-9df3-72c583106cc4@web.de>
+From: Lei Liu <liulei.rjpt@vivo.com>
+Date: Mon, 26 Aug 2024 15:02:38 +0800
+Subject: [PATCH v2 0/5] usb drivers use devm_clk_get_enabled() helpers
+Message-ID: <20240826070244.1835-1-liulei.rjpt@vivo.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-?
-> +++ b/drivers/gpio/gpio-aspeed-g7.c
-> @@ -0,0 +1,831 @@
-?
-> +static void aspeed_gpio_g7_set(struct gpio_chip *gc, unsigned int offset, int val)
-> +{
-?
-> +	raw_spin_lock_irqsave(&gpio->lock, flags);
-> +
-> +	__aspeed_gpio_g7_set(gc, offset, val);
-> +
-> +	raw_spin_unlock_irqrestore(&gpio->lock, flags);
-> +}
-?
+The devm_clk_get_enabled() helpers:
+    - call devm_clk_get()
+    - call clk_prepare_enable() and register what is needed in order to
+     call clk_disable_unprepare() when needed, as a managed resource.
 
-Under which circumstances would you become interested to apply a statement
-like ?guard(raw_spinlock_irqsave)(&gpio->lock);??
-https://elixir.bootlin.com/linux/v6.11-rc5/source/include/linux/spinlock.h#L551
+This simplifies the code and avoids calls to clk_disable_unprepare().
 
-Regards,
-Markus
+---
+The files ux500.c, mpfs.c, and pxa27x_udc.c have incorrect usage of 
+certain interfaces due to the lack of synchronization during the 
+commit updates. These issues have been corrected in the v1 version.
+
+version 2 changes
+1.ux500: Incorrect usage of clk_prepare_enable() should be corrected to
+  devm_clk_get_enabled().
+2.mpfs: Incorrect usage of devm_clk_get_enable() should be corrected to
+  devm_clk_get_enabled().
+3.pxa27x_udc: Incorrect usage of clk_prepare_enable() should be
+  corrected to devm_clk_get_enabled().
+
+Lei Liu (5):
+  usb: aspeed_udc: Use devm_clk_get_enabled() helpers
+  usb: pxa27x_udc: Use devm_clk_get_enabled() helpers
+  usb: r8a66597-udc: Use devm_clk_get_enabled() helpers
+  usb: mpfs: Use devm_clk_get_enabled() helpers
+  sb: ux500: Use devm_clk_get_enabled() helpers
+
+ drivers/usb/gadget/udc/aspeed_udc.c   |  9 +--------
+ drivers/usb/gadget/udc/pxa27x_udc.c   |  6 +-----
+ drivers/usb/gadget/udc/r8a66597-udc.c | 16 ++++------------
+ drivers/usb/musb/mpfs.c               | 22 ++++++----------------
+ drivers/usb/musb/ux500.c              | 18 ++++--------------
+ 5 files changed, 16 insertions(+), 55 deletions(-)
+
+-- 
+2.34.1
+
