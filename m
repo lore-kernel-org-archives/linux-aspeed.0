@@ -1,34 +1,70 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 26 Aug 2024 14:23:49 +0800
-Subject: [PATCH v14 15/31] ARM: dts: aspeed: yosemite4: Remove idle state setting for yosemite4 NIC connection
+Date: Mon, 26 Aug 2024 14:23:48 +0800
+Subject: [PATCH v14 14/31] ARM: dts: aspeed: yosemite4: Revise ina233 config for yosemite4 schematic change
 In-Reply-To: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240826062408.2885174-16-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240826062408.2885174-15-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove idle state setting for yosemite4 NIC connection
+Revise ina233 config for yosemite4 schematic change
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 1 -
- 1 file changed, 1 deletion(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 20 ++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index df389b506b4b..c0497a1aa93e 100644
+index 1765a0bb70d7..df389b506b4b 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1235,7 +1235,6 @@ mctp at 10 {
+@@ -1034,28 +1034,38 @@ adc at 37 {
+ 	};
  
- 	i2c-mux at 72 {
- 		compatible = "nxp,pca9544";
--		i2c-mux-idle-disconnect;
- 		reg = <0x72>;
+ 	power-sensor at 40 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x40>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
  
- 		imux24: i2c at 0 {
+ 	power-sensor at 41 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x41>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 42 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x42>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 43 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x43>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 44 {
+-		compatible = "ti,ina230";
++		compatible = "ti,ina233";
+ 		reg = <0x44>;
++		resistor-calibration = /bits/ 16 <0x0a00>;
++		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	temperature-sensor at 4e {
 -- 
 2.25.1
 
