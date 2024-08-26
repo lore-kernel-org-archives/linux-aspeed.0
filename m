@@ -1,43 +1,108 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 26 Aug 2024 14:23:56 +0800
-Subject: [PATCH v14 22/31] ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
+Date: Mon, 26 Aug 2024 14:23:53 +0800
+Subject: [PATCH v14 19/31] ARM: dts: aspeed: yosemite4: support mux to cpld
 In-Reply-To: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240826062408.2885174-23-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240826062408.2885174-20-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Revise duty cycle SMB11 and SMB16 to high: 40%, low: 60%,
-to meet 400kHz-i2c clock low time spec (> 1.3 us) from EE request
+Mux pca9544 to cpld was added on EVT HW schematic design,
+so add dts setting for devices behind mux pca9544 to cpld
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 ++
- 1 file changed, 2 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 64 ++++++++++++++-----
+ 1 file changed, 49 insertions(+), 15 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index c2994651e747..c940d23c8a4b 100644
+index 7b8a2384d99d..98eeee49b082 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -761,6 +761,7 @@ eeprom at 54 {
- &i2c10 {
+@@ -36,6 +36,10 @@ aliases {
+ 		i2c31 = &imux31;
+ 		i2c32 = &imux32;
+ 		i2c33 = &imux33;
++		i2c34 = &imux34;
++		i2c35 = &imux35;
++		i2c36 = &imux36;
++		i2c37 = &imux37;
+ 	};
+ 
+ 	chosen {
+@@ -951,24 +955,54 @@ &i2c12 {
  	status = "okay";
  	bus-frequency = <400000>;
-+	i2c-clk-high-min-percent = <40>;
- 	i2c-mux at 74 {
- 		compatible = "nxp,pca9544";
- 		i2c-mux-idle-disconnect;
-@@ -1314,6 +1315,7 @@ &i2c15 {
- 	mctp-controller;
- 	multi-master;
- 	bus-frequency = <400000>;
-+	i2c-clk-high-min-percent = <40>;
  
- 	mctp at 10 {
- 		compatible = "mctp-i2c-controller";
+-	temperature-sensor at 48 {
+-		compatible = "ti,tmp75";
+-		reg = <0x48>;
+-	};
++	i2c-mux at 70 {
++		compatible = "nxp,pca9544";
++		i2c-mux-idle-disconnect;
++		reg = <0x70>;
+ 
+-	eeprom at 50 {
+-		compatible = "atmel,24c128";
+-		reg = <0x50>;
+-	};
++		imux34: i2c at 0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
+ 
+-	eeprom at 54 {
+-		compatible = "atmel,24c64";
+-		reg = <0x54>;
+-	};
++			temperature-sensor at 48 {
++				compatible = "ti,tmp75";
++				reg = <0x48>;
++			};
++
++			eeprom at 50 {
++				compatible = "atmel,24c128";
++				reg = <0x50>;
++			};
+ 
+-	rtc at 6f {
+-		compatible = "nuvoton,nct3018y";
+-		reg = <0x6f>;
++			eeprom at 54 {
++				compatible = "atmel,24c64";
++				reg = <0x54>;
++			};
++
++			rtc at 6f {
++				compatible = "nuvoton,nct3018y";
++				reg = <0x6f>;
++			};
++		};
++
++		imux35: i2c at 1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		imux36: i2c at 2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		imux37: i2c at 3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++		};
+ 	};
+ };
+ 
 -- 
 2.25.1
 
