@@ -1,48 +1,199 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 26 Aug 2024 14:23:58 +0800
-Subject: [PATCH v14 24/31] ARM: dts: aspeed: yosemite4: add XDP710
+Date: Mon, 26 Aug 2024 14:23:57 +0800
+Subject: [PATCH v14 23/31] ARM: dts: aspeed: yosemite4: add fan led config
 In-Reply-To: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240826062408.2885174-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240826062408.2885174-25-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240826062408.2885174-24-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add XDP710 in yosemite4 DTS.
+Set fan led config in yosemite4 DTS.
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 152 +++++++++++++++++-
+ 1 file changed, 150 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 2f4e9c5edd5a..f73719b3c2f1 100644
+index c940d23c8a4b..2f4e9c5edd5a 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -978,11 +978,21 @@ power-sensor at 10 {
- 		reg = <0x10>;
+@@ -75,6 +75,154 @@ tpmdev at 0 {
+ 			reg = <0>;
+ 		};
  	};
- 
-+	power-sensor at 11 {
-+		compatible = "infineon,xdp710";
-+		reg = <0x11>;
-+	};
 +
- 	power-sensor at 12 {
- 		compatible = "adi,adm1272";
- 		reg = <0x12>;
- 	};
- 
-+	power-sensor at 13 {
-+		compatible = "infineon,xdp710";
-+		reg = <0x13>;
-+	};
++	leds {
++		compatible = "gpio-leds";
 +
- 	gpio at 20 {
- 		compatible = "nxp,pca9555";
- 		pinctrl-names = "default";
++		fan0_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 4 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan0_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 5 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan1_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 10 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan1_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 11 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan2_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 4 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan2_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 5 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan3_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 10 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan3_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 11 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan4_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 2 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan4_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 3 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan5_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 8 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan5_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 9 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan6_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 2 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan6_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 3 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan7_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 8 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan7_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 9 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan8_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 0 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan8_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 1 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan9_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio0 6 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan9_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio0 7 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan10_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 0 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan10_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 1 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan11_blue {
++			retain-state-shutdown;
++			default-state = "on";
++			gpios = <&led_gpio1 6 GPIO_ACTIVE_HIGH>;
++		};
++
++		fan11_amber {
++			retain-state-shutdown;
++			default-state = "off";
++			gpios = <&led_gpio1 7 GPIO_ACTIVE_HIGH>;
++		};
++	};
+ };
+ 
+ &uart1 {
+@@ -1198,7 +1346,7 @@ eeprom at 52 {
+ 				reg = <0x52>;
+ 			};
+ 
+-			gpio at 61 {
++			led_gpio0: gpio at 61 {
+ 				compatible = "nxp,pca9552";
+ 				reg = <0x61>;
+ 				#address-cells = <1>;
+@@ -1268,7 +1416,7 @@ eeprom at 52 {
+ 				reg = <0x52>;
+ 			};
+ 
+-			gpio at 61 {
++			led_gpio1: gpio at 61 {
+ 				compatible = "nxp,pca9552";
+ 				reg = <0x61>;
+ 				#address-cells = <1>;
 -- 
 2.25.1
 
