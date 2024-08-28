@@ -1,44 +1,85 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 28 Aug 2024 17:23:20 +0200
-Subject: [PATCH -next] mmc: sdhci-of-aspeed: fix module autoloading
-In-Reply-To: <20240826124851.379759-1-liaochen4@huawei.com>
-References: <20240826124851.379759-1-liaochen4@huawei.com>
-Message-ID: <CAPDyKFoFH+=Q+h8zuiuopi+f4p63QUoj_qEn83YVBinh8PnKBA@mail.gmail.com>
+From: Stephen Boyd <sboyd@kernel.org>
+Date: Wed, 28 Aug 2024 11:47:54 -0700
+Subject: [PATCH v2 3/3] clk: aspeed: add AST2700 clk driver
+In-Reply-To: <20240828062740.1614744-4-ryan_chen@aspeedtech.com>
+References: <20240828062740.1614744-1-ryan_chen@aspeedtech.com> <20240828062740.1614744-4-ryan_chen@aspeedtech.com>
+Message-ID: <61c8234139fcd2b27610ef18e9d9fbf7.sboyd@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 26 Aug 2024 at 14:57, Liao Chen <liaochen4@huawei.com> wrote:
->
-> Add MODULE_DEVICE_TABLE(), so modules could be properly autoloaded
-> based on the alias from of_device_id table.
->
-> Signed-off-by: Liao Chen <liaochen4@huawei.com>
+Quoting Ryan Chen (2024-08-27 23:27:40)
+> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+> index 983ef4f36d8c..855b65f2d6dd 100644
+> --- a/drivers/clk/Kconfig
+> +++ b/drivers/clk/Kconfig
+> @@ -269,6 +269,16 @@ config COMMON_CLK_ASPEED
+>           The G4 and G5 series, including the ast2400 and ast2500, are supported
+>           by this driver.
+>  
+> +config COMMON_CLK_AST2700
+> +       bool "Clock driver for AST2700 SoC"
+> +       depends on ARCH_ASPEED || COMPILE_TEST
+> +       select MFD_SYSCON
 
-Applied for fixes, by adding fixes/stable tag, thanks!
+Why is this a syscon?
 
-Kind regards
-Uffe
+> +       select RESET_CONTROLLER
+> +       help
+> +         This driver provides support for clock on AST2700 SoC.
+> +         This driver is responsible for managing the various clocks required
+> +         by the peripherals and cores within the AST2700.
+> +
+>  config COMMON_CLK_S2MPS11
+>         tristate "Clock driver for S2MPS1X/S5M8767 MFD"
+>         depends on MFD_SEC_CORE || COMPILE_TEST
+> diff --git a/drivers/clk/clk-ast2700.c b/drivers/clk/clk-ast2700.c
+> new file mode 100644
+> index 000000000000..7e0466e73980
+> --- /dev/null
+> +++ b/drivers/clk/clk-ast2700.c
+> @@ -0,0 +1,1198 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2024 ASPEED Technology Inc.
+> + * Author: Ryan Chen <ryan_chen@aspeedtech.com>
+> + */
+> +
+> +#include <linux/bits.h>
+> +#include <linux/clk-provider.h>
+[...]
+> +
+> +struct ast2700_reset {
+> +       void __iomem *base;
+> +       struct ast2700_reset_signal const *signal;
+> +       struct reset_controller_dev rcdev;
+> +};
 
+Please move the reset controller to the drivers/reset directory by means
+of using an auxiliary device. There are some existing examples in there
+if you grep for auxiliary_device in drivers/reset to help guide.
 
-> ---
->  drivers/mmc/host/sdhci-of-aspeed.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
-> index 430c1f90037b..37240895ffaa 100644
-> --- a/drivers/mmc/host/sdhci-of-aspeed.c
-> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
-> @@ -510,6 +510,7 @@ static const struct of_device_id aspeed_sdhci_of_match[] = {
->         { .compatible = "aspeed,ast2600-sdhci", .data = &ast2600_sdhci_pdata, },
->         { }
->  };
-> +MODULE_DEVICE_TABLE(of, aspeed_sdhci_of_match);
->
->  static struct platform_driver aspeed_sdhci_driver = {
->         .driver         = {
-> --
-> 2.34.1
->
+> +
+> +#define to_rc_data(p) container_of(p, struct ast2700_reset, rcdev)
+> +
+[...]
+> +
+> +static int ast2700_soc0_clk_init(struct device_node *soc0_node)
+> +{
+> +       struct clk_hw_onecell_data *clk_data;
+> +       void __iomem *clk_base;
+[...]
+> +                                            0, clk_base + SCU0_CLK_STOP,
+> +                                            28, 0, &ast2700_clk_lock);
+> +
+> +       of_clk_add_hw_provider(soc0_node, of_clk_hw_onecell_get, clk_data);
+> +
+> +       return 0;
+> +};
+> +
+> +CLK_OF_DECLARE_DRIVER(ast2700_soc0, "aspeed,ast2700-scu0", ast2700_soc0_clk_init);
+> +CLK_OF_DECLARE_DRIVER(ast2700_soc1, "aspeed,ast2700-scu1", ast2700_soc1_clk_init);
+
+Why can't this be a platform driver?
