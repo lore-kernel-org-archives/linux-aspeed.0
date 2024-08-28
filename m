@@ -1,88 +1,42 @@
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Wed, 28 Aug 2024 06:05:01 +0000
-Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: Add aspeed,video binding
-In-Reply-To: <a17f963e-0e6d-4132-817f-2e663268ee2d@kernel.org>
-References: <20240819080859.1304671-1-jammy_huang@aspeedtech.com>
- <20240819080859.1304671-2-jammy_huang@aspeedtech.com>
- <nnjcjt2kuplsy5bbxujuubkn2xdtpifjeiqt5qfvktdmaorzuz@x444p5ezcoch>
- <TYZPR06MB6568AB9E260263DBB1ED474DF1882@TYZPR06MB6568.apcprd06.prod.outlook.com>
- <a17f963e-0e6d-4132-817f-2e663268ee2d@kernel.org>
-Message-ID: <TYZPR06MB6568A38AD08F72EC637EFA7BF1952@TYZPR06MB6568.apcprd06.prod.outlook.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 28 Aug 2024 14:27:37 +0800
+Subject: [PATCH v2 0/3] Add support for AST2700 clk driver
+Message-ID: <20240828062740.1614744-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof,
+This patch series is add clk driver for AST2700.
 
-Sorry for the troublesome e-mail notice. We have informed IT to remove it.
+AST2700 is the 8th generation of Integrated Remote Management Processor
+introduced by ASPEED Technology Inc. Which is Board Management controller
+(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
+is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
 
-On 2024/8/23 ?? 02:13, Krzysztof Kozlowski wrote:
-> On 23/08/2024 03:11, Jammy Huang wrote:
-> 
-> >
-> >>
-> >>> @@ -0,0 +1,81 @@
-> >>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) %YAML 1.2
-> >>> +---
-> >>> +$id: http://devicetree.org/schemas/arm/aspeed/aspeed,video.yaml#
-> >>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> >>> +
-> >>> +title: ASPEED Video Engine
-> >>
-> >> ASPEED or Aspeed?
-> > I prefer ASPEED.
-> 
-> What is the name of the company? How is it called in all bindings? Is it an
-> acronym?
-It's ASPEED Technology Inc. You can find brief introduction here, https://www.aspeedtech.com/about_vision/.
-I did check it in bindings, but both ASPEED and Aspeed can be found.
-If you have suggestion, please let me know.
-> 
-> >
-> >>
-> >>> +
-> >>> +maintainers:
-> >>> +  - Eddie James <eajames@linux.ibm.com>
-> >>> +  - Jammy Huang <jammy_huang@aspeedtech.com>
-> >>> +
-> >>> +descriptio
-> 
-> 
-> ...
-Typo. Will be fixed.
+v2:
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number
+-clk-ast2700: drop WARN_ON, weird comment.
 
-> 
-> >
-> >>
-> >>> +           compatible = "aspeed,ast2600-video-engine";
-> >>
-> >> Fix indentation, this is supposed 4 spaces.
-> > OK
-> 
-> Every damn time from Aspeed. People, fix it finally. If you keep sending
-> confidential data, I will be rejecting/NAKing and deleting your messages as
-> requested.
-> 
-> <form letter>
-> Maybe I am the intended recipient of your message, maybe not. I don't want to
-> have any legal questions regarding upstream, public collaboration, thus
-> probably I should just remove your messages.
-> 
-> Please talk with your IT that such disclaimers in open-source are not desired
-> (and maybe even harmful).
-> If you do not understand why, please also see:
-> https://www.youtube.com/live/fMeH7wqOwXA?si=GY7igfbda6vnjXlJ&t=835
-> 
-> If you need to go around company SMTP server, then consider using b4
-> web-relay: https://b4.docs.kernel.org/en/latest/contributor/send.html
-> 
-> Please be informed that by responding to this email you agree that all
-> communications from you and/or your company is made public. In other words,
-> all messages originating from you and/or your company will be made public.
-> <form letter>
-> 
-> Best regards,
-> Krzysztof
+Ryan Chen (3):
+  dt-bindings: reset Add AST2700 reset bindings
+  dt-bindings: clock: Add AST2700 clock bindings
+  clk: aspeed: add AST2700 clk driver
+
+ drivers/clk/Kconfig                           |   10 +
+ drivers/clk/Makefile                          |    1 +
+ drivers/clk/clk-ast2700.c                     | 1198 +++++++++++++++++
+ .../dt-bindings/clock/aspeed,ast2700-clk.h    |  165 +++
+ .../dt-bindings/reset/aspeed,ast2700-reset.h  |  125 ++
+ 5 files changed, 1499 insertions(+)
+ create mode 100644 drivers/clk/clk-ast2700.c
+ create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
+ create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
+
+-- 
+2.34.1
 
