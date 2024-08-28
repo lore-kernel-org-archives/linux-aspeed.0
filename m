@@ -1,42 +1,154 @@
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 28 Aug 2024 14:27:37 +0800
-Subject: [PATCH v2 0/3] Add support for AST2700 clk driver
-Message-ID: <20240828062740.1614744-1-ryan_chen@aspeedtech.com>
+Date: Wed, 28 Aug 2024 14:27:38 +0800
+Subject: [PATCH v2 1/3] dt-bindings: reset Add AST2700 reset bindings
+In-Reply-To: <20240828062740.1614744-1-ryan_chen@aspeedtech.com>
+References: <20240828062740.1614744-1-ryan_chen@aspeedtech.com>
+Message-ID: <20240828062740.1614744-2-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series is add clk driver for AST2700.
+Add dt bindings for AST2700 reset driver.
 
-AST2700 is the 8th generation of Integrated Remote Management Processor
-introduced by ASPEED Technology Inc. Which is Board Management controller
-(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
-is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
-
-v2:
--yaml: drop 64bits address example.
--yaml: add discription about soc0 and soc1
--dt-bindings: remove (), *_NUMS, reserved.
--dt-bindings: remove dulipated define number
--clk-ast2700: drop WARN_ON, weird comment.
-
-Ryan Chen (3):
-  dt-bindings: reset Add AST2700 reset bindings
-  dt-bindings: clock: Add AST2700 clock bindings
-  clk: aspeed: add AST2700 clk driver
-
- drivers/clk/Kconfig                           |   10 +
- drivers/clk/Makefile                          |    1 +
- drivers/clk/clk-ast2700.c                     | 1198 +++++++++++++++++
- .../dt-bindings/clock/aspeed,ast2700-clk.h    |  165 +++
- .../dt-bindings/reset/aspeed,ast2700-reset.h  |  125 ++
- 5 files changed, 1499 insertions(+)
- create mode 100644 drivers/clk/clk-ast2700.c
- create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+ .../dt-bindings/reset/aspeed,ast2700-reset.h  | 125 ++++++++++++++++++
+ 1 file changed, 125 insertions(+)
  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
 
+diff --git a/include/dt-bindings/reset/aspeed,ast2700-reset.h b/include/dt-bindings/reset/aspeed,ast2700-reset.h
+new file mode 100644
+index 000000000000..eca7912b9138
+--- /dev/null
++++ b/include/dt-bindings/reset/aspeed,ast2700-reset.h
+@@ -0,0 +1,125 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Device Tree binding constants for AST2700 reset controller.
++ *
++ * Copyright (c) 2024 Aspeed Technology Inc.
++ */
++
++#ifndef _MACH_ASPEED_AST2700_RESET_H_
++#define _MACH_ASPEED_AST2700_RESET_H_
++
++/* SOC0 */
++#define SCU0_RESET_SDRAM		0
++#define SCU0_RESET_DDRPHY		1
++#define SCU0_RESET_RSA			2
++#define SCU0_RESET_SHA3			3
++#define SCU0_RESET_HACE			4
++#define SCU0_RESET_SOC			5
++#define SCU0_RESET_VIDEO		6
++#define SCU0_RESET_2D			7
++#define SCU0_RESET_PCIS			8
++#define SCU0_RESET_RVAS0		9
++#define SCU0_RESET_RVAS1		10
++#define SCU0_RESET_SM3			11
++#define SCU0_RESET_SM4			12
++#define SCU0_RESET_CRT0			13
++#define SCU0_RESET_ECC			14
++#define SCU0_RESET_DP_PCI		15
++#define SCU0_RESET_UFS			16
++#define SCU0_RESET_EMMC			17
++#define SCU0_RESET_PCIE1RST		18
++#define SCU0_RESET_PCIE1RSTOE		19
++#define SCU0_RESET_PCIE0RST		20
++#define SCU0_RESET_PCIE0RSTOE		21
++#define SCU0_RESET_JTAG			22
++#define SCU0_RESET_MCTP0		23
++#define SCU0_RESET_MCTP1		24
++#define SCU0_RESET_XDMA0		25
++#define SCU0_RESET_XDMA1		26
++#define SCU0_RESET_H2X1			27
++#define SCU0_RESET_DP			28
++#define SCU0_RESET_DP_MCU		29
++#define SCU0_RESET_SSP			30
++#define SCU0_RESET_H2X0			31
++#define SCU0_RESET_PORTA_VHUB1		32
++#define SCU0_RESET_PORTA_PHY3		33
++#define SCU0_RESET_PORTA_XHCI		34
++#define SCU0_RESET_PORTB_VHUB1		35
++#define SCU0_RESET_PORTB_PHY3		36
++#define SCU0_RESET_PORTB_XHCI		37
++#define SCU0_RESET_PORTA_USB		38
++#define SCU0_RESET_PORTB_USB		39
++#define SCU0_RESET_UHCI			40
++#define SCU0_RESET_TSP			41
++#define SCU0_RESET_E2M0			42
++#define SCU0_RESET_E2M1			43
++#define SCU0_RESET_VLINK		44
++
++/* SOC1 */
++#define SCU1_RESET_LPC0			0
++#define SCU1_RESET_LPC1			1
++#define SCU1_RESET_MII			2
++#define SCU1_RESET_PECI			3
++#define SCU1_RESET_PWM			4
++#define SCU1_RESET_MAC0			5
++#define SCU1_RESET_MAC1			6
++#define SCU1_RESET_MAC2			7
++#define SCU1_RESET_ADC			8
++#define SCU1_RESET_SD			9
++#define SCU1_RESET_ESPI0		10
++#define SCU1_RESET_ESPI1		11
++#define SCU1_RESET_JTAG1		12
++#define SCU1_RESET_SPI0			13
++#define SCU1_RESET_SPI1			14
++#define SCU1_RESET_SPI2			15
++#define SCU1_RESET_I3C0			16
++#define SCU1_RESET_I3C1			17
++#define SCU1_RESET_I3C2			18
++#define SCU1_RESET_I3C3			19
++#define SCU1_RESET_I3C4			20
++#define SCU1_RESET_I3C5			21
++#define SCU1_RESET_I3C6			22
++#define SCU1_RESET_I3C7			23
++#define SCU1_RESET_I3C8			24
++#define SCU1_RESET_I3C9			25
++#define SCU1_RESET_I3C10		26
++#define SCU1_RESET_I3C11		27
++#define SCU1_RESET_I3C12		28
++#define SCU1_RESET_I3C13		29
++#define SCU1_RESET_I3C14		30
++#define SCU1_RESET_I3C15		31
++#define SCU1_RESET_I3C15		31
++#define SCU1_RESET_MCU0			32
++#define SCU1_RESET_MCU1			33
++#define SCU1_RESET_H2A_SPI1		34
++#define SCU1_RESET_H2A_SPI2		35
++#define SCU1_RESET_UART0		36
++#define SCU1_RESET_UART1		37
++#define SCU1_RESET_UART2		38
++#define SCU1_RESET_UART3		39
++#define SCU1_RESET_I2C_FILTER		40
++#define SCU1_RESET_CALIPTRA		41
++#define SCU1_RESET_XDMA			42
++#define SCU1_RESET_FSI			43
++#define SCU1_RESET_CAN			44
++#define SCU1_RESET_MCTP			45
++#define SCU1_RESET_I2C			46
++#define SCU1_RESET_UART6		47
++#define SCU1_RESET_UART7		48
++#define SCU1_RESET_UART8		49
++#define SCU1_RESET_UART9		50
++#define SCU1_RESET_LTPI0		51
++#define SCU1_RESET_VGAL			52
++#define SCU1_RESET_LTPI1		53
++#define SCU1_RESET_ACE			54
++#define SCU1_RESET_E2M			55
++#define SCU1_RESET_UHCI			56
++#define SCU1_RESET_PORTC_USB2UART		57
++#define SCU1_RESET_PORTC_USB		58
++#define SCU1_RESET_PORTD_USB2UART		69
++#define SCU1_RESET_PORTD_USB		70
++#define SCU1_RESET_H2X			71
++#define SCU1_RESET_I3CDMA		72
++#define SCU1_RESET_PCIE2RST		73
++
++#endif  /* _MACH_ASPEED_AST2700_RESET_H_ */
 -- 
 2.34.1
 
