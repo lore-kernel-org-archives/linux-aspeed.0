@@ -1,44 +1,37 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 30 Aug 2024 08:21:39 +0800
-Subject: [PATCH v6 1/2] dt-bindings: media: convert aspeed-video.txt to
- dt-schema
-In-Reply-To: <20240829064508.3706672-2-jammy_huang@aspeedtech.com>
-References: <20240829064508.3706672-2-jammy_huang@aspeedtech.com>
-Message-ID: <202408300813.2RN73Kn4-lkp@intel.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Fri, 30 Aug 2024 11:40:43 +0800
+Subject: [PATCH v2 0/4] Add Aspeed G7 gpio support 
+Message-ID: <20240830034047.2251482-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Jammy,
+The Aspeed 7th generation SoC features two GPIO controllers: one with 12
+GPIO pins and another with 216 GPIO pins. The main difference from the
+previous generation is that the control logic has been updated to support
+per-pin control, allowing each pin to have its own 32-bit register for
+configuring value, direction, interrupt type, and more.
+This patch serial also add low-level operations (llops) to abstract the
+register access for GPIO registers and the coprocessor request/release in
+gpio-aspeed.c making it easier to extend the driver to support different
+hardware register layouts.
 
-kernel test robot noticed the following build warnings:
+Changes since v1:
+- Merge the gpio-aspeed-g7.c into the gpio-aspeed.c.
+- Create the llops in gpio-aspeed.c for flexibility.
 
-[auto build test WARNING on 47ac09b91befbb6a235ab620c32af719f8208399]
+Billy Tsai (4):
+  dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
+  gpio: aspeed: Remove the name for bank array
+  gpio: aspeed: Create llops to handle hardware access
+  gpio: aspeed: Support G7 Aspeed gpio controller
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jammy-Huang/dt-bindings-media-convert-aspeed-video-txt-to-dt-schema/20240829-144721
-base:   47ac09b91befbb6a235ab620c32af719f8208399
-patch link:    https://lore.kernel.org/r/20240829064508.3706672-2-jammy_huang%40aspeedtech.com
-patch subject: [PATCH v6 1/2] dt-bindings: media: convert aspeed-video.txt to dt-schema
-reproduce: (https://download.01.org/0day-ci/archive/20240830/202408300813.2RN73Kn4-lkp at intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202408300813.2RN73Kn4-lkp at intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   Warning: Documentation/devicetree/bindings/power/wakeup-source.txt references a file that doesn't exist: Documentation/devicetree/bindings/input/qcom,pm8xxx-keypad.txt
-   Warning: Documentation/devicetree/bindings/regulator/siliconmitus,sm5703-regulator.yaml references a file that doesn't exist: Documentation/devicetree/bindings/mfd/siliconmitus,sm5703.yaml
-   Warning: Documentation/hwmon/g762.rst references a file that doesn't exist: Documentation/devicetree/bindings/hwmon/g762.txt
-   Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/reserved-memory/qcom
->> Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/media/aspeed-video.txt
-   Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/display/exynos/
-   Warning: MAINTAINERS references a file that doesn't exist: Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
-   Using alabaster theme
+ .../bindings/gpio/aspeed,ast2400-gpio.yaml    |  46 +-
+ drivers/gpio/gpio-aspeed.c                    | 442 ++++++++++--------
+ 2 files changed, 303 insertions(+), 185 deletions(-)
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.25.1
+
