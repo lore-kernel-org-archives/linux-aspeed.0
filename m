@@ -1,49 +1,35 @@
 From: Peter Yin <peteryin.openbmc@gmail.com>
-Date: Fri, 30 Aug 2024 17:21:46 +0800
-Subject: [PATCH v2 1/2] ARM: dts: aspeed: Harma: add rtc device
-In-Reply-To: <20240830092148.1574520-1-peteryin.openbmc@gmail.com>
-References: <20240830092148.1574520-1-peteryin.openbmc@gmail.com>
-Message-ID: <20240830092148.1574520-2-peteryin.openbmc@gmail.com>
+Date: Fri, 30 Aug 2024 17:21:45 +0800
+Subject: [PATCH v2 0/2] Revise Meta(Facebook) Harma BMC(AST2600)
+Message-ID: <20240830092148.1574520-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add "nxp,pcf8563" device and the slave address is 0x51.
+Summary:
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
 
-Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+Base on: https://lore.kernel.org/all/799dbd97b09693fba6f837e73d4ef3421d604a8a.camel at codeconstruct.com.au/
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index cf3f807a38fe..92068c65eae4 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -135,10 +135,6 @@ &mac3 {
- 	use-ncsi;
- };
- 
--&rtc {
--	status = "okay";
--};
--
- &fmc {
- 	status = "okay";
- 
-@@ -506,6 +502,11 @@ imux31: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <3>;
-+
-+			rtc at 51 {
-+				compatible = "nxp,pcf8563";
-+				reg = <0x51>;
-+			};
- 		};
- 	};
- };
+v1->v2
+  - Fixed the mail and author.
+  - Revise presence-cmm to sgpio.
+
+v1
+  - Patch 0001 - add rtc device
+  - Patch 0002 - update sgpio line name
+
+
+Peter Yin (2):
+  ARM: dts: aspeed: Harma: add rtc device
+  ARM: dts: aspeed: Harma: update sgpio line name
+
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 41 +++++++++----------
+ 1 file changed, 19 insertions(+), 22 deletions(-)
+
 -- 
 2.25.1
 
