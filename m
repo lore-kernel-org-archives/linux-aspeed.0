@@ -1,98 +1,116 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 30 Aug 2024 11:40:44 +0800
-Subject: [PATCH v2 1/4] dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
+Date: Fri, 30 Aug 2024 11:40:45 +0800
+Subject: [PATCH v2 2/4] gpio: aspeed: Remove the name for bank array
 In-Reply-To: <20240830034047.2251482-1-billy_tsai@aspeedtech.com>
 References: <20240830034047.2251482-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240830034047.2251482-2-billy_tsai@aspeedtech.com>
+Message-ID: <20240830034047.2251482-3-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2700 is the 7th generation SoC from Aspeed, featuring two GPIO
-controllers: one with 12 GPIO pins and another with 216 GPIO pins.
+The bank array name is only used to determine if the GPIO offset is valid,
+and this condition can be replaced by checking if the offset exceeds the
+ngpio property.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- .../bindings/gpio/aspeed,ast2400-gpio.yaml    | 46 ++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
+ drivers/gpio/gpio-aspeed.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-index cf11aa7ec8c7..4d439972c14b 100644
---- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-+++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-@@ -15,6 +15,7 @@ properties:
-       - aspeed,ast2400-gpio
-       - aspeed,ast2500-gpio
-       - aspeed,ast2600-gpio
-+      - aspeed,ast2700-gpio
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 04c03402db6d..24f50a0ea4ab 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -77,7 +77,6 @@ struct aspeed_gpio_bank {
+ 	uint16_t	debounce_regs;
+ 	uint16_t	tolerance_regs;
+ 	uint16_t	cmdsrc_regs;
+-	const char	names[4][3];
+ };
  
-   reg:
-     maxItems: 1
-@@ -42,7 +43,7 @@ properties:
-     const: 2
+ /*
+@@ -104,7 +103,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0040,
+ 		.tolerance_regs = 0x001c,
+ 		.cmdsrc_regs = 0x0060,
+-		.names = { "A", "B", "C", "D" },
+ 	},
+ 	{
+ 		.val_regs = 0x0020,
+@@ -113,7 +111,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0048,
+ 		.tolerance_regs = 0x003c,
+ 		.cmdsrc_regs = 0x0068,
+-		.names = { "E", "F", "G", "H" },
+ 	},
+ 	{
+ 		.val_regs = 0x0070,
+@@ -122,7 +119,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x00b0,
+ 		.tolerance_regs = 0x00ac,
+ 		.cmdsrc_regs = 0x0090,
+-		.names = { "I", "J", "K", "L" },
+ 	},
+ 	{
+ 		.val_regs = 0x0078,
+@@ -131,7 +127,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0100,
+ 		.tolerance_regs = 0x00fc,
+ 		.cmdsrc_regs = 0x00e0,
+-		.names = { "M", "N", "O", "P" },
+ 	},
+ 	{
+ 		.val_regs = 0x0080,
+@@ -140,7 +135,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0130,
+ 		.tolerance_regs = 0x012c,
+ 		.cmdsrc_regs = 0x0110,
+-		.names = { "Q", "R", "S", "T" },
+ 	},
+ 	{
+ 		.val_regs = 0x0088,
+@@ -149,7 +143,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0160,
+ 		.tolerance_regs = 0x015c,
+ 		.cmdsrc_regs = 0x0140,
+-		.names = { "U", "V", "W", "X" },
+ 	},
+ 	{
+ 		.val_regs = 0x01E0,
+@@ -158,7 +151,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0190,
+ 		.tolerance_regs = 0x018c,
+ 		.cmdsrc_regs = 0x0170,
+-		.names = { "Y", "Z", "AA", "AB" },
+ 	},
+ 	{
+ 		.val_regs = 0x01e8,
+@@ -167,7 +159,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x01c0,
+ 		.tolerance_regs = 0x01bc,
+ 		.cmdsrc_regs = 0x01a0,
+-		.names = { "AC", "", "", "" },
+ 	},
+ };
  
-   ngpios:
--    minimum: 36
-+    minimum: 12
-     maximum: 232
+@@ -280,11 +271,11 @@ static inline const struct aspeed_bank_props *find_bank_props(
+ static inline bool have_gpio(struct aspeed_gpio *gpio, unsigned int offset)
+ {
+ 	const struct aspeed_bank_props *props = find_bank_props(gpio, offset);
+-	const struct aspeed_gpio_bank *bank = to_bank(offset);
+-	unsigned int group = GPIO_OFFSET(offset) / 8;
  
- required:
-@@ -93,6 +94,20 @@ allOf:
-           enum: [ 36, 208 ]
-       required:
-         - ngpios
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: aspeed,ast2700-gpio
-+    then:
-+      properties:
-+        gpio-line-names:
-+          minItems: 12
-+          maxItems: 216
-+        ngpios:
-+          enum: [ 12, 216 ]
-+      required:
-+        - ngpios
- 
- additionalProperties: false
- 
-@@ -146,3 +161,32 @@ examples:
-         gpio-ranges = <&pinctrl 0 208 36>;
-         ngpios = <36>;
-     };
-+  - |
-+    soc {
-+        #address-cells = <2>;
-+        #size-cells = <2>;
-+        #include <dt-bindings/interrupt-controller/arm-gic.h>
-+        gpio2: gpio at 14c0b000 {
-+            compatible = "aspeed,ast2700-gpio";
-+            reg = <0x0 0x14c0b000 0x0 0x1000>;
-+            interrupts-extended = <&soc1_intc2 18>;
-+            interrupt-controller;
-+            #interrupt-cells = <2>;
-+            #gpio-cells = <2>;
-+            gpio-controller;
-+            gpio-ranges = <&pinctrl1 0 0 216>;
-+            ngpios = <216>;
-+        };
+-	return bank->names[group][0] != '\0' &&
+-		(!props || ((props->input | props->output) & GPIO_BIT(offset)));
++	if (offset > gpio->chip.ngpio)
++		return false;
 +
-+        gpio3: gpio at 12c11000 {
-+            compatible = "aspeed,ast2700-gpio";
-+            reg = <0x0 0x12c11000 0x0 0x1000>;
-+            interrupts = <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
-+            interrupt-controller;
-+            #interrupt-cells = <2>;
-+            #gpio-cells = <2>;
-+            gpio-controller;
-+            gpio-ranges = <&pinctrl0 0 0 12>;
-+            ngpios = <12>;
-+        };
-+    };
++	return (!props || ((props->input | props->output) & GPIO_BIT(offset)));
+ }
+ 
+ static inline bool have_input(struct aspeed_gpio *gpio, unsigned int offset)
 -- 
 2.25.1
 
