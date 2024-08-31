@@ -1,53 +1,53 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Fri, 30 Aug 2024 15:16:18 -0700
-Subject: [PATCH v2 3/3] clk: aspeed: add AST2700 clk driver
-In-Reply-To: <OS8PR06MB7541BFDC6D2E490ECDAE085CF2972@OS8PR06MB7541.apcprd06.prod.outlook.com>
-References: <20240828062740.1614744-1-ryan_chen@aspeedtech.com> <20240828062740.1614744-4-ryan_chen@aspeedtech.com> <61c8234139fcd2b27610ef18e9d9fbf7.sboyd@kernel.org> <OS8PR06MB7541F12972412AE565A93287F2962@OS8PR06MB7541.apcprd06.prod.outlook.com> <3569ef6d81adc41330c4002752ba3aa9.sboyd@kernel.org> <OS8PR06MB7541BFDC6D2E490ECDAE085CF2972@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Message-ID: <45c7cf75876c5822f8c51f05375af507.sboyd@kernel.org>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 31 Aug 2024 09:46:38 +0800
+Subject: [PATCH v2 3/4] gpio: aspeed: Create llops to handle hardware
+ access
+In-Reply-To: <20240830034047.2251482-4-billy_tsai@aspeedtech.com>
+References: <20240830034047.2251482-4-billy_tsai@aspeedtech.com>
+Message-ID: <202408310953.Z0c7NIuz-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Quoting Ryan Chen (2024-08-30 00:50:21)
-> > Subject: RE: [PATCH v2 3/3] clk: aspeed: add AST2700 clk driver
-> > 
-> > Quoting Ryan Chen (2024-08-29 00:09:12)
-> > > > Subject: Re: [PATCH v2 3/3] clk: aspeed: add AST2700 clk driver
-> > > >
-> > > > Quoting Ryan Chen (2024-08-27 23:27:40)
-> > > > > a/drivers/clk/clk-ast2700.c b/drivers/clk/clk-ast2700.c new file
-> > > > > mode
-> > > > > 100644 index 000000000000..7e0466e73980
-> > > > > --- /dev/null
-> > > > > +++ b/drivers/clk/clk-ast2700.c
-> > > > > @@ -0,0 +1,1198 @@
-> > > > > +// SPDX-License-Identifier: GPL-2.0
-> > > > > +/*
-> > > > > + * Copyright (c) 2024 ASPEED Technology Inc.
-> > > > > + * Author: Ryan Chen <ryan_chen@aspeedtech.com>  */
-> > > > > +
-> > > > > +#include <linux/bits.h>
-> > > > > +#include <linux/clk-provider.h>
-> > > > [...]
-> > > > > +
-> > > > > +struct ast2700_reset {
-> > > > > +       void __iomem *base;
-> > > > > +       struct ast2700_reset_signal const *signal;
-> > > > > +       struct reset_controller_dev rcdev; };
-> > > >
-> > > > Please move the reset controller to the drivers/reset directory by
-> > > > means of using an auxiliary device. There are some existing examples
-> > > > in there if you grep for auxiliary_device in drivers/reset to help guide.
-> > >
-> > > Do you mean to have another reset controller driver?
-> > > If yes, I may need syscon for remap two drivers.
-> > 
-> > Yes. A syscon is not necessary to do that.
-> Thanks for point out auxiliary device.
-> Since our SoC reset and clock share the same register region.
-> Your recommend will use clk auxiliary_device_add for reset driver am I right?
+Hi Billy,
 
-Yes. Either the clk or the reset driver can be a platform driver and the
-other an auxiliary driver.
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on brgl/gpio/for-next]
+[also build test WARNING on linus/master v6.11-rc5 next-20240830]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Billy-Tsai/dt-bindings-gpio-aspeed-ast2400-gpio-Support-ast2700/20240830-114325
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git gpio/for-next
+patch link:    https://lore.kernel.org/r/20240830034047.2251482-4-billy_tsai%40aspeedtech.com
+patch subject: [PATCH v2 3/4] gpio: aspeed: Create llops to handle hardware access
+config: openrisc-randconfig-r131-20240830 (https://download.01.org/0day-ci/archive/20240831/202408310953.Z0c7NIuz-lkp at intel.com/config)
+compiler: or1k-linux-gcc (GCC) 14.1.0
+reproduce: (https://download.01.org/0day-ci/archive/20240831/202408310953.Z0c7NIuz-lkp at intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202408310953.Z0c7NIuz-lkp at intel.com/
+
+sparse warnings: (new ones prefixed by >>)
+>> drivers/gpio/gpio-aspeed.c:1107:26: sparse: sparse: symbol 'aspeed_g4_llops' was not declared. Should it be static?
+
+vim +/aspeed_g4_llops +1107 drivers/gpio/gpio-aspeed.c
+
+  1106	
+> 1107	struct aspeed_gpio_llops aspeed_g4_llops = {
+  1108		.copro_request = aspeed_gpio_copro_request,
+  1109		.copro_release = aspeed_gpio_copro_release,
+  1110		.reg_bits_set = aspeed_g4_reg_bits_set,
+  1111		.reg_bits_read = aspeed_g4_reg_bits_read,
+  1112	};
+  1113	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
