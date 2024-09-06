@@ -1,11 +1,11 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 6 Sep 2024 11:29:43 +0200
-Subject: [PATCH v15 32/32] ARM: dts: aspeed: yosemite4: add ISL28022
- support on 11
-In-Reply-To: <20240906062701.37088-33-Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 6 Sep 2024 11:30:20 +0200
+Subject: [PATCH v15 09/32] ARM: dts: aspeed: yosemite4: Enable interrupt
+ setting for pca9555
+In-Reply-To: <20240906062701.37088-10-Delphine_CC_Chiu@wiwynn.com>
 References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
- <20240906062701.37088-33-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <b0f7c007-b9e8-4914-b3fe-d6d17b61661e@kernel.org>
+ <20240906062701.37088-10-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <4065ec96-5f8b-4e89-9db6-6b1203958af9@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,26 +13,39 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 06/09/2024 08:26, Delphine CC Chiu wrote:
+> Enable interrupt setting for pca9555
+> 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-
-You didn't run checkpatch, did you?
-
 > ---
->  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 56 +++++++++++++++++--
+>  1 file changed, 52 insertions(+), 4 deletions(-)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index 0341b61aa1f1..e0cdda701c24 100644
+> index b11951c2f71e..09bbbcb192f5 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -1088,7 +1088,7 @@ power-sensor at 41 {
->  	};
+> @@ -832,30 +832,78 @@ power-sensor at 12 {
 >  
->  	power-sensor at 44 {
-> -		compatible = "ti,ina238";
-> +		compatible = "ti,ina238", "renesas,isl28022";
+>  	gpio at 20 {
+>  		compatible = "nxp,pca9555";
+> -		reg = <0x20>;
 
-No. Read bindings.
+NAK.
+
+You are making the code worse. Read DTS coding style.
+
+> +		pinctrl-names = "default";
+>  		gpio-controller;
+>  		#gpio-cells = <2>;
+> +		reg = <0x20>;
+> +		interrupt-parent = <&gpio0>;
+> +		interrupts = <98 IRQ_TYPE_LEVEL_LOW>;
+> +		gpio-line-names =
+> +		"P48V_OCP_GPIO1","P48V_OCP_GPIO2",
+
+Broken alignment.
+
+
 
 Best regards,
 Krzysztof
