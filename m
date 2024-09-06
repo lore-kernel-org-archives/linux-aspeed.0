@@ -1,11 +1,10 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 6 Sep 2024 11:28:51 +0200
-Subject: [PATCH v15 30/32] ARM: dts: aspeed: yosemite4: add SQ52205
- support
-In-Reply-To: <20240906062701.37088-31-Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 6 Sep 2024 11:29:02 +0200
+Subject: [PATCH v15 31/32] ARM: dts: aspeed: yosemite4: add GPIO I6
+In-Reply-To: <20240906062701.37088-32-Delphine_CC_Chiu@wiwynn.com>
 References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
- <20240906062701.37088-31-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <a8b2f7cb-17b7-457b-ac28-7e2e48e88f96@kernel.org>
+ <20240906062701.37088-32-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <474467d1-aa80-4ffb-a993-6f15d46bb4b7@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,28 +12,24 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 06/09/2024 08:26, Delphine CC Chiu wrote:
-> Add SQ52205 in yosemite4 DTS.
-
-No, that's not what your commit is doing.
-
+> Add BMC GPIO I6 for ALT_SMB_BMC_CPLD2_N.
 > 
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 > ---
->  .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> index d056f6d5ff6e..04aa428f94b7 100644
+> index 04aa428f94b7..0341b61aa1f1 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -1245,35 +1245,35 @@ adc at 37 {
+> @@ -2011,6 +2011,10 @@ pin_gpio_f7 {
+>  		gpios = <ASPEED_GPIO(F, 7) GPIO_ACTIVE_LOW>;
+>  		input;
 >  	};
->  
->  	power-sensor at 40 {
-> -		compatible = "ti,ina233", "richtek,rtq6056";
-> +		compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
+> +	pin_gpio_i6 {
 
-Why are you changing same line multiple times? It does not make any sense.
+Follow DTS coding style.
 
 Best regards,
 Krzysztof
