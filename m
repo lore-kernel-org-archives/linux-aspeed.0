@@ -1,38 +1,28 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 6 Sep 2024 11:34:04 +0200
-Subject: [PATCH v15 00/32] Add i2c-mux and eeprom devices for Meta
- Yosemite 4
-In-Reply-To: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <cc1920e9-8d9d-48b6-b593-e6c70f3f672a@kernel.org>
+Date: Fri, 6 Sep 2024 12:04:15 +0200
+Subject: [PATCH v16 1/3] ARM: dts: aspeed: yosemite4: Revise i2c-mux
+ devices
+In-Reply-To: <20240906092438.1047225-2-Delphine_CC_Chiu@wiwynn.com>
+References: <20240906092438.1047225-1-Delphine_CC_Chiu@wiwynn.com>
+ <20240906092438.1047225-2-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <e89bf774-12e3-4360-919e-f93148ce3456@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 06/09/2024 08:26, Delphine CC Chiu wrote:
-> Changelog:
->   - v15
->     - Add ISL28022 support
->   - v14
->     - Add SQ52205 support
->     - Add GPIO I6 pin
->   - v13
->     - Add RTQ6056-support-on-bus-11 
+On 06/09/2024 11:24, Delphine CC Chiu wrote:
+> From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> 
+> Revise Yosemite 4 devicetree for devices behind i2c-mux
+> - Add gpio and eeprom behind i2c-mux
+> - Remove redundant idle-state setting for i2c-mux
+> - Revise address of max31790 devices after i2c-mux.
+> 
+> Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Stop this nonsense. Your patchset should improve, not grow with multiple
-revisions with new stuff but with more and more errors.
-
-Prepare final work, not v13 with something but without rest, thus v14
-with another missing piece but still incomplete, then v15 with one more
-patch but obviously not complete.
-
-Then BEFORE you post new version fix all the oddities you have here. You
-did not run checkpatch, you did not write proper commit msgs, you did
-not test your DTS.
-
-The quality of this patchset is unacceptably low.
+Missing SoB. On all your patchsets.
 
 Best regards,
 Krzysztof
