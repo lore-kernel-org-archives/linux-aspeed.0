@@ -1,67 +1,33 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri,  6 Sep 2024 14:26:56 +0800
-Subject: [PATCH v15 30/32] ARM: dts: aspeed: yosemite4: add SQ52205 support
+Date: Fri,  6 Sep 2024 14:26:58 +0800
+Subject: [PATCH v15 32/32] ARM: dts: aspeed: yosemite4: add ISL28022 support on 11
 In-Reply-To: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240906062701.37088-31-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240906062701.37088-33-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add SQ52205 in yosemite4 DTS.
-
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index d056f6d5ff6e..04aa428f94b7 100644
+index 0341b61aa1f1..e0cdda701c24 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1245,35 +1245,35 @@ adc at 37 {
- 	};
- 
- 	power-sensor at 40 {
--		compatible = "ti,ina233", "richtek,rtq6056";
-+		compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
- 		reg = <0x40>;
- 		resistor-calibration = /bits/ 16 <0x0400>;
- 		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 41 {
--		compatible = "ti,ina233", "richtek,rtq6056";
-+		compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
- 		reg = <0x41>;
- 		resistor-calibration = /bits/ 16 <0x0400>;
- 		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 42 {
--		compatible = "ti,ina233", "richtek,rtq6056";
-+		compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
- 		reg = <0x42>;
- 		resistor-calibration = /bits/ 16 <0x0400>;
- 		current-lsb= /bits/ 16 <0x0001>;
- 	};
- 
- 	power-sensor at 43 {
--		compatible = "ti,ina233", "richtek,rtq6056";
-+		compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
- 		reg = <0x43>;
- 		resistor-calibration = /bits/ 16 <0x0400>;
- 		current-lsb= /bits/ 16 <0x0001>;
+@@ -1088,7 +1088,7 @@ power-sensor at 41 {
  	};
  
  	power-sensor at 44 {
--		compatible = "ti,ina233", "richtek,rtq6056";
-+		compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
+-		compatible = "ti,ina238";
++		compatible = "ti,ina238", "renesas,isl28022";
+ 		shunt-resistor = <1000>;
  		reg = <0x44>;
- 		resistor-calibration = /bits/ 16 <0x0400>;
- 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
 -- 
 2.25.1
 
