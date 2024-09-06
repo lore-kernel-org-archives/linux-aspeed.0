@@ -1,199 +1,67 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri,  6 Sep 2024 14:26:49 +0800
-Subject: [PATCH v15 23/32] ARM: dts: aspeed: yosemite4: add fan led config
+Date: Fri,  6 Sep 2024 14:26:51 +0800
+Subject: [PATCH v15 25/32] ARM: dts: aspeed: yosemite4: add RTQ6056 support
 In-Reply-To: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240906062701.37088-24-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240906062701.37088-26-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Set fan led config in yosemite4 DTS.
+Add RTQ6056 (spider board 3rd source) support in yosemite4 DTS.
 
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 152 +++++++++++++++++-
- 1 file changed, 150 insertions(+), 2 deletions(-)
+ .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index c940d23c8a4b..2f4e9c5edd5a 100644
+index f73719b3c2f1..03a1e41312e3 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -75,6 +75,154 @@ tpmdev at 0 {
- 			reg = <0>;
- 		};
+@@ -1240,35 +1240,35 @@ adc at 37 {
  	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		fan0_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 4 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan0_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 5 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan1_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 10 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan1_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 11 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan2_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 4 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan2_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 5 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan3_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 10 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan3_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 11 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan4_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 2 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan4_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 3 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan5_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 8 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan5_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 9 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan6_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 2 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan6_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 3 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan7_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 8 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan7_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 9 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan8_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan8_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 1 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan9_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 6 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan9_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 7 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan10_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan10_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 1 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan11_blue {
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 6 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		fan11_amber {
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 7 GPIO_ACTIVE_HIGH>;
-+		};
-+	};
- };
  
- &uart1 {
-@@ -1198,7 +1346,7 @@ eeprom at 52 {
- 				reg = <0x52>;
- 			};
+ 	power-sensor at 40 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x40>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
  
--			gpio at 61 {
-+			led_gpio0: gpio at 61 {
- 				compatible = "nxp,pca9552";
- 				reg = <0x61>;
- 				#address-cells = <1>;
-@@ -1268,7 +1416,7 @@ eeprom at 52 {
- 				reg = <0x52>;
- 			};
+ 	power-sensor at 41 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x41>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
  
--			gpio at 61 {
-+			led_gpio1: gpio at 61 {
- 				compatible = "nxp,pca9552";
- 				reg = <0x61>;
- 				#address-cells = <1>;
+ 	power-sensor at 42 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x42>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 43 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x43>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
+ 	};
+ 
+ 	power-sensor at 44 {
+-		compatible = "ti,ina233";
++		compatible = "ti,ina233", "richtek,rtq6056";
+ 		reg = <0x44>;
+ 		resistor-calibration = /bits/ 16 <0x0a00>;
+ 		current-lsb= /bits/ 16 <0x0001>;
 -- 
 2.25.1
 
