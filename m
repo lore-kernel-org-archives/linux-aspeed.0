@@ -1,9 +1,9 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 6 Sep 2024 09:38:35 +0200
-Subject: [PATCH v15 30/32] ARM: dts: aspeed: yosemite4: add SQ52205 support
-In-Reply-To: <20240906062701.37088-31-Delphine_CC_Chiu@wiwynn.com>
-References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com> <20240906062701.37088-31-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <CAMuHMdV80pF+rVhRWeeZy3tyZCr5y=qRWYm1Z655t3ULZJO=yA@mail.gmail.com>
+Date: Fri, 6 Sep 2024 09:42:01 +0200
+Subject: [PATCH v15 22/32] ARM: dts: aspeed: yosemite4: Revise i2c duty-cycle
+In-Reply-To: <20240906062701.37088-23-Delphine_CC_Chiu@wiwynn.com>
+References: <20240906062701.37088-1-Delphine_CC_Chiu@wiwynn.com> <20240906062701.37088-23-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <CAMuHMdXFC-TMNdJryq4MBh+QQOntxdHYJrfP2kLqxJk7LKgb9Q@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,41 +12,37 @@ Content-Transfer-Encoding: 7bit
 
 Hi Delphine,
 
-Thanks for your patch!
-
-On Fri, Sep 6, 2024 at 8:35?AM Delphine CC Chiu
+On Fri, Sep 6, 2024 at 8:28?AM Delphine CC Chiu
 <Delphine_CC_Chiu@wiwynn.com> wrote:
-> Add SQ52205 in yosemite4 DTS.
-
-Please explain.
-
+> Revise duty cycle SMB11 and SMB16 to high: 40%, low: 60%,
+> to meet 400kHz-i2c clock low time spec (> 1.3 us) from EE request
+>
 > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 
+Thanks for your patch!
 
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> @@ -1245,35 +1245,35 @@ adc at 37 {
->         };
->
->         power-sensor at 40 {
-> -               compatible = "ti,ina233", "richtek,rtq6056";
-> +               compatible = "ti,ina233", "richtek,rtq6056", "silergy,sq52205";
+> @@ -761,6 +761,7 @@ eeprom at 54 {
+>  &i2c10 {
+>         status = "okay";
+>         bus-frequency = <400000>;
+> +       i2c-clk-high-min-percent = <40>;
 
-At first sight, this looks wrong.
-However, these three all seem to be functionally equivalent power monitors.
-Are they software compatible too?
-There are also no DT bindings to guide us, except for the rtq6056 part.
+This property is documented nowhere, except for a not-yet-accepted
+patch submission in 2022. It looks like you've been told before, multiple
+times...
 
->                 reg = <0x40>;
->                 resistor-calibration = /bits/ 16 <0x0400>;
->                 current-lsb= /bits/ 16 <0x0001>;
->         };
+>         i2c-mux at 74 {
+>                 compatible = "nxp,pca9544";
+>                 i2c-mux-idle-disconnect;
 
 Gr{oetje,eeting}s,
 
                         Geert
 
--- 
+
+--
 Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert at linux-m68k.org
 
 In personal conversations with technical people, I call myself a hacker. But
