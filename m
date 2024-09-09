@@ -1,54 +1,90 @@
-From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 9 Sep 2024 01:34:24 +0000
-Subject: [PATCH v16 1/3] ARM: dts: aspeed: yosemite4: Revise i2c-mux
- devices
-In-Reply-To: <e89bf774-12e3-4360-919e-f93148ce3456@kernel.org>
-References: <20240906092438.1047225-1-Delphine_CC_Chiu@wiwynn.com>
- <20240906092438.1047225-2-Delphine_CC_Chiu@wiwynn.com>
- <e89bf774-12e3-4360-919e-f93148ce3456@kernel.org>
-Message-ID: <TYZPR04MB5853405445CB5CC1B7E95A09D6992@TYZPR04MB5853.apcprd04.prod.outlook.com>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Mon,  9 Sep 2024 09:37:41 +0800
+Subject: [PATCH v17 0/3] Add i2c-mux and eeprom devices for Meta Yosemite4
+Message-ID: <20240909013745.3306365-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Changelog:
+  - v17
+    - Add SoB for the patches.
+  - v16
+    - Reorganized the patches.
+    - Add i2c-mux and resolve the dt-validate errors.
+    - Revise Yosemite 4 devicetree for devices behind i2c-mux.
+    - Add mctp config and sensors for NIC after i2c-mux on bus 15.
+    - Add fan led config for BMC to control according the status of fan.
+  - v15
+    - Add ISL28022 support
+  - v14
+    - Add SQ52205 support
+    - Add GPIO I6 pin
+  - v13
+    - Add RTQ6056-support-on-bus-11 
+  - v12
+    - Fix GPIO linename typo and add missing GPIO pin initial state.
+  - v11
+    - Revise all GPIO line name with bottom line
+  - v10
+    - adjust mgm cpld ioexp bus
+    - add GPIOO7 name
+    - remove mctp driver
+  - v9
+    - add XDP710 support
+    - add RTQ6056 support
+    - add MP5990 support
+  - v8
+    - add fan led config
+  - v7
+    - Revise pca9506 i2c address
+  - v6
+    - Revise i2c duty-cycle for meeting 400khz spec
+  - v5
+    - Support medusa board adc sensors
+    - support NIC eeprom
+  - v4
+    - Re-format gpio linename
+    - Revise i2c device node names
+    - Split patches by logic changes
+  - v3
+    - Correct patch for revising gpio name
+  - v2
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
+  - v1
+    - Add gpio and eeprom behind i2c-mux
+    - Remove redundant idle-state setting for i2c-mux
+    - Enable adc 15, wdt2,spi gpio for yosemite4 use
+    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+    - Revise power sensor adm1281 for yosemite4 schematic change
+    - Add gpio pca9506 I/O expander for yosemite4 use
+    - remove space for adm1272 compatible
+    - enable interrupt setting for pca9555
+    - add eeprom for yosemite4 medusa board/BSM use
+    - remove temperature sensor for yosemite4 schematic change
+    - add power sensor for power module reading
+    - Revise adc128d818 adc mode for yosemite4 schematic change
+    - Revise ina233 for yosemite4 schematic change
+    - Remove idle state setting for yosemite4 NIC connection
+    - Initialize bmc gpio state
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
 
+Ricky CX Wu (3):
+  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+  ARM: dts: aspeed: yosemite4: add mctp config and sensors for NIC
+  ARM: dts: aspeed: yosemite4: add fan led config
 
-> -----Original Message-----
-> From: Krzysztof Kozlowski <krzk@kernel.org>
-> Sent: Friday, September 6, 2024 6:04 PM
-> To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
-> patrick at stwcx.xyz; Rob Herring <robh@kernel.org>; Krzysztof Kozlowski
-> <krzk+dt@kernel.org>; Conor Dooley <conor+dt@kernel.org>; Joel Stanley
-> <joel@jms.id.au>; Andrew Jeffery <andrew@codeconstruct.com.au>
-> Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v16 1/3] ARM: dts: aspeed: yosemite4: Revise i2c-mux
-> devices
-> 
->  [External Sender]
-> 
->  [External Sender]
-> 
-> On 06/09/2024 11:24, Delphine CC Chiu wrote:
-> > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> >
-> > Revise Yosemite 4 devicetree for devices behind i2c-mux
-> > - Add gpio and eeprom behind i2c-mux
-> > - Remove redundant idle-state setting for i2c-mux
-> > - Revise address of max31790 devices after i2c-mux.
-> >
-> > Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> 
-> Missing SoB. On all your patchsets.
-> 
-> Best regards,
-> Krzysztof
-Hi Krzysztof,
-Sorry to bother you with the previous version of the patches.
-We are reorganizing the patches and will run dts check before sending
-the patches to kernel org.
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 676 ++++++++++++++++--
+ 1 file changed, 634 insertions(+), 42 deletions(-)
 
-I will update the SoB in the commits in v17 patches. Thanks.
+-- 
+2.25.1
+
