@@ -1,9 +1,7 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon,  9 Sep 2024 18:54:17 +0800
-Subject: [PATCH v18 2/3] ARM: dts: aspeed: yosemite4: add mctp config and sensors for NIC
-In-Reply-To: <20240909105420.441607-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240909105420.441607-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240909105420.441607-3-Delphine_CC_Chiu@wiwynn.com>
+Date: Mon,  9 Sep 2024 18:54:15 +0800
+Subject: [PATCH v18 0/3] Add i2c-mux and eeprom devices for Meta Yosemite4
+Message-ID: <20240909105420.441607-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,118 +10,85 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-- Add MCTP config for NIC and remove the unnecessary MCTP config on bus
-15.
-- Add 2nd source temperature sensors EMC1403 for NIC.
-- Add eeprom for NIC.
+Changelog:
+  - v18
+    - Fix warnings for reg_format reporting by dts checking tool.
+  - v17
+    - Add SoB for the patches.
+  - v16
+    - Reorganized the patches.
+    - Add i2c-mux and resolve the dt-validate errors.
+    - Revise Yosemite 4 devicetree for devices behind i2c-mux.
+    - Add mctp config and sensors for NIC after i2c-mux on bus 15.
+    - Add fan led config for BMC to control according the status of fan.
+  - v15
+    - Add ISL28022 support
+  - v14
+    - Add SQ52205 support
+    - Add GPIO I6 pin
+  - v13
+    - Add RTQ6056-support-on-bus-11 
+  - v12
+    - Fix GPIO linename typo and add missing GPIO pin initial state.
+  - v11
+    - Revise all GPIO line name with bottom line
+  - v10
+    - adjust mgm cpld ioexp bus
+    - add GPIOO7 name
+    - remove mctp driver
+  - v9
+    - add XDP710 support
+    - add RTQ6056 support
+    - add MP5990 support
+  - v8
+    - add fan led config
+  - v7
+    - Revise pca9506 i2c address
+  - v6
+    - Revise i2c duty-cycle for meeting 400khz spec
+  - v5
+    - Support medusa board adc sensors
+    - support NIC eeprom
+  - v4
+    - Re-format gpio linename
+    - Revise i2c device node names
+    - Split patches by logic changes
+  - v3
+    - Correct patch for revising gpio name
+  - v2
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
+  - v1
+    - Add gpio and eeprom behind i2c-mux
+    - Remove redundant idle-state setting for i2c-mux
+    - Enable adc 15, wdt2,spi gpio for yosemite4 use
+    - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+    - Revise power sensor adm1281 for yosemite4 schematic change
+    - Add gpio pca9506 I/O expander for yosemite4 use
+    - remove space for adm1272 compatible
+    - enable interrupt setting for pca9555
+    - add eeprom for yosemite4 medusa board/BSM use
+    - remove temperature sensor for yosemite4 schematic change
+    - add power sensor for power module reading
+    - Revise adc128d818 adc mode for yosemite4 schematic change
+    - Revise ina233 for yosemite4 schematic change
+    - Remove idle state setting for yosemite4 NIC connection
+    - Initialize bmc gpio state
+    - Revise mx31790 fan tach config
+    - Add mctp config for NIC
+    - Support mux to cpld
+    - Revise gpio name
 
-Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 49 ++++++++++++++++++-
- 1 file changed, 48 insertions(+), 1 deletion(-)
+Ricky CX Wu (3):
+  ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+  ARM: dts: aspeed: yosemite4: add mctp config and sensors for NIC
+  ARM: dts: aspeed: yosemite4: add fan led config
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index bed6bf695496..7898c4c94b9f 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -938,7 +938,6 @@ &i2c15 {
- 	#address-cells = <1>;
- 	#size-cells = <0>;
- 	status = "okay";
--	mctp-controller;
- 	multi-master;
- 	bus-frequency = <400000>;
- 
-@@ -958,40 +957,88 @@ imux24: i2c at 0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		imux25: i2c at 1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		imux26: i2c at 2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		imux27: i2c at 3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <3>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			temperature-sensor at 3c {
-+				compatible = "smsc,emc1403";
-+				reg = <0x3c>;
-+			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 	};
- };
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 706 ++++++++++++++++--
+ 1 file changed, 660 insertions(+), 46 deletions(-)
+
 -- 
 2.25.1
 
