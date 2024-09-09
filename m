@@ -1,9 +1,9 @@
 From: Zhang Zekun <zhangzekun11@huawei.com>
-Date: Mon, 9 Sep 2024 20:29:21 +0800
-Subject: [PATCH 4/4] soc: qcom: smp2p: Simplify code with dev_err_probe()
+Date: Mon, 9 Sep 2024 20:29:18 +0800
+Subject: [PATCH 1/4] soc: qcom: rpmh-rsc: Simplify code with dev_err_probe()
 In-Reply-To: <20240909122921.12627-1-zhangzekun11@huawei.com>
 References: <20240909122921.12627-1-zhangzekun11@huawei.com>
-Message-ID: <20240909122921.12627-5-zhangzekun11@huawei.com>
+Message-ID: <20240909122921.12627-2-zhangzekun11@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -16,29 +16,29 @@ This can simplify the code a bit.
 
 Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
 ---
- drivers/soc/qcom/smp2p.c | 9 +++------
+ drivers/soc/qcom/rpmh-rsc.c | 9 +++------
  1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/soc/qcom/smp2p.c b/drivers/soc/qcom/smp2p.c
-index cefcbd61c628..2731449e2201 100644
---- a/drivers/soc/qcom/smp2p.c
-+++ b/drivers/soc/qcom/smp2p.c
-@@ -467,12 +467,9 @@ static int qcom_smp2p_alloc_outbound_item(struct qcom_smp2p *smp2p)
- 	int ret;
- 
- 	ret = qcom_smem_alloc(pid, smem_id, sizeof(*out));
--	if (ret < 0 && ret != -EEXIST) {
+diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+index de86009ecd91..cb82e887b51d 100644
+--- a/drivers/soc/qcom/rpmh-rsc.c
++++ b/drivers/soc/qcom/rpmh-rsc.c
+@@ -1045,12 +1045,9 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
+ 	 * do. To avoid adding this check to our children we'll do it now.
+ 	 */
+ 	ret = cmd_db_ready();
+-	if (ret) {
 -		if (ret != -EPROBE_DEFER)
--			dev_err(smp2p->dev,
--				"unable to allocate local smp2p item\n");
+-			dev_err(&pdev->dev, "Command DB not available (%d)\n",
+-									ret);
 -		return ret;
 -	}
-+	if (ret < 0 && ret != -EEXIST)
-+		return dev_err_probe(smp2p->dev, ret,
-+				     "unable to allocate local smp2p item\n");
++	if (ret)
++		return dev_err_probe(&pdev->dev, ret,
++				     "Command DB not available\n");
  
- 	out = qcom_smem_get(pid, smem_id, NULL);
- 	if (IS_ERR(out)) {
+ 	drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
+ 	if (!drv)
 -- 
 2.17.1
 
