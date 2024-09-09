@@ -1,151 +1,138 @@
-From: Joel Stanley <joel@jms.id.au>
-Date: Mon, 9 Sep 2024 20:41:17 +0930
-Subject: [GIT PULL] ARM: aspeed: soc changes for 6.12
-Message-ID: <CACPK8XeGDUrbJ-OaxqQBR=aVVYyrKGnvT1ZKXO0vPHpsjQ_i9g@mail.gmail.com>
+From: Rob Herring (Arm) <robh@kernel.org>
+Date: Mon, 09 Sep 2024 10:45:17 -0500
+Subject: [PATCH v18 0/3] Add i2c-mux and eeprom devices for Meta
+ Yosemite4
+In-Reply-To: <20240909105420.441607-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240909105420.441607-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <172589661042.199175.14634437656639420015.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Arnd,
 
-Here are some aspeed changes for v6.12. They are late because I forgot the pin
-for my yubikey, so I couldn't sign a tag. All sorted now. I've missed
-a few merge
-windows so I sent this along just in case you had time to put it in this window.
+On Mon, 09 Sep 2024 18:54:15 +0800, Delphine CC Chiu wrote:
+> From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> 
+> Changelog:
+>   - v18
+>     - Fix warnings for reg_format reporting by dts checking tool.
+>   - v17
+>     - Add SoB for the patches.
+>   - v16
+>     - Reorganized the patches.
+>     - Add i2c-mux and resolve the dt-validate errors.
+>     - Revise Yosemite 4 devicetree for devices behind i2c-mux.
+>     - Add mctp config and sensors for NIC after i2c-mux on bus 15.
+>     - Add fan led config for BMC to control according the status of fan.
+>   - v15
+>     - Add ISL28022 support
+>   - v14
+>     - Add SQ52205 support
+>     - Add GPIO I6 pin
+>   - v13
+>     - Add RTQ6056-support-on-bus-11
+>   - v12
+>     - Fix GPIO linename typo and add missing GPIO pin initial state.
+>   - v11
+>     - Revise all GPIO line name with bottom line
+>   - v10
+>     - adjust mgm cpld ioexp bus
+>     - add GPIOO7 name
+>     - remove mctp driver
+>   - v9
+>     - add XDP710 support
+>     - add RTQ6056 support
+>     - add MP5990 support
+>   - v8
+>     - add fan led config
+>   - v7
+>     - Revise pca9506 i2c address
+>   - v6
+>     - Revise i2c duty-cycle for meeting 400khz spec
+>   - v5
+>     - Support medusa board adc sensors
+>     - support NIC eeprom
+>   - v4
+>     - Re-format gpio linename
+>     - Revise i2c device node names
+>     - Split patches by logic changes
+>   - v3
+>     - Correct patch for revising gpio name
+>   - v2
+>     - Revise mx31790 fan tach config
+>     - Add mctp config for NIC
+>     - Support mux to cpld
+>     - Revise gpio name
+>   - v1
+>     - Add gpio and eeprom behind i2c-mux
+>     - Remove redundant idle-state setting for i2c-mux
+>     - Enable adc 15, wdt2,spi gpio for yosemite4 use
+>     - Revise quad mode to dual mode to avoid WP pin influnece the SPI
+>     - Revise power sensor adm1281 for yosemite4 schematic change
+>     - Add gpio pca9506 I/O expander for yosemite4 use
+>     - remove space for adm1272 compatible
+>     - enable interrupt setting for pca9555
+>     - add eeprom for yosemite4 medusa board/BSM use
+>     - remove temperature sensor for yosemite4 schematic change
+>     - add power sensor for power module reading
+>     - Revise adc128d818 adc mode for yosemite4 schematic change
+>     - Revise ina233 for yosemite4 schematic change
+>     - Remove idle state setting for yosemite4 NIC connection
+>     - Initialize bmc gpio state
+>     - Revise mx31790 fan tach config
+>     - Add mctp config for NIC
+>     - Support mux to cpld
+>     - Revise gpio name
+> 
+> Ricky CX Wu (3):
+>   ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+>   ARM: dts: aspeed: yosemite4: add mctp config and sensors for NIC
+>   ARM: dts: aspeed: yosemite4: add fan led config
+> 
+>  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 706 ++++++++++++++++--
+>  1 file changed, 660 insertions(+), 46 deletions(-)
+> 
+> --
+> 2.25.1
+> 
+> 
+> 
 
-The following changes since commit 8400291e289ee6b2bf9779ff1c83a291501f017b:
 
-  Linux 6.11-rc1 (2024-07-28 14:19:55 -0700)
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
 
-are available in the Git repository at:
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc.git
-tags/aspeed-6.12-devicetree
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
 
-for you to fetch changes up to b4c322c2783aedd652183bcec6d545ad45eba6d9:
+  pip3 install dtschema --upgrade
 
-  ARM: dts: aspeed: catalina: Update io expander line names
-(2024-08-27 13:00:49 +0930)
 
-----------------------------------------------------------------
-ASPEED device tree updates for 6.12
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-facebook-yosemite4.dtb' for 20240909105420.441607-1-Delphine_CC_Chiu at wiwynn.com:
 
- - New machines
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 20: '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$', 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 2f: '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$', 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: /ahb/apb/bus at 1e78a000/i2c at 780/i2c-mux at 74/i2c at 0/gpio at 61: failed to match any schema with compatible: ['nxp,pca9552']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 20: '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$', 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 2f: '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$', 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: /ahb/apb/bus at 1e78a000/i2c at 780/i2c-mux at 74/i2c at 1/gpio at 61: failed to match any schema with compatible: ['nxp,pca9552']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 0/temperature-sensor at 3c: failed to match any schema with compatible: ['smsc,emc1403']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 1/temperature-sensor at 3c: failed to match any schema with compatible: ['smsc,emc1403']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 2/temperature-sensor at 3c: failed to match any schema with compatible: ['smsc,emc1403']
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 3/temperature-sensor at 3c: failed to match any schema with compatible: ['smsc,emc1403']
 
-  * IBM P11 AST2600 BMC machines, named Blueridge and Fuji
-  * Meta's Catalina AST2600 BMC
 
- - Updates to harma, minerva, mtmitchell, mtjade, system1, SPC621D8HM3
 
- - Various changes to the dtsi to keep the YAML checker happy
 
-----------------------------------------------------------------
-Andrew Jeffery (7):
-      ARM: dts: aspeed: Fix coprocessor interrupt controller node name
-      ARM: dts: aspeed: Specify correct generic compatible for CVIC
-      ARM: dts: aspeed: Specify required properties for sram node
-      ARM: dts: aspeed: Remove undocumented XDMA nodes
-      ARM: dts: aspeed: Clean up AST2500 pinctrl properties
-      ARM: dts: aspeed-g6: Use generic 'ethernet' for ftgmac100 nodes
-      ARM: dts: aspeed-g6: Drop cells properties from ethernet nodes
 
-Chanh Nguyen (5):
-      ARM: dts: aspeed: mtjade, mtmitchell: Add OCP temperature sensors
-      ARM: dts: aspeed: mtmitchell: Add I2C temperature sensor alias ports
-      ARM: dts: aspeed: mtmitchell: Add Riser cards
-      ARM: dts: aspeed: mtmitchell: Enable i2c10 and i2c15
-      ARM: dts: aspeed: mtmitchell: Add LEDs
-
-Eddie James (5):
-      dt-bindings: arm: aspeed: add IBM P11 BMC boards
-      ARM: dts: aspeed: Add IBM P11 FSI devices
-      ARM: dts: aspeed: Add IBM P11 Blueridge BMC system
-      ARM: dts: aspeed: Add IBM P11 Blueridge 4U BMC system
-      ARM: dts: aspeed: Add IBM P11 Fuji BMC system
-
-Ninad Palsule (1):
-      ARM: dts: aspeed: System1: Updates to BMC board
-
-Peter Yin (11):
-      ARM: dts: aspeed: harma: Revise hsc chip
-      ARM: dts: aspeed: harma: Add VR devices
-      ARM: dts: aspeed: harma: Add sgpio name
-      ARM: dts: aspeed: harma: Add ina238
-      ARM: dts: aspeed: harma: Add power monitor xdp710
-      ARM: dts: aspeed: harma: Remove multi-host property
-      ARM: dts: aspeed: harma: Add fru device
-      ARM: dts: aspeed: harma: Add temperature device
-      ARM: dts: aspeed: harma: Enable mctp controller
-      ARM: dts: aspeed: harma: Fix spi-gpio dtb_check warnings
-      ARM: dts: aspeed: harma: Remove pca9546
-
-Potin Lai (4):
-      dt-bindings: arm: aspeed: add Meta Catalina board
-      ARM: dts: aspeed: catalina: add Meta Catalina BMC
-      ARM: dts: aspeed: catalina: Add pdb cpld io expander
-      ARM: dts: aspeed: catalina: Update io expander line names
-
-Rafa? Mi?ecki (1):
-      ARM: dts: aspeed: convert ASRock SPC621D8HM3 NVMEM content to
-layout syntax
-
-Yang Chen (18):
-      ARM: dts: aspeed: minerva: change the address of tmp75
-      ARM: dts: aspeed: minerva: change aliases for uart
-      ARM: dts: aspeed: minerva: add eeprom on i2c bus
-      ARM: dts: aspeed: minerva: change RTC reference
-      ARM: dts: aspeed: minerva: enable mdio3
-      ARM: dts: aspeed: minerva: remove unused bus and device
-      ARM: dts: aspeed: minerva: Define the LEDs node name
-      ARM: dts: aspeed: minerva: Add adc sensors for fan board
-      ARM: dts: aspeed: minerva: add linename of two pins
-      ARM: dts: aspeed: minerva: enable ehci0 for USB
-      ARM: dts: aspeed: minerva: add tmp75 sensor
-      ARM: dts: aspeed: minerva: add power monitor xdp710
-      ARM: dts: aspeed: minerva: revise sgpio line name
-      ARM: dts: aspeed: minerva: Switch the i2c bus number
-      ARM: dts: aspeed: minerva: remove unused power device
-      ARM: dts: aspeed: minerva: add ltc4287 device
-      ARM: dts: aspeed: minerva: Add spi-gpio
-      ARM: dts: aspeed: minerva: add host0-ready pin
-
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    3 +
- arch/arm/boot/dts/aspeed/Makefile                  |    3 +
- .../boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dts   |   20 +-
- .../dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts    |  154 +
- .../aspeed/aspeed-bmc-arm-stardragon4800-rep2.dts  |    4 -
- .../dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dts   |   12 +-
- .../boot/dts/aspeed/aspeed-bmc-asrock-x570d4u.dts  |    4 -
- .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 1110 ++++++
- .../boot/dts/aspeed/aspeed-bmc-facebook-harma.dts  |  177 +-
- .../dts/aspeed/aspeed-bmc-facebook-minerva.dts     |  518 ++-
- .../dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dts     |   21 +
- .../boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts   | 1686 +++++++++
- .../arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dts |    5 -
- .../arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts |    5 -
- arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts   | 3876 ++++++++++++++++++++
- .../arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts |    5 -
- .../arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts |    6 +-
- .../boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts |    4 -
- .../boot/dts/aspeed/aspeed-bmc-inspur-on5263m5.dts |    4 -
- .../boot/dts/aspeed/aspeed-bmc-intel-s2600wf.dts   |    4 -
- .../arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts |    4 -
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts |    4 -
- .../arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts |    4 -
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts  |    4 -
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dts |    5 -
- .../boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts |    9 -
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts  |    2 -
- .../dts/aspeed/aspeed-bmc-supermicro-x11spi.dts    |    4 -
- arch/arm/boot/dts/aspeed/aspeed-g4.dtsi            |    7 +-
- arch/arm/boot/dts/aspeed/aspeed-g5.dtsi            |   18 +-
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |   29 +-
- arch/arm/boot/dts/aspeed/ibm-power11-quad.dtsi     | 1539 ++++++++
- 32 files changed, 8939 insertions(+), 311 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dts
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts
- create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-quad.dtsi
