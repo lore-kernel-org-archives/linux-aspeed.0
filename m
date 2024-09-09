@@ -1,235 +1,38 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon,  9 Sep 2024 09:37:44 +0800
-Subject: [PATCH v17 3/3] ARM: dts: aspeed: yosemite4: add fan led config
-In-Reply-To: <20240909013745.3306365-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240909013745.3306365-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240909013745.3306365-4-Delphine_CC_Chiu@wiwynn.com>
+From: Peter Yin <peteryin.openbmc@gmail.com>
+Date: Mon,  9 Sep 2024 16:04:57 +0800
+Subject: [PATCH v3 0/2] Revise Meta(Facebook) Harma BMC(AST2600)
+Message-ID: <20240909080459.3457853-1-peteryin.openbmc@gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+Summary:
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
 
-Set fan led config in yosemite4 DTS so that BMC could set different
-color LED according to the status of the Fan.
+Base on: https://lore.kernel.org/all/799dbd97b09693fba6f837e73d4ef3421d604a8a.camel at codeconstruct.com.au/
 
-Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 177 +++++++++++++++++-
- 1 file changed, 175 insertions(+), 2 deletions(-)
+v2->v3
+  - Revise sgpio line name.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 9ddeccf650cd..6d64d87bf144 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -4,6 +4,7 @@
- /dts-v1/;
- #include "aspeed-g6.dtsi"
- #include <dt-bindings/gpio/aspeed-gpio.h>
-+#include <dt-bindings/leds/common.h>
- #include <dt-bindings/leds/leds-pca955x.h>
- #include <dt-bindings/i2c/i2c.h>
- 
-@@ -57,6 +58,178 @@ iio-hwmon {
- 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
- 				<&adc1 0>, <&adc1 1>;
- 	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		led-fan0-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 4 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan0-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 5 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan1-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 10 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan1-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 11 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan2-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 4 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan2-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 5 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan3-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 10 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan3-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 11 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan4-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 2 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan4-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 3 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan5-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 8 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan5-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 9 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan6-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 2 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan6-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 3 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan7-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 8 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan7-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 9 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan8-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan8-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 1 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan9-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio0 6 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan9-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio0 7 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan10-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 0 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan10-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 1 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan11-blue {
-+			color = <LED_COLOR_ID_BLUE>;
-+			retain-state-shutdown;
-+			default-state = "on";
-+			gpios = <&led_gpio1 6 GPIO_ACTIVE_HIGH>;
-+		};
-+
-+		led-fan11-amber {
-+			color = <LED_COLOR_ID_AMBER>;
-+			retain-state-shutdown;
-+			default-state = "off";
-+			gpios = <&led_gpio1 7 GPIO_ACTIVE_HIGH>;
-+		};
-+	};
- };
- 
- &uart1 {
-@@ -822,7 +995,7 @@ eeprom at 52 {
- 				reg = <0x52>;
- 			};
- 
--			gpio at 61 {
-+			led_gpio1: gpio at 61 {
- 				compatible = "nxp,pca9552";
- 				reg = <0x61>;
- 				#address-cells = <1>;
-@@ -874,7 +1047,7 @@ eeprom at 52 {
- 				reg = <0x52>;
- 			};
- 
--			gpio at 61 {
-+			led_gpio0: gpio at 61 {
- 				compatible = "nxp,pca9552";
- 				reg = <0x61>;
- 				#address-cells = <1>;
+v1->v2
+  - Fixed the mail and author.
+  - Revise presence-cmm to sgpio.
+
+v1
+  - Patch 0001 - add rtc device
+  - Patch 0002 - update sgpio line name
+
+
+Peter Yin (2):
+  ARM: dts: aspeed: Harma: add rtc device
+  ARM: dts: aspeed: Harma: revise sgpio line name
+
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 45 +++++++++----------
+ 1 file changed, 21 insertions(+), 24 deletions(-)
+
 -- 
 2.25.1
 
