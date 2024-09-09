@@ -1,44 +1,28 @@
 From: Zhang Zekun <zhangzekun11@huawei.com>
-Date: Mon, 9 Sep 2024 20:29:18 +0800
-Subject: [PATCH 1/4] soc: qcom: rpmh-rsc: Simplify code with dev_err_probe()
-In-Reply-To: <20240909122921.12627-1-zhangzekun11@huawei.com>
-References: <20240909122921.12627-1-zhangzekun11@huawei.com>
-Message-ID: <20240909122921.12627-2-zhangzekun11@huawei.com>
+Date: Mon, 9 Sep 2024 20:29:17 +0800
+Subject: [PATCH 0/4] Simplify code with dev_err_probe()
+Message-ID: <20240909122921.12627-1-zhangzekun11@huawei.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use dev_err_probe() directly in the driver probe phase, and we
-don't need to judge if the error code is not equal to -EPROBE_DEFER.
-This can simplify the code a bit.
+Use dev_err_probe() to simplify code, and we can avoid judging
+if the error code is not equal to -EPROBE_DEFER
 
-Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
----
- drivers/soc/qcom/rpmh-rsc.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+Zhang Zekun (4):
+  soc: qcom: rpmh-rsc: Simplify code with dev_err_probe()
+  soc: aspeed: Simplify code with dev_err_probe()
+  soc: qcom: smem: Simplify code with dev_err_probe()
+  soc: qcom: smp2p: Simplify code with dev_err_probe()
 
-diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index de86009ecd91..cb82e887b51d 100644
---- a/drivers/soc/qcom/rpmh-rsc.c
-+++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -1045,12 +1045,9 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
- 	 * do. To avoid adding this check to our children we'll do it now.
- 	 */
- 	ret = cmd_db_ready();
--	if (ret) {
--		if (ret != -EPROBE_DEFER)
--			dev_err(&pdev->dev, "Command DB not available (%d)\n",
--									ret);
--		return ret;
--	}
-+	if (ret)
-+		return dev_err_probe(&pdev->dev, ret,
-+				     "Command DB not available\n");
- 
- 	drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
- 	if (!drv)
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 10 ++++------
+ drivers/soc/qcom/rpmh-rsc.c           |  9 +++------
+ drivers/soc/qcom/smem.c               |  8 +++-----
+ drivers/soc/qcom/smp2p.c              |  9 +++------
+ 4 files changed, 13 insertions(+), 23 deletions(-)
+
 -- 
 2.17.1
 
