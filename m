@@ -1,7 +1,7 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 10 Sep 2024 10:22:36 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Enable adc15
-Message-ID: <20240910022236.1564291-1-Delphine_CC_Chiu@wiwynn.com>
+Date: Tue, 10 Sep 2024 11:03:23 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
+Message-ID: <20240910030324.2256698-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,40 +10,44 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Enable Yosemite4 adc15 config for monitoring P3V_BAT_SCALED.
+Enable spi-gpio setting for spi flash in yosemite4.
+Add tpm device under spi.
 
 Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 98477792aa00..2d46f7d40ed1 100644
+index 98477792aa00..fdf9040d655b 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -32,7 +32,7 @@ iio-hwmon {
- 		compatible = "iio-hwmon";
- 		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+@@ -34,6 +34,24 @@ iio-hwmon {
  				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
--				<&adc1 0>, <&adc1 1>;
-+				<&adc1 0>, <&adc1 1>, <&adc1 7>;
+ 				<&adc1 0>, <&adc1 1>;
  	};
++
++	spi {
++		compatible = "spi-gpio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		sck-gpios = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
++		mosi-gpios = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
++		miso-gpios = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
++		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
++		num-chipselects = <1>;
++
++		tpm at 0 {
++			reg = <0>;
++			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++			spi-max-frequency = <33000000>;
++		};
++	};
  };
  
-@@ -612,10 +612,10 @@ &pinctrl_adc4_default &pinctrl_adc5_default
- 
- &adc1 {
- 	status = "okay";
--	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default>;
-+	pinctrl-0 = <&pinctrl_adc8_default &pinctrl_adc9_default
-+			&pinctrl_adc15_default>;
- };
- 
--
- &ehci0 {
- 	status = "okay";
- };
+ &uart1 {
 -- 
 2.25.1
 
