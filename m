@@ -1,7 +1,7 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 10 Sep 2024 16:41:09 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Change eeprom for Medusa Board
-Message-ID: <20240910084109.3585923-1-Delphine_CC_Chiu@wiwynn.com>
+Date: Tue, 10 Sep 2024 16:57:00 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Remove temperature sensors on Medusa Board
+Message-ID: <20240910085701.3595248-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -10,27 +10,36 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Change eeprom on Medusa Board to AT24C128 according to hardware change.
+Remove two temperature sensors on Medusa Board according to hardware
+change.
 
 Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts  | 10 ----------
+ 1 file changed, 10 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 98477792aa00..398ffca58135 100644
+index 98477792aa00..986aa707de64 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -342,7 +342,7 @@ temperature-sensor at 4b {
+@@ -331,16 +331,6 @@ temperature-sensor at 49 {
+ 		reg = <0x49>;
  	};
  
+-	temperature-sensor at 4a {
+-		compatible = "ti,tmp75";
+-		reg = <0x4a>;
+-	};
+-
+-	temperature-sensor at 4b {
+-		compatible = "ti,tmp75";
+-		reg = <0x4b>;
+-	};
+-
  	eeprom at 54 {
--		compatible = "atmel,24c256";
-+		compatible = "atmel,24c128";
+ 		compatible = "atmel,24c256";
  		reg = <0x54>;
- 	};
- };
 -- 
 2.25.1
 
