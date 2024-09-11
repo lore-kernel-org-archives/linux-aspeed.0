@@ -1,106 +1,68 @@
-From: Rob Herring (Arm) <robh@kernel.org>
-Date: Tue, 10 Sep 2024 16:59:29 -0500
-Subject: [PATCH] ARM: dts: aspeed: Fix at24 EEPROM node names
-Message-ID: <20240910215929.823913-1-robh@kernel.org>
+From: Tommy Huang <tommy_huang@aspeedtech.com>
+Date: Wed, 11 Sep 2024 17:39:51 +0800
+Subject: [PATCH v3] i2c: aspeed: Update the stop sw state when the bus recovery occurs
+Message-ID: <20240911093951.1674824-1-tommy_huang@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-at24.yaml defines the node name for at24 EEPROMs as 'eeprom'.
+When the i2c bus recovery occurs, driver will send i2c stop command
+in the scl low condition. In this case the sw state will still keep
+original situation. Under multi-master usage, i2c bus recovery will
+be called when i2c transfer timeout occurs. Update the stop command
+calling with aspeed_i2c_do_stop function to update master_state.
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+Fixes: f327c686d3ba ("i2c: aspeed: added driver for Aspeed I2C")
+
+Cc: <stable@vger.kernel.org> # v4.13+
+Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts  | 8 ++++----
- arch/arm/boot/dts/aspeed/aspeed-bmc-vegman-rx20.dts | 6 +++---
- arch/arm/boot/dts/aspeed/aspeed-bmc-vegman.dtsi     | 2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/i2c/busses/i2c-aspeed.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts
-index 983853eedaef..fd361cf073c2 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts
-@@ -381,7 +381,7 @@ SMB_IPMB_3V3AUX_SCL: i2c at 5 {
- 			#size-cells = <0>;
- 			reg = <5>;
+diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+index ce8c4846b7fa..2a03a221e2dd 100644
+--- a/drivers/i2c/busses/i2c-aspeed.c
++++ b/drivers/i2c/busses/i2c-aspeed.c
+@@ -170,6 +170,13 @@ struct aspeed_i2c_bus {
  
--			U190_fru at 51 {
-+			eeprom at 51 {
- 				compatible = "atmel,24c128";
- 				reg = <0x51>;
- 				pagesize = <32>;
-@@ -460,7 +460,7 @@ &i2c3 {
- 	status = "okay";
+ static int aspeed_i2c_reset(struct aspeed_i2c_bus *bus);
  
- 	/* MB FRU (U173) @ 0xA2 */
--	mb_fru: mb_fru at 51 {
-+	mb_fru: eeprom at 51 {
- 		compatible = "atmel,24c128";
- 		reg = <0x51>;
- 		pagesize = <32>;
-@@ -472,7 +472,7 @@ FP_U1_tmp75 at 4a {
- 		reg = <0x4a>;
- 	};
++/* precondition: bus.lock has been acquired. */
++static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
++{
++	bus->master_state = ASPEED_I2C_MASTER_STOP;
++	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
++}
++
+ static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
+ {
+ 	unsigned long time_left, flags;
+@@ -187,7 +194,7 @@ static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
+ 			command);
  
--	FP_U4_fru at 52 {
-+	eeprom at 52 {
- 		compatible = "atmel,24c02";
- 		reg = <0x52>;
- 		pagesize = <16>;
-@@ -593,7 +593,7 @@ &i2c14 {
- 	status = "okay";
+ 		reinit_completion(&bus->cmd_complete);
+-		writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
++		aspeed_i2c_do_stop(bus);
+ 		spin_unlock_irqrestore(&bus->lock, flags);
  
- 	/* SCM FRU (U19) @ 0xA2 */
--	scm_fru: scm_fru at 51 {
-+	scm_fru: eeprom at 51 {
- 		compatible = "atmel,24c128";
- 		reg = <0x51>;
- 		pagesize = <32>;
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman-rx20.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman-rx20.dts
-index b8f0b08018a3..98f3e0437704 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman-rx20.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman-rx20.dts
-@@ -154,7 +154,7 @@ i2c at 7 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <7>;
--					at24 at 50 {
-+					eeprom at 50 {
- 						compatible = "atmel,24c64";
- 						reg = <0x50>;
- 						pagesize = <32>;
-@@ -196,7 +196,7 @@ i2c at 7 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <7>;
--					at24 at 50 {
-+					eeprom at 50 {
- 						compatible = "atmel,24c64";
- 						reg = <0x50>;
- 						pagesize = <32>;
-@@ -205,7 +205,7 @@ at24 at 50 {
- 					};
- 				};
- 			};
--			at24 at 50 {
-+			eeprom at 50 {
- 				compatible = "atmel,24c64";
- 				reg = <0x50>;
- 				pagesize = <32>;
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman.dtsi b/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman.dtsi
-index 1a5b25b2ea29..16815eede710 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-vegman.dtsi
-@@ -291,7 +291,7 @@ &i2c11 {
- 	/* SMB_BMC_MGMT_LVC3 */
- 	status = "okay";
+ 		time_left = wait_for_completion_timeout(
+@@ -390,13 +397,6 @@ static void aspeed_i2c_do_start(struct aspeed_i2c_bus *bus)
+ 	writel(command, bus->base + ASPEED_I2C_CMD_REG);
+ }
  
--	at24 at 50 {
-+	eeprom at 50 {
- 		compatible = "atmel,24c64";
- 		reg = <0x50>;
- 		pagesize = <32>;
+-/* precondition: bus.lock has been acquired. */
+-static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
+-{
+-	bus->master_state = ASPEED_I2C_MASTER_STOP;
+-	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+-}
+-
+ /* precondition: bus.lock has been acquired. */
+ static void aspeed_i2c_next_msg_or_stop(struct aspeed_i2c_bus *bus)
+ {
 -- 
-2.45.2
+2.25.1
 
