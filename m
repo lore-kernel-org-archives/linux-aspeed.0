@@ -1,68 +1,85 @@
-From: Tommy Huang <tommy_huang@aspeedtech.com>
-Date: Wed, 11 Sep 2024 17:39:51 +0800
-Subject: [PATCH v3] i2c: aspeed: Update the stop sw state when the bus recovery occurs
-Message-ID: <20240911093951.1674824-1-tommy_huang@aspeedtech.com>
+From: Andi Shyti <andi.shyti@kernel.org>
+Date: Wed, 11 Sep 2024 12:57:39 +0200
+Subject: [PATCH v3] i2c: aspeed: Update the stop sw state when the bus
+ recovery occurs
+In-Reply-To: <20240911093951.1674824-1-tommy_huang@aspeedtech.com>
+References: <20240911093951.1674824-1-tommy_huang@aspeedtech.com>
+Message-ID: <yoqhvha64bir33hcq6tlcehkusxu2b45w3ut4pzmvrot6bl63a@y3xn2xdespcu>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When the i2c bus recovery occurs, driver will send i2c stop command
-in the scl low condition. In this case the sw state will still keep
-original situation. Under multi-master usage, i2c bus recovery will
-be called when i2c transfer timeout occurs. Update the stop command
-calling with aspeed_i2c_do_stop function to update master_state.
+Hi,
 
-Fixes: f327c686d3ba ("i2c: aspeed: added driver for Aspeed I2C")
+On Wed, Sep 11, 2024 at 05:39:51PM GMT, Tommy Huang wrote:
+> When the i2c bus recovery occurs, driver will send i2c stop command
+> in the scl low condition. In this case the sw state will still keep
+> original situation. Under multi-master usage, i2c bus recovery will
+> be called when i2c transfer timeout occurs. Update the stop command
+> calling with aspeed_i2c_do_stop function to update master_state.
+> 
+> Fixes: f327c686d3ba ("i2c: aspeed: added driver for Aspeed I2C")
+> 
 
-Cc: <stable@vger.kernel.org> # v4.13+
-Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+the blank line in between tags (Fixes and the rest) needs to be
+removed.
 
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index ce8c4846b7fa..2a03a221e2dd 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -170,6 +170,13 @@ struct aspeed_i2c_bus {
- 
- static int aspeed_i2c_reset(struct aspeed_i2c_bus *bus);
- 
-+/* precondition: bus.lock has been acquired. */
-+static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
-+{
-+	bus->master_state = ASPEED_I2C_MASTER_STOP;
-+	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
-+}
-+
- static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
- {
- 	unsigned long time_left, flags;
-@@ -187,7 +194,7 @@ static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
- 			command);
- 
- 		reinit_completion(&bus->cmd_complete);
--		writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
-+		aspeed_i2c_do_stop(bus);
- 		spin_unlock_irqrestore(&bus->lock, flags);
- 
- 		time_left = wait_for_completion_timeout(
-@@ -390,13 +397,6 @@ static void aspeed_i2c_do_start(struct aspeed_i2c_bus *bus)
- 	writel(command, bus->base + ASPEED_I2C_CMD_REG);
- }
- 
--/* precondition: bus.lock has been acquired. */
--static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
--{
--	bus->master_state = ASPEED_I2C_MASTER_STOP;
--	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
--}
--
- /* precondition: bus.lock has been acquired. */
- static void aspeed_i2c_next_msg_or_stop(struct aspeed_i2c_bus *bus)
- {
--- 
-2.25.1
+No worries, I will take care of it before merging.
 
+Meantime, Brendan, Benjamin, Joel, any comment on this change?
+
+Thanks,
+Andi
+
+> Cc: <stable@vger.kernel.org> # v4.13+
+> Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
+> ---
+>  drivers/i2c/busses/i2c-aspeed.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index ce8c4846b7fa..2a03a221e2dd 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -170,6 +170,13 @@ struct aspeed_i2c_bus {
+>  
+>  static int aspeed_i2c_reset(struct aspeed_i2c_bus *bus);
+>  
+> +/* precondition: bus.lock has been acquired. */
+> +static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
+> +{
+> +	bus->master_state = ASPEED_I2C_MASTER_STOP;
+> +	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+> +}
+> +
+>  static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
+>  {
+>  	unsigned long time_left, flags;
+> @@ -187,7 +194,7 @@ static int aspeed_i2c_recover_bus(struct aspeed_i2c_bus *bus)
+>  			command);
+>  
+>  		reinit_completion(&bus->cmd_complete);
+> -		writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+> +		aspeed_i2c_do_stop(bus);
+>  		spin_unlock_irqrestore(&bus->lock, flags);
+>  
+>  		time_left = wait_for_completion_timeout(
+> @@ -390,13 +397,6 @@ static void aspeed_i2c_do_start(struct aspeed_i2c_bus *bus)
+>  	writel(command, bus->base + ASPEED_I2C_CMD_REG);
+>  }
+>  
+> -/* precondition: bus.lock has been acquired. */
+> -static void aspeed_i2c_do_stop(struct aspeed_i2c_bus *bus)
+> -{
+> -	bus->master_state = ASPEED_I2C_MASTER_STOP;
+> -	writel(ASPEED_I2CD_M_STOP_CMD, bus->base + ASPEED_I2C_CMD_REG);
+> -}
+> -
+>  /* precondition: bus.lock has been acquired. */
+>  static void aspeed_i2c_next_msg_or_stop(struct aspeed_i2c_bus *bus)
+>  {
+> -- 
+> 2.25.1
+> 
