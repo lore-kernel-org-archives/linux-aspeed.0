@@ -1,25 +1,26 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 12 Sep 2024 10:43:32 +0930
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Remove temperature
- sensors on Medusa Board
-In-Reply-To: <20240910085701.3595248-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240910085701.3595248-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <7c5a2a91fad3c52733beb5cd192ad4c90d48f82c.camel@codeconstruct.com.au>
+Date: Thu, 12 Sep 2024 11:12:26 +0930
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Change eeprom for
+ Medusa Board
+In-Reply-To: <20240910084109.3585923-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240910084109.3585923-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <172610534620.690179.300123501570049846.b4-ty@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-09-10 at 16:57 +0800, Delphine CC Chiu wrote:
-> From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+On Tue, 10 Sep 2024 16:41:09 +0800, Delphine CC Chiu wrote:
+> Change eeprom on Medusa Board to AT24C128 according to hardware change.
 > 
-> Remove two temperature sensors on Medusa Board according to hardware
-> change.
 > 
-> Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 
 Thanks, I've applied this to be picked up through the BMC tree.
 
-Andrew
+[1/1] ARM: dts: aspeed: yosemite4: Change eeprom for Medusa Board
+      commit: 41217159f292ae69e5ba255b260c77dc644f0bdc
+
+--
+Andrew Jeffery <andrew@codeconstruct.com.au>
+
