@@ -1,33 +1,46 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 12 Sep 2024 11:40:48 +0930
-Subject: [PATCH v1 2/2] ARM: dts: aspeed: yosemite4: Add gpio pca9506
- for CPLD IOE
-In-Reply-To: <20240910054751.2943217-3-Delphine_CC_Chiu@wiwynn.com>
-References: <20240910054751.2943217-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240910054751.2943217-3-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <ccef1d90b9a7eb343e99afa2c6cd6ea7407b0541.camel@codeconstruct.com.au>
+Date: Thu, 12 Sep 2024 11:46:47 +0930
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Revise quad mode to
+ dual mode
+In-Reply-To: <20240910051350.2580971-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240910051350.2580971-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <215e32abc38011a5e265d91340292234ca157ec8.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 2024-09-10 at 13:47 +0800, Delphine CC Chiu wrote:
+On Tue, 2024-09-10 at 13:13 +0800, Delphine CC Chiu wrote:
 > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 > 
-> We use CPLD to emulate gpio pca9506 I/O expander on each server
-> boards.
-> Therefore, add pca9506 to probe driver for the CPLD I/O expander.
+> Revise quad mode to dual mode to avoid WP pin influnece the SPI.
+> 
+> Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> ---
+>  .../arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 8 +++++---
+>  1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> index 98477792aa00..3073ade6d77c 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+> @@ -105,15 +105,17 @@ flash at 0 {
+>  		status = "okay";
+>  		m25p,fast-read;
+>  		label = "bmc";
+> -		spi-rx-bus-width = <4>;
+> +		spi-tx-bus-width = <2>;
+> +		spi-rx-bus-width = <2>;
+>  		spi-max-frequency = <50000000>;
+> -#include "openbmc-flash-layout-64.dtsi"
+> +#include "openbmc-flash-layout-128.dtsi"
 
-I think it might be best if you add your own compatible to the list in
-the gpio-pca95xx binding just in case there are some behavioural quirks
-of your CPLD implementation? Not sure if this should be
-"facebook,pca9506" or "wywinn,pca9506", but assuming facebook, from
-there you can specify
+This is a bit more drastic than changing the bus mode.
 
-    compatible = "facebook,pca9506", "nxp,pca9506";
-
-This allows you to add the quirks to the driver as required in the
-future through the more-specific compatible.
+Can you please split that out to a separate change with some
+justification in the commit message? For instance, was the chip changed
+too? Or were you using the 64M layout or a 128M chip the whole time?
 
 Andrew
