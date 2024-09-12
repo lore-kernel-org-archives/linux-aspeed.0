@@ -1,31 +1,20 @@
-From: Andi Shyti <andi.shyti@kernel.org>
-Date: Wed, 11 Sep 2024 17:57:04 +0200
-Subject: [PATCH v3] i2c: aspeed: Update the stop sw state when the bus
- recovery occurs
-In-Reply-To: <20240911093951.1674824-1-tommy_huang@aspeedtech.com>
-References: <20240911093951.1674824-1-tommy_huang@aspeedtech.com>
-Message-ID: <ljwz3zv7sakhqoeuceewmnk34igo2srfhtmbhhxqel3tgvqvou@wpvqldtoq6st>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Thu, 12 Sep 2024 10:16:23 +0930
+Subject: [PATCH] ARM: dts: aspeed: Fix at24 EEPROM node names
+In-Reply-To: <20240910215929.823913-1-robh@kernel.org>
+References: <20240910215929.823913-1-robh@kernel.org>
+Message-ID: <082cea8c7ca1aa15001b7c48b1c3ef1f209cc40a.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Tommy,
-
-On Wed, Sep 11, 2024 at 05:39:51PM GMT, Tommy Huang wrote:
-> When the i2c bus recovery occurs, driver will send i2c stop command
-> in the scl low condition. In this case the sw state will still keep
-> original situation. Under multi-master usage, i2c bus recovery will
-> be called when i2c transfer timeout occurs. Update the stop command
-> calling with aspeed_i2c_do_stop function to update master_state.
+On Tue, 2024-09-10 at 16:59 -0500, Rob Herring (Arm) wrote:
+> at24.yaml defines the node name for at24 EEPROMs as 'eeprom'.
 > 
-> Fixes: f327c686d3ba ("i2c: aspeed: added driver for Aspeed I2C")
-> 
-> Cc: <stable@vger.kernel.org> # v4.13+
-> Signed-off-by: Tommy Huang <tommy_huang@aspeedtech.com>
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 
-merged to i2c/i2c-host-fixes.
+Thanks, I've applied this to be picked up through the BMC tree.
 
-Thanks,
-Andi
+Andrew
