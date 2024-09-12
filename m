@@ -1,64 +1,121 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 12 Sep 2024 14:04:37 +0930
-Subject: [PATCH 1/2] ARM: dts: aspeed: mtmitchell: Add I2C FAN
- controllers
-In-Reply-To: <20240905063521.319416-2-chanh@os.amperecomputing.com>
-References: <20240905063521.319416-1-chanh@os.amperecomputing.com>
-	 <20240905063521.319416-2-chanh@os.amperecomputing.com>
-Message-ID: <24ab22b5403adb379f942b3dadb8f49b54f28bb0.camel@codeconstruct.com.au>
+Date: Thu, 12 Sep 2024 17:21:27 +0930
+Subject: [PATCH v2 2/4] gpio: aspeed: Remove the name for bank array
+In-Reply-To: <20240830034047.2251482-3-billy_tsai@aspeedtech.com>
+References: <20240830034047.2251482-1-billy_tsai@aspeedtech.com>
+	 <20240830034047.2251482-3-billy_tsai@aspeedtech.com>
+Message-ID: <7e2643f7586a7ed5d3cc90630d78fb3abd813a54.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2024-09-05 at 06:35 +0000, Chanh Nguyen wrote:
-> Add the MAX31790 nodes as i2c fan controllers.
+On Fri, 2024-08-30 at 11:40 +0800, Billy Tsai wrote:
+> The bank array name is only used to determine if the GPIO offset is valid,
+> and this condition can be replaced by checking if the offset exceeds the
+> ngpio property.
 > 
-> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  .../boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts   | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+>  drivers/gpio/gpio-aspeed.c | 17 ++++-------------
+>  1 file changed, 4 insertions(+), 13 deletions(-)
 > 
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-> index 0295f5adcfbc..da181f9ae820 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts
-> @@ -684,6 +684,16 @@ bmc-ocp0-en-hog {
->  			line-name = "bmc-ocp0-en-n";
->  		};
->  	};
-> +
-> +	fan-controller0 at 20 {
-> +		compatible = "maxim,max31790";
-> +		reg = <0x20>;
-> +	};
-> +
-> +	fan-controller1 at 2f {
-> +		compatible = "maxim,max31790";
-> +		reg = <0x2f>;
-> +	};
+> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+> index 04c03402db6d..24f50a0ea4ab 100644
+> --- a/drivers/gpio/gpio-aspeed.c
+> +++ b/drivers/gpio/gpio-aspeed.c
+> @@ -77,7 +77,6 @@ struct aspeed_gpio_bank {
+>  	uint16_t	debounce_regs;
+>  	uint16_t	tolerance_regs;
+>  	uint16_t	cmdsrc_regs;
+> -	const char	names[4][3];
 >  };
+>  
+>  /*
+> @@ -104,7 +103,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x0040,
+>  		.tolerance_regs = 0x001c,
+>  		.cmdsrc_regs = 0x0060,
+> -		.names = { "A", "B", "C", "D" },
+>  	},
+>  	{
+>  		.val_regs = 0x0020,
+> @@ -113,7 +111,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x0048,
+>  		.tolerance_regs = 0x003c,
+>  		.cmdsrc_regs = 0x0068,
+> -		.names = { "E", "F", "G", "H" },
+>  	},
+>  	{
+>  		.val_regs = 0x0070,
+> @@ -122,7 +119,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x00b0,
+>  		.tolerance_regs = 0x00ac,
+>  		.cmdsrc_regs = 0x0090,
+> -		.names = { "I", "J", "K", "L" },
+>  	},
+>  	{
+>  		.val_regs = 0x0078,
+> @@ -131,7 +127,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x0100,
+>  		.tolerance_regs = 0x00fc,
+>  		.cmdsrc_regs = 0x00e0,
+> -		.names = { "M", "N", "O", "P" },
+>  	},
+>  	{
+>  		.val_regs = 0x0080,
+> @@ -140,7 +135,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x0130,
+>  		.tolerance_regs = 0x012c,
+>  		.cmdsrc_regs = 0x0110,
+> -		.names = { "Q", "R", "S", "T" },
+>  	},
+>  	{
+>  		.val_regs = 0x0088,
+> @@ -149,7 +143,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x0160,
+>  		.tolerance_regs = 0x015c,
+>  		.cmdsrc_regs = 0x0140,
+> -		.names = { "U", "V", "W", "X" },
+>  	},
+>  	{
+>  		.val_regs = 0x01E0,
+> @@ -158,7 +151,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x0190,
+>  		.tolerance_regs = 0x018c,
+>  		.cmdsrc_regs = 0x0170,
+> -		.names = { "Y", "Z", "AA", "AB" },
+>  	},
+>  	{
+>  		.val_regs = 0x01e8,
+> @@ -167,7 +159,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+>  		.debounce_regs = 0x01c0,
+>  		.tolerance_regs = 0x01bc,
+>  		.cmdsrc_regs = 0x01a0,
+> -		.names = { "AC", "", "", "" },
+>  	},
+>  };
+>  
+> @@ -280,11 +271,11 @@ static inline const struct aspeed_bank_props *find_bank_props(
+>  static inline bool have_gpio(struct aspeed_gpio *gpio, unsigned int offset)
+>  {
+>  	const struct aspeed_bank_props *props = find_bank_props(gpio, offset);
+> -	const struct aspeed_gpio_bank *bank = to_bank(offset);
+> -	unsigned int group = GPIO_OFFSET(offset) / 8;
+>  
+> -	return bank->names[group][0] != '\0' &&
+> -		(!props || ((props->input | props->output) & GPIO_BIT(offset)));
+> +	if (offset > gpio->chip.ngpio)
 
-This generates some warnings based on v6.11-rc1:
-
-Executing: ./scripts/checkpatch.pl --strict -g HEAD                                                                                                            
-WARNING: DT compatible string "maxim,max31790" appears un-documented -- check ./Documentation/devicetree/bindings/                                             
-#25: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts:689:                                                                                      
-+               compatible = "maxim,max31790";                                                                                                                 
-                                                                                                                                                               
-WARNING: DT compatible string "maxim,max31790" appears un-documented -- check ./Documentation/devicetree/bindings/                                             
-#30: FILE: arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dts:694:                                                                                      
-+               compatible = "maxim,max31790";                                                                                                                 
-                                                                                                                                                               
-total: 0 errors, 2 warnings, 0 checks, 16 lines checked
-
-However, Guenter's applied the binding here:
-
-https://lore.kernel.org/all/3382f952-daae-43ff-bb85-fa4820ecbc5f at roeck-us.net/
-
-`make CHECK_DTBS=y aspeed/aspeed-bmc-ampere-mtmitchell.dtb` didn't turn
-up anything interesting after merging in hwmon-next, so I've applied
-these to be integrated via the BMC tree.
+Should this be `>=`? ngpio is a count.
 
 Andrew
+
+> +		return false;
+> +
+> +	return (!props || ((props->input | props->output) & GPIO_BIT(offset)));
+>  }
+>  
+>  static inline bool have_input(struct aspeed_gpio *gpio, unsigned int offset)
+
