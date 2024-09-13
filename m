@@ -1,74 +1,46 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 13 Sep 2024 15:43:20 +0800
-Subject: [PATCH v3 1/6] dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
-In-Reply-To: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
-References: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240913074325.239390-2-billy_tsai@aspeedtech.com>
+Date: Fri, 13 Sep 2024 15:43:19 +0800
+Subject: [PATCH v3 0/6] Add Aspeed G7 gpio support 
+Message-ID: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The AST2700 is the 7th generation SoC from Aspeed, featuring two GPIO
-controllers: one with 12 GPIO pins and another with 216 GPIO pins.
+The Aspeed 7th generation SoC features two GPIO controllers: one with 12
+GPIO pins and another with 216 GPIO pins. The main difference from the
+previous generation is that the control logic has been updated to support
+per-pin control, allowing each pin to have its own 32-bit register for
+configuring value, direction, interrupt type, and more.
+This patch serial also add low-level operations (llops) to abstract the
+register access for GPIO registers and the coprocessor request/release in
+gpio-aspeed.c making it easier to extend the driver to support different
+hardware register layouts.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- .../bindings/gpio/aspeed,ast2400-gpio.yaml    | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+Change since v2:
+- Correct minItems for gpio-line names
+- Remove the example for ast2700, because it???s the same as the AST2600
+- Fix the sparse warning which is reported by the test robot
+- Remove the version and use the match data to replace it.
+- Add another two patches one for deferred probe one for flush write.
 
-diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-index cf11aa7ec8c7..b9afd07a9d24 100644
---- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-+++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-@@ -15,6 +15,7 @@ properties:
-       - aspeed,ast2400-gpio
-       - aspeed,ast2500-gpio
-       - aspeed,ast2600-gpio
-+      - aspeed,ast2700-gpio
- 
-   reg:
-     maxItems: 1
-@@ -25,7 +26,7 @@ properties:
- 
-   gpio-controller: true
-   gpio-line-names:
--    minItems: 36
-+    minItems: 12
-     maxItems: 232
- 
-   gpio-ranges: true
-@@ -42,7 +43,7 @@ properties:
-     const: 2
- 
-   ngpios:
--    minimum: 36
-+    minimum: 12
-     maximum: 232
- 
- required:
-@@ -93,6 +94,20 @@ allOf:
-           enum: [ 36, 208 ]
-       required:
-         - ngpios
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: aspeed,ast2700-gpio
-+    then:
-+      properties:
-+        gpio-line-names:
-+          minItems: 12
-+          maxItems: 216
-+        ngpios:
-+          enum: [ 12, 216 ]
-+      required:
-+        - ngpios
- 
- additionalProperties: false
- 
+Changes since v1:
+- Merge the gpio-aspeed-g7.c into the gpio-aspeed.c.
+- Create the llops in gpio-aspeed.c for flexibility.
+
+Billy Tsai (6):
+  dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
+  gpio: aspeed: Remove the name for bank array
+  gpio: aspeed: Create llops to handle hardware access
+  gpio: aspeed: Support G7 Aspeed gpio controller
+  gpio: aspeed: Change the macro to support deferred probe
+  gpio: aspeed: Add the flush write to ensure the write complete.
+
+ .../bindings/gpio/aspeed,ast2400-gpio.yaml    |  19 +-
+ drivers/gpio/gpio-aspeed.c                    | 498 +++++++++++-------
+ 2 files changed, 313 insertions(+), 204 deletions(-)
+
 -- 
 2.25.1
 
