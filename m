@@ -1,42 +1,28 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 13 Sep 2024 15:43:25 +0800
-Subject: [PATCH v3 6/6] gpio: aspeed: Add the flush write to ensure the write complete.
-In-Reply-To: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Fri, 13 Sep 2024 19:22:43 +0100
+Subject: [PATCH v3 1/6] dt-bindings: gpio: aspeed,ast2400-gpio: Support
+ ast2700
+In-Reply-To: <20240913074325.239390-2-billy_tsai@aspeedtech.com>
 References: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240913074325.239390-7-billy_tsai@aspeedtech.com>
+ <20240913074325.239390-2-billy_tsai@aspeedtech.com>
+Message-ID: <20240913-swipe-crummiest-0d449f2e3314@spud>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Performing a dummy read ensures that the register write operation is fully
-completed, mitigating any potential bus delays that could otherwise impact
-the frequency of bitbang usage. E.g., if the JTAG application uses GPIO to
-control the JTAG pins (TCK, TMS, TDI, TDO, and TRST), and the application
-sets the TCK clock to 1 MHz, the GPIO???s high/low transitions will rely on
-a delay function to ensure the clock frequency does not exceed 1 MHz.
-However, this can lead to rapid toggling of the GPIO because the write
-operation is POSTed and does not wait for a bus acknowledgment.
+On Fri, Sep 13, 2024 at 03:43:20PM +0800, Billy Tsai wrote:
+> The AST2700 is the 7th generation SoC from Aspeed, featuring two GPIO
+> controllers: one with 12 GPIO pins and another with 216 GPIO pins.
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/gpio/gpio-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index d322c03481a8..d1e61ee48da2 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -406,6 +406,8 @@ static void __aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
- 	gpio->dcache[GPIO_BANK(offset)] = reg;
- 
- 	gpio->config->llops->reg_bits_set(gpio, offset, reg_val, val);
-+	// flush write
-+	gpio->config->llops->reg_bits_read(gpio, offset, reg_val);
- }
- 
- static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
--- 
-2.25.1
-
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240913/425f986c/attachment.sig>
