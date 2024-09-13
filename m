@@ -1,48 +1,42 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 13 Sep 2024 15:43:24 +0800
-Subject: [PATCH v3 5/6] gpio: aspeed: Change the macro to support deferred probe
+Date: Fri, 13 Sep 2024 15:43:25 +0800
+Subject: [PATCH v3 6/6] gpio: aspeed: Add the flush write to ensure the write complete.
 In-Reply-To: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
 References: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240913074325.239390-6-billy_tsai@aspeedtech.com>
+Message-ID: <20240913074325.239390-7-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use module_platform_driver() to replace module_platform_driver_probe().
-The former utilizes platform_driver_register(), which allows the driver to
-defer probing when it doesn't acquire the necessary resources due to probe
-order. In contrast, the latter uses __platform_driver_probe(), which
-includes the comment "Note that this is incompatible with deferred
-probing." Since our GPIO driver requires access to the clock resource, the
-former is more suitable.
+Performing a dummy read ensures that the register write operation is fully
+completed, mitigating any potential bus delays that could otherwise impact
+the frequency of bitbang usage. E.g., if the JTAG application uses GPIO to
+control the JTAG pins (TCK, TMS, TDI, TDO, and TRST), and the application
+sets the TCK clock to 1 MHz, the GPIO???s high/low transitions will rely on
+a delay function to ensure the clock frequency does not exceed 1 MHz.
+However, this can lead to rapid toggling of the GPIO because the write
+operation is POSTed and does not wait for a bus acknowledgment.
 
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/gpio/gpio-aspeed.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/gpio/gpio-aspeed.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 13495442e1aa..d322c03481a8 100644
+index d322c03481a8..d1e61ee48da2 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -1359,13 +1359,14 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
+@@ -406,6 +406,8 @@ static void __aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
+ 	gpio->dcache[GPIO_BANK(offset)] = reg;
+ 
+ 	gpio->config->llops->reg_bits_set(gpio, offset, reg_val, val);
++	// flush write
++	gpio->config->llops->reg_bits_read(gpio, offset, reg_val);
  }
  
- static struct platform_driver aspeed_gpio_driver = {
-+	.probe = aspeed_gpio_probe,
- 	.driver = {
- 		.name = KBUILD_MODNAME,
- 		.of_match_table = aspeed_gpio_of_table,
- 	},
- };
- 
--module_platform_driver_probe(aspeed_gpio_driver, aspeed_gpio_probe);
-+module_platform_driver(aspeed_gpio_driver);
- 
- MODULE_DESCRIPTION("Aspeed GPIO Driver");
- MODULE_LICENSE("GPL");
+ static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
 -- 
 2.25.1
 
