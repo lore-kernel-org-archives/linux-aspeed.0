@@ -1,88 +1,74 @@
-From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 13 Sep 2024 03:26:47 +0000
-Subject: [PATCH v1 2/2] ARM: dts: aspeed: yosemite4: Add gpio pca9506 for
- CPLD IOE
-In-Reply-To: <TYZPR04MB5853B6611AF9AA5C3E5AE778D6652@TYZPR04MB5853.apcprd04.prod.outlook.com>
-References: <20240910054751.2943217-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240910054751.2943217-3-Delphine_CC_Chiu@wiwynn.com>
- <ccef1d90b9a7eb343e99afa2c6cd6ea7407b0541.camel@codeconstruct.com.au>
- <TYZPR04MB5853B6611AF9AA5C3E5AE778D6652@TYZPR04MB5853.apcprd04.prod.outlook.com>
-Message-ID: <TYZPR04MB5853062387962EB4CA08A366D6652@TYZPR04MB5853.apcprd04.prod.outlook.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Fri, 13 Sep 2024 15:43:20 +0800
+Subject: [PATCH v3 1/6] dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
+In-Reply-To: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
+References: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
+Message-ID: <20240913074325.239390-2-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+The AST2700 is the 7th generation SoC from Aspeed, featuring two GPIO
+controllers: one with 12 GPIO pins and another with 216 GPIO pins.
 
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ .../bindings/gpio/aspeed,ast2400-gpio.yaml    | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
-> -----Original Message-----
-> From: Delphine_CC_Chiu/WYHQ/Wiwynn
-> Sent: Friday, September 13, 2024 10:08 AM
-> To: Andrew Jeffery <andrew@codeconstruct.com.au>;
-> Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
-> patrick at stwcx.xyz; Rob Herring <robh@kernel.org>; Krzysztof Kozlowski
-> <krzk+dt@kernel.org>; Conor Dooley <conor+dt@kernel.org>; Joel Stanley
-> <joel@jms.id.au>
-> Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: RE: [PATCH v1 2/2] ARM: dts: aspeed: yosemite4: Add gpio pca9506
-> for CPLD IOE
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: Andrew Jeffery <andrew@codeconstruct.com.au>
-> > Sent: Thursday, September 12, 2024 10:11 AM
-> > To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
-> > patrick at stwcx.xyz; Rob Herring <robh@kernel.org>; Krzysztof Kozlowski
-> > <krzk+dt@kernel.org>; Conor Dooley <conor+dt@kernel.org>; Joel Stanley
-> > <joel@jms.id.au>
-> > Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>;
-> > devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> > linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> > Subject: Re: [PATCH v1 2/2] ARM: dts: aspeed: yosemite4: Add gpio
-> > pca9506 for CPLD IOE
-> >
-> >  [External Sender]
-> >
-> >  [External Sender]
-> >
-> > On Tue, 2024-09-10 at 13:47 +0800, Delphine CC Chiu wrote:
-> > > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> > >
-> > > We use CPLD to emulate gpio pca9506 I/O expander on each server
-> > > boards.
-> > > Therefore, add pca9506 to probe driver for the CPLD I/O expander.
-> >
-> > I think it might be best if you add your own compatible to the list in
-> > the gpio-pca95xx binding just in case there are some behavioural
-> > quirks of your CPLD implementation? Not sure if this should be
-> > "facebook,pca9506" or "wywinn,pca9506", but assuming facebook, from
-> > there you can specify
-> >
-> >     compatible = "facebook,pca9506", "nxp,pca9506";
-> >
-> > This allows you to add the quirks to the driver as required in the
-> > future through the more-specific compatible.
-> >
-> > Andrew
-> 
-> Hi Andrew,
-> 
-> Thanks for the review.
-> I'll add the "facebook,pca9506" in gpio-pca95xx binding in next version of
-> patches.
+diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+index cf11aa7ec8c7..b9afd07a9d24 100644
+--- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
++++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+@@ -15,6 +15,7 @@ properties:
+       - aspeed,ast2400-gpio
+       - aspeed,ast2500-gpio
+       - aspeed,ast2600-gpio
++      - aspeed,ast2700-gpio
+ 
+   reg:
+     maxItems: 1
+@@ -25,7 +26,7 @@ properties:
+ 
+   gpio-controller: true
+   gpio-line-names:
+-    minItems: 36
++    minItems: 12
+     maxItems: 232
+ 
+   gpio-ranges: true
+@@ -42,7 +43,7 @@ properties:
+     const: 2
+ 
+   ngpios:
+-    minimum: 36
++    minimum: 12
+     maximum: 232
+ 
+ required:
+@@ -93,6 +94,20 @@ allOf:
+           enum: [ 36, 208 ]
+       required:
+         - ngpios
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: aspeed,ast2700-gpio
++    then:
++      properties:
++        gpio-line-names:
++          minItems: 12
++          maxItems: 216
++        ngpios:
++          enum: [ 12, 216 ]
++      required:
++        - ngpios
+ 
+ additionalProperties: false
+ 
+-- 
+2.25.1
 
-Hi Andrew,
-
-I tried to add "facebook,pca9506" in the compatible list of gpio-pca95xx binding
-and add compatible = "facebook,pca9506", "nxp,pca9506" but got following failed
-messages:
-    gpio at 21: compatible: 'oneOf' conditional failed, one must be fixed:
-        ['facebook,pca9506', 'nxp,pca9506'] is too long
-        'diodes,pi4ioe5v6534q' was expected
-        'nxp,pcal6534' was expected
-        from schema $id: http://devicetree.org/schemas/gpio/gpio-pca95xx.yaml#
-Would like to ask do you have any suggestions? Thanks.
