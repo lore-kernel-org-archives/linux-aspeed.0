@@ -1,28 +1,43 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Fri, 13 Sep 2024 19:22:43 +0100
-Subject: [PATCH v3 1/6] dt-bindings: gpio: aspeed,ast2400-gpio: Support
- ast2700
-In-Reply-To: <20240913074325.239390-2-billy_tsai@aspeedtech.com>
-References: <20240913074325.239390-1-billy_tsai@aspeedtech.com>
- <20240913074325.239390-2-billy_tsai@aspeedtech.com>
-Message-ID: <20240913-swipe-crummiest-0d449f2e3314@spud>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 14 Sep 2024 16:44:02 +0800
+Subject: [PATCH v3 5/6] gpio: aspeed: Change the macro to support
+ deferred probe
+In-Reply-To: <20240913074325.239390-6-billy_tsai@aspeedtech.com>
+References: <20240913074325.239390-6-billy_tsai@aspeedtech.com>
+Message-ID: <202409141654.wHuMQLLU-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 13, 2024 at 03:43:20PM +0800, Billy Tsai wrote:
-> The AST2700 is the 7th generation SoC from Aspeed, featuring two GPIO
-> controllers: one with 12 GPIO pins and another with 216 GPIO pins.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+Hi Billy,
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240913/425f986c/attachment.sig>
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on brgl/gpio/for-next]
+[also build test WARNING on linus/master v6.11-rc7 next-20240913]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Billy-Tsai/dt-bindings-gpio-aspeed-ast2400-gpio-Support-ast2700/20240913-154911
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/brgl/linux.git gpio/for-next
+patch link:    https://lore.kernel.org/r/20240913074325.239390-6-billy_tsai%40aspeedtech.com
+patch subject: [PATCH v3 5/6] gpio: aspeed: Change the macro to support deferred probe
+config: arc-randconfig-001-20240914 (https://download.01.org/0day-ci/archive/20240914/202409141654.wHuMQLLU-lkp at intel.com/config)
+compiler: arc-elf-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20240914/202409141654.wHuMQLLU-lkp at intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202409141654.wHuMQLLU-lkp at intel.com/
+
+All warnings (new ones prefixed by >>, old ones prefixed by <<):
+
+>> WARNING: modpost: vmlinux: section mismatch in reference: aspeed_gpio_driver+0x0 (section: .data) -> aspeed_gpio_probe (section: .init.text)
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
