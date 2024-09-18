@@ -1,35 +1,27 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 18 Sep 2024 09:53:09 -0700
-Subject: [PATCH v2 1/3] dt-bindings: trivial-devices: support pmbus
- compatible string
-In-Reply-To: <e94f03a9-92e1-47d5-aa36-fc51216436c9@kernel.org>
+Date: Wed, 18 Sep 2024 10:00:08 -0700
+Subject: [PATCH v2 2/3] dt-bindings: trivial-devices: support MPS MP5023
+In-Reply-To: <20240918095438.1345886-3-Delphine_CC_Chiu@wiwynn.com>
 References: <20240918095438.1345886-1-Delphine_CC_Chiu@wiwynn.com>
- <20240918095438.1345886-2-Delphine_CC_Chiu@wiwynn.com>
- <e94f03a9-92e1-47d5-aa36-fc51216436c9@kernel.org>
-Message-ID: <f76798ea-6edd-4888-8057-c09aaed88f25@roeck-us.net>
+ <20240918095438.1345886-3-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <bf5258b8-a5a1-4cf3-9bd0-1fa44696c3b0@roeck-us.net>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/18/24 06:03, Krzysztof Kozlowski wrote:
-> On 18/09/2024 11:54, Delphine CC Chiu wrote:
->> From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
->>
->> Add pmbus compatibale string for the Generic PMbus devices that could
->> be monitor by pmbus driver.
->>
+On 9/18/24 02:54, Delphine CC Chiu wrote:
+> From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 > 
-> You need to explain more, provide background why we would like to accept
-> a generic compatible. And why a specific compatible cannot or should not
-> be used...
+> Add support for hot-swap controller MPS MP5023.
 > 
-> In general this is a no, you cannot have such compatibles for real hardware.
-> 
+> Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> --
 
-Agreed; affected chips should be listed explicitly in drivers/hwmon/pmbus/pmbus.c.
+The hardware monitoring mailing list was not copied, so I assume that
+the expectation is that it will be applied through some other tree.
 
-Guenter
-
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
