@@ -1,64 +1,59 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 19 Sep 2024 07:15:28 +0000
-Subject: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
-In-Reply-To: <195a8bfe-e4d7-4140-9635-b86a6ce3c663@kernel.org>
-References: <20240916091039.3584505-1-ryan_chen@aspeedtech.com>
- <20240916091039.3584505-3-ryan_chen@aspeedtech.com>
- <b9bf19af-0c3c-4622-9124-a66d9df649b2@kernel.org>
- <OS8PR06MB754148AD165538D3D6B6C3DDF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <195a8bfe-e4d7-4140-9635-b86a6ce3c663@kernel.org>
-Message-ID: <OS8PR06MB7541F08D97EC0CF83F8B36ACF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Thu, 19 Sep 2024 17:43:33 +0800
+Subject: [PATCH v4 0/6] Add Aspeed G7 gpio support 
+Message-ID: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Subject: Re: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
-> 
-> On 19/09/2024 08:01, Ryan Chen wrote:
-> >> Subject: Re: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
-> >>
-> >> On 16/09/2024 11:10, Ryan Chen wrote:
-> >>> Add reset, clock dt bindings for AST2700.
-> >>>
-> >>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> >>> ---
-> >>>  .../dt-bindings/clock/aspeed,ast2700-clk.h    | 163
-> >> ++++++++++++++++++
-> >>>  .../dt-bindings/reset/aspeed,ast2700-reset.h  | 124 +++++++++++++
-> >>>  2 files changed, 287 insertions(+)
-> >>
-> >> This is supposed to be part of the commit adding these bindings. You
-> >> got this comment already, didn't you?
-> >
-> > Sorry, I may mis-understood your point in previous.
-> > I think you are ask, yaml and dt-binding header to be the same patch, right?
-> 
-> It is one patch adding the binding for the device and headers.
-Thanks.
-> 
-> >
-> >>
-> >>>  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
-> >>>  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
-> >>>
-> >>> diff --git a/include/dt-bindings/clock/aspeed,ast2700-clk.h
-> >>> b/include/dt-bindings/clock/aspeed,ast2700-clk.h
-> >>> new file mode 100644
-> >>> index 000000000000..63021af3caf5
-> >>> --- /dev/null
-> >>> +++ b/include/dt-bindings/clock/aspeed,ast2700-clk.h
-> >>
-> >> Use compatible as filename.
-> > Modify from aspeed,ast2700-clk.h to aspeed, clk-ast2700.h, is it ok?
-> > How about the aspeed,ast2700-reset.h file name is ok ?
-> 
-> No. For both use the same filename, so the full compatible. FULL.
+The Aspeed 7th generation SoC features two GPIO controllers: one with 12
+GPIO pins and another with 216 GPIO pins. The main difference from the
+previous generation is that the control logic has been updated to support
+per-pin control, allowing each pin to have its own 32-bit register for
+configuring value, direction, interrupt type, and more.
+This patch serial also add low-level operations (llops) to abstract the
+register access for GPIO registers and the coprocessor request/release in
+gpio-aspeed.c making it easier to extend the driver to support different
+hardware register layouts.
 
-Do you mean remove aspeed,ast2700-reset.h?
-And move reset information into "aspeed, clk-ast2700.h"
-> 
-> Best regards,
-> Krzysztof
+Change since v3:
+- Add `privilege_ctrl` and `privilege_init` callback
+- Use `bool aspeed_gpio_support_copro()` api to replace the
+`cmd_source_supoort` flag
+- Add the `dcache_require` flag and move the dcache usage into the
+reg_bit_set callback
+- `reg_bits_set` -> `reg_bit_set` and `reg_bits_read` -> `reg_bits_get`
+- `bool copro = 0` -> `bool copro = false`
+- `if (!gpio->config->llops->reg_bit_set || 
+!gpio->config->llops->reg_bits_get) return -EINVAL;`
+- Correct the access of reg_irq_status
+- Remove __init attribute to fix the compiler warning
+
+Change since v2:
+- Correct minItems for gpio-line names
+- Remove the example for ast2700, because it?s the same as the AST2600
+- Fix the sparse warning which is reported by the test robot
+- Remove the version and use the match data to replace it.
+- Add another two patches one for deferred probe one for flush write.
+
+Changes since v1:
+- Merge the gpio-aspeed-g7.c into the gpio-aspeed.c.
+- Create the llops in gpio-aspeed.c for flexibility.
+
+Billy Tsai (6):
+  dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
+  gpio: aspeed: Remove the name for bank array
+  gpio: aspeed: Create llops to handle hardware access
+  gpio: aspeed: Support G7 Aspeed gpio controller
+  gpio: aspeed: Change the macro to support deferred probe
+  gpio: aspeed: Add the flush write to ensure the write complete.
+
+ .../bindings/gpio/aspeed,ast2400-gpio.yaml    |  19 +-
+ drivers/gpio/gpio-aspeed.c                    | 565 +++++++++++-------
+ 2 files changed, 358 insertions(+), 226 deletions(-)
+
+-- 
+2.25.1
 
