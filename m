@@ -1,45 +1,84 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Thu, 19 Sep 2024 12:30:44 +0200
-Subject: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
-In-Reply-To: <OS8PR06MB7541F08D97EC0CF83F8B36ACF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Date: Thu, 19 Sep 2024 12:32:28 +0200
+Subject: [PATCH v3 1/4] dt-bindings: mfd: aspeed: support for AST2700
+In-Reply-To: <OS8PR06MB7541FDB6A74119A160B1A57CF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
 References: <20240916091039.3584505-1-ryan_chen@aspeedtech.com>
- <20240916091039.3584505-3-ryan_chen@aspeedtech.com>
- <b9bf19af-0c3c-4622-9124-a66d9df649b2@kernel.org>
- <OS8PR06MB754148AD165538D3D6B6C3DDF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <195a8bfe-e4d7-4140-9635-b86a6ce3c663@kernel.org>
- <OS8PR06MB7541F08D97EC0CF83F8B36ACF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Message-ID: <d076275a-ff71-43e2-8a30-969a7d062acd@kernel.org>
+ <20240916091039.3584505-2-ryan_chen@aspeedtech.com>
+ <9b356379-907c-4112-8e24-1810cfa40ef6@kernel.org>
+ <OS8PR06MB75416C23247B7AC64260C0AFF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <f79a48e6-e0ff-453f-98c1-1c5acbe6467d@kernel.org>
+ <OS8PR06MB7541FDB6A74119A160B1A57CF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <3185f620-28be-49b8-85f4-7ff8dd5ffce0@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19/09/2024 09:15, Ryan Chen wrote:
->>>>
->>>>>  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
->>>>>  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
+On 19/09/2024 09:13, Ryan Chen wrote:
+>> Subject: Re: [PATCH v3 1/4] dt-bindings: mfd: aspeed: support for AST2700
+>>
+>> On 19/09/2024 08:05, Ryan Chen wrote:
+>>>>> diff --git
+>>>>> a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+>>>>> b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+>>>>> index 86ee69c0f45b..127a357051cd 100644
+>>>>> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+>>>>> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+>>>>> @@ -9,6 +9,8 @@ title: Aspeed System Control Unit
+>>>>>  description:
+>>>>>    The Aspeed System Control Unit manages the global behaviour of
+>>>>> the
+>>>> SoC,
+>>>>>    configuring elements such as clocks, pinmux, and reset.
+>>>>> +  In AST2700 SOC which has two soc connection, each soc have its
+>>>>> + own scu  register control, ast2700-scu0 for soc0, ast2700-scu1 for
+>> soc1.
 >>>>>
->>>>> diff --git a/include/dt-bindings/clock/aspeed,ast2700-clk.h
->>>>> b/include/dt-bindings/clock/aspeed,ast2700-clk.h
->>>>> new file mode 100644
->>>>> index 000000000000..63021af3caf5
->>>>> --- /dev/null
->>>>> +++ b/include/dt-bindings/clock/aspeed,ast2700-clk.h
+>>>>>  maintainers:
+>>>>>    - Joel Stanley <joel@jms.id.au>
+>>>>> @@ -21,6 +23,8 @@ properties:
+>>>>>            - aspeed,ast2400-scu
+>>>>>            - aspeed,ast2500-scu
+>>>>>            - aspeed,ast2600-scu
+>>>>> +          - aspeed,ast2700-scu0
+>>>>> +          - aspeed,ast2700-scu1
+>>>>>        - const: syscon
+>>>>>        - const: simple-mfd
+>>>>>
+>>>>> @@ -30,10 +34,12 @@ properties:
+>>>>>    ranges: true
+>>>>>
+>>>>>    '#address-cells':
+>>>>> -    const: 1
+>>>>> +    minimum: 1
+>>>>> +    maximum: 2
+>>>>>
+>>>>>    '#size-cells':
+>>>>> -    const: 1
+>>>>> +    minimum: 1
+>>>>> +    maximum: 2
 >>>>
->>>> Use compatible as filename.
->>> Modify from aspeed,ast2700-clk.h to aspeed, clk-ast2700.h, is it ok?
->>> How about the aspeed,ast2700-reset.h file name is ok ?
+>>>> Why do the children have 64 bit addressing?
+>>>
+>>> AST2700 is 64bit address, so it also.
 >>
->> No. For both use the same filename, so the full compatible. FULL.
-> 
-> Do you mean remove aspeed,ast2700-reset.h?
-> And move reset information into "aspeed, clk-ast2700.h"
+>> But why do they need it?
 >>
+> Sorry, I may not understand your point.
 
-I did not say that. "For both" means for both files, so you can keep
-both files.
+I asked why do you think children require 64-bit addressing, instead of
+working with existing 32-bit address.
 
+> Since address-cell = <2>, Do you mean size-cell still 1?
+
+No... although that's another point, how bug address size is there? For
+the children?
+
+> If yes. I do the dts check it need size-cells=<2>, when I do address-cells = <2>
+
+Well, I talk about bus and children addressing. It's kind of obvious
+that changing one property means using different reg...
 
 Best regards,
 Krzysztof
