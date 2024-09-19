@@ -1,34 +1,27 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 19 Sep 2024 10:54:17 +0930
-Subject: [PATCH v2 2/3] dt-bindings: trivial-devices: support MPS MP5023
-In-Reply-To: <bf5258b8-a5a1-4cf3-9bd0-1fa44696c3b0@roeck-us.net>
-References: <20240918095438.1345886-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240918095438.1345886-3-Delphine_CC_Chiu@wiwynn.com>
-	 <bf5258b8-a5a1-4cf3-9bd0-1fa44696c3b0@roeck-us.net>
-Message-ID: <355b19a62e54aa979451d796c3ebe1e294a0cf45.camel@codeconstruct.com.au>
+Date: Thu, 19 Sep 2024 11:05:42 +0930
+Subject: [PATCH v2] ARM: dts: aspeed: yosemite4: Enable interrupt
+ setting for pca9555
+In-Reply-To: <20240918101742.1346788-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240918101742.1346788-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <172670974249.626583.5344001337825691927.b4-ty@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2024-09-18 at 10:00 -0700, Guenter Roeck wrote:
-> On 9/18/24 02:54, Delphine CC Chiu wrote:
-> > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> > 
-> > Add support for hot-swap controller MPS MP5023.
-> > 
-> > Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> > --
+On Wed, 18 Sep 2024 18:17:41 +0800, Delphine CC Chiu wrote:
+> Enable interrupt setting and add GPIO line name for pca9555 for the I/O
+> expanders on Medusa board.
 > 
-> The hardware monitoring mailing list was not copied, so I assume that
-> the expectation is that it will be applied through some other tree.
+> 
 
-We can take it through the BMC tree, but I'd prefer that the hardware
-monitoring list were copied regardless.
+Thanks, I've applied this to be picked up through the BMC tree.
 
-Ricky: Please do so for v3 onwards.
+[1/1] ARM: dts: aspeed: yosemite4: Enable interrupt setting for pca9555
+      commit: f2c5e6d55ee4f0a634d2ed0427f55b81cfca8f2f
 
-Andrew
+--
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
