@@ -1,42 +1,46 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 19 Sep 2024 17:43:39 +0800
-Subject: [PATCH v4 6/6] gpio: aspeed: Add the flush write to ensure the write complete.
-In-Reply-To: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
-References: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240919094339.2407641-7-billy_tsai@aspeedtech.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Thu, 19 Sep 2024 12:30:44 +0200
+Subject: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
+In-Reply-To: <OS8PR06MB7541F08D97EC0CF83F8B36ACF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20240916091039.3584505-1-ryan_chen@aspeedtech.com>
+ <20240916091039.3584505-3-ryan_chen@aspeedtech.com>
+ <b9bf19af-0c3c-4622-9124-a66d9df649b2@kernel.org>
+ <OS8PR06MB754148AD165538D3D6B6C3DDF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <195a8bfe-e4d7-4140-9635-b86a6ce3c663@kernel.org>
+ <OS8PR06MB7541F08D97EC0CF83F8B36ACF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Message-ID: <d076275a-ff71-43e2-8a30-969a7d062acd@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Performing a dummy read ensures that the register write operation is fully
-completed, mitigating any potential bus delays that could otherwise impact
-the frequency of bitbang usage. E.g., if the JTAG application uses GPIO to
-control the JTAG pins (TCK, TMS, TDI, TDO, and TRST), and the application
-sets the TCK clock to 1 MHz, the GPIO?s high/low transitions will rely on
-a delay function to ensure the clock frequency does not exceed 1 MHz.
-However, this can lead to rapid toggling of the GPIO because the write
-operation is POSTed and does not wait for a bus acknowledgment.
+On 19/09/2024 09:15, Ryan Chen wrote:
+>>>>
+>>>>>  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
+>>>>>  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-reset.h
+>>>>>
+>>>>> diff --git a/include/dt-bindings/clock/aspeed,ast2700-clk.h
+>>>>> b/include/dt-bindings/clock/aspeed,ast2700-clk.h
+>>>>> new file mode 100644
+>>>>> index 000000000000..63021af3caf5
+>>>>> --- /dev/null
+>>>>> +++ b/include/dt-bindings/clock/aspeed,ast2700-clk.h
+>>>>
+>>>> Use compatible as filename.
+>>> Modify from aspeed,ast2700-clk.h to aspeed, clk-ast2700.h, is it ok?
+>>> How about the aspeed,ast2700-reset.h file name is ok ?
+>>
+>> No. For both use the same filename, so the full compatible. FULL.
+> 
+> Do you mean remove aspeed,ast2700-reset.h?
+> And move reset information into "aspeed, clk-ast2700.h"
+>>
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/gpio/gpio-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
+I did not say that. "For both" means for both files, so you can keep
+both files.
 
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index c811e84db0b9..daa12e21d946 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -400,6 +400,8 @@ static void __aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
- 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
- 
- 	gpio->config->llops->reg_bit_set(gpio, offset, reg_val, val);
-+	// flush write
-+	gpio->config->llops->reg_bits_get(gpio, offset, reg_val);
- }
- 
- static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
--- 
-2.25.1
+
+Best regards,
+Krzysztof
 
