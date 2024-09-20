@@ -1,47 +1,52 @@
-From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 20 Sep 2024 07:57:01 +0000
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
-In-Reply-To: <63ce2d4b7edc52952a5f1bb97eb4dc8e7305045f.camel@codeconstruct.com.au>
-References: <20240910030324.2256698-1-Delphine_CC_Chiu@wiwynn.com>
- <63ce2d4b7edc52952a5f1bb97eb4dc8e7305045f.camel@codeconstruct.com.au>
-Message-ID: <TYZPR04MB585344D2C4C75DE832F4E9B2D66C2@TYZPR04MB5853.apcprd04.prod.outlook.com>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 20 Sep 2024 16:02:26 +0800
+Subject: [PATCH v2] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting for TPM
+Message-ID: <20240920080227.711691-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
+Enable spi-gpio setting for TPM device in yosemite4.
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Sent: Thursday, September 12, 2024 10:19 AM
-> To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
-> patrick at stwcx.xyz; Rob Herring <robh@kernel.org>; Krzysztof Kozlowski
-> <krzk+dt@kernel.org>; Conor Dooley <conor+dt@kernel.org>; Joel Stanley
-> <joel@jms.id.au>
-> Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v1] ARM: dts: aspeed: yosemite4: Enable spi-gpio setting
-> 
->  [External Sender]
-> 
->  [External Sender]
-> 
-> On Tue, 2024-09-10 at 11:03 +0800, Delphine CC Chiu wrote:
-> > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> >
-> > Enable spi-gpio setting for spi flash in yosemite4.
-> 
-> Is there actually a flash chip on the same bus? You've only described a TPM. If
-> there's no flash then this seems misleading.
-> 
-> Andrew
-> 
-Hi Andrew,
+Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+---
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts   | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-There is only TPM on the bus.
-Modified the commit message in V2.
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index 98477792aa00..869aa8b3f411 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -34,6 +34,24 @@ iio-hwmon {
+ 				<&adc0 4>, <&adc0 5>, <&adc0 6>, <&adc0 7>,
+ 				<&adc1 0>, <&adc1 1>;
+ 	};
++
++	spi {
++		compatible = "spi-gpio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		sck-gpios = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
++		mosi-gpios = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
++		miso-gpios = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
++		cs-gpios = <&gpio0 ASPEED_GPIO(X, 0) GPIO_ACTIVE_LOW>;
++		num-chipselects = <1>;
++
++		tpm at 0 {
++			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++			reg = <0>;
++			spi-max-frequency = <33000000>;
++		};
++	};
+ };
+ 
+ &uart1 {
+-- 
+2.25.1
 
-Thanks.
