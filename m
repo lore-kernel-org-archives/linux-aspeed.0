@@ -1,114 +1,53 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Fri, 20 Sep 2024 15:04:49 +0800
-Subject: [PATCH v19 2/2] ARM: dts: aspeed: yosemite4: add mctp config and sensors for NIC
-In-Reply-To: <20240920070449.3871705-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240920070449.3871705-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240920070449.3871705-3-Delphine_CC_Chiu@wiwynn.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Fri, 20 Sep 2024 07:31:01 +0000
+Subject: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
+In-Reply-To: <d076275a-ff71-43e2-8a30-969a7d062acd@kernel.org>
+References: <20240916091039.3584505-1-ryan_chen@aspeedtech.com>
+ <20240916091039.3584505-3-ryan_chen@aspeedtech.com>
+ <b9bf19af-0c3c-4622-9124-a66d9df649b2@kernel.org>
+ <OS8PR06MB754148AD165538D3D6B6C3DDF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <195a8bfe-e4d7-4140-9635-b86a6ce3c663@kernel.org>
+ <OS8PR06MB7541F08D97EC0CF83F8B36ACF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <d076275a-ff71-43e2-8a30-969a7d062acd@kernel.org>
+Message-ID: <OS8PR06MB754175D3DEB44835C673A82DF26C2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> Subject: Re: [PATCH v3 2/4] dt-bindings: Add AST2700 bindings
+> 
+> On 19/09/2024 09:15, Ryan Chen wrote:
+> >>>>
+> >>>>>  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-clk.h
+> >>>>>  create mode 100644
+> >>>>> include/dt-bindings/reset/aspeed,ast2700-reset.h
+> >>>>>
+> >>>>> diff --git a/include/dt-bindings/clock/aspeed,ast2700-clk.h
+> >>>>> b/include/dt-bindings/clock/aspeed,ast2700-clk.h
+> >>>>> new file mode 100644
+> >>>>> index 000000000000..63021af3caf5
+> >>>>> --- /dev/null
+> >>>>> +++ b/include/dt-bindings/clock/aspeed,ast2700-clk.h
+> >>>>
+> >>>> Use compatible as filename.
+> >>> Modify from aspeed,ast2700-clk.h to aspeed, clk-ast2700.h, is it ok?
+> >>> How about the aspeed,ast2700-reset.h file name is ok ?
+> >>
+> >> No. For both use the same filename, so the full compatible. FULL.
+> >
+> > Do you mean remove aspeed,ast2700-reset.h?
+> > And move reset information into "aspeed, clk-ast2700.h"
+> >>
+> 
+> I did not say that. "For both" means for both files, so you can keep both files.
+> 
+So, I think you want both file use the same name right? To be following
+include/dt-bindings/clock/aspeed,ast2700-scu.h
+include/dt-bindings/reset/aspeed,ast2700-scu.h
 
-- Add MCTP config for NIC and remove the unnecessary MCTP config on bus
-15.
-- Add eeprom for NIC.
-
-Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 30 +++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 6b4efb5fbd83..621e4e970790 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -937,7 +937,6 @@ &i2c15 {
- 	#address-cells = <1>;
- 	#size-cells = <0>;
- 	status = "okay";
--	mctp-controller;
- 	multi-master;
- 	bus-frequency = <400000>;
- 
-@@ -951,46 +950,73 @@ i2c-mux at 72 {
- 		reg = <0x72>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		i2c-mux-idle-disconnect;
- 
- 		imux24: i2c at 0 {
- 			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		imux25: i2c at 1 {
- 			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		imux26: i2c at 2 {
- 			reg = <2>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 
- 		imux27: i2c at 3 {
- 			reg = <3>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
-+			mctp-controller;
-+
- 			temperature-sensor at 1f {
- 				compatible = "ti,tmp421";
- 				reg = <0x1f>;
- 			};
-+
-+			eeprom at 50 {
-+				compatible = "atmel,24c64";
-+				reg = <0x50>;
-+			};
- 		};
- 	};
- };
--- 
-2.25.1
+> 
+> Best regards,
+> Krzysztof
 
