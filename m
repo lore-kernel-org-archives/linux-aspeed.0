@@ -1,300 +1,155 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 20 Sep 2024 12:26:38 +0930
-Subject: [PATCH v4 3/6] gpio: aspeed: Create llops to handle hardware
- access
-In-Reply-To: <20240919094339.2407641-4-billy_tsai@aspeedtech.com>
-References: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
-	 <20240919094339.2407641-4-billy_tsai@aspeedtech.com>
-Message-ID: <7aaed8cf171b67300aa5b7e861628278de948a27.camel@codeconstruct.com.au>
+From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 20 Sep 2024 06:38:18 +0000
+Subject: [PATCH v18 0/3] Add i2c-mux and eeprom devices for Meta Yosemite4
+In-Reply-To: <39630cb9cf923eec6d8e229aea4e6fc5980aa73e.camel@codeconstruct.com.au>
+References: <20240909105420.441607-1-Delphine_CC_Chiu@wiwynn.com>
+	 <172589661042.199175.14634437656639420015.robh@kernel.org>
+ <39630cb9cf923eec6d8e229aea4e6fc5980aa73e.camel@codeconstruct.com.au>
+Message-ID: <TYZPR04MB58539D6253FD5A8579FF154FD66C2@TYZPR04MB5853.apcprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Billy
 
-On Thu, 2024-09-19 at 17:43 +0800, Billy Tsai wrote:
-> Add low-level operations (llops) to abstract the register access for GPIO
-> registers and the coprocessor request/release. With this abstraction
-> layer, the driver can separate the hardware and software logic, making it
-> easier to extend the driver to support different hardware register
-> layouts.
+
+> -----Original Message-----
+> From: Andrew Jeffery <andrew@codeconstruct.com.au>
+> Sent: Thursday, September 12, 2024 10:34 AM
+> To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
+> Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> Cc: Rob Herring (Arm) <robh@kernel.org>; devicetree at vger.kernel.org; Joel
+> Stanley <joel@jms.id.au>; Conor Dooley <conor+dt@kernel.org>; Krzysztof
+> Kozlowski <krzk+dt@kernel.org>; linux-aspeed at lists.ozlabs.org;
+> linux-arm-kernel at lists.infradead.org; patrick at stwcx.xyz;
+> linux-kernel at vger.kernel.org
+> Subject: Re: [PATCH v18 0/3] Add i2c-mux and eeprom devices for Meta
+> Yosemite4
 > 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  drivers/gpio/gpio-aspeed.c | 429 +++++++++++++++++++------------------
->  1 file changed, 220 insertions(+), 209 deletions(-)
+>  [External Sender]
 > 
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index d20e15b2079d..8b334ce7b60a 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -39,6 +39,10 @@ struct aspeed_bank_props {
->  struct aspeed_gpio_config {
->  	unsigned int nr_gpios;
->  	const struct aspeed_bank_props *props;
-> +	const struct aspeed_gpio_llops *llops;
-> +	const int *debounce_timers_array;
-> +	int debounce_timers_num;
-> +	bool dcache_require;
+>  [External Sender]
+> 
+> Hi Ricky,
+> 
+> On Mon, 2024-09-09 at 10:45 -0500, Rob Herring (Arm) wrote:
+> > On Mon, 09 Sep 2024 18:54:15 +0800, Delphine CC Chiu wrote:
+> > > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> > >
+> ...
+> > >
+> > > Ricky CX Wu (3):
+> > >   ARM: dts: aspeed: yosemite4: Revise i2c-mux devices
+> > >   ARM: dts: aspeed: yosemite4: add mctp config and sensors for NIC
+> > >   ARM: dts: aspeed: yosemite4: add fan led config
+> > >
+> > >  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 706
+> > > ++++++++++++++++--
+> > >  1 file changed, 660 insertions(+), 46 deletions(-)
+> > >
+> > > --
+> > > 2.25.1
+> >
+> >
+> > My bot found new DTB warnings on the .dts files added or changed in
+> > this series.
+> >
+> > Some warnings may be from an existing SoC .dtsi. Or perhaps the
+> > warnings are fixed by another series. Ultimately, it is up to the
+> > platform maintainer whether these warnings are acceptable or not. No
+> > need to reply unless the platform maintainer has comments.
+> >
+> > If you already ran DT checks and didn't see these error(s), then make
+> > sure dt-schema is up to date:
+> >
+> >   pip3 install dtschema --upgrade
+> >
+> >
+> > New warnings running 'make CHECK_DTBS=y
+> aspeed/aspeed-bmc-facebook-yosemite4.dtb' for
+> 20240909105420.441607-1-Delphine_CC_Chiu at wiwynn.com:
+> >
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 20:
+> '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$',
+> 'pinctrl-[0-9]+'
+> >       from schema $id:
+> > https://urldefense.com/v3/__http://devicetree.org/schemas/hwmon/maxim,
+> >
+> max31790.yaml__;!!J63qqgXj!KOrUCIgHJyjBrccMiU8ZIIKD844Aq_AqQeUZF9qer
+> Ys
+> > j9rqtQAcRSSRFaVck8tuE0xWFPVt0pTCb8ZptOGMzhLQCCiY$
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 2f:
+> '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$',
+> 'pinctrl-[0-9]+'
+> >       from schema $id:
+> > https://urldefense.com/v3/__http://devicetree.org/schemas/hwmon/maxim,
+> >
+> max31790.yaml__;!!J63qqgXj!KOrUCIgHJyjBrccMiU8ZIIKD844Aq_AqQeUZF9qer
+> Ys
+> > j9rqtQAcRSSRFaVck8tuE0xWFPVt0pTCb8ZptOGMzhLQCCiY$
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb:
+> > /ahb/apb/bus at 1e78a000/i2c at 780/i2c-mux at 74/i2c at 0/gpio at 61: failed to
+> > match any schema with compatible: ['nxp,pca9552']
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 20:
+> '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$',
+> 'pinctrl-[0-9]+'
+> >       from schema $id:
+> > https://urldefense.com/v3/__http://devicetree.org/schemas/hwmon/maxim,
+> >
+> max31790.yaml__;!!J63qqgXj!KOrUCIgHJyjBrccMiU8ZIIKD844Aq_AqQeUZF9qer
+> Ys
+> > j9rqtQAcRSSRFaVck8tuE0xWFPVt0pTCb8ZptOGMzhLQCCiY$
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: pwm at 2f:
+> '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$',
+> 'pinctrl-[0-9]+'
+> >       from schema $id:
+> > https://urldefense.com/v3/__http://devicetree.org/schemas/hwmon/maxim,
+> >
+> max31790.yaml__;!!J63qqgXj!KOrUCIgHJyjBrccMiU8ZIIKD844Aq_AqQeUZF9qer
+> Ys
+> > j9rqtQAcRSSRFaVck8tuE0xWFPVt0pTCb8ZptOGMzhLQCCiY$
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb:
+> > /ahb/apb/bus at 1e78a000/i2c at 780/i2c-mux at 74/i2c at 1/gpio at 61: failed to
+> > match any schema with compatible: ['nxp,pca9552']
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb:
+> >
+> /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 0/temperature-sensor@
+> 3c:
+> > failed to match any schema with compatible: ['smsc,emc1403']
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb:
+> >
+> /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 1/temperature-sensor@
+> 3c:
+> > failed to match any schema with compatible: ['smsc,emc1403']
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb:
+> >
+> /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 2/temperature-sensor@
+> 3c:
+> > failed to match any schema with compatible: ['smsc,emc1403']
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb:
+> >
+> /ahb/apb/bus at 1e78a000/i2c at 800/i2c-mux at 72/i2c at 3/temperature-sensor@
+> 3c:
+> > failed to match any schema with compatible: ['smsc,emc1403']
+> >
+> 
+> Please either:
+> 
+> 1. Remove the offending nodes from your series so we don't add yet more
+> warnings, or 2. Write appropriate bindings and send them as part of the series
+> 
+> Regarding 1, you can always update the devicetree to add the nodes after
+> someone else has got the bindings merged. However, if you must have the
+> nodes, then you need to do 2.
+> 
+> Thanks,
+> 
+> Andrew
 
-Bit of a nitpick, but if we must have it I'd prefer we call this
-`require_dcache`.
+Hi Andrew,
 
->  
-> +static void aspeed_g4_reg_bit_set(struct aspeed_gpio *gpio, unsigned int offset,
-> +				  const enum aspeed_gpio_reg reg, bool val)
-> +{
-> +	const struct aspeed_gpio_bank *bank = to_bank(offset);
-> +	void __iomem *addr = bank_reg(gpio, bank, reg);
-> +	u32 temp;
-> +
-> +	if (reg == reg_val && gpio->config->dcache_require)
+I'll remove the offending nodes first and update bindings in other patches.
+Once the bindings are applied, I will update the nodes again.
 
-We know gpio->config->dcache_require will be true, because this is the
-g4 handler, right?
-
-> +		temp = gpio->dcache[GPIO_BANK(offset)];
-> +	else
-> +		temp = ioread32(addr);
-> +
-> +	if (val)
-> +		temp |= GPIO_BIT(offset);
-> +	else
-> +		temp &= ~GPIO_BIT(offset);
-> +
-> +	if (reg == reg_val && gpio->config->dcache_require)
-> +		gpio->dcache[GPIO_BANK(offset)] = temp;
-> +	iowrite32(temp, addr);
-> +}
-> +
-> +static u32 aspeed_g4_reg_bits_get(struct aspeed_gpio *gpio, unsigned int offset,
-> +				  const enum aspeed_gpio_reg reg)
-> +{
-> +	const struct aspeed_gpio_bank *bank = to_bank(offset);
-> +	void __iomem *addr = bank_reg(gpio, bank, reg);
-> +
-> +	if (reg == reg_rdata || reg == reg_irq_status)
-> +		return ioread32(addr);
-> +	return !!(ioread32(addr) & GPIO_BIT(offset));
-
-Okay, the semantics here feel a bit concerning. I think we need one
-behaviour or the other, not both.
-
-Perhaps we have two callbacks:
-
-1. get_bit()
-2. get_bank()
-
-where get_bank() is only defined for reg_rdata and reg_irq_status, and
-get_bit() for all registers.
-
-> +}
-> +
-> +static bool aspeed_g4_copro_request(struct aspeed_gpio *gpio, unsigned int offset)
-> +{
-> +	if (!copro_ops || !gpio->cf_copro_bankmap)
-> +		return false;
-> +	if (!gpio->cf_copro_bankmap[offset >> 3])
-> +		return false;
-> +	if (!copro_ops->request_access)
-> +		return false;
-> +
-> +	/* Pause the coprocessor */
-> +	copro_ops->request_access(copro_data);
-> +
-> +	/* Change command source back to ARM */
-> +	aspeed_gpio_change_cmd_source(gpio, offset, GPIO_CMDSRC_ARM);
-
-I don't think we need the indirection here, this is already a g4-
-specific callback implementation, we can directly call
-aspeed_g4_privilege_ctrl().
-
-> +
-> +	if (gpio->config->dcache_require)
-> +		/* Update cache */
-> +		gpio->dcache[GPIO_BANK(offset)] =
-> +			gpio->config->llops->reg_bits_get(gpio, offset, reg_rdata);
-> +
-> +	return true;
-> +}
-> +
-> +static void aspeed_g4_copro_release(struct aspeed_gpio *gpio, unsigned int offset)
-> +{
-> +	if (!copro_ops || !gpio->cf_copro_bankmap)
-> +		return;
-> +	if (!gpio->cf_copro_bankmap[offset >> 3])
-> +		return;
-> +	if (!copro_ops->release_access)
-> +		return;
-> +
-> +	/* Change command source back to ColdFire */
-> +	aspeed_gpio_change_cmd_source(gpio, offset, GPIO_CMDSRC_COLDFIRE);
-
-As above for the request implementation, we can call
-aspeed_g4_privilege_ctrl() directly here.
-
-> +
-> +	/* Restart the coprocessor */
-> +	copro_ops->release_access(copro_data);
-> +}
-> +
-> +static void aspeed_g4_privilege_ctrl(struct aspeed_gpio *gpio, unsigned int offset, int cmdsrc)
-> +{
-> +	/*
-> +	 * The command source register is only valid in bits 0, 8, 16, and 24, so we use
-> +	 * (offset & ~(0x7)) to ensure that reg_bits_set always targets a valid bit.
-> +	 */
-> +	/* Source 1 first to avoid illegal 11 combination */
-> +	gpio->config->llops->reg_bit_set(gpio, offset & ~(0x7), reg_cmdsrc1, !!(cmdsrc & BIT(1)));
-> +	/* Then Source 0 */
-> +	gpio->config->llops->reg_bit_set(gpio, offset & ~(0x7), reg_cmdsrc0, !!(cmdsrc & BIT(0)));
-
-Both of these can be direct calls to aspeed_g4_reg_bit_set().
-
-> +}
-> +
-> +static void aspeed_g4_privilege_init(struct aspeed_gpio *gpio)
-> +{
-> +	u32 i;
-> +
-> +	/* Switch all command sources to the ARM by default */
-> +	for (i = 0; i < DIV_ROUND_UP(gpio->chip.ngpio, 32); i++) {
-> +		aspeed_gpio_change_cmd_source(gpio, (i << 5) + 0, GPIO_CMDSRC_ARM);
-> +		aspeed_gpio_change_cmd_source(gpio, (i << 5) + 8, GPIO_CMDSRC_ARM);
-> +		aspeed_gpio_change_cmd_source(gpio, (i << 5) + 16, GPIO_CMDSRC_ARM);
-> +		aspeed_gpio_change_cmd_source(gpio, (i << 5) + 24, GPIO_CMDSRC_ARM);
-
-Again as this is a g4-specific callback we can directly call
-aspeed_g4_privilege_ctrl().
-
-> +	}
-> +}
-> +
-> +static const struct aspeed_gpio_llops aspeed_g4_llops = {
-> +	.copro_request = aspeed_g4_copro_request,
-> +	.copro_release = aspeed_g4_copro_release,
-> +	.reg_bit_set = aspeed_g4_reg_bit_set,
-> +	.reg_bits_get = aspeed_g4_reg_bits_get,
-> +	.privilege_ctrl = aspeed_g4_privilege_ctrl,
-> +	.privilege_init = aspeed_g4_privilege_init,
-> +};
->  /*
->   * Any banks not specified in a struct aspeed_bank_props array are assumed to
->   * have the properties:
-> @@ -1120,7 +1111,14 @@ static const struct aspeed_bank_props ast2400_bank_props[] = {
->  
->  static const struct aspeed_gpio_config ast2400_config =
->  	/* 220 for simplicity, really 216 with two 4-GPIO holes, four at end */
-> -	{ .nr_gpios = 220, .props = ast2400_bank_props, };
-> +	{
-> +		.nr_gpios = 220,
-> +		.props = ast2400_bank_props,
-> +		.llops = &aspeed_g4_llops,
-> +		.debounce_timers_array = debounce_timers,
-> +		.debounce_timers_num = ARRAY_SIZE(debounce_timers),
-> +		.dcache_require = true,
-> +	};
->  
->  static const struct aspeed_bank_props ast2500_bank_props[] = {
->  	/*     input	  output   */
-> @@ -1132,7 +1130,14 @@ static const struct aspeed_bank_props ast2500_bank_props[] = {
->  
->  static const struct aspeed_gpio_config ast2500_config =
->  	/* 232 for simplicity, actual number is 228 (4-GPIO hole in GPIOAB) */
-> -	{ .nr_gpios = 232, .props = ast2500_bank_props, };
-> +	{
-> +		.nr_gpios = 232,
-> +		.props = ast2500_bank_props,
-> +		.llops = &aspeed_g4_llops,
-> +		.debounce_timers_array = debounce_timers,
-> +		.debounce_timers_num = ARRAY_SIZE(debounce_timers),
-> +		.dcache_require = true,
-> +	};
->  
->  static const struct aspeed_bank_props ast2600_bank_props[] = {
->  	/*     input	  output   */
-> @@ -1148,7 +1153,14 @@ static const struct aspeed_gpio_config ast2600_config =
->  	 * We expect ngpio being set in the device tree and this is a fallback
->  	 * option.
->  	 */
-> -	{ .nr_gpios = 208, .props = ast2600_bank_props, };
-> +	{
-> +		.nr_gpios = 208,
-> +		.props = ast2600_bank_props,
-> +		.llops = &aspeed_g4_llops,
-> +		.debounce_timers_array = debounce_timers,
-> +		.debounce_timers_num = ARRAY_SIZE(debounce_timers),
-> +		.dcache_require = true,
-> +	};
->  
->  static const struct of_device_id aspeed_gpio_of_table[] = {
->  	{ .compatible = "aspeed,ast2400-gpio", .data = &ast2400_config, },
-> @@ -1191,6 +1203,9 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->  
->  	gpio->config = gpio_id->data;
->  
-> +	if (!gpio->config->llops->reg_bit_set || !gpio->config->llops->reg_bits_get)
-> +		return -EINVAL;
-> +
-
-This will need to clean up gpio->clk. Perhaps you could move it above
-the of_clk_get() call instead?
-
-However, looking through the rest it seems we have a few issues with
-this leak :/
-
->  	gpio->chip.parent = &pdev->dev;
->  	err = of_property_read_u32(pdev->dev.of_node, "ngpios", &ngpio);
->  	gpio->chip.ngpio = (u16) ngpio;
-> @@ -1207,27 +1222,23 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
->  	gpio->chip.label = dev_name(&pdev->dev);
->  	gpio->chip.base = -1;
->  
-> -	/* Allocate a cache of the output registers */
-> -	banks = DIV_ROUND_UP(gpio->chip.ngpio, 32);
-> -	gpio->dcache = devm_kcalloc(&pdev->dev,
-> -				    banks, sizeof(u32), GFP_KERNEL);
-> -	if (!gpio->dcache)
-> -		return -ENOMEM;
-> -
-> -	/*
-> -	 * Populate it with initial values read from the HW and switch
-> -	 * all command sources to the ARM by default
-> -	 */
-> -	for (i = 0; i < banks; i++) {
-> -		const struct aspeed_gpio_bank *bank = &aspeed_gpio_banks[i];
-> -		void __iomem *addr = bank_reg(gpio, bank, reg_rdata);
-> -		gpio->dcache[i] = ioread32(addr);
-> -		aspeed_gpio_change_cmd_source(gpio, bank, 0, GPIO_CMDSRC_ARM);
-> -		aspeed_gpio_change_cmd_source(gpio, bank, 1, GPIO_CMDSRC_ARM);
-> -		aspeed_gpio_change_cmd_source(gpio, bank, 2, GPIO_CMDSRC_ARM);
-> -		aspeed_gpio_change_cmd_source(gpio, bank, 3, GPIO_CMDSRC_ARM);
-> +	if (gpio->config->dcache_require) {
-> +		/* Allocate a cache of the output registers */
-> +		banks = DIV_ROUND_UP(gpio->chip.ngpio, 32);
-> +		gpio->dcache = devm_kcalloc(&pdev->dev, banks, sizeof(u32), GFP_KERNEL);
-> +		if (!gpio->dcache)
-> +			return -ENOMEM;
-
-This should also clean up gpio->clk. I don't think you can move it to
-avoid that.
-
-Andrew
-
-> +		/*
-> +		 * Populate it with initial values read from the HW
-> +		 */
-> +		for (i = 0; i < banks; i++)
-> +			gpio->dcache[i] =
-> +				gpio->config->llops->reg_bits_get(gpio, (i << 5), reg_rdata);
->  	}
->  
-> +	if (gpio->config->llops->privilege_init)
-> +		gpio->config->llops->privilege_init(gpio);
-> +
->  	/* Set up an irqchip */
->  	irq = platform_get_irq(pdev, 0);
->  	if (irq < 0)
-
+Thanks.
