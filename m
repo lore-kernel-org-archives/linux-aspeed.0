@@ -1,85 +1,64 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Thu, 19 Sep 2024 12:32:28 +0200
-Subject: [PATCH v3 1/4] dt-bindings: mfd: aspeed: support for AST2700
-In-Reply-To: <OS8PR06MB7541FDB6A74119A160B1A57CF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
-References: <20240916091039.3584505-1-ryan_chen@aspeedtech.com>
- <20240916091039.3584505-2-ryan_chen@aspeedtech.com>
- <9b356379-907c-4112-8e24-1810cfa40ef6@kernel.org>
- <OS8PR06MB75416C23247B7AC64260C0AFF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <f79a48e6-e0ff-453f-98c1-1c5acbe6467d@kernel.org>
- <OS8PR06MB7541FDB6A74119A160B1A57CF2632@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Message-ID: <3185f620-28be-49b8-85f4-7ff8dd5ffce0@kernel.org>
+From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
+Date: Fri, 20 Sep 2024 01:54:51 +0000
+Subject: [PATCH v2 2/3] dt-bindings: trivial-devices: support MPS MP5023
+In-Reply-To: <355b19a62e54aa979451d796c3ebe1e294a0cf45.camel@codeconstruct.com.au>
+References: <20240918095438.1345886-1-Delphine_CC_Chiu@wiwynn.com>
+	 <20240918095438.1345886-3-Delphine_CC_Chiu@wiwynn.com>
+	 <bf5258b8-a5a1-4cf3-9bd0-1fa44696c3b0@roeck-us.net>
+ <355b19a62e54aa979451d796c3ebe1e294a0cf45.camel@codeconstruct.com.au>
+Message-ID: <TYZPR04MB5853BD9CD0774B40BAEF7BDFD66C2@TYZPR04MB5853.apcprd04.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19/09/2024 09:13, Ryan Chen wrote:
->> Subject: Re: [PATCH v3 1/4] dt-bindings: mfd: aspeed: support for AST2700
->>
->> On 19/09/2024 08:05, Ryan Chen wrote:
->>>>> diff --git
->>>>> a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
->>>>> b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
->>>>> index 86ee69c0f45b..127a357051cd 100644
->>>>> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
->>>>> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
->>>>> @@ -9,6 +9,8 @@ title: Aspeed System Control Unit
->>>>>  description:
->>>>>    The Aspeed System Control Unit manages the global behaviour of
->>>>> the
->>>> SoC,
->>>>>    configuring elements such as clocks, pinmux, and reset.
->>>>> +  In AST2700 SOC which has two soc connection, each soc have its
->>>>> + own scu  register control, ast2700-scu0 for soc0, ast2700-scu1 for
->> soc1.
->>>>>
->>>>>  maintainers:
->>>>>    - Joel Stanley <joel@jms.id.au>
->>>>> @@ -21,6 +23,8 @@ properties:
->>>>>            - aspeed,ast2400-scu
->>>>>            - aspeed,ast2500-scu
->>>>>            - aspeed,ast2600-scu
->>>>> +          - aspeed,ast2700-scu0
->>>>> +          - aspeed,ast2700-scu1
->>>>>        - const: syscon
->>>>>        - const: simple-mfd
->>>>>
->>>>> @@ -30,10 +34,12 @@ properties:
->>>>>    ranges: true
->>>>>
->>>>>    '#address-cells':
->>>>> -    const: 1
->>>>> +    minimum: 1
->>>>> +    maximum: 2
->>>>>
->>>>>    '#size-cells':
->>>>> -    const: 1
->>>>> +    minimum: 1
->>>>> +    maximum: 2
->>>>
->>>> Why do the children have 64 bit addressing?
->>>
->>> AST2700 is 64bit address, so it also.
->>
->> But why do they need it?
->>
-> Sorry, I may not understand your point.
 
-I asked why do you think children require 64-bit addressing, instead of
-working with existing 32-bit address.
 
-> Since address-cell = <2>, Do you mean size-cell still 1?
+> -----Original Message-----
+> From: Andrew Jeffery <andrew@codeconstruct.com.au>
+> Sent: Thursday, September 19, 2024 9:24 AM
+> To: Guenter Roeck <linux@roeck-us.net>; Delphine_CC_Chiu/WYHQ/Wiwynn
+> <Delphine_CC_Chiu@wiwynn.com>; patrick at stwcx.xyz; Rob Herring
+> <robh@kernel.org>; Krzysztof Kozlowski <krzk+dt@kernel.org>; Conor Dooley
+> <conor+dt@kernel.org>
+> Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>; Joel Stanley
+> <joel@jms.id.au>; Peter Yin <peteryin.openbmc@gmail.com>; Noah Wang
+> <noahwang.wang@outlook.com>; Javier Carrasco
+> <javier.carrasco.cruz@gmail.com>; Fabio Estevam <festevam@gmail.com>;
+> Lukas Wunner <lukas@wunner.de>; Laurent Pinchart
+> <laurent.pinchart@ideasonboard.com>; devicetree at vger.kernel.org;
+> linux-kernel at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
+> linux-aspeed at lists.ozlabs.org
+> Subject: Re: [PATCH v2 2/3] dt-bindings: trivial-devices: support MPS MP5023
+> 
+>  [External Sender]
+> 
+>  [External Sender]
+> 
+> On Wed, 2024-09-18 at 10:00 -0700, Guenter Roeck wrote:
+> > On 9/18/24 02:54, Delphine CC Chiu wrote:
+> > > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> > >
+> > > Add support for hot-swap controller MPS MP5023.
+> > >
+> > > Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+> > > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+> > > --
+> >
+> > The hardware monitoring mailing list was not copied, so I assume that
+> > the expectation is that it will be applied through some other tree.
+> 
+> We can take it through the BMC tree, but I'd prefer that the hardware
+> monitoring list were copied regardless.
+> 
+> Ricky: Please do so for v3 onwards.
+> 
+> Andrew
+Hi Guenter & Andrew,
 
-No... although that's another point, how bug address size is there? For
-the children?
+Would like to ask how to copy the hardware monitoring mailing list?
+Should I just send the v3 patch with only this dt-bindings patch for MP5023
+and it will be added in the mail automatically?
 
-> If yes. I do the dts check it need size-cells=<2>, when I do address-cells = <2>
-
-Well, I talk about bus and children addressing. It's kind of obvious
-that changing one property means using different reg...
-
-Best regards,
-Krzysztof
-
+Regards.
