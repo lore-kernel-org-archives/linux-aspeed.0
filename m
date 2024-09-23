@@ -1,55 +1,23 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 23 Sep 2024 10:04:17 +0930
-Subject: [PATCH v4 3/6] gpio: aspeed: Create llops to handle hardware
- access
-In-Reply-To: <OSQPR06MB7252FDD739DCE7D4A44F63248B6C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
-References: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
-	 <20240919094339.2407641-4-billy_tsai@aspeedtech.com>
-	 <7aaed8cf171b67300aa5b7e861628278de948a27.camel@codeconstruct.com.au>
-	 <OSQPR06MB7252FDD739DCE7D4A44F63248B6C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
-Message-ID: <1333d8dd77c80825cb20bc5a9885a6ced774183b.camel@codeconstruct.com.au>
+Date: Mon, 23 Sep 2024 10:12:09 +0930
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Revise adc128d818 adc
+ mode on Spider Board
+In-Reply-To: <20240920085007.1076174-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240920085007.1076174-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <172705212979.81175.5974392458583781139.b4-ty@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-09-20 at 09:19 +0000, Billy Tsai wrote:
-> > 
-> > > @@ -1191,6 +1203,9 @@ static int __init aspeed_gpio_probe(struct
-> > > platform_device *pdev)
-> > > 
-> > > ??????gpio->config = gpio_id->data;
-> > > 
-> > > +     if (!gpio->config->llops->reg_bit_set || !gpio->config-
-> > > >llops->reg_bits_get)
-> > > +             return -EINVAL;
-> > > +
+On Fri, 20 Sep 2024 16:50:07 +0800, Delphine CC Chiu wrote:
+> Revise adc128d818 adc mode on Spider Board according to schematic.
 > 
-> > This will need to clean up gpio->clk. Perhaps you could move it
-> > above
-> > the of_clk_get() call instead?
 > 
-> How about change the `of_clk_get` to `devm_clk_get(&pdev->dev, 0);`?
 
-Yep.
+Thanks, I've applied this to be picked up through the BMC tree.
 
-> 
-> > However, looking through the rest it seems we have a few issues
-> > with
-> > this leak :/
-> 
-> This gpio driver doesn't have the reset, is it?
-
-No, just leaking the resource.
-
-However, I can't see that we prepare/enable (and disable/unprepare) the
-clock either :( [1]. Do you mind fixing that as well? It would be best
-if debounce didn't work by accident.
-
-Andrew
-
-[1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/clk.h?h=v6.11#n527
-
-
+--
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
