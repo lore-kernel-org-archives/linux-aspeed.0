@@ -1,79 +1,58 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 23 Sep 2024 10:39:06 +0930
-Subject: [PATCH v2 2/3] dt-bindings: trivial-devices: support MPS MP5023
-In-Reply-To: <TYZPR04MB5853BD9CD0774B40BAEF7BDFD66C2@TYZPR04MB5853.apcprd04.prod.outlook.com>
-References: <20240918095438.1345886-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240918095438.1345886-3-Delphine_CC_Chiu@wiwynn.com>
-	 <bf5258b8-a5a1-4cf3-9bd0-1fa44696c3b0@roeck-us.net>
-	 <355b19a62e54aa979451d796c3ebe1e294a0cf45.camel@codeconstruct.com.au>
-	 <TYZPR04MB5853BD9CD0774B40BAEF7BDFD66C2@TYZPR04MB5853.apcprd04.prod.outlook.com>
-Message-ID: <516706cb77ac88ff1b9d94a69b0e1ed54e184ec9.camel@codeconstruct.com.au>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 23 Sep 2024 02:20:59 +0000
+Subject: [PATCH v4 3/6] gpio: aspeed: Create llops to handle hardware
+ access
+In-Reply-To: <1333d8dd77c80825cb20bc5a9885a6ced774183b.camel@codeconstruct.com.au>
+References: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
+	 <20240919094339.2407641-4-billy_tsai@aspeedtech.com>
+	 <7aaed8cf171b67300aa5b7e861628278de948a27.camel@codeconstruct.com.au>
+	 <OSQPR06MB7252FDD739DCE7D4A44F63248B6C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+ <1333d8dd77c80825cb20bc5a9885a6ced774183b.camel@codeconstruct.com.au>
+Message-ID: <OSQPR06MB725290B4D7BFC47A26A0E10B8B6F2@OSQPR06MB7252.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2024-09-20 at 01:54 +0000, Delphine_CC_Chiu/WYHQ/Wiwynn wrote:
-> 
-> > -----Original Message-----
-> > From: Andrew Jeffery <andrew@codeconstruct.com.au>
-> > Sent: Thursday, September 19, 2024 9:24 AM
-> > To: Guenter Roeck <linux@roeck-us.net>; Delphine_CC_Chiu/WYHQ/Wiwynn
-> > <Delphine_CC_Chiu@wiwynn.com>; patrick at stwcx.xyz; Rob Herring
-> > <robh@kernel.org>; Krzysztof Kozlowski <krzk+dt@kernel.org>; Conor Dooley
-> > <conor+dt@kernel.org>
-> > Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>; Joel Stanley
-> > <joel@jms.id.au>; Peter Yin <peteryin.openbmc@gmail.com>; Noah Wang
-> > <noahwang.wang@outlook.com>; Javier Carrasco
-> > <javier.carrasco.cruz@gmail.com>; Fabio Estevam <festevam@gmail.com>;
-> > Lukas Wunner <lukas@wunner.de>; Laurent Pinchart
-> > <laurent.pinchart@ideasonboard.com>; devicetree at vger.kernel.org;
-> > linux-kernel at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> > linux-aspeed at lists.ozlabs.org
-> > Subject: Re: [PATCH v2 2/3] dt-bindings: trivial-devices: support MPS MP5023
-> > 
-> >  [External Sender]
-> > 
-> >  [External Sender]
-> > 
-> > On Wed, 2024-09-18 at 10:00 -0700, Guenter Roeck wrote:
-> > > On 9/18/24 02:54, Delphine CC Chiu wrote:
-> > > > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> > > > 
-> > > > Add support for hot-swap controller MPS MP5023.
-> > > > 
-> > > > Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> > > > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> > > > --
-> > > 
-> > > The hardware monitoring mailing list was not copied, so I assume that
-> > > the expectation is that it will be applied through some other tree.
-> > 
-> > We can take it through the BMC tree, but I'd prefer that the hardware
-> > monitoring list were copied regardless.
-> > 
-> > Ricky: Please do so for v3 onwards.
-> > 
-> > Andrew
-> Hi Guenter & Andrew,
-> 
-> Would like to ask how to copy the hardware monitoring mailing list?
+> > >
+> > > > @@ -1191,6 +1203,9 @@ static int __init aspeed_gpio_probe(struct
+> > > > platform_device *pdev)
+> > > >
+> > > >       gpio->config = gpio_id->data;
+> > > >
+> > > > +     if (!gpio->config->llops->reg_bit_set || !gpio->config-
+> > > > >llops->reg_bits_get)
+> > > > +             return -EINVAL;
+> > > > +
+> >
+> > > This will need to clean up gpio->clk. Perhaps you could move it
+> > > above
+> > > the of_clk_get() call instead?
+> >
+> > How about change the `of_clk_get` to `devm_clk_get(&pdev->dev, 0);`?
 
-Not sure how best to answer this, but add it in the To: line for your
-patches? 
+> Yep.
 
-> Should I just send the v3 patch with only this dt-bindings patch for MP5023
-> and it will be added in the mail automatically?
+> >
+> > > However, looking through the rest it seems we have a few issues
+> > > with
+> > > this leak :/
+> >
+> > This gpio driver doesn't have the reset, is it?
 
-Well, if whatever process you're already using isn't adding it
-automatically, I doubt it's going to start doing so now.
+> No, just leaking the resource.
 
-You can add it using the `--to` option to `b4 send` or `git send-
-email`, for instance.
+> However, I can't see that we prepare/enable (and disable/unprepare) the
+> clock either :( [1]. Do you mind fixing that as well? It would be best
+> if debounce didn't work by accident.
 
-The details for the hwmon list are here:
+> Andrew
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/MAINTAINERS?h=v6.11#n9836
+> [1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/clk.h?h=v6.11#n527
 
-Andrew
+Okay, I will update the clock API to use the `devm` prefix.
+
+Thanks
+
+Billy Tsai
