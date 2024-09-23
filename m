@@ -1,26 +1,55 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 23 Sep 2024 09:55:45 +0930
-Subject: [PATCH] ARM: dts: aspeed: catalina: add
- i2c-mux-idle-disconnect to all mux
-In-Reply-To: <20240920-catalina-i2c-mux-fix-2-v1-1-66cce7c54188@gmail.com>
-References: <20240920-catalina-i2c-mux-fix-2-v1-1-66cce7c54188@gmail.com>
-Message-ID: <172705114554.52616.12455513368806035629.b4-ty@codeconstruct.com.au>
+Date: Mon, 23 Sep 2024 10:04:17 +0930
+Subject: [PATCH v4 3/6] gpio: aspeed: Create llops to handle hardware
+ access
+In-Reply-To: <OSQPR06MB7252FDD739DCE7D4A44F63248B6C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+References: <20240919094339.2407641-1-billy_tsai@aspeedtech.com>
+	 <20240919094339.2407641-4-billy_tsai@aspeedtech.com>
+	 <7aaed8cf171b67300aa5b7e861628278de948a27.camel@codeconstruct.com.au>
+	 <OSQPR06MB7252FDD739DCE7D4A44F63248B6C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+Message-ID: <1333d8dd77c80825cb20bc5a9885a6ced774183b.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 20 Sep 2024 17:55:52 +0800, Potin Lai wrote:
-> Add the `i2c-mux-idle-disconnect` property to all i2c-mux nodes to
-> ensure proper behavior when switching between multiple I2C buses.
-> This avoids potential confusion caused by device addresses appearing on
-> multiple buses when they are not actively selected.
+On Fri, 2024-09-20 at 09:19 +0000, Billy Tsai wrote:
+> > 
+> > > @@ -1191,6 +1203,9 @@ static int __init aspeed_gpio_probe(struct
+> > > platform_device *pdev)
+> > > 
+> > > ??????gpio->config = gpio_id->data;
+> > > 
+> > > +     if (!gpio->config->llops->reg_bit_set || !gpio->config-
+> > > >llops->reg_bits_get)
+> > > +             return -EINVAL;
+> > > +
 > 
+> > This will need to clean up gpio->clk. Perhaps you could move it
+> > above
+> > the of_clk_get() call instead?
 > 
+> How about change the `of_clk_get` to `devm_clk_get(&pdev->dev, 0);`?
 
-Thanks, I've applied this to be picked up through the BMC tree.
+Yep.
 
---
-Andrew Jeffery <andrew@codeconstruct.com.au>
+> 
+> > However, looking through the rest it seems we have a few issues
+> > with
+> > this leak :/
+> 
+> This gpio driver doesn't have the reset, is it?
+
+No, just leaking the resource.
+
+However, I can't see that we prepare/enable (and disable/unprepare) the
+clock either :( [1]. Do you mind fixing that as well? It would be best
+if debounce didn't work by accident.
+
+Andrew
+
+[1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/clk.h?h=v6.11#n527
+
+
 
