@@ -1,64 +1,66 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Mon, 23 Sep 2024 11:09:38 +0200
-Subject: [PATCH v4 1/3] dt-bindings: mfd: aspeed: support for AST2700
-In-Reply-To: <20240923075012.2264573-2-ryan_chen@aspeedtech.com>
-References: <20240923075012.2264573-1-ryan_chen@aspeedtech.com>
- <20240923075012.2264573-2-ryan_chen@aspeedtech.com>
-Message-ID: <c02f84d2-1306-480b-b6b3-15d3ccae16ad@kernel.org>
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Date: Mon, 23 Sep 2024 18:06:05 +0800
+Subject: [PATCH v5 0/6] Add Aspeed G7 gpio support 
+Message-ID: <20240923100611.1597113-1-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 23/09/2024 09:50, Ryan Chen wrote:
-> Add reset, clk dt bindings headers, and update compatible
-> support for AST2700 clk, silicon-id in yaml.
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  .../bindings/mfd/aspeed,ast2x00-scu.yaml      |   8 +-
->  .../dt-bindings/clock/aspeed,ast2700-scu.h    | 163 ++++++++++++++++++
->  .../dt-bindings/reset/aspeed,ast2700-scu.h    | 124 +++++++++++++
->  3 files changed, 294 insertions(+), 1 deletion(-)
->  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-scu.h
->  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-scu.h
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> index 86ee69c0f45b..c800d5e53b65 100644
-> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> @@ -9,6 +9,8 @@ title: Aspeed System Control Unit
->  description:
->    The Aspeed System Control Unit manages the global behaviour of the SoC,
->    configuring elements such as clocks, pinmux, and reset.
-> +  In AST2700 SOC which has two soc connection, each soc have its own scu
-> +  register control, ast2700-scu0 for soc0, ast2700-scu1 for soc1.
->  
->  maintainers:
->    - Joel Stanley <joel@jms.id.au>
-> @@ -21,6 +23,8 @@ properties:
->            - aspeed,ast2400-scu
->            - aspeed,ast2500-scu
->            - aspeed,ast2600-scu
-> +          - aspeed,ast2700-scu0
-> +          - aspeed,ast2700-scu1
->        - const: syscon
->        - const: simple-mfd
->  
-> @@ -30,7 +34,8 @@ properties:
->    ranges: true
->  
->    '#address-cells':
-> -    const: 1
-> +    minimum: 1
-> +    maximum: 2
+The Aspeed 7th generation SoC features two GPIO controllers: one with 12
+GPIO pins and another with 216 GPIO pins. The main difference from the
+previous generation is that the control logic has been updated to support
+per-pin control, allowing each pin to have its own 32-bit register for
+configuring value, direction, interrupt type, and more.
+This patch serial also add low-level operations (llops) to abstract the
+register access for GPIO registers and the coprocessor request/release in
+gpio-aspeed.c making it easier to extend the driver to support different
+hardware register layouts.
 
-I would still argue that children do not need full 64-bit addressing,
-but fine, you can grow their space as much as possible.
+Change since v4:
+- Add `reg_bank_get` callback
+- `reg_bits_get` -> `reg_bit_get
+- `dcache_require` -> `require_dcache`
+- Use `devm_clk_get_enabled` to get the clock source
+- g4 specific api doesn't need to use the callback function 
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Change since v3:
+- Add `privilege_ctrl` and `privilege_init` callback
+- Use `bool aspeed_gpio_support_copro()` api to replace the
+`cmd_source_supoort` flag
+- Add the `dcache_require` flag and move the dcache usage into the
+reg_bit_set callback
+- `reg_bits_set` -> `reg_bit_set` and `reg_bits_read` -> `reg_bits_get`
+- `bool copro = 0` -> `bool copro = false`
+- `if (!gpio->config->llops->reg_bit_set || 
+!gpio->config->llops->reg_bits_get) return -EINVAL;`
+- Correct the access of reg_irq_status
+- Remove __init attribute to fix the compiler warning
 
-Best regards,
-Krzysztof
+Change since v2:
+- Correct minItems for gpio-line names
+- Remove the example for ast2700, because it's the same as the AST2600
+- Fix the sparse warning which is reported by the test robot
+- Remove the version and use the match data to replace it.
+- Add another two patches one for deferred probe one for flush write.
+
+Changes since v1:
+- Merge the gpio-aspeed-g7.c into the gpio-aspeed.c.
+- Create the llops in gpio-aspeed.c for flexibility.
+
+Billy Tsai (6):
+  dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
+  gpio: aspeed: Remove the name for bank array
+  gpio: aspeed: Create llops to handle hardware access
+  gpio: aspeed: Support G7 Aspeed gpio controller
+  gpio: aspeed: Change the macro to support deferred probe
+  gpio: aspeed: Add the flush write to ensure the write complete.
+
+ .../bindings/gpio/aspeed,ast2400-gpio.yaml    |  19 +-
+ drivers/gpio/gpio-aspeed.c                    | 589 +++++++++++-------
+ 2 files changed, 381 insertions(+), 227 deletions(-)
+
+-- 
+2.25.1
 
