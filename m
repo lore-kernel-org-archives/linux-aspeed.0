@@ -1,23 +1,25 @@
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Wed, 25 Sep 2024 10:14:58 +0930
-Subject: [PATCH v1 0/3] Revise Meta (Facebook) Minerva BMC (AST2600)
-In-Reply-To: <20240924140215.2484170-1-yangchen.openbmc@gmail.com>
-References: <20240924140215.2484170-1-yangchen.openbmc@gmail.com>
-Message-ID: <172722509817.374662.7338401100529556748.b4-ty@codeconstruct.com.au>
+Date: Wed, 25 Sep 2024 10:22:17 +0930
+Subject: [PATCH v2 0/2] Adjust the setting for SPI flash of yosemite4
+In-Reply-To: <20240924094430.272074-1-Delphine_CC_Chiu@wiwynn.com>
+References: <20240924094430.272074-1-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <172722553796.384629.2084285836291139720.b4-ty@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 24 Sep 2024 22:02:12 +0800, Yang Chen wrote:
-> Revise linux device tree entry related to Meta (Facebook) Minerva specific
-> devices connected to BMC (AST2600) SoC.
+On Tue, 24 Sep 2024 17:44:28 +0800, Delphine CC Chiu wrote:
+> - v2
+>   - Split the patches for different targets.
+> - v1
+>   - Revise SPI flash to dual mode.
+>   - Revise flash layout to 128MB.
 > 
-> Yang Chen (3):
->   ARM: dts: aspeed: minerva: Revise the SGPIO line name
->   ARM: dts: aspeed: minerva: change the i2c mux number for FCBs
->   ARM: dts: aspeed: minerva: add fru device for other blades
+> Ricky CX Wu (2):
+>   ARM: dts: aspeed: yosemite4: Revise quad mode to dual mode
+>   ARM: dts: aspeed: yosemite4: revise flash layout to 128MB
 > 
 > [...]
 
