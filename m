@@ -1,336 +1,72 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Wed, 25 Sep 2024 15:45:20 +0200
-Subject: [PATCH v4 2/3] reset: aspeed: register AST2700 reset auxiliary
- bus device
-In-Reply-To: <20240923075012.2264573-3-ryan_chen@aspeedtech.com>
-References: <20240923075012.2264573-1-ryan_chen@aspeedtech.com>
-	 <20240923075012.2264573-3-ryan_chen@aspeedtech.com>
-Message-ID: <d2289e43e0ede95eb125562dbe889e658ee3a522.camel@pengutronix.de>
+From: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+Date: Wed, 25 Sep 2024 17:07:32 +0200
+Subject: [PATCH v3 1/5] usb: aspeed_udc: Use devm_clk_get_enabled()
+ helpers
+In-Reply-To: <20240826082140.2311-1-liulei.rjpt@vivo.com>
+References: <20240826081900.2284-1-liulei.rjpt@vivo.com>
+ <20240826082140.2311-1-liulei.rjpt@vivo.com>
+Message-ID: <zi5lq44bc4vd33y42zkmn7hr7rw64wfxe2rvuvkekola6ctckc@buv7ybvq5skt>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hello,
 
-On Mo, 2024-09-23 at 15:50 +0800, Ryan Chen wrote:
-> The AST2700 reset driver is registered as an auxiliary device
-> due to reset and clock controller share the same register region.
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  drivers/reset/Kconfig        |   6 +
->  drivers/reset/Makefile       |   1 +
->  drivers/reset/reset-aspeed.c | 257 +++++++++++++++++++++++++++++++++++
->  3 files changed, 264 insertions(+)
->  create mode 100644 drivers/reset/reset-aspeed.c
-> 
-> diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-> index 67bce340a87e..612f22e1180d 100644
-> --- a/drivers/reset/Kconfig
-> +++ b/drivers/reset/Kconfig
-> @@ -22,6 +22,12 @@ config RESET_A10SR
->  	  This option enables support for the external reset functions for
->  	  peripheral PHYs on the Altera Arria10 System Resource Chip.
+On Mon, Aug 26, 2024 at 04:21:39PM +0800, Lei Liu wrote:
+> diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+> index f4781e611aaa..a362e31f7550 100644
+> --- a/drivers/usb/gadget/udc/aspeed_udc.c
+> +++ b/drivers/usb/gadget/udc/aspeed_udc.c
+> @@ -1459,8 +1459,6 @@ static void ast_udc_remove(struct platform_device *pdev)
+>  	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
+>  	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
 >  
-> +config RESET_ASPEED
-> +	tristate "ASPEED Reset Driver"
-> +	depends on ARCH_ASPEED || COMPILE_TEST
+> -	clk_disable_unprepare(udc->clk);
+> -
+>  	spin_unlock_irqrestore(&udc->lock, flags);
 
-This is missing:
+Isn't it broken to call clk_disable_unprepare() while holding a
+spinlock?
 
-	select AUXILIARY_BUS
+I guess that means that the remove path is untested in practise and this
+patches fixes a sleep-in-atomic. IMHO this invalidates Ulf's concern in
+his reply to the cover letter for this patch at least.
+  
+>  	if (udc->ep0_buf)
+> @@ -1500,16 +1498,11 @@ static int ast_udc_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, udc);
+>  
+> -	udc->clk = devm_clk_get(&pdev->dev, NULL);
+> +	udc->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+>  	if (IS_ERR(udc->clk)) {
+>  		rc = PTR_ERR(udc->clk);
 
-> +	help
-> +	  This enables the reset controller driver for AST2700.
-> +
->  config RESET_ATH79
->  	bool "AR71xx Reset Driver" if COMPILE_TEST
->  	default ATH79
-> diff --git a/drivers/reset/Makefile b/drivers/reset/Makefile
-> index 27b0bbdfcc04..97482bb56416 100644
-> --- a/drivers/reset/Makefile
-> +++ b/drivers/reset/Makefile
-> @@ -5,6 +5,7 @@ obj-y += starfive/
->  obj-y += sti/
->  obj-y += tegra/
->  obj-$(CONFIG_RESET_A10SR) += reset-a10sr.o
-> +obj-$(CONFIG_RESET_ASPEED) += reset-aspeed.o
->  obj-$(CONFIG_RESET_ATH79) += reset-ath79.o
->  obj-$(CONFIG_RESET_AXS10X) += reset-axs10x.o
->  obj-$(CONFIG_RESET_BCM6345) += reset-bcm6345.o
-> diff --git a/drivers/reset/reset-aspeed.c b/drivers/reset/reset-aspeed.c
-> new file mode 100644
-> index 000000000000..40cc6e76df70
-> --- /dev/null
-> +++ b/drivers/reset/reset-aspeed.c
-> @@ -0,0 +1,257 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Copyright (c) 2024 ASPEED Technology Inc.
-> + */
-> +
-> +#include <linux/auxiliary_bus.h>
-> +#include <linux/device.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/reset-controller.h>
-> +
-> +#include <dt-bindings/reset/aspeed,ast2700-scu.h>
-> +
-> +#define SCU0_RESET_CTRL1 0x200
-> +#define SCU0_RESET_CTRL2 0x220
-> +#define SCU1_RESET_CTRL1 0x200
-> +#define SCU1_RESET_CTRL2 0x220
-> +#define SCU1_PCIE3_CTRL 0x908
-> +
-> +struct ast2700_reset_signal {
-> +	bool dedicated_clr; /* dedicated reset clr offset */
-> +	u32 offset, bit;
-> +};
-> +
-> +struct aspeed_reset_info {
-> +	unsigned int nr_resets;
-> +	const struct ast2700_reset_signal *signal;
-> +};
-> +
-> +struct aspeed_reset {
-> +	struct reset_controller_dev rcdev;
-> +	struct aspeed_reset_info *info;
-> +	spinlock_t lock; /* Protect read-modify-write cycle */
-> +	void __iomem *base;
-> +};
-> +
-> +static const struct ast2700_reset_signal ast2700_reset0_signals[] = {
-> +	[SCU0_RESET_SDRAM] = { true, SCU0_RESET_CTRL1, BIT(0) },
-> +	[SCU0_RESET_DDRPHY] = { true, SCU0_RESET_CTRL1, BIT(1) },
-> +	[SCU0_RESET_RSA] = { true, SCU0_RESET_CTRL1, BIT(2) },
-> +	[SCU0_RESET_SHA3] = { true, SCU0_RESET_CTRL1, BIT(3) },
-> +	[SCU0_RESET_HACE] = { true, SCU0_RESET_CTRL1, BIT(4) },
-> +	[SCU0_RESET_SOC] = { true, SCU0_RESET_CTRL1, BIT(5) },
-> +	[SCU0_RESET_VIDEO] = { true, SCU0_RESET_CTRL1, BIT(6) },
-> +	[SCU0_RESET_2D] = { true, SCU0_RESET_CTRL1, BIT(7) },
-> +	[SCU0_RESET_PCIS] = { true, SCU0_RESET_CTRL1, BIT(8) },
-> +	[SCU0_RESET_RVAS0] = { true, SCU0_RESET_CTRL1, BIT(9) },
-> +	[SCU0_RESET_RVAS1] = { true, SCU0_RESET_CTRL1, BIT(10) },
-> +	[SCU0_RESET_SM3] = { true, SCU0_RESET_CTRL1, BIT(11) },
-> +	[SCU0_RESET_SM4] = { true, SCU0_RESET_CTRL1, BIT(12) },
-> +	[SCU0_RESET_CRT0] = { true, SCU0_RESET_CTRL1, BIT(13) },
-> +	[SCU0_RESET_ECC] = { true, SCU0_RESET_CTRL1, BIT(14) },
-> +	[SCU0_RESET_DP_PCI] = { true, SCU0_RESET_CTRL1, BIT(15) },
-> +	[SCU0_RESET_UFS] = { true, SCU0_RESET_CTRL1, BIT(16) },
-> +	[SCU0_RESET_EMMC] = { true, SCU0_RESET_CTRL1, BIT(17) },
-> +	[SCU0_RESET_PCIE1RST] = { true, SCU0_RESET_CTRL1, BIT(18) },
-> +	[SCU0_RESET_PCIE1RSTOE] = { true, SCU0_RESET_CTRL1, BIT(19) },
-> +	[SCU0_RESET_PCIE0RST] = { true, SCU0_RESET_CTRL1, BIT(20) },
-> +	[SCU0_RESET_PCIE0RSTOE] = { true, SCU0_RESET_CTRL1, BIT(21) },
-> +	[SCU0_RESET_JTAG] = { true, SCU0_RESET_CTRL1, BIT(22) },
-> +	[SCU0_RESET_MCTP0] = { true, SCU0_RESET_CTRL1, BIT(23) },
-> +	[SCU0_RESET_MCTP1] = { true, SCU0_RESET_CTRL1, BIT(24) },
-> +	[SCU0_RESET_XDMA0] = { true, SCU0_RESET_CTRL1, BIT(25) },
-> +	[SCU0_RESET_XDMA1] = { true, SCU0_RESET_CTRL1, BIT(26) },
-> +	[SCU0_RESET_H2X1] = { true, SCU0_RESET_CTRL1, BIT(27) },
-> +	[SCU0_RESET_DP] = { true, SCU0_RESET_CTRL1, BIT(28) },
-> +	[SCU0_RESET_DP_MCU] = { true, SCU0_RESET_CTRL1, BIT(29) },
-> +	[SCU0_RESET_SSP] = { true, SCU0_RESET_CTRL1, BIT(30) },
-> +	[SCU0_RESET_H2X0] = { true, SCU0_RESET_CTRL1, BIT(31) },
-> +	[SCU0_RESET_PORTA_VHUB] = { true, SCU0_RESET_CTRL2, BIT(0) },
-> +	[SCU0_RESET_PORTA_PHY3] = { true, SCU0_RESET_CTRL2, BIT(1) },
-> +	[SCU0_RESET_PORTA_XHCI] = { true, SCU0_RESET_CTRL2, BIT(2) },
-> +	[SCU0_RESET_PORTB_VHUB] = { true, SCU0_RESET_CTRL2, BIT(3) },
-> +	[SCU0_RESET_PORTB_PHY3] = { true, SCU0_RESET_CTRL2, BIT(4) },
-> +	[SCU0_RESET_PORTB_XHCI] = { true, SCU0_RESET_CTRL2, BIT(5) },
-> +	[SCU0_RESET_PORTA_VHUB_EHCI] = { true, SCU0_RESET_CTRL2, BIT(6) },
-> +	[SCU0_RESET_PORTB_VHUB_EHCI] = { true, SCU0_RESET_CTRL2, BIT(7) },
-> +	[SCU0_RESET_UHCI] = { true, SCU0_RESET_CTRL2, BIT(8) },
-> +	[SCU0_RESET_TSP] = { true, SCU0_RESET_CTRL2, BIT(9) },
-> +	[SCU0_RESET_E2M0] = { true, SCU0_RESET_CTRL2, BIT(10) },
-> +	[SCU0_RESET_E2M1] = { true, SCU0_RESET_CTRL2, BIT(11) },
-> +	[SCU0_RESET_VLINK] = { true, SCU0_RESET_CTRL2, BIT(12) },
-> +};
-> +
-> +static const struct ast2700_reset_signal ast2700_reset1_signals[] = {
-> +	[SCU1_RESET_LPC0] = { true, SCU1_RESET_CTRL1, BIT(0) },
-> +	[SCU1_RESET_LPC1] = { true, SCU1_RESET_CTRL1, BIT(1) },
-> +	[SCU1_RESET_MII] = { true, SCU1_RESET_CTRL1, BIT(2) },
-> +	[SCU1_RESET_PECI] = { true, SCU1_RESET_CTRL1, BIT(3) },
-> +	[SCU1_RESET_PWM] = { true, SCU1_RESET_CTRL1, BIT(4) },
-> +	[SCU1_RESET_MAC0] = { true, SCU1_RESET_CTRL1, BIT(5) },
-> +	[SCU1_RESET_MAC1] = { true, SCU1_RESET_CTRL1, BIT(6) },
-> +	[SCU1_RESET_MAC2] = { true, SCU1_RESET_CTRL1, BIT(7) },
-> +	[SCU1_RESET_ADC] = { true, SCU1_RESET_CTRL1, BIT(8) },
-> +	[SCU1_RESET_SD] = { true, SCU1_RESET_CTRL1, BIT(9) },
-> +	[SCU1_RESET_ESPI0] = { true, SCU1_RESET_CTRL1, BIT(10) },
-> +	[SCU1_RESET_ESPI1] = { true, SCU1_RESET_CTRL1, BIT(11) },
-> +	[SCU1_RESET_JTAG1] = { true, SCU1_RESET_CTRL1, BIT(12) },
-> +	[SCU1_RESET_SPI0] = { true, SCU1_RESET_CTRL1, BIT(13) },
-> +	[SCU1_RESET_SPI1] = { true, SCU1_RESET_CTRL1, BIT(14) },
-> +	[SCU1_RESET_SPI2] = { true, SCU1_RESET_CTRL1, BIT(15) },
-> +	[SCU1_RESET_I3C0] = { true, SCU1_RESET_CTRL1, BIT(16) },
-> +	[SCU1_RESET_I3C1] = { true, SCU1_RESET_CTRL1, BIT(17) },
-> +	[SCU1_RESET_I3C2] = { true, SCU1_RESET_CTRL1, BIT(18) },
-> +	[SCU1_RESET_I3C3] = { true, SCU1_RESET_CTRL1, BIT(19) },
-> +	[SCU1_RESET_I3C4] = { true, SCU1_RESET_CTRL1, BIT(20) },
-> +	[SCU1_RESET_I3C5] = { true, SCU1_RESET_CTRL1, BIT(21) },
-> +	[SCU1_RESET_I3C6] = { true, SCU1_RESET_CTRL1, BIT(22) },
-> +	[SCU1_RESET_I3C7] = { true, SCU1_RESET_CTRL1, BIT(23) },
-> +	[SCU1_RESET_I3C8] = { true, SCU1_RESET_CTRL1, BIT(24) },
-> +	[SCU1_RESET_I3C9] = { true, SCU1_RESET_CTRL1, BIT(25) },
-> +	[SCU1_RESET_I3C10] = { true, SCU1_RESET_CTRL1, BIT(26) },
-> +	[SCU1_RESET_I3C11] = { true, SCU1_RESET_CTRL1, BIT(27) },
-> +	[SCU1_RESET_I3C12] = { true, SCU1_RESET_CTRL1, BIT(28) },
-> +	[SCU1_RESET_I3C13] = { true, SCU1_RESET_CTRL1, BIT(29) },
-> +	[SCU1_RESET_I3C14] = { true, SCU1_RESET_CTRL1, BIT(30) },
-> +	[SCU1_RESET_I3C15] = { true, SCU1_RESET_CTRL1, BIT(31) },
-> +	[SCU1_RESET_MCU0] = { true, SCU1_RESET_CTRL2, BIT(0) },
-> +	[SCU1_RESET_MCU1] = { true, SCU1_RESET_CTRL2, BIT(1) },
-> +	[SCU1_RESET_H2A_SPI1] = { true, SCU1_RESET_CTRL2, BIT(2) },
-> +	[SCU1_RESET_H2A_SPI2] = { true, SCU1_RESET_CTRL2, BIT(3) },
-> +	[SCU1_RESET_UART0] = { true, SCU1_RESET_CTRL2, BIT(4) },
-> +	[SCU1_RESET_UART1] = { true, SCU1_RESET_CTRL2, BIT(5) },
-> +	[SCU1_RESET_UART2] = { true, SCU1_RESET_CTRL2, BIT(6) },
-> +	[SCU1_RESET_UART3] = { true, SCU1_RESET_CTRL2, BIT(7) },
-> +	[SCU1_RESET_I2C_FILTER] = { true, SCU1_RESET_CTRL2, BIT(8) },
-> +	[SCU1_RESET_CALIPTRA] = { true, SCU1_RESET_CTRL2, BIT(9) },
-> +	[SCU1_RESET_XDMA] = { true, SCU1_RESET_CTRL2, BIT(10) },
-> +	[SCU1_RESET_FSI] = { true, SCU1_RESET_CTRL2, BIT(12) },
-> +	[SCU1_RESET_CAN] = { true, SCU1_RESET_CTRL2, BIT(13) },
-> +	[SCU1_RESET_MCTP] = { true, SCU1_RESET_CTRL2, BIT(14) },
-> +	[SCU1_RESET_I2C] = { true, SCU1_RESET_CTRL2, BIT(15) },
-> +	[SCU1_RESET_UART6] = { true, SCU1_RESET_CTRL2, BIT(16) },
-> +	[SCU1_RESET_UART7] = { true, SCU1_RESET_CTRL2, BIT(17) },
-> +	[SCU1_RESET_UART8] = { true, SCU1_RESET_CTRL2, BIT(18) },
-> +	[SCU1_RESET_UART9] = { true, SCU1_RESET_CTRL2, BIT(19) },
-> +	[SCU1_RESET_LTPI0] = { true, SCU1_RESET_CTRL2, BIT(20) },
-> +	[SCU1_RESET_VGAL] = { true, SCU1_RESET_CTRL2, BIT(21) },
-> +	[SCU1_RESET_LTPI1] = { true, SCU1_RESET_CTRL2, BIT(22) },
-> +	[SCU1_RESET_ACE] = { true, SCU1_RESET_CTRL2, BIT(23) },
-> +	[SCU1_RESET_E2M] = { true, SCU1_RESET_CTRL2, BIT(24) },
-> +	[SCU1_RESET_UHCI] = { true, SCU1_RESET_CTRL2, BIT(25) },
-> +	[SCU1_RESET_PORTC_USB2UART] = { true, SCU1_RESET_CTRL2, BIT(26) },
-> +	[SCU1_RESET_PORTC_VHUB_EHCI] = { true, SCU1_RESET_CTRL2, BIT(27) },
-> +	[SCU1_RESET_PORTD_USB2UART] = { true, SCU1_RESET_CTRL2, BIT(28) },
-> +	[SCU1_RESET_PORTD_VHUB_EHCI] = { true, SCU1_RESET_CTRL2, BIT(29) },
-> +	[SCU1_RESET_H2X] = { true, SCU1_RESET_CTRL2, BIT(30) },
-> +	[SCU1_RESET_I3CDMA] = { true, SCU1_RESET_CTRL2, BIT(31) },
-> +	[SCU1_RESET_PCIE2RST] = { false, SCU1_PCIE3_CTRL, BIT(0) },
-> +};
-> +
-> +#define to_aspeed_reset(p) container_of(p, struct aspeed_reset, rcdev)
+An error message here would be nice. Something like
 
-Please turn this into a static inline function.
+	rc = dev_err_probe(&pdev->dev, PTR_ERR(udc->clk), "Failed to get clock\n");
 
-> +static int aspeed_reset_assert(struct reset_controller_dev *rcdev, unsigned long id)
-> +{
-> +	struct aspeed_reset *rc = to_aspeed_reset(rcdev);
-> +	void __iomem *reg_offset = rc->base + rc->info->signal[id].offset;
-> +	unsigned long flags;
-> +
-> +	if (rc->info->signal[id].dedicated_clr) {
-> +		writel(rc->info->signal[id].bit, reg_offset);
-> +	} else {
-> +		spin_lock_irqsave(&rc->lock, flags);
+should work.
 
-You could use guard(spinlock_irqsave)(&rc->lock) to save a few lines.
+>  		goto err;
+>  	}
+> -	rc = clk_prepare_enable(udc->clk);
+> -	if (rc) {
+> -		dev_err(&pdev->dev, "Failed to enable clock (0x%x)\n", rc);
+> -		goto err;
+> -	}
+>  
+>  	/* Check if we need to limit the HW to USB1 */
+>  	max_speed = usb_get_maximum_speed(&pdev->dev);
 
-> +		writel(readl(reg_offset) & ~rc->info->signal[id].bit, reg_offset);
-> +		spin_unlock_irqrestore(&rc->lock, flags);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int aspeed_reset_deassert(struct reset_controller_dev *rcdev, unsigned long id)
-> +{
-> +	struct aspeed_reset *rc = to_aspeed_reset(rcdev);
-> +	void __iomem *reg_offset = rc->base + rc->info->signal[id].offset;
-> +	unsigned long flags;
-> +
-> +	if (rc->info->signal[id].dedicated_clr) {
-> +		writel(rc->info->signal[id].bit, reg_offset + 0x04);
-> +	} else {
-> +		spin_lock_irqsave(&rc->lock, flags);
-> +		writel(readl(reg_offset) | rc->info->signal[id].bit, reg_offset);
-> +		spin_unlock_irqrestore(&rc->lock, flags);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int aspeed_reset_status(struct reset_controller_dev *rcdev, unsigned long id)
-> +{
-> +	struct aspeed_reset *rc = to_aspeed_reset(rcdev);
-> +	void __iomem *reg_offset = rc->base + rc->info->signal[id].offset;
-> +
-> +	return (readl(reg_offset) & rc->info->signal[id].bit) ? 1 : 0;
-> +}
-> +
-> +static const struct reset_control_ops aspeed_reset_ops = {
-> +	.assert = aspeed_reset_assert,
-> +	.deassert = aspeed_reset_deassert,
-> +	.status = aspeed_reset_status,
-> +};
-> +
-> +static int aspeed_reset_probe(struct auxiliary_device *adev,
-> +			      const struct auxiliary_device_id *id)
-> +{
-> +	struct aspeed_reset *reset;
-> +	struct device *dev = &adev->dev;
-> +
-> +	reset = devm_kzalloc(dev, sizeof(*reset), GFP_KERNEL);
-> +	if (!reset)
-> +		return -ENOMEM;
-> +
-> +	spin_lock_init(&reset->lock);
-> +
-> +	reset->info = (struct aspeed_reset_info *)(id->driver_data);
-
-Unnecessary parentheses.
-
-> +	reset->rcdev.owner = THIS_MODULE;
-> +	reset->rcdev.nr_resets = reset->info->nr_resets;
-> +	reset->rcdev.ops = &aspeed_reset_ops;
-> +	reset->rcdev.of_node = dev->parent->of_node;
-> +	reset->rcdev.dev = dev;
-> +	reset->rcdev.of_reset_n_cells = 1;
-> +	reset->base = (void __iomem *)adev->dev.platform_data;
-> +
-> +	if (!reset->base)
-> +		return -ENOMEM;
-> +
-> +	return devm_reset_controller_register(dev, &reset->rcdev);
-> +}
-> +
-> +static const struct aspeed_reset_info ast2700_reset0_info = {
-> +	.nr_resets = ARRAY_SIZE(ast2700_reset0_signals),
-> +	.signal = ast2700_reset0_signals,
-> +};
-> +
-> +static const struct aspeed_reset_info ast2700_reset1_info = {
-> +	.nr_resets = ARRAY_SIZE(ast2700_reset1_signals),
-> +	.signal = ast2700_reset1_signals,
-> +};
-> +
-> +static const struct auxiliary_device_id aspeed_reset_ids[] = {
-> +	{ .name = "clk_ast2700.reset0", .driver_data = (kernel_ulong_t)&ast2700_reset0_info },
-> +	{ .name = "clk_ast2700.reset1", .driver_data = (kernel_ulong_t)&ast2700_reset1_info },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(auxiliary, aspeed_reset_ids);
-> +
-> +static struct auxiliary_driver aspeed_reset_driver = {
-> +	.probe		= aspeed_reset_probe,
-> +	.id_table	= aspeed_reset_ids,
-> +};
-> +
-> +module_auxiliary_driver(aspeed_reset_driver);
-> +
-> +MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-> +MODULE_DESCRIPTION("ASPEED SoC Reset Controller Driver");
-> +MODULE_LICENSE("GPL");
-
-regards
-Philipp
+Best regards
+Uwe
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 488 bytes
+Desc: not available
+URL: <http://lists.ozlabs.org/pipermail/linux-aspeed/attachments/20240925/5d621874/attachment-0001.sig>
