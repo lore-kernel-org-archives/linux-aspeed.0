@@ -1,9 +1,7 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu, 26 Sep 2024 11:28:21 +0800
-Subject: [PATCH v1 5/5] ARM: dts: aspeed: yosemite4: Add i2c-mux for ADC monitor on Spider Board
-In-Reply-To: <20240926032821.4171466-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20240926032821.4171466-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240926032821.4171466-6-Delphine_CC_Chiu@wiwynn.com>
+Date: Thu, 26 Sep 2024 11:35:33 +0800
+Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Add i2c-mux for Management Board
+Message-ID: <20240926033534.4174707-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,62 +10,118 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Add I2C mux for ADC monitor on Spider Board.
+Add I2C mux for Management Board to separate the I2C bus 35 for
+updating CPLD firmware and I2C bus 34 for the other devices.
 
 Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 80 ++++++++++++++++---
+ 1 file changed, 69 insertions(+), 11 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 29dd109ebd08..40f6090fcb36 100644
+index 98477792aa00..234ce7019fca 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -20,6 +20,8 @@ aliases {
- 
- 		i2c30 = &imux30;
- 		i2c31 = &imux31;
-+		i2c32 = &imux32;
-+		i2c33 = &imux33;
+@@ -17,6 +17,9 @@ aliases {
+ 		serial6 = &uart7;
+ 		serial7 = &uart8;
+ 		serial8 = &uart9;
++
++		i2c34 = &imux34;
++		i2c35 = &imux35;
  	};
  
  	chosen {
-@@ -447,29 +449,25 @@ eeprom at 51 {
+@@ -348,22 +351,77 @@ eeprom at 54 {
+ };
  
- 	i2c-mux at 73 {
- 		compatible = "nxp,pca9544";
-+		reg = <0x73>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--
--		idle-state = <0>;
- 		i2c-mux-idle-disconnect;
--		reg = <0x73>;
+ &i2c12 {
++	#address-cells = <1>;
++	#size-cells = <0>;
+ 	status = "okay";
+ 	bus-frequency = <400000>;
  
--		i2c at 0 {
-+		imux32: i2c at 0 {
+-	temperature-sensor at 48 {
+-		compatible = "ti,tmp75";
+-		reg = <0x48>;
+-	};
++	i2c-mux at 70 {
++		compatible = "nxp,pca9544";
++		reg = <0x70>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		i2c-mux-idle-disconnect;
+ 
+-	eeprom at 50 {
+-		compatible = "atmel,24c128";
+-		reg = <0x50>;
+-	};
++		imux34: i2c at 0 {
 +			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			reg = <0>;
--
- 			adc at 35 {
- 				compatible = "maxim,max11617";
- 				reg = <0x35>;
- 			};
- 		};
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			temperature-sensor at 48 {
++				compatible = "ti,tmp75";
++				reg = <0x48>;
++			};
++
++			eeprom at 50 {
++				compatible = "atmel,24c128";
++				reg = <0x50>;
++			};
++
++			eeprom at 54 {
++				compatible = "atmel,24c64";
++				reg = <0x54>;
++			};
++
++			rtc at 6f {
++				compatible = "nuvoton,nct3018y";
++				reg = <0x6f>;
++			};
++
++			gpio at 20 {
++				compatible = "nxp,pca9506";
++				reg = <0x20>;
++				gpio-controller;
++				#gpio-cells = <2>;
++			};
++
++			gpio at 21 {
++				compatible = "nxp,pca9506";
++				reg = <0x21>;
++				gpio-controller;
++				#gpio-cells = <2>;
++			};
++
++			gpio at 22 {
++				compatible = "nxp,pca9506";
++				reg = <0x22>;
++				gpio-controller;
++				#gpio-cells = <2>;
++			};
++
++			gpio at 23 {
++				compatible = "nxp,pca9506";
++				reg = <0x23>;
++				gpio-controller;
++				#gpio-cells = <2>;
++			};
++		};
  
--		i2c at 1 {
-+		imux33: i2c at 1 {
+-	rtc at 6f {
+-		compatible = "nuvoton,nct3018y";
+-		reg = <0x6f>;
++		imux35: i2c at 1 {
 +			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			reg = <0>;
--
- 			adc at 35 {
- 				compatible = "maxim,max11617";
- 				reg = <0x35>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
+ 	};
+ };
+ 
 -- 
 2.25.1
 
