@@ -1,42 +1,36 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 27 Sep 2024 19:17:43 +0800
-Subject: [PATCH v6 6/7] gpio: aspeed: Add the flush write to ensure the write complete.
+Date: Fri, 27 Sep 2024 19:17:44 +0800
+Subject: [PATCH v6 7/7] gpio: aspeed: Use devm_clk api to manage clock source
 In-Reply-To: <20240927111744.3511373-1-billy_tsai@aspeedtech.com>
 References: <20240927111744.3511373-1-billy_tsai@aspeedtech.com>
-Message-ID: <20240927111744.3511373-7-billy_tsai@aspeedtech.com>
+Message-ID: <20240927111744.3511373-8-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Performing a dummy read ensures that the register write operation is fully
-completed, mitigating any potential bus delays that could otherwise impact
-the frequency of bitbang usage. E.g., if the JTAG application uses GPIO to
-control the JTAG pins (TCK, TMS, TDI, TDO, and TRST), and the application
-sets the TCK clock to 1 MHz, the GPIO's high/low transitions will rely on
-a delay function to ensure the clock frequency does not exceed 1 MHz.
-However, this can lead to rapid toggling of the GPIO because the write
-operation is POSTed and does not wait for a bus acknowledgment.
+Replace of_clk_get with devm_clk_get_enabled to manage the clock source.
 
+Fixes: 5ae4cb94b313 ("gpio: aspeed: Add debounce support")
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/gpio/gpio-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/gpio/gpio-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index d6a35e230370..7cea3c5ba696 100644
+index 7cea3c5ba696..5443129e0820 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -406,6 +406,8 @@ static void __aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
- 	struct aspeed_gpio *gpio = gpiochip_get_data(gc);
+@@ -1339,7 +1339,7 @@ static int aspeed_gpio_probe(struct platform_device *pdev)
+ 	if (!gpio_id)
+ 		return -EINVAL;
  
- 	gpio->config->llops->reg_bit_set(gpio, offset, reg_val, val);
-+	// flush write
-+	gpio->config->llops->reg_bit_get(gpio, offset, reg_val);
- }
- 
- static void aspeed_gpio_set(struct gpio_chip *gc, unsigned int offset,
+-	gpio->clk = of_clk_get(pdev->dev.of_node, 0);
++	gpio->clk = devm_clk_get_enabled(&pdev->dev, NULL);
+ 	if (IS_ERR(gpio->clk)) {
+ 		dev_warn(&pdev->dev,
+ 				"Failed to get clock from devicetree, debouncing disabled\n");
 -- 
 2.25.1
 
