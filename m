@@ -1,73 +1,117 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 27 Sep 2024 19:17:37 +0800
-Subject: [PATCH v6 0/7] Add Aspeed G7 gpio support 
-Message-ID: <20240927111744.3511373-1-billy_tsai@aspeedtech.com>
+Date: Fri, 27 Sep 2024 19:17:39 +0800
+Subject: [PATCH v6 2/7] gpio: aspeed: Remove the name for bank array
+In-Reply-To: <20240927111744.3511373-1-billy_tsai@aspeedtech.com>
+References: <20240927111744.3511373-1-billy_tsai@aspeedtech.com>
+Message-ID: <20240927111744.3511373-3-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Aspeed 7th generation SoC features two GPIO controllers: one with 12
-GPIO pins and another with 216 GPIO pins. The main difference from the
-previous generation is that the control logic has been updated to support
-per-pin control, allowing each pin to have its own 32-bit register for
-configuring value, direction, interrupt type, and more.
-This patch serial also add low-level operations (llops) to abstract the
-register access for GPIO registers and the coprocessor request/release in
-gpio-aspeed.c making it easier to extend the driver to support different
-hardware register layouts.
+The bank array name is only used to determine if the GPIO offset is valid,
+and this condition can be replaced by checking if the offset exceeds the
+ngpio property.
 
-Change since v5:
-- Reorder the aspeed_gpio_llops api
-- Add aspeed_gpio prefix for all of the api
-- Add mask value check before field_get and field_prep
-- Separate the devm_clk_get_enabled modification into a new patch.
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+ drivers/gpio/gpio-aspeed.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-Change since v4:
-- Add `reg_bank_get` callback
-- `reg_bits_get` -> `reg_bit_get
-- `dcache_require` -> `require_dcache`
-- Use `devm_clk_get_enabled` to get the clock source
-- g4 specific api doesn't need to use the callback function 
-
-Change since v3:
-- Add `privilege_ctrl` and `privilege_init` callback
-- Use `bool aspeed_gpio_support_copro()` api to replace the
-`cmd_source_supoort` flag
-- Add the `dcache_require` flag and move the dcache usage into the
-reg_bit_set callback
-- `reg_bits_set` -> `reg_bit_set` and `reg_bits_read` -> `reg_bits_get`
-- `bool copro = 0` -> `bool copro = false`
-- `if (!gpio->config->llops->reg_bit_set || 
-!gpio->config->llops->reg_bits_get) return -EINVAL;`
-- Correct the access of reg_irq_status
-- Remove __init attribute to fix the compiler warning
-
-Change since v2:
-- Correct minItems for gpio-line names
-- Remove the example for ast2700, because it's the same as the AST2600
-- Fix the sparse warning which is reported by the test robot
-- Remove the version and use the match data to replace it.
-- Add another two patches one for deferred probe one for flush write.
-
-Changes since v1:
-- Merge the gpio-aspeed-g7.c into the gpio-aspeed.c.
-- Create the llops in gpio-aspeed.c for flexibility.
-
-Billy Tsai (7):
-  dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
-  gpio: aspeed: Remove the name for bank array
-  gpio: aspeed: Create llops to handle hardware access
-  gpio: aspeed: Support G7 Aspeed gpio controller
-  gpio: aspeed: Change the macro to support deferred probe
-  gpio: aspeed: Add the flush write to ensure the write complete.
-  gpio: aspeed: Use devm_clk api to manage clock source
-
- .../bindings/gpio/aspeed,ast2400-gpio.yaml    |  19 +-
- drivers/gpio/gpio-aspeed.c                    | 605 +++++++++++-------
- 2 files changed, 394 insertions(+), 230 deletions(-)
-
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 04c03402db6d..d20e15b2079d 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -77,7 +77,6 @@ struct aspeed_gpio_bank {
+ 	uint16_t	debounce_regs;
+ 	uint16_t	tolerance_regs;
+ 	uint16_t	cmdsrc_regs;
+-	const char	names[4][3];
+ };
+ 
+ /*
+@@ -104,7 +103,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0040,
+ 		.tolerance_regs = 0x001c,
+ 		.cmdsrc_regs = 0x0060,
+-		.names = { "A", "B", "C", "D" },
+ 	},
+ 	{
+ 		.val_regs = 0x0020,
+@@ -113,7 +111,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0048,
+ 		.tolerance_regs = 0x003c,
+ 		.cmdsrc_regs = 0x0068,
+-		.names = { "E", "F", "G", "H" },
+ 	},
+ 	{
+ 		.val_regs = 0x0070,
+@@ -122,7 +119,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x00b0,
+ 		.tolerance_regs = 0x00ac,
+ 		.cmdsrc_regs = 0x0090,
+-		.names = { "I", "J", "K", "L" },
+ 	},
+ 	{
+ 		.val_regs = 0x0078,
+@@ -131,7 +127,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0100,
+ 		.tolerance_regs = 0x00fc,
+ 		.cmdsrc_regs = 0x00e0,
+-		.names = { "M", "N", "O", "P" },
+ 	},
+ 	{
+ 		.val_regs = 0x0080,
+@@ -140,7 +135,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0130,
+ 		.tolerance_regs = 0x012c,
+ 		.cmdsrc_regs = 0x0110,
+-		.names = { "Q", "R", "S", "T" },
+ 	},
+ 	{
+ 		.val_regs = 0x0088,
+@@ -149,7 +143,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0160,
+ 		.tolerance_regs = 0x015c,
+ 		.cmdsrc_regs = 0x0140,
+-		.names = { "U", "V", "W", "X" },
+ 	},
+ 	{
+ 		.val_regs = 0x01E0,
+@@ -158,7 +151,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0190,
+ 		.tolerance_regs = 0x018c,
+ 		.cmdsrc_regs = 0x0170,
+-		.names = { "Y", "Z", "AA", "AB" },
+ 	},
+ 	{
+ 		.val_regs = 0x01e8,
+@@ -167,7 +159,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x01c0,
+ 		.tolerance_regs = 0x01bc,
+ 		.cmdsrc_regs = 0x01a0,
+-		.names = { "AC", "", "", "" },
+ 	},
+ };
+ 
+@@ -280,11 +271,11 @@ static inline const struct aspeed_bank_props *find_bank_props(
+ static inline bool have_gpio(struct aspeed_gpio *gpio, unsigned int offset)
+ {
+ 	const struct aspeed_bank_props *props = find_bank_props(gpio, offset);
+-	const struct aspeed_gpio_bank *bank = to_bank(offset);
+-	unsigned int group = GPIO_OFFSET(offset) / 8;
+ 
+-	return bank->names[group][0] != '\0' &&
+-		(!props || ((props->input | props->output) & GPIO_BIT(offset)));
++	if (offset >= gpio->chip.ngpio)
++		return false;
++
++	return (!props || ((props->input | props->output) & GPIO_BIT(offset)));
+ }
+ 
+ static inline bool have_input(struct aspeed_gpio *gpio, unsigned int offset)
 -- 
 2.25.1
 
