@@ -1,9 +1,9 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 30 Sep 2024 15:04:58 +0800
-Subject: [PATCH v1 7/8] ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode on Fan Boards
+Date: Mon, 30 Sep 2024 15:04:59 +0800
+Subject: [PATCH v1 8/8] ARM: dts: aspeed: yosemite4: Add i2c-mux for ADC monitor on Spider Board
 In-Reply-To: <20240930070500.3174431-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240930070500.3174431-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240930070500.3174431-8-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240930070500.3174431-9-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,36 +12,62 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Revise adc128d818 adc mode on Fan Boards according to schematic.
+Add I2C mux for ADC monitors on Spider Board.
 
 Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 6a1dccd23225..e235ff7c7a9b 100644
+index e235ff7c7a9b..ec2d8a783ac1 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1173,7 +1173,7 @@ imux30: i2c at 0 {
- 			adc at 1f {
- 				compatible = "ti,adc128d818";
- 				reg = <0x1f>;
--				ti,mode = /bits/ 8 <2>;
-+				ti,mode = /bits/ 8 <1>;
- 			};
+@@ -34,6 +34,8 @@ aliases {
+ 		i2c29 = &imux29;
+ 		i2c30 = &imux30;
+ 		i2c31 = &imux31;
++		i2c32 = &imux32;
++		i2c33 = &imux33;
+ 		i2c34 = &imux34;
+ 		i2c35 = &imux35;
+ 	};
+@@ -1128,29 +1130,25 @@ eeprom at 51 {
  
- 			pwm at 20{
-@@ -1221,7 +1221,7 @@ imux31: i2c at 1 {
- 			adc at 1f {
- 				compatible = "ti,adc128d818";
- 				reg = <0x1f>;
--				ti,mode = /bits/ 8 <2>;
-+				ti,mode = /bits/ 8 <1>;
- 			};
+ 	i2c-mux at 73 {
+ 		compatible = "nxp,pca9544";
++		reg = <0x73>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-
+-		idle-state = <0>;
+ 		i2c-mux-idle-disconnect;
+-		reg = <0x73>;
  
- 			pwm at 20{
+-		i2c at 0 {
++		imux32: i2c at 0 {
++			reg = <0>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-			reg = <0>;
+-
+ 			adc at 35 {
+ 				compatible = "maxim,max11617";
+ 				reg = <0x35>;
+ 			};
+ 		};
+ 
+-		i2c at 1 {
++		imux33: i2c at 1 {
++			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-			reg = <0>;
+-
+ 			adc at 35 {
+ 				compatible = "maxim,max11617";
+ 				reg = <0x35>;
 -- 
 2.25.1
 
