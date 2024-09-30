@@ -1,9 +1,9 @@
 From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Mon, 30 Sep 2024 12:04:05 +0000
-Subject: [PATCH 10/45] media: tuners: Use string_choices helpers
+Date: Mon, 30 Sep 2024 12:04:06 +0000
+Subject: [PATCH 11/45] media: rc: Use string_choices helpers
 In-Reply-To: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
 References: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
-Message-ID: <20240930-cocci-opportunity-v1-10-81e137456ce0@chromium.org>
+Message-ID: <20240930-cocci-opportunity-v1-11-81e137456ce0@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,67 +11,85 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 The following cocci warnings are fixed:
-drivers/media/tuners/tda18250.c:110:3-12: opportunity for str_true_false(triggered)
-drivers/media/tuners/tda9887.c:296:39-54: opportunity for str_high_low(( buf [ 0 ] & 0x20 ))
-drivers/media/tuners/tda9887.c:298:39-54: opportunity for str_high_low(( buf [ 0 ] & 0x80 ))
-drivers/media/tuners/tda9887.c:294:39-54: opportunity for str_yes_no(( buf [ 0 ] & 0x01 ))
-drivers/media/tuners/tda9887.c:347:5-20: opportunity for str_yes_no(( buf [ 1 ] & 0x02 ))
-drivers/media/tuners/tda9887.c:353:5-20: opportunity for str_yes_no(( buf [ 1 ] & 0x20 ))
+drivers/media/rc/mceusb.c:1130:2-8: opportunity for str_enable_disable(enable)
+drivers/media/rc/ene_ir.c:1121:22-28: opportunity for str_enabled_disabled(enable)
+drivers/media/rc/serial_ir.c:591:4-9: opportunity for str_low_high(sense)
+drivers/media/rc/serial_ir.c:594:4-9: opportunity for str_low_high(sense)
 
 Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 ---
- drivers/media/tuners/tda18250.c |  2 +-
- drivers/media/tuners/tda9887.c  | 10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/media/rc/ene_ir.c    | 3 ++-
+ drivers/media/rc/mceusb.c    | 3 ++-
+ drivers/media/rc/serial_ir.c | 5 +++--
+ 3 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/media/tuners/tda18250.c b/drivers/media/tuners/tda18250.c
-index 68d0275f29e1..853600c80839 100644
---- a/drivers/media/tuners/tda18250.c
-+++ b/drivers/media/tuners/tda18250.c
-@@ -107,7 +107,7 @@ static int tda18250_wait_for_irq(struct dvb_frontend *fe,
- 	dev_dbg(&client->dev, "waited IRQ (0x%02x) %d ms, triggered: %s", irq,
- 			jiffies_to_msecs(jiffies) -
- 			(jiffies_to_msecs(timeout) - maxwait),
--			triggered ? "true" : "false");
-+			str_true_false(triggered));
+diff --git a/drivers/media/rc/ene_ir.c b/drivers/media/rc/ene_ir.c
+index 67722e2e47ff..90bee860a8a1 100644
+--- a/drivers/media/rc/ene_ir.c
++++ b/drivers/media/rc/ene_ir.c
+@@ -24,6 +24,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
++#include <linux/string_choices.h>
+ #include <media/rc-core.h>
+ #include "ene_ir.h"
  
- 	if (!triggered)
- 		return -ETIMEDOUT;
-diff --git a/drivers/media/tuners/tda9887.c b/drivers/media/tuners/tda9887.c
-index b2f7054c1832..f403dcf14aa0 100644
---- a/drivers/media/tuners/tda9887.c
-+++ b/drivers/media/tuners/tda9887.c
-@@ -291,11 +291,11 @@ static void dump_read_message(struct dvb_frontend *fe, unsigned char *buf)
- 		"+ 12.5 kHz",
- 	};
- 	tuner_info("read: 0x%2x\n", buf[0]);
--	tuner_info("  after power on : %s\n", (buf[0] & 0x01) ? "yes" : "no");
-+	tuner_info("  after power on : %s\n", str_yes_no(buf[0] & 0x01));
- 	tuner_info("  afc            : %s\n", afc[(buf[0] >> 1) & 0x0f]);
--	tuner_info("  fmif level     : %s\n", (buf[0] & 0x20) ? "high" : "low");
-+	tuner_info("  fmif level     : %s\n", str_high_low(buf[0] & 0x20));
- 	tuner_info("  afc window     : %s\n", (buf[0] & 0x40) ? "in" : "out");
--	tuner_info("  vfi level      : %s\n", (buf[0] & 0x80) ? "high" : "low");
-+	tuner_info("  vfi level      : %s\n", str_high_low(buf[0] & 0x80));
+@@ -1118,7 +1119,7 @@ static void ene_remove(struct pnp_dev *pnp_dev)
+ /* enable wake on IR (wakes on specific button on original remote) */
+ static void ene_enable_wake(struct ene_device *dev, bool enable)
+ {
+-	dbg("wake on IR %s", enable ? "enabled" : "disabled");
++	dbg("wake on IR %s", str_enabled_disabled(enable));
+ 	ene_set_clear_reg_mask(dev, ENE_FW1, ENE_FW1_WAKE, enable);
  }
  
- static void dump_write_message(struct dvb_frontend *fe, unsigned char *buf)
-@@ -344,13 +344,13 @@ static void dump_write_message(struct dvb_frontend *fe, unsigned char *buf)
- 	tuner_info("  B0   video mode      : %s\n",
- 		   (buf[1] & 0x01) ? "video trap" : "sound trap");
- 	tuner_info("  B1   auto mute fm    : %s\n",
--		   (buf[1] & 0x02) ? "yes" : "no");
-+		   str_yes_no(buf[1] & 0x02));
- 	tuner_info("  B2   carrier mode    : %s\n",
- 		   (buf[1] & 0x04) ? "QSS" : "Intercarrier");
- 	tuner_info("  B3-4 tv sound/radio  : %s\n",
- 		   sound[(buf[1] & 0x18) >> 3]);
- 	tuner_info("  B5   force mute audio: %s\n",
--		   (buf[1] & 0x20) ? "yes" : "no");
-+		   str_yes_no(buf[1] & 0x20));
- 	tuner_info("  B6   output port 1   : %s\n",
- 		   (buf[1] & 0x40) ? "high (inactive)" : "low (active)");
- 	tuner_info("  B7   output port 2   : %s\n",
+diff --git a/drivers/media/rc/mceusb.c b/drivers/media/rc/mceusb.c
+index cd7af4d88b7f..7f932f0f5750 100644
+--- a/drivers/media/rc/mceusb.c
++++ b/drivers/media/rc/mceusb.c
+@@ -25,6 +25,7 @@
+ #include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
++#include <linux/string_choices.h>
+ #include <linux/workqueue.h>
+ #include <linux/usb.h>
+ #include <linux/usb/input.h>
+@@ -1127,7 +1128,7 @@ static int mceusb_set_rx_carrier_report(struct rc_dev *dev, int enable)
+ 				    MCE_CMD_SETIRRXPORTEN, 0x00 };
+ 
+ 	dev_dbg(ir->dev, "%s short-range receiver carrier reporting",
+-		enable ? "enable" : "disable");
++		str_enable_disable(enable));
+ 	if (enable) {
+ 		ir->carrier_report_enabled = true;
+ 		if (!ir->learning_active) {
+diff --git a/drivers/media/rc/serial_ir.c b/drivers/media/rc/serial_ir.c
+index fc5fd3927177..f9ec2f043529 100644
+--- a/drivers/media/rc/serial_ir.c
++++ b/drivers/media/rc/serial_ir.c
+@@ -25,6 +25,7 @@
+ #include <linux/delay.h>
+ #include <linux/platform_device.h>
+ #include <linux/spinlock.h>
++#include <linux/string_choices.h>
+ #include <media/rc-core.h>
+ 
+ struct serial_ir_hw {
+@@ -588,10 +589,10 @@ static int serial_ir_probe(struct platform_device *dev)
+ 		}
+ 		sense = nlow >= nhigh ? 1 : 0;
+ 		dev_info(&dev->dev, "auto-detected active %s receiver\n",
+-			 sense ? "low" : "high");
++			 str_low_high(sense));
+ 	} else
+ 		dev_info(&dev->dev, "Manually using active %s receiver\n",
+-			 sense ? "low" : "high");
++			 str_low_high(sense));
+ 
+ 	dev_dbg(&dev->dev, "Interrupt %d, port %04x obtained\n", irq, io);
+ 
 
 -- 
 2.46.1.824.gd892dcdcdd-goog
