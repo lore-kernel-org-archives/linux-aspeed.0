@@ -1,9 +1,9 @@
 From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Mon, 30 Sep 2024 12:04:21 +0000
-Subject: [PATCH 26/45] media: videobuf2: Use string_choices helpers
+Date: Mon, 30 Sep 2024 12:04:22 +0000
+Subject: [PATCH 27/45] media: cec: Use string_choices helpers
 In-Reply-To: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
 References: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
-Message-ID: <20240930-cocci-opportunity-v1-26-81e137456ce0@chromium.org>
+Message-ID: <20240930-cocci-opportunity-v1-27-81e137456ce0@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,37 +11,55 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 The following cocci warnings are fixed:
-drivers/media/common/videobuf2/videobuf2-core.c:3008:2-6: opportunity for str_read_write(read)
-drivers/media/common/videobuf2/videobuf2-core.c:2860:2-8: opportunity for str_read_write(( read ))
+drivers/media/cec/usb/pulse8/pulse8-cec.c:698:2-9: opportunity for str_on_off(data [ 0 ])
+drivers/media/cec/usb/pulse8/pulse8-cec.c:705:4-11: opportunity for str_on_off(data [ 0 ])
+drivers/media/cec/platform/cec-gpio/cec-gpio.c:138:6-22: opportunity for str_high_low(cec -> hpd_is_high)
+drivers/media/cec/platform/cec-gpio/cec-gpio.c:141:6-21: opportunity for str_high_low(cec -> v5_is_high)
 
 Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 ---
- drivers/media/common/videobuf2/videobuf2-core.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/media/cec/platform/cec-gpio/cec-gpio.c | 4 ++--
+ drivers/media/cec/usb/pulse8/pulse8-cec.c      | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/media/common/videobuf2/videobuf2-core.c b/drivers/media/common/videobuf2/videobuf2-core.c
-index 29a8d876e6c2..05678fa14fe9 100644
---- a/drivers/media/common/videobuf2/videobuf2-core.c
-+++ b/drivers/media/common/videobuf2/videobuf2-core.c
-@@ -2857,7 +2857,8 @@ static int __vb2_init_fileio(struct vb2_queue *q, int read)
- 		return -EBUSY;
+diff --git a/drivers/media/cec/platform/cec-gpio/cec-gpio.c b/drivers/media/cec/platform/cec-gpio/cec-gpio.c
+index 98dacb0919b6..49160a15272b 100644
+--- a/drivers/media/cec/platform/cec-gpio/cec-gpio.c
++++ b/drivers/media/cec/platform/cec-gpio/cec-gpio.c
+@@ -135,10 +135,10 @@ static void cec_gpio_status(struct cec_adapter *adap, struct seq_file *file)
+ 	seq_printf(file, "using irq: %d\n", cec->cec_irq);
+ 	if (cec->hpd_gpio)
+ 		seq_printf(file, "hpd: %s\n",
+-			   cec->hpd_is_high ? "high" : "low");
++			   str_high_low(cec->hpd_is_high));
+ 	if (cec->v5_gpio)
+ 		seq_printf(file, "5V: %s\n",
+-			   cec->v5_is_high ? "high" : "low");
++			   str_high_low(cec->v5_is_high));
+ }
  
- 	dprintk(q, 3, "setting up file io: mode %s, count %d, read_once %d, write_immediately %d\n",
--		(read) ? "read" : "write", q->min_reqbufs_allocation, q->fileio_read_once,
-+		str_read_write(read), q->min_reqbufs_allocation,
-+		q->fileio_read_once,
- 		q->fileio_write_immediately);
+ static int cec_gpio_read_hpd(struct cec_adapter *adap)
+diff --git a/drivers/media/cec/usb/pulse8/pulse8-cec.c b/drivers/media/cec/usb/pulse8/pulse8-cec.c
+index ba67587bd43e..0167f21cb116 100644
+--- a/drivers/media/cec/usb/pulse8/pulse8-cec.c
++++ b/drivers/media/cec/usb/pulse8/pulse8-cec.c
+@@ -695,14 +695,14 @@ static int pulse8_setup(struct pulse8 *pulse8, struct serio *serio,
+ 		return err;
+ 	pulse8->autonomous = data[0];
+ 	dev_dbg(pulse8->dev, "Autonomous mode: %s",
+-		data[0] ? "on" : "off");
++		str_on_off(data[0]));
  
- 	fileio = kzalloc(sizeof(*fileio), GFP_KERNEL);
-@@ -3005,7 +3006,7 @@ static size_t __vb2_perform_fileio(struct vb2_queue *q, char __user *data, size_
- 	int ret;
+ 	if (pulse8->vers >= 10) {
+ 		cmd[0] = MSGCODE_GET_AUTO_POWER_ON;
+ 		err = pulse8_send_and_wait(pulse8, cmd, 1, cmd[0], 1);
+ 		if (!err)
+ 			dev_dbg(pulse8->dev, "Auto Power On: %s",
+-				data[0] ? "on" : "off");
++				str_on_off(data[0]));
+ 	}
  
- 	dprintk(q, 3, "mode %s, offset %ld, count %zd, %sblocking\n",
--		read ? "read" : "write", (long)*ppos, count,
-+		str_read_write(read), (long)*ppos, count,
- 		nonblock ? "non" : "");
- 
- 	if (!data)
+ 	cmd[0] = MSGCODE_GET_DEVICE_TYPE;
 
 -- 
 2.46.1.824.gd892dcdcdd-goog
