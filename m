@@ -1,9 +1,9 @@
 From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Mon, 30 Sep 2024 12:04:08 +0000
-Subject: [PATCH 13/45] media: pci: cx23885: Use string_choices helpers
+Date: Mon, 30 Sep 2024 12:04:09 +0000
+Subject: [PATCH 14/45] media: saa7134: Use string_choices helpers
 In-Reply-To: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
 References: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
-Message-ID: <20240930-cocci-opportunity-v1-13-81e137456ce0@chromium.org>
+Message-ID: <20240930-cocci-opportunity-v1-14-81e137456ce0@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,144 +11,91 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 The following cocci warnings are fixed:
-drivers/media/pci/cx23885/altera-ci.c:285:3-9: opportunity for str_read_write(( read ))
-drivers/media/pci/cx23885/cimax2.c:227:3-9: opportunity for str_read_write(( read ))
-drivers/media/pci/cx23885/cx23888-ir.c:996:4-9: opportunity for str_enabled_disabled(filtr)
-drivers/media/pci/cx23885/cx23888-ir.c:935:4-21: opportunity for str_enabled_disabled(cntrl & CNTRL_DMD)
-drivers/media/pci/cx23885/cx23888-ir.c:1020:4-21: opportunity for str_enabled_disabled(cntrl & CNTRL_MOD)
-drivers/media/pci/cx23885/cx23888-ir.c:937:4-21: opportunity for str_enabled_disabled(cntrl & CNTRL_RFE)
-drivers/media/pci/cx23885/cx23888-ir.c:1022:4-21: opportunity for str_enabled_disabled(cntrl & CNTRL_TFE)
-drivers/media/pci/cx23885/cx23888-ir.c:1008:4-21: opportunity for str_enabled_disabled(irqen & IRQEN_ROE)
-drivers/media/pci/cx23885/cx23888-ir.c:1014:4-21: opportunity for str_enabled_disabled(irqen & IRQEN_RSE)
-drivers/media/pci/cx23885/cx23888-ir.c:1004:4-21: opportunity for str_enabled_disabled(irqen & IRQEN_RTE)
-drivers/media/pci/cx23885/cx23888-ir.c:1044:4-21: opportunity for str_enabled_disabled(irqen & IRQEN_TSE)
-drivers/media/pci/cx23885/cx23888-ir.c:1026:4-21: opportunity for str_yes_no(cntrl & CNTRL_IVO)
-drivers/media/pci/cx23885/cx23888-ir.c:933:4-21: opportunity for str_yes_no(cntrl & CNTRL_RXE)
-drivers/media/pci/cx23885/cx23888-ir.c:1018:4-21: opportunity for str_yes_no(cntrl & CNTRL_TXE)
-drivers/media/pci/cx23885/cx23888-ir.c:1010:4-21: opportunity for str_yes_no(stats & STATS_RBY)
-drivers/media/pci/cx23885/cx23888-ir.c:1006:4-21: opportunity for str_yes_no(stats & STATS_ROR)
-drivers/media/pci/cx23885/cx23888-ir.c:1012:4-21: opportunity for str_yes_no(stats & STATS_RSR)
-drivers/media/pci/cx23885/cx23888-ir.c:1002:4-21: opportunity for str_yes_no(stats & STATS_RTO)
-drivers/media/pci/cx23885/cx23888-ir.c:1040:4-21: opportunity for str_yes_no(stats & STATS_TBY)
-drivers/media/pci/cx23885/cx23888-ir.c:1042:4-21: opportunity for str_yes_no(stats & STATS_TSR)
+drivers/media/pci/saa7134/saa7134-cards.c:7984:7-16: opportunity for str_yes_no(( 1 == rc ))
+drivers/media/pci/saa7134/saa7134-dvb.c:93:31-33: opportunity for str_on_off(ok)
+drivers/media/pci/saa7134/saa7134-input.c:919:3-12: opportunity for str_yes_no(( rc == 1 ))
+drivers/media/pci/saa7134/saa7134-input.c:898:3-12: opportunity for str_yes_no(( 1 == rc ))
+drivers/media/pci/saa7134/saa7134-input.c:934:3-12: opportunity for str_yes_no(( 1 == rc ))
+drivers/media/pci/saa7134/saa7134-video.c:622:10-15: opportunity for str_enabled_disabled(flags)
 
 Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 ---
- drivers/media/pci/cx23885/altera-ci.c  |  2 +-
- drivers/media/pci/cx23885/cimax2.c     |  2 +-
- drivers/media/pci/cx23885/cx23888-ir.c | 36 +++++++++++++++++-----------------
- 3 files changed, 20 insertions(+), 20 deletions(-)
+ drivers/media/pci/saa7134/saa7134-cards.c | 2 +-
+ drivers/media/pci/saa7134/saa7134-dvb.c   | 2 +-
+ drivers/media/pci/saa7134/saa7134-input.c | 6 +++---
+ drivers/media/pci/saa7134/saa7134-video.c | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/media/pci/cx23885/altera-ci.c b/drivers/media/pci/cx23885/altera-ci.c
-index 0dc348215b72..e154a39d86ef 100644
---- a/drivers/media/pci/cx23885/altera-ci.c
-+++ b/drivers/media/pci/cx23885/altera-ci.c
-@@ -282,7 +282,7 @@ static int altera_ci_op_cam(struct dvb_ca_en50221 *en50221, int slot,
- 	mutex_unlock(&inter->fpga_mutex);
+diff --git a/drivers/media/pci/saa7134/saa7134-cards.c b/drivers/media/pci/saa7134/saa7134-cards.c
+index e80fb4ebfda6..79cd61fb0205 100644
+--- a/drivers/media/pci/saa7134/saa7134-cards.c
++++ b/drivers/media/pci/saa7134/saa7134-cards.c
+@@ -7981,7 +7981,7 @@ int saa7134_board_init2(struct saa7134_dev *dev)
+ 			rc = i2c_transfer(&dev->i2c_adap, &msg, 1);
+ 			pr_info("%s: probe IR chip @ i2c 0x%02x: %s\n",
+ 				   dev->name, msg.addr,
+-				   (1 == rc) ? "yes" : "no");
++				   str_yes_no(rc == 1));
+ 			if (rc == 1)
+ 				dev->has_remote = SAA7134_REMOTE_I2C;
+ 		}
+diff --git a/drivers/media/pci/saa7134/saa7134-dvb.c b/drivers/media/pci/saa7134/saa7134-dvb.c
+index 6de8a02314af..d0e58a0156f7 100644
+--- a/drivers/media/pci/saa7134/saa7134-dvb.c
++++ b/drivers/media/pci/saa7134/saa7134-dvb.c
+@@ -90,7 +90,7 @@ static int pinnacle_antenna_pwr(struct saa7134_dev *dev, int on)
+ 	saa_setl(SAA7134_GPIO_GPSTATUS0 >> 2,   (1 << 28));
+ 	udelay(10);
+ 	ok = saa_readl(SAA7134_GPIO_GPSTATUS0) & (1 << 27);
+-	pr_debug("%s %s\n", __func__, ok ? "on" : "off");
++	pr_debug("%s %s\n", __func__, str_on_off(ok));
  
- 	ci_dbg_print("%s: %s: addr=[0x%02x], %s=%x\n", __func__,
--			(read) ? "read" : "write", addr,
-+			str_read_write(read), addr,
- 			(flag == NETUP_CI_FLG_CTL) ? "ctl" : "mem",
- 			(read) ? mem : val);
- 
-diff --git a/drivers/media/pci/cx23885/cimax2.c b/drivers/media/pci/cx23885/cimax2.c
-index 06e41f92092d..458fa779274a 100644
---- a/drivers/media/pci/cx23885/cimax2.c
-+++ b/drivers/media/pci/cx23885/cimax2.c
-@@ -224,7 +224,7 @@ static int netup_ci_op_cam(struct dvb_ca_en50221 *en50221, int slot,
- 			return -EREMOTEIO;
- 
- 	ci_dbg_print("%s: %s: chipaddr=[0x%x] addr=[0x%02x], %s=%x\n", __func__,
--			(read) ? "read" : "write", state->ci_i2c_addr, addr,
-+			str_read_write(read), state->ci_i2c_addr, addr,
- 			(flag == NETUP_CI_CTL) ? "ctl" : "mem",
- 			(read) ? mem : data);
- 
-diff --git a/drivers/media/pci/cx23885/cx23888-ir.c b/drivers/media/pci/cx23885/cx23888-ir.c
-index 222d04421468..85ca564fd3ab 100644
---- a/drivers/media/pci/cx23885/cx23888-ir.c
-+++ b/drivers/media/pci/cx23885/cx23888-ir.c
-@@ -930,11 +930,11 @@ static int cx23888_ir_log_status(struct v4l2_subdev *sd)
- 
- 	v4l2_info(sd, "IR Receiver:\n");
- 	v4l2_info(sd, "\tEnabled:                           %s\n",
--		  cntrl & CNTRL_RXE ? "yes" : "no");
-+		  str_yes_no(cntrl & CNTRL_RXE));
- 	v4l2_info(sd, "\tDemodulation from a carrier:       %s\n",
--		  cntrl & CNTRL_DMD ? "enabled" : "disabled");
-+		  str_enabled_disabled(cntrl & CNTRL_DMD));
- 	v4l2_info(sd, "\tFIFO:                              %s\n",
--		  cntrl & CNTRL_RFE ? "enabled" : "disabled");
-+		  str_enabled_disabled(cntrl & CNTRL_RFE));
- 	switch (cntrl & CNTRL_EDG) {
- 	case CNTRL_EDG_NONE:
- 		s = "disabled";
-@@ -993,37 +993,37 @@ static int cx23888_ir_log_status(struct v4l2_subdev *sd)
- 		  pulse_width_count_to_us(FIFO_RXTX, rxclk),
- 		  pulse_width_count_to_ns(FIFO_RXTX, rxclk));
- 	v4l2_info(sd, "\tLow pass filter:                   %s\n",
--		  filtr ? "enabled" : "disabled");
-+		  str_enabled_disabled(filtr));
- 	if (filtr)
- 		v4l2_info(sd, "\tMin acceptable pulse width (LPF):  %u us, %u ns\n",
- 			  lpf_count_to_us(filtr),
- 			  lpf_count_to_ns(filtr));
- 	v4l2_info(sd, "\tPulse width timer timed-out:       %s\n",
--		  stats & STATS_RTO ? "yes" : "no");
-+		  str_yes_no(stats & STATS_RTO));
- 	v4l2_info(sd, "\tPulse width timer time-out intr:   %s\n",
--		  irqen & IRQEN_RTE ? "enabled" : "disabled");
-+		  str_enabled_disabled(irqen & IRQEN_RTE));
- 	v4l2_info(sd, "\tFIFO overrun:                      %s\n",
--		  stats & STATS_ROR ? "yes" : "no");
-+		  str_yes_no(stats & STATS_ROR));
- 	v4l2_info(sd, "\tFIFO overrun interrupt:            %s\n",
--		  irqen & IRQEN_ROE ? "enabled" : "disabled");
-+		  str_enabled_disabled(irqen & IRQEN_ROE));
- 	v4l2_info(sd, "\tBusy:                              %s\n",
--		  stats & STATS_RBY ? "yes" : "no");
-+		  str_yes_no(stats & STATS_RBY));
- 	v4l2_info(sd, "\tFIFO service requested:            %s\n",
--		  stats & STATS_RSR ? "yes" : "no");
-+		  str_yes_no(stats & STATS_RSR));
- 	v4l2_info(sd, "\tFIFO service request interrupt:    %s\n",
--		  irqen & IRQEN_RSE ? "enabled" : "disabled");
-+		  str_enabled_disabled(irqen & IRQEN_RSE));
- 
- 	v4l2_info(sd, "IR Transmitter:\n");
- 	v4l2_info(sd, "\tEnabled:                           %s\n",
--		  cntrl & CNTRL_TXE ? "yes" : "no");
-+		  str_yes_no(cntrl & CNTRL_TXE));
- 	v4l2_info(sd, "\tModulation onto a carrier:         %s\n",
--		  cntrl & CNTRL_MOD ? "enabled" : "disabled");
-+		  str_enabled_disabled(cntrl & CNTRL_MOD));
- 	v4l2_info(sd, "\tFIFO:                              %s\n",
--		  cntrl & CNTRL_TFE ? "enabled" : "disabled");
-+		  str_enabled_disabled(cntrl & CNTRL_TFE));
- 	v4l2_info(sd, "\tFIFO interrupt watermark:          %s\n",
- 		  cntrl & CNTRL_TIC ? "not empty" : "half full or less");
- 	v4l2_info(sd, "\tOutput pin level inversion         %s\n",
--		  cntrl & CNTRL_IVO ? "yes" : "no");
-+		  str_yes_no(cntrl & CNTRL_IVO));
- 	v4l2_info(sd, "\tCarrier polarity:                  %s\n",
- 		  cntrl & CNTRL_CPL ? "space:burst mark:noburst"
- 				    : "space:noburst mark:burst");
-@@ -1037,11 +1037,11 @@ static int cx23888_ir_log_status(struct v4l2_subdev *sd)
- 		  pulse_width_count_to_us(FIFO_RXTX, txclk),
- 		  pulse_width_count_to_ns(FIFO_RXTX, txclk));
- 	v4l2_info(sd, "\tBusy:                              %s\n",
--		  stats & STATS_TBY ? "yes" : "no");
-+		  str_yes_no(stats & STATS_TBY));
- 	v4l2_info(sd, "\tFIFO service requested:            %s\n",
--		  stats & STATS_TSR ? "yes" : "no");
-+		  str_yes_no(stats & STATS_TSR));
- 	v4l2_info(sd, "\tFIFO service request interrupt:    %s\n",
--		  irqen & IRQEN_TSE ? "enabled" : "disabled");
-+		  str_enabled_disabled(irqen & IRQEN_TSE));
- 
- 	return 0;
- }
+ 	if (!ok)
+ 		saa_clearl(SAA7134_GPIO_GPSTATUS0 >> 2,   (1 << 26));
+diff --git a/drivers/media/pci/saa7134/saa7134-input.c b/drivers/media/pci/saa7134/saa7134-input.c
+index 8610eb473b39..239f0b9d080a 100644
+--- a/drivers/media/pci/saa7134/saa7134-input.c
++++ b/drivers/media/pci/saa7134/saa7134-input.c
+@@ -895,7 +895,7 @@ void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
+ 		rc = i2c_transfer(&dev->i2c_adap, &msg_msi, 1);
+ 		input_dbg("probe 0x%02x @ %s: %s\n",
+ 			msg_msi.addr, dev->i2c_adap.name,
+-			(1 == rc) ? "yes" : "no");
++			str_yes_no(rc == 1));
+ 		break;
+ 	case SAA7134_BOARD_SNAZIO_TVPVR_PRO:
+ 		dev->init_data.name = "SnaZio* TVPVR PRO";
+@@ -916,7 +916,7 @@ void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
+ 		rc = i2c_transfer(&dev->i2c_adap, &msg_msi, 1);
+ 		input_dbg("probe 0x%02x @ %s: %s\n",
+ 			msg_msi.addr, dev->i2c_adap.name,
+-			(rc == 1) ? "yes" : "no");
++			str_yes_no(rc == 1));
+ 		break;
+ 	case SAA7134_BOARD_KWORLD_PC150U:
+ 		/* copied and modified from MSI TV at nywhere Plus */
+@@ -931,7 +931,7 @@ void saa7134_probe_i2c_ir(struct saa7134_dev *dev)
+ 		rc = i2c_transfer(&dev->i2c_adap, &msg_msi, 1);
+ 		input_dbg("probe 0x%02x @ %s: %s\n",
+ 			msg_msi.addr, dev->i2c_adap.name,
+-			(1 == rc) ? "yes" : "no");
++			str_yes_no(rc == 1));
+ 		break;
+ 	case SAA7134_BOARD_HAUPPAUGE_HVR1110:
+ 		dev->init_data.name = saa7134_boards[dev->board].name;
+diff --git a/drivers/media/pci/saa7134/saa7134-video.c b/drivers/media/pci/saa7134/saa7134-video.c
+index 56b4481a40e6..1c02fb04abdf 100644
+--- a/drivers/media/pci/saa7134/saa7134-video.c
++++ b/drivers/media/pci/saa7134/saa7134-video.c
+@@ -619,7 +619,7 @@ static int saa7134_enable_analog_tuner(struct saa7134_dev *dev)
+ 		if (ret) {
+ 			pr_err("Couldn't change link %s->%s to %s. Error %d\n",
+ 			       source->name, sink->name,
+-			       flags ? "enabled" : "disabled",
++			       str_enabled_disabled(flags),
+ 			       ret);
+ 			return ret;
+ 		}
 
 -- 
 2.46.1.824.gd892dcdcdd-goog
