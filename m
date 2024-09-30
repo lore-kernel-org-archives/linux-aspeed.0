@@ -1,9 +1,9 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Mon, 30 Sep 2024 15:04:54 +0800
-Subject: [PATCH v1 3/8] ARM: dts: aspeed: yosemite4: Add i2c-mux for CPLD IOE on Spider Board
+Date: Mon, 30 Sep 2024 15:04:57 +0800
+Subject: [PATCH v1 6/8] ARM: dts: aspeed: yosemite4: Change the address of Fan IC on fan boards
 In-Reply-To: <20240930070500.3174431-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20240930070500.3174431-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20240930070500.3174431-4-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20240930070500.3174431-7-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,100 +12,43 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Add I2C mux for CPLD IOE on Spider Board.
+Change the address of Fan IC: Max31790 on fan boards according to
+schematic.
 
 Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 66 +++++++++++++++++++
- 1 file changed, 66 insertions(+)
+ .../arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index b813140b3c5b..26e0fcbed8d2 100644
+index 01ee455c41b0..6a1dccd23225 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -30,6 +30,8 @@ aliases {
- 		i2c25 = &imux25;
- 		i2c26 = &imux26;
- 		i2c27 = &imux27;
-+		i2c28 = &imux28;
-+		i2c29 = &imux29;
- 		i2c34 = &imux34;
- 		i2c35 = &imux35;
- 	};
-@@ -773,8 +775,72 @@ eeprom at 54 {
- };
+@@ -1188,9 +1188,9 @@ gpio at 22{
+ 				#gpio-cells = <2>;
+ 			};
  
- &i2c10 {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
- 	status = "okay";
- 	bus-frequency = <400000>;
-+	i2c-mux at 74 {
-+		compatible = "nxp,pca9544";
-+		reg = <0x74>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		i2c-mux-idle-disconnect;
-+
-+		imux28: i2c at 0 {
-+			reg = <0>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			gpio at 20 {
-+				compatible = "nxp,pca9506";
-+				reg = <0x20>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
-+
-+			gpio at 21 {
-+				compatible = "nxp,pca9506";
-+				reg = <0x21>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
-+
-+			gpio at 22 {
-+				compatible = "nxp,pca9506";
-+				reg = <0x22>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
-+
-+			gpio at 23 {
-+				compatible = "nxp,pca9506";
-+				reg = <0x23>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
-+
-+			gpio at 24 {
-+				compatible = "nxp,pca9506";
-+				reg = <0x24>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+				gpio-line-names = "","","","",
-+						  "NIC0_MAIN_PWR_EN",
-+						  "NIC1_MAIN_PWR_EN",
-+						  "NIC2_MAIN_PWR_EN",
-+						  "NIC3_MAIN_PWR_EN",
-+						  "","","","","","","","",
-+						  "","","","","","","","",
-+						  "","","","","","","","";
-+			};
-+		};
-+
-+		imux29: i2c at 1 {
-+			reg = <1>;
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+		};
-+	};
- };
+-			pwm at 23{
++			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				reg = <0x23>;
++				reg = <0x2f>;
+ 			};
  
- &i2c11 {
+ 			adc at 33 {
+@@ -1236,9 +1236,9 @@ gpio at 22{
+ 				#gpio-cells = <2>;
+ 			};
+ 
+-			pwm at 23{
++			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				reg = <0x23>;
++				reg = <0x2f>;
+ 			};
+ 
+ 			adc at 33 {
 -- 
 2.25.1
 
