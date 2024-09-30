@@ -1,9 +1,9 @@
 From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Mon, 30 Sep 2024 12:04:06 +0000
-Subject: [PATCH 11/45] media: rc: Use string_choices helpers
+Date: Mon, 30 Sep 2024 12:04:07 +0000
+Subject: [PATCH 12/45] media: dvb-frontends: Use string_choices helpers
 In-Reply-To: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
 References: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
-Message-ID: <20240930-cocci-opportunity-v1-11-81e137456ce0@chromium.org>
+Message-ID: <20240930-cocci-opportunity-v1-12-81e137456ce0@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,84 +11,135 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 The following cocci warnings are fixed:
-drivers/media/rc/mceusb.c:1130:2-8: opportunity for str_enable_disable(enable)
-drivers/media/rc/ene_ir.c:1121:22-28: opportunity for str_enabled_disabled(enable)
-drivers/media/rc/serial_ir.c:591:4-9: opportunity for str_low_high(sense)
-drivers/media/rc/serial_ir.c:594:4-9: opportunity for str_low_high(sense)
+drivers/media/dvb-frontends/cx24120.c:456:3-9: opportunity for str_enable_disable(enable)
+drivers/media/dvb-frontends/cx24120.c:462:2-8: opportunity for str_enabled_disabled(enable)
+drivers/media/dvb-frontends/helene.c:282:4-14: opportunity for str_read_write(write == 0)
+drivers/media/dvb-frontends/cxd2841er.c:209:3-13: opportunity for str_read_write(write == 0)
+drivers/media/dvb-frontends/drxk_hard.c:6282:22-28: opportunity for str_enable_disable(enable)
+drivers/media/dvb-frontends/drxk_hard.c:1071:2-13: opportunity for str_enable_disable(mpeg_enable)
+drivers/media/dvb-frontends/sp2.c:135:3-9: opportunity for str_read_write(( read ))
+drivers/media/dvb-frontends/horus3a.c:41:3-13: opportunity for str_read_write(write == 0)
+drivers/media/dvb-frontends/ascot2e.c:107:3-13: opportunity for str_read_write(write == 0)
+drivers/media/usb/dvb-usb/af9005-fe.c:1282:27-31: opportunity for str_high_low(temp)
+drivers/media/usb/dvb-usb/af9005-fe.c:790:30-32: opportunity for str_on_off(on)
 
 Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 ---
- drivers/media/rc/ene_ir.c    | 3 ++-
- drivers/media/rc/mceusb.c    | 3 ++-
- drivers/media/rc/serial_ir.c | 5 +++--
- 3 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/media/dvb-frontends/ascot2e.c   | 2 +-
+ drivers/media/dvb-frontends/cx24120.c   | 4 ++--
+ drivers/media/dvb-frontends/cxd2841er.c | 2 +-
+ drivers/media/dvb-frontends/drxk_hard.c | 4 ++--
+ drivers/media/dvb-frontends/helene.c    | 2 +-
+ drivers/media/dvb-frontends/horus3a.c   | 2 +-
+ drivers/media/dvb-frontends/sp2.c       | 2 +-
+ 7 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/media/rc/ene_ir.c b/drivers/media/rc/ene_ir.c
-index 67722e2e47ff..90bee860a8a1 100644
---- a/drivers/media/rc/ene_ir.c
-+++ b/drivers/media/rc/ene_ir.c
-@@ -24,6 +24,7 @@
- #include <linux/interrupt.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-+#include <linux/string_choices.h>
- #include <media/rc-core.h>
- #include "ene_ir.h"
- 
-@@ -1118,7 +1119,7 @@ static void ene_remove(struct pnp_dev *pnp_dev)
- /* enable wake on IR (wakes on specific button on original remote) */
- static void ene_enable_wake(struct ene_device *dev, bool enable)
+diff --git a/drivers/media/dvb-frontends/ascot2e.c b/drivers/media/dvb-frontends/ascot2e.c
+index cf8e5f1bd101..ec7a718428fc 100644
+--- a/drivers/media/dvb-frontends/ascot2e.c
++++ b/drivers/media/dvb-frontends/ascot2e.c
+@@ -104,7 +104,7 @@ static void ascot2e_i2c_debug(struct ascot2e_priv *priv,
+ 			      u8 reg, u8 write, const u8 *data, u32 len)
  {
--	dbg("wake on IR %s", enable ? "enabled" : "disabled");
-+	dbg("wake on IR %s", str_enabled_disabled(enable));
- 	ene_set_clear_reg_mask(dev, ENE_FW1, ENE_FW1_WAKE, enable);
+ 	dev_dbg(&priv->i2c->dev, "ascot2e: I2C %s reg 0x%02x size %d\n",
+-		(write == 0 ? "read" : "write"), reg, len);
++		str_write_read(write), reg, len);
+ 	print_hex_dump_bytes("ascot2e: I2C data: ",
+ 		DUMP_PREFIX_OFFSET, data, len);
+ }
+diff --git a/drivers/media/dvb-frontends/cx24120.c b/drivers/media/dvb-frontends/cx24120.c
+index 44515fdbe91d..a02aaebb091a 100644
+--- a/drivers/media/dvb-frontends/cx24120.c
++++ b/drivers/media/dvb-frontends/cx24120.c
+@@ -453,13 +453,13 @@ static int cx24120_msg_mpeg_output_global_config(struct cx24120_state *state,
+ 	ret = cx24120_message_send(state, &cmd);
+ 	if (ret != 0) {
+ 		dev_dbg(&state->i2c->dev, "failed to %s MPEG output\n",
+-			enable ? "enable" : "disable");
++			str_enable_disable(enable));
+ 		return ret;
+ 	}
+ 
+ 	state->mpeg_enabled = enable;
+ 	dev_dbg(&state->i2c->dev, "MPEG output %s\n",
+-		enable ? "enabled" : "disabled");
++		str_enabled_disabled(enable));
+ 
+ 	return 0;
+ }
+diff --git a/drivers/media/dvb-frontends/cxd2841er.c b/drivers/media/dvb-frontends/cxd2841er.c
+index d925ca24183b..d1b84cd9c510 100644
+--- a/drivers/media/dvb-frontends/cxd2841er.c
++++ b/drivers/media/dvb-frontends/cxd2841er.c
+@@ -206,7 +206,7 @@ static void cxd2841er_i2c_debug(struct cxd2841er_priv *priv,
+ {
+ 	dev_dbg(&priv->i2c->dev,
+ 		"cxd2841er: I2C %s addr %02x reg 0x%02x size %d data %*ph\n",
+-		(write == 0 ? "read" : "write"), addr, reg, len, len, data);
++		str_write_read(write), addr, reg, len, len, data);
  }
  
-diff --git a/drivers/media/rc/mceusb.c b/drivers/media/rc/mceusb.c
-index cd7af4d88b7f..7f932f0f5750 100644
---- a/drivers/media/rc/mceusb.c
-+++ b/drivers/media/rc/mceusb.c
-@@ -25,6 +25,7 @@
- #include <linux/device.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/string_choices.h>
- #include <linux/workqueue.h>
- #include <linux/usb.h>
- #include <linux/usb/input.h>
-@@ -1127,7 +1128,7 @@ static int mceusb_set_rx_carrier_report(struct rc_dev *dev, int enable)
- 				    MCE_CMD_SETIRRXPORTEN, 0x00 };
+ static int cxd2841er_write_regs(struct cxd2841er_priv *priv,
+diff --git a/drivers/media/dvb-frontends/drxk_hard.c b/drivers/media/dvb-frontends/drxk_hard.c
+index 87f3d4f0eb8c..cbb1ba0f1323 100644
+--- a/drivers/media/dvb-frontends/drxk_hard.c
++++ b/drivers/media/dvb-frontends/drxk_hard.c
+@@ -1068,7 +1068,7 @@ static int mpegts_configure_pins(struct drxk_state *state, bool mpeg_enable)
+ 	u16 err_cfg = 0;
  
- 	dev_dbg(ir->dev, "%s short-range receiver carrier reporting",
--		enable ? "enable" : "disable");
-+		str_enable_disable(enable));
- 	if (enable) {
- 		ir->carrier_report_enabled = true;
- 		if (!ir->learning_active) {
-diff --git a/drivers/media/rc/serial_ir.c b/drivers/media/rc/serial_ir.c
-index fc5fd3927177..f9ec2f043529 100644
---- a/drivers/media/rc/serial_ir.c
-+++ b/drivers/media/rc/serial_ir.c
-@@ -25,6 +25,7 @@
- #include <linux/delay.h>
- #include <linux/platform_device.h>
- #include <linux/spinlock.h>
-+#include <linux/string_choices.h>
- #include <media/rc-core.h>
+ 	dprintk(1, ": mpeg %s, %s mode\n",
+-		mpeg_enable ? "enable" : "disable",
++		str_enable_disable(mpeg_enable),
+ 		state->m_enable_parallel ? "parallel" : "serial");
  
- struct serial_ir_hw {
-@@ -588,10 +589,10 @@ static int serial_ir_probe(struct platform_device *dev)
- 		}
- 		sense = nlow >= nhigh ? 1 : 0;
- 		dev_info(&dev->dev, "auto-detected active %s receiver\n",
--			 sense ? "low" : "high");
-+			 str_low_high(sense));
- 	} else
- 		dev_info(&dev->dev, "Manually using active %s receiver\n",
--			 sense ? "low" : "high");
-+			 str_low_high(sense));
+ 	/* stop lock indicator process */
+@@ -6279,7 +6279,7 @@ static int drxk_gate_ctrl(struct dvb_frontend *fe, int enable)
+ {
+ 	struct drxk_state *state = fe->demodulator_priv;
  
- 	dev_dbg(&dev->dev, "Interrupt %d, port %04x obtained\n", irq, io);
+-	dprintk(1, ": %s\n", enable ? "enable" : "disable");
++	dprintk(1, ": %s\n", str_enable_disable(enable));
+ 
+ 	if (state->m_drxk_state == DRXK_NO_DEV)
+ 		return -ENODEV;
+diff --git a/drivers/media/dvb-frontends/helene.c b/drivers/media/dvb-frontends/helene.c
+index f127adee3ebb..b4527c141d9c 100644
+--- a/drivers/media/dvb-frontends/helene.c
++++ b/drivers/media/dvb-frontends/helene.c
+@@ -279,7 +279,7 @@ static void helene_i2c_debug(struct helene_priv *priv,
+ 		u8 reg, u8 write, const u8 *data, u32 len)
+ {
+ 	dev_dbg(&priv->i2c->dev, "helene: I2C %s reg 0x%02x size %d\n",
+-			(write == 0 ? "read" : "write"), reg, len);
++			str_write_read(write), reg, len);
+ 	print_hex_dump_bytes("helene: I2C data: ",
+ 			DUMP_PREFIX_OFFSET, data, len);
+ }
+diff --git a/drivers/media/dvb-frontends/horus3a.c b/drivers/media/dvb-frontends/horus3a.c
+index 0330b78a5b3f..10300ebf3ca0 100644
+--- a/drivers/media/dvb-frontends/horus3a.c
++++ b/drivers/media/dvb-frontends/horus3a.c
+@@ -38,7 +38,7 @@ static void horus3a_i2c_debug(struct horus3a_priv *priv,
+ 			      u8 reg, u8 write, const u8 *data, u32 len)
+ {
+ 	dev_dbg(&priv->i2c->dev, "horus3a: I2C %s reg 0x%02x size %d\n",
+-		(write == 0 ? "read" : "write"), reg, len);
++		str_write_read(write), reg, len);
+ 	print_hex_dump_bytes("horus3a: I2C data: ",
+ 		DUMP_PREFIX_OFFSET, data, len);
+ }
+diff --git a/drivers/media/dvb-frontends/sp2.c b/drivers/media/dvb-frontends/sp2.c
+index 75adf2a4589f..0332e3c312c6 100644
+--- a/drivers/media/dvb-frontends/sp2.c
++++ b/drivers/media/dvb-frontends/sp2.c
+@@ -132,7 +132,7 @@ static int sp2_ci_op_cam(struct dvb_ca_en50221 *en50221, int slot, u8 acs,
+ 		return ret;
+ 
+ 	dev_dbg(&s->client->dev, "%s: slot=%d, addr=0x%04x, %s, data=%x",
+-			(read) ? "read" : "write", slot, addr,
++			str_read_write(read), slot, addr,
+ 			(acs == SP2_CI_ATTR_ACS) ? "attr" : "io",
+ 			(read) ? mem : data);
  
 
 -- 
