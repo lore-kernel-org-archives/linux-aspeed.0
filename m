@@ -1,45 +1,44 @@
 From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Mon, 30 Sep 2024 12:04:15 +0000
-Subject: [PATCH 20/45] media: st: Use string_choices helpers
+Date: Mon, 30 Sep 2024 12:04:16 +0000
+Subject: [PATCH 21/45] media: coda: Use string_choices helpers
 In-Reply-To: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
 References: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
-Message-ID: <20240930-cocci-opportunity-v1-20-81e137456ce0@chromium.org>
+Message-ID: <20240930-cocci-opportunity-v1-21-81e137456ce0@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The following cocci warnings are fixed:
-drivers/media/platform/st/sti/hva/hva-debugfs.c:74:9-22: opportunity for str_true_false(ctrls -> dct8x8)
-drivers/media/platform/st/sti/hva/hva-debugfs.c:79:9-22: opportunity for str_true_false(ctrls -> sei_fp)
-drivers/media/platform/st/sti/hva/hva-debugfs.c:77:9-23: opportunity for str_true_false(ctrls -> vui_sar)
+The following cocci warning is fixed:
+drivers/media/platform/chips-media/coda/imx-vdoa.c:120:39-42: opportunity for str_write_read(val)
 
 Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 ---
- drivers/media/platform/st/sti/hva/hva-debugfs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/platform/chips-media/coda/imx-vdoa.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/media/platform/st/sti/hva/hva-debugfs.c b/drivers/media/platform/st/sti/hva/hva-debugfs.c
-index a86a07b6fbc7..5e8c7dddbabf 100644
---- a/drivers/media/platform/st/sti/hva/hva-debugfs.c
-+++ b/drivers/media/platform/st/sti/hva/hva-debugfs.c
-@@ -71,12 +71,12 @@ static void format_ctx(struct seq_file *s, struct hva_ctx *ctx)
- 			      "  | |- SEI frame packing type=%s\n",
- 			      v4l2_ctrl_get_menu(entropy)[ctrls->entropy_mode],
- 			      ctrls->cpb_size,
--			      ctrls->dct8x8 ? "true" : "false",
-+			      str_true_false(ctrls->dct8x8),
- 			      ctrls->qpmin,
- 			      ctrls->qpmax,
--			      ctrls->vui_sar ? "true" : "false",
-+			      str_true_false(ctrls->vui_sar),
- 			      v4l2_ctrl_get_menu(vui_sar)[ctrls->vui_sar_idc],
--			      ctrls->sei_fp ? "true" : "false",
-+			      str_true_false(ctrls->sei_fp),
- 			      v4l2_ctrl_get_menu(sei_fp)[ctrls->sei_fp_type]);
- 	}
+diff --git a/drivers/media/platform/chips-media/coda/imx-vdoa.c b/drivers/media/platform/chips-media/coda/imx-vdoa.c
+index c3561fcecb98..abdff181d417 100644
+--- a/drivers/media/platform/chips-media/coda/imx-vdoa.c
++++ b/drivers/media/platform/chips-media/coda/imx-vdoa.c
+@@ -15,6 +15,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/videodev2.h>
+ #include <linux/slab.h>
++#include <linux/string_choices.h>
  
+ #include "imx-vdoa.h"
+ 
+@@ -117,7 +118,7 @@ static irqreturn_t vdoa_irq_handler(int irq, void *data)
+ 	writel(val, vdoa->regs + VDOAIST);
+ 	if (val & VDOAIST_TERR) {
+ 		val = readl(vdoa->regs + VDOASR) & VDOASR_ERRW;
+-		dev_err(vdoa->dev, "AXI %s error\n", val ? "write" : "read");
++		dev_err(vdoa->dev, "AXI %s error\n", str_write_read(val));
+ 	} else if (!(val & VDOAIST_EOT)) {
+ 		dev_warn(vdoa->dev, "Spurious interrupt\n");
+ 	}
 
 -- 
 2.46.1.824.gd892dcdcdd-goog
