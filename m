@@ -1,9 +1,9 @@
 From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Mon, 30 Sep 2024 12:04:03 +0000
-Subject: [PATCH 08/45] media: dvb-usb-v2: Use string_choices helpers
+Date: Mon, 30 Sep 2024 12:04:04 +0000
+Subject: [PATCH 09/45] media: cx231xx: Use string_choices helpers
 In-Reply-To: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
 References: <20240930-cocci-opportunity-v1-0-81e137456ce0@chromium.org>
-Message-ID: <20240930-cocci-opportunity-v1-8-81e137456ce0@chromium.org>
+Message-ID: <20240930-cocci-opportunity-v1-9-81e137456ce0@chromium.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -11,61 +11,51 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 The following cocci warnings are fixed:
-drivers/media/usb/dvb-usb-v2/dvb_usb_core.c:250:3-22: opportunity for str_yes_no(adap -> pid_filtering)
-drivers/media/usb/dvb-usb-v2/dvb_usb_core.c:337:3-22: opportunity for str_yes_no(adap -> pid_filtering)
-drivers/media/usb/dvb-usb-v2/az6007.c:82:32-38: opportunity for str_enable_disable(enable)
-drivers/media/usb/dvb-usb-v2/az6007.c:192:32-37: opportunity for str_enable_disable(onoff)
+drivers/media/usb/cx231xx/cx231xx-video.c:144:4-9: opportunity for str_enabled_disabled(flags)
+drivers/media/usb/cx231xx/cx231xx-i2c.c:373:4-30: opportunity for str_read_write(( msgs [ i ] . flags & I2C_M_RD ))
+drivers/media/usb/cx231xx/cx231xx-i2c.c:402:4-32: opportunity for str_read_write(( msgs [ i + 1 ] . flags & I2C_M_RD ))
 
 Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 ---
- drivers/media/usb/dvb-usb-v2/az6007.c       | 4 ++--
- drivers/media/usb/dvb-usb-v2/dvb_usb_core.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/media/usb/cx231xx/cx231xx-i2c.c   | 4 ++--
+ drivers/media/usb/cx231xx/cx231xx-video.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/media/usb/dvb-usb-v2/az6007.c b/drivers/media/usb/dvb-usb-v2/az6007.c
-index 2410054ddb2c..1e9f946193a6 100644
---- a/drivers/media/usb/dvb-usb-v2/az6007.c
-+++ b/drivers/media/usb/dvb-usb-v2/az6007.c
-@@ -79,7 +79,7 @@ static int drxk_gate_ctrl(struct dvb_frontend *fe, int enable)
- 	struct dvb_usb_adapter *adap = fe->sec_priv;
- 	int status = 0;
+diff --git a/drivers/media/usb/cx231xx/cx231xx-i2c.c b/drivers/media/usb/cx231xx/cx231xx-i2c.c
+index 6da8e7943d94..6d8b70562f6d 100644
+--- a/drivers/media/usb/cx231xx/cx231xx-i2c.c
++++ b/drivers/media/usb/cx231xx/cx231xx-i2c.c
+@@ -370,7 +370,7 @@ static int cx231xx_i2c_xfer(struct i2c_adapter *i2c_adap,
+ 		addr = msgs[i].addr;
  
--	pr_debug("%s: %s\n", __func__, enable ? "enable" : "disable");
-+	pr_debug("%s: %s\n", __func__, str_enable_disable(enable));
- 
- 	if (!adap || !st)
- 		return -EINVAL;
-@@ -189,7 +189,7 @@ static int az6007_streaming_ctrl(struct dvb_frontend *fe, int onoff)
- {
- 	struct dvb_usb_device *d = fe_to_d(fe);
- 
--	pr_debug("%s: %s\n", __func__, onoff ? "enable" : "disable");
-+	pr_debug("%s: %s\n", __func__, str_enable_disable(onoff));
- 
- 	return az6007_write(d, 0xbc, onoff, 0, NULL, 0);
- }
-diff --git a/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c b/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c
-index f1c79f351ec8..c0a40112d043 100644
---- a/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c
-+++ b/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c
-@@ -247,7 +247,7 @@ static int dvb_usb_start_feed(struct dvb_demux_feed *dvbdmxfeed)
- 	dev_dbg(&d->udev->dev,
- 			"%s: adap=%d active_fe=%d feed_type=%d setting pid [%s]: %04x (%04d) at index %d\n",
- 			__func__, adap->id, adap->active_fe, dvbdmxfeed->type,
--			adap->pid_filtering ? "yes" : "no", dvbdmxfeed->pid,
-+			str_yes_no(adap->pid_filtering), dvbdmxfeed->pid,
- 			dvbdmxfeed->pid, dvbdmxfeed->index);
- 
- 	/* wait init is done */
-@@ -334,7 +334,7 @@ static int dvb_usb_stop_feed(struct dvb_demux_feed *dvbdmxfeed)
- 	dev_dbg(&d->udev->dev,
- 			"%s: adap=%d active_fe=%d feed_type=%d setting pid [%s]: %04x (%04d) at index %d\n",
- 			__func__, adap->id, adap->active_fe, dvbdmxfeed->type,
--			adap->pid_filtering ? "yes" : "no", dvbdmxfeed->pid,
-+			str_yes_no(adap->pid_filtering), dvbdmxfeed->pid,
- 			dvbdmxfeed->pid, dvbdmxfeed->index);
- 
- 	if (adap->active_fe == -1)
+ 		dprintk2(2, "%s %s addr=0x%x len=%d:",
+-			 (msgs[i].flags & I2C_M_RD) ? "read" : "write",
++			 str_read_write(msgs[i].flags & I2C_M_RD),
+ 			 i == num - 1 ? "stop" : "nonstop", addr, msgs[i].len);
+ 		if (!msgs[i].len) {
+ 			/* no len: check only for device presence */
+@@ -399,7 +399,7 @@ static int cx231xx_i2c_xfer(struct i2c_adapter *i2c_adap,
+ 			}
+ 			/* read bytes */
+ 			dprintk2(2, "plus %s %s addr=0x%x len=%d:",
+-				(msgs[i+1].flags & I2C_M_RD) ? "read" : "write",
++				str_read_write(msgs[i + 1].flags & I2C_M_RD),
+ 				i+1 == num - 1 ? "stop" : "nonstop", addr, msgs[i+1].len);
+ 			rc = cx231xx_i2c_recv_bytes_with_saddr(i2c_adap,
+ 							       &msgs[i],
+diff --git a/drivers/media/usb/cx231xx/cx231xx-video.c b/drivers/media/usb/cx231xx/cx231xx-video.c
+index 435eb0b32cb1..4cdcfe635ad7 100644
+--- a/drivers/media/usb/cx231xx/cx231xx-video.c
++++ b/drivers/media/usb/cx231xx/cx231xx-video.c
+@@ -141,7 +141,7 @@ static int cx231xx_enable_analog_tuner(struct cx231xx *dev)
+ 			dev_err(dev->dev,
+ 				"Couldn't change link %s->%s to %s. Error %d\n",
+ 				source->name, sink->name,
+-				flags ? "enabled" : "disabled",
++				str_enabled_disabled(flags),
+ 				ret);
+ 			return ret;
+ 		} else
 
 -- 
 2.46.1.824.gd892dcdcdd-goog
