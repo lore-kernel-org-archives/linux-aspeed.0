@@ -1,48 +1,34 @@
-From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 1 Oct 2024 15:48:37 -0500
-Subject: [PATCH v1 1/3] ARM: dts: aspeed: system1: Bump up i2c busses freq
-In-Reply-To: <20241001191756.234096-2-ninad@linux.ibm.com>
-References: <20241001191756.234096-1-ninad@linux.ibm.com>
- <20241001191756.234096-2-ninad@linux.ibm.com>
-Message-ID: <dabd422e-4ec1-48a7-9841-9faf4137820e@linux.ibm.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 1 Oct 2024 08:16:38 +0200
+Subject: [PATCH 1/2] ARM: dts: replace gpio = with gpios =
+In-Reply-To: <20240930223550.353882-2-rosenp@gmail.com>
+References: <20240930223550.353882-1-rosenp@gmail.com>
+ <20240930223550.353882-2-rosenp@gmail.com>
+Message-ID: <2915d4aa-a01d-4d00-ada9-43bbc227f9eb@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On 01/10/2024 00:35, Rosen Penev wrote:
+> Found with dtc:
+> 
+> Warning (deprecated_gpio_property): '[*-]gpio' is deprecated, use
+> '[*-]gpios' instead
+> 
+> Transformation performed with
+> 
+> find -name "*.dts" -exec sed -i 's/\tgpio = </\tgpios = </g' '{}' \
+> find -name "*.dtsi" -exec sed -i 's/\tgpio = </\tgpios = </g' '{}' \
 
-On 10/1/24 14:17, Ninad Palsule wrote:
-> Bump up i2c8 and i2c15 bus frequency so that PCIe slot and FPGA runs
-> faster
+Uh, no, please check if each is correct and already handled by bindings.
+
+> 
+> Signed-off-by: Rosen Penev <rosenp@gmail.com>
 
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
 
+Best regards,
+Krzysztof
 
->
-> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> ---
->   arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts | 2 ++
->   1 file changed, 2 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> index f3efecc7eb8d0..1cbf257fb0a0b 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> @@ -1007,6 +1007,7 @@ i2c7mux0chn7: i2c at 7 {
->   
->   &i2c8 {
->   	status = "okay";
-> +	bus-frequency = <400000>;
->   
->   	i2c-mux at 71 {
->   		compatible = "nxp,pca9548";
-> @@ -1468,6 +1469,7 @@ i2c14mux0chn7: i2c at 7 {
->   
->   &i2c15 {
->   	status = "okay";
-> +	bus-frequency = <400000>;
->   
->   	i2c-mux at 71 {
->   		compatible = "nxp,pca9548";
