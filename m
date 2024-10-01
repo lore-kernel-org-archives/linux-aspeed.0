@@ -1,62 +1,45 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue,  1 Oct 2024 16:30:21 +0800
-Subject: [PATCH v1] ARM: dts: aspeed: yosemite4: Remove IO expanders on I2C bus 13
-Message-ID: <20241001083021.3462426-1-Delphine_CC_Chiu@wiwynn.com>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Tue, 1 Oct 2024 11:17:13 +0200
+Subject: [PATCH v2 00/19] Migrate to sig_alg and templatize ecdsa
+In-Reply-To: <cover.1725972333.git.lukas@wunner.de>
+References: <cover.1725972333.git.lukas@wunner.de>
+Message-ID: <Zvu-GV-vtDJHKf51@wunner.de>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+Hi Herbert,
 
-Remove IO expanders on I2C bus 13 according to schematic change.
+On Tue, Sep 10, 2024 at 04:30:10PM +0200, Lukas Wunner wrote:
+> The original impetus of this series is to introduce P1363 signature
+> decoding for ecdsa (patch [18/19]), which is needed by the upcoming
+> SPDM library (Security Protocol and Data Model) for PCI device
+> authentication.
+> 
+> To facilitate that, move X9.62 signature decoding out of ecdsa.c and
+> into a template (patch [15/19]).
+> 
+> New in v2:  Move the maximum signature size calculations for ecdsa
+> out of software_key_query() and into the X9.62 template so that
+> corresponding calculations can be added for P1363 without further
+> cluttering up software_key_query() (patch [16/19] - [17/19]).
+> 
+> New in v2:  Avoid inefficient copying from kernel buffers to sglists
+> in the new templates by introducing a sig_alg backend and migrating
+> all algorithms to it, per Herbert's advice (patch [02/19] - [12/19]).
+> 
+> Clean up various smaller issues that caught my eye in ecdsa
+> (patch [01/19] and [14/19]), ecrdsa (patch [19/19]) and
+> ASN.1 headers (patch [13/19]).
 
-Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 28 -------------------
- 1 file changed, 28 deletions(-)
+This series was submitted at the tail end of the v6.11 cycle.
+It still applies cleanly to v6.12-rc1 though, so I'm not sure
+whether to resubmit.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index b6566e2ca274..ae2a2ed603ff 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -731,34 +731,6 @@ ipmb at 10 {
- 		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
- 		i2c-protocol;
- 	};
--
--	gpio at 20 {
--		compatible = "nxp,pca9506";
--		reg = <0x20>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
--
--	gpio at 21 {
--		compatible = "nxp,pca9506";
--		reg = <0x21>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
--
--	gpio at 22 {
--		compatible = "nxp,pca9506";
--		reg = <0x22>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
--
--	gpio at 23 {
--		compatible = "nxp,pca9506";
--		reg = <0x23>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
- };
- 
- &i2c14 {
--- 
-2.25.1
+Is there anything you want me to change?
 
+Thanks!
+
+Lukas
