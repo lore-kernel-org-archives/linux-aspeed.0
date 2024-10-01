@@ -1,10 +1,10 @@
 From: Eddie James <eajames@linux.ibm.com>
-Date: Tue, 1 Oct 2024 15:50:01 -0500
-Subject: [PATCH v1 3/3] ARM: dts: aspeed: system1: Add GPIO line names
-In-Reply-To: <20241001191756.234096-4-ninad@linux.ibm.com>
+Date: Tue, 1 Oct 2024 15:48:37 -0500
+Subject: [PATCH v1 1/3] ARM: dts: aspeed: system1: Bump up i2c busses freq
+In-Reply-To: <20241001191756.234096-2-ninad@linux.ibm.com>
 References: <20241001191756.234096-1-ninad@linux.ibm.com>
- <20241001191756.234096-4-ninad@linux.ibm.com>
-Message-ID: <a795fef5-b2c4-4201-b481-86d97d60c81e@linux.ibm.com>
+ <20241001191756.234096-2-ninad@linux.ibm.com>
+Message-ID: <dabd422e-4ec1-48a7-9841-9faf4137820e@linux.ibm.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -13,9 +13,8 @@ Content-Transfer-Encoding: 7bit
 
 
 On 10/1/24 14:17, Ninad Palsule wrote:
-> Add following GPIO line names so that userspace can control them
-> - PCH related GPIOs
-> - FPGA related GPIOs
+> Bump up i2c8 and i2c15 bus frequency so that PCIe slot and FPGA runs
+> faster
 
 
 Reviewed-by: Eddie James <eajames@linux.ibm.com>
@@ -24,31 +23,26 @@ Reviewed-by: Eddie James <eajames@linux.ibm.com>
 >
 > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 > ---
->   arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
+>   arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts | 2 ++
+>   1 file changed, 2 insertions(+)
 >
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> index c0219167a337a..35cb9fea308e8 100644
+> index f3efecc7eb8d0..1cbf257fb0a0b 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> @@ -370,17 +370,17 @@ &gpio0 {
->   	/*K0-K7*/	"","","","","","","","",
->   	/*L0-L7*/	"","","","","","","","bmc-ready",
->   	/*M0-M7*/	"","","","","","","","",
-> -	/*N0-N7*/	"","","","","","","","",
-> +	/*N0-N7*/	"fpga-debug-enable","","","","","","","",
->   	/*O0-O7*/	"","","","","","","","",
->   	/*P0-P7*/	"","","","","","","","bmc-hb",
-> -	/*Q0-Q7*/	"","","","","","","","",
-> +	/*Q0-Q7*/	"","","","","","","pch-ready","",
->   	/*R0-R7*/	"","","","","","","","",
->   	/*S0-S7*/	"","","","","","","rear-enc-fault0","rear-enc-id0",
->   	/*T0-T7*/	"","","","","","","","",
->   	/*U0-U7*/	"","","","","","","","",
->   	/*V0-V7*/	"","rtc-battery-voltage-read-enable","","power-chassis-control","","","","",
->   	/*W0-W7*/	"","","","","","","","",
-> -	/*X0-X7*/	"","power-chassis-good","","","","","","",
-> +	/*X0-X7*/	"fpga-pgood","power-chassis-good","pch-pgood","","","","","",
->   	/*Y0-Y7*/	"","","","","","","","",
->   	/*Z0-Z7*/	"","","","","","","","";
->   };
+> @@ -1007,6 +1007,7 @@ i2c7mux0chn7: i2c at 7 {
+>   
+>   &i2c8 {
+>   	status = "okay";
+> +	bus-frequency = <400000>;
+>   
+>   	i2c-mux at 71 {
+>   		compatible = "nxp,pca9548";
+> @@ -1468,6 +1469,7 @@ i2c14mux0chn7: i2c at 7 {
+>   
+>   &i2c15 {
+>   	status = "okay";
+> +	bus-frequency = <400000>;
+>   
+>   	i2c-mux at 71 {
+>   		compatible = "nxp,pca9548";
