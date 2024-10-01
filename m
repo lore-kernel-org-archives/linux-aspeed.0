@@ -1,9 +1,9 @@
 From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue,  1 Oct 2024 16:20:49 +0800
-Subject: [PATCH v2 07/10] ARM: dts: aspeed: yosemite4: correct the compatible string for max31790
+Date: Tue,  1 Oct 2024 16:20:50 +0800
+Subject: [PATCH v2 08/10] ARM: dts: aspeed: yosemite4: Change the address of Fan IC on fan boards
 In-Reply-To: <20241001082053.3455836-1-Delphine_CC_Chiu@wiwynn.com>
 References: <20241001082053.3455836-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20241001082053.3455836-8-Delphine_CC_Chiu@wiwynn.com>
+Message-ID: <20241001082053.3455836-9-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -12,64 +12,40 @@ Content-Transfer-Encoding: 7bit
 
 From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 
-Fix the compatible string for max31790 to match the binding document.
+Change the address of Fan IC: Max31790 on fan boards according to
+schematic.
 
-Fixes: 2b8d94f4b4a4 ("ARM: dts: aspeed: yosemite4: add Facebook Yosemite 4 BMC")
 Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
 Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ .../arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index ecf012c9cbbc..01ee455c41b0 100644
+index 01ee455c41b0..6a1dccd23225 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1177,10 +1177,8 @@ adc at 1f {
+@@ -1188,9 +1188,9 @@ gpio at 22{
+ 				#gpio-cells = <2>;
  			};
  
- 			pwm at 20{
--				compatible = "max31790";
-+				compatible = "maxim,max31790";
- 				reg = <0x20>;
--				#address-cells = <1>;
--				#size-cells = <0>;
- 			};
- 
- 			gpio at 22{
-@@ -1191,10 +1189,8 @@ gpio at 22{
- 			};
- 
- 			pwm at 23{
--				compatible = "max31790";
-+				compatible = "maxim,max31790";
- 				reg = <0x23>;
--				#address-cells = <1>;
--				#size-cells = <0>;
+-			pwm at 23{
++			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				reg = <0x23>;
++				reg = <0x2f>;
  			};
  
  			adc at 33 {
-@@ -1229,10 +1225,8 @@ adc at 1f {
+@@ -1236,9 +1236,9 @@ gpio at 22{
+ 				#gpio-cells = <2>;
  			};
  
- 			pwm at 20{
--				compatible = "max31790";
-+				compatible = "maxim,max31790";
- 				reg = <0x20>;
--				#address-cells = <1>;
--				#size-cells = <0>;
- 			};
- 
- 			gpio at 22{
-@@ -1243,10 +1237,8 @@ gpio at 22{
- 			};
- 
- 			pwm at 23{
--				compatible = "max31790";
-+				compatible = "maxim,max31790";
- 				reg = <0x23>;
--				#address-cells = <1>;
--				#size-cells = <0>;
+-			pwm at 23{
++			pwm at 2f{
+ 				compatible = "maxim,max31790";
+-				reg = <0x23>;
++				reg = <0x2f>;
  			};
  
  			adc at 33 {
