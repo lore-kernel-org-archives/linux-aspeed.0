@@ -1,92 +1,47 @@
-From: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>
-Date: Tue, 1 Oct 2024 07:52:46 +0000
-Subject: [PATCH v1 2/8] ARM: dts: aspeed: yosemite4: Add i2c-mux for four
- NICs
-In-Reply-To: <fffb98e40d407c68dc3de6fd21c8a724be96e38a.camel@codeconstruct.com.au>
-References: <20240930070500.3174431-1-Delphine_CC_Chiu@wiwynn.com>
-	 <20240930070500.3174431-3-Delphine_CC_Chiu@wiwynn.com>
- <fffb98e40d407c68dc3de6fd21c8a724be96e38a.camel@codeconstruct.com.au>
-Message-ID: <TYZPR04MB585305DCD18AF723B8A48480D6772@TYZPR04MB5853.apcprd04.prod.outlook.com>
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+Date: Tue,  1 Oct 2024 16:20:42 +0800
+Subject: [PATCH v2 00/10] Add I2C mux devices for yosemite4
+Message-ID: <20241001082053.3455836-1-Delphine_CC_Chiu@wiwynn.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+- v2
+ - Remove mctp property on I2C Bus 15.
+ - Add required properties for IOE on fan boards.
 
+- v1
+ - Add i2c-mux for ADC monitor on Spider Board.
+ - Revise adc128d818 adc mode on Fan Boards.
+ - Change the address of Fan IC on fan boards.
+ - Correct the compatible string for max31790.
+ - Revise address of i2c-mux for two fan boards.
+ - Add i2c-mux for CPLD IOE on Spider Board.
+ - Add i2c-mux for four NICs.
+ - Add i2c-mux for all Server Board slots.
 
-> -----Original Message-----
-> From: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Sent: Tuesday, October 1, 2024 8:37 AM
-> To: Delphine_CC_Chiu/WYHQ/Wiwynn <Delphine_CC_Chiu@wiwynn.com>;
-> patrick at stwcx.xyz; Rob Herring <robh@kernel.org>; Krzysztof Kozlowski
-> <krzk+dt@kernel.org>; Conor Dooley <conor+dt@kernel.org>; Joel Stanley
-> <joel@jms.id.au>
-> Cc: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>;
-> devicetree at vger.kernel.org; linux-arm-kernel at lists.infradead.org;
-> linux-aspeed at lists.ozlabs.org; linux-kernel at vger.kernel.org
-> Subject: Re: [PATCH v1 2/8] ARM: dts: aspeed: yosemite4: Add i2c-mux for four
-> NICs
-> 
->  [External Sender]
-> 
->  [External Sender]
-> 
-> On Mon, 2024-09-30 at 15:04 +0800, Delphine CC Chiu wrote:
-> > From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> >
-> > Add i2c-mux on Spider board for four NICs and add the temperature
-> > sensor and EEPROM for the NICs.
-> >
-> > Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-> > Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-> > ---
-> >  .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 75
-> > ++++++++++++++++++-
-> >  1 file changed, 72 insertions(+), 3 deletions(-)
-> >
-> > diff --git
-> > a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > index dbc992a625b7..b813140b3c5b 100644
-> > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-> > @@ -26,6 +26,10 @@ aliases {
-> >               i2c21 = &imux21;
-> >               i2c22 = &imux22;
-> >               i2c23 = &imux23;
-> > +             i2c24 = &imux24;
-> > +             i2c25 = &imux25;
-> > +             i2c26 = &imux26;
-> > +             i2c27 = &imux27;
-> >               i2c34 = &imux34;
-> >               i2c35 = &imux35;
-> >       };
-> > @@ -1196,8 +1200,9 @@ adc at 35 {
-> >  };
-> >
-> >  &i2c15 {
-> > +     #address-cells = <1>;
-> > +     #size-cells = <0>;
-> >       status = "okay";
-> > -     mctp-controller;
-> 
-> Why are you deleting this if you're not also deleting the MCTP endpoint node?
-> 
-> Unless there's some reason this is related to the NICs, this should be its own
-> patch with its own justification.
-> 
-> Andrew
-Hi Andrew,
+Ricky CX Wu (10):
+  ARM: dts: aspeed: yosemite4: add i2c-mux for all Server Board slots
+  ARM: dts: aspeed: yosemite4: Remove mctp property on I2C Bus 15
+  ARM: dts: aspeed: yosemite4: Add i2c-mux for four NICs
+  ARM: dts: aspeed: yosemite4: Add i2c-mux for CPLD IOE on Spider Board
+  ARM: dts: aspeed: yosemite4: Add required properties for IOE on fan
+    boards
+  ARM: dts: aspeed: yosemite4: Revise address of i2c-mux for two fan
+    boards
+  ARM: dts: aspeed: yosemite4: correct the compatible string for
+    max31790
+  ARM: dts: aspeed: yosemite4: Change the address of Fan IC on fan
+    boards
+  ARM: dts: aspeed: yosemite4: Revise adc128d818 adc mode on Fan Boards
+  ARM: dts: aspeed: yosemite4: Add i2c-mux for ADC monitor on Spider
+    Board
 
-We have discussed with Jeremy from Code Construct about removing the
-mctp-controller on bus 15 before.
+ .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 483 +++++++++++++++---
+ 1 file changed, 422 insertions(+), 61 deletions(-)
 
-He thought it would be better to add the mctp-controller on each i2c mux port
-so the MCTP driver would ensure that the mux was configured properly before
-communicating with the device.
+-- 
+2.25.1
 
-I'll split a patch to remove the mctp-controller on bus 15 in next serial of patches.
-
-Regards,
-Ricky
