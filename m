@@ -1,73 +1,42 @@
-From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
-Date: Thu,  3 Oct 2024 15:42:50 +0800
-Subject: [PATCH v3 9/9] ARM: dts: aspeed: yosemite4: Add i2c-mux for ADC monitor on Spider Board
-In-Reply-To: <20241003074251.3818101-1-Delphine_CC_Chiu@wiwynn.com>
-References: <20241003074251.3818101-1-Delphine_CC_Chiu@wiwynn.com>
-Message-ID: <20241003074251.3818101-10-Delphine_CC_Chiu@wiwynn.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Thu, 3 Oct 2024 10:16:38 +0200
+Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
+In-Reply-To: <20241002084023.467383-1-naresh.solanki@9elements.com>
+References: <20241002084023.467383-1-naresh.solanki@9elements.com>
+Message-ID: <vikiazbwxih7l4qcpoc5lhm6q5xwaitqnytt24nmr3prsos3jc@773uozmdlj6e>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
+On Wed, Oct 02, 2024 at 02:10:17PM +0530, Naresh Solanki wrote:
+> Document the new compatibles used on IBM SBP1.
+> 
+> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> ---
 
-Add I2C mux for ADC monitors on Spider Board.
+Provide changelog explaining what happened here, including what changed
+that tag is invalid/skipped.
 
-Signed-off-by: Ricky CX Wu <ricky.cx.wu.wiwynn@gmail.com>
-Signed-off-by: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
----
- .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+<form letter>
+This is a friendly reminder during the review process.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index bc25c11df255..ab4904cf2c0e 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -34,6 +34,8 @@ aliases {
- 		i2c29 = &imux29;
- 		i2c30 = &imux30;
- 		i2c31 = &imux31;
-+		i2c32 = &imux32;
-+		i2c33 = &imux33;
- 		i2c34 = &imux34;
- 		i2c35 = &imux35;
- 	};
-@@ -1100,29 +1102,25 @@ eeprom at 51 {
- 
- 	i2c-mux at 73 {
- 		compatible = "nxp,pca9544";
-+		reg = <0x73>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--
--		idle-state = <0>;
- 		i2c-mux-idle-disconnect;
--		reg = <0x73>;
- 
--		i2c at 0 {
-+		imux32: i2c at 0 {
-+			reg = <0>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			reg = <0>;
--
- 			adc at 35 {
- 				compatible = "maxim,max11617";
- 				reg = <0x35>;
- 			};
- 		};
- 
--		i2c at 1 {
-+		imux33: i2c at 1 {
-+			reg = <1>;
- 			#address-cells = <1>;
- 			#size-cells = <0>;
--			reg = <0>;
--
- 			adc at 35 {
- 				compatible = "maxim,max11617";
- 				reg = <0x35>;
--- 
-2.25.1
+It looks like you received a tag and forgot to add it.
+
+If you do not know the process, here is a short explanation: Please add
+Acked-by/Reviewed-by/Tested-by tags when posting new versions, under
+or above your Signed-off-by tag. Tag is "received", when provided
+in a message replied to you on the mailing list. Tools like b4 can help
+here. However, there's no need to repost patches *only* to add the tags.
+The upstream maintainer will do that for tags received on the version
+they apply.
+
+https://elixir.bootlin.com/linux/v6.5-rc3/source/Documentation/process/submitting-patches.rst#L577
+
+If a tag was not added on purpose, please state why and what changed.
+</form letter>
+
+Best regards,
+Krzysztof
 
