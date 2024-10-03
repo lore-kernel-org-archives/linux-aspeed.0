@@ -1,172 +1,122 @@
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Thu, 03 Oct 2024 09:13:48 +0930
-Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
-In-Reply-To: <172790540060.1353939.8456815650107227718.robh@kernel.org>
-References: <20241002084023.467383-1-naresh.solanki@9elements.com>
-	 <172790540060.1353939.8456815650107227718.robh@kernel.org>
-Message-ID: <be2630fe0abf590866c306880395659b33128111.camel@codeconstruct.com.au>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Thu, 3 Oct 2024 03:41:57 +0000
+Subject: [PATCH v14 0/3] Add ASPEED AST2600 I2Cv2 controller driver
+In-Reply-To: <Zv1aOedi9xl2mg9b@smile.fi.intel.com>
+References: <20241002070213.1165263-1-ryan_chen@aspeedtech.com>
+ <Zv1aOedi9xl2mg9b@smile.fi.intel.com>
+Message-ID: <SI6PR06MB75359904E108D7D0CC89A329F2712@SI6PR06MB7535.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Naresh,
-
-On Wed, 2024-10-02 at 16:45 -0500, Rob Herring (Arm) wrote:
-> On Wed, 02 Oct 2024 14:10:17 +0530, Naresh Solanki wrote:
-> > Document the new compatibles used on IBM SBP1.
-> > 
-> > Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-> > ---
-> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
+> Subject: Re: [PATCH v14 0/3] Add ASPEED AST2600 I2Cv2 controller driver
 > 
+> On Wed, Oct 02, 2024 at 03:02:10PM +0800, Ryan Chen wrote:
+> > This series add AST2600 i2cv2 new register set driver. The i2cv2
+> > driver is new register set that have new clock divider option for more
+> > flexiable generation. And also have separate i2c master and slave
+> > register set for control, patch #2 is i2c master driver only, patch #3
+> > is add i2c slave mode driver.
+> >
+> > The legacy register layout is mix master/slave register control together.
+> > The following is add more detail description about new register layout.
+> > And new feature set add for register.
+> >
+> > -Add new clock divider option for more flexible and accurate clock
+> > rate generation -Add tCKHighMin timing to guarantee SCL high pulse width.
+> > -Add support dual pool buffer mode, split 32 bytes pool buffer of each
+> > device into 2 x 16 bytes for Tx and Rx individually.
+> > -Increase DMA buffer size to 4096 bytes and support byte alignment.
+> > -Re-define the base address of BUS1 ~ BUS16 and Pool buffer.
+> > -Re-define registers for separating master and slave mode control.
+> > -Support 4 individual DMA buffers for master Tx and Rx, slave Tx and Rx.
+> >
+> > And following is new register set for package transfer sequence.
+> > -New Master operation mode:
+> >  S -> Aw -> P
+> >  S -> Aw -> TxD -> P
+> >  S -> Ar -> RxD -> P
+> >  S -> Aw -> RxD -> Sr -> Ar -> TxD -> P -Bus SDA lock auto-release
+> > capability for new master DMA command mode.
+> > -Bus auto timeout for new master/slave DMA mode.
+> >
+> > The following is two versus register layout.
+> > Old:
+> > {I2CD00}: Function Control Register
+> > {I2CD04}: Clock and AC Timing Control Register
+> > {I2CD08}: Clock and AC Timing Control Register
+> > {I2CD0C}: Interrupt Control Register
+> > {I2CD10}: Interrupt Status Register
+> > {I2CD14}: Command/Status Register
+> > {I2CD18}: Slave Device Address Register
+> > {I2CD1C}: Pool Buffer Control Register
+> > {I2CD20}: Transmit/Receive Byte Buffer Register
+> > {I2CD24}: DMA Mode Buffer Address Register
+> > {I2CD28}: DMA Transfer Length Register
+> > {I2CD2C}: Original DMA Mode Buffer Address Setting
+> > {I2CD30}: Original DMA Transfer Length Setting and Final Status
+> >
+> > New Register mode
+> > {I2CC00}: Master/Slave Function Control Register
+> > {I2CC04}: Master/Slave Clock and AC Timing Control Register
+> > {I2CC08}: Master/Slave Transmit/Receive Byte Buffer Register
+> > {I2CC0C}: Master/Slave Pool Buffer Control Register
+> > {I2CM10}: Master Interrupt Control Register
+> > {I2CM14}: Master Interrupt Status Register
+> > {I2CM18}: Master Command/Status Register
+> > {I2CM1C}: Master DMA Buffer Length Register
+> > {I2CS20}: Slave~ Interrupt Control Register
+> > {I2CS24}: Slave~ Interrupt Status Register
+> > {I2CS28}: Slave~ Command/Status Register
+> > {I2CS2C}: Slave~ DMA Buffer Length Register
+> > {I2CM30}: Master DMA Mode Tx Buffer Base Address
+> > {I2CM34}: Master DMA Mode Rx Buffer Base Address
+> > {I2CS38}: Slave~ DMA Mode Tx Buffer Base Address
+> > {I2CS3C}: Slave~ DMA Mode Rx Buffer Base Address
+> > {I2CS40}: Slave Device Address Register
+> > {I2CM48}: Master DMA Length Status Register
+> > {I2CS4C}: Slave  DMA Length Status Register
+> > {I2CC50}: Current DMA Operating Address Status
+> > {I2CC54}: Current DMA Operating Length  Status
+> >
+> > aspeed,global-regs:
+> > This global register is needed, global register is setting for new
+> > clock divide control, and new register set control.
+> >
+> > ASPEED SOC chip is server product, i2c bus may have fingerprint
+> > connect to another board. And also support hotplug.
+> > The following is board-specific design example.
+> > Board A                                         Board B
+> > -------------------------                       ------------------------
+> > |i2c bus#1(master/slave)  <===fingerprint ===> i2c bus#x (master/slave)|
+> > |i2c bus#2(master)-> tmp i2c device |          |
+> |
+> > |i2c bus#3(master)-> adc i2c device |          |
+> |
+> > -------------------------                       ------------------------
+> >
+> > i2c-scl-clk-low-timeout-us:
+> > For example I2C controller as slave mode, and suddenly disconnected.
+> > Slave state machine will keep waiting for master clock in for rx/tx
+> > transmit. So it need timeout setting to enable timeout unlock
+> > controller state. And in another side. In Master side also need avoid
+> > suddenly slave miss(un-plug), Master will timeout and release the SDA/SCL.
+> >
+> > aspeed,enable-dma:
+> > For example The bus#1 have trunk data needed for transfer, it can
+> > enable bus dma mode transfer, it can reduce cpu utilized.
+> > Others bus bus#2/3 use defautl buffer mode.
 > 
-> My bot found new DTB warnings on the .dts files added or changed in this
-> series.
+> Is it possible to switch to new terminology wherever it's possible?
+> I.e. master --> controller, slave --> target. See, for example, f872d28500bd
+> ("i2c: uniphier-f: reword according to newest specification").
 > 
-> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-> are fixed by another series. Ultimately, it is up to the platform
-> maintainer whether these warnings are acceptable or not. No need to reply
-> unless the platform maintainer has comments.
-> 
-> If you already ran DT checks and didn't see these error(s), then
-> make sure dt-schema is up to date:
-> 
->   pip3 install dtschema --upgrade
-> 
-> 
-> New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-sbp1.dtb' for 20241002084023.467383-1-naresh.solanki at 9elements.com:
-
-A bunch of what follows are issues caused by the lack of dt-schema
-bindings for the ASPEED SoC peripherals. You can ignore those errors
-for now.
-
-However, some of those below are specific to your devicetree. Can you
-please address them?
-
-> 
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: timer: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /sdram at 1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: bus at 1e600000: compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
-> 	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
-
-For instance, ignore the above for now.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mdio at 1e650010: Unevaluated properties are not allowed ('reset-assert-us', 'reset-deassert-us' were unexpected)
-> 	from schema $id: http://devicetree.org/schemas/net/aspeed,ast2600-mdio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mdio at 1e650018: Unevaluated properties are not allowed ('reset-assert-us', 'reset-deassert-us' were unexpected)
-> 	from schema $id: http://devicetree.org/schemas/net/aspeed,ast2600-mdio.yaml#
-
-Check the bindings regarding these - it seems they should go in a phy
-subnode of the MDIO controller.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: syscon at 1e6e2000: 'smp-memram at 180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^silicon-id@[0-9a-f]+$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/syscon at 1e6e2000/smp-memram at 180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/syscon at 1e6e2000/interrupt-controller at 560: failed to match any schema with compatible: ['aspeed,ast2600-scu-ic0']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/syscon at 1e6e2000/interrupt-controller at 570: failed to match any schema with compatible: ['aspeed,ast2600-scu-ic1']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/display at 1e6e6000: failed to match any schema with compatible: ['aspeed,ast2600-gfx', 'syscon']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: adc at 1e6e9000: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: adc at 1e6e9100: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: crypto at 1e6fa000: 'aspeed,ahbc' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/video at 1e700000: failed to match any schema with compatible: ['aspeed,ast2600-video-engine']
-
-Ignore the above for now.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: gpio at 1e780000: 'gpio-reserved-ranges' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-
-I'm not sure why this one is flagged, though it is one you should
-resolve. You might need some input from the devicetree maintainers.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/timer at 1e782000: failed to match any schema with compatible: ['aspeed,ast2600-timer']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: lpc at 1e789000: lpc-snoop at 80: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: lpc at 1e789000: reg-io-width: 4 is not of type 'object'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 24: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 28: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 2c: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 114: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/lpc at 1e789000/lhc at a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/lpc at 1e789000/ibt at 140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: sdc at 1e740000: sdhci at 1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> 	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: sdc at 1e740000: sdhci at 1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> 	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/sdc at 1e740000/sdhci at 1e740100: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/sdc at 1e740000/sdhci at 1e740200: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-
-Ignore the above for now.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-pvcore-nic2 at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-pvcore-nic1 at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-p3v3-nic at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-p1v2-nic at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-p1v8-nic at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/bus at 1e78a000/i2c at 280/bmc-slave at 10: failed to match any schema with compatible: ['ipmb-dev']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: r38263-p1v05-pch-aux at 40: Unevaluated properties are not allowed ('interrupt-parent', 'interrupts', 'regulators' were unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38060-p1v8-pch-aux at 40: Unevaluated properties are not allowed ('interrupt-parent', 'interrupts', 'regulators' were unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mux at 77: interrupts: False schema does not allow [[44, 4]]
-> 	from schema $id: http://devicetree.org/schemas/i2c/i2c-mux-pca954x.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-p5v-aux at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ir38263-p3v3-aux at 40: Unevaluated properties are not allowed ('regulators' was unexpected)
-> 	from schema $id: http://devicetree.org/schemas/regulator/infineon,ir38060.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-
-These all look like they need to be addressed.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: fsi at 1e79b000: compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-> 	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/fsi at 1e79b000: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: fsi at 1e79b100: compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-> 	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/fsi at 1e79b100: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/dma-controller at 1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
+Just for cover latter? Or I should modify for each patches commit message?
+Or entire i2c driver statement need switch to target?
+> --
+> With Best Regards,
+> Andy Shevchenko
 > 
 
-Ignore these for now.
-
-Andrew
