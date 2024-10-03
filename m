@@ -1,35 +1,34 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Thu, 3 Oct 2024 10:17:02 +0200
-Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
-In-Reply-To: <20241002084023.467383-1-naresh.solanki@9elements.com>
-References: <20241002084023.467383-1-naresh.solanki@9elements.com>
-Message-ID: <xuczpa6nrxjwo7hjn62ehblnzc5twupghbg4uuwp5vfczw3gmg@x23yhbxjccpy>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Thu, 3 Oct 2024 13:15:50 +0300
+Subject: [PATCH v14 0/3] Add ASPEED AST2600 I2Cv2 controller driver
+In-Reply-To: <SI6PR06MB75359904E108D7D0CC89A329F2712@SI6PR06MB7535.apcprd06.prod.outlook.com>
+References: <20241002070213.1165263-1-ryan_chen@aspeedtech.com>
+ <Zv1aOedi9xl2mg9b@smile.fi.intel.com>
+ <SI6PR06MB75359904E108D7D0CC89A329F2712@SI6PR06MB7535.apcprd06.prod.outlook.com>
+Message-ID: <Zv5u1gTK9yug7rbK@smile.fi.intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 02, 2024 at 02:10:17PM +0530, Naresh Solanki wrote:
-> Document the new compatibles used on IBM SBP1.
-> 
-> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-> ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> index 95113df178cc..8c04d6eaec08 100644
-> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> @@ -89,6 +89,7 @@ properties:
->                - ibm,everest-bmc
->                - ibm,rainier-bmc
->                - ibm,system1-bmc
-> +              - ibm,sbp1-bmc
+On Thu, Oct 03, 2024 at 03:41:57AM +0000, Ryan Chen wrote:
+> > On Wed, Oct 02, 2024 at 03:02:10PM +0800, Ryan Chen wrote:
 
-Keep alphabetical order.
+...
 
-Best regards,
-Krzysztof
+> > Is it possible to switch to new terminology wherever it's possible?
+> > I.e. master --> controller, slave --> target. See, for example, f872d28500bd
+> > ("i2c: uniphier-f: reword according to newest specification").
+> > 
+> Just for cover latter? Or I should modify for each patches commit message?
+> Or entire i2c driver statement need switch to target?
+
+I believe everywhere, where it applies: driver code, comments, documentation,
+commit messages...
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
 
