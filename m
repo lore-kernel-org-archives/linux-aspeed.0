@@ -1,10 +1,10 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 5 Oct 2024 15:36:16 +0800
+Date: Sat, 5 Oct 2024 18:00:52 +0800
 Subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register
  mode driver
 In-Reply-To: <20241002070213.1165263-3-ryan_chen@aspeedtech.com>
 References: <20241002070213.1165263-3-ryan_chen@aspeedtech.com>
-Message-ID: <202410051547.vOL3qMOc-lkp@intel.com>
+Message-ID: <202410051759.bRIS387l-lkp@intel.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
@@ -25,33 +25,30 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-i2c
 base:   v6.11
 patch link:    https://lore.kernel.org/r/20241002070213.1165263-3-ryan_chen%40aspeedtech.com
 patch subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register mode driver
-config: sh-allmodconfig (https://download.01.org/0day-ci/archive/20241005/202410051547.vOL3qMOc-lkp at intel.com/config)
-compiler: sh4-linux-gcc (GCC) 14.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241005/202410051547.vOL3qMOc-lkp at intel.com/reproduce)
+config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20241005/202410051759.bRIS387l-lkp at intel.com/config)
+compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241005/202410051759.bRIS387l-lkp at intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410051547.vOL3qMOc-lkp at intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410051759.bRIS387l-lkp at intel.com/
 
 All errors (new ones prefixed by >>):
 
-   drivers/i2c/busses/i2c-ast2600.c: In function 'ast2600_i2c_setup_buff_tx':
->> drivers/i2c/busses/i2c-ast2600.c:437:41: error: implicit declaration of function 'get_unaligned_le16'; did you mean 'get_unalign_ctl'? [-Wimplicit-function-declaration]
+>> drivers/i2c/busses/i2c-ast2600.c:437:6: error: call to undeclared function 'get_unaligned_le16'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
      437 |                                         get_unaligned_le16(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-         |                                         ^~~~~~~~~~~~~~~~~~
-         |                                         get_unalign_ctl
->> drivers/i2c/busses/i2c-ast2600.c:441:41: error: implicit declaration of function 'get_unaligned_le24'; did you mean 'get_unalign_ctl'? [-Wimplicit-function-declaration]
+         |                                         ^
+>> drivers/i2c/busses/i2c-ast2600.c:441:6: error: call to undeclared function 'get_unaligned_le24'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
      441 |                                         get_unaligned_le24(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-         |                                         ^~~~~~~~~~~~~~~~~~
-         |                                         get_unalign_ctl
->> drivers/i2c/busses/i2c-ast2600.c:445:41: error: implicit declaration of function 'get_unaligned_le32'; did you mean 'get_unalign_ctl'? [-Wimplicit-function-declaration]
+         |                                         ^
+>> drivers/i2c/busses/i2c-ast2600.c:445:6: error: call to undeclared function 'get_unaligned_le32'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
      445 |                                         get_unaligned_le32(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-         |                                         ^~~~~~~~~~~~~~~~~~
-         |                                         get_unalign_ctl
+         |                                         ^
+   3 errors generated.
 
 
-vim +437 drivers/i2c/busses/i2c-ast2600.c
+vim +/get_unaligned_le16 +437 drivers/i2c/busses/i2c-ast2600.c
 
    405	
    406	static int ast2600_i2c_setup_buff_tx(u32 cmd, struct ast2600_i2c_bus *i2c_bus)
