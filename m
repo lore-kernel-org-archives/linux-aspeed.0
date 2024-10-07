@@ -1,34 +1,57 @@
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Date: Mon, 7 Oct 2024 14:34:04 +0800
-Subject: [PATCH 0/4] [PATCH 0/4] Update ASPEED WDT bootstatus
-Message-ID: <20241007063408.2360874-1-chin-ting_kuo@aspeedtech.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Mon, 7 Oct 2024 08:58:28 +0200
+Subject: [PATCH 1/4] dt-bindings: watchdog: aspeed: Add property for WDT
+ SW reset
+In-Reply-To: <20241007063408.2360874-2-chin-ting_kuo@aspeedtech.com>
+References: <20241007063408.2360874-1-chin-ting_kuo@aspeedtech.com>
+ <20241007063408.2360874-2-chin-ting_kuo@aspeedtech.com>
+Message-ID: <6bb599b4-141c-43a5-8b9f-4cf6ca6c3384@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series inherits the patch submitted by Peter.
-https://patchwork.kernel.org/project/linux-watchdog/patch/20240430143114.1323686-2-peteryin.openbmc at gmail.com/
-Besides, the boot status modififed in the WDT driver
-obeys the rules proposed in the OpenBMC.
-https://github.com/openbmc/docs/blob/master/designs/bmc-reboot-cause-update.md#proposed-design
-Moreover, WDT SW reset is supported since AST2600 platform
-and is also included in this patch series.
+On 07/10/2024 08:34, Chin-Ting Kuo wrote:
+> Add "aspeed,restart-sw" property to distinguish normal WDT
+> reset from system restart triggered by SW consciously.
+> 
+> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> ---
+>  .../bindings/watchdog/aspeed,ast2400-wdt.yaml         | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> index be78a9865584..6cc3604c295a 100644
+> --- a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> +++ b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> @@ -95,6 +95,17 @@ properties:
+>        array with the first word defined using the AST2600_WDT_RESET1_* macros,
+>        and the second word defined using the AST2600_WDT_RESET2_* macros.
+>  
+> +  aspeed,restart-sw:
+> +    $ref: /schemas/types.yaml#/definitions/flag
+> +    description: >
 
-Chin-Ting Kuo (4):
-  dt-bindings: watchdog: aspeed: Add property for WDT SW reset
-  ARM: dts: aspeed: Add WDT controller into alias field
-  watchdog: aspeed: Update bootstatus handling
-  watchdog: aspeed: Add support for SW restart
+Why >?
 
- .../bindings/watchdog/aspeed,ast2400-wdt.yaml |  11 ++
- arch/arm/boot/dts/aspeed/aspeed-g4.dtsi       |   2 +
- arch/arm/boot/dts/aspeed/aspeed-g5.dtsi       |   3 +
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi       |   4 +
- drivers/watchdog/aspeed_wdt.c                 | 149 ++++++++++++++++--
- 5 files changed, 160 insertions(+), 9 deletions(-)
+> +      Normally, ASPEED WDT reset may occur when system hangs or reboot
+> +      triggered by SW consciously. However, system doesn't know whether the
+> +      restart is triggered by SW consciously since the reset event flag is
+> +      the same as normal WDT timeout reset. With this property, SW can
 
--- 
-2.34.1
+So DTS has this property and watchdog bites (timeout) but you will
+ignore it and claim that it was software choice?
+
+This does not make much sense to me, at least based on this explanation
+
+> +      restart the system immediately and directly without wait for WDT
+> +      timeout occurs. The reset event flag is also different from the normal
+> +      WDT reset. This property is only supported since AST2600 platform.
+
+Supported as drivers? How is this related? Or you mean hardware? Then
+property should be restricted there.
+
+Best regards,
+Krzysztof
 
