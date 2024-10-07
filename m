@@ -1,57 +1,123 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Mon, 7 Oct 2024 08:58:28 +0200
-Subject: [PATCH 1/4] dt-bindings: watchdog: aspeed: Add property for WDT
- SW reset
-In-Reply-To: <20241007063408.2360874-2-chin-ting_kuo@aspeedtech.com>
-References: <20241007063408.2360874-1-chin-ting_kuo@aspeedtech.com>
- <20241007063408.2360874-2-chin-ting_kuo@aspeedtech.com>
-Message-ID: <6bb599b4-141c-43a5-8b9f-4cf6ca6c3384@kernel.org>
+From: Kevin Chen <kevin_chen@aspeedtech.com>
+Date: Mon, 7 Oct 2024 09:26:20 +0000
+Subject: =?utf-8?B?UkU6IOWbnuimhjogW1BBVENIIHYxIDA4LzEwXSBhcm02NDogZHRzOiBhc3Bl?=
+ =?utf-8?Q?ed:_Add_initial_AST27XX_device_tree?=
+In-Reply-To: <aa3a1835-19e0-43a5-b6a4-4a7e531f3b2e@kernel.org>
+References: <20240726110355.2181563-1-kevin_chen@aspeedtech.com>
+ <20240726110355.2181563-9-kevin_chen@aspeedtech.com>
+ <b6be1531-d8e2-44d1-a81a-6db8f9ae4ad4@kernel.org>
+ <PSAPR06MB4949EC0D0E0DA16F50BBF40489802@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <aa3a1835-19e0-43a5-b6a4-4a7e531f3b2e@kernel.org>
+Message-ID: <PSAPR06MB4949B860119DCC42C9BC0E42897D2@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 07/10/2024 08:34, Chin-Ting Kuo wrote:
-> Add "aspeed,restart-sw" property to distinguish normal WDT
-> reset from system restart triggered by SW consciously.
+> >>> diff --git a/arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
+> >>> b/arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
+> >>> new file mode 100644
+> >>> index 000000000000..858ab95251e4
+> >>> --- /dev/null
+> >>> +++ b/arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
+> >>> @@ -0,0 +1,217 @@
+> >>> +// SPDX-License-Identifier: GPL-2.0-or-later #include
+> >>> +<dt-bindings/clock/aspeed,ast2700-clk.h>
+> >>> +#include <dt-bindings/reset/aspeed,ast2700-reset.h>
+> >>> +#include <dt-bindings/interrupt-controller/arm-gic.h>
+> >>> +#include <dt-bindings/interrupt-controller/aspeed-scu-ic.h>
+> >>> +
+> >>> +/ {
+> >>> +     model = "Aspeed BMC";
+> >>
+> >> Model of what? No, drop.
+> > Can I change to "model = "AST2700 EVB""
 > 
-> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> ---
->  .../bindings/watchdog/aspeed,ast2400-wdt.yaml         | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+> Model of what? No, it does not make sense here.
+Should I change to model = "Aspeed BMC SoC";
+
 > 
-> diff --git a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
-> index be78a9865584..6cc3604c295a 100644
-> --- a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
-> +++ b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
-> @@ -95,6 +95,17 @@ properties:
->        array with the first word defined using the AST2600_WDT_RESET1_* macros,
->        and the second word defined using the AST2600_WDT_RESET2_* macros.
->  
-> +  aspeed,restart-sw:
-> +    $ref: /schemas/types.yaml#/definitions/flag
-> +    description: >
+> 
+> ..
+> 
+> 
+> >>> +
+> >>> +             uart12: serial at 14c33b00 {
+> >>> +                     compatible = "ns16550a";
+> >>> +                     reg = <0x0 0x14c33b00 0x0 0x100>;
+> >>> +                     reg-shift = <2>;
+> >>> +                     reg-io-width = <4>;
+> >>> +                     clocks = <&syscon1
+> SCU1_CLK_GATE_UART12CLK>;
+> >>> +                     no-loopback-test;
+> >>> +                     pinctrl-names = "default";
+> >>
+> >> What is this?
+> > BMC uart using in uart12 in soc1.
+> 
+> No, that line. pinctrl-names do not make sense here without values.
+Agree, I will remove the line of pinctrl-names in next patch.
+Pinctrl property needed to be defined in the future patches.
 
-Why >?
-
-> +      Normally, ASPEED WDT reset may occur when system hangs or reboot
-> +      triggered by SW consciously. However, system doesn't know whether the
-> +      restart is triggered by SW consciously since the reset event flag is
-> +      the same as normal WDT timeout reset. With this property, SW can
-
-So DTS has this property and watchdog bites (timeout) but you will
-ignore it and claim that it was software choice?
-
-This does not make much sense to me, at least based on this explanation
-
-> +      restart the system immediately and directly without wait for WDT
-> +      timeout occurs. The reset event flag is also different from the normal
-> +      WDT reset. This property is only supported since AST2600 platform.
-
-Supported as drivers? How is this related? Or you mean hardware? Then
-property should be restricted there.
-
-Best regards,
-Krzysztof
+> 
+> >
+> >>
+> >>> +             };
+> >>> +     };
+> >>> +};
+> >>> +
+> >
+> > --
+> > Best Regards,
+> > Kevin. Chen
+> >
+> 
+> Why do you quote my email twice?
+> 
+> 
+> ...
+> 
+> >> +             uart12: serial at 14c33b00 {
+> >> +                     compatible = "ns16550a";
+> >> +                     reg = <0x0 0x14c33b00 0x0 0x100>;
+> >> +                     reg-shift = <2>;
+> >> +                     reg-io-width = <4>;
+> >> +                     clocks = <&syscon1
+> SCU1_CLK_GATE_UART12CLK>;
+> >> +                     no-loopback-test;
+> >> +                     pinctrl-names = "default";
+> >
+> > What is this?
+> >
+> >> +             };
+> >> +     };
+> >> +};
+> >> +
+> >
+> > Best regards,
+> > Krzysztof
+> >
+> other confidential information. If you have received it in error, please notify the
+> sender by reply e-mail and immediately delete the e-mail and any
+> attachments without copying or disclosing the contents. Thank you.
+> 
+> Maybe I am the intended recipient of your message, maybe not. I don't want to
+> have any legal questions regarding upstream, public collaboration, thus
+> probably I should just remove your messages.
+> 
+> Please talk with your IT that such disclaimers in open-source are not desired
+> (and maybe even harmful).
+> If you do not understand why, please also see:
+> https://www.youtube.com/live/fMeH7wqOwXA?si=GY7igfbda6vnjXlJ&t=835
+> 
+> If you need to go around company SMTP server, then consider using b4
+> web-relay: https://b4.docs.kernel.org/en/latest/contributor/send.html
+> 
+> Please be informed that by responding to this email you agree that all
+> communications from you and/or your company is made public. In other words,
+> all messages originating from you and/or your company will be made public.
+> 
+> Best regards,
+> Krzysztof
 
