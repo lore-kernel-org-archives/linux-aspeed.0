@@ -1,110 +1,253 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 5 Oct 2024 18:00:52 +0800
-Subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register
- mode driver
-In-Reply-To: <20241002070213.1165263-3-ryan_chen@aspeedtech.com>
-References: <20241002070213.1165263-3-ryan_chen@aspeedtech.com>
-Message-ID: <202410051759.bRIS387l-lkp@intel.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Mon, 7 Oct 2024 11:52:32 +0800
+Subject: [PATCH v15 0/3] Add ASPEED AST2600 I2Cv2 controller driver
+Message-ID: <20241007035235.2254138-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ryan,
+This series add AST2600 i2cv2 new register set driver. The i2cv2 driver
+is new register set that have new clock divider option for more flexiable
+generation. And also have separate i2c controller and target register
+set for control, patch #2 is i2c controller driver only, patch #3 is add
+i2c target mode driver.
 
-kernel test robot noticed the following build errors:
+The legacy register layout is mix controller/target register control
+together. The following is add more detail description about new register
+layout. And new feature set add for register.
 
-[auto build test ERROR on v6.11]
-[cannot apply to andi-shyti/i2c/i2c-host v6.12-rc1 linus/master next-20241004]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+-Add new clock divider option for more flexible and accurate clock rate
+generation -Add tCKHighMin timing to guarantee SCL high pulse width.
+-Add support dual pool buffer mode, split 32 bytes pool buffer of each
+device into 2 x 16 bytes for Tx and Rx individually.
+-Increase DMA buffer size to 4096 bytes and support byte alignment.
+-Re-define the base address of BUS1 ~ BUS16 and Pool buffer.
+-Re-define registers for separating controller and target mode control.
+-Support 4 individual DMA buffers for controller Tx and Rx,
+target Tx and Rx.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-i2c-aspeed-support-for-AST2600-i2cv2/20241002-150410
-base:   v6.11
-patch link:    https://lore.kernel.org/r/20241002070213.1165263-3-ryan_chen%40aspeedtech.com
-patch subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register mode driver
-config: x86_64-allyesconfig (https://download.01.org/0day-ci/archive/20241005/202410051759.bRIS387l-lkp at intel.com/config)
-compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241005/202410051759.bRIS387l-lkp at intel.com/reproduce)
+And following is new register set for package transfer sequence.
+-New Master operation mode:
+ S -> Aw -> P
+ S -> Aw -> TxD -> P
+ S -> Ar -> RxD -> P
+ S -> Aw -> RxD -> Sr -> Ar -> TxD -> P
+-Bus SDA lock auto-release capability for new controller DMA command mode.
+-Bus auto timeout for new controller/target DMA mode.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410051759.bRIS387l-lkp at intel.com/
+The following is two versus register layout.
+Old:
+{I2CD00}: Function Control Register
+{I2CD04}: Clock and AC Timing Control Register
+{I2CD08}: Clock and AC Timing Control Register
+{I2CD0C}: Interrupt Control Register
+{I2CD10}: Interrupt Status Register
+{I2CD14}: Command/Status Register
+{I2CD18}: Slave Device Address Register
+{I2CD1C}: Pool Buffer Control Register
+{I2CD20}: Transmit/Receive Byte Buffer Register
+{I2CD24}: DMA Mode Buffer Address Register
+{I2CD28}: DMA Transfer Length Register
+{I2CD2C}: Original DMA Mode Buffer Address Setting
+{I2CD30}: Original DMA Transfer Length Setting and Final Status
 
-All errors (new ones prefixed by >>):
+New Register mode
+{I2CC00}: Master/Slave Function Control Register
+{I2CC04}: Master/Slave Clock and AC Timing Control Register
+{I2CC08}: Master/Slave Transmit/Receive Byte Buffer Register
+{I2CC0C}: Master/Slave Pool Buffer Control Register
+{I2CM10}: Master Interrupt Control Register
+{I2CM14}: Master Interrupt Status Register
+{I2CM18}: Master Command/Status Register
+{I2CM1C}: Master DMA Buffer Length Register
+{I2CS20}: Slave~ Interrupt Control Register
+{I2CS24}: Slave~ Interrupt Status Register
+{I2CS28}: Slave~ Command/Status Register
+{I2CS2C}: Slave~ DMA Buffer Length Register
+{I2CM30}: Master DMA Mode Tx Buffer Base Address
+{I2CM34}: Master DMA Mode Rx Buffer Base Address
+{I2CS38}: Slave~ DMA Mode Tx Buffer Base Address
+{I2CS3C}: Slave~ DMA Mode Rx Buffer Base Address
+{I2CS40}: Slave Device Address Register
+{I2CM48}: Master DMA Length Status Register
+{I2CS4C}: Slave  DMA Length Status Register
+{I2CC50}: Current DMA Operating Address Status
+{I2CC54}: Current DMA Operating Length  Status
 
->> drivers/i2c/busses/i2c-ast2600.c:437:6: error: call to undeclared function 'get_unaligned_le16'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-     437 |                                         get_unaligned_le16(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-         |                                         ^
->> drivers/i2c/busses/i2c-ast2600.c:441:6: error: call to undeclared function 'get_unaligned_le24'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-     441 |                                         get_unaligned_le24(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-         |                                         ^
->> drivers/i2c/busses/i2c-ast2600.c:445:6: error: call to undeclared function 'get_unaligned_le32'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
-     445 |                                         get_unaligned_le32(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-         |                                         ^
-   3 errors generated.
+aspeed,global-regs:
+This global register is needed, global register is setting for
+new clock divide control, and new register set control.
 
+ASPEED SOC chip is server product, i2c bus may have fingerprint
+connect to another board. And also support hotplug.
+The following is board-specific design example.
+Board A                                       Board B
+-------------------------                     ------------------------
+|i2c bus#1(controller/target)<=fingerprint=>i2c bus#x (controller/target)|
+|i2c bus#2(controller)-> tmp i2c device |     |                          |
+|i2c bus#3(controller)-> adc i2c device |     |                          |
+-------------------------                     ------------------------
 
-vim +/get_unaligned_le16 +437 drivers/i2c/busses/i2c-ast2600.c
+i2c-scl-clk-low-timeout-us:
+For example I2C controller as slave mode, and suddenly disconnected.
+Slave state machine will keep waiting for controller clock in for rx/tx
+transmit. So it need timeout setting to enable timeout unlock controller
+state. And in another side. In Master side also need avoid suddenly
+slave miss(un-plug), Master will timeout and release the SDA/SCL.
 
-   405	
-   406	static int ast2600_i2c_setup_buff_tx(u32 cmd, struct ast2600_i2c_bus *i2c_bus)
-   407	{
-   408		struct i2c_msg *msg = &i2c_bus->msgs[i2c_bus->msgs_index];
-   409		u32 wbuf_dword;
-   410		int xfer_len;
-   411		int i;
-   412	
-   413		cmd |= AST2600_I2CM_PKT_EN;
-   414		xfer_len = msg->len - i2c_bus->master_xfer_cnt;
-   415		if (xfer_len > i2c_bus->buf_size)
-   416			xfer_len = i2c_bus->buf_size;
-   417		else if (i2c_bus->msgs_index + 1 == i2c_bus->msgs_count)
-   418			cmd |= AST2600_I2CM_STOP_CMD;
-   419	
-   420		if (cmd & AST2600_I2CM_START_CMD)
-   421			cmd |= AST2600_I2CM_PKT_ADDR(msg->addr);
-   422	
-   423		if (xfer_len) {
-   424			cmd |= AST2600_I2CM_TX_BUFF_EN | AST2600_I2CM_TX_CMD;
-   425			/*
-   426			 * The controller's buffer register supports dword writes only.
-   427			 * Therefore, write dwords to the buffer register in a 4-byte aligned,
-   428			 * and write the remaining unaligned data at the end.
-   429			 */
-   430			for (i = 0; i < xfer_len; i += 4) {
-   431				switch (min(xfer_len - i, 4) % 4) {
-   432				case 1:
-   433					wbuf_dword = msg->buf[i2c_bus->master_xfer_cnt + i];
-   434					break;
-   435				case 2:
-   436					wbuf_dword =
- > 437						get_unaligned_le16(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-   438					break;
-   439				case 3:
-   440					wbuf_dword =
- > 441						get_unaligned_le24(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-   442					break;
-   443				default:
-   444					wbuf_dword =
- > 445						get_unaligned_le32(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-   446					break;
-   447				}
-   448				writel(wbuf_dword, i2c_bus->buf_base + i);
-   449			}
-   450			writel(AST2600_I2CC_SET_TX_BUF_LEN(xfer_len),
-   451			       i2c_bus->reg_base + AST2600_I2CC_BUFF_CTRL);
-   452		}
-   453	
-   454		writel(cmd, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-   455	
-   456		return 0;
-   457	}
-   458	
+aspeed,enable-dma:
+For example The bus#1 have trunk data needed for transfer,
+it can enable bus dma mode transfer, it can reduce cpu utilized.
+Others bus bus#2/3 use defautl buffer mode.
+
+v15:
+-i2c-ast2600.c
+ -add include unaligned.h
+ -rename all master -> controller, slave -> target.
+ -keep multi-master to align property.
+ -remove no used element in ast2600_i2c_bus.
+v14:
+-aspeed,i2c.yaml
+ -v13 change people reviewed-by tag, v14 fixed to original people tag,
+modify to Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+ -struct ast2600_i2c_bus layout optimal.
+ -ast2600_select_i2c_clock refine.
+ -ast2600_i2c_recover_bus overridden fix.
+ -dma_mapping_error() returned error code shadowed modify.
+ -buffer register in a 4-byte aligned simplified
+ -remove smbus alert
+
+v13:
+ -separate i2c master and slave driver to be two patchs.
+ -modify include header list, add bits.h include. remove of*.h
+ -modify (((x) >> 24) & GENMASK(5, 0)) to (((x) & GENMASK(29, 24)) >> 24)
+ -modify ast2600_select_i2c_clock function implement.
+ -modify ast2600_i2c_recover_bus function u32 claim to
+u32 state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
+
+v12:
+-aspeed,i2c.yaml
+ -add Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+-i2c-ast2600.c
+ -update include by alphabetical order
+ -make just a one TAB and put the last two lines on the single one
+ -remove no used timing_table structre
+ -remove enum explicit assinment
+ -rewritten to avoid this and using loop in ast2600_select_i2c_clock
+ -use GENMASK for most 0xffff
+ -remove too many parentheses
+ -use str_read_write replace read write string
+ -remove redundant blank line after ast2600_i2c_bus_of_table
+ -fix wrong multi-line style of the comment
+ -use macro for i2c standard speeds
+ -remove useless noise dev_info
+
+v11:
+-aspeed,i2c.yaml
+ -no change, the same with v10.
+-i2c-ast2600.c
+ -modify alert_enable from int -> boolean.
+ -modify dbg string recovery -> recover.
+ -remove no need to init 0.
+ -remove new line after break.
+ -remove unneeded empty line.
+ -modify dma_alloc_coherent to dmam_alloc_coherent
+ -modify probe nomem return dev_err_probe
+ -modify i2c_add_adapter to devm_i2c_adapter
+ -modify checkpatch: Alignment should match open parenthesis
+ -modify checkpatch: braces {} should be used on all arms of this statement
+ -modify checkpatch: Unbalanced braces around else statement
+
+v10:
+-aspeed,i2c.yaml
+ -move unevaluatedProperties after allOf.
+ -remove extra one blank line.
+-i2c-ast2600.c
+ -no change, the same with v8.
+
+v9:
+-aspeed,i2c.yaml
+ -backoff to v7.
+  -no fix typo in maintainer's name and email. this would be another patch.
+  -no remove address-cells, size-cells, this would be another patch.
+ -use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ -fix allOf and else false properties for aspeed,ast2600-i2cv2.
+-i2c-ast2600.c
+ -no change, the same with v8
+
+v8:
+-aspeed,i2c.yaml
+ -modify commit message.
+  -Fix typo in maintainer's name and email.
+ -remove address-cells, size-cells.
+-i2c-ast2600.c
+ -move "i2c timeout counter" comment description before property_read.
+ -remove redundant code "return ret" in probe end.
+
+v7:
+-aspeed,i2c.yaml
+ -Update ASPEED I2C maintainers email.
+ -use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ -fix allOf and else false properties for aspeed,ast2600-i2cv2.
+-i2c-ast2600.c
+ -remove aspeed,xfer-mode instead of aspeed,enable-dma mode. buffer mode
+is default.
+ -remove aspeed,timeout instead of i2c-scl-clk-low-timeout-us for
+timeout setting.
+
+v6:
+-remove aspeed,i2cv2.yaml, merge to aspeed,i2c.yaml -add support for
+ i2cv2 properites.
+-i2c-ast2600.c
+ -fix ast2600_i2c_remove ordering.
+ -remove ast2600_i2c_probe goto labels, and add dev_err_probe -remove
+  redundant deb_dbg debug message.
+ -rename gr_regmap -> global_regs
+
+v5:
+-remove ast2600-i2c-global.yaml, i2c-ast2600-global.c.
+-i2c-ast2600.c
+ -remove legacy clock divide, all go for new clock divide.
+ -remove duplicated read isr.
+ -remove no used driver match
+ -fix probe return for each labels return.
+ -global use mfd driver, driver use phandle to regmap read/write.
+-rename aspeed,i2c-ast2600.yaml to aspeed,i2cv2.yaml -remove bus-frequency.
+-add required aspeed,gr
+-add timeout, byte-mode, buff-mode properites.
+
+v4:
+-fix i2c-ast2600.c driver buffer mode use single buffer conflit in
+ master slave mode both enable.
+-fix kmemleak issue when use dma mode.
+-fix typo aspeed,i2c-ast2600.yaml compatible is "aspeed,ast2600-i2c"
+-fix typo aspeed,i2c-ast2600.ymal to aspeed,i2c-ast2600.yaml
+
+v3:
+-fix i2c global clock divide default value.
+-remove i2c slave no used dev_dbg info.
+
+v2:
+-add i2c global ymal file commit.
+-rename file name from new to ast2600.
+ aspeed-i2c-new-global.c -> i2c-ast2600-global.c
+ aspeed-i2c-new-global.h -> i2c-ast2600-global.h
+ i2c-new-aspeed.c -> i2c-ast2600.c
+-rename all driver function name to ast2600.
+Ryan Chen (3):
+  dt-bindings: i2c: aspeed: support for AST2600-i2cv2
+  i2c: aspeed: support AST2600 i2c new register mode driver
+  i2c: aspeed: support AST2600 i2c new register target mode driver
+
+ .../devicetree/bindings/i2c/aspeed,i2c.yaml   |   51 +-
+ drivers/i2c/busses/Kconfig                    |   11 +
+ drivers/i2c/busses/Makefile                   |    1 +
+ drivers/i2c/busses/i2c-ast2600.c              | 1553 +++++++++++++++++
+ 4 files changed, 1613 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/i2c/busses/i2c-ast2600.c
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.34.1
+
