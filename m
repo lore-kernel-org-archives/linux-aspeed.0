@@ -1,50 +1,111 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Mon, 7 Oct 2024 10:48:18 +0000
-Subject: [PATCH v2 2/2] irqchip/aspeed-intc: Add support for AST27XX INTC
-In-Reply-To: <4817e23e-a726-4557-b756-e0cbc54eebaa@kernel.org>
+Date: Mon, 7 Oct 2024 10:48:06 +0000
+Subject: [PATCH v2 1/2] dt-bindings: interrupt-controller: Add support for
+ ASPEED AST27XX INTC
+In-Reply-To: <31635635-b743-446d-a94e-b3b8082c06a2@kernel.org>
 References: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
- <20240814114106.2809876-4-kevin_chen@aspeedtech.com>
- <4817e23e-a726-4557-b756-e0cbc54eebaa@kernel.org>
-Message-ID: <PSAPR06MB4949E625766C4E6F5173EB1B897D2@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <20240814114106.2809876-3-kevin_chen@aspeedtech.com>
+ <31635635-b743-446d-a94e-b3b8082c06a2@kernel.org>
+Message-ID: <PSAPR06MB49494DB3D3062AB23931FD08897D2@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > Support for the Aspeed Interrupt Controller found on Aspeed Silicon
-> > SoCs, such as the AST2700, which is arm64 architecture.
-> >
-> > To support ASPEED interrupt controller(INTC) maps the internal
-> > interrupt sources of the AST27XX device to an parent interrupt controller.
-> > ---
-> >  drivers/irqchip/Makefile          |   1 +
-> >  drivers/irqchip/irq-aspeed-intc.c | 137
-> > ++++++++++++++++++++++++++++++
-> >  2 files changed, 138 insertions(+)
-> >  create mode 100644 drivers/irqchip/irq-aspeed-intc.c
-> >
-> > diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile index
-> > 15635812b2d6..5da3f2f4eede 100644
-> > --- a/drivers/irqchip/Makefile
-> > +++ b/drivers/irqchip/Makefile
-> > @@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)			+=
-> irq-mvebu-sei.o
-> >  obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
-> >  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
-> >  obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o
-> irq-aspeed-scu-ic.o
-> > +obj-$(CONFIG_ASPEED_G7_INTC)		+= irq-aspeed-intc.o
+> > The ASPEED AST27XX interrupt controller(INTC) contain second level and
+> > third level interrupt controller. The third level INTC combines 32
+> > interrupt sources into 1 interrupt into parent interrupt controller.
+> > The second level INTC doing hand shake with third level INTC.
 > 
 > 
-> There is no such config symbol.
-Agree, I will use CONFIG_ARCH_ASPEED as the following.
-obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-intc.o
+> > +maintainers:
+> > +  - Kevin Chen <kevin_chen@aspeedtech.com>
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2700-intc-ic
+> > +
+> > +  reg:
+> > +    minItems: 1
+> 
+> That's unconstrained. Instead: maxItems: 1
+Agree.
 
 > 
-> You already got this exact comment. Replacing one broken code with other
-> broken code is not the solution.
+> > +
+> > +  interrupt-controller: true
+> > +
+> > +  '#interrupt-cells':
+> > +    const: 2
+> > +
+> > +  interrupts:
+> > +    minItems: 1
+> > +    maxItems: 10
+> > +    description:
+> > +      It contains two types of interrupt controller. The first type is multiple
+> > +      interrupt sources into parent interrupt controller. The second type is
+> > +      1 interrupt source to parent interrupt controller.
 > 
+> I think I asked already - list the items with description.
+> 
+> Why the number is flexible?
+Depend to which INTC0 or INTC1 used.
+INTC0 and INTC1 are two kinds of interrupt controller with enable and raw status registers for use.
+INTC0 is used to assert GIC(#192~#197) if interrupt in INTC1 asserted. There are 6 GIC interrupt number(#192~#197) used in one INTC0.
+INTC1 is used to assert INTC0 if interrupt of modules asserted. There are 32 module interrupts used in one INTC1.
+
+> 
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - interrupt-controller
+> > +  - '#interrupt-cells'
+> > +  - interrupts
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +
+> > +    bus {
+> > +        #address-cells = <2>;
+> > +        #size-cells = <2>;
+> > +
+> > +        interrupt-controller at 12101b00 {
+> > +          compatible = "aspeed,ast2700-intc-ic";
+> 
+> Messed indentation.
+Agree. Would change to the following.
+examples:
+  - |
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+    bus {
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+        interrupt-controller at 12101b00 {
+            compatible = "aspeed,ast2700-intc-ic";
+            reg = <0 0x12101b00 0 0x10>;
+            #interrupt-cells = <2>;
+            interrupt-controller;
+            interrupts = <GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 193 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 194 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>,
+                         <GIC_SPI 201 IRQ_TYPE_LEVEL_HIGH>;
+        };
+    };
+
 > 
 > Best regards,
 > Krzysztof
