@@ -1,43 +1,51 @@
-From: Naresh Solanki <naresh.solanki@9elements.com>
-Date: Mon, 7 Oct 2024 16:02:00 +0530
-Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
-In-Reply-To: <xuczpa6nrxjwo7hjn62ehblnzc5twupghbg4uuwp5vfczw3gmg@x23yhbxjccpy>
-References: <20241002084023.467383-1-naresh.solanki@9elements.com> <xuczpa6nrxjwo7hjn62ehblnzc5twupghbg4uuwp5vfczw3gmg@x23yhbxjccpy>
-Message-ID: <CABqG17gbXGRBDHzt8-rt6_n+37oMhjmJGxCLEqqM48GjMrKNrw@mail.gmail.com>
+From: Kevin Chen <kevin_chen@aspeedtech.com>
+Date: Mon, 7 Oct 2024 10:48:18 +0000
+Subject: [PATCH v2 2/2] irqchip/aspeed-intc: Add support for AST27XX INTC
+In-Reply-To: <4817e23e-a726-4557-b756-e0cbc54eebaa@kernel.org>
+References: <20240814114106.2809876-1-kevin_chen@aspeedtech.com>
+ <20240814114106.2809876-4-kevin_chen@aspeedtech.com>
+ <4817e23e-a726-4557-b756-e0cbc54eebaa@kernel.org>
+Message-ID: <PSAPR06MB4949E625766C4E6F5173EB1B897D2@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Krzysztof
-
-On Thu, 3 Oct 2024 at 13:47, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->
-> On Wed, Oct 02, 2024 at 02:10:17PM +0530, Naresh Solanki wrote:
-> > Document the new compatibles used on IBM SBP1.
+> > Support for the Aspeed Interrupt Controller found on Aspeed Silicon
+> > SoCs, such as the AST2700, which is arm64 architecture.
 > >
-> > Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> > To support ASPEED interrupt controller(INTC) maps the internal
+> > interrupt sources of the AST27XX device to an parent interrupt controller.
 > > ---
-> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
-> >  1 file changed, 1 insertion(+)
+> >  drivers/irqchip/Makefile          |   1 +
+> >  drivers/irqchip/irq-aspeed-intc.c | 137
+> > ++++++++++++++++++++++++++++++
+> >  2 files changed, 138 insertions(+)
+> >  create mode 100644 drivers/irqchip/irq-aspeed-intc.c
 > >
-> > diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > index 95113df178cc..8c04d6eaec08 100644
-> > --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > @@ -89,6 +89,7 @@ properties:
-> >                - ibm,everest-bmc
-> >                - ibm,rainier-bmc
-> >                - ibm,system1-bmc
-> > +              - ibm,sbp1-bmc
->
-> Keep alphabetical order.
-Sure. Will update in next patchset. Will also include Ack-by for the patch.
+> > diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile index
+> > 15635812b2d6..5da3f2f4eede 100644
+> > --- a/drivers/irqchip/Makefile
+> > +++ b/drivers/irqchip/Makefile
+> > @@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)			+=
+> irq-mvebu-sei.o
+> >  obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
+> >  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+> >  obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o
+> irq-aspeed-scu-ic.o
+> > +obj-$(CONFIG_ASPEED_G7_INTC)		+= irq-aspeed-intc.o
+> 
+> 
+> There is no such config symbol.
+Agree, I will use CONFIG_ARCH_ASPEED as the following.
+obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-intc.o
 
-Thanks.
-Naresh
->
+> 
+> You already got this exact comment. Replacing one broken code with other
+> broken code is not the solution.
+> 
+> 
 > Best regards,
 > Krzysztof
->
+
