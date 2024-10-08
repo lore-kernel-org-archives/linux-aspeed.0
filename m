@@ -1,58 +1,117 @@
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Tue, 8 Oct 2024 16:14:46 +0800
-Subject: [PATCH v7 3/7] gpio: aspeed: Change the macro to support deferred probe
+Date: Tue, 8 Oct 2024 16:14:47 +0800
+Subject: [PATCH v7 4/7] gpio: aspeed: Remove the name for bank array
 In-Reply-To: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
 References: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
-Message-ID: <20241008081450.1490955-4-billy_tsai@aspeedtech.com>
+Message-ID: <20241008081450.1490955-5-billy_tsai@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use module_platform_driver() to replace module_platform_driver_probe().
-The former utilizes platform_driver_register(), which allows the driver to
-defer probing when it doesn't acquire the necessary resources due to probe
-order. In contrast, the latter uses __platform_driver_probe(), which
-includes the comment "Note that this is incompatible with deferred
-probing." Since our GPIO driver requires access to the clock resource, the
-former is more suitable.
+The bank array name is only used to determine if the GPIO offset is valid,
+and this condition can be replaced by checking if the offset exceeds the
+ngpio property.
 
 Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/gpio/gpio-aspeed.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/gpio/gpio-aspeed.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index ea40ad43a79b..c49c55ae962b 100644
+index c49c55ae962b..61a531962de3 100644
 --- a/drivers/gpio/gpio-aspeed.c
 +++ b/drivers/gpio/gpio-aspeed.c
-@@ -1169,7 +1169,7 @@ static const struct of_device_id aspeed_gpio_of_table[] = {
+@@ -77,7 +77,6 @@ struct aspeed_gpio_bank {
+ 	uint16_t	debounce_regs;
+ 	uint16_t	tolerance_regs;
+ 	uint16_t	cmdsrc_regs;
+-	const char	names[4][3];
  };
- MODULE_DEVICE_TABLE(of, aspeed_gpio_of_table);
  
--static int __init aspeed_gpio_probe(struct platform_device *pdev)
-+static int aspeed_gpio_probe(struct platform_device *pdev)
- {
- 	const struct of_device_id *gpio_id;
- 	struct gpio_irq_chip *girq;
-@@ -1270,13 +1270,14 @@ static int __init aspeed_gpio_probe(struct platform_device *pdev)
- }
- 
- static struct platform_driver aspeed_gpio_driver = {
-+	.probe = aspeed_gpio_probe,
- 	.driver = {
- 		.name = KBUILD_MODNAME,
- 		.of_match_table = aspeed_gpio_of_table,
+ /*
+@@ -104,7 +103,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0040,
+ 		.tolerance_regs = 0x001c,
+ 		.cmdsrc_regs = 0x0060,
+-		.names = { "A", "B", "C", "D" },
+ 	},
+ 	{
+ 		.val_regs = 0x0020,
+@@ -113,7 +111,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0048,
+ 		.tolerance_regs = 0x003c,
+ 		.cmdsrc_regs = 0x0068,
+-		.names = { "E", "F", "G", "H" },
+ 	},
+ 	{
+ 		.val_regs = 0x0070,
+@@ -122,7 +119,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x00b0,
+ 		.tolerance_regs = 0x00ac,
+ 		.cmdsrc_regs = 0x0090,
+-		.names = { "I", "J", "K", "L" },
+ 	},
+ 	{
+ 		.val_regs = 0x0078,
+@@ -131,7 +127,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0100,
+ 		.tolerance_regs = 0x00fc,
+ 		.cmdsrc_regs = 0x00e0,
+-		.names = { "M", "N", "O", "P" },
+ 	},
+ 	{
+ 		.val_regs = 0x0080,
+@@ -140,7 +135,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0130,
+ 		.tolerance_regs = 0x012c,
+ 		.cmdsrc_regs = 0x0110,
+-		.names = { "Q", "R", "S", "T" },
+ 	},
+ 	{
+ 		.val_regs = 0x0088,
+@@ -149,7 +143,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0160,
+ 		.tolerance_regs = 0x015c,
+ 		.cmdsrc_regs = 0x0140,
+-		.names = { "U", "V", "W", "X" },
+ 	},
+ 	{
+ 		.val_regs = 0x01E0,
+@@ -158,7 +151,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x0190,
+ 		.tolerance_regs = 0x018c,
+ 		.cmdsrc_regs = 0x0170,
+-		.names = { "Y", "Z", "AA", "AB" },
+ 	},
+ 	{
+ 		.val_regs = 0x01e8,
+@@ -167,7 +159,6 @@ static const struct aspeed_gpio_bank aspeed_gpio_banks[] = {
+ 		.debounce_regs = 0x01c0,
+ 		.tolerance_regs = 0x01bc,
+ 		.cmdsrc_regs = 0x01a0,
+-		.names = { "AC", "", "", "" },
  	},
  };
  
--module_platform_driver_probe(aspeed_gpio_driver, aspeed_gpio_probe);
-+module_platform_driver(aspeed_gpio_driver);
+@@ -280,11 +271,11 @@ static inline const struct aspeed_bank_props *find_bank_props(
+ static inline bool have_gpio(struct aspeed_gpio *gpio, unsigned int offset)
+ {
+ 	const struct aspeed_bank_props *props = find_bank_props(gpio, offset);
+-	const struct aspeed_gpio_bank *bank = to_bank(offset);
+-	unsigned int group = GPIO_OFFSET(offset) / 8;
  
- MODULE_DESCRIPTION("Aspeed GPIO Driver");
- MODULE_LICENSE("GPL");
+-	return bank->names[group][0] != '\0' &&
+-		(!props || ((props->input | props->output) & GPIO_BIT(offset)));
++	if (offset >= gpio->chip.ngpio)
++		return false;
++
++	return (!props || ((props->input | props->output) & GPIO_BIT(offset)));
+ }
+ 
+ static inline bool have_input(struct aspeed_gpio *gpio, unsigned int offset)
 -- 
 2.25.1
 
