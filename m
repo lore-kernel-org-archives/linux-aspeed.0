@@ -1,37 +1,38 @@
-From: Naresh Solanki <naresh.solanki@9elements.com>
-Date: Tue,  8 Oct 2024 16:49:18 +0530
-Subject: [PATCH v4 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
-Message-ID: <20241008111924.1865857-1-naresh.solanki@9elements.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue,  8 Oct 2024 16:02:52 +0200
+Subject: (subset) [PATCH v7 0/7] Add Aspeed G7 gpio support
+In-Reply-To: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
+References: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
+Message-ID: <172839616610.55104.2573120540182552334.b4-ty@linaro.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document the new compatibles used on IBM SBP1.
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
----
-Changes in V4:
-- Retain Acked-by from v2.
-- Fix alphabetic order
----
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 2f92b8ab08fa..c79c74ab3d78 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -91,6 +91,7 @@ properties:
-               - ibm,everest-bmc
-               - ibm,fuji-bmc
-               - ibm,rainier-bmc
-+              - ibm,sbp1-bmc
-               - ibm,system1-bmc
-               - ibm,tacoma-bmc
-               - inventec,starscream-bmc
+On Tue, 08 Oct 2024 16:14:43 +0800, Billy Tsai wrote:
+> The Aspeed 7th generation SoC features two GPIO controllers: one with 12
+> GPIO pins and another with 216 GPIO pins. The main difference from the
+> previous generation is that the control logic has been updated to support
+> per-pin control, allowing each pin to have its own 32-bit register for
+> configuring value, direction, interrupt type, and more.
+> This patch serial also add low-level operations (llops) to abstract the
+> register access for GPIO registers and the coprocessor request/release in
+> gpio-aspeed.c making it easier to extend the driver to support different
+> hardware register layouts.
+> 
+> [...]
+
+Applied, thanks!
+
+[1/7] gpio: aspeed: Add the flush write to ensure the write complete.
+      commit: 1bb5a99e1f3fd27accb804aa0443a789161f843c
+[2/7] gpio: aspeed: Use devm_clk api to manage clock source
+      commit: a6191a3d18119184237f4ee600039081ad992320
+
+Best regards,
 -- 
-2.42.0
-
+Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
