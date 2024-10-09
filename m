@@ -1,112 +1,78 @@
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Wed, 9 Oct 2024 02:28:10 +0000
-Subject: [PATCH v7 7/7] gpio: aspeed: Support G7 Aspeed gpio controller
-In-Reply-To: <66e619a9085a2ecb62e3945cd024822de5317f92.camel@codeconstruct.com.au>
-References: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
-	 <20241008081450.1490955-8-billy_tsai@aspeedtech.com>
- <66e619a9085a2ecb62e3945cd024822de5317f92.camel@codeconstruct.com.au>
-Message-ID: <OSQPR06MB72526C8FE71BF336D8AF50758B7F2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Date: Wed, 9 Oct 2024 14:05:18 +0800
+Subject: [PATCH v5 0/3] Add support for AST2700 clk driver
+Message-ID: <20241009060521.2971168-1-ryan_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> > In the 7th generation of the SoC from Aspeed, the control logic of the
-> > GPIO controller has been updated to support per-pin control. Each pin now
-> > has its own 32-bit register, allowing for individual control of the pin's
-> > value, direction, interrupt type, and other settings. The permission for
-> > coprocessor access is supported by the hardware but hasn't been
-> > implemented in the current patch.
-> >
-> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> > ---
-> >  drivers/gpio/gpio-aspeed.c | 147 +++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 147 insertions(+)
-> >
-> > diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> > index 5d583cc9cbc7..208f95fb585e 100644
-> > --- a/drivers/gpio/gpio-aspeed.c
-> > +++ b/drivers/gpio/gpio-aspeed.c
-> > @@ -30,6 +30,27 @@
-> >  #include <linux/gpio/consumer.h>
-> >  #include "gpiolib.h"
-> >
-> > +/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-> > +#define field_get(_mask, _reg)       (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> > +#define field_prep(_mask, _val)      (((_val) << (ffs(_mask) - 1)) & (_mask))
-> > +
-> > +#define GPIO_G7_IRQ_STS_BASE 0x100
-> > +#define GPIO_G7_IRQ_STS_OFFSET(x) (GPIO_G7_IRQ_STS_BASE + (x) * 0x4)
-> > +#define GPIO_G7_CTRL_REG_BASE 0x180
-> > +#define GPIO_G7_CTRL_REG_OFFSET(x) (GPIO_G7_CTRL_REG_BASE + (x) * 0x4)
-> > +#define GPIO_G7_CTRL_OUT_DATA BIT(0)
-> > +#define GPIO_G7_CTRL_DIR BIT(1)
-> > +#define GPIO_G7_CTRL_IRQ_EN BIT(2)
-> > +#define GPIO_G7_CTRL_IRQ_TYPE0 BIT(3)
-> > +#define GPIO_G7_CTRL_IRQ_TYPE1 BIT(4)
-> > +#define GPIO_G7_CTRL_IRQ_TYPE2 BIT(5)
-> > +#define GPIO_G7_CTRL_RST_TOLERANCE BIT(6)
-> > +#define GPIO_G7_CTRL_DEBOUNCE_SEL1 BIT(7)
-> > +#define GPIO_G7_CTRL_DEBOUNCE_SEL2 BIT(8)
-> > +#define GPIO_G7_CTRL_INPUT_MASK BIT(9)
-> > +#define GPIO_G7_CTRL_IRQ_STS BIT(12)
-> > +#define GPIO_G7_CTRL_IN_DATA BIT(13)
-> > +
-> >  struct aspeed_bank_props {
-> >       unsigned int bank;
-> >       u32 input;
-> > @@ -95,6 +116,22 @@ struct aspeed_gpio_bank {
-> >   */
-> >
-> >  static const int debounce_timers[4] = { 0x00, 0x50, 0x54, 0x58 };
-> > +static const int g7_debounce_timers[4] = { 0x00, 0x00, 0x04, 0x08 };
-> > +
-> > +/*
-> > + * The debounce timers array is used to configure the debounce timer settings.Here?s how it works:
-> > + * Array Value: Indicates the offset for configuring the debounce timer.
-> > + * Array Index: Corresponds to the debounce setting register.
-> > + * The debounce timers array follows this pattern for configuring the debounce setting registers:
-> > + * Array Index 0: No debounce timer is set;
-> > + *             Array Value is irrelevant (don?t care).
-> > + * Array Index 1: Debounce setting #2 is set to 1, and debounce setting #1 is set to 0.
-> > + *             Array Value: offset for configuring debounce timer 0 (g4: 0x50, g7: 0x00)
-> > + * Array Index 2: Debounce setting #2 is set to 0, and debounce setting #1 is set to 1.
-> > + *             Array Value: offset for configuring debounce timer 1 (g4: 0x54, g7: 0x04)
-> > + * Array Index 3: Debounce setting #2 is set to 1, and debounce setting #1 is set to 1.
-> > + *             Array Value: offset for configuring debounce timer 2 (g4: 0x58, g7: 0x8)
-> > + */
-> >
-> >  static const struct aspeed_gpio_copro_ops *copro_ops;
-> >  static void *copro_data;
-> > @@ -250,6 +287,39 @@ static void __iomem *aspeed_gpio_g4_bank_reg(struct aspeed_gpio *gpio,
-> >       BUG();
-> >  }
-> >
-> > +static u32 aspeed_gpio_g7_reg_mask(const enum aspeed_gpio_reg reg)
-> > +{
-> > +     switch (reg) {
-> > +     case reg_val:
-> > +             return GPIO_G7_CTRL_OUT_DATA;
+This patch series is add clk driver for AST2700.
 
-> I think a problem is that we want this to be GPIO_G7_CTRL_IN_DATA for
-> reads, but GPIO_G7_CTRL_OUT_DATA for writes?
+AST2700 is the 8th generation of Integrated Remote Management Processor
+introduced by ASPEED Technology Inc. Which is Board Management controller
+(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
+is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
 
-Yes. So in my aspeed_g7_bit_get, I will change the mask to GPIO_G7_CTRL_IN_DATA.
+v5:
+-patch-2 Kconfig: add select AUXILIARY_BUS
+-reset-aspeed: #define to_aspeed_reset(p) turn into static inline function.
+-reset-aspeed: modify spin_lock_irqsave to guard(spinlock_irqsave)
+-reset-aspeed: remove unnecessary parentheses.
+-clk-ast2700: use <linux/units.h> and refrain from define clk
 
-+static bool aspeed_g7_reg_bit_get(struct aspeed_gpio *gpio, unsigned int offset,
-+                                 const enum aspeed_gpio_reg reg)
-+{
-+       u32 mask = aspeed_gpio_g7_reg_mask(reg);
-+       void __iomem *addr;
-+
-+       addr = gpio->base + GPIO_G7_CTRL_REG_OFFSET(offset);
-+       if (reg == reg_val)
-+               mask = GPIO_G7_CTRL_IN_DATA;
-+
-+       if (mask)
-+               return field_get(mask, ioread32(addr));
-+       else
-+               return 0;
-+}
-+
+v4:
+-yaml: keep size-cells=<1>.
+-merge clk,reset dt binding header with yaml the same patch.
+-rename clk,reset dt binding header to aspeed,ast2700-scu.h
+-reset-aspeed: update tables tabs sapces to consistent spaces.
+-reset-aspeed: remove no use dev_set_drvdata.
+-clk-ast2700: modify reset_name to const int scu in struct clk_data.
+-clk-ast2700: use scu number in clk_data generate reset_name for reset
+ driver register.
+-clk-ast2700: fix pll number mix up scu0,scu1.
+-clk-ast2700: update dt-binding clock include file.
+
+v3:
+-yaml: v2 missing send yaml patch, v3 add.
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number.
+-dt-bindings: merge clk and reset to be one patch.
+-reset-aspeed: add auxiliary device for reset driver.
+-clk-ast2700: modify reset to be auxiliary add.
+-clk-ast2700: modify to be platform driver.
+-clk-ast2700: modify each clk to const clk array.
+
+v2:
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number
+-clk-ast2700: drop WARN_ON, weird comment.
+
+Ryan Chen (3):
+  dt-bindings: mfd: aspeed: support for AST2700
+  reset: aspeed: register AST2700 reset auxiliary bus device
+  clk: aspeed: add AST2700 clock driver.
+
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml      |    8 +-
+ drivers/clk/Kconfig                           |    8 +
+ drivers/clk/Makefile                          |    1 +
+ drivers/clk/clk-ast2700.c                     | 1554 +++++++++++++++++
+ drivers/reset/Kconfig                         |    7 +
+ drivers/reset/Makefile                        |    1 +
+ drivers/reset/reset-aspeed.c                  |  256 +++
+ .../dt-bindings/clock/aspeed,ast2700-scu.h    |  163 ++
+ .../dt-bindings/reset/aspeed,ast2700-scu.h    |  124 ++
+ 9 files changed, 2121 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/clk/clk-ast2700.c
+ create mode 100644 drivers/reset/reset-aspeed.c
+ create mode 100644 include/dt-bindings/clock/aspeed,ast2700-scu.h
+ create mode 100644 include/dt-bindings/reset/aspeed,ast2700-scu.h
+
+-- 
+2.34.1
+
