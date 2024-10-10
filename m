@@ -1,65 +1,122 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Thu, 10 Oct 2024 16:40:15 +0300
-Subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register
- mode driver
-In-Reply-To: <202410051547.vOL3qMOc-lkp@intel.com>
-References: <20241002070213.1165263-3-ryan_chen@aspeedtech.com>
- <202410051547.vOL3qMOc-lkp@intel.com>
-Message-ID: <ZwfZP0LeqKobdbgK@smile.fi.intel.com>
+From: Rob Herring (Arm) <robh@kernel.org>
+Date: Thu, 10 Oct 2024 09:30:07 -0500
+Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
+In-Reply-To: <20241010112337.3840703-1-naresh.solanki@9elements.com>
+References: <20241010112337.3840703-1-naresh.solanki@9elements.com>
+Message-ID: <172857036038.1533242.5775916298170949713.robh@kernel.org>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Oct 05, 2024 at 03:36:16PM +0800, kernel test robot wrote:
-> Hi Ryan,
-> 
-> kernel test robot noticed the following build errors:
-> 
-> [auto build test ERROR on v6.11]
-> [cannot apply to andi-shyti/i2c/i2c-host v6.12-rc1 linus/master next-20241004]
-> [If your patch is applied to the wrong git tree, kindly drop us a note.
-> And when submitting patch, we suggest to use '--base' as documented in
-> https://git-scm.com/docs/git-format-patch#_base_tree_information]
-> 
-> url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-i2c-aspeed-support-for-AST2600-i2cv2/20241002-150410
-> base:   v6.11
-> patch link:    https://lore.kernel.org/r/20241002070213.1165263-3-ryan_chen%40aspeedtech.com
-> patch subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register mode driver
-> config: sh-allmodconfig (https://download.01.org/0day-ci/archive/20241005/202410051547.vOL3qMOc-lkp at intel.com/config)
-> compiler: sh4-linux-gcc (GCC) 14.1.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20241005/202410051547.vOL3qMOc-lkp at intel.com/reproduce)
-> 
-> If you fix the issue in a separate patch/commit (i.e. not just a new version of
-> the same patch/commit), kindly add following tags
-> | Reported-by: kernel test robot <lkp@intel.com>
-> | Closes: https://lore.kernel.org/oe-kbuild-all/202410051547.vOL3qMOc-lkp at intel.com/
-> 
-> All errors (new ones prefixed by >>):
-> 
->    drivers/i2c/busses/i2c-ast2600.c: In function 'ast2600_i2c_setup_buff_tx':
-> >> drivers/i2c/busses/i2c-ast2600.c:437:41: error: implicit declaration of function 'get_unaligned_le16'; did you mean 'get_unalign_ctl'? [-Wimplicit-function-declaration]
->      437 |                                         get_unaligned_le16(&msg->buf[i2c_bus->master_xfer_cnt + i]);
->          |                                         ^~~~~~~~~~~~~~~~~~
->          |                                         get_unalign_ctl
-> >> drivers/i2c/busses/i2c-ast2600.c:441:41: error: implicit declaration of function 'get_unaligned_le24'; did you mean 'get_unalign_ctl'? [-Wimplicit-function-declaration]
->      441 |                                         get_unaligned_le24(&msg->buf[i2c_bus->master_xfer_cnt + i]);
->          |                                         ^~~~~~~~~~~~~~~~~~
->          |                                         get_unalign_ctl
-> >> drivers/i2c/busses/i2c-ast2600.c:445:41: error: implicit declaration of function 'get_unaligned_le32'; did you mean 'get_unalign_ctl'? [-Wimplicit-function-declaration]
->      445 |                                         get_unaligned_le32(&msg->buf[i2c_bus->master_xfer_cnt + i]);
->          |                                         ^~~~~~~~~~~~~~~~~~
->          |                                         get_unalign_ctl
 
-You need to add
+On Thu, 10 Oct 2024 16:53:31 +0530, Naresh Solanki wrote:
+> Document the new compatibles used on IBM SBP1.
+> 
+> Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> ---
+> Changes in V4:
+> - Retain Acked-by from v2.
+> - Fix alphabetic order
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
 
-#include <asm/unaligned.h>
 
-_after_ other #include <linux/*.h> in the code.
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-sbp1.dtb' for 20241010112337.3840703-1-naresh.solanki at 9elements.com:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: timer: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /sdram at 1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: bus at 1e600000: compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
+	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: syscon at 1e6e2000: 'smp-memram at 180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^silicon-id@[0-9a-f]+$', 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/syscon at 1e6e2000/smp-memram at 180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/syscon at 1e6e2000/interrupt-controller at 560: failed to match any schema with compatible: ['aspeed,ast2600-scu-ic0']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/syscon at 1e6e2000/interrupt-controller at 570: failed to match any schema with compatible: ['aspeed,ast2600-scu-ic1']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/display at 1e6e6000: failed to match any schema with compatible: ['aspeed,ast2600-gfx', 'syscon']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: adc at 1e6e9000: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: adc at 1e6e9100: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: crypto at 1e6fa000: 'aspeed,ahbc' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/video at 1e700000: failed to match any schema with compatible: ['aspeed,ast2600-video-engine']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/timer at 1e782000: failed to match any schema with compatible: ['aspeed,ast2600-timer']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: lpc at 1e789000: lpc-snoop at 80: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: lpc at 1e789000: reg-io-width: 4 is not of type 'object'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 24: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 28: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 2c: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: kcs at 114: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/lpc at 1e789000/lhc at a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/lpc at 1e789000/ibt at 140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: sdc at 1e740000: sdhci at 1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
+	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: sdc at 1e740000: sdhci at 1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
+	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/sdc at 1e740000/sdhci at 1e740100: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/sdc at 1e740000/sdhci at 1e740200: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/bus at 1e78a000/i2c at 280/bmc-slave at 10: failed to match any schema with compatible: ['ipmb-dev']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mux at 77: interrupts: False schema does not allow [[44, 4]]
+	from schema $id: http://devicetree.org/schemas/i2c/i2c-mux-pca954x.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: fsi at 1e79b000: compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
+	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/fsi at 1e79b000: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: fsi at 1e79b100: compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
+	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/fsi at 1e79b100: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
+arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: /ahb/apb/dma-controller at 1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
+
+
+
 
 
