@@ -1,112 +1,157 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Fri, 11 Oct 2024 10:06:57 +0000
-Subject: [PATCH v3 2/2] irqchip/aspeed-intc: Add support for AST27XX INTC
-In-Reply-To: <f65dd139-1021-47d6-93a1-1477d6b4ca1d@web.de>
-References: <20241009115813.2908803-3-kevin_chen@aspeedtech.com>
- <f65dd139-1021-47d6-93a1-1477d6b4ca1d@web.de>
-Message-ID: <PSAPR06MB4949904D1FA95DBD3EF5288A89792@PSAPR06MB4949.apcprd06.prod.outlook.com>
+Date: Fri, 11 Oct 2024 10:02:39 +0000
+Subject: [PATCH v3 1/2] dt-bindings: interrupt-controller: Add support for
+ ASPEED AST27XX INTC
+In-Reply-To: <20241009211116.GA676770-robh@kernel.org>
+References: <20241009115813.2908803-1-kevin_chen@aspeedtech.com>
+ <20241009115813.2908803-2-kevin_chen@aspeedtech.com>
+ <20241009211116.GA676770-robh@kernel.org>
+Message-ID: <PSAPR06MB4949705F99984E6FA6C2CAE089792@PSAPR06MB4949.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Markus,
-
-Thank you for your review. Could you check the message below. Thanks a lot.
-
-> 
-> ?
-> > To support ASPEED interrupt controller(INTC) maps the internal
-> > interrupt sources of the AST27XX device to an parent interrupt controller.
+> > The ASPEED AST27XX interrupt controller(INTC) contain second level and
+> > third level interrupt controller.
+> >
+> > INTC0:
+> > The second level INTC, which used to assert GIC(#192~#197) if
+> > interrupt in INTC1 asserted. There are 6 GIC interrupt
+> > number(#192~#197) used in one INTC0.
+> >
+> > INTC1_x:
+> > The third level INTC, which used to assert GIC(#192~#197) if interrupt
+> > in
+> > INTC1 asserted. There are 6 GIC interrupt number(#192~#197) used in one
+> INTC0.
+> >
+> > Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
 > > ---
+> >  .../aspeed,ast2700-intc.yaml                  | 87
+> +++++++++++++++++++
+> >  1 file changed, 87 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-
+> > intc.yaml
+> >
+> > diff --git
+> > a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast270
+> > 0-intc.yaml
+> > b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast270
+> > 0-intc.yaml
+> > new file mode 100644
+> > index 000000000000..650a1f6e1177
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,as
+> > +++ t2700-intc.yaml
+> > @@ -0,0 +1,87 @@
+> > +# SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause %YAML 1.2
+> > +---
+> > +$id:
+> > +http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-int
+> > +c.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: Aspeed AST2700 Interrupt Controller
+> > +
+> > +description:
+> > +  This interrupt controller hardware is second level interrupt
+> > +controller that
+> > +  is hooked to a parent interrupt controller. It's useful to combine
+> > +multiple
+> > +  interrupt sources into 1 interrupt to parent interrupt controller.
+> > +
+> > +maintainers:
+> > +  - Kevin Chen <kevin_chen@aspeedtech.com>
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - aspeed,ast2700-intc-ic
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  interrupt-controller: true
+> > +
+> > +  '#interrupt-cells':
+> > +    const: 2
 > 
-> * I miss your tag ?Signed-off-by?.
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Docume
-> ntation/process/submitting-patches.rst?h=v6.12-rc2#n396
-> 
-> * How do you think about to choose an additional imperative wording
->   for an improved change description?
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Docume
-> ntation/process/submitting-patches.rst?h=v6.12-rc2#n94
-> 
-> 
-> ?
-> > +++ b/drivers/irqchip/irq-aspeed-intc.c
-> > @@ -0,0 +1,139 @@
-> ?
-> > +static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
-> +{
-> > +	struct aspeed_intc_ic *intc_ic = irq_desc_get_handler_data(desc);
-> > +	struct irq_chip *chip = irq_desc_get_chip(desc);
-> > +	unsigned long bit, status;
-> 
-> I suggest to reduce the scopes for three local variables.
-May I check the scopes of bit and status usage?
-Variables of bit and status are used in for_each_set_bit.
-How could I reduce the scopes?
-
-> 
+> Describe the meaning of the cells here.
+I would change to the following code
++  '#interrupt-cells':
++    const: 2
++    description:
++      The first cell is the IRQ number, the second cell is the trigger
++      type as defined in interrupt.txt in this directory.
 > 
 > > +
-> > +	chained_irq_enter(chip, desc);
+> > +  interrupts:
+> > +    maxItems: 10
+> > +    description:
 > 
-> Would you become interested to collaborate with another scoped guard for
-> this programming interface?
-> https://elixir.bootlin.com/linux/v6.12-rc2/source/include/linux/irqchip/chained
-> _irq.h#L13
-Maybe like the change in the following?
-
-diff --git a/drivers/irqchip/irq-aspeed-intc.c b/drivers/irqchip/irq-aspeed-intc.c
-index ef1c095ad09e..54d1881c56c6 100644
---- a/drivers/irqchip/irq-aspeed-intc.c
-+++ b/drivers/irqchip/irq-aspeed-intc.c
-@@ -32,7 +32,7 @@ static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
-        struct irq_chip *chip = irq_desc_get_chip(desc);
-        unsigned long bit, status;
-
--       chained_irq_enter(chip, desc);
-+       guard(chained_irq)(desc);
-
-        scoped_guard(raw_spinlock, &intc_ic->gic_lock) {
-                status = readl(intc_ic->base + INTC_INT_STATUS_REG);
-@@ -41,8 +41,6 @@ static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
-                        writel(BIT(bit), intc_ic->base + INTC_INT_STATUS_REG);
-                }
-        }
--
--       chained_irq_exit(chip, desc);
- }
-
- static void aspeed_intc_irq_mask(struct irq_data *data)
-diff --git a/include/linux/irqchip/chained_irq.h b/include/linux/irqchip/chained_irq.h
-index dd8b3c476666..399a4ae30205 100644
---- a/include/linux/irqchip/chained_irq.h
-+++ b/include/linux/irqchip/chained_irq.h
-@@ -38,4 +38,5 @@ static inline void chained_irq_exit(struct irq_chip *chip,
-                chip->irq_unmask(&desc->irq_data);
- }
-
-+DEFINE_GUARD (chained_irq, struct irq_desc * , chained_irq_exit ( _T ->irq_data.chip, _T ), chained_irq_enter (_T->irq_data.chip, _T))
- #endif /* __IRQCHIP_CHAINED_IRQ_H */
-
+> You need '|' to preserve formatting.
+OK. Thanks
 
 > 
-> 
+> > +      Depend to which INTC0 or INTC1 used.
+> > +      INTC0 and INTC1 are two kinds of interrupt controller with enable
+> and raw
+> > +      status registers for use.
+> > +      INTC0 is used to assert GIC if interrupt in INTC1 asserted.
+> > +      INTC1 is used to assert INTC0 if interrupt of modules asserted.
+> > +      +-----+   +-------+     +---------+---module0
+> > +      | GIC |---| INTC0 |--+--| INTC1_0 |---module2
+> > +      |     |   |       |  |  |         |---...
+> > +      +-----+   +-------+  |  +---------+---module31
+> > +                           |
+> > +                           |   +---------+---module0
+> > +                           +---| INTC1_1 |---module2
+> > +                           |   |         |---...
+> > +                           |   +---------+---module31
+> > +                          ...
+> > +                           |   +---------+---module0
+> > +                           +---| INTC1_5 |---module2
+> > +                               |         |---...
+> > +                               +---------+---module31
 > > +
-> > +	scoped_guard(raw_spinlock, &intc_ic->gic_lock) {
-> > +		status = readl(intc_ic->base + INTC_INT_STATUS_REG);
-> > +		for_each_set_bit(bit, &status, IRQS_PER_WORD) {
-> > +			generic_handle_domain_irq(intc_ic->irq_domain, bit);
-> > +			writel(BIT(bit), intc_ic->base + INTC_INT_STATUS_REG);
-> > +		}
-> > +	}
 > > +
-> > +	chained_irq_exit(chip, desc);
-> > +}
-> 
-> 
-> Regards,
-> Markus
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - interrupt-controller
+> > +  - '#interrupt-cells'
+> > +  - interrupts
+> > +
+> > +additionalProperties: false
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +
+> > +    bus {
+> > +        #address-cells = <2>;
+> > +        #size-cells = <2>;
+> > +
+> > +        interrupt-controller at 12101b00 {
+> > +            compatible = "aspeed,ast2700-intc-ic";
+> > +            reg = <0 0x12101b00 0 0x10>;
+> > +            #interrupt-cells = <2>;
+> > +            interrupt-controller;
+> > +            interrupts = <GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 193 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 194 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>,
+> > +                         <GIC_SPI 201 IRQ_TYPE_LEVEL_HIGH>;
+> > +        };
+> > +    };
+> > --
+> > 2.34.1
+> >
