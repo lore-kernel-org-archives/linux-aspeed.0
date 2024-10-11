@@ -1,102 +1,113 @@
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Fri, 11 Oct 2024 00:16:31 +0000
-Subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register
- mode driver
-In-Reply-To: <ZwfZP0LeqKobdbgK@smile.fi.intel.com>
-References: <20241002070213.1165263-3-ryan_chen@aspeedtech.com>
- <202410051547.vOL3qMOc-lkp@intel.com> <ZwfZP0LeqKobdbgK@smile.fi.intel.com>
-Message-ID: <OS8PR06MB75413D9CD40FC095B1B9FB67F2792@OS8PR06MB7541.apcprd06.prod.outlook.com>
+From: Naresh Solanki <naresh.solanki@9elements.com>
+Date: Fri, 11 Oct 2024 13:38:52 +0530
+Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
+In-Reply-To: <4d596ac9a2215be8510369c948e0b9680ee2fce3.camel@codeconstruct.com.au>
+References: <20241010112337.3840703-1-naresh.solanki@9elements.com>
+ <172857036038.1533242.5775916298170949713.robh@kernel.org> <4d596ac9a2215be8510369c948e0b9680ee2fce3.camel@codeconstruct.com.au>
+Message-ID: <CABqG17gmjvBmpp2a7tgVwR+q3tsrbejVmezWaXH__txytr30hQ@mail.gmail.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> Subject: Re: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new register
-> mode driver
-> 
-> On Sat, Oct 05, 2024 at 03:36:16PM +0800, kernel test robot wrote:
-> > Hi Ryan,
-> >
-> > kernel test robot noticed the following build errors:
-> >
-> > [auto build test ERROR on v6.11]
-> > [cannot apply to andi-shyti/i2c/i2c-host v6.12-rc1 linus/master
-> > next-20241004] [If your patch is applied to the wrong git tree, kindly drop us
-> a note.
-> > And when submitting patch, we suggest to use '--base' as documented in
-> > https://git-scm.com/docs/git-format-patch#_base_tree_information]
-> >
-> > url:
-> https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-i2c-as
-> peed-support-for-AST2600-i2cv2/20241002-150410
-> > base:   v6.11
-> > patch link:
-> https://lore.kernel.org/r/20241002070213.1165263-3-ryan_chen%40aspeedt
-> ech.com
-> > patch subject: [PATCH v14 2/3] i2c: aspeed: support AST2600 i2c new
-> > register mode driver
-> > config: sh-allmodconfig
-> >
-> (https://download.01.org/0day-ci/archive/20241005/202410051547.vOL3qM
-> O
-> > c-lkp at intel.com/config)
-> > compiler: sh4-linux-gcc (GCC) 14.1.0
-> > reproduce (this is a W=1 build):
-> >
-> (https://download.01.org/0day-ci/archive/20241005/202410051547.vOL3qM
-> O
-> > c-lkp at intel.com/reproduce)
-> >
-> > If you fix the issue in a separate patch/commit (i.e. not just a new
-> > version of the same patch/commit), kindly add following tags
-> > | Reported-by: kernel test robot <lkp@intel.com>
-> > | Closes:
-> > | https://lore.kernel.org/oe-kbuild-all/202410051547.vOL3qMOc-lkp at inte
-> > | l.com/
-> >
-> > All errors (new ones prefixed by >>):
-> >
-> >    drivers/i2c/busses/i2c-ast2600.c: In function
-> 'ast2600_i2c_setup_buff_tx':
-> > >> drivers/i2c/busses/i2c-ast2600.c:437:41: error: implicit
-> > >> declaration of function 'get_unaligned_le16'; did you mean
-> > >> 'get_unalign_ctl'? [-Wimplicit-function-declaration]
-> >      437 |
-> get_unaligned_le16(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-> >          |
-> ^~~~~~~~~~~~~~~~~~
-> >          |
-> get_unalign_ctl
-> > >> drivers/i2c/busses/i2c-ast2600.c:441:41: error: implicit
-> > >> declaration of function 'get_unaligned_le24'; did you mean
-> > >> 'get_unalign_ctl'? [-Wimplicit-function-declaration]
-> >      441 |
-> get_unaligned_le24(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-> >          |
-> ^~~~~~~~~~~~~~~~~~
-> >          |
-> get_unalign_ctl
-> > >> drivers/i2c/busses/i2c-ast2600.c:445:41: error: implicit
-> > >> declaration of function 'get_unaligned_le32'; did you mean
-> > >> 'get_unalign_ctl'? [-Wimplicit-function-declaration]
-> >      445 |
-> get_unaligned_le32(&msg->buf[i2c_bus->master_xfer_cnt + i]);
-> >          |
-> ^~~~~~~~~~~~~~~~~~
-> >          |
-> get_unalign_ctl
-> 
-> You need to add
-> 
-> #include <asm/unaligned.h>
-> 
-> _after_ other #include <linux/*.h> in the code.
-> 
-Thanks, I had modify update in v15 submit.
-https://patchwork.ozlabs.org/project/linux-aspeed/patch/20241007035235.2254138-3-ryan_chen at aspeedtech.com/
-> --
-> With Best Regards,
-> Andy Shevchenko
-> 
+Hi Andrew,
 
+
+On Fri, 11 Oct 2024 at 05:15, Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> Hi Naresh,
+>
+> On Thu, 2024-10-10 at 09:30 -0500, Rob Herring (Arm) wrote:
+> > On Thu, 10 Oct 2024 16:53:31 +0530, Naresh Solanki wrote:
+> > > Document the new compatibles used on IBM SBP1.
+> > >
+> > > Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> > > Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> > > ---
+> > > Changes in V4:
+> > > - Retain Acked-by from v2.
+> > > - Fix alphabetic order
+> > > ---
+> > >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+> > >  1 file changed, 1 insertion(+)
+> > >
+> >
+> >
+> > My bot found new DTB warnings on the .dts files added or changed in this
+> > series.
+> >
+> > Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+> > are fixed by another series. Ultimately, it is up to the platform
+> > maintainer whether these warnings are acceptable or not. No need to reply
+> > unless the platform maintainer has comments.
+> >
+> > If you already ran DT checks and didn't see these error(s), then
+> > make sure dt-schema is up to date:
+> >
+> >   pip3 install dtschema --upgrade
+> >
+> >
+> > New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-sbp1.dtb' for 20241010112337.3840703-1-naresh.solanki at 9elements.com:
+> >
+>
+> ...
+>
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mux at 77: interrupts: False schema does not allow [[44, 4]]
+> >       from schema $id: http://devicetree.org/schemas/i2c/i2c-mux-pca954x.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> >       from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+>
+> These still must be addressed as mentioned on v3 (with more specific
+> comments regarding the infineon,ir38263 on v4). Please look through the
+> binding documents for the affected nodes and make sure the nodes in
+> your DTS conform to their definitions. You can check your work with
+> `make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-sbp1.dtb` prior to sending.
+
+These are the warnings coming for trivial devices. Even for regulator at 5f
+
+grep -rsn mp2973 Documentation/
+Documentation/devicetree/bindings/trivial-devices.yaml:286:
+# Monolithic Power Systems Inc. multi-phase controller mp2973
+Documentation/devicetree/bindings/trivial-devices.yaml:287:          -
+mps,mp2973
+
+I've rebased it on top of for-next branch in [2]
+
+I rebased on top of [1] & the volume of output did reduce for CHECK_DTBS.
+
+Regards,
+Naresh
+
+[2] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git
+>
+> It may help to base your series on top of [1] to reduce the volume of
+> output from CHECK_DTBS=y.
+>
+> Andrew
+>
+> [1]: https://github.com/amboar/linux/tree/for/bmc/aspeed/dt
+>
