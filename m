@@ -1,44 +1,138 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 14 Oct 2024 09:04:23 +0200
-Subject: (subset) [PATCH v7 0/7] Add Aspeed G7 gpio support
-In-Reply-To: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
-References: <20241008081450.1490955-1-billy_tsai@aspeedtech.com>
-Message-ID: <172888945458.6232.12570065156992505241.b4-ty@linaro.org>
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Date: Mon, 14 Oct 2024 09:58:52 +0000
+Subject: [PATCH 1/4] dt-bindings: watchdog: aspeed: Add property for WDT
+ SW reset
+In-Reply-To: <e53369a9-c205-4297-b151-7a1e61d8459f@kernel.org>
+References: <20241007063408.2360874-1-chin-ting_kuo@aspeedtech.com>
+ <20241007063408.2360874-2-chin-ting_kuo@aspeedtech.com>
+ <6bb599b4-141c-43a5-8b9f-4cf6ca6c3384@kernel.org>
+ <TYZPR06MB5203B274C68C34FD478EA162B2442@TYZPR06MB5203.apcprd06.prod.outlook.com>
+ <e53369a9-c205-4297-b151-7a1e61d8459f@kernel.org>
+Message-ID: <TYZPR06MB5203836945655EBFF667417BB2442@TYZPR06MB5203.apcprd06.prod.outlook.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Hi Krzysztof,
 
-
-On Tue, 08 Oct 2024 16:14:43 +0800, Billy Tsai wrote:
-> The Aspeed 7th generation SoC features two GPIO controllers: one with 12
-> GPIO pins and another with 216 GPIO pins. The main difference from the
-> previous generation is that the control logic has been updated to support
-> per-pin control, allowing each pin to have its own 32-bit register for
-> configuring value, direction, interrupt type, and more.
-> This patch serial also add low-level operations (llops) to abstract the
-> register access for GPIO registers and the coprocessor request/release in
-> gpio-aspeed.c making it easier to extend the driver to support different
-> hardware register layouts.
+> -----Original Message-----
+> From: Krzysztof Kozlowski <krzk@kernel.org>
+> Sent: Monday, October 14, 2024 2:53 PM
+> Subject: Re: [PATCH 1/4] dt-bindings: watchdog: aspeed: Add property for WDT
+> SW reset
 > 
-> [...]
+> On 14/10/2024 04:07, Chin-Ting Kuo wrote:
+> > Hi Krzysztof,
+> >
+> > Thanks for the review.
+> >
+> >> -----Original Message-----
+> >> From: Krzysztof Kozlowski <krzk@kernel.org>
+> >> Sent: Monday, October 7, 2024 2:58 PM
+> >> Subject: Re: [PATCH 1/4] dt-bindings: watchdog: aspeed: Add property
+> >> for WDT SW reset
+> >>
+> >> On 07/10/2024 08:34, Chin-Ting Kuo wrote:
+> >>> Add "aspeed,restart-sw" property to distinguish normal WDT reset
+> >>> from system restart triggered by SW consciously.
+> >>>
+> >>> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> >>> ---
+> >>>  .../bindings/watchdog/aspeed,ast2400-wdt.yaml         | 11
+> >> +++++++++++
+> >>>  1 file changed, 11 insertions(+)
+> >>>
+> >>> diff --git
+> >>>
+> a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> >>>
+> b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> >>> index be78a9865584..6cc3604c295a 100644
+> >>> ---
+> >>>
+> a/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.yaml
+> >>> +++ b/Documentation/devicetree/bindings/watchdog/aspeed,ast2400-wdt.
+> >>> +++ ya
+> >>> +++ ml
+> >>> @@ -95,6 +95,17 @@ properties:
+> >>>        array with the first word defined using the
+> >>> AST2600_WDT_RESET1_*
+> >> macros,
+> >>>        and the second word defined using the AST2600_WDT_RESET2_*
+> >> macros.
+> >>>
+> >>> +  aspeed,restart-sw:
+> >>> +    $ref: /schemas/types.yaml#/definitions/flag
+> >>> +    description: >
+> >>
+> >> Why >?
+> >>
+> >
+> > ">" will be removed in the next patch series and the description
+> > content will be concatenated after the colon, ":".
+> >
+> >>> +      Normally, ASPEED WDT reset may occur when system hangs or
+> >> reboot
+> >>> +      triggered by SW consciously. However, system doesn't know
+> >>> + whether
+> >> the
+> >>> +      restart is triggered by SW consciously since the reset event flag is
+> >>> +      the same as normal WDT timeout reset. With this property, SW
+> >>> + can
+> >>
+> >> So DTS has this property and watchdog bites (timeout) but you will
+> >> ignore it and claim that it was software choice?
+> >>
+> >
+> > No. Normally, when WDT is enabled, a counter is also be enabled. When
+> > the counter is equal to an expected value, timeout event occurs.
+> > AST2600 hardware supports a SW mode, when a magic number is filled
+> > into a specific register, WDT reset is triggered immediately without
+> controlling the counter and the counter is not counted.
+> > Thus, WDT timeout doesn't occur.
+> 
+> How is this a no?
+> 
 
-Applied, thanks!
+It is used to emphasize that the driver doesn?t ignore the timeout event
+because the counter is not counted when SW mode is used and thus, no
+timeout occurs.
 
-[3/7] gpio: aspeed: Change the macro to support deferred probe
-      commit: f1bc03e7e9bbbb18ad60ad6c6908b16fb7f40545
-[4/7] gpio: aspeed: Remove the name for bank array
-      commit: d787289589202cd449cabed3d7fde84e18fb6dd6
-[5/7] gpio: aspeed: Create llops to handle hardware access
-      commit: 79fc9a2fcc457f4375118fbcdb6767163870b5ff
-[6/7] dt-bindings: gpio: aspeed,ast2400-gpio: Support ast2700
-      commit: bef6959a3746fc8207a0ca75e239c95d7409fd90
-[7/7] gpio: aspeed: Support G7 Aspeed gpio controller
-      commit: b2e861bd1eaf4c5f75139df9b75dade3334a5b6c
+> >
+> >> This does not make much sense to me, at least based on this
+> >> explanation
+> >>
+> >>> +      restart the system immediately and directly without wait for WDT
+> >>> +      timeout occurs. The reset event flag is also different from
+> >>> + the
+> >> normal
+> >>> +      WDT reset. This property is only supported since AST2600
+> platform.
+> >>
+> >> Supported as drivers? How is this related? Or you mean hardware? Then
+> >> property should be restricted there.
+> >>
+> >
+> > It is a hardware supported function on AST2600. For platform
+> > compatibility, without this property, all behaviors are the same as the
+> previous generation platform, AST2500.
+> >
+> > This property may be removed in the next patch series with referring
+> > to Rob suggestion
+> 
+> s/may/will/
+> 
 
-Best regards,
--- 
-Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+This property will be removed in the next patch series.
+
+> > in the other reply. After checking with the major users, it is
+> > feasible to remove this property and using SW reset by default when
+> > the restart operation is triggered by SW deliberately on AST2600 platform.
+> >
+> 
+> 
+
+Best Wishes,
+Chin-Ting
