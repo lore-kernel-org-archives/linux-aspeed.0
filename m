@@ -1,86 +1,127 @@
-From: Chanh Nguyen <chanh@amperemail.onmicrosoft.com>
-Date: Mon, 14 Oct 2024 22:02:44 +0700
-Subject: [PATCH] ARM: dts: aspeed: Add device tree for Ampere's Mt.
- Jefferson BMC
-In-Reply-To: <975ab37a-7429-4c52-b1e7-6ec9ba63048a@kernel.org>
-References: <20241014105031.1963079-1-chanh@os.amperecomputing.com>
- <975ab37a-7429-4c52-b1e7-6ec9ba63048a@kernel.org>
-Message-ID: <01c3d596-197a-46c6-b56c-05ef602b9c96@amperemail.onmicrosoft.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Tue, 15 Oct 2024 11:08:08 +1030
+Subject: [PATCH v5 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
+In-Reply-To: <CABqG17gmjvBmpp2a7tgVwR+q3tsrbejVmezWaXH__txytr30hQ@mail.gmail.com>
+References: <20241010112337.3840703-1-naresh.solanki@9elements.com>
+	 <172857036038.1533242.5775916298170949713.robh@kernel.org>
+	 <4d596ac9a2215be8510369c948e0b9680ee2fce3.camel@codeconstruct.com.au>
+	 <CABqG17gmjvBmpp2a7tgVwR+q3tsrbejVmezWaXH__txytr30hQ@mail.gmail.com>
+Message-ID: <5ca25b137b955dc5e0d9607df104097e3de7b782.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Naresh,
 
-
-On 14/10/2024 18:58, Krzysztof Kozlowski wrote:
-> On 14/10/2024 12:50, Chanh Nguyen wrote:
->> The Mt. Jefferson BMC is an ASPEED AST2600-based BMC for the Mt. Jefferson
->> hardware reference platform with AmpereOne(TM)M processor.
->>
->> Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
->> ---
->>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
->>   .../aspeed/aspeed-bmc-ampere-mtjefferson.dts  | 646 ++++++++++++++++++
->>   2 files changed, 647 insertions(+)
->>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dts
->>
->> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
->> index c4f064e4b073..b1fb0853a789 100644
->> --- a/arch/arm/boot/dts/aspeed/Makefile
->> +++ b/arch/arm/boot/dts/aspeed/Makefile
->> @@ -6,6 +6,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>   	aspeed-bmc-amd-daytonax.dtb \
->>   	aspeed-bmc-amd-ethanolx.dtb \
->>   	aspeed-bmc-ampere-mtjade.dtb \
->> +	aspeed-bmc-ampere-mtjefferson.dtb \
->>   	aspeed-bmc-ampere-mtmitchell.dtb \
->>   	aspeed-bmc-arm-stardragon4800-rep2.dtb \
->>   	aspeed-bmc-asrock-e3c246d4i.dtb \
->> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dts
->> new file mode 100644
->> index 000000000000..f24111ab9e65
->> --- /dev/null
->> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dts
->> @@ -0,0 +1,646 @@
->> +// SPDX-License-Identifier: GPL-2.0-only
->> +// Copyright 2024 Ampere Computing LLC.
->> +
->> +/dts-v1/;
->> +
->> +#include "aspeed-g6.dtsi"
->> +#include <dt-bindings/i2c/i2c.h>
->> +#include <dt-bindings/gpio/aspeed-gpio.h>
->> +
->> +/ {
->> +	model = "Ampere Mt. Jefferson BMC";
->> +	compatible = "ampere,mtjefferson-bmc", "aspeed,ast2600";
+On Fri, 2024-10-11 at 13:38 +0530, Naresh Solanki wrote:
+> Hi Andrew,
 > 
-> Missing binding.
 > 
-> Please run scripts/checkpatch.pl and fix reported warnings. Then please
-> run `scripts/checkpatch.pl --strict` and (probably) fix more warnings.
-> Some warnings can be ignored, especially from --strict run, but the code
-> here looks like it needs a fix. Feel free to get in touch if the warning
-> is not clear.
+> On Fri, 11 Oct 2024 at 05:15, Andrew Jeffery
+> <andrew@codeconstruct.com.au> wrote:
+> > 
+> > Hi Naresh,
+> > 
+> > On Thu, 2024-10-10 at 09:30 -0500, Rob Herring (Arm) wrote:
+> > > On Thu, 10 Oct 2024 16:53:31 +0530, Naresh Solanki wrote:
+> > > > Document the new compatibles used on IBM SBP1.
+> > > > 
+> > > > Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> > > > Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> > > > ---
+> > > > Changes in V4:
+> > > > - Retain Acked-by from v2.
+> > > > - Fix alphabetic order
+> > > > ---
+> > > >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+> > > >  1 file changed, 1 insertion(+)
+> > > > 
+> > > 
+> > > 
+> > > My bot found new DTB warnings on the .dts files added or changed in this
+> > > series.
+> > > 
+> > > Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+> > > are fixed by another series. Ultimately, it is up to the platform
+> > > maintainer whether these warnings are acceptable or not. No need to reply
+> > > unless the platform maintainer has comments.
+> > > 
+> > > If you already ran DT checks and didn't see these error(s), then
+> > > make sure dt-schema is up to date:
+> > > 
+> > >  pip3 install dtschema --upgrade
+> > > 
+> > > 
+> > > New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-sbp1.dtb' for 20241010112337.3840703-1-naresh.solanki at 9elements.com:
+> > > 
+> > 
+> > ...
+> > 
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mux at 77: interrupts: False schema does not allow [[44, 4]]
+> > >  from schema $id: http://devicetree.org/schemas/i2c/i2c-mux-pca954x.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu2 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu1 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu3 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: regulator at 5f: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: pvccinfaon-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: mp2973-pvccin-pvccfa-cpu0 at 58: 'regulators' does not match any of the regexes: 'pinctrl-[0-9]+'
+> > >  from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+> > 
+> > These still must be addressed as mentioned on v3 (with more specific
+> > comments regarding the infineon,ir38263 on v4). Please look through the
+> > binding documents for the affected nodes and make sure the nodes in
+> > your DTS conform to their definitions. You can check your work with
+> > `make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-sbp1.dtb` prior to sending.
+> 
+> These are the warnings coming for trivial devices. Even for regulator at 5f
+> 
+> grep -rsn mp2973 Documentation/
+> Documentation/devicetree/bindings/trivial-devices.yaml:286:
+> # Monolithic Power Systems Inc. multi-phase controller mp2973
+> Documentation/devicetree/bindings/trivial-devices.yaml:287: -
+> mps,mp2973
 > 
 
-Thank Krzysztof for your review!
+Right, but if they're generating warnings, then you haven't specified
+the nodes in accordance with the bindings. From here one of two things
+is the case:
 
-I will add my board to dt-bindings in patch v2.
+   1. The bindings' specifications are incomplete, and you need to
+      introduce patches updating them to match how you need to use the
+      hardware
+   2. Your devicetree is incorrect, and the unexpected properties need
+      to be removed from the listed nodes.
 
-Follow some previous patches on 
-Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+The only third option is "don't use the hardware how you need to" (i.e.
+remove the unexpected properties despite needing them, because you
+don't want to update the bindings).
 
-https://lore.kernel.org/all/20240805-potin-catalina-dts-v7-1-286bfd2ab93b at gmail.com/
-https://lore.kernel.org/all/20240522192524.3286237-13-eajames at linux.ibm.com/
-https://lore.kernel.org/all/20240502002836.17862-7-zev at bewilderbeest.net/
-
-Best regards,
-Chanh
-
-> Best regards,
-> Krzysztof
+Ultimately the tools are telling you something is wrong, and I need the
+warnings I've identified addressed before I can apply your patch,
+otherwise the hardware is not going to do what you might expect.
+> I've rebased it on top of for-next branch in [2]
 > 
+> I rebased on top of [1] & the volume of output did reduce for CHECK_DTBS.
 
+Great :)
+
+Andrew
