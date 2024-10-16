@@ -1,53 +1,48 @@
 From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Wed, 16 Oct 2024 00:31:00 +0000
-Subject: [PATCH v3 2/2] irqchip/aspeed-intc: Add support for AST27XX INTC
-In-Reply-To: <874j5ddow1.ffs@tglx>
-References: <20241009115813.2908803-3-kevin_chen@aspeedtech.com>
- <f65dd139-1021-47d6-93a1-1477d6b4ca1d@web.de> <874j5ddow1.ffs@tglx>
-Message-ID: <PSAPR06MB49496AB83001EDA4A51F263189462@PSAPR06MB4949.apcprd06.prod.outlook.com>
+Date: Wed, 16 Oct 2024 10:24:08 +0800
+Subject: [PATCH v4 0/2] Add support for AST2700 INTC driver
+Message-ID: <20241016022410.1154574-1-kevin_chen@aspeedtech.com>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> >> +
-> >> +	chained_irq_enter(chip, desc);
-> >
-> > Would you become interested to collaborate with another scoped guard
-> > for this programming interface?
-> 
-> Collaborate in which way? What are you collaborating on?
-> 
-> You are merely asking people to do work which you think is useful. You can do
-> that, but that does not make it useful.
-> 
-> Making a guard variant of chained_irq_enter/exit needs some thought and a
-> general plan for cleaning the whole chained irq usage up. It's on the cleanup
-> list already with quite some other items.
-> 
-> We are not adhoc adding a guard variant because guards are hip right now.
-> And no this does not need a scoped variant ever.
-> 
-> guards are not the panacea for everything.
-> 
-> > https://elixir.bootlin.com/linux/v6.12-rc2/source/include/linux/irqchi
-> > p/chained_irq.h#L13
-> 
-> Please refrain from these silly links. People know to find the functions on their
-> own.
-> 
-> Kevin, please update the change log, add your SOB and move the local
-> variables (unsigned long bit, status;) into the scoped_guard() zone.
-OK. I will do this change.
+---
+v4:
+aspeed,ast2700-intc.yaml:
+  - Add |' to preserve formatting.
+  - Remove the interrupt nubmer accroding to maxItems of interrupts.
 
-> 
-> Leave chained_irq_enter/exit() alone and resubmit.
-OK. I will send the v4 patch with chained_irq_enter/exit() alone.
+drivers/irqchip/irq-aspeed-intc.c
+  - Reduce scope of variables, which are bit and status.
+  - Replace 32 with INTC_IRQS_PER_WORD define.
+  - Remove reduendant tab.
 
-Thanks a lot.
+v3:
+aspeed,ast2700-intc.yaml:
+  - Change reg with maxIntems:10 only.
+  - Change interrupt with maxIntems:10 only.
+  - Add description of INT0 and INTC1.
+  - Fix the indentation.
 
-> 
-> Thanks,
-> 
->         tglx
+drivers/irqchip/irq-aspeed-intc.c:
+  - Change to use CONFIG_ARCH_ASPEED.
+  - Fix indentation.
+  - Remove irq_domain name assignment.
+  - Check all irq numbers first, and set chained.
+
+Kevin Chen (2):
+  dt-bindings: interrupt-controller: Add support for ASPEED AST27XX INTC
+  irqchip/aspeed-intc: Add AST27XX INTC support
+
+ .../aspeed,ast2700-intc.yaml                  |  86 +++++++++++
+ drivers/irqchip/Makefile                      |   1 +
+ drivers/irqchip/irq-aspeed-intc.c             | 140 ++++++++++++++++++
+ 3 files changed, 227 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
+ create mode 100644 drivers/irqchip/irq-aspeed-intc.c
+
+-- 
+2.34.1
+
