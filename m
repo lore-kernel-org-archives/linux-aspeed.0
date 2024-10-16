@@ -1,185 +1,120 @@
-From: Kevin Chen <kevin_chen@aspeedtech.com>
-Date: Wed, 16 Oct 2024 10:24:10 +0800
-Subject: [PATCH v4 2/2] irqchip/aspeed-intc: Add AST27XX INTC support
-In-Reply-To: <20241016022410.1154574-1-kevin_chen@aspeedtech.com>
-References: <20241016022410.1154574-1-kevin_chen@aspeedtech.com>
-Message-ID: <20241016022410.1154574-3-kevin_chen@aspeedtech.com>
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+Date: Wed, 16 Oct 2024 15:37:07 +1030
+Subject: [PATCH] ARM: dts: aspeed: Add device tree for Ampere's Mt.
+ Jefferson BMC
+In-Reply-To: <e8e31fb4-4a9f-4ea9-be4d-9ba29d824cc5@amperemail.onmicrosoft.com>
+References: <20241014105031.1963079-1-chanh@os.amperecomputing.com>
+	 <172891445289.1127319.4114892374425336022.robh@kernel.org>
+	 <b5919d904c9f06a618a54d49bc895c3081a511e4.camel@codeconstruct.com.au>
+	 <e8e31fb4-4a9f-4ea9-be4d-9ba29d824cc5@amperemail.onmicrosoft.com>
+Message-ID: <7555c528c90e6151f54d0e17c278527f95fac184.camel@codeconstruct.com.au>
 List-Id: <linux-aspeed.lists.ozlabs.org>
 To: linux-aspeed@lists.ozlabs.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Support Aspeed Interrupt Controller on Aspeed Silicon SoCs.
+On Tue, 2024-10-15 at 13:39 +0700, Chanh Nguyen wrote:
+> 
+> On 15/10/2024 07:44, Andrew Jeffery wrote:
+> > Hi Chanh,
+> > 
+> > On Mon, 2024-10-14 at 09:05 -0500, Rob Herring (Arm) wrote:
+> > > On Mon, 14 Oct 2024 10:50:31 +0000, Chanh Nguyen wrote:
+> > > > The Mt. Jefferson BMC is an ASPEED AST2600-based BMC for the Mt. Jefferson
+> > > > hardware reference platform with AmpereOne(TM)M processor.
+> > > > 
+> > > > Signed-off-by: Chanh Nguyen <chanh@os.amperecomputing.com>
+> > > > ---
+> > > >   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+> > > >   .../aspeed/aspeed-bmc-ampere-mtjefferson.dts  | 646 ++++++++++++++++++
+> > > >   2 files changed, 647 insertions(+)
+> > > >   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dts
+> > > > 
+> > > 
+> > > 
+> > > My bot found new DTB warnings on the .dts files added or changed in this
+> > > series.
+> > > 
+> > > Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+> > > are fixed by another series. Ultimately, it is up to the platform
+> > > maintainer whether these warnings are acceptable or not. No need to reply
+> > > unless the platform maintainer has comments.
+> > > 
+> > > If you already ran DT checks and didn't see these error(s), then
+> > > make sure dt-schema is up to date:
+> > > 
+> > >    pip3 install dtschema --upgrade
+> > > 
+> > > 
+> > > New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ampere-mtjefferson.dtb' for 20241014105031.1963079-1-chanh at os.amperecomputing.com:
+> > > 
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: /: compatible: 'oneOf' conditional failed, one must be fixed:
+> > > 	'ampere,mtjefferson-bmc' is not one of ['delta,ahe50dc-bmc', 'facebook,galaxy100-bmc', 'facebook,wedge100-bmc', 'facebook,wedge40-bmc', 'microsoft,olympus-bmc', 'quanta,q71l-bmc', 'tyan,palmetto-bmc', 'yadro,vesnin-bmc']
+> > > 	'ampere,mtjefferson-bmc' is not one of ['amd,daytonax-bmc', 'amd,ethanolx-bmc', 'ampere,mtjade-bmc', 'aspeed,ast2500-evb', 'asrock,e3c246d4i-bmc', 'asrock,e3c256d4i-bmc', 'asrock,romed8hm3-bmc', 'asrock,spc621d8hm3-bmc', 'asrock,x570d4u-bmc', 'bytedance,g220a-bmc', 'facebook,cmm-bmc', 'facebook,minipack-bmc', 'facebook,tiogapass-bmc', 'facebook,yamp-bmc', 'facebook,yosemitev2-bmc', 'facebook,wedge400-bmc', 'hxt,stardragon4800-rep2-bmc', 'ibm,mihawk-bmc', 'ibm,mowgli-bmc', 'ibm,romulus-bmc', 'ibm,swift-bmc', 'ibm,witherspoon-bmc', 'ingrasys,zaius-bmc', 'inspur,fp5280g2-bmc', 'inspur,nf5280m6-bmc', 'inspur,on5263m5-bmc', 'intel,s2600wf-bmc', 'inventec,lanyang-bmc', 'lenovo,hr630-bmc', 'lenovo,hr855xg2-bmc', 'portwell,neptune-bmc', 'qcom,centriq2400-rep-bmc', 'supermicro,x11spi-bmc', 'tyan,s7106-bmc', 'tyan,s8036-bmc', 'yadro,nicole-bmc', 'yadro,vegman-n110-bmc', 'yadro,vegman-rx20-bmc', 'yadro,vegman-sx20-bmc']
+> > > 	'ampere,mtjefferson-bmc' is not one of ['ampere,mtmitchell-bmc', 'aspeed,ast2600-evb', 'aspeed,ast2600-evb-a1', 'asus,x4tf-bmc', 'facebook,bletchley-bmc', 'facebook,catalina-bmc', 'facebook,cloudripper-bmc', 'facebook,elbert-bmc', 'facebook,fuji-bmc', 'facebook,greatlakes-bmc', 'facebook,harma-bmc', 'facebook,minerva-cmc', 'facebook,yosemite4-bmc', 'ibm,blueridge-bmc', 'ibm,everest-bmc', 'ibm,fuji-bmc', 'ibm,rainier-bmc', 'ibm,system1-bmc', 'ibm,tacoma-bmc', 'inventec,starscream-bmc', 'inventec,transformer-bmc', 'jabil,rbp-bmc', 'qcom,dc-scm-v1-bmc', 'quanta,s6q-bmc', 'ufispace,ncplite-bmc']
+> > > 	'aspeed,ast2400' was expected
+> > > 	'aspeed,ast2500' was expected
+> > > 	from schema $id: http://devicetree.org/schemas/arm/aspeed/aspeed.yaml#
+> > > 
+> > 
+> > This needs to be fixed as pointed out by Krzysztof.
+> > 
+> 
+> Thank Andrew, I'll update that in patch v2
+> 
+> > *snip*
+> > 
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: /ahb/apb/bus at 1e78a000/i2c at 180/i2c-mux at 70/i2c at 0/psu at 58: failed to match any schema with compatible: ['pmbus']
+> > > arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: /ahb/apb/bus at 1e78a000/i2c at 180/i2c-mux at 70/i2c at 0/psu at 59: failed to match any schema with compatible: ['pmbus']
+> > 
+> > These two should also be fixed. The compatible must describe the
+> > physical device, not the communication/application protocol. It may be
+> > necessary to add a binding if there's not one already for the device.
+> > 
+> 
+> Hi Andrew, My device is following the pmbus specification. So I'm using 
+> the generic pmbus driver 
+> (https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/drivers/hwmon/pmbus/pmbus.c#n237) 
+> to probe my device.
+> 
 
-ASPEED interrupt controller(INTC) maps the internal interrupt
-sources to a parent interrupt controller, which can be GIC or INTC.
+The devicetree doesn't describe drivers though, it describes devices.
+The compatible string needs to represent the device.
 
-Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
----
- drivers/irqchip/Makefile          |   1 +
- drivers/irqchip/irq-aspeed-intc.c | 140 ++++++++++++++++++++++++++++++
- 2 files changed, 141 insertions(+)
- create mode 100644 drivers/irqchip/irq-aspeed-intc.c
+>  In arch/arm/boot/dts/aspeed/ directory, many boards 
+> are also using this compatible to probe our devices.
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/arch/arm/boot/dts/aspeed/aspeed-bmc-lenovo-hr855xg2.dts#n219
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-transformers.dts#n263
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/arch/arm/boot/dts/aspeed/aspeed-bmc-tyan-s8036.dts#n260
+> 
+> Andrew, Recently I saw the ASPEED platform's maintainer accept the 
+> "pmbus" compatible with a warning log. You can see in the below list 
+> that patches were merged recently.
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=bb3776e564d2190db0ef45609e66f13c60ce5b48
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=28cfb03afcb20a841e96e821ba20870a7c437034
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=36d96827f480e90037d162098061333e279ea35f
+> 
 
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index e3679ec2b9f7..086911bf4db6 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -84,6 +84,7 @@ obj-$(CONFIG_MVEBU_SEI)			+= irq-mvebu-sei.o
- obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
- obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
-+obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-intc.o
- obj-$(CONFIG_STM32MP_EXTI)		+= irq-stm32mp-exti.o
- obj-$(CONFIG_STM32_EXTI) 		+= irq-stm32-exti.o
- obj-$(CONFIG_QCOM_IRQ_COMBINER)		+= qcom-irq-combiner.o
-diff --git a/drivers/irqchip/irq-aspeed-intc.c b/drivers/irqchip/irq-aspeed-intc.c
-new file mode 100644
-index 000000000000..faf18a675395
---- /dev/null
-+++ b/drivers/irqchip/irq-aspeed-intc.c
-@@ -0,0 +1,140 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ *  Aspeed Interrupt Controller.
-+ *
-+ *  Copyright (C) 2023 ASPEED Technology Inc.
-+ */
-+
-+#include <linux/bitops.h>
-+#include <linux/irq.h>
-+#include <linux/irqchip.h>
-+#include <linux/irqchip/chained_irq.h>
-+#include <linux/irqdomain.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/io.h>
-+#include <linux/spinlock.h>
-+
-+#define INTC_INT_ENABLE_REG	0x00
-+#define INTC_INT_STATUS_REG	0x04
-+#define INTC_IRQS_PER_WORD	32
-+
-+struct aspeed_intc_ic {
-+	void __iomem		*base;
-+	raw_spinlock_t		gic_lock;
-+	raw_spinlock_t		intc_lock;
-+	struct irq_domain	*irq_domain;
-+};
-+
-+static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
-+{
-+	struct aspeed_intc_ic *intc_ic = irq_desc_get_handler_data(desc);
-+	struct irq_chip *chip = irq_desc_get_chip(desc);
-+
-+	chained_irq_enter(chip, desc);
-+
-+	scoped_guard(raw_spinlock, &intc_ic->gic_lock) {
-+		unsigned long bit, status;
-+
-+		status = readl(intc_ic->base + INTC_INT_STATUS_REG);
-+		for_each_set_bit(bit, &status, INTC_IRQS_PER_WORD) {
-+			generic_handle_domain_irq(intc_ic->irq_domain, bit);
-+			writel(BIT(bit), intc_ic->base + INTC_INT_STATUS_REG);
-+		}
-+	}
-+
-+	chained_irq_exit(chip, desc);
-+}
-+
-+static void aspeed_intc_irq_mask(struct irq_data *data)
-+{
-+	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
-+	unsigned int mask = readl(intc_ic->base + INTC_INT_ENABLE_REG) & ~BIT(data->hwirq);
-+
-+	guard(raw_spinlock)(&intc_ic->intc_lock);
-+	writel(mask, intc_ic->base + INTC_INT_ENABLE_REG);
-+}
-+
-+static void aspeed_intc_irq_unmask(struct irq_data *data)
-+{
-+	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
-+	unsigned int unmask = readl(intc_ic->base + INTC_INT_ENABLE_REG) | BIT(data->hwirq);
-+
-+	guard(raw_spinlock)(&intc_ic->intc_lock);
-+	writel(unmask, intc_ic->base + INTC_INT_ENABLE_REG);
-+}
-+
-+static struct irq_chip aspeed_intc_chip = {
-+	.name			= "ASPEED INTC",
-+	.irq_mask		= aspeed_intc_irq_mask,
-+	.irq_unmask		= aspeed_intc_irq_unmask,
-+};
-+
-+static int aspeed_intc_ic_map_irq_domain(struct irq_domain *domain, unsigned int irq,
-+					 irq_hw_number_t hwirq)
-+{
-+	irq_set_chip_and_handler(irq, &aspeed_intc_chip, handle_level_irq);
-+	irq_set_chip_data(irq, domain->host_data);
-+
-+	return 0;
-+}
-+
-+static const struct irq_domain_ops aspeed_intc_ic_irq_domain_ops = {
-+	.map = aspeed_intc_ic_map_irq_domain,
-+};
-+
-+static int __init aspeed_intc_ic_of_init(struct device_node *node,
-+					 struct device_node *parent)
-+{
-+	struct aspeed_intc_ic *intc_ic;
-+	int ret = 0;
-+	int irq, i;
-+
-+	intc_ic = kzalloc(sizeof(*intc_ic), GFP_KERNEL);
-+	if (!intc_ic)
-+		return -ENOMEM;
-+
-+	intc_ic->base = of_iomap(node, 0);
-+	if (!intc_ic->base) {
-+		pr_err("Failed to iomap intc_ic base\n");
-+		ret = -ENOMEM;
-+		goto err_free_ic;
-+	}
-+	writel(0xffffffff, intc_ic->base + INTC_INT_STATUS_REG);
-+	writel(0x0, intc_ic->base + INTC_INT_ENABLE_REG);
-+
-+	intc_ic->irq_domain = irq_domain_add_linear(node, INTC_IRQS_PER_WORD,
-+						    &aspeed_intc_ic_irq_domain_ops, intc_ic);
-+	if (!intc_ic->irq_domain) {
-+		ret = -ENOMEM;
-+		goto err_iounmap;
-+	}
-+
-+	raw_spin_lock_init(&intc_ic->gic_lock);
-+	raw_spin_lock_init(&intc_ic->intc_lock);
-+
-+	/* Check all the irq numbers valid. If not, unmaps all the base and frees the data. */
-+	for (i = 0; i < of_irq_count(node); i++) {
-+		irq = irq_of_parse_and_map(node, i);
-+		if (!irq) {
-+			pr_err("Failed to get irq number\n");
-+			ret = -EINVAL;
-+			goto err_iounmap;
-+		}
-+	}
-+
-+	for (i = 0; i < of_irq_count(node); i++) {
-+		irq = irq_of_parse_and_map(node, i);
-+		irq_set_chained_handler_and_data(irq, aspeed_intc_ic_irq_handler, intc_ic);
-+	}
-+
-+	return 0;
-+
-+err_iounmap:
-+	iounmap(intc_ic->base);
-+err_free_ic:
-+	kfree(intc_ic);
-+	return ret;
-+}
-+
-+IRQCHIP_DECLARE(ast2700_intc_ic, "aspeed,ast2700-intc-ic", aspeed_intc_ic_of_init);
--- 
-2.34.1
+Unfortunately for your argument, I'm not trying to make the case that
+some people are allowed to do this and others (such as yourself) are
+not.
 
+Rather, this is the review process in action, where hopefully everyone,
+including myself, tries to improve their practices with feedback.
+
+You can also find discussions where other maintainers (Guenter, hwmon
+maintainer; Krzysztof, devicetree maintainer) have asked that "pmbus"
+not be used as a compatible:
+
+https://lore.kernel.org/all/f76798ea-6edd-4888-8057-c09aaed88f25 at roeck-us.net/
+
+The tools are asking you to do something different via the warnings,
+and so am I :) Please define the compatible according to the device
+used in the design.
+
+Thanks,
+
+Andrew
