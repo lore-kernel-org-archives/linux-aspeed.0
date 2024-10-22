@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-11-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-12-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AEBCD2CDFF
-	for <linux-aspeed@archiver.kernel.org>; Tue, 22 Oct 2024 16:52:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2286D2CDFF
+	for <linux-aspeed@archiver.kernel.org>; Tue, 22 Oct 2024 16:55:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XXysf06dJz2yVb;
-	Wed, 23 Oct 2024 03:52:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XXywC3N2Bz2yWK;
+	Wed, 23 Oct 2024 03:55:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729615973;
-	cv=none; b=eW7gRlyT5gMhuIqZTsYiRH3oXzM9Ku0WwCx4jf5pybZNSga76uBTcNYz0HkYSg5H8VOGxOwONAel17mHGrkhI5DVqzwVpUvdnKgeX8MtdtlEuYErSeIg+l/IoAjcvDtg+jU1MqxdmxRNvxZ9kRS2qGprGrhRyIRpcVH6y6dEUfPcWVva/RG/A4K/VnbUoLlioKh0mHU9E16eS0yV3f9Bt2ZjH2j6uzJDLLPNDMv+7LUjMAUGoWD94aDhtBUat74kteyuZI4OXai48saRpE0qfNbHpLELa28QMOETIo4P2KUMvu738lCzxkwlm/66cf/IiNibgvXUuoO1lH67V2wACg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729616107;
+	cv=none; b=EQ7LYJr9Wp9knoAOgxmpKiGuQTTpN2Cih/CLJbIhA5AzA4oQIbPl/rvfl5NZhd/sYtLAzwkRrpJ38E6N8O87V+dswynLKwZwTvb4oVYusGuSDBJ383X3ezYA3xre+q6qVZkVC0qzLIUUMRnlHRyNIdtB4gviTeJfs3sRzWGJFiTuC38Gpa25GDdoSrVMF1lV9iIv2Vdd6zQxbYE7tEZdPDnOfbvtB8wFpLealTOd545pCT9eyS4oVxAaTHqS/Lg5wuUYFgoAD4Q4MSePQED/nkKwr3zpcvlMJSp9pE01sub4tWUzA6a0e7wV5d3g8Jwmd/51POc1W8t+9wXsjaZG0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729615973; c=relaxed/relaxed;
-	bh=ln4RaaN3hlStJiTXS0w9jYwOdR139lH8BqX/igzVO24=;
+	t=1729616107; c=relaxed/relaxed;
+	bh=dFIIm5rhxs9qT/MajtS4EYkcanyHeA4sGE0hYbhvTFc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bh3UbS6EtmQyo9MJi3KEWbjk9AK+2GK6vOOdTN+t6KWAPbv6uuNsusVxBJLhmG8fJNzvQxhH9Yrsc5hSJ7HCe2y5rbzhNjelOTXq8V0I0Mg2aSoTFsQJOFWw65wkx4W3tEANA8lP3TaKz1BxsPgSJRkY8yS0rBUasZqoUq+2zHqbJjotlwpSpa/JOVKp9uPnof2suFPHSikBRLzaQbDRcD2DUJrTxskV7GKcvzRKwRwDJB/KN+NrPxzGe2srrW9ZlgmIjkVqHTEkwr+zaBorVD2z2Y0ksBW4LCCAB4ZPkZQvoY/r04y+Wh7FH8Sxo6soqN/uUbi39i4YgLr89iAoBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWiS06E8; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=HjWCgA332j45qhuxATZBXkjmSrEFqYepmk6TlQYDrvu5FbhuP9ahhQnHUmycQzM4CFia3VVJQVKpwndvM5EyQw4ufDD8gh93iV1djlIJpCHNvuUd1bOD4WflhtQtyQLAreGH5hK/24stpnYvkFzzeDfF4yi9IL0upNJ4DifKg6rLaWJi3mzQYr3PxBT4btDnBES0lNo+hBy1EfUUqZX9E+n8zXHzUdCCy93oF8Ag2iCVcRTGLLLMFsdcA3UIWbPljL9/TUi/3MRs79G5SIp+0UsYgZv+JjVJcyOa8BNaqZBeCYEPfb70Mx8Y/hq5drYJxEV0TXNBo+XJkYgH9cPfnA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EJny844q; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WWiS06E8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EJny844q;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XXysd1LQcz2yV6
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 23 Oct 2024 03:52:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XXywB471Zz2yV6
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 23 Oct 2024 03:55:06 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C5FCD5C4C8E;
-	Tue, 22 Oct 2024 16:52:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7616CC4CEC3;
-	Tue, 22 Oct 2024 16:52:48 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3E0F45C5BAB;
+	Tue, 22 Oct 2024 16:55:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E72B2C4CEC3;
+	Tue, 22 Oct 2024 16:55:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729615971;
-	bh=ln4RaaN3hlStJiTXS0w9jYwOdR139lH8BqX/igzVO24=;
+	s=k20201202; t=1729616104;
+	bh=dFIIm5rhxs9qT/MajtS4EYkcanyHeA4sGE0hYbhvTFc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WWiS06E8fIgaC4r7wPMNYXeRYiTBAmYLGVQUKjMNITcw08Fw6uwutF5fWI550+rth
-	 T/p5M4HbpBxbsnfyqFmGNulDYnq34JR7ZsOeVwLKO8KnEsmLU0CQORaqKD14/ghtaT
-	 FThIm0Wh8W13pUVQnfeKMEthtbk/cNfcsJHSIFppbr3GFOePWwciY4+UdxHHI4z75n
-	 sCL8CpvOxdQsOVQf3TW59ZhS6DszXZnH3BWFpfszSa0fZ1qXaQ5xqmyEVs3Y25lE/t
-	 4nPXgpbIp9gA/fopANf3AUs20HcnXBiLtuFIRbco1U6CbJKvAAgSLDtJDe704kEP2K
-	 mUZJMkYGswZFg==
-Date: Tue, 22 Oct 2024 17:52:46 +0100
+	b=EJny844qGoatCql5qUU/Q4fh8DIy6u3lc7JLAMq5mILuxu7Qg4uY1+ZFPCeHdARm5
+	 1jify6tlyKKhXrW1Fy7cpaX3pbshaDsAsHui7wnQMneSf2VvkNq+Nvv4/cWDIWW383
+	 bAeLYW8zFI+RNYM8AoBn+ZB/yVXHH6WjJCUw2gQ4PFCmj/jOkMmQ84133NxzSTA7l+
+	 QJfelq4HrbwvM+TQqngohC8q5DESZysL8jAPvDEZi9hoAqvsC8XG8K7RaQF2pi9IxM
+	 nb8ZL48xzl3BibX88siWOQMGJweVkFS6ZA4L1MWRglx7R/5LkyZ/kbQ64myclut72a
+	 1hEdOsDtKdV5Q==
+Date: Tue, 22 Oct 2024 17:54:59 +0100
 From: Conor Dooley <conor@kernel.org>
 To: Jason-Hsu <jasonhell19@gmail.com>
 Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
@@ -52,9 +52,10 @@ Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	yang.chen@quantatw.com, jerry.lin@quantatw.com
-Subject: Re: [PATCH 1/2] dt-bindings: arm: aspeed: add Meta Ventura board
-Message-ID: <20241022-purgatory-modify-fdcc5f1cff23@spud>
-References: <20241022021511.2322303-1-jasonhell19@gmail.com>
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
+Message-ID: <20241022-prayer-unmanaged-86ea24caf242@spud>
+References: <20241022021724.2322506-1-jasonhell19@gmail.com>
+ <20241022-clean-rebate-e986d6a82a05@spud>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,38 +68,41 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="yLTSOIWSP2DWBufY"
+	protocol="application/pgp-signature"; boundary="fGRR7GdKJMsqfzS2"
 Content-Disposition: inline
-In-Reply-To: <20241022021511.2322303-1-jasonhell19@gmail.com>
+In-Reply-To: <20241022-clean-rebate-e986d6a82a05@spud>
 
 
---yLTSOIWSP2DWBufY
+--fGRR7GdKJMsqfzS2
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 22, 2024 at 10:15:11AM +0800, Jason-Hsu wrote:
-> Document the new compatibles used on Meta Ventura.
-> Add subject prefix for the patch.
+On Tue, Oct 22, 2024 at 05:51:45PM +0100, Conor Dooley wrote:
+> On Tue, Oct 22, 2024 at 10:17:24AM +0800, Jason-Hsu wrote:
+> > Add Linux device tree related to Meta(Facebook) Ventura specific device=
+s connected to BMC(AST2600) SoC.
+> > Add subject prefix for the patch.
+> >=20
+> > Signed-off-by: Jason-Hsu <jasonhell19@gmail.com>
 >=20
-> Signed-off-by: Jason-Hsu <jasonhell19@gmail.com>
+> The indentation in here is very inconsistent. Please fix that.
 
-This patchset should be threaded. With taht,
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Also, I don't know what the coding style in aspeed in particular is, but
+the node ordering seems very random here. Could you sort nodes in the
+dts alphanumerically as the dts coding style suggests?
 
-Thanks,
-Conor.
 
---yLTSOIWSP2DWBufY
+--fGRR7GdKJMsqfzS2
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZxfYXgAKCRB4tDGHoIJi
-0jmrAP0atEdkBB4ulX4MyZxjcMS8Bvmm6/bB2RqP6JF7ZeGqxQD/fD2F3B7QKFDh
-ACUq1/f1Z9ZRHQIm/8YMh9sujE+HnQo=
-=Wg7A
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZxfY4wAKCRB4tDGHoIJi
+0g9lAP43/yhfmMpPGE/UTpJbFPS2SOc0ZEN/nLtKSvc25ObaswD+LyRMqnsq87TE
+r6zdEguM3482DqDtUmYg4SQEYytUVgE=
+=GZrq
 -----END PGP SIGNATURE-----
 
---yLTSOIWSP2DWBufY--
+--fGRR7GdKJMsqfzS2--
 
