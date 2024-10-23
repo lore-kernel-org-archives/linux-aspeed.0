@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-14-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-15-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8344CD2E029
-	for <linux-aspeed@archiver.kernel.org>; Wed, 23 Oct 2024 09:02:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5629DD2E027
+	for <linux-aspeed@archiver.kernel.org>; Wed, 23 Oct 2024 09:02:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XYNN65zvYz2xl6;
-	Wed, 23 Oct 2024 20:02:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XYNN768Nyz2yP8;
+	Wed, 23 Oct 2024 20:02:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729674134;
-	cv=none; b=FwWneedoL4FgoIo/XO/He643pmm7+y3SSDyfmxzom7TSgExE1cyO0LcMT+LxtKorJX4iTuUJukLNM4+Z9vJkN+G4i763cXDzFIyn7pYG+ew1NUnpHbjng1ZGLmqLdA5hlema8ZgWzHgaeGRYtvLtQMXonMkNggi9Gdhiufdu2yCgQ6+KILYJdylzkz0BwoFpsO81LOshcT503iCDE5ROVlTKsrue8jqbEut1R+7djdzPb2S41IJXOb7XpwgrVtp/wGk2H0X9dCFLs/JuoLaqTLrJ7DWPmFX/JhXsRxA+fg85f9mQ3176fMOcfYmlwN5mx5CEHSale/b4K7rYjzoR8g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729674135;
+	cv=none; b=TyBFxt29etiOKmnkErcfGgZKjKBu8CXsF3O+Kf6yFhxgaMdLQ5gXDxsW2j0wREGRm9m1AL/878JVkuOys5qsjB4LZNy51hjmRKkF8oe2DLyr/u5LIKUNqF5ZS9Djp89kT12ZhZjtVzQSnbmBd91qTAahaY+c9q4O9wgpk7/O0W/DmEUXNP/w5RDBffNGkYjk08vM7XOo+hiU6Yi6mOkbgFmnaztQFAdlb8K9SxX43ukseFLq/2tRXctMW1ZKb7FKOpGwv0tlDsT4Y7yDB2inQG78b4+dAo+To6WF+pMMPxz+/wDIA3Vx3czFvhYxtRY7f2CJnpiJ03Mc1gxWCir2FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729674134; c=relaxed/relaxed;
-	bh=dQd0qg9cMOvxG7U54ho6WYwB0ufGN1t9NyhbJMJZAdM=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=iOWZTSw+m/1KzsXAVObHJBuPfKRyT3x+Sjd8luLdTOd93eFp6G1WjhAI8bzuMsRM3+PikOUfXFYyVjdkGqRurIBKAKVCdho8bUjJV7Gy3SSiPih1VilXmKVBrbnkpvQdVNPAGspJ06tzh35mxcuSbF4kzpiPZ69XaLn32ZL7rrVNCvP2le346Bth0/o1Ucmy6M8FTjj7/u8Otbp7FyT19wPdhsRncCHrl2Z7+fgx30JZ75SWBzSY1hmJQw3gecS3goARsY/TMNEp4s28XaAmzNtGCb5Qykxfsq3zeASvcbH6iKK3m2qJAKD5G0yKVmsWJJu87I+qv1f1RMS0aoY3SA==
+	t=1729674135; c=relaxed/relaxed;
+	bh=ngitbfibPc0l72H2Il4pFvq3xcM2s5wgX43xxDdEsJ4=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=gSmrt0FQKXvhq9bzUsM/7PxgLSGraLiAvvLkIwzEX56GiV8NGVFaZbYG8rLW/L95OSA6f3L2tF0nEt7BrvPE6Po3foNwu4UxsebO1nZ5n0PiVE/+w23AihEMEkWCTO/6SfLuCOw1gkcQJWLupxnaF9jLsNgqdKCDvwPwQcAFjrbXk5o6fheaxzvDEEXC4RYljmgjj90y5skiOMn/QCt897Qt9W2VI3EcXFykPO0aSCng7ZQVvqtOn/hkYAZtHGPMVV6hyo2aOgD/bNe+jeZEp3Do37TjPnSsa0kiPMPirc7161KN+tuTzxI+EPQehfZplzKJUkhzsjGsAslm1bUl+A==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYNN52Sj0z2xVq
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 23 Oct 2024 20:02:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYNN66qmYz2xVq
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 23 Oct 2024 20:02:14 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Wed, 23 Oct
@@ -39,10 +40,13 @@ To: <ryan_chen@aspeedtech.com>, <lee@kernel.org>, <robh@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
 	<dmitry.baryshkov@linaro.org>
-Subject: [PATCH v6 0/3] Add support for AST2700 clk driver
-Date: Wed, 23 Oct 2024 17:01:50 +0800
-Message-ID: <20241023090153.1395220-1-ryan_chen@aspeedtech.com>
+CC: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v6 1/3] dt-bindings: mfd: aspeed: support for AST2700
+Date: Wed, 23 Oct 2024 17:01:51 +0800
+Message-ID: <20241023090153.1395220-2-ryan_chen@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241023090153.1395220-1-ryan_chen@aspeedtech.com>
+References: <20241023090153.1395220-1-ryan_chen@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -57,84 +61,358 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-This patch series is add clk driver for AST2700.
+Add reset, clk dt bindings headers, and update compatible
+support for AST2700 clk, silicon-id in yaml.
 
-AST2700 is the 8th generation of Integrated Remote Management Processor
-introduced by ASPEED Technology Inc. Which is Board Management controller
-(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
-is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
-
-v6:
--patch-2: add reset-aspeed.h
--reset-aspeed: add include cleanup.h for guard()
--reset-aspeed: change ids name clk_aspeed to reset_aspeed
--reset-aspeed: move aspeed_reset_controller_register,
-aspeed_reset_adev_release, aspeed_reset_unregister_adev from clk-ast2700.c
--reset-aspeed: drop base check, since it check in clk-ast2700.c
--clk-ast2700: sync each gate name from *clk to *clk-gate name.
--clk-ast2700: add CLK_GATE_ASPEED to diff clk_hw_register_gate and
-ast2700_clk_hw_register_gate.
-
-v5:
--patch-2 Kconfig: add select AUXILIARY_BUS
--reset-aspeed: #define to_aspeed_reset(p) turn into static inline function.
--reset-aspeed: modify spin_lock_irqsave to guard(spinlock_irqsave)
--reset-aspeed: remove unnecessary parentheses.
--clk-ast2700: use <linux/units.h> and refrain from define clk
-
-v4:
--yaml: keep size-cells=<1>.
--merge clk,reset dt binding header with yaml the same patch.
--rename clk,reset dt binding header to aspeed,ast2700-scu.h
--reset-aspeed: update tables tabs sapces to consistent spaces.
--reset-aspeed: remove no use dev_set_drvdata.
--clk-ast2700: modify reset_name to const int scu in struct clk_data.
--clk-ast2700: use scu number in clk_data generate reset_name for reset
- driver register.
--clk-ast2700: fix pll number mix up scu0,scu1.
--clk-ast2700: update dt-binding clock include file.
-
-v3:
--yaml: v2 missing send yaml patch, v3 add.
--yaml: drop 64bits address example.
--yaml: add discription about soc0 and soc1
--dt-bindings: remove (), *_NUMS, reserved.
--dt-bindings: remove dulipated define number.
--dt-bindings: merge clk and reset to be one patch.
--reset-aspeed: add auxiliary device for reset driver.
--clk-ast2700: modify reset to be auxiliary add.
--clk-ast2700: modify to be platform driver.
--clk-ast2700: modify each clk to const clk array.
-
-v2:
--yaml: drop 64bits address example.
--yaml: add discription about soc0 and soc1
--dt-bindings: remove (), *_NUMS, reserved.
--dt-bindings: remove dulipated define number
--clk-ast2700: drop WARN_ON, weird comment.
-
-Ryan Chen (3):
-  dt-bindings: mfd: aspeed: support for AST2700
-  reset: aspeed: register AST2700 reset auxiliary bus device
-  clk: aspeed: add AST2700 clock driver.
-
- .../bindings/mfd/aspeed,ast2x00-scu.yaml      |    8 +-
- drivers/clk/Kconfig                           |    8 +
- drivers/clk/Makefile                          |    1 +
- drivers/clk/clk-ast2700.c                     | 1513 +++++++++++++++++
- drivers/reset/Kconfig                         |    7 +
- drivers/reset/Makefile                        |    1 +
- drivers/reset/reset-aspeed.c                  |  302 ++++
- .../dt-bindings/clock/aspeed,ast2700-scu.h    |  163 ++
- .../dt-bindings/reset/aspeed,ast2700-scu.h    |  124 ++
- include/soc/aspeed/reset-aspeed.h             |   21 +
- 10 files changed, 2147 insertions(+), 1 deletion(-)
- create mode 100644 drivers/clk/clk-ast2700.c
- create mode 100644 drivers/reset/reset-aspeed.c
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml      |   8 +-
+ .../dt-bindings/clock/aspeed,ast2700-scu.h    | 163 ++++++++++++++++++
+ .../dt-bindings/reset/aspeed,ast2700-scu.h    | 124 +++++++++++++
+ 3 files changed, 294 insertions(+), 1 deletion(-)
  create mode 100644 include/dt-bindings/clock/aspeed,ast2700-scu.h
  create mode 100644 include/dt-bindings/reset/aspeed,ast2700-scu.h
- create mode 100644 include/soc/aspeed/reset-aspeed.h
 
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+index 86ee69c0f45b..c800d5e53b65 100644
+--- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+@@ -9,6 +9,8 @@ title: Aspeed System Control Unit
+ description:
+   The Aspeed System Control Unit manages the global behaviour of the SoC,
+   configuring elements such as clocks, pinmux, and reset.
++  In AST2700 SOC which has two soc connection, each soc have its own scu
++  register control, ast2700-scu0 for soc0, ast2700-scu1 for soc1.
+ 
+ maintainers:
+   - Joel Stanley <joel@jms.id.au>
+@@ -21,6 +23,8 @@ properties:
+           - aspeed,ast2400-scu
+           - aspeed,ast2500-scu
+           - aspeed,ast2600-scu
++          - aspeed,ast2700-scu0
++          - aspeed,ast2700-scu1
+       - const: syscon
+       - const: simple-mfd
+ 
+@@ -30,7 +34,8 @@ properties:
+   ranges: true
+ 
+   '#address-cells':
+-    const: 1
++    minimum: 1
++    maximum: 2
+ 
+   '#size-cells':
+     const: 1
+@@ -76,6 +81,7 @@ patternProperties:
+               - aspeed,ast2400-silicon-id
+               - aspeed,ast2500-silicon-id
+               - aspeed,ast2600-silicon-id
++              - aspeed,ast2700-silicon-id
+           - const: aspeed,silicon-id
+ 
+       reg:
+diff --git a/include/dt-bindings/clock/aspeed,ast2700-scu.h b/include/dt-bindings/clock/aspeed,ast2700-scu.h
+new file mode 100644
+index 000000000000..63021af3caf5
+--- /dev/null
++++ b/include/dt-bindings/clock/aspeed,ast2700-scu.h
+@@ -0,0 +1,163 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Device Tree binding constants for AST2700 clock controller.
++ *
++ * Copyright (c) 2024 Aspeed Technology Inc.
++ */
++
++#ifndef __DT_BINDINGS_CLOCK_AST2700_H
++#define __DT_BINDINGS_CLOCK_AST2700_H
++
++/* SOC0 clk */
++#define SCU0_CLKIN		0
++#define SCU0_CLK_24M		1
++#define SCU0_CLK_192M		2
++#define SCU0_CLK_UART		3
++#define SCU0_CLK_UART_DIV13	3
++#define SCU0_CLK_PSP		4
++#define SCU0_CLK_HPLL		5
++#define SCU0_CLK_HPLL_DIV2	6
++#define SCU0_CLK_HPLL_DIV4	7
++#define SCU0_CLK_HPLL_DIV_AHB	8
++#define SCU0_CLK_DPLL		9
++#define SCU0_CLK_MPLL		10
++#define SCU0_CLK_MPLL_DIV2	11
++#define SCU0_CLK_MPLL_DIV4	12
++#define SCU0_CLK_MPLL_DIV8	13
++#define SCU0_CLK_MPLL_DIV_AHB	14
++#define SCU0_CLK_D0		15
++#define SCU0_CLK_D1		16
++#define SCU0_CLK_CRT0		17
++#define SCU0_CLK_CRT1		18
++#define SCU0_CLK_MPHY		19
++#define SCU0_CLK_AXI0		20
++#define SCU0_CLK_AXI1		21
++#define SCU0_CLK_AHB		22
++#define SCU0_CLK_APB		23
++#define SCU0_CLK_UART4		24
++#define SCU0_CLK_EMMCMUX	25
++#define SCU0_CLK_EMMC		26
++#define SCU0_CLK_U2PHY_CLK12M	27
++#define SCU0_CLK_U2PHY_REFCLK	28
++
++/* SOC0 clk-gate */
++#define SCU0_CLK_GATE_MCLK	29
++#define SCU0_CLK_GATE_ECLK	30
++#define SCU0_CLK_GATE_2DCLK	31
++#define SCU0_CLK_GATE_VCLK	32
++#define SCU0_CLK_GATE_BCLK	33
++#define SCU0_CLK_GATE_VGA0CLK	34
++#define SCU0_CLK_GATE_REFCLK	35
++#define SCU0_CLK_GATE_PORTBUSB2CLK	36
++#define SCU0_CLK_GATE_UHCICLK	37
++#define SCU0_CLK_GATE_VGA1CLK	38
++#define SCU0_CLK_GATE_DDRPHYCLK	39
++#define SCU0_CLK_GATE_E2M0CLK	40
++#define SCU0_CLK_GATE_HACCLK	41
++#define SCU0_CLK_GATE_PORTAUSB2CLK	42
++#define SCU0_CLK_GATE_UART4CLK	43
++#define SCU0_CLK_GATE_SLICLK	44
++#define SCU0_CLK_GATE_DACCLK	45
++#define SCU0_CLK_GATE_DP	46
++#define SCU0_CLK_GATE_E2M1CLK	47
++#define SCU0_CLK_GATE_CRT0CLK	48
++#define SCU0_CLK_GATE_CRT1CLK	49
++#define SCU0_CLK_GATE_ECDSACLK	50
++#define SCU0_CLK_GATE_RSACLK	51
++#define SCU0_CLK_GATE_RVAS0CLK	52
++#define SCU0_CLK_GATE_UFSCLK	53
++#define SCU0_CLK_GATE_EMMCCLK	54
++#define SCU0_CLK_GATE_RVAS1CLK	55
++
++/* SOC1 clk */
++#define SCU1_CLKIN		0
++#define SCU1_CLK_HPLL		1
++#define SCU1_CLK_APLL		2
++#define SCU1_CLK_APLL_DIV2	3
++#define SCU1_CLK_APLL_DIV4	4
++#define SCU1_CLK_DPLL		5
++#define SCU1_CLK_UXCLK		6
++#define SCU1_CLK_HUXCLK		7
++#define SCU1_CLK_UARTX		8
++#define SCU1_CLK_HUARTX		9
++#define SCU1_CLK_AHB		10
++#define SCU1_CLK_APB		11
++#define SCU1_CLK_UART0		12
++#define SCU1_CLK_UART1		13
++#define SCU1_CLK_UART2		14
++#define SCU1_CLK_UART3		15
++#define SCU1_CLK_UART5		16
++#define SCU1_CLK_UART6		17
++#define SCU1_CLK_UART7		18
++#define SCU1_CLK_UART8		19
++#define SCU1_CLK_UART9		20
++#define SCU1_CLK_UART10		21
++#define SCU1_CLK_UART11		22
++#define SCU1_CLK_UART12		23
++#define SCU1_CLK_UART13		24
++#define SCU1_CLK_UART14		25
++#define SCU1_CLK_APLL_DIVN	26
++#define SCU1_CLK_SDMUX		27
++#define SCU1_CLK_SDCLK		28
++#define SCU1_CLK_RMII		29
++#define SCU1_CLK_RGMII		30
++#define SCU1_CLK_MACHCLK	31
++#define SCU1_CLK_MAC0RCLK	32
++#define SCU1_CLK_MAC1RCLK	33
++#define SCU1_CLK_CAN		34
++
++/* SOC1 clk gate */
++#define SCU1_CLK_GATE_LCLK0		35
++#define SCU1_CLK_GATE_LCLK1		36
++#define SCU1_CLK_GATE_ESPI0CLK		37
++#define SCU1_CLK_GATE_ESPI1CLK		38
++#define SCU1_CLK_GATE_SDCLK		39
++#define SCU1_CLK_GATE_IPEREFCLK		40
++#define SCU1_CLK_GATE_REFCLK		41
++#define SCU1_CLK_GATE_LPCHCLK		42
++#define SCU1_CLK_GATE_MAC0CLK		43
++#define SCU1_CLK_GATE_MAC1CLK		44
++#define SCU1_CLK_GATE_MAC2CLK		45
++#define SCU1_CLK_GATE_UART0CLK		46
++#define SCU1_CLK_GATE_UART1CLK		47
++#define SCU1_CLK_GATE_UART2CLK		48
++#define SCU1_CLK_GATE_UART3CLK		49
++#define SCU1_CLK_GATE_I2CCLK		50
++#define SCU1_CLK_GATE_I3C0CLK		51
++#define SCU1_CLK_GATE_I3C1CLK		52
++#define SCU1_CLK_GATE_I3C2CLK		53
++#define SCU1_CLK_GATE_I3C3CLK		54
++#define SCU1_CLK_GATE_I3C4CLK		55
++#define SCU1_CLK_GATE_I3C5CLK		56
++#define SCU1_CLK_GATE_I3C6CLK		57
++#define SCU1_CLK_GATE_I3C7CLK		58
++#define SCU1_CLK_GATE_I3C8CLK		59
++#define SCU1_CLK_GATE_I3C9CLK		60
++#define SCU1_CLK_GATE_I3C10CLK		61
++#define SCU1_CLK_GATE_I3C11CLK		62
++#define SCU1_CLK_GATE_I3C12CLK		63
++#define SCU1_CLK_GATE_I3C13CLK		64
++#define SCU1_CLK_GATE_I3C14CLK		65
++#define SCU1_CLK_GATE_I3C15CLK		66
++#define SCU1_CLK_GATE_UART5CLK		67
++#define SCU1_CLK_GATE_UART6CLK		68
++#define SCU1_CLK_GATE_UART7CLK		69
++#define SCU1_CLK_GATE_UART8CLK		70
++#define SCU1_CLK_GATE_UART9CLK		71
++#define SCU1_CLK_GATE_UART10CLK		72
++#define SCU1_CLK_GATE_UART11CLK		73
++#define SCU1_CLK_GATE_UART12CLK		74
++#define SCU1_CLK_GATE_FSICLK		75
++#define SCU1_CLK_GATE_LTPIPHYCLK	76
++#define SCU1_CLK_GATE_LTPICLK		77
++#define SCU1_CLK_GATE_VGALCLK		78
++#define SCU1_CLK_GATE_UHCICLK		79
++#define SCU1_CLK_GATE_CANCLK		80
++#define SCU1_CLK_GATE_PCICLK		81
++#define SCU1_CLK_GATE_SLICLK		82
++#define SCU1_CLK_GATE_E2MCLK		83
++#define SCU1_CLK_GATE_PORTCUSB2CLK	84
++#define SCU1_CLK_GATE_PORTDUSB2CLK	85
++#define SCU1_CLK_GATE_LTPI1TXCLK	86
++
++#endif
+diff --git a/include/dt-bindings/reset/aspeed,ast2700-scu.h b/include/dt-bindings/reset/aspeed,ast2700-scu.h
+new file mode 100644
+index 000000000000..d53c719b7a66
+--- /dev/null
++++ b/include/dt-bindings/reset/aspeed,ast2700-scu.h
+@@ -0,0 +1,124 @@
++/* SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause) */
++/*
++ * Device Tree binding constants for AST2700 reset controller.
++ *
++ * Copyright (c) 2024 Aspeed Technology Inc.
++ */
++
++#ifndef _MACH_ASPEED_AST2700_RESET_H_
++#define _MACH_ASPEED_AST2700_RESET_H_
++
++/* SOC0 */
++#define SCU0_RESET_SDRAM	0
++#define SCU0_RESET_DDRPHY	1
++#define SCU0_RESET_RSA		2
++#define SCU0_RESET_SHA3		3
++#define SCU0_RESET_HACE		4
++#define SCU0_RESET_SOC		5
++#define SCU0_RESET_VIDEO	6
++#define SCU0_RESET_2D		7
++#define SCU0_RESET_PCIS		8
++#define SCU0_RESET_RVAS0	9
++#define SCU0_RESET_RVAS1	10
++#define SCU0_RESET_SM3		11
++#define SCU0_RESET_SM4		12
++#define SCU0_RESET_CRT0		13
++#define SCU0_RESET_ECC		14
++#define SCU0_RESET_DP_PCI	15
++#define SCU0_RESET_UFS		16
++#define SCU0_RESET_EMMC		17
++#define SCU0_RESET_PCIE1RST	18
++#define SCU0_RESET_PCIE1RSTOE	19
++#define SCU0_RESET_PCIE0RST	20
++#define SCU0_RESET_PCIE0RSTOE	21
++#define SCU0_RESET_JTAG		22
++#define SCU0_RESET_MCTP0	23
++#define SCU0_RESET_MCTP1	24
++#define SCU0_RESET_XDMA0	25
++#define SCU0_RESET_XDMA1	26
++#define SCU0_RESET_H2X1		27
++#define SCU0_RESET_DP		28
++#define SCU0_RESET_DP_MCU	29
++#define SCU0_RESET_SSP		30
++#define SCU0_RESET_H2X0		31
++#define SCU0_RESET_PORTA_VHUB	32
++#define SCU0_RESET_PORTA_PHY3	33
++#define SCU0_RESET_PORTA_XHCI	34
++#define SCU0_RESET_PORTB_VHUB	35
++#define SCU0_RESET_PORTB_PHY3	36
++#define SCU0_RESET_PORTB_XHCI	37
++#define SCU0_RESET_PORTA_VHUB_EHCI	38
++#define SCU0_RESET_PORTB_VHUB_EHCI	39
++#define SCU0_RESET_UHCI		40
++#define SCU0_RESET_TSP		41
++#define SCU0_RESET_E2M0		42
++#define SCU0_RESET_E2M1		43
++#define SCU0_RESET_VLINK	44
++
++/* SOC1 */
++#define SCU1_RESET_LPC0		0
++#define SCU1_RESET_LPC1		1
++#define SCU1_RESET_MII		2
++#define SCU1_RESET_PECI		3
++#define SCU1_RESET_PWM		4
++#define SCU1_RESET_MAC0		5
++#define SCU1_RESET_MAC1		6
++#define SCU1_RESET_MAC2		7
++#define SCU1_RESET_ADC		8
++#define SCU1_RESET_SD		9
++#define SCU1_RESET_ESPI0	10
++#define SCU1_RESET_ESPI1	11
++#define SCU1_RESET_JTAG1	12
++#define SCU1_RESET_SPI0		13
++#define SCU1_RESET_SPI1		14
++#define SCU1_RESET_SPI2		15
++#define SCU1_RESET_I3C0		16
++#define SCU1_RESET_I3C1		17
++#define SCU1_RESET_I3C2		18
++#define SCU1_RESET_I3C3		19
++#define SCU1_RESET_I3C4		20
++#define SCU1_RESET_I3C5		21
++#define SCU1_RESET_I3C6		22
++#define SCU1_RESET_I3C7		23
++#define SCU1_RESET_I3C8		24
++#define SCU1_RESET_I3C9		25
++#define SCU1_RESET_I3C10	26
++#define SCU1_RESET_I3C11	27
++#define SCU1_RESET_I3C12	28
++#define SCU1_RESET_I3C13	29
++#define SCU1_RESET_I3C14	30
++#define SCU1_RESET_I3C15	31
++#define SCU1_RESET_MCU0		32
++#define SCU1_RESET_MCU1		33
++#define SCU1_RESET_H2A_SPI1	34
++#define SCU1_RESET_H2A_SPI2	35
++#define SCU1_RESET_UART0	36
++#define SCU1_RESET_UART1	37
++#define SCU1_RESET_UART2	38
++#define SCU1_RESET_UART3	39
++#define SCU1_RESET_I2C_FILTER	40
++#define SCU1_RESET_CALIPTRA	41
++#define SCU1_RESET_XDMA		42
++#define SCU1_RESET_FSI		43
++#define SCU1_RESET_CAN		44
++#define SCU1_RESET_MCTP		45
++#define SCU1_RESET_I2C		46
++#define SCU1_RESET_UART6	47
++#define SCU1_RESET_UART7	48
++#define SCU1_RESET_UART8	49
++#define SCU1_RESET_UART9	50
++#define SCU1_RESET_LTPI0	51
++#define SCU1_RESET_VGAL		52
++#define SCU1_RESET_LTPI1	53
++#define SCU1_RESET_ACE		54
++#define SCU1_RESET_E2M		55
++#define SCU1_RESET_UHCI		56
++#define SCU1_RESET_PORTC_USB2UART	57
++#define SCU1_RESET_PORTC_VHUB_EHCI	58
++#define SCU1_RESET_PORTD_USB2UART	59
++#define SCU1_RESET_PORTD_VHUB_EHCI	60
++#define SCU1_RESET_H2X		61
++#define SCU1_RESET_I3CDMA	62
++#define SCU1_RESET_PCIE2RST	63
++
++#endif  /* _MACH_ASPEED_AST2700_RESET_H_ */
 -- 
 2.34.1
 
