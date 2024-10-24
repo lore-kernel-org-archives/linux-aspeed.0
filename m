@@ -1,77 +1,64 @@
-Return-Path: <linux-aspeed+bounces-24-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-25-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA26ACE8E6E
-	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 12:54:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B142ECE8E75
+	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 13:23:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ5TC0KT0z2yj3;
-	Thu, 24 Oct 2024 23:54:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729774446;
-	cv=none; b=CaP7XcceqeKDI5BRXK4qv5AjEaRFZeuG3NC+ixH4tzVkzze4DR3eehTJ+ouXvueJLj6X3zKgeBQfLiKV08bUYpwOb0QYrfjby5anp6XNMJMnU/71yxxaa6Zs1eNBED2HFf3kl56uIOn3XrrLyrhkDfJ4+41e41CHNBHBJhWMAhc04ii4XdNGvgZQlmzFUv7JW0LWSeTdpvmNIg2NS37FjfkGU2nQyhcEu8WMNk3t/Z7fVMJaRw+g5NQLhg9Mmx4YSxMIfUR5az4qsUtSmgSPkOY66hkuJS8MVS8N9Qh0R9+fP0/cC3VeBtMUXf7LlFe5T3U3YTWxjjUNhCQIVkIBtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ66f1Blsz2ysv;
+	Fri, 25 Oct 2024 00:23:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729776186;
+	cv=none; b=Ctu8EKmPULJkEbVFp4vcuuGH1Z4OM8X5Mj1xHFLtq7aK9Da1jYYtJ1O6TZXmuFT0fZF1P0DU7yZ4VnkQIZGOFPz7SL0y84T3YmBmWkS88VL65Vo44E/rU7+WMitoIfPRsh3OvIoLV53dtRPj02u0XDtpbVt1AEGUV0QNd029Y/HktKVgH1KVhs4eQB181p21HbRx696DnUU9oL0eBEJiUpMoB6oS+Eb2q1l/uL/dUHD9pZC1vomXWWLQwmTzLsFAgdgkUq2BmTQ7bjEigcgLJ3H50MQrk1wjVQoidCmRDUruZ9p9xw5Y/28ZhBdervYg2bTH1TbJz2VnfV93fTG8KQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729774446; c=relaxed/relaxed;
-	bh=JCRJdYh2csJ+89h1hlReDsgz7vlEUdYt46ocV+NkEwM=;
+	t=1729776186; c=relaxed/relaxed;
+	bh=08lXJgKcAe8N3lleod88TNBbTcd1+2/PW8hqN4eL/LU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QuELLocEaD32duCFiAh3MOCEED9mReuP1Pn3MIzQ+oKN2LPkKZannHpKPYXaXRiuonz14Qbm4NysXfl+upnh3qo69f21+Z2bEuvRXHwq8at6azG0E3cKz0SV7Jvls+OlBG+UFiPnUBlS9q1o8m4g7TgoxJyHaOMK2oa4b8WDQ0gz0zsJO4FB+rPf8XwgyZoYkgcg6eKTQBWYnCVl2VOzjjRx7WLwDBIkgoOTk48DefTQq9BDrPnqnJtGv9AQfE/2oUkw4vrGIl79lGRXuk8QFcnz8Yo9Ya+0sMAt0N1iINIRT9iwyWiqJxPYoqs2gUvFbARqdMjMp7eG1qFdGsB9gg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=i+60y10u; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=AjsPl88s0cI0pedOzu3mwpE4HlOncIh/gLlWqr99vhOKcF10sZzbNUorD/sqCUtdOugS1n+Ooyat0nvHCBDnUVuPbfP/WGqY7cSC3P+aMlfHsdbXhS2xV5iMUijEYi+RqdoX9yj2DGsgUGkKm4DD0LpDXXquOdirEBEYJMlQva2o5E84Erq+IDx7l2oBxx26SSnsY5Wiiw/sz3VffYtT76ZYHY+Yxwugy0qA2wMqAkv/tnGwkVokvXFaO4bLPQi7mDOxdzfcocMRvxa9dRW8CP/uwaBCwhCoK76MMX6zzs/kM95AgiDztvgr0o3vJJvSjoujkk5S4J95GjudmWLsuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UE3qlqoc; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=i+60y10u;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UE3qlqoc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ5T822cPz2yYk
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 24 Oct 2024 23:54:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1729774444; x=1761310444;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=HUuhAWk3dXLnQPMq/6w0jxdCVg118X9Z6g0zogfDEU8=;
-  b=i+60y10uqnZb/2w2/aaK7VXe7pCS314O7HZnfH5PdJ/j0eVBAdIMu/wP
-   63zPxBk8CmTe86+hB9QUWD6jBMMeEJ24SE0L6aJ6kd8Q9tG52nPAhfopj
-   z0C9FMOAnbk7itc++0IKgLLvRNEdZJgoyV5XR/dMKBZPQZk8tFC94IDfA
-   Flgth8dDeLn3iAHLSi+ScFXLDpvXTdXhN2jzrQQKZ1Wgvq091y5+POoA+
-   KMhPNBlyznL0oMuG5AjRCN5UYC29qfl4r6L6vFQzM4Cjt4UqqwymRVxmG
-   fVNWGBsRFksX0zWKc4OLOuze2AdcFTevhff40ufY+otADl/kfPnCinJu+
-   A==;
-X-CSE-ConnectionGUID: PuySkkghQfakHfesoeKg0g==
-X-CSE-MsgGUID: Is/5hgg1TWuopI9a596Iww==
-X-IronPort-AV: E=McAfee;i="6700,10204,11235"; a="33305517"
-X-IronPort-AV: E=Sophos;i="6.11,229,1725346800"; 
-   d="scan'208";a="33305517"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Oct 2024 05:53:58 -0700
-X-CSE-ConnectionGUID: CYQhb0LyQ/O314nR33NJFw==
-X-CSE-MsgGUID: T60QwaPzQhGgKJLZPt2oiA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.11,229,1725346800"; 
-   d="scan'208";a="84560553"
-Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
-  by fmviesa003.fm.intel.com with ESMTP; 24 Oct 2024 05:53:54 -0700
-Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1t3xLc-000WRA-04;
-	Thu, 24 Oct 2024 12:53:52 +0000
-Date: Thu, 24 Oct 2024 20:53:28 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ryan Chen <ryan_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
-	andrew@codeconstruct.com.au, mturquette@baylibre.com,
-	sboyd@kernel.org, p.zabel@pengutronix.de,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-clk@vger.kernel.org, dmitry.baryshkov@linaro.org
-Cc: oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH v6 3/3] clk: aspeed: add AST2700 clock driver.
-Message-ID: <202410242017.1valHJUC-lkp@intel.com>
-References: <20241023090153.1395220-4-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ66c6slWz2yj3;
+	Fri, 25 Oct 2024 00:23:04 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 76001A45419;
+	Thu, 24 Oct 2024 13:22:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B136AC4CEC7;
+	Thu, 24 Oct 2024 13:22:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1729776180;
+	bh=xYOd1PGCn+k3tNRpgbdP98I0aYi1W9inhgTkL3ocTDw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=UE3qlqocUQQwG7+oevrCYRcqdU5t6igksP5NXhM/w/Avp9vTWc9do/b/XFIaLNfV5
+	 nF5Mu09+yamxjgYhYGBEQmyp0jczN/DdGoDW33UtiPMUXVeEbuIhBF22CiQpgWVwV0
+	 qUkHRqiDvnAE6+n+Gx1vJ81KFaa+9tUo6F6L3DmpRpnwHnc377u3qWPsgOaTM457VE
+	 v9l5/b2mhN5jG+3lRx8YjH+eLwlL5IZ6wRAjXlWNtm0ptENvdOtcjvulFw+AvWDq6L
+	 LQWX29+MFnAHc+tALWO1lyKg/mbG/pBQ6CBRa5K0LSHIpv+WZigHO6oDUKFVVqZmqs
+	 gAPURf4qcQhJA==
+Date: Thu, 24 Oct 2024 15:22:56 +0200
+From: Andi Shyti <andi.shyti@kernel.org>
+To: Tommy Huang <tommy_huang@aspeedtech.com>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	"brendanhiggins@google.com" <brendanhiggins@google.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, 
+	"joel@jms.id.au" <joel@jms.id.au>, BMC-SW <BMC-SW@aspeedtech.com>, 
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, 
+	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] i2c: aspeed: Consider i2c reset for muti-master case
+Message-ID: <c3ss6ralf4tpyknsda5p745a65xjprlzecdq3s4zy4dpckuxi4@izf7emrzykay>
+References: <20241018034919.974025-1-tommy_huang@aspeedtech.com>
+ <e06a0db538bf62d4aeb7352ecc81a3a679fb9eec.camel@codeconstruct.com.au>
+ <TYZPR06MB6191EBA63B87FE5152AF029DE14C2@TYZPR06MB6191.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,61 +73,26 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241023090153.1395220-4-ryan_chen@aspeedtech.com>
+In-Reply-To: <TYZPR06MB6191EBA63B87FE5152AF029DE14C2@TYZPR06MB6191.apcprd06.prod.outlook.com>
 
-Hi Ryan,
+Hi Tommy,
 
-kernel test robot noticed the following build warnings:
+On Tue, Oct 22, 2024 at 02:42:08AM +0000, Tommy Huang wrote:
+> Hi Andrew,
+> 
+> 	Thanks for your comments.
+> 	I want to fix the situation when our controller is set as target mode and reading / writing by other i2c host.
+> 	However, this host is stopped by any other reason (DC on/off..etc).
+> 	It will cause the controller is stuck in this situation.
+> 	But I find it might not have clear hints to identify this situation is normal or abnormal.
+> 	So, this patch should not be applied into mainstream.
 
-[auto build test WARNING on clk/clk-next]
-[also build test WARNING on pza/reset/next lee-mfd/for-mfd-next lee-leds/for-leds-next linus/master lee-mfd/for-mfd-fixes v6.12-rc4 next-20241024]
-[cannot apply to pza/imx-drm/next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+Please, avoid top posting, I don't understand which part of the
+original message you are trying to comment on.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-mfd-aspeed-support-for-AST2700/20241023-170434
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git clk-next
-patch link:    https://lore.kernel.org/r/20241023090153.1395220-4-ryan_chen%40aspeedtech.com
-patch subject: [PATCH v6 3/3] clk: aspeed: add AST2700 clock driver.
-config: arm64-randconfig-r133-20241024 (https://download.01.org/0day-ci/archive/20241024/202410242017.1valHJUC-lkp@intel.com/config)
-compiler: clang version 20.0.0git (https://github.com/llvm/llvm-project 5886454669c3c9026f7f27eab13509dd0241f2d6)
-reproduce: (https://download.01.org/0day-ci/archive/20241024/202410242017.1valHJUC-lkp@intel.com/reproduce)
+Second thing, please, before sending a patch, always always
+always make sure that checkpatch.pl reports '0' errors and '0'
+warnings, except for few sporadic cases.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202410242017.1valHJUC-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   In file included from drivers/clk/clk-ast2700.c:17:
->> include/soc/aspeed/reset-aspeed.h:14:5: warning: no previous prototype for function 'aspeed_reset_controller_register' [-Wmissing-prototypes]
-      14 | int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
-         |     ^
-   include/soc/aspeed/reset-aspeed.h:14:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-      14 | int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
-         | ^
-         | static 
-   1 warning generated.
-
-
-vim +/aspeed_reset_controller_register +14 include/soc/aspeed/reset-aspeed.h
-
-1476d29e4461f6 Ryan Chen 2024-10-23   9  
-1476d29e4461f6 Ryan Chen 2024-10-23  10  #if IS_ENABLED(CONFIG_RESET_ASPEED)
-1476d29e4461f6 Ryan Chen 2024-10-23  11  int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
-1476d29e4461f6 Ryan Chen 2024-10-23  12  				     const char *adev_name);
-1476d29e4461f6 Ryan Chen 2024-10-23  13  #else
-1476d29e4461f6 Ryan Chen 2024-10-23 @14  int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
-1476d29e4461f6 Ryan Chen 2024-10-23  15  				     const char *adev_name)
-1476d29e4461f6 Ryan Chen 2024-10-23  16  {
-1476d29e4461f6 Ryan Chen 2024-10-23  17  	return -ENODEV;
-1476d29e4461f6 Ryan Chen 2024-10-23  18  }
-1476d29e4461f6 Ryan Chen 2024-10-23  19  #endif /* if IS_ENABLED(CONFIG_RESET_ASPEED) */
-1476d29e4461f6 Ryan Chen 2024-10-23  20  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Andi
 
