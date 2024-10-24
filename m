@@ -1,63 +1,74 @@
-Return-Path: <linux-aspeed+bounces-27-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-28-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79E32CE8E7C
-	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 14:10:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13086CE8E90
+	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 16:07:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ79r0jSLz2yLV;
-	Fri, 25 Oct 2024 01:10:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729779055;
-	cv=none; b=euAkydjVS4FSGxqJmCQK82C8Ln/eICQw4cnqBEIkhwgTpBmjVZ4xBjhqNcmgu9ADnOToiuRT8VMK1tRqWDJv+lzFtQwGwqeuTy2j/yjX+7E8HhJST3GG7h5gTt6tPoCewPR5sDZIlsDddPou7+2bQUWv7aJXNJuADIY9NNgJ7vxC/RpC3sxixN9OVwyq2ZKBiRKI5IFKwAovLenNH4jMOkWK0wN6s7Nzy0ilxcmEJMa3Fm2zFAv6ie9xclByx4AnqIPLf2Iss3AaByAIITYrHIj6/+fxU7t/m3pzPoVnQIFy8lkOnGuqWVtYHgI7HSK/qH/Zeu/RoThCF0UJVnsrvQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ9mX38L3z2xgp;
+	Fri, 25 Oct 2024 03:07:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729786060;
+	cv=none; b=G9Ls32zhZ8EUmhorMnaLJsDjPCsxucEduv8ZsA5jZ16JwLZcOyW2UMD8AUbzuQ9YIRBE3ewTg7S0I+2dwXGpfm7zMMmQ3t0JNUtXPosDBOOBbE0bgRgHLzQ3U208bdCg1Wmwd7tLVt6EAUnvGffzQbd3vPgt9vdXKJ8rvWPM9/MT7K3t3Nyyc0Xlo7kxKELik2N3yjtUS/aqb0cI1NxcfVrORwmyT6IZCj0g0HHeVQeLtGEnUjYuUZz8/ethipaiBuHj74Aa92AdNDbDgVC3eIw03/k0+JIViiY0Oe+Eo+MKjB+Rr8WzWdAF0rKbt06BDSX2hzR2u6Gh9AGyyQDL6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729779055; c=relaxed/relaxed;
-	bh=0oZ0Ac+x+u3ydNa0cYENMIYLIzmnwWSTLS7vwsd90kg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=McKeKiyVcWm0fmDzqjbjWha8S0RDzi5E+386bpBaJGfPJNaqR5xppRCoRTSDYmoJOXaIDOmxvswAeZ2EqAnZtIZv0pqICwRjSeCtYVi/8uKet9bE1UxvYvGcyiJIHHOOKp0QfT8zif/XxJ9iAdjm/u7w1c0tTQMqBy5rPAOJv1yPbgSlYB4Ct/DCRCvrDL5+71BtUs7VisOpobvPwiQvX8KQn6qA3dVkjY7MDELOaRdJ2waKmIytJuX1CCu5KWvkN7Z/hS7yBGvYVQs4POJD7KBOwWPKsfT9Ofm0hrJ3C/6NMXpxs9VUpv9eb64pk+0ZeHIyofZtBAH9gfbXWGarMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZaXSy15T; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1729786060; c=relaxed/relaxed;
+	bh=2TNe2Ym34csTaEuiRW1/O4gceO7dqGqww+esQnWO0lg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=azZKEatt+5mpyI8RQAhm9H0vWgX0QxmgSHFAhHjV7Y5BG2I8oG6TKrLfquLS47HdmwspDWia4NmhBhm2oJxjUNqTOKus7afvSkP/y5L/mtuyP/SKMGilulbaAg4DGmKpyhnH/ixaOPo7q24qOllq3RIz3v0u7bg7D9e7NcmKl0kAdMuyaH7FawyFgQNQxz4hvFIm3QDa8wDnEUacnvOk/NF7YhUOgJHpaz3hm83pDqbCqUqxqGcwqZStI9Ma3c9LbRnh7IatAjNrwRWAzxs1poGqkc2TyfNybIxtIwGgZFsZe4JGobTBaaKenWGpecyHcsZlTFamN+TxLQkCyKGBTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FPhLJcqP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZaXSy15T;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FPhLJcqP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ79p6Gdhz2xrJ
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 25 Oct 2024 01:10:54 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 63AD55C4B6A;
-	Thu, 24 Oct 2024 14:10:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0C82EC4CEC7;
-	Thu, 24 Oct 2024 14:10:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729779052;
-	bh=krhQtm4zm/FOYnIE/tGTH1SAlqRa2tX6XY57qn26xao=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ZaXSy15To3yTWqZHs3NhtB2LSgH6UAKPlDgAu9RHa7JIE32YuivGXDueV4FJsc0Tw
-	 lRqaPHtdG3qBZYD5Qa1rFHI60A/Ycbt1R3a0Tvi4UHj/XI79cjebGX+eXnhOtMxebT
-	 LoVkkICu07poQAwYKfRkUyk5ghneAKiIaEcs7Y5cUeRXiNWO8eTopBCuATsoWN8OuE
-	 3htET69XX7c7wzvKmIDpHgkiikShCdERETvy10+a/a4DeA1uG3N4db1hJ5VMJ3olRw
-	 kH3yqNZuYnYbEr90UV3GeLXvIRW3KNvQZ740p0vydbItEgdY/nMt1vF2bvHHOnMyUn
-	 ZO8TO5vQq8cwQ==
-Date: Thu, 24 Oct 2024 09:10:50 -0500
-From: Rob Herring <robh@kernel.org>
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: jdelvare@suse.com, linux@roeck-us.net, krzk+dt@kernel.org,
-	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
-	ukleinek@kernel.org, linux-hwmon@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-pwm@vger.kernel.org, BMC-SW@aspeedtech.com
-Subject: Re: [PATCH v1 1/2] hwmon: (aspeed-g6-pwm-tacho): Extend the
- #pwm-cells to 4
-Message-ID: <20241024141050.GA246869-robh@kernel.org>
-References: <20241024071548.3370363-1-billy_tsai@aspeedtech.com>
- <20241024071548.3370363-2-billy_tsai@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ9mT6YJhz2xBb
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 25 Oct 2024 03:07:36 +1100 (AEDT)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-20c803787abso8649645ad.0
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 24 Oct 2024 09:07:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1729786054; x=1730390854; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=2TNe2Ym34csTaEuiRW1/O4gceO7dqGqww+esQnWO0lg=;
+        b=FPhLJcqPqDnObMQbSxftMRAbFe/8TkwNO0WZMh8VKgELki75rfRIRSUK6PGSTEZ3xW
+         IstUn/jwzRxGPQI0z834mKqSQk6LkYgYnWAhNefOwknntJaGa4g1BVbI7/TiuX/gHn/n
+         JX7jcYHJVqvmFSiKC8b2456zDLfz0YisrbjwQsRScErZNb7hJSQbb72ASChDAy1upMhK
+         MC/8F78iQjophQvf40kL2LviZMzoiu+zuLsIYVGYjQT6tZ+IX7k3BSDc9Hh+ZJJP3d2c
+         gt2QHTHR0QmlB0WGUss/+cXxjI97u/mRsoQebmOnrwIdayG0qsC+TceH1ujK4GNH5EB7
+         6X7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1729786054; x=1730390854;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2TNe2Ym34csTaEuiRW1/O4gceO7dqGqww+esQnWO0lg=;
+        b=EMfUAOm9u1DXs53wj2HUxJx9FcKWWHT7F4splzBuoL3NRR7BO3NmD9UqPlmTKeucSY
+         MlFP+/Fh5Qw74F+WPlLhnzTwUUkeAoJFNgii1hrzx64HoC7Xc4D9tk+hlT1c4YUmrx9u
+         bj5tRANHpCTIrldyQup1qxUsKPPXaUsQXWpyHqWVyNCwk0ZLcDXX7NEKA9hy3HkLNyxW
+         l5r5izqPyN/E0owlWj+ptSfVBtL4fIEvT16una9n8/aqZKgPRQCL3qoDBXk6UkXusQJ5
+         piq7HtrxeEBpsHcAvt5+bAjIJcYPb6M+6rjX4dIRiKKQCdO6JELn2jdVTKLa4gXfxTyQ
+         hDAQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUxNGOiLWSepaqfVpkiwC9fOfMjtMAjQGA0HSbz5xEGFTGhlLcCAGtuzsmRNsN/qu6yX+RXFMJ7vDoTeIU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwfncTm1281tzynNqKD6NpCQnRWY3+PjsGpr+zPZVNBn3x3Ru1k
+	2g0n+XcWeVK4HvWzZ0bduniqCz0ulmi2zzBE9xu8WdUsYHusqfui
+X-Google-Smtp-Source: AGHT+IHelvnAnzzyZFpgXYdYPCQlFtmHXCy4JGArTTYWPneli64ZPa28QteTqe35EW6LYZvcNZOMTw==
+X-Received: by 2002:a17:902:fc4f:b0:20b:a41f:6e4d with SMTP id d9443c01a7336-20fb89650ffmr43374945ad.15.1729786053504;
+        Thu, 24 Oct 2024 09:07:33 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-20e7ef0cbe5sm74037925ad.96.2024.10.24.09.07.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 24 Oct 2024 09:07:32 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <ea1be8af-0948-46b1-a1f4-fe572861cde4@roeck-us.net>
+Date: Thu, 24 Oct 2024 09:07:30 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,71 +81,85 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20241024071548.3370363-2-billy_tsai@aspeedtech.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 0/2] Enable WDT reload feature
+To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
+ Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: jdelvare@suse.com, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+ linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org,
+ BMC-SW@aspeedtech.com
+References: <20241024071548.3370363-1-billy_tsai@aspeedtech.com>
+ <nm4ckxv6swajr6hnqlkq5uoo6ncjzlg6yfxroftat6dubiefyi@xbhi4dvqacxm>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+In-Reply-To: <nm4ckxv6swajr6hnqlkq5uoo6ncjzlg6yfxroftat6dubiefyi@xbhi4dvqacxm>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Oct 24, 2024 at 03:15:47PM +0800, Billy Tsai wrote:
-> Add an option to support #pwm-cells up to 4. The additional cell is used
-> to enable the WDT reset feature, which is specific to the ASPEED PWM
-> controller.
-
-Use subject prefixes matching the subsystem.
-
+On 10/24/24 08:40, Uwe Kleine-König wrote:
+> Hello,
 > 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> Change-Id: Iefcc9622ac3dc684441d3e77aeb53c00f2ce4097
-
-Drop.
-
-> ---
->  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 25 ++++++++++++++++++-
->  1 file changed, 24 insertions(+), 1 deletion(-)
+> On Thu, Oct 24, 2024 at 03:15:46PM +0800, Billy Tsai wrote:
+>> Aspeed PWM controller has the WDT reload feature, which changes the duty
+>> cycle to a preprogrammed value after a WDT/EXTRST#.
+>>
+>> Billy Tsai (2):
+>>    hwmon: (aspeed-g6-pwm-tacho): Extend the #pwm-cells to 4
+>>    hwmon: (aspeed-g6-pwm-tacho): Support the WDT reload
 > 
-> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> index 9e5ed901ae54..0cc92ce29ece 100644
-> --- a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
-> @@ -31,7 +31,11 @@ properties:
->      maxItems: 1
->  
->    "#pwm-cells":
-> -    const: 3
-> +    enum: [3, 4]
-> +    description: |
-> +      The value should be 4 to enable the WDT reload feature, which will change the duty cycle to
-> +      a preprogrammed value after WDT/EXTRST#.
-> +      The range for the fourth cell value supported by this binding is 0 to 255.
-
-Wrap lines at 80.
-
->  
->  patternProperties:
->    "^fan-[0-9]+$":
-> @@ -69,3 +73,22 @@ examples:
->          pwms = <&pwm_tach 1 40000 0>;
->        };
->      };
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +    pwm_tach: pwm-tach-controller@1e610000 {
-> +      compatible = "aspeed,ast2600-pwm-tach";
-> +      reg = <0x1e610000 0x100>;
-> +      clocks = <&syscon ASPEED_CLK_AHB>;
-> +      resets = <&syscon ASPEED_RESET_PWM>;
-> +      #pwm-cells = <4>;
-> +
-> +      fan-0 {
-> +        tach-ch = /bits/ 8 <0x0>;
-> +        pwms = <&pwm_tach 0 40000 0 128>;
-> +      };
-> +
-> +      fan-1 {
-> +        tach-ch = /bits/ 8 <0x1 0x2>;
-> +        pwms = <&pwm_tach 1 40000 0 160>;
-> +      };
-> +    };
-> -- 
-> 2.25.1
+> Huh, I'm not convinced that extending #pwm-cells for that feature is a
+> good idea. Unless I'm missing something none of the other supported PWM
+> chips can do that, so I hesitate to change a standard for it. I suggest
+> to make this a separate property instead.
 > 
+
+Agreed.
+Guenter
+
 
