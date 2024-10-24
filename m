@@ -1,51 +1,77 @@
-Return-Path: <linux-aspeed+bounces-23-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-24-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27222D0BB6B
-	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 07:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA26ACE8E6E
+	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 12:54:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XYxzJ28nkz2yj3;
-	Thu, 24 Oct 2024 18:16:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729754172;
-	cv=none; b=iBdheL0suojAOJrJgr2tKOOMfDeFl5w1mh1BYKoZJ+Ln8MYnuvqtkwQbpsAWsZ09XNTdZ7z+SXOqYIWMZFmbc/gQRvho3oOUoGkADxxMHbyngtY74kYAw1/jFlxNs8R8B/TFSSt7zRbS1DLAsGUW4t2GstNsOjB/zNzX7ogctxqS6y8XB+FMwaMh5klzhiKMNaQDqSfKbYwkgjRpk3lAuwLzNZLqVM30+iT1bq9YZsKK64n8k2qM2lQAiKQQgpCvKP4HQioPcSU+i2/4TbJolfRYnSfG8yKzIfhzKdFp0ydao+8w/K/vucgYrg5vCRdtjVGri8gXqaChWdPcXXKpFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ5TC0KT0z2yj3;
+	Thu, 24 Oct 2024 23:54:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729774446;
+	cv=none; b=CaP7XcceqeKDI5BRXK4qv5AjEaRFZeuG3NC+ixH4tzVkzze4DR3eehTJ+ouXvueJLj6X3zKgeBQfLiKV08bUYpwOb0QYrfjby5anp6XNMJMnU/71yxxaa6Zs1eNBED2HFf3kl56uIOn3XrrLyrhkDfJ4+41e41CHNBHBJhWMAhc04ii4XdNGvgZQlmzFUv7JW0LWSeTdpvmNIg2NS37FjfkGU2nQyhcEu8WMNk3t/Z7fVMJaRw+g5NQLhg9Mmx4YSxMIfUR5az4qsUtSmgSPkOY66hkuJS8MVS8N9Qh0R9+fP0/cC3VeBtMUXf7LlFe5T3U3YTWxjjUNhCQIVkIBtw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729754172; c=relaxed/relaxed;
-	bh=FT2yILJv6RLvkUgpzAoVckbLuv8XMCf6BywVXl+6c/I=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=AADx301kwwr6MxBYHIvCdLnkx83K7/xGHIgCr6UeIwDrFOgwC2FlenSl07iofn4PwMJdgRfI3ZVSSz0c1pE5aL0fmiSPMLOaNIo/tCtlQ42xYFjj5ulhQI+HBRqCzU1+uUhTciXokWhMosewEaHNKGccPwzZTLM4QgCxBfQutF5PT4vCmDPtfIieGjKEcQeeLyYGUtGvWSSX5nhE6fFwaJHpSe1B7amsdnYS6+7utNUT9FpW46H/TezBu+UB1nkT4XHnywCfOCfTX16izG4aWEMXwomK0UOBIYqTqIkFTSLqB0QiVuMgvgaS5WKz3WN5y6b6Wx/hhNQShCcz6HlAvA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	t=1729774446; c=relaxed/relaxed;
+	bh=JCRJdYh2csJ+89h1hlReDsgz7vlEUdYt46ocV+NkEwM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QuELLocEaD32duCFiAh3MOCEED9mReuP1Pn3MIzQ+oKN2LPkKZannHpKPYXaXRiuonz14Qbm4NysXfl+upnh3qo69f21+Z2bEuvRXHwq8at6azG0E3cKz0SV7Jvls+OlBG+UFiPnUBlS9q1o8m4g7TgoxJyHaOMK2oa4b8WDQ0gz0zsJO4FB+rPf8XwgyZoYkgcg6eKTQBWYnCVl2VOzjjRx7WLwDBIkgoOTk48DefTQq9BDrPnqnJtGv9AQfE/2oUkw4vrGIl79lGRXuk8QFcnz8Yo9Ya+0sMAt0N1iINIRT9iwyWiqJxPYoqs2gUvFbARqdMjMp7eG1qFdGsB9gg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=i+60y10u; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=i+60y10u;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XYxzH4GHFz2yF4
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 24 Oct 2024 18:16:11 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Thu, 24 Oct
- 2024 15:15:48 +0800
-Received: from mail.aspeedtech.com (192.168.10.10) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
- Transport; Thu, 24 Oct 2024 15:15:48 +0800
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: <jdelvare@suse.com>, <linux@roeck-us.net>, <robh@kernel.org>,
-	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joel@jms.id.au>,
-	<andrew@codeconstruct.com.au>, <ukleinek@kernel.org>,
-	<billy_tsai@aspeedtech.com>, <linux-hwmon@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<linux-pwm@vger.kernel.org>, <BMC-SW@aspeedtech.com>
-Subject: [PATCH v1 2/2] hwmon: (aspeed-g6-pwm-tacho): Support the WDT reload
-Date: Thu, 24 Oct 2024 15:15:48 +0800
-Message-ID: <20241024071548.3370363-3-billy_tsai@aspeedtech.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20241024071548.3370363-1-billy_tsai@aspeedtech.com>
-References: <20241024071548.3370363-1-billy_tsai@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ5T822cPz2yYk
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 24 Oct 2024 23:54:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1729774444; x=1761310444;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=HUuhAWk3dXLnQPMq/6w0jxdCVg118X9Z6g0zogfDEU8=;
+  b=i+60y10uqnZb/2w2/aaK7VXe7pCS314O7HZnfH5PdJ/j0eVBAdIMu/wP
+   63zPxBk8CmTe86+hB9QUWD6jBMMeEJ24SE0L6aJ6kd8Q9tG52nPAhfopj
+   z0C9FMOAnbk7itc++0IKgLLvRNEdZJgoyV5XR/dMKBZPQZk8tFC94IDfA
+   Flgth8dDeLn3iAHLSi+ScFXLDpvXTdXhN2jzrQQKZ1Wgvq091y5+POoA+
+   KMhPNBlyznL0oMuG5AjRCN5UYC29qfl4r6L6vFQzM4Cjt4UqqwymRVxmG
+   fVNWGBsRFksX0zWKc4OLOuze2AdcFTevhff40ufY+otADl/kfPnCinJu+
+   A==;
+X-CSE-ConnectionGUID: PuySkkghQfakHfesoeKg0g==
+X-CSE-MsgGUID: Is/5hgg1TWuopI9a596Iww==
+X-IronPort-AV: E=McAfee;i="6700,10204,11235"; a="33305517"
+X-IronPort-AV: E=Sophos;i="6.11,229,1725346800"; 
+   d="scan'208";a="33305517"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Oct 2024 05:53:58 -0700
+X-CSE-ConnectionGUID: CYQhb0LyQ/O314nR33NJFw==
+X-CSE-MsgGUID: T60QwaPzQhGgKJLZPt2oiA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,229,1725346800"; 
+   d="scan'208";a="84560553"
+Received: from lkp-server01.sh.intel.com (HELO a48cf1aa22e8) ([10.239.97.150])
+  by fmviesa003.fm.intel.com with ESMTP; 24 Oct 2024 05:53:54 -0700
+Received: from kbuild by a48cf1aa22e8 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1t3xLc-000WRA-04;
+	Thu, 24 Oct 2024 12:53:52 +0000
+Date: Thu, 24 Oct 2024 20:53:28 +0800
+From: kernel test robot <lkp@intel.com>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
+	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+	andrew@codeconstruct.com.au, mturquette@baylibre.com,
+	sboyd@kernel.org, p.zabel@pengutronix.de,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-clk@vger.kernel.org, dmitry.baryshkov@linaro.org
+Cc: oe-kbuild-all@lists.linux.dev
+Subject: Re: [PATCH v6 3/3] clk: aspeed: add AST2700 clock driver.
+Message-ID: <202410242017.1valHJUC-lkp@intel.com>
+References: <20241023090153.1395220-4-ryan_chen@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,150 +84,63 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241023090153.1395220-4-ryan_chen@aspeedtech.com>
 
-Use the DTS property #pwm-cells to determine if the PWM controller needs
-to enable the WDT reload feature, which changes the duty cycle to a
-preprogrammed value after a WDT/EXTRST#. When #pwm-cells = <4>, the
-feature will be enabled, and the PWM consumer can use the 4th argument to
-set the reload duty cycle [0-255].
+Hi Ryan,
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-Change-Id: Ided520f73220581e3b37819a106ec81ebf9bb5a6
----
- drivers/hwmon/aspeed-g6-pwm-tach.c | 49 ++++++++++++++++++++++++++++++
- drivers/pwm/core.c                 |  6 ++--
- include/linux/pwm.h                | 10 ++++++
- 3 files changed, 62 insertions(+), 3 deletions(-)
+kernel test robot noticed the following build warnings:
 
-diff --git a/drivers/hwmon/aspeed-g6-pwm-tach.c b/drivers/hwmon/aspeed-g6-pwm-tach.c
-index 75eadda738ab..df47f9aa8ee6 100644
---- a/drivers/hwmon/aspeed-g6-pwm-tach.c
-+++ b/drivers/hwmon/aspeed-g6-pwm-tach.c
-@@ -56,6 +56,7 @@
- #include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
-+#include <dt-bindings/pwm/pwm.h>
- #include <linux/reset.h>
- #include <linux/sysfs.h>
- 
-@@ -452,6 +453,51 @@ static void aspeed_pwm_tach_reset_assert(void *data)
- 	reset_control_assert(rst);
- }
- 
-+static void aspeed_pwm_set_wdt_reload(struct pwm_chip *chip,
-+				      struct pwm_device *pwm,
-+				      u64 reload_duty_cycle)
-+{
-+	struct aspeed_pwm_tach_data *priv = aspeed_pwm_chip_to_data(chip);
-+	u32 hwpwm = pwm->hwpwm, val;
-+
-+	val = readl(priv->base + PWM_ASPEED_DUTY_CYCLE(hwpwm));
-+	val &= ~PWM_ASPEED_DUTY_CYCLE_POINT_AS_WDT;
-+	val |= FIELD_PREP(PWM_ASPEED_DUTY_CYCLE_POINT_AS_WDT,
-+			  reload_duty_cycle);
-+	writel(val, priv->base + PWM_ASPEED_DUTY_CYCLE(hwpwm));
-+
-+	val = readl(priv->base + PWM_ASPEED_CTRL(hwpwm));
-+	val |= PWM_ASPEED_CTRL_DUTY_LOAD_AS_WDT_ENABLE;
-+	writel(val, priv->base + PWM_ASPEED_CTRL(hwpwm));
-+}
-+
-+static struct pwm_device *
-+aspeed_pwm_xlate(struct pwm_chip *chip, const struct of_phandle_args *args)
-+{
-+	struct pwm_device *pwm;
-+
-+	/* flags in the fourth cell are optional */
-+	if (args->args_count < 3)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (args->args[0] >= chip->npwm)
-+		return ERR_PTR(-EINVAL);
-+
-+	pwm = pwm_request_from_chip(chip, args->args[0], NULL);
-+	if (IS_ERR(pwm))
-+		return pwm;
-+
-+	pwm->args.period = args->args[1];
-+	pwm->args.polarity = PWM_POLARITY_NORMAL;
-+	if (args->args[2] & PWM_POLARITY_INVERTED)
-+		pwm->args.polarity = PWM_POLARITY_INVERSED;
-+
-+	if (args->args_count > 3 && args->args[3] < U8_MAX)
-+		aspeed_pwm_set_wdt_reload(chip, pwm, args->args[3]);
-+
-+	return pwm;
-+}
-+
- static int aspeed_pwm_tach_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev, *hwmon;
-@@ -493,6 +539,9 @@ static int aspeed_pwm_tach_probe(struct platform_device *pdev)
- 	pwmchip_set_drvdata(chip, priv);
- 	chip->ops = &aspeed_pwm_ops;
- 
-+	if (IS_ENABLED(CONFIG_OF))
-+		chip->of_xlate = aspeed_pwm_xlate;
-+
- 	ret = devm_pwmchip_add(dev, chip);
- 	if (ret)
- 		return dev_err_probe(dev, ret, "Failed to add PWM chip\n");
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 6e752e148b98..8251f7b361ab 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -422,9 +422,8 @@ static int pwm_device_request(struct pwm_device *pwm, const char *label)
-  * chip. A negative error code is returned if the index is not valid for the
-  * specified PWM chip or if the PWM device cannot be requested.
-  */
--static struct pwm_device *pwm_request_from_chip(struct pwm_chip *chip,
--						unsigned int index,
--						const char *label)
-+struct pwm_device *pwm_request_from_chip(struct pwm_chip *chip,
-+					 unsigned int index, const char *label)
- {
- 	struct pwm_device *pwm;
- 	int err;
-@@ -442,6 +441,7 @@ static struct pwm_device *pwm_request_from_chip(struct pwm_chip *chip,
- 
- 	return pwm;
- }
-+EXPORT_SYMBOL_GPL(pwm_request_from_chip);
- 
- struct pwm_device *
- of_pwm_xlate_with_flags(struct pwm_chip *chip, const struct of_phandle_args *args)
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 8acd60b53f58..95ae885f65c3 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -405,6 +405,8 @@ void pwmchip_remove(struct pwm_chip *chip);
- int __devm_pwmchip_add(struct device *dev, struct pwm_chip *chip, struct module *owner);
- #define devm_pwmchip_add(dev, chip) __devm_pwmchip_add(dev, chip, THIS_MODULE)
- 
-+struct pwm_device *pwm_request_from_chip(struct pwm_chip *chip,
-+					 unsigned int index, const char *label);
- struct pwm_device *of_pwm_xlate_with_flags(struct pwm_chip *chip,
- 		const struct of_phandle_args *args);
- struct pwm_device *of_pwm_single_xlate(struct pwm_chip *chip,
-@@ -504,6 +506,14 @@ static inline void pwm_put(struct pwm_device *pwm)
- 	might_sleep();
- }
- 
-+static inline struct pwm_device *pwm_request_from_chip(struct pwm_chip *chip,
-+						       unsigned int index,
-+						       const char *label)
-+{
-+	might_sleep();
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct pwm_device *devm_pwm_get(struct device *dev,
- 					      const char *consumer)
- {
+[auto build test WARNING on clk/clk-next]
+[also build test WARNING on pza/reset/next lee-mfd/for-mfd-next lee-leds/for-leds-next linus/master lee-mfd/for-mfd-fixes v6.12-rc4 next-20241024]
+[cannot apply to pza/imx-drm/next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-mfd-aspeed-support-for-AST2700/20241023-170434
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git clk-next
+patch link:    https://lore.kernel.org/r/20241023090153.1395220-4-ryan_chen%40aspeedtech.com
+patch subject: [PATCH v6 3/3] clk: aspeed: add AST2700 clock driver.
+config: arm64-randconfig-r133-20241024 (https://download.01.org/0day-ci/archive/20241024/202410242017.1valHJUC-lkp@intel.com/config)
+compiler: clang version 20.0.0git (https://github.com/llvm/llvm-project 5886454669c3c9026f7f27eab13509dd0241f2d6)
+reproduce: (https://download.01.org/0day-ci/archive/20241024/202410242017.1valHJUC-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202410242017.1valHJUC-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   In file included from drivers/clk/clk-ast2700.c:17:
+>> include/soc/aspeed/reset-aspeed.h:14:5: warning: no previous prototype for function 'aspeed_reset_controller_register' [-Wmissing-prototypes]
+      14 | int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
+         |     ^
+   include/soc/aspeed/reset-aspeed.h:14:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+      14 | int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
+         | ^
+         | static 
+   1 warning generated.
+
+
+vim +/aspeed_reset_controller_register +14 include/soc/aspeed/reset-aspeed.h
+
+1476d29e4461f6 Ryan Chen 2024-10-23   9  
+1476d29e4461f6 Ryan Chen 2024-10-23  10  #if IS_ENABLED(CONFIG_RESET_ASPEED)
+1476d29e4461f6 Ryan Chen 2024-10-23  11  int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
+1476d29e4461f6 Ryan Chen 2024-10-23  12  				     const char *adev_name);
+1476d29e4461f6 Ryan Chen 2024-10-23  13  #else
+1476d29e4461f6 Ryan Chen 2024-10-23 @14  int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
+1476d29e4461f6 Ryan Chen 2024-10-23  15  				     const char *adev_name)
+1476d29e4461f6 Ryan Chen 2024-10-23  16  {
+1476d29e4461f6 Ryan Chen 2024-10-23  17  	return -ENODEV;
+1476d29e4461f6 Ryan Chen 2024-10-23  18  }
+1476d29e4461f6 Ryan Chen 2024-10-23  19  #endif /* if IS_ENABLED(CONFIG_RESET_ASPEED) */
+1476d29e4461f6 Ryan Chen 2024-10-23  20  
+
 -- 
-2.25.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
