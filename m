@@ -1,64 +1,52 @@
-Return-Path: <linux-aspeed+bounces-25-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-26-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B142ECE8E75
-	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 13:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36A45CE8E76
+	for <linux-aspeed@archiver.kernel.org>; Thu, 24 Oct 2024 13:45:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ66f1Blsz2ysv;
-	Fri, 25 Oct 2024 00:23:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729776186;
-	cv=none; b=Ctu8EKmPULJkEbVFp4vcuuGH1Z4OM8X5Mj1xHFLtq7aK9Da1jYYtJ1O6TZXmuFT0fZF1P0DU7yZ4VnkQIZGOFPz7SL0y84T3YmBmWkS88VL65Vo44E/rU7+WMitoIfPRsh3OvIoLV53dtRPj02u0XDtpbVt1AEGUV0QNd029Y/HktKVgH1KVhs4eQB181p21HbRx696DnUU9oL0eBEJiUpMoB6oS+Eb2q1l/uL/dUHD9pZC1vomXWWLQwmTzLsFAgdgkUq2BmTQ7bjEigcgLJ3H50MQrk1wjVQoidCmRDUruZ9p9xw5Y/28ZhBdervYg2bTH1TbJz2VnfV93fTG8KQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZ6cy51Pjz305n;
+	Fri, 25 Oct 2024 00:45:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729777554;
+	cv=none; b=BjTpNEHNS9Q0I5iQP8jRWTRzjzQp7fdJFxI/btdKrL8RgRVYB8oRpsyYX/JRB+qpBekWdMtr81qalV/jDTFFxjRm6/B56wiWjHpNiJDXYtljsOVszeWad1ceAkgdFj8YUyrxW+nx+Ql2f1sQrnh8e9wiof/lafhjh60nry0h2BHF/HC28Xb6HpqVIrMnlB7QnOzAsFycXJiYogYo1g8PfxowKLMlCEcjVTODzcR1eDj7Z9j9Twv6oQkGC+Q0nrQmFIiamepX2rhZTgUlbvoNPDscy9BqgAy4641NjhhuHaMmM5BbZZIsVWbhK7ur2BTm65lpX+FdQblz9AUPuU9s6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729776186; c=relaxed/relaxed;
-	bh=08lXJgKcAe8N3lleod88TNBbTcd1+2/PW8hqN4eL/LU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AjsPl88s0cI0pedOzu3mwpE4HlOncIh/gLlWqr99vhOKcF10sZzbNUorD/sqCUtdOugS1n+Ooyat0nvHCBDnUVuPbfP/WGqY7cSC3P+aMlfHsdbXhS2xV5iMUijEYi+RqdoX9yj2DGsgUGkKm4DD0LpDXXquOdirEBEYJMlQva2o5E84Erq+IDx7l2oBxx26SSnsY5Wiiw/sz3VffYtT76ZYHY+Yxwugy0qA2wMqAkv/tnGwkVokvXFaO4bLPQi7mDOxdzfcocMRvxa9dRW8CP/uwaBCwhCoK76MMX6zzs/kM95AgiDztvgr0o3vJJvSjoujkk5S4J95GjudmWLsuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UE3qlqoc; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1729777554; c=relaxed/relaxed;
+	bh=H22z+1DKblhixrrQFnavIFVOTl1pYEAvrFqvlkNkAyM=;
+	h=Date:Content-Type:MIME-Version:From:To:Cc:In-Reply-To:References:
+	 Message-Id:Subject; b=J7wt/ANvvqjc3Moysmcxs6BL9z2lp2N7VzkgZlGLuZ06jx9aOFzuRNogBXZC80S2abiTfy/F6JRTMau9XRUNpXF0VhdEqAJINtGVbZmCPrT8JkgU4abiwfkzVLyvyj2A2cuuLrxNWszzt87OAAb0gE0pESB6Dazd4dLPzwZ2iz9JqJvJ3qzu8k72/exUmHC0ysvJdLGvwP9yeIRl7ghvz9CfyoxEmU9IH7FMElMnt9L7pbIVsswDwR3ZHyRQGs+Tbb4u+u+yshsqg1Sy48wml+FwnTtvs8S5RKjQXvE2sRCdk9C5pqUnWbyStPJc1r8+E3Xg04GWpUcy+gI8TV6xYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tvZhZ/Wm; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UE3qlqoc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tvZhZ/Wm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ66c6slWz2yj3;
-	Fri, 25 Oct 2024 00:23:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZ6cx4MNgz2ysv
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 25 Oct 2024 00:45:53 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 76001A45419;
-	Thu, 24 Oct 2024 13:22:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B136AC4CEC7;
-	Thu, 24 Oct 2024 13:22:59 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5140F5C5FBE;
+	Thu, 24 Oct 2024 13:45:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73AA6C4CEC7;
+	Thu, 24 Oct 2024 13:45:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1729776180;
-	bh=xYOd1PGCn+k3tNRpgbdP98I0aYi1W9inhgTkL3ocTDw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=UE3qlqocUQQwG7+oevrCYRcqdU5t6igksP5NXhM/w/Avp9vTWc9do/b/XFIaLNfV5
-	 nF5Mu09+yamxjgYhYGBEQmyp0jczN/DdGoDW33UtiPMUXVeEbuIhBF22CiQpgWVwV0
-	 qUkHRqiDvnAE6+n+Gx1vJ81KFaa+9tUo6F6L3DmpRpnwHnc377u3qWPsgOaTM457VE
-	 v9l5/b2mhN5jG+3lRx8YjH+eLwlL5IZ6wRAjXlWNtm0ptENvdOtcjvulFw+AvWDq6L
-	 LQWX29+MFnAHc+tALWO1lyKg/mbG/pBQ6CBRa5K0LSHIpv+WZigHO6oDUKFVVqZmqs
-	 gAPURf4qcQhJA==
-Date: Thu, 24 Oct 2024 15:22:56 +0200
-From: Andi Shyti <andi.shyti@kernel.org>
-To: Tommy Huang <tommy_huang@aspeedtech.com>
-Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	"brendanhiggins@google.com" <brendanhiggins@google.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, 
-	"joel@jms.id.au" <joel@jms.id.au>, BMC-SW <BMC-SW@aspeedtech.com>, 
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, 
-	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH] i2c: aspeed: Consider i2c reset for muti-master case
-Message-ID: <c3ss6ralf4tpyknsda5p745a65xjprlzecdq3s4zy4dpckuxi4@izf7emrzykay>
-References: <20241018034919.974025-1-tommy_huang@aspeedtech.com>
- <e06a0db538bf62d4aeb7352ecc81a3a679fb9eec.camel@codeconstruct.com.au>
- <TYZPR06MB6191EBA63B87FE5152AF029DE14C2@TYZPR06MB6191.apcprd06.prod.outlook.com>
+	s=k20201202; t=1729777550;
+	bh=wwPWvSBGUvSYbh2tv8Xhy1j32pV3xMYlKdte6yQ/l2Q=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+	b=tvZhZ/WmfNUnyiKb5Ug+aYDARYpCaIaVruHf8RzheKEtrmA119942UEAyYXBDTIu4
+	 Ij802krosYUO8QjsIiY7S0l0fkv7KWTLyVjKzJiRB/8+PTeYVyR2729dlbrS4xic9S
+	 i3PNz0/nt5WYqKx5CZyeN+2RNC119c467bPSf2U7pLq/cBxS2XnRgjaLRKVD4e8Y83
+	 +UUneGva/+KcjKgregL0zfY6OLdFOU1kuzilwUBX0YPJwC8zmbGVzpBYBfKWUQv4a8
+	 t4htVWQwwVJ/KnXYfHbiTrWlisRfL6nwN8GK8ZwIgJSw3v0WKo6f8UMq9Y++my8OXd
+	 vXDn+M6UHDTqA==
+Date: Thu, 24 Oct 2024 08:45:48 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,28 +59,60 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <TYZPR06MB6191EBA63B87FE5152AF029DE14C2@TYZPR06MB6191.apcprd06.prod.outlook.com>
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: BMC-SW@aspeedtech.com, conor+dt@kernel.org, devicetree@vger.kernel.org, 
+ linux@roeck-us.net, jdelvare@suse.com, krzk+dt@kernel.org, joel@jms.id.au, 
+ linux-hwmon@vger.kernel.org, linux-pwm@vger.kernel.org, ukleinek@kernel.org, 
+ linux-aspeed@lists.ozlabs.org, andrew@codeconstruct.com.au, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20241024071548.3370363-2-billy_tsai@aspeedtech.com>
+References: <20241024071548.3370363-1-billy_tsai@aspeedtech.com>
+ <20241024071548.3370363-2-billy_tsai@aspeedtech.com>
+Message-Id: <172977754729.100390.12938687199677719303.robh@kernel.org>
+Subject: Re: [PATCH v1 1/2] hwmon: (aspeed-g6-pwm-tacho): Extend the
+ #pwm-cells to 4
 
-Hi Tommy,
 
-On Tue, Oct 22, 2024 at 02:42:08AM +0000, Tommy Huang wrote:
-> Hi Andrew,
+On Thu, 24 Oct 2024 15:15:47 +0800, Billy Tsai wrote:
+> Add an option to support #pwm-cells up to 4. The additional cell is used
+> to enable the WDT reset feature, which is specific to the ASPEED PWM
+> controller.
 > 
-> 	Thanks for your comments.
-> 	I want to fix the situation when our controller is set as target mode and reading / writing by other i2c host.
-> 	However, this host is stopped by any other reason (DC on/off..etc).
-> 	It will cause the controller is stuck in this situation.
-> 	But I find it might not have clear hints to identify this situation is normal or abnormal.
-> 	So, this patch should not be applied into mainstream.
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> Change-Id: Iefcc9622ac3dc684441d3e77aeb53c00f2ce4097
+> ---
+>  .../bindings/hwmon/aspeed,g6-pwm-tach.yaml    | 25 ++++++++++++++++++-
+>  1 file changed, 24 insertions(+), 1 deletion(-)
+> 
 
-Please, avoid top posting, I don't understand which part of the
-original message you are trying to comment on.
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Second thing, please, before sending a patch, always always
-always make sure that checkpatch.pl reports '0' errors and '0'
-warnings, except for few sporadic cases.
+yamllint warnings/errors:
 
-Andi
+dtschema/dtc warnings/errors:
+Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dts:54.48-70.11: ERROR (duplicate_label): /example-1/pwm-tach-controller@1e610000: Duplicate label 'pwm_tach' on /example-1/pwm-tach-controller@1e610000 and /example-0/pwm-tach-controller@1e610000
+ERROR: Input tree has errors, aborting (use -f to force output)
+make[2]: *** [scripts/Makefile.dtbs:129: Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.example.dtb] Error 2
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1442: dt_binding_check] Error 2
+make: *** [Makefile:224: __sub-make] Error 2
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20241024071548.3370363-2-billy_tsai@aspeedtech.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
 
