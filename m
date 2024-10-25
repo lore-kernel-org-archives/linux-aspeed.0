@@ -1,63 +1,152 @@
-Return-Path: <linux-aspeed+bounces-31-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-32-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A47A4D1038E
-	for <linux-aspeed@archiver.kernel.org>; Fri, 25 Oct 2024 00:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 876BBD10399
+	for <linux-aspeed@archiver.kernel.org>; Fri, 25 Oct 2024 00:40:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XZNRL6FGRz2yN3;
-	Fri, 25 Oct 2024 11:08:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729814910;
-	cv=none; b=BsUYB7qc97/1Do6OtaZPtSEqP6SEBBEQ1ZnUnyx4RTlp+Z80N9R2trGkAe3tEddewq12zesSZkVP6zjW/Bdj1MYAr/ssFxJFvbdmj3gfvAkKBPiCiBkKAFYFNGX9uzzU0nzAJnrgHxseG6lCGk6U5wus/S46YqGVetfhsvEW2OiQUuzYCL3mehBMhRjahExq1vqRmg+Om3klrFLxqB7e+iZy+NK5Q8+f1TigWKdE8bA6n0ydCqKvzd+RXAcn6qqIgVqZs9Io9IfAIunACkDjML/IDM+jVkg3EAwO72GNEciY4G3Ibq8P752ixgIqrGxMvyog3uTxZWw+hp5WdQombw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1729814910; c=relaxed/relaxed;
-	bh=DyDRu2d2LXSwr33hw3dE4eqSmypF32zZ6onJtYX/xyw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=KOJjK8iSzsddYWorUYmh/KKEdbP3VEZ/sHbd+y1091feanXyEwRl4MWhiYwi2dTsPnIs7Ikmg0dX4e3KW7g49kOlR93ELuuVtxQzMN0J4NwSzCjWk3BVa/SIzTNwsVr95kTtyNIgIBG6NeGp+NT7qbRNNarDduHefQ61fnvxfHNH2PRYOjHY0I29Ub22zs7ueHVnROtqYWIWIDwKtWYj886hwk2gswfrT70GzUrNtOWsWsH8kL8yOjr+Jz4N+N+AAOsP6WregNq+ZnpWXunyNFRrnPFt4R3tXkcGBQAYw1MQ0zKpcTRn8KUh8BShiKvBUaZh6tSMPLuXPZIcWWln4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=nXsEEgHG; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XZP7h01RLz2yN3;
+	Fri, 25 Oct 2024 11:39:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c400::" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1729816799;
+	cv=pass; b=oqlV1TdxP9W0y6wRSYSkyZUYK361hX5LoOXV5c0k3CvagvCb6CLa/RseuXkyaJ4y86/qZP063lk9yTDrc/eJxnxl2xJPPWuTxiJvEBIq9SiV3WJQVnxd0rsckfIgjGPDWjAXldVluzb1XmESHPKWDISyDrBusZL8Jy75xQtZe0tKHSwd2CkUaeoN52JPr22mJaOEaEhC84a8FFh2gwuZ4eaK5PpkwcN3nExBw0maP2l1hzRjykCQVwf/+4m5HIu+shzOMvR+U4z/hHMBTXvn+ogXN0AauR5LV+Zu8lv/vwrT29Crr6iqCVM3YUmqCbL6nky6sBXJNQZVLHYKZNlGaA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1729816799; c=relaxed/relaxed;
+	bh=oIfnPqHfdWVwYekGgMpEcXxrVJUQDmCKp6dluc7N0HI=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=LQ9iRqSi1+j6wW00OxaK60m1rud9DX+SAos6gweIKZXibYX4Bg67Dowxvny7qGVAQ/Ytl0ol4kumhDEoLyLT//AIPpriT85OIQ9UfK5rJXVGhZuRU7ffX5/2QLuzHLU4l2GE2QVx8C/3Wjcef72zsUswNmE0tlAVzFJc8C4SaaCv4/y4izBlK9q49U8Nxd9XEJ23TEslXbhwfDg2zYOLhD55IFGB/caDbCF3l2e8kEnY3UdnS3MBRIiaFTDopRQMfNYZ3CzTQ+e5nTayJZunhGu+nH0E5RsR08quSaXWTqHZP+rDDOHQh9BkSV5bFFMZ2NVuznRZVdn3wmWt7fN0xA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=Xe87zI7C; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c400::; helo=hk2pr02cu002.outbound.protection.outlook.com; envelope-from=tommy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=nXsEEgHG;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=Xe87zI7C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c400::; helo=hk2pr02cu002.outbound.protection.outlook.com; envelope-from=tommy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from HK2PR02CU002.outbound.protection.outlook.com (mail-eastasiaazlp170100000.outbound.protection.outlook.com [IPv6:2a01:111:f403:c400::])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZNRJ6LSXz2yLg
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 25 Oct 2024 11:08:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1729814906;
-	bh=DyDRu2d2LXSwr33hw3dE4eqSmypF32zZ6onJtYX/xyw=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=nXsEEgHGQElnKen9ggtsz3jVQPN+whxS4bNbRKgx3y0ecfBavbM6l1K46f91sO6HA
-	 21RdOjbvpLYr1vUPAIjx7UPblll+7c4R4m0H70TpwAdGbLQ8JNScjoi36yHH9jl/mU
-	 rkKUe4rApd2Tb0OSdIOfgmS2rSi1QF/EuBYP7pAZzB2nP+26TlgClJQ/Wo8XAsLAVa
-	 X4X9RAROWnSwLV+4VFZro3K+RL++Z8knQJHc+pqUkD5NJEgV9ZBlIFdJGJmgKbVJtj
-	 LyIUBliH9eJaCTHOCYDLyz/u2jfRXtvJv1rRVF81QvKr6B4rvIx185Yr+quMyEWRbE
-	 x6vKMovKGdeHQ==
-Received: from [192.168.68.112] (ppp118-210-190-208.adl-adc-lon-bras34.tpg.internode.on.net [118.210.190.208])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 2A396699DE;
-	Fri, 25 Oct 2024 08:08:23 +0800 (AWST)
-Message-ID: <a54cbc4c1f874f24d556b01004aecd1cabe00e56.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Jason-Hsu <jasonhell19@gmail.com>
-Cc: "Rob Herring (Arm)" <robh@kernel.org>, patrick@stwcx.xyz, 
-	yang.chen@quantatw.com, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, jerry.lin@quantatw.com, joel@jms.id.au, 
-	conor+dt@kernel.org, krzk+dt@kernel.org, linux-aspeed@lists.ozlabs.org, 
-	devicetree@vger.kernel.org
-Date: Fri, 25 Oct 2024 10:38:22 +1030
-In-Reply-To: <172978739533.623426.6741150637312458347.robh@kernel.org>
-References: <20241022021724.2322506-1-jasonhell19@gmail.com>
-	 <172978739533.623426.6741150637312458347.robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XZP7Z2lCZz2xs8;
+	Fri, 25 Oct 2024 11:39:52 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=N201OLJByOK86O9USq0iSocrfAyvyD+at5bmlfbsYswQbOk8Ex+glX2puVWmWkTxZNKlC59DX55nmx5JnRjOTx4R9ylI1y81HsIjE5S8JzpmQs3V+H9M3vjUtQJXozVUidc5oDlzYIvlVxPNCcLNiOaBeLA05z7/UWUEdTWlif2FsvGy649Xf1Ofv281zdK7hSvn4VuSrLhVqtZzcCjVyawS4Ssz17NMjjS/rRTKc2nW1TAfrmZ2f/YlwtwQiLBHyCF35/cp+6ZH8lEO3g/uXWOenjAQxumt9HKUkqZGc7AMtcI/1i6cziR7yxovgY23whKgf310KzAPYMLPouyzAA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=oIfnPqHfdWVwYekGgMpEcXxrVJUQDmCKp6dluc7N0HI=;
+ b=JiA30Ls/LyIgts6cHu6kx9lN2aIE8MC16iuVVlzw7m691twViVDBWfF+JYPDaygtRimC9yk2+ulhE68dI/HoS5LKRMPQqbFcJ+bfGN/8bjbFyMXnjCVppLhHDTtPoaxgm+RlM9Apr3otUPXy9tHgjtWzND4JHT6aFPxLpiPayH4xxAd4nq7CtM0eaLcuW4nYsIkio/Rizr7GXz5ya7Ej2OkzMMjLhPh3ZtPjkCjX9/Xv2Ee/0GXNxz8kk6ZuNo4TYbuwjxsydIIAAlYozAD1GngCDN4pw70xm+Tr6Mdn7kSUnggzu6cxBEnCKGbFbcMUBkxTgr8mud2K27rnuIFj3A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=oIfnPqHfdWVwYekGgMpEcXxrVJUQDmCKp6dluc7N0HI=;
+ b=Xe87zI7C9kOF31bjJAnH8wH4p+5RPLY2/oHuJbAMk2rlEnNvaOl9TeyKjpO3G7AwlZyefcmFcU1PDYfmUP6bJ/dtL4DZFCbvtRv3ll9kQSGQJXdcuh1yi2n8zKZPl4fLzAnyzSlAAwfc955Aw08nI7zj1nuRZpRtC4AnUsdwzHajjWXMcDBSKYea/jqHFIXEj3GkkT7JYmdMx0v0K61PlNjR5/Lc51RBV+DUgze6Iul/WLTBQ4gGoTas7Y6PN+2dFB6O8m5OAs9X4/441+qleJx2pctB+Ea+P44XVyDufGwiRfXP+rFa6bcmHI1ESV97XCjIU/RRhUgdFkFv6PfF+Q==
+Received: from TYZPR06MB6191.apcprd06.prod.outlook.com (2603:1096:400:33d::12)
+ by TYZPR06MB7216.apcprd06.prod.outlook.com (2603:1096:405:aa::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8093.14; Fri, 25 Oct
+ 2024 00:39:26 +0000
+Received: from TYZPR06MB6191.apcprd06.prod.outlook.com
+ ([fe80::cc07:35e3:9143:c8e2]) by TYZPR06MB6191.apcprd06.prod.outlook.com
+ ([fe80::cc07:35e3:9143:c8e2%3]) with mapi id 15.20.8093.013; Fri, 25 Oct 2024
+ 00:39:26 +0000
+From: Tommy Huang <tommy_huang@aspeedtech.com>
+To: Andi Shyti <andi.shyti@kernel.org>
+CC: Andrew Jeffery <andrew@codeconstruct.com.au>, "brendanhiggins@google.com"
+	<brendanhiggins@google.com>, "benh@kernel.crashing.org"
+	<benh@kernel.crashing.org>, "joel@jms.id.au" <joel@jms.id.au>, BMC-SW
+	<BMC-SW@aspeedtech.com>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "openbmc@lists.ozlabs.org"
+	<openbmc@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-i2c@vger.kernel.org"
+	<linux-i2c@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH] i2c: aspeed: Consider i2c reset for muti-master case
+Thread-Topic: [PATCH] i2c: aspeed: Consider i2c reset for muti-master case
+Thread-Index: AQHbIRC4mm8MiKb1p0WGejEQka9JT7KRHGgAgADqSOCAA+bbAIAAu/qA
+Date: Fri, 25 Oct 2024 00:39:25 +0000
+Message-ID:
+ <TYZPR06MB6191583EC51EE578E1A8910AE14F2@TYZPR06MB6191.apcprd06.prod.outlook.com>
+References: <20241018034919.974025-1-tommy_huang@aspeedtech.com>
+ <e06a0db538bf62d4aeb7352ecc81a3a679fb9eec.camel@codeconstruct.com.au>
+ <TYZPR06MB6191EBA63B87FE5152AF029DE14C2@TYZPR06MB6191.apcprd06.prod.outlook.com>
+ <c3ss6ralf4tpyknsda5p745a65xjprlzecdq3s4zy4dpckuxi4@izf7emrzykay>
+In-Reply-To: <c3ss6ralf4tpyknsda5p745a65xjprlzecdq3s4zy4dpckuxi4@izf7emrzykay>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TYZPR06MB6191:EE_|TYZPR06MB7216:EE_
+x-ms-office365-filtering-correlation-id: a51fa328-0642-4d76-08a6-08dcf48d7a59
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|1800799024|7416014|366016|38070700018;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?V9QFX2ktq7XxQsROXEEqga90qjfujxSh93dah11AJVIzxdsfx4HQfUUF/s4y?=
+ =?us-ascii?Q?e5PKq8psI6H6uRVEqjEsvtpZNsFXSnrEs7R6y0vb+vraioA3/L63l4hBOSDU?=
+ =?us-ascii?Q?KFkWV3RGbKn2VpYVL6k3SReLlsITLGXx+ZccyS6PlhBWMD41zsX7o9VABf/H?=
+ =?us-ascii?Q?mVk0f8Fzal3YiO0KrFBf4vnJKzq+LA7ZB7er9bJAStGTXtST+vQ4hTLJOtX2?=
+ =?us-ascii?Q?/PYkXAVdq5l78aGTKzQnNmw+7EkNN/DG4vvO6GSFjw+3OROwFR/r8kQg++pU?=
+ =?us-ascii?Q?rHNd2wZgwyO6ZiGQ+u+9X0B3f1UVPnIfdfvTXt9wENgZ59StY/pVsXIWPoas?=
+ =?us-ascii?Q?FFlSsu0GPuC5q88KeWYcAz1C/DCWIR3TNsaJW7Dw+dBteqeDBju4I4LT3Q72?=
+ =?us-ascii?Q?tAoRQICf42o6rDZ8OQhMGXbcMLBL+euvp0Zjk19Lg4nhHrXGtSGKXdSZBBQg?=
+ =?us-ascii?Q?t1FwulkPATlD5Htd+Nm2ydgAXAH2W9peIVzHhq+R3EAuiqFfcVD1bSE9nUs8?=
+ =?us-ascii?Q?VHQaf0/9rVA2iCVV88OY5Nr/3WeAmseUoVqeqZaqEx/rN08OLP7I3aU8c5KM?=
+ =?us-ascii?Q?YHj6TrYt+LURqKsApwwd5Ix+Hto4a0mVQnG9N3tYIcOxwv0vASuZmV0+dZiL?=
+ =?us-ascii?Q?epRp/E5CrDS9h/KTVkbTG7Qq62luj40iOgjtNWrqmXhiCCRAHCXczqDYxm1Q?=
+ =?us-ascii?Q?j2r3ji1WgkqstPXF3T27+GmtSn+pqsYXqTp0uKoWT/IuVdGIFjWHW1S4vibP?=
+ =?us-ascii?Q?Rpg+cBxBGvvVHQo1UJ/2LUGO1hb8/wdZQAQDUtj7X9jeNdWCNq3mgeqO352t?=
+ =?us-ascii?Q?VPCyPBxqEeZ3V7KGddLtHqI+5sVUWNZnppZIAP0lVjJjT4NebVyhOU3+KjC7?=
+ =?us-ascii?Q?gQKdyEqd5zBhsh/2hBB7yB7K3/1W0FbQUX98+4+PIswhMMics7L43d2dtm5O?=
+ =?us-ascii?Q?0bDltzlOu/8FtLafbR44MeL5P0vQOE+gBUm2NuLT/BMg3Vj+d6LvimsuvXAu?=
+ =?us-ascii?Q?Uy/prdrQ/MqJ2LwneLD672xr1Ymp8qTzzCNwJ3OGvpqKdfj1fkhChWsDqMGA?=
+ =?us-ascii?Q?dk+WjRXNF74+NQQ3RjUkxv1v8Aj9QA8Q08vSOwiujItfk+CaR39+TocKOO3S?=
+ =?us-ascii?Q?6mMstaz1owF1/KUSDyRY6aOoDWYB42Qng+NmNvMrPUlHoDkbJt5I8RsiA8op?=
+ =?us-ascii?Q?Qy4XYdSNhaX30DMvZARPoTP60eyerjs19Daew/mXi9I/ONQXi4wDAJXXTzIm?=
+ =?us-ascii?Q?OOeSlSzk1Xoe87AzOt0pESYjFlYEs7sCMoPWwm9pusdO9zAYX1ETS7Zc3YxF?=
+ =?us-ascii?Q?HrJFOErO29GvMfP0vdwlnqaqIm6bkk6TduFpDyyXijAlChu7kOgMf9qoNfN4?=
+ =?us-ascii?Q?lqMtf0s=3D?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR06MB6191.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(366016)(38070700018);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?8ckmcC1yrpcde/UfNNtET/Lpkwt6L5Wo27ySHKNO8EWfPOHxZeY9MMBoLk3q?=
+ =?us-ascii?Q?CSMlZGVfEnpQ3f5ynnKKngQYDawOqM5bRZaCcB4L9OdkyjVL6qwBNvJoyCcP?=
+ =?us-ascii?Q?sXfyW8JUKu5T25S19mpH82WwB2qIZ0dSFBNbp5p4kgvwRjj1E75PrOZS5gbY?=
+ =?us-ascii?Q?OWNp7Jk/vOOQrojui5PBrGxriQs5IBq2JHTqSOOWcg8m9IeRDPtT/71RDx9E?=
+ =?us-ascii?Q?LgADc3pq/lw33g0gCW6PXFVnQ1O/T1uyyhmrwKWZFRqNp+A5GrtPWRPIaYVd?=
+ =?us-ascii?Q?onyxJffRT8prLRotGDfn9jK88sq1x6P9jZAwOrceG1cVrwK1A3eiiinYqn/k?=
+ =?us-ascii?Q?4q8+IAtyqrSR+lP33ASSyXFIHiewEzHhz4XICJRWikgHqZIR8Xin5OKh9EPt?=
+ =?us-ascii?Q?ea6Y9QKwkLWcYNiS/nlJLgHYb18L8zbhndDoKhx8AlQxvz40SNar/9sNDEux?=
+ =?us-ascii?Q?k+LuXXkngK7cKoYCqvqqXp/bsocG0hPij+a7QotnpsgvTina2P3SC7Wd5O7V?=
+ =?us-ascii?Q?IXFkHYO/tc696rBpp19bi6nhE+Z5siJcjRxXvP9mMtn5xLwOBA5WYesQg3bT?=
+ =?us-ascii?Q?gN9Cpnxf6YMOzuzW0BY4SfrlYwNxuMTcSF4qqp6B3A1dt5d5gUth/eCNcQmi?=
+ =?us-ascii?Q?QGs55o+TNpFLEUCgGeUZJ39HqtjzHlcvumBEgXIWCnkIpd5Al0laFKr4aSuV?=
+ =?us-ascii?Q?ohB8f8tl9uB5NLgIUsfM1uFcJGZsmi39Egf6yByUhMWcLl1z0+esLR8vUsRG?=
+ =?us-ascii?Q?mZXEFtDTHvrO8zjiab17dGoEnksrsFGOepKd4eZdoY4i8ypiZhPoBVkWhqGB?=
+ =?us-ascii?Q?ObdST5vAlMI0pe8YEwBakR7ST6whuvzNyAD9qPSRyC5Xx8SyLZcWL2JcdpBZ?=
+ =?us-ascii?Q?e8WPYDCSVbibQbgvnZ2qSe5dAqOZoi+NZ+Clm5Hdn5aHZIJg2yTQg1m3K7Jn?=
+ =?us-ascii?Q?+BrOhHKKqKMDjejStBDIJlveSCyohV/yB+hgLfT/1kZIbMfTluGYSf2iCCCm?=
+ =?us-ascii?Q?wPGQ6zyv+nXlQ6i42X+UGjyi2HcNSfmTnbe8CenxgZ/vDcvXm8RFdYGwxj+2?=
+ =?us-ascii?Q?3tRJ91YlWKlSKK0wuVxIYREjZTu9LIGRTbSWyvZhZDkQC2cVs+tJrhSnI9D4?=
+ =?us-ascii?Q?F63F1ynYx5XRzRsVmtD04JCd9XbnImAZpIr1p85zePBIcOwkcsberCyxMAFj?=
+ =?us-ascii?Q?U4rc/VzeEX5Ypc5AkFvyibZ4Yx5EQRBTtnSm61nYyfLZccckS2XXv06m9Md4?=
+ =?us-ascii?Q?0h/1/b5RyUtFWQmdRazNhPuNdRkqp8tmZsJqKdbN1wyFFhy+65NmkyZZH3mF?=
+ =?us-ascii?Q?5rIRUIanQP3g3P5ZvXQYKeMpZKSGri1HHItGBdmJeLBIqJgadSj1JialmAxF?=
+ =?us-ascii?Q?uyqBNw+/BcK0IdseBrPc9ZVhjAwK1Ib04tZB1iuxxpz3vLjB2l7syZDT3rQP?=
+ =?us-ascii?Q?OkV/I3BaCvyS9TI0M5kenwn1+F/S2KJtnr5W8R0SeTl7NPCfuNhicvlws9Ih?=
+ =?us-ascii?Q?n9Nf8gYAxe/XnMoJyhy5EEetsxUQR3/COJ2IXDJ9cF9n/KEHUJOkA8ilh8DR?=
+ =?us-ascii?Q?Qei6CzIUrcWxahRbarahHoG2roOHE1sepsykChtNPqtRVtu6gszqkVYB4iY+?=
+ =?us-ascii?Q?VQ=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,202 +159,58 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB6191.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a51fa328-0642-4d76-08a6-08dcf48d7a59
+X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Oct 2024 00:39:25.9482
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: nANy4ygpE3DsUdE7Af8865+Um+rWgA3WuG3q10AYg6nEtNwczqno2VjY60wOEw3fO9fEQ9Y7msuwFOM42ISDZ6Lbdp109qiK8P54xBB1aAI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB7216
 
-Hi Jason,
-
-On Thu, 2024-10-24 at 11:33 -0500, Rob Herring (Arm) wrote:
-> On Tue, 22 Oct 2024 10:17:24 +0800, Jason-Hsu wrote:
-> > Add Linux device tree related to Meta(Facebook) Ventura specific device=
-s connected to BMC(AST2600) SoC.
-> > Add subject prefix for the patch.
-> >=20
-> > Signed-off-by: Jason-Hsu <jasonhell19@gmail.com>
-> > ---
-> >  arch/arm/boot/dts/aspeed/Makefile             |   1 +
-> >  .../aspeed/aspeed-bmc-facebook-ventura.dts    | 884 ++++++++++++++++++
-> >  2 files changed, 885 insertions(+)
-> >  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventur=
-a.dts
-> >=20
+> -----Original Message-----
+> From: Andi Shyti <andi.shyti@kernel.org>
+> Sent: Thursday, October 24, 2024 9:23 PM
+> To: Tommy Huang <tommy_huang@aspeedtech.com>
+> Cc: Andrew Jeffery <andrew@codeconstruct.com.au>;
+> brendanhiggins@google.com; benh@kernel.crashing.org; joel@jms.id.au;
+> BMC-SW <BMC-SW@aspeedtech.com>; linux-aspeed@lists.ozlabs.org;
+> openbmc@lists.ozlabs.org; linux-kernel@vger.kernel.org;
+> stable@vger.kernel.org; linux-i2c@vger.kernel.org;
+> linux-arm-kernel@lists.infradead.org
+> Subject: Re: [PATCH] i2c: aspeed: Consider i2c reset for muti-master case
 >=20
+> Hi Tommy,
 >=20
-> My bot found new DTB warnings on the .dts files added or changed in this
-> series.
+> On Tue, Oct 22, 2024 at 02:42:08AM +0000, Tommy Huang wrote:
+> > Hi Andrew,
+> >
+> > 	Thanks for your comments.
+> > 	I want to fix the situation when our controller is set as target mode =
+and
+> reading / writing by other i2c host.
+> > 	However, this host is stopped by any other reason (DC on/off..etc).
+> > 	It will cause the controller is stuck in this situation.
+> > 	But I find it might not have clear hints to identify this situation is=
+ normal
+> or abnormal.
+> > 	So, this patch should not be applied into mainstream.
 >=20
-> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-> are fixed by another series. Ultimately, it is up to the platform
-> maintainer whether these warnings are acceptable or not. No need to reply
-> unless the platform maintainer has comments.
+> Please, avoid top posting, I don't understand which part of the original
+> message you are trying to comment on.
+
+Got it.
+
+> Second thing, please, before sending a patch, always always always make s=
+ure
+> that checkpatch.pl reports '0' errors and '0'
+> warnings, except for few sporadic cases.
+
+Sure. Thanks for your suggestion.
+
 >=20
-> If you already ran DT checks and didn't see these error(s), then
-> make sure dt-schema is up to date:
->=20
->   pip3 install dtschema --upgrade
->=20
->=20
-> New warnings running 'make CHECK_DTBS=3Dy aspeed/aspeed-bmc-facebook-vent=
-ura.dtb' for 20241022021724.2322506-1-jasonhell19@gmail.com:
->=20
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /: compatible: =
-'oneOf' conditional failed, one must be fixed:
-> 	'facebook,ventura-rmc' is not one of ['delta,ahe50dc-bmc', 'facebook,gal=
-axy100-bmc', 'facebook,wedge100-bmc', 'facebook,wedge40-bmc', 'microsoft,ol=
-ympus-bmc', 'quanta,q71l-bmc', 'tyan,palmetto-bmc', 'yadro,vesnin-bmc']
-> 	'facebook,ventura-rmc' is not one of ['amd,daytonax-bmc', 'amd,ethanolx-=
-bmc', 'ampere,mtjade-bmc', 'aspeed,ast2500-evb', 'asrock,e3c246d4i-bmc', 'a=
-srock,e3c256d4i-bmc', 'asrock,romed8hm3-bmc', 'asrock,spc621d8hm3-bmc', 'as=
-rock,x570d4u-bmc', 'bytedance,g220a-bmc', 'facebook,cmm-bmc', 'facebook,min=
-ipack-bmc', 'facebook,tiogapass-bmc', 'facebook,yamp-bmc', 'facebook,yosemi=
-tev2-bmc', 'facebook,wedge400-bmc', 'hxt,stardragon4800-rep2-bmc', 'ibm,mih=
-awk-bmc', 'ibm,mowgli-bmc', 'ibm,romulus-bmc', 'ibm,swift-bmc', 'ibm,wither=
-spoon-bmc', 'ingrasys,zaius-bmc', 'inspur,fp5280g2-bmc', 'inspur,nf5280m6-b=
-mc', 'inspur,on5263m5-bmc', 'intel,s2600wf-bmc', 'inventec,lanyang-bmc', 'l=
-enovo,hr630-bmc', 'lenovo,hr855xg2-bmc', 'portwell,neptune-bmc', 'qcom,cent=
-riq2400-rep-bmc', 'supermicro,x11spi-bmc', 'tyan,s7106-bmc', 'tyan,s8036-bm=
-c', 'yadro,nicole-bmc', 'yadro,vegman-n110-bmc', 'yadro,vegman-rx20-bmc', '=
-yadro,vegman-sx20-bmc']
-> 	'facebook,ventura-rmc' is not one of ['ampere,mtmitchell-bmc', 'aspeed,a=
-st2600-evb', 'aspeed,ast2600-evb-a1', 'asus,x4tf-bmc', 'facebook,bletchley-=
-bmc', 'facebook,catalina-bmc', 'facebook,cloudripper-bmc', 'facebook,elbert=
--bmc', 'facebook,fuji-bmc', 'facebook,greatlakes-bmc', 'facebook,harma-bmc'=
-, 'facebook,minerva-cmc', 'facebook,yosemite4-bmc', 'ibm,blueridge-bmc', 'i=
-bm,everest-bmc', 'ibm,fuji-bmc', 'ibm,rainier-bmc', 'ibm,system1-bmc', 'ibm=
-,tacoma-bmc', 'inventec,starscream-bmc', 'inventec,transformer-bmc', 'jabil=
-,rbp-bmc', 'qcom,dc-scm-v1-bmc', 'quanta,s6q-bmc', 'ufispace,ncplite-bmc']
-> 	'aspeed,ast2400' was expected
-> 	'aspeed,ast2500' was expected
-> 	from schema $id: http://devicetree.org/schemas/arm/aspeed/aspeed.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /: failed to ma=
-tch any schema with compatible: ['facebook,ventura-rmc', 'aspeed,ast2600']
-
-You need to sort out your message threading issue so these warnings go
-away.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: timer: 'clocks'=
- does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml=
-#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /sdram@1e6e0000=
-: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac',=
- 'syscon']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: bus@1e600000: c=
-ompatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
-> 	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.y=
-aml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: syscon@1e6e2000=
-: 'smp-memram@180' does not match any of the regexes: '^interrupt-controlle=
-r@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^silic=
-on-id@[0-9a-f]+$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.ya=
-ml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e6e00=
-00/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatib=
-le: ['aspeed,ast2600-smpmem']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e6e00=
-00/syscon@1e6e2000/interrupt-controller@560: failed to match any schema wit=
-h compatible: ['aspeed,ast2600-scu-ic0']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e6e00=
-00/syscon@1e6e2000/interrupt-controller@570: failed to match any schema wit=
-h compatible: ['aspeed,ast2600-scu-ic1']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e6e00=
-00/display@1e6e6000: failed to match any schema with compatible: ['aspeed,a=
-st2600-gfx', 'syscon']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: adc@1e6e9000: '=
-interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-ad=
-c.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: adc@1e6e9100: '=
-interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-ad=
-c.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: crypto@1e6fa000=
-: 'aspeed,ahbc' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acr=
-y.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/video@1e70=
-0000: failed to match any schema with compatible: ['aspeed,ast2600-video-en=
-gine']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: sdc@1e740000: s=
-dhci@1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> 	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: sdc@1e740000: s=
-dhci@1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> 	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/sdc@1e7400=
-00/sdhci@1e740100: failed to match any schema with compatible: ['aspeed,ast=
-2600-sdhci', 'sdhci']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/sdc@1e7400=
-00/sdhci@1e740200: failed to match any schema with compatible: ['aspeed,ast=
-2600-sdhci', 'sdhci']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7800=
-00/timer@1e782000: failed to match any schema with compatible: ['aspeed,ast=
-2600-timer']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: lpc@1e789000: l=
-pc-snoop@80: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: lpc@1e789000: r=
-eg-io-width: 4 is not of type 'object'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: kcs@24: 'clocks=
-' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-b=
-mc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: kcs@28: 'clocks=
-' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-b=
-mc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: kcs@2c: 'clocks=
-' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-b=
-mc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: kcs@114: 'clock=
-s' does not match any of the regexes: 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-b=
-mc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7800=
-00/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspee=
-d,ast2600-lhc']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7800=
-00/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspe=
-ed,ast2600-ibt-bmc']
-
-Ignore the warnings above for now, I have some work to do to define the
-bindings and fix the DTSIs for the Aspeed SoCs.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7800=
-00/bus@1e78a000/i2c@200/i2c-mux@77/i2c@5/pwm@20: failed to match any schema=
- with compatible: ['max31790']
-
-This must rather be "maxim,max31790".
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7800=
-00/bus@1e78a000/i2c@580/power-monitor@69: failed to match any schema with c=
-ompatible: ['pmbus']
-
-"pmbus" is not a valid compatible. Please describe the _device_ in the
-usual form ("manufacturer,part-number"). You may need to define the
-binding for this device.
-
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: fsi@1e79b000: c=
-ompatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-> 	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-ma=
-ster.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7900=
-00/fsi@1e79b000: failed to match any schema with compatible: ['aspeed,ast26=
-00-fsi-master', 'fsi-master']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: fsi@1e79b100: c=
-ompatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-> 	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-ma=
-ster.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7900=
-00/fsi@1e79b100: failed to match any schema with compatible: ['aspeed,ast26=
-00-fsi-master', 'fsi-master']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dtb: /ahb/apb@1e7900=
-00/dma-controller@1e79e000: failed to match any schema with compatible: ['a=
-speed,ast2600-udma']
->=20
-
-Ignore these as well for now. Again, they are my problems to fix.
-
-Andrew
+> Andi
 
