@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-37-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-38-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34CF3D13592
-	for <linux-aspeed@archiver.kernel.org>; Mon, 28 Oct 2024 02:48:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20D21D13590
+	for <linux-aspeed@archiver.kernel.org>; Mon, 28 Oct 2024 02:48:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XcHrc5rv8z2xHx;
-	Mon, 28 Oct 2024 13:48:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XcHrd4CrCz2xJy;
+	Mon, 28 Oct 2024 13:48:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730083712;
-	cv=none; b=SxH6nKn3Jara2ikbXxPFpQoURNaIi91Y6be/8m15ahkpTqhrR3DP2ZBYdnt6O71k5tQmt97/vG+rnXiSDtg7Y3EkOk/zZVLE2xfhA1y/Zi2+8M8zTn8MJqD/vJ775vNMFnXpiMK65oe8fJV8EzsAWun7p5VqDHPCiscKSOvUoiG8x03adQWz+m2M47f0TyH1YsLKNdqs2MxwRvUbjpCEsHRUPvf8C8OflRuZ2OgN8/ZkUWDR4N/WD9alapO8Yg5wXo1SjkXKcqdSWw8iSqA8ZRwEvEYVAayyTIz70hVAteHRVxVC8NZmM/8shqrJdB6N0osGIgWy/gWDCjcyJMdW2g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730083713;
+	cv=none; b=DLCAwTa6bSPs9DULp/d9Ko+REwfJlxM3chh8MPMW09OWGWy8G7dRilVN5OJIGLhpnyYVLfulI/D2HnDUTdwf0gU+f2hTy0SzFjZFS47nt+fNjBXD6W2/4ZiiHaFbKTca44FkFIHXJ20b/BFuwIn+VkPetLgVg82WgBed6u8astVA0BQ9ViZEQfTbir+MoOzfNAuZIULKmeExZXX+m9tX1V0PYZEDnnolwayoZ6UihHL62umoWtKSyOXmFxJ9ZV5Tg6IEe+Icxim3PQLxlwvZj32/OK8xs+gofr3Ae8xTfeiZMvaYK53xIsSY2FMsnxpC3SlE/ohBnRwlGVNyamlvCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730083712; c=relaxed/relaxed;
-	bh=G7BiSP+LYgK4F52ldHmNN6aZ/J/wObufvAK63ZXAtZ8=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=WoP+47mXPCzd1duzfT0MVfG3lUSfIcDE68nLE1MexWR8HDpxQCXImkoyEwrf8DU3R9Zpt6PEUuRbTxeX6hcUWIWnm0721hIikQ0s5KjEqCjRTb320udmn61NrJ/J0QGEsGbjVQ/MsJTp9HpJZQgrzwjwCWwfkdNH49ili37mgJryLisBbFBDDh51Rt8wv/dh9IN9KyfcXb+2lajKOwvc4ducdam1QL6XcUWc4QcXLpWQ0ZTK95rhEULFH21+MgkZ1vziYXrn8kK7sN+6/lq7KJrZeALNSA/yFLlm/I27tuM64ZlpawvZrdBCeo4tyJu8qmRvKKc2z6Z3Ijk9poQNjg==
+	t=1730083713; c=relaxed/relaxed;
+	bh=+qnT/VJPfq/wikjmpBAQism7qboXf+iSdeubgEuKVlc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Q8HxSw1IlSve4f5HKjEE0uXKxeER1b1nP2Srxo7v9CV1XIoBFOqhCyEYzrbpl1zhfrfBRcOIUzh6nCsvNHrSTV0HsCYO3EmWLFkLDQq7tuuoqQqlJQ4VW1J0rI4z5ny4KJxsrKhAhb+M6woLWndJF+E38C33iVJTA+eIgnxctUdX/Us4TBkqLtbzB/4FbHrLF6Ro0iX7FPl5NfpZqozxiedbcO4X3cP0185z65dqRsiDSgtifGpQ7VHS4Eg+ISjSBlq7G62NL/Z4l8ijwAIAMYglVEF0sjzhX1I06hN6yTDv09b9tgRhyGoQ3ELQ+F1KYqTqT8ZKEOQVrNMjj+ynnw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XcHrb34Zdz2xG5
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 28 Oct 2024 13:48:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XcHrc6YhPz2xG5
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 28 Oct 2024 13:48:32 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 28 Oct
@@ -40,10 +41,12 @@ To: <patrick@stwcx.xyz>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 CC: <Peter.Yin@quantatw.com>, <Patrick_NC_Lin@wiwynn.com>,
 	<Bonnie_Lo@wiwynn.com>, <DELPHINE_CHIU@wiwynn.com>, <bmc-sw@aspeedtech.com>,
 	<chnguyen@amperecomputing.com>
-Subject: [PATCH v2 0/3] Update ASPEED WDT bootstatus
-Date: Mon, 28 Oct 2024 10:48:10 +0800
-Message-ID: <20241028024813.2416962-1-chin-ting_kuo@aspeedtech.com>
+Subject: [PATCH v2 1/3] ARM: dts: aspeed: Add WDT controller into alias field
+Date: Mon, 28 Oct 2024 10:48:11 +0800
+Message-ID: <20241028024813.2416962-2-chin-ting_kuo@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20241028024813.2416962-1-chin-ting_kuo@aspeedtech.com>
+References: <20241028024813.2416962-1-chin-ting_kuo@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,31 +62,59 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-This patch series inherits the patch submitted by Peter.
-https://patchwork.kernel.org/project/linux-watchdog/patch/20240430143114.1323686-2-peteryin.openbmc@gmail.com/
-Besides, the boot status modififed in the WDT driver
-obeys the rules proposed in the OpenBMC.
-https://github.com/openbmc/docs/blob/master/designs/bmc-reboot-cause-update.md#proposed-design
-Moreover, WDT SW restart mechanism is supported by HW
-since AST2600 platform and is also included in this
-patch series.
+Add WDT controller into alias field. After that, WDT index,
+used to distinguish different WDT controllers in the driver,
+can be gotten by using of_alias_get_id dts API.
 
-Changes in v2:
-  - Support SW restart on AST2600 by default without
-    adding any dts property.
+Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-g4.dtsi | 2 ++
+ arch/arm/boot/dts/aspeed/aspeed-g5.dtsi | 3 +++
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 4 ++++
+ 3 files changed, 9 insertions(+)
 
-
-Chin-Ting Kuo (3):
-  ARM: dts: aspeed: Add WDT controller into alias field
-  watchdog: aspeed: Update bootstatus handling
-  watchdog: aspeed: Add support for SW restart
-
- arch/arm/boot/dts/aspeed/aspeed-g4.dtsi |   2 +
- arch/arm/boot/dts/aspeed/aspeed-g5.dtsi |   3 +
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi |   4 +
- drivers/watchdog/aspeed_wdt.c           | 149 ++++++++++++++++++++++--
- 4 files changed, 150 insertions(+), 8 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
+index 78c967812492..d8b4136d0ca0 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
+@@ -29,6 +29,8 @@ aliases {
+ 		serial3 = &uart4;
+ 		serial4 = &uart5;
+ 		serial5 = &vuart;
++		watchdog0 = &wdt1;
++		watchdog1 = &wdt2;
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
+index 57a699a7c149..4dd220bca617 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
+@@ -30,6 +30,9 @@ aliases {
+ 		serial3 = &uart4;
+ 		serial4 = &uart5;
+ 		serial5 = &vuart;
++		watchdog0 = &wdt1;
++		watchdog1 = &wdt2;
++		watchdog2 = &wdt3;
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index 8ed715bd53aa..c0a47c795fff 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -40,6 +40,10 @@ aliases {
+ 		mdio1 = &mdio1;
+ 		mdio2 = &mdio2;
+ 		mdio3 = &mdio3;
++		watchdog0 = &wdt1;
++		watchdog1 = &wdt2;
++		watchdog2 = &wdt3;
++		watchdog3 = &wdt4;
+ 	};
+ 
+ 
 -- 
 2.34.1
 
