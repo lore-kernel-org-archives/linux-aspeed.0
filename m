@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-38-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-40-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20D21D13590
-	for <linux-aspeed@archiver.kernel.org>; Mon, 28 Oct 2024 02:48:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83AEDD13594
+	for <linux-aspeed@archiver.kernel.org>; Mon, 28 Oct 2024 02:48:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XcHrd4CrCz2xJy;
-	Mon, 28 Oct 2024 13:48:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XcHrg18SCz2yGv;
+	Mon, 28 Oct 2024 13:48:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730083713;
-	cv=none; b=DLCAwTa6bSPs9DULp/d9Ko+REwfJlxM3chh8MPMW09OWGWy8G7dRilVN5OJIGLhpnyYVLfulI/D2HnDUTdwf0gU+f2hTy0SzFjZFS47nt+fNjBXD6W2/4ZiiHaFbKTca44FkFIHXJ20b/BFuwIn+VkPetLgVg82WgBed6u8astVA0BQ9ViZEQfTbir+MoOzfNAuZIULKmeExZXX+m9tX1V0PYZEDnnolwayoZ6UihHL62umoWtKSyOXmFxJ9ZV5Tg6IEe+Icxim3PQLxlwvZj32/OK8xs+gofr3Ae8xTfeiZMvaYK53xIsSY2FMsnxpC3SlE/ohBnRwlGVNyamlvCg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730083715;
+	cv=none; b=XjpVa/vlZxM7Be+O/Ph4RM8qK7W3IEBkinXD7EHdcvruDqqvf61EuW+tVisJ+F5mUhx3lDzWU3Z0qwHu3iYyN804nNHz/LDMXAZfrRKWglYDg1qS7sVtAhv+TZFwAaqz4+lCrnp0lukudCJXturzPCEvT4ivLt7Is6EIa0yZbuqFbl+CQBLYCxw6KPLfppJYMj6doWaxcCDsCGgYgyucsF71Z0MtfISGrXXuQHEGmYzGZpnXg7eOYXOotAc7jIy59dcxJoZvV4YnWxmC0yJI55dgBPTyq9TGLiRtG7cFWqQE17bukKfMi9S2tOS8V0dkC2c5Txg8LiuaGOOFx8gfwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730083713; c=relaxed/relaxed;
-	bh=+qnT/VJPfq/wikjmpBAQism7qboXf+iSdeubgEuKVlc=;
+	t=1730083715; c=relaxed/relaxed;
+	bh=tKrqBYDWpA2Rp4McGKPnb/6dNWLjIXWZ+IBgL2/lAbQ=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Q8HxSw1IlSve4f5HKjEE0uXKxeER1b1nP2Srxo7v9CV1XIoBFOqhCyEYzrbpl1zhfrfBRcOIUzh6nCsvNHrSTV0HsCYO3EmWLFkLDQq7tuuoqQqlJQ4VW1J0rI4z5ny4KJxsrKhAhb+M6woLWndJF+E38C33iVJTA+eIgnxctUdX/Us4TBkqLtbzB/4FbHrLF6Ro0iX7FPl5NfpZqozxiedbcO4X3cP0185z65dqRsiDSgtifGpQ7VHS4Eg+ISjSBlq7G62NL/Z4l8ijwAIAMYglVEF0sjzhX1I06hN6yTDv09b9tgRhyGoQ3ELQ+F1KYqTqT8ZKEOQVrNMjj+ynnw==
+	 MIME-Version:Content-Type; b=RYOTX2MWhcSiLdUj+qGFjE70h9eLz7bNKrhbTRhpfTePFXuDoP4ZuQkKdCpPZnEJQ55CVuGjXyfOg9RZm2Avh0rg8iSOBZqwS0fhrHMwZn+XkcxdapJQ4hKegqnI1TxmHdpXvAHt0OcNJd4pFdM1zabNlb/9Zg9kgxF0w9Sl1AEp1lc2CP+7vLErVDjL10vgDWqfxdRbIOpsiRoc9pPmv1WE8V3cGxkORFY609iqUyrR4ayWatnZTX84qNsoLeBXmRQJxD5TzDm9JwGjX4NOjPgKT4M0Vbrq1GBeWjp+Mk1mo/d8PQiZM/Q6qq8+UM8Tw6BPg/ROg1Y57TdWgFDKTA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XcHrc6YhPz2xG5
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 28 Oct 2024 13:48:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XcHrf3c5kz2xG5
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 28 Oct 2024 13:48:34 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 28 Oct
@@ -41,9 +41,9 @@ To: <patrick@stwcx.xyz>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 CC: <Peter.Yin@quantatw.com>, <Patrick_NC_Lin@wiwynn.com>,
 	<Bonnie_Lo@wiwynn.com>, <DELPHINE_CHIU@wiwynn.com>, <bmc-sw@aspeedtech.com>,
 	<chnguyen@amperecomputing.com>
-Subject: [PATCH v2 1/3] ARM: dts: aspeed: Add WDT controller into alias field
-Date: Mon, 28 Oct 2024 10:48:11 +0800
-Message-ID: <20241028024813.2416962-2-chin-ting_kuo@aspeedtech.com>
+Subject: [PATCH v2 3/3] watchdog: aspeed: Add support for SW restart
+Date: Mon, 28 Oct 2024 10:48:13 +0800
+Message-ID: <20241028024813.2416962-4-chin-ting_kuo@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20241028024813.2416962-1-chin-ting_kuo@aspeedtech.com>
 References: <20241028024813.2416962-1-chin-ting_kuo@aspeedtech.com>
@@ -62,59 +62,128 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Add WDT controller into alias field. After that, WDT index,
-used to distinguish different WDT controllers in the driver,
-can be gotten by using of_alias_get_id dts API.
+Since AST2600, except for HW WDT counter timeout, HW WDT
+reset can also be triggered by just cinfiguring some
+HW registers by SW directly. We named it "SW restart".
+Although it is "SW" restart, its mechanism is implemented
+by HW.
+
+Originally, system can only know it is reset by WDT
+through a reset flag. However, since AST2600, SW can
+trigger the reset event consciously and directly without
+wait for WDT timeout. WDT counter is not enabled when
+SW restart is adopted. After that, an independent reset
+event flag will be set after systemis reset by SW.
 
 Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g4.dtsi | 2 ++
- arch/arm/boot/dts/aspeed/aspeed-g5.dtsi | 3 +++
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 4 ++++
- 3 files changed, 9 insertions(+)
+ drivers/watchdog/aspeed_wdt.c | 40 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
-index 78c967812492..d8b4136d0ca0 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
-@@ -29,6 +29,8 @@ aliases {
- 		serial3 = &uart4;
- 		serial4 = &uart5;
- 		serial5 = &vuart;
-+		watchdog0 = &wdt1;
-+		watchdog1 = &wdt2;
- 	};
+diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+index a0c03a949173..9ba9b7346d44 100644
+--- a/drivers/watchdog/aspeed_wdt.c
++++ b/drivers/watchdog/aspeed_wdt.c
+@@ -40,6 +40,9 @@ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+ #define   AST2600_SCU_SYS_RESET_WDT_SW_MASK	0x8
+ #define   AST2600_SCU_SYS_RESET_WDT_MASK_SHIFT	16
  
- 	cpus {
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
-index 57a699a7c149..4dd220bca617 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
-@@ -30,6 +30,9 @@ aliases {
- 		serial3 = &uart4;
- 		serial4 = &uart5;
- 		serial5 = &vuart;
-+		watchdog0 = &wdt1;
-+		watchdog1 = &wdt2;
-+		watchdog2 = &wdt3;
- 	};
++/* WDT behavior control flag */
++#define WDT_RESTART_SYSTEM_SW_SUPPORT	0x00000001
++
+ struct aspeed_wdt_scu {
+ 	const char *compatible;
+ 	u32 reset_status_reg;
+@@ -53,6 +56,7 @@ struct aspeed_wdt_config {
+ 	u32 irq_shift;
+ 	u32 irq_mask;
+ 	struct aspeed_wdt_scu scu;
++	u32 flags;
+ };
  
- 	cpus {
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-index 8ed715bd53aa..c0a47c795fff 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-@@ -40,6 +40,10 @@ aliases {
- 		mdio1 = &mdio1;
- 		mdio2 = &mdio2;
- 		mdio3 = &mdio3;
-+		watchdog0 = &wdt1;
-+		watchdog1 = &wdt2;
-+		watchdog2 = &wdt3;
-+		watchdog3 = &wdt4;
- 	};
+ struct aspeed_wdt {
+@@ -67,6 +71,7 @@ static const struct aspeed_wdt_config ast2400_config = {
+ 	.ext_pulse_width_mask = 0xff,
+ 	.irq_shift = 0,
+ 	.irq_mask = 0,
++	.flags = 0,
+ 	.scu = {
+ 		.compatible = "aspeed,ast2400-scu",
+ 		.reset_status_reg = AST2400_SCU_SYS_RESET_STATUS,
+@@ -80,6 +85,7 @@ static const struct aspeed_wdt_config ast2500_config = {
+ 	.ext_pulse_width_mask = 0xfffff,
+ 	.irq_shift = 12,
+ 	.irq_mask = GENMASK(31, 12),
++	.flags = 0,
+ 	.scu = {
+ 		.compatible = "aspeed,ast2500-scu",
+ 		.reset_status_reg = AST2400_SCU_SYS_RESET_STATUS,
+@@ -93,6 +99,7 @@ static const struct aspeed_wdt_config ast2600_config = {
+ 	.ext_pulse_width_mask = 0xfffff,
+ 	.irq_shift = 0,
+ 	.irq_mask = GENMASK(31, 10),
++	.flags = WDT_RESTART_SYSTEM_SW_SUPPORT,
+ 	.scu = {
+ 		.compatible = "aspeed,ast2600-scu",
+ 		.reset_status_reg = AST2600_SCU_SYS_RESET_STATUS,
+@@ -130,6 +137,11 @@ MODULE_DEVICE_TABLE(of, aspeed_wdt_of_table);
+ #define   WDT_CLEAR_TIMEOUT_AND_BOOT_CODE_SELECTION	BIT(0)
+ #define WDT_RESET_MASK1		0x1c
+ #define WDT_RESET_MASK2		0x20
++#define WDT_SW_RESET_CTRL	0x24
++#define   WDT_SW_RESET_COUNT_CLEAR	0xDEADDEAD
++#define   WDT_SW_RESET_ENABLE	0xAEEDF123
++#define WDT_SW_RESET_MASK1	0x28
++#define WDT_SW_RESET_MASK2	0x2c
  
+ /*
+  * WDT_RESET_WIDTH controls the characteristics of the external pulse (if
+@@ -249,10 +261,31 @@ static int aspeed_wdt_set_pretimeout(struct watchdog_device *wdd,
+ 	return 0;
+ }
  
++static void aspeed_wdt_sw_reset(struct watchdog_device *wdd)
++{
++	struct aspeed_wdt *wdt = to_aspeed_wdt(wdd);
++	u32 ctrl = WDT_CTRL_RESET_MODE_SOC |
++		   WDT_CTRL_RESET_SYSTEM;
++
++	writel(ctrl, wdt->base + WDT_CTRL);
++	writel(WDT_SW_RESET_COUNT_CLEAR,
++	       wdt->base + WDT_SW_RESET_CTRL);
++	writel(WDT_SW_RESET_ENABLE, wdt->base + WDT_SW_RESET_CTRL);
++
++	/* system must be reset immediately */
++	mdelay(1000);
++}
++
+ static int aspeed_wdt_restart(struct watchdog_device *wdd,
+ 			      unsigned long action, void *data)
+ {
+ 	struct aspeed_wdt *wdt = to_aspeed_wdt(wdd);
++	struct aspeed_wdt_config *cfg = wdt->cfg;
++
++	if (cfg->flags & WDT_RESTART_SYSTEM_SW_SUPPORT) {
++		aspeed_wdt_sw_reset(wdd);
++		return 0;
++	}
+ 
+ 	wdt->ctrl &= ~WDT_CTRL_BOOT_SECONDARY;
+ 	aspeed_wdt_enable(wdt, 128 * WDT_RATE_1MHZ / 1000);
+@@ -524,6 +557,13 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+ 			if (nrstmask > 1)
+ 				writel(reset_mask[1], wdt->base + WDT_RESET_MASK2);
+ 		}
++
++		if (wdt->cfg->flags & WDT_RESTART_SYSTEM_SW_SUPPORT) {
++			reg = readl(wdt->base + WDT_RESET_MASK1);
++			writel(reg, wdt->base + WDT_SW_RESET_MASK1);
++			reg = readl(wdt->base + WDT_RESET_MASK2);
++			writel(reg, wdt->base + WDT_SW_RESET_MASK2);
++		}
+ 	}
+ 
+ 	if (!of_property_read_u32(np, "aspeed,ext-pulse-duration", &duration)) {
 -- 
 2.34.1
 
