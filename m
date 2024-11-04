@@ -1,66 +1,63 @@
-Return-Path: <linux-aspeed+bounces-70-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-71-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C6F6D11186
-	for <linux-aspeed@archiver.kernel.org>; Mon,  4 Nov 2024 00:02:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 557ADD111A3
+	for <linux-aspeed@archiver.kernel.org>; Mon,  4 Nov 2024 04:14:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XhWqN2xXJz2yHT;
-	Mon,  4 Nov 2024 11:02:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730678528;
-	cv=none; b=IM1qoxFGVBibXdfwEmI2gf06SlnDlqq1zvijBswF0XfYDjfr5S+o/Fr9AjWQOjbWxWZ6GGrQF1zE3MHlAuI7G8dvjLD6XH2NdBwN3PuSnPDCk5eTjvN7o8S+HfMSs/8UJ9OHXC/I4y4NlxxsB18TVyGThNGiF842DVM+mvzV9hPrhF7vUcnTB7hjlCGoigWBiK3kyRSatlNNNtHJm3JMTZg9y0Jf+GXZ0F0LDggRWVBX1Uge4iUsS78o6+lLR4Gspk9Z1mp/J2wjsrwMjvtCfJ9P3F5ScT/zwMm8Tl8mhzDA2Ma07jgKHUHOzGgcD8GSuPfpkH4WZ0sAyHjxRjlJBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XhdQB2tRPz2xjQ;
+	Mon,  4 Nov 2024 15:14:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730693650;
+	cv=none; b=b+JBzD2hdtNrBi+w17+2Yrv3kFq1IEykHNvjoBGjxnMMmARehMGaGuOHoWXb5Afvun4M71NjCAZUG22ozqXDfnu9cjyeQ8rf94t+x1/duSR04dwt73zOJFdI3/QnlaDHe6TiFlJRvwCyE2u2chDAvTtKpI1Ib86FEo1Zj5IuDxSQr2qEDdBTuJ6rZGkC/ZNDI2YUsgJifkO/g1XGPBuJRzTzHSn3wNTpRaXodO/xj7NtTGTYn3OeDrldSLeJT76+L+KGKSXLXVh/zoFQ8ljDRuoI8W/ekD7uBSwWdJl6D1tuc3w1dc1/X4bvoyWHWxYR59OdUcSE1Nz6QkW9HU7qVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730678528; c=relaxed/relaxed;
-	bh=cm86/adYBO0QLMJTj80moqy+OSpgRV+dDfE8QASkuLs=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=SyJ8nnZrCDdek3Nl2/KgqCeFb75DOUOKomJE22+5At3Mcn7k9YGPEq8oVcWqPnot1OERQ749YYO1tWVAOUAkQuQ5NGcUgdyMeTxfoN9YCRyseKWr2tkwtvZW5WXMKwulNuDMfX3ItQtUBu4MB/ZVwgEu1EnYp3HpDcS7YSN6Ly+amfRuiobVRqxFUpWTy239LE6nqtnbYEh3bLFZax8TVb+KY3Vggqrcw36WFaMGsxPP3eHu2fjfMHltMP1NFYw3HgiJ2rknAa6BKALO07BFEt3ZtyeWhHV92qEaJxcA2XEMM9voxKnhMZteF/Nsly2tWqZ+Kwj5/LJvbL3uy9oyOg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=QqHI7rhE; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1730693650; c=relaxed/relaxed;
+	bh=UNSCjS1hoMEkhOA5T8UWRke7ikMlXHxI2Qlv0eAHNAQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ZCs6/YL5Aja2kLFZAcJ+9gMkpO6UbzSC/EgEeEdLhZdVPZRnFR0n5JjDacCON5gsKVeBwY7crcgL0Ek8SARKOUrZjKRfITYi+O9BEmVzQzFzhJoZokeIEk37/y5JV6dvKrOyKSlazqnqyjt+SfFD0+FP07CbHXyhS6BlpM5gDnbqLUa4Hekd1JJu9WTCM/CpTgKqM9mtTPlhfy0ucOr1jEBjyQOltPJ4pv2qFnp+9w+0je6C31FRYqTF+cRY/Dd6IS6H1C4pHBOmWybDvMHXXB8F2TOoDi3WImY4qM3yibZ0lnZUA9+C/Flslioj7JgWjX0NoVwNEA3R8U2GwXnQuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sXdI98mi; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andersson@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=QqHI7rhE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sXdI98mi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andersson@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhWqL3CZfz2xsW
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  4 Nov 2024 11:02:06 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1730678522;
-	bh=cm86/adYBO0QLMJTj80moqy+OSpgRV+dDfE8QASkuLs=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=QqHI7rhE5NLaRyprE6WKCAik4rWO9TXIZB8hGClSE0eoL/ZotGcXIg8mRB7oU/7xj
-	 kKBFAqApO2jqrhOsUaShqbFNdA3JYCPpxtIMhAils8Zcc7L9C4C96eRKrPy1SbdkJX
-	 W1euBcmLyVCXNvtuPlToaN7Oi6PgBIa1C8LloZyod9/W8EnmkJkuxNpptAXzgDWqhF
-	 DMjeArBbGADfnVWfgqY1Qzf2FofpzPF1RyI1vnwpXbNYdtTRvjjiCqybuSd4Gqt9eG
-	 AFwFi9LJRTSw7t/p3RcI3pZEfUUXKRiH3c25Q1/02Gy+kOAxnCREW3CKLmNoHikiHO
-	 vVW9CrOl1jbxw==
-Received: from [192.168.68.112] (ppp118-210-95-135.adl-adc-lon-bras32.tpg.internode.on.net [118.210.95.135])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 2EBC66A03A;
-	Mon,  4 Nov 2024 08:01:56 +0800 (AWST)
-Message-ID: <a0faca9a6ec7f4acdfa2f29b4ffb94b5392aea6b.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v4 1/3] watchdog: aspeed: Update bootstatus handling
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Patrick Williams <patrick@stwcx.xyz>, Chin-Ting Kuo
-	 <chin-ting_kuo@aspeedtech.com>
-Cc: joel@jms.id.au, wim@linux-watchdog.org, linux@roeck-us.net, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org, 
- Peter.Yin@quantatw.com, Patrick_NC_Lin@wiwynn.com, Bonnie_Lo@wiwynn.com, 
- DELPHINE_CHIU@wiwynn.com, bmc-sw@aspeedtech.com,
- chnguyen@amperecomputing.com
-Date: Mon, 04 Nov 2024 10:31:55 +1030
-In-Reply-To: <ZyUcIIb1dtoNhX00@heinlein.vulture-banana.ts.net>
-References: <20241101121201.2464091-1-chin-ting_kuo@aspeedtech.com>
-	 <20241101121201.2464091-2-chin-ting_kuo@aspeedtech.com>
-	 <ZyUcIIb1dtoNhX00@heinlein.vulture-banana.ts.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XhdQ83xdwz2xCj
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  4 Nov 2024 15:14:08 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 34046A41875;
+	Mon,  4 Nov 2024 04:12:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84BF6C4CED2;
+	Mon,  4 Nov 2024 04:13:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1730693640;
+	bh=INpEY8wcvBsJ8Jx/Cwwyoxkp2XDOjLy6fxyDUa3jdTM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=sXdI98midpimGyGBCzS9tIQIkeuxudwGFmriGX8YyhLArZErq6o153Py8D/un0txb
+	 sc7bm5KuEPttghvVREjvaEKHWuCqG/fO0bryqp7Iv1T6o6LJFp2Ij3s/9HLhINHP0m
+	 k6GHNmuwcUCuRv8qEZjkpWOA/uPjxEGeV3Kuyg288WEFpUXd4fqmKgjSmS5u5oIBtJ
+	 BxPT5FAFZnsgIXG42L2YFjWTN9ElPXKZ61PRPibNORgE5m2KXfkEvoDbfkxsiNTh16
+	 kBg38TMY4YaHdOvuTiOrCzOT0bDWBajk3jl5M2EQ4rLAAqelPc4TDfaXPV18BvUlUL
+	 A7sDjNSrgLpgg==
+From: Bjorn Andersson <andersson@kernel.org>
+To: konradybcio@kernel.org,
+	linux-arm-msm@vger.kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	linux-aspeed@lists.ozlabs.org,
+	Zhang Zekun <zhangzekun11@huawei.com>
+Cc: chenjun102@huawei.com
+Subject: Re: (subset) [PATCH 0/4] Simplify code with dev_err_probe()
+Date: Sun,  3 Nov 2024 22:13:46 -0600
+Message-ID: <173069362370.23540.7771718939151529265.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20240909122921.12627-1-zhangzekun11@huawei.com>
+References: <20240909122921.12627-1-zhangzekun11@huawei.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,62 +70,32 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-On Fri, 2024-11-01 at 14:21 -0400, Patrick Williams wrote:
-> On Fri, Nov 01, 2024 at 08:11:59PM +0800, Chin-Ting Kuo wrote:
-> > The boot status mapping rule follows the latest design guide from
-> > the OpenBMC shown as below.
-> > https://github.com/openbmc/docs/blob/master/designs/bmc-reboot-cause-up=
-date.md#proposed-design
-> > - WDIOF_EXTERN1=C2=A0=C2=A0 =3D> system is reset by Software
-> > - WDIOF_CARDRESET =3D> system is reset by WDT SoC reset
-> > - Others=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D> oth=
-er reset events, e.g., power on reset.
->=20
-> I'm quite surprised that the above is relevant for a kernel driver at
-> all.=C2=A0 Isn't "EXTERN1" a name of a real watchdog signal from your
-> hardware (my recollection is that there are 2 external watchdogs).
 
-I think you may be referring to WDTRST1 (and WDTRST2) here.
+On Mon, 09 Sep 2024 20:29:17 +0800, Zhang Zekun wrote:
+> Use dev_err_probe() to simplify code, and we can avoid judging
+> if the error code is not equal to -EPROBE_DEFER
+> 
+> Zhang Zekun (4):
+>   soc: qcom: rpmh-rsc: Simplify code with dev_err_probe()
+>   soc: aspeed: Simplify code with dev_err_probe()
+>   soc: qcom: smem: Simplify code with dev_err_probe()
+>   soc: qcom: smp2p: Simplify code with dev_err_probe()
+> 
+> [...]
 
-WDIOF_EXTERN1 and WDIOF_EXTERN2 have an unrelated history:
+Applied, thanks!
 
-https://github.com/torvalds/linux/blame/master/include/uapi/linux/watchdog.=
-h
+[1/4] soc: qcom: rpmh-rsc: Simplify code with dev_err_probe()
+      commit: 454381b5236c22ff5995aab5db4f640d34f9ea98
+[3/4] soc: qcom: smem: Simplify code with dev_err_probe()
+      commit: 876b405004842b10a684f06f967502d20d64384f
+[4/4] soc: qcom: smp2p: Simplify code with dev_err_probe()
+      commit: cd8ec43758a5ca91c5503d1cde2df95e05b968ca
 
-> =C2=A0 I
-> think the point of this referenced design document was that most
-> users
-> of BMCs have "EXTERN1" used a for software reset conditions.
-> `CARDRESET` should be representing resets by the watchdog itself.
-
-I think this is what Chin-Ting is proposing for the Aspeed driver?
-
->=20
-> The purpose of this design proposal was not to require very specific
-> changes to individual watchdog drivers, but to align the userspace
-> use
-> with the best practices already from other watchdog drivers.=C2=A0 I don'=
-t
-> think the kernel driver should be bending to match a particular
-> userspace implementation; you should be exposing the information
-> available to your hardware.
-
-I agree with this in principle, but I'm not sure what else is meant to
-be done here.
-
->=20
-> Having said that, it was known that there would need to be changes to
-> the driver because some of these conditions were not adequately
-> exposed
-> at all.=C2=A0 I'm just still surprised that we're needing to reference
-> that
-> document as part of these changes.
-
-I think the main question is whether an internal, graceful (userspace-
-requested) reset is a reasonable use of WDIOF_EXTERN[12]. My feeling
-no. I wonder whether defining a new flag (WDIOF_REBOOT?
-WDIOF_GRACEFUL?) in the UAPI would be acceptable?
-
-Andrew
+Best regards,
+-- 
+Bjorn Andersson <andersson@kernel.org>
 
