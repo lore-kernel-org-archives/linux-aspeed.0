@@ -1,67 +1,66 @@
-Return-Path: <linux-aspeed+bounces-80-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-81-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B75CAD3176B
-	for <linux-aspeed@archiver.kernel.org>; Tue,  5 Nov 2024 17:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13B00D33A29
+	for <linux-aspeed@archiver.kernel.org>; Tue,  5 Nov 2024 18:53:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xjb7n63v7z2xJy;
-	Wed,  6 Nov 2024 04:35:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730828101;
-	cv=none; b=Z66q+HTH37+yM2DULkNKUabYG7aEN5/CyhkvMzRqsRAZENDM4LzJI5DN+gYmdtOHkXHNcnn/Z7nOiA17/QWyO4b5J0AUlpRN6e1Bt1x/OdHom6l3s40J5FOoclOw+E4pcvAZMtL9WP0jhXfsegqVciFdBD5PsYXDR/7cFVNIOPmgNePiznWKjr3NgcFLZ7m0MrwaIOrBpg8HDaoExL2VvK96XMHfqfKDh6U7rUqC8JmhSk3jzUY+/C5OtqABAgVUwKWIBehZ5qCSWQbMCeDj6d2PmaMw900mry4N8P6vt8F9xShmKW/v97o+ZkHGADg987sFss6MpBFd/lht7UjCEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XjctC31Bhz2y8Z;
+	Wed,  6 Nov 2024 05:53:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730832803;
+	cv=none; b=RCwalb+Us02x3doRXiG6dDzpRjnjkfxvyCFF2AZsWHTFFASJNCjsnHW+aRqf+p+0/FShf7CDqriUUfg/YbxzJ0GA4M9kFDlWmOYdcjKRNcHG22Oa6HkznImfwy1Bpa63b9RHvjxRlQscj99sFqMKfMrUK7oE1N5S5Fcc+0gHqTzi4LfuPQ5TIfa52MQSkY11k1EmxOHo7HHlZ1NdoEI/oo4WrOPo8mZoJdCK567HPo+YVFSf0dxacpnI/zmiMXjewzsSY1Q2FpPkZrbLpR6cbHpA2xZojtdIwH3cMVKcuLZ836xn4wX1mRLTI8zO9ztaZAkv+U050hpzETcHuyawLw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730828101; c=relaxed/relaxed;
-	bh=SpVxQLLNLfLph3m6EIkv3r8u00CnaqvwEZ6ejt8Iwfo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=DfkHnTSHG6enmXm0BpYIeJGJrU1HYgJSuee3k7i2J+j00q581nWZJi63A/2zD8X648O3l+u7YC/2uYC/oliTPHX2opCHq1OL9b7OXNgvP0kjXxO9toLWRbt2vavOil9T9XC6ENem0kSK2ENi26lbQJCSCtd8vcUk+XJvSazxghX7zeQ0qs6HUE9liX7/9a1LSQZr0lGTa0K26Qd7QOoFRaw6VwxLm2yhomXzLcnONcd1VneYue1n6HXd3C6d74fkDZDaxoX9C279k0Y/zxp4cTl72fHjXF/JmzzsT/EgTulN53RXA8vYQ7dv+8AHDgSGZHU9j4h/1qN/oRFAokZLoQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Tu6s5Pc6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=naresh.solanki@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
+	t=1730832803; c=relaxed/relaxed;
+	bh=ehmuV0mGF+56Q7DGeN7/B0OGtD8FDHl8tJhMc+L5J7c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nOvwEkuD0390A08FR4miBrXskMwnvpc0GuXjN+tecDTfcrx6hD/bIRd2C/1gIgFUHtNGEN2htfQMl652YTmSQ7UrnXREaLbQ/BFGlLfgYk6GEHGfiy3mN9MiyCY4bVFdcl5mAxJ0zG+U6kssVq8BPeaXE9e7v0Nu2vGB7SmMcxVDqT8nI+UhunVGoXIwhTq1J3xtEPwCwRs1L9/+FAEfNYn78zMaYHmO5xBHQgd+yXRzJBugv8wqNiZ9eWH8eJlan5MgUii6vEKrmt/PlBkVxgQtGDwgnZHjLuyfU16JVB9wBk/3fIwAOvgxgPzLr/EFLG1J974QFVh3zy6NA7psIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ci6r5DV2; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Tu6s5Pc6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ci6r5DV2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=naresh.solanki@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xjb7l4NRmz2xHQ
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  6 Nov 2024 04:34:57 +1100 (AEDT)
-Received: by mail-pg1-x52b.google.com with SMTP id 41be03b00d2f7-7cd8803fe0aso3880693a12.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 05 Nov 2024 09:34:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1730828095; x=1731432895; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=SpVxQLLNLfLph3m6EIkv3r8u00CnaqvwEZ6ejt8Iwfo=;
-        b=Tu6s5Pc6HtgKLIcDc3eXjEzbNGR5fkuc/h6mk9HZ6sd0C4ApCmcuqrkKaTpqfJ5iNH
-         P9oE/4XsiQiITQEopLXBy1QYmxx5IyXWw9VPqzpK/KzqDj8TbKyiL1vrfQ4xbGTId+Uj
-         HFnkdpWcUUgQLWijP+LaJE8ktBuueozT6erQi/OXjQIMvaTol61+HXFouKp49ucFAZ1n
-         BKUGx00ImBAJnphSfMHZo89m0MnvvLAPRJhnMJ7kOPqAdNpqM3TmF5cp+m4qEdcma06K
-         Hj7g3H5EZomKCv14tBUb2QjXp+DZZTIOWoU2VMvrRzBFdB9fVEXcYYAcjl3shRoGOY9m
-         XhXw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730828095; x=1731432895;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=SpVxQLLNLfLph3m6EIkv3r8u00CnaqvwEZ6ejt8Iwfo=;
-        b=JVu1hMBSjmGfvH57WDdnDdex8shFSa7E9Hse7xAIWUeEGB2ms1mi/d13rTL13V6kOO
-         nwKIbAyFOHVaCkllLdltkckVtq04yN/mNvAcaPvm0SyJUS56s3G39Yrn2vnGWMMRhMn7
-         hLW5Lf2sOdi68Ovt/FexsOf6A0o4boKYgIdZRQf6n+4Jkqc+HDmde3BGKGQ2aHtmmoku
-         54BfxGEcOLetEQRXAHGu1TN+prIRNxTrqI18Ji++Y/sspjMPTroTyMUHabp0xNaBCOoC
-         JiQUQYtNwt/Ki+Gjjx62xU7azINqFnmbocYM8lS7KKOl6UUmsqV2T/nNl5aIGSfbLS+I
-         5WtQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWz27ZISsUvGy+Pfd3240eaxIyFNTlue+12YorHnnIH6OwV3AeR9Bkf+w7rZlg6OKXZHSRiL8K9ouqvIek=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YweoZyyERRWpKf6FkpfEtz4uBJ/HgVKVsRqg2Mz68XOCcIN9bdl
-	EMYjhu++GKwPfV45namYCBigF7ynhnte9Tb2PtPjIcA535N8kxFbblfIxupTsr5PGK6sPw6Z1vD
-	QUi5RPOOscax92lPe2NgZkP9JszxN0CHb+tflXQ==
-X-Google-Smtp-Source: AGHT+IH+bA1GiURFitv8kWYaSx/RW5cqeoyKLHZlSyIHFiiS2c0gxrHtSJy3vziWV/X5vWRNJ0DWzAshOtbMqV8BLE0=
-X-Received: by 2002:a17:90b:3581:b0:2e0:7b2b:f6a with SMTP id
- 98e67ed59e1d1-2e92ce710a9mr24650088a91.17.1730828095207; Tue, 05 Nov 2024
- 09:34:55 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xjct96zw5z2xH9
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  6 Nov 2024 05:53:21 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3C0185C4D33;
+	Tue,  5 Nov 2024 18:52:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4656C4CECF;
+	Tue,  5 Nov 2024 18:53:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1730832798;
+	bh=ehmuV0mGF+56Q7DGeN7/B0OGtD8FDHl8tJhMc+L5J7c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ci6r5DV2VqvCag1s6EuF1aRwGbPKGH/tDqYybfvWC09acB+ugQ+GjwdbjAN+mH/zy
+	 9wUzO9DRDwMJO7FtUVQzTMYgujVqO3KDgHY6kXbZXUUv/ACutVQBpo4uUAU1A/dmrA
+	 0KPfpjx8ruV3QgyNqLAhbXp661aM0b5hHIqO6Q2jXxAeyAXVw/K/s/nkR+0nALKWUP
+	 k02jNQE3NdHiPOnuxzyXcaNHbBKmTI5cdXXbf4xnd5JEjzX8tA8vLQma1VRzkDEE3c
+	 J1e2RY1kEInd06J27owPH5EGn3nsxBG2etos92r1tCCT23IH726/PaZyDU2W8/1lel
+	 4nKNe9OV3BcCQ==
+Date: Tue, 5 Nov 2024 18:53:13 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: "Rob Herring (Arm)" <robh@kernel.org>,
+	Naresh Solanki <naresh.solanki@9elements.com>, jdelvare@suse.com,
+	Conor Dooley <conor.dooley@microchip.com>,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org, krzk+dt@kernel.org, sylv@sylv.io,
+	linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org,
+	linux@roeck-us.net, Joel Stanley <joel@jms.id.au>,
+	conor+dt@kernel.org
+Subject: Re: [PATCH v6 1/2] dt-bindings: arm: aspeed: add IBM SBP1 board
+Message-ID: <20241105-regroup-busily-adbb9b342abc@spud>
+References: <20241104092220.2268805-1-naresh.solanki@9elements.com>
+ <173072771091.3690717.11563964377469449295.robh@kernel.org>
+ <20241104-saturate-device-d020a0d7321f@spud>
+ <f468a5c0a0112cee35815fb6c7b7f9933934adc2.camel@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,46 +73,95 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20241104092220.2268805-1-naresh.solanki@9elements.com>
- <20241104092220.2268805-2-naresh.solanki@9elements.com> <ac9698862598f0d09d35872d0e091537f822fbcd.camel@codeconstruct.com.au>
- <CABqG17j8RhFpNV+nJ=nLY8+uO_XXjbN55+Ce8op=6Dj5Z=_WOA@mail.gmail.com> <7d9657ff-1c4a-4167-982a-9f07e7b51f77@roeck-us.net>
-In-Reply-To: <7d9657ff-1c4a-4167-982a-9f07e7b51f77@roeck-us.net>
-From: Naresh Solanki <naresh.solanki@9elements.com>
-Date: Tue, 5 Nov 2024 23:04:44 +0530
-Message-ID: <CABqG17i51TnPhAKKEAVYMXfqem9XWeNJuwzgLiYB81uCs0n91A@mail.gmail.com>
-Subject: Re: [PATCH v6 2/2] ARM: dts: aspeed: sbp1: IBM sbp1 BMC board
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	jdelvare@suse.com, sylv@sylv.io, linux-hwmon@vger.kernel.org, 
-	Joel Stanley <joel@jms.id.au>, Patrick Rudolph <patrick.rudolph@9elements.com>, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="R4RpYoaHCnWgW7y6"
+Content-Disposition: inline
+In-Reply-To: <f468a5c0a0112cee35815fb6c7b7f9933934adc2.camel@codeconstruct.com.au>
 
-Hi Andrew, Guenter,
 
-@Andrew Shall I resend this patch series along with dependent
-dt-binding patches ?
+--R4RpYoaHCnWgW7y6
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 5 Nov 2024 at 21:17, Guenter Roeck <linux@roeck-us.net> wrote:
->
-> On 11/4/24 20:10, Naresh Solanki wrote:
-> [ ... ]
->
-> >>  From a spot check, the warnings seem legitimate. Did you send the right
-> >> patches?
-> > Just checked again. They are resolved. But I guess the dtbinding patch
-> > for the above warning are merged in hwmon-next branch & not in dt/next
-> >
->
-> Did I apply some patches which should have been applied elsewhere ?
-I think it should be fine.
+On Tue, Nov 05, 2024 at 10:39:34AM +1030, Andrew Jeffery wrote:
+> Hi Conor,
+>=20
+> On Mon, 2024-11-04 at 18:49 +0000, Conor Dooley wrote:
+> > On Mon, Nov 04, 2024 at 08:39:21AM -0600, Rob Herring (Arm) wrote:
+> > >=20
+> > > On Mon, 04 Nov 2024 14:52:14 +0530, Naresh Solanki wrote:
+> > > > Document the new compatibles used on IBM SBP1.
+> > > >=20
+> > > > Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+> > > > Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> > > > ---
+> > > > Changes in V4:
+> > > > - Retain Acked-by from v2.
+> > > > - Fix alphabetic order
+> > > > ---
+> > > > =A0Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+> > > > =A01 file changed, 1 insertion(+)
+> > > >=20
+> > >=20
+> > >=20
+> > > My bot found new DTB warnings on the .dts files added or changed in
+> > > this
+> > > series.
+> > >=20
+> > > Some warnings may be from an existing SoC .dtsi. Or perhaps the
+> > > warnings
+> > > are fixed by another series. Ultimately, it is up to the platform
+> > > maintainer whether these warnings are acceptable or not. No need to
+> > > reply
+> > > unless the platform maintainer has comments.
+> > >=20
+> > > If you already ran DT checks and didn't see these error(s), then
+> > > make sure dt-schema is up to date:
+> > >=20
+> > > =A0 pip3 install dtschema --upgrade
+> > >=20
+> > >=20
+> > > New warnings running 'make CHECK_DTBS=3Dy aspeed/aspeed-bmc-ibm-
+> > > sbp1.dtb' for
+> > > 20241104092220.2268805-1-naresh.solanki@9elements.com:
+> >=20
+> > Really? This many warnings on a v6?
+> >=20
+>=20
+> I understand that it's surprising and disappointing, however these
+> warnings are from the Aspeed DTSIs and not directly from the proposed
+> DTS. Many are an artefact of history, and I'm (slowly) working to clean
+> them up. Recently I haven't had any time to dedicate to that effort,
+> and as I'm somewhat responsible for the state of things, I'm not
+> prepared to block other people's patches and push my own
+> responsibilities onto them.
 
-Regards,
-Naresh
->
-> If so, please let me know, and I'll drop them.
->
-> Guenter
->
+Ah, you see that's where I would say "no new warnings" and get the
+submitter to fix them ;) And were I the submitter, I'd want to resolve
+the warnings rather than run into issues down the road when things get
+"fixed"/documented. But I guess that's why I have the schmucks task of
+reviewing bindings innit..
+
+> I've been replying to those proposing new Aspeed-based devicetrees to
+> separate the warnings they're introducing from the warnings that
+> already exist, and requiring them to fix the issues they're responsible
+> for. I hope that I'll have time to continue to improve the situation,
+> as this is obviously a tedious task for me too.=20
+
+Well, it is your platform and if you're confident that these nodes are
+correct despite the warnings, who am I to stop you!
+
+--R4RpYoaHCnWgW7y6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZyppmQAKCRB4tDGHoIJi
+0gl3AQDYMKKpv+VRW+O5chJQqZbIqtD3TSwbPLzL+iwv7LwutgD/SjKnZdTS+eIj
+kcZPtile9/G6QpMnUwj4wo/u+c6FAwU=
+=6O1S
+-----END PGP SIGNATURE-----
+
+--R4RpYoaHCnWgW7y6--
 
