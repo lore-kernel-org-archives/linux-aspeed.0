@@ -1,73 +1,77 @@
-Return-Path: <linux-aspeed+bounces-87-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-88-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 514AAD29FB3
-	for <linux-aspeed@archiver.kernel.org>; Wed,  6 Nov 2024 09:01:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01026D59F6A
+	for <linux-aspeed@archiver.kernel.org>; Wed,  6 Nov 2024 19:33:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xjzhs73kqz2yyR;
-	Wed,  6 Nov 2024 20:01:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730883693;
-	cv=none; b=lz9JMNPh6e2jklXnQxh8S1j3yIFUncQ05jbYEtC9MpCF7hjV768GkHje6ty0xokGcUZfWbg4/VM9NmQJC1i/EsO1nkCd8lmEfILJK3cxrb8tydIHCheZJvH3zMcLC1JPEaIz0U+2PT/UzfMQNMM5NDKSjepSTsapY7xE9e9Zrs/AxkNfSXuig7jtkPYn0BxRXtOXaREeEGeVC8ZRrbTEO2hr/i/Jes3/I78ntD7KYo3aBn2T0BxMGLf6+TPKlYyRyhPE5QhoESd/vSMHWOI3F2+SCqRzciAnC3z6WB9+xuja8AAXHQYuOA1QO0jhvroueonY0bLbHVl5FFiC/56pow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkFk20Gxjz3bc6;
+	Thu,  7 Nov 2024 06:33:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730921609;
+	cv=none; b=AgeK5jtRIzkMKwaYWw4yrD3niuHqGz2bdT2DlZth62zMoSy8P6TR8Ch/FM+Q5OQI0VnxodamWMTzBIma+eYlOrP1Z2RsyN6d5KHM0SS//2lZhtwDTM2yuhaDEGCYI+HjxBiHAv9GNAsUYCIEt81QpndxYh2Z0CXobtWXnrPE+hJULNJ9LaEydyD+6Pg7VAXRAhV3zTJAxCE9t+xjHGzcPKr+6Mq3V1e+UeVAIQDJ/u7o9qYWYoKIRh3ki8pjRqHCE03aCYZ9jtqfxCTtkf6l3ARjQaS6V1B0kMaVShgMO74QQ522p2NjAPzDTegnYh/p90sTN8QTgZaVRt24dG08Tw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730883693; c=relaxed/relaxed;
-	bh=sGC6TPqRGXu1mF5aeFEhak+3rB765Th2HjWB1mjw0KQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HOhhM9NGzIQgPVuHRjXXWILl54QAoQLEUNaiK6RzBW0rJ3eKHajGpkwHFpICRePX7qZO8ApQUq2B49Akeet2hJJ7WUWc9TOUVamKy3Z4ROR9HOOOzbWKpe04dOaPdHNjJQ4WRh9Hxf1T6lypN4yn4nIa7vS6ERt48RpBWkMA7nvs5kkXmy6O8Z/lgHT8J3tFfXuAw+/JhvDX2YKZxCgBNCwj5M1r8ekNnvrR97fAv0ADfm2nl5JW3x+vJ3TrCWdKTZmI0cj4ooVbcGGL1AULtSML8Z08qzjzJRojujVjMCKg4T0LPZyUNIkDGEr/3ZITfctVfHOlqDMk4v07EnQRXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IFewanih; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1730921609; c=relaxed/relaxed;
+	bh=DWKirZ0Dp0Cmi7IM3wOgw90y9rfSjrE2uL6xs36CaBI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dWqKyd9nHj/Vh6PCQVvgVapCjSQ7LsGtsQxwZVOT2W6z2DBMOY0MzxFuDvJc/JIaP8PoqMKr3I29Zn4RqOyqKDssii8/WM1TQEAz1LxAJ/R49tNHbBIXWp8SFr0D4/6vcQnpeCQKrynL/4MVl0s1J54Qoial3Co7oIH2/Nj6oQOHmVBIJE05p8LpLLvr3O6hYHH5l+d1XVPROMPukOL8spLrAI+bZXc/XFIbLdpSZX9Ogrrvx9AqLrI/JAvIFpwmxf0DGFl0l5S/1MT970s8cCgQE0pS1L5RNQ+3RLCm/gzrR4weufHhTjWCY9D5gw0kOp79sA8g6sULa9pQJl91DQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ENr9eiVZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IFewanih;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ENr9eiVZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xjzhs0jLNz2yRD
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  6 Nov 2024 20:01:32 +1100 (AEDT)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-20bb39d97d1so61933145ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 06 Nov 2024 01:01:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1730883690; x=1731488490; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=sGC6TPqRGXu1mF5aeFEhak+3rB765Th2HjWB1mjw0KQ=;
-        b=IFewanihrrT1TgGPd8cdInUlQKTcMcIWBuBrO+3B6kIhEtWLUWv4BlGxl8pi7ZvyWX
-         xtJKXH8LlpnYHAXYy2LVY2dHNdGw3R58hoqv3JU0zym3Bm+x6bTDkUdNBq+lycyXNC9M
-         RZRlDL0R50NuUY6s6GJQ3l9OtxM7KrcqkFLmSsDQ7erj9p5Bq2s2GPEIPKFTFL/g48UM
-         +XhH635raBxPKDYXe7Pdxqpgle9kGTbN21OYZpmLREwj9sQ0t+Qg0z7VC/qIHnPCglrr
-         Fo0CvwLJTopIhLcRl9umHvVg/GjZMj35nmE5TWGiTCEwT7bKKbJ5+dNTpugJXvmCym7q
-         EUMg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730883690; x=1731488490;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=sGC6TPqRGXu1mF5aeFEhak+3rB765Th2HjWB1mjw0KQ=;
-        b=nzSywTTTGV62Z5GpfDjrv6lm/yevp1j/F37sNrgJys0Pw0WoSxrPjRBHf0dc9JXaeO
-         MXJ61a76hG6uBVL2f4DDZ18WAYIw4gr62IHpDu820ckJEfvkMIvn/5Pap+VdxPEiQgn5
-         kwuz5ydO4befw/mdpjpJGyImlyb1g5lHhjWrzzXMt16iWYTYYZG8yKBV/ICp/sge6K/h
-         GMi5BhIJB282HpF4wu1vcEiVgYCNbAR77/ApBkCLWvFcfFMiQicLp4atPKAjqq7icESm
-         HAjjXscyO4Grc/HqSedEsc+3YpG2L8Y5JDu6euwK2VIzLx8wK3KqiLmoJ5mOtGx6lZcU
-         WNVg==
-X-Forwarded-Encrypted: i=1; AJvYcCUQOAJ3HpKw1aNb2+CBKaOsHabZMelX8ZD3pEMmw6vNCYXi0ljIlwbRiQcpdD24Yy8/Fz8q4veQ7LPfTic=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw+vRbMMM56qr68pSld0EBtcj2cYW8GIZZtlpgKGsyfp2vsJOZa
-	sI1VQwYMae70lAcLd7Jns9JeDzV2w5GoUfZluxQAYle64H1iGmFpzX7uWA==
-X-Google-Smtp-Source: AGHT+IEERyee8yuMkqt0ER6m9QzckotlvCf7D5ZemQxV4YVnYPTWKduYZ7ohuFoSiKwCKIa+Cet3hw==
-X-Received: by 2002:a17:902:dace:b0:20c:5cdd:a91 with SMTP id d9443c01a7336-210f76d6870mr381219045ad.41.1730883689798;
-        Wed, 06 Nov 2024 01:01:29 -0800 (PST)
-Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-211057d380fsm91317665ad.240.2024.11.06.01.01.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 06 Nov 2024 01:01:29 -0800 (PST)
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Wed, 06 Nov 2024 16:58:52 +0800
-Subject: [PATCH 2/2] ARM: dts: aspeed: catalina: add hdd board cpld ioexp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkFjy3xbXz3bbn
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  7 Nov 2024 06:33:25 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4A6Ie2xn019000;
+	Wed, 6 Nov 2024 19:33:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=DWKirZ0Dp0Cmi7IM3wOgw90y9rfSjrE2uL6xs36Ca
+	BI=; b=ENr9eiVZ04SS+raMo7YOwe/5lqseQep5DBV0mxtj4ejs6+D6s9ty+mVdL
+	yo+w7ofJrydqMWdkYqNFTgqsJvSHqWSYDNIKk3RQinPE7o/7DwsjOSRwjW+22/fo
+	NOQXk728926OMGZ/1lRM7eeVSwrloJhOXNFhdXdvxOKBDq7urArFKRw8yDyOy8Am
+	Ppwq3cfxtHD1QpIF+Id4CF/WaTHp+E4LM6RM6CqeIs+xKQWaW3oL8lL/73tzAjRz
+	F9z4tRgba7b7B4MNZZyh9Jk3EolaIePA/UuWabvLYAbPxYYD2Rct49Z3XD7LUETW
+	Sh4vKmDjS/c3MGUnjRPf74t/icEog==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42rdxc87t0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 Nov 2024 19:33:07 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4A6Fpd2Q019096;
+	Wed, 6 Nov 2024 19:33:06 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 42p0mj6rhv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 06 Nov 2024 19:33:06 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4A6JX6Di47841676
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 6 Nov 2024 19:33:06 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 09AAF5805C;
+	Wed,  6 Nov 2024 19:33:06 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 850925805A;
+	Wed,  6 Nov 2024 19:33:05 +0000 (GMT)
+Received: from slate16.aus.stglabs.ibm.com (unknown [9.61.24.137])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  6 Nov 2024 19:33:05 +0000 (GMT)
+From: Eddie James <eajames@linux.ibm.com>
+To: linux-aspeed@lists.ozlabs.org
+Cc: andrew@codeconstruct.com.au, joel@jms.id.au, robh@kernel.org,
+        krzk+dt@kernel.org, conor+dt@kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Eddie James <eajames@linux.ibm.com>
+Subject: [PATCH] arm: dts: aspeed: Everest and Fuji: Add VRM presence gpio expander
+Date: Wed,  6 Nov 2024 13:33:03 -0600
+Message-ID: <20241106193303.748824-1-eajames@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,117 +84,105 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20241106-catalina-cpld-ioexp-update-v1-2-3437bcfcb608@gmail.com>
-References: <20241106-catalina-cpld-ioexp-update-v1-0-3437bcfcb608@gmail.com>
-In-Reply-To: <20241106-catalina-cpld-ioexp-update-v1-0-3437bcfcb608@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Patrick Williams <patrick@stwcx.xyz>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Potin Lai <potin.lai@quantatw.com>, Cosmo Chou <cosmo.chou@quantatw.com>, 
- Potin Lai <potin.lai.pt@gmail.com>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1730883681; l=2784;
- i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=Ma7zHm/VTawO0uhZBJJdi+x5g2IFHZE6w9ObR9Dz8mM=;
- b=9Mfn75WH2EHATjpkT8yHXktIYSE/oom0no6vIbpn29BER7AETsF/1yGpaSr1mOLp8P1Z7Jnx7
- BC/PFZV9qOlBWzy0AXX0GZ8TtazizPmWZFVoFLekpIsrhZ5YsIhjCBL
-X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
- pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: PJz5APyk2-yIADYsMYqQhSW6YClopaTn
+X-Proofpoint-ORIG-GUID: PJz5APyk2-yIADYsMYqQhSW6YClopaTn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
+ bulkscore=0 lowpriorityscore=0 spamscore=0 suspectscore=0 phishscore=0
+ clxscore=1011 impostorscore=0 adultscore=0 mlxlogscore=602
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2409260000 definitions=main-2411060147
 
-Add HDD board CPLD IO expender based on latest CPLD firmware support.
+Add the gpio expander that provides the VRM presence detection
+pins.
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 65 ++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
+ .../dts/aspeed/aspeed-bmc-ibm-everest.dts     | 27 +++++++++++++++++++
+ .../boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts   | 27 +++++++++++++++++++
+ 2 files changed, 54 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-index 10a9fca1b803..102d71234932 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-@@ -632,6 +632,36 @@ eeprom@51 {
- 
- &i2c3 {
- 	status = "okay";
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+index 513077a1f4be..9961508ee872 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+@@ -353,6 +353,33 @@ pca1: pca9552@62 {
+ 			"presence-base-op",
+ 			"";
+ 	};
 +
-+	// HDD CPLD IOEXP 0x10
-+	io_expander13: gpio@10 {
-+		compatible = "nxp,pca9555";
-+		interrupt-parent = <&gpio0>;
-+		interrupts = <ASPEED_GPIO(I, 6) IRQ_TYPE_LEVEL_LOW>;
-+		reg = <0x10>;
++	led-controller@63 {
++		compatible = "nxp,pca9552";
++		reg = <0x63>;
++		#address-cells = <1>;
++		#size-cells = <0>;
 +		gpio-controller;
 +		#gpio-cells = <2>;
-+	};
 +
-+	// HDD CPLD IOEXP 0x11
-+	io_expander14: gpio@11 {
-+		compatible = "nxp,pca9555";
-+		interrupt-parent = <&gpio0>;
-+		interrupts = <ASPEED_GPIO(I, 6) IRQ_TYPE_LEVEL_LOW>;
-+		reg = <0x11>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+	};
-+
-+	// HDD CPLD IOEXP 0x12
-+	io_expander15: gpio@12 {
-+		compatible = "nxp,pca9555";
-+		interrupt-parent = <&gpio0>;
-+		interrupts = <ASPEED_GPIO(I, 6) IRQ_TYPE_LEVEL_LOW>;
-+		reg = <0x12>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
++		gpio-line-names =
++			"presence-vrm-c12",
++			"presence-vrm-c13",
++			"presence-vrm-c15",
++			"presence-vrm-c16",
++			"presence-vrm-c17",
++			"presence-vrm-c18",
++			"presence-vrm-c20",
++			"presence-vrm-c21",
++			"presence-vrm-c54",
++			"presence-vrm-c55",
++			"presence-vrm-c57",
++			"presence-vrm-c58",
++			"presence-vrm-c59",
++			"presence-vrm-c60",
++			"presence-vrm-c62",
++			"presence-vrm-c63";
 +	};
  };
  
- &i2c4 {
-@@ -1067,3 +1097,38 @@ &io_expander12 {
- 		"PRSNT_CHASSIS1_LEAK_CABLE_R_N","PRSNT_CHASSIS0_LEAK_CABLE_R_N";
+ &i2c1 {
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts
+index c24e464e5faa..27ded3bba66d 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts
+@@ -355,6 +355,33 @@ led-controller@62 {
+ 			"presence-base-op",
+ 			"";
+ 	};
++
++	led-controller@63 {
++		compatible = "nxp,pca9552";
++		reg = <0x63>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"presence-vrm-c12",
++			"presence-vrm-c13",
++			"presence-vrm-c15",
++			"presence-vrm-c16",
++			"presence-vrm-c17",
++			"presence-vrm-c18",
++			"presence-vrm-c20",
++			"presence-vrm-c21",
++			"presence-vrm-c54",
++			"presence-vrm-c55",
++			"presence-vrm-c57",
++			"presence-vrm-c58",
++			"presence-vrm-c59",
++			"presence-vrm-c60",
++			"presence-vrm-c62",
++			"presence-vrm-c63";
++	};
  };
  
-+&io_expander13 {
-+	gpio-line-names =
-+		"wP3V3_RUNTIME_FLT_HDD0","wP12V_RUNTIME_FLT_HDD0",
-+		"wP3V3_AUX_RUNTIME_FLT_HDD0","",
-+		"Host_PERST_SEQPWR_FLT_HDD0","wP3V3_SEQPWR_FLT_HDD0",
-+		"wP12V_SEQPWR_FLT_HDD0","wP3V3_AUX_SEQPWR_FLT_HDD0",
-+		"wP3V3_RUNTIME_FLT_HDD1","wP12V_RUNTIME_FLT_HDD1",
-+		"wP3V3_AUX_RUNTIME_FLT_HDD1","",
-+		"Host_PERST_SEQPWR_FLT_HDD1","wP3V3_SEQPWR_FLT_HDD1",
-+		"wP12V_SEQPWR_FLT_HDD1","wP3V3_AUX_SEQPWR_FLT_HDD1";
-+};
-+
-+&io_expander14 {
-+	gpio-line-names =
-+		"wP3V3_RUNTIME_FLT_HDD2","wP12V_RUNTIME_FLT_HDD2",
-+		"wP3V3_AUX_RUNTIME_FLT_HDD2","",
-+		"Host_PERST_SEQPWR_FLT_HDD2","wP3V3_SEQPWR_FLT_HDD2",
-+		"wP12V_SEQPWR_FLT_HDD2","wP3V3_AUX_SEQPWR_FLT_HDD2",
-+		"wP3V3_RUNTIME_FLT_HDD3","wP12V_RUNTIME_FLT_HDD3",
-+		"wP3V3_AUX_RUNTIME_FLT_HDD3","",
-+		"Host_PERST_SEQPWR_FLT_HDD3","wP3V3_SEQPWR_FLT_HDD3",
-+		"wP12V_SEQPWR_FLT_HDD3","wP3V3_AUX_SEQPWR_FLT_HDD3";
-+};
-+
-+&io_expander15 {
-+	gpio-line-names =
-+		"P3V3_HDD3_FAULT_R","P3V3_HDD2_FAULT_R",
-+		"P3V3_HDD1_FAULT_R","P3V3_HDD0_FAULT_R",
-+		"P12V_HDD3_FLT_L","P12V_HDD2_FLT_L",
-+		"P12V_HDD1_FLT_L","P12V_HDD0_FLT_L",
-+		"HDD_23_PWRBRK_N_R","HDD_01_PWRBRK_N_R",
-+		"","",
-+		"HDD3_PRSNT_N_R","HDD2_PRSNT_N_R",
-+		"HDD1_PRSNT_N_R","HDD0_PRSNT_N_R";
-+};
-
+ &i2c1 {
 -- 
-2.31.1
+2.43.5
 
 
