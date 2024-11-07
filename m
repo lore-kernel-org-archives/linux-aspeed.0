@@ -1,68 +1,73 @@
-Return-Path: <linux-aspeed+bounces-95-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-97-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43056D43349
-	for <linux-aspeed@archiver.kernel.org>; Thu,  7 Nov 2024 11:22:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B1ACD4335C
+	for <linux-aspeed@archiver.kernel.org>; Thu,  7 Nov 2024 12:42:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xkfn365Gsz2xYs;
-	Thu,  7 Nov 2024 22:22:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::635"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730978551;
-	cv=none; b=hBQ5f/S9nISpvVbotsQ106e0LDjP1aA0KN/Ydx88xNyQkj6CUREOyxMzGCbJjg670xsVXYbsczuzyPj75adul/5gmv8bTTdBPIoRW1K/t9PS06Iwcsj1WhKuXKDrTO6qSuuSIhQ+ksRV5NGLqpOah0gRd2sCqudhTwT9HuxxUAMGiNxga6IOGPeeYhegGGSKjVNg3CXEPDiDo5hgTadm38ytk5ysMYMh7jDCWiyj/YXzid/tsvqom/mikagsiQygRfVfmnZVKZxeUSWOF9f2EbeoaYI7Axg4ZrsTPZiNumyBMU2npmiPxaa91DZ4SWPG1qkxpUEi3Hdfo7tczT4FAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkhYG4TJWz3blH;
+	Thu,  7 Nov 2024 23:42:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1730983346;
+	cv=none; b=LQ1AqRo29i4s8XYxcYUBadrPAO4vKU+c1jwjyU3sYQIrRBUZfh1gVdc3hOnHnq+8rT8puX/9+YzqEy4HgWAWbxRdSOmQlxNhh7kL52RXyPZEGZEk781oQGTj4RQowlQQPMpQtW+gSqa7VgiNUfCuLH9x1fIKVH1M0EO9fgoMdNjGAP3CZO0UTGG6/F3XoSWp0zLQD/pK/BSACQgvZFKD07pNf8Wb7HDtJQNNpSJAbxdWKeKvi0xpeAhAJNL0ROd8/W7dCe00Hcrb/Wz0bmrWyPVHNI7Nfq5GqC+ngbgXIaAGL2Qq0J2cFpyU/fyNdK/JMS2VfqcOUNPSlDZCPn0XDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1730978551; c=relaxed/relaxed;
-	bh=iyCDl7ZPUt6a//yr/835EBnfK0zGbZXT8k2phIEStMM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=cFwGhpOsSIkZqG8VVqaXZLunSD7SNvdjipWdVOZrmKK9MO9mkByYwSuB4eaReOFH9MWmKVq7qlfWwuEzwllIZAsh/vz6+18oTV36bCrix7KjACne6yymudMrcEPV5pBd0sM/r9w0woWoz3B7bA4iJfKvuimi7s2WwOGj4EbzZHBsua5+hJWVemUO0d3Lz8/qXSMmznoce2gBVZqszTeZJv4O3+GCVYBRmHFp6zotmqvGDogavtcHKmj1ldIHoeV+AwMP21rqsZR3iYEq+jYYpWo7v+p9zK/55H570o7+7rgHoaNecdMZ84FlGfo6E0hEAGv5lklUJBuHiL1N5oArzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=cdkBwzuq; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1730983346; c=relaxed/relaxed;
+	bh=youLRMmo0sKknJq3kY6wxMpo14aMmgxOgYUVVaBBx1Q=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=EI5DCX7ljnbjDwlnLI63lSK8Kt5m0xBQT5JUOdBd90xhBpKypkZb8IHfdJDK6DVH1s87zmatap/DH26vrpZTBR1N/MPyEkUAKW+0WbdhuvCweO33869OmXBdLo1qhmsMMKh1CO8xj8JPTMG3896lryhLdeM4/rZ5K/rPjpqPiqQZwQXxn6trzy+HCeQu3/nFUX8Xpr020yRyOoSSDOq1/LZvj4jkMQ7BZuv84w4w7BL+LaA/t3rcwcdUcqktZuO8Tzh1VaSP+CuyLstILUdGCX/8t4UyX+Rzmx0AXnhDydAX2B7BdlmfYYseta12e8BnolcP1IDCYwEzYfPqoMxCIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Yz5V14sj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=cdkBwzuq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Yz5V14sj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::635; helo=mail-ej1-x635.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com [IPv6:2a00:1450:4864:20::635])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xkfn14f5zz2xCd
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  7 Nov 2024 22:22:27 +1100 (AEDT)
-Received: by mail-ej1-x635.google.com with SMTP id a640c23a62f3a-a9a628b68a7so128520666b.2
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 07 Nov 2024 03:22:27 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkhYD37WDz2xYg
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  7 Nov 2024 23:42:22 +1100 (AEDT)
+Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-20cceb8d8b4so6120065ad.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 07 Nov 2024 04:42:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1730978545; x=1731583345; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=iyCDl7ZPUt6a//yr/835EBnfK0zGbZXT8k2phIEStMM=;
-        b=cdkBwzuqm/KwAUuIVgdIDWJoYKRWiwpO3YS2u+0KOlRVl0B5qYEnQ5YCByEos1p0kg
-         dVvyeHSCgBJfG0DJz+j8CgVm0Dzvs+z3+b1Ml6hmvsiCyt6Ko1xDpqM5n4JvM7kKQ+L3
-         gEsLzbJ/OK8lVCBUPS28j8RmOxZp7UhwB6oSwJcfuXIv/w+z9M0NWFvO7USMbaWMMNJI
-         ecsDq0xOG/ET9mXGIMpd7iSwRgyqaimhqe/c1ZRzR3MyB52oqztemIYo9uupiBumLfRy
-         0m9EFUa3/jh970fnOANyxCo7DCgd6ShdAM9CY7hjssQXPyo5zMhXyIR50LlOpFPyYFug
-         cUwg==
+        d=gmail.com; s=20230601; t=1730983341; x=1731588141; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=youLRMmo0sKknJq3kY6wxMpo14aMmgxOgYUVVaBBx1Q=;
+        b=Yz5V14sjfgKgesmZOFa302P/FFn3YhfNSz5FnKf7HZnYDC1P/nQ9yBCbl6o7I+r43g
+         cqF+oNkOGqf/6XFV4mp5BA+XGQgVxExH01PnjgjWdkogHomvtCQlpdSihIyszSl8h7Tm
+         bV16AwsD/hvu6jSCys91Kq5h5wMopVcfv2nYHCa1/2DmDRobGtZpgepU5M1PYURdO20O
+         WSBFqp0hrac6zxVvmMk6zWhD6RwxT+jOdcDX//1iDocsFNGpyHUMAEI7863UtVm2M9Za
+         QbM5i5BZNJzqxjLhJm0ERLOjGPRgbEmN4lepInU9sEPHj8pdPX6Udv7MkGSm9pAKqVx/
+         6Y+w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1730978545; x=1731583345;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=iyCDl7ZPUt6a//yr/835EBnfK0zGbZXT8k2phIEStMM=;
-        b=wvCRxm2WLeO/JNi4DUFENRz/McdStBaG5lV8DbLUqfT4NwC9tuDATyTpdOFMlY65vd
-         hZgEDNKA6DcIc9kS9pDO3J18UjDe9zTDXsY3pght5IX0s5j9lkNhbq87ggCXLAoZ/Txx
-         brC+Pv+oOxOwfwwD7bAulKkJ6G4PSFVl/hvEBv8hizpt+2dw3EKrkjxFOLsfoZbvU0zO
-         i3dSH6LVPx5Pr08zaNTHR6nbItcTjU3dXfJWMLnuptCi5z2KI9Oi71qNgeULjZd+LJVK
-         zo4OOyhiJy1r6ZlJwgGXPeEH02w5tCj0ReWbTWO2K8W+YYv8ak1QX9HueTER+wqinnBL
-         E8jQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWyzQxsAR4jLmH0ELgpa6eDdFH1jrw6AFzy8dDsqzhmxz4ssF9nMlXhhJBvK+4Kuly/Nl3JW15JnMu1d2Q=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwcP7fGUiiZmoI2Ow35aLusdsu+KkScepYP8AdXpKYdBtQ5lRd0
-	vFcj1GgTL3CAlpUaqvJQ+LMdojUfTp81FS5vtgR7iDcULpnyxfB2lOCDjO3nSqWSXIF4f5wOogw
-	bvmQ/o9mMVjXic2zc61VEcYh4dbY=
-X-Google-Smtp-Source: AGHT+IHGsPapN8RHF9Qpx6NuCKBBsmhdkYBPLxie1jdxHa0MnvuH1vKs6Dy7tAmC0sQgjvTv9FyEtEoss4jejQxSaY8=
-X-Received: by 2002:a17:906:8415:b0:a9e:c940:d154 with SMTP id
- a640c23a62f3a-a9ec940d1ebmr412325866b.17.1730978544331; Thu, 07 Nov 2024
- 03:22:24 -0800 (PST)
+        d=1e100.net; s=20230601; t=1730983341; x=1731588141;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=youLRMmo0sKknJq3kY6wxMpo14aMmgxOgYUVVaBBx1Q=;
+        b=wNyrkMZ+vfa+iEMLFMW/HxB2c4008oqP9bpVq4xcnUd/F6FyUX+p1+I+uTniB1mSUe
+         89eiPr3RIcFwUsVduAYCys2+2jpgcW162EBrcCSQfk1ComKHVUJmz9Y5Jtw1L175P77K
+         PFOwg8xKshrNRcArlLMv+4ugCzjv3w5/zHj0pOw+cQCx275mxJyrXQpZYrKBN0th+uAr
+         Q71AzGx53q9nTs5vCQhrgXUitrDbEvhV1+45aaJI6aaG9xK4rp9NiwtPz8KHFYGQe1t4
+         n8HrbATwyVxwH3hgXMHI59u9TYz0JQOARxZnXaihpvCwPjjeLw4nSdYdleGDePOeBhPv
+         RX+A==
+X-Forwarded-Encrypted: i=1; AJvYcCV5kJHsjWMDcRHTPRTFqQ6AgFPzhmx+U5O2z6S90qEmUePHEFCpDGffPurCBMXmYRVfaHYQQsiBezNapzA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzY0N2X1tKgUPkR3N/LuSJg0pER/ZTqxDNd+FF6d9QIZ+lLM5Ne
+	nlPfSpuY3Hbya6C7BjDSFjURllQ5QMQTBZXErdzQchv+MPGmtj9K
+X-Google-Smtp-Source: AGHT+IGEXo60WK+bnzWKZpp/tb3i21nIWbMBqygL8tAiAdUOQebmGHeK1uuGJEibdV7evN/corYGzw==
+X-Received: by 2002:a17:902:d48b:b0:20c:da7c:6e8c with SMTP id d9443c01a7336-21175a93c02mr52725505ad.3.1730983340762;
+        Thu, 07 Nov 2024 04:42:20 -0800 (PST)
+Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21177e412d8sm11101975ad.113.2024.11.07.04.42.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 07 Nov 2024 04:42:20 -0800 (PST)
+From: Potin Lai <potin.lai.pt@gmail.com>
+Subject: [PATCH v2 0/2] ARM: dts: aspeed: catalina: update CPLD IO expander
+ pin definitions
+Date: Thu, 07 Nov 2024 20:39:56 +0800
+Message-Id: <20241107-catalina-cpld-ioexp-update-v2-0-d7742eabc0e6@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -75,56 +80,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20241106-catalina-cpld-ioexp-update-v1-0-3437bcfcb608@gmail.com>
- <20241106-catalina-cpld-ioexp-update-v1-1-3437bcfcb608@gmail.com> <8e858e760c78ddf533e9e03c20b34fce29862c2e.camel@codeconstruct.com.au>
-In-Reply-To: <8e858e760c78ddf533e9e03c20b34fce29862c2e.camel@codeconstruct.com.au>
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Thu, 7 Nov 2024 19:22:13 +0800
-Message-ID: <CAGfYmwVxwaZk-si1OkP4xeaODhAO74Hv43U=SpzOsGOBkTH8Bw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] ARM: dts: aspeed: catalina: update pdb board cpld
- ioexp linename
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Patrick Williams <patrick@stwcx.xyz>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Potin Lai <potin.lai@quantatw.com>, 
-	Cosmo Chou <cosmo.chou@quantatw.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIABy1LGcC/43NTQ6DIBCG4auYWXcaQGJ/Vt6jcYEw6iQqBKyxM
+ d691BN0+XyL99shUWRK8Cx2iLRyYj9nqEsBdjBzT8guG5RQWkpRoTWLGXk2aMPokD1tAd/BmYW
+ QNDktHkZ15CAHQqSOtzP+arIHTouPn/Nrlb/1r+wqUWCpy1trO9tW4l73k+Hxav0EzXEcXxrhO
+ nXEAAAA
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Patrick Williams <patrick@stwcx.xyz>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Potin Lai <potin.lai@quantatw.com>, Cosmo Chou <cosmo.chou@quantatw.com>, 
+ Potin Lai <potin.lai.pt@gmail.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1730983338; l=783;
+ i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
+ bh=fDEBLfyJb9nAn3ipO12nV6wnAto2tMxREdWJ9q5mc7U=;
+ b=EKVMgmy3zl5agoZHAZ4L/s+CG8X+hFuX+tTz28Z0g2vxOKOPzhCqGMqrJw48x6vluGrArZFlA
+ FR3h5HtOXxxBC6dMyMqO51uFbZ63ua2/BTAb8HexQTzfXHtdyEkt81E
+X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
+ pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-On Thu, Nov 7, 2024 at 7:41=E2=80=AFAM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> On Wed, 2024-11-06 at 16:58 +0800, Potin Lai wrote:
-> > Update the GPIO linename of each PDB CPLD IO expander based on latest
-> > CPLD firmware.
->
-> What version is the latest CPLD firmware? What was the previous version
-> with the old pin assignments?
+This patch series updates the CPLD IO expander pin definitions of PDB
+board and HDD board.
 
-Because the hardware changes from EVT to DVT, the CPLD firmware
-reallocated the IOEXP pin mapping in DVT version.
-I will add more description into the commit message in the next version.
+Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+---
+Changes in v2:
+- add more description in commit message
+- Link to v1: https://lore.kernel.org/r/20241106-catalina-cpld-ioexp-update-v1-0-3437bcfcb608@gmail.com
 
->
-> I'm also interested in some discussion of the coordination between CPLD
-> firmware, the devicetree and the BMC userspace configuration. This
-> change feels pretty painful.
+---
+Potin Lai (2):
+      ARM: dts: aspeed: catalina: update pdb board cpld ioexp linename
+      ARM: dts: aspeed: catalina: add hdd board cpld ioexp
 
-I am not from the CPLD firmware team, I only know our CPLD team was
-redesigning the entire struct which causes the huge changes of IOEXP
-pins.
+ .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 150 ++++++++++++---------
+ 1 file changed, 87 insertions(+), 63 deletions(-)
+---
+base-commit: 59b723cd2adbac2a34fc8e12c74ae26ae45bf230
+change-id: 20241106-catalina-cpld-ioexp-update-e4ed409a2fed
 
-This is probably a different topic, I am curious about is it possible
-to assign the linename in userspace?
-In OpenBMC, there are many services that depend on GPIO linename, it
-will be more flexible if I can assign the linename before service
-starts.
+Best regards,
+-- 
+Potin Lai <potin.lai.pt@gmail.com>
 
-Thanks,
-Potin
-
->
-> Andrew
 
