@@ -1,62 +1,72 @@
-Return-Path: <linux-aspeed+bounces-102-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-103-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9897D5D695
-	for <linux-aspeed@archiver.kernel.org>; Thu,  7 Nov 2024 23:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8162DD5D699
+	for <linux-aspeed@archiver.kernel.org>; Thu,  7 Nov 2024 23:49:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xkz7Q2VXLz3brC;
-	Fri,  8 Nov 2024 10:39:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XkzM66q4xz3bp1;
+	Fri,  8 Nov 2024 10:49:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731022770;
-	cv=none; b=JDXch+CHdhPvn8l+QnAqcA0NDr19yO7YRGojfxJ0rc8BKJVfdopjUhBD3fv/SZeYi5+zqoXu9O+Ru8zDgwJ8f3W+TdE/xq/vghLoIDRjpm/vJMqBBms17NgqRiTv0U0WvnliMN97Wea1tdUVpMqmkgXXIyf5zlU78rwzE+2TiCUPpE7ED6VCMCiWb9dbNoMjHWGn3PhYfLAY/LQLmbGlsbMH5WY4P0FRaQ2R24/syZ7kHtOAjJHL3vvMCZeskjsT54jWJHRTffthrpdMTRTfjWOdj980zrAteAA1DniGixV2FCLLyRUII9x01EGF2tAwLmfzZ+FtbkScF6IBWyMAuw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731023378;
+	cv=none; b=SuqGwhfu1lTetljT5XlnFq0NXnJfxbz9tKAPTFzWHuPbq0/znRSjisgLDBasD1+AnBXXqAm9y+Q7ijnjYEf9oAjiZ7iqFZVVDMqrHPS3+rq41R/XJWLA8fFruUM77p/TrFsNd6NBhCRibMKoQnSIHs4+2vj2hfcA0zDJ89qsuWOi5iE8pVv3zzY7Agd8QHz+2K7JeBVLg67SYQMkNMdvNOLxWtXoy0+3ouW9zF+yG/XlBFDe4Ix3VUfWi2jrJqkMQ7/G0G0iEIxxLHZjywxldSOOKUS4sGr9f5GISELF0OT+jO7inCOHvwCFOy1jR6k5RgsGPYVCouMCbH2h09+uXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731022770; c=relaxed/relaxed;
-	bh=A5bjyyAWYr+VR/DxJGgp7mRweAiKTLFWuDoMtqHPdt4=;
+	t=1731023378; c=relaxed/relaxed;
+	bh=p2kk6Hi41/Ro/71xlCn7nSIBe3j3Ua27rEHjt50nD+I=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cwLyBpK6HjNxb3YG1f8yI99ToFRnejnQDZA/LIngupmJqzfGVWQpCwtkTBIBYjKpX+GDbqf6qpqyijNXJCySNGHIH9KO6LPSVS6mLgFd+WsF4uOsP0YYJDZSCN/Hf0sn3h4mFuKHyIxkFMRbkA/mCeD53DErvzr4MvXEod8FjYilHCnE6NzWyKbY+z1LbbMupICLujKsUDVOQloNoCIjKesDZXqlzEwC13oJneM+cHDe/cmD8zVFPYKZ0yzBw0dTU5q/KVdt+q4ge6Q4mNDYATgaba+w5Ng82rMlzyStwKwwir+2DS/pcpYjOlW+xxGaZwrODLwpo48t1BVjMVryeg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bqOTL1V0; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=WkVy3BrciCY7ifw+6AwAhH8w0t3VvuzS+Jkq8oXZHMTRZwPuXBFzEZJLpsJpkOjrm46OGc9TvU6+vVyHpV1fV+zGHGiTXzNUnYRAyWT1x3KqkDmaZSZVYtRdrlv9b2wLf2vNP47No9Q1V5U2iJjgTaxjq74FGoOFXJWiEQvsODBip+oIjXcda2zTNaFEi1yBRV6RKyvVGQ5YCIOAhO3cTjni0C1EtSTxDfQ+QX7Nep0Qx9byr0mjKnU48uTUU+a7y+vD3BJj3C8hXFmyv33Jls2ujYqmYlmajix7vkeVzLOnVlfX1adnhwtPEAWjJgFxNjlonaAWRWZKRn54w4UynQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=EBtdjaAH; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bqOTL1V0;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=EBtdjaAH;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xkz7P4q7Zz3bn9
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  8 Nov 2024 10:39:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XkzM572HLz3bn9
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  8 Nov 2024 10:49:37 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1731022768;
-	bh=A5bjyyAWYr+VR/DxJGgp7mRweAiKTLFWuDoMtqHPdt4=;
+	d=codeconstruct.com.au; s=2022a; t=1731023377;
+	bh=p2kk6Hi41/Ro/71xlCn7nSIBe3j3Ua27rEHjt50nD+I=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=bqOTL1V0niQ4ld27SUYcHlDmAaoq5xSdE6TM4Cu7mkF2RsEJpecqiqyVPuUWIGNTQ
-	 ICeHH8E6VMmRL/ULBPyjNck8NZar70M3f+zzThxoac1+zdqPdiiMrkzs4C7+bcp99z
-	 axJyWMyc4x/hr9s/0Q0Aj5PMHlc/YeR54n+Bjj1Hgn59bxgRW2Siyhf44zq/Q4IDfq
-	 C+qwyMxmczr1dL5D3Rq6H39SlHeiDYjRWeMIaTVN2F9ete38v8BRjqJLMcET5rIJqG
-	 XogJixa7Ie4sXmj0XViwanp/VzRMD6l4uwBb2YTQRRKiKpnp1fhz/n49FnwzomV4UP
-	 TvY7qz6AgVqIw==
+	b=EBtdjaAHWRxXhfz8E3EXbIwgrYhv9xSEM8jRmHASRjDiZmfjWDvgig5I9KA9TGwAn
+	 bwdtQtrW1Bi0FszAYf2ySq2ONGvFI2J3CVBilPvpDpXMKBc6lrJtCgKXbMRKyW3jco
+	 VF4nI772R2yLDrWDipnNyKv8g13a51byGXbFfS9JWNsdyXOcQboImaKqivg1Cev/sp
+	 M+CND0O1jc0barD0lqTXMXWYagjLffmHPhNpocbUjPlJaHU9vzCFkaKqO9Rn+006o+
+	 V2pQvSP8NUUXX96YEnIE3K++DWYjy0bIJJSPOT4Rooygp1UWLep5HZmlQJdxUKxBLt
+	 jj8Zwer5xhkdw==
 Received: from [192.168.68.112] (ppp118-210-167-185.adl-adc-lon-bras34.tpg.internode.on.net [118.210.167.185])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id AB35C6B922;
-	Fri,  8 Nov 2024 07:39:27 +0800 (AWST)
-Message-ID: <696cbaeefd0f731a1883771da3caa308ffcd03d5.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2 1/2] ARM: dts: aspeed: catalina: update pdb board
- cpld ioexp linename
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id EB6136B922;
+	Fri,  8 Nov 2024 07:49:33 +0800 (AWST)
+Message-ID: <ed77d57facaaef0be796b4c6a742dc7bf3bff479.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v4 1/3] watchdog: aspeed: Update bootstatus handling
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Potin Lai <potin.lai.pt@gmail.com>, Patrick Williams <patrick@stwcx.xyz>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- devicetree@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org,  linux-kernel@vger.kernel.org, Potin Lai
- <potin.lai@quantatw.com>, Cosmo Chou <cosmo.chou@quantatw.com>
-Date: Fri, 08 Nov 2024 10:09:27 +1030
-In-Reply-To: <20241107-catalina-cpld-ioexp-update-v2-1-d7742eabc0e6@gmail.com>
-References: 
-	<20241107-catalina-cpld-ioexp-update-v2-0-d7742eabc0e6@gmail.com>
-	 <20241107-catalina-cpld-ioexp-update-v2-1-d7742eabc0e6@gmail.com>
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, Patrick Williams
+	 <patrick@stwcx.xyz>, "wim@linux-watchdog.org" <wim@linux-watchdog.org>, 
+	"linux@roeck-us.net"
+	 <linux@roeck-us.net>
+Cc: "joel@jms.id.au" <joel@jms.id.au>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+ <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-watchdog@vger.kernel.org"
+ <linux-watchdog@vger.kernel.org>, "Peter.Yin@quantatw.com"
+ <Peter.Yin@quantatw.com>, "Patrick_NC_Lin@wiwynn.com"
+ <Patrick_NC_Lin@wiwynn.com>, "Bonnie_Lo@wiwynn.com" <Bonnie_Lo@wiwynn.com>,
+  "DELPHINE_CHIU@wiwynn.com" <DELPHINE_CHIU@wiwynn.com>, BMC-SW
+ <BMC-SW@aspeedtech.com>,  "chnguyen@amperecomputing.com"
+ <chnguyen@amperecomputing.com>
+Date: Fri, 08 Nov 2024 10:19:32 +1030
+In-Reply-To: <TYZPR06MB5203053A004676F51322DECFB25C2@TYZPR06MB5203.apcprd06.prod.outlook.com>
+References: <20241101121201.2464091-1-chin-ting_kuo@aspeedtech.com>
+	 <20241101121201.2464091-2-chin-ting_kuo@aspeedtech.com>
+	 <ZyUcIIb1dtoNhX00@heinlein.vulture-banana.ts.net>
+	 <a0faca9a6ec7f4acdfa2f29b4ffb94b5392aea6b.camel@codeconstruct.com.au>
+	 <TYZPR06MB5203053A004676F51322DECFB25C2@TYZPR06MB5203.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
@@ -73,14 +83,80 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 
-On Thu, 2024-11-07 at 20:39 +0800, Potin Lai wrote:
-> Due to there are huge changes of PDB CPLD IOEXP pin definitions since
-> DVT version,
+Hi Chin-Ting,
 
-If this is a different (revision of the) board, maybe it should have a
-different dts file?
+On Thu, 2024-11-07 at 05:35 +0000, Chin-Ting Kuo wrote:
+> Hi Andrew,
+>=20
+> Thanks for the check.
+>=20
+> > -----Original Message-----
+> > From: Andrew Jeffery <andrew@codeconstruct.com.au>
+> > Sent: Monday, November 4, 2024 8:02 AM
+> > Subject: Re: [PATCH v4 1/3] watchdog: aspeed: Update bootstatus
+> > handling
+> >=20
+> > On Fri, 2024-11-01 at 14:21 -0400, Patrick Williams wrote:
+> > > On Fri, Nov 01, 2024 at 08:11:59PM +0800, Chin-Ting Kuo wrote:
+> > > > The boot status mapping rule follows the latest design guide
+> > > > from
+> > > > the OpenBMC shown as below.
+> > > > https://github.com/openbmc/docs/blob/master/designs/bmc-reboot-caus=
+e
+> > > > -update.md#proposed-design
+> > > > - WDIOF_EXTERN1=C2=A0=C2=A0 =3D> system is reset by Software
+> > > > - WDIOF_CARDRESET =3D> system is reset by WDT SoC reset
+> > > > - Others=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D>=
+ other reset events, e.g., power on reset.
+> > >=20
+> > > I'm quite surprised that the above is relevant for a kernel
+> > > driver at
+> > > all.=C2=A0 Isn't "EXTERN1" a name of a real watchdog signal from your
+> > > hardware (my recollection is that there are 2 external
+> > > watchdogs).
+> >=20
+> > I think you may be referring to WDTRST1 (and WDTRST2) here.
+> >=20
+>=20
+> WDTRST1, wdt_ext, is a pulse signal generated when WDT timeout
+> occurs. However, depending on the HW board design, wdt_ext doesn=E2=80=99=
+t
+> always affect the system reset. Thus, EXTERN1 boot status can be
+> ignored in ASPEED WDT driver and just implement "CARDRESET" and
+> "others" types since EXTERN1 is not always affected/controlled by WDT
+> controller directly. Or, an additional property in dts can be added
+> to
+> distinguish whether the current EXTRST# reset event is triggered by
+> wdt_ext signal.
 
-See the on-going conversation on v1.
+Yep, I understand how it works. I was responding to Patrick's query to
+clear up some confusion around the watchdog signal names.
+
+> >=20
+> > >=20
+> > > Having said that, it was known that there would need to be
+> > > changes to
+> > > the driver because some of these conditions were not adequately
+> > > exposed at all.=C2=A0 I'm just still surprised that we're needing to
+> > > reference that document as part of these changes.
+> >=20
+> > I think the main question is whether an internal, graceful
+> > (userspace-
+> > requested) reset is a reasonable use of WDIOF_EXTERN[12]. My
+> > feeling no. I
+> > wonder whether defining a new flag (WDIOF_REBOOT?
+> > WDIOF_GRACEFUL?) in the UAPI would be acceptable?
+> >=20
+>=20
+> Agree, but this is out of the scope of this patch series and can be
+> discussed and
+> implemented in the other future patches.
+
+I disagree, because then you're changing the userspace-visible
+behaviour of the driver yet again. I don't prefer the proposed patch as
+the way forward because I think it is abusing the meaning of
+WDIOF_EXTERN1. I think the concept needs input from the watchdog
+maintainers.
 
 Andrew
 
