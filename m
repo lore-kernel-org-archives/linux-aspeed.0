@@ -1,77 +1,61 @@
-Return-Path: <linux-aspeed+bounces-106-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-107-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57CE1D5C0E3
-	for <linux-aspeed@archiver.kernel.org>; Fri,  8 Nov 2024 14:58:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1D34D12D59
+	for <linux-aspeed@archiver.kernel.org>; Sun, 10 Nov 2024 23:45:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XlMX40Fnxz3bwk;
-	Sat,  9 Nov 2024 01:58:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731077923;
-	cv=none; b=mK5e9mgOIrJNuhyr17yXIYeUSnYYUSU8GhT5MkZg819Ufv14382vKLRyCehNUx74cxp2M5YrVbwiyQB2VVQ9x2KMSG1qGwo9w6TV3Hdy/zQ/vK8COypdG6iSa6sYlHgLvg+b2aSduOI4tw5szcT7xjQ0+2BuZolGYAhA4gwXwsSuAfmR3qZ8kN6auTA6tlioSjacicyxL3v2ri0TzE7mb0APyYTdH5nkYVqTtm57OsCTR8myrwsc2uBFrqYEhWrh9+3iIHQ6KgDtiQ9tEMZmpCIEQejqPc1mc1S2QfX2QDjCBn8QNru/4W4h6c7pAYipQ20qlP67+zq8Ab+BqrprNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xmq7K10fZz2y8Z;
+	Mon, 11 Nov 2024 10:45:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731282349;
+	cv=none; b=jeVyGAnTJJrbLzIgBGUvM3+yEwpT24X4LQmb/YmGtx7hChboXvnOvoXrSGEA4PYQWdh6b5GluTa9KGbKyqOx+UeqMuqJNs3f/eDzQO5q/rcyDoYag9rTBGEfL1hBANBggoXTziIxCaHi5H9PaJoIdNNUGrJahONA92FYFPOlsaWorl0r4Jwnb0DDsf+O6VdXQflMWpgQVofmnyE9wd72COtH1t07rNRAm2FMnGyc1HrYXyE41TL808FO5E2ZvQRdSHJmJIwUsOQpCD130Vd6ApboB2/Zwz8wyOsZOfgukO/Sf984MK0S+0EkuafFT1/i6klCoHN6f+S4x9JgQJB3fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731077923; c=relaxed/relaxed;
-	bh=zbQ/7ajaIUHGgWotTYl7JBdEMFP9k+dUhiJRbgtHLw8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=IyBOqyBcbqJDGl0AYfEgdSh7cEVwE9zxuqgpBns6SM+kdjDOFSFJ730TxjNWqv3JiCPu9Sv29QBJdULl6mYeicGrlz6EJmi+6RKVIcWreLkqZ9eJoaMkGF6H9fK4hOWndua7WwZ5dUPJHrZJ81lZzJZJPbTexKK1kal8t1buq/BRlMtnC4vfr7S455gYPCI+Tn3st604GuuWcFyvt8hz5nCknGaUafPstRDNc2qhCfMr8FzEZ9RGnJpWnU5CHlL0Gp3qURQNcxmkCRiQpbY1Rkjo/ZElHDs/XO1P+LgrC/KN1RZsgfH33rAnX/F1gcLSKHQh18rHXCmKp96NVfrbnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XIBNqvHO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1731282349; c=relaxed/relaxed;
+	bh=CtE/2TzXKxCOgx8TvJHqD35OsC00+oFw8Pd4MfmWF1k=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=iDzX7N7sqdMBl26UDklgf0Ysc4/3E71EjXUUf9okTYXqUQKn6Li/8ffQ/7CPuH99YLLc2QkSj6zg0L0JWtUWwaL47TliGiZmf19fvO1PZTn1AnjmwlivVQDRKt9CjK15OPmqwfEdf4D2ik7l/cS0xn7fXuAtFt1QRAORKbAj9hMNb6nu653zJJxCTQ1wBZTAyaTTWmTSIADpl7FMb7vJiPNWUDuamB8IKnRNSERfR8THmL5H2GJZzAv79ix+kDSsIk62SwmVHbSFX0Yluh81T2OmyRQOpiqhcJVEeqYk8QmgTioGDZ5s6iEOvMQ5PfUvxDiC8ysJru7kSVGJmUDT+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kdqScvdb; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XIBNqvHO;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kdqScvdb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XlMX21DGhz3bw9
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  9 Nov 2024 01:58:41 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4A8DBXp0001699;
-	Fri, 8 Nov 2024 14:58:25 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=zbQ/7ajaIUHGgWotTYl7JBdEMFP9k+dUhiJRbgtHL
-	w8=; b=XIBNqvHOF2R1YdeL7CXowNR4wqAOMUzKpbgEDXznKwrIgP8d5dSMQImlM
-	8onEXw51YTzdg56FnLx4UVpEcDMVubquzpniNtvYz8wL/tNyEcD/KI7kde9nAOc0
-	VK31Bck8XMMtSoWKaSQAwE6gJvzpYd+nEhAP4jlhA9YlL3tHzAVKquWzrbi3VQsB
-	da94cTXxg6dwr6NsQPeDDgYzjN6VsahH5qUsnCL5T2d5gP7sn+QlaRpLNJK5JBHj
-	Be6vbbRCbMVUKydf0TyqpKbPCqZT2WMzFqY1J/UlmsbVXUW1OXhbhJC/U4TBqEkv
-	o28S26i1xJVkf2F/GhZDko/8DcQ3w==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 42sk9s8hxf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 08 Nov 2024 14:58:25 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4A8EQCsa008433;
-	Fri, 8 Nov 2024 14:58:24 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 42nywmjfh0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 08 Nov 2024 14:58:24 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4A8EwO5E24117922
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 8 Nov 2024 14:58:24 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E31A65805A;
-	Fri,  8 Nov 2024 14:58:23 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B37E558056;
-	Fri,  8 Nov 2024 14:58:23 +0000 (GMT)
-Received: from slate16.aus.stglabs.ibm.com (unknown [9.61.24.137])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  8 Nov 2024 14:58:23 +0000 (GMT)
-From: Eddie James <eajames@linux.ibm.com>
-To: linux-aspeed@lists.ozlabs.org
-Cc: andrew@codeconstruct.com.au, joel@jms.id.au, robh@kernel.org,
-        krzk+dt@kernel.org, conor+dt@kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Eddie James <eajames@linux.ibm.com>
-Subject: [PATCH] arm: dts: aspeed: Blueridge and Rainer: Add VRM presence GPIOs
-Date: Fri,  8 Nov 2024 08:58:21 -0600
-Message-ID: <20241108145822.1365072-1-eajames@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xmq7H1H48z2xxt
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 11 Nov 2024 10:45:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1731282344;
+	bh=CtE/2TzXKxCOgx8TvJHqD35OsC00+oFw8Pd4MfmWF1k=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=kdqScvdbKNWzvUQOtZ8y4IJkVrDptpwzjGzuyO7c9xz2ZQyZ28TCXeX2HpyB5RBnL
+	 k8Wr8bmUr7L14Ja/d9pqNNdIxeREt3khie9BtL0bWpuLgJFWd6o6+qyp8QfEj9FwLe
+	 pjBrFrarmMdB6AtvTqU0pCkTBFMkjCJNQ8/WCPzFhyIfdW+hcYUz8vrhDwD7h/hmkR
+	 17NNxq+S/o7+PGdqZr3IqzQdcFJY3D4yIuUwpe3oxsv2qDvjGjlhWwvqcxLwNJ1mwX
+	 f52aRicZTaKScCqoFq3RBSHfSJpq8wLTg6aXx+gpXDPVGZNVljIFVPlHyphQdMQgAV
+	 UyBWi8r99lOuA==
+Received: from [192.168.68.112] (ppp118-210-186-64.adl-adc-lon-bras34.tpg.internode.on.net [118.210.186.64])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id DE0216490A;
+	Mon, 11 Nov 2024 07:45:42 +0800 (AWST)
+Message-ID: <d4196567fc62a24922794b02adad1b6c47750760.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] arm: dts: aspeed: Blueridge and Rainer: Add VRM
+ presence GPIOs
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Eddie James <eajames@linux.ibm.com>, linux-aspeed@lists.ozlabs.org
+Cc: joel@jms.id.au, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org,  devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Mon, 11 Nov 2024 10:15:40 +1030
+In-Reply-To: <20241108145822.1365072-1-eajames@linux.ibm.com>
+References: <20241108145822.1365072-1-eajames@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -84,59 +68,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: uEoh45k5zx-eHpSrTI_hq81m4nT7e9B5
-X-Proofpoint-ORIG-GUID: uEoh45k5zx-eHpSrTI_hq81m4nT7e9B5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 malwarescore=0
- phishscore=0 suspectscore=0 mlxlogscore=318 clxscore=1015
- priorityscore=1501 lowpriorityscore=0 spamscore=0 mlxscore=0
- impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2409260000 definitions=main-2411080122
 
-Add GPIO line names to the GPIO expander to describe DCM and
-VRM presence detection lines.
-
-Signed-off-by: Eddie James <eajames@linux.ibm.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts | 4 ++--
- arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts   | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
-index 5f9a46c2abb8..d504ae84db89 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dts
-@@ -1232,8 +1232,8 @@ led-controller@60 {
- 		#gpio-cells = <2>;
- 
- 		gpio-line-names =
--			"", "", "", "", "", "", "", "",
--			"", "", "", "", "", "", "power-config-full-load", "";
-+			"", "", "", "", "", "", "P10_DCM0_PRES", "P10_DCM1_PRES",
-+			"", "", "", "", "PRESENT_VRM_DCM0_N", "PRESENT_VRM_DCM1_N", "power-config-full-load", "";
- 	};
- 
- 	led-controller@61 {
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts
-index a4aec3010456..eefc69d0d032 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dts
-@@ -1280,8 +1280,8 @@ pca_pres3: pca9552@60 {
- 		#gpio-cells = <2>;
- 
- 		gpio-line-names =
--			"", "", "", "", "", "", "", "",
--			"", "", "", "", "", "", "power-config-full-load", "";
-+			"", "", "", "", "", "", "P10_DCM0_PRES", "P10_DCM1_PRES",
-+			"", "", "", "", "PRESENT_VRM_DCM0_N", "PRESENT_VRM_DCM1_N", "power-config-full-load", "";
- 	};
- 
- 	pca_pres2: pca9552@61 {
--- 
-2.43.5
+T24gRnJpLCAyMDI0LTExLTA4IGF0IDA4OjU4IC0wNjAwLCBFZGRpZSBKYW1lcyB3cm90ZToKPiBB
+ZGQgR1BJTyBsaW5lIG5hbWVzIHRvIHRoZSBHUElPIGV4cGFuZGVyIHRvIGRlc2NyaWJlIERDTSBh
+bmQKPiBWUk0gcHJlc2VuY2UgZGV0ZWN0aW9uIGxpbmVzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IEVk
+ZGllIEphbWVzIDxlYWphbWVzQGxpbnV4LmlibS5jb20+Cj4gLS0tCj4gwqBhcmNoL2FybS9ib290
+L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1pYm0tYmx1ZXJpZGdlLmR0cyB8IDQgKystLQo+IMKgYXJj
+aC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5pZXIuZHRzwqDCoCB8IDQg
+KystLQo+IMKgMiBmaWxlcyBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0p
+Cj4gCj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWli
+bS1ibHVlcmlkZ2UuZHRzCj4gYi9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1p
+Ym0tYmx1ZXJpZGdlLmR0cwo+IGluZGV4IDVmOWE0NmMyYWJiOC4uZDUwNGFlODRkYjg5IDEwMDY0
+NAo+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWlibS1ibHVlcmlk
+Z2UuZHRzCj4gKysrIGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLWJs
+dWVyaWRnZS5kdHMKPiBAQCAtMTIzMiw4ICsxMjMyLDggQEAgbGVkLWNvbnRyb2xsZXJANjAgewo+
+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dwaW8tY2VsbHMgPSA8Mj47Cj4gwqAK
+PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGdwaW8tbGluZS1uYW1lcyA9Cj4gLcKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAiIiwgIiIsICIiLCAi
+IiwgIiIsICIiLCAiIiwgIiIsCj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqAiIiwgIiIsICIiLCAiIiwgIiIsICIiLCAicG93ZXItY29uZmlnLWZ1bGwtCj4g
+bG9hZCIsICIiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgIiIsICIiLCAiIiwgIiIsICIiLCAiIiwgIlAxMF9EQ00wX1BSRVMiLAo+ICJQMTBfRENNMV9Q
+UkVTIiwKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCIi
+LCAiIiwgIiIsICIiLCAiUFJFU0VOVF9WUk1fRENNMF9OIiwKPiAiUFJFU0VOVF9WUk1fRENNMV9O
+IiwgInBvd2VyLWNvbmZpZy1mdWxsLWxvYWQiLCAiIjsKPiDCoMKgwqDCoMKgwqDCoMKgfTsKClRo
+aXMgZW5kcyB1cCBnZW5lcmF0aW5nIGNoZWNrcGF0Y2ggd2FybmluZ3MgYWJvdXQgbG9uZyBsaW5l
+cyB3aGVuIEkKYXBwbHkgaXQuCgpJIGRpZCBhIHF1aWNrLCBpbmNvbXBsZXRlIGFuZCByYW5kb20g
+c3VydmV5IG9mIHNvbWUgb3RoZXIgZGV2aWNldHJlZXMsCmFuZCBwZXJoYXBzIGV4cGxvZGluZyBv
+dXQgbGlrZSBpbiBbMV0gbWlnaHQgaGVscC4KClsxXTogaHR0cHM6Ly9naXQua2VybmVsLm9yZy9w
+dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXguZ2l0L2NvbW1pdC8/aWQ9ZDg1
+YjJhZDM1YTJhYgoKPiDCoAo+IMKgwqDCoMKgwqDCoMKgwqBsZWQtY29udHJvbGxlckA2MSB7Cj4g
+ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWlibS1yYWlu
+aWVyLmR0cwo+IGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5p
+ZXIuZHRzCj4gaW5kZXggYTRhZWMzMDEwNDU2Li5lZWZjNjlkMGQwMzIgMTAwNjQ0Cj4gLS0tIGEv
+YXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5pZXIuZHRzCj4gKysr
+IGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5pZXIuZHRzCj4g
+QEAgLTEyODAsOCArMTI4MCw4IEBAIHBjYV9wcmVzMzogcGNhOTU1MkA2MCB7Cj4gwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjZ3Bpby1jZWxscyA9IDwyPjsKPiDCoAo+IMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZ3Bpby1saW5lLW5hbWVzID0KPiAtwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCIiLCAiIiwgIiIsICIiLCAiIiwgIiIs
+ICIiLCAiIiwKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oCIiLCAiIiwgIiIsICIiLCAiIiwgIiIsICJwb3dlci1jb25maWctZnVsbC0KPiBsb2FkIiwgIiI7
+Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAiIiwgIiIs
+ICIiLCAiIiwgIiIsICIiLCAiUDEwX0RDTTBfUFJFUyIsCj4gIlAxMF9EQ00xX1BSRVMiLAo+ICvC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIiIsICIiLCAiIiwg
+IiIsICJQUkVTRU5UX1ZSTV9EQ00wX04iLAo+ICJQUkVTRU5UX1ZSTV9EQ00xX04iLCAicG93ZXIt
+Y29uZmlnLWZ1bGwtbG9hZCIsICIiOwoKU2ltaWxhcmx5IGhlcmUuCgpBbmRyZXcK
 
 
