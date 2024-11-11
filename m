@@ -1,59 +1,60 @@
-Return-Path: <linux-aspeed+bounces-117-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-118-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEA65D3ABFA
-	for <linux-aspeed@archiver.kernel.org>; Mon, 11 Nov 2024 23:44:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B974D3ABFA
+	for <linux-aspeed@archiver.kernel.org>; Mon, 11 Nov 2024 23:53:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XnR3f6mSkz2y8V;
-	Tue, 12 Nov 2024 10:44:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XnRFg6VtJz2xwD;
+	Tue, 12 Nov 2024 10:53:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731368686;
-	cv=none; b=JsD7UOErK2Otdt8Ip3kDeRxjzuYx3f46amOMMxkZPJ8UdsPDvF98XK1vz/5wzq6nhniZzuq9REz2vOYJhW+h1bJylEH+WqFauaepUSpUx6N5LRcCmMOSJXEkyXV7+obzDxR9MGCKL6VK8BqKgIdvQdRoM6PB0Jx4hGKda32nGTCVMfBUHKpU2DzihCKxgs6yEzkG9YLcDg6uoMvAHgLJ3x0woJakorjUZaTx1VtU3GkCtHZrVShJqNqRoIv8ocSY24YdK7FYfmssImUGl5XmEaRg4UV9XC86k7ZL3rSCtZUaI+pVD08Qjx8WhmRslBrU25qHhRHp0zWU/uaZnEw0dw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731369207;
+	cv=none; b=Og7FL8hniQ5Vp09mSmjl8Hy/sdd3ptTlWoJyt4kRUT43Ku/O/9UxKPZKB+xNhSkrPCIgXZambI3IO+6LenDs5UNOlmxwJ3c6OpPHWDe+5BQvbzrtM1lsk/7oAeH0e08y7bpx+EPqsi8BRIlQ2aD8MNGNCofKm9N0yNPXs8G1IFxhy5N81UFOY34BYvFsb9EvpbhC1odHcT0wyoTGCjwiii2S+HDMczzrF+q8CW7cIHjulriFJ4xqnzrBvI7Drgx+UIu9nSQt+z2wMq5ndRq5UZKNvcoDTTLxHdvpm6JEToNS32rFnAhUyoqIqq0JR41jx9cFLHa8Is5KdqgoE+qGRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731368686; c=relaxed/relaxed;
-	bh=HNS2E7az+Jaci4XovebpTPUnBWAIfINok64yMQczmas=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=f72/EFlf7CHQoxMLLuUz17p1iWCcXgJ4f2zeGz2Zce42rpMzPqKd7FJ2/7cacU2T5skupX9uBX6KFp6JExOwsdwn+sL0hL+l0wveyK6IGx2V8YL9Z8BZD1/F/kUsEuKFW4QgE+VuUJ5EthNXnlpZJ88VBsJS+vkrQ2PE8sl2UIvITVP9tn0rab1YiEt5oBqKccdDnvwOse8c1X504P2EhDUXe1d+9U3q7+9+i+2HsZ3MPEdFGFwiSV5dDhyrOdJ842Y3vtgfBd1tjONdJJtAu1ZmOmZf4B38LnUd/z3vew6nBu6jCNV2R0nzVVuam0CCrLggps5hBbyUAmMy1Hr/tQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=fagZ1Uyq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1731369207; c=relaxed/relaxed;
+	bh=/1kbnaXoTlpDzhR7Und7m0yG1HUq2WsmOLWdk0VxH2U=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=S/+xWRdF7yKANcWBX/dM5H/AjWsXHiQhEp++IIjczjvCK/0+vPuwqMe+QWsrHTlx325Hor4ETPv0+g/1rShQHsXhtsG6MnLmMU6YyJzXG6o9psR7UplekEyfk7ZTlr/oNE37AOmTNDrFBRL1muDKQbnSFsdV94qoRCinnV7jT20fBSAnwlnPVRv3m46stbSrbZQ2pidoUKJkPDUITBhb0l7QEeBU1zBOrfs3KUESNA1l9OQTZEoTt8z1npESMYlDXFoFxp9rLUI0lqhpAeMJXOF8kaOSMOTRSktTKmSfp4+OyZ8dOT5XI5+G/qVguGVWhcr1MwiXOTQ6JVQ/JpEbtA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kzYM1tMm; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=fagZ1Uyq;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kzYM1tMm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XnR3d3c33z2y1W;
-	Tue, 12 Nov 2024 10:44:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XnRFg1J9qz2xk1
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 12 Nov 2024 10:53:26 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1731368682;
-	bh=HNS2E7az+Jaci4XovebpTPUnBWAIfINok64yMQczmas=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=fagZ1UyqZw1/N50if/vQZLtnLaK3ln1MmlUv3Doq0riO2D2dQX5OxebOos98QQNHD
-	 rvj5ZSDctgCE+W+cV4p2XSF04Eq28eVLhoqXjEH7mTpEnr04daecKMy+pkxKl4ciEF
-	 tSeUrCkLxTdB26geLvM2hAx4DQrkgYyjp8iLyyRRvlcUrpoga3WClJd8WukQRntxHq
-	 4gPqsSMAA7MJKszP7C+a+RH1KT0KyWbAWn4+Z7/5d1ihB25g6YWa6BZ4KxPQhs2KLI
-	 FJwQAF8wkZD7J6WUyKAZhUFb9Yme3nUUm0jlD+mEKtrWe4zN1jioQt/zVcb6n0N0rP
-	 J4pKkogAUYTxQ==
+	d=codeconstruct.com.au; s=2022a; t=1731369206;
+	bh=/1kbnaXoTlpDzhR7Und7m0yG1HUq2WsmOLWdk0VxH2U=;
+	h=Subject:From:To:Date:In-Reply-To:References;
+	b=kzYM1tMmRXj67bu5aN2rYgWXRdBhCtsYVc1CRiDHRq0DMX6IBCZzXs/b3TDGtWyn6
+	 8InZgahjgAodowhz+RAX9ztwkB3hwkk66PVyQSN1Ewcbkc048gbBvs5G81SJHk7myO
+	 yjh71q0HyINmvgElK7mRITBEanF3XaDA0jD8vAnnpB0uUOW4JfIdHWI26yMQOVMtdP
+	 njvoialn2fQdzvn828mP02TFz7IFzkt1aqfG87xSVumEocXTC53xo7XLjozG6vjvGl
+	 LdWP+iZXCDay/2Ox1GtDy2SZsyNQ4Y50s3UqlUUhtIwh8lZF+t5GrsGuxC3DekiLC9
+	 CEM+G/OcxQ8IA==
 Received: from [192.168.68.112] (ppp118-210-164-236.adl-adc-lon-bras34.tpg.internode.on.net [118.210.164.236])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 61E676616C;
-	Tue, 12 Nov 2024 07:44:41 +0800 (AWST)
-Message-ID: <e6cdf774e4a5a59fbce798b05e6f57b11c62f56f.camel@codeconstruct.com.au>
-Subject: Re: Pruning obsolete BMC devicetrees
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 1E96566029;
+	Tue, 12 Nov 2024 07:53:25 +0800 (AWST)
+Message-ID: <434b2dab17050643badc60c50b361153631b7cdd.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v1 3/5] ARM: dts: aspeed: Harma: Revise GPIO line name
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Andrew Geissler <geissonator@gmail.com>, openbmc
- <openbmc@lists.ozlabs.org>,  Joel Stanley <joel@jms.id.au>
-Cc: linux-aspeed <linux-aspeed@lists.ozlabs.org>, linux-arm-kernel
-	 <linux-arm-kernel@lists.infradead.org>
-Date: Tue, 12 Nov 2024 10:14:38 +1030
-In-Reply-To: <c96c7e05-31ca-4145-a8ed-d74a32770011@gmail.com>
-References: 
-	<b386a9e98412b06b6186ee5dea81ac6a69bc4f8b.camel@codeconstruct.com.au>
-	 <c96c7e05-31ca-4145-a8ed-d74a32770011@gmail.com>
+To: Peter Yin <peteryin.openbmc@gmail.com>, Rob Herring
+ <robh+dt@kernel.org>,  Krzysztof Kozlowski
+ <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley <conor+dt@kernel.org>,
+ Joel Stanley <joel@jms.id.au>,  devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,  linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Tue, 12 Nov 2024 10:23:24 +1030
+In-Reply-To: <20241111094349.2894060-4-peteryin.openbmc@gmail.com>
+References: <20241111094349.2894060-1-peteryin.openbmc@gmail.com>
+	 <20241111094349.2894060-4-peteryin.openbmc@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
@@ -70,52 +71,53 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 
-Hello!
+Hi Peter,
 
-On Mon, 2024-11-11 at 11:25 -0600, Andrew Geissler wrote:
+On Mon, 2024-11-11 at 17:43 +0800, Peter Yin wrote:
+> =C2=A0 Add:
+> =C2=A0=C2=A0=C2=A0 "ac-power-button",
+> =C2=A0=C2=A0=C2=A0 "asic0-card-type-detection0-n"
+> =C2=A0=C2=A0=C2=A0 "asic0-card-type-detection1-n"
+> =C2=A0=C2=A0=C2=A0 "asic0-card-type-detection2-n"
 >=20
-> On 11/10/2024 10:49 PM, Andrew Jeffery wrote:
-> > Hi all, We now have quite a collection of BMC-related devicetrees=20
-> > upstream. There's interest in whether we can prune some of them
-> > out.
-> Thanks for doing this AndrewJ, it's always good to keep things
-> cleaned up.
+> =C2=A0=C2=A0=C2=A0 "cpu0-prochot-alert",
+> =C2=A0=C2=A0=C2=A0 "cpu0-thermtrip-alert",
 >=20
-> > 2018-06-22 876c5d891c9d7442d2734871317bc6480cd9f80e:=20
-> > aspeed-bmc-opp-palmetto.dts=20
-> I think we're ready to call it good on Palmetto and remove it. I'd
-> like=20
-> to also remove it from our CI job.
-
-Hmm, so unfortunately for Palmetto it's one of the primary ways to test
-AST2400 stuff. Even if we retire it from OpenBMC CI it still has its
-imprint in other open source projects such as QEMU. The AST2400 is
-still used in some other products such as the Delta AHE50DC; it's
-useful to keep things around that can exercise it.
-
+> =C2=A0=C2=A0=C2=A0 "irq-uv-detect-alert",
+> =C2=A0=C2=A0=C2=A0 "irq-hsc-alert",
 >=20
-> > 2019-12-03 53820e00aaa173db268e0288d0407806539b4c3e:=20
-> > aspeed-bmc-opp-swift.dts
-> Swift can also be removed.
+> =C2=A0=C2=A0=C2=A0 "uart-switch-button"
+> =C2=A0=C2=A0=C2=A0 "uart-switch-lsb"
+> =C2=A0=C2=A0=C2=A0 "uart-switch-msb"
+>=20
+> =C2=A0=C2=A0=C2=A0 "leakage-detect-alert",
+>=20
+> =C2=A0=C2=A0=C2=A0 "power-card-enable",
+> =C2=A0=C2=A0=C2=A0 "power-fault-n",
+> =C2=A0=C2=A0=C2=A0 "power-hsc-good",
+> =C2=A0=C2=A0=C2=A0 "power-chassis-good"
+> =C2=A0=C2=A0=C2=A0 "presence-post-card",
+> =C2=A0=C2=A0=C2=A0 "presence-cmm"
+> =C2=A0=C2=A0=C2=A0 "pvdd11-ocp-alert"
+>=20
+> =C2=A0=C2=A0=C2=A0 "reset-control-cmos-clear"
+> =C2=A0=C2=A0=C2=A0 "reset-cause-pcie",
+> =C2=A0=C2=A0=C2=A0 "reset-cause-platrst",
+>=20
+> =C2=A0=C2=A0=C2=A0 "P0_I3C_APML_ALERT_L",
 
-Ack.
-
-> > 2020-03-06 fa09a28ca3e966582d6d92ef1536de360c8b194b:=20
-> > aspeed-bmc-opp-zaius.dts
-> Unless someone from google disagrees, I would like to also remove
-> Zaius=20
-> from CI.
-
-I'll wait for some other confirmation on this one.
+Rather than list the identifiers that are already contained in the
+patch, can you please discuss what functionality these identifiers
+enable, how different functions are related, and why this must all be
+done in one patch?
 
 >=20
-> > 2024-08-02 1c8b6faf882de15fd62094e08b2ca5bf7870b767:=20
-> > aspeed-bmc-opp-tacoma.dts
-> Tacoma can also be removed.
+> =C2=A0 Rename:
+> =C2=A0=C2=A0=C2=A0 "power-cpu-good" to "host0-ready",
+> =C2=A0=C2=A0=C2=A0 "host-ready-n" to "post-end-n
 
-Ack.
-
-Thanks for the response!
+On the other-hand, explicitly calling out these changes is helpful, but
+please also discuss the motivation and impact.
 
 Andrew
 
