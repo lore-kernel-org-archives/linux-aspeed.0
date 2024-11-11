@@ -1,60 +1,55 @@
-Return-Path: <linux-aspeed+bounces-107-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-108-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1D34D12D59
-	for <linux-aspeed@archiver.kernel.org>; Sun, 10 Nov 2024 23:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39DA3D12D71
+	for <linux-aspeed@archiver.kernel.org>; Mon, 11 Nov 2024 04:49:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xmq7K10fZz2y8Z;
-	Mon, 11 Nov 2024 10:45:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XmxsR32fLz2yWr;
+	Mon, 11 Nov 2024 15:49:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731282349;
-	cv=none; b=jeVyGAnTJJrbLzIgBGUvM3+yEwpT24X4LQmb/YmGtx7hChboXvnOvoXrSGEA4PYQWdh6b5GluTa9KGbKyqOx+UeqMuqJNs3f/eDzQO5q/rcyDoYag9rTBGEfL1hBANBggoXTziIxCaHi5H9PaJoIdNNUGrJahONA92FYFPOlsaWorl0r4Jwnb0DDsf+O6VdXQflMWpgQVofmnyE9wd72COtH1t07rNRAm2FMnGyc1HrYXyE41TL808FO5E2ZvQRdSHJmJIwUsOQpCD130Vd6ApboB2/Zwz8wyOsZOfgukO/Sf984MK0S+0EkuafFT1/i6klCoHN6f+S4x9JgQJB3fw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1731300555;
+	cv=none; b=DlYYyHk7V0jiAFz8oB5e1sdkONVUPPnA/ZpMbcAf+MgEFNnNpykOH4kARX8j9U6ScSFUrh19Z2oFzzyX1QE27CdsxVeP0qHhJ7z3xzFlf8PtUuMx1l9IfssaoC46Qw0jp4SMaFphY8pLGKjPVa7NYdF579QZLAIOFUlmBUy+ckzwFA0ToRl4yr0SMYK6C/hK6y5JzXxl3vN7Mxp8UII4vEkOSdMDPk0w0SB31TuBWgalFaB3ldYYFX+zXI0Zn3/ezTjQdEh1eaQdLBRJ11+vMWTpu+fe7k/O1B92woQvzkP/Gq4WWZMpqN3moW1+DDRHRl3JoTMhQszRTM9oCawrwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1731282349; c=relaxed/relaxed;
-	bh=CtE/2TzXKxCOgx8TvJHqD35OsC00+oFw8Pd4MfmWF1k=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=iDzX7N7sqdMBl26UDklgf0Ysc4/3E71EjXUUf9okTYXqUQKn6Li/8ffQ/7CPuH99YLLc2QkSj6zg0L0JWtUWwaL47TliGiZmf19fvO1PZTn1AnjmwlivVQDRKt9CjK15OPmqwfEdf4D2ik7l/cS0xn7fXuAtFt1QRAORKbAj9hMNb6nu653zJJxCTQ1wBZTAyaTTWmTSIADpl7FMb7vJiPNWUDuamB8IKnRNSERfR8THmL5H2GJZzAv79ix+kDSsIk62SwmVHbSFX0Yluh81T2OmyRQOpiqhcJVEeqYk8QmgTioGDZ5s6iEOvMQ5PfUvxDiC8ysJru7kSVGJmUDT+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kdqScvdb; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1731300555; c=relaxed/relaxed;
+	bh=usVtKTwHCFOrZTgz0XXZa10e04cdDcZS1OBiQazzMXQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=oIBj9VuKEPwzCsn4hsJ9vJbOKKVfwXV68cVQZKt7ljF5vT4oAT1jkxXeLN35vu1pfGiMJw0BAx/SYo/s08cZHGxZCkKg65eLc2jEkH5IGFR11Oa6d/ytQWab0lwrtt8+RXHlYQcfW5O9DSEfRd3f8JQEKfvq4EOUYs8yFPw9HUyXBqRHiYDc5393BuAzVSkPsvvEtlCcP4yUvUlp3xvVri/6SD994MoOXYM5UoJT2tZw6x4uxZ2IOQojl58BHiyXgHKg0Bd83xgMMpuf4EathXhdi8gm3ic+8Ka53n8feJiRsu+u3ioHOF4KKyVT7YBQwXS46TKUqb1wkhSBPmydjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=l/zHwD8n; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kdqScvdb;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=l/zHwD8n;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xmq7H1H48z2xxt
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 11 Nov 2024 10:45:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XmxsP53gbz2yWK;
+	Mon, 11 Nov 2024 15:49:13 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1731282344;
-	bh=CtE/2TzXKxCOgx8TvJHqD35OsC00+oFw8Pd4MfmWF1k=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=kdqScvdbKNWzvUQOtZ8y4IJkVrDptpwzjGzuyO7c9xz2ZQyZ28TCXeX2HpyB5RBnL
-	 k8Wr8bmUr7L14Ja/d9pqNNdIxeREt3khie9BtL0bWpuLgJFWd6o6+qyp8QfEj9FwLe
-	 pjBrFrarmMdB6AtvTqU0pCkTBFMkjCJNQ8/WCPzFhyIfdW+hcYUz8vrhDwD7h/hmkR
-	 17NNxq+S/o7+PGdqZr3IqzQdcFJY3D4yIuUwpe3oxsv2qDvjGjlhWwvqcxLwNJ1mwX
-	 f52aRicZTaKScCqoFq3RBSHfSJpq8wLTg6aXx+gpXDPVGZNVljIFVPlHyphQdMQgAV
-	 UyBWi8r99lOuA==
-Received: from [192.168.68.112] (ppp118-210-186-64.adl-adc-lon-bras34.tpg.internode.on.net [118.210.186.64])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id DE0216490A;
-	Mon, 11 Nov 2024 07:45:42 +0800 (AWST)
-Message-ID: <d4196567fc62a24922794b02adad1b6c47750760.camel@codeconstruct.com.au>
-Subject: Re: [PATCH] arm: dts: aspeed: Blueridge and Rainer: Add VRM
- presence GPIOs
+	d=codeconstruct.com.au; s=2022a; t=1731300551;
+	bh=usVtKTwHCFOrZTgz0XXZa10e04cdDcZS1OBiQazzMXQ=;
+	h=Subject:From:To:Cc:Date;
+	b=l/zHwD8nV2XhoeT5F5ZRgx77E/Q/2t/muD8r2BV4z4S32BYxddYl6TVIao8AQHwYF
+	 dwB8n7lyKChboB/Z1GuIrlP0wb4Za2p5OEGd6uM6Vvi7tBasVRyNdvA3CI5P7Rz4Xx
+	 CCGE/QWR1q6CZgKLbnuGXiYSCe8Fxbyzy+QBdMTMBPBab7wx0kqwE7BvG4RHlgfoZs
+	 ZeG6Jaaf0KvaSvvUiZYaHBcx06MBpBuhYRPNJar32zw7FqFB/PlKDiRMxpdkGHFmUo
+	 3aD51hgasLuF86xB0rpZSXQaECTJNd0Drixc5ivkWfxAofG0RnrCasIlUi9zvF/ly/
+	 jqJxz9IBPKAfA==
+Received: from [192.168.91.88] (ppp118-210-71-122.adl-adc-lon-bras32.tpg.internode.on.net [118.210.71.122])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id AFD1865FD5;
+	Mon, 11 Nov 2024 12:49:06 +0800 (AWST)
+Message-ID: <b386a9e98412b06b6186ee5dea81ac6a69bc4f8b.camel@codeconstruct.com.au>
+Subject: Pruning obsolete BMC devicetrees
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Eddie James <eajames@linux.ibm.com>, linux-aspeed@lists.ozlabs.org
-Cc: joel@jms.id.au, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org,  devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Date: Mon, 11 Nov 2024 10:15:40 +1030
-In-Reply-To: <20241108145822.1365072-1-eajames@linux.ibm.com>
-References: <20241108145822.1365072-1-eajames@linux.ibm.com>
+To: openbmc <openbmc@lists.ozlabs.org>, Joel Stanley <joel@jms.id.au>
+Cc: linux-aspeed <linux-aspeed@lists.ozlabs.org>, linux-arm-kernel
+	 <linux-arm-kernel@lists.infradead.org>
+Date: Mon, 11 Nov 2024 15:19:04 +1030
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -69,50 +64,224 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 
-T24gRnJpLCAyMDI0LTExLTA4IGF0IDA4OjU4IC0wNjAwLCBFZGRpZSBKYW1lcyB3cm90ZToKPiBB
-ZGQgR1BJTyBsaW5lIG5hbWVzIHRvIHRoZSBHUElPIGV4cGFuZGVyIHRvIGRlc2NyaWJlIERDTSBh
-bmQKPiBWUk0gcHJlc2VuY2UgZGV0ZWN0aW9uIGxpbmVzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IEVk
-ZGllIEphbWVzIDxlYWphbWVzQGxpbnV4LmlibS5jb20+Cj4gLS0tCj4gwqBhcmNoL2FybS9ib290
-L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1pYm0tYmx1ZXJpZGdlLmR0cyB8IDQgKystLQo+IMKgYXJj
-aC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5pZXIuZHRzwqDCoCB8IDQg
-KystLQo+IMKgMiBmaWxlcyBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0p
-Cj4gCj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWli
-bS1ibHVlcmlkZ2UuZHRzCj4gYi9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1p
-Ym0tYmx1ZXJpZGdlLmR0cwo+IGluZGV4IDVmOWE0NmMyYWJiOC4uZDUwNGFlODRkYjg5IDEwMDY0
-NAo+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWlibS1ibHVlcmlk
-Z2UuZHRzCj4gKysrIGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLWJs
-dWVyaWRnZS5kdHMKPiBAQCAtMTIzMiw4ICsxMjMyLDggQEAgbGVkLWNvbnRyb2xsZXJANjAgewo+
-IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dwaW8tY2VsbHMgPSA8Mj47Cj4gwqAK
-PiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGdwaW8tbGluZS1uYW1lcyA9Cj4gLcKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAiIiwgIiIsICIiLCAi
-IiwgIiIsICIiLCAiIiwgIiIsCj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqAiIiwgIiIsICIiLCAiIiwgIiIsICIiLCAicG93ZXItY29uZmlnLWZ1bGwtCj4g
-bG9hZCIsICIiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIiIsICIiLCAiIiwgIiIsICIiLCAiIiwgIlAxMF9EQ00wX1BSRVMiLAo+ICJQMTBfRENNMV9Q
-UkVTIiwKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCIi
-LCAiIiwgIiIsICIiLCAiUFJFU0VOVF9WUk1fRENNMF9OIiwKPiAiUFJFU0VOVF9WUk1fRENNMV9O
-IiwgInBvd2VyLWNvbmZpZy1mdWxsLWxvYWQiLCAiIjsKPiDCoMKgwqDCoMKgwqDCoMKgfTsKClRo
-aXMgZW5kcyB1cCBnZW5lcmF0aW5nIGNoZWNrcGF0Y2ggd2FybmluZ3MgYWJvdXQgbG9uZyBsaW5l
-cyB3aGVuIEkKYXBwbHkgaXQuCgpJIGRpZCBhIHF1aWNrLCBpbmNvbXBsZXRlIGFuZCByYW5kb20g
-c3VydmV5IG9mIHNvbWUgb3RoZXIgZGV2aWNldHJlZXMsCmFuZCBwZXJoYXBzIGV4cGxvZGluZyBv
-dXQgbGlrZSBpbiBbMV0gbWlnaHQgaGVscC4KClsxXTogaHR0cHM6Ly9naXQua2VybmVsLm9yZy9w
-dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXguZ2l0L2NvbW1pdC8/aWQ9ZDg1
-YjJhZDM1YTJhYgoKPiDCoAo+IMKgwqDCoMKgwqDCoMKgwqBsZWQtY29udHJvbGxlckA2MSB7Cj4g
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWlibS1yYWlu
-aWVyLmR0cwo+IGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5p
-ZXIuZHRzCj4gaW5kZXggYTRhZWMzMDEwNDU2Li5lZWZjNjlkMGQwMzIgMTAwNjQ0Cj4gLS0tIGEv
-YXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5pZXIuZHRzCj4gKysr
-IGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLXJhaW5pZXIuZHRzCj4g
-QEAgLTEyODAsOCArMTI4MCw4IEBAIHBjYV9wcmVzMzogcGNhOTU1MkA2MCB7Cj4gwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjZ3Bpby1jZWxscyA9IDwyPjsKPiDCoAo+IMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZ3Bpby1saW5lLW5hbWVzID0KPiAtwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCIiLCAiIiwgIiIsICIiLCAiIiwgIiIs
-ICIiLCAiIiwKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oCIiLCAiIiwgIiIsICIiLCAiIiwgIiIsICJwb3dlci1jb25maWctZnVsbC0KPiBsb2FkIiwgIiI7
-Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAiIiwgIiIs
-ICIiLCAiIiwgIiIsICIiLCAiUDEwX0RDTTBfUFJFUyIsCj4gIlAxMF9EQ00xX1BSRVMiLAo+ICvC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIiIsICIiLCAiIiwg
-IiIsICJQUkVTRU5UX1ZSTV9EQ00wX04iLAo+ICJQUkVTRU5UX1ZSTV9EQ00xX04iLCAicG93ZXIt
-Y29uZmlnLWZ1bGwtbG9hZCIsICIiOwoKU2ltaWxhcmx5IGhlcmUuCgpBbmRyZXcK
+Hi all,
 
+We now have quite a collection of BMC-related devicetrees upstream.
+There's interest in whether we can prune some of them out.
+
+If you've added a board you no-longer require, or know of one added for
+a project you were working on that will not revisit upstream kernel
+support, please let us know if you're happy to queue it up for removal
+after the next LTS release.
+
+For interest's sake, I did some analysis on when the Aspeed devicetrees
+were last touched by commits that weren't obviously broad fixups:
+
+   2018-06-22 876c5d891c9d7442d2734871317bc6480cd9f80e: aspeed-bmc-opp-palm=
+etto.dts
+   2019-01-10 869d1375a495e6217fdfda6a59b13812d2f3a569: aspeed-bmc-arm-star=
+dragon4800-rep2.dts
+   2019-01-17 43d78e726a2b5fef0c0e0f07e2bed0faa4918d1b: aspeed-bmc-inspur-o=
+n5263m5.dts
+   2019-04-04 8bc7d3ed7cf4a1d44e63301c44bcbd41e6f50f65: aspeed-bmc-opp-lany=
+ang.dts
+   2019-04-25 29b871f344f43ef428aa55ee9ed2a76b5bee0f87: aspeed-bmc-quanta-q=
+71l.dts
+   2019-05-05 9831ae33750db5341bcfcb3a54758e016dfc0c81: aspeed-bmc-lenovo-h=
+r630.dts
+   2019-05-21 130413736376e299e77328760209fd3307d02201: aspeed-bmc-microsof=
+t-olympus.dts
+   2019-06-25 dc4bea0b989cfa3e3dfd8fe79a18abcfaca19767: aspeed-bmc-lenovo-h=
+r855xg2.dts
+   2019-11-18 e4aab38ed5d1b8316f25786e6ec6adb34449b294: aspeed-bmc-opp-vesn=
+in.dts
+   2019-12-03 53820e00aaa173db268e0288d0407806539b4c3e: aspeed-bmc-opp-swif=
+t.dts
+   2020-03-06 1f2c9d31e4806177aa97819d4ddc83dacd437ba2: aspeed-bmc-opp-romu=
+lus.dts
+   2020-03-06 fa09a28ca3e966582d6d92ef1536de360c8b194b: aspeed-bmc-opp-zaiu=
+s.dts
+   2020-04-29 697538bd65ad22a92598b5efded3666d3c59d1cc: aspeed-bmc-opp-nico=
+le.dts
+   2020-08-24 11c4124d5343b86e828c7c120cb8d1ece720dd0c: aspeed-bmc-facebook=
+-yamp.dts
+   2020-08-24 f883a606097d0017079b0e40125aac47ab221616: aspeed-bmc-facebook=
+-cmm.dts
+   2020-09-22 9e1cc9679776f5b9e42481d392b1550753ebd084: aspeed-bmc-intel-s2=
+600wf.dts
+   2020-12-21 13177f6ed3ea380011cea8a2f798c918e1ffc436: aspeed-bmc-supermic=
+ro-x11spi.dts
+   2021-01-21 286a596da2937d292828927a2b2ade4e03188f6c: aspeed-bmc-opp-mowg=
+li.dts
+   2021-04-13 45171b7dd2b81dbd38dc4027686774f8b02f2390: aspeed-bmc-ibm-rain=
+ier-1s4u.dts
+   2021-04-15 f0145db24e65f6cf13347a90ffb86e5ef2ff2ca2: aspeed-bmc-facebook=
+-tiogapass.dts
+   2021-04-30 189e847a0f0bcf99df5aea85e634abada5fbfbf4: aspeed-bmc-ibm-rain=
+ier-4u.dts
+   2021-05-26 419cc0b8c127193f6f447b905b1240765d2087c7: aspeed-bmc-inspur-n=
+f5280m6.dts
+   2021-07-18 00e9e776fa197592addc1f3002c63585f884a5dd: aspeed-bmc-facebook=
+-wedge100.dts
+   2021-07-18 5501ab03b9f1412a44e993e469f9375276de5399: aspeed-bmc-facebook=
+-galaxy100.dts
+   2021-07-18 c8a66b42d689e2b90878416e4b83a7ed3f58b708: aspeed-bmc-facebook=
+-wedge40.dts
+   2021-07-19 813e3f1d51fda49c7c9ce8552177968cd63a2af6: aspeed-bmc-facebook=
+-minipack.dts
+   2021-10-14 4eb7fe3333a021c8d0f35bcb5cd7c4e42800df62: aspeed-bmc-inspur-f=
+p5280g2.dts
+   2021-10-19 2561b4f6ecc741cb96e67c5fe250915548a83bb2: aspeed-bmc-inventec=
+-transformers.dts
+   2021-11-19 67ac01d03862b274d4ca3fa76092e96b00f478af: aspeed-bmc-vegman-n=
+110.dts
+   2021-11-19 67ac01d03862b274d4ca3fa76092e96b00f478af: aspeed-bmc-vegman-s=
+x20.dts
+   2021-11-30 4fcbe1f5b6ba71e0c464a303e3769bf1ce1fe54c: aspeed-bmc-tyan-s71=
+06.dts
+   2021-12-10 b26965e99788ea163fc217bdca1c2b17a5d70c90: aspeed-bmc-bytedanc=
+e-g220a.dts
+   2022-03-25 7b46aa7c008d2becd5df46c174d8cb4239e24659: aspeed-bmc-nuvia-dc=
+-scm.dts
+   2022-05-26 94d0a03297615cad2d40b0f02ceab902a7339062: aspeed-bmc-portwell=
+-neptune.dts
+   2022-06-23 390ffde2b97c8d50f87bf450208b3a4ed70cc2db: aspeed-bmc-arm-cent=
+riq2400-rep.dts
+   2022-06-24 7f058112873e86ca760f2d2b0e1ccc2ab111f418: aspeed-bmc-qcom-dc-=
+scm-v1.dts
+   2022-08-30 50c7e281f44726249b5ab7f148c02bbba751fea1: aspeed-bmc-facebook=
+-elbert.dts
+   2022-08-30 50c7e281f44726249b5ab7f148c02bbba751fea1: aspeed-bmc-facebook=
+-fuji.dts
+   2022-09-22 3293fca4a689dae1090b997145a46c816ff03a4a: aspeed-bmc-amd-dayt=
+onax.dts
+   2022-10-21 fe87f88eaf696b064231143536a33a618d5e0cd2: aspeed-bmc-opp-miha=
+wk.dts
+   2023-01-11 03d24e12749281f51545c9011fc953ac844df413: aspeed-bmc-amd-etha=
+nolx.dts
+   2023-01-18 8803d9438ef65c96b03ae95472e19b3ac072c930: aspeed-bmc-tyan-s80=
+36.dts
+   2023-01-19 28cfb03afcb20a841e96e821ba20870a7c437034: aspeed-bmc-ufispace=
+-ncplite.dts
+   2023-07-03 3f2879e4040cd8145d4b2f66ee8f9738e438e055: aspeed-bmc-inventec=
+-starscream.dts
+   2023-09-14 fe93af86526b93de6f11ca3c201525dbd961fb8f: aspeed-bmc-facebook=
+-minerva-cmc.dts
+   2024-01-13 8412c47d68436b9f9a260039a4a773daa6824925: aspeed-bmc-facebook=
+-bletchley.dts
+   2024-01-13 8412c47d68436b9f9a260039a4a773daa6824925: aspeed-bmc-facebook=
+-wedge400.dts
+   2024-01-31 247997184b0eb70f7af29fbe3e32f7a4eff2651e: aspeed-bmc-asrock-e=
+3c246d4i.dts
+   2024-02-24 dc260f505bd57f57b23bb343285e29533a6264f3: aspeed-bmc-asrock-r=
+omed8hm3.dts
+   2024-02-26 4ed43e8a1b9080a3ba393606b0523cf8bb311083: aspeed-bmc-delta-ah=
+e50dc.dts
+   2024-04-03 c61838aa458b5f96d5824733bef164da2d7ee860: aspeed-bmc-asrock-x=
+570d4u.dts
+   2024-04-05 f956245e4b74312cb238ce6a21fe02f60ef592f4: aspeed-bmc-facebook=
+-yosemitev2.dts
+   2024-04-10 1bd612936b558f6868ea1c5734e72fcea3bc49f2: aspeed-bmc-facebook=
+-cloudripper.dts
+   2024-04-30 d8bdd1e8acd54631a59c56f637b18816c5381f61: aspeed-bmc-asus-x4t=
+f.dts
+   2024-05-01 c44211af1aa9c6b93178a3993e18a7ebffab7488: aspeed-bmc-asrock-e=
+3c256d4i.dts
+   2024-05-20 76c5533925434b0383f95a56a4da2e81e3e8a3d3: aspeed-bmc-asrock-s=
+pc621d8hm3.dts
+   2024-05-22 787d4cbff0dc2fb5c4a344fb5f5f14ca5d7d0a9c: aspeed-bmc-ibm-blue=
+ridge-4u.dts
+   2024-08-02 1c8b6faf882de15fd62094e08b2ca5bf7870b767: aspeed-bmc-ibm-bonn=
+ell.dts
+   2024-08-02 1c8b6faf882de15fd62094e08b2ca5bf7870b767: aspeed-bmc-opp-taco=
+ma.dts
+   2024-08-02 1c8b6faf882de15fd62094e08b2ca5bf7870b767: aspeed-bmc-opp-with=
+erspoon.dts
+   2024-08-06 326bed426c43645cdce46197c420f929969a18c4: aspeed-bmc-ampere-m=
+tjade.dts
+   2024-08-16 ef1e32cb6314898da9188e2371a398c217db238a: aspeed-bmc-facebook=
+-greatlakes.dts
+   2024-09-05 a16edad0afa57424b85ae512a574b21ad02ee9a5: aspeed-bmc-ampere-m=
+tmitchell.dts
+   2024-09-09 8da6f02e0cbd2a54a1c322f12a104ae6d0aaac26: aspeed-bmc-facebook=
+-harma.dts
+   2024-09-10 e87ee9893c576b2d3916b017bb672f2f3c0e231a: aspeed-bmc-quanta-s=
+6q.dts
+   2024-09-10 e87ee9893c576b2d3916b017bb672f2f3c0e231a: aspeed-bmc-vegman-r=
+x20.dts
+   2024-09-24 ef73fe22bdd97bd829246299f69cd701f29ffb07: aspeed-bmc-facebook=
+-minerva.dts
+   2024-09-26 e9414665bb9f80c6072b8ecd3f43f395a0c5b916: aspeed-bmc-facebook=
+-catalina.dts
+   2024-10-01 5270aac729e2f2ad5ed0529bcb2618c92735e9f1: aspeed-bmc-ibm-syst=
+em1.dts
+   2024-10-03 faabe02697d7348f5c7cb7be4d93f9c9041021f7: aspeed-bmc-facebook=
+-yosemite4.dts
+   2024-10-21 8e2e003ccafe87795a9940ffed456600f71a0fd7: aspeed-bmc-ampere-m=
+tjefferson.dts
+   2024-11-04 275017f75a4fefd004962024c3b4a1587a95bdfe: aspeed-bmc-ibm-sbp1=
+.dts
+   2024-11-06 c63cd57bb09abfb15b6907e85d2df7be152d9f25: aspeed-bmc-ibm-ever=
+est.dts
+   2024-11-07 2eff056a229e21d9e287a74f1305f947ff6b141b: aspeed-bmc-ibm-fuji=
+.dts
+   2024-11-08 ed280dbf0e488347c33bef359f8b101f0835f89b: aspeed-bmc-ibm-blue=
+ridge.dts
+   2024-11-08 ed280dbf0e488347c33bef359f8b101f0835f89b: aspeed-bmc-ibm-rain=
+ier.dts
+  =20
+Out of further curiosity, I also filtered the list by machines that
+aren't mentioned in upstream OpenBMC (not that that's where they must
+be used, but it might be an indication of stalled efforts to upstream
+support):
+
+   2019-01-10 869d1375a495e6217fdfda6a59b13812d2f3a569: aspeed-bmc-arm-star=
+dragon4800-rep2.dts
+   2019-01-17 43d78e726a2b5fef0c0e0f07e2bed0faa4918d1b: aspeed-bmc-inspur-o=
+n5263m5.dts
+   2019-04-04 8bc7d3ed7cf4a1d44e63301c44bcbd41e6f50f65: aspeed-bmc-opp-lany=
+ang.dts
+   2019-05-05 9831ae33750db5341bcfcb3a54758e016dfc0c81: aspeed-bmc-lenovo-h=
+r630.dts
+   2019-06-25 dc4bea0b989cfa3e3dfd8fe79a18abcfaca19767: aspeed-bmc-lenovo-h=
+r855xg2.dts
+   2020-08-24 11c4124d5343b86e828c7c120cb8d1ece720dd0c: aspeed-bmc-facebook=
+-yamp.dts
+   2021-01-21 286a596da2937d292828927a2b2ade4e03188f6c: aspeed-bmc-opp-mowg=
+li.dts
+   2021-05-26 419cc0b8c127193f6f447b905b1240765d2087c7: aspeed-bmc-inspur-n=
+f5280m6.dts
+   2021-07-18 00e9e776fa197592addc1f3002c63585f884a5dd: aspeed-bmc-facebook=
+-wedge100.dts
+   2021-07-18 5501ab03b9f1412a44e993e469f9375276de5399: aspeed-bmc-facebook=
+-galaxy100.dts
+   2021-07-18 c8a66b42d689e2b90878416e4b83a7ed3f58b708: aspeed-bmc-facebook=
+-wedge40.dts
+   2021-07-19 813e3f1d51fda49c7c9ce8552177968cd63a2af6: aspeed-bmc-facebook=
+-minipack.dts
+   2021-10-14 4eb7fe3333a021c8d0f35bcb5cd7c4e42800df62: aspeed-bmc-inspur-f=
+p5280g2.dts
+   2022-05-26 94d0a03297615cad2d40b0f02ceab902a7339062: aspeed-bmc-portwell=
+-neptune.dts
+   2022-06-23 390ffde2b97c8d50f87bf450208b3a4ed70cc2db: aspeed-bmc-arm-cent=
+riq2400-rep.dts
+   2022-08-30 50c7e281f44726249b5ab7f148c02bbba751fea1: aspeed-bmc-facebook=
+-elbert.dts
+   2022-10-21 fe87f88eaf696b064231143536a33a618d5e0cd2: aspeed-bmc-opp-miha=
+wk.dts
+   2024-01-13 8412c47d68436b9f9a260039a4a773daa6824925: aspeed-bmc-facebook=
+-wedge400.dts
+   2024-01-13 8412c47d68436b9f9a260039a4a773daa6824925: aspeed-bmc-facebook=
+-wedge400.dts
+   2024-04-10 1bd612936b558f6868ea1c5734e72fcea3bc49f2: aspeed-bmc-facebook=
+-cloudripper.dts
+   2024-04-30 d8bdd1e8acd54631a59c56f637b18816c5381f61: aspeed-bmc-asus-x4t=
+f.dts
+
+Some of the earlier devicetrees might be candidates for consideration.
+
+Andrew
+
+(data produced and post-processed with awful invocations of git log,
+awk and one-liner shell scripts. Happy to pass them on by request)
 
