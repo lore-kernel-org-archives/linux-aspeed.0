@@ -1,65 +1,56 @@
-Return-Path: <linux-aspeed+bounces-142-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-143-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9636D4415E
-	for <linux-aspeed@archiver.kernel.org>; Tue, 19 Nov 2024 13:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B772D4415E
+	for <linux-aspeed@archiver.kernel.org>; Tue, 19 Nov 2024 13:56:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xt59T6TfLz2xvR;
-	Wed, 20 Nov 2024 00:35:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732023357;
-	cv=none; b=cR/SY5+sejEqksjmlQtT7tu0hT6wuyl5A2WXXqj/bDBrXtqnEkeiy0Y+kA7YJuq87Tyob8YR2C9xcGO6ZBmPp8i3rlWZb2wTe0XEfi86wD+fsoHIEQf1UixtJ0qTUszXSPuTFqOaaavZZMK4tDByrkfjqOcZW99OZpb0VZuRvGwj7trJcx2cFYqAgTcdPDeoDkskCN8PDhr7lowGod56pFifrc+a+l3X3A7a6DvNOTSTfGtLzF7xqWzbX4tz09/fCGvpNC2XQmwr6VBszBhwghkUSXRuOu8JM6YRP3yPJVgbA8RR1TK+zRu3Tf8+BNL0hfQ5adhV1Is7mXdojNg6Kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xt5cr68RYz2xwH;
+	Wed, 20 Nov 2024 00:56:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732024572;
+	cv=none; b=D0TnRkjjjwOWf8MYx4NgOOXJskpPUA4fn2F2IWFGWFNubjEG8BjwCm4lewED3Zo1Gd42kn/u8aI1Zg17e8N/2COBGX3faed2Esi7XlZCOmApuqBUlB/2GmpnscLm1HCEN7wWKFo8IUa3MrJaeeZMJRrofKvEP2z2THnoDn8eyrEyd5OHmlirAw+m2Kvriv5WpwqB4EVsU8Bj3vXZVYvgP82JmiDLNrRJya2vVECehZH6WncjmvNpqhz9gaLdaOqTyMIhiHcLI/RZnId1c0uUOtry+T9gR4s9AudVP0fHEgV2UpCvMKIWv7iWHtcNMzAl0xyGVAcQ2J/GnikI4Unikg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732023357; c=relaxed/relaxed;
-	bh=Wjea4FlwXiv3hwGbFMl+5M469Qx4kTcDewT9eAG6hxc=;
+	t=1732024572; c=relaxed/relaxed;
+	bh=8phBlKnPGyquZpUR4CtoI5JKyG39N4jtaX8T9/dhoVE=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Y+spxDQ/ucO3Kma6HxnqYyrrbTgw2PHL3V0shvydTHILa4b9y/KyY4WfzMB5PZLak2V4G4YmygpSPdg4igws0JLAM7AVIOR7iQlx6bU6+j8v+3Wia8HksLgZGxs6ORrXl6ntpPz8zlKlD35hnWqmu1WoqhZkVip7+aPvWTdPVhH8RkwD/WeK7UxVE1819CgpsC89edwTMeGghMfnVoQ6u2n4wGUpfczl1GD1VFenx62Xi8QYlNDLx2ilmAy/N+n8Ix3UOZ1GIQJB5Tl8TquY6i5U25PMeNzeom81Z/43kQBhjkCgX/1Kks+IDRnBJPvsqZjofQqH8q/e6BvQnMQg5Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AebHnbAQ; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Nt4uSt/6/EqAhV+ESrN/ixost3Hz9WSUEpz5GsSQH9MfHTQT2SiC3LNxxFUBoODXYRmevpB5Uk3+OWoxPWdQCNbrVuIOJmdCGLN0hflSebiNWc5k+ZSRzrKUyc8oXjq+22R209FTH8WKdEQctK6nzmZ4046cI+vSf7UbbzI8Wo+7+75DwHKphCJ6AF9g/1/wpdRwTN6+yHNqUma6VAeMtxaq5ebRtDCB8mKcZ0NJqEnVJKxNoywxWW1xQR2OkOEs15cYI/bEG2XjWhTw7DosBXjuDgA5voJMui7/Zm5rJmoociJkjrU1nMuGxJMS1lCx9YHuNiT8/DWMEOzPfWay1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Omq3yR3i; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AebHnbAQ;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Omq3yR3i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xt59S6344z2xsM;
-	Wed, 20 Nov 2024 00:35:56 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 4E24CA42A33;
-	Tue, 19 Nov 2024 13:33:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 392E8C4CECF;
-	Tue, 19 Nov 2024 13:35:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1732023351;
-	bh=oLpoc2WvoUsUhrS1aPvboIlqwN760aHoq0UZupZxYjQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=AebHnbAQkG2N53GlUQn1JKbPsQYgSuLJ3rIaWjBB1+Cz/TCXT/sTExaoTfk1RdkaX
-	 qptk0tFf5g5zglEsN0RoWn1letpAIHLW/3okldSWHABXmTBHP4uUm/XkvCfqliWsbM
-	 cVFTfMGunVzFG9oVsnGg7/hkneH5HGDpv1hq0GnfFZLJI8yzx/D75zVTUivGmlX4/H
-	 gM3kIpPHrPmhAVlpdxt6jPUvkVHzBSi1uCac2FIAyEG9N/HqkD9of+N7nf1Kaec2o+
-	 TZskTdPA3hLcTCm2WHYwZ1cNLKRDgNEI0qVNVgW2Yd9BUV32McmtVAZlv262Nx8X4R
-	 8GZ/c0vgqwXyA==
-Date: Tue, 19 Nov 2024 14:35:48 +0100
-From: Andi Shyti <andi.shyti@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	Brendan Higgins <brendanhiggins@google.com>, Tommy Huang <tommy_huang@aspeedtech.com>, 
-	"benh@kernel.crashing.org" <benh@kernel.crashing.org>, "joel@jms.id.au" <joel@jms.id.au>, 
-	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>, "wsa@kernel.org" <wsa@kernel.org>, 
-	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>, 
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
-	BMC-SW <BMC-SW@aspeedtech.com>, "brendan.higgins@linux.dev" <brendan.higgins@linux.dev>
-Subject: Re: [RFC v1] MAINTAINERS: transfer i2c-aspeed maintainership from
- Brendan to Ryan
-Message-ID: <x2rt6k5hw2km2vm4wjnqihop3xcy3uirhxs5wvhnesxc2athgb@c2ra7a62mfve>
-References: <20241115044303.50877-1-brendanhiggins@google.com>
- <ZzcPJ9sweqxLZOGf@ninjato>
- <OS8PR06MB75413EC87F76AD0B1BBA0FEFF2272@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xt5cp5hczz2xtb
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 20 Nov 2024 00:56:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=8phBlKnPGyquZpUR4CtoI5JKyG39N4jtaX8T9/dhoVE=; b=Omq3yR3iFFtSeRX03YohOOeDTb
+	Gvg7+hksVB7P1htaGtkk6FzzVzmP3tupywqmcA63m9N43s5GhqyReBJQnh+N+x8nqk6ke8y8ERILN
+	argxdK/h76qHrS1QPe1K5JU3+NV5pjuvjo9SR+lXP9m3Hg667DTYA97EPvWt2iA9tWFc=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1tDOhu-00DoDg-Nf; Tue, 19 Nov 2024 14:55:54 +0100
+Date: Tue, 19 Nov 2024 14:55:54 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: hkallweit1@gmail.com, linux@armlinux.org.uk, davem@davemloft.net,
+	edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+	joel@jms.id.au, andrew@codeconstruct.com.au, f.fainelli@gmail.com,
+	netdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net v2] net: mdio: aspeed: Add dummy read for fire control
+Message-ID: <27a39b05-3029-4b31-ada7-542e23e4de8b@lunn.ch>
+References: <20241119095141.1236414-1-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,39 +65,42 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <OS8PR06MB75413EC87F76AD0B1BBA0FEFF2272@OS8PR06MB7541.apcprd06.prod.outlook.com>
+In-Reply-To: <20241119095141.1236414-1-jacky_chou@aspeedtech.com>
 
-Hi Ryan,
+On Tue, Nov 19, 2024 at 05:51:41PM +0800, Jacky Chou wrote:
+> When the command bus is sometimes busy, it may cause the command is not
+> arrived to MDIO controller immediately. On software, the driver issues a
+> write command to the command bus does not wait for command complete and
+> it returned back to code immediately. But a read command will wait for
+> the data back, once a read command was back indicates the previous write
+> command had arrived to controller.
+> Add a dummy read to ensure triggering mdio controller before starting
+> polling the status of mdio controller to avoid polling unexpected timeout.
 
-On Mon, Nov 18, 2024 at 12:25:56AM +0000, Ryan Chen wrote:
-> > Subject: Re: [RFC v1] MAINTAINERS: transfer i2c-aspeed maintainership from
-> > Brendan to Ryan
-> > 
-> > On Fri, Nov 15, 2024 at 04:43:03AM +0000, Brendan Higgins wrote:
-> > > Remove Brendan Higgins <brendanhiggins@google.com> from i2c-aspeed
-> > > entry and replace with Ryan Chen <ryan_chen@aspeedtech.com>.
-> > >
-> > > Signed-off-by: Brendan Higgins <brendanhiggins@google.com>
-> > > ---
-> > > I am leaving Google and am going through and cleaning up my
-> > > @google.com
-> > 
-> > Thanks for your work on this driver.
-> > 
-> > > address in the relevant places. I was just going to remove myself from
-> > > the ASPEED I2C DRIVER since I haven't been paying attention to it, but
-> > > then I saw Ryan is adding a file for the I2C functions on 2600, which
-> > > made my think: Should I replace myself with Ryan as the maintainer?
-> > >
-> > > I see that I am the only person actually listed as the maintainer at
-> > > the moment, and I don't want to leave this in an unmaintained state.
-> > > What does everyone think? Are we cool with Ryan as the new maintainer?
-> > 
-> > I am fine, depends on Ryan as far as I am concerned.
-> Thanks a lot, Brendan.
-> I am ok to be a maintainer.
+Please have another attempt at writing the commit message.
 
-can I take this as an a-b by you?
+> Fixes: a9770eac511a ("net: mdio: Move MDIO drivers into a new subdirectory")
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> ---
+>  drivers/net/mdio/mdio-aspeed.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
+> index c2170650415c..373902d33b96 100644
+> --- a/drivers/net/mdio/mdio-aspeed.c
+> +++ b/drivers/net/mdio/mdio-aspeed.c
+> @@ -62,6 +62,8 @@ static int aspeed_mdio_op(struct mii_bus *bus, u8 st, u8 op, u8 phyad, u8 regad,
+>  		| FIELD_PREP(ASPEED_MDIO_DATA_MIIRDATA, data);
+>  
+>  	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
+> +	/* Add dummy read to ensure triggering mdio controller */
+> +	(void)ioread32(ctx->base + ASPEED_MDIO_CTRL);
 
-Andi
+Maybe: /* Dummy read to flush previous write to controller */
+
+
+    Andrew
+
+---
+pw-bot: cr
 
