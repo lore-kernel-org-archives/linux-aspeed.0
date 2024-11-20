@@ -1,82 +1,67 @@
-Return-Path: <linux-aspeed+bounces-150-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-151-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A795AD6E2B2
-	for <linux-aspeed@archiver.kernel.org>; Wed, 20 Nov 2024 04:54:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A320D6E2CA
+	for <linux-aspeed@archiver.kernel.org>; Wed, 20 Nov 2024 06:54:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XtTYC21Kcz2xvh;
-	Wed, 20 Nov 2024 15:54:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732078463;
-	cv=none; b=AF14leqgykzHZqfiNYFl7cHzQymAxYizzULGT34ADQq4jWNpzgwzQMl4EWMuBlXAdPG5RpVHuNJRqvXtbyF+bsViPrV9FGOt1XurNXbBhx05UHu56i22gB8B5dWuj3hKXQanNftW1/spdxigAuVnpfRnbAsFtLfvCs57d6EGJq4+1Mwx08c8SPWwnirgbtcGNkEs/93UaD9f7So71xxOA/3Az7PnpITkqLji7vX9pJgGW9UXmrMsO6sB5SwXmsP8q9pTZ+OdBJbib6Q9sdnIt2/Jida9SNVzSyDP2m+tPJOQnhD6Yf5kNl1ZjMVLCn3WZWjwvvoUEBa4Rm5YTccLgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4XtXCW5HHsz2y72;
+	Wed, 20 Nov 2024 17:54:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732085655;
+	cv=none; b=Cks74PLiNVZWH4FDepjsmu1hyt4CslR8x+ATAUNDaErWSg77xcZsUpIy6OwmmsdxeCdZ2iEQvyvN2f75kbtlFKJzWZKmDN14KC/zrpc3cSXpuqM33C/rsyMXyM2VrSgwf5PgCbPfr2+JZglzda1dCIN1mxyAFSaoqLUS4yeLQtCI7dbAHo4YRgs6fPqewpcuD4dlmiUQbUALvi0H5Xz9hH5ictPpXE0sEcAkKMJX8mDfZRm7gqcvNlxTSpZa8jP5dLf12HNhGUprxjqvJ+REYcIAGw1HbC9wij8bjnVaZ0Sb1sAGXH9dq/6aDOWwQZ2jwv/AgsVt4H6XC2QLT7R8Nw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732078463; c=relaxed/relaxed;
-	bh=m0rejVzUQ8KWXV5movCkOFjMtx+/Mx0idUJFVHrt9mc=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=msSSMQpK9K10X4Ci5vCrqsuytK9QstdAOow8Tj+YUp+CiHmrNN3Wt8+mu6tAm1yAZbaka0dAJA8Lryoka1m+kJj6FDtoDThS/jbPwXNcXqSLc9huWsPBqtfJPs2qbiZYqPLv8Ku/S6h5PyXVaoR21zh/WTePBzV8rMJ269t7R8nB3v8ulUNQw3QavhaYSobVCXqMtX8FrLQrwYa2vO9U0nHSiykZla5ZKj6xOESMCLkpb82VS27/jDkNDPo5opsjIHDNnZZU4URH9nQ4meVUyKOVVhXSQ/3/cAecsNo1g+IWOFbNZE7RfORODOvmnZByiO0loI6V/QN6Ui4NlwaRfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=NvXLS/23; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1732085655; c=relaxed/relaxed;
+	bh=ZGVDroxvGZaMmvO0knhWHMPeqQ4OtV04fIWg9bKNd7c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FW1JirEhFQiAZIoISzDDW7zya1poG3p0v8cBDaMSV0L7M6CORchRZYDtxqEn3m/Q2Tc8rxNAg1EQrnRtGjfPP14lrOedQYUh6ocIphOGsciiGaHSGFm9nZPd4tvonquFRlkFwa5cZZVYZW/LB47UIlHT6qfKEtO+O+K2Z9un54rlkDpEg4oE8CR+GzhTSZhNJGR4kQRZ3eeuJeqpoZO3QHYectrVPIVSAEtV7pnPsnWzx878tt4hULvaLWwkKypBWf8Go7M/U01uKpPMYvUQLniDtkL43m2/GpS9WbLzaeeIqxeeYZdwe3jkIxSnXsTH0cJu/rBZTssLG9DvvsD3ow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hs0kvvOv; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=NvXLS/23;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hs0kvvOv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=andi.shyti@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XtTYB3fhrz2xr4
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 20 Nov 2024 15:54:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1732078461;
-	bh=m0rejVzUQ8KWXV5movCkOFjMtx+/Mx0idUJFVHrt9mc=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=NvXLS/23phZOX0oazXs4Xv1vRCgMfkzmxFiB2ptYRe7mgYNjLB+TA0uCUFMX3lLt0
-	 OdWVhkBFqcddqEvt0LlVxkQKBwKzKGDLyAGbg1UAww346BcgXd7qG/6KHHdeO4ybza
-	 Zj3pDAQiZ9KF3qsFAFEp46bpmY2+rQIq7Jvk5SihOKZEEDcnz4ebdfw0jHkb+a44ON
-	 cMjJ7xFGrTa1NblXj0zmPI/zgfoLxjKj+axuEaCzOGUIXeiIKimOLX0kL8+a/oLxXi
-	 jPXESR1UDnEITr7oNggg5/MSGOLEk3fiXM8s2krf4/Cn5H5Q8AK5sKcQ6b2mJuW+mY
-	 CKvW8eYkKhmsw==
-Received: from [192.168.68.112] (ppp118-210-181-13.adl-adc-lon-bras34.tpg.internode.on.net [118.210.181.13])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9637766403;
-	Wed, 20 Nov 2024 12:54:19 +0800 (AWST)
-Message-ID: <1bc83ee73545f9aab6e0a931cda8f5ffe41cb445.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v4 1/3] watchdog: aspeed: Update bootstatus handling
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Guenter Roeck <linux@roeck-us.net>, Chin-Ting Kuo
-	 <chin-ting_kuo@aspeedtech.com>, Patrick Williams <patrick@stwcx.xyz>, 
-	"wim@linux-watchdog.org"
-	 <wim@linux-watchdog.org>
-Cc: "joel@jms.id.au" <joel@jms.id.au>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
- <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "linux-watchdog@vger.kernel.org"
- <linux-watchdog@vger.kernel.org>, "Peter.Yin@quantatw.com"
- <Peter.Yin@quantatw.com>, "Patrick_NC_Lin@wiwynn.com"
- <Patrick_NC_Lin@wiwynn.com>, "Bonnie_Lo@wiwynn.com" <Bonnie_Lo@wiwynn.com>,
-  "DELPHINE_CHIU@wiwynn.com" <DELPHINE_CHIU@wiwynn.com>, BMC-SW
- <BMC-SW@aspeedtech.com>,  "chnguyen@amperecomputing.com"
- <chnguyen@amperecomputing.com>
-Date: Wed, 20 Nov 2024 15:24:18 +1030
-In-Reply-To: <9565c496-44d8-4214-8038-931926210d0f@roeck-us.net>
-References: <20241101121201.2464091-1-chin-ting_kuo@aspeedtech.com>
-	 <20241101121201.2464091-2-chin-ting_kuo@aspeedtech.com>
-	 <ZyUcIIb1dtoNhX00@heinlein.vulture-banana.ts.net>
-	 <a0faca9a6ec7f4acdfa2f29b4ffb94b5392aea6b.camel@codeconstruct.com.au>
-	 <TYZPR06MB5203053A004676F51322DECFB25C2@TYZPR06MB5203.apcprd06.prod.outlook.com>
-	 <ed77d57facaaef0be796b4c6a742dc7bf3bff479.camel@codeconstruct.com.au>
-	 <TYZPR06MB52039B02B6D3053355F30489B25D2@TYZPR06MB5203.apcprd06.prod.outlook.com>
-	 <9a1e64ef-81d9-48b0-b871-ce4ff792eae4@roeck-us.net>
-	 <TYZPR06MB52039DB39B62E6FA5220103AB2272@TYZPR06MB5203.apcprd06.prod.outlook.com>
-	 <2531f830-6a36-4bd5-ba1e-9e19f0f66496@roeck-us.net>
-	 <219607ab74764f3d47659fb5ab3223b3034152e5.camel@codeconstruct.com.au>
-	 <9565c496-44d8-4214-8038-931926210d0f@roeck-us.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4XtXCV3wCPz2y0K;
+	Wed, 20 Nov 2024 17:54:14 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id EB6E6A429FA;
+	Wed, 20 Nov 2024 06:52:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6954CC4CECD;
+	Wed, 20 Nov 2024 06:54:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1732085650;
+	bh=yu0IVEbUHfOiqCOXFtKIo8jBF0HFsQeEynvGjcvNELw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Hs0kvvOvB6EcOyu+DecW4JQwfXGTTJf/6WS3IneXaxhzQ7mCu7eid687fHls1LqR4
+	 hVQKmoCeYYzKhg79WNjIfngDZv3Lasyw42DmaJ+pKXXILr8E2Y72GkStjOrN3dLe39
+	 wJzV2dNuGPMZ6j3WyTBGBM2G9lei0aZYx3+q3o8Bh7SB3R6jHn5sRwEkZ3FpBHe0eh
+	 895uK8IKGwN/BVbfBI2leAI85qRvGeXZl6Lgnp/8bh71dfExQPd1UM9XzlibNTmc8e
+	 BrGtmWRZVvM/Kh9sWNyqMp2kEfo3hIhCYl21Rs5S9uy3vYoz+fIKw3UFbXxtdMH/D+
+	 /A2DHGXLlw86w==
+Date: Wed, 20 Nov 2024 07:54:06 +0100
+From: Andi Shyti <andi.shyti@kernel.org>
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
+	Brendan Higgins <brendanhiggins@google.com>, Tommy Huang <tommy_huang@aspeedtech.com>, 
+	"benh@kernel.crashing.org" <benh@kernel.crashing.org>, "joel@jms.id.au" <joel@jms.id.au>, 
+	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>, "wsa@kernel.org" <wsa@kernel.org>, 
+	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>, 
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	BMC-SW <BMC-SW@aspeedtech.com>, "brendan.higgins@linux.dev" <brendan.higgins@linux.dev>
+Subject: Re: [RFC v1] MAINTAINERS: transfer i2c-aspeed maintainership from
+ Brendan to Ryan
+Message-ID: <37pcpov3u7oitszupqaw3upujy7fmns64gijqea5tz3m5zq4yy@stxttuqde5dz>
+References: <20241115044303.50877-1-brendanhiggins@google.com>
+ <ZzcPJ9sweqxLZOGf@ninjato>
+ <OS8PR06MB75413EC87F76AD0B1BBA0FEFF2272@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <x2rt6k5hw2km2vm4wjnqihop3xcy3uirhxs5wvhnesxc2athgb@c2ra7a62mfve>
+ <OS8PR06MB754190CEF8763CCF5CE89899F2202@OS8PR06MB7541.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,21 +74,38 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OS8PR06MB754190CEF8763CCF5CE89899F2202@OS8PR06MB7541.apcprd06.prod.outlook.com>
 
-On Mon, 2024-11-18 at 17:27 -0800, Guenter Roeck wrote:
-> So, again, what exactly would userspace do with the information that
-> this
-> was a watchdog triggered warm reboot ? Why would it need that
-> information ?
+Hi Ryan,
 
-I'll defer to the others on To/Cc to answer that.
+...
 
-My only position is I don't think changing behaviour of existing
-drivers to exploit WDIOF_EXTERN1 as a graceful-reboot indicator is a
-good idea either. Obviously I don't have much skin in the game with
-watchdog maintenance, so my thoughts shouldn't have much influence
-beyond the Aspeed-specifics, but I just didn't want to see some fun new
-confusion or incompatibility arise as a result.
+> > > > > I see that I am the only person actually listed as the maintainer
+> > > > > at the moment, and I don't want to leave this in an unmaintained state.
+> > > > > What does everyone think? Are we cool with Ryan as the new
+> > maintainer?
+> > > >
+> > > > I am fine, depends on Ryan as far as I am concerned.
+> > > Thanks a lot, Brendan.
+> > > I am ok to be a maintainer.
+> > 
+> > can I take this as an a-b by you?
+> > 
+> Sorry, I don't know your "a-b" means.
+> If to be maintainer, Sure, I am willing to be.
 
-Andrew
+a-b is short for "Acked-by:". I assume you have acked this patch :-)
+
+So, thanks Ryan for taking this driver on you, I hope you'll
+enjoy. I took this patch into i2c/i2c-host-fixes.
+
+Andi
+
+P.S.
+Sometimes you will see r-b which stands for "Reviewed-by".
+Sometimes SoB or Sob or s-b for "Signed-off-by".
+
+It's just a way to overcomplicate something that is easy :-)
 
