@@ -1,77 +1,79 @@
-Return-Path: <linux-aspeed+bounces-163-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-164-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B41DFD75BB6
-	for <linux-aspeed@archiver.kernel.org>; Thu, 21 Nov 2024 04:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2491CD75BB7
+	for <linux-aspeed@archiver.kernel.org>; Thu, 21 Nov 2024 04:36:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xv5651PsNz2yl1;
-	Thu, 21 Nov 2024 15:36:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b2e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732163789;
-	cv=none; b=l2TAEb5q07ykggdlGLSRAqOvJr2CUzRmk88EngyuXJUKLepKdDjsud44mlujIMUBE1KzDZbtlU8CA2tFw3H1ZYolIAZvXrO87Wl5BpF9NQBAie8gaUn5SCwqNMnmlZkIcACf85K+YbcxOz+1zR6zZdBC+VPz1Q5Zrr3ZPODSz9DaDXrD8PuCjSVoX6bIhUXVb+IoQJ+BHWMQhqyxGy6o2NkfdsDCcqGkU1o2yNB/fFbPBMgt6fmgnnenMvz5kikMXJ49HGGbZnM6medp3L17eVrSLclTO/Hkx+5mYcj1pB2DigWpwtaZ82WFQ3Ekv8/ReRHhAzPcM0OGpj7S1u7fMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xv5673XzLz2ynL;
+	Thu, 21 Nov 2024 15:36:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b30"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732163791;
+	cv=none; b=lXkVufC8cubGRNDZIxYbv6HewPOqnZpheGF/412uV6aPvTZMaYxSj+ytRLqaLfKFpJ0pzECLeZZtNofukkbvk5bJCUdAQaR7RKa6AnoAt0/RqGOYx84pEzotbI+NwhYwFAW1hQ/WABYCsd/7WmSLp8elnBX/ctU7iHgQlS0/aao2Kgtb6j6nIrYnbSmnW8dM7aBM0MxKFrC/VgOYYOWZ5ExrkXJBslSty5baKixl/E3T5/S5WYfbs2atmrRwrXqcxdnIABVQDAo5B3fCfVjHIWkl45ERvdngVDb3k0USipunUFhWKNNtJgSh1lPrzQX1erxTkb1EcYyOiSIxUNpCaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732163789; c=relaxed/relaxed;
-	bh=gq+ad7sZfGrLxQrmLaPQvEe+2stpRD0g+Leamoq1YOQ=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=iM+a+5XiiYUsjJdjtQDKJjCfNBHXqHwYddn0RGN//e/U+fT4H4o7BeQKKQal/6LM7n3Ni4BqqA3rHtZ3uU+jxjtzPxuS18/RBaPB87r2EtH/Vl3IgNl5WCYkZq2sLEq3Gtfd1lyYQyLZ6UkCzczrYVm76WQ/lXl0NzVkEQCj00aZi7hghjlj7B4T62MNy0SVnt8/nVyLJ1aLX0PBq9iKapYdxXLXrAZmRpLfsE6zcl534BLd2Powmj0WaOSSylMPCaE12spZTs5OEmi1lnwFA95DJ/nGJgPZjHzeGkFogqyNNixmc5TMgP4MY4clm9FI7VEpBLHa/PWYYHKwmLYLnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BjoR2txQ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b2e; helo=mail-yb1-xb2e.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1732163791; c=relaxed/relaxed;
+	bh=nuyF7+8Fz7Mpttrs+fI8NL75TsOEWtX+J92XFGbgaKU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=hoLJ55o9Aa18ICUFtuOhzrG82gozdMGgbfhHiRB4tPanHkZt7kD64gQJyNrKSGGUSl9jXDOY65DFUjjjBzsQX8dJYIHdSYPnN/+GaAlsW67vNJP5WnA/KhBVqzDvcBnA/wjMSVO48jAiIHlINy8fHXWAJ6rgb8TojJ5ZyJa9hJyjlELdsQeIZ6avNNXLWV8iQOKvJyitmg5tsjM8VF7KjEMB3PRYDVA1MXCSLWgxBPCxRBE/JwktSg0qRB9ZPTaJdpfT5D2eya7WLbFFgNxeiyWN0mf4pypDm3a2mtiLWYM1EosDkOW8zYSwyEMbINLH4B8rz9j/YK+sL4ZfCDLl2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FMbvLPIj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b30; helo=mail-yb1-xb30.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BjoR2txQ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FMbvLPIj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b2e; helo=mail-yb1-xb2e.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb2e.google.com (mail-yb1-xb2e.google.com [IPv6:2607:f8b0:4864:20::b2e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b30; helo=mail-yb1-xb30.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb30.google.com (mail-yb1-xb30.google.com [IPv6:2607:f8b0:4864:20::b30])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xv56409hyz2xgQ
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 21 Nov 2024 15:36:28 +1100 (AEDT)
-Received: by mail-yb1-xb2e.google.com with SMTP id 3f1490d57ef6-e382e549918so351355276.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 20 Nov 2024 20:36:27 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xv5661yx6z2xgQ
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 21 Nov 2024 15:36:29 +1100 (AEDT)
+Received: by mail-yb1-xb30.google.com with SMTP id 3f1490d57ef6-e387e50d98eso380622276.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 20 Nov 2024 20:36:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1732163784; x=1732768584; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=gq+ad7sZfGrLxQrmLaPQvEe+2stpRD0g+Leamoq1YOQ=;
-        b=BjoR2txQ7tFO6WwN1jCAH+Ax+hqGgTnUQujOBhB0TlSBUHxqAPmjeJ568er+6ZA+Gj
-         /3H2Gnx6/1B7fGaCewMmX4qfmobUvNdKu7DciWM/UkdBQPx8CrIAuI8CvKITucUaMV05
-         +FOiRklZNvXoDCUcjeOYhjLzSV6UeJrfpW/vbj++NsdKrKa1gFAar9JvBRvdXHHiJ+8K
-         FDFHwM4kQkvuSf2/r58z/8HPooN9q2qOL1EdF9VAs2uyUzmtzwy5IDLkeaLDWtCw0rrc
-         vqu5jeLf669NuNFNQ65JsKlwgx8BcRuUea3pGB2Qhn8tYIlA3ZBACRs7vgooq6Xf0zbK
-         cGhg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1732163784; x=1732768584;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20230601; t=1732163786; x=1732768586; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=gq+ad7sZfGrLxQrmLaPQvEe+2stpRD0g+Leamoq1YOQ=;
-        b=TbXh/2dXSI6c4O8Z9Cw3xBPUCL8nZGzwQXbW7Y79IbhWtJ1ULNxeoWAHnwiYOBXa1s
-         iDd6hpYy5G5RfsoX3TIwErbpxZkjcWjGvTuU4RQzMjCXBGPWhKsFP5ZbcD2lc63OfxNg
-         g6OnRxu69NRnW+qsHVH/cH6cVoD0ez/5wRz/rH0R2SnS+g2yzLvZZ3VVloqoxC6OTmmj
-         RrbSjuLVyJdeAxhk8NHJXwRnTCKjNeREz7WINXGWFkXXwZ+UuFKzXxwrPc81Ro5LHdpQ
-         IzpCbKNaB52ZoPRLKL92z9Sk48rytQYZ88z7eG6GEafAaFRyCAYKYYEtLZEWvCUQrthj
-         Iq0w==
-X-Forwarded-Encrypted: i=1; AJvYcCU8FrTU3d4yhBHdnBO87pxR1T56ah06V61Kp9oAui5vvVbAqo11sK2wluxLoHQa1TqfrkfrCa6LNB3iH4g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6PQA0o12glGyA+P7ddS8kA015cna9L8CsG47qkT3XcdA+jjEU
-	TnEHhmAyGp8ewlO2k9/9h2ZVkPI0ZAIza26eUkE1eAW4XULUnTAy
-X-Gm-Gg: ASbGncuuJABpmz8WoRFLnCNagAn7vx0Il7vhXYteIy88VLOPKyyGnNapMU6g3YMSDds
-	CGytl5sTYYCdArWlR0NPCgu+uiO7p7lHeEX629z8g3YeZg6jjQgQS9kUfm1f4sI7A1anHwTcrlc
-	Aplm+EgD8zKEtTh6+HwyTixHz4q30mDcCStW9GMGtYIPYpNUFmsJtplvM7ySKKG+PyHmT5Ad3xq
-	FNjzKT9fBq9Dn+qJEIWKc61emt3BZXYVmpQWP0glVPrBdzbxcMMxitGNEDdb3jXDe7d+eCIUQvO
-	LSLnEL3cZDPButppMWsdYma2ofw=
-X-Google-Smtp-Source: AGHT+IG6v9ry8rNPMTv18xrWoIOcEji23ZUnLH/q33uEBsqANBSy4agWkDZk0KmSDWfSx0CnygepHw==
-X-Received: by 2002:a05:6902:18c2:b0:e30:e1f3:2a9c with SMTP id 3f1490d57ef6-e38cb3cfc5fmr6450392276.0.1732163784062;
-        Wed, 20 Nov 2024 20:36:24 -0800 (PST)
+        bh=nuyF7+8Fz7Mpttrs+fI8NL75TsOEWtX+J92XFGbgaKU=;
+        b=FMbvLPIjV/JBhELyPiCJFOeFqs0cfVhr9MNvMXHKRMrmUmmOWAmQ30+LV9C+3wXvnX
+         I8plX8nsEzVsFpGTwbMIJ9jx/XVEZZF1tvrjOC9N8xFWNSWcy6EcO19Q2WkrPHcGrMfE
+         XrcOJs2BxUwXAveRarDCVFvRuGM+3ooMj5CtJgAzioq9U6nFtxk8ezOGoh2GOKV86QpU
+         zQ0GNxV/xvAqya9G/iXypwa802cA68qx3Ib0SWJd34l4E1gn57jR/zvVUKNqOwz/0MqM
+         0iHHTKM9H2a4bVmUgepubbHNSMA+44A6CqjJWeLkthsbjBJzbkkQ9n1Z5b+S4/gj5J82
+         JlAQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1732163786; x=1732768586;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=nuyF7+8Fz7Mpttrs+fI8NL75TsOEWtX+J92XFGbgaKU=;
+        b=XZ46jdO6Y+zz2fRZGyKbL4qOwEXsH+Sgr11dSZm5UrbSSI8Gjaus0CLJKl529qTJwe
+         akwV0MQj9ILMbidmg3JSWi0SI63c5lQdijvUtrMr2OoIqDxajfn4x8cQD/pXybk+Qi7Q
+         UjYWrapJGMBovKkBKh9UJW/RSAancUyST9HPW9WoUAknHNuDclZzQ0Rk/1ZwCY9FhfRI
+         KlGPawvYRPAX9Rt1GT59/2Eda8zmejLsckYEqJslyprZUzGYZhzN6br9785QbgxT9U6r
+         pSmECCdDuzpFxTyzZEsXwsac4uhQKB2hwoH5KutXlBd+rhyYB8Pd4jmTKN3cx8/COPj7
+         sFMA==
+X-Forwarded-Encrypted: i=1; AJvYcCUvw0OTb0jvdFbmZ+bVFvdLT/HMVd+7S9aoWup96o8iZBKnvQZKQ4PXfLBNS/5jp9mNSSQFku1QjnHBLvc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyh63aPBsaZNpe7GpYNYGPq1pxLtgN0zHG9dlgTq2GIjMgw1m+T
+	XAe4eC6X+dyXLvWHcxOKgSLcE7zFr70EML96gvSsuXLOjHBSFtBC
+X-Gm-Gg: ASbGncuiyVPjr8MKfdbPvTJz3cRPNSIYWth5FhYgWxbKGfMKIYEaqZsO3CvKsFaxL1S
+	Wc2daFO2TPLAQ5kVFdDRhWvB7CLH16KgG7CNNAsplnMXG4go2MDVxOU5sW6+iHQW43nmJNRQJQF
+	7S66UP2Q9VsHgLtV7BIn/faxwZgXo7Zwvf9/ouWjaEtWKtLvS/xlMsQURTH4TpA/XKIapoyK+8h
+	5CU22VniBFEiNNq82RzMZrbn+PLYuDD4o1ANB1sXKqRuw3kma+OtEa+2JF05cyrPFR6eb7P7oAt
+	Tn4Q2JbVBox+f51j9LeZfrBM2y4=
+X-Google-Smtp-Source: AGHT+IF30ME5s1gaJATBRjBcX8Rto6d8Elgy0z54nRN46cpfTIYfKGmrsKdWfd4s/uRCQcRBSZkQDA==
+X-Received: by 2002:a05:6902:2742:b0:e30:99c0:af7d with SMTP id 3f1490d57ef6-e38cb60dd1fmr4909115276.52.1732163786614;
+        Wed, 20 Nov 2024 20:36:26 -0800 (PST)
 Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7fbb64e11fcsm402013a12.15.2024.11.20.20.36.21
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7fbb64e11fcsm402013a12.15.2024.11.20.20.36.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Nov 2024 20:36:23 -0800 (PST)
+        Wed, 20 Nov 2024 20:36:26 -0800 (PST)
 From: Potin Lai <potin.lai.pt@gmail.com>
-Subject: [PATCH 0/2] ARM: dts: aspeed: catalina: revise catalina dts file
-Date: Thu, 21 Nov 2024 12:34:03 +0800
-Message-Id: <20241121-catalina-dts-20241120-v1-0-e4212502624b@gmail.com>
+Date: Thu, 21 Nov 2024 12:34:04 +0800
+Subject: [PATCH 1/2] ARM: dts: aspeed: catalina: revise ltc4287
+ shunt-resistor value
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,9 +88,9 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIADu4PmcC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIxNDQyMD3eTEksSczLxE3ZSSYl24aKqxiWGSpYG5oYVJqhJQb0FRalpmBdj
- c6NjaWgB6tcObZwAAAA==
+Message-Id: <20241121-catalina-dts-20241120-v1-1-e4212502624b@gmail.com>
+References: <20241121-catalina-dts-20241120-v1-0-e4212502624b@gmail.com>
+In-Reply-To: <20241121-catalina-dts-20241120-v1-0-e4212502624b@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>, 
@@ -98,32 +100,42 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
  Potin Lai <potin.lai.pt@gmail.com>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1732163781; l=647;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1732163781; l=968;
  i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=381WngC8iKFV1PSpDa07H1nZ9xgbAG9Xckkdyqb9St8=;
- b=h1qEWQAugQzZbGZaOABW6eYNn/tU2euJILA3NbFag8tPDo0xTstUA80jjiwz3tvv9IZAxBccc
- fZl41CP7LWnDOZrzSz1yCjzHIZR9KIn9VwTnPzNBZU2Lrk9f8nXcu9h
+ bh=FgpAIoX+4e+QQroE4QsDxMK/L1w728/CM4HFCE+TVtE=;
+ b=BICNuLr+vifOMwP7TqOnU1nthYmDGgU8Prg5w33jLmWC6dvW4VwWc/9Zu3wGhVdjBIjx0EDd5
+ qUdPwWFlLp7CjHJHpQKpOCBj3RbEa9Xfty41tXlgOVXDhtTrMhVEUOJ
 X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
  pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Add following patches to fix issues.
-- revise ltc4287 shunt-resistor value 
-- remove interrupt of GPIOB4 form all IOEXP
+Fix wrong shunt-resistor settings of two ltc4287 nodes.
 
 Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
 ---
-Potin Lai (2):
-      ARM: dts: aspeed: catalina: revise ltc4287 shunt-resistor value
-      ARM: dts: aspeed: catalina: remove interrupt of GPIOB4 form all IOEXP
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
----
-base-commit: 59b723cd2adbac2a34fc8e12c74ae26ae45bf230
-change-id: 20241120-catalina-dts-20241120-e341b907184e
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
+index 82835e96317d..417c0d12635c 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
+@@ -512,12 +512,12 @@ i2c1mux0ch4: i2c@4 {
+ 			power-monitor@42 {
+ 				compatible = "lltc,ltc4287";
+ 				reg = <0x42>;
+-				shunt-resistor-micro-ohms = <200>;
++				shunt-resistor-micro-ohms = <100>;
+ 			};
+ 			power-monitor@43 {
+ 				compatible = "lltc,ltc4287";
+ 				reg = <0x43>;
+-				shunt-resistor-micro-ohms = <200>;
++				shunt-resistor-micro-ohms = <100>;
+ 			};
+ 		};
+ 		i2c1mux0ch5: i2c@5 {
 
-Best regards,
 -- 
-Potin Lai <potin.lai.pt@gmail.com>
+2.31.1
 
 
