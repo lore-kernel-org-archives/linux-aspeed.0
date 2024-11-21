@@ -1,65 +1,72 @@
-Return-Path: <linux-aspeed+bounces-161-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-162-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B7B8D75BB2
-	for <linux-aspeed@archiver.kernel.org>; Thu, 21 Nov 2024 04:29:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27581D75BB6
+	for <linux-aspeed@archiver.kernel.org>; Thu, 21 Nov 2024 04:36:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xv4xf0nN4z2yjb;
-	Thu, 21 Nov 2024 15:29:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732163350;
-	cv=none; b=Gshw1WsQtVI1k6n7/1mPl7OlNod92zGFkXBgeXM8yEZCCJG8jVJiZIloSxVLMDbBReLDGlZI0EBr3bLN6SmXOPFNdaFmIp0QcVXX+JM+pTyTpFNvoaDgB9LC8Uw4d2lmsQjAmnIQk0gz5+M1OfpqAAqqJV7PjeB5yqRzskQ0Nv3JsiQJz8PubW3OySqzCMqbJQK2+Rk9rlp6+KHHxznLRzVvtX/Cd+VnZqfA7SvenVFyS063MCNnSHEIDka8UGsGsZHUpLozPbz431rJDKiSqoMLJSlnAc9lyNFUWm5EJ27eM8oeQNdDC4v65cm2X5QseDEaHdajVym4LL63483brw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xv55m1gxPz2ykC;
+	Thu, 21 Nov 2024 15:36:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732163772;
+	cv=none; b=Tfsq+8Wlpzisuu/SLDFOm4QBI1M35MBJ6eXGa+z+paGONY52Bers+J8yMUiiVOuwOAKHSC4cN1fzWKKffJoc7aHv6twvAYGztdRAhIr1/2oifWPk6LFmntNir0i59hkSWKQWReibkuzr+h6C0khr5A6xo9KBlDXe2asuBKj/JJVyZVTVALZbvt6pYHEG01fHoRhsJTkb1xyzHOVxZWvl9g9vzKS+pfsDucgI2IHgCyNGbWY//BYOcvDHaHIAufwFXyUHwjOtCUq+iDfINbzzOasUqKKT41kViYPPmQI6EUP8W9KanW1b6tTeplf5bv2T1QAB2y2swR+Wmi1qxGa0aw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732163350; c=relaxed/relaxed;
-	bh=mrLmzUmm6ToQPoBGZOkQVodGHG3cbLJ24xAFO3b7XsQ=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=VAeCijhWnt0uqSFkf27LRZHP2ZaYgU/8PlEQFV3Gt3MlmlMlxO3DzniLJTHeX3eQCrDk6a93/qrol3o4z9ByyWheDuj2LJ1ECnTFXM7wplsjucmq6roq8nCpzmAyo4kYH+NT4WSQ05bALcdNxFpf8t054/YJU4n9ioXoTbN4iX2pTz6nNrTAFXQVM1DCRxRX844QHyfnCeoLee9GRa7u4iuelr11bOyplzfU5uE88qqvKOr/heDOmdrQvGyVYuZWsvFNiT34Q3pNpjMw+NRV9aHpDBy3eSzquzEVirpWVX/yzkXL0HpUl/PNYXZceDCKJqxIsHe6Mfu5xHXEmqx4vg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MEg8R2aI; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1732163772; c=relaxed/relaxed;
+	bh=1/0XIMY2uA6o6zIyzy4M5ULjqGepYEcYqaZjgiCOkJw=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
+	 In-Reply-To:Content-Type; b=EjQLePF3isvs02o5S7nhpo3RhgPpSW9pnRdQAw+3y/CSBoFpd/o/Ieg/N6npfVGiPHJBF1PJK0vj4o+upfbe+t3YH4t1HtIFlQecruEWq/fUkzulb+zjeUIFhBx7PoLd3AM8joKCz1E2OB2SZ3vFyyCD1/iSk12cFwCJdzx+WlICwzL7j40BiHoBrmWloWDAbG8Yjn+gqQGbJB01MZZdxJov46CDZvvndd+rKt1WairtzgzdxPU458cqSNljrsk+KpV7VOajooGsMjRTRuRNlUaxCllJrHA8RVV6ZY2C01IvB8Kpcrg11Kkt2yx65i8teOkDcz/aquaxURSBJGYouA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bmeVSJBU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=peteryin.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MEg8R2aI;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bmeVSJBU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=peteryin.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xv4xc0XZhz2yjR
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 21 Nov 2024 15:29:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xv55k1pQGz2xgQ
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 21 Nov 2024 15:36:08 +1100 (AEDT)
+Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-71e592d7f6eso394604b3a.3
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 20 Nov 2024 20:36:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1732163346;
-	bh=mrLmzUmm6ToQPoBGZOkQVodGHG3cbLJ24xAFO3b7XsQ=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=MEg8R2aItOCsozsPbMgwasrISoK1DySd0kmnMLuGcFIDVypoEzI9axv9SrQU8Bacl
-	 w5oxEl18qmEgYoTTTbw0vFb5jkm7oQ/LfWr+PC8qj8RtpDCAzyeDNZVc4YlYRbcSBz
-	 IbuOFKez76r76Sq2AIgWeWv4vpqwM3SatVCW5KMDcJQFP2ycHZEZJyNd8nWmOeVzcb
-	 qWBenb9nhm9Z1W8cUi9gCX87Iib9fYctRMXeZeP7XBHkzM3c0bvGeGkDoewEwDLkqm
-	 5E02JqnKZVzyZfiV2ihQ5/1ZkJd6FiuVuwpXInGUUYMZG5kbE1mXmFQSt0Ej/89sTT
-	 tQhcWYvrwZzIQ==
-Received: from [192.168.68.112] (ppp118-210-181-13.adl-adc-lon-bras34.tpg.internode.on.net [118.210.181.13])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9CEB16C2B6;
-	Thu, 21 Nov 2024 12:29:01 +0800 (AWST)
-Message-ID: <944951bb04506e6b131293d634ab7be7417d8827.camel@codeconstruct.com.au>
-Subject: Re: [PATCH net v2] net: mdio: aspeed: Add dummy read for fire
- control
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jacky Chou <jacky_chou@aspeedtech.com>, hkallweit1@gmail.com, 
- linux@armlinux.org.uk, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org,  pabeni@redhat.com, joel@jms.id.au, f.fainelli@gmail.com,
- netdev@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org,  linux-kernel@vger.kernel.org
-Date: Thu, 21 Nov 2024 14:59:01 +1030
-In-Reply-To: <b6155c5f-3012-42d1-90dc-8ef39d1eef2d@lunn.ch>
-References: <20241119095141.1236414-1-jacky_chou@aspeedtech.com>
-	 <d28177c9152408d77840992f2b76efe3cb675b7a.camel@codeconstruct.com.au>
-	 <b6155c5f-3012-42d1-90dc-8ef39d1eef2d@lunn.ch>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+        d=gmail.com; s=20230601; t=1732163764; x=1732768564; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :to:from:subject:user-agent:mime-version:date:message-id:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1/0XIMY2uA6o6zIyzy4M5ULjqGepYEcYqaZjgiCOkJw=;
+        b=bmeVSJBUP+vUt7epwlA4kL5sTRJKY7ZLRxP/5aK/+Z2LH0jKsSLdQY63QxZgTlPh4P
+         +IWRzMtxOSd737tb5ziyOd9zb1enVc+8gJRqrth/G7y/uW48sRRzTD+9C/RIYjOBlvzR
+         N55+ytdhpqJOtWRHi7ZD+TWMzb+EkU0Fgo1zmW2ldgDoFM631kU9KcJ349m+kKqmwuP/
+         nXkfg1CgzcBh9rhq3NgPYzKd1R1C8BGbTOqkw+MLt4d5QCMIfS9Z4mV5dn7a8DhbV8Rp
+         LU1Ey8UzqAl87n4PrncDLQQ9GBkafmYY1JMvHbHDZdNNDN0fABFFfHFju+v3vFXC+gnc
+         XgrQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1732163764; x=1732768564;
+        h=content-transfer-encoding:in-reply-to:content-language:references
+         :to:from:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=1/0XIMY2uA6o6zIyzy4M5ULjqGepYEcYqaZjgiCOkJw=;
+        b=O/K94bQdR2IPVulLUSdydPuCGUHtugAwOa7tvfA6NMpvJswFHZqNeaYHHklsMls5JC
+         mWal25hdTufDEW+YnWGaQrI00GwjH87HbN17xm2nYI41R/Bhcpdo2vTut9J2aCYk7m+r
+         8vJo/5Xurx+rCEwBGekUZp/5Ofca7oB5N6ic8Z/CuLlm19QcPl2m1lf4UgYRUJzsblk6
+         bLmxAKD0XZ4f1qeAZj78LjIIJkAtvxh27PFLRx4o9Z0wELUdEzJjIPtNOw25ANe3FLTQ
+         WElrAmEfTKkRiYXHkTJDaxQXoLuf+oCG2Dkya/pwCjNX/CmmQl8SzXrwFonpWcekUifg
+         Y9hQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXaKbNOXq7YXiYKMlC1Lij7YiZrXbu3fFyAangnFtVybUDscG4/DoYZzOhdcO3ykr+BvWGI4KkV8+QpbU4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyic1exM21xaybAbrzKJwJkAo/IrRyBeFQCfdeNflur7ys/OYSz
+	LzZbk4f6xAKwl138CxT2T/CTJ3dw5rM0Vn+xgCvZfQcoiPuV/IvY
+X-Google-Smtp-Source: AGHT+IFaemvzryO7WCLz5Ca6Xg1J+x2yyqw0JJSN0FkNyVQdTywTiZN7n88034g5Msg4VO8+oq5ykA==
+X-Received: by 2002:a05:6a00:21cd:b0:71e:1722:d019 with SMTP id d2e1a72fcca58-724bed5a647mr6328217b3a.22.1732163764184;
+        Wed, 20 Nov 2024 20:36:04 -0800 (PST)
+Received: from [10.10.14.80] (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7fbb659fccesm393651a12.73.2024.11.20.20.36.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 20 Nov 2024 20:36:03 -0800 (PST)
+Message-ID: <b13e5063-3b07-43ec-a7cc-b19e73b7c9e0@gmail.com>
+Date: Thu, 21 Nov 2024 12:33:50 +0800
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,50 +79,62 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 0/6] Revise Meta(Facebook) Harma BMC(AST2600)
+From: PeterYin <peteryin.openbmc@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20241121025323.1403409-1-peteryin.openbmc@gmail.com>
+Content-Language: en-US
+In-Reply-To: <20241121025323.1403409-1-peteryin.openbmc@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Wed, 2024-11-20 at 14:44 +0100, Andrew Lunn wrote:
-> On Wed, Nov 20, 2024 at 03:13:11PM +1030, Andrew Jeffery wrote:
-> > On Tue, 2024-11-19 at 17:51 +0800, Jacky Chou wrote:
-> > > When the command bus is sometimes busy, it may cause the command
-> > > is
-> > > not
-> > > arrived to MDIO controller immediately. On software, the driver
-> > > issues a
-> > > write command to the command bus does not wait for command
-> > > complete
-> > > and
-> > > it returned back to code immediately. But a read command will
-> > > wait
-> > > for
-> > > the data back, once a read command was back indicates the
-> > > previous
-> > > write
-> > > command had arrived to controller.
-> > > Add a dummy read to ensure triggering mdio controller before
-> > > starting
-> > > polling the status of mdio controller to avoid polling unexpected
-> > > timeout.
-> >=20
-> > Why use the explicit dummy read rather than adjust the poll
-> > interval or
-> > duration? I still don't think that's been adequately explained
-> > given
-> > the hardware-clear of the fire bit on completion, which is what
-> > we're
-> > polling for.
->=20
-> I'm guessing here, but if the hardware has not received the write,
-> the
-> read could return an indication that the hardware is idle, and so the
-> poll exits immediately. The returned value of the first read need to
-> be ignored. It is simpler and more reliable to do that with an
-> explicit read, rather than try to play with the poll timing.
->=20
-> AS i said, a guess. We need a good commit message explaining the
-> reality of what is happening here.
+Hi Andrew,
+   I believe this series' path will conflict with upstream due to 
+version differences between OpenBMC and upstream. I will update to the 
+latest version of the DTS from upstream and submit a new version 
+accordingly.
 
-I agree, the commit message needs to be more precise about the
-interactions and effects.
+Thanks,
+Peter.
 
-Andrew
+Peter Yin 於 11/21/24 10:53 寫道:
+> Summary:
+> Revise linux device tree entry related to Meta(Facebook) Harma
+> specific devices connected to BMC(AST2600) SoC.
+> 
+> Base on:
+> https://github.com/openbmc/linux/blob/dev-6.6/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+> 
+> Base on:
+> https://lore.kernel.org/all/14e1a0f581417d4228aea8c2569598d42b4bd334.camel@codeconstruct.com.au/
+> 
+> v1->v2
+>    - Provide additional details for SGPIO.
+>    - Add adc128d818 device
+> 
+> v1
+>    - Patch 0001 - Harma: Revise node name
+>    - Patch 0002 - Harma: Add retimer device
+>    - Patch 0003 - Harma: Revise GPIO line name
+>    - Patch 0004 - Harma: add e1s power monitor
+>    - Patch 0005 - Harma: fan board io-expande
+>    - Patch 0006 - Harma: add adc128d818
+> 
+> Peter Yin (6):
+>    ARM: dts: aspeed: Harma: Revise node name
+>    ARM: dts: aspeed: Harma: Add retimer device
+>    ARM: dts: aspeed: Harma: Revise GPIO line name
+>    ARM: dts: aspeed: Harma: add e1s power monitor
+>    ARM: dts: aspeed: Harma: fan board io-expander
+>    ARM: dts: aspeed: Harma: add adc128d818
+> 
+>   .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 134 ++++++++++++++----
+>   1 file changed, 110 insertions(+), 24 deletions(-)
+> 
 
