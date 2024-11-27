@@ -1,58 +1,61 @@
-Return-Path: <linux-aspeed+bounces-172-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-173-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0B84D6554C
-	for <linux-aspeed@archiver.kernel.org>; Tue, 26 Nov 2024 19:24:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5250BD6ACF2
+	for <linux-aspeed@archiver.kernel.org>; Wed, 27 Nov 2024 16:14:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4XyXZZ6Wnhz2xjw;
-	Wed, 27 Nov 2024 06:24:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732649078;
-	cv=none; b=QasoJznFaJbSliQDuaegPIMxLPi2OsdNsN/ruYXWh/qzV0dIvtmiDJOavTkv+PlxsHF68X+hjRZNqMFKIsK8Ltmjh9ZXK4Im2iwKFoBTRzeD9Cy5h0YOYD5gxnPtHiyIx71D7vI2wKZrEgSyYlldd+GTlF/zTvIA4s+8rpu6EPPWbIMrjgAnYzuYdEDDY3+qqw43kNAZNE7TIJz/z+uQIFTBkumGtMvHrVVYo4us+xwAzAq4+Tf2oRccwMfkKExgiRwc5DI91tjSt8HspmX7Al3gfTLT8PuY0+OfZfPf2L7GsEJFPNZp0s9zCiglOY+SU488a4VaxLousmK/l+auoQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz4Jw1kmYz2xmk;
+	Thu, 28 Nov 2024 03:14:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732724080;
+	cv=none; b=QhyH74jUMI33zlWzFLSZFvWvDMX7to/ytGLwHoaRHTELaQBV0t4JZB6bCfk0OFSYxec+pSINupMxsiWfeSDZilR9unaiNQKb7hEZ+FGpg+jWjEPeMo4sE75hFdNSu7sdvmEdcCzlsG5pEkPa8+qo4tvnrVZYz8oPTT2NuiMGi6eY2y+wrmYjVIaUcIYC92H4P8GJjerCdwawzKw8JdNmF3NkQRNfA8SiWT//Nn/4wg8Zrf/LbjW69YREH3+lnRr9jdNr72tjCtasLxrxZ3VjSaDdeNjoiW1E0VRR4IzSEin2hd8/yV2je5naSlbd8dOM7aujXKwa1kCENawPplahxQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732649078; c=relaxed/relaxed;
-	bh=snKroQwtkypY8SdAmHkbYrAAMz7CQLXGWztiA4anALU=;
+	t=1732724080; c=relaxed/relaxed;
+	bh=aShkXMyayZKWZRdrM7J5JHKi41tIxe5R2eQr9Tu6jG0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AoAoNkvrldT69FyW9dElDep25HX7DY8pP4tWzA1jEoGdxbMiDakmD0sDame+kzz3qzEQKkfcHfAZ9T4f3fbsskPNgQIBLzIZ/mdJmWHR1v8S9c81ZlboDypLfAGSGzl0ICkvi5IW+1M4HqmNph3PPgumM89icJ91xKG/Z7H+MzOivdJ9W8AcSBRAI0rPLpKSLGy7yJKa3UOOwoX/ktKfU7C1NyRIQqzKrx6XNoC26cBksMIibo9S9OBWIuBKYDeCOBwN67Skut2q3jNRxrVyYTRBoAH6jcGbpBSFmxuYkHt2l1bY7CY6bHVnMzynFCmfPzQ3pc0J8MMNAlUeBiaZTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ut329A+t; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=dB3agrO0lBLzO3UXgsFYz4DqewRAT8jP6pEu9Wa7k2c0F8q+dtQvCyApPt5lOlMb4tREr3jlXLQeraDhg0F+bLNadRs8UpEz5fMiHvyEnAG7QOemBbeprzVI0wX7Zr65RCclGhIDNf8yvPoC/4DhBrkh9YAbfZApkj/JCRtmp5C8S2D1rjeNyYPAc4X6BgY7WJ0iEBWiD9mJUeEaFhWdWSKeH5NveBlLn15BJqzRHrWnUkYy1CBiLBXjeNLRXrvWnSwf9sQobo83Z8+ORHCo4n9IbKvXyKeMwqD4ooCvWM08O1m357b8Q4e0NWsWwmkUkKrPXzT21vaO8p4fQCnZnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Yzy7GJrB; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ut329A+t;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Yzy7GJrB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4XyXZW6R3Lz2yHj
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 27 Nov 2024 06:24:35 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=snKroQwtkypY8SdAmHkbYrAAMz7CQLXGWztiA4anALU=; b=ut329A+tI3avnKTDT9v25tw0Y1
-	W4SBgQOyGBdvNGrWiPgUmzHTCs5JL317/ClnLgZrzZsdv3UAUzdYf2LAjTrxzC5Wxh2WB0TbwQxVA
-	K/RXS44a8gmeHWiZE983yZfQtj6xkcnR6TdmHqlqI3StK5XZ9MKiE44y+O54/PYlSN2k=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1tG1AV-00EYHb-Hf; Tue, 26 Nov 2024 20:24:15 +0100
-Date: Tue, 26 Nov 2024 20:24:15 +0100
-From: Andrew Lunn <andrew@lunn.ch>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xz4Jv0JDpz2x9g
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 28 Nov 2024 03:14:38 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4B2315C5639;
+	Wed, 27 Nov 2024 16:13:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA1F2C4CECC;
+	Wed, 27 Nov 2024 16:14:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1732724075;
+	bh=t/t+qxjEE72ckgaetIew3I8k7tV0KGgHqs4PPn6lneU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Yzy7GJrBd/e3ed1KEIowTju/iUvh/T9yE4tGSE0foVfkz5XPzXIOav9a3ecTJoRt5
+	 moLU8F3FSksk54D/GR/HMeNLeuUuKh3NiYt2bnkveJbvFmKh0fRGHABUGUbsZ9FriC
+	 ZTUUjasE8OBdmpR7GkUMGtwjrFU+3VOiB+UijToRHYzP/qVaWiQoI22LUiD2adoIUe
+	 6ANGhB0IE2OfxqeDIOQbHvGef7jPGS8zPibk4MFBmqNmk215695V7uGLXiUPItOMIv
+	 EfDTid/dN/dhSFUnjvKfQh9oCGv4ZQsc6tA/55cUwZw/kBHf8zQju+TwCHdhHSgtVg
+	 GCogrBmNZzflQ==
+Date: Wed, 27 Nov 2024 16:14:30 +0000
+From: Conor Dooley <conor@kernel.org>
 To: Jason Hsu <jasonhell19@gmail.com>
 Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
 	joel@jms.id.au, andrew@codeconstruct.com.au, patrick@stwcx.xyz,
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	yang.chen@quantatw.com, jerry.lin@quantatw.com,
-	Jason Hsu <jason-hsu@quantatw.com>
-Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
-Message-ID: <160008e2-f480-49c3-994e-a498e74eee23@lunn.ch>
-References: <20241126111817.2331577-1-jason-hsu@quantatw.com>
- <20241126111817.2331577-3-jason-hsu@quantatw.com>
+	yang.chen@quantatw.com, jerry.lin@quantatw.com
+Subject: Re: [PATCH v5 1/2] dt-bindings: arm: aspeed: add Meta Ventura board
+Message-ID: <20241127-resupply-tanned-1410c026f127@spud>
+References: <20241127073409.147714-1-jason-hsu@quantatw.com>
+ <20241127073409.147714-2-jason-hsu@quantatw.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -65,25 +68,61 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="jmHGxiniHzsUH9Y8"
+Content-Disposition: inline
+In-Reply-To: <20241127073409.147714-2-jason-hsu@quantatw.com>
+
+
+--jmHGxiniHzsUH9Y8
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20241126111817.2331577-3-jason-hsu@quantatw.com>
+Content-Transfer-Encoding: quoted-printable
 
-> +    // 88E6393X CONFIG FRU
-> +	eeprom@50 {
-> +		compatible = "atmel,24c64";
-> +		reg = <0x50>;
-> +	};
+On Wed, Nov 27, 2024 at 03:34:08PM +0800, Jason Hsu wrote:
+> From: Jason-Hsu <jasonhell19@gmail.com>
+>=20
+> Document the new compatibles used on Meta Ventura.
+> Add subject prefix for the patch.
+>=20
+> Signed-off-by: Jason-Hsu <jasonhell19@gmail.com>
 
-I just noticed this and it seems odd. MV88E6393X is a Marvell Ethernet
-switch. It can have an eeprom, and if so, the mv88e6xxx driver will
-export it via ethtool. It is not normally visible to Linux as an I2C
-device, because it hangs off the switches I2C Bus.
+I acked this on v1:
+https://lore.kernel.org/all/20241022-purgatory-modify-fdcc5f1cff23@spud/
 
-Do you have some multi master going on?
+Where did that ack go?
 
-I also don't see the switch itself here. I would expect it to be
-listed in the MDIO node.
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/D=
+ocumentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> index 2f92b8ab08fa..98ea2b3e0eb1 100644
+> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> @@ -86,6 +86,7 @@ properties:
+>                - facebook,greatlakes-bmc
+>                - facebook,harma-bmc
+>                - facebook,minerva-cmc
+> +              - facebook,ventura-rmc
+>                - facebook,yosemite4-bmc
+>                - ibm,blueridge-bmc
+>                - ibm,everest-bmc
+> --=20
+> 2.34.1
+>=20
 
-	Andrew
+--jmHGxiniHzsUH9Y8
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZ0dFZgAKCRB4tDGHoIJi
+0mIfAQCayJEyg/gpu7kW1AsnuurZqhAYXJ0x4zKzE2K1FAFASQD7BAOqyd6ui9uH
+b6YBGxhPSq91ve2zVGXLlpN06U7rIAY=
+=Gnpn
+-----END PGP SIGNATURE-----
+
+--jmHGxiniHzsUH9Y8--
 
