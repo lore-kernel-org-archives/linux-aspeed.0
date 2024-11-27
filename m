@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-175-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-176-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D5EDD6ACFA
-	for <linux-aspeed@archiver.kernel.org>; Wed, 27 Nov 2024 18:15:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD7ECD6ACFA
+	for <linux-aspeed@archiver.kernel.org>; Wed, 27 Nov 2024 18:17:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz70q6qT8z2yGT;
-	Thu, 28 Nov 2024 05:15:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732731355;
-	cv=none; b=aW348ByO/7kG/Gghm5Yf79d1f7cbWXXfNJhtn1LUj1Pxd94ULtoU/5fkiAZKZSKtR9pAm6xNID2JinlOOHqPQJDcR+gC8dwVLgxEHgzfnhDeMVPMZs8DPDhj6MmPAr3w3ChZXMat6i3Bbkc2/D4qu7fhJAS8BOMFgDb5cVx1V9VLRDvuHQUb2UD4kQO7zTphcF9xTxtzOU1o8XNR6+zJO6isuf5iIDi5QmYOfgoVdmPwYNKZBe7EGjSy8BG9l6x5p+KRMk+dnIBAaMoANfEAnENVpojbls/7E9xMHYaMEUBRYT+C2Vb8knxfZkZlZVXGatEwZyk/Gu1Dm+Fdb+wgYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Xz72B1j12z2yMk;
+	Thu, 28 Nov 2024 05:17:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1732731426;
+	cv=none; b=g+kyEWNBFB62qmUQqqJMqWwSleLrd8To2FamwIiFdn2JmuaZyduQhEjsXechdTJEhpwvpuAKBXD/2IUcpOyIAWh2R0YOaB83Le+F74V2prtq724WkOkhu7YMK+ZNC8PKt0n15Wsoa/0g0/4KHQf8UKtZhdOgQmdQGgZuOjwSqYS+F4QGp212HMjOekkNJNo5wbHOtnPNcTINb3wjCo75EIFdpxWYH7Mhv2i5PkSbE0YgKq2CuFZQe5sfSKK0aXlodDJMDL5958NTo6VE9VqLYpJezelR9FMQNGx169y0GBm43dHrArsjTL6hrpfPkx0Gmcc7F6Eig+iiaxsRR53fOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1732731355; c=relaxed/relaxed;
-	bh=6lrmQp/bo2VP9p7ksOmamWbX434qkL7CBpG8q9DJP3A=;
+	t=1732731426; c=relaxed/relaxed;
+	bh=UCapQCLe5ex4m82oTMIM7kr8FSCh8511YQp5+rojyrU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hF8gn2F31QyW6FaWcHwqaIK4ykadZ1C1u/+NNoM0x4gG/C+OhMxYjk9+51RvwbeqdCjZTOuwcEuLeSkA+FhnSXab7S68YssvAq7Lvg4UYofmFhCInsLJxPUCZpM4jf+5JA88l8OYzK4gegGd+rc6W0aLZOG4/0dczlwrJsSx5Z+rXKxiHpBXNrhHpDahTvTpfLppDBUiRSjtkUVSClhWj35hT2JvHG160Qy+sptLx9G8MVIHO2CUxloSnLzGy6mM9uA6lH27e0h9uWr5XolPUGH+sx/aoLBD2KVGmxHuyo6FbxpmzFaAiX64q8NV4Rg1n4HtwJUESg+xdiDNU7x3sA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gpw7QEfD; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=bBHK1kHPO0ZFlFxfFtyvM6omoobWyI1sBP4CDNONw5+5UeWyiI2B3jcAvheTQdAIf8pTt4KM4uHVF3fYhOHkcFo5Itcfyf5L5RiW7dchLNbZ9OTGMsNsTllJf7O97xvQngZx48rQrNVX6psWNRQCbct6W2RPco1JdIZlci4V6YD08b687x1SMoRIT9oWkulqVvS9s6QEsZVw9BtrAHwpAioOFQ1Jr3kADx65yjz0Nc0UtLliDF0s67oYHaJ5qP88Lw3SJeTnvI5ehxoLvpEBjsHM+AcaEOAHj9Nyc41aCEWMV1wjQUDZIlrcjHcz/Dc/bFUSyW4sTGN720oe7ELxzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RMDY8YUF; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gpw7QEfD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RMDY8YUF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xz70p6Ryxz2y3Z
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 28 Nov 2024 05:15:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Xz7290Rryz2y3Z
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 28 Nov 2024 05:17:05 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id CE52E5C59A3;
-	Wed, 27 Nov 2024 18:15:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8602AC4CECC;
-	Wed, 27 Nov 2024 18:15:48 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 64ABFA43985;
+	Wed, 27 Nov 2024 18:15:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A695C4CECC;
+	Wed, 27 Nov 2024 18:16:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1732731352;
-	bh=6lrmQp/bo2VP9p7ksOmamWbX434qkL7CBpG8q9DJP3A=;
+	s=k20201202; t=1732731420;
+	bh=ViaFJxqIqAaRF5tQZD54yXLYk8q0ILGAzJ1PxTcRLmw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=gpw7QEfDYo7hBLT8ohJd5XYLYiKtd4ltcZX99TxU9BrW3q/uNNWucL0W8FiMa+fe0
-	 bug2j6AhZR8IXewujbX3MpEKK8WSI6Wu91NwYv+yC6QVW6ptPJ2Zpubjs7zGrammXg
-	 C6DCKEB5FwjuWzaJ5Gezqn99vpA7LLzBUrPHkLH6rqmooov+RjmC3eU5DPRLt5LZY6
-	 hAC67NNAyIK6mLrrGnCc6H5FhJB8o23slGBAOjda/1ZYO11lwTkuMBBl8EnreGOICG
-	 q9Iicf5l1G5H+5JO/ZJ4N6AlCd87u6DJXMD0U3ELZHp27QgfkzNW1XFfEMCY2c87fG
-	 1Tp1UnEwRJf9g==
-Message-ID: <a503ca1b-a9d6-4613-92be-a671c260547a@kernel.org>
-Date: Wed, 27 Nov 2024 19:15:46 +0100
+	b=RMDY8YUFnXK2TvL1IxrrTkaE7fUjjSXgEChancSRHqtWw5ne6ON74FhPghW2kouy7
+	 Jhm1sDBwGyjCHzmr+r3q8lnEU0A7xBFsnZ+NxmDe819kLrpnbIFqBn5OME118X8EbE
+	 SjnuAmDQF3L43Ja246t6FSyYUcSpI5xl6m1fJKp0nPbzklkvA9lDzEkubM8J8WH+hZ
+	 QXHttJk+vryEibdgjxvk3pszu07pISh/k95POWkrgoIvI3VdhrklxF6RruAfK1dk6/
+	 za/ifWTxwVGe9Gh8qQoms4Uokrl8JqDasZgiaxJV+HHS6eZRWkSWbt2+27oKNvw/sT
+	 cmUTglglEIZcw==
+Message-ID: <d165ed94-4979-46e4-a685-44f4636620b6@kernel.org>
+Date: Wed, 27 Nov 2024 19:16:53 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,7 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
+Subject: Re: [PATCH v5 0/2] Add Meta(Facebook) Ventura BMC(AST2600)
 To: Jason Hsu <jasonhell19@gmail.com>, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
  patrick@stwcx.xyz, devicetree@vger.kernel.org,
@@ -68,7 +68,6 @@ To: Jason Hsu <jasonhell19@gmail.com>, robh@kernel.org, krzk+dt@kernel.org,
 Cc: yang.chen@quantatw.com, jerry.lin@quantatw.com,
  Jason Hsu <jason-hsu@quantatw.com>
 References: <20241127073409.147714-1-jason-hsu@quantatw.com>
- <20241127073409.147714-3-jason-hsu@quantatw.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -114,17 +113,38 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241127073409.147714-3-jason-hsu@quantatw.com>
+In-Reply-To: <20241127073409.147714-1-jason-hsu@quantatw.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 27/11/2024 08:34, Jason Hsu wrote:
-> Add Linux device tree related to Meta(Facebook) Ventura specific devices connected to BMC(AST2600) SoC.
-> Add subject prefix for the patch.
+> Add Linux device tree entry related to Meta(Facebook) Ventura specific
+> devices connected to BMC(AST2600) SoC.
+> 
 > ---
-NAK, nothing improved.
+> v1:
+>     1. Create ventura dts file.
+>     2. Add commit msg.
+>     3. Use format-patch to generate patch.
+>     4. Add subject prefixes matching the subsystem.
+> ---
+> v2:
+> ---
+>     1. Modify email content.
+> v3:
+> ---
+>     1. Add mail list.
+> v4:
+>     1. Apply git send-email --thread option.
+>     2. Sort nodes in the dts alphanumerically.
+> v5:
+>     1. Run scripts/checkpatch.pl and fix reported warnings.
 
-Respond to comments and implement them.
+
+Nothing improved. Do you know how to run checkpatch?
+
+Why did you ignore all other comments?
+
 
 Best regards,
 Krzysztof
