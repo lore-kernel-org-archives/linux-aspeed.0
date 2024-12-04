@@ -1,77 +1,51 @@
-Return-Path: <linux-aspeed+bounces-180-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-181-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E011E7716D
-	for <linux-aspeed@archiver.kernel.org>; Wed,  4 Dec 2024 07:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD285E7716D
+	for <linux-aspeed@archiver.kernel.org>; Wed,  4 Dec 2024 23:24:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y388r5btMz30VS;
-	Wed,  4 Dec 2024 18:21:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733296908;
-	cv=none; b=Piu6Q5y7+loavZSlKOF/FVshG684jUVpBkFjpAJyiVu9BcleJDXB5HN+qJMQbIRYHU8VsKydzgIKbWxU3r9CfgBuhOe4+frdtX9y3Qx+YrSLtMD7f5go00yamZzVXnPiMeDPe/IMSIaQzoUPvbfr1Is0AsaWqdG3+vIOhyCf8Hjh0PM5H8Y/Rz2g8m1mcOO5Uia7lZv2ztQLAuJ33asYPhjVYz6TjjqYXjnCaLQGcf5cjqbJXl1V2PUfoUlTO9NffJFhcLqghluokkp5N4Xa9JbvJZgkYKXxtRveLqI/HwZgUCIeXL9be1pAke8vw7E6rwL/0nrCiMspzkkqaEKjnw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y3YWy4Hxkz30DL;
+	Thu,  5 Dec 2024 10:24:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733354686;
+	cv=none; b=UQon1JaY4bTbAGIzsf4LeryyJ9/TPFu8XmFULeiLvUL9nscuzb9RQaOf1YALtAZ8pMkaAq9VAt2Ij6efuKZ1qmDYBliOgzD79jDgl3rVPeuYssgNmjom8tImw0Xi1CbikVypAJLEcisYmPlU3JlRdATYM9j50DIcfPAvO86oq7xXuTFHEPYA8d6WSyjaavGweQMZurzOr6j9a4OQ478kL/MT8Avxbu8mTda8It1RwM6MV3fFSIzZ69VzdjY2RQANFySBKv5LbClE/3h2xvK87z6qaM4pAV6eaLTeXk/Zg8/IWWna6OXkf5hoyYaFe4gzhLz+adMC7KQ2afc8miiIZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733296908; c=relaxed/relaxed;
-	bh=X1xLPBUzUotQ8W4dnkHC8pvofzpJw52qNUZu5+hvGuQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S0tF8J9/bcjPiSn55H/c7regyhi6GqpkQdVaLwmklxZJznE6RTSD1vltHucfObj5H52/smDJne/OZ6DTslMjIhnsPkmxd5QpfFo+TaEQAyHVDfdlvhR3FxrHCfidXTco5X/CHvGOHoBBa3/DVZdZIBW3wLn0ZOh17w3LpA2oyllOPRmqQ84E/VeszGtu9tfUx3mrlON5ihpJXtT0U0IA9NmF7JyLQAHBDGrGoUk7x+fRYM9vlfyBbnJQIO57CUaBWNs/iqHPliL/25H8UtkrrzCSDspiUYOljSu1vDp180rzqa76FQr90ERdyXyNio8igVIcmE3WqjE/ZbYLREL0Lw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=DEDVPZLw; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	t=1733354686; c=relaxed/relaxed;
+	bh=U95w3ZhQysRNriViK2YjwAoYndR153TS1yK6EG2Jj7A=;
+	h=Message-ID:Content-Type:MIME-Version:In-Reply-To:References:
+	 Subject:From:To:Date; b=lEAuberWCCZlrL54qjGPBk5ozrgcyPoUniZxGNzTakWWe23tWI5byhFLLaBXwn363rwqRLK6Lh5dshyui7kH1f8mnot+hLszas7h+nj/NsRSJTFRlimEGpXxHNi2HB8MCebL0YEQZ8ecGtElHhkk1dG0HzYFNZZkGTin+PjN9JmncdPqOUSApXOo0gdVaS98LbZI8ubXKg/v2su0Z4l7sZiAENH4w/EoVwKjo/b5qxW17AnaolWVHKS6pCA3hRB77xxOu+nzLHEDK6g949WdJc/uMcS+2E8DOoz0Hwz1OYLA/3yO/FjddIY7QRXSIVBf/yLQceN5I162nmqne3jChA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GiOWzsli; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sboyd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=DEDVPZLw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GiOWzsli;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sboyd@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y388p2t0Fz30Sy
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  4 Dec 2024 18:21:44 +1100 (AEDT)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-4349fe119a8so7564295e9.3
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 03 Dec 2024 23:21:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1733296899; x=1733901699; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=X1xLPBUzUotQ8W4dnkHC8pvofzpJw52qNUZu5+hvGuQ=;
-        b=DEDVPZLwTr6bZuGtUQcpkTmipIN9WGWr+XGyVYVo7Zoa7mfZyoOsiFhDz2jYp23VAC
-         KRce9wdBLdJtc1oGOzUH2znBCwHM4Tz3gcYV9he+YjVKHy/yzuqqkUYg9dR9l/GHr/oD
-         tyFw7qdaJjpqAQeg1njFUF15Akm9LdAEV8VE+9mHRJIzGmqnP+PjOtTgLaNlwRoatWKl
-         SRAa5gY+oDKGz1L0/a3TJ1mFkJ8jAqme5WqDW5VOY+tXub2XIMeekW5d6DKNjVazht7h
-         FndUcwFzh7s9wPTeynd2W+FDeiuZs+0t7V4QFt3Ha9TchDYqR+EWTWFcgl0fVSTogZ6l
-         f/Ng==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733296899; x=1733901699;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=X1xLPBUzUotQ8W4dnkHC8pvofzpJw52qNUZu5+hvGuQ=;
-        b=MsCnPX0uAHbxgJgYDFIWAv6JcBPYTsVLmH9PtOUTzYFRL4VDNaGIF1+UBoyAH6spBq
-         uSrsvbRq5fGoMRPtrlzBUUUAk3d6nI4Y6tDTU1eQfHx79iwf1aPoyMRRmbqGnwdPOAgh
-         PMS/LazwBgDFbGYAzpOvBKFHilEhrNU6vgiaUXvpVPLtwEm83PYBYHyLx3IDq/U/SH2C
-         cTKFasVGBYqIorYumOixw2w9mHFQ8E3WhVbvHN9gRmL8IJg5n+gX97g5lE6NsvByiYUE
-         8j0TXD07MeSeomi1yjYRl2TNxmv9dP2Ssj0XzwRmyif1vUVIv5Rs+F9WO7YNVZrMnf2f
-         W5bw==
-X-Forwarded-Encrypted: i=1; AJvYcCV5CDWiSF1qsmoZYXDQWrj2U5bjp9qF0PB3pLANy2+2+7KQqaX3ZTy7/TAI/KftKOI6ROXfQg2GNXP2ANs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxcni4ulv+eHiIkHrUGjomipAmDlqqLgeEXK42I4TgdIWcpvoW/
-	mdTjbbR25D55lt5q+7WG1avABiXlOtHiQZy7z2OCsv5QNy20SQYihsH5kmGdsqY=
-X-Gm-Gg: ASbGnctfXvD/KA7PFdhBnYeCI/p70D7HUSNchk0AqG0L/5ina9HHpQ5I8krnoJ7DjiF
-	37OtwOebDMCtn6NA2Pt/S9a6e1qEtT5qVt8LdZl1OEduzOnrFFZNsM6EaAfzT7yZTRfwA7jAEB/
-	ptwXmaWPpkf0aiAypCUHgqpFcD2xIbUaAXJ4H/lX05bBO7/7BApN8yx2qvTCjKuuZkGPi/PA35v
-	gfmrP+2wD9sQGgRTEwGuVHfLlTq+mzD/1y7n18QhNUBybYBHijtxrYrHWjQVO4Y6C1z+w==
-X-Google-Smtp-Source: AGHT+IHtCdQ05BQDY20/LpYx6IfP8mgaeR10Q3ey/YZ+JByIUyxE2J/jobAU8fTKHzVmlAdPD/L43Q==
-X-Received: by 2002:a05:600c:1ca2:b0:42c:b63d:df3 with SMTP id 5b1f17b1804b1-434d09055a8mr17717385e9.0.1733296898918;
-        Tue, 03 Dec 2024 23:21:38 -0800 (PST)
-Received: from [192.168.1.20] ([178.197.223.165])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-434d52aa0b4sm13924315e9.35.2024.12.03.23.21.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 03 Dec 2024 23:21:38 -0800 (PST)
-Message-ID: <068c4e43-d64c-4f08-abff-675334e8f5e9@linaro.org>
-Date: Wed, 4 Dec 2024 08:21:36 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y3YWx2rM5z309W
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  5 Dec 2024 10:24:45 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id B61725C70EA;
+	Wed,  4 Dec 2024 23:23:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39D87C4CECD;
+	Wed,  4 Dec 2024 23:24:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733354682;
+	bh=n6tt8G5iTvpqN8Ai25XZii/0NhY4FJ0gg4/pPLwKCLU=;
+	h=In-Reply-To:References:Subject:From:To:Date:From;
+	b=GiOWzsliDjYjlm7BEB7r0ofwLpgEMaFF1CGsnuzGfzn3rh9A2v2GqkccSbrv1sJiB
+	 nyNb6EBSmgIV/FNj23TTr9go6o8Y2kTC/gUtGyOX55nD8WrRXMiINDLLtIz1vJCjY4
+	 d6iBZmpUJB5yp2lADEAQO1ulCBnKanstPMRIATkRj0xBuSiodEyezHFGjBjztzfPYk
+	 6/AB26dA+ZB0Pml+u0UUDE/kS747yKT0oGfF53KrQ7o1hQLesFLCVxrCnYaTbGSyud
+	 NKxTGfE5Iz2YYqKLPlRSbG7CA+RK4C1SVmWivF3EZ+lr4wU+fIYubbzTqyl/AGgQt9
+	 N3iRPScMm7DFw==
+Message-ID: <9ccfb478d9a122db6c634e9559e211ff.sboyd@kernel.org>
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -84,75 +58,139 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] ARM: dts: aspeed: Enable video engine for IBM System1
-To: manojkiran.eda@gmail.com, Rob Herring <robh+dt@kernel.org>,
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- Eddie James <eajames@linux.ibm.com>, Ninad Palsule <ninad@linux.ibm.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- openbmc@lists.ozlabs.org
-References: <20241203-dts-system1-video-v1-1-008e5e660106@gmail.com>
-From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Content-Language: en-US
-Autocrypt: addr=krzysztof.kozlowski@linaro.org; keydata=
- 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
- D2GYIS41Kv4Isx2dEFh+/Q==
-In-Reply-To: <20241203-dts-system1-video-v1-1-008e5e660106@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <OS8PR06MB75419637D55A022300E00850F2352@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20241028053018.2579200-1-ryan_chen@aspeedtech.com> <20241028053018.2579200-4-ryan_chen@aspeedtech.com> <287924eed186e3b6b52cd13bcf939ab6.sboyd@kernel.org> <SI6PR06MB7535F5D22E3FCCF5C610B307F2552@SI6PR06MB7535.apcprd06.prod.outlook.com> <a68516df98c8b8fb80f094e6e55fcb8d.sboyd@kernel.org> <OS8PR06MB75419637D55A022300E00850F2352@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Subject: RE: [PATCH v7 3/3] clk: aspeed: add AST2700 clock driver.
+From: Stephen Boyd <sboyd@kernel.org>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, andrew@codeconstruct.com.au, conor+dt@kernel.org, devicetree@vger.kernel.org, dmitry.baryshkov@linaro.org, joel@jms.id.au, krzk+dt@kernel.org, lee@kernel.org, linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, mturquette@baylibre.com, p.zabel@pengutronix.de, robh@kernel.org
+Date: Wed, 04 Dec 2024 15:24:40 -0800
+User-Agent: alot/0.12.dev1+gaa8c22fdeedb
 
-On 03/12/2024 14:22, Manojkiran Eda via B4 Relay wrote:
-> From: Manojkiran Eda <manojkiran.eda@gmail.com>
-> 
-> Signed-off-by: Manojkiran Eda <manojkiran.eda@gmail.com>
-You CC-ed an address, which suggests you do not work on mainline kernel
-or you do not use get_maintainers.pl/b4/patman. Regardless of the
-reason, process needs improvement: please CC correct address.
+Quoting Ryan Chen (2024-12-01 19:12:01)
+> > > > Subject: Re: [PATCH v7 3/3] clk: aspeed: add AST2700 clock driver.
+> > > >
+> > > > Quoting Ryan Chen (2024-10-27 22:30:18)
+> > > > > diff --git a/drivers/clk/clk-ast2700.c b/drivers/clk/clk-ast2700.c
+> > > > > new file mode 100644 index 000000000000..db9ee5031b7c
+> > > > > --- /dev/null
+> > > > > +++ b/drivers/clk/clk-ast2700.c
+> > > > > @@ -0,0 +1,1513 @@
+> > > > > +// SPDX-License-Identifier: GPL-2.0
+> > [...]
+> > > > > +struct ast2700_clk_info {
+> > > > > +       const char *name;
+> > > > > +       const char * const *parent_names;
+> > > >
+> > > > Please don't use strings for parent names.
+> > > Sorry, do you mean use clk_parent_data struct for parent?
+> > >         +const struct clk_parent_data   parent;         /* For gate */
+> > >         +const struct clk_parent_data   *parents;               /*
+> > For mux */
+> >=20
+> > Yes.
+> And I find a better way for parent_data. The following is my modification=
+.=20
+> And parent_data will be union data structure. Like following.
+> Is this good direction?=20
 
-Best regards,
-Krzysztof
+Looks OK.
+
+>=20
+> #define DIVIDER_CLK(_id, _name, _parent, _reg, _shift, _width, _div_table=
+) \
+>         [_id] =3D { \
+>                 .type =3D CLK_DIVIDER, \
+>                 .name =3D _name, \
+>                 .data =3D { \
+>                         .div =3D { \
+>                                 .parent =3D _parent, \
+>                                 .reg =3D _reg, \
+>                                 .bit_shift =3D _shift, \
+>                                 .bit_width =3D _width, \
+>                                 .div_table =3D _div_table, \
+>                         }, \
+>                 }, \
+>         }
+> struct ast2700_clk_info {
+>         const char *name;
+>         u8 clk_idx;
+>         u32 reg;
+>         u32 type;
+>         union {
+>                 struct ast2700_clk_fixed_factor_data factor;
+>                 struct ast2700_clk_fixed_rate_data rate;
+>                 struct ast2700_clk_gate_data gate;
+>                 struct ast2700_clk_div_data div;
+>                 struct ast2700_clk_pll_data pll;
+>                 struct ast2700_clk_mux_data mux;
+>         } data;
+> };
+>=20
+> struct ast2700_clk_div_data {
+>         const struct clk_div_table *div_table;
+>         const struct clk_parent_data *parent;
+>         u8 bit_shift;
+>         u8 bit_width;
+>         u32 reg;
+> };
+>=20
+> static const struct ast2700_clk_info ast2700_scu0_clk_info[] __initconst =
+=3D {
+> ...........................
+>         DIVIDER_CLK(SCU0_CLK_AHB, "soc0-ahb", soc0_ahbmux,
+
+Can you also show what soc0_ahbmux is?
+
+>                     SCU0_HWSTRAP1, 5, 2, ast2700_hclk_div_table),
+> ......................
+> >=20
+> > >
+> > > >
+> > > > > +       const struct clk_div_table *div_table;
+> > > > > +       unsigned long fixed_rate;
+> > > > > +       unsigned int mult;
+> > > > > +       unsigned int div;
+> > > > > +       u32 reg;
+> > > > > +       u32 flags;
+> > > > > +       u32 type;
+> > > > > +       u8 clk_idx;
+> > > > > +       u8 bit_shift;
+> > > > > +       u8 bit_width;
+> > > > > +       u8 num_parents;
+> > > > > +};
+> > > > > +
+> > > > [...]
+> > > > > +
+> > > > > +static const struct clk_div_table ast2700_clk_div_table2[] =3D {
+> > > > > +       { 0x0, 2 },
+> > > > > +       { 0x1, 4 },
+> > > > > +       { 0x2, 6 },
+> > > > > +       { 0x3, 8 },
+> > > > > +       { 0x4, 10 },
+> > > > > +       { 0x5, 12 },
+> > > > > +       { 0x6, 14 },
+> > > > > +       { 0x7, 16 },
+> > > >
+> > > > Isn't this the default divider setting for struct clk_divider?
+> > > Sorry, I don't catch your point.
+> > > the SoC do have default divider setting. But it can be modified.
+> > > And also have different divider table setting.
+> >=20
+> > I mean that this is the way that struct clk_divider works already. So y=
+ou don't
+> > need to make the clk_div_table array for what is supported in code.
+>=20
+> Sorry, I understand your point. But I trace the code didn't get any clue.=
+ "clk_divider work already".
+> finally function call will be __clk_hw_register_divider
+> https://github.com/torvalds/linux/blob/master/drivers/clk/clk-divider.c#L=
+589
+> It still need table point need to address. Can you give me more direction=
+ or example?
+>=20
+
+The 'table' member is optional. When the table is NULL, we treat each
+number that fits into the divider field width as a divider. It may be
+CLK_DIVIDER_EVEN_INTEGERS that you have here though.
 
