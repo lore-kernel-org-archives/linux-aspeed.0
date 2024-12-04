@@ -1,72 +1,63 @@
-Return-Path: <linux-aspeed+bounces-178-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-179-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A72EEE69E86
-	for <linux-aspeed@archiver.kernel.org>; Mon,  2 Dec 2024 19:43:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BADDE7716D
+	for <linux-aspeed@archiver.kernel.org>; Wed,  4 Dec 2024 04:09:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y2Djz1y2Gz2yVd;
-	Tue,  3 Dec 2024 06:43:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733168631;
-	cv=none; b=P4kM1v8Me01452p9yCvKTo13E8T6JhXlwfx1G+JgV9Xx9tHqNY7bYdJfcZXszd9g9JkVGdMrZ1dxd08KX7vayklLbhf4HwgFURlAipTbwce8ieYosUK5F+jGlIooF3gl47q/tX2djaInHsADuJxqMVnmAHB2YSVRmShnyYaqNzu2TltyIg91xvh3EyWK7fIzDMP0T90S3HiXDrpvr+N17ZeS4Qx/vNYIyPbZQYXCFb0/P+F18yNyr1HBdjB3CxPTEK+my/t/W3xSkIOvMGildMwxxX/1LWVxRVgmCqDzCY0fwlVojVs60ukHNltfbZDp/RIWJ3TQBZoiDGorGFNdmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y33tP3YQdz30VF;
+	Wed,  4 Dec 2024 15:09:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733285341;
+	cv=none; b=Fh7LjvpCCATsSMiV33o+YkxMHPQODl1Q+NVVuLLyZd17xsvRf6CugvNnrH8Z2l0R36zIl6BA11q9hCv2wwTzR63nkpc+gIYETxOPRHV3ZH/VZTO/r4cAfldM+BCal4iyhLZEjogPCzAh00UuOGnT+nhlEcxQdJ4qosNUpJqL+OqargdmabYkXdP3QtzgzXr836X8pk6QH33X4MPpq9D9gOVPyHJ4t4Ih6Hrdhs3v4AKPBiBk1ds3BENFMMgJpbw8f5zNn+dKicIHdFrPiZneZLlpVpo6A3gzYZJoZKZtXchIQ7jPby2wpF8AyzPWpI3rFrwEiQ6oWDsX5WGRqKxAIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733168631; c=relaxed/relaxed;
-	bh=PtthdvLNczidenLf1mjfjYZczot34nYiKDi3OMmwcXM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PVCnYVm8Q7LBy0hrYCAXBBqNUnYyXrUTsvVRBy535og7xnO6HAGc5aruqG6X4PhNsvlaLc2xPqkmcd6nfMjPGmko5xDVNjD7Ue+AOubYiAlziEmeQ8O8a1s7sndV/WPfJsMKQPS6YrbG0CRlBSD15DaIvRjlGzIgHy4rKJuG8/v5oPI1/0vuSjuvDZK7idsRylboxGcUwdRIFV1hEgdV8GfOLXiBqm0YN+EQg1hg+rmWlKjf853dG5bKbmufUQNmIrzokC1ERXK1QiwT1e6GD3zBeL8nYCOnxvmtmokuCmNwIGfy0//sx0hVEU2NJZG4XlIIISdxfQhH9w7hMrWxrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pgMNadtd; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1733285341; c=relaxed/relaxed;
+	bh=LrOFYJV2ZrZYy6LgVD19Et9UmHlo6S9eT8BWN0Eq0bQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=T8S/MbgBa26KSaVX2vqlrcbdOchwfU3NQERjdMIE+y8iMO0cLq8V5VOv/krPM/Al5c2l58H+I/GwKhJcbyTKUPoARCfD3YykbcpitfpZvn3ovEfEXIPgZuEvInIeywZNUIRDczFLUFYgSVPRZwS1KdDTmbmx/MkoMXxKMge3X0Lfz1BvJDU4tNg1b1QMlOz+Cgkx3EYUbnO5G2lLHdHvC7lNIHslcYcbzRGKtkvWd/l1OFp29Ekg8E79SULpO9V8MrnQgaxLA3Dv6uv5ZAbV5T8m/NJ5Qx9WafK3OXsi53FqCwj//3STfSgLJkfE7WeXxZ6chSe4xHaKaxe0iraXmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DJrluDAK; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pgMNadtd;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DJrluDAK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y2Djx2nX9z2xn3;
-	Tue,  3 Dec 2024 06:43:49 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4B2BXqsn019335;
-	Mon, 2 Dec 2024 19:43:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Ptthdv
-	LNczidenLf1mjfjYZczot34nYiKDi3OMmwcXM=; b=pgMNadtdExpMF8d/t7Sfdi
-	xX/81avIMgLTC6n2dkeAoOKcfkXtOlMWY1wuyQif0bAeg1YK+kOy8nZhChDu64uT
-	4AWOymZH7L75W3CdNvk9YLqGlbl+laA8U848mPrLXfLpPzRVqsjZ/53RWUBI7adz
-	qnukNNDe+v2JrAZXb02OhjOiWWiyIlpXOfpEFTV03DeUYCC1m08pV6KTr8ng2cQ+
-	MEsPP0FLYXPO/5KPLK1bascKH8ZLj4x6QMoLTy2O2arjFpvkrWXgGrV+usRNeTV0
-	ODVWZ24kHIHTmfyqc1B7K2LkBiZLUqQSqt6oTjjzDoTCbnV49c68Y8cjarcyI8lg
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 437tcvb7ye-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 02 Dec 2024 19:43:29 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4B2Hu9vW006840;
-	Mon, 2 Dec 2024 19:43:28 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 438f8jatr5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 02 Dec 2024 19:43:28 +0000
-Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4B2JhR1R31326480
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 2 Dec 2024 19:43:28 GMT
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B1CFA58050;
-	Mon,  2 Dec 2024 19:43:27 +0000 (GMT)
-Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4738958052;
-	Mon,  2 Dec 2024 19:43:27 +0000 (GMT)
-Received: from [9.61.149.118] (unknown [9.61.149.118])
-	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  2 Dec 2024 19:43:27 +0000 (GMT)
-Message-ID: <8896a6db-6208-4095-bdf8-f5d21b519631@linux.ibm.com>
-Date: Mon, 2 Dec 2024 13:43:24 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y33tM4nHTz30V1;
+	Wed,  4 Dec 2024 15:08:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1733285336;
+	bh=LrOFYJV2ZrZYy6LgVD19Et9UmHlo6S9eT8BWN0Eq0bQ=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=DJrluDAKGeNcgsdW3x3ei/ik/ffQfZJIkBG3/v2CrO1qnlv/S7WLHQPFrZ3zuEEHv
+	 Ql/kiy4lRF9SdAOLkNiMVLcm4qOlIt9pzcAHvDatDUiW7rwKAUEpHE+MusHS3ffky/
+	 TmH8r50SqdUbjnz+i8N7lzhba4EMsUiqJGe8fdWAGRVfbpRK1e1/6PyfyM79sh+Nym
+	 V6l9PJU0fiY0HD1KxdcqrZsUvdezusjkCVZ5bqhdgVaEBm6Fiwf59SE6TgvQwUZxzN
+	 U1JQevi0+nyNR+LxqBN31xERHHWhB9pSYC/mbEyXjNpwXieFBfT65zhuVx3PzaL4yb
+	 6pTB1aWUb035A==
+Received: from [192.168.68.112] (ppp118-210-165-44.adl-adc-lon-bras34.tpg.internode.on.net [118.210.165.44])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id C3CC96D6B6;
+	Wed,  4 Dec 2024 12:08:54 +0800 (AWST)
+Message-ID: <9ff74b8a13ff58921a4f7f18dbded9c06b195c06.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] ARM: dts: aspeed: Enable video engine for IBM System1
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: manojkiran.eda@gmail.com, Rob Herring <robh+dt@kernel.org>, Krzysztof
+ Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Eddie James
+ <eajames@linux.ibm.com>, Ninad Palsule <ninad@linux.ibm.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	openbmc@lists.ozlabs.org
+Date: Wed, 04 Dec 2024 14:38:53 +1030
+In-Reply-To: <20241203-dts-system1-video-v1-1-008e5e660106@gmail.com>
+References: <20241203-dts-system1-video-v1-1-008e5e660106@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -79,149 +70,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] fsc: Switch back to struct platform_driver::remove()
-To: =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-        Jeremy Kerr <jk@ozlabs.org>, Joel Stanley <joel@jms.id.au>
-Cc: Alistar Popple <alistair@popple.id.au>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        linux-fsi@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-        linux-aspeed@lists.ozlabs.org
-References: <20241130150530.901263-2-u.kleine-koenig@baylibre.com>
-Content-Language: en-US
-From: Eddie James <eajames@linux.ibm.com>
-In-Reply-To: <20241130150530.901263-2-u.kleine-koenig@baylibre.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: rs94fHDTTEC7yHxUvjUCMxju6vUxsfNd
-X-Proofpoint-GUID: rs94fHDTTEC7yHxUvjUCMxju6vUxsfNd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
- definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
- mlxlogscore=999 spamscore=0 clxscore=1011 impostorscore=0
- lowpriorityscore=0 priorityscore=1501 mlxscore=0 bulkscore=0
- malwarescore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2411120000 definitions=main-2412020165
 
+Hi Manoj,
 
-On 11/30/24 09:05, Uwe Kleine-König wrote:
-> After commit 0edb555a65d1 ("platform: Make platform_driver::remove()
-> return void") .remove() is (again) the right callback to implement for
-> platform drivers.
->
-> Convert all platform drivers below drivers/fsi to use .remove(), with
-> the eventual goal to drop struct platform_driver::remove_new(). As
-> .remove() and .remove_new() have the same prototypes, conversion is done
-> by just changing the structure member name in the driver initializer.
->
-> While touching these drivers, make the alignment of the touched
-> initializers consistent.
-
-
-Thanks.
-
-
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-
-
->
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@baylibre.com>
+On Tue, 2024-12-03 at 18:52 +0530, Manojkiran Eda via B4 Relay wrote:
+> From: Manojkiran Eda <manojkiran.eda@gmail.com>
+>=20
+> Signed-off-by: Manojkiran Eda <manojkiran.eda@gmail.com>
 > ---
-> Hello,
->
-> this is based on Friday's next, feel free to drop changes that result in
-> a conflict when you come around to apply this. I'll care for the fallout
-> at a later time then. (Having said that, if you use b4 am -3 and git am
-> -3, there should be hardly any conflict.)
->
-> This is merge window material.
->
-> Best regards
-> Uwe
->
->   drivers/fsi/fsi-master-aspeed.c | 4 ++--
->   drivers/fsi/fsi-master-ast-cf.c | 4 ++--
->   drivers/fsi/fsi-master-gpio.c   | 4 ++--
->   drivers/fsi/fsi-occ.c           | 6 +++---
->   4 files changed, 9 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-> index 6f5e1bdf7e40..0f66bc8ac2de 100644
-> --- a/drivers/fsi/fsi-master-aspeed.c
-> +++ b/drivers/fsi/fsi-master-aspeed.c
-> @@ -661,12 +661,12 @@ static const struct of_device_id fsi_master_aspeed_match[] = {
->   MODULE_DEVICE_TABLE(of, fsi_master_aspeed_match);
->   
->   static struct platform_driver fsi_master_aspeed_driver = {
-> -	.driver = {
-> +	.driver	= {
->   		.name		= "fsi-master-aspeed",
->   		.of_match_table	= fsi_master_aspeed_match,
->   	},
->   	.probe	= fsi_master_aspeed_probe,
-> -	.remove_new = fsi_master_aspeed_remove,
-> +	.remove	= fsi_master_aspeed_remove,
->   };
->   
->   module_platform_driver(fsi_master_aspeed_driver);
-> diff --git a/drivers/fsi/fsi-master-ast-cf.c b/drivers/fsi/fsi-master-ast-cf.c
-> index a4c37ff8edd6..4ed2f33284cf 100644
-> --- a/drivers/fsi/fsi-master-ast-cf.c
-> +++ b/drivers/fsi/fsi-master-ast-cf.c
-> @@ -1429,12 +1429,12 @@ static const struct of_device_id fsi_master_acf_match[] = {
->   MODULE_DEVICE_TABLE(of, fsi_master_acf_match);
->   
->   static struct platform_driver fsi_master_acf = {
-> -	.driver = {
-> +	.driver	= {
->   		.name		= "fsi-master-acf",
->   		.of_match_table	= fsi_master_acf_match,
->   	},
->   	.probe	= fsi_master_acf_probe,
-> -	.remove_new = fsi_master_acf_remove,
-> +	.remove	= fsi_master_acf_remove,
->   };
->   
->   module_platform_driver(fsi_master_acf);
-> diff --git a/drivers/fsi/fsi-master-gpio.c b/drivers/fsi/fsi-master-gpio.c
-> index f761344f4873..9f8bfc43ad93 100644
-> --- a/drivers/fsi/fsi-master-gpio.c
-> +++ b/drivers/fsi/fsi-master-gpio.c
-> @@ -883,12 +883,12 @@ static const struct of_device_id fsi_master_gpio_match[] = {
->   MODULE_DEVICE_TABLE(of, fsi_master_gpio_match);
->   
->   static struct platform_driver fsi_master_gpio_driver = {
-> -	.driver = {
-> +	.driver	= {
->   		.name		= "fsi-master-gpio",
->   		.of_match_table	= fsi_master_gpio_match,
->   	},
->   	.probe	= fsi_master_gpio_probe,
-> -	.remove_new = fsi_master_gpio_remove,
-> +	.remove	= fsi_master_gpio_remove,
->   };
->   
->   module_platform_driver(fsi_master_gpio_driver);
-> diff --git a/drivers/fsi/fsi-occ.c b/drivers/fsi/fsi-occ.c
-> index a6d4c8f123a5..b5a7372a680c 100644
-> --- a/drivers/fsi/fsi-occ.c
-> +++ b/drivers/fsi/fsi-occ.c
-> @@ -737,10 +737,10 @@ MODULE_DEVICE_TABLE(of, occ_match);
->   static struct platform_driver occ_driver = {
->   	.driver = {
->   		.name = "occ",
-> -		.of_match_table	= occ_match,
-> +		.of_match_table = occ_match,
->   	},
-> -	.probe	= occ_probe,
-> -	.remove_new = occ_remove,
-> +	.probe = occ_probe,
-> +	.remove = occ_remove,
->   };
->   
->   static int occ_init(void)
->
-> base-commit: f486c8aa16b8172f63bddc70116a0c897a7f3f02
+> This patch enables the aspeed video engine support in ASPEED BMC for
+> IBM System1. It is crucial for facilitating the BMC's video capture
+> and redirection capabilities, which are integral to remote management
+> and KVM (Keyboard-Video-Mouse) over IP functionality.
+
+Can you please put this in the body of the commit message rather than
+in a comment?
+
+Commit messages need a body and not just a subject.
+
+Cheers,
+
+Andrew
+
 
