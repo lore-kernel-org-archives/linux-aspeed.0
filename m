@@ -1,81 +1,53 @@
-Return-Path: <linux-aspeed+bounces-188-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-189-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 928AAE77187
-	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Dec 2024 04:26:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A469AE77185
+	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Dec 2024 04:31:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y7zts0GF5z30Sy;
-	Thu, 12 Dec 2024 15:26:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733888961;
-	cv=none; b=Bf+OfWivzgJlNOp3P9PTe7qgUyIculiLoAnqYmmpMPldDQrlZOicp1bjwTjm2HQxagqwbb3rczdE8BW6Po2qLyRODOShCAXcojYnGg7koOnAwSiM/VNtI/gbREQxQYfcOBMN7H+Em2Fa2g6rCBO23paC6Pdds8astP1ZlAhaa2i+V3Znsh7hjquRiTBU4KWzITfRyReHQqUSuaq4sHOXWvHGx3JirbkZ6f5wZNxs1VvYcnsW6Z25P+AV0a/9xudakYaKsvRhv/vODjvw6SHDrAL7S/wrMGGiK+yAWPiYMQPzVxEkTmOdvJ4k7M8pLZ1UIiJxizyEIVAOAmhxhsB+cA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y800V0xvtz30T1;
+	Thu, 12 Dec 2024 15:31:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1733956376;
+	cv=none; b=iDq465INZTyK5ryeQJ8TsqkX9hMLiJa74CiB/5WsNevpFqUIo02SuDkMPhRv++FsmECS3ZjV7vDkbkKxnOJ7iVwcyddyXfC4j8FuZpD2C23H55x2AB1OYhqZJYmwMGY41LS4sdmQ17XokcTGimRFIK3fQylqjHllSBbMT7x82CcbbXKYfuhgllzIZbL7G/Bctv0+fQ3/A5RbDz04Y9ZF7+vu30gNo7jUmAa/ERKWc+Fs6P8VUwAHqSu9tfo67aejlC+KUjJWppJ2e2FFVaesM1LxpJYsvS9qXijoC0lPlVW7jS8hASXkHXq/TtBiMPUsgJjeH3q1oc46RtbJifyxIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1733888961; c=relaxed/relaxed;
-	bh=F5SQ9JD2m8PwX2AyXJonB6lYI/RXq35sHgQ7Uk77VOQ=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jtiB5GqN5co1KaBD3TIm8i6KNi78bMjfnZbb+SjJMXHIOXwVeFcDsGLcJJiASzp6s8JmSKxS/RSpzBHMlg6js0uMlxkU6Edv3Tl8UJsQ6Q/Mmo3qpecVXvx8T9MTEPTUcqvdDzmO2bECWX490hGd2D99CH4FanVcTfhjmUnVq1H3A76h+6+pxa9mnDGKK5OwJjExVjqqHxhs0fcmMWyGntBJC4UFA+vgV6Xf113ywA95NzNrfrEsY2l96k5PKH3QfUEjrYa7k4gknW+VL389cTQCebNRT6RFQHEOGp3PBiVTAfqUbOtQ/TYmOyAMgGGdOluLJobhk0UF0Ob4uDjUYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=pf.is.s.u-tokyo.ac.jp; dkim=pass (2048-bit key; unprotected) header.d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.i=@pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=CQQJitxM; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=joe@pf.is.s.u-tokyo.ac.jp; receiver=lists.ozlabs.org) smtp.mailfrom=pf.is.s.u-tokyo.ac.jp
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=pf.is.s.u-tokyo.ac.jp
+	t=1733956376; c=relaxed/relaxed;
+	bh=MFkNZ+i21tlx6hz0vBlYSM97GY8K+YGsUZLUMrNxKW8=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=e+afqrUYr/0FlIAXD86NrcWTA9+GLlsUTOp6Dlr+vjdKhCmDq1lnHqT0iCuQszlad0rkgenYMMmekPAR6jcBRJ1AOL/FFHLm+VFI35RZ7AqwufJcezt2Zbja6ICSzinPcsPU9+JDF+sdPOBJ4zs4bjInAeQn3V9gSy2sTwAPGJt4ai2Kq8tG2lE2a2aYCueuXdF2QCzNSHO5YJTBnls3S1Wxin+9hM/1IX3PHHtbS0xn2f2nOeSdVfuIFgDRN/wBrG2dAitsTwwZNAg6P/SibVB+8B1euowtYi2RpaGdWrOPSt0g04jjLqWzQxGpaqj1r0sby+7aAmnO7WNjM/1JLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cqZ00nyo; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.i=@pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=CQQJitxM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cqZ00nyo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=pf.is.s.u-tokyo.ac.jp (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=joe@pf.is.s.u-tokyo.ac.jp; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y7M6Q6gNkz305P
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Dec 2024 14:49:16 +1100 (AEDT)
-Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-728eedfca37so199374b3a.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Dec 2024 19:49:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=pf-is-s-u-tokyo-ac-jp.20230601.gappssmtp.com; s=20230601; t=1733888954; x=1734493754; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=F5SQ9JD2m8PwX2AyXJonB6lYI/RXq35sHgQ7Uk77VOQ=;
-        b=CQQJitxMPQjpwXC/JqSAT7jZG8N9WSx+DF+URqiUFPRAI6XRkbjb1964yRCU3cIW00
-         rEWcte269XGHECodzM+NhkOk9/8ytzk9BBMy1/xVjQE1haXiulIVUthuEMdQC9gl3LDo
-         SZlURFA2AGJhgi7caQajvRCeJLSBSIDgLxVLjS8ywDCN3r5+diu60VMbvCtxJzyhl/IH
-         9OeSublr4XQBTaHKEBMRel35s+85X1e9TnP+vBdMIN98nu1UF1rXLMHUr0Sn5D7iQY+n
-         h2FQ4OTZj8AaS8d2z36OfFwVA/Exjg/SYsihX0wYhjmVi/gBxGJjzIcn/I/nUzTBdtzI
-         e53g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733888954; x=1734493754;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=F5SQ9JD2m8PwX2AyXJonB6lYI/RXq35sHgQ7Uk77VOQ=;
-        b=dXrUYiK2KOrQAUFh7h++TK4Etk7mu9QU+yz9Y/GnHQ3z2WxlpuBJl30DVxOuPI+F9N
-         eLF91+TFjUkmwVGm+iskWL2aT8BX6yuhPMksL+ZeS4jaC3rmPly1HQZnFVjwL1/ET/l6
-         rssIrHQW49W6GCnnkWPCVgBZEf4Yq2udrbUQMLERFFdgmp4fdqR2N/WznkE4TWZ0gPqs
-         jaz9pxXUeiEXrEcd6nLqs2efP0nLxWVEX1OX1X0urEJjXXHePrBL9MyeSEEI4gOE+Nid
-         BNoEPznJbX809P6T27uR4foFRnKuxcgfTr92HY3mhu1H9x5rQxbeqaneR3xhueNCjmHV
-         ggGg==
-X-Gm-Message-State: AOJu0YwoB3RmzvHgmPsQQ3y+/UJ9+TkJLv43CPzIBYgKiHIdwWKu2BiO
-	OUoWrfReEVnXEMpcfJbRYn3zS4xE738SolIoR50q/1v4sCL65FXZPrBcBVEPjRY=
-X-Gm-Gg: ASbGncuKbtuA85oMqb2JtWpoVsUGZ2MIt6kCO3ao/IVeI6ktiV2Ju4uTfcYNJSvicKn
-	wzLTfzYrFjdO1Ls4t/Pb5QmLIugS2C41TyLdjNXEegE2OXpXsKFge5sJFhIn6lsFcTxABaT/5Zo
-	QNRnrAMloRh6pAcFGLCt5Zm7O2dRFPTt6GBrWsFGHUx13xmg8lXa6DqDzy9mZBSjUq45fRG0kJY
-	BtaQCT7Jrm+Wus6iTnZtOpRFU69sMY/v2van4D+ib3UzDwipSnE01HGY2QhbK/hRF6D6b0F2B4l
-	27jgwuRfy7jBfeFNNbJDwaDpKFsjEdoz77hCl2Gv
-X-Google-Smtp-Source: AGHT+IE5r05cswO2zejERKPHmzWQjUNg3n5OzpNASVNgcxLvtTCenFYT7AMzaOgerO1VqXvFK/yW+A==
-X-Received: by 2002:a05:6a20:841d:b0:1e1:9ba5:80d8 with SMTP id adf61e73a8af0-1e1c1360eacmr2924632637.33.1733888953561;
-        Tue, 10 Dec 2024 19:49:13 -0800 (PST)
-Received: from localhost.localdomain (133-32-227-190.east.xps.vectant.ne.jp. [133.32.227.190])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-7fd50e37084sm3283675a12.76.2024.12.10.19.49.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Dec 2024 19:49:13 -0800 (PST)
-From: Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
-To: joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: linux-aspeed@lists.ozlabs.org,
-	Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
-Subject: [PATCH v2] soc: aspeed: move switch statements before resource allocation and free kfifo on error
-Date: Wed, 11 Dec 2024 12:49:08 +0900
-Message-Id: <20241211034908.228734-1-joe@pf.is.s.u-tokyo.ac.jp>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y7r2v2YY3z2yP8;
+	Thu, 12 Dec 2024 09:32:55 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 110A35C67ED;
+	Wed, 11 Dec 2024 22:32:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 24AB1C4CED3;
+	Wed, 11 Dec 2024 22:32:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733956373;
+	bh=cVsBRq85rissDz94gS1APPLak1L31WJ3t5TGTSYE/as=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=cqZ00nyo1Apj+jfDOCjAb0Dxj/1hdrSgL4z0d1BQUgbsnfyS1cxj2Bs3BmSupO9YI
+	 ZrIs7UmW8cKEp43GKNoiniGEMwWKwmjdnER3WeCSCGcRBKWotkXLcx8jndR1TkSpRP
+	 uiVGhMx/F4anBNn2cXEIgvbbMNAcLgjaLi7WcLTW60LB7hq+FQhuXx3i6Ic5UlnfEU
+	 vzGsMum9i7o+4Bz2yDi5hvchzvThH3EecYX333iWDVqDeJrI5DcrWWqj0yc7VIBVVl
+	 GPNr0CGIC5KgEmOa8jzIJQb3v4R6rhXRyTCF1prrQpAlkKDu/E5iMLuOrlL7ULHRg3
+	 dPb253YfD0mvw==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 70CC8380A965;
+	Wed, 11 Dec 2024 22:33:10 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,74 +61,61 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] soc: Switch back to struct platform_driver::remove()
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: 
+ <173395638899.1729195.5401091299734997866.git-patchwork-notify@kernel.org>
+Date: Wed, 11 Dec 2024 22:33:08 +0000
+References: <20241029074859.509587-2-u.kleine-koenig@baylibre.com>
+In-Reply-To: <20241029074859.509587-2-u.kleine-koenig@baylibre.com>
+To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig_=3Cu=2Ekleine-koenig=40baylibre=2Ecom=3E?=@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org
+Cc: linux-riscv@lists.infradead.org, arnd@arndb.de, olof@lixom.net,
+ joel@jms.id.au, andrew@codeconstruct.com.au, christophe.leroy@csgroup.eu,
+ herve.codina@bootlin.com, qiang.zhao@nxp.com, hasegawa-hitomi@fujitsu.com,
+ lihuisong@huawei.com, linusw@kernel.org, kaloz@openwrt.org,
+ kgugala@antmicro.com, mholenko@antmicro.com, gsomlo@gmail.com,
+ zhuyinbo@loongson.cn, matthias.bgg@gmail.com,
+ angelogioacchino.delregno@collabora.com, conor.dooley@microchip.com,
+ daire.mcnamara@microchip.com, krzysztof.kozlowski@linaro.org,
+ andersson@kernel.org, konradybcio@kernel.org, heiko@sntech.de,
+ alim.akhtar@samsung.com, thierry.reding@gmail.com, jonathanh@nvidia.com,
+ nm@ti.com, ssantosh@kernel.org, michal.simek@amd.com,
+ andriy.shevchenko@linux.intel.com, duje.mihanovic@skole.hr,
+ broonie@kernel.org, david.wu@rock-chips.com, jay.xu@rock-chips.com,
+ jay.buddhabhatti@amd.com, radhey.shyam.pandey@amd.com,
+ izhar.ameer.shaikh@amd.com, naman.trivedimanojbhai@amd.com,
+ linux-arm-kernel@lists.infradead.org, soc@lists.linux.dev,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
+ linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+ linux-rockchip@lists.infradead.org, linux-samsung-soc@vger.kernel.org,
+ linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
 
-The switch statement in aspeed_lpc_enable_snoop() only depends on the
-function argument channel, thus move it prior to any resource
-acquisition. Also free the kfifo when misc_register() fails.
+Hello:
 
-Fixes: 524feb799408 ("soc: add aspeed folder and misc drivers")
-Signed-off-by: Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>
----
-Changes in V2:
-- Move the switch statement before any resource allocation happens.
-- Free the kfifo before returning an error.
----
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 34 ++++++++++++++-------------
- 1 file changed, 18 insertions(+), 16 deletions(-)
+This patch was applied to riscv/linux.git (fixes)
+by Arnd Bergmann <arnd@arndb.de>:
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index 9ab5ba9cf1d6..de308bc789ed 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -190,22 +190,6 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 	const struct aspeed_lpc_snoop_model_data *model_data =
- 		of_device_get_match_data(dev);
- 
--	init_waitqueue_head(&lpc_snoop->chan[channel].wq);
--	/* Create FIFO datastructure */
--	rc = kfifo_alloc(&lpc_snoop->chan[channel].fifo,
--			 SNOOP_FIFO_SIZE, GFP_KERNEL);
--	if (rc)
--		return rc;
--
--	lpc_snoop->chan[channel].miscdev.minor = MISC_DYNAMIC_MINOR;
--	lpc_snoop->chan[channel].miscdev.name =
--		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
--	lpc_snoop->chan[channel].miscdev.fops = &snoop_fops;
--	lpc_snoop->chan[channel].miscdev.parent = dev;
--	rc = misc_register(&lpc_snoop->chan[channel].miscdev);
--	if (rc)
--		return rc;
--
- 	/* Enable LPC snoop channel at requested port */
- 	switch (channel) {
- 	case 0:
-@@ -224,6 +208,24 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 		return -EINVAL;
- 	}
- 
-+	init_waitqueue_head(&lpc_snoop->chan[channel].wq);
-+	/* Create FIFO datastructure */
-+	rc = kfifo_alloc(&lpc_snoop->chan[channel].fifo,
-+			 SNOOP_FIFO_SIZE, GFP_KERNEL);
-+	if (rc)
-+		return rc;
-+
-+	lpc_snoop->chan[channel].miscdev.minor = MISC_DYNAMIC_MINOR;
-+	lpc_snoop->chan[channel].miscdev.name =
-+		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
-+	lpc_snoop->chan[channel].miscdev.fops = &snoop_fops;
-+	lpc_snoop->chan[channel].miscdev.parent = dev;
-+	rc = misc_register(&lpc_snoop->chan[channel].miscdev);
-+	if (rc) {
-+		kfifo_free(&lpc_snoop->chan[channel].fifo);
-+		return rc;
-+	}
-+
- 	regmap_update_bits(lpc_snoop->regmap, HICR5, hicr5_en, hicr5_en);
- 	regmap_update_bits(lpc_snoop->regmap, SNPWADR, snpwadr_mask,
- 			   lpc_port << snpwadr_shift);
+On Tue, 29 Oct 2024 08:48:58 +0100 you wrote:
+> After commit 0edb555a65d1 ("platform: Make platform_driver::remove()
+> return void") .remove() is (again) the right callback to implement for
+> platform drivers.
+> 
+> Convert all platform drivers below drivers/soc to use .remove(), with
+> the eventual goal to drop struct platform_driver::remove_new(). As
+> .remove() and .remove_new() have the same prototypes, conversion is done
+> by just changing the structure member name in the driver initializer.
+> 
+> [...]
+
+Here is the summary with links:
+  - soc: Switch back to struct platform_driver::remove()
+    https://git.kernel.org/riscv/c/511c06e39035
+
+You are awesome, thank you!
 -- 
-2.34.1
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 
