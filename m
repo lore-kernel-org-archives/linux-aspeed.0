@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-220-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-221-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E5EE7717D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 08:02:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AAACE7717D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 08:03:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8hd2603nz3Wtr;
-	Fri, 13 Dec 2024 19:01:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734076918;
-	cv=none; b=oja7yllhOzcC0f7UI/+JRovnGRIfBAJ6fWZlvtNniLO0/M3vAf97tGpBIf8qOuug4HvwHHu2H/DRH/fiWIUIHbC0isQiilIu/g8VqdLqoyfS1Oov47XC3pD7ttPPJov7YkaR/6W137r4m0KiqJ5Rd3uHsAXbK3IPO6vNHZw+KuOGMHaLHYRClQqJATMkfn7X3S3T+jJtGbl5twumxZjXxiX9OZPYDgkv3htMj2LX4sU6D+hK5Y49TfF7MppAWmYekzgUnF48ROZ40ZGCkK5gjG1kxIVMgqxM4p89QgloO9HDHh4gXjEX+kAsRhY83k9gyAu+nB4mkJdTbOxaG7iAcQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8hfY6QvFz3Wtr;
+	Fri, 13 Dec 2024 19:03:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734076997;
+	cv=none; b=U65YFCwU/wxWQf6GvGstRlSSI7GekbjvslSbwD/z75zFaqoufzXjSIkAWlzBLKiGoyoJvOWjDnVZAgCKNbat0OqzjVbPzPnjNyYMX6Y2iM2yuV3X2XyqkMrcZOwgCsDw88VC4ktga68cydXAuFNDwZTNuOrWrmM6Nrgb2oTgccJx6qnDhHBE63Rzb/v9ryer9OchfoOwaKrgl9pt5bsebt5d++6qdtnfWAct03qre2Bt8f/9xkOfeMJP3T4M93P0PzRYHT3/Y7WA14oYt7jof9JDSvzM8LCnFXiZFj/NLtIKNGOZgsjXGd33ihT8Plh9/+KrywdMtqm4L9cRWAdBwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734076918; c=relaxed/relaxed;
-	bh=+OIcgo3tA5osCXlqLZ4sQaufk6SmQZDh+GnoFoiCrBQ=;
+	t=1734076997; c=relaxed/relaxed;
+	bh=+MASkLN1FgxszsWI5Y09zAOGB93egTLjzXn5Q0L8I8w=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=RDZZIMNZ05cSdApmArZxaL2xqiE0PnLZkODoHOC2H1FDzbYjkQawwKROvLOPPUeXx38NaEE9TKrK9xcdOM4CL42K6iHhDEVudaC5DtoIWM4Gqych9e/1ntOk5Yt8B/2W9DrNfb+JBjQowQVjaoZNDcQQ+82uae4p7HHGDQ6z/zNf6Fq7Vqp6qYAEZoqgpAUAhuI2q25ryBy/DFH5L2sdvD55iISOy7FBiKb2wbaKf5c4IBc6W4Oq5EtnLR/hLZpz9SerYy6NISRJ2eYPmBoyGuhTOeZAe73ktTyJtlJATRaWzoAGfpokdLVQDg/JJ9b4Kp/scahQg3CH0dwZrnO2QA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M5PdWI9A; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=UZPh111JWZNWqow0yoqk3psNhnqW00V7qk9rN0sz5ANNTsVc+AHuhoWcXsNxOB8PM3TNwE4r9HgMi4odDFJKds9OqoMmFgNkUGkxVYJZ124pHYOqb1VhvEqUO9UFE6+hXay1DJKr4uLOStGR73NOwLRZlSneK1+2hFigUBhVUtJd8GBH8UMrYELasxEQi/tKNO+Iz/QQxccsYNGyMWKqMfq+XjWKS1s6MeHr6Eqj19G1mly3U0Kwde/byWalaK+KlXEoPvTltDzhgdqZbupXyOmR+v0dJyaKu3LVyWSR1lZM6ATy7RLqFWdBMF7NHbphqHwHfzJAmWb0kb7lmSZOgQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EwV67xqq; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M5PdWI9A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EwV67xqq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8hd15QP3z30jZ
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 19:01:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8hfX4vpMz30hf
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 19:03:16 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 5B389A427CB;
-	Fri, 13 Dec 2024 08:00:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F060C4CED1;
-	Fri, 13 Dec 2024 08:01:48 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 67F31A4279C;
+	Fri, 13 Dec 2024 08:01:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68A56C4CED0;
+	Fri, 13 Dec 2024 08:03:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734076915;
-	bh=7LD54dmJDjftl31NJJcExHt1aZa+FMSTWfGvjuK1GAA=;
+	s=k20201202; t=1734076994;
+	bh=cCfaLbDj76ucD+vK9e+MtqWGYwvp8M9DqjAGvbzG//o=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=M5PdWI9Ap51gOdghnXpW7Yj0LlUwGokHmPMqLNKuUoItSerMXxIGBc0H1YbuWOCVz
-	 sE45bhf0/u5jw4eOyNxzv9GhfTIGNmDOkR1Sv4fHrGbXyB2Bi1qeSBbldwiB4vfHhN
-	 IUf2qVnycb7ESTFjYv5hoO4xfkjszM2wpnecBLsaCJPYu1YLl4rhPaU3LdqNxoaoHD
-	 VYih3RLAfp6VhPjoTewg7U8/YyM5C01zrcNrIr/LwX8+sbUtUpgKB0WyHfHWe0fKjw
-	 zEwcTsEv4p5xbhvK6SCt/hPm+E0LuwJzHB/VfAXVQDVP8+swEadlHzFTncv2KqIIS5
-	 FWZrIi7lIRxmQ==
-Message-ID: <dbfe7c42-cc9b-4471-93ed-846260db42e6@kernel.org>
-Date: Fri, 13 Dec 2024 09:01:46 +0100
+	b=EwV67xqqK8+3K9vXVLo5cX7V4TaPvlNYwRndJpGG7E5X6pVvVaD20DDpngbCo1D4u
+	 UKtct4n546cJX9QbQi0s7oS6iqfi19ZfRWpuCRsWtIuJ7/X8OsAAVqr95TVvq8Lydx
+	 B9A8f/oHHYp90MavTu79v1JvSHijg8eyh97e8QxvSagkFJuCo2kovh1IikG34m1KrE
+	 y+q4SxnOh5VW4P7yltNH6tm4DnWFwO2Lukvie0TPpCHoAoIiOD2sTx4cVYJoTuqGqp
+	 8uNquwYdxa+TKkq14VjsyusAN4UCPnMSe3xHYaDxwcUpyPVBYh49p0x/f9wBCjzKjm
+	 TKOQYn45goflg==
+Message-ID: <3e5346a3-ad00-46e2-8af5-1ac5d60c27c8@kernel.org>
+Date: Fri, 13 Dec 2024 09:03:04 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,7 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 4/6] arm64: dts: aspeed: Add initial AST27XX device
+Subject: Re: [PATCH v3 5/6] arm64: dts: aspeed: Add initial AST2700 EVB device
  tree
 To: Kevin Chen <kevin_chen@aspeedtech.com>, robh@kernel.org,
  krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
@@ -71,7 +71,7 @@ To: Kevin Chen <kevin_chen@aspeedtech.com>, robh@kernel.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  soc@lists.linux.dev
 References: <20241212155237.848336-1-kevin_chen@aspeedtech.com>
- <20241212155237.848336-7-kevin_chen@aspeedtech.com>
+ <20241212155237.848336-8-kevin_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -117,24 +117,91 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241212155237.848336-7-kevin_chen@aspeedtech.com>
+In-Reply-To: <20241212155237.848336-8-kevin_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 12/12/2024 16:52, Kevin Chen wrote:
-> Add aspeed-g7.dtsi to be AST27XX device tree.
+> Add EVB board of AST2700 in ASPEED Architecture.
 > 
 > Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
-
-Where are all the bindings? Why are you silent about this? The patchset
-adding new SoC DTS, when separate, is supposed to explain where we can
-find the bindings.
-
 > ---
->  arch/arm64/boot/dts/Makefile              |   1 +
->  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi | 236 ++++++++++++++++++++++
->  2 files changed, 237 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.
+>  arch/arm64/boot/dts/aspeed/Makefile        |  4 ++
+>  arch/arm64/boot/dts/aspeed/ast2700-evb.dts | 57 ++++++++++++++++++++++
+>  2 files changed, 61 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
+>  create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+> 
+> diff --git a/arch/arm64/boot/dts/aspeed/Makefile b/arch/arm64/boot/dts/aspeed/Makefile
+> new file mode 100644
+> index 000000000000..ffe7e15017cc
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/aspeed/Makefile
+> @@ -0,0 +1,4 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +
+> +dtb-$(CONFIG_ARCH_ASPEED) += \
+> +	ast2700-evb.dtb
+> diff --git a/arch/arm64/boot/dts/aspeed/ast2700-evb.dts b/arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+> new file mode 100644
+> index 000000000000..6dad88c98ce0
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+> @@ -0,0 +1,57 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g7.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +	model = "AST2700A1-EVB";
+> +	compatible = "aspeed,ast2700-evb", "aspeed,ast2700";
+> +
+> +	aliases {
+> +		serial12 = &uart12;
+> +	};
+> +
+> +	chosen {
+> +		bootargs = "console=ttyS12,115200n8";
+> +		stdout-path = &uart12;
+
+Nothing improved. You keep ignoring my comments: not responding, not
+addressing, not fixing the code.
+
+> +	};
+> +
+> +	firmware {
+> +		optee: optee {
+> +			compatible = "linaro,optee-tz";
+> +			method = "smc";
+> +		};
+> +	};
+> +
+> +	memory@400000000 {
+> +		device_type = "memory";
+> +		reg = <0x4 0x00000000 0x40000000>;
+> +	};
+> +
+> +	reserved-memory {
+> +		#address-cells = <2>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +
+> +		mcu_fw: mcu-firmware@42fe00000 {
+> +			reg = <0x4 0x2fe00000 0x200000>;
+> +			no-map;
+> +		};
+> +
+> +		atf: trusted-firmware-a@430000000 {
+> +			reg = <0x4 0x30000000 0x80000>;
+> +			no-map;
+> +		};
+> +
+> +		optee_core: optee_core@430080000 {
+
+Follow DTS Coding style document. That's the same comment as before.
 
 
 Best regards,
