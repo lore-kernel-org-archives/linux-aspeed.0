@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-217-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-218-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 070ACE7717D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 07:59:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 009D4E7717D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 07:59:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8hYf4YZnz30ht;
-	Fri, 13 Dec 2024 18:59:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8hZ84Zshz30j0;
+	Fri, 13 Dec 2024 18:59:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734076742;
-	cv=none; b=ek/qrFirXdga6BjdFR7CTVueSJF6pgiLCdypycAsbEl01zxLlQzA6vgNaGG1FNdbMDfQfV50LxZ3CwBlRc4Ky+lwnuWUadc1FTUp9F8M0Bk6MqCYYx6deixu4FfdREpFfj33cEjcrrVlOl16inou4ULtGHCdkttBS7d006n7IjDKhfnoeRVpmNEA0NUhFeBlwob4EwWVB3AX5vfUIgqnFs0HEMv+1IwwTeliGK6nKM29g1BCv7LJzjFSI39Hc+a/J8O8mQz5LRx/k40gISePiBppaxE6IzxrHDU5MNmVeSMmGtDl9gMTbnrrVHBkQ3E+XLAdvamPiC25DCMh92zQtw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734076768;
+	cv=none; b=i51RDLyAolE8d9j+el4Bv9D/zYbczta6Po+SD73/3KhjQzM0baBOlxRbO5FNjd2vq0TxMq2T09UP8TuN8Mxx4Q4/N3f5kQZbx+Pu/bDNOCbCTs8xOyBYQRMn8txo98YQapOJfErJeul1HU8OQmhRBVc8LYkaVgfu35GIQCFkEtUicU7KUG9r7fNQj2ePABIU5XtVWOU5LX2hEE+SVYTM9lSSEMliswIibPaIXEKRcOflBA0pT0j7NidYH5g7/fgM7aTad3XPjuivrb+5QA3n7/tmYo/0JrwYt8yHFaAY/orudUzvM8b0G5+aMyf6Fk+VFw1nnf9gGLCs9ml1+Pxenw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734076742; c=relaxed/relaxed;
-	bh=zlkris1liTVWQjG7xmfJcZ8XhXc2DktuLuR3xmqQa2c=;
+	t=1734076768; c=relaxed/relaxed;
+	bh=CRIMoCRXgr21zV+LDsGuNBNHSvWNc7pEgMCpKFErixc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=LpI/IwWrn8Rig/wA1ozeatirCBxWRtcYYzyKBD5U94dfiaXNqUlNGlu1wcaO4olXMv+5GsZqyYODtjWlGhKxAkNLYlmNwzof5WoTjR8HQK4FfG/j/IPfITWJwkXXIwXN/7VQHV9mJfW19LhwOdaK0GUeoZbhpyFDvIRppEHnK7jvm7p9jPpoJ1GiP9m+RMJe2F7IbJykohjjwWVMotw4cWVlhi1KcCBTLZUtKYby9saj0oMPhhT2cH+HTWQDYRLsoYzvXjNlGH/SuoP8BRUaGYdVP0e/Os4c/QjnaqN0rr4tNJX63/cGUX+VLvD1SoDmJsdYAwEx6YheerFyhL3feA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vEBiGmkk; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=ce36FgrkW+Qki5/OkDtA4rhs/k6Xx7yzwuJam/kbqNrQofnAp+BlconRRkz+m1U0ZvRFBAiom2AW44cxYOobal1kRkIUeGrfOIkIAmYy15JEX6h2OEBlS8E/3btOrAJKNqHpp9Kcp5FVUUfKCGKYRfY2qDRU7OMLCtn+ND8baYNBisdQ+TYqMVGY73Ode4Fn8vARYNm87XEVmqjvi3IKUcFPivlK2fYnBk8SaH/yUIeomjwFj5m1CeDPGOlCBdi9BFY8aqlfJ5GeXnY+E2x/poconPn0Op1RagoctyI3w7upm0h09oWWcwpkxowdw3mzzm4GsMQPrDNvz3d5Duf/bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R8xDmd7V; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vEBiGmkk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R8xDmd7V;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8hYd3LRpz30hl
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 18:59:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8hZ74S2Hz30hl
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 18:59:27 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 824A7A4279C;
-	Fri, 13 Dec 2024 07:57:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57C4DC4CED6;
-	Fri, 13 Dec 2024 07:58:51 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 6E356A42757;
+	Fri, 13 Dec 2024 07:57:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EA6F4C4CED0;
+	Fri, 13 Dec 2024 07:59:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734076738;
-	bh=Z3DdeUSPj6xptVZW3V6ExHDnuGZdELrNH+NgowrCnR4=;
+	s=k20201202; t=1734076765;
+	bh=mmeXuR7jX0+cdPS+dNqIHwCfiX6r6wzMOuIh7ErAcYA=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=vEBiGmkkD9Lrd9ypPblghpcIlB07uqVWWbbk7FZEd7ZlvuPvr1KYAXQEZBOTrGv93
-	 VYi89mQC2flubX2gSCpaSmNhWW092wf77PwwJtiCktsEHI5DtOEOSiwZKsfSQ98006
-	 j3nRbdcxdK/fzwM7Jcm12z6IU6m1gJF5ZiaF/9Psg6BE95Gb3WGCjgvfACvQOZfFvM
-	 pgH458BT4M4cpkixq9ioqtkAYNcLgrbIMtXS4yMs9+Kg+7UZFdTVqk07jhdSGLJXpa
-	 k3rGKdK7X9mOeocl9kCCaFIjIkCHxMZTjmAmKtvdP+a8cJ1I/d32KdRTanfppr8iD4
-	 LO1m5C0NeuxUg==
-Message-ID: <11ad5a97-b066-4bea-8829-50e0416cea9d@kernel.org>
-Date: Fri, 13 Dec 2024 08:58:48 +0100
+	b=R8xDmd7VuwbDLrhXzFhubEb8fSUozlxYAFjLwcPbLw/TwSctcf4aqu49hzGf3dt7+
+	 KY/q6VHFIe5ZjcF4H3lUqUW6z3trSBpexVjzNgivxe8Gl+J28Ql0y83DMZ6VBGbDpo
+	 aRQphlz7pPuxLmQQhidyaItcZGJdSZHoOeuuB834MwaYt33zHsQrPeMAJnFb7lKXsk
+	 5/7WJqnB/cn/D2FaCGoK+Rodi2wVGmmBETtj71dhy5dCkVqpnwuRSV9/+e3olUBhzY
+	 2wLjme2klBhTXQUizUJ87IY2v5nlQC9SWOPuDUnxxqvBM32GJbooum7+7aAWrMeIoJ
+	 /Fj+4MRqEovzQ==
+Message-ID: <7289a50a-e139-453f-a512-3dd68a0839a2@kernel.org>
+Date: Fri, 13 Dec 2024 08:59:15 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,8 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/6] dt-bindings: interrupt-controller: Refine
- size/interrupt-cell usage.
+Subject: Re: [PATCH v3 2/6] dt-bindings: arm: aspeed: Add ASPEED AST27XX SoC
 To: Kevin Chen <kevin_chen@aspeedtech.com>, robh@kernel.org,
  krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
  andrew@codeconstruct.com.au, tglx@linutronix.de, catalin.marinas@arm.com,
@@ -71,7 +70,7 @@ To: Kevin Chen <kevin_chen@aspeedtech.com>, robh@kernel.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  soc@lists.linux.dev
 References: <20241212155237.848336-1-kevin_chen@aspeedtech.com>
- <20241212155237.848336-3-kevin_chen@aspeedtech.com>
+ <20241212155237.848336-4-kevin_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -117,123 +116,41 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241212155237.848336-3-kevin_chen@aspeedtech.com>
+In-Reply-To: <20241212155237.848336-4-kevin_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 12/12/2024 16:52, Kevin Chen wrote:
-> 1. Because size-cells is no need to use 2, modify to 1 for use.
-
-???
-
-> 2. Add minItems to 1 for interrupts for intc1.
-
-???
-
-> 3. Add 1 interrupt of intc1 example into yaml file.
-
-> 4. Add intc1 sub-module of uart12 as example using the intc0 and intc1.
-
-What is all this?
-
-BTW, there was no such patch in previous version and your changelog is
-silent about it.
-
-Subject: drop all full stops. Subject never ends with full stop.
-
+> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
 > ---
->  .../aspeed,ast2700-intc.yaml                  | 60 +++++++++++++++----
->  1 file changed, 47 insertions(+), 13 deletions(-)
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
-> index 55636d06a674..eadfbc45326b 100644
-> --- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
-> +++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
-> @@ -31,6 +31,7 @@ properties:
->        type as defined in interrupt.txt in this directory.
+> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> index 2f92b8ab08fa..20191fee1f5b 100644
+> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+> @@ -101,4 +101,10 @@ properties:
+>                - ufispace,ncplite-bmc
+>            - const: aspeed,ast2600
 >  
->    interrupts:
-> +    minItems: 1
-
-Nope, not explained, not constrained. Your schema is supposed to be
-constrained.
-
-
->      maxItems: 6
->      description: |
->        Depend to which INTC0 or INTC1 used.
-> @@ -68,19 +69,52 @@ examples:
->      #include <dt-bindings/interrupt-controller/arm-gic.h>
->  
->      bus {
-> +      #address-cells = <2>;
-> +      #size-cells = <1>;
+> +      - description: AST2700 based boards
+> +        items:
+> +          - enum:
+> +              - aspeed,ast2700-evb
+> +          - const: aspeed,ast2700
 > +
-> +      intc0: interrupt-controller@12100000 {
-> +        compatible = "simple-mfd";
-> +        reg = <0 0x12100000 0x4000>;
-> +        ranges = <0x0 0x0 0x0 0x12100000 0x4000>;
->          #address-cells = <2>;
-> -        #size-cells = <2>;
-> -
-> -        interrupt-controller@12101b00 {
-> -            compatible = "aspeed,ast2700-intc-ic";
-> -            reg = <0 0x12101b00 0 0x10>;
-> -            #interrupt-cells = <2>;
-> -            interrupt-controller;
-> -            interrupts = <GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>,
-> -                         <GIC_SPI 193 IRQ_TYPE_LEVEL_HIGH>,
-> -                         <GIC_SPI 194 IRQ_TYPE_LEVEL_HIGH>,
-> -                         <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>,
-> -                         <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>,
-> -                         <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>;
+>  additionalProperties: true
 
 
-I don't understand what is all this.
 
-> +        #size-cells = <1>;
-> +
-> +        intc0_11: interrupt-controller@1b00 {
-> +          compatible = "aspeed,ast2700-intc-ic";
-> +          reg = <0 0x12101b00 0x10>;
-> +          #interrupt-cells = <2>;
-> +          interrupt-controller;
-> +          interrupts = <GIC_SPI 192 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +                       <GIC_SPI 193 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +                       <GIC_SPI 194 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +                       <GIC_SPI 195 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +                       <GIC_SPI 196 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +                       <GIC_SPI 197 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
->          };
-> +      };
-> +
-> +      intc1: interrupt-controller@14c18000 {
-> +        compatible = "simple-mfd";
-> +        reg = <0 0x14c18000 0x400>;
-> +        ranges = <0x0 0x0 0x0 0x14c18000 0x400>;
-> +        #address-cells = <2>;
-> +        #size-cells = <1>;
-> +
-> +        intc1_4: interrupt-controller@140 {
-> +          compatible = "aspeed,ast2700-intc-ic";
-> +          reg = <0x0 0x140 0x10>;
-> +          #interrupt-cells = <2>;
-> +          interrupt-controller;
-> +          interrupts-extended = <&intc0_11 4 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +        };
-> +      };
-> +
-> +      uart12: serial@14c33b00 {
-> +        compatible = "ns16550a";
-> +        reg = <0x0 0x14c33b00 0x100>;
-> +        interrupts-extended = <&intc1_4 18 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +        reg-shift = <2>;
-> +        reg-io-width = <4>;
-> +        no-loopback-test;
-> +      };
+This patchset is just corrupted. You already sent it as patch #1.
 
-And above is not related at all. Don't add entirely unrelated changes. Drop.
-
+Please run scripts/checkpatch.pl and fix reported warnings. Then please
+run `scripts/checkpatch.pl --strict` and (probably) fix more warnings.
+Some warnings can be ignored, especially from --strict run, but the code
+here looks like it needs a fix. Feel free to get in touch if the warning
+is not clear.
 
 Best regards,
 Krzysztof
