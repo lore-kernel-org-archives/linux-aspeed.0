@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-235-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-236-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB0EBE7717D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 15:48:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A2F3E7717D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 15:49:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8tzs3Rx3z30fW;
-	Sat, 14 Dec 2024 02:48:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734104937;
-	cv=none; b=du4XsuU3NAqY6Dl31V0p0OVFu1a9PLFIS8tse4fHE3a1n4JxT/ylgt1h2byy6Uwu0nPSvjygtPL39r5ZAS0+bh1+ODJXGCKUT9aQr/MwxXhiPwuTHc7zeqizydjUuZbdIjNRMJ7emW7cXdzN2ZGoMeJ77Du4qKvoGXM9yG+UKmap5DoAZMymdBmLjN1g1GbR1pPdPHoZJTYbAi42ZhRU6y+lpr8QsO8XCPVh8hvi5ACUvndA2G5UR18ovx9+Wa02Qahj+xzDwJMdOogeRuGO0Au0yah5+JcnYddZPY3NmM8gs5EmnuS35vTkAQKNLC+kVejwE9dX0j9QHJzWcSjTkA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8v0M6Hnrz30fW;
+	Sat, 14 Dec 2024 02:49:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734104963;
+	cv=none; b=OuzpCpq+zCjYCaJeq8OmD1BoMcQbCxGxMSaGGSoJF8dd0LqxKR2Ejl79MWyEbb5NkpTA6DrYDSh6fKWX1q2DsEpIbpT6Ekwe5Mlz+9gGBgBZ2oCv1fIQmOK+QE/dFXKDMpBgsurQQm6V6bfSHlGhmauvUokyH0/Rsdu+TKJt/YMIK8ITEAzwSzuEGXg5cHtOaWJGSrfkci9nPwPpwxZI/TNENXuwAWS0g1EGVgtNghypgqfScSIMjKynpqLotBAipO4TxiViqKSBEo7m8YW/TQMkc6g5fKQsGP23JSb4uit2Vx65LSvs1i5OCmDhuJvmZPCPnU4YSjHlxPGMpMK6DA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734104937; c=relaxed/relaxed;
-	bh=2ku47Ydha883JTsKW5guHd8/08rTDvHSHoZG8yEKGlg=;
+	t=1734104963; c=relaxed/relaxed;
+	bh=GHtvUQpufoIBKJFDuefGcJV0DBpGk5Tp2+TckBU2eMg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=n5Sa4nFhXwJHus5hFfBSTZeJDom0PZRx9EJfNKV7UvcAQRMxvjX010Kedd6ULhyCPuvEeyfhIuaYJqDQVHaAJAV2keqd3iyCjazc76gYdFmmgRjO8Syf/yhIofnUhze/WUPwW4J0LQ9Npgk9DxcZtzV/RMK2WlmCWP7l0nT5zh3SBpi9Iw6+v6GdK86rH0xJCjcDD9t7enCUDZv1fwKBASVSjKnM8Gi+AQ+pa9VV7mosiE72mxhTgNyjmKZNvOQAV30hwrcrwXM37nwgYJcFyyJNT2mprVBnI8/AcICF1XpRVcZW+FwokBfz1KqIfhuy0id2pNbpqob6YF0IuIVwrA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZhfbDoOI; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=HYXRUNo7SD+hNC28ilnhU2sGyh7MV2ifnzau9BPFDW2/gOVIyj0468Zncfihu7n5ieaYDPhGSYwGe7TVb1YipOMLO7Y/ATkqmOXYip00DiEwlpaiq4xearhhfGm+7Z5jSkDbAbPHHgHUjZ7+7hCIaBnwQ8j3dEZWABzF7aI27oF8A6zYoXWCY8BvumJJjEcx+NJJM7ZYryFMW1OKCnyBhSuAjwYt8iMc1mMvUOQTY460bb9TsOlcAQmwlBlKvrlMx8KO8qGviL5Wd51e1QNwatPe3nxbK3bFccAFPPmg20TlGA1bVlYAkEsUktAO1O0szx8Vklj9v+efw9+IaeSHEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OmM+p3RC; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZhfbDoOI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OmM+p3RC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8tzq548nz30Wd
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 14 Dec 2024 02:48:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8v0L5QRnz30Wd
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 14 Dec 2024 02:49:22 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id BCDACA42B57;
-	Fri, 13 Dec 2024 15:47:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BB43C4CED0;
-	Fri, 13 Dec 2024 15:48:47 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 3A1C4A41D6E;
+	Fri, 13 Dec 2024 15:47:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2348C4CED0;
+	Fri, 13 Dec 2024 15:49:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734104931;
-	bh=25i8EZcrX5qs0YdzRRCBIcKVUXh7ElyhWyKn7kQgg3g=;
+	s=k20201202; t=1734104960;
+	bh=/hDdjLzEU/NW7kyxw2WQHiNd3hIOj8UaYlN8AblZ6GY=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ZhfbDoOIU4ZoJhX/zmDWHnMotJNG0HlvVTDXjJiDqY8f0PEDi7peUG5yeRDw4t6/5
-	 upQFtmBsGkR64WkI19lDp5xNXDs3S0JMMEuyM1PsBPcpGBB4eRPrcyJtlZd/tEBYEO
-	 yXzskWOeTfUrbzyi8Ypxnb+0CpTLn0p0cgPdF2htwapuUOA32CrF6WTDd9Bs3wbUqM
-	 X1XAB7eNI32RV/2M/0OR7SlGYfUMQ+KoyatDWnMXd8481zrAZuC3Q0uRZq24RwJnmi
-	 WVfJ8HqGulHVP9zJRnCSS9OSVYpiQjuz3SGuLOy6ZVlgKcgQacR40npTzJWN6KrQVV
-	 1T75vxmx0IQxw==
-Message-ID: <45b55b4b-25e4-4e8b-8c95-8c3129e72227@kernel.org>
-Date: Fri, 13 Dec 2024 16:48:45 +0100
+	b=OmM+p3RCtfPhAYT3Hz7bPotVhqgDa3gVt4f2/DAR32WQ86R1wwTeMRgVCnK6lXUXo
+	 pC5f2pBPmK0oveVlXE3hCksa5tr+QP2StnGDMJJy37+w+3vxHCAxOf49fmLRoQEkRw
+	 0XGv0orDKVE5fZEUHga0zid8fA3PieuibAIwuBkee27mvctkP6elKYQq2l3pOUR7E1
+	 34UdzSLW8j0pbtsUL6yl0V59YlcYTi6b5xGjnhFrnxHqHNHdYW3XK6pVz+V5vy2bIa
+	 8owvlZWcQzahmPqf1HErEUBq33k3l411jHtd7NuFdYT6BShaT89ZLPqubSACCTDH5+
+	 XlNz+koYFDwdA==
+Message-ID: <de59078c-8410-4c4f-bfce-db402e92635c@kernel.org>
+Date: Fri, 13 Dec 2024 16:49:13 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,7 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 1/8] ARM: dts: aspeed: system1: Add IPMB device
+Subject: Re: [PATCH v1 7/8] ARM: dts: aspeed: system1: Mark GPIO line high/low
 To: Ninad Palsule <ninad@linux.ibm.com>, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
  devicetree@vger.kernel.org, eajames@linux.ibm.com,
@@ -67,7 +67,7 @@ To: Ninad Palsule <ninad@linux.ibm.com>, robh@kernel.org, krzk+dt@kernel.org,
  linux-kernel@vger.kernel.org
 Cc: NINAD PALSULE <ninadpalsule@us.ibm.com>
 References: <20241213145037.3784931-1-ninad@linux.ibm.com>
- <20241213145037.3784931-2-ninad@linux.ibm.com>
+ <20241213145037.3784931-8-ninad@linux.ibm.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -113,45 +113,46 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241213145037.3784931-2-ninad@linux.ibm.com>
+In-Reply-To: <20241213145037.3784931-8-ninad@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 13/12/2024 15:50, Ninad Palsule wrote:
 > From: NINAD PALSULE <ninadpalsule@us.ibm.com>
 > 
-> Add IPMB device sitting behind PCH module
+> - Mark following GPIO lines as input high:
+>   - GPIOL4 (reset PCH registers)
+>   - GPIOL5 (reset portition of intel ME)
+> - Mark isolate errors from cpu1 gpio (GPIOO6) as active low output.
+> - The fan controller reset line should be active high.
 > 
 > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 > ---
->  arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+>  .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 28 +++++++++++++++++++
+>  1 file changed, 28 insertions(+)
 > 
 > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> index 8f77bc9e860c..51a116d7041a 100644
+> index ca2d4a292687..be0cd6152c61 100644
 > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
 > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> @@ -763,6 +763,16 @@ i2c3mux0chn7: i2c@7 {
->  
->  &i2c4 {
->  	status = "okay";
-> +	multi-master;
-> +	bus-frequency = <1000000>;
+> @@ -383,6 +383,34 @@ &gpio0 {
+>  	/*X0-X7*/	"fpga-pgood","power-chassis-good","pch-pgood","","","","","",
+>  	/*Y0-Y7*/	"","","","","","","","",
+>  	/*Z0-Z7*/	"","","","","","","","";
 > +
-> +	//Set bmc' slave address;
-
-Is this relevant/useful comment? Why is it even here?
-
-> +	bmc_slave@10 {
-
+> +	rtc_reset {
 Node names should be generic. See also an explanation and list of
 examples (not exhaustive) in DT specification:
 https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
 
-Also: use DTS coding style (there are no underscores in node names) and
-use preferred naming scheme (see general kernel coding style / naming).
-
-
+It does not look like you tested the DTS against bindings. Please run
+`make dtbs_check W=1` (see
+Documentation/devicetree/bindings/writing-schema.rst or
+https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
+for instructions).
+Maybe you need to update your dtschema and yamllint. Don't rely on
+distro packages for dtschema and be sure you are using the latest
+released dtschema.
 
 Best regards,
 Krzysztof
