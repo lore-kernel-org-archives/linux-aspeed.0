@@ -1,64 +1,65 @@
-Return-Path: <linux-aspeed+bounces-223-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-224-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16FE2E7717D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 09:11:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAE41E7717D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 11:09:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8k8j4zyGz3bP4;
-	Fri, 13 Dec 2024 20:11:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734081061;
-	cv=none; b=ik639WTADijLUiPDM+eEx6/5Zq79bC0VlsPuHLQwEkgCXY/k41zKOPXwIygAyrIv58J7EH+ryJ5WzYzA1fEveeDKw0d9YfFesa+60UwG+5TlkXttF+evg2Ye7NQlpMswK0jImERAOyuJHB758E4ZN3J+qfpX1MWVKTd32As054I62UTu7jhYeU2Rf/7oLLhUPNaRP6QIIm6qoA5RrE8ZP306s4WTyRpmxfRKe+suiR36xyhAaGpwIQVtxXBYXXdScXjBhKkyeKc6sfj0C6hpF7e3wCE7Xsgfn5YSYUDn4/1ZqVbzNC1OJyfylt1sJls1KWRGQ8aHq1cRpYDpOJYnMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8mmq22zqz3bTJ;
+	Fri, 13 Dec 2024 22:08:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734088139;
+	cv=none; b=L99zMffRMJJm6USBq3P+kC4pZvrrv0Y3Ac0NUcJ3cIxk9WPsP48zpgc1wxIhXiDbgaybJCqQNywgNOoE8aYSuNpBhGaWXll/sfpjpBQRrzj2Hay0PldCfc6ittouIeWzs4PybyPJoi16sXaRDfEtdFgjDCK7inkhOmvXFMJFfp637LWclBy6xYHzNJHU7VEeGPoCMkMG0OOTkP735eneLhoO/wAZLK5SmPp5PUx3C4xd7nRJOkF43k+J7jqtPx8qOWyzICEyEeqJbQcK8U4Pycmcqw96dqoEJSnhF+Gx5ig/PB0AnO2a7ITTixaqbmA7URuIkgkbK3xR8voqnJFT5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734081061; c=relaxed/relaxed;
-	bh=rCUFAByP9cVuG9VB1K7M9sg63VdKSoihxlYcF6Tvg8I=;
+	t=1734088139; c=relaxed/relaxed;
+	bh=Q0PS8MAQEZybHHbs6FZGtMT3Ml/Nc1Pc3JSPi4pTUNI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AMiqqFhpVhJoGba/ggwLsu2e/TZxsgHUEDb/SX6wZvv070ZWPOeVlHNNzggsOsR5nyLZF8FYY/Hje9BanWGpGPTbnwvUEnQK//RM/qjB/672+Qa6lbKF0WvMLR+ZwV7b2LCS/Dgv/7UvSFSctXMd/FxORjT73e+L98ABjO+Z4SNUb4KoVmt7aCheCrwTLrj+NZ893r0oTQyAeIK2HYPqIw/WNBwv0GwiOBe2jZu9KfAbDE5KPAx+eSxSzptnENdVA3U8Agz/r4EIXxh6g3PnNAhP8S407BL6uECURrWbGYpCBqjBjtnz9Au0/Jv2bkgaWRzNCM55Hq99+RwzuoEmAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GAbwKM7Q; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=A3p/iX8E+YVwPV8lMBMBUP2HuJC3BDN8FmbULbP8WG+6pausxiBRBcQ4cfIk03pkd7DV7UShrxkyk+I0tA6b+OD7tmCeqIsUhDHPFg5+Pm5I1gCcpZvXn/riwzvFqsWXzE/hUGZ8Xa1UWSIATITpnE0kXk1iExvQbH7A5vEPaJBOtlw9fCECH1EnpiD4sWVbzwWpqX0CMhQzbKqzTwV6QRvxp6nIC3iX3UhkTsZdeffFClrgRe9ycjWKyDZQYj5GH235o1skY4EyHixvmS5zzRySVir/WyK60o7Ccwvi7nHYXuqx/Lxs9Shab9cKHZ3xlsSYVWlNfvJdT+0tVArHyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IlcsphOa; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GAbwKM7Q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IlcsphOa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8k8h5CFdz3bNh
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 20:11:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8mmp1GRnz30hf
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 22:08:58 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 49A37A40E0A;
-	Fri, 13 Dec 2024 09:09:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5358EC4CED6;
-	Fri, 13 Dec 2024 09:10:57 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 8ECE3A42ADD;
+	Fri, 13 Dec 2024 11:07:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81CD1C4CED0;
+	Fri, 13 Dec 2024 11:08:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734081058;
-	bh=G+cTnuuCPd8OUrWtJFXbPhKcg/vWEnCq2zPfc22GuSo=;
+	s=k20201202; t=1734088132;
+	bh=Q0PS8MAQEZybHHbs6FZGtMT3Ml/Nc1Pc3JSPi4pTUNI=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=GAbwKM7Ql8JlHQtvaxCAEjlrWi6IlQRqnJA8CZ04DwQrSfcb10h5+6cjzhldotnRh
-	 L2XSBgnBNZJUfO8crBg8MZlN8CfTvAifyk+GlvHyJiBZTVjivci1Qq01nMnxglh31v
-	 zi2eIA2ZMTu2jG9TIvc1Ivn5fZM3DHGSFcpIq8o1+3NB7mQAtUoaY5nAKzecFcPCyO
-	 J9jow5Rd3wWUjudv+BGCRohLkufEOp6fwOe3r/hPcHfEjlJ+YXmMmxWIju6dHjvMhR
-	 Jw4Xke+387YftU3lGl/YoX2Xk+UUsw0Rkspn2qa5yOkvs2yO2Ogw/NNIThpLB0r9xj
-	 +Wc8vdUS31j+A==
-Date: Fri, 13 Dec 2024 10:10:54 +0100
+	b=IlcsphOaglpa/Gsl9aKRBly3XeRAr0If8i6t5nFnfRmgB6ceeGeNIGWtVi6G9/Frh
+	 XuTUB5aSm5m+KNbzwd8wBa6Uj2Zok1IY/DflaxxbK7gWMc9YZbnDC65ZzHBMcnZQNT
+	 qiat+WoiHbJiWvwxOZ2/rDl7VpSz8677MdFJWtxpR/IBNjTNIzHbJc4Og/5TdZRGm8
+	 gfrWVUrp7HZMVvX9djfxSw1QuamrtXb35JV2bHlO1mr3ZbGjT+9+ezmAp/Wt7xYjOc
+	 K0QoRvQL+Y9ZDrFau8tziqI8fQ3Ml6W5eaFlr5iN/mwgEhPyIBcNvk7N3uUh5yQMsF
+	 UTzREiyjFn4tA==
+Date: Fri, 13 Dec 2024 12:08:48 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Kevin Chen <kevin_chen@aspeedtech.com>
+To: Ninad Palsule <ninad@linux.ibm.com>
 Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	joel@jms.id.au, andrew@codeconstruct.com.au, tglx@linutronix.de, 
-	catalin.marinas@arm.com, will@kernel.org, arnd@arndb.de, olof@lixom.net, 
-	quic_bjorande@quicinc.com, geert+renesas@glider.be, dmitry.baryshkov@linaro.org, 
-	konradybcio@kernel.org, neil.armstrong@linaro.org, johan+linaro@kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, soc@lists.linux.dev
-Subject: Re: [PATCH v3 1/6] dt-bindings: interrupt-controller: Refine
- size/interrupt-cell usage.
-Message-ID: <k7jftzlih6ss4yaxrv7r4dudhcu43iyu2qvkl2thb5wiaszto7@evzmwfxxzzt6>
-References: <20241212155237.848336-1-kevin_chen@aspeedtech.com>
- <20241212155237.848336-3-kevin_chen@aspeedtech.com>
+	eajames@linux.ibm.com, jdelvare@suse.com, linux@roeck-us.net, corbet@lwn.net, 
+	joel@jms.id.au, andrew@codeconstruct.com.au, Delphine_CC_Chiu@wiwynn.com, 
+	broonie@kernel.org, peteryin.openbmc@gmail.com, noahwang.wang@outlook.com, 
+	naresh.solanki@9elements.com, lukas@wunner.de, jbrunet@baylibre.com, 
+	patrick.rudolph@9elements.com, gregkh@linuxfoundation.org, peterz@infradead.org, 
+	pbiel7@gmail.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-hwmon@vger.kernel.org, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-i2c@vger.kernel.org
+Subject: Re: [PATCH v1 3/4] dt-bindings: hwmon: intel,crps185: Add to trivial
+Message-ID: <au4mmpxa6tbznu3pcxeu7tri4elvcoyy7l5m5ujdpj7ah3xqrz@ule3ymdiisyj>
+References: <20241212214927.3586509-1-ninad@linux.ibm.com>
+ <20241212214927.3586509-4-ninad@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,26 +74,16 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20241212155237.848336-3-kevin_chen@aspeedtech.com>
+In-Reply-To: <20241212214927.3586509-4-ninad@linux.ibm.com>
 
-On Thu, Dec 12, 2024 at 11:52:31PM +0800, Kevin Chen wrote:
-> 1. Because size-cells is no need to use 2, modify to 1 for use.
-> 2. Add minItems to 1 for interrupts for intc1.
-> 3. Add 1 interrupt of intc1 example into yaml file.
-> 4. Add intc1 sub-module of uart12 as example using the intc0 and intc1.
-> ---
->  .../aspeed,ast2700-intc.yaml                  | 60 +++++++++++++++----
->  1 file changed, 47 insertions(+), 13 deletions(-)
-> 
+On Thu, Dec 12, 2024 at 03:49:02PM -0600, Ninad Palsule wrote:
+> Add INTEL Common Redundant Power Supply Versions crps185 bindings as
+> trivial.
 
-As with all your patches, repeating since v1 the same comment, so one
-more last time:
+becuse they are trivial or you don't care? Some broader context would be
+useful here.
 
-Please run scripts/checkpatch.pl and fix reported warnings. Then please
-run 'scripts/checkpatch.pl --strict' and (probably) fix more warnings.
-Some warnings can be ignored, especially from --strict run, but the code
-here looks like it needs a fix. Feel free to get in touch if the warning
-is not clear.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 Best regards,
 Krzysztof
