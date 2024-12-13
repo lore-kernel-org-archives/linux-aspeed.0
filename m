@@ -1,51 +1,79 @@
-Return-Path: <linux-aspeed+bounces-236-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-237-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A2F3E7717D
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 15:49:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4385CE7717F
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 16:13:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8v0M6Hnrz30fW;
-	Sat, 14 Dec 2024 02:49:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734104963;
-	cv=none; b=OuzpCpq+zCjYCaJeq8OmD1BoMcQbCxGxMSaGGSoJF8dd0LqxKR2Ejl79MWyEbb5NkpTA6DrYDSh6fKWX1q2DsEpIbpT6Ekwe5Mlz+9gGBgBZ2oCv1fIQmOK+QE/dFXKDMpBgsurQQm6V6bfSHlGhmauvUokyH0/Rsdu+TKJt/YMIK8ITEAzwSzuEGXg5cHtOaWJGSrfkci9nPwPpwxZI/TNENXuwAWS0g1EGVgtNghypgqfScSIMjKynpqLotBAipO4TxiViqKSBEo7m8YW/TQMkc6g5fKQsGP23JSb4uit2Vx65LSvs1i5OCmDhuJvmZPCPnU4YSjHlxPGMpMK6DA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8vWs65jLz2yVj;
+	Sat, 14 Dec 2024 03:13:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734106393;
+	cv=none; b=NPJwq6GgtQ86WgEzuk/lFBFcfughD8gnzI+C47xTgI7bBj6Ye5Ms8MzE7ScNzOOjLZ45WJqTHtBuMdgEbSt+9OGwr4kmNZtJ0t257Nb2tiIVp37qJsmxWz6zx8D2WEub/QIay8ldjB0pxrHVoe4xg75JRGXbccPDArJcjyFkynjYJrToqhZZG/EjmdMR/NyDitmeGez7BjgHoM4Qu9jvaP3x/5DQLGjV0efbSWpGBh0FJlYhQoLyeTNw9rkqsMCcEvh+jXN41wlzsxKEoSRIdtTHaseQUwMKjuwDKZWD0kLyknNtM6VhHs+Zop91Ns7e9PO977tM/IqS4+oErm626Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734104963; c=relaxed/relaxed;
-	bh=GHtvUQpufoIBKJFDuefGcJV0DBpGk5Tp2+TckBU2eMg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HYXRUNo7SD+hNC28ilnhU2sGyh7MV2ifnzau9BPFDW2/gOVIyj0468Zncfihu7n5ieaYDPhGSYwGe7TVb1YipOMLO7Y/ATkqmOXYip00DiEwlpaiq4xearhhfGm+7Z5jSkDbAbPHHgHUjZ7+7hCIaBnwQ8j3dEZWABzF7aI27oF8A6zYoXWCY8BvumJJjEcx+NJJM7ZYryFMW1OKCnyBhSuAjwYt8iMc1mMvUOQTY460bb9TsOlcAQmwlBlKvrlMx8KO8qGviL5Wd51e1QNwatPe3nxbK3bFccAFPPmg20TlGA1bVlYAkEsUktAO1O0szx8Vklj9v+efw9+IaeSHEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OmM+p3RC; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1734106393; c=relaxed/relaxed;
+	bh=PW1LH2F8Qxvgif3YU5Y3z1CGnrmFPIED3xPs36aiFdc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=WjlBxE+ZyXKpkaVk+IJuV0D1nY2NtvM3tAmMCecx8nUw5beiXfwS6k7FRku6cmjZc2iBIZJqfGkxV4wPProvT67UKpf4JdA5TK380yr0GrDpqAMIPESCnC7TuUTSb4sMXZhmjt0m4Er78u1hP9hjvYtiKSBHorhKJbO+3j5Yw0DINEX6sgF5GALE+Gs9EHVoGpSQ8myg1AOW5ZfMHZ/G7DX8sWsHAiZ1qP11CpL5Dqril22Xe+xLnw293yKBrOSlYxtWaAMe66Z3SqhgCuMaNnnI6TVTNV9f4A6/xkVDoxPC/rnh5zGfESN+TNInam3o6XGCoGUKDVW0JCnQfqpfTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IFz2XB9K; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OmM+p3RC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IFz2XB9K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8v0L5QRnz30Wd
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 14 Dec 2024 02:49:22 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 3A1C4A41D6E;
-	Fri, 13 Dec 2024 15:47:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2348C4CED0;
-	Fri, 13 Dec 2024 15:49:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734104960;
-	bh=/hDdjLzEU/NW7kyxw2WQHiNd3hIOj8UaYlN8AblZ6GY=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=OmM+p3RCtfPhAYT3Hz7bPotVhqgDa3gVt4f2/DAR32WQ86R1wwTeMRgVCnK6lXUXo
-	 pC5f2pBPmK0oveVlXE3hCksa5tr+QP2StnGDMJJy37+w+3vxHCAxOf49fmLRoQEkRw
-	 0XGv0orDKVE5fZEUHga0zid8fA3PieuibAIwuBkee27mvctkP6elKYQq2l3pOUR7E1
-	 34UdzSLW8j0pbtsUL6yl0V59YlcYTi6b5xGjnhFrnxHqHNHdYW3XK6pVz+V5vy2bIa
-	 8owvlZWcQzahmPqf1HErEUBq33k3l411jHtd7NuFdYT6BShaT89ZLPqubSACCTDH5+
-	 XlNz+koYFDwdA==
-Message-ID: <de59078c-8410-4c4f-bfce-db402e92635c@kernel.org>
-Date: Fri, 13 Dec 2024 16:49:13 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8vWr2zwRz2yJL
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 14 Dec 2024 03:13:11 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 4BDEIuv6015637;
+	Fri, 13 Dec 2024 16:12:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=PW1LH2
+	F8Qxvgif3YU5Y3z1CGnrmFPIED3xPs36aiFdc=; b=IFz2XB9KxBQc8Ujd8Xiybl
+	y8j268CsM6r8SqPK89Jql5bAhJZxtMSNtBiguZWzNpe3UOGr2OUCtFDu6cgcLzWx
+	J90QX0C2oAH2PnsSFLjsC59qkkvX4dKReP8JOI639+rpZ686znUFKOiXcbl933rS
+	rHjBO3icTzSSwF6ZdzL+iNxVmbGov+xLbe37GDK6jfliaLszFkZ0bz4bcWGbFmOj
+	+2pGrlEelsjg9HOKuGahLSwcYDucIr8Nl1wq776HawnE5yRb0Bl8f12LxTLDBRJE
+	6F40wT06m46cbatgGlY1uIb1kdsg+uNe7E6ciLDo7alYl3EyOtb3tp1xIw/uu2XQ
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43gh43a73g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Dec 2024 16:12:49 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 4BDGCmio015273;
+	Fri, 13 Dec 2024 16:12:48 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 43gh43a73d-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Dec 2024 16:12:48 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 4BDFWlBq032734;
+	Fri, 13 Dec 2024 16:12:47 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43d0psxx0g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 13 Dec 2024 16:12:47 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 4BDGCkHw53936584
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 13 Dec 2024 16:12:46 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EC53158058;
+	Fri, 13 Dec 2024 16:12:45 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1F91458059;
+	Fri, 13 Dec 2024 16:12:42 +0000 (GMT)
+Received: from [9.61.68.160] (unknown [9.61.68.160])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 13 Dec 2024 16:12:42 +0000 (GMT)
+Message-ID: <c7717f89-65cc-4668-a3e0-ee042cdcd426@linux.ibm.com>
+Date: Fri, 13 Dec 2024 10:12:41 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,101 +87,73 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 7/8] ARM: dts: aspeed: system1: Mark GPIO line high/low
-To: Ninad Palsule <ninad@linux.ibm.com>, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
- devicetree@vger.kernel.org, eajames@linux.ibm.com,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: NINAD PALSULE <ninadpalsule@us.ibm.com>
-References: <20241213145037.3784931-1-ninad@linux.ibm.com>
- <20241213145037.3784931-8-ninad@linux.ibm.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v1 1/4] hwmon: pmbus-core: Add label for fan and temp
+To: Guenter Roeck <linux@roeck-us.net>, robh@kernel.org, krzk+dt@kernel.org,
+        conor+dt@kernel.org, eajames@linux.ibm.com, jdelvare@suse.com,
+        corbet@lwn.net, joel@jms.id.au, andrew@codeconstruct.com.au,
+        Delphine_CC_Chiu@Wiwynn.com, broonie@kernel.org,
+        peteryin.openbmc@gmail.com, noahwang.wang@outlook.com,
+        naresh.solanki@9elements.com, lukas@wunner.de, jbrunet@baylibre.com,
+        patrick.rudolph@9elements.com, gregkh@linuxfoundation.org,
+        peterz@infradead.org, pbiel7@gmail.com, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org,
+        linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-aspeed@lists.ozlabs.org, linux-i2c@vger.kernel.org,
+        ninad@linux.ibm.com
+References: <20241212214927.3586509-1-ninad@linux.ibm.com>
+ <20241212214927.3586509-2-ninad@linux.ibm.com>
+ <f9d881b7-7301-476e-b281-0380dfcf0e10@roeck-us.net>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20241213145037.3784931-8-ninad@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Ninad Palsule <ninad@linux.ibm.com>
+In-Reply-To: <f9d881b7-7301-476e-b281-0380dfcf0e10@roeck-us.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: NzpH0gdcpRWbYIcxxx5eotGsIgESifCn
+X-Proofpoint-GUID: OxreHfqoC1Ht6a91pdGiYTk7dSHkFhRl
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
+ priorityscore=1501 adultscore=0 impostorscore=0 spamscore=0
+ mlxlogscore=718 suspectscore=0 phishscore=0 lowpriorityscore=0 bulkscore=0
+ mlxscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2411120000 definitions=main-2412130113
 
-On 13/12/2024 15:50, Ninad Palsule wrote:
-> From: NINAD PALSULE <ninadpalsule@us.ibm.com>
-> 
-> - Mark following GPIO lines as input high:
->   - GPIOL4 (reset PCH registers)
->   - GPIOL5 (reset portition of intel ME)
-> - Mark isolate errors from cpu1 gpio (GPIOO6) as active low output.
-> - The fan controller reset line should be active high.
-> 
-> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> ---
->  .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 28 +++++++++++++++++++
->  1 file changed, 28 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> index ca2d4a292687..be0cd6152c61 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-> @@ -383,6 +383,34 @@ &gpio0 {
->  	/*X0-X7*/	"fpga-pgood","power-chassis-good","pch-pgood","","","","","",
->  	/*Y0-Y7*/	"","","","","","","","",
->  	/*Z0-Z7*/	"","","","","","","","";
-> +
-> +	rtc_reset {
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+Hello Guenter,
 
-It does not look like you tested the DTS against bindings. Please run
-`make dtbs_check W=1` (see
-Documentation/devicetree/bindings/writing-schema.rst or
-https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
-for instructions).
-Maybe you need to update your dtschema and yamllint. Don't rely on
-distro packages for dtschema and be sure you are using the latest
-released dtschema.
+On 12/12/24 16:06, Guenter Roeck wrote:
+> On 12/12/24 13:49, Ninad Palsule wrote:
+>> Adding label files for fan and temperature sensors in the power supply.
+>> The openbmc application dbus-sensor(psusensor) requires those files to
+>> consfigure those sensors.
+>> Note that prefix for temp label is temp[A..C] used instead of temp[1..3]
+>> as dbus-sensor(psusensor) application calculate index based on last
+>> digit in the name so we do not want to make index double digit after
+>> appending page index.
+>>
+>> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+>
+> We are not going to fix userspace problems in the kernel.
+>
+> Guenter
+>
 
-Best regards,
-Krzysztof
+Thanks for the quick review.
+
+Sorry I am not clear on this. I feel that it is better to support labels 
+for temperature
+
+sensors and fans like other. Are you saying we should not support these 
+labels or
+
+I need update in the patch to support them better?
+
+Please let me know.
+
+Thanks & Regards,
+
+Ninad Palsule
+
+
 
