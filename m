@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-219-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-220-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 998FCE7717F
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 07:59:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E5EE7717D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Dec 2024 08:02:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8hZj1hJsz30jV;
-	Fri, 13 Dec 2024 18:59:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734076797;
-	cv=none; b=Fr8PHo3oX1lJn+N7KaYP00/mZEH5xY09fOGTThANfCsMxYdKADYBDQAJOvmHXuFdd5OkDKaiylW52xjM+Z0Xt28KOj2UuW/+Z1LOEFNT22z714AWZZpK8uRAIGoaeMvvdwZ/ADzEkSOUSq7WlID+vN5f06ZnPlugX5HDY+n5hYevxKyWAXn2eSHwNLzUhGCD6+0+7T1YwyXcKzNRusNc8lYXom8KR+SAV5vnUni05763gHlV+xFEMozG5B0CyOyDST9tnS2iVfXfErP6xL/p5t+r12EW7zWeaZYbP5viJ0zk80ueIzNYh51bwBKkIFGCwSvf/mi8wD38FsETYKLp1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Y8hd2603nz3Wtr;
+	Fri, 13 Dec 2024 19:01:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734076918;
+	cv=none; b=oja7yllhOzcC0f7UI/+JRovnGRIfBAJ6fWZlvtNniLO0/M3vAf97tGpBIf8qOuug4HvwHHu2H/DRH/fiWIUIHbC0isQiilIu/g8VqdLqoyfS1Oov47XC3pD7ttPPJov7YkaR/6W137r4m0KiqJ5Rd3uHsAXbK3IPO6vNHZw+KuOGMHaLHYRClQqJATMkfn7X3S3T+jJtGbl5twumxZjXxiX9OZPYDgkv3htMj2LX4sU6D+hK5Y49TfF7MppAWmYekzgUnF48ROZ40ZGCkK5gjG1kxIVMgqxM4p89QgloO9HDHh4gXjEX+kAsRhY83k9gyAu+nB4mkJdTbOxaG7iAcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734076797; c=relaxed/relaxed;
-	bh=Io6gpEcnOGzdye+2kiHrUQWFpNo/CqyBUvnSTyCaLLs=;
+	t=1734076918; c=relaxed/relaxed;
+	bh=+OIcgo3tA5osCXlqLZ4sQaufk6SmQZDh+GnoFoiCrBQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=VwRXUET7e2SnOSUmjicxq2N9q9I3rVSB8pvU48eRJgzGaSVlLgSF9ezq72f9Z+b268PzrZwDr7eMnrHImjWVBBpDR13bti5qn1d/HSMIE6h5oQC9RObK1/Ndpfqp6/69y/my6p7xiTRy97BX0csd7mARyVf/zEgrUcC7o4rA29qyR5D6XREBs7rl/F7moylci/WuLfVudjcx9IUCIL4nlhsSCsmEFhhTksLGcIK4cQIsud7X3H/AaQBr8MGHxMSi2MRFhLu0uTNp1g1cmWkankE3yA8No409+TlZhTXLWiMn/Z38BOdlh8kgPM80o3Q7xJsq7sAAGzcbO8S2Lfdi/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dpGpeq7b; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=RDZZIMNZ05cSdApmArZxaL2xqiE0PnLZkODoHOC2H1FDzbYjkQawwKROvLOPPUeXx38NaEE9TKrK9xcdOM4CL42K6iHhDEVudaC5DtoIWM4Gqych9e/1ntOk5Yt8B/2W9DrNfb+JBjQowQVjaoZNDcQQ+82uae4p7HHGDQ6z/zNf6Fq7Vqp6qYAEZoqgpAUAhuI2q25ryBy/DFH5L2sdvD55iISOy7FBiKb2wbaKf5c4IBc6W4Oq5EtnLR/hLZpz9SerYy6NISRJ2eYPmBoyGuhTOeZAe73ktTyJtlJATRaWzoAGfpokdLVQDg/JJ9b4Kp/scahQg3CH0dwZrnO2QA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M5PdWI9A; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dpGpeq7b;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M5PdWI9A;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8hZh1K3Fz30hl
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 18:59:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Y8hd15QP3z30jZ
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Dec 2024 19:01:57 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id E0295A427B2;
-	Fri, 13 Dec 2024 07:58:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5073C4CED0;
-	Fri, 13 Dec 2024 07:59:46 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 5B389A427CB;
+	Fri, 13 Dec 2024 08:00:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F060C4CED1;
+	Fri, 13 Dec 2024 08:01:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734076793;
-	bh=Zk2t2gNIqw1Fr3k0oMx9b92c0wRmzmcHtlYDobnwy5g=;
+	s=k20201202; t=1734076915;
+	bh=7LD54dmJDjftl31NJJcExHt1aZa+FMSTWfGvjuK1GAA=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=dpGpeq7bMlUF0fXGU/PpNaWDwNLPYp3mDzeqZb6lVpY5OgNCZzBCKi3ZvZAiZQqTc
-	 6WfTatWetFCdCRuq28PfGdPN8W85HhzbZCks3xZW3l/o+cxDopAej7rEVu+i4dOzkv
-	 aZCcYOPzuyXDH5fCtHfaU2z5snJMeCsBli3DYSUBIytLIEod6RE+5t5dWmUN3U/sTc
-	 jHZF3UjY95BqoyxwNqekTNYGAGwv6nut1rbWXdYOKACXFaDPq8kaYLSspymE99edCa
-	 JIBxtuPVF7t3qhZlNIjRykdseF9+GXElPk2xTDlblKafJj9tunusH6ijjJtCPcz5/T
-	 frcUQMuNibYTA==
-Message-ID: <7a1244db-7ab7-4374-b44d-e55a25d766a2@kernel.org>
-Date: Fri, 13 Dec 2024 08:59:44 +0100
+	b=M5PdWI9Ap51gOdghnXpW7Yj0LlUwGokHmPMqLNKuUoItSerMXxIGBc0H1YbuWOCVz
+	 sE45bhf0/u5jw4eOyNxzv9GhfTIGNmDOkR1Sv4fHrGbXyB2Bi1qeSBbldwiB4vfHhN
+	 IUf2qVnycb7ESTFjYv5hoO4xfkjszM2wpnecBLsaCJPYu1YLl4rhPaU3LdqNxoaoHD
+	 VYih3RLAfp6VhPjoTewg7U8/YyM5C01zrcNrIr/LwX8+sbUtUpgKB0WyHfHWe0fKjw
+	 zEwcTsEv4p5xbhvK6SCt/hPm+E0LuwJzHB/VfAXVQDVP8+swEadlHzFTncv2KqIIS5
+	 FWZrIi7lIRxmQ==
+Message-ID: <dbfe7c42-cc9b-4471-93ed-846260db42e6@kernel.org>
+Date: Fri, 13 Dec 2024 09:01:46 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,8 +59,8 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/6] dt-bindings: interrupt-controller: Fix the
- size-cells in ast2700-intc
+Subject: Re: [PATCH v3 4/6] arm64: dts: aspeed: Add initial AST27XX device
+ tree
 To: Kevin Chen <kevin_chen@aspeedtech.com>, robh@kernel.org,
  krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
  andrew@codeconstruct.com.au, tglx@linutronix.de, catalin.marinas@arm.com,
@@ -71,7 +71,7 @@ To: Kevin Chen <kevin_chen@aspeedtech.com>, robh@kernel.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  soc@lists.linux.dev
 References: <20241212155237.848336-1-kevin_chen@aspeedtech.com>
- <20241212155237.848336-5-kevin_chen@aspeedtech.com>
+ <20241212155237.848336-7-kevin_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -117,24 +117,24 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20241212155237.848336-5-kevin_chen@aspeedtech.com>
+In-Reply-To: <20241212155237.848336-7-kevin_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 12/12/2024 16:52, Kevin Chen wrote:
-> It is no need to let size-cells to 2 for the ASPEED AST27XX INTC. Modify
-> the ast2700-intc example usage.
-
-Why?
-
-This just looks useless.
-
+> Add aspeed-g7.dtsi to be AST27XX device tree.
 > 
 > Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+
+Where are all the bindings? Why are you silent about this? The patchset
+adding new SoC DTS, when separate, is supposed to explain where we can
+find the bindings.
+
 > ---
->  .../bindings/interrupt-controller/aspeed,ast2700-intc.yaml    | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
+>  arch/arm64/boot/dts/Makefile              |   1 +
+>  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi | 236 ++++++++++++++++++++++
+>  2 files changed, 237 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.
 
 
 Best regards,
