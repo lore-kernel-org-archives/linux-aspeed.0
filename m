@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-277-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-278-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44C94E77183
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Dec 2024 08:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DFB9E77183
+	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Dec 2024 08:11:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YCmWB6LDGz2xjQ;
-	Wed, 18 Dec 2024 19:07:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734509254;
-	cv=none; b=QNpQwzmiTcjwNLtOzAgwDGpx8co3B23plcCD0xia/fiq9Kn/3NjGXjUJEuKFVFCtTD2s5tFOfJ6Pu/gLA8axd5015jT9EHzYw3yrpQmLC/NvpZh0D5c7cWxUbalkzGTyesqmamMH/KJ+6tnmPjuYt0gXbNhoXuxSSQpAIVMmCVp98WBbFhaB4a0/3qmUAbVlAUq2ps3ATSyz/P3RQa6m8JkAYR6/+Hg6j2eeGlU9YJprC7JTH6W6fzgeN2bwDCAIIz1KagHF6wbE9OKbiyD3S26d3Ls72/CU0smBsYycp7lWzHKeIwVOrcDccf6+2mwr1F3K9wf3pDIc7u6CCyHokg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YCmc100JPz2xjQ;
+	Wed, 18 Dec 2024 19:11:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734509504;
+	cv=none; b=JjWSl5U7R/7AzA4jM0wHD4kEsk53OOV/E6YKEl3RUG2jwZrS6g3DJOg/Qir9Q7dZNpmWYQWgTf4KLyqy4GWEvpZOxM3vNI3vs7uBOl4LbszsFcv1kplnnkHA6Lo8uVCnuETJOAfpdf20VtTfNTK2Den0DtTPDihyeEhT3mBndk+lY41SmfRmmxxJyn5xz3FkgU4Ajv8wQkCufOgwj9eXcX3DTh2UV7PYla0OvTt5TI7CtvY3nfmSjM+ZYuQxBJFE24PhndsTVa4G4xHph2eQ5jP3vG7P1esdFu2lhiQ+KcpUGLowr7ffPLcUw2WDWgDh4NgmfBtdv5yX1ETB5y2wRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734509254; c=relaxed/relaxed;
-	bh=+zvVxg8TjpzTKJeVgAA52MwuzQxHGHAPTbkC5v+VP5E=;
+	t=1734509504; c=relaxed/relaxed;
+	bh=juKhwfg+Frw7VM5RTNeQJHLkr65oOosI9cDLDXSk6fs=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=DrOH6jCGxdRisXmjUEyRCa32jGBgnVHtuxl3En75XGy1YHjiB5Khe+xf8x/w0h0MZfSWNLQjOOl0MdWfSzvEisQhAyJxiyrX00qedjEXbpeIA/4N4mouU7g4NkNT6jx1CK+xShHx2Uzy0GXe3YCEk21KMvy2Dzj2F7gfmbT9CEhKfRlR3vzVM8QDtgCWy2k9bI/RmmX05Movxe3Pk5A5uyKUm130lDWIQlCyKjA02tA++dq+47wRfaOuct7IMmBd5nugpaB7yrT+Cc47nZGtTVe0g4msM9MOSas2SnecDOrzqqaoYAloHHZ3tAwR33xmVF1bgNJzliJmScSr9FNCfw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iC91Vydm; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=IpU2zdvKv2Ans5hVg5p2/bNmvCCiVjekPSRu9i9z5XVnOCYvBYBMsZjlUbc1eJO6tcGPTZI/9KUrwq2IMq++hLnZ7UYJKCsKerX58a1/EhJ/OpoPJ29+j0A8bQFmvhuRcmcUEaqzYM31XR0DT3yAh3HBvsAzBsEfEqTCMkbxjpSIyp6JRO5y+Vxm5MbIWmxBLg8VRqVbflP4iF3wgeSbbMW4B7aBzHfeFKFo6UeJbDWa5FTswOdOtbEzjHHzj7tHncMWflUp4j9/KSqezqxs2aNRyBAth2uIHJ3Fcmk4TTneQoBJy4RT+pZukZQkowNm075ORNviMqw2eKH2T39dKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mH8otsfK; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iC91Vydm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mH8otsfK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCmW95sjjz2xfB
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Dec 2024 19:07:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCmbz6PpSz2xfB
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Dec 2024 19:11:43 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id A0C3B5C5E45;
-	Wed, 18 Dec 2024 08:06:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 930CAC4CED0;
-	Wed, 18 Dec 2024 08:07:23 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 63C47A424F8;
+	Wed, 18 Dec 2024 08:09:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A524C4CED4;
+	Wed, 18 Dec 2024 08:11:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734509249;
-	bh=3YQQgFLzWqXSr+8cpiXWMiZeoDJOT88+J0fk3jLp0XI=;
+	s=k20201202; t=1734509500;
+	bh=GD+XRq2BWDzrYgMfELDkBiixgET0u+IfEAOVp79m8/c=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=iC91VydmXNXgoWb0ae+s8i4Yv/Uuaj+T9PnsEknpF3lE/F2GyaVzRXQvUMg0LH3jQ
-	 66yHkkV5ex3UMZ5IyFODmkSr4gAhV8BIaP98+MGZNIiDNCH5CRsxxHZj3RhKrXsRXe
-	 5rO9Wh4EHSxmPVDaxXbjut6LawLdAHceNlK6jcUz0SQF/+gax2ir+ZgTHa+cYMz7EN
-	 OuMeZ87ln3RDhwWQLDNULpsJsM92cGGur5lI/h5SQLqXijqaJHrrQB48Mqbg/Ijbjd
-	 D8XuMGzXNAAJQlOKYLuOF6kmxGtnNpUtwjgZ5vm/tqsMIS9uFYtmxfvY4QL3EKdn9U
-	 8QEFzrESLeC5Q==
-Message-ID: <4ce799f1-e8c6-4a0d-aca5-dfb3dcb0c1d8@kernel.org>
-Date: Wed, 18 Dec 2024 09:07:21 +0100
+	b=mH8otsfKPIZaIn7z2+Vlzh/Bllp9tXet1lPJLKt9j8l4aKn06FGLkfOiRD7LRDhBg
+	 8jXKz8KGdJyULSDVR6vgkU+cdNujljJdM15ovpUZGRYdiEQvGHe6P/AbGY+78T69So
+	 MBflpqIjqZKi4A8T1fEyx3H0r5OxeI8b0K6ZWdOUtbyAcnXUtq1MiWXYFiJCE3v+55
+	 q0WBwsyYNU3JAZJHAXVphTnt2x+Q2VCuYhMGKz9pmMFzkjoetCpxMv1aZLOBMSWxmZ
+	 wBmJXS2fDhiExrmSIkiOm9vuyVpgL9cDK+4X6u7m9cUlmnVkoevOyfHMedxR6PAQtm
+	 R2QEyLou8zsAA==
+Message-ID: <4717dbb3-4fea-4ca0-800e-07ceed4dfec0@kernel.org>
+Date: Wed, 18 Dec 2024 09:11:31 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,8 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/6] dt-bindings: interrupt-controller: Refine
- size/interrupt-cell usage.
+Subject: Re: [PATCH v3 2/6] dt-bindings: arm: aspeed: Add ASPEED AST27XX SoC
 To: Kevin Chen <kevin_chen@aspeedtech.com>, "robh@kernel.org"
  <robh@kernel.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
  "conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
@@ -82,9 +81,10 @@ To: Kevin Chen <kevin_chen@aspeedtech.com>, "robh@kernel.org"
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "soc@lists.linux.dev" <soc@lists.linux.dev>
 References: <20241212155237.848336-1-kevin_chen@aspeedtech.com>
- <20241212155237.848336-3-kevin_chen@aspeedtech.com>
- <11ad5a97-b066-4bea-8829-50e0416cea9d@kernel.org>
- <PSAPR06MB4949CF57BD69B2F7C1D141CD89052@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <20241212155237.848336-4-kevin_chen@aspeedtech.com>
+ <7289a50a-e139-453f-a512-3dd68a0839a2@kernel.org>
+ <7b991fca-6e2f-454f-a94d-6a583854769b@kernel.org>
+ <PSAPR06MB49495C182D0B64687E0174A389052@PSAPR06MB4949.apcprd06.prod.outlook.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -130,81 +130,59 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <PSAPR06MB4949CF57BD69B2F7C1D141CD89052@PSAPR06MB4949.apcprd06.prod.outlook.com>
+In-Reply-To: <PSAPR06MB49495C182D0B64687E0174A389052@PSAPR06MB4949.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 18/12/2024 04:04, Kevin Chen wrote:
+On 18/12/2024 03:55, Kevin Chen wrote:
 > Hi Krzk,
 > 
->>> 1. Because size-cells is no need to use 2, modify to 1 for use.
->>
->> ???
-> So, is it OK that I change the size-cells back to 2 include the aspeed,ast2700-intc.yaml examples and aspeed-g7.dtsi?
-
-No, my total surprise is that I did not understand what it maens. Is
-this changelog? Commit msg? Why such change is made?
-
-> 
->>
->>> 2. Add minItems to 1 for interrupts for intc1.
->>
->> ???
-> For variable interrupt numbers, I need to fix the below warnings by minItems.
->   DTC [C] arch/arm64/boot/dts/aspeed/ast2700-evb.dtb
-> /home/kevin/linux-mainline/arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@100: interrupts-extended: [[3, 0, 3844]] is too short
->         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> /home/kevin/linux-mainline/arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@110: interrupts-extended: [[3, 1, 3844]] is too short
->         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> /home/kevin/linux-mainline/arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@120: interrupts-extended: [[3, 2, 3844]] is too short
->         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> /home/kevin/linux-mainline/arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@130: interrupts-extended: [[3, 3, 3844]] is too short
->         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> /home/kevin/linux-mainline/arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@140: interrupts-extended: [[3, 4, 3844]] is too short
->         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> /home/kevin/linux-mainline/arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@150: interrupts-extended: [[3, 5, 3844]] is too short
->         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> 
->>
->>> 3. Add 1 interrupt of intc1 example into yaml file.
->>
->>> 4. Add intc1 sub-module of uart12 as example using the intc0 and intc1.
->>
->> What is all this?
->>
->> BTW, there was no such patch in previous version and your changelog is silent
->> about it.
-> Agree, I will restore the previous version.
-> 
->>
->> Subject: drop all full stops. Subject never ends with full stop.
->>
->>> ---
->>>  .../aspeed,ast2700-intc.yaml                  | 60
->> +++++++++++++++----
->>>  1 file changed, 47 insertions(+), 13 deletions(-)
+>>> On 12/12/2024 16:52, Kevin Chen wrote:
+>>>> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+>>>> ---
+>>>>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 6 ++++++
+>>>>  1 file changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>>>> b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>>>> index 2f92b8ab08fa..20191fee1f5b 100644
+>>>> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>>>> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+>>>> @@ -101,4 +101,10 @@ properties:
+>>>>                - ufispace,ncplite-bmc
+>>>>            - const: aspeed,ast2600
+>>>>
+>>>> +      - description: AST2700 based boards
+>>>> +        items:
+>>>> +          - enum:
+>>>> +              - aspeed,ast2700-evb
+>>>> +          - const: aspeed,ast2700
+>>>> +
+>>>>  additionalProperties: true
 >>>
->>> diff --git
->>> a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast270
->>> 0-intc.yaml
->>> b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast270
->>> 0-intc.yaml index 55636d06a674..eadfbc45326b 100644
->>> ---
->>> a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast270
->>> 0-intc.yaml
->>> +++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,as
->>> +++ t2700-intc.yaml
->>> @@ -31,6 +31,7 @@ properties:
->>>        type as defined in interrupt.txt in this directory.
 >>>
->>>    interrupts:
->>> +    minItems: 1
->>
->> Nope, not explained, not constrained. Your schema is supposed to be
->> constrained.
+>>>
+>>> This patchset is just corrupted. You already sent it as patch #1.
+>>>
+>>> Please run scripts/checkpatch.pl and fix reported warnings. Then
+>>> please run `scripts/checkpatch.pl --strict` and (probably) fix more warnings.
+>>> Some warnings can be ignored, especially from --strict run, but the
+>>> code here looks like it needs a fix. Feel free to get in touch if the
+>>> warning is not clear.
+>> BTW, you already got here same comments before and this is third time you
+>> send exactly the same without implementing what we asked you.
+> Please check the following message.
+> https://lore.kernel.org/lkml/PSAPR06MB494943F3F34881D23CEEBD9A897D2@PSAPR06MB4949.apcprd06.prod.outlook.com/
+> 
+> Or, how do you think what is better for me to add ast2700-evb?
+Please stop responding just to make me go away.
 
-I still do not understand this commit at all.
+Read the comments from half a year ago, which you have never implemented:
 
+https://lore.kernel.org/lkml/e6cb6f26-fef2-49bc-ab25-fdc9a659f593@kernel.org/
+
+On every new patch I was asking you to go back, but again you were
+ignoring each of such messages.
 
 Best regards,
 Krzysztof
