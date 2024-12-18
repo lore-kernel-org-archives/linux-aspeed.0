@@ -1,51 +1,93 @@
-Return-Path: <linux-aspeed+bounces-278-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-279-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DFB9E77183
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Dec 2024 08:11:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA40CE7718A
+	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Dec 2024 15:09:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YCmc100JPz2xjQ;
-	Wed, 18 Dec 2024 19:11:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734509504;
-	cv=none; b=JjWSl5U7R/7AzA4jM0wHD4kEsk53OOV/E6YKEl3RUG2jwZrS6g3DJOg/Qir9Q7dZNpmWYQWgTf4KLyqy4GWEvpZOxM3vNI3vs7uBOl4LbszsFcv1kplnnkHA6Lo8uVCnuETJOAfpdf20VtTfNTK2Den0DtTPDihyeEhT3mBndk+lY41SmfRmmxxJyn5xz3FkgU4Ajv8wQkCufOgwj9eXcX3DTh2UV7PYla0OvTt5TI7CtvY3nfmSjM+ZYuQxBJFE24PhndsTVa4G4xHph2eQ5jP3vG7P1esdFu2lhiQ+KcpUGLowr7ffPLcUw2WDWgDh4NgmfBtdv5yX1ETB5y2wRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YCxtC3Cy6z30VV;
+	Thu, 19 Dec 2024 02:09:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1734534579;
+	cv=none; b=a0se/swEL8KUlxSNfU1NxF2S84MYgU4gq4gu5O56HqcoPVgQtCnOqiBHN8BCj2z17FJ7pzXprfFtGPZQ7dvH5L/IxcEnw/ty/Gdf8CNwHqkLVuRvcem5aHowvk6+Prb+nngrWPnBF4IpxCsRIktJ6xo6f++HO7UST9HapbusX44eZy3BG36aYe7Bb6e9x4KONw5FhmxssjL2SfdnUTuoNwHJJjurK779p9ARldF99Uwj8YsTRPteboSy6ehKiYL0hrMGeqH/h91SngjSu81FHMTDP6Xo2xDA+jZW9d/RQsw5Moic7jKBNQyMoTLkVqXnY50RGOupQEPnUbfxdiQGzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1734509504; c=relaxed/relaxed;
-	bh=juKhwfg+Frw7VM5RTNeQJHLkr65oOosI9cDLDXSk6fs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=IpU2zdvKv2Ans5hVg5p2/bNmvCCiVjekPSRu9i9z5XVnOCYvBYBMsZjlUbc1eJO6tcGPTZI/9KUrwq2IMq++hLnZ7UYJKCsKerX58a1/EhJ/OpoPJ29+j0A8bQFmvhuRcmcUEaqzYM31XR0DT3yAh3HBvsAzBsEfEqTCMkbxjpSIyp6JRO5y+Vxm5MbIWmxBLg8VRqVbflP4iF3wgeSbbMW4B7aBzHfeFKFo6UeJbDWa5FTswOdOtbEzjHHzj7tHncMWflUp4j9/KSqezqxs2aNRyBAth2uIHJ3Fcmk4TTneQoBJy4RT+pZukZQkowNm075ORNviMqw2eKH2T39dKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mH8otsfK; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1734534579; c=relaxed/relaxed;
+	bh=6mDeikeFSe+F1f6WRvocmJwWKAt2yrKKW2tQ+SDhd5c=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ECKwpoFtUxaAqm1oHsHN+/jRD1ZmUH+hZmD90dZrXkBIXDF+0Gv8xXrL17siwtqH3tihuxrcwyIp1yALTZ7+o6sd2pi4TYBQp4TMTvSWkZEOyIzTjX65qGrt1wsIeg5sPvtEibnXOi2GMq1Yii4o+uwGLv8CaG2uZg6HcUQS1Z7GqnYFIeKF/FGF6SKc3Wq/gpUNoKZ89tWr0rTIKpLumzgFbuKxDn4Q8IkTTuFTwpxVIrndB075YG6R9KdmsRuyw4DKXsvs/eHcUvZI/f49uUl3ZEfrjKgX4jxlw+ang1nF6ZHH9rd2dlhJL0d8JopG0O+q8cYhkhig1xpdKu61ww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=baFT1s/2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mH8otsfK;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=baFT1s/2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCmbz6PpSz2xfB
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Dec 2024 19:11:43 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 63C47A424F8;
-	Wed, 18 Dec 2024 08:09:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A524C4CED4;
-	Wed, 18 Dec 2024 08:11:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1734509500;
-	bh=GD+XRq2BWDzrYgMfELDkBiixgET0u+IfEAOVp79m8/c=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=mH8otsfKPIZaIn7z2+Vlzh/Bllp9tXet1lPJLKt9j8l4aKn06FGLkfOiRD7LRDhBg
-	 8jXKz8KGdJyULSDVR6vgkU+cdNujljJdM15ovpUZGRYdiEQvGHe6P/AbGY+78T69So
-	 MBflpqIjqZKi4A8T1fEyx3H0r5OxeI8b0K6ZWdOUtbyAcnXUtq1MiWXYFiJCE3v+55
-	 q0WBwsyYNU3JAZJHAXVphTnt2x+Q2VCuYhMGKz9pmMFzkjoetCpxMv1aZLOBMSWxmZ
-	 wBmJXS2fDhiExrmSIkiOm9vuyVpgL9cDK+4X6u7m9cUlmnVkoevOyfHMedxR6PAQtm
-	 R2QEyLou8zsAA==
-Message-ID: <4717dbb3-4fea-4ca0-800e-07ceed4dfec0@kernel.org>
-Date: Wed, 18 Dec 2024 09:11:31 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YCxt955hXz30Tc
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Dec 2024 02:09:36 +1100 (AEDT)
+Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-2165448243fso65149735ad.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Dec 2024 07:09:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1734534572; x=1735139372; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=6mDeikeFSe+F1f6WRvocmJwWKAt2yrKKW2tQ+SDhd5c=;
+        b=baFT1s/2NPEaCkH4JCKkH8DOwLKgYarcHaM8AYPq48H/ebb/MjBuzX+8dkvslCd0F4
+         D5rHkVhQmAWM6VHYIjv4Oa9Sp8/bk0g38tMaSIPPRckN4FwDWhvBrVvkW//j+ywN0vtt
+         titMeLF2KbrLFDQKSzR1hydd/kpCHUfuXNrMzmxCu4W38wwSyKLeZIokzJ2B6jRBYr38
+         rnkHlY8BojIS5Dj1/toXIYDU3pejJaA58MSE4GUvdX3o9Z62NzJhjm6sQX0THVelD08D
+         ZVYJT7sRv4m7YwuUMO//5MkFGgMRyV8NLYgTjTMheWQPIMuviFeMkN0Jn+FB6qgyerjT
+         OEjA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734534572; x=1735139372;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=6mDeikeFSe+F1f6WRvocmJwWKAt2yrKKW2tQ+SDhd5c=;
+        b=lm/L9qC/zCTcFfedsJwnCF/lwWz3CToqJTsxi3c1YhBai18x67ATHLmESDo4ivmAae
+         FsEaWAOHi+DEUnRHBSQY3EWiXI0zF4qiVfoU5qvwQv9e1LfM2tLbZvuio6xhy6AaB5h0
+         C9NqqflgV2/OcX5eRoG0KIF1OG4HCN6GVgHmeIHSN9E5v2oWyO0k/qz77aV/Y8YySHRq
+         eTSBJ0+orW0x8yMPvF00wDmRdQqGos/i4kOQB5QAAJcoL9bCwz0Ci672hXxzC8qxcteq
+         l4iEHRXqAoHOSpzkDtpLr/K/eld2A9h8bNMy+Pj+HN6oDaBG1Dnu8/JPvk1/ohGbaQRR
+         wVyA==
+X-Forwarded-Encrypted: i=1; AJvYcCV8qOytoCvzZHaZDz7KA9jzWeB9Ido7F2bGEdkPzcP7ImK3fS73zfYCIJQcc+yFd+TbFiJi4udgiSGnTho=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxbhvnJse1hp3+m6P5myNDd/2Px53ySVDSO1AB+gN9AgsLWBoLF
+	4iww+2+TnUgU7asw0xhwQ+q0d8hpNPaTH0qevtu9TraveMqCuSnb
+X-Gm-Gg: ASbGncuf284NwTXeIRY99KCGfO965Ql62z1oCOjehKavoD1NjtIfaMkb2IV5ccy4kva
+	1erS0erwHTlXp0Jwc4hEKmhZjbBOoJkvhhUxRAETLujIRkLJCgiSmV3aA00k6BriXRQFma/TXdB
+	GnxoVjDsSfUSTYRcUxo9Y/8d/MZvir6cPe7Soxsy7A3V7ZvV3Vs0XmUal9O3ux3J+3bmH4oWv0A
+	OLiRpECpuM9NKBtW8ege+cSrwSoyZyibzg0K+UjBFUsNIr8PDsvG2p4qiKfV8ZJIMXXmQ==
+X-Google-Smtp-Source: AGHT+IEewReQwgk+5Ua6YOOIYy2d2/wQCgEBDZk3bKIj2d8jpP3GFkNNyFGtuZW0MM3ArXC6dPDOAw==
+X-Received: by 2002:a17:902:f68e:b0:216:4b5a:998b with SMTP id d9443c01a7336-218d7252a1cmr34156515ad.45.1734534572373;
+        Wed, 18 Dec 2024 07:09:32 -0800 (PST)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-218a1e728a8sm75452185ad.280.2024.12.18.07.09.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Dec 2024 07:09:31 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Wed, 18 Dec 2024 07:09:30 -0800
+From: Guenter Roeck <linux@roeck-us.net>
+To: Ninad Palsule <ninad@linux.ibm.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	eajames@linux.ibm.com, jdelvare@suse.com, corbet@lwn.net,
+	joel@jms.id.au, andrew@codeconstruct.com.au,
+	Delphine_CC_Chiu@wiwynn.com, broonie@kernel.org,
+	peteryin.openbmc@gmail.com, noahwang.wang@outlook.com,
+	naresh.solanki@9elements.com, lukas@wunner.de, jbrunet@baylibre.com,
+	patrick.rudolph@9elements.com, gregkh@linuxfoundation.org,
+	peterz@infradead.org, pbiel7@gmail.com, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org,
+	linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-i2c@vger.kernel.org
+Subject: Re: [PATCH v4 1/4] hwmon: (pmbus/core) Add PMBUS_REVISION in debugfs
+Message-ID: <89ff7229-2e86-4d36-9349-50af109b0085@roeck-us.net>
+References: <20241217173537.192331-1-ninad@linux.ibm.com>
+ <20241217173537.192331-2-ninad@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,132 +100,19 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 2/6] dt-bindings: arm: aspeed: Add ASPEED AST27XX SoC
-To: Kevin Chen <kevin_chen@aspeedtech.com>, "robh@kernel.org"
- <robh@kernel.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
- "conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
- <joel@jms.id.au>, "andrew@codeconstruct.com.au"
- <andrew@codeconstruct.com.au>, "tglx@linutronix.de" <tglx@linutronix.de>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "will@kernel.org" <will@kernel.org>, "arnd@arndb.de" <arnd@arndb.de>,
- "olof@lixom.net" <olof@lixom.net>,
- "quic_bjorande@quicinc.com" <quic_bjorande@quicinc.com>,
- "geert+renesas@glider.be" <geert+renesas@glider.be>,
- "dmitry.baryshkov@linaro.org" <dmitry.baryshkov@linaro.org>,
- "konradybcio@kernel.org" <konradybcio@kernel.org>,
- "neil.armstrong@linaro.org" <neil.armstrong@linaro.org>,
- "johan+linaro@kernel.org" <johan+linaro@kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "soc@lists.linux.dev" <soc@lists.linux.dev>
-References: <20241212155237.848336-1-kevin_chen@aspeedtech.com>
- <20241212155237.848336-4-kevin_chen@aspeedtech.com>
- <7289a50a-e139-453f-a512-3dd68a0839a2@kernel.org>
- <7b991fca-6e2f-454f-a94d-6a583854769b@kernel.org>
- <PSAPR06MB49495C182D0B64687E0174A389052@PSAPR06MB4949.apcprd06.prod.outlook.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
- cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
- JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
- gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
- J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
- NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
- BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
- vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
- Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
- TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzSVLcnp5c3p0b2Yg
- S296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+wsGVBBMBCgA/AhsDBgsJCAcDAgYVCAIJCgsE
- FgIDAQIeAQIXgBYhBJvQfg4MUfjVlne3VBuTQ307QWKbBQJgPO8PBQkUX63hAAoJEBuTQ307
- QWKbBn8P+QFxwl7pDsAKR1InemMAmuykCHl+XgC0LDqrsWhAH5TYeTVXGSyDsuZjHvj+FRP+
- gZaEIYSw2Yf0e91U9HXo3RYhEwSmxUQ4Fjhc9qAwGKVPQf6YuQ5yy6pzI8brcKmHHOGrB3tP
- /MODPt81M1zpograAC2WTDzkICfHKj8LpXp45PylD99J9q0Y+gb04CG5/wXs+1hJy/dz0tYy
- iua4nCuSRbxnSHKBS5vvjosWWjWQXsRKd+zzXp6kfRHHpzJkhRwF6ArXi4XnQ+REnoTfM5Fk
- VmVmSQ3yFKKePEzoIriT1b2sXO0g5QXOAvFqB65LZjXG9jGJoVG6ZJrUV1MVK8vamKoVbUEe
- 0NlLl/tX96HLowHHoKhxEsbFzGzKiFLh7hyboTpy2whdonkDxpnv/H8wE9M3VW/fPgnL2nPe
- xaBLqyHxy9hA9JrZvxg3IQ61x7rtBWBUQPmEaK0azW+l3ysiNpBhISkZrsW3ZUdknWu87nh6
- eTB7mR7xBcVxnomxWwJI4B0wuMwCPdgbV6YDUKCuSgRMUEiVry10xd9KLypR9Vfyn1AhROrq
- AubRPVeJBf9zR5UW1trJNfwVt3XmbHX50HCcHdEdCKiT9O+FiEcahIaWh9lihvO0ci0TtVGZ
- MCEtaCE80Q3Ma9RdHYB3uVF930jwquplFLNF+IBCn5JRzsFNBFVDXDQBEADNkrQYSREUL4D3
- Gws46JEoZ9HEQOKtkrwjrzlw/tCmqVzERRPvz2Xg8n7+HRCrgqnodIYoUh5WsU84N03KlLue
- MNsWLJBvBaubYN4JuJIdRr4dS4oyF1/fQAQPHh8Thpiz0SAZFx6iWKB7Qrz3OrGCjTPcW6ei
- OMheesVS5hxietSmlin+SilmIAPZHx7n242u6kdHOh+/SyLImKn/dh9RzatVpUKbv34eP1wA
- GldWsRxbf3WP9pFNObSzI/Bo3kA89Xx2rO2roC+Gq4LeHvo7ptzcLcrqaHUAcZ3CgFG88CnA
- 6z6lBZn0WyewEcPOPdcUB2Q7D/NiUY+HDiV99rAYPJztjeTrBSTnHeSBPb+qn5ZZGQwIdUW9
- YegxWKvXXHTwB5eMzo/RB6vffwqcnHDoe0q7VgzRRZJwpi6aMIXLfeWZ5Wrwaw2zldFuO4Dt
- 91pFzBSOIpeMtfgb/Pfe/a1WJ/GgaIRIBE+NUqckM+3zJHGmVPqJP/h2Iwv6nw8U+7Yyl6gU
- BLHFTg2hYnLFJI4Xjg+AX1hHFVKmvl3VBHIsBv0oDcsQWXqY+NaFahT0lRPjYtrTa1v3tem/
- JoFzZ4B0p27K+qQCF2R96hVvuEyjzBmdq2esyE6zIqftdo4MOJho8uctOiWbwNNq2U9pPWmu
- 4vXVFBYIGmpyNPYzRm0QPwARAQABwsF8BBgBCgAmAhsMFiEEm9B+DgxR+NWWd7dUG5NDfTtB
- YpsFAmA872oFCRRflLYACgkQG5NDfTtBYpvScw/9GrqBrVLuJoJ52qBBKUBDo4E+5fU1bjt0
- Gv0nh/hNJuecuRY6aemU6HOPNc2t8QHMSvwbSF+Vp9ZkOvrM36yUOufctoqON+wXrliEY0J4
- ksR89ZILRRAold9Mh0YDqEJc1HmuxYLJ7lnbLYH1oui8bLbMBM8S2Uo9RKqV2GROLi44enVt
- vdrDvo+CxKj2K+d4cleCNiz5qbTxPUW/cgkwG0lJc4I4sso7l4XMDKn95c7JtNsuzqKvhEVS
- oic5by3fbUnuI0cemeizF4QdtX2uQxrP7RwHFBd+YUia7zCcz0//rv6FZmAxWZGy5arNl6Vm
- lQqNo7/Poh8WWfRS+xegBxc6hBXahpyUKphAKYkah+m+I0QToCfnGKnPqyYIMDEHCS/RfqA5
- t8F+O56+oyLBAeWX7XcmyM6TGeVfb+OZVMJnZzK0s2VYAuI0Rl87FBFYgULdgqKV7R7WHzwD
- uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
- 7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
- 5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <PSAPR06MB49495C182D0B64687E0174A389052@PSAPR06MB4949.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20241217173537.192331-2-ninad@linux.ibm.com>
 
-On 18/12/2024 03:55, Kevin Chen wrote:
-> Hi Krzk,
+On Tue, Dec 17, 2024 at 11:35:32AM -0600, Ninad Palsule wrote:
+> Add debugfs file for the PMBUS_REVISION command. This command provides
+> information about PMBus protocol revision number.
 > 
->>> On 12/12/2024 16:52, Kevin Chen wrote:
->>>> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
->>>> ---
->>>>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 6 ++++++
->>>>  1 file changed, 6 insertions(+)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>>> b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>>> index 2f92b8ab08fa..20191fee1f5b 100644
->>>> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>>> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->>>> @@ -101,4 +101,10 @@ properties:
->>>>                - ufispace,ncplite-bmc
->>>>            - const: aspeed,ast2600
->>>>
->>>> +      - description: AST2700 based boards
->>>> +        items:
->>>> +          - enum:
->>>> +              - aspeed,ast2700-evb
->>>> +          - const: aspeed,ast2700
->>>> +
->>>>  additionalProperties: true
->>>
->>>
->>>
->>> This patchset is just corrupted. You already sent it as patch #1.
->>>
->>> Please run scripts/checkpatch.pl and fix reported warnings. Then
->>> please run `scripts/checkpatch.pl --strict` and (probably) fix more warnings.
->>> Some warnings can be ignored, especially from --strict run, but the
->>> code here looks like it needs a fix. Feel free to get in touch if the
->>> warning is not clear.
->> BTW, you already got here same comments before and this is third time you
->> send exactly the same without implementing what we asked you.
-> Please check the following message.
-> https://lore.kernel.org/lkml/PSAPR06MB494943F3F34881D23CEEBD9A897D2@PSAPR06MB4949.apcprd06.prod.outlook.com/
-> 
-> Or, how do you think what is better for me to add ast2700-evb?
-Please stop responding just to make me go away.
+> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 
-Read the comments from half a year ago, which you have never implemented:
+I already applied this patch, so there is no need to re-send it.
+If it turns out to have a bug, please send an update on top of it.
 
-https://lore.kernel.org/lkml/e6cb6f26-fef2-49bc-ab25-fdc9a659f593@kernel.org/
-
-On every new patch I was asking you to go back, but again you were
-ignoring each of such messages.
-
-Best regards,
-Krzysztof
+Thanks,
+Guenter
 
