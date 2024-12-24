@@ -1,50 +1,51 @@
-Return-Path: <linux-aspeed+bounces-290-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-291-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65A0CE77188
-	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Dec 2024 17:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A9E9E77188
+	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Dec 2024 17:08:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YHhCw0TpVz2xfb;
-	Wed, 25 Dec 2024 04:07:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YHhD1078Gz303N;
+	Wed, 25 Dec 2024 04:08:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.183.194
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735060076;
-	cv=none; b=ciiKSr8MOgr77K54yMqnrERXebbKH13g5OCIGSSUnlaMGqglP7Cf8Hl0CnD85OQ+82bw7Nq5Q5B5IKtNHFI4EHZRd1VtHyaoU8TGHtU7W6UDNMRmx47NzDyDR+hxYP1HQRLlPKe+eCU9ikfcOb4hxfWjv/nG8uudCn7zpfI9K3qpYFWf+HlNTXOTX442BKFoox5ei0WXSR7UKXiy2pSeSs4GNDYLsi5xaseAa3QDW8GYyMA2WlZQ0N3AXs8ZYmbvoHUrxuGv+VMGEDpCdpcJjDeE9Q8qipQY2VzkhwKPVZn7s1HVfcU+h7fY1GoZiEN3TSVCw/BcDJs0STNjuAMHJw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735060080;
+	cv=none; b=JW8hDw0fxxiVxaWbSPsVGfzzmruXadyC0tc2kyhVp9D48u5NBqRIfMeYOLvyYWfsm6RnjqRorI5Pkd0eEmSkPrMTXHoBKFjMPLYVi+vZgng2lHBCB1D6Y1wLlVS4sq1xLzTEpTc1WV9aexV3vKC2D1rkSSrCWi3laqGKOpKgzjeLHyr5aplx8HNx2seAZRDgJpjCpIvqDBxe7JJzTMthJKXqEGvLs3rytUfkTzlIm9x85ciir9Fbs9aYJrfNaVI8LWh0rfPf0Be5WVXLjttGGyHwpROQqamsw6DhErKu81xdIxbk94t7no3rd72kwyMzwJzZ2hPj/E3hxBZ2Q5zmgg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735060076; c=relaxed/relaxed;
-	bh=kbQep8baX7V18i3WQzlRcus+JcLBQAZAEQ0EVnsTNJ0=;
+	t=1735060080; c=relaxed/relaxed;
+	bh=VzPEJXwTtX4trhn4jiSXKCMpEB5Y/gw2NHlQipYlhDw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SG7aVKNQLn2aKc6wDNKODINnqeuUhJh4eAb7uDJN0FuGKTBpfrMH1Tl18bnI4GjZqgpl08RbV7KvTIwnqeZi4np5bk6swn80AWnUnRrnDhg2J8k/WRVv3Q0JQnJPzOuoHWw+UArYlZiB25UEpPUdTWa1O2A8/su0Oj4uQcObqZnI74VIMofoBVZ2fF8V0evC1xEJ5OcJPsFwuCD+nY+lIWPJdxWNU7Ck69NCX5vZP8G/BWGpc/Me+Jp5RKI8iCffHkRxQBImnecTr/TZ+Kvzt4TeKBhnrRmZbEvnwHsCrTIB53r5wBTnLgYy/hX9+CrS1PivAkham9IV00h3q54c6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QLRtoFxK; dkim-atps=neutral; spf=pass (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 In-Reply-To:To:Cc; b=d2d15PaCeq2sibvkYil99XqLGUP8dCNHfMCS29wUB5AZHnxMwBWX1I2xU8f8mrQeG5KD0YlORu5nbunk1/CtUPYeDLUGoC1ZAVk61E2t6zwgapHtturH5fuPte6ygb9R2n5IFQ1Pb45PCqGUEoYCa2mCxEF/0B4Qx1wHRYaiTlxBS86wBRHA1cHf+2W+kdyfWraR+jmwyqLBa8PxDCH/yWyievzUcZ691aZgX3Wvs76QPVJW2wgACCTzcOvlfTJibPaKebk87EQosaWrfQbyPgSzloUhwJ6+gdgFttjRR+3io69h2h3TW9auOcpb5ApXc9XdsLE1f5OEE3zw/TjTWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=EzF2TBzt; dkim-atps=neutral; spf=pass (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QLRtoFxK;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=EzF2TBzt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.194; helo=relay2-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [217.70.183.194])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YHhCt49LZz301N;
-	Wed, 25 Dec 2024 04:07:54 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 6473340002;
-	Tue, 24 Dec 2024 17:07:47 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YHhCz1ywqz2ysB;
+	Wed, 25 Dec 2024 04:07:58 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 09DF040006;
+	Tue, 24 Dec 2024 17:07:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1735060071;
+	t=1735060076;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=kbQep8baX7V18i3WQzlRcus+JcLBQAZAEQ0EVnsTNJ0=;
-	b=QLRtoFxKhPx0761tFyItDBBDh2ZlFhF74KE6N+ECmWyJZguR1WQ5Ubts5K4LFjzLqsiF8f
-	znkeDr/77Gx65+E0itx1DTZB5nG6gmx+RZ5PoaZ348+69I1KFnN8av9noGAGWqGVqa8VJH
-	/47qulqvgam/S4uoVPc9phHZzhGwvSiZDuuFV3dpfkin0H8Khid96WKjSwJDVCdkUlpw1z
-	T+5MCcHJ5EE35MNfDSFbQQD3KEUm93JXLCEUgKCidBEmGQk7JER2pakRH+bareC++ojpDF
-	xBHAi4D1P//sZEySLVewnaP8Lt0ihrF6PYH2v7ExzKqcTZ6RPIzkkSanj9zaGg==
+	bh=VzPEJXwTtX4trhn4jiSXKCMpEB5Y/gw2NHlQipYlhDw=;
+	b=EzF2TBztddoKYRFhcVtq8rq/rg+jTFBz9rODvimhcXvHvXfu+GHbgH0M07v8SJOsvYkb5/
+	azHgKUXYrRaGpvifsZI/6x52aHsGWwNyT3bBorvLjJrSGX+Dsg//+fzBoMtIoWdRgUDA2t
+	niAwU/bCugZRReTXZ19Wuhe61iFT3y0yiAFN/WcAGNDBCFaO2/2Pk+darLR5Z64w/KmNVx
+	e1TGhyebkHmosHM9EPv+G9yigrrNL0KS+gw4Pt/gmCZffAOn1Hdv1qzSi5IwDL2Kznh4wS
+	Bii8S97vU8+7vHFR4RxslHDM/VaNj4Nf2jWo9AnN/auRec87X1NVVjynykdIpA==
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Date: Tue, 24 Dec 2024 18:06:04 +0100
-Subject: [PATCH v2 19/27] spi: spi-mem: Create macros for DTR operation
+Date: Tue, 24 Dec 2024 18:06:05 +0100
+Subject: [PATCH v2 20/27] spi: spi-mem: Estimate the time taken by
+ operations
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,7 +60,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241224-winbond-6-11-rc1-quad-support-v2-19-ad218dbc406f@bootlin.com>
+Message-Id: <20241224-winbond-6-11-rc1-quad-support-v2-20-ad218dbc406f@bootlin.com>
 References: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
 In-Reply-To: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
 To: Mark Brown <broonie@kernel.org>, Sanjay R Mehta <sanju.mehta@amd.com>, 
@@ -92,101 +93,82 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.15-dev
 X-GND-Sasl: miquel.raynal@bootlin.com
 
-We do have macros for defining command, address, dummy and data
-cycles. We also have a .dtr flag that implies sampling the bus on both
-edges, but there are currently no macros enabling it. We might make use
-of such macros, so let's create:
-- SPI_MEM_DTR_OP_CMD
-- SPI_MEM_DTR_OP_ADDR
-- SPI_MEM_DTR_OP_DUMMY
-- SPI_MEM_DTR_OP_DATA_OUT
-- SPI_MEM_DTR_OP_DATA_OUT
+In the SPI-NAND layer, we currently make list of operation variants from
+the fastest one to the slowest and there is a bit of logic in the core
+to go over them and pick the first one that is supported by the
+controller, ie. the fastest one among the supported ops.
+
+This kind of logic only works if all operations run at the same
+frequency, but as soon as we introduce per operation max frequencies it
+is not longer as obvious which operation will be faster, especially
+since it also depends on the PCB/controller frequency limitation.
+
+One way to make this choice more clever is to go over all the
+variants and for each of them derive an indicator which will help derive
+the theoretical best. In this case, we derive a theoretical duration for
+the entire operation and we take the smallest one.
+
+Add a helper that parses the spi-mem operation and returns this value.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- include/linux/spi/spi-mem.h | 41 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ drivers/spi/spi-mem.c       | 30 ++++++++++++++++++++++++++++++
+ include/linux/spi/spi-mem.h |  1 +
+ 2 files changed, 31 insertions(+)
 
+diff --git a/drivers/spi/spi-mem.c b/drivers/spi/spi-mem.c
+index 96374afd0193ca2cf4f50004f66c36dce32894e8..a9f0f47f4759b0e1ce22348e713a3b42cfb8ea9c 100644
+--- a/drivers/spi/spi-mem.c
++++ b/drivers/spi/spi-mem.c
+@@ -562,6 +562,36 @@ void spi_mem_adjust_op_freq(struct spi_mem *mem, struct spi_mem_op *op)
+ }
+ EXPORT_SYMBOL_GPL(spi_mem_adjust_op_freq);
+ 
++/**
++ * spi_mem_calc_op_duration() - Derives the theoretical length (in ns) of an
++ *			        operation. This helps finding the best variant
++ *			        among a list of possible choices.
++ * @op: the operation to benchmark
++ *
++ * Some chips have per-op frequency limitations, PCBs usually have their own
++ * limitations as well, and controllers can support dual, quad or even octal
++ * modes, sometimes in DTR. All these combinations make it impossible to
++ * statically list the best combination for all situations. If we want something
++ * accurate, all these combinations should be rated (eg. with a time estimate)
++ * and the best pick should be taken based on these calculations.
++ *
++ * Returns a ns estimate for the time this op would take.
++ */
++u64 spi_mem_calc_op_duration(struct spi_mem_op *op)
++{
++	u64 ncycles = 0;
++	u32 ns_per_cycles;
++
++	ns_per_cycles = 1000000000 / op->max_freq;
++	ncycles += ((op->cmd.nbytes * 8) / op->cmd.buswidth) / (op->cmd.dtr ? 2 : 1);
++	ncycles += ((op->addr.nbytes * 8) / op->addr.buswidth) / (op->addr.dtr ? 2 : 1);
++	ncycles += ((op->dummy.nbytes * 8) / op->dummy.buswidth) / (op->dummy.dtr ? 2 : 1);
++	ncycles += ((op->data.nbytes * 8) / op->data.buswidth) / (op->data.dtr ? 2 : 1);
++
++	return ncycles * ns_per_cycles;
++}
++EXPORT_SYMBOL_GPL(spi_mem_calc_op_duration);
++
+ static ssize_t spi_mem_no_dirmap_read(struct spi_mem_dirmap_desc *desc,
+ 				      u64 offs, size_t len, void *buf)
+ {
 diff --git a/include/linux/spi/spi-mem.h b/include/linux/spi/spi-mem.h
-index ca6ea01c40f85095ac2730cb424cfb21d7daa700..306c05dd13789017da2c5339cddc031f03302bb9 100644
+index 306c05dd13789017da2c5339cddc031f03302bb9..82390712794c5a4dcef1319c19d74b77b6e1e724 100644
 --- a/include/linux/spi/spi-mem.h
 +++ b/include/linux/spi/spi-mem.h
-@@ -20,6 +20,14 @@
- 		.opcode = __opcode,				\
- 	}
+@@ -424,6 +424,7 @@ bool spi_mem_default_supports_op(struct spi_mem *mem,
  
-+#define SPI_MEM_DTR_OP_CMD(__opcode, __buswidth)		\
-+	{							\
-+		.nbytes = 1,					\
-+		.opcode = __opcode,				\
-+		.buswidth = __buswidth,				\
-+		.dtr = true,					\
-+	}
-+
- #define SPI_MEM_OP_ADDR(__nbytes, __val, __buswidth)		\
- 	{							\
- 		.nbytes = __nbytes,				\
-@@ -27,6 +35,14 @@
- 		.val = __val,					\
- 	}
+ int spi_mem_adjust_op_size(struct spi_mem *mem, struct spi_mem_op *op);
+ void spi_mem_adjust_op_freq(struct spi_mem *mem, struct spi_mem_op *op);
++u64 spi_mem_calc_op_duration(struct spi_mem *mem, struct spi_mem_op *op);
  
-+#define SPI_MEM_DTR_OP_ADDR(__nbytes, __val, __buswidth)	\
-+	{							\
-+		.nbytes = __nbytes,				\
-+		.val = __val,					\
-+		.buswidth = __buswidth,				\
-+		.dtr = true,					\
-+	}
-+
- #define SPI_MEM_OP_NO_ADDR	{ }
- 
- #define SPI_MEM_OP_DUMMY(__nbytes, __buswidth)			\
-@@ -35,6 +51,13 @@
- 		.buswidth = __buswidth,				\
- 	}
- 
-+#define SPI_MEM_DTR_OP_DUMMY(__nbytes, __buswidth)		\
-+	{							\
-+		.nbytes = __nbytes,				\
-+		.buswidth = __buswidth,				\
-+		.dtr = true,					\
-+	}
-+
- #define SPI_MEM_OP_NO_DUMMY	{ }
- 
- #define SPI_MEM_OP_DATA_IN(__nbytes, __buf, __buswidth)		\
-@@ -45,6 +68,15 @@
- 		.buf.in = __buf,				\
- 	}
- 
-+#define SPI_MEM_DTR_OP_DATA_IN(__nbytes, __buf, __buswidth)	\
-+	{							\
-+		.dir = SPI_MEM_DATA_IN,				\
-+		.nbytes = __nbytes,				\
-+		.buf.in = __buf,				\
-+		.buswidth = __buswidth,				\
-+		.dtr = true,					\
-+	}
-+
- #define SPI_MEM_OP_DATA_OUT(__nbytes, __buf, __buswidth)	\
- 	{							\
- 		.buswidth = __buswidth,				\
-@@ -53,6 +85,15 @@
- 		.buf.out = __buf,				\
- 	}
- 
-+#define SPI_MEM_DTR_OP_DATA_OUT(__nbytes, __buf, __buswidth)	\
-+	{							\
-+		.dir = SPI_MEM_DATA_OUT,			\
-+		.nbytes = __nbytes,				\
-+		.buf.out = __buf,				\
-+		.buswidth = __buswidth,				\
-+		.dtr = true,					\
-+	}
-+
- #define SPI_MEM_OP_NO_DATA	{ }
- 
- /**
+ bool spi_mem_supports_op(struct spi_mem *mem,
+ 			 const struct spi_mem_op *op);
 
 -- 
 2.47.0
