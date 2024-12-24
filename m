@@ -1,54 +1,54 @@
-Return-Path: <linux-aspeed+bounces-307-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-308-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61BC8E7718E
-	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Dec 2024 17:27:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07F25E7718D
+	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Dec 2024 17:28:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YHhfV0M2Rz305P;
-	Wed, 25 Dec 2024 04:27:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YHhgS4byJz303N;
+	Wed, 25 Dec 2024 04:28:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.178.240
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735061250;
-	cv=none; b=jKMq01pl54OCGVXezRUdnGPFPO5Ztd81cClj+KkmjFgHPb7uf4eW8iAGhICuOLhYtE+tMLMjUzpztrgL2Ik7koVOsOC/iHm8WnbEEQW+Wm2qjIl/cyT+4XpPMsnHnd7B95uCO0mP6ZXUgQrKxJ5jD570QtEhss6CrwC7x8YzxU2PF4uEKpNu/XZ9WEsbO5zvPcSLRiu8Qt7d3952VZvf5A9Nwc4GW+49c9vXhwj/IIIXYsEXww/yW3gxpbmcxGb2tlEO3GO7PaHBAUmS8XhRJopwYifV00cf1Gw4qSofGH0/uZnEG7S7MyJXi5X7ngzusoUfB5vLHsyVRwp6CvFINA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735061300;
+	cv=none; b=ki7yVfReDUbOp+cgvxuAXEIkxfDB4wTM0psNNm8COJ5b/KrKWxTP+LEnbGMHkYhKN6bg9ipOmDmYpFRFUD1MnRQcHTGj8gvbK1xxRo/nWz4hmZoXOcxhe2yOReUZ4jQVJkNBv4AN+pmCCZ1u2KIIX3X+YNXhF0p+XcGa8ORIVFm3mwPHFWqE7vItY8gfY20rcwah+VnkBKePmEb+9e1niLw+LP8T/6mSJJvWAJLn7sn24xjwm9zMC5mUD+7+IsGeftxvu6LsmP6+ClXbUEs3AVy3INcHg7t7sR2+Pok8iYF811fgA7UpQEoA6fROA1UYQ4GE9W7OveqrQdhh/UD52A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735061250; c=relaxed/relaxed;
-	bh=dplhgiiMhu5lUlvijJ09whzPZ6kRkT4F5CXKBJnyGI0=;
+	t=1735061300; c=relaxed/relaxed;
+	bh=BZ7N9DxFJs+ypWx4tpIWo4afnbo0gO3jjiMo2DbsJnA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=FTXoQi7VFBT08vPSpNYQYLQNvCUOZsdDyBxOOc2DRNIVoXkXNVlejxWEQxv0NxYIuVTxESOkYu1SYIwMVllxDP0xtiOxzcsXTIWmKDfFcQjsoRIfSI+udOsl/aNSej75oomwzutUT1OAcM6cw8Hrv4vKFZlyIM9VOUyWk3LVB0rw7wz8bgX0/5GWZh6iv4bu1wjStnyKMfpcIUXWmRtZCy04t5AvkyCim6ACAPvzl7w4GdICNa9HG/j38c64F1frqWVZShdqrPIJMwS3mV7ApIPIaV4sbvzb0qLdwO09Atj9xt7+iEnt182aPHPO1RYIafay1J1FVIyKbVV5raZrtQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UEJYhyDx; dkim-atps=neutral; spf=pass (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 In-Reply-To:To:Cc; b=JODbqlaZ2MVNEMeDaHyS0Ec9Vw55yOhkolEkaX8K0J+G39yDSuMSoyYYL92k7zOPKHexPE8hplalrj/jcEi2eqrslWCN9B05B0Zt9Jn5vlItRC2rgKJxifqa282v/6Xf1FuqofZPZ2GIiIl0mKiXMYoGCXWOf0E6N7yntrqp+PZJLAWKXYeRA2fb6SxxgrhrJPAt7AwMFwBxkBp3JsSEgHfDdsWynnypIhhjpwsSX70QfqaIWv/VJCGmYHH9g7QMKdx51x4KLqRdg01iwNuqkM3ECE89eCxyETyYSuP5izDLSzgrAE2+1EFOMnMK56GKLtwm6JTR0v/TL41xoql3Ag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QeYyN/ui; dkim-atps=neutral; spf=pass (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=UEJYhyDx;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=QeYyN/ui;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
 Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YHhfS2l1rz2xFq;
-	Wed, 25 Dec 2024 04:27:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YHhgQ3qdJz302c;
+	Wed, 25 Dec 2024 04:28:18 +1100 (AEDT)
 Received: from relay2-d.mail.gandi.net (unknown [217.70.183.194])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 78F06C0C45;
-	Tue, 24 Dec 2024 17:06:54 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id A86AA40008;
-	Tue, 24 Dec 2024 17:06:42 +0000 (UTC)
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id 20766C0A23;
+	Tue, 24 Dec 2024 17:07:03 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id D128B40004;
+	Tue, 24 Dec 2024 17:06:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1735060007;
+	t=1735060016;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=dplhgiiMhu5lUlvijJ09whzPZ6kRkT4F5CXKBJnyGI0=;
-	b=UEJYhyDx8PzhaDvY3g2VxeMGh4jzAc6hrVPewf+sulS+8TOM4yRf5unw8Z196fbszetW94
-	vyPxxNqOXKAqzrwGmHS4egH0hNeHt3iWfJFg48ivq2UpiEjxVYTwHdca7ZJz5J9eQGmRI7
-	WgdrwvrXMtWajCTF/ZXrjnCUL5/Cfm3+HdnwHI+2gb7CGSEV6yRmZ/GB4JBHF+MUTaOzth
-	IME5p8vg39e0zjUlKZmUnB7076zPvjQYMQf7TIPiF+Rc/hHugDnHk8pvYTU7GFnLczvYi0
-	Wq/a4rrIDtBn0xkWKhY081ckeKTW7qMSBFPcnOMn4k/c60G+3mBTiFyHIp9ezA==
+	bh=BZ7N9DxFJs+ypWx4tpIWo4afnbo0gO3jjiMo2DbsJnA=;
+	b=QeYyN/uiGZhXmqNymhnTAPygPndx1LCwsdLVoUS6KOTxlzVQMSRpzYfmYr3CrafD+soidn
+	GIFyL0trjNaPFws7xI5aAPBy0Y/zMKXrmOIzv9d1VR0mL2vKg0ZddGcsjeueZDvzMoURGP
+	oOYbbCU545L9qVCcaj/DcSBnJaLoYwHv/9hryJgHcdsemDEXyVABHcXRPOcWf+9I7swFyC
+	6b3ovrOap/L/hY7pZFExCeayq8xfEmL0e9Nl5AogDbfsR90nwFDXq9TtZzEzRj7hc8+lyx
+	THWAp7i77m4tFwQw9n6KSkAyAgmvJjh/wfZiOMqrwcwjMh1GStlLFjU2e1nMeg==
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Date: Tue, 24 Dec 2024 18:05:50 +0100
-Subject: [PATCH v2 05/27] spi: amlogic-spifc-a1: Support per spi-mem
- operation frequency switches
+Date: Tue, 24 Dec 2024 18:05:52 +0100
+Subject: [PATCH v2 07/27] spi: dw: Support per spi-mem operation frequency
+ switches
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -63,7 +63,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241224-winbond-6-11-rc1-quad-support-v2-5-ad218dbc406f@bootlin.com>
+Message-Id: <20241224-winbond-6-11-rc1-quad-support-v2-7-ad218dbc406f@bootlin.com>
 References: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
 In-Reply-To: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
 To: Mark Brown <broonie@kernel.org>, Sanjay R Mehta <sanju.mehta@amd.com>, 
@@ -108,41 +108,45 @@ core.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/spi/spi-amlogic-spifc-a1.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/spi/spi-dw-core.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/spi/spi-amlogic-spifc-a1.c b/drivers/spi/spi-amlogic-spifc-a1.c
-index fadf6667cd51c40a29749b378b82161a337edc62..18c9aa2cbc290d8ac179438ab42c27e1a722d422 100644
---- a/drivers/spi/spi-amlogic-spifc-a1.c
-+++ b/drivers/spi/spi-amlogic-spifc-a1.c
-@@ -259,7 +259,7 @@ static int amlogic_spifc_a1_exec_op(struct spi_mem *mem,
- 	size_t data_size = op->data.nbytes;
- 	int ret;
+diff --git a/drivers/spi/spi-dw-core.c b/drivers/spi/spi-dw-core.c
+index 431788dd848cea1d854affe0d1fb971f680824a1..3d49b1dbaed4d491c0df659c061582e71f2c514d 100644
+--- a/drivers/spi/spi-dw-core.c
++++ b/drivers/spi/spi-dw-core.c
+@@ -677,7 +677,7 @@ static int dw_spi_exec_mem_op(struct spi_mem *mem, const struct spi_mem_op *op)
+ 	 * operation. Transmit-only mode is suitable for the rest of them.
+ 	 */
+ 	cfg.dfs = 8;
+-	cfg.freq = clamp(mem->spi->max_speed_hz, 0U, dws->max_mem_freq);
++	cfg.freq = clamp(op->max_freq, 0U, dws->max_mem_freq);
+ 	if (op->data.dir == SPI_MEM_DATA_IN) {
+ 		cfg.tmode = DW_SPI_CTRLR0_TMOD_EPROMREAD;
+ 		cfg.ndf = op->data.nbytes;
+@@ -894,6 +894,10 @@ static void dw_spi_hw_init(struct device *dev, struct dw_spi *dws)
+ 		dw_writel(dws, DW_SPI_CS_OVERRIDE, 0xF);
+ }
  
--	ret = amlogic_spifc_a1_set_freq(spifc, mem->spi->max_speed_hz);
-+	ret = amlogic_spifc_a1_set_freq(spifc, op->max_freq);
- 	if (ret)
- 		return ret;
- 
-@@ -320,6 +320,10 @@ static const struct spi_controller_mem_ops amlogic_spifc_a1_mem_ops = {
- 	.adjust_op_size = amlogic_spifc_a1_adjust_op_size,
- };
- 
-+static const struct spi_controller_mem_caps amlogic_spifc_a1_mem_caps = {
++static const struct spi_controller_mem_caps dw_spi_mem_caps = {
 +	.per_op_freq = true,
 +};
 +
- static int amlogic_spifc_a1_probe(struct platform_device *pdev)
+ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
  {
- 	struct spi_controller *ctrl;
-@@ -356,6 +360,7 @@ static int amlogic_spifc_a1_probe(struct platform_device *pdev)
- 	ctrl->bits_per_word_mask = SPI_BPW_MASK(8);
- 	ctrl->auto_runtime_pm = true;
- 	ctrl->mem_ops = &amlogic_spifc_a1_mem_ops;
-+	ctrl->mem_caps = &amlogic_spifc_a1_mem_caps;
- 	ctrl->min_speed_hz = SPIFC_A1_MIN_HZ;
- 	ctrl->max_speed_hz = SPIFC_A1_MAX_HZ;
- 	ctrl->mode_bits = (SPI_RX_DUAL | SPI_TX_DUAL |
+ 	struct spi_controller *host;
+@@ -941,8 +945,10 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
+ 		host->set_cs = dw_spi_set_cs;
+ 	host->transfer_one = dw_spi_transfer_one;
+ 	host->handle_err = dw_spi_handle_err;
+-	if (dws->mem_ops.exec_op)
++	if (dws->mem_ops.exec_op) {
+ 		host->mem_ops = &dws->mem_ops;
++		host->mem_caps = &dw_spi_mem_caps;
++	}
+ 	host->max_speed_hz = dws->max_freq;
+ 	host->flags = SPI_CONTROLLER_GPIO_SS;
+ 	host->auto_runtime_pm = true;
 
 -- 
 2.47.0
