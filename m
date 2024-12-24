@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-293-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-294-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03714E77188
-	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Dec 2024 17:08:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50DFAE77188
+	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Dec 2024 17:08:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YHhD94Cd4z3024;
-	Wed, 25 Dec 2024 04:08:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YHhDF6nRNz302c;
+	Wed, 25 Dec 2024 04:08:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::222"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735060089;
-	cv=none; b=fQIQCzg7CMDkMPucm2R8isHjh2MW/DO2g6c4qwW8awl4DL9G1HKX3JbDjX2s8Cf/Op5EyclwLXHKxc0GuMujpJ6J/V/S22bgFGx8y3MeJEEIl1iJxSndY0iDCCDVFUPMQ+mZ6KOc+BX6Ehz4sMR27/fMYtvN8UcHIbuFwbRmXSJBmUAbmV7H+2iGs2dn1x+W/MvS4up3tCtcz5jqkUti/ik10qdjBdDNRnOiuXbsctcco5fTI3Bz+bcf28I6P/80ae0K9hvNzQKQ6PeEmzrPRPKS741/X71R3l8CSPKtRkcGaXexkNxxK6/CLDSTF4V8Lj82gUo1wR0RCfVFv/AH4A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735060093;
+	cv=none; b=Ql7Hjs7D/0ztjqToC442z9J7oZOnbU1evhtVOZetXgSz7YVdrre9vETBX8GcrTUbP0xpU0t/2T0dtSxqhrQctAIT96ZYZ4bSf6Ifil7BH7lDPb8lcA0wSusxikWy0N1KDicNX/T/DpSUMxHbjwgP5t1OFlBzXb9d6tFdhdboE5pkP8vXugyJVLtbvOJYkDNztfAhTquX5W8DdRFri2xZ3eboh/W0kMoJFXcaLPFlfjQ6Sh0uogno3BkaHMTao4CaLHLWo2E5FggjTLRwdXcGOET8wuJNgy/FwLW0VPfZ72LsL6AtzaiHOehOKLWrtWAjhl5i67m5LaR1parrpCX1mw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735060089; c=relaxed/relaxed;
-	bh=+4OsasNx8lhobCm5ORTBJQ6wBy7WkLnmvrsNMBWmSJ4=;
+	t=1735060093; c=relaxed/relaxed;
+	bh=sEcOYXJrONKHwBqG/6O0ih6T2LYP/HBXQ4mMGLoulzI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LhdbJZik0QsfXdLjCdaamk1nbeib0W6MfYY7gSxySZBHQ6nwYWJfy/FNAcumf2VllT5GRfvHyDFFSZhYEI1YHUiwb8kbqroHiBN4x9paI55L2AZ7mMZQE2jmcMaaHnLvhXL6EcOI4YKp4FuPesoGPqGanw1VazIH51dh5Dg2pEaystLnnvvtZylAOWZJgIgIUxXiZLYSwjCRsgYSU5dLt1y+zk7rJuTI7qoCSs2fabHGyEtmg4wVf4NF1/jeLJDt45og1sKZix1uSKWQR70DxNM3GV6g+PcMFN1qF+JWr1Jt1XfqkMtSvixT5obq6eI/Pi5dIsUeUTr84za/EGLSrQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Bzx8EfmH; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 In-Reply-To:To:Cc; b=aRe58DJfJ5cA0FP3+N8yRxpGo42B7x7hyKJtLYxVsKOVGk13OQ3tIHpIYo/r5Ggt15nvcXoGS0JT3p97eKQ7JF8YRehBgvExouaz8cpsOFOPomYew2V+yQ2I8q2WrK9qNtTJ6Nz2UTlHjCx0wskvREDHgsuvkrKa0ZVvgAk88YHyHRR37l2/wmyQkg4Ajt3plGBMTLtcb7j0sxAaiMGAw4SlrI5p4GnwEc04tYFcR5YtanMNbCwetz1kn2Sn2I1g3xAjzIHODiATAfNufCA4ca3KkYTtI+6XLNvppCe1gUL662THkVemH00+EGHsM7aLmXcE2LLaoMmM5xxAJPTzBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=TLomLwdj; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Bzx8EfmH;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=TLomLwdj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
 Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::222])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YHhD76bLDz302c;
-	Wed, 25 Dec 2024 04:08:07 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 2476840002;
-	Tue, 24 Dec 2024 17:08:01 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YHhDD1T3pz303N;
+	Wed, 25 Dec 2024 04:08:11 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 4FBA240005;
+	Tue, 24 Dec 2024 17:08:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1735060085;
+	t=1735060089;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=+4OsasNx8lhobCm5ORTBJQ6wBy7WkLnmvrsNMBWmSJ4=;
-	b=Bzx8EfmHiwZa5evAKhuHzFGByKQK+6zDdGV+b5AUFTMeWY2TvOSxI9RxY04NNOg+9i2uJ7
-	7QLwCGd8mJLoUXAZX1/Ko87uyYIcHxsJ4vqdqC3if3qLJJtkj8XPuVgaXkfHoX8RM/1UhL
-	IPJNcKey+8qBTIiX4QsGhLnSsjquwzQWVKflqEvt5uqVGFzEr6tYvaNpzusa+yCRa5Lq16
-	YkJemgbFsUbxTmsm2TycV+PjQg1qd5iFJ0zKFZbjXLF9+XAwfKmms0K6y8ANtEiX9Ygx/F
-	JNh5x3zy0dTkP8BKZLED4xrBcEVn2WHVqQLm0liqHOIahWU7xZ4PKxeSxzyLWw==
+	bh=sEcOYXJrONKHwBqG/6O0ih6T2LYP/HBXQ4mMGLoulzI=;
+	b=TLomLwdjOWdFo+9NPFZ7aGrSt7rUkXNrIfD2TTJ3JP1r4ILA4u2VMWLk8Qap7c1ELdZMQ2
+	rMJ2dvQEhXQJlORPG/e1DFs6jOrplEcHJUIGjDG7D3EohYYReibZBUoXCsQkCn+erq9tLd
+	3WO6r8MskQ5y3DT82uHth9QUdSlyHm6LxgE/5wf11566NgyOmeXUhjTcF2gGj/e2SR7sQZ
+	v7DT0pMEQ/Qe+gn7lyQ/FYxRLp3yPW0dypm5PaSRDh1tdXt5dOCqHDKLhNXhha34QnPKTw
+	oYb+4EEZzpiAY7+Q1o6i8y+cX5N5DSjsJ7qwigMklp0U4622u6/J7aHuqeavBg==
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Date: Tue, 24 Dec 2024 18:06:07 +0100
-Subject: [PATCH v2 22/27] mtd: spinand: Add an optional frequency to read
- from cache macros
+Date: Tue, 24 Dec 2024 18:06:08 +0100
+Subject: [PATCH v2 23/27] mtd: spinand: Enhance the logic when picking a
+ variant
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20241224-winbond-6-11-rc1-quad-support-v2-22-ad218dbc406f@bootlin.com>
+Message-Id: <20241224-winbond-6-11-rc1-quad-support-v2-23-ad218dbc406f@bootlin.com>
 References: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
 In-Reply-To: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
 To: Mark Brown <broonie@kernel.org>, Sanjay R Mehta <sanju.mehta@amd.com>, 
@@ -93,36 +93,77 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.15-dev
 X-GND-Sasl: miquel.raynal@bootlin.com
 
-While the SPINAND_PAGE_READ_FROM_CACHE_FAST_OP macro is supposed to be
-able to run at the flash highest supported frequency, it is not the case
-of the regular read from cache, which may be limited in terms of maximum
-frequency. Add an optional argument to this macro, which will be used to
-set the maximum frequency, if any.
+Currently the best variant picked in the first one in the list provided
+in the manufacturer driver. This worked well while all operations where
+performed at the same speed, but with the introduction of DTR transfers
+and per operation maximum frequencies, this no longer works correctly.
+
+Let's continue iterating over all the alternatives, even if we find a
+match, keeping a reference over the theoretically fastest
+operation. Only at the end we can tell which variant is the best.
+
+This logic happening only once at boot, the extra computing needed
+compared to the previous version is acceptable wrt. the expected
+improvements.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- include/linux/mtd/spinand.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/mtd/nand/spi/core.c | 13 ++++++++++---
+ include/linux/spi/spi-mem.h |  2 +-
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/mtd/spinand.h b/include/linux/mtd/spinand.h
-index 63c89307c86524143913660c66ec4fe4375904f8..1948e654b8aacb3d4b774a00939e8e8198f53da7 100644
---- a/include/linux/mtd/spinand.h
-+++ b/include/linux/mtd/spinand.h
-@@ -62,11 +62,12 @@
- 		   SPI_MEM_OP_NO_DUMMY,					\
- 		   SPI_MEM_OP_NO_DATA)
+diff --git a/drivers/mtd/nand/spi/core.c b/drivers/mtd/nand/spi/core.c
+index 94f33c8be031ac60208e22e4e3fa0d90cfae093c..a2a8cfd1752139e3227fa4a39ab0e25bbeec53f8 100644
+--- a/drivers/mtd/nand/spi/core.c
++++ b/drivers/mtd/nand/spi/core.c
+@@ -1198,10 +1198,13 @@ spinand_select_op_variant(struct spinand_device *spinand,
+ 			  const struct spinand_op_variants *variants)
+ {
+ 	struct nand_device *nand = spinand_to_nand(spinand);
++	const struct spi_mem_op *best_variant = NULL;
++	u64 best_op_duration_ns = ULLONG_MAX;
+ 	unsigned int i;
  
--#define SPINAND_PAGE_READ_FROM_CACHE_OP(addr, ndummy, buf, len) \
-+#define SPINAND_PAGE_READ_FROM_CACHE_OP(addr, ndummy, buf, len, ...) \
- 	SPI_MEM_OP(SPI_MEM_OP_CMD(0x03, 1),				\
- 		   SPI_MEM_OP_ADDR(2, addr, 1),				\
- 		   SPI_MEM_OP_DUMMY(ndummy, 1),				\
--		   SPI_MEM_OP_DATA_IN(len, buf, 1))
-+		   SPI_MEM_OP_DATA_IN(len, buf, 1),			\
-+		   __VA_OPT__(SPI_MEM_OP_MAX_FREQ(__VA_ARGS__)))
+ 	for (i = 0; i < variants->nops; i++) {
+ 		struct spi_mem_op op = variants->ops[i];
++		u64 op_duration_ns = 0;
+ 		unsigned int nbytes;
+ 		int ret;
  
- #define SPINAND_PAGE_READ_FROM_CACHE_FAST_OP(addr, ndummy, buf, len) \
- 	SPI_MEM_OP(SPI_MEM_OP_CMD(0x0b, 1),			\
+@@ -1220,13 +1223,17 @@ spinand_select_op_variant(struct spinand_device *spinand,
+ 				break;
+ 
+ 			nbytes -= op.data.nbytes;
++
++			op_duration_ns += spi_mem_calc_op_duration(&op);
+ 		}
+ 
+-		if (!nbytes)
+-			return &variants->ops[i];
++		if (!nbytes && op_duration_ns < best_op_duration_ns) {
++			best_op_duration_ns = op_duration_ns;
++			best_variant = &variants->ops[i];
++		}
+ 	}
+ 
+-	return NULL;
++	return best_variant;
+ }
+ 
+ /**
+diff --git a/include/linux/spi/spi-mem.h b/include/linux/spi/spi-mem.h
+index 82390712794c5a4dcef1319c19d74b77b6e1e724..c4830dfaff3db5549c45bb7a9c4bf5110fa2e338 100644
+--- a/include/linux/spi/spi-mem.h
++++ b/include/linux/spi/spi-mem.h
+@@ -424,7 +424,7 @@ bool spi_mem_default_supports_op(struct spi_mem *mem,
+ 
+ int spi_mem_adjust_op_size(struct spi_mem *mem, struct spi_mem_op *op);
+ void spi_mem_adjust_op_freq(struct spi_mem *mem, struct spi_mem_op *op);
+-u64 spi_mem_calc_op_duration(struct spi_mem *mem, struct spi_mem_op *op);
++u64 spi_mem_calc_op_duration(struct spi_mem_op *op);
+ 
+ bool spi_mem_supports_op(struct spi_mem *mem,
+ 			 const struct spi_mem_op *op);
 
 -- 
 2.47.0
