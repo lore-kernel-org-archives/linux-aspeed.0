@@ -1,105 +1,75 @@
-Return-Path: <linux-aspeed+bounces-339-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-340-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48151E77197
-	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Jan 2025 16:27:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32F13E77197
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Jan 2025 17:27:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSGfr6fQmz3bX9;
-	Wed,  8 Jan 2025 03:27:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.151
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736267252;
-	cv=none; b=Y1EpQlwluBTv6Q++JAopmlfebb9YC96dQVvR4FjPmKVt7GK7J47OrherQ6tK0YWU4+PhQIabw6xC1wkKBG3YJcZWYi60WtE9vB52Ax4Ytb+V9WJB92oPBY2kUBbyi7px2VG6n6JfCtbvFwCEZCPt01VOTIVtFfyxtMhUrhi1V7gu/UZhdVCtAcOU/5lNIoj22ks6YBRzOtTixcSLHsnFcr6oqpu2hmml6RFYuUHwF49RW0Q1L5KG2inhL3Ghh6lzvfaVXB4KV+MpFSAm287bn/IahBKJQJjg+puYQHBmzIr08w1Wi2M1SHB8ZSwtAav/m4r+H7Sdnv5i/SeB2MoTwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YSHzV27NGz2yhM;
+	Wed,  8 Jan 2025 04:27:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736270822;
+	cv=none; b=KkZUBVd1gbx2z1MmITUfFD8zcvlbP41RZPQMP80mC2fxr/fyWyPbbl5kXLjG3v2tuIjLbIdyAXsbkFL+Too6QXN8JK0JiKjvxipqTY3zOXIPeVubsIJLpatwwDc1WZaV0KQzKRsjlVUErfLShmbFMLD4WNGcn9uh/pGYMJwOf/m+/m1Suxm1Yy/383MQQBEVuUMDycgmpq4ZnW7Nlxqt+BuDSt1z4On82Krrlouq99JaKDbKQ5kn75TyxfDL8mg5bCXMBUO4QpwqSyPwaj2kgc8Q4cq3NE7/BkoT0Lh0a2S8Qio5m/e05vA2yzLM4Ko6Aiot52ScS5cyH/JkthOYzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736267252; c=relaxed/relaxed;
-	bh=RIzROz9khoj2BhgYd0nISvi0RDBvOsblgFIn28Lq6mo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=T8L8OaldIsvSHR/3IXGqRipM+LMvwjuKUITJgvxjcERFhD7JzmGFTcJTAfdZMBVEQHVEOtbHE4G3TPZOFoLC1R+AkYzwoxUIau5hongtCsq1jM59MPhwzvPUxQ7Cu5fpGnMFMXm019uCrFnyMUI+M/Cyxz/a/MeGJZBLtJGQ8CTpPL/lSHJtRPwXOOHRQXTeEH+7an4wXu8P4EC3MazYQqwBAWZx0Xnp0RDs/p9WRDusnbEGTGF1lg/auK/2JveUDMhpG4d0+i8funuWJpcViYlwNHOeczH1Jx24l0mOP1eKheoenMx0scYZa6lUWnQq4ZP41gkDTWuuAsNzTCzgbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=stwcx.xyz; dkim=pass (2048-bit key; unprotected) header.d=stwcx.xyz header.i=@stwcx.xyz header.a=rsa-sha256 header.s=fm1 header.b=JgJYzyfb; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=v7fL1/cF; dkim-atps=neutral; spf=pass (client-ip=103.168.172.151; helo=fout-a8-smtp.messagingengine.com; envelope-from=patrick@stwcx.xyz; receiver=lists.ozlabs.org) smtp.mailfrom=stwcx.xyz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=stwcx.xyz
+	t=1736270822; c=relaxed/relaxed;
+	bh=AnFDI1orT78UbMz4dvewuX8lguog+6111daL66A0sXs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=kQ9YMkFBY6Pr/z7YOOrbocRqxGjTICGMOoeQdGRWFaPW5q0wos4kj2wCv6cgEhxwYlZrpZNgoI+xvobCRaahV6FDYNh3A/KOFz4lkcDt2Y2PGmH4mPnZinWRBK8Rc1pmhx+blWF7cAGxwFaSQy8dgULaOu5QSFAiHAWKYt24P9OpympoJW+lSDnvt88N+RLbmslqwCxelgp1kQpGm/AtIwHWQiR05+i8L9meNoHPxGkLyg/rRNIec9E8A4+X1Nb65f48BDqo5fE+p0i3CCjwwmRv6BtWgGd8/jKKC17wS6cokrgRFbh8qDtW7eHZEZuXoYgDtVpkthM/gTUY1k7R5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=f+L/xFkv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org) smtp.mailfrom=broadcom.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=stwcx.xyz header.i=@stwcx.xyz header.a=rsa-sha256 header.s=fm1 header.b=JgJYzyfb;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=v7fL1/cF;
+	dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=f+L/xFkv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=stwcx.xyz (client-ip=103.168.172.151; helo=fout-a8-smtp.messagingengine.com; envelope-from=patrick@stwcx.xyz; receiver=lists.ozlabs.org)
-Received: from fout-a8-smtp.messagingengine.com (fout-a8-smtp.messagingengine.com [103.168.172.151])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=broadcom.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSGfq2WG3z3bWf
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Jan 2025 03:27:31 +1100 (AEDT)
-Received: from phl-compute-12.internal (phl-compute-12.phl.internal [10.202.2.52])
-	by mailfout.phl.internal (Postfix) with ESMTP id 8B6A5138021D;
-	Tue,  7 Jan 2025 11:27:28 -0500 (EST)
-Received: from phl-mailfrontend-02 ([10.202.2.163])
-  by phl-compute-12.internal (MEProxy); Tue, 07 Jan 2025 11:27:28 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stwcx.xyz; h=cc
-	:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to; s=fm1; t=1736267248; x=1736353648; bh=RIzROz9khoj2BhgYd0nIS
-	vi0RDBvOsblgFIn28Lq6mo=; b=JgJYzyfb6uWDMn3aPzlcl/3MJiH2QRXXcmkSK
-	I0kdbVlIvZ7X79l4EIKV9TQSUQ3D/hgLZrGsE2BBPn1VHqf7Jc6d1HcExifAI1PO
-	OE9q8rYyxLGuN73nUDDivs5+XYpFz6l4KIBJwT01fF4lDlX1ijgRZ4UGOYGYvC33
-	bGnDwM7yKi+5WCxfsVWZaR2W2/4HkTgcJRIadJYespfqKUTXbAtY2PhnIkQ+UUqy
-	rSj0+mF7g4xXp7A2XWd5CqBXctNlxt9qKvCx3tWAB+4dLovrXjMKzZ35yUHLp+xO
-	s+bOUJJU1WSQdDEmeNKwBtPMXi4tMvYCXeNLjtF6PHJ9q1i+g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
-	1736267248; x=1736353648; bh=RIzROz9khoj2BhgYd0nISvi0RDBvOsblgFI
-	n28Lq6mo=; b=v7fL1/cFRe3LyWeEDJqbN+BHz84S4WxdXb/p2y2oyHbnQj7pIeb
-	RUg9q8dSrlCzbFr99KizNdUXCWV2/k9UgcWNPOtNvdVqeD6ErQsvzjxymNQ6w5ou
-	Z2vXTZwRhYdIBEaW1YLoH4wvMtsou8v7UhyJk8ksg9Q5IrDQgkYEk1ZFO5Mmjqpz
-	YYp/gY2Dy8C4M3TyjoBH4at9tQP7yNvfbEqTDl0/YzfvWZZKIvC6sBSRSg2SIPpf
-	OBmMf73L/QvH8IAMeN+d17mdMWlUVE63SMF1uQEvtgDcHM8BFMx9NuTn+W5GoGUW
-	zxa/VCMEmFThJ2F+QAVk5wZItGXWnywtiTQ==
-X-ME-Sender: <xms:8FV9Z1o58OmcY7bOpfDguii-4Dyq9EwnbKb2Rlia05Gm21v-ixVeqQ>
-    <xme:8FV9Z3pjvaGGvKkTq73WqoYzNFeC3e4iojEfGBlDjf2Lt14Wr0Q7InFJrJR-BJ2hJ
-    h1TSHm01SQFljv3v80>
-X-ME-Received: <xmr:8FV9ZyNP23xLO3nAt_k5WbX6SXsU2lnNr4fel_B8nM5WdGDi7mjgAMR7mwM>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefuddrudegvddgkeeiucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggvpdfu
-    rfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnh
-    htshculddquddttddmnegfrhhlucfvnfffucdljedtmdenucfjughrpefhvfevufffkffo
-    ggfgsedtkeertdertddtnecuhfhrohhmpefrrghtrhhitghkucghihhllhhirghmshcuoe
-    hprghtrhhitghksehsthiftgigrdighiiiqeenucggtffrrghtthgvrhhnpeevtdevgfdt
-    hfefveejudelheeghefhhfdtteetheehudeiueefhfetkeejleefteenucevlhhushhtvg
-    hrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehprghtrhhitghksehsthif
-    tgigrdighiiipdhnsggprhgtphhtthhopedutddpmhhouggvpehsmhhtphhouhhtpdhrtg
-    hpthhtoheprhhosghhsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehkrhiikhdought
-    sehkvghrnhgvlhdrohhrghdprhgtphhtthhopegtohhnohhrodgutheskhgvrhhnvghlrd
-    horhhgpdhrtghpthhtohepjhhovghlsehjmhhsrdhiugdrrghupdhrtghpthhtoheprghn
-    ughrvgifsegtohguvggtohhnshhtrhhutghtrdgtohhmrdgruhdprhgtphhtthhopehprg
-    htrhhitghksehsthiftgigrdighiiipdhrtghpthhtohepuggvvhhitggvthhrvggvsehv
-    ghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrghrmhdqkhgvrh
-    hnvghlsehlihhsthhsrdhinhhfrhgruggvrggurdhorhhgpdhrtghpthhtoheplhhinhhu
-    gidqrghsphgvvggusehlihhsthhsrdhoiihlrggsshdrohhrgh
-X-ME-Proxy: <xmx:8FV9Zw6QocUaHzH3d5RerqE4_65ciJ2PP1FhCYjR4buSwlZCzyAkrA>
-    <xmx:8FV9Z06uYnqS91cIQ4aayYyOJP4doFTlVJpORD90oeKneZUjvlY8Yg>
-    <xmx:8FV9Z4jnbJkStym_1S2pHwtjzWRHvnu6bkb9dx1K0bC8vklsDMaF3A>
-    <xmx:8FV9Z25WYP8x5t4Io_naP6_mjO72FfUC1q5B4XAo1OBZS6DlO07Klw>
-    <xmx:8FV9ZxxwKaQde-S-bbq_i_gl61gnJfILwioB6CCwFQKbwmmaL8X9x4NQ>
-Feedback-ID: i68a1478a:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 7 Jan 2025 11:27:27 -0500 (EST)
-From: Patrick Williams <patrick@stwcx.xyz>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Patrick Williams <patrick@stwcx.xyz>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 REBASE] ARM: dts: aspeed: yosemite4: adjust secondary flash name
-Date: Tue,  7 Jan 2025 11:27:25 -0500
-Message-ID: <20250107162726.232402-1-patrick@stwcx.xyz>
-X-Mailer: git-send-email 2.44.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSHzP4YnXz2yVV
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Jan 2025 04:26:53 +1100 (AEDT)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-21644aca3a0so56511455ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Jan 2025 09:26:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=broadcom.com; s=google; t=1736270811; x=1736875611; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=AnFDI1orT78UbMz4dvewuX8lguog+6111daL66A0sXs=;
+        b=f+L/xFkvmyHPJAcU/Iuer2R2CryWTbcYk3027fvcqwmhvSNuDcHilLowGRCLhP8LYD
+         FEgL6wB8+b3deFLspy+GOI7VgEUQTVbwXJhCDpneRtkQlUK8/vVI1dXOSpKKcTnuK+fF
+         P6xyOaR1IdDnpSWplZY+H8SxN+YMBDSBdHYRU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736270811; x=1736875611;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=AnFDI1orT78UbMz4dvewuX8lguog+6111daL66A0sXs=;
+        b=IuVLYPzs330dp3UEwg6oNph2enDTb0T8zhH3RuekD+aTMCk3rr+xM0uaAief8cDWDO
+         xbksT533Vhw4t1WYmPzf3CSPpfmspGLUzCZEVVaM0YmHLZ+vzwoAtHsDZtFGYzIpny7v
+         4g/zoMqUJEw5vjBOYvTgzYyRR5kDy/4J2qylsqx8FqHknhE7ocSveLgyaIwjSynoXTim
+         9jIrr4lxlWT6CZau47zKNuAuT+2egnAe/JdVAkDct8cT9JdjMfOKBE2gk2PLmUn0b+s+
+         f7s+NKhtbqiI0Ns0t9Thx7Kgp3XXhbKw8NRlOBL9FgdLtwlCAkGdr71sOYuAn+gK8vmf
+         Zlgg==
+X-Forwarded-Encrypted: i=1; AJvYcCXliFEx6c1hQXxdv2v+0a9tJm1NKJsX4attNU7kc5PSocHTjVCFoipi6nxVdjaNhnaik7O0mR5PxRJdFBY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxmDcAiXczGxH+HrUNc5fh9wOTNhSIK9At3vHJ6Olc0AC5THZdO
+	Ph/g/2aZr4SGciV7NmRmkQuJnm4sNl1o9CM/kyJEH1cFrTGBPh78qBDfhdzh6Q==
+X-Gm-Gg: ASbGncujWbSPWxB2Nl/yyXIUfnTe6ytZLESbOB8/F/7NWUQehcAwqyHFjhXTXXwg835
+	JHFaxH9hQn8SMEImPOUxoERz69jPdXZeH2RJlPFk6Aud4q/LmVmm/VB1IBFyIzMpKi5pulsqDIs
+	n4YyRK9T06Ogmvg+PVhIzQ78PQMBJiifvMW1Uec2KfH2HfL/abQ5KY9cgmOWL5SldoxAPqdXb+7
+	/ueUToJgKaKSwSE/2eYegKhsXtDSKHW8NpIvy1MNPQYqPphM3lvOZdZhbVrJ0URczKCS8PjH4v4
+	fc5goZlKDexoClj+G2Db
+X-Google-Smtp-Source: AGHT+IEPaGgB9Qa+1DpEpRgPYql8+QmamIMyRh5C1Rx/DzqtHoRCh+8H9eqIioceJgqABRLUqu9iOw==
+X-Received: by 2002:a17:902:c408:b0:216:4d1f:5c83 with SMTP id d9443c01a7336-219e6f26814mr803886345ad.47.1736270810779;
+        Tue, 07 Jan 2025 09:26:50 -0800 (PST)
+Received: from [10.67.48.245] ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-219dc9cdeccsm314093865ad.144.2025.01.07.09.26.47
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 07 Jan 2025 09:26:49 -0800 (PST)
+Message-ID: <e2d33d2f-6b30-495e-a089-b1185b22130f@broadcom.com>
+Date: Tue, 7 Jan 2025 09:26:46 -0800
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -112,34 +82,91 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] dt-bindings: usb: Correct indentation and style in DTS
+ example
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Justin Chen <justin.chen@broadcom.com>, Al Cooper <alcooperx@gmail.com>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Magnus Damm <magnus.damm@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Benjamin Bara <benjamin.bara@skidata.com>,
+ Bjorn Andersson <andersson@kernel.org>,
+ Ahmad Zainie <wan.ahmad.zainie.wan.mohamad@intel.com>,
+ Del Regno <angelogioacchino.delregno@collabora.com>,
+ Tianping Fang <tianping.fang@mediatek.com>,
+ Jassi Brar <jaswinder.singh@linaro.org>,
+ Biju Das <biju.das.jz@bp.renesas.com>,
+ Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+ Francesco Dolcini <francesco.dolcini@toradex.com>,
+ Macpaul Lin <macpaul.lin@mediatek.com>,
+ Alexander Stein <alexander.stein@ew.tq-group.com>,
+ linux-usb@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org
+References: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
+Content-Language: en-US
+From: Florian Fainelli <florian.fainelli@broadcom.com>
+Autocrypt: addr=florian.fainelli@broadcom.com; keydata=
+ xsBNBFPAG8ABCAC3EO02urEwipgbUNJ1r6oI2Vr/+uE389lSEShN2PmL3MVnzhViSAtrYxeT
+ M0Txqn1tOWoIc4QUl6Ggqf5KP6FoRkCrgMMTnUAINsINYXK+3OLe7HjP10h2jDRX4Ajs4Ghs
+ JrZOBru6rH0YrgAhr6O5gG7NE1jhly+EsOa2MpwOiXO4DE/YKZGuVe6Bh87WqmILs9KvnNrQ
+ PcycQnYKTVpqE95d4M824M5cuRB6D1GrYovCsjA9uxo22kPdOoQRAu5gBBn3AdtALFyQj9DQ
+ KQuc39/i/Kt6XLZ/RsBc6qLs+p+JnEuPJngTSfWvzGjpx0nkwCMi4yBb+xk7Hki4kEslABEB
+ AAHNMEZsb3JpYW4gRmFpbmVsbGkgPGZsb3JpYW4uZmFpbmVsbGlAYnJvYWRjb20uY29tPsLB
+ IQQQAQgAywUCZWl41AUJI+Jo+hcKAAG/SMv+fS3xUQWa0NryPuoRGjsA3SAUAAAAAAAWAAFr
+ ZXktdXNhZ2UtbWFza0BwZ3AuY29tjDAUgAAAAAAgAAdwcmVmZXJyZWQtZW1haWwtZW5jb2Rp
+ bmdAcGdwLmNvbXBncG1pbWUICwkIBwMCAQoFF4AAAAAZGGxkYXA6Ly9rZXlzLmJyb2FkY29t
+ Lm5ldAUbAwAAAAMWAgEFHgEAAAAEFQgJChYhBNXZKpfnkVze1+R8aIExtcQpvGagAAoJEIEx
+ tcQpvGagWPEH/2l0DNr9QkTwJUxOoP9wgHfmVhqc0ZlDsBFv91I3BbhGKI5UATbipKNqG13Z
+ TsBrJHcrnCqnTRS+8n9/myOF0ng2A4YT0EJnayzHugXm+hrkO5O9UEPJ8a+0553VqyoFhHqA
+ zjxj8fUu1px5cbb4R9G4UAySqyeLLeqnYLCKb4+GklGSBGsLMYvLmIDNYlkhMdnnzsSUAS61
+ WJYW6jjnzMwuKJ0ZHv7xZvSHyhIsFRiYiEs44kiYjbUUMcXor/uLEuTIazGrE3MahuGdjpT2
+ IOjoMiTsbMc0yfhHp6G/2E769oDXMVxCCbMVpA+LUtVIQEA+8Zr6mX0Yk4nDS7OiBlvOwE0E
+ U8AbwQEIAKxr71oqe+0+MYCc7WafWEcpQHFUwvYLcdBoOnmJPxDwDRpvU5LhqSPvk/yJdh9k
+ 4xUDQu3rm1qIW2I9Puk5n/Jz/lZsqGw8T13DKyu8eMcvaA/irm9lX9El27DPHy/0qsxmxVmU
+ pu9y9S+BmaMb2CM9IuyxMWEl9ruWFS2jAWh/R8CrdnL6+zLk60R7XGzmSJqF09vYNlJ6Bdbs
+ MWDXkYWWP5Ub1ZJGNJQ4qT7g8IN0qXxzLQsmz6tbgLMEHYBGx80bBF8AkdThd6SLhreCN7Uh
+ IR/5NXGqotAZao2xlDpJLuOMQtoH9WVNuuxQQZHVd8if+yp6yRJ5DAmIUt5CCPcAEQEAAcLB
+ gQQYAQIBKwUCU8AbwgUbDAAAAMBdIAQZAQgABgUCU8AbwQAKCRCTYAaomC8PVQ0VCACWk3n+
+ obFABEp5Rg6Qvspi9kWXcwCcfZV41OIYWhXMoc57ssjCand5noZi8bKg0bxw4qsg+9cNgZ3P
+ N/DFWcNKcAT3Z2/4fTnJqdJS//YcEhlr8uGs+ZWFcqAPbteFCM4dGDRruo69IrHfyyQGx16s
+ CcFlrN8vD066RKevFepb/ml7eYEdN5SRALyEdQMKeCSf3mectdoECEqdF/MWpfWIYQ1hEfdm
+ C2Kztm+h3Nkt9ZQLqc3wsPJZmbD9T0c9Rphfypgw/SfTf2/CHoYVkKqwUIzI59itl5Lze+R5
+ wDByhWHx2Ud2R7SudmT9XK1e0x7W7a5z11Q6vrzuED5nQvkhAAoJEIExtcQpvGagugcIAJd5
+ EYe6KM6Y6RvI6TvHp+QgbU5dxvjqSiSvam0Ms3QrLidCtantcGT2Wz/2PlbZqkoJxMQc40rb
+ fXa4xQSvJYj0GWpadrDJUvUu3LEsunDCxdWrmbmwGRKqZraV2oG7YEddmDqOe0Xm/NxeSobc
+ MIlnaE6V0U8f5zNHB7Y46yJjjYT/Ds1TJo3pvwevDWPvv6rdBeV07D9s43frUS6xYd1uFxHC
+ 7dZYWJjZmyUf5evr1W1gCgwLXG0PEi9n3qmz1lelQ8lSocmvxBKtMbX/OKhAfuP/iIwnTsww
+ 95A2SaPiQZA51NywV8OFgsN0ITl2PlZ4Tp9hHERDe6nQCsNI/Us=
+In-Reply-To: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Meta (Facebook) has a preference for all of our secondary flash
-chips to be labelled "alt-bmc" for consistency of userspace tools
-deal with updates.  Bletchley, Harma, Minerva, and Catalina all
-follow this convention but for some reason Yosemite4 is different.
+On 1/7/25 05:10, Krzysztof Kozlowski wrote:
+> DTS example in the bindings should be indented with 2- or 4-spaces and
+> aligned with opening '- |', so correct any differences like 3-spaces or
+> mixtures 2- and 4-spaces in one binding.
+> 
+> No functional changes here, but saves some comments during reviews of
+> new patches built on existing code.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
+>   .../bindings/usb/aspeed,usb-vhub.yaml         | 40 +++++++++----------
+>   .../devicetree/bindings/usb/brcm,bdc.yaml     | 14 +++----
 
-Adjust the label in the dts to match the other platforms.
-
-Signed-off-by: Patrick Williams <patrick@stwcx.xyz>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index ab4904cf2c0e..29f224bccd63 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -159,7 +159,7 @@ flash@0 {
- 	flash@1 {
- 		status = "okay";
- 		m25p,fast-read;
--		label = "bmc2";
-+		label = "alt-bmc";
- 		spi-tx-bus-width = <2>;
- 		spi-rx-bus-width = <2>;
- 		spi-max-frequency = <50000000>;
+Acked-by: Florian Fainelli <florian.fainelli@broadcom.com> # brcm,bdc.yaml
 -- 
-2.44.2
-
+Florian
 
