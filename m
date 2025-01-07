@@ -1,76 +1,79 @@
-Return-Path: <linux-aspeed+bounces-315-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-316-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1944E77188
-	for <linux-aspeed@archiver.kernel.org>; Fri,  3 Jan 2025 01:44:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19869E77188
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Jan 2025 03:14:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YPRGH1mC6z301N;
-	Fri,  3 Jan 2025 12:44:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1735868695;
-	cv=none; b=SBqGt2onH5oHkQx84Fv9ZAOWOkKrP886D1kZBezHgwEfJuTIM5+/f4NMfdnL2G6MBmtA/h52NFndcmYHqjerLQtpbUBnb1myyJw7kuIEOC9+EZ9xCqxT4wJ0jGdz6ejdRhLusMR8eZgYgYtnwCRe8FZOytjVTXj+MwcSbgMP2zSIlJSGvj3HcDzKej8Tk4nQTtNoPm++dLe9o3GuSo4djhpGIolP2vjwcoNpEApq9vaQ8yK5m+pf9czArVWMjk+xdU0W8dTwoK6b9i31E+71Fs+qw72vcVE7vOSTaEFZdDaogII5Qp38dBtAkW8hKktwpwNPQ0988IWuqSPeh9Hg/w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YRx3L6hwzz2yPD;
+	Tue,  7 Jan 2025 14:14:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736219646;
+	cv=none; b=MWhKu24E0JJjq+4ZDhEMP6yvF7mZYM5T4Ncj3Pu+nhRWLoiXoI8RgiSMqUASvqC/wb6imwVFShaf2CLUfDnxcVFCuqdnaqgpy7mduhjkFxicWctZWV5szdI71f/ENvwQWqgkpESUPdlnuNGLxiAHXUgsNVdXJ60MnKbxVA++V7MUV1Iob7cs4lWaALMWW+DFIwv/RLQgFGSOFPZpceKzVdb3knoDBeYgnNVb1wp5/ry6bKZs2uDFpsc/3nPimmGpT6mikDNrlq9tlaI1M1B/svyoQ5W600bXkUZj67dNm66EQQAnT7E3iPab1mn+qBMAeAeI6Una/cxz4jUPcvOXUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1735868695; c=relaxed/relaxed;
-	bh=k2Cl0qLA6Zse6X1mOHGAIPpGxF7+VgglAz9fd0zm31c=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=ZopezTyQbtSGsXuyl5H/TRj30t4DsN+E0c1lfkSgIlPrAL0UZ32O+spIQ64Y/gz/Vn+11Ue+R0acZcLCccyMa5fmYRjQ9Q4bL/MCQc2XiCC6oNZZlJJdhwbBZi5PZpyetNiXfejFJTsTrFhKz+0xwqbK+PsczAkv4J9yYllIqG71gDsdEeEKkgnPhjD1SVdVc9SBNIn1zixbYQk4WX8N2hCojvRcGan5tUnkZtFuVoKY888JXAwedTaDlkdveV4yXNNS9nx5ftZxqiZMJzqOIpmp67s3msSJZAmeHAg09Q2EgBwRX2/x6q4ynM5JwSk6hgI435uYqYzVQ4vED9BwAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Dk7VJzdB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1736219646; c=relaxed/relaxed;
+	bh=i51dHw5mNIoRaqgYOtjuCasI+NG6Y61PinKIFAENVu0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=F2rkKUpyi4WMDO4eS7iKjBCacR9A1f/j43U77vB9hnyIi5Yf7+SoIkef4Iwp6Mxv1vxSmMgPl/QyGlkTJRH5ygtiXb2k30QslzFlxkEq4a3EfbTLV8g33v7z+ledVyodq6Zfr+UK02To+HuQube25ThSI10MtmzF2BqpS4SxWVyE66p1GTeSw5sM2At/Q1N9bUjHhcILEMq5rFsMvr+1K50EH6ztWDMDDJBd2M+kHrDZ2aaHVg4oBJjiHCiDXDpooERpoaZT73S4lalW5C9AuyLHqK/aPhnoyYtX3ErWmFFTlL59zCgy1fttABkoXA3JBcbAHXaprJDr9CIOKbHnzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SI/iwviz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Dk7VJzdB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SI/iwviz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YPRGF6gGXz2xxt
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  3 Jan 2025 12:44:52 +1100 (AEDT)
-Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-2efded08c79so12926481a91.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Jan 2025 17:44:52 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YRx3J4v6jz2yNc
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  7 Jan 2025 14:14:04 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id 98e67ed59e1d1-2ef714374c0so18785949a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 06 Jan 2025 19:14:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1735868688; x=1736473488; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=k2Cl0qLA6Zse6X1mOHGAIPpGxF7+VgglAz9fd0zm31c=;
-        b=Dk7VJzdBw1UZRrP5OvDQLrQ5oJtNf6ZIE+TFZxAiG3lnWVLrg44tbcinLGrtd7zkLS
-         Xzckz6kH1PLUstS1K7QhAxPnr1+ggux9NnfkaKdKStFfXO3hfyoSwl9UFo7ghhMNlQ5d
-         A3HubJFJOIg4J798y+tyfLPTPwR07dW1NcQgE5aHG5y1zc+QGxDIwHMGnRHdS0o4GWeM
-         pSFUnOVWyAfJu5YerIZ6MaqwG4FkyXulXRb19EDOm7iSwR+u+Zy9EcAoa5W8uIPgwk2Q
-         FfC9qj66BUVG4/w5nO+LO5uH2P7nvbY4vSRWPX+EjK+jF2tKrdLrlk9F80CWm0Rmcesh
-         1hzA==
+        d=gmail.com; s=20230601; t=1736219638; x=1736824438; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=i51dHw5mNIoRaqgYOtjuCasI+NG6Y61PinKIFAENVu0=;
+        b=SI/iwviz5dXd9/o1rL8vjelcv2M4RQzSdz3UIBaJJsQdpRPqJAaFORQSEYongY/5ec
+         9r8px0LYz1lI08ae/esT32CV0L1375cXdBMzdOT0uovIMsGoOcqxXo753wKU6oJq6Hbc
+         4RUwgO4xL6LxcfRrG//4qnYoc57NSMYA8ngff8ljVlxvpD95ToUu3eIngKe0vRl7iWEP
+         ZDRPFEKitK+H4+1FgSK5HzK7aEiSCs/hCyzjZO1urMLhDblZPIsQXeJuJTcFsrHpO2m5
+         zfvtLcZ4FTxMrlCfuLAxOFP6nQAzEGyJ/gjNDt+p/zJVUcIk1hBOsMSKUPrOJVoLA1Fd
+         HYKw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735868688; x=1736473488;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=k2Cl0qLA6Zse6X1mOHGAIPpGxF7+VgglAz9fd0zm31c=;
-        b=h30N3A1BkGgyeoVfCw+F0XtQsn9WMa61wAY1hjVi+Fvbw+bhYrf+DTdAXlob7RGxUt
-         Z40XSTp4oS0iAdmGviACjx5lBWLSFM/C5ZJQHsn0SFT80sq5BdAY1cplKKibljdQOkDx
-         6t7e7BmLMoAx17mOheZ3qB7joieSxQqcZN+1iqTdmuVlR3YLh9WWIpnbFJT7wfew65Z3
-         3jYbkHJs5MCZ7ZgWAjKOlxNiRR2ffkpX45hq9cS38CHjUNdXhZk7MQVIhuXjiI7xFeWd
-         o1+ASh7Ol3uIO96uG993lBdxq3ypsc6sPkyW2BAoGIlO044uHieuR9KPNYtyg7ClmgjW
-         MVFg==
-X-Forwarded-Encrypted: i=1; AJvYcCWGZkaGbyl6vlhna+6F19dSNGiPd8uez6TTYalj18lySVRvsnXlKVmd0zGM7N871sorwKB+rUoViIeruLI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz88GIP26M/ixHUD/DTAMgU55HxN8p2ZzKJZWCQujM2DjVSLDMv
-	Rh+0NUSfGlsowUL2tnLVVDnkF3lTNfY2vqq6XtBd4HCX9Q2I+gjI
-X-Gm-Gg: ASbGncvL7RVoDIVQ91S5SqqQFT6dHiqgK9mX0n3GRrooh8P6vrZcBF4HB41Yhxozd37
-	53/TDjnXME4A2TowjXHsiKp/dSJA4h1l6RxnGNvDgYPsOT6DkSceeIZc0gmVvTStDNfym3E+3yw
-	/YP3Ht0su+RDNO7q9cwYgVSf4q7PyGDys7Jo6VEJ1CAz1v6L8HPqPcG79Ymp9v1/B+Kc1wwyCPr
-	c2IiQYR9Q4IgmAwmGn03DNbxtrWdw+aL1fdEfUkiAuArBIAoyN10RcCgud4mA9QSnwTIPhcucmg
-	Gi+zsD916Mr9TH7qevoYtBDD0OGm/H/qhg==
-X-Google-Smtp-Source: AGHT+IE+4fM40xvU28AzvOJIq0548U2gC/Q8aDCSFhqHoK9P+D4GoUQlU1aKGPee55+jqzqjHIgWuQ==
-X-Received: by 2002:a17:90b:5244:b0:2ee:f440:53ed with SMTP id 98e67ed59e1d1-2f452ed6a0dmr61484494a91.31.1735868688516;
-        Thu, 02 Jan 2025 17:44:48 -0800 (PST)
-Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-219dca02f8asm234551495ad.279.2025.01.02.17.44.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Jan 2025 17:44:48 -0800 (PST)
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Fri, 03 Jan 2025 09:42:31 +0800
-Subject: [PATCH] ARM: dts: aspeed: catalina: update catalina dts file
+        d=1e100.net; s=20230601; t=1736219638; x=1736824438;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=i51dHw5mNIoRaqgYOtjuCasI+NG6Y61PinKIFAENVu0=;
+        b=l7o4x73MHTFuJE9rTUcTP8KxJXOCsqN/j9LOupoPLMRVkjhRtXXYZ2owfdoBqydiJr
+         rAwpojHAF1TdWQLlA8MHlE2qAAi9F2a8xAkZiKrGcWRs+1amwW+W2klgE8lIoHqTwM2f
+         MVQGWDTPYoOCnmeDxFjdQTAHOtbA+UJB56x7ziTNo8/zCZnEQRPIjqL9p7db7zrdWW/G
+         HyYSRMfAcOxM5bce+na+PDEF5oDvAIBwDeym2l/1Cux8LmrkcN2news2jKwq/l09FhWC
+         oTl8ixDe6L4v9MC6GwRLCkCD3LEopgbEH/ffUiQ/o2NpehOnXm1RmF+KEXycWbGRMfPX
+         9tlQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUK0lqjkme859QjUErmFe6hx7n+PM5arhvB0GD+3sqS0S1Mm61x8qNsVMA15cu7KNUTzjR78ZgKkD7nSKY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwGEsrSCjvJYk2YmyfVoGIOy2QkSoeufvS7ySl9GSTvl+LrCfnj
+	grU8X6Am0j3S2SmTmGIoRpdf/QdGjCAW0DNW2rqisnHYGTT372NB
+X-Gm-Gg: ASbGnctqIwt3qrvFdvLiSj8tC/cLufqMWYsBiagda+s1VPCycs96X4uNdk7+daish47
+	jjgFY0XLVBbbFGF01Ow9P99E534t74CcHGawPetbzOxdqGSksmXZcy+4c3xTSZT2pALMSlkaqrj
+	ZoGQOcmQi31z6vnK8FwTAEhftaoq3j0S7o7rL/dVFTEoRedy9vYvSgJVEhTJwsReOF6bhawEdH5
+	z2YpuEvKrO0kuW/G8S4HdNDaCM2kQX02I/D2dNwkdmshbI9ncecbRrsJHFBKUfS/gepsqGAn6CS
+	6DVN3UL2ULCZgIYabXCJxTEHIOtbnQ==
+X-Google-Smtp-Source: AGHT+IEqYTX48WWwIQGYBpAj2HUYugaKpRU3ZceIzqDXA+cx39JjALuCANuONI/3tuRP80rX6if6iQ==
+X-Received: by 2002:a17:90b:4ecb:b0:2ee:94a0:255c with SMTP id 98e67ed59e1d1-2f53cc20b46mr2398211a91.13.1736219638490;
+        Mon, 06 Jan 2025 19:13:58 -0800 (PST)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2f447882ad8sm34534574a91.35.2025.01.06.19.13.56
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 06 Jan 2025 19:13:57 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <80b400b5-0dec-4643-9503-a21a35af5bcb@roeck-us.net>
+Date: Mon, 6 Jan 2025 19:13:55 -0800
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -83,273 +86,248 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 1/1] watchdog: aspeed: Update bootstatus handling
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, patrick@stwcx.xyz,
+ andrew@codeconstruct.com.au, wim@linux-watchdog.org, joel@jms.id.au,
+ linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Peter.Yin@quantatw.com, Patrick_NC_Lin@wiwynn.com, BMC-SW@aspeedtech.com,
+ chnguyen@amperecomputing.com, aaron_lee@aspeedtech.com
+References: <20250101070116.2287171-1-chin-ting_kuo@aspeedtech.com>
+ <20250101070116.2287171-2-chin-ting_kuo@aspeedtech.com>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+In-Reply-To: <20250101070116.2287171-2-chin-ting_kuo@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250103-potin-catalina-dts-update-20250102-v1-1-b0b7a523c968@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAIZAd2cC/z2NQQrDIBAAvxL23AUVW0i+EnJY47ZZCCpqQyH49
- 0oOOQ4MMycUzsIFpuGEzIcUiaGDfgywbhQ+jOI7g1HmqbQymGKVgCtV2iUQ+lrwmzxVxlsZtXX
- qRdZ5R9BDKfNbftdkXlr7A1Frn790AAAA
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Patrick Williams <patrick@stwcx.xyz>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
- Potin Lai <potin.lai.pt@gmail.com>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1735868686; l=5772;
- i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=EWxIpZVzkObHrj3L3XnSjp1bXarY9ieZwL9MOGdfNcQ=;
- b=xLRs8zCBojbAOqgKdmTqa8vcJFMyCMitfwkdSmBkpFbK3jD0OBzbcb/9meKzqok8jfEm2f9Wa
- ILsB5P38XJWAMc9AP5VGhAC2QxyTvQ5tYWHwFeC/7JfPlT0FD4DTMHG
-X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
- pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Update device nodes list below for driver binding.
+On 12/31/24 23:01, Chin-Ting Kuo wrote:
+> The boot status in the watchdog device struct is updated during
+> controller probe stage. Application layer can get the boot status
+> through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
+> The bootstatus can be,
+> WDIOF_CARDRESET => the system is reset by WDT SoC reset.
+> Others          => other reset events, e.g., power on reset.
+> 
+> On ASPEED platform, the boot status is recorded in the SCU registers.
+> - AST2400: Only a bit represents for any WDT reset.
+> - AST2500/AST2600: The reset triggered by different WDT controllers
+>                     can be distinguished by different SCU bits.
+> 
+> Besides, on AST2400 and AST2500, since alternating boot event is
+> triggered by WDT SoC reset, it is classified as WDIOF_CARDRESET.
+> 
+> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> ---
+>   drivers/watchdog/aspeed_wdt.c | 85 ++++++++++++++++++++++++++++++++++-
+>   1 file changed, 83 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+> index b4773a6aaf8c..1fae70b2fa6b 100644
+> --- a/drivers/watchdog/aspeed_wdt.c
+> +++ b/drivers/watchdog/aspeed_wdt.c
+> @@ -11,21 +11,30 @@
+>   #include <linux/io.h>
+>   #include <linux/kernel.h>
+>   #include <linux/kstrtox.h>
+> +#include <linux/mfd/syscon.h>
+>   #include <linux/module.h>
+>   #include <linux/of.h>
+>   #include <linux/of_irq.h>
+>   #include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+>   #include <linux/watchdog.h>
+>   
+>   static bool nowayout = WATCHDOG_NOWAYOUT;
+>   module_param(nowayout, bool, 0);
+>   MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+>   				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+> +struct aspeed_wdt_scu {
+> +	const char *compatible;
+> +	u32 reset_status_reg;
+> +	u32 wdt_reset_mask;
+> +	u32 wdt_reset_mask_shift;
+> +};
+>   
+>   struct aspeed_wdt_config {
+>   	u32 ext_pulse_width_mask;
+>   	u32 irq_shift;
+>   	u32 irq_mask;
+> +	struct aspeed_wdt_scu scu;
+>   };
+>   
+>   struct aspeed_wdt {
+> @@ -39,18 +48,36 @@ static const struct aspeed_wdt_config ast2400_config = {
+>   	.ext_pulse_width_mask = 0xff,
+>   	.irq_shift = 0,
+>   	.irq_mask = 0,
+> +	.scu = {
+> +		.compatible = "aspeed,ast2400-scu",
+> +		.reset_status_reg = 0x3c,
+> +		.wdt_reset_mask = 0x1,
+> +		.wdt_reset_mask_shift = 1,
+> +	},
+>   };
+>   
+>   static const struct aspeed_wdt_config ast2500_config = {
+>   	.ext_pulse_width_mask = 0xfffff,
+>   	.irq_shift = 12,
+>   	.irq_mask = GENMASK(31, 12),
+> +	.scu = {
+> +		.compatible = "aspeed,ast2500-scu",
+> +		.reset_status_reg = 0x3c,
+> +		.wdt_reset_mask = 0x1,
+> +		.wdt_reset_mask_shift = 2,
+> +	},
+>   };
+>   
+>   static const struct aspeed_wdt_config ast2600_config = {
+>   	.ext_pulse_width_mask = 0xfffff,
+>   	.irq_shift = 0,
+>   	.irq_mask = GENMASK(31, 10),
+> +	.scu = {
+> +		.compatible = "aspeed,ast2600-scu",
+> +		.reset_status_reg = 0x74,
+> +		.wdt_reset_mask = 0xf,
+> +		.wdt_reset_mask_shift = 16,
+> +	},
+>   };
+>   
+>   static const struct of_device_id aspeed_wdt_of_table[] = {
+> @@ -213,6 +240,60 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
+>   	return 0;
+>   }
+>   
+> +static void aspeed_wdt_update_bootstatus(struct platform_device *pdev,
+> +					 struct aspeed_wdt *wdt)
+> +{
+> +	struct resource *res;
+> +	struct aspeed_wdt_scu scu = wdt->cfg->scu;
+> +	struct regmap *scu_base;
+> +	u32 reset_mask_width;
+> +	u32 reset_mask_shift;
+> +	u32 reg_size;
+> +	u32 idx = 0;
+> +	u32 status;
+> +	int ret;
+> +
+> +	if (!of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt")) {
+> +		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +		if (res) {
+> +			reg_size = res->end - res->start;
 
-- Add IOB NIC thermal nodes (TMP421)
-  - 24-001f, 26-001f, 36-001f, 38-001f
-- Add FIO Remote thermal node (TMP75)
-  - 23-001f
-- Add Power sensor node (MP5990)
-  - 16-0022
-- Add main source fan controllers (MAX31790)
-  - 18-0021, 18-0027
-- Add 2nd source fan controllers (NCT7363)
-  - 18-0001, 18-0002
-- Add 2nd source HSC nodes (XDP710)
-  - 20-0013, 20-001c
-- Remove all ina238 nodes, move to userspace
-  - 16-0041, 16-0042, 16-0044, 17-0041, 17-0043
+Is this correct ? Normally one would use resource_size() which is
+res->end - res->start + 1.
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
-Updating the catalina system device nodes in dts file.
----
- .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 149 +++++++++++++++++----
- 1 file changed, 126 insertions(+), 23 deletions(-)
+> +			if (reg_size)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-index 3822bb3c9243..23583665ba12 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-@@ -190,6 +190,12 @@ i2c0mux0ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+
-+			// IOB0 NIC0 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux0ch1: i2c@1 {
- 			#address-cells = <1>;
-@@ -200,6 +206,12 @@ i2c0mux0ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+
-+			// IOB0 NIC1 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux0ch3: i2c@3 {
- 			#address-cells = <1>;
-@@ -361,6 +373,12 @@ i2c0mux3ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+
-+			// IOB1 NIC0 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux3ch1: i2c@1 {
- 			#address-cells = <1>;
-@@ -371,6 +389,12 @@ i2c0mux3ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+
-+			// IOB1 NIC1 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux3ch3: i2c@3 {
- 			#address-cells = <1>;
-@@ -464,40 +488,105 @@ i2c1mux0ch0: i2c@0 {
- 			#size-cells = <0>;
- 			reg = <0x0>;
- 
--			power-sensor@41 {
--				compatible = "ti,ina238";
--				reg = <0x41>;
--				shunt-resistor = <500>;
--			};
--			power-sensor@42 {
--				compatible = "ti,ina238";
--				reg = <0x42>;
--				shunt-resistor = <500>;
--			};
--			power-sensor@44 {
--				compatible = "ti,ina238";
--				reg = <0x44>;
--				shunt-resistor = <500>;
-+			power-sensor@22 {
-+				compatible = "mps,mp5990";
-+				reg = <0x22>;
- 			};
- 		};
- 		i2c1mux0ch1: i2c@1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0x1>;
--
--			power-sensor@41 {
--				compatible = "ti,ina238";
--				reg = <0x41>;
--			};
--			power-sensor@43 {
--				compatible = "ti,ina238";
--				reg = <0x43>;
--			};
- 		};
- 		i2c1mux0ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0x2>;
-+
-+			hwmon0: hwmon@1 {
-+				compatible = "nuvoton,nct7363";
-+				reg = <0x01>;
-+				#pwm-cells = <2>;
-+
-+				fan-9 {
-+					pwms = <&hwmon0 0 40000>;
-+					tach-ch = /bits/ 8 <0x09>;
-+				};
-+				fan-11 {
-+					pwms = <&hwmon0 0 40000>;
-+					tach-ch = /bits/ 8 <0x0b>;
-+				};
-+				fan-10 {
-+					pwms = <&hwmon0 4 40000>;
-+					tach-ch = /bits/ 8 <0x0a>;
-+				};
-+				fan-13 {
-+					pwms = <&hwmon0 4 40000>;
-+					tach-ch = /bits/ 8 <0x0d>;
-+				};
-+				fan-15 {
-+					pwms = <&hwmon0 6 40000>;
-+					tach-ch = /bits/ 8 <0x0f>;
-+				};
-+				fan-1 {
-+					pwms = <&hwmon0 6 40000>;
-+					tach-ch = /bits/ 8 <0x01>;
-+				};
-+				fan-0 {
-+					pwms = <&hwmon0 10 40000>;
-+					tach-ch = /bits/ 8 <0x00>;
-+				};
-+				fan-3 {
-+					pwms = <&hwmon0 10 40000>;
-+					tach-ch = /bits/ 8 <0x03>;
-+				};
-+			};
-+			hwmon1: hwmon@2 {
-+				compatible = "nuvoton,nct7363";
-+				reg = <0x02>;
-+				#pwm-cells = <2>;
-+
-+				fan-9 {
-+					pwms = <&hwmon1 0 40000>;
-+					tach-ch = /bits/ 8 <0x09>;
-+				};
-+				fan-11 {
-+					pwms = <&hwmon1 0 40000>;
-+					tach-ch = /bits/ 8 <0x0b>;
-+				};
-+				fan-10 {
-+					pwms = <&hwmon1 4 40000>;
-+					tach-ch = /bits/ 8 <0x0a>;
-+				};
-+				fan-13 {
-+					pwms = <&hwmon1 4 40000>;
-+					tach-ch = /bits/ 8 <0x0d>;
-+				};
-+				fan-15 {
-+					pwms = <&hwmon1 6 40000>;
-+					tach-ch = /bits/ 8 <0x0f>;
-+				};
-+				fan-1 {
-+					pwms = <&hwmon1 6 40000>;
-+					tach-ch = /bits/ 8 <0x01>;
-+				};
-+				fan-0 {
-+					pwms = <&hwmon1 10 40000>;
-+					tach-ch = /bits/ 8 <0x00>;
-+				};
-+				fan-3 {
-+					pwms = <&hwmon1 10 40000>;
-+					tach-ch = /bits/ 8 <0x03>;
-+				};
-+			};
-+			pwm@21{
-+				compatible = "maxim,max31790";
-+				reg = <0x21>;
-+			};
-+			pwm@27{
-+				compatible = "maxim,max31790";
-+				reg = <0x27>;
-+			};
- 		};
- 		i2c1mux0ch3: i2c@3 {
- 			#address-cells = <1>;
-@@ -509,6 +598,14 @@ i2c1mux0ch4: i2c@4 {
- 			#size-cells = <0>;
- 			reg = <0x4>;
- 
-+			power-monitor@13 {
-+				compatible = "infineon,xdp710";
-+				reg = <0x13>;
-+			};
-+			power-monitor@1c {
-+				compatible = "infineon,xdp710";
-+				reg = <0x1c>;
-+			};
- 			power-monitor@42 {
- 				compatible = "lltc,ltc4287";
- 				reg = <0x42>;
-@@ -580,6 +677,12 @@ temperature-sensor@4b {
- 				compatible = "ti,tmp75";
- 				reg = <0x4b>;
- 			};
-+
-+			// FIO REMOTE TEMP SENSOR
-+			temperature-sensor@4f {
-+				compatible = "ti,tmp75";
-+				reg = <0x4f>;
-+			};
- 		};
- 	};
- };
+... and then this if() would not be needed. Either case, if res->end - res->start
+is 1, there are actually 2 registers, so the calculation seems off.
 
----
-base-commit: becaccc292bfbd12df81148746043c5221e49da8
-change-id: 20250102-potin-catalina-dts-update-20250102-914b06a4bdba
+> +				idx = ((intptr_t)wdt->base & 0x00000fff) / reg_size;
+> +		}
+> +	}
+> +
+> +	wdt->wdd.bootstatus = WDIOS_UNKNOWN;
+> +	scu_base = syscon_regmap_lookup_by_compatible(scu.compatible);
+> +	if (IS_ERR(scu_base))
+> +		return;
 
-Best regards,
--- 
-Potin Lai <potin.lai.pt@gmail.com>
+This should be
+	if (IS_ERR(scu_base)) {
+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
+		return;
+	}
+
+to avoid having to clear it below.
+
+> +
+> +	ret = regmap_read(scu_base, scu.reset_status_reg, &status);
+> +	if (ret)
+> +		return;
+> +
+> +	reset_mask_width = hweight32(scu.wdt_reset_mask);
+> +	reset_mask_shift = scu.wdt_reset_mask_shift +
+> +			   reset_mask_width * idx;
+> +
+> +	if (status & (scu.wdt_reset_mask << reset_mask_shift))
+> +		wdt->wdd.bootstatus = WDIOF_CARDRESET;
+> +	else
+> +		wdt->wdd.bootstatus = 0;
+> +
+> +	/* clear wdt reset event flag */
+> +	if (of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt") ||
+> +	    of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2500-wdt")) {
+> +		ret = regmap_read(scu_base, scu.reset_status_reg, &status);
+> +		if (!ret) {
+> +			status &= ~(scu.wdt_reset_mask << reset_mask_shift);
+> +			regmap_write(scu_base, scu.reset_status_reg, status);
+> +		}
+> +	} else {
+> +		regmap_write(scu_base, scu.reset_status_reg,
+> +			     scu.wdt_reset_mask << reset_mask_shift);
+> +	}
+> +}
+> +
+>   /* access_cs0 shows if cs0 is accessible, hence the reverted bit */
+>   static ssize_t access_cs0_show(struct device *dev,
+>   			       struct device_attribute *attr, char *buf)
+> @@ -458,10 +539,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>   		writel(duration - 1, wdt->base + WDT_RESET_WIDTH);
+>   	}
+>   
+> +	aspeed_wdt_update_bootstatus(pdev, wdt);
+> +
+>   	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
+>   	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
+> -		wdt->wdd.bootstatus = WDIOF_CARDRESET;
+> -
+>   		if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
+>   		    of_device_is_compatible(np, "aspeed,ast2500-wdt"))
+>   			wdt->wdd.groups = bswitch_groups;
 
 
