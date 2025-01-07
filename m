@@ -1,52 +1,83 @@
-Return-Path: <linux-aspeed+bounces-343-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-344-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7A0DE77197
-	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Jan 2025 22:54:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CD6EE77197
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Jan 2025 22:56:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSRFX26yCz2yD5;
-	Wed,  8 Jan 2025 09:54:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736290480;
-	cv=none; b=Xn4y3bmuWdy3kdNuzQoLYbyycOe7t0pdaihD9kMM3Vy43kOn0wp2fBdBitIiguxAPB8Ubgri8Y54dKLP3YXcS3Ey5424Zql1CHn7blU05c7qeqbcZjnAcHWLT5ndQLRgMzYcE5kwEoL4kwoKi3sdlDJCAOdgYXbjWN52Z2wGD2/CEFPLwNXqNKjEOgxLEGBXkfNLVNOtr164y8dmm5zL+jCe7TAm900Nl3h6pBy3QYFemyKiFbuo/gvph+OJ3zVV/teCGQbxOsJNrN0Q3o5M7HNsI9sn8vDmFQoTzELW09pP9gGuF4TqQVzs9wq4hx8uraF85isqJN4LAGgxOjTAMw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YSRHS0LmZz2yD5;
+	Wed,  8 Jan 2025 09:56:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.194.8.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736271704;
+	cv=none; b=Pe3cbC2suqZsbPHzF2b/rK73q7/A8VH2544RSVW8Ix/Y45Wk8RtotMec4h5qlxogGOPxKBqSKipZJqAfPsW75BRBFBHHtI1dHAiDZJ/CndXW7t1p9o4MhJ65Ek5+c2S5qgIsJaqdAMQlcYOAzdu3UaHLfTEmEXOh9hx2Lqc0UGhp6xtUAqeY+DkuDHAMesDDySZwjzuUORaVvaRaZwptvqtDRFrwmX16b2AClUxRMVhK8F2tHfxJLCvZOQTS7FtEDiErbhGJ2xgGK3fzc9OZDdDwIETzSn6HuZM0Jta+uPVVTW+tb8beKBTsaHTgPT6WPtcb3Q2TGGEHkbHcpVimFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736290480; c=relaxed/relaxed;
-	bh=vLc1xPAL0AFFKPRpUd/UVHpL4aDbiIngxyJwJEuzDb8=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=E6QpaHEF5bBmE0Ih3J4b3kU7E49KnV29C5JWeG/gnECDmPZrVcn7bk6Iyxqw4/0aFrcexU2vXM1qrAYnjcNcODWG9gys3xBvE4+pBMClQlCH7AgtVHnM1cuMHC++Ktg6XURDi6ORahuTGDHPmhru45XEM7slHGBWiDS1tI7er5ECWo8PSW3IS51n44lMEoq62ybwPIpZL5rIoaWylTCCPrJfqm1aSCvCPn2Wgyc4EZWdSRT+bQCg485hgg446dM+7Z+R5V8NteRUpLjZY3lk32idZCZzBYJ+M6nkW8IItjXwkiJvxSW6SANDTAMH2O/A8qoj0QAR0HpWB7HBIRSLdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LJf7DYF3; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736271704; c=relaxed/relaxed;
+	bh=YpsA1hCVY3ewqxQ7j406xH50/PlVnUrpfZDhJ2TaT4A=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TxD36apULtFAp3boHV0dr7LHDmcnhVWkQaTu4hlQD24neAIu+04mwH0pcG9zHYXzExGhz+RKcoaB/TKPi+/0U7i3ee59Bc75WFd0COWtJhGveTrNVnjnjTOEQ6sCKuJ2fq5mVwHy1KMuLE5a8r8bBrS+vMhxBs4ikeDgvWpw0gXIEiJBbzqagCtP/Ays+3qtGstJXZgoG1TienkHI1eD2Sd0pL1twUwHVr9iiEUVyBdBwgYdxyYY4me52IoJxZn7qQYBU+SGk8ZxNFF0HIDIKQgkzuxstkxG83hprZ6qGu7xNHrKcPgwYtCqoal8kXqTfBmNQ5w57JsN8LSDPdxJSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=dolcini.it; dkim=pass (2048-bit key; unprotected) header.d=dolcini.it header.i=@dolcini.it header.a=rsa-sha256 header.s=default header.b=dZXZV8FC; dkim-atps=neutral; spf=pass (client-ip=217.194.8.81; helo=mail11.truemail.it; envelope-from=francesco@dolcini.it; receiver=lists.ozlabs.org) smtp.mailfrom=dolcini.it
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=dolcini.it
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LJf7DYF3;
+	dkim=pass (2048-bit key; unprotected) header.d=dolcini.it header.i=@dolcini.it header.a=rsa-sha256 header.s=default header.b=dZXZV8FC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dolcini.it (client-ip=217.194.8.81; helo=mail11.truemail.it; envelope-from=francesco@dolcini.it; receiver=lists.ozlabs.org)
+X-Greylist: delayed 483 seconds by postgrey-1.37 at boromir; Wed, 08 Jan 2025 04:41:38 AEDT
+Received: from mail11.truemail.it (mail11.truemail.it [217.194.8.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSRFW2jqLz2y8p
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Jan 2025 09:54:39 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 04F595C62E1;
-	Tue,  7 Jan 2025 22:53:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98A7DC4CEE8;
-	Tue,  7 Jan 2025 22:54:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736290473;
-	bh=dYbF7CHxuuCz2p1jW22Ix5UW0UmrzVjjqtNsyO8jekA=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=LJf7DYF3n6cj3pBXooqWfWIUfMxkpq+W8jkF9sAjxC7pNSYms7tQbAQ9ZcS6HULtp
-	 0zn6w2Tc9E71TTX19KpDZYeTBMbyqAiqX2S2Hu2uRHXmrV9YkPRDjDDNT/YZ1iRyd4
-	 RLWfGOKVsiMoPJvQRWNbHSvi/WyUkvIUR0W9UWq+Ssg6rulAXGwW9oOaNlIbp5xbVs
-	 GIdvbuuIr+Us+G0Q9045WfDhoZpZSlHpNytlG/in7WZGCnMGerIXzvaP7nnHXaiF48
-	 NZgt0JQEE54lkJtYijy4F9cjWTwzJLBpQqXxWrX4oRw5Vn2gv8MXAoVIprSD0SS09a
-	 rRKbWZgYVdhpQ==
-Date: Tue, 07 Jan 2025 16:54:32 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSJJL4PDYz2yhM
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Jan 2025 04:41:38 +1100 (AEDT)
+Received: from francesco-nb (93-49-2-63.ip317.fastwebnet.it [93.49.2.63])
+	by mail11.truemail.it (Postfix) with ESMTPA id BEB121F948;
+	Tue,  7 Jan 2025 18:33:14 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dolcini.it;
+	s=default; t=1736271195;
+	bh=YpsA1hCVY3ewqxQ7j406xH50/PlVnUrpfZDhJ2TaT4A=; h=From:To:Subject;
+	b=dZXZV8FCflkSbXZf2ez6Y/NLj/wwpNR69lN/ozvq6wc0hHsv7aNHN7bcmznN1fdB1
+	 8nR/aEIIP3JLTbzZhig7PZp7yrl0IFr4Zr1/jDq7/s4oA3XAZKIk27q1Yl8knhi4Cm
+	 /UyHsYkvK+OMnN01osdNq0nQH6wZLtjMutCoy5r5VyrM6fNWTibTQhWJTC0coHFvM8
+	 AMa/AAx+f+KLs2A38kPgagH0qrkgOm+K/deSLLzj1Uhk2rHErYdrWDDkqDkkVSWOH6
+	 y/dvfV7H0prkHth0t+jSdD20DJp085U9PyAYfNDEnuYZqi34cJY+/bpQG9CK5LGqW9
+	 av41Gza7na4cg==
+Date: Tue, 7 Jan 2025 18:33:11 +0100
+From: Francesco Dolcini <francesco@dolcini.it>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Justin Chen <justin.chen@broadcom.com>,
+	Al Cooper <alcooperx@gmail.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Florian Fainelli <f.fainelli@gmail.com>,
+	Benjamin Bara <benjamin.bara@skidata.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Ahmad Zainie <wan.ahmad.zainie.wan.mohamad@intel.com>,
+	Del Regno <angelogioacchino.delregno@collabora.com>,
+	Tianping Fang <tianping.fang@mediatek.com>,
+	Jassi Brar <jaswinder.singh@linaro.org>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
+	Francesco Dolcini <francesco.dolcini@toradex.com>,
+	Macpaul Lin <macpaul.lin@mediatek.com>,
+	Alexander Stein <alexander.stein@ew.tq-group.com>,
+	linux-usb@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: usb: Correct indentation and style in DTS
+ example
+Message-ID: <20250107173311.GA72209@francesco-nb>
+References: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,82 +90,21 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, krzk+dt@kernel.org, netdev@vger.kernel.org, 
- davem@davemloft.net, andrew@codeconstruct.com.au, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- ratbert@faraday-tech.com, minyard@acm.org, andrew+netdev@lunn.ch, 
- edumazet@google.com, joel@jms.id.au, kuba@kernel.org, 
- openipmi-developer@lists.sourceforge.net, pabeni@redhat.com, 
- eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org, 
- conor+dt@kernel.org
-To: Ninad Palsule <ninad@linux.ibm.com>
-In-Reply-To: <20250107162350.1281165-1-ninad@linux.ibm.com>
-References: <20250107162350.1281165-1-ninad@linux.ibm.com>
-Message-Id: <173629037049.1994533.7630339914217766401.robh@kernel.org>
-Subject: Re: [PATCH v2 00/10] DTS updates for system1 BMC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
 
-
-On Tue, 07 Jan 2025 10:23:37 -0600, Ninad Palsule wrote:
-> Hello,
+On Tue, Jan 07, 2025 at 02:10:13PM +0100, Krzysztof Kozlowski wrote:
+> DTS example in the bindings should be indented with 2- or 4-spaces and
+> aligned with opening '- |', so correct any differences like 3-spaces or
+> mixtures 2- and 4-spaces in one binding.
 > 
-> Please review the patch set.
+> No functional changes here, but saves some comments during reviews of
+> new patches built on existing code.
 > 
-> V2:
-> ---
->   Fixed CHECK_DTBS errors by
->     - Using generic node names
->     - Documenting phy-mode rgmii-rxid in ftgmac100.yaml
->     - Adding binding documentation for IPMB device interface
-> 
-> NINAD PALSULE (7):
->   ARM: dts: aspeed: system1: Add IPMB device
->   ARM: dts: aspeed: system1: Add GPIO line name
->   ARM: dts: aspeed: system1: Add RGMII support
->   ARM: dts: aspeed: system1: Reduce sgpio speed
->   ARM: dts: aspeed: system1: Update LED gpio name
->   ARM: dts: aspeed: system1: Remove VRs max8952
->   ARM: dts: aspeed: system1: Mark GPIO line high/low
-> 
-> Ninad Palsule (3):
->   dt-bindings: net: faraday,ftgmac100: Add phys mode
->   bindings: ipmi: Add binding for IPMB device intf
->   ARM: dts: aspeed: system1: Disable gpio pull down
-> 
->  .../devicetree/bindings/ipmi/ipmb-dev.yaml    |  42 +++++
->  .../bindings/net/faraday,ftgmac100.yaml       |   3 +
->  .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 177 ++++++++++++------
->  3 files changed, 163 insertions(+), 59 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/ipmi/ipmb-dev.yaml
-> 
-> --
-> 2.43.0
-> 
-> 
-> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-system1.dtb' for 20250107162350.1281165-1-ninad@linux.ibm.com:
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: gpio@1e780000: 'hog-0', 'hog-1', 'hog-2', 'hog-3' do not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-
-
-
+Acked-by: Francesco Dolcini <francesco.dolcini@toradex.com> # ti,tusb73x0-pci.yaml
 
 
 
