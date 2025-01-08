@@ -1,67 +1,92 @@
-Return-Path: <linux-aspeed+bounces-352-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-353-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A44B1E77199
-	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Jan 2025 12:55:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC3ECE77188
+	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Jan 2025 16:37:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YSnwC1sj8z2yNs;
-	Wed,  8 Jan 2025 23:55:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.160.43
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736340955;
-	cv=none; b=Q4zQOP51q9DpD3BZEw3d3bG1dTJq3FPicVIHbNIr5MhFtOcYRn9qdwxiXVVBQrl4xskP5d9rHxB/Jz1SBOcNwSh6UFCjNhQ9A+wCQmjnMdKbuvXm/VphH5Qo5nryuTHYHIEgltRjr3DRUHWem8pWG20tKy1VPsNtI3Q5fF2HSMN6z7gAL5wRX55GL62kjlJZjzPaIbwG21Vg6Gbs1K6ugYVabv/IkzUSMRklbArDkkEuE728Wx6jYPNQbU3FOkkF0v0z680+vapCj4R9tqANS+iC1g0DqQ+C9ZgQlRMaInYtBFE1rMQXxijSn96enlReWMRGxQ+ve7E+4pm1AJ1zUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YStqj2qlfz30VX;
+	Thu,  9 Jan 2025 03:37:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736354241;
+	cv=none; b=fxNPmj42uJIu1akXh8pX4mja3V+uRkwxV8gyjvELLTHsKODpGDJiSHwKG2C5ZwPsaCrGwSbEEFZXCa538fZ8Q4kEHvpKymRr3lGwGhjHFrGxSXZ7qFI1OPnR8f6NpTfPEOJCxrRV3qFBP4fw3ybOe8zS1i0NPKLPGP1qTMLNSUZscHYB7kirufrvDWsFEgAgbtYU6kXliNupwSwVDm/AwklpK0RgvsHMHrsbQT9ULjilacVF1d8Okxluv10uui3SEOJjG9jWqU2QCQgyLdI5qSmpZBRbOaqiJknWIF+FhG2wb7J0xx1vRL6aNHpVGE3wf0MJQ8d9/Y6wFy8Ebv8AYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736340955; c=relaxed/relaxed;
-	bh=HUpdZqfO185onp0pw74RHuTZBmHqg9gIbSRVhApYVuI=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XVO+RMl7Eclj8IJ3GqSfh6W23TYwBmS8sHPpEl67vegzJDDAVcvR4d4nnBT/wRQ7xdsWT7T9hb0DZTfF9LyRc4RDRCkx35x4aHxB3oDKOknIM3UMQ6mCsPsCFaWECzwCPXfDkSz9fK9jDa5cS42jXqtUs5gLLhaNwOPPjtclvxWGSaZ/vflDzHBtvK2KY2EJHcu/aiA45a4Ig23oX8pKiOhR1iLjNjZjz0jWyW09I8z3/m3u9yHEgnMI9igkfwdkjQHqEeQ1fZoGWV4HqkoxtYWVX5urTBVyqwWmpY6CRu2on5XhuCr7LLVh4f+mt8dLLAVmREx4fnnqJOxe0Ic8lQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.160.43; helo=mail-oa1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.43; helo=mail-oa1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-f43.google.com (mail-oa1-f43.google.com [209.85.160.43])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1736354241; c=relaxed/relaxed;
+	bh=Eeb+5bbQwiD1cuiyTeHIf8yHJDqRjV/gy6/cIxE2XqY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MM7Lu8RIjfCHmN4JRD1U4CDHLfzf+y4md3kZDPTw3D13txk5RzTqxx5Pgf3e+tmQBO5XFbEyiiJNu10pakRWTlN12H9XYWjCZWJuLmHMmZO13yQqyLZmu06ngLDlPhjYvS7zmb0Vn5zb4QDS0Xg+nYOMWM/rUi6OrbNByeEiGQpLSF+ve03jzm6BOKfdlq+AVIzmWTuWWQdKP7a1F0DNlzHJmBN5dDDEwZLo+s4b6tOtN89DiF1X8BANYVinNVnLfERsHF32GxmPf2X2tC1AWiZdzk60cguCgm68G+ytNhGqo0jDjby1n7HTG5UAJWwbqCKseA91sthbhlJFeHrp8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pjBqCBO1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pjBqCBO1;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YSnw856tMz2yMD
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Jan 2025 23:55:51 +1100 (AEDT)
-Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-29ff8053384so7654758fac.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Jan 2025 04:55:51 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736340948; x=1736945748;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=HUpdZqfO185onp0pw74RHuTZBmHqg9gIbSRVhApYVuI=;
-        b=CArCdYfHR/kwhO2EyvV4XdybvPl2LGqiSaKaOAYyDu0n75goTjhpw8uahwASBPYZcJ
-         nUMoxFy7CviuoTeBoUy8gMeuuxlsrHxxcfwoFIqsiSjnPEP/DY9sjpyfjQ7c9VJ67zav
-         oIfuB2WLQ/ApANgJo4bcSIPfL4J8DvciLDfZDd91rrybkOjQc2S7FWutBfaSyrRb7RfY
-         BMtjdTkz6x0tv5Es3Vdzeu2WBhLqDSLQba+ma6r9Ysg/q/ZENTVXejr/NZW1pcSKeslG
-         pL2vkMW71MWwi1hRxpzNigq6NUtvuqC3RNwEPPOM/OiMkcPPU7n/agmeulkqDMVCfHNs
-         4I3g==
-X-Forwarded-Encrypted: i=1; AJvYcCVlpMdAmCTLWQe5Mbvl+EtH12r/sy8/LmBtxxcgcjvv4CbAnC11hAIBZ9u8hQFitPJHjX0zoOmVStGn0GY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzQrkhHwM9RqTihFgv4C51mmUid2fXEdiQh6pck58nTgtQYrb2X
-	GUbUT8ru09givFREOB40lt+dasHDI4TaUC6ZUbtogPuRv9YO/O/xqmz127mW
-X-Gm-Gg: ASbGncuUYWuDHRy8SURP33hVBubK/1crqlK97/tUYWg/ttC3bOlFcX2g7LVo+LGEc2Z
-	tXdS64XSzqVl7SDU3dhtLnR6wwRDjkRwhVHFszr/ZNanTBJ+vitf5avhIeMCeTIuJQMoOVm3u2l
-	OytJi2ZQxdeVagOQMLN/LIBAFgJEcTY2K+AskHpr/WkL1+MZlMikgOYdqaVPgH86iwOuRx1xE1A
-	1946RRsZs4pYT93gFHUpwUw6XokYir0Dv9tE/jAc3iUeS6CYeQXTptYMVf7aKlagZnelw5z/UHY
-	/05dO7r8+BJku32GCYM=
-X-Google-Smtp-Source: AGHT+IF/amsZ4WQXYEaKTUiphqbtt0jZ0HeoZi/HKSwHlu27vp62BuDulBIaitC2DJSJEh3N8H9ugA==
-X-Received: by 2002:a05:6870:6b0a:b0:2a3:be8a:eebb with SMTP id 586e51a60fabf-2aa06983781mr1277219fac.35.1736340947630;
-        Wed, 08 Jan 2025 04:55:47 -0800 (PST)
-Received: from mail-oo1-f49.google.com (mail-oo1-f49.google.com. [209.85.161.49])
-        by smtp.gmail.com with ESMTPSA id 586e51a60fabf-2a7d74bb9fcsm13288073fac.12.2025.01.08.04.55.46
-        for <linux-aspeed@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 08 Jan 2025 04:55:47 -0800 (PST)
-Received: by mail-oo1-f49.google.com with SMTP id 006d021491bc7-5f33d944ce0so11371363eaf.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Jan 2025 04:55:46 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCVjVibgTohQ6Is1YcWJQM2WPLBPM91dzEStYnZ4RlN87CEqLisIGm8mbvgClfsOeFo59+4395JUaQTQt38=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:e10:b0:4af:c519:4e7f with SMTP id
- ada2fe7eead31-4b3d10485b5mr1502790137.18.1736340575232; Wed, 08 Jan 2025
- 04:49:35 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YStqh107xz30VL
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  9 Jan 2025 03:37:19 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 508BkaTZ024752;
+	Wed, 8 Jan 2025 16:36:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=Eeb+5bbQwiD1cuiyT
+	eHIf8yHJDqRjV/gy6/cIxE2XqY=; b=pjBqCBO1k6/Yy7gtpNCApxWfPZI9mbFZf
+	ya/ouAoBB+tTHu+7lvonTL3DLo5F1gEWq6u5oHNr5k47uXG51lNJkwRYR/sCo3C1
+	ik87Kjqj0h0u7t2PmAzoUOSIxZGX0OF8ML0q5xxHj8P4t9oRRoeaUFFLKEZxdPbM
+	sTpeUEOwdPjJCX7egA5wvUgbdNuH1dWwhDNaijCCJwMvrwToQSd0pVdcujI6qmYN
+	WnqWH/Zip41yvSOfTKhMvlzOfidmoVHvdVIm9+TeHn0SPqVIWYFU8fx9ke5b5hfl
+	GxsscyipPos5jI0NsfTBNjtnGnCy1uIR5bbaXrWW0/EdE/SQPhTSA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 441edj42kr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Jan 2025 16:36:49 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 508GWffH001185;
+	Wed, 8 Jan 2025 16:36:48 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 441edj42kn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Jan 2025 16:36:48 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 508E3ikH028054;
+	Wed, 8 Jan 2025 16:36:47 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 43yhhk8fu4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Jan 2025 16:36:47 +0000
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 508Gajd124707608
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 8 Jan 2025 16:36:46 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DB73558063;
+	Wed,  8 Jan 2025 16:36:45 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B85F958058;
+	Wed,  8 Jan 2025 16:36:44 +0000 (GMT)
+Received: from gfwa153.aus.stglabs.ibm.com (unknown [9.3.84.127])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  8 Jan 2025 16:36:44 +0000 (GMT)
+From: Ninad Palsule <ninad@linux.ibm.com>
+To: minyard@acm.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+        kuba@kernel.org, pabeni@redhat.com, ratbert@faraday-tech.com,
+        openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org,
+        joel@jms.id.au, andrew@codeconstruct.com.au,
+        devicetree@vger.kernel.org, eajames@linux.ibm.com,
+        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: Ninad Palsule <ninad@linux.ibm.com>
+Subject: [PATCH v3 02/10] bindings: ipmi: Add binding for IPMB device intf
+Date: Wed,  8 Jan 2025 10:36:30 -0600
+Message-ID: <20250108163640.1374680-3-ninad@linux.ibm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250108163640.1374680-1-ninad@linux.ibm.com>
+References: <20250108163640.1374680-1-ninad@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,64 +99,79 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
-In-Reply-To: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 8 Jan 2025 13:49:23 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdVpDWFt+3EBeiGfia3DXDL+LNg976FBm32vNEnJdSx4uQ@mail.gmail.com>
-X-Gm-Features: AbW1kvaX9wLk6edIIBJWmWkhpdJHnfaq_7CxFB_flrYoOUJ_oqU6wmphd1LCLQ4
-Message-ID: <CAMuHMdVpDWFt+3EBeiGfia3DXDL+LNg976FBm32vNEnJdSx4uQ@mail.gmail.com>
-Subject: Re: [PATCH] dt-bindings: usb: Correct indentation and style in DTS example
-To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Justin Chen <justin.chen@broadcom.com>, 
-	Al Cooper <alcooperx@gmail.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, Florian Fainelli <f.fainelli@gmail.com>, 
-	Benjamin Bara <benjamin.bara@skidata.com>, Bjorn Andersson <andersson@kernel.org>, 
-	Ahmad Zainie <wan.ahmad.zainie.wan.mohamad@intel.com>, 
-	Del Regno <angelogioacchino.delregno@collabora.com>, 
-	Tianping Fang <tianping.fang@mediatek.com>, Jassi Brar <jaswinder.singh@linaro.org>, 
-	Biju Das <biju.das.jz@bp.renesas.com>, 
-	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, 
-	Francesco Dolcini <francesco.dolcini@toradex.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
-	Alexander Stein <alexander.stein@ew.tq-group.com>, linux-usb@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	linux-tegra@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: G7djX-H4gCRzpCafK7OHUYyecHfPp2sg
+X-Proofpoint-ORIG-GUID: MfxIFkF6SMTBxEuT45eu-RQSixEpBh8E
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 mlxscore=0
+ lowpriorityscore=0 bulkscore=0 mlxlogscore=999 phishscore=0 malwarescore=0
+ impostorscore=0 priorityscore=1501 clxscore=1015 adultscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
+ definitions=main-2501080137
 
-On Tue, Jan 7, 2025 at 2:10=E2=80=AFPM Krzysztof Kozlowski
-<krzysztof.kozlowski@linaro.org> wrote:
-> DTS example in the bindings should be indented with 2- or 4-spaces and
-> aligned with opening '- |', so correct any differences like 3-spaces or
-> mixtures 2- and 4-spaces in one binding.
->
-> No functional changes here, but saves some comments during reviews of
-> new patches built on existing code.
->
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Add device tree binding document for the IPMB device interface.
+This device is already in use in both driver and .dts files.
 
->  .../bindings/usb/renesas,rzv2m-usb3drd.yaml   | 36 ++++++++---------
->  .../bindings/usb/renesas,usb3-peri.yaml       | 24 +++++------
+Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+---
+ .../devicetree/bindings/ipmi/ipmb-dev.yaml    | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/ipmi/ipmb-dev.yaml
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be> # renesas
+diff --git a/Documentation/devicetree/bindings/ipmi/ipmb-dev.yaml b/Documentation/devicetree/bindings/ipmi/ipmb-dev.yaml
+new file mode 100644
+index 000000000000..a8f46f1b883e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/ipmi/ipmb-dev.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/ipmi/ipmb-dev.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: IPMB Device
++
++description: IPMB Device interface to receive request and send response
++
++maintainers:
++  - Ninad Palsule <ninad@linux.ibm.com>
++
++properties:
++  compatible:
++    enum:
++      - ipmb-dev
++
++  reg:
++    maxItems: 1
++
++  i2c-protocol:
++    description:
++      Use I2C block transfer instead of SMBUS block transfer.
++    type: boolean
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        ipmb-dev@10 {
++            compatible = "ipmb-dev";
++            reg = <0x10>;
++            i2c-protocol;
++        };
++    };
+-- 
+2.43.0
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
 
