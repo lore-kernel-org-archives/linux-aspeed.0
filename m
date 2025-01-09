@@ -1,78 +1,174 @@
-Return-Path: <linux-aspeed+bounces-384-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-385-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1094E77197
-	for <linux-aspeed@archiver.kernel.org>; Thu,  9 Jan 2025 14:54:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 220BDE77188
+	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Jan 2025 03:56:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YTSVN2VtGz3bVl;
-	Fri, 10 Jan 2025 01:54:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736434460;
-	cv=none; b=Qr4LNU/3HUowBdtmrT5jscPlSIWx36JDU+lVG96elG99LHVrEBXZdSOlyrI0llFQ81QKtCJWLtMj9e2Y/I82HO3lgZuo2SoNeMlZLvn3fiWTf9NFCAcq7KSEthzMCdF/xeqYaAoJKZbD5OdkPT+5h5/oOPivm7DPsLIACdNn9F72y9hu126Tb4Th4XIQpZGXfew7FV+PUSN+9jk/2VtS+S/EXBMNRZB+9huFFGJTVonfqpVX3LjsV5/YEX+Q/n+IYFZAsRSOQGiSOD6wlufwutbNvbSWZkmeB3fU7NrtH0N2Ho4a2t5gxftlTfjinpdvZqiuoK09OnryAtI72/Uv/A==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736434460; c=relaxed/relaxed;
-	bh=XS2zHmL8eJvwlmo1sEnhOq6r1rAGjvGYbp8ZEUGFl1Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bAmIVrsMvbEZWbcDCcEphenNyFC6BePP4YN/EweF3mDOrvR4ninjHt5q2iNjYl4H3ASqEUkd+LuN/aFOw8r2B7eV1mx8dBBT2NqdSl3vidmWTGhTxsZr1EJwxqBdL8oxwCk4smGEQa3LKyZAsZpEZ2IO0bHzzZ9XJe/9GqfEHcIBpesb646ZUt5Tn4YF4rceBxX0iw+bQuys/u/TyYY3cvFuCIrBCCgzDKLBNck9t6EryEzQs/h0PN00Uil7iau85F9fAbHX3JQH17j/ET/N8InGt9axuMYUJlmWErJTOJNzz3ZAU72L/ckDuGJtI4G8On+BdLZfuaer9UakVaFJbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=e5HM2Lc7; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YTnrf449Qz30Nl;
+	Fri, 10 Jan 2025 14:56:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2011::720" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736418833;
+	cv=pass; b=PvkjJ01c/sTTZqhZ2t1hxftzOwu8uCCC9J31twBbd+2yRIPKy2Htrt7BfD5/iUY0JQ8CEV46XTWeqgaG7GzIzKrUw1iOzsNZ1zbRnftx6fiKOCW6tuEX5Zo9CWys4i4VLKYuePpX4JUImUrjbfB9hvgUNlmsnImk0MpDXZNbJgRTMS98QNGS5IkSw+BuptmmxuW3gaTkLqh0yrY9lxiABsgeD5Z0L6RULjZxSdIw3/FZUhXBOiC6JA5JZEWe2nYwzChMc2D7d6jih7jHzJYhVL72cffWVyg7LLuHTF5xfIQwg+5ePgNFFfGEfIkeA6/dPU/GAVhBH678XvJ9kxmeAA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1736418833; c=relaxed/relaxed;
+	bh=HYEeul6B3x4Jxe1kWbtwZ7O0+30C2HHCpUEyvi8rZd0=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=CSpW0oDzkCy5+eHiLG1Au0Gqn6gdfMFpbuEj7UjM3e52Cqt6yIZdDH9ZxSeYj/hqBsS4qFJuYGaGoHspz83MlJBmYbTl9Irn/K+cFKITZIuvPNDWC/YMoEpcNHbzlRMU5tmYzObtUEdKHnXZlqzD5eTAgUVZqxTD1RNWQBONGtf1KCr3P+j2O2z2blStyE6IWS72eBToqRv7sVjktLO/Pbqv39XCEfbzyL0tHAE14rteroEGCfwdMW93DAiK6tDy4pXJzQfqo5tIyOuM6rzPcAWs3k3OBoBrI0VtXjBf+E9tVGG3cFHJLsI295bqxjK8i5VZyApAtJCxQAQjt5xxsg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=PMuDI3fr; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2011::720; helo=apc01-tyz-obe.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=e5HM2Lc7;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=PMuDI3fr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:2011::720; helo=apc01-tyz-obe.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on20720.outbound.protection.outlook.com [IPv6:2a01:111:f403:2011::720])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YTSVM1tMyz2yRP
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Jan 2025 01:54:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=XS2zHmL8eJvwlmo1sEnhOq6r1rAGjvGYbp8ZEUGFl1Q=; b=e5HM2Lc7Oc/aGxpK7LuQgCbm00
-	xw1HYHPDQtPmf7zSBPtz8vsJNAAMNfQQ2FuneHutnkBVy2KVQ1n5a4kMYJuQUBEgP+7S2ZbiK6OMw
-	aaSH+H26CrsWNk4ic2+hnuMT9zDDAai41SWYjVi8Ia+UDfujLoXB0n/Kfdvx9zRwKk4g=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1tVtvB-002vFx-GY; Thu, 09 Jan 2025 15:54:05 +0100
-Date: Thu, 9 Jan 2025 15:54:05 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Ninad Palsule <ninad@linux.ibm.com>
-Cc: Jacky Chou <jacky_chou@aspeedtech.com>,
-	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YTLjn47szz3bTD
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  9 Jan 2025 21:33:47 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=vj8Q79cHRTYmrDzy7uzbsCUQOJN37nNciuy6ZlIKSffrkR83gx/8xg4/QHO8XpKA+nwG7W63ss0Ypp1WY+sz6fxMoXaDxW0pIuGp2RjfNDVVuWev8cFpJPF2Ocv3675rJhEGw1T735reZKM3LLJlxkPAnIHuTBPhZRlrb/R9mOa6/PHyKJiZBdt+6QOe1hy5nNwYDYu2X/9ILPlbIsuuaC3TNfktEpkUJDubN8iX9351V3aJfj05YrdYClsYrJfsI5i6BME2bM9Y8OyX300HNNNZZ85xk4arCq8VK+MsZ+OzUPyvxcACV4XkAcukuS2R4G2t+HAUpQMl5ZxzHOY1HQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=HYEeul6B3x4Jxe1kWbtwZ7O0+30C2HHCpUEyvi8rZd0=;
+ b=Cmk6uLwiATgr5vEDLKLOnjXjCSNCBX6ZzuzoRkdzZHCHrTgzZARdMReikmx4wFM58NfH3W7Y4YQwsJN/OKR5s3F1nZJ9FB0i0WjBpZAvyTvT8KsjCSEPlkuyPa+JFvkT6rIEo5kHXcrGa5kHLpexd5eJsVNOtSGXpU32Z/TjW21pddOgLv3xxGnaNpnAB8lqsZ+QncNY9PPuSmnhmEMiqQLQLb/oJtrBLdAmQviTb7jaKwHlNknV3w5X2zWP3FZczqUYY1NLewy1ZFPHkIjhqB1uY+/afo5HZcEkbhAENrVaEP+HCdc1Gved/rQGHt744nrex7l1/nVgiXREE5tqqQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HYEeul6B3x4Jxe1kWbtwZ7O0+30C2HHCpUEyvi8rZd0=;
+ b=PMuDI3frYscH1jqoRRthh1EsmTsASwSgwAeJQ2f2WeaV3XCWD9g44K33sPdsDIxsXQg0RZw6gZNxqWsDIyfPB7Y6I8L1wasFuS0LcZqjvu0u/J26T7nmUGQe/7U4dJ7mrStRx1UGormHge0y36NqfKuZ/iegnFFgtEwIu0NQn0ZFaxeGLDaAdpJSbc3xwqUeZ0R+NF/oU3ZjSuSSXQ94YIWBbjMFsWkNOEgdh3Bt6xrjr3AHKK/w5UTiiOQewb/vj/GmZrmzP39D47PTLSeHJc/4/Xw7MmAh9uyzk1sQQA0aqVynYW8SmATlnULxP1AoRTSql9xdR1kjd/Cfn3L3ag==
+Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
+ by TYZPR06MB6513.apcprd06.prod.outlook.com (2603:1096:400:452::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8335.9; Thu, 9 Jan
+ 2025 10:33:20 +0000
+Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
+ ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
+ ([fe80::6b58:6014:be6e:2f28%5]) with mapi id 15.20.8335.007; Thu, 9 Jan 2025
+ 10:33:20 +0000
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+To: Andrew Lunn <andrew@lunn.ch>, Ninad Palsule <ninad@linux.ibm.com>
+CC: "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
 	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"davem@davemloft.net" <davem@davemloft.net>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"eajames@linux.ibm.com" <eajames@linux.ibm.com>,
-	"edumazet@google.com" <edumazet@google.com>,
-	"joel@jms.id.au" <joel@jms.id.au>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>,
-	"kuba@kernel.org" <kuba@kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"minyard@acm.org" <minyard@acm.org>,
+	"conor+dt@kernel.org" <conor+dt@kernel.org>, "davem@davemloft.net"
+	<davem@davemloft.net>, "devicetree@vger.kernel.org"
+	<devicetree@vger.kernel.org>, "eajames@linux.ibm.com"
+	<eajames@linux.ibm.com>, "edumazet@google.com" <edumazet@google.com>,
+	"joel@jms.id.au" <joel@jms.id.au>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
+	"kuba@kernel.org" <kuba@kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "minyard@acm.org" <minyard@acm.org>,
 	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"openipmi-developer@lists.sourceforge.net" <openipmi-developer@lists.sourceforge.net>,
-	"pabeni@redhat.com" <pabeni@redhat.com>,
-	"ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
+	"openipmi-developer@lists.sourceforge.net"
+	<openipmi-developer@lists.sourceforge.net>, "pabeni@redhat.com"
+	<pabeni@redhat.com>, "ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
 	"robh@kernel.org" <robh@kernel.org>
-Subject: Re: =?utf-8?B?5Zue6KaGOiBbUEFUQw==?= =?utf-8?Q?H?= v2 05/10] ARM:
- dts: aspeed: system1: Add RGMII support
-Message-ID: <c05c0476-c8bd-42f4-81da-7fe96e8e503b@lunn.ch>
-References: <SEYPR06MB5134CC0EBA73420A4B394A009D122@SEYPR06MB5134.apcprd06.prod.outlook.com>
+Subject:
+ =?big5?B?pl7C0DogW1BBVENIIHYyIDA1LzEwXSBBUk06IGR0czogYXNwZWVkOiBzeXN0ZW0x?=
+ =?big5?Q?:_Add_RGMII_support?=
+Thread-Topic: [PATCH v2 05/10] ARM: dts: aspeed: system1: Add RGMII support
+Thread-Index: AQHbYX4ZqwUnoFUOykuCVX4SkD1z27MNKUAAgABN4QCAAApFgIAAvO3A
+Date: Thu, 9 Jan 2025 10:33:20 +0000
+Message-ID:
+ <SEYPR06MB51344BA59830265A083469489D132@SEYPR06MB5134.apcprd06.prod.outlook.com>
+References:
+ <SEYPR06MB5134CC0EBA73420A4B394A009D122@SEYPR06MB5134.apcprd06.prod.outlook.com>
  <0c42bbd8-c09d-407b-8400-d69a82f7b248@lunn.ch>
  <b2aec97b-63bc-44ed-9f6b-5052896bf350@linux.ibm.com>
  <59116067-0caa-4666-b8dc-9b3125a37e6f@lunn.ch>
- <SEYPR06MB51344BA59830265A083469489D132@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <8042c67c-04d3-41c0-9e88-8ce99839f70b@lunn.ch>
- <c0b653ea-3fe0-4bdb-9681-bf4e3ef1364a@linux.ibm.com>
+In-Reply-To: <59116067-0caa-4666-b8dc-9b3125a37e6f@lunn.ch>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|TYZPR06MB6513:EE_
+x-ms-office365-filtering-correlation-id: 8da9f795-a645-4473-a854-08dd309909b1
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|7416014|1800799024|366016|38070700018;
+x-microsoft-antispam-message-info:
+ =?big5?B?S3RWaWlrdmxhWXNabzVRUTNWZTdvUkFIQVdqTjMzVHJZdDJRWFEzYVRydjZpMG5m?=
+ =?big5?B?bXZMbDltSkRLSTB4V3RMYWt2a3RPTVZTSFlzMU1VbStBbEJEbjlDMHorL2ZYTDVJ?=
+ =?big5?B?R1dHQmMwUUo5SmFuclBvY2FDMmNHTUVqZkhyNk5tVUVQTGNYM1Fac1hyN1JuYjND?=
+ =?big5?B?dHFsUHNBenRUUSswK2k2L1Foc042SllwT1d0L3U4cTFBSlRuaTZhKzE4bVlFS0xl?=
+ =?big5?B?eE81eWpMdkI1cWRPWmJaN3kvbWJYZkxKU0VHNzRwdklBQ2Nid0RMUCtMeGNTZkY1?=
+ =?big5?B?ZjdmMW9ZQ0NTcnJtVm45cVo3ZTR0dzU0bkZZV0tTVXduZWltUkQ1WHVNcGNBUTMy?=
+ =?big5?B?SmNXbDJBanJhWGx0MDBJTWJDOFVGTFBOTTQ4RnZlTWJXQ0lIaWlSZ2tUOXljU3lQ?=
+ =?big5?B?TUhWS1R1SVpOcVBmWHVxaGNsaHVGRFh4WmF4ZC90OU10KzAwcnhDSVRoNjdEQ1k5?=
+ =?big5?B?ZThNeEFWaGRPYnFIekd3WTNpeU1PaURRdmNxbmJTTUk0eWpNcE9xQmdrUTNybGZq?=
+ =?big5?B?YmhkZWtlWEVJblNmNWU4eHdiR3dLcEhJNFhzVzh0VUszZUdzWVNtZjM3WlRlNUt0?=
+ =?big5?B?ai9wTUIzL1lONlMvVUxnVk1JRTh1ZUFMUHdrUHpReTVMUXo0NGJQUTR3Q2o3WXVQ?=
+ =?big5?B?K2hLTnBseEZ4Q0o3bjdRdFkyd1JidWlrc2lNbVBNZ3Zsb0V6V2UwZjVQRkpra2Jw?=
+ =?big5?B?SzVtWVFZMElleFZ3bVIwVWlFUWo1eW5xckk3dWl3Z3k3UjFFb21teEZzRktyUzlk?=
+ =?big5?B?Wkc5d1d1OUxFUS80RjFiOWtpMDVURm5VQ3U1YUVLQUUxNU5DR1RLRnNkME8ySkk3?=
+ =?big5?B?V3FJRVVVNEE5Ymx4K0lTOEdnVHgzUVArdVhidW1tUG5mQXV2UUM4ZmFhOEtQby9I?=
+ =?big5?B?RjNlUVJ1eWw4TWtCSEkzQldzZzlWRmJ3NmdXaDBmYUR6Y3ZpVXpydnpjek5FOWZn?=
+ =?big5?B?WXQ1Ti9ZZ1BPQzFZMlhncVFTUlRhRGdsUGpudDQxTW0vVnNzTkx6dDA1aEFOV2hW?=
+ =?big5?B?cENtQ1hFek9EOWlnZzNxUENCWUt4RVpWWEg3bzJVNHNRUG56STlvZ094OVhZZnRO?=
+ =?big5?B?em1SdEF4b0ZPS2J5V1RCYytkMDdSQ3FLWDhwSU9EWUx2TUlya0Y2ZTBGQWc1ZTlS?=
+ =?big5?B?MWQxZjJZYkNrWWY5M1FJM3E1SWpYU21EcmpFQ0FKVGxGbjlHUFErS3JQYTRmbXFJ?=
+ =?big5?B?K2xlTzlmY1ZNNkV1NTh5YVlzSmdKdWI2d3diYnFTeCtqaExaZktDSmt1RW9DOHBP?=
+ =?big5?B?Qnhpek1xOWVTbXlKa3dWOTBmWm1oWmdncEFTcFhFR3BrVEtSRTFyK21pSkJBWU1C?=
+ =?big5?B?STAwNmNkVTBtQURFUU5jYUorajNSVmE4aGJ2ZWhveGtqRkhxT3U3QVBLdTE4WkhS?=
+ =?big5?B?d0ZyUStjUmRpeUJpN0NPdVllZkhzeDZDZHYraVVNT1YwWGs4SHpRWUNXdmxDbjZa?=
+ =?big5?B?UWF0Szh4d3pFQ3dISDVRc08reDNCYWJwZzFaUjVRRVlXdTlUOUtUTHZneDFJL21K?=
+ =?big5?B?dmZXZHRDa2I1UFNVU0MwRlFHWEhJQ2J4T1hKcUFrSzRrbUZRSVdLbW5Yd1M4Uzl2?=
+ =?big5?B?NU1ES2NNVnhjTzhVaW91a2tYQTdKa1VVakZWc1ZIMzBPN05Ud2RUUDVUQ2l3aDh0?=
+ =?big5?B?K0RaSzdzVjQrRzl0R1FwN2l6bzA2OVdTSnJFOWw0UVFqdlZwN251MmRwekdJZlUx?=
+ =?big5?B?b2V2RlQyOTFVcTZCODdhYXJNVllKSTB2bWpjMUlSbk1WbUdEZFhjSmlHMnR3STMw?=
+ =?big5?Q?aI5T6DDBm4vz1VeE?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(38070700018);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?big5?B?ODBYUWJxTlVuakJIVHgwaXErbUJuUFJsSFJqbE92WTkrSU5PMmJ2aU83c3I4dWd4?=
+ =?big5?B?M0pHdk9QVXVkUEwvQzBKVnpqM1o4MEs4aElwTzJWbkxLVEdIbjRKVTZBNC9DcHo2?=
+ =?big5?B?QUN5cVhpZUNRZHlWN1Y3R2tyT2Q5NHR0TDZNQ2FzTk9lOFlVTzFaUk5aL202MWFz?=
+ =?big5?B?M3EwWE9TcFgyL01XZVc3cG9HK2dYYVA1WlRyMFJRYWg1azM1aWNHK3FiMEtVSWdu?=
+ =?big5?B?d1czZjhaN29PZGN2L3QrVkt0VmtJbUtJbmlzNmxSRDJzYnhlU3JKYTJ1TlkxQ1BI?=
+ =?big5?B?NEtFcUVJSGNqYmVHMi9XdnkwN1JpR3Y2V2k3dHBzUkRabnhZYWxROUlQN1U0dVI0?=
+ =?big5?B?Qy9YR0o0ZFdYdUwwM0dOYm5zR2NhWU5TTFk2WjVuU2tId09Gb3l6VlU5SndFWUVt?=
+ =?big5?B?ZFdzdk01TWNEem1ITnBkYjhGZXIxNXR4NDF0eVg1ZVlhQU44eGlWdHVaU25Vb0V5?=
+ =?big5?B?QVJ0WkQ1NVNoQVJzMTM2TW5jZ2M2QjBWOWtpTTY5Y2Y4TUd1dVhWblI1YWpxdGUw?=
+ =?big5?B?YjByQzRzM0tFSldxelNhUjR1N3lrcjBxcnp6UzJIZTVXaTVSeGdLcEJUYUwxTlVY?=
+ =?big5?B?Yzl1ZVhHekt5aHBJQ3N6RDhkZkdWNCtoVndleGZoTVF4TzUwdEYrcWR2YzBYcC9w?=
+ =?big5?B?YXZzMHVqblZObVV5bXowZTJaekdaWklmdDBlS3F0SXo3blJ2Z1BmaEsvT3lNMmp4?=
+ =?big5?B?WmtZRWFRRkJoQVpJL3d4QWUxWVg2YTZ6TmlGdDVDbnVCN25BOEE5eU8wbWtLa291?=
+ =?big5?B?R3pXdXpFZFE1MDZHU3FmeUo2ZmNjcFJBbnR4SlQ2UXBGQ2d6N0VUOHRuK2U5cDJn?=
+ =?big5?B?blNVK2w3NTdJakR5WS9FZjJ4Q1diaTJzckdTZVQvazQrTlFvbWFEVXhlU2d6clR1?=
+ =?big5?B?SHhmcnF1bW5mL1pCQjBzc2duVGR1NzZmWEgxQi9zYjFKVDZRSEJRUmFCYmtwOHVW?=
+ =?big5?B?OFNoTHE4Um9UNWVoR2ZreFRuWVB4VTMvWVBRQk5CR3VRTmtNcXRhdHZmVkdBTWt1?=
+ =?big5?B?K29meGVPMG51bUNucDBBRGhYUllUSUVjd3AyZDVGa09uNFhVWElkUXNTNFhra1Zu?=
+ =?big5?B?cXpVbXpFSG1aV25oYWFTbHgwb055Njc1cGZRWVkyS3ZBcVpLd2hWQ1dVTVFCRFBU?=
+ =?big5?B?RmFOYTFkdzNicFZFbGhucFVhTWJkak43TWRwZTF5aXhMSkdWYnU0YlYzQnlzRUU1?=
+ =?big5?B?N2pzRnp0UkhKcHhpcFlIS3FDVmRRZk5HMEhsdiswRHRSTFFNL1JJbmtndzNBb0ls?=
+ =?big5?B?THdaL3owTDdlb3NRVmJlV2prSDNzSlUvVWU5cmM2ejgwb3JPOU5tRXZaZjlFSVpl?=
+ =?big5?B?STRveXhiS0U0dXZkZmVaU21VUW83MGgvWm1uekpGYk5INENrczI3VFQwVVdQVFNq?=
+ =?big5?B?TTFGeVlnVEQzTGdBSVVBOXZUcDNkK0VUeXhsbEJ0VG1kWUM3Z1c1QUFrdEMrdXBR?=
+ =?big5?B?TmsvKzhHRFpuVE8vL1JuNlRQekFiM0dpR25YS0VzRVB0TllXc3l0YjMyWXpYbjJm?=
+ =?big5?B?djhlV0RFZlRmU3RrZGNtWlNsejcvaVlSS25tTktNVGx0empCdnlDU1QrbWU5Nlhl?=
+ =?big5?B?TWhIdWE3bURySkNrSUhUeTRWMkR2NGdoWHZzSWNPTVhoc05PaVhmeWREYXEwR2hn?=
+ =?big5?B?V1B6OGI0UEtjSFZsQmdCdFg1SE9GUFpLem1tR0d1VWQ4Wks5Wm4xUWhCc2dHWUR6?=
+ =?big5?B?WlgwSDBLVVIzb3hkUGljbGd4enRiaEhramdjdUNlb0F5SzQ2eENBZkNBYnBDSVhV?=
+ =?big5?B?UUxidVI2L2lnMWJNMlpmSnUydE5IbjFlYk9YNjdKMmNNV2xHenVJbEZ3dm9FRGdC?=
+ =?big5?B?ZWk0cFZNcll5cVlMYmRjY0FUTTV6TEk1eWhneXdqb0RLdjRUeFNQRkR5K2s5YXZn?=
+ =?big5?B?d3ptcnBZdE5JOXVNRklFS3d0b0FtK0J4bU5NdUMrbzJ4a2EyS2c4bDRWTzZGT1kz?=
+ =?big5?B?V2xVNTNid2w0ZWhRN21wM1RxSVlPVWNveGRZcnlSdFB2ZTA1c2wzNGRjeWNZamFP?=
+ =?big5?Q?KM6L1A1c0NxNPVPd?=
+Content-Type: text/plain; charset="big5"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,90 +181,36 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c0b653ea-3fe0-4bdb-9681-bf4e3ef1364a@linux.ibm.com>
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8da9f795-a645-4473-a854-08dd309909b1
+X-MS-Exchange-CrossTenant-originalarrivaltime: 09 Jan 2025 10:33:20.6823
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: QthDJUDpsDu7sk0aTARdlic7koCE3uk5ICezUFFsDfjS1//p5EmXsK9sG3kd5jr+aeoXmJkQ+ogdRcm4NZLV7M2l6HA7eWrCX3wPG4cRNF8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB6513
 
-On Thu, Jan 09, 2025 at 08:25:28AM -0600, Ninad Palsule wrote:
-> Hello Andrew,
-> 
-> On 1/9/25 07:21, Andrew Lunn wrote:
-> > On Thu, Jan 09, 2025 at 10:33:20AM +0000, Jacky Chou wrote:
-> > > Hi Andrew,
-> > > 
-> > > > > There are around 11 boards in Aspeed SOC with phy-mode set to "rgmii"
-> > > > > (some of them are mac0&1 and others are mac2&3). "rgmii-rxid" is only
-> > > > mine.
-> > > > > No one in aspeed SOC using "rgmii-id".
-> > > > O.K, so we have to be careful how we fix this. But the fact they are all equally
-> > > > broken might help here.
-> > > > 
-> > > > > > Humm, interesting. Looking at ftgmac100.c, i don't see where you
-> > > > > > configure the RGMII delays in the MAC?
-> > > > This is going to be important. How are delays configured if they are not in the
-> > > > MAC driver?
-> > > The RGMII delay is adjusted on clk-ast2600 driver. Please refer to the following link.
-> > > https://github.com/AspeedTech-BMC/linux/blob/f52a0cf7c475dc576482db46759e2d854c1f36e4/drivers/clk/clk-ast2600.c#L1008
-> > O.K. So in your vendor tree, you have additional DT properties
-> > mac1-clk-delay, mac2-clk-delay, mac3-clk-delay. Which is fine, you can
-> > do whatever you want in your vendor tree, it is all open source.
-> > 
-> > But for mainline, this will not be accepted. We have standard
-> > properties defined for configuring MAC delays in picoseconds:
-> > 
-> >          rx-internal-delay-ps:
-> >            description:
-> >              RGMII Receive Clock Delay defined in pico seconds. This is used for
-> >              controllers that have configurable RX internal delays. If this
-> >              property is present then the MAC applies the RX delay.
-> >          tx-internal-delay-ps:
-> >            description:
-> >              RGMII Transmit Clock Delay defined in pico seconds. This is used for
-> >              controllers that have configurable TX internal delays. If this
-> >              property is present then the MAC applies the TX delay.
-> > 
-> > 
-> > You need to use these, and in the MAC driver, not a clock driver. That
-> > is also part of the issue. Your MAC driver looks correct, it just
-> > silently passes phy-mode to the PHY just like every other MAC
-> > driver. But you have some code hidden away in the clock controller
-> > which adds the delays. If this was in the MAC driver, where it should
-> > be, this broken behaviour would of been found earlier.
-> > 
-> > So, looking at mainline, i see where you create a gated clock. But
-> > what i do not see is where you set the delays.
-> > 
-> > How does this work in mainline? Is there more hidden code somewhere
-> > setting the ASPEED_MAC12_CLK_DLY register?
-> 
-> I think the code already exist in the mainline:
-> https://github.com/torvalds/linux/blob/master/drivers/clk/clk-ast2600.c#L595
-> 
-> It is configuring SCU register in the ast2600 SOC to introduce delays. The
-> mac is part of the SOC.
-
-I could be reading this wrong, but that appears to create a gated
-clock.
-
-hw = clk_hw_register_gate(dev, "mac1rclk", "mac12rclk", 0,
-	       		scu_g6_base + ASPEED_MAC12_CLK_DLY, 29, 0,
-			&aspeed_g6_clk_lock);
-
-/**
- * clk_hw_register_gate - register a gate clock with the clock framework
- * @dev: device that is registering this clock
- * @name: name of this clock
- * @parent_name: name of this clock's parent
- * @flags: framework-specific flags for this clock
- * @reg: register address to control gating of this clock
- * @bit_idx: which bit in the register controls gating of this clock
- * @clk_gate_flags: gate-specific flags for this clock
- * @lock: shared register lock for this clock
- */
-
-There is nothing here about writing a value into @reg at creation time
-to give it a default value. If you look at the vendor code, it has
-extra writes, but i don't see anything like that in mainline.
-
-	Andrew
+SGkgQW5kcmV3LA0KDQo+ID4gVGhlcmUgYXJlIGFyb3VuZCAxMSBib2FyZHMgaW4gQXNwZWVkIFNP
+QyB3aXRoIHBoeS1tb2RlIHNldCB0byAicmdtaWkiDQo+ID4gKHNvbWUgb2YgdGhlbSBhcmUgbWFj
+MCYxIGFuZCBvdGhlcnMgYXJlIG1hYzImMykuICJyZ21paS1yeGlkIiBpcyBvbmx5DQo+IG1pbmUu
+DQo+ID4NCj4gPiBObyBvbmUgaW4gYXNwZWVkIFNPQyB1c2luZyAicmdtaWktaWQiLg0KPiANCj4g
+Ty5LLCBzbyB3ZSBoYXZlIHRvIGJlIGNhcmVmdWwgaG93IHdlIGZpeCB0aGlzLiBCdXQgdGhlIGZh
+Y3QgdGhleSBhcmUgYWxsIGVxdWFsbHkNCj4gYnJva2VuIG1pZ2h0IGhlbHAgaGVyZS4NCj4gDQo+
+ID4gPiBIdW1tLCBpbnRlcmVzdGluZy4gTG9va2luZyBhdCBmdGdtYWMxMDAuYywgaSBkb24ndCBz
+ZWUgd2hlcmUgeW91DQo+ID4gPiBjb25maWd1cmUgdGhlIFJHTUlJIGRlbGF5cyBpbiB0aGUgTUFD
+Pw0KPiANCj4gVGhpcyBpcyBnb2luZyB0byBiZSBpbXBvcnRhbnQuIEhvdyBhcmUgZGVsYXlzIGNv
+bmZpZ3VyZWQgaWYgdGhleSBhcmUgbm90IGluIHRoZQ0KPiBNQUMgZHJpdmVyPw0KDQpUaGUgUkdN
+SUkgZGVsYXkgaXMgYWRqdXN0ZWQgb24gY2xrLWFzdDI2MDAgZHJpdmVyLiBQbGVhc2UgcmVmZXIg
+dG8gdGhlIGZvbGxvd2luZyBsaW5rLg0KaHR0cHM6Ly9naXRodWIuY29tL0FzcGVlZFRlY2gtQk1D
+L2xpbnV4L2Jsb2IvZjUyYTBjZjdjNDc1ZGM1NzY0ODJkYjQ2NzU5ZTJkODU0YzFmMzZlNC9kcml2
+ZXJzL2Nsay9jbGstYXN0MjYwMC5jI0wxMDA4DQoNCldlIHJlY2VudGx5IHBsYW4gdG8gdXBzdHJl
+YW0gdG8gbWFpbmxpbmUgdGhpcyBwYXJ0IGFib3V0IHRoZSBSR01JSSBkZWxheSBjb25maWd1cmF0
+aW9uLg0KQWxsIE1BQyBSR01JSSBkZWxheSBvZiBhc3QyNjAwIGFyZSBjb25maWd1cmVkIG9uIHRo
+ZSBTQ1UgcmVnaXN0ZXIuDQpBcyBtZW50aW9uZWQgYmVmb3JlLCB3ZSB3b3VsZCBsaWtlIHRvIGNv
+bmZpZ3VyZSB0aGUgUkdNSUkgVFgvUlggZGVsYXkgb24gQk1DIHNpZGUuDQpUaGVyZWZvcmUsIHdl
+IHVzZSB0aGUgInJnbWlpIiBhbmQgInJnbWlpLXJ4aWQiIGFzIHRoZSByZWNvbW1lbmRhdGlvbiBm
+b3Igb3VyIGRlc2lnbi4NCg0KVGhhbmtzLA0KSmFja3kNCg==
 
