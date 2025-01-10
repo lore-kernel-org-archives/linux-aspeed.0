@@ -1,51 +1,50 @@
-Return-Path: <linux-aspeed+bounces-409-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-410-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DADE4E7719E
-	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Jan 2025 14:45:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FD70E77188
+	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Jan 2025 14:45:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YV4GB3qxvz3cXb;
-	Sat, 11 Jan 2025 01:45:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::229"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736520354;
-	cv=none; b=hhJWr75/4eQLsc4E3hP7nvVYhY1YNwz9yB9lK8P4N+MVG3kpYi/4H7RkaQAHzUzzVqBV0hNY0Px3qbYHcZirMkf1KE1fy0JHAUZ5iI4IzRqC2w0g/uGrdpWqYuXHbeYmxCmdsCrMi2A/8lgSAwoJKoMmDA5ESqX5uVBy9eESnNgB/ojVwuAoG82oUGpeWpLtA3dfqKqanuZM81jH+cqxQrcJlO/ZaZZoFk1WLRBTK6XyFlIhYeLy53HtT+dcmbtByA7UYPVZWHaO3PqZ+N2nnJcxQAMAZitnelC07EFoJDASfESJLyfLOut1sodECSnl7T0wViYzcECfBQKV3LJZIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YV4GD1ts6z3cXk;
+	Sat, 11 Jan 2025 01:45:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.183.199
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736520356;
+	cv=none; b=lF2CTALU/TjQOtiHxFfS+sPc/s1/uUcfBtYmNGHTWr9BS2eoNkC6j4rPpA91aXRJSHByBRyVXBhOr2Xbpqs7lWGRzbwDtvMbGJL//BXjPDZStAhUrCTGPAXuOud/Ct/0Ih5fEtkojwkJplxxXiDSI36SS4/2c9NIo7/zh9r7PSZMVKQzcAnJrmdwgze8inuOXThHegBDoLDnTEb7p+0CvlpT+XD8AkNihfWIGnLPLcK+mOYgv2CbvahM82jM36y/b9bnZ7RRZptCuWfD2UpKnXCCtobLEoPKrswO4glCB9gjdBrLcxgGxXh06q6FQ7wLV/575+GYqmkSYXr5FvqH0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736520354; c=relaxed/relaxed;
-	bh=kUGghYrB4WitsSHuF0lDrbtdh7hpjjhPPG7Q2vRUm6U=;
+	t=1736520356; c=relaxed/relaxed;
+	bh=EpRU8Ni8GjnsQQyxRFEa2zYtIybiX1a/U99sUmUB8ik=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=EhthazFIHIpC9DjJfILMy6/ntE7dwDMi3pqKtEyIi8OIXR8bBwowwRAs0mdHnibsj9rbZWbUKEHQusFVkTAq7MXgvgEWemvetYt4XJs5rWIURClLPr454kiULkHdZe9ChA/vJmL4x6gjrLjLMsDBL8a0WRMZMjp8Pda9cxk0KlmT+GyrHQlLPlTeupxQjK9d09kiLEad8mpUXXI9BOfQAZpqBmg8loVSAOJmlcvgKrzH2S7qGMsFMQM1gRhSt8K2hfT2c08nB6UVKGEprtRmkJKGxUOKwk5Y13rGVnQ4KeRp/OZT8/qtq6UrfKQkm9BHUmHZVgJ6GeEXHYLQrd2yEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Sv3UfO/u; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8::229; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	 In-Reply-To:To:Cc; b=QFY9aw+ZlMqzVqU37i4FofELUxVsW9qdqcDFQ/EQ95CZ/zDW16RGVUJPZdIZeRbZ3t88WWLzCwEif0oNKmsAxE5Ou7T2Z5QHdlVt0n91pcx4dtrx7oNTTKmLvlC39h+kUfl6a7Ptxij7bgjPWmGPpUNW0U9+ICFNGU//xLIapoKJAweWnfQ3py0ibrEEGsAo2r544waOiCcWDMNcMTM7oBJiqp80bPnEe1KP5P5WwqYAIkzqkg618w/jJrAgrDfEcd4/f5OAKKMDGzT1jMMRYO9RIv9kbrzBM1ne7CgDQsie/cF+FpaLG8Up1BHALCczOPMjS8fWZpbvsurZy0j/1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ps2xwVTl; dkim-atps=neutral; spf=pass (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Sv3UfO/u;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ps2xwVTl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::229; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::229])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV4G90GGtz3cXq;
-	Sat, 11 Jan 2025 01:45:52 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 7E4C1FF80C;
-	Fri, 10 Jan 2025 14:45:48 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV4GB5YvZz3cXp;
+	Sat, 11 Jan 2025 01:45:54 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 52486FF809;
+	Fri, 10 Jan 2025 14:45:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1736520350;
+	t=1736520352;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=kUGghYrB4WitsSHuF0lDrbtdh7hpjjhPPG7Q2vRUm6U=;
-	b=Sv3UfO/uRhHellLUV7bjdDRHuvtAW2kg1nixqAJ9dIeqwY1briltOT4820Cx4aF7OI3lKe
-	yKMs5cQ67wQ5XdxhqDtPGmVzIGpH6UrQ4nRgNg4hMZD+jZ1NckjoJUh5k1vICzx1Y4VePc
-	tgzkYxcqgrKhpjzakxLL4E5QAI2mTv6BdHqKRQV6EF9F5HG781prtwREpmhsldzoUJ0o8e
-	bX0AfOnOkbJC8L+nYvUX9ST35HS04zMivhXUYqTOddf7lH3PD0aZgZtpd9JLghSYxSg7qn
-	yYE0Q4508naMHRxBzkjaG/RlZVGNsWRP0UVLnzH6ntlBZsgXiqI5yLRqcKWJcw==
+	bh=EpRU8Ni8GjnsQQyxRFEa2zYtIybiX1a/U99sUmUB8ik=;
+	b=ps2xwVTlM2PTpfSbUiaA7GQikbBH2xvfr/ZvvllsjJplPe0WaeZjLR3zfkV5ZPJo9Fsvfw
+	Hvr/eNi/+vf5xgAEq3I6OWryO5KLCo2GlusGdMXRZQN3ls18h+0riFckUUqD9oNbjI/gR5
+	0m3WtbaalZjIWYBQtsudpoGqxwxL12PtG0RvDneXjNijWN6EDWlsydN6yevpu2gg7yKNUr
+	a/p/z1DcxBrwliH5lFJMR7tggXrkA4gBMPupZ1/c4m30EBZPNtO3XRfczF2zZwitdePeJE
+	Y4T+AovB8ht2v/imVIx+K6HoyMofI2fs3bA6uDikBjR/LNw8J9gnI5lezSkcNw==
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Date: Fri, 10 Jan 2025 15:45:19 +0100
-Subject: [PATCH v3 17/27] spi: zynqmp-gqspi: Support per spi-mem operation
- frequency switches
+Date: Fri, 10 Jan 2025 15:45:20 +0100
+Subject: [PATCH v3 18/27] spi: spi-mem: Reorder spi-mem macro assignments
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,7 +59,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250110-winbond-6-11-rc1-quad-support-v3-17-7ab4bd56cf6e@bootlin.com>
+Message-Id: <20250110-winbond-6-11-rc1-quad-support-v3-18-7ab4bd56cf6e@bootlin.com>
 References: <20250110-winbond-6-11-rc1-quad-support-v3-0-7ab4bd56cf6e@bootlin.com>
 In-Reply-To: <20250110-winbond-6-11-rc1-quad-support-v3-0-7ab4bd56cf6e@bootlin.com>
 To: Mark Brown <broonie@kernel.org>, Sanjay R Mehta <sanju.mehta@amd.com>, 
@@ -93,78 +92,60 @@ Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
 X-Mailer: b4 0.15-dev
 X-GND-Sasl: miquel.raynal@bootlin.com
 
-Every ->exec_op() call correctly configures the spi bus speed to the
-maximum allowed frequency for the memory using the constant spi default
-parameter. Since we can now have per-operation constraints, let's use
-the value that comes from the spi-mem operation structure instead. In
-case there is no specific limitation for this operation, the default spi
-device value will be given anyway.
+Follow the order in which all the `struct spi_mem_op` members are
+defined.
 
-The per-operation frequency capability is thus advertised to the spi-mem
-core.
+This is purely aesthetics, there is no functional change.
 
-Cc: Michal Simek <michal.simek@amd.com>
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/spi/spi-zynqmp-gqspi.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ include/linux/spi/spi-mem.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/spi/spi-zynqmp-gqspi.c b/drivers/spi/spi-zynqmp-gqspi.c
-index 549a6e0c96546211223dd45e8e70620fa5fd18ab..d800d79f62a70c74551e1ad6f628685ec6c18b0d 100644
---- a/drivers/spi/spi-zynqmp-gqspi.c
-+++ b/drivers/spi/spi-zynqmp-gqspi.c
-@@ -535,7 +535,7 @@ static inline u32 zynqmp_qspi_selectspimode(struct zynqmp_qspi *xqspi,
-  * zynqmp_qspi_config_op - Configure QSPI controller for specified
-  *				transfer
-  * @xqspi:	Pointer to the zynqmp_qspi structure
-- * @qspi:	Pointer to the spi_device structure
-+ * @op:		The memory operation to execute
-  *
-  * Sets the operational mode of QSPI controller for the next QSPI transfer and
-  * sets the requested clock frequency.
-@@ -553,12 +553,12 @@ static inline u32 zynqmp_qspi_selectspimode(struct zynqmp_qspi *xqspi,
-  *	frequency supported by controller.
-  */
- static int zynqmp_qspi_config_op(struct zynqmp_qspi *xqspi,
--				 struct spi_device *qspi)
-+				 const struct spi_mem_op *op)
- {
- 	ulong clk_rate;
- 	u32 config_reg, req_speed_hz, baud_rate_val = 0;
+diff --git a/include/linux/spi/spi-mem.h b/include/linux/spi/spi-mem.h
+index c7a7719c264846ad9fce613ba96d9284ad7893e7..ca6ea01c40f85095ac2730cb424cfb21d7daa700 100644
+--- a/include/linux/spi/spi-mem.h
++++ b/include/linux/spi/spi-mem.h
+@@ -15,16 +15,16 @@
  
--	req_speed_hz = qspi->max_speed_hz;
-+	req_speed_hz = op->max_freq;
+ #define SPI_MEM_OP_CMD(__opcode, __buswidth)			\
+ 	{							\
++		.nbytes = 1,					\
+ 		.buswidth = __buswidth,				\
+ 		.opcode = __opcode,				\
+-		.nbytes = 1,					\
+ 	}
  
- 	if (xqspi->speed_hz != req_speed_hz) {
- 		xqspi->speed_hz = req_speed_hz;
-@@ -1072,7 +1072,7 @@ static int zynqmp_qspi_exec_op(struct spi_mem *mem,
- 		op->dummy.buswidth, op->data.buswidth);
+ #define SPI_MEM_OP_ADDR(__nbytes, __val, __buswidth)		\
+ 	{							\
+ 		.nbytes = __nbytes,				\
+-		.val = __val,					\
+ 		.buswidth = __buswidth,				\
++		.val = __val,					\
+ 	}
  
- 	mutex_lock(&xqspi->op_lock);
--	zynqmp_qspi_config_op(xqspi, mem->spi);
-+	zynqmp_qspi_config_op(xqspi, op);
- 	zynqmp_qspi_chipselect(mem->spi, false);
- 	genfifoentry |= xqspi->genfifocs;
- 	genfifoentry |= xqspi->genfifobus;
-@@ -1224,6 +1224,10 @@ static const struct spi_controller_mem_ops zynqmp_qspi_mem_ops = {
- 	.exec_op = zynqmp_qspi_exec_op,
- };
+ #define SPI_MEM_OP_NO_ADDR	{ }
+@@ -39,18 +39,18 @@
  
-+static const struct spi_controller_mem_caps zynqmp_qspi_mem_caps = {
-+	.per_op_freq = true,
-+};
-+
- /**
-  * zynqmp_qspi_probe - Probe method for the QSPI driver
-  * @pdev:	Pointer to the platform_device structure
-@@ -1333,6 +1337,7 @@ static int zynqmp_qspi_probe(struct platform_device *pdev)
+ #define SPI_MEM_OP_DATA_IN(__nbytes, __buf, __buswidth)		\
+ 	{							\
++		.buswidth = __buswidth,				\
+ 		.dir = SPI_MEM_DATA_IN,				\
+ 		.nbytes = __nbytes,				\
+ 		.buf.in = __buf,				\
+-		.buswidth = __buswidth,				\
+ 	}
  
- 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
- 	ctlr->mem_ops = &zynqmp_qspi_mem_ops;
-+	ctlr->mem_caps = &zynqmp_qspi_mem_caps;
- 	ctlr->setup = zynqmp_qspi_setup_op;
- 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
- 	ctlr->dev.of_node = np;
+ #define SPI_MEM_OP_DATA_OUT(__nbytes, __buf, __buswidth)	\
+ 	{							\
++		.buswidth = __buswidth,				\
+ 		.dir = SPI_MEM_DATA_OUT,			\
+ 		.nbytes = __nbytes,				\
+ 		.buf.out = __buf,				\
+-		.buswidth = __buswidth,				\
+ 	}
+ 
+ #define SPI_MEM_OP_NO_DATA	{ }
 
 -- 
 2.47.0
