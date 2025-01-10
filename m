@@ -1,93 +1,79 @@
-Return-Path: <linux-aspeed+bounces-420-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-421-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9434E7719C
-	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Jan 2025 14:52:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37033E7719D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Jan 2025 14:55:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YV4Q43YGNz3cXv;
-	Sat, 11 Jan 2025 01:52:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736520764;
-	cv=none; b=GMu3j81mX+cHsaLAghwFp6WrmR8TpDl8BFpAZJ/T0dZApjOTd/jUbviw7gULJpLMtnODC/5Ob4xZobz0lrT5bUlD4Ic1QCODH33CmtSaKiYHCWyfIlhjKC6hHaaXG/l3LKBoqVzvVG0WBLrlwHyyTc0FZVIzoXkKkMPww9kfdjoy3AhpsZ190EyXmEAQTXg+nEvN8yVUXGwrpY2RQzzhSaE7T47KMVTDF7HYTzXI78iVtqqujUp9VigNVOqcT2mjkv288SkVbtNRmavKth2W/LfSqbtVdXLX8bnEwZR4/+KDuJMWzmDUBI3SfDUCYVWiKcclAb0T6mAfWAX6Xp0EWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YV4TN6Gkdz3cYH;
+	Sat, 11 Jan 2025 01:55:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736520936;
+	cv=none; b=oCi4VTaB17ewhdsF4DU5BLfgD0qz1u8jQPgXh/UjArBWCa/CPt1JsdhCBcjMfXpXjcqDapAK74xyDj465IJdfu4h2PreGaaPGFHE2RYnUxulpeRXmIPyhai19cLPnskf7VbUzC4EHb7yM6K0Ez4tYqtt8PN9h2RgQapW3MZfLOxv/GekUEZIbrZdo8HkJ+U8ke/bqwXb032qSkBhQsS7t3Xf4IIUasbrl1keDxgmFGfDZVI2Kyt1iy2Pm+GG3ktLiERhJPPpeoJwhHoWtrZWVaJR6SLQEL+r4GcBsG0hQCtviRw4H8FIS9i4GTQCITbmcFoZlrmCvaswNl3WzypDqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736520764; c=relaxed/relaxed;
-	bh=fSAq9ftH8WS0Cu3Bt+E6Xa84rtG0m/mz4MYDXGMgD4o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XJJUqCpVFzOGHnDJ86RtzPUyjKfS2uXsB7zi6Mx4Z8bBbJ3AnJO2MwN8fY9BWQJRoBW7DfuUe2arWUIDv6yNpe0jGgIjFy76nomqVR5hdEiKCKGabr4yg4D97hovRfTnHNhH668PXJthmaKbd7zcWnzAeUMAKTM54yf9Sh9uy2XiELZ6QZryabm7RMO2oRNYHrXFJtgcL3RMXOH23pSNN0oyPr3/WIgZFKVOTKDKlUzR2OrPG4/Hh3uVoSMOuFQ9sEEZL6PCm2KVPfCxDxz7zQrcZr37GQfboFoNmGiAdsECQ7YMHWghEzdcPAUgZ+nP5TQuJ8zJU6LH8Iep9xzMYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gLi8UcH9; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736520936; c=relaxed/relaxed;
+	bh=i+LOJ+gombIgGwG5VFHwn8O9GEmrVpqWrhBqWRMHkUM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cHZ9pMxHyknhscZ7i+ywPrWYom5nT5bpIHd0OVBLt+TneFSn4C5o5DqXEZ0dEO8rtOmK8RCG0GoBLTW067tLwTjGBjtAG/qhBJS/ey8gENvTELOam+rqHr0u6LQ3mXTU9JDsfbDIyaeFYuOfxpyIHT13CNl5oeUVj+LOlbMZxQJh45nyB24dBaEy87VtRyDehdrhLfgzkhoc0yJ77MAb1HGS1bvnZuAjJR/YwsYPGSMQj0+9TNhf+af8putgnew0s+laMaDI45R6uB2oKzcpgOC3xq5JhhhXQfZWPaqTj7zn1wL9dxbD5XxHFIDZla+NtyVWesHq7zGjDtts9gYrQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sHJqOdmc; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gLi8UcH9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sHJqOdmc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV4Q31d8dz3cXk;
-	Sat, 11 Jan 2025 01:52:43 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 521DAA4214C;
-	Fri, 10 Jan 2025 14:50:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8C0AC4CED6;
-	Fri, 10 Jan 2025 14:52:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736520760;
-	bh=aNCFEV4RXYP85CjPd7vNqTGzYYPEBIBQoTBIen40yHY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gLi8UcH9DGe79azEcqPclXToIx5qw10enSJS5mjJaQRBBZ+5CLBrfh7Mpi7iMW0TO
-	 A/rbMrNTS+PA9NpBPcVMM2z4ku1oxppk3W6llOIBhZvOuDHhGVRljWiAOR1U+h7yFg
-	 tOqGBw0ZgHBSqZRgs8RWqGihl1fJ89d10Xtujow1iFSpmcSQgrYpctK/HiN6tIbDI+
-	 n5yG5j4ZixygYt6rjBddVkMwyc9Hf5TbHnNKtMpk9hIBLXmn5EBUF3ghvXFuOE1FRu
-	 mrmh66XV3EANLgY1TKzwxSp7POGpX7PmaPlVbxRNm2IDDx7avzqsmJ+qIFj+4ZvpJn
-	 l1C5E9zSehWHg==
-Date: Fri, 10 Jan 2025 14:52:29 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Sanjay R Mehta <sanju.mehta@amd.com>, Han Xu <han.xu@nxp.com>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Haibo Chen <haibo.chen@nxp.com>,
-	Yogesh Gaur <yogeshgaur.83@gmail.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Michal Simek <michal.simek@amd.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Shan-Chun Hung <schung@nuvoton.com>,
-	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
-	=?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Avi Fishman <avifishman70@gmail.com>,
-	Tomer Maimon <tmaimon77@gmail.com>,
-	Tali Perry <tali.perry1@gmail.com>,
-	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
-	Benjamin Fair <benjaminfair@google.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Raju Rangoju <Raju.Rangoju@amd.com>,
-	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-	Steam Lin <stlin2@winbond.com>, linux-spi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, imx@lists.linux.dev,
-	linux-riscv@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	linux-rockchip@lists.infradead.org, linux-mtd@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
-	linux-stm32@st-md-mailman.stormreply.com
-Subject: Re: [PATCH v2 20/27] spi: spi-mem: Estimate the time taken by
- operations
-Message-ID: <c9043531-c733-4153-a814-79aab387883e@sirena.org.uk>
-References: <20241224-winbond-6-11-rc1-quad-support-v2-0-ad218dbc406f@bootlin.com>
- <20241224-winbond-6-11-rc1-quad-support-v2-20-ad218dbc406f@bootlin.com>
- <ca317e2c-cd09-4884-b9eb-9cf23ae88078@sirena.org.uk>
- <87tta6ag5b.fsf@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YV4TM4Fgqz3cYG
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 11 Jan 2025 01:55:35 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50AE6K88025765;
+	Fri, 10 Jan 2025 14:54:52 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=i+LOJ+
+	gombIgGwG5VFHwn8O9GEmrVpqWrhBqWRMHkUM=; b=sHJqOdmcdSdrpGd8AuIzGY
+	MFrQCvllj4hEkrUVomjNdrMT+xBN2JKilvHI3xqNhmNaTSXZrv2Jf/67zrtxlO17
+	/9IfOB7Q2TyzoS/4o7fSV1L4xAoMF+O43A4xcKVf6El/c6OW5qEuc98VJ+JAZozR
+	20BggKe62S5vv29Wl8tneuLygy/S6ZqbDegEI8afL1Z39BLErRcxlLTVHKJ2+djk
+	k5c/9Cf1n0XRid31LU5DbyZkSsnpJt+FgVo/6dJ0FkR/v6zbM/OU96ZfyBf8jmqt
+	QdDkDaoeAKjdCQsrG83rR169iVZ8mhAIjlEHZJ+BlCRMgCvsNGPd3MddN8V6xgfQ
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 443515078v-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 Jan 2025 14:54:52 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50AEspJG031187;
+	Fri, 10 Jan 2025 14:54:51 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 443515078q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 Jan 2025 14:54:51 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50ACiCwC003614;
+	Fri, 10 Jan 2025 14:54:50 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 43yfatjww2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 Jan 2025 14:54:50 +0000
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50AEsnjp64291144
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 10 Jan 2025 14:54:50 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD0CD58059;
+	Fri, 10 Jan 2025 14:54:49 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 04AB158043;
+	Fri, 10 Jan 2025 14:54:47 +0000 (GMT)
+Received: from [9.61.139.65] (unknown [9.61.139.65])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 10 Jan 2025 14:54:46 +0000 (GMT)
+Message-ID: <81567190-a683-4542-a530-0fb419f5f9be@linux.ibm.com>
+Date: Fri, 10 Jan 2025 08:54:46 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,49 +86,159 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="D5dtr3CwiZ2FNoyO"
-Content-Disposition: inline
-In-Reply-To: <87tta6ag5b.fsf@bootlin.com>
-X-Cookie: RELATIVES!!
+User-Agent: Mozilla Thunderbird
+Subject: =?UTF-8?B?UmU6IOWbnuimhjog5Zue6KaGOiBbUEFUQ0ggdjIgMDUvMTBdIEFSTTog?=
+ =?UTF-8?Q?dts=3A_aspeed=3A_system1=3A_Add_RGMII_support?=
+To: Andrew Lunn <andrew@lunn.ch>, Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+        "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+        "conor+dt@kernel.org" <conor+dt@kernel.org>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "eajames@linux.ibm.com" <eajames@linux.ibm.com>,
+        "edumazet@google.com" <edumazet@google.com>,
+        "joel@jms.id.au"
+ <joel@jms.id.au>,
+        "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
+        "kuba@kernel.org" <kuba@kernel.org>,
+        "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+        "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "minyard@acm.org" <minyard@acm.org>,
+        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+        "openipmi-developer@lists.sourceforge.net"
+ <openipmi-developer@lists.sourceforge.net>,
+        "pabeni@redhat.com" <pabeni@redhat.com>,
+        "ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
+        "robh@kernel.org" <robh@kernel.org>
+References: <SEYPR06MB5134CC0EBA73420A4B394A009D122@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <0c42bbd8-c09d-407b-8400-d69a82f7b248@lunn.ch>
+ <b2aec97b-63bc-44ed-9f6b-5052896bf350@linux.ibm.com>
+ <59116067-0caa-4666-b8dc-9b3125a37e6f@lunn.ch>
+ <SEYPR06MB51344BA59830265A083469489D132@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <8042c67c-04d3-41c0-9e88-8ce99839f70b@lunn.ch>
+ <c0b653ea-3fe0-4bdb-9681-bf4e3ef1364a@linux.ibm.com>
+ <c05c0476-c8bd-42f4-81da-7fe96e8e503b@lunn.ch>
+ <SEYPR06MB5134A63DBE28AA1305967A0C9D1C2@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <9fbc6f4c-7263-4783-8d41-ac2abe27ba95@lunn.ch>
+Content-Language: en-US
+From: Ninad Palsule <ninad@linux.ibm.com>
+In-Reply-To: <9fbc6f4c-7263-4783-8d41-ac2abe27ba95@lunn.ch>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: yBxRhoVKtROkPwpLrEH_vSrRXZ8-RPmL
+X-Proofpoint-ORIG-GUID: sRq5wnscmLN25EJIJ55u5_9qYeOUvOt6
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
+ malwarescore=0 suspectscore=0 priorityscore=1501 bulkscore=0 phishscore=0
+ spamscore=0 clxscore=1015 mlxlogscore=999 lowpriorityscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
+ definitions=main-2501100114
 
+Hello Andrew & Jacky,
 
---D5dtr3CwiZ2FNoyO
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 1/10/25 08:04, Andrew Lunn wrote:
+>> Agree. You are right. This part is used to create a gated clock.
+>> We will configure these RGMII delay in bootloader like U-boot.
+>> Therefore, here does not configure delay again.
+>> Because AST2600 MAC1/2 RGMII delay setting in scu region is combined to one 32-bit register,
+>> MAC3/4 is also. I will also use 'aliase' to get MAC index to set delay in scu.
+>>
+>> // aspeed-g6.dtsi
+>> aliases {
+>> 		..........
+>> 		mac0 = &mac0;
+>> 		mac1 = &mac1;
+>> 		mac2 = &mac2;
+>> 		mac4 = &mac3;
+>> 	};
+> I would avoid that, because they are under control of the DT
+> developer. You sometimes seen the order changed in the hope of
+> changing the interface names, rather than use a udev script, or
+> systemd naming scheme.
+>
+> The physical address of each interface is well known and fixed? Are
+> they the same for all ASTxxxx devices? I would hard code them into the
+> driver to identify the instance.
+>
+> But first we need to fix what is broken with the existing DT phy-modes
+> etc.
+>
+> What is the reset default of these SCU registers? 0? So we can tell if
+> the bootloader has modified it and inserted a delay?
 
-On Fri, Jan 10, 2025 at 03:37:52PM +0100, Miquel Raynal wrote:
-> On 10/01/2025 at 12:42:47 GMT, Mark Brown <broonie@kernel.org> wrote:
+Jacky,
 
-> > This breaks the build:
+Here are the values on my system and those are expected that means 
+u-boot is setting correct value?
 
-> > /build/stage/linux/drivers/spi/spi-mem.c:580:5: error: conflicting type=
-s for =E2=80=98spi_mem_calc_op_duration=E2=80=99; have =E2=80=98u64(struct =
-spi_mem_op *)=E2=80=99 {aka =E2=80=98long long unsigned int(struct spi_mem_=
-op *)=E2=80=99}
-> >   580 | u64 spi_mem_calc_op_duration(struct spi_mem_op *op)
+# devmem 0x1E6E2340 32
+0x9028A410
+# devmem 0x1E6E2348 32
+0x00410410
+# devmem 0x1E6E234c 32
+0x00410410
 
-> Crap, that's a fixup that landed in the wrong commit (mtd: spinand:
-> Enhance the logic when picking a variant). I'll fix it.
+# devmem 0x1E6E2350 32
+0x40104145
+# devmem 0x1E6E2358 32
+0x00104145
+# devmem 0x1E6E235c 32
+0x00104145
 
-Please only resend that patch - the rest builds and tests fine in my CI,
-I'm just checking a merge fixup.
+>
+> What i think you need to do is during probe of the MAC driver, compare
+> phy-mode and how the delays are configured in hardware. If the delays
+> in hardware are 0, assume phy-mode is correct and use it. If the
+> delays are not 0, compare them with phy-mode. If the delays and
+> phy-mode agree, use them. If they disagree, assume phy-mode is wrong,
+> issue a dev_warn() that the DT blob is out of date, and modify
+> phy-mode to match the delays in the hardware, including a good
+> explanation of what is going on in the commit message to help those
+> with out of tree DT files. And then patch all the in tree DT files to
+> use the correct phy-mode.
 
---D5dtr3CwiZ2FNoyO
-Content-Type: application/pgp-signature; name="signature.asc"
+Andrew,
 
------BEGIN PGP SIGNATURE-----
+Do we need updates on this description. It doesn't talk about external 
+PCB level delays?
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmeBNC0ACgkQJNaLcl1U
-h9DAqAf/Qrz25ymjeY3vF9YJzCAUUyBS18sTyjX0LHFtT3TgKFe5BYRlKvM8thbH
-laiQ60LjJlTDfHpTNzluTCzAgMXm72nOcj/jI4aNjM++Vr/I/xwvVZWbnIH6eZXN
-/6oik+AWx+8+dkg/KM9xeJmz1c7efDMcu1KPjM4jv1cuGHe/SMAy0HroYpo6o1+d
-WMMbRDqbjT+aZF/9ZnqhOxl1+UaPqyhWYWMlmrT0HbsD+DGGfSXjiPKYVe3+gv7s
-n3Oxrkni3O74YgOIN1Tg924Beg9+V7xFVjC+xdzZ0l/uY22fPkMHM+lVFwz9Qy0r
-ZmvCpIfRn+q++xWYtiLBpITHKteMvw==
-=Dk/0
------END PGP SIGNATURE-----
+https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/net/ethernet-controller.yaml#L77-L90
 
---D5dtr3CwiZ2FNoyO--
+This is what you explained:
+
+MAC driver reads following phy-mode from device tree. 95% of mac driver 
+directly
+  pass it to PHY through phy_connect.
+
+rgmii - PCB has long clock lines so delay is added by PCB
+         On this mode PHY does nothing.
+rgmii-id - PCB doesn't add delay. Either MAC or PHY needs to add the delay
+            Add delays in both directions. Some PHY may not add delay in 
+that
+            case MAC needs to add the delay mask rgmii-id to rgmii.
+rgmii-rxid - If there is an extra long TX clock line, but not RX clock,
+              you would use rgmii-rxid
+rgmii-txid - When there is an extra long RX clock line on the PCB, but not
+              the TX clock line, you would use rgmii-txid
+
+Regards,
+
+Ninad
+
+>
+> Please double check my logic, just to make sure it is correct. If i
+> have it correct, it should be backwards compatible. The one feature
+> you loose out on is when the bootloader sets the wrong delays and you
+> want phy-mode to actually override it.
+>
+> When AST2700 comes along, you can skip all this, get it right from the
+> start and not need this workaround.
+>
+> 	Andrew
+>
 
