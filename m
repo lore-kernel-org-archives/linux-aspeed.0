@@ -1,79 +1,70 @@
-Return-Path: <linux-aspeed+bounces-436-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-437-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6FA4E77188
-	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jan 2025 15:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CBA0E77188
+	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jan 2025 23:51:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWJxW6cDVz30WY;
-	Mon, 13 Jan 2025 02:20:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736695247;
-	cv=none; b=ZflvZdtXEjD8ABV1r5EMkxm5rw4Al3ttmcd62oG7AhUHXCyffmND68C29STqPEUewDMeBY9O7nzgxvTCiikcy8Du0qZ5nSw3JF7UzBukaaupRm4fJSjCVMx95vkaKW+IbTdOEubSsVDnT2xLnTsU3aETAIhs2gA+Q1JkNZA/L0dvpepcFuaV9ANohY/DgBOlOU0pIen5GlPzRtarpCHHBQhnWeASbIx5k/Jrl6akZJtp8Yb0sJBbcOwB+p647qUPJ89zytOoWDBRfFETuIu1Mqzzz3WCm5LbLOXBUc6AQjnMWq4I6aLg49RPgy3Et+UHVeRz2rJhaVA/dUkIh7E0vg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWXGX5S2Jz3041;
+	Mon, 13 Jan 2025 10:51:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::2c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736701882;
+	cv=none; b=P9NP0/Y4vafW2CkNBiWNG27zDAFINOG5vhkNnckuQYLwZasqVQM9ePTZ75u9opSpY126dA10Q/EcYpIpnVTjOaYF51Lk08dIfFh9j6fd7BM3gkLnupcaKUcR6B1M2Nnzxxb65jTyBhMU+Lc4SpZQ7/amrh8wXXiXodqqXOMJZXKHEMMsX1gwCt+COvjYnTeKrt3BwiL4PdsJvWiXx3Whp/Zh0oQD+IeQbNHOUmGJe2eG2GMJf7GT1MxhYPCOgBo26QmIyt0tZ8hboBa7D7XnFiScxgPsb75G7qPRqRYr0C6YtQsjym0XyygSf13nF58DNO07mD02hdWorEK/1kz2zw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736695247; c=relaxed/relaxed;
-	bh=x3gG01/m+hJWTLZKxo2fthJ4fy1cfFaLbH+CW5D3uW8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gsgMOEsjLlNcA6Oq4EIrmB+ZVk5zhaYVIuueUbfqbqGu5RI9xKDQGLbAgtj7xSZ3W6WdVJdc8oEV5bFV68vrGaQjtkLnWMoOqxT9TNwLqCfNRvpeW3LHJxQD64v0980z8ixvdKdGKJr7TkHf1yJua0mY670lREUeOQO9fojYpOPSH7eA631OWc1YOhWcZNKQAcfqgPuD1FYXpaW9sznYhUSTalda9ONql1YkzRsLinI8NPPEAabUWTFLCECwJGbap/7oobySqphuctfrkivjnbSpfC+ksbxXBoxkNxdhEyHrTG2EOHpw6vBz1/mOx4Io9R/qQ2Fqnr2rsu4dAQvA/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TLPrEkvO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	t=1736701882; c=relaxed/relaxed;
+	bh=BRSvG4lHDviRuzjJRGYuKFbYzwOqYOzJbZ32m62ocNE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ffOthFl7FILmy5wlHSQcyWeS/YWbpqKyWVD97mPZAnc2/8es503eErR4nImqu4wjY+AN6FcY5GrQXItOx+epjPBgB9hv3DZQsLp3t61WKQEMo7JIpE9JXGgr2RFKVskAu2j2StFLyBBUGCNCGPsLjKdhWC1KgOSg9OKLwUuf+CYjqhaAGDPR5ZJ1PPrC4+LFQkWArm7UzffT91YwKgqHYmJoThgCvP4JVtFA81K+7WRyim9cvb/eh8TZF2OHi3H4D8IWoCQqnn0210zvc13Eob4UjAh6ye6RW18KP68jQAuc3De2Ibn7obmFMo2Tu8LtxiiXJPt/1llFlrnIgI+auQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MiIY7gFv; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::2c; helo=mail-oa1-x2c.google.com; envelope-from=jassisinghbrar@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TLPrEkvO;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MiIY7gFv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::2c; helo=mail-oa1-x2c.google.com; envelope-from=jassisinghbrar@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oa1-x2c.google.com (mail-oa1-x2c.google.com [IPv6:2001:4860:4864:20::2c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWJxT3ch3z30WM
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jan 2025 02:20:44 +1100 (AEDT)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2166360285dso59143855ad.1
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Jan 2025 07:20:44 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWMP41Wqjz30VQ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jan 2025 04:11:19 +1100 (AEDT)
+Received: by mail-oa1-x2c.google.com with SMTP id 586e51a60fabf-29e5c0c46c3so2020139fac.3
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Jan 2025 09:11:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1736695241; x=1737300041; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=x3gG01/m+hJWTLZKxo2fthJ4fy1cfFaLbH+CW5D3uW8=;
-        b=TLPrEkvO2PvmUlqJy/ALzzUxfXjnRGqPnypQg1xNxqFIaR9GE9T9oM3lvI5rN8UCks
-         SiiTx7jabXY4cisuSfErbXbucmyO5bpoQzUlj222hMMsYGJw488wAw/E+jjzitYJMHhk
-         1H/xN+SBhrnY6socODVEIehBsg7PLkZBgssUEXRs6zqePmYz8zJgY9MlVgQS6n2d0Tsk
-         EUeoGjCzPBl/8+q5XxMnXVPwCihaoKVjrvBcsZyLebinvagUG9idT924AA3GNNtIYsSR
-         T0tc9bfhbBEWtNSIlqCXD3mbqaLsMsGK9Lj+0nPKs4WiNmKjNLgOenRz/ojg0a8ZpovA
-         nUVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736695241; x=1737300041;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1736701876; x=1737306676; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=x3gG01/m+hJWTLZKxo2fthJ4fy1cfFaLbH+CW5D3uW8=;
-        b=dXyyQzEbBI1jgggLOVS651mp8DCOUN3EjqCglalieRJuTxDzCn88JdCOvZFchowKvL
-         tjzJdcoik5WLZMs98eYTgIkoLpii0TcjirKr2g5im6dvLdqtIMt39BdcPaq3fFMEpNkk
-         0oa1jPOx0CV5C27fXLbuIJgUGx7QTni3uTYFss6KxqN4kt9DwDoB1P6KZswecpmwolx4
-         ubkp5Wncgo397IypIkhK4jtURolEh7fFd9baOF/Aks4QBwTSrGjOtB3VAi56l5Pl80y/
-         lpeP4OYzFxbdyJ1pJbUQTKz19FKRfKIQ3vnYH8KLOkpE053QjKFYPdtHY17KDTbzWqG9
-         IgKQ==
-X-Forwarded-Encrypted: i=1; AJvYcCX0K3SoIPV/BX2SCOWFHoUXBGREtr4gUdwkROIrClJsUmYeoJCj7+KZrnHnOQxa8IAh1G22w8MzcqAgaI4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzxmtM+7zgIE5AoJ7AndoWCseIVaevoH5KkL5W5/4nEJgoPAwn3
-	Q8BFfC8rucFwgPWGCZCEqJfpKJ9/dx6CbHlFyjfrq0JSsKfQNeF/
-X-Gm-Gg: ASbGncsDySDi0umsf7qD/2UoKqJl2pDedtoo8QYEXYxyOMS624ZvgVv8Yqdq0XaDVCF
-	Vk8WIgJICiG+ILOaRXu+u6fltrxNHMjfRgPkzA3tu46XGrFUbce05uLgHewAsISzUCvyWxeVof2
-	4Ux/9XKwnnpVvQ3H6Mel17YOiC5LNmWTQRawLsV7RaoKA3vgcPC5c+wnp/uJe/lQSTjh1hHBnQT
-	slq+tqIycC8pteE8jHqm15QmwCdksuqJs8tjockAGqMaqNw5XFlFCz72Nzjat3EglP41GioW6Rp
-	d+mcrPj1x7puIULnACjO/QdSvL3OJw==
-X-Google-Smtp-Source: AGHT+IF/FozhO9qZ95zF/Im7xp4vonQs2+URIZ8u5K1tRqaZZL12OaAezyRemQnpRDUXRoKN1pKXxw==
-X-Received: by 2002:a05:6a20:12c6:b0:1db:ef68:e505 with SMTP id adf61e73a8af0-1e88d10e95amr29265607637.20.1736695241213;
-        Sun, 12 Jan 2025 07:20:41 -0800 (PST)
-Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72d406a980esm4412502b3a.180.2025.01.12.07.20.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 12 Jan 2025 07:20:40 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <42008fe4-8046-424c-9f12-e95a0471928d@roeck-us.net>
-Date: Sun, 12 Jan 2025 07:20:38 -0800
+        bh=BRSvG4lHDviRuzjJRGYuKFbYzwOqYOzJbZ32m62ocNE=;
+        b=MiIY7gFvq8R6DH8wfISIUACREUpRGYjSwxMogjcjK6WGDjgnSVdRUjmKQVFEkq3HwS
+         e47ARWi0QKmJoXQEQsUH+EtTYLbzqJuCJjD/JQZZYnnaG3HWkg1ZLHg95CMOVCqkvgCB
+         gKgGYqCj2gby6RTqxzahlhTonfPWH2K3grsSXCs8YolKaR7j0I6wI3xUJGY0XsVcyaMn
+         QgQdMJrYRpTUhbc0puqf9W/vuH4/Y+SO4PL+g+GaYjPTBUnC51K4uJmWhMprc4ub/qeS
+         QerpVnBsvkJeWBUxNqzLHEh8e+kit5RsQBITnfoHOO8qe2YuZW+4iT8ZSlAeowZ4Vy3n
+         /HgQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736701876; x=1737306676;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=BRSvG4lHDviRuzjJRGYuKFbYzwOqYOzJbZ32m62ocNE=;
+        b=viQ+JSvezDCMGTpIP9bHqW7pToCQpPWUlwM3nuG3SaB+B2u0j041fVk2QbseLe9o3S
+         c5pre8hCn7N0saJOPbICvfwMv03I3E3HKJF07rb3n/VjvS4XtXTjuDz3PTH+afWMoYnZ
+         DWY1aPnCnV3mcWF3RbShkIVkTvN2EgPl9kUw9Q41sKoxhmYNW+c14O8bdvlNeLUE3Qmx
+         mfzjrmHAuAUWLnt7FyU3OpdD/AEw5UmEbdRVMDHAwokkBTSebOzFN0Kj8mwioF3MUYqY
+         X46t5+J0u+LgS/ltyGNNQoW97+N6QPS+URw85+OE6FgkygEEG6Ff9KR48keVL9OmDGSP
+         7VuA==
+X-Forwarded-Encrypted: i=1; AJvYcCWR2HDzm7FIFRatLEBQPbWgBMVTrDRHda4GXOclW4/sLJAjpatVNZsqIT72/vBdfmIFShnejROPfUopGkk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YznqLTmvqMmU+bnoyoO5NRhKgu+FIBk/snLPCEfbrTvg+GE1WK5
+	rwTN25kaa8bLtST8zoeSoNbPNUn78AAA5u7uc8xhK3uaUho0Oq0Prt1ncJUpi0kKmrLIWBrYrWZ
+	EZYDELbkphDI5cuVwqhH0+YX8ZSI=
+X-Gm-Gg: ASbGnctbp3t+UlLghiuDBeLYGQrgUgQ9BgwengvPMLnziIwKO+Zr/XKo6KAYe+fvKTw
+	mpdAwnxuWDD7upfp/vYAfRFxMReziMXJsXGSFHNs=
+X-Google-Smtp-Source: AGHT+IENGjLXxXcSGe+w7tY3R64tOX7yK5WBTBwurxfDdtVFwVvG/FRtTErahZqTGTD6G89aj5oqyZiB1L1vqwlTv1w=
+X-Received: by 2002:a05:6870:ad84:b0:296:bbc8:4a82 with SMTP id
+ 586e51a60fabf-2aa0690e4f6mr10712332fac.27.1736701876276; Sun, 12 Jan 2025
+ 09:11:16 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,83 +77,56 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v6 1/1] watchdog: aspeed: Update bootstatus handling
-To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, patrick@stwcx.xyz,
- andrew@codeconstruct.com.au, wim@linux-watchdog.org, joel@jms.id.au,
- linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Peter.Yin@quantatw.com, Patrick_NC_Lin@wiwynn.com, BMC-SW@aspeedtech.com,
- chnguyen@amperecomputing.com, aaron_lee@aspeedtech.com
-References: <20250112081204.263216-1-chin-ting_kuo@aspeedtech.com>
- <20250112081204.263216-2-chin-ting_kuo@aspeedtech.com>
-Content-Language: en-US
-From: Guenter Roeck <linux@roeck-us.net>
-Autocrypt: addr=linux@roeck-us.net; keydata=
- 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
- mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
-In-Reply-To: <20250112081204.263216-2-chin-ting_kuo@aspeedtech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20250107131015.246461-1-krzysztof.kozlowski@linaro.org>
+From: Jassi Brar <jassisinghbrar@gmail.com>
+Date: Sun, 12 Jan 2025 11:11:04 -0600
+X-Gm-Features: AbW1kvbXjyqTnf9gPwBQ9ZLkKzxPws-DMkCbBAzJp--cshKBewoVPRLg0dMWqYE
+Message-ID: <CABb+yY0sgg6-zF-0shQbcZ=TqxYGDO=S847WpLGFcF3Xh9f2Nw@mail.gmail.com>
+Subject: Re: [PATCH] dt-bindings: usb: Correct indentation and style in DTS example
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Justin Chen <justin.chen@broadcom.com>, 
+	Al Cooper <alcooperx@gmail.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, Florian Fainelli <f.fainelli@gmail.com>, 
+	Benjamin Bara <benjamin.bara@skidata.com>, Bjorn Andersson <andersson@kernel.org>, 
+	Ahmad Zainie <wan.ahmad.zainie.wan.mohamad@intel.com>, 
+	Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Tianping Fang <tianping.fang@mediatek.com>, Jassi Brar <jaswinder.singh@linaro.org>, 
+	Biju Das <biju.das.jz@bp.renesas.com>, 
+	Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, 
+	Francesco Dolcini <francesco.dolcini@toradex.com>, Macpaul Lin <macpaul.lin@mediatek.com>, 
+	Alexander Stein <alexander.stein@ew.tq-group.com>, linux-usb@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	linux-tegra@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 1/12/25 00:12, Chin-Ting Kuo wrote:
-> The boot status in the watchdog device struct is updated during
-> controller probe stage. Application layer can get the boot status
-> through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
-> The bootstatus can be,
-> WDIOF_CARDRESET => the system is reset by WDT SoC reset.
-> Others          => other reset events, e.g., power on reset.
-> 
-> On ASPEED platform, the boot status is recorded in the SCU registers.
-> - AST2400: Only a bit represents for any WDT reset.
-> - AST2500/AST2600: The reset triggered by different WDT controllers
->                     can be distinguished by different SCU bits.
-> 
-> Besides, on AST2400 and AST2500, since alternating boot event is
-> triggered by WDT SoC reset, it is classified as WDIOF_CARDRESET.
-> 
-> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+On Tue, Jan 7, 2025 at 7:10=E2=80=AFAM Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
+>
+> DTS example in the bindings should be indented with 2- or 4-spaces and
+> aligned with opening '- |', so correct any differences like 3-spaces or
+> mixtures 2- and 4-spaces in one binding.
+>
+> No functional changes here, but saves some comments during reviews of
+> new patches built on existing code.
+>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+> ---
+>  .../bindings/usb/aspeed,usb-vhub.yaml         | 40 +++++++++----------
+>  .../devicetree/bindings/usb/brcm,bdc.yaml     | 14 +++----
+>  .../devicetree/bindings/usb/cypress,hx3.yaml  | 24 +++++------
+>  .../devicetree/bindings/usb/dwc2.yaml         |  4 +-
+>  .../devicetree/bindings/usb/fcs,fsa4480.yaml  | 20 +++++-----
+>  .../bindings/usb/intel,keembay-dwc3.yaml      | 30 +++++++-------
+>  .../devicetree/bindings/usb/ite,it5205.yaml   | 18 ++++-----
+>  .../bindings/usb/maxim,max3420-udc.yaml       | 28 ++++++-------
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-
+Acked-by: Jassi Brar <jassisinghbrar@gmail.com>
 
