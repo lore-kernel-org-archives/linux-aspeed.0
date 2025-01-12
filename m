@@ -1,51 +1,79 @@
-Return-Path: <linux-aspeed+bounces-435-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-436-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EEDAE7719D
-	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jan 2025 08:12:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6FA4E77188
+	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Jan 2025 15:20:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YW7RF07PMz30Vl;
-	Sun, 12 Jan 2025 19:12:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736669544;
-	cv=none; b=jREOE5EEEulROF915/pNxIYuvTTqnHdtM/birP5tNSCg3pJp9RLPGJJmnedK73hmx9oANggCIj2mCsdYB/1L2mIQ1DZR4tq3yn0vT0jqidE1+2Nq/83ZMA2mYzT6wB5bzifs5Vplhj1dV/a7HLf+n56kr3S1bK+FGLjqKla5RHCCfZqXbUk+VHLaqTi6bqoVhWTc3A2OcR6Nv9U3wYrshWAteztpOjOC8L+FMvwNGUxWK78nzV+ctqcrvFVXdD2eoahbOkmXKD6aG/DERsx6NyJwK4HHOi2Glrps0QwOF9aILtKDYvSCTJQ+XIrcHRHqZVJekdAytCwblp1qZwW+wQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWJxW6cDVz30WY;
+	Mon, 13 Jan 2025 02:20:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736695247;
+	cv=none; b=ZflvZdtXEjD8ABV1r5EMkxm5rw4Al3ttmcd62oG7AhUHXCyffmND68C29STqPEUewDMeBY9O7nzgxvTCiikcy8Du0qZ5nSw3JF7UzBukaaupRm4fJSjCVMx95vkaKW+IbTdOEubSsVDnT2xLnTsU3aETAIhs2gA+Q1JkNZA/L0dvpepcFuaV9ANohY/DgBOlOU0pIen5GlPzRtarpCHHBQhnWeASbIx5k/Jrl6akZJtp8Yb0sJBbcOwB+p647qUPJ89zytOoWDBRfFETuIu1Mqzzz3WCm5LbLOXBUc6AQjnMWq4I6aLg49RPgy3Et+UHVeRz2rJhaVA/dUkIh7E0vg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736669544; c=relaxed/relaxed;
-	bh=vHjDT5onW6lvL+BayrgdDIJCBfXAqjxfPqUj5szW/rY=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BGfcFF5MwECF0v7dpaAuaBNhwqw0DOnu8b+LsSUUNWj9qIf4UXb5jvJ5PcFMUSf4R7eqZDSkLOEFfng8+/ExDTKQnXJB4eApwJ1b/E3ep+G6IUbicSYUynhVQdlQU9oJn9Mki4fN6SD3KduX/5t++HJ+RbvXv1QkpYJU9Orx0gSu3gKct2gjt458l5CMUV/KCKbCPb5xMw9k2iDjNaXDJOyYHZhcEXqt4cMTh7k2Lne1+rxs/jMkaKnC7gJZfY95k4ZRMLWm9zV58hy8bvl82BYmg5H7qQVGhFQ/geY5C6G2mC7ETRRejIzyTEkJJNhRkxk/+wrHBH8UvAr+dHoQZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1736695247; c=relaxed/relaxed;
+	bh=x3gG01/m+hJWTLZKxo2fthJ4fy1cfFaLbH+CW5D3uW8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=gsgMOEsjLlNcA6Oq4EIrmB+ZVk5zhaYVIuueUbfqbqGu5RI9xKDQGLbAgtj7xSZ3W6WdVJdc8oEV5bFV68vrGaQjtkLnWMoOqxT9TNwLqCfNRvpeW3LHJxQD64v0980z8ixvdKdGKJr7TkHf1yJua0mY670lREUeOQO9fojYpOPSH7eA631OWc1YOhWcZNKQAcfqgPuD1FYXpaW9sznYhUSTalda9ONql1YkzRsLinI8NPPEAabUWTFLCECwJGbap/7oobySqphuctfrkivjnbSpfC+ksbxXBoxkNxdhEyHrTG2EOHpw6vBz1/mOx4Io9R/qQ2Fqnr2rsu4dAQvA/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TLPrEkvO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TLPrEkvO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YW7RD2PCpz30Vd
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Jan 2025 19:12:24 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Sun, 12 Jan
- 2025 16:12:04 +0800
-Received: from aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
- Transport; Sun, 12 Jan 2025 16:12:04 +0800
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-To: <patrick@stwcx.xyz>, <andrew@codeconstruct.com.au>, <linux@roeck-us.net>,
-	<wim@linux-watchdog.org>, <joel@jms.id.au>, <linux-watchdog@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-CC: <Peter.Yin@quantatw.com>, <Patrick_NC_Lin@wiwynn.com>,
-	<BMC-SW@aspeedtech.com>, <chnguyen@amperecomputing.com>,
-	<aaron_lee@aspeedtech.com>
-Subject: [PATCH v6 1/1] watchdog: aspeed: Update bootstatus handling
-Date: Sun, 12 Jan 2025 16:12:04 +0800
-Message-ID: <20250112081204.263216-2-chin-ting_kuo@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250112081204.263216-1-chin-ting_kuo@aspeedtech.com>
-References: <20250112081204.263216-1-chin-ting_kuo@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWJxT3ch3z30WM
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jan 2025 02:20:44 +1100 (AEDT)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2166360285dso59143855ad.1
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Jan 2025 07:20:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1736695241; x=1737300041; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=x3gG01/m+hJWTLZKxo2fthJ4fy1cfFaLbH+CW5D3uW8=;
+        b=TLPrEkvO2PvmUlqJy/ALzzUxfXjnRGqPnypQg1xNxqFIaR9GE9T9oM3lvI5rN8UCks
+         SiiTx7jabXY4cisuSfErbXbucmyO5bpoQzUlj222hMMsYGJw488wAw/E+jjzitYJMHhk
+         1H/xN+SBhrnY6socODVEIehBsg7PLkZBgssUEXRs6zqePmYz8zJgY9MlVgQS6n2d0Tsk
+         EUeoGjCzPBl/8+q5XxMnXVPwCihaoKVjrvBcsZyLebinvagUG9idT924AA3GNNtIYsSR
+         T0tc9bfhbBEWtNSIlqCXD3mbqaLsMsGK9Lj+0nPKs4WiNmKjNLgOenRz/ojg0a8ZpovA
+         nUVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736695241; x=1737300041;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=x3gG01/m+hJWTLZKxo2fthJ4fy1cfFaLbH+CW5D3uW8=;
+        b=dXyyQzEbBI1jgggLOVS651mp8DCOUN3EjqCglalieRJuTxDzCn88JdCOvZFchowKvL
+         tjzJdcoik5WLZMs98eYTgIkoLpii0TcjirKr2g5im6dvLdqtIMt39BdcPaq3fFMEpNkk
+         0oa1jPOx0CV5C27fXLbuIJgUGx7QTni3uTYFss6KxqN4kt9DwDoB1P6KZswecpmwolx4
+         ubkp5Wncgo397IypIkhK4jtURolEh7fFd9baOF/Aks4QBwTSrGjOtB3VAi56l5Pl80y/
+         lpeP4OYzFxbdyJ1pJbUQTKz19FKRfKIQ3vnYH8KLOkpE053QjKFYPdtHY17KDTbzWqG9
+         IgKQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX0K3SoIPV/BX2SCOWFHoUXBGREtr4gUdwkROIrClJsUmYeoJCj7+KZrnHnOQxa8IAh1G22w8MzcqAgaI4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzxmtM+7zgIE5AoJ7AndoWCseIVaevoH5KkL5W5/4nEJgoPAwn3
+	Q8BFfC8rucFwgPWGCZCEqJfpKJ9/dx6CbHlFyjfrq0JSsKfQNeF/
+X-Gm-Gg: ASbGncsDySDi0umsf7qD/2UoKqJl2pDedtoo8QYEXYxyOMS624ZvgVv8Yqdq0XaDVCF
+	Vk8WIgJICiG+ILOaRXu+u6fltrxNHMjfRgPkzA3tu46XGrFUbce05uLgHewAsISzUCvyWxeVof2
+	4Ux/9XKwnnpVvQ3H6Mel17YOiC5LNmWTQRawLsV7RaoKA3vgcPC5c+wnp/uJe/lQSTjh1hHBnQT
+	slq+tqIycC8pteE8jHqm15QmwCdksuqJs8tjockAGqMaqNw5XFlFCz72Nzjat3EglP41GioW6Rp
+	d+mcrPj1x7puIULnACjO/QdSvL3OJw==
+X-Google-Smtp-Source: AGHT+IF/FozhO9qZ95zF/Im7xp4vonQs2+URIZ8u5K1tRqaZZL12OaAezyRemQnpRDUXRoKN1pKXxw==
+X-Received: by 2002:a05:6a20:12c6:b0:1db:ef68:e505 with SMTP id adf61e73a8af0-1e88d10e95amr29265607637.20.1736695241213;
+        Sun, 12 Jan 2025 07:20:41 -0800 (PST)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72d406a980esm4412502b3a.180.2025.01.12.07.20.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 12 Jan 2025 07:20:40 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <42008fe4-8046-424c-9f12-e95a0471928d@roeck-us.net>
+Date: Sun, 12 Jan 2025 07:20:38 -0800
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,172 +86,83 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 1/1] watchdog: aspeed: Update bootstatus handling
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, patrick@stwcx.xyz,
+ andrew@codeconstruct.com.au, wim@linux-watchdog.org, joel@jms.id.au,
+ linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Peter.Yin@quantatw.com, Patrick_NC_Lin@wiwynn.com, BMC-SW@aspeedtech.com,
+ chnguyen@amperecomputing.com, aaron_lee@aspeedtech.com
+References: <20250112081204.263216-1-chin-ting_kuo@aspeedtech.com>
+ <20250112081204.263216-2-chin-ting_kuo@aspeedtech.com>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+In-Reply-To: <20250112081204.263216-2-chin-ting_kuo@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The boot status in the watchdog device struct is updated during
-controller probe stage. Application layer can get the boot status
-through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
-The bootstatus can be,
-WDIOF_CARDRESET => the system is reset by WDT SoC reset.
-Others          => other reset events, e.g., power on reset.
+On 1/12/25 00:12, Chin-Ting Kuo wrote:
+> The boot status in the watchdog device struct is updated during
+> controller probe stage. Application layer can get the boot status
+> through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
+> The bootstatus can be,
+> WDIOF_CARDRESET => the system is reset by WDT SoC reset.
+> Others          => other reset events, e.g., power on reset.
+> 
+> On ASPEED platform, the boot status is recorded in the SCU registers.
+> - AST2400: Only a bit represents for any WDT reset.
+> - AST2500/AST2600: The reset triggered by different WDT controllers
+>                     can be distinguished by different SCU bits.
+> 
+> Besides, on AST2400 and AST2500, since alternating boot event is
+> triggered by WDT SoC reset, it is classified as WDIOF_CARDRESET.
+> 
+> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 
-On ASPEED platform, the boot status is recorded in the SCU registers.
-- AST2400: Only a bit represents for any WDT reset.
-- AST2500/AST2600: The reset triggered by different WDT controllers
-                   can be distinguished by different SCU bits.
-
-Besides, on AST2400 and AST2500, since alternating boot event is
-triggered by WDT SoC reset, it is classified as WDIOF_CARDRESET.
-
-Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
----
- drivers/watchdog/aspeed_wdt.c | 81 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index b4773a6aaf8c..369635b38ca0 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -11,21 +11,30 @@
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/kstrtox.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
-+#include <linux/regmap.h>
- #include <linux/watchdog.h>
- 
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
- 				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+struct aspeed_wdt_scu {
-+	const char *compatible;
-+	u32 reset_status_reg;
-+	u32 wdt_reset_mask;
-+	u32 wdt_reset_mask_shift;
-+};
- 
- struct aspeed_wdt_config {
- 	u32 ext_pulse_width_mask;
- 	u32 irq_shift;
- 	u32 irq_mask;
-+	struct aspeed_wdt_scu scu;
- };
- 
- struct aspeed_wdt {
-@@ -39,18 +48,36 @@ static const struct aspeed_wdt_config ast2400_config = {
- 	.ext_pulse_width_mask = 0xff,
- 	.irq_shift = 0,
- 	.irq_mask = 0,
-+	.scu = {
-+		.compatible = "aspeed,ast2400-scu",
-+		.reset_status_reg = 0x3c,
-+		.wdt_reset_mask = 0x1,
-+		.wdt_reset_mask_shift = 1,
-+	},
- };
- 
- static const struct aspeed_wdt_config ast2500_config = {
- 	.ext_pulse_width_mask = 0xfffff,
- 	.irq_shift = 12,
- 	.irq_mask = GENMASK(31, 12),
-+	.scu = {
-+		.compatible = "aspeed,ast2500-scu",
-+		.reset_status_reg = 0x3c,
-+		.wdt_reset_mask = 0x1,
-+		.wdt_reset_mask_shift = 2,
-+	},
- };
- 
- static const struct aspeed_wdt_config ast2600_config = {
- 	.ext_pulse_width_mask = 0xfffff,
- 	.irq_shift = 0,
- 	.irq_mask = GENMASK(31, 10),
-+	.scu = {
-+		.compatible = "aspeed,ast2600-scu",
-+		.reset_status_reg = 0x74,
-+		.wdt_reset_mask = 0xf,
-+		.wdt_reset_mask_shift = 16,
-+	},
- };
- 
- static const struct of_device_id aspeed_wdt_of_table[] = {
-@@ -213,6 +240,56 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
- 	return 0;
- }
- 
-+static void aspeed_wdt_update_bootstatus(struct platform_device *pdev,
-+					 struct aspeed_wdt *wdt)
-+{
-+	const struct resource *res;
-+	struct aspeed_wdt_scu scu = wdt->cfg->scu;
-+	struct regmap *scu_base;
-+	u32 reset_mask_width;
-+	u32 reset_mask_shift;
-+	u32 idx = 0;
-+	u32 status;
-+	int ret;
-+
-+	if (!of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt")) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		idx = ((intptr_t)wdt->base & 0x00000fff) / resource_size(res);
-+	}
-+
-+	scu_base = syscon_regmap_lookup_by_compatible(scu.compatible);
-+	if (IS_ERR(scu_base)) {
-+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
-+		return;
-+	}
-+
-+	ret = regmap_read(scu_base, scu.reset_status_reg, &status);
-+	if (ret) {
-+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
-+		return;
-+	}
-+
-+	reset_mask_width = hweight32(scu.wdt_reset_mask);
-+	reset_mask_shift = scu.wdt_reset_mask_shift +
-+			   reset_mask_width * idx;
-+
-+	if (status & (scu.wdt_reset_mask << reset_mask_shift))
-+		wdt->wdd.bootstatus = WDIOF_CARDRESET;
-+
-+	/* clear wdt reset event flag */
-+	if (of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt") ||
-+	    of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2500-wdt")) {
-+		ret = regmap_read(scu_base, scu.reset_status_reg, &status);
-+		if (!ret) {
-+			status &= ~(scu.wdt_reset_mask << reset_mask_shift);
-+			regmap_write(scu_base, scu.reset_status_reg, status);
-+		}
-+	} else {
-+		regmap_write(scu_base, scu.reset_status_reg,
-+			     scu.wdt_reset_mask << reset_mask_shift);
-+	}
-+}
-+
- /* access_cs0 shows if cs0 is accessible, hence the reverted bit */
- static ssize_t access_cs0_show(struct device *dev,
- 			       struct device_attribute *attr, char *buf)
-@@ -458,10 +535,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 		writel(duration - 1, wdt->base + WDT_RESET_WIDTH);
- 	}
- 
-+	aspeed_wdt_update_bootstatus(pdev, wdt);
-+
- 	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
- 	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
--		wdt->wdd.bootstatus = WDIOF_CARDRESET;
--
- 		if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
- 		    of_device_is_compatible(np, "aspeed,ast2500-wdt"))
- 			wdt->wdd.groups = bswitch_groups;
--- 
-2.34.1
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
 
