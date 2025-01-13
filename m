@@ -1,73 +1,77 @@
-Return-Path: <linux-aspeed+bounces-441-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-442-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EAB3E7719A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 13 Jan 2025 03:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CAC3E7719E
+	for <linux-aspeed@archiver.kernel.org>; Mon, 13 Jan 2025 06:18:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWdmX4h0Tz3c75;
-	Mon, 13 Jan 2025 14:59:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736740748;
-	cv=none; b=kEkB8NBGoaoDaTKao7rbftI4sMecX2JKfIfPGXS0hneTMBPr45uWUhrMHS59ggB0mk1Y5hv6DF6b3roMdllz88ttTlKsP1g+nE3xxYJCkBBKRpXW3do9h2QND7/ZA1/htBxvXqQEIQtHKXvco5NvTW8/3DsBd5Kc7hgjQYY5mv+Uhw8rEHvc+Dc92YUvBl4L1xLvA7zTPmRctO0+vgiw2Rte4DtYbNMfMESjXhgo7zGJPVOjHg0SiBCb9e38NvErf//b77Ot/GmyomdNgOCZgX9Wa4NRwzYmmT0q9ygXj4qpzO2ho3wNaM3WDPbLYgms1RgLtWhAou0GCir1HMsMAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWhsr5g7bz3c5M;
+	Mon, 13 Jan 2025 17:18:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736749136;
+	cv=none; b=l21UueXIk8UHd7oNetrtduTj0qQy3akHIWn4+2y0t0cVbt0or7bR96OjrYefQm3oz0581pmj2HlloSfsb2wOR56B9eYDi4DyrCDuEgHL5Pb9ecRokBMA6L71qLoedqzPmFpl0Ld15xHueInFNRB6PhCyEiKB0IKzBjjUKtWU5HilHmbgltkfXLGk4ssEs0P2a5JOl7UUYpCkER7OTVkrdxcX+1OgpYdimEJN31sRRbyoZtrrrs902LibwJNW3vLIU+cSSYa1j2SuUgILmvUOQem+aBmB8jkM6OvX7w/A8gLlZJdB7ldIlLwvYHs9iID9B2pt0SYlVQF+E4ucBChv6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736740748; c=relaxed/relaxed;
-	bh=QLhw6OkQrXv0RsZWIWSuSjwbKLs0+8UzD3LS2CDT3yw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Iy9ZJf4k7R68ps/oyAHGZGAfJQj+aUkMOs2xzFVn1ZYYvykMvtfWf7Is1Jg4DCJZks44NZaZpHNDsLCpfOhiL1XmuM5OhHOWYxx2m7BHxBNA/UU4oMRYTF+LxoHhBsfez8ptY+SdIE/bkfhsSUiGSRln0c2nlyNFU/lWbXNRawSWj2gH1s0kESixyE4oHQYMleGRAGoXhok2WAVdmUA69X//XA27PT6FM/4crZtdsAmn4hQ94hVHKpkYGHi4pk/0WpOh+KFTwqABuF6oPfqdrhkVaLnHKKmUYXZARWvzRM3WU/EqHiHdZ+tjekV2ypQm+SMvyEzQ9hLRHQ070EIGsQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=i32yi60d; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1736749136; c=relaxed/relaxed;
+	bh=UXMYkhj5IZ9Mb+wHyrW48mIfsHQ1A9AFKPYuWPrAkpY=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=VSU6IZkIwVQOtgyMsV6BQnTPx24BWnc7aXcKgQj4YGTJmIGzT3GYstJ+PllPZMWr4XE6yMWXbkMlAVnh1OlsMk/gF2iBOUXkz+Z5fUgL2JAlM9xS2XWL7z/noe0RnhDDBpHBkID00Rl7WN5NlgZTFDLM0FcT97HZRtPLgtxJhVt6mzrBuvQ4A1dWTzYjKVfrIOrNsDx02ALtbcBh/Sun0kl7Bgt8YhE8EvR5I5Pt7pK5+e00nlDOZABVG7VYmlQfwDLc8l3U3n4MOSs47MiFTFKfjiMFDOVwuSRWiAjUp2bt/vbCLSXvydhvXX+2RpsgHhBgh4NxRfzFEWA9zXuf1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=StVtGbJT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=i32yi60d;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=StVtGbJT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWdmW5Dr7z3c5N
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jan 2025 14:59:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWhsq0npYz3c3x
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jan 2025 17:18:53 +1100 (AEDT)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2165cb60719so67382965ad.0
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Jan 2025 22:18:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1736740746;
-	bh=QLhw6OkQrXv0RsZWIWSuSjwbKLs0+8UzD3LS2CDT3yw=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=i32yi60doVevtEVYaXyWyCzZ7KCFtnSOqmAQcK5OPyn3ilaXE3ZCMgRaii+HwbyW1
-	 Fujc2vB6QpFtMP95uHadSHEwEWzQ70g8UK+JyEPHRDhHwQLsec36Oy5qiBbei3efTv
-	 6GVevKhTm078Zy1A4+yKntwq/MjE1xomYpw7ghbsCiVYpdlcx/Hc+vZ5BemlCZyEQk
-	 L8OlM1vI5Bl9YSOMhNMrS2e+AuQVijcMbMGvQMMAmgfUFj59JjWgPR3nbWmHAAVGOZ
-	 fnHCXuDLIQOhJ9IxB+wwfPJ6JDBpDaC6rfAs3HtNIDngYU99CGG0c0oajoPZkOx24I
-	 ebhE8eBQ//Xqg==
-Received: from [192.168.68.112] (ppp118-210-178-153.adl-adc-lon-bras34.tpg.internode.on.net [118.210.178.153])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9403D7178A;
-	Mon, 13 Jan 2025 11:59:05 +0800 (AWST)
-Message-ID: <277cdf8cd94e61d3c28e03c6bf929c86b52df120.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v6 1/1] watchdog: aspeed: Update bootstatus handling
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, "patrick@stwcx.xyz"
-	 <patrick@stwcx.xyz>, "linux@roeck-us.net" <linux@roeck-us.net>, 
-	"wim@linux-watchdog.org"
-	 <wim@linux-watchdog.org>, "joel@jms.id.au" <joel@jms.id.au>, 
-	"linux-watchdog@vger.kernel.org"
-	 <linux-watchdog@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	 <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	 <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	 <linux-kernel@vger.kernel.org>
-Cc: "Peter.Yin@quantatw.com" <Peter.Yin@quantatw.com>, 
-	"Patrick_NC_Lin@wiwynn.com"
-	 <Patrick_NC_Lin@wiwynn.com>, BMC-SW <BMC-SW@aspeedtech.com>, 
-	"chnguyen@amperecomputing.com"
-	 <chnguyen@amperecomputing.com>, Aaron Lee <aaron_lee@aspeedtech.com>
-Date: Mon, 13 Jan 2025 14:29:04 +1030
-In-Reply-To: <TYZPR06MB52032C46C1AB2C18B923A8E6B21F2@TYZPR06MB5203.apcprd06.prod.outlook.com>
-References: <20250112081204.263216-1-chin-ting_kuo@aspeedtech.com>
-	 <20250112081204.263216-2-chin-ting_kuo@aspeedtech.com>
-	 <b4fa429c6c7df899281d36f295b4431c90fe443c.camel@codeconstruct.com.au>
-	 <TYZPR06MB52032C46C1AB2C18B923A8E6B21F2@TYZPR06MB5203.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-User-Agent: Evolution 3.46.4-2 
+        d=gmail.com; s=20230601; t=1736749131; x=1737353931; darn=lists.ozlabs.org;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UXMYkhj5IZ9Mb+wHyrW48mIfsHQ1A9AFKPYuWPrAkpY=;
+        b=StVtGbJT2qrmBGqpJjb5eNBZqvKU3HqmVA+Gdpnpbqty67PguzRLkWQG7ApVTB9y0w
+         J/pE1XOU9RJ4300SXFShI7deJxrRs93FAYdPSzdGxHf9K7rM/+bBw8YSUCMsMwScvXjC
+         USrDEjBDFMXvGitYFZ02FHHEWXGM0L1lbgzf0MftJeScD9wu/883ETU/PTwItjYAXFGl
+         XYYhFEwYzj6JB5uBXf/s/CVqenqku+gJoBQLDDPTwPSFK+2+vGANFz/FRI9ApSkydWsM
+         4C9F2lFpyxJg+i/qzuh8WDelXqmWri9pAtjVcYo84h0rEJMcu1Kh+tqHhwOcHo0xNqWu
+         dTwA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1736749131; x=1737353931;
+        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
+         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UXMYkhj5IZ9Mb+wHyrW48mIfsHQ1A9AFKPYuWPrAkpY=;
+        b=sRPBFFOelVRn4gVAVeg8IawO7pyXfXQg9qo5RRMpQxIj2Uw7fM/RlFpR3vcqpep5n6
+         qZnpVq1JXa3rygGlBuxaxNZIG3kAjXaqJomuYFeT1PLJYN8A+PXfKkSVXFGU0PGak0/m
+         dhQ/PudPiqQ+i+mZbZ1edmF/RVXhX2NnTDH+8XiyglgVNres5OVEgc24MaediMfRZAlw
+         3Q5p9AytF5F0Tb20py3ZQy5VUYDBDatXE9vDQyMC4mHqscYwVK7O8aj7zlgM1HT/Ff1l
+         F6RdI4TEQ7se322NKB7VjAYv8SvYioMS3fquSIBHv8ezy1cxn4gILy0rmygSLi7WuvbH
+         nkOA==
+X-Forwarded-Encrypted: i=1; AJvYcCUjFhKnnlZQgoMaK4tOIpp1mP6AbJQoMOdP3aOJxZBIyDSlbS0omvcGyX8Pb/EEXrgOkxfjukt5ceIO84w=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwJaxYGbwZEy/7h4dYEJjshsb1oCLuMk48VWWhaq8x7bLc1IWEz
+	MoQMiUE8Q+o8n2O1YKGysk3i4UAUR5eZRpo9I/YECFeKRO4W0EAD
+X-Gm-Gg: ASbGncug3UmZo23dv7Jd/+OGlPw6r2EqsSs41tN2q+b8bdKaGI5nGGNhVbPxjmz4Ybi
+	F7z7Ty83GDFdiWfwnNVBguF+LlgQlRVuaeo18zwVJ/44pdMegvt2Ddok+1b4SHWkNS8gAQhmvBb
+	ao+IUYQo+XoDcMrivZO5F/DouS19WYpozXhQO16tnM0KRZqbShGqQxQembGaV3lQYphZhW65bn0
+	/I4b2M/0JJcvNo0drMZ8Zq5xfOOov9OdEvth9sMnCijd0PHa6aYS0lvsslqN3LwWBQoLMGb9q2I
+	kGNbTt7oL7qxrvk5LS3gwZsPWxz2bMiu7g==
+X-Google-Smtp-Source: AGHT+IFigaJwgK7Z0NX1dvC/nKexlb3PogVsWIi3IglxLkUsghZrWcqjcsFlHJl2DP1Q0iXvPWIhFg==
+X-Received: by 2002:a05:6a20:6a25:b0:1e7:6f82:321f with SMTP id adf61e73a8af0-1e88d10749amr27730415637.17.1736749131204;
+        Sun, 12 Jan 2025 22:18:51 -0800 (PST)
+Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-a318e8ecacfsm6279705a12.38.2025.01.12.22.18.48
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 12 Jan 2025 22:18:50 -0800 (PST)
+From: Potin Lai <potin.lai.pt@gmail.com>
+Date: Mon, 13 Jan 2025 14:16:23 +0800
+Subject: [PATCH v2] ARM: dts: aspeed: catalina: Update DTS to support
+ multiple PDB board sources
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,144 +84,311 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250113-potin-catalina-dts-update-20250102-v2-1-1725117fe7a9@gmail.com>
+X-B4-Tracking: v=1; b=H4sIALavhGcC/42Nyw6CMBBFf4V07Zi2PBRX/odhMX0Ik0BL2ko0h
+ H+3kuja5bm5OWdl0QaykV2KlQW7UCTvMshDwfSArrdAJjOTXNZccAmzT+RAY8KRHIJJER6zwWT
+ hd2lFpXiDlTIKWRbNwd7puUduXeaBYvLhtTcX8Vm/+vIf/SJAgOLqhLUsdducr/2ENB61n1i3b
+ dsbWGRFVdQAAAA=
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Patrick Williams <patrick@stwcx.xyz>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
+ Potin Lai <potin.lai.pt@gmail.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1736749128; l=6860;
+ i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
+ bh=+9P1SAFUTyPeHDsem7TQlwq42JcEr9R7g9tjaiPQiIs=;
+ b=q7cGmq9jtHu+sNoOLc89cs/9abzrthQEj0V4PmdvhAoWoyNT0lNHWSLu3QYfxAkuzcEU+acMA
+ 7Tg1EZrRPQwBE6NOoGguYQPQg0a5TPmzZ+TijEtlbwyFcTemAXAhs20
+X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
+ pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-T24gTW9uLCAyMDI1LTAxLTEzIGF0IDAzOjQxICswMDAwLCBDaGluLVRpbmcgS3VvIHdyb3RlOgo+
-IEhpIEFuZHJldywKPiAKPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gPiBGcm9tOiBB
-bmRyZXcgSmVmZmVyeSA8YW5kcmV3QGNvZGVjb25zdHJ1Y3QuY29tLmF1Pgo+ID4gU2VudDogTW9u
-ZGF5LCBKYW51YXJ5IDEzLCAyMDI1IDExOjI5IEFNCj4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHY2
-IDEvMV0gd2F0Y2hkb2c6IGFzcGVlZDogVXBkYXRlIGJvb3RzdGF0dXMKPiA+IGhhbmRsaW5nCj4g
-PiAKPiA+IE9uIFN1biwgMjAyNS0wMS0xMiBhdCAxNjoxMiArMDgwMCwgQ2hpbi1UaW5nIEt1byB3
-cm90ZToKPiA+ID4gVGhlIGJvb3Qgc3RhdHVzIGluIHRoZSB3YXRjaGRvZyBkZXZpY2Ugc3RydWN0
-IGlzIHVwZGF0ZWQgZHVyaW5nCj4gPiA+IGNvbnRyb2xsZXIgcHJvYmUgc3RhZ2UuIEFwcGxpY2F0
-aW9uIGxheWVyIGNhbiBnZXQgdGhlIGJvb3Qgc3RhdHVzCj4gPiA+IHRocm91Z2ggdGhlIGNvbW1h
-bmQsIGNhdAo+ID4gPiAvc3lzL2NsYXNzL3dhdGNoZG9nL3dhdGNoZG9nWC9ib290c3RhdHVzLgo+
-ID4gPiBUaGUgYm9vdHN0YXR1cyBjYW4gYmUsCj4gPiA+IFdESU9GX0NBUkRSRVNFVCA9PiB0aGUg
-c3lzdGVtIGlzIHJlc2V0IGJ5IFdEVCBTb0MgcmVzZXQuCj4gPiA+IE90aGVyc8KgwqDCoMKgwqDC
-oMKgwqDCoCA9PiBvdGhlciByZXNldCBldmVudHMsIGUuZy4sIHBvd2VyIG9uIHJlc2V0Lgo+ID4g
-PiAKPiA+ID4gT24gQVNQRUVEIHBsYXRmb3JtLCB0aGUgYm9vdCBzdGF0dXMgaXMgcmVjb3JkZWQg
-aW4gdGhlIFNDVQo+ID4gPiByZWdpc3RlcnMuCj4gPiA+IC0gQVNUMjQwMDogT25seSBhIGJpdCBy
-ZXByZXNlbnRzIGZvciBhbnkgV0RUIHJlc2V0Lgo+ID4gPiAtIEFTVDI1MDAvQVNUMjYwMDogVGhl
-IHJlc2V0IHRyaWdnZXJlZCBieSBkaWZmZXJlbnQgV0RUCj4gPiA+IGNvbnRyb2xsZXJzCj4gPiA+
-IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBjYW4gYmUgZGlzdGluZ3Vpc2hl
-ZCBieSBkaWZmZXJlbnQgU0NVIGJpdHMuCj4gPiA+IAo+ID4gPiBCZXNpZGVzLCBvbiBBU1QyNDAw
-IGFuZCBBU1QyNTAwLCBzaW5jZSBhbHRlcm5hdGluZyBib290IGV2ZW50IGlzCj4gPiA+IHRyaWdn
-ZXJlZCBieSBXRFQgU29DIHJlc2V0LCBpdCBpcyBjbGFzc2lmaWVkIGFzIFdESU9GX0NBUkRSRVNF
-VC4KPiA+ID4gCj4gPiA+IFNpZ25lZC1vZmYtYnk6IENoaW4tVGluZyBLdW8gPGNoaW4tdGluZ19r
-dW9AYXNwZWVkdGVjaC5jb20+Cj4gPiA+IC0tLQo+ID4gPiDCoGRyaXZlcnMvd2F0Y2hkb2cvYXNw
-ZWVkX3dkdC5jIHwgODEKPiA+ID4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0K
-PiA+ID4gwqAxIGZpbGUgY2hhbmdlZCwgNzkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkK
-PiA+ID4gCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3dhdGNoZG9nL2FzcGVlZF93ZHQuYwo+
-ID4gPiBiL2RyaXZlcnMvd2F0Y2hkb2cvYXNwZWVkX3dkdC5jIGluZGV4IGI0NzczYTZhYWY4Yy4u
-MzY5NjM1YjM4Y2EwCj4gPiA+IDEwMDY0NAo+ID4gPiAtLS0gYS9kcml2ZXJzL3dhdGNoZG9nL2Fz
-cGVlZF93ZHQuYwo+ID4gPiArKysgYi9kcml2ZXJzL3dhdGNoZG9nL2FzcGVlZF93ZHQuYwo+ID4g
-PiBAQCAtMTEsMjEgKzExLDMwIEBACj4gPiA+IMKgI2luY2x1ZGUgPGxpbnV4L2lvLmg+Cj4gPiA+
-IMKgI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgo+ID4gPiDCoCNpbmNsdWRlIDxsaW51eC9rc3Ry
-dG94Lmg+Cj4gPiA+ICsjaW5jbHVkZSA8bGludXgvbWZkL3N5c2Nvbi5oPgo+ID4gPiDCoCNpbmNs
-dWRlIDxsaW51eC9tb2R1bGUuaD4KPiA+ID4gwqAjaW5jbHVkZSA8bGludXgvb2YuaD4KPiA+ID4g
-wqAjaW5jbHVkZSA8bGludXgvb2ZfaXJxLmg+Cj4gPiA+IMKgI2luY2x1ZGUgPGxpbnV4L3BsYXRm
-b3JtX2RldmljZS5oPgo+ID4gPiArI2luY2x1ZGUgPGxpbnV4L3JlZ21hcC5oPgo+ID4gPiDCoCNp
-bmNsdWRlIDxsaW51eC93YXRjaGRvZy5oPgo+ID4gPiAKPiA+ID4gwqBzdGF0aWMgYm9vbCBub3dh
-eW91dCA9IFdBVENIRE9HX05PV0FZT1VUOwo+ID4gPiDCoG1vZHVsZV9wYXJhbShub3dheW91dCwg
-Ym9vbCwgMCk7Cj4gPiA+IMKgTU9EVUxFX1BBUk1fREVTQyhub3dheW91dCwgIldhdGNoZG9nIGNh
-bm5vdCBiZSBzdG9wcGVkIG9uY2UKPiA+IHN0YXJ0ZWQKPiA+ID4gKGRlZmF1bHQ9Igo+ID4gPiDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgX19NT0RVTEVfU1RSSU5HKFdBVEMKPiA+IEhET0dfTk9XQVlPVVQpCj4gPiA+ICIpIik7
-Cj4gPiA+ICtzdHJ1Y3QgYXNwZWVkX3dkdF9zY3Ugewo+ID4gPiArwqDCoMKgwqDCoMKgwqBjb25z
-dCBjaGFyICpjb21wYXRpYmxlOwo+ID4gPiArwqDCoMKgwqDCoMKgwqB1MzIgcmVzZXRfc3RhdHVz
-X3JlZzsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgdTMyIHdkdF9yZXNldF9tYXNrOwo+ID4gPiArwqDC
-oMKgwqDCoMKgwqB1MzIgd2R0X3Jlc2V0X21hc2tfc2hpZnQ7Cj4gPiA+ICt9Owo+ID4gPiAKPiA+
-ID4gwqBzdHJ1Y3QgYXNwZWVkX3dkdF9jb25maWcgewo+ID4gPiDCoMKgwqDCoMKgwqDCoMKgdTMy
-IGV4dF9wdWxzZV93aWR0aF9tYXNrOwo+ID4gPiDCoMKgwqDCoMKgwqDCoMKgdTMyIGlycV9zaGlm
-dDsKPiA+ID4gwqDCoMKgwqDCoMKgwqDCoHUzMiBpcnFfbWFzazsKPiA+ID4gK8KgwqDCoMKgwqDC
-oMKgc3RydWN0IGFzcGVlZF93ZHRfc2N1IHNjdTsKPiA+ID4gwqB9Owo+ID4gPiAKPiA+ID4gwqBz
-dHJ1Y3QgYXNwZWVkX3dkdCB7Cj4gPiA+IEBAIC0zOSwxOCArNDgsMzYgQEAgc3RhdGljIGNvbnN0
-IHN0cnVjdCBhc3BlZWRfd2R0X2NvbmZpZwo+ID4gPiBhc3QyNDAwX2NvbmZpZyA9IHsKPiA+ID4g
-wqDCoMKgwqDCoMKgwqDCoC5leHRfcHVsc2Vfd2lkdGhfbWFzayA9IDB4ZmYsCj4gPiA+IMKgwqDC
-oMKgwqDCoMKgwqAuaXJxX3NoaWZ0ID0gMCwKPiA+ID4gwqDCoMKgwqDCoMKgwqDCoC5pcnFfbWFz
-ayA9IDAsCj4gPiA+ICvCoMKgwqDCoMKgwqDCoC5zY3UgPSB7Cj4gPiA+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqAuY29tcGF0aWJsZSA9ICJhc3BlZWQsYXN0MjQwMC1zY3UiLAo+ID4g
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLnJlc2V0X3N0YXR1c19yZWcgPSAweDNj
-LAo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLndkdF9yZXNldF9tYXNrID0g
-MHgxLAo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLndkdF9yZXNldF9tYXNr
-X3NoaWZ0ID0gMSwKPiA+ID4gK8KgwqDCoMKgwqDCoMKgfSwKPiA+ID4gwqB9Owo+ID4gPiAKPiA+
-ID4gwqBzdGF0aWMgY29uc3Qgc3RydWN0IGFzcGVlZF93ZHRfY29uZmlnIGFzdDI1MDBfY29uZmln
-ID0gewo+ID4gPiDCoMKgwqDCoMKgwqDCoMKgLmV4dF9wdWxzZV93aWR0aF9tYXNrID0gMHhmZmZm
-ZiwKPiA+ID4gwqDCoMKgwqDCoMKgwqDCoC5pcnFfc2hpZnQgPSAxMiwKPiA+ID4gwqDCoMKgwqDC
-oMKgwqDCoC5pcnFfbWFzayA9IEdFTk1BU0soMzEsIDEyKSwKPiA+ID4gK8KgwqDCoMKgwqDCoMKg
-LnNjdSA9IHsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoC5jb21wYXRpYmxl
-ID0gImFzcGVlZCxhc3QyNTAwLXNjdSIsCj4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqAucmVzZXRfc3RhdHVzX3JlZyA9IDB4M2MsCj4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqAud2R0X3Jlc2V0X21hc2sgPSAweDEsCj4gPiA+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqAud2R0X3Jlc2V0X21hc2tfc2hpZnQgPSAyLAo+ID4gPiArwqDCoMKgwqDC
-oMKgwqB9LAo+ID4gPiDCoH07Cj4gPiA+IAo+ID4gPiDCoHN0YXRpYyBjb25zdCBzdHJ1Y3QgYXNw
-ZWVkX3dkdF9jb25maWcgYXN0MjYwMF9jb25maWcgPSB7Cj4gPiA+IMKgwqDCoMKgwqDCoMKgwqAu
-ZXh0X3B1bHNlX3dpZHRoX21hc2sgPSAweGZmZmZmLAo+ID4gPiDCoMKgwqDCoMKgwqDCoMKgLmly
-cV9zaGlmdCA9IDAsCj4gPiA+IMKgwqDCoMKgwqDCoMKgwqAuaXJxX21hc2sgPSBHRU5NQVNLKDMx
-LCAxMCksCj4gPiA+ICvCoMKgwqDCoMKgwqDCoC5zY3UgPSB7Cj4gPiA+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqAuY29tcGF0aWJsZSA9ICJhc3BlZWQsYXN0MjYwMC1zY3UiLAo+ID4g
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLnJlc2V0X3N0YXR1c19yZWcgPSAweDc0
-LAo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLndkdF9yZXNldF9tYXNrID0g
-MHhmLAo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgLndkdF9yZXNldF9tYXNr
-X3NoaWZ0ID0gMTYsCj4gPiA+ICvCoMKgwqDCoMKgwqDCoH0sCj4gPiA+IMKgfTsKPiA+ID4gCj4g
-PiA+IMKgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgYXNwZWVkX3dkdF9vZl90YWJs
-ZVtdID0geyBAQCAtCj4gPiA+IDIxMyw2Cj4gPiA+ICsyNDAsNTYgQEAgc3RhdGljIGludCBhc3Bl
-ZWRfd2R0X3Jlc3RhcnQoc3RydWN0IHdhdGNoZG9nX2RldmljZQo+ID4gPiAqd2RkLAo+ID4gPiDC
-oMKgwqDCoMKgwqDCoMKgcmV0dXJuIDA7Cj4gPiA+IMKgfQo+ID4gPiAKPiA+ID4gK3N0YXRpYyB2
-b2lkIGFzcGVlZF93ZHRfdXBkYXRlX2Jvb3RzdGF0dXMoc3RydWN0IHBsYXRmb3JtX2RldmljZQo+
-ID4gPiAqcGRldiwKPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBzdHJ1Y3QKPiA+IGFzcGVl
-ZF93ZHQgKndkdCkgewo+ID4gPiArwqDCoMKgwqDCoMKgwqBjb25zdCBzdHJ1Y3QgcmVzb3VyY2Ug
-KnJlczsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgc3RydWN0IGFzcGVlZF93ZHRfc2N1IHNjdSA9IHdk
-dC0+Y2ZnLT5zY3U7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoHN0cnVjdCByZWdtYXAgKnNjdV9iYXNl
-Owo+ID4gPiArwqDCoMKgwqDCoMKgwqB1MzIgcmVzZXRfbWFza193aWR0aDsKPiA+ID4gK8KgwqDC
-oMKgwqDCoMKgdTMyIHJlc2V0X21hc2tfc2hpZnQ7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoHUzMiBp
-ZHggPSAwOwo+ID4gPiArwqDCoMKgwqDCoMKgwqB1MzIgc3RhdHVzOwo+ID4gPiArwqDCoMKgwqDC
-oMKgwqBpbnQgcmV0Owo+ID4gPiArCj4gPiA+ICvCoMKgwqDCoMKgwqDCoGlmICghb2ZfZGV2aWNl
-X2lzX2NvbXBhdGlibGUocGRldi0+ZGV2Lm9mX25vZGUsCj4gPiA+ICJhc3BlZWQsYXN0MjQwMC13
-ZHQiKSkgewo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVzID0gcGxhdGZv
-cm1fZ2V0X3Jlc291cmNlKHBkZXYsCj4gPiBJT1JFU09VUkNFX01FTSwgMCk7Cj4gPiA+ICvCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBpZHggPSAoKGludHB0cl90KXdkdC0+YmFzZSAmIDB4
-MDAwMDBmZmYpIC8KPiA+ID4gcmVzb3VyY2Vfc2l6ZShyZXMpOwo+ID4gPiArwqDCoMKgwqDCoMKg
-wqB9Cj4gPiA+ICsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgc2N1X2Jhc2UgPQo+ID4gPiBzeXNjb25f
-cmVnbWFwX2xvb2t1cF9ieV9jb21wYXRpYmxlKHNjdS5jb21wYXRpYmxlKTsKPiA+ID4gK8KgwqDC
-oMKgwqDCoMKgaWYgKElTX0VSUihzY3VfYmFzZSkpIHsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoHdkdC0+d2RkLmJvb3RzdGF0dXMgPSBXRElPU19VTktOT1dOOwo+ID4gPiAr
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmV0dXJuOwo+ID4gPiArwqDCoMKgwqDCoMKg
-wqB9Cj4gPiA+ICsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgcmV0ID0gcmVnbWFwX3JlYWQoc2N1X2Jh
-c2UsIHNjdS5yZXNldF9zdGF0dXNfcmVnLAo+ID4gPiAmc3RhdHVzKTsKPiA+ID4gK8KgwqDCoMKg
-wqDCoMKgaWYgKHJldCkgewo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgd2R0
-LT53ZGQuYm9vdHN0YXR1cyA9IFdESU9TX1VOS05PV047Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqByZXR1cm47Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoH0KPiA+ID4gKwo+ID4g
-PiArwqDCoMKgwqDCoMKgwqByZXNldF9tYXNrX3dpZHRoID0gaHdlaWdodDMyKHNjdS53ZHRfcmVz
-ZXRfbWFzayk7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoHJlc2V0X21hc2tfc2hpZnQgPSBzY3Uud2R0
-X3Jlc2V0X21hc2tfc2hpZnQgKwo+ID4gPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAgcmVzZXRfbWFza193aWR0aCAqIGlkeDsKPiA+ID4gKwo+ID4g
-PiArwqDCoMKgwqDCoMKgwqBpZiAoc3RhdHVzICYgKHNjdS53ZHRfcmVzZXRfbWFzayA8PCByZXNl
-dF9tYXNrX3NoaWZ0KSkKPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHdkdC0+
-d2RkLmJvb3RzdGF0dXMgPSBXRElPRl9DQVJEUkVTRVQ7Cj4gPiAKPiA+IEhvdyBwcmVjaXNlIGlz
-IHRoZSB3b3JkaW5nIGluIHlvdXIgY29tbWl0IG1lc3NhZ2U/IFRoZSBBU1QyNjAwLCBmb3IKPiA+
-IGluc3RhbmNlLCBoYXMgNCByZXNldCB0eXBlczoKPiA+IAo+ID4gMS4gIlNvQyIKPiA+IDIuICJG
-dWxsIgo+ID4gMy4gIkFSTSIKPiA+IDQuICJTb2Z0d2FyZSIKPiA+IAo+ID4gSW4gdGhlIGNvbW1p
-dCBtZXNzYWdlLCB5b3Ugc2FpZDoKPiA+IAo+ID4gPiBXRElPRl9DQVJEUkVTRVQgPT4gdGhlIHN5
-c3RlbSBpcyByZXNldCBieSBXRFQgU29DIHJlc2V0Lgo+ID4gCj4gCj4gVGhlIGNvbW1pdCBtZXNz
-YWdlIHNob3VsZCBiZSBjaGFuZ2VkIGZvciBtb3JlIHByZWNpc2VseS4KPiAiV0RJT0ZfQ0FSRFJF
-U0VUID0+IHRoZSBzeXN0ZW0gaXMgcmVzZXQgZHVlIHRvIFdEVCB0aW1lb3V0IG9jY3Vycy4iCj4g
-VGhpcyBjaGFuZ2UgY2FuIGJlIHVwZGF0ZWQgd2l0aCBhIG5ldyBwYXRjaCB2ZXJzaW9uLgo+IAo+
-ID4gSG93ZXZlciB0aGUgbG9naWMgaGVyZSAod2l0aCB0aGUgd2F5IHlvdSd2ZSBpbml0aWFsaXNl
-ZCB0aGUgY29uZmlnCj4gPiBzdHJ1Y3QgZm9yIHRoZQo+ID4gQVNUMjYwMCkgd2lsbCBzaWduYWwg
-V0RJT0ZfQ0FSRFJFU0VUIGV2ZW4gaWYgd2hhdCBvY2N1cnJlZCB3YXMgZS5nLgo+ID4gYQo+ID4g
-KGdyYWNlZnVsPykgc29mdHdhcmUgcmVzZXQuCj4gPiAKPiAKPiBBcyB0aGUgZGlzY3Vzc2lvbiBp
-biB0aGUgcHJldmlvdXMgcGF0Y2ggc2VyaWVzLCB0aGVyZSBpcyBubyBjb25zZW5zdXMKPiBmb3Ig
-Z3JhY2VmdWwKPiByZXNldCBmbGFnIGluIFdEVCBmcmFtZXdvcmsuIFRodXMsIHRoaXMgcGF0Y2gg
-b25seSBkaXN0aW5ndWlzaGVzIFdEVAo+IHJlc2V0IGZyb20KPiBvdGhlciByZXNldCByZWFzb25z
-Lgo+IAo+ID4gVGhlIG9ubHkgdGhpbmcgV0RJT0ZfQ0FSRFJFU0VUIGRpZmZlcmVudGlhdGVzIGlz
-IGEgcG93ZXItb24gcmVzZXQKPiA+IGZyb20gYW55Cj4gPiBvdGhlciBraW5kIG9mIHdhdGNoZG9n
-LWRyaXZlbiByZXNldC4KPiA+IAo+IAo+IFllcy4KPiAKPiA+IElzIHRoYXQgd2hhdCdzIGludGVu
-ZGVkPyBJJ20ganVzdCB3YXJ5IG9mIGNvbmZ1c2lvbiBmb3Igd2hhdAo+ID4gYXBwZWFycyB0byBi
-ZSBhCj4gPiBnZW5lcmljIHVzZSBvZiAiU29DIiBpbiB0aGUgY29tbWl0IG1lc3NhZ2UgdnMgdGhl
-IHNwZWNpZmljICJTb0MiCj4gPiBtb2RlIG9mIHRoZSB3YXRjaGRvZyBjb250cm9sbGVyIChzaG91
-bGQgc29tZSBkb2N1bWVudGF0aW9uIGJlCj4gPiB3cml0dGVuL3VwZGF0ZWQ/KQo+ID4gCj4gCj4g
-VGhlIGNvbW1pdCBtZXNzYWdlIGNhbiBiZSB1cGRhdGVkLgoKT2theSwgdGhhbmtzLgoKQW5kcmV3
-Cg==
+This patch updates the Catalina device tree to support different sources
+of PDB boards.
+
+Changes for Main source PDB board
+- Thermal Sensor Monitoring:
+  - Added IOB NIC nodes (TMP421) for thermal sensor monitoring.
+  - Added FIO remote thermal node (TMP75) for thermal sensor monitoring.
+- Fan Monitoring and Control:
+  - Add fan p12V power sensor node (MP5990) for sensor monitoring.
+  - Add fan controllers (MAX31790) for fan control and tach monitoring.
+
+Changes for 2nd source PDB board
+- Fan Monitoring and Control:
+  - Added 2nd source fan controllers (NCT7363) for fan duty control and
+    tach monitoring.
+- Power Monitoring:
+  - Added 2nd source HSC nodes (XDP710) for power sensor monitoring.
+- Address Conflicts:
+  - Removed all ina238 nodes due to address conflicts. Moved the driver
+    probe for ina238 to userspace.
+
+Changes for PDB brick board
+- Power Monitoring:
+  - Add delta brick nodes for power sensor monitoring.
+
+Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+---
+Updating the Catalina DTS to support multiple PDB board sources.
+---
+Changes in v2:
+- Add delta_brick nodes to support PDB brick board
+- Link to v1: https://lore.kernel.org/r/20250103-potin-catalina-dts-update-20250102-v1-1-b0b7a523c968@gmail.com
+---
+ .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 170 ++++++++++++++++++---
+ 1 file changed, 147 insertions(+), 23 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
+index 3822bb3c9243..49230e6a749e 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
+@@ -190,6 +190,12 @@ i2c0mux0ch0: i2c@0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
++
++			// IOB0 NIC0 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux0ch1: i2c@1 {
+ 			#address-cells = <1>;
+@@ -200,6 +206,12 @@ i2c0mux0ch2: i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
++
++			// IOB0 NIC1 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux0ch3: i2c@3 {
+ 			#address-cells = <1>;
+@@ -361,6 +373,12 @@ i2c0mux3ch0: i2c@0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
++
++			// IOB1 NIC0 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux3ch1: i2c@1 {
+ 			#address-cells = <1>;
+@@ -371,6 +389,12 @@ i2c0mux3ch2: i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
++
++			// IOB1 NIC1 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux3ch3: i2c@3 {
+ 			#address-cells = <1>;
+@@ -464,51 +488,145 @@ i2c1mux0ch0: i2c@0 {
+ 			#size-cells = <0>;
+ 			reg = <0x0>;
+ 
+-			power-sensor@41 {
+-				compatible = "ti,ina238";
+-				reg = <0x41>;
+-				shunt-resistor = <500>;
+-			};
+-			power-sensor@42 {
+-				compatible = "ti,ina238";
+-				reg = <0x42>;
+-				shunt-resistor = <500>;
+-			};
+-			power-sensor@44 {
+-				compatible = "ti,ina238";
+-				reg = <0x44>;
+-				shunt-resistor = <500>;
++			power-sensor@22 {
++				compatible = "mps,mp5990";
++				reg = <0x22>;
+ 			};
+ 		};
+ 		i2c1mux0ch1: i2c@1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0x1>;
+-
+-			power-sensor@41 {
+-				compatible = "ti,ina238";
+-				reg = <0x41>;
+-			};
+-			power-sensor@43 {
+-				compatible = "ti,ina238";
+-				reg = <0x43>;
+-			};
+ 		};
+ 		i2c1mux0ch2: i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0x2>;
++
++			hwmon0: hwmon@1 {
++				compatible = "nuvoton,nct7363";
++				reg = <0x01>;
++				#pwm-cells = <2>;
++
++				fan-9 {
++					pwms = <&hwmon0 0 40000>;
++					tach-ch = /bits/ 8 <0x09>;
++				};
++				fan-11 {
++					pwms = <&hwmon0 0 40000>;
++					tach-ch = /bits/ 8 <0x0b>;
++				};
++				fan-10 {
++					pwms = <&hwmon0 4 40000>;
++					tach-ch = /bits/ 8 <0x0a>;
++				};
++				fan-13 {
++					pwms = <&hwmon0 4 40000>;
++					tach-ch = /bits/ 8 <0x0d>;
++				};
++				fan-15 {
++					pwms = <&hwmon0 6 40000>;
++					tach-ch = /bits/ 8 <0x0f>;
++				};
++				fan-1 {
++					pwms = <&hwmon0 6 40000>;
++					tach-ch = /bits/ 8 <0x01>;
++				};
++				fan-0 {
++					pwms = <&hwmon0 10 40000>;
++					tach-ch = /bits/ 8 <0x00>;
++				};
++				fan-3 {
++					pwms = <&hwmon0 10 40000>;
++					tach-ch = /bits/ 8 <0x03>;
++				};
++			};
++			hwmon1: hwmon@2 {
++				compatible = "nuvoton,nct7363";
++				reg = <0x02>;
++				#pwm-cells = <2>;
++
++				fan-9 {
++					pwms = <&hwmon1 0 40000>;
++					tach-ch = /bits/ 8 <0x09>;
++				};
++				fan-11 {
++					pwms = <&hwmon1 0 40000>;
++					tach-ch = /bits/ 8 <0x0b>;
++				};
++				fan-10 {
++					pwms = <&hwmon1 4 40000>;
++					tach-ch = /bits/ 8 <0x0a>;
++				};
++				fan-13 {
++					pwms = <&hwmon1 4 40000>;
++					tach-ch = /bits/ 8 <0x0d>;
++				};
++				fan-15 {
++					pwms = <&hwmon1 6 40000>;
++					tach-ch = /bits/ 8 <0x0f>;
++				};
++				fan-1 {
++					pwms = <&hwmon1 6 40000>;
++					tach-ch = /bits/ 8 <0x01>;
++				};
++				fan-0 {
++					pwms = <&hwmon1 10 40000>;
++					tach-ch = /bits/ 8 <0x00>;
++				};
++				fan-3 {
++					pwms = <&hwmon1 10 40000>;
++					tach-ch = /bits/ 8 <0x03>;
++				};
++			};
++			pwm@21{
++				compatible = "maxim,max31790";
++				reg = <0x21>;
++			};
++			pwm@27{
++				compatible = "maxim,max31790";
++				reg = <0x27>;
++			};
+ 		};
+ 		i2c1mux0ch3: i2c@3 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0x3>;
++
++			delta_brick@63 {
++				compatible = "pmbus";
++				reg = <0x63>;
++			};
++			delta_brick@64 {
++				compatible = "pmbus";
++				reg = <0x64>;
++			};
++			delta_brick@65 {
++				compatible = "pmbus";
++				reg = <0x65>;
++			};
++			delta_brick@66 {
++				compatible = "pmbus";
++				reg = <0x66>;
++			};
++			delta_brick@67 {
++				compatible = "pmbus";
++				reg = <0x67>;
++			};
+ 		};
+ 		i2c1mux0ch4: i2c@4 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0x4>;
+ 
++			power-monitor@13 {
++				compatible = "infineon,xdp710";
++				reg = <0x13>;
++			};
++			power-monitor@1c {
++				compatible = "infineon,xdp710";
++				reg = <0x1c>;
++			};
+ 			power-monitor@42 {
+ 				compatible = "lltc,ltc4287";
+ 				reg = <0x42>;
+@@ -580,6 +698,12 @@ temperature-sensor@4b {
+ 				compatible = "ti,tmp75";
+ 				reg = <0x4b>;
+ 			};
++
++			// FIO REMOTE TEMP SENSOR
++			temperature-sensor@4f {
++				compatible = "ti,tmp75";
++				reg = <0x4f>;
++			};
+ 		};
+ 	};
+ };
+
+---
+base-commit: becaccc292bfbd12df81148746043c5221e49da8
+change-id: 20250102-potin-catalina-dts-update-20250102-914b06a4bdba
+
+Best regards,
+-- 
+Potin Lai <potin.lai.pt@gmail.com>
 
 
