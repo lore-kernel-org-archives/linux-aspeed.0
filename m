@@ -1,51 +1,79 @@
-Return-Path: <linux-aspeed+bounces-444-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-445-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FB53C02181
-	for <linux-aspeed@archiver.kernel.org>; Mon, 13 Jan 2025 09:38:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 791B1C02183
+	for <linux-aspeed@archiver.kernel.org>; Mon, 13 Jan 2025 14:26:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YWnHX1WtWz30V7;
-	Mon, 13 Jan 2025 20:38:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736761080;
-	cv=none; b=Ml0r7kSFmtURLA37BySVkLe4EhIrpsywF5E32K6VoP/TzRuFjN0faChW30QoSJOUkm0oMLCdfM1EfW7FTXkG68RcSXdh2VQLVGnJFm/9Ya4W5kt7NS79H1xqryuhCjxhGqn+mH141Rq+7oHQu/jP8GJQxbrOBpiH3faYDDrmiRhb3sORXjEcxRtbtKLYj/qds4Gcdo5tadfIwXljQzygSGYpE2PHuMaheCd0DZ4U5xOWFPAN44eb5vn9mEuS45/sEARKa/zuWju8Yj5xF0SVXTSRumEy5ebFDfo1QkFpXjCr0ISUY9oRhxGM+7uL5nHKsoB1644tG5WznZPFKkKKrw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YWvhp6trRz30WJ;
+	Tue, 14 Jan 2025 01:26:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736778410;
+	cv=none; b=CRGyvzznu6DFvnWYrKfJcnkhqeROKaWvaOHL7vfiw+naio8TcoQndPJ5HSB+NyeaPxs/193UMwqYUNz6KnKp+qr6a7hBGuTzIIiF6dgbM6Mp7ZGaPCOi/dSXABKEXQ4IfCRTfMuaIB5tQjh+pReTN3s7k6ZT2kAYaqXZU5z/it22BLl3zvDHFUhG7u/I9deNWMakTOWz/cxA+1X60kpDUGO2QddO2G8QYRgpvwO50lJcGi2OQ/Rzpu2s8CyZgzC9L8z0UZWJc9yRSJpT/J532BmMzSw7o+tHvfJ9s5992PnOidy9Ow/jWIYaNXCB/Cxi6467Sjf8eZOwWr/CMy2d/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736761080; c=relaxed/relaxed;
-	bh=gQdcg7kA7Svf14MOdb4iykEN+5HWOLbKVycowHGDDfo=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=UrR0b6ZyvYmwgzEz3PWbeJW5892ooEQWW+bvFSypftmn7JgxZCnNWR9Wwdvm4+wZU0EQ9BjZLprQ7uu4nu5tftlfNX83/8DMimr0ayd7YhV/rEFWovHpqTtqh/nlGRdJHMtb65Z17nOGsoV0hjs+glrEMIJwxS2HYg50yt5nuKKFliB67rvjld/OJ12hEZDvxiQo/hgx6RVSoFP5FV6vemj7ktMqMxZYjWad8o+Ccvnx9QW+ljrpaheF86l70uOzcJVp2npcvT1kCEdbFj8CBavdZb17ORJ8Pjg1LJviBec5OptQSSkDgB0Ks67jpADLg9BaOqD2PAYDMsfG9+I8GA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	t=1736778410; c=relaxed/relaxed;
+	bh=Re1AWynCh34gObTCxI5E9tYgcxtbbp4c3dsc92FesJk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=HV0O8mvlKQfG9XLzntbi+J9uOlBcrCn2StWOqmkN8tSCG3yvCIeEtr0MVzp+5VgICxiYEqQ50f0hGzNnsyD+pxVO7HxNaiPaNFjTdklk2tV+QIWFQfkEeo3LmW6ZPcwBmbng8eukAp1D/zVJj686Jy2hmX/X1CL3UpKtrI41GBUhDdRgoHDa/bfo4Xmzc4a3Y10/K/WzR9Hy1UfK3lW1P+Izi97sstO7FnM5n+Ue+5GnCpvH6Kroe/O+KCZ6T3Rlsd657wZGT057nU3VP3xJJyiqB+PnhyqyCl+msB7sG5QghDEJ6IjYYvZ785CPLbLPW/UN5mg9LgovmQ/Dn0RIEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eNsa+SII; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eNsa+SII;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWnHW436Hz305c
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Jan 2025 20:37:59 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 13 Jan
- 2025 17:37:37 +0800
-Received: from aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
- Transport; Mon, 13 Jan 2025 17:37:37 +0800
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-To: <patrick@stwcx.xyz>, <andrew@codeconstruct.com.au>, <linux@roeck-us.net>,
-	<wim@linux-watchdog.org>, <joel@jms.id.au>, <linux-watchdog@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-CC: <Peter.Yin@quantatw.com>, <Patrick_NC_Lin@wiwynn.com>,
-	<BMC-SW@aspeedtech.com>, <chnguyen@amperecomputing.com>,
-	<aaron_lee@aspeedtech.com>
-Subject: [PATCH v7 1/1] watchdog: aspeed: Update bootstatus handling
-Date: Mon, 13 Jan 2025 17:37:37 +0800
-Message-ID: <20250113093737.845097-2-chin-ting_kuo@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250113093737.845097-1-chin-ting_kuo@aspeedtech.com>
-References: <20250113093737.845097-1-chin-ting_kuo@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YWvhn6PLJz30CL
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Jan 2025 01:26:49 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50DD4iCY019939;
+	Mon, 13 Jan 2025 14:26:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Re1AWy
+	nCh34gObTCxI5E9tYgcxtbbp4c3dsc92FesJk=; b=eNsa+SIIMnv4fh5Y37zDo2
+	RJwSsnglnbxwhPcVcXoxP1ovUD87h+dcCwi2aiVGKBCmuENnNghJE/b6+z3qwl7i
+	xmRdOwHadN7aDygj5IYGYUhBpELtckz9sMU594Ul2/YXm4KyQVE+CkiKtwb5ucUz
+	pt1vCMJvh5E8lJXkEzgCA6O5zE1tDWDbgDIcEyae+0Cf/vvav7Jc5AbVMD9IrPjc
+	DTqeZN6b7SYWoihopp3ACIIFZ6O+dH306Q6FS5cEgmx97wA6eqi/E4DJzowmUuI/
+	er7FJymUQfIVsaHnOGDdtq4rlQzr3R6m7Fp9UwiM5yamd0ofge26P9ZooX4cTsig
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 444qvhk102-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jan 2025 14:26:12 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50DEKZWa015977;
+	Mon, 13 Jan 2025 14:26:11 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 444qvhk100-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jan 2025 14:26:11 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50DCn0Qe016976;
+	Mon, 13 Jan 2025 14:26:10 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4444fjxg2m-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Jan 2025 14:26:10 +0000
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50DEQ90M46596426
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Jan 2025 14:26:10 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9A19B58064;
+	Mon, 13 Jan 2025 14:26:09 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EDC8658061;
+	Mon, 13 Jan 2025 14:26:08 +0000 (GMT)
+Received: from [9.24.12.86] (unknown [9.24.12.86])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Jan 2025 14:26:08 +0000 (GMT)
+Message-ID: <bcebe5ed-6080-4642-b6a5-5007d97fac71@linux.ibm.com>
+Date: Mon, 13 Jan 2025 08:26:08 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,174 +86,82 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: =?UTF-8?B?UmU6IOWbnuimhjog5Zue6KaGOiDlm57opoY6IFtQQVRDSCB2MiAwNS8x?=
+ =?UTF-8?Q?0=5D_ARM=3A_dts=3A_aspeed=3A_system1=3A_Add_RGMII_support?=
+To: Jacky Chou <jacky_chou@aspeedtech.com>, Andrew Lunn <andrew@lunn.ch>
+Cc: "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+        "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+        "conor+dt@kernel.org" <conor+dt@kernel.org>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "eajames@linux.ibm.com" <eajames@linux.ibm.com>,
+        "edumazet@google.com" <edumazet@google.com>,
+        "joel@jms.id.au"
+ <joel@jms.id.au>,
+        "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
+        "kuba@kernel.org" <kuba@kernel.org>,
+        "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+        "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "minyard@acm.org" <minyard@acm.org>,
+        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+        "openipmi-developer@lists.sourceforge.net"
+ <openipmi-developer@lists.sourceforge.net>,
+        "pabeni@redhat.com" <pabeni@redhat.com>,
+        "ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
+        "robh@kernel.org" <robh@kernel.org>
+References: <SEYPR06MB5134CC0EBA73420A4B394A009D122@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <0c42bbd8-c09d-407b-8400-d69a82f7b248@lunn.ch>
+ <b2aec97b-63bc-44ed-9f6b-5052896bf350@linux.ibm.com>
+ <59116067-0caa-4666-b8dc-9b3125a37e6f@lunn.ch>
+ <SEYPR06MB51344BA59830265A083469489D132@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <8042c67c-04d3-41c0-9e88-8ce99839f70b@lunn.ch>
+ <c0b653ea-3fe0-4bdb-9681-bf4e3ef1364a@linux.ibm.com>
+ <c05c0476-c8bd-42f4-81da-7fe96e8e503b@lunn.ch>
+ <SEYPR06MB5134A63DBE28AA1305967A0C9D1C2@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <d80f5916-4918-4849-bf4e-2ef608ece09d@linux.ibm.com>
+ <SEYPR06MB51340579A53502150F67ADEC9D1F2@SEYPR06MB5134.apcprd06.prod.outlook.com>
+Content-Language: en-US
+From: Ninad Palsule <ninad@linux.ibm.com>
+In-Reply-To: <SEYPR06MB51340579A53502150F67ADEC9D1F2@SEYPR06MB5134.apcprd06.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: PzMhasNMDNoKxdyKdAi2vxo5N7CWP4lG
+X-Proofpoint-ORIG-GUID: LOmVa8asSR9IfG6trFhNTjMZnecHBQjs
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1051,Hydra:6.0.680,FMLib:17.12.62.30
+ definitions=2024-10-15_01,2024-10-11_01,2024-09-30_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 clxscore=1015
+ priorityscore=1501 bulkscore=0 adultscore=0 mlxscore=0 spamscore=0
+ phishscore=0 impostorscore=0 mlxlogscore=999 lowpriorityscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2411120000 definitions=main-2501130118
 
-The boot status in the watchdog device struct is updated during
-controller probe stage. Application layer can get the boot status
-through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
-The bootstatus can be,
-WDIOF_CARDRESET => System is reset due to WDT timeout occurs.
-Others          => Other reset events, e.g., power on reset.
+Hi Jacky,
 
-On ASPEED platforms, boot status is recorded in the SCU registers.
-- AST2400: Only a bit is used to represent system reset triggered by
-           any WDT controller.
-- AST2500/AST2600: System reset triggered by different WDT controllers
-                   can be distinguished by different SCU bits.
+On 1/13/25 00:22, Jacky Chou wrote:
+> Hi Ninad,
+>
+>> Thanks. When are you planning to push this change? I might need to hold on to
+>> mac changes until then.
+> Yes. We have a plan to push the patch about RGMII delay configuration.
+> Currently, I try to align our SDK to kernel.
 
-Besides, on AST2400 and AST2500, since alternating boot event is
-also triggered by using WDT timeout mechanism, it is classified
-as WDIOF_CARDRESET.
+Thanks. What will be the "phy-mode" value after you make these changes?
 
-Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
----
- drivers/watchdog/aspeed_wdt.c | 81 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 2 deletions(-)
+Will it be "rgmii-id" for MAC1..4?
 
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index b4773a6aaf8c..369635b38ca0 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -11,21 +11,30 @@
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/kstrtox.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
-+#include <linux/regmap.h>
- #include <linux/watchdog.h>
- 
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
- 				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+struct aspeed_wdt_scu {
-+	const char *compatible;
-+	u32 reset_status_reg;
-+	u32 wdt_reset_mask;
-+	u32 wdt_reset_mask_shift;
-+};
- 
- struct aspeed_wdt_config {
- 	u32 ext_pulse_width_mask;
- 	u32 irq_shift;
- 	u32 irq_mask;
-+	struct aspeed_wdt_scu scu;
- };
- 
- struct aspeed_wdt {
-@@ -39,18 +48,36 @@ static const struct aspeed_wdt_config ast2400_config = {
- 	.ext_pulse_width_mask = 0xff,
- 	.irq_shift = 0,
- 	.irq_mask = 0,
-+	.scu = {
-+		.compatible = "aspeed,ast2400-scu",
-+		.reset_status_reg = 0x3c,
-+		.wdt_reset_mask = 0x1,
-+		.wdt_reset_mask_shift = 1,
-+	},
- };
- 
- static const struct aspeed_wdt_config ast2500_config = {
- 	.ext_pulse_width_mask = 0xfffff,
- 	.irq_shift = 12,
- 	.irq_mask = GENMASK(31, 12),
-+	.scu = {
-+		.compatible = "aspeed,ast2500-scu",
-+		.reset_status_reg = 0x3c,
-+		.wdt_reset_mask = 0x1,
-+		.wdt_reset_mask_shift = 2,
-+	},
- };
- 
- static const struct aspeed_wdt_config ast2600_config = {
- 	.ext_pulse_width_mask = 0xfffff,
- 	.irq_shift = 0,
- 	.irq_mask = GENMASK(31, 10),
-+	.scu = {
-+		.compatible = "aspeed,ast2600-scu",
-+		.reset_status_reg = 0x74,
-+		.wdt_reset_mask = 0xf,
-+		.wdt_reset_mask_shift = 16,
-+	},
- };
- 
- static const struct of_device_id aspeed_wdt_of_table[] = {
-@@ -213,6 +240,56 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
- 	return 0;
- }
- 
-+static void aspeed_wdt_update_bootstatus(struct platform_device *pdev,
-+					 struct aspeed_wdt *wdt)
-+{
-+	const struct resource *res;
-+	struct aspeed_wdt_scu scu = wdt->cfg->scu;
-+	struct regmap *scu_base;
-+	u32 reset_mask_width;
-+	u32 reset_mask_shift;
-+	u32 idx = 0;
-+	u32 status;
-+	int ret;
-+
-+	if (!of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt")) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		idx = ((intptr_t)wdt->base & 0x00000fff) / resource_size(res);
-+	}
-+
-+	scu_base = syscon_regmap_lookup_by_compatible(scu.compatible);
-+	if (IS_ERR(scu_base)) {
-+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
-+		return;
-+	}
-+
-+	ret = regmap_read(scu_base, scu.reset_status_reg, &status);
-+	if (ret) {
-+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
-+		return;
-+	}
-+
-+	reset_mask_width = hweight32(scu.wdt_reset_mask);
-+	reset_mask_shift = scu.wdt_reset_mask_shift +
-+			   reset_mask_width * idx;
-+
-+	if (status & (scu.wdt_reset_mask << reset_mask_shift))
-+		wdt->wdd.bootstatus = WDIOF_CARDRESET;
-+
-+	/* clear wdt reset event flag */
-+	if (of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt") ||
-+	    of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2500-wdt")) {
-+		ret = regmap_read(scu_base, scu.reset_status_reg, &status);
-+		if (!ret) {
-+			status &= ~(scu.wdt_reset_mask << reset_mask_shift);
-+			regmap_write(scu_base, scu.reset_status_reg, status);
-+		}
-+	} else {
-+		regmap_write(scu_base, scu.reset_status_reg,
-+			     scu.wdt_reset_mask << reset_mask_shift);
-+	}
-+}
-+
- /* access_cs0 shows if cs0 is accessible, hence the reverted bit */
- static ssize_t access_cs0_show(struct device *dev,
- 			       struct device_attribute *attr, char *buf)
-@@ -458,10 +535,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 		writel(duration - 1, wdt->base + WDT_RESET_WIDTH);
- 	}
- 
-+	aspeed_wdt_update_bootstatus(pdev, wdt);
-+
- 	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
- 	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
--		wdt->wdd.bootstatus = WDIOF_CARDRESET;
--
- 		if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
- 		    of_device_is_compatible(np, "aspeed,ast2500-wdt"))
- 			wdt->wdd.groups = bswitch_groups;
--- 
-2.34.1
+If that is the case then I can test it with current configuration which 
+may add extra delays in the RX from PHY side.
 
+Regards,
+
+Ninad
+
+>
+> Thanks,
+> Jacky
 
