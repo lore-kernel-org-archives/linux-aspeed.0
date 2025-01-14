@@ -1,79 +1,52 @@
-Return-Path: <linux-aspeed+bounces-481-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-482-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DA63E77188
-	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Jan 2025 22:10:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0B12E77188
+	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Jan 2025 23:58:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YXjxP0tqJz3bSK;
-	Wed, 15 Jan 2025 09:10:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736892633;
-	cv=none; b=TAZSQ75Ad6X8c990cXGve7DfHmjNp+BuIW5xxEznifZWAjHJz+MAogk3Iy9lUILfMvtdp5GOkfqWTQXTlyM9HKV2hEia1yDdIp5qFJKJ0w8pQ+K46HJHROAOnKfYehRo86rmcoflLGnwZniwqzIAqXOSFBzlNN8zsp1jxnajudNoc+koRqpe6D/ih4mwcX6lNNyN39YdfvPNpLuSl8kkAX/SQqGJB7w72sZec35Bh0jVcoVQORZwF+hRBXUrOnD4Md+wAIoV1IzKwet5AL+mLl+sqjJOzZ6UU0q14bTwSYVdavWYMzpkKikmXOzgGg6RGtT9YPoWY7JK8X/M2RjsEg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YXmKN1mLJz2yVX;
+	Wed, 15 Jan 2025 10:58:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736899080;
+	cv=none; b=VACA7nSNE3qDtQKXAAfvEITprJE6sunV7F5ELJjhx2vuwHM2/qbP2FVbkX6ukO9cPbwP71hHMVCy30GeP/y0z8SgBI65F0d2ZbZk+9J0P34KZ7Hj+lByASgBxChDuW+/ntToJGk2Sk3FZT1vIvxeNj4vYuirFoZobpXwJFqfhxGobTj7VrvQkhXrUPEqoZs/1vqgLS6GYIKj5dH/sVfQIRW8/KOSLgzKzAzvK0B9Fk2U+FsS2UM8KX9F7mFTw0PybDyTxk1MiM4AfYJN1U2ohcx9LcybnGVJ1ituDmoTVBhOVAXXpZOF0/D0ciN7+DFWH4UVdMli4MqLv6LorU1AvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736892633; c=relaxed/relaxed;
-	bh=Kpkg8ZRNaBCx0LdYq1kZUif9nqPGH11+aM8P8oFUIdg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=f0hqJhRVVWRFgse9cx/WbylURnUBOvY3PP4r4Pq5UZT4defSoFU+b0gnYxMMOLwtVREOk3eKwOkqeGGgAFQ558lfNYYdpsHjszFcYA+EApeMDge2It1isTNTQH98J/OXNhtXdpJkrSQ4t37/s56kowizlqUiFAdQcg0s76WZRuDt5knNM2NMZmJ/UagdaBSai4EDQgryKN2P0xXFG/+GuZy6tEJ1RXXyM/ChE9DbRVsu3TSUDiX5ZsN6YeFrZLOlhLN0LiC6NenDOiti+4fk3xtE34YBqfiEc4qqe8p61uT7FmmBR3l3CP81HRYQo7CbdX9AgWuhdDvQ044Z49sSbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JlyNEdum; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1736899080; c=relaxed/relaxed;
+	bh=Lgpd9qSYbSO27cTLVVtK32TzSRP1yS2DhHPZv759j/0=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=TNQiewH7cXR8w0OD88n1otf2BiUzMkNV7XImwa3juTxVW3ZgkUDUmeS9VeNy5/Y3P7kJ5bR7qE7KFPXMMkB6SBZcIBOqIkrwLLHkLKJzcAAij0yD1CkWiQbQzuhy48CSrdxopQ79hTNuHd96c9jAxJag7GUvXEkJkRxxXZJY4bAHYigBuiHQ/cnoeQDsbJfvwuef5qqkKZAUEJtPZAdogABwkl4x811iYz7BdUBPDA2zSUzWERKs9uq/ohUH+6lwysoudj8aalU3wJkEmqnA73MtuN82+YfXD6uHOrUtwRfCIiVPIWY3pADO9sqv4RWIKMVo8MN+15/JdPOKMgsiCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jxngMlvI; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JlyNEdum;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jxngMlvI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YXjxN0ng7z3bSJ
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jan 2025 09:10:31 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50EFURub005899;
-	Tue, 14 Jan 2025 22:10:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Kpkg8Z
-	RNaBCx0LdYq1kZUif9nqPGH11+aM8P8oFUIdg=; b=JlyNEdumOpmggrw97leKDB
-	O8aD3t0oXfYBT3JjdZhzcCbjPJoQ+plOjW/OGBZmZnlKnvNIEw0gjGapr8gh/IhM
-	ci/fqGGAgSGkAXMJo05HriUArsKMHv0w7rLNsd+ukmZqADGolfNivZPbcJvHkwAy
-	DR5ZACXVMOPYpj7lwEsFCeeomEvs+zqUOpBXFEdfMrZajc9TzkgQyJA/o1hUsIT5
-	B5o5EB3Mjr7+/zY80rEExurmz9l/RDVYhoT2YGMyBjQpdF6szegyX0HVF63/y8ji
-	/oJ8pnBR3VmambmAo/Co/qvIflRzqWo6xNO9BCwSW2b3LP35yA2wNJoMwyB4w/EA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 445tmghp5k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jan 2025 22:10:02 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50EMA2Jh032360;
-	Tue, 14 Jan 2025 22:10:02 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 445tmghp5d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jan 2025 22:10:02 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50EKYumK004526;
-	Tue, 14 Jan 2025 22:10:01 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4442ysnhgd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jan 2025 22:10:01 +0000
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50EMA0md54723054
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 14 Jan 2025 22:10:00 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 78F1958068;
-	Tue, 14 Jan 2025 22:10:00 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3EB4058054;
-	Tue, 14 Jan 2025 22:09:58 +0000 (GMT)
-Received: from [9.61.120.113] (unknown [9.61.120.113])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 14 Jan 2025 22:09:57 +0000 (GMT)
-Message-ID: <c8fa4a3d-9cbc-49ce-9d76-85e57453fb04@linux.ibm.com>
-Date: Tue, 14 Jan 2025 16:09:57 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YXmKM1sllz2yVV
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jan 2025 10:57:59 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id A9B475C5944;
+	Tue, 14 Jan 2025 23:57:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E29BAC4CEDD;
+	Tue, 14 Jan 2025 23:57:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1736899077;
+	bh=qYcadH5zTVf6YXQcR12gkpEXX8NXXimDRL8MXEYl88I=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=jxngMlvI1aMH7uwkSNtEMSo14UCuU2hwadYpy8TGifVRhFKGYRXkjD8bHJaeDuGjp
+	 AeuWNlEeSkWvTVqZZHSyoVuIEOfWATWVpJfr1CTZkPcPUqxjNsTEQhSov8/KnowEL5
+	 CvQg9E8qJCtw9Il4ZjD2H2I9Cqly4JEQPTspsZBthQy65l6WPXtta9EFp6hG+9UKnI
+	 m9DFyGiLnsMunIEMMhHIEgusMkuF1M6leSBraIeKhJCHqf92d865JChCjeNBvTyU4f
+	 cdFhJabsFOTtH0IsfqAktwOWynpwEd9PBgziJ0YRbPkQaTNAXtDIM5zA+LO6T1/lM/
+	 pTET4Szz1XfIQ==
+Date: Tue, 14 Jan 2025 17:57:55 -0600
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,69 +59,61 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 00/10] DTS updates for system1 BMC
-To: Rob Herring <robh@kernel.org>
-Cc: linux-aspeed@lists.ozlabs.org, davem@davemloft.net, edumazet@google.com,
-        andrew@codeconstruct.com.au, netdev@vger.kernel.org, kuba@kernel.org,
-        joel@jms.id.au, linux-arm-kernel@lists.infradead.org,
-        openipmi-developer@lists.sourceforge.net, conor+dt@kernel.org,
-        linux-kernel@vger.kernel.org, pabeni@redhat.com,
-        ratbert@faraday-tech.com, eajames@linux.ibm.com,
-        devicetree@vger.kernel.org, andrew+netdev@lunn.ch, minyard@acm.org,
-        krzk+dt@kernel.org
-References: <20250108163640.1374680-1-ninad@linux.ibm.com>
- <173637565834.1164228.2385240280664730132.robh@kernel.org>
- <a8893ef1-251d-447c-b42f-8f1ebc9623bb@linux.ibm.com>
- <20250114000727.GA3693942-robh@kernel.org>
-Content-Language: en-US
-From: Ninad Palsule <ninad@linux.ibm.com>
-In-Reply-To: <20250114000727.GA3693942-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: v_6PYVa29mNhrKAYYwhcM5Xcjd6o3IGx
-X-Proofpoint-ORIG-GUID: wZefgua35hP2KPe6COMauRr6HOrmFlvU
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-14_07,2025-01-13_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- suspectscore=0 phishscore=0 clxscore=1015 lowpriorityscore=0 bulkscore=0
- impostorscore=0 adultscore=0 malwarescore=0 mlxlogscore=859 mlxscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2501140166
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: kuba@kernel.org, netdev@vger.kernel.org, andrew@codeconstruct.com.au, 
+ davem@davemloft.net, edumazet@google.com, 
+ openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org, 
+ joel@jms.id.au, linux-aspeed@lists.ozlabs.org, devicetree@vger.kernel.org, 
+ conor+dt@kernel.org, pabeni@redhat.com, andrew+netdev@lunn.ch, 
+ minyard@acm.org, eajames@linux.ibm.com, 
+ linux-arm-kernel@lists.infradead.org, krzk+dt@kernel.org
+To: Ninad Palsule <ninad@linux.ibm.com>
+In-Reply-To: <20250114220147.757075-3-ninad@linux.ibm.com>
+References: <20250114220147.757075-1-ninad@linux.ibm.com>
+ <20250114220147.757075-3-ninad@linux.ibm.com>
+Message-Id: <173689894057.1969633.10540050942005147267.robh@kernel.org>
+Subject: Re: [PATCH v5 02/10] bindings: ipmi: Add binding for IPMB device
+ intf
 
-Hello Rob,
 
-On 1/13/25 18:07, Rob Herring wrote:
->>> My bot found new DTB warnings on the .dts files added or changed in this
->>> series.
->>>
->>> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
->>> are fixed by another series. Ultimately, it is up to the platform
->>> maintainer whether these warnings are acceptable or not. No need to reply
->>> unless the platform maintainer has comments.
->>>
->>> If you already ran DT checks and didn't see these error(s), then
->>> make sure dt-schema is up to date:
->>>
->>>     pip3 install dtschema --upgrade
->>>
->>>
->>> New warnings running 'make CHECK_DTBS=y aspeed/aspeed-bmc-ibm-system1.dtb' for 20250108163640.1374680-1-ninad@linux.ibm.com:
->>>
->>> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: gpio@1e780000: 'hog-0', 'hog-1', 'hog-2', 'hog-3' do not match any of the regexes: 'pinctrl-[0-9]+'
->>> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
->> This is a false positive. So ignoring it.
-> No, it is not. You need to define hog nodes in aspeed,ast2400-gpio.yaml.
-> See other GPIO controller bindings that do this.
+On Tue, 14 Jan 2025 16:01:36 -0600, Ninad Palsule wrote:
+> Add device tree binding document for the IPMB device interface.
+> This device is already in use in both driver and .dts files.
+> 
+> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+> ---
+>  .../devicetree/bindings/ipmi/ipmb-dev.yaml    | 55 +++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/ipmi/ipmb-dev.yaml
+> 
 
-ok, I fixed it. Thanks for the review.
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Regards,
+yamllint warnings/errors:
 
-Ninad
+dtschema/dtc warnings/errors:
+Error: Documentation/devicetree/bindings/ipmi/ipmb-dev.example.dts:24.32-33 syntax error
+FATAL ERROR: Unable to parse input tree
+make[2]: *** [scripts/Makefile.dtbs:131: Documentation/devicetree/bindings/ipmi/ipmb-dev.example.dtb] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1506: dt_binding_check] Error 2
+make: *** [Makefile:251: __sub-make] Error 2
 
->
-> Rob
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20250114220147.757075-3-ninad@linux.ibm.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
 
