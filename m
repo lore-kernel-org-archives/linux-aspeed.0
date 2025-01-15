@@ -1,66 +1,98 @@
-Return-Path: <linux-aspeed+bounces-490-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-491-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC394C02180
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 14:25:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1910DC02180
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 18:31:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YY7Yq0RF9z2ysB;
-	Thu, 16 Jan 2025 01:25:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736951102;
-	cv=none; b=dyELhbxa0EQtljP0zl+2DmfrsjeK034hO2i6E/S3qU0hMB0+FTtoQChtzNbWkBikRT3cxUOhfZh3AJupOk87w2EfAh3IMRJARlZFVmWLZPJSOxWo/CzGzHaONPqEPSxRBLysz4w7WbQHpTNtUKcvcJHED8ct4X/gJRJOmE1pnUXwAShnKuwHqVTvW5tPjbLAVwc/QDuYGijZswYeatO3d74fiySUGok2dB9AqrHt2GpoYoo6ewAyyo0FWhWWXflvSgUT8qR5aRUDdamtDD+liFFXRTRm+Tij8DWmQF/jFjZRYAEDaoUqkzN8j/SJ+IG7wGEpNLz+HNmRtVAU8mtFmQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYF1x50lWz2ysW;
+	Thu, 16 Jan 2025 05:31:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.183.199
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736965877;
+	cv=none; b=jzwPZJejogEtIrQeu13SV+3QT5solnBsasN9e997FwbI/Pg/RQVB71HrcPkyeDWIWwP/ayUHcVsmR6EKuNM6V/BxR/f+dblsGYuT700ivRsk4OVcdI5AB8jBz5ZeN1Em5Mf/P5UFxeyoCxhwjSwXWtZ/XQ5JTmBBKclb/qhUOW7nm1mTANSoq/Zs3i9ug8y5MBcR82AN98DvVuLKVjuObAXdzcy+p6djw0s0XHxyt6L5QMX+F/yNSpiQz7ZO6JITAZQPUQIVxYFbsnUO5fo0ZdWUPv/sv3Y87pf/1Lny5khvCU7GhFVnLq5UUWitRujnkRx423GG2buytN11jzbepA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736951102; c=relaxed/relaxed;
-	bh=xaOcGj9j9Cemvm+vFePyCuGaT0+qHLpoq0/snIH1qN4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CEGKq15gSrhCCKvjHRA2j1pWfbvZoOND/xyniNBUtgE+7dhnxIfGHsmfvRPErgTGixhHian7K4CLYnewG7OLo/qxu87gP9kA8FGcenb4TA3ZDX3D1JcI1PFRIhKgZY4c/1Cl+X0JbTYDBS2KyXcPAWzU88wYt3Vdfo02kjjibMNhHFpNU1Jpce64NRUEkbgSfgv/LnwWuPTB4KhgYuzl+fs6dIiWay4u8x59K1gKopF475MB4xHhmrPrA64f+YiAkHXAnhcfnyuglIK4/uiLGEhuTvj2MPZOwOsE/kM+A5irwbVfUKkQxl+4fSQY0GKDKmobsZ1AJmOt0CUcJhsx0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=upw8EeuX; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736965877; c=relaxed/relaxed;
+	bh=jLoWi3Wg0eiQh/tot5fchMc56NRkY1AedYStPaUs9Pk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ZVHBsTZCSFgXUzSuuVbnoc9RVDQ1JUvBvIIXrE3g8JTV/E/hZgFQHpEPtweEmPoF6Utrmg60l9yNLiWIYDkgfPKMzzXBtVIc06I6vVzShVvCXfV5voNAcwbGxP9XcV+4aROuDsBZsjF9hqtN0/s7vP5lEovqlzMrrXFcnti9VQbNaiq8PuS4IAPZG75PbYxIRSveQYMWUzmjwXKBTLK3og5okErRwIgh6MOp7zi4FrCV6UKRNr4hDBWlgkispIxZvk4j0bpbOKh1d7JVULBBg2geRQsKHqw0cr1OQEqV7EYqezTw4bcHGYT1u8ufKCWNYFwEU96+WTVJz94uvVfD+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=XVoQSRAs; dkim-atps=neutral; spf=pass (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=upw8EeuX;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=XVoQSRAs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
+Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YY7Yp2Yt5z2yZ6
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 01:25:02 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id E6325A4056A;
-	Wed, 15 Jan 2025 14:23:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D1BAC4CED1;
-	Wed, 15 Jan 2025 14:24:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736951098;
-	bh=WMcIZXIWDa7GXnAeCZ5NxIJiTsw13XWfpqK4pCdgiWc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=upw8EeuXYaML9/AhOywPJDa8xi5WeR9m2yIsNolj7dP6UH8uX/xTo9rVWXny5BMTZ
-	 5kTFQyivcoBL+oastN9JqrQe83FruI51a77YqLwe3+7tX9GRcy/piFAAR5Hi/iZ3Ob
-	 D0a7xaDbn513HeQ/MUnlsaiuvxDctoKXJhl3txNtdwiRqfYrJEhk4eeo5P1X0Z6oFJ
-	 jP89kAQhk5CKJsTMXGDDzO5WYoXqqIhFWMm/6UbCeTkVhvs6DUJMf816Z5iEyHUkO+
-	 bake0gHU9EG6GTTYaKYBI4BEEZ1A+HJzsGVWCiqY4AVHvCQ8HDDmEv0nHySoX000YD
-	 k1PSgi2nMvPiA==
-Date: Wed, 15 Jan 2025 08:24:57 -0600
-From: Rob Herring <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Ninad Palsule <ninad@linux.ibm.com>, minyard@acm.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, andrew+netdev@lunn.ch,
-	davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
-	pabeni@redhat.com, openipmi-developer@lists.sourceforge.net,
-	netdev@vger.kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
-	devicetree@vger.kernel.org, eajames@linux.ibm.com,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 03/10] dt-bindings: gpio: ast2400-gpio: Add hogs
- parsing
-Message-ID: <20250115142457.GA3859772-robh@kernel.org>
-References: <20250114220147.757075-1-ninad@linux.ibm.com>
- <20250114220147.757075-4-ninad@linux.ibm.com>
- <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYF1v3FL7z2ynR;
+	Thu, 16 Jan 2025 05:31:14 +1100 (AEDT)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 420B0FF803;
+	Wed, 15 Jan 2025 18:31:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1736965870;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=jLoWi3Wg0eiQh/tot5fchMc56NRkY1AedYStPaUs9Pk=;
+	b=XVoQSRAsHPXADFu3jVGI7dBwCecPD+dviwtiINSG7gG2QTYI7ZKoCGbAlzsXnHawAhGKwl
+	24LiXfzCQR3pIZBqvn9qb/WI76bBR/gYM5iK3v27XfrrihWyj6I9DuAIL0fsvT3vsw3I/q
+	czvnLPptcYBnGEnhrm8GhgmQ8vCeUtjENVYUkzFUKo7lU8h2121ib4vf8mK5lggJa2imhw
+	wuKxnh8Eev9ag9+Xsu7zpWrkt2h27deaKdBBBwhgImA9Rm+AwpotMeHj0kiG0/Az9PUc1t
+	KHhtrdM1rJLw5PWkyTBKEJFeu2A3AfGxN8CmN6JVLXE0bXGUEx1cXfp5ava0qA==
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Mark Brown <broonie@kernel.org>,
+	Sanjay R Mehta <sanju.mehta@amd.com>,
+	Serge Semin <fancer.lancer@gmail.com>,
+	Han Xu <han.xu@nxp.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Daire McNamara <daire.mcnamara@microchip.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Haibo Chen <haibo.chen@nxp.com>,
+	Yogesh Gaur <yogeshgaur.83@gmail.com>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Michal Simek <michal.simek@amd.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Shan-Chun Hung <schung@nuvoton.com>,
+	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
+	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Avi Fishman <avifishman70@gmail.com>,
+	Tomer Maimon <tmaimon77@gmail.com>,
+	Tali Perry <tali.perry1@gmail.com>,
+	Patrick Venture <venture@google.com>,
+	Nancy Yuen <yuenn@google.com>,
+	Benjamin Fair <benjaminfair@google.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Raju Rangoju <Raju.Rangoju@amd.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	Steam Lin <stlin2@winbond.com>,
+	linux-spi@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-riscv@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mediatek@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-mtd@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	openbmc@lists.ozlabs.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	Tudor Ambarus <tudor.ambarus@linaro.org>
+Subject: Re: [PATCH v3 21/27] mtd: spinand: Create distinct fast and slow read from cache variants
+Date: Wed, 15 Jan 2025 19:31:02 +0100
+Message-ID: <173696548250.435435.10416906996871126975.b4-ty@bootlin.com>
+X-Mailer: git-send-email 2.47.0
+In-Reply-To: <20250110-winbond-6-11-rc1-quad-support-v3-21-7ab4bd56cf6e@bootlin.com>
+References: <20250110-winbond-6-11-rc1-quad-support-v3-0-7ab4bd56cf6e@bootlin.com> <20250110-winbond-6-11-rc1-quad-support-v3-21-7ab4bd56cf6e@bootlin.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,39 +105,44 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-GND-Sasl: miquel.raynal@bootlin.com
 
-On Wed, Jan 15, 2025 at 09:45:50AM +0100, Krzysztof Kozlowski wrote:
-> On Tue, Jan 14, 2025 at 04:01:37PM -0600, Ninad Palsule wrote:
-> > Allow parsing GPIO controller children nodes with GPIO hogs.
-> > 
-> > Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> > ---
-> >  .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-> > index b9afd07a9d24..b9bc4fe4d5a6 100644
-> > --- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-> > +++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
-> > @@ -46,6 +46,12 @@ properties:
-> >      minimum: 12
-> >      maximum: 232
-> >  
-> > +patternProperties:
-> > +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
+On Fri, 10 Jan 2025 15:45:23 +0100, Miquel Raynal wrote:
+> So far, the SPINAND_PAGE_READ_FROM_CACHE_OP macro was taking a first
+> argument, "fast", which was inducing the possibility to support higher
+> bus frequencies than with the normal (slower) read from cache
+> alternative. In practice, without frequency change on the bus, this was
+> likely without effect, besides perhaps allowing another variant of the
+> same command, that could run at the default highest speed. If we want to
+> support this fully, we need to add a frequency parameter to the slowest
+> command. But before we do that, let's drop the "fast" boolean from the
+> macro and duplicate it, this will further help supporting having
+> different frequencies allowed for each variant.
 > 
-> Choose one - suffix or prefix. More popular is suffix.
+> [...]
 
-I was about to say that, but this matches what gpio-hog.yaml defines. 
-Why we did both, I don't remember. We could probably eliminate 
-'hog-[0-9]+' as that doesn't appear to be used much.
+The following patches have been applied to nand/next:
 
-Long term, I want to make all gpio controllers reference a gpio 
-controller schema and put the hog stuff there. Then we have the node 
-names defined in 1 place.
+[21/27] mtd: spinand: Create distinct fast and slow read from cache variants
+        commit: 042087247835dad1ec5e39052abf022fd13c6326
+[22/27] mtd: spinand: Add an optional frequency to read from cache macros
+        commit: 7ce0d16d5802bfde4209e52ee8ad644ca1eab423
+[23/27] mtd: spinand: Enhance the logic when picking a variant
+        commit: 666c299be696f02c3354da104295fb94b8f65d25
+[24/27] mtd: spinand: Add support for read DTR operations
+        commit: 8586bc8d95488dfaadbc1af89ba59900d2c39119
+[25/27] mtd: spinand: winbond: Update the *JW chip definitions
+        commit: 1ea808b4d15b9bddc48af75b0668b82366b5b927
+[26/27] mtd: spinand: winbond: Add comment about naming
+        commit: 61c7155e3fe938d4da4671b2f84e29eaf79f5f46
+[27/27] mtd: spinand: winbond: Add support for DTR operations
+        commit: be7a05db4252edbffb43484b14755048fb8db710
 
-Rob
+Patche(s) should be available on mtd/linux.git and will be
+part of the next PR (provided that no robot complains by then).
+
+Kind regards,
+Miquèl
 
