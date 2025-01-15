@@ -1,82 +1,63 @@
-Return-Path: <linux-aspeed+bounces-485-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-486-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37321C02183
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 03:06:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E91DEC02180
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 08:45:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YXrVG4xf8z30gv;
-	Wed, 15 Jan 2025 14:05:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736910358;
-	cv=none; b=AAi4lUuyOGoXMQeYXoZ54h4IxRoKo0+ob8cipR5XQ8YdhKdWcpu1jJSC++KjM/DQT8pQp9YET2kgkJcIVcvwDLISXpoLDN1sgX2Hhf4+4z6XUK/ylgTr7WNLRzEPHUvGazcFe/nyL8iPWhkypsL9dW5VKNe1lG1p4Qh7aQTElLUe4GqQEwSzZKtDSHyYToxyDmAE76xNHIef8JdVca1+aTXbvwHczi+g62kZUpy/2HAvTsXJWBxnl3zokNSHTG0HjEf7Gkt4h5W1/wiwisnARpOx3g39T1++jLggspY2eXioVL2p2HECT7HmsEluVZNZiUNC6/DyspuPuBpuiOyCaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YY02Z0h6lz30MM;
+	Wed, 15 Jan 2025 19:45:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736930758;
+	cv=none; b=IzSgr6sxix+tBUBp17kkG/iU2zxUI6Om/H5onAvmZ6NTGTcT4LyR435gT5+G8/ff6FXaagm9uJ0rEDSy5ouvRKwr/Wu8ApY5yfyTNLTTCQhlaF5goFrt23A9ASJC/ARRf5+ssf+X+BbjjJYS/AV6X+jZDJv1Gd93bVJuo65ESsWKciOiVYodeuV/fmFrFx+uPq5WhO2ZsjtVh8J8LbXRbBQXZxShaLmimSUL2KBwRtmkkunk8+cPCG0D+O3G0RG34WBLLw0gTvXq1NIpISywqgpCoSgEKJcjsk2wgEkKIpqZtj0V3Luady6PExgGI7elSbSgkPpY4t2bCQRhUqel1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736910358; c=relaxed/relaxed;
-	bh=xZ3pSeWobvg8Tl71lQfQroV+f3jXMvH5qIsHJ4PQK2A=;
+	t=1736930758; c=relaxed/relaxed;
+	bh=NZzAaGpNJQnNH4596dN2jZE4+Wk1VnOd5wMlBtov1n8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XMTrEVAxJpEfeOeWJuiPnqKBN7oQqtfx/AU85VoGQV0ERA7WQiluGfn4qyirKGCNmaMJXOyCZstJ4TsjuHClo48N/vGnmTdXvve/8g+MjPbhHDTfrvmF5P/kzPy3ZaUXR1NV5C9x6Fxa7uIoCD2zwTOHxtPQfffydWLXDE3NRsyMgdXBMo4p+86dpXzk89P0xB2AXF9Tx6eMho4uERKXUicgYxTp8ng1ukUDkRw4uEZzhpQcKiL0yvO/dsMsMKZp+LB49XfsdY4dSIXOtO7kqmF6R1xWpl0XmiZIcF5avLR6eCL+6NRa8FsN8GIVvb29vZWYFFvo956HwfMvW+jRQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=krVR3BV+; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=fr4k4PsI1WMR1v9EIICj7tvWWlnbAOAQRfmf7yktWan+FAcY8FSf4WpHiebTHD1j08/DQ5gfkrBdOsJNC9bFSuXPpO9syewLVyjPFBCNB6FjJsxXea6cHSFqAQre1S2enNEzisD32r6U3aIx6JjKJrwX1aFI+RdMXl01/ZKbCOCgvA9fCcl3mjsqgl40AWceG4Ps8E9ay5FJGcerNp/w1nj6Ia4JXda32/GcRZ802Y61R6NgCPaCvshxU6jMEWuNK/166BKbZOgKP2KtlSbG3M8zjIMykJqF8DkjFfeXyoorSRi37FTDRU9uxelpNfFdITtoXYQhBGRN2187ekInWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qcxC6SzV; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=krVR3BV+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qcxC6SzV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YXrVF0FYgz30P3
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jan 2025 14:05:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=xZ3pSeWobvg8Tl71lQfQroV+f3jXMvH5qIsHJ4PQK2A=; b=krVR3BV+9Rjj3324BmDgxaZ2mg
-	hvJQmkiQLPMtvaxTBuqsr6Cbg69R1frvco63GG5G1dyw/jnG65GNG/3pDGQUCxDQteU/UDf3hUIDE
-	15MV/GMsuGypwbzxqc/55u7g29U9XYdknbk0RptcwYib0cd5HTzItZPOkx6hKnJmgjAk=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1tXtii-004eNm-6i; Wed, 15 Jan 2025 04:05:28 +0100
-Date: Wed, 15 Jan 2025 04:05:28 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Ninad Palsule <ninad@linux.ibm.com>,
-	"andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
-	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"davem@davemloft.net" <davem@davemloft.net>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"eajames@linux.ibm.com" <eajames@linux.ibm.com>,
-	"edumazet@google.com" <edumazet@google.com>,
-	"joel@jms.id.au" <joel@jms.id.au>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>,
-	"kuba@kernel.org" <kuba@kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"minyard@acm.org" <minyard@acm.org>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"openipmi-developer@lists.sourceforge.net" <openipmi-developer@lists.sourceforge.net>,
-	"pabeni@redhat.com" <pabeni@redhat.com>,
-	"ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
-	"robh@kernel.org" <robh@kernel.org>
-Subject: Re: =?utf-8?B?5Zue6KaGOiDlm57opoY6IOWbng==?=
- =?utf-8?B?6KaGOiDlm57opoY6IFtQQVRD?= =?utf-8?Q?H?= v2 05/10] ARM: dts:
- aspeed: system1: Add RGMII support
-Message-ID: <e5178acd-0b6f-4580-9892-0cca48b6898a@lunn.ch>
-References: <SEYPR06MB51344BA59830265A083469489D132@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <8042c67c-04d3-41c0-9e88-8ce99839f70b@lunn.ch>
- <c0b653ea-3fe0-4bdb-9681-bf4e3ef1364a@linux.ibm.com>
- <c05c0476-c8bd-42f4-81da-7fe96e8e503b@lunn.ch>
- <SEYPR06MB5134A63DBE28AA1305967A0C9D1C2@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <d80f5916-4918-4849-bf4e-2ef608ece09d@linux.ibm.com>
- <SEYPR06MB51340579A53502150F67ADEC9D1F2@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <bcebe5ed-6080-4642-b6a5-5007d97fac71@linux.ibm.com>
- <26dec4b7-0c6d-4e8e-9df6-d644191e767f@lunn.ch>
- <SEYPR06MB5134DD6F514225EA8607DC979D192@SEYPR06MB5134.apcprd06.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YY02X6DdDz2yq4
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Jan 2025 19:45:56 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id A6C7DA4186F;
+	Wed, 15 Jan 2025 08:44:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B8FFC4CEDF;
+	Wed, 15 Jan 2025 08:45:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1736930753;
+	bh=BO+3m4FMfOEG/15U7sR7NT9LJguDOTS3576NIxYCBC4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=qcxC6SzVOVwXLkfQSuzJsVT1MbWuFE4DDr9Lmivl1awzuPTfYhtERml6+ZC1PhY3i
+	 E05cAcYI5oEg/VnRWQwfJZhslpuwCsVVI3K3k/uH9xtXZ7yCJf/5xe5/SSeF+o2VHL
+	 LGu3WkcCOtQHu6Ri0NKZ3oPHPplPkBr/4CXAebb+bc8YuF3ncvIlHJEwrk9T15/Rjc
+	 buCSPyl8nZjxCkJZcNuOjphLNrOctF2hhaPnSO5T0AS34Ii2KHquycjySlvOPxZYLf
+	 vDksmIIexXrJtsr0S+gzVQhn15ZIX7Y4OYAJ+S989RAHX80XhDs8Y76x0V8FycvmmZ
+	 lK2QqzNmRTNXA==
+Date: Wed, 15 Jan 2025 09:45:50 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Ninad Palsule <ninad@linux.ibm.com>
+Cc: minyard@acm.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com, 
+	kuba@kernel.org, pabeni@redhat.com, openipmi-developer@lists.sourceforge.net, 
+	netdev@vger.kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au, 
+	devicetree@vger.kernel.org, eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 03/10] dt-bindings: gpio: ast2400-gpio: Add hogs
+ parsing
+Message-ID: <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
+References: <20250114220147.757075-1-ninad@linux.ibm.com>
+ <20250114220147.757075-4-ninad@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,37 +70,32 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <SEYPR06MB5134DD6F514225EA8607DC979D192@SEYPR06MB5134.apcprd06.prod.outlook.com>
+In-Reply-To: <20250114220147.757075-4-ninad@linux.ibm.com>
 
-On Wed, Jan 15, 2025 at 02:57:04AM +0000, Jacky Chou wrote:
-> Hi Andrew and Ninad,
+On Tue, Jan 14, 2025 at 04:01:37PM -0600, Ninad Palsule wrote:
+> Allow parsing GPIO controller children nodes with GPIO hogs.
 > 
-> > >
-> > > Thanks. What will be the "phy-mode" value after you make these changes?
-> > >
-> > > Will it be "rgmii-id" for MAC1..4?
-> > 
-> > It should be.
+> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+> ---
+>  .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> Perhaps we will keep using "rgmii"
+> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+> index b9afd07a9d24..b9bc4fe4d5a6 100644
+> --- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+> +++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+> @@ -46,6 +46,12 @@ properties:
+>      minimum: 12
+>      maximum: 232
+>  
+> +patternProperties:
+> +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
 
-No. It is wrong.
+Choose one - suffix or prefix. More popular is suffix.
 
-> The reason is we cannot be sure all PHYs have support for phy-mode property.
-> We will refer to the other MACs and PHYs driver about phy-mode and 
-> rx/tx-internal-delay-ps properties how they implement.
-> 
-> Currently, we will plan to implement RGMII delay in ftgmac100 driver based on
-> ethernet-controller.yaml.
-> 
-> At same time, we will think how to configure these phy-mode "rgmii-rxid", "rgmii-txid" 
-> and "rgmii-id in MAC driver.
+Best regards,
+Krzysztof
 
-I already explain how this works once. Please read this thread
-again.... The MAC can apply the delays, but it must mask the phy-mode
-it passes to the PHY.
-
-	Andrew
 
