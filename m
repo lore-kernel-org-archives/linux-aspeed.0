@@ -1,51 +1,80 @@
-Return-Path: <linux-aspeed+bounces-492-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-493-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14842C02180
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 20:30:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A896DC02180
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 21:54:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYHgj542Mz30NF;
-	Thu, 16 Jan 2025 07:30:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736973041;
-	cv=none; b=aRiA/x5645vU5/pZQDnzqVNI2idi5nZ1kCCzG2u1yyhUm13nEwQOnez+CFfUX4QSVji2xaVqB2htb2WgC30+vvtbQGd73vT1gjUu3K+t+55u3M1dwj+d8Zb49dEibzNx1zlYgbgoPNQij9vwCuhV4D0qdFQi6CaFQPLwtMUnXaWGrW5eBW3EJDVPVnXncYVZ/F219u2KiPxRwl8ZILgJmWvQ3bSNbUzuAwnVgbcoAxj+pAY6w+BnRNhLo7PuGSfWF727W3Xx0Ln5+TOQN0SqUIm1YdiH0cJS5MXw+4nqjB3XZnQFiwd75mB6OBCCPFjeF3LZho1PnU+zWbP7ApkM5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYKX71S7Dz3bq0;
+	Thu, 16 Jan 2025 08:54:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736978055;
+	cv=none; b=myURLbhhSv7TM0CfPlomzco0qlkqqxtyFvLOeNv0Imus5oWx78ti0zuXqBzwJmfq/pgUlJ9MnX2sVMTSMK2yuWZkohZY4hW3Cx7cAzCBuvTv/sziw+yoSjWl+eDyflY5asqcd1Rwt41bb9f7GDo/sD+McccvrGFvpPfQpSBIggpwieYZq47xyl3xzV53gNlRll0cgfZoiRKdMZYdvt7MxH6ld9hbqvkn1ivtF9B8rlvoXfKvJDIxx/ywPJw/3AK6DC/MSg6obopptc2Uek5A680TPFGdPkR/49B67J9gT4yfsqdUkVzo9OjEbJCwsyYXQvsCokQvpSg4w5c+a4yw0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736973041; c=relaxed/relaxed;
-	bh=asX4kVgx8cY0P7Djc9Q2mP5+7FSf24CknaT6mNUpnTI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=iyBTnQh+s3j6qp9EZ6dYPSDfga8cCdOf+cwEA5U45PwtXmzHoJTYmSCEANR3xfQpxdeyGXPy/7gHfd6c65AmWPJu1srbUHlOmJ1FMv7xzJBdLY56J8W/rbreC/T2K6EUh8m+BHDqFTsrucHzF8VXa+zJ5/K169heX8SzYWJ5f/rdIjPd05Wkbna3hd09L8iP5Qvo+94PxO8Ki8Z+N2NH02sr43M9yB9HWXJ4ParnFsX9oZFOnRYd3FVxgYz8DldnT8kQeEV1Z/Xvpxe3luSxTNXW1PrUD+94tzId1/QyC7DXkxCtnIptqtbSN6a/KuLzmFMhoAXq2zuam72892Y8/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tXOiMClp; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1736978055; c=relaxed/relaxed;
+	bh=TzpXaZVhH3eqHenHViKCjdEQGUU6qnZx4yq8XoragwU=;
+	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To; b=OKqpM1qiHmcU7yDadvY0xI6RbCPbRVZSWVLpDiD+yO/luThmGACMswwa2WAPvNTdxHLzqRKYGHihFmqwDW2QCR8K+P+n1Vm3qafNoWagFb1g+U+jaExhC6tFvirvBQoingNYYuDIlx1iv/s2jWmFaSAUPBUAb2QKxWnztu8Z5m37vI+8OYfqRYguOLvZQ9rJJnI/MzhOrN5kl53HijqOzd+L8DelG8PvPigo3F4rVn8QCLgdUHY2rlXAFDIe7x+6n1i0GpvCZ17SeUnbFl2gfCnjrrcfmAszBKT/GEmZUtb+0DFZgmSmqT/8FAyTHFUNNgPc1H0jYH0PhOvI+JGqXw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nxj0p9Y9; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tXOiMClp;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nxj0p9Y9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYHgf5kDsz3bV7
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 07:30:38 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 854485C5E5B;
-	Wed, 15 Jan 2025 20:29:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9028CC4CEE8;
-	Wed, 15 Jan 2025 20:30:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1736973035;
-	bh=gB8UBTvmb8E1QTudIroWAe/RajxF90HeTzlSkghei6M=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=tXOiMClpszQtUjtPEHUd3RW/12+ocDakbB9+FdSymLyPBMXjXrPd42638msOw2Uiq
-	 T6LlUv4Di8HpUsnyaL6NBSV9gTwoQAnopvERBkG1sbwwFLMtHsSH1HixDRNY1O3x6z
-	 UsEc3GvRILBl4bXOsSoMGv52ctcWsb5tkCUfXMfrC210MKGg8d0sFB8BJa52JwYIJ8
-	 VVL2hV0okKt2ofQX+hPVwO+Ms6bE7x0mCLXQ8MxQYcyIoaDMkuKLmqB0LEOhGtHUQo
-	 rZ6S38ElZh9bcXoomFwnFSs2QJJPk9os2+mpV3gSd0p9SlZ+T4ceAv4LDr7bYLhIoT
-	 KUgXXOuc6jSjA==
-Message-ID: <d823325a-1549-44e5-a1b5-6fe0d547cfd1@kernel.org>
-Date: Wed, 15 Jan 2025 21:30:26 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYKX62f4Gz30hQ
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 08:54:13 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50FHX5Tc000836;
+	Wed, 15 Jan 2025 21:53:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=TzpXaZVhH3eqHenHViKCjdEQGUU6qn
+	Zx4yq8XoragwU=; b=Nxj0p9Y9/7i2/hCO+avoY3MFnfxlL+Ij/EPPF5CL1/EQuq
+	GubT5SyeWPLREdWs27s8YdXAB/GsdqPyRSb+Gt91ni81T4MTZJAcK+dX1qxg0v4Y
+	Zho/T1hRTBwVxgvT+jEZegUefIAu/3z2fCueB4TB4OOx2UTUMVJTmkA2sedKSU99
+	SsIIGnAmHSnL76OAqUI5k2+RaVs0bk7txfQ4ixoYnM0oU0j7rpdpi9AF9CfZEmRB
+	wze0+eg42BLjjaIjARaJOBF5Q84BC5h1lQlYhZARHeMdC1qiieN+KUxvaz9ODT8/
+	VquVDKmxkSmH5aFyYkUWEnlH6u3OPEw5DRaMpsiA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4465gbvs43-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 Jan 2025 21:53:45 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50FLriCx027772;
+	Wed, 15 Jan 2025 21:53:44 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4465gbvs41-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 Jan 2025 21:53:44 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50FJCi0b016498;
+	Wed, 15 Jan 2025 21:53:43 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4445p1t8n7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 Jan 2025 21:53:43 +0000
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50FLrgFs21299906
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 15 Jan 2025 21:53:43 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B9E9458054;
+	Wed, 15 Jan 2025 21:53:42 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 27D645804E;
+	Wed, 15 Jan 2025 21:53:40 +0000 (GMT)
+Received: from [9.61.59.21] (unknown [9.61.59.21])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 15 Jan 2025 21:53:39 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------M63O9CT6nsxzWiO8YePzjvSE"
+Message-ID: <a164ab0e-1cdf-427e-bfb7-f5614be5b0fa@linux.ibm.com>
+Date: Wed, 15 Jan 2025 15:53:38 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,91 +90,153 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v5 03/10] dt-bindings: gpio: ast2400-gpio: Add hogs
  parsing
-To: Rob Herring <robh@kernel.org>
-Cc: Ninad Palsule <ninad@linux.ibm.com>, minyard@acm.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org,
- joel@jms.id.au, andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
- eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>
+Cc: minyard@acm.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+        kuba@kernel.org, pabeni@redhat.com,
+        openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org,
+        joel@jms.id.au, andrew@codeconstruct.com.au,
+        devicetree@vger.kernel.org, eajames@linux.ibm.com,
+        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
 References: <20250114220147.757075-1-ninad@linux.ibm.com>
  <20250114220147.757075-4-ninad@linux.ibm.com>
  <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
  <20250115142457.GA3859772-robh@kernel.org>
-From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
+From: Ninad Palsule <ninad@linux.ibm.com>
 In-Reply-To: <20250115142457.GA3859772-robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: N0qq9DarB3vpRhUB6kGjwhL57QFm0RUJ
+X-Proofpoint-ORIG-GUID: 59NEuzXQaaEoT921uCHvZsT9sSdxJDdd
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-01-15_09,2025-01-15_02,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
+ adultscore=0 mlxlogscore=999 phishscore=0 priorityscore=1501
+ suspectscore=0 bulkscore=0 malwarescore=0 impostorscore=0
+ lowpriorityscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2411120000 definitions=main-2501150154
+
+This is a multi-part message in MIME format.
+--------------M63O9CT6nsxzWiO8YePzjvSE
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 15/01/2025 15:24, Rob Herring wrote:
->>>  
+Hello Rob,
+
+Thanks for the review.
+
+On 1/15/25 08:24, Rob Herring wrote:
+> On Wed, Jan 15, 2025 at 09:45:50AM +0100, Krzysztof Kozlowski wrote:
+>> On Tue, Jan 14, 2025 at 04:01:37PM -0600, Ninad Palsule wrote:
+>>> Allow parsing GPIO controller children nodes with GPIO hogs.
+>>>
+>>> Signed-off-by: Ninad Palsule<ninad@linux.ibm.com>
+>>> ---
+>>>   .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++++
+>>>   1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+>>> index b9afd07a9d24..b9bc4fe4d5a6 100644
+>>> --- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+>>> +++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+>>> @@ -46,6 +46,12 @@ properties:
+>>>       minimum: 12
+>>>       maximum: 232
+>>>   
 >>> +patternProperties:
 >>> +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
->>
 >> Choose one - suffix or prefix. More popular is suffix.
-> 
-> I was about to say that, but this matches what gpio-hog.yaml defines. 
-> Why we did both, I don't remember. We could probably eliminate 
+> I was about to say that, but this matches what gpio-hog.yaml defines.
+> Why we did both, I don't remember. We could probably eliminate
 > 'hog-[0-9]+' as that doesn't appear to be used much.
-
-Only one case:
-arch/arm64/boot/dts/nvidia/tegra210-p2894.dtsi:                 hog-0 {
-
-Although there are few "hog" prefixes followed by alphanumeric, so not
-matching above pattern.
-
-> 
-> Long term, I want to make all gpio controllers reference a gpio 
-> controller schema and put the hog stuff there. Then we have the node 
+>
+> Long term, I want to make all gpio controllers reference a gpio
+> controller schema and put the hog stuff there. Then we have the node
 > names defined in 1 place.
 
+Which one of the following are you suggesting?
 
+"^(.+-hog(-[0-9]+)?)$"
+"^(pin-hog(-[0-9]+)?)$" any other? Regards, Ninad
 
-Best regards,
-Krzysztof
+>
+> Rob
+>
+--------------M63O9CT6nsxzWiO8YePzjvSE
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p>Hello Rob,</p>
+    <p>Thanks for the review.<br>
+    </p>
+    <div class="moz-cite-prefix">On 1/15/25 08:24, Rob Herring wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:20250115142457.GA3859772-robh@kernel.org">
+      <pre wrap="" class="moz-quote-pre">On Wed, Jan 15, 2025 at 09:45:50AM +0100, Krzysztof Kozlowski wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="" class="moz-quote-pre">On Tue, Jan 14, 2025 at 04:01:37PM -0600, Ninad Palsule wrote:
+</pre>
+        <blockquote type="cite">
+          <pre wrap="" class="moz-quote-pre">Allow parsing GPIO controller children nodes with GPIO hogs.
+
+Signed-off-by: Ninad Palsule <a class="moz-txt-link-rfc2396E" href="mailto:ninad@linux.ibm.com">&lt;ninad@linux.ibm.com&gt;</a>
+---
+ .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+index b9afd07a9d24..b9bc4fe4d5a6 100644
+--- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
++++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+@@ -46,6 +46,12 @@ properties:
+     minimum: 12
+     maximum: 232
+ 
++patternProperties:
++  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
+</pre>
+        </blockquote>
+        <pre wrap="" class="moz-quote-pre">
+Choose one - suffix or prefix. More popular is suffix.
+</pre>
+      </blockquote>
+      <pre wrap="" class="moz-quote-pre">
+I was about to say that, but this matches what gpio-hog.yaml defines. 
+Why we did both, I don't remember. We could probably eliminate 
+'hog-[0-9]+' as that doesn't appear to be used much.
+
+Long term, I want to make all gpio controllers reference a gpio 
+controller schema and put the hog stuff there. Then we have the node 
+names defined in 1 place.</pre>
+    </blockquote>
+    <p>Which one of the following are you suggesting?</p>
+    <pre wrap="" class="moz-quote-pre">"^(.+-hog(-[0-9]+)?)$"
+"^(pin-hog<span style="white-space: pre-wrap">(-[0-9]+)?)$"
+any other?
+Regards,
+Ninad
+</span></pre>
+    <blockquote type="cite"
+      cite="mid:20250115142457.GA3859772-robh@kernel.org">
+      <pre wrap="" class="moz-quote-pre">
+
+Rob
+
+</pre>
+    </blockquote>
+  </body>
+</html>
+
+--------------M63O9CT6nsxzWiO8YePzjvSE--
+
 
