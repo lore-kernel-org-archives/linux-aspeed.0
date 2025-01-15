@@ -1,98 +1,51 @@
-Return-Path: <linux-aspeed+bounces-491-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-492-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1910DC02180
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 18:31:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14842C02180
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Jan 2025 20:30:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYF1x50lWz2ysW;
-	Thu, 16 Jan 2025 05:31:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.70.183.199
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736965877;
-	cv=none; b=jzwPZJejogEtIrQeu13SV+3QT5solnBsasN9e997FwbI/Pg/RQVB71HrcPkyeDWIWwP/ayUHcVsmR6EKuNM6V/BxR/f+dblsGYuT700ivRsk4OVcdI5AB8jBz5ZeN1Em5Mf/P5UFxeyoCxhwjSwXWtZ/XQ5JTmBBKclb/qhUOW7nm1mTANSoq/Zs3i9ug8y5MBcR82AN98DvVuLKVjuObAXdzcy+p6djw0s0XHxyt6L5QMX+F/yNSpiQz7ZO6JITAZQPUQIVxYFbsnUO5fo0ZdWUPv/sv3Y87pf/1Lny5khvCU7GhFVnLq5UUWitRujnkRx423GG2buytN11jzbepA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYHgj542Mz30NF;
+	Thu, 16 Jan 2025 07:30:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1736973041;
+	cv=none; b=aRiA/x5645vU5/pZQDnzqVNI2idi5nZ1kCCzG2u1yyhUm13nEwQOnez+CFfUX4QSVji2xaVqB2htb2WgC30+vvtbQGd73vT1gjUu3K+t+55u3M1dwj+d8Zb49dEibzNx1zlYgbgoPNQij9vwCuhV4D0qdFQi6CaFQPLwtMUnXaWGrW5eBW3EJDVPVnXncYVZ/F219u2KiPxRwl8ZILgJmWvQ3bSNbUzuAwnVgbcoAxj+pAY6w+BnRNhLo7PuGSfWF727W3Xx0Ln5+TOQN0SqUIm1YdiH0cJS5MXw+4nqjB3XZnQFiwd75mB6OBCCPFjeF3LZho1PnU+zWbP7ApkM5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1736965877; c=relaxed/relaxed;
-	bh=jLoWi3Wg0eiQh/tot5fchMc56NRkY1AedYStPaUs9Pk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZVHBsTZCSFgXUzSuuVbnoc9RVDQ1JUvBvIIXrE3g8JTV/E/hZgFQHpEPtweEmPoF6Utrmg60l9yNLiWIYDkgfPKMzzXBtVIc06I6vVzShVvCXfV5voNAcwbGxP9XcV+4aROuDsBZsjF9hqtN0/s7vP5lEovqlzMrrXFcnti9VQbNaiq8PuS4IAPZG75PbYxIRSveQYMWUzmjwXKBTLK3og5okErRwIgh6MOp7zi4FrCV6UKRNr4hDBWlgkispIxZvk4j0bpbOKh1d7JVULBBg2geRQsKHqw0cr1OQEqV7EYqezTw4bcHGYT1u8ufKCWNYFwEU96+WTVJz94uvVfD+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=XVoQSRAs; dkim-atps=neutral; spf=pass (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1736973041; c=relaxed/relaxed;
+	bh=asX4kVgx8cY0P7Djc9Q2mP5+7FSf24CknaT6mNUpnTI=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=iyBTnQh+s3j6qp9EZ6dYPSDfga8cCdOf+cwEA5U45PwtXmzHoJTYmSCEANR3xfQpxdeyGXPy/7gHfd6c65AmWPJu1srbUHlOmJ1FMv7xzJBdLY56J8W/rbreC/T2K6EUh8m+BHDqFTsrucHzF8VXa+zJ5/K169heX8SzYWJ5f/rdIjPd05Wkbna3hd09L8iP5Qvo+94PxO8Ki8Z+N2NH02sr43M9yB9HWXJ4ParnFsX9oZFOnRYd3FVxgYz8DldnT8kQeEV1Z/Xvpxe3luSxTNXW1PrUD+94tzId1/QyC7DXkxCtnIptqtbSN6a/KuLzmFMhoAXq2zuam72892Y8/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tXOiMClp; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=XVoQSRAs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tXOiMClp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYF1v3FL7z2ynR;
-	Thu, 16 Jan 2025 05:31:14 +1100 (AEDT)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 420B0FF803;
-	Wed, 15 Jan 2025 18:31:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1736965870;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jLoWi3Wg0eiQh/tot5fchMc56NRkY1AedYStPaUs9Pk=;
-	b=XVoQSRAsHPXADFu3jVGI7dBwCecPD+dviwtiINSG7gG2QTYI7ZKoCGbAlzsXnHawAhGKwl
-	24LiXfzCQR3pIZBqvn9qb/WI76bBR/gYM5iK3v27XfrrihWyj6I9DuAIL0fsvT3vsw3I/q
-	czvnLPptcYBnGEnhrm8GhgmQ8vCeUtjENVYUkzFUKo7lU8h2121ib4vf8mK5lggJa2imhw
-	wuKxnh8Eev9ag9+Xsu7zpWrkt2h27deaKdBBBwhgImA9Rm+AwpotMeHj0kiG0/Az9PUc1t
-	KHhtrdM1rJLw5PWkyTBKEJFeu2A3AfGxN8CmN6JVLXE0bXGUEx1cXfp5ava0qA==
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Mark Brown <broonie@kernel.org>,
-	Sanjay R Mehta <sanju.mehta@amd.com>,
-	Serge Semin <fancer.lancer@gmail.com>,
-	Han Xu <han.xu@nxp.com>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Haibo Chen <haibo.chen@nxp.com>,
-	Yogesh Gaur <yogeshgaur.83@gmail.com>,
-	Heiko Stuebner <heiko@sntech.de>,
-	Michal Simek <michal.simek@amd.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Shan-Chun Hung <schung@nuvoton.com>,
-	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
-	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Avi Fishman <avifishman70@gmail.com>,
-	Tomer Maimon <tmaimon77@gmail.com>,
-	Tali Perry <tali.perry1@gmail.com>,
-	Patrick Venture <venture@google.com>,
-	Nancy Yuen <yuenn@google.com>,
-	Benjamin Fair <benjaminfair@google.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Raju Rangoju <Raju.Rangoju@amd.com>,
-	Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-	Steam Lin <stlin2@winbond.com>,
-	linux-spi@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-riscv@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mediatek@lists.infradead.org,
-	linux-rockchip@lists.infradead.org,
-	linux-mtd@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org,
-	linux-stm32@st-md-mailman.stormreply.com,
-	Tudor Ambarus <tudor.ambarus@linaro.org>
-Subject: Re: [PATCH v3 21/27] mtd: spinand: Create distinct fast and slow read from cache variants
-Date: Wed, 15 Jan 2025 19:31:02 +0100
-Message-ID: <173696548250.435435.10416906996871126975.b4-ty@bootlin.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250110-winbond-6-11-rc1-quad-support-v3-21-7ab4bd56cf6e@bootlin.com>
-References: <20250110-winbond-6-11-rc1-quad-support-v3-0-7ab4bd56cf6e@bootlin.com> <20250110-winbond-6-11-rc1-quad-support-v3-21-7ab4bd56cf6e@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYHgf5kDsz3bV7
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 07:30:38 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 854485C5E5B;
+	Wed, 15 Jan 2025 20:29:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9028CC4CEE8;
+	Wed, 15 Jan 2025 20:30:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1736973035;
+	bh=gB8UBTvmb8E1QTudIroWAe/RajxF90HeTzlSkghei6M=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=tXOiMClpszQtUjtPEHUd3RW/12+ocDakbB9+FdSymLyPBMXjXrPd42638msOw2Uiq
+	 T6LlUv4Di8HpUsnyaL6NBSV9gTwoQAnopvERBkG1sbwwFLMtHsSH1HixDRNY1O3x6z
+	 UsEc3GvRILBl4bXOsSoMGv52ctcWsb5tkCUfXMfrC210MKGg8d0sFB8BJa52JwYIJ8
+	 VVL2hV0okKt2ofQX+hPVwO+Ms6bE7x0mCLXQ8MxQYcyIoaDMkuKLmqB0LEOhGtHUQo
+	 rZ6S38ElZh9bcXoomFwnFSs2QJJPk9os2+mpV3gSd0p9SlZ+T4ceAv4LDr7bYLhIoT
+	 KUgXXOuc6jSjA==
+Message-ID: <d823325a-1549-44e5-a1b5-6fe0d547cfd1@kernel.org>
+Date: Wed, 15 Jan 2025 21:30:26 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -105,44 +58,94 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-GND-Sasl: miquel.raynal@bootlin.com
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 03/10] dt-bindings: gpio: ast2400-gpio: Add hogs
+ parsing
+To: Rob Herring <robh@kernel.org>
+Cc: Ninad Palsule <ninad@linux.ibm.com>, minyard@acm.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, andrew+netdev@lunn.ch, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org,
+ joel@jms.id.au, andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
+ eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20250114220147.757075-1-ninad@linux.ibm.com>
+ <20250114220147.757075-4-ninad@linux.ibm.com>
+ <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
+ <20250115142457.GA3859772-robh@kernel.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20250115142457.GA3859772-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Fri, 10 Jan 2025 15:45:23 +0100, Miquel Raynal wrote:
-> So far, the SPINAND_PAGE_READ_FROM_CACHE_OP macro was taking a first
-> argument, "fast", which was inducing the possibility to support higher
-> bus frequencies than with the normal (slower) read from cache
-> alternative. In practice, without frequency change on the bus, this was
-> likely without effect, besides perhaps allowing another variant of the
-> same command, that could run at the default highest speed. If we want to
-> support this fully, we need to add a frequency parameter to the slowest
-> command. But before we do that, let's drop the "fast" boolean from the
-> macro and duplicate it, this will further help supporting having
-> different frequencies allowed for each variant.
+On 15/01/2025 15:24, Rob Herring wrote:
+>>>  
+>>> +patternProperties:
+>>> +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
+>>
+>> Choose one - suffix or prefix. More popular is suffix.
 > 
-> [...]
+> I was about to say that, but this matches what gpio-hog.yaml defines. 
+> Why we did both, I don't remember. We could probably eliminate 
+> 'hog-[0-9]+' as that doesn't appear to be used much.
 
-The following patches have been applied to nand/next:
+Only one case:
+arch/arm64/boot/dts/nvidia/tegra210-p2894.dtsi:                 hog-0 {
 
-[21/27] mtd: spinand: Create distinct fast and slow read from cache variants
-        commit: 042087247835dad1ec5e39052abf022fd13c6326
-[22/27] mtd: spinand: Add an optional frequency to read from cache macros
-        commit: 7ce0d16d5802bfde4209e52ee8ad644ca1eab423
-[23/27] mtd: spinand: Enhance the logic when picking a variant
-        commit: 666c299be696f02c3354da104295fb94b8f65d25
-[24/27] mtd: spinand: Add support for read DTR operations
-        commit: 8586bc8d95488dfaadbc1af89ba59900d2c39119
-[25/27] mtd: spinand: winbond: Update the *JW chip definitions
-        commit: 1ea808b4d15b9bddc48af75b0668b82366b5b927
-[26/27] mtd: spinand: winbond: Add comment about naming
-        commit: 61c7155e3fe938d4da4671b2f84e29eaf79f5f46
-[27/27] mtd: spinand: winbond: Add support for DTR operations
-        commit: be7a05db4252edbffb43484b14755048fb8db710
+Although there are few "hog" prefixes followed by alphanumeric, so not
+matching above pattern.
 
-Patche(s) should be available on mtd/linux.git and will be
-part of the next PR (provided that no robot complains by then).
+> 
+> Long term, I want to make all gpio controllers reference a gpio 
+> controller schema and put the hog stuff there. Then we have the node 
+> names defined in 1 place.
 
-Kind regards,
-Miquèl
+
+
+Best regards,
+Krzysztof
 
