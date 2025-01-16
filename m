@@ -1,79 +1,80 @@
-Return-Path: <linux-aspeed+bounces-503-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-504-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39287C02183
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jan 2025 15:05:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13B13C02183
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jan 2025 15:09:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYmPX5vPkz3bhD;
-	Fri, 17 Jan 2025 02:05:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYmW74qqlz30Mn;
+	Fri, 17 Jan 2025 02:09:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737039904;
-	cv=none; b=XmBaUmx9ZnschKeiAGwuHxoyHbkP5ysPPVZwqJo1i8jW+ZHaQUoPZYQe4eW88pqAwG5snzBAbEnq6TjrR3WKNmrerEv46Ws6aaUOUzsTNenbAlN4v9C0ttKjAAqQm2y0Kz3VbK7Vv96gnfc+jyX7lIaeCB1o099yCNfdqMBJ0G0K36QpRyqw3UcWOGT/x1BpRyf35cGQvXyaMl+xa85HbtZY0ClVUMwOfhTntNuxQtorrZMfVUV7nqBup9XptiuGWy7i/QKEpZ6htlsYdGRnxqeAlnHrvhAN4OyuRv0pahd4lo7d1unduVGlenaRGwmxBv1jFsRJL6B2pEPBlRC/oA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737040195;
+	cv=none; b=O9Aw22wNrEPDQB8/N8bhx2Ym9Zxx/wi7Wj0uNLmMn6FC0HZjo0jTet1pfhrXiA1jyuo8BtaX48fZaPkfsXzwRCnS4HP6x3X9dMFeoW72jZAbcKkFntNWkB00liNt0M2PEvX9jfneJK9vOkKhQ2CTU5oA4T+Au2XoL7ye6PNlbqNOFsvm16tqCplGsZ4X1s0KYI/0rUyBbOTPJ/l2Uo4zOvoW73N7NyYL8LlC/xs4EWB6ecJRAS1YG6vPAKReq1b6ktpyKTqsx2LtVM9UH7mPesuDfjM1eJhyFicxfn+8/7aPPOs2ZsOZn8bo9guzOcXVicNE02C63WCOJLRwF2pryw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737039904; c=relaxed/relaxed;
-	bh=YqyfQxOJ5oYKECoyFJ2sTY8rhlGKLhZCB19orskKgkE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Kgn+fIWhnOj7z3kZPiQjPAn92Z9ewEzwnvc/deHLvVsn3gRTiXZvCbraUnel4Y0eWeXySPe9HIEB82QwYFAEH3AOzJFKDA2QQMFCHZnqqh2aBhvs/rirzeRsv8k97/DsSw9qtDE5gXGqDb77/AMBIvtgvr8o1RyDdnXLOS9fLzZgsgEqwywlRXZMZLopkcuqjRHAvBr2xWaxHG3s+RzGqDd8o/qe/3zg2UofwooeAsPbBsqNkTk/oGpYG3oQ3K50x7Ruz3yZ//J+f/45sRl9bhp4xsOqT8OiQXs3HiNzgjc1v8H0GB0tZd/5dLXf2Ia581o7BXleH7Ux006N1Qw6Eg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UxP66y8y; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1737040195; c=relaxed/relaxed;
+	bh=dV2Pcid8HsWqw37L8am+YTKtRpX5ZjFhn238QfxByf0=;
+	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To; b=cZSDpbFz7IO89fVmo1+3nNZMaeHdBYcdTCDVDB/ncCOOUVAHo1/WTeZqeyoTDAbipd5Hsb7MY1fmX2R5MjJGICgVqOLur/h8mK+pNF8WfLrbuXKRpSnandXoslXvEVk1gnQhaANHPASH3dZJs6FgeyZz3iRG1LNRDp60LZiMFBYVx3O5JsXW2AktqhpmI4cZlW3apBsYKCcA7rNESkZi9Gr5/vyNgt1EIWaMgCQxfUFQYM+gXUrusmVvxH7iFRb/4t0n/K30R177Ud+3nhalKYR/Gf0fZsrrV3RUtHh8z7H0Xa/P5ys9smatkdkXvAOCp6HsN3jnEMvC6YSIvO1mjg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bF1bkcRC; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UxP66y8y;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bF1bkcRC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYmPW42Ljz30Mn
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Jan 2025 02:05:02 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50GE6dxf024817;
-	Thu, 16 Jan 2025 15:04:32 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYmW65znrz30Ff
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Jan 2025 02:09:54 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50GAdR0f022785;
+	Thu, 16 Jan 2025 15:09:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=YqyfQx
-	OJ5oYKECoyFJ2sTY8rhlGKLhZCB19orskKgkE=; b=UxP66y8y9OT9RWoBkaJAU3
-	GfkhR0rxzN94Sk3KjZdvONvMmx4MlGUauBsmpyNtxtfo9KsmiQ/vlL4sTwTu0PUp
-	vSgHgFEUTdaYxWr5udXMn5OuCFAKUgZmhgqqdZXmhSbRgbyIL/niU4TL3c2jdvNf
-	JKm9g5qc1RNZhAlhCgqZZfTUt1wUqEkOtTjEW+RtI7hw42FNfOhojmhcvNdT9Ghf
-	NRClsrSRmKedtjTt3g/a7plBN2KUb96ivAzsTUh9yeLcs/N7aqaQhcLDZSgCdMpN
-	OCTYiaxdVGb8OFOq3q1Ybs0ULTgnYv9RIYl1MuLXe/id0QVac65LfSSLwk/XfFgg
-	==
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=dV2Pcid8HsWqw37L8am+YTKtRpX5Zj
+	Fhn238QfxByf0=; b=bF1bkcRCIOduygSPKnqAMX/T6/Oag1g5BH+4zZnMmaAeIR
+	PH1Ft4gREadZISM3jED8wQJfyQecfdzE1JycM2Amvn5tg81MYDHhwEzk2Q2N6Yar
+	lsc50GYlO7TwYK7sQiagKXufZrSWLJDP9pH1Vnyev0Z+iwfnJQuSWng4KYCb57So
+	kQigG9RhvjLFyMt8A+ewde483k7/QfcPMYkfUfRbvDjR7Oh9HimdWTccrvFFBtZ5
+	bZ/EtDDRwJ+TMUet5lPDsmllulR6DfKhrQf6cQmYllzLU5b11XUfZ6VsRmFs6Gpn
+	lev2G1YK4DxFW3uD/jnZdAzx77sjqqV7Pu4wJBhg==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4473k58ar8-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 446pub3sug-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Jan 2025 15:04:31 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50GERMrc012914;
-	Thu, 16 Jan 2025 15:04:31 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4473k58ar1-1
+	Thu, 16 Jan 2025 15:09:24 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50GEjT58015552;
+	Thu, 16 Jan 2025 15:09:23 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 446pub3sub-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Jan 2025 15:04:31 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50GE6SP6017400;
-	Thu, 16 Jan 2025 15:04:30 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4444fke98p-1
+	Thu, 16 Jan 2025 15:09:23 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50GDcFHH007519;
+	Thu, 16 Jan 2025 15:09:23 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4443ynecx1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Jan 2025 15:04:30 +0000
+	Thu, 16 Jan 2025 15:09:22 +0000
 Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50GF4URL28246688
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50GF9MGI17302164
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 16 Jan 2025 15:04:30 GMT
+	Thu, 16 Jan 2025 15:09:22 GMT
 Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EA8CC5803F;
-	Thu, 16 Jan 2025 15:04:29 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 00CF758054;
+	Thu, 16 Jan 2025 15:09:22 +0000 (GMT)
 Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5565C58056;
-	Thu, 16 Jan 2025 15:04:23 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C4AB65804E;
+	Thu, 16 Jan 2025 15:09:19 +0000 (GMT)
 Received: from [9.61.59.21] (unknown [9.61.59.21])
 	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 16 Jan 2025 15:04:22 +0000 (GMT)
-Message-ID: <35572405-2dd6-48c9-9113-991196c3f507@linux.ibm.com>
-Date: Thu, 16 Jan 2025 09:04:21 -0600
+	Thu, 16 Jan 2025 15:09:19 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------Pfl6iU6VOZYRBnaxcySYJfUt"
+Message-ID: <f60f4c2a-568b-46d7-b6cc-5a6daf496515@linux.ibm.com>
+Date: Thu, 16 Jan 2025 09:09:19 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,69 +90,90 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v5 03/10] dt-bindings: gpio: ast2400-gpio: Add hogs
  parsing
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: andrew+netdev@lunn.ch, pabeni@redhat.com,
-        linux-arm-kernel@lists.infradead.org, edumazet@google.com,
-        joel@jms.id.au, krzk+dt@kernel.org, linux-kernel@vger.kernel.org,
-        andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
-        davem@davemloft.net, kuba@kernel.org,
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: minyard@acm.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+        kuba@kernel.org, pabeni@redhat.com,
         openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org,
-        linux-aspeed@lists.ozlabs.org, conor+dt@kernel.org,
-        eajames@linux.ibm.com, minyard@acm.org
+        joel@jms.id.au, andrew@codeconstruct.com.au,
+        devicetree@vger.kernel.org, eajames@linux.ibm.com,
+        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
 References: <20250114220147.757075-1-ninad@linux.ibm.com>
  <20250114220147.757075-4-ninad@linux.ibm.com>
- <173689907575.1972841.5521973699547085746.robh@kernel.org>
+ <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
 Content-Language: en-US
 From: Ninad Palsule <ninad@linux.ibm.com>
-In-Reply-To: <173689907575.1972841.5521973699547085746.robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss>
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: owqPtG7sXawqZszVtmUCKpylao6OtTOR
-X-Proofpoint-ORIG-GUID: y3OZyjeOsP0uNqLC9wmfkr7B2_zgRWNG
+X-Proofpoint-GUID: i4ZweR9hZ4k_EadMK1FfdqI5Qt8J3KMj
+X-Proofpoint-ORIG-GUID: VN9vOfncTB44TN01PQclARGLtQf_uRKC
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
  definitions=2025-01-16_06,2025-01-16_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
- adultscore=0 malwarescore=0 suspectscore=0 priorityscore=1501
- lowpriorityscore=0 bulkscore=0 mlxlogscore=666 impostorscore=0
- clxscore=1015 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2411120000 definitions=main-2501160114
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
+ spamscore=0 malwarescore=0 lowpriorityscore=0 mlxscore=0 suspectscore=0
+ priorityscore=1501 bulkscore=0 mlxlogscore=696 clxscore=1015 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
+ definitions=main-2501160114
 
-Hi Rob,
+This is a multi-part message in MIME format.
+--------------Pfl6iU6VOZYRBnaxcySYJfUt
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On 1/14/25 17:57, Rob Herring (Arm) wrote:
-> On Tue, 14 Jan 2025 16:01:37 -0600, Ninad Palsule wrote:
->> Allow parsing GPIO controller children nodes with GPIO hogs.
->>
->> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
->> ---
->>   .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++++
->>   1 file changed, 6 insertions(+)
->>
-> My bot found errors running 'make dt_binding_check' on your patch:
->
-> yamllint warnings/errors:
->
-> dtschema/dtc warnings/errors:
->
->
-> doc reference errors (make refcheckdocs):
+Hi Krzysztof,
 
-I am not seeing any error even after upgrading dtschema. Also this mail 
-also doesn't show any warning. Is this false negative?
+On 1/15/25 02:45, Krzysztof Kozlowski wrote:
+>>   
+>> +patternProperties:
+>> +  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
+> Choose one - suffix or prefix. More popular is suffix.
 
-   HOSTLD  scripts/dtc/fdtoverlay
-   CHKDT   ./Documentation/devicetree/bindings
-   LINT    ./Documentation/devicetree/bindings
-   DTEX 
-Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.example.dts
-   DTC [C] 
-Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.example.dtb
+Ok, choosing suffix.
+
+Thanks for the review.
 
 Regards,
 
 Ninad
 
->
+
+--------------Pfl6iU6VOZYRBnaxcySYJfUt
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p>Hi <span style="white-space: pre-wrap">Krzysztof,</span></p>
+    <div class="moz-cite-prefix">On 1/15/25 02:45, Krzysztof Kozlowski
+      wrote:<br>
+    </div>
+    <blockquote type="cite"
+cite="mid:mbtwdqpalfr2xkhnjc5c5jcjk4w5brrxmgfeydjj5j2jfze4mj@smyyogplpxss">
+      <blockquote type="cite">
+        <pre wrap="" class="moz-quote-pre">
+ 
++patternProperties:
++  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
+</pre>
+      </blockquote>
+      <pre wrap="" class="moz-quote-pre">
+Choose one - suffix or prefix. More popular is suffix.</pre>
+    </blockquote>
+    <p>Ok, choosing suffix.</p>
+    <p>Thanks for the review.</p>
+    <p>Regards,</p>
+    <p>Ninad<br>
+    </p>
+    <br>
+  </body>
+</html>
+
+--------------Pfl6iU6VOZYRBnaxcySYJfUt--
+
 
