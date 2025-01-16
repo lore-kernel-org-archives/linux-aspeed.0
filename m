@@ -1,79 +1,59 @@
-Return-Path: <linux-aspeed+bounces-506-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-507-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BCA1C02183
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jan 2025 15:16:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C91BEC02183
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Jan 2025 19:57:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YYmfq6PBbz30Mn;
-	Fri, 17 Jan 2025 02:16:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737040595;
-	cv=none; b=V95nGaaP88kkcS+baWimUJYS4GPVRg21OblGQSWwpIr4IxIjPqxCf/Ep0vbIcJ2Otmwz7cHOZLyG5PKyfjLyDYLcYEf8Qp7LhxCIAQ+HCHl5KkTcwbAiqd3cTiyZekl+ktH2DBu+SbZ+o8aKxqy2+BGLLcZkSFK1UkQY1gK5hovf7qb13yqgy1/suTI3/hvoA5Qj6nTaQz+qvs1Uvn4UWYj/n04THQ4/mCj5JVP3xZhs1695C+3X9zuwVcWBAkkK/nU9RxFsAwuQSKTKd8TmhylHeEIjrUrQSOkb4BaoytmkRtFFGqiKRrfwq0iBf0LbmVgKuydnYvERDtcMluFc+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YYtvJ1Dbmz2yG9;
+	Fri, 17 Jan 2025 06:57:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737057468;
+	cv=none; b=kiNmPEyb+YQAVlt4i16OvzgzslSuTgSynNvgOXo4LZCpQXOh9QikCIdkK2PfE5BrpABISE16eEPuEkwq/ZNF+LT56tyQTBhAl3lEU1vnqpF9qwHfvg59+fdM7crPnX29ah2BLYdQtwfkVSZ2Y6CuZV+HI2/Dsr5hk+BgNcASarpBsvtyCnbSAnBeyPE5Zlo6BmA+GHR5GLNCFSV/+PtZ3C3W5ZYV8TElJsa2w631Tr+TCe+Vh0wATCo8p3R9NRJJcQLJ9XLW0vxn0ezZo11D/tnCKemqqh75Uq7TItD1J8WdcdAg+t/9X+TZ3YhGTGaEnvPL4elEVII1pgBEoPDn6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737040595; c=relaxed/relaxed;
-	bh=YdlWU5uHCS6BCpki15J5p47gd8bkNXmYAGt43QgM2/c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JuwumUdRjUf5Y94//fc0QHjgklK41l7HeXPliIT+t+vYV5QGlhA+jz2QHGWCnqbNiw8iJeKeGuVxa4K9tQ1/cGzpZaTyUqfeQdnepwvlxoB6CdGnbeBbfR8TZX292VBB8husG6SUT4sO57A61pJGQ0PHE0Dp+89rwsdlHP1phtMIWSiluqw2LH9J4RQYY7hx8Q/oetHXiXCS5ZeLbslUBOXZswOz0QhbFfgZwtedwCf4t2U+qi2maTP79ixDFWJ5o1K5Z3dbc6PcIlce1hZLK7FPRfeRpNuABn45f5GLhhVDBpAETiD9NYwEF486s1nQSV6xC6hrTOI2T/9T/HKviQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jJKfTCI0; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1737057468; c=relaxed/relaxed;
+	bh=KX0PekS4oyZJN7vq29nBWyPFMEjESyyECU6yqKwIP9E=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=BjyPDiltqnBLtrGBPXC1wwKXxPFq8WEDfbHAOhjhjEvkuM9cjC1OtLlyGRlalb/nsXeATug3S4iH16dkh6TO5hcc39eeCJP+DK4o+Jea5iWK39en51oSPJuX0NQgJo1qvoG8SZbROkJGbmZUfyemXAtSQo1BwPfmljt7XrSuXw2sgxCTuOpYRtj7pk5VUi6GvGJ2Y4eoUoGG2vMUtJyqOhpUfnfmNnVE2s4Z+tBGPI+MtZKqHGiP+/kva/lz0HXavo4B3Ubg4meheZAvyE2aVzn2SU6uRFxajKYTUc3DekULuvol+8tr/WBBECdQzHZssq33HftzvjV84qWaPOgeQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aqj/PJ7J; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jJKfTCI0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aqj/PJ7J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYmfp6ZjQz30Ff
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Jan 2025 02:16:34 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50G85bZm020393;
-	Thu, 16 Jan 2025 15:16:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=YdlWU5
-	uHCS6BCpki15J5p47gd8bkNXmYAGt43QgM2/c=; b=jJKfTCI0ZUQFfQTMFyBDSo
-	bcKiIqdOoYMz7FZs6J6mIbOTtrvPcx43H3O+GzhgikIFqKEC5xL7UIsM/YGAdw+s
-	rY7RyhbA/bwP29iGd3QQ5nbRwdED32I3/ZzBiTVoMs2DD4EF9BqZdbhO+/tHRZ9Z
-	cwg22N0MEDzJj8t09Asjy6ROnUjvIPI/LbrFQ5VsvjK1uyFfL3IjLcjqaz4NmYxL
-	IkjMbIYG8v8HXz7XcgX/EHyT0BUhf68SOYF40rhsbgnuK1DW5lKLN04O7h5q+pBF
-	C3EqJmnk/LDjv2NdY/AiYXuRGeAPjiTpihsHBRZThGimOuxbVklxgZ/XyzQdqMNQ
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 446xa3a2dq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Jan 2025 15:16:03 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50GEu1dE031417;
-	Thu, 16 Jan 2025 15:16:03 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 446xa3a2dm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Jan 2025 15:16:03 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50GDn4kB017359;
-	Thu, 16 Jan 2025 15:16:02 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4444fkeaky-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Jan 2025 15:16:02 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50GFG21F8389282
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 16 Jan 2025 15:16:02 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1235B58055;
-	Thu, 16 Jan 2025 15:16:02 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 04EF75803F;
-	Thu, 16 Jan 2025 15:15:58 +0000 (GMT)
-Received: from [9.61.59.21] (unknown [9.61.59.21])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 16 Jan 2025 15:15:57 +0000 (GMT)
-Message-ID: <98c24ee1-3a02-4df9-b181-22f3e6676b85@linux.ibm.com>
-Date: Thu, 16 Jan 2025 09:15:56 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YYtvH27qfz2y66
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Jan 2025 06:57:47 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 6427F5C5DCD
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 19:57:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C8D93C4CEDD
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 19:57:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1737057464;
+	bh=BpGbL4CFfsflMGaBvp4j9m1dN/ZGd8uGCM2kddow5H8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=aqj/PJ7JlbWZi20JPqqhgl4FtKBowEHKrr5py0QJZaT/h7NwbJLKWtfZF5HVJ+f01
+	 eaumhpfu06/SjCfeP4TGZg7LFj0jw5dpOxHBHmnfIZjWAOLq6Gictv0ymZ294BVo+6
+	 wZxDS8gqUVXCZFkkiyPfGqx6r+MImWIilKWs1HvUPklZ8YaFqKl3Gk24rjgg7ys+D2
+	 TpIs5/FNVV7ktyFEOULoBvnjU5NoveD+FaNRhRgWJYYvPlaC2gBzCYDaoTGt87wI8+
+	 WcnzI/xvOoCtspwq+cwpNhM8PyQ0GWcAnShRPgNtAGka16GTj2unoDYSF7vH1jGFbW
+	 mkYRd0WRyzITQ==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-30219437e63so25872641fa.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Jan 2025 11:57:44 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUaXr81Uo5G5zKHJHaUqZtMAiDJI9E30R5UA/icp+/Vy9W+56FWlw2ui6YFNS9hbf57HI1zK58KzDLxmNs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwSea3Tl9aX/P0NmhClZ6UzHzkdIT4H7Y9cDiIu0Li2Oc6/w1UM
+	hvbL4elXRp4COaMbAhYGHqIuZTeR6gP/6kUc7JOU7ffRR9nLRnB94TygsnmMRaah1lUKx4yxPrt
+	IWpoaVC/0CZ+Mq4+Z5R3Kru32CA==
+X-Google-Smtp-Source: AGHT+IE8PDn7axUoinBnTIfZ0cfMVPVQgH/bj9hTJDusIxJXQXf3Z2wDnrh+6FvWe+I1CQJPWkBXl12skSmq8p7UwQ8=
+X-Received: by 2002:ac2:4e16:0:b0:540:2fe6:6a3c with SMTP id
+ 2adb3069b0e04-542abe955e7mr3496186e87.0.1737057463177; Thu, 16 Jan 2025
+ 11:57:43 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,85 +66,54 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 00/10] DTS updates for system1 BMC
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
-        pabeni@redhat.com, krzk+dt@kernel.org, kuba@kernel.org, joel@jms.id.au,
-        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-        davem@davemloft.net, eajames@linux.ibm.com,
-        andrew@codeconstruct.com.au, andrew+netdev@lunn.ch, minyard@acm.org,
-        edumazet@google.com, conor+dt@kernel.org, netdev@vger.kernel.org,
-        devicetree@vger.kernel.org
-References: <20250114220147.757075-1-ninad@linux.ibm.com>
- <173690506198.2128017.15705512689029125898.robh@kernel.org>
-Content-Language: en-US
-From: Ninad Palsule <ninad@linux.ibm.com>
-In-Reply-To: <173690506198.2128017.15705512689029125898.robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: pOwtUgxf4sevROlKDeyLe7g0iyYEuZGT
-X-Proofpoint-ORIG-GUID: O3vTPOgjhkVxMFnsseHc2nuO1G_oFbHE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-16_06,2025-01-16_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
- bulkscore=0 clxscore=1015 adultscore=0 mlxlogscore=839 priorityscore=1501
- suspectscore=0 spamscore=0 phishscore=0 impostorscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2411120000
- definitions=main-2501160114
+References: <20250114220147.757075-1-ninad@linux.ibm.com> <20250114220147.757075-4-ninad@linux.ibm.com>
+ <173689907575.1972841.5521973699547085746.robh@kernel.org> <35572405-2dd6-48c9-9113-991196c3f507@linux.ibm.com>
+In-Reply-To: <35572405-2dd6-48c9-9113-991196c3f507@linux.ibm.com>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 16 Jan 2025 13:57:23 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqK1z4w62pGX0NgM7by+QRFcmBadw=CRVrvF2vv-zgAExg@mail.gmail.com>
+X-Gm-Features: AbW1kvaz7cz0JErISAQO978pEbpoqDGvU0yV8aV8M5Xy632yu2go8X9lmt54eW8
+Message-ID: <CAL_JsqK1z4w62pGX0NgM7by+QRFcmBadw=CRVrvF2vv-zgAExg@mail.gmail.com>
+Subject: Re: [PATCH v5 03/10] dt-bindings: gpio: ast2400-gpio: Add hogs parsing
+To: Ninad Palsule <ninad@linux.ibm.com>
+Cc: andrew+netdev@lunn.ch, pabeni@redhat.com, 
+	linux-arm-kernel@lists.infradead.org, edumazet@google.com, joel@jms.id.au, 
+	krzk+dt@kernel.org, linux-kernel@vger.kernel.org, andrew@codeconstruct.com.au, 
+	devicetree@vger.kernel.org, davem@davemloft.net, kuba@kernel.org, 
+	openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org, 
+	linux-aspeed@lists.ozlabs.org, conor+dt@kernel.org, eajames@linux.ibm.com, 
+	minyard@acm.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hello Rob,
-
-On 1/14/25 19:40, Rob Herring (Arm) wrote:
-> make sure dt-schema is up to date:
+On Thu, Jan 16, 2025 at 9:04=E2=80=AFAM Ninad Palsule <ninad@linux.ibm.com>=
+ wrote:
 >
->    pip3 install dtschema --upgrade
+> Hi Rob,
 >
+> On 1/14/25 17:57, Rob Herring (Arm) wrote:
+> > On Tue, 14 Jan 2025 16:01:37 -0600, Ninad Palsule wrote:
+> >> Allow parsing GPIO controller children nodes with GPIO hogs.
+> >>
+> >> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
+> >> ---
+> >>   .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++=
+++
+> >>   1 file changed, 6 insertions(+)
+> >>
+> > My bot found errors running 'make dt_binding_check' on your patch:
+> >
+> > yamllint warnings/errors:
+> >
+> > dtschema/dtc warnings/errors:
+> >
+> >
+> > doc reference errors (make refcheckdocs):
 >
-> New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250114220147.757075-1-ninad@linux.ibm.com:
->
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-palmetto.dtb: gpio@1e780000: 'pin_func_mode0', 'pin_func_mode1', 'pin_func_mode2', 'pin_gpio_a0', 'pin_gpio_a1', 'pin_gpio_b1', 'pin_gpio_b2', 'pin_gpio_b7', 'pin_gpio_d1', 'pin_gpio_f1', 'pin_gpio_f4', 'pin_gpio_f5', 'pin_gpio_f7', 'pin_gpio_g3', 'pin_gpio_g4', 'pin_gpio_g5', 'pin_gpio_h0', 'pin_gpio_h1', 'pin_gpio_h2', 'pin_gpio_h7' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-delta-ahe50dc.dtb: gpio@1e780000: 'doom-guardrail' does not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dtb: gpio@1e780000: 'nic_func_mode0', 'nic_func_mode1', 'seq_cont' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dtb: gpio@1e780000: 'pin_gpio_aa6', 'pin_gpio_aa7', 'pin_gpio_ab0', 'pin_gpio_b0', 'pin_gpio_b5', 'pin_gpio_h5', 'pin_gpio_z2' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-bytedance-g220a.dtb: gpio@1e780000: 'pin_gpio_b6', 'pin_gpio_i3' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: gpio@1e780000: 'usb_power' does not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dtb: gpio@1e780000: 'bmc-ready' does not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: gpio@1e780000: 'i2c3_mux_oe_n', 'usb_power' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjade.dtb: gpio@1e780000: 'bmc-ready' does not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: gpio@1e780000: 'i2c3_mux_oe_n', 'usb_power' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: gpio@1e780000: 'i2c3_mux_oe_n', 'usb_power' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: gpio@1e780000: 'usb_power' does not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dtb: gpio@1e780000: 'func_mode0', 'func_mode1', 'func_mode2', 'ncsi_cfg', 'seq_cont' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-lenovo-hr855xg2.dtb: gpio@1e780000: 'pin_gpio_a1', 'pin_gpio_a3', 'pin_gpio_aa0', 'pin_gpio_aa4', 'pin_gpio_ab3', 'pin_gpio_ac6', 'pin_gpio_b5', 'pin_gpio_b7', 'pin_gpio_e0', 'pin_gpio_e2', 'pin_gpio_e5', 'pin_gpio_e6', 'pin_gpio_f0', 'pin_gpio_f1', 'pin_gpio_f2', 'pin_gpio_f3', 'pin_gpio_f4', 'pin_gpio_f6', 'pin_gpio_g7', 'pin_gpio_h6', 'pin_gpio_i3', 'pin_gpio_j1', 'pin_gpio_j2', 'pin_gpio_j3', 'pin_gpio_l0', 'pin_gpio_l1', 'pin_gpio_l4', 'pin_gpio_l5', 'pin_gpio_r6', 'pin_gpio_r7', 'pin_gpio_s1', 'pin_gpio_s2', 'pin_gpio_s6', 'pin_gpio_z3' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-lenovo-hr630.dtb: gpio@1e780000: 'pin_gpio_aa0', 'pin_gpio_aa5', 'pin_gpio_b5', 'pin_gpio_f0', 'pin_gpio_f3', 'pin_gpio_f4', 'pin_gpio_f5', 'pin_gpio_g4', 'pin_gpio_g7', 'pin_gpio_h2', 'pin_gpio_h3', 'pin_gpio_i3', 'pin_gpio_j2', 'pin_gpio_j3', 'pin_gpio_s2', 'pin_gpio_s4', 'pin_gpio_s6', 'pin_gpio_y0', 'pin_gpio_y1', 'pin_gpio_z0', 'pin_gpio_z2', 'pin_gpio_z3', 'pin_gpio_z7' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dtb: gpio@1e780000: 'line_bmc_i2c2_sw_rst_n', 'line_bmc_i2c5_sw_rst_n', 'line_iso_u146_en', 'ncsi_mux_en_n' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-arm-stardragon4800-rep2.dtb: gpio@1e780000: 'pin_gpio_c7', 'pin_gpio_d1' do not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 'pinctrl-[0-9]+'
-> 	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
+> I am not seeing any error even after upgrading dtschema. Also this mail
+> also doesn't show any warning. Is this false negative?
 
-This patchset fixes this issue. 
-https://lore.kernel.org/linux-kernel/20250116090009.87338-1-krzysztof.kozlowski@linaro.org/
+I believe this happens when a prior patch in the series has an error.
 
-Thanks & Regards,
-
-Ninad
-
+Rob
 
