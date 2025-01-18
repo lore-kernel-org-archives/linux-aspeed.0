@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-526-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-527-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBCB2C02185
-	for <linux-aspeed@archiver.kernel.org>; Sat, 18 Jan 2025 08:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2784BC02187
+	for <linux-aspeed@archiver.kernel.org>; Sat, 18 Jan 2025 08:24:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YZqKL3mF2z2ykt;
-	Sat, 18 Jan 2025 19:20:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YZqQq55q4z2ykt;
+	Sat, 18 Jan 2025 19:24:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737188406;
-	cv=none; b=ZtpvZUjxz2Cl6WhMN7C1rFmBTzj474jUPj52+DR1sTvwrsk0FmNpXyO8v58ijXQl/50D7y75qGetUZfC7Iwb1/srctOkivrOT/h337/3QHH2s15O0wdIzUmB1hvVi6aoWDGrVG1h9tJUTiLbCYYDyUAa8YuU8w6D22aqfKlMrEqBG9KoTAlcBQVlfULakUiMFURHZ9nE35ub93opXSTwVBanTd3oLBlXoWy0he0HUZpuF6AULNwgnqT2WhYKbNnqO9Yg4SsN0rN22vRkbU/uOlgNcE4BL/tGhNQqL7cH1VFiHtLwmaDeFGqjsCwjW3G6IdCCLBoqcS8sbqSnF5ZEVg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737188691;
+	cv=none; b=KhUfrD5qdFr6oorGNueU6RoLbMeVJ50h3ywtEaqpobffiW+toTD72RcXMtZ8wcummnin3jODY3cYTJv3waUz3Iy9gSzvJRl5YQGh+aedgK3pwiJdH5CXzuCon8haXS7C0v5IBkHuk1Gme3yhE06jSj7THlZDwErMUXttvQWX3o0GLsC3UR5IbXbvMHdMkPBRGuJHWzlnjdtSstyQjWcubdzIMUggKBJYtzK8UaV+US+v0yA2hR+DXu5FcS7sGXffUn4nAh0CapvE/XTnWT7VcjHeGRcWjY6HxTRn9BAT4TA7vNFGiWEQA7nP62Rl1tP9yeu7ToiNRQP20+W5KEWXVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737188406; c=relaxed/relaxed;
-	bh=2Px+8GMhBsOX7Zw3pb5rjKTkqBDuocjX/v6UQ0QAA80=;
+	t=1737188691; c=relaxed/relaxed;
+	bh=yHHOsjczkVFUY6E2hS+Jh4/Pa4zvDuuQuUVaZE+j9m0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=PjUH16S38aH5LXfxaY1llInGEZ/2h7Dn1ShuviR+GLBBlC5curijJArU5X16JwPrPka4rpp4KNinxQRpWVkC6+WYU3GH6d+JPDHiMIFPFprUNKiKJf176FEKQ+nT+PEXxxR5ghKrzSe4zzQ0Or+BmNplk6zpdaFFHBv+kWOh4m6+np+dIlskJ6Dz96VU5mbfqrLdPv5ScRJa8yTTpdPkja1UenBIQX5xZCxbq42qHoSarW2ePx0nT86O8d+EAdt4WeN8aGVNhU4vtrpmwXFWNg5XWygcAoMDIB7j5O/nS16aUg8gRo7J+2ZwHXUqMCeTv4FXVcg/JWOuu30rcyaRBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rSYpFkCH; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=J4BPrw0hzn7Eodbt/MOEpkc0EzX0ngin6FAkhre6O2vDgTj5gvM8+Q2ZIhIreLZNuO/PkIx/nbTvMKscFtMHbHPN8jHvSNxXJ5lbHcYP87U62xvJ4lR2VfmY689yyZYoRamkAZlpLQZjhMny3uYl9+P8cBFyNqI6vHy2J6y3LI9VKXFBXOKCMCBs8aMbXfAJBJpsIR4TvIYWIGd2bZ6SiwStVq2qDYik6v2iUh8dPGqnRtlCeqNA5GCyQ9oXczVDiFubWr9gdweoMYg3wJtNpN57fJWl5DfcZypJyP4+E/RFi1MqYyFpPxD2tvfJmESx1bSbVHOFCyGAWTR35UL65g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tJYPEAJd; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rSYpFkCH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tJYPEAJd;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZqKJ4Zf9z2ykf
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jan 2025 19:20:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZqQp3tP7z2ykf
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jan 2025 19:24:50 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 9151EA414A6;
-	Sat, 18 Jan 2025 08:18:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 293D5C4CED1;
-	Sat, 18 Jan 2025 08:19:58 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 3E3A4A414A1;
+	Sat, 18 Jan 2025 08:23:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D798C4CEE1;
+	Sat, 18 Jan 2025 08:24:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1737188401;
-	bh=YbcWTFN65zhkh7JHxpJZgRzeMXbczIAPRgv6aZmMRWo=;
+	s=k20201202; t=1737188687;
+	bh=oT6x1/UPbJU0IyP7WL9HBzTJXPcBfOdY3PxFK3Y7jGo=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=rSYpFkCHwS7b4dS4+X5AZUmRk0jHt/pSGAB7S22H8WFFUnOnKlJgzcY7MlRV8F6cW
-	 el6Za+CDDieSYBo3N4ch8XY5PDEzX9VSltJCsoiobGzXTLs74gezrEE9+3QmjRBMyn
-	 LcSEy74Cpm1qcjI2QMh3H6OR7ZnokFSN8TlQRVd1FeymzgNLAhoL/Py1mg7TMYRcxP
-	 YCORYD8gESbup+f3WigPR9ZFOBtrH2WnZCwCFeduq2x/qVCy0VyyXH3woPiSlsXMZ7
-	 0cgfwWdMemNgF+yeL6LC3vEeAxpyEq7TYDVuKtm/uC4elWQZ4zGRpUmsIENM51FjeB
-	 0Up8B63rn+Hcg==
-Message-ID: <bad78886-2577-476f-a80f-e189a178b26e@kernel.org>
-Date: Sat, 18 Jan 2025 09:19:56 +0100
+	b=tJYPEAJd0AGZe8PocR92lVmtXO3/z5Iez6qnLEopHkNaG9mysET1wN6YK64J2A54L
+	 hXezxApN+kM5tULa7KBXq85CYpGNAHOQ3ee5mth3wu+rprISgVfYd6tmachMo1zN9Q
+	 qoPtrFiM8xG5fB1BpYtZEsgcPGImq7imDTXiIxkgJ8aS8lco4NplDhNkk8iG5nZ+sE
+	 tkP6I1FZayrPVW/VdYAn7IoYj5hiBiCjkrP1KAui2St1/erl1EW/MbJPQebFQgEOuU
+	 T9gq+nQPuyOkqLEF+fV8x2xi0dXscw8YbIiDUY6ehlyebRH32ZwjRuEo/TszKbef9V
+	 k3JDJBx2tLuGQ==
+Message-ID: <907dade8-0e11-4d99-acb5-2d35ba729932@kernel.org>
+Date: Sat, 18 Jan 2025 09:24:42 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,13 +59,13 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v0 1/3] dt-binding: aspeed: Add LPC PCC controller
+Subject: Re: [PATCH v0 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
 To: Kevin Chen <kevin_chen@aspeedtech.com>, joel@jms.id.au,
  andrew@codeconstruct.com.au, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  elbadrym@google.com
 References: <20250117095217.661070-1-kevin_chen@aspeedtech.com>
- <20250117095217.661070-2-kevin_chen@aspeedtech.com>
+ <20250117095217.661070-4-kevin_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -111,41 +111,282 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250117095217.661070-2-kevin_chen@aspeedtech.com>
+In-Reply-To: <20250117095217.661070-4-kevin_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 17/01/2025 10:52, Kevin Chen wrote:
-> Add dt-bindings for Aspeed for Aspeed LPC POST code capture controller.
+> Add LPC PCC controller driver to support POST code capture.
 > 
 > Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
 > ---
 
-Patchsets start from 1, not 0.
 
-This wasn't tested as it has obvious errors, so no review. Test your
-patches before you send them.
+This patch was never tested with your DTS and bindings. Please do not
+send untested code.
 
+> +
+> +/*
+> + * A2600-15 AP note
+> + *
+> + * SW workaround to prevent generating Non-Fatal-Error (NFE)
+> + * eSPI response when PCC is used for port I/O byte snooping
+> + * over eSPI.
+> + */
+> +static int aspeed_a2600_15(struct aspeed_pcc *pcc, struct device *dev)
+> +{
+> +	struct device_node *np;
+> +	u32 hicrb_en;
+> +
+> +	/* abort if snoop is enabled */
+> +	np = of_find_compatible_node(dev->parent->of_node, NULL, "aspeed,ast2600-lpc-snoop");
 
-<form letter>
-Please use scripts/get_maintainers.pl to get a list of necessary people
-and lists to CC. It might happen, that command when run on an older
-kernel, gives you outdated entries. Therefore please be sure you base
-your patches on recent Linux kernel.
+No, don't sprinkle compatible to epxress relationship. Use proper
+phandles or parent-child relationship.
 
-Tools like b4 or scripts/get_maintainer.pl provide you proper list of
-people, so fix your workflow. Tools might also fail if you work on some
-ancient tree (don't, instead use mainline) or work on fork of kernel
-(don't, instead use mainline). Just use b4 and everything should be
-fine, although remember about `b4 prep --auto-to-cc` if you added new
-patches to the patchset.
+> +	if (np) {
+> +		if (of_device_is_available(np)) {
+> +			dev_err(dev, "A2600-15 should be applied with snoop disabled\n");
+> +			return -EPERM;
+> +		}
+> +	}
+> +
+> +	/* abort if port is not 4-bytes continuous range */
+> +	if (pcc->port_xbits != 0x3) {
+> +		dev_err(dev, "A2600-15 should be applied on 4-bytes continuous I/O address range\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* set SNPWADR of snoop device */
+> +	regmap_write(pcc->regmap, SNPWADR, pcc->port | ((pcc->port + 2) << 16));
+> +
+> +	/* set HICRB[15:14]=11b to enable ACCEPT response for SNPWADR */
+> +	hicrb_en = HICRB_ENSNP0D | HICRB_ENSNP1D;
+> +	regmap_update_bits(pcc->regmap, HICRB, hicrb_en, hicrb_en);
+> +
+> +	/* set HICR6[19] to extend SNPWADR to 2x range */
+> +	regmap_update_bits(pcc->regmap, HICR6, HICR6_EN2BMODE, HICR6_EN2BMODE);
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_pcc_enable(struct aspeed_pcc *pcc, struct device *dev)
+> +{
+> +	int rc;
+> +
+> +	if (pcc->a2600_15) {
+> +		rc = aspeed_a2600_15(pcc, dev);
+> +		if (rc)
+> +			return rc;
+> +	}
+> +
+> +	/* record mode */
+> +	regmap_update_bits(pcc->regmap, PCCR0,
+> +			   PCCR0_MODE_SEL_MASK,
+> +			   pcc->rec_mode << PCCR0_MODE_SEL_SHIFT);
+> +
+> +	/* port address */
+> +	regmap_update_bits(pcc->regmap, PCCR1,
+> +			   PCCR1_BASE_ADDR_MASK,
+> +			   pcc->port << PCCR1_BASE_ADDR_SHIFT);
+> +
+> +	/* port address high bits selection or parser control */
+> +	regmap_update_bits(pcc->regmap, PCCR0,
+> +			   PCCR0_ADDR_SEL_MASK,
+> +			   pcc->port_hbits_select << PCCR0_ADDR_SEL_SHIFT);
+> +
+> +	/* port address dont care bits */
+> +	regmap_update_bits(pcc->regmap, PCCR1,
+> +			   PCCR1_DONT_CARE_BITS_MASK,
+> +			   pcc->port_xbits << PCCR1_DONT_CARE_BITS_SHIFT);
+> +
+> +	/* set DMA ring buffer size and enable interrupts */
+> +	if (pcc->dma_mode) {
+> +		regmap_write(pcc->regmap, PCCR4, pcc->dma.addr & 0xffffffff);
+> +		regmap_update_bits(pcc->regmap, PCCR5, PCCR5_DMA_ADDRH_MASK,
+> +				   (pcc->dma.addr >> 32) << PCCR5_DMA_ADDRH_SHIFT);
+> +		regmap_update_bits(pcc->regmap, PCCR5, PCCR5_DMA_LEN_MASK,
+> +				   (pcc->dma.size / 4) << PCCR5_DMA_LEN_SHIFT);
+> +		regmap_update_bits(pcc->regmap, PCCR0,
+> +				   PCCR0_EN_DMA_INT | PCCR0_EN_DMA_MODE,
+> +				   PCCR0_EN_DMA_INT | PCCR0_EN_DMA_MODE);
+> +	} else {
+> +		regmap_update_bits(pcc->regmap, PCCR0, PCCR0_RX_TRIG_LVL_MASK,
+> +				   PCC_FIFO_THR_4_EIGHTH << PCCR0_RX_TRIG_LVL_SHIFT);
+> +		regmap_update_bits(pcc->regmap, PCCR0,
+> +				   PCCR0_EN_RX_TMOUT_INT | PCCR0_EN_RX_AVAIL_INT,
+> +				   PCCR0_EN_RX_TMOUT_INT | PCCR0_EN_RX_AVAIL_INT);
+> +	}
+> +
+> +	regmap_update_bits(pcc->regmap, PCCR0, PCCR0_EN, PCCR0_EN);
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_pcc_probe(struct platform_device *pdev)
+> +{
+> +	int rc;
+> +	struct aspeed_pcc *pcc;
+> +	struct device *dev = &pdev->dev;
+> +	uint32_t fifo_size = PAGE_SIZE;
+> +
+> +	pcc = devm_kzalloc(&pdev->dev, sizeof(*pcc), GFP_KERNEL);
 
-You missed at least devicetree list (maybe more), so this won't be
-tested by automated tooling. Performing review on untested code might be
-a waste of time.
+Why not dev?
 
-Please kindly resend and include all necessary To/Cc entries.
-</form letter>
+> +	if (!pcc)
+> +		return -ENOMEM;
+> +
+> +	pcc->dev = dev;
+> +	rc = of_property_read_u32(dev->of_node, "port-addr", &pcc->port);
+
+Nope
+
+> +	if (rc) {
+> +		dev_err(dev, "cannot get port address\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	/* optional, by default: 0 -> 1-Byte mode */
+> +	of_property_read_u32(dev->of_node, "rec-mode", &pcc->rec_mode);
+
+Nope
+
+> +	if (!is_valid_rec_mode(pcc->rec_mode)) {
+> +		dev_err(dev, "invalid record mode: %u\n",
+> +			pcc->rec_mode);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* optional, by default: 0 -> no don't care bits */
+> +	of_property_read_u32(dev->of_node, "port-addr-xbits", &pcc->port_xbits);
+
+Nope
+
+> +
+> +	/*
+> +	 * optional, by default: 0 -> no high address bits
+> +	 *
+> +	 * Note that when record mode is set to 1-Byte, this
+> +	 * property is ignored and the corresponding HW bits
+> +	 * behave as read/write cycle parser control with the
+> +	 * value set to 0b11
+> +	 */
+> +	if (pcc->rec_mode) {
+> +		of_property_read_u32(dev->of_node, "port-addr-hbits-select",
+
+Nope, none of these properties exist.
+
+> +				     &pcc->port_hbits_select);
+> +		if (!is_valid_high_bits_select(pcc->port_hbits_select)) {
+> +			dev_err(dev, "invalid high address bits selection: %u\n",
+> +				pcc->port_hbits_select);
+> +			return -EINVAL;
+> +		}
+> +	} else {
+> +		pcc->port_hbits_select = 0x3;
+> +	}
+> +
+> +	/* AP note A2600-15 */
+> +	pcc->a2600_15 = of_property_read_bool(dev->of_node, "A2600-15");
+
+NAK even more.
+
+> +	if (pcc->a2600_15)
+> +		dev_info(dev, "A2600-15 AP note patch is selected\n");
+> +> +	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+> +	if (rc) {
+> +		dev_err(dev, "cannot set 64-bits DMA mask\n");
+> +		return rc;
+> +	}
+> +
+> +	pcc->dma_mode = of_property_read_bool(dev->of_node, "dma-mode");
+
+NAK, drop
+
+> +	if (pcc->dma_mode) {
+> +		pcc->dma.size = PCC_DMA_BUFSZ;
+> +		pcc->dma.virt = dmam_alloc_coherent(dev,
+> +						    pcc->dma.size,
+> +						    &pcc->dma.addr,
+> +						    GFP_KERNEL);
+> +		if (!pcc->dma.virt) {
+> +			dev_err(dev, "cannot allocate DMA buffer\n");
+> +			return -ENOMEM;
+> +		}
+> +
+> +		fifo_size = roundup(pcc->dma.size, PAGE_SIZE);
+> +	}
+> +
+> +	rc = kfifo_alloc(&pcc->fifo, fifo_size, GFP_KERNEL);
+> +	if (rc) {
+> +		dev_err(dev, "cannot allocate kFIFO\n");
+
+Run coccinelle on your code first.
+
+> +		return -ENOMEM;
+> +	}
+> +
+> +	pcc->regmap = syscon_node_to_regmap(pdev->dev.parent->of_node);
+> +	if (IS_ERR(pcc->regmap)) {
+> +		dev_err(dev, "cannot map register\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	/* Disable PCC and DMA Mode for safety */
+> +	regmap_update_bits(pcc->regmap, PCCR0, PCCR0_EN |  PCCR0_EN_DMA_MODE, 0);
+> +
+> +	/* Clear Rx FIFO. */
+> +	regmap_update_bits(pcc->regmap, PCCR0, PCCR0_CLR_RX_FIFO, 1);
+> +
+> +	/* Clear All interrupts status. */
+> +	regmap_write(pcc->regmap, PCCR2,
+> +		     PCCR2_INT_STATUS_RX_OVER | PCCR2_INT_STATUS_DMA_DONE |
+> +		     PCCR2_INT_STATUS_PATTERN_A | PCCR2_INT_STATUS_PATTERN_B);
+> +
+> +	pcc->irq = platform_get_irq(pdev, 0);
+> +	if (pcc->irq < 0) {
+> +		dev_err(dev, "cannot get IRQ\n");
+> +		rc = -ENODEV;
+> +		goto err_free_kfifo;
+> +	}
+> +
+> +	rc = devm_request_irq(dev, pcc->irq, aspeed_pcc_isr, 0, DEVICE_NAME, pcc);
+> +	if (rc < 0) {
+> +		dev_err(dev, "cannot request IRQ handler\n");
+> +		goto err_free_kfifo;
+> +	}
+> +
+> +	init_waitqueue_head(&pcc->wq);
+> +
+> +	pcc->mdev_id = ida_alloc(&aspeed_pcc_ida, GFP_KERNEL);
+> +	if (pcc->mdev_id < 0) {
+> +		dev_err(dev, "cannot allocate ID\n");
+> +		return pcc->mdev_id;
+> +	}
+> +
+> +	pcc->mdev.parent = dev;
+> +	pcc->mdev.minor = MISC_DYNAMIC_MINOR;
+> +	pcc->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME,
+> +					pcc->mdev_id);
+> +	pcc->mdev.fops = &pcc_fops;
+> +	rc = misc_register(&pcc->mdev);
+> +	if (rc) {
+> +		dev_err(dev, "cannot register misc device\n");
+> +		goto err_free_kfifo;
+> +	}
+> +
+> +	rc = aspeed_pcc_enable(pcc, dev);
+> +	if (rc) {
+> +		dev_err(dev, "cannot enable PCC\n");
+> +		goto err_dereg_mdev;
+> +	}
+> +
+> +	dev_set_drvdata(&pdev->dev, pcc);
+> +
+> +	dev_info(dev, "module loaded\n");
+
+Drop such function success messages, everywhere.
 
 Best regards,
 Krzysztof
