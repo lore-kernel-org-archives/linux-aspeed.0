@@ -1,52 +1,65 @@
-Return-Path: <linux-aspeed+bounces-524-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-525-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BAEDC02183
-	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Jan 2025 14:32:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7415BC02185
+	for <linux-aspeed@archiver.kernel.org>; Sat, 18 Jan 2025 03:51:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YZMdK4sKZz30WX;
-	Sat, 18 Jan 2025 01:32:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YZjMG5qXRz2yn4;
+	Sat, 18 Jan 2025 14:51:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737124341;
-	cv=none; b=JbHUfFmD+i5lGP2PJ1kX8WUZSTLbv+LBQNnu5QkNjuQJJtDbV2vx+G/Sm0fzyPfAO6MnfihwhRVIn1OIXpzfBlrtGdMqLjkxaoCdp6/JDV9jI6LlXFPavlfCL0O4lQX2H68MSedG7GJMDyH35qRfU53/2Jke9pBTMPXyi+LBs4NI6R0SwENrcNtWANV7qd/cjdG16FtAlTeMGIZ+aGiHXWwh5nVhy1faYbc7nRqiu8rckDZjjYAAP1Xl1y7TroSRMxS206LJeRLMPXiYPEpTQhC2X25yDnj6Rhj7UFt7vomKo2NL1C3/VKTTLoPrDnV/wVAqFtNPImMYnNMBRGYOdA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1737172282;
+	cv=none; b=YNcKwNJOfPr22so8qtXasLMevygZuYIuDnxmjxC0Tw7u3ws1r17QJcKQ0QBQEduFdt0Cr90fRRkEenhKufWRMluxV6AHnGXWG0FzZlQLw6T3NWZiTzuM9pJTb2TgW/ArBo3jYKKK/EWLDf4PlEx3j4/IexA8b9NfoV93TWpwsGVenJkLFT9ZeCNR95rsKw78Dt7vMj267cZbff9jC5Tnefn1IuWDlKrhYZL5irGBZEH0gLPrQSd/L+8dy6Hp6d6lFTvSpOHkxQAuL7WezHdKatiaIGf6c9oLay+VKIc8G/e0UBbGJZP732w5X7O1k5UN2gi3awyhIE7ongWCv4ovxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1737124341; c=relaxed/relaxed;
-	bh=FQLYVwticC0pQgJuG9CmU0MdkMzypGHsD12XmJ4q2jg=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=hV5bgUQNFNKfWLrhB9UFzR0wtI8Xuv8I6VUHR5R16ntetLiDG8uVHiZgvERT8Q4+RwOCZf6SkdMhqk70BzasoaKl/DzaGJ8tqS+Ll3Gk4a74X7XpQE1txEC+QoyZpGZlekDi4rNPQ2ALUhag08YazFKZ1TVRYEWUsD2jphgcafqN1lH+sVvR0ODYsavA9HSNeVZk+kM2JZEoEUW6R2XjCRLFftDNHdGFGujBFyjmNwrbJcrpuEkEdna91qRPfPGsFgnjEcmss/WhaPyXSdszrXYXzShXw7JRnzn4I1Feuy/sLlPX35rZ4eIe0hvLGdif1AbJswnlClz+e9uyM1JtZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CWHqKh+C; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1737172282; c=relaxed/relaxed;
+	bh=/DyfZWIIA96g0Ckt/iF1SREvxeObReWViBxkd40Wrkw=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=I9R/9p6Boygrrdc/NOu2yDa5cb1x7M4mKqFnF7BNGZthoYVAuAqpii5qDT25PdKvD9CIpn2kn8exd/aQoDSDjkHrmWAYnma94OZeibsqJifzjZLtIfVjb14GyfZ/aF3WlOC6xnRK9ArC6AZbmUNoHBxWEf5MYC/eVcYAEKnr1jAhOwascOrc7O0TBF8JJjiDCdAkWwHxXwiRCOTlC3M7ubVlInjhIcn4XwpppZh5yqAhl/qTRxZE3pV773JQjmRZ6JVL09mqFqVF0qz/Pg7+IZ4u9eM6ZZMc2UnS+IbrtYnN4I0EFQ3Gdx5BDVH426jY8KKTi3G+APVgzLHLiiqt0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wg4O7nHq; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CWHqKh+C;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Wg4O7nHq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZMdJ3R33z30WP
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jan 2025 01:32:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YZjMG09NSz2ymg
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Jan 2025 14:51:21 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 83508A430C7;
-	Fri, 17 Jan 2025 14:30:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A352C4CEE3;
-	Fri, 17 Jan 2025 14:32:16 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id B43DBA43169;
+	Sat, 18 Jan 2025 03:49:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A859CC4CED1;
+	Sat, 18 Jan 2025 03:51:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1737124337;
-	bh=26g0fdxxXJS5fHlyq0dbUxYx22VrCNq5Mgdt7Hy5xBQ=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=CWHqKh+C4dmpNScj3bVkG9IP168qiggK99/98sB2wCn6tw0jwJzB4HERKmwu62sAq
-	 +hr4YlCkAbXMxmJ7LYaTtJLEZvXPcQ9Eu1pRpSkumVapMDIDtL9Mf/QTfNA2t+BS4W
-	 cIdStQ0vnrgUmHfSHfHQApJW1OiANlbcnkjudEhLYNoKU33uzgsrU+p23v+SPOUx+O
-	 xsBtmk0IZJ1yE8thG2Jn+wF/pJZNJiksjsW1WmHWf0nw+/0UFLGDwrcGQtgBp/wShy
-	 OVO084Oe1tr+yU1E+QGU7YtJGXWz13XDa4Pm0c4ZSo/Y38uxKRmXAfeDR+5238m/6I
-	 HZDb4BBJKz7Nw==
-Date: Fri, 17 Jan 2025 08:32:15 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=k20201202; t=1737172278;
+	bh=/DyfZWIIA96g0Ckt/iF1SREvxeObReWViBxkd40Wrkw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=Wg4O7nHqeAoZVFYyETYyeYu6pLx6d3Q1QDps4UyzGqUKor6alhi/0n71XGBldQ4HW
+	 TZHLh9qrSEZu5RiK1HiCETkuZ1otS4LxtUJY6RwUDnfymgyNy3ZbrOKVDeEBj9q7CU
+	 UXN0fhkBZw7KqeXXZPBMGEXi55Z/M9coD9wv2rMoS8l9qMX42xjPco8QGcWlCVpt7r
+	 gBzDWBu+xgQnyce5DuwaRJ4ubCN1fvudUEEqWXVRWjVTxqmFncxVG0lakKlY4uLFez
+	 v2s8ETIJ+tuqmEYDoo6wEkJkG31MGrlc4fLDXUJLpJQYAa6foQhUuxHZJMAuI2mox+
+	 CQFRLjx1V97pg==
+Date: Fri, 17 Jan 2025 19:51:16 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: andrew+netdev@lunn.ch
+Cc: Ninad Palsule <ninad@linux.ibm.com>, minyard@acm.org, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, davem@davemloft.net,
+ edumazet@google.com, pabeni@redhat.com,
+ openipmi-developer@lists.sourceforge.net, netdev@vger.kernel.org,
+ joel@jms.id.au, andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
+ eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 01/10] dt-bindings: net: faraday,ftgmac100: Add phys
+ mode
+Message-ID: <20250117195116.4211ef42@kernel.org>
+In-Reply-To: <20250116203527.2102742-2-ninad@linux.ibm.com>
+References: <20250116203527.2102742-1-ninad@linux.ibm.com>
+	<20250116203527.2102742-2-ninad@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,119 +72,12 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, joel@jms.id.au, 
- linux-aspeed@lists.ozlabs.org, andrew@codeconstruct.com.au, 
- elbadrym@google.com, linux-kernel@vger.kernel.org
-To: Kevin Chen <kevin_chen@aspeedtech.com>
-In-Reply-To: <20250117095217.661070-1-kevin_chen@aspeedtech.com>
-References: <20250117095217.661070-1-kevin_chen@aspeedtech.com>
-Message-Id: <173712392559.810318.5052005402329647545.robh@kernel.org>
-Subject: Re: [PATCH v0 0/3] Add AST2600 LPC PCC support
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
+On Thu, 16 Jan 2025 14:35:16 -0600 Ninad Palsule wrote:
+> Aspeed device supports rgmii, rgmii-id, rgmii-rxid, rgmii-txid so
+> document them.
 
-On Fri, 17 Jan 2025 17:52:14 +0800, Kevin Chen wrote:
-> The AST2600 has PCC controller in LPC, placed in LPC node. As a result,
-> add LPC PCC controller driver to support POST code capture.
-> 
-> Kevin Chen (3):
->   dt-binding: aspeed: Add LPC PCC controller
->   ARM: dts: aspeed-g6: Add AST2600 LPC PCC support
->   soc: aspeed: lpc-pcc: Add PCC controller support
-> 
->  .../bindings/soc/aspeed/lpc-pcc.yaml          |  51 ++
->  arch/arm/boot/dts/aspeed/aspeed-g6.dtsi       |   7 +
->  drivers/soc/aspeed/Kconfig                    |  10 +
->  drivers/soc/aspeed/Makefile                   |   1 +
->  drivers/soc/aspeed/aspeed-lpc-pcc.c           | 505 ++++++++++++++++++
->  5 files changed, 574 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/lpc-pcc.yaml
->  create mode 100644 drivers/soc/aspeed/aspeed-lpc-pcc.c
-> 
-> --
-> 2.34.1
-> 
-> 
-> 
-
-
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250117095217.661070-1-kevin_chen@aspeedtech.com:
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-transformers.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-starscream.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-qcom-dc-scm-v1.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ufispace-ncplite.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dtb: lpc-pcc@0: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/soc/aspeed/lpc-pcc.yaml#
-
-
-
-
-
+Andrew, just to be sure - you're okay with extending the bindings?
 
