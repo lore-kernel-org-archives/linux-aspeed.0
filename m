@@ -1,83 +1,70 @@
-Return-Path: <linux-aspeed+bounces-596-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-597-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37061C0218F
-	for <linux-aspeed@archiver.kernel.org>; Fri, 31 Jan 2025 16:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E380CC0218F
+	for <linux-aspeed@archiver.kernel.org>; Fri, 31 Jan 2025 16:48:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yl1pZ4jNgz30NN;
-	Sat,  1 Feb 2025 03:40:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8:216:3eff:fe9d:e7b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738341622;
-	cv=none; b=dxirP++rQx8fQ3YxuPso3ZtyGbg59BaIhqtHPVdhDwkEDakb9G2RQYPZ5VK5Ip+DQDgXEmm3/Onla1LLAFiFZeZw8Vb3h2BCXsLM9hmjKsS3bXa9++5Im2YnEl0FiFrr97Qxmu0jljAxGycxL0P5ErwO3kmGWtSkOVomMrIIhVnQq75gybtc4LNU4bDUltWAxFeP+uGfsaqbRgXmiLuQs4KU4PG7amztrOh1NjmVvgTkEMmmwY0tucWVT4GKjiG73uQlv5SViNK7XuyPdM/JWoAQrB3HmeqrrTtGYwF1mM1u98f1LY/+xpIyfzB6HqiM5MyBDMMex5Y9NMp5KlKPvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yl1zr3nxLz30NN;
+	Sat,  1 Feb 2025 03:48:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738342104;
+	cv=none; b=dsw6EJ4W6N+KnhFuoqj+UX8lyP74s/vG1KTdd16rCNWr+5mJTKXHjOP5i/kc4OS+ZhI08Tl0FtvLaMXaUhqIZjt3VmNawa7T2szGSo+121Ug/vg4eRVOr1NcN7vJH3Pc1mSYVJF++o+9bCO/7IR9HOZBXhkYauMpNLHXOc2n01Fu/kz3Tk6dwpx+7k8qo5xLK6xMZTTffiGeqCh2B21uXFwmCqfY1wj5gS2PDT6Rdrj6Sso5BSimZ1UN82nXoeGTj0237gzbOJlTBxiUXP/QM9SL5BrTf7QpMQyW3MCbPFw31S4jYm3yqRqNCHzAZ07tqw6Zsjzw0mJRTYJuysrwrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738341622; c=relaxed/relaxed;
-	bh=7KWNF2EunwCPCeuVVboVX1uolneu+r5yyv1IBQ0gWo4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CiJc9JPoxyhz398/UqnqTxU94V4b3NioDMD6RWQ9P5DQ9oOheCs4TrigXUA+2vQqCDq6F+bp+cl6hx5TTZcVjX6badJKugF8WOXo6YZH9RRSH6f6UZCjZriZFyUHoeNZbj2tbwH7BxuWYe8Q+/wxYadmp2zlItDqUr5mvnLWiHkM47KPb1Ev/WmeEp26l1rUfEO8StFboA9yhDmW6y3d+rhSTs0JxLN/Ave74IexOIMeyznYmQD3sFgbCQPyJeZpDftwptSKDz2trbeOzHHUIvZGx486iULbOdTeruhd2QJThMCWZa/eoSbrLZmjPPbILCB/mNzPuZRjgqEbKfj2Sg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=L4UYAY7L; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=L4UYAY7L;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alexandre.belloni@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 651 seconds by postgrey-1.37 at boromir; Sat, 01 Feb 2025 03:40:21 AEDT
-Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [IPv6:2001:4b98:dc4:8:216:3eff:fe9d:e7b4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1738342104; c=relaxed/relaxed;
+	bh=zbZODgSfQ8dTNQ71PLU7lLra/naTkm614ENyg5PDJ0I=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=N/2i+4nT02EB+UY7DufI9jZYhMPADSVqzG9ebBX7zGkJcc8kK24mEvOzQlDlJaVJxFBfKT95psWwuSz9mCbh03w9nTClwGF9fsC2T4d5uHSdNO/lBBDQU2oOKgpLMFJqmsGEohnI6Mz2XTnwEcBPt/bOmxjIpw/zCZ7F40QGSeWk7vrGMkbGGDGBfoH9G6MjI/pwdw4nXnbJiAuzX7FEnKI0jk+MeWNuAn937QFNvt04VS4fhvMw/U/Jh9opkBGN19SBgqiwKB3U1taKvdl8zB5PNueZw1ut6Rb8jnw/crG/ciAXOsWNYNHA6h1QdnwgRLmrEwtUpz/Jj3c54BSDCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 925 seconds by postgrey-1.37 at boromir; Sat, 01 Feb 2025 03:48:22 AEDT
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yl1pY0vKLz2yMh
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Feb 2025 03:40:20 +1100 (AEDT)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
-	by mslow3.mail.gandi.net (Postfix) with ESMTP id 31D2B5831FF
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 31 Jan 2025 16:29:34 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 6498843308;
-	Fri, 31 Jan 2025 16:29:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1738340961;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7KWNF2EunwCPCeuVVboVX1uolneu+r5yyv1IBQ0gWo4=;
-	b=L4UYAY7LB9GmZmq1Xeo81KykAiAeyqXyzQgKdocaa7/U8iYXucJTCelJnOzQzepP5Gd0IA
-	obrRnLX14vTL98FmrBqYsH//2u3QO+vMf8glIYeM+3eJnjRwbWvA8KL0KCqVUtNdKuiW7N
-	NHDwJuhk5oPe6nEF7uOivEemvGONlRPVymcAJOn9ZnPho/mr0vbKiu2FcqprAJoOTUrVD2
-	UVjljAbgQFQmXnJIgYUonBakq8maFlc0ZK2KBMlCnxWTf4lMu7itNsWvZxQKPaZL4FqFKT
-	ufd0E3NbTLZsL8JcgfM9iYUSGtpgSiXLMP0w1mtRtDREQlvtv8XcqWlk+LY/AA==
-Date: Fri, 31 Jan 2025 17:29:17 +0100
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yl1zp6nw0z2yMh
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Feb 2025 03:48:20 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.18.186.31])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Yl1bP1gXVz6D9H9;
+	Sat,  1 Feb 2025 00:30:41 +0800 (CST)
+Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
+	by mail.maildlp.com (Postfix) with ESMTPS id C5C2D140155;
+	Sat,  1 Feb 2025 00:32:49 +0800 (CST)
+Received: from localhost (10.195.244.178) by frapeml500008.china.huawei.com
+ (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 31 Jan
+ 2025 17:32:47 +0100
+Date: Fri, 31 Jan 2025 16:32:46 +0000
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S . Miller" <davem@davemloft.net>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Crt Mori <cmo@melexis.com>, Jonathan Cameron <jic23@kernel.org>,
-	Lars-Peter Clausen <lars@metafoo.de>,
-	Jacky Huang <ychuang3@nuvoton.com>,
-	Shan-Chun Hung <schung@nuvoton.com>,
-	Yury Norov <yury.norov@gmail.com>,
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>,
-	linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-renesas-soc@vger.kernel.org, linux-crypto@vger.kernel.org,
-	qat-linux@intel.com, linux-gpio@vger.kernel.org,
-	linux-aspeed@lists.ozlabs.org, linux-iio@vger.kernel.org,
-	linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+	<sboyd@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, "Alexandre
+ Belloni" <alexandre.belloni@bootlin.com>, Claudiu Beznea
+	<claudiu.beznea@tuxon.dev>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller"
+	<davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, "Bartosz
+ Golaszewski" <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, Jonathan Cameron
+	<jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang
+	<ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, Yury Norov
+	<yury.norov@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jaroslav
+ Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, "Johannes Berg"
+	<johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, "Alex Elder"
+	<elder@ieee.org>, <linux-clk@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-renesas-soc@vger.kernel.org>,
+	<linux-crypto@vger.kernel.org>, <qat-linux@intel.com>,
+	<linux-gpio@vger.kernel.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-iio@vger.kernel.org>, <linux-sound@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH treewide v2 1/3] bitfield: Add non-constant
  field_{prep,get}() helpers
-Message-ID: <202501311629171d7df0f5@mail.local>
+Message-ID: <20250131163246.00000077@huawei.com>
+In-Reply-To: <1824412519cb8791ab428065116927ee7b77cf35.1738329459.git.geert+renesas@glider.be>
 References: <cover.1738329458.git.geert+renesas@glider.be>
- <1824412519cb8791ab428065116927ee7b77cf35.1738329459.git.geert+renesas@glider.be>
+	<1824412519cb8791ab428065116927ee7b77cf35.1738329459.git.geert+renesas@glider.be>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,16 +77,15 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1824412519cb8791ab428065116927ee7b77cf35.1738329459.git.geert+renesas@glider.be>
-X-GND-State: clean
-X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdelvdeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfhfgggtuggjsehttdertddttddvnecuhfhrohhmpeetlhgvgigrnhgurhgvuceuvghllhhonhhiuceorghlvgigrghnughrvgdrsggvlhhlohhnihessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepgeeiudeuteehhfekgeejveefhfeiudejuefhgfeljefgjeegkeeujeeugfehgefgnecuffhomhgrihhnpegsohhothhlihhnrdgtohhmnecukfhppedvrgdtudemvgdtrgemvdgumeeifeejtdemjeekvgdtmegttdgvkeemvdektdeimeekrggtieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvrgdtudemvgdtrgemvdgumeeifeejtdemjeekvgdtmegttdgvkeemvdektdeimeekrggtiedphhgvlhhopehlohgtrghlhhhoshhtpdhmrghilhhfrhhomheprghlvgigrghnughrvgdrsggvlhhlohhnihessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepfeegpdhrtghpthhtohepghgvvghrthdorhgvnhgvshgrshesghhlihguvghrrdgsvgdprhgtphhtthhopehmthhurhhquhgvthhtvgessggrhihlihgsrhgvrdgtohhmpdhrtghpthhtohepshgsohihu
- geskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepnhhitgholhgrshdrfhgvrhhrvgesmhhitghrohgthhhiphdrtghomhdprhgtphhtthhopegtlhgruhguihhurdgsvgiinhgvrgesthhugihonhdruggvvhdprhgtphhtthhopehgihhovhgrnhhnihdrtggrsghiugguuhesihhnthgvlhdrtghomhdprhgtphhtthhopehhvghrsggvrhhtsehgohhnughorhdrrghprghnrgdrohhrghdrrghupdhrtghpthhtohepuggrvhgvmhesuggrvhgvmhhlohhfthdrnhgvth
-X-GND-Sasl: alexandre.belloni@bootlin.com
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.195.244.178]
+X-ClientProxiedBy: lhrpeml100005.china.huawei.com (7.191.160.25) To
+ frapeml500008.china.huawei.com (7.182.85.71)
 
-On 31/01/2025 14:46:51+0100, Geert Uytterhoeven wrote:
+On Fri, 31 Jan 2025 14:46:51 +0100
+Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+
 > The existing FIELD_{GET,PREP}() macros are limited to compile-time
 > constants.  However, it is very common to prepare or extract bitfield
 > elements where the bitfield mask is not a compile-time constant.
@@ -113,7 +99,9 @@ On 31/01/2025 14:46:51+0100, Geert Uytterhoeven wrote:
 >   3. Support 64-bit use on 32-bit architectures.
 > 
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+For the IIO one.
+
+Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
 > ---
 > v2:
@@ -330,12 +318,5 @@ Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 >  static int snd_rme_digiface_write_reg(struct snd_kcontrol *kcontrol, int item, u16 mask, u16 val)
 >  {
 >  	struct usb_mixer_elem_list *list = snd_kcontrol_chip(kcontrol);
-> -- 
-> 2.43.0
-> 
 
--- 
-Alexandre Belloni, co-owner and COO, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
 
