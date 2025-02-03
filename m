@@ -1,79 +1,85 @@
-Return-Path: <linux-aspeed+bounces-620-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-621-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE407C02192
-	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Feb 2025 15:18:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30013C02196
+	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Feb 2025 15:31:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YmqrF2vJxz2xsW;
-	Tue,  4 Feb 2025 02:18:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738595885;
-	cv=none; b=cXupGQNJ7JoiIRkOE4eWv8rVN/bcJXu99VdqoNCK4pygYyHCOwUvqKznTNLvQZ766TYEiIbrNSbtAznAlBTm9vTC9nbs9FqGo3jJVP4Bgcb0gz+FyIaMtsOe+lIDNHlZDpCXnC7IidVSgNFTLNPcNmN3uFZT0xQcZ8t/4FQoHjDix6xYehMlSmfjIRvMq9ZX0YIqwHZzFY31VmS45I3BamLXnng2FTPyW+WuC7YUIOp7OQO2C31s7WYckMD9YQIZmIllZNGE9orXcTWZcMDk9IoN6Pid4tQwic7V5oXRvcZ68/b06V5LO/rh+ePTnwFWloO7qj9EKDxBoIH+Djs5qw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ymr864RJqz2xk7;
+	Tue,  4 Feb 2025 02:31:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:242:246e::2"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738596710;
+	cv=none; b=GrhscE+WdsChW4AWHkebiSVZWxf4inoXw8CwKlL+fdPIIhqJ0Aow0+4eouPXD55HzaDMqTcMKEnyyaYqHQgAgUGjEdI/LNb91KM6Hhe0AXe2lQuSQvoGvq0H20mZhcNJ3aEz0FmHyptFiQ7SpgpDndHGXSvnt0jukq3vciGd0GGiytnD8VRYObkoKCOCCg2NBBZEXyVt3w5HqJCYtNS2ukJyPtK/2HCtbtkysqMTksxAI072EV/lSdoMwjgYfM+8TWtQyW9FOT6mA0VYgvMCNZ0D4ySHnchydWVI5VGh1zuj8ueVwlnzWCp14MB4yFX6pfMLFFDb8+h0SrqqQ0kTKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738595885; c=relaxed/relaxed;
-	bh=VQ4RqG5wX63XHkwCiEdYMzRbUoNudhkrKOhuQwdpm0I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=ZucE0STdL23qxuyB52r2uTSSiO6AJ+WUfmSxoZO0w8rVuklRvF4cEow9pI27Ty8+J433LfgqGvIgYyQ8LXNuGrqxoDAhW6wn6Yqm4+42M3p8GaweTAzqwBW/3mkFGN/T+kjlhKukaUaiEac77tDz0Vr3mW67egq4TKBlqMpyTyXxvgGuZdHshN0W+GF4/XxoYU/pO4SSMzPy0FAlGz1Dihcsz1Dqy71l64cmQQIEcNH+ZpeW9NFJzIHmukvNPdIAvMRds0AJpiEKeS67TSvZefXXvs1L9ynWxQL8T4TUEU0UDJN8FLv8Gd0MyTGecFydsVMViYBJTaLrAo8mKhzbWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nlc1VyEi; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1738596710; c=relaxed/relaxed;
+	bh=PAvOtJHsIMS59RfRzFfMyl8id23TWAECc7EwAHrUKlY=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=XXSEHs9XdNmybcm4y+W7Rp8eqrzHSkm4/6yiqd4leCHlD7P0x4VYQ19T5zTooF0KXUCEMOksZByUVlTBscTBmoQHDgvCg1e4x+Igs46PCtsCWhECab5kN0kXMtveeUW15WoU+dAGk1vadJmGycozimcUll+6OMK2do2acyTt2Uvik4njwxcuEsN+xhU9DUa0+ncUlvOwRny9/Hwb8rb4WpMmR6vO6M6BFXGyKdPdyGfCHybPpLJ4rZ3RU5rTZWtBgLShYhl/pV03eD0OISrPBUZ328vFeJHdylmE6I0OiUqnvhgOinNzew5IvfvBG5PfkwNR9B5Dr4rNvL5/QwbjOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net; dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=WPKbYP2m; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org) smtp.mailfrom=sipsolutions.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Nlc1VyEi;
+	dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=WPKbYP2m;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sipsolutions.net (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org)
+Received: from sipsolutions.net (s3.sipsolutions.net [IPv6:2a01:4f8:242:246e::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YmqrD0n2pz2xk7
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Feb 2025 02:18:03 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5137X6YA014781;
-	Mon, 3 Feb 2025 15:17:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=VQ4RqG
-	5wX63XHkwCiEdYMzRbUoNudhkrKOhuQwdpm0I=; b=Nlc1VyEiuQjiYLbh9pocM7
-	CLzpw0KGTWnPjmqHhoJdctttDND+tQK9HnMGI7+5OzI4UOPiC2g1jfxT+E/4BtIV
-	sRXuqVCYEY+QMYpq+kzCJlXYPJJKcC/jr+wBiAnRpFY1GMFrD3kBYJg2cRwGp8VN
-	3vDv5GV8RucvxRppCS/1GVFpv1u6Bscij0K+xur3Wb5seNOMbt1BYWKIU0Ts97yT
-	yV9Ttyl3qwNR7zYjITItgwJC86BAgbspV7aWTEhxK+vwY8P2JFALSNld4SwgDHCL
-	AU/IXMdkZIM/eZ4ifT84xINshzb+HcutkwCXvamEvqn+VMPoIEEZ7wRGln1XR9ow
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44jsgnj3w7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 03 Feb 2025 15:17:40 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 513FGR11024317;
-	Mon, 3 Feb 2025 15:17:40 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44jsgnj3w4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 03 Feb 2025 15:17:40 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 513C7pcF024493;
-	Mon, 3 Feb 2025 15:17:39 GMT
-Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44hxxmxxnf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 03 Feb 2025 15:17:39 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 513FHcae18088686
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 3 Feb 2025 15:17:38 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5F3EC58059;
-	Mon,  3 Feb 2025 15:17:38 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 301B95804B;
-	Mon,  3 Feb 2025 15:17:37 +0000 (GMT)
-Received: from [9.24.12.86] (unknown [9.24.12.86])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  3 Feb 2025 15:17:37 +0000 (GMT)
-Message-ID: <c06056b4-db8a-4c0b-b061-aa596d3519f8@linux.ibm.com>
-Date: Mon, 3 Feb 2025 09:17:36 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ymr854YDyz2xJ8
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Feb 2025 02:31:49 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=sipsolutions.net; s=mail; h=MIME-Version:Content-Transfer-Encoding:
+	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
+	Resent-Cc:Resent-Message-ID; bh=PAvOtJHsIMS59RfRzFfMyl8id23TWAECc7EwAHrUKlY=;
+	t=1738596709; x=1739806309; b=WPKbYP2m554oV92ofNHXgmK4f5Kczfmx2KPMeDJ7kzv1Sml
+	y1H3j1+rZ0GesRwgqUY5RZsVVrDmBPHmpxMcL0DNzmIvmAikxh7BFhj4iy4ABbQ2g8ZExVnUlpK2C
+	GsK61+rWhqpm1tth0kgHRNRp0cpkz+gwtfAwc5g/rHbQANNEruTT4Pf1Xq5CSlWhnCwiIbxYfzKP9
+	IEm9aMR8rkQBGczMUdSCY7UdN6VS75As6bv/VjRl6H11vZbLpPA5zN6thqtKcpAp2rOXzjCmPbLR2
+	lQ1sulqkjKmvqann1uS8o9cDlWWI/at8loLohsF6z7VllXRMpRr8sIgJtkM1PmVw==;
+Received: by sipsolutions.net with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
+	(Exim 4.98)
+	(envelope-from <johannes@sipsolutions.net>)
+	id 1teyQE-00000001gus-0LFB;
+	Mon, 03 Feb 2025 16:31:38 +0100
+Message-ID: <2904baea9188a4707d4b5a9a6bfa517a54323f8a.camel@sipsolutions.net>
+Subject: Re: [PATCH treewide v2 1/3] bitfield: Add non-constant
+ field_{prep,get}() helpers
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Vincent Mailhol <mailhol.vincent@wanadoo.fr>, Yury Norov
+	 <yury.norov@gmail.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, linux-clk@vger.kernel.org,
+ 	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
+	linux-crypto@vger.kernel.org, qat-linux@intel.com,
+ linux-gpio@vger.kernel.org, 	linux-aspeed@lists.ozlabs.org,
+ linux-iio@vger.kernel.org, 	linux-sound@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Michael Turquette	 <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Nicolas Ferre	
+ <nicolas.ferre@microchip.com>, Alexandre Belloni
+ <alexandre.belloni@bootlin.com>,  Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+ Herbert Xu	 <herbert@gondor.apana.org.au>, "David S . Miller"
+ <davem@davemloft.net>,  Linus Walleij <linus.walleij@linaro.org>, Bartosz
+ Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>,  Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, Jonathan Cameron
+ <jic23@kernel.org>,  Lars-Peter Clausen	 <lars@metafoo.de>, Jacky Huang
+ <ychuang3@nuvoton.com>, Shan-Chun Hung	 <schung@nuvoton.com>, Rasmus
+ Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Jakub Kicinski <kuba@kernel.org>, Alex Elder
+ <elder@ieee.org>
+Date: Mon, 03 Feb 2025 16:31:36 +0100
+In-Reply-To: <45920591-e1d6-4337-a906-35bb5319836c@wanadoo.fr>
+References: <cover.1738329458.git.geert+renesas@glider.be>
+	 <1824412519cb8791ab428065116927ee7b77cf35.1738329459.git.geert+renesas@glider.be>
+	 <e20a177a-30cd-4088-89e1-b479aba1356c@wanadoo.fr>
+	 <Z5-xMUqrDuaE8Eo_@thinkpad>
+	 <74cab7d1ec31e7531cdda0f1eb47acdebd5c8d3f.camel@sipsolutions.net>
+	 <45920591-e1d6-4337-a906-35bb5319836c@wanadoo.fr>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.54.3 (3.54.3-1.fc41) 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,51 +92,59 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 1/9] bindings: ipmi: Add binding for IPMB device intf
-To: Krzysztof Kozlowski <krzk@kernel.org>, brgl@bgdev.pl,
-        linus.walleij@linaro.org, minyard@acm.org, robh@kernel.org,
-        krzk+dt@kernel.org, conor+dt@kernel.org, andrew+netdev@lunn.ch,
-        davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
-        pabeni@redhat.com, openipmi-developer@lists.sourceforge.net,
-        netdev@vger.kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
-        devicetree@vger.kernel.org, eajames@linux.ibm.com,
-        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20250203144422.269948-1-ninad@linux.ibm.com>
- <20250203144422.269948-2-ninad@linux.ibm.com>
- <6def1c5d-d1a0-4a6f-9db2-453692d5423d@kernel.org>
-Content-Language: en-US
-From: Ninad Palsule <ninad@linux.ibm.com>
-In-Reply-To: <6def1c5d-d1a0-4a6f-9db2-453692d5423d@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: bmeP0_XdLDJr4zTpejIH4blsVibc7Jc7
-X-Proofpoint-ORIG-GUID: LEkVc5s_HyeQNjFOjksxZRwmsKHp-Du9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-03_06,2025-01-31_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=994 phishscore=0
- mlxscore=0 priorityscore=1501 clxscore=1015 adultscore=0 malwarescore=0
- impostorscore=0 lowpriorityscore=0 suspectscore=0 spamscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2501170000
- definitions=main-2502030110
+X-malware-bazaar: not-scanned
 
-Hi Krzysztof,
+On Mon, 2025-02-03 at 22:36 +0900, Vincent Mailhol wrote:
+> > On the flip side, there have been discussions in the past (though I
+> > think not all, if any, on the list(s)) about the argument order. Since
+> > the value is typically not a constant, requiring the mask to be a
+> > constant has ensured that the argument order isn't as easily mixed up a=
+s
+> > otherwise.
+>=20
+> If this is a concern, then it can be checked with:
+>=20
+>   BUILD_BUG_ON_MSG(!__builtin_constant_p(_mask) &&
+>                    __builtin_constant_p(_val),
+>                    _pfx "mask is not constant");
+>=20
+> It means that we forbid FIELD_PREP(non_const_mask, const_val) but allow
+> any other combination.
 
-Thanks for the review.
+There almost certainly will be users who want both to be non-constant
+though, and anyway I don't understand how that helps - if you want to
+write the value 0x7 to the (variable) mask 0xF then this won't catch
+anything?
 
+> > However, the suggested change to BUILD_BUG_ON_NOT_POWER_OF_2 almost
+> > certainly shouldn't be done for the same reason - not compiling for non=
+-
+> > constant values is [IMHO] part of the API contract for that macro. This
+> > can be important for the same reasons.
+>=20
+> Your point is fair enough. But I do not see this as a killer argument.
+> We can instead just add below helper:
+>=20
+>   BUILD_BUG_ON_STATICALLY_NOT_POWER_OF_2()
+>=20
+> But, for the same reason why I would rather not have both the
+> FIELD_{PREP,GET}() and the field_{prep,get}(), I would also rather not
+> have a BUILD_BUG_ON_NOT_POWER_OF_2() and a
+> BUILD_BUG_ON_STATICALLY_NOT_POWER_OF_2().
+>=20
+> If your concern is the wording of the contract, the description can just
+> be updated.
 
->> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
->> Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
-> You still need to fix the subject. Why patch #1 has bindings but patch
-> #2 dt-bindings? Why can't this be consistent?
+No, I just think in both cases it's really bad form to silently update
+the contract removing negative assertions that other people may have
+been relying on. Not because these trigger today, of course, but because
+they may not have added additional checks, or similar.
 
-What is preferred now a days? bindings or dt-bindings?
+So arguably then you should have BUILD_BUG_ON_CONST_NOT_POWER_OF_2() or
+so instead, so that all existing users are unaffected by the updates,
+and similarly that's an argument for leaving FIELD_* versions intact. Or
+I guess one could change all existing users to new ones accordingly, say
+FIELD_*_CONST_MASK(), but that's pretty annoying too.
 
--- 
-Thanks & Regards,
-Ninad
-
+johannes
 
