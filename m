@@ -1,62 +1,61 @@
-Return-Path: <linux-aspeed+bounces-604-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-605-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B94F3C0218A
-	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Feb 2025 03:48:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51F59C02190
+	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Feb 2025 04:06:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YmXXH2Pb5z2yvq;
-	Mon,  3 Feb 2025 14:48:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YmXwl4ZcGz2yvq;
+	Mon,  3 Feb 2025 15:05:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738554495;
-	cv=none; b=JiufWIhVf1bWkbkzdPz/wzOTftY4/CXQk+Yzw4j0HeZxj2AEjCwOYtMCorXA0krk7eeT6fFk7TPN9rE2rodoSV7w0ORet5fz27UC6BfCAh8pZthPGgv6TpN6w/R0PPDpFQLsJyc+iUBSS7iQ04VA8XJDHsmsxyZ+tuKegGN+K39n8HiRYVAaZTji776q1IrDWqQBtK6LYCq5KkI4fN28Yeq1dc469vsS6ixQBD/vKmGjHbJLd0c5C/6j/PPSvYUmNnl/Zx+A8sfN9ZYFxn4y2slGTiCJnqV3kc5Wu659ey+bGVv0GbACb8sPRml5fSLATeekyfomQ7qy8hrVrDAvkQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738555559;
+	cv=none; b=GpXhHTH2zKPPvqNo2tW6QB/QfRnIxXNuYlSdVJVTEUKG+sjhcrqXE7pCYNNvBcKYG7sVDzi/k8GOCl9hGamccNmfz4SSZhhPCWh2kk0tLa5UE1K8Zuqc5TnBLubwgQLZcMYNU4jAIJzARHtPicJfU7s3QHZXoNpRAwW1uIiCzD63tBftHb7gIyBjBo7stqHGpk7LSIqL8+3PUc/mlTYEObHPtFvFtR8Buuljejw/60KIPsgObwNfIhkR4G8XX6i3TQ8zpMIuMj0bS74GauTvzRgaTHKORw2cjXZ6kni91URS2Fz7Sy7sx/I1JZadJQBt2b8ZqPbb4t2S52zeujHRlg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738554495; c=relaxed/relaxed;
-	bh=n8IcwophMB3hoBBGXT86DKcgpvdtGcA9h2Vz1Sh5RwU=;
+	t=1738555559; c=relaxed/relaxed;
+	bh=EfiRw7gB8e/5MLrWL0BiJdfLFcVW2LHs3Jq0FFdnVo0=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=f0iso4a5XowBNCSX4V4TgBrzBVCZzguvewHanqek+6zUqtnIvKLS4/zo9jTwryJN85XelZA/olApc9r1dB61MSdGzTbJuqgf78c0VGKEHHSzju9xeyXE4hoVtFzkwKehvw+hb+DdrYEFmQojx8o/2m/SUUD5imE2oC4PPIuMXQSogrujHfspfKX3xZQST91s8AHCCOyIlBWSGCpiEsxlnyEkQKwTuOSA4pEPlp0bexqpweHyJ1gw6Q7zkPge66Iy37aRQhUkvJP8VIMzMhO8egMnradPavgdrUbzsQZWmHhZZMBsGtEQweczUWEz98HAG306nyoyZonNJHHTG7OzFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=eMdjBFk3; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=bPr5dNEt2wsZT63jYupNsaefWb+TyPvNCR7K15gKtvjFWsjVhEPphNwKXMt8XSHWuzpLUT5m+Pz0BBb4m5ipebP5JjF5RVbw1AzK0xzlZpHdexdZLL4RH2/QucuIK3+ZXIfGUrHQoNAcjJpTkbnG6kty7ocmRqih3kyqK3eQI5nf73BN7jP7c+oXjrAe9PYy1xySsNzwNEGkS4uW8cPqS89S5yTczLRhntnXKx//7h3ZjOH/qNMGqoc2QJ5TaM9KlC29cZyjliRsOg5HdjixmooIACVSbhaISNQzfkieJp5uzRMkjgoDIYdW29T6MsC+Ses4cevJCN0uK/db1MZDwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=WqdTiAAe; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=eMdjBFk3;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=WqdTiAAe;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YmXXG6416z2yvn
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Feb 2025 14:48:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YmXwk0b0Sz2yvn
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Feb 2025 15:05:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1738554494;
-	bh=n8IcwophMB3hoBBGXT86DKcgpvdtGcA9h2Vz1Sh5RwU=;
+	d=codeconstruct.com.au; s=2022a; t=1738555556;
+	bh=EfiRw7gB8e/5MLrWL0BiJdfLFcVW2LHs3Jq0FFdnVo0=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=eMdjBFk3KbuTs5LrRrBeRuUqTEk7k4QsMpb/VX5ewByVywkhR5nQEJwluEJ/4pdRE
-	 tvN9zct23uahM+UuXIXsQza+rKNiTbRDbn3ORYvLYyr4dlxm7zW/yC11kTCcj/vYiK
-	 XyKs6sCqI4rOqRN5/Jdj4rDRnSP/ujlvUaFNOvN83pN13aYHPxQBWhEOzqDk43JlOr
-	 PETvdpqQRMN3BdD+L8Z3g2JZRNsWU3yqKAUzhS+C8CSHhxWdGK4U/WlL7JkPXh6Vhw
-	 eQwjKpQw+B6mwwH7Ra6Mf0QGmf6u4fVFS2gzIqxCOvZTTYq3+xi5DBMO9haGMa1e5K
-	 DkLmHOoJlKxRw==
+	b=WqdTiAAetAQKzDnEKAxG/R3ri9ZP0gG2mu2AqTf9zfCQLmvqRHEeqcjlFbxI8q6Vy
+	 YF5PJSeqgtcjFe1LFbJC7ga2/nTFHbxtubP0f891BE/g+tFzX+zAEmsWPgNql1/yKH
+	 uHiZzlkHo2WpAr8ze2u9IRE5+90PhFevbqvS2n05CB4w7oDoh04u/2/NzwBDNdx5IU
+	 YFqjgAhGJsfgGdg4jsPZzQSN5fuH55Opp9YUfK3r9NjHNEIBHIchSz5Z/eKcreUbdu
+	 u76oHkujWbGyHwDUgfpE207FzjXJlYYVk9mp1TR4ZW1v5gqJmFWdMqaVj5IAEVElvk
+	 /VSJ7VAFCHPzQ==
 Received: from [192.168.68.112] (58-7-156-140.dyn.iinet.net.au [58.7.156.140])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5B04173C54;
-	Mon,  3 Feb 2025 11:48:12 +0800 (AWST)
-Message-ID: <0cbefd2b2488b7855fb374ce94facd9f7440b7a6.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v3] ARM: dts: aspeed: catalina: Update DTS to support
- multiple PDB board sources
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id BD4E773C54;
+	Mon,  3 Feb 2025 12:05:51 +0800 (AWST)
+Message-ID: <f01ea3f0184cb598cdfcc22d304ea31ef5b7dbbc.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v7 1/1] watchdog: aspeed: Update bootstatus handling
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Potin Lai <potin.lai.pt@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski
-	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	 <joel@jms.id.au>, Patrick Williams <patrick@stwcx.xyz>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Cosmo Chou
-	 <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>
-Date: Mon, 03 Feb 2025 14:18:11 +1030
-In-Reply-To: <20250114-potin-catalina-dts-update-20250102-v3-1-14981744b2fe@gmail.com>
-References: 
-	<20250114-potin-catalina-dts-update-20250102-v3-1-14981744b2fe@gmail.com>
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, patrick@stwcx.xyz, 
+	linux@roeck-us.net, wim@linux-watchdog.org, joel@jms.id.au, 
+	linux-watchdog@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Peter.Yin@quantatw.com, Patrick_NC_Lin@wiwynn.com,
+ BMC-SW@aspeedtech.com,  chnguyen@amperecomputing.com,
+ aaron_lee@aspeedtech.com
+Date: Mon, 03 Feb 2025 14:35:50 +1030
+In-Reply-To: <20250113093737.845097-2-chin-ting_kuo@aspeedtech.com>
+References: <20250113093737.845097-1-chin-ting_kuo@aspeedtech.com>
+	 <20250113093737.845097-2-chin-ting_kuo@aspeedtech.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
@@ -73,46 +72,30 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 
-Hi Potin,
-
-On Tue, 2025-01-14 at 14:12 +0800, Potin Lai wrote:
-> This patch updates the Catalina device tree to support different
-> sources
-> of PDB boards.
-
-Can you expand "PDB"?
-
+On Mon, 2025-01-13 at 17:37 +0800, Chin-Ting Kuo wrote:
+> The boot status in the watchdog device struct is updated during
+> controller probe stage. Application layer can get the boot status
+> through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
+> The bootstatus can be,
+> WDIOF_CARDRESET =3D> System is reset due to WDT timeout occurs.
+> Others=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =3D> Other r=
+eset events, e.g., power on reset.
 >=20
-> Changes for Main source PDB board
-> - Thermal Sensor Monitoring:
-> =C2=A0 - Added IOB NIC nodes (TMP421) for thermal sensor monitoring.
-
-Can you expand "IOB"?
-
-> =C2=A0 - Added FIO remote thermal node (TMP75) for thermal sensor
-> monitoring.
-
-Can you expand "FIO"?
-
-> - Fan Monitoring and Control:
-> =C2=A0 - Add fan p12V power sensor node (MP5990) for sensor monitoring.
-> =C2=A0 - Add fan controllers (MAX31790) for fan control and tach
-> monitoring.
+> On ASPEED platforms, boot status is recorded in the SCU registers.
+> - AST2400: Only a bit is used to represent system reset triggered by
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 any WDT cont=
+roller.
+> - AST2500/AST2600: System reset triggered by different WDT
+> controllers
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 can be distinguished by different SCU =
+bits.
 >=20
-> Changes for 2nd source PDB board
-> - Fan Monitoring and Control:
-> =C2=A0 - Added 2nd source fan controllers (NCT7363) for fan duty control
-> and
-> =C2=A0=C2=A0=C2=A0 tach monitoring.
-> - Power Monitoring:
-> =C2=A0 - Added 2nd source HSC nodes (XDP710) for power sensor monitoring.
-> - Address Conflicts:
-> =C2=A0 - Removed all ina238 nodes due to address conflicts. Moved the
-> driver
-> =C2=A0=C2=A0=C2=A0 probe for ina238 to userspace.
+> Besides, on AST2400 and AST2500, since alternating boot event is
+> also triggered by using WDT timeout mechanism, it is classified
+> as WDIOF_CARDRESET.
+>=20
+> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 
-Can you unpack the issue with the conflicts a little further? What was
-going on here?
-
-Andrew
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
