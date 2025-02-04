@@ -1,62 +1,79 @@
-Return-Path: <linux-aspeed+bounces-644-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-645-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC433C02193
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Feb 2025 19:31:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 573F8C02193
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Feb 2025 19:40:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YnYPd38Wjz2ytT;
-	Wed,  5 Feb 2025 06:31:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738697461;
-	cv=none; b=eTO23KgBf+czKroSA3pCetE4894EDqXbfDP4Ix26oka4mtxK3khVPmlshE0KS8q38FzyQLvbDB2DfVKkEnt4JwTxZ2FJlvoHDTCL9XA43FaZ/6Ud8NSHnSO2orziPDI13+foNBd8qBLfRjDlpE+xYj/CEQEqrncW3N3kUdpB02Y3o03Xzk71DKsy+qW8FjwIwaWCHlQvyMndhWDOmjhYr0xdnk76Xcy7FF3BGcIcpoAuD8ezAdlP7sI68wY9jK+Qo2eo6GFd/fFWYTRV5cy8zxW4lzNBA9U/nhhlR4OYG4C+NKTvl0PPZryKehXijocPO6KLoEhUrYHctmcTIzHmmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YnYcY6qK5z2ysv;
+	Wed,  5 Feb 2025 06:40:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738698029;
+	cv=none; b=PR/hs9yfvhfbu7m68+2bH2jks987sXDr3j+SCH6MfNhr96a/qL9GVLloYX4vgCl0VP8bTM7bpLr6mkqi9DtefLE6GPe+GeNPnnkgIEtrP+2qGuUEq/yX5Z5yGkWrqzbG/StrqM9oLgUiKVD72XRLJPKlTDShzJuOyKfjQfI1/wVAM/8Majs+U6e7+wMd0nWzAcV9SiptLzVqyFWlbCHb/8I1WV0Y2R8rqjByJctfYcybUYqFYO1dzXLqLyjUqWAqOEQQkdGfcP0sQObUHBClcRgFJ/OACqyL75BuXadevcAWdud+ZbFv3zrn9Jon4bNWhLnH/m0ahnJg89LZbOMI9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738697461; c=relaxed/relaxed;
-	bh=Q1wT9qVF3f4f4tUE1P5oM6Q6VhPe74PG5Vx6sGjHCWo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Dx57o528teD8RGaAvsh0wDT80PqtT7oLtnIE9r/4A2hjRVZ3m39Wwmlj+rnkCPWVp0jKHsY0038ofQWEoxenTFLPwVcjnYQpl3mTTQl08+fQ9T1SszLxAtla9zx6dzqYQnKil9hFEp6Qp7bFYMUwaENLHpy8eQsNAbYsaxIIBQc01xrGt2mMD70DGbQ4vl/GRst17e3fcogPO/OVJKG6Sqg7PJPkmjTRetm3CZh7gWO+Ay4BbeJb4o2xEp9TWCXkYm+RlcXbJPX9Xt+DcTuv8QGt2Y5Y/NjiF4R0NbfL+z6ahzgYxrbuy7WydAlx6kC4tV1ugatYJ2MOZ336qmsFVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QMpnY06C; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1738698029; c=relaxed/relaxed;
+	bh=L0+ep8JKH1qnWrvTGJ8l/LlGnrRt9fPRrJ/gx5Vk9ZE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=ObZ38G3TFNorSV+o7LnCerWGgh33R033gCFJdmcwaHAAsCNwAo/MxDud+C5qoOIXvzntFQpop23GUL11OI4uR3+dd9okEnPsJzoopN8PF7khONssOjHBCkI0Tw/tobXgGF4W23+6keaiLOWlxPIfT9plqYbOp0drtkBBU38sVCj0DqbUeadFUMlhM2i9Y4F8uHGZ3eCaNkNvTwCgQk4RK9sREm8/+RW4BjYrXmUT9sXOQj6UbyL/rRUweppf7SbHjMo3nSiIVmkAyDwSgEGEH/8DeretBJcgQYculicbDskvuKT27BAISj6Y4/pbuV9X8vy4dmJGhc0BteeyZ76gmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PwrUb4y3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QMpnY06C;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PwrUb4y3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnYPc61H4z2ysv;
-	Wed,  5 Feb 2025 06:31:00 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 400225C67BB;
-	Tue,  4 Feb 2025 19:30:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26EF8C4CEE2;
-	Tue,  4 Feb 2025 19:30:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1738697458;
-	bh=xHGH4a/Ywo4+o/ZzmwaCuhzBpYplcQuCjUSy9UL7dtE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=QMpnY06Cph7s50YtSLnzh0whrBYj3+19NY8J/lXEJ5PtGPfiAqMLpaMv8pnJTFb0P
-	 93oj+nkxIft/kgW92UACbNRdrZHHsuam2LDq3HHEy+Q2UlC5ngXXAjzLiTFmLRLuDx
-	 43mtYvjCbAu2z+dzJzeQcFMNir+YLla30E7ytuMnJqpXDT0D9O+o3rpdwm1QMEqK52
-	 eNZ4kpudcDR3Y8h8h8Uj61hw9nLJA6nXk92J694aOrDyitUUm8+Kp11wNoEbYE/LSG
-	 FEpgIxGpOVPrGgqzJZYNcv6igP9KVImNEoKuY1qzDC/Toh2oV82rNQisd0Q2ALOSm9
-	 gPhd3dYCEHM1A==
-Date: Tue, 4 Feb 2025 19:30:53 +0000
-From: Conor Dooley <conor@kernel.org>
-To: Jammy Huang <jammy_huang@aspeedtech.com>
-Cc: eajames@linux.ibm.com, mchehab@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
-	andrew@aj.id.au, linux-media@vger.kernel.org,
-	openbmc@lists.ozlabs.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: media: convert aspeed-video.txt to dt-schema
-Message-ID: <20250204-from-catsup-132a4af05f49@spud>
-References: <20250204062822.3738037-1-jammy_huang@aspeedtech.com>
- <20250204-acronym-unshaved-18b89a389091@spud>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnYcY0ZkVz2ypD
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Feb 2025 06:40:28 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 514GEoDk029325;
+	Tue, 4 Feb 2025 19:40:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=L0+ep8
+	JKH1qnWrvTGJ8l/LlGnrRt9fPRrJ/gx5Vk9ZE=; b=PwrUb4y3MmwnbtPg+ZzKUr
+	+/8JqqtwjhhBk3mEKl0dmG8JHNmk3j4mjOgFhiCoGSqB0BSDM4zUnZoxqSPOcPiw
+	8nlNFh+GDjKEKMBusvQZrDCYKzDHGh2Ylq2nC6ymV35pBYeDbCsjYmjNnsF6MELa
+	2hmKFbN9QHOBSsfmbC5S6edM+YStnJyPAvtle8tg9x2Eq1P3mRTZx3rjaoVi1lb0
+	gvIjQwtdwjSOSLRTP/su3jjdBeRFZspIag88OXEd4a+4vXh29uKJPoVZn8vUkDu2
+	O6e9xEbDnatuWQ6ZACzjkrw6DWqrk//B9eIKZGooug3jErrfn754cG7JZ7uIOusQ
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44k8y9n2fk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Feb 2025 19:40:07 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 514JRPbB010902;
+	Tue, 4 Feb 2025 19:40:07 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44k8y9n2ff-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Feb 2025 19:40:07 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 514JXoDo024540;
+	Tue, 4 Feb 2025 19:40:05 GMT
+Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44hxxn55q4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Feb 2025 19:40:05 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 514Je4OI26739230
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 4 Feb 2025 19:40:05 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D765F58054;
+	Tue,  4 Feb 2025 19:40:04 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 95E905805F;
+	Tue,  4 Feb 2025 19:40:02 +0000 (GMT)
+Received: from [9.67.69.251] (unknown [9.67.69.251])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  4 Feb 2025 19:40:02 +0000 (GMT)
+Message-ID: <66e2e5e4-5ce5-442c-ba0f-d12cbe79e868@linux.ibm.com>
+Date: Tue, 4 Feb 2025 13:40:01 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,47 +86,82 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="S4lsoQVavYeukAq/"
-Content-Disposition: inline
-In-Reply-To: <20250204-acronym-unshaved-18b89a389091@spud>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 0/9] DTS updates for system1 BMC
+To: Andrew Jeffery <andrew@codeconstruct.com.au>, brgl@bgdev.pl,
+        linus.walleij@linaro.org, minyard@acm.org, robh@kernel.org,
+        krzk+dt@kernel.org, conor+dt@kernel.org, andrew+netdev@lunn.ch,
+        davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+        pabeni@redhat.com, openipmi-developer@lists.sourceforge.net,
+        netdev@vger.kernel.org, joel@jms.id.au, devicetree@vger.kernel.org,
+        eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org,
+        linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20250203144422.269948-1-ninad@linux.ibm.com>
+ <79b819b6d06e3be0aa7e7f6872353f103294710c.camel@codeconstruct.com.au>
+Content-Language: en-US
+From: Ninad Palsule <ninad@linux.ibm.com>
+In-Reply-To: <79b819b6d06e3be0aa7e7f6872353f103294710c.camel@codeconstruct.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: BhN8vCZp0wt20C1zuEMO0Dx_nRHE2XX9
+X-Proofpoint-ORIG-GUID: WZwPJdOGC93lfCtccZ-FJMqUiy-K5W1k
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-02-04_09,2025-02-04_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 bulkscore=0
+ mlxlogscore=965 suspectscore=0 lowpriorityscore=0 clxscore=1015
+ spamscore=0 mlxscore=0 adultscore=0 impostorscore=0 phishscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2501170000 definitions=main-2502040145
+
+Hi Andrew,
+
+Thank you for the review.
+
+>>
+>> NINAD PALSULE (6):
+> 
+> Why is your name all in caps here but not for the binding patches
+> below? Can you fix that up?
+
+Fixed in the version 9
 
 
---S4lsoQVavYeukAq/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>> Ninad Palsule (3):
+>>    bindings: ipmi: Add binding for IPMB device intf
+> 
+> This one needs an ack from Corey if I'm to take it.
+> 
+>>    dt-bindings: gpio: ast2400-gpio: Add hogs parsing
+> 
+> This one needs an ack from Linus W or Bartosz if I'm to take it.
+> However, it's also causing some grief from Rob's bot:
+> 
+> https://lore.kernel.org/all/173859694889.2601726.10618336219726193824.robh@kernel.org/
+> 
+> As the reported nodes should all be hogs the name shouldn't matter
+> anywhere else (as far as I'm aware). It would be nice if all the
+> warnings were cleaned up before we merged the binding update. That way
+> we don't cause everyone else looking at the CHECK_DTBS=y output more
+> grief than they already get for the Aspeed devicetrees.
+> 
+> In order to not get bogged down it might be worth splitting out both
+> the IPMB- and GPIO- related patches like you did the FTGMAC100 patch,
+> and then I can merge what remains (from a quick look they seem
+> relatively uncontroversial).
+> 
 
-On Tue, Feb 04, 2025 at 07:30:03PM +0000, Conor Dooley wrote:
-> On Tue, Feb 04, 2025 at 02:28:22PM +0800, Jammy Huang wrote:
-> > +  aspeed,scu:
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
-> > +    description: |
-> > +      Specifies the scu node that is needed if video wants to capture
-> > +      from sources other than Host VGA.
-> > +
-> > +  aspeed,gfx:
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
-> > +    description: |
-> > +      Specifies the Soc Display(gfx) node that needs to be queried to =
-get
-> > +      related information if video wants to use gfx as capture source.
->=20
-> These two phandle properties are new and not mentioned in your commit
-> message. Why have they been added?
+The warnings are fixed by different patch by Krzysztof. As there are no 
+more changes then I will wait for other responses. If I don't get those 
+response in couple of days then I will split it.
+https://lore.kernel.org/linux-kernel/20250116085947.87241-1-krzysztof.kozlowski@linaro.org/
 
-nvm, I see Krzysztof has already responded to the v2
+I am also planning to fix old warnings in the system1 dts in separate patch.
 
---S4lsoQVavYeukAq/
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
+-- 
+Thanks & Regards,
+Ninad
 
-iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZ6Jq7QAKCRB4tDGHoIJi
-0u/dAP9W0ZzsPi1nGv0y3Mt5OGgJcbcIllWIJygiE1g/EgrSHAEA/s0hskJKMuu/
-a2utbby4wEBmS2pfmG8tdx84sTac9gY=
-=jK5r
------END PGP SIGNATURE-----
-
---S4lsoQVavYeukAq/--
 
