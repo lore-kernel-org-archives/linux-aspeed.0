@@ -1,69 +1,69 @@
-Return-Path: <linux-aspeed+bounces-650-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-649-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6437DC02199
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Feb 2025 19:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43C3CC02198
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Feb 2025 19:41:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YnYdx0bRZz2yvn;
-	Wed,  5 Feb 2025 06:41:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738698101;
-	cv=none; b=MwILdtSptHsxwpymgzkZc2y3wg2bt95dJbBVoPaqYtL30xNZsFxc44zFF61rvRR+U2PBdzM2Kqz1m3knpFyWe21MD/zt8QTrdanRrvqpdL55JmLAnnD3GR1xmjrWIGDZHnFnhbUO2LzFla1QoqNhDby/888AfZ1OJtu+xb9xzMuGUlfRVkhtoUvBPHWyqdNvaqmmtSPboyHJ6seIj51WFBfOjb0VStqvT5sRxRb9T7VEOdDhb8oaEkpeqCVjC/6UAQUZ1yLqASUvfTJowV/wvqsauwuhUxDya8M1f5Nnclqz49pzJaCIeLBsCnOb4b9NO0vXURYvz3xFTLOzPX4LGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YnYdv4W5pz2ytm;
+	Wed,  5 Feb 2025 06:41:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738698099;
+	cv=none; b=bSF4QwKZvvSGd2jCV5JyYM54UkX7g4/EhltUzz/hLOX9koBCIiyH2apwzf/wC082ALs3GoPUddjtbQNcLZYdM4ZWuc6H7c2kS2NJk4XRh0E7i4gUNB7WHxgQJsTj+/dYJCZBflajMpBWKd5G/MTONSpr3msMw066tYtgz4HCrYr1ljGMkKGd4O/hdaGjKphD1RvDMrre/S78fqyyLWj5gM1RjzJkZSjq7TJzyO4/MkKlPFl+p16j+T+bj+xYhJn7WCzQJVft9oqhx6FK6Bh/NmXC/y/CxUUtq1bkTl9DWkZ302Sgc6Nie9AuyMCGRYVGNG3Tpdp3BTA6lgnT0FFzKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738698101; c=relaxed/relaxed;
-	bh=ftBo0P4wnz9NKDpBszzMvbwyZf8xb/pGYa+IgAkrrJs=;
+	t=1738698099; c=relaxed/relaxed;
+	bh=M2Jh7wxBPDIMXjM/IX68myxQ1J5TffG1POfQiRFYLQc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Mok/OiPe1KZmXLHLqfDPKXH4k7KUJZ8Fr/uoabbXmfXInOK0Yn5ID7lF8sbzZQOitrBWP5/1xTJw15kJkRb1lsMjoEWj/BUc7TlDlu8hnBR60GzGxe01gH15Dxgd1SDg1BiEh5BjHdCQuS18LKMz8F5hm1jyiwZsbLC0/+a1sqsPsF4oi0/6z1/l38k8ywIn8Su0Yv8XuPVSKHB+l6OCnHWT1Zg9jLTKe90BJRM9izC9nEZUuxS30psGLb0pIwHwU7AAg7DTB7zk63hH+485FM2+7IVsyKxRTDhY9mZk++4SfmLrb2cd05dEFtnLeB+aHU7tRbeDXcmzGZBUrKon5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QD0/1e9U; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=PvQyo0MwYVJjjsLVlQByoeCWQiJP6AZoSHbNysFgdXuXbuYFOxFmM83P6TofkdwtqYU1Sr42OyDFPeefcId1eAr7iLJFsSs0KsKn4052OTxsvO9Kztr4KTaXWl7GCMXanTb4vBZqeYFjmCD2qyd3WjvzvAfxrrB4MR0dNGf7Tz67fA7MrbC84vooJ45Vrf8O5d0IL9uZzep6pTrbxOOQFnW7ASQB9AkyMGHX2A1gofCiKs/vwzsYxaVXExpsk3LP+CMyEUia5i8Lrb1fkw8Z+qz/h/q+hIVx/WIDuI4Aa1XJLqw4zhFtwd6+1qQ0yvvX7LU0vlPvZdlXVsTttIxWIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fi4o4zgE; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QD0/1e9U;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fi4o4zgE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnYdw2wsqz2yvl
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Feb 2025 06:41:40 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 514GEnrD023279;
-	Tue, 4 Feb 2025 19:41:23 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnYdt5glMz2ypD
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Feb 2025 06:41:38 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 514GF5tH011391;
+	Tue, 4 Feb 2025 19:41:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=ftBo0P4wnz9NKDpBs
-	zzMvbwyZf8xb/pGYa+IgAkrrJs=; b=QD0/1e9UvLaMm68DbUEkIHMM8thrNdFEH
-	EO0+jq75HyXg2tqNDNiMg4jlH5Iu7pqQxp8Xh2DhT82J9E/JFfZrwjdprsfn/s85
-	044Z49y8ubNYMMdLVbvxPwQYxf+taOpmbWrgt9aGO5jszriznr4Iz3JZHfwwCxgP
-	sNMoorhH8ZwDNqFeajsuyS4PRZZiMfoz/iORacswgMjqH98zkHBCcTzEF50+UTkT
-	WiIn7BItRALDwLYIedqhn64iw9nZtNs0ozj9kb11tixVz6j7BwwHfU/2nIZKjIpc
-	/gUlNOiEUjVwoM50hVl2Yv4NRIyveX5gfTfsoxLNX6sRfemyc+9dw==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44kn62hf0f-1
+	:mime-version:references:subject:to; s=pp1; bh=M2Jh7wxBPDIMXjM/I
+	X68myxQ1J5TffG1POfQiRFYLQc=; b=fi4o4zgEpYwnQCO9VbgJngzEtnMzXNbDe
+	s34+LG9sZTrCK7byl65AMnUDCsg/6tyMPcAsfemeCBUJmlnhqysZXQKuzS1zvlHx
+	oXs7amZZp/pdpsBrfgKK0AXjq23ENjbEO9NuKlNGTDUSh1Rq3FaIhuR4JZcQCdUO
+	4sqHLCVlifL4CM5SPWnjGlcxGBPPZp/B4wg1u2386dm2aDW/iKLqrgX1a0grr6EK
+	iMsMHweMG/iTtjE1zLji+1IA4YFjuM8dIKSM5gZepeJF2u1eQIOGd3XkvpWv/9UX
+	Tcs2kChjOTwocjBwH/phxAM3dK/HFk8VgeVAHR3/INohm4OmcgfHg==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44k9r0vke5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Feb 2025 19:41:22 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 514GPChm006508;
-	Tue, 4 Feb 2025 19:41:21 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44hyekd2vb-1
+	Tue, 04 Feb 2025 19:41:20 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 514JTUGN024635;
+	Tue, 4 Feb 2025 19:41:19 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44hxxn55xs-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Feb 2025 19:41:21 +0000
+	Tue, 04 Feb 2025 19:41:19 +0000
 Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 514JfJZT23855552
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 514JfIYO13501082
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Feb 2025 19:41:20 GMT
+	Tue, 4 Feb 2025 19:41:18 GMT
 Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C2F155805F;
-	Tue,  4 Feb 2025 19:41:19 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 330F558055;
+	Tue,  4 Feb 2025 19:41:18 +0000 (GMT)
 Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7361B58060;
-	Tue,  4 Feb 2025 19:41:19 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id CECA158043;
+	Tue,  4 Feb 2025 19:41:17 +0000 (GMT)
 Received: from gfwa153.aus.stglabs.ibm.com (unknown [9.3.84.127])
 	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  4 Feb 2025 19:41:19 +0000 (GMT)
+	Tue,  4 Feb 2025 19:41:17 +0000 (GMT)
 From: Ninad Palsule <ninad@linux.ibm.com>
 To: brgl@bgdev.pl, linus.walleij@linaro.org, minyard@acm.org, robh@kernel.org,
         krzk+dt@kernel.org, conor+dt@kernel.org,
@@ -73,9 +73,9 @@ To: brgl@bgdev.pl, linus.walleij@linaro.org, minyard@acm.org, robh@kernel.org,
         linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
         linux-gpio@vger.kernel.org
 Cc: Ninad Palsule <ninad@linux.ibm.com>, andrew@lunn.ch
-Subject: [PATCH v9 6/9] ARM: dts: aspeed: system1: Update LED gpio name
-Date: Tue,  4 Feb 2025 13:41:09 -0600
-Message-ID: <20250204194115.3899174-7-ninad@linux.ibm.com>
+Subject: [PATCH v9 2/9] dt-bindings: gpio: ast2400-gpio: Add hogs parsing
+Date: Tue,  4 Feb 2025 13:41:05 -0600
+Message-ID: <20250204194115.3899174-3-ninad@linux.ibm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250204194115.3899174-1-ninad@linux.ibm.com>
 References: <20250204194115.3899174-1-ninad@linux.ibm.com>
@@ -93,126 +93,42 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: WKlglM2HYiMfwLFDdRjeOTy73qx3425p
-X-Proofpoint-ORIG-GUID: WKlglM2HYiMfwLFDdRjeOTy73qx3425p
+X-Proofpoint-ORIG-GUID: sFz25NTmsH6MKevdrjgW-qP1DQTkBnv1
+X-Proofpoint-GUID: sFz25NTmsH6MKevdrjgW-qP1DQTkBnv1
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
  definitions=2025-02-04_09,2025-02-04_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1015
- priorityscore=1501 suspectscore=0 impostorscore=0 bulkscore=0
- mlxlogscore=743 spamscore=0 lowpriorityscore=0 phishscore=0 mlxscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2502040143
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 bulkscore=0
+ suspectscore=0 lowpriorityscore=0 mlxlogscore=999 phishscore=0
+ clxscore=1015 adultscore=0 spamscore=0 mlxscore=0 malwarescore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2501170000 definitions=main-2502040145
 
-Rename LEDs with meaningful names for easier identification.
+Allow parsing GPIO controller children nodes with GPIO hogs.
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
 ---
- .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 36 +++++++++----------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ .../devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml       | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-index e02ff50fb48e..56357dda4b0a 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-@@ -116,63 +116,63 @@ vga_memory: region@bf000000 {
- 	leds {
- 		compatible = "gpio-leds";
+diff --git a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+index b9afd07a9d24..b16273e69dfe 100644
+--- a/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
++++ b/Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+@@ -46,6 +46,12 @@ properties:
+     minimum: 12
+     maximum: 232
  
--		led-0 {
-+		led-bmc-ready {
- 			gpios = <&gpio0 ASPEED_GPIO(L, 7) GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-1 {
-+		led-bmc-hb {
- 			gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-2 {
-+		led-rear-enc-fault0 {
- 			gpios = <&gpio0 ASPEED_GPIO(S, 6) GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-3 {
-+		led-rear-enc-id0 {
- 			gpios = <&gpio0 ASPEED_GPIO(S, 7) GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-4 {
-+		led-fan0-fault {
- 			gpios = <&pca3 5 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-5 {
-+		led-fan1-fault {
- 			gpios = <&pca3 6 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-6 {
-+		led-fan2-fault {
- 			gpios = <&pca3 7 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-7 {
-+		led-fan3-fault {
- 			gpios = <&pca3 8 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-8 {
-+		led-fan4-fault {
- 			gpios = <&pca3 9 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-9 {
-+		led-fan5-fault {
- 			gpios = <&pca3 10 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-a {
-+		led-fan6-fault {
- 			gpios = <&pca3 11 GPIO_ACTIVE_LOW>;
- 		};
- 
--		led-b {
-+		led-nvmed0-fault {
- 			gpios = <&pca4 4 GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-c {
-+		led-nvmed1-fault {
- 			gpios = <&pca4 5 GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-d {
-+		led-nvmed2-fault {
- 			gpios = <&pca4 6 GPIO_ACTIVE_HIGH>;
- 		};
- 
--		led-e {
-+		led-nvmed3-fault {
- 			gpios = <&pca4 7 GPIO_ACTIVE_HIGH>;
- 		};
- 	};
-@@ -368,14 +368,14 @@ &gpio0 {
- 	/*I0-I7*/	"","","","","","","","",
- 	/*J0-J7*/	"","","","","","","","",
- 	/*K0-K7*/	"","","","","","","","",
--	/*L0-L7*/	"","","","","","","","bmc-ready",
-+	/*L0-L7*/	"","","","","","","","led-bmc-ready",
- 	/*M0-M7*/	"","","","","","","","",
- 	/*N0-N7*/	"pch-reset","","","","","flash-write-override","","",
- 	/*O0-O7*/	"","","","","","","","",
--	/*P0-P7*/	"","","","","","","","bmc-hb",
-+	/*P0-P7*/	"","","","","","","","led-bmc-hb",
- 	/*Q0-Q7*/	"","","","","","","pch-ready","",
- 	/*R0-R7*/	"","","","","","","","",
--	/*S0-S7*/	"","","","","","","rear-enc-fault0","rear-enc-id0",
-+	/*S0-S7*/	"","","","","","","led-rear-enc-fault0","led-rear-enc-id0",
- 	/*T0-T7*/	"","","","","","","","",
- 	/*U0-U7*/	"","","","","","","","",
- 	/*V0-V7*/	"","rtc-battery-voltage-read-enable","","power-chassis-control","","","","",
++patternProperties:
++  "-hog(-[0-9]+)?$":
++    type: object
++    required:
++      - gpio-hog
++
+ required:
+   - compatible
+   - reg
 -- 
 2.43.0
 
