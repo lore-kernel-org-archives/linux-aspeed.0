@@ -1,84 +1,61 @@
-Return-Path: <linux-aspeed+bounces-642-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-643-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB5BAC02194
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Feb 2025 18:44:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 234CBC02193
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Feb 2025 19:30:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YnXMd1WkMz2yvh;
-	Wed,  5 Feb 2025 05:44:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738694653;
-	cv=none; b=lP8kyjz/hyBt/GqPN740g/MjKaFUHMSfbEvZYKKMpKzcRtd/fQGGRWEQvD4n4e9LKviVp1Z9QriCxh69mliMWCKt9UTSwE9CemUi+/Mp4ikk+Ts72Ykg4iNsdgT2oCaDPxNPX3YhXqeR1j5MZID1xGeeWb65UsIPpz/Etx0j2UixpPAI9gdYNKRKSiHqBoI1OHicieHCC6hQ2+lpy5PQ400XTxziH1xjf8W5ZlcnSKVYttHC3wclO5JT0URODRSb7JX9xwKQP5uu1z8+wIuMyM6TrQLwhY07hSewqkVkCKwFrDidqWWQUxMZ4yY2wO13VWd4ZBPrZ/8B0wsr98NiLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YnYNh49Cxz2ysv;
+	Wed,  5 Feb 2025 06:30:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738697412;
+	cv=none; b=Or2Ne0+ZMvbmTNGdk/VBCmtiGdZrI3V6Zooi3SLo7bPmSRRRNaB9bsPQCBEbKlX9AZk3JCeOCbSGWGMEtlsiiuoMmvuA2dS7y5bbmaOVGo3HeJS0xiR0BEFwXuXW7d1LLuOZDx9AqqdK+cG2zy+S4ihGwnc+D8c4O3wrlD+V89z3DQ4DGHTy8u6RiQjNn4x+vH1/2qt93Hje+jD34xnw83VyF1DpP6I8GnPdXIeI5Xg8Xdvf7zG4/cHJYRZk8ycxqTXSwLuBFTOXyKQ4jeKAF2CWeRJ7xaE6L2PpmibPOvmMRECox37b4hz3v2jVzhr1pK6jjshMB19JNxIsaZfliw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738694653; c=relaxed/relaxed;
-	bh=PYjjz1aWU4NtFt4XUxGKKc+IidttJLlsWDQxKQMaaKY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DwJkQxXS5snuObC9w5LPVzZlUQZKSYykTw8zxKTs5eXbcNtyszc5bU5YiougOr/oyJ2tDyStdTIrbLgZJbfDhb+4xahoEZ5je2xMQ1twhLafXUM2k/j+OmuZuS88jF00b7Sf23WkjwCA5jEF7JabRX5JKKKwmrwZoIrGt1knqIVM7Kjef1GwAakGn/al5MX5+iowUOHvEomaLHejw2bv+/IkL4v7gkS4VSPzjMbBf4N6yN3OULG0RNl7yeEh5hglh8U0Y40kRukVRH9PdLg8ctQhW8ZaTNLtsLLZC1W1uCZr4g5d6INBqoH+RuJE4WW5ubsKqdnYNfY4ybkKy398Lg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M+r60eEP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1738697412; c=relaxed/relaxed;
+	bh=klzFW5qufSNhopssaHB67PSC4MM864bFLdh0AdosYTI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=gBa9x32IiG3c7EPzVUumZU8k0gGVJw4VrChNn2V5v6mvfW7/OHFQSd8an7o8KfGh6YQmZhrzh2z7QVfam4csxhsMgtLCdLK1huczXaHOpY9UsiKyWQBxKBJ4rVJC+Q/stpOjVOpEGZj1BhXrwVqIjekKLNb36MygCZMavWwRRu8/WE7Y0tmWfYprJzniwQtoBqhbY+avP3+JDymVsphvUXabC00Xa7udoCnCfj294Iy6dQB+ivwDON6enfj1C1ZD1D9MN9OcXajYXolCxHKWyKks0fDhezcu6P6VDynltRvMAeDdcCSBHk+tZFInUKCMpDfbLc5TEIPKmZx0OcTJmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PJ28FiwK; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M+r60eEP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PJ28FiwK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ninad@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnXMc1xKxz2ysf
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Feb 2025 05:44:11 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 514GEmFh023238;
-	Tue, 4 Feb 2025 18:43:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=PYjjz1aWU4NtFt4XU
-	xGKKc+IidttJLlsWDQxKQMaaKY=; b=M+r60eEPK1QLMq2D/iGTf/QA3gdFfsxHD
-	spzJ7fjAmSJgCvB5djBZ+db5W53dlUvrEGV4HfQ5mbIH3/AXr4y+8jdyl39opqNk
-	ZHdHN0bwBK6BPnZcX73PUeV8dY7N4EJNqtdFYhZTdLIHHv79+YF/FYUKML9JsjWQ
-	dZXGR17YmyIXp6MTaMIyx20ZiH28NTbF6I3XLDlhDWU+VPbjHslEOAKHGB7sj1tA
-	Ay5eyW2sc8w1gDf6ma5SNDwukCEwB5F87So/ARsroFfdyJxG6vjuqlol8aNIer9g
-	BL66jNBCVbpwxHE9Xs4SnDOHEO3aF7aVR22ThnNt4uV2/1LEAaryA==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44kn62h6gv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Feb 2025 18:43:52 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 514G6diX024506;
-	Tue, 4 Feb 2025 18:43:51 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44hxxn4y1c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Feb 2025 18:43:51 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 514Ihon319923586
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Feb 2025 18:43:50 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5099C58058;
-	Tue,  4 Feb 2025 18:43:50 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 72A6158059;
-	Tue,  4 Feb 2025 18:43:49 +0000 (GMT)
-Received: from gfwa153.aus.stglabs.ibm.com (unknown [9.3.84.127])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  4 Feb 2025 18:43:49 +0000 (GMT)
-From: Ninad Palsule <ninad@linux.ibm.com>
-To: brgl@bgdev.pl, linus.walleij@linaro.org, minyard@acm.org, robh@kernel.org,
-        krzk+dt@kernel.org, conor+dt@kernel.org,
-        openipmi-developer@lists.sourceforge.net, joel@jms.id.au,
-        andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
-        eajames@linux.ibm.com, linux-arm-kernel@lists.infradead.org,
-        linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-gpio@vger.kernel.org
-Cc: Ninad Palsule <ninad@linux.ibm.com>, andrew@lunn.ch
-Subject: [PATCH v8 9/9] ARM: dts: aspeed: system1: Disable gpio pull down
-Date: Tue,  4 Feb 2025 12:43:35 -0600
-Message-ID: <20250204184337.3896834-10-ninad@linux.ibm.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250204184337.3896834-1-ninad@linux.ibm.com>
-References: <20250204184337.3896834-1-ninad@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnYNg0QS5z2yDx;
+	Wed,  5 Feb 2025 06:30:10 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 6BCF25C67BB;
+	Tue,  4 Feb 2025 19:29:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46AC9C4CEE9;
+	Tue,  4 Feb 2025 19:30:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1738697407;
+	bh=dp3KkiRbpI5jTq31jDz9RRKWBTNV3PSWERsFVIuYVUE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=PJ28FiwKrc8NJPI/UEnZa67oUEmxwlDSox0/vLcuo50zurUwA2+ytfQnM6Bv4u0PK
+	 vAoehoqdy9VadUapFOhWNyKJeVT++wKSeKmI7OkjbiXd6uV4midvRdJZancpyQ/RFe
+	 iHJ9n9P7LXMc5SUQiCKC5Leqbdieg7Yh1vV1vN4UFk+3/zV2NcTwFK9e/Js+zHfCKH
+	 B4bGIZak2YsfPaoAp0ADRNr0gPsZR2oevAC0Zda/tE85Zf2fsfTN/re9Xd6/r3qCiF
+	 7w7Rze4iYR5KCqJ4/giOPWK9lTqwVCOzrq61Sgtpt4Bcd0Y2Pb3bE41emxsTaPxzeq
+	 csBuOwM6KBsKg==
+Date: Tue, 4 Feb 2025 19:30:03 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Jammy Huang <jammy_huang@aspeedtech.com>
+Cc: eajames@linux.ibm.com, mchehab@kernel.org, robh@kernel.org,
+	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+	andrew@aj.id.au, linux-media@vger.kernel.org,
+	openbmc@lists.ozlabs.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: media: convert aspeed-video.txt to dt-schema
+Message-ID: <20250204-acronym-unshaved-18b89a389091@spud>
+References: <20250204062822.3738037-1-jammy_huang@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -91,72 +68,197 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 3USUnJHjBMRwF6VX6atP-O_ydnemG9SL
-X-Proofpoint-ORIG-GUID: 3USUnJHjBMRwF6VX6atP-O_ydnemG9SL
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-04_08,2025-02-04_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1015
- priorityscore=1501 suspectscore=0 impostorscore=0 bulkscore=0
- mlxlogscore=870 spamscore=0 lowpriorityscore=0 phishscore=0 mlxscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2502040140
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="i8IRvi06tcsVtedw"
+Content-Disposition: inline
+In-Reply-To: <20250204062822.3738037-1-jammy_huang@aspeedtech.com>
 
-Disable internal pull down for the following GPIO lines.
-- GPIOL4 - Reset PCH registers in the rtc.
-- GPIOL5 - Reset portition of Intel ME
-- GPIOL6 - FM smi active
-- GPIOL7 - psu all dc power good.
 
-Reviewed-by: Eddie James <eajames@linux.ibm.com>
-Signed-off-by: Ninad Palsule <ninad@linux.ibm.com>
----
- .../dts/aspeed/aspeed-bmc-ibm-system1.dts     | 28 +++++++++++++++++++
- 1 file changed, 28 insertions(+)
+--i8IRvi06tcsVtedw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-index 00b091bc7da9..c8267c97a44e 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dts
-@@ -355,7 +355,35 @@ &uhci {
- 	status = "okay";
- };
- 
-+&pinctrl {
-+	pinctrl_gpiol4_unbiased: gpiol4 {
-+		pins = "C15";
-+		bias-disable;
-+	};
-+
-+	pinctrl_gpiol5_unbiased: gpiol5 {
-+		pins = "F15";
-+		bias-disable;
-+	};
-+
-+	pinctrl_gpiol6_unbiased: gpiol6 {
-+		pins = "B14";
-+		bias-disable;
-+	};
-+
-+	pinctrl_gpiol7_unbiased: gpiol7 {
-+		pins = "C14";
-+		bias-disable;
-+	};
-+};
-+
- &gpio0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_gpiol4_unbiased
-+		&pinctrl_gpiol5_unbiased
-+		&pinctrl_gpiol6_unbiased
-+		&pinctrl_gpiol7_unbiased>;
-+
- 	gpio-line-names =
- 	/*A0-A7*/	"","","","","","","","",
- 	/*B0-B7*/	"","","","","bmc-tpm-reset","","","",
--- 
-2.43.0
+On Tue, Feb 04, 2025 at 02:28:22PM +0800, Jammy Huang wrote:
+> Convert aspeed-video.txt to yaml format.
+> Update aspeed-video.txt to aspeed,video-engine.yaml in MAINTAINER file.
+>=20
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> ---
+>  .../bindings/media/aspeed,video-engine.yaml   | 84 +++++++++++++++++++
+>  .../bindings/media/aspeed-video.txt           | 33 --------
+>  MAINTAINERS                                   |  2 +-
+>  3 files changed, 85 insertions(+), 34 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/media/aspeed,video-=
+engine.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/media/aspeed-video.=
+txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/media/aspeed,video-engine.=
+yaml b/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+> new file mode 100644
+> index 000000000000..c66ae6b53cbb
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+> @@ -0,0 +1,84 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/media/aspeed,video-engine.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: ASPEED Video Engine
+> +
+> +maintainers:
+> +  - Eddie James <eajames@linux.ibm.com>
+> +
+> +description:
+> +  The Video Engine (VE) embedded in the ASPEED SOCs can be configured to
+> +  capture and compress video data from digital or analog sources.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2400-video-engine
+> +      - aspeed,ast2500-video-engine
+> +      - aspeed,ast2600-video-engine
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 2
+> +
+> +  clock-names:
+> +    items:
+> +      - const: vclk
+> +      - const: eclk
+> +
+> +  resets:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  memory-region:
+> +    maxItems: 1
+> +    description: |
+> +      Phandle to the reserved memory nodes to be associated with the
+> +      VE. VE will acquires memory space for 3 purposes:
+> +        1. JPEG header
+> +        2. Compressed result
+> +        3. Temporary transformed image data
+> +
+> +  aspeed,scu:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: |
+> +      Specifies the scu node that is needed if video wants to capture
+> +      from sources other than Host VGA.
+> +
+> +  aspeed,gfx:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: |
+> +      Specifies the Soc Display(gfx) node that needs to be queried to get
+> +      related information if video wants to use gfx as capture source.
 
+These two phandle properties are new and not mentioned in your commit
+message. Why have they been added?
+
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - clocks
+> +  - clock-names
+> +  - interrupts
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> +    #include <dt-bindings/clock/ast2600-clock.h>
+> +
+> +    video@1e700000 {
+> +      compatible =3D "aspeed,ast2600-video-engine";
+> +      reg =3D <0x1e700000 0x1000>;
+> +      clocks =3D <&syscon ASPEED_CLK_GATE_VCLK>,
+> +               <&syscon ASPEED_CLK_GATE_ECLK>;
+> +      clock-names =3D "vclk", "eclk";
+> +      interrupts =3D <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
+> +      aspeed,scu =3D <&syscon>;
+> +      aspeed,gfx =3D <&gfx>;
+> +    };
+> diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/D=
+ocumentation/devicetree/bindings/media/aspeed-video.txt
+> deleted file mode 100644
+> index d2ca32512272..000000000000
+> --- a/Documentation/devicetree/bindings/media/aspeed-video.txt
+> +++ /dev/null
+> @@ -1,33 +0,0 @@
+> -* Device tree bindings for Aspeed Video Engine
+> -
+> -The Video Engine (VE) embedded in the Aspeed AST2400/2500/2600 SOCs can
+> -capture and compress video data from digital or analog sources.
+> -
+> -Required properties:
+> - - compatible:		"aspeed,ast2400-video-engine" or
+> -			"aspeed,ast2500-video-engine" or
+> -			"aspeed,ast2600-video-engine"
+> - - reg:			contains the offset and length of the VE memory region
+> - - clocks:		clock specifiers for the syscon clocks associated with
+> -			the VE (ordering must match the clock-names property)
+> - - clock-names:		"vclk" and "eclk"
+> - - resets:		reset specifier for the syscon reset associated with
+> -			the VE
+> - - interrupts:		the interrupt associated with the VE on this platform
+> -
+> -Optional properties:
+> - - memory-region:
+> -	phandle to a memory region to allocate from, as defined in
+> -	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+> -
+> -Example:
+> -
+> -video-engine@1e700000 {
+> -    compatible =3D "aspeed,ast2500-video-engine";
+> -    reg =3D <0x1e700000 0x20000>;
+> -    clocks =3D <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_=
+ECLK>;
+> -    clock-names =3D "vclk", "eclk";
+> -    resets =3D <&syscon ASPEED_RESET_VIDEO>;
+> -    interrupts =3D <7>;
+> -    memory-region =3D <&video_engine_memory>;
+> -};
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 896a307fa065..7e59daa1e89d 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3549,7 +3549,7 @@ M:	Eddie James <eajames@linux.ibm.com>
+>  L:	linux-media@vger.kernel.org
+>  L:	openbmc@lists.ozlabs.org (moderated for non-subscribers)
+>  S:	Maintained
+> -F:	Documentation/devicetree/bindings/media/aspeed-video.txt
+> +F:	Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+>  F:	drivers/media/platform/aspeed/
+> =20
+>  ASUS EC HARDWARE MONITOR DRIVER
+>=20
+> base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
+> --=20
+> 2.25.1
+>=20
+
+--i8IRvi06tcsVtedw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCZ6JqugAKCRB4tDGHoIJi
+0mCkAQDv+QJAtLQu581nLzkejap/mpHejKb7ON+oLm+XbsuanwD/XWZyc+D15A2m
+NvFwrl1iWOd3s3nRf2VSuRWBz8w31wk=
+=GNL1
+-----END PGP SIGNATURE-----
+
+--i8IRvi06tcsVtedw--
 
