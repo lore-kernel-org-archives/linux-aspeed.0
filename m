@@ -1,152 +1,100 @@
-Return-Path: <linux-aspeed+bounces-660-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-661-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB5E9C02193
-	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Feb 2025 01:14:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BDFAC02192
+	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Feb 2025 08:40:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ynj1r17kYz2yYy;
-	Wed,  5 Feb 2025 12:14:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:200f::72b" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738718064;
-	cv=pass; b=ODug9kjsesTwFiw0oFXq13Zi7HJALpkoewAZgKclylhyGTZGBcIkCYvuzB/hqfygI6JGBAUH/HndOLilCIaoBNN7+arJWCvCNIurYnCgV4DDfw15YNZc8PKNhCLrj5Fk2m3Bo9uzsFxmVkKkC7gN5tRXeBC/QGwlmucrmgU1s72HtJc64k0YTajO9jUD629RIIWW8TJ7alcdNlpiY9XgEU9w8dfHkg57/YoUkSayC69pp7wmOlxA/S/D2HYQEIw9SBsYX1MPuG3A/5r1uGiJDraWhHz+zXLzen9UC5q6Fms2IdAAHrgwxC4CdDZciWCPigZwhR++xKFrGkmYwYJyqg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738718064; c=relaxed/relaxed;
-	bh=531eewIykQUfivLb0yL8U+VbUKxOsCGpM3ZFt08bGco=;
-	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=Tw/63hHAenQU0dcJiNtug+ooBTBg2ilTtlJdlJJIaRM56HFTstZMfIk/5/EBb8nf/KCI9AOx6dBvHxkxa8Uwdm9UGjYkf/bjfiEIjzU2HxBkccBtvq52g/s7sZ18wSiUHMdz8Hr0icebdYMl/2EywKDaXPBpKcY59qWKnFoFF+qLl+qkXY2CldLoa3wNKZKFq0teTjoSjyO+0rdiQiqjpN5HLZlr28OKimBKtPoxj8QqfANG0DMmhKruwCt85HxcUHC2GbxC715HTWiOlg5w0ICLecO8JKoJ9we3W4spVgm14x4yV0qb/SPL1M9siuLlOXBKC29umPAT73A4MGqKew==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=2a01:111:f403:200f::72b; helo=apc01-sg2-obe.outbound.protection.outlook.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:200f::72b; helo=apc01-sg2-obe.outbound.protection.outlook.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from APC01-SG2-obe.outbound.protection.outlook.com (mail-sg2apc01on2072b.outbound.protection.outlook.com [IPv6:2a01:111:f403:200f::72b])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yntwc251Cz2yXY;
+	Wed,  5 Feb 2025 19:40:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738744832;
+	cv=none; b=SYlAuPC6lzkSipqllAynhPvuM0d6PimHCjRSU1b70/YUS/ICSZb8NlsW+qxAJwkrwWaL3GCvFJKMo+U5apUFEtvjt0aq4puayZLaA64Ivn0XhR2N25VhqsUT6t8qnPQUowrv2ZUzI7DsQn9TwrNFHYKsAzZli73NZWwuNpAMwgvbN8VnOJy6zQ7o8CNgZR96tc8a2W/HTmboaNvn0VIhUgxGxd72oYnpbg2YOJb7WKkBHUiA/700DSGrXQtAMgpXGklw+zqG5hiCsyD0ygHoD9scgW/PZH7PiDNiGzP76Oo3UaOUA415zNs4LrfnC2RGrH24chBRfz62lYSUrUOsxg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1738744832; c=relaxed/relaxed;
+	bh=+es5DswhUHJuqnAtb0R/kgWj5lIvrRgBlmdAByRuO1k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=iHKUCsrVYfUeC7eieVe34sL/29NDDjHk03lWMgM4UXQwL9RBYcxm7fe6UWsG4Q6fWCn1VS/L1448ZfP7Mxqz5Jgffn8HLNI+nFEzpnhIDVHjp4ksRqvPTd5BW1I8FbBf9rX+vcbR+BwoZVwRAJ6hiBNB8W7Gxby9eijSMjcEJuTKSwVJ1+AXf8r12qqreWC2NuhtI7mgUQbuNlQkDOVka8L8PuFMb4CiUqLiYUrVpjQCilXtg3OXnig7qbxW9qolU0aa5iv3xSqkvvFqYHahw4BWQ+3MyClHBAbcARIsSGLe3PwTp9pzsrHpnrQdYfFlnCuzhQPT+7tCyfDkgDKiCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=eNIQ6A3b; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org) smtp.mailfrom=bgdev.pl
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=eNIQ6A3b;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bgdev.pl (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ynj1b4v8Cz2yGF;
-	Wed,  5 Feb 2025 12:13:53 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=fOCs+kDgsWrSR6EjV9OI9d8X/KhsNwptdCZyUe8XKYzt/yT/K5y4w3jgZ65xjk4gWME4wVSHDZKNuunp4R7jsuR/NylE8Q3tIrqGrDqdhgYQr+OvZMh/QufOP8JZF1WfCRsRJ2KFTHFn2WfSUtpM8zmpgzYrYs6Hki6CMqA7hyWAomnW2zG58LfocaMMf0UMAU/bzEbFy0LMKgIrBJ/IhWxKA7aGuDI1Kjfj2ZgQCPT2mbgQ5i+dQ9QC7jDmkKuvVerT+jozi45hT4KLBbfwv/Oc8OTwltf9joxmEOuDecoSiocFug/rtOi7owPkNDhqvtLCH4CdQvpDwObhn1oJKA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=531eewIykQUfivLb0yL8U+VbUKxOsCGpM3ZFt08bGco=;
- b=v+LhRUmehhuqORiaSLOIAApeqVajk1O2GnJ8IkX/bUHPQ3qNNPnOSsUwsJrPUy3lijFmaX+yOS1AkZQSpxZjJdK66tqqZDtutXU5Fi6ZB44VFqpNAqr347xK4MDpI20bjCQ3YECc3LcEDpiwfSb6OVqERpvVdJOZz6qANcCvhvp9tAFpZKEN/1yMO8BVBn22fSr8zNA8OEnu3wel76AuxwPjbH9g8Rmb9lZYzyLwfG+M1p1NdEDyxiczCHljAb7mHN4qN8a3n1OaML9FN+9+ow2wxzoMp1TGkfAn0Ki8MVK5t8COfnROxIXSvl5nbROKvyi4Yz9M4w82XWFh+SixUg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=531eewIykQUfivLb0yL8U+VbUKxOsCGpM3ZFt08bGco=;
- b=Y+8OuRjmdrAv+m7ERkHmof7H1lRJy7/i2JICcy93FswWZ88WFNlBz86zA0JCQXkr06jfRj7pKtD7/8uJbEHhANqt+8hJ2FlvrNBeQa84AtSwD7l0qJLulKtlLBEdVXkkh3RQBdTOKWuzl/SCgfna0iMD3FQaZGSFrzBaZP3Okm4Mi4fZROkDIkkKLCXmzeuibe8ZohNzjyZeRLxLsdUWMKfF3D48KyQ++dNAVzIR5YhX7ApRWXygAH5dA8anwZQ2nRzhixuNlSRXPwc+JdKyITF6AIBvrTUKXRsLMjICCW5pJ4d1H17Lell98mDyLjOpPRzVQzvNpomyhH/38H5W7w==
-Received: from TYZPR06MB6568.apcprd06.prod.outlook.com (2603:1096:400:45f::6)
- by TYZPR06MB5483.apcprd06.prod.outlook.com (2603:1096:400:288::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8422.11; Wed, 5 Feb
- 2025 01:13:31 +0000
-Received: from TYZPR06MB6568.apcprd06.prod.outlook.com
- ([fe80::72b8:dce5:355b:e84b]) by TYZPR06MB6568.apcprd06.prod.outlook.com
- ([fe80::72b8:dce5:355b:e84b%7]) with mapi id 15.20.8422.008; Wed, 5 Feb 2025
- 01:13:31 +0000
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>, "eajames@linux.ibm.com"
-	<eajames@linux.ibm.com>, "mchehab@kernel.org" <mchehab@kernel.org>,
-	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
-	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
-	"joel@jms.id.au" <joel@jms.id.au>, "andrew@aj.id.au" <andrew@aj.id.au>,
-	"linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2] media: dt-bindings: aspeed,video-engine: Convert to
- json schema
-Thread-Topic: [PATCH v2] media: dt-bindings: aspeed,video-engine: Convert to
- json schema
-Thread-Index: AQHbdvIcpN89Y9FlH0+W/fgiURP0s7M3452g
-Date: Wed, 5 Feb 2025 01:13:31 +0000
-Message-ID:
- <TYZPR06MB656885B87A6300425F5C4D2CF1F72@TYZPR06MB6568.apcprd06.prod.outlook.com>
-References: <20250204085041.3724290-1-jammy_huang@aspeedtech.com>
- <d705e66d-8a5c-490b-b277-f29429c207dd@kernel.org>
-In-Reply-To: <d705e66d-8a5c-490b-b277-f29429c207dd@kernel.org>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: TYZPR06MB6568:EE_|TYZPR06MB5483:EE_
-x-ms-office365-filtering-correlation-id: 8a219154-2946-4cf5-ef6d-08dd45824e18
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|7416014|376014|366016|921020|38070700018;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?N7ACKJqOJw7QzAzlPbe4bqtfEv6i3PieprRNPeIx20bYgWM4HUNdzZpuq9Qn?=
- =?us-ascii?Q?z5dS6jneA+/+GGMTOgXhgMnF+nGMEGwr+MyBs1cljE1oZ1wIrnM8dDW/ipim?=
- =?us-ascii?Q?O0LaiLr7CBKEGdhtf/WToKdaAeSZYqtSw56xt2VxJjE8q8Y/L8JilB02kxcj?=
- =?us-ascii?Q?ay79++jmIM1J2ka4saFC//z5LJIPz7KvDi8lxN+yxbfBgZeUhflJ/h3BlK47?=
- =?us-ascii?Q?oPX3O2KbLA4BXGgntsOIQQ7fa96+0Yzf6uoSm+2mwausRC4hjn0iJJ0flgCL?=
- =?us-ascii?Q?76IRaK0KKzcYuKjMLiWtf5/TirpbR1VVJf2UZ0lr8hJ6SEg8Ex/Whi2wtbch?=
- =?us-ascii?Q?fZs+9EKFSojETlpACYoCTLzeENU/IH1ANdn6Y8zzjj1a69dnPr5nrJY1RxbK?=
- =?us-ascii?Q?VM8AbETpY2L3YUvtv5VQE4dJN0jT4DrOvBqprbBoYo0WltFr/n2zYZy4S/ks?=
- =?us-ascii?Q?ZvSLjjgvnLe7k1ApsE9btMPX/15HUSKurGuSiCltW8NTrpCd2JyzSPFGCN0f?=
- =?us-ascii?Q?PZVLuNZczIo0yjVpA2zzwcGh/PriaU96C+Xzo7CG2A+OKQ8Z+2oiLp2XPVBI?=
- =?us-ascii?Q?0+v7/B/mUCAPq+Ye1eGLQzetFurjtvownX8hB1ro4f/MueJ7yR1+/rTHNN/c?=
- =?us-ascii?Q?s62/QVXRRoRzsczSrl47HEBO7xDBx2YpIwOdzmcUqA5t68PCnhlv6L4WGkp4?=
- =?us-ascii?Q?T5FAnMuzhYkJNktj/CdBn/O949eh5sXpgfI/0sKebhaUIq0tjuhh1ZNRHvqi?=
- =?us-ascii?Q?vyBDqB0gcTldziifRGB5kQmskU2Em5+xWOdkSnm4Ts/6gDXZmD6QlQc+6BFb?=
- =?us-ascii?Q?BlcH5RPnlpCwFkB9VFmJdG3dX8x3CBJfL548O9hFd7MPGbNdn1Uttd3JRYw0?=
- =?us-ascii?Q?Pk8Huo2ZILI2HivA+2sY5FY6CACRp1Tw1Wdkeh8YGPjux1TBD2p+s4RG077w?=
- =?us-ascii?Q?uakoWTVukudeaE/ZRjcEpBK6G2hV0NdAcb3FkTGARgWQvJktF9lnYHiFD2Qh?=
- =?us-ascii?Q?cWqQModWoTlthoduOLctjmGGEzam/2T6/tQ0m4ry8iAMfl/1C8l2lhVkdWVU?=
- =?us-ascii?Q?WQLmzWTBmuwAPFPWaUt0eBiRE3YEJxK6fTTtgFgl11uy2Gc8Oi+qHR8REcGu?=
- =?us-ascii?Q?eHnnSk12QrdQV9tl2wE9w36lZQ37Hkm1AjD8WPYOp9/jniZjYjY/yNrMcayA?=
- =?us-ascii?Q?cvNRG8Iacnd4ssP6APutY4idbyScAMX6uxnufT9/9/Q0LW8puLzsFTlszefT?=
- =?us-ascii?Q?cFNe8l+E5GOLNNmR2whuGpqA5tVp9mqwXieZSxmfYf6d1XkzgIY44oV19As+?=
- =?us-ascii?Q?kfNCp19xKvDkCK9JDgN2DVottO0G+cEZtVXYucHj0oYqtBipq3CiBT5fxTXX?=
- =?us-ascii?Q?kU0OpSKFhp8DZuk+00e2QJGlE5PJRBKaffsX75b5iy6IvepLFfonvTKQR8L1?=
- =?us-ascii?Q?g8BJTl79mOxKVVyv18vmd0HOWDI+3VXNz5xQ7cBXHtY9DGwDwTRXiQ=3D=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR06MB6568.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(921020)(38070700018);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?p6t+Ijm506RmTDda15RyGryXwVEDftWICDtDn4k1eihbTI3hCGlP1fIGI3QM?=
- =?us-ascii?Q?xAOvnZGvzGGShnCh6cugDA8lhndivQHsruFoonbluVhUxhcvfc9UK8hCO14Y?=
- =?us-ascii?Q?hSPF/kZLj+uEQGOAqNery+wcCN1aG0YHi+iOAe4q82Ikq7NAqph0XYzfDmCf?=
- =?us-ascii?Q?tXOfCMHu1L8+jPBXQbxISNC8aOayq21/Bs6aDQKbWOkhAK8DQ7Pabg1x9bMh?=
- =?us-ascii?Q?MHpxhaL6uf2JQZ+eU8UwsjdBieERzXz4tGC3Si4423wrH9Rwdoztw6DNVZzG?=
- =?us-ascii?Q?zavSGvoH/oM8fo7jN0FE/AbVOiNmZ+HbetX5vUTIAGFOjVyiix73mT5GxlFq?=
- =?us-ascii?Q?2FLBGG/WZ3i90ADmV66YLWYpwXsRG/jJRn54SmiA4a7cLglLWUXg8mjAMXaU?=
- =?us-ascii?Q?7wWRtt3FYaiXcem61vwxZwzX2v/0XgSYMi9whfjNQJQSvC2JYWGVbT38rVnh?=
- =?us-ascii?Q?6is+8hxV5bsG8ZaZaUsvaKFxKEaRgEAgDiAjUZp0IyEFGtOxFxvnIScBfl2G?=
- =?us-ascii?Q?dNXpr+F92qDrjH/mR8U7qVcocxrTCQ20J/Fi5NxOv77b6kl+6VaM6OsmOutc?=
- =?us-ascii?Q?beAtxv7HNfFZsq6quJc10oLVeVbHeUfCm5eeSHoJnCy+OHtoWU0KqizpxSNp?=
- =?us-ascii?Q?FQWqL3ghLE28oZn7wJjJdXDzMwVEY/EXmmDmqSlNf3GcR5lk+5XG35iueulG?=
- =?us-ascii?Q?HwgPLVxRFNjiM53lGiWLI2hifXYHnGMXaS4i3la65DqTlNskhPYHuVSj7isT?=
- =?us-ascii?Q?bO/KV0YvVqkQwYsYmLqMgNzeWvpJK6eOSpbzRZax77modd/p2ea98Zf58ku9?=
- =?us-ascii?Q?PfeJaDLrkRHj1nkXaa+6wJ1kA/JCa8mFipu7U2td9QNak0SX52OdndvO8J56?=
- =?us-ascii?Q?YDBti1fa0rCmu7xNYHEf8jloCKnNXQImMX/6k1c0mwx+UqThHCxV/xPMlbcF?=
- =?us-ascii?Q?3EQpbt9IO3NJy0N2GVx8FJPqnFLUB8pc0BHObh6XQHd9SWZXUkKLNnJubB5X?=
- =?us-ascii?Q?KJ9lvhMKcXaodlEBSoEOw01R/0Y/au6IKT/R88vyocQ6tYS6oHAtLtUY2Y/+?=
- =?us-ascii?Q?C03s8YTb4vGpDOondfI2GIOhTgeg8sJeVMj285uAGcp6Mka9s8OS6rGXBQM9?=
- =?us-ascii?Q?oDIpTM8pi6UmBIX5Pi+bm5SCSgjzKuK1+sV2kOyYIjkNwnwBbqT3ox1KxCOz?=
- =?us-ascii?Q?2XwdujrvquR0DOw851+gXG80fqKYmJZOhtQlc35SpFNLB3IO05siilScD071?=
- =?us-ascii?Q?GrSyGlZRvUFz254meQBkhQEXue9jHfaXmQZPplpsRXn1VuEwIju1eKQpWbzA?=
- =?us-ascii?Q?idsAVvAyFuWpEB9hHRZvmbhyMNDBx7SuQlZlan+8lNys7o0cBsBmgqG6K6Kx?=
- =?us-ascii?Q?AFXjwZLsW4i8hFcyEWZGSPoLUXHp7NAgfya5ok99/V7XeP6IfYKq5g9GeBS7?=
- =?us-ascii?Q?7S+zrzrKHFuxQCxoPgI8Yvn22U1h/WK58kkij5D+2EijObZh2EgiHY+/+qnQ?=
- =?us-ascii?Q?cEHRk2CHk8IqGnbGQoauu/VX/o0bGx9XJj4idGYCeqmuKNouh036XLfcRGKP?=
- =?us-ascii?Q?SGxOl4d/ZV0fN9MQQxPPhUDJUGhg+Tvt710rx+5MasFqjazKmGa4FqtP5T6A?=
- =?us-ascii?Q?Lg=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YntwZ1rMNz2yRM
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Feb 2025 19:40:28 +1100 (AEDT)
+Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-38633b5dbcfso6890332f8f.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 05 Feb 2025 00:40:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1738744824; x=1739349624; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+es5DswhUHJuqnAtb0R/kgWj5lIvrRgBlmdAByRuO1k=;
+        b=eNIQ6A3bDP+fWJta4lHT7r3eSd57zm13W0vXW9vpmhWrb5Hk1MTvh/+ujuOrZbkEy4
+         71btACYpgXqi2mzJSZTuqGee5FjRP/80osnbTFAMHUS9T72u+77aoKdmOGMEx0t1TP9g
+         KYOFRHxOjkSTWbIE/d+yuFssfrAQlq7vsIPnvMZOdfuxL09nG894ffEwhyVWaoHE+r+i
+         tXqOJ033cy+FYkyaQwkG6/m0Ddk3l9uZKSttONWK+ARqKE3X0hrze3cEFWfKWssxkS+t
+         Ifngp+4OlInTd6a0RZfuX9MW6cLttMDSSdbQW/X4bPkLCj1u4eu7p+Z4plpNEo/kkGOl
+         3wuQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738744824; x=1739349624;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+es5DswhUHJuqnAtb0R/kgWj5lIvrRgBlmdAByRuO1k=;
+        b=cqUVnWckBOg8pOPePyZ2S2EUL9k4jzlbmBPT4MgXcyppuoVVkghJxI2gYr1HE9fzmr
+         vt7v4j8IOnzy96soxKQ9czbk5Eu5lxtipgeYAUf+1kG0CND7spxJqoUDuKL+WkOAjwiW
+         9sJG6TyXmUUAyoq4+LrIH29l6mrww5EAsMWyjs/cZ8qYqt88tbO0ztsE+s9+46ZRxxpq
+         57j5l3Y/rDpDYnyn3YTStwiQTu33uRXH8PlplWCTBg78U6pca4zIKgOWptlFzR7kLheI
+         p1irthfY4ZWt3hlP90xWglh8UJYpRN/RdPiRswt+OqZEOy6JUbovZAJpX6qbFW94EfXw
+         1aGQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXMVjWtlZBdZrBXdIlEV4EK3COFzkRD2eYPQCPQ/R4EPIODqTZmhWF5tVzgVx+yKVDDAVqkDR+lkavxD0c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyHhq5YLo6mEagXbLemEj56b+HQzs3JAncvoIZaSeg1eTF/6uxe
+	iVcv09HUrC6xqooMNdGKK3/HBpk2RRFaAr9+UCE5UZGNgmXNGId19e5HwcXlKa0=
+X-Gm-Gg: ASbGnctlKpaTFfcn9xGVaLc/IK6163xgpG3sZJmg/dU/slM+FXHcE6Wua1yLjS9sJus
+	O2rDA8b20lXtws1l6HZAbBHdxcxSFN7kgrZwHo5gDiGUe5CSux4XhOv/KSTZq5eOwqtMZgujKPq
+	h2TWzZDIe3bloFYua1n2uct/+eYC+jLKFxAMoLzcAmpnUSJXzkeVKdSOVmp/QkxEyIaQ0guBXKV
+	AQO+9jx6hOQ5UQngLsHWPmtYucfQvdgZrcy3ovAf7neWg9L8URsNy4AdpE6Oy+LTHB/BYPzgv24
+	7C8WwKXK+duS+tg=
+X-Google-Smtp-Source: AGHT+IHufl43yH4h42TNeRNb4pIxJfhWtSlcWpDN/3IHQPb679izKuQl7RiI9837Q+o9LDGQeygmhQ==
+X-Received: by 2002:a5d:47a4:0:b0:38b:ec34:2d62 with SMTP id ffacd0b85a97d-38db48a0aa1mr1427352f8f.24.1738744823940;
+        Wed, 05 Feb 2025 00:40:23 -0800 (PST)
+Received: from brgl-uxlite.home ([2a01:cb1d:dc:7e00:a766:1fb1:99b5:1d5f])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38db6d7fb3dsm704259f8f.72.2025.02.05.00.40.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 05 Feb 2025 00:40:23 -0800 (PST)
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+To: brgl@bgdev.pl,
+	linus.walleij@linaro.org,
+	minyard@acm.org,
+	robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	openipmi-developer@lists.sourceforge.net,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	devicetree@vger.kernel.org,
+	eajames@linux.ibm.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	linux-gpio@vger.kernel.org,
+	Ninad Palsule <ninad@linux.ibm.com>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+	andrew@lunn.ch
+Subject: Re: (subset) [PATCH v9 0/9] DTS updates for system1 BMC
+Date: Wed,  5 Feb 2025 09:40:21 +0100
+Message-ID: <173874481706.6250.3472033617115260753.b4-ty@linaro.org>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <20250204194115.3899174-1-ninad@linux.ibm.com>
+References: <20250204194115.3899174-1-ninad@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -159,117 +107,24 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB6568.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8a219154-2946-4cf5-ef6d-08dd45824e18
-X-MS-Exchange-CrossTenant-originalarrivaltime: 05 Feb 2025 01:13:31.4273
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 8RUzrXjvZ7/8vBTBkPE4VliAsEAxN4qFAIo4C63BhOMUh+5KHWj65B9p4RJuft24gVw9dpt8/ogKPsitg9tBfDGyxrDubsy9uKONEgn/XpE=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB5483
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Hi Krzysztof,
+From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-Thanks for your feedback.=20
 
-> On 04/02/2025 09:50, Jammy Huang wrote:
-> > Convert aspeed-video.txt to yaml format.
-> > Update aspeed-video.txt to aspeed,video-engine.yaml in MAINTAINER file.
-> >
-> > NOTE: The following checkpatch warning is generated since we do
-> > include the header in the example, but this is a false positive warning=
-.
-> > WARNING: DT binding docs and includes should be a separate patch. See:
-> > Documentation/devicetree/bindings/submitting-patches.rst
->=20
-> This does not belong to commit message, it's irrelevant. You can mention =
-in
-> the changelog, though, but IMO, that's really not important for this patc=
-h.
->=20
-> >
-> > Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> > ---
-> >  v2:
-> >   - Update commit subject
-> >   - Add NOTE for false positive warning
-> > ---
->=20
-> ...
->=20
-> > +
-> > +  memory-region:
-> > +    maxItems: 1
-> > +    description: |
-> > +      Phandle to the reserved memory nodes to be associated with the
-> > +      VE. VE will acquires memory space for 3 purposes:
-> > +        1. JPEG header
-> > +        2. Compressed result
-> > +        3. Temporary transformed image data
-> > +
-> > +  aspeed,scu:
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
-> > +    description: |
->=20
-> Do not need '|' unless you need to preserve formatting.
-OK.
+On Tue, 04 Feb 2025 13:41:03 -0600, Ninad Palsule wrote:
+> Please review the patch set version 9.
+> 
+> V9:
+> 
 
->=20
-> > +      Specifies the scu node that is needed if video wants to capture
-> > +      from sources other than Host VGA.
-> > +
-> > +  aspeed,gfx:
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
->=20
-> None of these two properties were in original binding with *justification=
-*. You
-> must describe any changes done during conversion, otherwise you could add
-> here whatever property you wish, right?
-Sure, I will add information for these properties in later patch.
+Applied, thanks!
 
->=20
-> > +    description: |
-> > +      Specifies the Soc Display(gfx) node that needs to be queried to =
-get
-> > +      related information if video wants to use gfx as capture source.
-> > +
-> > +required:
-> > +  - compatible
-> > +  - reg
-> > +  - clocks
-> > +  - clock-names
-> > +  - interrupts
-> > +
-> > +additionalProperties: false
-> > +
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> > +    #include <dt-bindings/clock/ast2600-clock.h>
-> > +
-> > +    video@1e700000 {
->=20
-> Looks rather like: isp@
-Do you prefer other node-name??
-
->=20
-> > +      compatible =3D "aspeed,ast2600-video-engine";
-> > +      reg =3D <0x1e700000 0x1000>;
-> > +      clocks =3D <&syscon ASPEED_CLK_GATE_VCLK>,
-> > +               <&syscon ASPEED_CLK_GATE_ECLK>;
-> > +      clock-names =3D "vclk", "eclk";
-> > +      interrupts =3D <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
-> > +      aspeed,scu =3D <&syscon>;
-> > +      aspeed,gfx =3D <&gfx>;
->=20
->=20
->=20
-> Best regards,
-> Krzysztof
+[2/9] dt-bindings: gpio: ast2400-gpio: Add hogs parsing
+      commit: e8f2ca6be61f1cae2ff12932fa03224581b6b231
 
 Best regards,
-Jammy
+-- 
+Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
