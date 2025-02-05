@@ -1,74 +1,74 @@
-Return-Path: <linux-aspeed+bounces-663-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-664-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A16D5C02194
-	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Feb 2025 22:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48DCBC02199
+	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Feb 2025 22:51:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YpFp94cttz305c;
-	Thu,  6 Feb 2025 09:51:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YpFpB3MW8z2yDp;
+	Thu,  6 Feb 2025 09:51:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738786237;
-	cv=none; b=ObEFUjanqJwVcyLfGXkGNnTOcZPB2J5TaxmShpTBMytJiQ1Sa7ZbIMj9u3t41zWREJXXFOSUuOKLVeQt4HjpYWnVmUEn9XDT0BvewthKwIIpGlNEjP2BQZwdkew4QJLyS0HoEvra7Y2+4cWEGK84rMzpAXotjl5InYkxxeK2T2TmkaKZaPoiyQr1t5pzdo0UJ3tOvrL5djDn7+a1Y5iWdOCZ5cZh71LMiAhe/hF/Ml3OQSZ3FTJ8NwBhhGZD7oo2lQbymPBnVb0vljwIHcBYYWkp+OruNHD5t3UPN/MimTW5okEsbBTrdopAJ83rwkvhyBSpZYhFGXEjokEAjl7vaw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738786269;
+	cv=none; b=A+UjvWGDJWkMtuhpilbJeAn3gNrM/LGsXi9X3+7Yzd8UIMsKJk3CD3ZibarTE3xD/VNYch7joZlCpk5Bj0ko1Fp7KFC4N2kYuOvyCvNctNPHcEwlGnb7ajZqrbdvyFCiCdwKKz6P4ST5IZahHlSF8B4YdyAf5UTjqdVkBK1ggeCuUp+DkwvxiCZEwCqY3KYsizO/NGE7O5/WyzDWouzFq3upEKHN1lfhFsyIp5MSCaqpLQuk9R7kzLsR96uijeJSp9TPjSlVmt+14Kpz28gc1g688QYkR4t7hs6EB0HrZIFv0pLxoQiqf69X+IBqX4GkRiNiJQ9kRB/ya8J9Bx4iAA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738786237; c=relaxed/relaxed;
-	bh=vTQQyop+FvNGZGa2HymGI+zd4XYA6ac0SZNdQLlY4mQ=;
+	t=1738786269; c=relaxed/relaxed;
+	bh=WV3CUjfdiDqmiVITg/ki0rg01TIBSPaLDwHXu/1B6+E=;
 	h=From:Date:Subject:MIME-Version:Message-Id:References:In-Reply-To:
-	 To:Cc:Content-Type; b=DpQffyvxpIf1bC31KOfdNjx4YKxAsa50OIablZSL39Uibqk6jFtFis9UhlzeWJt+0RXWU4I/2PzagHIOPtdFUHNeupbbum/+clu+H2fbV+JE3PGCSRz/gwUIUvx/ITMmRVtYlMSE4QPY+Uu22NFaVvJWA0zGVImMOJ+QWUAnvwaapLkczJqoQletxoSlv1uN6iaycRZL+NkpnOJNDKS1hsq7PO81aNxbcEc5TQt4vGsfmXB7+61wVpTkZ45XMJ80QiT/Odx6x2PwaoPEDxLnrAUzOOPzSoTGvbONyLWve9jVvALPzc0vmKfHBv+AXSgEkAndU4leDA/9AubTxBkyXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MvLx69g2; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XhwHPxP3; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 To:Cc:Content-Type; b=nyVSZJlV1MWmAvgXKw4xldiNRLnsrKtfyL6ek2aFCqrxVBmDs04Pl9IR9aZoCJEwk986Ofr7yDnRNofo/vE/6EsA9JP63jmoBTcehcx/1qbr3WdDqMECz2eOSn84TU5EMr9u+0328P0i8HxBQJAnf3KgfTmzit9Ate7zN9wmPuqeWA1s3IO3/tJR6k7/pvD29AQSur8leU//XXQURUpa17alN3CrJUYhq8BHaRsMYkn4JsgfWtRRRmIgVsD8okQ3pf6woQNNLWRegulgrT8KzjC0/ONSgmMaFMopU9I456Ec56YWCjyl+mC+JrmPJbyniPXFRKCiF03F4ub5SSLo4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QcqcuR97; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RU+u7dtI; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MvLx69g2;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XhwHPxP3;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QcqcuR97;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RU+u7dtI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpBDr28Q5z3011
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  6 Feb 2025 07:10:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpBFS3YR3z3011
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  6 Feb 2025 07:11:08 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1738786232;
+	s=mimecast20190719; t=1738786265;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vTQQyop+FvNGZGa2HymGI+zd4XYA6ac0SZNdQLlY4mQ=;
-	b=MvLx69g2gIYxBY0dc0dOkomxbpmaj97ziOBT2I39KwrNytZ8Da4sU6me/F5t/NmS6Lcssl
-	kC0gzM8BPizaBLcPxsACulJcT/vsER/3mi7dwZlBdmTZnqSALr/RZIRSjZmZLLhh9hsFdb
-	HPWoAXsUifFBgwGCbMoI1HzJ+IrgXh4=
+	bh=WV3CUjfdiDqmiVITg/ki0rg01TIBSPaLDwHXu/1B6+E=;
+	b=QcqcuR974GrOSuLXu1a8vPwaFlQxH8x8feAkyxBQEkja7sN0LddH6q7dAcSrNTgCdzhw1B
+	3m55jLDWU+lvWrPcHDxqPmw/PW9mZeiMaupptGFgLSWc4fdqkLft3DlddUcln1aSQyrUlj
+	yFqeUpg5nIX7XpVz6J9PxBzYwx9mboo=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1738786233;
+	s=mimecast20190719; t=1738786266;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vTQQyop+FvNGZGa2HymGI+zd4XYA6ac0SZNdQLlY4mQ=;
-	b=XhwHPxP37jrmyngcB009Kao+bBLQmKOnJGV+kv1rtWn9u1IizDVevNEXu6VJSo3U7TU0ud
-	Htidxxu8tXs4z81WrL6+FHoXSxw07pbmd7vN/ciB+dYUn/j8Iq8BfLdjsVqggvIJtxq5w/
-	XS/ZgHm5CH9H8Lv+ABIeknV31tvqFNg=
-Received: from mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com
+	bh=WV3CUjfdiDqmiVITg/ki0rg01TIBSPaLDwHXu/1B6+E=;
+	b=RU+u7dtIiIHmlZq/cfbFMT2d32+LnLrwLvQ/hOkyHEN4hQDGBc+wsNunvryeN06tgcrx1K
+	HnT84It4YwObmIXD10o6xcIuWVV4yYHkJgeRPQzDk/xs29gHHl03ZFtHhgybTXJSy4E/Kh
+	w1/bCdxKGocTAghPeSgUuETQ+Atq1GM=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-655-m7hdKrGiOj6HXRKp-6DoKQ-1; Wed,
- 05 Feb 2025 15:10:30 -0500
-X-MC-Unique: m7hdKrGiOj6HXRKp-6DoKQ-1
-X-Mimecast-MFC-AGG-ID: m7hdKrGiOj6HXRKp-6DoKQ
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-221-V8OTbI5dNI6szj-0skYMAQ-1; Wed,
+ 05 Feb 2025 15:11:02 -0500
+X-MC-Unique: V8OTbI5dNI6szj-0skYMAQ-1
+X-Mimecast-MFC-AGG-ID: V8OTbI5dNI6szj-0skYMAQ
 Received: from mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.40])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id F0A821955F17;
-	Wed,  5 Feb 2025 20:10:24 +0000 (UTC)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 2D14319560AF;
+	Wed,  5 Feb 2025 20:10:57 +0000 (UTC)
 Received: from asrivats-na.rmtustx.csb (unknown [10.2.17.21])
-	by mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 7939E19560AB;
-	Wed,  5 Feb 2025 20:10:14 +0000 (UTC)
+	by mx-prod-int-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id A058B19560A3;
+	Wed,  5 Feb 2025 20:10:46 +0000 (UTC)
 From: Anusha Srivatsa <asrivats@redhat.com>
-Date: Wed, 05 Feb 2025 15:08:02 -0500
-Subject: [PATCH 06/12] drm/sprd: move to devm_platform_ioremap_resource()
+Date: Wed, 05 Feb 2025 15:08:05 -0500
+Subject: [PATCH 09/12] drm/tegra: move to devm_platform_ioremap_resource()
  usage
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -82,7 +82,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Message-Id: <20250205-mem-cocci-newapi-v1-6-aebf2b0e2300@redhat.com>
+Message-Id: <20250205-mem-cocci-newapi-v1-9-aebf2b0e2300@redhat.com>
 References: <20250205-mem-cocci-newapi-v1-0-aebf2b0e2300@redhat.com>
 In-Reply-To: <20250205-mem-cocci-newapi-v1-0-aebf2b0e2300@redhat.com>
 To: Joel Stanley <joel@jms.id.au>, 
@@ -127,93 +127,66 @@ Cc: linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
  linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
  linux-rockchip@lists.infradead.org, 
  linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, 
- linux-doc@vger.kernel.org, Anusha Srivatsa <asrivats@redhat.com>, 
- Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1738786137; l=2394;
+ linux-doc@vger.kernel.org, Anusha Srivatsa <asrivats@redhat.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1738786137; l=1560;
  i=asrivats@redhat.com; s=20250122; h=from:subject:message-id;
- bh=xnOKo4d5zLC6SAtMuS91xcrNjPZ1X4hCGtOsaEUix3w=;
- b=9P96dzilm8OCSAOsV3nelE+NyCk6X33PzR8pna80qQpA32qqE1OqIck1bXLiEytFKxbzWi35X
- rpdS2muAEJCDsCOvfv1Ty24PUjjSatCiBHbA0S8cJP14odIDLpHcX+M
+ bh=66gfH4HaVcJzuzQX0NHIOkeT0eso2EOo8AHIoNrPiQ8=;
+ b=M6WZh0GtYS5B4deJ9B3qzO3qNws7WyKrJNpqYJygKF9Hd54wmE5lZ9VrSBMuunB4vSfrq/v+B
+ aoMAifGb953DS/z3pxTMJycEfckOvMXSVVatw6+5DoXKTwZ0HpUpzbU
 X-Developer-Key: i=asrivats@redhat.com; a=ed25519;
  pk=brnIHkBsUZEhyW6Zyn0U92AeIZ1psws/q8VFbIkf1AU=
 X-Scanned-By: MIMEDefang 3.0 on 10.30.177.40
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: N9QC4Oo-GONO_z5xjzYX0WnilXzyNV8qoZRZAsPuZtY_1738786225
+X-Mimecast-MFC-PROC-ID: ZkvMp6vMx9qTFdIYDYwefQ_VEDBYHuJs69UVGT6K0gg_1738786257
 X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
-Replace platform_get_resource + devm_ioremap
+Replace platform_get_resource + devm_ioremap_resource
 with just devm_platform_ioremap_resource()
 
 Used Coccinelle to do this change. SmPl patch:
-@rule_2@
+@rule_1@
 identifier res;
-expression ioremap;
+expression ioremap_res;
 identifier pdev;
 @@
 -struct resource *res;
 ...
 -res = platform_get_resource(pdev,...);
-<...
--if (!res) {
--...
--}
-...>
--ioremap = devm_ioremap(...);
-+ioremap = devm_platform_ioremap_resource(pdev,0);
+-ioremap_res = devm_ioremap_resource(...);
++ioremap_res = devm_platform_ioremap_resource(pdev,0);
 
-Cc: Chunyan Zhang <zhang.lyra@gmail.com>
-Cc: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Mikko Perttunen <mperttunen@nvidia.com>
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
 ---
- drivers/gpu/drm/sprd/sprd_dpu.c | 9 +--------
- drivers/gpu/drm/sprd/sprd_dsi.c | 9 +--------
- 2 files changed, 2 insertions(+), 16 deletions(-)
+ drivers/gpu/drm/tegra/dsi.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/sprd/sprd_dpu.c b/drivers/gpu/drm/sprd/sprd_dpu.c
-index cb2816985305fd19eac27413c214681a5a1e9ffa..65cd5aa1634eee5a6735ccffa4ee3979844d92ce 100644
---- a/drivers/gpu/drm/sprd/sprd_dpu.c
-+++ b/drivers/gpu/drm/sprd/sprd_dpu.c
-@@ -784,16 +784,9 @@ static int sprd_dpu_context_init(struct sprd_dpu *dpu,
+diff --git a/drivers/gpu/drm/tegra/dsi.c b/drivers/gpu/drm/tegra/dsi.c
+index 4a8cd9ed0a9414b2f40b716fa8c02aff038a53e0..51f1ed897f8e473f45f89ff3e2d99f66d2c80f21 100644
+--- a/drivers/gpu/drm/tegra/dsi.c
++++ b/drivers/gpu/drm/tegra/dsi.c
+@@ -1564,7 +1564,6 @@ static int tegra_dsi_ganged_probe(struct tegra_dsi *dsi)
+ static int tegra_dsi_probe(struct platform_device *pdev)
  {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct dpu_context *ctx = &dpu->ctx;
--	struct resource *res;
- 	int ret;
+ 	struct tegra_dsi *dsi;
+-	struct resource *regs;
+ 	int err;
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
--		dev_err(dev, "failed to get I/O resource\n");
--		return -EINVAL;
--	}
--
--	ctx->base = devm_ioremap(dev, res->start, resource_size(res));
-+	ctx->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (!ctx->base) {
- 		dev_err(dev, "failed to map dpu registers\n");
- 		return -EFAULT;
-diff --git a/drivers/gpu/drm/sprd/sprd_dsi.c b/drivers/gpu/drm/sprd/sprd_dsi.c
-index 8fc26479bb6bce0aa94914f49d0986a7e19326c1..1668bb4166ab0ad3812c5654244544a9caf249a6 100644
---- a/drivers/gpu/drm/sprd/sprd_dsi.c
-+++ b/drivers/gpu/drm/sprd/sprd_dsi.c
-@@ -901,15 +901,8 @@ static int sprd_dsi_context_init(struct sprd_dsi *dsi,
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct dsi_context *ctx = &dsi->ctx;
--	struct resource *res;
+ 	dsi = devm_kzalloc(&pdev->dev, sizeof(*dsi), GFP_KERNEL);
+@@ -1636,8 +1635,7 @@ static int tegra_dsi_probe(struct platform_device *pdev)
+ 		goto remove;
+ 	}
  
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
--		dev_err(dev, "failed to get I/O resource\n");
--		return -EINVAL;
--	}
--
--	ctx->base = devm_ioremap(dev, res->start, resource_size(res));
-+	ctx->base = devm_platform_ioremap_resource(pdev, 0);
- 	if (!ctx->base) {
- 		drm_err(dsi->drm, "failed to map dsi host registers\n");
- 		return -ENXIO;
+-	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	dsi->regs = devm_ioremap_resource(&pdev->dev, regs);
++	dsi->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(dsi->regs)) {
+ 		err = PTR_ERR(dsi->regs);
+ 		goto remove;
 
 -- 
 2.47.0
