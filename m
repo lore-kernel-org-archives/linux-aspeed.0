@@ -1,83 +1,86 @@
-Return-Path: <linux-aspeed+bounces-681-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-682-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8840C02194
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Feb 2025 16:13:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86402C02196
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Feb 2025 22:51:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yphx92ftZz30DD;
-	Fri,  7 Feb 2025 03:13:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738858429;
-	cv=none; b=JFPFswNoVYoYMOrmESVVXGcU+mrie5pmsF9RaRxJ78nzt/zdPnwatOUhlvi2H+f33Q+vh+oSZW/UnA00T8/iqxpoJRo4NFX7DpMFbnmsOSUYfq2dTQb9Q1aETfSRgPbxub3Xc4ZPMe8oSHCm5dRQ9GqImNG+JGyWqOPHHgXl5wKRnzfIJJws0Qmo469OYQ71N5EvlaoyNeoQydRBOfjnxWRUUmfpwrYloN0yDqI8m+ZV0ZN/BLEKuziWADapvq8aAUvBM5+B3qCegAbJmx3BSnhxG+Y082Dl5pF2RIWdBLmms3oNOWC+hrGW2docqD2O+dM6CIXsU5ukESYthyq7wQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ypsll6sqMz2y8X;
+	Fri,  7 Feb 2025 09:51:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738876589;
+	cv=none; b=oDWgSNba54yMXA6Vf/OQkYLhVcbJ8ZKmZSVIPu1fxHYDLAeEszHHLblZpSfaBh7v6cN/emHOZSjnQHQ5UxWzwAD6LFp1Q77DTpbwAgJwNyyQ4Kau/jTCOY6SnfjapHRY/fJz6SlATMqxXR/JzcPJSIulsrEfrcnq+QLdmPu14a08m33AgczvZna/mGkkxGSBFkf7XFtBmzH+qGHO7R3WbXKev+2S0z04g8N7pHLNj7cPoyel2jRbMEjwh7OcFT/vdbLqosLwYsJSSOhsjPkXjUsHK4D3THt3gjEDfm3qSUs4kbEwAQzuI6t7gsaQQrDajk/kf+E2dpuIHhh5eqgWUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738858429; c=relaxed/relaxed;
-	bh=HsVx1KaNwgqNLZilcbZny92AtsUxM9BfF1vMwKADwMk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Qk17iZH2fjVY+Nz84TjVGwU/N3TBwtHmtjOgPtN7K3ZiEwq7iLJzUZWWwRK+gTlJyXoQG6VMW53XjSeg6lZHyjh3CLrDQzkR5f5+FChr6XckAcsQeldQNU22p7MBoR+9tfQr39lNQ2NJvZiDVyldefA/NsJJUouOGkgAWPVRf2LTaD+1h6bCYfHw+MX/noUTY0PdAS/k/qurjTeXo+tG5N6GXs96hJ+Jb7FgvZ7orL90K5XfWk2JQsBKGZymUGLqEe7mIIWe86bzLj+qMe7+iv7aW5noVSFM8FRL3wnS7YxpCp5Nu/u8wol2BXFmKFO70L5/m1KD5GPwAly7wKmk4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dYCFPFSL; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1738876589; c=relaxed/relaxed;
+	bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=IVSl+sBx9AXhV9KcrPefVGxFU0yJeDsFjHJdFp2CrgGJpbsmiUa2QU3TLGyeox6DI7198DYBx8MVCgmQjc7uOtUxCGpo5jGFyreVG+/RNCXfa7S+2Ft/ihq4Lid1vapp6k1s1OcRtvsFTBOVwLwUBMoDfL1dVTCyBUyt7iVYdZU14sHwsAsfIiXPFe8fQh7GaEin9zq7iJ48XG1ogzGFADG0lOIiWxOOVJ8eb8Y+FDOu8f4Sk4pkbqUSpj7VkA685V1SmZNIwuDZfXVuO0GVKcX5gdeDQ9BJTHyBuMe+z+pSDpmJnZD35D8GU4/uM7YOdCz9isTelGsl/Ge/7mHliw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dYCFPFSL;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yphx83xPJz3028
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Feb 2025 03:13:48 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 23F095C64A4;
-	Thu,  6 Feb 2025 16:13:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F07F8C4CEDD;
-	Thu,  6 Feb 2025 16:13:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1738858425;
-	bh=yugtap81E+1XEiUSlot9N/ao/3tXx/zIxbLqkf5yQ2s=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=dYCFPFSLLiDASvYd4s42uud1DtC2OYpyDgEeLT35r+DrvE2jij76XmTWQ9G67IkkY
-	 GXlKlZixxwv1mXchRyKAC2XLHInGz7nXltb/sepWggEKQB2TlbKf/zl7RmfFuI/bgH
-	 POQtLfiwx3vOBe+qHPtYDAHCNvMvnzxOt413CP2Ky6rkPlhy2ILdMwAJlRvRLqD0vj
-	 Zr7POyxFiXm5+iQmgkdVq1+ZtMEZUnmtN8vK+HRSG+ejF6wz2rbhMHSIENz/QYTel5
-	 LTPtPbUTgV8Ae2h5Vlge1PtDZVU6vqHxlAMGJQmuO06gQkxOszYi8GtT6wvI2wkZns
-	 f+nG5+ZFP0G5A==
-Date: Thu, 6 Feb 2025 17:13:43 +0100
-From: Maxime Ripard <mripard@kernel.org>
-To: Anusha Srivatsa <asrivats@redhat.com>
-Cc: Joel Stanley <joel@jms.id.au>, 
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Stefan Agner <stefan@agner.ch>, 
-	Alison Wang <alison.wang@nxp.com>, Xinliang Liu <xinliang.liu@linaro.org>, 
-	Tian Tao <tiantao6@hisilicon.com>, Xinwei Kong <kong.kongxinwei@hisilicon.com>, 
-	Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu <yongqin.liu@linaro.org>, 
-	John Stultz <jstultz@google.com>, Chun-Kuang Hu <chunkuang.hu@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Marek Vasut <marex@denx.de>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Sandy Huang <hjc@rock-chips.com>, 
-	Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>, Andy Yan <andy.yan@rock-chips.com>, 
-	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
-	Chunyan Zhang <zhang.lyra@gmail.com>, Alain Volmat <alain.volmat@foss.st.com>, 
-	Raphael Gallais-Pou <rgallaispou@gmail.com>, Yannick Fertre <yannick.fertre@foss.st.com>, 
-	Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>, Philippe Cornu <philippe.cornu@foss.st.com>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Alexey Brodkin <abrodkin@synopsys.com>, 
-	Dave Stevenson <dave.stevenson@raspberrypi.com>, =?utf-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, 
-	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, Jonathan Corbet <corbet@lwn.net>, linux-aspeed@lists.ozlabs.org, 
-	dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
-	linux-rockchip@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
-	linux-tegra@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH 11/12] drm/vc4: move to devm_platform_ioremap_resource()
- usage
-Message-ID: <20250206-hallowed-ultra-tiger-cfec8e@houat>
-References: <20250205-mem-cocci-newapi-v1-0-aebf2b0e2300@redhat.com>
- <20250205-mem-cocci-newapi-v1-11-aebf2b0e2300@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpqfN5Y16z2xpn
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Feb 2025 08:16:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1738876582;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
+	b=Na8bVlvY1YKaLk0SSwZvzwxxT8XgWT+EfdZIxWlPTghr6JwFzKlxbjf9ci7oJlH9nVzmW4
+	zuvfpSh3C0vQlkJ8I1sSoro+FueBDgN6dXVjNqIQPE+Gd42AFKcG2/i5xcFQ0JQTuDSGvN
+	xnJ+w9n4EhEdyzPlIdZbeS3ta5RnSUQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1738876582;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
+	b=Na8bVlvY1YKaLk0SSwZvzwxxT8XgWT+EfdZIxWlPTghr6JwFzKlxbjf9ci7oJlH9nVzmW4
+	zuvfpSh3C0vQlkJ8I1sSoro+FueBDgN6dXVjNqIQPE+Gd42AFKcG2/i5xcFQ0JQTuDSGvN
+	xnJ+w9n4EhEdyzPlIdZbeS3ta5RnSUQ=
+Received: from mail-yw1-f199.google.com (mail-yw1-f199.google.com
+ [209.85.128.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-368-DixcfuEDMuGmSKpcWiT9sg-1; Thu, 06 Feb 2025 16:16:20 -0500
+X-MC-Unique: DixcfuEDMuGmSKpcWiT9sg-1
+X-Mimecast-MFC-AGG-ID: DixcfuEDMuGmSKpcWiT9sg
+Received: by mail-yw1-f199.google.com with SMTP id 00721157ae682-6f68264a641so15582317b3.2
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 06 Feb 2025 13:16:19 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738876579; x=1739481379;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
+        b=K8U6MCpaE3T76swBjjpEFyCPV4iKfuxhlnqWr3zsMX2UlaxV9/1iGcupDr5YUyRbMX
+         bEvtUk6NuM9GEyOEBqFqzc8rxi4E2aDRI5/7E+m69AiQSQCJPoUo6pRPS2i+4pYn7C+U
+         HVA5Qm875CJZO5HB6TC9c/3kaSHpjdS9dV39zxAH+3k0U9aij3LM1k09mm+xJKIX+YEe
+         owloJ7Lz1SC9iHD/8JUmLEleLg6b0GvbcQP6SGA68tq8gTADhMZaKqNZqUyLxhVex6n7
+         /C49KrVTuGrMoX0q1vXlRO9FoRdk/2NjvqLQZH0dcKPsGgBRFH9A39kcY2HGUbHg2AbI
+         0UGQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXoQ+UhgztBscuehuKfn6mX/VX/eEsc9q0sLQV0Mk5hG/cYgBzak7JeiKDJSlNjR4/FgduSIxbyug9vhSE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YweJbitGeKr/Xv3xS0LU4yWGywENcyHZlEhkwl2ZQ/Dv6A+CVoA
+	HyV0GFpO0uV1pe4z4Sa+md1hYHCt2mlNTc5GJ01aBkEq2KW/PIrFAtNZk44jZPlzbMHgUv/EqgK
+	XJz1pd/CG11QRHRaDPcBx2jP2cL5z+KkFk68DDxUqIDnr5MhqtnenkwgYG2EqG2B29f0TXdyCnh
+	LNgCZ5Hpkq32qtIVEIMuvmM3E62Pcla2f7ISzs1g==
+X-Gm-Gg: ASbGncsoDXReVJhbDzCSahKAdmlYMOFcOqOl1l4XT9TcaQxjUYSE47ZMW2dXRxEVWkH
+	vcCv7DoqGUA48oYHrDbSytFRrvmkLPzAnSXuHUNLzyxtKTToWyy4hfjaTNtd7
+X-Received: by 2002:a05:690c:9989:b0:6ef:6fef:4cb6 with SMTP id 00721157ae682-6f9b233bf8fmr8830697b3.0.1738876579000;
+        Thu, 06 Feb 2025 13:16:19 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IFjCqpwPwL+07jYSJFwomed71Bwu5IyhQrsp/e8kjJRvrAsFYgViw9/vssKy4znNo90IGP+LEAAzfLVoH6pYqM=
+X-Received: by 2002:a05:690c:9989:b0:6ef:6fef:4cb6 with SMTP id
+ 00721157ae682-6f9b233bf8fmr8830137b3.0.1738876578666; Thu, 06 Feb 2025
+ 13:16:18 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,111 +93,212 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="nds2ddkwji5fimma"
-Content-Disposition: inline
-In-Reply-To: <20250205-mem-cocci-newapi-v1-11-aebf2b0e2300@redhat.com>
+References: <20250205-mem-cocci-newapi-v1-0-aebf2b0e2300@redhat.com>
+ <20250205-mem-cocci-newapi-v1-12-aebf2b0e2300@redhat.com> <73bad044-f5fc-40ea-9e32-571912573a5f@suse.de>
+In-Reply-To: <73bad044-f5fc-40ea-9e32-571912573a5f@suse.de>
+From: Anusha Srivatsa <asrivats@redhat.com>
+Date: Thu, 6 Feb 2025 16:16:07 -0500
+X-Gm-Features: AWEUYZk6prfZM1C9-Gul4JSYr8izxGkZAIuEujMIU0-RwOCWKJ-qTeyWBXWPDFc
+Message-ID: <CAN9Xe3R=PpKbM=QraFvPMTF+XvBujjxp3XCWtg3Y5+pd+OE1Dw@mail.gmail.com>
+Subject: Re: [PATCH 12/12] Documentation: Update the todo
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Joel Stanley <joel@jms.id.au>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Stefan Agner <stefan@agner.ch>, 
+	Alison Wang <alison.wang@nxp.com>, Xinliang Liu <xinliang.liu@linaro.org>, 
+	Tian Tao <tiantao6@hisilicon.com>, Xinwei Kong <kong.kongxinwei@hisilicon.com>, 
+	Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu <yongqin.liu@linaro.org>, 
+	John Stultz <jstultz@google.com>, Chun-Kuang Hu <chunkuang.hu@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Marek Vasut <marex@denx.de>, 
+	Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Sandy Huang <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
+	Andy Yan <andy.yan@rock-chips.com>, Orson Zhai <orsonzhai@gmail.com>, 
+	Baolin Wang <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
+	Alain Volmat <alain.volmat@foss.st.com>, Raphael Gallais-Pou <rgallaispou@gmail.com>, 
+	Yannick Fertre <yannick.fertre@foss.st.com>, 
+	Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>, 
+	Philippe Cornu <philippe.cornu@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Thierry Reding <thierry.reding@gmail.com>, 
+	Mikko Perttunen <mperttunen@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Alexey Brodkin <abrodkin@synopsys.com>, Dave Stevenson <dave.stevenson@raspberrypi.com>, 
+	=?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>, 
+	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, Jonathan Corbet <corbet@lwn.net>, 
+	linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
+	linux-rockchip@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-tegra@vger.kernel.org, linux-doc@vger.kernel.org
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: VAgfGcWRxgSvHtCumivHWeW-ahIG0C1yUQmMfLvBNv0_1738876579
+X-Mimecast-Originator: redhat.com
+Content-Type: multipart/alternative; boundary="000000000000c7abf9062d7fc054"
 
-
---nds2ddkwji5fimma
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
+--000000000000c7abf9062d7fc054
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH 11/12] drm/vc4: move to devm_platform_ioremap_resource()
- usage
-MIME-Version: 1.0
 
-On Wed, Feb 05, 2025 at 03:08:07PM -0500, Anusha Srivatsa wrote:
-> Replace platform_get_resource_byname + devm_ioremap_resource
-> with just devm_platform_ioremap_resource()
->=20
-> Used Coccinelle to do this change. SmPl patch:
-> //rule s/(devm_)platform_get_resource_byname +
-> //(devm_)ioremap/devm_platform_ioremap_resource.
-> @rule_3@
-> identifier res;
-> expression ioremap;
-> identifier pdev;
-> constant mem;
-> expression name;
-> @@
-> -struct resource *res;
-> <+...
-> -res =3D platform_get_resource_byname(pdev,mem,name);
-> <...
-> -if (!res) {
-> -...
-> -}
-> ...>
-> -ioremap =3D devm_ioremap(...);
-> +ioremap =3D devm_platform_ioremap_resource_byname(pdev,name);
-> ...+>
->=20
-> v2: Change the SmPl patch to work on multiple occurences of
-> the pattern. This also fixes the compilation error.
->=20
-> Cc: Maxime Ripard <mripard@kernel.org>
-> Cc: Dave Stevenson <dave.stevenson@raspberrypi.com>
-> Cc: Ma=EDra Canal <mcanal@igalia.com>
-> Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
-> ---
->  drivers/gpu/drm/vc4/vc4_hdmi.c | 55 +++++++++++-------------------------=
-------
->  1 file changed, 14 insertions(+), 41 deletions(-)
->=20
-> diff --git a/drivers/gpu/drm/vc4/vc4_hdmi.c b/drivers/gpu/drm/vc4/vc4_hdm=
-i.c
-> index 47d9ada98430634cfd8c1e21c2a4d00d501bab7e..066f1246dab420ee889845b0c=
-573d80ce7c88595 100644
-> --- a/drivers/gpu/drm/vc4/vc4_hdmi.c
-> +++ b/drivers/gpu/drm/vc4/vc4_hdmi.c
-> @@ -2951,71 +2951,44 @@ static int vc5_hdmi_init_resources(struct drm_dev=
-ice *drm,
->  {
->  	struct platform_device *pdev =3D vc4_hdmi->pdev;
->  	struct device *dev =3D &pdev->dev;
-> -	struct resource *res;
->  	int ret;
-> =20
-> -	res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM, "hdmi");
-> -	if (!res)
-> -		return -ENODEV;
-> -
-> -	vc4_hdmi->hdmicore_regs =3D devm_ioremap(dev, res->start,
-> -					       resource_size(res));
-> +	vc4_hdmi->hdmicore_regs =3D devm_platform_ioremap_resource_byname(pdev,
-> +									"hdmi");
->  	if (!vc4_hdmi->hdmicore_regs)
->  		return -ENOMEM;
-> =20
-> -	res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM, "hd");
-> -	if (!res)
-> -		return -ENODEV;
-> -
-> -	vc4_hdmi->hd_regs =3D devm_ioremap(dev, res->start, resource_size(res));
-> +	vc4_hdmi->hd_regs =3D devm_platform_ioremap_resource_byname(pdev, "hd");
->  	if (!vc4_hdmi->hd_regs)
->  		return -ENOMEM;
+On Thu, Feb 6, 2025 at 2:57=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse.=
+de>
+wrote:
 
-I *think* that one is shared between both HDMI controllers on the
-RaspberryPi4, so we can't claim them from both instances. We should add
-a comment there to document that it's on purpose.
+> Hi
+>
+>
+> Am 05.02.25 um 21:08 schrieb Anusha Srivatsa:
+> > Update the Documentation to be more precise.
+> >
+> > v2: Update for clarity
+> >
+> > Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> > Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
+> > ---
+> >   Documentation/gpu/todo.rst | 12 ++++++------
+> >   1 file changed, 6 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+> > index
+> 256d0d1cb2164bd94f9b610a751b907834d96a21..03fcd086889acbd1294669b260292ff=
+c79e97e2f
+> 100644
+> > --- a/Documentation/gpu/todo.rst
+> > +++ b/Documentation/gpu/todo.rst
+> > @@ -441,13 +441,13 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
+> >
+> >   Level: Intermediate
+> >
+> > -Request memory regions in all drivers
+> > --------------------------------------
+> > +Request memory regions in all fbdev drivers
+> > +--------------------------------------------
+> >
+> > -Go through all drivers and add code to request the memory regions that
+> the
+> > -driver uses. This requires adding calls to request_mem_region(),
+> > -pci_request_region() or similar functions. Use helpers for managed
+> cleanup
+> > -where possible.
+> > +Old/ancient fbdev drivers do not request their memory properly.
+> > +Go through these drivers and add code to request the memory regions
+> that the
+> > +driver uses. Problematic areas include hardware that has exclusive
+> ranges like
+> > +VGA. VGA16fb does not request the range as it is expected.
+>
+> I'd keep both, old and new text, and turn them into a single paragraph.
+> The old text explains what to do and the new text gives examples.
+>
+>
+Sure. Waiting for one final patch to be reviewed(patch 11). With that, I
+will make the changes you suggested and re-roll the series.
 
-The rest looks good.
+Thanks for the feedback!
 
-Maxime
+Anusha
 
---nds2ddkwji5fimma
-Content-Type: application/pgp-signature; name="signature.asc"
+> Best regards
+> Thomas
+> >
+> >   Drivers are pretty bad at doing this and there used to be conflicts
+> among
+> >   DRM and fbdev drivers. Still, it's the correct thing to do.
+> >
+>
+> --
+> --
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Frankenstrasse 146, 90461 Nuernberg, Germany
+> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+> HRB 36809 (AG Nuernberg)
+>
+>
 
------BEGIN PGP SIGNATURE-----
+--000000000000c7abf9062d7fc054
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCZ6TftgAKCRAnX84Zoj2+
-drfXAYDBINKHBSckIuo/kq/HoUvq16io0SUMaLB/CVkeidnE3EXaDz9M3WhZ60Ha
-n8d4HmABf0i2bHqp4iPr3Cr3YiSEnV9zX0sFLdFl/FejJMglsT19c+7lwsGMwuaH
-8nnPGZ1q6A==
-=1kXI
------END PGP SIGNATURE-----
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote g=
+mail_quote_container"><div dir=3D"ltr" class=3D"gmail_attr">On Thu, Feb 6, =
+2025 at 2:57=E2=80=AFAM Thomas Zimmermann &lt;<a href=3D"mailto:tzimmermann=
+@suse.de">tzimmermann@suse.de</a>&gt; wrote:<br></div><blockquote class=3D"=
+gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(20=
+4,204,204);padding-left:1ex">Hi<br>
+<br>
+<br>
+Am 05.02.25 um 21:08 schrieb Anusha Srivatsa:<br>
+&gt; Update the Documentation to be more precise.<br>
+&gt;<br>
+&gt; v2: Update for clarity<br>
+&gt;<br>
+&gt; Cc: Thomas Zimmermann &lt;<a href=3D"mailto:tzimmermann@suse.de" targe=
+t=3D"_blank">tzimmermann@suse.de</a>&gt;<br>
+&gt; Signed-off-by: Anusha Srivatsa &lt;<a href=3D"mailto:asrivats@redhat.c=
+om" target=3D"_blank">asrivats@redhat.com</a>&gt;<br>
+&gt; ---<br>
+&gt;=C2=A0 =C2=A0Documentation/gpu/todo.rst | 12 ++++++------<br>
+&gt;=C2=A0 =C2=A01 file changed, 6 insertions(+), 6 deletions(-)<br>
+&gt;<br>
+&gt; diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst<b=
+r>
+&gt; index 256d0d1cb2164bd94f9b610a751b907834d96a21..03fcd086889acbd1294669=
+b260292ffc79e97e2f 100644<br>
+&gt; --- a/Documentation/gpu/todo.rst<br>
+&gt; +++ b/Documentation/gpu/todo.rst<br>
+&gt; @@ -441,13 +441,13 @@ Contact: Thomas Zimmermann &lt;<a href=3D"mailto=
+:tzimmermann@suse.de" target=3D"_blank">tzimmermann@suse.de</a>&gt;<br>
+&gt;=C2=A0 =C2=A0<br>
+&gt;=C2=A0 =C2=A0Level: Intermediate<br>
+&gt;=C2=A0 =C2=A0<br>
+&gt; -Request memory regions in all drivers<br>
+&gt; --------------------------------------<br>
+&gt; +Request memory regions in all fbdev drivers<br>
+&gt; +--------------------------------------------<br>
+&gt;=C2=A0 =C2=A0<br>
+&gt; -Go through all drivers and add code to request the memory regions tha=
+t the<br>
+&gt; -driver uses. This requires adding calls to request_mem_region(),<br>
+&gt; -pci_request_region() or similar functions. Use helpers for managed cl=
+eanup<br>
+&gt; -where possible.<br>
+&gt; +Old/ancient fbdev drivers do not request their memory properly.<br>
+&gt; +Go through these drivers and add code to request the memory regions t=
+hat the<br>
+&gt; +driver uses. Problematic areas include hardware that has exclusive ra=
+nges like<br>
+&gt; +VGA. VGA16fb does not request the range as it is expected.<br>
+<br>
+I&#39;d keep both, old and new text, and turn them into a single paragraph.=
+ <br>
+The old text explains what to do and the new text gives examples.<br>
+<br></blockquote><div><br></div><div>Sure. Waiting for one final patch to b=
+e reviewed(patch 11). With that, I will make the changes you suggested and =
+re-roll the series. <br></div><div><br></div><div>Thanks for the feedback!<=
+/div><div><br></div><div>Anusha<br></div><blockquote class=3D"gmail_quote" =
+style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);pa=
+dding-left:1ex">
+Best regards<br>
+Thomas<br>
+&gt;=C2=A0 =C2=A0<br>
+&gt;=C2=A0 =C2=A0Drivers are pretty bad at doing this and there used to be =
+conflicts among<br>
+&gt;=C2=A0 =C2=A0DRM and fbdev drivers. Still, it&#39;s the correct thing t=
+o do.<br>
+&gt;<br>
+<br>
+-- <br>
+--<br>
+Thomas Zimmermann<br>
+Graphics Driver Developer<br>
+SUSE Software Solutions Germany GmbH<br>
+Frankenstrasse 146, 90461 Nuernberg, Germany<br>
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman<br>
+HRB 36809 (AG Nuernberg)<br>
+<br>
+</blockquote></div></div>
 
---nds2ddkwji5fimma--
+--000000000000c7abf9062d7fc054--
+
 
