@@ -1,86 +1,46 @@
-Return-Path: <linux-aspeed+bounces-682-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-683-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86402C02196
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Feb 2025 22:51:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEF46C02192
+	for <linux-aspeed@archiver.kernel.org>; Fri,  7 Feb 2025 08:24:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ypsll6sqMz2y8X;
-	Fri,  7 Feb 2025 09:51:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738876589;
-	cv=none; b=oDWgSNba54yMXA6Vf/OQkYLhVcbJ8ZKmZSVIPu1fxHYDLAeEszHHLblZpSfaBh7v6cN/emHOZSjnQHQ5UxWzwAD6LFp1Q77DTpbwAgJwNyyQ4Kau/jTCOY6SnfjapHRY/fJz6SlATMqxXR/JzcPJSIulsrEfrcnq+QLdmPu14a08m33AgczvZna/mGkkxGSBFkf7XFtBmzH+qGHO7R3WbXKev+2S0z04g8N7pHLNj7cPoyel2jRbMEjwh7OcFT/vdbLqosLwYsJSSOhsjPkXjUsHK4D3THt3gjEDfm3qSUs4kbEwAQzuI6t7gsaQQrDajk/kf+E2dpuIHhh5eqgWUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yq6Ss4811z30JH;
+	Fri,  7 Feb 2025 19:24:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738916653;
+	cv=none; b=R/iXQCJNwrCbB9LG6USJ0DEq4/zfQnrg3chYckmnhUKWWn1R+BH48HQ5UipMggv0wbvaX+gHaIEEwIpIWKLp6TABGlVROZ2/HNa/jSNzsoy8WsolSiP24P8N3Yabwp73n96OYKp8brFN8nD06qbhatreZ/mApuqmt+bAIoyu16vNMhP46bs2OI8k0bJYBv36E0BFOqso7HoKMkPSR8Tr3rco5a7WhrW7b/sH8cRJjTV2q5twZDowkRfO0Ofcypag8VbZbd5paqqJQ+kreow90RX0LEzGKPLheWR5c3DsTPLtGjosdsRPO4y5Ip7dYacDZ7Hh06ROJpqCjmlE3u9mog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738876589; c=relaxed/relaxed;
-	bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IVSl+sBx9AXhV9KcrPefVGxFU0yJeDsFjHJdFp2CrgGJpbsmiUa2QU3TLGyeox6DI7198DYBx8MVCgmQjc7uOtUxCGpo5jGFyreVG+/RNCXfa7S+2Ft/ihq4Lid1vapp6k1s1OcRtvsFTBOVwLwUBMoDfL1dVTCyBUyt7iVYdZU14sHwsAsfIiXPFe8fQh7GaEin9zq7iJ48XG1ogzGFADG0lOIiWxOOVJ8eb8Y+FDOu8f4Sk4pkbqUSpj7VkA685V1SmZNIwuDZfXVuO0GVKcX5gdeDQ9BJTHyBuMe+z+pSDpmJnZD35D8GU4/uM7YOdCz9isTelGsl/Ge/7mHliw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Na8bVlvY;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1738916653; c=relaxed/relaxed;
+	bh=hQ8V9KXvhygSj/cIkAlhhxlgO75Xj/X7PeQoxRpjPcs=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=nYNfEiu+HjNUxI4Dg8ZIxw/Nhv/5Gh8sRp6lPo32/RjHw1Lyh3WfsguJ7KUyT9fVlXahwqmJwJcgEv/LBsmkyJUEU9LiC1JcKCAGVM79EbBbPVFftKwyf3L2TborVL+jl1HSihOrdqK19M6VxTeV5RIzEJegDfbKgkVnMH3QZkdOgtkYya/2D0KZ3MCfDxztbZr+QDrezqF+camDcbsYTbWwMyijk2RneYl4agOw2u5NPj48Tqj6gQiGTuhxpweZ/FgtYlMyM1r1tNKzRMpoZWEarqqhdrrQBXLdM9tcZ8H5LTShalP2bZUF6b1rz0cDkFvR0C/JDhycT3Wp2Y3MDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpqfN5Y16z2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Feb 2025 08:16:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1738876582;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
-	b=Na8bVlvY1YKaLk0SSwZvzwxxT8XgWT+EfdZIxWlPTghr6JwFzKlxbjf9ci7oJlH9nVzmW4
-	zuvfpSh3C0vQlkJ8I1sSoro+FueBDgN6dXVjNqIQPE+Gd42AFKcG2/i5xcFQ0JQTuDSGvN
-	xnJ+w9n4EhEdyzPlIdZbeS3ta5RnSUQ=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1738876582;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
-	b=Na8bVlvY1YKaLk0SSwZvzwxxT8XgWT+EfdZIxWlPTghr6JwFzKlxbjf9ci7oJlH9nVzmW4
-	zuvfpSh3C0vQlkJ8I1sSoro+FueBDgN6dXVjNqIQPE+Gd42AFKcG2/i5xcFQ0JQTuDSGvN
-	xnJ+w9n4EhEdyzPlIdZbeS3ta5RnSUQ=
-Received: from mail-yw1-f199.google.com (mail-yw1-f199.google.com
- [209.85.128.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-368-DixcfuEDMuGmSKpcWiT9sg-1; Thu, 06 Feb 2025 16:16:20 -0500
-X-MC-Unique: DixcfuEDMuGmSKpcWiT9sg-1
-X-Mimecast-MFC-AGG-ID: DixcfuEDMuGmSKpcWiT9sg
-Received: by mail-yw1-f199.google.com with SMTP id 00721157ae682-6f68264a641so15582317b3.2
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 06 Feb 2025 13:16:19 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738876579; x=1739481379;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/LIRhzPa0ziB3G/ikzWEbtqiSuvX/5xBqL7wzBRiH8M=;
-        b=K8U6MCpaE3T76swBjjpEFyCPV4iKfuxhlnqWr3zsMX2UlaxV9/1iGcupDr5YUyRbMX
-         bEvtUk6NuM9GEyOEBqFqzc8rxi4E2aDRI5/7E+m69AiQSQCJPoUo6pRPS2i+4pYn7C+U
-         HVA5Qm875CJZO5HB6TC9c/3kaSHpjdS9dV39zxAH+3k0U9aij3LM1k09mm+xJKIX+YEe
-         owloJ7Lz1SC9iHD/8JUmLEleLg6b0GvbcQP6SGA68tq8gTADhMZaKqNZqUyLxhVex6n7
-         /C49KrVTuGrMoX0q1vXlRO9FoRdk/2NjvqLQZH0dcKPsGgBRFH9A39kcY2HGUbHg2AbI
-         0UGQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXoQ+UhgztBscuehuKfn6mX/VX/eEsc9q0sLQV0Mk5hG/cYgBzak7JeiKDJSlNjR4/FgduSIxbyug9vhSE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YweJbitGeKr/Xv3xS0LU4yWGywENcyHZlEhkwl2ZQ/Dv6A+CVoA
-	HyV0GFpO0uV1pe4z4Sa+md1hYHCt2mlNTc5GJ01aBkEq2KW/PIrFAtNZk44jZPlzbMHgUv/EqgK
-	XJz1pd/CG11QRHRaDPcBx2jP2cL5z+KkFk68DDxUqIDnr5MhqtnenkwgYG2EqG2B29f0TXdyCnh
-	LNgCZ5Hpkq32qtIVEIMuvmM3E62Pcla2f7ISzs1g==
-X-Gm-Gg: ASbGncsoDXReVJhbDzCSahKAdmlYMOFcOqOl1l4XT9TcaQxjUYSE47ZMW2dXRxEVWkH
-	vcCv7DoqGUA48oYHrDbSytFRrvmkLPzAnSXuHUNLzyxtKTToWyy4hfjaTNtd7
-X-Received: by 2002:a05:690c:9989:b0:6ef:6fef:4cb6 with SMTP id 00721157ae682-6f9b233bf8fmr8830697b3.0.1738876579000;
-        Thu, 06 Feb 2025 13:16:19 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFjCqpwPwL+07jYSJFwomed71Bwu5IyhQrsp/e8kjJRvrAsFYgViw9/vssKy4znNo90IGP+LEAAzfLVoH6pYqM=
-X-Received: by 2002:a05:690c:9989:b0:6ef:6fef:4cb6 with SMTP id
- 00721157ae682-6f9b233bf8fmr8830137b3.0.1738876578666; Thu, 06 Feb 2025
- 13:16:18 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yq6Sr31nQz3045;
+	Fri,  7 Feb 2025 19:24:08 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Fri, 7 Feb
+ 2025 16:23:51 +0800
+Received: from twmbx02.aspeed.com (192.168.10.10) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
+ Transport; Fri, 7 Feb 2025 16:23:51 +0800
+From: Jammy Huang <jammy_huang@aspeedtech.com>
+To: <eajames@linux.ibm.com>, <mchehab@kernel.org>, <robh@kernel.org>,
+	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joel@jms.id.au>,
+	<andrew@aj.id.au>, <linux-media@vger.kernel.org>, <openbmc@lists.ozlabs.org>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v3] media: dt-bindings: aspeed,video-engine: Convert to json schema
+Date: Fri, 7 Feb 2025 16:23:51 +0800
+Message-ID: <20250207082351.1298990-1-jammy_huang@aspeedtech.com>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -93,212 +53,180 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20250205-mem-cocci-newapi-v1-0-aebf2b0e2300@redhat.com>
- <20250205-mem-cocci-newapi-v1-12-aebf2b0e2300@redhat.com> <73bad044-f5fc-40ea-9e32-571912573a5f@suse.de>
-In-Reply-To: <73bad044-f5fc-40ea-9e32-571912573a5f@suse.de>
-From: Anusha Srivatsa <asrivats@redhat.com>
-Date: Thu, 6 Feb 2025 16:16:07 -0500
-X-Gm-Features: AWEUYZk6prfZM1C9-Gul4JSYr8izxGkZAIuEujMIU0-RwOCWKJ-qTeyWBXWPDFc
-Message-ID: <CAN9Xe3R=PpKbM=QraFvPMTF+XvBujjxp3XCWtg3Y5+pd+OE1Dw@mail.gmail.com>
-Subject: Re: [PATCH 12/12] Documentation: Update the todo
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Joel Stanley <joel@jms.id.au>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Stefan Agner <stefan@agner.ch>, 
-	Alison Wang <alison.wang@nxp.com>, Xinliang Liu <xinliang.liu@linaro.org>, 
-	Tian Tao <tiantao6@hisilicon.com>, Xinwei Kong <kong.kongxinwei@hisilicon.com>, 
-	Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu <yongqin.liu@linaro.org>, 
-	John Stultz <jstultz@google.com>, Chun-Kuang Hu <chunkuang.hu@kernel.org>, 
-	Philipp Zabel <p.zabel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Marek Vasut <marex@denx.de>, 
-	Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
-	Sandy Huang <hjc@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
-	Andy Yan <andy.yan@rock-chips.com>, Orson Zhai <orsonzhai@gmail.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
-	Alain Volmat <alain.volmat@foss.st.com>, Raphael Gallais-Pou <rgallaispou@gmail.com>, 
-	Yannick Fertre <yannick.fertre@foss.st.com>, 
-	Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>, 
-	Philippe Cornu <philippe.cornu@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, Thierry Reding <thierry.reding@gmail.com>, 
-	Mikko Perttunen <mperttunen@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Alexey Brodkin <abrodkin@synopsys.com>, Dave Stevenson <dave.stevenson@raspberrypi.com>, 
-	=?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>, 
-	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, Jonathan Corbet <corbet@lwn.net>, 
-	linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
-	linux-rockchip@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
-	linux-tegra@vger.kernel.org, linux-doc@vger.kernel.org
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: VAgfGcWRxgSvHtCumivHWeW-ahIG0C1yUQmMfLvBNv0_1738876579
-X-Mimecast-Originator: redhat.com
-Content-Type: multipart/alternative; boundary="000000000000c7abf9062d7fc054"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
---000000000000c7abf9062d7fc054
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Convert aspeed-video.txt to yaml format.
+Update aspeed-video.txt to aspeed,video-engine.yaml in MAINTAINER file.
 
-On Thu, Feb 6, 2025 at 2:57=E2=80=AFAM Thomas Zimmermann <tzimmermann@suse.=
-de>
-wrote:
+Additional changes:
+- Two phandle properties, 'aspeed,scu' and 'aspeed,gfx', are added for
+  video engine to capture video from sources other than VGA.
+- Update examples and include appropriate file directives to resolve
+  errors identified by `dt_binding_check` and `dtbs_check`.
 
-> Hi
->
->
-> Am 05.02.25 um 21:08 schrieb Anusha Srivatsa:
-> > Update the Documentation to be more precise.
-> >
-> > v2: Update for clarity
-> >
-> > Cc: Thomas Zimmermann <tzimmermann@suse.de>
-> > Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
-> > ---
-> >   Documentation/gpu/todo.rst | 12 ++++++------
-> >   1 file changed, 6 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
-> > index
-> 256d0d1cb2164bd94f9b610a751b907834d96a21..03fcd086889acbd1294669b260292ff=
-c79e97e2f
-> 100644
-> > --- a/Documentation/gpu/todo.rst
-> > +++ b/Documentation/gpu/todo.rst
-> > @@ -441,13 +441,13 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
-> >
-> >   Level: Intermediate
-> >
-> > -Request memory regions in all drivers
-> > --------------------------------------
-> > +Request memory regions in all fbdev drivers
-> > +--------------------------------------------
-> >
-> > -Go through all drivers and add code to request the memory regions that
-> the
-> > -driver uses. This requires adding calls to request_mem_region(),
-> > -pci_request_region() or similar functions. Use helpers for managed
-> cleanup
-> > -where possible.
-> > +Old/ancient fbdev drivers do not request their memory properly.
-> > +Go through these drivers and add code to request the memory regions
-> that the
-> > +driver uses. Problematic areas include hardware that has exclusive
-> ranges like
-> > +VGA. VGA16fb does not request the range as it is expected.
->
-> I'd keep both, old and new text, and turn them into a single paragraph.
-> The old text explains what to do and the new text gives examples.
->
->
-Sure. Waiting for one final patch to be reviewed(patch 11). With that, I
-will make the changes you suggested and re-roll the series.
+Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+---
+ v3:
+  - Add Additional changes into comments.
+  - Remove | after phandle description
 
-Thanks for the feedback!
+ v2:
+  - Update patch subject
+  - Add NOTE for false positive warning
+---
+ .../bindings/media/aspeed,video-engine.yaml   | 84 +++++++++++++++++++
+ .../bindings/media/aspeed-video.txt           | 33 --------
+ MAINTAINERS                                   |  2 +-
+ 3 files changed, 85 insertions(+), 34 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+ delete mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
 
-Anusha
+diff --git a/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml b/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+new file mode 100644
+index 000000000000..93917c9ecfc3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+@@ -0,0 +1,84 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/media/aspeed,video-engine.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED Video Engine
++
++maintainers:
++  - Eddie James <eajames@linux.ibm.com>
++
++description:
++  The Video Engine (VE) embedded in the ASPEED SOCs can be configured to
++  capture and compress video data from digital or analog sources.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-video-engine
++      - aspeed,ast2500-video-engine
++      - aspeed,ast2600-video-engine
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 2
++
++  clock-names:
++    items:
++      - const: vclk
++      - const: eclk
++
++  resets:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  memory-region:
++    maxItems: 1
++    description:
++      Phandle to the reserved memory nodes to be associated with the
++      VE. VE will acquires memory space for 3 purposes:
++        1. JPEG header
++        2. Compressed result
++        3. Temporary transformed image data
++
++  aspeed,scu:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description:
++      Specifies the scu node that is needed if video wants to capture
++      from sources other than Host VGA.
++
++  aspeed,gfx:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description:
++      Specifies the Soc Display(gfx) node that needs to be queried to get
++      related information if video wants to use gfx as capture source.
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - clock-names
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/clock/ast2600-clock.h>
++
++    video@1e700000 {
++        compatible = "aspeed,ast2600-video-engine";
++        reg = <0x1e700000 0x1000>;
++        clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
++                 <&syscon ASPEED_CLK_GATE_ECLK>;
++        clock-names = "vclk", "eclk";
++        interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
++        aspeed,scu = <&syscon>;
++        aspeed,gfx = <&gfx>;
++    };
+diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
+deleted file mode 100644
+index d2ca32512272..000000000000
+--- a/Documentation/devicetree/bindings/media/aspeed-video.txt
++++ /dev/null
+@@ -1,33 +0,0 @@
+-* Device tree bindings for Aspeed Video Engine
+-
+-The Video Engine (VE) embedded in the Aspeed AST2400/2500/2600 SOCs can
+-capture and compress video data from digital or analog sources.
+-
+-Required properties:
+- - compatible:		"aspeed,ast2400-video-engine" or
+-			"aspeed,ast2500-video-engine" or
+-			"aspeed,ast2600-video-engine"
+- - reg:			contains the offset and length of the VE memory region
+- - clocks:		clock specifiers for the syscon clocks associated with
+-			the VE (ordering must match the clock-names property)
+- - clock-names:		"vclk" and "eclk"
+- - resets:		reset specifier for the syscon reset associated with
+-			the VE
+- - interrupts:		the interrupt associated with the VE on this platform
+-
+-Optional properties:
+- - memory-region:
+-	phandle to a memory region to allocate from, as defined in
+-	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+-
+-Example:
+-
+-video-engine@1e700000 {
+-    compatible = "aspeed,ast2500-video-engine";
+-    reg = <0x1e700000 0x20000>;
+-    clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
+-    clock-names = "vclk", "eclk";
+-    resets = <&syscon ASPEED_RESET_VIDEO>;
+-    interrupts = <7>;
+-    memory-region = <&video_engine_memory>;
+-};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 896a307fa065..7e59daa1e89d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3549,7 +3549,7 @@ M:	Eddie James <eajames@linux.ibm.com>
+ L:	linux-media@vger.kernel.org
+ L:	openbmc@lists.ozlabs.org (moderated for non-subscribers)
+ S:	Maintained
+-F:	Documentation/devicetree/bindings/media/aspeed-video.txt
++F:	Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
+ F:	drivers/media/platform/aspeed/
+ 
+ ASUS EC HARDWARE MONITOR DRIVER
 
-> Best regards
-> Thomas
-> >
-> >   Drivers are pretty bad at doing this and there used to be conflicts
-> among
-> >   DRM and fbdev drivers. Still, it's the correct thing to do.
-> >
->
-> --
-> --
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Frankenstrasse 146, 90461 Nuernberg, Germany
-> GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
-> HRB 36809 (AG Nuernberg)
->
->
-
---000000000000c7abf9062d7fc054
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote g=
-mail_quote_container"><div dir=3D"ltr" class=3D"gmail_attr">On Thu, Feb 6, =
-2025 at 2:57=E2=80=AFAM Thomas Zimmermann &lt;<a href=3D"mailto:tzimmermann=
-@suse.de">tzimmermann@suse.de</a>&gt; wrote:<br></div><blockquote class=3D"=
-gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(20=
-4,204,204);padding-left:1ex">Hi<br>
-<br>
-<br>
-Am 05.02.25 um 21:08 schrieb Anusha Srivatsa:<br>
-&gt; Update the Documentation to be more precise.<br>
-&gt;<br>
-&gt; v2: Update for clarity<br>
-&gt;<br>
-&gt; Cc: Thomas Zimmermann &lt;<a href=3D"mailto:tzimmermann@suse.de" targe=
-t=3D"_blank">tzimmermann@suse.de</a>&gt;<br>
-&gt; Signed-off-by: Anusha Srivatsa &lt;<a href=3D"mailto:asrivats@redhat.c=
-om" target=3D"_blank">asrivats@redhat.com</a>&gt;<br>
-&gt; ---<br>
-&gt;=C2=A0 =C2=A0Documentation/gpu/todo.rst | 12 ++++++------<br>
-&gt;=C2=A0 =C2=A01 file changed, 6 insertions(+), 6 deletions(-)<br>
-&gt;<br>
-&gt; diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst<b=
-r>
-&gt; index 256d0d1cb2164bd94f9b610a751b907834d96a21..03fcd086889acbd1294669=
-b260292ffc79e97e2f 100644<br>
-&gt; --- a/Documentation/gpu/todo.rst<br>
-&gt; +++ b/Documentation/gpu/todo.rst<br>
-&gt; @@ -441,13 +441,13 @@ Contact: Thomas Zimmermann &lt;<a href=3D"mailto=
-:tzimmermann@suse.de" target=3D"_blank">tzimmermann@suse.de</a>&gt;<br>
-&gt;=C2=A0 =C2=A0<br>
-&gt;=C2=A0 =C2=A0Level: Intermediate<br>
-&gt;=C2=A0 =C2=A0<br>
-&gt; -Request memory regions in all drivers<br>
-&gt; --------------------------------------<br>
-&gt; +Request memory regions in all fbdev drivers<br>
-&gt; +--------------------------------------------<br>
-&gt;=C2=A0 =C2=A0<br>
-&gt; -Go through all drivers and add code to request the memory regions tha=
-t the<br>
-&gt; -driver uses. This requires adding calls to request_mem_region(),<br>
-&gt; -pci_request_region() or similar functions. Use helpers for managed cl=
-eanup<br>
-&gt; -where possible.<br>
-&gt; +Old/ancient fbdev drivers do not request their memory properly.<br>
-&gt; +Go through these drivers and add code to request the memory regions t=
-hat the<br>
-&gt; +driver uses. Problematic areas include hardware that has exclusive ra=
-nges like<br>
-&gt; +VGA. VGA16fb does not request the range as it is expected.<br>
-<br>
-I&#39;d keep both, old and new text, and turn them into a single paragraph.=
- <br>
-The old text explains what to do and the new text gives examples.<br>
-<br></blockquote><div><br></div><div>Sure. Waiting for one final patch to b=
-e reviewed(patch 11). With that, I will make the changes you suggested and =
-re-roll the series. <br></div><div><br></div><div>Thanks for the feedback!<=
-/div><div><br></div><div>Anusha<br></div><blockquote class=3D"gmail_quote" =
-style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);pa=
-dding-left:1ex">
-Best regards<br>
-Thomas<br>
-&gt;=C2=A0 =C2=A0<br>
-&gt;=C2=A0 =C2=A0Drivers are pretty bad at doing this and there used to be =
-conflicts among<br>
-&gt;=C2=A0 =C2=A0DRM and fbdev drivers. Still, it&#39;s the correct thing t=
-o do.<br>
-&gt;<br>
-<br>
--- <br>
---<br>
-Thomas Zimmermann<br>
-Graphics Driver Developer<br>
-SUSE Software Solutions Germany GmbH<br>
-Frankenstrasse 146, 90461 Nuernberg, Germany<br>
-GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman<br>
-HRB 36809 (AG Nuernberg)<br>
-<br>
-</blockquote></div></div>
-
---000000000000c7abf9062d7fc054--
+base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
+-- 
+2.25.1
 
 
