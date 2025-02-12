@@ -1,46 +1,60 @@
-Return-Path: <linux-aspeed+bounces-699-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-700-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B20FC0219B
-	for <linux-aspeed@archiver.kernel.org>; Wed, 12 Feb 2025 01:47:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5628C02198
+	for <linux-aspeed@archiver.kernel.org>; Wed, 12 Feb 2025 06:44:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yt1Qn0h6Fz2yGT;
-	Wed, 12 Feb 2025 12:47:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739324849;
-	cv=none; b=WWthqmCuaeGRNQ+fv2zU3884C1qo8uvK9bq85nIHrAKfh1AvPu5G2Bc+ZokFgPbUQ7aMExDOwuIQLJp9VPyeaIMy/kNI5lCaV0eTS4GU8ouMyvsbN4EcuLzALptHB42XkxDvI9xOeXpso1JrwVtzfYvt1wR2ggdijm/5WjquPd/mxBIMoA6a7ZzJFbm/cj/HZUChGpyQgzBUPYk+ZY/2vyhpyGUttLY/S1ipz4qX8XpJl3dnSUjtw0EIL4qPN+ojnbPpaRnI75cFtjDj44LE3YyXXoImJWwgX9pwpOMqycZxfV1BT8no1+MIMPlTMn+jag6vlMqX9GY7O1WTZ2DS7w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yt81c3vTLz2yZ6;
+	Wed, 12 Feb 2025 17:44:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739342676;
+	cv=none; b=kRKOvo+QVsEChqnuVWJgIftKIv4qXATn8I8FjQHBpZurpnAk/HqBBMjkyEwfq0FQXjeuOgrs8jLyqRpIKqW9ACpHVWHuMdFolkUR1h5lI0oqG1LOpg3gHewLY53IpbRX5hjcukUAv8Y3nKHPeUngPVTOp8PvhaJcATqBqW84MWibbEw0SuL+tq5Sm4tqsCwEbOYUWYGCw67DEzB0qMBiQbxB1lCZkwzMTpfL9xjV+UDmpi3u5BBCHYtEHuCN7EimdODkemWgG56q4r3RmMgnr2oc6qKZ+RlQYggjg6EJHDdN8Vs5qc1vxja7CwU6IdTts3PLIduRHBlqRb8xmztcjg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739324849; c=relaxed/relaxed;
-	bh=aRzSBhbBPTR7ydubgQ5qlZ0vpO3vweP8qyW1/cNmlJ0=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HNmSRPZg3zeFe6EwHNWSG7+SSg73hs+cvTzgjyyJIKhbU4W15Xavz+DwhXT8xtHkeJVj3XG9EITealtac0yK/b6Af4gq0csD4Iohld9BAfkXc7K4Dd7cB/Q8EDP3qcsHMA2cIBD9xHfVz9prNa3iGcS1ts7rDjrZTdbAlTKoSnF0JhmXiqcVBwJKt3WCegkf8KAW0yXLHh/SoQPRCxbjYdlKY1QQWAddJydKGejcp9sPfmpl2aGR0hnEkuzEgaYeULRbBOjZP/shnrXxy35yxudx+9tiEBxWor4XsC5n5JPlURoSbO3U4Qa7cjEk5GKI4LxoSKj+5noYgjQi22g5Gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1739342676; c=relaxed/relaxed;
+	bh=qCJf3RdMRIDtsyVFtsT7i6n1XVBxH7JnaQG1mSyRKT0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Uotrz/JVLbPGFI+gmAnMiemITYCQdXUDQ7E0otgzC9Ee7Qbj2g0cCHtn2XGlolUHkkBsMXTUD+WNARnfq2aWOprwLLBDfx4EiEz/EmhyxEsYHeDzww0TXQIk6xD2D/jHoIka3lULln3MNNlXJMN8gi7wJHCt9QhOZplmNI70TxSukoFfxag3GD++zwdl0zzP0rFTt9WJD4tbp158XUHw5gmtSXm3AEieFIcG1GJPa+J17NTd1oiWpcfTtMVzB/ubwIL5DP2zPUyAx8QvkI/OrrOVQkdtqWU+b+wiz5+WTq/TH3iC6IecIZahsgWCTpcLZFCjr+Mw/2k6jdrXj201LQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tfUXC0BL; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tfUXC0BL;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yt1Qm1KWFz2xmk;
-	Wed, 12 Feb 2025 12:47:27 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Wed, 12 Feb
- 2025 09:47:11 +0800
-Received: from twmbx02.aspeed.com (192.168.10.10) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
- Transport; Wed, 12 Feb 2025 09:47:11 +0800
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-To: <eajames@linux.ibm.com>, <mchehab@kernel.org>, <robh@kernel.org>,
-	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joel@jms.id.au>,
-	<andrew@aj.id.au>, <linux-media@vger.kernel.org>, <openbmc@lists.ozlabs.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v5] media: dt-bindings: aspeed,video-engine: Convert to json schema
-Date: Wed, 12 Feb 2025 09:47:11 +0800
-Message-ID: <20250212014711.2181865-1-jammy_huang@aspeedtech.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yt81b4BHjz2yF4;
+	Wed, 12 Feb 2025 17:44:35 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id AF933A40FA2;
+	Wed, 12 Feb 2025 06:42:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 505EEC4CEDF;
+	Wed, 12 Feb 2025 06:44:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739342672;
+	bh=Sv9qNL+TN5TjV7dcAh3uCs0tMgt7UdZj63e5XWo0KJw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=tfUXC0BLirlUXBWTvvt0AJzcvF0lHh9wK8R5XaaS+Wl1kkpJ1p251RZ3KuZMnnY4H
+	 hHF8g/BHY2ZqEwg9csC76QN/ORdw2gqcmxpwnGKXUNr7EfLik3ayZfaTyNrgtOMGeZ
+	 fzH8JvLwuIsqof/UnySBYsbry++vdHDaZ0rj+ifOdJovO0mB6MaYCwdT37ZzMu/me9
+	 jqVmmb+GaMwFC1+WfvFoUnehxg6umOkJp3dt7Dwzhm2OYDPWrkVF5t5g43esQPvnAF
+	 WaI4tfXxlwkLNy1xuEfxlIuY0638gIUBdtffuu/kBnld5maDpljDOqAn5E4L1lx3nU
+	 jhNIek9FoKY+w==
+Date: Wed, 12 Feb 2025 07:44:27 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Jammy Huang <jammy_huang@aspeedtech.com>
+Cc: eajames@linux.ibm.com, mchehab@kernel.org, robh@kernel.org, 
+	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au, andrew@aj.id.au, 
+	linux-media@vger.kernel.org, openbmc@lists.ozlabs.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5] media: dt-bindings: aspeed,video-engine: Convert to
+ json schema
+Message-ID: <20250212-copper-tortoise-from-hyperborea-8dddcc@krzk-bin>
+References: <20250212014711.2181865-1-jammy_huang@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -53,168 +67,25 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250212014711.2181865-1-jammy_huang@aspeedtech.com>
 
-Convert aspeed-video.txt to yaml format.
-Update aspeed-video.txt to aspeed,video-engine.yaml in MAINTAINER file.
+On Wed, Feb 12, 2025 at 09:47:11AM +0800, Jammy Huang wrote:
+> Convert aspeed-video.txt to yaml format.
+> Update aspeed-video.txt to aspeed,video-engine.yaml in MAINTAINER file.
+> 
+> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> ---
+>  v5:
+>   - Don't put additional changes in this commit.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- v5:
-  - Don't put additional changes in this commit.
+But it fails then, right? I asked for justification or separate commit,
+depending on what is really hapenning here.
 
- v4:
-  - Keep | after phandle description to fix dt_binding_check error.
+Are you sure you tested this? I am pretty confident it will fail :/.
 
- v3:
-  - Add Additional changes into comments.
-  - Remove | after phandle description
-
- v2:
-  - Update patch subject
-  - Add NOTE for false positive warning
----
- .../bindings/media/aspeed,video-engine.yaml   | 72 +++++++++++++++++++
- .../bindings/media/aspeed-video.txt           | 33 ---------
- MAINTAINERS                                   |  2 +-
- 3 files changed, 73 insertions(+), 34 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
- delete mode 100644 Documentation/devicetree/bindings/media/aspeed-video.txt
-
-diff --git a/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml b/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
-new file mode 100644
-index 000000000000..95d4dfe2a217
---- /dev/null
-+++ b/Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
-@@ -0,0 +1,72 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/media/aspeed,video-engine.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED Video Engine
-+
-+maintainers:
-+  - Eddie James <eajames@linux.ibm.com>
-+
-+description:
-+  The Video Engine (VE) embedded in the ASPEED SOCs can be configured to
-+  capture and compress video data from digital or analog sources.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2400-video-engine
-+      - aspeed,ast2500-video-engine
-+      - aspeed,ast2600-video-engine
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 2
-+
-+  clock-names:
-+    items:
-+      - const: vclk
-+      - const: eclk
-+
-+  resets:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  memory-region:
-+    maxItems: 1
-+    description: |
-+      Phandle to the reserved memory nodes to be associated with the
-+      VE. VE will acquires memory space for 3 purposes:
-+        1. JPEG header
-+        2. Compressed result
-+        3. Temporary transformed image data
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - clock-names
-+  - interrupts
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+
-+    video@1e700000 {
-+        compatible = "aspeed,ast2600-video-engine";
-+        reg = <0x1e700000 0x1000>;
-+        clocks = <&syscon ASPEED_CLK_GATE_VCLK>,
-+                 <&syscon ASPEED_CLK_GATE_ECLK>;
-+        clock-names = "vclk", "eclk";
-+        interrupts = <GIC_SPI 7 IRQ_TYPE_LEVEL_HIGH>;
-+        aspeed,scu = <&syscon>;
-+        aspeed,gfx = <&gfx>;
-+    };
-diff --git a/Documentation/devicetree/bindings/media/aspeed-video.txt b/Documentation/devicetree/bindings/media/aspeed-video.txt
-deleted file mode 100644
-index d2ca32512272..000000000000
---- a/Documentation/devicetree/bindings/media/aspeed-video.txt
-+++ /dev/null
-@@ -1,33 +0,0 @@
--* Device tree bindings for Aspeed Video Engine
--
--The Video Engine (VE) embedded in the Aspeed AST2400/2500/2600 SOCs can
--capture and compress video data from digital or analog sources.
--
--Required properties:
-- - compatible:		"aspeed,ast2400-video-engine" or
--			"aspeed,ast2500-video-engine" or
--			"aspeed,ast2600-video-engine"
-- - reg:			contains the offset and length of the VE memory region
-- - clocks:		clock specifiers for the syscon clocks associated with
--			the VE (ordering must match the clock-names property)
-- - clock-names:		"vclk" and "eclk"
-- - resets:		reset specifier for the syscon reset associated with
--			the VE
-- - interrupts:		the interrupt associated with the VE on this platform
--
--Optional properties:
-- - memory-region:
--	phandle to a memory region to allocate from, as defined in
--	Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
--
--Example:
--
--video-engine@1e700000 {
--    compatible = "aspeed,ast2500-video-engine";
--    reg = <0x1e700000 0x20000>;
--    clocks = <&syscon ASPEED_CLK_GATE_VCLK>, <&syscon ASPEED_CLK_GATE_ECLK>;
--    clock-names = "vclk", "eclk";
--    resets = <&syscon ASPEED_RESET_VIDEO>;
--    interrupts = <7>;
--    memory-region = <&video_engine_memory>;
--};
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 896a307fa065..7e59daa1e89d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3549,7 +3549,7 @@ M:	Eddie James <eajames@linux.ibm.com>
- L:	linux-media@vger.kernel.org
- L:	openbmc@lists.ozlabs.org (moderated for non-subscribers)
- S:	Maintained
--F:	Documentation/devicetree/bindings/media/aspeed-video.txt
-+F:	Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
- F:	drivers/media/platform/aspeed/
- 
- ASUS EC HARDWARE MONITOR DRIVER
-
-base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
--- 
-2.25.1
+Best regards,
+Krzysztof
 
 
