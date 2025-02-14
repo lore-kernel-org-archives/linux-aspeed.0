@@ -1,71 +1,85 @@
-Return-Path: <linux-aspeed+bounces-714-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-716-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274CAC3DA4A
-	for <linux-aspeed@archiver.kernel.org>; Thu, 13 Feb 2025 22:01:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F0DAC02198
+	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Feb 2025 09:44:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yv8Jv3Nh3z30Ff;
-	Fri, 14 Feb 2025 09:01:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739411464;
-	cv=none; b=W3+0YmvuzsYlXgw8PsdjFVGcMw7bDKCqyaZAvYe9naH2gJXYxGHQgpq56ltc/3wrZSulg69WocgFwgWaxv/R6OkzoaYfOTSWMcRC60vIkjRMQVLWlu3+PV+dW0sCMYWQ0U0pSlvRzTMnjeoCm2etAWcbqZAMoaumgu8orL+QBDrEYsXD9tSh0shcf7Cejaic1ouaNjkz9mbGPt8ij6vxwNsTF3FYAB6HW9H6l7T7HzsRe/m8R4s+IR7CVfui5W4wzXn2NIr0LgMU38m2xExj9OwUbLXdvJY+TWolZ9KVoaMD0Utgk4rrrZ7hFflvcNk4nVd6PRhk6jrk1elstktOKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YvRvw1H8Zz30WY;
+	Fri, 14 Feb 2025 20:44:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739526252;
+	cv=none; b=L/PKsfNJgNIDRNf/gF1Lq16gBLZzGmoFo3UIufhcs52frIYHSinCXDQxd2SPo3Kvg3Drvw+5pg5nlAzHjK5QcVAwNGe/zogHFbvWhWr0GxccX82zgZc9kOTIS//S0xvdt3M0gyHcM9tjLz+XkWICL5GcfX6gKDaS0DIZ+w3HTIEbzhlA4uHTbknbEvz2l/bK6rlUDAZfYlpTSrzd8HLUHkGmtNKemiZwrYm+IfMkO1T5B8nlf58EDYud5DuSeT8ye9iAWAK+WPi5+ApIhwQdvN8BYKCYnhnWrZVH5ZfcBGGdxuAWGcFLl30ntLXUtbkRpIqvqgXElZ1eN29sruHW2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739411464; c=relaxed/relaxed;
-	bh=nF+3d9YE5wll/jDVUEdSENnWO/Lio/88ULs9I5MUpd8=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=A0RnjLiaa5llcqFqDSIwJMCeLzeJ6Oru6irwxaGHbuo9L7YNII9UBIRmcL+PJhwhx98O+SKX+HB6V9H2Xf6YPNVHnkXK2vYBtRdXomHzfWMqfCZ7Lhc6kXUluEI+CWwr+002qKgWKctgGYuDK45wgXxXhWbQZYFFeFDCG/JAb76qzowoIeyoYsT6S4V5EBmNtZQuuikjrbtbDzU0+ZUEwiV1ygI7eWRj0tcXTlsT7QeBkzCBjRW3pw7S8ttfIrlYs7660ZTm5WHbVtd8fUEwfvl7eYxoTzWp0Z4cvYAGgW/UQUMalnB4XkWV0kyRuAG5Mf7FbUIDsH9C+YpwanOnAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=K5KXVhY6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=chenyuan0y@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1739526252; c=relaxed/relaxed;
+	bh=21tqIdPM7MMDZGQ0+y3MH3C18hS595+a3Ckf07v6s8I=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Qur1uDhia9LXUWSdFcGKOI9eTf9e/3UqXKJaE6X3+Vu6KL++4yXsMwxPhSOL9t5tJeZ7QTvuUoBLiyg1DGHdq78KZ/EaZcr7SVhoMbHBMHFMgDqHY1y9Sal88LnZmu8pYthb92l3fmrKyhzTWJv0YaRhxSoc7zc9rrl/bS5xVoPOYGVwsFN3SzO9yeDvvDHBmqbcoavmx4BU4/bgwTCPnUOetnyJADEZz45a6u+d15GLdUgiL2JEq6aDLU3tFNiKQTPdLIs5tzXYxrK3cDekNQDC79Ey0dMlATcjisX2NabMWQ5ZzHQS5XLLaABFg7dMDKue8kZ8BwlTMs6cj+R08g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QKgThIZQ; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=K5KXVhY6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QKgThIZQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=chenyuan0y@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YtdSR6P5Mz2yK7
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 13 Feb 2025 12:51:02 +1100 (AEDT)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-218c8ac69faso567685ad.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 12 Feb 2025 17:51:02 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739411461; x=1740016261; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nF+3d9YE5wll/jDVUEdSENnWO/Lio/88ULs9I5MUpd8=;
-        b=K5KXVhY6jXSMlWa4uJoVQP7tSvixO8J7vsu2Hj3KAPmT9oUcuKjRTCoMixvpe6l7xN
-         5z40n6eNjGGBSi8Ki/gdWnNNdIjW7ND+5tKkZLmkXhfZNkdtPJQj+wTf8qTwLbtXHvrA
-         Ynzs2jNAgSG5VmrN7o6JcY69u87r6wHB+matXAodmRLKVVzBZFQI1/vOloUljnXSfWSn
-         KfQb8L+qYbpishKjxk0t5bIs/bn1XzkPY7nF88jvJyz71DNFAzTD9AHQVk9tH8FfXG14
-         TKZoUNMFEbvH5C2xwAX8azxOEHhOOwplsZ4+4cRzEKkU32FEHQ+93loUSoDUTQwCIVRW
-         VyBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739411461; x=1740016261;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=nF+3d9YE5wll/jDVUEdSENnWO/Lio/88ULs9I5MUpd8=;
-        b=GMA5zFzgOIcNH01UH3SPWy0hvnQvvlmLbEhC71N7P0/EyT2jsTxJOuptlqJYqS+dPv
-         m/EdSFskgn6Is65sTk2rCuLikkhJZF5ordiM1jI8NcvUo7cH4sJfSTBByT1cZvoEZJka
-         gdgMqjh+64WUxxTirGExGJq4GybhNmcDIWYpfnRxcKBiwvqzAhO3ctIOsWgwpcMsBwge
-         Z5iIJJ0Xs0P4ZDcJcojSWV3Sk2OnpxvqjzJqAU8YN8UybEjDYsEiO5q+HDVaNJkqB813
-         DFVkzEeZzSvKyEdmmm/O4RrqL7secduKPDaTT68LN5IIO0WaEUxTLWE8K9qdK+vg4iNo
-         ghZg==
-X-Forwarded-Encrypted: i=1; AJvYcCVA6NC79b3BlsUO39xHC/Qbmeg0rAMcl0viWK3z0Pui+ZuEX9zNDhlqGsNYiFlg7aRvg92GppFT2IzGS+4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyUPe+FPZILVe+9ZYIiY+HDLk0UOMBM7EpuQQ999RXQFoupH7GF
-	YHKIwXIlkzGb66TMwCyDyQSqiVMZBIjKJNDSHylDHGx4xZWL3+tHQn+r+BpsG3Ayx0aDscDy1sU
-	jQTjCEAMeyF3nDQdwz42SGdc3iA==
-X-Gm-Gg: ASbGnctF9ax4NicfXNnr9oAMurR1UIRX6U8drLUOgxUGizefdlyNr3oHwb0rtwW2HFO
-	A6rAAh4DVZWkhMacfS+JMonOV1egLny3ITVJyQpU8FLeHKZjzzgBFQLK1UB4OWDCbeS8mzNboUg
-	==
-X-Google-Smtp-Source: AGHT+IFMzUNH4nx8Yt+NdViQ9eOLs4WezIKfW1Xnu9XXaeSGgUXoUd6cnTuTro+aX0pUCtSkVo5z0Ezs9Q5zdCPaPVI=
-X-Received: by 2002:a17:902:ea02:b0:215:3862:603a with SMTP id
- d9443c01a7336-220bbb465f2mr34801125ad.10.1739411460841; Wed, 12 Feb 2025
- 17:51:00 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvRvv2JVGz30W0
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 14 Feb 2025 20:44:11 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 334F5A42555;
+	Fri, 14 Feb 2025 09:42:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9C057C4CED1;
+	Fri, 14 Feb 2025 09:44:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739526247;
+	bh=euxH5xTB3npndNEOhGf9KR+p/1GlHm5dq8S6R5vtFvg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=QKgThIZQsDXvHi250nXVACftNulY+hDA56lG4gV0mWDqpQmEI/IeByxEkZ30VumCF
+	 L+r2W1g/8OTElc/khx4mIaSFrKtauo7k7wzOS5jT9SBbtUlYjgOkI86coP9+s3NYwT
+	 y3Pkf0q3FPGmXw9gDN2jBCwdfFjlwHIM6NMKxRNfAHvOj6MfdWa4J64sZrCZ+2mWp8
+	 rvLAPOGA4lz6JczHmcz0aTOHczOZk73pBCHAN90DCEiXiuHnMIe8lrWw5JBzcFdPvS
+	 NBKHdwztH01NncybK/yA9xE55/oALEeW+VtQObpTVt07tlkncpFvbP/wa1DsJj+6au
+	 giWDWVolgoUpA==
+Date: Fri, 14 Feb 2025 10:44:04 +0100
+From: Maxime Ripard <mripard@kernel.org>
+To: Anusha Srivatsa <asrivats@redhat.com>
+Cc: Joel Stanley <joel@jms.id.au>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Stefan Agner <stefan@agner.ch>, 
+	Alison Wang <alison.wang@nxp.com>, Xinliang Liu <xinliang.liu@linaro.org>, 
+	Tian Tao <tiantao6@hisilicon.com>, Xinwei Kong <kong.kongxinwei@hisilicon.com>, 
+	Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu <yongqin.liu@linaro.org>, 
+	John Stultz <jstultz@google.com>, Chun-Kuang Hu <chunkuang.hu@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Marek Vasut <marex@denx.de>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Sandy Huang <hjc@rock-chips.com>, 
+	Heiko =?utf-8?Q?St=C3=BCbner?= <heiko@sntech.de>, Andy Yan <andy.yan@rock-chips.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Chunyan Zhang <zhang.lyra@gmail.com>, Alain Volmat <alain.volmat@foss.st.com>, 
+	Raphael Gallais-Pou <rgallaispou@gmail.com>, Yannick Fertre <yannick.fertre@foss.st.com>, 
+	Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>, Philippe Cornu <philippe.cornu@foss.st.com>, 
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Alexey Brodkin <abrodkin@synopsys.com>, 
+	Dave Stevenson <dave.stevenson@raspberrypi.com>, =?utf-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, 
+	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, Jonathan Corbet <corbet@lwn.net>, linux-aspeed@lists.ozlabs.org, 
+	dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
+	linux-rockchip@lists.infradead.org, linux-stm32@st-md-mailman.stormreply.com, 
+	linux-tegra@vger.kernel.org, linux-doc@vger.kernel.org
+Subject: Re: [PATCH 11/12] drm/vc4: move to devm_platform_ioremap_resource()
+ usage
+Message-ID: <20250214-quixotic-fossa-of-art-b8bb9f@houat>
+References: <20250205-mem-cocci-newapi-v1-0-aebf2b0e2300@redhat.com>
+ <20250205-mem-cocci-newapi-v1-11-aebf2b0e2300@redhat.com>
+ <20250206-hallowed-ultra-tiger-cfec8e@houat>
+ <CAN9Xe3SpTG7r2UkN7_pH0uMXhU5u+dkWhaM9+w5VyOQZp9byNg@mail.gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -78,154 +92,129 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20250212212556.2667-1-chenyuan0y@gmail.com> <f649fc0f8491ab666b3c10f74e3dc18da6c20f0a.camel@codeconstruct.com.au>
- <CALGdzuoeYesmdRBG_QPW_rkFcX7v=0hsDr0iX3u5extEL5qYag@mail.gmail.com> <8e6c7913fda39baa50309886f9f945864301660f.camel@codeconstruct.com.au>
-In-Reply-To: <8e6c7913fda39baa50309886f9f945864301660f.camel@codeconstruct.com.au>
-From: Chenyuan Yang <chenyuan0y@gmail.com>
-Date: Wed, 12 Feb 2025 19:50:49 -0600
-X-Gm-Features: AWEUYZkVYD9t8ecpGjfaGqr6TdWOTef7hnfeghSVidusmxHZlhnX0dA023zCsj4
-Message-ID: <CALGdzurifZaqatjGRZGxA4FyNBHOYJdVXpKHSM4hQdA3qZtYvQ@mail.gmail.com>
-Subject: Re: [PATCH] soc: aspeed: Add NULL pointer check in aspeed_lpc_enable_snoop()
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: joel@jms.id.au, richardcochran@gmail.com, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha384;
+	protocol="application/pgp-signature"; boundary="tmymxs4x7znmvcxa"
+Content-Disposition: inline
+In-Reply-To: <CAN9Xe3SpTG7r2UkN7_pH0uMXhU5u+dkWhaM9+w5VyOQZp9byNg@mail.gmail.com>
+
+
+--tmymxs4x7znmvcxa
+Content-Type: text/plain; protected-headers=v1; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 11/12] drm/vc4: move to devm_platform_ioremap_resource()
+ usage
+MIME-Version: 1.0
 
-Hi Andrew,
-
-I've drafted the following patch to address the resource cleanup issue:
-
-```
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index 9ab5ba9cf1d6..4988144aba88 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -200,11 +200,15 @@ static int aspeed_lpc_enable_snoop(struct
-aspeed_lpc_snoop *lpc_snoop,
-  lpc_snoop->chan[channel].miscdev.minor =3D MISC_DYNAMIC_MINOR;
-  lpc_snoop->chan[channel].miscdev.name =3D
-  devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
-+ if (!lpc_snoop->chan[channel].miscdev.name) {
-+ rc =3D -ENOMEM;
-+ goto free_fifo;
-+ }
-  lpc_snoop->chan[channel].miscdev.fops =3D &snoop_fops;
-  lpc_snoop->chan[channel].miscdev.parent =3D dev;
-  rc =3D misc_register(&lpc_snoop->chan[channel].miscdev);
-  if (rc)
-- return rc;
-+ goto free_name;
-
-  /* Enable LPC snoop channel at requested port */
-  switch (channel) {
-@@ -221,7 +225,8 @@ static int aspeed_lpc_enable_snoop(struct
-aspeed_lpc_snoop *lpc_snoop,
-  hicrb_en =3D HICRB_ENSNP1D;
-  break;
-  default:
-- return -EINVAL;
-+ rc =3D -EINVAL;
-+ goto free_misc;
-  }
-
-  regmap_update_bits(lpc_snoop->regmap, HICR5, hicr5_en, hicr5_en);
-@@ -232,6 +237,14 @@ static int aspeed_lpc_enable_snoop(struct
-aspeed_lpc_snoop *lpc_snoop,
-  hicrb_en, hicrb_en);
-
-  return rc;
-+
-+free_misc:
-+ misc_deregister(&lpc_snoop->chan[channel].miscdev);
-+free_name:
-+ kfree(lpc_snoop->chan[channel].miscdev.name);
-+free_fifo:
-+ kfifo_free(&lpc_snoop->chan[channel].fifo);
-+ return rc;
- }
-```
-
-I have a couple of questions regarding the cleanup order:
-
-1. Do we need to call misc_deregister() in this case, considering that
-the registration happens before return -EINVAL?
-2. If misc_deregister() is required, is there a specific order we
-should follow when calling misc_deregister() and
-kfree(lpc_snoop->chan[channel].miscdev.name);?
-
--Chenyuan
-
-On Wed, Feb 12, 2025 at 7:39=E2=80=AFPM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> On Wed, 2025-02-12 at 19:37 -0600, Chenyuan Yang wrote:
-> > Hi Andrew,
-> >
-> > Thanks for your prompt reply!
-> >
-> > On Wed, Feb 12, 2025 at 6:21=E2=80=AFPM Andrew Jeffery
-> > <andrew@codeconstruct.com.au> wrote:
+On Tue, Feb 11, 2025 at 12:08:57PM -0500, Anusha Srivatsa wrote:
+> On Thu, Feb 6, 2025 at 11:13=E2=80=AFAM Maxime Ripard <mripard@kernel.org=
+> wrote:
+>=20
+> > On Wed, Feb 05, 2025 at 03:08:07PM -0500, Anusha Srivatsa wrote:
+> > > Replace platform_get_resource_byname + devm_ioremap_resource
+> > > with just devm_platform_ioremap_resource()
 > > >
-> > > Hi Chenyuan,
+> > > Used Coccinelle to do this change. SmPl patch:
+> > > //rule s/(devm_)platform_get_resource_byname +
+> > > //(devm_)ioremap/devm_platform_ioremap_resource.
+> > > @rule_3@
+> > > identifier res;
+> > > expression ioremap;
+> > > identifier pdev;
+> > > constant mem;
+> > > expression name;
+> > > @@
+> > > -struct resource *res;
+> > > <+...
+> > > -res =3D platform_get_resource_byname(pdev,mem,name);
+> > > <...
+> > > -if (!res) {
+> > > -...
+> > > -}
+> > > ...>
+> > > -ioremap =3D devm_ioremap(...);
+> > > +ioremap =3D devm_platform_ioremap_resource_byname(pdev,name);
+> > > ...+>
 > > >
-> > > On Wed, 2025-02-12 at 15:25 -0600, Chenyuan Yang wrote:
-> > > > lpc_snoop->chan[channel].miscdev.name could be NULL, thus,
-> > > > a pointer check is added to prevent potential NULL pointer
-> > > > dereference.
-> > > > This is similar to the fix in commit 3027e7b15b02
-> > > > ("ice: FiI am cx some null pointer dereference issues in ice_ptp.c"=
-).
-> > > >
-> > > > This issue is found by our static analysis tool.
-> > > >
-> > > > Signed-off-by: Chenyuan Yang <chenyuan0y@gmail.com>
-> > > > ---
-> > > >  drivers/soc/aspeed/aspeed-lpc-snoop.c | 2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > >
-> > > > diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > > > b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > > > index 9ab5ba9cf1d6..376b3a910797 100644
-> > > > --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > > > +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> > > > @@ -200,6 +200,8 @@ static int aspeed_lpc_enable_snoop(struct
-> > > > aspeed_lpc_snoop *lpc_snoop,
-> > > >         lpc_snoop->chan[channel].miscdev.minor =3D MISC_DYNAMIC_MIN=
-OR;
-> > > >         lpc_snoop->chan[channel].miscdev.name =3D
-> > > >                 devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME=
-,
-> > > > channel);
-> > > > +       if (!lpc_snoop->chan[channel].miscdev.name)
-> > > > +               return -ENOMEM;
+> > > v2: Change the SmPl patch to work on multiple occurences of
+> > > the pattern. This also fixes the compilation error.
 > > >
-> > > This introduces yet another place where the driver leaks resources in
-> > > an error path (in this case, the channel kfifo). The misc device also
-> > > gets leaked later on. It would be nice to address those first so that
-> > > handling this error can take the appropriate cleanup path.
+> > > Cc: Maxime Ripard <mripard@kernel.org>
+> > > Cc: Dave Stevenson <dave.stevenson@raspberrypi.com>
+> > > Cc: Ma=C3=ADra Canal <mcanal@igalia.com>
+> > > Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
+> > > ---
+> > >  drivers/gpu/drm/vc4/vc4_hdmi.c | 55
+> > +++++++++++-------------------------------
+> > >  1 file changed, 14 insertions(+), 41 deletions(-)
 > > >
-> > > Andrew
+> > > diff --git a/drivers/gpu/drm/vc4/vc4_hdmi.c
+> > b/drivers/gpu/drm/vc4/vc4_hdmi.c
+> > > index
+> > 47d9ada98430634cfd8c1e21c2a4d00d501bab7e..066f1246dab420ee889845b0c573d=
+80ce7c88595
+> > 100644
+> > > --- a/drivers/gpu/drm/vc4/vc4_hdmi.c
+> > > +++ b/drivers/gpu/drm/vc4/vc4_hdmi.c
+> > > @@ -2951,71 +2951,44 @@ static int vc5_hdmi_init_resources(struct
+> > drm_device *drm,
+> > >  {
+> > >       struct platform_device *pdev =3D vc4_hdmi->pdev;
+> > >       struct device *dev =3D &pdev->dev;
+> > > -     struct resource *res;
+> > >       int ret;
+> > >
+> > > -     res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM, "hdm=
+i");
+> > > -     if (!res)
+> > > -             return -ENODEV;
+> > > -
+> > > -     vc4_hdmi->hdmicore_regs =3D devm_ioremap(dev, res->start,
+> > > -                                            resource_size(res));
+> > > +     vc4_hdmi->hdmicore_regs =3D
+> > devm_platform_ioremap_resource_byname(pdev,
+> > > +
+> >  "hdmi");
+> > >       if (!vc4_hdmi->hdmicore_regs)
+> > >               return -ENOMEM;
+> > >
+> > > -     res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM, "hd"=
+);
+> > > -     if (!res)
+> > > -             return -ENODEV;
+> > > -
+> > > -     vc4_hdmi->hd_regs =3D devm_ioremap(dev, res->start,
+> > resource_size(res));
+> > > +     vc4_hdmi->hd_regs =3D devm_platform_ioremap_resource_byname(pde=
+v,
+> > "hd");
+> > >       if (!vc4_hdmi->hd_regs)
+> > >               return -ENOMEM;
 > >
-> > It seems that the `aspeed_lpc_enable_snoop()` function originally does
-> > not have a cleanup path. For example, if `misc_register` fails, the
-> > function directly returns rc without performing any cleanup.
-> > Similarly, when the `channel` has its default value, the function
-> > simply returns -EINVAL.
-> >
-> > Given this, I am wondering whether it would be a good idea to
-> > introduce a cleanup path. If so, should we ensure cleanup for all
-> > possible exit points?
+> > I *think* that one is shared between both HDMI controllers on the
+> > RaspberryPi4, so we can't claim them from both instances. We should add
+> > a comment there to document that it's on purpose.
 >
-> Yes please!
->
-> Thanks,
->
-> Andrew
->
+> How about vc4_hdmi->hdmicore_regs? It also has another instance
+> vc4_hdmi_init_resources(). Looks like that also doesnt need any converting
+> and shold be left as is.
+
+No, each controller will have its own set of registers there, so it can
+be converted.
+
+Maxime
+
+--tmymxs4x7znmvcxa
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCZ68QXwAKCRAnX84Zoj2+
+dnJFAX44qxSqH4/9r1lPWe6YsBKR9clH1sZQRZaWBdRICp0iE+/MJiNA/tJghQgy
+Xb2262kBgMGvJFpuBmHvz9HJegWf00i39I2+ctkME/qrOcHQhoIwF07ezVrQyZOZ
+z9Q+kadHOg==
+=d/Gf
+-----END PGP SIGNATURE-----
+
+--tmymxs4x7znmvcxa--
 
