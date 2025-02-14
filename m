@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-721-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-722-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AA5FC02198
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04CA3C021A6
 	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Feb 2025 13:56:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YvYW50tpfz30dt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YvYW51dYsz30XR;
 	Sat, 15 Feb 2025 00:56:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.130.132.48
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739541392;
-	cv=none; b=lmGc2+yQs7sX2LOYWZWZG47z6bWjxgXC47EPPLpDtMR0FjyEBm+aSCRdrLlW63T4If5uOzJE+HOpcn8Q+BIhTBNIRHEyX4l7DkIC9jHPw4ejt/gTbAM2RJRLqqDIa09l8XnnTRML+PEb/I4bEraO8d5mG/N8JMbYsCcCeUasfiTpGYxCXPABNqhPiDlTLUgMz82TjLZ5rCRPaH7Hz403mT1Z0/VsFPCnvqUbu9n3HhdDQxheCIBJSk/V6eDSmkv2WdMur1IDXrYCEpv6oY+PvF4gpugFF1q5iabl/Wxatm8KKKOY2Y5Rz9YdRBFsyV93WPgHrcHaWHF2NDOvppdgYQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739541393;
+	cv=none; b=U5CQUabpN8ehPzmd+CWQJ85JcLMv95TY0m2855gjIf9cZTKL206MJcR++De5u5N/J/t4RW8l/zcdxI3xNo6M/R3tzHDB2EiXE1ImsIKNBrT1uDKJV+DTRw9DxVuHP+ETQQbR4DLnLDxlnmmvwjX3c9QbORalwNv2js7/qdT+87jMYrgS6bl1ViANmwtIejs3IQ0WT07YNU8XWqPvesNhHZOh2IUyqZIKKJHOrk6wH9eiRmSPN0IWYmecnbEWjazPq3iXtX/4XP0CYA98GywZrFOTyCLGm3va3MfuA6COPvTuSveqRMm2wBrZPY0aKfAY98PDVtpv8bQ0rkYdQ0v3tQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739541392; c=relaxed/relaxed;
-	bh=ieSviPBjJLVAo2lEPMzr48dShxvUoX9e50T9HLFhjRs=;
+	t=1739541393; c=relaxed/relaxed;
+	bh=eeUwrRpD2YC1sE1xYDTYmrhZ9ZUlADLpQEgAOjhP27A=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EwkV60b6OZunnbCARwxSIfFJairkE+d1PGYhxHLsKIr0lXsxQwuTQlnWUzFY1XiwupHLNSbaYFI0CqGhHO7WsI+QDZSYqKwQUzcJu7elyjqO3uJC/cRoMBta7YH75JV+F8BKErR7mLoW2Yj6l6qjYcVk4Lo2cdtmz1/HbUTGD8noZgBFcpRpvhkt7Sa3sMnBgXnGgkvi4QRWcwXdBepSR4RyL7SL6EtBG72hN+43ALUZFzWlqfRKaohaLyVvQwMG5NvdSvm84F4RlAmpTb5TXMbRNEBGWsBbOS6vs2uPVZPDSZbHfU2o1eEg/IpZYXnzFKpJKWP9IEJvo6PDot9flQ==
+	 MIME-Version; b=EqnLA06CFDPut3nGJrZTlZn+jAsIYA0WItiPJcX47LQRpWWUufz7JnnmGFZyn6T5Yjk2WYYYs0kbScyy7/VSXhzPWp87VzTClKxFnpeIlEEFiF3zXnyfQ3qn+cKNuE8UdrTcDNsMW/MH8n3HlxvR78mQyaQxxXO0UeAUk6gbMh47LggSIJMiCnZ/q19WdGHpGaah0BfD8kTbl3IIaHOUtMh7gRhxyONZ3gmRHlT0dcMGtWedVqAxojeAR3ia0o9BsQxrbP91T7iorMMVf4zqcENcnoW3k1pLHfIRtBGVT9m6HiRBa4mV2942C15fxdJzywPxFv41oKTLp/RYm/mFSw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=195.130.132.48; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=cantor.telenet-ops.be
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=cantor.telenet-ops.be (client-ip=195.130.132.48; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
@@ -24,22 +24,22 @@ Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvYW411nbz30XR
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 15 Feb 2025 00:56:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvYW416XLz30Yb
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 15 Feb 2025 00:56:30 +1100 (AEDT)
 Received: from michel.telenet-ops.be (michel.telenet-ops.be [IPv6:2a02:1800:110:4::f00:18])
-	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4YvYVy3hPXz4x1Sf
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4YvYVy3hWVz4x2sh
 	for <linux-aspeed@lists.ozlabs.org>; Fri, 14 Feb 2025 14:56:26 +0100 (CET)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:6395:73cc:7fc4:4cab])
 	by michel.telenet-ops.be with cmsmtp
-	id DRvu2E00L1MuxXz06RvuMY; Fri, 14 Feb 2025 14:56:25 +0100
+	id DRvu2E00N1MuxXz06RvuMa; Fri, 14 Feb 2025 14:56:25 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtp (Exim 4.97)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1tiwAL-00000006p2b-0uwA;
+	id 1tiwAL-00000006p2i-19TY;
 	Fri, 14 Feb 2025 14:55:54 +0100
 Received: from geert by rox.of.borg with local (Exim 4.97)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1tiwAc-00000000qEh-1jsF;
+	id 1tiwAc-00000000qEo-22dS;
 	Fri, 14 Feb 2025 14:55:54 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
@@ -79,9 +79,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 1/4] bitfield: Drop underscores from macro parameters
-Date: Fri, 14 Feb 2025 14:55:50 +0100
-Message-ID: <ef545b87b3e3e48ec91ab4ad272d17334ab0569c.1739540679.git.geert+renesas@glider.be>
+Subject: [PATCH v3 3/4] clk: renesas: Use bitfield helpers
+Date: Fri, 14 Feb 2025 14:55:52 +0100
+Message-ID: <425fa9bb496eecc3fd7fb4bd8e6a98de18c14756.1739540679.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1739540679.git.geert+renesas@glider.be>
 References: <cover.1739540679.git.geert+renesas@glider.be>
@@ -99,165 +99,130 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-There is no need to prefix macro parameters with underscores.
-Remove the underscores.
+Use the FIELD_{GET,PREP}() and field_{get,prep}() helpers for const
+respective non-const bitfields, instead of open-coding the same
+operations.
 
-Suggested-by: David Laight <david.laight.linux@gmail.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v3:
-  - New.
----
- include/linux/bitfield.h | 86 ++++++++++++++++++++--------------------
- 1 file changed, 43 insertions(+), 43 deletions(-)
+  - No changes,
 
-diff --git a/include/linux/bitfield.h b/include/linux/bitfield.h
-index 63928f1732230700..e8269f23b824c4a9 100644
---- a/include/linux/bitfield.h
-+++ b/include/linux/bitfield.h
-@@ -60,68 +60,68 @@
- 
- #define __bf_cast_unsigned(type, x)	((__unsigned_scalar_typeof(type))(x))
- 
--#define __BF_FIELD_CHECK(_mask, _reg, _val, _pfx)			\
-+#define __BF_FIELD_CHECK(mask, reg, val, pfx)				\
- 	({								\
--		BUILD_BUG_ON_MSG(!__builtin_constant_p(_mask),		\
--				 _pfx "mask is not constant");		\
--		BUILD_BUG_ON_MSG((_mask) == 0, _pfx "mask is zero");	\
--		BUILD_BUG_ON_MSG(__builtin_constant_p(_val) ?		\
--				 ~((_mask) >> __bf_shf(_mask)) &	\
--					(0 + (_val)) : 0,		\
--				 _pfx "value too large for the field"); \
--		BUILD_BUG_ON_MSG(__bf_cast_unsigned(_mask, _mask) >	\
--				 __bf_cast_unsigned(_reg, ~0ull),	\
--				 _pfx "type of reg too small for mask"); \
--		__BUILD_BUG_ON_NOT_POWER_OF_2((_mask) +			\
--					      (1ULL << __bf_shf(_mask))); \
-+		BUILD_BUG_ON_MSG(!__builtin_constant_p(mask),		\
-+				 pfx "mask is not constant");		\
-+		BUILD_BUG_ON_MSG((mask) == 0, pfx "mask is zero");	\
-+		BUILD_BUG_ON_MSG(__builtin_constant_p(val) ?		\
-+				 ~((mask) >> __bf_shf(mask)) &	\
-+					(0 + (val)) : 0,		\
-+				 pfx "value too large for the field"); \
-+		BUILD_BUG_ON_MSG(__bf_cast_unsigned(mask, mask) >	\
-+				 __bf_cast_unsigned(reg, ~0ull),	\
-+				 pfx "type of reg too small for mask"); \
-+		__BUILD_BUG_ON_NOT_POWER_OF_2((mask) +			\
-+					      (1ULL << __bf_shf(mask))); \
- 	})
- 
- /**
-  * FIELD_MAX() - produce the maximum value representable by a field
-- * @_mask: shifted mask defining the field's length and position
-+ * @mask: shifted mask defining the field's length and position
-  *
-  * FIELD_MAX() returns the maximum value that can be held in the field
-- * specified by @_mask.
-+ * specified by @mask.
+v2:
+  - Rebase on top of commit 470e3f0d0b1529ab ("clk: renesas: rcar-gen4:
+    Introduce R-Car Gen4 CPG driver").
+---
+ drivers/clk/renesas/clk-div6.c      |  6 +++---
+ drivers/clk/renesas/rcar-gen3-cpg.c | 15 +++++----------
+ drivers/clk/renesas/rcar-gen4-cpg.c |  9 +++------
+ 3 files changed, 11 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/clk/renesas/clk-div6.c b/drivers/clk/renesas/clk-div6.c
+index 3abd6e5400aded6a..f7b827b5e9b2dd32 100644
+--- a/drivers/clk/renesas/clk-div6.c
++++ b/drivers/clk/renesas/clk-div6.c
+@@ -7,6 +7,7 @@
+  * Contact: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
   */
--#define FIELD_MAX(_mask)						\
-+#define FIELD_MAX(mask)						\
- 	({								\
--		__BF_FIELD_CHECK(_mask, 0ULL, 0ULL, "FIELD_MAX: ");	\
--		(typeof(_mask))((_mask) >> __bf_shf(_mask));		\
-+		__BF_FIELD_CHECK(mask, 0ULL, 0ULL, "FIELD_MAX: ");	\
-+		(typeof(mask))((mask) >> __bf_shf(mask));		\
- 	})
  
- /**
-  * FIELD_FIT() - check if value fits in the field
-- * @_mask: shifted mask defining the field's length and position
-- * @_val:  value to test against the field
-+ * @mask: shifted mask defining the field's length and position
-+ * @val:  value to test against the field
-  *
-- * Return: true if @_val can fit inside @_mask, false if @_val is too big.
-+ * Return: true if @val can fit inside @mask, false if @val is too big.
-  */
--#define FIELD_FIT(_mask, _val)						\
-+#define FIELD_FIT(mask, val)						\
- 	({								\
--		__BF_FIELD_CHECK(_mask, 0ULL, 0ULL, "FIELD_FIT: ");	\
--		!((((typeof(_mask))_val) << __bf_shf(_mask)) & ~(_mask)); \
-+		__BF_FIELD_CHECK(mask, 0ULL, 0ULL, "FIELD_FIT: ");	\
-+		!((((typeof(mask))val) << __bf_shf(mask)) & ~(mask)); \
- 	})
++#include <linux/bitfield.h>
+ #include <linux/clk-provider.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
+@@ -171,8 +172,7 @@ static u8 cpg_div6_clock_get_parent(struct clk_hw *hw)
+ 	if (clock->src_mask == 0)
+ 		return 0;
  
- /**
-  * FIELD_PREP() - prepare a bitfield element
-- * @_mask: shifted mask defining the field's length and position
-- * @_val:  value to put in the field
-+ * @mask: shifted mask defining the field's length and position
-+ * @val:  value to put in the field
-  *
-  * FIELD_PREP() masks and shifts up the value.  The result should
-  * be combined with other fields of the bitfield using logical OR.
-  */
--#define FIELD_PREP(_mask, _val)						\
-+#define FIELD_PREP(mask, val)						\
- 	({								\
--		__BF_FIELD_CHECK(_mask, 0ULL, _val, "FIELD_PREP: ");	\
--		((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask);	\
-+		__BF_FIELD_CHECK(mask, 0ULL, val, "FIELD_PREP: ");	\
-+		((typeof(mask))(val) << __bf_shf(mask)) & (mask);	\
- 	})
+-	hw_index = (readl(clock->reg) & clock->src_mask) >>
+-		   __ffs(clock->src_mask);
++	hw_index = field_get(clock->src_mask, readl(clock->reg));
+ 	for (i = 0; i < clk_hw_get_num_parents(hw); i++) {
+ 		if (clock->parents[i] == hw_index)
+ 			return i;
+@@ -191,7 +191,7 @@ static int cpg_div6_clock_set_parent(struct clk_hw *hw, u8 index)
+ 	if (index >= clk_hw_get_num_parents(hw))
+ 		return -EINVAL;
  
- #define __BF_CHECK_POW2(n)	BUILD_BUG_ON_ZERO(((n) & ((n) - 1)) != 0)
+-	src = clock->parents[index] << __ffs(clock->src_mask);
++	src = field_prep(clock->src_mask, clock->parents[index]);
+ 	writel((readl(clock->reg) & ~clock->src_mask) | src, clock->reg);
+ 	return 0;
+ }
+diff --git a/drivers/clk/renesas/rcar-gen3-cpg.c b/drivers/clk/renesas/rcar-gen3-cpg.c
+index 027100e84ee4c429..ca8f6a68771628fb 100644
+--- a/drivers/clk/renesas/rcar-gen3-cpg.c
++++ b/drivers/clk/renesas/rcar-gen3-cpg.c
+@@ -54,10 +54,8 @@ static unsigned long cpg_pll_clk_recalc_rate(struct clk_hw *hw,
+ {
+ 	struct cpg_pll_clk *pll_clk = to_pll_clk(hw);
+ 	unsigned int mult;
+-	u32 val;
  
- /**
-  * FIELD_PREP_CONST() - prepare a constant bitfield element
-- * @_mask: shifted mask defining the field's length and position
-- * @_val:  value to put in the field
-+ * @mask: shifted mask defining the field's length and position
-+ * @val:  value to put in the field
-  *
-  * FIELD_PREP_CONST() masks and shifts up the value.  The result should
-  * be combined with other fields of the bitfield using logical OR.
-@@ -130,30 +130,30 @@
-  * be used in initializers. Error checking is less comfortable for this
-  * version, and non-constant masks cannot be used.
-  */
--#define FIELD_PREP_CONST(_mask, _val)					\
-+#define FIELD_PREP_CONST(mask, val)					\
- 	(								\
- 		/* mask must be non-zero */				\
--		BUILD_BUG_ON_ZERO((_mask) == 0) +			\
-+		BUILD_BUG_ON_ZERO((mask) == 0) +			\
- 		/* check if value fits */				\
--		BUILD_BUG_ON_ZERO(~((_mask) >> __bf_shf(_mask)) & (_val)) + \
-+		BUILD_BUG_ON_ZERO(~((mask) >> __bf_shf(mask)) & (val)) + \
- 		/* check if mask is contiguous */			\
--		__BF_CHECK_POW2((_mask) + (1ULL << __bf_shf(_mask))) +	\
-+		__BF_CHECK_POW2((mask) + (1ULL << __bf_shf(mask))) +	\
- 		/* and create the value */				\
--		(((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask))	\
-+		(((typeof(mask))(val) << __bf_shf(mask)) & (mask))	\
- 	)
+-	val = readl(pll_clk->pllcr_reg) & CPG_PLLnCR_STC_MASK;
+-	mult = (val >> __ffs(CPG_PLLnCR_STC_MASK)) + 1;
++	mult = FIELD_GET(CPG_PLLnCR_STC_MASK, readl(pll_clk->pllcr_reg)) + 1;
  
- /**
-  * FIELD_GET() - extract a bitfield element
-- * @_mask: shifted mask defining the field's length and position
-- * @_reg:  value of entire bitfield
-+ * @mask: shifted mask defining the field's length and position
-+ * @reg:  value of entire bitfield
-  *
-- * FIELD_GET() extracts the field specified by @_mask from the
-- * bitfield passed in as @_reg by masking and shifting it down.
-+ * FIELD_GET() extracts the field specified by @mask from the
-+ * bitfield passed in as @reg by masking and shifting it down.
-  */
--#define FIELD_GET(_mask, _reg)						\
-+#define FIELD_GET(mask, reg)						\
- 	({								\
--		__BF_FIELD_CHECK(_mask, _reg, 0U, "FIELD_GET: ");	\
--		(typeof(_mask))(((_reg) & (_mask)) >> __bf_shf(_mask));	\
-+		__BF_FIELD_CHECK(mask, reg, 0U, "FIELD_GET: ");	\
-+		(typeof(mask))(((reg) & (mask)) >> __bf_shf(mask));	\
- 	})
+ 	return parent_rate * mult * pll_clk->fixed_mult;
+ }
+@@ -94,7 +92,7 @@ static int cpg_pll_clk_set_rate(struct clk_hw *hw, unsigned long rate,
  
- extern void __compiletime_error("value doesn't fit into mask")
+ 	val = readl(pll_clk->pllcr_reg);
+ 	val &= ~CPG_PLLnCR_STC_MASK;
+-	val |= (mult - 1) << __ffs(CPG_PLLnCR_STC_MASK);
++	val |= FIELD_PREP(CPG_PLLnCR_STC_MASK, mult - 1);
+ 	writel(val, pll_clk->pllcr_reg);
+ 
+ 	for (i = 1000; i; i--) {
+@@ -176,11 +174,7 @@ static unsigned long cpg_z_clk_recalc_rate(struct clk_hw *hw,
+ 					   unsigned long parent_rate)
+ {
+ 	struct cpg_z_clk *zclk = to_z_clk(hw);
+-	unsigned int mult;
+-	u32 val;
+-
+-	val = readl(zclk->reg) & zclk->mask;
+-	mult = 32 - (val >> __ffs(zclk->mask));
++	unsigned int mult = 32 - field_get(zclk->mask, readl(zclk->reg));
+ 
+ 	return DIV_ROUND_CLOSEST_ULL((u64)parent_rate * mult,
+ 				     32 * zclk->fixed_div);
+@@ -231,7 +225,8 @@ static int cpg_z_clk_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	if (readl(zclk->kick_reg) & CPG_FRQCRB_KICK)
+ 		return -EBUSY;
+ 
+-	cpg_reg_modify(zclk->reg, zclk->mask, (32 - mult) << __ffs(zclk->mask));
++	cpg_reg_modify(zclk->reg, zclk->mask,
++		       field_prep(zclk->mask, 32 - mult));
+ 
+ 	/*
+ 	 * Set KICK bit in FRQCRB to update hardware setting and wait for
+diff --git a/drivers/clk/renesas/rcar-gen4-cpg.c b/drivers/clk/renesas/rcar-gen4-cpg.c
+index 31aa790fd003d45e..a63114a1d431968f 100644
+--- a/drivers/clk/renesas/rcar-gen4-cpg.c
++++ b/drivers/clk/renesas/rcar-gen4-cpg.c
+@@ -279,11 +279,7 @@ static unsigned long cpg_z_clk_recalc_rate(struct clk_hw *hw,
+ 					   unsigned long parent_rate)
+ {
+ 	struct cpg_z_clk *zclk = to_z_clk(hw);
+-	unsigned int mult;
+-	u32 val;
+-
+-	val = readl(zclk->reg) & zclk->mask;
+-	mult = 32 - (val >> __ffs(zclk->mask));
++	unsigned int mult = 32 - field_get(zclk->mask, readl(zclk->reg));
+ 
+ 	return DIV_ROUND_CLOSEST_ULL((u64)parent_rate * mult,
+ 				     32 * zclk->fixed_div);
+@@ -334,7 +330,8 @@ static int cpg_z_clk_set_rate(struct clk_hw *hw, unsigned long rate,
+ 	if (readl(zclk->kick_reg) & CPG_FRQCRB_KICK)
+ 		return -EBUSY;
+ 
+-	cpg_reg_modify(zclk->reg, zclk->mask, (32 - mult) << __ffs(zclk->mask));
++	cpg_reg_modify(zclk->reg, zclk->mask,
++		       field_prep(zclk->mask, 32 - mult));
+ 
+ 	/*
+ 	 * Set KICK bit in FRQCRB to update hardware setting and wait for
 -- 
 2.43.0
 
