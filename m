@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-757-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-758-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87FC8C021A9
-	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Feb 2025 11:55:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D6EBC021A9
+	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Feb 2025 11:56:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YxLh81lfYz30Ds;
-	Mon, 17 Feb 2025 22:55:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739793336;
-	cv=none; b=MGDUzsyiHFYjt5WHIoWZIbMPQE1jvN+mg0Jc+DlvqJtiHvXbjRJdt6Im3BKEwVRo9kTVYcg8BDXWUrH2GtRraDFc9XOyUTSYqlNSWf7btSEhrsu+gJHx4oatuohSZUf/inqgR3f51HL6zOoTDdZze05b8vMaqu8MYYpDE5ZX2pf3uOIvP7tF1RT/dBtrQUFbZgICo1/N+IlOmEPdQrEb4e0e8R78kvc9VWRjE+WwztnLiHLHlUGp0fQA+PneQsQmRa0WbZNPacYM2bebpzTaR53WkuVbBjPIjKG6207VDzEkYuSVyRZdnlXx5nWA5FXMHpveKU2FLr17QHipWsXTOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YxLhz0vldz30Ds;
+	Mon, 17 Feb 2025 22:56:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739793379;
+	cv=none; b=E/bQeLEBsxs3mzK4NZSsX3P+NYJXjg+HOmb0mPFJV5S8KBDcT5JzZy4HX5ftlZ4XXdpqAZxCAFO0iN/j0VTfWiHogngyHfZcOl/ysyItpefywABuMvefLTJHkkqaDI+dSVsiW0v4DcdNSYoTvQD/6M5kwFVr1eqckuyyCrzPDvEICBFbFTbyQRRUHhbfFQCk/d0KN+r/Zshg9FTQ8SdxUz5J6+LrT+GiDVUpqZ4SSEU+q3XrmtYFdWHeRbCSfSDCvS3/HpeUkfQ+sJIFqwhEoLmqUiBD5hoL3dw3QaQSt9oShjfpS6IbIbdwq9i4s5rUu9yXuJPt+6NbuAElGACafQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739793336; c=relaxed/relaxed;
-	bh=GVbVc0Vty+ZbEpmexB9d4hcUsP7C674d/3hF0YkarFs=;
+	t=1739793379; c=relaxed/relaxed;
+	bh=5jMgw4xZ0wqnre7NmHUUtqCj41LQfgBvCVLLEKVgy5U=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=Hm43UxlpJlVEY4rFQcc+wsNBAMZu5cgQRakL7/sDPtgZBqRmbBUd6yDhi3439QiPohARSu2ELcFsQpZcIMGr1htKFnfwseDZMv1CHSZ1roir9snwzQyIzJkC7aTKPNInPgCJ4tbAy9e2FHmwGVv4xkLCzH27ONjzEt38NRqh9SNYPlqSOsqeW2ZYRIFDEL7UmOmg7uIXIj/4LdMabCTp0JURKIQCp8eQ/i2cq8YqAjb8ORCHnN95Ihm5Eb9ffDhnXfd0x+z+kY/NBN7Awc7VVsT1KmABQ2fn4p3qAq1/mFAk5KV3BZR7e2RLH3R8IlIGAKoc07nw89zWjVP3VSSYTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dpDAZZ4k; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=d9X27YIszTLGow6Hi2amTLBarOMlJnCu0ZV/Ix9MsEhr4PDgrOV9hbS/yyj2Qj1n5oqQgnRH0YCNCRtTjlWISWf2NWYzrYTAn8LkIt7Ebdyl6NZP5B8zwUmk1a6SetsEkpgX99R9l6RU+SsJrD4251s/Z+hkw6fL/5/JaATRWabcGvXRiNE7LNNuEIPFURoz1kdez/vvpS/YoskNMuNNxw7BTSr5i891QyfGxSdWW+0MAuImsvmoduVx3sPjGmY2OHzr0NjPYM4mHSF9DfHOlnoieBjLleEcLCvbRT0OrUG01rCr+9SbuW1+xiZkR3wUCT+QjoHeNaT2wWLKyvDc3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xt6UZJpg; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dpDAZZ4k;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xt6UZJpg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxLh71dLQz3093
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Feb 2025 22:55:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxLhy2HK8z3093
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Feb 2025 22:56:18 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 95DA05C5554;
-	Mon, 17 Feb 2025 11:54:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 794CDC4CEE2;
-	Mon, 17 Feb 2025 11:55:29 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 78AFCA40B49;
+	Mon, 17 Feb 2025 11:54:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89027C4CED1;
+	Mon, 17 Feb 2025 11:56:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739793331;
-	bh=fsu/JikjB1SDf12gpEflh4DfexxT1SP8RZ2/ROh7TuM=;
+	s=k20201202; t=1739793375;
+	bh=BwweQqmHmd4epRmfYOdDtMF+OmsJru6LslOEtC7cpwg=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=dpDAZZ4k3OAS1fOV2ronUMP6okm88+lQadboKGBTj/uDVvT4NHxs1EsTQsIOEaj09
-	 N42XA58mHy2reeosv/r0/HU9nmQxrGkY4gd6HURc/5ZNUWXGRHbnGrs0KcmEhn6Htm
-	 G4BycBhLTn5MONzLKvZxomE/7eaqjMxLOi6muOCSrnPcwl6HesuVSVGGhX1WlBVxBE
-	 XRzNV9p7wRAWKX7xsoctm1nkmGXOUSlVXreZZCc3jO/+/qgyBIKX0PbhV3i1ik/vGS
-	 D6G6Xk6EKbpfpM1Kid+v5g0sEi5cNxGU9vbpODFb2u5kvoHpisZtTrG+y+Ah0ZjQ0s
-	 hsH6J459CNJnA==
-Message-ID: <78dc2cee-2d87-42a9-8e0b-2199c653def4@kernel.org>
-Date: Mon, 17 Feb 2025 12:55:27 +0100
+	b=Xt6UZJpgjp6XnRyJ8w+VHIRjSmSrMzxbjB2jGloRyTEDP4W5+ybqqZycj1VYFZFhM
+	 ZA1ULlLKBeWrugAxyWVAtuGgbQKlPyQ2V0et3uefRn6MBLzmw8x2t2esuDbAHxiGIm
+	 0OGWDNbOLWi5aDCP88F3sUHDCasg8U1GSMg8saSIi2eqG98GdG/DwSo9KRRF2/nut5
+	 Dr0aGWtKDJdo681qI6tDZCIPcaidEH3myuRdhsN+m20NNlJi3Qm5GZlBMMaBukdfbO
+	 I25aLbOXnvwvd92zK89uGApLIoRHcmQpglftRoXeXcYIK4odc3bpqK9x+I7bHaPRXr
+	 44Rjdy9Lr1B8Q==
+Message-ID: <6ab0afc3-dcfa-4ae8-a695-b8b3864c0a6e@kernel.org>
+Date: Mon, 17 Feb 2025 12:56:09 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,19 +59,14 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v0 1/3] dt-binding: aspeed: Add LPC PCC controller
-To: Kevin Chen <kevin_chen@aspeedtech.com>, "joel@jms.id.au"
- <joel@jms.id.au>, "andrew@codeconstruct.com.au"
- <andrew@codeconstruct.com.au>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "elbadrym@google.com" <elbadrym@google.com>
-References: <20250117095217.661070-1-kevin_chen@aspeedtech.com>
- <20250117095217.661070-2-kevin_chen@aspeedtech.com>
- <bad78886-2577-476f-a80f-e189a178b26e@kernel.org>
- <PSAPR06MB4949CB5CE2E08B98B368160589FF2@PSAPR06MB4949.apcprd06.prod.outlook.com>
+Subject: Re: [PATCH v1 1/3] dt-binding: aspeed: Add LPC PCC controller
+To: Kevin Chen <kevin_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au, chiawei_wang@aspeedtech.com,
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org
+References: <20250217114831.3225970-1-kevin_chen@aspeedtech.com>
+ <20250217114831.3225970-2-kevin_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -117,47 +112,42 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <PSAPR06MB4949CB5CE2E08B98B368160589FF2@PSAPR06MB4949.apcprd06.prod.outlook.com>
+In-Reply-To: <20250217114831.3225970-2-kevin_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 13/02/2025 09:46, Kevin Chen wrote:
->> On 17/01/2025 10:52, Kevin Chen wrote:
->>> Add dt-bindings for Aspeed for Aspeed LPC POST code capture controller.
->>>
->>> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
->>> ---
->>
->> Patchsets start from 1, not 0.
-> Agree, I will resend the patchsets of v1.
+On 17/02/2025 12:48, Kevin Chen wrote:
+> Add dt-bindings for Aspeed for Aspeed LPC POST code capture controller.
 > 
->>
->> This wasn't tested as it has obvious errors, so no review. Test your patches
->> before you send them.
-> Agree, I will run "make dtbs_check W=1" and " make dt_binding_check " to check result is clean before the next commits.
-> 
->>
->>
->> <form letter>
->> Please use scripts/get_maintainers.pl to get a list of necessary people and lists
->> to CC. It might happen, that command when run on an older kernel, gives you
->> outdated entries. Therefore please be sure you base your patches on recent
->> Linux kernel.
->>
->> Tools like b4 or scripts/get_maintainer.pl provide you proper list of people, so
->> fix your workflow. Tools might also fail if you work on some ancient tree (don't,
->> instead use mainline) or work on fork of kernel (don't, instead use mainline).
->> Just use b4 and everything should be fine, although remember about `b4 prep
->> --auto-to-cc` if you added new patches to the patchset.
->>
->> You missed at least devicetree list (maybe more), so this won't be tested by
->> automated tooling. Performing review on untested code might be a waste of
->> time.
->>
->> Please kindly resend and include all necessary To/Cc entries.
->> </form letter>
+> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 36 +++++++++++++++++++
 
-How did you implement this feedback?
+Nothing improved. You will not get different review.
+
+Also, provide detailed changelog explaining how you fixed here
+previously reported issues.
+
+
+<form letter>
+Please use scripts/get_maintainers.pl to get a list of necessary people
+and lists to CC. It might happen, that command when run on an older
+kernel, gives you outdated entries. Therefore please be sure you base
+your patches on recent Linux kernel.
+
+Tools like b4 or scripts/get_maintainer.pl provide you proper list of
+people, so fix your workflow. Tools might also fail if you work on some
+ancient tree (don't, instead use mainline) or work on fork of kernel
+(don't, instead use mainline). Just use b4 and everything should be
+fine, although remember about `b4 prep --auto-to-cc` if you added new
+patches to the patchset.
+
+You missed at least devicetree list (maybe more), so this won't be
+tested by automated tooling. Performing review on untested code might be
+a waste of time.
+
+Please kindly resend and include all necessary To/Cc entries.
+</form letter>
 
 Best regards,
 Krzysztof
