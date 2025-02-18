@@ -1,79 +1,51 @@
-Return-Path: <linux-aspeed+bounces-765-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-766-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DAB6C021A9
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Feb 2025 05:33:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC145C021A9
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Feb 2025 07:53:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yxp8t5Pc6z2yyJ;
-	Tue, 18 Feb 2025 16:33:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739856814;
-	cv=none; b=Ja46Z1BdKezN+cOYSyHYryDw1M0sJoU+GijsTzX/lxSk521VMn9zDLqZ1DrUA+Ot9Hfum83hR8YuMNGNvI8peXqhGv5OCBnQ+Cli7z1R+xdxbFNSn+2/Xq2u+VCBKYhlC+VFKOM1xx6Oqxu0VrzmIVFW0Q3pv3imhtdfuB1PWDCWZTVR8wVZxSZ9Xy8T6jnqdjOSENUZdjdOutmM11Dk751WGbJWR6MpL41akZSgCCz8U5WMOLVMEfEbsX6wRGttWHk7XYlwF/GPnazNDltaBR4TL3brAkXK+W0d5w4WUEoWT3APUZMmg2zc64cvyfvFlYJISM4I02wdulx1HX47HQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YxsG61xQxz305S;
+	Tue, 18 Feb 2025 18:53:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739865198;
+	cv=none; b=gVgZVuhnHJH17+kGpqNuqJqDXpQe+1LAaljYvgXv9cOGidHNgzLe62+5qRalYrT9BBr/76C4cctID3rE+dxW18i6ZHJ6cy2b0hQy32OAz36Qk5jjlHLHuPtDq6sT4Og+cEYj24WbD37yHN2KM+k+zLq1T1C6Dv4BcmFyPqOB3ArVwtQw/TNIEspxxPxcnynVz+m2EdHP8vMiuLLTDFsrLs0fPnSmjglOlqoF68hJi+VljLJqXg4rPvZgUJVYEDuDDj4zzWqMtKN/DpcLrH3JHwYYrPq0p/P8SDu9pUfYOW4BaiuTqHSYsIs6f2ncOrlSinpPaS1Bcv/+pZxVZpifcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739856814; c=relaxed/relaxed;
-	bh=ZIXUg8SbRufb036zZV3HGnjlaTM/TH+KOn8o/6auPy0=;
+	t=1739865198; c=relaxed/relaxed;
+	bh=9tltAkhRkI8L7RP6Qq0opfcj1OIGIbiAkIF+jWBaHO0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gV+gr5LibnCYQlP6rkdBnI1drPvct/ZJBUjO0fmFDrmnzkCSJqNn1+/k4+hLlct4Us2veZXY48kwLoMnfqQFuQpD5FI81LbK8BtGo1/isSvEj3POzCumZt3JD6NLeuU/RkLjPHYpwq//8Vq2ksYY5hAXQv+vRzE7+yAUb13rT/DPS/K+nLKoMj3vYdEFBWovq7qknjFNQPWcHkCSxy3UwUpkNdbahuUepPxGbgcZ2NJs02MHWOTxOCRzt2cB4knApLaPq2ALtJOtziJ3kSwIm1PA8JccE3rJywcLu7xAi6+ipxQUxNB/1i/zrFi+wlwdVgCMCg4yBLMrUcNTdVe/wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H2KWQW6u; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	 In-Reply-To:Content-Type; b=JZmR8/MDdIVhfPS+Jt1+Agk4b0yAqyMJtGaw1SezNn9YyXruBbAJCsPhhC6Ez1HFj5A5fHB18KNpXLLo+1lqxf3QSmBOtJBsE88yp+WHGfYCWO+fGVeXOG4lgg7O9yAuI7to4SmTAp0GbCO2dB2K1Esj//AIbC8IztUso5ZLLhaTMXJS8Ok4sl5tU27MiSq20vVdjN/Em1zlgj//O9XrIbISQZnvVuLTSD1fMnjFGqdehNRDUniTnopGHXqwZOTlk29AkIg/c5xt7aIUcDVYh4iadmJAqeKSAG0qq+tuz6fP38R3sNqh/FntAve1lQ7rym5R4V09ZVCSVGm3YMmE3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YZ7Wq/yb; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H2KWQW6u;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YZ7Wq/yb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yxp8s4JlGz2yvv
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Feb 2025 16:33:33 +1100 (AEDT)
-Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-2fbffe0254fso9414991a91.3
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Feb 2025 21:33:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1739856811; x=1740461611; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZIXUg8SbRufb036zZV3HGnjlaTM/TH+KOn8o/6auPy0=;
-        b=H2KWQW6uYq2102O4WC5PA+MEkOEMP6cRLUkfsGa8EC3wQmRcO1WCeygD0lkyB7LYTv
-         C2fIre7PLzA3wvCDtcQ6H5t0Fwl5x65KCB+17o3ts57St2mbiyi8nxFYPnKSRghutpt2
-         Q+I5bE1L6tZD/7s0UD/5t0QmhNls1Fl4vwyTRlevP1uPRqEsMU5MzMd5MaWdlpkOmgbT
-         ebXUrja8JyjjmQ2O7AxfPZyM1/RrXeGbueSR3r/8cnmARwOUDIj3halmRoWusJT0B0c0
-         6IPFHJ+h+F9jYzgP+npmwU7hReDo32sge7oDRttbiqmCKnK4cuVnErp+w4iH1hCH5iKi
-         5h3Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739856811; x=1740461611;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ZIXUg8SbRufb036zZV3HGnjlaTM/TH+KOn8o/6auPy0=;
-        b=uFHBiNd+ufHegoxiK2eozv1aqIqL9sWDBh77sXKyFkL6iEfQ7Yb8CUw8XdMuSHlHjC
-         i1F5yTzLoy+lsKCddCr/FzKHtdDxHln0QykV5Tj/OfkLrwtQHaa6MhIgs1hsNkn+Gqzb
-         CwZddjliz4U1Kz0RZNsbIkc4/OfStKB6GVdbcktO12Y+bOhiwxCcSJDbNCMAM/7TyF8U
-         U7B8JwjVaQf26YEqRQB7/AN1aqBNmkBiMSgq901wUS6hWnf0F+72FLy5AiMPXCF5ccAu
-         YmOGWFB2XbsFMd4xwV24iJAr7dyMKjwfzRbmuwUry0q7HqyFasH20YzpKC1j/4jIi6p8
-         V2pg==
-X-Forwarded-Encrypted: i=1; AJvYcCWB1kWt7NW3CXdxL1LXjisTI78/WREtwnHnYIsr8Gk8fBaBQC5cQpaoJNi+2mbNVXPK9dSbnWiUgHgNPdc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx5Q0VLkxdL0TaCwEZFuQBqqHVsem0YKwwjly0fdaZnbyGB9wMK
-	KkpUfICsPcRHY0qgw8h92C0ba6DCiXBBrT+VCE7DXXQbCyjE/5jy
-X-Gm-Gg: ASbGncun2g3dazuBdgL3K5cbVUa6BB836aBauU+IpFwLliHWFWbb7mogx3U/hvJSPiz
-	Qf7vQj6lbp60f44S+iK6JEI/9wO8xS4vo02UQy/KKnBmds/PGbU6LXhqdTrQyugdjLipIf7DLny
-	MYAvfOZX9Xf2YbxZLaPvpTHZrOl6n8m07qEV6+9MP22afiXEX5UYGy1JLDdpFUurj4mJx0v3IfY
-	DNAzNxHo/bbNlPQkSyzH1+zV4GXjVWv4Oft7pZ3bDETXSdlI+m75e/nLESQDuI/KNW+cr1j9Xf5
-	eBhL30NMECL/2a4vbEcZ9BMbL5g/gUVB/p8JcQ/pM4gSqDh0w4eFCoI1YrhDieih
-X-Google-Smtp-Source: AGHT+IE3yaFBuZ3jvd/c/xksrjQzXgC2Ka5HLYonZdx0VSjT+fo54DpWdxFWB6u9LmDK+vl70/Lj3Q==
-X-Received: by 2002:a05:6a00:2e08:b0:730:74f8:25c1 with SMTP id d2e1a72fcca58-732618c0351mr16588841b3a.15.1739856811308;
-        Mon, 17 Feb 2025 21:33:31 -0800 (PST)
-Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-73270de9b7asm4451004b3a.90.2025.02.17.21.33.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Feb 2025 21:33:29 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <50ab5a0a-b807-4bd7-bda8-7c6f4bfc76fc@roeck-us.net>
-Date: Mon, 17 Feb 2025 21:33:27 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxsG52bkmz3045
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Feb 2025 18:53:17 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id DECA05C5800;
+	Tue, 18 Feb 2025 07:52:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 54BC0C4CEE2;
+	Tue, 18 Feb 2025 07:53:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1739865194;
+	bh=pM3poGEcsbyLMIA6gXTWiUeVXWBqYh4bpJklQX9Pc8g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=YZ7Wq/ybr9pPJ2jeHjF6bEb2edS8eeRwrNnlez6bivuXfyFh7ZCGN4okR2V57NjA1
+	 Bb80NC0w56VIBOarJvs2XVMJBV2rVHm4CpJC1LUSiBho86KDjfSL1ekqKs5ZBaNwCm
+	 7gHhFfzGZmat9Oog0jvkPGVb4m3iu8RQwUYDrcyCgrJz2C8DwQEOwP6UupejYyTaas
+	 BCXxDwGZPJ8/9Z3H5V9MMs/Lo3NglUnyXWwWwArGzu8VfuaqTaiirqGrtbzncNQhE7
+	 l1tO4jqJgmbK7QQGWyUJ5bCvyk5lrRvr+IZPUToFvltzaczK/LdeKds51ia/IaUGP2
+	 JzPmJ3pgtAfhw==
+Message-ID: <6002ba76-2186-4839-9ad4-01364be33ff3@kernel.org>
+Date: Tue, 18 Feb 2025 08:53:09 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,111 +59,93 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] driver/aspeed-wdt: fix pretimeout for counting down
- logic
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: aspeed-g6.dtsi: enable IRQ for
+ watchdogs
 To: Heyi Guo <guoheyi@linux.alibaba.com>, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- Eddie James <eajames@linux.ibm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>
 References: <20250218031709.103823-1-guoheyi@linux.alibaba.com>
+ <20250218031709.103823-2-guoheyi@linux.alibaba.com>
 Content-Language: en-US
-From: Guenter Roeck <linux@roeck-us.net>
-Autocrypt: addr=linux@roeck-us.net; keydata=
- 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
- mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
-In-Reply-To: <20250218031709.103823-1-guoheyi@linux.alibaba.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20250218031709.103823-2-guoheyi@linux.alibaba.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 2/17/25 19:16, Heyi Guo wrote:
-> Aspeed watchdog uses counting down logic, so the value set to register
-> should be the value of subtracting pretimeout from total timeout.
-> 
-> Fixes: 9ec0b7e06835 ("watchdog: aspeed: Enable pre-timeout interrupt")
+On 18/02/2025 04:16, Heyi Guo wrote:
+> To finally enable watchdog pretimeout function.
 > 
 > Signed-off-by: Heyi Guo <guoheyi@linux.alibaba.com>
 > 
-> Cc: Wim Van Sebroeck <wim@linux-watchdog.org>
-> Cc: Guenter Roeck <linux@roeck-us.net>
+
+There is never blank line between tags.
+
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>
+
+Please drop the autogenerated scripts/get_maintainer.pl CC-entries from
+commit msg. There is no single need to store automated output of
+get_maintainers.pl in the git log. It can be easily re-created at any
+given time, thus its presence in the git history is redundant and
+obfuscates the log.
+
+If you need it for your own patch management purposes, keep it under the
+--- separator.
+
+> Cc: Conor Dooley <conor+dt@kernel.org>
 > Cc: Joel Stanley <joel@jms.id.au>
 > Cc: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Cc: Eddie James <eajames@linux.ibm.com>
-> ---
->   drivers/watchdog/aspeed_wdt.c | 7 +++++++
->   1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-> index b4773a6aaf8c..520d8aba12a5 100644
-> --- a/drivers/watchdog/aspeed_wdt.c
-> +++ b/drivers/watchdog/aspeed_wdt.c
-> @@ -187,6 +187,13 @@ static int aspeed_wdt_set_pretimeout(struct watchdog_device *wdd,
->   	u32 actual = pretimeout * WDT_RATE_1MHZ;
->   	u32 s = wdt->cfg->irq_shift;
->   	u32 m = wdt->cfg->irq_mask;
-> +	u32 reload = readl(wdt->base + WDT_RELOAD_VALUE);
-> +
 
-It is unusual to use a register value here and not the configured timeout
-value. I would have assumed that pretimeout is compared against wdt->timout,
-not against the register value, and that the multiplication with WDT_RATE_1MHZ
-is done after validation. This needs an explanation.
+Missing Sob as last entry.
 
-> +	if (actual >= reload)
-> +		return -EINVAL;
-> +
 
-On top of that, you'll also need to explain why watchdog_pretimeout_invalid()
-and with it the validation in watchdog_set_pretimeout() does not work for this
-watchdog and why this extra validation is necessary.
 
-Guenter
-
-> +	/* watchdog timer is counting down */
-> +	actual = reload - actual;
->   
->   	wdd->pretimeout = pretimeout;
->   	wdt->ctrl &= ~m;
-
+Best regards,
+Krzysztof
 
