@@ -1,51 +1,64 @@
-Return-Path: <linux-aspeed+bounces-759-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-760-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6196C021A9
-	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Feb 2025 12:01:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3918DC021A9
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Feb 2025 00:57:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YxLpQ4fsRz30Ds;
-	Mon, 17 Feb 2025 23:01:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739793662;
-	cv=none; b=cBLUDCMFqwaNBVCcpA8VqgyPE0LwP9d9GtXliYXwLPEMv8EMaWdM9916xiJjkSlHupMkoZH+qXopZzTpbFrdPWeXGt4IpjFTZ5i7LxNnodXhSi7hdEXjRRbc7ik4MVpPg8XIK4oia1C6BWLGBHoQFhOKIpnJLt9MiatlAEyORZuskQD/8g/b4x+GOYM+VicW4maN7FyxdLyS1jlO1ZMJRnPyCAakrrG3OpjiNAnVn77Q9GkB944tWeHLyp/2WKmC7qL5WmP28VVMaSKxkYYti/D444waLzXvMtiQBkPQEiJFxtfpw/pVxkmMBpYuxJ0zGbl92sxx9scgaIkTY51qtQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yxh1n69t3z2xs7;
+	Tue, 18 Feb 2025 11:57:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739840221;
+	cv=none; b=kGS+//Owraj0Q16OI5A8PyCSG6INhurDREEYEvzrW8HzXnlB3m0F8Sot8yrO8Jqcyo8CipfUIaxyJEybLdg9H4jBoqM/4YqEZGQYlO9IIB1jx5y4bVF38yGgIwZVPB8iZwFRoM1juDzwdYdIsT15mCwttxqrKjoV5g5rMakmfKJdRbEfwYn68HWoJE6V57uXt1Vc3WfR5grDE9E00IfWKFl6PdSSfK391eeetfDeKCoptnYUXE/cec/7ePEC46o1Cz+6phcqOtbK+4HEz/6QEZgJyxB36C8BCi2dm45BOc+LxkJDvBKAxbR3/MbLM7gDzLGfr3Ge/a81ki9rzdWfSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739793662; c=relaxed/relaxed;
-	bh=BGErXx4XGBLwNEeQGGq+scslByuPmCZuR7zPUphE9YE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=NrYpG5M68cg5jtnhLva6W+bFSZYogyyO66zP7T96BMdYOLY7BezsH4E2xd5oxNciRu5AjZFSwOn/cTzNimyl7gG7I0LJ4FcUN2wdf9IBYLqZ3vQjUwiy2eMqGxiJ/u6EnyJlZ7NbreJtBwB4ZOH30jMKBg9Rt0DyPaoJDDwuP/7OeffEeQRgDHnK7VnGU2VwUnO2WK9rcluucidNpnOWQ1I96tByEZaINnmsCSWC+mpu791cmk3Ys8GWSNLZ/PcH9UiktWtbXvKNYT/Zjo8CDR29S8CVmU7sdxPpO0eJNwPW/xpPn3vPMxSB+RDeObIFpRejC2RbtKiTPUaioqrW8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ANdsQhJo; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1739840221; c=relaxed/relaxed;
+	bh=EkQ8ik4KdAGTrmDROq1yWEvtaKgYAVb1rRwmJhpHbIY=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=OLNSK79CsYu5E3/Qo0aknVC/mj+jJvrZ3LJfqVz3ISFLEd6g74Jz6iv6YN3FrzOSroLb+RLS5TWYftuxwgZ63+ts4aRB/kn5p4WNrXMgnX8NM1Tu6ghIQV43Le/vq5OkU5p5FjkJz1EVbcnLhajxtLyQ7kBJzvcwCrxEyLRctQMYezAbcNWyR/PERyj6AjSgJVPxNTORpqabXyPHjUdw4qGRx6xyd5iWN8peKoWC8mzn6JzxCWc0IIIqFxXBLEek5smiD0hVLoDDg62F1PPOvaYdlG7zgkcMMpcKwGQTzRauWmwy9rHZ2fUBkq3KkZdCXi5kDG4i/GBBBY7+0ndonw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=PKHF027/; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ANdsQhJo;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=PKHF027/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxLpP5Mtsz3093
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Feb 2025 23:01:01 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 95637A41070;
-	Mon, 17 Feb 2025 11:59:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5009C4CED1;
-	Mon, 17 Feb 2025 12:00:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1739793658;
-	bh=Kr1Ya5TI/SIfooq9DNyaR7dHvSRVgX1+U4ew/PplMLA=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=ANdsQhJoJXVov4RbTt/C3QRcF1uHJ41lwP9jXhhpYyoLunnYsR/dNkYeQs/RkcLRA
-	 of7IGElEZoudL09GMMJ9on3GyIebxW8w5EK84A5qmdeyv71o94IQ09Dms0C7uPGn0f
-	 7n2AW6Zy+Fy5B04wBrk9rEfjNsQvsWp2HVKzJmY0hc62C0DS/ikBq8QoixjL1BUN2L
-	 cwEGE+SgS1BiBfvBdIM96tHpvwY0XOyeeK1QWVYle/YNqBUGlilSP5ZUEgHG7YHzUF
-	 qBf6+9UUSUZu4yWt7xknbmwR5brbKJYDdgBrRMyb3f9x+8TBRopJnYW2ZqmBBR3gEI
-	 SNSW/AepSQkpg==
-Message-ID: <e43b5f8f-37e4-4468-b3ca-5059a5e6f3c3@kernel.org>
-Date: Mon, 17 Feb 2025 13:00:52 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yxh1m44ZYz2xrC
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Feb 2025 11:57:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1739840217;
+	bh=EkQ8ik4KdAGTrmDROq1yWEvtaKgYAVb1rRwmJhpHbIY=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=PKHF027/YqWI0hLDSpaf6m8oWe3aOeZOErMZjZyNQK/1VLMrsayuAOE9MEeeRmyeG
+	 Zya4NJgfYPP7QoVHwEi25s3nATtH1x/QivmUGOdTzFfc/dSXlcdIedaSHkwfN/M0Q7
+	 ISJ5sz/LA6WAvmEl3mFtlMXoCysBYbssI53AalZv5prualDQ3f4ENR+SdxHGpImIOZ
+	 EoDpYyDX5UGmIG0L+Csp/Qu1AMif4DGQRpwp4a3vULIfLxUCnspSpP98Jurxmyr7Oj
+	 y1F503EdhB5E1H/gwdiSnrVDzPjMTSxt5aDs+SX0qyp70hqIwAdNcyJ4uejTQ646mL
+	 itPZMdMybTs+g==
+Received: from [192.168.68.112] (ppp118-210-165-49.adl-adc-lon-bras34.tpg.internode.on.net [118.210.165.49])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5BB64759DD;
+	Tue, 18 Feb 2025 08:56:54 +0800 (AWST)
+Message-ID: <6fd7cd57261ddf9831f57dc4c637b24e9f8982d9.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v1 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Kevin Chen
+ <kevin_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
+ krzk+dt@kernel.org,  conor+dt@kernel.org, joel@jms.id.au,
+ chiawei_wang@aspeedtech.com,  linux-aspeed@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org,  linux-kernel@vger.kernel.org
+Cc: "tomer.maimon" <tomer.maimon@nuvoton.com>
+Date: Tue, 18 Feb 2025 11:26:53 +1030
+In-Reply-To: <e43b5f8f-37e4-4468-b3ca-5059a5e6f3c3@kernel.org>
+References: <20250217114831.3225970-1-kevin_chen@aspeedtech.com>
+	 <20250217114831.3225970-4-kevin_chen@aspeedtech.com>
+	 <e43b5f8f-37e4-4468-b3ca-5059a5e6f3c3@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,84 +71,30 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
-To: Kevin Chen <kevin_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
- krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
- andrew@codeconstruct.com.au, chiawei_wang@aspeedtech.com,
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
-References: <20250217114831.3225970-1-kevin_chen@aspeedtech.com>
- <20250217114831.3225970-4-kevin_chen@aspeedtech.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20250217114831.3225970-4-kevin_chen@aspeedtech.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-On 17/02/2025 12:48, Kevin Chen wrote:
-> +
-> +	pcc->mdev.parent = dev;
-> +	pcc->mdev.minor = MISC_DYNAMIC_MINOR;
-> +	pcc->mdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME,
-> +					pcc->mdev_id);
-> +	pcc->mdev.fops = &pcc_fops;
-> +	rc = misc_register(&pcc->mdev);
-> +	if (rc) {
-> +		dev_err(dev, "Couldn't register misc device\n");
-> +		goto err_free_kfifo;
-> +	}
+T24gTW9uLCAyMDI1LTAyLTE3IGF0IDEzOjAwICswMTAwLCBLcnp5c3p0b2YgS296bG93c2tpIHdy
+b3RlOgo+IE9uIDE3LzAyLzIwMjUgMTI6NDgsIEtldmluIENoZW4gd3JvdGU6Cj4gPiArCj4gPiAr
+wqDCoMKgwqDCoMKgwqBwY2MtPm1kZXYucGFyZW50ID0gZGV2Owo+ID4gK8KgwqDCoMKgwqDCoMKg
+cGNjLT5tZGV2Lm1pbm9yID0gTUlTQ19EWU5BTUlDX01JTk9SOwo+ID4gK8KgwqDCoMKgwqDCoMKg
+cGNjLT5tZGV2Lm5hbWUgPSBkZXZtX2thc3ByaW50ZihkZXYsIEdGUF9LRVJORUwsICIlcyVkIiwK
+PiA+IERFVklDRV9OQU1FLAo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHBjYy0+bWRldl9pZCk7
+Cj4gPiArwqDCoMKgwqDCoMKgwqBwY2MtPm1kZXYuZm9wcyA9ICZwY2NfZm9wczsKPiA+ICvCoMKg
+wqDCoMKgwqDCoHJjID0gbWlzY19yZWdpc3RlcigmcGNjLT5tZGV2KTsKPiA+ICvCoMKgwqDCoMKg
+wqDCoGlmIChyYykgewo+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGRldl9lcnIo
+ZGV2LCAiQ291bGRuJ3QgcmVnaXN0ZXIgbWlzYyBkZXZpY2VcbiIpOwo+ID4gK8KgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoGdvdG8gZXJyX2ZyZWVfa2ZpZm87Cj4gPiArwqDCoMKgwqDCoMKg
+wqB9Cj4gCj4gWW91IGNhbm5vdCBleHBvc2UgdXNlci1zcGFjZSBpbnRlcmZhY2VzIGZyb20gU29D
+IGRyaXZlcnMuIFVzZQo+IGFwcHJvcHJpYXRlIHN1YnN5c3RlbSBmb3IgdGhpcyB3aXRoIHByb3Bl
+ciBBQkkgZG9jdW1lbnRhdGlvbi4KPiAKPiBTZWU6Cj4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcv
+YWxsL2JjNTExOGYyLTg5ODItNDZmZi1iYzc1LWQwYzcxNDc1ZTkwOUBhcHAuZmFzdG1haWwuY29t
+Lwo+IGFuZCBtb3JlIGRpc2N1c3Npb25zIG9uIExLTUwKCkZ1cnRoZXIsIGRyaXZlcnMvbWlzYy9h
+c3BlZWQtbHBjLXNub29wLmMgYWxyZWFkeSBleGlzdHM6CgpodHRwczovL2dpdC5rZXJuZWwub3Jn
+L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC5naXQvY29tbWl0Lz9pZD05
+ZjRmOWFlODFkMGFmZmMxODJmNTRkZDAwMjg1ZGRiOTBlMGIzYWUxCgpLZXZpbjogRGlkIHlvdSBj
+b25zaWRlciByZXdvcmtpbmcgaXQ/CgpOdXZvdG9uIGhhdmUgYSBzaW1pbGFyIGNhcGFiaWxpdHkg
+aW4gdGhlaXIgTlBDTSBCTUMgU29DKHMpIHdpdGggdGhlCiJCUEMiICgiQklPUyBQT1NUIENvZGUi
+IGNvbnRyb2xsZXIpLiBUaGVyZSBzaG91bGQgYmUgc29tZSBjb25zZW5zdXMgb24KdGhlIGJpbmRp
+bmcgYW5kIHVzZXJzcGFjZSBpbnRlcmZhY2UuCgpBbmRyZXcK
 
-You cannot expose user-space interfaces from SoC drivers. Use
-appropriate subsystem for this with proper ABI documentation.
-
-See:
-https://lore.kernel.org/all/bc5118f2-8982-46ff-bc75-d0c71475e909@app.fastmail.com/
-and more discussions on LKML
-
-Best regards,
-Krzysztof
 
