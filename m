@@ -1,59 +1,72 @@
-Return-Path: <linux-aspeed+bounces-785-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-786-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A558EC021AA
-	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Feb 2025 00:41:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 197E8C021AA
+	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Feb 2025 01:22:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YyvZb2KyLz2yYJ;
-	Thu, 20 Feb 2025 11:41:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YywVF3gGNz30P3;
+	Thu, 20 Feb 2025 12:22:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740012071;
-	cv=none; b=GwbPq7K1WcrEyBkLBA8A5OGvtxtSBMCSuZLJN6vQO9qNcl6StCMVrsX/kst/NGUzs8YGkH0V5gJJrMckdeLSyA2ErRcJ5/cBvNsOnwqu5TuIgY32rMsHiZNe/r2o4G8YnSV59pxA1u660ehhF4yWou9LTE0+LLSmQDySV5s0hnfe0Gl3oFIrhyMhB2e/7RCmtb+7pN9sj8+vi11fyCogFlLhgLjxFWFJo/MJ+3jhT6DuutgSrcu7TRzKmsXHcE6jOhxZu/IFPGLoYrEoCSXNub2zQdkHWFzQuxe1vvSAe+qL9F7jWCuN8AV29Mw0Mqy1owEed+mFFQwl+/26rI4uaQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740014549;
+	cv=none; b=K8FbDMbvP3vVqqj2eUMm31/AXh4R3q1XzAlerf7uT2qFIDOOn2xS9E23FkjC6yVJ+omAXEWYNVQhlxSEp9IagSYxlVWktsDNwF5oGurH8GjjPCIN+qA82ea2U245mvTyG9I+trQakbUoz6nHFej6xPUJxaYJct+Fej1jHNmjIakXIZkmmQSYCqk6jTxKsIo+AOMroXa4b1oSFjDY8hZnvZ4m/x2xwQJqoL0cOzDbC8pNh3jbARXBGSpDl4YdNSuKQyN91pB/Fll+C7h9uhVlSaEZmUHrFBqGaj5dmzVolDhfW5jhc+ZX/KICm/9ipEZClZoZz6csze1Nj8XlWeBCpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740012071; c=relaxed/relaxed;
-	bh=hBvUhOI2FL6RYIJ2THi32kx7sgjzdUmW5yq1BzGPFao=;
+	t=1740014549; c=relaxed/relaxed;
+	bh=/aBZNCva4WH3GgF1JWE0vCHAorP1a+UaOp78AtPSvIs=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Brc1V48iuM2Q1gwARN5unlmLJ2jTszuCU0jYIPya/yanScTsjsJqUXQkgp8FfJRPYUa86MjQrJZq2WHCV1UV/oknsKU9fFebeZHpS/47tqLzs92ZjXZZs16Agp5BOAhJMjsc/1sLPxqzyIgLvBlhtVvw/tVDLrqi7ikdwaxAjDl04PASaZOAoJIP4eEEnN2ObBT6Jp1r0HRU+zqFANPscqm7ZkZGHWbcl/cUJVUKNejwc6sFFUtDQJkMHMQjdrwlQ9gtTBl2J3ecjKH4oMvGemID1hSEdwsNY4Itw1mOhoG4WwcDYAbiFCWCOiwRoMmQRHC5dFeUMrRlFz9NumgGug==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=nCRRlhV3; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=HfFaIoFfD/Ui9Buk2H2MlVQIPppguUUWKuqF34eyNS/n+nC4O0zINmKw7Wwc17S9C1uKdrx0mho717ZN6t76Rjc23xD+iigt709wUtDKNOAr4zlugH3rwy78o74R60k4fVBnEussHB1RZ061q36N/L2FkFaEb+YO0ZX88QapdnB81Q2zYLqd3eIml9dL5L9onMcVdwrlkNz3qcdwIokAkN2V4/IGLelM68RKlXTas1scF10EsDcgEs8Shj7wK8D409IBW537NscfZLzmC/Jy6FsTjj01nu0wjLBlHR5dEDg8uBWqQmDtoTOF0kv0Qc19C+s9casKnwntgA/wIS3ZfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=jDPkX9yb; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=nCRRlhV3;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=jDPkX9yb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YyvZX6XD0z2yFB
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Feb 2025 11:41:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YywVD5ZvWz2xjQ
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Feb 2025 12:22:28 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1740012067;
-	bh=hBvUhOI2FL6RYIJ2THi32kx7sgjzdUmW5yq1BzGPFao=;
+	d=codeconstruct.com.au; s=2022a; t=1740014547;
+	bh=/aBZNCva4WH3GgF1JWE0vCHAorP1a+UaOp78AtPSvIs=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=nCRRlhV3RL8kHlRzrBz9xbUtPiDC8GRXo00VXtOwMfmx0z5NU+akRBi6RHHd+nAlg
-	 cP2qdK3lk9Vnjc6I7EQJ3tCJSwrCYJHyggdFfzeYRF9hnC8ErxhqZFRnQPSY8VBO6h
-	 mD33h31kJBPsXCKVkhFdw3U63WRuPA8rOaaShgTTotwhXaM4yXrMLsqlsFkClrSzQD
-	 jm3huJ7p/OwT3dMEZVV1ow+FdSQ1hunHbhvgegvT4LOrMdxjwRBayFzp+DWCKqmQ3L
-	 Q1Tqa3O+ekfB5FTPuzSRSURLeDMTeaOIy3iDSgWay4DqZtKGKkOo1VMxdLiX2IPFwx
-	 2LvhUgAf4iy7g==
+	b=jDPkX9ybPVbYrZwggfWgeyoBnY0mjGJ8ASBUDf5oFON4YnflN9naB/3vgG1afQQTX
+	 GFOY0t7ZJXkBgeTkXiIHwYp5gpVuZeyntuTHe2jtjNvTj2qsIJ0YID9Oiv7KHwN179
+	 +QBCsAliWT8EV1jf7Tu1XH0aEpdTiy/ajFd05daKgIqqx7uUEitI/7FsZqjH8lPE47
+	 6jrlxSBjvY+DLtPHKQPSpTWcQpoyrERhBrRk7egdOetj5VnlsamurHTeqv8zo+zCf/
+	 Y9souM03kgD780Kvvnknx8NQjYG+QSKUAU7QV+NpR74yIvrzptt9jkgBBDuuLWCtHv
+	 +/o4S0PDEWLGw==
 Received: from [192.168.68.112] (ppp118-210-187-53.adl-adc-lon-bras34.tpg.internode.on.net [118.210.187.53])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 2B29F75FE6;
-	Thu, 20 Feb 2025 08:41:06 +0800 (AWST)
-Message-ID: <379b87b84ae79ce6cb49ee27410e628518e0e269.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 3/3] ARM: dts: aspeed: Add Balcones system
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id E1E3C76942;
+	Thu, 20 Feb 2025 09:22:23 +0800 (AWST)
+Message-ID: <ba2757fd02b3e7c8f9c862c76f2cfcd2b6bfb41b.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v1 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Eddie James <eajames@linux.ibm.com>, linux-aspeed@lists.ozlabs.org
-Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	devicetree@vger.kernel.org
-Date: Thu, 20 Feb 2025 11:11:05 +1030
-In-Reply-To: <20250219212735.1365050-4-eajames@linux.ibm.com>
-References: <20250219212735.1365050-1-eajames@linux.ibm.com>
-	 <20250219212735.1365050-4-eajames@linux.ibm.com>
+To: Kevin Chen <kevin_chen@aspeedtech.com>, "joel@jms.id.au"
+ <joel@jms.id.au>,  Z-ChiaWei Wang <chiawei_wang@aspeedtech.com>,
+ "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Mo Elbadry <elbadrym@google.com>
+Cc: "tomer.maimon" <tomer.maimon@nuvoton.com>, Krzysztof Kozlowski
+	 <krzk@kernel.org>, "lee@kernel.org" <lee@kernel.org>, "robh@kernel.org"
+	 <robh@kernel.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>, 
+	"conor+dt@kernel.org"
+	 <conor+dt@kernel.org>
+Date: Thu, 20 Feb 2025 11:52:23 +1030
+In-Reply-To: <TY0PR06MB4960EA7255DF0BDF235F0D9689C52@TY0PR06MB4960.apcprd06.prod.outlook.com>
+References: <20250217114831.3225970-1-kevin_chen@aspeedtech.com>
+	 <20250217114831.3225970-4-kevin_chen@aspeedtech.com>
+	 <e43b5f8f-37e4-4468-b3ca-5059a5e6f3c3@kernel.org>
+	 <6fd7cd57261ddf9831f57dc4c637b24e9f8982d9.camel@codeconstruct.com.au>
+	 <PSAPR06MB4949C65DF5C034BD6B40C9B589FA2@PSAPR06MB4949.apcprd06.prod.outlook.com>
+	 <d4945482509cad0bf3e8cd93c1fb21bac2e0c7f2.camel@codeconstruct.com.au>
+	 <TY0PR06MB4960EA7255DF0BDF235F0D9689C52@TY0PR06MB4960.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -68,102 +81,116 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 
-SGkgRWRkaWUsCgpJIGhhdmUgc29tZSBtaW5vciBjb21tZW50cyBpbmxpbmU6CgpPbiBXZWQsIDIw
-MjUtMDItMTkgYXQgMTU6MjcgLTA2MDAsIEVkZGllIEphbWVzIHdyb3RlOgo+IFRoZSBCYWxjb25l
-cyBzeXN0ZW0gaXMgc2ltaWxhciB0byBCb25uZWxsIGJ1dCB3aXRoIGEgUE9XRVIxMSBwcm9jZXNz
-b3IuCgpDYW4geW91IGFkZCBzb21lIGNvbW1lbnRhcnkgYWJvdXQgdGhlIFAxMSBkdWFsIHZzIHF1
-YWQgY2hhbmdlcyBoZXJlPwoKPiAKPiBTaWduZWQtb2ZmLWJ5OiBFZGRpZSBKYW1lcyA8ZWFqYW1l
-c0BsaW51eC5pYm0uY29tPgo+IC0tLQo+IMKgYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL01ha2Vm
-aWxlwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHzCoMKgIDEgKwo+IMKgLi4uL2R0cy9hc3BlZWQv
-YXNwZWVkLWJtYy1pYm0tYmFsY29uZXMuZHRzwqDCoMKgIHwgNTk0ICsrKysrKysrKysrKysKPiDC
-oC4uLi9hcm0vYm9vdC9kdHMvYXNwZWVkL2libS1wb3dlcjExLWR1YWwuZHRzaSB8IDc3OSArKysr
-KysrKysrKysrKysrKysKPiDCoC4uLi9hcm0vYm9vdC9kdHMvYXNwZWVkL2libS1wb3dlcjExLXF1
-YWQuZHRzaSB8IDc2OSArLS0tLS0tLS0tLS0tLS0tLQo+IMKgNCBmaWxlcyBjaGFuZ2VkLCAxMzc2
-IGluc2VydGlvbnMoKyksIDc2NyBkZWxldGlvbnMoLSkKPiDCoGNyZWF0ZSBtb2RlIDEwMDY0NCBh
-cmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1pYm0tYmFsY29uZXMuZHRzCj4gwqBj
-cmVhdGUgbW9kZSAxMDA2NDQgYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2libS1wb3dlcjExLWR1
-YWwuZHRzaQo+IAo+IGRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvTWFrZWZp
-bGUgYi9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvTWFrZWZpbGUKPiBpbmRleCAyZTVmNDgzM2Ew
-NzNiLi43MWIyZDY3ZmRiYWM4IDEwMDY0NAo+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVl
-ZC9NYWtlZmlsZQo+ICsrKyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZQo+IEBA
-IC0zNCw2ICszNCw3IEBAIGR0Yi0kKENPTkZJR19BUkNIX0FTUEVFRCkgKz0gXAo+IMKgwqDCoMKg
-wqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXlhbXAuZHRiIFwKPiDCoMKgwqDCoMKgwqDCoMKg
-YXNwZWVkLWJtYy1mYWNlYm9vay15b3NlbWl0ZXYyLmR0YiBcCj4gwqDCoMKgwqDCoMKgwqDCoGFz
-cGVlZC1ibWMtZmFjZWJvb2steW9zZW1pdGU0LmR0YiBcCj4gK8KgwqDCoMKgwqDCoMKgYXNwZWVk
-LWJtYy1pYm0tYmFsY29uZXMuZHRiIFwKPiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1pYm0t
-Ymx1ZXJpZGdlLmR0YiBcCj4gwqDCoMKgwqDCoMKgwqDCoGFzcGVlZC1ibWMtaWJtLWJvbm5lbGwu
-ZHRiIFwKPiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1pYm0tZXZlcmVzdC5kdGIgXAo+IGRp
-ZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1pYm0tYmFsY29u
-ZXMuZHRzIGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtaWJtLWJhbGNvbmVz
-LmR0cwo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gaW5kZXggMDAwMDAwMDAwMDAwMC4uMGZlOTlh
-NzQ4YjYzYgo+IC0tLSAvZGV2L251bGwKPiArKysgYi9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQv
-YXNwZWVkLWJtYy1pYm0tYmFsY29uZXMuZHRzCj4gQEAgLTAsMCArMSw1OTQgQEAKPiArLy8gU1BE
-WC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0yLjAtb3ItbGF0ZXIKPiArLy8gQ29weXJpZ2h0IDIw
-MjUgSUJNIENvcnAuCj4gKy9kdHMtdjEvOwo+ICsKPiArI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2dw
-aW8vYXNwZWVkLWdwaW8uaD4KPiArI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2kyYy9pMmMuaD4KPiAr
-I2luY2x1ZGUgPGR0LWJpbmRpbmdzL2xlZHMvbGVkcy1wY2E5NTV4Lmg+Cj4gKyNpbmNsdWRlICJh
-c3BlZWQtZzYuZHRzaSIKPiArI2luY2x1ZGUgImlibS1wb3dlcjExLWR1YWwuZHRzaSIKPiArCj4g
-Ky8gewo+ICvCoMKgwqDCoMKgwqDCoG1vZGVsID0gIkJhbGNvbmVzIjsKPiArwqDCoMKgwqDCoMKg
-wqBjb21wYXRpYmxlID0gImlibSxiYWxjb25lcy1ibWMiLCAiYXNwZWVkLGFzdDI2MDAiOwo+ICsK
-PiAKCi4uLgoKPiArfTsKPiArCj4gKyZpMmMwIHsKPiArwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSAi
-b2theSI7Cj4gKwo+ICvCoMKgwqDCoMKgwqDCoGVlcHJvbUA1MSB7Cj4gK8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAiYXRtZWwsMjRjNjQiOwo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg1MT47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiAr
-Cj4gK8KgwqDCoMKgwqDCoMKgZ3Bpb0AyMCB7CgpDYW4geW91IHBsZWFzZSBmb2xsb3cgdGhlIERU
-UyBjb2Rpbmcgc3R5bGUgYW5kIG9yZGVyIHRoZSBub2RlcyBieSB1bml0CmFkZHJlc3M/CgpodHRw
-czovL2RvY3Mua2VybmVsLm9yZy9kZXZpY2V0cmVlL2JpbmRpbmdzL2R0cy1jb2Rpbmctc3R5bGUu
-aHRtbCNvcmRlci1vZi1ub2RlcwoKT3JkZXJpbmcgdGhlIHRvcC1sZXZlbCBsYWJlbCByZWZlcmVu
-Y2VzIGFscGhhYmV0aWNhbGx5IHdvdWxkIGJlCmFwcHJlY2lhdGVkIHRvby4gSXQgZG9lc24ndCBz
-ZWVtIGxpa2UgdGhleSdyZSBpbiBhbiBvcmRlciByZWZsZWN0aW5nCmUuZy4gdGhlIHVuaXQgYWRk
-cmVzcywgaXQgZmVlbHMga2luZCBvZiBhcmJpdHJhcnkuCgo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqBjb21wYXRpYmxlID0gInRpLHRjYTk1NTQiOwo+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqByZWcgPSA8MHgyMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoGdwaW8tY29udHJvbGxlcjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dw
-aW8tY2VsbHMgPSA8Mj47Cj4gKwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBncGlv
-LWxpbmUtbmFtZXMgPQo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgIiIsCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqAiUlVTU0VMX0ZXX0kyQ19FTkFCTEVfTiIsCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAiUlVTU0VMX09QUEFORUxfUFJFU0VOQ0VfTiIsCj4gK8KgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAiQkxZVEhfT1BQQU5FTF9Q
-UkVTRU5DRV9OIiwKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoCJDUFVfVFBNX0NBUkRfUFJFU0VOVF9OIiwKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoCIiLAo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgIiIsCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqAiREFTRF9CUF9QUkVTRU5UX04iOwo+ICvCoMKgwqDCoMKgwqDCoH07Cj4g
-K307Cj4gKwoKLi4uCgo+ICsKPiArJmkyYzUgewo+ICvCoMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJv
-a2F5IjsKPiArCj4gK8KgwqDCoMKgwqDCoMKgZWVwcm9tQDUyIHsKPiArwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJhdG1lbCwyNGM2NCI7Cj4gK8KgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9IDwweDUyPjsKPiArwqDCoMKgwqDCoMKgwqB9Owo+ICsK
-PiArwqDCoMKgwqDCoMKgwqB0ZW1wZXJhdHVyZS1zZW5zb3JANGUgewoKT3JkZXJpbmcgYWdhaW4g
-aGVyZS4KCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAidGks
-dG1wNDM1IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDB4NGU+Owo+
-ICvCoMKgwqDCoMKgwqDCoH07Cj4gK307Cj4gCgouLi4KCj4gKwo+ICsma2NzMyB7Cj4gK8KgwqDC
-oMKgwqDCoMKgc3RhdHVzID0gIm9rYXkiOwo+ICvCoMKgwqDCoMKgwqDCoGFzcGVlZCxscGMtaW8t
-cmVnID0gPDB4Y2EyPjsKPiArwqDCoMKgwqDCoMKgwqBhc3BlZWQsbHBjLWludGVycnVwdHMgPSA8
-MTEgSVJRX1RZUEVfTEVWRUxfTE9XPjsKPiArfTsKPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vYm9v
-dC9kdHMvYXNwZWVkL2libS1wb3dlcjExLWR1YWwuZHRzaSBiL2FyY2gvYXJtL2Jvb3QvZHRzL2Fz
-cGVlZC9pYm0tcG93ZXIxMS1kdWFsLmR0c2kKPiBuZXcgZmlsZSBtb2RlIDEwMDY0NAo+IGluZGV4
-IDAwMDAwMDAwMDAwMDAuLmU1ZjY1MjU4ZTA4MmYKPiAtLS0gL2Rldi9udWxsCj4gKysrIGIvYXJj
-aC9hcm0vYm9vdC9kdHMvYXNwZWVkL2libS1wb3dlcjExLWR1YWwuZHRzaQo+IEBAIC0wLDAgKzEs
-Nzc5IEBACj4gKy8vIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wLW9yLWxhdGVyCj4g
-Ky8vIENvcHlyaWdodCAyMDI1IElCTSBDb3JwLgo+ICsKPiArLyB7Cj4gCgouLi4KCj4gKwo+ICsm
-ZnNpbTAgewo+ICvCoMKgwqDCoMKgwqDCoCNhZGRyZXNzLWNlbGxzID0gPDI+Owo+ICvCoMKgwqDC
-oMKgwqDCoCNzaXplLWNlbGxzID0gPDA+Owo+ICvCoMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5
-IjsKPiArwqDCoMKgwqDCoMKgwqBidXMtZnJlcXVlbmN5ID0gPDEwMDAwMDAwMD47Cj4gK8KgwqDC
-oMKgwqDCoMKgY2ZhbS1yZXNldC1ncGlvcyA9IDwmZ3BpbzAgQVNQRUVEX0dQSU8oUSwgMCkgR1BJ
-T19BQ1RJVkVfSElHSD47Cj4gKwo+ICvCoMKgwqDCoMKgwqDCoGNmYW1AMCwwIHsKPiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDAgMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoCNhZGRyZXNzLWNlbGxzID0gPDE+Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqAjc2l6ZS1jZWxscyA9IDwxPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgY2hpcC1pZCA9IDwwPjsKPiArCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oAoKLi4uCgo+ICsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgc2JlZmlmb0AyNDAw
-IHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBh
-dGlibGUgPSAiaWJtLHA5LXNiZWZpZm8iOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDB4MjQwMCAweDQwMD47Cj4gKwo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgb2NjIHsKPiArwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjb21wYXRp
-YmxlID0gImlibSxwMTAtb2NjIjsKCkkgYXNzdW1lIHRoaXMgZG9lc24ndCBuZWVkIGEgbmV3IGNv
-bXBhdGlibGUgZm9yIFAxMSAoZ2l2ZW4geW91J3JlCm1vdmluZyBpdCBvdXQgb2YgdGhlIHF1YWQg
-RFRTSSkuCgpBbmRyZXcK
+On Wed, 2025-02-19 at 11:59 +0000, Kevin Chen wrote:
+> > On Tue, 2025-02-18 at 11:11 +0000, Kevin Chen wrote:
+> > > > On Mon, 2025-02-17 at 13:00 +0100, Krzysztof Kozlowski wrote:
+> > > > > On 17/02/2025 12:48, Kevin Chen wrote:
+> > > > > > +
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.parent =3D=
+ dev;
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.minor =3D =
+MISC_DYNAMIC_MINOR;
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.name =3D d=
+evm_kasprintf(dev, GFP_KERNEL,
+> > > > > > "%s%d",
+> > > > > > DEVICE_NAME,
+> > > > > >=20
+> > > >=20
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0pcc->mdev_id);
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.fops =3D &=
+pcc_fops;
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0rc =3D misc_register=
+(&pcc->mdev);
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (rc) {
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0dev_err(dev, "Couldn't register misc
+> > > > > > device\n");
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0goto err_free_kfifo;
+> > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
+> > > > >=20
+> > > > > You cannot expose user-space interfaces from SoC drivers. Use
+> > > > > appropriate subsystem for this with proper ABI documentation.
+> > > > >=20
+> > > > > See:
+> > > > > https://lore.kernel.org/all/bc5118f2-8982-46ff-bc75-d0c71475e909@=
+a
+> > > > > pp.f
+> > > > > astmail.com/
+> > > > > and more discussions on LKML
+> > > >=20
+> > > > Further, drivers/misc/aspeed-lpc-snoop.c already exists:
+> > > >=20
+> > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/=
+c
+> > > > ommit/?id=3D
+> > > > 9f4f9ae81d0affc182f54dd00285ddb90e0b3ae1
+> > > >=20
+> > > > Kevin: Did you consider reworking it?
+> > > Andrew: No, I do not rework it but add the post code capture
+> > > driver
+> > > using the SNOOP registers. As a result, I add some code in
+> > > aspeed_a2600_15 to check the SNOOP enable bit. PCC driver probe
+> > > abort
+> > > if snoop is enabled.
+> >=20
+> > Hmm, I think OpenBMC's history regarding POST code support caused
+> > some
+> > confusion on my part. For whatever reason, the snoop device was
+> > used as a
+> > source of POST codes despite the existence of the dedicated POST
+> > code
+> > hardware since at least the AST2400, but...
+> What I know about the dedicated POST code hardware in ASPEED should
+> be the same one in LPC module.
+>=20
+> >=20
+> > > PCC is used for port I/O byte snooping over eSPI.
+> >=20
+> > ... it seems that they're largely interchangeable, just with
+> > different hardware
+> > features (PCC has DMA)? My impression is that the snoop device
+> > could also be
+> > used over eSPI?
+> Yes, PCC has DMA to capture the POST code.
+> And snoop device also can be used over eSPI.
+>=20
+> These two devices of PCC and snoop use the same port I/O of 80h and
+> 81h.
+> But, in current usage of PCC, it can support a continuous, 4-bytes
+> maximum region from port I/O 80h to 83h.
+> What I know about PCC or snoop usage, depends on INTEL platform or
+> AMD platform.
+>=20
+> For ASPEED, we want to upstream the PCC driver for the PCC usage.
 
+Yeah, that's fine, but I think some work needs to be done to provide
+coherence in the devicetree binding and userspace APIs across both the
+ASPEED snoop and PCC bits, as well as the Nuvoton BPC. Bespoke designs
+create pain.
+
+The PCC driver above reads the data out of the DMA ring-buffer straight
+into the kfifo hooked up the the miscdev read callback. The datasheet
+notes: "the data structure of the FIFO is mode dependent" in the
+description of PCCR3, but no in-band or out-of-band mechanism (sysfs,
+ioctl) is provided for userspace to query whether it's 1B, 2B, 4B or
+"full" mode.
+
+The situation with the snoop driver is similar (1 or 2 1B channels
+multiplexed into the one data stream). It also looks a bit quirky with
+multiple channels enabled, as what userspace reads will depend on the
+host access patterns, but no metadata is provided to userspace about
+what it's reading.
+
+This should be fixed so userspace can have some certainty and a useful
+API to work against (one that provides a direct description of what's
+being read out).
+
+I expect we could similarly consolidate the devicetree bindings,
+covering what IO port range to attach to.
+
+Andrew
 
