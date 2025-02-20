@@ -1,85 +1,72 @@
-Return-Path: <linux-aspeed+bounces-787-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-788-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85A18C021AA
-	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Feb 2025 02:33:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6097BC021B2
+	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Feb 2025 14:36:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yyy3x6LZ7z3028;
-	Thu, 20 Feb 2025 13:33:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2011::612" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740018797;
-	cv=pass; b=d7bUind8MvlNkR2n6fAxTnVZeWZtaDLBELabw9htoanHOOq6qc1qApYCh47AuZ+tVgZuRgmUdJRwmoaPIcG7F/QULvywwSAZOWi4qpbX6Wl+lnn3Uv2EN7gwZHu8+9O2ir+wZlp11Wr+smzngXB2B7ijoI+CB5PF3BVxUePZBoerBlRfec27Pd9NatFWfJ3DMSTYVmMmoxVDeWJRYG1A6tVxu6lpnIzaFamQ3xdnX+PaWEisRWYodhgVZKbuSwqwjflzMDj4r+8c+SouOalJK4Apn11TyM/yHQ0f7q8ykxNSj/t0ZX5bZyNrFlmvkK/RMkOlQUhZ5Kd5L/yP9GTlrA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740018797; c=relaxed/relaxed;
-	bh=/x787lNgNntEc47QXNfeY2l5Pt9oXXCzO9vFsY4d+S0=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=ih6riksL/j7a4NSHKjXe+cPL9kcfOATyq6aq7FLjaAFUbAEvP6q609h+a9GTU3C4h6fdkv4RyFFEKolO4ynTomyY5dxQgMacgYXhD0T07Mwq4cT+ZZ85V5QcmHUGYrHe8KBaBipdK+4cFOQzHUBfCXXmBMAACFY45zjlhmC2m3cgOfQk+R5WU1pjJgyvB0LqKlwYYO5L/G5SwCYJQ3G62mqB18vhbDxnApdu4+rvheSBE82vetB8aHrDU4lgGH7pZIsD52JIxIewNDPWFZwqzOwjJt+PRnNvtgvVb0IezXa0zbjenIbdtpif2M60FegQMzADlskcaueI+hROdkieng==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wiwynn.com; dkim=pass (2048-bit key; unprotected) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=selector2 header.b=Ij5s/juf; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2011::612; helo=apc01-tyz-obe.outbound.protection.outlook.com; envelope-from=delphine_cc_chiu@wiwynn.com; receiver=lists.ozlabs.org) smtp.mailfrom=wiwynn.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wiwynn.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YzG6r38wqz30TH;
+	Fri, 21 Feb 2025 01:36:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740062212;
+	cv=none; b=TUDg23NEmJM5SdUN0xHD7gIbd64zmAaYI+jZK6n6gVJuqedjqdxmJXotAf4xl8c69xyClnn8WGkVbvZICBgFye2sK0f0MraXMF7yjuzA5Ut046Nwo0PQM/2NfvDfgPQAVfEtHGm+/AqFUn2BIJMTE6j5nWo+nwiYevBmlusCMed1XD9CDGFJNOEnMBplX9X8CLz9FuGPkzJpCirhB5cs8i4OwezvOaMBl2H9A7+VS7EifKma5J8lZ193jF6NughSoO7UvR1zSna9g1W60py45+OIW95hBpi+1/jYVEeZDqhZvjQb5mGfyjtwWluB/Ny7PYIqtGlNbf/VMdYHlPJqQA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1740062212; c=relaxed/relaxed;
+	bh=LvAve/4dkDe4Xg3pY33uohABuN5Ael5Y3OV6lbiTz/8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oaZ+xCist0lumwOHRSRCcP52XS3B4HAH3IuVk1uOTI2YrA/TwGbGAYuS4RHc6pW9lkQwquWBNr9AU9CD6mFVZThLQBbgLHMcrr3yfsBSBpNBkh+Y+cg0XaLcUZBElK1+XwIKGZzx1FAI0vIRjwA0hN/HWOVONDsZLapWv9TtUSNTYCWr/t5uzL0lyyeXwg5YOtPOkwQ0YcWMtOmQ1sv58uQRnp0weg3u4iPSVLb3DOpIUcosMP+Dwr7xtfZDyDM8hsI5nggsWkyq3/He8fAej4+tiHBkkLDX4iyMhNsxXXqtB6QsRPVkU7CI05jEEHCc/iEOqezte5EuNDamnziJ9w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JJvQBzuL; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=selector2 header.b=Ij5s/juf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JJvQBzuL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wiwynn.com (client-ip=2a01:111:f403:2011::612; helo=apc01-tyz-obe.outbound.protection.outlook.com; envelope-from=delphine_cc_chiu@wiwynn.com; receiver=lists.ozlabs.org)
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on20612.outbound.protection.outlook.com [IPv6:2a01:111:f403:2011::612])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yyy3w2W9tz2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Feb 2025 13:33:15 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=d0lX4NEkim9MWqGDIFx5egKuwtu1yEfKg6UilYKRxWzXEioaNN79CUorvCM3EnI+2scAqnhd0dlMDg2YAfKj59p2Y07X88+9J+M5hjCI8PeGjNMDlURmIIswZe4KUis+kxYbJja2REncrf8FHUtbaBSXclcYjBXvN1y1jngWxvY7ch49sExySTndkty+2OiaR0yIL8Xk6ENRgVB2vuJf0h6dqNyo3RokTjDU2FeZT8ZK6q1MG37Csgx/7PZrU7WzEsVDKILa/ThMOACfrmYDmDYrGB6z7+HDvJuBQv69DGT8A+/FZ/s+fb7+06UmN2997dqNoCL1Gk3C0zYCRy62aA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/x787lNgNntEc47QXNfeY2l5Pt9oXXCzO9vFsY4d+S0=;
- b=YtzZCdywLlKHu0a9UI7pjbxvofPDHAJm5SFSUJD83ERhzqz5BGyMo3tAasERAjuOFdZGN3QXQjsgLdvmdjLulCxAo3rUaSgQXqGXPw7sbBfj7m7ZHPowx1iK/HXOtNQC7Gi8SoeQrm4RrgiPNi998OerA4PyofYs/mX/bqFzUt5BdKD3fD6BTC5qqr0Ovkf+isleiG3Uj+4VZ/4W3bKVZfi84sh+AmNGgMilpzNrE3gjGsj6YtHQDc9XNjqBjmk6oNk6M5NYU5KsOOb7cUT+8ipmjsDVtxw1oVtiypk42J9pNa+lzSvkBUi2me/1idEyPOrDYQ4GRULCxzjEYj7qLA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
- 211.20.1.79) smtp.rcpttodomain=stwcx.xyz smtp.mailfrom=wiwynn.com; dmarc=fail
- (p=quarantine sp=quarantine pct=100) action=quarantine
- header.from=wiwynn.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wiwynn.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/x787lNgNntEc47QXNfeY2l5Pt9oXXCzO9vFsY4d+S0=;
- b=Ij5s/jufpaApD2P6rc0ptkRaG6Tq0aJb3HuGAWNEsFSJ/Fp9n0VtRgdLZysQtcidRF8qY5XZA77uoH8+/UYhgWaCWYO2XLz0xmlbMoM4vsRttOTuHETRYDtHpAkj7+1lDv/g7pLAMaEj7W+Fam4De1nIGx9dz4hjzyYVQf8lHjFuqVQnGfIIeJw4JKhNPWphgdXTeyxktgNhqtFCXSXLOECGYv16GKsx/jBRP1NmlPss6R3lSdvn84VMMYM2RoQpvSmVD3k3Mh46aDDv9J2cwOrq/DFq4zQx/9udVI54UwT3sk7s5vUdqkK0tN0FWoEzx6M5VJ+DkKj8xIMeX40YCA==
-Received: from SG2PR02CA0011.apcprd02.prod.outlook.com (2603:1096:3:17::23) by
- SEYPR04MB7320.apcprd04.prod.outlook.com (2603:1096:101:170::5) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.8466.16; Thu, 20 Feb 2025 02:32:50 +0000
-Received: from SG1PEPF000082E4.apcprd02.prod.outlook.com
- (2603:1096:3:17:cafe::4e) by SG2PR02CA0011.outlook.office365.com
- (2603:1096:3:17::23) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.8466.16 via Frontend Transport; Thu,
- 20 Feb 2025 02:32:50 +0000
-X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 211.20.1.79)
- smtp.mailfrom=wiwynn.com; dkim=none (message not signed)
- header.d=none;dmarc=fail action=quarantine header.from=wiwynn.com;
-Received-SPF: Fail (protection.outlook.com: domain of wiwynn.com does not
- designate 211.20.1.79 as permitted sender) receiver=protection.outlook.com;
- client-ip=211.20.1.79; helo=localhost.localdomain;
-Received: from localhost.localdomain (211.20.1.79) by
- SG1PEPF000082E4.mail.protection.outlook.com (10.167.240.7) with Microsoft
- SMTP Server id 15.20.8466.11 via Frontend Transport; Thu, 20 Feb 2025
- 02:32:49 +0000
-From: Delphine CC Chiu <delphine_cc_chiu@wiwynn.com>
-To: patrick@stwcx.xyz,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: MarshallZhan-wiwynn <marshall_zhan@wiwynn.com>,
-	Delphine CC Chiu <delphine_cc_chiu@wiwynn.com>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v5] ARM: dts: aspeed: yosemite4: add I3C config in DTS
-Date: Thu, 20 Feb 2025 10:32:32 +0800
-Message-Id: <20250220023233.1686419-1-delphine_cc_chiu@wiwynn.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YzG6q2PZYz2yRF
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 01:36:50 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51KBGPnT012316;
+	Thu, 20 Feb 2025 14:36:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=LvAve/
+	4dkDe4Xg3pY33uohABuN5Ael5Y3OV6lbiTz/8=; b=JJvQBzuLGxq64136OfYCzU
+	yvUE6dBAUN8BnQVzbCRrJQ4mN8xVHaEQC+ou770SGNls3AaJ9BuMrZXmt0kqfHYO
+	A2DGViQvkEVQZkOxhsStz4GCBRRP4A3ZaEHPDmYp203rjjroOCw7fgxdeNnEoqCx
+	stU/2BfFlIngjidKrTg/qmPq1n5c2LaRJYRF5qiKuEfMGCZV/CzwtwVHyqYhsNg2
+	1hc064XMUj7Wr/DvOOZU3J8TW2FF6dnKAJ8qkTPOUj74m2B0GFFSepo7x0aDt5iC
+	sUlKjfqwMdygHEA6pfbLzxUohL09GWC6U/YEQsGcoFiLxA800yXuwNS/d3Qug1gA
+	==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44wreabxt0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 20 Feb 2025 14:36:42 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51KBbF4l002336;
+	Thu, 20 Feb 2025 14:36:41 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 44w03xaejt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 20 Feb 2025 14:36:40 +0000
+Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51KEaekW29164202
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 20 Feb 2025 14:36:40 GMT
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 28C9E58054;
+	Thu, 20 Feb 2025 14:36:40 +0000 (GMT)
+Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CA5B558055;
+	Thu, 20 Feb 2025 14:36:39 +0000 (GMT)
+Received: from [9.61.48.195] (unknown [9.61.48.195])
+	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 20 Feb 2025 14:36:39 +0000 (GMT)
+Message-ID: <97e9990b-7c08-41c7-aa8d-b6d13be2a2a7@linux.ibm.com>
+Date: Thu, 20 Feb 2025 08:36:37 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -92,169 +79,210 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/3] ARM: dts: aspeed: Add Balcones system
+To: Andrew Jeffery <andrew@codeconstruct.com.au>,
+        linux-aspeed@lists.ozlabs.org
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+        devicetree@vger.kernel.org
+References: <20250219212735.1365050-1-eajames@linux.ibm.com>
+ <20250219212735.1365050-4-eajames@linux.ibm.com>
+ <379b87b84ae79ce6cb49ee27410e628518e0e269.camel@codeconstruct.com.au>
+Content-Language: en-US
+From: Eddie James <eajames@linux.ibm.com>
+In-Reply-To: <379b87b84ae79ce6cb49ee27410e628518e0e269.camel@codeconstruct.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SG1PEPF000082E4:EE_|SEYPR04MB7320:EE_
-Content-Type: text/plain
-X-MS-Office365-Filtering-Correlation-Id: 56b282eb-a00b-4b0a-0e46-08dd5156de73
-X-MS-Exchange-AtpMessageProperties: SA
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|82310400026|7416014|376014|1800799024|36860700013;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?t6YA5OyGpVgLGgnTDumtLiUep5upxsCzHruNTTYvBs+EJ2lWRQ+vqtTb3358?=
- =?us-ascii?Q?3m/1hTtWFAe3YArBZwoYNyrh+397qmlT4/B6Si7pssCAXmqSWJryVIQtQRia?=
- =?us-ascii?Q?bshSWTgTAYM073efDGQ+wSRAecpwtXi6AgeplfrD89CB6E4R9mo1TuFkEw3X?=
- =?us-ascii?Q?DO+lg74pG0J27D6MmbSoAl1XryfI2E7ovDxDxh6nDKHYjpHjYvjFpQVtcaVX?=
- =?us-ascii?Q?icXUm+f0jkWyb/0dACuUE8ErgiXB32RURXfk1JQMOhRcNhGihW16p4WAgoLt?=
- =?us-ascii?Q?O0iEn4+jjhOaCWZmdKvjfyhBHIcTkiipak9dbbztK90mxUpg6m5e7d0h72LI?=
- =?us-ascii?Q?ZtvlHS86YuwzDUhiaiTgmHqjVYVw2ZsurgzHhwlP1fL0diskB76ZwIedkOOD?=
- =?us-ascii?Q?ol2PiHWXxtg98DDB/uHVzJK0ES8+g+TwtJhH0q+xz6DwwaiF7YowhyQmSHF3?=
- =?us-ascii?Q?qqgsQZi5MiPXbteVJN2us8ORTmP0sf4keKgWJy3FoP7l7d6nA0bBlP9JqarA?=
- =?us-ascii?Q?l212JVtN4R5Es5tPO11/VagREDWurS+bm5nT/5Xja1LRWflR8olifRHoaY5R?=
- =?us-ascii?Q?hsgprsjJODx6lN38J9jXPZpVtEDXJeguIcSe5laJON3Ugag60qgnTILhHWLv?=
- =?us-ascii?Q?M2I55IhfhOZi25o6lJtAkBel5358nGS1iItOM7XvnsROjuVlZCgxvcmz7q/+?=
- =?us-ascii?Q?gUHFAOlo6cnzxxIYc+Howk4UNg+zOdbHWPx2+mFb4sC2AmcXxdOvuegJG5b8?=
- =?us-ascii?Q?7rWNlQucmlIH1GWTd6zuAoeWDO0IKr0W6y7vMiHtQXF+/6ybMbMsLPkallZs?=
- =?us-ascii?Q?O5gTpNcuggy0SG8zn6yCBQtU6YddPBNsC136mz6Z36zdrz8Q8TsLYX2Rk14/?=
- =?us-ascii?Q?zqRc+N73F/ZGV23PmnYMC6eWVL/Yl9PmMq2zK3Pob4zG/KckgQSC2fNPBINW?=
- =?us-ascii?Q?1VXSSmfYFIBV+AlGFf6VDucsPjcgBZRcR9QPgLJ55A8LDS99sKz5sp24Pipo?=
- =?us-ascii?Q?sz1yY4btapfoDGz7uP6HynPC9NIcbPa0KmEo3FKyyVoG/1X+CNhBit3K/DDf?=
- =?us-ascii?Q?qPxgCwJxMbZIGBMVfwla9wg3pMJt53MjVh+DLrzCkqbEaxy1ZRdUJlNbwPB/?=
- =?us-ascii?Q?DdmUdkZbT0slHo9N1gZ3S+UWR6hbx5bT41IBfVEq9jWf4JT69g2F5S7vht9P?=
- =?us-ascii?Q?60CtWA5VnUNB+OhXeMh4603fLnscZV80GX3auEO1Sh4ipQr+jXfggSm5Ybdt?=
- =?us-ascii?Q?/ypF+Tk1jElihTGdvMU//zp81maRG8Dv57EGTkYdEUHC/BMTjOqNaiiEb6FI?=
- =?us-ascii?Q?Crl+fMNaSITzyElEm2if08hC4Q96yNHyUqMW6lOoc1KUnShw5TF8Z0UtWzgN?=
- =?us-ascii?Q?fq+ISbP+OSfI+j9ERxEV3S8eursHm5GHo5ByldxabyC/+wKmlwJzyUcRef01?=
- =?us-ascii?Q?8/GuWHTQLGVFVvrGca4RJwl4XwaP88J/HgS1Ru/HO0ZF8t43lT5AjEfRLLmd?=
- =?us-ascii?Q?piVpCMu8NJgVo8M=3D?=
-X-Forefront-Antispam-Report:
-	CIP:211.20.1.79;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:localhost.localdomain;PTR:211-20-1-79.hinet-ip.hinet.net;CAT:NONE;SFS:(13230040)(82310400026)(7416014)(376014)(1800799024)(36860700013);DIR:OUT;SFP:1101;
-X-OriginatorOrg: wiwynn.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Feb 2025 02:32:49.1035
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 56b282eb-a00b-4b0a-0e46-08dd5156de73
-X-MS-Exchange-CrossTenant-Id: da6e0628-fc83-4caf-9dd2-73061cbab167
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=da6e0628-fc83-4caf-9dd2-73061cbab167;Ip=[211.20.1.79];Helo=[localhost.localdomain]
-X-MS-Exchange-CrossTenant-AuthSource:
-	SG1PEPF000082E4.apcprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR04MB7320
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: teamT-6vmMHbdymMoxeWy7jWGTWxFoNu
+X-Proofpoint-GUID: teamT-6vmMHbdymMoxeWy7jWGTWxFoNu
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-02-20_06,2025-02-20_02,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ priorityscore=1501 suspectscore=0 bulkscore=0 mlxscore=0 adultscore=0
+ spamscore=0 impostorscore=0 phishscore=0 clxscore=1015 lowpriorityscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502100000 definitions=main-2502200104
 
-From: MarshallZhan-wiwynn <marshall_zhan@wiwynn.com>
 
-Set I3C config in yosemite4 DTS.
+On 2/19/25 18:41, Andrew Jeffery wrote:
+> Hi Eddie,
+>
+> I have some minor comments inline:
+>
+> On Wed, 2025-02-19 at 15:27 -0600, Eddie James wrote:
+>> The Balcones system is similar to Bonnell but with a POWER11 processor.
+> Can you add some commentary about the P11 dual vs quad changes here?
 
-Test plan:
-Tested PLDM GetTID successfully with the I3C hub driver.
 
-Signed-off-by: MarshallZhan-wiwynn <marshall_zhan@wiwynn.com>
-Signed-off-by: Delphine CC Chiu <delphine_cc_chiu@wiwynn.com>
----
- .../aspeed/aspeed-bmc-facebook-yosemite4.dts  | 86 +++++++++++++++++++
- 1 file changed, 86 insertions(+)
+Yes I will.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-index 29f224bccd63..5dbfe073e536 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
-@@ -1317,6 +1317,92 @@ eeprom@50 {
- 	};
- };
- 
-+&i3c0 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_i3c1_default>;
-+	i3c-pp-scl-hi-period-ns = <40>;
-+	i3c-pp-scl-lo-period-ns = <40>;
-+	i3c-od-scl-hi-period-ns = <380>;
-+	i3c-od-scl-lo-period-ns = <620>;
-+	sda-tx-hold-ns = <10>;
-+
-+	mctp-controller;
-+	hub@0x70 {
-+		reg = <0x70 0x3c0 0x00700000>;
-+		cp0-ldo-en = "disabled";
-+		cp1-ldo-en = "disabled";
-+		cp0-ldo-volt = "1.2V";
-+		cp1-ldo-volt = "1.2V";
-+		tp0145-ldo-en = "disabled";
-+		tp2367-ldo-en = "disabled";
-+		tp0145-ldo-volt = "1.2V";
-+		tp2367-ldo-volt = "1.2V";
-+		tp0145-pullup = "2k";
-+		tp2367-pullup = "2k";
-+
-+		target-port@0 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+		target-port@1 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+		target-port@2 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+		target-port@3 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+	};
-+};
-+
-+&i3c1 {
-+	status = "okay";
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_i3c2_default>;
-+	i3c-pp-scl-hi-period-ns = <40>;
-+	i3c-pp-scl-lo-period-ns = <40>;
-+	i3c-od-scl-hi-period-ns = <380>;
-+	i3c-od-scl-lo-period-ns = <620>;
-+	sda-tx-hold-ns = <10>;
-+
-+	mctp-controller;
-+	hub@0x70 {
-+		reg = <0x70 0x3c0 0x00700000>;
-+		cp0-ldo-en = "disabled";
-+		cp1-ldo-en = "disabled";
-+		cp0-ldo-volt = "1.2V";
-+		cp1-ldo-volt = "1.2V";
-+		tp0145-ldo-en = "disabled";
-+		tp2367-ldo-en = "disabled";
-+		tp0145-ldo-volt = "1.2V";
-+		tp2367-ldo-volt = "1.2V";
-+		tp0145-pullup = "2k";
-+		tp2367-pullup = "2k";
-+
-+		target-port@0 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+		target-port@1 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+		target-port@2 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+		target-port@3 {
-+			mode = "i3c";
-+			pullup = "enabled";
-+		};
-+	};
-+};
-+
- &adc0 {
- 	status = "okay";
- 	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
--- 
-2.25.1
 
+>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> ---
+>>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>>   .../dts/aspeed/aspeed-bmc-ibm-balcones.dts    | 594 +++++++++++++
+>>   .../arm/boot/dts/aspeed/ibm-power11-dual.dtsi | 779 ++++++++++++++++++
+>>   .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 769 +----------------
+>>   4 files changed, 1376 insertions(+), 767 deletions(-)
+>>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
+>>   create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>> index 2e5f4833a073b..71b2d67fdbac8 100644
+>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>> @@ -34,6 +34,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>          aspeed-bmc-facebook-yamp.dtb \
+>>          aspeed-bmc-facebook-yosemitev2.dtb \
+>>          aspeed-bmc-facebook-yosemite4.dtb \
+>> +       aspeed-bmc-ibm-balcones.dtb \
+>>          aspeed-bmc-ibm-blueridge.dtb \
+>>          aspeed-bmc-ibm-bonnell.dtb \
+>>          aspeed-bmc-ibm-everest.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
+>> new file mode 100644
+>> index 0000000000000..0fe99a748b63b
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
+>> @@ -0,0 +1,594 @@
+>> +// SPDX-License-Identifier: GPL-2.0-or-later
+>> +// Copyright 2025 IBM Corp.
+>> +/dts-v1/;
+>> +
+>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>> +#include <dt-bindings/i2c/i2c.h>
+>> +#include <dt-bindings/leds/leds-pca955x.h>
+>> +#include "aspeed-g6.dtsi"
+>> +#include "ibm-power11-dual.dtsi"
+>> +
+>> +/ {
+>> +       model = "Balcones";
+>> +       compatible = "ibm,balcones-bmc", "aspeed,ast2600";
+>> +
+>>
+> ...
+>
+>> +};
+>> +
+>> +&i2c0 {
+>> +       status = "okay";
+>> +
+>> +       eeprom@51 {
+>> +               compatible = "atmel,24c64";
+>> +               reg = <0x51>;
+>> +       };
+>> +
+>> +       gpio@20 {
+> Can you please follow the DTS coding style and order the nodes by unit
+> address?
+>
+> https://docs.kernel.org/devicetree/bindings/dts-coding-style.html#order-of-nodes
+>
+> Ordering the top-level label references alphabetically would be
+> appreciated too. It doesn't seem like they're in an order reflecting
+> e.g. the unit address, it feels kind of arbitrary.
+
+
+Oops yep, I'll fix all these.
+
+
+>
+>> +               compatible = "ti,tca9554";
+>> +               reg = <0x20>;
+>> +               gpio-controller;
+>> +               #gpio-cells = <2>;
+>> +
+>> +               gpio-line-names =
+>> +                       "",
+>> +                       "RUSSEL_FW_I2C_ENABLE_N",
+>> +                       "RUSSEL_OPPANEL_PRESENCE_N",
+>> +                       "BLYTH_OPPANEL_PRESENCE_N",
+>> +                       "CPU_TPM_CARD_PRESENT_N",
+>> +                       "",
+>> +                       "",
+>> +                       "DASD_BP_PRESENT_N";
+>> +       };
+>> +};
+>> +
+> ...
+>
+>> +
+>> +&i2c5 {
+>> +       status = "okay";
+>> +
+>> +       eeprom@52 {
+>> +               compatible = "atmel,24c64";
+>> +               reg = <0x52>;
+>> +       };
+>> +
+>> +       temperature-sensor@4e {
+> Ordering again here.
+>
+>> +               compatible = "ti,tmp435";
+>> +               reg = <0x4e>;
+>> +       };
+>> +};
+>>
+> ...
+>
+>> +
+>> +&kcs3 {
+>> +       status = "okay";
+>> +       aspeed,lpc-io-reg = <0xca2>;
+>> +       aspeed,lpc-interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
+>> +};
+>> diff --git a/arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi b/arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
+>> new file mode 100644
+>> index 0000000000000..e5f65258e082f
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
+>> @@ -0,0 +1,779 @@
+>> +// SPDX-License-Identifier: GPL-2.0-or-later
+>> +// Copyright 2025 IBM Corp.
+>> +
+>> +/ {
+>>
+> ...
+>
+>> +
+>> +&fsim0 {
+>> +       #address-cells = <2>;
+>> +       #size-cells = <0>;
+>> +       status = "okay";
+>> +       bus-frequency = <100000000>;
+>> +       cfam-reset-gpios = <&gpio0 ASPEED_GPIO(Q, 0) GPIO_ACTIVE_HIGH>;
+>> +
+>> +       cfam@0,0 {
+>> +               reg = <0 0>;
+>> +               #address-cells = <1>;
+>> +               #size-cells = <1>;
+>> +               chip-id = <0>;
+>> +
+>> +
+> ...
+>
+>> +
+>> +               sbefifo@2400 {
+>> +                       compatible = "ibm,p9-sbefifo";
+>> +                       reg = <0x2400 0x400>;
+>> +
+>> +                       occ {
+>> +                               compatible = "ibm,p10-occ";
+> I assume this doesn't need a new compatible for P11 (given you're
+> moving it out of the quad DTSI).
+
+
+That is correct. FSI all remains the same for P11.
+
+
+Thanks for the review!
+
+Eddie
+
+
+>
+> Andrew
 
