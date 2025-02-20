@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-789-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-790-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F98AC021B1
-	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Feb 2025 14:46:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48AC0C021B1
+	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Feb 2025 14:47:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YzGLN4QFjz2yWK;
-	Fri, 21 Feb 2025 01:46:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YzGMB6d5Rz2yWK;
+	Fri, 21 Feb 2025 01:47:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740062812;
-	cv=none; b=e22DEmFD0I7bvvn8P9dc6l+P3DEoPbM6znA6DmXgd3iDuG9lfucVeal0yQyk4xbF4XowjoEZc5z6Zd2oTKJKEwPOV2N6x1172YudlLHlJ5XfGBr134fIPWwrmKTtG3LwYxPUiDu+5wuIrX2qzaljD1ZzdIBwZXVdV8E9xOKcPhDRPC+6gwzMlhH4j/+yWzhqU3TObbiUk4npRfZaQOJYz6baN5x49yVKHn5EyX/fTSWKzKjT10QWPSmHGVd+rz6cE0r0aMGwIg+HtSMqQmhrLxJyRFCGRYEGkojHkLzBIqAM7WbYRoX8FnJ3biqf0NFQ2ZkQ1Nlh3Cawq6ZBQ8xiAQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740062854;
+	cv=none; b=YaRq8305WDBlqaWHOhe/WmWbi17NOd6lbrfqycgc+eyS8+L7CMNBBwl+AvwO7G4B/l4O82wf8fhFUBppdoUTHIxuvt/ZqGRiqEtNMNKIISYVR3A/1tmCAPvJi0GnWEZfvSAB0ig1IR5rlTJ9ieuetLuFRsXwVRPwHYVr/qVn2GK6GCyqUrK7Ok6zE6U8FUWVCfnG5v11w3cdZW9O/hlqjcrq7DiblXLK5YGeTKgrWVQd1RdYrf/i9uayFqTIz2a87cS/wdKXNhmAGAgoYlvCj/NUnenILfoNymb9r0nuZx5TYXtdcRy+RmFYiGWt8r/V6wcGvwDEpbv1lc54GUEMGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740062812; c=relaxed/relaxed;
-	bh=bqEU0zIgxauq/QKSd703NDsF1+xeK8NoyzsKzXPzneQ=;
+	t=1740062854; c=relaxed/relaxed;
+	bh=8i9P5MpRYioBEZD0nn/zSGTiI1De+tNTUXmV5Pa97Ps=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=YTwBSejN8K3cyYwsw49PKTdtd2yaZVJEjexjkzKS2/o/DYouOGUjERGmqYI5t3lfbmrVdtK6XyZs5YCw8O1PIWwFC75GivhvXlqaNDqf7JYGTWPEiGtVdjwCa6V5IPqBoPV0O4ulFIKyJtbyycqp22C3xxEX5LpLHvGShZ2gOSq8C5258Rg2Vp0zV5KmxzQeoXKnYEjh4UaUG6CIaF9ZEumVRKQf2lKrZsgs6Uo+KnLpC1cJiNYaI/GvOdDhlpNsfG2TixSRt8/ivJhpYUkOlevkMIz4z7f2KGFHK3iRIWCGwEOVm1NGWrkCeVS61KDH1RXt9MS/SciU1Ng1jEZ8Uw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e0cNaEr2; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=hFiQpDiEkT3DtESwzzOYg0RtBBeFkoILbZw3u4LDQMCIOXX5lI2f0HYkO8RKOfB0+HEZu6hUkSPpeas686L0D82A1YeUjHWBuczWpvxKOEeNd9PWP8HkQe8Msf0Kvon/XVZzpY/vNvX0uVit1xDsiEf4fXmenwwYcnBuGuaLTTM1ZO4PTYm4Yt9HWhzXUTHxX5fncSmfAjM7+fCEorhBqQPlJmlHGI5rL2RPVxTPejMfTERPShloEZjQBbliYdBWI2yf5ZlKh2ZsrszyZ2pyfOhYFRzKR02hFxGCwr12B7ihRJIykdEj52YFyUerE5qvXgHYpnLpv5zhwiNrFomovg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UB7YWCo0; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e0cNaEr2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UB7YWCo0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YzGLM5RmXz2yRF
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 01:46:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YzGMB1RHcz2yRF
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 01:47:34 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 068FD5C5E6E;
-	Thu, 20 Feb 2025 14:46:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82A92C4CED1;
-	Thu, 20 Feb 2025 14:46:46 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 665B25C5513;
+	Thu, 20 Feb 2025 14:46:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 156B3C4CED1;
+	Thu, 20 Feb 2025 14:47:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740062808;
-	bh=3BC2IPxEq5/tM6nQGPYZ3pLodWYai6EreKgRdwEaAdY=;
+	s=k20201202; t=1740062852;
+	bh=8i9P5MpRYioBEZD0nn/zSGTiI1De+tNTUXmV5Pa97Ps=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=e0cNaEr2jLE9/ajUEtIM8REvI+IyMEU7y59qlR1A9NxQLxBFRNUfq4EP0knScQgRa
-	 gl7w/qy8CDNAS4q4PEUC05cs5YFuZR2NivZV9SUMvCGxEP02+Z96mFGrGHzVIULQKi
-	 /SIHRAlNG5qCwCP2/VdF5/GEO+QTE2CwxMw1clmDtp/Ke2wlDB7w5fEpwUFoCsjgA4
-	 kTXk0MJhlqVBWfOjV73rA0+BNLJdZRox+cHupdIx5YIKVFCYva55MioLAYtkHthqkx
-	 n/Lduglvvd3SO4u6J8w/LXiDP3tXhGB1R8d0ogAVbZ0wnKunXWeN1t/4mjQAEXSLzM
-	 IH1ifiwmC5IxQ==
-Message-ID: <e0dff071-f726-47f5-b177-0485aa703263@kernel.org>
-Date: Thu, 20 Feb 2025 15:46:44 +0100
+	b=UB7YWCo0g7mN3pIGTHKrb2vUBo/ONEHmumbBfba2el+Wv0gqmoJSJ02YyYcUNA7n+
+	 zaMJ6iPbnLgNcckUtt5VwR/73w7QRzscywcLj9m/zVAfUFrB0ZKAuE0HmdfvJcr4l0
+	 hjq9JRu5Bu7CNMbKfJ05PJ1bMvMexuJcVoZhszOr84gfIsc4CbbUDZ7AGAFecTRLk1
+	 KvdYET83hnx/7v2bed2b3xLqfJA2vemt1q26XR0V0Xzp0el24AF9sRkN3+PE2OcB4A
+	 Hs+u/Dfot1eFvaEi0GEmFCwF9kPbJ1v0zvxPgoTHtl7gbaVFUp/wXo94V6Azd+PV/S
+	 BZxniKBbsAG1Q==
+Message-ID: <3ed2b213-0219-4ca7-817c-d6adf424612e@kernel.org>
+Date: Thu, 20 Feb 2025 15:47:28 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,12 +59,12 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dt-bindings: arm: aspeed: add IBM Balcones board
+Subject: Re: [PATCH 2/3] dt-bindings: hwmon: ucd90320: Add 90160 compatible
 To: Eddie James <eajames@linux.ibm.com>, linux-aspeed@lists.ozlabs.org
 Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
  andrew@codeconstruct.com.au, devicetree@vger.kernel.org
 References: <20250219212735.1365050-1-eajames@linux.ibm.com>
- <20250219212735.1365050-2-eajames@linux.ibm.com>
+ <20250219212735.1365050-3-eajames@linux.ibm.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -110,17 +110,17 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250219212735.1365050-2-eajames@linux.ibm.com>
+In-Reply-To: <20250219212735.1365050-3-eajames@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 19/02/2025 22:27, Eddie James wrote:
-> Document a new AST2600 BMC board for IBM P11 server.
-> 
-> Signed-off-by: Eddie James <eajames@linux.ibm.com>
-> ---
+> The 90160 is just like the 90320 but with less GPIs and GPIOs.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Then isn't it compatible?
+
+Where is your driver change?
+
 
 Best regards,
 Krzysztof
