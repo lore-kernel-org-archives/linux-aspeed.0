@@ -1,52 +1,99 @@
-Return-Path: <linux-aspeed+bounces-804-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-805-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3F68C021B3
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Feb 2025 18:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F24C021B3
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Feb 2025 21:38:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yzyqf5rNLz2xH8;
-	Sat, 22 Feb 2025 05:11:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740161470;
-	cv=none; b=e99BNY/4sq4pdO9zvFejwqXqOCAVn56TWCb+eSWe8dCblFWeMyD2hFZUx7t55ZzKUI5SJofU6OQMhrjvItDZI1v0PxIsQnxNqEhgDRHfyG/KwSonzNIAnsEAzZKy2kL4xb0Z15af8O/1qMtgP7nu0wY8KqfjxbKl/KC79VJ3gm40li4G70VW4M/DouoENjpQ6NIxbNvl6LxQ2RtPPyDI2awgCcz2fQC5g0h+oEkaPgYhl5t8LOOQBpAiYFTT0Th2sGV0jT4aJrqAxh486qezySdThvDfClRkaMJTuniJznHOs3myxFXQ81RY8EsZ+7jYO7NyXhJblblkUbciAKiqvA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z03RK1N3Sz2yD8;
+	Sat, 22 Feb 2025 08:38:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740173933;
+	cv=none; b=gXjU//yRy0VrHeoCHs0xRq6y4OydKy0Tg20iJqP1w4JU2jUKn7R+bccA6VGIm0eQemKzoyzzt/JubhlFJsuR4Pw0YEKTjUlEdU4sg5HDqOqk4W34sTmyKNGxeQhxlcyex8GXjjgjSTyCvack9do+5CM32Cd3xX1iYF88nKAbMTikzaN4JMa4tQu0nmN64F962cATbRdnkfMpOjKyrUHrEYdcLPpSGsMBwhc0BEcOjY2v+y9QVw+Ko5xVQwBYXPhI9/3fEGxXxvFhQBk7DKBXgyz4HlfM3vv2ryIpc1MliUi8L2hoj5fBAXrmnDr/GbCuv22OIg4H5y/AJyBNyEEklQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740161470; c=relaxed/relaxed;
-	bh=vjRWLeUMBnWHqZC01qtYZaIsfREJ1bMtNVLkc7WuNo8=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=OZRT1IOWFerl1ZTAbjHZwfBrYeUPIA7XIJsPTJ946ZlUDjUfVrldzEqmoOmLXCz9r166Kh0xZYXDXxxWX55/wZcNfEHv3pAldr5zBif/zgymbkahHaLLhwJhR5zewiKoBBYmJDyE0s//wK8OYbCVtG4L58v58lZYlRSBjQyKGXQ0wRdVHNphuaETRzUbXX2mC5K77iq7z3NaH2V9vR6NySFT3NXI8Argyqr9t8gBqwtkre3Zed+BQP9uzUJhgjMN6O6g0gArGMtBFDKnLLRubSeTKBswpzCZeZi+tbOKgcMneX4Umzd25tJA2KtXcWC/pWaueakcUxTInDC/5Runjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ugHih2+d; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1740173933; c=relaxed/relaxed;
+	bh=sJT+U7McgsKphrcHRdaZ6L+JaOsqY4avlMmqDJFGzCA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=e51z3JYALlDFsZaFdZv01lWmGJEYBdUxyjjv1WgDA6nNkQvrhMDMZkWrXTlt8udY3t00SEP+LRbDa7KnoJszz/Ss+L+ORbcVZK5b+AgDvp3NYGEKPhSBiBdO61FQBTVyluy2hlJr+ys89k0u1jGURv3pOzjrHACQGK8YMY4L1axCEAUE/QnqHLVhtoG5NCcZqgMQmJDPRycULwpn7FQtqa1+6FtDABSYXVA4FaB/0q4leEBuLRgttsI839t/B7kppkYlzYqGIZns1vrUPnJDEBf/ofxoRgK4UHqqHT3e5EwoLaE+V2mwOqmHRiyJOe+ka6eAsyvEMh6bllMB0ta4kg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Q7fFaWec; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=naresh.solanki@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ugHih2+d;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Q7fFaWec;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=naresh.solanki@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yzyqb3PLyz2xr4
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 22 Feb 2025 05:11:07 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 949DF5C6C3A;
-	Fri, 21 Feb 2025 18:10:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AFCAC4CED6;
-	Fri, 21 Feb 2025 18:11:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740161464;
-	bh=85EHNpoj5FaBLPd9sBcxsflJ1IRBinF2k5EJ5sLuFrI=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=ugHih2+df1SPzqPMF4JymvJh3qPDtYfg/57ha36Haggascwnbf9cefDuq+XTAbN8/
-	 8NWWww0/IOJD5t09tFuaGCQIuVOePl2pX+pPAH4saW0ZDKbTGBe6Z/XamZUf0GFp4e
-	 3/TL/baKioAfw9en6OsjJcf+AdxOv1BxWjh5DERLkUqqkR0rV4e5FDzA8QrTjTisdm
-	 UZllos3ha7Mlh32eQwh25CopC7uZ3875Q6+1pPss+FlfHZRDMu3m71lSOgVBD2RNlK
-	 SOk1zHeuYts/E6ZYZruNWFd1lJ9EdsiZwJSj/UMjVbAr+KTsk7P38ahEMBOmwUugrA
-	 bqMZWkJHeaRWg==
-Date: Fri, 21 Feb 2025 12:11:02 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z03RH3Tpxz2y34
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 22 Feb 2025 08:38:50 +1100 (AEDT)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-439950a45daso16380105e9.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 13:38:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=9elements.com; s=google; t=1740173925; x=1740778725; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=sJT+U7McgsKphrcHRdaZ6L+JaOsqY4avlMmqDJFGzCA=;
+        b=Q7fFaWecnee7CrPTqIR9lJmfs0B+7Q01ktw1TZ+BccvWdwEIvfhjgdLgVFQhbqzx31
+         QfeQYBBlQ1rsZ+BLzQhCX9D7wPd2IaQesbaU68oEZD/ufJVHxS2qTIdMHxUROjL1wq56
+         EUAUxD1P8r2CFjJXRi+nT09xR3TXmOM9CX0XlyeAwoGHJdbInQuNEu/4aMTT92RN2CVj
+         nNR30hzgXdxKSUOzrdXYg5nOhbXDzrmB0cgcakxhCR5s40CrsN+9ADeIk7A+zTHJq3dV
+         c9ebSXpnvyTs4pPNO7bj93R1brJflymtEsjZ4wGsVWGaJLAjMLPkzakCN0sxvjtOps97
+         LtTA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740173925; x=1740778725;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=sJT+U7McgsKphrcHRdaZ6L+JaOsqY4avlMmqDJFGzCA=;
+        b=guSlrAHZz96+IbOBHW89afMNHhiqKrCz29pfh/cUida89Ekb0YOaUSaYTaej65KIl9
+         0lC647NooTnoyx6me8TuXzGvYlqzVk4bP5L6pVWCEH3Jjto1h/s19S6F/7akbriUXYVb
+         8o6sv1oUeAU0Co/VRVG6jvM6YtgJ7Tp8+9DzZevkTQfsosnhVYQFHgnSPpFhl/mA6gj6
+         sj76HKKrCqLd26JsyS+8cEWHAXItzP7KxW7dP5lINIn7z6TYfRrGDTTWhqyZbrMKrQWI
+         g4hjz+2nZuMaWWI3S1XJxPkBBsumMBKa2dqez+j/Y6md2f5O6pxZyUKSl7B0K6S06W24
+         PSUw==
+X-Forwarded-Encrypted: i=1; AJvYcCUTwdaH0aWy8wx8U2WVKZ5YnAkfr1UxfLzMs9YuZrzqlW/h1qqM13IGUepjjYlD5WiW8/4wG8HI/xMbi4g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxF0+CdPzT8Jxj2TU8SoYcoW/+DBANvGuUnvJXhuToPYzISAyu4
+	K/G+W9XhpzQVc4/wl1pHe9jmZw5vTr9g8g4XrgtVvE1fnJxE7CEORhY26y3vq8o=
+X-Gm-Gg: ASbGncvIJPldrFYoX+EFx8MJAx+t/C02OyTDdug8552dmtRXmJwrCkpt/dLmTQMnbmo
+	BWnPJAywixZJHKAI4bP0W5wWPATdKAx7CVVpfrnZAXdj2RJtt7btg36/6UnglYj9JVH21IRuyjA
+	OeNbvh3jAjM12rvVJdbf8sUthNqvbDzlZCroaCrlXOW20mTQSzic4l3kULrAnE5XoyM/LQmAxmy
+	wRaIDtbFfIS8jazeVfKPgA6NwSNZmWPxpn82XDB7szhACZwvxWwmssj/lv/KZWPjzmgLFsIzzqU
+	eh7XNw+eNUCL4j7uxci+thq7ImW/LIVdlLTIkd/lrVTj2+axLNJU0uu7xasYXf1V4gWHDEVNCYc
+	ico2iNYkEANBfjdIK9s2GRw==
+X-Google-Smtp-Source: AGHT+IEJdfP86XwonfKjpWl9cuxaXOkK2TY/AbasqcdUgfrAsr/wju12Wjkvh2xGz6T+sDP+8jaxzw==
+X-Received: by 2002:a05:600c:4f91:b0:439:955d:c4e2 with SMTP id 5b1f17b1804b1-439ae1f15b6mr39164505e9.13.1740173925072;
+        Fri, 21 Feb 2025 13:38:45 -0800 (PST)
+Received: from stroh80.lab.9e.network (ip-078-094-000-050.um19.pools.vodafone-ip.de. [78.94.0.50])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38f25913f5asm24767461f8f.52.2025.02.21.13.38.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Feb 2025 13:38:43 -0800 (PST)
+From: Naresh Solanki <naresh.solanki@9elements.com>
+To: Guenter Roeck <linux@roeck-us.net>,
+	broonie@kernel.org,
+	conor@kernel.org,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Naresh Solanki <Naresh.Solanki@9elements.com>,
+	Patrick Rudolph <patrick.rudolph@9elements.com>
+Cc: linux-hwmon@vger.kernel.org,
+	Naresh Solanki <naresh.solanki@9elements.com>,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 2/2] ARM: dts: aspeed: sbp1: Align regulator node with Infineon ir38060
+Date: Sat, 22 Feb 2025 03:08:35 +0530
+Message-ID: <20250221213837.1594057-2-naresh.solanki@9elements.com>
+X-Mailer: git-send-email 2.42.0
+In-Reply-To: <20250221213837.1594057-1-naresh.solanki@9elements.com>
+References: <20250221213837.1594057-1-naresh.solanki@9elements.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,121 +106,243 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: krzk+dt@kernel.org, devicetree@vger.kernel.org, 
- linux-aspeed@lists.ozlabs.org, conor+dt@kernel.org, 
- andrew@codeconstruct.com.au
-To: Eddie James <eajames@linux.ibm.com>
-In-Reply-To: <20250220205948.1777200-1-eajames@linux.ibm.com>
-References: <20250220205948.1777200-1-eajames@linux.ibm.com>
-Message-Id: <174015998324.3469672.1009055817022487781.robh@kernel.org>
-Subject: Re: [PATCH v2 0/3] ARM: dts: aspeed: Add Balcones system
+Content-Transfer-Encoding: 8bit
 
+The PMBus driver expects a regulator node, which was missing in the
+board's device tree. This was corrected in the latest device binding
+update for ir38060.yaml.
 
-On Thu, 20 Feb 2025 14:59:45 -0600, Eddie James wrote:
-> The Balcones system is similar to Bonnell but with a POWER11 processor.
-> 
-> Changes since v1:
->  - Add all the ucd9000 driver supported compatible strings
->  - Fix node ordering in Balcones device tree
->  - Improve commit message to explain addition of ibm-power11-dual.dtsi
-> 
-> Eddie James (3):
->   dt-bindings: arm: aspeed: add IBM Balcones board
->   dt-bindings: hwmon: ucd90320: Add additional compatible strings
->   ARM: dts: aspeed: Add Balcones system
-> 
->  .../bindings/arm/aspeed/aspeed.yaml           |   1 +
->  .../bindings/hwmon/pmbus/ti,ucd90320.yaml     |   6 +
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../dts/aspeed/aspeed-bmc-ibm-balcones.dts    | 594 +++++++++++++
->  .../arm/boot/dts/aspeed/ibm-power11-dual.dtsi | 779 ++++++++++++++++++
->  .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 769 +----------------
->  6 files changed, 1383 insertions(+), 767 deletions(-)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
->  create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
-> 
-> --
-> 2.43.5
-> 
-> 
-> 
+Update the board's DT binding accordingly to align with the fixed
+device binding and ensure proper regulator support.
 
+Fixes: 1d333cd641fb ("ARM: dts: aspeed: sbp1: IBM sbp1 BMC board")
+Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
+---
+Changes in V2:
+1. Update commit message
+2. Add fix tag
+---
+ .../boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts   | 124 +++++++++++-------
+ 1 file changed, 80 insertions(+), 44 deletions(-)
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250220205948.1777200-1-eajames@linux.ibm.com:
-
-arch/arm/boot/dts/aspeed/aspeed-ast2500-evb.dtb: /ahb/apb/pwm-tacho-controller@1e786000: failed to match any schema with compatible: ['aspeed,ast2500-pwm-tacho']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minipack.dtb: /ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2500-lhc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: timer: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /sdram@1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: bus@1e600000: compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
-	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: syscon@1e6e2000: 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^silicon-id@[0-9a-f]+$', 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/syscon@1e6e2000/interrupt-controller@560: failed to match any schema with compatible: ['aspeed,ast2600-scu-ic0']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/syscon@1e6e2000/interrupt-controller@570: failed to match any schema with compatible: ['aspeed,ast2600-scu-ic1']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/display@1e6e6000: failed to match any schema with compatible: ['aspeed,ast2600-gfx', 'syscon']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: adc@1e6e9000: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: adc@1e6e9100: 'interrupts' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: crypto@1e6fa000: 'aspeed,ahbc' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/video@1e700000: failed to match any schema with compatible: ['aspeed,ast2600-video-engine']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: gpio@1e780000: 'usb-power-hog' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/gpio/aspeed,ast2400-gpio.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/timer@1e782000: failed to match any schema with compatible: ['aspeed,ast2600-timer']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: lpc@1e789000: lpc-snoop@80: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: lpc@1e789000: reg-io-width: 4 is not of type 'object'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: kcs@24: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: kcs@28: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: kcs@2c: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: kcs@114: 'clocks' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: sdc@1e740000: sdhci@1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: sdc@1e740000: sdhci@1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/sdc@1e740000/sdhci@1e740100: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/sdc@1e740000/sdhci@1e740200: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/bus@1e78a000/i2c@400/pwm@53: failed to match any schema with compatible: ['maxim,max31785a']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: pressure-sensor@76: '#io-channel-cells' does not match any of the regexes: 'pinctrl-[0-9]+'
-	from schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: fsi@1e79b000: compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/fsi@1e79b000: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: fsi@1e79b100: compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/fsi@1e79b100: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/dma-controller@1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dtb: lpc@1e789000: reg-io-width: 4 is not of type 'object'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-
-
-
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts
+index 8d98be3d5f2e..34f3d773a775 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts
+@@ -1838,13 +1838,17 @@ i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			pvcore_nic2: ir38263-pvcore-nic2@40 {
++			ir38263_pvcore_nic2: ir38263-pvcore-nic2@40 {
+ 				compatible = "infineon,ir38263";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "pvcore_nic2";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					pvcore_nic2: vout {
++						regulator-name = "pvcore_nic2";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -1853,13 +1857,17 @@ i2c@3 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			pvcore_nic1: ir38263-pvcore-nic1@40 {
++			ir38263_pvcore_nic1: ir38263-pvcore-nic1@40 {
+ 				compatible = "infineon,ir38263";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "pvcore_nic1";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					pvcore_nic1: vout {
++						regulator-name = "pvcore_nic1";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -1874,13 +1882,17 @@ i2c@5 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			p3v3_nic: ir38263-p3v3-nic@40 {
++			ir38263_p3v3_nic: ir38263-p3v3-nic@40 {
+ 				compatible = "infineon,ir38263";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "p3v3_nic";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					p3v3_nic: vout {
++						regulator-name = "p3v3_nic";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -1889,13 +1901,17 @@ i2c@6 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			p1v2_nic: ir38263-p1v2-nic@40 {
++			ir38263_p1v2_nic: ir38263-p1v2-nic@40 {
+ 				compatible = "infineon,ir38263";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "p1v2_nic";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					p1v2_nic: vout {
++						regulator-name = "p1v2_nic";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -1904,13 +1920,17 @@ i2c@7 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			p1v8_nic: ir38263-p1v8-nic@40 {
++			ir38263_p1v8_nic: ir38263-p1v8-nic@40 {
+ 				compatible = "infineon,ir38263";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "p1v8_nic";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					p1v8_nic: vout {
++						regulator-name = "p1v8_nic";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 	};
+@@ -2070,13 +2090,17 @@ i2c@1 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			p1v05_pch_aux: ir38263-p1v05-pch-aux@40 {
++			ir38263_p1v05_pch_aux: ir38263-p1v05-pch-aux@40 {
+ 				compatible = "infineon,ir38263";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "p1v05_pch_aux";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					p1v05_pch_aux: vout {
++						regulator-name = "p1v05_pch_aux";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -2085,13 +2109,17 @@ i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 
+-			p1v8_pch_aux: ir38060-p1v8-pch-aux@40 {
++			ir38060_p1v8_pch_aux: ir38060-p1v8-pch-aux@40 {
+ 				compatible = "infineon,ir38060";
+ 				reg = <0x40>;
+ 
+-				regulator-name = "p1v8_pch_aux";
+-				regulator-enable-ramp-delay = <2000>;
+-				vin-supply = <&p12v>;
++				regulators {
++					p1v8_pch_aux: vout {
++						regulator-name = "p1v8_pch_aux";
++						regulator-enable-ramp-delay = <2000>;
++						vin-supply = <&p12v>;
++					};
++				};
+ 			};
+ 		};
+ 
+@@ -3596,34 +3624,42 @@ i2c@1 {
+ 		reg = <1>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		p5v_aux: ir38263-p5v-aux@40 {
++		ir38263_p5v_aux: ir38263-p5v-aux@40 {
+ 			compatible = "infineon,ir38263";
+ 			reg = <0x40>;
+ 
+-			regulator-name = "p5v_aux";
+-			regulator-enable-ramp-delay = <2000>;
+-			vin-supply = <&p12v>;
+-			vbus-supply = <&p3v3_bmc_aux>;
+-			regulator-always-on;
+-			regulator-boot-on;
++			regulators {
++				p5v_aux: vout {
++					regulator-name = "p5v_aux";
++					regulator-enable-ramp-delay = <2000>;
++					vin-supply = <&p12v>;
++					vbus-supply = <&p3v3_bmc_aux>;
++					regulator-always-on;
++					regulator-boot-on;
++				};
++			};
+ 		};
+ 	};
+ 	i2c@2 {
+ 		reg = <2>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		p3v3_aux: ir38263-p3v3-aux@40 {
++		ir38263_p3v3_aux: ir38263-p3v3-aux@40 {
+ 			compatible = "infineon,ir38263";
+ 			reg = <0x40>;
+ 
+-			vin-supply = <&p12v>;
+-			regulator-name = "p3v3_aux";
+-			/*
+-			 * 2msec for regulator + 18msec for board capacitance
+-			 * Note: Every IC has a PTC which slowly charges the bypass
+-			 * cap.
+-			 */
+-			regulator-enable-ramp-delay = <200000>;
++			regulators {
++				p3v3_aux: vout {
++					regulator-name = "p3v3_aux";
++					/*
++					 * 2msec for regulator + 18msec for board capacitance
++					 * Note: Every IC has a PTC which slowly charges the bypass
++					 * cap.
++					 */
++					vin-supply = <&p12v>;
++					regulator-enable-ramp-delay = <200000>;
++				};
++			};
+ 		};
+ 	};
+ 	i2c@3 {
+-- 
+2.42.0
 
 
