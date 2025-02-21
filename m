@@ -1,48 +1,48 @@
-Return-Path: <linux-aspeed+bounces-799-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-800-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4781C021B2
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Feb 2025 02:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94731C021B2
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Feb 2025 02:51:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YzZPV620Xz30T1;
-	Fri, 21 Feb 2025 13:50:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YzZR10WWjz30T1;
+	Fri, 21 Feb 2025 13:51:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740106238;
-	cv=none; b=JOUTNegVQa9h45UksSxVXS2RX2OJJqzz4gD33VP58R8X8wXHkZkoBCOG7htKipHN5X37EMa+SNUyZ64YrkkHmKgXJo1ovA62hSNXmZlLi6CFPph3HpuaMd+udHyyzJfsVGq9ELEERoUStCXoRvOdeM0P5MafPS21j7MQa1Eang6kcHBu0wEXnfjaGI+/s6o2gk2sNkhyRjWwwGapgwWB72DZ7CdeqLBtRdS2zna+URmhMDIrIJp5+c5o+9YwY7OmI8U2ONptY3cT87ncj4yMz/093Ad8JmRVTR3AZyIcLWczwVstj1E/flY/7YtbpJmjyw0nPteR+ixcjvgiL7NoQQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740106317;
+	cv=none; b=EnzayDClMHS4LCY3RTGpu1Y8aajOPJ79GeUEIzX7IUwSP/d1CPLbR5b1tFwCKACU+VgGPZ0BRBYrq7bvZaQiFDJLzolPKb0l7U7KcpBU+Sx6KYmJlzgex5G7/aUfv+BnfqQksbLx9fTMiGc0KHlBuuxXRN7XdLWSfeHUNXUZrU3KIkWi6CzGlQDVEm6HT+TLvCdQP45ruTW+COuNW60zZBEuLFrhUAo5ebcPTBcCKft7OoJzGHli4sH15L1RkD4hyGYpDFv1HFv+oEGJMpkfZmm5ZAHPM/0DQ968spDb4U9o9gb3E9tHpBzBGP9JlPznZ1I0yozw/Tg8Bm+J/Drggw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740106238; c=relaxed/relaxed;
+	t=1740106317; c=relaxed/relaxed;
 	bh=UnJlIFv0UPUzNd+Vm3edQcV3c4YlHIanESgLP3djvo0=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=BJAYBYp2zPTa2ZcXdXjrm2mRbNd1CGmNdmEBGWx4MH2FMnMy3bZrcD+MiIekDANVnOaN1HpcNZjWqqxnq8u9bCmwRKDayp3Y1MZrsrgEgTmYiGG1/f/Jf8JrOT8AoCivEVP4fh8Qw+E/mpFeVJFHN5wIqdBcGue6fe0MRCTDqxtkrSd2uqi4yK0XRpGb0bsAfe66CHUJMzxL2VznlksXLk7nUzlEdW7CQ4Xu/ncGtuixHl66tWHOJGB+yVB0NiF7gHCDSlG0VUQMeywQSyWuYcdnT+Ucqp/4D/Yn4NVWxZzpLa1K9rhkgDmBLBAwjXQRY9lixLwYY+LqNZQHEaBnzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bS3XDmJS; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=kdezbGpNBt3PpAJ8cn/YE8a7QV1lKc76kithMtd0ao4auJzJuzdEB1Mwpto+K2Ip300alWMyo7vV7QC7jojr5BT4mn8+RxybpUF6PZROnaaB+vystyCYlKOcqvnEZnR8rso8uutR0zY+9MCXYVzYSqRWF0SPzA3/8nqDGTyOMvBUfV+e66PeRTcBjHBrsFdT+okR85uSk/UJVkgCyM6EJ7EYtdfzRhZV8FxSqVL7eCDgoM2EZrBqDqRJBl66x7ZMEMnvNxipvghBrT8Wssif+oM4yVQY+c9PIMz9/ri+9xkrtW3Cw9F3h2uLTDfVzkCAJqsoD4F//YJWuzySsDu/vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=heDSOgdi; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bS3XDmJS;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=heDSOgdi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YzZPR4KZKz2yyR
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 13:50:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YzZR03qrTz2yyR
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 13:51:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1740106233;
+	d=codeconstruct.com.au; s=2022a; t=1740106316;
 	bh=UnJlIFv0UPUzNd+Vm3edQcV3c4YlHIanESgLP3djvo0=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=bS3XDmJSaRwxBcjtYnMTwIb+H/BxFKEtm3Pk7VaDsbV19owr6Q+j1opLuCdtqhQjD
-	 6+dx3TMF4X+YLGT3ur3e/AynpgFoaPBP+vI223VEgbjjCuBxhzUe2/vHDgY8UUS0cH
-	 tpBvqc2ZQBtmnsdWHuqYkOS0I56/E++xdqSsN1+TrdBmEqzThNE3Mt9bOaUCZdn5W/
-	 WdhUezPTM4PI7OoUGenB05aasczV9qn3O4nKodwZiLdtHvP0rDpANhShljodZzXkja
-	 OkbLOh5h3ULoqcIbv8eNIuBjrOS2om0ynANUpLZCNQDTt2xg1fj4v7QJ7m0hoFy9Ec
-	 7ljKn+ys0IO6Q==
+	b=heDSOgdi2Y2Q3C6UtY3/RAZCOylprvSdvWWTv++IwVftSMht359YMj0lw/EZgpu5q
+	 SpjrKtHOF5jhW2BZRvEk9FFYcfAgB0BDK6dLYghRL1inDTJgKq51bYpQ4hpPiAjlXI
+	 7Cr44g/wIl3uA5GQWTw3TudE8FTG5WKmqTb/mR1v3POlp11pORfFNcSOxqKkvuAYUh
+	 SqHMdAy49SJsvStLIiLOSagIrA4IWXlWQE1i3R6mQljqEJWI9HG5DR/DOSCuJhkSNI
+	 NLS7xNtFlR9QOlehyStYuHx3maYm0TBdxYzLjbfLTZfbWowRjVSBvKATI7eoPpSZrU
+	 EKPeciMa5yRBA==
 Received: from [192.168.53.88] (ppp118-210-81-188.adl-adc-lon-bras32.tpg.internode.on.net [118.210.81.188])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 59BAE76B4D;
-	Fri, 21 Feb 2025 10:50:29 +0800 (AWST)
-Message-ID: <eec1e53185baeed99e5e0c86875f121ab4d25fd1.camel@codeconstruct.com.au>
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0E0C276B4D;
+	Fri, 21 Feb 2025 10:51:54 +0800 (AWST)
+Message-ID: <a8fec7b5a84cee03602d4bca6c3a12d81fb141f4.camel@codeconstruct.com.au>
 Subject: Re: [PATCH v5] ARM: dts: aspeed: yosemite4: add I3C config in DTS
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Delphine CC Chiu <delphine_cc_chiu@wiwynn.com>, patrick@stwcx.xyz, Rob
@@ -51,7 +51,7 @@ To: Delphine CC Chiu <delphine_cc_chiu@wiwynn.com>, patrick@stwcx.xyz, Rob
 Cc: MarshallZhan-wiwynn <marshall_zhan@wiwynn.com>, 
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 21 Feb 2025 13:20:28 +1030
+Date: Fri, 21 Feb 2025 13:21:54 +1030
 In-Reply-To: <20250220023233.1686419-1-delphine_cc_chiu@wiwynn.com>
 References: <20250220023233.1686419-1-delphine_cc_chiu@wiwynn.com>
 Content-Type: text/plain; charset="UTF-8"
