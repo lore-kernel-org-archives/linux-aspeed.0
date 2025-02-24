@@ -1,74 +1,49 @@
-Return-Path: <linux-aspeed+bounces-815-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-816-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 236A9C021B3
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 09:32:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84E66C021B3
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 09:55:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1bBD5Njjz3011;
-	Mon, 24 Feb 2025 20:32:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:edc0:2:b01:1d::104"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740389572;
-	cv=none; b=LQbasrrjIaaFSHi3e05R4ECbxVi9BK2sYkb2GnJHvbMxVuoEqEMOD6aFoaOFQltLaHBLSU1tvRavM28VqZFwx8mxKq8j2g4qI+RaUGAP9DN0/XQ91NFL54pRcLIU8SUjraE4wiRmn1sydepbc0F5cyG1sf0gaQn8413/f/8yn6QwheWl1exMIzXCTYm33xeZ/TwqeDmUEvAeZ8oUKn4xf0tmtSHgz8jrDsqAXZCVWhcwxam/WCaVmvd8gVPGuePsGJKYe5t0yktvHavlphsYjqklIIoO8G/HUekmxPX7Q+ruh3hPs9/BwlN30czg+p4msobM8aEMX2U0Bk0HQZhmGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1bhD1F92z2yDS;
+	Mon, 24 Feb 2025 20:55:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740390924;
+	cv=none; b=f+8Bfy83wwMfXZVQab577ei0Jrz/aLP6rKJf3pMcFbZ6omrmXykX7mVQHJJCNQWISHTJ21zy1KTl26iHWTebF48EBGh7AMpwBfyTN7iubo11/UtxitCzniX+evvGr9bbJxWpQ767u8QQOPEaZvPAcOSaXhvT7BkhQUFb4Bg4i4/Y9kEsMa/kPTWU+RmzHfmuga6r7wRgPGPT49h6JpUytf2U0/tpjCfveERDpkW1FvVNIACkO6MOqu7B/zkQm4Sm8DD0Yk94yX+2iNjX0ebXlIDLe4uuT4m9PxqPtIPg36C5POjkjszyQMvZoHEOVGBC4B0LtF36Toe4S/Jj2Z8Kdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740389572; c=relaxed/relaxed;
-	bh=MWFLyE+zepQ0gwE9Kxqdao03pl2+fyemSDhVBXoCKgk=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=oMjoU5s3biGtMh+vkYXdjjIiGoByy8li5QOPWawxOiD93wAX3p86X++OV+Aw+z+FnvmP7qTC/dM1XrB+LJEGEYHtgSMdBUoCG/ebqTPgNFyBZxHWR/JZOBivJAUIXfWpS7GHhLzkxRrzFFg2lsZ6Dn80DwYDWWNdaDTMdO2p2wHsOI2CyePc5+t4ZMWg029o8i2pAmcaWJddFsBnB1J9+6F2QGCnOihzjSJlCgHLIFdwiADCGGiLuYOto5i2Li08O7VkB/wJ2U6Bz5VJZTDosekZBW5uaaN4IG52+Jke1JSsT0QprjjvRPl+zQ0LTr3v1YrSqV+Dg1mcDhLeurN+9g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=p.zabel@pengutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=pengutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=p.zabel@pengutronix.de; receiver=lists.ozlabs.org)
-Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1740390924; c=relaxed/relaxed;
+	bh=6oO4geAGYM1LW7w/5WuIN3CcKw41cAIbReMoNe6WNmY=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=kFClAwe6Psi3QvlRrn20oi/77p3ezApnDHKfGKYRvw3npdOmdyT2CJS3/r6rsKokE6kHuHoJ72ACrYj/9+coxHKYLHuv83WEkrAEqiHTjiQIPVDGclSkNuiCCo7meizc84D1SOsp4y7R2FAZ+9k3lat3WlVmbJJJcLOZ6KJ6Wg9YcCZG+LC1dplwDvKF+Rr/pzJPlWASILvbUEsSpzDy5p4CKSuVvwR0KyVNX/K1IiG+wbfo+PPwBcrStC6WhUr42phdQ2USzcoq1B4hoTo03jMikCkO760xy8nELhZSmWHmBUPjceMB0WV19iv3W8gKrP8oMQWKH75S3etQXXCLGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1bBD1Vl7z301N
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Feb 2025 20:32:52 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1tmUpA-0002iD-0i; Mon, 24 Feb 2025 10:32:28 +0100
-Received: from lupine.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::4e] helo=lupine)
-	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.96)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1tmUp9-002ZLh-14;
-	Mon, 24 Feb 2025 10:32:27 +0100
-Received: from pza by lupine with local (Exim 4.96)
-	(envelope-from <p.zabel@pengutronix.de>)
-	id 1tmUp9-0003W5-0p;
-	Mon, 24 Feb 2025 10:32:27 +0100
-Message-ID: <db8dad75c03d747d16cdc67ebbedd5c2f8c27a6d.camel@pengutronix.de>
-Subject: Re: [PATCH v16 2/3] i2c: aspeed: support AST2600 i2c new register
- mode driver
-From: Philipp Zabel <p.zabel@pengutronix.de>
-To: Ryan Chen <ryan_chen@aspeedtech.com>, "benh@kernel.crashing.org"
-	 <benh@kernel.crashing.org>, "joel@jms.id.au" <joel@jms.id.au>, 
-	"andi.shyti@kernel.org"
-	 <andi.shyti@kernel.org>, "robh@kernel.org" <robh@kernel.org>, 
-	"krzk+dt@kernel.org"
-	 <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>, 
-	"andrew@codeconstruct.com.au"
-	 <andrew@codeconstruct.com.au>, "andriy.shevchenko@linux.intel.com"
-	 <andriy.shevchenko@linux.intel.com>, "linux-i2c@vger.kernel.org"
-	 <linux-i2c@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	 <openbmc@lists.ozlabs.org>, "devicetree@vger.kernel.org"
-	 <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	 <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	 <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	 <linux-kernel@vger.kernel.org>
-Date: Mon, 24 Feb 2025 10:32:27 +0100
-In-Reply-To: <OS8PR06MB75413DA9AF08F23506FA6DDBF2C02@OS8PR06MB7541.apcprd06.prod.outlook.com>
-References: <20250224055936.1804279-1-ryan_chen@aspeedtech.com>
-	 <20250224055936.1804279-3-ryan_chen@aspeedtech.com>
-	 <ee0f5b583aadb42e7557e1afc49c5b9af594d2c3.camel@pengutronix.de>
-	 <OS8PR06MB75413DA9AF08F23506FA6DDBF2C02@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1bhC32NNz2yDH
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Feb 2025 20:55:22 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 24 Feb
+ 2025 17:55:06 +0800
+Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
+ Transport; Mon, 24 Feb 2025 17:55:06 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: ryan_chen <ryan_chen@aspeedtech.com>, Michael Turquette
+	<mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Philipp Zabel
+	<p.zabel@pengutronix.de>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@aj.id.au>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	<linux-clk@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: [PATCH v9 0/3] Add support for AST2700 clk driver
+Date: Mon, 24 Feb 2025 17:55:03 +0800
+Message-ID: <20250224095506.2047064-1-ryan_chen@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -81,93 +56,123 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: p.zabel@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-aspeed@lists.ozlabs.org
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Mo, 2025-02-24 at 09:04 +0000, Ryan Chen wrote:
-> > Subject: Re: [PATCH v16 2/3] i2c: aspeed: support AST2600 i2c new
-> > register
-> > mode driver
-> >=20
-> > On Mo, 2025-02-24 at 13:59 +0800, Ryan Chen wrote:
-> > > Add i2c new register mode driver to support AST2600 i2c new
-> > > register
-> > > mode. AST2600 i2c controller have legacy and new register mode.
-> > > The
-> > > new register mode have global register support 4 base clock for
-> > > scl
-> > > clock selection, and new clock divider mode. The new register
-> > > mode
-> > > have separate register set to control i2c controller and target.
-> > > This
-> > > patch is for i2c controller mode driver.
-> > >=20
-> > > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > > ---
-> > > =C2=A0drivers/i2c/busses/Kconfig       |   11 +
-> > > =C2=A0drivers/i2c/busses/Makefile      |    1 +
-> > > =C2=A0drivers/i2c/busses/i2c-ast2600.c | 1036
-> > > ++++++++++++++++++++++++++++++
-> > > =C2=A03 files changed, 1048 insertions(+)
-> > > =C2=A0create mode 100644 drivers/i2c/busses/i2c-ast2600.c
-> > >=20
-> > [...]
-> > > diff --git a/drivers/i2c/busses/i2c-ast2600.c
-> > > b/drivers/i2c/busses/i2c-ast2600.c
-> > > new file mode 100644
-> > > index 000000000000..bfac507693dd
-> > > --- /dev/null
-> > > +++ b/drivers/i2c/busses/i2c-ast2600.c
-> > > @@ -0,0 +1,1036 @@
-> > [...]
-> > > +static int ast2600_i2c_probe(struct platform_device *pdev) {
-> > > +	struct device *dev =3D &pdev->dev;
-> > > +	struct ast2600_i2c_bus *i2c_bus;
-> > > +	struct resource *res;
-> > > +	u32 global_ctrl;
-> > > +	int ret;
-> > > +
-> > > +	i2c_bus =3D devm_kzalloc(dev, sizeof(*i2c_bus),
-> > > GFP_KERNEL);
-> > > +	if (!i2c_bus)
-> > > +		return -ENOMEM;
-> > > +
-> > > +	i2c_bus->reg_base =3D devm_platform_ioremap_resource(pdev,
-> > > 0);
-> > > +	if (IS_ERR(i2c_bus->reg_base))
-> > > +		return PTR_ERR(i2c_bus->reg_base);
-> > > +
-> > > +	i2c_bus->rst =3D devm_reset_control_get_shared(dev, NULL);
-> > > +	if (IS_ERR(i2c_bus->rst))
-> > > +		return dev_err_probe(dev, PTR_ERR(i2c_bus->rst),
-> > > "Missing reset
-> > > +ctrl\n");
-> > > +
-> > > +	reset_control_deassert(i2c_bus->rst);
-> >=20
-> > No reset_control_assert() in the error paths below? You could get
-> > that and
-> > simplify this by using devm_reset_control_get_shared_deasserted().
-> >=20
-> Sorry, devm_reset_control_get_shared_deasserted is new for me.
-> Do you mean modify by following=20
->=20
-> i2c_bus->rst =3D devm_reset_control_get_shared_deasserted(dev, NULL);
-> if (IS_ERR(i2c_bus->rst))
-> =C2=A0=C2=A0=C2=A0=C2=A0return dev_err_probe(dev, PTR_ERR(i2c_bus->rst), =
-"Missing reset
-> ctrl\n");
->=20
-> - reset_control_deassert(i2c_bus->rst);
+This patch series is add clk driver for AST2700.
 
-Yes see [1]. Remove the reset_control_assert() in ast2600_i2c_remove()
-as well.
+AST2700 is the 8th generation of Integrated Remote Management Processor
+introduced by ASPEED Technology Inc. Which is Board Management controller
+(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
+is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
 
-[1] https://docs.kernel.org/driver-api/reset.html#c.devm_reset_control_get_=
-shared_deasserted
+v9:
+-aspeed,ast2700-scu.h: no change.
+add more clear commit description.
+-clk-ast2700.c:
+add inlcude bitfield.h
+remove redundant clk_parent_data soc0_mpll_div8/soc0_ahb/uart13clk/
+uart14clk/uart15clk/uart16clk/soc1_ahb/d_clk_sels
 
-regards
-Philipp
+v8:
+-aspeed,ast2700-scu.h: remove no use soc0 clock, add new clock
+-clk-ast2700.c: remove include <linux/auxiliary_bus.h>,
+include <linux/clk-provider.h>, include <linux/of_address.h>
+-clk-ast2700.c: add include <linux/mod_devicetable.h>
+-clk-ast2700.c: modify include <soc/aspeed/reset-aspeed.h> order before
+dt-bindings
+-clk-ast2700.c: modify define to be tabbed out space
+-clk-ast2700.c: add union struct for each clk type
+	union {
+		struct ast2700_clk_fixed_factor_data factor;
+		struct ast2700_clk_fixed_rate_data rate;
+		struct ast2700_clk_gate_data gate;
+		struct ast2700_clk_div_data div;
+		struct ast2700_clk_pll_data pll;
+		struct ast2700_clk_mux_data mux;
+	} data;
+-clk-ast2700.c: modify clk_data = device_get_match_data(dev);
+-clk-ast2700.c: modify builtin_platform_driver_probe to 
+arch_initcall(clk_ast2700_init)
+-clk-ast2700.c: ast2700_clk_hw_register_hpll explain: scu010[4:2],
+scu010[4:2] = 010, hpll force 1.8Ghz
+scu010[4:2] = 011, hpll force 1.7Ghz
+scu010[4:2] = 110, hpll force 1.2Ghz
+scu010[4:2] = 111, hpll force 800Mhz
+others depend on hpll parameter register setting.
+
+v7:
+-reset-aspeed.h: fix declare static inline aspeed_reset_controller_register
+if the function is not used.
+
+v6:
+-patch-2: add reset-aspeed.h
+-reset-aspeed: add include cleanup.h for guard()
+-reset-aspeed: change ids name clk_aspeed to reset_aspeed
+-reset-aspeed: move aspeed_reset_controller_register,
+aspeed_reset_adev_release, aspeed_reset_unregister_adev from clk-ast2700.c
+-reset-aspeed: drop base check, since it check in clk-ast2700.c
+-clk-ast2700: sync each gate name from *clk to *clk-gate name.
+-clk-ast2700: add CLK_GATE_ASPEED to diff clk_hw_register_gate and
+ast2700_clk_hw_register_gate.
+
+v5:
+-patch-2 Kconfig: add select AUXILIARY_BUS
+-reset-aspeed: #define to_aspeed_reset(p) turn into static inline function.
+-reset-aspeed: modify spin_lock_irqsave to guard(spinlock_irqsave)
+-reset-aspeed: remove unnecessary parentheses.
+-clk-ast2700: use <linux/units.h> and refrain from define clk
+
+v4:
+-yaml: keep size-cells=<1>.
+-merge clk,reset dt binding header with yaml the same patch.
+-rename clk,reset dt binding header to aspeed,ast2700-scu.h
+-reset-aspeed: update tables tabs sapces to consistent spaces.
+-reset-aspeed: remove no use dev_set_drvdata.
+-clk-ast2700: modify reset_name to const int scu in struct clk_data.
+-clk-ast2700: use scu number in clk_data generate reset_name for reset
+ driver register.
+-clk-ast2700: fix pll number mix up scu0,scu1.
+-clk-ast2700: update dt-binding clock include file.
+
+v3:
+-yaml: v2 missing send yaml patch, v3 add.
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number.
+-dt-bindings: merge clk and reset to be one patch.
+-reset-aspeed: add auxiliary device for reset driver.
+-clk-ast2700: modify reset to be auxiliary add.
+-clk-ast2700: modify to be platform driver.
+-clk-ast2700: modify each clk to const clk array.
+
+v2:
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number
+-clk-ast2700: drop WARN_ON, weird comment.
+
+Ryan Chen (3):
+  dt-binding: clock: ast2700: modify soc0/1 clock define
+  reset: aspeed: register AST2700 reset auxiliary bus device
+  clk: aspeed: add AST2700 clock driver
+
+ drivers/clk/Kconfig                           |    8 +
+ drivers/clk/Makefile                          |    1 +
+ drivers/clk/clk-ast2700.c                     | 1120 +++++++++++++++++
+ drivers/reset/Kconfig                         |    7 +
+ drivers/reset/Makefile                        |    1 +
+ drivers/reset/reset-aspeed.c                  |  302 +++++
+ .../dt-bindings/clock/aspeed,ast2700-scu.h    |    7 +-
+ include/soc/aspeed/reset-aspeed.h             |   21 +
+ 8 files changed, 1464 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/clk/clk-ast2700.c
+ create mode 100644 drivers/reset/reset-aspeed.c
+ create mode 100644 include/soc/aspeed/reset-aspeed.h
+
+-- 
+2.34.1
+
 
