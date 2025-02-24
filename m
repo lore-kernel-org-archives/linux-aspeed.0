@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-821-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-822-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5241EC021A6
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 10:12:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59251C021A4
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 10:15:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1c3q75Wbz2xKN;
-	Mon, 24 Feb 2025 21:12:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1c7S09K8z300g;
+	Mon, 24 Feb 2025 21:15:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740391943;
-	cv=none; b=LU8tFvRuAoP2lqr0LcV5L6BDDbMmAesA+9WsjIUMp1ksCeVV1ZNezUDH7W0o+49zB2evlB1fMw6hcecr97iHhntNMOOMI7C33CQ1yRixnMJxJy+jYNrY3Ixr3IkDSAWQ6C479zoAq6VJXUcRrta+RrTuws6J/d2IZVhv87k7qyK+aEQgclcfFSYzNW2Ml8PrfNDwXX4BCM9vDZXbN2xCvZN0/qO+kx9IhbqxoBIKtwKS6IzG8J0AzyP7P9TL1ZczyGN9WQhso+Wpu7tV1LKmaA3bDUlagMj/AFSk83Vf9mTax8giphq41CC/9goetQ+2wXKvkxI/OC0TK380wD12KQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740392131;
+	cv=none; b=A8YeppYvqIIn4M2/frQj0ljpZk3QI4AEAkgm/ewvS0nkz6AaNErMoe+Jx4D9jpO8twba+6NnjIxC9h914++uOAjAjVoCfgWIimGjLe3KwctEDBKE0Yc3niZjHkeR2x1hoT4OXwVzCxj2a+gIV5BbgDaSpsBaePQVmwQdSkNBrnEV869hK455JlOlBn5KnG2EKbQy57iaqLwhsrKkCbyWPCusCXXJQIWL4+vmoHbSpPWFAZTjOwG5eCb8qEfGgqjTP3PINGe3RxfCa8KkVm9sMcs8kvUKOiH662iHftKFkRLZg935/4mL6B5QnVVXw9kDN9HPKjwRdJzADYEuaJuK2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740391943; c=relaxed/relaxed;
-	bh=UkuR2aUQ3YGlD8BMUU05CYVfaZCuUHd9VHCQOYO2I4U=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=aGz8XjUPPa/8AI5/JVQBRHHeT6frrbcZGueef5f6z+tpuWu0jJqsBg29IvIPqn3gMk7Pd5vJMKqjMPPJkiNMQrSUT6J7XQj1KHVps3TmrJEp1ZqLz1p8nlA/mPlyMxLucH87WQZDGUkRqPWrjVYxSlXeqhgfBbtyeLuuiT3RD+poDg8klDc0ncTOtJUdoB4H3q/Q8HmCq+cD+UKPADceHpc77aF7kiwWKHhXly8iGAN/1Na+QV6u8QBq9aSDTevWOx8qzO3tlgqcDhhwXPxxHmggXd9Vh8nE44J9Zv6NqeXfpJY2kb86UVu0pCuJw4m7OPCTYhlMubC4Y98cz751nA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nuT1086/; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1740392131; c=relaxed/relaxed;
+	bh=NP6KwitEnDLK+EJyz6Py7uDR66RPflahZM9CtHgTPDQ=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
+	 In-Reply-To:Content-Type; b=JfXKmXa0reAuuDq0H6R21LBtD4AIXFHwI/LK8TTl1Hf32IX0jnKZWFa6uPGIRVslpSRxWu4DY0js/SIipnmDFip84l3S0A6rGXAApVyHAIUWv2shiYnuDlJwk201mFutbzni0VMEEYKgqT0QEWD64WFpyGPBBgiJGraK/95mx7dG9Np1gzBLMdaBIGLeniXvG0iq4cVSMlMjdZ1eRFNQqOy2CZCw1d7cpkoSOtsX7vK/FypCC6EhaHxAHRHXjrsejZVP3tbBzjpBhVAIksum+1KRs7qwf8Wzw0zrwJ7ZTYQTc8KrLea1xn7kB/efYysnEgqXAn/XDOLDNPX/rqVBtA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R6VXbhAr; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nuT1086/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R6VXbhAr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1c3p73Kxz2xHp
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Feb 2025 21:12:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1c7R1S77z2xKN
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Feb 2025 21:15:31 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 2579B5C6150;
-	Mon, 24 Feb 2025 10:11:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E632C4CED6;
-	Mon, 24 Feb 2025 10:12:15 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 59A7C5C624C;
+	Mon, 24 Feb 2025 10:14:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98C60C4CEE6;
+	Mon, 24 Feb 2025 10:15:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740391939;
-	bh=PCYrjtUGVCNWA2UVJ7z9lylraitHnr5rIdAHSEZtMNk=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=nuT1086/FaATtLmemWY7kOIECVttghSCc4222D9Ldf9XVKoYAoTvqQy3s/KaSB3IY
-	 81PTkl2QIEWMA6zZM6BI5P6wZfDYoF1AnzNc6SKBdP9JEwYsdeW9BGnfgPeU2TAYMl
-	 mCHCT8linYBKLN8VQ6+l7EsAKaRYomEfkzZXVL2D2/wgVXYHB8r0p5Ba4367zLL3Qb
-	 6gxNP4F/yPnPsjwUjcjOZ4VQsQAWdvLGCJ3nlwEq/DmgRfj8p9zNSWiQbxFq/XnPSF
-	 GYSfBHYuATnubYut9uyyOqywvuJ8UMNofpuPAQMWbh5Vsu1z5174dT8BfsZ4/JmvVq
-	 s0DtFT/+KuHBQ==
-Message-ID: <71cf8012-3b77-43de-b8ac-54c84a97f9d3@kernel.org>
-Date: Mon, 24 Feb 2025 11:12:13 +0100
+	s=k20201202; t=1740392129;
+	bh=nhdDyfK9oxoqYCHrduTPMT827OPl9ykkco5bv7xZgSA=;
+	h=Date:Subject:From:To:References:In-Reply-To:From;
+	b=R6VXbhArAIL0nOd/yzjC2LPNaSBbJVh1MqyuEm2Td41KdiWTRmLdfz5jIaAYerCb9
+	 v/mSewLO0bPVocrhhm1aJmH1OHW2vInZTnvK0O1NOzDmNX85C/6/eYyOi4xiLpq5ZU
+	 02Cc/N9DTkm2xyiN0UbkjPPit3lnwQWk9iVn9O19STk22WRTu8QXh+MrjBHIYBPzCh
+	 GVQgvokZ17V3vLBFo4kAO8A/g0q53cY68Jt40b2nOJkKihS1bWVzRQFYEOPJ1h7BKj
+	 tDY9mWasrp5ghGJp7hELvIJA6s2IXPVtq2TuThQDtheBiVnbP0ZtgUCCl/xS3jrK2A
+	 OPHLUNggY4RQA==
+Message-ID: <d5d90f03-3db8-4f90-baad-0be4f3d3e0ea@kernel.org>
+Date: Mon, 24 Feb 2025 11:15:23 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,6 +61,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v9 2/3] reset: aspeed: register AST2700 reset auxiliary
  bus device
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
  Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
  <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
@@ -71,7 +72,7 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250224095506.2047064-1-ryan_chen@aspeedtech.com>
  <20250224095506.2047064-3-ryan_chen@aspeedtech.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+ <71cf8012-3b77-43de-b8ac-54c84a97f9d3@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
  xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
@@ -116,68 +117,72 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250224095506.2047064-3-ryan_chen@aspeedtech.com>
+In-Reply-To: <71cf8012-3b77-43de-b8ac-54c84a97f9d3@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 24/02/2025 10:55, Ryan Chen wrote:
-> +
-> +static void aspeed_reset_unregister_adev(void *_adev)
-> +{
-> +	struct auxiliary_device *adev = _adev;
-> +
-> +	auxiliary_device_delete(adev);
-> +	auxiliary_device_uninit(adev);
-> +}
-> +
-> +static void aspeed_reset_adev_release(struct device *dev)
-> +{
-> +	struct auxiliary_device *adev = to_auxiliary_dev(dev);
-> +
-> +	kfree(adev);
-> +}
-> +
+On 24/02/2025 11:12, Krzysztof Kozlowski wrote:
+> On 24/02/2025 10:55, Ryan Chen wrote:
+>> +
+>> +static void aspeed_reset_unregister_adev(void *_adev)
+>> +{
+>> +	struct auxiliary_device *adev = _adev;
+>> +
+>> +	auxiliary_device_delete(adev);
+>> +	auxiliary_device_uninit(adev);
+>> +}
+>> +
+>> +static void aspeed_reset_adev_release(struct device *dev)
+>> +{
+>> +	struct auxiliary_device *adev = to_auxiliary_dev(dev);
+>> +
+>> +	kfree(adev);
+>> +}
+>> +
+> 
+> Every exported function *must* have kerneldoc.
+> 
+>> +int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
+>> +				     const char *adev_name)
+>> +{
+>> +	struct auxiliary_device *adev;
+>> +	int ret;
+>> +
+>> +	adev = kzalloc(sizeof(*adev), GFP_KERNEL);
+>> +	if (!adev)
+>> +		return -ENOMEM;
+>> +
+>> +	adev->name = adev_name;
+>> +	adev->dev.parent = clk_dev;
+>> +	adev->dev.release = aspeed_reset_adev_release;
+>> +	adev->id = 666u;
+>> +
+>> +	ret = auxiliary_device_init(adev);
+>> +	if (ret) {
+>> +		kfree(adev);
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = auxiliary_device_add(adev);
+>> +	if (ret) {
+>> +		auxiliary_device_uninit(adev);
+>> +		return ret;
+>> +	}
+>> +
+>> +	adev->dev.platform_data = (__force void *)base;
+>> +
+>> +	return devm_add_action_or_reset(clk_dev, aspeed_reset_unregister_adev, adev);
+>> +}
+>> +EXPORT_SYMBOL_GPL(aspeed_reset_controller_register);
+> 
+> No, you cannot export functions without users. There is no single user
+> of this, so this is not justified at all.
+My mistake, I missed patch #3 which uses it.
 
-Every exported function *must* have kerneldoc.
-
-> +int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
-> +				     const char *adev_name)
-> +{
-> +	struct auxiliary_device *adev;
-> +	int ret;
-> +
-> +	adev = kzalloc(sizeof(*adev), GFP_KERNEL);
-> +	if (!adev)
-> +		return -ENOMEM;
-> +
-> +	adev->name = adev_name;
-> +	adev->dev.parent = clk_dev;
-> +	adev->dev.release = aspeed_reset_adev_release;
-> +	adev->id = 666u;
-> +
-> +	ret = auxiliary_device_init(adev);
-> +	if (ret) {
-> +		kfree(adev);
-> +		return ret;
-> +	}
-> +
-> +	ret = auxiliary_device_add(adev);
-> +	if (ret) {
-> +		auxiliary_device_uninit(adev);
-> +		return ret;
-> +	}
-> +
-> +	adev->dev.platform_data = (__force void *)base;
-> +
-> +	return devm_add_action_or_reset(clk_dev, aspeed_reset_unregister_adev, adev);
-> +}
-> +EXPORT_SYMBOL_GPL(aspeed_reset_controller_register);
-
-No, you cannot export functions without users. There is no single user
-of this, so this is not justified at all.
-
-
-
+I don't get why do you need to export this in the first place, instead
+of putting it in the clock driver, as usually expected. Handling child
+creation is logically the task of the device having children, the
+parent. Not the child.
 
 Best regards,
 Krzysztof
