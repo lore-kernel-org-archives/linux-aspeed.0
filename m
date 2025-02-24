@@ -1,99 +1,48 @@
-Return-Path: <linux-aspeed+bounces-805-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-806-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F24C021B3
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Feb 2025 21:38:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E3F5C021B5
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 06:00:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z03RK1N3Sz2yD8;
-	Sat, 22 Feb 2025 08:38:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740173933;
-	cv=none; b=gXjU//yRy0VrHeoCHs0xRq6y4OydKy0Tg20iJqP1w4JU2jUKn7R+bccA6VGIm0eQemKzoyzzt/JubhlFJsuR4Pw0YEKTjUlEdU4sg5HDqOqk4W34sTmyKNGxeQhxlcyex8GXjjgjSTyCvack9do+5CM32Cd3xX1iYF88nKAbMTikzaN4JMa4tQu0nmN64F962cATbRdnkfMpOjKyrUHrEYdcLPpSGsMBwhc0BEcOjY2v+y9QVw+Ko5xVQwBYXPhI9/3fEGxXxvFhQBk7DKBXgyz4HlfM3vv2ryIpc1MliUi8L2hoj5fBAXrmnDr/GbCuv22OIg4H5y/AJyBNyEEklQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1VSX6r17z2yXs;
+	Mon, 24 Feb 2025 16:59:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740376796;
+	cv=none; b=ibH7nyaB5ywVANYkvCnpQYsckghlCGrPxVebY1P055l4ihq6fyXdU3ub4iKgCSUVJnWcUhaWesaOJGf312zUNZDDIq8aXkZWC8UEQsMs9NybheQIEAXrNJNp3Jus+BINnqgkZ23BIlo7IsaWr/wKg/t6udiJy5QlCSjwH9RqgmV32bieYBV4iQECbHmlmQ9WUB//XJcw2oi4JqoEkNTrOhc7nD8kTJLR3FppOhH2vRhHEG7zMiWrDhesFvMgds875ZeJdj3ez3Sq5G+yTGQJxmgBpiqbT+siiHqcJmADzUD387yv6tPzpAo05jGgOLalUGVU7w4KLBReZWOOfAcFFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740173933; c=relaxed/relaxed;
-	bh=sJT+U7McgsKphrcHRdaZ6L+JaOsqY4avlMmqDJFGzCA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=e51z3JYALlDFsZaFdZv01lWmGJEYBdUxyjjv1WgDA6nNkQvrhMDMZkWrXTlt8udY3t00SEP+LRbDa7KnoJszz/Ss+L+ORbcVZK5b+AgDvp3NYGEKPhSBiBdO61FQBTVyluy2hlJr+ys89k0u1jGURv3pOzjrHACQGK8YMY4L1axCEAUE/QnqHLVhtoG5NCcZqgMQmJDPRycULwpn7FQtqa1+6FtDABSYXVA4FaB/0q4leEBuLRgttsI839t/B7kppkYlzYqGIZns1vrUPnJDEBf/ofxoRgK4UHqqHT3e5EwoLaE+V2mwOqmHRiyJOe+ka6eAsyvEMh6bllMB0ta4kg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Q7fFaWec; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=naresh.solanki@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=Q7fFaWec;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=naresh.solanki@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1740376796; c=relaxed/relaxed;
+	bh=fZMl6LX3RoBQXZasqQSRGJNkMkjT8mvTOpVMtltXWkk=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=AtnmV9tc708rvOJqnzvozxyDmeP3C2H2RyKilIgVILs65164nQ6SZ7oWeVNbcMkCQ5hsrEzPS2RcTHur8e2aXHIy5J+fPaDImWbiQliHKs2fhJM0e/uFaXxvOVoXyd4DW53WdzYJpc40wqGNafVA9LkpKxzY22mrO353zJJApBDkVh9rG8IgFcPZvA4vvO2aKg4FbKVWF8SLsvWh8AGNlAhQ02CiuLxnHNZULegq2K/qVg+RS0egtFrM8aInV8H5Co8lZpqTOFct/JVRPX0oULlLJwkQqNXRDXNSXfJMYEiG97UeDdeXswMfgtLgzsXk6kWj8O26cJ2xVo1GhWGJ8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z03RH3Tpxz2y34
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 22 Feb 2025 08:38:50 +1100 (AEDT)
-Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-439950a45daso16380105e9.2
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Feb 2025 13:38:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1740173925; x=1740778725; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sJT+U7McgsKphrcHRdaZ6L+JaOsqY4avlMmqDJFGzCA=;
-        b=Q7fFaWecnee7CrPTqIR9lJmfs0B+7Q01ktw1TZ+BccvWdwEIvfhjgdLgVFQhbqzx31
-         QfeQYBBlQ1rsZ+BLzQhCX9D7wPd2IaQesbaU68oEZD/ufJVHxS2qTIdMHxUROjL1wq56
-         EUAUxD1P8r2CFjJXRi+nT09xR3TXmOM9CX0XlyeAwoGHJdbInQuNEu/4aMTT92RN2CVj
-         nNR30hzgXdxKSUOzrdXYg5nOhbXDzrmB0cgcakxhCR5s40CrsN+9ADeIk7A+zTHJq3dV
-         c9ebSXpnvyTs4pPNO7bj93R1brJflymtEsjZ4wGsVWGaJLAjMLPkzakCN0sxvjtOps97
-         LtTA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740173925; x=1740778725;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=sJT+U7McgsKphrcHRdaZ6L+JaOsqY4avlMmqDJFGzCA=;
-        b=guSlrAHZz96+IbOBHW89afMNHhiqKrCz29pfh/cUida89Ekb0YOaUSaYTaej65KIl9
-         0lC647NooTnoyx6me8TuXzGvYlqzVk4bP5L6pVWCEH3Jjto1h/s19S6F/7akbriUXYVb
-         8o6sv1oUeAU0Co/VRVG6jvM6YtgJ7Tp8+9DzZevkTQfsosnhVYQFHgnSPpFhl/mA6gj6
-         sj76HKKrCqLd26JsyS+8cEWHAXItzP7KxW7dP5lINIn7z6TYfRrGDTTWhqyZbrMKrQWI
-         g4hjz+2nZuMaWWI3S1XJxPkBBsumMBKa2dqez+j/Y6md2f5O6pxZyUKSl7B0K6S06W24
-         PSUw==
-X-Forwarded-Encrypted: i=1; AJvYcCUTwdaH0aWy8wx8U2WVKZ5YnAkfr1UxfLzMs9YuZrzqlW/h1qqM13IGUepjjYlD5WiW8/4wG8HI/xMbi4g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxF0+CdPzT8Jxj2TU8SoYcoW/+DBANvGuUnvJXhuToPYzISAyu4
-	K/G+W9XhpzQVc4/wl1pHe9jmZw5vTr9g8g4XrgtVvE1fnJxE7CEORhY26y3vq8o=
-X-Gm-Gg: ASbGncvIJPldrFYoX+EFx8MJAx+t/C02OyTDdug8552dmtRXmJwrCkpt/dLmTQMnbmo
-	BWnPJAywixZJHKAI4bP0W5wWPATdKAx7CVVpfrnZAXdj2RJtt7btg36/6UnglYj9JVH21IRuyjA
-	OeNbvh3jAjM12rvVJdbf8sUthNqvbDzlZCroaCrlXOW20mTQSzic4l3kULrAnE5XoyM/LQmAxmy
-	wRaIDtbFfIS8jazeVfKPgA6NwSNZmWPxpn82XDB7szhACZwvxWwmssj/lv/KZWPjzmgLFsIzzqU
-	eh7XNw+eNUCL4j7uxci+thq7ImW/LIVdlLTIkd/lrVTj2+axLNJU0uu7xasYXf1V4gWHDEVNCYc
-	ico2iNYkEANBfjdIK9s2GRw==
-X-Google-Smtp-Source: AGHT+IEJdfP86XwonfKjpWl9cuxaXOkK2TY/AbasqcdUgfrAsr/wju12Wjkvh2xGz6T+sDP+8jaxzw==
-X-Received: by 2002:a05:600c:4f91:b0:439:955d:c4e2 with SMTP id 5b1f17b1804b1-439ae1f15b6mr39164505e9.13.1740173925072;
-        Fri, 21 Feb 2025 13:38:45 -0800 (PST)
-Received: from stroh80.lab.9e.network (ip-078-094-000-050.um19.pools.vodafone-ip.de. [78.94.0.50])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38f25913f5asm24767461f8f.52.2025.02.21.13.38.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Feb 2025 13:38:43 -0800 (PST)
-From: Naresh Solanki <naresh.solanki@9elements.com>
-To: Guenter Roeck <linux@roeck-us.net>,
-	broonie@kernel.org,
-	conor@kernel.org,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Naresh Solanki <Naresh.Solanki@9elements.com>,
-	Patrick Rudolph <patrick.rudolph@9elements.com>
-Cc: linux-hwmon@vger.kernel.org,
-	Naresh Solanki <naresh.solanki@9elements.com>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/2] ARM: dts: aspeed: sbp1: Align regulator node with Infineon ir38060
-Date: Sat, 22 Feb 2025 03:08:35 +0530
-Message-ID: <20250221213837.1594057-2-naresh.solanki@9elements.com>
-X-Mailer: git-send-email 2.42.0
-In-Reply-To: <20250221213837.1594057-1-naresh.solanki@9elements.com>
-References: <20250221213837.1594057-1-naresh.solanki@9elements.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1VSW495Vz2yjb;
+	Mon, 24 Feb 2025 16:59:55 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Mon, 24 Feb
+ 2025 13:59:36 +0800
+Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1258.12 via Frontend
+ Transport; Mon, 24 Feb 2025 13:59:36 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: <ryan_chen@aspeedtech.com>, <benh@kernel.crashing.org>, <joel@jms.id.au>,
+	<andi.shyti@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+	<conor+dt@kernel.org>, <andrew@codeconstruct.com.au>,
+	<p.zabel@pengutronix.de>, <andriy.shevchenko@linux.intel.com>,
+	<linux-i2c@vger.kernel.org>, <openbmc@lists.ozlabs.org>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v16 0/3] Add ASPEED AST2600 I2Cv2 controller driver
+Date: Mon, 24 Feb 2025 13:59:33 +0800
+Message-ID: <20250224055936.1804279-1-ryan_chen@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,242 +56,261 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-The PMBus driver expects a regulator node, which was missing in the
-board's device tree. This was corrected in the latest device binding
-update for ir38060.yaml.
+This series add AST2600 i2cv2 new register set driver. The i2cv2 driver
+is new register set that have new clock divider option for more flexiable
+generation. And also have separate i2c controller and target register
+set for control, patch #2 is i2c controller driver only, patch #3 is add
+i2c target mode driver.
 
-Update the board's DT binding accordingly to align with the fixed
-device binding and ensure proper regulator support.
+The legacy register layout is mix controller/target register control
+together. The following is add more detail description about new register
+layout. And new feature set add for register.
 
-Fixes: 1d333cd641fb ("ARM: dts: aspeed: sbp1: IBM sbp1 BMC board")
-Signed-off-by: Naresh Solanki <naresh.solanki@9elements.com>
----
-Changes in V2:
-1. Update commit message
-2. Add fix tag
----
- .../boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts   | 124 +++++++++++-------
- 1 file changed, 80 insertions(+), 44 deletions(-)
+-Add new clock divider option for more flexible and accurate clock rate
+generation -Add tCKHighMin timing to guarantee SCL high pulse width.
+-Add support dual pool buffer mode, split 32 bytes pool buffer of each
+device into 2 x 16 bytes for Tx and Rx individually.
+-Increase DMA buffer size to 4096 bytes and support byte alignment.
+-Re-define the base address of BUS1 ~ BUS16 and Pool buffer.
+-Re-define registers for separating controller and target mode control.
+-Support 4 individual DMA buffers for controller Tx and Rx,
+target Tx and Rx.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts
-index 8d98be3d5f2e..34f3d773a775 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dts
-@@ -1838,13 +1838,17 @@ i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			pvcore_nic2: ir38263-pvcore-nic2@40 {
-+			ir38263_pvcore_nic2: ir38263-pvcore-nic2@40 {
- 				compatible = "infineon,ir38263";
- 				reg = <0x40>;
- 
--				regulator-name = "pvcore_nic2";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					pvcore_nic2: vout {
-+						regulator-name = "pvcore_nic2";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -1853,13 +1857,17 @@ i2c@3 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			pvcore_nic1: ir38263-pvcore-nic1@40 {
-+			ir38263_pvcore_nic1: ir38263-pvcore-nic1@40 {
- 				compatible = "infineon,ir38263";
- 				reg = <0x40>;
- 
--				regulator-name = "pvcore_nic1";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					pvcore_nic1: vout {
-+						regulator-name = "pvcore_nic1";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -1874,13 +1882,17 @@ i2c@5 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			p3v3_nic: ir38263-p3v3-nic@40 {
-+			ir38263_p3v3_nic: ir38263-p3v3-nic@40 {
- 				compatible = "infineon,ir38263";
- 				reg = <0x40>;
- 
--				regulator-name = "p3v3_nic";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					p3v3_nic: vout {
-+						regulator-name = "p3v3_nic";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -1889,13 +1901,17 @@ i2c@6 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			p1v2_nic: ir38263-p1v2-nic@40 {
-+			ir38263_p1v2_nic: ir38263-p1v2-nic@40 {
- 				compatible = "infineon,ir38263";
- 				reg = <0x40>;
- 
--				regulator-name = "p1v2_nic";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					p1v2_nic: vout {
-+						regulator-name = "p1v2_nic";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -1904,13 +1920,17 @@ i2c@7 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			p1v8_nic: ir38263-p1v8-nic@40 {
-+			ir38263_p1v8_nic: ir38263-p1v8-nic@40 {
- 				compatible = "infineon,ir38263";
- 				reg = <0x40>;
- 
--				regulator-name = "p1v8_nic";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					p1v8_nic: vout {
-+						regulator-name = "p1v8_nic";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 	};
-@@ -2070,13 +2090,17 @@ i2c@1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			p1v05_pch_aux: ir38263-p1v05-pch-aux@40 {
-+			ir38263_p1v05_pch_aux: ir38263-p1v05-pch-aux@40 {
- 				compatible = "infineon,ir38263";
- 				reg = <0x40>;
- 
--				regulator-name = "p1v05_pch_aux";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					p1v05_pch_aux: vout {
-+						regulator-name = "p1v05_pch_aux";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -2085,13 +2109,17 @@ i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 
--			p1v8_pch_aux: ir38060-p1v8-pch-aux@40 {
-+			ir38060_p1v8_pch_aux: ir38060-p1v8-pch-aux@40 {
- 				compatible = "infineon,ir38060";
- 				reg = <0x40>;
- 
--				regulator-name = "p1v8_pch_aux";
--				regulator-enable-ramp-delay = <2000>;
--				vin-supply = <&p12v>;
-+				regulators {
-+					p1v8_pch_aux: vout {
-+						regulator-name = "p1v8_pch_aux";
-+						regulator-enable-ramp-delay = <2000>;
-+						vin-supply = <&p12v>;
-+					};
-+				};
- 			};
- 		};
- 
-@@ -3596,34 +3624,42 @@ i2c@1 {
- 		reg = <1>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		p5v_aux: ir38263-p5v-aux@40 {
-+		ir38263_p5v_aux: ir38263-p5v-aux@40 {
- 			compatible = "infineon,ir38263";
- 			reg = <0x40>;
- 
--			regulator-name = "p5v_aux";
--			regulator-enable-ramp-delay = <2000>;
--			vin-supply = <&p12v>;
--			vbus-supply = <&p3v3_bmc_aux>;
--			regulator-always-on;
--			regulator-boot-on;
-+			regulators {
-+				p5v_aux: vout {
-+					regulator-name = "p5v_aux";
-+					regulator-enable-ramp-delay = <2000>;
-+					vin-supply = <&p12v>;
-+					vbus-supply = <&p3v3_bmc_aux>;
-+					regulator-always-on;
-+					regulator-boot-on;
-+				};
-+			};
- 		};
- 	};
- 	i2c@2 {
- 		reg = <2>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		p3v3_aux: ir38263-p3v3-aux@40 {
-+		ir38263_p3v3_aux: ir38263-p3v3-aux@40 {
- 			compatible = "infineon,ir38263";
- 			reg = <0x40>;
- 
--			vin-supply = <&p12v>;
--			regulator-name = "p3v3_aux";
--			/*
--			 * 2msec for regulator + 18msec for board capacitance
--			 * Note: Every IC has a PTC which slowly charges the bypass
--			 * cap.
--			 */
--			regulator-enable-ramp-delay = <200000>;
-+			regulators {
-+				p3v3_aux: vout {
-+					regulator-name = "p3v3_aux";
-+					/*
-+					 * 2msec for regulator + 18msec for board capacitance
-+					 * Note: Every IC has a PTC which slowly charges the bypass
-+					 * cap.
-+					 */
-+					vin-supply = <&p12v>;
-+					regulator-enable-ramp-delay = <200000>;
-+				};
-+			};
- 		};
- 	};
- 	i2c@3 {
+And following is new register set for package transfer sequence.
+-New Master operation mode:
+ S -> Aw -> P
+ S -> Aw -> TxD -> P
+ S -> Ar -> RxD -> P
+ S -> Aw -> RxD -> Sr -> Ar -> TxD -> P
+-Bus SDA lock auto-release capability for new controller DMA command mode.
+-Bus auto timeout for new controller/target DMA mode.
+
+The following is two versus register layout.
+Old:
+{I2CD00}: Function Control Register
+{I2CD04}: Clock and AC Timing Control Register
+{I2CD08}: Clock and AC Timing Control Register
+{I2CD0C}: Interrupt Control Register
+{I2CD10}: Interrupt Status Register
+{I2CD14}: Command/Status Register
+{I2CD18}: Slave Device Address Register
+{I2CD1C}: Pool Buffer Control Register
+{I2CD20}: Transmit/Receive Byte Buffer Register
+{I2CD24}: DMA Mode Buffer Address Register
+{I2CD28}: DMA Transfer Length Register
+{I2CD2C}: Original DMA Mode Buffer Address Setting
+{I2CD30}: Original DMA Transfer Length Setting and Final Status
+
+New Register mode
+{I2CC00}: Master/Slave Function Control Register
+{I2CC04}: Master/Slave Clock and AC Timing Control Register
+{I2CC08}: Master/Slave Transmit/Receive Byte Buffer Register
+{I2CC0C}: Master/Slave Pool Buffer Control Register
+{I2CM10}: Master Interrupt Control Register
+{I2CM14}: Master Interrupt Status Register
+{I2CM18}: Master Command/Status Register
+{I2CM1C}: Master DMA Buffer Length Register
+{I2CS20}: Slave~ Interrupt Control Register
+{I2CS24}: Slave~ Interrupt Status Register
+{I2CS28}: Slave~ Command/Status Register
+{I2CS2C}: Slave~ DMA Buffer Length Register
+{I2CM30}: Master DMA Mode Tx Buffer Base Address
+{I2CM34}: Master DMA Mode Rx Buffer Base Address
+{I2CS38}: Slave~ DMA Mode Tx Buffer Base Address
+{I2CS3C}: Slave~ DMA Mode Rx Buffer Base Address
+{I2CS40}: Slave Device Address Register
+{I2CM48}: Master DMA Length Status Register
+{I2CS4C}: Slave  DMA Length Status Register
+{I2CC50}: Current DMA Operating Address Status
+{I2CC54}: Current DMA Operating Length  Status
+
+aspeed,global-regs:
+This global register is needed, global register is setting for
+new clock divide control, and new register set control.
+
+ASPEED SOC chip is server product, i2c bus may have fingerprint
+connect to another board. And also support hotplug.
+The following is board-specific design example.
+Board A                                       Board B
+-------------------------                     ------------------------
+|i2c bus#1(controller/target)<=fingerprint=>i2c bus#x (controller/target)|
+|i2c bus#2(controller)-> tmp i2c device |     |                          |
+|i2c bus#3(controller)-> adc i2c device |     |                          |
+-------------------------                     ------------------------
+
+i2c-scl-clk-low-timeout-us:
+For example I2C controller as slave mode, and suddenly disconnected.
+Slave state machine will keep waiting for controller clock in for rx/tx
+transmit. So it need timeout setting to enable timeout unlock controller
+state. And in another side. In Master side also need avoid suddenly
+slave miss(un-plug), Master will timeout and release the SDA/SCL.
+
+aspeed,enable-dma:
+For example The bus#1 have trunk data needed for transfer,
+it can enable bus dma mode transfer, it can reduce cpu utilized.
+Others bus bus#2/3 use defautl buffer mode.
+
+aspeed,enable-byte:
+Force i2c controller use byte mode transfer. the byte mode transfer
+will send i2c data each byte by byte, inlcude address read/write.
+
+v16:
+-aspeed,i2c.yaml: add aspeed,enable-byte properties for force byte mode.
+-i2c-ast2600.c
+ -change include asm/unaligned.h to linux/unaligned.h.
+ -add reset timeout councter when slave active timeout.
+ -modify issue i2c_recovery_bus before slave re-enable.
+ -add aspeed,enable-byte properties.
+
+v15:
+-i2c-ast2600.c
+ -add include unaligned.h
+ -rename all master -> controller, slave -> target.
+ -keep multi-master to align property.
+ -remove no used element in ast2600_i2c_bus.
+v14:
+-aspeed,i2c.yaml
+ -v13 change people reviewed-by tag, v14 fixed to original people tag,
+modify to Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+ -struct ast2600_i2c_bus layout optimal.
+ -ast2600_select_i2c_clock refine.
+ -ast2600_i2c_recover_bus overridden fix.
+ -dma_mapping_error() returned error code shadowed modify.
+ -buffer register in a 4-byte aligned simplified
+ -remove smbus alert
+
+v13:
+ -separate i2c master and slave driver to be two patchs.
+ -modify include header list, add bits.h include. remove of*.h
+ -modify (((x) >> 24) & GENMASK(5, 0)) to (((x) & GENMASK(29, 24)) >> 24)
+ -modify ast2600_select_i2c_clock function implement.
+ -modify ast2600_i2c_recover_bus function u32 claim to
+u32 state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
+
+v12:
+-aspeed,i2c.yaml
+ -add Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+-i2c-ast2600.c
+ -update include by alphabetical order
+ -make just a one TAB and put the last two lines on the single one
+ -remove no used timing_table structre
+ -remove enum explicit assinment
+ -rewritten to avoid this and using loop in ast2600_select_i2c_clock
+ -use GENMASK for most 0xffff
+ -remove too many parentheses
+ -use str_read_write replace read write string
+ -remove redundant blank line after ast2600_i2c_bus_of_table
+ -fix wrong multi-line style of the comment
+ -use macro for i2c standard speeds
+ -remove useless noise dev_info
+
+v11:
+-aspeed,i2c.yaml
+ -no change, the same with v10.
+-i2c-ast2600.c
+ -modify alert_enable from int -> boolean.
+ -modify dbg string recovery -> recover.
+ -remove no need to init 0.
+ -remove new line after break.
+ -remove unneeded empty line.
+ -modify dma_alloc_coherent to dmam_alloc_coherent
+ -modify probe nomem return dev_err_probe
+ -modify i2c_add_adapter to devm_i2c_adapter
+ -modify checkpatch: Alignment should match open parenthesis
+ -modify checkpatch: braces {} should be used on all arms of this statement
+ -modify checkpatch: Unbalanced braces around else statement
+
+v10:
+-aspeed,i2c.yaml
+ -move unevaluatedProperties after allOf.
+ -remove extra one blank line.
+-i2c-ast2600.c
+ -no change, the same with v8.
+
+v9:
+-aspeed,i2c.yaml
+ -backoff to v7.
+  -no fix typo in maintainer's name and email. this would be another patch.
+  -no remove address-cells, size-cells, this would be another patch.
+ -use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ -fix allOf and else false properties for aspeed,ast2600-i2cv2.
+-i2c-ast2600.c
+ -no change, the same with v8
+
+v8:
+-aspeed,i2c.yaml
+ -modify commit message.
+  -Fix typo in maintainer's name and email.
+ -remove address-cells, size-cells.
+-i2c-ast2600.c
+ -move "i2c timeout counter" comment description before property_read.
+ -remove redundant code "return ret" in probe end.
+
+v7:
+-aspeed,i2c.yaml
+ -Update ASPEED I2C maintainers email.
+ -use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ -fix allOf and else false properties for aspeed,ast2600-i2cv2.
+-i2c-ast2600.c
+ -remove aspeed,xfer-mode instead of aspeed,enable-dma mode. buffer mode
+is default.
+ -remove aspeed,timeout instead of i2c-scl-clk-low-timeout-us for
+timeout setting.
+
+v6:
+-remove aspeed,i2cv2.yaml, merge to aspeed,i2c.yaml -add support for
+ i2cv2 properites.
+-i2c-ast2600.c
+ -fix ast2600_i2c_remove ordering.
+ -remove ast2600_i2c_probe goto labels, and add dev_err_probe -remove
+  redundant deb_dbg debug message.
+ -rename gr_regmap -> global_regs
+
+v5:
+-remove ast2600-i2c-global.yaml, i2c-ast2600-global.c.
+-i2c-ast2600.c
+ -remove legacy clock divide, all go for new clock divide.
+ -remove duplicated read isr.
+ -remove no used driver match
+ -fix probe return for each labels return.
+ -global use mfd driver, driver use phandle to regmap read/write.
+-rename aspeed,i2c-ast2600.yaml to aspeed,i2cv2.yaml -remove bus-frequency.
+-add required aspeed,gr
+-add timeout, byte-mode, buff-mode properites.
+
+v4:
+-fix i2c-ast2600.c driver buffer mode use single buffer conflit in
+ master slave mode both enable.
+-fix kmemleak issue when use dma mode.
+-fix typo aspeed,i2c-ast2600.yaml compatible is "aspeed,ast2600-i2c"
+-fix typo aspeed,i2c-ast2600.ymal to aspeed,i2c-ast2600.yaml
+
+v3:
+-fix i2c global clock divide default value.
+-remove i2c slave no used dev_dbg info.
+
+v2:
+-add i2c global ymal file commit.
+-rename file name from new to ast2600.
+ aspeed-i2c-new-global.c -> i2c-ast2600-global.c
+ aspeed-i2c-new-global.h -> i2c-ast2600-global.h
+ i2c-new-aspeed.c -> i2c-ast2600.c
+-rename all driver function name to ast2600.
+Ryan Chen (3):
+  dt-bindings: i2c: aspeed: support for AST2600-i2cv2
+  i2c: aspeed: support AST2600 i2c new register mode driver
+  i2c: aspeed: support AST2600 i2c new register target mode driver
+
+ .../devicetree/bindings/i2c/aspeed,i2c.yaml   |   58 +
+ drivers/i2c/busses/Kconfig                    |   11 +
+ drivers/i2c/busses/Makefile                   |    1 +
+ drivers/i2c/busses/i2c-ast2600.c              | 1565 +++++++++++++++++
+ 4 files changed, 1635 insertions(+)
+ create mode 100644 drivers/i2c/busses/i2c-ast2600.c
+
 -- 
-2.42.0
+2.34.1
 
 
