@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-820-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-821-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01D85C021A4
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 10:10:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5241EC021A6
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Feb 2025 10:12:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1c1h25Nlz2ygQ;
-	Mon, 24 Feb 2025 21:10:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740391832;
-	cv=none; b=T7UiDo9fcodc7aby0+1QvEs4kymv7gNxQjftfv9FknHOMZM3+ii064FUIA7Esg6wEf7ONr2uZB1ckUUPPqRchZMtAEnpz9jifR1uULanmhCniFulYAW6/Z/bEvsuvcLqpoN338Sba64cip2jIJTehW7F4RuTq0hlqRDk9iUAmWMQ1KEApCmjOF6cyLxm7GFJRUc+WgtcjVpcC2trIOvIOlPEIszVsP8b/JhJeAkYZmEuDfPUJTVSY+g+NBqBeqs1lvGb4sj0FfW1yhMzwjZa7bxm/b/bnOXzJ4rw2MWZh3vFoNmx414nG2fyMABpCQwYAK8mtDhhVvLSa8+w5+RdHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1c3q75Wbz2xKN;
+	Mon, 24 Feb 2025 21:12:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740391943;
+	cv=none; b=LU8tFvRuAoP2lqr0LcV5L6BDDbMmAesA+9WsjIUMp1ksCeVV1ZNezUDH7W0o+49zB2evlB1fMw6hcecr97iHhntNMOOMI7C33CQ1yRixnMJxJy+jYNrY3Ixr3IkDSAWQ6C479zoAq6VJXUcRrta+RrTuws6J/d2IZVhv87k7qyK+aEQgclcfFSYzNW2Ml8PrfNDwXX4BCM9vDZXbN2xCvZN0/qO+kx9IhbqxoBIKtwKS6IzG8J0AzyP7P9TL1ZczyGN9WQhso+Wpu7tV1LKmaA3bDUlagMj/AFSk83Vf9mTax8giphq41CC/9goetQ+2wXKvkxI/OC0TK380wD12KQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740391832; c=relaxed/relaxed;
-	bh=DvJwUyMDFoD/t47CtZ9qRo15ppjYqfFq4nxVSrhI78Q=;
+	t=1740391943; c=relaxed/relaxed;
+	bh=UkuR2aUQ3YGlD8BMUU05CYVfaZCuUHd9VHCQOYO2I4U=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=bgg9qByVBof6mosJ5DUr+SJ/IN9ZYUujgxSzpAZax4Cg2gI0Fv7q0CfnYQt8dUlO49xEYKdWMFD3QP1dxMh1qj6TQTrBD+lfCSBBJJWnIRnFVXHoPCfPyuXYIS/xxSzLWI8NhNKvh4Y4lV/jl4VOi3J4Xai4RL0jgJOlxQkfvvLVD63M53LnOmCgmzY7mZbhVMYkLN9UXL+Ela8QK8/iu3wve+qjKWUJw81y3DnpCr4Ztj0Rl9pz3Ob7LDK3wgHpZTFpVpboK/ZS5avCLR2jGbDthvDak7IDWzU/W/d6BEa5cfkPKGzqGZ3EOcOkQV80P2kWRzdt8kNug/z2992kog==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Gaav39Br; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=aGz8XjUPPa/8AI5/JVQBRHHeT6frrbcZGueef5f6z+tpuWu0jJqsBg29IvIPqn3gMk7Pd5vJMKqjMPPJkiNMQrSUT6J7XQj1KHVps3TmrJEp1ZqLz1p8nlA/mPlyMxLucH87WQZDGUkRqPWrjVYxSlXeqhgfBbtyeLuuiT3RD+poDg8klDc0ncTOtJUdoB4H3q/Q8HmCq+cD+UKPADceHpc77aF7kiwWKHhXly8iGAN/1Na+QV6u8QBq9aSDTevWOx8qzO3tlgqcDhhwXPxxHmggXd9Vh8nE44J9Zv6NqeXfpJY2kb86UVu0pCuJw4m7OPCTYhlMubC4Y98cz751nA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nuT1086/; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Gaav39Br;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nuT1086/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1c1g15hCz2yVv
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Feb 2025 21:10:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1c3p73Kxz2xHp
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Feb 2025 21:12:22 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6F8BD61189;
-	Mon, 24 Feb 2025 10:10:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDE8EC4CED6;
-	Mon, 24 Feb 2025 10:10:24 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 2579B5C6150;
+	Mon, 24 Feb 2025 10:11:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E632C4CED6;
+	Mon, 24 Feb 2025 10:12:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740391828;
-	bh=nGIgI5Cm6+5BTpZFR8Wf9vbZLwRowF8CBnVRRVc2t4s=;
+	s=k20201202; t=1740391939;
+	bh=PCYrjtUGVCNWA2UVJ7z9lylraitHnr5rIdAHSEZtMNk=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=Gaav39BrdspeY62DXl0BvVCSbwBKXiuf/w7Cu3HImF8o1tsU+wA3P7cF16KWVpVUb
-	 3Zlt4E8NROAwG0DhJCe8Tcaet7K9+bLxiDGFhPb5+NtMjOc2HIxQOCzvyqei1K9fMI
-	 Q/wqenyTdrE229v+TICaIdNTnqXbROoE6lQNm+aJEwJ/dQGpq2zTn6DJ5R59eC1c4E
-	 mw3KT4q+kY3oehIiECukwYmo+BhM8g27Z0cc2oZV4zgyQ3qw/GX/LoRfzIk01OmL6j
-	 4qvt80OZLcGMl4Lp/5HdkVBPeDXw4TaS4mC56aNRQGMLGOq3ae4SZsLETVuNstiU6k
-	 9MQwpZe0XDiug==
-Message-ID: <f810b8a2-4261-4b68-b59b-4efa0219b5db@kernel.org>
-Date: Mon, 24 Feb 2025 11:10:23 +0100
+	b=nuT1086/FaATtLmemWY7kOIECVttghSCc4222D9Ldf9XVKoYAoTvqQy3s/KaSB3IY
+	 81PTkl2QIEWMA6zZM6BI5P6wZfDYoF1AnzNc6SKBdP9JEwYsdeW9BGnfgPeU2TAYMl
+	 mCHCT8linYBKLN8VQ6+l7EsAKaRYomEfkzZXVL2D2/wgVXYHB8r0p5Ba4367zLL3Qb
+	 6gxNP4F/yPnPsjwUjcjOZ4VQsQAWdvLGCJ3nlwEq/DmgRfj8p9zNSWiQbxFq/XnPSF
+	 GYSfBHYuATnubYut9uyyOqywvuJ8UMNofpuPAQMWbh5Vsu1z5174dT8BfsZ4/JmvVq
+	 s0DtFT/+KuHBQ==
+Message-ID: <71cf8012-3b77-43de-b8ac-54c84a97f9d3@kernel.org>
+Date: Mon, 24 Feb 2025 11:12:13 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,8 +59,8 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v9 1/3] dt-binding: clock: ast2700: modify soc0/1 clock
- define
+Subject: Re: [PATCH v9 2/3] reset: aspeed: register AST2700 reset auxiliary
+ bus device
 To: Ryan Chen <ryan_chen@aspeedtech.com>,
  Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
  <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
@@ -70,7 +70,7 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 References: <20250224095506.2047064-1-ryan_chen@aspeedtech.com>
- <20250224095506.2047064-2-ryan_chen@aspeedtech.com>
+ <20250224095506.2047064-3-ryan_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -116,25 +116,66 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250224095506.2047064-2-ryan_chen@aspeedtech.com>
+In-Reply-To: <20250224095506.2047064-3-ryan_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 24/02/2025 10:55, Ryan Chen wrote:
-> -remove redundant SOC0_CLK_UART_DIV13:
-> SOC0_CLK_UART_DIV13 is not use at clk-ast2700.c, the clock
-> source tree is uart clk src -> uart_div_table -> uart clk.
-> 
-> -Change SOC0_CLK_HPLL_DIV_AHB to SOC0_CLK_AHBMUX:
-> modify clock tree implement.
-> older CLK_AHB use mpll_div_ahb/hpll_div_ahb to be ahb clock source.
-> mpll->mpll_div_ahb
->                   -> clk_ahb
-> hpll->hpll_div_ahb
+> +
+> +static void aspeed_reset_unregister_adev(void *_adev)
+> +{
+> +	struct auxiliary_device *adev = _adev;
+> +
+> +	auxiliary_device_delete(adev);
+> +	auxiliary_device_uninit(adev);
+> +}
+> +
+> +static void aspeed_reset_adev_release(struct device *dev)
+> +{
+> +	struct auxiliary_device *adev = to_auxiliary_dev(dev);
+> +
+> +	kfree(adev);
+> +}
+> +
 
+Every exported function *must* have kerneldoc.
 
-I can barely understand it and from the pieces I got, it does not
-explain need for ABI break.
+> +int aspeed_reset_controller_register(struct device *clk_dev, void __iomem *base,
+> +				     const char *adev_name)
+> +{
+> +	struct auxiliary_device *adev;
+> +	int ret;
+> +
+> +	adev = kzalloc(sizeof(*adev), GFP_KERNEL);
+> +	if (!adev)
+> +		return -ENOMEM;
+> +
+> +	adev->name = adev_name;
+> +	adev->dev.parent = clk_dev;
+> +	adev->dev.release = aspeed_reset_adev_release;
+> +	adev->id = 666u;
+> +
+> +	ret = auxiliary_device_init(adev);
+> +	if (ret) {
+> +		kfree(adev);
+> +		return ret;
+> +	}
+> +
+> +	ret = auxiliary_device_add(adev);
+> +	if (ret) {
+> +		auxiliary_device_uninit(adev);
+> +		return ret;
+> +	}
+> +
+> +	adev->dev.platform_data = (__force void *)base;
+> +
+> +	return devm_add_action_or_reset(clk_dev, aspeed_reset_unregister_adev, adev);
+> +}
+> +EXPORT_SYMBOL_GPL(aspeed_reset_controller_register);
+
+No, you cannot export functions without users. There is no single user
+of this, so this is not justified at all.
+
 
 
 
