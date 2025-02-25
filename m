@@ -1,74 +1,75 @@
-Return-Path: <linux-aspeed+bounces-840-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-839-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 370D9C021B2
-	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Feb 2025 23:01:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E39FC19777
+	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Feb 2025 23:01:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2Y4Y5dvWz30gC;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2Y4Y3d0jz30W8;
 	Wed, 26 Feb 2025 10:01:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740522197;
-	cv=none; b=OE+iPjyg87G7gC3zGS9nr6ia/Dl7o2H5kOkBX+BzhsbQsio/nq667013ZM+xXNX6kbTNUeRBjo3zKdvfNhm3de3TpiUNKl1ftKpkrZuh5SDlaF5ilK46OJdjNtDjKfFBbDKVKRbjje65I83A3c7rvlae1k+2hXzG2j/6gFujIjXNcEzkBEe/tvi601aB6XLjWr+l67FiPJuU+iER7yiqavc4/1cyYN0HVsT9lIEWTLUmeGI2AncO7RFFqaA0sRTnUfywnakTPZxnphz52Q5v7XeeUMQVAAQjDJS55vyUOcG63kq1pkXYpeuMxSsxrNEZKqGtWN19bVzBS2lCK12i7g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740522089;
+	cv=none; b=J31V8bBoryzqqd6z84j3ekBPoiiMEKY5HRwaXHFhBuwq1aSOh0YS0dk4jEk4xSFCqaBYdECny4eABghQWc1xB+UxsWj86G1PGN7aST96iuy6CWM1lvBqXtBii5JVXC6bPWsawwQ0SRNLNA7YPwW3jmHgYNSp4OCZYfvjPd4YBR9A39eZRB00z5jYwbMAcmwAZwp7P9AcrLEQwlbEmHF8eOixxgVgfQzR6YShGdiERr/PLOhqHF5kzul0kqwpjAPWNvmio2+gC7GDAPRzhB8P5QlJa8CnVrK/n+TgVZ3tHjCsl2jK/HXV4iNuVU+MWQIwLu6Uasj/0LT1gIvuHgCNKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740522197; c=relaxed/relaxed;
-	bh=4YKTxXn5l9L/3067x1ZnZ8w6M1gB59GICvb9XtTgB0s=;
+	t=1740522089; c=relaxed/relaxed;
+	bh=fXC/g2hx4+SuKNdvLb6DJYqgd3Fo4tqg7uIP9fRKLiE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Plj6kSh4uoDvrq4lIkyd6fOHxNdjfxbLQ74KDDNf0aUA4Ru0nUZijejvEkf4l/5nCQTfN9fdc225eCddrstukBjrdeHNUUjfUvP0r2TrsPn3zp/IFKc8S5e3PDjn5V1S59k9twY5+yT2Bf3JsYbE0cfwV4XOnPxt7cfj3O8J2wlXJ2RnYPWpWtxnRJdrOe9uKYb4r1IgWl6rJy6SkzOWFRCoT9RYapUeGQoaKVjbFUl4cm6yXORekeLfspsfU2HG0fV481VV8byBl0S6jA/RXFMm93mAm+LYUBaPA7cjcAbPteSe+wAlHoIbSwRlERSSjTpEv86NMI6gwrtAJDCgbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LC3ir0+O; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LC3ir0+O; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 In-Reply-To:To:Cc; b=BqvIZbX9I7g4LsfAZyhGj1WHsB3q3AYGJoOLthNOGbMuE/Jq67vWE6OHtNcXH7qTED074gSgxvs05BIn3/OsidFtPLVqj3WuhXEQjRF0xm+Q0qywM5LtAmDBH9QL6bR53FD9cbixIGspnv9DRO9zKZVU3PLUFJVthricvrxxnKd724HUDs5F4nU/C/fK8ICTcSvj48xGgLDmaJ2XglBCT++tapgvj1eayY1XOIZdhofpuJAY4jmwFmOh7wP4vou/ax4RDnHkiS8FwKk3h3VrOilfZinVCrsJNm+AHm5YVLUpPi3uuA6t+jnLo/h+WxXIuBZJq7KYGaTodpL+SejLLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BszB7H4F; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GmvbTF85; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LC3ir0+O;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LC3ir0+O;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BszB7H4F;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=GmvbTF85;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2XDh5qjdz2ypD
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Feb 2025 09:23:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2XBc4TG9z2ypD
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Feb 2025 09:21:28 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1740522194;
+	s=mimecast20190719; t=1740522085;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4YKTxXn5l9L/3067x1ZnZ8w6M1gB59GICvb9XtTgB0s=;
-	b=LC3ir0+OZKAoIFN09kk7QIu3MUoz2vSTyEdNft0hRwMd0ptV/NW82p4k+JAWm6Glyqc6pZ
-	JxRt/2wPaoLjhBng/0k7NHz6gPVL8BH0R5B49IY1IAPQecE9VM+35JbOHnQ4D3nnsrtAGr
-	wLNTD5jp0yFzi5kmzqCfN2FpA6r+gzk=
+	bh=fXC/g2hx4+SuKNdvLb6DJYqgd3Fo4tqg7uIP9fRKLiE=;
+	b=BszB7H4FDobu7H+mn44IRxGH5koLVzhYQz0X1yXXJvSF4GATN1fvISQrvkO10nXZMqpxl5
+	RIOvC01RMn8cT6k8zyQAjVcsUebY6B5cN3e3VHnnlKz54yQZXtTul8z2i8hwW7gXR5pi86
+	BxHi7ubi1OGrsQzWVqtvVVOOtCOgTO0=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1740522194;
+	s=mimecast20190719; t=1740522086;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=4YKTxXn5l9L/3067x1ZnZ8w6M1gB59GICvb9XtTgB0s=;
-	b=LC3ir0+OZKAoIFN09kk7QIu3MUoz2vSTyEdNft0hRwMd0ptV/NW82p4k+JAWm6Glyqc6pZ
-	JxRt/2wPaoLjhBng/0k7NHz6gPVL8BH0R5B49IY1IAPQecE9VM+35JbOHnQ4D3nnsrtAGr
-	wLNTD5jp0yFzi5kmzqCfN2FpA6r+gzk=
-Received: from mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com
+	bh=fXC/g2hx4+SuKNdvLb6DJYqgd3Fo4tqg7uIP9fRKLiE=;
+	b=GmvbTF852TUOG1bpkfxbwa73GWIZPpOA4NJwUjOmzbSTTA6mcoSae+FprQDkLQWIyQ3w/D
+	XbJALYieTGamXDVeEsHi0h7ZH6VlaJkKUqEPJwLUgy9GtLtW//WSeGd7aoCyXsRxSHYRix
+	Lea3pqw0Uxs9FH1h5mTI3ub7nPHO0Ns=
+Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
  (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
  relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-513-oa49bnmHNVqMO6CG_JqJbQ-1; Tue,
- 25 Feb 2025 17:23:08 -0500
-X-MC-Unique: oa49bnmHNVqMO6CG_JqJbQ-1
-X-Mimecast-MFC-AGG-ID: oa49bnmHNVqMO6CG_JqJbQ_1740522183
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-583-KyhcA59cM1-BWPF_GwZ8XQ-1; Tue,
+ 25 Feb 2025 17:21:20 -0500
+X-MC-Unique: KyhcA59cM1-BWPF_GwZ8XQ-1
+X-Mimecast-MFC-AGG-ID: KyhcA59cM1-BWPF_GwZ8XQ_1740522074
 Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mx-prod-mc-04.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id D68F01903085;
-	Tue, 25 Feb 2025 22:23:00 +0000 (UTC)
+	by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 2B59918EB2C3;
+	Tue, 25 Feb 2025 22:21:12 +0000 (UTC)
 Received: from asrivats-na.rmtustx.csb (unknown [10.2.16.79])
-	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 4D5CD1800357;
-	Tue, 25 Feb 2025 22:22:51 +0000 (UTC)
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 2DAF9180035F;
+	Tue, 25 Feb 2025 22:20:59 +0000 (UTC)
 From: Anusha Srivatsa <asrivats@redhat.com>
-Date: Tue, 25 Feb 2025 17:20:53 -0500
-Subject: [PATCH RESEND 12/12] Documentation: Update the todo
+Date: Tue, 25 Feb 2025 17:20:42 -0500
+Subject: [PATCH RESEND 01/12] drm/aspeed: move to
+ devm_platform_ioremap_resource() usage
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -83,7 +84,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250225-memory-drm-misc-next-v1-12-9d0e8761107a@redhat.com>
+Message-Id: <20250225-memory-drm-misc-next-v1-1-9d0e8761107a@redhat.com>
 References: <20250225-memory-drm-misc-next-v1-0-9d0e8761107a@redhat.com>
 In-Reply-To: <20250225-memory-drm-misc-next-v1-0-9d0e8761107a@redhat.com>
 To: Joel Stanley <joel@jms.id.au>, 
@@ -126,51 +127,54 @@ Cc: linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
  linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
  linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, 
  linux-doc@vger.kernel.org, Anusha Srivatsa <asrivats@redhat.com>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1740522045; l=1573;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1740522045; l=1480;
  i=asrivats@redhat.com; s=20250122; h=from:subject:message-id;
- bh=/15qlsboM6yCAvaydvQcsEN4W06HB6cK0UlxWA8+/dI=;
- b=ctwB++vs/uJo3W74tDO1hgYWH+/4RjK1rS8II5NkImDP6J2u1dRysoaEir8KpfcS5eR2mtRZk
- klKUEMHenKeDWvB9gJk66H8NhG2Mti3PcGp+7DJwrN0qR8FJ1Dt9Wf3
+ bh=Ji2upCwA2YC69EXYhE7xdrMWzAZFX1xUI3aJsw8TVlU=;
+ b=DdfQ2GZmNJIAnLQLuMwyCjQyCNxnWwAGvIaThNcrvWSxsm+dwd/vHuHsmVFm/giZCmo/zRMpW
+ jYHBm++WaPQAHFDQoesclZIx86uVez3dOkR1k3aY3PejKo57J/l+FxU
 X-Developer-Key: i=asrivats@redhat.com; a=ed25519;
  pk=brnIHkBsUZEhyW6Zyn0U92AeIZ1psws/q8VFbIkf1AU=
 X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
 
-Update the Documentation to be more precise.
+Replace platform_get_resource + devm_ioremap_resource
+with just devm_platform_ioremap_resource()
 
-v2: Update for clarity
-v3: Further details in Todo
+Used Coccinelle to do this change. SmPl patch:
+@rule_1@
+identifier res;
+expression ioremap_res;
+identifier pdev;
+@@
+-struct resource *res;
+...
+-res = platform_get_resource(pdev,...);
+-ioremap_res = devm_ioremap_resource(...);
++ioremap_res = devm_platform_ioremap_resource(pdev,0);
 
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Joel Stanley <joel@jms.id.au>
+Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Reviewed-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
 ---
- Documentation/gpu/todo.rst | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/aspeed/aspeed_gfx_drv.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
-index 256d0d1cb2164bd94f9b610a751b907834d96a21..c57777a24e03d91b1ffe04365f7356f2d938befd 100644
---- a/Documentation/gpu/todo.rst
-+++ b/Documentation/gpu/todo.rst
-@@ -441,14 +441,15 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
+diff --git a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+index 397e677a691c2c6d199063f44358196a4569b389..46094cca297479d1cf19f6db99538c5e7a0fec92 100644
+--- a/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
++++ b/drivers/gpu/drm/aspeed/aspeed_gfx_drv.c
+@@ -144,11 +144,9 @@ static int aspeed_gfx_load(struct drm_device *drm)
+ 	struct aspeed_gfx *priv = to_aspeed_gfx(drm);
+ 	struct device_node *np = pdev->dev.of_node;
+ 	const struct aspeed_gfx_config *config;
+-	struct resource *res;
+ 	int ret;
  
- Level: Intermediate
- 
--Request memory regions in all drivers
---------------------------------------
-+Request memory regions in all fbdev drivers
-+--------------------------------------------
- 
--Go through all drivers and add code to request the memory regions that the
--driver uses. This requires adding calls to request_mem_region(),
-+Old/ancient fbdev drivers do not request their memory properly.
-+Go through these drivers and add code to request the memory regions
-+that the driver uses. This requires adding calls to request_mem_region(),
- pci_request_region() or similar functions. Use helpers for managed cleanup
--where possible.
--
-+where possible. Problematic areas include hardware that has exclusive ranges
-+like VGA. VGA16fb does not request the range as it is expected.
- Drivers are pretty bad at doing this and there used to be conflicts among
- DRM and fbdev drivers. Still, it's the correct thing to do.
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	priv->base = devm_ioremap_resource(drm->dev, res);
++	priv->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(priv->base))
+ 		return PTR_ERR(priv->base);
  
 
 -- 
