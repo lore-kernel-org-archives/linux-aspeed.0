@@ -1,171 +1,76 @@
-Return-Path: <linux-aspeed+bounces-825-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-826-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE712C021B6
-	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Feb 2025 02:21:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA3E2C021B8
+	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Feb 2025 04:27:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z21Z21hZXz30RG;
-	Tue, 25 Feb 2025 13:21:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2011::730" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740450090;
-	cv=pass; b=kxVYQHUmXfaeYjYOzPQQ9rzLRJCoNEBFQXvxVjLelHTC9BYeLjdZo3zgndKkCKnGJuhct4GFEtIh3Ly3wYWsESW78k1S+ySJWfu+NQyYJ8gt/8OcTPFPjy0wYuoGqcAjxd+5/XeK8XPcbb+X9XKW57BRMMk9L042n3U+FCgySZR9jeFRzK+q8urpIBDJ0k29mhuYfiEI1I3dibnl6ahb85EEDtvKDooQQceaB6rfx77UIu0wnncmSsNPteaLKRxYIIGByKxd6FiIYe9vXojOHvi13NEncbfQ993RPBXys7y56Q9KU6C05WRh4qr8Fy3hx2ClZiKT3VAPPkGyIuNcNA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740450090; c=relaxed/relaxed;
-	bh=yzJ3iClFvILCnOxYAiHuxuyy30BWs3SNFhxPNsPjHFQ=;
-	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=DeFy0GKq8T1sy9bDoKJwwcrPlwXdxA5k16qAQUBcc1392S6a1JskBpvOieHQyPKH1gaTjwL1qI0lBiYoebkfyFpmBi7A+FpTTn7ZzdoDUN3yHdWjpIIKplcLzJ64VOCsl0ncazz2uK3txpc3trwcNv1da4J2ipo7tbviFUOs4I87K3oWrh0G3MusA2BP5Vd21Lb+TaCH6rXBDk+qCFn3QeOdrLkRkdxXdg1NNuQ2hiTz40mQdKRf+y18FOsN0w29+F8S09pZVCCE/69xun9ew09I8pdT3EYeSb/HDSXYb8PUKoI7zp9O43QgeEtSdgRiXMSjexxtxF6BlszIvZCh1g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=aspeedtech.com; spf=temperror (client-ip=2a01:111:f403:2011::730; helo=apc01-tyz-obe.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:2011::730; helo=apc01-tyz-obe.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from APC01-TYZ-obe.outbound.protection.outlook.com (mail-tyzapc01on20730.outbound.protection.outlook.com [IPv6:2a01:111:f403:2011::730])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z24MW2Rtrz30N8;
+	Tue, 25 Feb 2025 15:27:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740457655;
+	cv=none; b=fSjIHv726tuET4YEbrKIGE2X/FqSNTkIRaPA0JOqxE/k57N7+ADofP7tHPmJoudYznSJWN78XwcmiriZKQsn3zfmE28PEdHxjCDXH7Xh0JO+OTJR3Mo1Sa2zLrZ4HoEazM3+25yc40hMUgLkN36fgB0G80OLYF6DSk96NNnOUiGpGyBltBaJTjYlP/glG85OWOy0JLjBmg31SbaU+qHGYn7gsqDAU+i+aLt+frogdmziNTTPt/lpc/g3dWqCq2zgrvowG3ss+KkdK+mynnnYn97uYS5Joe6+uCwqX3ROUbD7n3Nou4hGt/gwMY/3gQaNzRCCEdx+jIgVCI0XQztnXA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1740457655; c=relaxed/relaxed;
+	bh=tBq+uED9VcLqvQWo73iw5X2/Rdc3ERYOyoMS/2j02eE=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=kVWlMnGevhC0RDFvP0NTQMNwRdroRRbM8KbiVDf8QKdgZWjTYfl4wF9J+5Fbm+dA5nKUI2sTxlYQop/wSf4FS/tMMJ5gufhWCx1KHJB60nT7qzXQ6NlPGKp1FAM/o2i88xCH5aWD+b/8llXa3QD/pqOwvH1kF1oRlKRPgJRK8U+sGLfzZiuQD38+n316pSZrbulOuRTB3TR15lwaEkfHbaIz3yIIPUiptM0s51vdeyznARucj3AZ3piB9BiZS1fyZRAhHK1Zu4fS5VhzxPEmDGuml3i33lNPytKa2qdkala8erBMHt5GkoqlFUc0uACZrAHrDgEj4OgB5NpDUyNRpA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hMwkPLVt; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hMwkPLVt;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z21Yg6ZYBz30CL
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Feb 2025 13:20:51 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=REAwoqTjUMD9QDHf0r0hkX6iKuP+jLaU7cmBBxNdRFu426iKFe+zcyxpQIv201kycEktkUsb8m44U11CAgaDV/OEVSTrFbVuw7UtitEJcP7bxqAYS8KALjIASygTYO5tvOwLn5T3cl7EUpa+/seCEo0grvIwdJkUl7a0jqs7esYoORu5J0lzul2bMfoQ46jJzr4o6C96gUMBc2okHPEkpby3IQ1z7EK3EVRoSUysm7X60wZsq6ouf86bRgwjjwFn7nVdZfHLP4nr3dRaEtFm/wVS7cI/d4kIjDevlyiZOuyTYBt1XdIbeDGOJAD1ymrQi3LVGrUjEecyYUo+72ktcw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=yzJ3iClFvILCnOxYAiHuxuyy30BWs3SNFhxPNsPjHFQ=;
- b=kSlT7CHYkeJUaY2a3/qG/v4ifFChCUpvAqG/h4yI1efUDRZHdmlyFYXINy967YtUpBSW4hOeh9ECZV4ILeNkL0as1ly6pftUcIHt+u22Fw+hoym6aAzL228DDOUT5eEEWgQCtr3WkJXJCcTR13Gd81yOEVCnRN21g3LjuIWl10udgE+nCeFupCHGOOybL/WzIyHDA5bjpG+AJY0atsF8QpBVIbkbxn6q3aEXyiYRUewkFGji0RocOqmOnbMVnUYB182V1VOwjAEOTPnqPawbnuGh0vOw7JWjh0UljKVUiTYNsEr4PFkx+aPJxFaccXAmmpojOSFYYFsaepgcWJV15Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=yzJ3iClFvILCnOxYAiHuxuyy30BWs3SNFhxPNsPjHFQ=;
- b=QFywBCwGKzgSSXwOxkQoUSv5ZvXfMtPprdrLTrJVhXz6QBudbVde04xipTlCAvvqVbWh3YVJmD0ka67uTOlTx7mX0azqF+O8Q6q7kGbioBm4QZvQIMGETW/rRubFthRKdMvX2ABem+1lcGjOKVRNnL/HQ88l7n5fXhlvMx34RzUJAvhy9B39lWOWKGFxOIj2ROHLWqhDt3SvckVPGVOfby9Ipw6YsHLjunUWumZdzG+USX2/oOd3SDcO+drvlAkFOtufgpkumSaF8djqzIXhpWAB+IeLWGs5OPYRjlBb4H6hl8oPiWvBSEnbqR27y82z4ahQU00NQ4TqJYinS/3vlA==
-Received: from OS8PR06MB7541.apcprd06.prod.outlook.com (2603:1096:604:2b1::11)
- by SEZPR06MB5174.apcprd06.prod.outlook.com (2603:1096:101:70::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8466.12; Tue, 25 Feb
- 2025 02:20:25 +0000
-Received: from OS8PR06MB7541.apcprd06.prod.outlook.com
- ([fe80::9f51:f68d:b2db:da11]) by OS8PR06MB7541.apcprd06.prod.outlook.com
- ([fe80::9f51:f68d:b2db:da11%7]) with mapi id 15.20.8466.016; Tue, 25 Feb 2025
- 02:20:25 +0000
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-To: Philipp Zabel <p.zabel@pengutronix.de>, Krzysztof Kozlowski
-	<krzk@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
-	<sboyd@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@aj.id.au>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
-	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v9 2/3] reset: aspeed: register AST2700 reset auxiliary
- bus device
-Thread-Topic: [PATCH v9 2/3] reset: aspeed: register AST2700 reset auxiliary
- bus device
-Thread-Index: AQHbhqIysbDNMgzGf0K86faa5MrsmbNWO+CAgAAA44CAAGf+gIAApJmQ
-Date: Tue, 25 Feb 2025 02:20:25 +0000
-Message-ID:
- <OS8PR06MB7541E77E1EA78D658E5444A6F2C32@OS8PR06MB7541.apcprd06.prod.outlook.com>
-References: <20250224095506.2047064-1-ryan_chen@aspeedtech.com>
-	 <20250224095506.2047064-3-ryan_chen@aspeedtech.com>
-	 <71cf8012-3b77-43de-b8ac-54c84a97f9d3@kernel.org>
-	 <d5d90f03-3db8-4f90-baad-0be4f3d3e0ea@kernel.org>
- <b00aef9582e223a5770cebc714ad65168eab744b.camel@pengutronix.de>
-In-Reply-To: <b00aef9582e223a5770cebc714ad65168eab744b.camel@pengutronix.de>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OS8PR06MB7541:EE_|SEZPR06MB5174:EE_
-x-ms-office365-filtering-correlation-id: e1314db8-5104-40b1-979d-08dd5542f6f3
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|366016|376014|7416014|38070700018|921020;
-x-microsoft-antispam-message-info:
- =?utf-8?B?dlM2U0tpVzh3ZnE4WUVvL3ptbkN3VmNvdXB2NU5peVJiVnZDdUtxZGNlbHgz?=
- =?utf-8?B?K0kzY3kvQXJEODI2RXU0akNEV21Sa2NMRjhwanZybTZnME5rREN0ZFNlL2pa?=
- =?utf-8?B?cWJYZ1B3bzFBbGo4N3daWWNiaEwxaHNsVjhkd0JRU3JsdGFaWnNNZ2p2R3FD?=
- =?utf-8?B?OU05WjA4SVBXL0lLZllCZlpieUtLVDdSYUpRYTdRYVRXODJWemdqUFZKWlFv?=
- =?utf-8?B?U1AzZXhkZU9rNVBWTlV3VWt6OEFHNmdEZVVQRWp1N2J1amJ5bDhUVzUwRnk2?=
- =?utf-8?B?K0hxYWxIMzlvREVnWHBtWCtKQ0VtNnkwTUYyRXJTSk14WHI1cUVaWnhDWWMx?=
- =?utf-8?B?UWpXa1F0S1diWlM0Rm40Z3RHOGkxQjdpdFRYZ1hSMXluU3V1bUtsZVJzWmpP?=
- =?utf-8?B?d0VDVmw0V0MvZnNQZU9WMmt1bitmYnBpbGdCZ0xwRWdNUGN0aG0vSVcrKy9Z?=
- =?utf-8?B?N2NSVlNibXIwa3dqSGRMb21tYW8rTkVwTmQrQ3N6cldKcWJLbThYa1ZxYm85?=
- =?utf-8?B?QmkvMGpkSEMwNDczMFdVOC9pQUtKNzdBNzJHdENFNXZjSVFkbkMwdXVBc0tN?=
- =?utf-8?B?NG55YU0rWkJkTXRreXpZVFFhSW9ocXc4ZkFnVDNkNVdyV3VGbitkcEdxOG1W?=
- =?utf-8?B?QnFYRmdiREJXK0hJVFFnTHo2dkhDRmYvT25JN0ZKQXhZN0ZPeXpKbjltUjZT?=
- =?utf-8?B?bE1EdnAxNkJoUFliVklOQ1N4Wng3eE13UDBhSHMzc2x2RHNvMFA2NC9HMUlv?=
- =?utf-8?B?d1NrTVVYYlpUSUJNZXh3eFJxb0hFZzhlU1dic0lWT1RRRW1FY2NGZ0ZtSXl2?=
- =?utf-8?B?ZEJxbGptNnNrZEVBdUFZRWtHc2ZMV1J0OWlkUjVFQ1lBZDVRS09yR0RnNXNa?=
- =?utf-8?B?WFhRM3l5aHdRaDkvYTllNWNNUXIxbmNvc3lNYTBQTDQzOUJmYVUzMEV3MnNM?=
- =?utf-8?B?UUZLbzN2N1BLQVRXTTlaMUJtTXBHdVZtZFZlZzhDVkRuVEpXbWdSWENMYklr?=
- =?utf-8?B?QzlhSnBPVXcwT1MvUHY2UWZEekliKy9CVENMT1RhNVlLSDh0bjB6ZWxmTHhm?=
- =?utf-8?B?YS9FT0szYmUrV0FFK1V0YS9NTVY0TWVvblBUVDYzSDFSQTdNNDZCL0JMMlFM?=
- =?utf-8?B?eFJSekFGOUl2RE5MVkorWWpsTkRqajlrOUQrQWdLWXo1MHZyOCtzbHE5U0Rs?=
- =?utf-8?B?cXhNb0tIYmZnc3dWSC9hV2d3a0srOVhxUFNEZW16V2JYVmI4bEdXczdXSGp4?=
- =?utf-8?B?QmY2eWN1cW9zbHc0eUd5dTRRZ092clBiZnpJYU9LVjNJcWFBTlZFOG9VOEty?=
- =?utf-8?B?anNabzhOUGdiUXJJNExQVzNYYTlQZ3pBSmMra21qQ2pOQi9jM2lxUlhyZ3lh?=
- =?utf-8?B?NitBVEE1a1ZPTTZUdHo0VS8za1NiTlpsd1FnRnFhMng3S1BSUVp3YU5VSkdF?=
- =?utf-8?B?ZDRleEd2QmRVNVRsOHpYNU9xbTE0Zk5VMUpvKzdGcjVmY2UyaHVnc2FtL3Jy?=
- =?utf-8?B?R0lNKzJTOFUxVUhpSXBCVG8vNVM0UkxJaHRXWWk5emRjU0dRSDRqekVoRzFv?=
- =?utf-8?B?ZW5xdU1kU1UzNUM0c2liUjErdmR1cVdIVHNSWWM2ZHdjQ2pKWkNXQWFOU1RN?=
- =?utf-8?B?ZHhONzkva0owU2l0dUNsUDcxZUxuM0tnVDIyU3BlVDZWazcvQXFDSFVsNWlr?=
- =?utf-8?B?dnhYUHpkVDU0K09NbXBaNjlOaitGRXZaenBmR1RLY1RhY3JiamVpSUFFRXBv?=
- =?utf-8?B?L0RPTjB1U1FzcVhOWExvU0Z4dHdnaHRFbWw2S1duMzBKYW9VN2lnWWdsNHJ3?=
- =?utf-8?B?a2k0bUtVZmJoL2JBSVlRdnRFTVA3SnZ1c0xrcFpsemt6Skl2bkExK0V5eEYw?=
- =?utf-8?B?eE1BaVVzRmJHNnBtdFpQVnJqdmVIVlA3THlsUlBhd1FNQklwMFY1UVhpblFo?=
- =?utf-8?B?RTF2bklBK0dtMzloaXVwMGJDZWFoYndpK21HV2hDdEdMVElaNUNyVHVhZTYr?=
- =?utf-8?B?cmJ3TUF2d1ZRPT0=?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OS8PR06MB7541.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(38070700018)(921020);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?utf-8?B?cFk1ZXVqMTA3SDQrQkJ1bXJpeTlnSUt6MVVCeE0ySzQzSVJ3RkhCY0d6bnJU?=
- =?utf-8?B?eG5BL2x6bWJrbmZOakV5NC8rd1NQWWExYnZQUkFIa25FS2lZUUtmNThNWktU?=
- =?utf-8?B?WldZKzkyM0h6aXFEaW43K1hxbCtGWWFzSXRkRTNHcTNybW5pcGJHVDZWeXZz?=
- =?utf-8?B?U2dEdnArSXhveFlmK25PcFIweDlzRkR0YnR0Rk9iNS9ZNzJnOE9yczM5WXho?=
- =?utf-8?B?Q3hWbTBzYXFkQ3lST0FLUXM2cWVHRStkL3M4Y3RMbFREdkJHbmcyQzg1T2Y0?=
- =?utf-8?B?UitVWlIxOXc5VWVwZzR4UUdNVHZ5OUNldTJYckhLclpJSUd5TUdzWFFTNzJm?=
- =?utf-8?B?bVNKdHpwQjdsZ1o4NmlWbGdmMERtZEp0SjFEaFZUQ2VaRVdMeEtuaGpyeWlj?=
- =?utf-8?B?alhmcHZiSXV5Q2M0QVhQMUswY3JGMW93WFFiN3VPRzJWdHZoWC9VanBLTzk3?=
- =?utf-8?B?aE9lOFZWQXQ4cmVLZGsxVnlrV3duOUQzdmQ5RVRkT3dNTWxMdEZCdFNhQUNn?=
- =?utf-8?B?OS9SOS9PWnNSMzl0bEJ4cStDbXhXVDhuaFRGS2R1UmlBYWdEK1pTZDFaT3Bt?=
- =?utf-8?B?V3VPUjdkSEw4OU14SytqanZGZndLbzVaVlZDNDk3UzdqWC9NUUQxMHlkRzM3?=
- =?utf-8?B?emtzUmJvbUFEQS8yUWczUUxzRWQybTlpNTlkYVVadllPdnprc2VldnRwVHBR?=
- =?utf-8?B?b0Y2aGpuUllnQW5hdGNBNUc3QjFhVjlCZmFtMks4eDBmMVIrRWpTOUg1YzRR?=
- =?utf-8?B?cGx1a1UrSjd2cXN3OENZU2hYM1FqcHc0RmRMVU5mQ1l5OTNUbVRNSlJ3eTZn?=
- =?utf-8?B?SGpaZUVJUVRpRldWTU42QjYvUjFKdVpIVE5qVjhSYUp6dkVlOVRGaUtmdnoy?=
- =?utf-8?B?blpPc0M4OU1DWVFYbHBqUDdSV0xzRm9aSnJnbkM5bGM4bW5WdTJ4VmRkR2s1?=
- =?utf-8?B?emdKU1d2NTMzQklObGFOU3NuVnVWOFVDbkRVY1k0b1ZaZTJOOXc0dGMzTDlT?=
- =?utf-8?B?aTJBeWRqYlEya3NDSVl1TFR3eGcyZnRRKzcxQjFRUEtvSXJyazZPK2VxN2FW?=
- =?utf-8?B?SUp2Z3B0OFV6K0tLS1FFdC9wdExMOERWcHdVMEY5bnFFbzFlaWJOOE1iWmI2?=
- =?utf-8?B?LzRnY1Q4NkpnVUR3MVR0b0Z3OXF4OVhvWGFWS2ZxeXdGQ2JNYVB6djNDeTV2?=
- =?utf-8?B?bWxOeklnZVI5dE83Q1NGMm0xRVNoRlNvMVIrWGsxODhiQU5xbWlwZFdUWEF4?=
- =?utf-8?B?a1lwZDFrMmZiQlBpNy9CUTl5NUtrOEVUeGRnQjJ3UDdpdlR5Vk1rbURyQm05?=
- =?utf-8?B?RUZzY2RFWXVVbkwrSW1BamZzV3lpYzJCSVFoaVFNZlNUV3BnaGpBRGtDaW5W?=
- =?utf-8?B?MlNtYlZQRVhzS2xlcFQ1M1A5UFNNeTl4d2Znd1U1ay8weGNGNkcyLzJHQ1E0?=
- =?utf-8?B?b2pvcjJaQWloakNZVzZ4ODlna1NuZmhzZmpUdTM0WitoUGk3OE5hWmNzSEpN?=
- =?utf-8?B?UGdNMjlYUVFnVldXS2c4OTBOc29TbXJVQkpPZU43OThNR084K1U0ek1KTEly?=
- =?utf-8?B?bk9lSkxMNUp6VnJoUTIxeWlNUFI3ekpRVFRiTnRtQk5uUWEvTnJRR3NGd0FB?=
- =?utf-8?B?U1Qxck1xZnFkRUZXVVRZa2NCNnlqZVg4YXpacmdRQm9rWTl3cE5kc1Jidmg2?=
- =?utf-8?B?QU8xZ2ZkaGFDRmtWRWczaWhzWmpLQlNHeTRoVHAzL2kwMEVUZ1VLV3FCTXVa?=
- =?utf-8?B?dklQbTJNMFlOeUxES2g4aGRKbmh6SGY2MzJKN0dnUTM5NW9BdDBvUW1kMVpk?=
- =?utf-8?B?NEFWZEUyekFLM1o4bTUvWXMyTDFqSEFobTl0dHBpOVp4RVN5OVFjaWdLWGRx?=
- =?utf-8?B?bjZhSDlDZk5FeGFPNktoZjlCTDhNdmVJWkpLVDQ4aXpoS0dzMEgyeVFWMVR1?=
- =?utf-8?B?aVprbTdReEs1YlRPalFzQWdrLzhGYWRpNmFmTStzMDRvc1d2U00yVWN2dmRi?=
- =?utf-8?B?aHo4QnNDV2k2NGxNVldrTVBUdjU3ZXY1dWJTWVo1ekhRek5PNG5DVnpzY29C?=
- =?utf-8?B?cW5pdEZFcVpPdDhpTFBES3hscGdSTTJseWFPT0NBMmIyQy9rMnp3MEtpbUVJ?=
- =?utf-8?Q?fPVQudWCb55w/sceAnlqTzW65?=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z24MT5h73z300C
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Feb 2025 15:27:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1740457652;
+	bh=tBq+uED9VcLqvQWo73iw5X2/Rdc3ERYOyoMS/2j02eE=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=hMwkPLVtLK1ZvJmQYYIrH7ps60fu/iAzOkiB+OHVTznrOoYho7yywweETK0X0NaWm
+	 VAH9Vw8zS4N79Anp6DLvAZkOvP5EGe0vjl2prTuESNbvsoN6ElpXzFhjmmO7UajEeU
+	 1yFOi6oZH3LsRLC6Krils2x/d1nxkfxnYDhuPTU8DgBlfnQ4Bq+eHkde7I0VIHxBTw
+	 Vdqli5J76dtZmqgFj/LIfvZhGM97a6ltsYJ+JiIOmhIf+D0UhM0+bWgnSRn3z2pw2b
+	 oJ4iVtEVLv9k54HnzOrlqRJxs7ymdnH6PCq8kMYC0HDdmwmyFoTYzhgeczEvTxencD
+	 YTsIsVvw3hegg==
+Received: from [IPv6:2405:6e00:2421:8fa3:333c:2fc8:332d:ddb4] (unknown [120.20.122.15])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 4021170B52;
+	Tue, 25 Feb 2025 12:27:27 +0800 (AWST)
+Message-ID: <f7369d6205e05c7aac3f3de7cbd08c3b08960d75.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v1 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Kevin Chen <kevin_chen@aspeedtech.com>, "joel@jms.id.au"
+ <joel@jms.id.au>,  Z-ChiaWei Wang <chiawei_wang@aspeedtech.com>,
+ "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Mo Elbadry <elbadrym@google.com>
+Cc: "tomer.maimon" <tomer.maimon@nuvoton.com>, Krzysztof Kozlowski
+	 <krzk@kernel.org>, "lee@kernel.org" <lee@kernel.org>, "robh@kernel.org"
+	 <robh@kernel.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>, 
+	"conor+dt@kernel.org"
+	 <conor+dt@kernel.org>, Jenmin Yuan <jenmin_yuan@aspeedtech.com>, BMC-SW
+	 <BMC-SW@aspeedtech.com>
+Date: Tue, 25 Feb 2025 14:57:25 +1030
+In-Reply-To: <PSAPR06MB494947E21AB39369ADFA8C9489C72@PSAPR06MB4949.apcprd06.prod.outlook.com>
+References: <20250217114831.3225970-1-kevin_chen@aspeedtech.com>
+	 <20250217114831.3225970-4-kevin_chen@aspeedtech.com>
+	 <e43b5f8f-37e4-4468-b3ca-5059a5e6f3c3@kernel.org>
+	 <6fd7cd57261ddf9831f57dc4c637b24e9f8982d9.camel@codeconstruct.com.au>
+	 <PSAPR06MB4949C65DF5C034BD6B40C9B589FA2@PSAPR06MB4949.apcprd06.prod.outlook.com>
+	 <d4945482509cad0bf3e8cd93c1fb21bac2e0c7f2.camel@codeconstruct.com.au>
+	 <TY0PR06MB4960EA7255DF0BDF235F0D9689C52@TY0PR06MB4960.apcprd06.prod.outlook.com>
+	 <ba2757fd02b3e7c8f9c862c76f2cfcd2b6bfb41b.camel@codeconstruct.com.au>
+	 <PSAPR06MB494947E21AB39369ADFA8C9489C72@PSAPR06MB4949.apcprd06.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -178,62 +83,164 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OS8PR06MB7541.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e1314db8-5104-40b1-979d-08dd5542f6f3
-X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Feb 2025 02:20:25.5504
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: UbbdNG/aRv8PtS0BeugGe1kLtE1MnNzpk66/bPf2zw2P0Vp+/3ATathrt8F22OTwZa1i+C6jop6aKuhr7GMXhYxrbcIRzI9WBumnnI0HSXs=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB5174
 
-PiBTdWJqZWN0OiBSZTogW1BBVENIIHY5IDIvM10gcmVzZXQ6IGFzcGVlZDogcmVnaXN0ZXIgQVNU
-MjcwMCByZXNldCBhdXhpbGlhcnkgYnVzDQo+IGRldmljZQ0KPiANCj4gT24gTW8sIDIwMjUtMDIt
-MjQgYXQgMTE6MTUgKzAxMDAsIEtyenlzenRvZiBLb3psb3dza2kgd3JvdGU6DQo+ID4gT24gMjQv
-MDIvMjAyNSAxMToxMiwgS3J6eXN6dG9mIEtvemxvd3NraSB3cm90ZToNCj4gPiA+IE9uIDI0LzAy
-LzIwMjUgMTA6NTUsIFJ5YW4gQ2hlbiB3cm90ZToNCj4gPiA+ID4gKw0KPiA+ID4gPiArc3RhdGlj
-IHZvaWQgYXNwZWVkX3Jlc2V0X3VucmVnaXN0ZXJfYWRldih2b2lkICpfYWRldikgew0KPiA+ID4g
-PiArCXN0cnVjdCBhdXhpbGlhcnlfZGV2aWNlICphZGV2ID0gX2FkZXY7DQo+ID4gPiA+ICsNCj4g
-PiA+ID4gKwlhdXhpbGlhcnlfZGV2aWNlX2RlbGV0ZShhZGV2KTsNCj4gPiA+ID4gKwlhdXhpbGlh
-cnlfZGV2aWNlX3VuaW5pdChhZGV2KTsNCj4gPiA+ID4gK30NCj4gPiA+ID4gKw0KPiA+ID4gPiAr
-c3RhdGljIHZvaWQgYXNwZWVkX3Jlc2V0X2FkZXZfcmVsZWFzZShzdHJ1Y3QgZGV2aWNlICpkZXYp
-IHsNCj4gPiA+ID4gKwlzdHJ1Y3QgYXV4aWxpYXJ5X2RldmljZSAqYWRldiA9IHRvX2F1eGlsaWFy
-eV9kZXYoZGV2KTsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCWtmcmVlKGFkZXYpOw0KPiA+ID4gPiAr
-fQ0KPiA+ID4gPiArDQo+ID4gPg0KPiA+ID4gRXZlcnkgZXhwb3J0ZWQgZnVuY3Rpb24gKm11c3Qq
-IGhhdmUga2VybmVsZG9jLg0KPiA+ID4NCj4gPiA+ID4gK2ludCBhc3BlZWRfcmVzZXRfY29udHJv
-bGxlcl9yZWdpc3RlcihzdHJ1Y3QgZGV2aWNlICpjbGtfZGV2LCB2b2lkDQo+IF9faW9tZW0gKmJh
-c2UsDQo+ID4gPiA+ICsJCQkJICAgICBjb25zdCBjaGFyICphZGV2X25hbWUpDQo+ID4gPiA+ICt7
-DQo+ID4gPiA+ICsJc3RydWN0IGF1eGlsaWFyeV9kZXZpY2UgKmFkZXY7DQo+ID4gPiA+ICsJaW50
-IHJldDsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCWFkZXYgPSBremFsbG9jKHNpemVvZigqYWRldiks
-IEdGUF9LRVJORUwpOw0KPiA+ID4gPiArCWlmICghYWRldikNCj4gPiA+ID4gKwkJcmV0dXJuIC1F
-Tk9NRU07DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlhZGV2LT5uYW1lID0gYWRldl9uYW1lOw0KPiA+
-ID4gPiArCWFkZXYtPmRldi5wYXJlbnQgPSBjbGtfZGV2Ow0KPiA+ID4gPiArCWFkZXYtPmRldi5y
-ZWxlYXNlID0gYXNwZWVkX3Jlc2V0X2FkZXZfcmVsZWFzZTsNCj4gPiA+ID4gKwlhZGV2LT5pZCA9
-IDY2NnU7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlyZXQgPSBhdXhpbGlhcnlfZGV2aWNlX2luaXQo
-YWRldik7DQo+ID4gPiA+ICsJaWYgKHJldCkgew0KPiA+ID4gPiArCQlrZnJlZShhZGV2KTsNCj4g
-PiA+ID4gKwkJcmV0dXJuIHJldDsNCj4gPiA+ID4gKwl9DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwly
-ZXQgPSBhdXhpbGlhcnlfZGV2aWNlX2FkZChhZGV2KTsNCj4gPiA+ID4gKwlpZiAocmV0KSB7DQo+
-ID4gPiA+ICsJCWF1eGlsaWFyeV9kZXZpY2VfdW5pbml0KGFkZXYpOw0KPiA+ID4gPiArCQlyZXR1
-cm4gcmV0Ow0KPiA+ID4gPiArCX0NCj4gPiA+ID4gKw0KPiA+ID4gPiArCWFkZXYtPmRldi5wbGF0
-Zm9ybV9kYXRhID0gKF9fZm9yY2Ugdm9pZCAqKWJhc2U7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwly
-ZXR1cm4gZGV2bV9hZGRfYWN0aW9uX29yX3Jlc2V0KGNsa19kZXYsDQo+ID4gPiA+ICthc3BlZWRf
-cmVzZXRfdW5yZWdpc3Rlcl9hZGV2LCBhZGV2KTsgfQ0KPiA+ID4gPiArRVhQT1JUX1NZTUJPTF9H
-UEwoYXNwZWVkX3Jlc2V0X2NvbnRyb2xsZXJfcmVnaXN0ZXIpOw0KPiA+ID4NCj4gPiA+IE5vLCB5
-b3UgY2Fubm90IGV4cG9ydCBmdW5jdGlvbnMgd2l0aG91dCB1c2Vycy4gVGhlcmUgaXMgbm8gc2lu
-Z2xlDQo+ID4gPiB1c2VyIG9mIHRoaXMsIHNvIHRoaXMgaXMgbm90IGp1c3RpZmllZCBhdCBhbGwu
-DQo+ID4gTXkgbWlzdGFrZSwgSSBtaXNzZWQgcGF0Y2ggIzMgd2hpY2ggdXNlcyBpdC4NCj4gPg0K
-PiA+IEkgZG9uJ3QgZ2V0IHdoeSBkbyB5b3UgbmVlZCB0byBleHBvcnQgdGhpcyBpbiB0aGUgZmly
-c3QgcGxhY2UsIGluc3RlYWQNCj4gPiBvZiBwdXR0aW5nIGl0IGluIHRoZSBjbG9jayBkcml2ZXIs
-IGFzIHVzdWFsbHkgZXhwZWN0ZWQuIEhhbmRsaW5nIGNoaWxkDQo+ID4gY3JlYXRpb24gaXMgbG9n
-aWNhbGx5IHRoZSB0YXNrIG9mIHRoZSBkZXZpY2UgaGF2aW5nIGNoaWxkcmVuLCB0aGUNCj4gPiBw
-YXJlbnQuIE5vdCB0aGUgY2hpbGQuDQo+IA0KPiBBbHNvLCBjb25zaWRlciBiYXNpbmcgdGhpcyBv
-biB0b3Agb2Y6DQo+IA0KPiBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvMjAyNTAyMTgtYXV4
-LWRldmljZS1jcmVhdGUtaGVscGVyLXY0LTAtYzNkN2RmZGVhDQo+IDJlNkBiYXlsaWJyZS5jb20v
-DQoNCkhlbGxvLCBCYXNlIG9uIHRoaXMgc2VyaWVzLCBJIHdpbGwgdXNlIGFkZXYgPSBkZXZtX2F1
-eGlsaWFyeV9kZXZpY2VfY3JlYXRlIGluc3RlYWQgYWRkZXZfYWxsb2MsIGFkZXZfcmVsZWFzLg0K
-QnV0IGl0IHN0aWxsIGhhdmUgRVhQT1JUX1NZTUJPTF9HUEwoYXNwZWVkX3Jlc2V0X2NvbnRyb2xs
-ZXJfcmVnaXN0ZXIpOw0KQW0gSSByaWdodD8NCg0KPiByZWdhcmRzDQo+IFBoaWxpcHANCg==
+On Fri, 2025-02-21 at 00:51 +0000, Kevin Chen wrote:
+> > On Wed, 2025-02-19 at 11:59 +0000, Kevin Chen wrote:
+> > > > On Tue, 2025-02-18 at 11:11 +0000, Kevin Chen wrote:
+> > > > > > On Mon, 2025-02-17 at 13:00 +0100, Krzysztof Kozlowski wrote:
+> > > > > > > On 17/02/2025 12:48, Kevin Chen wrote:
+> > > > > > > > +
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.parent=
+ =3D dev;
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.minor =
+=3D MISC_DYNAMIC_MINOR;
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.name =
+=3D devm_kasprintf(dev, GFP_KERNEL,
+> > > > > > > > "%s%d",
+> > > > > > > > DEVICE_NAME,
+> > > > > > > >=20
+> > > > > >=20
+> > > >=20
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0pcc->mdev_id);
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pcc->mdev.fops =
+=3D &pcc_fops;
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0rc =3D misc_regi=
+ster(&pcc->mdev);
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (rc) {
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0dev_err(dev, "Couldn't register misc
+> > > > > > > > device\n");
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0goto err_free_kfifo;
+> > > > > > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0}
+> > > > > > >=20
+> > > > > > > You cannot expose user-space interfaces from SoC drivers. Use
+> > > > > > > appropriate subsystem for this with proper ABI documentation.
+> > > > > > >=20
+> > > > > > > See:
+> > > > > > > https://lore.kernel.org/all/bc5118f2-8982-46ff-bc75-d0c71475e=
+9
+> > > > > > > 09@a
+> > > > > > > pp.f
+> > > > > > > astmail.com/
+> > > > > > > and more discussions on LKML
+> > > > > >=20
+> > > > > > Further, drivers/misc/aspeed-lpc-snoop.c already exists:
+> > > > > >=20
+> > > > > > https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.=
+g
+> > > > > > it/c
+> > > > > > ommit/?id=3D
+> > > > > > 9f4f9ae81d0affc182f54dd00285ddb90e0b3ae1
+> > > > > >=20
+> > > > > > Kevin: Did you consider reworking it?
+> > > > > Andrew: No, I do not rework it but add the post code capture
+> > > > > driver using the SNOOP registers. As a result, I add some code in
+> > > > > aspeed_a2600_15 to check the SNOOP enable bit. PCC driver probe
+> > > > > abort if snoop is enabled.
+> > > >=20
+> > > > Hmm, I think OpenBMC's history regarding POST code support caused
+> > > > some confusion on my part. For whatever reason, the snoop device wa=
+s
+> > > > used as a source of POST codes despite the existence of the
+> > > > dedicated POST code hardware since at least the AST2400, but...
+> > > What I know about the dedicated POST code hardware in ASPEED should b=
+e
+> > > the same one in LPC module.
+> > >=20
+> > > >=20
+> > > > > PCC is used for port I/O byte snooping over eSPI.
+> > > >=20
+> > > > ... it seems that they're largely interchangeable, just with
+> > > > different hardware features (PCC has DMA)? My impression is that th=
+e
+> > > > snoop device could also be used over eSPI?
+> > > Yes, PCC has DMA to capture the POST code.
+> > > And snoop device also can be used over eSPI.
+> > >=20
+> > > These two devices of PCC and snoop use the same port I/O of 80h and
+> > > 81h.
+> > > But, in current usage of PCC, it can support a continuous, 4-bytes
+> > > maximum region from port I/O 80h to 83h.
+> > > What I know about PCC or snoop usage, depends on INTEL platform or AM=
+D
+> > > platform.
+> > >=20
+> > > For ASPEED, we want to upstream the PCC driver for the PCC usage.
+> >=20
+> > Yeah, that's fine, but I think some work needs to be done to provide co=
+herence
+> > in the devicetree binding and userspace APIs across both the ASPEED sno=
+op
+> > and PCC bits, as well as the Nuvoton BPC. Bespoke designs create pain.
+> https://lore.kernel.org/linux-kernel//7661de74-f68c-6617-6a4e-3b0eb76a2a2=
+e@linaro.org/T/
+> Andrew, I find the "NPCM BPC driver" to get the link. Are these patches m=
+atch what you mentioned?
+
+That looks about right.
+
+Note Rob's response there about disparate bindings:
+
+https://lore.kernel.org/linux-kernel//20221130193014.GA2645083-robh@kernel.=
+org/
+
+>=20
+> >=20
+> > The PCC driver above reads the data out of the DMA ring-buffer straight=
+ into
+> > the kfifo hooked up the the miscdev read callback. The datasheet
+> > notes: "the data structure of the FIFO is mode dependent" in the descri=
+ption of
+> > PCCR3, but no in-band or out-of-band mechanism (sysfs,
+> > ioctl) is provided for userspace to query whether it's 1B, 2B, 4B or "f=
+ull" mode.
+> For the data structure in PCCR3, I checked with designer. We only need 2B=
+ mode to get the information about data and related addresses.
+> For example, from espi master send the port 80h~83h with first data 0x112=
+23344 and second data 0x55667788. The PCC kfifo would be written in the fol=
+lowing output from hexdump.
+> # hexdump=C2=A0 /dev/aspeed-lpc-pcc0
+> 0000000 4044 4133 4222 4311 4088 4177 4266 4355
+
+Right, but that's different to how the Aspeed snoop chardev behaves.
+Both the snoop and PCC features can be used to present the same data
+(POST codes) to userspace. There should be a unified chardev behaviour
+for POST codes so we don't end up with a mess in userspace to deal with
+the differences in hardware capabilities.
+
+If we've got a chardev it would feel idiomatic to me to have ioctls to
+configure the hardware to the required capture mode for the platform.
+
+> >=20
+> > The situation with the snoop driver is similar (1 or 2 1B channels mult=
+iplexed
+> > into the one data stream). It also looks a bit quirky with multiple cha=
+nnels
+> > enabled, as what userspace reads will depend on the host access pattern=
+s, but
+> > no metadata is provided to userspace about what it's reading.
+> Yes, for the snoop driver and PCC driver, some mechanism is the same. But=
+ snoop only supports 2 bytes data from the 2 1B channels multiplexed.
+> So, we need to add PCC driver to upstream for customer's 4 Bytes POST cod=
+e capture usage even the PCC driver needs to check the snoop enabled or not=
+.
+
+I understand.
+
+> Or, could you please give us come comments about how I can upstream the P=
+CC driver.
+
+Essentially I don't think it's okay that each driver implement a
+bespoke chardev, or that the devices don't share a common devicetree
+binding. I think what's needed is a small abstraction that provides
+common chardev semantics to userspace (e.g. /dev/postcodeN) that can be
+connected to the different backends provided by the hardware (Aspeed
+snoop and PCC, Nuvoton BPC) and act on the needs of userspace (1, 2, 4-
+byte POST codes, configured using ioctls).
+
+Andrew
 
