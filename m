@@ -1,108 +1,71 @@
-Return-Path: <linux-aspeed+bounces-857-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-859-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB3C6C021B8
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Feb 2025 14:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 141E8C19776
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Feb 2025 22:56:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2y5Q20TMz3bmY;
-	Thu, 27 Feb 2025 01:48:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04::f03c:95ff:fe5e:7468"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740581306;
-	cv=none; b=Q7XNSEgqYqJd+1NHgRIYte58THHLyfsq9Xv+rxLKcFcH7pRNRS1GBYOhydDTkqf7FHbJVgwQSpp/ZZFTKvg4nLIauezwX9HuZOUaYGjV8Dfo6PUVoAvfrftOPgWXQ+otCBuwDimdabURWjc6VUaiJEzx50VvujMZEncAYFWEmF4+entmb3I04eu9hhmHJSRhIo4JFM5h6FwPRTqy+2YzwQq8fskZa9lmt1vxDLkM/b9FVjkCCS12r28ZlHeqP/tVv91L7dc6DqTMEha4/E4TB4TejVRp3I5QHgbyLKBHy3q5gruSF+Nb80XmJxlYzhrlUN95W7JAQzk7ymiBEviKLg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z38wR45hTz3bkP;
+	Thu, 27 Feb 2025 09:56:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::135"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740530904;
+	cv=none; b=Wuyry/KPBxelKuIRBvrTd1bF88lv3NWi82vOgz4gENPMjFE389dsxHhXhAdyU/+sbGD6PloAOCnvDw05BAd3YLW0VJw+nuVe1YZkDeXmJekLXvuC0TKnt6P0GiZIEZaK+dCXwITjqBdjveoXsGf4kIGY72xTkxgUp7NSvP9aUrBsMI5XETNUlKfBvbgsr/EtoerGurf3gydvKnfZBLW+iAWagxPX8aZV2Dl9obHKCw5Cib9GfoEW3eBPdGIGP1cu+tebMZI973/axvMpUSRnpnKDG03YC8mzA6sU+CyxkHcwo0uZQo3yD8VwS4c8r/c5v+llScNTpO4u3YSSwEvACg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740581306; c=relaxed/relaxed;
-	bh=ts7DogLyjgmKQcMe21RrEO+T2pwtrKbym15M0EENPE0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RnmFydgu9ADtvXr9dasYY6F6JMlKuh/ol2CUPXF3LUdn6ahvW1q9Xt9im0NlgUbn+/poyCuX4t6slcfBPqhTJxeLYOrx6vv7XiE1R3UVGm/81BwL+Uc/E6w6NBhjaOBP7GJSfCpvjjBlCWhl+g51jNyxu71zoIsY3TY5t/hJqKAXrUo+UEatyJWI0z1d443HqCiOdBY53fP5yWINSRbGKBfLjrHf0TZuJa+Q5xIJRXWAmU1ySzSSVNlqKi4oZmX8hCisJFTZ5900IOlLk9L/FFUEQU4uBZrxPD2EaSWkdfsjuJYCVSSysUywvySvAjgyB2alTFrorFrdCmsAXuY16Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ei0b9YtU; dkim-atps=neutral; spf=pass (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1740530904; c=relaxed/relaxed;
+	bh=3G/3+m/lRjbsgB6Uj67QoFbCFOBM3izr4BbRlnuiWfc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RDuvgAVF/yTeNgmtGyctu5U5ZIwcKfd5EyGDe5a65LEW7skNqcUFQJPxiicPOlTdGWoxrLw1vMmJDojUAa7EJa0GnhDMvM5seB9cLbMkP8C+4ZBItB0CpGZ0wm0+IfHfdWeg9mWw79WWYaWGSJXm7+JjgfVMeq70LLDp4H6+aMAw7yLribvDLGcje7ozluSJJV/uTLRKkjC8BV/kjkq0noqopWyBQWJeLvmC1LxOAdBrKf/ipvuqhSEX02aUVbj+T274pCrMhRk0iW/+eKtYrapDjO6dh3oqbm1ZqWt8BF72tpLmQ8tYCwGOObca4sNFeVdUqvyvwb1gfj2cDzShBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=wULpqrsb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::135; helo=mail-il1-x135.google.com; envelope-from=elbadrym@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ei0b9YtU;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=wULpqrsb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::135; helo=mail-il1-x135.google.com; envelope-from=elbadrym@google.com; receiver=lists.ozlabs.org)
+Received: from mail-il1-x135.google.com (mail-il1-x135.google.com [IPv6:2607:f8b0:4864:20::135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2y5P3V30z3bmN
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 27 Feb 2025 01:48:25 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id BD9AC6123C;
-	Wed, 26 Feb 2025 14:48:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89C32C4CEEC;
-	Wed, 26 Feb 2025 14:48:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740581303;
-	bh=0kWYmB/zokqmJ9Xk1NaO2fJR2wQi5MCDrrTHi5pb4GI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Ei0b9YtUHY3RZh/d2khLUG5C74xzOhBX1EAlmeWMT3qMtUbccY5JK3IHd5f+69Tjn
-	 U5AGfaZbZo/+Q8ZOiDWEORqcb7vBkCRsvsn4sUS9qG7d9vyDXFu//LUkIU0gcse6o0
-	 FU8irzW9zoTkpDzXPXiyNzuoo/5F0b+UP0Jdp3P1cykHscDpzEyDZhDqFcxErlGDP4
-	 QfFuISqvCfQIerRJk7hKmAkB8r3Y7CBPKWFklXXrxZmX2YHYp6wPuh2rgHo/aoDwwS
-	 moSj0GKQWflQP2QWx/b8IwaOrbXv3R+W2+A+4x0mJEFkQdC3GI4BTonmi0LyRp4GoB
-	 55upu3YK9Edkg==
-From: Maxime Ripard <mripard@kernel.org>
-To: Joel Stanley <joel@jms.id.au>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Stefan Agner <stefan@agner.ch>,
-	Alison Wang <alison.wang@nxp.com>,
-	Xinliang Liu <xinliang.liu@linaro.org>,
-	Tian Tao <tiantao6@hisilicon.com>,
-	Xinwei Kong <kong.kongxinwei@hisilicon.com>,
-	Sumit Semwal <sumit.semwal@linaro.org>,
-	Yongqin Liu <yongqin.liu@linaro.org>,
-	John Stultz <jstultz@google.com>,
-	Chun-Kuang Hu <chunkuang.hu@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Matthias Brugger <matthias.bgg@gmail.com>,
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
-	Marek Vasut <marex@denx.de>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Fabio Estevam <festevam@gmail.com>,
-	Orson Zhai <orsonzhai@gmail.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Chunyan Zhang <zhang.lyra@gmail.com>,
-	Alain Volmat <alain.volmat@foss.st.com>,
-	Raphael Gallais-Pou <rgallaispou@gmail.com>,
-	Yannick Fertre <yannick.fertre@foss.st.com>,
-	Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>,
-	Philippe Cornu <philippe.cornu@foss.st.com>,
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-	Alexandre Torgue <alexandre.torgue@foss.st.com>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Mikko Perttunen <mperttunen@nvidia.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Alexey Brodkin <abrodkin@synopsys.com>,
-	Dave Stevenson <dave.stevenson@raspberrypi.com>,
-	=?UTF-8?q?Ma=C3=ADra=20Canal?= <mcanal@igalia.com>,
-	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Anusha Srivatsa <asrivats@redhat.com>
-Cc: Maxime Ripard <mripard@kernel.org>,
-	linux-aspeed@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-mediatek@lists.infradead.org,
-	imx@lists.linux.dev,
-	linux-stm32@st-md-mailman.stormreply.com,
-	linux-tegra@vger.kernel.org,
-	linux-doc@vger.kernel.org
-Subject: Re: (subset) [PATCH RESEND 11/12] drm/vc4: move to devm_platform_ioremap_resource() usage
-Date: Wed, 26 Feb 2025 15:47:57 +0100
-Message-ID: <174058126147.2737122.5690208783260352743.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250225-memory-drm-misc-next-v1-11-9d0e8761107a@redhat.com>
-References: <20250225-memory-drm-misc-next-v1-0-9d0e8761107a@redhat.com> <20250225-memory-drm-misc-next-v1-11-9d0e8761107a@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2bS72XjGz30HB
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Feb 2025 11:48:22 +1100 (AEDT)
+Received: by mail-il1-x135.google.com with SMTP id e9e14a558f8ab-3d1925db9e7so55005ab.0
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Feb 2025 16:48:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1740530900; x=1741135700; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3G/3+m/lRjbsgB6Uj67QoFbCFOBM3izr4BbRlnuiWfc=;
+        b=wULpqrsbs28FwefmOsNNUFS7PqiTLA7fySwUkVbFfUtJ07aWzny9gIzmz10b0IvvZS
+         NjM9WBh9R5JNpKCvouhEzD6+Ds4EdVVM9dQp2XdJ2zgS69CalUq1EQwr7RlOeKF2UyI6
+         zaTbTC+0peRR5nlOgW1qGIGlIlfBtbYX0oR288PCcv/0o/i7rQCv28RU6hFcwQttnuWu
+         mjcjB8lHc7zXgYCPjSJw6I0+90THqtIGekt9naGGj6nkhGv4/ZpA3kKdL00W/aQBS377
+         hRNfZQb4kh7l6BbH+G1KB1mPCVGGN0ljrZKfEMzJkv7v4Bk+vIsYFfcT0ym6DUPsrJgi
+         nxNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740530900; x=1741135700;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3G/3+m/lRjbsgB6Uj67QoFbCFOBM3izr4BbRlnuiWfc=;
+        b=S17RCLC1r0di4rBOLqe5GR+LOO7WF8Uz4ygfchwveodVySyAKQt4C1YQYoXPmDME81
+         CnxHNmMUy2WCPBpRGp8P7FmIZPonNRn4R75uDUoyaJCafuXev23oq4+dCcXVs7BNu07y
+         RB/G46ejzCGwemu8FemJOPlhGR2ZvAHdI65UTiPpZUUwE/iJxNSJCFBG1/9aLfX+aR1R
+         a9AChuXWk+P8XMindU7UuiVwELeBhk/flqiVOJrlM/DKg50xgYvzA0c2Dt7vKNQEiRON
+         R4F5LNaWujt/f6RyGyyS6/yywYLL0TEZyHV3/Q/1F4HWBswVQ7NDBtmOEab6YD/Q7uKG
+         16RQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUqd3gVRjXo95UwIhgLgi29h/lRZ5JtsOJT8R9onq/o18moHi5bFGZ5lDk6DXeHnVfpiMSGTbmNqZb+49s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwIdN9hsNBUU1Nks3xGoy2jrxBxxc52NvYSCUhChi8DsOtSW4Nk
+	9rdkkq5zgVmgDlh/dHs57aYikjpDysh1tezY1vW24zbBAlr7A2lddwtD8bCN64Az+P0GDzKGp2/
+	nXssuzH0n5MlozCdGrQ7y0S+Ur24worLfSeqP
+X-Gm-Gg: ASbGncuYOlDa3b8YIZ4W9WsRUAmDk161kQfV8cEqTtUPfgVObv669r16SLobNQgMF8P
+	CYVnXgmePqxDdPQxoGo3kdDIEu3l8PuLU7bNx2LVZu2EuXO+q1PxjbeKd9NO3t8iq7M/43G3Xim
+	IPByFcz7YyOAOEjc1EpbmwzfxRXOQAPogIzSeECg==
+X-Google-Smtp-Source: AGHT+IEonmoXFq+Ql657Kw6dLSY0rgGUEYIF0fLPMaaamVLsEFg6KhJOepe80hFReyd4EBHGAz+Lg9VVLfRxSPLAzbw=
+X-Received: by 2002:a05:6e02:3dc4:b0:3d0:507f:38dd with SMTP id
+ e9e14a558f8ab-3d3048be45fmr6716235ab.5.1740530900058; Tue, 25 Feb 2025
+ 16:48:20 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -115,39 +78,77 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+References: <20250217114831.3225970-1-kevin_chen@aspeedtech.com>
+ <20250217114831.3225970-4-kevin_chen@aspeedtech.com> <e43b5f8f-37e4-4468-b3ca-5059a5e6f3c3@kernel.org>
+ <6fd7cd57261ddf9831f57dc4c637b24e9f8982d9.camel@codeconstruct.com.au>
+ <PSAPR06MB4949C65DF5C034BD6B40C9B589FA2@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <d4945482509cad0bf3e8cd93c1fb21bac2e0c7f2.camel@codeconstruct.com.au>
+ <TY0PR06MB4960EA7255DF0BDF235F0D9689C52@TY0PR06MB4960.apcprd06.prod.outlook.com>
+ <ba2757fd02b3e7c8f9c862c76f2cfcd2b6bfb41b.camel@codeconstruct.com.au>
+ <PSAPR06MB494947E21AB39369ADFA8C9489C72@PSAPR06MB4949.apcprd06.prod.outlook.com>
+ <f7369d6205e05c7aac3f3de7cbd08c3b08960d75.camel@codeconstruct.com.au>
+ <CAOO6b=udHyXx3QXyUE=siuuJopanUxzbFeBujtqWRy=j2ut4fw@mail.gmail.com> <0008bab55f56252016406e06f147ef52f058bb86.camel@codeconstruct.com.au>
+In-Reply-To: <0008bab55f56252016406e06f147ef52f058bb86.camel@codeconstruct.com.au>
+From: Mo Elbadry <elbadrym@google.com>
+Date: Tue, 25 Feb 2025 16:48:09 -0800
+X-Gm-Features: AQ5f1Jrgg80yi8orSiI63M_RmdhldZtwHc2ZYNn_1MdwWw5j1deSt788HIVdze8
+Message-ID: <CAOO6b=s4CyVvCP8Gb_OGWCMX3ggs9sm6_WnqEB1h6ScVVJppDQ@mail.gmail.com>
+Subject: Re: [PATCH v1 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Kevin Chen <kevin_chen@aspeedtech.com>, "joel@jms.id.au" <joel@jms.id.au>, 
+	Z-ChiaWei Wang <chiawei_wang@aspeedtech.com>, 
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tomer.maimon" <tomer.maimon@nuvoton.com>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, "lee@kernel.org" <lee@kernel.org>, "robh@kernel.org" <robh@kernel.org>, 
+	"krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>, 
+	Jenmin Yuan <jenmin_yuan@aspeedtech.com>, BMC-SW <BMC-SW@aspeedtech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 25 Feb 2025 17:20:52 -0500, Anusha Srivatsa wrote:
-> Replace platform_get_resource_byname + devm_ioremap_resource
-> with just devm_platform_ioremap_resource()
-> 
-> Used Coccinelle to do this change. SmPl patch:
-> //rule s/(devm_)platform_get_resource_byname +
-> //(devm_)ioremap/devm_platform_ioremap_resource.
-> @rule_3@
-> identifier res;
-> expression ioremap;
-> identifier pdev;
-> constant mem;
-> expression name;
-> @@
-> -struct resource *res;
-> <+...
-> -res = platform_get_resource_byname(pdev,mem,name);
-> <...
-> -if (!res) {
-> -...
-> -}
-> ...>
-> -ioremap = devm_ioremap(...);
-> +ioremap = devm_platform_ioremap_resource_byname(pdev,name);
-> ...+>
-> 
-> [...]
+Hi Andrew,
 
-Applied to misc/kernel.git (drm-misc-next).
+Understood, your comments do make sense and are the right way to go.
 
-Thanks!
-Maxime
+I agree on not rushing, we want to see things moving forward but
+properly as well.
+
+Thank you for your help,
+Mo
+
+
+
+On Tue, Feb 25, 2025 at 3:28=E2=80=AFPM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> Hi Mo,
+>
+> On Mon, 2025-02-24 at 20:34 -0800, Mo Elbadry wrote:
+> > Hi Andrew,
+> >
+> > I agree that a small layer of abstraction is needed to provide common
+> > chardev semantics to userspace. I think that effort can come where both
+> > Nuvoton and Aspeed unify their design and agree on a common abstraction
+> > layer.
+> >
+> > I think such efforts may take some time for both to unify, is it possib=
+le
+> > to get this upstreamed (after addressing all other comments) while both
+> > parties work on an agreed unified abstraction layer?
+> >
+>
+> Given Arnd doesn't want bespoke userspace interfaces in the SoC drivers
+> this will need to go elsewhere, perhaps drivers/char or drivers/misc.
+> Greg and Arnd maintain both, so the patch needs to make a convincing
+> argument to them. For my part, my comments are just opinions based on
+> my understanding of the use-cases and the SoCs involved, and the desire
+> for reasonable devicetree and userspace interfaces.
+>
+> I don't think it's right to try to rush things as devicetree and
+> userspace interfaces can be tricky to change or remove. Rushing tends
+> to be painful for all involved in the long run.
+>
+> Cheers,
+>
+> Andrew
 
