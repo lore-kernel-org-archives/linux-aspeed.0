@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-849-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-850-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C55DC021B8
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Feb 2025 09:52:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD20DC021B8
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Feb 2025 09:56:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2qWk65Fxz30T1;
-	Wed, 26 Feb 2025 20:52:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740563538;
-	cv=none; b=lyhcdmrUu0CWp72sa5yQPXuOnY+ScN/wwO7sJUSMcgY23NNy/RK3m8u1mYsBwQvOHAiyN2wpO6NmwcLmKCDCJluavrIpvqD2wEnaYvWMkwT1lQlc5HQqySfhOCBPBcx1y+jUVdEOsDPPaSX79+d357yxR5SPT7xheC0nUBWDwLoeA7RMcKGdmdIVPC4Qfq5/lvUj2D6wWi2WKYwkH0Twr4ZjhzrVRhh6x7MfFEuo8STCgIbfnaot52T1BC0Z5X+P/m7k1Sy9v+FbcavnxtDdNMxt7oR/uKJw3Z8PZ1BH1pSAmLedzPUEY0YOhYhoHAPsR9N2aeafA9fDNTnDRu4DkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2qcW1b37z30T1;
+	Wed, 26 Feb 2025 20:56:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04::f03c:95ff:fe5e:7468"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740563787;
+	cv=none; b=aiY+1SwWxk3Uxc3FUOS86WQu5UekK2FVF7jCaQS2FMtoaVNZtDAjDdPqelpw6+4Uq8A0nXDZfsww38TmdBaDA5t6H3mF9aRzjzGBbu40Z/211D4DWhydyQMjYdPYkbR8NHCV1oUCUIFyfE5sBGfbaiPq2G6RVv/MXpc6J75MZLBBP9qGkPmI/B2vtdFFs/1uWPNyasLx1iCQFjcsjkMJjly0koHh9UXheynqd2bycQvFVsiJcuLtaAdYf8YhkvKeefQRal3eXuSLOpfUsrO7I9NZKiKwzyiKQSEptWDRR9RKsXTCca2f2TCCFe0mFGi2pj/bp8ZnybmpfG2DMezzHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740563538; c=relaxed/relaxed;
-	bh=BNifuMMg8kN1dRr0AxSBEfQHprYr4kWwAWl5KaUxLSc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=isoEiQCS8+2fQWs0mlWEhDtuSa48vFnlRFtILKFbjurXmlzBQaM1CuBrLuiYrLR3QIbprPrt1C9wTPbsHW/wYRjJVzpHEmC/SoNUjvZNFzpeoHwy08N8Uedvf5GiQnJvLrnuNh2kn4xz7Aa0mJgUVxnesiSFl5hKjmMDM1XRMbl5bGUs9PF0roYPeiS7BvGf0Cv1e2ndnuiOMfqrFdEQKAIKlQyw6VwpqbnKzgjeJD50LnT3zRqB1KBeskrD0yqCpNV0SK60V0XuFfB/iLYLnxi7jMD/fneOsXCDT5Ojgik9XBdUYDEnabBiUNTk1DO45IgWTbZs70NnX9e8R2L2iQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JN3KXRqN; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1740563787; c=relaxed/relaxed;
+	bh=Y+pxVerkfoS1avWErqPTUCwq3rjsaYZehyf3vYLR4ZE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hhBmCf2VMRJDyhnm8KKSOTrBu1kneFETJvDiIuRU7GWA//c9J7GfOFLgaWG5iaGxAAsPP1LZY0Gc3y/EzaZhvAlhDZH7JVzT9Hf0T9SM4VXy9KqTMxec6B/lNsvQ3pZywMSx0P3pUjDuB9oFoTmYA6vmTXuO2zHJU51weVFExzGgPZkbUvf0vVAuY1C222aAuh6I9DIdTE6jwaUmPEpHUtv4a42LsFsf8kWp+ZA/j8ap+K3B7vd/H7cKl0PX4KlRwR0HFMhaLCdmAdoFDTBpS7Ur2sgkpdTeY6gJ0XeAmppJFilWyUJUReiELVKRgrMU3oQhNDCKZBkAF6GoPMxfAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDIsy8iO; dkim-atps=neutral; spf=pass (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JN3KXRqN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDIsy8iO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2qWj3v28z2yvl
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Feb 2025 20:52:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2qcV2GNSz2yvl;
+	Wed, 26 Feb 2025 20:56:26 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 42E7661137;
-	Wed, 26 Feb 2025 09:52:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66F6AC4CEE2;
-	Wed, 26 Feb 2025 09:52:10 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 3141061137;
+	Wed, 26 Feb 2025 09:56:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B313C4CED6;
+	Wed, 26 Feb 2025 09:56:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740563534;
-	bh=5T09s0qVcBTtGUjTDTgqWOKvvI0OpaBOAa+991mZ0V4=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=JN3KXRqN2TW/Zc8xmUpno3ptEuwvCWcb2uAJR8DhiQ8xt/qNFdT0uPnxWz6Vb9UkP
-	 VmJerQeeldcqglmsec0+F424FbTFaKRW7ZBlQMH1Y4Qv3BP7KEbajnRwF79oM66odv
-	 3Z1D5TrNIfpyHhYlxpWZsHe6mDQwmqZjnKMclY7dgCwuO/OprW/yS+GktN160Hum1v
-	 bNbnl+kp07MzuK3D38hRFGmlS1hKMaAJh46WOwlrHJit8i8GlPk++pzDM92NKoBSVo
-	 fnf0+MsU8WPh+N+8Wbr4AX1FdLjQzn30n0KSVe6HgnNfSRsW9/HNYlLDCd7pRIwkY+
-	 HhSxAZOEzh93w==
-Message-ID: <1175a8d2-65ac-439e-94b8-cf7af8db37b3@kernel.org>
-Date: Wed, 26 Feb 2025 10:52:08 +0100
+	s=k20201202; t=1740563783;
+	bh=1Quf7/c1ehY7FhlfL5b4CSIvNDLhWomMOOrwdf5C1bc=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=nDIsy8iONaUkV3zCR4j24aHleHJTprg4Ra22sC6KXhc8VhmIPceVBmDcFBURrhIje
+	 cu7kCS/JqDVLynQAq47qWpSXY+sx1LXQCf5NthVCR4cz70GDprSdoMxNf44f1F0s7f
+	 lkEttvPtA4icjYlN+6PjUfTSuiI9sIE6I9xCe9ofUGVGLmM7CL4DSqrjZD3A4feDS7
+	 AslZqbM90UNfJmjSBXyskmUlDyJs3dBrwl+snCUs4gQK8ctVFdz/qce6nP2MR416XY
+	 BGHC2WMTKEKN3BV+K4HMnG4jWxihC9Yt8F6DDtUxVnTebz0sPKInn95MHwTb0TxxJI
+	 5vrkFmbgouSTw==
+Message-ID: <50327725-f3b8-4a8b-94a2-85afccd2868a@kernel.org>
+Date: Wed, 26 Feb 2025 10:56:17 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,28 +59,28 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v9 1/3] dt-binding: clock: ast2700: modify soc0/1 clock
- define
-To: Ryan Chen <ryan_chen@aspeedtech.com>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
+ AST2600-i2cv2
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "joel@jms.id.au" <joel@jms.id.au>,
+ "andi.shyti@kernel.org" <andi.shyti@kernel.org>,
+ "robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
+ <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
+ "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linux-arm-kernel@lists.infradead.org"
  <linux-arm-kernel@lists.infradead.org>,
  "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20250224095506.2047064-1-ryan_chen@aspeedtech.com>
- <20250224095506.2047064-2-ryan_chen@aspeedtech.com>
- <f810b8a2-4261-4b68-b59b-4efa0219b5db@kernel.org>
- <OS8PR06MB7541D685A626D300AC730A5BF2C32@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <2b64a9d7-7048-4842-9cc1-fe23f5abdd00@kernel.org>
- <OS8PR06MB75411AE082C9630314966F2AF2C32@OS8PR06MB7541.apcprd06.prod.outlook.com>
- <c4727195-757a-4624-8580-78e5c32e9290@kernel.org>
- <OS8PR06MB7541615D536BC1D44FF6D18DF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20250224055936.1804279-1-ryan_chen@aspeedtech.com>
+ <20250224055936.1804279-2-ryan_chen@aspeedtech.com>
+ <20250224-arrogant-adventurous-mackerel-0dc18a@krzk-bin>
+ <OS8PR06MB75415E95342F26F576B5CF8AF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -126,144 +126,142 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <OS8PR06MB7541615D536BC1D44FF6D18DF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
+In-Reply-To: <OS8PR06MB75415E95342F26F576B5CF8AF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
-On 26/02/2025 06:10, Ryan Chen wrote:
->> Subject: Re: [PATCH v9 1/3] dt-binding: clock: ast2700: modify soc0/1 clock
->> define
+On 26/02/2025 10:28, Ryan Chen wrote:
+>> Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
+>> AST2600-i2cv2
 >>
->> On 25/02/2025 10:49, Ryan Chen wrote:
->>>>>> Subject: Re: [PATCH v9 1/3] dt-binding: clock: ast2700: modify
->>>>>> soc0/1 clock define
->>>>>>
->>>>>> On 24/02/2025 10:55, Ryan Chen wrote:
->>>>>>> -remove redundant SOC0_CLK_UART_DIV13:
->>>>>>> SOC0_CLK_UART_DIV13 is not use at clk-ast2700.c, the clock source
->>>>>>> tree is uart clk src -> uart_div_table -> uart clk.
->>>>>>>
->>>>>>> -Change SOC0_CLK_HPLL_DIV_AHB to SOC0_CLK_AHBMUX:
->>>>>>> modify clock tree implement.
->>>>>>> older CLK_AHB use mpll_div_ahb/hpll_div_ahb to be ahb clock source.
->>>>>>> mpll->mpll_div_ahb
->>>>>>>                   -> clk_ahb
->>>>>>> hpll->hpll_div_ahb
->>>>>>
->>>>>>
->>>>>> I can barely understand it and from the pieces I got, it does not
->>>>>> explain need for ABI break.
->>>>>>
->>>>>
->>>>> #1. SCU0_CLK_UART_DIV13 is redundant, it does not impact ABI break
->>>>
->>>> You did not explain how it does not impact. Clock was exported, there
->>>> was a user and now there is no clock. User stops working. ABI break.
->>>>
+>> On Mon, Feb 24, 2025 at 01:59:34PM +0800, Ryan Chen wrote:
+>>> Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,enable-dma
+>>> and description for ast2600-i2cv2.
 >>>
->>> Sorry, SCU0_CLK_UART_DIV13 was defined, but was never referenced in any
->> upstream device trees.
->>
->>
->> That's incomplete definition of ABI
->>
->>> Since there is no in-tree usage of `SCU0_CLK_UART_DIV13`, its removal does
->> not cause an ABI break.
->>
->>
->> You ignored out of tree users. Please read carefully ABI docs.
->>
->>
+>>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+>>> ---
+>>>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 58 +++++++++++++++++++
+>>>  1 file changed, 58 insertions(+)
 >>>
->>>>> #2. Change SOC0_CLK_HPLL_DIV_AHB to SOC0_CLK_AHBMUX Older
->>>> implement
->>>>> where `mpll_div_ahb` and `hpll_div_ahb` were **hardcoded dividers**
->>>>> for
->>>> AHB.
->>>>> In **the new approach (v8)**, I refactored the clock tree to clock tree.
->>>>
->>>> I still cannot parse sentences like "refactoring A to A". It's meaningless to
->> me.
->>>>
->>>>> It should be ABI-safe change
->>>>
->>>> No, you do not understand the ABI. You removed a clock ID, that's the
->>>> ABI change.
->>>>
->>>> Otherwise explain how this is not changing ABI.
->>>>
->>>>
->>>>>
->>>>> Or you want to keep original SOC0_CLK_HPLL_DIV_AHB define and then
->>>>> add
->>>> SOC0_CLK_AHBMUX.
->>>>> To be 1st patch, then 2n patch remove redundant
->>>> SOC0_CLK_HPLL_DIV_AHB?
->>>>
->>>> If you break the ABI you need to clearly explain why. We have long
->>>> conversations and you still did not say why.
->>>>
->>> Sorry, my point will be following steps to avoid potential ABI issues,
->>> I can modify the patch series as follows:
->>> 1. **Patch 1:** Add `SOC0_CLK_AHBMUX` without removing
->> `SOC0_CLK_HPLL_DIV_AHB`.
->>> 2. **Patch 2:** Finally remove `SOC0_CLK_HPLL_DIV_AHB`.
+>>> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> index 5b9bd2feda3b..356033d18f90 100644
+>>> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+>>> @@ -44,12 +44,60 @@ properties:
+>>>      description: frequency of the bus clock in Hz defaults to 100 kHz when
+>> not
+>>>        specified
+>>>
+>>> +  multi-master:
+>>> +    type: boolean
+>>> +    description:
+>>> +      states that there is another master active on this bus
+>>
+>> Except that this wasn't ever tested...
+>>
+>> Don't duplicate properties. i2c-controller schema has it already.
+> 
+> I will remove it to avoid duplication.
+>>
+>>> +
+>>> +  aspeed,enable-dma:
+>>> +    type: boolean
+>>> +    description: |
+>>> +      I2C bus enable dma mode transfer.
+>>> +
+>>> +      ASPEED ast2600 platform equipped with 16 I2C controllers that
+>> share a
+>>> +      single DMA engine. DTS files can specify the data transfer mode
+>> to/from
+>>> +      the device, either DMA or programmed I/O. However, hardware
+>>> + limitations
+>>
+>> so what is byte mode?
+> I explain in cover, I will add here also. 
+
+Cover letters do not get merged and we do not read them, except when
+looking for dependencies and explanations of process (like RFC). Your
+hardware description must be fully contained in commits, not cover letter.
+
+
+> aspeed,enable-byte:
+> Force i2c controller use byte mode transfer. the byte mode transfer
+> will send i2c data each byte by byte, inlcude address read/write.
+
+Isn't this standard FIFO mode?
+
+Why anyone would need to enable byte mode for given board?
+
+> 
+>>
+>>> +      may require a DTS to manually allocate which controller can use
+>> DMA mode.
+>>> +      The "aspeed,enable-dma" property allows control of this.
+>>> +
+>>> +      In cases where one the hardware design results in a specific
+>>> +      controller handling a larger amount of data, a DTS would likely
+>>> +      enable DMA mode for that one controller.
+>>> +
+>>> +  aspeed,enable-byte:
+>>> +    type: boolean
+>>> +    description: |
+>>> +      I2C bus enable byte mode transfer.
+>>
+>> No, either this is expressed as lack of dma mode property or if you have three
+>> modes, then rather some enum (aspeed,transfer-mode ?)
+> 
+> Thanks suggestion, I will using an enum property like aspeed,transfer-mode instead.
 >>
 >>
->> I do not understand what changed here. You remove exported clock which is
->> ABI, so how is this answering my question.
 >>
->> You keep dodging my questions. Here I asked "why". I do not see any answer
->> why.
-> 
-> Apology, I can't catch your point. But I still need your guideline.
-> 
-> **Regarding `SCU0_CLK_UART_DIV13`:**
->    - This clock ID was originally defined but was never used in any in-tree device trees. (i2c-ast2700.c v1 ~ v9)
->    - So there should not have ABI-break am I correct?
+>>> +
+>>> +  aspeed,global-regs:
+>>> +    $ref: /schemas/types.yaml#/definitions/phandle
+>>> +    description: The phandle of i2c global register node.
+>>
+>> For what? Same question as usual: do not repeat property name, but say what
+>> is this used for and what exactly it points to.
+>>
+>> s/i2c/I2C/ but then what is "I2C global register node"? This is how you call your
+>> device in datasheet?
+>>
+> I do descript in cover, should add into the yaml file ?
 
 
-No, because there are other users of bindings. All forks, out of tree
-DTS, other projects etc. You defined ABI for them.
-
-> 
-> **Regarding `SOC0_CLK_HPLL_DIV_AHB` → `SOC0_CLK_AHBMUX`:**
->    - The previous implementation used dividers (`mpll_div_ahb`, `hpll_div_ahb`) for AHB clock selection. (i2c-ast2700.c v1 ~ v8)
-> mpll->mpll_div_ahb
->                   -> clk_ahb
-> hpll->hpll_div_ahb
->    - The new approach use `SOC0_CLK_AHBMUX`, which AHB clock sources via a mux. (i2c-ast2700.c v9)
-> mpll->
->       ahb_mux -> div_table -> clk_ahb
-> hpll->
-
-Your formatting is one of the problems I have troubles understanding it.
-Above is not wrapped or wrapped oddly. You keep using bold * but double
-**, which is not a standard markup. Please switch to standard mailing
-list formatting - proper wrapping, only text mode and use client which
-actually can parse and create that.
-
-What I don't understand is how clocks could change in hardware. You
-described implementation, but the clock IDS do not describe
-implementation but the the mapping to real hardware clocks. So how
-SOC0_CLK_HPLL_DIV_AHB clock disappeared from hardware?
-
-
->    - And since i2c-ast2700.c (v8) is not applied, so there should also no one use this ABI. Am I correct?
-
-If binding was not applied, then what are you changing here?
-
-Does it mean header described clock which was in the hardware but its
-handling was not yet implemented in the driver?
-
+Again, cover letter does not matter. Your hardware must be explained here.
 
 > 
-> If this is not acceptable, my next patch will keep SCU0_CLK_UART_DIV13/SCU0_CLK_HPLL_DIV_AHB define.
+> aspeed,global-regs: 
+> This global register is needed, global register is setting for
+> new clock divide control, and new register set control.
 
-Maybe my last message was not clear, so: you need to explain why you are
-breaking ABI and/or explain the ABI impact in the commit msg.
+So this means you implement clock controller via syscon?
 
-> But add new SCU0_CLK_AHBMUX define for avoid your point ABI break. Is this acceptable?  
+> 
+>>
+>>> +
+>>>  required:
+>>>    - reg
+>>>    - compatible
+>>>    - clocks
+>>>    - resets
+>>>
+>>> +allOf:
+>>> +  - $ref: /schemas/i2c/i2c-controller.yaml#
+>>> +  - if:
+>>> +      properties:
+>>> +        compatible:
+>>> +          contains:
+>>> +            const: aspeed,ast2600-i2cv2
+>>
+>> NAK, undocumented compatible.
+> 
+> Sorry, I should add what kind of document about this compatible?
+
+You cannot add new compatibles without documenting them. Documentation
+is in the form of DT schema and each compatible must be listed (in some
+way) in compatible property description.
 
 
 Best regards,
