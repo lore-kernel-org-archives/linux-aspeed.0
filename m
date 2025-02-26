@@ -1,51 +1,94 @@
-Return-Path: <linux-aspeed+bounces-850-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-851-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD20DC021B8
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Feb 2025 09:56:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 680E8C19776
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Feb 2025 10:21:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2qcW1b37z30T1;
-	Wed, 26 Feb 2025 20:56:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04::f03c:95ff:fe5e:7468"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740563787;
-	cv=none; b=aiY+1SwWxk3Uxc3FUOS86WQu5UekK2FVF7jCaQS2FMtoaVNZtDAjDdPqelpw6+4Uq8A0nXDZfsww38TmdBaDA5t6H3mF9aRzjzGBbu40Z/211D4DWhydyQMjYdPYkbR8NHCV1oUCUIFyfE5sBGfbaiPq2G6RVv/MXpc6J75MZLBBP9qGkPmI/B2vtdFFs/1uWPNyasLx1iCQFjcsjkMJjly0koHh9UXheynqd2bycQvFVsiJcuLtaAdYf8YhkvKeefQRal3eXuSLOpfUsrO7I9NZKiKwzyiKQSEptWDRR9RKsXTCca2f2TCCFe0mFGi2pj/bp8ZnybmpfG2DMezzHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2r9F6wbYz3blF;
+	Wed, 26 Feb 2025 21:21:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740565281;
+	cv=none; b=gai7vuO9cvOVe5TRmxgRkV5P0UPzXF4dFECf8tG8DtzVhVrGzeICaz4Lo5ALg5ncurpSB0/ZZRozILI2Z/77+muivhVN+Z+XhC5kOyXf2asKg6nZRjSxyRd20YhGXRg/9tpSL4jQoXwtWpzL9Y86DwsMYqBfSQZRKHTMVu0zjZXjfwfWYf/MjXJg0HMayeohhMjWpILGnhMC88y0IrJi3UlvYVF6ijhlL+jWJ9LN4RcOcEpXK419dw8MyaJ7PX4wB8/mPzcPWVMFszSrQxb4RAg/kXLiHtT6GWySj/zqGvyjnFyk12HCT6KlP4zuc3omcLuBd2tCC3S8pr8kR7c9yA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740563787; c=relaxed/relaxed;
-	bh=Y+pxVerkfoS1avWErqPTUCwq3rjsaYZehyf3vYLR4ZE=;
+	t=1740565281; c=relaxed/relaxed;
+	bh=15oD9F9LF4ihAw9LiWAc/1ckpc1w8RXcncpMlXfhcS8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=hhBmCf2VMRJDyhnm8KKSOTrBu1kneFETJvDiIuRU7GWA//c9J7GfOFLgaWG5iaGxAAsPP1LZY0Gc3y/EzaZhvAlhDZH7JVzT9Hf0T9SM4VXy9KqTMxec6B/lNsvQ3pZywMSx0P3pUjDuB9oFoTmYA6vmTXuO2zHJU51weVFExzGgPZkbUvf0vVAuY1C222aAuh6I9DIdTE6jwaUmPEpHUtv4a42LsFsf8kWp+ZA/j8ap+K3B7vd/H7cKl0PX4KlRwR0HFMhaLCdmAdoFDTBpS7Ur2sgkpdTeY6gJ0XeAmppJFilWyUJUReiELVKRgrMU3oQhNDCKZBkAF6GoPMxfAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDIsy8iO; dkim-atps=neutral; spf=pass (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 In-Reply-To:Content-Type; b=LB4zIS/iOhh6t4oGZalY1ir8D4Vl2zdou2orRNR0vuYHSzJQwQZr3cmVX2EJWouGy38IbZqFZpMR22ncw5vfowOX/F2tmcOZyrGn3scHvdYOHpX3azH79psI0gplQWT5W7yIyJkHK90/7quMCrb9pR1OpAw0dZJIXVlddXTe892UxPj615M6BAZq1p7fLV6+iLg38pMJikmzsyA17ZGupQFRGC57m0qKlkaPYAEKXD88IuMRoukLSvI9O8q4T2jUQrXXRWkwtpZiTT8i86xbcoOKQsC9NDdkVZmLsDA3XrEh5bqdmJVKInHE0oX4+WFpcFfrWzFHJ59j/qyZJihYtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=NBuUhnR+; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1dBq1ESw; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=NBuUhnR+; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1dBq1ESw; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDIsy8iO;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=NBuUhnR+;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1dBq1ESw;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=NBuUhnR+;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=1dBq1ESw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2qcV2GNSz2yvl;
-	Wed, 26 Feb 2025 20:56:26 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3141061137;
-	Wed, 26 Feb 2025 09:56:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9B313C4CED6;
-	Wed, 26 Feb 2025 09:56:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740563783;
-	bh=1Quf7/c1ehY7FhlfL5b4CSIvNDLhWomMOOrwdf5C1bc=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=nDIsy8iONaUkV3zCR4j24aHleHJTprg4Ra22sC6KXhc8VhmIPceVBmDcFBURrhIje
-	 cu7kCS/JqDVLynQAq47qWpSXY+sx1LXQCf5NthVCR4cz70GDprSdoMxNf44f1F0s7f
-	 lkEttvPtA4icjYlN+6PjUfTSuiI9sIE6I9xCe9ofUGVGLmM7CL4DSqrjZD3A4feDS7
-	 AslZqbM90UNfJmjSBXyskmUlDyJs3dBrwl+snCUs4gQK8ctVFdz/qce6nP2MR416XY
-	 BGHC2WMTKEKN3BV+K4HMnG4jWxihC9Yt8F6DDtUxVnTebz0sPKInn95MHwTb0TxxJI
-	 5vrkFmbgouSTw==
-Message-ID: <50327725-f3b8-4a8b-94a2-85afccd2868a@kernel.org>
-Date: Wed, 26 Feb 2025 10:56:17 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2r9C6449z3bkg
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Feb 2025 21:21:19 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 6363D21197;
+	Wed, 26 Feb 2025 10:21:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1740565276; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=15oD9F9LF4ihAw9LiWAc/1ckpc1w8RXcncpMlXfhcS8=;
+	b=NBuUhnR+9yjyKCdcjlR8ffMrStU0q3O4Gn9HOXfir3Y0k09+3KZFgPX13+WkHXApGEvhUp
+	atnR0NdbNxsw1m5KZ+BsvRVICwGU63iKHuPN04yoBGyau3rq/YfWARVe/ViV+xVO3nGQSq
+	UvqN7JOUAPFqWuJrVlQduEYNiMTAaeg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1740565276;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=15oD9F9LF4ihAw9LiWAc/1ckpc1w8RXcncpMlXfhcS8=;
+	b=1dBq1ESwdP+6fjZI8BtYhs8qsoSzB2F/x41N/q8fJeUZaVXxMET7HA6MsYb+i7ZNzw1PbV
+	k0RYDHPjQYTE2RDQ==
+Authentication-Results: smtp-out1.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=NBuUhnR+;
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=1dBq1ESw
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1740565276; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=15oD9F9LF4ihAw9LiWAc/1ckpc1w8RXcncpMlXfhcS8=;
+	b=NBuUhnR+9yjyKCdcjlR8ffMrStU0q3O4Gn9HOXfir3Y0k09+3KZFgPX13+WkHXApGEvhUp
+	atnR0NdbNxsw1m5KZ+BsvRVICwGU63iKHuPN04yoBGyau3rq/YfWARVe/ViV+xVO3nGQSq
+	UvqN7JOUAPFqWuJrVlQduEYNiMTAaeg=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1740565276;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=15oD9F9LF4ihAw9LiWAc/1ckpc1w8RXcncpMlXfhcS8=;
+	b=1dBq1ESwdP+6fjZI8BtYhs8qsoSzB2F/x41N/q8fJeUZaVXxMET7HA6MsYb+i7ZNzw1PbV
+	k0RYDHPjQYTE2RDQ==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 248931377F;
+	Wed, 26 Feb 2025 10:21:15 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id xdCZBxvrvmegbAAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Wed, 26 Feb 2025 10:21:15 +0000
+Message-ID: <faaf92d2-f157-48c4-af1c-7251f65e8c2d@suse.de>
+Date: Wed, 26 Feb 2025 11:21:14 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,211 +102,162 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
- AST2600-i2cv2
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "joel@jms.id.au" <joel@jms.id.au>,
- "andi.shyti@kernel.org" <andi.shyti@kernel.org>,
- "robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
- <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
- "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
- "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
- "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20250224055936.1804279-1-ryan_chen@aspeedtech.com>
- <20250224055936.1804279-2-ryan_chen@aspeedtech.com>
- <20250224-arrogant-adventurous-mackerel-0dc18a@krzk-bin>
- <OS8PR06MB75415E95342F26F576B5CF8AF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH RESEND 12/12] Documentation: Update the todo
+To: Anusha Srivatsa <asrivats@redhat.com>, Joel Stanley <joel@jms.id.au>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Stefan Agner <stefan@agner.ch>,
+ Alison Wang <alison.wang@nxp.com>, Xinliang Liu <xinliang.liu@linaro.org>,
+ Tian Tao <tiantao6@hisilicon.com>,
+ Xinwei Kong <kong.kongxinwei@hisilicon.com>,
+ Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu
+ <yongqin.liu@linaro.org>, John Stultz <jstultz@google.com>,
+ Chun-Kuang Hu <chunkuang.hu@kernel.org>,
+ Philipp Zabel <p.zabel@pengutronix.de>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Marek Vasut <marex@denx.de>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Orson Zhai <orsonzhai@gmail.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Chunyan Zhang <zhang.lyra@gmail.com>, Alain Volmat
+ <alain.volmat@foss.st.com>, Raphael Gallais-Pou <rgallaispou@gmail.com>,
+ Yannick Fertre <yannick.fertre@foss.st.com>,
+ Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>,
+ Philippe Cornu <philippe.cornu@foss.st.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Mikko Perttunen <mperttunen@nvidia.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Alexey Brodkin <abrodkin@synopsys.com>,
+ Dave Stevenson <dave.stevenson@raspberrypi.com>,
+ =?UTF-8?Q?Ma=C3=ADra_Canal?= <mcanal@igalia.com>,
+ Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>,
+ Jonathan Corbet <corbet@lwn.net>
+Cc: linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-mediatek@lists.infradead.org, imx@lists.linux.dev,
+ linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org,
+ linux-doc@vger.kernel.org
+References: <20250225-memory-drm-misc-next-v1-0-9d0e8761107a@redhat.com>
+ <20250225-memory-drm-misc-next-v1-12-9d0e8761107a@redhat.com>
 Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <OS8PR06MB75415E95342F26F576B5CF8AF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Autocrypt: addr=tzimmermann@suse.de; keydata=
+ xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
+ XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
+ BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
+ hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
+ 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
+ AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
+ AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
+ AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
+ lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
+ U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
+ vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
+ 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
+ j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
+ T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
+ 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
+ GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
+ hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
+ EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
+ C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
+ yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
+ SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
+ Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
+ 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
+In-Reply-To: <20250225-memory-drm-misc-next-v1-12-9d0e8761107a@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-
-On 26/02/2025 10:28, Ryan Chen wrote:
->> Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
->> AST2600-i2cv2
->>
->> On Mon, Feb 24, 2025 at 01:59:34PM +0800, Ryan Chen wrote:
->>> Add ast2600-i2cv2 compatible and aspeed,global-regs, aspeed,enable-dma
->>> and description for ast2600-i2cv2.
->>>
->>> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
->>> ---
->>>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 58 +++++++++++++++++++
->>>  1 file changed, 58 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
->>> b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
->>> index 5b9bd2feda3b..356033d18f90 100644
->>> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
->>> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
->>> @@ -44,12 +44,60 @@ properties:
->>>      description: frequency of the bus clock in Hz defaults to 100 kHz when
->> not
->>>        specified
->>>
->>> +  multi-master:
->>> +    type: boolean
->>> +    description:
->>> +      states that there is another master active on this bus
->>
->> Except that this wasn't ever tested...
->>
->> Don't duplicate properties. i2c-controller schema has it already.
-> 
-> I will remove it to avoid duplication.
->>
->>> +
->>> +  aspeed,enable-dma:
->>> +    type: boolean
->>> +    description: |
->>> +      I2C bus enable dma mode transfer.
->>> +
->>> +      ASPEED ast2600 platform equipped with 16 I2C controllers that
->> share a
->>> +      single DMA engine. DTS files can specify the data transfer mode
->> to/from
->>> +      the device, either DMA or programmed I/O. However, hardware
->>> + limitations
->>
->> so what is byte mode?
-> I explain in cover, I will add here also. 
-
-Cover letters do not get merged and we do not read them, except when
-looking for dependencies and explanations of process (like RFC). Your
-hardware description must be fully contained in commits, not cover letter.
+X-Rspamd-Queue-Id: 6363D21197
+X-Rspamd-Action: no action
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-0.999];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FREEMAIL_TO(0.00)[redhat.com,jms.id.au,linux.intel.com,kernel.org,gmail.com,ffwll.ch,codeconstruct.com.au,agner.ch,nxp.com,linaro.org,hisilicon.com,google.com,pengutronix.de,collabora.com,denx.de,linux.alibaba.com,foss.st.com,nvidia.com,synopsys.com,raspberrypi.com,igalia.com,lwn.net];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	R_RATELIMIT(0.00)[to_ip_from(RL5qdohruh175rhiw1bqi96ifb)];
+	TO_DN_SOME(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_EQ_ENVFROM(0.00)[];
+	FROM_HAS_DN(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	TO_MATCH_ENVRCPT_SOME(0.00)[];
+	MID_RHS_MATCH_FROM(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[51];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TAGGED_RCPT(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,suse.de:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo]
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
 
 
-> aspeed,enable-byte:
-> Force i2c controller use byte mode transfer. the byte mode transfer
-> will send i2c data each byte by byte, inlcude address read/write.
 
-Isn't this standard FIFO mode?
+Am 25.02.25 um 23:20 schrieb Anusha Srivatsa:
+> Update the Documentation to be more precise.
+>
+> v2: Update for clarity
+> v3: Further details in Todo
+>
+> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+> Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
 
-Why anyone would need to enable byte mode for given board?
+Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-> 
->>
->>> +      may require a DTS to manually allocate which controller can use
->> DMA mode.
->>> +      The "aspeed,enable-dma" property allows control of this.
->>> +
->>> +      In cases where one the hardware design results in a specific
->>> +      controller handling a larger amount of data, a DTS would likely
->>> +      enable DMA mode for that one controller.
->>> +
->>> +  aspeed,enable-byte:
->>> +    type: boolean
->>> +    description: |
->>> +      I2C bus enable byte mode transfer.
->>
->> No, either this is expressed as lack of dma mode property or if you have three
->> modes, then rather some enum (aspeed,transfer-mode ?)
-> 
-> Thanks suggestion, I will using an enum property like aspeed,transfer-mode instead.
->>
->>
->>
->>> +
->>> +  aspeed,global-regs:
->>> +    $ref: /schemas/types.yaml#/definitions/phandle
->>> +    description: The phandle of i2c global register node.
->>
->> For what? Same question as usual: do not repeat property name, but say what
->> is this used for and what exactly it points to.
->>
->> s/i2c/I2C/ but then what is "I2C global register node"? This is how you call your
->> device in datasheet?
->>
-> I do descript in cover, should add into the yaml file ?
+Thanks for the update.
 
+> ---
+>   Documentation/gpu/todo.rst | 13 +++++++------
+>   1 file changed, 7 insertions(+), 6 deletions(-)
+>
+> diff --git a/Documentation/gpu/todo.rst b/Documentation/gpu/todo.rst
+> index 256d0d1cb2164bd94f9b610a751b907834d96a21..c57777a24e03d91b1ffe04365f7356f2d938befd 100644
+> --- a/Documentation/gpu/todo.rst
+> +++ b/Documentation/gpu/todo.rst
+> @@ -441,14 +441,15 @@ Contact: Thomas Zimmermann <tzimmermann@suse.de>
+>   
+>   Level: Intermediate
+>   
+> -Request memory regions in all drivers
+> --------------------------------------
+> +Request memory regions in all fbdev drivers
+> +--------------------------------------------
+>   
+> -Go through all drivers and add code to request the memory regions that the
+> -driver uses. This requires adding calls to request_mem_region(),
+> +Old/ancient fbdev drivers do not request their memory properly.
+> +Go through these drivers and add code to request the memory regions
+> +that the driver uses. This requires adding calls to request_mem_region(),
+>   pci_request_region() or similar functions. Use helpers for managed cleanup
+> -where possible.
+> -
+> +where possible. Problematic areas include hardware that has exclusive ranges
+> +like VGA. VGA16fb does not request the range as it is expected.
+>   Drivers are pretty bad at doing this and there used to be conflicts among
+>   DRM and fbdev drivers. Still, it's the correct thing to do.
+>   
+>
 
-Again, cover letter does not matter. Your hardware must be explained here.
+-- 
+--
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Software Solutions Germany GmbH
+Frankenstrasse 146, 90461 Nuernberg, Germany
+GF: Ivo Totev, Andrew Myers, Andrew McDonald, Boudien Moerman
+HRB 36809 (AG Nuernberg)
 
-> 
-> aspeed,global-regs: 
-> This global register is needed, global register is setting for
-> new clock divide control, and new register set control.
-
-So this means you implement clock controller via syscon?
-
-> 
->>
->>> +
->>>  required:
->>>    - reg
->>>    - compatible
->>>    - clocks
->>>    - resets
->>>
->>> +allOf:
->>> +  - $ref: /schemas/i2c/i2c-controller.yaml#
->>> +  - if:
->>> +      properties:
->>> +        compatible:
->>> +          contains:
->>> +            const: aspeed,ast2600-i2cv2
->>
->> NAK, undocumented compatible.
-> 
-> Sorry, I should add what kind of document about this compatible?
-
-You cannot add new compatibles without documenting them. Documentation
-is in the form of DT schema and each compatible must be listed (in some
-way) in compatible property description.
-
-
-Best regards,
-Krzysztof
 
