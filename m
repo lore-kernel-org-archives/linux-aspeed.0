@@ -1,51 +1,80 @@
-Return-Path: <linux-aspeed+bounces-871-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-872-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A5E7C282C6
-	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Feb 2025 17:31:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8BF7CC282D1
+	for <linux-aspeed@archiver.kernel.org>; Sat,  1 Mar 2025 11:01:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4FcP5r3Qz3btP;
-	Sat,  1 Mar 2025 04:31:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740763877;
-	cv=none; b=c01aUQCUDam0j5vxMHGDzxJMoEDFUwI0V1jXxY0wRWeaANvC7p/j2lGZu4EIU0jIytEcN7JUUA37GkBB6s6zUXGFIhjpTI0ztn0v1j7GfoFdAiciQJQoj/Y7w3kA0/ojb0SEb4CVM9iMqk8PeBWlZfs1b6JbJv51OPXwoLjBfiqDaRnTAZpP03tjf6HMLk7FcfOJHFtFejIwTEPep29KE/Bd0YHXex5FtHBHZIh6mdvnSs2tDoD6BTzlhcFnYwZNKvobJg/XsifPJahkXQ0+4Rk7W+cfZHkV1d5Bx+f5GK0GOpB0rGnUY1vLChypgUujimT1Yr5vxY72OI+Qq3SCRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hvt6f1Sz30gC;
+	Sat,  1 Mar 2025 22:01:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::532"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740751651;
+	cv=none; b=fiUCCtsjp8GRD2E74LJGcSQhqnZCIpwtJ+7rd3NFIzs9Vd/gQgoa68hJ+UUhW2tbCyPnElFPmtbjPepHwYhD3QYe01YOx+M04aVdS+vqM1VVrPjtugSAYzP0LV/ccYpQiskIIKEv2SOOYy3y3aLLQFYFEJ7/L00TZN42X/ymxKDQ64Z4wEK3Id5J+qizh6HudirMF547yzER5HHJJJmJaRlUBfOoIPUfHbK35tqoU69icoOC+yfNQHZlc4XC9aIxKu4d28w24UW/uQK9xaUHKu/U+qMtXOj5QXhrBE2t5fBanZfz1b8/0lKwt76VYjX/eiis6HFs48sw8h0/+F7otQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740763877; c=relaxed/relaxed;
-	bh=KT+MNwpd4F28O8ArZz1ntkuhE4VBNJ7gO9Sos3omueY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bBoBfGIY2PANHYLcita+zu9MTMHl82SJANALIQSEWzn8fwpoBnrWuVFVP/vAClbtWv2SdFFTzOTRcJP/4m7tWImZhWO40FIQM0PmSA4RapzHtzOINRDLaYo7JN7MMUOFie66iRRr3/ESXrA/6RT7/hwxvkCQmB3uXEW8C8dg9PWnUiBSPYhpKTMcRSmCM4BtlZy82Qd4M6eSJ/+tdGfRv8BGoGgnKMF0DZneJcNM2BRoJ7cwo4+u1oTOr8f5+B0+u1ixkU8tAxW0oVQ6IfgX+Y/pYR4cgQmOOmUAxznMjtBrTA5QaXSudlJsc1hDIgwtLO/b74mxqtGfx9bpPEWWYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BLtJWd/c; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1740751651; c=relaxed/relaxed;
+	bh=dZH0eiBnc3WyY94yEis5FUZqmpsbyvfcyDb3myV5OX0=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=AQjp4nWn9Y7pAnmT9ExEYYmuAzzaU2ouPLK51vcGodnZ1DRMGBoqnstKdU+rU+hKSOo7Ji6LcRA7lfoev19mLOHOJ7qCu+s/+K+an31CQW2n0o1nW0HAK0U20CpQiZdDAEfaabE0byAk5Q1WMpD7mkadQdBYFcBmyv8rA5KNYAS5sYJRYMU9YJe3/VmVCTAruBVwrOZUsLzobwibyA27GI8rfXiT9H9V5ki+MLCLcjNcnNKETbZgMdwdBpwIAAY5RUPcU/9hhx676+DjJr34VotD/+kO/kCswYBPPPnCsxeU6Z7YmuOeJhiE2SUHUx7y0j+qos9rn4KnEnIQN5VooA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=IG/p3Bb6; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BLtJWd/c;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=IG/p3Bb6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z4FcP0Mrsz3bm3
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 04:31:17 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 6855D5C6804;
-	Fri, 28 Feb 2025 17:28:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2684FC4CED6;
-	Fri, 28 Feb 2025 17:31:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740763874;
-	bh=qbWQBw/uFqQPwpcYNMFggUmUDTmFcLh0DbcUnSSTCuA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=BLtJWd/c1bfEyU1HO9uRG+96bn5uoeZFvNoz/ITIoZVr2bPrfVd/obe/e+BjHjPjw
-	 rImRgi3N4f381K4clFXIxdYFPPEl1Yu1WvYMwgQOJZFtFSOKtxwyYAHU9Z7Q/et0am
-	 DHYVrTaTNb3FrTH6miqiIDSrkHeLlJ0lXUTJ8Y7Rv79nepG2UsyIVpzgPZ0hOyxgY3
-	 14M7b6EFOXK6/06VuTXF+6Ai01GbUaupJYuouxn+BZi/fooM6EZalDdPHS6NS/HTK4
-	 h8q4sGCMpmv9O3mSRX6y6C2ScWlYppd9CHT1SXBRN5K0GSqmPa/gShJxlsTAfV4RB5
-	 N1Urg97vMGssg==
-Message-ID: <aff5a71f-ed87-4a3d-b7bd-8d96bcd19a13@kernel.org>
-Date: Fri, 28 Feb 2025 18:31:05 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495F5m68z3bvP
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:29 +1100 (AEDT)
+Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-5e4d50ed90aso1633738a12.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1740751646; x=1741356446; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=dZH0eiBnc3WyY94yEis5FUZqmpsbyvfcyDb3myV5OX0=;
+        b=IG/p3Bb6xwT2sajGPy0wsLY3qnwKce1S5yTesaUX0xHRsDJ4t+oboSqeTfy9dF2gQ7
+         jghXtilEkBIblICx0RYVRdmXtrjO4z8r2KAqibSEGAglUUmTv4vTTAg4iCWA2Ax20PBw
+         p2JklRxddBQKMnx2rOUEn6Pe+u8CNENUk8+5MnbwPX+89q+ixmkD0Dj0q068EuwG/dcv
+         +JnXo8W4YoZQ/IVKlDYGxSxlVaVI7k44SUu46g1jZNYWq/t5Tfm5yEaWJg5nQpaWRkSb
+         JcjnkDHxyDsxOlfrnFoKPZl/S2LwHPeJAkEhZx7/uXTc9/SWbOiJKBC2S94IMiWwaltU
+         aKfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740751646; x=1741356446;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dZH0eiBnc3WyY94yEis5FUZqmpsbyvfcyDb3myV5OX0=;
+        b=lenKQjtLCXrsPNkUfI6pN+7R2VEGXnL1doqi/R7ChS9hR/ouKkEY9zVDcAg4sKi94L
+         I8uMsPBBXWqdFbDnAoXFKmP5wqNEgj+mlyswX0YtkNdFsTc7CyDHXkKsMpp6I2GrRmel
+         s8nLdzywmry+i7HcW+o/IztSq209H1Orsv3eLbqOK0oDuAZ0MVIw2fFlSutqCu3iOKCt
+         bA2doUYHKFl/JB6Y19kQPQZdDKCQfIt/LyCRO4jRwzFBOK7fpSuVKMMPfByP10qrWqhg
+         97woVRha1T/T9l+H/QBfIn5sA3K7NDracq6gNMX49k2FS0ZgpZ18vK4UukVtJBmzvLNz
+         FTqw==
+X-Forwarded-Encrypted: i=1; AJvYcCUSnF3GguhSEAtklERyWfiptE++yGtt387TdjaLc8AW3iFKeZHoyP1U76T/MrBq7p4DMxNQM4W6McXpsJU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YytMOkqlCMpvV/V2QPV7adoW/klwmfJyNAeP9l9F7ppaOHPWtov
+	+qXCcTqaGrMaCYXpkmmNkBj4huLmO4ABIlhsd6HjiR+rxKlEOag49pd5MeyOTC0=
+X-Gm-Gg: ASbGncvZ36xc1HWIUf91L4g08Z6EV7ri/ja5ozO0k/uWOQ6LkIgbZL4gtQItPi/TXQT
+	xRAEAu133LuChRIc+r5BZJZnQpjgnGNXwdTimaBbGq2XcHTEbE3BJdHjtYaT0C6SBhATFqPkF/C
+	/I8X32e0oR+Za7ZA6ra3EH3nOLbo/uQhkFNuOOSaLs/cpnJOiDbFyMjQtBweRXWyA8A+rYXTSI0
+	cHOQdD0P7W+Xpj84I2mrPMsYtx35M5wPN8ymLAtVB8mkA/xb7+y6Yspg8tbjPAQdA5cM0grhL/r
+	vlSdoSbV5taS4/cqQb2tfuwnTKKaRb6a89o//bos3ghYWgmG9bMYXPjJW1dQaZPCt9vMto/3nNL
+	pLHoyAfPNlA==
+X-Google-Smtp-Source: AGHT+IFbzXWayjdSMfWjy9cwjYueSFy4YBp7IQ8OjzR2IKI5f4QLOeDnV9cvNi5W4D61UevFMTrZwA==
+X-Received: by 2002:a05:6402:239a:b0:5e5:552:32a8 with SMTP id 4fb4d7f45d1cf-5e5055238efmr931950a12.8.1740751645786;
+        Fri, 28 Feb 2025 06:07:25 -0800 (PST)
+Received: from puffmais.c.googlers.com (30.171.91.34.bc.googleusercontent.com. [34.91.171.30])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5e4c3fb51f9sm2550839a12.55.2025.02.28.06.07.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Feb 2025 06:07:25 -0800 (PST)
+From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+Date: Fri, 28 Feb 2025 14:07:19 +0000
+Subject: [PATCH 06/18] rtc: ftrtc010: drop needless struct
+ ftrtc010_rtc::rtc_dev member
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,86 +87,98 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 02/18] rtc: s5m: drop needless struct s5m_rtc_info::i2c
- member
-To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
- Chanwoo Choi <cw00.choi@samsung.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
- Hans Ulli Kroll <ulli.kroll@googlemail.com>,
- Linus Walleij <linus.walleij@linaro.org>,
- Neil Armstrong <neil.armstrong@linaro.org>,
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
- =?UTF-8?B?VMOzdGggSsOhbm9z?= <gomba007@gmail.com>,
- Dianlong Li <long17.cool@163.com>
-Cc: linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org,
- linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-amlogic@lists.infradead.org
-References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
- <20250228-rtc-cleanups-v1-2-b44cec078481@linaro.org>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20250228-rtc-cleanups-v1-2-b44cec078481@linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20250228-rtc-cleanups-v1-6-b44cec078481@linaro.org>
+References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
+In-Reply-To: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>, 
+ Krzysztof Kozlowski <krzk@kernel.org>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+ =?utf-8?q?T=C3=B3th_J=C3=A1nos?= <gomba007@gmail.com>, 
+ Dianlong Li <long17.cool@163.com>
+Cc: linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org, 
+ linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-amlogic@lists.infradead.org, 
+ =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+X-Mailer: b4 0.14.2
 
-On 28/02/2025 15:07, André Draszik wrote:
-> When this driver was converted to using the devres managed i2c device
-> in commit 7db7ad0817fe ("rtc: s5m: use devm_i2c_new_dummy_device()"),
-> struct s5m_rtc_info::i2c became essentially unused.
-> 
-> We can drop it from the structure and just use a local temporary
-> variable, reducing runtime memory consumption by a few bytes.
-> 
-> Signed-off-by: André Draszik <andre.draszik@linaro.org>
+The memory pointed to by the ::rtc_dev member is managed via devres,
+and no code in this driver uses it past _probe().
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+We can drop it from the structure and just use a local temporary
+variable, reducing runtime memory consumption by a few bytes.
 
-Best regards,
-Krzysztof
+Signed-off-by: André Draszik <andre.draszik@linaro.org>
+---
+ drivers/rtc/rtc-ftrtc010.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/rtc/rtc-ftrtc010.c b/drivers/rtc/rtc-ftrtc010.c
+index cb4a5d101f537e20a685bb022e6f6516b0df8271..02608d3784958e69ec0ecbdb9fcc8b333b19e7cc 100644
+--- a/drivers/rtc/rtc-ftrtc010.c
++++ b/drivers/rtc/rtc-ftrtc010.c
+@@ -28,7 +28,6 @@ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:" DRV_NAME);
+ 
+ struct ftrtc010_rtc {
+-	struct rtc_device	*rtc_dev;
+ 	void __iomem		*rtc_base;
+ 	int			rtc_irq;
+ 	struct clk		*pclk;
+@@ -113,6 +112,7 @@ static int ftrtc010_rtc_probe(struct platform_device *pdev)
+ 	struct ftrtc010_rtc *rtc;
+ 	struct device *dev = &pdev->dev;
+ 	struct resource *res;
++	struct rtc_device *rtc_dev;
+ 	int ret;
+ 
+ 	rtc = devm_kzalloc(&pdev->dev, sizeof(*rtc), GFP_KERNEL);
+@@ -160,29 +160,28 @@ static int ftrtc010_rtc_probe(struct platform_device *pdev)
+ 		goto err_disable_extclk;
+ 	}
+ 
+-	rtc->rtc_dev = devm_rtc_allocate_device(dev);
+-	if (IS_ERR(rtc->rtc_dev)) {
+-		ret = PTR_ERR(rtc->rtc_dev);
++	rtc_dev = devm_rtc_allocate_device(dev);
++	if (IS_ERR(rtc_dev)) {
++		ret = PTR_ERR(rtc_dev);
+ 		goto err_disable_extclk;
+ 	}
+ 
+-	rtc->rtc_dev->ops = &ftrtc010_rtc_ops;
++	rtc_dev->ops = &ftrtc010_rtc_ops;
+ 
+ 	sec  = readl(rtc->rtc_base + FTRTC010_RTC_SECOND);
+ 	min  = readl(rtc->rtc_base + FTRTC010_RTC_MINUTE);
+ 	hour = readl(rtc->rtc_base + FTRTC010_RTC_HOUR);
+ 	days = readl(rtc->rtc_base + FTRTC010_RTC_DAYS);
+ 
+-	rtc->rtc_dev->range_min = (u64)days * 86400 + hour * 3600 +
+-				  min * 60 + sec;
+-	rtc->rtc_dev->range_max = U32_MAX + rtc->rtc_dev->range_min;
++	rtc_dev->range_min = (u64)days * 86400 + hour * 3600 + min * 60 + sec;
++	rtc_dev->range_max = U32_MAX + rtc_dev->range_min;
+ 
+ 	ret = devm_request_irq(dev, rtc->rtc_irq, ftrtc010_rtc_interrupt,
+ 			       IRQF_SHARED, pdev->name, dev);
+ 	if (unlikely(ret))
+ 		goto err_disable_extclk;
+ 
+-	return devm_rtc_register_device(rtc->rtc_dev);
++	return devm_rtc_register_device(rtc_dev);
+ 
+ err_disable_extclk:
+ 	clk_disable_unprepare(rtc->extclk);
+
+-- 
+2.48.1.711.g2feabab25a-goog
+
 
