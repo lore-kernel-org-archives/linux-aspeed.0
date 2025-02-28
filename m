@@ -1,78 +1,80 @@
-Return-Path: <linux-aspeed+bounces-876-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-875-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7B2AC282C6
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ADD5C282D2
 	for <linux-aspeed@archiver.kernel.org>; Sat,  1 Mar 2025 11:01:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hvx4pwLz3c3n;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hvx34ZPz3c30;
 	Sat,  1 Mar 2025 22:01:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740751649;
-	cv=none; b=IvnDOBWwenemRbvaM21TWe71wWMGoSFc9+7HymKKINd+oz6Gc0Bxk3RycYGm4pK3e8tWz7CAiJq7VdF+HoKTYmllZvT7upDS7Qc75kQyHm8yPKbxB7PiXPPHnCgTRtuP5S27fRBESSY+0Qv1lm9g4GL9/OPNLeTUWJ3Nq4jJb+tC4X5uHXJAThEkYWLb0nbYrlmpSQgg3wOEED9k79/m7KoL/+AB0lsxIlWifyKrfKcT255uqnt9+3eOQPjdInkQalv5d52RmMspSyIr2UDSP90pp+hbxIdyrPLjYcgfRyFPTE5589eHbaJhx9/BUEtHHRL+xkc8WWeOSuuFBFjazA==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::532"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740751654;
+	cv=none; b=ZSjtuq8NAkAXr6O+SL5jKqSEbQAV38VRKmKHbx9uP2gzrIWtgltzFGrQza1x1A7OI5kXVk00tMxAO+d4mSB74B9O/77uLrh2ZKhZTcBXx5ix1JsNvvyj3R72JjR56zmODeCbeqXLuzkIxBGpSPzY/Ma2xfKlM4plvetIhjHui4Ker1cOF1X8dfz6H4yKVqXOP73llm7D5LF4K3DbEZYwSnCDDaXG73H3rwqaY0FIrRkuk/XtCQ7ee8JNAgszr6v0q+HWYLJTWUg8XidBdL8thsJ3q0IAq+JAO3+PYY+EccnPn1xlHU2+Qyik7dz7b93N5vb+BQFVD+YE4GY4U75o7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740751649; c=relaxed/relaxed;
-	bh=xhLZqgcaujiFhw9G1dCH5p0FiLmGyvslkaMt4uwl9Do=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=GyY1fh4HipEnd8Hd8XDO95zoRpFhmAX8Dgy0Hq3LwyF9fNX6gaWPFY0uaQImzC+wHpyJrnRJdhzzFV7tOBM7sn0iHDxVrtnRnfFQLdmXD2WZ2xL78oFVjjP0oSjJfKapB3X+FDj3rNJW/HzF6FAsAJxhHFEG4XFWHGJb57PhDlKGhIgj73ncPB165tOrs6zNAlv40XXd9Z5MXjaNAezSVCU9KCKtnP1UgBzajhz7VSmkIgxwl56tjXPIbjXWAHcpFqWe4Ne7/V9WfxFN4jbgGP7W9nVEqczgjcRn5zp6GI0y0I/W2CTHTCU5+XtszQ0I3zSNcVWpZCaKIUBr2FVGZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zdbk9aXD; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+	t=1740751654; c=relaxed/relaxed;
+	bh=7nzHwlkUM09BG0CuM/bA+EpIQxILewT/ffWeXrAz77U=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=eCkwm3AtAFMSRQglatODeNrC/rl4zxiX6fSAFOxXMhZS3ru09yQsn6Xktk/czpzomm9fKRZgfVYN1hl9zurH9mcN6OQcnlZuveoorx2NEGYrCifvFL0Ciq8hO9tXVwr84H+76/z07xkPoEVpnucQ5SJXjt9I37b85ZQ+TflUWt1Yt/P96qJjuQzZ3svBGQ+XcLB7eghja9KUWOFZQav0iR32Grl+N2n1+fWiXCR4O8Sto2I3lYYhbqXO8eJqLr4XCfDbHlbdoRzI+dBC0EHJcyPVkoqXv3fp4+vTyJYo84CisoxfAXP7SV+sGDBCARhfSbMKJaW/55vlTySpI79Ldw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=hrj2UGCj; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zdbk9aXD;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=hrj2UGCj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495C64Ggz3bsQ
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:26 +1100 (AEDT)
-Received: by mail-ed1-x52f.google.com with SMTP id 4fb4d7f45d1cf-5e4d3f92250so2082236a12.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:26 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495K2jgCz3btn
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:33 +1100 (AEDT)
+Received: by mail-ed1-x532.google.com with SMTP id 4fb4d7f45d1cf-5e4ce6e3b8cso2624199a12.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1740751642; x=1741356442; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xhLZqgcaujiFhw9G1dCH5p0FiLmGyvslkaMt4uwl9Do=;
-        b=zdbk9aXDzFwOmaP2CRcVmQFa6D1C18odHBGfaaYpSb83YHnMqsCvHHGd9uPUqwTWfQ
-         h/QjN8qgqIdi9Yh26sCEHIV8kjq2Udr2UTKKifaE3mwSEyc2wrnbjlNacc3VVu5FtK+K
-         g9I39bOXvIE9Ypp46YsqXNUSIe+HlSPDbxoWPePmP8WLQCHLX+yJ88Kv3N/HMwEZoKRP
-         5TJQnR3TutPpjnTUUNV6m6QUYqW0KxQb7kyNB+SqJpKpPi1wWp9wdYku8rKkCOWL9hMa
-         9e+H8DZ4Nd+soa8FOqQPMgYdBoF7D8rZZ02ltO+Z9tJq/EdfAsbxuqJqb8YM8Qqb8hEV
-         N9kw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740751642; x=1741356442;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=linaro.org; s=google; t=1740751648; x=1741356448; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=xhLZqgcaujiFhw9G1dCH5p0FiLmGyvslkaMt4uwl9Do=;
-        b=QG3pzmVcxMan3jF+gueL6YZuWtMWUR6jU2woocs4TJ39I0XR3hC1DGdXXSGBSQ4u5M
-         jWEHHgEoLv4yf64JvKkDTSUbd5sYKsKP9oWEcMSYBWr/omFsM1vvXTZz3XWQjRsWNAFA
-         CXaMUdOzmReM7TdiAMQqe+XsAxWyGjqofssqMNIA2cT6UbSqSYg6JhKb5WE+QER3Zeq0
-         SRVrGsvlF2H57tJyTD/JdlKRGXlqeHivr0634p6xfSuakGDoF9E5+HJk8ykL/IK/UDRR
-         sitXZT4VrW2qqC/EYE/dvhv6fbnm2DxenhLoN2ZUIT+miFWjZZXX9iFh8CPPrxKumC7n
-         a+bw==
-X-Forwarded-Encrypted: i=1; AJvYcCWowzd4yMjtlLplPhlJn5PwgEgoR+o8A/NHKNFIPSfh4ftviXQZaitk22+tMRVsbId2oydBFipnji1m2NE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw8Kp2EOx4FO8IbttAry2+mul/5vQWDsR8PB2gb35X1tNFYmuZD
-	TYPybx3dcwTa+fh4uTutVL8O1wHORrb3uXryZWynFiUadFDJts1KDCcDkAkw5Jc=
-X-Gm-Gg: ASbGnctTQES5h65LeKMELjLqM0SmHczVnZubX7uR/SuWGN51FV7ioQi4UTogJxYl2ed
-	Af1jS8nNIg3P1G3Cita97Rb7Y0xnCL7V6nkL8rfsWFk3ujK2CG3MP/JQF26mjgYJwjrS+Rj2VRX
-	d4xYLbPZdgen6uTIW0cSAx0NmFfNk0sNcRH+rXtmq/Bth4d8AY+EyAlbSdd4s/tqvUzPIe5PVbb
-	7yknmued+P6+vy3zeIFdlccNk2RCUbX82I1I8PM+4TkQSziFgpPRGUahsdxCuKq+zGekez4Mfur
-	nrzI2d44zLlMwOs3oHvyFrGza3zOJk3lvRV+TXLnChoBhHUVwQ3FXY5weaZteTALcwMIleP7uOL
-	ms2th1aNNqQ==
-X-Google-Smtp-Source: AGHT+IHP7pUAJMVQB1Guj47dyI47K7YXQj82SFh5z5QQxgHATc6r4NQ1/TjLpJM/Ncf+/B2eBWDZ7w==
-X-Received: by 2002:a05:6402:5242:b0:5e4:cfb0:f667 with SMTP id 4fb4d7f45d1cf-5e4d6b691d6mr2481074a12.21.1740751641613;
-        Fri, 28 Feb 2025 06:07:21 -0800 (PST)
+        bh=7nzHwlkUM09BG0CuM/bA+EpIQxILewT/ffWeXrAz77U=;
+        b=hrj2UGCj8NGxaUhckMZNGnJBOwYCB5gfxWj+llt5oHJbRYHX6kg5q+QugRxw4Hmr39
+         P/pcVRemOmzKB0j/WfTSd4kpMeC9b+vyaM6EUBZSt8C+qMGpKwfrwZm7rIyFUPQXavmA
+         HSJwkm+hl3qO4sJk9V6y+PWsMFvCUmZuw6S21HA3l25XiaP3ZgZPmQlHp4exc8mA9YSY
+         3SKCPvfYILJuF5tiUoRZZ7z9bn6APxAuFp1/a0sXVpXecZ+1IIGcEMGXVHgwiZVzJFI8
+         pYa2VnFkWGTuW5kYSpP3XaOJpEJan7oMlAs9tqy03VN17Xmc5TppCStEEuJ/+fDyUYta
+         Ixtg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740751648; x=1741356448;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7nzHwlkUM09BG0CuM/bA+EpIQxILewT/ffWeXrAz77U=;
+        b=GsrinTUJxPjpOuJTSj7tA89GqS84AH95uFo2o1c5z0XlppePbyNUUSa6JrMsNL/1eI
+         oQmTAY6n/nmjr/BbHSYRoPpxNZZ1IWNic2kQp7upfTnfY419x48hDtFqCFjRN6561Djl
+         XUzkIUDNZX+PAxowRf5lMwD7n1atwl2UDGdVKitUzVYz/iTGHugsqMjmZ21VLoW20XF4
+         Wr45iQNdikx2TJ1MdS/tgzma0akeP7sbPD6YAVX0nbcl/+kBz02nwui3XVoJgPlPge34
+         +tO7izKsrdnhOmERKGDKsgh+2BBWFMnc5xA14xYv+xMjXH6L22szP23atKbMqSlo0bxJ
+         mEkw==
+X-Forwarded-Encrypted: i=1; AJvYcCXSdf3MDepHuyxWEP+dxG+AEnmSIHjPafpQWeWb1PZqFgso3kA7Dp4aurFqvFpTJUiQ7ClrROitCKmlNeE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzUo2hxKaKJEe0GyjAPT4u7CMh7mQg/HjV6N2nPmIPlKYm+hf/1
+	yekjClMVvsuXSENV7UWkSDjoDoAjCtWu7nz+kHHfAYsAVX7TWot0TiU4Wbv91LI7oAHztqXYDMf
+	aYlU=
+X-Gm-Gg: ASbGncs7mAIc7WoFfRiG284AoYbSwCmaapUO0HPO3dr31FEMLVNUq7oY/4NedYLlPiB
+	mtMyTeLn/FyiLtPAq5oz3QHAGXHDq7BDVMPQspkHy56FHXXzZ53qrwAIBYrrOSNVwd12iijJvRK
+	6hDhvQM7lpumRC+TOcR4kMMK4UlzXFGI7fk65OB+J5aUtgtJPfB1QWajZh7hWH2zz8HojH2V1eF
+	RJjp+30NJ0zJnPf91qY/dqEL36CJdWk2gzMjQxQaCFVUB6OnnLzlTkM9gLDmWE291J2ieb+Lg48
+	vP/JaKe/rHrtRC5QtY2fywUqIaRxnFqGYKuB2+DcsLx4uxtjcUM/ckpaBF9uQzUjuRD9e1t1E2w
+	R5C4SjWQfVQ==
+X-Google-Smtp-Source: AGHT+IGquByOTAI+pOBsMihZmYnZaIy5p2XitRnKkTWDJg07k5RO868wRYsHEejBUavy8mEmWjqo9Q==
+X-Received: by 2002:a05:6402:13d4:b0:5e0:8a27:cd36 with SMTP id 4fb4d7f45d1cf-5e4bfacb0a8mr8959084a12.8.1740751648271;
+        Fri, 28 Feb 2025 06:07:28 -0800 (PST)
 Received: from puffmais.c.googlers.com (30.171.91.34.bc.googleusercontent.com. [34.91.171.30])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5e4c3fb51f9sm2550839a12.55.2025.02.28.06.07.20
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5e4c3fb51f9sm2550839a12.55.2025.02.28.06.07.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 28 Feb 2025 06:07:21 -0800 (PST)
+        Fri, 28 Feb 2025 06:07:27 -0800 (PST)
 From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Subject: [PATCH 00/18] a few rtc driver cleanups
-Date: Fri, 28 Feb 2025 14:07:13 +0000
-Message-Id: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
+Date: Fri, 28 Feb 2025 14:07:24 +0000
+Subject: [PATCH 11/18] rtc: rx8581: drop needless struct rx8581::rtc member
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,10 +89,9 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIABHDwWcC/x3MQQqAIBBA0avIrBN0SoiuEi3MphoIE60IxLsnL
- d/i/wyJIlOCQWSI9HDi01foRoDbrd9I8lINqNAoxF7Gy0l3kPV3SFKjU7PR2JLtoCYh0srvvxu
- nUj6cRcJTXgAAAA==
-X-Change-ID: 20250228-rtc-cleanups-12c0b5123ea4
+Message-Id: <20250228-rtc-cleanups-v1-11-b44cec078481@linaro.org>
+References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
+In-Reply-To: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
 To: Chanwoo Choi <cw00.choi@samsung.com>, 
  Krzysztof Kozlowski <krzk@kernel.org>, 
  Alexandre Belloni <alexandre.belloni@bootlin.com>, 
@@ -108,68 +109,71 @@ Cc: linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org,
  =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
 X-Mailer: b4 0.14.2
 
-Hi,
+The memory pointed to by the ::rtc member is managed via devres, and
+no code in this driver uses it past _probe().
 
-While looking at RTC, I noticed that various drivers are keeping
-pointers to data that they're not using themselves throughout their
-lifetime.
-
-So I took the liberty to drop these pointers and this series is the
-result.
-
-The last two patches also convert two drivers to using dev_err_probe(),
-as I looked slightly closer into those two. They don't exactly fit the
-general subject of removal of unneeded pointers, but I wanted to share
-them anyway, since they're ready.
-
-All of this was compile-tested only.
-
-Cheers,
-Andre'
+We can drop it from the structure and just use a local temporary
+variable, reducing runtime memory consumption by a few bytes.
 
 Signed-off-by: André Draszik <andre.draszik@linaro.org>
 ---
-André Draszik (18):
-      rtc: max77686: drop needless struct max77686_rtc_info::rtc member
-      rtc: s5m: drop needless struct s5m_rtc_info::i2c member
-      rtc: aspeed: drop needless struct aspeed_rtc::rtc_dev member
-      rtc: ds2404: drop needless struct ds2404::rtc member
-      rtc: ep93xx: drop needless struct ep93xx_rtc::rtc member
-      rtc: ftrtc010: drop needless struct ftrtc010_rtc::rtc_dev member
-      rtc: m48t86: drop needless struct m48t86_rtc_info::rtc member
-      rtc: meson: drop needless struct meson_rtc::rtc member
-      rtc: meson-vrtc: drop needless struct meson_vrtc_data::rtc member
-      rtc: pl030: drop needless struct pl030_rtc::rtc member
-      rtc: rx8581: drop needless struct rx8581::rtc member
-      rtc: s35390a: drop needless struct s35390a::rtc member
-      rtc: sd2405al: drop needless struct sd2405al::rtc member
-      rtc: sd3078: drop needless struct sd3078::rtc member
-      rtc: rx8581: drop needless struct rx8581
-      rtc: sd3078: drop needless struct sd3078
-      rtc: max77686: use dev_err_probe() where appropriate
-      rtc: s5m: convert to dev_err_probe() where appropriate
+ drivers/rtc/rtc-rx8581.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
- drivers/rtc/rtc-aspeed.c     | 16 ++++-----
- drivers/rtc/rtc-ds2404.c     | 14 ++++----
- drivers/rtc/rtc-ep93xx.c     | 16 ++++-----
- drivers/rtc/rtc-ftrtc010.c   | 17 +++++----
- drivers/rtc/rtc-m48t86.c     | 14 ++++----
- drivers/rtc/rtc-max77686.c   | 37 +++++++++----------
- drivers/rtc/rtc-meson-vrtc.c | 12 +++----
- drivers/rtc/rtc-meson.c      | 16 ++++-----
- drivers/rtc/rtc-pl030.c      | 14 ++++----
- drivers/rtc/rtc-rx8581.c     | 85 +++++++++++++++++++-------------------------
- drivers/rtc/rtc-s35390a.c    | 22 ++++++------
- drivers/rtc/rtc-s5m.c        | 58 +++++++++++++-----------------
- drivers/rtc/rtc-sd2405al.c   | 16 ++++-----
- drivers/rtc/rtc-sd3078.c     | 71 +++++++++++++++---------------------
- 14 files changed, 183 insertions(+), 225 deletions(-)
----
-base-commit: 0226d0ce98a477937ed295fb7df4cc30b46fc304
-change-id: 20250228-rtc-cleanups-12c0b5123ea4
+diff --git a/drivers/rtc/rtc-rx8581.c b/drivers/rtc/rtc-rx8581.c
+index b18c12887bdc3705ea4cee9b8d75086a05b24e71..785ebaca07ac971eee34559f8d1e0a8a872cbba9 100644
+--- a/drivers/rtc/rtc-rx8581.c
++++ b/drivers/rtc/rtc-rx8581.c
+@@ -54,7 +54,6 @@
+ 
+ struct rx8581 {
+ 	struct regmap		*regmap;
+-	struct rtc_device	*rtc;
+ };
+ 
+ struct rx85x1_config {
+@@ -252,6 +251,7 @@ static int rx8581_probe(struct i2c_client *client)
+ 	struct rx8581 *rx8581;
+ 	const struct rx85x1_config *config = &rx8581_config;
+ 	const void *data = of_device_get_match_data(&client->dev);
++	struct rtc_device *rtc;
+ 	static struct nvmem_config nvmem_cfg[] = {
+ 		{
+ 			.name = "rx85x1-",
+@@ -286,21 +286,21 @@ static int rx8581_probe(struct i2c_client *client)
+ 	if (IS_ERR(rx8581->regmap))
+ 		return PTR_ERR(rx8581->regmap);
+ 
+-	rx8581->rtc = devm_rtc_allocate_device(&client->dev);
+-	if (IS_ERR(rx8581->rtc))
+-		return PTR_ERR(rx8581->rtc);
++	rtc = devm_rtc_allocate_device(&client->dev);
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
+ 
+-	rx8581->rtc->ops = &rx8581_rtc_ops;
+-	rx8581->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
+-	rx8581->rtc->range_max = RTC_TIMESTAMP_END_2099;
+-	rx8581->rtc->start_secs = 0;
+-	rx8581->rtc->set_start_time = true;
++	rtc->ops = &rx8581_rtc_ops;
++	rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
++	rtc->range_max = RTC_TIMESTAMP_END_2099;
++	rtc->start_secs = 0;
++	rtc->set_start_time = true;
+ 
+-	ret = devm_rtc_register_device(rx8581->rtc);
++	ret = devm_rtc_register_device(rtc);
+ 
+ 	for (i = 0; i < config->num_nvram; i++) {
+ 		nvmem_cfg[i].priv = rx8581;
+-		devm_rtc_nvmem_register(rx8581->rtc, &nvmem_cfg[i]);
++		devm_rtc_nvmem_register(rtc, &nvmem_cfg[i]);
+ 	}
+ 
+ 	return ret;
 
-Best regards,
 -- 
-André Draszik <andre.draszik@linaro.org>
+2.48.1.711.g2feabab25a-goog
 
 
