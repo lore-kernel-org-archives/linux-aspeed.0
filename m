@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-870-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-871-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31934C282C1
-	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Feb 2025 17:31:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A5E7C282C6
+	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Feb 2025 17:31:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4FcH67xkz3bsm;
-	Sat,  1 Mar 2025 04:31:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740763871;
-	cv=none; b=ndGaHhTapksYDBYlz/JwXFrAVc4qvjuBcR5nGEiDWMnuHRZG9DgU+WXYbeztLTCppgXkbJ5oc9YlO+eSDfTHg26fvaRq9pSJYd1OWRkrEJ6nCDD6582v86znUhSL15bMBerd7rRtjOXwqfVqbjKiAafffHWN/euE7Bt2t3Omc7P8XchSsm7oijn1tWfMza5JuFRUGFhbAQVCl/992gsBTy3Fba9N5BPKWeYUniGS5pfBuQtF5rqq2ymrcrsjxnitoGvh6ZiS0dLG546pC0MnMyIyRbzEo/6XJ0JRUftzSoGAn3aq6BZg90pFh91CeWBLASot6BbTQjtXm1008j0oIQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4FcP5r3Qz3btP;
+	Sat,  1 Mar 2025 04:31:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740763877;
+	cv=none; b=c01aUQCUDam0j5vxMHGDzxJMoEDFUwI0V1jXxY0wRWeaANvC7p/j2lGZu4EIU0jIytEcN7JUUA37GkBB6s6zUXGFIhjpTI0ztn0v1j7GfoFdAiciQJQoj/Y7w3kA0/ojb0SEb4CVM9iMqk8PeBWlZfs1b6JbJv51OPXwoLjBfiqDaRnTAZpP03tjf6HMLk7FcfOJHFtFejIwTEPep29KE/Bd0YHXex5FtHBHZIh6mdvnSs2tDoD6BTzlhcFnYwZNKvobJg/XsifPJahkXQ0+4Rk7W+cfZHkV1d5Bx+f5GK0GOpB0rGnUY1vLChypgUujimT1Yr5vxY72OI+Qq3SCRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740763871; c=relaxed/relaxed;
-	bh=F/vVUd9bjaEWgZi7xVgsmCaZbgpB0Tw80Ic/JRvH4gI=;
+	t=1740763877; c=relaxed/relaxed;
+	bh=KT+MNwpd4F28O8ArZz1ntkuhE4VBNJ7gO9Sos3omueY=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SmLLvr2H4FpMGC749DIquYAZIg4Bg5MvN3PJY/DGWFuOYdlINO7r8NIRG+gYjassI89ROhoKcq60j2yg/jD0PoJMM3DPNfqsVOdecWhlgVXE2WhMdTTX+LaA/9ytvCzMNc2r/iM3CFP9wJyo0I+MbGKvOIgUDiiPBfidVF72uuTaxVVwcNjSJitF/b4WbUal618LNfJZJRUzbKHvbY7aMgbJlRqpCmC1hHbfN9qpei2b7X1+PHkf4kNi+6A3EN45+eJjSkL+ON8y/g3MYx64nobCokvOY9qRQKNMBf152EIYaD0MONG3DRH/qnvTw4GwgEU/YDjakK83iSwFfS/ReQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mCvXJigM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=bBoBfGIY2PANHYLcita+zu9MTMHl82SJANALIQSEWzn8fwpoBnrWuVFVP/vAClbtWv2SdFFTzOTRcJP/4m7tWImZhWO40FIQM0PmSA4RapzHtzOINRDLaYo7JN7MMUOFie66iRRr3/ESXrA/6RT7/hwxvkCQmB3uXEW8C8dg9PWnUiBSPYhpKTMcRSmCM4BtlZy82Qd4M6eSJ/+tdGfRv8BGoGgnKMF0DZneJcNM2BRoJ7cwo4+u1oTOr8f5+B0+u1ixkU8tAxW0oVQ6IfgX+Y/pYR4cgQmOOmUAxznMjtBrTA5QaXSudlJsc1hDIgwtLO/b74mxqtGfx9bpPEWWYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BLtJWd/c; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mCvXJigM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BLtJWd/c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z4FcG6j4sz3bm3
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 04:31:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z4FcP0Mrsz3bm3
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 04:31:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2475661FAC;
-	Fri, 28 Feb 2025 17:31:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 766A3C4CED6;
-	Fri, 28 Feb 2025 17:31:01 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 6855D5C6804;
+	Fri, 28 Feb 2025 17:28:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2684FC4CED6;
+	Fri, 28 Feb 2025 17:31:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740763868;
-	bh=gF4ghbQiAaJ5xTcJ/cbYCtx4ZQ2upF+SCfAg+CIwopY=;
+	s=k20201202; t=1740763874;
+	bh=qbWQBw/uFqQPwpcYNMFggUmUDTmFcLh0DbcUnSSTCuA=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mCvXJigMR91385/f69RM5SSBdnNPDU7oxghnPQ3zgCtbOOQjxpcDmBd5n6ugkUxoy
-	 ZAV5U+XIF2bAmTPc3iZpoWQihb82w9bXiVY5LG8b8EBt3hUMllcAcyNw17dxKpWrGd
-	 Hdo5IjgoqWLxrSiEZBpqLzSQ+G1yRWhrenTkcghW+nqBmngw3TfqUT0QTEX2bY+9tz
-	 l+LGHKEEyFB5q3igA8Dm+jDVFmixPqnF/4a4iUKWrQZHs7DFy6M9RAZn9URURcFGVv
-	 kJRzDY46Y8qXj8q3ZFtndna+8iZa1oqEiYiHPd/FuC3yhU4tgYIQ2G3qdIyenwlpl5
-	 z8AespW16ofZg==
-Message-ID: <24104b0c-aa80-41d7-89b0-0a253a1ccdc9@kernel.org>
-Date: Fri, 28 Feb 2025 18:30:58 +0100
+	b=BLtJWd/c1bfEyU1HO9uRG+96bn5uoeZFvNoz/ITIoZVr2bPrfVd/obe/e+BjHjPjw
+	 rImRgi3N4f381K4clFXIxdYFPPEl1Yu1WvYMwgQOJZFtFSOKtxwyYAHU9Z7Q/et0am
+	 DHYVrTaTNb3FrTH6miqiIDSrkHeLlJ0lXUTJ8Y7Rv79nepG2UsyIVpzgPZ0hOyxgY3
+	 14M7b6EFOXK6/06VuTXF+6Ai01GbUaupJYuouxn+BZi/fooM6EZalDdPHS6NS/HTK4
+	 h8q4sGCMpmv9O3mSRX6y6C2ScWlYppd9CHT1SXBRN5K0GSqmPa/gShJxlsTAfV4RB5
+	 N1Urg97vMGssg==
+Message-ID: <aff5a71f-ed87-4a3d-b7bd-8d96bcd19a13@kernel.org>
+Date: Fri, 28 Feb 2025 18:31:05 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,8 +59,8 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 01/18] rtc: max77686: drop needless struct
- max77686_rtc_info::rtc member
+Subject: Re: [PATCH 02/18] rtc: s5m: drop needless struct s5m_rtc_info::i2c
+ member
 To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>,
  Chanwoo Choi <cw00.choi@samsung.com>,
  Alexandre Belloni <alexandre.belloni@bootlin.com>,
@@ -76,7 +76,7 @@ Cc: linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org,
  linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-amlogic@lists.infradead.org
 References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
- <20250228-rtc-cleanups-v1-1-b44cec078481@linaro.org>
+ <20250228-rtc-cleanups-v1-2-b44cec078481@linaro.org>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -122,23 +122,19 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250228-rtc-cleanups-v1-1-b44cec078481@linaro.org>
+In-Reply-To: <20250228-rtc-cleanups-v1-2-b44cec078481@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 On 28/02/2025 15:07, André Draszik wrote:
 > When this driver was converted to using the devres managed i2c device
-> in commit 59a7f24fceb3 ("rtc: max77686: convert to
-> devm_i2c_new_dummy_device()"), struct max77686_rtc_info::rtc became
-> essentially unused.
+> in commit 7db7ad0817fe ("rtc: s5m: use devm_i2c_new_dummy_device()"),
+> struct s5m_rtc_info::i2c became essentially unused.
 > 
 > We can drop it from the structure and just use a local temporary
 > variable, reducing runtime memory consumption by a few bytes.
 > 
 > Signed-off-by: André Draszik <andre.draszik@linaro.org>
-> ---
->  drivers/rtc/rtc-max77686.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
 
 Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
