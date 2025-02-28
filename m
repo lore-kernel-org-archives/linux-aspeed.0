@@ -1,79 +1,61 @@
-Return-Path: <linux-aspeed+bounces-865-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-866-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD8E7C19F32
-	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Feb 2025 01:29:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9C99C19776
+	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Feb 2025 06:13:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z3rH10qszz300B;
-	Fri, 28 Feb 2025 12:29:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740706189;
-	cv=none; b=QchJ3MgA+G73dl2APRHRVVrmeAlNfgrxCDILsugptj7A00guNJfa+YZXV7wqlM3/94EhENt4HnFHw+UEnYwe2priF85e03W960HstYEYtraf2BfQMI8SJiLXzG9cbNF3PlKZB4iqV3Cp4Es1rTHOrzkYFxutbPXuLDhwxjaZys80UJ9i63f5mQhHCsNo/w6rC8aGFNYIq+Stpq6GHqSU/3bBfp8FfNg5JC3pGDxSZLcOoJS5L9yJ4FSrQcTCAatPfMyq1kCooFmeoyjodQTs80+s/Wa18IEFrK8oWN7ZpqmwUv5CVZQCOGAJXaeeq2ZJLxuJB+0RoFi4QkXR2hRa7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z3yZK2LjNz3brx;
+	Fri, 28 Feb 2025 17:13:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740723209;
+	cv=none; b=BcbnDUPqgacGEnA4Wfr0tg4F2nPSRbYuXn59zHh3pGTTM5zEkPZs0Fwskxe2vSxE+idtoDy5bREMleAtp9CGvp09JD1VeSl+4AmbIj0T0ZfvKGWEk/pQznPhE0PT1J8ZZ8/fHC7fS4hD/esy8wASNJGg/CI+1PLxcDcdu878LDFTxDDiifdjLIDNsjZn5VVA61eW3HgZZ2+lhb3yPW1wrG+TY8ZYyCAH7Yg3rxtOSlRZ3j+2vRhKu+ZKLZAeg9cfB2BO9PiJAeYsZ3QKRGU0lSYEm3me7/w48i4NyxBoDD7JBPQrTqnyEbjWVSk/i7sTQ0gaVC6DpzqK6Lxo5n/bhw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740706189; c=relaxed/relaxed;
-	bh=6RoHJsMyZhDsVatyt4MKbmEUoQtHz9C5xwaEcpfT8NE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B574PoLAlzXDSDitXcgzjySFNEuTnC2+GYAdbsrFEGcTB1oTp6WuDJb7LrVvCjeUGX2q3/yQeMTHGxlDIW1Oq9Ku/VZ/NIWTq0oSByDGKceYR35muXkJi7gjjxeY9Um+skY4o16y7/0LYIcC8/8DjshDwdXg0JlvrEE3PLa7mJoSAmHPtjdF9XtYRYM0c+JuPmGYy+W0f0IA/afwdGF1EkNz3QFqXT1+B05xkblTp+Jn0QnxsOtRtWOm5FiBTOgN0rXUAesFHFcXJ/WJUzcpdN1cB7RBKmdvyLMo9jwbvXuztfKUQCm7VyB94bqMO/7cZ+mUc9JoDQuwpXea3S4aqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LOUqepIP; dkim-atps=neutral; spf=pass (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1740723209; c=relaxed/relaxed;
+	bh=pp9IBKUNCA/ZJDCgfry7+1Ltnk8p0iW227IRYl0yOXU=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=bnuAjIu1p7COpnaQErCBeLxvCQmOh7GTfho29aNDp69wkub6GVgClQqkSSBA1XmQZQtBXiozFl/l8C8sHUYuHxQaU2bxaI4vUfIL/J7rjPgL+MvO8ESc7TyhZ9udetYDRkfTKr2EucForHKhdAvmDwwRHKbSmEuEC8iRFiPPB+tPtjT/9sJH3itNuEMB2ObbR6kS/pxtSwBrhsls1lq3ZePGTy7ZzbpUELQMkkdN6HLCzIG6l+KnkvFl3MrAoQayFJ8VWRONWgkZOzrAJvcJAF2Zy83Lxp/EI08fk225ZHqh7nwte4/ZWTESOKuMgv/vlMHPo847CVESKqlrxwR7Dw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ditMs+Qb; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LOUqepIP;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ditMs+Qb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z3rGy1RQrz2ymg;
-	Fri, 28 Feb 2025 12:29:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1740706187; x=1772242187;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=0Kaw4aySzXzJh8b//ALxlZ2RwWuBVvZuS4cYdwjBK+4=;
-  b=LOUqepIPuJgVrM9Ax8zWf51GGL3qfxvDKd0Ygx7CGmyO4+FLEjOJfQ5B
-   qJYvF+TD253Na9Hw5ZvGqXhugwR0n06PO23IQPi+/Lw6fM0+DEwn2HZN1
-   TE3IcmiyC4B2MH8zPWy7qbI0yExFyvFSYTvcERoPnwCbmE7B1o5o8xz1l
-   BGIHq6A/AzhfIKMODstr9R9hC8LybXqdc1j7fJGsWeRcrZzyG6BEccwNg
-   47ZVYgT7OrGJ/3pAPTjXuywuDhRIMl0DKQocvUszCQqSKo4id8Ymbjfh5
-   U7AOhOPb49F6Qa/1oVTtxPwDo4xljy4AjJAvjKp4cBP8FlGRpT895brEE
-   A==;
-X-CSE-ConnectionGUID: nps5WG7pTiybFiHaXoLSqw==
-X-CSE-MsgGUID: 7CJral5uRQ+HlAzxkzx+sA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11358"; a="45275647"
-X-IronPort-AV: E=Sophos;i="6.13,320,1732608000"; 
-   d="scan'208";a="45275647"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Feb 2025 17:29:41 -0800
-X-CSE-ConnectionGUID: tQ2gpyfRQ9adco+P481y1g==
-X-CSE-MsgGUID: EFDf9J9jSi+DvFy8QwsOMQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,320,1732608000"; 
-   d="scan'208";a="148014413"
-Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
-  by orviesa002.jf.intel.com with ESMTP; 27 Feb 2025 17:29:33 -0800
-Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1tnpBh-000EH4-0H;
-	Fri, 28 Feb 2025 01:29:25 +0000
-Date: Fri, 28 Feb 2025 09:28:59 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ryan Chen <ryan_chen@aspeedtech.com>, benh@kernel.crashing.org,
-	joel@jms.id.au, andi.shyti@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org,
-	andrew@codeconstruct.com.au, p.zabel@pengutronix.de,
-	andriy.shevchenko@linux.intel.com, linux-i2c@vger.kernel.org,
-	openbmc@lists.ozlabs.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH v16 2/3] i2c: aspeed: support AST2600 i2c new register
- mode driver
-Message-ID: <202502280902.U0gLDhve-lkp@intel.com>
-References: <20250224055936.1804279-3-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z3yZH5GMgz30W5
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 17:13:27 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1740723203;
+	bh=pp9IBKUNCA/ZJDCgfry7+1Ltnk8p0iW227IRYl0yOXU=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=ditMs+Qb4Ve+EarpPSccKWAdGQWMzmrpNYywK6GlQojWc1Vahufg9xsyjz3kGCk5O
+	 gIcp3/Sj7bJmQSNN1Y6xLJrBClGqr1UoSrEbSpYEnP2EkzRUjDZorc2M1SYpPqjg4W
+	 xvBjpqq5yBPccr9WMXq7iAoNM72bd2XppoXdOiBbjXj9+5UHYsjhAKKGqD+KqIYYL3
+	 bw0oyu141KURV/zuC5UdSEqIRXpyP4r6johtqrPaopw+QKjfhWEIL6jLgCzH7lw65F
+	 wZ0rzC32U8Uc2MEcI7qET4/5vBwqKCO3yU1mHoO7QioJWAg0Hucx8Qx3rAjYykmMna
+	 MSARqv1UkfSEg==
+Received: from [127.0.1.1] (58-7-146-131.dyn.iinet.net.au [58.7.146.131])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 65FE977DAB;
+	Fri, 28 Feb 2025 14:13:20 +0800 (AWST)
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: brgl@bgdev.pl, linus.walleij@linaro.org, minyard@acm.org, 
+ robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+ openipmi-developer@lists.sourceforge.net, joel@jms.id.au, 
+ devicetree@vger.kernel.org, eajames@linux.ibm.com, 
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
+ Ninad Palsule <ninad@linux.ibm.com>
+Cc: andrew@lunn.ch
+In-Reply-To: <20250204194115.3899174-1-ninad@linux.ibm.com>
+References: <20250204194115.3899174-1-ninad@linux.ibm.com>
+Subject: Re: [PATCH v9 0/9] DTS updates for system1 BMC
+Message-Id: <174072320025.3245072.10865277615164271412.b4-ty@codeconstruct.com.au>
+Date: Fri, 28 Feb 2025 16:43:20 +1030
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,94 +68,19 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250224055936.1804279-3-ryan_chen@aspeedtech.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.2
 
-Hi Ryan,
+On Tue, 04 Feb 2025 13:41:03 -0600, Ninad Palsule wrote:
+> Please review the patch set version 9.
+> 
+> V9:
+> 
 
-kernel test robot noticed the following build warnings:
+Thanks, I've applied this to be picked up through the BMC tree.
 
-[auto build test WARNING on andi-shyti/i2c/i2c-host]
-[also build test WARNING on linus/master v6.14-rc4 next-20250227]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+--
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-i2c-aspeed-support-for-AST2600-i2cv2/20250224-140221
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/andi.shyti/linux.git i2c/i2c-host
-patch link:    https://lore.kernel.org/r/20250224055936.1804279-3-ryan_chen%40aspeedtech.com
-patch subject: [PATCH v16 2/3] i2c: aspeed: support AST2600 i2c new register mode driver
-config: mips-allyesconfig (https://download.01.org/0day-ci/archive/20250228/202502280902.U0gLDhve-lkp@intel.com/config)
-compiler: mips-linux-gcc (GCC) 14.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250228/202502280902.U0gLDhve-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202502280902.U0gLDhve-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   drivers/i2c/busses/i2c-ast2600.c: In function 'ast2600_i2c_recover_bus':
->> drivers/i2c/busses/i2c-ast2600.c:345:32: warning: unsigned conversion from 'int' to 'u8' {aka 'unsigned char'} changes value from '-145' to '111' [-Woverflow]
-     345 |                         return -ETIMEDOUT;
-         |                                ^
-
-
-vim +345 drivers/i2c/busses/i2c-ast2600.c
-
-   315	
-   316	static u8 ast2600_i2c_recover_bus(struct ast2600_i2c_bus *i2c_bus)
-   317	{
-   318		u32 state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-   319		int ret = 0;
-   320		u32 ctrl;
-   321		int r;
-   322	
-   323		dev_dbg(i2c_bus->dev, "%d-bus recovery bus [%x]\n", i2c_bus->adap.nr, state);
-   324	
-   325		ctrl = readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-   326	
-   327		/* Disable controller */
-   328		writel(ctrl & ~(AST2600_I2CC_MASTER_EN | AST2600_I2CC_SLAVE_EN),
-   329		       i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-   330	
-   331		writel(readl(i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL) | AST2600_I2CC_MASTER_EN,
-   332		       i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-   333	
-   334		reinit_completion(&i2c_bus->cmd_complete);
-   335		i2c_bus->cmd_err = 0;
-   336	
-   337		/* Check 0x14's SDA and SCL status */
-   338		state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-   339		if (!(state & AST2600_I2CC_SDA_LINE_STS) && (state & AST2600_I2CC_SCL_LINE_STS)) {
-   340			writel(AST2600_I2CM_RECOVER_CMD_EN, i2c_bus->reg_base + AST2600_I2CM_CMD_STS);
-   341			r = wait_for_completion_timeout(&i2c_bus->cmd_complete, i2c_bus->adap.timeout);
-   342			if (r == 0) {
-   343				dev_dbg(i2c_bus->dev, "recovery timed out\n");
-   344				writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
- > 345				return -ETIMEDOUT;
-   346			} else if (i2c_bus->cmd_err) {
-   347				dev_dbg(i2c_bus->dev, "recovery error\n");
-   348				ret = -EPROTO;
-   349			}
-   350		}
-   351	
-   352		/* Recovery done */
-   353		state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
-   354		if (state & AST2600_I2CC_BUS_BUSY_STS) {
-   355			dev_dbg(i2c_bus->dev, "Can't recover bus [%x]\n", state);
-   356			ret = -EPROTO;
-   357		}
-   358	
-   359		/* restore original controller setting */
-   360		writel(ctrl, i2c_bus->reg_base + AST2600_I2CC_FUN_CTRL);
-   361		return ret;
-   362	}
-   363	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
 
