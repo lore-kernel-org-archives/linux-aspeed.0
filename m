@@ -1,79 +1,79 @@
-Return-Path: <linux-aspeed+bounces-883-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-884-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39F2AC021B8
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8040C282D3
 	for <linux-aspeed@archiver.kernel.org>; Sat,  1 Mar 2025 11:01:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hw02ZY8z3byh;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hw041qZz3c1w;
 	Sat,  1 Mar 2025 22:01:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740751654;
-	cv=none; b=NisxFUuBDouVO/Qfpm2KLA1BNG+XFnIAsNLTEt1dW0qrgmeruCfTRe3FmUKueq/Z+s3O38dyj7DBvgvgX4VOioFI0BY8BLQ7fmue/GwgKZpuaTA4T8LK8U1dskOu5SJsOFyngmCyOdFTYEAVW2VW/kRrZly7Ym/CCABWShzXOEa86zcnnkV6zCAiNmH8Ip0YwAZgFzYPgShDEUXvmsSIx8V2qb/joWNimnIuharcCfFPG/C93jpTrv3PJ651E4AZN87RqPAUTF2210zvfzyDefUcTGeDeM7SStx99AaP5DF9Gxkjp0hprdTaj4BiUIKk5NiqCkJODMr1eW13/pfAYQ==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::534"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740751655;
+	cv=none; b=cscantGV3uE/EEHrFZA2T3bkxjKxHW099Uov5RZVTVjT800EGtdKNB3us5V9LrgrmaRllb1kakV4oQ51LHrOnCbmZ0wu1Ib78CB/Qx53FQif4uqEiw8IuWy+PSFSPEAIUgKQyau8dMSayOgemm5A74PRW/ArLwekzgqQo7YmhtkRo5JHwEcMJ43VavYJwHEO9uLBen4Rgd+p/DurhjZsBD5OhrPKiZbB+MJHXj+pUmmDlpSSaUq9KTrke7IKXo13TtthvEcOBdcJZHFEZ8Mp0FOvqcC3h7WvOIUhWVSxBwlvP1sDVEhuLSluojQHxcxYOuM2UqOsV+eCDQD47KZ/aw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740751654; c=relaxed/relaxed;
-	bh=Ka86PnTxcRg56Z11OHXTxcAKX5oZrUWInphsB9KYtsw=;
+	t=1740751655; c=relaxed/relaxed;
+	bh=IKZrDxBZwKYSSWAqYI1nyzOGiPZfFb6S25OWnyP8uMM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Gp79tPRbP52NdljrBy0G/vOhvMcrgZ8XcHEA5cDDaEIcI58i4rYgtvIpsJFzMf/L0glwGy03mB3P536BRaxMi0atVKHjyOovq6BIxDTonk4wxJ/+3XE+pBCxCxQc1QMEg8NB5dA5NZVvWdwCuuEw0WscUGVM11emwnjvZ60kwU1HM2ZC65RCLJpmO9SMEDPUazihfOp9YLTNq+8mDmEe/dkVp0qNn038/GZH9KE4CJbkud/l4pVdRgSP/EBbr2yaeG6brqAw/ANzZ7/CcTt+Yv21Ci9qqH1sEEt+CBXJ5cSXo/es4NaEor0myJPxyCC7CGk3/7CaIj/wsutoYwin5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=d4nFaiqw; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+	 In-Reply-To:To:Cc; b=XO56izKodd0AiA66XggiQTIxuOYOsV2SBLEk5lZ3XkjKQATSGX6J4ZuzdOslXMo7m+PCe3eW5qw2xLqmynRu2yAkBXAwygsaaCjxAfxDc2ell+IGc0PRkonhnYvHvwFNYB4GVx8L14DCoCzn5881JeQEt9rZHMX1L6DOankDclMLKFOe8h87aPxubkoYXNtCVdWzyWNzJklBN3+mnR61iR4Q+n6DHPk2Pjl+P6DfV8vjaNVZHB6g4JikVC8M9W58XnN8tz+MdYK/v6ArBk606nd63GOlYLPkZkZMzV8QocTZYvielEk8z8yNddMdf3lGQ7nUuSb/8eF800kQf/M79Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=IMuit8yB; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=d4nFaiqw;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=IMuit8yB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495K4jcrz3bvd
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:33 +1100 (AEDT)
-Received: by mail-ed1-x52f.google.com with SMTP id 4fb4d7f45d1cf-5e04861e7a6so3512930a12.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:33 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495L585lz3c5Z
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:34 +1100 (AEDT)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-5dec817f453so3274779a12.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google; t=1740751649; x=1741356449; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Ka86PnTxcRg56Z11OHXTxcAKX5oZrUWInphsB9KYtsw=;
-        b=d4nFaiqwxnEpUUlyL+wT7GXCHgExvP7vjZ6+ntxrKUSZVcYr58jQpMelowrjPoeEka
-         1Ygc95cZnF9hkSvD5nMLePegIKG5/QXpSJ0qq/mcnYmPkJ6bmxNgpq4knzZiJUtWdF9k
-         6hUtwGpLyaN5WHaMVTL4TIJM/EqPqS80pFSreuprI05MjsckAneDpZ/1gG5u5uNepFmJ
-         9y0uAJiSY/CQPsiUq+8PU4/tWG5xM8Wd0qCpCBO93dylYthGILwEwp65b2AMjSe1FZrL
-         xNBma1nQWWifXNuQy3hqlGQXj8truRhDOUjYpqWwgLIwjs6tJNTNMECSQkFfTwEINeTv
-         keJg==
+        bh=IKZrDxBZwKYSSWAqYI1nyzOGiPZfFb6S25OWnyP8uMM=;
+        b=IMuit8yBturR/mnp8Sxaa1Hb1ytN8+pDoHHBuA78ZTxI3fmQJOX4kN79bTOO/GLw/W
+         h5TGX34P/khvD4IIc5En9zP8qSbYjC1x24c4jyttPaVLmZXjbmp9qsEfLdo5059LS5nj
+         lNq91ysbXPGuQaB1p6ZAJb2J2qC1UhyduWeb7w6SQcA+ue3pejyhK0CNLArPh8Iq6MN7
+         9ajlm+Aj8GstTxLXeyugFxoeARihjPcHbdC3X2a5HPzs6BehW1xzEmjpJ5AeGZ73gCCb
+         +ZHH4RnMqzFEoF6bVtMA19wJFBqsZ06v4+/wACYHd1MnO71CbvvanYrYmnZs1OQv629e
+         2ECg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20230601; t=1740751649; x=1741356449;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Ka86PnTxcRg56Z11OHXTxcAKX5oZrUWInphsB9KYtsw=;
-        b=xOzj2sdvUhAw30r2eu9g9ZNLnbda06E1d5zoe6ZpxfaOyaJLG3CUIooNYpkCsM9Mo9
-         9AuMLY9Hjzl1teqaJQLmtohKN4GTwS2Bmh29MnDWZgWfZgJcNGpmVdVdQ/yrXrNUJrSs
-         zKZ1GhYC1qjo3y6mRWA9GndrhvF8Ae/6/ahLZMxWuAAQKh97s6zXGHNzZDz4zn/8XDKf
-         lQsgTghviqZL3OtAl5CMI2dKlbORxxnY53pERWFC0rlOWxENgPORlW4fqTZP2tLDoCHl
-         unYoH+2ADtLlLgmHK1asH99y2FaW3FKY098X7x6eRlEWXQncBZYkt9L/txmKnyyJvuWa
-         W37w==
-X-Forwarded-Encrypted: i=1; AJvYcCWBC1D1WBUFqwspBoKPn/lWypUHMbiDJ4+g17M3b84Lenw6C1TQcSzs0RlDmJvpGA4Y/rUWOiMDrAJFQsQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwwCCB9cxdDt0NFmg38werBxa1NhU+f7ZbUJVeBXM8d8pKGDZhf
-	CX7hy3bYz6oDtiUDlLQJKeTFEp1mBzsjegRVLHELOXD1W5Ccq8hoQieNprprp/o=
-X-Gm-Gg: ASbGncvmyCTAetTCK4rmmOqEEkzc3VWoyQKtfgsfWWiSPSHBMt5gwyfjJeVapQbyzE7
-	z9iuV5yFqdagqxe/z1YAQV9zlHYDBdcpQYIgiO6pdcaMyFJoHDJK2HVPGz/Krdk/36uKPx6ouhN
-	GVWQLOhktdqJcEmgvH0d/LJMr7cZJ7UzDoI2c9VHTSjm75qd14W2yut9coSXlzrPnaMasuRn8MU
-	wdPSfSZulAUJ7UYy0rBvIi6a5onnHG7yXv3pehi46ZkF+3LcPcXE/pbCsjs9CJmFnr3SP+loVWA
-	AbW6jnDjrCqBsIVPDOdZHqu6HOq0uX86lonIRIgcITskVl8LDKNsAk5OYGCqgTv8bWImGeA3fQx
-	QhZaxiklQkw==
-X-Google-Smtp-Source: AGHT+IF1zdUSX6ZhtbedenD60jZMcHzIIU2NhAe4k+oRQ6Wt3d6uE7nze1qy/Ap2/A6npGSF7Q9PVw==
-X-Received: by 2002:a05:6402:348a:b0:5d1:f009:925e with SMTP id 4fb4d7f45d1cf-5e4d6b1869bmr2990380a12.16.1740751648743;
-        Fri, 28 Feb 2025 06:07:28 -0800 (PST)
+        bh=IKZrDxBZwKYSSWAqYI1nyzOGiPZfFb6S25OWnyP8uMM=;
+        b=BCWZzF8f4SCC42JRijFKzlKRinFqXfS+GPFoYHX1/O2p5ZFdlUejImfMLzCwyFi04G
+         2jN1yG/Rk+Xbxw90jfD+020iSiS/H1dDpG27qqWZLx3hgDf1lE4nQca/4mtlcC5X5RIs
+         VeVrRncX2hhF5glQ77jYhJy33iIif08wIoGTmQvQwkj9HWilKLPuW1swEDXIYIfccsxD
+         eSjOorpQF408OJLLZOrgzxWHEtE/ridMux+YuI59vdOK0WpuyO4PCKg6NUHKY0GwC2Gf
+         bPJW93JgV05O9dRJdCVRic2075eXnfBhR+JEeKGNC3XlDoEyJ3LNxdiM8fod9SUFAAIk
+         2XbQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVkJsaBnRegsPjLWra3RxNfd80UDDP/wttomqx7p1/mX0KqLwLXIKIJJm6R2zfqRV2XSvuihwmvUvJYQkQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyd5HVASld1JJz77rdXlIn1B34lx/Do8nkI1t80WVLiHb4bbCC2
+	iAU+6zzpyGzErgsKzsSzJyCudDkZUvXNOAAJkKMsgKpg2wKNlXZtcNxLM2l/VCM=
+X-Gm-Gg: ASbGnculQBprDyNbLJdDSRH9L6HenRZHV6r9cd+TnVeWoCJ7SZkgXoxmmt+lu46CvFC
+	cDshb6zhSH/iXtJ5GnAXY4P0mFNM8Z1C+CA7Pq+hu3met5nqsoHjhJ7StGGxBbuP5O7xYvvMzou
+	qU3QjX3ghBkQUo3iFQ9yE2yuhonmsT7M+ig4waSX48jRC/kpzOG/biTdVz43UpczyUPeHeEBin8
+	DBzCyvip2dd7r1c8qwFOz6EFN4QVHsjHW31Bd0tL2RaapMb1vzkqZxMaOwJtPrys0qvUb+POe2O
+	zJGZ+MnNlmGtU3oAUdLhS3DX01AChEgLseviuyme1ADH1OFjiLYSbOESwop9fmi0bUTWOOEYELN
+	NuTEpQQpFuw==
+X-Google-Smtp-Source: AGHT+IHq59q43U3ESaHrkdTJX61FFZSQWYbph+vbGLJu0Eb0VqRkvBLNVX+MfvKgdS008nj52Al/2Q==
+X-Received: by 2002:a05:6402:5188:b0:5dc:c531:e5c0 with SMTP id 4fb4d7f45d1cf-5e4d6b83d0emr2632501a12.27.1740751649255;
+        Fri, 28 Feb 2025 06:07:29 -0800 (PST)
 Received: from puffmais.c.googlers.com (30.171.91.34.bc.googleusercontent.com. [34.91.171.30])
         by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5e4c3fb51f9sm2550839a12.55.2025.02.28.06.07.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Fri, 28 Feb 2025 06:07:28 -0800 (PST)
 From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Date: Fri, 28 Feb 2025 14:07:25 +0000
-Subject: [PATCH 12/18] rtc: s35390a: drop needless struct s35390a::rtc
+Date: Fri, 28 Feb 2025 14:07:26 +0000
+Subject: [PATCH 13/18] rtc: sd2405al: drop needless struct sd2405al::rtc
  member
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -89,7 +89,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250228-rtc-cleanups-v1-12-b44cec078481@linaro.org>
+Message-Id: <20250228-rtc-cleanups-v1-13-b44cec078481@linaro.org>
 References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
 In-Reply-To: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
 To: Chanwoo Choi <cw00.choi@samsung.com>, 
@@ -117,67 +117,54 @@ variable, reducing runtime memory consumption by a few bytes.
 
 Signed-off-by: André Draszik <andre.draszik@linaro.org>
 ---
- drivers/rtc/rtc-s35390a.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ drivers/rtc/rtc-sd2405al.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/rtc/rtc-s35390a.c b/drivers/rtc/rtc-s35390a.c
-index e3dc18882f41445c41fbea56edbd5c869514880c..3408d2ab274194e39cde38a83567d37bd53f6632 100644
---- a/drivers/rtc/rtc-s35390a.c
-+++ b/drivers/rtc/rtc-s35390a.c
-@@ -63,7 +63,6 @@ MODULE_DEVICE_TABLE(of, s35390a_of_match);
+diff --git a/drivers/rtc/rtc-sd2405al.c b/drivers/rtc/rtc-sd2405al.c
+index d2568c3e387659dfea598cd2ef6bddc5c076cbb9..00c3033e8079b5f10aaabcc7a1d3f19771263a02 100644
+--- a/drivers/rtc/rtc-sd2405al.c
++++ b/drivers/rtc/rtc-sd2405al.c
+@@ -42,7 +42,6 @@
  
- struct s35390a {
- 	struct i2c_client *client[8];
--	struct rtc_device *rtc;
- 	int twentyfourhour;
+ struct sd2405al {
+ 	struct device		*dev;
+-	struct rtc_device	*rtc;
+ 	struct regmap		*regmap;
  };
  
-@@ -422,6 +421,7 @@ static int s35390a_probe(struct i2c_client *client)
- 	int err, err_read;
- 	unsigned int i;
- 	struct s35390a *s35390a;
+@@ -167,6 +166,7 @@ static const struct regmap_config sd2405al_regmap_conf = {
+ static int sd2405al_probe(struct i2c_client *client)
+ {
+ 	struct sd2405al *sd2405al;
 +	struct rtc_device *rtc;
- 	char buf, status1;
- 	struct device *dev = &client->dev;
+ 	int ret;
  
-@@ -447,9 +447,9 @@ static int s35390a_probe(struct i2c_client *client)
- 		}
- 	}
+ 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
+@@ -182,17 +182,17 @@ static int sd2405al_probe(struct i2c_client *client)
+ 	if (IS_ERR(sd2405al->regmap))
+ 		return PTR_ERR(sd2405al->regmap);
  
--	s35390a->rtc = devm_rtc_allocate_device(dev);
--	if (IS_ERR(s35390a->rtc))
--		return PTR_ERR(s35390a->rtc);
-+	rtc = devm_rtc_allocate_device(dev);
+-	sd2405al->rtc = devm_rtc_allocate_device(&client->dev);
+-	if (IS_ERR(sd2405al->rtc))
+-		return PTR_ERR(sd2405al->rtc);
++	rtc = devm_rtc_allocate_device(&client->dev);
 +	if (IS_ERR(rtc))
 +		return PTR_ERR(rtc);
  
- 	err_read = s35390a_read_status(s35390a, &status1);
- 	if (err_read < 0) {
-@@ -480,17 +480,17 @@ static int s35390a_probe(struct i2c_client *client)
- 
- 	device_set_wakeup_capable(dev, 1);
- 
--	s35390a->rtc->ops = &s35390a_rtc_ops;
--	s35390a->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
--	s35390a->rtc->range_max = RTC_TIMESTAMP_END_2099;
-+	rtc->ops = &s35390a_rtc_ops;
+-	sd2405al->rtc->ops = &sd2405al_rtc_ops;
+-	sd2405al->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
+-	sd2405al->rtc->range_max = RTC_TIMESTAMP_END_2099;
++	rtc->ops = &sd2405al_rtc_ops;
 +	rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
 +	rtc->range_max = RTC_TIMESTAMP_END_2099;
  
--	set_bit(RTC_FEATURE_ALARM_RES_MINUTE, s35390a->rtc->features);
--	clear_bit(RTC_FEATURE_UPDATE_INTERRUPT, s35390a->rtc->features );
-+	set_bit(RTC_FEATURE_ALARM_RES_MINUTE, rtc->features);
-+	clear_bit(RTC_FEATURE_UPDATE_INTERRUPT, rtc->features);
+ 	dev_set_drvdata(&client->dev, sd2405al);
  
- 	if (status1 & S35390A_FLAG_INT2)
--		rtc_update_irq(s35390a->rtc, 1, RTC_AF);
-+		rtc_update_irq(rtc, 1, RTC_AF);
+-	ret = devm_rtc_register_device(sd2405al->rtc);
++	ret = devm_rtc_register_device(rtc);
+ 	if (ret < 0)
+ 		return ret;
  
--	return devm_rtc_register_device(s35390a->rtc);
-+	return devm_rtc_register_device(rtc);
- }
- 
- static struct i2c_driver s35390a_driver = {
 
 -- 
 2.48.1.711.g2feabab25a-goog
