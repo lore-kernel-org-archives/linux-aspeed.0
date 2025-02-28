@@ -1,80 +1,80 @@
-Return-Path: <linux-aspeed+bounces-888-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-889-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BA08C282D4
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A802FC021B8
 	for <linux-aspeed@archiver.kernel.org>; Sat,  1 Mar 2025 11:01:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hw14XH9z3011;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4hw14qPrz3c5W;
 	Sat,  1 Mar 2025 22:01:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62a"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::536"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740751652;
-	cv=none; b=fk5aeU2SNVRRZz4XkhClrYe49i6GMa/fRmcHLtji7+nS5zsWTh2Gv9yVfzKfErVcU3FpORIucffgQGQwgd0tgqCPqk3u7+KQsPAJqVWH32k/fOZovT1++VjV2VVe1P4iRDWujK9jp1Qgm40j0+NU/DzcGTiMMOixudrOqwmQ/Tgj90vl8537HXRicTc3YkHtNZVgGFIvel3vfcqqBlM1F8SIKFosrvq5uA23smxVc4FbHOurKqLk82LLR9Qv6S4xxE1r7fD2Hpa204PLX3GtsK6xLO2G/kgE1kqjWQwLzMj3V5hr8BzmCsMRJV/jkmwiCaG6c3bi19cCt2+2QTU7Rg==
+	cv=none; b=bfaXDEAjZHIMi0ZQoC0f3cJtKyagAHqJrfH4NLw338mf2W0tDhGKKa+CmOSanqvsjh9Z642G7qkcP1VL2ECOcfdynFoOQgRdYu/pGZGUn2/o23Ishb87GqTYC/fLpeFk1o5lP/dl6U8ON4CPs2R7bm4KMCVFtMrconhmeFYMLdqPN77OaJp+Or0kXAgqgT0UKl1e9JbT+lPdNdUCnOIKruxmpAwk10tPXNiNlwy0U1MMatPgiv76raL1HZrg1e2HBUABzkaKABggwVmuobgPpgwOqBsyYoMiQFoFkEoLg9LjJOHHfH+i1XvY14/Bl0tCLZTou40H593x8ysRx9Q7jw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1740751652; c=relaxed/relaxed;
-	bh=GfBBNFFxoATgsY5PG9x5TDiO1XW3it+ha4dH0f4d6kY=;
+	bh=NvWUKPp3Qf/mJMvtGf6kleKwT9jTpA0O53gNmEgl49A=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=oMeMxHjx1azbQGcO6tU67RK3JTLBaqE+kZtZcAm+juOY1zbKwDGILvMc1DSQ1laQVYCFKL/uU/9Z6FLGqAprW6Iq0pUZq8N7dvDstY5OqOjCS/g2Ss1nn5S6xynggGjdBuFiBd2Aoa3NT3Sf9VtCcx735jpVumVcZT0Pl7rHyVmM1Q7ZEtlTmDtSLv1gjoBcwEsAB3+07L+YjtDOlXEPqKnYUx1G8zVRZMCG09LyL9PBESliLstx97EV1RixcXOzfRksye91DAnklP1G2vbg+f9c+3DFhM+g6q/+70sN5CapBWzxMBbW09nGmLFo4yyybqmt4scCJ98+pEYFcV9ePA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=eabPqLi8; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+	 In-Reply-To:To:Cc; b=nmpy84mNd86k9wJVvJdRMnqv4YVWdQTM5HqQaEopvpyPggbabPPsiOLwTgmQX0AYOwlDZD/gLFVF2VB1eiXkhTaHlUr4Br/KbqhBrOCVV0zvvgqwMggzd+PJjxIr7MzFd1y5eLMoBhcyzD86mn6FEAo6uTK+yuYbdlklmqHf/vcGoIKIjZ3Eu4qnm/L/ovaDzZAY1LZj+19/3teAgD/2ainM7BmtYg8ldZzbr1UC0lnmrrhgQbMjcAe7LpcY33bueZ1/AEa8Fitoaz2XDI6oYoyPdz+RxbTZ4EFFbPplTyMp6jtnlewtCedYHLdytUB53rWJ7+6q0UEwNfcqY2i5fQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Ex/ZfRGf; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::536; helo=mail-ed1-x536.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=eabPqLi8;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Ex/ZfRGf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::62a; helo=mail-ej1-x62a.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62a.google.com (mail-ej1-x62a.google.com [IPv6:2a00:1450:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::536; helo=mail-ed1-x536.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x536.google.com (mail-ed1-x536.google.com [IPv6:2a00:1450:4864:20::536])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495H32GCz3bvd
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:30 +1100 (AEDT)
-Received: by mail-ej1-x62a.google.com with SMTP id a640c23a62f3a-abb892fe379so301487366b.0
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:30 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z495J0m3Vz3bw9
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  1 Mar 2025 01:07:31 +1100 (AEDT)
+Received: by mail-ed1-x536.google.com with SMTP id 4fb4d7f45d1cf-5e5050d19e9so1068038a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Feb 2025 06:07:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google; t=1740751647; x=1741356447; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=GfBBNFFxoATgsY5PG9x5TDiO1XW3it+ha4dH0f4d6kY=;
-        b=eabPqLi8RzRapWFyGJhVDGj8dEERR4KNgsYygLjndw3paHV83bXMZUt/a0eipDhr6A
-         H2b/nw14CdrE04PAr94AZyQWkwTwK5/BJVrwols+8nUuTb0YY5LuhHinDyjd/KjRGaAv
-         4c7H7nr5kUr9O6VGcXm0Gr3GGUedB6FvsTk/vYwKHobH/6qwVFvJl3mBwlRoRl9EIjem
-         Vs8kGd98/sgnNL0SWmnACaDEXQhGyzjwzJMVz7NbQ5+cEzESfkIOKt2ZU7SpqEawQR5n
-         UdjaNdgi+nAhzX8eZOIFqAx0qbEg8y07fX8yGwMCx+39zZHLvAUTd5rUvFEouRtcirR/
-         wtig==
+        bh=NvWUKPp3Qf/mJMvtGf6kleKwT9jTpA0O53gNmEgl49A=;
+        b=Ex/ZfRGfLGz4kQlfVgaU9MQk6u033bBktoW5qX+Y7ttZntjs/TqFtqS8/1nxDJkBbv
+         wPlYV6Fd7ELDSArly+n1dN72LgoEzyUb9Jsrnsx/iyZdrVgu+73dnjVBEkXcJk1/oQs0
+         qhk4ajnoXLXBgDYJIcuY+wQCw/mvhmPiD/SK1lX7cUUk71nlRJCcSkvEK1CJ7tLRivG0
+         xxn6OBxQ2se4YlJrBG9OkHQxMPkb5cqfD4V0NkAwdkWSEOQjajPwoEr80Xt4xNkVvSF8
+         /FmBkPu0m3JFEp/LS087HY4mCmc4cXzyF45wmV2I5El2+5txM9TdzxDJXx7Ao1tgyRG0
+         ONVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20230601; t=1740751647; x=1741356447;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=GfBBNFFxoATgsY5PG9x5TDiO1XW3it+ha4dH0f4d6kY=;
-        b=NOJ5FH9282ZHIWIhKjC1hY8uGCDDLVzU7CsK2jtTt4qmUILfnf7u61GvLbM347fAvU
-         N0zfwkAGLFk0kwX39uRFRXfwDJ30EDkG/NdrpNBGdqP66/kZ+Jtvl1mQKRqqJNiydLze
-         L5QlrcquhAqw55qqZPC+TKhcsItdsFlbTDuPqMrHd33o0rF2tyoCOChDSEeyqjMK0Hx8
-         gwWKIpNpVedpuVaeLjg9BARZFscIC80uJYCGXpyYuThIigGXp7flEbNhLHWcuuap4mg8
-         ARkzgkVZjGeulNOJtldcl3YQ2A6IkZdha5O7KEo3PCSQ2CPEuLZrhg9HSRffW8cBoxki
-         Pdfw==
-X-Forwarded-Encrypted: i=1; AJvYcCUDhDLbDqC60/Q4AISc7rdQR6zaE7PnDHci11K9JYMTBTKQQt9jyzOyW2gwHTRv2/RKEp3ifcyPAsxZVi0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxHlc7hJi5v5Z1fZHJ9lcINMryQIAOEAkqGqMw3O7MevGpuqevT
-	pMtXFzwBFxp/PbzOFZYXNpyGXSrvr2p/a0/wenyH/8SuIB2d7ck3ZncYy+OVK1A=
-X-Gm-Gg: ASbGnct6SJtNcm2rPKk/z7VS6wFiiRzv1JbkISBqakrx+CalZIuWNqbvW5OHY6Yf2Cb
-	PjkQ5exxoeL9xgpSmuIX4Flze5yX8lI73nr3EJXd9okW0cZ2Z8tSRvm1YAKjAy5mGMsm4ZyKJMN
-	cl240BSEd0nnJS2XxFGRaKzwc0YB3rVGatq45VJNQY4il/RSPCOWqr6Eo6bn8e53xKT265Z/EFT
-	z3knFv+oV1AryM4ZqABw86xKoKRsdv1vWERe8rvULQJnCUvKJYLGyzMUzjt87P3fd7mEefaGpqx
-	90sRmPzJ0RPp5VU47a8yPvdGkoSutcogOqtm859qGQmmMDSIpWiOuqGWAgvC/CeLgjny7ITJJ8+
-	OmPVwfrPZXA==
-X-Google-Smtp-Source: AGHT+IELhJPOd4W0qPAgNgABcD5moXsKlcKW8ZKlMd0/6RuVXfSWqRkHz67gqaNmak1AZcnDjWmnpg==
-X-Received: by 2002:a05:6402:50d0:b0:5e0:818a:5f4d with SMTP id 4fb4d7f45d1cf-5e4d6b628aamr8322653a12.28.1740751646827;
-        Fri, 28 Feb 2025 06:07:26 -0800 (PST)
+        bh=NvWUKPp3Qf/mJMvtGf6kleKwT9jTpA0O53gNmEgl49A=;
+        b=BPl8HVcUtzSMf+j/ppv7Z4k0anq85Mis9OEgfugNhzWLAnLtz7zW4YJ493yz+n6hUX
+         n3GS+qF6Knv1hS5EgUlKn8RO+BRo1d7e2L7Csj390bDVX6jdDZDpPfuA0aXgZpTFaiFq
+         6ERTqzT7qOY8DZBdJfGU7ytnp7vo/jf5DQIcB3eQeUufQoA16pvZtkqowY9KuMisbLl2
+         2pRSpIzqO5ZwebHABWNLiXYs9UKC83Dm8kBQmQPv9/BWgP+CGi1F+LexLgrRxMrY957G
+         2pWULzM4ll1MFESl6+WqvsaklbkOZUPhO1q5qgSukW4AouLrhB0tUthsWKpHq/RKb4sf
+         sACg==
+X-Forwarded-Encrypted: i=1; AJvYcCVroKFWi/iRHJwUIKJR5hRSDI17oJyXGKb1LWvHXnARsXj3xtfjHKc3Kj9qFZd1vyEyMshdvjIL0s5zip4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyr5zkghUd+p4T1m1h6P/AO6i4+UI62rUqVZrMahmye8sFbADXv
+	/vLj/pTzKF+qaV8yDsf47KIcltRAv/+AVEFX7cpMvl/dqul+0rl16w/8aBEU+54=
+X-Gm-Gg: ASbGnctdmDisncIpzjZfyxmdwXsbXjbwMu1hjr84AweT0wmg10Dyo7RcSwDyIFgVOmP
+	lAFl3KTJC3+Rz2yGfobbpPDv/H7d2UruoEo6smDzh01mVlDJT7FDrnruqkytSAPPOZvf75/f71K
+	JBFztymO3E+9s083ROtLwNJYQbpRjF7Q2GC+K+TLpuG0iRNv8iuUY211FG73FNULN17NZKC1LLR
+	zhZXa8hN848fJoFJ7pn+1GW+GnaN2KNUaBS6gWTm0ArP/eUpXrtFjOq1ysDJtNwGWZ1PWbJ14Es
+	9gtp6nlQGrlVqFy6xYt76NEosHp7+pTsFhLwJhsIpm3Ag38zl4CykXGLZXWDjgqE+0U5FDAiBaO
+	br83jsiTMOA==
+X-Google-Smtp-Source: AGHT+IGZCKi+h7liDGF2k254zFpRo0bnTt6a/BEgRPyIDc7kptNekspya74S4whe/rs/kwdpZDQeGw==
+X-Received: by 2002:a05:6402:27d1:b0:5e0:82a0:50ab with SMTP id 4fb4d7f45d1cf-5e4d6b6240bmr2836488a12.27.1740751647311;
+        Fri, 28 Feb 2025 06:07:27 -0800 (PST)
 Received: from puffmais.c.googlers.com (30.171.91.34.bc.googleusercontent.com. [34.91.171.30])
         by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-5e4c3fb51f9sm2550839a12.55.2025.02.28.06.07.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Fri, 28 Feb 2025 06:07:26 -0800 (PST)
 From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Date: Fri, 28 Feb 2025 14:07:21 +0000
-Subject: [PATCH 08/18] rtc: meson: drop needless struct meson_rtc::rtc
- member
+Date: Fri, 28 Feb 2025 14:07:22 +0000
+Subject: [PATCH 09/18] rtc: meson-vrtc: drop needless struct
+ meson_vrtc_data::rtc member
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,7 +89,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250228-rtc-cleanups-v1-8-b44cec078481@linaro.org>
+Message-Id: <20250228-rtc-cleanups-v1-9-b44cec078481@linaro.org>
 References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
 In-Reply-To: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
 To: Chanwoo Choi <cw00.choi@samsung.com>, 
@@ -117,65 +117,47 @@ variable, reducing runtime memory consumption by a few bytes.
 
 Signed-off-by: André Draszik <andre.draszik@linaro.org>
 ---
- drivers/rtc/rtc-meson.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/rtc/rtc-meson-vrtc.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/rtc/rtc-meson.c b/drivers/rtc/rtc-meson.c
-index db1d626edca5fbb590f26c1cdd0774d350244a99..47e9ebf58ffc2f2b6c65932f8ec3773a213a62ef 100644
---- a/drivers/rtc/rtc-meson.c
-+++ b/drivers/rtc/rtc-meson.c
-@@ -59,7 +59,6 @@
- #define MESON_STATIC_DEFAULT    (MESON_STATIC_BIAS_CUR | MESON_STATIC_VOLTAGE)
+diff --git a/drivers/rtc/rtc-meson-vrtc.c b/drivers/rtc/rtc-meson-vrtc.c
+index 5849729f7d01d7ec7868ff3bbdc5ed599aaa8238..7d38258cbe376e5a1b2af6250cb6d04c313175fb 100644
+--- a/drivers/rtc/rtc-meson-vrtc.c
++++ b/drivers/rtc/rtc-meson-vrtc.c
+@@ -13,7 +13,6 @@
  
- struct meson_rtc {
--	struct rtc_device	*rtc;		/* rtc device we created */
- 	struct device		*dev;		/* device we bound from */
- 	struct reset_control	*reset;		/* reset source */
- 	struct regulator	*vdd;		/* voltage input */
-@@ -292,6 +291,7 @@ static int meson_rtc_probe(struct platform_device *pdev)
- 	};
- 	struct device *dev = &pdev->dev;
- 	struct meson_rtc *rtc;
-+	struct rtc_device *rtc_dev;
- 	void __iomem *base;
- 	int ret;
- 	u32 tm;
-@@ -300,16 +300,16 @@ static int meson_rtc_probe(struct platform_device *pdev)
- 	if (!rtc)
- 		return -ENOMEM;
+ struct meson_vrtc_data {
+ 	void __iomem *io_alarm;
+-	struct rtc_device *rtc;
+ 	unsigned long alarm_time;
+ 	bool enabled;
+ };
+@@ -65,6 +64,7 @@ static const struct rtc_class_ops meson_vrtc_ops = {
+ static int meson_vrtc_probe(struct platform_device *pdev)
+ {
+ 	struct meson_vrtc_data *vrtc;
++	struct rtc_device *rtc;
  
--	rtc->rtc = devm_rtc_allocate_device(dev);
--	if (IS_ERR(rtc->rtc))
--		return PTR_ERR(rtc->rtc);
-+	rtc_dev = devm_rtc_allocate_device(dev);
-+	if (IS_ERR(rtc_dev))
-+		return PTR_ERR(rtc_dev);
+ 	vrtc = devm_kzalloc(&pdev->dev, sizeof(*vrtc), GFP_KERNEL);
+ 	if (!vrtc)
+@@ -78,12 +78,12 @@ static int meson_vrtc_probe(struct platform_device *pdev)
  
- 	platform_set_drvdata(pdev, rtc);
+ 	platform_set_drvdata(pdev, vrtc);
  
- 	rtc->dev = dev;
+-	vrtc->rtc = devm_rtc_allocate_device(&pdev->dev);
+-	if (IS_ERR(vrtc->rtc))
+-		return PTR_ERR(vrtc->rtc);
++	rtc = devm_rtc_allocate_device(&pdev->dev);
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
  
--	rtc->rtc->ops = &meson_rtc_ops;
--	rtc->rtc->range_max = U32_MAX;
-+	rtc_dev->ops = &meson_rtc_ops;
-+	rtc_dev->range_max = U32_MAX;
+-	vrtc->rtc->ops = &meson_vrtc_ops;
+-	return devm_rtc_register_device(vrtc->rtc);
++	rtc->ops = &meson_vrtc_ops;
++	return devm_rtc_register_device(rtc);
+ }
  
- 	base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(base))
-@@ -365,11 +365,11 @@ static int meson_rtc_probe(struct platform_device *pdev)
- 	}
- 
- 	meson_rtc_nvmem_config.priv = rtc;
--	ret = devm_rtc_nvmem_register(rtc->rtc, &meson_rtc_nvmem_config);
-+	ret = devm_rtc_nvmem_register(rtc_dev, &meson_rtc_nvmem_config);
- 	if (ret)
- 		goto out_disable_vdd;
- 
--	ret = devm_rtc_register_device(rtc->rtc);
-+	ret = devm_rtc_register_device(rtc_dev);
- 	if (ret)
- 		goto out_disable_vdd;
- 
+ static int __maybe_unused meson_vrtc_suspend(struct device *dev)
 
 -- 
 2.48.1.711.g2feabab25a-goog
