@@ -1,90 +1,71 @@
-Return-Path: <linux-aspeed+bounces-893-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-894-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E62CC021B8
-	for <linux-aspeed@archiver.kernel.org>; Sat,  1 Mar 2025 17:48:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6002C282D0
+	for <linux-aspeed@archiver.kernel.org>; Sat,  1 Mar 2025 18:12:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4sxw5RnFz2yt0;
-	Sun,  2 Mar 2025 04:48:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.17
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740851316;
-	cv=none; b=aKV7IP6JpTU7nWOzw4adf5aOnLTBsiwLJJwz+ttqSpjC9ntuOFM84LZmswMXB4qSnaUA2DJu9xpIQa7p8ziyhEkAnOSAHEpndbbTcs/ditIHIhegZJDrahitlW/j3AYfrk3Xl0wz/J21W5XSD9gdWKsNW5nT9oEFHrOQItSEwb0JaXNTN/mzCQbMc1w3RA2gpThoDYAbvKPUYAQzbuuUUq+8GqZDXpBLr6STv9VfDrXUyr7sFKcRKR+5sp30WfZpYndClkJPm/j3D+FjbrgOT1Jw90agj7aBAErgPXs7NAsNfVYEXg7muPq04hofkAN3TYbjq00pmGIoqW4bth1Zhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z4tTG3c7Fz2yt0;
+	Sun,  2 Mar 2025 05:12:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::235"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740852738;
+	cv=none; b=YqQ2f03FwQS0QkdBz6TSlOdjV/yGugqHgo+G6pphhb6J51a2CE/kANKykFB8ooh0Qs3Y9sju80MVfReKZjyjAG5lnRDdTZ6XHDRAwN5PrBk44QQ5Wy8JVF6mFbZgGUOBZz6dLIu9N7cFT4cwBanytgCdIAtruVepkl1D1dUdo9CSAi14XhygHRksvO5682bX6AXZeZ5XT9xNbg+YcCBaXPnitxlGf77yUmjJUD+/kXClrvNJp5tQpCsnlVFkBTKlXiyO3kEb7bSwSYb7Lpi9bM+WR1x5cSjqNsPcG/ugjtLycWcSQFC/AqNZ2aM1FrA8SRVKzepgD/lHU7EzCDeqRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740851316; c=relaxed/relaxed;
-	bh=5IE6qRT8T/TuM6a4BH8RP7w5kbjSJCRbGgfIR7TwTuk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HKhrW85K+y8WlrztjpcZGn+rj3qEpE6dSwIrBgVHo/+cQIYZ/yVYxyLm70otxVisxSWjKjmyrfiNmu8jJAylRvYad3SCeIvqE2nJwT7a3bNyWYJYG7GeNYzcFko2YUJGRXNJNJdyt8fiY6fePyfcHCggzXJ8DqOHkEWNRXPx2qN34N0mLq15JwpfrIYLwJeXWIyoH4LxTmeVKTvjCDJT9hAbz6MdyPBnI3oJwCuq/oQNUJWByOQfQ1O2RqZbFq8bBdwiYCiMNa8kMqLOKqUuEN+H9uaOeFF69BaZGfhxQ4FzMWuk/WlIyvAXxOJbybCCyIqI2z4ymsqS/JVec4zY8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A3PThd5M; dkim-atps=neutral; spf=pass (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1740852738; c=relaxed/relaxed;
+	bh=Eg0hFQaD8ycLhbpwZvT+7PAZXueZuxzeChkcp4728Mg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=TbLawnG7DYeZrt/JXP2+UM+pB/eERBIUgNh5jvkilhEM653gBPW4/CO/Tow06vOI+yQtVTzwwbJpSIrZ83M6Ub1QUAFakV5PB6ExHC001RvpfwOuUAw1vh9T4Up7RJlb5AzxHpxH+TVlwo2cnV51WNd7gyiJt6WmWaGO2rAh3/HDvXPjp5F6ilGI6oETt1HUu9L+5k69K3Sjxe+/SbXigiXv1fMeUAEZP1TqPhWehToyvFrfjqjftE9TRpmdFvQao1OEEhMrZ50Q36eeNaehcLiFHRGvcfm3h1cQgkh0ux6IXeydmDw0UhnjdtDIT4L86fjE4LLJXyvrgOtoFmNLiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=lGhNNYQ5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A3PThd5M;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=lGhNNYQ5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::235; helo=mail-lj1-x235.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x235.google.com (mail-lj1-x235.google.com [IPv6:2a00:1450:4864:20::235])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z4sxt2ghXz2ypP
-	for <linux-aspeed@lists.ozlabs.org>; Sun,  2 Mar 2025 04:48:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1740851314; x=1772387314;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=IMSIu8jvdDwIJAM4fLeDemvtPcKTwRRhp37hHpIn+X4=;
-  b=A3PThd5MOLDYszOu6Vw2AE751Wm0qZEGmjONxcE0O9MmcNd/aPcjSLAU
-   TWLCSp+dTDR7TJHrQPp4bCubyAQ/m5m0gmJdsW2zBhnQ/7QudwZO6lqnw
-   p1b7yJVpF2tLRy/mMQWearsoYMNiMSMKWOokgaJi7NKoDKg3o7QQ0GXV+
-   gLN/U7zIpmiT80DanLjXjIZqFOrku7j+DZcG5HPbAVnGJOHEKGwdojgFW
-   J/AzLHwIoD1ej0AFz4EckIntzxxQQhmhnBouQFKu0qveirrBN3zagr0EK
-   WefHZ8NLtZVN2SGd2fF14O3NZqpGPHTa56j3gw2ymv9KcJ5jvmg8M4fgZ
-   A==;
-X-CSE-ConnectionGUID: MO+K+UJQTUCscdRLtuLulA==
-X-CSE-MsgGUID: x0bPExDgR4eTsUFytuA/uQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11360"; a="41650275"
-X-IronPort-AV: E=Sophos;i="6.13,325,1732608000"; 
-   d="scan'208";a="41650275"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2025 09:48:29 -0800
-X-CSE-ConnectionGUID: vgYcIYDcRt+mQdx99iLk9w==
-X-CSE-MsgGUID: L50jgmYYT9+XgO2hztfjcg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,325,1732608000"; 
-   d="scan'208";a="140844857"
-Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
-  by fmviesa002.fm.intel.com with ESMTP; 01 Mar 2025 09:48:24 -0800
-Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1toQwo-000GWE-0u;
-	Sat, 01 Mar 2025 17:48:22 +0000
-Date: Sun, 2 Mar 2025 01:47:17 +0800
-From: kernel test robot <lkp@intel.com>
-To: =?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>,
-	Chanwoo Choi <cw00.choi@samsung.com>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Hans Ulli Kroll <ulli.kroll@googlemail.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Kevin Hilman <khilman@baylibre.com>,
-	Jerome Brunet <jbrunet@baylibre.com>,
-	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-	=?iso-8859-1?Q?T=F3th_J=E1nos?= <gomba007@gmail.com>,
-	Dianlong Li <long17.cool@163.com>
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-amlogic@lists.infradead.org,
-	=?iso-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
-Subject: Re: [PATCH 02/18] rtc: s5m: drop needless struct s5m_rtc_info::i2c
- member
-Message-ID: <202503020150.LkqTktVQ-lkp@intel.com>
-References: <20250228-rtc-cleanups-v1-2-b44cec078481@linaro.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z4tTD57smz2ypP
+	for <linux-aspeed@lists.ozlabs.org>; Sun,  2 Mar 2025 05:12:15 +1100 (AEDT)
+Received: by mail-lj1-x235.google.com with SMTP id 38308e7fff4ca-30ba5cccc19so6582761fa.1
+        for <linux-aspeed@lists.ozlabs.org>; Sat, 01 Mar 2025 10:12:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1740852728; x=1741457528; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Eg0hFQaD8ycLhbpwZvT+7PAZXueZuxzeChkcp4728Mg=;
+        b=lGhNNYQ5bIiiV459O/V/+j8IQ5VtXmtgKPe3ybMN29TfhbTioU9muKV+1Je/SzcOBp
+         LWkZBigKUsKRdK0sFpXIs1Nq9bPVdPSVZ2RTIP3rexikge/5u3VNEV/sAne+ZHpVMSYk
+         eQgc1dNIASdM7QXCwsIogaEAfNUXtxLbbwjb4T9LnMrZScYWY/DUliOyeAuFVAxKpk5p
+         CZ9EnEXvVVDlX9XepUviV0o5FKDdAdLtbz/jcVZOVUwT4L0jHfn+AqLbQtKKmYF0uWUJ
+         ZrzqWg9xRLGrCGGNHD9hyckgKInOBmo0bbfBCoXCxozoz09k721IqCw0fGR24Qb87jMz
+         uBWw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740852728; x=1741457528;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Eg0hFQaD8ycLhbpwZvT+7PAZXueZuxzeChkcp4728Mg=;
+        b=NcKK7OkSPSZqL6p+WxSDAO9FD3Q5GHa63q7aGDxAOM4WaHaoy7zxhmlgu9fO48OQ5+
+         7HHH4NGDRmS8JnSQdXF9hFrgVha87thziW2zkgsGwCBqQ8J4pZJWlxHeRJ60hciZ6mLI
+         2NwtENpxCwrOMUzYKAFUdeVH3K7WQZNhGyiHEofLM/c3R9CGBtSzmy652NkVw1daGC0V
+         ClJq/6XOxyjJHAPsaN5U8kQOTEPiv3up9XJKlELwMreC1lRMMnXXFI7fHEN5leKhVw23
+         ePzL+r0g5WmkCfCoav78Fa87Z5m/sHrOIjVdTe7MTEDeJAHiZX1TNuyK/HuGOFwBN16k
+         hKPw==
+X-Forwarded-Encrypted: i=1; AJvYcCV5PHE8Qq/HtEvAn0eEi+RuyAFR94aV2fc84AjssGFEZGgn1cn2Dx20s5TPpvNb9GK9WOcbV64vHAsW3zE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YylXrVz2qclhKbZKZdUwEj2kYO04k2U8QqSFMnRXiBPcPXQ+1mm
+	KD09S8qAbTgUrTaU5/Ci6ZTxXqsEhFQBHd+tNLnVVM7QPyQkAbHbG4wPRdBX9HPmRPJAcSIvAAq
+	0sq+f6dcyPOQsAURqpuTR4yt/hsXmc0zRptT/Hg==
+X-Gm-Gg: ASbGncvxRRBll6TW/5ACvBTHTJOTQNJ0GkSlgDmxDEVZQY4qYJoG7nCep7wOXS7nZ3z
+	2juTKajr99v2xSE4V6iEmocDPAzB9BF1BaXH/C4QpeeBqps8gQnsJOY2TPNnWnNJngfjXPBZfVC
+	JjCYASbyHb86u7aCe0s0oR/zt6Iw==
+X-Google-Smtp-Source: AGHT+IEH99Tq5urSrvxoc72GqejnsJAsNSDML6g3rnh8KP+Vmtk9gqB7j3gZFHmLs6QHmiQqUlP2gDlbwUBJuyx82iI=
+X-Received: by 2002:a2e:8052:0:b0:307:e368:6bd6 with SMTP id
+ 38308e7fff4ca-30b933037d4mr26808421fa.32.1740852727658; Sat, 01 Mar 2025
+ 10:12:07 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -97,157 +78,40 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250228-rtc-cleanups-v1-2-b44cec078481@linaro.org>
+References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org> <20250228-rtc-cleanups-v1-10-b44cec078481@linaro.org>
+In-Reply-To: <20250228-rtc-cleanups-v1-10-b44cec078481@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Sat, 1 Mar 2025 19:11:56 +0100
+X-Gm-Features: AQ5f1JrUCPCMLG1ATCrGher1b7FQk-JSwRhx_use4qjyzNuoMvAXn5iqo9KhAOA
+Message-ID: <CACRpkdamF4B1y+zr-Y_XB8gAoSv2Q2U4VxuZd+ivZq7KV1Quyw@mail.gmail.com>
+Subject: Re: [PATCH 10/18] rtc: pl030: drop needless struct pl030_rtc::rtc member
+To: =?UTF-8?Q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, 
+	Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, =?UTF-8?B?VMOzdGggSsOhbm9z?= <gomba007@gmail.com>, 
+	Dianlong Li <long17.cool@163.com>, linux-kernel@vger.kernel.org, 
+	linux-rtc@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-amlogic@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi André,
+On Fri, Feb 28, 2025 at 3:07=E2=80=AFPM Andr=C3=A9 Draszik <andre.draszik@l=
+inaro.org> wrote:
 
-kernel test robot noticed the following build warnings:
+> The memory pointed to by the ::rtc member is managed via devres, and
+> no code in this driver uses it past _probe().
+>
+> We can drop it from the structure and just use a local temporary
+> variable, reducing runtime memory consumption by a few bytes.
+>
+> Signed-off-by: Andr=C3=A9 Draszik <andre.draszik@linaro.org>
 
-[auto build test WARNING on 0226d0ce98a477937ed295fb7df4cc30b46fc304]
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Andr-Draszik/rtc-max77686-drop-needless-struct-max77686_rtc_info-rtc-member/20250228-221320
-base:   0226d0ce98a477937ed295fb7df4cc30b46fc304
-patch link:    https://lore.kernel.org/r/20250228-rtc-cleanups-v1-2-b44cec078481%40linaro.org
-patch subject: [PATCH 02/18] rtc: s5m: drop needless struct s5m_rtc_info::i2c member
-config: arm-randconfig-004-20250301 (https://download.01.org/0day-ci/archive/20250302/202503020150.LkqTktVQ-lkp@intel.com/config)
-compiler: clang version 21.0.0git (https://github.com/llvm/llvm-project 14170b16028c087ca154878f5ed93d3089a965c6)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250302/202503020150.LkqTktVQ-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202503020150.LkqTktVQ-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   In file included from drivers/rtc/rtc-s5m.c:11:
-   In file included from include/linux/i2c.h:19:
-   In file included from include/linux/regulator/consumer.h:35:
-   In file included from include/linux/suspend.h:5:
-   In file included from include/linux/swap.h:9:
-   In file included from include/linux/memcontrol.h:21:
-   In file included from include/linux/mm.h:2287:
-   include/linux/vmstat.h:507:36: warning: arithmetic between different enumeration types ('enum node_stat_item' and 'enum lru_list') [-Wenum-enum-conversion]
-     507 |         return node_stat_name(NR_LRU_BASE + lru) + 3; // skip "nr_"
-         |                               ~~~~~~~~~~~ ^ ~~~
->> drivers/rtc/rtc-s5m.c:678:46: warning: variable 'i2c' is uninitialized when used here [-Wuninitialized]
-     678 |         i2c = devm_i2c_new_dummy_device(&pdev->dev, i2c->adapter,
-         |                                                     ^~~
-   drivers/rtc/rtc-s5m.c:642:24: note: initialize the variable 'i2c' to silence this warning
-     642 |         struct i2c_client *i2c;
-         |                               ^
-         |                                = NULL
-   2 warnings generated.
-
-
-vim +/i2c +678 drivers/rtc/rtc-s5m.c
-
-   637	
-   638	static int s5m_rtc_probe(struct platform_device *pdev)
-   639	{
-   640		struct sec_pmic_dev *s5m87xx = dev_get_drvdata(pdev->dev.parent);
-   641		struct s5m_rtc_info *info;
-   642		struct i2c_client *i2c;
-   643		const struct regmap_config *regmap_cfg;
-   644		int ret, alarm_irq;
-   645	
-   646		info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
-   647		if (!info)
-   648			return -ENOMEM;
-   649	
-   650		switch (platform_get_device_id(pdev)->driver_data) {
-   651		case S2MPS15X:
-   652			regmap_cfg = &s2mps14_rtc_regmap_config;
-   653			info->regs = &s2mps15_rtc_regs;
-   654			alarm_irq = S2MPS14_IRQ_RTCA0;
-   655			break;
-   656		case S2MPS14X:
-   657			regmap_cfg = &s2mps14_rtc_regmap_config;
-   658			info->regs = &s2mps14_rtc_regs;
-   659			alarm_irq = S2MPS14_IRQ_RTCA0;
-   660			break;
-   661		case S2MPS13X:
-   662			regmap_cfg = &s2mps14_rtc_regmap_config;
-   663			info->regs = &s2mps13_rtc_regs;
-   664			alarm_irq = S2MPS14_IRQ_RTCA0;
-   665			break;
-   666		case S5M8767X:
-   667			regmap_cfg = &s5m_rtc_regmap_config;
-   668			info->regs = &s5m_rtc_regs;
-   669			alarm_irq = S5M8767_IRQ_RTCA1;
-   670			break;
-   671		default:
-   672			dev_err(&pdev->dev,
-   673					"Device type %lu is not supported by RTC driver\n",
-   674					platform_get_device_id(pdev)->driver_data);
-   675			return -ENODEV;
-   676		}
-   677	
- > 678		i2c = devm_i2c_new_dummy_device(&pdev->dev, i2c->adapter,
-   679						RTC_I2C_ADDR);
-   680		if (IS_ERR(i2c)) {
-   681			dev_err(&pdev->dev, "Failed to allocate I2C for RTC\n");
-   682			return PTR_ERR(i2c);
-   683		}
-   684	
-   685		info->regmap = devm_regmap_init_i2c(i2c, regmap_cfg);
-   686		if (IS_ERR(info->regmap)) {
-   687			ret = PTR_ERR(info->regmap);
-   688			dev_err(&pdev->dev, "Failed to allocate RTC register map: %d\n",
-   689					ret);
-   690			return ret;
-   691		}
-   692	
-   693		info->dev = &pdev->dev;
-   694		info->s5m87xx = s5m87xx;
-   695		info->device_type = platform_get_device_id(pdev)->driver_data;
-   696	
-   697		if (s5m87xx->irq_data) {
-   698			info->irq = regmap_irq_get_virq(s5m87xx->irq_data, alarm_irq);
-   699			if (info->irq <= 0) {
-   700				dev_err(&pdev->dev, "Failed to get virtual IRQ %d\n",
-   701					alarm_irq);
-   702				return -EINVAL;
-   703			}
-   704		}
-   705	
-   706		platform_set_drvdata(pdev, info);
-   707	
-   708		ret = s5m8767_rtc_init_reg(info);
-   709		if (ret)
-   710			return ret;
-   711	
-   712		info->rtc_dev = devm_rtc_allocate_device(&pdev->dev);
-   713		if (IS_ERR(info->rtc_dev))
-   714			return PTR_ERR(info->rtc_dev);
-   715	
-   716		info->rtc_dev->ops = &s5m_rtc_ops;
-   717	
-   718		info->rtc_dev->range_min = RTC_TIMESTAMP_BEGIN_2000;
-   719		info->rtc_dev->range_max = RTC_TIMESTAMP_END_2099;
-   720	
-   721		if (!info->irq) {
-   722			clear_bit(RTC_FEATURE_ALARM, info->rtc_dev->features);
-   723		} else {
-   724			ret = devm_request_threaded_irq(&pdev->dev, info->irq, NULL,
-   725							s5m_rtc_alarm_irq, 0, "rtc-alarm0",
-   726							info);
-   727			if (ret < 0) {
-   728				dev_err(&pdev->dev, "Failed to request alarm IRQ: %d: %d\n",
-   729					info->irq, ret);
-   730				return ret;
-   731			}
-   732			device_init_wakeup(&pdev->dev, true);
-   733		}
-   734	
-   735		return devm_rtc_register_device(info->rtc_dev);
-   736	}
-   737	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Yours,
+Linus Walleij
 
