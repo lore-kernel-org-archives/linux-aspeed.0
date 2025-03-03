@@ -1,97 +1,86 @@
-Return-Path: <linux-aspeed+bounces-916-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-918-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDAA8C282D2
-	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Mar 2025 22:41:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDAE6C282C6
+	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Mar 2025 22:41:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6DLg4Cdxz30Vm;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6DLg5t8yz30Vs;
 	Tue,  4 Mar 2025 09:41:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740991558;
-	cv=none; b=ApDqL9tKXgo6Jym6VDDsfHYrVoca69haKgpTJib9svwNQvRjxe3G7iIxBKXE+m2OAVMre8ykEus0idqfoQ1BJAFlGeiZNxnZ0cbUsnmpwXTZ2NCo1HwKYxMh5Mt7Aop0rLsh/C0RoDl5Llp0Qi9tWcnTPnIEhQvTzYOHqwQJI4Fa/HOH9MKh8FEsbxvM6lsBk+Ql2EhmZAus7kdXvbHrI7J91AmQjmpBDo0eStShwmIi9qEpUGq8vmpK+gMG9c1pLpA2SHev2x9/S0pWIjzTiyaHO3+I5IkNlq8WUPLbBiKJkL3x2UqJiDqNfQCAHdp0bRtZOLpb7jsshew3Sh/WNQ==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741022981;
+	cv=none; b=O6SZz3P2a5+enA+y3gggsZRI48vnHRmadBAm8B8nYsvlcVOBcCVnhUe6g5STVLVAZDl14hRuAu8mmfVGa6X9yIkjdsOHfygoFxyOR5A8wSHiddiuZFEjtzxXFvbTjNwv3qqp97Y7ohHp0iWuvmk/zGvelM0J1BBLktHiPfrBMZ1yegCD827M/zRekUjFVbSJmP6DkGMY5yqIL6HRKhTjmqtknofkrLTQpL2v7IgDIzcLNqXTELcfYHozINuF3PkLJ7PRioAxipuG5XyQBQO7B0U7XxCa5s0zHXHD59XCLwgJKep9gDZh04fx9jtjKmsMb1eawq7LFfzSgLDqnLRWFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740991558; c=relaxed/relaxed;
-	bh=fg7ScFrpAhGYL1bOoOF2peNB6lfD3/GoDR0u+tz557k=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=erkL/S4jihObNnmbSbIgd1s9O3qP85gK4ApyLFyIjLomUgh8aqR0zw9w4NMx/bSHHVbyCymA++0P6wINsZIopqbhkWew86otYgk5WOOC0txGxI6mcIK+RNadaYolUKRN6zV/Dzv8LCu+vqHO/HJpYIDY7JC+4bOYBhViVVx53LabQEoNrMSjrHfSnX844X7WILj1e0jouZjTh3ZQWE2SStROkmTfIVemd5BuAlJp4PLzYEKevITt8U+nfbWHOhh15df/WcTL6uffmFR9+GKSMKr8ZgM1cOUyUTWNhGwAOtv6Pa9gP1nCHldfs5KUHSmLYnYDm2/iM0iE+srS8oCWOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wZeRyVNc; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	t=1741022981; c=relaxed/relaxed;
+	bh=fknoquM4HNPBtsYGt0/DMnFH0+dEPH8rOlkay8lH1H4=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FzXftR85eRumkRtaVSBZfJwyGyi3I8ZznvFcWOlTarHjtal5MIQhDvsFTSravfqC9nL09lk/XOHNsCSKM6XucFhhpqIf1R9laewWoU8aRCX5ol4IaBl8JbwOekMeYrkYyt5VUs94qj4HRpPmRgPNDBLmhLL4/3b31SFKVZt1YPdGD3HRyo/GNp2tdIClNpzix6U+XESmOdVZQqGN2BfDaR4gLLMdKsEHQz9VzkWFXKixwZhyQAVybhpvq2AG70uKSRrS8DYdjWgLlmKODpzJvujuk/qgMszxZ3pBmG7oc3BjMvvGnvYSiJHi9FJAgx0Ygd0ifkTnScn9nbkgHzDOSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VbXNKZvR; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HvAPaxAB; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wZeRyVNc;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=VbXNKZvR;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HvAPaxAB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=asrivats@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5spr0rwtz2yDS
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Mar 2025 19:45:54 +1100 (AEDT)
-Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-43948021a45so38086375e9.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Mar 2025 00:45:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1740991549; x=1741596349; darn=lists.ozlabs.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=fg7ScFrpAhGYL1bOoOF2peNB6lfD3/GoDR0u+tz557k=;
-        b=wZeRyVNcEf7VWEcZ8YCYyiWZqrL7ys6ASAo/F6AVphpJnEYjb+rUYTdMjCpSDoSw9B
-         kLJo71YWcTcWcBdoeDDdXDQXtuA1EBN6+KTs0jIbbyjmJXQVgg4WebqHb6Ymap2lch8d
-         H2kTygLsLcgxlWvPN7rUogT5sQIqXuakqYL/NMKhIDIKRCdnoZoGsfgpPNdEQwdg1mwp
-         W07OAWp0O1ro+YMb4AtPnD2BLUBNZvjF5mMWc971Zy5rc7wnBGZ4P0h4PirdtsWTmaO1
-         qXEYetqJcLyqMlQ1NFdtHa5JJLYIQZHmGvCiyWZDXYAXhMgdzbwxvwMBYKQ6yDw8mW0F
-         AQig==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z65R80DbSz2yvl
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Mar 2025 04:29:37 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1741022973;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=fknoquM4HNPBtsYGt0/DMnFH0+dEPH8rOlkay8lH1H4=;
+	b=VbXNKZvRjoWawgtsegLpYLfubxf5u39VkAc2BpjtEGfFi1Ll3I8xPQORQoKvkF34X5dzV6
+	Id49o2EUTWd9zoSg3l69Vm5Tic+OojljUnLSECmK9NS8l55xsyW6CJWXhIBGV2iA83ULBJ
+	VU3L67GalzgkzUv20rcmpVt4ZJNXxIM=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1741022974;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=fknoquM4HNPBtsYGt0/DMnFH0+dEPH8rOlkay8lH1H4=;
+	b=HvAPaxABEGyg/p60dhRY9Uy8Zz7fUIUQY9bt+ZpKRULjbiq0artylVpIfptc9K8OULVJOD
+	BUqTxQNDFzLg5IjUod5aUPJD8cSCb76RjyzTdke6x2NXb9q5ptCaibtk97QfOfOTwt51kK
+	R/m5TIwFNj+/Iiit5/RDmhLE5sWX8I0=
+Received: from mail-yw1-f197.google.com (mail-yw1-f197.google.com
+ [209.85.128.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-240--X_GMqJDM7mWodmBGq6Ubg-1; Mon, 03 Mar 2025 12:29:32 -0500
+X-MC-Unique: -X_GMqJDM7mWodmBGq6Ubg-1
+X-Mimecast-MFC-AGG-ID: -X_GMqJDM7mWodmBGq6Ubg_1741022971
+Received: by mail-yw1-f197.google.com with SMTP id 00721157ae682-6f2793679ebso56066707b3.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Mar 2025 09:29:32 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740991549; x=1741596349;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=fg7ScFrpAhGYL1bOoOF2peNB6lfD3/GoDR0u+tz557k=;
-        b=AkNDa3lQu+0xLzqP7dSi+0dThKvhAukP4OGrhUxoFnrsxg4jsK3edq2Jn6yzjxSscs
-         t3Gxj8N0ZVGNbUardFxqsOhm2HL2Ian7dLquueYiOOloDCgLuExHKgvBpLSJLe6BKDwh
-         QnYfMK+zCl/PsBheD3yEpO534sAO9i0NBRJpGJDydlJt93zQB0Fl73I5/tDmprog+m59
-         I0myoXd13E4hij9EUcoAvbIJOVQJ75/mxnHzJ8pq6xUjOgm2lhJJxgkW43FhSyeYhUJy
-         fmWrXKQqQ6Y2VOsZozrrGGxDzDVQ7W48RoVWp8pCCNFnk3tWEmVdwG0dlIO9lHj97bo0
-         3XJA==
-X-Forwarded-Encrypted: i=1; AJvYcCXJeDKoc9kjdjTYE6RVuyJpikq50c4/G29DvsOlWYym6wdwgb8Jj4ggImkpTDuMwB3PWFqqB9MeHvX7bbg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyEyVCGaM1S0VcwxT1LHE1m3vW78GBBmD9jvEAUjW5QSEjALQKn
-	1kji3Z29+54DVLfEW9Fe1wEpAXmgDAB/fn1R3SoJO0miVswLZFHDB9vsW3DHS2M=
-X-Gm-Gg: ASbGncvonyQI22zI1pbQxf9BI72NVL4PBOeNMRNn2XnCrjeKnM/hAuAcmlnDwnwMt1Q
-	e76j8KenDU0svvp4oyae3NOT3RKD9ezP09uNWIT5IizRFXCWeRMz7dKeyfFm2SiNtwdZxFRbD5s
-	sIx/tya/XczYQzqvynro676/4/4nvruhdgdmPMOA2W5Z8WtbDRHSgTgVSQzDvsXOBuqhFTEFJbO
-	bY5g3GSV5M8XEVELNyr9+EuNxfnJUYh1AEprUwdFuAUjldX4kcskHoZ/WFgQd1kXYO1zsqqtbdA
-	Xz3fgBPnkG/i2dYtxy1mm48bbSOdwcX9lEsEHuR8ZXLCw+Py
-X-Google-Smtp-Source: AGHT+IEQ5gIerplrLBCNz9iWi2EjC22riC6x2aUD9LPOL3RMv31foO6V/nmZEr2WkFVBKnwbDjXW6Q==
-X-Received: by 2002:a05:600c:4e8b:b0:43a:b8ef:4dce with SMTP id 5b1f17b1804b1-43ba67041bamr112726745e9.11.1740991549553;
-        Mon, 03 Mar 2025 00:45:49 -0800 (PST)
-Received: from draszik.lan ([80.111.64.44])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43b736f75ebsm153130965e9.3.2025.03.03.00.45.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Mar 2025 00:45:49 -0800 (PST)
-Message-ID: <4d0042850eb4d9898559b56505291c4e849d44c5.camel@linaro.org>
-Subject: Re: [PATCH 00/18] a few rtc driver cleanups
-From: =?ISO-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski
- <krzk@kernel.org>,  Joel Stanley <joel@jms.id.au>, Andrew Jeffery
- <andrew@codeconstruct.com.au>, Hans Ulli Kroll	
- <ulli.kroll@googlemail.com>, Linus Walleij <linus.walleij@linaro.org>, Neil
- Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>,
- Jerome Brunet	 <jbrunet@baylibre.com>, Martin Blumenstingl
- <martin.blumenstingl@googlemail.com>,  =?ISO-8859-1?Q?T=F3th_J=E1nos?=	
- <gomba007@gmail.com>, Dianlong Li <long17.cool@163.com>, 
-	linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org, 
-	linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-amlogic@lists.infradead.org
-Date: Mon, 03 Mar 2025 08:45:47 +0000
-In-Reply-To: <20250301203658839d5482@mail.local>
-References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
-	 <20250301203658839d5482@mail.local>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.53.2-1 
+        d=1e100.net; s=20230601; t=1741022971; x=1741627771;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=fknoquM4HNPBtsYGt0/DMnFH0+dEPH8rOlkay8lH1H4=;
+        b=eSk1SYXjk77soD/KMY4VPBaTYN+ISmJV0vsaWuB+WTNr4TVJ1mhi9lHmhRqRGlLGCQ
+         bhBDewLML3EZY+SRgP7VNUNWOneJYjfh4d3ynYjT6mExurzFLCgMqBxKauNpOgRaZkne
+         DNNk1tF9GmxRVQMAjCbh25vYJbdvq46ZtCBiPlGLq6PetKzm/OV+OtveFKJJaL+V1b15
+         +qLnV/Ow+8kk/eloc/wwLmUlcyuI3G0KuBNJS3P6l9JGEJB5Tjv+VahcHrM0PmkLWizd
+         jXFM2r9z/Dy7Gw9VAsgccTupbpwxs2zz4AHJl/lJ8nDqEwat+zzq52DGVYHRREqErqTU
+         J0Wg==
+X-Forwarded-Encrypted: i=1; AJvYcCU0P7Royt+cKecrV2+TGLVk6uwVd5jOcKIwmy0e0MVbW3A3EhQUXOPcBt78zFXb/izGerPnjLAvBSubC2c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzcPgEXfSB6JQGtWHuCdEk8c6ItRgx3hRlE0GR2E+h5MZoh9IAw
+	ItcpywCx8VbtpGvrK+yOAGLgkHZevMFGdFcsGUIGZEqCuS5REMybqZTnyb2SiQdBZuSyzvik6Td
+	KBn9wvAvXhraGTLukGuX9PYD4Tc+qN5y7nLqo5/W98x7n2aukFXLO2bhH/aWQq+yKIyP3CKHSM8
+	NuXq3buN8mDhXVQ6bfPs6K/JSuJax2PD3jY4Ewaw==
+X-Gm-Gg: ASbGncuj2HuEhTay07uU+sba+b+M34btKsBoEZBzTGd5Tgp6UrQh68O0CF1iHJZ39Yh
+	4IJaUXuBt7Qp7eljzCTXitDwGIpL9THB/qKZCNqDRjNWaU2lbU0QgT5tedbPNYPsoEMI5t+k=
+X-Received: by 2002:a05:690c:6912:b0:6fd:3fd0:6f4d with SMTP id 00721157ae682-6fd4a0bd6d5mr197126587b3.26.1741022971467;
+        Mon, 03 Mar 2025 09:29:31 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IEitH9aEWJ+qG/9z4a5kdmAZQKGZ+U/x7f6AMH3AjCMHyi0yDTUtDSbkw1Iw4XvHtAqN3hS5a439MFySru2o+8=
+X-Received: by 2002:a05:690c:6912:b0:6fd:3fd0:6f4d with SMTP id
+ 00721157ae682-6fd4a0bd6d5mr197126027b3.26.1741022971048; Mon, 03 Mar 2025
+ 09:29:31 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -104,84 +93,772 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+References: <20250225-memory-drm-misc-next-v1-0-9d0e8761107a@redhat.com>
+ <20250225-memory-drm-misc-next-v1-7-9d0e8761107a@redhat.com> <24958ae8-6153-4798-abeb-e770d66ca8e4@foss.st.com>
+In-Reply-To: <24958ae8-6153-4798-abeb-e770d66ca8e4@foss.st.com>
+From: Anusha Srivatsa <asrivats@redhat.com>
+Date: Mon, 3 Mar 2025 12:29:19 -0500
+X-Gm-Features: AQ5f1Johe5mKdrN6JeFaOimn0fTUub6Bmoa-niuGqxRMqBj6fp0gOenjXNq9T2I
+Message-ID: <CAN9Xe3Q8=_Tz51i6gxNM6445p-rhNiK7B5Ljcga8g_Nn676dCQ@mail.gmail.com>
+Subject: Re: [PATCH RESEND 07/12] drm/sti: move to devm_platform_ioremap_resource()
+ usage
+To: Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>
+Cc: Joel Stanley <joel@jms.id.au>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Stefan Agner <stefan@agner.ch>, 
+	Alison Wang <alison.wang@nxp.com>, Xinliang Liu <xinliang.liu@linaro.org>, 
+	Tian Tao <tiantao6@hisilicon.com>, Xinwei Kong <kong.kongxinwei@hisilicon.com>, 
+	Sumit Semwal <sumit.semwal@linaro.org>, Yongqin Liu <yongqin.liu@linaro.org>, 
+	John Stultz <jstultz@google.com>, Chun-Kuang Hu <chunkuang.hu@kernel.org>, 
+	Philipp Zabel <p.zabel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Marek Vasut <marex@denx.de>, 
+	Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Chunyan Zhang <zhang.lyra@gmail.com>, Alain Volmat <alain.volmat@foss.st.com>, 
+	Raphael Gallais-Pou <rgallaispou@gmail.com>, Yannick Fertre <yannick.fertre@foss.st.com>, 
+	Philippe Cornu <philippe.cornu@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Thierry Reding <thierry.reding@gmail.com>, 
+	Mikko Perttunen <mperttunen@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Alexey Brodkin <abrodkin@synopsys.com>, Dave Stevenson <dave.stevenson@raspberrypi.com>, 
+	=?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>, 
+	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, Jonathan Corbet <corbet@lwn.net>, 
+	linux-aspeed@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, 
+	linux-doc@vger.kernel.org
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: eIgSJXtb0Pf7vZep9jLZ-14R6dsF4FVyXQpj3Vc_ueM_1741022971
+X-Mimecast-Originator: redhat.com
+Content-Type: multipart/alternative; boundary="000000000000bc509b062f737f75"
 
-Hi Alexandre,
+--000000000000bc509b062f737f75
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2025-03-01 at 21:36 +0100, Alexandre Belloni wrote:
-> On 28/02/2025 14:07:13+0000, Andr=C3=A9 Draszik wrote:
-> > Hi,
-> >=20
-> > While looking at RTC, I noticed that various drivers are keeping
-> > pointers to data that they're not using themselves throughout their
-> > lifetime.
-> >=20
-> > So I took the liberty to drop these pointers and this series is the
-> > result.
-> >=20
-> > The last two patches also convert two drivers to using dev_err_probe(),
-> > as I looked slightly closer into those two. They don't exactly fit the
-> > general subject of removal of unneeded pointers, but I wanted to share
-> > them anyway, since they're ready.
-> >=20
-> > All of this was compile-tested only.
-> >=20
-> > Cheers,
-> > Andre'
-> >=20
-> > Signed-off-by: Andr=C3=A9 Draszik <andre.draszik@linaro.org>
+On Wed, Feb 26, 2025 at 5:19=E2=80=AFAM Raphael Gallais-Pou <
+raphael.gallais-pou@foss.st.com> wrote:
+
+>
+> On 2/25/25 23:20, Anusha Srivatsa wrote:
+> > Replace platform_get_resource/_byname + devm_ioremap
+> > with just devm_platform_ioremap_resource()
+> >
+> > Used Coccinelle to do this change. SmPl patch:
+> >
+> > @rule@
+> > identifier res;
+> > expression ioremap;
+> > identifier pdev;
+> > constant mem;
+> > expression name;
+> > @@
+> > -struct resource *res;
+> > ...
+> > -res =3D platform_get_resource_byname(pdev,mem,name);
+> > <...
+> > -if (!res) {
+> > -...
+> > -}
+> > ...>
+> > -ioremap =3D devm_ioremap(...);
+> > +ioremap =3D devm_platform_ioremap_resource_byname(pdev,name);
+> >
+> > and
+> > @rule_2@
+> > identifier res;
+> > expression ioremap;
+> > identifier pdev;
+> > @@
+> > -struct resource *res;
+> > ...
+> > -res =3D platform_get_resource(pdev,...);
+> > <...
+> > -if (!res) {
+> > -...
+> > -}
+> > ...>
+> > -ioremap =3D devm_ioremap(...);
+> > +ioremap =3D devm_platform_ioremap_resource(pdev,0);
+> >
+> > v2: Fix compilation error.
+>
+>
+> Hi Anusha,
+>
+>
+> You did not take into account my comment regarding the changelog. :-)
+>
+> https://www.kernel.org/doc/html/latest/process/submitting-patches.html#co=
+mmentary
+>
+> While the commit summary do not specify the version, this changelog
+> suggests
+> that the version of your series as been incremented.
+> If this is a v2, then a version descriptor should be applied to the
+> patchset.
+>
+> https://www.kernel.org/doc/html/latest/process/submitting-patches.html#su=
+bject-line
+>
+> Hi  Raphael,
+
+That is correct. While this patch is a v2, there is another patch or two in
+the same series that is on v4 when it got acked and reviewed. Having
+patches belonging to the same series with different version prefixes seemed
+odd when I sent the series. Hence added what exactly changed in the commit
+log.
+
+Anusha
+
+
+> Regards,
+> Rapha=C3=ABl
+>
+> >
+> > Cc: Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>
+> > Cc: Alain Volmat <alain.volmat@foss.st.com>
+> > Reviewed-by: Maxime Ripard <mripard@kernel.org>
+> > Acked-by: Raphael Gallais-Pou <rgallaispou@gmail.com>
+> > Signed-off-by: Anusha Srivatsa <asrivats@redhat.com>
 > > ---
-> > Andr=C3=A9 Draszik (18):
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: max77686: drop needless struct max7=
-7686_rtc_info::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: s5m: drop needless struct s5m_rtc_i=
-nfo::i2c member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: aspeed: drop needless struct aspeed=
-_rtc::rtc_dev member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: ds2404: drop needless struct ds2404=
-::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: ep93xx: drop needless struct ep93xx=
-_rtc::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: ftrtc010: drop needless struct ftrt=
-c010_rtc::rtc_dev member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: m48t86: drop needless struct m48t86=
-_rtc_info::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: meson: drop needless struct meson_r=
-tc::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: meson-vrtc: drop needless struct me=
-son_vrtc_data::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: pl030: drop needless struct pl030_r=
-tc::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: rx8581: drop needless struct rx8581=
-::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: s35390a: drop needless struct s3539=
-0a::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: sd2405al: drop needless struct sd24=
-05al::rtc member
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: sd3078: drop needless struct sd3078=
-::rtc member
->=20
-> My main concern with this is that as soon as we introduce irq support,
-> we are going to need the rtc pointer back in the struct. But I guess
-> that most of them are old enough to say that nobody is interested in irq
-> support.
+> >  drivers/gpu/drm/sti/sti_compositor.c | 10 +---------
+> >  drivers/gpu/drm/sti/sti_dvo.c        | 10 +---------
+> >  drivers/gpu/drm/sti/sti_hda.c        |  9 +--------
+> >  drivers/gpu/drm/sti/sti_hdmi.c       | 11 +----------
+> >  drivers/gpu/drm/sti/sti_hqvdp.c      | 10 +---------
+> >  drivers/gpu/drm/sti/sti_tvout.c      | 10 +---------
+> >  drivers/gpu/drm/sti/sti_vtg.c        | 10 +---------
+> >  7 files changed, 7 insertions(+), 63 deletions(-)
+> >
+> > diff --git a/drivers/gpu/drm/sti/sti_compositor.c
+> b/drivers/gpu/drm/sti/sti_compositor.c
+> > index
+> 063f82d23d80c4ba83624a0066a18416a2b37351..7aefce6706ba2cd7d97a33228c9b981=
+2edecf06f
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_compositor.c
+> > +++ b/drivers/gpu/drm/sti/sti_compositor.c
+> > @@ -177,7 +177,6 @@ static int sti_compositor_probe(struct
+> platform_device *pdev)
+> >       struct device_node *np =3D dev->of_node;
+> >       struct device_node *vtg_np;
+> >       struct sti_compositor *compo;
+> > -     struct resource *res;
+> >       unsigned int i;
+> >
+> >       compo =3D devm_kzalloc(dev, sizeof(*compo), GFP_KERNEL);
+> > @@ -194,14 +193,7 @@ static int sti_compositor_probe(struct
+> platform_device *pdev)
+> >
+> >       memcpy(&compo->data, of_match_node(compositor_of_match, np)->data=
+,
+> >              sizeof(struct sti_compositor_data));
+> > -
+> > -     /* Get Memory ressources */
+> > -     res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > -     if (res =3D=3D NULL) {
+> > -             DRM_ERROR("Get memory resource failed\n");
+> > -             return -ENXIO;
+> > -     }
+> > -     compo->regs =3D devm_ioremap(dev, res->start, resource_size(res))=
+;
+> > +     compo->regs =3D devm_platform_ioremap_resource(pdev, 0);
+> >       if (compo->regs =3D=3D NULL) {
+> >               DRM_ERROR("Register mapping failed\n");
+> >               return -ENXIO;
+> > diff --git a/drivers/gpu/drm/sti/sti_dvo.c
+> b/drivers/gpu/drm/sti/sti_dvo.c
+> > index
+> 4dcddd02629b6a1052be8fb8333bd3aa17c083c5..c877298a7f2bad171724eca4d43ea62=
+2db4c81cd
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_dvo.c
+> > +++ b/drivers/gpu/drm/sti/sti_dvo.c
+> > @@ -511,7 +511,6 @@ static int sti_dvo_probe(struct platform_device
+> *pdev)
+> >  {
+> >       struct device *dev =3D &pdev->dev;
+> >       struct sti_dvo *dvo;
+> > -     struct resource *res;
+> >       struct device_node *np =3D dev->of_node;
+> >
+> >       DRM_INFO("%s\n", __func__);
+> > @@ -523,14 +522,7 @@ static int sti_dvo_probe(struct platform_device
+> *pdev)
+> >       }
+> >
+> >       dvo->dev =3D pdev->dev;
+> > -
+> > -     res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> "dvo-reg");
+> > -     if (!res) {
+> > -             DRM_ERROR("Invalid dvo resource\n");
+> > -             return -ENOMEM;
+> > -     }
+> > -     dvo->regs =3D devm_ioremap(dev, res->start,
+> > -                     resource_size(res));
+> > +     dvo->regs =3D devm_platform_ioremap_resource_byname(pdev, "dvo-re=
+g");
+> >       if (!dvo->regs)
+> >               return -ENOMEM;
+> >
+> > diff --git a/drivers/gpu/drm/sti/sti_hda.c
+> b/drivers/gpu/drm/sti/sti_hda.c
+> > index
+> 14fdc00d2ba03d4f96ba407ac8e576decb6f32c0..3ca3abb80d425901f4c031edfd327a7=
+70d624e1c
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_hda.c
+> > +++ b/drivers/gpu/drm/sti/sti_hda.c
+> > @@ -750,14 +750,7 @@ static int sti_hda_probe(struct platform_device
+> *pdev)
+> >               return -ENOMEM;
+> >
+> >       hda->dev =3D pdev->dev;
+> > -
+> > -     /* Get resources */
+> > -     res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> "hda-reg");
+> > -     if (!res) {
+> > -             DRM_ERROR("Invalid hda resource\n");
+> > -             return -ENOMEM;
+> > -     }
+> > -     hda->regs =3D devm_ioremap(dev, res->start, resource_size(res));
+> > +     hda->regs =3D devm_platform_ioremap_resource_byname(pdev, "hda-re=
+g");
+> >       if (!hda->regs)
+> >               return -ENOMEM;
+> >
+> > diff --git a/drivers/gpu/drm/sti/sti_hdmi.c
+> b/drivers/gpu/drm/sti/sti_hdmi.c
+> > index
+> 164a34d793d86f114394048667ae3189e1c39242..c64ce7a1ef58b9ce4429edd368269be=
+a87d86984
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_hdmi.c
+> > +++ b/drivers/gpu/drm/sti/sti_hdmi.c
+> > @@ -1380,7 +1380,6 @@ static int sti_hdmi_probe(struct platform_device
+> *pdev)
+> >       struct device *dev =3D &pdev->dev;
+> >       struct sti_hdmi *hdmi;
+> >       struct device_node *np =3D dev->of_node;
+> > -     struct resource *res;
+> >       struct device_node *ddc;
+> >       int ret;
+> >
+> > @@ -1399,15 +1398,7 @@ static int sti_hdmi_probe(struct platform_device
+> *pdev)
+> >       }
+> >
+> >       hdmi->dev =3D pdev->dev;
+> > -
+> > -     /* Get resources */
+> > -     res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> "hdmi-reg");
+> > -     if (!res) {
+> > -             DRM_ERROR("Invalid hdmi resource\n");
+> > -             ret =3D -ENOMEM;
+> > -             goto release_adapter;
+> > -     }
+> > -     hdmi->regs =3D devm_ioremap(dev, res->start, resource_size(res));
+> > +     hdmi->regs =3D devm_platform_ioremap_resource_byname(pdev,
+> "hdmi-reg");
+> >       if (!hdmi->regs) {
+> >               ret =3D -ENOMEM;
+> >               goto release_adapter;
+> > diff --git a/drivers/gpu/drm/sti/sti_hqvdp.c
+> b/drivers/gpu/drm/sti/sti_hqvdp.c
+> > index
+> 0f658709c9d0d398c4eed65202443db9d0b41f8c..420395598d119a403d531211022e600=
+5d6a2bd59
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_hqvdp.c
+> > +++ b/drivers/gpu/drm/sti/sti_hqvdp.c
+> > @@ -1356,7 +1356,6 @@ static int sti_hqvdp_probe(struct platform_device
+> *pdev)
+> >       struct device *dev =3D &pdev->dev;
+> >       struct device_node *vtg_np;
+> >       struct sti_hqvdp *hqvdp;
+> > -     struct resource *res;
+> >
+> >       DRM_DEBUG_DRIVER("\n");
+> >
+> > @@ -1367,14 +1366,7 @@ static int sti_hqvdp_probe(struct platform_devic=
+e
+> *pdev)
+> >       }
+> >
+> >       hqvdp->dev =3D dev;
+> > -
+> > -     /* Get Memory resources */
+> > -     res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > -     if (!res) {
+> > -             DRM_ERROR("Get memory resource failed\n");
+> > -             return -ENXIO;
+> > -     }
+> > -     hqvdp->regs =3D devm_ioremap(dev, res->start, resource_size(res))=
+;
+> > +     hqvdp->regs =3D devm_platform_ioremap_resource(pdev, 0);
+> >       if (!hqvdp->regs) {
+> >               DRM_ERROR("Register mapping failed\n");
+> >               return -ENXIO;
+> > diff --git a/drivers/gpu/drm/sti/sti_tvout.c
+> b/drivers/gpu/drm/sti/sti_tvout.c
+> > index
+> af6c06f448c4819def8cc0d0836e30f991529690..0bebe815f5e7567f84388af93723a6f=
+a7d2cc7a2
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_tvout.c
+> > +++ b/drivers/gpu/drm/sti/sti_tvout.c
+> > @@ -838,7 +838,6 @@ static int sti_tvout_probe(struct platform_device
+> *pdev)
+> >       struct device *dev =3D &pdev->dev;
+> >       struct device_node *node =3D dev->of_node;
+> >       struct sti_tvout *tvout;
+> > -     struct resource *res;
+> >
+> >       DRM_INFO("%s\n", __func__);
+> >
+> > @@ -850,14 +849,7 @@ static int sti_tvout_probe(struct platform_device
+> *pdev)
+> >               return -ENOMEM;
+> >
+> >       tvout->dev =3D dev;
+> > -
+> > -     /* get memory resources */
+> > -     res =3D platform_get_resource_byname(pdev, IORESOURCE_MEM,
+> "tvout-reg");
+> > -     if (!res) {
+> > -             DRM_ERROR("Invalid glue resource\n");
+> > -             return -ENOMEM;
+> > -     }
+> > -     tvout->regs =3D devm_ioremap(dev, res->start, resource_size(res))=
+;
+> > +     tvout->regs =3D devm_platform_ioremap_resource_byname(pdev,
+> "tvout-reg");
+> >       if (!tvout->regs)
+> >               return -ENOMEM;
+> >
+> > diff --git a/drivers/gpu/drm/sti/sti_vtg.c
+> b/drivers/gpu/drm/sti/sti_vtg.c
+> > index
+> 5ba469b711b5318e9e9e6d8df127fb8933d1fac1..b5353fe774d72fd629ecd3ef75a5d28=
+17ca8617f
+> 100644
+> > --- a/drivers/gpu/drm/sti/sti_vtg.c
+> > +++ b/drivers/gpu/drm/sti/sti_vtg.c
+> > @@ -380,20 +380,12 @@ static int vtg_probe(struct platform_device *pdev=
+)
+> >  {
+> >       struct device *dev =3D &pdev->dev;
+> >       struct sti_vtg *vtg;
+> > -     struct resource *res;
+> >       int ret;
+> >
+> >       vtg =3D devm_kzalloc(dev, sizeof(*vtg), GFP_KERNEL);
+> >       if (!vtg)
+> >               return -ENOMEM;
+> > -
+> > -     /* Get Memory ressources */
+> > -     res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > -     if (!res) {
+> > -             DRM_ERROR("Get memory resource failed\n");
+> > -             return -ENOMEM;
+> > -     }
+> > -     vtg->regs =3D devm_ioremap(dev, res->start, resource_size(res));
+> > +     vtg->regs =3D devm_platform_ioremap_resource(pdev, 0);
+> >       if (!vtg->regs) {
+> >               DRM_ERROR("failed to remap I/O memory\n");
+> >               return -ENOMEM;
+> >
+>
+>
 
-Thanks for your thoughts Alexandre - I don't know the history of
-these drivers and don't mind either way. I can drop those patches
-that would require reintroducing if irq support is added in the
-future. I think overall you're OK with keeping them, but please
-let me know if I'm misunderstanding :-)
+--000000000000bc509b062f737f75
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->=20
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: rx8581: drop needless struct rx8581
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: sd3078: drop needless struct sd3078
->=20
-> I guess you could squash those two with the previous ones touching the
-> respective drivers because you are the one removing the last remaining
-> struct member.
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote g=
+mail_quote_container"><div dir=3D"ltr" class=3D"gmail_attr">On Wed, Feb 26,=
+ 2025 at 5:19=E2=80=AFAM Raphael Gallais-Pou &lt;<a href=3D"mailto:raphael.=
+gallais-pou@foss.st.com">raphael.gallais-pou@foss.st.com</a>&gt; wrote:<br>=
+</div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;b=
+order-left:1px solid rgb(204,204,204);padding-left:1ex"><br>
+On 2/25/25 23:20, Anusha Srivatsa wrote:<br>
+&gt; Replace platform_get_resource/_byname + devm_ioremap<br>
+&gt; with just devm_platform_ioremap_resource()<br>
+&gt;<br>
+&gt; Used Coccinelle to do this change. SmPl patch:<br>
+&gt;<br>
+&gt; @rule@<br>
+&gt; identifier res;<br>
+&gt; expression ioremap;<br>
+&gt; identifier pdev;<br>
+&gt; constant mem;<br>
+&gt; expression name;<br>
+&gt; @@<br>
+&gt; -struct resource *res;<br>
+&gt; ...<br>
+&gt; -res =3D platform_get_resource_byname(pdev,mem,name);<br>
+&gt; &lt;...<br>
+&gt; -if (!res) {<br>
+&gt; -...<br>
+&gt; -}<br>
+&gt; ...&gt;<br>
+&gt; -ioremap =3D devm_ioremap(...);<br>
+&gt; +ioremap =3D devm_platform_ioremap_resource_byname(pdev,name);<br>
+&gt;<br>
+&gt; and<br>
+&gt; @rule_2@<br>
+&gt; identifier res;<br>
+&gt; expression ioremap;<br>
+&gt; identifier pdev;<br>
+&gt; @@<br>
+&gt; -struct resource *res;<br>
+&gt; ...<br>
+&gt; -res =3D platform_get_resource(pdev,...);<br>
+&gt; &lt;...<br>
+&gt; -if (!res) {<br>
+&gt; -...<br>
+&gt; -}<br>
+&gt; ...&gt;<br>
+&gt; -ioremap =3D devm_ioremap(...);<br>
+&gt; +ioremap =3D devm_platform_ioremap_resource(pdev,0);<br>
+&gt;<br>
+&gt; v2: Fix compilation error.<br>
+<br>
+<br>
+Hi Anusha,=C2=A0<br>
+<br>
+<br>
+You did not take into account my comment regarding the changelog. :-)<br>
+<a href=3D"https://www.kernel.org/doc/html/latest/process/submitting-patche=
+s.html#commentary" rel=3D"noreferrer" target=3D"_blank">https://www.kernel.=
+org/doc/html/latest/process/submitting-patches.html#commentary</a><br>
+<br>
+While the commit summary do not specify the version, this changelog suggest=
+s<br>
+that the version of your series as been incremented.<br>
+If this is a v2, then a version descriptor should be applied to the patchse=
+t.<br>
+<a href=3D"https://www.kernel.org/doc/html/latest/process/submitting-patche=
+s.html#subject-line" rel=3D"noreferrer" target=3D"_blank">https://www.kerne=
+l.org/doc/html/latest/process/submitting-patches.html#subject-line</a><br>
+<br></blockquote><div>Hi=C2=A0 Raphael,</div><div><br></div><div>That is co=
+rrect. While this patch is a v2, there is another patch or two in the same =
+series that is on v4 when it got acked and reviewed. Having patches belongi=
+ng to the same series with different version prefixes seemed odd when I sen=
+t the series. Hence added what exactly changed in the commit log.</div><div=
+><br></div><div>Anusha</div><div>=C2=A0</div><blockquote class=3D"gmail_quo=
+te" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204=
+);padding-left:1ex">
+Regards,<br>
+Rapha=C3=ABl<br>
+<br>
+&gt;<br>
+&gt; Cc: Raphael Gallais-Pou &lt;<a href=3D"mailto:raphael.gallais-pou@foss=
+.st.com" target=3D"_blank">raphael.gallais-pou@foss.st.com</a>&gt;<br>
+&gt; Cc: Alain Volmat &lt;<a href=3D"mailto:alain.volmat@foss.st.com" targe=
+t=3D"_blank">alain.volmat@foss.st.com</a>&gt;<br>
+&gt; Reviewed-by: Maxime Ripard &lt;<a href=3D"mailto:mripard@kernel.org" t=
+arget=3D"_blank">mripard@kernel.org</a>&gt;<br>
+&gt; Acked-by: Raphael Gallais-Pou &lt;<a href=3D"mailto:rgallaispou@gmail.=
+com" target=3D"_blank">rgallaispou@gmail.com</a>&gt;<br>
+&gt; Signed-off-by: Anusha Srivatsa &lt;<a href=3D"mailto:asrivats@redhat.c=
+om" target=3D"_blank">asrivats@redhat.com</a>&gt;<br>
+&gt; ---<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_compositor.c | 10 +---------<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_dvo.c=C2=A0 =C2=A0 =C2=A0 =C2=A0 | 10 +-=
+--------<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_hda.c=C2=A0 =C2=A0 =C2=A0 =C2=A0 |=C2=A0=
+ 9 +--------<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_hdmi.c=C2=A0 =C2=A0 =C2=A0 =C2=A0| 11 +-=
+---------<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_hqvdp.c=C2=A0 =C2=A0 =C2=A0 | 10 +------=
+---<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_tvout.c=C2=A0 =C2=A0 =C2=A0 | 10 +------=
+---<br>
+&gt;=C2=A0 drivers/gpu/drm/sti/sti_vtg.c=C2=A0 =C2=A0 =C2=A0 =C2=A0 | 10 +-=
+--------<br>
+&gt;=C2=A0 7 files changed, 7 insertions(+), 63 deletions(-)<br>
+&gt;<br>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_compositor.c b/drivers/gpu/drm/st=
+i/sti_compositor.c<br>
+&gt; index 063f82d23d80c4ba83624a0066a18416a2b37351..7aefce6706ba2cd7d97a33=
+228c9b9812edecf06f 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_compositor.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_compositor.c<br>
+&gt; @@ -177,7 +177,6 @@ static int sti_compositor_probe(struct platform_de=
+vice *pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *np =3D dev-&gt;of_node;<=
+br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *vtg_np;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct sti_compositor *compo;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0struct resource *res;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned int i;<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0compo =3D devm_kzalloc(dev, sizeof(*compo), =
+GFP_KERNEL);<br>
+&gt; @@ -194,14 +193,7 @@ static int sti_compositor_probe(struct platform_d=
+evice *pdev)<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0memcpy(&amp;compo-&gt;data, of_match_node(co=
+mpositor_of_match, np)-&gt;data,<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 sizeof(struct sti_comp=
+ositor_data));<br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0/* Get Memory ressources */<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource(pdev, IORESOURCE_ME=
+M, 0);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (res =3D=3D NULL) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Get m=
+emory resource failed\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENXIO;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0compo-&gt;regs =3D devm_ioremap(dev, res-&gt;star=
+t, resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0compo-&gt;regs =3D devm_platform_ioremap_resource=
+(pdev, 0);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (compo-&gt;regs =3D=3D NULL) {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;=
+Register mapping failed\n&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENXIO;<b=
+r>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_dvo.c b/drivers/gpu/drm/sti/sti_d=
+vo.c<br>
+&gt; index 4dcddd02629b6a1052be8fb8333bd3aa17c083c5..c877298a7f2bad171724ec=
+a4d43ea622db4c81cd 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_dvo.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_dvo.c<br>
+&gt; @@ -511,7 +511,6 @@ static int sti_dvo_probe(struct platform_device *p=
+dev)<br>
+&gt;=C2=A0 {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device *dev =3D &amp;pdev-&gt;dev;<br=
+>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct sti_dvo *dvo;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0struct resource *res;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *np =3D dev-&gt;of_node;<=
+br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_INFO(&quot;%s\n&quot;, __func__);<br>
+&gt; @@ -523,14 +522,7 @@ static int sti_dvo_probe(struct platform_device *=
+pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0dvo-&gt;dev =3D pdev-&gt;dev;<br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource_byname(pdev, IORESO=
+URCE_MEM, &quot;dvo-reg&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (!res) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Inval=
+id dvo resource\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0dvo-&gt;regs =3D devm_ioremap(dev, res-&gt;start,=
+<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0dvo-&gt;regs =3D devm_platform_ioremap_resource_b=
+yname(pdev, &quot;dvo-reg&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!dvo-&gt;regs)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt;=C2=A0 <br>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_hda.c b/drivers/gpu/drm/sti/sti_h=
+da.c<br>
+&gt; index 14fdc00d2ba03d4f96ba407ac8e576decb6f32c0..3ca3abb80d425901f4c031=
+edfd327a770d624e1c 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_hda.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_hda.c<br>
+&gt; @@ -750,14 +750,7 @@ static int sti_hda_probe(struct platform_device *=
+pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0hda-&gt;dev =3D pdev-&gt;dev;<br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0/* Get resources */<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource_byname(pdev, IORESO=
+URCE_MEM, &quot;hda-reg&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (!res) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Inval=
+id hda resource\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0hda-&gt;regs =3D devm_ioremap(dev, res-&gt;start,=
+ resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0hda-&gt;regs =3D devm_platform_ioremap_resource_b=
+yname(pdev, &quot;hda-reg&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!hda-&gt;regs)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt;=C2=A0 <br>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_hdmi.c b/drivers/gpu/drm/sti/sti_=
+hdmi.c<br>
+&gt; index 164a34d793d86f114394048667ae3189e1c39242..c64ce7a1ef58b9ce4429ed=
+d368269bea87d86984 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_hdmi.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_hdmi.c<br>
+&gt; @@ -1380,7 +1380,6 @@ static int sti_hdmi_probe(struct platform_device=
+ *pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device *dev =3D &amp;pdev-&gt;dev;<br=
+>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct sti_hdmi *hdmi;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *np =3D dev-&gt;of_node;<=
+br>
+&gt; -=C2=A0 =C2=A0 =C2=A0struct resource *res;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *ddc;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0int ret;<br>
+&gt;=C2=A0 <br>
+&gt; @@ -1399,15 +1398,7 @@ static int sti_hdmi_probe(struct platform_devic=
+e *pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0hdmi-&gt;dev =3D pdev-&gt;dev;<br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0/* Get resources */<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource_byname(pdev, IORESO=
+URCE_MEM, &quot;hdmi-reg&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (!res) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Inval=
+id hdmi resource\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ret =3D -ENOMEM;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0goto release_adapter;=
+<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0hdmi-&gt;regs =3D devm_ioremap(dev, res-&gt;start=
+, resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0hdmi-&gt;regs =3D devm_platform_ioremap_resource_=
+byname(pdev, &quot;hdmi-reg&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!hdmi-&gt;regs) {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ret =3D -ENOMEM;=
+<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0goto release_ada=
+pter;<br>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_hqvdp.c b/drivers/gpu/drm/sti/sti=
+_hqvdp.c<br>
+&gt; index 0f658709c9d0d398c4eed65202443db9d0b41f8c..420395598d119a403d5312=
+11022e6005d6a2bd59 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_hqvdp.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_hqvdp.c<br>
+&gt; @@ -1356,7 +1356,6 @@ static int sti_hqvdp_probe(struct platform_devic=
+e *pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device *dev =3D &amp;pdev-&gt;dev;<br=
+>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *vtg_np;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct sti_hqvdp *hqvdp;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0struct resource *res;<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_DEBUG_DRIVER(&quot;\n&quot;);<br>
+&gt;=C2=A0 <br>
+&gt; @@ -1367,14 +1366,7 @@ static int sti_hqvdp_probe(struct platform_devi=
+ce *pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0hqvdp-&gt;dev =3D dev;<br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0/* Get Memory resources */<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource(pdev, IORESOURCE_ME=
+M, 0);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (!res) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Get m=
+emory resource failed\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENXIO;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0hqvdp-&gt;regs =3D devm_ioremap(dev, res-&gt;star=
+t, resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0hqvdp-&gt;regs =3D devm_platform_ioremap_resource=
+(pdev, 0);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!hqvdp-&gt;regs) {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;=
+Register mapping failed\n&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENXIO;<b=
+r>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_tvout.c b/drivers/gpu/drm/sti/sti=
+_tvout.c<br>
+&gt; index af6c06f448c4819def8cc0d0836e30f991529690..0bebe815f5e7567f84388a=
+f93723a6fa7d2cc7a2 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_tvout.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_tvout.c<br>
+&gt; @@ -838,7 +838,6 @@ static int sti_tvout_probe(struct platform_device =
+*pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device *dev =3D &amp;pdev-&gt;dev;<br=
+>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *node =3D dev-&gt;of_node=
+;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct sti_tvout *tvout;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0struct resource *res;<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_INFO(&quot;%s\n&quot;, __func__);<br>
+&gt;=C2=A0 <br>
+&gt; @@ -850,14 +849,7 @@ static int sti_tvout_probe(struct platform_device=
+ *pdev)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0tvout-&gt;dev =3D dev;<br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0/* get memory resources */<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource_byname(pdev, IORESO=
+URCE_MEM, &quot;tvout-reg&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (!res) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Inval=
+id glue resource\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0tvout-&gt;regs =3D devm_ioremap(dev, res-&gt;star=
+t, resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0tvout-&gt;regs =3D devm_platform_ioremap_resource=
+_byname(pdev, &quot;tvout-reg&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!tvout-&gt;regs)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt;=C2=A0 <br>
+&gt; diff --git a/drivers/gpu/drm/sti/sti_vtg.c b/drivers/gpu/drm/sti/sti_v=
+tg.c<br>
+&gt; index 5ba469b711b5318e9e9e6d8df127fb8933d1fac1..b5353fe774d72fd629ecd3=
+ef75a5d2817ca8617f 100644<br>
+&gt; --- a/drivers/gpu/drm/sti/sti_vtg.c<br>
+&gt; +++ b/drivers/gpu/drm/sti/sti_vtg.c<br>
+&gt; @@ -380,20 +380,12 @@ static int vtg_probe(struct platform_device *pde=
+v)<br>
+&gt;=C2=A0 {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct device *dev =3D &amp;pdev-&gt;dev;<br=
+>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0struct sti_vtg *vtg;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0struct resource *res;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0int ret;<br>
+&gt;=C2=A0 <br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0vtg =3D devm_kzalloc(dev, sizeof(*vtg), GFP_=
+KERNEL);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!vtg)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt; -<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0/* Get Memory ressources */<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0res =3D platform_get_resource(pdev, IORESOURCE_ME=
+M, 0);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0if (!res) {<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;Get m=
+emory resource failed\n&quot;);<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0}<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0vtg-&gt;regs =3D devm_ioremap(dev, res-&gt;start,=
+ resource_size(res));<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0vtg-&gt;regs =3D devm_platform_ioremap_resource(p=
+dev, 0);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!vtg-&gt;regs) {<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0DRM_ERROR(&quot;=
+failed to remap I/O memory\n&quot;);<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENOMEM;<=
+br>
+&gt;<br>
+<br>
+</blockquote></div></div>
 
-Will do.
-
-Cheers,
-Andre'
+--000000000000bc509b062f737f75--
 
 
