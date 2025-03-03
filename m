@@ -1,78 +1,79 @@
-Return-Path: <linux-aspeed+bounces-901-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-900-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D44F2C282D5
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D992C282D3
 	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Mar 2025 13:18:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5zsd4tlHz30WY;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5zsd2bjsz30WS;
 	Tue,  4 Mar 2025 00:18:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32f"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741007925;
-	cv=none; b=XosQrbZiNyYQiiXAOJxyCTpUOeDoF7enXB62054mpHi96LqEBLc8dHSt8OX7Ut+tjdc7Rz4z42tjlDtgUaU8aTeLwENl1Jq1Z4r8fKlM8iYqKl61r/tk1HpcFM6A8mZoB2d3qhkLV+lQlUs7RnPxtURxAIJgMKzZ0lIwQB6Uug/bVGjNkV9T7ZtJt761FJHO5DMeSdjDjw/xtdbPkI3CiWmvDeFXWQBykSnvGt/2029A4a33A7JIqrUONqlJhMb97LXp1jmS/is0z4aC9HX5fDpuQhke2+va5fE38AIKFQc7mml3w1aIZg359K6TN2AsHzVjpWGDO7rWYFJZpYeTSw==
+	cv=none; b=QeiRUWuI+OhogtBVnOWF4hAIXi6ImGJX+GrfHmKjfuuVj/tY0LH+9ZYt+/Xj8cpX8/24rRx8GpxmnQrVU2/f8f3EiYg0cZrHkjlDnFRyCyhqvANlkzGoCtWiMT98aOzYwXxG+SH04yzBRVhDv6bvRkd5bkUY3vniQFfpSKSB6c78K1V5kRE3HKTCUo7Rzecqu94Teu3MruHp8ph9IrQyhKB2LrI1vjSTiFa0oyDgYP/m1HWm4FA2wkp43K6bKNmn53D6tpNU7ncjQ5zSB8yP7L+mqqDCzAMfpL4MykCZhgH/iNN/3P3y1MoXscnSuE22HJQaWijmVndCkURI6u6B6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1741007925; c=relaxed/relaxed;
-	bh=X8hAv7noimuIZZQmeIe3WLO3rZ6iIEPRpuvmg5XIUhY=;
+	bh=fZ5oJp3c5WFM4WouXer3X9uqb/QndY0s4T1ZVpIJ/XI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=X8fb3BybDp4mXs0NOFfFB5GojrDZGnDIhOXQ2WMhlX4wkIo3YM+mo677fVAoS5UbLP6CAN74LdBO/ad4bOYgRKM4fBLc0DKssLEly6DyuG6YLuihM73wmNMU7VX4uZPi1IZHM3oVWBIf8ciQzBvkzbY5JaEKMTyAb/JYXHoiEZBAYBnDGOu5go/GFSjqSGnoEDVAn+s/6qVgEYtkcNqkM0sSRHKjuKfHL2AXqkQgSk7KNac117fSTWBfF5p/havdLLytrU305+sG5c6QuVxALMV2ii/BJrOj60zuTSSi6a678QXRUv56Oc0o5pNDMSiVr4Np09u4PLiTYNiczPfgRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=bg19v7kQ; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org) smtp.mailfrom=bgdev.pl
+	 In-Reply-To:To:Cc; b=WCZnD68vRyflshn/bEhcOjpdwlTrh1pN+eboEEmT5919VPNlFn8pNlVNlunLr3RX0lhD8gzCuKzCKGMLpVnybAZRAY3GkqueH5dCtcw0IujSmJ3ZM0ixy5KTMXPrzOpl/ZnIud/qCp2Kj7bwwSze0xPx8v4dyYTZym1sxlmPEjcM0xDwBO/tfiSup3cTZx1B4/7N6C/HF4xX6NJaXe3OVGF/fN3v6IWisnbHKb+jC5hSuiNPLqlTXyN12S8oTGe/FnPFTXT9IR2k+uJSWuuVK5xywnvKTBa/fzgozC0/8xKqoITXkATDdg8ahmeuVgx6PJv1Woqs9DGel5LrIh889g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=gmF+X6Wt; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org) smtp.mailfrom=bgdev.pl
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=bg19v7kQ;
+	dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=gmF+X6Wt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bgdev.pl (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bgdev.pl (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5zsc3lDSz3bV2
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Mar 2025 00:18:44 +1100 (AEDT)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-43690d4605dso28098095e9.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Mar 2025 05:18:44 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5zsb1Z9Sz30WY
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Mar 2025 00:18:43 +1100 (AEDT)
+Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-43bbb440520so11698805e9.2
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Mar 2025 05:18:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1741007921; x=1741612721; darn=lists.ozlabs.org;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1741007920; x=1741612720; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=X8hAv7noimuIZZQmeIe3WLO3rZ6iIEPRpuvmg5XIUhY=;
-        b=bg19v7kQHtxZG/2GVFjxkIRAvmvepRiQM/GYR82/pF3h7LF5EGXpQZ/vUtOit1BGgN
-         4Hiz/AZ9e4ZOy1rFsfCY0KS5Eg0427hOj342YIfOoCLz36LFMN67cYAUEREPnLxibOQ6
-         X8E8gzytEHLEmW+Pd2mger8noROFtyoMkNCyb/qamKl71R8m/QkfZ3QdKrAETmfp8gMq
-         EeWPLak4TgTfOduDIf3bGGo1WeBEHlSCykckcZJ+RbK1hjtKU8mFACD/aX9ZFjaVPK43
-         a8szTJZzmLOT/fqOcD0El6bPn9zya33b7g0dDh0lA+zTWh/CKjlO/M2ZbOLkgXPx3uTw
-         /qww==
+        bh=fZ5oJp3c5WFM4WouXer3X9uqb/QndY0s4T1ZVpIJ/XI=;
+        b=gmF+X6WtvChg1AUnQFeVi/sC5UL0ekch2LIR1B7py7+a175NWuIyyikYAP7/1Gvlzg
+         2kcQLD540Ks3r/5+VhMN4paSz5Zl+y0Nl91CgoQyTpPSXCobOfXyz3k3xPXNMFsbIXOo
+         7vYjLNoGYtHv8admRbotOQOCpbjqlXDGPoWm2wCSQqsBOFF5il9jRz3w3k9agm39Iz/N
+         y6N/DLAa/YpvPkTLdwNANiqzQBGi/xqpJ2KR8nHVakjSAztuvTamvqk604RZnMgVKg+T
+         TOG68WnMXX0ttWxOz5ZyK+UX9DDnmn6tYVPbzzTVNdn3+187ryFw9BYAHIYquuwpsvdp
+         YYSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741007921; x=1741612721;
+        d=1e100.net; s=20230601; t=1741007920; x=1741612720;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=X8hAv7noimuIZZQmeIe3WLO3rZ6iIEPRpuvmg5XIUhY=;
-        b=dMk4zloa9rL8bcCN4jPUg8ovcI2utyYHZxSZh9xFooxhtE+r9ri3IysZGVuW0VpOut
-         EdvDmZf2veAqMQ2hH4X9x2q0UK6TGh3GDAEFrrxWKZ6hYh4wfLaUJ+UCQb2G3700+7Tn
-         aXWZxKN9Hj1NMwofEoGYTK9CVeK2isSpcdDMaoeIdIkmJ/a4892CRAkjRqz2IJTYVmY0
-         WLqYnuDDnBaDPaCJeEjqokmzx40utdABE8PE46x7QN+k6VEQVdvRvZ5YNVRh8GmWxhQ1
-         xrQC+sdmWSSh8yT3QN3QB22kYFcOx7g4CZ+P7N+BHt3W41ZMopE8Lb21jYNAwhHie6zz
-         /B0g==
-X-Forwarded-Encrypted: i=1; AJvYcCWBDyYqQldAWAQpqenjwGoAnMcBok/VIcJ5fISallJITrWic2F8MkxnccosPrRyg1IRaAam6TaLexSW50k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywv5yl6UG/XYl2XYyolPS73UIY9Q0o0Jt7lInGDcUGCyG48YzE9
-	9pVl9BR6vwh/6KFpEVD4anyVXEwbjpjagm8pXZYzZN0A8HXqSKNtmFMqDEqnDQ0=
-X-Gm-Gg: ASbGnctXrxDQH5Q9uG/HJYC9iN+l50wg0txI3HKcLCWCejaGISsUt3wwJ8y+imJTGTS
-	ZiSg17GQsGvM3lVd25QiESRwHBGgJT2DXRWjt3JKuR+1nsAtVNCHdD6NFIXU4b0pNjKCYYAGiIJ
-	rM6aRMz40ADcFGqpfSSznRJZQQn4O8d2+1aakmV03qfDoJLQlaphhfoTCeDDMz7fujdpoL6u9os
-	Ih7mclVa1/W9aRi00AnfTZ2b5ObRtJ4/O8CfxB8NDHUp2xL2Zm+yegE1swe2tU8u9S3d0gZESVA
-	L+cq2p9VSk0hm0QbOaq6U30fF+TU5eDM9GTa5w==
-X-Google-Smtp-Source: AGHT+IENjU5auSW6uBydmqpRlN4cRim5e7ftx75e07xHAIh+YvS9KyaVM39ESiF/66tXbphMfz7i4g==
-X-Received: by 2002:a05:600c:3112:b0:439:99d1:d4a4 with SMTP id 5b1f17b1804b1-43ba670a870mr109103405e9.18.1741007921076;
-        Mon, 03 Mar 2025 05:18:41 -0800 (PST)
-Received: from [127.0.1.1] ([2a01:cb1d:dc:7e00:664a:9e92:6aa8:6007])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43aba538b9fsm194821915e9.17.2025.03.03.05.18.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        bh=fZ5oJp3c5WFM4WouXer3X9uqb/QndY0s4T1ZVpIJ/XI=;
+        b=NLPd0Pd5TtX6zxaAVd31Ggoxcgg+UtWjeZfYWnSAr4eanBgem7UGYgbm9hs5jfxaA4
+         wa2uFkkUfeuIogCskT6cyUSZ2OuooooeNlRCk86bMc1M5CtoziDFrsMyeW7zsgeSucmR
+         xdsbTuK5BGJEaKBxQcwCspFtZ0vLFgnwkrFWLseF5CPSn5UeuqBQ5tctkxMO2ZhoeJdl
+         23la64dGr60dUvUvNPUe5yWagvH67pmbyn0mkeyZdjWeglE81XRUYPnBdavHmeeDF00U
+         h6OfB6n3VrXwiCFH2g3GwRylx2MAsW06q4x70Klf49cPnBsObfv42Ob0dEmhe4lpMYxJ
+         6doA==
+X-Forwarded-Encrypted: i=1; AJvYcCWbLm+NKlG1MDdNeQFHZ4/ExcSoxuQ9v4Sx0tGCqlYP6Y95ZOPrzqJHaxZaxo2NCMI318Aj/uyZx9Ks7XQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy2wtw+RVyieGTmlDnkGcEuu8bKvXqNziSZE2+oHmrpeVZ9Gy33
+	r5yV3iSVdwNk1LCIkLO5Rxe/lzGsSka0LZC2Av1wPRjxFpalgjC2NgFD3hZAAHD7j67VZQ3lFQe
+	r
+X-Gm-Gg: ASbGncv0nWg5xexrViTI84ynFjZedA9/OwK/kkq/C/jnyCK+pK/q0lUx815faX4adiL
+	kqCCn6ucza2BlepBeFBmvlMeeMQN/zuLkYeWDnIeIlTRQGgfjwhEAmPZyDO9rB8YfIR27hEUpZl
+	9ILwqRbvvkMszhLibH+99dZ7BG5dTjYBWtEB8rqEMgZV3K6d3zjOStnauesil1tOjzIiK6os2KD
+	RwK3VemUVcf1rXAk4H0YQviUVSIfjE3Lxmie3JYYNjF917NJ+bFklEmgK7sqsqipZySjmQvjtis
+	EoFKwuKtVkKIUQGdWz7HbS270CvRK22BgBAsdw==
+X-Google-Smtp-Source: AGHT+IG5s1ruT1nmumvD1vz4k/PQPFk73wz70YSES2dlvEwqzkFmq0l7g9gUOgUlEDWIW1/6NKwMVQ==
+X-Received: by 2002:a05:600c:1990:b0:439:9b80:ca6f with SMTP id 5b1f17b1804b1-43bad205987mr116763645e9.5.1741007920075;
         Mon, 03 Mar 2025 05:18:40 -0800 (PST)
+Received: from [127.0.1.1] ([2a01:cb1d:dc:7e00:664a:9e92:6aa8:6007])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43aba538b9fsm194821915e9.17.2025.03.03.05.18.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Mar 2025 05:18:39 -0800 (PST)
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 03 Mar 2025 14:18:28 +0100
-Subject: [PATCH 03/15] gpio: adnp: use devm_mutex_init()
+Date: Mon, 03 Mar 2025 14:18:27 +0100
+Subject: [PATCH 02/15] gpio: adnp: use lock guards for the I2C lock
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,7 +88,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250303-gpiochip-set-conversion-v1-3-1d5cceeebf8b@linaro.org>
+Message-Id: <20250303-gpiochip-set-conversion-v1-2-1d5cceeebf8b@linaro.org>
 References: <20250303-gpiochip-set-conversion-v1-0-1d5cceeebf8b@linaro.org>
 In-Reply-To: <20250303-gpiochip-set-conversion-v1-0-1d5cceeebf8b@linaro.org>
 To: Linus Walleij <linus.walleij@linaro.org>, 
@@ -101,58 +102,249 @@ Cc: linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
  Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 X-Mailer: b4 0.14.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1039;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5610;
  i=bartosz.golaszewski@linaro.org; h=from:subject:message-id;
- bh=rVvnRkyDf21RjdggCKIxDxEyQFvc1fgcMj5lcOy+gbw=;
- b=owEBbQKS/ZANAwAKARGnLqAUcddyAcsmYgBnxawp7Yvsyrv6sI169Lp9L4rRvfe6m5SnbOO8v
- UqoONS7cQOJAjMEAAEKAB0WIQQWnetsC8PEYBPSx58Rpy6gFHHXcgUCZ8WsKQAKCRARpy6gFHHX
- ctf9EACVXYJIoLFFThB1bopDzr4Y6565Nv71gHd7ciywfLXPYQ6yTBNpZh/2RSmBQB+e+ja86PH
- CUip+9SBF9kzpxZiGkp6FhfuDN54tAmirDRWrtRODLUV3iHyzK9uH0jo1tXljQOt1NYRquUBhgN
- bGB/C2ihy4oE6qHKnMakBSbtacDEQp6fbBYxfNGH84kysXmJQV43Mv1NUjNnf/aHFKvNkgWDtin
- vHcT2e6jtYK1G5qPaEchHbyTOloRaGL4KXF+r87jQrAvoJFh5Qt7IswZ/Fmv1p+Er+tsRg1Dn4Y
- yYvnyN2mVheduT8LzO4AzsbzrjhkjYvz+vNbkfnZ450m15iY9yEiaCFyFc9WzGuR4PWA4+Vqbtb
- 79F2tyV/LUQcR35Okda9wZAqhOGnH1EsdPjzfoAjV9UaqS3Dl7KloSMDvc1a5nEL4sX4JzhZgHf
- 9ZF2kvH0tk3HMIpOQQR/ZbQ1CTCAxX6av1Qdbniwf08+kv/DyzDulxnlVG/qXDQ5LhC5fF3iUpM
- hdZiVTFUbzMvEXFScb9AF/4l3uK9w2PgNEZjDZ7aIzESl4APeYcOLcMK+vKAIPJUlaOYbOwMBZo
- lfhFveb81B6cBFCYG0aoXsPcfnT2rUfb4+52AfSHbC6d5HEiyQpdiT+5q5UoentxBKekBIrFEPc
- Y0M8FNdhHVNmC2g==
+ bh=7cE7tXYd+kBXXnaURava5I+mvo86dKpC24i0n29V+bg=;
+ b=owEBbQKS/ZANAwAKARGnLqAUcddyAcsmYgBnxawpxuJoIV5NMGocJt+m6HFa4mYBXmmZlg4hw
+ 8wwnHfFcfGJAjMEAAEKAB0WIQQWnetsC8PEYBPSx58Rpy6gFHHXcgUCZ8WsKQAKCRARpy6gFHHX
+ cvjzEADPodYCLVwjeMTiGTqPipprljvQCB/GL3xqqTvapt8laajCeEP13MAl+wEQgOI0PZjtgmX
+ IfA0F82Ky3uW/F57NzwGDDUbhJo1kkawv/eZOqQ+iySkYpAjFaF1eV+oboYthMguItGFy3KWAQ5
+ JqKgAdn7TqGMrZWB4xBd2Nfu71VA+FhqgEXam6X9yeI0uNeMN0yeLZsyxvTZq66ZVrt0yop3Pg5
+ kp6deFDMu8Jn1//eSLL+8uVpdoKB+Cj7AT/AUl6/5x69brbHiORb03ioq1Nv4XPE2Bva+/oCBw/
+ aCFfEOyJrsROsvx1dYpcXMWytgBgxj6wM3OhAa4dXuPWGxKFq3inPX7XxK2YoKp/HlfRCs3Bv0Y
+ MPsQNxupceBB6eNWtP3bk0r92+8D0i5+m3NMGz2zq83unvXskmb8q+LiwAQ79DL72CednxwdxTu
+ Bj6tysTCulxtGU5NqYQDAgmXUbdvRiqUrSAmCUQAvmQ2b5Gf+VaMZIj/V+Z7gfj5/emjbGC9rem
+ R+EAqun19YF+NX/B2DOft33MLhn9mZThlbEy6JE1cTaXqDp/Tq2AArFUUx/C0JDRf+HzB+Mx3q5
+ dNl7v/Pp8yfkP/IZCSnqtnNj1sUXTVN69sTh4L4X2UV96caMerMTa59SIBSU4eZPg8a9MdsOwj/
+ UB9QF8bbNI/2ffQ==
 X-Developer-Key: i=bartosz.golaszewski@linaro.org; a=openpgp;
  fpr=169DEB6C0BC3C46013D2C79F11A72EA01471D772
 
 From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
-The mutex initialized in probe() is never cleaned up. Use
-devm_mutex_init() to do it automatically.
+Reduce the code complexity by using automatic lock guards with the I2C
+mutex.
 
 Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 ---
- drivers/gpio/gpio-adnp.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/gpio/gpio-adnp.c | 118 +++++++++++++++++++----------------------------
+ 1 file changed, 47 insertions(+), 71 deletions(-)
 
 diff --git a/drivers/gpio/gpio-adnp.c b/drivers/gpio/gpio-adnp.c
-index dc87768276ec..d6ae9cf1eb54 100644
+index 6dafab0cf964..dc87768276ec 100644
 --- a/drivers/gpio/gpio-adnp.c
 +++ b/drivers/gpio/gpio-adnp.c
-@@ -9,6 +9,7 @@
+@@ -3,6 +3,7 @@
+  * Copyright (C) 2011-2012 Avionic Design GmbH
+  */
+ 
++#include <linux/cleanup.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/i2c.h>
  #include <linux/interrupt.h>
- #include <linux/mod_devicetable.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
- #include <linux/property.h>
- #include <linux/seq_file.h>
- #include <linux/slab.h>
-@@ -482,7 +483,10 @@ static int adnp_i2c_probe(struct i2c_client *client)
- 	if (!adnp)
- 		return -ENOMEM;
+@@ -101,9 +102,9 @@ static void adnp_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ {
+ 	struct adnp *adnp = gpiochip_get_data(chip);
  
--	mutex_init(&adnp->i2c_lock);
-+	err = devm_mutex_init(&client->dev, &adnp->i2c_lock);
-+	if (err)
-+		return err;
+-	mutex_lock(&adnp->i2c_lock);
++	guard(mutex)(&adnp->i2c_lock);
 +
- 	adnp->client = client;
+ 	__adnp_gpio_set(adnp, offset, value);
+-	mutex_unlock(&adnp->i2c_lock);
+ }
  
- 	err = adnp_gpio_setup(adnp, num_gpios, device_property_read_bool(dev, "interrupt-controller"));
+ static int adnp_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
+@@ -114,32 +115,26 @@ static int adnp_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
+ 	u8 value;
+ 	int err;
+ 
+-	mutex_lock(&adnp->i2c_lock);
++	guard(mutex)(&adnp->i2c_lock);
+ 
+ 	err = adnp_read(adnp, GPIO_DDR(adnp) + reg, &value);
+ 	if (err < 0)
+-		goto out;
++		return err;
+ 
+ 	value &= ~BIT(pos);
+ 
+ 	err = adnp_write(adnp, GPIO_DDR(adnp) + reg, value);
+ 	if (err < 0)
+-		goto out;
++		return err;
+ 
+ 	err = adnp_read(adnp, GPIO_DDR(adnp) + reg, &value);
+ 	if (err < 0)
+-		goto out;
++		return err;
+ 
+-	if (value & BIT(pos)) {
+-		err = -EPERM;
+-		goto out;
+-	}
++	if (value & BIT(pos))
++		return -EPERM;
+ 
+-	err = 0;
+-
+-out:
+-	mutex_unlock(&adnp->i2c_lock);
+-	return err;
++	return 0;
+ }
+ 
+ static int adnp_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
+@@ -151,33 +146,28 @@ static int adnp_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
+ 	int err;
+ 	u8 val;
+ 
+-	mutex_lock(&adnp->i2c_lock);
++	guard(mutex)(&adnp->i2c_lock);
+ 
+ 	err = adnp_read(adnp, GPIO_DDR(adnp) + reg, &val);
+ 	if (err < 0)
+-		goto out;
++		return err;
+ 
+ 	val |= BIT(pos);
+ 
+ 	err = adnp_write(adnp, GPIO_DDR(adnp) + reg, val);
+ 	if (err < 0)
+-		goto out;
++		return err;
+ 
+ 	err = adnp_read(adnp, GPIO_DDR(adnp) + reg, &val);
+ 	if (err < 0)
+-		goto out;
++		return err;
+ 
+-	if (!(val & BIT(pos))) {
+-		err = -EPERM;
+-		goto out;
+-	}
++	if (!(val & BIT(pos)))
++		return -EPERM;
+ 
+ 	__adnp_gpio_set(adnp, offset, value);
+-	err = 0;
+ 
+-out:
+-	mutex_unlock(&adnp->i2c_lock);
+-	return err;
++	return 0;
+ }
+ 
+ static void adnp_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+@@ -189,25 +179,24 @@ static void adnp_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+ 	for (i = 0; i < num_regs; i++) {
+ 		u8 ddr, plr, ier, isr;
+ 
+-		mutex_lock(&adnp->i2c_lock);
++		scoped_guard(mutex, &adnp->i2c_lock) {
++			err = adnp_read(adnp, GPIO_DDR(adnp) + i, &ddr);
++			if (err < 0)
++				return;
+ 
+-		err = adnp_read(adnp, GPIO_DDR(adnp) + i, &ddr);
+-		if (err < 0)
+-			goto unlock;
++			err = adnp_read(adnp, GPIO_PLR(adnp) + i, &plr);
++			if (err < 0)
++				return;
+ 
+-		err = adnp_read(adnp, GPIO_PLR(adnp) + i, &plr);
+-		if (err < 0)
+-			goto unlock;
++			err = adnp_read(adnp, GPIO_IER(adnp) + i, &ier);
++			if (err < 0)
++				return;
+ 
+-		err = adnp_read(adnp, GPIO_IER(adnp) + i, &ier);
+-		if (err < 0)
+-			goto unlock;
++			err = adnp_read(adnp, GPIO_ISR(adnp) + i, &isr);
++			if (err < 0)
++				return;
+ 
+-		err = adnp_read(adnp, GPIO_ISR(adnp) + i, &isr);
+-		if (err < 0)
+-			goto unlock;
+-
+-		mutex_unlock(&adnp->i2c_lock);
++		}
+ 
+ 		for (j = 0; j < 8; j++) {
+ 			unsigned int bit = (i << adnp->reg_shift) + j;
+@@ -232,11 +221,6 @@ static void adnp_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+ 				   direction, level, interrupt, pending);
+ 		}
+ 	}
+-
+-	return;
+-
+-unlock:
+-	mutex_unlock(&adnp->i2c_lock);
+ }
+ 
+ static irqreturn_t adnp_irq(int irq, void *data)
+@@ -252,28 +236,20 @@ static irqreturn_t adnp_irq(int irq, void *data)
+ 		unsigned long pending;
+ 		int err;
+ 
+-		mutex_lock(&adnp->i2c_lock);
++		scoped_guard(mutex, &adnp->i2c_lock) {
++			err = adnp_read(adnp, GPIO_PLR(adnp) + i, &level);
++			if (err < 0)
++				continue;
+ 
+-		err = adnp_read(adnp, GPIO_PLR(adnp) + i, &level);
+-		if (err < 0) {
+-			mutex_unlock(&adnp->i2c_lock);
+-			continue;
++			err = adnp_read(adnp, GPIO_ISR(adnp) + i, &isr);
++			if (err < 0)
++				continue;
++
++			err = adnp_read(adnp, GPIO_IER(adnp) + i, &ier);
++			if (err < 0)
++				continue;
+ 		}
+ 
+-		err = adnp_read(adnp, GPIO_ISR(adnp) + i, &isr);
+-		if (err < 0) {
+-			mutex_unlock(&adnp->i2c_lock);
+-			continue;
+-		}
+-
+-		err = adnp_read(adnp, GPIO_IER(adnp) + i, &ier);
+-		if (err < 0) {
+-			mutex_unlock(&adnp->i2c_lock);
+-			continue;
+-		}
+-
+-		mutex_unlock(&adnp->i2c_lock);
+-
+ 		/* determine pins that changed levels */
+ 		changed = level ^ adnp->irq_level[i];
+ 
+@@ -365,12 +341,12 @@ static void adnp_irq_bus_unlock(struct irq_data *d)
+ 	struct adnp *adnp = gpiochip_get_data(gc);
+ 	unsigned int num_regs = 1 << adnp->reg_shift, i;
+ 
+-	mutex_lock(&adnp->i2c_lock);
++	scoped_guard(mutex, &adnp->i2c_lock) {
++		for (i = 0; i < num_regs; i++)
++			adnp_write(adnp, GPIO_IER(adnp) + i,
++				   adnp->irq_enable[i]);
++	}
+ 
+-	for (i = 0; i < num_regs; i++)
+-		adnp_write(adnp, GPIO_IER(adnp) + i, adnp->irq_enable[i]);
+-
+-	mutex_unlock(&adnp->i2c_lock);
+ 	mutex_unlock(&adnp->irq_lock);
+ }
+ 
 
 -- 
 2.45.2
