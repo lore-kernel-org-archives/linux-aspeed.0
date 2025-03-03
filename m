@@ -1,93 +1,97 @@
-Return-Path: <linux-aspeed+bounces-917-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-916-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A377C282D6
-	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Mar 2025 22:41:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDAA8C282D2
+	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Mar 2025 22:41:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6DLg4y5xz30Vq;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6DLg4Cdxz30Vm;
 	Tue,  4 Mar 2025 09:41:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741010657;
-	cv=none; b=O1/jd2feLcBq1iqvmHODEDuyRFgI+9fRLMbUEAKvg6WDEHiQ6qIncfYqGPnyCMagkOplKTD8SmFu8S7CT/DjPOHwT6EEmAHMSs+u13ldI0uIKZ5amY+/9Jj3OKQB2oztzINpK/5AqL/pibeTxoU0fOE2Fb/yNZgWctr0L4+18+OIzHRan6sgvCzXfOITfmIBu+zpQkJIM1odRCJz7rr02mmieuEtmubO/YRo4iy3fz4thZwDBpTX8X0iEOBTYX5wSiKWOmx6YR8yI3e0q8uECbVA3y8rx+qefe3Hm6haMgsHDWF8ShcRSFvkL32Wb7SN0UEY3wyZvSoFLKAz0wKKkA==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740991558;
+	cv=none; b=ApDqL9tKXgo6Jym6VDDsfHYrVoca69haKgpTJib9svwNQvRjxe3G7iIxBKXE+m2OAVMre8ykEus0idqfoQ1BJAFlGeiZNxnZ0cbUsnmpwXTZ2NCo1HwKYxMh5Mt7Aop0rLsh/C0RoDl5Llp0Qi9tWcnTPnIEhQvTzYOHqwQJI4Fa/HOH9MKh8FEsbxvM6lsBk+Ql2EhmZAus7kdXvbHrI7J91AmQjmpBDo0eStShwmIi9qEpUGq8vmpK+gMG9c1pLpA2SHev2x9/S0pWIjzTiyaHO3+I5IkNlq8WUPLbBiKJkL3x2UqJiDqNfQCAHdp0bRtZOLpb7jsshew3Sh/WNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741010657; c=relaxed/relaxed;
-	bh=8k28ohh0BPSZHJHOBtNIM4qll2UGyVczMLoUtKSqo1k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QyWg1CX6pCJVEtIaCorSxfGhPYj770ASdC/95qV/ntq/O+Zu5QIhZ5Rc/+CNOBg76xTm9yoj9HrYaau7+uCEaf9GwVJn6dMw4tukq8iEY53ydFPCdbUJxFoBJ+PLkEA6f2Sbx0tQg0iQwlV0dTK+7SqAqx4y37Jqc6P6d94VfO8Yl53fWQcAAODqd20ev8zJdvLx1mrF5GcsLxKp5WVFUe/v2eagvCI08fsEeYRAjIH8tgdmxnkBuxPI+qOpbd+1/1ahQRlttkHuBcNacYLVkJpT7/d9LSoUpCkPbCiT/26GA9MUB6JMeur/gWHjn0a6ofcppEJSa5iZllJEwNotdA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RU03gmJp; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=gomba007@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1740991558; c=relaxed/relaxed;
+	bh=fg7ScFrpAhGYL1bOoOF2peNB6lfD3/GoDR0u+tz557k=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=erkL/S4jihObNnmbSbIgd1s9O3qP85gK4ApyLFyIjLomUgh8aqR0zw9w4NMx/bSHHVbyCymA++0P6wINsZIopqbhkWew86otYgk5WOOC0txGxI6mcIK+RNadaYolUKRN6zV/Dzv8LCu+vqHO/HJpYIDY7JC+4bOYBhViVVx53LabQEoNrMSjrHfSnX844X7WILj1e0jouZjTh3ZQWE2SStROkmTfIVemd5BuAlJp4PLzYEKevITt8U+nfbWHOhh15df/WcTL6uffmFR9+GKSMKr8ZgM1cOUyUTWNhGwAOtv6Pa9gP1nCHldfs5KUHSmLYnYDm2/iM0iE+srS8oCWOQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wZeRyVNc; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RU03gmJp;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wZeRyVNc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=gomba007@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z60t7637sz2xgp
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Mar 2025 01:04:15 +1100 (AEDT)
-Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4394a823036so42853785e9.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Mar 2025 06:04:15 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5spr0rwtz2yDS
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Mar 2025 19:45:54 +1100 (AEDT)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-43948021a45so38086375e9.1
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Mar 2025 00:45:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1741010652; x=1741615452; darn=lists.ozlabs.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=8k28ohh0BPSZHJHOBtNIM4qll2UGyVczMLoUtKSqo1k=;
-        b=RU03gmJp4Pdx/NnpJ9m2uCaw6gW9MU4qr9DdHpdLUq3LdRhXWMWMc6E09NgQCM089g
-         p0QrurjRTJj9q1w4YsZi408fPN2CIFHQs/cI3LqTa0sWQTvbJVHOEnEbuVMN0TSVehoI
-         bMomz3MWz8fygRSqfbxxCHYpssxNVq23WZsf/T67vev196LnFomj/1kbTTGZFvjf2MSa
-         7/ICdnlTeq13ZM1hwapymYyOR0A3cgS2gNKgF/Stl4WRyYKR0W/kFYjqtQqCuhahzGut
-         Gj36GTjJ3zQKi/kYTuKatLIqfOOWcVT5j1YeTuibQRKJewDW2RYwYW16eM3wKsJmTuGn
-         mt6A==
+        d=linaro.org; s=google; t=1740991549; x=1741596349; darn=lists.ozlabs.org;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=fg7ScFrpAhGYL1bOoOF2peNB6lfD3/GoDR0u+tz557k=;
+        b=wZeRyVNcEf7VWEcZ8YCYyiWZqrL7ys6ASAo/F6AVphpJnEYjb+rUYTdMjCpSDoSw9B
+         kLJo71YWcTcWcBdoeDDdXDQXtuA1EBN6+KTs0jIbbyjmJXQVgg4WebqHb6Ymap2lch8d
+         H2kTygLsLcgxlWvPN7rUogT5sQIqXuakqYL/NMKhIDIKRCdnoZoGsfgpPNdEQwdg1mwp
+         W07OAWp0O1ro+YMb4AtPnD2BLUBNZvjF5mMWc971Zy5rc7wnBGZ4P0h4PirdtsWTmaO1
+         qXEYetqJcLyqMlQ1NFdtHa5JJLYIQZHmGvCiyWZDXYAXhMgdzbwxvwMBYKQ6yDw8mW0F
+         AQig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741010652; x=1741615452;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=8k28ohh0BPSZHJHOBtNIM4qll2UGyVczMLoUtKSqo1k=;
-        b=cCuOpaDlUjiR3U+WN/n4toMAO7UFTAKPjt/rR1ya8il27ITcPfYdE2kNPbYB/0pr+3
-         dMiY4uOxlK+FS8NzDihp6+DcVjQ32drLSmJf3wr10mJRF8OUpX2KvN0QiU0VITEOnbgZ
-         p3dPtgdKMVTzz8qizVqqJQSHg92NOYghPMsK75xo/2NdFHDsbOZKrcQrChv5eu0IojlE
-         Xmaa8EWKo9y9N2/mk807pMllJmr1WCRjLjS5r7TbbKDedUHg6XM9hYynG9eGfmyuYj/C
-         aXLEFDeSzcnsUpmuNEw/o1kgPuxh7Nnd12VwINrJ5MSerkijNKdBJwQC7yxTb2YKYXn8
-         maJQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWfoOKTE6LZC/IRBiTNHVgWeUOyyCaH5VYNxMmj0iVzaRzFbV4NR2vO+lC3Xmg4VKNqNJpSokoP+k1kUWE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxNzAGInB+A5dSLj+FhIbutLF32S7Z8eQSd6MR/xAcLBDbT8Img
-	GoMe2sj+rdWYb1HUukmPey3lR4cEwAtIqaSawKkQAJ115wyd3Z0y
-X-Gm-Gg: ASbGncuvqwLIoVHVFEv3kk7RQQDNxXk+iDsTQJBfwwSOQ9DGnPPxanpOP5dVvDvSvW9
-	eKbwFDqap1iy53yc2tgALbyObg/h4x4UvRJBfZcV0ugVRKUpMeMl/LTTk9EgVgZxLrRMpN4s3xA
-	/4Eot/BwlNlasEtfaLFA/eelwFLaVe3DTsGi0YLj04/pgws8e5Vg2tej/EpYcBiXUOmLaEbAAAp
-	68VsPZQy/PWg85BCjZjX7hv+if4htxz17a0DUtbjTs7/HT6AfjZyQCLS5IF+nfU50z1cxaS3buS
-	cI2BwE6JoxxaFUmoJ9AnF2cEKe8wuiyGwbW3K/r0cUkHWL7YvlPwejbxS4ZFq7nnECuxXI4bdPw
-	lufo=
-X-Google-Smtp-Source: AGHT+IHvcHXOSeKhHWMUt2xXWhTV53mo6yshUFDelmHEDhBHpCQfhR1rFavwoCbMnPzni4lL0cMigA==
-X-Received: by 2002:a05:6000:1f8c:b0:38d:e48b:1783 with SMTP id ffacd0b85a97d-390eca27761mr8649282f8f.42.1741010652096;
-        Mon, 03 Mar 2025 06:04:12 -0800 (PST)
-Received: from ubuntu2204 (207-pool1.nat.godollo.uni-mate.hu. [192.188.242.207])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-390e47960b6sm14936073f8f.17.2025.03.03.06.04.10
+        d=1e100.net; s=20230601; t=1740991549; x=1741596349;
+        h=mime-version:user-agent:content-transfer-encoding:references
+         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=fg7ScFrpAhGYL1bOoOF2peNB6lfD3/GoDR0u+tz557k=;
+        b=AkNDa3lQu+0xLzqP7dSi+0dThKvhAukP4OGrhUxoFnrsxg4jsK3edq2Jn6yzjxSscs
+         t3Gxj8N0ZVGNbUardFxqsOhm2HL2Ian7dLquueYiOOloDCgLuExHKgvBpLSJLe6BKDwh
+         QnYfMK+zCl/PsBheD3yEpO534sAO9i0NBRJpGJDydlJt93zQB0Fl73I5/tDmprog+m59
+         I0myoXd13E4hij9EUcoAvbIJOVQJ75/mxnHzJ8pq6xUjOgm2lhJJxgkW43FhSyeYhUJy
+         fmWrXKQqQ6Y2VOsZozrrGGxDzDVQ7W48RoVWp8pCCNFnk3tWEmVdwG0dlIO9lHj97bo0
+         3XJA==
+X-Forwarded-Encrypted: i=1; AJvYcCXJeDKoc9kjdjTYE6RVuyJpikq50c4/G29DvsOlWYym6wdwgb8Jj4ggImkpTDuMwB3PWFqqB9MeHvX7bbg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyEyVCGaM1S0VcwxT1LHE1m3vW78GBBmD9jvEAUjW5QSEjALQKn
+	1kji3Z29+54DVLfEW9Fe1wEpAXmgDAB/fn1R3SoJO0miVswLZFHDB9vsW3DHS2M=
+X-Gm-Gg: ASbGncvonyQI22zI1pbQxf9BI72NVL4PBOeNMRNn2XnCrjeKnM/hAuAcmlnDwnwMt1Q
+	e76j8KenDU0svvp4oyae3NOT3RKD9ezP09uNWIT5IizRFXCWeRMz7dKeyfFm2SiNtwdZxFRbD5s
+	sIx/tya/XczYQzqvynro676/4/4nvruhdgdmPMOA2W5Z8WtbDRHSgTgVSQzDvsXOBuqhFTEFJbO
+	bY5g3GSV5M8XEVELNyr9+EuNxfnJUYh1AEprUwdFuAUjldX4kcskHoZ/WFgQd1kXYO1zsqqtbdA
+	Xz3fgBPnkG/i2dYtxy1mm48bbSOdwcX9lEsEHuR8ZXLCw+Py
+X-Google-Smtp-Source: AGHT+IEQ5gIerplrLBCNz9iWi2EjC22riC6x2aUD9LPOL3RMv31foO6V/nmZEr2WkFVBKnwbDjXW6Q==
+X-Received: by 2002:a05:600c:4e8b:b0:43a:b8ef:4dce with SMTP id 5b1f17b1804b1-43ba67041bamr112726745e9.11.1740991549553;
+        Mon, 03 Mar 2025 00:45:49 -0800 (PST)
+Received: from draszik.lan ([80.111.64.44])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-43b736f75ebsm153130965e9.3.2025.03.03.00.45.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Mar 2025 06:04:11 -0800 (PST)
-Date: Mon, 3 Mar 2025 15:04:09 +0100
-From: =?utf-8?B?VMOzdGggSsOhbm9z?= <gomba007@gmail.com>
-To: =?utf-8?B?QW5kcsOp?= Draszik <andre.draszik@linaro.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, 
-	Krzysztof Kozlowski <krzk@kernel.org>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Hans Ulli Kroll <ulli.kroll@googlemail.com>, Linus Walleij <linus.walleij@linaro.org>, 
-	Neil Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, 
-	Jerome Brunet <jbrunet@baylibre.com>, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
-	Dianlong Li <long17.cool@163.com>, linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org, 
+        Mon, 03 Mar 2025 00:45:49 -0800 (PST)
+Message-ID: <4d0042850eb4d9898559b56505291c4e849d44c5.camel@linaro.org>
+Subject: Re: [PATCH 00/18] a few rtc driver cleanups
+From: =?ISO-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski
+ <krzk@kernel.org>,  Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Hans Ulli Kroll	
+ <ulli.kroll@googlemail.com>, Linus Walleij <linus.walleij@linaro.org>, Neil
+ Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>,
+ Jerome Brunet	 <jbrunet@baylibre.com>, Martin Blumenstingl
+ <martin.blumenstingl@googlemail.com>,  =?ISO-8859-1?Q?T=F3th_J=E1nos?=	
+ <gomba007@gmail.com>, Dianlong Li <long17.cool@163.com>, 
+	linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org, 
 	linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	linux-aspeed@lists.ozlabs.org, linux-amlogic@lists.infradead.org
-Subject: Re: [PATCH 13/18] rtc: sd2405al: drop needless struct sd2405al::rtc
- member
-Message-ID: <2gfjdazu2ohv4evd7iuk2dzexlydnd6yu3xmjk2lgsx3iws5sa@xdwf4df4ojck>
+Date: Mon, 03 Mar 2025 08:45:47 +0000
+In-Reply-To: <20250301203658839d5482@mail.local>
 References: <20250228-rtc-cleanups-v1-0-b44cec078481@linaro.org>
- <20250228-rtc-cleanups-v1-13-b44cec078481@linaro.org>
+	 <20250301203658839d5482@mail.local>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.53.2-1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,21 +104,84 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250228-rtc-cleanups-v1-13-b44cec078481@linaro.org>
 
-Hi!
+Hi Alexandre,
 
-> We can drop it from the structure and just use a local temporary
-> variable, reducing runtime memory consumption by a few bytes.
+On Sat, 2025-03-01 at 21:36 +0100, Alexandre Belloni wrote:
+> On 28/02/2025 14:07:13+0000, Andr=C3=A9 Draszik wrote:
+> > Hi,
+> >=20
+> > While looking at RTC, I noticed that various drivers are keeping
+> > pointers to data that they're not using themselves throughout their
+> > lifetime.
+> >=20
+> > So I took the liberty to drop these pointers and this series is the
+> > result.
+> >=20
+> > The last two patches also convert two drivers to using dev_err_probe(),
+> > as I looked slightly closer into those two. They don't exactly fit the
+> > general subject of removal of unneeded pointers, but I wanted to share
+> > them anyway, since they're ready.
+> >=20
+> > All of this was compile-tested only.
+> >=20
+> > Cheers,
+> > Andre'
+> >=20
+> > Signed-off-by: Andr=C3=A9 Draszik <andre.draszik@linaro.org>
+> > ---
+> > Andr=C3=A9 Draszik (18):
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: max77686: drop needless struct max7=
+7686_rtc_info::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: s5m: drop needless struct s5m_rtc_i=
+nfo::i2c member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: aspeed: drop needless struct aspeed=
+_rtc::rtc_dev member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: ds2404: drop needless struct ds2404=
+::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: ep93xx: drop needless struct ep93xx=
+_rtc::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: ftrtc010: drop needless struct ftrt=
+c010_rtc::rtc_dev member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: m48t86: drop needless struct m48t86=
+_rtc_info::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: meson: drop needless struct meson_r=
+tc::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: meson-vrtc: drop needless struct me=
+son_vrtc_data::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: pl030: drop needless struct pl030_r=
+tc::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: rx8581: drop needless struct rx8581=
+::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: s35390a: drop needless struct s3539=
+0a::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: sd2405al: drop needless struct sd24=
+05al::rtc member
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: sd3078: drop needless struct sd3078=
+::rtc member
+>=20
+> My main concern with this is that as soon as we introduce irq support,
+> we are going to need the rtc pointer back in the struct. But I guess
+> that most of them are old enough to say that nobody is interested in irq
+> support.
 
-It works on real hardware.
+Thanks for your thoughts Alexandre - I don't know the history of
+these drivers and don't mind either way. I can drop those patches
+that would require reintroducing if irq support is added in the
+future. I think overall you're OK with keeping them, but please
+let me know if I'm misunderstanding :-)
 
-Tested-by: Tóth János <gomba007@gmail.com>
+>=20
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: rx8581: drop needless struct rx8581
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 rtc: sd3078: drop needless struct sd3078
+>=20
+> I guess you could squash those two with the previous ones touching the
+> respective drivers because you are the one removing the last remaining
+> struct member.
 
-Regards,
-TJ
+Will do.
+
+Cheers,
+Andre'
 
 
