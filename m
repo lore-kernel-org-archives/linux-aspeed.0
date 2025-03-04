@@ -1,83 +1,80 @@
-Return-Path: <linux-aspeed+bounces-920-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-921-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E4E7C021B8
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Mar 2025 08:04:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D22BFC021B8
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Mar 2025 09:08:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6Ss50bZnz30Vw;
-	Tue,  4 Mar 2025 19:04:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741075496;
-	cv=none; b=gghmO8mwqBxlKRNL7qY4g43N8ophRhjutczvZpZ5r7azrJdwiNiHtApVwnylpjkUdkTgGjSXR0ztAchAXoRykDO3N+Ksf3nhWONtQmpg25HpDbumddek2zv4XZgvCjKQUtVFlT0icnWCOA0klfJk4qMXRx7N9dqyyKnVkqzc4iIP9UKGuc23gPiXWQbR4ktq6D6fUKHE2GU6kp5sNmd4qohx8UbhiFw4ykl6AIALEjwhzr3C5M6C5BkehOeskldB2mD60fypQtpeuVlNBWT3ewYrLa4yW+xU9scGWh8an2dLdfWtJ87MLU13BG0UbSL6IjgNSGvzvqEhEy67ptZrIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6VGL2TSQz30WS;
+	Tue,  4 Mar 2025 20:08:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741079306;
+	cv=none; b=RWHfbBhDtizFraHLehS2T5wI3Clj5/ClSAvVwUx9Ap5OTkk/DnLQP37953NiCYawXG8WrzvA62PvgSxAHWDzc71HhCZWIfKKFV2vosu0+3GUVG1jNQfSlky+VEYKXYSEiC+/f8yA6HP+cwTb1/9114Hi7B2jaxBNSLGyPT7TFUtVRMA2Wd4MEM7S4UYN8IbLblbFodpvkMbI7lU3iEDcZ6JQo6Y2CWpPT4GwgOray2DApU/CJlJMltQd7r6hzxHEy6WQ0SHyHKTeBte+rbXxV8084kr5Mrxyla1zNpzQ9mc6ycbPE7hRpe9ACkgzphXYKHkukIkQKvgjsRj05a3TuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741075496; c=relaxed/relaxed;
-	bh=TfhW4dwpgrUF8A3XTnsZo52SIIqBepXuTOwv8Zqk2Qg=;
+	t=1741079306; c=relaxed/relaxed;
+	bh=iTG8fxlmYXAlax6nSmeXc8A6YgmKjSnnFRoCzKTT16E=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b+WI4WCmrRZwtlIKdXD3Voc15EtZNFFLkny1psQA/TJk9iH3/XIYKo50FWdxgs5O8OnLrjVoR7Fnj4/NbTb3vhHYJR8PEF3vQHTjI+sqH6+p9smM1dqb3IogjAoui+ncdFADtt+tu5YfCgRbiwZaq49agYB83/zCBo09PtlxAmTUFochc4PTs3OUE2As1IiehPMQSF1yoRFD/wrC2OghfAhd1dBJC6DGE7MNMt5ckdLVtQd0zKYQgVOYa4g5T/kYAkxq8TL4StNfW6PNpTg2eWW6HGOMQJ579tiUgbI3ECWnG5HJLYC2tNVy7UjOV/0KyecUQjiRX8idqV+NnZ9BdA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MTMooLPO; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=D9CIvBLDoDSGwDWWc364MfSPbtpkEalw5WWhsi79Q7bl3Vtr7yANIXnxHTGZ5Qd75NVbmuOyyp9buDqeGG7XNXGzkxsLnmgwtwMD+BCw6YESN1ZZqYal+2f4+CrUwx5F8Cgc6HyDUU066xuwO1eCr/rIb9EDylBjtiTFbtrJF/WVN1zDItg66MIPFvW6FwYEJA0WoYji751KILFM3KMiGdvifVCZPx2bL2yMDs+H5o25f6L3I9n52me/JppxE9RmPzpmulHOyJhS8Z5z5aBpxr1VcSQ2aoaS3qVhqwnpGd9CEcBlYZbQOnwdA0a9lxl7TOTshBfnPAU0Ogff75p/hA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c5fzkrS7; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MTMooLPO;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c5fzkrS7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=mripard@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6Ss40Kqfz30Vq
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Mar 2025 19:04:55 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 52D5EA45302;
-	Tue,  4 Mar 2025 07:59:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DCBEC4CEE5;
-	Tue,  4 Mar 2025 08:04:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1741075492;
-	bh=vIjLPcUzgSKENXMFoyq8MSR3rL6XCeonIPvrarBTHfI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MTMooLPO8Bbb2GKqdM1BuZCtLRVMLpPUiZewyqhTUOANTZEdA7zKLpNVpc2b4+pde
-	 qLxD1GPfTrr2crKHjmFBRkbsQhLcZE/wIdMSn7xP+K7vJd7ZRJEAH9qDQUxuZcs5kx
-	 PTy2NgT0nWNSVjrgvdi0A9uofQ0NxTbml1X58f1jrN3deGiad5mCcW/u5Oh/f1kNxH
-	 WkgVk5ns/TvPqpAEbTVtWOTQmUYqzcBtq42vbowT/RyyDgHhCJdC0cKAvbzxnmEotI
-	 4k4ylvc9gwaqMoZC+TRzV16b9VRVTbQY41zF+zC/l+py0e6GMwaWsk+QqwNP9zvG1O
-	 WP0yWgzyy+/YA==
-Date: Tue, 4 Mar 2025 09:04:50 +0100
-From: Maxime Ripard <mripard@kernel.org>
-To: Anusha Srivatsa <asrivats@redhat.com>
-Cc: Raphael Gallais-Pou <raphael.gallais-pou@foss.st.com>, 
-	Joel Stanley <joel@jms.id.au>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
-	Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@gmail.com>, 
-	Simona Vetter <simona@ffwll.ch>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Stefan Agner <stefan@agner.ch>, Alison Wang <alison.wang@nxp.com>, 
-	Xinliang Liu <xinliang.liu@linaro.org>, Tian Tao <tiantao6@hisilicon.com>, 
-	Xinwei Kong <kong.kongxinwei@hisilicon.com>, Sumit Semwal <sumit.semwal@linaro.org>, 
-	Yongqin Liu <yongqin.liu@linaro.org>, John Stultz <jstultz@google.com>, 
-	Chun-Kuang Hu <chunkuang.hu@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
-	Matthias Brugger <matthias.bgg@gmail.com>, 
-	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Marek Vasut <marex@denx.de>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, Orson Zhai <orsonzhai@gmail.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
-	Alain Volmat <alain.volmat@foss.st.com>, Raphael Gallais-Pou <rgallaispou@gmail.com>, 
-	Yannick Fertre <yannick.fertre@foss.st.com>, Philippe Cornu <philippe.cornu@foss.st.com>, 
-	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Mikko Perttunen <mperttunen@nvidia.com>, 
-	Jonathan Hunter <jonathanh@nvidia.com>, Alexey Brodkin <abrodkin@synopsys.com>, 
-	Dave Stevenson <dave.stevenson@raspberrypi.com>, =?utf-8?B?TWHDrXJh?= Canal <mcanal@igalia.com>, 
-	Raspberry Pi Kernel Maintenance <kernel-list@raspberrypi.com>, Jonathan Corbet <corbet@lwn.net>, linux-aspeed@lists.ozlabs.org, 
-	dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, imx@lists.linux.dev, 
-	linux-stm32@st-md-mailman.stormreply.com, linux-tegra@vger.kernel.org, linux-doc@vger.kernel.org
-Subject: Re: [PATCH RESEND 07/12] drm/sti: move to
- devm_platform_ioremap_resource() usage
-Message-ID: <20250304-astute-curvy-ladybug-f9ff15@houat>
-References: <20250225-memory-drm-misc-next-v1-0-9d0e8761107a@redhat.com>
- <20250225-memory-drm-misc-next-v1-7-9d0e8761107a@redhat.com>
- <24958ae8-6153-4798-abeb-e770d66ca8e4@foss.st.com>
- <CAN9Xe3Q8=_Tz51i6gxNM6445p-rhNiK7B5Ljcga8g_Nn676dCQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6VGJ2jMNz30WQ
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Mar 2025 20:08:23 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1741079305; x=1772615305;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=GXuRz06hDfIRTVBK7Y7J5u3Fy/4jNuBeBSyafYInY64=;
+  b=c5fzkrS7PerSNZLuodmyjKWLPsUleINo1H9SBq8RNAL+xGd6ZKECEWIG
+   1CCVcCnk9eHco+l0O/DcSKawWwDipwSa8xGqNkjB20TnNq60a5RVkMQU7
+   8vNAPQvgcn5IZK5od1VfalIzQpssx4yjmV2bAEFgKIMPapjizpuwHl6SU
+   uXd04GHXg+r94QGWtnGrDo/7FMWo9hlsuVZBrMnZrnifpBcaHXNPH7Ntg
+   p/EyV5XEEbLMeU4RaRLeCmumQLQaVUW8bkygE93SHiDZTXjHo93hRlAiW
+   vqXYybqMjygR+ljzAe9g7mxG88qH2RqNlHzDDqc9RGrAKuY26FcmHjJpt
+   w==;
+X-CSE-ConnectionGUID: aZBhRAqhS+yINaH/M2oaDQ==
+X-CSE-MsgGUID: yJBOy7v0SzS+mZLdbJgYRA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11362"; a="53391434"
+X-IronPort-AV: E=Sophos;i="6.13,331,1732608000"; 
+   d="scan'208";a="53391434"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Mar 2025 01:08:20 -0800
+X-CSE-ConnectionGUID: WsdSvD8kQSqq8xlLa15QJg==
+X-CSE-MsgGUID: wBNumz0fSaSG5Y1WNX0q2Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="119230033"
+Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
+  by orviesa008.jf.intel.com with ESMTP; 04 Mar 2025 01:08:16 -0800
+Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1tpOG5-000JWI-26;
+	Tue, 04 Mar 2025 09:08:13 +0000
+Date: Tue, 4 Mar 2025 17:07:44 +0800
+From: kernel test robot <lkp@intel.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Michael Hennerich <michael.hennerich@analog.com>,
+	Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+	Mun Yew Tham <mun.yew.tham@intel.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-pwm@vger.kernel.org, patches@opensource.cirrus.com,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
+Subject: Re: [PATCH 02/15] gpio: adnp: use lock guards for the I2C lock
+Message-ID: <202503041612.G8O0Bdrg-lkp@intel.com>
+References: <20250303-gpiochip-set-conversion-v1-2-1d5cceeebf8b@linaro.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,114 +87,132 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha384;
-	protocol="application/pgp-signature"; boundary="3cvx2hh6lak7gb3g"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAN9Xe3Q8=_Tz51i6gxNM6445p-rhNiK7B5Ljcga8g_Nn676dCQ@mail.gmail.com>
+In-Reply-To: <20250303-gpiochip-set-conversion-v1-2-1d5cceeebf8b@linaro.org>
+
+Hi Bartosz,
+
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on 9778568dede2166c7bd124d473f9ec365f782935]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Bartosz-Golaszewski/gpio-74x164-use-new-line-value-setter-callbacks/20250303-212738
+base:   9778568dede2166c7bd124d473f9ec365f782935
+patch link:    https://lore.kernel.org/r/20250303-gpiochip-set-conversion-v1-2-1d5cceeebf8b%40linaro.org
+patch subject: [PATCH 02/15] gpio: adnp: use lock guards for the I2C lock
+config: x86_64-buildonly-randconfig-001-20250304 (https://download.01.org/0day-ci/archive/20250304/202503041612.G8O0Bdrg-lkp@intel.com/config)
+compiler: clang version 19.1.7 (https://github.com/llvm/llvm-project cd708029e0b2869e80abe31ddb175f7c35361f90)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250304/202503041612.G8O0Bdrg-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202503041612.G8O0Bdrg-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/gpio/gpio-adnp.c:241:8: warning: variable 'isr' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
+     241 |                         if (err < 0)
+         |                             ^~~~~~~
+   drivers/gpio/gpio-adnp.c:265:14: note: uninitialized use occurs here
+     265 |                 pending &= isr & ier;
+         |                            ^~~
+   drivers/gpio/gpio-adnp.c:241:4: note: remove the 'if' if its condition is always false
+     241 |                         if (err < 0)
+         |                         ^~~~~~~~~~~~
+     242 |                                 continue;
+         |                                 ~~~~~~~~
+   drivers/gpio/gpio-adnp.c:235:25: note: initialize the variable 'isr' to silence this warning
+     235 |                 u8 changed, level, isr, ier;
+         |                                       ^
+         |                                        = '\0'
+>> drivers/gpio/gpio-adnp.c:245:8: warning: variable 'ier' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
+     245 |                         if (err < 0)
+         |                             ^~~~~~~
+   drivers/gpio/gpio-adnp.c:265:20: note: uninitialized use occurs here
+     265 |                 pending &= isr & ier;
+         |                                  ^~~
+   drivers/gpio/gpio-adnp.c:245:4: note: remove the 'if' if its condition is always false
+     245 |                         if (err < 0)
+         |                         ^~~~~~~~~~~~
+     246 |                                 continue;
+         |                                 ~~~~~~~~
+   drivers/gpio/gpio-adnp.c:241:8: warning: variable 'ier' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
+     241 |                         if (err < 0)
+         |                             ^~~~~~~
+   drivers/gpio/gpio-adnp.c:265:20: note: uninitialized use occurs here
+     265 |                 pending &= isr & ier;
+         |                                  ^~~
+   drivers/gpio/gpio-adnp.c:241:4: note: remove the 'if' if its condition is always false
+     241 |                         if (err < 0)
+         |                         ^~~~~~~~~~~~
+     242 |                                 continue;
+         |                                 ~~~~~~~~
+   drivers/gpio/gpio-adnp.c:235:30: note: initialize the variable 'ier' to silence this warning
+     235 |                 u8 changed, level, isr, ier;
+         |                                            ^
+         |                                             = '\0'
+   3 warnings generated.
 
 
---3cvx2hh6lak7gb3g
-Content-Type: text/plain; protected-headers=v1; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH RESEND 07/12] drm/sti: move to
- devm_platform_ioremap_resource() usage
-MIME-Version: 1.0
+vim +241 drivers/gpio/gpio-adnp.c
 
-On Mon, Mar 03, 2025 at 12:29:19PM -0500, Anusha Srivatsa wrote:
-> On Wed, Feb 26, 2025 at 5:19=E2=80=AFAM Raphael Gallais-Pou <
-> raphael.gallais-pou@foss.st.com> wrote:
->=20
-> >
-> > On 2/25/25 23:20, Anusha Srivatsa wrote:
-> > > Replace platform_get_resource/_byname + devm_ioremap
-> > > with just devm_platform_ioremap_resource()
-> > >
-> > > Used Coccinelle to do this change. SmPl patch:
-> > >
-> > > @rule@
-> > > identifier res;
-> > > expression ioremap;
-> > > identifier pdev;
-> > > constant mem;
-> > > expression name;
-> > > @@
-> > > -struct resource *res;
-> > > ...
-> > > -res =3D platform_get_resource_byname(pdev,mem,name);
-> > > <...
-> > > -if (!res) {
-> > > -...
-> > > -}
-> > > ...>
-> > > -ioremap =3D devm_ioremap(...);
-> > > +ioremap =3D devm_platform_ioremap_resource_byname(pdev,name);
-> > >
-> > > and
-> > > @rule_2@
-> > > identifier res;
-> > > expression ioremap;
-> > > identifier pdev;
-> > > @@
-> > > -struct resource *res;
-> > > ...
-> > > -res =3D platform_get_resource(pdev,...);
-> > > <...
-> > > -if (!res) {
-> > > -...
-> > > -}
-> > > ...>
-> > > -ioremap =3D devm_ioremap(...);
-> > > +ioremap =3D devm_platform_ioremap_resource(pdev,0);
-> > >
-> > > v2: Fix compilation error.
-> >
-> >
-> > Hi Anusha,
-> >
-> >
-> > You did not take into account my comment regarding the changelog. :-)
-> >
-> > https://www.kernel.org/doc/html/latest/process/submitting-patches.html#=
-commentary
-> >
-> > While the commit summary do not specify the version, this changelog
-> > suggests
-> > that the version of your series as been incremented.
-> > If this is a v2, then a version descriptor should be applied to the
-> > patchset.
-> >
-> > https://www.kernel.org/doc/html/latest/process/submitting-patches.html#=
-subject-line
-> >
-> > Hi  Raphael,
->=20
-> That is correct. While this patch is a v2, there is another patch or two =
-in
-> the same series that is on v4 when it got acked and reviewed. Having
-> patches belonging to the same series with different version prefixes seem=
-ed
-> odd when I sent the series. Hence added what exactly changed in the commit
-> log.
+   225	
+   226	static irqreturn_t adnp_irq(int irq, void *data)
+   227	{
+   228		struct adnp *adnp = data;
+   229		unsigned int num_regs, i;
+   230	
+   231		num_regs = 1 << adnp->reg_shift;
+   232	
+   233		for (i = 0; i < num_regs; i++) {
+   234			unsigned int base = i << adnp->reg_shift, bit;
+   235			u8 changed, level, isr, ier;
+   236			unsigned long pending;
+   237			int err;
+   238	
+   239			scoped_guard(mutex, &adnp->i2c_lock) {
+   240				err = adnp_read(adnp, GPIO_PLR(adnp) + i, &level);
+ > 241				if (err < 0)
+   242					continue;
+   243	
+   244				err = adnp_read(adnp, GPIO_ISR(adnp) + i, &isr);
+ > 245				if (err < 0)
+   246					continue;
+   247	
+   248				err = adnp_read(adnp, GPIO_IER(adnp) + i, &ier);
+   249				if (err < 0)
+   250					continue;
+   251			}
+   252	
+   253			/* determine pins that changed levels */
+   254			changed = level ^ adnp->irq_level[i];
+   255	
+   256			/* compute edge-triggered interrupts */
+   257			pending = changed & ((adnp->irq_fall[i] & ~level) |
+   258					     (adnp->irq_rise[i] & level));
+   259	
+   260			/* add in level-triggered interrupts */
+   261			pending |= (adnp->irq_high[i] & level) |
+   262				   (adnp->irq_low[i] & ~level);
+   263	
+   264			/* mask out non-pending and disabled interrupts */
+   265			pending &= isr & ier;
+   266	
+   267			for_each_set_bit(bit, &pending, 8) {
+   268				unsigned int child_irq;
+   269				child_irq = irq_find_mapping(adnp->gpio.irq.domain,
+   270							     base + bit);
+   271				handle_nested_irq(child_irq);
+   272			}
+   273		}
+   274	
+   275		return IRQ_HANDLED;
+   276	}
+   277	
 
-This breaks a lot of tools though. If your series changes, you need to
-increase the version number, no matter how small or insignificant it
-changed compared to the previous one. resend is only meant to be used
-when you send the exact same series.
-
-Maxime
-
---3cvx2hh6lak7gb3g
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iJUEABMJAB0WIQTkHFbLp4ejekA/qfgnX84Zoj2+dgUCZ8a0GwAKCRAnX84Zoj2+
-dvPAAX0T6CB5j6he9IlacsjKLYZXt0M1IhAKVugJHAC1WHuswlCAJSgEyELEpzS1
-ddcuQ7kBf3wXscEAe3lhr3vk0F2KVEj4r8JtBnUwxNM0o1E63auMQV7dNPG5Z5Ku
-4gxKbq/wJQ==
-=hPVI
------END PGP SIGNATURE-----
-
---3cvx2hh6lak7gb3g--
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
