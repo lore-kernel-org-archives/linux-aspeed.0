@@ -1,80 +1,51 @@
-Return-Path: <linux-aspeed+bounces-956-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-957-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4609C28B21
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Mar 2025 23:36:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7045FC19F32
+	for <linux-aspeed@archiver.kernel.org>; Wed,  5 Mar 2025 06:39:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6sWv310bz3c1w;
-	Wed,  5 Mar 2025 10:36:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741107943;
-	cv=none; b=IGFfpO4rj+sL8YQIM5kmcqYPZttkoY0eYftKpdHhMGNxPgJuteAHhRhRqryT5eRoK2O8c4VrxBAERj1Gwf8cEdVyqFInc66y1ZKBc2OJoe3VTKtchgbrlqQIPuT+frw96DYwYu6awjTCbEBYHI2+MwjRNIV1vhn+GfY7SWcDLWk3h+EcN6dd5AJNUmTMHCYgQ8MEkMIGGE4r6v6fw1yOzleI1NKjIffQlQGlvheJ2xr+MgqgvVMqYm6rXd1PsMLhvx0tOY3tV3/WmaNiaePZOqGkDm7yA0P0rNHs+PSFN03K5d1ArOCQZBGzm9vUoLe7gEyDVkHCQ6mCDDxEPVOm7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z72vV0kL5z2xJ8;
+	Wed,  5 Mar 2025 17:39:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741156742;
+	cv=none; b=nC0Vv0E2Hi+HX/cve/tzuXZuxtrJHMP/fS9E2a7LnnBjKDvxRRTWfdcyA71ddtWhOtS5e2OnhoOu4g0gwIZmnFqrspSj3CABB2Z0D17Pp0wZuJOx2xfoUKl9tlqFkGpJXEjwF1WS9vn1xcN2e7id2tVJwD3E5K/TaZpj88G9Ft8vi86YVcYcOZTdt04UOqgaaC8JM6JNcpLknKg2FQn3CANKdxu6OlHTMR40HgceTg2sQMtMJOND80+Z1sTM+0WlW0BTVACveRJIMHno+LJF3dlwTbxL8GxXYKCzr96za43z8mbEDZP2WlPRcKSfokDbLX9OEBH3exhNXPilvrRq2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741107943; c=relaxed/relaxed;
-	bh=hsaGEw76ofDXd3Q1RIPfSv8CJUvwC0w+ueATTj/NegM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Hr6KLg4/W5P42BeosY4Xwo7d2ueLBaSD4SEuCBs2Kpw2cMVymi8xPaMgoFo519WAI30TO5mOjKRUPfTpIAsDF9xik8lWQOHcwCFJSccf98byHXzs+yc30HXWMojgdFuRzLXJq/JN9K3kX7u2LMyOpBB2CNyiQfXfz+Ef51G5oWHUhbIBQ3sUnnnTWR18WTXD9mBJxE2WG43ig20OmIOwEMCwzyB2WlfOuAj5z0sl2b32dHCulhXlFQ74plRwMKzhx0+qgHmhGNd4TISCAk5ajRxA4GfST0yoYm9asyQVTlcP5c9MDQjDr0pvqaikE4ZX1d2xsCDOnaYG6hikaZYVIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=n9Ntyz9D; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	t=1741156742; c=relaxed/relaxed;
+	bh=v2uOL0k9bepafJ0G3XjnC8OlpN4LyVrrA1VKHBwJf14=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=NBut1o/9q9f0NdqJpswdEbdCokV0VHejKm0By+acmW92o82G83FSvK9stzJaEHjqawbzdFsBp/zZoRswffkfArtVsVWBfoQKTSxXfeut7xkiY6RAav98Bha0UjqbjCXJSC2+Lb+e1b8iVsZdm3DOKNKEdncS1FiBcipndKfMYaoZLypflRArqgcWmUJCvXniijOMJNtI6v0q/VmcAk8zYU/s7fm/AER+ZAx6DQzil/dh6zlPp8Z1/9crkxYY5xUeGnJg6em9lvJVK5JbxERfxPQQAVnSOM1Ywe3bu+eUWyC+2dPkhHPi3CawkcF5orlyx/+/B8NLPQd+K1wtB3NaLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eqyhctWe; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=n9Ntyz9D;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eqyhctWe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=andre.draszik@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6hs31Vqjz3bpm
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Mar 2025 04:05:43 +1100 (AEDT)
-Received: by mail-ej1-x632.google.com with SMTP id a640c23a62f3a-abf48293ad0so587728766b.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 04 Mar 2025 09:05:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1741107940; x=1741712740; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hsaGEw76ofDXd3Q1RIPfSv8CJUvwC0w+ueATTj/NegM=;
-        b=n9Ntyz9DanZ597d856QF5TUBIfc2kTJv+g4XU0WKjUKAhQIROhRBnQTg43PKjrd8qq
-         4ZSDY5WAMltP7XTjA5Li/Qz2xEq/X9otKyVngEWAUxA3cTQlBOzflG4DRfHnq+ul/y1c
-         ic+X5w9M6hlMxcPLsEIphIp6mmoW7OdUePm4NsqXA3TO230L+jI/J5oSTgD2VjVj9Jvm
-         evsIovN1DLr1mVN53a0lobE24CHaWxXMzDbuj/MofpqbPD7XgxY2FtNCcxMwV3ESWfDI
-         ipGMLQ/UEWIQPmMkbD9k28gcHrB1TVXVrTuSXM/DHRV053O04+1pnxvzpbLnZYVJzJ7F
-         0NmA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741107940; x=1741712740;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hsaGEw76ofDXd3Q1RIPfSv8CJUvwC0w+ueATTj/NegM=;
-        b=Enwp4vmUXgM2PBF8MoVjqEMyV7ectSQnYFbJMnBgIMyQyzJtTsXuQwgxqlyUXqtEbQ
-         cjf985dqs657Q7OIUVt1rudrCcTxeeRB+dOg1HDJnh9WGB71e7yL8mBWWKObelZ61c9D
-         esTZfYH8FjfjC/2rb3sPb2ilAOVix4mcvES2Lx9LgSBM5A+3fCwn2XFDQEPKBXjIjlmi
-         MPt+FZPh8ObqfQe+gt/Rl8mlc5r7xKrKd8EbScht7tAzTh4ERub/4CSrXabJuyxhUdxG
-         kbVoELsGpu/WGSMPC6PwM0hpKgiJXFSE+TzbUn3rT9+7mWopaSU8h/gUPiSkuf9SXJ/T
-         FDvg==
-X-Forwarded-Encrypted: i=1; AJvYcCXq803GoBentHK1p5TC/qFxzbGMZ+kBfQBR68fAxd69OS3vvwB7WyphDtxTkeORjkdnqC6CgYzFcapF7Hw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxyB+t5uiJcrhEP4CYXhtrCImne8w6QbtKqzBwrrBIu39PCVSxc
-	5vsJ/avKTQwknYS38iG3CzBAydB9UxN9xSvcDDhQH6vKIZNunTEnDpVeTpDDkik=
-X-Gm-Gg: ASbGncszHNZQvO58G/KNv0QFPXk89WnRBVpxuNHdDhwwIZQsaopJidXiAcmE66M/y5c
-	uePVIKhjNOr4OAqfW5yzdLcTovG6s2OoiTtUifRxTu35XzV2Mk77lmfi+URD0EsCONCW7gbU56Q
-	qClhrIYB3oUruY1DXthqP4Ee7buBx+DM3ytz/aE2OFRg82iO9R1myNffHzdeF+SsngZJPqX8/YC
-	I8Z5CZWyoOja6X30Hxcvs2TPnR3qaywU0VdjpCnMUp+YJwlWXNRv7v/VXZ7u29e0qdP5WTa+HnE
-	2wH4ULqF75r+Tn8GV9Y7dntt532P5Q8NQmJQyS2h9fFqBmZURloqtwtI7ZoJl0jIaRZ58g5j/33
-	Xaq7kiOo9arWqA9FqHt1hG9u4pUcK
-X-Google-Smtp-Source: AGHT+IFl6TTi8U8Sph/F6W/xnjfer4H7R9+DXzK4OCCEVcy7pkMVR63rOrht0Su/bmOb+eKFGQTbhQ==
-X-Received: by 2002:a17:907:1c8b:b0:abf:38a:6498 with SMTP id a640c23a62f3a-ac20db16fb1mr2300366b.55.1741107940186;
-        Tue, 04 Mar 2025 09:05:40 -0800 (PST)
-Received: from puffmais.c.googlers.com (30.171.91.34.bc.googleusercontent.com. [34.91.171.30])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-abf795ba15esm367589066b.131.2025.03.04.09.05.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Mar 2025 09:05:39 -0800 (PST)
-From: =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-Date: Tue, 04 Mar 2025 17:05:41 +0000
-Subject: [PATCH v2 13/16] rtc: sd2405al: drop needless struct sd2405al::rtc
- member
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z72vS5Pz4z2xGF
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Mar 2025 17:39:00 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id AE707A45139;
+	Wed,  5 Mar 2025 06:33:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB4F0C4CEE2;
+	Wed,  5 Mar 2025 06:38:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741156737;
+	bh=qpI2PgQCDJLC7BAxPRiGKYKh9UkyRzVa0QxyYizlb6U=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=eqyhctWeY+yfRcKT9xvz+ZsWssjRVjnRBKOa78OrJIIUERS/9deQpUT/2a0MYgDhJ
+	 nIbwCMDDaaoHmIuK95B8jgK4AcLT6Q0Q3ZYhEqlcfulDq3uqVM49rpsiWp/2nliko6
+	 UtNlr9cGIB0tkg0lsByUum7ctY15riEFeeGznULDGCljspmkdZ7j6kH9rCx6jRqefG
+	 HQIS9BDyzUhbb8qLc0SAEe9OQjwXJqsGJ7hOHg9qu5gKT/yc3QmQVT/OcYJkWcANmZ
+	 Rv0GxezhnMmIUSMKaFE+tvVk45Bjzn/Ihsbf2y2QzqH13caYGSho1bCDACH8XoXndC
+	 p8Am/DF50LsiQ==
+Message-ID: <8740eeb8-9467-48bb-a911-e70c3da3c45a@kernel.org>
+Date: Wed, 5 Mar 2025 07:38:49 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,90 +58,144 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250304-rtc-cleanups-v2-13-d4689a71668c@linaro.org>
-References: <20250304-rtc-cleanups-v2-0-d4689a71668c@linaro.org>
-In-Reply-To: <20250304-rtc-cleanups-v2-0-d4689a71668c@linaro.org>
-To: Chanwoo Choi <cw00.choi@samsung.com>, 
- Krzysztof Kozlowski <krzk@kernel.org>, 
- Alexandre Belloni <alexandre.belloni@bootlin.com>, 
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Hans Ulli Kroll <ulli.kroll@googlemail.com>, 
- Linus Walleij <linus.walleij@linaro.org>, 
- Neil Armstrong <neil.armstrong@linaro.org>, 
- Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
- Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
- =?utf-8?q?T=C3=B3th_J=C3=A1nos?= <gomba007@gmail.com>, 
- Dianlong Li <long17.cool@163.com>, Nathan Chancellor <nathan@kernel.org>, 
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-rtc@vger.kernel.org, 
- linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-amlogic@lists.infradead.org, 
- llvm@lists.linux.dev, 
- =?utf-8?q?Andr=C3=A9_Draszik?= <andre.draszik@linaro.org>
-X-Mailer: b4 0.14.2
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/3] dt-binding: aspeed: Add LPC PCC controller
+To: Kevin Chen <kevin_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au, derek.kiernan@amd.com, dragan.cvetic@amd.com,
+ arnd@arndb.de, gregkh@linuxfoundation.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20250304104434.481429-1-kevin_chen@aspeedtech.com>
+ <20250304104434.481429-2-kevin_chen@aspeedtech.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20250304104434.481429-2-kevin_chen@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The memory pointed to by the ::rtc member is managed via devres, and
-no code in this driver uses it past _probe().
+On 04/03/2025 11:44, Kevin Chen wrote:
+> Add dt-bindings for Aspeed for Aspeed LPC POST code capture controller.
 
-We can drop it from the structure and just use a local temporary
-variable, reducing runtime memory consumption by a few bytes.
+Please use subject prefixes matching the subsystem. You can get them for
+example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
+your patch is touching. For bindings, the preferred subjects are
+explained here:
+https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patches.html#i-for-patch-submitters
 
-Tested-by: Tóth János <gomba007@gmail.com>
-Signed-off-by: André Draszik <andre.draszik@linaro.org>
----
- drivers/rtc/rtc-sd2405al.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+Missing 's'.
 
-diff --git a/drivers/rtc/rtc-sd2405al.c b/drivers/rtc/rtc-sd2405al.c
-index d2568c3e387659dfea598cd2ef6bddc5c076cbb9..00c3033e8079b5f10aaabcc7a1d3f19771263a02 100644
---- a/drivers/rtc/rtc-sd2405al.c
-+++ b/drivers/rtc/rtc-sd2405al.c
-@@ -42,7 +42,6 @@
- 
- struct sd2405al {
- 	struct device		*dev;
--	struct rtc_device	*rtc;
- 	struct regmap		*regmap;
- };
- 
-@@ -167,6 +166,7 @@ static const struct regmap_config sd2405al_regmap_conf = {
- static int sd2405al_probe(struct i2c_client *client)
- {
- 	struct sd2405al *sd2405al;
-+	struct rtc_device *rtc;
- 	int ret;
- 
- 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
-@@ -182,17 +182,17 @@ static int sd2405al_probe(struct i2c_client *client)
- 	if (IS_ERR(sd2405al->regmap))
- 		return PTR_ERR(sd2405al->regmap);
- 
--	sd2405al->rtc = devm_rtc_allocate_device(&client->dev);
--	if (IS_ERR(sd2405al->rtc))
--		return PTR_ERR(sd2405al->rtc);
-+	rtc = devm_rtc_allocate_device(&client->dev);
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 
--	sd2405al->rtc->ops = &sd2405al_rtc_ops;
--	sd2405al->rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
--	sd2405al->rtc->range_max = RTC_TIMESTAMP_END_2099;
-+	rtc->ops = &sd2405al_rtc_ops;
-+	rtc->range_min = RTC_TIMESTAMP_BEGIN_2000;
-+	rtc->range_max = RTC_TIMESTAMP_END_2099;
- 
- 	dev_set_drvdata(&client->dev, sd2405al);
- 
--	ret = devm_rtc_register_device(sd2405al->rtc);
-+	ret = devm_rtc_register_device(rtc);
- 	if (ret < 0)
- 		return ret;
- 
+> 
+> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 36 +++++++++++++++++++
+>  1 file changed, 36 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> index 5dfe77aca167..367847bd7e75 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+> @@ -149,6 +149,35 @@ patternProperties:
+>        - interrupts
+>        - snoop-ports
+>  
+> +  "^lpc-pcc@[0-9a-f]+$":
+> +    type: object
+> +    additionalProperties: false
+> +
+> +    description:
+> +      The LPC pcc interface allows the BMC to listen on and record the data
+> +      bytes written by the Host to the targeted LPC I/O pots.
+> +
+> +    properties:
+> +      compatible:
+> +        items:
+> +          - enum:
+> +              - aspeed,ast2600-lpc-pcc
+> +
+> +      reg:
+> +        maxItems: 1
+> +
+> +      interrupts:
+> +        maxItems: 1
+> +
+> +      pcc-ports:
 
--- 
-2.48.1.711.g2feabab25a-goog
+Missing vendor prefix
 
+> +        $ref: /schemas/types.yaml#/definitions/uint32-array
+> +        description: The LPC I/O ports to pcc
+
+Description is too vague. Why would we encode I/O ports as some numbers
+instead of GPIOs for example? If these are ports, why this is not a graph?
+
+Missing constraints - min/maxItems, defaults, minimum/maximum etc.
+
+> +
+> +    required:
+> +      - compatible
+> +      - interrupts
+> +      - pcc-ports
+> +
+>    "^uart-routing@[0-9a-f]+$":
+>      $ref: /schemas/soc/aspeed/uart-routing.yaml#
+>      description: The UART routing control under LPC register space
+> @@ -176,6 +205,13 @@ examples:
+>          #size-cells = <1>;
+>          ranges = <0x0 0x1e789000 0x1000>;
+>  
+> +        lpc_pcc: lpc-pcc@0 {
+> +            compatible = "aspeed,ast2600-lpc-pcc";
+> +            reg = <0x0 0x140>;
+> +            interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
+> +            pcc-ports = <0x80>;
+
+So what 0x80 stands for?
+
+
+Best regards,
+Krzysztof
 
