@@ -1,80 +1,166 @@
-Return-Path: <linux-aspeed+bounces-963-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-964-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1FE5C282DE
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Mar 2025 18:02:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABFCFC28B2F
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Mar 2025 01:51:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z7y1K1R3Zz3c7j;
-	Fri,  7 Mar 2025 05:02:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741284133;
-	cv=none; b=MczpV5cKwjdiYxwTqtOUq+8ZNXMFD+2I1yUfiHEI2xU5lxPPLR8c+Z7Oucp06V+yONlBp4BEXdLAW3DR0JcdR75Z1UGAkws3ExSF61SriOrHX488XTwSxsd7XzfICeRCJe4BYb1EH2mjClKAGdVtwcG7NnSbhyz9m3mq2XAVo/sGpP2v3Wm4cF8NGe0FEzwVdJUZOCSi0R2SNtFdy80P2yR75Ttue8X4oK5lz9TwQ8Q8mpLwcM8lHVCjjYJknP/GhhVil7nyvVPEH4UGm61FaBvaP/z9MXcangRJsPVN7hnY/wPNrunDJ6XkA/MNNcSoyUeX4rLQqMDI/btit3pI+Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741284133; c=relaxed/relaxed;
-	bh=cT/90xZaViu9n21Bl3syCt1wWI2oqW2FHfa0uBqaKIY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cJo2a+oI42tgCNnFTNiuDk6g5KlhZQEuQx44EbJoAeFSF0lqx/QVrjrGbaWEQ8p426HdAJ+uPebKCqciqFnMNC11OBZspkYBTBBWIjvUaKHW3gnK5GDh/SGF2MegrnYB6UyQ6NpY/adCLRuxWzSVSd3FxhIh2F/GCptiqUSBc41/diG6NgSuD3ZwtSWTS1/bT9O/DBnZuMyAoj3/vjmuBloCJTCgbe1TB4MzyoTYaomU/uDOP1S1zrJV5y5WnYRthfoFBqaeQUtq2HYF8vBJUmPcYeDlUUWM22UVz8RkPQSjqkj0yv8ZPG8IRVYOckHrZZ4cKGohBaSKUeZ9rSzjiw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=afiJshKk; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=afiJshKk;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZB0Hl1JLVz30Sy;
+	Mon, 10 Mar 2025 12:51:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c400::2" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741571507;
+	cv=pass; b=cGPxCBpXR+vum/2ycGev0rGfo05yEcCCKmX6duHxsmxBpYLOtPxGVzZgor6At6H+8giL74chtdZCkDwe+bEOI6CFdVXx1wHYZtU3T8JwWnRv9FVxCZHvpxHxpzPrqjCV52XNiUqe9o1JjJAzX6a/rw2Ltk/nZYfe01ptmGr7LIG/6gFQXDglq0CiiwtWrHaI1bLJsqfqgiU+qhQ35xzbfBh5DUwsV75/ByXroeINNnQKnvOB36Y+uD4+5K9OIFeOcEitaT4deYHlAB0WVXjSifJZMg7b4pOJJ6Q/yPW3gROFW37cbisQyvYGWtNK92dfwvfuysNGN/Qhcl0EeTz+wg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1741571507; c=relaxed/relaxed;
+	bh=LhsXnJ1V9R8AdOq7sKDQHwG522hLaPdnQRRFw4kL56A=;
+	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=mwGcZ+80Lob/iTcwH/X3n+pHZ6jUP6yanJZK693Xc6szVI7CVt/zuE9Bk4843lL+3IT7fO+ukZ376PMjYOctgDEsHqck/RPnxEzokuCj78VlH+0c4Gjos2f8H1GaJxSVH+VrFlJ3ZBTgxu1vF3Y5zYCXgh7506BBUhLplNccSE6pY9IpYZAfDRb/Vx2Yp/4JBqLt4njDZTonqN8CkUKdg6XEQMAuUs9ooM+/HjgzncFDpjzwX07apSXKh6HedO5j8qOicG4jtqzpuXNO+r0jtrQSI4cYuGzOUt59YI0yY0um8Wgudd2ka1t/ORuYwBMTv8wKNbpzoqMSj9obQhwYbA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=2a01:111:f403:c400::2; helo=hk3pr03cu002.outbound.protection.outlook.com; envelope-from=kevin_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c400::2; helo=hk3pr03cu002.outbound.protection.outlook.com; envelope-from=kevin_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from HK3PR03CU002.outbound.protection.outlook.com (mail-eastasiaazlp170110002.outbound.protection.outlook.com [IPv6:2a01:111:f403:c400::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z7y1G2v2Mz2yFK
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Mar 2025 05:02:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1741284131; x=1772820131;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=aS4+MiTQzEhxzLiPX4aqCukgIbUCu3ZfrqEOUCUr7XI=;
-  b=afiJshKkmNU/2fBC4WbPKknX0R2L69JkHdHppbig+B6nHX4qHLTzy9MS
-   ehevNi9uwJkJyzKs7sn6o4nXP7H7wG8CJh1PaN2zaeDWY1yrRrkjdbxRK
-   7nVPWekF88lp7sTd+PnLZmobJX65O2m5Ke2Kn0SU278W6BfhwlhRh8pmw
-   dwSsUcJbTcCxDoCV1DsZ8xab/IvSW59Qj9xMe4HtEMOj3Y8Vw2WVc+Ovg
-   Uc0z5syPCk42N02r8i57vBxP8UBuMf0S/eFxranViB2LhZqU/MH7jrEY0
-   c2gwVVIuPk7P9H1SAohAF2wP5H55faWLNepjBtJ5JOSaLHusBrztjbrHm
-   g==;
-X-CSE-ConnectionGUID: 3GOjC+jFSHy5u+WoVgeaiw==
-X-CSE-MsgGUID: SbdWwP8iReKjwNZHDQbdbQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11365"; a="42447283"
-X-IronPort-AV: E=Sophos;i="6.14,226,1736841600"; 
-   d="scan'208";a="42447283"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Mar 2025 10:01:54 -0800
-X-CSE-ConnectionGUID: gNpnIM6CT4yTMEC2oo0i5w==
-X-CSE-MsgGUID: 7bbIzenPRDe7V8jlIyKzsQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.14,226,1736841600"; 
-   d="scan'208";a="119280835"
-Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
-  by fmviesa008.fm.intel.com with ESMTP; 06 Mar 2025 10:01:51 -0800
-Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1tqFXY-000NQI-0V;
-	Thu, 06 Mar 2025 18:01:48 +0000
-Date: Fri, 7 Mar 2025 02:01:04 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ryan Chen <ryan_chen@aspeedtech.com>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>,
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linux-clk@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH v9 3/3] clk: aspeed: add AST2700 clock driver
-Message-ID: <202503070117.mMjnpop8-lkp@intel.com>
-References: <20250224095506.2047064-4-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZB0HL4jMKz2yYJ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Mar 2025 12:50:59 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=FPGTmNhGc+XK8y9LWFCHv7mo50xCcq7n0rcI8Isjv9XNgx4QAIhc7bFb3nUlRyar8lTARsth3OLMg834RpVIM9qUGpU+8/cnuDHi5yyaKmkYqbL2P4AingRtN6EYs6YAm7ZLEMloWnaWlxo3Rw/TKNZUWwsckZS4z9eBXX3QDA0mwjKPQ72h35RIaMOSrnJ9mnpWw0ibqeHyybk1tijsNOjIX2bE/yAhNSLTt/0oaZDgqI/KLTFvff1jkYlP7gKgkWfR26G9Zgb0mtgBGQm9EFsY81HR5BxzLqQXlqNkd3yvGAUEOaJWsgMVshq2ZX3hk6knHBr2PKfhJG3akPPmcQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LhsXnJ1V9R8AdOq7sKDQHwG522hLaPdnQRRFw4kL56A=;
+ b=TGEt/kiYWNQx6zQaD/T+p5w58Xl45jLSWMcGmII62zUi7NSiF6v7QohsmH1DvJ6C7f5yrQg73gOP6TK2gS9dvo+xMqDYvn+lNI5bKrGJrVGJeYSGrWVBwrjlMiIDfvj0nDPZPYizC5SMiD6jyy11c8MjnzVWXHNVQHO9Ro5VkN4YSPjidk6y5jCTu1IhuV38EkNP13u7UV59ZsjOhVLtwrYAuwhKQMv62t2p/bkOtlhEX1BdHmX5cj+9NlT7nbMxE3x2DRx23gn6uIkesBX5dpv0i7pMtOG0adpH8kIPjS3cim3+f+FFlVRw73K8gP6NAaeHfxQO3K2s+KG/RbBLVw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LhsXnJ1V9R8AdOq7sKDQHwG522hLaPdnQRRFw4kL56A=;
+ b=FD5WLoyym2h+lVXW72NW7iDeqXXCVkYiF4g1IRzxzgW7ItVzyJBUGyhUHHI0sSpM//EdqjGPtenvuE69BjSWbmSiUiXFpkdrv4YvOUW6ews5favaM64+HPVIo+vbGVwcNOzwDi5gmizlN4n3DZa8b30/PLKt/elev4pahWBDQN7Rp/ljKh9aO5T1ENw42Czq19mhvUW0VqN6l96VrYB9L8xnuVLYOWu8vFUWt6V+FcTY78QhTqvYzmCk7fyiyN2QjHjdB8bMbu2ZBotfbUSd8UN6b3dxKlu6FOdPgKTlPaU/U4OomTjmqUgKkQVp4J1Xcr4yS1TqzYWiiEoSzuxRhg==
+Received: from PSAPR06MB4949.apcprd06.prod.outlook.com (2603:1096:301:ad::9)
+ by TYZPR06MB6141.apcprd06.prod.outlook.com (2603:1096:400:343::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8511.26; Mon, 10 Mar
+ 2025 01:50:30 +0000
+Received: from PSAPR06MB4949.apcprd06.prod.outlook.com
+ ([fe80::7bdd:639a:6b94:37bf]) by PSAPR06MB4949.apcprd06.prod.outlook.com
+ ([fe80::7bdd:639a:6b94:37bf%4]) with mapi id 15.20.8511.025; Mon, 10 Mar 2025
+ 01:50:30 +0000
+From: Kevin Chen <kevin_chen@aspeedtech.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>, "lee@kernel.org" <lee@kernel.org>,
+	"robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
+	<krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
+	"joel@jms.id.au" <joel@jms.id.au>, "andrew@codeconstruct.com.au"
+	<andrew@codeconstruct.com.au>, "derek.kiernan@amd.com"
+	<derek.kiernan@amd.com>, "dragan.cvetic@amd.com" <dragan.cvetic@amd.com>,
+	"arnd@arndb.de" <arnd@arndb.de>, "gregkh@linuxfoundation.org"
+	<gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org"
+	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, Mo Elbadry <elbadrym@google.com>
+Subject: RE: [PATCH v2 1/3] dt-binding: aspeed: Add LPC PCC controller
+Thread-Topic: [PATCH v2 1/3] dt-binding: aspeed: Add LPC PCC controller
+Thread-Index: AQHbjPJy2F3uXFUe20eiIvujFTWQbbNkGJyAgAeEr9A=
+Date: Mon, 10 Mar 2025 01:50:30 +0000
+Message-ID:
+ <PSAPR06MB494973DC08A8105EA05FBE6D89D62@PSAPR06MB4949.apcprd06.prod.outlook.com>
+References: <20250304104434.481429-1-kevin_chen@aspeedtech.com>
+ <20250304104434.481429-2-kevin_chen@aspeedtech.com>
+ <8740eeb8-9467-48bb-a911-e70c3da3c45a@kernel.org>
+In-Reply-To: <8740eeb8-9467-48bb-a911-e70c3da3c45a@kernel.org>
+Accept-Language: zh-TW, en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PSAPR06MB4949:EE_|TYZPR06MB6141:EE_
+x-ms-office365-filtering-correlation-id: f7489ff1-46a3-47ad-57bd-08dd5f75f02a
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|366016|376014|7416014|38070700018|921020;
+x-microsoft-antispam-message-info:
+ =?utf-8?B?SmhSdmY1VDdnb2JBVnJxc3pvNU1aWTFoeFV4ODNCMW5yT1VxRERkWlBoRFNo?=
+ =?utf-8?B?Vnh4Z2pPdDN2SHQ1NU9pZmZJaU8rQlJwN0FzeEJMYUJ5WmtzUVNEREhuNDUx?=
+ =?utf-8?B?REpXekhzUDNObkhzV1NrMzMvRTBab0cxTDRIYTdHQlhYWTdZL1psczd0eVoz?=
+ =?utf-8?B?RlArSEtPUWdoN3d2MVF2aVdVWmRZblVlV3FFTGhkblBlZ2RJTEIxWm1GRWp1?=
+ =?utf-8?B?VzRJMEZRUG9XaER0Vm9wQVlqUTVjdGc3OHlldlYyTXBYcWZJdkNRaDBlNzdJ?=
+ =?utf-8?B?cW5YSllTY2VqanFEZ1dIeUxEbjV1T3hqMEc4MFRaSlY5bzJKRWJtbWs4TGZy?=
+ =?utf-8?B?S0trTXBxcDMzZDcrQ05OUUZMNXVHTE9lQkFTWkhZYlVSRmFZU2ZTQU5qNjd5?=
+ =?utf-8?B?bmovT0oyaFA1VS9PQWZ2NzhrS1VVcmJQNFM3M3BMcFZmcEpyVWRwYTBQUHhY?=
+ =?utf-8?B?S3FJMGRwMHo0NWFiSUlxVHpxUlZCOGhVeGRYWXJDSHhkb2hJaEJxQ2dPVGJv?=
+ =?utf-8?B?dVphTkkyT1g2WDQvNllCd0hJTmxPbk82Skx6YkFzc2FpM1RDMEJSN2ZYVXJr?=
+ =?utf-8?B?am1NMTJlcGZMUm45T3BNb21Cby81Q0tuZEFmK2FKaDUzOTJOUE1sUkRpQWlh?=
+ =?utf-8?B?azZlRUpsZk5nM1pRTlI4aEhNUHlZNXN5bEQydlRjcWlYQTNMQ3VHczF4bDB4?=
+ =?utf-8?B?eFpUUGRxVlNKdnM3TmpJRDNZSXhzZHdRWmNSYllaa0ZUVC9PcFNwWmpCdFFv?=
+ =?utf-8?B?Z0I5SlVwWldnaVA4VDhMM3ljRW5OMTF1T052anFyekY5Q1BoaU5ubWdmMHNl?=
+ =?utf-8?B?ODJjMFhZd2tqUVN4LzBXZlZHS0NUWmIrNVVpYjBkQzVMRGJLMkx0dkovTmNz?=
+ =?utf-8?B?eHNqUVhFSktpaER1OW9tOWxEbGJ2OXBYMUg3NFpCQk9BTTRXQmtkQjJPdkdI?=
+ =?utf-8?B?WXJqN0pGOFdNWmVud3pKb0VEU0NwUTBrbTV0cEUwNDRmNUxpZ0N4ZFFkT0Ez?=
+ =?utf-8?B?UFBUTXZ5Sko4RFdCcHVKWnVJTTdpMGs2UFQwUFd2RXdsYUY2aHF4TjJ1VUdP?=
+ =?utf-8?B?WElIK3ovUjRZMVBlUGE3VGEwclJlZEdjOXp1ZkFuVzZGMitkc1pUWXU0by9w?=
+ =?utf-8?B?UWJXSVc1Q3FZczkvZHl6elJTMURrUDZFaHdOWTN3MGdoSXYyQWpFbzB4blhB?=
+ =?utf-8?B?MUlDbnNEUTF2TlR4NjEzbkJFc0EvalNLdE8rSWQ4NTExMTU2R3VaYUIzMUZl?=
+ =?utf-8?B?VlBwQXMvQm9VTldqbTQ3VFh1QkpUQ3I0Q3R2MlV0cU53T3Z0STU1OUJ4a0lV?=
+ =?utf-8?B?WnpjZ3l4ZnpGeERYdjZoSHI1M3NVdnRnaDR6T1NDTmdmUEk1THUyR1BNemx6?=
+ =?utf-8?B?UGZIdGw5R01pekZpSTRqVk0zcWpXMVBQZkJHdnlvRTl0cDB1b3QwOFpCUHhS?=
+ =?utf-8?B?ZTh3VzRhdXBXbmRvT2hKdi9xZEtxamw5U0VSQkpVL3lnTFNPWEZ0VFNwV24y?=
+ =?utf-8?B?WmpqNUxYbll6ZFdLUE5DWjczeGhSUGk5WkdwRnFLY29uL1R3RENQOWw3d1J2?=
+ =?utf-8?B?ek1PM1djQ2pza1AyVmpUVWtoa2tHbm9GcFA0eVNyR3N4cGsxUzEvVU56bFJR?=
+ =?utf-8?B?ZjZwaFhDYTU2SnMza2xPRmtlczJmTXlRSTlHNmxnb0FWOWkxejMwbElLODBR?=
+ =?utf-8?B?b3dYTytjY3BwSTBqODNZbEFHZkcrR0hJWUdtWFUrSzlSdEtWRDZPS0M5b0FW?=
+ =?utf-8?B?TS9RdDVyL3NMOWYwbjdJQjFZaENzTFA3bjNJKzNkU3JqbzhON0pXaGYxYm91?=
+ =?utf-8?B?M1NFS3lhSXN3K1FLSDNzYWhlYktmeGs4SVlLNDBCSmtlWVZrRXUwTEZtaFJz?=
+ =?utf-8?B?R1Z2L2t1UTVCUGdkbzA4RDFaQk02dTM4MW1NSnVrME90Q2c9PQ==?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PSAPR06MB4949.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(38070700018)(921020);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?bkVxVGIvWDFrcGFuS0YzTUptaTZ3ZlQvclZjL3JudWlUdncraStEYjBHMkdP?=
+ =?utf-8?B?V2xvbkZsakV6T0U3RHBtOFdwd093UmIzYUZPYzFUNzFkVVQxblpnenJ3Zk9E?=
+ =?utf-8?B?bFArQmdkK05kUEtEeTRTNXZ0Unp2dFlFaklvUmQ3OFRESDBVYWRPSWpOaGFB?=
+ =?utf-8?B?ZzRCOGpHb2JuLzA1bmFXQXFUUDd1TmMvY20zMlpiM1dqZnY2dmVjdWNWUzVK?=
+ =?utf-8?B?K3ZKWXF5TGxmNmRsR240Z3hyNUxlOUI5L1BueG1JSXRBU1M4VDZ4c2R2RjJI?=
+ =?utf-8?B?QkdrbGZCb01vd0RzZzUvY2ZBTGdOY1RTYklzbWFSaW4yOUtENUltb05ibDR2?=
+ =?utf-8?B?UVF2SVJLNnI0R3RnZHd4MlNQK0t4Y0hvQ2p6a3lKMEdTOXk3NEIxQzBUdEdl?=
+ =?utf-8?B?a0hJYUpqYVVxT1RUY09Jc3VqRGRPT2hjMWFVSUxyYXF6Sm5HZXRLU3BVUU9B?=
+ =?utf-8?B?SytxcUg4N1N0UUt4NzJvZUFCNnVUdTRjVDM0d0s1S095MnBrck5oa3kzSTYx?=
+ =?utf-8?B?SGg4WTZULzc2b01PNXQ0ck1aWmxjSG95d0hoWnU2NWt3R2xCRW9pNWJHcGxw?=
+ =?utf-8?B?T0RhekhBblphdTJEKytLbTVjcUhxRXNVVy9iSVVET0xlR2lCV3FUZmhTbW5N?=
+ =?utf-8?B?b3k0RE9FYXdjdWE4VTY2THlhQjlFMmR3VzgxdXZRMjltbHFlNWJ2M3RiN2hD?=
+ =?utf-8?B?dGNlajJVM3VndU9xWjVsSFpGdDVFdTU4WkNzRUhFV3FPdTZzSVNnQmNyc21a?=
+ =?utf-8?B?YVBGU3NqdjNSRFhHSHhPZUtPbHBwdmh5S1pkR2NNZ0NnL0lOV1VsbHVhOHd3?=
+ =?utf-8?B?bkgxd3Fkd0pGQ2tyclhmY3NZYTVqUGNmcFpla1FHV1lESVI5UDNncm1QVkxk?=
+ =?utf-8?B?bFQ0c01iczlpT2pTRkVOWktsaHhXajZHbGRkNmd5ZW1CaUswSlNKUEVwaGNr?=
+ =?utf-8?B?OHN5RlJDR2tNVzNzbzBFVzdlZ3FWTm4reDV3Sm9SalN6NVIwek9DZ2RQekd4?=
+ =?utf-8?B?a3BXY09MbDVueHQzVGE1YWZ2S3lmUnlZck4wMHYyOG1kM2orenc2OGcyVnNw?=
+ =?utf-8?B?Z3ZVNC96T20xM20xK1NWb3FjYnRYaUdsMVAvVC9VMXBnejJGZ0tUWXpxQnU1?=
+ =?utf-8?B?NTNKa20rSW8vcUx4cXd6UHhHQkdVVkZJeXU2N25GZlpvYVJzL2Y0bEt0cVZu?=
+ =?utf-8?B?SE45M1UyQUIvSmVsVnZrNWV1WWJSQlorMDA0N3ZmaUo2cVlZcy93TzIvTGdD?=
+ =?utf-8?B?UmhIUlJQZ1AxdHhzaWU4VGFrd0FWVUc3MGxOYVpDdE8xWG9MUWFhbFBQYmVG?=
+ =?utf-8?B?R25QcVJ5dm40MnpMRjRSUHFiSlBpMjJjdUUzWVhqMmZpT05CekJYSUZRalBH?=
+ =?utf-8?B?TEo0UzNNZS9ZQnpaMVNPR0hzbmNoVmRDcXh3aGExYlBoNmY4dlF1SEljdmcz?=
+ =?utf-8?B?V2ZIbCtiQ3QzblhGUEkraTE3aEwzQWl6QS9mclVnUHppVzM5dyt5NzFlNzVu?=
+ =?utf-8?B?Sjd1V3NsZjE4ZTBadkZyalZmcEU3UDZnR09HKzk4RjZRYTk3TVRFaC9TOHBO?=
+ =?utf-8?B?aUZqM2dsaG4wN2ttaDhranNjL0RnL1F3c1Npd1pDUGlrRjlPVE5SZ1dqV2xM?=
+ =?utf-8?B?KzBOcjZOSXBEZEhXWHh5VHhVZmw2U3NDZW9ZTDkwSVk5ZEhIbUZ6NEt3Slp0?=
+ =?utf-8?B?V3JvSWovMGxmRE9PZHdpK3NjSmprTDRITWNMMzdjaFkyaEdCYnhCN2JFRlVH?=
+ =?utf-8?B?Nm1pYXhicVpWVlBvcmN5dXdOeUxTeDUxUHFkWnZNeWUrZFFjT00vdzlIYUJI?=
+ =?utf-8?B?VXZGNHdtVTFCRzNFRnZLTTlGOFUyWHUwQmtrdDZ3K0VOeStKQ2FCY3VKWWhh?=
+ =?utf-8?B?d1VEb1pCSTV4cCtTRUtkNGhIZWlGVVU1Q056UitzSWNsWmYyOVc5cnpGc3NE?=
+ =?utf-8?B?M1lIZk9KOG5Ib2FXY0puYmxmR3NVa2dKemQ2RnpscXdFRTYwQkx6QlJ3anZa?=
+ =?utf-8?B?bnJQYTdMK292aWYzMXRHVzFtVGxPUjVZUEgramJjSkg1eEpvMDl6bkZjOThT?=
+ =?utf-8?B?aGpya256K0FKUllVWGRmd3lGSHBIME10NVFpZllkSzlzeHJYb1I3ZkQ3M3hS?=
+ =?utf-8?Q?zHo2y7Qp8/80NxHPSzR+Ci0Gq?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,176 +173,80 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250224095506.2047064-4-ryan_chen@aspeedtech.com>
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PSAPR06MB4949.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f7489ff1-46a3-47ad-57bd-08dd5f75f02a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Mar 2025 01:50:30.1430
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: p0ZNHGFQw+f87kJZ/YkBPrZR2/JHK5W3Ra/48axKcDpcSQ4/Bzk2xa/AYT0GlZ+s7vIqCaBVVu7HRRduJ8bpe7L9y5ER7Yw8HAGlNLDRFBI=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB6141
 
-Hi Ryan,
-
-kernel test robot noticed the following build warnings:
-
-[auto build test WARNING on linus/master]
-[also build test WARNING on v6.14-rc5 next-20250306]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-binding-clock-ast2700-modify-soc0-1-clock-define/20250224-175830
-base:   linus/master
-patch link:    https://lore.kernel.org/r/20250224095506.2047064-4-ryan_chen%40aspeedtech.com
-patch subject: [PATCH v9 3/3] clk: aspeed: add AST2700 clock driver
-config: powerpc64-randconfig-r121-20250306 (https://download.01.org/0day-ci/archive/20250307/202503070117.mMjnpop8-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 14.2.0
-reproduce: (https://download.01.org/0day-ci/archive/20250307/202503070117.mMjnpop8-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202503070117.mMjnpop8-lkp@intel.com/
-
-sparse warnings: (new ones prefixed by >>)
->> drivers/clk/clk-ast2700.c:1066:92: sparse: sparse: Using plain integer as NULL pointer
-
-vim +1066 drivers/clk/clk-ast2700.c
-
-   952	
-   953	static int ast2700_soc_clk_probe(struct platform_device *pdev)
-   954	{
-   955		const struct ast2700_clk_data *clk_data;
-   956		struct ast2700_clk_ctrl *clk_ctrl;
-   957		struct clk_hw_onecell_data *clk_hw_data;
-   958		struct device *dev = &pdev->dev;
-   959		void __iomem *clk_base;
-   960		struct clk_hw **hws;
-   961		char *reset_name;
-   962		int ret;
-   963		int i;
-   964	
-   965		clk_ctrl = devm_kzalloc(dev, sizeof(*clk_ctrl), GFP_KERNEL);
-   966		if (!clk_ctrl)
-   967			return -ENOMEM;
-   968		clk_ctrl->dev = dev;
-   969		dev_set_drvdata(&pdev->dev, clk_ctrl);
-   970	
-   971		spin_lock_init(&clk_ctrl->lock);
-   972	
-   973		clk_base = devm_platform_ioremap_resource(pdev, 0);
-   974		if (IS_ERR(clk_base))
-   975			return PTR_ERR(clk_base);
-   976	
-   977		clk_ctrl->base = clk_base;
-   978	
-   979		clk_data = device_get_match_data(dev);
-   980		if (!clk_data)
-   981			return -ENODEV;
-   982	
-   983		clk_ctrl->clk_data = clk_data;
-   984		reset_name = devm_kasprintf(dev, GFP_KERNEL, "reset%d", clk_data->scu);
-   985	
-   986		clk_hw_data = devm_kzalloc(dev, struct_size(clk_hw_data, hws, clk_data->nr_clks),
-   987					   GFP_KERNEL);
-   988		if (!clk_hw_data)
-   989			return -ENOMEM;
-   990	
-   991		clk_hw_data->num = clk_data->nr_clks;
-   992		hws = clk_hw_data->hws;
-   993	
-   994		if (clk_data->scu)
-   995			ast2700_soc1_configure_i3c_clk(clk_ctrl);
-   996	
-   997		for (i = 0; i < clk_data->nr_clks; i++) {
-   998			const struct ast2700_clk_info *clk = &clk_data->clk_info[i];
-   999			void __iomem *reg;
-  1000	
-  1001			if (clk->type == CLK_FIXED) {
-  1002				const struct ast2700_clk_fixed_rate_data *fixed_rate = &clk->data.rate;
-  1003	
-  1004				hws[i] = devm_clk_hw_register_fixed_rate(dev, clk->name, NULL, 0,
-  1005									 fixed_rate->fixed_rate);
-  1006			} else if (clk->type == CLK_FIXED_FACTOR) {
-  1007				const struct ast2700_clk_fixed_factor_data *factor = &clk->data.factor;
-  1008	
-  1009				hws[i] = devm_clk_hw_register_fixed_factor(dev, clk->name,
-  1010									   factor->parent->name,
-  1011									   0, factor->mult, factor->div);
-  1012			} else if (clk->type == DCLK_FIXED) {
-  1013				const struct ast2700_clk_pll_data *pll = &clk->data.pll;
-  1014	
-  1015				reg = clk_ctrl->base + pll->reg;
-  1016				hws[i] = ast2700_clk_hw_register_dclk(reg, clk->name, clk_ctrl);
-  1017			} else if (clk->type == CLK_HPLL) {
-  1018				const struct ast2700_clk_pll_data *pll = &clk->data.pll;
-  1019	
-  1020				reg = clk_ctrl->base + pll->reg;
-  1021				hws[i] = ast2700_clk_hw_register_hpll(reg, clk->name,
-  1022								      pll->parent->name, clk_ctrl);
-  1023			} else if (clk->type == CLK_PLL) {
-  1024				const struct ast2700_clk_pll_data *pll = &clk->data.pll;
-  1025	
-  1026				reg = clk_ctrl->base + pll->reg;
-  1027				hws[i] = ast2700_clk_hw_register_pll(i, reg, clk->name,
-  1028								     pll->parent->name, clk_ctrl);
-  1029			} else if (clk->type == CLK_UART_PLL) {
-  1030				const struct ast2700_clk_pll_data *pll = &clk->data.pll;
-  1031	
-  1032				reg = clk_ctrl->base + pll->reg;
-  1033				hws[i] = ast2700_clk_hw_register_uartpll(reg, clk->name,
-  1034									 pll->parent->name, clk_ctrl);
-  1035			} else if (clk->type == CLK_MUX) {
-  1036				const struct ast2700_clk_mux_data *mux = &clk->data.mux;
-  1037	
-  1038				reg = clk_ctrl->base + mux->reg;
-  1039				hws[i] = devm_clk_hw_register_mux_parent_data_table(dev, clk->name,
-  1040										    mux->parents,
-  1041										    mux->num_parents, 0,
-  1042										    reg, mux->bit_shift,
-  1043										    mux->bit_width, 0,
-  1044										    NULL, &clk_ctrl->lock);
-  1045			} else if (clk->type == CLK_MISC) {
-  1046				const struct ast2700_clk_pll_data *misc = &clk->data.pll;
-  1047	
-  1048				reg = clk_ctrl->base + misc->reg;
-  1049				hws[i] = ast2700_clk_hw_register_misc(i, reg, clk->name,
-  1050								      misc->parent->name, clk_ctrl);
-  1051			} else if (clk->type == CLK_DIVIDER) {
-  1052				const struct ast2700_clk_div_data *div = &clk->data.div;
-  1053	
-  1054				reg = clk_ctrl->base + div->reg;
-  1055				hws[i] = devm_clk_hw_register_divider_table(dev, clk->name,
-  1056									    div->parent->name, 0,
-  1057									    reg, div->bit_shift,
-  1058									    div->bit_width, 0,
-  1059									    div->div_table,
-  1060									    &clk_ctrl->lock);
-  1061			} else if (clk->type == CLK_GATE_ASPEED) {
-  1062				const struct ast2700_clk_gate_data *gate = &clk->data.gate;
-  1063	
-  1064				reg = clk_ctrl->base + gate->reg;
-  1065				hws[i] = ast2700_clk_hw_register_gate(dev, clk->name, gate->parent,
-> 1066								      reg, gate->bit, gate->flags, 0);
-  1067	
-  1068			} else {
-  1069				const struct ast2700_clk_gate_data *gate = &clk->data.gate;
-  1070	
-  1071				reg = clk_ctrl->base + gate->reg;
-  1072				hws[i] = devm_clk_hw_register_gate_parent_data(dev, clk->name, gate->parent,
-  1073									       0, reg, clk->clk_idx, 0,
-  1074									       &clk_ctrl->lock);
-  1075			}
-  1076	
-  1077			if (IS_ERR(hws[i]))
-  1078				return PTR_ERR(hws[i]);
-  1079		}
-  1080	
-  1081		ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clk_hw_data);
-  1082		if (ret)
-  1083			return ret;
-  1084	
-  1085		return aspeed_reset_controller_register(dev, clk_base, reset_name);
-  1086	}
-  1087	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+PiBPbiAwNC8wMy8yMDI1IDExOjQ0LCBLZXZpbiBDaGVuIHdyb3RlOg0KPiA+IEFkZCBkdC1iaW5k
+aW5ncyBmb3IgQXNwZWVkIGZvciBBc3BlZWQgTFBDIFBPU1QgY29kZSBjYXB0dXJlIGNvbnRyb2xs
+ZXIuDQo+IA0KPiBQbGVhc2UgdXNlIHN1YmplY3QgcHJlZml4ZXMgbWF0Y2hpbmcgdGhlIHN1YnN5
+c3RlbS4gWW91IGNhbiBnZXQgdGhlbSBmb3INCj4gZXhhbXBsZSB3aXRoIGBnaXQgbG9nIC0tb25l
+bGluZSAtLSBESVJFQ1RPUllfT1JfRklMRWAgb24gdGhlIGRpcmVjdG9yeSB5b3VyDQo+IHBhdGNo
+IGlzIHRvdWNoaW5nLiBGb3IgYmluZGluZ3MsIHRoZSBwcmVmZXJyZWQgc3ViamVjdHMgYXJlIGV4
+cGxhaW5lZCBoZXJlOg0KPiBodHRwczovL3d3dy5rZXJuZWwub3JnL2RvYy9odG1sL2xhdGVzdC9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL3N1Ym1pdHRpbmctcGF0Y2gNCj4gZXMuaHRtbCNpLWZvci1wYXRj
+aC1zdWJtaXR0ZXJzDQo+IA0KPiBNaXNzaW5nICdzJy4NCj4gDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBLZXZpbiBDaGVuIDxrZXZpbl9jaGVuQGFzcGVlZHRlY2guY29tPg0KPiA+IC0tLQ0KPiA+
+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9tZmQvYXNwZWVkLWxwYy55YW1sICAgfCAzNg0KPiAr
+KysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAzNiBpbnNlcnRpb25zKCsp
+DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
+L21mZC9hc3BlZWQtbHBjLnlhbWwNCj4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
+aW5ncy9tZmQvYXNwZWVkLWxwYy55YW1sDQo+ID4gaW5kZXggNWRmZTc3YWNhMTY3Li4zNjc4NDdi
+ZDdlNzUgMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
+L21mZC9hc3BlZWQtbHBjLnlhbWwNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvbWZkL2FzcGVlZC1scGMueWFtbA0KPiA+IEBAIC0xNDksNiArMTQ5LDM1IEBAIHBh
+dHRlcm5Qcm9wZXJ0aWVzOg0KPiA+ICAgICAgICAtIGludGVycnVwdHMNCj4gPiAgICAgICAgLSBz
+bm9vcC1wb3J0cw0KPiA+DQo+ID4gKyAgIl5scGMtcGNjQFswLTlhLWZdKyQiOg0KPiA+ICsgICAg
+dHlwZTogb2JqZWN0DQo+ID4gKyAgICBhZGRpdGlvbmFsUHJvcGVydGllczogZmFsc2UNCj4gPiAr
+DQo+ID4gKyAgICBkZXNjcmlwdGlvbjoNCj4gPiArICAgICAgVGhlIExQQyBwY2MgaW50ZXJmYWNl
+IGFsbG93cyB0aGUgQk1DIHRvIGxpc3RlbiBvbiBhbmQgcmVjb3JkIHRoZQ0KPiBkYXRhDQo+ID4g
+KyAgICAgIGJ5dGVzIHdyaXR0ZW4gYnkgdGhlIEhvc3QgdG8gdGhlIHRhcmdldGVkIExQQyBJL08g
+cG90cy4NCj4gPiArDQo+ID4gKyAgICBwcm9wZXJ0aWVzOg0KPiA+ICsgICAgICBjb21wYXRpYmxl
+Og0KPiA+ICsgICAgICAgIGl0ZW1zOg0KPiA+ICsgICAgICAgICAgLSBlbnVtOg0KPiA+ICsgICAg
+ICAgICAgICAgIC0gYXNwZWVkLGFzdDI2MDAtbHBjLXBjYw0KPiA+ICsNCj4gPiArICAgICAgcmVn
+Og0KPiA+ICsgICAgICAgIG1heEl0ZW1zOiAxDQo+ID4gKw0KPiA+ICsgICAgICBpbnRlcnJ1cHRz
+Og0KPiA+ICsgICAgICAgIG1heEl0ZW1zOiAxDQo+ID4gKw0KPiA+ICsgICAgICBwY2MtcG9ydHM6
+DQo+IA0KPiBNaXNzaW5nIHZlbmRvciBwcmVmaXgNCk9LLCBzbyBJIG5lZWQgdG8gYWRkIHRoZSB2
+ZW5kb3IgcHJlZml4IHN1Y2ggYXMgImFzcGVlZCxwY2MtcG9ydHMiLiBSaWdodD8NCkJ1dCBJIHdh
+bnQgdG8gY2hlY2sgdGhlIHNub29wLXBvcnRzIHVzYWdlLiBJbiB0aGUgSFcgY29udHJvbGxlciwg
+dGhlIHVzYWdlIHNob3VsZCBiZSB0aGUgc2FtZS4NCk5vdCBvbmx5IGFzcGVlZCBidXQgbnV2b3Rv
+biwgdGhlcmUgZXhpc3QgYSBIVyBtb2R1bGUgZm9yIHRoZSBzbm9vcC1wb3J0cyBvciBwY2MtcG9y
+dHMgdXNhZ2UuDQoNCj4gDQo+ID4gKyAgICAgICAgJHJlZjogL3NjaGVtYXMvdHlwZXMueWFtbCMv
+ZGVmaW5pdGlvbnMvdWludDMyLWFycmF5DQo+ID4gKyAgICAgICAgZGVzY3JpcHRpb246IFRoZSBM
+UEMgSS9PIHBvcnRzIHRvIHBjYw0KPiANCj4gRGVzY3JpcHRpb24gaXMgdG9vIHZhZ3VlLiBXaHkg
+d291bGQgd2UgZW5jb2RlIEkvTyBwb3J0cyBhcyBzb21lIG51bWJlcnMNCj4gaW5zdGVhZCBvZiBH
+UElPcyBmb3IgZXhhbXBsZT8gSWYgdGhlc2UgYXJlIHBvcnRzLCB3aHkgdGhpcyBpcyBub3QgYSBn
+cmFwaD8NCkZvciB0aGUgcG9ydC1tbWFwZWQgSS9PIGluIHg4MCBhcmNoaXRlY3R1cmUsIEJNQyBu
+ZWVkIHRvIGhhbmRsZSBzcGVjaWZpYyBwb3J0IEkvTyBpbiB0aGUgcmVsYXRpdmUgSFcgbW9kdWxl
+Lg0KU28sIEkgbmVlZCB0byBhZGQgdGhlIHBjYy1wb3J0cyBwcm9wZXJ0eSBhcyB0aGUgc25vb3At
+cG9ydHMgcHJvcGVydHkgaW4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9h
+c3BlZWQtbHBjLnlhbWwNCg0KPiANCj4gTWlzc2luZyBjb25zdHJhaW50cyAtIG1pbi9tYXhJdGVt
+cywgZGVmYXVsdHMsIG1pbmltdW0vbWF4aW11bSBldGMuDQpUaGUgcG9ydC1tbWFwZWQgSS9PIGlz
+IGRlZmluZWQgZnJvbSBob3N0LCBCTUMgYXMgdGhlIGRldmljZSB3b3VsZCBjYXB0dXJlIHRoZSBw
+b3J0IEkvTyBmcm9tIHRoZSBwY2MtcG9ydHMgcHJvcGVydHkgZGVmaW5lZCBpbiBkdHMuDQoNCj4g
+DQo+ID4gKw0KPiA+ICsgICAgcmVxdWlyZWQ6DQo+ID4gKyAgICAgIC0gY29tcGF0aWJsZQ0KPiA+
+ICsgICAgICAtIGludGVycnVwdHMNCj4gPiArICAgICAgLSBwY2MtcG9ydHMNCj4gPiArDQo+ID4g
+ICAgIl51YXJ0LXJvdXRpbmdAWzAtOWEtZl0rJCI6DQo+ID4gICAgICAkcmVmOiAvc2NoZW1hcy9z
+b2MvYXNwZWVkL3VhcnQtcm91dGluZy55YW1sIw0KPiA+ICAgICAgZGVzY3JpcHRpb246IFRoZSBV
+QVJUIHJvdXRpbmcgY29udHJvbCB1bmRlciBMUEMgcmVnaXN0ZXIgc3BhY2UgQEANCj4gPiAtMTc2
+LDYgKzIwNSwxMyBAQCBleGFtcGxlczoNCj4gPiAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwxPjsN
+Cj4gPiAgICAgICAgICByYW5nZXMgPSA8MHgwIDB4MWU3ODkwMDAgMHgxMDAwPjsNCj4gPg0KPiA+
+ICsgICAgICAgIGxwY19wY2M6IGxwYy1wY2NAMCB7DQo+ID4gKyAgICAgICAgICAgIGNvbXBhdGli
+bGUgPSAiYXNwZWVkLGFzdDI2MDAtbHBjLXBjYyI7DQo+ID4gKyAgICAgICAgICAgIHJlZyA9IDww
+eDAgMHgxNDA+Ow0KPiA+ICsgICAgICAgICAgICBpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMTQ1IElS
+UV9UWVBFX0xFVkVMX0hJR0g+Ow0KPiA+ICsgICAgICAgICAgICBwY2MtcG9ydHMgPSA8MHg4MD47
+DQo+IA0KPiBTbyB3aGF0IDB4ODAgc3RhbmRzIGZvcj8NCkhvc3QgYXMgeDg2IGFyY2hpdGVjdHVy
+ZSB3b3VsZCBhY2Nlc3MgdGhlIDB4ODAgcG9ydCwgd2hpY2ggaXMgbWFwcGVkIHRvIHRoZSBCTUMg
+UENDIEhXIG1vZHVsZS4NCkFzIGEgcmVzdWx0LCB4ODYgY2FuIGtlZXAgdGhlIHBvcnQtbW1hcGVk
+IEkvTyB1c2FnZSBhbmQgYWNjZXNzIHRoZSBCTUMgZGV2aWNlLCB3aGljaCBpcyBuZWVkZWQgdG8g
+a25vdyB3aGljaCBwb3J0IHVzaW5nIGluIHRoZSBQQ0MgbW9kdWxlIGluIEJNQy4NCg0KPiANCj4g
+DQo+IEJlc3QgcmVnYXJkcywNCj4gS3J6eXN6dG9mDQo=
 
