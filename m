@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-970-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-971-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21470C282DE
-	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Mar 2025 11:42:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EC0FC282DE
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Mar 2025 11:43:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBFPS51H3z2ykX;
-	Mon, 10 Mar 2025 22:42:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBFQj73VPz2ykX;
+	Mon, 10 Mar 2025 22:43:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741606956;
-	cv=none; b=nnKyV/sBUCpWGE1CEINDd+eT7Im1ALsq338d4yBOqeWpPERFqZZCtgT+lJtzfXlUDOfYgw9RWSCkKwqc4vmRKCQe5sG51Ok9pLj+ZP+JE1f28SEW+fo6xn6uavsB0u8kMJcBjWpXDOWfDdeZbpKmfQ6b0HR9RQ8OpPSzzIQvl3DIK0ut4bLOfMa5evrFJHv2d8VNiT8pw3EYeReoH4cR4795TRgn2hDbbXHAj8BJ3j93uYITiZHAw4uM4aRtBaPJzkCzn56hWQYT+bdurMOo1hwOcCnUZJiB9s1NYCMXe/ZZgbP626t39uWIv24qs1PZJsBYvoUJsqJcFIIB/flm9w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741607021;
+	cv=none; b=eWY/PJcgAg3Fxw8SPKN9deGwg7hA++oZ38SS+ZUELuESCqrttLaA0ssw21qRz+ur5+52Meyjo9XxSbtlfJQ5Hfor19+2ND6uYBMNLLrdFdJFnML8ABWtVH+F6rnf2hSSj5bFPmddCJoLdJLs3AKF8cLrtD5rpXwKS6eKqrq9+psw8sBndtKEW9O//gki06jbPSdPexrsvA/Z5Jtei/Dv5s1Gchm7SxF6tmCx4P+tY7dhdYYsNuxPqEa7gVUue5F/KdrPftpMkfGFI2dU99CZ+4zitjuETeIOBqYYeLGjn7Av7lg6N648OJiqizBA2g9/PUQ+weWAtxfIrshxb3bXVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741606956; c=relaxed/relaxed;
-	bh=cNa329GU5JBW03qZLl7qSW/q+TmVSO17f3aGzGoB63w=;
+	t=1741607021; c=relaxed/relaxed;
+	bh=/jk1eNce9YdaDO4hTP3Q8VPdC5qG8RIvP2AOzDClGpE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=BR2SvSxxS4obPah4PdvDMqfRHt0ZsqI2QErSTRAFitoA0GIpVN11ZnN62mLDe+HxjD5o/bcE8DZYTafBO5l+7w9mE/te2t68oxCTRcMlg9bAMg9dPA4v7HJGz0TuRbQqhB2bKc4CqTFNf7YzEnnVvS5Oo/pMOqOAujPIO6DRcj5E0li3pdHSmqN26oLjM4mXMwE8AgRqkffk1MgUyTIP26cfrfYUB5drxOC6POV2tF6DzHg8yv/+T6bJJVPmUCnv02H2/OHATHtBNswwAMVgEV7rn3WkTsapIRV67YeKTH/gj/4tcy7slhKFDs82YMfgAIqqujxCyHLvUTa5TlYAYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dy+BQ3th; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=nXgdZbZc09B7++N1buRM5slFD/6y2DXGMKEMglBHOz+7uHH/OMoQaeb+7dT8OCMX1WH1GE999EkBfe9m5yzSleS4PxfHwbPVIpaWhJVS+5XT6NAleuIj3DHOHcB+Yrm+giRZ1KsDhA26qHSHBO1F9Ch3ciOYqhiY3lIKNIeySVbTTV9vdbBgmZiwt53x6Bo+OJOV9joi13K82tas+PGPNgfFjPdVZVaJ57OI74KbShusNlIpKNjlxyLeL98jynBz+8bSSiHeXDNyBuDyvZuX8XB4pENeDtTZNa9N5ULv2IeCAQvbqkLHeJi02Urq1CpAejGC/ZXifcmcN0sXyZu65w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y1fF+ejS; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dy+BQ3th;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y1fF+ejS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBFPR5qDDz2xy7
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Mar 2025 22:42:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBFQj08Hdz2xy7
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Mar 2025 22:43:41 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 162EE5C5F77;
-	Mon, 10 Mar 2025 11:40:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 215A7C4CEE5;
-	Mon, 10 Mar 2025 11:42:26 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 81AD25C5F48;
+	Mon, 10 Mar 2025 11:41:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9FDCC4CEE5;
+	Mon, 10 Mar 2025 11:43:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1741606952;
-	bh=YloHviLRFlUFPEF9ijYfWaGssLrwGDxErOdmeO+w8Ic=;
+	s=k20201202; t=1741607019;
+	bh=tQwFxFodDyYLTyLCaNMHIBv2+xezKs5dn2xjZoV+LO8=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=dy+BQ3thZ59bMEEOmG5gyz2x5bgCXFrZhcyuAki0f4jEJdpIXz8heytHO1OKRZp39
-	 d+2zBy7yet3ekB6qcepXnxXPsXjkYimxYnjzIDTOMG4nRS4dr2H9TByKzBnzR9FpoD
-	 esmNAz0+yAoxPbE7ebA7hXpOgGnY4OvSnTh+Fat07d3r9hGK754HbK+exVu7VF7Ula
-	 9deHSmqm3/g5BSUfgJpJi3udFnPbEUjnViBQXrvlZpUcuF9PRADMYUwpwPfS0+4gw7
-	 VdlBLr4CNBGp1ayaYIxBZv5xirr03PLMht53ckDW9eyM+GZ7GpLvA0Bc2mIhDsddHQ
-	 r77ZQ8PvT73mA==
-Message-ID: <a12afc26-2e8e-42cc-ac68-27ba8906707f@kernel.org>
-Date: Mon, 10 Mar 2025 12:42:23 +0100
+	b=Y1fF+ejSeQjhZG03rGEzTxp4uHwG4FJ88H+cfBpnOWdfhlXWFidYySRC0n7RvTvY8
+	 o78WgeYmEpny+6uUDNOEAM4GBB56bsnkguIYCeaAJDgmdYZ9IbxZiogpahqH2Rtynb
+	 UdI36etroRrla+LhumrlCCR1Dmdc2Z/6RdfAp6kv/Lb9F8vKZHT740yXpJXvU04MVJ
+	 0PA/LAXPiuLAr2gmuVNGQ8bQW+RqKEZXJC+pQZdsZbSqBKMStOFVYJO2GSRquFZ9lZ
+	 ubOB9bhKTjJ51nuW3AEa8PGsaROhbykS+YoofW9AbNWH485bqFvsdB7lZNOICaiNgL
+	 0zb9KBCim9gnQ==
+Message-ID: <58466532-3e17-4968-bade-210f478ccc76@kernel.org>
+Date: Mon, 10 Mar 2025 12:43:29 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,7 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/3] dt-binding: aspeed: Add LPC PCC controller
+Subject: Re: [PATCH v2 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
 To: Kevin Chen <kevin_chen@aspeedtech.com>, "lee@kernel.org"
  <lee@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
  "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
@@ -73,14 +73,11 @@ To: Kevin Chen <kevin_chen@aspeedtech.com>, "lee@kernel.org"
  "linux-arm-kernel@lists.infradead.org"
  <linux-arm-kernel@lists.infradead.org>,
  "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Mo Elbadry <elbadrym@google.com>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 References: <20250304104434.481429-1-kevin_chen@aspeedtech.com>
- <20250304104434.481429-2-kevin_chen@aspeedtech.com>
- <8740eeb8-9467-48bb-a911-e70c3da3c45a@kernel.org>
- <PSAPR06MB494973DC08A8105EA05FBE6D89D62@PSAPR06MB4949.apcprd06.prod.outlook.com>
- <e17cdf9d-ba96-41d2-9656-9e50d0e0795a@kernel.org>
- <TY0PR06MB496045B19DCB149EC902D0FF89D62@TY0PR06MB4960.apcprd06.prod.outlook.com>
+ <20250304104434.481429-4-kevin_chen@aspeedtech.com>
+ <2fd83d68-7104-4755-a0f0-8ce4a2601e09@kernel.org>
+ <TY0PR06MB496072786197162F19ED7DDD89D62@TY0PR06MB4960.apcprd06.prod.outlook.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -126,32 +123,42 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <TY0PR06MB496045B19DCB149EC902D0FF89D62@TY0PR06MB4960.apcprd06.prod.outlook.com>
+In-Reply-To: <TY0PR06MB496072786197162F19ED7DDD89D62@TY0PR06MB4960.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 10/03/2025 10:49, Kevin Chen wrote:
->>>>> +            compatible = "aspeed,ast2600-lpc-pcc";
->>>>> +            reg = <0x0 0x140>;
->>>>> +            interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
->>>>> +            pcc-ports = <0x80>;
->>>>
->>>> So what 0x80 stands for?
->>> Host as x86 architecture would access the 0x80 port, which is mapped to the
->> BMC PCC HW module.
->>> As a result, x86 can keep the port-mmaped I/O usage and access the BMC
->> device, which is needed to know which port using in the PCC module in BMC.
+On 10/03/2025 11:05, Kevin Chen wrote:
+>> On 04/03/2025 11:44, Kevin Chen wrote:
+>>> +
+>>> +static int aspeed_pcc_probe(struct platform_device *pdev) {
+>>> +	int rc;
+>>> +	struct aspeed_pcc_ctrl *pcc;
+>>> +	struct device *dev;
+>>> +	uint32_t fifo_size = PAGE_SIZE;
+>>> +
+>>> +	dev = &pdev->dev;
 >>
->> And on different boards this is not 0x80?
-> The port-mmaped I/O defined in the intel legacy document as the example usage.
-> For example, the common usage agreement of port-mmaped I/O are the following. But this setting can be modified due to the host usage. We provide the flexibility to modify the I/O port settings.
-> KCS : 0xCA2(CMD)/CA3(Data)
-> BT : 0xE4/E5/E6
-> SNOOP/PCC : 0x80/81/82/83
-> Mailbox : 0xCC0
-> SuperIO : 0x2E/2F or 0x4E/0x4F
-> System UART : 0x3F8/2F8/3E8/2E8
-So which boards have it modified?
+>> This goes to declaration.
+> OK. I will move it to declaration.
+> 
+>>
+>>> +
+>>> +	pcc = devm_kzalloc(&pdev->dev, sizeof(*pcc), GFP_KERNEL);
+>>
+>> Maybe my previous comment was not clear, but you agreed with it. Anyway
+>> nothing improved here.
+> Could I reserve the pcc variable using for the pcc_ctrl data structure?
+> Pcc_ctrl data include the regmap/irq/io_port/dma/kfifo.
+> If I change the name to dev, it does not make sense for these data to be.
+> 
+>>
+>> If you have 'dev' variable, use it.
+> Do you mean just use the pdev->dev not local dev variable?
+What is the point of this:
+dev = &pdev->dev;
+
+if you do not use 'dev'? If you come with a reason, sure. If you do not
+have such, then everything should use 'dev', not pdev->dev.
 
 Best regards,
 Krzysztof
