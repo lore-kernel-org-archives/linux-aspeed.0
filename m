@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-978-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-979-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93D0AC28B2E
-	for <linux-aspeed@archiver.kernel.org>; Tue, 11 Mar 2025 07:33:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D616C28B2F
+	for <linux-aspeed@archiver.kernel.org>; Tue, 11 Mar 2025 07:34:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBlpz14KKz3bmN;
-	Tue, 11 Mar 2025 18:32:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741678379;
-	cv=none; b=T6phHoibVQvFMOaL9EB9sM4kn2HfeanQc5gvvR0IMMmOgum/LSLUpWVVcDZMcdbkWMvHs3X5QwAawT1Gy7wP1OczLGvkDlG8QbRKF/e3jCyCjQhrhPwOgXYGJ9S1lgJ7XOf4bstlShLDfyDiSb30gIYqOZYGZ+ew1www6/9ESUld0smd7iIcl/0wFoaJpCN8QPeWpGlQczejbBOJzvWPA3Iu1PYIKZCwEvqMxCQn2WK8HSBUoIfMXKTl72doKmylnxWQTETIt35MUNJj6fXbTaTkzpqO3+YIr3ehkAd7nzvVkb3BqpuCsje6wSGFX3JgSOedmwjXbPMo/qYHpDXbyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBlsG2C2wz3bmf;
+	Tue, 11 Mar 2025 18:34:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741678498;
+	cv=none; b=bzRXhDVxyU6JAWAgkzEzKXFRpMD9Y5y8wk1ClInY50av75qQntRzTVV0rmnhfDDCLBIUU9sS33FD3EueM9VQMjYSuamd52Wm6Yq/32Vlno/UIEvIiW6CLSfvgW+TnbQnX/IEy00BZyMEHZgniuu39QfGVEdKn4l0PMcBNX/1y93Bk1mr7+lGxiWhEeN/al4f4kL1Kco1efb3SS1e//t4DEv6bwOni1uprp7K4lqXXxErUrWNVCRcnveLSoLV8R35yDail2azY+8MN9Bs6ZOdNfLIfsDytmk3aWjWX5yyocWqHHt9fGqlacQAiaHGa1I1B3ZM3mK3nbSUVXbm/DAJkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741678379; c=relaxed/relaxed;
-	bh=0aDEyxmAvSbFP0m6XTzeM8qB7MBBDVrXivnGog3viH4=;
+	t=1741678498; c=relaxed/relaxed;
+	bh=L1mvUPTMlzS5MK+oJKCmujIlWmPMPrf8qizbNHkT0po=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=gAKt20y5FZ5CwxORxcVQs8cMVCygaX6CHrQqENRcXqAo56bbBrsvADa77o2FfJJ0uX7NJT7pJ+uL5FCq7eQS5YwBuOBPAu2dVeyD6HWve/q1+FzntuDHOtdDyTU0LdEbYZtBkskd1i1KXDWiw1A3K/7ENMhD6PZGUrp5vuhsJjKZ24S5bYpwRCqSTbhHkW36al2gCjujdAM1Pa3m3Qyjz6QDlZoRsHEZpOVgVgyVwmmMfhXEFR7vt20Ye8sXmYwuij0jgJufzyAcSWSh+4+sx4itoke/KLU+J8ePUUOIJb02t/BwWwrC3JevOL0y0OZ9/H141XLt7PyWMqW/622nmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oHEozVXL; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=cezqotSNTBQwJww8Y7xpqfLtN0yxCrdEADrbNu9venabeDtVzwIRowswHMwFucxJUU6rMrarjQIJ2UX7QLnuG8gQOHPydJgFT+phMqM5COwN174XXuGLXcJYrBa8O/QXVUnb9I4anWHPoaI+3lBq2w1uN/O37Zoh5Omzdtc8daCi4Jqcn4ns6KvXpJ2/+y3F2HKzkh7NO3OW8SyhTJs90Z81iSnIxg8ZZSGtcvMVzI5TPXPmqJvBQJ4ld8yEyKygQlw21YsQt0w61eIRl2XNQ7YgRELGHk2rvenlWSQajToZYliDkqAhwDmEb09ZzOpCXh5kn+bfeuOcTgq9B25tnw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Go4JXtJJ; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oHEozVXL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Go4JXtJJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBlpy1VlQz3bmJ
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Mar 2025 18:32:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBlsD5F9Zz3bmJ
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Mar 2025 18:34:56 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 9941BA46871;
-	Tue, 11 Mar 2025 07:27:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66E5DC4CEE9;
-	Tue, 11 Mar 2025 07:32:50 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id F07755C4D45;
+	Tue, 11 Mar 2025 07:32:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81256C4CEF1;
+	Tue, 11 Mar 2025 07:34:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1741678375;
-	bh=eq1zDERNnHCEBXKhMKABIiOPB5489qmkacw1l2N8o+k=;
+	s=k20201202; t=1741678494;
+	bh=wg4YeqiedkYDu3lKghALGd0dLR7nHsUD6V3DaDuourY=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=oHEozVXLIaIOh0FquEgNapuhQD4+gHPUCvtvrHfmgXV5dH1cmCakA2epJjRgmWsef
-	 /GOxWt+JjFIJ0uDAGahT7BzW459Ulwp33TkRwBJ8kj4dELnblWdVnHF4N0D+m2wVln
-	 Cz72loZzPS03pbmFweRGX/GXxzPu0Q1xrW2pdsrRQivwT5ce1y59Lq9sZIaqdytgGF
-	 xyVEqUMSecnXiTNnzkOwcatmyLdSHhRotA0lJxTqhyiwhT4uM9cqh7tEV8Wz5NOtDJ
-	 yBxeD/uOML3fBpzv19oBrIn12S1078QYLC6T2m3iKSoofl0hYHXZidyhPILNYb2wp8
-	 XqvD1/hZLiACA==
-Message-ID: <5d14e715-7940-4f1b-ab79-860ada066072@kernel.org>
-Date: Tue, 11 Mar 2025 08:32:47 +0100
+	b=Go4JXtJJ9gcw5EXueFYSF68kMoS7kIGslH/44LM4z2SDkDs9EwoYgqefiDjTSm/x3
+	 1mleB1CI41XUYyNHJZTicmiYrtHhwXe+LYINg8A0SMVJTefD0nJKe7K5uZTBmAt0rW
+	 WBxA1xaPimtk7NcNJgr7+/kmK9tSqx/5wQH1a0h8KGwYaOwrsCV1ZuStLmDIBqLxsr
+	 DsTCwfeLnSdaksWJlCUJfshx2MUz5JEwUDxFDi0iSjR2QOnLBC5/Vydty0FKkbQsSF
+	 YPEXhtUcMa2JqZXYA78oxY+1OOmHIx8oE4QH6N4Fp6Sw+KwVkUuJ2c6tZGneXfiSqe
+	 pvWGdyc/uwijg==
+Message-ID: <0e30c12f-5ac5-4008-8cc8-ec4111520655@kernel.org>
+Date: Tue, 11 Mar 2025 08:34:47 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,7 +59,7 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 1/3] dt-binding: aspeed: Add LPC PCC controller
+Subject: Re: [PATCH v3 3/3] soc: aspeed: lpc-pcc: Add PCC controller support
 To: Kevin Chen <kevin_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
  krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
  andrew@codeconstruct.com.au, derek.kiernan@amd.com, dragan.cvetic@amd.com,
@@ -67,7 +67,7 @@ To: Kevin Chen <kevin_chen@aspeedtech.com>, lee@kernel.org, robh@kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 References: <20250310114839.3098148-1-kevin_chen@aspeedtech.com>
- <20250310114839.3098148-2-kevin_chen@aspeedtech.com>
+ <20250310114839.3098148-4-kevin_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -113,75 +113,76 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250310114839.3098148-2-kevin_chen@aspeedtech.com>
+In-Reply-To: <20250310114839.3098148-4-kevin_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 10/03/2025 12:48, Kevin Chen wrote:
-> Add dt-bindings for Aspeed for Aspeed LPC POST code capture controller.
-
-
-<form letter>
-This is a friendly reminder during the review process.
-
-It seems my or other reviewer's previous comments were not fully
-addressed. Maybe the feedback got lost between the quotes, maybe you
-just forgot to apply it. Please go back to the previous discussion and
-either implement all requested changes or keep discussing them.
-
-Thank you.
-</form letter>
-
-> 
-> Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
-> ---
->  .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 38 +++++++++++++++++++
->  1 file changed, 38 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-> index 5dfe77aca167..178c151a19ba 100644
-> --- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
-> @@ -149,6 +149,37 @@ patternProperties:
->        - interrupts
->        - snoop-ports
->  
-> +  "^lpc-pcc@[0-9a-f]+$":
-> +    type: object
-> +    additionalProperties: false
+> +static int aspeed_pcc_probe(struct platform_device *pdev)
+> +{
+> +	int rc;
+> +	struct aspeed_pcc_ctrl *pcc;
+> +	struct device *dev = &pdev->dev;
+> +	uint32_t fifo_size = PAGE_SIZE;
 > +
-> +    description:
-> +      The LPC pcc interface allows the BMC to listen on and record the data
-> +      bytes written by the Host to the targeted LPC I/O pots.
+> +	pcc = devm_kzalloc(dev, sizeof(*pcc), GFP_KERNEL);
+> +	if (!pcc)
+> +		return -ENOMEM;
 > +
-> +    properties:
-> +      compatible:
-> +        items:
-> +          - enum:
-> +              - aspeed,ast2600-lpc-pcc
-> +
-> +      reg:
-> +        maxItems: 1
-> +
-> +      interrupts:
-> +        maxItems: 1
-> +
-> +      pcc-ports:
-> +        $ref: /schemas/types.yaml#/definitions/uint32-array
-> +        description:
-> +          As a device handshake with a host using the port-mmaped I/O in x86
-> +          architecture, need to handle specific which port I/O address for use.
+> +	pcc->regmap = syscon_node_to_regmap(dev->parent->of_node);
+> +	if (IS_ERR(pcc->regmap)) {
+> +		dev_err(dev, "Couldn't get regmap\n");
 
-<form letter>
-This is a friendly reminder during the review process.
+return dev_err_probe() is not suitable?
 
-It seems my or other reviewer's previous comments were not fully
-addressed. Maybe the feedback got lost between the quotes, maybe you
-just forgot to apply it. Please go back to the previous discussion and
-either implement all requested changes or keep discussing them.
+> +		return -ENODEV;
 
-Thank you.
-</form letter>
+Why overriding error code?
+
+> +	}
+> +
+> +	rc = of_property_read_u32(dev->of_node, "pcc-ports", &pcc->port);
+> +	if (rc) {
+> +		dev_err(dev, "no pcc ports configured\n");
+> +		return -ENODEV;
+
+Why overriding error code?
+
+You got this comment already at v2.
+
+> +	}
+> +
+> +	rc = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+> +	if (rc) {
+> +		dev_err(dev, "cannot set 64-bits DMA mask\n");
+> +		return rc;
+> +	}
+> +
+> +	pcc->dma.size = PCC_DMA_BUFSZ;
+> +	pcc->dma.virt = dmam_alloc_coherent(dev,
+> +					    pcc->dma.size,
+> +					    &pcc->dma.addr,
+> +					    GFP_KERNEL);
+> +	if (!pcc->dma.virt) {
+> +		dev_err(dev, "cannot allocate DMA buffer\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	fifo_size = roundup(pcc->dma.size, PAGE_SIZE);
+> +	rc = kfifo_alloc(&pcc->fifo, fifo_size, GFP_KERNEL);
+> +	if (rc) {
+
+Drop {}
+
+> +		return -ENOMEM;
+> +	}
+> +
+
+Please run scripts/checkpatch.pl and fix reported warnings. After that,
+run also `scripts/checkpatch.pl --strict` and (probably) fix more
+warnings. Some warnings can be ignored, especially from --strict run,
+but the code here looks like it needs a fix. Feel free to get in touch
+if the warning is not clear.
 
 
 
