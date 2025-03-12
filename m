@@ -1,51 +1,61 @@
-Return-Path: <linux-aspeed+bounces-981-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-982-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E37C2C28B28
-	for <linux-aspeed@archiver.kernel.org>; Wed, 12 Mar 2025 07:49:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57560C28B28
+	for <linux-aspeed@archiver.kernel.org>; Wed, 12 Mar 2025 12:12:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZCN7Z2p1gz3bvW;
-	Wed, 12 Mar 2025 18:49:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741765770;
-	cv=none; b=PZaaWPhu5VLnry+vBGVHK9aBme+wBxo5HtPsaitMxUPnr6TK1YgmKfRsKTWoopNE4tF6SKL3PErKZtsajKTOIlgFVS9UWha5Dq+asZVPHVfbJvwJTZfqroCh5alpw/xzP/d9qbc+WaxG116zgZd/UxJ48kz6p9sIR1q+uy/S8D/pkMKKhr8OMIyACoXYO+6d7P2Gd5ikdob4OcdVJmvHEKOhSTqA2pSiPp/0xvgvEziBnw26MYOrL4zYS0PhTevZ4R8ZYxtskuw3JbX3TE2fDnBI/luFr+XIOYLlDcZAKIIGQVgkE1b7Ho2csssTsb7lVVt90UVemHQttLCmZX5w/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZCTyl6hMhz3btk;
+	Wed, 12 Mar 2025 23:12:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741781535;
+	cv=none; b=lPCHrY+TCjSN8HWxEgCu8/ID8P8LGU3OKXMm/ipVPO5/0UpdwJtJP6JyyswfzWo/6wX+99mYuRSDkZc9mK98Spcwehf4n2mWzT1N0AIEgOeW5G85BzcTZWkFZbySOnVaIMuZzAXFAbQzPinHgNbxXOzxu1Sq7TSNWzU+2Dz4wOqUEr+MwmLqpiKsIXkQlch64AtBkxpxN8HMixcVIac0JEeJdHSaCkVvGIqbFKieX/xXX+0QwScVX2gizD8uVTKPUHGsIoi+tWF66caem1typViqNFm3AVqm+U2c3tNQcHLR2oMgL1LC87IrhwXrBvHfTouIOXsqB1XqAG6OpUotVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741765770; c=relaxed/relaxed;
-	bh=ov0fONSpayVHwQ6jSzoajrZju77Qrn6jIk0Ptu1/rrE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SolSAHkk38Hy4rWicz6BZx3WDcDXjnD/i3v1q3V7z6Ay6FGH3CsvCwTucfJOvYPs6qZZJfdp8j6l4iJFKFO+vLDllfjh/r9E8aNyZCjK6s0j4SuiIxsssAO4BJpVso3lgBKs0oDpYBuhfVIPbLhDRiKrQKf4XyVpFdVwkUcx0AOE4bZDistkgE1YGZGM/EtpQP3wG4x7b632u1lyBjRuCJHEI3UcjJ5CyjkokOh22wPGFcXeDzIZHv61eiPmh6SIf4xY+pd5bSmTJmKT0UvhpHGxUHeAvaZCFY5igloqmIsT1TJ1ZXXpteTUGsGZhLpWhYi19BJFhG5eKrReJOtqnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mROqzmIl; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1741781535; c=relaxed/relaxed;
+	bh=YuyUiiI7ZFuPPHGTzB32+a5/wwkD8Jfy7CZVbltjHtA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=US3o8vTVRvY2ZQVOo+eZMbi+3v4rE5xpdDYameMSLfuqrU8TxswDWrKaKF4ZKHmF1Tic9jtvXzGMXTA/lNac+jwZGZ4kjOBoi1P5jLcLi+pHxBtJzLw3bNEIZ6fNp4rmMly70JN/hGU8sPGYUrFo/v8bwTpXaFxS7bWtJAwA3Ff74AhzVxJy6iTaC+ctK/BKD/5d92zsHJw43erHiID5CyqPfXnC0Mu4cpNxfJAYLS9tW8GU3/oXnu7yGZoIXka0nIMjEYanWXSNVCsZ30yVS6Jp7Vcu4MfbQOyNBKd0puRrhx3ptkEu+V5CXDMW/YTAIq8JwP9fXO7mz1WI8kbl1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=eMKAcuAn; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mROqzmIl;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=eMKAcuAn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZCN7X3VMGz3blv;
-	Wed, 12 Mar 2025 18:49:28 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 06576A4533D;
-	Wed, 12 Mar 2025 07:43:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7DA4FC4CEE3;
-	Wed, 12 Mar 2025 07:49:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1741765765;
-	bh=1OUgy1SKRvO1iDshS78QTSNzbpvJr1KyphHwa0nzMCU=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=mROqzmIlUBN82sBxeHnw6zvf6fYn5KVJ3MdADKa+tTWZT1uwZykUKVjQC65kOQ6HB
-	 QhZlXdXiptmDO+e438/JQK+AL0HdEPU8Gw+jBz5LdRXosXfFgs4zOXNU+4TovGq3oF
-	 vKge6cB8r5W/7ZDTsVOH6UOL+BvwRevETJUeRo0A9PYjkjR2hkpJEdGAsFpHsV/u/w
-	 G3Oi+5wKJT4tcd+Hodp8uPqb7WjQ+10PICaoMpdRSP2xpcXhq/MV0JIXsBCGkzPwNu
-	 CCbD9A9HucjAHL7hiLNwrDTgNA+U6RrrtaJPb979YIM1LvX0SszDSjeEiOeX78nERZ
-	 HMWM3N4V0f1HQ==
-Message-ID: <93bb3092-7f49-4a7f-ac97-3cf1a62ac39d@kernel.org>
-Date: Wed, 12 Mar 2025 08:49:16 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZCTyj4hNHz3bmf
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 12 Mar 2025 23:12:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=YuyUiiI7ZFuPPHGTzB32+a5/wwkD8Jfy7CZVbltjHtA=; b=eMKAcuAn2Tef46O2sREbd5JusY
+	LdZ7uMoXii7OgFq2XCG/PvANlVkUthXXopVpdbVF4KS1LzveZh1HFUpIPonEMVHBAg344Ko/Mq8We
+	I1yJauwZk1lslPLU35cn7dyV4rPgR19UmaU5x8cvODdxJrSF4CQFX4jok7x3mDI8j0u4=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1tsKw8-004ebX-Q4; Wed, 12 Mar 2025 13:11:48 +0100
+Date: Wed, 12 Mar 2025 13:11:48 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Willie Thai <wthai@nvidia.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	joel@jms.id.au, andrew@codeconstruct.com.au, kees@kernel.org,
+	tony.luck@intel.com, gpiccoli@igalia.com,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-hardening@vger.kernel.org, openbmc@lists.ozlabs.org,
+	leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com,
+	maryang@nvidia.com, pmenzel@molgen.mpg.de,
+	Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2] ARM: dts: aspeed: Add device tree for Nvidia's
+ GB200NVL BMC
+Message-ID: <9ccc845b-9392-4a37-8bca-4f54997126ce@lunn.ch>
+References: <20250312045802.4115029-1-wthai@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,210 +68,23 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] ARM: dts: aspeed: Add device tree for Nvidia's
- GB200NVL BMC
-To: Willie Thai <wthai@nvidia.com>, robh@kernel.org, krzk+dt@kernel.org,
- conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
- kees@kernel.org, tony.luck@intel.com, gpiccoli@igalia.com,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-hardening@vger.kernel.org, openbmc@lists.ozlabs.org
-Cc: leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com,
- maryang@nvidia.com, pmenzel@molgen.mpg.de, Andrew Lunn <andrew@lunn.ch>
-References: <20250312045802.4115029-1-wthai@nvidia.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <20250312045802.4115029-1-wthai@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-On 12/03/2025 05:58, Willie Thai wrote:
-> The GB200NVL BMC is an Aspeed Ast2600 based BMC
-> for Nvidia Blackwell GB200NVL platform.
-> Reference to Ast2600 SOC [1].
-> Reference to Blackwell GB200NVL Platform [2].
-
-Missing blank line
-
-> Co-developed-by: Mars Yang <maryang@nvidia.com>
-> Signed-off-by: Mars Yang <maryang@nvidia.com>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: Andrew Lunn <andrew@lunn.ch>
-> Cc: Paul Menzel <pmenzel@molgen.mpg.de>
-> Link: Reference to Ast2600 SOC: https://www.aspeedtech.com/server_ast2600/ [1]
-> Link: Reference to Blackwell GB200NVL Platform: https://nvdam.widen.net/s/wwnsxrhm2w/blackwell-datasheet-3384703 [2]
-
-Links do not have text, I think. Just link.
-
-> Signed-off-by: Willie Thai <wthai@nvidia.com>
-> ---
-> Changes in v2:
->   - Fix the SOB name [Krzysztof]
->   - Fix warnings from scripts/checkpatch.pl run [Krzysztof]
->   - Fix DTS coding style [Krzysztof]
->   - Move pinctrl override to the bottom [Krzysztof]
->   - Drop bootargs [Krzysztof]
->   - Follow DTS coding style and change naming for leds node [Krzysztof]
->   - Change flash 0 status property [Krzysztof]
->   - Change the phy-mode to rgmii [Andrew]
->   - Remove the max-speed in mac0 [Andrew]
-> ---
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |    1 +
->  .../aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dts | 1229 +++++++++++++++++
->  2 files changed, 1230 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index 2e5f4833a073..20fd357a1ee9 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -50,6 +50,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-lenovo-hr630.dtb \
->  	aspeed-bmc-lenovo-hr855xg2.dtb \
->  	aspeed-bmc-microsoft-olympus.dtb \
-> +	aspeed-bmc-nvidia-gb200nvl-bmc.dtb \
->  	aspeed-bmc-opp-lanyang.dtb \
->  	aspeed-bmc-opp-mowgli.dtb \
->  	aspeed-bmc-opp-nicole.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dts
-> new file mode 100644
-> index 000000000000..eeec3704a43b
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dts
-> @@ -0,0 +1,1229 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/leds/common.h>
-> +
-> +/ {
-> +	model = "AST2600 GB200NVL BMC";
-> +	compatible = "nvidia,gb200nvl-bmc", "aspeed,ast2600";
-
-Missing bindings.
-
-Please run scripts/checkpatch.pl and fix reported warnings. After that,
-run also `scripts/checkpatch.pl --strict` and (probably) fix more
-warnings. Some warnings can be ignored, especially from --strict run,
-but the code here looks like it needs a fix. Feel free to get in touch
-if the warning is not clear.
-
-
-...
-
-> +	leds {
-> +		compatible = "gpio-leds";
-> +		led-0{
-
-Missing space befre {
-
-This applies everywhere.
-
-> +			label = "uid_led";
-> +			gpios = <&sgpiom0 27 GPIO_ACTIVE_LOW>;
-> +		};
-> +		led-1{
-> +			label = "fault_led";
-> +			gpios = <&sgpiom0 29 GPIO_ACTIVE_LOW>;
-> +		};
-> +		led-2{
-> +			label = "power_led";
-> +			gpios = <&sgpiom0 31 GPIO_ACTIVE_LOW>;
-> +		};
-> +
-> +	};
-> +
-> +	buttons {
-> +		button-power {
-> +			label = "power-btn";
-> +			gpio = <&sgpiom0 156 GPIO_ACTIVE_LOW>;
-> +		};
-> +		button-uid {
-> +			label = "uid-btn";
-> +			gpio = <&sgpiom0 154 GPIO_ACTIVE_LOW>;
-> +		};
-> +	};
-> +
-> +};
-> +
-> +// Enable Primary flash on FMC for bring up activity
-> +&fmc {
+> +&mac0 {
 > +	status = "okay";
-> +	flash@0 {
-> +		status = "okay";
+> +	pinctrl-names = "default";
+> +	phy-mode = "rgmii";
+> +	phy-handle = <&ethphy3>;
+> +	pinctrl-0 = <&pinctrl_rgmii1_default>;
+> +};
 
-Nothing improved.
+Please read the discussion again. "rgmii" is probably equally wrong as
+"rgmii-rxid" you had in v1.
 
-Respond to comment instead of ignoring it.
+Please talk with Aspeed and ask them the clean up the mess they made
+with RGMII delays. Until that happens, adding this node should wait.
 
-
-
-...
-
-
-> +
-> +		imux33: i2c@1 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <1>;
-> +			pca9555@21 {
-
-Node names should be generic. See also an explanation and list of
-examples (not exhaustive) in DT specification:
-https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
-
-You already got this comment. You must apply such feedback to entire
-file instead of fixing only one issue and relying on us to find all
-instances. It's your task to find all of the instances.
-
-
-Best regards,
-Krzysztof
+     Andrew
 
