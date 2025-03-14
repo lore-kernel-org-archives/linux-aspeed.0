@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-988-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-989-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E73C8C282EC
-	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Mar 2025 11:21:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C93F5C35FF1
+	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Mar 2025 11:21:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDhlJ4S0Vz2yYq;
-	Fri, 14 Mar 2025 22:21:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDhlK2hnWz2yhG;
+	Fri, 14 Mar 2025 22:21:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741951292;
-	cv=none; b=dnRHj/RxhjfPQQwcDp0ql9nxFYgisVC6hpw1Sg5uXuAup6wEzxueTfeGN2Bpm2P5Ef2jHXyF14COEkd2lTORHHXuacaeC7Hlb3L4pbNP4K7g67wSgde0it46sv+Vvo1/9vABEWLA/lgWaRcFaLDwY9bfLcD/ZJ6k8rxJF3fy+hDtk19BWmXhKj4BiLRRrUAI19q/ZlZBZQiMAMKSkYEhZvxg0eV3mtEiRb7DI5XbrXQaUschCCqEcVHJyDo19ryPvo2Gq+fE/MfFZ5Sque5Jzv7uVLOJx2TXDZMNxoi+y04tPdPRGjXHvXiPvo1mKA4CXdjJHXdxFhGTBDqWK/4RMg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741951293;
+	cv=none; b=dDkTra4fM8zWsaVQbSbhynjQmVaZh5eALtgNugo/HOi3kKWubHxp7c6FbCVlrKBqVjfJc73/OWW8eg/O1kWp3INsUhtw9geK0LbtiW8G/hhXkISu3kuHsiMSMe+Ya9STajXaZE16ScX5RMrNKnkMNyLR5pLVT3YBZlkLkJImDJvd57/cT8Pj5FK8e1O6b+UfmnmongrFI72CA1dKQSnM8nsswvwSGOfzKZxipdLojNrd02K9pYl8vzEP8dPhaL6rRgsNTPJtZux3y4xnFdFYPS8CqY0jLqMOJG0VDOWS5Po6UXPT5kH07rQ5JEnKdAgj2IGlCt8vyNab26FpduZ1TA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741951292; c=relaxed/relaxed;
-	bh=8w/NMnluLso4auUJlPLHvGrwv8C1kQ2MGdbvhxTHnEI=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=OFzjAy/rxQ+awu5vKvmQklaD8KmeN3Qu0uf9nrOBoBy/msx6vjrMb6C+pRJ3PQJXnxTnmUaGsCwqViTztnCy01zP5bb+IamcLwTdxvIp8CO+dirmhycRvPoYj7AJED56piUim8HjI7xtFwYsJY2rUN7AVh9XZIJNpmBeiXHlF31egLUF6oKqn6dt2jFUo7NOmlhJ8UsB8XyZ6M9XFji+0CfsQ+3FsHeI09lg+4sRBFTrID4UmyCjuv7ZZpEypsqZwi7HS16Wnmefw9oFXoQB+WsWzCmb2OKInuo8pvtIbbpabSOf7k23ZbXmBnUeorEYazu77Q+VzTPXhj4vw5PdFA==
+	t=1741951293; c=relaxed/relaxed;
+	bh=ZPeOALh8hvdV7JWB8QVZ8vIgqd6Fip8BkDA60r1vc3s=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=IH2ltDsdef7+fVFNqSTxBlH49Jh+aerymSL/RU1hpWbGPvcqJZPQe8j8Nve8TEv8SZnzCpEvQ7wM2atcHKhsz1Qm+IgYydE8FOVovYpgj2US+MAZwpCpG1bPijCITcdKTolAWTyUnzsj5pZ/HgMZJCFEfDxvOXHhJ5nR7SeRDA0udjfPtSt3NZCFs7Ny0JsJuaCJzvR+yS3MIUe120RpPKf/oHFbBpStDiDvIUL67uw6EQJ6DKJYtMytT8HORo13S+9Td3zTMXKhDhcCUnCC/VW5DvXtNyjWRnBJ+vSVWB9zBBgROKpUI06NXpEkUpesKMTDnCJtpLlbdebk/D8vxQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=kevin_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=kevin_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDhlH6C5vz2xmk
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 14 Mar 2025 22:21:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDhlJ5J52z2xmk
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 14 Mar 2025 22:21:32 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1258.12; Fri, 14 Mar
@@ -39,10 +40,12 @@ To: <lee@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>
 CC: Kevin Chen <kevin_chen@aspeedtech.com>
-Subject: [PATCH v4 0/3] Add AST2600 LPC PCC support
-Date: Fri, 14 Mar 2025 19:21:10 +0800
-Message-ID: <20250314112113.953238-1-kevin_chen@aspeedtech.com>
+Subject: [PATCH v4 1/3] dt-binding: aspeed: Add LPC PCC controller
+Date: Fri, 14 Mar 2025 19:21:11 +0800
+Message-ID: <20250314112113.953238-2-kevin_chen@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250314112113.953238-1-kevin_chen@aspeedtech.com>
+References: <20250314112113.953238-1-kevin_chen@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,34 +61,69 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
---
-v4
-aspeed-lpc-pcc.c:
- -- Remove the debug message in the aspeed_lpc_pcc_probe.
- -- Add pcc-ports in the aspeed-g6.dtsi.
+Add dt-bindings for Aspeed for Aspeed LPC POST code capture controller.
 
-v3
-aspeed-lpc-pcc.c:
- -- Add ida_free and fix the dev usage with removing some debug messages.
-aspeed-lpc.yaml:
- -- Add description about the pcc-ports usage.
+Signed-off-by: Kevin Chen <kevin_chen@aspeedtech.com>
+---
+ .../devicetree/bindings/mfd/aspeed-lpc.yaml   | 38 +++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-v2:
- -- Change driver path to drivers/misc
-
-Kevin Chen (3):
-  dt-binding: aspeed: Add LPC PCC controller
-  ARM: dts: aspeed-g6: Add AST2600 LPC PCC support
-  soc: aspeed: lpc-pcc: Add PCC controller support
-
- .../devicetree/bindings/mfd/aspeed-lpc.yaml   |  38 ++
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi       |   8 +
- drivers/misc/Kconfig                          |  10 +
- drivers/misc/Makefile                         |   1 +
- drivers/misc/aspeed-lpc-pcc.c                 | 437 ++++++++++++++++++
- 5 files changed, 494 insertions(+)
- create mode 100644 drivers/misc/aspeed-lpc-pcc.c
-
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+index 5dfe77aca167..178c151a19ba 100644
+--- a/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
++++ b/Documentation/devicetree/bindings/mfd/aspeed-lpc.yaml
+@@ -149,6 +149,37 @@ patternProperties:
+       - interrupts
+       - snoop-ports
+ 
++  "^lpc-pcc@[0-9a-f]+$":
++    type: object
++    additionalProperties: false
++
++    description:
++      The LPC pcc interface allows the BMC to listen on and record the data
++      bytes written by the Host to the targeted LPC I/O pots.
++
++    properties:
++      compatible:
++        items:
++          - enum:
++              - aspeed,ast2600-lpc-pcc
++
++      reg:
++        maxItems: 1
++
++      interrupts:
++        maxItems: 1
++
++      pcc-ports:
++        $ref: /schemas/types.yaml#/definitions/uint32-array
++        description:
++          As a device handshake with a host using the port-mmaped I/O in x86
++          architecture, need to handle specific which port I/O address for use.
++
++    required:
++      - compatible
++      - interrupts
++      - pcc-ports
++
+   "^uart-routing@[0-9a-f]+$":
+     $ref: /schemas/soc/aspeed/uart-routing.yaml#
+     description: The UART routing control under LPC register space
+@@ -176,6 +207,13 @@ examples:
+         #size-cells = <1>;
+         ranges = <0x0 0x1e789000 0x1000>;
+ 
++        lpc_pcc: lpc-pcc@0 {
++            compatible = "aspeed,ast2600-lpc-pcc";
++            reg = <0x0 0x140>;
++            interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
++            pcc-ports = <0x80>;
++        };
++
+         lpc_ctrl: lpc-ctrl@80 {
+             compatible = "aspeed,ast2600-lpc-ctrl";
+             reg = <0x80 0x80>;
 -- 
 2.34.1
 
