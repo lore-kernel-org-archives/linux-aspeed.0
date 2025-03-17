@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-999-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1000-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1B59C282EC
-	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Mar 2025 07:32:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D598FC282EC
+	for <linux-aspeed@archiver.kernel.org>; Mon, 17 Mar 2025 07:46:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGRWh4JGhz2yfP;
-	Mon, 17 Mar 2025 18:32:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGRqL3hGQz2ydl;
+	Mon, 17 Mar 2025 18:46:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742196752;
-	cv=none; b=EQjR97ShIv1OkF2Bj9zxi0uC4eIOiaKtt0MEqttA1zvm55i4g3ZXtjFKXSfiyuK2mhFJa87bWSSikuaGprq1ABzp89Vix56GS41iHAneNzvFM59SqznyD1DwenmCrFzBzT61K0UBXmMSI6IA991pBHbUs4XH1m8IBCV7hdlSvv2Dh3cVTeSEh5b/MjLK3/t181JNcvlKNNF0B+IrYywIK8UnqWK7gLlEPNk9g39DzAiD1X4/GP/J9+kQyODMW4Wf1TYsjzxTe5m/wYQgZodZWCTzD+8KLRPE++Vb8NTvbs814ORr+yUk87onaaIPG9sYCQAmxchh5cTKe0PjgqYIMg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742197566;
+	cv=none; b=HksVxvb93fAHbPOgl4dmsLp4iFH6zhZ8cUnYpiUdpiGlJnUqbgrEnEcAGPBbep2+BnOuU83PVYLc9I6kdytw/CG9fXbUJT3OYabgE5YSsFopc0de+z2Cwz+K0KR6CSH0yORGOXN78tDVm176kv8VtGjbCqH7P/vFWSepK9PeL+VVGYxY2EoAPP3w1FARfp4C4ronqLfLKCIo+vGGddUFMmM6tuf/kuWHA8kxIg2gkVCFRGfQ6DUIg7BV25c/d/5VaQeFfzD6/WEFgba8kAbwf7SCjjdYpVNLLAlK0Apbqwr6aEGIX9B0G7VxhOxEb/tb6e+AwXJIeFgnxr3GGR5UsQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742196752; c=relaxed/relaxed;
-	bh=ZTwLScIJ/zcr/tEfBIF+qBKAehs3+Ab5TsM0o48mqmA=;
+	t=1742197566; c=relaxed/relaxed;
+	bh=6wLAwvtqG1ryj7tG4a1beOb/Rm7+CH+QpG7mQMG+2+w=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MTRx/fzDcXs6Kn0hvpcXTGC0oindjbwhA8/BrAyI+RjGRTksuCdbxXAfYcqj9rOo4CbT9HporJoeaIG0wbMhgoC09ghqDloXQ3QqroRn90Fg5VAmotFbPwazuEL/JrRTZ6h8ux1FX5CCkO2V72i6g+2r8Q3tS919YLKtmPgUtKhFpDsWA6zoeg7uYBL6kDEPQq4bJchRcvtI0EyVoTAo8RTsQYTrr40FmZbz4koogf04OWgBP52EaH7AH4OLTCd4DCKk4349FjcJR9LxVx3LOLr0AhOsG7Co/C4bvqAqpCHqrAjDZzrAIlvqeURag5StAcuPp0i5d6VTzG1mhJCdHg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kBHOzH5f; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=NVgsnHRkPWYu4huXiD7OEaHRM26Lh/SF/SxtT1yE1Amm1j0Hc2h4RgwHZ4FSUKcufXBJB0deO6l+g8C22/29Dchbus0nH82EtobRgsU6BWpgnjDE5B3rU9IpKqy7xsjGqa2hnFKLNAz4ppPMw6UOajb4LqJoZCgh3DlXDfFZOnJEtkB4KiYs+/+X1HI1DUnDxb94QN8BUNXZr8nISMSN2VLlJ2T7HzwsfO4rsXYt27Wpr6C4uuGzo2a5+TuKBh8tXDTpCGtITvgI9Jqi1faTvciX2R1pNCrztkvNynBfA7F/xrRbfuloXx1hoXE0vHJ96uAgrF1zAPRtPdmoLy9KQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qx2MvfYY; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kBHOzH5f;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qx2MvfYY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZGRWg2B7Wz2y3b
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Mar 2025 18:32:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZGRqK0t21z2yKp;
+	Mon, 17 Mar 2025 18:46:05 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id CF9B65C2771;
-	Mon, 17 Mar 2025 07:30:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6EB4C4CEE3;
-	Mon, 17 Mar 2025 07:32:21 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 22FE45C49A0;
+	Mon, 17 Mar 2025 07:43:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6047AC4CEE3;
+	Mon, 17 Mar 2025 07:45:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742196748;
-	bh=uWRBhGYc6EgYaSJe5jVFgCPxsSX9BUuM9hicfeD/bRw=;
+	s=k20201202; t=1742197562;
+	bh=E/ATrqhvoWqVxOEgCo2VlQn8yYVwmdA17L8rJAlpqMw=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=kBHOzH5fF+FfLYhEHVBR7D4eXqv/Men3p9DUz9R1U39yYHuI2TA/VXebBkV87PUJ8
-	 HtzED47ZYq57M1gh0kWZAuwETCS2AJmM7xivtR0MOoS3gwvFFoXpUaWjBToRWp/xdq
-	 wWIOfgX5XbFWuBKeM17g8e03YHAHtvfOlRZralXzyfGSxt9lPuEgxKv2Tuw6ayAmS3
-	 rmHBvY14P8QO4wqo42vcgyT1SytTDk2xcEiFA4jWNDMxmcs9P5Mj9txi/uuFstEhdu
-	 4phyjzlzX41xWSYO3ccXmxIOqWNgszUJBU6+RiMt/revRMpL1J8sRpHr0r9yE1dfx8
-	 hTfbCGLGJr34w==
-Message-ID: <0d5cf176-f084-467b-b4a1-9a1f862d0781@kernel.org>
-Date: Mon, 17 Mar 2025 08:32:19 +0100
+	b=qx2MvfYYWHOs0TXdinCtDhi37zof6hhV3lFSxgPcUlocrfn+giHOs9PqW4yvNN3CV
+	 MRSLPiMQIX+aLR/gZ2gDc+PkJW08Kcq7OUwovxWC33aFFqW/9UWgGINPZhpCTUn9lQ
+	 7TGWz/DFTvMuS61nKPHLCNdRjI4qBXtzCqY6hs9bomZnR9gX6wLOv0ltlGneIZgf39
+	 JzMj4Bouav1y4Ih533LZnRitFgWO2jwRo18DbzWdSDvFVyfc921z8aB0zMYbkzXAXb
+	 0nientZciDzfEyqxzY5N4h7oXIOINfre26il5FJfbogXpHDfDkOlTpa3g20lOo/48W
+	 pyNoQfJTFIMcw==
+Message-ID: <069b9fe4-c54a-4efd-923e-1558c59fe3f4@kernel.org>
+Date: Mon, 17 Mar 2025 08:45:52 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,18 +59,32 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [net-next 3/4] dt-bindings: net: ftgmac100: add rgmii delay
- properties
-To: Jacky Chou <jacky_chou@aspeedtech.com>, andrew+netdev@lunn.ch,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- joel@jms.id.au, andrew@codeconstruct.com.au, ratbert@faraday-tech.com,
- netdev@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org
-Cc: BMC-SW@aspeedtech.com
-References: <20250317025922.1526937-1-jacky_chou@aspeedtech.com>
- <20250317025922.1526937-4-jacky_chou@aspeedtech.com>
+Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
+ AST2600-i2cv2
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "joel@jms.id.au" <joel@jms.id.au>,
+ "andi.shyti@kernel.org" <andi.shyti@kernel.org>,
+ "robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
+ <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
+ "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+ "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+ "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20250224055936.1804279-1-ryan_chen@aspeedtech.com>
+ <20250224055936.1804279-2-ryan_chen@aspeedtech.com>
+ <20250224-arrogant-adventurous-mackerel-0dc18a@krzk-bin>
+ <OS8PR06MB75415E95342F26F576B5CF8AF2C22@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <50327725-f3b8-4a8b-94a2-85afccd2868a@kernel.org>
+ <OS8PR06MB7541B0DBC64B3EF6838DFE74F2CD2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <d1b184c5-84c1-4d76-a1d0-a9f37f1e363c@kernel.org>
+ <OS8PR06MB7541D1D2E16C5E77037F3BB0F2CB2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -116,43 +130,256 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250317025922.1526937-4-jacky_chou@aspeedtech.com>
+In-Reply-To: <OS8PR06MB7541D1D2E16C5E77037F3BB0F2CB2@OS8PR06MB7541.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 17/03/2025 03:59, Jacky Chou wrote:
-> Add tx-internal-delay-ps and rx-internal-delay-ps to
-
-Please wrap code according to the preferred limit expressed in Kernel
-coding style (checkpatch is not a coding style description, but only a
-tool).  However don't wrap blindly (see Kernel coding style).
-
-> configure the RGMII delay for MAC. According to
-> ethernet-controller.yaml, they use for RGMII TX and RX delay.
+On 05/03/2025 10:35, Ryan Chen wrote:
+>> Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
+>> AST2600-i2cv2
+>>
+>> On 27/02/2025 09:19, Ryan Chen wrote:
+>>>>
+>>>>
+>>>>> aspeed,enable-byte:
+>>>>> Force i2c controller use byte mode transfer. the byte mode transfer
+>>>>> will send i2c data each byte by byte, inlcude address read/write.
+>>>>
+>>>> Isn't this standard FIFO mode?
+>>> Yes, it is.
+>>>>
+>>>> Why anyone would need to enable byte mode for given board?
+>>> By default, it is buffer-mode, for performance, I don't want user enable
+>> byte-mode, it will increase CPU utilize.
+>>> But someone want to be force enable byte-mode, so I add properties.
+>>> https://patchwork.ozlabs.org/project/linux-aspeed/patch/20241007035235
+>>> .2254138-3-ryan_chen@aspeedtech.com/
+>>
+>>
+>> I don't see the reason why this would be a board property.
+>>
+>> I understood need for DMA because it is shared and only some of the
+>> controllers can use it. But why choice between buffer and FIFO depending on
+>> hardware?
 > 
-> In Aspeed desgin, the RGMII delay is a number of ps as unit to
-> set delay, do not use one ps as unit. The values are different
-> from each MAC. So, here describes the property values
-> as index to configure corresponding scu register.
+> By default, the I2C controller runs in buffer mode. Each i2c bus have 16bytes buffer to transmit data.
+> Enabling byte mode will increases CPU utilization, so it is not recommended. 
+> However, some user might require forcing byte mode, so I added this property to allow that.
+
+
+You are not answering the question. I asked why the choice depends on
+hardware and you answer "user might required".
+
+Do you understand that this is about hardware, not user choices?
+
+
+>>
+>>
+>>>>
+>>>>>
+>>>>>>
+>>>>>>> +      may require a DTS to manually allocate which controller can
+>>>>>>> + use
+>>>>>> DMA mode.
+>>>>>>> +      The "aspeed,enable-dma" property allows control of this.
+>>>>>>> +
+>>>>>>> +      In cases where one the hardware design results in a specific
+>>>>>>> +      controller handling a larger amount of data, a DTS would likely
+>>>>>>> +      enable DMA mode for that one controller.
+>>>>>>> +
+>>>>>>> +  aspeed,enable-byte:
+>>>>>>> +    type: boolean
+>>>>>>> +    description: |
+>>>>>>> +      I2C bus enable byte mode transfer.
+>>>>>>
+>>>>>> No, either this is expressed as lack of dma mode property or if you
+>>>>>> have three modes, then rather some enum (aspeed,transfer-mode ?)
+>>>>>
+>>>>> Thanks suggestion, I will using an enum property like
+>>>>> aspeed,transfer-mode
+>>>> instead.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>> +
+>>>>>>> +  aspeed,global-regs:
+>>>>>>> +    $ref: /schemas/types.yaml#/definitions/phandle
+>>>>>>> +    description: The phandle of i2c global register node.
+>>>>>>
+>>>>>> For what? Same question as usual: do not repeat property name, but
+>>>>>> say what is this used for and what exactly it points to.
+>>>>>>
+>>>>>> s/i2c/I2C/ but then what is "I2C global register node"? This is how
+>>>>>> you call your device in datasheet?
+>>>>>>
+>>>>> I do descript in cover, should add into the yaml file ?
+>>>>
+>>>>
+>>>> Again, cover letter does not matter. Your hardware must be explained here.
+>>> Will add into commit.
+>>>>
+>>>>>
+>>>>> aspeed,global-regs:
+>>>>> This global register is needed, global register is setting for new
+>>>>> clock divide control, and new register set control.
+>>>>
+>>>> So this means you implement clock controller via syscon?
+>>> No, it is just mode switch. It also explain in cover. I will add it in commit.
+>>> The legacy register layout is mix controller/target register control together.
+>> The following is add more detail description about new register layout. And
+>> new feature set add for register.
+>>>>
+>>>>>
+>>>>>>
+>>>>>>> +
+>>>>>>>  required:
+>>>>>>>    - reg
+>>>>>>>    - compatible
+>>>>>>>    - clocks
+>>>>>>>    - resets
+>>>>>>>
+>>>>>>> +allOf:
+>>>>>>> +  - $ref: /schemas/i2c/i2c-controller.yaml#
+>>>>>>> +  - if:
+>>>>>>> +      properties:
+>>>>>>> +        compatible:
+>>>>>>> +          contains:
+>>>>>>> +            const: aspeed,ast2600-i2cv2
+>>>>>>
+>>>>>> NAK, undocumented compatible.
+>>>>>
+>>>>> Sorry, I should add what kind of document about this compatible?
+>>>>
+>>>> You cannot add new compatibles without documenting them.
+>>>> Documentation is in the form of DT schema and each compatible must be
+>>>> listed (in some
+>>>> way) in compatible property description.
+>>>
+>>> Sorry, do you mean, I add following in yaml or commit message?
+>>
+>> You need to list this in compatibles first.
 > 
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-> ---
+> I will add it in compatible in next submit.
+> 
+> 	enum:
+> 		-aspeed,ast2600-i2cv2
+>>
+>>>
+>>> This series add AST2600 i2cv2 new register set driver. The i2cv2 driver is new
+>> register set that have new clock divider option for more flexiable generation.
+>> And also have separate i2c controller and target register set for control, patch
+>> #2 is i2c controller driver only, patch #3 is add i2c target mode driver.
+>>
+>> All this describes driver, not hardware.
+> 
+> Sorry, the cover letter description the register. I will add int in commit message.
+> 
+> -Add new clock divider option for more flexible and accurate clock rate
+> generation -Add tCKHighMin timing to guarantee SCL high pulse width.
+> -Add support dual pool buffer mode, split 32 bytes pool buffer of each
+> device into 2 x 16 bytes for Tx and Rx individually.
+> -Increase DMA buffer size to 4096 bytes and support byte alignment.
+> -Re-define the base address of BUS1 ~ BUS16 and Pool buffer.
+> -Re-define registers for separating controller and target mode control.
+> -Support 4 individual DMA buffers for controller Tx and Rx,
+> target Tx and Rx.
+> 
+> And following is new register set for package transfer sequence.
+> -New Master operation mode:
+>  S -> Aw -> P
+>  S -> Aw -> TxD -> P
+>  S -> Ar -> RxD -> P
+>  S -> Aw -> RxD -> Sr -> Ar -> TxD -> P
+> -Bus SDA lock auto-release capability for new controller DMA command mode.
+> -Bus auto timeout for new controller/target DMA mode.
+> 
+> The following is two versus register layout.
+> Old:
+> {I2CD00}: Function Control Register
+> {I2CD04}: Clock and AC Timing Control Register
+> {I2CD08}: Clock and AC Timing Control Register
+> {I2CD0C}: Interrupt Control Register
+> {I2CD10}: Interrupt Status Register
+> {I2CD14}: Command/Status Register
+> {I2CD18}: Slave Device Address Register
+> {I2CD1C}: Pool Buffer Control Register
+> {I2CD20}: Transmit/Receive Byte Buffer Register
+> {I2CD24}: DMA Mode Buffer Address Register
+> {I2CD28}: DMA Transfer Length Register
+> {I2CD2C}: Original DMA Mode Buffer Address Setting
+> {I2CD30}: Original DMA Transfer Length Setting and Final Status
+> 
+> New Register mode
+> {I2CC00}: Master/Slave Function Control Register
+> {I2CC04}: Master/Slave Clock and AC Timing Control Register
+> {I2CC08}: Master/Slave Transmit/Receive Byte Buffer Register
+> {I2CC0C}: Master/Slave Pool Buffer Control Register
+> {I2CM10}: Master Interrupt Control Register
+> {I2CM14}: Master Interrupt Status Register
+> {I2CM18}: Master Command/Status Register
+> {I2CM1C}: Master DMA Buffer Length Register
+> {I2CS20}: Slave~ Interrupt Control Register
+> {I2CS24}: Slave~ Interrupt Status Register
+> {I2CS28}: Slave~ Command/Status Register
+> {I2CS2C}: Slave~ DMA Buffer Length Register
+> {I2CM30}: Master DMA Mode Tx Buffer Base Address
+> {I2CM34}: Master DMA Mode Rx Buffer Base Address
+> {I2CS38}: Slave~ DMA Mode Tx Buffer Base Address
+> {I2CS3C}: Slave~ DMA Mode Rx Buffer Base Address
+> {I2CS40}: Slave Device Address Register
+> {I2CM48}: Master DMA Length Status Register
+> {I2CS4C}: Slave  DMA Length Status Register
+> {I2CC50}: Current DMA Operating Address Status
+> {I2CC54}: Current DMA Operating Length  Status
 
-...
+I don't understand anything from that and how is this relevant to our
+discussion.
 
->    mdio:
->      $ref: /schemas/net/mdio.yaml#
->  
-> @@ -102,4 +116,4 @@ examples:
->                  reg = <1>;
->              };
->          };
-> -    };
-> +    };
-> \ No newline at end of file
+> 
+>>
+>>>
+>>> The legacy register layout is mix controller/target register control together.
+>> The following is add more detail description about new register layout. And
+>> new feature set add for register.
+>>>
+>>> -Add new clock divider option for more flexible and accurate clock rate
+>> generation -Add tCKHighMin timing to guarantee SCL high pulse width.
+>>> -Add support dual pool buffer mode, split 32 bytes pool buffer of each device
+>> into 2 x 16 bytes for Tx and Rx individually.
+>>> -Increase DMA buffer size to 4096 bytes and support byte alignment.
+>>> -Re-define the base address of BUS1 ~ BUS16 and Pool buffer.
+>>> -Re-define registers for separating controller and target mode control.
+>>> -Support 4 individual DMA buffers for controller Tx and Rx, target Tx and Rx.
+>>
+>> Does it mean hardware changed on AST2600? 
+> No Hw change, it is different mode setting will have another mode register setting.
+> Mode setting is in global register, I will add in next commit message
+
+Neither this.
+
+So it seems you describe already existing and documented I2C, but for
+some reason you want second compatible. The problem is that you do not
+provide reason from the point of view of bindings.
+
+To summarize: what your users want - don't care. Start properly
+describing hardware and your SoC.
 
 
-This was neither tested nor reviewed by you before sending.
+> 
+> I2CG00: Device Master Mode Interrupt Status Register (I2CG0C[3]=1)
+> I2CG00: Device Master/Slave Mode Interrupt Status Register (I2CG0C[3]=0)
+> I2CG04: Device Slave Mode Interrupt Status Register
+> I2CG0C: Global Control Register
+> I2CG10: New Clock Divider Control Register (I2CG0C[1] = 1)
+> 
+>> Or these are different devices
+>> than aspeed,ast2600-i2c-bus? If this is not a different device, how one SoC can
+>> have two different flavors of same device in the same instance?
+> 
+> When global setting for new, will new register mapping, no setting will keep old register mapping.
+
+
+I cannot parse this.
 
 
 Best regards,
