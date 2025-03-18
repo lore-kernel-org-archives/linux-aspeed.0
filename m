@@ -1,52 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1044-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1045-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D1B9C282EC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 17:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76B5FC282EC
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 18:11:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHJF80BvKz2ySd;
-	Wed, 19 Mar 2025 04:07:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742317675;
-	cv=none; b=Bk73VSBt426Js1g6lqogN3dKYfixLUyXQUKE44w/sIO5Ai3hyHNLcR8RzNCIHZUrm1pC6AIrWehznaYbqYQM6Gxux14ixnpXMDjKAlftS94nDabYJi77jWUFsISiYsa5+em5A5cQkr2WSs7cGSBY6FiH6fbr+jXrBw6cypQMKh8ocf6jgjinLttbLKl8FrAMTR/hgfYl18x4nNPfSwXkbxnQXVl1x1Ul7sWCpnPGYx7puwaFM9LwqIckyRzvwKqEZ8aalx/8pa3+dqyvNhq5haMqIz2AM+noRen27VeOEq5eCLPJZhduYMw9On3Qw0VCVPZDxzbtXgYpNSXal+cXvg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHKf80hs9z2yrr;
+	Wed, 19 Mar 2025 05:11:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742321471;
+	cv=none; b=Nu+Q1SHmmvZMIgWvLej10tBOfV8Y3ByN0zQ0rY6q+HeKZ82e+qeT2qzzCjWKWkFFVZUtXyPoqVn/cycb3g+auA39xJUkrC9vvXOtuJ3CZd1DGKY4e/awnfBHq1aJNrkU2gd9XJUjw1C7zU/JhEMeXV8MZYPGDvDjhjITOd6B55tbwonp+aOr+eGl14SmJejFNsTwbpgPV0iEVddRgfc5ExVNdqn/9rwWED7g8FxS4fFDJcefsPE6KMdYB6J6/RFzTE9cvaZUepVtoSZYUVc///4KbCNMCwCHbtzHN8UxsKSb0bZ+TmPWoshfwEIv+KxRkDkZYy+VssZ3JZ+xVupwzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742317675; c=relaxed/relaxed;
-	bh=Rv2cgmWeDpgTRXs3pcSTXnSyFEBSkNMNxViatRStrqI=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=g097gy/KNbCW9YTtJP8FSDBKva5ZduU7lcVlgbCVDFcBX0Ua1QPX7q2vtnKfHmAo2xuhhyTUfa/+PeZwgnBGj59AigJIn3jzWoYO3djA2VxEYugGDhjewgxxPi9r165DKR9XVKuRPSW/V2AaQHb8FfCB9fH+uWCePND1Js5UtwIz2Zjv4PX1jqnPkBHpub2RZmbnnP2YpTwvpAOLir7ggXBnehAqb4rccpRj8O3iv430PEpyOSLdcHHUz94mtWdmUDtLA8UyQR0PKS8A3/pU9qqIa1qZCEB5MnM+vu8da4CFjpcOPRoQ3IFiGVSqQqS8rsNfaCrlwhQWDYJU6YCsfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8DO/VWd; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1742321471; c=relaxed/relaxed;
+	bh=dhxBklJjoiDjMWM8fz1bkfc7BtePXDzsgcwDoKT/AOM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jmTJreFKNb3ySv1imHWYfF/H48XrxiY0LS7CmTYlBccCB7Wq1rzrX1Faers5/TC/kvbmq1Q6818KMaK2OBJdWDEqIS9fdwD6N+FeDKr9hEfZpPUglXkaET1ejb5BR8/t2JP+yoS60WJWEwSmL43HwT2sLl/mGDaOEKmNh3t9LvAnqQKfsCvoUNb/NR33yBGIkywLoa7doK8SWZv4CDGWTQBsifi+vIYQUamxNL5Xd8UgBz3LWppubnFaPEOEgtwxnc8oN+YAQ4FemGvRxMu39MGy0pNxLtrGR9VbO7zjrKOqy1uEeOKWSYw3WxmljhhgpIgBzIDlgwuS1zE/+Fqf4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sApcvRWx; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8DO/VWd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sApcvRWx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHJF712Jyz2yMF;
-	Wed, 19 Mar 2025 04:07:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHKf36KRfz2yrp;
+	Wed, 19 Mar 2025 05:11:07 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id E61E65C58DA;
-	Tue, 18 Mar 2025 17:05:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 501DEC4CEDD;
-	Tue, 18 Mar 2025 17:07:52 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id E6E045C593C;
+	Tue, 18 Mar 2025 18:08:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1261FC4CEDD;
+	Tue, 18 Mar 2025 18:11:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742317672;
-	bh=ClveRfCHzxpsa3h6WnfKVB/u2POf/KIKNL1rIjfPHD8=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=m8DO/VWdfaesHQ5jT69BoVvNtsn228iyk8FyWouLmx6BqE6Dpf/ZmT1F1QIOMLXMd
-	 5wHGTGrwLlL62BrnRxM3tyc1SMiNPxET5U7HXjKMXeUxeiwCwbHDvGv0Ain3bm99az
-	 ETpLdjwARCwR+E5xDYcZmNIlaruV5mCCQxPh8UJWKs/ZuYS2jDMP7UZ4HOeR5X/j+P
-	 DhMKJhomyUxcf06pTekpfMFAkQ1oT+zwKJbyJG1Sy1oLJH7vBg/hlhau2HnZQumt4X
-	 mSULDDO4k6SBxHXpjSLzbtWvejh8jDR5DQ7xoR30zsKURxg3nIwOGx6tA7w2r5rXkG
-	 /vB3aDvmpWhpw==
-Date: Tue, 18 Mar 2025 12:07:51 -0500
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	s=k20201202; t=1742321465;
+	bh=//wJdgEDdjcLFwZklfG7xg1CloFRvngCE0o9Vb24u90=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=sApcvRWxUxlRiyWnp75tt1fxhz+mQB5GWO6jGtdawrZSYXytqcn3ppHzU4y3SO1uk
+	 Tu0qIWWqqN90SNA/9iWUV1NQsknezWKegXG9AMnJYp0us+YhDdxVZqfr831o9xswvF
+	 7RtkB45z0c6CeBwZAYv+N3dtYxr95mSgMnqOZTwRiUw47+3LVTG7titIrI0aQv6HMw
+	 1P7ujLVBppBEqvFHUT/IafCW75+T0UxCxl3sYSYK7qm2njZXj5jXfG5MISuyK+FElh
+	 wFcep8ubVnOF6Ph5KbQ2t5Zl6S9+bRbRfK6irmZjdgO042bAJH6H9F9NDfsiyUEau3
+	 /WlVlF+MhWk8g==
+Message-ID: <cebf6611-4a9f-48fa-9226-e4a559e75ab9@kernel.org>
+Date: Tue, 18 Mar 2025 19:10:58 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,131 +58,96 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-aspeed@lists.ozlabs.org, andrew@codeconstruct.com.au, 
- linux-arm-kernel@lists.infradead.org, krzk+dt@kernel.org, 
- linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, 
- devicetree@vger.kernel.org, joel@jms.id.au, conor+dt@kernel.org, 
- robh+dt@kernel.org
-To: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
-In-Reply-To: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
-References: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
-Message-Id: <174231753965.3228114.9624277631612711787.robh@kernel.org>
-Subject: Re: [PATCH v3 1/2] dt-bindings: arm: aspeed: Add AMD Onyx BMC
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 1/2] dt-bindings: arm: aspeed: Add AMD Onyx BMC
  compatible
+To: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>,
+ devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au
+Cc: robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, jothayot@amd.com
+References: <20250318174730.1921983-1-Rajaganesh.Rathinasabapathi@amd.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <20250318174730.1921983-1-Rajaganesh.Rathinasabapathi@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-
-On Mon, 17 Mar 2025 23:12:23 -0500, Rajaganesh Rathinasabapathi wrote:
+On 18/03/2025 18:47, Rajaganesh Rathinasabapathi wrote:
 > Document new AMD Onyx BMC board compatibles
 > 
 > Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
 > ---
 >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
 >  1 file changed, 1 insertion(+)
-> 
 
+Can you slow down and read submitting patches before posting or at least
+get someone experienced in AMD to help you?
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
+<form letter>
+This is a friendly reminder during the review process.
 
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
+It looks like you received a tag and forgot to add it.
 
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
+If you do not know the process, here is a short explanation:
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new versions
+of patchset, under or above your Signed-off-by tag, unless patch changed
+significantly (e.g. new properties added to the DT bindings). Tag is
+"received", when provided in a message replied to you on the mailing
+list. Tools like b4 can help here. However, there's no need to repost
+patches *only* to add the tags. The upstream maintainer will do that for
+tags received on the version they apply.
 
-  pip3 install dtschema --upgrade
+Please read:
+https://elixir.bootlin.com/linux/v6.12-rc3/source/Documentation/process/submitting-patches.rst#L577
 
+If a tag was not added on purpose, please state why and what changed.
+</form letter>
 
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com:
-
-Error: arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts:20.25-31 syntax error
-FATAL ERROR: Unable to parse input tree
-make[3]: *** [scripts/Makefile.dtbs:131: arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dtb] Error 1
-make[2]: *** [scripts/Makefile.build:461: arch/arm/boot/dts/aspeed] Error 2
-make[2]: Target 'arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dtb' not remade because of errors.
-make[1]: *** [/home/rob/proj/linux-dt-testing/Makefile:1475: aspeed/aspeed-bmc-amd-onyx.dtb] Error 2
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-spc621d8hm3.dtb: /ahb/apb@1e780000/pwm-tacho-controller@1e786000: failed to match any schema with compatible: ['aspeed,ast2500-pwm-tacho']
-make: *** [Makefile:248: __sub-make] Error 2
-make: Target 'aspeed/aspeed-bmc-microsoft-olympus.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-delta-ahe50dc.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-palmetto.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-ast2500-evb.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-quanta-s6q.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-romulus.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-sbp1.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-inspur-fp5280g2.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-minipack.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-mowgli.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-witherspoon.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-vegman-sx20.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-tacoma.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-lanyang.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-vegman-rx20.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-fuji.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-everest.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-bytedance-g220a.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-cmm.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-blueridge-4u.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-asrock-e3c246d4i.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-ast2600-evb-a1.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-amd-onyx.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-supermicro-x11spi.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-vegman-n110.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-vesnin.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-bletchley.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-ast2600-evb.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-inventec-transformers.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-rainier.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-tyan-s8036.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ampere-mtjade.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-asrock-x570d4u.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-yosemite4.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-blueridge.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-asrock-spc621d8hm3.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-inventec-starscream.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-yamp.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-rainier-4u.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-catalina.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-amd-ethanolx.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-bonnell.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-inspur-on5263m5.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ampere-mtjefferson.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-asus-x4tf.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-nicole.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-intel-s2600wf.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-wedge40.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-lenovo-hr855xg2.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-asrock-e3c256d4i.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-lenovo-hr630.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-asrock-romed8hm3.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-quanta-q71l.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-tyan-s7106.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-yosemitev2.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-wedge100.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-elbert.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-amd-daytonax.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-qcom-dc-scm-v1.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ufispace-ncplite.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-opp-zaius.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-portwell-neptune.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ampere-mtmitchell.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-fuji.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-minerva.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-galaxy100.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-harma.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-inspur-nf5280m6.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-wedge400.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-arm-stardragon4800-rep2.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-ibm-system1.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-greatlakes.dtb' not remade because of errors.
-make: Target 'aspeed/aspeed-bmc-facebook-tiogapass.dtb' not remade because of errors.
-
-
-
-
-
+Best regards,
+Krzysztof
 
