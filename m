@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1039-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1040-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AD24C28B28
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 16:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7BD8C282EC
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 16:43:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHHbY0ZbLz2yrm;
-	Wed, 19 Mar 2025 03:38:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742315929;
-	cv=none; b=TBaZpEsm9qr8hypm5lnwZGJTCWzA545+wPfb29or21+2qq9QmqVcQp25euMh8FwH5S4sQ8PotyVTpEH/gq9xcZjVPkoBNFtE1Q7YOIUxNvQ6PRnFEDzeT41oFzfWQKgdeOkFCH61yWzYFXN8Czo2lcG8lJLmqOj2sR1vOPPML08mFtiozYe0k6eiwFLdo8Yud4vAbxexWShVDVXGYed5zQiMaZ2p8pstDwuvKwHa4WQ2jf9Q48adDzPJfwGEWzEAHuChK7/kJiBmYAXQNdHQFSSd6kmL071CvH3wCag26ZbTJRK+oYaQ6Wb0JKvFN1igwtxB2h5q508quKdpBfQtrw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHHjN4J74z2yrr;
+	Wed, 19 Mar 2025 03:43:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742316232;
+	cv=none; b=j1N5BpuJ6rk4Krbjvq23YtTzTgeTrCMtuJvD6shld8HZFx4NJm99sVzCpLOnL+I1ITiYvyglg6d8Ee9psA4JZKVz7TEYzrJFpsvmgdHg+eBKHqFLKPBVoH24CeKPTVpRp1SAgrk6zfLbxBFMB9BshSt341hVIcUezy6W0BOFUnxVrCxT08thuJoRlWQTei06igNt2B6L3kZmwL2MPhMFg5v80dDXrVm5FtWNmD+9yUmtFELbDcxNrKuRGRgIvpd8lg5Jg/Wy3QkU1l307x1bpEbF4JBrNbxFOcie7vKl1dyVRDTMUbIh6I+l2MttidFGVGUaisl2JVo7kphb3vJTpg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742315929; c=relaxed/relaxed;
-	bh=pplgf49EeMY5aJzogCPpyLcjItxm5BZZyX/5W6kCRLU=;
+	t=1742316232; c=relaxed/relaxed;
+	bh=hRkq1ULLvIBrVNatUk5i63ENaYYJY3HBmsCPtJKR6vE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ff8pTJ8xddBaglSofeiLEfcLGOSFyYjquaAOA5j/VpAwNs/ee1sBVO3vJQi5bdizALKFjYiponE9IRwlHv7MNXmEeHGPY9dtTS63PrCFb9G5mn0RD5iN6su7sDOuFqaVYZWRDOAwJ0H3o7dZuh3lCb2KLM3i16ssm/ouBW71PUI8AqyZ7OdQSrwayLeob4Lq53Gb0Mi9dYY6kT6Er8bOcEa+g+kwKTvgRuGePB71p5h4Kp5DdFp4kV3sWnE5H4uBjSZy068L6mzgyovodoQGiZ1B1soZfp8xw7nRear8cMTRDG/B9ZpFr0DU0gpPCErlk5ptO8tZMr41P4XOHONlew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YtHD6qqO; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=KsEMoBc4JoAQEMinoAn+1zIOAHMR3113h/bIAddETwd6s8iUJG1vLr3bXIotMUl6Mrm0HE6oF7mmk00ukh2M8yE//yVuS4/SMZBdIfqHZ5/G7YEz+DPt1iO8FgTgB95hTQ9E5PODIwmWMAE88mNeixKklVlHjIOxRrfujtPtOCFKOC2dbT6dnB9HoQ1GxCAJe2brBoNhWDWKfFcpoexoJFTMHEP5A4viE/wgXAuWAArW206u5ev6JPFxr7vcoVRN2RncFAlMN1LODaEjE3nGw7Werg4jh6fK9SF7bmI2h3sXEkxY/nP+YEFNrg6pZvcYf0OpMPxEn/wS3I9OT7VDvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hM4q24ww; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YtHD6qqO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hM4q24ww;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHHbX0Wdxz2yKs
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 19 Mar 2025 03:38:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHHjM56Kcz2yrq;
+	Wed, 19 Mar 2025 03:43:51 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 0B42F5C4351;
-	Tue, 18 Mar 2025 16:36:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F093C4CEDD;
-	Tue, 18 Mar 2025 16:38:38 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 9C7EAA489F4;
+	Tue, 18 Mar 2025 16:38:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2E07C4CEE3;
+	Tue, 18 Mar 2025 16:43:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742315925;
-	bh=8AhF7NEi5ZxcJCJVdewacbeZc7Bx4GBTxdrQ9XQ2IBM=;
+	s=k20201202; t=1742316228;
+	bh=1ThGxiBTJ1d+vasYBvl6pVEHqhIezF4pFgLUTtbqiJk=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=YtHD6qqO1I3quggwsnNgcFDxP+cUDkCIT3Z0Qj0vQao7fI6eb993XHouXI+n5JVIs
-	 HP/HfUE66+5l07c69/uKaYklw049D+4KJljxj4mLbOnVJ8kmnE9nRD5RfuclnljWZe
-	 sQLjVQD05Z0ctPJ430HOlHDKDhsBOH/imxwzkLpJQrTyh90wIK7TIRxPEpftds0kJ/
-	 wuSAMgZqqVtbnHf+9x9PIAdulPvgpxN4CMBMPZgOTQ1rOVRcsyz7ph+JzEYkUdahRN
-	 GQ6mTQpX6QnPcrv46pPZ7EwDtDKWL1QgO7uwFyQTIqRQoj3k9j0DsTZ1b4KvUZHff5
-	 xrP6qndco2MhQ==
-Message-ID: <8762dea1-3a0d-4bc8-aacd-fc8a2b5e2714@kernel.org>
-Date: Tue, 18 Mar 2025 17:38:35 +0100
+	b=hM4q24www0m/e38FVCjqJzOCjYAc7qtG0XM7Rtdr/rTYp9wCEBOgEUtq3TrKgqgmS
+	 BA6PHtJAmY9sOvJ+s/eBf4cRZtU+5WZRQr5h4PDYuLKjh6uL8v6+KQt2MptpDXl8vF
+	 pusTzHxDdY2FpkgTg7Zs6IWIY7EoZHc0HypODcTvsdhTQfh7CmowUMQXtZN8syr24W
+	 xNaD5heHhP5pbv5CI18MRQd6861vEs7onyyEwb2juPHsyLUDMZTvuCDsExHbmyAY3U
+	 9g2Zs8pYxrsKgf3STtchtmRc4aLLFx9jRwym9K7K0lzUmFGFL6nEevxBTodqKHo53c
+	 siFG/FzjZAgFA==
+Message-ID: <1142f61a-63d8-4a3c-8f89-a7b3bbd6cdc9@kernel.org>
+Date: Tue, 18 Mar 2025 17:43:41 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,36 +59,15 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: =?UTF-8?B?UmU6IOWbnuimhjog5Zue6KaGOiBbbmV0LW5leHQgNC80XSBuZXQ6IGZ0?=
- =?UTF-8?Q?gmac100=3A_add_RGMII_delay_for_AST2600?=
-To: Andrew Lunn <andrew@lunn.ch>, Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Russell King <linux@armlinux.org.uk>,
- Maxime Chevallier <maxime.chevallier@bootlin.com>,
- "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "edumazet@google.com" <edumazet@google.com>,
- "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com"
- <pabeni@redhat.com>, "robh@kernel.org" <robh@kernel.org>,
- "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
- "conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
- <joel@jms.id.au>, "andrew@codeconstruct.com.au"
- <andrew@codeconstruct.com.au>,
- "ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- BMC-SW <BMC-SW@aspeedtech.com>
-References: <20250317025922.1526937-1-jacky_chou@aspeedtech.com>
- <20250317025922.1526937-5-jacky_chou@aspeedtech.com>
- <20250317095229.6f8754dd@fedora.home>
- <Z9gC2vz2w5dfZsum@shell.armlinux.org.uk>
- <SEYPR06MB51347CD1AB5940641A77427D9DDF2@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <c3c02498-24a3-4ced-8ba3-5ca62b243047@lunn.ch>
- <SEYPR06MB5134C8128FCF57D37F38CEFF9DDE2@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <5b448c6b-a37d-4028-a56d-2953fc0e743a@lunn.ch>
+Subject: Re: [PATCH v3 1/2] dt-bindings: arm: aspeed: Add AMD Onyx BMC
+ compatible
+To: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>,
+ devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au
+Cc: robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -134,67 +113,20 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <5b448c6b-a37d-4028-a56d-2953fc0e743a@lunn.ch>
+In-Reply-To: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 18/03/2025 14:51, Andrew Lunn wrote:
-> On Tue, Mar 18, 2025 at 05:34:08AM +0000, Jacky Chou wrote:
->> Hi Andrew,
->>
->> Thank you for your reply.
->>
->>>> The RGMII delay of AST2600 has a lot of steps can be configured.
->>>
->>> Are they uniformly space? Then it should be a simple formula to calculate? Or
->>> a lookup table?
->>
->> There are fixed delay values by step. I list below.
->> AST2600 MAC0/1 one step delay = 45 ps
->> AST2600 MAC2/3 one step delay = 250 ps
+On 18/03/2025 05:12, Rajaganesh Rathinasabapathi wrote:
+> Document new AMD Onyx BMC board compatibles
 > 
-> That is messy.
+> Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 > 
->> I calculate all step and emulate them.
->> The dt-binding will be like below.
->> rx-internal-delay-ps:
->>     description:
->>       Setting this property to a non-zero number sets the RX internal delay
->>       for the MAC. ... skip ...
->>     enum:
->>       [45, 90, 135, 180, 225, 250, 270, 315, 360, 405, 450, 495, 500, 540, 585, 630, 675, 
->>        720, 750, 765, 810, 855, 900, 945, 990, 1000, 1035, 1080, 1125, 1170, 1215, 1250, 
->>        1260, 1305, 1350, 1395, 1440, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 
->>        3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750, 6000, 6250, 6500, 6750, 7000, 
->>        7250, 7500, 7750, 8000]
-> 
-> Can the hardware do 0 ps?
-> 
-> So this list is a superset of both 45ps and 250ps steps?
 
-git grep multipleOf:
-
-e.g.
-oneOf:
- - minimum: 45
-   maximum: ...
-   multipleOf: 45
- - minimum: 1500
-   maximum: ...
-   multipleOf: 250
-
-> 
-> Lets see what the DT Maintainers say, but it could be you need two
-> different compatibles for mac0/1 to mac2/3 because they are not
-> actually compatible! You can then have a list per compatible.
-If this is the only, *only* difference, then just go with vendor
-property matching register value... but oh, wait, how person reading and
-writing the DTS would understand if "0x2" means 90 ps or 1750 ps? I
-don't see how the original binding was helping here in total. Just
-moving the burden from driver developer to DTS developer. :/
-
-If different instances are not the same, means the devices are not the
-same, so two compatibles seem reasonable.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 Best regards,
 Krzysztof
