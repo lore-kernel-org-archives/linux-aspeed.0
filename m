@@ -1,61 +1,72 @@
-Return-Path: <linux-aspeed+bounces-1034-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1035-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADDA2C282EC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 08:45:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3720FC28B28
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 13:45:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZH55Q2XvSz2yrR;
-	Tue, 18 Mar 2025 19:45:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742287530;
-	cv=none; b=VQHv+4dosZ7r7/7Oh8/ftuWSVjU2WJLPOKyqlmBS8Byftf93u/Pidr93btf2uRpU4UdESxBsLpNfW0F0labY+756GAD2TERX3M55PyNnIMMb32YX5K6Dm17LxSA6iL07rZstgR/N1janWY+PlMki06hwZelvPVGNHDmxl/1NJk0CUG/52Cdr7+IFa+Rg/HjMutLw9EUKPApzvnnQILKtcNs9Ol9swPDOqWdlVM8ONj3+d6TcrOzaopzWu7PEpFeralp8CEBlWTfZPwPZHisMIvS33ynVdM1ADI6EVbGr17nTWWyAZ5EfaGmgdQ8uXPpmYnuxTB9dW/5NV2JmVCjJHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHClL5zmvz2yfS;
+	Wed, 19 Mar 2025 00:45:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742305518;
+	cv=none; b=UFFa6jZkn7XZbC+g0tgd1U1ZbXdJnQbbD3D8bH+xj+Ig3tbb+e85UsIcakwHYopIfuFfOgPx981vg2ZP8c1dwhfQSp826yOMNZ32TmthFTOo9bhiXD1DUu5d5MGDvUyb1U+HGhGvTgtlqjJjbg4syOCG6QgWlkDQzIkXw0f5DfXaxX+n79Hb/ztzV7mke8xcpclT28+sbRR2CpoZhKwBEHZ5Qz9KfC/k0QQFKQWltixuwqFTB93IuYlrzTNWXkKPiSFEU1A5gox2F4ORbEZirBh3rf4pIDzQnh+p+kwrsKqHwJCJdnRw04C3J3bOdlRlkfElYlwWx0HuqkoCAgLTTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742287530; c=relaxed/relaxed;
-	bh=pQa+8tLXCh38wxpuqC/UFWJialaNOAJe6R4eCwrtJlY=;
+	t=1742305518; c=relaxed/relaxed;
+	bh=8/RzstvQ9BWwLvvMkrQEWveUn5iG+OyCk6DBs4Rad9Y=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ArrDYF7x2i+Ep9WIb4V2/UMskTpIGSORZf0AGaLy/gyHBCwUzItDnJDADtb6Yp3VKOjkNV234+a7ABa6g45TYJ7W732tkdg/uoVVhnXNBMpaLTA1f8bYvpmSPtcBzrxO5WBaBideIugjSdIJxkxWUqkn231H8tslrIBJqEtaeqSL+gIA2JJVQpWarxqVobzWD6h+UYaBzvMDZ3Zz7FRMvyIAcZX2C/XCSPbeGOKX+BiB91GOZG3BzXtYCDA3V39pTj2UIZIw3yLs+NTzLsN/jj4MLgBBGO7htEkCaS9l4Q8r/Kf4ZAN/UX0wCK/Jcx1y9nF/eeg7ZITlspsrXDEY7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mc0mPIzZ; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=iuYjAC3XrmyhusdUNXq7kw3U5gVg1p5z5WzkunHMlxSE6o5VHryJBmtp5ZFpuuaJ/11lZaU1d15gJrGzRWNZE4z5wfyMj/OF0S2rBuOzCK388pRpUdBxvugTo2h7Mk80BpO9EcCNlozIXr6mGdKp87xaIJAFp55omNzTXLD+VY4I/5XE/uC2UtUg+Isd5FfD1OllYmTxO5ZxrxHE/sEPJvZGY1tc59LUx/TO+fOUgEGUII+lYyY+mVHGTLu/s5vASdg8vQv40hyENZnua5wt5XsQQGGvrFKhdAfnO2v1ZC2MiiJmHaohEOY7M+r70Q1ctruJ5QL6vagBJtjiTJRurg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=TIykPaMS; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mc0mPIzZ;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=TIykPaMS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZH55P4lNCz2yrQ;
-	Tue, 18 Mar 2025 19:45:29 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 0231D5C5556;
-	Tue, 18 Mar 2025 08:43:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF98EC4CEDD;
-	Tue, 18 Mar 2025 08:45:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742287526;
-	bh=xvR4q+kDcK2eJhnkZQxu0f9mq7keqwXDtJByURfUMBg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=mc0mPIzZcbkoWsgw/Yh+D4VVUkWFdSfIvMFA5e41vglhGpICtIJrlOa7pKfMamn82
-	 XhoREwnpMhbcRL1xtHnbrRA632XsL3fcsP8NH8p96idE1tpO0vNe71nx9Wd8Dr4RF/
-	 e5FfFG/FimCyHiVF5WIv66uJmd10dlYXedjbxgYSiWLDsmP9kllvAixBNW/kaEPybl
-	 N4kbNi0bxwazA1YbOLiyddk2PQQFDssYSSEeHBd2fkIkRvmUbrLzjPjzF6XhTAh0U5
-	 jlBP5uEawrXWuILN1fsoDS11F00d8zlB26UoKszf5zwXx40Pj+h7YPX4/KZiGEQI4c
-	 6Pi1Pnz7UV9Rw==
-Date: Tue, 18 Mar 2025 09:45:22 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
-Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au, 
-	andrew@codeconstruct.com.au, robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	Supreeth Venkatesh <supreeth.venkatesh@amd.com>
-Subject: Re: [PATCH v3 2/2] ARM:dts:aspeed: Initial device tree for AMD Onyx
- Platform
-Message-ID: <20250318-imaginary-peccary-of-argument-ab6b39@krzk-bin>
-References: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
- <20250318041224.1693323-2-Rajaganesh.Rathinasabapathi@amd.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHClK04FVz2yMh
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 19 Mar 2025 00:45:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=8/RzstvQ9BWwLvvMkrQEWveUn5iG+OyCk6DBs4Rad9Y=; b=TIykPaMSpNNvt2P5/a+iJhCdkH
+	ZDU27yEMxC6rC9OBHfa9CLX+uTPrfzKx89lqkaTMu80DUdw+cgNe/cB87UYF5GoGvpaKYXa51093A
+	Pv6f1eCCR9DEwQr3pZC1oPxCHdW0uc5m3ke99tB6mi7Q9b2N0Zt2MkC/rl1UySGgT60Q=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1tuXFE-006GSZ-5r; Tue, 18 Mar 2025 14:44:36 +0100
+Date: Tue, 18 Mar 2025 14:44:36 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+	"davem@davemloft.net" <davem@davemloft.net>,
+	"edumazet@google.com" <edumazet@google.com>,
+	"kuba@kernel.org" <kuba@kernel.org>,
+	"pabeni@redhat.com" <pabeni@redhat.com>,
+	"robh@kernel.org" <robh@kernel.org>,
+	"krzk+dt@kernel.org" <krzk+dt@kernel.org>,
+	"conor+dt@kernel.org" <conor+dt@kernel.org>,
+	"joel@jms.id.au" <joel@jms.id.au>,
+	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+	"ratbert@faraday-tech.com" <ratbert@faraday-tech.com>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	BMC-SW <BMC-SW@aspeedtech.com>
+Subject: Re: =?utf-8?B?5Zue6KaG?= =?utf-8?Q?=3A?= [net-next 4/4] net:
+ ftgmac100: add RGMII delay for AST2600
+Message-ID: <1a2dab82-ddb1-4c38-a576-abd1edd8d5e1@lunn.ch>
+References: <20250317025922.1526937-1-jacky_chou@aspeedtech.com>
+ <20250317025922.1526937-5-jacky_chou@aspeedtech.com>
+ <dc7296b2-e7aa-4cc3-9aa7-44e97ec50fc3@lunn.ch>
+ <SEYPR06MB513471FBFDEAFAA3308000699DDE2@SEYPR06MB5134.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -68,43 +79,63 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250318041224.1693323-2-Rajaganesh.Rathinasabapathi@amd.com>
+In-Reply-To: <SEYPR06MB513471FBFDEAFAA3308000699DDE2@SEYPR06MB5134.apcprd06.prod.outlook.com>
 
-On Mon, Mar 17, 2025 at 11:12:24PM -0500, Rajaganesh Rathinasabapathi wrote:
-> +/ {
-> +	model = "AMD Onyx BMC";
-> +	compatible = "amd,onyx-bmc", "aspeed,ast2600";
-> +
-> +	aliases {
-> +		serial0 = &uart1;
-> +		serial4 = &uart5;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = serial4:115200n8;
-> +	};
-> +
-> +	memory@80000000 {
-> +		device_type = "memory";
-> +		reg = <0x80000000 0x80000000>;
-> +	};
-> +
-> +};
+On Tue, Mar 18, 2025 at 10:46:58AM +0000, Jacky Chou wrote:
+> Hi Andrew,
+> 
+> Thank you for your reply.
+> 
+> > > +	u32 rgmii_tx_delay, rgmii_rx_delay;
+> > > +	u32 dly_reg, tx_dly_mask, rx_dly_mask;
+> > > +	int tx, rx;
+> > > +
+> > > +	netdev = platform_get_drvdata(pdev);
+> > > +	priv = netdev_priv(netdev);
+> > > +
+> > > +	tx = of_property_read_u32(np, "tx-internal-delay-ps", &rgmii_tx_delay);
+> > > +	rx = of_property_read_u32(np, "rx-internal-delay-ps",
+> > > +&rgmii_rx_delay);
+> > 
+> > > +	if (!tx) {
+> > 
+> > The documentation for of_property_read_u32() says:
+> > 
+> >  * Return: 0 on success, -EINVAL if the property does not exist,
+> >  * -ENODATA if property does not have a value, and -EOVERFLOW if the
+> >  * property data isn't large enough.
+> > 
+> > You need to handle EINVAL different to the other errors, which are real errors
+> > and should fail the probe.
+> > 
+> > The commit message, and probably the binding needs to document what
+> > happens when the properties are not in the DT blob. This needs to be part of
+> > the bigger picture of how you are going to sort out the mess with existing .dts
+> > files listing 'rgmii' when in fact they should be 'rgmii-id'.
+> 
+> Why can't the MAC add internal delay to RGMII? Is it necessary to add on PHY side?
 
-<form letter>
-This is a friendly reminder during the review process.
+The MAC could, but that is not the point. You need to explain how you
+are going to solve the mess you have in DT, why all aspeed boards have
+the wrong phy-mode. You need to fix that, and i will continue to NACK
+new boards until the correct rgmii-id value can be used to indicate
+there do not have extra long clock lines on the PCB.
 
-It seems my or other reviewer's previous comments were not fully
-addressed. Maybe the feedback got lost between the quotes, maybe you
-just forgot to apply it. Please go back to the previous discussion and
-either implement all requested changes or keep discussing them.
+> > > +		/* Use tx-internal-delay-ps as index to configure tx delay
+> > > +		 * into scu register.
+> > > +		 */
+> > > +		if (rgmii_tx_delay > 64)
+> > > +			dev_warn(&pdev->dev, "Get invalid tx delay value");
+> > 
+> > Return EINVAL and fail the probe.
+> 
+> Agreed.
+> I just show warning here, because sometimes the RGMII delay value will configure at bootloader.
 
-Thank you.
-</form letter>
+That is a different issue. If there is a value in DT, it must be
+valid, fail the probe otherwise.
 
-Best regards,
-Krzysztof
-
+	Andrew
 
