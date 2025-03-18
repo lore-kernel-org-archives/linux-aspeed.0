@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1045-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1046-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76B5FC282EC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 18:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34A0FC282EC
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 18:14:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHKf80hs9z2yrr;
-	Wed, 19 Mar 2025 05:11:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742321471;
-	cv=none; b=Nu+Q1SHmmvZMIgWvLej10tBOfV8Y3ByN0zQ0rY6q+HeKZ82e+qeT2qzzCjWKWkFFVZUtXyPoqVn/cycb3g+auA39xJUkrC9vvXOtuJ3CZd1DGKY4e/awnfBHq1aJNrkU2gd9XJUjw1C7zU/JhEMeXV8MZYPGDvDjhjITOd6B55tbwonp+aOr+eGl14SmJejFNsTwbpgPV0iEVddRgfc5ExVNdqn/9rwWED7g8FxS4fFDJcefsPE6KMdYB6J6/RFzTE9cvaZUepVtoSZYUVc///4KbCNMCwCHbtzHN8UxsKSb0bZ+TmPWoshfwEIv+KxRkDkZYy+VssZ3JZ+xVupwzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHKkH6FMSz2yS4;
+	Wed, 19 Mar 2025 05:14:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742321687;
+	cv=none; b=AvRw7oQxpk5FnvFlG+FUvZ4JUCtVoHK+EtWhRhtMcS6hJCU/TAjTXTtICJC2rBG/CZqkkuEIGkyUi/LV0dJNFiFkFGNdoOpN5TRRFTV7UdYKKLhgOLnPnguyhApXn8ze0sVCCqlPMcalA0T09xgmUUZ97cQRvGb8GEFnBwZ9vYq5LAp+IQoSfAsMbSt6A7aYykBLxtjf9bmSKB2qgU9BWvmonaHnBHYQXO0ol6Hk72/5XUs31E7eaV0c9Ozn8RHdXO4uIASlfxgS8ffD1xr5VRvPIZrFaMqpgWTCVlUGwWSz/bes/hb+Nc0k540oIESA3gJS9RrGK2qNh66841baag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742321471; c=relaxed/relaxed;
-	bh=dhxBklJjoiDjMWM8fz1bkfc7BtePXDzsgcwDoKT/AOM=;
+	t=1742321687; c=relaxed/relaxed;
+	bh=bmD5/qhZ6pfEIocn7be4gVxcBNmNNa4sasvxq2sv550=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jmTJreFKNb3ySv1imHWYfF/H48XrxiY0LS7CmTYlBccCB7Wq1rzrX1Faers5/TC/kvbmq1Q6818KMaK2OBJdWDEqIS9fdwD6N+FeDKr9hEfZpPUglXkaET1ejb5BR8/t2JP+yoS60WJWEwSmL43HwT2sLl/mGDaOEKmNh3t9LvAnqQKfsCvoUNb/NR33yBGIkywLoa7doK8SWZv4CDGWTQBsifi+vIYQUamxNL5Xd8UgBz3LWppubnFaPEOEgtwxnc8oN+YAQ4FemGvRxMu39MGy0pNxLtrGR9VbO7zjrKOqy1uEeOKWSYw3WxmljhhgpIgBzIDlgwuS1zE/+Fqf4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sApcvRWx; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=k/rt7iaV0McLTfHjEUlWyB3ddC+bOIyXMa7pmYtuGbZqRuFwCvBaTdw8buIoYRbFPSB2xTrhfL8znrXUv9HR2amRQUrWw6N1pgsC6iM+Qt3uENRhNjapFd/ziH/zqevbxYFK0gjdFfabkkYNTe6c29Z0zv0zTpDf8yf4EhhdqdRmojpFhYytppwmPJbfZLtfS+hHFaC5fFS+IIjqtzJA30Huf7P45HeplabcoKEYhx56K0+IOrxCazoZLQ5kYWZJuMc4IPijYaonrz0pQ7GyEz1BcqUDxFTFqWUGX44l5sFUviOkrBOFf8KSGou5uyxpeJW5/UijgKtpSLZXuSM4Og==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i2A6HzB2; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sApcvRWx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i2A6HzB2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHKf36KRfz2yrp;
-	Wed, 19 Mar 2025 05:11:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHKkG6h1pz2xQ6;
+	Wed, 19 Mar 2025 05:14:46 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id E6E045C593C;
-	Tue, 18 Mar 2025 18:08:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1261FC4CEDD;
-	Tue, 18 Mar 2025 18:11:00 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id BFB435C5940;
+	Tue, 18 Mar 2025 18:12:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 173B1C4CEDD;
+	Tue, 18 Mar 2025 18:14:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742321465;
-	bh=//wJdgEDdjcLFwZklfG7xg1CloFRvngCE0o9Vb24u90=;
+	s=k20201202; t=1742321684;
+	bh=j4D6yqwOvM+stQg+EqjghdyWoe81KJ/Poshes12g7FM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=sApcvRWxUxlRiyWnp75tt1fxhz+mQB5GWO6jGtdawrZSYXytqcn3ppHzU4y3SO1uk
-	 Tu0qIWWqqN90SNA/9iWUV1NQsknezWKegXG9AMnJYp0us+YhDdxVZqfr831o9xswvF
-	 7RtkB45z0c6CeBwZAYv+N3dtYxr95mSgMnqOZTwRiUw47+3LVTG7titIrI0aQv6HMw
-	 1P7ujLVBppBEqvFHUT/IafCW75+T0UxCxl3sYSYK7qm2njZXj5jXfG5MISuyK+FElh
-	 wFcep8ubVnOF6Ph5KbQ2t5Zl6S9+bRbRfK6irmZjdgO042bAJH6H9F9NDfsiyUEau3
-	 /WlVlF+MhWk8g==
-Message-ID: <cebf6611-4a9f-48fa-9226-e4a559e75ab9@kernel.org>
-Date: Tue, 18 Mar 2025 19:10:58 +0100
+	b=i2A6HzB2idOwrAhmmRv/qstaaT8x0rE3ysWNpjr+P8iXgcxuyYOIp4/duN9xntrba
+	 RTMZRwa1pU1vPOKqZ1UZleUQ6+90F67dv4MqFkMDWGlP1Csws0wCnoU356Ua7VvR8O
+	 ptEzJXSpeMyoZWmnCm/+zIvWRtqTZwKzxTmZyz+Kvj9ClX3m3s42CvdRcqi0E/tQj4
+	 cFq61w0Ne+0KLJYb8BM2SHZ/fytvXjXNsy8wzH+b0it/phM4Pesz6TBSWa8aAM6ru3
+	 lgoMHy8Q2PJWwVIBYJi3opAtJp1kHdcnXCZBi+Q0wMldYb5UQWwU2978gLQnhJd1oC
+	 S6lklk1Djmhvg==
+Message-ID: <af75c352-0010-4c58-b8bc-ac0d02337d1a@kernel.org>
+Date: Tue, 18 Mar 2025 19:14:35 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,15 +59,17 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/2] dt-bindings: arm: aspeed: Add AMD Onyx BMC
- compatible
+Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: Add Initial device tree for AMD
+ Onyx Platform
 To: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>,
  devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
  andrew@codeconstruct.com.au
 Cc: robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, jothayot@amd.com
+ linux-kernel@vger.kernel.org, jothayot@amd.com,
+ Supreeth Venkatesh <supreeth.venkatesh@amd.com>
 References: <20250318174730.1921983-1-Rajaganesh.Rathinasabapathi@amd.com>
+ <20250318174730.1921983-2-Rajaganesh.Rathinasabapathi@amd.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -113,40 +115,97 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250318174730.1921983-1-Rajaganesh.Rathinasabapathi@amd.com>
+In-Reply-To: <20250318174730.1921983-2-Rajaganesh.Rathinasabapathi@amd.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 18/03/2025 18:47, Rajaganesh Rathinasabapathi wrote:
-> Document new AMD Onyx BMC board compatibles
+> Add initial device tree and makefile updates for
+> AMD Onyx platform.
 > 
+> AMD Onyx platform is an AMD customer reference board with an Aspeed
+> ast2600 BMC manufactured by AMD.
+> It describes I2C devices, UARTs, MAC, FMC, etc.
+> present on AMD Onyx platform.
+> 
+> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
 > Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
 > ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  1 file changed, 1 insertion(+)
+> Changes since v1:
+> * Incorporate review comments
 
-Can you slow down and read submitting patches before posting or at least
-get someone experienced in AMD to help you?
+Which ones? I do not see my comments addressed and if you do not list
+them, I treat it as a clear sign you do not care.
 
-<form letter>
-This is a friendly reminder during the review process.
+> * Update commit message
+> * Remove vmalloc and earlyprintk
+> 
+> Changes since v2:
+> * Address review comments
 
-It looks like you received a tag and forgot to add it.
+Which ones? This has to be specific
 
-If you do not know the process, here is a short explanation:
-Please add Acked-by/Reviewed-by/Tested-by tags when posting new versions
-of patchset, under or above your Signed-off-by tag, unless patch changed
-significantly (e.g. new properties added to the DT bindings). Tag is
-"received", when provided in a message replied to you on the mailing
-list. Tools like b4 can help here. However, there's no need to repost
-patches *only* to add the tags. The upstream maintainer will do that for
-tags received on the version they apply.
+> * Fix checkpatch warnings
+> * Remove bootargs
+> 
+> Changes since v3:
+> * Fix stdout-path
+> * Change commit summary
+> ---
+>  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>  .../boot/dts/aspeed/aspeed-bmc-amd-onyx.dts   | 102 ++++++++++++++++++
+>  2 files changed, 103 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index 2e5f4833a073..1e6a130377b8 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -5,6 +5,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-ast2600-evb.dtb \
+>  	aspeed-bmc-amd-daytonax.dtb \
+>  	aspeed-bmc-amd-ethanolx.dtb \
+> +	aspeed-bmc-amd-onyx.dtb \
+>  	aspeed-bmc-ampere-mtjade.dtb \
+>  	aspeed-bmc-ampere-mtjefferson.dtb \
+>  	aspeed-bmc-ampere-mtmitchell.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+> new file mode 100644
+> index 000000000000..32509a651183
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+> @@ -0,0 +1,102 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +// Copyright (c) 2021 - 2024 AMD Inc.
+> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+> +
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +
+> +/ {
+> +	model = "AMD Onyx BMC";
+> +	compatible = "amd,onyx-bmc", "aspeed,ast2600";
+> +
+> +	aliases {
+> +		serial0 = &uart1;
+> +		serial4 = &uart5;
+> +	};
+> +
+> +	chosen {
+> +		stdout-path = "serial4:115200n8";
+> +	};
+> +
+> +	memory@80000000 {
+> +		device_type = "memory";
+> +		reg = <0x80000000 0x80000000>;
+> +	};
+> +
+> +};
+How did you address comment here from v1 which was responded with "ACK"?
 
-Please read:
-https://elixir.bootlin.com/linux/v6.12-rc3/source/Documentation/process/submitting-patches.rst#L577
-
-If a tag was not added on purpose, please state why and what changed.
-</form letter>
+What else what exactly fixed and what not?
 
 Best regards,
 Krzysztof
