@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1040-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1041-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7BD8C282EC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 16:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3514EC282EC
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 16:44:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHHjN4J74z2yrr;
-	Wed, 19 Mar 2025 03:43:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHHjk64Dsz2yrt;
+	Wed, 19 Mar 2025 03:44:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742316232;
-	cv=none; b=j1N5BpuJ6rk4Krbjvq23YtTzTgeTrCMtuJvD6shld8HZFx4NJm99sVzCpLOnL+I1ITiYvyglg6d8Ee9psA4JZKVz7TEYzrJFpsvmgdHg+eBKHqFLKPBVoH24CeKPTVpRp1SAgrk6zfLbxBFMB9BshSt341hVIcUezy6W0BOFUnxVrCxT08thuJoRlWQTei06igNt2B6L3kZmwL2MPhMFg5v80dDXrVm5FtWNmD+9yUmtFELbDcxNrKuRGRgIvpd8lg5Jg/Wy3QkU1l307x1bpEbF4JBrNbxFOcie7vKl1dyVRDTMUbIh6I+l2MttidFGVGUaisl2JVo7kphb3vJTpg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742316250;
+	cv=none; b=bk6w6Xhdon793I8l0ONpq57ytvu8EJczJlHj7UWwLd8OfIP5vhe8dX+TdHW44anHwKKXgoMjZfzF/psydyabC8FP80HfyMxqoxcNMSXQIyVLeX+tmVn3rz0KH7yJIP/ZEsMF+cxzWWaPS4UtkoPXOQ98PO5G2lxuDZJiQJ97OXZ0L2Ik8Weg9sP565+Q/KAJqbYAurn1Kf6wsgslXA90EJp2ulXkyrHMqOEC4ef4+pLPSGAs0PM/skZfqPRjBLJ/HTnty96x66OEIjCmVSEHoU0kYCBtDoMmN4i9w3gvtpjI4EiKN8GNlMZln+VLYCd24AsAm2AefOIT9/EO447gHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742316232; c=relaxed/relaxed;
-	bh=hRkq1ULLvIBrVNatUk5i63ENaYYJY3HBmsCPtJKR6vE=;
+	t=1742316250; c=relaxed/relaxed;
+	bh=ePmC0+KIjRqSg+M3AaOEM+CCVKkqUwdmpIff+KWRdLU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KsEMoBc4JoAQEMinoAn+1zIOAHMR3113h/bIAddETwd6s8iUJG1vLr3bXIotMUl6Mrm0HE6oF7mmk00ukh2M8yE//yVuS4/SMZBdIfqHZ5/G7YEz+DPt1iO8FgTgB95hTQ9E5PODIwmWMAE88mNeixKklVlHjIOxRrfujtPtOCFKOC2dbT6dnB9HoQ1GxCAJe2brBoNhWDWKfFcpoexoJFTMHEP5A4viE/wgXAuWAArW206u5ev6JPFxr7vcoVRN2RncFAlMN1LODaEjE3nGw7Werg4jh6fK9SF7bmI2h3sXEkxY/nP+YEFNrg6pZvcYf0OpMPxEn/wS3I9OT7VDvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hM4q24ww; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=HqhA81BX/Fm4hzC4XLcDITzBJnLovrKg0jL2vQg86y76u3LYGfwYOHhtwY7Xb4xLObV+m7U3XcOioQqGuNUrAN6uJsyQcFqcWf0gHS+l8TxakHx0uO5orDM12+EdpADYipaNh0SegNMfcYXqvxoqr3t4zlgkXp5/0wryR+X9+9JMOb3LalIAdE7ouXAN3nEnAdQIdnTlB/w7k91sp/x+8piXJs45lVX5cMroBRZGvS9G229Uf33ZpeMukS+Eo5xg+Fjh9Ut/c7JxiDFE6ZFZzwF4CQYQBxCb9nhK/EwGNc3Z/gS6Gc6u5eMnIbdlRSaEhkYV6F+xzcVqgOJHt28Zxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h6nbmN1B; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hM4q24ww;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h6nbmN1B;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHHjM56Kcz2yrq;
-	Wed, 19 Mar 2025 03:43:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHHjk004Tz2yrq;
+	Wed, 19 Mar 2025 03:44:09 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 9C7EAA489F4;
-	Tue, 18 Mar 2025 16:38:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2E07C4CEE3;
-	Tue, 18 Mar 2025 16:43:44 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 74CE9A48C06;
+	Tue, 18 Mar 2025 16:38:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C36CFC4CEE3;
+	Tue, 18 Mar 2025 16:44:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742316228;
-	bh=1ThGxiBTJ1d+vasYBvl6pVEHqhIezF4pFgLUTtbqiJk=;
+	s=k20201202; t=1742316247;
+	bh=ePmC0+KIjRqSg+M3AaOEM+CCVKkqUwdmpIff+KWRdLU=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=hM4q24www0m/e38FVCjqJzOCjYAc7qtG0XM7Rtdr/rTYp9wCEBOgEUtq3TrKgqgmS
-	 BA6PHtJAmY9sOvJ+s/eBf4cRZtU+5WZRQr5h4PDYuLKjh6uL8v6+KQt2MptpDXl8vF
-	 pusTzHxDdY2FpkgTg7Zs6IWIY7EoZHc0HypODcTvsdhTQfh7CmowUMQXtZN8syr24W
-	 xNaD5heHhP5pbv5CI18MRQd6861vEs7onyyEwb2juPHsyLUDMZTvuCDsExHbmyAY3U
-	 9g2Zs8pYxrsKgf3STtchtmRc4aLLFx9jRwym9K7K0lzUmFGFL6nEevxBTodqKHo53c
-	 siFG/FzjZAgFA==
-Message-ID: <1142f61a-63d8-4a3c-8f89-a7b3bbd6cdc9@kernel.org>
-Date: Tue, 18 Mar 2025 17:43:41 +0100
+	b=h6nbmN1BvYW04XeKvKGU8ofmetokOrVB782eC1McXlADeEv6UencZ4+AvTzVpJl2s
+	 OE4f9X4Xe05u6BIcD37nxsuINBhxm0svPuZtmXqPNXKYxB3QMAf1y/79/6hadMSqRf
+	 l2hpGoKAxTJf8kuafflKV+JNN56ZZbb5gaHu1iQXY+8csTJcwwQP+04Q+egBVdaBPS
+	 n16JwuCd6oZX3VkkOD7oHgT11sTl0AiC5fkKzvZkQMAX8o5hY/57DDXXcw7xEmVBl+
+	 znuIVkiu1K61Fgk8qmhsQ7Fbe4vRREFluSfOWzZ8vlwfiDe7iBtvhGVUG6QmJlyTI8
+	 ufa1edIo9xUeg==
+Message-ID: <5b32c913-7ae5-44b9-b9c3-84713d2f055c@kernel.org>
+Date: Tue, 18 Mar 2025 17:43:58 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,13 +61,15 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v3 1/2] dt-bindings: arm: aspeed: Add AMD Onyx BMC
  compatible
-To: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>,
- devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
- andrew@codeconstruct.com.au
-Cc: robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Rajaganesh Rathinasabapathi <rrathina@amd.com>,
+ Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au, robh+dt@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, jothayot@amd.com
 References: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
+ <20250318-rapid-coot-of-tact-d779ad@krzk-bin>
+ <bc27b658-5c62-4187-acdc-df8dc22161a8@amd.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -113,20 +115,22 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250318041224.1693323-1-Rajaganesh.Rathinasabapathi@amd.com>
+In-Reply-To: <bc27b658-5c62-4187-acdc-df8dc22161a8@amd.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 18/03/2025 05:12, Rajaganesh Rathinasabapathi wrote:
-> Document new AMD Onyx BMC board compatibles
-> 
-> Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
-> ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  1 file changed, 1 insertion(+)
-> 
+On 18/03/2025 17:42, Rajaganesh Rathinasabapathi wrote:
+>>
+>> Where is the changelog? What happened with this patch between v1 and v3?
+>>
+>> Best regards,
+>> Krzysztof
+>>
+> Earlier patches did not add dt-binding patch. Added compatibles now in v3.
+> It was a review comment on earlier dts submission.
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+Then your changelog says this is a new patch in the series.
 
 Best regards,
 Krzysztof
