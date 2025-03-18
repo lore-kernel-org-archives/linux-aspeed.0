@@ -1,49 +1,49 @@
-Return-Path: <linux-aspeed+bounces-1029-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1030-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0CE7C282EC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 01:25:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4AC5C282EC
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Mar 2025 01:26:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGvKJ3cVHz2yVb;
-	Tue, 18 Mar 2025 12:25:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGvM332R9z2yVb;
+	Tue, 18 Mar 2025 12:26:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742261108;
-	cv=none; b=hJLRcTkvwHXXWPOrXSQ6jxzuHbeHX42y590OtD4gSjWRsQeoUDskPgnPv1RwwwJnW/m2hoH34ioV2KWjtIa4g0Wfd2f2HUzDHxkE4W9ub1IpT0rfIYQlBxtN0sUunxkYKS5OfWjTwJqA0p1huPAbzFndR9DWdAV4XFH7xR0o5CCPcuvUnmnDUrerKBdGOxz6yPMHIGGRdkhsbz3tabPNAl28yTtF8bYlFU1gXlPkVZT/tmXe8Osow4lSyBrWJjN/YZFJDuO00byeutAia9q8W+b9lZXsmm1DxxH28qvhfd3I7gFTq3EhrzADOxJYfzEh+8hMdJdPfyx6egUOBcLc1A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742261199;
+	cv=none; b=Kn547GqziaROrbSwL8dI/iy+4zHwAcNqp0MX4wmUgouenchnjNSr+Jw36KW15lseKwyaojg96Kr9G3Qv/TNJN3wl9h27Vsb2Dd7X4VqdrCPhPBJzdse/jN9UlppZt8Ium8uPfCPfD7iW0zXgbbTmqLk6jZ6bziZEUqoA9eOWJPGEvZM5BwBeI3eIImJViBK4n4kiUjng+lz+kvP/hMhKl09msukUOFZ7l9HqEybZ8lJ2CNvvTrKZzcvVnwjZkPQkNzNa3ETEPKUONlY6QcKio/1ZQ3HUPcq8rU0SC66qINcHX1DoDKEobCP59QzVur1ED5l78FjVTEfBpOCDTf9oXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742261108; c=relaxed/relaxed;
-	bh=lPmp4bTaoMgGyxKWDl4hyootOO3DyrJbTpPjEsI959o=;
+	t=1742261199; c=relaxed/relaxed;
+	bh=8qKvfbybSgzxVC9QLPwnRVKlfys38kBlYo29Mi3CfoU=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Wt0GVDX+NAIo7zlcIhkvP0oDiuSI7GHY7P+Ew6h5wjSiQh47SIdcnZP7kpPreStgvQ26R77rwNq+lK1EjO0MHqMSq6ujUfhWs8FzKgceO+YGdaYx1vLcedarhP8gJQD+C3kKeZWBXQ7NTmDPpl/OSWgbhAIhD1NBY4JyDobYdJBtX+FlG7YYFG/4D6+uQHnHgKyN9TrKD73T9Iesd2kk8odqgSe7UgVyyGbvt/tJ4nTbjTknlpwm+keMCLMKxiNaBsVa0i80slvrrvLkzgVD68G1nTfea+mVfvEzVf1n4k3T2h/soc+9mzSiEpP0fczDupz5t5cHklMXqsWuIr2mLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bsNvKS6Q; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=oRLMX++KfRad3kAqaiOb7vb4UTyxk1o5jNySSBXM9V8sX2OdRStKzKLmumVjrmbcQ2aAEVPeff4h5dGb244FopXE/tnz6FPUbBxSNMw8WnZLrqdTX4nvrn2UVRUdgwFnVvUaB51xXZ6/ktrDknpU/av8QV+dodrANmXdpb2sHGRRXQzX2yfs3yHlDo84+2Phy7tH0QAh78OGApcjKadJ7yQwK02QNGG/CWUBDkruc6N+9G3/O+Fi9EgnpnkBkET4YE33mp40DQY/Z8jv0THoQSumJjIlXcMKR9eexGNuohwh/j09iZuTmIw3EzvRElzwPWHK1G37Qtc+/S1DtUOpZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=C+NGQUgu; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bsNvKS6Q;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=C+NGQUgu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZGvKJ0FxPz2yN3
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Mar 2025 12:25:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZGvM26n2nz2yN3
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Mar 2025 12:26:38 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1742261107;
-	bh=lPmp4bTaoMgGyxKWDl4hyootOO3DyrJbTpPjEsI959o=;
+	d=codeconstruct.com.au; s=2022a; t=1742261198;
+	bh=8qKvfbybSgzxVC9QLPwnRVKlfys38kBlYo29Mi3CfoU=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=bsNvKS6QD1044iBQatImnxqfM2ryIpayU6Xlej8mBkjEwgHgFdo+R6oFz2U3tP30t
-	 Bcq37i1W6QRUC4qYCJqm3SVWHFzrXv/q5burE+CtCXaD0oILvyJgA4DT3mg9z8cIXB
-	 Ejdt6SDdKdHeh7JkehZp/FtXZ5lW4CerqNRvXKCAGH1xXj0xZxL3rAMDwzcpkzM0Zm
-	 mlCY8Y4FL66Rc9H0ydXLFPJG72PZvR80ZZoTsVMLdgckIU379emKNfAmY5lqhx5FNP
-	 ZFgHLFwUS4MzKEKwVBIIeo839By+lfegH9Fx0XXzh6H9zhlTd6zl70ujcF5lCfVrwn
-	 ESvNiLxQitVcg==
+	b=C+NGQUgudkaryNlxpr+Bh9rYvk2OfGEBFs9x7fJ2Q1bAnXm9xqsV60gCn1kJVjx8r
+	 7UWvgJxoo9f+Xas+7ze2zyTisPdjRvt6v+tyvEBxQo8432S2UhwskhE77CAfXjzhYh
+	 NJAeFE4CsA3JGGjnriSHv6fW0fAZerqwjUzFfigHB81o+fq3Tbha3IWgEaAfV54MwR
+	 YzgoSJnCuq2BMgIvrT/xetkcK1/rFhAKLXCrX3q68/9a8WN05p/HmxO4NOMnEIz7gi
+	 90sFG6miV+Bm5HK1y1SxvCXjLaPy2ywC7atf/aY1fOTy+H5p1TE8aykGCQS7bnFdgX
+	 Rm+VpKU4VqdUw==
 Received: from [192.168.68.112] (unknown [180.150.112.225])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id DA1937A5D1;
-	Tue, 18 Mar 2025 09:25:06 +0800 (AWST)
-Message-ID: <bbc06c8cfd3ccd1847ec309f0fe4af80649720d4.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 13/15] gpio: aspeed: use new line value setter callbacks
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id C0D7F7A5D4;
+	Tue, 18 Mar 2025 09:26:37 +0800 (AWST)
+Message-ID: <ace3d4bfa8bf4d59e1578a5f8b7c9aa92a25d85b.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 14/15] gpio: aspeed-sgpio: use lock guards
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Bartosz Golaszewski <brgl@bgdev.pl>, Linus Walleij
  <linus.walleij@linaro.org>, Michael Hennerich
@@ -54,10 +54,10 @@ Cc: linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-pwm@vger.kernel.org, patches@opensource.cirrus.com, 
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Date: Tue, 18 Mar 2025 11:55:06 +1030
-In-Reply-To: <20250303-gpiochip-set-conversion-v1-13-1d5cceeebf8b@linaro.org>
+Date: Tue, 18 Mar 2025 11:56:37 +1030
+In-Reply-To: <20250303-gpiochip-set-conversion-v1-14-1d5cceeebf8b@linaro.org>
 References: <20250303-gpiochip-set-conversion-v1-0-1d5cceeebf8b@linaro.org>
-	 <20250303-gpiochip-set-conversion-v1-13-1d5cceeebf8b@linaro.org>
+	 <20250303-gpiochip-set-conversion-v1-14-1d5cceeebf8b@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
@@ -77,9 +77,8 @@ MIME-Version: 1.0
 On Mon, 2025-03-03 at 14:18 +0100, Bartosz Golaszewski wrote:
 > From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 >=20
-> struct gpio_chip now has callbacks for setting line values that return
-> an integer, allowing to indicate failures. Convert the driver to using
-> them.
+> Reduce the code complexity by using automatic lock guards with the raw
+> spinlock.
 >=20
 > Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 
