@@ -1,80 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1072-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1073-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 606ADC36000
-	for <linux-aspeed@archiver.kernel.org>; Wed, 19 Mar 2025 16:50:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D641C35FFA
+	for <linux-aspeed@archiver.kernel.org>; Wed, 19 Mar 2025 19:23:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHvpG5G0bz2yrp;
-	Thu, 20 Mar 2025 03:50:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742403014;
-	cv=none; b=bFhhjGUJEbS4Oe0rcoZn0/G9ctzvN5IvGD4HR6g+7XQyKtxwn+J7Pnfjdxl48myiRP0fyZJKD8lgGt9drsqHZ0uW47Diw/9LJTSoriOy8Xv7RcOv31h7/krWfrHdW4OUldaOstf2xCtGllwdoOoTAVKazCbTB6BMUh+FWbLMqxwM3i2x4zn3ChYcEFDsbm8l+yz4gvylXHd7apllnLa4NFcIMV+Zd5p4728EWqLynByHLN9Q1D8fOjJ3inOGrA/V6WHWYAlC+q3RzRSeMPG72zBh3n1Dzf/WunUOdHxAj6bi+XfBduVf+ZA5fh4s8tYCnX/KBbya/CxwCjOOHw9XpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHzBz0fjzz2yys;
+	Thu, 20 Mar 2025 06:23:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742412202;
+	cv=none; b=bO4tWGVqQlQRmJhufloxmDroQy7WGvQY22sO7z4b6mMxTnLj6o6RyAIwIY+Uc/frqQkGFC5dC+dR6rUa2p+YqeEfKH2Yo0HLYBmI3I3hCgMrsyTexqq5P+eKdJ2MOQYloLyLpzHUOtNrQwAlPTFyS/BjVbR4+cdl09BviWbRGyyJg3Lzj1UKDX0ADyL2AFJbMCs1QoV3uhg0tenjx4zw4DPftx9YyUvzEk6BEk1V6SaOe0TVPKPRnRgLtIdEMDG0VF9Zbbjz7X6q94ddq4qJKSbfy8Bp5CR6dLeSwHLLfjDo0DtCRukRYFVfRfO+WAYgt62CVLBOGlMap9nr0FkIwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742403014; c=relaxed/relaxed;
-	bh=ktd5HnARwuJ13vsAdMCAO/qEm+OczuyUS4W9n3wx7eI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=erERu2WRkRnhbHPVlgr6dHBXGzNhIFLZ3+7MvACl2/tm0dYW52/oomDDufIBAkX7gWLfZ5+mDWlQaRuqwm/y0KZepyfk9+aPvCoEHZquAcxHzT+2L5jE2LnLyMAK/hZm/0VUA5kiTwpL8DRtXYoxs/ccmZYmj4kkFinyUI+2G9HA3o5VJjrP3eIC1QmSgmXPJtZ0VYwovGe0GNCx411PQPX/wHJK9wLTarmjycg8ENWTG8IFG9is+i6LViefntNmRJAjYJ/w5TBOwFbWFbpZuHrBraxbMh6wjXVj7EzYSqjp3PXmMXkvVneVo3/ufukD3jcNS+iTrwlkzdqNecdkhw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=l1Dkxa+E; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1742412202; c=relaxed/relaxed;
+	bh=k/HZQ3Zahl7KcvExRpxIJjr5IKy9aN8frbDhjqdWNxw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=iI5EXR1WZR6n2er/N8fFco7Vq4JOdnytzZ1h+1wUuA66+aenWEoqPNi934w7YGVkLRujkjo3qfLXJllgFx86XFrWjiy3OWjDej+/oEmtPxbLhEV7WxZ1t8Xwe/PgCkSIFgjTqCuzO8/HeQKQfhi+H8pD+NxPXsyg3JXFP2SZy9K0Olh17sh0c1ckSOTSOIXF5+YezvckTMY9uPpVMgvLHbwQKyvAGSKJlKkhrfg7jDiyqwB4tEggk5nAYqJArxOcb10ksE3jAzs4enITKHMHYMFz/rhN2uTMvhJlfqUzxcwHJOgn+aUbOxGseTvm3pw1O1ldCZglh5mey28as4oC8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DJcjSaFg; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=l1Dkxa+E;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DJcjSaFg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHvpG0klkz2yqQ
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Mar 2025 03:50:13 +1100 (AEDT)
-Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-2ff799d99dcso7876980a91.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 19 Mar 2025 09:50:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1742403012; x=1743007812; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ktd5HnARwuJ13vsAdMCAO/qEm+OczuyUS4W9n3wx7eI=;
-        b=l1Dkxa+EuXti2ztTw5YlWh1XEUKXPvStut0lB34gDqNXYjYmMxGOGMlhNzTPLt1+30
-         NHviazh0vBJEALszIIcynzB18/SH+T/3tS8o8aKujeZygobw5Jck2K9C6D9ZjbPrLBfN
-         zCma7+YV8fAwFNS70V4tyhZ8RRwcwoKXSVivCpOAvNTRNnfJGMu2zw9aGI8oCLG4XpbQ
-         ZBRHln8pZz/oO1R56eTeBfqbbAOYZ9ioSuLZetl9oXszncvmCEtdUSMm6zP5W42lXoYm
-         CnVZrc5jTFEDvsWD2YJfQ323PXX3TFLID4JL0+k9Maup3l5r1qq1n9Y5OVhmi3pjOYv/
-         E0dg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742403012; x=1743007812;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ktd5HnARwuJ13vsAdMCAO/qEm+OczuyUS4W9n3wx7eI=;
-        b=FdZOcxGu1GGqqlFrAsiZbY140Cv0HMRDo/Nl8e9tNmDeO/EhsoixTuLAi0Mxk3TwSQ
-         0vfnTNWzsMorJr7+vOknAyOHHWjqO9cBA9buZEj9NcGnnEBEp+Oyw/5dT0PzwN6BwgKv
-         x0mQBosn9ndxveuuOZRdwsHrI3V+Jbn2sDrOfaHIA1QdwRNU3Iw1fOyr41C7OEeoG6wT
-         Tyv2YJNB/lnXNb2lFTb4AoLCzqlfw+ppGN9OzekUswMijFG/HieVlRFxHaXiNcRSgpin
-         yl0MEGnHTy6+3RvFjgEFZCjmzNaIZOLU6I2ACcsQJECFEGAimZ1MUpl4MAEw7x+gKX6e
-         eD3g==
-X-Forwarded-Encrypted: i=1; AJvYcCWff5c6LvW+0HZO/jS2bKRpDhIj52wMKmMDDL+NxV2f+QMC7ljo7YynLXkieoTSm3QxvGCsDSMO/9rmjQk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxD3wAmOFqJfS/DOmZH23L3X2mDsz7g8YeszIGxJq8t165rLI3a
-	D5x50Pp5+XqFd0YVhB1Fs5eM7mmZCQomrPaI28WWK7kENae9mP+S
-X-Gm-Gg: ASbGnctThAKzaL9uXgTUFCNIq4HWvEpDyg6JHiUwisQ0rmFiUmQ4aXvK58ukhNf7LSF
-	izkSBMHyqB0docT1reppYoMGLQeS3IzKA9ozcf0v4Iu1xM+n2Cy3TB5l4hSn75dFMXyPdoGoEAZ
-	4UofmmhN6CkiJx6OOZMMpVcjEyrdx4OMKbD56YlV8dpDdrnG7dw5IHeaRWFifRBMT8M56r4i5G0
-	qlWaa6yRHDgLTah6s8OHBcqfhHSJ5cZERRSSfI0cqg6lbcbN3i+agpk4gUlAh0k7MLc/4LuaUK1
-	4+ZZJ+4w2ja+J65A/Awy5o0L6fv7jFUzWsC1wnBseMpKQSgmVJL5c+l4C5bOsQc7CDKfAEk3GhK
-	UCuBTA/MrIo7UYUxff01pUg==
-X-Google-Smtp-Source: AGHT+IGxXevDtQdSFbDZHtjF2RHmeqCAKr0zaFPCSHEdfmgNst33MgVmH/JXly1hqvsrRFBXTDuyMw==
-X-Received: by 2002:a17:90b:2647:b0:2fc:b40:339a with SMTP id 98e67ed59e1d1-301bde60960mr5555739a91.10.1742403012272;
-        Wed, 19 Mar 2025 09:50:12 -0700 (PDT)
-Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-301bf576bc2sm1863641a91.5.2025.03.19.09.50.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Mar 2025 09:50:11 -0700 (PDT)
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Thu, 20 Mar 2025 00:47:29 +0800
-Subject: [PATCH v4 8/8] ARM: dts: aspeed: catalina: Enable multi-master on
- additional I2C buses
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHzBx6zCcz2yyT;
+	Thu, 20 Mar 2025 06:23:21 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 5C5DB5C6144;
+	Wed, 19 Mar 2025 19:21:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1FD5FC4CEE9;
+	Wed, 19 Mar 2025 19:23:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1742412199;
+	bh=r/XHbPpCDJg8LK6akBmJpvgVHJpTE1lx9iFi1+FW9MU=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=DJcjSaFg1WzjsfwN3S18h/TNsv+xT7Mfh/G3Ev/9JixtH5vs/cqkDaL5bIq0bSPp8
+	 CVGw9HXbJNMdxd0hCCo41zii/BvmkX9CbQ8tKJ1revkGZxxa/VlFf4P25TYt+xiJob
+	 4mI9hyx1WBLYCFfuv276gPhY3WqUZz5twwHydHId59OIiv1SLO6v1b6s207i2iKVvL
+	 roAKJa9XUgMVWf3hMsavNsfosOoQDpwdFOfw5kWZV1yWG2gnhyc6Fzvhvya0yEzahb
+	 nXziJePKSbeQQAjtDLL/yMzmb1OsTUzF1+VJtBTfa8ygzxaZ7455C7bccnu4BoCp4Z
+	 n2Zf1cERFJOlA==
+Message-ID: <b75a5c14-f399-45e2-80f3-923e7afe78ab@kernel.org>
+Date: Wed, 19 Mar 2025 20:23:11 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,60 +58,180 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: Add Initial device tree for AMD
+ Onyx Platform
+To: Rajaganesh Rathinasabapathi <rrathina@amd.com>,
+ Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>,
+ devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au
+Cc: robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, jothayot@amd.com,
+ Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+References: <20250318174730.1921983-1-Rajaganesh.Rathinasabapathi@amd.com>
+ <20250318174730.1921983-2-Rajaganesh.Rathinasabapathi@amd.com>
+ <af75c352-0010-4c58-b8bc-ac0d02337d1a@kernel.org>
+ <8c7be61d-d5e4-4f7f-a995-06cf856a84ae@amd.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 fv0=
+In-Reply-To: <8c7be61d-d5e4-4f7f-a995-06cf856a84ae@amd.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250320-potin-catalina-dts-update-20250102-v4-8-7c34b8139014@gmail.com>
-References: <20250320-potin-catalina-dts-update-20250102-v4-0-7c34b8139014@gmail.com>
-In-Reply-To: <20250320-potin-catalina-dts-update-20250102-v4-0-7c34b8139014@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Patrick Williams <patrick@stwcx.xyz>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
- Potin Lai <potin.lai.pt@gmail.com>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1742402988; l=1008;
- i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=jtqICxpttL+081MeVsrW0PF8g0r+obZJAZMWsooXIQ0=;
- b=x6Gzmnb1MJYvPzx8ZwKN1PgPtzH5ZXo5LlnNEMXuS0IyPsgHR2WVwVGglPj2osLT16/A3QCp2
- K9s+FG9+ciTAQDpvzrXkOqQ9lzlBFMDWvik3mUz8hcRRxrN+hXsLbaH
-X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
- pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Update the device tree to enable `multi-master` mode on I2C buses shared
-between the host BMC and the NV module with HMC. This ensures proper bus
-arbitration and coordination in multi-master environments, preventing
-communication conflicts and improving reliability.
+On 19/03/2025 17:41, Rajaganesh Rathinasabapathi wrote:
+> On 3/18/25 23:44, Krzysztof Kozlowski wrote:
+>> Caution: This message originated from an External Source. Use proper caution when opening attachments, clicking links, or responding.
+>>
+>>
+>> On 18/03/2025 18:47, Rajaganesh Rathinasabapathi wrote:
+>>> Add initial device tree and makefile updates for
+>>> AMD Onyx platform.
+>>>
+>>> AMD Onyx platform is an AMD customer reference board with an Aspeed
+>>> ast2600 BMC manufactured by AMD.
+>>> It describes I2C devices, UARTs, MAC, FMC, etc.
+>>> present on AMD Onyx platform.
+>>>
+>>> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+>>> Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+>>> ---
+>>> Changes since v1:
+>>> * Incorporate review comments
+>>
+>> Which ones? I do not see my comments addressed and if you do not list
+>> them, I treat it as a clear sign you do not care.
+>>
+> 
+> Understood, will list them in next patch submission.
+>>> * Update commit message
+>>> * Remove vmalloc and earlyprintk
+>>>
+>>> Changes since v2:
+>>> * Address review comments
+>>
+>> Which ones? This has to be specific
+>>
+> Got it, will add details and fix in next patch.
+> 
+>>> * Fix checkpatch warnings
+>>> * Remove bootargs
+>>>
+>>> Changes since v3:
+>>> * Fix stdout-path
+>>> * Change commit summary
+>>> ---
+>>>  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>>>  .../boot/dts/aspeed/aspeed-bmc-amd-onyx.dts   | 102 ++++++++++++++++++
+>>>  2 files changed, 103 insertions(+)
+>>>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>>>
+>>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>>> index 2e5f4833a073..1e6a130377b8 100644
+>>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>>> @@ -5,6 +5,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>>       aspeed-ast2600-evb.dtb \
+>>>       aspeed-bmc-amd-daytonax.dtb \
+>>>       aspeed-bmc-amd-ethanolx.dtb \
+>>> +     aspeed-bmc-amd-onyx.dtb \
+>>>       aspeed-bmc-ampere-mtjade.dtb \
+>>>       aspeed-bmc-ampere-mtjefferson.dtb \
+>>>       aspeed-bmc-ampere-mtmitchell.dtb \
+>>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>>> new file mode 100644
+>>> index 000000000000..32509a651183
+>>> --- /dev/null
+>>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>>> @@ -0,0 +1,102 @@
+>>> +// SPDX-License-Identifier: GPL-2.0+
+>>> +// Copyright (c) 2021 - 2024 AMD Inc.
+>>> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+>>> +
+>>> +/dts-v1/;
+>>> +
+>>> +#include "aspeed-g6.dtsi"
+>>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>>> +
+>>> +/ {
+>>> +     model = "AMD Onyx BMC";
+>>> +     compatible = "amd,onyx-bmc", "aspeed,ast2600";
+>>> +
+>>> +     aliases {
+>>> +             serial0 = &uart1;
+>>> +             serial4 = &uart5;
+>>> +     };
+>>> +
+>>> +     chosen {
+>>> +             stdout-path = "serial4:115200n8";
+>>> +     };
+>>> +
+>>> +     memory@80000000 {
+>>> +             device_type = "memory";
+>>> +             reg = <0x80000000 0x80000000>;
+>>> +     };
+>>> +
+>>> +};
+>> How did you address comment here from v1 which was responded with "ACK"?
+>>
+>> What else what exactly fixed and what not?
+>>
+>> Best regards,
+>> Krzysztof
+> 
+> Thanks for the comments.
+> I will add 'Acked-by' and in next patch submission. 
+> 
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-index 573701bb7fee..c11de5a61912 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-@@ -800,6 +800,7 @@ ssif-bmc@10 {
- 
- &i2c12 {
- 	status = "okay";
-+	multi-master;
- 
- 	// Module 1 FRU EEPROM
- 	eeprom@50 {
-@@ -810,6 +811,7 @@ eeprom@50 {
- 
- &i2c13 {
- 	status = "okay";
-+	multi-master;
- 
- 	// Module 0 FRU EEPROM
- 	eeprom@50 {
+What? Where did you get it from? Are you sure you understand submitting
+patches document regarding this section?
 
--- 
-2.31.1
+Read the comment given on v1 instead of some random actions.
 
+Best regards,
+Krzysztof
 
