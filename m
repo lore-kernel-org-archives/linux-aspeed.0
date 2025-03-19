@@ -1,51 +1,81 @@
-Return-Path: <linux-aspeed+bounces-1074-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1075-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18A60C35FFA
-	for <linux-aspeed@archiver.kernel.org>; Wed, 19 Mar 2025 19:29:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 544B2C35FFA
+	for <linux-aspeed@archiver.kernel.org>; Wed, 19 Mar 2025 22:46:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHzKd4DF1z2yyx;
-	Thu, 20 Mar 2025 06:29:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742412549;
-	cv=none; b=b0urDSPgx+yeqpCBBn/6CrIvYeuFOlq4qWq2/NDrmZrcvp+GSNfeqWTxe/jPJVqSTeMw2uCOGmkm2yl9Dh5gSJGZMHw2RlCFk4xKaQMNupHBu8jF3+69jY0xgk5LRrW0QBk1d7qdwqQVkkvsSzlgfhlny34rHWVJXr2fh1frQvfWsUAFVyUQs8KSDUm190T6QxL1xFA6voQdSgN6x7NvlF4/2J9z0VHigSJaIsAQI9CE91LLiWxzJQBuCderEi3JBSDBPNTRerV5w2r700gfHiOVC0+3lyH3iMM03d1aTobZ0wcGxLaRbOEO2HDQxHI98g2GmOPBa+4BmDRI0AyThQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742412549; c=relaxed/relaxed;
-	bh=zbmHU6yoDwVXekz4tTQKe7pROirEewngkxi6bRGCAYU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ShLM0aCIs29LDmAwgKhgO0Gf1QI5V1gSthsDYndaWfAss7X9rqftBgrLm7xPi4Zdeu7tSmdoNew0JAJ2kGgBz2Sb6Rv96juBmvT9MBsqiToFD8z2j9gjCew6Xo1dZG07oy+wGu4s4ngIwVSLieLfS+f9o0sMz6y2J3lE4MmjUuVY1Utd9zcKegBBbWIl8jcwBpa/vuq8QWeKrA2b8nS3VQutQ/vkcpgj/3+SBO6KjwSMKNJV9BfDa2fvIGMc9M4y64w2mN1ZszzYHD2A2pplcqJnowFL0q7I8gzJqA8sIyCdh3DcAEcQdC6Ilnhk6H9nFVMzbC6hWkQA3/YxdzRw3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pzO/WD9d; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJ3j35QMWz2yr9;
+	Thu, 20 Mar 2025 09:46:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2417::609" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742402524;
+	cv=pass; b=NDUx2sX7U8rbSgFRZ5Lbg211q2jJ9LoKiyWNNbMm2L0SUKDx7+o0Z/vTe25fS9AVJbG/CTM+8hwkhamTjfJqQJ6p1usY6I3gkMvRVFGqgtjxvI8eS3/JIcH8krUTohUWLEL4ZZKq32VcDAcE+XyUevWZhz5hvmEjhBE0sjWz6xq5kHKPm4Tq8sU/D40BzAEzsiwnFTfcuVWsyItECPetvnuQpojJF6GUVrQeeuFJw74FnBx5PEI/NNAnvu6GP0jO4gLMRNuHoZijlH1F5C7vEdS/fQ1ErCzKjtMSf30vMKc10RwKUxZlYhKOkXkB+t2LEbqkT34XeuPcncAlYHflGA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1742402524; c=relaxed/relaxed;
+	bh=cWQwz0AXkIyIUn2ezOvuaMMfacGPMiIzuEhHRVpEJwY=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=o1JNrKDEaXZUSbPmNDPPhKLrxZPz8h7GMBOnEaJzZwa1gtHIXyCq09NMqpmSn0ek9BdNb/qquqLI03P4aIzJuIkxMl7VIRXdxvachx7nd/pfimsIwJzJhq3GFxMOEgJmWMrLolt1Oc0ZMs+CI5QrNRyevzeYLpQ70jLWAdsIy39cksk4wj4AMN+gIV5EC9ZlLAZLIOIknce8s0I7w1mJKSZFmbq9c4Gcf46qmA21hPw/Cve7Ue6zA3SszoFYDHTHFL6EQ7DPLtLmz4a0fVBEfrIZtSTF0UZ2zqXNHLwLzCvbW/f5T2MRLwXUOPLhYUatGzr3BHYbTPOrnD2Yg2KxOA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=NEqGH+nF; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2417::609; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=rajaganesh.rathinasabapathi@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pzO/WD9d;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=NEqGH+nF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:2417::609; helo=nam12-dm6-obe.outbound.protection.outlook.com; envelope-from=rajaganesh.rathinasabapathi@amd.com; receiver=lists.ozlabs.org)
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (mail-dm6nam12on20609.outbound.protection.outlook.com [IPv6:2a01:111:f403:2417::609])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHzKc4p6Yz2yys;
-	Thu, 20 Mar 2025 06:29:08 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6C1A8682F4;
-	Wed, 19 Mar 2025 19:29:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E0A4C4CEE9;
-	Wed, 19 Mar 2025 19:28:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742412545;
-	bh=ZzMX55IjDIprWqceWohngFCM6EBQHJSx4FKfnv2T0Ac=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=pzO/WD9dL5W+fwp7FqW8OjOYtwusOt0EiiKi7IrOJ8q9ngMf6Kq3cwcm/WCzb3xDq
-	 bxseUheWXp5G01aDdO3IfNGmWpaN/Sg7jRw2UBA1ezdzcVPY3kz+1z7iD9IQ2iIWkt
-	 utGAd7YoEcVwmy+kyqB2rC5u3tHkX1MtT3ZpxSay1C2Ut9wFA4A+ZIRcuLUOMdJhpo
-	 cx8xbmJNjvJtufT9nODAFx2t0a4VmeYnSgcg3tAXO9up2Pquh7OadHBtgMk5SL08Il
-	 4g85Qv9OOygkFUK0cu5vUrThgvQI3hPFrdbe0xMOOj90pw7ueY7lK4Tzc0iW4iOpgs
-	 Uryed/e1F8ksg==
-Message-ID: <44f2387b-0a86-46cc-a5d2-950dd688b207@kernel.org>
-Date: Wed, 19 Mar 2025 20:28:56 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHvcp046Cz2yf9;
+	Thu, 20 Mar 2025 03:42:01 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=OOml4Yl9jTY0d26Qu8GuscXYAwdPooK1SMPmHHKMQeTkaJ3iYYACpj2hG3xAKuRDiYVL+sjgwcI6iWx+v/H5QUeeRztDzq3bvmvIw60k35ugBwRit3DpJfMmTtDI6tpcAXW2S/gWWJ57e16FtBBYlaxhIrVV9W+ILAhjyAjlX0C3vvb52qlTb3iqLDh1BDu5e2/I2QhdBgbdcO9H1z5a90BfleVNi8zvNhlG6v5Z18bFa4395eF6aN9bLgJH47MGDy++rAXvMqJW+kFNzPTB0PgYAzoE9shF0pJsCcPJAjks7DKxjvHHKZQzerAko6teM5nvO6HLsrp+yUiGM+/pIQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=cWQwz0AXkIyIUn2ezOvuaMMfacGPMiIzuEhHRVpEJwY=;
+ b=xiFjV45DARQt38RQPgC/ausbTWa/0gidn/D4deRUFFORsBriMfsEpEtOJ/9SgfpfGmXgOlwDodzM02nWzLkkv4BDX6s4dDLVodRlgcIzWj0LoTlXxr5Pq80tOBEIQgrxazsm91kuVrDb9SYcUPgov2EdupmdsUiPus+GM1ZSwdfCxTiNWtnPiBSxAS+u5iew0I/z0RUGt+WgeIYCsC0N0oYHCC+tanaIpX/i7iTxJZzHdhEZwfiN2pBrtEdUyrejKCktS5zLPC1hts7yMoKHD6EOeJOiucPHD7KlpGKmG75QPRUPv0l0v+aK1V8DbzYgdJ7ztUxTrc6dhDsvfihWMw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=cWQwz0AXkIyIUn2ezOvuaMMfacGPMiIzuEhHRVpEJwY=;
+ b=NEqGH+nFtzy8T6QnARV1pAVX4rMHV13CTr+LbIttOJQqqSAvxwYB0D7HqTPvimBxpTcVq1d1Ozz2Ljp0uZehaWONJxsP46GI5Pc+ueek+gymKWsWvb+kbYdFawn+quEWLLpQjEwfiRFhpWySJ76+67PpENh5b+DAMtClRYKkuf8=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from DS7PR12MB6285.namprd12.prod.outlook.com (2603:10b6:8:96::8) by
+ DS0PR12MB7745.namprd12.prod.outlook.com (2603:10b6:8:13c::8) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8534.34; Wed, 19 Mar 2025 16:41:38 +0000
+Received: from DS7PR12MB6285.namprd12.prod.outlook.com
+ ([fe80::6acf:b37d:a152:409e]) by DS7PR12MB6285.namprd12.prod.outlook.com
+ ([fe80::6acf:b37d:a152:409e%3]) with mapi id 15.20.8534.034; Wed, 19 Mar 2025
+ 16:41:38 +0000
+Message-ID: <8c7be61d-d5e4-4f7f-a995-06cf856a84ae@amd.com>
+Date: Wed, 19 Mar 2025 22:11:30 +0530
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 2/2] ARM: dts: aspeed: Add Initial device tree for AMD
+ Onyx Platform
+To: Krzysztof Kozlowski <krzk@kernel.org>,
+ Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>,
+ devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au
+Cc: robh+dt@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, jothayot@amd.com,
+ Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+References: <20250318174730.1921983-1-Rajaganesh.Rathinasabapathi@amd.com>
+ <20250318174730.1921983-2-Rajaganesh.Rathinasabapathi@amd.com>
+ <af75c352-0010-4c58-b8bc-ac0d02337d1a@kernel.org>
+Content-Language: en-US
+From: Rajaganesh Rathinasabapathi <rrathina@amd.com>
+In-Reply-To: <af75c352-0010-4c58-b8bc-ac0d02337d1a@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: SG2PR04CA0162.apcprd04.prod.outlook.com (2603:1096:4::24)
+ To DS7PR12MB6285.namprd12.prod.outlook.com (2603:10b6:8:96::8)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,86 +88,199 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] ARM: dts: aspeed: Add device tree for Nvidia's
- GB200NVL BMC
-To: Willie Thai <wthai@nvidia.com>
-Cc: andrew@codeconstruct.com.au, andrew@lunn.ch, conor+dt@kernel.org,
- devicetree@vger.kernel.org, dkodihalli@nvidia.com, gpiccoli@igalia.com,
- joel@jms.id.au, kees@kernel.org, krzk+dt@kernel.org, leohu@nvidia.com,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org,
- maryang@nvidia.com, openbmc@lists.ozlabs.org, pmenzel@molgen.mpg.de,
- robh@kernel.org, tingkaic@nvidia.com, tony.luck@intel.com
-References: <93bb3092-7f49-4a7f-ac97-3cf1a62ac39d@kernel.org>
- <20250319112451.4171471-1-wthai@nvidia.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 fv0=
-In-Reply-To: <20250319112451.4171471-1-wthai@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS7PR12MB6285:EE_|DS0PR12MB7745:EE_
+X-MS-Office365-Filtering-Correlation-Id: 6b658751-5017-4677-4990-08dd6704eb4a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|7416014|366016;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?YUZRVEMrWTFrbzVSS0ZYVnFodDJPUGUyWmp5Q2c4dDhsM1VCOUF6U0U2RU95?=
+ =?utf-8?B?a0NGM2tBTDRMQkVieTRVaVpNbExhWXJsQTkrK29yOXM1azN1ZFBqaG5adWtm?=
+ =?utf-8?B?VThGOFlrTU9TT0dGYkZYQm52WjRtRU04YnFGZDFIK25sT05IclN1SW5sait4?=
+ =?utf-8?B?TmFXT0U5ZzhVc1BlZ0pKcUY3RnlvdlNVOGxSRGV0MFpYRzZhWkhYNzBSM3Fk?=
+ =?utf-8?B?SUFjU0ZNODBqNVBBZHphZkpHYlhDWWo3RXFMdlBRTmNxN1NKQkc3ZCtrU1Rw?=
+ =?utf-8?B?QUsvVzl5cSsvWVM2VHFOUUdrN1BIcm9nekRKM3RUemF6U2tNZ2UvaWp4MEpZ?=
+ =?utf-8?B?WnVCaHJwY2tRNzk1clhpRjdQWGlod1poNVJIUkVxZSsrQ0ZmMHhBQnhWOGpE?=
+ =?utf-8?B?Y0tMSnBkS2ZscjY4b2tZWXZmSFJWN2JkTTRtdFhqVHJkY0VINVp3YnRaKy94?=
+ =?utf-8?B?cDlZRmFtK1U5aTBxaFlRRExOQ3lDbkRHeEhiYjluNGFIMFJscWxJa3dzQXFM?=
+ =?utf-8?B?dWRPbjFmRU1aWjA4RHRBNWdhUlhWM0EvdUJISlArWmlBWGphZnQrV3pOSFp2?=
+ =?utf-8?B?aGJzL21SYmlaeU90ZVg5dlRqZnZPczNPZXpBQWdrL2dEQnh0TG1WSDZGbnQ0?=
+ =?utf-8?B?Y2RyMDExT3E3R2VTUkI0R1pHc2J0OEpCa2NjTzRYYnBDK1UzcC9nRzNYUHRx?=
+ =?utf-8?B?UFdYUldzNWtORTlnVTAxUkpxRjJYa0M2RkFzTUx3d3lhWWJpb1dnSmcwa0xs?=
+ =?utf-8?B?TkpkMWNJcC9sMVhtU0dabTF6NUpDVEZTQ29mMG54YkRYTWt5alQyLzk5bWVu?=
+ =?utf-8?B?ekJlbGNJeG93RzY5SlpxMXVSTlFhclg0YkdNWXZ6ak03QWREVmNEVUovelh2?=
+ =?utf-8?B?UTc3b204ZUx5TW9kR2pONWNZVENYV1ZYQ0x0cGJnaUY2N0R1bkkxUFVCRnAv?=
+ =?utf-8?B?WU9uNFU2K1lrQWJadDVwQ3RXZnRZRjJxYllXSmhOeUl2T1Bnbno3OEdnUUlF?=
+ =?utf-8?B?eFdGclJmN0ovemtrZkQvZzM0dWtSTmw5YVJuaTFwMDRFckhROG41ZTJxSzNR?=
+ =?utf-8?B?R09zbmtlWHIxS2pIT0xobGFYd2VSMHY3RHhFMGEvcGk1ZnlxeWRKVTJuaDMy?=
+ =?utf-8?B?SkxET2dJUEQrdis4b3NkWkRuQmo0T3dFMzZ2OGk0VWpWajZGUFR2MzNOUVl6?=
+ =?utf-8?B?OFJaREp4aWxsWUxsaWhsZ1hiUE43WXBSUTlmV2FQaGhHRDcyYTdMNlAwdGQ1?=
+ =?utf-8?B?am1jQ25ZcTFidldhd0Q5S05BSjczNGY4SEE4OW8xOHlLWkhzVGNNRFkyUEJZ?=
+ =?utf-8?B?Qlp0bXRQaTdkNEd3aW4xMWFVL1NBcnpRbHhxYlE5ZFpxOUZycUVoSyswWHdL?=
+ =?utf-8?B?OG5UdlhrbGRyTGs4RS8rcmkxUkxyZXlBZGVscGJEbTNvVExhMFB5NVpiWW5P?=
+ =?utf-8?B?TXM2blVxYmRDZi95Y2VTQXkrc1B1K2RFNjNySWFMK3hoSWNWNjFZbk5MWTla?=
+ =?utf-8?B?SWh0TmZldU5yb21WU3QzQlhyQ2FUeE5UVGEraUtrTzR1WXVwVXJ0Z1NxV085?=
+ =?utf-8?B?TEM5WjA0WEh2MHRYY3p1Q1IvU2xQMjdXZGxxTWNvL3RQemJ3T0tSZ0VraVB1?=
+ =?utf-8?B?UHJxdndHVkxSdlptWXVwd1JQRE00cEc4QlQxbDBhVFlUY015L3VEWGJPN2dX?=
+ =?utf-8?B?UlJOaFpkUFVvNGRXSWJEUERqbzVqT1B1bmJVbGhGU1dsMTdRR05xalJvajFl?=
+ =?utf-8?B?THBSMm4xdUgwSms2aWJqUCtoY2FwOFZqeW14V1dLYjFNYmxlYXBXazE5Q3FO?=
+ =?utf-8?B?ME5Lc1JraW1McU5ZbWZ2a0xwNDZQdHprSU1KSHFHNVBTWlY4NlVhN2FON3Iz?=
+ =?utf-8?Q?d7Cw/9ABuLRke?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB6285.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?MkxtQ0dCdS9zbHRzOWZIWGVPbkVndUFLbWtGVW5pMVNxbkh5S3EzNFBuL0ov?=
+ =?utf-8?B?OW1lSUNqNnVRVzF6Q3cvbUg3T0Uzd3g5NDZjVXRPRlVDRkYyNlBwdHZIUmZH?=
+ =?utf-8?B?Rmh6U3Q0VFFCNGdweWZ0SWs1bkgwSGJvd0FMNWNGN0VQNkJIY1pXSFBUZGls?=
+ =?utf-8?B?Y0V6cVc5MHUvYTRGK3Jmd0ZLMUV3S1NmcS9YQStUQkFuMVNmVjIxc1dpRVlp?=
+ =?utf-8?B?ZEhJYlhIMEwzRVU5RlVnN2gyTUh0TzRpY3o4aTBJR0l4dDM1Rlg2TUI4LzZ2?=
+ =?utf-8?B?L3JqS3BjVENHRk4xeVl1NmsvWnlQN3ZxOUsvMTlIK1NQVlZveER6d3ZDQTE5?=
+ =?utf-8?B?a3p5N1QwRXdueHdDb1N5d0lraUNBTldLTzBBeVBLNHRuOXJ5Ym9nT25XWFdi?=
+ =?utf-8?B?TDJvOVJYUFVWUzdXQUF3WVgvNVlUc2pSQWdubDgvUnI1ZmNJZzNCOGJVcUhC?=
+ =?utf-8?B?Nkc5R2NzY0piemF0WllTT1lhb3BueURxY2thSTU1Z01kazdVMElEa0YySkwy?=
+ =?utf-8?B?T3JhNjdyb2ttTW44bngxeE1JT1lxUXZMczlSSHBDanU2YWx1b1Q2NU9wSndh?=
+ =?utf-8?B?ZmxxZlJxcXVZenBjK0JkOUFseFo1YUJpd3RrZ2Q1QXo0K2ZJL1dDRDhHeVFJ?=
+ =?utf-8?B?ZEwrcTF1VnRUYVpscmtGejVjYmZZQlovUXlXZEtubXdKdWd6Z1F2c1dlb0NJ?=
+ =?utf-8?B?aDRXb2h1M016S0o4Q0ErYXI5YXdZZnljeHRzaU5HWStWRis5ckNIeTlmM3d6?=
+ =?utf-8?B?ZS9yMWZQRTMrQThRZFpnZFlVUHNqYmhyVkh4bCtodkFhT1EwcmhtR0g4cnZi?=
+ =?utf-8?B?SmdvNnhZd3RsOU1UM2FpMW1BTVRXcDQ2eWJONDIrc1ZwcUZjVFJocmRsWGhX?=
+ =?utf-8?B?YmYyVm9Gd2UzN2JmSmVydlBCalZsVVBSMVQ2WkQzalNQajdOcnU2QWNCMVR0?=
+ =?utf-8?B?c3Q0WFIvUHI5SGk2bUNQdFRvQTdDdWlqN3RETHYzYkh1ODB0VVFEZnVVcjVu?=
+ =?utf-8?B?RTNPUWkzZVN5SHdsUmYzaUJicTMzRTVWNmQxSTZ0dGV3SUhPYVlWL2p4WXl1?=
+ =?utf-8?B?OEtTVU9kZGJkckMxWHdoK0lCVzIxVENjM09MYytPaXlpVWoyYysyN1Y4NDNQ?=
+ =?utf-8?B?R2RRZWpOQmR6czF5YWNnL1hoWXhXOE9UVzh1cVRPc2JXaTFRNnI5SEd6TTUv?=
+ =?utf-8?B?ZzcyajM1a0kzMXkrM0xEME5NL2g3ZThVS1dSY1F3S0xza3B4c0JNQnJ0K2FM?=
+ =?utf-8?B?TzhEV2tnQ091NVRHeENMdjZrbkRibzVhVU9Wd3QweEhZZW9RZTI5TzZvU1RD?=
+ =?utf-8?B?TGRvTTZ6M1hRR3pVeUF1ZTAvdXBkbnpUMWwvUlM0K3JwZnNxZmQvR2FYc0N1?=
+ =?utf-8?B?SkZLSWlyWWgwSVdQTE1mMENNRXRXdjl0Y3hDRG9TQ2RjdW5DdGg5M1lYdmgx?=
+ =?utf-8?B?b3hadkZqTVVkZEF2d2dKVnZtNWFPaXo2QXVTQXVTcldzMSs5eU1ScERuQ3BM?=
+ =?utf-8?B?b2VvRUI4QXlKcGdVZkwzOCtGWjRxNnpUNTR3NFdKQVlraDlzS1UzQURHemh5?=
+ =?utf-8?B?dlc1MFg3NDBveGlsbXBvN1V2a3o3bkNSWCs2YjNtWUk3K2xpaUY1REQwT1N6?=
+ =?utf-8?B?cXBLc1VNTmROSnB1ZnU4QUlsSGpkUlVNdUdZL2hoYTlpRjRNcUNvdmliaC96?=
+ =?utf-8?B?cnh2MXJ0TXJPQW4wdEhURUNzRzFTMTdidkpPNlRPMXZtSE1nUUZTWHduWGlw?=
+ =?utf-8?B?WmZqR3F1RjR4dVhFRXJpemU2YmEvZHd0V0pUMGxDeWQwdzhwSXl6cDFzVTEw?=
+ =?utf-8?B?cWNEUHZlSFo3bUJVY05wUElnZGVHY2EvUUpvcFNEWmNyYWxva05ncFFPMEJv?=
+ =?utf-8?B?MTRjai9LcC9wM0VhYk5JbXBUSVBQVXZaWFZSeDh1TTdJUU91NnJiQ2kwWW8y?=
+ =?utf-8?B?SEg2TjFBQXRXejdMeVprM09UZVBzVWFJM1NSSnZVQUs3WUVpUHgyUmdKbnVr?=
+ =?utf-8?B?RlRNZWtsWStZQ1RyWHJZZkpBTkJJM2xIV09JMFhqVytYOXQvVkhhWEVycXMw?=
+ =?utf-8?B?clpIelJFNDBaUmNzanBVNWs3OVNoSkQ0a1BSSTFvWlZyZ0lDVGZPcDdxemg2?=
+ =?utf-8?Q?1Bf3zpImD/040naGOZT8eWeSS?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6b658751-5017-4677-4990-08dd6704eb4a
+X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB6285.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Mar 2025 16:41:38.4606
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: uY8jRONfrEWlOxqGkT01lKymzfUwOuFggXdti/lS4ivAQIYrniiOECmZTl2eJLAyBXJDF34ZDyS4Z7LkurdKJg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB7745
 
-On 19/03/2025 12:24, Willie Thai wrote:
->>> +
->>> +// Enable Primary flash on FMC for bring up activity
->>> +&fmc {
->>> +	status = "okay";
->>> +	flash@0 {
->>> +		status = "okay";
->>
->> Nothing improved.
->>
->> Respond to comment instead of ignoring it.
->>
+On 3/18/25 23:44, Krzysztof Kozlowski wrote:
+> Caution: This message originated from an External Source. Use proper caution when opening attachments, clicking links, or responding.
 > 
-> The property was disabled here: https://github.com/torvalds/linux/blob/master/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi#L172
+> 
+> On 18/03/2025 18:47, Rajaganesh Rathinasabapathi wrote:
+>> Add initial device tree and makefile updates for
+>> AMD Onyx platform.
+>>
+>> AMD Onyx platform is an AMD customer reference board with an Aspeed
+>> ast2600 BMC manufactured by AMD.
+>> It describes I2C devices, UARTs, MAC, FMC, etc.
+>> present on AMD Onyx platform.
+>>
+>> Signed-off-by: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+>> Signed-off-by: Rajaganesh Rathinasabapathi <Rajaganesh.Rathinasabapathi@amd.com>
+>> ---
+>> Changes since v1:
+>> * Incorporate review comments
+> 
+> Which ones? I do not see my comments addressed and if you do not list
+> them, I treat it as a clear sign you do not care.
+> 
 
-I see, thanks.
+Understood, will list them in next patch submission.
+>> * Update commit message
+>> * Remove vmalloc and earlyprintk
+>>
+>> Changes since v2:
+>> * Address review comments
+> 
+> Which ones? This has to be specific
+> 
+Got it, will add details and fix in next patch.
 
+>> * Fix checkpatch warnings
+>> * Remove bootargs
+>>
+>> Changes since v3:
+>> * Fix stdout-path
+>> * Change commit summary
+>> ---
+>>  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>>  .../boot/dts/aspeed/aspeed-bmc-amd-onyx.dts   | 102 ++++++++++++++++++
+>>  2 files changed, 103 insertions(+)
+>>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>> index 2e5f4833a073..1e6a130377b8 100644
+>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>> @@ -5,6 +5,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>       aspeed-ast2600-evb.dtb \
+>>       aspeed-bmc-amd-daytonax.dtb \
+>>       aspeed-bmc-amd-ethanolx.dtb \
+>> +     aspeed-bmc-amd-onyx.dtb \
+>>       aspeed-bmc-ampere-mtjade.dtb \
+>>       aspeed-bmc-ampere-mtjefferson.dtb \
+>>       aspeed-bmc-ampere-mtmitchell.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>> new file mode 100644
+>> index 000000000000..32509a651183
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-amd-onyx.dts
+>> @@ -0,0 +1,102 @@
+>> +// SPDX-License-Identifier: GPL-2.0+
+>> +// Copyright (c) 2021 - 2024 AMD Inc.
+>> +// Author: Supreeth Venkatesh <supreeth.venkatesh@amd.com>
+>> +
+>> +/dts-v1/;
+>> +
+>> +#include "aspeed-g6.dtsi"
+>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>> +
+>> +/ {
+>> +     model = "AMD Onyx BMC";
+>> +     compatible = "amd,onyx-bmc", "aspeed,ast2600";
+>> +
+>> +     aliases {
+>> +             serial0 = &uart1;
+>> +             serial4 = &uart5;
+>> +     };
+>> +
+>> +     chosen {
+>> +             stdout-path = "serial4:115200n8";
+>> +     };
+>> +
+>> +     memory@80000000 {
+>> +             device_type = "memory";
+>> +             reg = <0x80000000 0x80000000>;
+>> +     };
+>> +
+>> +};
+> How did you address comment here from v1 which was responded with "ACK"?
+> 
+> What else what exactly fixed and what not?
+> 
+> Best regards,
+> Krzysztof
 
-Best regards,
-Krzysztof
+Thanks for the comments.
+I will add 'Acked-by' and in next patch submission. 
+
+Thanks,
+Raja
 
