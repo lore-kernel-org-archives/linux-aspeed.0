@@ -1,79 +1,80 @@
-Return-Path: <linux-aspeed+bounces-1077-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1078-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D42C3C28B30
-	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Mar 2025 15:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC1A5C36001
+	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Mar 2025 15:24:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJTrx3chcz3055;
-	Fri, 21 Mar 2025 02:24:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742484273;
-	cv=none; b=eDGv+aIvB9tsavrSGON5HZO1l//H/OU36rh8XadK8oenF2VkXGPpCT2NZCehAcwwqYUFFdp1UA32qw0sKxHDbDC+owyP1FokqhLuJ08pYULIXVwKwZa88wlAIlCU6uFiYVoEsPeRaXRLrJWsSTxpy4hC4IS4w5EfGChJIC8bVETLcrVyemfT9ywgQ12Bs4vfYKvCMA+ViUoNVE8UFrdH9o/dmxF+SC96IFPhPTZjNo5bR20PLCGvkLnyGkcIiY3JOrneOok88ZLFXs4orMaih8j/KNoskO6bF2+acNxkWFkBDFDsxfdglhQSz7GGGRNmxEkVeba+SHYr0T6R1xvHww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJTry0yMzz2yrD;
+	Fri, 21 Mar 2025 02:24:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742484274;
+	cv=none; b=P5raw8oSFej6tHyKCDh8gAs2vxCrYMv/U6QxV4acq+nr+Ia5a/ySoZqW9cY+qyQ2pAw2UnIVtuKaXY5nOcDTHEdw1IBemFvijtN6+b6SpHBtj4ySIApFCIxNqi6DV9ExZ/0UlyK25KSi4muwCXhenfyB3b5rLkLuhEM3d8P9UifS6fwJtKx2l8DZdHm92Qgs16qjYJ/HjN+8NJlrDNwX2W/o+YJdS4owilf8j2WIUC9WKBTX15zv0HugLO+uDeu+o/CLF9rhezCtxXqrB6X2ckjhF7NzVWmDhXDgwoa9rwO87uVtXN5Uik9Jgj8gH/MnpcyIvfRW2zl8mCWi94itvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742484273; c=relaxed/relaxed;
-	bh=xgBZ5CUSGzZQMXrNQ7iMZPeg3VKPPTQI8tLphlbuft8=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=IYBlyQ9ML41MLTfJMDvau4mbSDJOjK2FtCK+MW2DI4RkZ33F/UX7Gzi17c+W7JglXRmi86l5+ouEUgrjvvrnVBiR1pl5Tmn/CccMs+VKGwKN753VfNbL6ZEVgtScE0b2WhaO0OaqKi072JhLqix3gdhHkwLyYLUoJaWA91zrbbdIIxVvn7oPsasTfDbibUsJRAuao1HILzjL0qHc3xKfly9Sc6fvJXE1jl/hKSWOYq34MCyGBx4HVFVV2m0iEW2r3yIknSpL+sPyQpplssMEGqmyWe8juORXI+ktCo0Oh+g4se6rP0JcI3YslXB1X/cAL2INs7xD22ZEZjbdI+Nyvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MQJkRh/k; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1742484274; c=relaxed/relaxed;
+	bh=vsGnq8WpEGq8rItMy0um7W6pcAm/zbCWTBE+mh8Th8U=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=khB+15HwV624rrctU9Yo1JJi62UvLWUagf69HsCWXVIWIx/QaMq5ZWUeP8OZh8eyQI+zJe/9CzXV9/basgB/D+IoEkwOy4lelGXp5rpElvBDQJakxOg3xJomhJv+VTkeUtDzP3aOyc4IfmGqtv3ErFRrRIChiOxxTnLSUgO0FmSc87y5EJnBNQo4XrveHya3EVOwmnTB3jb/Qo1OY70HD/S14YgPQBbSujp0LacU8IxhP7IIeWwTnxo7c/1484LfyLjpAmDKym8i87lt9TyXbpfGfdVb+O/55GFTwBqiTMV1qT+br7Ej/b7+oE9YMDHJ0G0m6nlI3SZWehOL5iIdtg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H98z9l0F; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MQJkRh/k;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H98z9l0F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJTrw1h50z2yrD
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Mar 2025 02:24:31 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2264aefc45dso26766985ad.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Mar 2025 08:24:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJTrx2y71z3050
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Mar 2025 02:24:33 +1100 (AEDT)
+Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2235189adaeso18909125ad.0
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Mar 2025 08:24:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1742484269; x=1743089069; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=xgBZ5CUSGzZQMXrNQ7iMZPeg3VKPPTQI8tLphlbuft8=;
-        b=MQJkRh/kloL/EPnVfXMap2Y9ykrSJwIJUr98VSL+at71RT8qy+0lFgYaOtI8/Zvt9w
-         qDEu8uLR9Y2Z+WhSGTK0trYD5/EnbT+iFmHxhxJoo/sHPwL78SwylI8y1yDk5l5XIExc
-         kglbNzDuj00UA6VsjcTV6foMK/F3mjx3AbM45FxdBM6tkRliLUqciV9EpUkKkBtrGuAX
-         4PhkBIRjt7cUqVAeYAfhayRZc1hY1JwgPuJZhXkzEuwAQp0tTQ/GdvqWs3n4bsxNHBuv
-         SW22HfiaHwMCkJvbh4+90bbhpVBvYHu9BKtm9JRSUCYrcR/lVBItPzKYpdZOMnnTMGQV
-         8PPA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742484269; x=1743089069;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20230601; t=1742484271; x=1743089071; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=xgBZ5CUSGzZQMXrNQ7iMZPeg3VKPPTQI8tLphlbuft8=;
-        b=c94tZBZ7S92BZQ5p9k6h9cQVRAEsbq9K/QpLIrCRD1FFsURKy8QMJNy8/gJjXPrZ0E
-         wVCLpRV0+klP8ZsQP7tvTptyLIaQ5JjATfbDUee3Pp6Ks0VYYQjm4FmX1b/u3N+1Ns0e
-         HHSSTLEyFC6oXvH+3w3FA6zU/XpATkyZQXGcmScOxhEGzhkZR0wSGxhn469pCh3hYwHK
-         rcMX7g2Tje8bTsbxzpgIIFzajPvSK5lJ8+GD02gBGtBcqJDXWHqdIYvz58eH/MfB6Fxk
-         tOsT3JaxhixDEAFcD8B85ZVJVbETZ7pv1rkY8fcNZxfuZgPZwQ3yVOSUn151zRyxssjG
-         vhTg==
-X-Forwarded-Encrypted: i=1; AJvYcCWwFyoh8R/QCj7YwpDdJoOPWtSRF0lKXy7ebA45nIy5l5ldLbchq91vF3Z117d5wraxCD1+52BI82dsAro=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxzskIJB+Bb0l6ZuKpcKi4nKZl87Vj5cfLgwZf4NhKy21LpudJp
-	mCY/M3QpQV4tZDhLrZ5Pzw83o2cp94mwHeru0i0QoafAx791vrSf
-X-Gm-Gg: ASbGncuECCLe74B7BqOsAALBhozugLcFbctYIn3Ul/WCDRsdfHPS5vSkmydFHM69MaE
-	3bTq+MYyriPrYGPQ9jwd6qwUg7NW7ANolNWe1Cl3phVn+MvlUPcKFoBTNGmRt9sVIh0RnpXPbdL
-	bnONcKaNzee/IwsDJa++H8pg+tNBpTKgk1Gb0Fm7HsWpDEIIOicxbGK42vPWFaK+/lVOK6FMMi2
-	+1C5PHsKa11/JtS6IGA23vMJN1U2NsEeKqWCkPSkoxnE735URmXZ5E1RMyvBc9H4kMw11/nWJsd
-	cEbCmKRLdkPeTeFCugOFJXqeblI7dBWM0IVWnNvlL/TD3mYi+igxV+qmKqBzfLoHk8BaVGmeo8U
-	RfS1lyWTvrbE2s5AWAKzaNg==
-X-Google-Smtp-Source: AGHT+IE8wgx82LSpjOoMcp7xMjse6vZ9j5z6ddnJQvCI/Fs2gOi8QJmpGG9UFax94XWc9AkTdIPv9w==
-X-Received: by 2002:a17:903:2346:b0:223:5ace:eccf with SMTP id d9443c01a7336-2265ee0aedbmr64395195ad.25.1742484268680;
-        Thu, 20 Mar 2025 08:24:28 -0700 (PDT)
+        bh=vsGnq8WpEGq8rItMy0um7W6pcAm/zbCWTBE+mh8Th8U=;
+        b=H98z9l0FOXtQvBobGRaLsgCoUsTtL7bVe1kMpQe6iVq+50pYqEkV2uuyNnhj94eVfs
+         pyyJgAZkR6wl7cKQcn4JgEMmtR+EAyzgrzuf7XirBU8hd177CH7wPvz7Ou0tn6XZWYvG
+         BzlgHShkyl2z0E0+HtFGxH1gCdCUK0Vh//+Uc58w2n/sLcyD/aHj+MAxUPkbm2+R7ur6
+         7cGSuH6L87UXFzIRvRVtf+5woopKspjJpJkDuX6JoCf4PQdJ2lAAX0RIoXoRrXCWdoAt
+         9y5FtHTFlWLYrJz4pTu9KVL7T8/zrAruvEBjrggy/qCZEA4liIL4Xg9rL0QBxh+I4pa+
+         0+gw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1742484271; x=1743089071;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vsGnq8WpEGq8rItMy0um7W6pcAm/zbCWTBE+mh8Th8U=;
+        b=Sf+VnNcAT0NV/4054YExlH+sX6DeT3q2rt6e72W8OtsP/sItR0ZZLYtuaOfWC9+kD4
+         JodNaH+KtcMRen7Sznv+6j8zyrrM3elVyOG6vEpCTimgQv8vJZs/lKecA4L7eYPX+EZx
+         jedzZbpfKvyuHAsoNcu480M7EGLLmrqKdP33pZ/V0ZbiF3X1cz8XGfsKohop4S3WLVn3
+         EryK8KTQ8zH9fYFlo8sgm1AQWEjZKqIyv06hDtDxR4eEzDXLp/CtW8QDDADx1dOSkB9A
+         s444x53TY0eQglx/vmI0g+98ohxQH/pDskYqXngFXU8j3qDQpTPCy3RGDfTvWd1FdS8P
+         AQEQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW1PYp5/Ly/SQNXGqlHY2eKna5PJv59NzqQtWYoovFan+A4Qv8YiiA4NS+lSQF/cg82v7jyXXmq3nC8Y1s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx5x2G6VDNP2mRHhKaWZNUgs4nUJ1nqKzhP+2e5DhqgvksyEyOd
+	XfKbs3DTbPCkYm/nzxXU927oNGvxAnRHMTB5X9X01Oj9hjlYVx3p
+X-Gm-Gg: ASbGncuY5oQQHmwQThr4xedI5EfcrgfsDVcHisrH2ImIrWXw4TthvJEUfL5kHh7yFp4
+	zlckX4lGLq1+/Ya/FLRShoMDvTExdYXQ4LHacSNwx4YcShT0np+h5IJvUIH7lnxwYylLHg/paJo
+	aJUmXiYNUBG9jMigimnnHFmoY3fwxu2nCu7IX1VPsrhQShFwPHiiY2AqcJvjMqcUNz+jDN/G4qq
+	oWiIyE1tRUifjCnUU5wVr+xVMaTamSQP0pxFI89rmFSwDxbOXTOAB8TjB4EB98Cy75nSCCfYYGy
+	IEdb6CtbKqapuHh4Vy9Y1hSxoAdS7dAZfywHwqx5qGFkErxy93BUpFSF+QzxKgcV2W5KHqKf4NQ
+	bELOy/PpsxnTfHmgXjzbASQ==
+X-Google-Smtp-Source: AGHT+IHybFC0zN/Rzgp2ZChfKI2Jk8hE5XOcGV4Y15RoIluk7IS4EwemASEKGtRKwRtujb5+46zkqw==
+X-Received: by 2002:a17:903:187:b0:223:3394:3a2e with SMTP id d9443c01a7336-2265e7184aamr45865045ad.18.1742484271343;
+        Thu, 20 Mar 2025 08:24:31 -0700 (PDT)
 Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-225c6bd4a8fsm136905515ad.234.2025.03.20.08.24.25
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-225c6bd4a8fsm136905515ad.234.2025.03.20.08.24.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Mar 2025 08:24:28 -0700 (PDT)
+        Thu, 20 Mar 2025 08:24:30 -0700 (PDT)
 From: Potin Lai <potin.lai.pt@gmail.com>
-Subject: [PATCH v5 00/10] ARM: dts: aspeed: catalina: Update DTS to support
- Catalina PVT hardware
-Date: Thu, 20 Mar 2025 23:21:50 +0800
-Message-Id: <20250320-potin-catalina-dts-update-20250102-v5-0-e161be6583a7@gmail.com>
+Date: Thu, 20 Mar 2025 23:21:51 +0800
+Subject: [PATCH v5 01/10] ARM: dts: aspeed: catalina: Add IO Mezz board
+ thermal sensor nodes
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,11 +89,9 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAI4y3GcC/43NQW7CMBCF4asgrzvIY09wzKr3qFiMHQcsQRLFb
- lSEcvc6SKURqyz/0eh7D5HCGEMSx91DjGGKKfZdiepjJ/yFu3OA2JQWSqpKolQw9Dl24DnzNXY
- MTU7wPTScA7xeLJKTBybXOBYFGsbQxp/nyNep9CWm3I/35+aEy/WP11v4CQHBSWe4UtrbQ/15v
- nG87n1/Ews/qRWJ20hVSDSqQjRtMGzfSb0maROpF5JsjYbIqTa8k/RPaiU3kQQSjNfkatRWIq3
- JeZ5/AdkRxPXNAQAA
+Message-Id: <20250320-potin-catalina-dts-update-20250102-v5-1-e161be6583a7@gmail.com>
+References: <20250320-potin-catalina-dts-update-20250102-v5-0-e161be6583a7@gmail.com>
+In-Reply-To: <20250320-potin-catalina-dts-update-20250102-v5-0-e161be6583a7@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>, 
@@ -102,58 +101,82 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
  Potin Lai <potin.lai.pt@gmail.com>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1742484265; l=2078;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1742484265; l=1855;
  i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=cJ4PKBqJ1ZUnV8+yUZvNXJkgGfWoCnqYjpX/+o7T94w=;
- b=S29qvnFmgZIP8YDEgxdV9L8SWhKqk1HlSw3tWuB6SnfHRj8puN3OAuw4BqZ/y3CK9surBXICF
- qdFlkjwYr7QCHpzI9QI0C9x31DQb1Oc5lQS4+R35VLGiGuL+5jJF3Ar
+ bh=ZE8DMnDtK6GtXz/R29k12joihlo+gxEvbFhaGKQky3s=;
+ b=Pwk8Uh+93j9LYHavxQFQIFiCHCzIOTgKNDNj8/fEYsR7crev46E2mLJvCsTSj93JoySx9CQyj
+ 71O0JM47JzTC8DBcfN6GeGIo64SJdL0YhGdfdK5V451j7FQ9RYGGpZD
 X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
  pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Update the DTS file for the Catalina platform based on the PVT hardware
-changes.
+Add thermal sensor nodes for the IO Mezzanine (IO Mezz) board in the
+Catalina platform device tree. These nodes enable temperature monitoring
+for the backend NIC, improving thermal management and monitoring
+capabilities.
 
 Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
 ---
-Changes in v5:
-- Revise CBC FRU eeprom i2c bus and address
-- Add MCTP support for backend NIC monitoring via PLDM over MCTP
-- Link to v4: https://lore.kernel.org/r/20250320-potin-catalina-dts-update-20250102-v4-0-7c34b8139014@gmail.com
+ .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 24 ++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Changes in v4:
-- Split a single commit into multiple smaller commits to reduce complexity.
-- Add `multi-master` into i2c12 & i2c13  
-- Link to v3: https://lore.kernel.org/r/20250114-potin-catalina-dts-update-20250102-v3-1-14981744b2fe@gmail.com
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
+index c151984289bc..d5d99a945ee4 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
+@@ -198,6 +198,12 @@ i2c0mux0ch0: i2c@0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
++
++			// IOB0 NIC0 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux0ch1: i2c@1 {
+ 			#address-cells = <1>;
+@@ -208,6 +214,12 @@ i2c0mux0ch2: i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
++
++			// IOB0 NIC1 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux0ch3: i2c@3 {
+ 			#address-cells = <1>;
+@@ -299,6 +311,12 @@ i2c0mux3ch0: i2c@0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <0>;
++
++			// IOB1 NIC0 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux3ch1: i2c@1 {
+ 			#address-cells = <1>;
+@@ -309,6 +327,12 @@ i2c0mux3ch2: i2c@2 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			reg = <2>;
++
++			// IOB1 NIC1 TEMP
++			temperature-sensor@1f {
++				compatible = "ti,tmp421";
++				reg = <0x1f>;
++			};
+ 		};
+ 		i2c0mux3ch3: i2c@3 {
+ 			#address-cells = <1>;
 
-Changes in v3:
-- Remove delta_brick nodes due to compatible string not supported
-- Link to v2: https://lore.kernel.org/r/20250113-potin-catalina-dts-update-20250102-v2-1-1725117fe7a9@gmail.com
-
-Changes in v2:
-- Add delta_brick nodes to support PDB brick board
-- Link to v1: https://lore.kernel.org/r/20250103-potin-catalina-dts-update-20250102-v1-1-b0b7a523c968@gmail.com
-
----
-Potin Lai (10):
-      ARM: dts: aspeed: catalina: Add IO Mezz board thermal sensor nodes
-      ARM: dts: aspeed: catalina: Add Front IO board remote thermal sensor
-      ARM: dts: aspeed: catalina: Add MP5990 power sensor node
-      ARM: dts: aspeed: catalina: Add fan controller support
-      ARM: dts: aspeed: catalina: Add second source fan controller support
-      ARM: dts: aspeed: catalina: Add second source HSC node support
-      ARM: dts: aspeed: catalina: Remove INA238 and INA230 nodes
-      ARM: dts: aspeed: catalina: Enable multi-master on additional I2C buses
-      ARM: dts: aspeed: catalina: Update CBC FRU EEPROM I2C bus and address
-      ARM: dts: aspeed: catalina: Enable MCTP support for NIC management
-
- .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 197 +++++++++++++++------
- 1 file changed, 144 insertions(+), 53 deletions(-)
----
-base-commit: 4701f33a10702d5fc577c32434eb62adde0a1ae1
-change-id: 20250102-potin-catalina-dts-update-20250102-914b06a4bdba
-
-Best regards,
 -- 
-Potin Lai <potin.lai.pt@gmail.com>
+2.31.1
 
 
