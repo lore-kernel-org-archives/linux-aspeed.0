@@ -1,80 +1,80 @@
-Return-Path: <linux-aspeed+bounces-1078-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1079-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC1A5C36001
-	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Mar 2025 15:24:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAEC6C28B30
+	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Mar 2025 15:24:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJTry0yMzz2yrD;
-	Fri, 21 Mar 2025 02:24:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742484274;
-	cv=none; b=P5raw8oSFej6tHyKCDh8gAs2vxCrYMv/U6QxV4acq+nr+Ia5a/ySoZqW9cY+qyQ2pAw2UnIVtuKaXY5nOcDTHEdw1IBemFvijtN6+b6SpHBtj4ySIApFCIxNqi6DV9ExZ/0UlyK25KSi4muwCXhenfyB3b5rLkLuhEM3d8P9UifS6fwJtKx2l8DZdHm92Qgs16qjYJ/HjN+8NJlrDNwX2W/o+YJdS4owilf8j2WIUC9WKBTX15zv0HugLO+uDeu+o/CLF9rhezCtxXqrB6X2ckjhF7NzVWmDhXDgwoa9rwO87uVtXN5Uik9Jgj8gH/MnpcyIvfRW2zl8mCWi94itvQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJTs03xkpz305D;
+	Fri, 21 Mar 2025 02:24:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::630"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742484276;
+	cv=none; b=oJCDdKFGYBehk4tG/xV2mj+9oUFGHLsKobMKkum1EOX4E838jzRIlZwdr2Rl+pQ//L7FTE6j1Bk0ytimqnNtn1m1T+YO8obe2uPGscjppSy2HBHDj8CEbV6+q2Y7Y085tCmWNJTjxE34pZ8FRla5HhwlHFJui1PB6pPWACAZiYVJEAc47JUCN7N3YG7geDJ+wJWupdwHLDbdxU0JdexjHpYvEuJ0OZfsGt8t/M14UskVkjGZoYhYIrlkZ27KSY+JuesTBey5Lj7ZZhX2Ia2YR49VV2ZIXiMMRx+nmNhf1jjmGhjsD/u2GCjgFxclm0nrO6ZtMdjfEQa0O20EHR96PQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742484274; c=relaxed/relaxed;
-	bh=vsGnq8WpEGq8rItMy0um7W6pcAm/zbCWTBE+mh8Th8U=;
+	t=1742484276; c=relaxed/relaxed;
+	bh=iQ6AZvpz6rhEfIMNob1PWyEst8krux8q3uqPjk7Bggg=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=khB+15HwV624rrctU9Yo1JJi62UvLWUagf69HsCWXVIWIx/QaMq5ZWUeP8OZh8eyQI+zJe/9CzXV9/basgB/D+IoEkwOy4lelGXp5rpElvBDQJakxOg3xJomhJv+VTkeUtDzP3aOyc4IfmGqtv3ErFRrRIChiOxxTnLSUgO0FmSc87y5EJnBNQo4XrveHya3EVOwmnTB3jb/Qo1OY70HD/S14YgPQBbSujp0LacU8IxhP7IIeWwTnxo7c/1484LfyLjpAmDKym8i87lt9TyXbpfGfdVb+O/55GFTwBqiTMV1qT+br7Ej/b7+oE9YMDHJ0G0m6nlI3SZWehOL5iIdtg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H98z9l0F; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=TSFzK2OTZt5FYjjZ6uznAuB7+HuHnfp3pAda+9UXXlUzOfh6Hf5qe9E92Mwe2LWBNERVq/s2BYWMCPHnAwGURSvdgtr8IGshZjShbriuqkf/lFt6L54kSdV20KeKBfHsCBZuPe0tsbT06rsULamoKCMhZEJVI8GxJtYEPIp1WiHB1KcQvLvpf0wRFq/tqpAUqLbv2yL5AMAKjqArqAtIKf+Tt8vHTL/Q5XziXhbwSWqYPKDcmY/k/P2XkMymIn9NZ+oXPTMMi2c+OUohkdZbmAu1NMjxoLWU8gb366DrqweohDgZGQFVx3hyGwPfKvlrvUrDNk8ObEZf2rupjwLtoQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=HcStSwy7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H98z9l0F;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=HcStSwy7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJTrx2y71z3050
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Mar 2025 02:24:33 +1100 (AEDT)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2235189adaeso18909125ad.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Mar 2025 08:24:33 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJTrz6DQzz2y8p
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Mar 2025 02:24:35 +1100 (AEDT)
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-223a7065ff8so28667695ad.0
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Mar 2025 08:24:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1742484271; x=1743089071; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1742484274; x=1743089074; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=vsGnq8WpEGq8rItMy0um7W6pcAm/zbCWTBE+mh8Th8U=;
-        b=H98z9l0FOXtQvBobGRaLsgCoUsTtL7bVe1kMpQe6iVq+50pYqEkV2uuyNnhj94eVfs
-         pyyJgAZkR6wl7cKQcn4JgEMmtR+EAyzgrzuf7XirBU8hd177CH7wPvz7Ou0tn6XZWYvG
-         BzlgHShkyl2z0E0+HtFGxH1gCdCUK0Vh//+Uc58w2n/sLcyD/aHj+MAxUPkbm2+R7ur6
-         7cGSuH6L87UXFzIRvRVtf+5woopKspjJpJkDuX6JoCf4PQdJ2lAAX0RIoXoRrXCWdoAt
-         9y5FtHTFlWLYrJz4pTu9KVL7T8/zrAruvEBjrggy/qCZEA4liIL4Xg9rL0QBxh+I4pa+
-         0+gw==
+        bh=iQ6AZvpz6rhEfIMNob1PWyEst8krux8q3uqPjk7Bggg=;
+        b=HcStSwy73kkntcSTiidMX3LA/Cw+GPUsey0HGX+zgZWZ4yVnJvKMK3gQ9IFNlzNnz4
+         kCojU2QXshgCVpvva/QU3xsbHDb2LGMLoo5fhUg+bbmHgOUvcfQQ9KWjT/14nqqAhDJe
+         rUAcxbxnx3I1p9snSJZ0geBdpsc4zB4d2ZedGxNCBSeIEpF0Q/0KeRGPE6Cir3a/Zkdw
+         QMCT905KAycapeExPU1kq4ZKZICRpCxDjS2WFJl451tohDC5D5QsjE2UNUc3wXRB20ya
+         1/8FJt9zvXI4xIe5FpXbN5RfbTEIOZywkdlDKwziVlCqepTjb/z3+ayu1vIXGi1W7tPH
+         0c3A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742484271; x=1743089071;
+        d=1e100.net; s=20230601; t=1742484274; x=1743089074;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=vsGnq8WpEGq8rItMy0um7W6pcAm/zbCWTBE+mh8Th8U=;
-        b=Sf+VnNcAT0NV/4054YExlH+sX6DeT3q2rt6e72W8OtsP/sItR0ZZLYtuaOfWC9+kD4
-         JodNaH+KtcMRen7Sznv+6j8zyrrM3elVyOG6vEpCTimgQv8vJZs/lKecA4L7eYPX+EZx
-         jedzZbpfKvyuHAsoNcu480M7EGLLmrqKdP33pZ/V0ZbiF3X1cz8XGfsKohop4S3WLVn3
-         EryK8KTQ8zH9fYFlo8sgm1AQWEjZKqIyv06hDtDxR4eEzDXLp/CtW8QDDADx1dOSkB9A
-         s444x53TY0eQglx/vmI0g+98ohxQH/pDskYqXngFXU8j3qDQpTPCy3RGDfTvWd1FdS8P
-         AQEQ==
-X-Forwarded-Encrypted: i=1; AJvYcCW1PYp5/Ly/SQNXGqlHY2eKna5PJv59NzqQtWYoovFan+A4Qv8YiiA4NS+lSQF/cg82v7jyXXmq3nC8Y1s=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx5x2G6VDNP2mRHhKaWZNUgs4nUJ1nqKzhP+2e5DhqgvksyEyOd
-	XfKbs3DTbPCkYm/nzxXU927oNGvxAnRHMTB5X9X01Oj9hjlYVx3p
-X-Gm-Gg: ASbGncuY5oQQHmwQThr4xedI5EfcrgfsDVcHisrH2ImIrWXw4TthvJEUfL5kHh7yFp4
-	zlckX4lGLq1+/Ya/FLRShoMDvTExdYXQ4LHacSNwx4YcShT0np+h5IJvUIH7lnxwYylLHg/paJo
-	aJUmXiYNUBG9jMigimnnHFmoY3fwxu2nCu7IX1VPsrhQShFwPHiiY2AqcJvjMqcUNz+jDN/G4qq
-	oWiIyE1tRUifjCnUU5wVr+xVMaTamSQP0pxFI89rmFSwDxbOXTOAB8TjB4EB98Cy75nSCCfYYGy
-	IEdb6CtbKqapuHh4Vy9Y1hSxoAdS7dAZfywHwqx5qGFkErxy93BUpFSF+QzxKgcV2W5KHqKf4NQ
-	bELOy/PpsxnTfHmgXjzbASQ==
-X-Google-Smtp-Source: AGHT+IHybFC0zN/Rzgp2ZChfKI2Jk8hE5XOcGV4Y15RoIluk7IS4EwemASEKGtRKwRtujb5+46zkqw==
-X-Received: by 2002:a17:903:187:b0:223:3394:3a2e with SMTP id d9443c01a7336-2265e7184aamr45865045ad.18.1742484271343;
-        Thu, 20 Mar 2025 08:24:31 -0700 (PDT)
+        bh=iQ6AZvpz6rhEfIMNob1PWyEst8krux8q3uqPjk7Bggg=;
+        b=J9jTGW4Oz5r8ecMeqFJmvdOu3D4V6Nxf7TMw2k7QM3ymxv9ALwFpasPWfBvUjOmguA
+         MRss8kSwvcH0xK6cUwnxnWVMM/Qd/rqF9rxAnucPDwhrZbJXQfq5ndFCnOQbWfUOIr6o
+         V32IBynFwUKDYKbntIwCxlErPZg3w0ly2xZIRucYJ9/1sq/026pUAqJMa/zm9Uca/O9A
+         AgThmCrdRjmoPYz25/J5ZhBs5pw/RC9T5BbURu2CHSECS4RkRV5ILq2DCcPQdsRjhCNt
+         Txr6rwwiZ8qWHqAkfOquMQLoK7i5V3xEn86MYwMv46d6awKwcs2rreWP++qR2EfNAbCw
+         SKHg==
+X-Forwarded-Encrypted: i=1; AJvYcCXHWzskzbYcDxF46Wd+hezXKhvKV/0yg2lER9XssIkCgAqIxm6KlPgipBuYEghwkQr/tHZyYZG3crtF8ZE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwRTg1h7innFClYZGA0xq3XXY/ri6QLYsJKWSKwwlLAYI9BPC6v
+	q2Zc1mqloaY+4o+WwFDT/1scIGtMfuZHMpoWKG1VIDuPcci/kOSo
+X-Gm-Gg: ASbGncvIHPYbgXZba2s1d15mCHS1F/HT7znrcS46lvRgPRtQpZ51L1FMdiymkgjw8Je
+	dYby0tfw6gXAvOx4T+T+GoX7k96y8H3ogBhPakWV2T+vVOkVDIIfZPidIZU7f+ZFPbOuaFEcClQ
+	0u8fnEBWs/nOsin2r18nmnT0hJj8z0YdNxoNiOn5dCw1gQ8pMD/hZlEE9DoTvON77JJhGcrK9o6
+	CfSSyXG5SXx0RT9ynqgK6P/L1kw6f5J/fCe39pxch3IeDea3cQqmkndlGZc/mRbKYUTdkCcp5u3
+	eqirk/YaOa0S7sKmOj4exLK5myoMGeMH5oqjACSM4GaDQAjq4rgDGA/S5r6OypgOcG0eZdLPKSC
+	i4mbg/gAGB6iUmLIfmsfGiM4m5A8sc0Oy
+X-Google-Smtp-Source: AGHT+IE5GPeE0Om0AY9fiRC5tRfnAcMPwqRX9hgQMpQNbBBAF9NyfQrMJYuDiGjFwNp2dwrDmszp2w==
+X-Received: by 2002:a17:902:c40a:b0:21f:7a8b:d675 with SMTP id d9443c01a7336-2264981d956mr117068525ad.4.1742484273966;
+        Thu, 20 Mar 2025 08:24:33 -0700 (PDT)
 Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-225c6bd4a8fsm136905515ad.234.2025.03.20.08.24.28
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-225c6bd4a8fsm136905515ad.234.2025.03.20.08.24.31
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 20 Mar 2025 08:24:30 -0700 (PDT)
+        Thu, 20 Mar 2025 08:24:33 -0700 (PDT)
 From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Thu, 20 Mar 2025 23:21:51 +0800
-Subject: [PATCH v5 01/10] ARM: dts: aspeed: catalina: Add IO Mezz board
- thermal sensor nodes
+Date: Thu, 20 Mar 2025 23:21:52 +0800
+Subject: [PATCH v5 02/10] ARM: dts: aspeed: catalina: Add Front IO board
+ remote thermal sensor
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,7 +89,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250320-potin-catalina-dts-update-20250102-v5-1-e161be6583a7@gmail.com>
+Message-Id: <20250320-potin-catalina-dts-update-20250102-v5-2-e161be6583a7@gmail.com>
 References: <20250320-potin-catalina-dts-update-20250102-v5-0-e161be6583a7@gmail.com>
 In-Reply-To: <20250320-potin-catalina-dts-update-20250102-v5-0-e161be6583a7@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -101,80 +101,40 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
  Potin Lai <potin.lai.pt@gmail.com>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1742484265; l=1855;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1742484265; l=882;
  i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=ZE8DMnDtK6GtXz/R29k12joihlo+gxEvbFhaGKQky3s=;
- b=Pwk8Uh+93j9LYHavxQFQIFiCHCzIOTgKNDNj8/fEYsR7crev46E2mLJvCsTSj93JoySx9CQyj
- 71O0JM47JzTC8DBcfN6GeGIo64SJdL0YhGdfdK5V451j7FQ9RYGGpZD
+ bh=P26V4Vll3LYpWjYPKGRYB+hCja9t6ZA02VGXue+Ra5U=;
+ b=/XN3QQM8+yPF6MUoJ8BkER6tXXOOmxvF1ngqIsnV8HshnT7+U5Qx3O9tBvAjElM3CeqsBdvhQ
+ tNVb5huq7oWCNJUZrqPv9olH4g3qakgYuRJiGu5KgpgYker+N8TZZtV
 X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
  pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Add thermal sensor nodes for the IO Mezzanine (IO Mezz) board in the
-Catalina platform device tree. These nodes enable temperature monitoring
-for the backend NIC, improving thermal management and monitoring
-capabilities.
+Add a remote thermal sensor node for the Front IO board in the Catalina
+platform device tree. This sensor enables monitoring of the inlet
+temperature.
 
 Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-catalina.dts    | 24 ++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-index c151984289bc..d5d99a945ee4 100644
+index d5d99a945ee4..307af99e833c 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-@@ -198,6 +198,12 @@ i2c0mux0ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
+@@ -544,6 +544,12 @@ temperature-sensor@4b {
+ 				compatible = "ti,tmp75";
+ 				reg = <0x4b>;
+ 			};
 +
-+			// IOB0 NIC0 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
++			// FIO REMOTE TEMP SENSOR
++			temperature-sensor@4f {
++				compatible = "ti,tmp75";
++				reg = <0x4f>;
 +			};
  		};
- 		i2c0mux0ch1: i2c@1 {
- 			#address-cells = <1>;
-@@ -208,6 +214,12 @@ i2c0mux0ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+
-+			// IOB0 NIC1 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux0ch3: i2c@3 {
- 			#address-cells = <1>;
-@@ -299,6 +311,12 @@ i2c0mux3ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+
-+			// IOB1 NIC0 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux3ch1: i2c@1 {
- 			#address-cells = <1>;
-@@ -309,6 +327,12 @@ i2c0mux3ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+
-+			// IOB1 NIC1 TEMP
-+			temperature-sensor@1f {
-+				compatible = "ti,tmp421";
-+				reg = <0x1f>;
-+			};
- 		};
- 		i2c0mux3ch3: i2c@3 {
- 			#address-cells = <1>;
+ 	};
+ };
 
 -- 
 2.31.1
