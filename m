@@ -1,65 +1,65 @@
-Return-Path: <linux-aspeed+bounces-1100-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1101-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C04DC28B30
-	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Mar 2025 01:07:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96032C28B30
+	for <linux-aspeed@archiver.kernel.org>; Fri, 21 Mar 2025 01:17:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJkmw34L7z2yqm;
-	Fri, 21 Mar 2025 12:06:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJl151W2Sz2yVX;
+	Fri, 21 Mar 2025 12:17:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742519216;
-	cv=none; b=abeYEbTrSLaQJ0BND5KHiUkIegPwQm00vZv3f8zRtpZLWeIUQ8wSDF55ZhL5fe5VclF8cTgYO5yLQvVyqqrBZrHSGsq/nxVo94D4xoQTx39QZyHGwhXVlQNsUfFA/j9uYIvMyCeDIBN0VYBBXAQVXaVVrflb9rSO47IIoaBYUzt7KDAkLEpkYrZk+F/gVFyVfacVY6vVfpEajsee+cH6/zjNSKml5xjtPIWxUvtCSKFlqnwkDc0P7OvXq6NxDO1bQ+mPhjv1k5K64CixIh27FZTh9hd9U9qPG5GDce1LKWhcd1JQnWpV+y2s6ehgLOvKJRG0XoEZyRj77SaVkyiLLA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742519849;
+	cv=none; b=AONjJa/aCnX2AiBLM/C9pJHkvHcNrmMJiDCvrVUWrRg2asQtDMwLR+g6mq4FmgPAqCTYVFuS62T9CyVQZ/FYNvwO3tVez9hleUsE0B9pkDsKgxLr1R2tnp/ufZGK+Mv9fnMOKDTVdud9MZltIQEtDHGGhW/Gj+iww/5PrjoOuVF9huT+hadJkjr2PQepbv1KsNAaUGIBbETntNDI9GCLtXWXMDCymMEBFxOh3EYkGq8GWnl0ksyeW/0kX8exM1Bpohjxb0O/wToRy6Cz2s7c5PjIvgpLET42z08kyE6dWFsDrEdGTMzsFuxqRyFmPuMFbeyzJEqQwiZvemGigrkQAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742519216; c=relaxed/relaxed;
-	bh=pIdTixZuNmStjtltpSgBZZbYtUoRIdqSvZd1TvixVG4=;
+	t=1742519849; c=relaxed/relaxed;
+	bh=3gAbyuISuqa5pnBiQR//72WrRmt0RCFEDOdo2QdTYT0=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=WwUmy16wqe27aNqCNVOHGYm1QTi/I7pGUrdVtWNQjQUKTYavGE0ng3c4/JQ5yapYt6p/rcBcZV3PzE0X0ylRNIafSHYoRNA+se93CX1Lukz3bHaJCoQVqhb8Ha25ubwdS2gIabod5oEBa1B8vBigl7eyVhFDSL6oRLbipVZGnhJsfHjzrIFrYXwe0VnU4NdICvVEqN1LtRk9ui9X7D/DcU+MteVc97GBPAG0bhuwZW6nVzg3ssmZ+58tGIS5n6nSie9QyN5N6BhepGJPo1jqQdyuPSr4czQvz4p2ll6XEl9v5DfXmtUAWwNIiD41YPmKRc70o2W6bk4kAi2ho6JwyQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=STmLaeeb; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=Y4dugz4KMwiHuQB0Y6VAHu6mTftjdvy1zcoDXaAJxuSyjao0vfx4TRMo4JQFPijLuO4RB8hFqg37hXNXH38EVYNsLEoLleMGexK8bVDsN0zWO2ASgc/lwVMg/USuYvgWCsahcWRaYyMfqicwvTzKcadBbZerkdtaJzW4yPmExz4tUXeXZWkuk3UKpnFuD52y2dKM3L0bEmnpjMCs0FTgn4PV5n94Ez6Ht25I4GtewwmC9M11S+LnsvFtC3KgZQBgC6NYXxe2DWntsWcz/TvfpZtTUlZJ7seFLhY3yiUPtIqT3JMsTubCoqFRQlkt06dckX/Lm8blJKQzbahXnR1jpA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=CF9LrEaW; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=STmLaeeb;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=CF9LrEaW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJkmv6HGvz2yhW;
-	Fri, 21 Mar 2025 12:06:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJl110sj4z2yTP
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 21 Mar 2025 12:17:25 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1742519215;
-	bh=pIdTixZuNmStjtltpSgBZZbYtUoRIdqSvZd1TvixVG4=;
+	d=codeconstruct.com.au; s=2022a; t=1742519844;
+	bh=3gAbyuISuqa5pnBiQR//72WrRmt0RCFEDOdo2QdTYT0=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=STmLaeeb8JgIPPtTQkTrSNDqYPUrllXY1O8adMuBZaHXPzg3r7xposNnDqGupfi5X
-	 99Zta++gSDDl1g6lvrC8XT0hnuAKg1r3RC4z8Zo/QyDKqSgnfrSyFA2MJrdT4WBFl1
-	 RUmt/OZ6TxN7GeAG3cVCmiMKGwUSnxBv5Lv4WOi5kgsXZNcVhEykb5ll2kTsc+9Pa6
-	 BaiCS7bfJfQEDURlCP4T+9JpGc1mpUmY46UGjImGTinlAXe91pWEhhzlW3nyExDQS9
-	 gfDVgpD1XzfZxWWDXw/j4WUCiQMImKu63heMsVU2ep4csPM121OpZcNW44Zwo3oG/U
-	 7WLh87jddaPNg==
+	b=CF9LrEaW73SSkAvONjb7ZeJumWBWYxoLQjntgCqAddTkQMb+6W3Ef9L9xMutrChWF
+	 4M3NhEapu1XqbGp4r43Mk9FvfQZcYgdC0PQx74HpzalW6cP4ICJXXFqD8D0H4rsLb5
+	 3wGvehiN82krX48aekEAXVTTltdltypLJydQcmZhkqOAgdHJQHEipk0uZfE+jVVICP
+	 +r1i21k+oLgLe0VA+h4AvyC+LFRGYmJuZhRuMKbdnTwcr+uVt/eBFfERxq6f55lGN3
+	 aKAkmbSbRsBYhxkDscaApAlbXAzbJc2A/+BKBNtV9WsLTR8XUTESe8xIWW/RoiOVu+
+	 hq8h5S6RvwoFw==
 Received: from [192.168.68.112] (unknown [180.150.112.225])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 6DB127AF35;
-	Fri, 21 Mar 2025 09:06:54 +0800 (AWST)
-Message-ID: <585c2b050a44f4009b3a61cab69f800c88a0cf5e.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v3 2/2] dt-bindings: arm: aspeed: add Nvidia's GB200NVL
- BMC
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5C53E7A886;
+	Fri, 21 Mar 2025 09:17:23 +0800 (AWST)
+Message-ID: <26a1d17c47c5ca6036dd58ac3b953daeec9f5ef8.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v5 05/10] ARM: dts: aspeed: catalina: Add second source
+ fan controller support
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Willie Thai <wthai@nvidia.com>, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, joel@jms.id.au, kees@kernel.org, tony.luck@intel.com, 
-	gpiccoli@igalia.com, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
-	openbmc@lists.ozlabs.org
-Cc: leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com, Mars Yang
-	 <maryang@nvidia.com>
-Date: Fri, 21 Mar 2025 11:36:53 +1030
-In-Reply-To: <20250320164633.101331-3-wthai@nvidia.com>
-References: <20250320164633.101331-1-wthai@nvidia.com>
-	 <20250320164633.101331-3-wthai@nvidia.com>
+To: Potin Lai <potin.lai.pt@gmail.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>, Patrick Williams <patrick@stwcx.xyz>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Cosmo Chou
+	 <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>
+Date: Fri, 21 Mar 2025 11:47:22 +1030
+In-Reply-To: <20250320-potin-catalina-dts-update-20250102-v5-5-e161be6583a7@gmail.com>
+References: 
+	<20250320-potin-catalina-dts-update-20250102-v5-0-e161be6583a7@gmail.com>
+	 <20250320-potin-catalina-dts-update-20250102-v5-5-e161be6583a7@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -74,48 +74,85 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 
-Hi Willie,
+SGkgUG90aW4sCgpPbiBUaHUsIDIwMjUtMDMtMjAgYXQgMjM6MjEgKzA4MDAsIFBvdGluIExhaSB3
+cm90ZToKPiBBZGQgZGV2aWNlIHRyZWUgbm9kZXMgZm9yIHRoZSBOQ1Q3MzYzIGZhbiBjb250cm9s
+bGVycyBvbiB0aGUgc2Vjb25kLQo+IHNvdXJjZQo+IFBvd2VyIERpc3RyaWJ1dGlvbiBCb2FyZCAo
+UERCKS4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBQb3RpbiBMYWkgPHBvdGluLmxhaS5wdEBnbWFpbC5j
+b20+Cj4gLS0tCj4gwqAuLi4vZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWZhY2Vib29rLWNhdGFsaW5h
+LmR0c8KgwqDCoCB8IDc2Cj4gKysrKysrKysrKysrKysrKysrKysrKwo+IMKgMSBmaWxlIGNoYW5n
+ZWQsIDc2IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vYm9vdC9kdHMv
+YXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stCj4gY2F0YWxpbmEuZHRzIGIvYXJjaC9hcm0vYm9v
+dC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stCj4gY2F0YWxpbmEuZHRzCj4gaW5kZXgg
+ZmQyMmFkZDkwNDQ5Li45Y2JiMjk2ZGNkOWUgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9hcm0vYm9vdC9k
+dHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stY2F0YWxpbmEuZHRzCj4gKysrIGIvYXJjaC9h
+cm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stY2F0YWxpbmEuZHRzCj4gQEAg
+LTQ2Nyw2ICs0NjcsODIgQEAgaTJjMW11eDBjaDI6IGkyY0AyIHsKPiDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjc2l6ZS1jZWxscyA9IDwwPjsKPiDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHgyPjsK
+PiDCoAo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaHdt
+b24wOiBod21vbkAxIHsKClRoZXJlIG1pZ2h0IGJlIGluc3RhbmNlcyBvZiBjYWxsaW5nIG5vZGVz
+IGFuZCBsYWJlbHMgJ2h3bW9uJyBpbiBvdGhlcgooQk1DKSBkZXZpY2V0cmVlcywgYnV0IEkgZG9u
+J3QgdGhpbmsgd2Ugc2hvdWxkIGNvbnRpbnVlIHRoYXQgcHJhY3RpY2UuCkkgdGhpbmsgaW4gdGhp
+cyBjYXNlIGl0IHNob3VsZCBiZSAnZmFuLWNvbnRyb2xsZXInLgoKaHdtb24gaXMgdGhlIG5hbWUg
+b2YgYSBrZXJuZWwgc3Vic3lzdGVtLCBub3QgYSBjbGFzcyBvZiBoYXJkd2FyZS4gVGhlCmRldmlj
+ZXRyZWVzIHNob3VsZCBkZXNjcmliZSB0aGUgaGFyZHdhcmUgKGFuZCBub3QgY29uY2VwdHMgZnJv
+bSB0aGUKa2VybmVsKS4KCgo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibnV2b3RvbixuY3Q3MzYzIjsK
+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqByZWcgPSA8MHgwMT47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI3B3bS1jZWxscyA9IDwyPjsKPiArCj4gK8Kg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgZmFuLTkgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBwd21zID0gPCZod21vbjAgMCA0MDAw
+MD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHRhY2gtY2ggPSAvYml0cy8gOCA8MHgwOT47Cj4g
+K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgfTsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqBmYW4tMTEgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBwd21zID0g
+PCZod21vbjAgMCA0MDAwMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHRhY2gtY2ggPSAvYml0
+cy8gOCA8MHgwYj47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgfTsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBmYW4tMTAgewo+ICvCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqBwd21zID0gPCZod21vbjAgNCA0MDAwMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oHRhY2gtY2ggPSAvYml0cy8gOCA8MHgwYT47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfTsKPiArwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBmYW4tMTMgewo+
+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBwd21zID0gPCZod21vbjAgNCA0MDAwMD47Cj4gK8KgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoHRhY2gtY2ggPSAvYml0cy8gOCA8MHgwZD47Cj4gK8KgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfTsKPiAr
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqBmYW4tMTUgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBwd21zID0gPCZod21vbjAgNiA0
+MDAwMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHRhY2gtY2ggPSAvYml0cy8gOCA8MHgwZj47
+Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgfTsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqBmYW4tMSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHB3bXMg
+PSA8Jmh3bW9uMCA2IDQwMDAwPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgdGFjaC1jaCA9IC9i
+aXRzLyA4IDwweDAxPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGZhbi0wIHsKPiArwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgcHdtcyA9IDwmaHdtb24wIDEwIDQwMDAwPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgdGFjaC1jaCA9IC9iaXRzLyA4IDwweDAwPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Owo+ICvCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGZhbi0zIHsK
+PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcHdtcyA9IDwmaHdtb24wIDEwIDQwMDAwPjsKPiArwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgdGFjaC1jaCA9IC9iaXRzLyA4IDwweDAzPjsKPiArwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Owo+
+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfTsKPiArwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGh3bW9uMTogaHdtb25A
+MiB7CgpBcyBhYm92ZS4KCkFuZHJldwo=
 
-On Thu, 2025-03-20 at 16:46 +0000, Willie Thai wrote:
-> This patch adds a binding for GB200NVL BMC.
->=20
-> The GB200NVL BMC is an Aspeed Ast2600 based BMC for Nvidia Blackwell
-> GB200NVL platform.
-> Reference to Ast2600 SOC [1].
-> Reference to Blackwell GB200NVL Platform [2].
->=20
-> Co-developed-by: Mars Yang <maryang@nvidia.com>
-> Signed-off-by: Mars Yang <maryang@nvidia.com>
-> Link: https://www.aspeedtech.com/server_ast2600/=C2=A0[1]
-> Link:
-> https://nvdam.widen.net/s/wwnsxrhm2w/blackwell-datasheet-3384703=C2=A0[2]
-> Signed-off-by: Willie Thai <wthai@nvidia.com>
-> ---
-> =C2=A0Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
-> =C2=A01 file changed, 1 insertion(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> index 01333ac111fb..a3736f134130 100644
-> --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> @@ -98,6 +98,7 @@ properties:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 - inventec,starscream-bmc
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 - inventec,transformer-bmc
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 - jabil,rbp-bmc
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0 - nvidia,gb200nvl-bmc
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 - qcom,dc-scm-v1-bmc
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 - quanta,s6q-bmc
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 - ufispace,ncplite-bmc
-
-Please order this patch first in your series, before the devicetree.
-
-Andrew
 
