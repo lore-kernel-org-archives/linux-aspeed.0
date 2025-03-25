@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1133-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1134-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15CF7C35FFC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Mar 2025 07:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19B8DC3600B
+	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Mar 2025 07:17:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMLpj4rs5z2yqP;
-	Tue, 25 Mar 2025 18:17:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742887053;
-	cv=none; b=IBM0v7VSQpDewFV9rq1y+mdm9JpP+11HOxHmMgQeFUnlT/iSnmYobNSB93sNzmAili9ljZjk/ZOzeMy+YhpUeohOF23OWqELZNrliIbFu7hQQXEj8nJaFD0mdBlLrV0VOz+PW1pVSKLw0rw6jU14EvK1pagUjGZwvpywksY73BOarGBWJvQoD4XC2PQbsldYuwVoWon4lZm3dCeipxJZKoCQ01MiefnUrlJpUaHs5A5ubOU3nQiMCcSCb3crec+x0/+DVQ0ErZ/OitrPvkpkGrjoSaOhj6EP8HtbE32yMve3SmMcanaWUbZmXDC6uoc8ZN10/c6z+5YnQuptJh/0Aw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMLq068FKz2ypW;
+	Tue, 25 Mar 2025 18:17:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742887068;
+	cv=none; b=V3D7ikxWWehNGH+EcYFGWFzVpRCGhSDa4aMrK/uE5lbb5NjzbgFWlUpl9O/eTsveL1kIy8G/C8KrgSIBZhrzypJMbqVbpJgpk/yqcZ31FVbExllyNvSr5GjF9hE+T3r1yyaiIUQUD3DFwWqsjEOFpaepG8q9s9KC2pRBFwLO8j/901PP/h85nxrJ4hYVy7+hb6uGCBxwrZDMyWK/tQCN/dwMXvu1JjK5G2zbSjHuweRkMZOaVIJeLsTRNCuiDwBHd1SDwLmdNJAbMx8ktuNf9Mu1I+DOagTKb4cTn4s0BikN/TACdDZNWmBUIoClu/k1dDU6f/l9SGF8nbGCXPb7Vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742887053; c=relaxed/relaxed;
-	bh=vMQMjzj8BPLntmxXLAwX7Ihl9XTZOPwH5wXoQLEypNE=;
+	t=1742887068; c=relaxed/relaxed;
+	bh=P4rrQVc2zGtRpMhAKKc1z4WWAiDEnAm/KroIvbDZcNw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=aByjCLD+TDqcK8A5aDC4d6yCR/qBVew7iMsSjNptUPUqsSEv1V7AdFawtiYdnwkgriz4+ydwh6sbq5EuVBWcNGJ5BZ+CGIkBI6e7F5CGLUItN+YqheozpeU4A7uuNx/vT7liqySHdVRJmJT5zSinDA1p48iJLv+EZbMyV05VY1Q7ZdzQe5eRolD3tTz/9+5j54LRUzC9OU6zj1oUGIKQFqWQ+CR7UwQp3FB3HJ8CzFHtLafYoOTYw5xdRhbQWsWIUtJ67+pQNgVMS7wjvSUEX+M871gMiBbvWvPuuJHmbDVJxGjgnr8b9/N6qF7sWHwPqEjTH7xr+27DaJBHmtKjew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=txHMkcgl; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=L8g45vx7zqPH3IYEwe4+j65FQyH3tKNyKiyDdcyB4VkJCwj4M0JQ5lXn2lcYVOCMaCqSZLOKkoiIsWk+K8UCxrt7VtcsEoe3rXFYunc9MoJIkYH4cR93mLfnkIz3d/lqnfD9v/lvz4scQ/bfQy7dIJj06BtHTAgje/mOu83v/0evm2HiXgY1WxjH9o8IH/gI1sBezfZKdaV2OpT/uRDEM5CtnfB9QOej03OSHSCyrANHfpWXlRixQQHHD8EJz9FxutNck9GTVNIAaBjVrW49ugLQHcVtXLmal2FSCL4dLgWV/6L7ikQzexcBD5fOh8fSoV+H5S8+viGGnvmfaPsRTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eQtA14yf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=txHMkcgl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eQtA14yf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZMLph3gVfz2ypW;
-	Tue, 25 Mar 2025 18:17:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZMLq00Pgfz2ygH;
+	Tue, 25 Mar 2025 18:17:48 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id BDE2C5C57AF;
-	Tue, 25 Mar 2025 07:15:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2F13C4CEE8;
-	Tue, 25 Mar 2025 07:17:22 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7178F43B11;
+	Tue, 25 Mar 2025 07:17:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C84EBC4CEE8;
+	Tue, 25 Mar 2025 07:17:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1742887049;
-	bh=n7mb7O4AT4k8LuaRNLE8Z2JLAXYdBakAXOdaSM+1GmU=;
+	s=k20201202; t=1742887065;
+	bh=dPL/Puqjjdi0RH/fJRKYqZV53Z1SSiSqqjVNCx2Q+64=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=txHMkcglOJUEbzF3pVudhYJH8Zx103UOYJ+Au+ZBdlfkCSjChjlHiNrWZm5uIVdFQ
-	 l0w/ImzGjdHUf/9zwg6smsuZtt+5xzGJ74Q2kH1ZGTG1eJ1szWH8w+j8odsLd2ijj4
-	 44J2AMTmZExTkKjhg/jkKE6uVzffKBUrCsiWgCbb5jrxA+moXnG3Saz4NKzu+ddbEJ
-	 q7pNIkL8e9gnt0Kf8TpeVcM1g7+M10sxFEcUIH1NmqrgWZiMrA70ZY7TOmT2xd8mlh
-	 mNOWX6cZh0upUZsN3CXp6RU/7ehbNBv6xpUWnOyTHbpZUQIctkEn373FALe/JlsLkc
-	 jAdfB2MfabZLA==
-Message-ID: <99ec033f-7557-49cb-9b73-117ddc63d6d1@kernel.org>
-Date: Tue, 25 Mar 2025 08:17:20 +0100
+	b=eQtA14yf/fiXE4P/szG4Tq5ZyOCI9fda5fFmbIpJElchcz+HE1QEwKaX3Pj+zpn7a
+	 EY0IsXS+1YTspcbKop8zdXl3qsbIuy1feq3iye7e5RtPEm+m2xGUYGcwfE+CdL09WF
+	 SeIui/U01UBFf8ctLYj0s5tU/kI1Ts/oojKu3JYN2SvdJuHVbNAFl77Vgbv43lnj2a
+	 HCsmymNN2c0TqZk1kFV4j3yo/ZSYwzPXil72k9rIMXYu/S9J/u/1ehsT5ZEts4n8bu
+	 ePoT6LI7V4Q4oadmo5XEw6tBnHoOTYetepZcrlD4cFuFI8w9Tj/17Yp2gDiNbTTGK/
+	 1ZGTkO79KO/dw==
+Message-ID: <5fb97347-927b-44e1-bc0b-ff711d342be4@kernel.org>
+Date: Tue, 25 Mar 2025 08:17:37 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,18 +59,16 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/3] dt-bindings: arm: aspeed: add Nvidia's GB200NVL
- BMC
+Subject: Re: [PATCH v4 2/3] dt-bindings: pinctrl: aspeed,ast2600-pinctrl
 To: Willie Thai <wthai@nvidia.com>, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
  kees@kernel.org, tony.luck@intel.com, gpiccoli@igalia.com,
  devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-hardening@vger.kernel.org, openbmc@lists.ozlabs.org
-Cc: leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com,
- Mars Yang <maryang@nvidia.com>
+Cc: leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com
 References: <20250324175926.222473-1-wthai@nvidia.com>
- <20250324175926.222473-2-wthai@nvidia.com>
+ <20250324175926.222473-3-wthai@nvidia.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -116,16 +114,14 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  uZwJCLykjad45hsWcOGk3OcaAGQS6NDlfhM6O9aYNwGL6tGt/6BkRikNOs7VDEa4/HlbaSJo
  7FgndGw1kWmkeL6oQh7wBvYll2buKod4qYntmNKEicoHGU+x91Gcan8mCoqhJkbqrL7+nXG2
  5Q/GS5M9RFWS+nYyJh+c3OcfKqVcZQNANItt7+ULzdNJuhvTRRdC3g9hmCEuNSr+CLMdnRBY fv0=
-In-Reply-To: <20250324175926.222473-2-wthai@nvidia.com>
+In-Reply-To: <20250324175926.222473-3-wthai@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 24/03/2025 18:59, Willie Thai wrote:
-> Add Nvidia's  GB200NVL BMC board compatible.
+> Add EMMCG5 enum to compatible list of pinctrl binding for emmc enabling.
 > 
-> Co-developed-by: Mars Yang <maryang@nvidia.com>
-> Signed-off-by: Mars Yang <maryang@nvidia.com>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: Andrew Jeffery <andrew@codeconstruct.com.au>
 > Signed-off-by: Willie Thai <wthai@nvidia.com>
 > ---
 
