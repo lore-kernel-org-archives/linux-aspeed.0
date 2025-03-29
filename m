@@ -1,64 +1,83 @@
-Return-Path: <linux-aspeed+bounces-1137-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1138-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62DC2C3600B
-	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Mar 2025 00:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87491C28B20
+	for <linux-aspeed@archiver.kernel.org>; Sun, 30 Mar 2025 23:31:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZP20d603Fz2yrQ;
-	Fri, 28 Mar 2025 11:46:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743122817;
-	cv=none; b=nYE9gBb6raRBEVIGklxZsbk7IHk4Djd90CJPyPiYaTDiLGXUOqIX/mjPu0HUvy/FOXaBSRq6gd443yjzO7eAtbHipncGAo2LBMrsZDyqNKLAGVtrGAsE0VOC8EvzhtWLox2BdEwC1gwl+ycAsR1VmtjSKhPf07nlxKZi4eRXbdgI6EcvTo1rLShbRioAlFOexqUB28i1ohWJRRrB8kL5RQrS6FqJVeTifU+oDTLQsr514PDPXJwtVLYWi4LJAVX2FWSlJP605tBsvn9I/G1itqZmFXWO4wWT2tBcrS0urHnXbVpUC75DPd2rXAioEwyBqr32QMgnpoCMeSQX6cGrMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZQr9x00lXz2yf3;
+	Mon, 31 Mar 2025 10:31:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1044"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743208163;
+	cv=none; b=Ph4BGy6f08IhLUea63uOdwFOVtZ3PrrAKxvoxaskxSQBBVu9nT/At2rXOI+ZFKbA36QoYJ2vhyeXv5QzIGSiE49mRY+EN3IYBYEk1/ZSZMygSrUVnZZtzMtVbW6QyA3E+CURKL1M3fFNj51AQfoZQbM+jUKPe8gO55Wf+Bv5Gfu1BgUnbh8pYRLP08zUb2fGgXNx0Y6UNwAQy7LKnmG2o8j5CirAdfmL//nGyuxSv+B4XV5g0OSPsHGjhY00JZCQNV7QSXv6UiXTB8XgAF2c9I6fBHon/e0yGKPLaWjOhmPUPcz8mchTRb2FmfnKT59cvpuEQghrMIcdC8NRxe4Vhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743122817; c=relaxed/relaxed;
-	bh=p+ra6T2kuA7+mt1Iw7ON824iAjkZzokAvi5uNjYApfw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=hv+fRqG0jZ1wUmjxyZ5GVhTqNjswMIgUxHAPPQiODKcimGXgcJSxqCA7wTIO0KzaTILRCEDTDW0ledqGYYGBBNp5QjBzh0vYiX2KyAhFh/wgvM7s6RU1czlbLGJh1h/IKD3txJJ9R7xRtN+7voxz0Ra1Fl04m0rayl23mFeHvwfqIE4T00bzMYGqlotLINH9fPWHWyXTJ+/W95ZbCp3BQ6o647ylliQZpxB7XXSkHj1XtweXUPVQK4909HBWgNHEnH0tswo+WZal5SqlV4hNMhQB8Q8yV8Ef1YInbw1lSuShs924wb5F+wIfEldgZNn9P2ALeCXsLZgTbRotjg0FZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=l8YUapQx; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1743208163; c=relaxed/relaxed;
+	bh=WYXL/IJoE9Di2fp4ccVQCgQpgTyRfUoS3TC43hdzJJQ=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Z5Tw6yQ4VJiPv960mr64pAGD0d/PSwcUK/0jojCvkexpNtWx4pRUt9w9Jh9HqvExtieJ36b8fIwLt3Vp4AzfXOUluc5jM5BZGNMV2gCtbdqWZs2GFG7W1GKMfEnRSigKFZ6p8UQyAJF9M2PMKb776m3sQz12SZ8ObWsGEWYArI4BKXxjo/QfWZCchrvfEw1HsEQHyV+PR/qMf9okxFelXKOgcuJopcWtOp0bz1j1IFzqDbjw9XLu9AaouCCN+JW8S9hP+T8TSq8budkW1mgXbGscKPTdhBGrAyclSQgedaQ0qReZm14a91dl7P+wQOfKU5F1E6gj+vL8Kg1rJWUYdw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DlM7g96Z; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1044; helo=mail-pj1-x1044.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=l8YUapQx;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DlM7g96Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1044; helo=mail-pj1-x1044.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com [IPv6:2607:f8b0:4864:20::1044])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZP20c5n7Nz2yfK;
-	Fri, 28 Mar 2025 11:46:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZPdYt0YKyz2ySm
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 29 Mar 2025 11:29:21 +1100 (AEDT)
+Received: by mail-pj1-x1044.google.com with SMTP id 98e67ed59e1d1-2ff784dc055so4607420a91.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Mar 2025 17:29:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1743122814;
-	bh=p+ra6T2kuA7+mt1Iw7ON824iAjkZzokAvi5uNjYApfw=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=l8YUapQxzkeoWlqLL49sQe2NZt+CDE+Nbw6PPh7eZKP++2Ac/TSsnK1tiM8aLmjXH
-	 ar97VpEYv4CJvV2HBzYiqAYvGRrXS5SX1+jOn8cZbD2UXHu0hG+ziM/hyTG7h0MAyp
-	 eCrvBZPGJH/pl5yjqZGxCdUUZbbPn8RAshQSwN2XFyx4y5qhrlsHmE6fttMcr9p63Y
-	 mWibmTpNIuw6aArxfyUc4gHIgIdHCwAgKe6okSnUvEjAtjpNnsrMVqHfJBpdi0NiFD
-	 essgIYoScXVdiCnLgBILlmAyiayUxWWj4wNKzK4NeNA9WT/igeteJsm/lHbAnK/DGU
-	 wBJTYZY0MyPmg==
-Received: from [192.168.68.112] (unknown [180.150.112.225])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id C0E4C7BC5A;
-	Fri, 28 Mar 2025 08:46:50 +0800 (AWST)
-Message-ID: <d0f7003c22e19c8fc7617610043edc7be925a180.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v4 2/3] dt-bindings: pinctrl: aspeed,ast2600-pinctrl
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Willie Thai <wthai@nvidia.com>, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, joel@jms.id.au, kees@kernel.org, tony.luck@intel.com, 
-	gpiccoli@igalia.com, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, 
-	openbmc@lists.ozlabs.org
-Cc: leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com
-Date: Fri, 28 Mar 2025 11:16:49 +1030
-In-Reply-To: <20250324175926.222473-3-wthai@nvidia.com>
-References: <20250324175926.222473-1-wthai@nvidia.com>
-	 <20250324175926.222473-3-wthai@nvidia.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+        d=gmail.com; s=20230601; t=1743208159; x=1743812959; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=WYXL/IJoE9Di2fp4ccVQCgQpgTyRfUoS3TC43hdzJJQ=;
+        b=DlM7g96ZP8jO8WEctLw+rVTIMMtgIkYRjt7PS5oDVC0ezWmk+W2CQnep8lPnMYHtGe
+         uasAURemknSUou3L5FvHjXMqhyyWmwAc4BiPWg+dVIJ07BxRG7sZqMN87tk+gdw1StPn
+         pKZqJYIO0LZ0sWRBsS+64Pi0ppD17gRBbjJRIUF+/1g05G97EWCDf0Jr+KK9TCvrEF/2
+         YHEuvMAXKKcY/a/c+xo2FogniQW0W+lARIiL9jv7pgQ4+j6iU+WYwdNqs+atbqpvSp2+
+         NelcL8nQqWW3DSzKg5R8p1yZHvR7p/kP7PKszKzQnHVwN2HL2UJV1bqm2Dr1rzFnjeqm
+         Xflw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1743208159; x=1743812959;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=WYXL/IJoE9Di2fp4ccVQCgQpgTyRfUoS3TC43hdzJJQ=;
+        b=Q0WHXEVoAaVmHaoHU0CYfzekevZDIV3yElDbJpb+GoCtAiQ7/qL1DPmEu1jahqqy7C
+         9TUz3XbpVtAidVQPpZ0smRC3CzN95gUiFSDgrtMJf/javtFUm+nf++OmVgQxgDPoLUS3
+         S0QYSJS2HTv27A50mAoN2heumsKtHWvGrezWSj2L4q1/n8rTkAFCUQzmt1X2YQL7SkLe
+         lhr7wxV9pUgEEHk3rk1FNu7zDJxeEdI99cVWGVnNTrF6riXYt72miNHc+6iDtzyCT2UR
+         ozEkFK8Fnc9T4IZxhObTm1X2tHRBJMRI+VXmKlP/IOM5YBWoWxySaRh6kM85lyLncXpk
+         rrZQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUVCoNEpvc3rpPOY7untyM7oGWX5zDsQylUFYQN/3r0zN20yJf3093vHdCucEqPDMRVuAZS3oyZ41xOauA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxzXzta61tCnpSRqRYICrQxUjTyaPqNS5t4osbJDHdxVrS877+I
+	Jamt4RCtVlV07KBIJtkG1h/kd5r93ZPXRCbsV8v3M6hkwXoLgM/5
+X-Gm-Gg: ASbGncvhyiH6cnf0p0zfja0/6fJuJBQRhi01h40/gcpkQcFFHY+YyClIh+kaOVbPAJs
+	5OujULPp/WZs4KjdFfBUvCzmkzrEmFFPaXRNdtUd+7zw4HU1ONG8zx5viIHS2h82ghu3EXv3yYR
+	y7T1YklrZvgaNUOsUePFn53iFne34UQxzLp6dxUSeO1tmu+/7aPRf+AfEYcUpnP37sUzvE0G6NH
+	R2rgMd8+aFDi1dOcMx18VGr6AH/fKJd7BHty2c2i2QCIuTCd7EHrekMqQoNlga2V+bpziOFesNb
+	rMGQmSiSHPzRL8qxVgSQpYVibvBee83BT+RC5EjO7mkp0FFW6KEXXaF3dJnRJHy/2s5l0A==
+X-Google-Smtp-Source: AGHT+IFA2z+X2uC61UN1KJifyXv9jI8e3ROzSjHTCWF6TbJpXqQnAeo9E5gok3I3WbstaxxTgqoAHg==
+X-Received: by 2002:a17:90b:134d:b0:2fa:e9b:33b8 with SMTP id 98e67ed59e1d1-305320afaadmr1854600a91.18.1743208159280;
+        Fri, 28 Mar 2025 17:29:19 -0700 (PDT)
+Received: from henry.localdomain ([36.112.187.254])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30516d3e535sm2541627a91.1.2025.03.28.17.29.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 28 Mar 2025 17:29:18 -0700 (PDT)
+From: Henry Martin <bsdhenrymartin@gmail.com>
+To: linux-usb@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org
+Cc: gregkh@linuxfoundation.org,
+	linux-arm-kernel@lists.infradead.org,
+	Henry Martin <bsdhenrymartin@gmail.com>
+Subject: [PATCH] Subject: [PATCH] usb: gadget: aspeed: Add NULL check in the ast_vhub_init_dev
+Date: Sat, 29 Mar 2025 08:29:11 +0800
+Message-Id: <20250329002911.132826-1-bsdhenrymartin@gmail.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,46 +90,36 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Mon, 2025-03-24 at 17:59 +0000, Willie Thai wrote:
-> Add EMMCG5 enum to compatible list of pinctrl binding for emmc
-> enabling.
->=20
-> Cc: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Signed-off-by: Willie Thai <wthai@nvidia.com>
-> ---
-> =C2=A0.../devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0 | 1
-> +
-> =C2=A01 file changed, 1 insertion(+)
->=20
-> diff --git
-> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
-> pinctrl.yaml
-> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
-> pinctrl.yaml
-> index 80974c46f3ef..cb75e979f5e0 100644
-> --- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
-> pinctrl.yaml
-> +++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
-> pinctrl.yaml
-> @@ -276,6 +276,7 @@ additionalProperties:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - BMCINT
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - EMMCG1
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - EMMCG4
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - EMMCG5
+When devm_kasprintf() fails, it returns a NULL pointer. However, this return value is not properly checked in the function ast_vhub_init_dev.
 
-What pin configuration does this correspond to for the eMMC controller?
-These groups aren't arbitrary, they correspond to the 1, 4 and 8-bit
-bus modes.
+A NULL check should be added after the devm_kasprintf call to prevent potential NULL pointer dereference error.
 
-You may have added this squash a warning, but I suspect the pinctrl
-configuration in your devicetree is incorrect.
+Fixes: 7ecca2a4080cb ("usb/gadget: Add driver for Aspeed SoC virtual hub")
+Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+---
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Andrew
-
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - EMMCG8
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - ESPI
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - ESPIALT
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+index 573109ca5b79..1709a58299a5 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+@@ -545,9 +545,11 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
+ 	struct device *parent = &vhub->pdev->dev;
+ 	int rc;
+ 
++	d->name = devm_kasprintf(parent, GFP_KERNEL, "port%d", idx + 1);
++	if (!d->name)
++		return -ENOMEM;
+ 	d->vhub = vhub;
+ 	d->index = idx;
+-	d->name = devm_kasprintf(parent, GFP_KERNEL, "port%d", idx+1);
+ 	d->regs = vhub->regs + 0x100 + 0x10 * idx;
+ 
+ 	ast_vhub_init_ep0(vhub, &d->ep0, d);
+-- 
+2.34.1
 
 
