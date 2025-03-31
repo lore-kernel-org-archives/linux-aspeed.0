@@ -1,89 +1,96 @@
-Return-Path: <linux-aspeed+bounces-1145-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1144-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEC18C36019
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6432AC36014
 	for <linux-aspeed@archiver.kernel.org>; Mon, 31 Mar 2025 22:56:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRRM44chjz2yfF;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRRM41ThJz2yrZ;
 	Tue,  1 Apr 2025 09:56:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::641"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743413978;
-	cv=none; b=YGRcx/wuh/WxXC05IVCcx8RAqQKwHSzX0EMxVN5fAV28v3T9ClUVpq4G3wJU7jgAfKfMg+f9AFSD5Cy4IkK6ijbjPegK7B4yIE6TbM9ISI1cPAnNEntMahxoMEeZCpiQCDitcV5czHQUbj/zoZGUY5qEh+a5ES0/sKOwdemJEGOg++XBvK7NGez9xuW0UosdsoPOtYwNGSTpg6BYAZUHWxSM3VLoHE6e9su9RS93NNeEGnv1fkEgFtXbmtXCOHO/k+RS0DSn0SwMHHuzDNw3vEqPQPm0eRzH6ZXOv+B+zDaiuHyRjzbq6iZH+W9SSwKAZLeUlmVV+NvT8p60KvTyAA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743413978; c=relaxed/relaxed;
-	bh=RKMxlaeTxaJWI4z9WHO98X3QgiKdQ3qKVb7b/rUt++I=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=WiyNfoy6r9yfloH8lR05HHSIY7leGhx7tw1p4cNNyp3jSHC4PTYydZdjNo0auIKL/8k2kQIox3pGtkbsn+KNU1dMHRoXiWSjR12JoP6oCnELkwG7IYvZxZuRo+08UopARx/tAYE+cmPrKioSvaKy1pCENkl+DyFLDJWty9oPkoQqwSpYilCh1/SyDPOaSRzOgUSjIQJ+eOdnz2HsQybP6TQxh4T1M3FFo4Zv/P3IYk4jGz/Ct5/hDtpcIDQuncDBcfXa/GHr6vcN9qgSeYxA1+eWgzCBuCBN8qwQpAKcivygyDD3HRGVXhK9or9DsrKZkny6Qya81pd14Fs0ouj30A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VbD3TeEI; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2414::60b" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743441573;
+	cv=pass; b=AmLLGV1iJVighpydOL9qOH6e3Zi3vcg2rOWOlUrXUlqrWxHYaajwgbR0kVAr0rTL8bQ8j/jivwFGhYSZIu4rgpDGLbfh2szKIw/bMJM//Thar0B4/0qcdOscsnYf4HEvu/9Z+L3ZHvS7vo2gLAh1+8rKINy/5QDSaNyw4YApQDOmi5LHZ0ysgZltdaCwCaCp5w0UR0kvk1YJ3jeTeXhVtgpnzyU4f5Vg06lxZeArtprWheihD3jXGX9TO3Dr0G0WDPmnuu2+HSWMXpJEheMIftfBMBvcDCt2TV29sc2gVGtuhhVRZf47xg6eBlatjiAMDPzG2Na/kvQ3Z44ftGSXQw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1743441573; c=relaxed/relaxed;
+	bh=msdUo3wzjzr8XFwzKi5515/1w+Y5mSvWR+VVIcgmn0c=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ArTpazzSctJy1UA9xXNZwa3TfcJ6Oc8n3O3IDgzX5+BOvat6UYrLvsgHCf7KzAH07Lvm9KBt3w4srQus75pbdiUqlwuRmZQtbaiiR244EGT9SqUkPD1MSXuaMKdIRIr/BWvxJsqBM2QtxtIN9YxKqFtJSKoMV4hkVEKIIBRl7mbomWzTjXDZ7rv39pJIJm4InvXNFJ9SbO1IQykBz6K0OUk5fn8S8ypVFB/vD+/by/X1W4zjuknSVHBwJXIc4k0Z9gn5cfvI0JcFaIzh05x49NAzoawOSuytrgfMi2XLhjCnMb5m5zXTd5Da1eMOhYU8FhsN5qNi2+I3tbdDIITZew==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=RIw6FQJn; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2414::60b; helo=nam11-bn8-obe.outbound.protection.outlook.com; envelope-from=wthai@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VbD3TeEI;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=RIw6FQJn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2414::60b; helo=nam11-bn8-obe.outbound.protection.outlook.com; envelope-from=wthai@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2060b.outbound.protection.outlook.com [IPv6:2a01:111:f403:2414::60b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZR5gs1rflz2ydw
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 31 Mar 2025 20:39:35 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id d9443c01a7336-223f4c06e9fso77314285ad.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 31 Mar 2025 02:39:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743413974; x=1744018774; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=RKMxlaeTxaJWI4z9WHO98X3QgiKdQ3qKVb7b/rUt++I=;
-        b=VbD3TeEIwNjTPs7wChbTo/wA9n/STORlzCb+s/AJOAHO7iS1KJ3DXSJUDOHA++IY5l
-         ET25MVlkUd/nKt7eMx6eq7+Ut2q7f3+BZXmX0UK0RI5EN6tBlLOAtVWRjiBc+S1uS0Zc
-         uKEUAnT1JdcUZMAUtI0Pp5Xzu66TeYIEfpikp/dVs5qk37LxCOM5u+zrDcKQ2qKhxglU
-         2iAc271S3DADp7tlggOq9Rpx+fkmLzRgLak3sXxZOPohrfgepM9/RdQESISexjF/ZkOp
-         BYJPej/DI7KP2xdAuXJBSSv2ExU5H3py0+9scD2aviKspG1gzIAWf3XbkPbyhIGWfQ6M
-         MUag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743413974; x=1744018774;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=RKMxlaeTxaJWI4z9WHO98X3QgiKdQ3qKVb7b/rUt++I=;
-        b=JkkFB1o43UcchA7tKxaiJDqaJHWKj7uDjD16FAwD50dLkTCxq4pqHjsNIf1+Wx5S4w
-         H41LPVlEnnFMUPJ4i+cYx5I3vBLkqetYr6vb3D2jZX5gOsy4Nhe2lpTnV1o96xdBvFBU
-         e1z8U5CPPyY9+/D4PVUkalykSAlh4DQfEmNWkZg1sbou5Zg7EM6eF7Ly4emVF34/bxsV
-         QKXT6ZGMFUChsen4RJs+trB1deB+GQXf5tdKh0hWgqYAq/0j7cT7oXWPGev683QmY8Bw
-         g3E3VGJ/BrGZ4IRnD/YYwooaM4utEoxUJkrAZEYE0YfUwjVVkDSPSmIaXniBneGUhzPI
-         zHOA==
-X-Forwarded-Encrypted: i=1; AJvYcCVV5khlLVstdbFaNJhuBReNKiilWpn10Q7pskRVLsdMs+G1VqD9c8I3gh3SD0lyfA/fy1XiDrk85jOI9Fc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwliOn7jsyQjvbDZJ+xoA06tkEjtJ5af+inG1UvBul4WUdHF+zz
-	vdKz8oLdFJi9MaqrimjxpHL5wnhcbcoBfOcMOdrWGNitMfV6MYnc
-X-Gm-Gg: ASbGncstXCIst4NmAMSdPzaNmZtLqryqQ7Z/rAp7PGcNzCPeF3izm7T866p6ruZja3I
-	RKszT5lx4YLKuKYh+I8Fk0t+e7u2i6AeadadxKDaF3y9hrIUCh1XSgsSyBlugAXrL1QVrm+hZtm
-	MbWYcT4w1QZcZnZdNVbgr+JFr3fyxI9UHjquCDhQi40YP4oZe55zDzWLp3w5A/8sP+IfGm6I9tW
-	8tuDImgpnw3zLFGLI+df19qgncYYcvKUkPfxiJVgnM2fdVYDTM7ANUd8BVLjaIf6B+hLaWgqluO
-	KXNeeHm1pRyAoKU7jgm0zPw4aGFCT06mn9CWJO/9CH9De/01RNQxLzhvkEQZmtDTfkTNMsc=
-X-Google-Smtp-Source: AGHT+IHaTuotKrQ7H6Jwshz7QKSz02e2BY1SJ5EVZ81Mmzdz+0YDdgOAsdLuQKnlKlj+InQ4FWeA1g==
-X-Received: by 2002:a17:903:46cc:b0:221:89e6:ccb6 with SMTP id d9443c01a7336-2292ef33b00mr156170785ad.25.1743413973635;
-        Mon, 31 Mar 2025 02:39:33 -0700 (PDT)
-Received: from henry.localdomain ([111.202.148.167])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2291f1cf93esm65083725ad.154.2025.03.31.02.39.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 31 Mar 2025 02:39:33 -0700 (PDT)
-From: Henry Martin <bsdhenrymartin@gmail.com>
-To: joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: herve.codina@bootlin.com,
-	gsomlo@gmail.com,
-	heiko@sntech.de,
-	andersson@kernel.org,
-	u.kleine-koenig@baylibre.com,
-	bsdhenrymartin@gmail.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers/misc: Add NULL check in aspeed_lpc_enable_snoop
-Date: Mon, 31 Mar 2025 17:39:22 +0800
-Message-Id: <20250331093922.7735-1-bsdhenrymartin@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRHtW5hmJz2yT0;
+	Tue,  1 Apr 2025 04:19:31 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=oC6rujEphLfkWjWp5stVloInzCPDtNthiqkRbI0FjWSb9xX1iW5hZGT62gtzBv1INfFYfZHk4LyzmxxyUlG/ldHOPFSUwIhzCQ9a6EcPS1wDFecoY/g3rVorp6VDKKgBD8d+qEnkpslZYJP8xckf5EZ0DwfR5m+usU2xcb3GxmGqSvVKm1JVpI1DrqgWvp2s4w5lErQxZaMEAO2i9SYDRoKND5+bo9htanW/ux1dn8GmIXIl+6RQcxnGeeTIgKN01aLqNez8Fs3/7s36SuhL0kp7yZQC+V+25elx3qWqL2rJ9qne9lvO2BGRkn5TnLm0AU3jHtt+Qx6y6pLJyVteBw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=msdUo3wzjzr8XFwzKi5515/1w+Y5mSvWR+VVIcgmn0c=;
+ b=s4G5KRdUh2LGGhO131M9xhln4H5FFnFQrzRtDbxkM1JVFf8nA5S8Mb28J4f3Phw9TK1BkysGcbiu2ZfdonyESX2ktPRA/LhMRl7KNFXtF65YmSsjz5n/nh3YMI3D/+Sq4yUbmXt+MSypPxmY93p5HFg1Id3cGlbvLhnwhugmYJ5ZXPU9A+Vl58uiByNtZbrenO4tzN3FaJxBZWktfR7e43JiIHsBd0E2YhbzgE0EM2MofXvPa4pd7v8vJWmGgxJJSHhjlOmeU+eXCsYM2zSE5zFpMV/wMw8aelQqTZ9lFoPO0Uqu+0Av0GmT1mYy/idetJyQBnrEQ8vnEPA/tcRNzA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.160) smtp.rcpttodomain=codeconstruct.com.au
+ smtp.mailfrom=nvidia.com; dmarc=pass (p=reject sp=reject pct=100) action=none
+ header.from=nvidia.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=msdUo3wzjzr8XFwzKi5515/1w+Y5mSvWR+VVIcgmn0c=;
+ b=RIw6FQJn1u2Fs7E1lIvDYyFu9xwVDJE0/gYyQr2uc+9sbph0yfUH7ygsnDPVx4sW82lKsZWFXRtCjN0Z/CWOwn25qJm44iJM6ncIXRAPCuz9Llbwq+UjTOQiUAOzV/oZ62p2TFMxKbXaVuMiX96yzuTmpjcshd/AQNf+72wRTqG0tux2daL1JYfSnO0VyC5j7cKErYbpVzesaaiwKX5SbD9PfSx76ig/kraceH08Pw9Fz4l9s2Y/rH7xRjYEB0EhKsPouEVjSG/C21PGm/XXAdie6YRmj1u/WWaF2apyoZCjdMByhJapr1pFc+RuXwHlrUoVZy6ZHJahXXjzm/7FIQ==
+Received: from CH0PR13CA0046.namprd13.prod.outlook.com (2603:10b6:610:b2::21)
+ by SJ2PR12MB8036.namprd12.prod.outlook.com (2603:10b6:a03:4c1::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.52; Mon, 31 Mar
+ 2025 17:19:07 +0000
+Received: from CH1PEPF0000AD74.namprd04.prod.outlook.com
+ (2603:10b6:610:b2:cafe::81) by CH0PR13CA0046.outlook.office365.com
+ (2603:10b6:610:b2::21) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.8583.26 via Frontend Transport; Mon,
+ 31 Mar 2025 17:19:06 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ CH1PEPF0000AD74.mail.protection.outlook.com (10.167.244.52) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8606.22 via Frontend Transport; Mon, 31 Mar 2025 17:19:05 +0000
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Mon, 31 Mar
+ 2025 10:18:58 -0700
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail203.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.14; Mon, 31 Mar
+ 2025 10:18:58 -0700
+Received: from willie-obmc-builder.nvidia.com (10.127.8.10) by mail.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server id 15.2.1544.14 via Frontend
+ Transport; Mon, 31 Mar 2025 10:18:57 -0700
+From: Willie Thai <wthai@nvidia.com>
+To: <andrew@codeconstruct.com.au>
+CC: <conor+dt@kernel.org>, <devicetree@vger.kernel.org>,
+	<dkodihalli@nvidia.com>, <gpiccoli@igalia.com>, <joel@jms.id.au>,
+	<kees@kernel.org>, <krzk+dt@kernel.org>, <leohu@nvidia.com>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-hardening@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<openbmc@lists.ozlabs.org>, <robh@kernel.org>, <tingkaic@nvidia.com>,
+	<tony.luck@intel.com>, <wthai@nvidia.com>, <harrys@nvidia.com>
+Subject: Re: Re: [PATCH v4 2/3] dt-bindings: pinctrl: aspeed,ast2600-pinctrl
+Date: Mon, 31 Mar 2025 17:18:57 +0000
+Message-ID: <20250331171857.262649-1-wthai@nvidia.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <d0f7003c22e19c8fc7617610043edc7be925a180.camel@codeconstruct.com.au>
+References: <d0f7003c22e19c8fc7617610043edc7be925a180.camel@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -97,32 +104,100 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: AnonymousSubmission
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH1PEPF0000AD74:EE_|SJ2PR12MB8036:EE_
+X-MS-Office365-Filtering-Correlation-Id: d2824fea-25dd-4a5b-ca71-08dd707823e7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|1800799024|7416014|36860700013|82310400026|7053199007;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?69GcHvvXw0bhH6IMfhhzrtqSF/fk50FFXR9doWMGF9yDG3qnM5uK742E5GUQ?=
+ =?us-ascii?Q?ZGV65vcOBU/gXLEb3OAdNrBj6QF1zPmiCE5Uok9Q/2UB8OKZyH+10qqaJxNd?=
+ =?us-ascii?Q?jMKSlnk/qEipOh/Nw7Edfi8AeBnyz4bFtqqYDeTA49oJAH79X/ZF9XELIkte?=
+ =?us-ascii?Q?pHFllSv10b/f3S1xfQ23MDji7z6vjRL3HLey++q4m6bY5dbYM0SpesRvG6vD?=
+ =?us-ascii?Q?StD0jvRO/pmtVDphF+rqiy/ISuIoE0e2ylKiyUs+sa7HnHg4saDYOm+OD38Z?=
+ =?us-ascii?Q?jidakGUmUer96BXEwzjam/KV38gW3Jep8dFcZiv3toq1HXv9zYCB8AMiovXa?=
+ =?us-ascii?Q?3rsn8qTM5CArjBFE7nzPvixIrCrOOz1Vr+1+9j16WuTfh6lpAxzbUc46Fkuj?=
+ =?us-ascii?Q?6EQiiiF4YlYV0KkbDczmw+NKmvVWRwtJHqB4QGf0bEchqe+c1D2waLPvErm+?=
+ =?us-ascii?Q?A+WIh+96RvjqdebJEWehzxaj6KTqC5nAGqBK02mbTdYuttEM9MgloPt4U4uf?=
+ =?us-ascii?Q?8UXtVjabFigpg4pFv1nmBQC3kTPq7Uw+Jey8lLHTht93XTiTzUidw559KYNV?=
+ =?us-ascii?Q?VXnzMjZCMpCWS5q5Z5iGBsfPSsK3sC0K4OmVYqkKjuYVDvjcEWfPDlpgWoGv?=
+ =?us-ascii?Q?l69xQI7C6fDpCkiza0xixJxVpDfL62RA1Hlf+KFBIZJELMwmQi7Kzeh8pA+d?=
+ =?us-ascii?Q?0WFaRjsjiEsJl4drbLgvbVffhrmq+7f3WYbruZrjskkC6Xan3ShO9lJIdpCm?=
+ =?us-ascii?Q?Y4hEVaVtf73dQM6Ibbpo3lf+SoBCEZhrmT0sZKJ8B6ydMhqgx1GN9xt1bHAA?=
+ =?us-ascii?Q?QasiZ3D+zXYcUolc5p7LSlgiZxq/Ko+jzQGGhbnhkZ8OReAJ7ytfEwnMXLdS?=
+ =?us-ascii?Q?iTPI1aCXZ7sSRf0kF4KTjmOELok9LWI8yGqxlqhU0/O/EFV+iEPfLNuBGX72?=
+ =?us-ascii?Q?jC5p29lEJf1vdl7F4qsurwdWMw0kZMFP8IfhayQiJjtcHZdiyan9/JgGWkGh?=
+ =?us-ascii?Q?iOc/8/0gKKnOhmbve75c+cxPm4HZsF0ZFvLJfkBDqJDPRUXaxXuAfU5bomZG?=
+ =?us-ascii?Q?gIs34tkS+EUhGmPGIJbCODf0RR6Rm9WSp7J/F+P2ZExQH3uCIaC+l4rV2ccc?=
+ =?us-ascii?Q?V7QGjGQ/Ypnn+A2H4TQl9/t5sneLY8VGk31E5B3O9Jvo+SuFBUXOcJIATeDA?=
+ =?us-ascii?Q?xzbivS58fCAfShaF/9KoBfr42+SrHFaDWNZfZrP1jda7ApTWVaUFsHhFdr30?=
+ =?us-ascii?Q?qTZSb3xX/SQSvIKLVLcoXvsqfHt99Y+qqsSTs9LmZQuZLrtFQ8gyz7H9vHED?=
+ =?us-ascii?Q?zOWf7POx9rQO6a2gxINUCPuKg+RH38jpDYrcvkuQQEuD0H2ratzD2txSeEJK?=
+ =?us-ascii?Q?1JzCHdyV8SENYPSXXaOtr4PwlbLzC8/iINhJaqwxp+5qlNA9P5waSREUwxnN?=
+ =?us-ascii?Q?pt1NEeezXfwmQddel4G2d1fTPskRj0ONhoWdq8ppgot1YQAXjEFYdMUK0gS7?=
+ =?us-ascii?Q?RTTfetdPMPAMe//iab58wFdywqgwQUI5aGOB?=
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(376014)(1800799024)(7416014)(36860700013)(82310400026)(7053199007);DIR:OUT;SFP:1101;
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Mar 2025 17:19:05.5226
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: d2824fea-25dd-4a5b-ca71-08dd707823e7
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	CH1PEPF0000AD74.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR12MB8036
 
-When devm_kasprintf() fails, it returns a NULL pointer. However, this return value is not properly checked in the function aspeed_lpc_enable_snoop.
+>> Add EMMCG5 enum to compatible list of pinctrl binding for emmc
+>> enabling.
+>> 
+>> Cc: Andrew Jeffery <andrew@codeconstruct.com.au>
+>> Signed-off-by: Willie Thai <wthai@nvidia.com>
+>> ---
+>>  .../devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml      | 1
+>> +
+>>  1 file changed, 1 insertion(+)
+>> 
+>> diff --git
+>> a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
+>> pinctrl.yaml
+>> b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
+>> pinctrl.yaml
+>> index 80974c46f3ef..cb75e979f5e0 100644
+>> --- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
+>> pinctrl.yaml
+>> +++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-
+>> pinctrl.yaml
+>> @@ -276,6 +276,7 @@ additionalProperties:
+>>          - BMCINT
+>>          - EMMCG1
+>>          - EMMCG4
+>> +        - EMMCG5
+> 
+> What pin configuration does this correspond to for the eMMC controller?
+> These groups aren't arbitrary, they correspond to the 1, 4 and 8-bit
+> bus modes.
+> 
+> You may have added this squash a warning, but I suspect the pinctrl
+> configuration in your devicetree is incorrect.
+> 
+> Andrew
+> 
 
-A NULL check should be added after the devm_kasprintf() to prevent potential NULL pointer dereference error.
+Thanks for your feedback !
+We want to exclude AC5 pin in the default EMMCG4 pin group, because that pin is used for other purpose.
+We define a new group called EMMCG5 as:
+GROUP_DECL(EMMCG5, AB4, AA4, AC4, AA5, Y5, AB5, AB6)
+The bus mode is still 4-bit mode.
+Could you please advise if we can use the name "EMMCG5" ?
 
-Fixes: 3772e5da44542 ("Aspeed LPC snoop output using misc chardev")
-
-Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
----
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index 9ab5ba9cf1d6..376b3a910797 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -200,6 +200,8 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 	lpc_snoop->chan[channel].miscdev.minor = MISC_DYNAMIC_MINOR;
- 	lpc_snoop->chan[channel].miscdev.name =
- 		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
-+	if (!lpc_snoop->chan[channel].miscdev.name)
-+		return -ENOMEM;
- 	lpc_snoop->chan[channel].miscdev.fops = &snoop_fops;
- 	lpc_snoop->chan[channel].miscdev.parent = dev;
- 	rc = misc_register(&lpc_snoop->chan[channel].miscdev);
--- 
-2.34.1
-
+>>          - EMMCG8
+>>          - ESPI
 
