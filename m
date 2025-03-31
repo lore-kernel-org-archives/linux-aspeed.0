@@ -1,54 +1,89 @@
-Return-Path: <linux-aspeed+bounces-1141-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1142-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13988C3600B
-	for <linux-aspeed@archiver.kernel.org>; Mon, 31 Mar 2025 16:16:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8D38C3600C
+	for <linux-aspeed@archiver.kernel.org>; Mon, 31 Mar 2025 22:56:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRGTY3w9Mz2yqT;
-	Tue,  1 Apr 2025 03:16:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.17.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743437777;
-	cv=none; b=oSg8/3Vd3zzu/lqR3QMDgKFad0kLhZsT5KRDUzauX3uYNoizRdx1a/89k05Tos2BbdrW2k7isi8H8a2joqreV6KAH2vPPCfuIH4Dm6UjphqQLGLHmPb1bNd/qitG01FiTnC03mtz//mPbj3Pot7/4/ymqVm5xV1ZKSjzVkh8CajvQ+qnkwhZ8ZF35fKnQlud+wuiDC9nx+6mGtiriUHgQ1sgIbuwDAjv9/A9UJsY1bDydueryTiZhYVgBZV+DCXMs92TLLpUEpGskA2cKeAiNbgtm1WCd3jb55AQ+gFeB54FS2zpKxA/ZAqj+aeTvj9Pu4UIpU5w5uj974vKZ8Eq/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRRM32SgQz2yrg;
+	Tue,  1 Apr 2025 09:56:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::641"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743433978;
+	cv=none; b=HGMYNJ0QKFUL410+H5Fqrq1NfjTovfZzej92PHWyG0DbkKMcUz8k/YeCkKqfzDLF/6a46dRvtOOiFSYBT8kao24mWzcSEUfVQOTYAq4Ye/nFCHz9T6M1HZlxioe/wrdb0Pj5XKQvV+qqDb3Gc+5s2YewkQHHSjPUGbwGP5D1r4GitTyLRK+/uOeBvc1gEkk487N3L37dqxsqOi3HhmQjUFydc+clypBSiPPj2ZkTSDR/W3Z68DuNqDWaho7Rc5uY32CPNIlSIPInUQAyrXO25rUURa9yK9lHwklshc9rIoQsUeQ6WQwhX6S02XoT8WNhYugEk7Js3scJA7lVHcySJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743437777; c=relaxed/relaxed;
-	bh=ongIBo++HFbn0NqFF6/15Jg95xn4PjVawgwlrGYSnys=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=Mg2s9z0gLKhh5efMsKvP8v2OEIxUB3tqNfyex/QYCVeNM8EmsFTxSVwCMpH/GWGO0F5HGAVJBMS1LfmxvK0c073BCccsyJwMlQM+5WHE0Hjdo51R224xp26fvk5YplOtp+c4VRCWB4v/GLj8dRmknwgHCNJgS7/Tn8K/o4C0At1FV5Nu/o8eq+WXL7bL+KREEs2LJ194o3p1KnMPrsyGZAka1ypuCP7wP/pzar7wNyh1AOoE7o27VD0m7VQMdgR+chkfpF+D9jpbyOipDXDARnKT4SEZRyYmh70K1xpWSXNZ0r+WZTqV487803XNtLaMVT/7oS17HFhCAm49ZF1o7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=H6mOFW8O; dkim-atps=neutral; spf=pass (client-ip=212.227.17.11; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1743433978; c=relaxed/relaxed;
+	bh=UQs6q6PQtFgVe2Al3n7AGyLmvRZf/U28ub434FoB4Us=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=jNQF/Gp4w+TyE7gBqWNgVS6pJp+TM7YO8Ln0+DVlO+l8VDXDMa234fAJHcqnJcdFhBD/LPZmXfBEHt5cmHyKyQrhOCkemtbk6G50lTAVTPMKzGNmTiQzs/cJU2QPVCiqRxkB2sBdhNvCdcH8tWl9YF60T4lF/SoNgypHQl2OtTtcqScF5oGMMKIhbJ7myoB+4PlXJYK4yZ1OpgujZLd+Yp4WG+cC+SxSUfiLsaKx1OFIRc3/eQIFJKGpyzMW1IeR5av8AX70zoUhAmIJ3oLaIknBEujKx3G5HnX1WBSiJXBuznvZNJOG9hjvl4PmoWpIxE4SUmESuQ0jMWfpM3VRMw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LXbCnMi8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=H6mOFW8O;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LXbCnMi8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.17.11; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1428 seconds by postgrey-1.37 at boromir; Tue, 01 Apr 2025 03:16:14 AEDT
-Received: from mout.web.de (mout.web.de [212.227.17.11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRGTV6qgmz2yVX
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  1 Apr 2025 03:16:13 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1743437749; x=1744042549; i=markus.elfring@web.de;
-	bh=ongIBo++HFbn0NqFF6/15Jg95xn4PjVawgwlrGYSnys=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=H6mOFW8OD8FstaGCGFkhdJ03x8v7LkcTu/U4KUm4pCi3rt4guHvMf3V/BNf6h1uk
-	 KPQCPxc3lH7S8VjLLn7tsmUs5rW7hoaqJOnShwOpwlaOiP6X1EIdLl6JWTO4dmdN1
-	 h2NeeUxTpcvshsf170R4kT5E0Mu2MRhsKz9IgrCY663Tm9kFPHiWmmGUlWpTQUCpZ
-	 AeaeWVBfyzu7w4emavadcQEAari8nIaIpweqHdhFlm2FIHwdzwCbZ1GptSN0oQo2K
-	 IW0HZ6xO/wYQ7X14JrvKzAPCmlC0eaKu/UmlKZHHwydA86F4BtbPQOC3GiW/bIVYn
-	 5OuYTr1/i8rEOnaBUw==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.37]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MIL4Y-1tvvjk3V7U-00EZdU; Mon, 31
- Mar 2025 18:15:48 +0200
-Message-ID: <8cd011a2-67af-47bd-a05a-905eb333180b@web.de>
-Date: Mon, 31 Mar 2025 18:15:46 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRF4S4yTwz2xQD
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  1 Apr 2025 02:12:54 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id d9443c01a7336-2264aefc45dso115542555ad.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 31 Mar 2025 08:12:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1743433972; x=1744038772; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=UQs6q6PQtFgVe2Al3n7AGyLmvRZf/U28ub434FoB4Us=;
+        b=LXbCnMi8ytD2VPykrTld/KTQoj8Bf7WMjPWMrTf5ZT9T26N0Oo/ehGfxkVnhHiqL+G
+         qigCT4SRalaXU83dcSjHQTyNqkIqPzmyzSXy9PZWu4D0fUIwl1Vk8yb0mU9Mld5cx7H6
+         pY2tHzduY/FFSbOeUhoSTvgXh22pC5EkK1tvZPWE3NA8FcMaoyPotCili1EAYESDLUqd
+         dihjyHx+wVw4uXZ8FxJaoFW9Ys5WHz4heCBnfAYpK9YDNFIm48Vy4BFtWtvNz6Vp190a
+         aWVVEE5zcDXVqbU+Dr1DHDutaANQq4vl9aTJHRvuZXBXzwXENevbHNYCPTx31SBUKPpC
+         v/NQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1743433972; x=1744038772;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=UQs6q6PQtFgVe2Al3n7AGyLmvRZf/U28ub434FoB4Us=;
+        b=lNwseAgxX4sqMwY6G25IDO7I1N6klNiUSvBH6i5T0THVXhqU9qlJhLGMNs3CUzDzqR
+         PhlHsTDi/mfPIeRPIWMPTvI4D4W7+CClCtkoNE08cB6GrnhmoazjlBGviAtisT6Ip0/l
+         HM7WuL/28rQfwvIecmfQLZw1ZL6xdE9cH0mcWB/4vb14Zz5ApjxdMSiQch4K6vR2D70J
+         9lfTYmMx4HY6cGViao+35tFyCa85y7lVgFDoHQYnTV5g0nFZgUW2q6tLh1g3XDrLTvQn
+         OsI0bJ9KwXq5HFq3zk+Kh5k1cT8k0VOAKwC9O4S5C06Nankqk5myYzqzMk9ZUo460qKk
+         cIrQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVMeTMRVbiMgi3TJ0kKUSuP5EIs2xwtjgihMt6QzhtnhFiXDM1OFAyTH8aCW9e3ofJexOUJ3ppWjJ5cYYo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw6ru9CwlcBRvaA6+wBaa7IsR5ceXJLpUvOJyyIqo314erb0/KJ
+	iHnWVODYWUuMzxB2xS+Ur8YCxQPikUAmh3trvdg+CVxL9ry4I6qa
+X-Gm-Gg: ASbGncshcoumFYl8ic4v8tuWV5vMbGYT25/Uf/ctVUq0/mt6kDIyl1FhkssBSUa6Drr
+	y0VN5clTTpy20P7gYJ2R7n0xZKmntJhEhdYxLqOleyCdlUwn6zC/vwaQ8znsTElcVJwf3yeCTKp
+	TEo5b4JypjTlpq91mQfgbaaK8tXK0SlAyVprebtSaNOCebSQ1uXPp+/4vLCDeU2kZYLpgdmD07n
+	BQrc4QkoHKltgCDsdS9sgcz+q7dX+O1X3IAne1L8rrGCVYPyABuusm6HRpFKe4JgOdUGbx6DFt0
+	Il/QgXpMnYIlWjkwcPJoGGS6vOeENqJB7Q2z6WJrFh8Oa5upEQxnf9OqsZoBWTiK4Ai3TEmMNrN
+	gmsdJKQ==
+X-Google-Smtp-Source: AGHT+IFu36yXNBcYaTdIut4XpIU2h0wu30Oj49ASXXvk6ejJjANWdSL5zYgJyYHCGhMg5H3r4F/Duw==
+X-Received: by 2002:a05:6a00:b8c:b0:732:a24:7354 with SMTP id d2e1a72fcca58-7398033f3ecmr14860283b3a.4.1743433972309;
+        Mon, 31 Mar 2025 08:12:52 -0700 (PDT)
+Received: from henry.localdomain ([111.202.148.167])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-739710684bcsm7033689b3a.113.2025.03.31.08.12.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Mar 2025 08:12:51 -0700 (PDT)
+From: Henry Martin <bsdhenrymartin@gmail.com>
+To: joel@jms.id.au,
+	andrew@codeconstruct.com.au
+Cc: bsdhenrymartin@gmail.com,
+	u.kleine-koenig@baylibre.com,
+	arnd@arndb.de,
+	herve.codina@bootlin.com,
+	gsomlo@gmail.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] drivers/misc: Add NULL check in aspeed_lpc_enable_snoop
+Date: Mon, 31 Mar 2025 23:12:38 +0800
+Message-Id: <20250331151238.13703-1-bsdhenrymartin@gmail.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,74 +96,38 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Henry Martin <bsdhenrymartin@gmail.com>, linux-aspeed@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Arnd Bergmann <arnd@arndb.de>,
- Gabriel Somlo <gsomlo@gmail.com>, Herve Codina <herve.codina@bootlin.com>,
- Joel Stanley <joel@jms.id.au>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-References: <20250331154002.14128-1-bsdhenrymartin@gmail.com>
-Subject: Re: [PATCH v3] drivers/misc: Add NULL check in
- aspeed_lpc_enable_snoop
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20250331154002.14128-1-bsdhenrymartin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:lYijUOEiHoRB9NGC01Dedke5GNycctJPJmpQkQahVipGe7YJ0+q
- hbLKpicLEn97cVSUWr0mcHqONoddhsJevKtRBS6wwWTEQIZMoXZRTIwnpZznhy5YxKFSrEv
- aG9bVbuwCq/xPV0uR6lt4OYA97ipJpTT1gVPcS4dIG+YE7qiWNAJvPXqVqhFIsN9s6flPOq
- 5xA9OFtw/KJ/8Ka+HXLcQ==
-UI-OutboundReport: notjunk:1;M01:P0:5oG7VCXH8og=;P15nKdTwkUBxynx5MUowVvpmB3b
- FRjy02zxityj2sJk+NqUkCD4kdFgK3chCFghCvQprY841gpT4B1iPmDbt3CBKDFSj4sr6d5+Z
- L7FyuCAtsq1nNIOMo0GGlPZG7fGXQNytTbd5sPL+p7CXjizlWE0ZlYgnFe/vzPiGcqzZUXpSa
- YsmwuMOQ1pVncNaiRa0TtJhm8lmsLY1DVRBRvmohb7BBUv2EX7PlFcBPgP79+BYGPm0YzuZH9
- OrP+xxPZxKfSIspxJ3qxZZp6D8tzTJqs3KiYAqXrUbmiLOnOTzkxYJ3Mr+BBhfa3XjeVaXO5e
- vO4O2uUAF4eNfojJjLbF6MxzirBw+02KGeoLTYLW7C3S1bbHuRTylCgAFy3Yd1M9z2cExFhdH
- 9/4kU7N2WZDehcjvwdTexXxJr9Fq4jcFwII1/DWCfiZwgc0K9LV4xKE5NaDg0CWxy/skROK1D
- EhhLGyrlCeKgVQiKYuyw4KnoA6kdlCba3pQOoLS9ly+E8LpdOReQUyVMDixuEVIRd7XP5Eouf
- xNXqqIxKw7HTaJwygubijjNtlNiRPaVCoZfoc1yRbYEsZUthHMw+g4dJrBhBHC2SApZp1RqGE
- QimUsR4AvtCblSmqevdKPCXK972Y1vJ3wZ0Q841z/jwsVuguu0cixPncQs5oihwwTdJEuXQhQ
- NMYLwItlrJ18oen9Qbonl2GZlmjxM9New8qoJp1LyHtm1urZkgdd9AMhPeZCsWJI/uAL7Uv/F
- XGQc5PT4GoWC/uZ20U21bmKtAsQB8BxlgJxjC2UAluLBzUqQpfohb3z+ar4YHWANqIJ8xp5gd
- gScUWf6CIIToIa2c99R8VsimZz1n7o3k9UqoNNcmQbx8n580qf4/rZFJ+bpF6PRcOIiwJO37j
- Almw5Grpb5yItYtBnN3PxAjGGVrMqYec6jLWiIqFVR8ZV97E3niesur+uCcYO3qkGbv137lAB
- 0HosRDEQZMtboFp8lLsGfCkMQZ/HCy0WQeDyOpYo/RHwRK3jfiXCbN89NPBqzXLkESRNp1tWY
- Iv3Y0h7bb/+iTZy2JXXc87NWmFuWx/5e9k9kaFVmCazZZBpimTca3GUGG5Tn8zgEv+0HB+OIR
- Q5SMRcoveP/bX8nJmLI1nXqUOBBLI8hizrEtaNf+ffHdd2BvCqePHmYY/wpXaU2nQLdkLiZ3w
- 6U/TFqgleP9oBJlM7bq4qsXatAnI+Egk00g4X9fdh6kBCRQ4RbWXLKxqQ4duosaDLT/JDID3D
- mYHBtoXnLlVuwA+Zio8vdN5GtK9FC5iN+qAc5mMyZnzfV/WM0+tjlElLMhARCaoijDVORjxyO
- A3HM+ZLgbHYfkdIlcRNnwxszJeFLlkIbreBB0HSwQRaAT2qaYTKkm2qv1q/WmjS/Klo5JzAjJ
- RRhIrUt4aONDCFI50yCm8QhCwnaVEPf9JvCKSIn6FFTP7DjSxzVomsM9QeWjZhTE4fpEm9G36
- AqVxRT5xIT3bnintaqAKFdbmweB742Qe0fdv9h/35V+VO9kkDpEF8Nbx2ENv/O2Ckjjy8mw==
+Content-Transfer-Encoding: 8bit
 
-> devm_kasprintf() returns NULL if memory allocation fails. Currently,
-=E2=80=A6
-                 call?                               failed?
+devm_kasprintf() returns NULL if memory allocation fails. Currently,
+aspeed_lpc_enable_snoop() does not check for this case, leading to a NULL
+pointer dereference.
 
+Add NULL check after devm_kasprintf() to prevent this issue.
 
-> The corrected code adds error checking and optimizes resource release lo=
-gic
-=E2=80=A6
+Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
+Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+---
+V1 -> V2: Removed blank line between tags.
 
-See also once more:
-https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tre=
-e/Documentation/process/submitting-patches.rst?h=3Dv6.14#n94
+Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+---
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index 9ab5ba9cf1d6..376b3a910797 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -200,6 +200,8 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+ 	lpc_snoop->chan[channel].miscdev.minor = MISC_DYNAMIC_MINOR;
+ 	lpc_snoop->chan[channel].miscdev.name =
+ 		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
++	if (!lpc_snoop->chan[channel].miscdev.name)
++		return -ENOMEM;
+ 	lpc_snoop->chan[channel].miscdev.fops = &snoop_fops;
+ 	lpc_snoop->chan[channel].miscdev.parent = dev;
+ 	rc = misc_register(&lpc_snoop->chan[channel].miscdev);
+-- 
+2.34.1
 
-An other subsystem specification might be more desirable.
-https://web.git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/lo=
-g/drivers/soc/aspeed/aspeed-lpc-snoop.c?h=3Dnext-20250331
-
-
-* May the array access be simplified another bit here?
-* How do you think about to store a pointer to a corresponding data struct=
-ure member
-  in an additional local variable?
-
-
-Regards,
-Markus
 
