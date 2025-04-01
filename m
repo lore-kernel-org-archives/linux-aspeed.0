@@ -1,53 +1,88 @@
-Return-Path: <linux-aspeed+bounces-1149-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1150-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274A2C36008
-	for <linux-aspeed@archiver.kernel.org>; Tue,  1 Apr 2025 07:38:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38D23C36010
+	for <linux-aspeed@archiver.kernel.org>; Tue,  1 Apr 2025 11:46:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRfxV4Lpqz2ygD;
-	Tue,  1 Apr 2025 18:38:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743493102;
-	cv=none; b=SPt+6LhxYMF/ypfymL/YOmEFNZgGvu7EyYnibqHzvZIXvYVU+G3ApTsgDwiZSYRi+A/KDMwZC1zYjbvSruLghQX7iP1Zgz/e3La6kBxKsbvT6UNRdpyJ954+khH2VJKa6pRj8Tl3yweNPea6DAJaA3Ye5uSfot3UPJkEV1rWhRUYqpNuac+JPWI6n2MbjvDhS1VmZuuz5WRSNKkozSEFN85j0J7JAxx3w0y/6GHUWUCgaxboKD29PaHj7SE2WGYI91Vy2MM9WzLrjM1wPPQ3KxJIfgJM5QcXUfosafnqs7C2RpDEo6SOi56lxo9hY/Cf+eOlbMAHKDm5duMFdMbn6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRmRX2sL6z2yVX;
+	Tue,  1 Apr 2025 22:46:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::643"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743478794;
+	cv=none; b=YD+3HrlsuCfqCn+JUFz+8hR5yemwK1kPFXCE5GWGLrRloFl9dQLJ5gCtY0rpykUK1rceNOodoKf+gbN/AzNClGiZUf0/D0oaVSENwzFfSdQp9KWWGrVq4rR+AAvIzuEEH6sSkMfK4tvlIJZWSjetDFx9kDEmbcZqLIEY3NRiKvqYAmWr5eda+hLoGxJgPLuYJsYQZmcrT9sX6XXgMEPnOK9foA5UHzcTHzC1/hXQ3bKC5ZJ6UXOrSNW7CuEUgoJQmUv7kMy7HZAQ+9uNOch1VbuJs+zUM+rQ/Fy/vKcppRyLjF+wA+zSSutIJzlJL0i2svyVUaDH+neixY3VByfhng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743493102; c=relaxed/relaxed;
-	bh=lZ6ilgd+d6KfG9lOxFSFTm3CnNKt2h2pPE7ocZRUsd4=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=g6n9j4Mp8CKuWwShkRY9MSqjy+mAoNMORU7nC81gQt6Cge8Ego/87M5BmAXwGHcc1tKbCfScKNZLNGBUUq4CZFk1OvaQor2QKdUsIo5uzOxJ2Vf/hxjdMRxmPALKfeYxUwxIBu1yrT/dHKoyDVoIzriOdLgOBUrfu4RL9i37oRE4keJV69MQ5apAeKeGJyg8Ns5ZGktMvSyIVU03oSWrCisQKnvHe2xPxtXRzlfOoioLc3O/lbfjLmVgeatRKiKFrkJDY5hBxgULCRC+wN5X7grSQZP5Ms/+deDeexsGPJPHX2QKhNLNucbZ+Ff2yuodmpNQ0Mp2TFrO8Y1YfvUtRw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=TRURDuB8; dkim-atps=neutral; spf=pass (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1743478794; c=relaxed/relaxed;
+	bh=IFYh5M0fsDdvGMhmL2V0U6mTiiJF12cIZfzIb8uL/7Y=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=c+se1fFofBDYuyzqJVueeWK5qW5h7K/DL46nkdydpUGfHx+Lv7hIWYHFvdNbzgGSJ83bX0O2KyoYH2PNNFpsT3t92/x2jigg8fBukTLhwzgDGTBDogo+3xX82siqa6k/ZTkgPoYPtrNXeAav8x5jIvS1Odq9knQIyfb7aiMGffBhleyRrcJPO40Zcxs1I0QkJ1zSiRO0FTCWlRg6TfbQrDHBnF+11Z+7vAgNP5iyvwgCj3cg+YEKKhYqtFLv1J1yAmrDA4K+XnEz4BCSzQmU80dnR9h3AWo8u+JBBOk/0otoDbQyQdTLOes2t/aFo5RkfFJ0fDzzn3gxS7OH8j9C6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PC1cZzCs; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=TRURDuB8;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PC1cZzCs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-Received: from mout.web.de (mout.web.de [212.227.15.3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRfxS5fnNz2yf1
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  1 Apr 2025 18:38:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1743493072; x=1744097872; i=markus.elfring@web.de;
-	bh=lZ6ilgd+d6KfG9lOxFSFTm3CnNKt2h2pPE7ocZRUsd4=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=TRURDuB8XuAeNfRoBqN8GowqN/SD2xhR3YnrweZTGFOPOpQBfPb4s1bNtHI6pkN5
-	 rAzjJOynuBfZpUC00AOPLQld2fYvvRUvwYZydXB4KYIh18NGriYVsREfLAIXOPMW2
-	 NuQdNCzsHEedxS5Kfx/FsgN0mtKKIFuvib2UjYDBfowDxBD4OHGHoB2Gb4qohQA+C
-	 P8z1lPc4GkTWxWkWxP+Q9JDaUPBnr+GYfOtbABZVCQu0Hun74SH5q0+OPKuZy+Ur6
-	 yMa4rSd33NnJltam/MZLNmgevgI9RNn+T947G7wSgZI8GVSjafjyqCtB1zE7kSLyb
-	 l3qi1mSqjkO7OKzcgw==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.70.54]) by smtp.web.de (mrweb005
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1N1uAv-1sxQ5p2UZ7-016DUR; Tue, 01
- Apr 2025 09:37:52 +0200
-Message-ID: <0325e399-42e9-4744-837a-fcc7fb3f6787@web.de>
-Date: Tue, 1 Apr 2025 09:37:51 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRYfJ42m1z2xQ6
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  1 Apr 2025 14:39:51 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id d9443c01a7336-224341bbc1dso86588175ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 31 Mar 2025 20:39:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1743478790; x=1744083590; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=IFYh5M0fsDdvGMhmL2V0U6mTiiJF12cIZfzIb8uL/7Y=;
+        b=PC1cZzCs4iQMekXqW+ytk8IDmvct5G0YM5EZx9oTUeOFBIBJXz1dvaJvygdITW7QsT
+         t1rkMKndEIdIqjFttXEN0+9iylswvZlWskXUxCOfRvcqcxYnAjZ67Ur7vZEf4ocNKe+Y
+         JpnEznnbT3yyevdQkTXUJyGXXIfDQTwRMCNQ0JPyROzjhzzsDwc8QHbvFNC4AtX4pVqY
+         Wtk3EXBhCKqmbUmJS5nuVAh4EwSC3mlgMGbDkx0ClHeZ6wIODHDsIE7EdDQi1PwhhfZG
+         y9AjuhvYTiyk5Go6uTJhx36gCdIZ/vgczLgb1iwuAkAEttYAf+2OiFGJa0PpL2dN7TCQ
+         tItQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1743478790; x=1744083590;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=IFYh5M0fsDdvGMhmL2V0U6mTiiJF12cIZfzIb8uL/7Y=;
+        b=Kp+XJcPEs4qV2jYeoYgILBchNSyyuYTpTpwk5QpTFA2Hr1pedEPWUv94zESX9fci8/
+         a0RrnkdubHePewo34HBOTmRFAw26hmBxgcYUUpkb0tMtEBy0CrUeies8SYLpDof3ptw4
+         sV7pe0aGI1purzdtBKCSO2xbWZh3UOAXV0+6YDQZxYYwxKvLW1FpmPoLBNKIs3ZNP5Wz
+         sNkX0c3ewuiPSgDyKAVf9YuXbqqhCgHzKCtjJF7EUOFBxtpLBDZ5yMq8ma+olRj7vv9n
+         zhQQSAxiYSbK44Ro67QLeBsBlrpdTYG+inwhy+UHrpiudwKvIPdvgyO4kit8ZcFz16vN
+         hprg==
+X-Forwarded-Encrypted: i=1; AJvYcCUvGpsKnPO1ZUBiYuLR5Dmxg9qtqCUBob9Bua87UOD5V5devGlcA7DyQ35DeeEENLg2CX70HNAYWIXgI0g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzR9YZicfEtepI3IEAFVqS9NK/gJYoQP9J8X8A/jzACQweuE1f/
+	HNrm2EzzZY3WtbF8Jh1MuFoXvoF2aV0mr8BAkAZAg3Eb9qRu8AJh
+X-Gm-Gg: ASbGnctRLcUvTsAJzwVGYb7KQM/RpcpqfxuaM5vrwjhoRfIdkOf/fu0pjO4htvxV4sr
+	VXeKZ2jJ9qhPSu7id/sV4+P0RDqCWZHj/+89KjnRGisuy9+Gv1wqvQxS+LCOkQPGG06p7BLLs5l
+	woEjJ4RcVWyjjedVWoL5KFA0Tq/Ay41BoJnXK887X/dToxdeLJqSWKlc+ibzg2q6Vp5DFC8i6I3
+	ZWV9/xG7YXxa2YYJ0cLqsrkeFadVRVAp0aw9fM8bsXWsWiKvddTPHT/LKoF+ORGOBh2YsexWpBz
+	FRRpmUyZr2M4wDOz4NXA95Vl/wqrTxfV7oFDPQCj+L93PjXaWk+iB23eFgWlw4xiKlNzz+k=
+X-Google-Smtp-Source: AGHT+IGT8jkNO5+IfXQCLnbfYUK9R0hC9L7cWhycJGTtXws06galosA23s3dNcxmybY3RaYeogb7zw==
+X-Received: by 2002:a17:902:eb83:b0:220:c4e8:3b9f with SMTP id d9443c01a7336-2292f8968e9mr195477775ad.0.1743478789870;
+        Mon, 31 Mar 2025 20:39:49 -0700 (PDT)
+Received: from henry.localdomain ([111.202.148.167])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2291eedcedesm77958805ad.67.2025.03.31.20.39.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 31 Mar 2025 20:39:49 -0700 (PDT)
+From: Henry Martin <bsdhenrymartin@gmail.com>
+To: joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	u.kleine-koenig@baylibre.com,
+	andersson@kernel.org,
+	arnd@arndb.de,
+	herve.codina@bootlin.com,
+	bsdhenrymartin@gmail.com
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3] drivers/misc: Add NULL check in aspeed_lpc_enable_snoop
+Date: Tue,  1 Apr 2025 11:39:35 +0800
+Message-Id: <20250401033935.17617-1-bsdhenrymartin@gmail.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,55 +95,90 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Henry Martin <bsdhenrymartin@gmail.com>, linux-aspeed@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, Arnd Bergmann <arnd@arndb.de>,
- Bjorn Andersson <andersson@kernel.org>,
- Herve Codina <herve.codina@bootlin.com>, Joel Stanley <joel@jms.id.au>,
- =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-References: <20250401033935.17617-1-bsdhenrymartin@gmail.com>
-Subject: Re: [PATCH v4?] drivers/misc: Add NULL check in
- aspeed_lpc_enable_snoop
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20250401033935.17617-1-bsdhenrymartin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:uBUtwrdW9UP/4MafolPA1rdm/y65edT5dtJ5kT+ZActg0X4du07
- IxCOyZmo6MSLsdXF379CVK7lNSjb5eXLgInBPlvgRTHSeXQ6U1GOnb47T7zdYzTWRdY0JqI
- gOi8MkOzsYvHetZtp4r1F1fTtasV8NobFFY8vSkIDlzhEIFWPWn1Q6XUwxVYygmziDJNHGN
- OdBdXJQrr6VurIKS3s5JA==
-UI-OutboundReport: notjunk:1;M01:P0:0osCmIXyPyc=;c7+bBTwZNL5IQLeFLOuZMLvDygW
- EQg8bchrYLNMqmczPwg6eBhHE3KcMEobAkDC4yb51d6m/cFlqLC7RLudl9JuQb98f8A+Jf+tj
- rmP14N2XGC0pvXVxZxUL5m5bwQ2jnjNr83dSl9ga3/wk8phKDpDIs1KxkZvpLf4VeG3Qfg/ZB
- OQlhhguO4lDGNpznkrUzrL0nqfPUYXDfY4Q/zViS075S23ygWXBfz+eozbkyx0/ScVr8Vljyz
- npCWu2r6mf57ydJH9ni1gSou16EMhAOW/pquIsx47/x/vbuAjNBdqZekOKHBA7UYXNEaAyis1
- UT8ZInSkA5/kK7qKkuhdjjnq2QaNgELfirBeh7M5EItKt4UDWTmuxvxmU1ttPMe98l1DO0gW2
- sQnUE3ZbODLD4aqjYVRMPEQykXX95wgzCGqnmcgf2tS+T2eK0zSXDizFWsNbXq3PvNrxQRDoR
- dGac0Db8Uco/Cw+7sh6Ld8WYgPJY1LOvTuk9tAu3LEvkozcmOQA0yVWJEtHH+3srKAPyLKfAq
- xcNGslzzS4+Pj1yLX6DFefqct9UpsyLS+RQ4lPaBuW295cirN4ZyUhP4cfh0zE7wNL0yCGshR
- 3DplK+W+D8IobWxvgieeB0KjMIk9eZDtPvCl4JfwqWAsifEjItAJXYHke5sZSRqf3obl+OK6q
- r4dSk72hAEoFahV4KpHgfkVVOBelS8vQJ9duiM/gG+jyDFGxZOSlnkEtkvy38J7yLZ7EjnS4s
- YLi6ons5cfQVCby1mgA+CXsy5Pt5lmmHRsmkzT/UPwDFh/CiNKU3gMQ4AuR2TBcTdXa+a4MwT
- F3lUR3bpQQR/Z1InzJ8UA2+wkUikbAQAYP88b2PmKrI8DY2rkfBzRqg5tbpZdYVzBf8RUaGoY
- wSoTS1Id31IF0UitT8x+8Mcen/mwniXSJWolm5urot0PxlrDo39LiNmRCfe63iERncJMq5zdt
- U3fPpXyxvkSXBYYrO0XE6PTLzPsE56OwBcLJiNkJwxEs7+XKHewVSfoqyrtW5GIJ/ozssVOuU
- YS3FpllobxkxsMIZiopxeQZTFMcirYMFT73cIlOpcEb4lO3OLY36eqHAQrzEMW13N1Gen0N4C
- mXZGqbpJ3lBOw13HenFMC574TkZZ5WhHCubL0fpcj7khJx4V5aOpEwrGeCnFwZJazFXtpZlGz
- yT++Sp6MuBebKowRmWZeFhcSg/ZmPQjKy8cxm8X5cVnKWc4E5y5RiJrqr1VQyyrAHO6BbsoVD
- KJa2+4oyDbMCLQuhFN9IFuz/FFQD6q+InoQoH5QaZpDYm6z1Q+vauZ4xp3BQ3p4ckhxEQWcFV
- b7OTCUrIDkQ+85AuKDcycDdjKXLDVQYQxFegCuLZT/9yF5NZUGWKPi2hTa4wvc2vo+HzNEs3k
- btB2aANdFvDZRKTKlQuWs+ESv4kOnYN+/uuFtE+YTkS6ASQq8X8Cp+pdc++ExcqDMzGJbKbxA
- /gfhQSrl7TNE5jEona35SDluZ+Wl0F91H+uY8mfFtuex3xWv2
+Content-Transfer-Encoding: 8bit
 
-=E2=80=A6
-> ---
-> V2 -> V3: Simplify =E2=80=A6
+devm_kasprintf() returns NULL when memory allocation fails. Currently,
+aspeed_lpc_enable_snoop() does not check for this case, which results in a
+NULL pointer dereference.
 
-Is there a need to reconsider patch version numbers a bit more?
+Add NULL check after devm_kasprintf() to prevent this issue.
 
-Regards,
-Markus
+Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
+Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+---
+V2 -> V3: Simplify the arrary access and correct commit message.
+V1 -> V2: Removed blank line between tags.
+
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 35 ++++++++++++++++++---------
+ 1 file changed, 24 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index 9ab5ba9cf1d6..25ebecd14103 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -189,22 +189,28 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+ 	u32 hicr5_en, snpwadr_mask, snpwadr_shift, hicrb_en;
+ 	const struct aspeed_lpc_snoop_model_data *model_data =
+ 		of_device_get_match_data(dev);
++	struct aspeed_lpc_snoop_channel *snoop_chan = &lpc_snoop->chan[channel];
++	struct miscdevice *mdev = &snoop_chan->miscdev;
++
++	init_waitqueue_head(&snoop_chan->wq);
+ 
+-	init_waitqueue_head(&lpc_snoop->chan[channel].wq);
+ 	/* Create FIFO datastructure */
+-	rc = kfifo_alloc(&lpc_snoop->chan[channel].fifo,
+-			 SNOOP_FIFO_SIZE, GFP_KERNEL);
++	rc = kfifo_alloc(&snoop_chan->fifo, SNOOP_FIFO_SIZE, GFP_KERNEL);
+ 	if (rc)
+ 		return rc;
+ 
+-	lpc_snoop->chan[channel].miscdev.minor = MISC_DYNAMIC_MINOR;
+-	lpc_snoop->chan[channel].miscdev.name =
+-		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
+-	lpc_snoop->chan[channel].miscdev.fops = &snoop_fops;
+-	lpc_snoop->chan[channel].miscdev.parent = dev;
+-	rc = misc_register(&lpc_snoop->chan[channel].miscdev);
++	mdev->minor = MISC_DYNAMIC_MINOR;
++	mdev->name = devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, channel);
++	if (!mdev->name) {
++		rc = -ENOMEM;
++		goto err_free_fifo;
++	}
++
++	mdev->fops = &snoop_fops;
++	mdev->parent = dev;
++	rc = misc_register(mdev);
+ 	if (rc)
+-		return rc;
++		goto err_free_fifo;
+ 
+ 	/* Enable LPC snoop channel at requested port */
+ 	switch (channel) {
+@@ -221,7 +227,8 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+ 		hicrb_en = HICRB_ENSNP1D;
+ 		break;
+ 	default:
+-		return -EINVAL;
++		rc = -EINVAL;
++		goto err_misc_deregister;
+ 	}
+ 
+ 	regmap_update_bits(lpc_snoop->regmap, HICR5, hicr5_en, hicr5_en);
+@@ -232,6 +239,12 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+ 				hicrb_en, hicrb_en);
+ 
+ 	return rc;
++
++err_misc_deregister:
++	misc_deregister(mdev);
++err_free_fifo:
++	kfifo_free(&snoop_chan->fifo);
++	return rc;
+ }
+ 
+ static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+-- 
+2.34.1
+
 
