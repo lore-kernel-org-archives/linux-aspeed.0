@@ -1,54 +1,53 @@
-Return-Path: <linux-aspeed+bounces-1148-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1149-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43E7CC36008
-	for <linux-aspeed@archiver.kernel.org>; Tue,  1 Apr 2025 07:15:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274A2C36008
+	for <linux-aspeed@archiver.kernel.org>; Tue,  1 Apr 2025 07:38:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRfRV1cTQz2ygD;
-	Tue,  1 Apr 2025 18:15:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZRfxV4Lpqz2ygD;
+	Tue,  1 Apr 2025 18:38:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743491749;
-	cv=none; b=c/jhWZe+XjBQe42GhKe0Fdj8bQt0BYwCdQTuIfiFG29+XfLCWgbuYuEohGIKVoVRqMaEhQuUDgrwecMZPOzLCdaGnyJaltbfSDZZTlTI1rG4/P1Bnsr5daqeEvl0oTC7ddjUjP9x4u6cQ7M4o4TXGSj/F41R2kmFpY4Od9KMwKFExv4k6GJy9zckC8IaHjpI5D6+M3I4d4fYUVJf18c4X2Ls1YUPiNk6fw/xa0+gRGHULmuGT5Wnrn74w/aNCacF6JTlCPDOTDC6l6ThkfTrnDtONZpGGQXsyzzFR0eMUgkZdk1Y7oQop/DURghVCXxYDb+3QUVk7uL8LgzNmfRBLA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743493102;
+	cv=none; b=SPt+6LhxYMF/ypfymL/YOmEFNZgGvu7EyYnibqHzvZIXvYVU+G3ApTsgDwiZSYRi+A/KDMwZC1zYjbvSruLghQX7iP1Zgz/e3La6kBxKsbvT6UNRdpyJ954+khH2VJKa6pRj8Tl3yweNPea6DAJaA3Ye5uSfot3UPJkEV1rWhRUYqpNuac+JPWI6n2MbjvDhS1VmZuuz5WRSNKkozSEFN85j0J7JAxx3w0y/6GHUWUCgaxboKD29PaHj7SE2WGYI91Vy2MM9WzLrjM1wPPQ3KxJIfgJM5QcXUfosafnqs7C2RpDEo6SOi56lxo9hY/Cf+eOlbMAHKDm5duMFdMbn6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743491749; c=relaxed/relaxed;
-	bh=Ufr8jWio+k3mAwH6vRZeNy2DQEzSjS0mBeDw/wYCdD4=;
+	t=1743493102; c=relaxed/relaxed;
+	bh=lZ6ilgd+d6KfG9lOxFSFTm3CnNKt2h2pPE7ocZRUsd4=;
 	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=Pu6tL5yxXRw1urixfE9EDWneXNKutK57lFkuAMSwK1mSr/Jrc5EP16b9+JoAWoAlJ7c6ude2fp11NE+z/FTD9vG1XWjBCLhiWFMHoJ1WzaftHs3fe1i23vM3HRddS6JIznd6FI3xiM/zvkZLgBT1JICgPYREUSldUSUYXJPAuFyLwHKWLwJBjPqdNeYU0+n9+vBONPRan6LzPP5lYrjGxYVfwHuOBdh10fmE5FaM2vhDoJGyLBjhGWKb1KiGHUvSfgUiS1QX22QFJL+Y9tuo33Z7rzBGUkh+Ze2HTcc5Pq7BilyOwFNB0UDiTcwOQROkIfcfuxKUyiYTbDwd7b7XZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=widx1Zio; dkim-atps=neutral; spf=pass (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
+	 In-Reply-To:Content-Type; b=g6n9j4Mp8CKuWwShkRY9MSqjy+mAoNMORU7nC81gQt6Cge8Ego/87M5BmAXwGHcc1tKbCfScKNZLNGBUUq4CZFk1OvaQor2QKdUsIo5uzOxJ2Vf/hxjdMRxmPALKfeYxUwxIBu1yrT/dHKoyDVoIzriOdLgOBUrfu4RL9i37oRE4keJV69MQ5apAeKeGJyg8Ns5ZGktMvSyIVU03oSWrCisQKnvHe2xPxtXRzlfOoioLc3O/lbfjLmVgeatRKiKFrkJDY5hBxgULCRC+wN5X7grSQZP5Ms/+deDeexsGPJPHX2QKhNLNucbZ+Ff2yuodmpNQ0Mp2TFrO8Y1YfvUtRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=TRURDuB8; dkim-atps=neutral; spf=pass (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=widx1Zio;
+	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=TRURDuB8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.3; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 373 seconds by postgrey-1.37 at boromir; Tue, 01 Apr 2025 18:15:47 AEDT
 Received: from mout.web.de (mout.web.de [212.227.15.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRfRR1Wccz2yf1
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  1 Apr 2025 18:15:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZRfxS5fnNz2yf1
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  1 Apr 2025 18:38:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1743491730; x=1744096530; i=markus.elfring@web.de;
-	bh=Ufr8jWio+k3mAwH6vRZeNy2DQEzSjS0mBeDw/wYCdD4=;
+	s=s29768273; t=1743493072; x=1744097872; i=markus.elfring@web.de;
+	bh=lZ6ilgd+d6KfG9lOxFSFTm3CnNKt2h2pPE7ocZRUsd4=;
 	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
 	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
 	 cc:content-transfer-encoding:content-type:date:from:message-id:
 	 mime-version:reply-to:subject:to;
-	b=widx1ZioDtdpjurlfr+BfKggyrhEV3NvwOhfEpEaNmlSPAycW4dDOnCqyp/n6u0m
-	 NaJBhau+ilht/YAgkmY0BGWDWCP9LQuDYjncCxavqwoWSDipP9sIjNcK9CSUjpa8W
-	 nlRKr9bL0ksDW8ktDGu5whUhW7YbCj78spJ5NV/Q/3jBhbyz12D4qWAojQ/HRYCN0
-	 dp04CgKlo+bgCfu9zuoUxeja1Ybpro8OHZll6FPQShAgFsOjTUAphurft3IOmtDF4
-	 I/Mf60Y8m9/cA197xNJha2JGnJ8YhxD2t7svPatYL52p8djsESoRahbTgfJxb3ocy
-	 ON/JDIdagvxOX4TfFg==
+	b=TRURDuB8XuAeNfRoBqN8GowqN/SD2xhR3YnrweZTGFOPOpQBfPb4s1bNtHI6pkN5
+	 rAzjJOynuBfZpUC00AOPLQld2fYvvRUvwYZydXB4KYIh18NGriYVsREfLAIXOPMW2
+	 NuQdNCzsHEedxS5Kfx/FsgN0mtKKIFuvib2UjYDBfowDxBD4OHGHoB2Gb4qohQA+C
+	 P8z1lPc4GkTWxWkWxP+Q9JDaUPBnr+GYfOtbABZVCQu0Hun74SH5q0+OPKuZy+Ur6
+	 yMa4rSd33NnJltam/MZLNmgevgI9RNn+T947G7wSgZI8GVSjafjyqCtB1zE7kSLyb
+	 l3qi1mSqjkO7OKzcgw==
 X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
 Received: from [192.168.178.29] ([94.31.70.54]) by smtp.web.de (mrweb005
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1MAtwr-1toHKj15fl-00GGYs; Tue, 01
- Apr 2025 09:09:20 +0200
-Message-ID: <03d87a25-02ea-4e4a-8d3f-c2fcdc4d068e@web.de>
-Date: Tue, 1 Apr 2025 09:09:08 +0200
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1N1uAv-1sxQ5p2UZ7-016DUR; Tue, 01
+ Apr 2025 09:37:52 +0200
+Message-ID: <0325e399-42e9-4744-837a-fcc7fb3f6787@web.de>
+Date: Tue, 1 Apr 2025 09:37:51 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,68 +69,45 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  Herve Codina <herve.codina@bootlin.com>, Joel Stanley <joel@jms.id.au>,
  =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
 References: <20250401033935.17617-1-bsdhenrymartin@gmail.com>
-Subject: Re: [PATCH v3] drivers/misc: Add NULL check in
+Subject: Re: [PATCH v4?] drivers/misc: Add NULL check in
  aspeed_lpc_enable_snoop
 Content-Language: en-GB
 From: Markus Elfring <Markus.Elfring@web.de>
 In-Reply-To: <20250401033935.17617-1-bsdhenrymartin@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:9ghQMBunowstGfr7Qbdl++g5f/BvUsX0AoqlPh8HYvKL8GZYMsX
- yZRQOWRRNANFr4jw2YfJLK5EUbUmnVuuo5hJwu5tRWtS9qgDOAmpFJN5ZUeZY3fAv1uXZub
- RMxnWZDvwUIR/Gk68FCUk72oaFPQdMhOFkgBxBjRH+6uf5v2boobf9GcQSk1/SnGrJuZqXW
- TZfhrRgSY8F1Rp7gXIaHA==
-UI-OutboundReport: notjunk:1;M01:P0:AVsIm+6RSYk=;PrlffSMgd7hpKDqnRezgtqkWjFw
- ZuXIDWOOhFXZRp/sE6CqYGeNWsWGVdJlbiv2FLmnBPHTESSttB+NbnYPrqABu+Dd9fMdMmyiJ
- RB/lF1Kn+JgOYgdyQG8qHKodS1Q2Mz8LULEGuO4E7HWRMiuPiC3dN5uc49Iz1ZWDF8Z+rO0HW
- WdpARtLj89PAtIS4mKeGqHk6JEiK/spI55Z6rXclNUkmX9kWV+DHVDdPPRYJj28SD29aRvCwI
- +Eek5lhq/Hy79CyZfnRz8CwACKaybIRXnKqxyfRnPRMdmci5zSq5lps9z5Xtcjau6oR7bbyXI
- 5zNmGLTsbduGfugEaRmiIcksmObTgCGX0m/Ko0M4vBJ//QCN9yw1EtdKpFx+UFoQKiD1566lG
- HVMcG2Np6cAIxaXq9hBYOaDVPLGEA7TLEBfzjme38hi2NyLyZUTEFFMBCOX6Y+jIzkOACl/O8
- x6T720TLEGyJKjdTJ54D3R7HQYjMXVE5TRkEnygFunNjhDlm4zmp9oQp8ij7wp9di1vEle+7f
- pZkkUigMVz0xYCoM4OaEaA6FlFoaxkZgkcl3KCgxcNaLQwUAwQ3aQz1AFILm4t38uIEDazCL/
- xM1UhF7g4B3qlfSwwE4cGehWN9LlPbOYfDFRkKsPcHWQQ39VCf25wQY/V4TSAj0eeKnG43EeS
- VHnvSSgWki8aDlK8qZXuvJJS7kT/uzGXvZTazGGI7hlZUc0/OqLrhYENi2AALgsawk185f5z8
- xtOH0YkInY0WKCDBXWblDzsgCz9AJ8xHZ2IXxni1Squu8ea7p7i9ddWEIgog4CBMFS0zNMDUz
- 7xu02iE1sTnuXRcsEaCckEavgYtp7l90+wDdG0FfJ24ng2IHqq2dkZXSOsMmYSw3Vx1QU/22q
- tXnyaKVhQdJ2QMwQKrrmOARzZWI4LDP8meNY2MbSDj2scPrI/l9iAhjI9XsNgyb9LJFd25Wlg
- zcvIZUuZ7EqtSKLYXWkDZ9KfHPImfz5Nvv2dGh9B7JoaK0L1OqLStiB9DQMY2jKRqqoY2qAoU
- qkjE5ghUZ2avqLE2gKEjdyetxl6dksR6KFrPSRw0zIzgWSsv2b18dnfqDX7niv33J6izTqLAX
- jBPB8/o7pIrGymY8Kts2xneb4oehzwIgcrffJ59Em+uao9KBK/rtPwIxYjvMAEKV6VhOOIp0s
- CYNCoCcYYGKfL8H4WroBxccw6R9KGe9BD2SHvVRGGWBNaS3ZSvW4B81tVYHh/MCMLMiKJLMcd
- i2+wek0mzvgyjzG9gHvlSqAc4P4gQ8cIj+rQjhwed56OXNwEi+O1Jyl5IO4MS7QPwDJqIHjqS
- fIUnSg1cMgpViH5m7nNqwVFbq+ZeZnEEdZC71c9CzipHoPAgOPTN0xHvXsvA/U6mTi04sGeDC
- dd6Y48FwROIn5rCGRhEtStxkS3PJsg9Bn5LvTILmqRE1UBkKnFVzATShRIkrtMFGnFyb3abMD
- 70wcHQ1A+SqC1OfJO2YS5UTaNgDsVPGhH8lVcJrAVSIaak2Wf
-
-> devm_kasprintf() return NULL if memory allocation fails. Currently,
-=E2=80=A6
-                call?                               failed?
-
-
-> Add NULL check after devm_kasprintf() to prevent this issue.
-
-Do you propose to improve this function implementation a bit more?
-
+X-Provags-ID: V03:K1:uBUtwrdW9UP/4MafolPA1rdm/y65edT5dtJ5kT+ZActg0X4du07
+ IxCOyZmo6MSLsdXF379CVK7lNSjb5eXLgInBPlvgRTHSeXQ6U1GOnb47T7zdYzTWRdY0JqI
+ gOi8MkOzsYvHetZtp4r1F1fTtasV8NobFFY8vSkIDlzhEIFWPWn1Q6XUwxVYygmziDJNHGN
+ OdBdXJQrr6VurIKS3s5JA==
+UI-OutboundReport: notjunk:1;M01:P0:0osCmIXyPyc=;c7+bBTwZNL5IQLeFLOuZMLvDygW
+ EQg8bchrYLNMqmczPwg6eBhHE3KcMEobAkDC4yb51d6m/cFlqLC7RLudl9JuQb98f8A+Jf+tj
+ rmP14N2XGC0pvXVxZxUL5m5bwQ2jnjNr83dSl9ga3/wk8phKDpDIs1KxkZvpLf4VeG3Qfg/ZB
+ OQlhhguO4lDGNpznkrUzrL0nqfPUYXDfY4Q/zViS075S23ygWXBfz+eozbkyx0/ScVr8Vljyz
+ npCWu2r6mf57ydJH9ni1gSou16EMhAOW/pquIsx47/x/vbuAjNBdqZekOKHBA7UYXNEaAyis1
+ UT8ZInSkA5/kK7qKkuhdjjnq2QaNgELfirBeh7M5EItKt4UDWTmuxvxmU1ttPMe98l1DO0gW2
+ sQnUE3ZbODLD4aqjYVRMPEQykXX95wgzCGqnmcgf2tS+T2eK0zSXDizFWsNbXq3PvNrxQRDoR
+ dGac0Db8Uco/Cw+7sh6Ld8WYgPJY1LOvTuk9tAu3LEvkozcmOQA0yVWJEtHH+3srKAPyLKfAq
+ xcNGslzzS4+Pj1yLX6DFefqct9UpsyLS+RQ4lPaBuW295cirN4ZyUhP4cfh0zE7wNL0yCGshR
+ 3DplK+W+D8IobWxvgieeB0KjMIk9eZDtPvCl4JfwqWAsifEjItAJXYHke5sZSRqf3obl+OK6q
+ r4dSk72hAEoFahV4KpHgfkVVOBelS8vQJ9duiM/gG+jyDFGxZOSlnkEtkvy38J7yLZ7EjnS4s
+ YLi6ons5cfQVCby1mgA+CXsy5Pt5lmmHRsmkzT/UPwDFh/CiNKU3gMQ4AuR2TBcTdXa+a4MwT
+ F3lUR3bpQQR/Z1InzJ8UA2+wkUikbAQAYP88b2PmKrI8DY2rkfBzRqg5tbpZdYVzBf8RUaGoY
+ wSoTS1Id31IF0UitT8x+8Mcen/mwniXSJWolm5urot0PxlrDo39LiNmRCfe63iERncJMq5zdt
+ U3fPpXyxvkSXBYYrO0XE6PTLzPsE56OwBcLJiNkJwxEs7+XKHewVSfoqyrtW5GIJ/ozssVOuU
+ YS3FpllobxkxsMIZiopxeQZTFMcirYMFT73cIlOpcEb4lO3OLY36eqHAQrzEMW13N1Gen0N4C
+ mXZGqbpJ3lBOw13HenFMC574TkZZ5WhHCubL0fpcj7khJx4V5aOpEwrGeCnFwZJazFXtpZlGz
+ yT++Sp6MuBebKowRmWZeFhcSg/ZmPQjKy8cxm8X5cVnKWc4E5y5RiJrqr1VQyyrAHO6BbsoVD
+ KJa2+4oyDbMCLQuhFN9IFuz/FFQD6q+InoQoH5QaZpDYm6z1Q+vauZ4xp3BQ3p4ckhxEQWcFV
+ b7OTCUrIDkQ+85AuKDcycDdjKXLDVQYQxFegCuLZT/9yF5NZUGWKPi2hTa4wvc2vo+HzNEs3k
+ btB2aANdFvDZRKTKlQuWs+ESv4kOnYN+/uuFtE+YTkS6ASQq8X8Cp+pdc++ExcqDMzGJbKbxA
+ /gfhQSrl7TNE5jEona35SDluZ+Wl0F91H+uY8mfFtuex3xWv2
 
 =E2=80=A6
 > ---
-> V2 -> V3: Simplify the arrary access and correct commit message.
-=E2=80=A6
+> V2 -> V3: Simplify =E2=80=A6
 
-* Would you like to avoid a typo here?
-
-* I imagine that there is a need to offer such adjustments
-  in separate update steps.
-  https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/t=
-ree/Documentation/process/submitting-patches.rst?h=3Dv6.14#n81
-
-* Please choose a more appropriate subsystem specification.
-  https://web.git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/=
-log/drivers/soc/aspeed/aspeed-lpc-snoop.c?h=3Dnext-20250331
-
-* How do you think about to append parentheses to a function name
-  also in the summary phrase?
+Is there a need to reconsider patch version numbers a bit more?
 
 Regards,
 Markus
