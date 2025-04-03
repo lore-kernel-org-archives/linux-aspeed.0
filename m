@@ -1,67 +1,59 @@
-Return-Path: <linux-aspeed+bounces-1157-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1158-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECF99C3600C
-	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Apr 2025 05:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86EB3C3601E
+	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Apr 2025 10:15:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZSrZp48Sfz2xjQ;
-	Thu,  3 Apr 2025 16:56:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZSyKW71RSz2yNG;
+	Thu,  3 Apr 2025 21:15:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743659778;
-	cv=none; b=bL7CO+3UTwqJhexRN1ydbfRAOLC/BPMUWWGWLHLMnVpW2Yn96NcWcPRYkctgr57junT1veQmirbDy0aucQGLfxIZ1+hqgqhaXs2GbvHrb4xdNN72k3I5JkMRx0Xsh+EdMzNaw5dSsr3gdaV7oIqP/f9WYi6EPGwEFNe2NhDrbT4MFgzpDLH9mn1l23zyw2P2H+0yrqk9pEq9izZqCRJe6BG0eCWgH6x47dU3hqESXDbqAfCfSV+hz/n+YS2b7TOJ3lMh6gBegE+mREa0Jad5faz7SAsy8v6uujF+p451xN0bgbASHJ7FR+/0tTXfaH6dSbgyFa8IeWTSmRxU3sxlDA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743675311;
+	cv=none; b=a9l75fqJTcUtiP9ZA+MLipFeCQyh43Q88DALtdMFQJNh1tiYay0VbsgPq7fWOYhkwvkvVPuTri+nuskGgb+mM7K+P7RXo4Y45ZifyCSDOJzwHMc9nJumzk4Co9NZWHK7WINkAHSh5RzoSsHxEsJvpDylfcrSVQONTmjAOTBSG1L55dwYQ2mdNMCNgw5AgIv+CtA93dlwmmVvbHU6Rq+R1orLp09wWvfNZ6MymdRFtk2ifCepLy67vV9ZOFuJiwDQMRL6yRuCHZ2/yKviSyBXZCkQtC+CCqgHkMSElM4FXpYJrOh7Ae23J0mdzZq6Ik1YjYejXXwho3Y95BriARtn9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743659778; c=relaxed/relaxed;
-	bh=e+hB6TfsNEWsOBfPe7+0Du59DxYe84XYO03aEf1oq2w=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=nJWtwA8+CNz62UC9qxUBCW4d3jDDJz5NkZMJElSvrc0krVGKHrErPD/rZTut++hHL3mhMvY4gNE7MwGTJnJ3f0uLpYUi3Irh+rT0c5HrJqE/h2MVWjH+s7nPp+7gF2zKl91mDuUNFHgpjJDsUKaF5j0tvJtqzRKN/2K4B3D2kADVFr1MmEvFtoHAeTFw1GyZ5+3nbL/nVcdDTJNzSaWu3B7S0+fTkFVYEbS6crx3o+v9Z+kEmVww7owTDBusL16EdwR0ATvDFw0GNiazgYn8KZpmFrdvUwkEntapmJMn0QBWAZmFBKEOOycheYyb7jIB88NvQLQWCfO54Urbcl0msg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=YeCqwMTk; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1743675311; c=relaxed/relaxed;
+	bh=6YiZPdINyfjJtYAnZKaHv2MfxtG1OcVQesKXKvaLIoc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=DR5nOxY9tMfJFaHbq3GxUO9i8+Gr0Qsd4WLdo04/4Dw7Uh/FhHljlIMLQVmm0CLbz5qDpB1WsaFqVDRmYCITHR29iKygkqdELqMLFiaKOAILwugBAuRpN7smi6cdmJ0iPKANEP5vZHVItlw2O0uFLcA+fNHQBetLRNCwzgidLVlkZ70ZZOkZadkUjgruklwgL89B9eJ99GjjGmF0Lc3nbqWSBsTqmsrjYUp8T1iZ/3yJkqS54cA0hAKXn0gX3ohpRErmV6PJf8jYISfv1Ojcmu2xBGv8wT++aJekgiEMunjxER/mj/8s7pheg1MwuRvKQv6/SkuXuf0YfaPDkQhdqA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=YjHebHiX; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=YeCqwMTk;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=YjHebHiX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZSrZn20wLz2xQ5;
-	Thu,  3 Apr 2025 16:56:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZSyKV3qTJz2xjQ
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  3 Apr 2025 21:15:09 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1743659775;
-	bh=e+hB6TfsNEWsOBfPe7+0Du59DxYe84XYO03aEf1oq2w=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=YeCqwMTkAaEXEzG3fK/V5nJFzmxl3eQwO96YkjdDajs7/4XBWpWWkpkVQreFkpou1
-	 nVMQFT9n7e2USYGg8wPzyjE3Z6I+DQ67V6uubhy/NZ1HPGIEvUJ3e2trugUKOj0z+J
-	 SbR4yaIks8jZJI7qZ4qENCQG1aLlcO/Jug21dgd/emU8StBtjUuCeRcj6N38rqK4EQ
-	 7BOPvqng/pk6T5qmR3zdUTwCuSdj330tEgtjfGzM/ajK02F+g615g7YpTVMG3jP9Sd
-	 HB40N5nrMRjJM21CtMtB0gdfFlpL7fYPvP13O0kKRL8B4X/aILvW8g+iqpeJG+yzm+
-	 GofwYelTCS5NQ==
-Received: from [192.168.68.112] (unknown [180.150.112.225])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 60B3C7B352;
-	Thu,  3 Apr 2025 13:56:12 +0800 (AWST)
-Message-ID: <ca1f5dc3d0dd53dfe6abd9d6bea98838980f0840.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v5 1/2] dt-bindings: arm: aspeed: add Nvidia's GB200NVL
- BMC
+	d=codeconstruct.com.au; s=2022a; t=1743675301;
+	bh=6YiZPdINyfjJtYAnZKaHv2MfxtG1OcVQesKXKvaLIoc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=YjHebHiXBKcucM1B5xCxyF7McIWBWvSfR7Oy71lKvde+bw0b5DyjcJdXoFNMkJpM7
+	 wguVnfH/FpNTX4NRS5O57Kbq+qf0TiNvMDMPioOwjHzmtoidj5Iv74hr0rK7f1I8HR
+	 mfbilxoenBUuSg7fD+YGMLG1g2aTCjGoOMCDu0NpHAuhVyYrrG6qc8JEqEzZxgQts6
+	 /aUil5JOL9KdckyutnY5QCssgu29OKMSu9+Aj+2vbU/WtAV76DCPb7Flw+y5vg7Xdz
+	 OQubU3vZ3QkC349Yojaye8/QLM8F3LRkXt1iYoeqJ2b8gx7XIkX9aowLewqg4VOurN
+	 hTmFaKjc9s+dA==
+Received: from [127.0.1.1] (unknown [180.150.112.225])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B6C8A7C3B3;
+	Thu,  3 Apr 2025 18:14:56 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Willie Thai <wthai@nvidia.com>, 
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au, 
-	kees@kernel.org, tony.luck@intel.com, gpiccoli@igalia.com, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	linux-hardening@vger.kernel.org, openbmc@lists.ozlabs.org
-Cc: leohu@nvidia.com, tingkaic@nvidia.com, dkodihalli@nvidia.com, Mars Yang
-	 <maryang@nvidia.com>
-Date: Thu, 03 Apr 2025 16:26:11 +1030
-In-Reply-To: <f563b33e-f552-4a3c-bb45-6b7add876fdd@kernel.org>
-References: <20250401153955.314860-1-wthai@nvidia.com>
-	 <20250401153955.314860-2-wthai@nvidia.com>
-	 <f563b33e-f552-4a3c-bb45-6b7add876fdd@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+To: joel@jms.id.au, gsomlo@gmail.com, heiko@sntech.de, arnd@arndb.de, 
+ herve.codina@bootlin.com, andersson@kernel.org, 
+ u.kleine-koenig@baylibre.com, Henry Martin <bsdhenrymartin@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20250401074647.21300-1-bsdhenrymartin@gmail.com>
+References: <20250401074647.21300-1-bsdhenrymartin@gmail.com>
+Subject: Re: [PATCH v4] soc: aspeed: Add NULL check in
+ aspeed_lpc_enable_snoop()
+Message-Id: <174367530124.3067819.2690843491529168690.b4-ty@codeconstruct.com.au>
+Date: Thu, 03 Apr 2025 20:45:01 +1030
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,28 +66,23 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.2
 
-On Tue, 2025-04-01 at 17:51 +0200, Krzysztof Kozlowski wrote:
-> On 01/04/2025 17:39, Willie Thai wrote:
-> > Add Nvidia's=C2=A0 GB200NVL BMC board compatible.
-> >=20
-> > Co-developed-by: Mars Yang <maryang@nvidia.com>
-> > Signed-off-by: Mars Yang <maryang@nvidia.com>
-> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
->=20
-> Why are you faking tags/email addresses? Read carefully submitting
-> patches. I really suggest using b4 instead of manually editing
-> things.
-> And if you decide for manual way, you must never, *never* edit
-> people's
-> tag. You can only copy and paste it.
+On Tue, 01 Apr 2025 15:46:47 +0800, Henry Martin wrote:
+> devm_kasprintf() returns NULL when memory allocation fails. Currently,
+> aspeed_lpc_enable_snoop() does not check for this case, which results in a
+> NULL pointer dereference.
+> 
+> Add NULL check after devm_kasprintf() to prevent this issue.
+> 
+> 
+> [...]
 
-I've applied the series, fixing the tag in the process, along with the
-line-wrapping of the commit message in the second patch.
+Thanks, I've applied this to be picked up through the BMC tree.
 
-Willie: scripts/checkpatch.pl warns of some of these things. Please
-make sure to use it in the future, or if you adopt b4 as Krzysztof
-suggests, use `b4 prep --check`.
+--
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
-Andrew
 
