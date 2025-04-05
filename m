@@ -1,59 +1,55 @@
-Return-Path: <linux-aspeed+bounces-1158-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1159-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86EB3C3601E
-	for <linux-aspeed@archiver.kernel.org>; Thu,  3 Apr 2025 10:15:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06ED8C36010
+	for <linux-aspeed@archiver.kernel.org>; Sat,  5 Apr 2025 11:08:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZSyKW71RSz2yNG;
-	Thu,  3 Apr 2025 21:15:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743675311;
-	cv=none; b=a9l75fqJTcUtiP9ZA+MLipFeCQyh43Q88DALtdMFQJNh1tiYay0VbsgPq7fWOYhkwvkvVPuTri+nuskGgb+mM7K+P7RXo4Y45ZifyCSDOJzwHMc9nJumzk4Co9NZWHK7WINkAHSh5RzoSsHxEsJvpDylfcrSVQONTmjAOTBSG1L55dwYQ2mdNMCNgw5AgIv+CtA93dlwmmVvbHU6Rq+R1orLp09wWvfNZ6MymdRFtk2ifCepLy67vV9ZOFuJiwDQMRL6yRuCHZ2/yKviSyBXZCkQtC+CCqgHkMSElM4FXpYJrOh7Ae23J0mdzZq6Ik1YjYejXXwho3Y95BriARtn9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZVCQT0YL9z2ygn;
+	Sat,  5 Apr 2025 22:08:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743851329;
+	cv=none; b=JMJWqrSPjJD+IiZ0RkamUS8PnQha07+y+U2U49agcqaA64BS2DCTK9yUn2cS5CA4WcdXydg/2sXSCWqTKXFpweUel8dwRr+AnSqMT4tOs2C3Lev9l02is8lFTkbhi5qC2SZib81c5zxgcukW+fYwVs05J26Y1chWSXu+xEAIqMILcagOCV5PSOQcpkwW6LsV3Ceaanl0t/FeC63KNbvJOo4C8DEyZQJ4kYTudQNBUpwB0nplwZwSEoGBcWt7qSSb65vPTsgXeaqK9dZCFdb9nfNOMYnI8mN9gs+m/yqBhu46I9twCi+n9IGZhlmu9CiVQ29JjVZ3AlaBi3F99CXukg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743675311; c=relaxed/relaxed;
-	bh=6YiZPdINyfjJtYAnZKaHv2MfxtG1OcVQesKXKvaLIoc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=DR5nOxY9tMfJFaHbq3GxUO9i8+Gr0Qsd4WLdo04/4Dw7Uh/FhHljlIMLQVmm0CLbz5qDpB1WsaFqVDRmYCITHR29iKygkqdELqMLFiaKOAILwugBAuRpN7smi6cdmJ0iPKANEP5vZHVItlw2O0uFLcA+fNHQBetLRNCwzgidLVlkZ70ZZOkZadkUjgruklwgL89B9eJ99GjjGmF0Lc3nbqWSBsTqmsrjYUp8T1iZ/3yJkqS54cA0hAKXn0gX3ohpRErmV6PJf8jYISfv1Ojcmu2xBGv8wT++aJekgiEMunjxER/mj/8s7pheg1MwuRvKQv6/SkuXuf0YfaPDkQhdqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=YjHebHiX; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1743851329; c=relaxed/relaxed;
+	bh=Vya8iaw7Anhfwsf5FS132RTtxwL4SCtVczzoO4BHfVA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Gj0YVpIwmYQ0HXnCSrcbUHia/b481ojeyn9jNixK4ug0loibgwtRFohu4SwprH0BkLUvk/c1y+dMEy7nORaTQr5kQ7climfyizQc1HurzCRKVn4HDAYKO9QwSrVA2h8gIQizKNOE/02bwYaZDXOK0/PoiVmlj4uxm0lIzZffQrILVpWLk2kupbxkl6dc2feeFhDrgF5hPukr8cMInPw/POfN5EnpmEwKdcvWnts7JU8Ro86GTg5SzyISuAAFU9f87rVdEgQBETHtI1IFaXxKP3iY7Le9WeqMcDPr5/RelJWlTD7nfAzXQ4srhK80JWJneXclo2zaXJnIQ+hf4ZDSbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=ANM4kS03; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=YjHebHiX;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=ANM4kS03;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZSyKV3qTJz2xjQ
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  3 Apr 2025 21:15:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1743675301;
-	bh=6YiZPdINyfjJtYAnZKaHv2MfxtG1OcVQesKXKvaLIoc=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=YjHebHiXBKcucM1B5xCxyF7McIWBWvSfR7Oy71lKvde+bw0b5DyjcJdXoFNMkJpM7
-	 wguVnfH/FpNTX4NRS5O57Kbq+qf0TiNvMDMPioOwjHzmtoidj5Iv74hr0rK7f1I8HR
-	 mfbilxoenBUuSg7fD+YGMLG1g2aTCjGoOMCDu0NpHAuhVyYrrG6qc8JEqEzZxgQts6
-	 /aUil5JOL9KdckyutnY5QCssgu29OKMSu9+Aj+2vbU/WtAV76DCPb7Flw+y5vg7Xdz
-	 OQubU3vZ3QkC349Yojaye8/QLM8F3LRkXt1iYoeqJ2b8gx7XIkX9aowLewqg4VOurN
-	 hTmFaKjc9s+dA==
-Received: from [127.0.1.1] (unknown [180.150.112.225])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B6C8A7C3B3;
-	Thu,  3 Apr 2025 18:14:56 +0800 (AWST)
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: joel@jms.id.au, gsomlo@gmail.com, heiko@sntech.de, arnd@arndb.de, 
- herve.codina@bootlin.com, andersson@kernel.org, 
- u.kleine-koenig@baylibre.com, Henry Martin <bsdhenrymartin@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20250401074647.21300-1-bsdhenrymartin@gmail.com>
-References: <20250401074647.21300-1-bsdhenrymartin@gmail.com>
-Subject: Re: [PATCH v4] soc: aspeed: Add NULL check in
- aspeed_lpc_enable_snoop()
-Message-Id: <174367530124.3067819.2690843491529168690.b4-ty@codeconstruct.com.au>
-Date: Thu, 03 Apr 2025 20:45:01 +1030
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZVCQR3v3qz2yN2
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  5 Apr 2025 22:08:46 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 00E5CA42FA2;
+	Sat,  5 Apr 2025 11:03:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2891AC4CEE4;
+	Sat,  5 Apr 2025 11:08:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1743851323;
+	bh=dezxj8VSTZLrhrjMvBNRo9xpOTdQox3P2xIB/cWe9ZI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ANM4kS03MtTUdM32rgSWs9YpCS0CGFaMqXHu4IKzHuAfwLypIYNdLmV/vR36aA0/U
+	 cELzkwwwuV0gKzDs/uYnYx0TYaiD6GSfh+OAWmz+xCutCfhyxqj1ohLctBXjCLWPC/
+	 93hfZf4v++soFdMTZC11JQK/O73giTWHHilMaRG8=
+Date: Sat, 5 Apr 2025 12:07:14 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Henry Martin <bsdhenrymartin@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] Subject: [PATCH] usb: gadget: aspeed: Add NULL check in
+ the ast_vhub_init_dev
+Message-ID: <2025040527-recite-stunt-893f@gregkh>
+References: <20250329002911.132826-1-bsdhenrymartin@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,23 +62,25 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250329002911.132826-1-bsdhenrymartin@gmail.com>
 
-On Tue, 01 Apr 2025 15:46:47 +0800, Henry Martin wrote:
-> devm_kasprintf() returns NULL when memory allocation fails. Currently,
-> aspeed_lpc_enable_snoop() does not check for this case, which results in a
-> NULL pointer dereference.
+On Sat, Mar 29, 2025 at 08:29:11AM +0800, Henry Martin wrote:
+> When devm_kasprintf() fails, it returns a NULL pointer. However, this return value is not properly checked in the function ast_vhub_init_dev.
 > 
-> Add NULL check after devm_kasprintf() to prevent this issue.
-> 
-> 
-> [...]
+> A NULL check should be added after the devm_kasprintf call to prevent potential NULL pointer dereference error.
 
-Thanks, I've applied this to be picked up through the BMC tree.
+Please properly wrap your changelog text.
 
---
-Andrew Jeffery <andrew@codeconstruct.com.au>
+> Fixes: 7ecca2a4080cb ("usb/gadget: Add driver for Aspeed SoC virtual hub")
 
+No cc: stable?
+
+Also, your Subject line has "Subject:" in it twice, something went wrong
+with the patch when you sent it out :(
+
+thanks,
+
+greg k-h
 
