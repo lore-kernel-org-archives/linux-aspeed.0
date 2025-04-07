@@ -1,49 +1,49 @@
-Return-Path: <linux-aspeed+bounces-1161-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1162-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 661C1C36018
-	for <linux-aspeed@archiver.kernel.org>; Mon,  7 Apr 2025 18:11:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4A91C36018
+	for <linux-aspeed@archiver.kernel.org>; Mon,  7 Apr 2025 18:13:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZWcjb0911z2yrl;
-	Tue,  8 Apr 2025 04:11:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744049506;
-	cv=none; b=JgHNni9V8lbKcLbvDtmHwVEILfJLGJyYV9VyXwZGCYWRIgRkx9hYGo53T4VHHmI3wlLVN4druqlpKVMm8qaFJvayNrgCjZzT58rfowtLgGJm1PYp9gAD2HArFllU0MRj/jgNEL54LrSF8olSmErTQv5izW/fdswrISGrbdsqe2dxkeL49DoXUmc2YAPUTb11mBLvforEDZZL3iHfek6WIL1OzH4ryAY2CHVKvdetlJdvVMFhSfGU0iQrujs2XO1G2Bn1J3nj72Fk1kLmCzbc3zBglUdvACJksr/OdIMn9QF92WUcm7SOEnZxVmTWV5Y05SypTIbOvI2IwEZAhTMmIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZWcl22Z7Tz2yGZ;
+	Tue,  8 Apr 2025 04:13:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744049582;
+	cv=none; b=iV0NiXsxMG2lSEljeDlNliGtsqkidsZqCTnV3zdqTSKF4N1zFazuuezXIsKqWxNXtgKToZo76wv+taJqqmEqm/CiPcg2ZR2V7o1+BOPKESRQjdUh5f/PlC6zWMKKAAqcRawlUxY26B5ccDiYHfN0+lzIxbROVrN94xb0OuLelG9hPL3oyy8T2jzhGaCy4PHKx+qcu/1Wm8BhquTAng0rHOCczNhcRR8FyYf1NwgoY4cPgnB16fKs04I1y+5ifzkk7iuskwITjW+f0ZGpOLl6gkKIWh8oV6D/tYrXE34Wz7MXg7+cN0tSoD93S6EiVYKe+duY8ZYxfWNFdY9A28tlfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744049506; c=relaxed/relaxed;
+	t=1744049582; c=relaxed/relaxed;
 	bh=cGSukBRzmg8n0+9cjuObXUH/cH44qlXadRu6k+17x6I=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=YcRI9Gj0v2zRCYCil//hG36GgzbTJItoyK4DZVwYvQYFW1pqzvmhk8a1OP4A/0bcTb2Vx2JkXQMEU2Yx/piOgx2fQ3mA5iaLHu+ewo/ruw3WumD+Ulh3msfIcn9ejVhXQF1dgNhUQMeM2vZqR7CMFxAUTClW7sOHtHqmjg2Fm/fKnVWd+cYqYBV14YFt4lTgY4jJOUZIToaR1kTR9MM3ncBQiZa64d20kpisIeYrYiefd33yp0sv832rhwR3/Gmqz9xGyroSr+JseDQPY/4+H8w/4jPkrOp6FpAC9qs1YsBlaHZbUjRn9Rpe3cHd6NFaToAVn8+thA2pfIiLDsZ7bg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=id44oJdB; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=do5h3erkCw8Tw8QKoLp5KLIlGbEMq69DcqckV0RHgBb/zRjGKyaqC2wMb9GQHcY/yXDNu/ngA9exT9cvLM6Chkci75QdF66LgqhQGLT1N56RamHQuZ8O4LUHKaoRL5gyzROjHwEY6NXugdrFkCgqu5Xwddtts+TydOx++P385RueTtMJS+BiRnoyvFcPhD8uzvfPSkWRK9wJGsrbdkZ5JraxFMyR+CaPvl5ZHL16MrUxPRcUsPNpp/z7JNQXnJWwsBzyiIzVWRfhokI5U/cmhlAPzXYstqA8YF6O+yHGzi1VvrQAcRRYJguZ47okATiOEmgnyPE0a8z6qmSYukNAZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JX7xthFK; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=id44oJdB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JX7xthFK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZWcjZ1CXpz2yqy
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  8 Apr 2025 04:11:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZWcl14RL8z2xdL
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  8 Apr 2025 04:13:01 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 73F59A484A8;
-	Mon,  7 Apr 2025 18:06:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 918E1C4CEE7;
-	Mon,  7 Apr 2025 18:11:41 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 872F6A48450;
+	Mon,  7 Apr 2025 18:07:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A9F16C4CEDD;
+	Mon,  7 Apr 2025 18:12:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744049502;
+	s=k20201202; t=1744049577;
 	bh=QBJ+dUeJc1CSohXQzdN/Y/YCiwyNb/H1CHJQS7EhYcg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=id44oJdBgOQF86LPDEiCyCGFB1qCcMT3d1hZI68gUWH/YfNLqHv+eo6wDhHLqTfc1
-	 zvHjIMoK92PZK/JNSs/SRM/b/0wPyrBQP1ovbwKNi4CBUi94fU+JhueJIQ+8uadgCr
-	 sfj8l4C0IDemViYL/o2L09bMrbOPP27804tx0C1Snv8sqW2mQ3KloUQAyxl+Q0zH6R
-	 VGlMQmJBW+5z/Xv3UghlnSjf6tKJuDigc+sXv4VfNaXE4YltoZXCEDq2F4qr2WWkAy
-	 A5oOZocyMdW/fZkwqz8nYCP7y3WNd7XOJNaWDXZaRhC/N7F70Eqh/p8XeTW5CS9osc
-	 xWkrONzo44COQ==
+	b=JX7xthFK7yQFN3HXFZHFZFmUFAdcZWRaGPaRbR0JNQe4NRXcYZ0Zp5LffamXeiky0
+	 YdKE1P8r9qfOZ4UYmV9kGouGqSs0g0RSluDqqChFSqOzfy1P4vBYifru3iNGnlzhhV
+	 6nyurJRdf4mAgjk3ldiaLlNKL9fVCRigYqwj67fdohZ/kv+Ws4IjNjKxC3fbKJQJw0
+	 PkcKdf5viakPWY3FbL4UjsfWgDvRLaUFfdcm72ioLVbzInXokosSeEHGFNLzDNa2eT
+	 Ndcj06nVv2L7J/vK/nWxVHLenQAKXb9USZawsPilpEgU91x04XN45kAIFAYshR9SjX
+	 MK9SUJAPaXn0Q==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -57,12 +57,12 @@ Cc: Chenyuan Yang <chenyuan0y@gmail.com>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org,
 	netdev@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.14 20/31] usb: gadget: aspeed: Add NULL pointer check in ast_vhub_init_dev()
-Date: Mon,  7 Apr 2025 14:10:36 -0400
-Message-Id: <20250407181054.3177479-20-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.13 17/28] usb: gadget: aspeed: Add NULL pointer check in ast_vhub_init_dev()
+Date: Mon,  7 Apr 2025 14:12:07 -0400
+Message-Id: <20250407181224.3180941-17-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250407181054.3177479-1-sashal@kernel.org>
-References: <20250407181054.3177479-1-sashal@kernel.org>
+In-Reply-To: <20250407181224.3180941-1-sashal@kernel.org>
+References: <20250407181224.3180941-1-sashal@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,7 +77,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.14.1
+X-stable-base: Linux 6.13.10
 Content-Transfer-Encoding: 8bit
 
 From: Chenyuan Yang <chenyuan0y@gmail.com>
