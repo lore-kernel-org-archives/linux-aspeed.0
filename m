@@ -1,87 +1,68 @@
-Return-Path: <linux-aspeed+bounces-1160-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1161-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A55EC36002
-	for <linux-aspeed@archiver.kernel.org>; Mon,  7 Apr 2025 00:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 661C1C36018
+	for <linux-aspeed@archiver.kernel.org>; Mon,  7 Apr 2025 18:11:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZW9kh68BYz2y3b;
-	Mon,  7 Apr 2025 10:56:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1041"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743852639;
-	cv=none; b=CNSQfFYZWtWBYtUQwomgLUDsULK6JyrwkOaqqFeDBJPu7HqLkTHHw7rgl0pkvjAPUrkYG0C8eh4qHg97PKUh/J8d3FDu2wUuLaw24sSXq5TC+Z8EtSOn1YCEpZ+dhFYJ0ROmB+aPrLK64FSoM7enyqK7z/c/T43AfU9ql2NveNFN26y46KxJMSk+t5/JpiqhBhVbqFW5MP+ntNoyulcDOMqUlh+qC1UgRqN/MuViJEIGYhgW5vSCthLW8LI1DhJrKmO2DM0QEVjuNX9PlliosAn+CjDTE33TtXEH+ZkKbUfPhAFdPjD13Q0cl3iFtpaBKdEo3XoUMkuAtTvXVQWQVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZWcjb0911z2yrl;
+	Tue,  8 Apr 2025 04:11:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744049506;
+	cv=none; b=JgHNni9V8lbKcLbvDtmHwVEILfJLGJyYV9VyXwZGCYWRIgRkx9hYGo53T4VHHmI3wlLVN4druqlpKVMm8qaFJvayNrgCjZzT58rfowtLgGJm1PYp9gAD2HArFllU0MRj/jgNEL54LrSF8olSmErTQv5izW/fdswrISGrbdsqe2dxkeL49DoXUmc2YAPUTb11mBLvforEDZZL3iHfek6WIL1OzH4ryAY2CHVKvdetlJdvVMFhSfGU0iQrujs2XO1G2Bn1J3nj72Fk1kLmCzbc3zBglUdvACJksr/OdIMn9QF92WUcm7SOEnZxVmTWV5Y05SypTIbOvI2IwEZAhTMmIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743852639; c=relaxed/relaxed;
-	bh=SoQfJRPHunsbNr6uBql3ChRC57ynqxjZE49jEW526Ik=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=IYVkRbzecnkGZTpdo0swGnJRUdlUFAtKN5k/kcUpVa4g6YakRG+B7rji6emi5DloZEQC8P7SD14UZS1wejLmu5VjGS07/IAD/xD+yA8UH4W5gjMd54i97cV+xYT7sRrwZlMTQmZ+iE59pjatdfPLczso3LI63pS4ZijpRUm4doHDFN2wgQlxllVCnRf36zaIMaUJowMR8w9+LqbwnL0gGzRk+2Kh2xkYWeX37UkCjEUn351uMYbsqjSUM8IZUsgNDIiLtJNF39frwCF3+HilPLJClSZSaSGyWIpDuq3+1PvuuiNo9mJMnVvSLovDdwY/cWbha/4hJfC7pyVzvEY4gQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Ni+KC0GR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1041; helo=mail-pj1-x1041.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1744049506; c=relaxed/relaxed;
+	bh=cGSukBRzmg8n0+9cjuObXUH/cH44qlXadRu6k+17x6I=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=YcRI9Gj0v2zRCYCil//hG36GgzbTJItoyK4DZVwYvQYFW1pqzvmhk8a1OP4A/0bcTb2Vx2JkXQMEU2Yx/piOgx2fQ3mA5iaLHu+ewo/ruw3WumD+Ulh3msfIcn9ejVhXQF1dgNhUQMeM2vZqR7CMFxAUTClW7sOHtHqmjg2Fm/fKnVWd+cYqYBV14YFt4lTgY4jJOUZIToaR1kTR9MM3ncBQiZa64d20kpisIeYrYiefd33yp0sv832rhwR3/Gmqz9xGyroSr+JseDQPY/4+H8w/4jPkrOp6FpAC9qs1YsBlaHZbUjRn9Rpe3cHd6NFaToAVn8+thA2pfIiLDsZ7bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=id44oJdB; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Ni+KC0GR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=id44oJdB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1041; helo=mail-pj1-x1041.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZVCvd4m91z2y92
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  5 Apr 2025 22:30:36 +1100 (AEDT)
-Received: by mail-pj1-x1041.google.com with SMTP id 98e67ed59e1d1-30572effb26so2571696a91.0
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 05 Apr 2025 04:30:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1743852633; x=1744457433; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=SoQfJRPHunsbNr6uBql3ChRC57ynqxjZE49jEW526Ik=;
-        b=Ni+KC0GRYU1pdV7BRzUTUzJ59VOZ0edSfu8QWE+FKwbMNwyRmt3I137QY5Rp8MVA98
-         dsw6egEDLiTJd8rJLuvGviRw9ALY+tX0wNN+fMjizdsabSYOFzufLTmpGQw2myieptEA
-         0OWomL4ROqsCfVWzpMhwaJ5K5sNT/zJS65tF+5jYncgUq7vJvxMEjsZrwJnJifob5lEL
-         aHn6hegdonLwMHpmNU0VqxrlBtcQLAw/2/6M0nB/3dWbhFEb2TZWj2X2x+OLTFS7ELVl
-         6lkXyxYaut6lughyM1KiPQ3qmNeVhT1ujwkYVJozeq7BH54sIJr3kGK+igU1MWzPmL3C
-         DK6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1743852633; x=1744457433;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=SoQfJRPHunsbNr6uBql3ChRC57ynqxjZE49jEW526Ik=;
-        b=UFRCVoBlxPkCh+nQgtN5kOkzAJ02oh2RQxjD2gXmoB0K5of5Ha7+3wqGW3egty1Cxc
-         dz+knZGq7PDvOuM87eeTH1P7AvQfWNYckM33dFIIEs4W8mYBgGijkW5jV5C+tDjK0wxw
-         j63fQ+NB+7DYI79J3L+mSt/6+2lkwaxNkhecVK2ql04FCg+Qc8+eaIK8e5wFq08ygcrW
-         oWnUKjBWoLGTRjkU8aEGfy2+ouLIDWqM9Wk+t5njqU9R6PW6uM3t5uV2uwiPAtPOnlSx
-         7tKFDFqGx/tn66N6gUImr/X1T7cIp6TpzuD6aquhOEOj3yvFitP4no7xaVuFnhglirBN
-         /yng==
-X-Forwarded-Encrypted: i=1; AJvYcCUChpLfdz+b1a4cc8mD53Kr/3IiFysTwcoJos7L/hegUSnBVifcVSHKE/ncFsx3HONxZj3JrZdQs7AhowY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwT45TRVKrs7dXYLYQwXN6qUktxYV1t+T/McA1LB2hnDYYP75h/
-	pJOx7Vbl4aH93tlfzszjyEBVGaOuISPM/nQtAP2FXqDlu1793Wat
-X-Gm-Gg: ASbGncvrQxdqaKTSsJR85ahcYkVW7StT/rwniHSwTuQnX3bw8rtaAJo0G9XPojo5NlX
-	IRyEmqL3YOzGGwLRW2fS4OWhDl0js+7CDuRuDJNHx+aEm63haVA6hDFsGixfHVOOCiDzS0nn92h
-	IJamnk0ToT/B9L6JaIGRnnCxwAnBSu1rZ6BIHF6CbyjyTPPeszYRJELVslfxoqkWZWpecSWu56m
-	FcCE030+94vHr51S7ceYuKGN5ype4sG9jvOfF1W+6i2H+tnm/IvXqE9PLilA9mp1On552OVCuN3
-	vAHHX+5w7Lqt2hKJb6d5IM97OGZ5+9hUQ2gUJ221+VSsas2tmuNSnCRHHTsShLKgRLTH
-X-Google-Smtp-Source: AGHT+IG3yh2rev0TOr9Xa1tn7dlPnXmv6Sk9wM2sX7rVbQR8YnS+sCVDoP/A+k0aNPhcL4ZnjR4Y1A==
-X-Received: by 2002:a17:90a:e18c:b0:2fe:d766:ad95 with SMTP id 98e67ed59e1d1-306a4860a03mr8905930a91.9.1743852633336;
-        Sat, 05 Apr 2025 04:30:33 -0700 (PDT)
-Received: from henry.localdomain ([223.72.104.21])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-af9bc323839sm4299234a12.30.2025.04.05.04.30.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 05 Apr 2025 04:30:32 -0700 (PDT)
-From: Henry Martin <bsdhenrymartin@gmail.com>
-To: gregkh@linuxfoundation.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZWcjZ1CXpz2yqy
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  8 Apr 2025 04:11:46 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 73F59A484A8;
+	Mon,  7 Apr 2025 18:06:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 918E1C4CEE7;
+	Mon,  7 Apr 2025 18:11:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1744049502;
+	bh=QBJ+dUeJc1CSohXQzdN/Y/YCiwyNb/H1CHJQS7EhYcg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=id44oJdBgOQF86LPDEiCyCGFB1qCcMT3d1hZI68gUWH/YfNLqHv+eo6wDhHLqTfc1
+	 zvHjIMoK92PZK/JNSs/SRM/b/0wPyrBQP1ovbwKNi4CBUi94fU+JhueJIQ+8uadgCr
+	 sfj8l4C0IDemViYL/o2L09bMrbOPP27804tx0C1Snv8sqW2mQ3KloUQAyxl+Q0zH6R
+	 VGlMQmJBW+5z/Xv3UghlnSjf6tKJuDigc+sXv4VfNaXE4YltoZXCEDq2F4qr2WWkAy
+	 A5oOZocyMdW/fZkwqz8nYCP7y3WNd7XOJNaWDXZaRhC/N7F70Eqh/p8XeTW5CS9osc
+	 xWkrONzo44COQ==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Chenyuan Yang <chenyuan0y@gmail.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Sasha Levin <sashal@kernel.org>,
 	joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: linux-usb@vger.kernel.org,
+	andrew@codeconstruct.com.au,
+	richardcochran@gmail.com,
+	linux-usb@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Henry Martin <bsdhenrymartin@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH v2] usb/gadget: Add NULL check in ast_vhub_init_dev()
-Date: Sat,  5 Apr 2025 19:30:20 +0800
-Message-Id: <20250405113020.80387-1-bsdhenrymartin@gmail.com>
-X-Mailer: git-send-email 2.34.1
+	netdev@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.14 20/31] usb: gadget: aspeed: Add NULL pointer check in ast_vhub_init_dev()
+Date: Mon,  7 Apr 2025 14:10:36 -0400
+Message-Id: <20250407181054.3177479-20-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250407181054.3177479-1-sashal@kernel.org>
+References: <20250407181054.3177479-1-sashal@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -94,37 +75,45 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.14.1
 Content-Transfer-Encoding: 8bit
 
-devm_kasprintf() returns NULL when memory allocation fails. Currently,
-ast_vhub_init_dev() does not check for this case, which results in a
-NULL pointer dereference.
+From: Chenyuan Yang <chenyuan0y@gmail.com>
 
-Add NULL check after devm_kasprintf() to prevent this issue.
+[ Upstream commit 8c75f3e6a433d92084ad4e78b029ae680865420f ]
 
-Cc: stable@vger.kernel.org	# v4.18
-Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub")
-Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
+The variable d->name, returned by devm_kasprintf(), could be NULL.
+A pointer check is added to prevent potential NULL pointer dereference.
+This is similar to the fix in commit 3027e7b15b02
+("ice: Fix some null pointer dereference issues in ice_ptp.c").
+
+This issue is found by our static analysis tool
+
+Signed-off-by: Chenyuan Yang <chenyuan0y@gmail.com>
+Link: https://lore.kernel.org/r/20250311012705.1233829-1-chenyuan0y@gmail.com
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-V1 -> V2: Add Cc: stable label and correct commit message.
-
- drivers/usb/gadget/udc/aspeed-vhub/dev.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-index 573109ca5b79..5b7d41a990d7 100644
+index 573109ca5b799..a09f72772e6e9 100644
 --- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
 +++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-@@ -548,6 +548,8 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
+@@ -548,6 +548,9 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
  	d->vhub = vhub;
  	d->index = idx;
  	d->name = devm_kasprintf(parent, GFP_KERNEL, "port%d", idx+1);
 +	if (!d->name)
 +		return -ENOMEM;
++
  	d->regs = vhub->regs + 0x100 + 0x10 * idx;
  
  	ast_vhub_init_ep0(vhub, &d->ep0, d);
 -- 
-2.34.1
+2.39.5
 
 
