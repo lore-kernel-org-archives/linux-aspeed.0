@@ -1,71 +1,66 @@
-Return-Path: <linux-aspeed+bounces-1180-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1181-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73372C369AF
-	for <linux-aspeed@archiver.kernel.org>; Sat, 12 Apr 2025 04:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07502C3ABAA
+	for <linux-aspeed@archiver.kernel.org>; Mon,  5 May 2025 14:46:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZZKxC2Y6Zz2yrQ;
-	Sat, 12 Apr 2025 14:16:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::241"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744378244;
-	cv=none; b=dhQGaQMrtPjYJSMpuD3nqxAREl8SEVwiwinpS/8TIZG8AtccSnfVQz0FSIa6SNG/p5fH0xHwGWymsUIu8gcneMS8Wlr9XvLOcMDzwpYqlz5sP28FFIiXunv7FT0AQS7S27rLMMAibqJVqX+yoVYo/rVmyWejPjqOemCeUmPlpZzCkJlUsf2ZpasiBFsA1vQ9ceLTW3epFyYzvg7dQv1WnqnLHnX60KlSa++vvhScSITv2tzidx0VovCOPVFNyXTd70uOMaKl1ezVOonylNZQKZXoKUhjnAPqSTkqRc54me5KtG3Whc6Pjtgvj2CSnyS/edt6yaduqCgyV0BlcKNmGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZrkqX0Zyvz2xd4;
+	Tue,  6 May 2025 00:46:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746456375;
+	cv=none; b=L5zbuZsk1TVe2dEUt3HLAxZnDbzH5U+7ISVrPiB+ecgezxifUrmc8GZZKTwGzvRmxdp8y89rqIhajEbreICDmzyZKsuEGBbKYYGdBVMuozELVxtoZvB1VJjT/2f7xBMtwAN8vFQzu7jl9OJVyFLMLvut5EgBz/TWOM2dN/925mJD1j8Fh0/ModJyFvFexD8fwHj62BUtF3YMab4TmhVoKQ0zRV9RTBdZBpEvvZVsXOehs5PL3Ys5OsmDw4sYi6abOyFmuI/cAwiaifmtXLn1UDOcxuLTl+tfxPZTIXotZH8mDPJikQ9jFq2Eb/J2NIi1SS5xVk98O91Li1ljH1zhzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744378244; c=relaxed/relaxed;
-	bh=T2R/IkUgsNUQZyYj/hsSGzxvJ2UNWF/IZAubjoxHQl0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=S9n0oAIrpA6DBEN5AEVlEYkgFP3xCi4HXptHDEMk2pQxxyGpByhTvLvuhYBrwN6NGsiHcwZElz/mxeRmBjA8zyEd7MLDUdvMSUTJOKxy9Nq1groKs/4L7P6Qa0RGco63Dmv9f82uQbhYJuEUtWuQ6smv363B45EvBdQaRt3JBPON5pTsUzvp1oAeIUhhDbFH3UCQcbq44JKqJlqXY9YQBf5RQxMZtWGs2RPEyUkOMsdfNM/GXBw3/GQlNEB/XpFWPEDSjt5gGHU8LqoNNigPkqR0lG7jnjCqJ3Rt7WK4NCilz2nAwssENf4Mb/Ktt7DqrTYjONnu7obnMfxkHzsCAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AVSNBOB+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::241; helo=mail-lj1-x241.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1746456375; c=relaxed/relaxed;
+	bh=JlsKhkoz828MEtVy2v5Fu7Luz+EY3Qo135bmujvMVE8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kXOZotE1c2rg4xZNHQfAybE/6P8N5SUIsQyv5muUFJlM8KyxAa1DUoGJfGrUvUHCbu7BHZueisGWbkUuFv3JSOWZ+dyNBnsS+uZ9Afiii7iPbABxhRIwzeuXt4lNA5S9j6MQ14drGdYQKk462+IFYunQXZKlZIofPUDUvTzg5EpOm2LFYz9RWnSdX3LSzxXXM9b58GPA0tyms/nYkaPKoi+e661xRyuInc25lGkIzWBUpSrPh6xDX1ea1c0jQxzGR4vYJvfphGLyZMKsBBhlKLgf4Za1xWAWBFBDcyUVEU146FJgWleTNuVVD1ZDp/20QXhLOW64P0RoRRG2kdCjPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g2L9k+WP; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AVSNBOB+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g2L9k+WP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::241; helo=mail-lj1-x241.google.com; envelope-from=bsdhenrymartin@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZYyHQ6V2qz3bv8
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 11 Apr 2025 23:30:41 +1000 (AEST)
-Received: by mail-lj1-x241.google.com with SMTP id 38308e7fff4ca-30c44a87b9cso15426871fa.3
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 11 Apr 2025 06:30:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1744378239; x=1744983039; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=T2R/IkUgsNUQZyYj/hsSGzxvJ2UNWF/IZAubjoxHQl0=;
-        b=AVSNBOB+E6wxppmbdkX2vxkdFprbyblEU1+qC/L1tUMM4QrjR/XRhFIlLnQNd+hVbg
-         xlImsmbI2MFiEGnMH3RRWJCxW223e8dUWPh/voqqI7yq3HMJxUj/0aAcJdZw4di93M5e
-         eQZC5P8U1Ba2qYZZrUhduEIS0CnNZAhcK+0WA2MhoDkVdqd76yH2umvYe7PRMrwImAg7
-         NCPKK4dekCMHxoaqBmXwPJ3q5RC4uGnbLw+3y7Nh4NsGkWZXR9AzaSTSrO1WM0gQiSO/
-         dTg9dbzI9dLzaz+f6BZgf19lS8HZokXdL2Atgv9YOLHg/gteuICbBPGLz6AVJR9fvPWS
-         wl6Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744378239; x=1744983039;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=T2R/IkUgsNUQZyYj/hsSGzxvJ2UNWF/IZAubjoxHQl0=;
-        b=eNAlCI4/rNzDzud99oMvZRR9GtsC79ByqBOMEfIiKmqr8S/+HxWemIcYgwvpSHymJJ
-         lIVGfmZxB8TH3p4b6HgxRUiwwJR7RXmALxZ/lwnh1Dt+3OWxU2adC4KyvhpkQmmnJnSs
-         UxuyolNnx1OU0hMKQpYWoeTnpc/neXWGPVjs4z0uqjdspPOLx72SvfiJVbzEQRqsqJ+m
-         dHxjqs2zASwDUfoz8d4d5mkF4XuYVO1ICOBVe6eoNIqXqr4EmcjOm7m+KRyPc8VC8nN0
-         8/e8Nqsy6gZz6ZDsYJf40cvYJ2l4F5swOrgNafeWbgL9oyFMiOSl2biY9bhhoCASLrHo
-         dHvw==
-X-Forwarded-Encrypted: i=1; AJvYcCX4YinGcR5MEIAT8+lQo+FmWVzP3+1x9NiX3BILpeRbSquQIwngtMqzpSA36e5ya/I5E/mkDvz009m4NTM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywsr7HX7cQNbkLwHDH+s9Vk2J9BFL87ryYMUN2wz8KanDXsnzU1
-	IUZL5i2uNIpXVxO66/Fu+JmJcGqyBX08XvRDUZSROzp3dElxHfePFEzzgUDUT+MhlNTqIhsUWNX
-	VwoMPILXZ0fdhNfZOql8FOVWA4y4=
-X-Gm-Gg: ASbGncvcea5Phr9w584z6lps6B0/nntx8ProlK6lRpMlvZFcgo45dpl+idJ8zz86qW5
-	DervaxVpZdM8KUYCNvoe2r/BTAXbn84Tx0lQ3QvANQHwlyPJXnap/HuoRIhiWKqqk/CtfJqoxMC
-	GA+1xcMI4LVRX7j5E55KE5
-X-Google-Smtp-Source: AGHT+IG1lqVlN04eQ+Cdjd0vIhu0KNn3WIjR2MqivG0AARDZu5eY1L6Hi/Vnc2KqgBWl1QD8jRqYqg+Y0ThYnZbHxqc=
-X-Received: by 2002:a2e:a545:0:b0:30b:a92e:8b42 with SMTP id
- 38308e7fff4ca-31049a930d6mr9258461fa.26.1744378237355; Fri, 11 Apr 2025
- 06:30:37 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZrkqV2brKz2xVq;
+	Tue,  6 May 2025 00:46:14 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0C8E561155;
+	Mon,  5 May 2025 14:45:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1AC7CC4CEEF;
+	Mon,  5 May 2025 14:46:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746456371;
+	bh=x7tnnriKWWyb+OOuz9Jm2Bv/3oa5SNZPvGNweMUWMIU=;
+	h=From:To:Cc:Subject:Date:From;
+	b=g2L9k+WPZ+3OvN9rVu72Dcp1LHEzvAtWshioq4cwfDRz5dhPuLGkql2COEPoTeti1
+	 r6Wyz8I2gy/Rd76okDAVba4h1+yPlgChYIS6+VhXkhkZXfgMHuGPS740zXIoI1k7qG
+	 +AJLi/QkoKqnk/f4Ew/DXA7Iv96yQIS/dp7Gk2oKzEE1dJhsDNThHTJL0wjBIwYGv2
+	 JLPSd7yrxNnr+OXhYtLrOCstGa1Y+kIanVT5Zoh6sBPFEz8wBYu6u7JyFan7cAcc9A
+	 BSJhVVLA1p6xCZZ1q5EiDISbBzSQaJU1Oamejd/CNuc4ACSFN8p/AA7NrXwPdcIZPY
+	 xo9hqlVu8qB8g==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-i2c@vger.kernel.org,
+	openbmc@lists.ozlabs.org
+Subject: [PATCH] dt-bindings: interrupt-controller: Convert aspeed,ast2400-i2c-ic to DT schema
+Date: Mon,  5 May 2025 09:46:04 -0500
+Message-ID: <20250505144605.1287121-1-robh@kernel.org>
+X-Mailer: git-send-email 2.47.2
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,76 +72,121 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-digest@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
+Precedence: list
 MIME-Version: 1.0
-References: <20250405113020.80387-1-bsdhenrymartin@gmail.com> <2025041119-debit-cosmic-f41c@gregkh>
-In-Reply-To: <2025041119-debit-cosmic-f41c@gregkh>
-From: henry martin <bsdhenrymartin@gmail.com>
-Date: Fri, 11 Apr 2025 21:30:26 +0800
-X-Gm-Features: ATxdqUFFH3sTnc2x3CM9EZtpM34AzSWHqdFLolBE3C_g_Sf3mnv8aMarh0qkivM
-Message-ID: <CAEnQdOqmq3wwn3FLNq2wiq6MuM9ZMgcs6vcmwpVVgwzY=zeceg@mail.gmail.com>
-Subject: Re: [PATCH v2] usb/gadget: Add NULL check in ast_vhub_init_dev()
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: joel@jms.id.au, andrew@codeconstruct.com.au, linux-usb@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-> What kernel version did you make this against?  It does not apply to
-> 6.15-rc1 for me :(
+Convert the Aspeed I2C interrupt controller binding to schema format.
 
-Apologies for the noise.
+Drop the "#address-cells" and "#size-cells" as they are unused and
+incorrect anyways.
 
-I just rebased onto v6.15-rc1 and noticed that this issue has already been
-fixed upstream.
-Thanks again for taking the time to review =E2=80=94 I'll drop this patch.
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ .../aspeed,ast2400-i2c-ic.txt                 | 25 ----------
+ .../aspeed,ast2400-i2c-ic.yaml                | 46 +++++++++++++++++++
+ MAINTAINERS                                   |  2 +-
+ 3 files changed, 47 insertions(+), 26 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.txt
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.yaml
 
-Best regards,
-Henry
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.txt b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.txt
+deleted file mode 100644
+index 033cc82e5684..000000000000
+--- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.txt
++++ /dev/null
+@@ -1,25 +0,0 @@
+-Device tree configuration for the I2C Interrupt Controller on the AST24XX and
+-AST25XX SoCs.
+-
+-Required Properties:
+-- #address-cells	: should be 1
+-- #size-cells 		: should be 1
+-- #interrupt-cells 	: should be 1
+-- compatible 		: should be "aspeed,ast2400-i2c-ic"
+-			  or "aspeed,ast2500-i2c-ic"
+-- reg			: address start and range of controller
+-- interrupts		: interrupt number
+-- interrupt-controller	: denotes that the controller receives and fires
+-			  new interrupts for child busses
+-
+-Example:
+-
+-i2c_ic: interrupt-controller@0 {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	#interrupt-cells = <1>;
+-	compatible = "aspeed,ast2400-i2c-ic";
+-	reg = <0x0 0x40>;
+-	interrupts = <12>;
+-	interrupt-controller;
+-};
+diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.yaml b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.yaml
+new file mode 100644
+index 000000000000..6cff6a7231bb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.yaml
+@@ -0,0 +1,46 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2400-i2c-ic.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed I2C Interrupt Controller (AST24XX/AST25XX)
++
++maintainers:
++  - Ryan Chen <ryan_chen@aspeedtech.com>
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-i2c-ic
++      - aspeed,ast2500-i2c-ic
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  interrupt-controller: true
++
++  '#interrupt-cells':
++    const: 1
++
++required:
++  - compatible
++  - reg
++  - '#interrupt-cells'
++  - interrupts
++  - interrupt-controller
++
++additionalProperties: false
++
++examples:
++  - |
++    interrupt-controller@0 {
++        compatible = "aspeed,ast2400-i2c-ic";
++        reg = <0x0 0x40>;
++        #interrupt-cells = <1>;
++        interrupts = <12>;
++        interrupt-controller;
++    };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b830dfeaa05f..9e37f0c14496 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2328,7 +2328,7 @@ L:	linux-i2c@vger.kernel.org
+ L:	openbmc@lists.ozlabs.org (moderated for non-subscribers)
+ S:	Maintained
+ F:	Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
+-F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.txt
++F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2400-i2c-ic.yaml
+ F:	drivers/i2c/busses/i2c-aspeed.c
+ F:	drivers/irqchip/irq-aspeed-i2c-ic.c
+ 
+-- 
+2.47.2
 
-Greg KH <gregkh@linuxfoundation.org> =E4=BA=8E2025=E5=B9=B44=E6=9C=8811=E6=
-=97=A5=E5=91=A8=E4=BA=94 21:06=E5=86=99=E9=81=93=EF=BC=9A
->
-> On Sat, Apr 05, 2025 at 07:30:20PM +0800, Henry Martin wrote:
-> > devm_kasprintf() returns NULL when memory allocation fails. Currently,
-> > ast_vhub_init_dev() does not check for this case, which results in a
-> > NULL pointer dereference.
-> >
-> > Add NULL check after devm_kasprintf() to prevent this issue.
-> >
-> > Cc: stable@vger.kernel.org    # v4.18
-> > Fixes: 7ecca2a4080c ("usb/gadget: Add driver for Aspeed SoC virtual hub=
-")
-> > Signed-off-by: Henry Martin <bsdhenrymartin@gmail.com>
-> > ---
-> > V1 -> V2: Add Cc: stable label and correct commit message.
-> >
-> >  drivers/usb/gadget/udc/aspeed-vhub/dev.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gad=
-get/udc/aspeed-vhub/dev.c
-> > index 573109ca5b79..5b7d41a990d7 100644
-> > --- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> > +++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> > @@ -548,6 +548,8 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsign=
-ed int idx)
-> >       d->vhub =3D vhub;
-> >       d->index =3D idx;
-> >       d->name =3D devm_kasprintf(parent, GFP_KERNEL, "port%d", idx+1);
-> > +     if (!d->name)
-> > +             return -ENOMEM;
-> >       d->regs =3D vhub->regs + 0x100 + 0x10 * idx;
-> >
-> >       ast_vhub_init_ep0(vhub, &d->ep0, d);
-> > --
-> > 2.34.1
-> >
->
-> What kernel version did you make this against?  It does not apply to
-> 6.15-rc1 for me :(
->
-> thanks,
->
-> greg k-h
 
