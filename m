@@ -1,49 +1,49 @@
-Return-Path: <linux-aspeed+bounces-1185-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1186-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A444BC3ABB6
-	for <linux-aspeed@archiver.kernel.org>; Mon,  5 May 2025 22:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A80E8C3ABB6
+	for <linux-aspeed@archiver.kernel.org>; Mon,  5 May 2025 22:59:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZrxSC2rCbz2xrJ;
-	Tue,  6 May 2025 08:45:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746485115;
-	cv=none; b=Dw1hebcl+bpUN95z5VtA9dEIm1URLfc+CvrOXHJ5tS/GVrY/8ANGDeLP1y+uWmuhxcdbPFdXNJE+3unShjpe6OCl7OyzXQKWnjinrtWF3yGUU89CBYQl+r/c1rgYGapYTR2ELiITQgrc/RbpXKWrCGtIDQQkcJ9ba0C/cXexwn6y+xcQIwLRo9r8kfIJ/ws5H12OzzwtYLyU7Ig4xpYp9RC4T5nlf90dc1L0ZR/4DzEIKPUUtxfnbZZzd/+YoLeNskpi01029sieh/vm3YcYCPtMKBsADbsBS2K6ZnrfKSc+TEQOjhobm429iMwWFbJXPEQwvEM0VqQ3tXKgkoG4Iw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrxn72W33z2yQJ;
+	Tue,  6 May 2025 08:59:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746485995;
+	cv=none; b=U3y+NakkGB1ndxh9hFkk4PivLs9R+JfioqzAbfH3f/s9NrR6ypHSjwvV81R9H9nChz9vrql4FXlE+NSYkJks7PNUo5DY/gXTnjNa27NX3mqKU9sHCmWzS/tCVgctUzDLW488m2/SDwGoH46mURbttXzfu5kR0BtU/PcKt4hVOrNwviHY7N7vy7GdBtPmhSKPJkBtvnutSbI0wyDkbzXm9ozgu1Fvsrxoiqmp+Ul4wdgabuGhLO6m4+1LSQZ0ux/xRGHI2ykZt48be1TTIVQ1pyLkMvLWOdVRnK3jiWK91mb0OfpTdW4BvKKmD/ncKUl7RBkpdRhQNCCJCwrAJfbmXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746485115; c=relaxed/relaxed;
-	bh=K+fX/SlB7a7Xg9/muzQ76KUyDALcxWmQNgcMFQvMtMs=;
+	t=1746485995; c=relaxed/relaxed;
+	bh=bBOdXyXS4xPz3SkZDj6+qaGSQH/hm/6mLzfAVljRnQI=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=DXjNXGXLzaFjqMP8hU1Le/f1wSkwtGJv/Bukq6EpI3SIfSEJ2C9R3AyrlHtButsIIAODBBNNVc/COuKHUFoKkwVEwMzZamUMOLDkjyUIi6tJuR094jLTzwNaEcBqoYD3irPl4x3xe8nlsxa92/6txipGS1RUeVhgUORo6RW7uIKnzeNZQxDVd/Z2V3Q2AQMZ6OXYVZafMIZZyUP7gW9I2z4z4xRgdBYJ9v39PKKzZIAQsRYhwmzQea/+bWXI85k6MhMVJE6q6ct0edlmkuWTlYVqc/g/Gf3udGp9HRH6CXB0Wf/xssf/5TzH743d7wy65RTEV1ON+vE0r4I1tfS7Kg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oWcXvCm9; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=HtsnsqaQQtuUtNhT2VXFaLYD+mHQSP9lNCZ6WojqSncFxtD/1O9wGygva3Epns1zxad2ILf+QbesBo8IVxQOblBsLnHPF505bCR1ATo8/THj6O3XZ0sLo/wFLpgxnBUniz1cD6qhVg5BoWHtMUOGAOEv8YJYNQeEcKvhrokLQxQgaIBjqE9dBUkVDnbJmuY32cirzvVFRfq0t5EaKQluCx+9hgyhGKyZUVCwhb1UId99OKIzGBQin2qic6Kd8ZMLp4LhiGv461d6aXqiK/uu27oakVFoQIFORkLee/jHLujazcKtC0/uwpGs7A7GNM7Zza5heDWxECQ4AhV/e5nSlQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PEctCCj3; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oWcXvCm9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PEctCCj3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZrxSB4H29z2xqJ
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  6 May 2025 08:45:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zrxn63Bjrz2xxr
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  6 May 2025 08:59:54 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E6F49431FE;
-	Mon,  5 May 2025 22:45:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F2D2C4CEE4;
-	Mon,  5 May 2025 22:45:11 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id D60C8439B6;
+	Mon,  5 May 2025 22:59:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FCFBC4CEED;
+	Mon,  5 May 2025 22:59:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746485112;
-	bh=Y8gOUr/d7B6ukn7cFkOC8T9Tsre9FJWWrtBN+lk4QgU=;
+	s=k20201202; t=1746485992;
+	bh=2M8uPCt36C3of6ENKMaaIlkGVz65Qcmxt5L5qeA9Jus=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=oWcXvCm9v6ab1U2TGl8pkcbrUsOYwAigkn3hna4Em85To3hNX3iK8+h4h5zz7amip
-	 334FS3D0O1QS1rHIQi7o2VSW81Tr22J44MZsVTC3mk6rCOfxelZ7unnw+HEsQEbzNm
-	 89las5pw8Ct0GmNgGXMbGDt1gSccu2fHrWAaG3vKKvNjkVwUYzYImKZgJ3y5gMgq1s
-	 XiriOpScHo4OO1l4IwxxlXQr/J2iA3RYUNqk2fqoVi+z2PeD7EgUPNci1wpJM4Duxd
-	 c3mIyYWEgHcIA2W1N8p+SgDSm2FnitsXbYj9JhwFXtp8DkaRRoBbZerqxx1pO4DcDD
-	 KmMPMVxjCPe+w==
+	b=PEctCCj3OgCddDU4ao2KrwEcYmJsZhR6DIGOu36l6q7ZsRCbvyT8hcJLOaZC5zTj3
+	 g/+YqQXKZu60oLPydbzvD/cmCuZqUzUgKJGkdLxxRd1KzjXiSPbnvvcfqIuBbIj7kS
+	 41tgl5Oku6MYOw+aBYJemXeKrTTHVYdN2qsrFlnOzre8oXBRmrbZxS0Flqd/sxd78A
+	 lRAPZCX0FmjJ0N8kJi8rfXPbmG6wiThSJzyEh6UxKm9epvilzaXT3XYbVkXBBeRNnO
+	 XEVhn7pHXED+uV14/6yocN169MblBcZjA7dtqmHzvdvlebM+1YzPNOagGEikm6kIGs
+	 JTBvZE8C5i0FA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
@@ -56,12 +56,12 @@ Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
 	linux-watchdog@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 6.12 168/486] watchdog: aspeed: Update bootstatus handling
-Date: Mon,  5 May 2025 18:34:04 -0400
-Message-Id: <20250505223922.2682012-168-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 6.6 101/294] watchdog: aspeed: Update bootstatus handling
+Date: Mon,  5 May 2025 18:53:21 -0400
+Message-Id: <20250505225634.2688578-101-sashal@kernel.org>
 X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505223922.2682012-1-sashal@kernel.org>
-References: <20250505223922.2682012-1-sashal@kernel.org>
+In-Reply-To: <20250505225634.2688578-1-sashal@kernel.org>
+References: <20250505225634.2688578-1-sashal@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,7 +77,7 @@ Precedence: list
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.12.26
+X-stable-base: Linux 6.6.89
 Content-Transfer-Encoding: 8bit
 
 From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
@@ -113,7 +113,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 79 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index b4773a6aaf8cc..369635b38ca0e 100644
+index b72a858bbac70..7bc0fb1df1e00 100644
 --- a/drivers/watchdog/aspeed_wdt.c
 +++ b/drivers/watchdog/aspeed_wdt.c
 @@ -11,21 +11,30 @@
@@ -184,7 +184,7 @@ index b4773a6aaf8cc..369635b38ca0e 100644
  };
  
  static const struct of_device_id aspeed_wdt_of_table[] = {
-@@ -213,6 +240,56 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
+@@ -211,6 +238,56 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
  	return 0;
  }
  
@@ -241,7 +241,7 @@ index b4773a6aaf8cc..369635b38ca0e 100644
  /* access_cs0 shows if cs0 is accessible, hence the reverted bit */
  static ssize_t access_cs0_show(struct device *dev,
  			       struct device_attribute *attr, char *buf)
-@@ -458,10 +535,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+@@ -447,10 +524,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
  		writel(duration - 1, wdt->base + WDT_RESET_WIDTH);
  	}
  
