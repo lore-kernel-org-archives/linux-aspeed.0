@@ -1,65 +1,67 @@
-Return-Path: <linux-aspeed+bounces-1182-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1183-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4A81C3ABAA
-	for <linux-aspeed@archiver.kernel.org>; Mon,  5 May 2025 14:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08F77C3ABB6
+	for <linux-aspeed@archiver.kernel.org>; Mon,  5 May 2025 22:22:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrkqb2vB2z2yr2;
-	Tue,  6 May 2025 00:46:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746456379;
-	cv=none; b=asTO9kkQhpTb2Lslt5JTrTwzD+u1Xhs/EELC1jiMx7t+CCAjCKo1Gvr2Tg01/nLfqw7asWsgkB5XCJDEEeBc4oUgF3biZn2eXfkc+0+Tp8cKBl7zGvy6esSWSn9W9OVUF+PHN1GCGtcg7yfYuquocvyAlC8zR8/aei3Sq2/Y0ljPCIDK0sUquxgDC/AJJdnHHxoIDIPkptTM8H/Px48rOmQT8XZHdtTFwWmGjsEiJ0hqqcmiNx+gDJXpv1w4Ld4vCn7M2VDHV7BdKTyHhPG0rbj6TghkrmNauq6ZD06GRQWuw7C/GbdhgK9mBHi0VlxMDiSVhGqvsSeaITGLdbfdKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZrwyT54Y9z2xTh;
+	Tue,  6 May 2025 08:22:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746483777;
+	cv=none; b=CPouxN5yqXtlIH6ChcuTUc+1yi53loo/MQqfG1itUajqp6SZyJDU1mifstiHqKHfY7XHzRr+RrMfYc/ME6H+rZLpgz8jTNtZIobAkmrcbE65NzBXNk5bgB4FeYx55P8QFJjLTK5SqGi9+A5xhsDSb8IMPoFxrPWwjrsd6yXdXNUC3dTR9j/sCl2pubSOgmH9A0IuHv4TtHtMRdUMDrtS3m81P8LAnUOSLrK85Dlkmc9j9QNRVSc89WvJyMgYI8Ij33+kQ78GJxZDsM9rTEcy73F1yPls0ZcHnF3xFoE3s1/9GZavL7urxhX1L+aqgWTLmHP4vPe6C6nJaftsoupIWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746456379; c=relaxed/relaxed;
-	bh=iTBTgsz+Ilutml5RH24YXByNyxuquONZJQpFMgadR/c=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=cbYhgrNsZpAX8WKTmz+29scz/+QQZ97BxZCDpJnlwCE+OUPnGZonGVQh/2OoxRzjW/Yi3uO5Sb7PrGT+Z5jkTFskfSZqDUY6USXaZ+nDke1eELPGGl6SOjr4+mIsjQYwdsxwSJuX2rov+JHGsTzBBbOsCTNItL9h0GwRSdWsKc8gm+4p5Mtb5sis5aJy/0m9QySKv61a65hQ42/BtR4xQNEzyVGxcT2/z2fr7Fc4n5Zt23OSl7JhWdpy5q/VP3z2G0O7+JZvFQknYNNCTEY/+TFfkn2GMSp/XDYW700fOjjxFOVxsYTh4cT6QX/vC9qtG2v9bTP/HRqswfvQ/jbPDg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BkWSzRYI; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1746483777; c=relaxed/relaxed;
+	bh=K+fX/SlB7a7Xg9/muzQ76KUyDALcxWmQNgcMFQvMtMs=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=PngJ7CxihmqkBojbL4FT11FZz55M/AVkyIR+43H/Tg5Yi5P04X12hW/4fFSMpH+zUKQq3YiEBu+LBdeSpJrk3bQv5s5rAhAVPMFKY4lGq7Alzt5vynx+Pik8+D7FJTuBBgCheHIwCR5r1Wrnq94Z3EW8jVf+mky/XIsSzqQqZQ1aoT88ZC9MZfqTrrkMRd3jzgiRAuUGn2U3q+ZmPvpsSMfySFhqYZu85tEGyBI6mxZfWz2sj7h08jb2diy7exTkuj/oLDs9Lqx05QP1wKcb0z43lqI9bDwAJEWc7hECh8WSA+nxHkmEme+iYAwBWnHFtFeAiaEQo6+h1u4XOF7luQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k8C+bxxD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BkWSzRYI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k8C+bxxD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZrkqZ40d5z2xVq
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  6 May 2025 00:46:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZrwyS6Dpxz2xRw
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  6 May 2025 08:22:56 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2B8E66135E;
-	Mon,  5 May 2025 14:45:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35837C4CEEF;
-	Mon,  5 May 2025 14:46:16 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id AF1B2438DD;
+	Mon,  5 May 2025 22:22:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07B10C4CEE4;
+	Mon,  5 May 2025 22:22:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746456376;
-	bh=4bDA+VU4HKiAdPSG7pDQ7lpUmXsZe5SALIM6IjFpDmY=;
-	h=From:To:Cc:Subject:Date:From;
-	b=BkWSzRYIoY22w53CdjXaPfov8jjMYYJQ3D3fok+SjanF80LxfaYknu7A5Rx9Q2/Nk
-	 FK+gSdYkE+3vbSUZlVf3fL5dYlfwjy8/3yrNgSNiPQS17geHLJtuiiUTUXMnM8JAi1
-	 3Ew71fC6N7Dt4K+6Y3aN/HuwKu81iwUfQjabkWU5/UwJOw3//EP24jA52XJOCNwztq
-	 l57OQvVoXXHmu1qmnTwdZ9EUACab6g28wKUCCjjes6f85zhK428gS6vaKe5s0tTrDC
-	 M71U+bbIWDyqBMZiOw666hfCM834ZaIhy2PZRy8HGbMQ6hmGFielO/zIMMOx9Ka4Na
-	 rhOBXLbs8M2LQ==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Eddie James <eajames@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
+	s=k20201202; t=1746483774;
+	bh=Y8gOUr/d7B6ukn7cFkOC8T9Tsre9FJWWrtBN+lk4QgU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=k8C+bxxD8va+Agkzxm32fnhGljfLPD5ducAKMQQ6QUzvdr6TOldtxDqoinGb/eKgg
+	 OwrKFJCmMJCWBC/HLbZbee9eOlhLrqqtTZtyikZ5JyUw2PbPA08QBPlJGow7Pu24yW
+	 UFCStqNVU9B1Aa7QphLrqpqWchJEPRaAIbrCdq2ZIko6EIDX3zInVgWkSFsWk76PEL
+	 gCAXHGAe7QgKKDsmGBnssoZ9W7TMUOmxayXqBz6fpCRy9r5TBqtUKR8iytJzyKTjvW
+	 TjyAfN8lmdfbt18tQhsujJ8nc5HWqvz900kRKkem536Q1c+07HBt6L8aQ6OhXmcEAD
+	 Pvlbz0g/0jOVg==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Lee Jones <lee@kernel.org>
-Cc: Andrew Jeffery <andrew@aj.id.au>,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] dt-bindings: interrupt-controller: Convert aspeed,ast2xxx-scu-ic to DT schema
-Date: Mon,  5 May 2025 09:46:11 -0500
-Message-ID: <20250505144613.1287360-1-robh@kernel.org>
-X-Mailer: git-send-email 2.47.2
+	Guenter Roeck <linux@roeck-us.net>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Sasha Levin <sashal@kernel.org>,
+	joel@jms.id.au,
+	linux-watchdog@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org
+Subject: [PATCH AUTOSEL 6.14 212/642] watchdog: aspeed: Update bootstatus handling
+Date: Mon,  5 May 2025 18:07:08 -0400
+Message-Id: <20250505221419.2672473-212-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.5
+In-Reply-To: <20250505221419.2672473-1-sashal@kernel.org>
+References: <20250505221419.2672473-1-sashal@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,139 +75,186 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
+X-stable-base: Linux 6.14.5
 Content-Transfer-Encoding: 8bit
 
-Convert the Aspeed SCU interrupt controller binding to schema format.
-It's a straight-forward conversion of the typical interrupt controller.
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+[ Upstream commit 5c03f9f4d36292150c14ebd90788c4d3273ed9dc ]
+
+The boot status in the watchdog device struct is updated during
+controller probe stage. Application layer can get the boot status
+through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
+The bootstatus can be,
+WDIOF_CARDRESET => System is reset due to WDT timeout occurs.
+Others          => Other reset events, e.g., power on reset.
+
+On ASPEED platforms, boot status is recorded in the SCU registers.
+- AST2400: Only a bit is used to represent system reset triggered by
+           any WDT controller.
+- AST2500/AST2600: System reset triggered by different WDT controllers
+                   can be distinguished by different SCU bits.
+
+Besides, on AST2400 and AST2500, since alternating boot event is
+also triggered by using WDT timeout mechanism, it is classified
+as WDIOF_CARDRESET.
+
+Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Link: https://lore.kernel.org/r/20250113093737.845097-2-chin-ting_kuo@aspeedtech.com
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Wim Van Sebroeck <wim@linux-watchdog.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../aspeed,ast2500-scu-ic.yaml                | 48 +++++++++++++++++++
- .../aspeed,ast2xxx-scu-ic.txt                 | 23 ---------
- .../bindings/mfd/aspeed,ast2x00-scu.yaml      |  9 +++-
- MAINTAINERS                                   |  2 +-
- 4 files changed, 57 insertions(+), 25 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2500-scu-ic.yaml
- delete mode 100644 Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
+ drivers/watchdog/aspeed_wdt.c | 81 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 79 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2500-scu-ic.yaml b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2500-scu-ic.yaml
-new file mode 100644
-index 000000000000..d5287a2bf866
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2500-scu-ic.yaml
-@@ -0,0 +1,48 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright 2025 Eddie James
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2500-scu-ic.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed AST25XX and AST26XX SCU Interrupt Controller
-+
-+maintainers:
-+  - Eddie James <eajames@linux.ibm.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2500-scu-ic
-+      - aspeed,ast2600-scu-ic0
-+      - aspeed,ast2600-scu-ic1
-+
-+  reg:
-+    maxItems: 1
-+
-+  '#interrupt-cells':
-+    const: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+required:
-+  - compatible
-+  - reg
-+  - '#interrupt-cells'
-+  - interrupts
-+  - interrupt-controller
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    interrupt-controller@18 {
-+        compatible = "aspeed,ast2500-scu-ic";
-+        reg = <0x18 0x4>;
-+        #interrupt-cells = <1>;
-+        interrupts = <21>;
-+        interrupt-controller;
-+    };
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-deleted file mode 100644
-index 251ed44171db..000000000000
---- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-+++ /dev/null
-@@ -1,23 +0,0 @@
--Aspeed AST25XX and AST26XX SCU Interrupt Controller
--
--Required Properties:
-- - #interrupt-cells		: must be 1
-- - compatible			: must be "aspeed,ast2500-scu-ic",
--				  "aspeed,ast2600-scu-ic0" or
--				  "aspeed,ast2600-scu-ic1"
-- - interrupts			: interrupt from the parent controller
-- - interrupt-controller		: indicates that the controller receives and
--				  fires new interrupts for child busses
--
--Example:
--
--    syscon@1e6e2000 {
--        ranges = <0 0x1e6e2000 0x1a8>;
--
--        scu_ic: interrupt-controller@18 {
--            #interrupt-cells = <1>;
--            compatible = "aspeed,ast2500-scu-ic";
--            interrupts = <21>;
--            interrupt-controller;
--        };
--    };
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-index c800d5e53b65..12986ebe7ec7 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-@@ -48,8 +48,15 @@ properties:
+diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+index b4773a6aaf8cc..369635b38ca0e 100644
+--- a/drivers/watchdog/aspeed_wdt.c
++++ b/drivers/watchdog/aspeed_wdt.c
+@@ -11,21 +11,30 @@
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+ #include <linux/kstrtox.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_irq.h>
+ #include <linux/platform_device.h>
++#include <linux/regmap.h>
+ #include <linux/watchdog.h>
  
- patternProperties:
-   '^p2a-control@[0-9a-f]+$':
--    description: See Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
-     type: object
-+    additionalProperties: true
-+    properties:
-+      compatible:
-+        contains:
-+          enum:
-+            - aspeed,ast2500-scu-ic
-+            - aspeed,ast2600-scu-ic0
-+            - aspeed,ast2600-scu-ic1
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, bool, 0);
+ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+ 				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++struct aspeed_wdt_scu {
++	const char *compatible;
++	u32 reset_status_reg;
++	u32 wdt_reset_mask;
++	u32 wdt_reset_mask_shift;
++};
  
-   '^pinctrl(@[0-9a-f]+)?$':
-     type: object
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 9e37f0c14496..a792c5495d15 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3577,7 +3577,7 @@ ASPEED SCU INTERRUPT CONTROLLER DRIVER
- M:	Eddie James <eajames@linux.ibm.com>
- L:	linux-aspeed@lists.ozlabs.org (moderated for non-subscribers)
- S:	Maintained
--F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2xxx-scu-ic.txt
-+F:	Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2500-scu-ic.yaml
- F:	drivers/irqchip/irq-aspeed-scu-ic.c
- F:	include/dt-bindings/interrupt-controller/aspeed-scu-ic.h
+ struct aspeed_wdt_config {
+ 	u32 ext_pulse_width_mask;
+ 	u32 irq_shift;
+ 	u32 irq_mask;
++	struct aspeed_wdt_scu scu;
+ };
  
+ struct aspeed_wdt {
+@@ -39,18 +48,36 @@ static const struct aspeed_wdt_config ast2400_config = {
+ 	.ext_pulse_width_mask = 0xff,
+ 	.irq_shift = 0,
+ 	.irq_mask = 0,
++	.scu = {
++		.compatible = "aspeed,ast2400-scu",
++		.reset_status_reg = 0x3c,
++		.wdt_reset_mask = 0x1,
++		.wdt_reset_mask_shift = 1,
++	},
+ };
+ 
+ static const struct aspeed_wdt_config ast2500_config = {
+ 	.ext_pulse_width_mask = 0xfffff,
+ 	.irq_shift = 12,
+ 	.irq_mask = GENMASK(31, 12),
++	.scu = {
++		.compatible = "aspeed,ast2500-scu",
++		.reset_status_reg = 0x3c,
++		.wdt_reset_mask = 0x1,
++		.wdt_reset_mask_shift = 2,
++	},
+ };
+ 
+ static const struct aspeed_wdt_config ast2600_config = {
+ 	.ext_pulse_width_mask = 0xfffff,
+ 	.irq_shift = 0,
+ 	.irq_mask = GENMASK(31, 10),
++	.scu = {
++		.compatible = "aspeed,ast2600-scu",
++		.reset_status_reg = 0x74,
++		.wdt_reset_mask = 0xf,
++		.wdt_reset_mask_shift = 16,
++	},
+ };
+ 
+ static const struct of_device_id aspeed_wdt_of_table[] = {
+@@ -213,6 +240,56 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
+ 	return 0;
+ }
+ 
++static void aspeed_wdt_update_bootstatus(struct platform_device *pdev,
++					 struct aspeed_wdt *wdt)
++{
++	const struct resource *res;
++	struct aspeed_wdt_scu scu = wdt->cfg->scu;
++	struct regmap *scu_base;
++	u32 reset_mask_width;
++	u32 reset_mask_shift;
++	u32 idx = 0;
++	u32 status;
++	int ret;
++
++	if (!of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt")) {
++		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++		idx = ((intptr_t)wdt->base & 0x00000fff) / resource_size(res);
++	}
++
++	scu_base = syscon_regmap_lookup_by_compatible(scu.compatible);
++	if (IS_ERR(scu_base)) {
++		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
++		return;
++	}
++
++	ret = regmap_read(scu_base, scu.reset_status_reg, &status);
++	if (ret) {
++		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
++		return;
++	}
++
++	reset_mask_width = hweight32(scu.wdt_reset_mask);
++	reset_mask_shift = scu.wdt_reset_mask_shift +
++			   reset_mask_width * idx;
++
++	if (status & (scu.wdt_reset_mask << reset_mask_shift))
++		wdt->wdd.bootstatus = WDIOF_CARDRESET;
++
++	/* clear wdt reset event flag */
++	if (of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt") ||
++	    of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2500-wdt")) {
++		ret = regmap_read(scu_base, scu.reset_status_reg, &status);
++		if (!ret) {
++			status &= ~(scu.wdt_reset_mask << reset_mask_shift);
++			regmap_write(scu_base, scu.reset_status_reg, status);
++		}
++	} else {
++		regmap_write(scu_base, scu.reset_status_reg,
++			     scu.wdt_reset_mask << reset_mask_shift);
++	}
++}
++
+ /* access_cs0 shows if cs0 is accessible, hence the reverted bit */
+ static ssize_t access_cs0_show(struct device *dev,
+ 			       struct device_attribute *attr, char *buf)
+@@ -458,10 +535,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+ 		writel(duration - 1, wdt->base + WDT_RESET_WIDTH);
+ 	}
+ 
++	aspeed_wdt_update_bootstatus(pdev, wdt);
++
+ 	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
+ 	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
+-		wdt->wdd.bootstatus = WDIOF_CARDRESET;
+-
+ 		if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
+ 		    of_device_is_compatible(np, "aspeed,ast2500-wdt"))
+ 			wdt->wdd.groups = bswitch_groups;
 -- 
-2.47.2
+2.39.5
 
 
