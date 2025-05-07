@@ -1,67 +1,65 @@
-Return-Path: <linux-aspeed+bounces-1186-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1187-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A80E8C3ABB6
-	for <linux-aspeed@archiver.kernel.org>; Mon,  5 May 2025 22:59:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB0E9C3ABBE
+	for <linux-aspeed@archiver.kernel.org>; Wed,  7 May 2025 03:22:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrxn72W33z2yQJ;
-	Tue,  6 May 2025 08:59:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746485995;
-	cv=none; b=U3y+NakkGB1ndxh9hFkk4PivLs9R+JfioqzAbfH3f/s9NrR6ypHSjwvV81R9H9nChz9vrql4FXlE+NSYkJks7PNUo5DY/gXTnjNa27NX3mqKU9sHCmWzS/tCVgctUzDLW488m2/SDwGoH46mURbttXzfu5kR0BtU/PcKt4hVOrNwviHY7N7vy7GdBtPmhSKPJkBtvnutSbI0wyDkbzXm9ozgu1Fvsrxoiqmp+Ul4wdgabuGhLO6m4+1LSQZ0ux/xRGHI2ykZt48be1TTIVQ1pyLkMvLWOdVRnK3jiWK91mb0OfpTdW4BvKKmD/ncKUl7RBkpdRhQNCCJCwrAJfbmXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZsgYK46QGz2ydN;
+	Wed,  7 May 2025 13:22:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746588133;
+	cv=none; b=kSpZMPf8oqYiVsOAhyy/b2+5J0Qg9mE1Z5ygLgAp4QLPyhsluN9Iss7a4O3fEjccnjznBSzno9ii41qKT/BuviXL+5xj9FxQ+zWe0amaF/OeMryGZuAs8hzyMIb4KBI4fKGO1madahMeXWvm9SkuIhUuxwIeq+q3v0AnLDTBF3h34FjLk3Bco0AuKf1y7g3sGZo4UpnV5a5O6eab1YW8706bXUOioaJUAScoCuGFHmRC2JN5wch+5+lstcVMbhTOZLpoKKCSqnbYvvl4rUv059oeaMFAo9Txt9KaCp1nbqWbM9edX/UfLKFoMjVkYMmcnBP5NX0Kig+9+cuRaunHwQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746485995; c=relaxed/relaxed;
-	bh=bBOdXyXS4xPz3SkZDj6+qaGSQH/hm/6mLzfAVljRnQI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=HtsnsqaQQtuUtNhT2VXFaLYD+mHQSP9lNCZ6WojqSncFxtD/1O9wGygva3Epns1zxad2ILf+QbesBo8IVxQOblBsLnHPF505bCR1ATo8/THj6O3XZ0sLo/wFLpgxnBUniz1cD6qhVg5BoWHtMUOGAOEv8YJYNQeEcKvhrokLQxQgaIBjqE9dBUkVDnbJmuY32cirzvVFRfq0t5EaKQluCx+9hgyhGKyZUVCwhb1UId99OKIzGBQin2qic6Kd8ZMLp4LhiGv461d6aXqiK/uu27oakVFoQIFORkLee/jHLujazcKtC0/uwpGs7A7GNM7Zza5heDWxECQ4AhV/e5nSlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PEctCCj3; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1746588133; c=relaxed/relaxed;
+	bh=WxnIZWGjyW8z4p9AhSnJJsn8ZjAdBNM5VL2W6LDw1c0=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=DGYkDxp2vkU1wEIyRTFxEiMpEyFSzOB0BNNyMJiX2t5txZafBOqlq9ab/5xD+3SeujDIjaOKPpbUxeYJvEEdYdDK2maGmWiF5q9dc+Utz+isBKbMnN0FRaGSEET6lnoWzfN0ySi51Teer1tOMAQ1OVLGfBKYdnMEGiPoquFEoL5YvAu0r/EE5O+jDAOtRLWjNmg3hZyTzDve/GIJBp7TYqNCXd9qUqT/qn3ljrhlnFFY7hX0ys+AqDCn33WkBGfLSPkdOWQuN0MqPJSO+b1p/yph952aCiWAAHQ/S2bikSqm8oVQ2YFcueLLjhqgulomeYz0oVLFY7HHtgaCHmMfSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bCR+8fc3; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PEctCCj3;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bCR+8fc3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zrxn63Bjrz2xxr
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  6 May 2025 08:59:54 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D60C8439B6;
-	Mon,  5 May 2025 22:59:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3FCFBC4CEED;
-	Mon,  5 May 2025 22:59:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1746485992;
-	bh=2M8uPCt36C3of6ENKMaaIlkGVz65Qcmxt5L5qeA9Jus=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=PEctCCj3OgCddDU4ao2KrwEcYmJsZhR6DIGOu36l6q7ZsRCbvyT8hcJLOaZC5zTj3
-	 g/+YqQXKZu60oLPydbzvD/cmCuZqUzUgKJGkdLxxRd1KzjXiSPbnvvcfqIuBbIj7kS
-	 41tgl5Oku6MYOw+aBYJemXeKrTTHVYdN2qsrFlnOzre8oXBRmrbZxS0Flqd/sxd78A
-	 lRAPZCX0FmjJ0N8kJi8rfXPbmG6wiThSJzyEh6UxKm9epvilzaXT3XYbVkXBBeRNnO
-	 XEVhn7pHXED+uV14/6yocN169MblBcZjA7dtqmHzvdvlebM+1YzPNOagGEikm6kIGs
-	 JTBvZE8C5i0FA==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Guenter Roeck <linux@roeck-us.net>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Sasha Levin <sashal@kernel.org>,
-	joel@jms.id.au,
-	linux-watchdog@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 6.6 101/294] watchdog: aspeed: Update bootstatus handling
-Date: Mon,  5 May 2025 18:53:21 -0400
-Message-Id: <20250505225634.2688578-101-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250505225634.2688578-1-sashal@kernel.org>
-References: <20250505225634.2688578-1-sashal@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZsgYK0nQsz2yGx;
+	Wed,  7 May 2025 13:22:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1746588132;
+	bh=WxnIZWGjyW8z4p9AhSnJJsn8ZjAdBNM5VL2W6LDw1c0=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=bCR+8fc3LtDcSawxO4X6KapprEaFUHlDopKZmFaplYY0hg9qY2ZHxxAV725dw6TZI
+	 vMDQ4I5qCYW6aZB4ClA6mBPGWTAzsDb1q1Thuz7JM2NEN/d3IuDPcTQLqgOX/JwN49
+	 KHoX9w693tqIC2Wx8pBJhr+8PskzFyOU7AHb//tDxrGce2vfyWslb8hUjjTgbuA7VR
+	 Q5OEngX/ctCaryV+qVyYxXLfGBO3HzAYro10sfoquGFdPUUuZPvdQI5ai05jbgyxJM
+	 fT8bxI8lm3R4gU+9Se9xj6dc4oLjeMt/vfVhuQ2ToHwniIaYo/sUJ108EIsmeyRJEA
+	 xje1L/94ngvGg==
+Received: from [192.168.68.112] (unknown [180.150.112.225])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 324D864473;
+	Wed,  7 May 2025 11:22:10 +0800 (AWST)
+Message-ID: <5acf9c0afc764931f3e9e70c4085beeb95b9652d.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] dt-bindings: interrupt-controller: Convert
+ aspeed,ast2400-i2c-ic to DT schema
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: "Rob Herring (Arm)" <robh@kernel.org>, Thomas Gleixner
+ <tglx@linutronix.de>,  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
+ Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Ryan Chen
+ <ryan_chen@aspeedtech.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org
+Date: Wed, 07 May 2025 12:52:09 +0930
+In-Reply-To: <20250505144605.1287121-1-robh@kernel.org>
+References: <20250505144605.1287121-1-robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -75,186 +73,14 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.6.89
-Content-Transfer-Encoding: 8bit
 
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+On Mon, 2025-05-05 at 09:46 -0500, Rob Herring (Arm) wrote:
+> Convert the Aspeed I2C interrupt controller binding to schema format.
+>=20
+> Drop the "#address-cells" and "#size-cells" as they are unused and
+> incorrect anyways.
+>=20
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 
-[ Upstream commit 5c03f9f4d36292150c14ebd90788c4d3273ed9dc ]
-
-The boot status in the watchdog device struct is updated during
-controller probe stage. Application layer can get the boot status
-through the command, cat /sys/class/watchdog/watchdogX/bootstatus.
-The bootstatus can be,
-WDIOF_CARDRESET => System is reset due to WDT timeout occurs.
-Others          => Other reset events, e.g., power on reset.
-
-On ASPEED platforms, boot status is recorded in the SCU registers.
-- AST2400: Only a bit is used to represent system reset triggered by
-           any WDT controller.
-- AST2500/AST2600: System reset triggered by different WDT controllers
-                   can be distinguished by different SCU bits.
-
-Besides, on AST2400 and AST2500, since alternating boot event is
-also triggered by using WDT timeout mechanism, it is classified
-as WDIOF_CARDRESET.
-
-Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-Link: https://lore.kernel.org/r/20250113093737.845097-2-chin-ting_kuo@aspeedtech.com
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Wim Van Sebroeck <wim@linux-watchdog.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/watchdog/aspeed_wdt.c | 81 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
-index b72a858bbac70..7bc0fb1df1e00 100644
---- a/drivers/watchdog/aspeed_wdt.c
-+++ b/drivers/watchdog/aspeed_wdt.c
-@@ -11,21 +11,30 @@
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/kstrtox.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
-+#include <linux/regmap.h>
- #include <linux/watchdog.h>
- 
- static bool nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, bool, 0);
- MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
- 				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+struct aspeed_wdt_scu {
-+	const char *compatible;
-+	u32 reset_status_reg;
-+	u32 wdt_reset_mask;
-+	u32 wdt_reset_mask_shift;
-+};
- 
- struct aspeed_wdt_config {
- 	u32 ext_pulse_width_mask;
- 	u32 irq_shift;
- 	u32 irq_mask;
-+	struct aspeed_wdt_scu scu;
- };
- 
- struct aspeed_wdt {
-@@ -39,18 +48,36 @@ static const struct aspeed_wdt_config ast2400_config = {
- 	.ext_pulse_width_mask = 0xff,
- 	.irq_shift = 0,
- 	.irq_mask = 0,
-+	.scu = {
-+		.compatible = "aspeed,ast2400-scu",
-+		.reset_status_reg = 0x3c,
-+		.wdt_reset_mask = 0x1,
-+		.wdt_reset_mask_shift = 1,
-+	},
- };
- 
- static const struct aspeed_wdt_config ast2500_config = {
- 	.ext_pulse_width_mask = 0xfffff,
- 	.irq_shift = 12,
- 	.irq_mask = GENMASK(31, 12),
-+	.scu = {
-+		.compatible = "aspeed,ast2500-scu",
-+		.reset_status_reg = 0x3c,
-+		.wdt_reset_mask = 0x1,
-+		.wdt_reset_mask_shift = 2,
-+	},
- };
- 
- static const struct aspeed_wdt_config ast2600_config = {
- 	.ext_pulse_width_mask = 0xfffff,
- 	.irq_shift = 0,
- 	.irq_mask = GENMASK(31, 10),
-+	.scu = {
-+		.compatible = "aspeed,ast2600-scu",
-+		.reset_status_reg = 0x74,
-+		.wdt_reset_mask = 0xf,
-+		.wdt_reset_mask_shift = 16,
-+	},
- };
- 
- static const struct of_device_id aspeed_wdt_of_table[] = {
-@@ -211,6 +238,56 @@ static int aspeed_wdt_restart(struct watchdog_device *wdd,
- 	return 0;
- }
- 
-+static void aspeed_wdt_update_bootstatus(struct platform_device *pdev,
-+					 struct aspeed_wdt *wdt)
-+{
-+	const struct resource *res;
-+	struct aspeed_wdt_scu scu = wdt->cfg->scu;
-+	struct regmap *scu_base;
-+	u32 reset_mask_width;
-+	u32 reset_mask_shift;
-+	u32 idx = 0;
-+	u32 status;
-+	int ret;
-+
-+	if (!of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt")) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		idx = ((intptr_t)wdt->base & 0x00000fff) / resource_size(res);
-+	}
-+
-+	scu_base = syscon_regmap_lookup_by_compatible(scu.compatible);
-+	if (IS_ERR(scu_base)) {
-+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
-+		return;
-+	}
-+
-+	ret = regmap_read(scu_base, scu.reset_status_reg, &status);
-+	if (ret) {
-+		wdt->wdd.bootstatus = WDIOS_UNKNOWN;
-+		return;
-+	}
-+
-+	reset_mask_width = hweight32(scu.wdt_reset_mask);
-+	reset_mask_shift = scu.wdt_reset_mask_shift +
-+			   reset_mask_width * idx;
-+
-+	if (status & (scu.wdt_reset_mask << reset_mask_shift))
-+		wdt->wdd.bootstatus = WDIOF_CARDRESET;
-+
-+	/* clear wdt reset event flag */
-+	if (of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2400-wdt") ||
-+	    of_device_is_compatible(pdev->dev.of_node, "aspeed,ast2500-wdt")) {
-+		ret = regmap_read(scu_base, scu.reset_status_reg, &status);
-+		if (!ret) {
-+			status &= ~(scu.wdt_reset_mask << reset_mask_shift);
-+			regmap_write(scu_base, scu.reset_status_reg, status);
-+		}
-+	} else {
-+		regmap_write(scu_base, scu.reset_status_reg,
-+			     scu.wdt_reset_mask << reset_mask_shift);
-+	}
-+}
-+
- /* access_cs0 shows if cs0 is accessible, hence the reverted bit */
- static ssize_t access_cs0_show(struct device *dev,
- 			       struct device_attribute *attr, char *buf)
-@@ -447,10 +524,10 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
- 		writel(duration - 1, wdt->base + WDT_RESET_WIDTH);
- 	}
- 
-+	aspeed_wdt_update_bootstatus(pdev, wdt);
-+
- 	status = readl(wdt->base + WDT_TIMEOUT_STATUS);
- 	if (status & WDT_TIMEOUT_STATUS_BOOT_SECONDARY) {
--		wdt->wdd.bootstatus = WDIOF_CARDRESET;
--
- 		if (of_device_is_compatible(np, "aspeed,ast2400-wdt") ||
- 		    of_device_is_compatible(np, "aspeed,ast2500-wdt"))
- 			wdt->wdd.groups = bswitch_groups;
--- 
-2.39.5
-
 
