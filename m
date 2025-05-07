@@ -1,64 +1,63 @@
-Return-Path: <linux-aspeed+bounces-1187-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1188-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB0E9C3ABBE
-	for <linux-aspeed@archiver.kernel.org>; Wed,  7 May 2025 03:22:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20CD3C3ABBE
+	for <linux-aspeed@archiver.kernel.org>; Wed,  7 May 2025 03:26:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZsgYK46QGz2ydN;
-	Wed,  7 May 2025 13:22:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zsgf15ng6z2ydN;
+	Wed,  7 May 2025 13:26:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746588133;
-	cv=none; b=kSpZMPf8oqYiVsOAhyy/b2+5J0Qg9mE1Z5ygLgAp4QLPyhsluN9Iss7a4O3fEjccnjznBSzno9ii41qKT/BuviXL+5xj9FxQ+zWe0amaF/OeMryGZuAs8hzyMIb4KBI4fKGO1madahMeXWvm9SkuIhUuxwIeq+q3v0AnLDTBF3h34FjLk3Bco0AuKf1y7g3sGZo4UpnV5a5O6eab1YW8706bXUOioaJUAScoCuGFHmRC2JN5wch+5+lstcVMbhTOZLpoKKCSqnbYvvl4rUv059oeaMFAo9Txt9KaCp1nbqWbM9edX/UfLKFoMjVkYMmcnBP5NX0Kig+9+cuRaunHwQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746588377;
+	cv=none; b=cKlP28t1PIFQzNtgfBZoIJkY89LTP0ZB0swhtAd93IabYrblB9NhxYhZTsRS7VN0rUUGV7phnwmbE2RPEnQG77BoG/5VbQIiSqMLGqsLtROH+uS8zIuDncCw5g5SDS6036PzYLuqp7iXBoZPeux0P9t/DXpzOQFL3kT1yqOICAUOxblH7tF0IgXimiD34N+p2+OjNohwOZLwBR97PGrnMmYFW4kIfbn1yKHUXaVBl1zTn5+q7ZzCl0gzJKOGHy0kk5K4yihfnZuPK1WIEbtocbdownDjgDVV5BAwwobEoCobQXAZCcIkKIhuOEwD+C9zeLFT95PvYrvCtHKI22DP+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746588133; c=relaxed/relaxed;
-	bh=WxnIZWGjyW8z4p9AhSnJJsn8ZjAdBNM5VL2W6LDw1c0=;
+	t=1746588377; c=relaxed/relaxed;
+	bh=Y5vJizc5brmYQWZglKQyfCEypI/+K7GGslyxSRM5v9w=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=DGYkDxp2vkU1wEIyRTFxEiMpEyFSzOB0BNNyMJiX2t5txZafBOqlq9ab/5xD+3SeujDIjaOKPpbUxeYJvEEdYdDK2maGmWiF5q9dc+Utz+isBKbMnN0FRaGSEET6lnoWzfN0ySi51Teer1tOMAQ1OVLGfBKYdnMEGiPoquFEoL5YvAu0r/EE5O+jDAOtRLWjNmg3hZyTzDve/GIJBp7TYqNCXd9qUqT/qn3ljrhlnFFY7hX0ys+AqDCn33WkBGfLSPkdOWQuN0MqPJSO+b1p/yph952aCiWAAHQ/S2bikSqm8oVQ2YFcueLLjhqgulomeYz0oVLFY7HHtgaCHmMfSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bCR+8fc3; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=ST2W7S4H9u1IHNBaw1X3Un9GloZmDvhF65Db3ohhHO3Q/js7Dc+ES5cnqIebNLCN4NZDq4E8nyzqcMEX5TiWM71Ey6Z6s6WcWLFpLk2J8EOWrc867ex6HNI+PG8ioSJRQDA9Uc75ZGqV2ib/uOV6vG0wsRV6tLDP39H1g8MAo+Q0/jDu+aAUn6Ckq94fLPDQ96xle7c9q7ZThH5yN0VP8jg0R9DHaAdrh5FywzVgN63nTJao/jJPHF+IBQ+PfQXKKZvAptyBRI4z7NHQx0FO52tr8dGc46nJ+EfMGNjgqLHldHkhOW5kc3HxBDioTGTHvT9g7zh9RRnS08pBAxAQ2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=S0WQfe7a; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bCR+8fc3;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=S0WQfe7a;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZsgYK0nQsz2yGx;
-	Wed,  7 May 2025 13:22:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zsgf02D56z2yGx
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  7 May 2025 13:26:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1746588132;
-	bh=WxnIZWGjyW8z4p9AhSnJJsn8ZjAdBNM5VL2W6LDw1c0=;
+	d=codeconstruct.com.au; s=2022a; t=1746588375;
+	bh=Y5vJizc5brmYQWZglKQyfCEypI/+K7GGslyxSRM5v9w=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=bCR+8fc3LtDcSawxO4X6KapprEaFUHlDopKZmFaplYY0hg9qY2ZHxxAV725dw6TZI
-	 vMDQ4I5qCYW6aZB4ClA6mBPGWTAzsDb1q1Thuz7JM2NEN/d3IuDPcTQLqgOX/JwN49
-	 KHoX9w693tqIC2Wx8pBJhr+8PskzFyOU7AHb//tDxrGce2vfyWslb8hUjjTgbuA7VR
-	 Q5OEngX/ctCaryV+qVyYxXLfGBO3HzAYro10sfoquGFdPUUuZPvdQI5ai05jbgyxJM
-	 fT8bxI8lm3R4gU+9Se9xj6dc4oLjeMt/vfVhuQ2ToHwniIaYo/sUJ108EIsmeyRJEA
-	 xje1L/94ngvGg==
+	b=S0WQfe7apXJG8hwyq3uESs+ijRgSJZYkei7bb1ps7R4osyWkuQdCzmr8t5D3WtmrT
+	 VAdu1RiHr0RnoztCCC8hd75R9bWqzol3Ecy35lG4sgdcDKsTVdDEjvtes/Y8RCSKJS
+	 0/8aIBAG0HpSvDe16wPBAoiba1+DxtEM5T4S1Qq1NvCnbxMySlW69zW7fWRi5k8eeF
+	 kHqo7V9SJwXxCBBa76OpGfJ4OOg/8UW25Oi/AbxL1yFATohbX35A0K2mOvIuKrY7Y5
+	 ZZBy8VrB24c+mI0DGa0IMDxOIDiw4ujugExef8LWo9jXzSQ0mYWVE2clnhyvX/jw80
+	 6RpI8ESTMLo4Q==
 Received: from [192.168.68.112] (unknown [180.150.112.225])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 324D864473;
-	Wed,  7 May 2025 11:22:10 +0800 (AWST)
-Message-ID: <5acf9c0afc764931f3e9e70c4085beeb95b9652d.camel@codeconstruct.com.au>
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9952764473;
+	Wed,  7 May 2025 11:26:14 +0800 (AWST)
+Message-ID: <34dcdbd4fb15a988f15e812faa566b32506a2f2f.camel@codeconstruct.com.au>
 Subject: Re: [PATCH] dt-bindings: interrupt-controller: Convert
- aspeed,ast2400-i2c-ic to DT schema
+ aspeed,ast2xxx-scu-ic to DT schema
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: "Rob Herring (Arm)" <robh@kernel.org>, Thomas Gleixner
- <tglx@linutronix.de>,  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Ryan Chen
- <ryan_chen@aspeedtech.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org
-Date: Wed, 07 May 2025 12:52:09 +0930
-In-Reply-To: <20250505144605.1287121-1-robh@kernel.org>
-References: <20250505144605.1287121-1-robh@kernel.org>
+To: "Rob Herring (Arm)" <robh@kernel.org>, Eddie James
+ <eajames@linux.ibm.com>,  Thomas Gleixner <tglx@linutronix.de>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,  Joel
+ Stanley <joel@jms.id.au>, Lee Jones <lee@kernel.org>
+Cc: Andrew Jeffery <andrew@aj.id.au>, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org
+Date: Wed, 07 May 2025 12:56:14 +0930
+In-Reply-To: <20250505144613.1287360-1-robh@kernel.org>
+References: <20250505144613.1287360-1-robh@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -74,13 +73,92 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-On Mon, 2025-05-05 at 09:46 -0500, Rob Herring (Arm) wrote:
-> Convert the Aspeed I2C interrupt controller binding to schema format.
->=20
-> Drop the "#address-cells" and "#size-cells" as they are unused and
-> incorrect anyways.
->=20
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+SGkgUm9iLAoKVGhhbmtzIGZvciB0aGUgY29udmVyc2lvbi4gT25lIGNvbW1lbnQgYmVsb3c6CgpP
+biBNb24sIDIwMjUtMDUtMDUgYXQgMDk6NDYgLTA1MDAsIFJvYiBIZXJyaW5nIChBcm0pIHdyb3Rl
+Ogo+IENvbnZlcnQgdGhlIEFzcGVlZCBTQ1UgaW50ZXJydXB0IGNvbnRyb2xsZXIgYmluZGluZyB0
+byBzY2hlbWEgZm9ybWF0Lgo+IEl0J3MgYSBzdHJhaWdodC1mb3J3YXJkIGNvbnZlcnNpb24gb2Yg
+dGhlIHR5cGljYWwgaW50ZXJydXB0Cj4gY29udHJvbGxlci4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBS
+b2IgSGVycmluZyAoQXJtKSA8cm9iaEBrZXJuZWwub3JnPgo+IC0tLQo+IMKgLi4uL2FzcGVlZCxh
+c3QyNTAwLXNjdS1pYy55YW1swqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHwgNDgKPiAr
+KysrKysrKysrKysrKysrKysrCj4gwqAuLi4vYXNwZWVkLGFzdDJ4eHgtc2N1LWljLnR4dMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHwgMjMgLS0tLS0tLS0tCj4gwqAuLi4vYmluZGlu
+Z3MvbWZkL2FzcGVlZCxhc3QyeDAwLXNjdS55YW1swqDCoMKgwqDCoCB8wqAgOSArKystCj4gwqBN
+QUlOVEFJTkVSU8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgIHzCoCAyICstCj4gwqA0IGZpbGVzIGNoYW5nZWQsIDU3IGlu
+c2VydGlvbnMoKyksIDI1IGRlbGV0aW9ucygtKQo+IMKgY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pbnRlcnJ1cHQtCj4gY29udHJvbGxlci9hc3Bl
+ZWQsYXN0MjUwMC1zY3UtaWMueWFtbAo+IMKgZGVsZXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9pbnRlcnJ1cHQtCj4gY29udHJvbGxlci9hc3BlZWQsYXN0
+Mnh4eC1zY3UtaWMudHh0Cj4gCj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9pbnRlcnJ1cHQtCj4gY29udHJvbGxlci9hc3BlZWQsYXN0MjUwMC1zY3UtaWMu
+eWFtbAo+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVwdC0KPiBj
+b250cm9sbGVyL2FzcGVlZCxhc3QyNTAwLXNjdS1pYy55YW1sCj4gbmV3IGZpbGUgbW9kZSAxMDA2
+NDQKPiBpbmRleCAwMDAwMDAwMDAwMDAuLmQ1Mjg3YTJiZjg2Ngo+IC0tLSAvZGV2L251bGwKPiAr
+KysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW50ZXJydXB0LQo+IGNvbnRy
+b2xsZXIvYXNwZWVkLGFzdDI1MDAtc2N1LWljLnlhbWwKPiBAQCAtMCwwICsxLDQ4IEBACj4gKyMg
+U1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IChHUEwtMi4wLW9ubHkgT1IgQlNELTItQ2xhdXNlKQo+
+ICsjIENvcHlyaWdodCAyMDI1IEVkZGllIEphbWVzCj4gKyVZQU1MIDEuMgo+ICstLS0KPiArJGlk
+Ogo+IGh0dHA6Ly9kZXZpY2V0cmVlLm9yZy9zY2hlbWFzL2ludGVycnVwdC1jb250cm9sbGVyL2Fz
+cGVlZCxhc3QyNTAwLXNjdS1pYy55YW1sIwo+ICskc2NoZW1hOiBodHRwOi8vZGV2aWNldHJlZS5v
+cmcvbWV0YS1zY2hlbWFzL2NvcmUueWFtbCMKPiArCj4gK3RpdGxlOiBBc3BlZWQgQVNUMjVYWCBh
+bmQgQVNUMjZYWCBTQ1UgSW50ZXJydXB0IENvbnRyb2xsZXIKPiArCj4gK21haW50YWluZXJzOgo+
+ICvCoCAtIEVkZGllIEphbWVzIDxlYWphbWVzQGxpbnV4LmlibS5jb20+Cj4gKwo+ICtwcm9wZXJ0
+aWVzOgo+ICvCoCBjb21wYXRpYmxlOgo+ICvCoMKgwqAgZW51bToKPiArwqDCoMKgwqDCoCAtIGFz
+cGVlZCxhc3QyNTAwLXNjdS1pYwo+ICvCoMKgwqDCoMKgIC0gYXNwZWVkLGFzdDI2MDAtc2N1LWlj
+MAo+ICvCoMKgwqDCoMKgIC0gYXNwZWVkLGFzdDI2MDAtc2N1LWljMQo+ICsKPiArwqAgcmVnOgo+
+ICvCoMKgwqAgbWF4SXRlbXM6IDEKPiArCj4gK8KgICcjaW50ZXJydXB0LWNlbGxzJzoKPiArwqDC
+oMKgIGNvbnN0OiAxCj4gKwo+ICvCoCBpbnRlcnJ1cHRzOgo+ICvCoMKgwqAgbWF4SXRlbXM6IDEK
+PiArCj4gK8KgIGludGVycnVwdC1jb250cm9sbGVyOiB0cnVlCj4gKwo+ICtyZXF1aXJlZDoKPiAr
+wqAgLSBjb21wYXRpYmxlCj4gK8KgIC0gcmVnCj4gK8KgIC0gJyNpbnRlcnJ1cHQtY2VsbHMnCj4g
+K8KgIC0gaW50ZXJydXB0cwo+ICvCoCAtIGludGVycnVwdC1jb250cm9sbGVyCj4gKwo+ICthZGRp
+dGlvbmFsUHJvcGVydGllczogZmFsc2UKPiArCj4gK2V4YW1wbGVzOgo+ICvCoCAtIHwKPiArwqDC
+oMKgIGludGVycnVwdC1jb250cm9sbGVyQDE4IHsKPiArwqDCoMKgwqDCoMKgwqAgY29tcGF0aWJs
+ZSA9ICJhc3BlZWQsYXN0MjUwMC1zY3UtaWMiOwo+ICvCoMKgwqDCoMKgwqDCoCByZWcgPSA8MHgx
+OCAweDQ+Owo+ICvCoMKgwqDCoMKgwqDCoCAjaW50ZXJydXB0LWNlbGxzID0gPDE+Owo+ICvCoMKg
+wqDCoMKgwqDCoCBpbnRlcnJ1cHRzID0gPDIxPjsKPiArwqDCoMKgwqDCoMKgwqAgaW50ZXJydXB0
+LWNvbnRyb2xsZXI7Cj4gK8KgwqDCoCB9Owo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvaW50ZXJydXB0LQo+IGNvbnRyb2xsZXIvYXNwZWVkLGFzdDJ4eHgt
+c2N1LWljLnR4dAo+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2ludGVycnVw
+dC0KPiBjb250cm9sbGVyL2FzcGVlZCxhc3QyeHh4LXNjdS1pYy50eHQKPiBkZWxldGVkIGZpbGUg
+bW9kZSAxMDA2NDQKPiBpbmRleCAyNTFlZDQ0MTcxZGIuLjAwMDAwMDAwMDAwMAo+IC0tLSBhL0Rv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pbnRlcnJ1cHQtCj4gY29udHJvbGxlci9h
+c3BlZWQsYXN0Mnh4eC1zY3UtaWMudHh0Cj4gKysrIC9kZXYvbnVsbAo+IEBAIC0xLDIzICswLDAg
+QEAKPiAtQXNwZWVkIEFTVDI1WFggYW5kIEFTVDI2WFggU0NVIEludGVycnVwdCBDb250cm9sbGVy
+Cj4gLQo+IC1SZXF1aXJlZCBQcm9wZXJ0aWVzOgo+IC0gLSAjaW50ZXJydXB0LWNlbGxzwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgOiBtdXN0IGJlIDEKPiAtIC0gY29tcGF0aWJsZcKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoDogbXVzdCBiZSAiYXNwZWVkLGFzdDI1MDAtc2N1LWlj
+IiwKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoCAiYXNwZWVkLGFzdDI2MDAtc2N1LWljMCIgb3IKPiAtwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCAiYXNw
+ZWVkLGFzdDI2MDAtc2N1LWljMSIKPiAtIC0gaW50ZXJydXB0c8KgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoDogaW50ZXJydXB0IGZyb20gdGhlIHBhcmVudAo+IGNvbnRyb2xsZXIK
+PiAtIC0gaW50ZXJydXB0LWNvbnRyb2xsZXLCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oDogaW5kaWNhdGVzIHRoYXQgdGhlCj4gY29udHJvbGxlciByZWNlaXZlcyBhbmQKPiAtwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oCBmaXJlcyBuZXcgaW50ZXJydXB0cyBmb3IgY2hpbGQKPiBidXNzZXMKPiAtCj4gLUV4YW1wbGU6
+Cj4gLQo+IC3CoMKgwqAgc3lzY29uQDFlNmUyMDAwIHsKPiAtwqDCoMKgwqDCoMKgwqAgcmFuZ2Vz
+ID0gPDAgMHgxZTZlMjAwMCAweDFhOD47Cj4gLQo+IC3CoMKgwqDCoMKgwqDCoCBzY3VfaWM6IGlu
+dGVycnVwdC1jb250cm9sbGVyQDE4IHsKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCAjaW50ZXJy
+dXB0LWNlbGxzID0gPDE+Owo+IC3CoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGNvbXBhdGlibGUgPSAi
+YXNwZWVkLGFzdDI1MDAtc2N1LWljIjsKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBpbnRlcnJ1
+cHRzID0gPDIxPjsKPiAtwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBpbnRlcnJ1cHQtY29udHJvbGxl
+cjsKPiAtwqDCoMKgwqDCoMKgwqAgfTsKPiAtwqDCoMKgIH07Cj4gZGlmZiAtLWdpdCBhL0RvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9tZmQvYXNwZWVkLGFzdDJ4MDAtCj4gc2N1Lnlh
+bWwgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbWZkL2FzcGVlZCxhc3QyeDAw
+LQo+IHNjdS55YW1sCj4gaW5kZXggYzgwMGQ1ZTUzYjY1Li4xMjk4NmViZTdlYzcgMTAwNjQ0Cj4g
+LS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9hc3BlZWQsYXN0Mngw
+MC1zY3UueWFtbAo+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9tZmQv
+YXNwZWVkLGFzdDJ4MDAtc2N1LnlhbWwKPiBAQCAtNDgsOCArNDgsMTUgQEAgcHJvcGVydGllczoK
+PiDCoAo+IMKgcGF0dGVyblByb3BlcnRpZXM6Cj4gwqDCoCAnXnAyYS1jb250cm9sQFswLTlhLWZd
+KyQnOgo+IC3CoMKgwqAgZGVzY3JpcHRpb246IFNlZSBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvbWlzYy9hc3BlZWQtCj4gcDJhLWN0cmwudHh0Cj4gwqDCoMKgwqAgdHlwZTogb2Jq
+ZWN0Cj4gK8KgwqDCoCBhZGRpdGlvbmFsUHJvcGVydGllczogdHJ1ZQo+ICvCoMKgwqAgcHJvcGVy
+dGllczoKPiArwqDCoMKgwqDCoCBjb21wYXRpYmxlOgo+ICvCoMKgwqDCoMKgwqDCoCBjb250YWlu
+czoKPiArwqDCoMKgwqDCoMKgwqDCoMKgIGVudW06Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqAg
+LSBhc3BlZWQsYXN0MjUwMC1zY3UtaWMKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCAtIGFzcGVl
+ZCxhc3QyNjAwLXNjdS1pYzAKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCAtIGFzcGVlZCxhc3Qy
+NjAwLXNjdS1pYzEKClRoaXMgY2hhbmdlIHNob3VsZCBiZSBkb25lIG9uIHRoZSBpbnRlcnJ1cHQt
+Y29udHJvbGxlciBwYXR0ZXJuIHByb3BlcnR5Cm5vZGUgcmF0aGVyIHRoYW4gdGhlIHAyYS1jb250
+cm9sbGVyIG5vZGUuCgpBbmRyZXcK
 
-Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 
