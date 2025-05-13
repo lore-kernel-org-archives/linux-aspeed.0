@@ -1,56 +1,57 @@
-Return-Path: <linux-aspeed+bounces-1201-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1202-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8E62C3ABC3
-	for <linux-aspeed@archiver.kernel.org>; Tue, 13 May 2025 06:43:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA907C3ABC9
+	for <linux-aspeed@archiver.kernel.org>; Tue, 13 May 2025 06:43:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZxRl53fkgz2ynf;
-	Tue, 13 May 2025 16:43:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZxRl74VCFz2ynh;
+	Tue, 13 May 2025 16:43:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.6.53.87
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747118625;
-	cv=none; b=Vt9mQ//BKTyQeg9lvh1/f77huX7Qbhm1U0cIJ9iUsyDVq4Zu20mhu/nYCc7N3pC6WBvBti5MocOPiaPq6odm6yMb3dTOEdH/UgW4MSWOQwWWRbiv46Mybl3FtVPXMB8k/PU04BEOWMuqAuRSnQwn93Pjm+92j5WWGbV2jikVYSHjotQcVhIJSCFPoJNaQ9UyUpGSe8wr3oIeYXHlXaAEs+oy6gjd97D0kdoRtw59MdPdZS9Amz6Xcvk1GEAdW6it64d/hSUsnSJfsd+rfwX1g6IN+E0spUIq59EzHhfqMYYwvAT4W16LKBCE893qosps1NoBgqcr0U30JskdcGkmow==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747118627;
+	cv=none; b=M7NpXNby4bIAC345KIRQvKP5C3jn2LiSvHa8/CdP5ahUWWGzu0QueQrCnfbmE7wjPkA8WC3nLgHE4fGM0xnX3ra09SIXPONcfV59qLzVz+X2+Z/jfIYIu05RbkNT68xkER1d5TcXcjCw0O8Pel9DtKzW5PNDq26e6pSwuP5uk0K+0biyF3oFOwAr9bkz6QX13pTUNKcMciCfhaomJdrzqafuNpzuqzdBiiA5GE3S2XcFg1tft4NAbi3hM9wQdK4j0KojhVernKQ19Pi+5xdCz4vRCVqnv/eQ9/NeVJGW/ZIXLulg6ukwgM+yzTd61oY808adWee6906cHmVYdRAWXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747118625; c=relaxed/relaxed;
-	bh=ETeQzIWQ/HMg/qMx1tm+QJBqw/HHYrbauihlJ7GZAW4=;
-	h=Date:Message-Id:In-Reply-To:References:From:Subject:To:Cc; b=L21NscYk/O6nzZvXgAe+cwckeHQDv4HzZlfTohckOoZRDA0aBJ3JHOJIPTx9nRi1NDSxgxSbfW450n5mlweFdsl2tAlhFo/Rrsv1zWwsyYBHgRIfjSCjyURwW0eph6SQv6ZHIYTDBxP3c+BWE4qTnkPOAvlIzdso2nWmg9GrQ5fPOJKO1dWVYhX7jwSRGUccebqoxVBmmR9q07Nv7YwrKm/8NxtsFPeq/8i/9eyAmU0npQF2BMzmtE3ZxGZlS+VS6Zkyo/N/C2W9qb/7MClmZ5alsAwewgT/Mom00h/SfpkxUkos7kz/VaeEeQX8byqr/SGqIr/DKBuaXWaLPqtz6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=UFbt0U8G; dkim-atps=neutral; spf=pass (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
+	t=1747118627; c=relaxed/relaxed;
+	bh=qaIj+ZcBl/cU0Sg+Bo5053DJynhFBXA+5ndSeoJA92E=;
+	h=Date:Message-Id:In-Reply-To:References:From:Subject:To:Cc; b=Q85Eg1A/ap1CbKVdCkD1S9oerYfCaD6vHVDfwibrv42/Hv4f+dfuoZkTlFaGZt6MbqRwDUVi/QpNLHFtAhSyhMlS1HZ5FFkBSrTQkgxuj2O1gWswhmJV0tOnmN51tFfq3I7e3Gt11mg3gm9GilvZ9NY0RwXQDTh/n4BfwaSl9aBzdgcVJUpjZvsfoBSP3XSFS1KjSpAsbvqfThlCaG2eQQgEwnVyWNOc/wQo4ugogpRPdBawtyvmpLygSGO9WzhbWRnV+NciTRT3jTJ3J4Stlx7g5lj3PhBgwX9YnZq1011Vu0EZBlasrFz4m+kx8w5dSp+v74zDS6JN+sH4yRRIhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=iwHvzxcG; dkim-atps=neutral; spf=pass (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=UFbt0U8G;
+	dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=iwHvzxcG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
 Received: from abb.hmeau.com (abb.hmeau.com [144.6.53.87])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZxRl44dXGz2xd6
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 May 2025 16:43:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZxRl66V9Bz2xd6
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 May 2025 16:43:46 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=hmeau.com;
 	s=formenos; h=Cc:To:Subject:From:References:In-Reply-To:Message-Id:Date:
 	Sender:Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
 	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
 	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=ETeQzIWQ/HMg/qMx1tm+QJBqw/HHYrbauihlJ7GZAW4=; b=UFbt0U8GpFM/xVEg/Em5+3AdmZ
-	2aWZ35yjJazzBUubAHESE1EmNDFpjRDQ0DvT8bPEb3iBXz/grVd6Qvh664f33rrSdJ0sEdlqqHZ/D
-	0sqU6B94fM/f7tAz9J0j6l0t8PjshlqRxoyWOXm3G916jg06zwecNIiULWhYzdg2rspL/aEtHNI79
-	djZDbSvd4DHWqh9UOA0gs8tEaD9bnwNtje65RKcuPdbCyJYHrQPxDsOE7YAHW9yk6GUMSAApv+h5l
-	UqzRrWVSGN96M0Ks9tNXeuO61ZLBieqtRM0toeF1FExH9v6yF+9WV+Pa+Gdgs5UTEDu2myE3C0/AI
-	SHy4NCGA==;
+	bh=qaIj+ZcBl/cU0Sg+Bo5053DJynhFBXA+5ndSeoJA92E=; b=iwHvzxcGNCrJfEgQovANjTBagO
+	aD0p6AMZAMYf1+3GNxtRutw11D8N3GYqH/wsToFI+mLuTkfMjS10AIj2RrWdXCZnh+UaeHViatd8M
+	dMkzMaNAApQrzbC6OCUOHiSmEcjxrV3W7VgXWKtgP6yL4ApYcTY6R6+PBG2qQAnyvBAVrx4/J9ues
+	3478yQ7tVIg+axcJ9eBDfrkg9jGSt7VkMwrbCaqHq9flMq7VRgQk1uV1n37+pHX33iylJQ9fFDsZ0
+	SmKdaivKplejkXpnSiV0tfO+BfonU6eFFZN/dBNjsQ4LlHuooGpiDdTIwQJk8ezP8iIZqMmgWci2u
+	4wA6osEQ==;
 Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
 	by formenos.hmeau.com with smtp (Exim 4.96 #2 (Debian))
-	id 1uEikG-005g65-0k;
-	Tue, 13 May 2025 14:04:05 +0800
-Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Tue, 13 May 2025 14:04:04 +0800
-Date: Tue, 13 May 2025 14:04:04 +0800
-Message-Id: <e4a4fdb61f103c2ced989c7b75dfd4e60a0faeb2.1747116129.git.herbert@gondor.apana.org.au>
+	id 1uEik0-005g4H-0D;
+	Tue, 13 May 2025 14:03:49 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Tue, 13 May 2025 14:03:48 +0800
+Date: Tue, 13 May 2025 14:03:48 +0800
+Message-Id: <1a9548c383795a025076de7f6ee4fc465c287369.1747116129.git.herbert@gondor.apana.org.au>
 In-Reply-To: <cover.1747116129.git.herbert@gondor.apana.org.au>
 References: <cover.1747116129.git.herbert@gondor.apana.org.au>
 From: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH 08/11] crypto: aspeed/hash - Use API partial block handling
+Subject: [PATCH 01/11] crypto: aspeed/hash - Remove purely software hmac
+ implementation
 To: Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
 Cc: Neal Liu <neal_liu@aspeedtech.com>, linux-aspeed@lists.ozlabs.org
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
@@ -66,273 +67,49 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 
-Use the Crypto API partial block handling.
+The hmac implementation in aspeed simply duplicates what the new
+ahash hmac template already does, namely construct ipad and opad
+by hand and then adding them to the hash before feeding it to the
+engine.
 
-Also switch to the generic export format.
-
-Remove final function that is no longer used by the Crypto API.
-Move final padding into aspeed_ahash_dma_prepare_sg.
+Remove them and just use the generic ahash hmac template.
 
 Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 ---
- drivers/crypto/aspeed/aspeed-hace-hash.c | 304 ++++++++---------------
- drivers/crypto/aspeed/aspeed-hace.h      |   6 +-
- 2 files changed, 104 insertions(+), 206 deletions(-)
+ drivers/crypto/aspeed/aspeed-hace-hash.c | 335 -----------------------
+ drivers/crypto/aspeed/aspeed-hace.h      |  10 -
+ 2 files changed, 345 deletions(-)
 
 diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c b/drivers/crypto/aspeed/aspeed-hace-hash.c
-index d31d7e1c9af2..d7c7f867d6e1 100644
+index 0b6e49c06eff..0bcec2d40ed6 100644
 --- a/drivers/crypto/aspeed/aspeed-hace-hash.c
 +++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
-@@ -13,6 +13,7 @@
- #include <linux/err.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-+#include <linux/scatterlist.h>
- #include <linux/string.h>
+@@ -5,7 +5,6 @@
  
- #ifdef CONFIG_CRYPTO_DEV_ASPEED_DEBUG
-@@ -58,6 +59,46 @@ static const __be64 sha512_iv[8] = {
- 	cpu_to_be64(SHA512_H6), cpu_to_be64(SHA512_H7)
- };
- 
-+static int aspeed_sham_init(struct ahash_request *req);
-+static int aspeed_ahash_req_update(struct aspeed_hace_dev *hace_dev);
-+
-+static int aspeed_sham_export(struct ahash_request *req, void *out)
-+{
-+	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
-+	union {
-+		u8 *u8;
-+		u64 *u64;
-+	} p = { .u8 = out };
-+
-+	memcpy(out, rctx->digest, rctx->ivsize);
-+	p.u8 += rctx->ivsize;
-+	put_unaligned(rctx->digcnt[0], p.u64++);
-+	if (rctx->ivsize == 64)
-+		put_unaligned(rctx->digcnt[1], p.u64);
-+	return 0;
-+}
-+
-+static int aspeed_sham_import(struct ahash_request *req, const void *in)
-+{
-+	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
-+	union {
-+		const u8 *u8;
-+		const u64 *u64;
-+	} p = { .u8 = in };
-+	int err;
-+
-+	err = aspeed_sham_init(req);
-+	if (err)
-+		return err;
-+
-+	memcpy(rctx->digest, in, rctx->ivsize);
-+	p.u8 += rctx->ivsize;
-+	rctx->digcnt[0] = get_unaligned(p.u64++);
-+	if (rctx->ivsize == 64)
-+		rctx->digcnt[1] = get_unaligned(p.u64);
-+	return 0;
-+}
-+
- /* The purpose of this padding is to ensure that the padded message is a
-  * multiple of 512 bits (SHA1/SHA224/SHA256) or 1024 bits (SHA384/SHA512).
-  * The bit "1" is appended at the end of the message followed by
-@@ -117,33 +158,29 @@ static int aspeed_ahash_dma_prepare(struct aspeed_hace_dev *hace_dev)
- 	bool final = rctx->flags & SHA_FLAGS_FINUP;
- 	unsigned int length, remain;
- 
--	length = rctx->total + rctx->bufcnt;
-+	length = rctx->total;
- 	remain = final ? 0 : length % rctx->block_size;
- 
- 	AHASH_DBG(hace_dev, "length:0x%x, remain:0x%x\n", length, remain);
- 
--	if (rctx->bufcnt)
--		memcpy(hash_engine->ahash_src_addr, rctx->buffer, rctx->bufcnt);
--
- 	if ((final ? round_up(length, rctx->block_size) + rctx->block_size :
- 		     length) > ASPEED_CRYPTO_SRC_DMA_BUF_LEN) {
- 		dev_warn(hace_dev->dev, "Hash data length is too large\n");
- 		return -EINVAL;
- 	}
- 
--	scatterwalk_map_and_copy(hash_engine->ahash_src_addr +
--				 rctx->bufcnt, rctx->src_sg,
-+	scatterwalk_map_and_copy(hash_engine->ahash_src_addr, rctx->src_sg,
- 				 rctx->offset, rctx->total - remain, 0);
- 	rctx->offset += rctx->total - remain;
- 
-+	rctx->digcnt[0] += rctx->total - remain;
-+	if (rctx->digcnt[0] < rctx->total - remain)
-+		rctx->digcnt[1]++;
-+
- 	if (final)
- 		length += aspeed_ahash_fill_padding(
- 			hace_dev, rctx, hash_engine->ahash_src_addr + length);
--	else
--		scatterwalk_map_and_copy(rctx->buffer, rctx->src_sg,
--					 rctx->offset, remain, 0);
- 
--	rctx->bufcnt = remain;
- 	rctx->digest_dma_addr = dma_map_single(hace_dev->dev, rctx->digest,
- 					       SHA512_DIGEST_SIZE,
- 					       DMA_BIDIRECTIONAL);
-@@ -168,16 +205,17 @@ static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev *hace_dev)
- 	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
- 	struct ahash_request *req = hash_engine->req;
- 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
-+	bool final = rctx->flags & SHA_FLAGS_FINUP;
- 	struct aspeed_sg_list *src_list;
- 	struct scatterlist *s;
- 	int length, remain, sg_len, i;
- 	int rc = 0;
- 
--	remain = (rctx->total + rctx->bufcnt) % rctx->block_size;
--	length = rctx->total + rctx->bufcnt - remain;
-+	remain = final ? 0 : rctx->total % rctx->block_size;
-+	length = rctx->total - remain;
- 
--	AHASH_DBG(hace_dev, "%s:0x%x, %s:%zu, %s:0x%x, %s:0x%x\n",
--		  "rctx total", rctx->total, "bufcnt", rctx->bufcnt,
-+	AHASH_DBG(hace_dev, "%s:0x%x, %s:0x%x, %s:0x%x\n",
-+		  "rctx total", rctx->total,
- 		  "length", length, "remain", remain);
- 
- 	sg_len = dma_map_sg(hace_dev->dev, rctx->src_sg, rctx->src_nents,
-@@ -198,13 +236,39 @@ static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev *hace_dev)
- 		goto free_src_sg;
- 	}
- 
--	if (rctx->bufcnt != 0) {
--		u32 phy_addr;
--		u32 len;
-+	for_each_sg(rctx->src_sg, s, sg_len, i) {
-+		u32 phy_addr = sg_dma_address(s);
-+		u32 len = sg_dma_len(s);
- 
-+		if (length > len)
-+			length -= len;
-+		else {
-+			/* Last sg list */
-+			len = length;
-+			length = 0;
-+		}
-+
-+		src_list[i].phy_addr = cpu_to_le32(phy_addr);
-+		src_list[i].len = cpu_to_le32(len);
-+	}
-+
-+	if (length != 0) {
-+		rc = -EINVAL;
-+		goto free_rctx_digest;
-+	}
-+
-+	rctx->digcnt[0] += rctx->total - remain;
-+	if (rctx->digcnt[0] < rctx->total - remain)
-+		rctx->digcnt[1]++;
-+
-+	if (final) {
-+		int len = aspeed_ahash_fill_padding(hace_dev, rctx,
-+						    rctx->buffer);
-+
-+		rctx->total += len;
- 		rctx->buffer_dma_addr = dma_map_single(hace_dev->dev,
- 						       rctx->buffer,
--						       rctx->block_size * 2,
-+						       sizeof(rctx->buffer),
- 						       DMA_TO_DEVICE);
- 		if (dma_mapping_error(hace_dev->dev, rctx->buffer_dma_addr)) {
- 			dev_warn(hace_dev->dev, "dma_map() rctx buffer error\n");
-@@ -212,54 +276,19 @@ static int aspeed_ahash_dma_prepare_sg(struct aspeed_hace_dev *hace_dev)
- 			goto free_rctx_digest;
- 		}
- 
--		phy_addr = rctx->buffer_dma_addr;
--		len = rctx->bufcnt;
--		length -= len;
--
--		/* Last sg list */
--		if (length == 0)
--			len |= HASH_SG_LAST_LIST;
--
--		src_list[0].phy_addr = cpu_to_le32(phy_addr);
--		src_list[0].len = cpu_to_le32(len);
--		src_list++;
--	}
--
--	if (length != 0) {
--		for_each_sg(rctx->src_sg, s, sg_len, i) {
--			u32 phy_addr = sg_dma_address(s);
--			u32 len = sg_dma_len(s);
--
--			if (length > len)
--				length -= len;
--			else {
--				/* Last sg list */
--				len = length;
--				len |= HASH_SG_LAST_LIST;
--				length = 0;
--			}
--
--			src_list[i].phy_addr = cpu_to_le32(phy_addr);
--			src_list[i].len = cpu_to_le32(len);
--		}
--	}
--
--	if (length != 0) {
--		rc = -EINVAL;
--		goto free_rctx_buffer;
-+		src_list[i].phy_addr = cpu_to_le32(rctx->buffer_dma_addr);
-+		src_list[i].len = cpu_to_le32(len);
-+		i++;
- 	}
-+	src_list[i - 1].len |= cpu_to_le32(HASH_SG_LAST_LIST);
- 
- 	rctx->offset = rctx->total - remain;
--	hash_engine->src_length = rctx->total + rctx->bufcnt - remain;
-+	hash_engine->src_length = rctx->total - remain;
- 	hash_engine->src_dma = hash_engine->ahash_src_dma_addr;
- 	hash_engine->digest_dma = rctx->digest_dma_addr;
- 
- 	return 0;
- 
--free_rctx_buffer:
--	if (rctx->bufcnt != 0)
--		dma_unmap_single(hace_dev->dev, rctx->buffer_dma_addr,
--				 rctx->block_size * 2, DMA_TO_DEVICE);
- free_rctx_digest:
- 	dma_unmap_single(hace_dev->dev, rctx->digest_dma_addr,
- 			 SHA512_DIGEST_SIZE, DMA_BIDIRECTIONAL);
-@@ -274,39 +303,21 @@ static int aspeed_ahash_complete(struct aspeed_hace_dev *hace_dev)
- {
- 	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
- 	struct ahash_request *req = hash_engine->req;
-+	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
- 
- 	AHASH_DBG(hace_dev, "\n");
- 
- 	hash_engine->flags &= ~CRYPTO_FLAGS_BUSY;
- 
--	crypto_finalize_hash_request(hace_dev->crypt_engine_hash, req, 0);
-+	if (rctx->flags & SHA_FLAGS_FINUP)
-+		memcpy(req->result, rctx->digest, rctx->digsize);
-+
-+	crypto_finalize_hash_request(hace_dev->crypt_engine_hash, req,
-+				     rctx->total - rctx->offset);
- 
- 	return 0;
+ #include "aspeed-hace.h"
+ #include <crypto/engine.h>
+-#include <crypto/hmac.h>
+ #include <crypto/internal/hash.h>
+ #include <crypto/scatterwalk.h>
+ #include <crypto/sha1.h>
+@@ -338,70 +337,6 @@ static int aspeed_hace_ahash_trigger(struct aspeed_hace_dev *hace_dev,
+ 	return -EINPROGRESS;
  }
  
 -/*
-- * Copy digest to the corresponding request result.
-- * This function will be called at final() stage.
+- * HMAC resume aims to do the second pass produces
+- * the final HMAC code derived from the inner hash
+- * result and the outer key.
 - */
--static int aspeed_ahash_transfer(struct aspeed_hace_dev *hace_dev)
+-static int aspeed_ahash_hmac_resume(struct aspeed_hace_dev *hace_dev)
 -{
 -	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
 -	struct ahash_request *req = hash_engine->req;
 -	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+-	struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
+-	struct aspeed_sham_ctx *tctx = crypto_ahash_ctx(tfm);
+-	struct aspeed_sha_hmac_ctx *bctx = tctx->base;
+-	int rc = 0;
 -
 -	AHASH_DBG(hace_dev, "\n");
 -
@@ -342,32 +119,17 @@ index d31d7e1c9af2..d7c7f867d6e1 100644
 -	dma_unmap_single(hace_dev->dev, rctx->buffer_dma_addr,
 -			 rctx->block_size * 2, DMA_TO_DEVICE);
 -
--	memcpy(req->result, rctx->digest, rctx->digsize);
+-	/* o key pad + hash sum 1 */
+-	memcpy(rctx->buffer, bctx->opad, rctx->block_size);
+-	memcpy(rctx->buffer + rctx->block_size, rctx->digest, rctx->digsize);
 -
--	return aspeed_ahash_complete(hace_dev);
--}
+-	rctx->bufcnt = rctx->block_size + rctx->digsize;
+-	rctx->digcnt[0] = rctx->block_size + rctx->digsize;
 -
- /*
-  * Trigger hardware engines to do the math.
-  */
-@@ -340,51 +351,6 @@ static int aspeed_hace_ahash_trigger(struct aspeed_hace_dev *hace_dev,
- 	return -EINPROGRESS;
- }
- 
--static int aspeed_ahash_req_final(struct aspeed_hace_dev *hace_dev)
--{
--	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
--	struct ahash_request *req = hash_engine->req;
--	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
--	int rc = 0;
+-	aspeed_ahash_fill_padding(hace_dev, rctx);
+-	memcpy(rctx->digest, rctx->sha_iv, rctx->ivsize);
 -
--	AHASH_DBG(hace_dev, "\n");
--
--	rctx->bufcnt += aspeed_ahash_fill_padding(hace_dev, rctx,
--						  rctx->buffer + rctx->bufcnt);
--
--	rctx->digest_dma_addr = dma_map_single(hace_dev->dev,
--					       rctx->digest,
+-	rctx->digest_dma_addr = dma_map_single(hace_dev->dev, rctx->digest,
 -					       SHA512_DIGEST_SIZE,
 -					       DMA_BIDIRECTIONAL);
 -	if (dma_mapping_error(hace_dev->dev, rctx->digest_dma_addr)) {
@@ -376,8 +138,7 @@ index d31d7e1c9af2..d7c7f867d6e1 100644
 -		goto end;
 -	}
 -
--	rctx->buffer_dma_addr = dma_map_single(hace_dev->dev,
--					       rctx->buffer,
+-	rctx->buffer_dma_addr = dma_map_single(hace_dev->dev, rctx->buffer,
 -					       rctx->block_size * 2,
 -					       DMA_TO_DEVICE);
 -	if (dma_mapping_error(hace_dev->dev, rctx->buffer_dma_addr)) {
@@ -399,253 +160,393 @@ index d31d7e1c9af2..d7c7f867d6e1 100644
 -	return rc;
 -}
 -
- static int aspeed_ahash_update_resume_sg(struct aspeed_hace_dev *hace_dev)
+ static int aspeed_ahash_req_final(struct aspeed_hace_dev *hace_dev)
  {
  	struct aspeed_engine_hash *hash_engine = &hace_dev->hash_engine;
-@@ -396,23 +362,15 @@ static int aspeed_ahash_update_resume_sg(struct aspeed_hace_dev *hace_dev)
- 	dma_unmap_sg(hace_dev->dev, rctx->src_sg, rctx->src_nents,
- 		     DMA_TO_DEVICE);
+@@ -437,10 +372,6 @@ static int aspeed_ahash_req_final(struct aspeed_hace_dev *hace_dev)
+ 	hash_engine->src_length = rctx->bufcnt;
+ 	hash_engine->digest_dma = rctx->digest_dma_addr;
  
--	if (rctx->bufcnt != 0)
-+	if (rctx->flags & SHA_FLAGS_FINUP)
- 		dma_unmap_single(hace_dev->dev, rctx->buffer_dma_addr,
--				 rctx->block_size * 2,
--				 DMA_TO_DEVICE);
-+				 sizeof(rctx->buffer), DMA_TO_DEVICE);
- 
- 	dma_unmap_single(hace_dev->dev, rctx->digest_dma_addr,
- 			 SHA512_DIGEST_SIZE, DMA_BIDIRECTIONAL);
- 
--	scatterwalk_map_and_copy(rctx->buffer, rctx->src_sg, rctx->offset,
--				 rctx->total - rctx->offset, 0);
+-	if (rctx->flags & SHA_FLAGS_HMAC)
+-		return aspeed_hace_ahash_trigger(hace_dev,
+-						 aspeed_ahash_hmac_resume);
 -
--	rctx->bufcnt = rctx->total - rctx->offset;
- 	rctx->cmd &= ~HASH_CMD_HASH_SRC_SG_CTRL;
+ 	return aspeed_hace_ahash_trigger(hace_dev, aspeed_ahash_transfer);
  
--	if (rctx->flags & SHA_FLAGS_FINUP)
--		return aspeed_ahash_req_final(hace_dev);
--
- 	return aspeed_ahash_complete(hace_dev);
+ free_rctx_digest:
+@@ -609,16 +540,6 @@ static int aspeed_sham_update(struct ahash_request *req)
+ 	return aspeed_hace_hash_handle_queue(hace_dev, req);
  }
  
-@@ -427,9 +385,6 @@ static int aspeed_ahash_update_resume(struct aspeed_hace_dev *hace_dev)
- 	dma_unmap_single(hace_dev->dev, rctx->digest_dma_addr,
- 			 SHA512_DIGEST_SIZE, DMA_BIDIRECTIONAL);
- 
--	if (rctx->flags & SHA_FLAGS_FINUP)
--		memcpy(req->result, rctx->digest, rctx->digsize);
+-static int aspeed_sham_shash_digest(struct crypto_shash *tfm, u32 flags,
+-				    const u8 *data, unsigned int len, u8 *out)
+-{
+-	SHASH_DESC_ON_STACK(shash, tfm);
 -
- 	return aspeed_ahash_complete(hace_dev);
- }
- 
-@@ -468,21 +423,16 @@ static int aspeed_hace_hash_handle_queue(struct aspeed_hace_dev *hace_dev,
- static int aspeed_ahash_do_request(struct crypto_engine *engine, void *areq)
+-	shash->tfm = tfm;
+-
+-	return crypto_shash_digest(shash, data, len, out);
+-}
+-
+ static int aspeed_sham_final(struct ahash_request *req)
  {
- 	struct ahash_request *req = ahash_request_cast(areq);
--	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+ 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+@@ -664,7 +585,6 @@ static int aspeed_sham_init(struct ahash_request *req)
  	struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
  	struct aspeed_sham_ctx *tctx = crypto_ahash_ctx(tfm);
  	struct aspeed_hace_dev *hace_dev = tctx->hace_dev;
- 	struct aspeed_engine_hash *hash_engine;
--	int ret = 0;
-+	int ret;
+-	struct aspeed_sha_hmac_ctx *bctx = tctx->base;
  
- 	hash_engine = &hace_dev->hash_engine;
- 	hash_engine->flags |= CRYPTO_FLAGS_BUSY;
- 
--	if (rctx->op == SHA_OP_UPDATE)
--		ret = aspeed_ahash_req_update(hace_dev);
--	else if (rctx->op == SHA_OP_FINAL)
--		ret = aspeed_ahash_req_final(hace_dev);
--
-+	ret = aspeed_ahash_req_update(hace_dev);
- 	if (ret != -EINPROGRESS)
- 		return ret;
- 
-@@ -513,20 +463,6 @@ static int aspeed_ahash_do_one(struct crypto_engine *engine, void *areq)
- 	return aspeed_ahash_do_request(engine, areq);
- }
- 
--static int aspeed_sham_final(struct ahash_request *req)
--{
--	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
--	struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
--	struct aspeed_sham_ctx *tctx = crypto_ahash_ctx(tfm);
--	struct aspeed_hace_dev *hace_dev = tctx->hace_dev;
--
--	AHASH_DBG(hace_dev, "req->nbytes:%d, rctx->total:%d\n",
--		  req->nbytes, rctx->total);
--	rctx->op = SHA_OP_FINAL;
--
--	return aspeed_hace_hash_handle_queue(hace_dev, req);
--}
--
- static int aspeed_sham_update(struct ahash_request *req)
- {
- 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
-@@ -539,22 +475,7 @@ static int aspeed_sham_update(struct ahash_request *req)
- 	rctx->total = req->nbytes;
- 	rctx->src_sg = req->src;
- 	rctx->offset = 0;
--	rctx->src_nents = sg_nents(req->src);
--	rctx->op = SHA_OP_UPDATE;
--
--	rctx->digcnt[0] += rctx->total;
--	if (rctx->digcnt[0] < rctx->total)
--		rctx->digcnt[1]++;
--
--	if (rctx->bufcnt + rctx->total < rctx->block_size) {
--		scatterwalk_map_and_copy(rctx->buffer + rctx->bufcnt,
--					 rctx->src_sg, rctx->offset,
--					 rctx->total, 0);
--		rctx->bufcnt += rctx->total;
--
--		return rctx->flags & SHA_FLAGS_FINUP ?
--		       aspeed_sham_final(req) : 0;
--	}
-+	rctx->src_nents = sg_nents_for_len(req->src, req->nbytes);
- 
- 	return aspeed_hace_hash_handle_queue(hace_dev, req);
- }
-@@ -636,7 +557,6 @@ static int aspeed_sham_init(struct ahash_request *req)
- 		return -EINVAL;
- 	}
- 
--	rctx->bufcnt = 0;
- 	rctx->total = 0;
+ 	AHASH_DBG(hace_dev, "%s: digest size:%d\n",
+ 		  crypto_tfm_alg_name(&tfm->base),
+@@ -732,14 +652,6 @@ static int aspeed_sham_init(struct ahash_request *req)
  	rctx->digcnt[0] = 0;
  	rctx->digcnt[1] = 0;
-@@ -661,30 +581,11 @@ static int aspeed_sham_cra_init(struct crypto_ahash *tfm)
+ 
+-	/* HMAC init */
+-	if (tctx->flags & SHA_FLAGS_HMAC) {
+-		rctx->digcnt[0] = rctx->block_size;
+-		rctx->bufcnt = rctx->block_size;
+-		memcpy(rctx->buffer, bctx->ipad, rctx->block_size);
+-		rctx->flags |= SHA_FLAGS_HMAC;
+-	}
+-
  	return 0;
  }
  
--static int aspeed_sham_export(struct ahash_request *req, void *out)
+@@ -748,43 +660,6 @@ static int aspeed_sham_digest(struct ahash_request *req)
+ 	return aspeed_sham_init(req) ? : aspeed_sham_finup(req);
+ }
+ 
+-static int aspeed_sham_setkey(struct crypto_ahash *tfm, const u8 *key,
+-			      unsigned int keylen)
 -{
--	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+-	struct aspeed_sham_ctx *tctx = crypto_ahash_ctx(tfm);
+-	struct aspeed_hace_dev *hace_dev = tctx->hace_dev;
+-	struct aspeed_sha_hmac_ctx *bctx = tctx->base;
+-	int ds = crypto_shash_digestsize(bctx->shash);
+-	int bs = crypto_shash_blocksize(bctx->shash);
+-	int err = 0;
+-	int i;
 -
--	memcpy(out, rctx, sizeof(*rctx));
+-	AHASH_DBG(hace_dev, "%s: keylen:%d\n", crypto_tfm_alg_name(&tfm->base),
+-		  keylen);
 -
--	return 0;
+-	if (keylen > bs) {
+-		err = aspeed_sham_shash_digest(bctx->shash,
+-					       crypto_shash_get_flags(bctx->shash),
+-					       key, keylen, bctx->ipad);
+-		if (err)
+-			return err;
+-		keylen = ds;
+-
+-	} else {
+-		memcpy(bctx->ipad, key, keylen);
+-	}
+-
+-	memset(bctx->ipad + keylen, 0, bs - keylen);
+-	memcpy(bctx->opad, bctx->ipad, bs);
+-
+-	for (i = 0; i < bs; i++) {
+-		bctx->ipad[i] ^= HMAC_IPAD_VALUE;
+-		bctx->opad[i] ^= HMAC_OPAD_VALUE;
+-	}
+-
+-	return err;
 -}
 -
--static int aspeed_sham_import(struct ahash_request *req, const void *in)
+ static int aspeed_sham_cra_init(struct crypto_tfm *tfm)
+ {
+ 	struct ahash_alg *alg = __crypto_ahash_alg(tfm->__crt_alg);
+@@ -793,43 +668,13 @@ static int aspeed_sham_cra_init(struct crypto_tfm *tfm)
+ 
+ 	ast_alg = container_of(alg, struct aspeed_hace_alg, alg.ahash.base);
+ 	tctx->hace_dev = ast_alg->hace_dev;
+-	tctx->flags = 0;
+ 
+ 	crypto_ahash_set_reqsize(__crypto_ahash_cast(tfm),
+ 				 sizeof(struct aspeed_sham_reqctx));
+ 
+-	if (ast_alg->alg_base) {
+-		/* hmac related */
+-		struct aspeed_sha_hmac_ctx *bctx = tctx->base;
+-
+-		tctx->flags |= SHA_FLAGS_HMAC;
+-		bctx->shash = crypto_alloc_shash(ast_alg->alg_base, 0,
+-						 CRYPTO_ALG_NEED_FALLBACK);
+-		if (IS_ERR(bctx->shash)) {
+-			dev_warn(ast_alg->hace_dev->dev,
+-				 "base driver '%s' could not be loaded.\n",
+-				 ast_alg->alg_base);
+-			return PTR_ERR(bctx->shash);
+-		}
+-	}
+-
+ 	return 0;
+ }
+ 
+-static void aspeed_sham_cra_exit(struct crypto_tfm *tfm)
 -{
--	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+-	struct aspeed_sham_ctx *tctx = crypto_tfm_ctx(tfm);
+-	struct aspeed_hace_dev *hace_dev = tctx->hace_dev;
 -
--	memcpy(rctx, in, sizeof(*rctx));
+-	AHASH_DBG(hace_dev, "%s\n", crypto_tfm_alg_name(tfm));
 -
--	return 0;
+-	if (tctx->flags & SHA_FLAGS_HMAC) {
+-		struct aspeed_sha_hmac_ctx *bctx = tctx->base;
+-
+-		crypto_free_shash(bctx->shash);
+-	}
 -}
 -
- static struct aspeed_hace_alg aspeed_ahash_algs[] = {
- 	{
- 		.alg.ahash.base = {
- 			.init	= aspeed_sham_init,
- 			.update	= aspeed_sham_update,
+ static int aspeed_sham_export(struct ahash_request *req, void *out)
+ {
+ 	struct aspeed_sham_reqctx *rctx = ahash_request_ctx(req);
+@@ -873,7 +718,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
+ 					.cra_alignmask		= 0,
+ 					.cra_module		= THIS_MODULE,
+ 					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+ 				}
+ 			}
+ 		},
+@@ -905,7 +749,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
+ 					.cra_alignmask		= 0,
+ 					.cra_module		= THIS_MODULE,
+ 					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+ 				}
+ 			}
+ 		},
+@@ -937,112 +780,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
+ 					.cra_alignmask		= 0,
+ 					.cra_module		= THIS_MODULE,
+ 					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+-				}
+-			}
+-		},
+-		.alg.ahash.op = {
+-			.do_one_request = aspeed_ahash_do_one,
+-		},
+-	},
+-	{
+-		.alg_base = "sha1",
+-		.alg.ahash.base = {
+-			.init	= aspeed_sham_init,
+-			.update	= aspeed_sham_update,
 -			.final	= aspeed_sham_final,
- 			.finup	= aspeed_sham_finup,
- 			.digest	= aspeed_sham_digest,
- 			.export	= aspeed_sham_export,
-@@ -699,6 +600,7 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
- 					.cra_priority		= 300,
- 					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
- 								  CRYPTO_ALG_ASYNC |
-+								  CRYPTO_AHASH_ALG_BLOCK_ONLY |
- 								  CRYPTO_ALG_KERN_DRIVER_ONLY,
- 					.cra_blocksize		= SHA1_BLOCK_SIZE,
- 					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx),
-@@ -716,7 +618,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
- 		.alg.ahash.base = {
- 			.init	= aspeed_sham_init,
- 			.update	= aspeed_sham_update,
+-			.finup	= aspeed_sham_finup,
+-			.digest	= aspeed_sham_digest,
+-			.setkey	= aspeed_sham_setkey,
+-			.export	= aspeed_sham_export,
+-			.import	= aspeed_sham_import,
+-			.halg = {
+-				.digestsize = SHA1_DIGEST_SIZE,
+-				.statesize = sizeof(struct aspeed_sham_reqctx),
+-				.base = {
+-					.cra_name		= "hmac(sha1)",
+-					.cra_driver_name	= "aspeed-hmac-sha1",
+-					.cra_priority		= 300,
+-					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
+-								  CRYPTO_ALG_ASYNC |
+-								  CRYPTO_ALG_KERN_DRIVER_ONLY,
+-					.cra_blocksize		= SHA1_BLOCK_SIZE,
+-					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx) +
+-								sizeof(struct aspeed_sha_hmac_ctx),
+-					.cra_alignmask		= 0,
+-					.cra_module		= THIS_MODULE,
+-					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+-				}
+-			}
+-		},
+-		.alg.ahash.op = {
+-			.do_one_request = aspeed_ahash_do_one,
+-		},
+-	},
+-	{
+-		.alg_base = "sha224",
+-		.alg.ahash.base = {
+-			.init	= aspeed_sham_init,
+-			.update	= aspeed_sham_update,
 -			.final	= aspeed_sham_final,
- 			.finup	= aspeed_sham_finup,
- 			.digest	= aspeed_sham_digest,
- 			.export	= aspeed_sham_export,
-@@ -731,6 +632,7 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
- 					.cra_priority		= 300,
- 					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
- 								  CRYPTO_ALG_ASYNC |
-+								  CRYPTO_AHASH_ALG_BLOCK_ONLY |
- 								  CRYPTO_ALG_KERN_DRIVER_ONLY,
- 					.cra_blocksize		= SHA256_BLOCK_SIZE,
- 					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx),
-@@ -748,7 +650,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
- 		.alg.ahash.base = {
- 			.init	= aspeed_sham_init,
- 			.update	= aspeed_sham_update,
+-			.finup	= aspeed_sham_finup,
+-			.digest	= aspeed_sham_digest,
+-			.setkey	= aspeed_sham_setkey,
+-			.export	= aspeed_sham_export,
+-			.import	= aspeed_sham_import,
+-			.halg = {
+-				.digestsize = SHA224_DIGEST_SIZE,
+-				.statesize = sizeof(struct aspeed_sham_reqctx),
+-				.base = {
+-					.cra_name		= "hmac(sha224)",
+-					.cra_driver_name	= "aspeed-hmac-sha224",
+-					.cra_priority		= 300,
+-					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
+-								  CRYPTO_ALG_ASYNC |
+-								  CRYPTO_ALG_KERN_DRIVER_ONLY,
+-					.cra_blocksize		= SHA224_BLOCK_SIZE,
+-					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx) +
+-								sizeof(struct aspeed_sha_hmac_ctx),
+-					.cra_alignmask		= 0,
+-					.cra_module		= THIS_MODULE,
+-					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+-				}
+-			}
+-		},
+-		.alg.ahash.op = {
+-			.do_one_request = aspeed_ahash_do_one,
+-		},
+-	},
+-	{
+-		.alg_base = "sha256",
+-		.alg.ahash.base = {
+-			.init	= aspeed_sham_init,
+-			.update	= aspeed_sham_update,
 -			.final	= aspeed_sham_final,
- 			.finup	= aspeed_sham_finup,
- 			.digest	= aspeed_sham_digest,
- 			.export	= aspeed_sham_export,
-@@ -763,6 +664,7 @@ static struct aspeed_hace_alg aspeed_ahash_algs[] = {
- 					.cra_priority		= 300,
- 					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
- 								  CRYPTO_ALG_ASYNC |
-+								  CRYPTO_AHASH_ALG_BLOCK_ONLY |
- 								  CRYPTO_ALG_KERN_DRIVER_ONLY,
- 					.cra_blocksize		= SHA224_BLOCK_SIZE,
- 					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx),
-@@ -783,7 +685,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs_g6[] = {
- 		.alg.ahash.base = {
- 			.init	= aspeed_sham_init,
- 			.update	= aspeed_sham_update,
+-			.finup	= aspeed_sham_finup,
+-			.digest	= aspeed_sham_digest,
+-			.setkey	= aspeed_sham_setkey,
+-			.export	= aspeed_sham_export,
+-			.import	= aspeed_sham_import,
+-			.halg = {
+-				.digestsize = SHA256_DIGEST_SIZE,
+-				.statesize = sizeof(struct aspeed_sham_reqctx),
+-				.base = {
+-					.cra_name		= "hmac(sha256)",
+-					.cra_driver_name	= "aspeed-hmac-sha256",
+-					.cra_priority		= 300,
+-					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
+-								  CRYPTO_ALG_ASYNC |
+-								  CRYPTO_ALG_KERN_DRIVER_ONLY,
+-					.cra_blocksize		= SHA256_BLOCK_SIZE,
+-					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx) +
+-								sizeof(struct aspeed_sha_hmac_ctx),
+-					.cra_alignmask		= 0,
+-					.cra_module		= THIS_MODULE,
+-					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+ 				}
+ 			}
+ 		},
+@@ -1077,7 +814,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs_g6[] = {
+ 					.cra_alignmask		= 0,
+ 					.cra_module		= THIS_MODULE,
+ 					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+ 				}
+ 			}
+ 		},
+@@ -1109,77 +845,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs_g6[] = {
+ 					.cra_alignmask		= 0,
+ 					.cra_module		= THIS_MODULE,
+ 					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+-				}
+-			}
+-		},
+-		.alg.ahash.op = {
+-			.do_one_request = aspeed_ahash_do_one,
+-		},
+-	},
+-	{
+-		.alg_base = "sha384",
+-		.alg.ahash.base = {
+-			.init	= aspeed_sham_init,
+-			.update	= aspeed_sham_update,
 -			.final	= aspeed_sham_final,
- 			.finup	= aspeed_sham_finup,
- 			.digest	= aspeed_sham_digest,
- 			.export	= aspeed_sham_export,
-@@ -798,6 +699,7 @@ static struct aspeed_hace_alg aspeed_ahash_algs_g6[] = {
- 					.cra_priority		= 300,
- 					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
- 								  CRYPTO_ALG_ASYNC |
-+								  CRYPTO_AHASH_ALG_BLOCK_ONLY |
- 								  CRYPTO_ALG_KERN_DRIVER_ONLY,
- 					.cra_blocksize		= SHA384_BLOCK_SIZE,
- 					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx),
-@@ -815,7 +717,6 @@ static struct aspeed_hace_alg aspeed_ahash_algs_g6[] = {
- 		.alg.ahash.base = {
- 			.init	= aspeed_sham_init,
- 			.update	= aspeed_sham_update,
+-			.finup	= aspeed_sham_finup,
+-			.digest	= aspeed_sham_digest,
+-			.setkey	= aspeed_sham_setkey,
+-			.export	= aspeed_sham_export,
+-			.import	= aspeed_sham_import,
+-			.halg = {
+-				.digestsize = SHA384_DIGEST_SIZE,
+-				.statesize = sizeof(struct aspeed_sham_reqctx),
+-				.base = {
+-					.cra_name		= "hmac(sha384)",
+-					.cra_driver_name	= "aspeed-hmac-sha384",
+-					.cra_priority		= 300,
+-					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
+-								  CRYPTO_ALG_ASYNC |
+-								  CRYPTO_ALG_KERN_DRIVER_ONLY,
+-					.cra_blocksize		= SHA384_BLOCK_SIZE,
+-					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx) +
+-								sizeof(struct aspeed_sha_hmac_ctx),
+-					.cra_alignmask		= 0,
+-					.cra_module		= THIS_MODULE,
+-					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+-				}
+-			}
+-		},
+-		.alg.ahash.op = {
+-			.do_one_request = aspeed_ahash_do_one,
+-		},
+-	},
+-	{
+-		.alg_base = "sha512",
+-		.alg.ahash.base = {
+-			.init	= aspeed_sham_init,
+-			.update	= aspeed_sham_update,
 -			.final	= aspeed_sham_final,
- 			.finup	= aspeed_sham_finup,
- 			.digest	= aspeed_sham_digest,
- 			.export	= aspeed_sham_export,
-@@ -830,6 +731,7 @@ static struct aspeed_hace_alg aspeed_ahash_algs_g6[] = {
- 					.cra_priority		= 300,
- 					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
- 								  CRYPTO_ALG_ASYNC |
-+								  CRYPTO_AHASH_ALG_BLOCK_ONLY |
- 								  CRYPTO_ALG_KERN_DRIVER_ONLY,
- 					.cra_blocksize		= SHA512_BLOCK_SIZE,
- 					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx),
+-			.finup	= aspeed_sham_finup,
+-			.digest	= aspeed_sham_digest,
+-			.setkey	= aspeed_sham_setkey,
+-			.export	= aspeed_sham_export,
+-			.import	= aspeed_sham_import,
+-			.halg = {
+-				.digestsize = SHA512_DIGEST_SIZE,
+-				.statesize = sizeof(struct aspeed_sham_reqctx),
+-				.base = {
+-					.cra_name		= "hmac(sha512)",
+-					.cra_driver_name	= "aspeed-hmac-sha512",
+-					.cra_priority		= 300,
+-					.cra_flags		= CRYPTO_ALG_TYPE_AHASH |
+-								  CRYPTO_ALG_ASYNC |
+-								  CRYPTO_ALG_KERN_DRIVER_ONLY,
+-					.cra_blocksize		= SHA512_BLOCK_SIZE,
+-					.cra_ctxsize		= sizeof(struct aspeed_sham_ctx) +
+-								sizeof(struct aspeed_sha_hmac_ctx),
+-					.cra_alignmask		= 0,
+-					.cra_module		= THIS_MODULE,
+-					.cra_init		= aspeed_sham_cra_init,
+-					.cra_exit		= aspeed_sham_cra_exit,
+ 				}
+ 			}
+ 		},
 diff --git a/drivers/crypto/aspeed/aspeed-hace.h b/drivers/crypto/aspeed/aspeed-hace.h
-index ad39954251dd..b1d07730d543 100644
+index 68f70e01fccb..7ff1798bc198 100644
 --- a/drivers/crypto/aspeed/aspeed-hace.h
 +++ b/drivers/crypto/aspeed/aspeed-hace.h
-@@ -172,7 +172,6 @@ struct aspeed_sham_reqctx {
- 	u64			digcnt[2];
+@@ -119,7 +119,6 @@
+ #define SHA_FLAGS_SHA512		BIT(4)
+ #define SHA_FLAGS_SHA512_224		BIT(5)
+ #define SHA_FLAGS_SHA512_256		BIT(6)
+-#define SHA_FLAGS_HMAC			BIT(8)
+ #define SHA_FLAGS_FINUP			BIT(9)
+ #define SHA_FLAGS_MASK			(0xff)
  
- 	unsigned long		flags;		/* final update flag should no use*/
--	unsigned long		op;		/* final or update */
- 	u32			cmd;		/* trigger cmd */
- 
- 	/* walk state */
-@@ -185,14 +184,11 @@ struct aspeed_sham_reqctx {
- 	size_t			block_size;
- 	size_t			ivsize;
- 
--	/* remain data buffer */
- 	dma_addr_t		buffer_dma_addr;
--	size_t			bufcnt;		/* buffer counter */
--
- 	dma_addr_t		digest_dma_addr;
- 
- 	/* This is DMA too but read-only for hardware. */
--	u8			buffer[SHA512_BLOCK_SIZE * 2];
-+	u8			buffer[SHA512_BLOCK_SIZE + 16];
+@@ -161,17 +160,8 @@ struct aspeed_engine_hash {
+ 	aspeed_hace_fn_t		dma_prepare;
  };
  
- struct aspeed_engine_crypto {
+-struct aspeed_sha_hmac_ctx {
+-	struct crypto_shash *shash;
+-	u8 ipad[SHA512_BLOCK_SIZE];
+-	u8 opad[SHA512_BLOCK_SIZE];
+-};
+-
+ struct aspeed_sham_ctx {
+ 	struct aspeed_hace_dev		*hace_dev;
+-	unsigned long			flags;	/* hmac flag */
+-
+-	struct aspeed_sha_hmac_ctx	base[];
+ };
+ 
+ struct aspeed_sham_reqctx {
 -- 
 2.39.5
 
