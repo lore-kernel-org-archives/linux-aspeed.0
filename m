@@ -1,65 +1,52 @@
-Return-Path: <linux-aspeed+bounces-1223-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1224-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E0EAC2D0CD
-	for <linux-aspeed@archiver.kernel.org>; Tue, 20 May 2025 00:23:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09441C3DA6D
+	for <linux-aspeed@archiver.kernel.org>; Tue, 20 May 2025 11:06:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1ZzW4ycFz30Wh;
-	Tue, 20 May 2025 10:23:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747700631;
-	cv=none; b=UAIx8lk3jEZFNBud9MmmsxMQaAMqzjzLPkiYpJVHJkYaVgodKu7g4iYqsMFNeekEDLGKeIBAFnImCmxV7Y2ib65m16M4xZtP5dwTZ71mW1WeE60qHhnmhMCaX0K5qXTFXoEDvJV8vpqcUhp71s94dImCT8dPQt9FtQVKQhL4z5cW7j8jqhCV4yRsIi8Kr40kIdekmwRS1y7dZi2HW2lUqno6wXpjxoNaz1uk/TwpNKDd3onUg5jF1wNlZV5HF3a1DQiUd+kOAFhb+9MHYnKQ8CFAKe44JQ5VB18nyjm9RIGieG2b7UFTHqt4hACwLh3sGm70sTYZt9fGatGhLMfCDw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sDg4lgCz3bmN;
+	Tue, 20 May 2025 21:06:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747733768;
+	cv=none; b=jSY01onJNyVwVPwynRFj+cJyu8I/bxJmPkFCa1ZBZjR5+KTnrq0iaFSyDxNhiNKpFlgtyLEJMOKoyY1Lh7mOcX/DX1WZe8ayX9CmrTmPwiLCQlZLKHY5q0KCiEfxea41o7MJae6svRRaZ6nFQ7qAfYuYTUr6yVn8xCCmeK2CO7LmRjq7r5JCYEhpf3ztF0eAXgzPJ5bM9ewDBqdRBSzBt9b5VnW2CJlB/uNZs5kIJ6zQXqyal4Ko3Ti33advftNCQju4fDO15c0KEMvDqs2/l+jUWlyBS51QZ/5QW+YSNAxOcr2ZSnWDT+RfRG1A9WXTx0Nc1wcZ1y11h6FGuNI2cg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747700631; c=relaxed/relaxed;
-	bh=jVbDrHX4p3eETAYYbC8E/B38AzMWjZPxZbviRuREGuw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=RL5l7qzLR/rxPBf+hQotcXWJekFmQLu0rkiozPLYcTAzy8gOqtd1C64EhSpEnG1O7F9g49ew+CCDV0HSHsbxceSjfnaeJ9M/UEuc4EZBrXB/17ayCHw4OFWrTJkqiNIDkhT2LLRdZH4jddTfxqvGawU8eTwvHvxH+76pl4x7lukubZTpL9C4nceO+noSrQMLVf1OAGBtJlNySj2SIujhv/bsuBVylP0iA2HTJC7CyElhelzyhrATLwfoHqivhRa1nG4K4oJW+2+WL2QOlISJXjyMRU7HI1fy5PbhGTiWkK7VPNFapi1HCEjauRpvr2YBupGjQj/rsOrl8Wq/nPOU5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=HA7AscUC; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=HA7AscUC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1747733768; c=relaxed/relaxed;
+	bh=60ePIMFtFNnTRq6a6scvjalpuWAEeRNc5/hW1qAcUmc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=K81M6AzkvqbB1ziyyEfw4iGzhYCVuttAgTwPHpvIxlkhHk694XwS8F/3d7+dRPiMlyop8g+iBGf1wvMpd1fGp2UwTL4skvZez6+LjCeK5ORNcMZTq5cxvkV9gETsmrxK4fd/iavJcmOP/g4J+Wv+FoASF7rIUOkt+TZpGPnnpbuAEsOIVXYn+GoGgEAU079v1RXHQ/7w1QzsMgnbgPZU7ei+DafP3PRyCbddVk79q8PoP3uhqrJRx3S47boAvGzM7HISUbPM3cZFZ0CX7+L/xklvXQAALJaJmi8UWyQXo81WECCS4YIB4dz3mHUqrCR7e6b8EQJ2eKiIXuQSLFQeFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1ZzV4wZ8z30WD
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 20 May 2025 10:23:50 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1747700627;
-	bh=jVbDrHX4p3eETAYYbC8E/B38AzMWjZPxZbviRuREGuw=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=HA7AscUCU63hu4pNCk7Z8VKwggRSY1X/g/VPH5PfBXPSY/ysZ6+TnYOGje7OE88wH
-	 jIy20LQ6Gb6hzjna2EODuadUcLPwDYdpKPOM9EDz+dXCvoN2sy98vGNnxSlnbXHQjp
-	 w+FSvaUEbpeVomXLiupz0jt4lRtSL9sgFtL2pdiJQzJ7j5VwBjW1BaR9b/5dy4lp8K
-	 BjH+DM8fBKGKw5qPdTjHNuYZavHiiGBfmvjRL9GOJ5PO4aKQFNrdr/SHVoXHg+F8yR
-	 rQNZuvPlpre4LzYKQWnIR320KkLwsmwodYltopC+jqqHA0jGMVpuY1OfXTLD/9xGQ/
-	 PEFyd/Wuo0gEA==
-Received: from [192.168.68.112] (unknown [180.150.112.166])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 1291A640A1;
-	Tue, 20 May 2025 08:23:45 +0800 (AWST)
-Message-ID: <ac008c13719e2c91d7d377cd7a6151393934d854.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2] arm: dts: aspeed: yosemite4: add gpio name for uart
- mux sel
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Marshall Zhan <marshall.zhan.wiwynn@gmail.com>, Delphine CC Chiu
-	 <delphine_cc_chiu@wiwynn.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, patrick@stwcx.xyz, Rob Herring
- <robh@kernel.org>,  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>
-Date: Tue, 20 May 2025 09:53:44 +0930
-In-Reply-To: <7a5f60e9-376c-440e-a369-5c8d5e10c72a@kernel.org>
-References: <20250519024850.2894895-1-delphine_cc_chiu@wiwynn.com>
-	 <7a5f60e9-376c-440e-a369-5c8d5e10c72a@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1qDl28t3z2yrN
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 20 May 2025 19:36:07 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 20 May
+ 2025 17:28:49 +0800
+Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 20 May 2025 17:28:49 +0800
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+To: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>
+CC: <linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<andrew+netdev@lunn.ch>, <davem@davemloft.net>, <edumazet@google.com>,
+	<kuba@kernel.org>, <pabeni@redhat.com>, <robh@kernel.org>,
+	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joel@jms.id.au>,
+	<andrew@codeconstruct.com.au>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
+	<p.zabel@pengutronix.de>, <BMC-SW@aspeedtech.com>
+Subject: [net 2/4] dt-bindings: clock: ast2600: Add reset definitions for MAC1 and MAC2
+Date: Tue, 20 May 2025 17:28:46 +0800
+Message-ID: <20250520092848.531070-3-jacky_chou@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250520092848.531070-1-jacky_chou@aspeedtech.com>
+References: <20250520092848.531070-1-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,31 +60,33 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Hi Marshall,
+Add ASPEED_RESET_MAC1 and ASPEED_RESET_MAC2 reset definitions to
+the ast2600-clock binding header. These are required for proper
+reset control of the MAC1 and MAC2 ethernet controllers on the
+AST2600 SoC.
 
-On Mon, 2025-05-19 at 08:10 +0200, Krzysztof Kozlowski wrote:
-> On 19/05/2025 04:48, Delphine CC Chiu wrote:
-> > WIWYNN PROPRIETARY
-> > This email (and any attachments) contains proprietary or confidential i=
-nformation and is for the sole use of its intended recipient. Any unauthori=
-zed review, use, copying or distribution of this email or the content of th=
-is email is strictly prohibited. If you are not the intended recipient, ple=
-ase notify the sender and delete this email immediately.
->=20
->=20
-> We cannot test proprietary patches. Start working with the community in
-> the open.
+Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+---
+ include/dt-bindings/clock/ast2600-clock.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-The kernel.org mailing list docs elaborate a little on Krzysztof's
-point:
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 7ae96c7bd72f..f60fff261130 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -122,6 +122,8 @@
+ #define ASPEED_RESET_PCIE_DEV_OEN	20
+ #define ASPEED_RESET_PCIE_RC_O		19
+ #define ASPEED_RESET_PCIE_RC_OEN	18
++#define ASPEED_RESET_MAC2		12
++#define ASPEED_RESET_MAC1		11
+ #define ASPEED_RESET_PCI_DP		5
+ #define ASPEED_RESET_HACE		4
+ #define ASPEED_RESET_AHB		1
+-- 
+2.34.1
 
-https://subspace.kernel.org/etiquette.html#do-not-include-confidentiality-d=
-isclaimers
-
-(It's worth reading the rest of the page too).
-
-Cheers,
-
-Andrew
 
