@@ -1,47 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1229-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1230-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CF85C3DA6D
-	for <linux-aspeed@archiver.kernel.org>; Tue, 20 May 2025 14:30:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91530C3ABDD
+	for <linux-aspeed@archiver.kernel.org>; Tue, 20 May 2025 15:47:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1xmV4nmQz3bbm;
-	Wed, 21 May 2025 00:30:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747751434;
-	cv=none; b=UwAGoCFgal9eU0YeUeOyesetdGFF/TToiclmF2Ul9zIX/j8+N0Zx/lippcEy/G8L/izhRst0ozZLApOZVVMr0oCzVP0ENHYRkiZDrQLnbNzxrc6c5AqEDxI/ARXBKD0ZwBLoR2SVL1If6Re3Xgk0NNcs4Pn9W1Cg9tg3Q3xmoBev3dvcTo/PkpasKahmKnLex8gfHpmUQ4XVI5C4HswSrYkpEQa7D/Wq/gncJHyI2WX0Uxe9hvLdhfBia76BiRyuNWR1RQsUhzaUuYaf0iIU/RlAackeq/Rwm1eaX8B2J4X74S575x2gIhbMo1cvxbh6gU2/Cp7erN1Vgq9TLNUl9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1zTb0G3wz2yDM;
+	Wed, 21 May 2025 01:47:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747756066;
+	cv=none; b=itIbuAu0pSdI24QL/6cZG4lSbtTAQiJ9PQlRiSZcJYuSjgJvXFw6lU21Rljd6xGy2LOW+fuBm3EAVa/Cuv9/zbNdCCUD0Zm0/yav3cBxLOR8JsBHZEytsovYZ1Wf5nMweBtcdyxdLOHEz/a4U8ON/OD0LesY0gzLLE7V/wXQ16jhbq+cWCdJ3hJJgKc4D6msTpX6diNQViEyl72T174z7H+4fGoWm/b9RHDjoLBysfKwRZVVnuuWKVv2KlJJPonlB3tl0LAkAL38SxnV70LUWc5A3P079IKTSEK2TIs2oGw+kBaKb5qJ52o/IH7PBqOnZlKnajCvcyk8bJiQ1iVfwQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747751434; c=relaxed/relaxed;
-	bh=60oYgzAqshuD6yLOKdWI/2Zup0hrKz6aeKRaimHYHAU=;
+	t=1747756066; c=relaxed/relaxed;
+	bh=58gDZVLa6Ht0FSHmZITUm7NmcPXfc1FuPcB86sHdzp0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=bNAFdnbsEpujHJRPkKv8G1fzIapTuOs+zH8flD55D9lE9kPNXevy5HlwcnGS8+bAaG9zuGJN4mhSir+9uqQ/eG3U0uFsqZ5I7T0ZUbaqZ9gdwUQkWd7620UPjycdk4fkGeVl8CveVouuXcsyrzuEgVVDje3aq4mkgRamVyNhNgI9hz2HrnJRTwS1N+PJCaRM8BQ1QxVtK18pIE9bjkFFb9fn1RFWeM+iuqvOK2GCUIF88twp4rh5lt8cJD1GSxtT5TrxA9NV7Bn2SgVuSPzSNxA+IJfxQZvm4HlP+K0A6pnvbOozI8N77wTY3U9nZUgrF3hrS2w6g4pERyiDbC8i6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=b1+f6y/q; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=UqRh7s+XuvRFBfPGSCOTG114pAyH+z5TQ3f0IiQ+e2jCpYoTLdbvkrlSCTMCiLm4t+qgGh+cDT5Y4NoOAM8xSnl9WWyAXA8pEMMgTkncdy6KdZaSS9t185P9x/pIz7dYZXampo/XOeIrIA074RyDH3MPLtbiBrHE6xqUAm4nFXZ15kGcf4hFlz26V9+/Rxwt+z6YeRI4jatCX23j4XD3g4VEnaS8N1bkhJrSHpgNlcOcV34QCKgmqcDs9PWSDD0TW/msYMJQvl4LCO3RY/lLkd336zzAqcEOipxVVCDy7IZn5+xnLlTGaDitD5dWeZzKD3vHyyziu0Xu4yKOTenIRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hDHIr2AL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=b1+f6y/q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hDHIr2AL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1xmS5Fhfz2yr8
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 21 May 2025 00:30:31 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=60oYgzAqshuD6yLOKdWI/2Zup0hrKz6aeKRaimHYHAU=; b=b1+f6y/qH2058NF2o/xrWpwO2L
-	8MoTZG0nKc3MTgGQfRLBEdPRafkGWEK3ijxCQ9bcpbumoeiNLv86XQr9TWXw/ZqLfeeD6OQBg83P1
-	CaOiweBnQ5dCVPAv5On3ryybfKlhWBMlvWfjvQ0OfkUjmAvZBizf7FXaqJj3BJ71oYsM=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1uHNz0-00D8Jc-Gt; Tue, 20 May 2025 16:30:18 +0200
-Date: Tue, 20 May 2025 16:30:18 +0200
-From: Andrew Lunn <andrew@lunn.ch>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1zTY6yskz2xrb
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 21 May 2025 01:47:45 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 809B461126;
+	Tue, 20 May 2025 15:47:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6480CC4CEE9;
+	Tue, 20 May 2025 15:47:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747756063;
+	bh=Kx5G6jb5VVr3oqqGbr04JrYV0NFaNI05NayVcBLr/w4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hDHIr2ALlh8Morhko7v8apJ8Wf7asZINSwivtyHAkUn9ZrbEKdsayhHxZXZh4H+4R
+	 Z7qxw5zKWSJGNISJvIzArsoDxoXB2buC5LyPKDBNpPJr7O2MZUxOaxZaw+kpW7d5Cb
+	 qj48E+LAch77GIp6/cqnk13gPn3LIDDyS5QDyRcvM/Tdh513xGXroq6pmuAdjnP1Qe
+	 cfwOsBrw6lNPMb7+gCZT+NDIHqIzRroJQfireRm6trozaM+8Xjv8IZCPfNyS/v4gZ4
+	 SyDv93Q91Kh/KVnQ6AC1RwUzsRNMvruQ8QL8VizeKjtyO2s21zuvV0DPGgN3I575J1
+	 tPbBN43Jku3qA==
+Date: Tue, 20 May 2025 16:47:37 +0100
+From: Conor Dooley <conor@kernel.org>
 To: Jacky Chou <jacky_chou@aspeedtech.com>
 Cc: netdev@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
@@ -51,9 +55,10 @@ Cc: netdev@vger.kernel.org, devicetree@vger.kernel.org,
 	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
 	andrew@codeconstruct.com.au, mturquette@baylibre.com,
 	sboyd@kernel.org, p.zabel@pengutronix.de, BMC-SW@aspeedtech.com
-Subject: Re: [net 0/4] net: ftgmac100: Add SoC reset support for RMII mode
-Message-ID: <cfb44996-ad63-43cd-bbc5-07f70939d019@lunn.ch>
+Subject: Re: [net 1/4] dt-bindings: net: ftgmac100: Add resets property
+Message-ID: <20250520-creature-strenuous-e8b1f36ab82d@spud>
 References: <20250520092848.531070-1-jacky_chou@aspeedtech.com>
+ <20250520092848.531070-2-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,22 +72,61 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="vqRuqlVkPNRifbyp"
+Content-Disposition: inline
+In-Reply-To: <20250520092848.531070-2-jacky_chou@aspeedtech.com>
+
+
+--vqRuqlVkPNRifbyp
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250520092848.531070-1-jacky_chou@aspeedtech.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 20, 2025 at 05:28:44PM +0800, Jacky Chou wrote:
-> This patch series adds support for an optional reset line to the
-> ftgmac100 ethernet controller, as used on Aspeed SoCs. On these SoCs,
-> the internal MAC reset is not sufficient to reset the RMII interface.
-> By providing a SoC-level reset via the device tree "resets" property,
-> the driver can properly reset both the MAC and RMII logic, ensuring
-> correct operation in RMII mode.
+On Tue, May 20, 2025 at 05:28:45PM +0800, Jacky Chou wrote:
+> Add optional resets property for Aspeed SoCs to reset the MAC and
+> RGMII/RMII.
+>=20
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> ---
+>  Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml | 5 +++++
+>  1 file changed, 5 insertions(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml=
+ b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
+> index 55d6a8379025..f7af2cd432d3 100644
+> --- a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
+> +++ b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
+> @@ -35,6 +35,11 @@ properties:
+>        - description: MAC IP clock
+>        - description: RMII RCLK gate for AST2500/2600
+> =20
+> +  resets:
+> +    maxItems: 1
+> +    description:
+> +      Optional reset control for the MAC controller (e.g. Aspeed SoCs)
 
-What tree is this for? You have net in the subject, but no Fixes:
-tags?
+If only aspeed socs support this, then please restrict to just your
+products.
 
-https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html
+> +
+>    clock-names:
+>      minItems: 1
+>      items:
+> --=20
+> 2.34.1
+>=20
 
-	Andrew
+--vqRuqlVkPNRifbyp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaCykGAAKCRB4tDGHoIJi
+0ldUAQCs0SeY54j9yeQV50Qs6FaOw51w5rsiRnuKhNfqKgBERAD/bi4/ULFOC+eK
+hIqwX2TOHjPWTh/uDyZS4qnyKuCRnAs=
+=5R4U
+-----END PGP SIGNATURE-----
+
+--vqRuqlVkPNRifbyp--
 
