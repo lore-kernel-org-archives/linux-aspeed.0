@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1236-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1237-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E396C54FB3
-	for <linux-aspeed@archiver.kernel.org>; Mon, 26 May 2025 12:50:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D641AC5AD49
+	for <linux-aspeed@archiver.kernel.org>; Mon, 26 May 2025 12:51:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b5bGK2htPz2xTh;
-	Mon, 26 May 2025 22:50:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748263833;
-	cv=none; b=JJccHPN7EBeJ42p5Ta50yIgrzVTSuH3BzXib3+VVKH2d3C1r0WaNqURkm6EKGSgP9rvReSo9n3e5tWoJNgG14smdzMMiglDDCwBgZ0qRzAMSFv68SPXyrSnAAGpyAKLs37LxihWucJSSBe0bzrdpTOYLB1Mu3lldqAG/CnGNveWh4xq0nyifCM0q1oZr+/PzhVjLwcJK6vEtlLDXh89UAiY04JTviO+tueNYmzTdn+1IqH68jlpvoXFpwVjHXqojsHM9u73G3jQWsL2UpGKNmCO4njQydF7fQZS4m/7o/HaWBP4/qyupO6wdvXGi0S2/jmnkMTzEe+T8NIgFQL1c5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b5bH82sCYz2xTh;
+	Mon, 26 May 2025 22:51:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748263876;
+	cv=none; b=Oex50vJhHZaXxWtNNs31Rpdeym5ZJC6ZcVcRu6wv6tTB2zWC7lMhWA0UG94MyBe6OpTZlJGsNmu7jE+jqj2nwwLqaSF29phmEJuO8+VHzmMM/cFjljR1L+ZR94UjREQbXL0MjS5KufWRUskt2Bscqw241NqLy62NyKf0GeWWYiT6VgfBItx9U1eO9DGtAzUXydP9eqPdMLZ674j2O9JPmcl5K0lyjOp7jS62lR0qTQyKB+U0nGXqYiHl6zeGalMkUSf/iAFj/7J9EYO6JdzsprP69tRUTIGxtOrx4iBlzVaVuooj6X+fqFBXABlsIMkk1xZ8sxAKlZb+3HAAiXMEQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748263833; c=relaxed/relaxed;
-	bh=l/vgOJHebWu4D8vw6Mk+H6KrJfRRJIS2oLUcoP4RMvE=;
+	t=1748263876; c=relaxed/relaxed;
+	bh=WsGJJ6AVLC37IIHF+Wus+rwsgSILxYFGuSqHNtXbDEQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZgsE+vhwizF19embx/o4dmylkrVlEex0GISgCxYY3GwlnoBx47P1eQzUaFAapEGQWHDqluqADo6CG+JGSS2ch7BvAyH2F9HpDWyelExZOo7pasYK/nEqGXVCiLoRFnVcZog24RnsTMjWjDR3rDdwRY8chofxIYJKAlgVAsPJDvjYAgqYeyfmCwP6C33tBQvoUJV8+Qm+lHGkF8SpieLyT+4DSn64o8nQN4apcePoSozFz4DBfwagZxT+SqYTdoWe1CtdxcpTq/fAdMXlKnwdlN6CfFuzjebK3iD/PD1gVR0/yUu/dnQfP5jZtMoGE0yJEaJV/cdskirw/1MdUx7GFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HdAH03kw; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=BbsTeXAvJT/pHBUGTfqAg6xhd/SnTwsLIOrgHwHj6GTiq9GgekvaDb65ZhoeMxri6pOaiazVwlT+jXL7S8Eaxd0kLJqXx+xm1/DxTJZLoZXtjKqygYxg3BpNoy1QuiywHuePcToOFqcrQNTXpXkjPfLSY/bPkA+DAKxnBkpcQJS4wcQTMU8yDYLdC1Q2T68boCnKCK+eZRLmMm6ks/aQHBHXYrOy3tvFSjfIspZxCj6wfPR0P/bCdeyuIWFL8ZpDzDWqvDFfeefSQA73XIs3rIodyZ3cHXyZrCtUOdYtJMwjZRYPGfgKV53i/9/y3l7J+Jl2KKmA5bJdsD3H/1VTTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iDoBWdO8; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HdAH03kw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iDoBWdO8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5bGJ1fG0z2xS2
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 May 2025 22:50:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5bH742Rgz2xS2
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 26 May 2025 22:51:15 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 32A845C5B4D;
-	Mon, 26 May 2025 12:48:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7650C4CEE7;
-	Mon, 26 May 2025 12:50:25 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id ADE1A6000A;
+	Mon, 26 May 2025 12:51:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58DA5C4CEE7;
+	Mon, 26 May 2025 12:51:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1748263828;
-	bh=S+sgcdPuXz88oIHCw65VvI8ZGKF66R62sU/DlgsIzxI=;
+	s=k20201202; t=1748263872;
+	bh=OiSKHcRFddrlyZUjfP04teAfJ14IE/9PwmNSpInx62g=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=HdAH03kwIwakK+re2R6H4K5cZDEXhJWMjJn129us2vtqi09IguSR+NA0Uh9vK1wM4
-	 r0aztawMIeIdZVjd0EEIJHaA01L4QXgoqI63k7ZLiPfC71fi8P4g9u705Q2oQUlFpE
-	 SXXAtRtgbeoap64lShUzIgwyi0n88SzPrH93gR+Rnta0X3LmMFDf5Lxf+mX1Vn8/bh
-	 S7eEeJf2CqMIzKM3SuiiYFvInN59S5LGulwzjZK6gwEuWi0/WD/dPVsdeTv8EmP4D1
-	 z5fkNLrr27tXIZ806UR8SPkNv925YkCytVRJefAJBxnI2guvkIYp3EQzyHYdrrFYJa
-	 8yu/g+HkbPDFw==
-Message-ID: <c5e16072-e6de-4256-b0e2-3b45e420f0c4@kernel.org>
-Date: Mon, 26 May 2025 14:50:24 +0200
+	b=iDoBWdO8ifY3wuSf1/8KCC/AvzGlV68EMy12355RJsw3KppuWqCJ2rQvmGkLhQrZe
+	 Cr5HHF7E5fXWgOivbGvLZmOr9RGZQqNVBBLKQo3KE8fudY2fTZ+3u3941UNsN3O1Yr
+	 CIdlYpDkBYiJH7sP/YLPJ1Mcsfhdrf7HkNDfHNbBxkGsay/Q886pHukujbPI3dnmJQ
+	 OSlzT5sjwU0DE1l6exUgXTa5wVpTsD1MOFYXTgjr9O5kgKEte3pt5IgodMjuMBD5Rj
+	 c9YDxsLiC+13h2OnNcWDk6KUoa9BhvfIf+exf9YyRtjm1JUx9SnnvLIatdi8gwStue
+	 +GQJZ/qxttvUA==
+Message-ID: <f168126c-e0e2-40d3-9b9b-2a5002a75474@kernel.org>
+Date: Mon, 26 May 2025 14:51:07 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,16 +60,17 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V3 2/2] ARM: dts: aspeed: clemente: add Meta Clemente BMC
+Subject: Re: [PATCH V3 1/2] dt-bindings: arm: aspeed: add Meta Clemente board
 To: leo.jt.wang@gmail.com, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
  Andrew Jeffery <andrew@codeconstruct.com.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- george.kw.lee@fii-foxconn.com, leo.jt.wang@fii-foxconn.com
-References: <6822b851.050a0220.27a24d.d071@mx.google.com>
- <68343bef.170a0220.23efba.1d80@mx.google.com>
+ george.kw.lee@fii-foxconn.com, leo.jt.wang@fii-foxconn.com,
+ Conor Dooley <conor.dooley@microchip.com>
+References: <6822b830.050a0220.27a24d.d064@mx.google.com>
+ <68343b91.a70a0220.2298c6.5b57@mx.google.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -115,68 +116,33 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <68343bef.170a0220.23efba.1d80@mx.google.com>
+In-Reply-To: <68343b91.a70a0220.2298c6.5b57@mx.google.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 26/05/2025 12:01, leo.jt.wang@gmail.com wrote:
+On 26/05/2025 11:59, leo.jt.wang@gmail.com wrote:
 > From: Leo Wang <leo.jt.wang@fii-foxconn.com>
 > 
-> Add linux device tree entry for Meta Clemente compute-tray
-> BMC using AST2600 SoC.
+> Document the new compatibles used on Meta Clemente.
 > 
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> 
+
+Drop blank line.
+
 > Signed-off-by: Leo Wang <leo.jt.wang@fii-foxconn.com>
 > ---
->  arch/arm/boot/dts/aspeed/Makefile             |    1 +
->  .../aspeed/aspeed-bmc-facebook-clemente.dts   | 1195 +++++++++++++++++
->  2 files changed, 1196 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index b3170fdd3096..9d0a465cbb36 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -19,6 +19,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-delta-ahe50dc.dtb \
->  	aspeed-bmc-facebook-bletchley.dtb \
->  	aspeed-bmc-facebook-catalina.dtb \
-> +	aspeed-bmc-facebook-clemente.dtb \
->  	aspeed-bmc-facebook-cmm.dtb \
->  	aspeed-bmc-facebook-elbert.dtb \
->  	aspeed-bmc-facebook-fuji.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-> new file mode 100644
-> index 000000000000..63b5a13214f1
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-> @@ -0,0 +1,1195 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright (c) 2021 Facebook Inc.
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/usb/pd.h>
-> +#include <dt-bindings/leds/leds-pca955x.h>
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +#include <dt-bindings/i2c/i2c.h>
-> +
-> +/ {
-> +	model = "Facebook Clemente BMC";
-> +	compatible = "facebook,clemente-bmc", "aspeed,ast2600";
-Missing bindings.
 
-Or your threading is broken because I did not receive 1/2.
-
-Just in case:
-
-Please version your patches (entire patchset!) correctly, e.g. use b4 or
-git format-patch -vX, and add changelog in cover letter or under '---'
-of individual patches describing changes from previous version.
+So here I found 1/2. This is totally broken threading.
 
 Do not attach (thread) your patchsets to some other threads (unrelated
 or older versions). This buries them deep in the mailbox and might
 interfere with applying entire sets.
+
+
 
 Best regards,
 Krzysztof
