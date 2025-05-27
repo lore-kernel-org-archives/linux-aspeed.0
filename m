@@ -1,171 +1,97 @@
-Return-Path: <linux-aspeed+bounces-1247-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1248-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35D4DC5B543
-	for <linux-aspeed@archiver.kernel.org>; Tue, 27 May 2025 23:52:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DD24C5AD49
+	for <linux-aspeed@archiver.kernel.org>; Tue, 27 May 2025 23:52:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b6Ttr49nBz2yDD;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b6Ttr57cJz2xKd;
 	Wed, 28 May 2025 09:51:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748312283;
-	cv=pass; b=mLJzLQbFYFZRwcREiT6hHEZGNp8m6MlAWUiFXWHcgMBXEfCP7PNQ7CUQJ2KMXq2FeKbAKCG0LcD00plqxtw73oTO97kl3VGMM3DO+fNZRKzW1j8j8b2rx/Ud4bRmAE0tYyeA3AENxnun1ZAYabh62uD/T63jJ5C3pot6nONkjmAJohjia3VNx+QCTJKlx9IwDtrb/1qe3TpIJVxUM85yp7rScGatjHrvUpQvN+YffRLSuc+J3bU852oW92aV8nnzyJX3ExdK/4wLGPFBJ7vKZJu+++geIRiR5b7zugTEHRbEaBCwyzQJYp8xRZhR9jBALNUYs290ySgF97h0qLyTIw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748312283; c=relaxed/relaxed;
-	bh=fr5BKm45mwXrCCRUi2IRE03btLWxQMyslfWPYecRBuU=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=ZjLKoijTS+6m+5++AanRmxeLyN5mz+KNg1YX2zlPL7oG9lmMyTRr/uII5TGoNoS5a6IJif32M4lZcWUbujZ2B5GHaDb8ABSV3n5sOSAFTGmG84ge5BEmN5DKcoJUPcxXGht4qpEXmy3O0YJ75ZNeZC6ZTkK2zgTm9DpLC8blX4Al5A/agVYFeIsb4gLqr52vV1bmkEt3y8GximSHgdL9ThpKLsagzANebQRcgDyx3jiaag38wVa9KuNHPQn+jAwBa/H/xkuwr+JLhMImpryc2mcsgbqkcWGLreFWtoGUPIvvHHFc8j4zsYaZd3oFsO89U0iOc9qJomWNrn7cOiwNmg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=aspeedtech.com; spf=temperror (client-ip=2a01:111:f403:c40f::7; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::7; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::7])
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748358625;
+	cv=none; b=mpdK7glQy7T6XB5BBwc7VmpU6kltMu6XpNq2KEEEjoxA1ie9zP4vVyFFRjIjtNRbYMe7X0KACKbZPL72OQwQSqlltlZV1aZc4MyEF5ldQCCXx+ZCbIhpEpKFqJnv/8VEYBDg0wmkq/D5HM8WT+CcX6OitV6ekCXRbvGfWXwRpENZTcIjI1eftGWK3gMCdcL9+kzuDnifulCvKj+6mMRbeqV3G/hes+qVnUN9qXKOvLkah2an9yCOsNMzRUjd+PxYLCK0dF/FFqJBdmSQMWe3xZMDfGemoEznFMhUgZ86RlYzfAru7NE1kGfc9+FFgW2o4hX9/s7oQXnYzCigA27ivw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1748358625; c=relaxed/relaxed;
+	bh=TcDZQwTmMdtyKKt05qTa4r45+8RvNA2opPyhd5OidXw=;
+	h=Message-ID:From:To:Cc:Subject:Date:In-Reply-To:References:
+	 MIME-Version; b=bvhc4ItNfwGQ/3+E3jWMMb6vur2Umw16HeEcPgVLm7a37G1IXgUPOf34MZ4J3HDTPfjoygzozALBJCo0S+pspAfE7KpeYMgQuxM0Mi9DXdoMuXUxrGsAMSlQx+XEiROHRBFiJAM3d3kqBNUUMso0thbIuTJ7jPPTU/moucxKcjjK7z9SJpqVbvfB8ME/EoX1Si6gtotEyHpa4a6IZOG3szDejlV0EiN3YL4Pg8PtCKXBJy0hXy1f8LFTHKB/gb/txnDjco+iS9OrEWNmbCZZP7tdXzJWkq6vwK6R9+nnXY9FOgBPHHQqB3Q8HGInlGrfx7CqzXg6zspXy1RseNBaxw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=F7RnRKiN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=F7RnRKiN;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5x9n3Y8wz2xPc
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 27 May 2025 12:17:28 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=o9+NOqzkdm86VGMTNgNkYXxsJWJG6WXANuRtmO/BL6n89RQhAH+hygZKv3w+X0/IPBuva4HCX0nH8L4CCmZMvvmbxMafAlv+S7+vR/QJXb0/CnXQr12CicAhczaEXfcOGbSAi4C2DGkOxA3pQRz0QaVWak3SoRzy+CSrdmQQ2+zjg5xSo1oX/8Yhd5qtRi5o9+xqd+Xd0vB8Ujtl1SdUIaYnICn2iTAaA/FNinmuP5OqnxomEK/IAi6v2GwYi/wb27kx46Ybs87oNMaScInE9mDsnZAoU+j9efndGiNadxH4YZa4Vta+sOfV3GTpr4pkV0H8d6mobaJqDTdRu7CtCw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fr5BKm45mwXrCCRUi2IRE03btLWxQMyslfWPYecRBuU=;
- b=g5wscMn6S5pJWD4hjqqXk8n7C8RzPMLgGNGKRltVJOdg/4IuZPRz1eD54LmhX/MB8c76r6+zkC0PWhitLBay4rx9hhpnetQ8w9dz/vjEK0Pvfklb9n2OHF2smJGPo+k29e9+LyTuUsYgqUKOsai1+clvTqLdNI7EEPwzuaQ6EV85Wbs3YMUMHEq+jn7uyo4+o3oUAmxdemyChBcFpzcVycAr8vh9AlXR3epdZlb/WyH1fGgHcpCrR0smZdDu+EDCi5AFfdwZs+O/vrOuGW0tCjU2A/Uoj1gwXzq8CguXHyi3cavzTFqPYzsP8e4Mk9Totz16ccPkBArGF55v42ZDMg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fr5BKm45mwXrCCRUi2IRE03btLWxQMyslfWPYecRBuU=;
- b=Bqp0s6egcAtXxQjg2Dx1rBeb8tpsY8VNVa4m8kBLoo04NfYG8yHLiT2Jo39z32XADRqc7Wu9ufcHFtrr8q0aB5X8PEq+Wv/PCi8DwmSdNq4oHTKyCd2XZwgTOg2ltxxmhYjNgjBJFUY+LKeK6/4fxbcXmWUViRvsNLAQx7uqeZEL9Rx3Var03BiqOvtleKEpOzHSBlyDMbmzFzsHurAO1jJ+rGMDgih46/y7UqQXUqH7FdDYJdbE9U+AdZbgvmJFkfoaTwZTaghdxbI2ShmzP5g5Jcw6OEzQaXO57jq4B6Bb4MP+dveCK2uinwh4ptq3IHkTHhJQViWB1OpxJsGZDg==
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
- by KL1PR06MB6792.apcprd06.prod.outlook.com (2603:1096:820:ff::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8769.24; Tue, 27 May
- 2025 02:17:02 +0000
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28%5]) with mapi id 15.20.8769.022; Tue, 27 May 2025
- 02:17:02 +0000
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Andrew Lunn <andrew@lunn.ch>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "andrew+netdev@lunn.ch"
-	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
-	"edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
-	<kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>, "robh@kernel.org"
-	<robh@kernel.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
-	"conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
-	<joel@jms.id.au>, "andrew@codeconstruct.com.au"
-	<andrew@codeconstruct.com.au>, "mturquette@baylibre.com"
-	<mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
-	"p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, BMC-SW
-	<BMC-SW@aspeedtech.com>
-Subject:
- =?big5?B?pl7C0DogW25ldCAwLzRdIG5ldDogZnRnbWFjMTAwOiBBZGQgU29DIHJlc2V0IHN1?=
- =?big5?Q?pport_for_RMII_mode?=
-Thread-Topic: [net 0/4] net: ftgmac100: Add SoC reset support for RMII mode
-Thread-Index: AQHbyWmaCWjiI1u+ZUqVQN90hno8zrPblJcAgAoyHhA=
-Date: Tue, 27 May 2025 02:17:02 +0000
-Message-ID:
- <SEYPR06MB5134C11D9A5072465FEF04099D64A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-References: <20250520092848.531070-1-jacky_chou@aspeedtech.com>
- <cfb44996-ad63-43cd-bbc5-07f70939d019@lunn.ch>
-In-Reply-To: <cfb44996-ad63-43cd-bbc5-07f70939d019@lunn.ch>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|KL1PR06MB6792:EE_
-x-ms-office365-filtering-correlation-id: b6611c71-7c4f-4a49-e190-08dd9cc4914e
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|366016|376014|7416014|38070700018;
-x-microsoft-antispam-message-info:
- =?big5?B?QldlQXVEWnFkcGJuSHFvTFEvbitkVmpBS2Z2Q1lIendoUDkyS0VLODZBT2hJTHRw?=
- =?big5?B?Yy9aa0dTNkJLSXQwRFJPVXVJVW4wVVVQbEFsWkJMK3ptaEFaWnNPb0YwdXBScUN1?=
- =?big5?B?NlBFT2VacVVIaWl3eGgxWUpLSXduT3N6L3h2MFhWU0NReDlqZmtEbTdHbDV5NkNY?=
- =?big5?B?NVZ2ZGxYNlhIcXlDNXEwTEhBNnZxTHNZaEk1Q1FmWnNDSTZLOXluejBIeHFwZmdr?=
- =?big5?B?NG51SU5FaVpCQTJDeTdGdFlGT3pFUkFVNkZXZFBPaHBiWEhDcDBJZlEvemI4aVYw?=
- =?big5?B?ZWtUOExFRGZyNTJiN1kxRVFxQ0lvVE5oY253WGFWZHdFRTB3OFdTRGtxUm1xdkhy?=
- =?big5?B?alk5cmljYlRFclQ2VTJZS1I2WmVleHFzTlhmR0hsYjdIbi84RDNpaFFvSHRYOGFZ?=
- =?big5?B?RFhRTzdNbWtCeU1EMVdtMkRRS0VMV0V3MFhwQ2NidVA0bUR0cTBvUk41bnRIMkgr?=
- =?big5?B?eGtRWlYvcFIxbjdYYVF6QnNZRkRwRVZYRW5EcUxxZUNKKzJvcU5YUGpvTkhCdjJH?=
- =?big5?B?NmRSaXk2Ni8vQjF3QTlIVEQyZ3NKQnowNWJ1dmJiM0NoWDBZMk01ak5WUGNrZDhv?=
- =?big5?B?TjFpR1YvUURBbGJISk0zVGdGeGpFWWYrMEJUL2NrczJTN2hpaGpvdVVCVHk3Wlpw?=
- =?big5?B?ZVYvMCt1Z0NCWWpHMWFYdkJGeGJVVE5PY2VhNWdUek9RYmlJQ2ZFUVlVMVErTStB?=
- =?big5?B?aUo5ZjZqQkx1dzRKbzV0WmY4N0c3VWxXNkNyOHpIRk8rTXlyRWJTQjVUdkZZdFJ3?=
- =?big5?B?bks5WjBESndIY0JaVlUzc2VyUllrblhtbTFVMXdQLzY1dFlrZU9lUEY5cVRRYmlQ?=
- =?big5?B?djFUZXZQYWxYMmJaT01MUzkzNXEzdGxPd3d6U0E4VGZCY1V4bG0rWWlEU1VwMG12?=
- =?big5?B?djd1NVl2dWNaMmdLc3pJbDlDMW9vbHFuUUFubGl4UDB3bWR5VElhd3hxOHFaSTRs?=
- =?big5?B?ZG4wOWZLVUY5VlFLQ2ZlcGRMeHFLQ1U0RUJPRFFiSGdSWXRQUEpxS2FOUkJ0bUZu?=
- =?big5?B?L3ZkZTc5d3VIeVZNNkpBSDdKRm9oNXkya24zMlc2bnIxWXhHL0lkdGpHWkpzdmg3?=
- =?big5?B?M0FZSDN0TFJKNUlZMFkwMXAvL3pBOHlCM1BSR21OSlQ4cjdDa2c1M0o0VDlPQlds?=
- =?big5?B?d29VcHZ2UklrZGR0OHFiMFFJOVdQdHE2d0lETzNwUHVPbTUvSThLYThBVG90NnNI?=
- =?big5?B?ekRHVXNHbVZlc1FwcDVBeU15ei8wYVVJV0R2OTZKMG1aQTR2dkhKdGZhaGJscVUw?=
- =?big5?B?S002R0tsMlRQdU9Qdy9UZGNSQzNhWXN0cUhmU2VXTTlFcUhZYkJuemZRNWFqbU1n?=
- =?big5?B?aGsrMmVvL1M5YW55bHptM0FiM1dTRTN5ZUFmaENQWW5NT0d5VVJjZWY0NklGR0lG?=
- =?big5?B?ZExtYnI1amwxaFFHOTZ1bXI3anFuOFdLSW1wWFgzdGpyK05aWmZQeFROcmd2MjdN?=
- =?big5?B?VlRySGFKVnNVc2YxdmZPdG1XRUJIVU5YemR6NFdPdkdONml1U25NWGRjMHR5UnBO?=
- =?big5?B?NGwzL0ppOWNvaHdZZWZBZUtCTEx2aVR4bEYzamNQTFZrbURQK0RXTysxM0d1QzQy?=
- =?big5?B?STUwUjkyOUZyd1hYT2dsZUZ5SUE3b2w5WTJOVEh4MXdYbUtueXJneTBrcHNoQVNn?=
- =?big5?B?YjB6ZnV6ekt0c3BlNEdaWXlnaVlySUgwVGdlS3VNUFZMcEVtNHZjTzRuWnE4YThN?=
- =?big5?B?SkIxZ2JYMEEvYVlIZi8yRkxqNmdwdXkrU1g0cWxUVzMwZlRudHZmb1QvQXFjWHJ4?=
- =?big5?B?ZytyNk5tRmRrSDhSSWo3RHNOb01PTGg4enNFMW00YkdlZnQzc2o3TVFuc1VJNjBk?=
- =?big5?B?UmZad2lHOGYyeXE4SldUakNzNGYySUxNL1JHTm5LZ2wxOUZmZjU0UkxFREt2UlNS?=
- =?big5?Q?stFRimJfmuL27+7SPwoeFUCbLwc=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(38070700018);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?big5?B?eW0wNVZJbE0zRUdCaUJMYzh6QXMrQXFTRDE0YjFOWWFIV2VtKy82TDRibkloaWda?=
- =?big5?B?Y2gvTEZLMEF4UDhJYnhXaHpXbU1yRUxWZmxmbE9uVFh5bmJlb0JRODhkeGJuYUdr?=
- =?big5?B?V1ZMMm1SZWYxamRDUDE1dEluOWVvTEJ4L0s3VVJ3YmVmakJMcGdaL2tLNWxLMUtN?=
- =?big5?B?dkZ6VHlicSs2NnhWK2lDWExjQmRkZVJhNER5WkdKWDVwa3lrbFVqbVNnY3drV0Ru?=
- =?big5?B?NEg5K3lzWGpkVjJjTzhiUVAzMnIwYjl0cXhRdGR4M0t5R283NHcxV2xaaWh4Um5q?=
- =?big5?B?TVdpKzVrNm1pQjF3M2prVW5VdTZzTUV2QTk5WDg5Y1Brc3ZDekxwbm5Ualo2aCs2?=
- =?big5?B?MjA4b3RlZ3pIV00vRXU4M1Z6enlCckFKZE9wN2hQbmN2K1h0SnpFRmlzaHFyRDlp?=
- =?big5?B?SVdtOG9WQSt5Y0pZTlgyN3B5cGVydVpqUUUzSkFRQllTT25rUXluY0RCUHNXQjds?=
- =?big5?B?V3Z1UVVnNzFIUHc0akdpNmpYSDljRkhEYmxoYW4vT1pqNUhuUEVyOEZYZmJ0RVFJ?=
- =?big5?B?eXNXVnh0QjNiUVc5ZlQyUk5lRzcxOFpxS2xsRXBCTVkzeUJHZE1EdmtNWHd3bEZF?=
- =?big5?B?UGpoREorOXZYTlZFeFJpK3JvK3haaFZFajMxN1FaNzdUZ0pGdFlDMHJLSFFnb0Vn?=
- =?big5?B?dDRKckUwOEswV1poa1pIckNTTVZRT2RhcDltUkxVc0UyZGpzbWdIWmFHMEhpeDY0?=
- =?big5?B?aWZ2Qk5ITGY5NlBrVmJzSUZxOXg2eVpOSktCSDdZWml6dEJvdWxDVzVHQXNHbUpV?=
- =?big5?B?Mlk0aW1zNFJLV2ZZQzk3andwU3RTSTVmNHZEK1gzSHpZcWlCTGhONXhaYUI5TnIy?=
- =?big5?B?eXk3UzBkM2NuYlNaWUM4bFgxdnBUaHN0eDZZY3dwRUVBQ1BGbVFjOTM2eE5mem9z?=
- =?big5?B?YWRSOFE4T0o1SU9NWWY1OFVMT0ExRDJFRTFLTCswdHhRSHkzRnJ0NDhuSWl3ajZj?=
- =?big5?B?VTVSRXJQa1hjajY3a0cvMnV6S2ViZC8yRDdKbEp3YWZHQVB1YzJwVEc2SHZna1gv?=
- =?big5?B?WHh6U0FjMlIvVXVoazNNNGZiekVYNU5iaG5kQkc4M1hhNW1vKzhZNTZSN0Fnbm1J?=
- =?big5?B?V2Q3aTJSRzIwQ285NTk3SDBCVmVtUTBaRXkzNVNVMnE0d1hNK0p6TEhJcXVhOFBt?=
- =?big5?B?YzB1SEZiUUtDYzJUbVZ4MnMwdUF6ZmZ6anp2clhaMVVBZmFIM3Jja2dqcWV4TzNa?=
- =?big5?B?dE16UFhqbjAzSVc3T1BGSFY3Vyt2ZHhhcnFDdktZOTNGZXJVZnJPeE1PeVZucDdL?=
- =?big5?B?M3FJS2RsQkx5NndZZ3I1Z0xlcmlVY1BBTUtCMDRsVTdLWEdCakFLS2Noc3ZHbm9v?=
- =?big5?B?eEp1R2J3MzduRGFBYlhxaHhRaFpLNHNwVTdkZUo0ZXNHRkwxNDVvcG5GenJTT0cr?=
- =?big5?B?SDZjYmlxejhsZFhrMktLR0hBYndJcHZnUGpTSkYyK1ljT0ZUY2xyWU9sVDZIYUlV?=
- =?big5?B?L1BYMHoxVzFlMStXMEFTd3hyRml3MlVOY0hBVWFKZDBCUkJncExxY1dGOHJYK0xQ?=
- =?big5?B?N3ByK0x5VnhRYVo1K1pzUjdHaFJaZmM4cFJvUW5xbm5mdDAzU3Y4OXRFeEQveElk?=
- =?big5?B?Zm9YQmp1UmxLeTJWVmFlbmNJYjQwaVh6akRUcGVuQ3puWkhDdFBhaWJ5bFRwZzdE?=
- =?big5?B?V20zbkFrL0NqME9ndWluMFl2cFlwa013VXNZT0ZXYnhIRWEwMmUycDc3bHA4TlJU?=
- =?big5?B?eTkxU0ZPZWxjSTdzcC9ZNjFzQkhqVExIWXdwcVM4RSs0V0RjR1doc0txbktITWw5?=
- =?big5?B?TmdQdzFhNnprcG9BaFlXZnh1MVVBTUJscWxseXB4ZTN1SC9hV2hjK2FIdFNkMUxm?=
- =?big5?B?dUo2OFpXbHRWTTlmRDEwVVR1SXlZZTJSUnkxNm5ZSWJ1cjdmRW1DcEdKbStqWlI0?=
- =?big5?B?RUY2SXJyNXVSc1pHVitmTndJc1NIQjQwTTZEU3E4Wlg5SndyR1pVOW1ET3B6TEI3?=
- =?big5?B?WktQYjJJemFKY2k0L2VzOWN5cGYxOE9kenZmNFhJTG96Z2pUcGN4aXpEcGJOM2Rv?=
- =?big5?Q?LXyIgtO5nxJ4IC4a?=
-Content-Type: text/plain; charset="big5"
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6GKD47WWz2xPL
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 May 2025 01:10:24 +1000 (AEST)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-742c73f82dfso2544090b3a.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 27 May 2025 08:10:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1748358623; x=1748963423; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to:date
+         :subject:cc:to:from:message-id:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=TcDZQwTmMdtyKKt05qTa4r45+8RvNA2opPyhd5OidXw=;
+        b=F7RnRKiNb58jzM9ljRBlqYWMaParqbunNn0Gfzi9J7MtsogrYuy9mcwuwp7jykmZjm
+         7IAs4jM7VRzFipRQOAEHWvyy2L4QhNsz4olA6uPV56NkNIu4BmNK5ULBPtGrj5Stg6F0
+         AnNk9FjJCQqWnyv3jXI6S2+VFjbJPm3pjQf7vIS5l47wdu++QAaeIFD80F1afMRrCgjM
+         VzKWEeetq5tuBSlBoENHoUlHzNBnp2H9IY2z4AhmAr1TG4Ky6bU7JIOyzPuAWcdl7yY0
+         U3d5Fr5uJP+lp2Q0/WyBc4FLXjGkCoOwbnw2Fwi+xhHD5gwcvdfM1s4XmqHJGrBcKrrm
+         kEtw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1748358623; x=1748963423;
+        h=content-transfer-encoding:mime-version:references:in-reply-to:date
+         :subject:cc:to:from:message-id:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=TcDZQwTmMdtyKKt05qTa4r45+8RvNA2opPyhd5OidXw=;
+        b=v6qtJZYwbAmHvYqpSAloeIeiR1GItOo4ZvPtVP0Sz35Sx3QqGju71vK/wqY3x07MDT
+         LMOgS622Nk0IwpS4DggHVBBSILk/8T019/v4m9MIQl+xbifeSVaL2a5VploTXpXI2pfs
+         Rmu/qNlkAdjvBqYNiZOH91SAZuAnM56Y2dEkEZ+okhhrjf6MIJroRFjdQ6Zc+7wV2o/c
+         y7ASCefOrXvDljYjMWkaT4EUUv227m/T723QvQbH/ujeUw/EifBJDVIrso0Nm1KywzpJ
+         tx2LThP4hsu4zZQYvq06LckJ1Un0aOCfLAUjuORYZAkqB9eZFmyJ72GoF7wod5OFthqL
+         jv2w==
+X-Forwarded-Encrypted: i=1; AJvYcCXnOYZ7xM6uPeNskg7ksITLKTabtMP5qfpr1BzldD59J61EeLqum1DdwtZqoBuWgYbhLJnISw1dB8BMTzs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzajucpslwXdueXaoChjeeauQOxhzJZNgDoOPU8LHVVqjO/5jtT
+	u0c5uJ2E/eoLYy7tWFNqyaOI0ATDhTzG9RBsXu6/ualM1eU17LO4DGWn
+X-Gm-Gg: ASbGncuoUqeGdZyMqIhpUEYHI7QBAQwRr/ez5pjVvo9R5/SWMuZumTwZvPL5JuVHLZb
+	sJFZC76/UQ1My67u5rryA6LkwURb93j5d8eWZXCpHK2XwMsq26JZcboM1lfmsisptVozkuQSZMh
+	0gAsay2g8IpEgA2cG0v3MZxEyV6XoOAxP7V5Hm0QGAWaZxelpcj0Fmc/4uNt504ncj+hBRaIjbE
+	Kdg9E8CajEZyVjGOndINLnPJS/dH6Ap8/Sivy+Vd1kIHj+lXZY4XQttV/X4SsG3R1jjdwKiOu51
+	oWHSoFjQYVBec00zJi68GNpDJC3kvu8qLZk7tOkSyO7iN0hd2pU31G7GrVMV3uzf9HwEGgue
+X-Google-Smtp-Source: AGHT+IH0RFT0xP+3+dNVvU0bw/BAG60Nd9T6wKSR2SIUzdNr5GW2guXZ60yJdjSdkxe8OyWvVV66/Q==
+X-Received: by 2002:aa7:888d:0:b0:736:4ebd:e5a with SMTP id d2e1a72fcca58-745fe0c7a55mr20646910b3a.20.1748358622652;
+        Tue, 27 May 2025 08:10:22 -0700 (PDT)
+Received: from dea88b1475bb.. (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-742a96de11csm18869987b3a.31.2025.05.27.08.10.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 May 2025 08:10:22 -0700 (PDT)
+Message-ID: <6835d5de.050a0220.14ffd7.0e18@mx.google.com>
+X-Google-Original-Message-ID: <20250527150946.2815348-2-LeoWang>
+From: leo.jt.wang@gmail.com
+X-Google-Original-From: LeoWang
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	george.kw.lee@fii-foxconn.com,
+	leo.jt.wang@fii-foxconn.com,
+	Conor Dooley <conor.dooley@microchip.com>
+Subject: [PATCH v4 1/2] dt-bindings: arm: aspeed: add Meta Clemente board
+Date: Tue, 27 May 2025 23:08:48 +0800
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250527150946.2815348-1-LeoWang>
+References: <f168126c-e0e2-40d3-9b9b-2a5002a75474@kernel.org>
+ <20250527150946.2815348-1-LeoWang>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -179,29 +105,31 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b6611c71-7c4f-4a49-e190-08dd9cc4914e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 27 May 2025 02:17:02.1292
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: wl6V/evyaClzZNpqVzq5JjD7LdPif4zY/R+Can+AnQimsd5Pi6kCSy+/F570NTIB88HmbdGNc/IRweW7nCsQGqp05l+JtDsuMmjOBdIeLXM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR06MB6792
+Content-Transfer-Encoding: 8bit
 
-SGkgQW5kcmV3LA0KDQpUaGFuayB5b3UgZm9yIHlvdXIgcmVwbHkuDQoNCj4gPiBUaGlzIHBhdGNo
-IHNlcmllcyBhZGRzIHN1cHBvcnQgZm9yIGFuIG9wdGlvbmFsIHJlc2V0IGxpbmUgdG8gdGhlDQo+
-ID4gZnRnbWFjMTAwIGV0aGVybmV0IGNvbnRyb2xsZXIsIGFzIHVzZWQgb24gQXNwZWVkIFNvQ3Mu
-IE9uIHRoZXNlIFNvQ3MsDQo+ID4gdGhlIGludGVybmFsIE1BQyByZXNldCBpcyBub3Qgc3VmZmlj
-aWVudCB0byByZXNldCB0aGUgUk1JSSBpbnRlcmZhY2UuDQo+ID4gQnkgcHJvdmlkaW5nIGEgU29D
-LWxldmVsIHJlc2V0IHZpYSB0aGUgZGV2aWNlIHRyZWUgInJlc2V0cyIgcHJvcGVydHksDQo+ID4g
-dGhlIGRyaXZlciBjYW4gcHJvcGVybHkgcmVzZXQgYm90aCB0aGUgTUFDIGFuZCBSTUlJIGxvZ2lj
-LCBlbnN1cmluZw0KPiA+IGNvcnJlY3Qgb3BlcmF0aW9uIGluIFJNSUkgbW9kZS4NCj4gDQo+IFdo
-YXQgdHJlZSBpcyB0aGlzIGZvcj8gWW91IGhhdmUgbmV0IGluIHRoZSBzdWJqZWN0LCBidXQgbm8g
-Rml4ZXM6DQo+IHRhZ3M/DQo+IA0KPiBodHRwczovL3d3dy5rZXJuZWwub3JnL2RvYy9odG1sL2xh
-dGVzdC9wcm9jZXNzL21haW50YWluZXItbmV0ZGV2Lmh0bWwNCg0KU29ycnkuDQpXZSB3YW50IHRv
-IGFkZCBhIHJlc2V0IGZ1bmN0aW9uIGluIGRyaXZlci4NCkkgd2lsbCBjaGFuZ2UgdG8gbmV0LW5l
-eHQgaW4gbmV4dCB2ZXJzaW9uLg0KDQpUaGFua3MsDQpKYWNreQ0K
+From: Leo Wang <leo.jt.wang@fii-foxconn.com>
+
+Document the new compatibles used on Meta Clemente.
+
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Leo Wang <leo.jt.wang@fii-foxconn.com>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index a3736f134130..4416a40dcd86 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -81,6 +81,7 @@ properties:
+               - asus,x4tf-bmc
+               - facebook,bletchley-bmc
+               - facebook,catalina-bmc
++              - facebook,clemente-bmc
+               - facebook,cloudripper-bmc
+               - facebook,elbert-bmc
+               - facebook,fuji-bmc
+-- 
+2.43.0
+
 
