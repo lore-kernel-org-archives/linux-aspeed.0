@@ -1,97 +1,64 @@
-Return-Path: <linux-aspeed+bounces-1248-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1249-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DD24C5AD49
-	for <linux-aspeed@archiver.kernel.org>; Tue, 27 May 2025 23:52:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B7BFC54ED1
+	for <linux-aspeed@archiver.kernel.org>; Wed, 28 May 2025 00:44:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b6Ttr57cJz2xKd;
-	Wed, 28 May 2025 09:51:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748358625;
-	cv=none; b=mpdK7glQy7T6XB5BBwc7VmpU6kltMu6XpNq2KEEEjoxA1ie9zP4vVyFFRjIjtNRbYMe7X0KACKbZPL72OQwQSqlltlZV1aZc4MyEF5ldQCCXx+ZCbIhpEpKFqJnv/8VEYBDg0wmkq/D5HM8WT+CcX6OitV6ekCXRbvGfWXwRpENZTcIjI1eftGWK3gMCdcL9+kzuDnifulCvKj+6mMRbeqV3G/hes+qVnUN9qXKOvLkah2an9yCOsNMzRUjd+PxYLCK0dF/FFqJBdmSQMWe3xZMDfGemoEznFMhUgZ86RlYzfAru7NE1kGfc9+FFgW2o4hX9/s7oQXnYzCigA27ivw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b6W3B5p8sz2xGY;
+	Wed, 28 May 2025 10:44:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748393046;
+	cv=none; b=Yd8xrQNmjdrJQOrHGgcabrcI08cJDSQXZ3nG/qNbBfbXqt1jy+v7gcDFitY18YrFxz0cIES2sbbVjY+36NXSpQ6Vavl2AfTVm0pBy9oEBfWxe85+T03O1cZ+xqi6pNb/O2GN7YuT3HsuGXCgdCD5o8G2rmYdm3tdK7A3S2tiNtr7+s7Ye3Nw3aI9DretPxv0vGC93YlLAu0M1HiM8qkhr/tHlO6azlURvpy06HgoQIedka5hqO+2BR6kyRY+oKFtGzRSymn+z3hxQGAD3v3/3tKjTjEbeFUvPr45loJamu4mg60Tl8sIdtsQZ7xBhR1PzUOn4SIUZ/5Tusb856/WKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748358625; c=relaxed/relaxed;
-	bh=TcDZQwTmMdtyKKt05qTa4r45+8RvNA2opPyhd5OidXw=;
-	h=Message-ID:From:To:Cc:Subject:Date:In-Reply-To:References:
-	 MIME-Version; b=bvhc4ItNfwGQ/3+E3jWMMb6vur2Umw16HeEcPgVLm7a37G1IXgUPOf34MZ4J3HDTPfjoygzozALBJCo0S+pspAfE7KpeYMgQuxM0Mi9DXdoMuXUxrGsAMSlQx+XEiROHRBFiJAM3d3kqBNUUMso0thbIuTJ7jPPTU/moucxKcjjK7z9SJpqVbvfB8ME/EoX1Si6gtotEyHpa4a6IZOG3szDejlV0EiN3YL4Pg8PtCKXBJy0hXy1f8LFTHKB/gb/txnDjco+iS9OrEWNmbCZZP7tdXzJWkq6vwK6R9+nnXY9FOgBPHHQqB3Q8HGInlGrfx7CqzXg6zspXy1RseNBaxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=F7RnRKiN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1748393046; c=relaxed/relaxed;
+	bh=bW4crBIy9PqA9JTflIEcujZLjdIxJW8V1rpT69gqPkM=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=jkzOKNkIjYhhjEXOAWMl2xYgoPP9v4YmxqXYOFy4mWuQpBeFORFpSf9aUVXriHJIRLqMTS6Lf8aQkYyQxodosgHvh5nI6R0RlMkoLz8DUEjNem76+fqMxZA5kR61EqpagFSya1Ht2hG9U4g7AZ+84vipBDSyhReKqpUnZn3BsN6g/uaDnNQCjbJz5Hl/fthyEkOB6kJvtKlqZ4IAevNvRuhKTkF4evDQeA3degAJpyu4YbxUBvDTYic49EyAumEEIdnGVGOQ19R1SGJdvgLIbSvyiQPLB+nDmiSiy+69Hm/wwPDUVjqplQ+QwK6buAeC66A842VjfMhpo6MDme/A5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aDrfu7Ua; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=F7RnRKiN;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aDrfu7Ua;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6GKD47WWz2xPL
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 May 2025 01:10:24 +1000 (AEST)
-Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-742c73f82dfso2544090b3a.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 27 May 2025 08:10:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6W391RPQz2xGF;
+	Wed, 28 May 2025 10:44:05 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1748358623; x=1748963423; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to:date
-         :subject:cc:to:from:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TcDZQwTmMdtyKKt05qTa4r45+8RvNA2opPyhd5OidXw=;
-        b=F7RnRKiNb58jzM9ljRBlqYWMaParqbunNn0Gfzi9J7MtsogrYuy9mcwuwp7jykmZjm
-         7IAs4jM7VRzFipRQOAEHWvyy2L4QhNsz4olA6uPV56NkNIu4BmNK5ULBPtGrj5Stg6F0
-         AnNk9FjJCQqWnyv3jXI6S2+VFjbJPm3pjQf7vIS5l47wdu++QAaeIFD80F1afMRrCgjM
-         VzKWEeetq5tuBSlBoENHoUlHzNBnp2H9IY2z4AhmAr1TG4Ky6bU7JIOyzPuAWcdl7yY0
-         U3d5Fr5uJP+lp2Q0/WyBc4FLXjGkCoOwbnw2Fwi+xhHD5gwcvdfM1s4XmqHJGrBcKrrm
-         kEtw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748358623; x=1748963423;
-        h=content-transfer-encoding:mime-version:references:in-reply-to:date
-         :subject:cc:to:from:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=TcDZQwTmMdtyKKt05qTa4r45+8RvNA2opPyhd5OidXw=;
-        b=v6qtJZYwbAmHvYqpSAloeIeiR1GItOo4ZvPtVP0Sz35Sx3QqGju71vK/wqY3x07MDT
-         LMOgS622Nk0IwpS4DggHVBBSILk/8T019/v4m9MIQl+xbifeSVaL2a5VploTXpXI2pfs
-         Rmu/qNlkAdjvBqYNiZOH91SAZuAnM56Y2dEkEZ+okhhrjf6MIJroRFjdQ6Zc+7wV2o/c
-         y7ASCefOrXvDljYjMWkaT4EUUv227m/T723QvQbH/ujeUw/EifBJDVIrso0Nm1KywzpJ
-         tx2LThP4hsu4zZQYvq06LckJ1Un0aOCfLAUjuORYZAkqB9eZFmyJ72GoF7wod5OFthqL
-         jv2w==
-X-Forwarded-Encrypted: i=1; AJvYcCXnOYZ7xM6uPeNskg7ksITLKTabtMP5qfpr1BzldD59J61EeLqum1DdwtZqoBuWgYbhLJnISw1dB8BMTzs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzajucpslwXdueXaoChjeeauQOxhzJZNgDoOPU8LHVVqjO/5jtT
-	u0c5uJ2E/eoLYy7tWFNqyaOI0ATDhTzG9RBsXu6/ualM1eU17LO4DGWn
-X-Gm-Gg: ASbGncuoUqeGdZyMqIhpUEYHI7QBAQwRr/ez5pjVvo9R5/SWMuZumTwZvPL5JuVHLZb
-	sJFZC76/UQ1My67u5rryA6LkwURb93j5d8eWZXCpHK2XwMsq26JZcboM1lfmsisptVozkuQSZMh
-	0gAsay2g8IpEgA2cG0v3MZxEyV6XoOAxP7V5Hm0QGAWaZxelpcj0Fmc/4uNt504ncj+hBRaIjbE
-	Kdg9E8CajEZyVjGOndINLnPJS/dH6Ap8/Sivy+Vd1kIHj+lXZY4XQttV/X4SsG3R1jjdwKiOu51
-	oWHSoFjQYVBec00zJi68GNpDJC3kvu8qLZk7tOkSyO7iN0hd2pU31G7GrVMV3uzf9HwEGgue
-X-Google-Smtp-Source: AGHT+IH0RFT0xP+3+dNVvU0bw/BAG60Nd9T6wKSR2SIUzdNr5GW2guXZ60yJdjSdkxe8OyWvVV66/Q==
-X-Received: by 2002:aa7:888d:0:b0:736:4ebd:e5a with SMTP id d2e1a72fcca58-745fe0c7a55mr20646910b3a.20.1748358622652;
-        Tue, 27 May 2025 08:10:22 -0700 (PDT)
-Received: from dea88b1475bb.. (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-742a96de11csm18869987b3a.31.2025.05.27.08.10.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 May 2025 08:10:22 -0700 (PDT)
-Message-ID: <6835d5de.050a0220.14ffd7.0e18@mx.google.com>
-X-Google-Original-Message-ID: <20250527150946.2815348-2-LeoWang>
-From: leo.jt.wang@gmail.com
-X-Google-Original-From: LeoWang
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	george.kw.lee@fii-foxconn.com,
-	leo.jt.wang@fii-foxconn.com,
-	Conor Dooley <conor.dooley@microchip.com>
-Subject: [PATCH v4 1/2] dt-bindings: arm: aspeed: add Meta Clemente board
-Date: Tue, 27 May 2025 23:08:48 +0800
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20250527150946.2815348-1-LeoWang>
-References: <f168126c-e0e2-40d3-9b9b-2a5002a75474@kernel.org>
- <20250527150946.2815348-1-LeoWang>
+	d=codeconstruct.com.au; s=2022a; t=1748393043;
+	bh=bW4crBIy9PqA9JTflIEcujZLjdIxJW8V1rpT69gqPkM=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=aDrfu7UaYHEsGM5716KG0K+1v8ehAR+fHjDkTlTL9OlVwzHZqwZoUuqC8qfIs766z
+	 MBeP9oD7moryEudsoNWE4xMLYoa2TUmleQY0TtBxqcjlkS4tykuSS83O7fFUWZLxmj
+	 qLitCvUfZCcEvqpahC14pyyJs0TkKvdEw4vKDc8djXf+lRm7xb/w4zDLqDDYzCxIdO
+	 V9t0qvSktbdHf5lK67zwCYoL0Jar/hESdviRfPQZ/1X2HbkKJnnR6kLhLn9UyoEdXP
+	 I3ZjXhu/cDF2CeIfwTjbTOFWPlTI3aLJ/gb+eh2N4dNSqbvPtLjKg+nKI8lMcO+T3c
+	 geXWB+/rlA9MA==
+Received: from [192.168.68.112] (unknown [180.150.112.166])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9BE6C832CD;
+	Wed, 28 May 2025 08:44:00 +0800 (AWST)
+Message-ID: <753cd65ebf659972c8a33e5f8e579b9fa8738682.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 18/34] mmc: sdhci-of-aspeed: Drop the use of
+ sdhci_pltfm_free()
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Binbin Zhou <zhoubinbin@loongson.cn>, Binbin Zhou
+ <zhoubb.aaron@gmail.com>,  Huacai Chen <chenhuacai@loongson.cn>, Ulf
+ Hansson <ulf.hansson@linaro.org>, Adrian Hunter <adrian.hunter@intel.com>
+Cc: Huacai Chen <chenhuacai@kernel.org>, linux-mmc@vger.kernel.org, Joel
+ Stanley <joel@jms.id.au>, linux-aspeed@lists.ozlabs.org,
+ openbmc@lists.ozlabs.org
+Date: Wed, 28 May 2025 10:13:59 +0930
+In-Reply-To: <dfc7e01a6134e421ae3aa8da3221f67d59706d0d.1747792905.git.zhoubinbin@loongson.cn>
+References: <cover.1747792905.git.zhoubinbin@loongson.cn>
+	 <dfc7e01a6134e421ae3aa8da3221f67d59706d0d.1747792905.git.zhoubinbin@loongson.cn>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -105,31 +72,18 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 
-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
+On Mon, 2025-05-26 at 14:06 +0800, Binbin Zhou wrote:
+> Since the devm_mmc_alloc_host() helper is already in
+> use,=C2=A0
 
-Document the new compatibles used on Meta Clemente.
+This doesn't appear to be true? aspeed_sdhci_probe() calls
+sdhci_pltfm_init(), and following that through eventually we call
+mmc_alloc_host() (the non-devm_ variant).
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-Signed-off-by: Leo Wang <leo.jt.wang@fii-foxconn.com>
----
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+That said, there are some error paths in aspeed_sdhci_probe() where we
+leak the object. Improving the code would be helpful, but my
+understanding is this patch isn't right.
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index a3736f134130..4416a40dcd86 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -81,6 +81,7 @@ properties:
-               - asus,x4tf-bmc
-               - facebook,bletchley-bmc
-               - facebook,catalina-bmc
-+              - facebook,clemente-bmc
-               - facebook,cloudripper-bmc
-               - facebook,elbert-bmc
-               - facebook,fuji-bmc
--- 
-2.43.0
-
+Andrew
 
