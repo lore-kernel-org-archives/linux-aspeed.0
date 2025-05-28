@@ -1,76 +1,76 @@
-Return-Path: <linux-aspeed+bounces-1274-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1275-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6233CC3ABB2
-	for <linux-aspeed@archiver.kernel.org>; Wed, 28 May 2025 16:46:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E43EFC5AD49
+	for <linux-aspeed@archiver.kernel.org>; Wed, 28 May 2025 16:47:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b6wQ974DZz2xgp;
-	Thu, 29 May 2025 02:46:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748450817;
-	cv=none; b=c+ZzUvJqo1C3uVqQtByGZP6RV4RyQSfWzytcvmkeKI8VcEh8qXj54F3Kph8QSprUfswj95br7ciflLYrhag5+EIVZ925OtIFInHneIVcWX+N/87JD0WF3XgzpQDbuhd+6mTCU6LF01inmwpHSe1lXFDvBWXLdzgF2P/qViBvIIlpBu2+bAHJJR+dc6+7O17ssij2pqyB+Xsj0kqAsmK0LVN32ZD8swclZs1Tsi5atFnODbto0wSnQF7+Hj9huocxwk3wtM8A8LRIVNG2ZZjjgrzbYHhAgRC9G5GTGcDqu5WD+xn5Dmo/NaIP2zf/nSOhCZhzAZjqhGCBP4gUN8YiEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b6wQP48VBz2xQ5;
+	Thu, 29 May 2025 02:47:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1035"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748450829;
+	cv=none; b=JdaA2+/ZDLWOREunhi0HKe4XcEYnle8W0qQhSA4JPGvubRvR3SRG2R67ZprphnZiHZADxMA9JJh4QAkfXUUf9kLQrsfsVDKBg6pVDkJM5zgUXv9PPcmWxlryEvRIv7a+RvDBo5uBBo0kyKY/TeMx+QiqYw7nfdJGV2sBjsWvJkAoItUu632PDkdr64XPAqJIKkpnufM+UarJJAxK3cx/MlhHWGSqvgfod9EGxZlALtnLE1jsHAWm3IJ/Db4Bb8nGKIrq3VEEar8QJ3LNJSCNe0xx7MWiCO+4HzdnFoPtET2IFJCUEL5UBSa32d34YyRcZNrSvO//s6eOE/A1M0aWlA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748450817; c=relaxed/relaxed;
+	t=1748450829; c=relaxed/relaxed;
 	bh=bTrLQar6gjTjFnrAkyn0kezzixoXN+IjT1tsTT4veX4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bsCXwdFd+5adLTrJ7ZSlkOhzMw69KfR8XU978yLOtTHT6UFIN54TVNyU4W17TwV9iVCvlyhfqlyPVemUca0P4uspc3oXzipe/LTjvz+iWmScz1bSIn2fN07wxEGtudmhjbHjTbK7lqczzyTNynOsRosvfhObxMLHvk7I0XZMGX/0m9HXzsjVcpFNvESywYDTNzjUA45fr1eD6RhsO96Zi27gp/P5KNxn+8hoNghJh+FozLlMulKp8GeRf9kecQBoT4ujA/xhg0GNFFb8j7sQR9jD0eS173qrOprd0RHO/QB3g4PH3SEW50ZeBHGA4HDq6Cw2ZpNKPjKyFVqcOQEbbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=C2ghUTBZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org) smtp.mailfrom=broadcom.com
+	 In-Reply-To:Content-Type; b=jIGCNrzlVIZa/2IBW5lcYs8vl3whCbHzaIWU++qAAd/VpKuPN3OjfpgqLdmE93PDW4Cn82xkyOdmSsICqp9rIY0ues1GCgq4cslyoy/ARBCN35mwW/F47I4H+LjHTvGiK9uO6HRkYlYDurX9BCVOq0/LO1uSL2RFBSEXCXAD3Jj21WXtqy2ncqXyWAhU2bhEiQx+AT0tU6g3PTAO8otVCgN0qukQRfr9OaecKybIX00/cMcfgjK2VuMccddopnkTHC1VjFYAm7gcJ87sHnIT1spSdRmD3ylboOl8UxSAHFcuw53apn72t2GatbeC5vSvL4qT/VjN3+2r7a0L0ziaLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com; dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=YDFWaGyr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org) smtp.mailfrom=broadcom.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=broadcom.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=C2ghUTBZ;
+	dkim=pass (1024-bit key; unprotected) header.d=broadcom.com header.i=@broadcom.com header.a=rsa-sha256 header.s=google header.b=YDFWaGyr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=broadcom.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=broadcom.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=florian.fainelli@broadcom.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6wQ900L5z2xGv
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 29 May 2025 02:46:56 +1000 (AEST)
-Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-311ef4fb43dso701696a91.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 28 May 2025 09:46:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6wQN3TDGz2xCW
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 29 May 2025 02:47:08 +1000 (AEST)
+Received: by mail-pj1-x1035.google.com with SMTP id 98e67ed59e1d1-3119822df05so2750102a91.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 28 May 2025 09:47:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=broadcom.com; s=google; t=1748450815; x=1749055615; darn=lists.ozlabs.org;
+        d=broadcom.com; s=google; t=1748450827; x=1749055627; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:autocrypt:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:from:to:cc:subject:date:message-id:reply-to;
         bh=bTrLQar6gjTjFnrAkyn0kezzixoXN+IjT1tsTT4veX4=;
-        b=C2ghUTBZXXr3XSojMtLgxAmS0WDNjjbNwUA8SeQ40Ijikht3BfuY9uEYYI2n13mGvg
-         PP4e+bokWgmOB6HepI1WGYWieQVSksmM7PSIiguS/0O9tlZK81NHGuY3VMLRfqwLZPv+
-         kd+XPNLmoN0YrCOwHvHdFMS4OaFAKglJolZSA=
+        b=YDFWaGyrGphyGvvkwIC/X4QMdj7VrDp1TSIK1DPBUtiBUIzq52QyHbonv/OUsvszOo
+         AZ4q74RyEunEMfWMRYPr7ZIvXOwAwlaqxoWhQUnnZWazAEfbhcwFMByHJxVok1KupRNQ
+         dVSNwmc32kiiw/VnXKTgOCe1IlpvkPe5pQDzA=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748450815; x=1749055615;
+        d=1e100.net; s=20230601; t=1748450827; x=1749055627;
         h=content-transfer-encoding:in-reply-to:autocrypt:from
          :content-language:references:cc:to:subject:user-agent:mime-version
          :date:message-id:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
         bh=bTrLQar6gjTjFnrAkyn0kezzixoXN+IjT1tsTT4veX4=;
-        b=cEMg4GEda3z92GNQulUvn6f1c1Ko1S/rEax5tb/Dkip10tA7uONW1tBS5nZr3qmtQp
-         wH+6z7zLtNSfUmsc/wtQGi6oSNDr8YKCeL8sXlnj4+0uRYYRULsl0EERlQmxk3inwRIj
-         LYZWdtScf9iP08ejBVS6tKT9EguJU0s8fq31rGPU9v74QwOE8dfUFwVr7KfoOdbskvjJ
-         1OUEN4r73V/x7oG9RPbrEwl8jJ4iBHV3x7DSKdYBcRQJFpqXlAI3ZBRjJazoKYW5kW8h
-         /1T1Qtf4w4hkcwBnY+vBf1A/8l//6VfNJQApbVPAvl40OIa1OIB2KeoSH2Ua3GiTP6YB
-         Qb4Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVYVwN357eJ3twKVvWDElxGH0O8yphSd/W30wOHJXjBr29NI/rS3fp99ujOySSdUQG49YjBJ7muh++ZRkA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxIseCJqwITf6O35q34ZFwGaQco4Ggt7Jl6IXAIdnafeH9VHIrv
-	H0/Ak/rjJNLG8SJ5IurGtdUNcKGKaD0a9LqvXsmrk7G5xb+Fq3NKudfSIotW7kNHAw==
-X-Gm-Gg: ASbGnctS815lgfMEqZByRSmwUSetKzau5MDo9KWwysSa5OOzV9Br2BAvE8rFLXqo+9b
-	tc4fx6W6czhzlCMeidaBjO4dX00FrosfZtM29/j0D3zOXgY9xOi4TIrJNs+s5oW56vdLJeZZIw4
-	4aSCXWf2iM3eQz37T8W0D1DPRJLh3pcArYfNT6ZgCpsGJfleIpf0BeJmK49IOPLR9u/3cvem5O5
-	ibXDJrNOWcvE/FwZ5z65IGACkgiIv67OkjcLNfWkYki118e6M9HZeNOurhBMUGEnmkZRRKoXBZY
-	fFwLz+vNhN4TkcZnL26MUZQZmka+J4YFJfeWI1CaSC8eoA9lDgPCjv/5688uedNcRJTQ84+/xdJ
-	ba6uzyQwZDRRC6C77PKPMpJZNow==
-X-Google-Smtp-Source: AGHT+IFT6XAEwnqmUoOcI07id6ao8WU4RQsHRUiSo14S7rt6kSg/zNuxIRvCOFRwlU7jbF8bN29PMQ==
-X-Received: by 2002:a17:90b:3e83:b0:311:be51:bde8 with SMTP id 98e67ed59e1d1-311be51c258mr7978889a91.20.1748450814600;
-        Wed, 28 May 2025 09:46:54 -0700 (PDT)
+        b=u3YSa45zKdR1/sZ4CCyFf3/nQncaDp+xAcksasdpudb3hhtTI0Njc5ew1/wTrCwQ14
+         I8ShYQgnmGbkdrDchd9zTsHjRdEogwnn6VuHYmmDvlQVPqiUG7WRbqW3VQmPSB+5vQg3
+         Q/mzO3eskysbEvME41VqNeVGJYwBmeZWnbPxnA3qr50QiBZ7W2lASsr4Wqa+iZ2us4YR
+         hUCs05TpHMQnJx2505rwRljv9XE33bpKUfFX7HszqsE25PPVokwz685IzHpSRwmQcQXx
+         HU56OL4JYZmu88xgMNiLAhg6se1G3Tc5/t8wzsbn42L5EVQz1/dRObGGGbRcKgbWmQwj
+         a8Ew==
+X-Forwarded-Encrypted: i=1; AJvYcCVIEzUH9Q7+TMcxgLjIKE/tBbs665FWUMhOAXonBwcKiFsL74eEpOFIqq6fmnWG03/tLuXz3Ug1aZkNF30=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxspZ/NX5MLRZQgU/0yv7+yfQfLbptAE8uM8rCOK+G1LwOGpRcA
+	/yOTdeLP25er3adRrhWepjztL+r49xiTuCM9sqxgbooF3kFYz5eLSew4RXOpqpgkEw==
+X-Gm-Gg: ASbGncuZyGrdLJ2QgRdPEA3JYVDGkMFDO0aOGTcEnrqiHsuV06PI1zqYPGGxxT7TJYP
+	BFeAYMxWMi+FDcc//shPXflmi+J865pz6zxTdRffEyVf3lFkOmMMEDz9dhhWj+jYuDN0vpqZuC2
+	m1qcWXSEQQWjPbV7Ft8beTTczm+Tv1eYWfCZ1QTPH96/6ooz5/g2I1im2LYnvgHGFbURgLbyPgq
+	869Zrd0g0dBAVPVdtdNTnBQRn1C9GdVmAb8dnnOVOmA39Q2RqRrYPjnwvRpznOQ02CD4Nsa4xuD
+	nAWTg4JnDxAbEEPD/w7pKVlqIJc+3htn7wQDAHg7HL7jyprdeYMdqM7sqqZm8AbyPCGvf2iBFTg
+	oo3kCr5xRZy4faPg=
+X-Google-Smtp-Source: AGHT+IH0GIOB3le0IKYtPmRR7AMZV+k2FqHC9XHWUmEUEohQfd4DCCGdhmzJ/UzDzReG9+UWi+j8Kw==
+X-Received: by 2002:a17:90b:3651:b0:311:a4d6:30f8 with SMTP id 98e67ed59e1d1-311a4d630ffmr9297166a91.13.1748450826671;
+        Wed, 28 May 2025 09:47:06 -0700 (PDT)
 Received: from [10.67.48.245] ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-311e46ce2b1sm1520552a91.36.2025.05.28.09.46.45
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-311e46ce2b1sm1520552a91.36.2025.05.28.09.46.57
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 28 May 2025 09:46:53 -0700 (PDT)
-Message-ID: <caa88dcb-148b-485d-ac77-b1ec9ca94f13@broadcom.com>
-Date: Wed, 28 May 2025 09:46:44 -0700
+        Wed, 28 May 2025 09:47:06 -0700 (PDT)
+Message-ID: <c92b138d-3c8a-4b14-978e-0274301768df@broadcom.com>
+Date: Wed, 28 May 2025 09:46:57 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,7 +85,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 09/17] pinctrl: bcm: cygnus-ns2: Move fixed assignments to
+Subject: Re: [PATCH 10/17] pinctrl: bcm: cygnus-nsp: Move fixed assignments to
  'pinctrl_desc' definition
 To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
  Linus Walleij <linus.walleij@linaro.org>,
@@ -125,7 +125,7 @@ Cc: linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-riscv@lists.infradead.org, linux-rtc@vger.kernel.org,
  linux-stm32@st-md-mailman.stormreply.com
 References: <20250528-pinctrl-const-desc-v1-0-76fe97899945@linaro.org>
- <20250528-pinctrl-const-desc-v1-9-76fe97899945@linaro.org>
+ <20250528-pinctrl-const-desc-v1-10-76fe97899945@linaro.org>
 Content-Language: en-US
 From: Florian Fainelli <florian.fainelli@broadcom.com>
 Autocrypt: addr=florian.fainelli@broadcom.com; keydata=
@@ -160,7 +160,7 @@ Autocrypt: addr=florian.fainelli@broadcom.com; keydata=
  MIlnaE6V0U8f5zNHB7Y46yJjjYT/Ds1TJo3pvwevDWPvv6rdBeV07D9s43frUS6xYd1uFxHC
  7dZYWJjZmyUf5evr1W1gCgwLXG0PEi9n3qmz1lelQ8lSocmvxBKtMbX/OKhAfuP/iIwnTsww
  95A2SaPiQZA51NywV8OFgsN0ITl2PlZ4Tp9hHERDe6nQCsNI/Us=
-In-Reply-To: <20250528-pinctrl-const-desc-v1-9-76fe97899945@linaro.org>
+In-Reply-To: <20250528-pinctrl-const-desc-v1-10-76fe97899945@linaro.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
