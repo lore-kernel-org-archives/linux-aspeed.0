@@ -1,177 +1,95 @@
-Return-Path: <linux-aspeed+bounces-1279-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1280-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1A61C3ABB2
-	for <linux-aspeed@archiver.kernel.org>; Thu, 29 May 2025 00:19:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A042C5AD49
+	for <linux-aspeed@archiver.kernel.org>; Thu, 29 May 2025 00:20:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b76Nm5s0lz2yrB;
-	Thu, 29 May 2025 10:16:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c400::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748397970;
-	cv=pass; b=ahMfTOExZTmzKFfVrVMT1hKXZAPqN5Wpyqgnrx8z+MLYA8rneIE/RT+0sRfLPcn7hi+8jWB9EOJTAUFlWErsOCdcTgcF0VS0PXaC6VxE00nc4VtUKp4lYa5TCQMTTiwZdInW+C5ST41z2JnlfRO69DFGeggLzvz0N/yyBwTxhbZYztP9HZASVwAHwWnIXhGbgtmDTj6Oj55cu0KVqdyPE1EsSgDQCVrhr4qpF3QiA2W+LRUExEv6yq1L3NhwGpJoepjKvf/soc0RhGy7wBOrjkaJ5QVMunU+aBIlM4yqccfJml0RTc/sfF/0auX5EvRD5fRKgK8W95QjsfgVZRIphg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748397970; c=relaxed/relaxed;
-	bh=/o+RCouCo5ZVC2WN/3Xud3a2CWZ0lNgzZlJRMQBLv8I=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=mrJtzG81X2SflciWxyA5ObG27TIsQaLm9Dxx2eNg2ddSa4bES7rZ35Q8IpLeb5apexGaeP23kqPsMYmZCp0hICgAxBtPjmFHkSCG4X9eV6jm0euyvD+WPP/TyrCIRNf+HP3mNiNWeQKy3yw0MvQG+H5PkqOf3BOxX7p3NK7hOK3My81aTpdUseojgp6oa4bEngt6PnJnMhj62ucddGGD1O4hVfktNcehDJqJ73l4/S7U1775ezaz92afXBEHYvDKbvRcE9qaA9HpgUFwUnx22V5c3zp7q1ZDKoa2rL91UTLG9jkbeFy1NUphE8yge0TrDeS+AcqatXyWV55MmlxD4A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=XRaDHrx/; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c400::3; helo=hk3pr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b76Ns471zz2ygK;
+	Thu, 29 May 2025 10:16:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748436717;
+	cv=none; b=EDQIOocHfCsBgMv+RsNFFJ9KK87rQRm+VncV9/hM/UsfHImVXcSx7grU2BGWthS9n09Z8eorHAGVE3a2w6XTAnll3g6KwwBaPlTvVQHWwJXKCAH8b6y/5Rplg2BpGK0WVTejr9dSnw2GqqPEktYixOcfswcmsZ6WZqgQmbP1vjHsTQJPSubywuKs504+qDSVdU3ye/aoJakCE7ySlPekjxSmeK5uFSKT0Bv98zmmVka5DetBFF1H1YyaHQ2kg4sVErDUpvj+0ua2uHMUNzXG45B4j9zJ/8aXfvn3SFr4mIZiK91YLyi12cn4Zaf8vosdIjCte7s0XGLQDxVHtwH6Dw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1748436717; c=relaxed/relaxed;
+	bh=kB7iTXZYNtwJt0PtMe69WPYXcPVzYowqNRiFzjz3jZY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=iepY+Nu4CFuuGjQ8aj6/BGyu2XiNUlHJAV0U5ECe+7fU5IMLx0TT2DnOLIHoQmGvoNGBfIeVOTPVYwjh1Y88jo/9iz8SRyPh+4tvrdqvpwQvHxlfRzJxnm29DDAsgHTAnIMS29emRdHiHVNqv1bNk3Sl2cDlspf9ZLTeMgQixD5d7M1vWiLek35th6PurBv0bpAioo1EXcp/CukqMjKVDPb7RFCQ7JsJhC+1pbYH/F9G5wwRtxpgUvEHxx/SUySMGEMx1BdC3BMHfE7z/a4sL9/ic44JE2wYBkajxPeGE9qBjlSj5oc5z0fQAQPIBpjgvqlujdo55FlY4DIakbCA2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aEt+GYsq; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=lorenzo@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=XRaDHrx/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aEt+GYsq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c400::3; helo=hk3pr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from HK3PR03CU002.outbound.protection.outlook.com (mail-eastasiaazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c400::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=lorenzo@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6Xsr31Q7z2xHT
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 28 May 2025 12:06:08 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=MObpab1Agxxqa0e4PV0b6eXJUCTS5M/ioBrhtGj3ETB8uK2+olD+fWQUnxGHhI/zQWfrl2xCnDm/Kb+njAiVoKbjU+Oqljsh9B3shQr+wlI3zdV8wil/6nh6aFSttCdVK/cwa2ZqmVYANa5fWgTa6klzO72o7SZSyEvN810E2MCK7z69+3E3hLqy9SXsMNi3cgOWCEQImKF3agX1l91PdfVLaWXJPJk9Ww7Uia+guQtGKfB3vHwhvfE1xwMzv8Kz6543v2jYhOUrUq3RduZTYPtveDsI7ZnUFLPRy61W+k84BqCVYSYKVt/KtlWSbFaXg+SUGmFTS6Nk6df4XuCo1Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/o+RCouCo5ZVC2WN/3Xud3a2CWZ0lNgzZlJRMQBLv8I=;
- b=A2jzGPGdcDchTg78qmdqZA4mqdkb4YrEHiXOBc0z/lgfN/ySASgddmfTxJM7k4ziApQearMS18OEF2DWeShz5onLsMhqzrHh/uKZewdR/BPhuEVL5Vhk4JiLuN/EeNbHrF6HDT4k+fqNzeIAAGQgjW3QKMUDBo5bkUJGFG7IgmPDiG5qqR0c2BuuhFd7vqyXlZq/uP7fCQJvN6d351MKjvfwpeOKTC1xYt0wqYEaPhND6AVwA0XHQ1duIVnLf20sjzaTcEfpzWsmZbe4LGvh3y/9DnAFRT5nykU5hk9sOAwxa2d+tA8La4LTKYP3nfYxQDh7562ENHGFnfraULLSpw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/o+RCouCo5ZVC2WN/3Xud3a2CWZ0lNgzZlJRMQBLv8I=;
- b=XRaDHrx/VuRMwnDiQWPaJq/ZYCp3/oyTl7qgI80Odg8cyMBdn+664rqFokCRiVNb9vNME76nZMfzLrTsHsmQJll8wscJMow1CNNURzq8G6Z8lLWSa9yKI8835ukNqIiDiQ9UHbodCGamygWDQc+seMfRh0FOcWLzPSkd2Tp4s0DP3s4Be3yQO3bXK8rM0nzjKSFeOpuuTrEt4pTaT7ph6J/n6dljE5dphG5hszdwxvyEy5lyHUbZUDIONTH6+CWbdeR45BwYMyCGFoYNjZA86OqPE1nXm8XW+B3uO7P0Ex0TscN/7FnKSs4WKvwL7I2wJ6IXwxMm5grm4F1YmUk75g==
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
- by SEZPR06MB7345.apcprd06.prod.outlook.com (2603:1096:101:255::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8769.24; Wed, 28 May
- 2025 01:49:58 +0000
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28%5]) with mapi id 15.20.8769.022; Wed, 28 May 2025
- 01:49:58 +0000
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Conor Dooley <conor@kernel.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "andrew+netdev@lunn.ch"
-	<andrew+netdev@lunn.ch>, "davem@davemloft.net" <davem@davemloft.net>,
-	"edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
-	<kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>, "robh@kernel.org"
-	<robh@kernel.org>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
-	"conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
-	<joel@jms.id.au>, "andrew@codeconstruct.com.au"
-	<andrew@codeconstruct.com.au>, "mturquette@baylibre.com"
-	<mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
-	"p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, BMC-SW
-	<BMC-SW@aspeedtech.com>
-Subject:
- =?big5?B?pl7C0DogW25ldCAxLzRdIGR0LWJpbmRpbmdzOiBuZXQ6IGZ0Z21hYzEwMDogQWRk?=
- =?big5?Q?_resets_property?=
-Thread-Topic: [net 1/4] dt-bindings: net: ftgmac100: Add resets property
-Thread-Index: AQHbyWmbzc4DO9TZvEidHe0NP79ULbPbqjGAgAod+ZCAAMf9AIAAwfmA
-Date: Wed, 28 May 2025 01:49:58 +0000
-Message-ID:
- <SEYPR06MB5134B705B97DA376D60DDA149D67A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-References: <20250520092848.531070-1-jacky_chou@aspeedtech.com>
- <20250520092848.531070-2-jacky_chou@aspeedtech.com>
- <20250520-creature-strenuous-e8b1f36ab82d@spud>
- <SEYPR06MB51346A27CD1C50C2922FE30C9D64A@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <20250527-sandy-uninvited-084d071c4418@spud>
-In-Reply-To: <20250527-sandy-uninvited-084d071c4418@spud>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|SEZPR06MB7345:EE_
-x-ms-office365-filtering-correlation-id: b640ea60-94a4-4fd3-e5c4-08dd9d89f40f
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|366016|376014|7416014|38070700018;
-x-microsoft-antispam-message-info:
- =?big5?B?bnRESHl6cFhLOEYrN1k4UGphZ0VJZW5Ua29OWHBqUlRFWWkrOHhMZE9DS2pMdHBs?=
- =?big5?B?S2duN2ZVZnVSeXM1YmdlSTNLRjZhMDlibERxdVNRQkxSTCt1TXpqYjdJSDdzZDF1?=
- =?big5?B?TVJZR2VSYVBWZ2EwN2xHdW9SQXBhL0gzWUtGS3ZiZTBrWTk0dW5ha1hSREZlVGVl?=
- =?big5?B?bEZvS08wOGtSd05JR0RCZ3VrQnRzSmF2a29ocjFtWHVkeW1yNThXV3Q1cU5ZTk9I?=
- =?big5?B?ZTVycWRMMWpicjhqTEUzcHQzUnBxcVFiaUE1MElMMDI1dE10dC9oSVU0bXBYT0V3?=
- =?big5?B?dXNEeUpTUk5qQmlOWmlTM0Y4aW1YejNzaDlBWnV0cHNqQWZNNjJaZCt6K3N4Smtx?=
- =?big5?B?TjEzelpTb1lRZytZeWZKSEsxMll0M3dnS01GQndRWU9uYmhUUWg2MnNJaEVENTRm?=
- =?big5?B?c3lRWFZzbnMxYkRyZUxPVHF4U0dWS21rQmV0Vk1mdHdxWDFRN28wSlZTRklWdWgx?=
- =?big5?B?SmhwTFlKeXdsL05pKzZDNWhsTm1pRnFoVGhwbE9uTVpvdmIvbU56YXJsK0UyTlE4?=
- =?big5?B?RnZWUzNXczA1STI0SkYwc0JvbWx6cmYwNG43OUVPYTB1L3B1ZHZkVGxMVVlRWlZ5?=
- =?big5?B?ckxXU3k1UDVlWFZkLytuZkUwb05OZmRWNjcwQmhwQzFla0REazlWTUx4RE80Nm1V?=
- =?big5?B?QnpTcnIzMUZXRSt1MU9OeFhsc3YyWVhnaG5OVDkrV1BwRTNYL1A1alFVZXVYY0Jn?=
- =?big5?B?ZVRIUmhMUHJTWEZzU0JERkZSVllTTDBuQlhXZno4alJCZHl6alBKQTdOejlBN3Nr?=
- =?big5?B?VUJXMHhPWGZUWk5FdkUvWnptc2tEaG9YU1FEM2hHYXBJWmRGMUR4U3hrVWJtd2pv?=
- =?big5?B?eHdFU1hTTGoyY1RSVFlYU1ZIQkpoTU1EUk9NbHc1eTFNNTdlalhkYlNNYUFCSUVx?=
- =?big5?B?anBMeVNmUUdqb2RTNWhzWGpJY1M5MHFVZ1czRjRldTNTay9QSkNFN01yREFBazZ3?=
- =?big5?B?NTc3dlBQQVh5anp1c3N3NHF4MUpXSEdrMjgvZDJnRDllTXRzTEtRZGpvN3RUNERz?=
- =?big5?B?c2hwVkMrYVhDQUM0MmdxaDZRRDBjUFFjd0NlblZYQytpRzhOckZsV0Q4Njh0a1Q0?=
- =?big5?B?Q0FNandMSitIdHFzbnNTY1luM1o0NFN4Z3g3VE4vV3N6RmZRUStzK0xINzBXS1Qz?=
- =?big5?B?bFRYbU04eUh6dVllMzBQb1R3MlNpVDlaUWJVYTV6bTlnL2ZkNlJvTVVaZ21jRXJF?=
- =?big5?B?VUsvOHF4VGozYUNxOUhrSXRKUFZ3UFpGVlljbnloZTY0MW5KOGhxcm5MS2FUbWY2?=
- =?big5?B?NTdHVFgyU0hUcUREQU5VZHgyWXJZRklBeld5NzdPaG42UEgyUHZkMnVMWE9qcUFH?=
- =?big5?B?VGZFU0oxYzdvdW85Wk8rbUpoeU04SUNIT09YUURkajBCV1hyWWw0cGM2b3ErWFJx?=
- =?big5?B?dTZ0MmR5K3lYUjBBbHZIUTVLeUxGWEZCRk01eVNiamt1RVhmaXYzM2x6dXg5Qndo?=
- =?big5?B?OTRhUFdsV1J6ZisvTjVlZEZ5MDF4RWVOdDhTVlVUV2h6MVJoSzU3eW9BNG51cEVk?=
- =?big5?B?Z3RLZTBWd0JTY1diL0lib3haeXFuV1BUK2R6dndqQUI0bFE1Y3dYSThhUFFZZ1dU?=
- =?big5?B?Q0lrOTAzK1VpakJvbDd4UlErS0Z3QnE4dFJnaW1IenM2dmZRZXhZRkloREZoWkEz?=
- =?big5?B?MjB3b0FFdjU2S05PaUMrZEFYbndYdG5jejBHRHBKVC9wc0RjUnhQK0NTL0Z6ZTA1?=
- =?big5?B?ZGtwUVdEa1VkN2NTdWQvdTJrTkQreFJDTlNBeHYrc1BFTy9pUVRNdi9mSGQxR3pT?=
- =?big5?B?aXVVRmR5a2ZHNXNsRmYzRFpuUkpucUkvWngzaVhtM0hIcWFHWUF1MThYMFlkZ1Jx?=
- =?big5?B?VUk2TWtVbEovMG82VnVwODkxUUV4TEY0dVU1RWZrZmcrQVFnSG5BeXJNRWFUa0R3?=
- =?big5?B?cUQ2N2Z3PT0=?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(38070700018);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?big5?B?dTRNSzN6aUZFaC85M0NzRVBmTnZXVktnRmgzanBlbE1FVUpORVdjdEZUaDZnYzR5?=
- =?big5?B?V0lrQzlzdFZqVWg5dmhFNUl6RDM2Ri83SFZMMUlidlN6dlFjTG9xdXAwb1F4K040?=
- =?big5?B?T042WkVodzg1Wml4Qm9PZ0VwYUwxUldQelpFTGY5Y2drclFvNjdRUjM1QUZSTWpH?=
- =?big5?B?Skp5bWlXYkJtZnMrSnVXS2c2WkJmL0Z2aWhOWDlOOWowWFAyeDRIUFdMcjhTNy9C?=
- =?big5?B?ZjRBNXFRSXZpdlhNMlZDLzZDYXpnUW9xbTRxSjcwRENqNXc2RkNxWFB1VnZtWTV6?=
- =?big5?B?NTh5TlNRaDI3MkhuclZadUwyZ3VSYnEzd2lycTJzanlLYlNoZytTRGh1ckxVNTBR?=
- =?big5?B?Zitib2Q0d0xVcUJjYzlPTC9oVEhFcEp4bks0bWs0T1p1bzJpYVNWRXRDNWhKeWpt?=
- =?big5?B?di9lZXBMbWw2cmVYaVdqNkdSMzRtS0UwYnZSaUczQkFRdCsrRjVER3pUcjVhcW8z?=
- =?big5?B?TzM4V3htVzdLbk52ekxaM0loSWE3OWVaSmxFQnI5VUloaGJhR2Rtd2NtQWwwVEUz?=
- =?big5?B?NENnSlo1R2VDTVlkQmhxSjJIR216WXhmbmZUMWlIcjNrbGgrMERUZ3NNbUQ1djg4?=
- =?big5?B?RjAxTCtUcTRLMzdFNE5HemN3a250eXJXMFNXR05rTlVodDA0VUJJRTFsZS9nYkZH?=
- =?big5?B?VmEyWXVIL2hvaCt6S1gySVpwNlN5VnByN0Z1cWRtUG1aeUpENTFMbFV1dzFQWm5Z?=
- =?big5?B?dmIxeTBrQ2pnMnNIQ1BncnhUZ2dobkd4R3FaTHBZVjlya3VlMnlSK0dHZlVvdUVy?=
- =?big5?B?VHVUNmhMWVdjSnp5YXFJKzFueGR4YnJmWWxiNVBmQzN5anZUdnM2UU12NURhTXdt?=
- =?big5?B?YW9ROVZEc2QwL2NoTzZQTmtub3FDNzM3czFnNk52ckV5Rmgva01BM1VQWVc4cmxJ?=
- =?big5?B?enlKNXdSc3BodU9xbFhrdTVma21UckNaTVhkdnFYNlFUU3J0OXpzR3NqNnZVVDNx?=
- =?big5?B?bS9weFg0Y2ZYL0FmeTZnNnpzUGhiMU5raGNnbWpsTVUwdEhvYW42Syt4ZS9VNFlk?=
- =?big5?B?eXZyQTBEZGFlZHAxMTZ5UHd6ZXhmd3F4eVRUemp2ZHR6SHRzNE44ck82dW1LN0VE?=
- =?big5?B?Uk80TDY0R1B0Z3F1WW9XL1VDTVBKZzRYeGhrQWlXT3pIbDRJbFRXRkpUeDVxQ2xo?=
- =?big5?B?YythRFVNWGRmejNjS1ZCTXBBSkdYcmt3RU84MnljZ2t5WGJNcVNtUUdod0ROMTdN?=
- =?big5?B?ZzRiT2pkQk53UFVPakFhOTI4YmxQaHc2MWYzdmlCTzJPNW1JQno2UXpYazNOWWsz?=
- =?big5?B?TlovNjZTY1dpYmphenVDUzJ6VERFbmZqdCtQbjNPWTFCSXdETldpZ1U5Z1I1SFlC?=
- =?big5?B?dVBTdWdOTDcxWUZwV1hpMVMrNGRMRkdUekErUlBlbk5Fa0tsT2hmYVY4bFRjNFcx?=
- =?big5?B?ZmlvMFQ3ZEJhZW16SnhqNzlkK29nRlFrdFh4Y2sveUJBb1pSeHFialN5V0F6d3oy?=
- =?big5?B?MUlmNWdsVm9ZZGhjdmV6bEN3MGRqNVliVmI2b2p6cnI2cjFPMGtNSHJabGtCUVJH?=
- =?big5?B?UzljT09RK3NzWkJBdW0ydGU4MEJDTSsxUW1DajJpc201OHpQN1BVbXd6OCszUDVx?=
- =?big5?B?emRQeVB0bERXWE96bzVUdWRMTHlJMlNDTjVDVDNCdnlsTUlTK3hvMlExN2E4STZw?=
- =?big5?B?Mk1zVDdvdkR0c0RtQnoxdnF1TUp0alY2dnB4RUdORnFoRWZOcEZMUHJTdm1QdkZN?=
- =?big5?B?bjVZelRFME11OHdldTJUZ1o2VlA2K0RIelh0bXRZNFYyZFpHRU1zQmsraHJXdXVX?=
- =?big5?B?eW1hWGd0NXYrcTRiQllwaGo2R1VyUnExekVlSTFiMm5rVXNORzRIOUF1VytNbXNp?=
- =?big5?B?OE5ZTGtXekZzR1hVRDdZd09pODNuSGF0RUJXZEdLd1VpZEpaNjY5NkhEVlNWV0Mx?=
- =?big5?B?aDUxejVKcWh6a05OOHlmOU1iSHczMDVTUFdGYlJPL0JxSFBzY1h1YnZPa3RzWWpQ?=
- =?big5?B?VTFnWDZMc0cyTmJVc2ZuMHNxeUs5blpIMmtrTkxLeUhkLytSVy9IcVRNUGFnV1hR?=
- =?big5?Q?CsGk/G2Vyp7vTCCU?=
-Content-Type: text/plain; charset="big5"
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b6qC02sPpz2xgp;
+	Wed, 28 May 2025 22:51:56 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 501C14A698;
+	Wed, 28 May 2025 12:51:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A382FC4CEE7;
+	Wed, 28 May 2025 12:51:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1748436714;
+	bh=SnUlBhjo9u7u7RSQrf1KxHe5OU8VLd3rhNPNiG04UYs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=aEt+GYsqzE/+UQ/K7Hk/i0gSau9lkAT3hL2R69tTRbqACtYt9VtHrhU5qY0ibd3Xj
+	 EJQ3E8/eVuQ9CMfiomfFvchMrdqbskU2hRlkRmAtm4ZIk8qi0YifCqF9f6QQA6JgtE
+	 p9De0b1FMSRDj/IMgpOUzmtgoo7e4OSxEvq6HLAAHH/hJqFzgGBn4DqT7Lqat/SLZg
+	 i0LTZOqnq5R4P1I+l0r6kgNzamQPvGQG6wa2Lk1zJDGxHNf7he3hgN4ROBnp87OAo+
+	 yqhhzH8qztpN1ghO3+normZFf8fTYF/IPwFkOX9NyZx1nJKPkCY5jmDg9H6VKHkSff
+	 XClTH+H/YL33g==
+Date: Wed, 28 May 2025 14:51:51 +0200
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>,
+	Basavaraj Natikar <Basavaraj.Natikar@amd.com>,
+	Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Joel Stanley <joel@jms.id.au>, Avi Fishman <avifishman70@gmail.com>,
+	Tomer Maimon <tmaimon77@gmail.com>,
+	Tali Perry <tali.perry1@gmail.com>,
+	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+	Benjamin Fair <benjaminfair@google.com>,
+	Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+	=?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	David Rhodes <david.rhodes@cirrus.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Charles Keepax <ckeepax@opensource.cirrus.com>,
+	Sean Wang <sean.wang@kernel.org>,
+	Jesper Nilsson <jesper.nilsson@axis.com>,
+	Lars Persson <lars.persson@axis.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Vladimir Zapolskiy <vz@mleia.com>,
+	Michal Simek <michal.simek@amd.com>,
+	Emil Renner Berthing <kernel@esmil.dk>,
+	Jianlong Huang <jianlong.huang@starfivetech.com>,
+	Hal Feng <hal.feng@starfivetech.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org, linux-sound@vger.kernel.org,
+	patches@opensource.cirrus.com, linux-mediatek@lists.infradead.org,
+	linux-arm-kernel@axis.com, linux-riscv@lists.infradead.org,
+	linux-rtc@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com
+Subject: Re: [PATCH 16/17] pinctrl: Constify static 'pinctrl_desc'
+Message-ID: <aDcG58lXUgtW7pRZ@lore-desk>
+References: <20250528-pinctrl-const-desc-v1-0-76fe97899945@linaro.org>
+ <20250528-pinctrl-const-desc-v1-16-76fe97899945@linaro.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -185,28 +103,227 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b640ea60-94a4-4fd3-e5c4-08dd9d89f40f
-X-MS-Exchange-CrossTenant-originalarrivaltime: 28 May 2025 01:49:58.7054
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: D5+9q5BXPQRXrAwo8NVw6cJyYPAFwXgWeqG1dgGA5GQyfvc6uTKsszi2IcdorMGnB6PwSHap9EnJwC3fozWdHr9PlyqxPCmwss0M9E3r9m4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB7345
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="/Ro94xiBz0rUYauQ"
+Content-Disposition: inline
+In-Reply-To: <20250528-pinctrl-const-desc-v1-16-76fe97899945@linaro.org>
 
-SGkgQ29ub3IgRG9vbGV5LA0KDQoNCj4gPiA+ID4gKyAgcmVzZXRzOg0KPiA+ID4gPiArICAgIG1h
-eEl0ZW1zOiAxDQo+ID4gPiA+ICsgICAgZGVzY3JpcHRpb246DQo+ID4gPiA+ICsgICAgICBPcHRp
-b25hbCByZXNldCBjb250cm9sIGZvciB0aGUgTUFDIGNvbnRyb2xsZXIgKGUuZy4gQXNwZWVkDQo+
-ID4gPiA+ICsgU29DcykNCj4gPiA+DQo+ID4gPiBJZiBvbmx5IGFzcGVlZCBzb2NzIHN1cHBvcnQg
-dGhpcywgdGhlbiBwbGVhc2UgcmVzdHJpY3QgdG8ganVzdCB5b3VyIHByb2R1Y3RzLg0KPiA+ID4N
-Cj4gPg0KPiA+IFRoZSByZXNldCBmdW5jdGlvbiBpcyBvcHRpb25hbCBpbiBkcml2ZXIuDQo+ID4g
-SWYgdGhlcmUgaXMgcmVzZXQgZnVuY3Rpb24gaW4gdGhlIG90aGVyIFNvQywgaXQgY2FuIGFsc28g
-dXNlcyB0aGUgcmVzZXQgcHJvcGVydHkNCj4gaW4gdGhlaXIgU29DLg0KPiANCj4gImlmIiwgc3Vy
-ZS4gQnV0IHlvdSBkb24ndCBrbm93IGFib3V0IGFueSBvdGhlciBTb0NzLCBzbyBwbGVhc2UgcmVz
-dHJpY3QgaXQgdG8gdGhlDQo+IHN5c3RlbXMgdGhhdCB5b3UgZG8ga25vdyBoYXZlIGEgcmVzZXQu
-DQoNCkFncmVlZC4NCkkgd2lsbCByZXN0cmljdCBpdCBpbiBuZXh0IHZlcnNpb24uDQoNCkphY2t5
-DQo=
+
+--/Ro94xiBz0rUYauQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+> The local static 'struct pinctrl_desc' is not modified, so can be made
+> const for code safety.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+For airoha bits:
+
+Acked-by: Lorenzo Bianconi <lorenzo@kernel.org>
+
+> ---
+>  drivers/pinctrl/berlin/berlin.c                    | 2 +-
+>  drivers/pinctrl/cirrus/pinctrl-cs42l43.c           | 2 +-
+>  drivers/pinctrl/mediatek/pinctrl-airoha.c          | 2 +-
+>  drivers/pinctrl/pinctrl-artpec6.c                  | 2 +-
+>  drivers/pinctrl/pinctrl-bm1880.c                   | 2 +-
+>  drivers/pinctrl/pinctrl-k210.c                     | 2 +-
+>  drivers/pinctrl/pinctrl-lpc18xx.c                  | 2 +-
+>  drivers/pinctrl/pinctrl-mlxbf3.c                   | 2 +-
+>  drivers/pinctrl/pinctrl-tb10x.c                    | 2 +-
+>  drivers/pinctrl/pinctrl-zynq.c                     | 2 +-
+>  drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c | 2 +-
+>  11 files changed, 11 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/drivers/pinctrl/berlin/berlin.c b/drivers/pinctrl/berlin/ber=
+lin.c
+> index c372a2a24be4bb80b1f2475ef8512171c8e1326f..e5a35b803ce66d247c5e5ad78=
+e6677570a1add60 100644
+> --- a/drivers/pinctrl/berlin/berlin.c
+> +++ b/drivers/pinctrl/berlin/berlin.c
+> @@ -283,7 +283,7 @@ static int berlin_pinctrl_build_state(struct platform=
+_device *pdev)
+>  	return 0;
+>  }
+> =20
+> -static struct pinctrl_desc berlin_pctrl_desc =3D {
+> +static const struct pinctrl_desc berlin_pctrl_desc =3D {
+>  	.name		=3D "berlin-pinctrl",
+>  	.pctlops	=3D &berlin_pinctrl_ops,
+>  	.pmxops		=3D &berlin_pinmux_ops,
+> diff --git a/drivers/pinctrl/cirrus/pinctrl-cs42l43.c b/drivers/pinctrl/c=
+irrus/pinctrl-cs42l43.c
+> index 628b60ccc2b07dc77e36da8919436fa348749e0c..a90beb986f5bb707c54552e13=
+33802943a4b04bc 100644
+> --- a/drivers/pinctrl/cirrus/pinctrl-cs42l43.c
+> +++ b/drivers/pinctrl/cirrus/pinctrl-cs42l43.c
+> @@ -448,7 +448,7 @@ static const struct pinconf_ops cs42l43_pin_conf_ops =
+=3D {
+>  	.pin_config_group_set	=3D cs42l43_pin_config_group_set,
+>  };
+> =20
+> -static struct pinctrl_desc cs42l43_pin_desc =3D {
+> +static const struct pinctrl_desc cs42l43_pin_desc =3D {
+>  	.name		=3D "cs42l43-pinctrl",
+>  	.owner		=3D THIS_MODULE,
+> =20
+> diff --git a/drivers/pinctrl/mediatek/pinctrl-airoha.c b/drivers/pinctrl/=
+mediatek/pinctrl-airoha.c
+> index b97b28ebb37a6ec092360f8ea404dd67e6c43eac..ccd2b512e8365b3a5af0bb223=
+329f39119bc7078 100644
+> --- a/drivers/pinctrl/mediatek/pinctrl-airoha.c
+> +++ b/drivers/pinctrl/mediatek/pinctrl-airoha.c
+> @@ -2852,7 +2852,7 @@ static const struct pinctrl_ops airoha_pctlops =3D {
+>  	.dt_free_map =3D pinconf_generic_dt_free_map,
+>  };
+> =20
+> -static struct pinctrl_desc airoha_pinctrl_desc =3D {
+> +static const struct pinctrl_desc airoha_pinctrl_desc =3D {
+>  	.name =3D KBUILD_MODNAME,
+>  	.owner =3D THIS_MODULE,
+>  	.pctlops =3D &airoha_pctlops,
+> diff --git a/drivers/pinctrl/pinctrl-artpec6.c b/drivers/pinctrl/pinctrl-=
+artpec6.c
+> index 717f9592b28b51737e67aafc93664b1345511908..af67057128ff1e9e766b958fe=
+ce9c71518c89081 100644
+> --- a/drivers/pinctrl/pinctrl-artpec6.c
+> +++ b/drivers/pinctrl/pinctrl-artpec6.c
+> @@ -907,7 +907,7 @@ static const struct pinconf_ops artpec6_pconf_ops =3D=
+ {
+>  	.pin_config_group_set	=3D artpec6_pconf_group_set,
+>  };
+> =20
+> -static struct pinctrl_desc artpec6_desc =3D {
+> +static const struct pinctrl_desc artpec6_desc =3D {
+>  	.name	 =3D "artpec6-pinctrl",
+>  	.owner	 =3D THIS_MODULE,
+>  	.pins	 =3D artpec6_pins,
+> diff --git a/drivers/pinctrl/pinctrl-bm1880.c b/drivers/pinctrl/pinctrl-b=
+m1880.c
+> index b0000fe5b31dfbcd6af6eaf0c01029f00cbd205b..387798fb09be51cabd5cb76e0=
+d90a28b1d363050 100644
+> --- a/drivers/pinctrl/pinctrl-bm1880.c
+> +++ b/drivers/pinctrl/pinctrl-bm1880.c
+> @@ -1298,7 +1298,7 @@ static const struct pinmux_ops bm1880_pinmux_ops =
+=3D {
+>  	.set_mux =3D bm1880_pinmux_set_mux,
+>  };
+> =20
+> -static struct pinctrl_desc bm1880_desc =3D {
+> +static const struct pinctrl_desc bm1880_desc =3D {
+>  	.name =3D "bm1880_pinctrl",
+>  	.pins =3D bm1880_pins,
+>  	.npins =3D ARRAY_SIZE(bm1880_pins),
+> diff --git a/drivers/pinctrl/pinctrl-k210.c b/drivers/pinctrl/pinctrl-k21=
+0.c
+> index eddb01796a83eb86c8c5bcf6788c999e8bf2926a..66c04120c29deccf53b21cbf8=
+705f1d10c74ace5 100644
+> --- a/drivers/pinctrl/pinctrl-k210.c
+> +++ b/drivers/pinctrl/pinctrl-k210.c
+> @@ -879,7 +879,7 @@ static const struct pinctrl_ops k210_pinctrl_ops =3D {
+>  	.dt_free_map =3D pinconf_generic_dt_free_map,
+>  };
+> =20
+> -static struct pinctrl_desc k210_pinctrl_desc =3D {
+> +static const struct pinctrl_desc k210_pinctrl_desc =3D {
+>  	.name =3D "k210-pinctrl",
+>  	.pins =3D k210_pins,
+>  	.npins =3D K210_NPINS,
+> diff --git a/drivers/pinctrl/pinctrl-lpc18xx.c b/drivers/pinctrl/pinctrl-=
+lpc18xx.c
+> index 0f5a7bed2f81b731714e3b65908df23f2ffdfd63..5e0201768323521754e7ecd27=
+e878a81925c18a6 100644
+> --- a/drivers/pinctrl/pinctrl-lpc18xx.c
+> +++ b/drivers/pinctrl/pinctrl-lpc18xx.c
+> @@ -1257,7 +1257,7 @@ static const struct pinctrl_ops lpc18xx_pctl_ops =
+=3D {
+>  	.dt_free_map		=3D pinctrl_utils_free_map,
+>  };
+> =20
+> -static struct pinctrl_desc lpc18xx_scu_desc =3D {
+> +static const struct pinctrl_desc lpc18xx_scu_desc =3D {
+>  	.name =3D "lpc18xx/43xx-scu",
+>  	.pins =3D lpc18xx_pins,
+>  	.npins =3D ARRAY_SIZE(lpc18xx_pins),
+> diff --git a/drivers/pinctrl/pinctrl-mlxbf3.c b/drivers/pinctrl/pinctrl-m=
+lxbf3.c
+> index ffb5dda364dc81808cfd5a168ce3f1e9f119357d..fcd9d46de89fb3e5215784109=
+ba31b171fd15448 100644
+> --- a/drivers/pinctrl/pinctrl-mlxbf3.c
+> +++ b/drivers/pinctrl/pinctrl-mlxbf3.c
+> @@ -231,7 +231,7 @@ static const struct pinmux_ops mlxbf3_pmx_ops =3D {
+>  	.gpio_request_enable =3D mlxbf3_gpio_request_enable,
+>  };
+> =20
+> -static struct pinctrl_desc mlxbf3_pin_desc =3D {
+> +static const struct pinctrl_desc mlxbf3_pin_desc =3D {
+>  	.name =3D "pinctrl-mlxbf3",
+>  	.pins =3D mlxbf3_pins,
+>  	.npins =3D ARRAY_SIZE(mlxbf3_pins),
+> diff --git a/drivers/pinctrl/pinctrl-tb10x.c b/drivers/pinctrl/pinctrl-tb=
+10x.c
+> index d6bb8f58978df1577db24f96c2174f47962b5520..2d2e9f697ff99b4209dda8d55=
+11f478a18b26a21 100644
+> --- a/drivers/pinctrl/pinctrl-tb10x.c
+> +++ b/drivers/pinctrl/pinctrl-tb10x.c
+> @@ -735,7 +735,7 @@ static const struct pinmux_ops tb10x_pinmux_ops =3D {
+>  	.set_mux =3D tb10x_pctl_set_mux,
+>  };
+> =20
+> -static struct pinctrl_desc tb10x_pindesc =3D {
+> +static const struct pinctrl_desc tb10x_pindesc =3D {
+>  	.name =3D "TB10x",
+>  	.pins =3D tb10x_pins,
+>  	.npins =3D ARRAY_SIZE(tb10x_pins),
+> diff --git a/drivers/pinctrl/pinctrl-zynq.c b/drivers/pinctrl/pinctrl-zyn=
+q.c
+> index caa8a2ca3e681718fe213921deca8d130371b122..dcde86fed10db3e2dfebc19cb=
+841ea7f63e74989 100644
+> --- a/drivers/pinctrl/pinctrl-zynq.c
+> +++ b/drivers/pinctrl/pinctrl-zynq.c
+> @@ -1143,7 +1143,7 @@ static const struct pinconf_ops zynq_pinconf_ops =
+=3D {
+>  	.pin_config_group_set =3D zynq_pinconf_group_set,
+>  };
+> =20
+> -static struct pinctrl_desc zynq_desc =3D {
+> +static const struct pinctrl_desc zynq_desc =3D {
+>  	.name =3D "zynq_pinctrl",
+>  	.pins =3D zynq_pins,
+>  	.npins =3D ARRAY_SIZE(zynq_pins),
+> diff --git a/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c b/drivers=
+/pinctrl/starfive/pinctrl-starfive-jh7100.c
+> index 27f99183d994dccb92aac81ca42228bdb9225e87..aeaa0ded7c1e5ee7f9c5e4113=
+bfd208fb844ba7d 100644
+> --- a/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
+> +++ b/drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c
+> @@ -898,7 +898,7 @@ static const struct pinconf_ops starfive_pinconf_ops =
+=3D {
+>  	.is_generic =3D true,
+>  };
+> =20
+> -static struct pinctrl_desc starfive_desc =3D {
+> +static const struct pinctrl_desc starfive_desc =3D {
+>  	.name =3D DRIVER_NAME,
+>  	.pins =3D starfive_pins,
+>  	.npins =3D ARRAY_SIZE(starfive_pins),
+>=20
+> --=20
+> 2.45.2
+>=20
+
+--/Ro94xiBz0rUYauQ
+Content-Type: application/pgp-signature; name=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCaDcG5wAKCRA6cBh0uS2t
+rABgAQDChqlOupLj8dMgBJtw+ZYSz23faF0MajHN6Bznec2ZxQD/b4iuNIDVxDRu
+w5SyOOU+1pIOKkH9BqiTR31e740csQc=
+=S7ff
+-----END PGP SIGNATURE-----
+
+--/Ro94xiBz0rUYauQ--
 
