@@ -1,76 +1,67 @@
-Return-Path: <linux-aspeed+bounces-1287-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1288-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 526A4C3ABB2
-	for <linux-aspeed@archiver.kernel.org>; Fri, 30 May 2025 04:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 279FFC5B552
+	for <linux-aspeed@archiver.kernel.org>; Fri, 30 May 2025 08:12:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b7qYD6sQVz2xrb;
-	Fri, 30 May 2025 14:11:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748518806;
-	cv=none; b=JQHncUoc9+cmjqrWhv3i5YKVjs8+nHRf/OJCDRgtM86xAA1xh8yJpTnt+4bzyyynO4dfUv8IWS0iHn51Hce65rKMOoKykmozs67EeJXqrMxZMcFg6kewoEfv7zjczB3MDH6C/ZCpGYPnI2tLgFaTIUEIueNO54CS7vdcfMIcNzkTDNnGZSN4kRtymhbEgGJyN9nGhQxNtCNX3bih/pxMC2Uphml64WF0tTZWE1ZsAcEqXtqKPPWng6B2/ExZPz+vQe2Q4xTyWObYd6Yqr5wMEgGmWfV2Nvn9SO/gQKEjcVZdp7l7S3mGPNZ5GCQiKJ7KdtEkknrmsBRkpOiX5f0Jsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b7wvn2tVfz2xC3;
+	Fri, 30 May 2025 18:12:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.161.41
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748592757;
+	cv=none; b=fmJ3uA/L01ljHOQoeJZkPKAVWM/fqpa3rACzntzxwc2XqdP00fwRAFQDzDslB3T8Xi3SmDrrC6Gb/+mzBwpwyV2irtHM4KHzTwFstOxkFKCtMV95JI7A8Y6tjHGyuR3EEYKN6VafkyWzpGgd/03ZKPnkAZ6AqIBkiWD44aOLo10vAr50bHGMu3NPNt1+L3Z8TnLJufotaXwkKTBqCZQdxcyw0ySkB3LYM2+L1Zu6osqY4CoW9IExvPpGgvRvWuikULpWCgJ2JuuKE/4v0npUEDgLZQt9Z2iIzZesg6tlhfoKheyVOY5gCOawjJ912v6bzXSdogZ9hJGA8Q0nmQpxRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748518806; c=relaxed/relaxed;
-	bh=oPJPluA2yPOrdl3Xx9YilnLVqcTIWj8u7ZCyZ4fkpT8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=jPpIOeIuk7G5/il9fYvc+KjRv2UasHbaw67ewjyowVPSVtXAITK87gkByv7uHXb3oB72vNFmKe6v8fsirF0dUN1ZmtyQjL6u+NYGmVoewD43SG/mnQ9Du2ekpxYRN0cToX7LkaecNuC2qROWWxJP6c7ZBIKeRItN/mzqALfrR/4pmPcIP7Ll31twJZ49JfeUnX2RtwzmIibhVoFxRLZ8RM0rStA+nr2/6lZcyGb+NK8BO2gwpc+X/PCkqh+hL1zPidNt37hrTUqKMJSImG0l07EYDymKm2baY5JqD26pSYp8mebAiGQEQ5tfSVRWrEWFj+SJmi+5pebvJAcYEAfD5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RGMUQ28a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=ankitchauhan2065@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RGMUQ28a;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=ankitchauhan2065@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+	t=1748592757; c=relaxed/relaxed;
+	bh=UODADZBFNNuhdOjNi7w1d1lWaPaCSwIUX58mKie6mVI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bAt27Re+sExD3C/v43k+RGkxGYWICh3RJnXqYpqiHWu6w31jP6HzUX4o4RZoQWHW2Emdpr1ZAskLBEgpjkuZ7ZWotsTrrqVngG0VUUJmSK4nE8eDlGeR9rttHWV+sNUw8KhjUxWjUwI2kRdPXvJQhpVu+yrHNxw4jDAn6NFoay3eCxjiRUaaByhhLQQ5YYxwMtDMNG4C7fVAZ/vmw2FB44hoQngIKHvcE5s0nS40L6iZxL7RkIA1479v3v4+HVRi9lHpYAH4P+GSxZFr5It0x+d+E0DyNqRBvMBQD0Uvy3cjY3rfX0sUtTeZFvNrym4BTOYN0st5/3jcl7hhvE8ZRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.161.41; helo=mail-oo1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.41; helo=mail-oo1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b7PYc4mQzz2xdg
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 29 May 2025 21:40:03 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-742c3d06de3so872383b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 29 May 2025 04:40:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1748518801; x=1749123601; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=oPJPluA2yPOrdl3Xx9YilnLVqcTIWj8u7ZCyZ4fkpT8=;
-        b=RGMUQ28aYZO2xi3FAOHSGHtNcgjCBODIAaJGNcmCRssxmmU48WV4LJgxNpUrIlWemR
-         inM8Q8TEJdqFLdgYNDSl8KPcr6y5xKkz1W9a9l7eYRLqmaKidaUGCZuoCgZlmEHnJcFE
-         ef7ctVOva/C/78AQbE4Tlsfns9Omxp5Iu1Gw4zkzpcURJZGiIQ9/khOrN6dGhRoK0Za3
-         uKT/HCUhUYtztvpP/D1hNF10fYlZXCf3369bUYzd0KsLITr4TURp+A/shVx6reHEHWhu
-         xumNGhDQflhEwY4Lnz3HbpB/y6s5709y7c9sQ8VVGH1o4+wS4rpKP5m1VB0tU2Hzz1px
-         zm6Q==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b7wvl5DXCz2x9N;
+	Fri, 30 May 2025 18:12:34 +1000 (AEST)
+Received: by mail-oo1-f41.google.com with SMTP id 006d021491bc7-6066c02cd92so851072eaf.2;
+        Fri, 30 May 2025 01:12:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748518801; x=1749123601;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=1e100.net; s=20230601; t=1748592752; x=1749197552;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=oPJPluA2yPOrdl3Xx9YilnLVqcTIWj8u7ZCyZ4fkpT8=;
-        b=vzA+ehNwJStGkOhG+XSGtLruof4x8Yo6U/rO0AN8LGbUrtIqtR4dgdSdL/NzKjqi/i
-         lcHv7La0CHl6FNWq+ZkLAUzZtwd9o0yXSDcyLI7m7t27wa2ZtRnsOFlnFTeohpGYhn++
-         CEwBlrFGuQrj7PNX+Jn+bg2kqpEC70u8y3UaKJtbbRxy0wXRJi8Afo+PfZPutHEJD5N0
-         kMfb8G7ofhKu3ip6KQWA/WBcaBOCto0Db2ocnunc9fITAZXpJ5Tb/pvXHuE6DEreLUTd
-         24uuJClfSj+S+ud2dvCLRwaxdFkppb61smeLrQsqKzwMiZ5PfHpKzzbj7VP3azUi30Kp
-         AhsA==
-X-Forwarded-Encrypted: i=1; AJvYcCXLOrQmwV/7n2Y3B+AD4I44yojfWUOof6A+2pGyayu42fLNPpdsosMRt3ItUxpNqeiK1xUlFDa5EfijHps=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyIJgTfbOWk19F9cFspXkiGnkreBmY2oteKB7fT5v8MbddvNEz2
-	qqHfh7n5fDJSPlX4JKAJhoUwjvJDD2VieIfI5cXMm3SSLlgrNvkaJFUB
-X-Gm-Gg: ASbGncssGNUB6Fgf/nLchL52O1bd0w1+rv7SnG7cQtX+py5Ib9Vfh+sL0EtIAjskSGN
-	2U8Nnh1+66Y4aOMMpS2FfATk71TMb1ILNxqFFq6Bs87auu3jO5QeGZeTan3DCpQcc8q0RO+nMaH
-	8MLALjr2Y6S8q4MWhhgyxJKMMNvZndTLTO4Rxj/wK3kX5GQ7UO59aPugElwCiKiruaNoHQWcWm8
-	/lW8Je1/D/NyOqyj2Iy9ZWxGqzrDywkLH3u1Isb+BG52RsBr9dgCG2sO5g8d6WJl2cJYbWXXM6D
-	cUSq/m6Hs462hW0w/3/zoO7QjJ1U92ECdleeLOGN8GVgMgw8djA7BjVI6yeArw==
-X-Google-Smtp-Source: AGHT+IHsY236gxnL8+RzCtR1lcYX0dN2OvDWa0uStfgSddoIhXY7ZKQytFP78FPhrjNUwn+k17a6Hg==
-X-Received: by 2002:a05:6a00:3cc1:b0:73e:235a:1fca with SMTP id d2e1a72fcca58-745fe06fccdmr31439493b3a.20.1748518800934;
-        Thu, 29 May 2025 04:40:00 -0700 (PDT)
-Received: from [127.0.1.1] ([2405:201:4042:d128:985:242f:9e00:e9db])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-747affafad4sm1137055b3a.116.2025.05.29.04.39.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 May 2025 04:40:00 -0700 (PDT)
-From: Ankit Chauhan <ankitchauhan2065@gmail.com>
-Date: Thu, 29 May 2025 17:09:38 +0530
-Subject: [PATCH] arm: lanyang: fix lable->label typo for lanyang dts
+        bh=UODADZBFNNuhdOjNi7w1d1lWaPaCSwIUX58mKie6mVI=;
+        b=Jo81SFSadKvcKrMLx5KufEFTIITCrd2MM2wYzKLRWBl96/1hK7w8MwsdoCmaniruor
+         OzlRY/0fBhtNHBfmoSXarQ+3ebVChSjcv1t+TUO430fsGI5Spe0CWYqLQF9gh3J6o61M
+         mUO8nb0nA0cTR5hN+e55Y/7e8c31sK3BsTLK9+gXIHoKS67Vcv7jGynETmNM9VBNAr8D
+         pc2S0Fa/v8urfL2wSjfGtxYrDIzx4VLo3hkmHWxP3Ap4GBPuJSTRxtMNdgGlcmPiTOFG
+         xI9ODam5dG1geN4ZiyDKbqIKA4g6pa77DUKT8Qty0jGp3vXG4P9nLoLDAFoFRoOdvr5Q
+         F+Aw==
+X-Forwarded-Encrypted: i=1; AJvYcCVLOtaFCRUlI2cOXps1kx3zTqKYUWonxENA2GQ+XGkfq9ljm3A7PGoTY4AYTteXJV3njWM7f5tf5PmC5/A=@lists.ozlabs.org, AJvYcCXQwV410xOj/LLXC6ILpliMHhvnFvetg2bWciGlhJo9TC3Up1bDDKCCUvfBnNujyjEFDHewBj59Ow==@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzpiAVwkm4b1t6ujk0XIbadJ3TUwJB0cQziYrEUPGbikGx7skoZ
+	v2tzOES3dkTfWS1AgbfmPPXkZni6lrJprLU3BrwOTosL16CBqwub5X0GfX5ddYUA
+X-Gm-Gg: ASbGnctPWOlXdAJa4vTD0UrpxnZiR9YzJkmdT/NMWSslujQJIVGTc4vdtxHQYmBW47m
+	uSuOk03VrSMwD4l2EXWsJN5w/xXSps2G87d2xnrzVQt8MI1ohu53eBxy5dvwWCabUQkgaRF6678
+	DK8tckApX0ZcZvYGSKoWWKRhVDcUTUOV8UfYRjqIbN29Wa0zjoS25COtDDOEJCQ5pmilnPk/zi8
+	LAiWh/NDTfTCEU8RjZ1vbigSn+f0V1wM05b1+6TYD1JzicWAZnEuIl3XZG8iu0dG8+kkx3yhxeW
+	SWqPVHUc3apW5DabZrDcGRqL0QWBc0ubcXhwzR+ZJK1qYYJ+swcsVHRKGYeWtG9Aa96I3QTbmc+
+	XTC/xpXoG3zqqwRSP03oceONGrFVSUThWUrBU/zc=
+X-Google-Smtp-Source: AGHT+IHnDAJ+wHE5jBUe7dICHcyJFLnnPKRPwH1THP/L39Tx/JZsfp6LaklIs9jwWXau93nBdKqTFQ==
+X-Received: by 2002:a05:6820:1e03:b0:60a:4cf:a7a0 with SMTP id 006d021491bc7-60c4d714d5fmr1457452eaf.7.1748592751664;
+        Fri, 30 May 2025 01:12:31 -0700 (PDT)
+Received: from mail-oi1-f172.google.com (mail-oi1-f172.google.com. [209.85.167.172])
+        by smtp.gmail.com with ESMTPSA id 006d021491bc7-60c14c42c3bsm304884eaf.5.2025.05.30.01.12.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 30 May 2025 01:12:31 -0700 (PDT)
+Received: by mail-oi1-f172.google.com with SMTP id 5614622812f47-3f8ae3ed8f4so1171440b6e.3;
+        Fri, 30 May 2025 01:12:31 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUD4qT2Ir3DgfksZFetQgfnZU+q74kKeZvjlkTF5tYG/HEP0NO7iBEVG88VrThYn+eTlHa55VVZP+A6+aQ=@lists.ozlabs.org, AJvYcCXsCGhzFArlaj7EOa8sooSZX5QbA4GcmPdrft5ZyJJcirwqzjm82aMIb9zHFfvAu1Apm5pZ/XWvrw==@lists.ozlabs.org
+X-Received: by 2002:a05:6122:17aa:b0:530:677b:1e93 with SMTP id
+ 71dfb90a1353d-53080df1088mr2012964e0c.0.1748592388616; Fri, 30 May 2025
+ 01:06:28 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -84,65 +75,97 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250529-lanyang-lable-fix-v1-1-8a2dcb48bda4@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAHlHOGgC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDI1MDUyNL3ZzEvEqgOJBOyknVTcus0DVINTZLSjNJNklLsVQC6isoSgUKg82
- Mjq2tBQCSvO3XYwAAAA==
-X-Change-ID: 20250529-lanyang-lable-fix-0e36bf4c4fd9
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Ankit Chauhan <ankitchauhan2065@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1748518785; l=1318;
- i=ankitchauhan2065@gmail.com; s=20250528; h=from:subject:message-id;
- bh=Pwx2fvfVuST5jQFNBNpRxios2r+c4w/jFunmwqAE8/8=;
- b=d2y3CSmsLFYARBUorhoa9UHNPHRgs1SOt+vaL0kiIzgUeRyL7d4SFTeJhA36lr0Dj7eCeapP7
- DhfUivnA5bwDarDO1DXOIoyLCyQs2t1CB4NaFSBRPc1KtiwWpufV1Od
-X-Developer-Key: i=ankitchauhan2065@gmail.com; a=ed25519;
- pk=6qbMcLtF/2YGH1xAgdxEABYLcPtWnesHOBiHaoZEZrA=
+References: <20250528-pinctrl-const-desc-v1-0-76fe97899945@linaro.org>
+ <20250528-pinctrl-const-desc-v1-14-76fe97899945@linaro.org>
+ <CAMuHMdUGDf5n_Fg7pwiPumm95nPUXyH15geAy2ULwY3U+OtZJA@mail.gmail.com> <b6b7fb61-878e-4407-b964-564efb3524b1@linaro.org>
+In-Reply-To: <b6b7fb61-878e-4407-b964-564efb3524b1@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 30 May 2025 10:06:16 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUHyLYk0oSN8XDNCXUvLQLe2u0k0noVJLbR+pYWDTB4+w@mail.gmail.com>
+X-Gm-Features: AX0GCFuCNZIpijI8V-LFtD11RdEuCtx09JrM6Rph_c1WT65W3SrLJtlImd30cUI
+Message-ID: <CAMuHMdUHyLYk0oSN8XDNCXUvLQLe2u0k0noVJLbR+pYWDTB4+w@mail.gmail.com>
+Subject: Re: [PATCH 14/17] pinctrl: renesas: Move fixed assignments to
+ 'pinctrl_desc' definition
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Basavaraj Natikar <Basavaraj.Natikar@amd.com>, 
+	Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Joel Stanley <joel@jms.id.au>, Avi Fishman <avifishman70@gmail.com>, 
+	Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, 
+	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, 
+	Benjamin Fair <benjaminfair@google.com>, =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, 
+	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	David Rhodes <david.rhodes@cirrus.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, 
+	Charles Keepax <ckeepax@opensource.cirrus.com>, Lorenzo Bianconi <lorenzo@kernel.org>, 
+	Sean Wang <sean.wang@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, 
+	Lars Persson <lars.persson@axis.com>, 
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Damien Le Moal <dlemoal@kernel.org>, 
+	Vladimir Zapolskiy <vz@mleia.com>, Michal Simek <michal.simek@amd.com>, 
+	Emil Renner Berthing <kernel@esmil.dk>, Jianlong Huang <jianlong.huang@starfivetech.com>, 
+	Hal Feng <hal.feng@starfivetech.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, linux-gpio@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-renesas-soc@vger.kernel.org, linux-sound@vger.kernel.org, 
+	patches@opensource.cirrus.com, linux-mediatek@lists.infradead.org, 
+	linux-arm-kernel@axis.com, linux-riscv@lists.infradead.org, 
+	linux-rtc@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>
+Content-Type: text/plain; charset="UTF-8"
 
-Fix an obvious spelling error in the dts file for Lanyang BMC.
-This was reported by bugzilla a few years ago but never got fixed.
+Hi Krzysztof,
 
-Reported by: Jens Schleusener <Jens.Schleusener@fossies.org>
-Closes: https://bugzilla.kernel.org/show_bug.cgi?id=205891
+CC wsa
 
-Signed-off-by: Ankit Chauhan <ankitchauhan2065@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Wed, 28 May 2025 at 19:55, Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
+> On 28/05/2025 14:54, Geert Uytterhoeven wrote:
+> >>         .pmxops = &rzn1_pmx_ops,
+> >>         .confops = &rzn1_pinconf_ops,
+> >>         .owner = THIS_MODULE,
+> >> +       .pins = rzn1_pins,
+> >> +       .npins = ARRAY_SIZE(rzn1_pins),
+> >>  };
+> >>
+> >>  static int rzn1_pinctrl_parse_groups(struct device_node *np,
+> >> @@ -878,8 +880,6 @@ static int rzn1_pinctrl_probe(struct platform_device *pdev)
+> >>
+> >>         ipctl->dev = &pdev->dev;
+> >>         rzn1_pinctrl_desc.name = dev_name(&pdev->dev);
+> >
+> > ... if you would replace this assignment by a hardcoded name
+> > like "pinctrl-rzn1".
+>
+> I saw it, but this would not be equivalent. dev_name includes platform
+> bus id, e.g. pinctrl-rzn1.0 which might matter here - conflict of names.
+> Are you sure this would work fine?
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts
-index 370738572a55b2498fff31a4aabf336cc41e1eac..8b9d382241ff11329fcbaca5a469aebb11fd3460 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts
-@@ -52,12 +52,12 @@ hdd_fault {
- 			gpios = <&gpio ASPEED_GPIO(B, 3) GPIO_ACTIVE_HIGH>;
- 		};
- 		bmc_err {
--			lable = "BMC_fault";
-+			label = "BMC_fault";
- 			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_HIGH>;
- 		};
- 
- 		sys_err {
--			lable = "Sys_fault";
-+			label = "Sys_fault";
- 			gpios = <&gpio ASPEED_GPIO(H, 7) GPIO_ACTIVE_HIGH>;
- 		};
- 	};
+There can be only one anyway.
+Most drivers used a fixed name:
 
----
-base-commit: a5806cd506af5a7c19bcd596e4708b5c464bfd21
-change-id: 20250529-lanyang-lable-fix-0e36bf4c4fd9
+drivers/pinctrl/renesas/pinctrl-rza1.c: rza1_pctl->desc.name = DRIVER_NAME;
+drivers/pinctrl/renesas/pinctrl-rza2.c: priv->desc.name = DRIVER_NAME;
+drivers/pinctrl/renesas/pinctrl-rzg2l.c: pctrl->desc.name = DRV_NAME;
+drivers/pinctrl/renesas/pinctrl-rzn1.c: rzn1_pinctrl_desc.name =
+dev_name(&pdev->dev);
+drivers/pinctrl/renesas/pinctrl-rzt2h.c: desc->name = DRV_NAME;
+drivers/pinctrl/renesas/pinctrl-rzv2m.c: pctrl->desc.name = DRV_NAME;
+drivers/pinctrl/renesas/pinctrl.c: pmx->pctl_desc.name = DRV_NAME;
 
-Best regards,
+It might change the path in debugfs (/sys/kernel/debug/pinctrl/) though.
+Wolfram?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-Ankit Chauhan <ankitchauhan2065@gmail.com>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
