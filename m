@@ -1,49 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1293-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1294-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AB00C61CE7
-	for <linux-aspeed@archiver.kernel.org>; Tue,  3 Jun 2025 07:55:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1395C5AD49
+	for <linux-aspeed@archiver.kernel.org>; Tue,  3 Jun 2025 09:23:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bBNKp0Wz7z2yPS;
-	Tue,  3 Jun 2025 17:55:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748937310;
-	cv=none; b=XKWBAIt5HxV3awdKflfTMLUk4sQaCpvkbT2cC6780+PHoh3p6Yi5Z9g3cKV/gg0NVzJRJRVFobbtDPb5BxpzDQaZaDMGl59xU+1nrwgQAS1wD5ywAxYLuJu+kF30cI7vHwlUS/gxF6+TaE5HZ+smVi+prJPsyQ4EGmXe6kY0oDCF2b6arJDow/Yzpp3EcR7wZygjnqpJSPEXHhQBmHcX1ohvkj4mYYuTz+/9bdjwwygJRUOqyxmIOYQMgoqQ6uVh/6FsVIv86+zOJWvRwYONx0ZpcS+YP+k9iucIn1e7OEVfFYSkSrQB56xlvv83HHpU6lcP9mEhFahY0PO/hrRM9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bBQHD2twDz2yPd;
+	Tue,  3 Jun 2025 19:23:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748942584;
+	cv=none; b=OcoF6l5Ye3eauaHoHsQBjxCzTO2OmZHNZizOSESNbK0JRWPg5afLcqGcYmh6hPr35DjEpLDyroyjB1HT1ICRrGWH7FSFbqYyolQ7vpVJcTuKFMF8GjVEK/UXUfOQwlTRSMZ76jDPsAG4Q0J0pSYzTOVDayTrn2fNTvlYTrpDgsHM2LtyKCDqILm6yLo8DaacIOaiY4XDiVsdx4g2Kn1n5fojj3OOvLv/4fEkwTj+g21SxHC2AWsEC+jCCvxdirPaYIwmNzqgJDydGvGnaHDs3eoBEqIQYxjoA4lB1OvocEB+gHO5lkD928VspGlZDljK7CKaFoklbseciS7YhULHhw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748937310; c=relaxed/relaxed;
-	bh=2FeXWMdC20aMCJlyUrZl3OvKRoJgq8WgoBZAHJqdT9M=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mxA/gB9fveIaKiioXUTZ2A/yKtkGFiKIsE0WIPayUkUIMz1II9zATFzkm8IECfmUg4ZyBMv3+zUsbGZ4KYs3mnXCroLJ4wkChbiPDR3lhtOa4nr9cgdT+iFk2nkB+apGRwA5xskRTZbGRmGguAnPKiXortLCNlcupNpxlV14qOWKUSvgPhBWwIe9AkRD0Wy54wNdzaniGSrtGz588fXyqBmtBNO0jHasfcGQO46DuV7li00SvNgcuXZPXa8zllpAWn+GH8mItwrraOPtwoM20dPyr1KMjkJJYl6WuLkATa+LOZo2QJcwdLQq5K3lRUVXlRIxl5wXwo3DxYzv+NAEAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1748942584; c=relaxed/relaxed;
+	bh=iERnukN30xxDbYAqctVpQlvPt/OdnzYWEq4HA3XCtZk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=TpX70X6CEf9vlW9dyOGglU8mTc1KQIp4ODS5GPHrPs6w52RMbqst994jfuLI+gHmjry2CzVi57TshtQcqMiRaogDMOz/JufY1aWkjzr/SSsKinEEAkQQ1WR7nP4g9EZqJ1lguuGRcT41pHoT919LxBOJ13fu0E1Gf3XAQ64yNmiLOh+fkGujhNYjdbsVjKYEkRpD877qJIK9ZMY56/fvtsy9lxrTWNIgDLV0sRaCcaWg3JXor836yJD6/Ra186QvGzpzu+5AG7Wk1QRcs3iUXCS8UHsKJKzUMXqs0+fOFcm6CwE3qdG2a1rNSdV7p8GKDQPuIvxs/MR86aFY3k+vOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iOOjGM+t; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iOOjGM+t;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bBNKn14D1z2xDD
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  3 Jun 2025 17:55:09 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 3 Jun
- 2025 15:54:50 +0800
-Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Tue, 3 Jun 2025 15:54:50 +0800
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-To: <jassisinghbrar@gmail.com>, <robh@kernel.org>, <krzk+dt@kernel.org>,
-	<conor+dt@kernel.org>, <joel@jms.id.au>, <andrew@codeconstruct.com.au>,
-	<jammy_huang@aspeedtech.com>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH v1 2/2] mailbox: aspeed: add mailbox driver for AST27XX series SoC
-Date: Tue, 3 Jun 2025 15:54:50 +0800
-Message-ID: <20250603075450.133604-3-jammy_huang@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250603075450.133604-1-jammy_huang@aspeedtech.com>
-References: <20250603075450.133604-1-jammy_huang@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bBQHC1khHz2yNB
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  3 Jun 2025 19:23:03 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id DEE655C47E1;
+	Tue,  3 Jun 2025 09:20:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A61C9C4CEED;
+	Tue,  3 Jun 2025 09:22:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1748942580;
+	bh=pa/3ZATIuxwXySjtXGgigJm/TDYBu3uL5xfL7mNZ6Ig=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=iOOjGM+tYrnQU1VNrBMvmbSwr+BHGEbvU6mcmZArjYZ1mYDhuRVM2urLhRAVyITLM
+	 jBMq/wJDHmxQiq7jTqgR1H0mfSjCXTVwSRYpV59JfEyoB5dK0PNTaYqjKu5B4mBZD2
+	 OgrUyawT8jKoPcqW4QMXI4v6B1jr3ktLrAoDLQwLjtn7A19+/nR4goG4ngJ3TI6/2i
+	 YJR/NZU/w9ESoGTnQzAuiJs6fq19EIrpsWt7K4y4LRFb1O3cK+hZVbkLGd59WOwYol
+	 OvumVtuMPDAJbzFQpFJHHYP5DcAEv2j5wp+pL8aTImrtkTlcURIkQFpOR2DsqMReMM
+	 JG6cFv1uL0NYQ==
+Message-ID: <273da934-deeb-4129-917c-5d7038930941@kernel.org>
+Date: Tue, 3 Jun 2025 11:22:53 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -57,281 +59,102 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 1/2] dt-bindings: mailbox: Add ASPEED AST2700 series
+ SoC
+To: Jammy Huang <jammy_huang@aspeedtech.com>, jassisinghbrar@gmail.com,
+ robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20250603075450.133604-1-jammy_huang@aspeedtech.com>
+ <20250603075450.133604-2-jammy_huang@aspeedtech.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <20250603075450.133604-2-jammy_huang@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Add mailbox controller driver for AST27XX SoCs, which provides
-independent tx/rx mailbox between different processors. There are 4
-channels for each tx/rx mailbox and each channel has an 32-byte FIFO.
+On 03/06/2025 09:54, Jammy Huang wrote:
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +  "#mbox-cells":
+> +    const: 1
+> +    description: |
+> +      <&phandle channel>
+> +      phandle : Label name of mailbox controller
+> +      channel : 0-3, Channel index
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
- drivers/mailbox/Kconfig           |   8 ++
- drivers/mailbox/Makefile          |   2 +
- drivers/mailbox/ast2700-mailbox.c | 226 ++++++++++++++++++++++++++++++
- 3 files changed, 236 insertions(+)
- create mode 100644 drivers/mailbox/ast2700-mailbox.c
+Drop description, pretty obvious (or just say that second argument is
+channel number).
 
-diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
-index 68eeed660a4a..1c38cd570091 100644
---- a/drivers/mailbox/Kconfig
-+++ b/drivers/mailbox/Kconfig
-@@ -340,4 +340,12 @@ config THEAD_TH1520_MBOX
- 	  kernel is running, and E902 core used for power management among other
- 	  things.
- 
-+config AST2700_MBOX
-+	tristate "ASPEED AST2700 IPC driver"
-+	depends on ARCH_ASPEED || COMPILE_TEST
-+	help
-+	  Mailbox driver implementation for ASPEED AST27XX SoCs. This driver
-+	  can be used to send message between different processors in SoC.
-+	  The driver provides mailbox support for sending interrupts to the
-+	  clients. Say Y here if you want to build this driver.
- endif
-diff --git a/drivers/mailbox/Makefile b/drivers/mailbox/Makefile
-index 13a3448b3271..9a9add9a7548 100644
---- a/drivers/mailbox/Makefile
-+++ b/drivers/mailbox/Makefile
-@@ -72,3 +72,5 @@ obj-$(CONFIG_QCOM_CPUCP_MBOX)	+= qcom-cpucp-mbox.o
- obj-$(CONFIG_QCOM_IPCC)		+= qcom-ipcc.o
- 
- obj-$(CONFIG_THEAD_TH1520_MBOX)	+= mailbox-th1520.o
-+
-+obj-$(CONFIG_AST2700_MBOX)	+= ast2700-mailbox.o
-diff --git a/drivers/mailbox/ast2700-mailbox.c b/drivers/mailbox/ast2700-mailbox.c
-new file mode 100644
-index 000000000000..0ee10bd3a6e1
---- /dev/null
-+++ b/drivers/mailbox/ast2700-mailbox.c
-@@ -0,0 +1,226 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright Aspeed Technology Inc. (C) 2025. All rights reserved
-+ */
-+
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/iopoll.h>
-+#include <linux/kernel.h>
-+#include <linux/mailbox_controller.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+/* Each bit in the register represents an IPC ID */
-+#define IPCR_TX_TRIG		0x00
-+#define IPCR_TX_ENABLE		0x04
-+#define IPCR_RX_ENABLE		0x104
-+#define IPCR_TX_STATUS		0x08
-+#define IPCR_RX_STATUS		0x108
-+#define  RX_IRQ(n)		BIT(0 + 1 * (n))
-+#define  RX_IRQ_MASK		0xf
-+#define IPCR_TX_DATA		0x10
-+#define IPCR_RX_DATA		0x110
-+
-+struct ast2700_mbox_data {
-+	u8 num_chans;
-+	u8 msg_size;
-+};
-+
-+struct ast2700_mbox {
-+	struct mbox_controller mbox;
-+	const struct ast2700_mbox_data *drv_data;
-+	void __iomem *regs;
-+	u32 *rx_buff;
-+};
-+
-+static inline int ch_num(struct mbox_chan *chan)
-+{
-+	return chan - chan->mbox->chans;
-+}
-+
-+static inline int ast2700_mbox_tx_done(struct ast2700_mbox *mb, int idx)
-+{
-+	return !(readl(mb->regs + IPCR_TX_STATUS) & BIT(idx));
-+}
-+
-+static irqreturn_t ast2700_mbox_irq(int irq, void *p)
-+{
-+	struct ast2700_mbox *mb = p;
-+	void __iomem *data_reg;
-+	int num_words;
-+	u32 *word_data;
-+	u32 status;
-+	int n;
-+
-+	/* Only examine channels that are currently enabled. */
-+	status = readl(mb->regs + IPCR_RX_ENABLE) &
-+		 readl(mb->regs + IPCR_RX_STATUS);
-+
-+	if (!(status & RX_IRQ_MASK))
-+		return IRQ_NONE;
-+
-+	for (n = 0; n < mb->mbox.num_chans; ++n) {
-+		struct mbox_chan *chan = &mb->mbox.chans[n];
-+
-+		if (!(status & RX_IRQ(n)))
-+			continue;
-+
-+		for (data_reg = mb->regs + IPCR_RX_DATA + mb->drv_data->msg_size * n,
-+		     word_data = chan->con_priv,
-+		     num_words = (mb->drv_data->msg_size / sizeof(u32));
-+		     num_words; num_words--, data_reg += sizeof(u32), word_data++)
-+			*word_data = readl(data_reg);
-+
-+		mbox_chan_received_data(chan, chan->con_priv);
-+
-+		/* The IRQ can be cleared only once the FIFO is empty. */
-+		writel(RX_IRQ(n), mb->regs + IPCR_RX_STATUS);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int ast2700_mbox_send_data(struct mbox_chan *chan, void *data)
-+{
-+	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
-+	void __iomem *data_reg;
-+	u32 *word_data;
-+	int num_words;
-+	int idx = ch_num(chan);
-+
-+	if (!(readl(mb->regs + IPCR_TX_ENABLE) & BIT(idx))) {
-+		dev_warn(mb->mbox.dev, "%s: Ch-%d not enabled yet\n", __func__, idx);
-+		return -EBUSY;
-+	}
-+
-+	if (!(ast2700_mbox_tx_done(mb, idx))) {
-+		dev_warn(mb->mbox.dev, "%s: Ch-%d last data has not finished\n", __func__, idx);
-+		return -EBUSY;
-+	}
-+
-+	for (data_reg = mb->regs + IPCR_TX_DATA + mb->drv_data->msg_size * idx,
-+	     num_words = (mb->drv_data->msg_size / sizeof(u32)),
-+	     word_data = (u32 *)data;
-+	     num_words; num_words--, data_reg += sizeof(u32), word_data++)
-+		writel(*word_data, data_reg);
-+
-+	writel(BIT(idx), mb->regs + IPCR_TX_TRIG);
-+	dev_dbg(mb->mbox.dev, "%s: Ch-%d sent\n", __func__, idx);
-+
-+	return 0;
-+}
-+
-+static int ast2700_mbox_startup(struct mbox_chan *chan)
-+{
-+	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
-+	int idx = ch_num(chan);
-+	void __iomem *reg = mb->regs + IPCR_RX_ENABLE;
-+
-+	writel_relaxed(readl_relaxed(reg) | BIT(idx), reg);
-+
-+	return 0;
-+}
-+
-+static void ast2700_mbox_shutdown(struct mbox_chan *chan)
-+{
-+	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
-+	int idx = ch_num(chan);
-+	void __iomem *reg = mb->regs + IPCR_RX_ENABLE;
-+
-+	writel_relaxed(readl_relaxed(reg) & ~BIT(idx), reg);
-+}
-+
-+static bool ast2700_mbox_last_tx_done(struct mbox_chan *chan)
-+{
-+	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
-+	int idx = ch_num(chan);
-+
-+	return ast2700_mbox_tx_done(mb, idx) ? true : false;
-+}
-+
-+static const struct mbox_chan_ops ast2700_mbox_chan_ops = {
-+	.send_data	= ast2700_mbox_send_data,
-+	.startup	= ast2700_mbox_startup,
-+	.shutdown	= ast2700_mbox_shutdown,
-+	.last_tx_done	= ast2700_mbox_last_tx_done,
-+};
-+
-+static int ast2700_mbox_probe(struct platform_device *pdev)
-+{
-+	struct ast2700_mbox *mb;
-+	const struct ast2700_mbox_data *drv_data;
-+	struct device *dev = &pdev->dev;
-+	int irq, ret;
-+
-+	if (!pdev->dev.of_node)
-+		return -ENODEV;
-+
-+	drv_data = (const struct ast2700_mbox_data *)device_get_match_data(&pdev->dev);
-+
-+	mb = devm_kzalloc(dev, sizeof(*mb), GFP_KERNEL);
-+	if (!mb)
-+		return -ENOMEM;
-+
-+	mb->mbox.chans = devm_kcalloc(&pdev->dev, drv_data->num_chans,
-+				      sizeof(*mb->mbox.chans), GFP_KERNEL);
-+	if (!mb->mbox.chans)
-+		return -ENOMEM;
-+
-+	for (int i = 0; i < drv_data->num_chans; i++) {
-+		mb->mbox.chans[i].con_priv = devm_kcalloc(dev, drv_data->msg_size,
-+							  sizeof(u8), GFP_KERNEL);
-+		if (!mb->mbox.chans[i].con_priv)
-+			return -ENOMEM;
-+	}
-+
-+	platform_set_drvdata(pdev, mb);
-+
-+	mb->regs = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(mb->regs))
-+		return PTR_ERR(mb->regs);
-+
-+	mb->drv_data = drv_data;
-+	mb->mbox.dev = dev;
-+	mb->mbox.num_chans = drv_data->num_chans;
-+	mb->mbox.ops = &ast2700_mbox_chan_ops;
-+	mb->mbox.txdone_irq = false;
-+	mb->mbox.txdone_poll = true;
-+	mb->mbox.txpoll_period = 5;
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	ret = devm_request_irq(dev, irq, ast2700_mbox_irq, 0, dev_name(dev), mb);
-+	if (ret)
-+		return ret;
-+
-+	return devm_mbox_controller_register(dev, &mb->mbox);
-+}
-+
-+static const struct ast2700_mbox_data ast2700_drv_data = {
-+	.num_chans = 4,
-+	.msg_size = 0x20,
-+};
-+
-+static const struct of_device_id ast2700_mbox_of_match[] = {
-+	{ .compatible = "aspeed,ast2700-mailbox", .data = &ast2700_drv_data },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, ast2700_mbox_of_match);
-+
-+static struct platform_driver ast2700_mbox_driver = {
-+	.driver = {
-+		.name = "ast2700-mailbox",
-+		.of_match_table = ast2700_mbox_of_match,
-+	},
-+	.probe = ast2700_mbox_probe,
-+};
-+module_platform_driver(ast2700_mbox_driver);
-+
-+MODULE_AUTHOR("Jammy Huang <jammy_huang@aspeedtech.com>");
-+MODULE_DESCRIPTION("ASPEED AST2700 IPC driver");
-+MODULE_LICENSE("GPL");
--- 
-2.25.1
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +  - "#mbox-cells"
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +    mbox@12c1c200 {
 
+mailbox@
+
+With these fixed:
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+
+Best regards,
+Krzysztof
 
