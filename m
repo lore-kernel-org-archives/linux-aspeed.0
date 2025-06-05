@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1316-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1317-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BA0BC5B543
-	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Jun 2025 05:48:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2971DC5B543
+	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Jun 2025 06:27:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bCYQM3Dl6z2yLB;
-	Thu,  5 Jun 2025 15:48:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749102491;
-	cv=none; b=lU+ZTUhuTw6n/rAymP6u1XPsORnmU0JF+C/B9I0cyosSUlDVPUd3S4t8I8Mrofvmf/8Fs903CEc2LWWzZKKus6VsVyQR/lz5aj+dUXHhKQ9VI03XYpkVy48n4+Y0NyJ/Fceiqzgdoo21GKBguICS1+Z97oJyr6R1hSEgd26lu1PMli7Rid6g8GmNRqqVY7sB2kYqBuCw/Tikyth2jDVQlS5qIXjT4f6ZhDsvjVgkR6zE6qxzp62pgoyVCR+UVKPRvbC5kT2GqYexEZSnDE2754w/8ir/I+2C5MGT3b9+IRjbxT3L9YEaUdyCk4q3CialHoqoEbSfCAqTT3cMe6tPNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bCZJ94rkKz2yLB;
+	Thu,  5 Jun 2025 16:27:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749104873;
+	cv=none; b=CoGf8Se8iNR+J0QFJRhfEaSApYELWB9CcZ8cgk1BDvv+mp5tl/1zQZ3u0tM7X/JA3PanRLKK9V/KYsbXi555XWa2s5Dft3zPulX5ynIsJwYGTBijs7aCey2CKA0XucpuE9NDbGc7aLEhKfSUBCdrflCxYJk4kzmP28xJLqdXCINAoUqDF+8SAHPCR0cmkhuMxBxYyu426fwDO7ybiCHAEAxnvRnB5lvq/3YpVu/S3yfoPtJX+oTfP20fOHmn0jcuOIdv/YdmEi183ajxSwWwV9anurbXHNlMfutWjYFW6/2Kj/pEoSBrR/q6Bn0yY+HN9W7OFkScLgUkbapTtZ3o9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749102491; c=relaxed/relaxed;
-	bh=naiNfKI5FAi+uyC3lJxSBIRFVeN4EMfE9uXp4ORAMmM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=DCE+qxS8y9thr/3SAGT4X0xslN1sHEtaLclFjBcZwHFgR/FXXpERMkDnnIkD6hyPUQczalr+MB2WQGa5PIgtFtKBzSHT9n9pv1WALGZWneHGfi24ze9gMD2V0yyJTCUWn+taMiNEcvxgv7kzeexxmrboWyD9Dpp8Wntm87Ap2X0Ae7S5RqOfHj5Gg9F1Npa5NffXeGWhO8UbirljbNHb/Z1tndanibY0sKpr0vbmqxCXFKyiaPiyCwG56smCl2S4/ZSzM7KpzAt9/4lVSbMLAlkiMixWotn1AI0qLb4p3uHLF9EldD7vgn/0Hne8EWgXCI9TJEdkMSwa9tkR/WX+4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R4L+vMRr; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1749104873; c=relaxed/relaxed;
+	bh=EKm9WUU6FtOobKgGi3oLuOuCpaIOCGX5shuFJq51i+M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hrs9nbfnO6EyegFHfokJTmJsypHaZzihLRTo+3Uy+QPrnSLuGZ/+8VNOX1G5VGNSiGsIE2F4pR1ee8bakOYerJetXVjpm3J6h2c637yG3WWos8Vi6KUNScvfqDdbPmJ89RwoclFytbYf4k0mtnoIIJ84f04pS5Isu4kaSWPbn1k/nhwa9MTUFeu0jNW0huzGLYQYVRgXP8N0D9eeZkZLoqZBmTLCiMdvgOgoICQnIzLnDpXK6zio8k/Mbcjvlguj4dU9/hjiSg1R7OenMOn4ZyraRNps01FeXdrbq83qwW6v19gGFw05FN172Jjr1W0PbyULwS/bVPPI7mkGD9rhJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kMBmXy5x; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R4L+vMRr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kMBmXy5x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bCYQL0MrHz2xRs
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  5 Jun 2025 15:48:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bCZJ62cvCz2xRs
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  5 Jun 2025 16:27:50 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 8A4EFA459D4;
-	Thu,  5 Jun 2025 05:48:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D1CEC4CEE7;
-	Thu,  5 Jun 2025 05:48:03 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 2A5055C0FCE;
+	Thu,  5 Jun 2025 06:25:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE585C4CEE7;
+	Thu,  5 Jun 2025 06:27:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749102486;
-	bh=9t5rT9ry6WPHa53KUFn8dkbO9OaKcc8ExoqUN9Ekk5U=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=R4L+vMRr6jtUNaccghDB5FifpMtUuRHZ1mq3p5RzbIDFNeRtZ9P4QeEHATFzOzMw9
-	 o9lOGuqSIALSiNnveV+r+BiHeQrnEI6vJSDAkWg0w6+3E7CWm4/QomlmA2ySlt7pR0
-	 03b4qxFYCWywntenPlTzhVqMsl8H70OmvM9DholIxjxbFwKieqmLndYZsG4eDK/QUK
-	 mzjhpsnz7Qv8ZXzrptNkDjBuhCtcKlDc1k/Ba3NVisRoJXZ1Sw6gENzthiRjt/xEkW
-	 SZ5yJfJiTlpBpAbBVtOcgZ/dI4CsoBJMGeUDIm6O6JsXHOZ28hvNPvdQZ6nq8nrzPh
-	 KyGBG10wlv8bg==
-Message-ID: <e9a1d863-a08c-4f6a-97b3-4a752606544a@kernel.org>
-Date: Thu, 5 Jun 2025 07:48:01 +0200
+	s=k20201202; t=1749104867;
+	bh=gDi9w7D4lkLR0DHzkrmwUCrgnOmwd+WEWLFetO+9nSo=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=kMBmXy5xTgkhTPikKP7MVdcOQaSRoHC1RUf7UdqM+4iV6RFgrRQuT8U1TXrZap9Pi
+	 n1KVw6az9N4VLjgxtrlWfuc6bfLmsPtCELVm35YIkIENkLcRX3fK/qt+5YFu3zkmP6
+	 4+aSVy1EzbKZJm9qw7VlhJFWDfvFiJsWBSAb8FAg0a8o+i3INFviVaEHG9KtY2QXxL
+	 CmN6F3OWn674sFvEB6mPbDi9aojRwtLGulIWS384QowsBWW7vusi6euXkASMd+i3Dd
+	 mT9HHKng9LDq2nqLsiHLAiRDH0YzblR+cf5+ZD3UA7NtaZH19CHa0a9VBQEfQP+ej6
+	 KN5QAAj2ofwtA==
+Message-ID: <47df36d0-db0b-4100-aafe-ffaa0dc0e4b5@kernel.org>
+Date: Thu, 5 Jun 2025 08:27:43 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,23 +60,15 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] dt-bindings: mailbox: Add ASPEED AST2700 series
- SoC
-To: Jammy Huang <jammy_huang@aspeedtech.com>,
- "jassisinghbrar@gmail.com" <jassisinghbrar@gmail.com>,
- "robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
- <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
- "joel@jms.id.au" <joel@jms.id.au>,
- "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20250604125558.1614523-1-jammy_huang@aspeedtech.com>
- <20250604125558.1614523-2-jammy_huang@aspeedtech.com>
- <e27f3ea6-943d-4d78-b4d6-85d0dd521fe7@kernel.org>
- <TYZPR06MB656866677C78C34A5AFDC985F16FA@TYZPR06MB6568.apcprd06.prod.outlook.com>
+Subject: Re: [PATCH v3 1/1] ARM: dts: aspeed: Add device tree for Nvidia's
+ GB200 UT3.0b platform BMC
+To: Donald Shannon <donalds@nvidia.com>, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org
+Cc: joel@jms.id.au, andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20250605041550.1940089-2-donalds@nvidia.com>
+ <20250605041550.1940089-3-donalds@nvidia.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -122,28 +114,61 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <TYZPR06MB656866677C78C34A5AFDC985F16FA@TYZPR06MB6568.apcprd06.prod.outlook.com>
+In-Reply-To: <20250605041550.1940089-3-donalds@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 05/06/2025 03:44, Jammy Huang wrote:
->> On 04/06/2025 14:55, Jammy Huang wrote:
->>> +
->>> +examples:
->>> +  - |
->>> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
->>> +
->>> +    mailbox@12c1c200 {
->>> +        compatible = "aspeed,ast2700-mailbox";
->>> +        reg = <0x0 0x12c1c200 0x0 0x200>;
->>
->> Last time I asked to test, you responded you will test. What happened?
->> You did not test. This is just disappointing.
-> I did test for my last patch. In the end, the errors shown as below did not include ast2700-mailbox.
-> So I think it is ok. I will check what's wrong on my environment.
+On 05/06/2025 06:15, Donald Shannon wrote:
+> The GB200NVL UT3.0b BMC is an Aspeed Ast2600 based BMC
+> for Nvidia Blackwell GB200NVL platform.
+> Reference to Ast2600 SOC [1].
+> Reference to Blackwell GB200NVL Platform [2].
+> 
+> Link: https://www.aspeedtech.com/server_ast2600/ [1]
+> Link: https://nvdam.widen.net/s/wwnsxrhm2w/blackwell-datasheet-3384703 [2]
+> 
+> Signed-off-by: Donald Shannon <donalds@nvidia.com>
+> ---
+>  arch/arm/boot/dts/aspeed/Makefile             |    1 +
+>  .../aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts  | 1125 +++++++++++++++++
+>  2 files changed, 1126 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+> index b3170fdd3096..1101bc74e8c8 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -51,6 +51,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>  	aspeed-bmc-lenovo-hr855xg2.dtb \
+>  	aspeed-bmc-microsoft-olympus.dtb \
+>  	aspeed-bmc-nvidia-gb200nvl-bmc.dtb \
+> +	aspeed-bmc-nvidia-gb200-ut30b.dtb \
+>  	aspeed-bmc-opp-lanyang.dtb \
+>  	aspeed-bmc-opp-mowgli.dtb \
+>  	aspeed-bmc-opp-nicole.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts
+> new file mode 100644
+> index 000000000000..81c44a1e4f5d
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts
+> @@ -0,0 +1,1125 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/dts-v1/;
+> +
+> +#include "aspeed-g6.dtsi"
+> +#include <dt-bindings/i2c/i2c.h>
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/leds/common.h>
+> +
+> +/ {
+> +	model = "AST2600 GB200 UT3.0b BMC";
+> +	compatible = "nvidia,gb200nvl-bmc", "aspeed,ast2600";
 
-No, it is not ok and with simple dt_binding_check I immediately
-reproduced the issue (wrong addresses in example), thus you did not test it.
+
+Nothing improved.
+
+Also, where is the changelog (see submitting patches)?
+
 
 Best regards,
 Krzysztof
