@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1320-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1321-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4F2DC5B549
-	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Jun 2025 06:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 073C9C5AD49
+	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Jun 2025 06:53:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bDBmJ5wVqz2yMF;
-	Fri,  6 Jun 2025 16:50:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749192656;
-	cv=none; b=BREd+QKoPS7TABwJn8q4LBRqDIODABY+GL1mUnhVRydMrhMF7kGqlRSeqEeFB33y1PxebWUCKgSSBUFum+q74LzRHWiJ27gE8Ukp2C0PHvYIqxwHkv5L1bODy2LOLnhlnXlUU/xJvYKpMvl5hgB7qhK+mBN4p58blnZN5viaVZMD1NTwGL3Hlxxrdjp6rM3TlgwpocrthswIIs34zNM5TKR0vYd4w87yFGmT4Bsp9LQvQKuFeVM62W2Q+APZ8yYjorCBGOovOkgPrIz3Gn23k5Oj8IZ4Lc82jeLSEZevdnH0jBYkkNAlyfdKh2tfaSxz8RvaqeLvv6vlghEAVZlA0A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bDBpg3YRmz2yMF;
+	Fri,  6 Jun 2025 16:52:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749192779;
+	cv=none; b=H6BeG3wJ1EeKzuYZ8KLGEm2+6FXwcy45xBjDc+vQ3+JCSyzYDb/2VKLLi3eAKxIpZxgVjyPgwwWkGzRfNVMYWqD0OywAho/i8mVDwiap6DqpH//Y8qPbg5Os9HOagimf9E60740nNF4M5qlDS6b1MR64vuKHhE8NHmIYQ/3DIkR8mVmIOrZG0sVqeIMiWvL8hQz7C0QRYXIl/UQLkSK6syLVdefEMc0HB2yYxUETFsSVqvp/6RlVw7pZk7GyDO+Vy8cgaZ09sB0SJz/UKgYhOQTnXl3ljZCH17aYXn0tHastvFYuo4s2eEt9Zfs6ytgM+WWMVJkKHRQiR252+AwrUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749192656; c=relaxed/relaxed;
-	bh=FFLWmPUoB4ir8jCnJJSpQlreeYFttPD0icC1n1Qgv+g=;
+	t=1749192779; c=relaxed/relaxed;
+	bh=saxZA5Uxs1E7RxqJcdEtW/oMCqj5S3aOf7cLcO4FnOU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=C4WF+gC5HyQAWtbGppFUbkzqM6PqO4bFTxIMSZwD3zcazsurC7F/CaiGo8TbeBvObtLSWUcI9++kpktbo9fCvg2NfD3qht9EpTLMFzSGcFn8p1pdtiE8nVJKyc81Pv6Lnz7qW+/FbdvJN3VpGYCi+O6sywzIU6RV2frw4qcpq8EyxYh/OQuFp6mhBT2lkQ6t1fBTPv+hvreZfK1bRAI8PW4gwTdm7E5JHFOwsev+j9HCt8Cr/dnCe09xjqSi83EqoW3fzeOCw8wE4H2CmyJiEoIwFZEaQmml8LGvI32JKV60sXzMW6vk/KGQOo1ng0AssHpxMXf/QbiWwY/0yjS9HQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOCtZz3r; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=d+vNFumPPwRu5zU+apYGL4ctKXN8XuMklD4F7C/99+/4+OUkVp2XHlAGYH97WdbR9Mlei8F0OWT/iw5cu2eC2zk536/7tEEtHWZIpOERbL9gvjCpzrO6izmgewzBfpC7cP1tauBmZX/PeUqDGT2PzFqTSQToYS2CuHZC28ImS6O3vKZvfugNpYwz4CCb69b+vQIhpq0S+D3jDHveQZ9MndNDAHMhdhj6d/e1dpq5cGB4evDflUK8Hncgo6kSFNin1brpMuNtCUdUt28zP9gBJi54jW7P5J90991JqzwC6sgipTd7rQ8m8iGQzah9s6JBLjz342AVSfp6UfX0dxaHLg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gSC4rUVg; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOCtZz3r;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gSC4rUVg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bDBmH2Nm2z2xH9
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  6 Jun 2025 16:50:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bDBpf56Zdz2xH9
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  6 Jun 2025 16:52:58 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 50301A4FEC3;
-	Fri,  6 Jun 2025 06:50:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E3F75C4CEEB;
-	Fri,  6 Jun 2025 06:50:48 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7D19A4A6E8;
+	Fri,  6 Jun 2025 06:52:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 52E0BC4CEEB;
+	Fri,  6 Jun 2025 06:52:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749192652;
-	bh=3i0K2Cb7TgIgcoO/1LEeenusT49+10en1WHeFgaoCbQ=;
+	s=k20201202; t=1749192776;
+	bh=wk4SOBjDCrEEF63gdLu+EPqFr55LfBxz8pJHs9sIA84=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=NOCtZz3rHIh67wd8v5OIYJI1PZkZ6sLWHD9B1msOuJPIiyJvuomQBfs6kKRPTlLhB
-	 rN854GLDnWO4SRLXPq3SHTb8AmFdGbPSYvHyTh5mVVb+PMOBZWup1LZ5CSUl0gAj9N
-	 ZxPwnSW++eTgnKOd6bKU9Zgbo/r3eqyL9NEolvPbSNj3Oov4C2NxM0k0FNj/NTbqaV
-	 +VmUH9IYcm+CYXhzxjW8qrGMQFjTd95W91vF9arYYgz6/FiqaGhQXe2tOh/L+fw4Xt
-	 7tL8LdmM/1cvNwWMFn9kEqgquS2R7ty1FRD13EJGOmJvQ80SNw0zsfMQ9yRCuMhkeN
-	 YX/snbkyOIGPA==
-Message-ID: <44b72ea6-353f-40bd-9bbc-66186bdb1161@kernel.org>
-Date: Fri, 6 Jun 2025 08:50:47 +0200
+	b=gSC4rUVgMxIAG+S4k5bglLdPFFozAfqagGwE7m7PfFf2hYRuv2v/9iNVvbSNwM2Ny
+	 RTtXTkB86cPRByrY1+y0t840lyreHtpCXsQ20vpoB4LzPgusiCmAeQmycko84x6x9Y
+	 aT/8n6TQcScxnxrXbnbayftP4osbv36K8zn3JWk6EB1XGto1XrvvNJAOf8Rp2KJtz6
+	 tkT+LdS3OD67KLltlmmmFLzMdldz5Nq7Ri3hShuiasBW8yGrHM3Epk5ig+4xRycuRD
+	 iDChxcW3DSljtApVpl1ViRWb60L9hjXsquc2ipPdyfr2w9DiIZ5s+7TMcWS10ZTVAc
+	 z0gHLGHu0rCow==
+Message-ID: <27c1a3fe-4536-4e6f-a636-ffc0fbd52568@kernel.org>
+Date: Fri, 6 Jun 2025 08:52:51 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 1/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
+Subject: Re: [PATCH v7 2/2] dt-bindings: arm: aspeed: add Meta Ventura board
 To: Jason Hsu <jasonhell19@gmail.com>, robh@kernel.org, krzk+dt@kernel.org,
  conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
  patrick@stwcx.xyz, devicetree@vger.kernel.org,
@@ -68,7 +68,7 @@ To: Jason Hsu <jasonhell19@gmail.com>, robh@kernel.org, krzk+dt@kernel.org,
  linux-kernel@vger.kernel.org
 Cc: yang.chen@quantatw.com, jerry.lin@quantatw.com
 References: <20250606025251.887953-1-jasonhell19@gmail.com>
- <20250606025251.887953-2-jasonhell19@gmail.com>
+ <20250606025251.887953-3-jasonhell19@gmail.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -114,35 +114,28 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20250606025251.887953-2-jasonhell19@gmail.com>
+In-Reply-To: <20250606025251.887953-3-jasonhell19@gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 06/06/2025 04:52, Jason Hsu wrote:
-> Add Linux device tree related to Meta(Facebook) Ventura specific
-> devices connected to BMC(AST2600) SoC.Add subject prefix for the patch.
+> Document the new compatibles used on Meta Ventura.
+
+This is not what is happening here.
+
+> Add subject prefix for the patch.
+
+No clue what is "subject prefix" for a patch.
+
 > 
 > Signed-off-by: Jason Hsu <jasonhell19@gmail.com>
 
-<form letter>
-This is a friendly reminder during the review process.
+Please use subject prefixes matching the subsystem. You can get them for
+example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
+your patch is touching. For bindings, the preferred subjects are
+explained here:
+https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patches.html#i-for-patch-submitters
 
-It looks like you received a tag and forgot to add it.
-
-If you do not know the process, here is a short explanation:
-Please add Acked-by/Reviewed-by/Tested-by tags when posting new versions
-of patchset, under or above your Signed-off-by tag, unless patch changed
-significantly (e.g. new properties added to the DT bindings). Tag is
-"received", when provided in a message replied to you on the mailing
-list. Tools like b4 can help here. However, there's no need to repost
-patches *only* to add the tags. The upstream maintainer will do that for
-tags received on the version they apply.
-
-Please read:
-https://elixir.bootlin.com/linux/v6.12-rc3/source/Documentation/process/submitting-patches.rst#L577
-
-If a tag was not added on purpose, please state why and what changed.
-</form letter>
 
 Best regards,
 Krzysztof
