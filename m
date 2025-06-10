@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-1335-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1336-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A138FC5B552
-	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Jun 2025 09:10:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE79EC61DB2
+	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Jun 2025 09:10:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bGjgq26m2z308b;
-	Tue, 10 Jun 2025 19:10:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bGjgr2N0Yz309v;
+	Tue, 10 Jun 2025 19:10:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749546647;
-	cv=none; b=eM0+NQ1fWiyNYWSC1uGT+UmohQJMgXw1KsTdlCzVxtOSHFu/eP+TGlYHdDwQprrs/6jGxAy4iiYbzxmX+wEb82Do8V2ZqOVwPu6ks9lPFbpLaQsRQ8ewqvvo57AgVabWfRYUmoJF4Qgk0kvduHTRB8zvbjJgS2n3Pae7Imt3Xql55wD/gNTOjChjKYPe/huGIuhBIto3evF/fROq+SY0Tn6ErPcS2PdgEvWc3WBPDlqJfzKpnnjo7EQOkCXkKCsY9zo/4Y015d8au+80pTEr3Lp5GoSz7csP5peZk2CBmG+nSTZ38NGLRf4M19wpie2EAAi34aIyS1FrRvDU/NuMRQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749546648;
+	cv=none; b=S6dARtnpahVwJKejfcwVSWHgFHYMXqUMMaFJCr/aI2LuKF18Q7QzVmYWCm3ire+kCmDBg13l4lx3KshiF216ehsOb6QqSIBRo0oHxxlVG6xd7yMB9+JH6SB5lLDaMsQ9gb9UAhKQNCV+8wSHhcptm8P8ZOxG+2HIzhw4e/5omA5mq0v2Stmc+jtv8nzGP2PSbbRggokOAp22Bi7aMr21jyt7OJHDo0XGtYSPusRkQeNTVXTVC1Pe9vXTia/xmbj+IxysBYpG+s2DVCYai50Dekg7DP/AnVQzM7a4QRxQn7rj7bGwIBk0lnlLQ6MUWqRczKXiHaYNfNMOPImE4Om4eg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749546647; c=relaxed/relaxed;
-	bh=SWxVt0hRjs9/ZfxFEoYX6taw1WtXAg+mCWSsk2BxyPU=;
+	t=1749546648; c=relaxed/relaxed;
+	bh=2FeXWMdC20aMCJlyUrZl3OvKRoJgq8WgoBZAHJqdT9M=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=giH3lDPSQ8vhA5fkYAAOBu8TmuLudQYV0EikkptYypiQfyfzFN92l3GoOIblRihEIE4wI2y4XbuqCshdqPsdPNgp4dyEH6zi8ZtdtYHt3CMIq+JkeA5Jvy4HEPa4oPqrEoD0MY6fiwnxbz8ewN/FAjzbsYlai2wnpe/oH2mDy8ieJ30/x0aJVGQCTfMWePi4rRA0SVc2C7HzKkEdhFSCl2tywhtBR5/eaEQdGRl4svPsyVAQAb5d6m+25EBgLiFqo9A1kgegpW0fznebeillVhdN/kRQeeuKiM4p9OGkg523YPtDVwNrPGkPotA5h0L+aFaWrkTm1yAoT2fiA4b+IA==
+	 MIME-Version:Content-Type; b=YM3obQhsYemww2gx6tcIRCq40hAazn3i0CY4tC5bEvDeYBGezXHABRBReQX/aviQvB0ed+2h6v0awNRu5mfCPgki7rv6wbjsaclJD4qo4uW0VoKx8T4bM9hLTyU8mwE2g1BRg76wC7Un9YhHf0zA2DjEqsJ+V+y9AVrY1BFzsUf8U82G+YUrstZjO6sr+umPixxKHRvJFhGdZfGZzxSZUVULPdKHWE0Ig9DsJB7VQ/stSvR/oTVVPa0+mAEuNbmvTMMUjzCmN5eGT751nusPoRsy9uFSM4l3/tQshyDDYOD8RQF9TfUbyCUQvjGlDGnmY3O85+4pXgYuTmpWYs1V0Q==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGjgp2kf4z2xjv
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Jun 2025 19:10:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGjgq38ynz2xjv
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Jun 2025 19:10:47 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 10 Jun
@@ -38,9 +38,9 @@ To: <jassisinghbrar@gmail.com>, <robh@kernel.org>, <krzk+dt@kernel.org>,
 	<jammy_huang@aspeedtech.com>, <devicetree@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: [PATCH v3 1/2] dt-bindings: mailbox: Add ASPEED AST2700 series SoC
-Date: Tue, 10 Jun 2025 17:10:25 +0800
-Message-ID: <20250610091026.49724-2-jammy_huang@aspeedtech.com>
+Subject: [PATCH v3 2/2] mailbox: aspeed: add mailbox driver for AST27XX series SoC
+Date: Tue, 10 Jun 2025 17:10:26 +0800
+Message-ID: <20250610091026.49724-3-jammy_huang@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250610091026.49724-1-jammy_huang@aspeedtech.com>
 References: <20250610091026.49724-1-jammy_huang@aspeedtech.com>
@@ -60,78 +60,277 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Introduce the mailbox module for AST27XX series SoC, which is responsible
-for interchanging messages between asymmetric processors.
+Add mailbox controller driver for AST27XX SoCs, which provides
+independent tx/rx mailbox between different processors. There are 4
+channels for each tx/rx mailbox and each channel has an 32-byte FIFO.
 
 Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
 ---
- .../mailbox/aspeed,ast2700-mailbox.yaml       | 57 +++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mailbox/aspeed,ast2700-mailbox.yaml
+ drivers/mailbox/Kconfig           |   8 ++
+ drivers/mailbox/Makefile          |   2 +
+ drivers/mailbox/ast2700-mailbox.c | 226 ++++++++++++++++++++++++++++++
+ 3 files changed, 236 insertions(+)
+ create mode 100644 drivers/mailbox/ast2700-mailbox.c
 
-diff --git a/Documentation/devicetree/bindings/mailbox/aspeed,ast2700-mailbox.yaml b/Documentation/devicetree/bindings/mailbox/aspeed,ast2700-mailbox.yaml
+diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
+index 68eeed660a4a..1c38cd570091 100644
+--- a/drivers/mailbox/Kconfig
++++ b/drivers/mailbox/Kconfig
+@@ -340,4 +340,12 @@ config THEAD_TH1520_MBOX
+ 	  kernel is running, and E902 core used for power management among other
+ 	  things.
+ 
++config AST2700_MBOX
++	tristate "ASPEED AST2700 IPC driver"
++	depends on ARCH_ASPEED || COMPILE_TEST
++	help
++	  Mailbox driver implementation for ASPEED AST27XX SoCs. This driver
++	  can be used to send message between different processors in SoC.
++	  The driver provides mailbox support for sending interrupts to the
++	  clients. Say Y here if you want to build this driver.
+ endif
+diff --git a/drivers/mailbox/Makefile b/drivers/mailbox/Makefile
+index 13a3448b3271..9a9add9a7548 100644
+--- a/drivers/mailbox/Makefile
++++ b/drivers/mailbox/Makefile
+@@ -72,3 +72,5 @@ obj-$(CONFIG_QCOM_CPUCP_MBOX)	+= qcom-cpucp-mbox.o
+ obj-$(CONFIG_QCOM_IPCC)		+= qcom-ipcc.o
+ 
+ obj-$(CONFIG_THEAD_TH1520_MBOX)	+= mailbox-th1520.o
++
++obj-$(CONFIG_AST2700_MBOX)	+= ast2700-mailbox.o
+diff --git a/drivers/mailbox/ast2700-mailbox.c b/drivers/mailbox/ast2700-mailbox.c
 new file mode 100644
-index 000000000000..9c5d7028e116
+index 000000000000..0ee10bd3a6e1
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/mailbox/aspeed,ast2700-mailbox.yaml
-@@ -0,0 +1,57 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mailbox/aspeed,ast2700-mailbox.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
++++ b/drivers/mailbox/ast2700-mailbox.c
+@@ -0,0 +1,226 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright Aspeed Technology Inc. (C) 2025. All rights reserved
++ */
 +
-+title: ASPEED AST2700 mailbox controller
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/iopoll.h>
++#include <linux/kernel.h>
++#include <linux/mailbox_controller.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
 +
-+maintainers:
-+  - Jammy Huang <jammy_huang@aspeedtech.com>
++/* Each bit in the register represents an IPC ID */
++#define IPCR_TX_TRIG		0x00
++#define IPCR_TX_ENABLE		0x04
++#define IPCR_RX_ENABLE		0x104
++#define IPCR_TX_STATUS		0x08
++#define IPCR_RX_STATUS		0x108
++#define  RX_IRQ(n)		BIT(0 + 1 * (n))
++#define  RX_IRQ_MASK		0xf
++#define IPCR_TX_DATA		0x10
++#define IPCR_RX_DATA		0x110
 +
-+description:
-+  ASPEED AST2700 has multiple processors that need to communicate with each
-+  other. The mailbox controller provides a way for these processors to send
-+  messages to each other. It is a hardware-based inter-processor communication
-+  mechanism that allows processors to send and receive messages through
-+  dedicated channels.
-+  The mailbox's tx/rx are independent, meaning that one processor can send a
-+  message while another processor is receiving a message simultaneously.
-+  There are 4 channels available for both tx and rx operations. Each channel
-+  has a FIFO buffer that can hold messages of a fixed size (32 bytes in this
-+  case).
-+  The mailbox controller also supports interrupt generation, allowing
-+  processors to notify each other when a message is available or when an event
-+  occurs.
++struct ast2700_mbox_data {
++	u8 num_chans;
++	u8 msg_size;
++};
 +
-+properties:
-+  compatible:
-+    const: aspeed,ast2700-mailbox
++struct ast2700_mbox {
++	struct mbox_controller mbox;
++	const struct ast2700_mbox_data *drv_data;
++	void __iomem *regs;
++	u32 *rx_buff;
++};
 +
-+  reg:
-+    maxItems: 1
++static inline int ch_num(struct mbox_chan *chan)
++{
++	return chan - chan->mbox->chans;
++}
 +
-+  interrupts:
-+    maxItems: 1
++static inline int ast2700_mbox_tx_done(struct ast2700_mbox *mb, int idx)
++{
++	return !(readl(mb->regs + IPCR_TX_STATUS) & BIT(idx));
++}
 +
-+  "#mbox-cells":
-+    const: 1
++static irqreturn_t ast2700_mbox_irq(int irq, void *p)
++{
++	struct ast2700_mbox *mb = p;
++	void __iomem *data_reg;
++	int num_words;
++	u32 *word_data;
++	u32 status;
++	int n;
 +
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - "#mbox-cells"
++	/* Only examine channels that are currently enabled. */
++	status = readl(mb->regs + IPCR_RX_ENABLE) &
++		 readl(mb->regs + IPCR_RX_STATUS);
 +
-+additionalProperties: false
++	if (!(status & RX_IRQ_MASK))
++		return IRQ_NONE;
 +
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
++	for (n = 0; n < mb->mbox.num_chans; ++n) {
++		struct mbox_chan *chan = &mb->mbox.chans[n];
 +
-+    mailbox@12c1c200 {
-+        compatible = "aspeed,ast2700-mailbox";
-+        reg = <0x12c1c200 0x200>;
-+        interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
-+        #mbox-cells = <1>;
-+    };
++		if (!(status & RX_IRQ(n)))
++			continue;
++
++		for (data_reg = mb->regs + IPCR_RX_DATA + mb->drv_data->msg_size * n,
++		     word_data = chan->con_priv,
++		     num_words = (mb->drv_data->msg_size / sizeof(u32));
++		     num_words; num_words--, data_reg += sizeof(u32), word_data++)
++			*word_data = readl(data_reg);
++
++		mbox_chan_received_data(chan, chan->con_priv);
++
++		/* The IRQ can be cleared only once the FIFO is empty. */
++		writel(RX_IRQ(n), mb->regs + IPCR_RX_STATUS);
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int ast2700_mbox_send_data(struct mbox_chan *chan, void *data)
++{
++	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
++	void __iomem *data_reg;
++	u32 *word_data;
++	int num_words;
++	int idx = ch_num(chan);
++
++	if (!(readl(mb->regs + IPCR_TX_ENABLE) & BIT(idx))) {
++		dev_warn(mb->mbox.dev, "%s: Ch-%d not enabled yet\n", __func__, idx);
++		return -EBUSY;
++	}
++
++	if (!(ast2700_mbox_tx_done(mb, idx))) {
++		dev_warn(mb->mbox.dev, "%s: Ch-%d last data has not finished\n", __func__, idx);
++		return -EBUSY;
++	}
++
++	for (data_reg = mb->regs + IPCR_TX_DATA + mb->drv_data->msg_size * idx,
++	     num_words = (mb->drv_data->msg_size / sizeof(u32)),
++	     word_data = (u32 *)data;
++	     num_words; num_words--, data_reg += sizeof(u32), word_data++)
++		writel(*word_data, data_reg);
++
++	writel(BIT(idx), mb->regs + IPCR_TX_TRIG);
++	dev_dbg(mb->mbox.dev, "%s: Ch-%d sent\n", __func__, idx);
++
++	return 0;
++}
++
++static int ast2700_mbox_startup(struct mbox_chan *chan)
++{
++	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
++	int idx = ch_num(chan);
++	void __iomem *reg = mb->regs + IPCR_RX_ENABLE;
++
++	writel_relaxed(readl_relaxed(reg) | BIT(idx), reg);
++
++	return 0;
++}
++
++static void ast2700_mbox_shutdown(struct mbox_chan *chan)
++{
++	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
++	int idx = ch_num(chan);
++	void __iomem *reg = mb->regs + IPCR_RX_ENABLE;
++
++	writel_relaxed(readl_relaxed(reg) & ~BIT(idx), reg);
++}
++
++static bool ast2700_mbox_last_tx_done(struct mbox_chan *chan)
++{
++	struct ast2700_mbox *mb = dev_get_drvdata(chan->mbox->dev);
++	int idx = ch_num(chan);
++
++	return ast2700_mbox_tx_done(mb, idx) ? true : false;
++}
++
++static const struct mbox_chan_ops ast2700_mbox_chan_ops = {
++	.send_data	= ast2700_mbox_send_data,
++	.startup	= ast2700_mbox_startup,
++	.shutdown	= ast2700_mbox_shutdown,
++	.last_tx_done	= ast2700_mbox_last_tx_done,
++};
++
++static int ast2700_mbox_probe(struct platform_device *pdev)
++{
++	struct ast2700_mbox *mb;
++	const struct ast2700_mbox_data *drv_data;
++	struct device *dev = &pdev->dev;
++	int irq, ret;
++
++	if (!pdev->dev.of_node)
++		return -ENODEV;
++
++	drv_data = (const struct ast2700_mbox_data *)device_get_match_data(&pdev->dev);
++
++	mb = devm_kzalloc(dev, sizeof(*mb), GFP_KERNEL);
++	if (!mb)
++		return -ENOMEM;
++
++	mb->mbox.chans = devm_kcalloc(&pdev->dev, drv_data->num_chans,
++				      sizeof(*mb->mbox.chans), GFP_KERNEL);
++	if (!mb->mbox.chans)
++		return -ENOMEM;
++
++	for (int i = 0; i < drv_data->num_chans; i++) {
++		mb->mbox.chans[i].con_priv = devm_kcalloc(dev, drv_data->msg_size,
++							  sizeof(u8), GFP_KERNEL);
++		if (!mb->mbox.chans[i].con_priv)
++			return -ENOMEM;
++	}
++
++	platform_set_drvdata(pdev, mb);
++
++	mb->regs = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(mb->regs))
++		return PTR_ERR(mb->regs);
++
++	mb->drv_data = drv_data;
++	mb->mbox.dev = dev;
++	mb->mbox.num_chans = drv_data->num_chans;
++	mb->mbox.ops = &ast2700_mbox_chan_ops;
++	mb->mbox.txdone_irq = false;
++	mb->mbox.txdone_poll = true;
++	mb->mbox.txpoll_period = 5;
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++
++	ret = devm_request_irq(dev, irq, ast2700_mbox_irq, 0, dev_name(dev), mb);
++	if (ret)
++		return ret;
++
++	return devm_mbox_controller_register(dev, &mb->mbox);
++}
++
++static const struct ast2700_mbox_data ast2700_drv_data = {
++	.num_chans = 4,
++	.msg_size = 0x20,
++};
++
++static const struct of_device_id ast2700_mbox_of_match[] = {
++	{ .compatible = "aspeed,ast2700-mailbox", .data = &ast2700_drv_data },
++	{}
++};
++MODULE_DEVICE_TABLE(of, ast2700_mbox_of_match);
++
++static struct platform_driver ast2700_mbox_driver = {
++	.driver = {
++		.name = "ast2700-mailbox",
++		.of_match_table = ast2700_mbox_of_match,
++	},
++	.probe = ast2700_mbox_probe,
++};
++module_platform_driver(ast2700_mbox_driver);
++
++MODULE_AUTHOR("Jammy Huang <jammy_huang@aspeedtech.com>");
++MODULE_DESCRIPTION("ASPEED AST2700 IPC driver");
++MODULE_LICENSE("GPL");
 -- 
 2.25.1
 
