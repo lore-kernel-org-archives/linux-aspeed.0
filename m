@@ -1,78 +1,90 @@
-Return-Path: <linux-aspeed+bounces-1341-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1342-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31A3FC5B552
-	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Jun 2025 17:04:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CD31C677C4
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Jun 2025 02:56:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bGwBs5mj6z3blF;
-	Wed, 11 Jun 2025 03:04:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749575093;
-	cv=none; b=TYXZIPiSBbP/Zqiao0Ple0pksRuheFvmlNJ8Ec/gVzHYshFusZP0u7/Hvb62924m9tnDe4XboNfPu2WcPjpERASPkpUzSUi+UqUsxTdMWtsJayGQyesa+/B3VEGk51RIUczw+jEIXFNw9eIQiPuir/kz05s4s3G3+A6ERVT0LN0n/6rOT9jNjTyiPgaR6iey/9ixtd6S7exdRg0QHQsfO/nC4UXynl9NtN7hHiZtKYsL7jx96vm8CceDwf5ueB74gL6lkE4XbTLCW0Zi9TST6sl3ZWm32t01FNgXX6EZi+ZWTW9x3wqEbpEpmodTlWHcC9IxDGuncUyieENGn9OD4Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749575093; c=relaxed/relaxed;
-	bh=l1SAMsGs37SGD+chia/RQyRlWwAaxqTB5CEOsEmZAX0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=V9CycaTThUmas2jUh7+3NI4dxtV0rUfLEaEz4UApCB2cOMxez0/GlkZt31r8brEKUPP9HyPjgtctJaOFRAVuaiPYepklDZdQgmf728/BlY+o0V5QnQeZw3ws6cdgLpAPgGJMZU9hb58u/QSEWsJAUMjtyQ4XEa7LERynN57nZU49cNS/gcLoCV4xq2gyAss/CW7/lKOTnA+3KPA0c2DMx9eQcrsqE1P4CvWpIS50+sNbw8PLKykOEXiXKfplfgAnjL8inKvEtJ/4NVLv9bVBzPQuQ1W+9Mff/we+yGBvmBcMzLDgovWXH+FeEd889+xI67nuI0mvnXGo/VxlTdchHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=evc+1ZJM; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bH9Kw58dFz2yYJ;
+	Wed, 11 Jun 2025 12:56:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2415::610" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749605475;
+	cv=pass; b=mEL3xFl+kaqQqvvyQ5SjR9GXzcjDZXwBSiSB17uI/xCXxPaP38wWFC3Zn9k+IzdJ6Ua683W/6H0Vooil09wayCdbMr75UbJnmWmc6Ku0pWnPMZquNaDjlUkLyabLzjTPHh9SM1p524b0qibweKSWeq1i2/XJkbCPalWwCkQi4ignqD183obY9aw9wpWLvFlsv4DEaxHJmNSit0ZVpMevpNL9tVBTS0obkPeIQv+dezNrCRQzpaWr5n0ntHYrIRMUOcjA/WQWklDC4D3XXVcT7aHilpjJ0b7M1TU9YYwFLUXfn7zjDItp+9wybNZ9VXQ8UMYUy5WJVvibwzL9yChYBA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1749605475; c=relaxed/relaxed;
+	bh=++/x0W7ekADfWJSr6zLBqZf9TmVR/5WzBIGDff14kTY=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=P+6JY+Csi0NY+jJFA4PAtIr00X706b51aRc5Sl0NVbH0qP6tjsJlhYJDbOcTTRzTFAi8/mlTzWnwubL0C4jz04AL4BpQxD8ztOdsiIfcoX8NqpCD37ahamiRCZQrjdcr2Ku2gWO4Xr/18/MQLG5p1FEQZnpgo1+9ayZkIalX5zjTZanK25LSZQZCWkp2rY85kf+kVEMJHIYBz2je7Co5Y7AVh0OMAkwz4kHeuJPs6yzz2R255N7PqrGdVmZ2ogjN1MzJrr5mxdtBUWJTTGSU5QLEbjXTnET2WZ7lPG5OKF9TtxHXj7ppPz8ssfditGpZzKpojtBHZBhRAAX9ivF+vg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=PT64cYXR; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2415::610; helo=nam11-dm6-obe.outbound.protection.outlook.com; envelope-from=donalds@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=evc+1ZJM;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=PT64cYXR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2415::610; helo=nam11-dm6-obe.outbound.protection.outlook.com; envelope-from=donalds@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on20610.outbound.protection.outlook.com [IPv6:2a01:111:f403:2415::610])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGwBr3DMPz3bkg
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 03:04:51 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2353a2bc210so49886585ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Jun 2025 10:04:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1749575088; x=1750179888; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=l1SAMsGs37SGD+chia/RQyRlWwAaxqTB5CEOsEmZAX0=;
-        b=evc+1ZJMN4hnX6w29Z6RyHi8M1/DE6SItsDA9Q3RlkFlyhbO0kdcRFA9W0CRPSw0Nn
-         KMeH1JA3VJcytxbFtPnLXJbkR6Qt3K1ato1kkBKuNSCR/aTmI9FNshqLhoYi5hWmK69M
-         /bLjZPh3eT7ndavrUzmjnaykCrequBuUQIuv4br5XDnnjcz0fGhL/KNcfBWxsfQK7dyw
-         SAXAV99LRDKyPKznfBxQNmiLh1TVsW376MIk77e0mjGCI7Y0guN7NlizKG3AraasgsAR
-         0dK05mLHyEgMShUGuMk2daZl+XNVXn/0KtRWFPvCDl8pBsPV/ms8NNaY0nSx2CoD5vhX
-         a2/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749575088; x=1750179888;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=l1SAMsGs37SGD+chia/RQyRlWwAaxqTB5CEOsEmZAX0=;
-        b=WRLso8e2N0lN3WiWoZsWf9jUO2LyQxNoXmL5OO5yBpB78NqDRJNQSJ8kpWywIlKayx
-         AIkvGo/lhZkHKkNxM8qdNq3cYHocRzmS65xzvg5m/YHfPYT2+CUE3ZMH/df46o8u0RGu
-         p4+MpKAcDYG8gYzPCynbqx9JE2GidXudrhUMN9w14T2NHk2/p5/KqAz3dbqmVZho60Og
-         ko0C2I1iRkpYv4GEbvsljRqNZsMIh4NvdrRYWI/OR+yCIVBRi8EbK1A3UpNdTJ1CVTvr
-         udY0AOrIb+0mctug9ZCUWP9OMBJsOmSae2mDs5RCMhXZN+qy0iRg8OpoK0KvyTT0NOTi
-         YPVw==
-X-Forwarded-Encrypted: i=1; AJvYcCVFSNVEfB5kot5IqhxW6FUNEmrhchGRq4Cw3Q7Ti5VXYPbjHSWEbL7cAtCqM01rdpGX64ww5mjhpUeRwMo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz3XOpqfWYMkEXaHoPmNMoZWdq5ucxXzLijjjAiPQhEihk2V1/R
-	op9vaZTKYmWqxWeryenzAMut7EI37HGdXhb+Nx1MNyZiVSrH9GnrdCsj
-X-Gm-Gg: ASbGncsUpxW6QAR14cE0DpQf/OWyRRzjYzGVdGMc/agTiDqxYcRWOeZODliFHCBDILv
-	VaU0VtitWmyD+GybXcyAT6ZZcrKDsg2Z0iaa0PqKPQ38B/QM3S0waaBgmXcR7PLtAUp86o0EM0H
-	bgAN178pO1Rs3Bge0Gia9xX3HhfsmMBwjNxiLh5YWRWhNxFqLi37n24XhO3GxMWZcCxBtRW6FBF
-	RaesmmHghpWhajheuFSwkAJnlL5qUsWoCgkmNR2h+AE13qp1JezyxrYKiv4wlJCWINdegN1FKJk
-	nhaAC9nnszgkddpnt27g0ZSR1Ew+t3wxtxncvO3s82lJzhdusi9kQywfADdNAkumvo+Ofz/VM57
-	aWokRXKEkGujHXFHbnkIfrkYulIzhGX4ErhwhFOFWKec0zHjcMg==
-X-Google-Smtp-Source: AGHT+IGN8fWm1wd/rYS+vEB4RxNmREuCEW79sACTf92qnjh+StZfwWgh0XTKc+e8n8+kZsmS0X1KRQ==
-X-Received: by 2002:a17:902:c94c:b0:235:81c7:3c45 with SMTP id d9443c01a7336-23641b26eeamr523415ad.46.1749575086817;
-        Tue, 10 Jun 2025 10:04:46 -0700 (PDT)
-Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-236034065edsm72958615ad.185.2025.06.10.10.04.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Jun 2025 10:04:46 -0700 (PDT)
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Wed, 11 Jun 2025 01:02:09 +0800
-Subject: [PATCH] ARM: dts: aspeed: catalina: Enable MCTP for frontend NIC
- management
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bH7R53WVlz2xd4
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 11:31:12 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=U0svVGVR88wqW0SoeGc+0h5xHs3A1kzxWPLHKucjZQZftSJKKeol71mIwLUQBAzmkhLB+vCiKRh1uGVGcHx9jf97zEkuAARYOxybG3HoUjWrIHYu2DhjdSx4VTszYVKVovLxBSK4P/VHjj/ZeqrrD4k11XEGoZQQmlO4UcxAc/xgLphZQK7nz+wNNqZsGjBKJAmOGQJjKmUq/atzi5UstW/WIG9LjvA+ZMGd+C3+bCCrOfOF8/ohekpWD3lO0mZnIaIoLP1t1w+iS0btgzufwWtRwCuQxkaaFFtb+aCTxNf5GVKb82vBVYWrOym18Gmp+R230iuJ3Qfj9oPm0ztRAQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=++/x0W7ekADfWJSr6zLBqZf9TmVR/5WzBIGDff14kTY=;
+ b=aR91WSIwwduwXnlKP+XZdAxdMx9dviCnka/NmnCn8MLQEESR3rxPdqZFoMTEAGUJvwnGFz8YaOtaopEqhFkrZvCDKr81iamMiObrlNyktpnAFvYunERH0Sw2ObgfrcYNyRCGXr0JxIX2OQKjkwy5SVldyLu2YfjhQztZraYUYjRsDuZnaJZxvKxgsJ3+rkk7XfVJlwIAlUVMfNyXtvJ1VFvoFFu5HDVSZ3JlLhSYlCBIRYTgSQEVnElIECHvZB7jiVKj6Wbp7x2wX2VbSDd6ocA4P9P7eaHnUoEMJ2jDVGxfCAE2up3buwTRylhD/awbYHmviHMA5/nVHliOVuruJw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=++/x0W7ekADfWJSr6zLBqZf9TmVR/5WzBIGDff14kTY=;
+ b=PT64cYXRqXVVZo/+Wm0xw9yCcpBv8bew1mvkQvkPbz0CYS23LkxETO9VY7tOSUHaK8TTC1e0iRQdY2j/ozWDIrxHA+eb1bWZltP6gumujYsV76DKu4MiNSRIP+9S3RPAKwvfX5dMzrmeYcJyCL6al3nBCaqGTB1oLitzViKPlEeV0g4yuV81hxThJxsuDrfyXJYE/b/z0yOzQi09rIQkEIr/YvpCu1+JAe7SoN+mSNi53eGdOW1zPe1ifkbAlHOIZac6PBGtClYCL4ZiSzp3I6JkkHttZkI/7zAeLyJkC7FgFHL0aOE4Y8z/L6pMwmLW9froS4Qm4pgdZ49zf5H6jw==
+Received: from MN2PR14CA0009.namprd14.prod.outlook.com (2603:10b6:208:23e::14)
+ by SA1PR12MB6702.namprd12.prod.outlook.com (2603:10b6:806:252::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8792.34; Wed, 11 Jun
+ 2025 01:30:50 +0000
+Received: from BL6PEPF0001AB50.namprd04.prod.outlook.com
+ (2603:10b6:208:23e:cafe::e6) by MN2PR14CA0009.outlook.office365.com
+ (2603:10b6:208:23e::14) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.8792.35 via Frontend Transport; Wed,
+ 11 Jun 2025 01:30:49 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ BL6PEPF0001AB50.mail.protection.outlook.com (10.167.242.74) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.8835.15 via Frontend Transport; Wed, 11 Jun 2025 01:30:49 +0000
+Received: from rnnvmail201.nvidia.com (10.129.68.8) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.4; Tue, 10 Jun
+ 2025 18:30:28 -0700
+Received: from rnnvmail203.nvidia.com (10.129.68.9) by rnnvmail201.nvidia.com
+ (10.129.68.8) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.14; Tue, 10 Jun
+ 2025 18:30:28 -0700
+Received: from dondevbox.nvidia.com (10.127.8.13) by mail.nvidia.com
+ (10.129.68.9) with Microsoft SMTP Server id 15.2.1544.14 via Frontend
+ Transport; Tue, 10 Jun 2025 18:30:28 -0700
+From: Donald Shannon <donalds@nvidia.com>
+To: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>
+CC: <joel@jms.id.au>, <andrew@codeconstruct.com.au>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<etanous@nvidia.com>, Donald Shannon <donalds@nvidia.com>
+Subject: [PATCH v4 1/1] ARM: dts: aspeed: Add device tree for Nvidia's GB200 UT3.0b platform BMC
+Date: Tue, 10 Jun 2025 18:30:24 -0700
+Message-ID: <20250611013025.2898412-1-donalds@nvidia.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,78 +98,99 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250611-catalina-mctp-i2c-10-15-v1-1-2a882e461ed9@gmail.com>
-X-B4-Tracking: v=1; b=H4sIABBlSGgC/x3MSwqAMAwA0atI1gaa4v8q4qLWqAGt0hYRxLtbX
- L7FzAOBvXCALnvA8yVBDpdAeQZ2NW5hlCkZtNKlqojQmmg2cQZ3G08UbZEUUontWHNbFJUa5wZ
- SfXqe5f7P/fC+H35ZZLBpAAAA
-To: Rob Herring <robh+dt@kernel.org>, 
- Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Patrick Williams <patrick@stwcx.xyz>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
- Potin Lai <potin.lai.pt@gmail.com>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1749575084; l=1422;
- i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=FeGGqTV3hMLvtuAUwQjWTQyZXr9HDJB5RrZEzdTh77s=;
- b=lRWcKzdCWOshs6fYek3iMrxbKcUD0Q0b2Tn4RqRTi0y+t19th2ZR1mJJ/o5nxpConHX4xZfj9
- M55WJ2w/KdyB4EiBoVxPni3QOtFCBWVk2dtVdkjJqPvrVw6cQn81u4y
-X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
- pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: AnonymousSubmission
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BL6PEPF0001AB50:EE_|SA1PR12MB6702:EE_
+X-MS-Office365-Filtering-Correlation-Id: e8610e73-addc-44db-9c02-08dda887991a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|82310400026|36860700013|376014|13003099007;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?dHgLVNGuGub2wI3T8xBldhk0SGudz/lMeIA4dhpYiH3Ku4C/as8XAyyx8FI0?=
+ =?us-ascii?Q?1KaFetc7Za6Iss3RHVXb67tSZdOrwR37kRzuc9CeyYwDLOvqOYBPeRiIZavY?=
+ =?us-ascii?Q?0mpF1c/AX3mn6knnPe/qZP+Ks4WmlS77p1SEha0llZqBlcnR444HF06SV6IY?=
+ =?us-ascii?Q?O+C8kdRUga87QKHgazwDXiO8QdwhJ/LDjrlmp5ODK3ICKgG4hyD3ZcB4rRZJ?=
+ =?us-ascii?Q?ZyvgGh4e/uDBaV6A10WIu/Ex0BpV7Bgpp/ewaqmr6U9CpicLy3r6Ie0+hghV?=
+ =?us-ascii?Q?818Zi9Wth0uBT+sUBMxfZrMc8kqSwlDq9MPaINTsz5TNDHvuiAX1UGNM9eP1?=
+ =?us-ascii?Q?HMsjwz72SYxpqF9YlyXIeKs9qmz3mFZiLx/4cHLaQBHV/EkCdc4OlOBNwo9d?=
+ =?us-ascii?Q?9lp513WfZP0evUA/ChFKE6Pv821hTKjwAeqKurS245jv0XS/MghdXzFC6qKu?=
+ =?us-ascii?Q?I9IyGWUHvI7GKhyymkYpF+rSsdbFxujWoiwR4ZCTaf6MombvjNz/ZevPJx5x?=
+ =?us-ascii?Q?FOyP/BwDn4gNzZlu08O/aEb/oNCXyBPfilpdQVdnfwaxJReeTqfYtevk19Nm?=
+ =?us-ascii?Q?0GTfh34j6IWtd+r2D3AJI9m6009CqPMzB6dPstp07/b0AbmJB5ekfElhtkFU?=
+ =?us-ascii?Q?1hwuJsM4TSS2FJgDVl1FUenMD+1JR84mVwmQOQeZFF28235SHC6PoDE8v2D0?=
+ =?us-ascii?Q?lF/pL7swsp0G/kIfTM3Nx12hRaSe9x7cJLcB0gEqXS3Kuy6bXEqELlALXCpf?=
+ =?us-ascii?Q?OWcpA5LZ8ELbRPW/p4EXKWzHq5zsI8nY8gB98PNFLmBKRhJQAQDBDlqIqj8P?=
+ =?us-ascii?Q?XZVcGb2OOUu6+8gHi11lJ82R1ZLRjcywaRYw+U7tcuT7KqWCYHvxqe4JhCVj?=
+ =?us-ascii?Q?x0MzCufXjYryluAFmlMmUUb4AwnhQdXoSLQVbzK9fanwmqBrRECBqUxlxUXx?=
+ =?us-ascii?Q?jKIaNARo+G/f4SRoJEK3vkSRTEXzCEjdrntrVV0+Wle5c/PbWgXWtH2Dtlxi?=
+ =?us-ascii?Q?ylsi1gg5DAj8H0zMgS46Edcn3tVa6bp8RA1npuW1cL8gfrNXQz7ZjzuIU/Gn?=
+ =?us-ascii?Q?b8kP+pmvHYOrMtoYGl/RRag61qDMBVIvu667I6J2KP+6AziPDjr0j9xHLdxq?=
+ =?us-ascii?Q?mzEAv32TvyNQS3NWdVWbCoeEQTJmGOxRJ8pR5ntAI6dt2DLcEMA+i1rq/P9h?=
+ =?us-ascii?Q?SEwqaibzBlcaPq079Ugjly1ticXgb6790a5ydxCC0Aqd/5OQcBbqeLpi/n4O?=
+ =?us-ascii?Q?4TFrjAqBYilvY2LviAPP0MbAieFBkZrgRwuhYA+uYytCvmkH6cYqRTmU3zbK?=
+ =?us-ascii?Q?NAPlqOAdHLa6tSemZjOptHI9NWT2LvhP4GTM4dO9gSYq+iBIirXpC+EzaQak?=
+ =?us-ascii?Q?Jscnryz+/Lmi12MBOdmd3dN0Wxms7qYL2NWaIJUBAGTrL+0SW/YqdyGYwxnj?=
+ =?us-ascii?Q?zweszvpXExcNsDK+7vtQrG1rv/qnhbRnrlA6y0O2gb9Y+WTl6RhXAlv6WEJv?=
+ =?us-ascii?Q?nIKggqZULp4c541XFQQIa/oBiv/jkQ8ret/o?=
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(36860700013)(376014)(13003099007);DIR:OUT;SFP:1101;
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Jun 2025 01:30:49.7144
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: e8610e73-addc-44db-9c02-08dda887991a
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BL6PEPF0001AB50.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB6702
 
-Add the `mctp-controller` property and MCTP nodes to enable support for
-frontend NIC management via PLDM over MCTP.
+The GB200NVL UT3.0b BMC is an Aspeed Ast2600 based BMC
+for Nvidia Blackwell GB200NVL platform.
+Reference to Ast2600 SOC [1].
+Reference to Blackwell GB200NVL Platform [2].
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
+Link: https://www.aspeedtech.com/server_ast2600/ [1]
+Link: https://nvdam.widen.net/s/wwnsxrhm2w/blackwell-datasheet-3384703 [2]
+
+Signed-off-by: Donald Shannon <donalds@nvidia.com>
 ---
-Add the mctp-controller property and MCTP nodes to enable support for
-frontend NIC management via PLDM over MCTP.
+Changes v1 -> v2:
+  - Changed phy-mode to rgmii-id [Lunn]
+  - Removed redundant max-speed for mac0 [Lunn]
+  - Fixed typo from gb200nvl to gb200 in Makefile
+Changes v2 -> v3:
+  - Fixed whitespace issues [Krzysztof]
+  - Fixed schema validation issues from my end ( there are still issues with the aspeed dtsi file that are not related to this new dts) [Herring]
+  - Reordered to follow style guide [Krzysztof]
+  - Removed redundant status okays
+  - Changed vcc to vdd for the power gating on the gpio expanders
+Changes v3 -> v4:
+  - Added changelog [Krzysztof]
+  - Added nvidia,gb200-ut30b board binding [Krzysztof]
+  - Removed unused imports
+  - Reordered a couple other style guide violations
+  - Added back in a couple needed "status okay"s
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-index 5fb67ad2d777..8d786510167f 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dts
-@@ -797,6 +797,12 @@ eeprom@56 {
- 
- &i2c10 {
- 	status = "okay";
-+	multi-master;
-+	mctp-controller;
-+	mctp@10 {
-+		compatible = "mctp-i2c-controller";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+	};
- 
- 	// OCP NIC0 TEMP
- 	temperature-sensor@1f {
-@@ -926,6 +932,12 @@ io_expander14: gpio@15 {
- 
- &i2c15 {
- 	status = "okay";
-+	multi-master;
-+	mctp-controller;
-+	mctp@10 {
-+		compatible = "mctp-i2c-controller";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+	};
- 
- 	// OCP NIC1 TEMP
- 	temperature-sensor@1f {
+Donald Shannon (1):
+  ARM: dts: aspeed: Add device tree for Nvidia's GB200 UT3.0b platform
+    BMC
 
----
-base-commit: 4d75f5c664195b970e1cd2fd25b65b5eff257a0a
-change-id: 20250611-catalina-mctp-i2c-10-15-9b7e94460bf8
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts  | 1154 +++++++++++++++++
+ 3 files changed, 1156 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts
 
-Best regards,
+
+base-commit: 460178e842c7a1e48a06df684c66eb5fd630bcf7
 -- 
-Potin Lai <potin.lai.pt@gmail.com>
+2.43.0
 
 
