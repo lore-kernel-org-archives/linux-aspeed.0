@@ -1,52 +1,52 @@
-Return-Path: <linux-aspeed+bounces-1349-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1350-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54CDFC71133
-	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Jun 2025 03:06:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5B79C61DB2
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Jun 2025 03:44:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bH9Xk0VPhz30Lt;
-	Wed, 11 Jun 2025 13:06:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749518672;
-	cv=none; b=EQxY1rv09H+0gYVUQMTiXeDuJwRRM9GbCe8iE8vADNzjTzSpqCj58f3V/H9MD52ZUxCFF5uTa1mKVYb4yL7dtVgHjDTEJtOTti3/tEkYcaPrLSTGwczli9wobV/qEBEz777bU4m9WexXG38WH0gJM7TyUAeqeiGOlRJng+OwP3J2Th/dW5Z0RE0RFn6W0m0JCgAK93MwrVsBKQ30q6HlEi0ih0Pls1+vT8WJBkyVoDFzbHag+k96RjITGfpSPQoqw3YsuHyGhx/lGxz92JkOLB1SkUvvP9WJqf6Vw6RbNmoFdmCYBkq1x2tFdA9oDL0iCTlYgOuaQhhQz02PJ+wkYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bHBNw3KYpz2yYJ;
+	Wed, 11 Jun 2025 13:44:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749613472;
+	cv=none; b=S+VLxOO3pUvr89ZZ2Yiqieq7MmAsNo3iFGHhthiQmDC+DZz0ju1Bwnp1M3n4Na4qZaW+qBaQRKFWDJxp/657uEqU1z13PgI1JQSMHpaYPIn7ZswerJsHJjSracNJGf5webiS3vhMo4TR7QfmCaBYwo7C7X++8Ybdfqrht439TXd+3DZFUUM4+dWxFQ+4ZduBJuBrE7wzMwwzgrZVEZR1afxN/c4/TH3aWOwky2EKjZFuYf9xWwJG4LsUm8r0lnFqZeaU075aCnejMSrGY0fqNmyKwKXMMrWlaKEuo83nDfUeN8U8O5gu2lk8mWOoinI82oRFDtEKxgDVFocJWqfALA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749518672; c=relaxed/relaxed;
-	bh=5LKba7DknBhbjPo7db2iJgXAGczza2OID/T8xJSknic=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ft/VySSicgozopz4F3WVQ2/sp+6vlYgQrpVzCb5/ejGbpUc5iwSRoNlPgeXu6LQkfMzCWqaCJ9f/HRvBr0q7eR3uVzjzhz9cid6ahsM7fXPr+MHzu2oI1MqE06hYHKurNFUCuzqyYPYXsvEpxUCFW/g36zM8Z1Vkhsv6I8eRI8rqYwzWZ/Ka4boUNzfEqbfvIcJeycaydCfnaB5ugW/vK4qF90pSJWo2lgRyyZASTi0OuDH71udY9Ysjr4+E6Zs9wfjjSdsyckrgn3mxj92RKot2Xz2pQ41121yusoRc1pOYOgX0f0U/5L1H+Rj1Q6YTVh5nq//92SMgM/h2ixgi5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1749613472; c=relaxed/relaxed;
+	bh=yMbhtrxd+lfucvgFGWo6yq3uWZnN00zrQisBYzRC/t4=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=a7DKzhZsaVS92t6D1GYP9fwcpyS+Pdf1sRysfZMqR6KrzYNhwKWcE4+yiJbBfyXahTkIkuAAOiilOt5yH5L1DwgBmjqznyRNc0HuYwTBWJYmmjcnKnI2PO0F+kjd7AJkJeeqfXr8tY9ZeYi8vYoCSkZOEd6b6LXqjEK8RplsqFDgNF2zGdni8JJejE6AfGsJU1PZQjbAFaJEzJMudzqkNkfz4CSLlZsUuF/54C+buVj9b5vmfhTUw6XNMvO1MnFdkb2PrkhWO+Mb8jae4Jp1kCszL/ragv909nq4+6JJM0Jqem8cNpdi4EMZ5a1geNV76kuVGtKKlxgvhOqV+c1O+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d2CowW0j; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d2CowW0j;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGWKq5Tlrz2yGM
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Jun 2025 11:24:31 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 10 Jun
- 2025 09:24:07 +0800
-Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Tue, 10 Jun 2025 09:24:07 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>
-CC: <linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<andrew+netdev@lunn.ch>, <davem@davemloft.net>, <edumazet@google.com>,
-	<kuba@kernel.org>, <pabeni@redhat.com>, <robh@kernel.org>,
-	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joel@jms.id.au>,
-	<andrew@codeconstruct.com.au>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
-	<p.zabel@pengutronix.de>, <BMC-SW@aspeedtech.com>
-Subject: [net-next v2 4/4] net: ftgmac100: Add optional reset control for RMII mode on Aspeed SoCs
-Date: Tue, 10 Jun 2025 09:24:06 +0800
-Message-ID: <20250610012406.3703769-5-jacky_chou@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250610012406.3703769-1-jacky_chou@aspeedtech.com>
-References: <20250610012406.3703769-1-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHBNt1PM0z2xHY
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 13:44:30 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id DFF055C58FC;
+	Wed, 11 Jun 2025 03:42:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 291EDC4AF0C;
+	Wed, 11 Jun 2025 03:44:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749613467;
+	bh=5ARTyfd+J/ANy0FRcXsCzGza7YVCTUrLuXUD1PZwF38=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=d2CowW0j1dHDkYJE12gpXiTg1KVtWyL0Ehl/lBriVhAk/iMnnl7KbhzpBp5HKCEMA
+	 rQxvG+DQaZup6HQuSFnZF02/U6L/VKc4kuolS+/ANutM10tdmxTFWaNZHxOfpXnsRx
+	 +p6UfTpxjw1oFO+NBPE7oX3fqRj4CAFBGxO4UWMi86hAzlgFTostggjepRiAcgU/XG
+	 qu2YQzl7Igy+TfwUI40t1MFtxtqbcobuJTur79vFIrnCYyjVQjhnFLaa5kKYcfXfFG
+	 Yj5imWphxWv9C+XXdZwmW2W7KK721TZJlW1+9Xypr9iQBnXNYaQo/CBVrsEW3TEZi6
+	 3/U7hPBL7htJQ==
+Date: Tue, 10 Jun 2025 22:44:26 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,80 +60,137 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ etanous@nvidia.com, krzk+dt@kernel.org, andrew@codeconstruct.com.au, 
+ devicetree@vger.kernel.org, conor+dt@kernel.org, joel@jms.id.au, 
+ linux-arm-kernel@lists.infradead.org
+To: Donald Shannon <donalds@nvidia.com>
+In-Reply-To: <20250611013025.2898412-1-donalds@nvidia.com>
+References: <20250611013025.2898412-1-donalds@nvidia.com>
+Message-Id: <174961323770.3426174.10462978172910890705.robh@kernel.org>
+Subject: Re: [PATCH v4 1/1] ARM: dts: aspeed: Add device tree for Nvidia's
+ GB200 UT3.0b platform BMC
 
-On Aspeed SoCs, the internal MAC reset is insufficient to fully reset the
-RMII interface; only the SoC-level reset line can properly reset the RMII
-logic. This patch adds support for an optional "resets" property in the
-device tree, allowing the driver to assert and deassert the SoC reset line
-when operating in RMII mode. This ensures the MAC and RMII interface are
-correctly reset and initialized.
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
----
- drivers/net/ethernet/faraday/ftgmac100.c | 26 ++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+On Tue, 10 Jun 2025 18:30:24 -0700, Donald Shannon wrote:
+> The GB200NVL UT3.0b BMC is an Aspeed Ast2600 based BMC
+> for Nvidia Blackwell GB200NVL platform.
+> Reference to Ast2600 SOC [1].
+> Reference to Blackwell GB200NVL Platform [2].
+> 
+> Link: https://www.aspeedtech.com/server_ast2600/ [1]
+> Link: https://nvdam.widen.net/s/wwnsxrhm2w/blackwell-datasheet-3384703 [2]
+> 
+> Signed-off-by: Donald Shannon <donalds@nvidia.com>
+> ---
+> Changes v1 -> v2:
+>   - Changed phy-mode to rgmii-id [Lunn]
+>   - Removed redundant max-speed for mac0 [Lunn]
+>   - Fixed typo from gb200nvl to gb200 in Makefile
+> Changes v2 -> v3:
+>   - Fixed whitespace issues [Krzysztof]
+>   - Fixed schema validation issues from my end ( there are still issues with the aspeed dtsi file that are not related to this new dts) [Herring]
+>   - Reordered to follow style guide [Krzysztof]
+>   - Removed redundant status okays
+>   - Changed vcc to vdd for the power gating on the gpio expanders
+> Changes v3 -> v4:
+>   - Added changelog [Krzysztof]
+>   - Added nvidia,gb200-ut30b board binding [Krzysztof]
+>   - Removed unused imports
+>   - Reordered a couple other style guide violations
+>   - Added back in a couple needed "status okay"s
+> ---
+> 
+> Donald Shannon (1):
+>   ARM: dts: aspeed: Add device tree for Nvidia's GB200 UT3.0b platform
+>     BMC
+> 
+>  .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+>  arch/arm/boot/dts/aspeed/Makefile             |    1 +
+>  .../aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts  | 1154 +++++++++++++++++
+>  3 files changed, 1156 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dts
+> 
+> 
+> base-commit: 460178e842c7a1e48a06df684c66eb5fd630bcf7
+> --
+> 2.43.0
+> 
+> 
+> 
 
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index 17ec35e75a65..01c4db6e5b91 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -9,6 +9,7 @@
- #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
- 
- #include <linux/clk.h>
-+#include <linux/reset.h>
- #include <linux/dma-mapping.h>
- #include <linux/etherdevice.h>
- #include <linux/ethtool.h>
-@@ -101,6 +102,8 @@ struct ftgmac100 {
- 
- 	/* AST2500/AST2600 RMII ref clock gate */
- 	struct clk *rclk;
-+	/* Aspeed reset control */
-+	struct reset_control *rst;
- 
- 	/* Link management */
- 	int cur_speed;
-@@ -148,6 +151,23 @@ static int ftgmac100_reset_and_config_mac(struct ftgmac100 *priv)
- {
- 	u32 maccr = 0;
- 
-+	/* Aspeed RMII needs SCU reset to clear status */
-+	if (priv->is_aspeed && priv->netdev->phydev->interface == PHY_INTERFACE_MODE_RMII) {
-+		int err;
-+
-+		err = reset_control_assert(priv->rst);
-+		if (err) {
-+			dev_err(priv->dev, "Failed to reset mac (%d)\n", err);
-+			return err;
-+		}
-+		usleep_range(10000, 20000);
-+		err = reset_control_deassert(priv->rst);
-+		if (err) {
-+			dev_err(priv->dev, "Failed to deassert mac reset (%d)\n", err);
-+			return err;
-+		}
-+	}
-+
- 	switch (priv->cur_speed) {
- 	case SPEED_10:
- 	case 0: /* no link */
-@@ -1968,6 +1988,12 @@ static int ftgmac100_probe(struct platform_device *pdev)
- 
- 	}
- 
-+	priv->rst = devm_reset_control_get_optional_exclusive(priv->dev, NULL);
-+	if (IS_ERR(priv->rst)) {
-+		err = PTR_ERR(priv->rst);
-+		goto err_phy_connect;
-+	}
-+
- 	if (priv->is_aspeed) {
- 		err = ftgmac100_setup_clk(priv);
- 		if (err)
--- 
-2.34.1
+
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
+
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+This patch series was applied (using b4) to base:
+ Base: using specified base-commit 460178e842c7a1e48a06df684c66eb5fd630bcf7
+
+If this is not the correct base, please add 'base-commit' tag
+(or use b4 which does this automatically)
+
+New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250611013025.2898412-1-donalds@nvidia.com:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: timer (arm,armv7-timer): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /sdram@1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: bus@1e600000 (aspeed,ast2600-ahbc): compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
+	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e6e0000/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e6e0000/display@1e6e6000: failed to match any schema with compatible: ['aspeed,ast2600-gfx', 'syscon']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: adc@1e6e9000 (aspeed,ast2600-adc0): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: adc@1e6e9100 (aspeed,ast2600-adc1): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: crypto@1e6fa000 (aspeed,ast2600-acry): 'aspeed,ahbc' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: sdc@1e740000 (aspeed,ast2600-sd-controller): sdhci@1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
+	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: sdc@1e740000 (aspeed,ast2600-sd-controller): sdhci@1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
+	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/sdc@1e740000/sdhci@1e740100: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/sdc@1e740000/sdhci@1e740200: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e780000/timer@1e782000: failed to match any schema with compatible: ['aspeed,ast2600-timer']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: lpc@1e789000 (aspeed,ast2600-lpc-v2): reg-io-width: 4 is not of type 'object'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: lpc@1e789000 (aspeed,ast2600-lpc-v2): lpc-snoop@80: 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: kcs@24 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: kcs@28 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: kcs@2c (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: kcs@114 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e780000/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e780000/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: fsi@1e79b000 (aspeed,ast2600-fsi-master): compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
+	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e790000/fsi@1e79b000: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: fsi@1e79b100 (aspeed,ast2600-fsi-master): compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
+	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e790000/fsi@1e79b100: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200-ut30b.dtb: /ahb/apb@1e790000/dma-controller@1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
+
+
+
+
 
 
