@@ -1,61 +1,59 @@
-Return-Path: <linux-aspeed+bounces-1384-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1385-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C8AFC677C4
-	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Jun 2025 08:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9C47C677C4
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Jun 2025 10:03:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bHJqH4lNFz307V;
-	Wed, 11 Jun 2025 18:34:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749630859;
-	cv=none; b=MU0T0aIh0tj2gjk1IJT0GPxLdmLemq+1Ond/aVAEmQT/0oeigWygOIRHOKPWxCUJzYdWxNG6iZQE0vMCiiD0xnBQGSEYBz+l17+e0XTQtsghH39B7AMJK+l8saiHF/Qhlx6aLnr7Vm3VQFIwW7+n+09ZnMtCEJsKPBeoCZKgr52OZWaQalUP4Mh+RpupDAP0u/puXGxiWjSt6TFey070ey6AilsjoZ2eQFoUvAZB67q4z4pB8lQj52TJ3QMLRWIz1IJLV4yEkuTk0zm5igBFwSOJ6nTcukvRD4RAxU0rxfhjtC+9bh10uI3CpuC90tfaa44kZ9l3ZtwRUGstlci8cw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bHLpP2z2bz309v;
+	Wed, 11 Jun 2025 20:03:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=178.79.152.223
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749636221;
+	cv=none; b=EIGhdAythUk6qqCHS80UQv3wishEDtVgjjGJcpXtXJU6t3J/iMClNEcV52p6FLpTyBRHmsph1e/UCPQyoKax0knLPeu75dWgjXZKk6ViCVB8OMeBay1mc3qmOxkSNK/eKbiBS5CgQJ615j04bWnvRDd1EpUx+61SoBHbKL50UtjvXh0P5Ws0CDgP+c9ZsggGP/4rTiHtVFW2ZRzPNi2NVmayPEO1wuyfhdGeT9xWfZUIc+XRLLYB6M2V5JJAixpEm2vKV4G41j0RyfeEUkbGScOWsGo8YdZ1TcaJgynVDqKDMC3WX2rXFHS+6XF3q2+BSIXQm3ZX92F6yWkO7q9ffw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749630859; c=relaxed/relaxed;
-	bh=sFubRqLaTRPPao3ADmJTjzXg7NYirox4Cx5yp8T1Po0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=FOU75DJQv5mCgItjFETEykQWdCE0A6h3Ycq+i1aAzkql0kqXfCJRPHuloaCHD4p52B4tk5gPX2+Ilu1s6hs/0vtjqdS104mAtvigw72vxKpuGWnMLlU83FE83alFatcH80882Z1kE3ag6V/vIemG4NRB1lIPTORkJX82cICe3mnL7knNeAlGvCw1Cv8EYrGaadHnLrmCdLwhX9wigPwKdgCqeGROsyw+kNvPUwlONUNwX/urXj132YxAlvkTkPSyAJiSYSgsvmMWMkz0/qCVyPJQFqcwoCqPU9h2Q46727ovosztqaiwj7b9xfEnNVRGg2YcEB1nMs6MjE0yJY1fuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y3ULcI9I; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1749636221; c=relaxed/relaxed;
+	bh=dDt7ez3i6z0BSsshI76a7nThQr3BMVLTBBzfDYTA6pg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=E/uawaYXpKMmepyl0S8lq1C2kQKK3TOtAuvtD7cAA1br26zHzjApD2hcqJQThTHt7Llsal/JlvUHegBF8IJocUMAFLPM0FIi8XVB198u1lt7uzsFil/X73EsUNWkGnn8D86d8XCUCA97WEoMHpruNYIO9trZkI7WVtMQu5qdrrqWO2dzbVqm82gN/q0hMAYHlX46+VcQrnephmC032wAiI9oCIjTNy2lG3ICgHaT/DpUjiCatgXFC55duxXH0WfCb/ZMb1YvU3t5bKBc0dh7kwEY/5feH90odXdk341yX0M5Iix6JKdVa9EAp2rElzAZedIRAQkyljyS7HzNLQk4Kg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mleia.com; dkim=pass (2048-bit key; unprotected) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=Jxt6xsAg; dkim=pass (2048-bit key) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=Jxt6xsAg; dkim-atps=neutral; spf=none (client-ip=178.79.152.223; helo=mail.mleia.com; envelope-from=vz@mleia.com; receiver=lists.ozlabs.org) smtp.mailfrom=mleia.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=mleia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y3ULcI9I;
+	dkim=pass (2048-bit key; unprotected) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=Jxt6xsAg;
+	dkim=pass (2048-bit key) header.d=mleia.com header.i=@mleia.com header.a=rsa-sha256 header.s=mail header.b=Jxt6xsAg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=mleia.com (client-ip=178.79.152.223; helo=mail.mleia.com; envelope-from=vz@mleia.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 550 seconds by postgrey-1.37 at boromir; Wed, 11 Jun 2025 20:03:39 AEST
+Received: from mail.mleia.com (mleia.com [178.79.152.223])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHJqG6K6Tz2xbX
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 18:34:18 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 38A64A51527;
-	Wed, 11 Jun 2025 08:34:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5311AC4CEEE;
-	Wed, 11 Jun 2025 08:34:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749630855;
-	bh=YjUuaMXRjj3yUKM1oXzB5tryE1JdcUrQb6CsDD4lW7o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Y3ULcI9IJyU/3l5FNnF21dookZoXpT0aM6QPxdT5KR4dj5+MwmuBef05fRcY7CvZK
-	 UeBU/WbML8g8V2ZL2h+sTSB8laoO7PDxiX6kvecKeUcl2IAD8GbCSkN9SavXl6WuY1
-	 4MeUMVGBJiaY3jt32AJp0OJWQoVnQ6JEEdcJiQXz2RsWlMl+HyL8g3Otn+G0/gdz/e
-	 eKJOq//e/kg3jeadV8QCPHBdmUKKIUSVGrkK1ULlLjfVMh6zbV28tPRlyVBMBK2u6V
-	 L7MgsqJc0Pbe0lggsEFkW89fWPIeryKYmGkJTIrzKXP7Vk2hBiIfNccbDW/7SsIYEg
-	 IaiTDLO+Cf+uQ==
-Date: Wed, 11 Jun 2025 10:34:13 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Jammy Huang <jammy_huang@aspeedtech.com>
-Cc: jassisinghbrar@gmail.com, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] dt-bindings: mailbox: Add ASPEED AST2700 series
- SoC
-Message-ID: <20250611-serval-of-immortal-novelty-055c93@kuoka>
-References: <20250610091026.49724-1-jammy_huang@aspeedtech.com>
- <20250610091026.49724-2-jammy_huang@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHLpM3FCnz2xBb;
+	Wed, 11 Jun 2025 20:03:39 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mleia.com; s=mail;
+	t=1749635665; bh=ZELWje44IQXg+aqRqhMjZlzmAPP8bdbQVZYOFJq3M9g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Jxt6xsAgMAOUb4jl76i3Cw/ob+3g27CDrEJ11UaNWweARmh3pASKr9vGVkS92IFac
+	 YPXA6hqSgGV5dnyifiEPzFxSuWmHwqtnnBorcndP4VXu30erdJBfP8YrJ46WtqkT2C
+	 ZB5SXynEGjYF90uyMsBkLTP7/K9tKTjfvpNQc65M4ZFGcmOJyetoZJbQyfgMTcccnC
+	 ovv/hF2800vFjHZenrXZ9Ib3Cs3634CyeipOu5H15sVoNWHX/j8qicu106Z5ZeHvjj
+	 l5CXC3vkbBXv/RUgPw6tOFDOWz5MZGDnaCREKgxUUUqRvZgLkdcVlwdN1MIjOJGq3p
+	 fGRPXfFbZHprg==
+Received: from mail.mleia.com (localhost [127.0.0.1])
+	by mail.mleia.com (Postfix) with ESMTP id 964313C153A;
+	Wed, 11 Jun 2025 09:54:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=mleia.com; s=mail;
+	t=1749635665; bh=ZELWje44IQXg+aqRqhMjZlzmAPP8bdbQVZYOFJq3M9g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Jxt6xsAgMAOUb4jl76i3Cw/ob+3g27CDrEJ11UaNWweARmh3pASKr9vGVkS92IFac
+	 YPXA6hqSgGV5dnyifiEPzFxSuWmHwqtnnBorcndP4VXu30erdJBfP8YrJ46WtqkT2C
+	 ZB5SXynEGjYF90uyMsBkLTP7/K9tKTjfvpNQc65M4ZFGcmOJyetoZJbQyfgMTcccnC
+	 ovv/hF2800vFjHZenrXZ9Ib3Cs3634CyeipOu5H15sVoNWHX/j8qicu106Z5ZeHvjj
+	 l5CXC3vkbBXv/RUgPw6tOFDOWz5MZGDnaCREKgxUUUqRvZgLkdcVlwdN1MIjOJGq3p
+	 fGRPXfFbZHprg==
+Message-ID: <2ae6aa29-ea42-4fdf-a0ae-8cd088c88786@mleia.com>
+Date: Wed, 11 Jun 2025 12:54:21 +0300
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,42 +67,83 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20250610091026.49724-2-jammy_huang@aspeedtech.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 16/17] pinctrl: Constify static 'pinctrl_desc'
+Content-Language: ru-RU
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Basavaraj Natikar <Basavaraj.Natikar@amd.com>,
+ Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>,
+ Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>,
+ Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>,
+ Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>,
+ =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+ Broadcom internal kernel review list
+ <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>,
+ Scott Branden <sbranden@broadcom.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ David Rhodes <david.rhodes@cirrus.com>,
+ Richard Fitzgerald <rf@opensource.cirrus.com>,
+ Charles Keepax <ckeepax@opensource.cirrus.com>,
+ Lorenzo Bianconi <lorenzo@kernel.org>, Sean Wang <sean.wang@kernel.org>,
+ Jesper Nilsson <jesper.nilsson@axis.com>,
+ Lars Persson <lars.persson@axis.com>, Damien Le Moal <dlemoal@kernel.org>,
+ Michal Simek <michal.simek@amd.com>, Emil Renner Berthing <kernel@esmil.dk>,
+ Jianlong Huang <jianlong.huang@starfivetech.com>,
+ Hal Feng <hal.feng@starfivetech.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Manivannan Sadhasivam <mani@kernel.org>
+Cc: linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-sound@vger.kernel.org, patches@opensource.cirrus.com,
+ linux-mediatek@lists.infradead.org, linux-arm-kernel@axis.com,
+ linux-riscv@lists.infradead.org, linux-rtc@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com
+References: <20250611-pinctrl-const-desc-v2-0-b11c1d650384@linaro.org>
+ <20250611-pinctrl-const-desc-v2-16-b11c1d650384@linaro.org>
+From: Vladimir Zapolskiy <vz@mleia.com>
+In-Reply-To: <20250611-pinctrl-const-desc-v2-16-b11c1d650384@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-49551924 
+X-CRM114-CacheID: sfid-20250611_095425_660571_DE75DF41 
+X-CRM114-Status: UNSURE (   7.40  )
+X-CRM114-Notice: Please train this message. 
 
-On Tue, Jun 10, 2025 at 05:10:25PM GMT, Jammy Huang wrote:
-> Introduce the mailbox module for AST27XX series SoC, which is responsible
-> for interchanging messages between asymmetric processors.
+On 6/11/25 09:13, Krzysztof Kozlowski wrote:
+> The local static 'struct pinctrl_desc' is not modified, so can be made
+> const for code safety.
 > 
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+> Acked-by: Lorenzo Bianconi <lorenzo@kernel.org>
+> Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+> Reviewed-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
->  .../mailbox/aspeed,ast2700-mailbox.yaml       | 57 +++++++++++++++++++
->  1 file changed, 57 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/mailbox/aspeed,ast2700-mailbox.yaml
+>   drivers/pinctrl/berlin/berlin.c                    | 2 +-
+>   drivers/pinctrl/cirrus/pinctrl-cs42l43.c           | 2 +-
+>   drivers/pinctrl/mediatek/pinctrl-airoha.c          | 2 +-
+>   drivers/pinctrl/pinctrl-artpec6.c                  | 2 +-
+>   drivers/pinctrl/pinctrl-bm1880.c                   | 2 +-
+>   drivers/pinctrl/pinctrl-k210.c                     | 2 +-
+>   drivers/pinctrl/pinctrl-lpc18xx.c                  | 2 +-
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Acked-by: Vladimir Zapolskiy <vz@mleia.com>
 
-<form letter>
-This is an automated instruction, just in case, because many review
-tags are being ignored. If you know the process, just skip it entirely
-(please do not feel offended by me posting it here - no bad intentions
-intended, no patronizing, I just want to avoid wasted efforts). If you
-do not know the process, here is a short explanation:
+>   drivers/pinctrl/pinctrl-mlxbf3.c                   | 2 +-
+>   drivers/pinctrl/pinctrl-tb10x.c                    | 2 +-
+>   drivers/pinctrl/pinctrl-zynq.c                     | 2 +-
+>   drivers/pinctrl/starfive/pinctrl-starfive-jh7100.c | 2 +-
+>   11 files changed, 11 insertions(+), 11 deletions(-)
+> 
 
-Please add Acked-by/Reviewed-by/Tested-by tags when posting new
-versions of patchset, under or above your Signed-off-by tag, unless
-patch changed significantly (e.g. new properties added to the DT
-bindings). Tag is "received", when provided in a message replied to you
-on the mailing list. Tools like b4 can help here ('b4 trailers -u ...').
-However, there's no need to repost patches *only* to add the tags. The
-upstream maintainer will do that for tags received on the version they
-apply.
-
-https://elixir.bootlin.com/linux/v6.15/source/Documentation/process/submitting-patches.rst#L591
-</form letter>
-
-Best regards,
-Krzysztof
-
+--
+Best wishes,
+Vladimir
 
