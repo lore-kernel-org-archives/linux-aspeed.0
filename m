@@ -1,77 +1,75 @@
-Return-Path: <linux-aspeed+bounces-1378-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1379-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2990CC61CE7
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82524C71134
 	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Jun 2025 08:05:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bHJ9w5PsYz307q;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bHJ9w5qdJz3089;
 	Wed, 11 Jun 2025 18:05:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749629124;
-	cv=none; b=feqWfC18drzE2rYCA36yKFlcbIcUFxf7znP7kOnLq1h65csklCNn4Ao5JeQzenVukgDBil8HzWVJkYOgNLkhdE9JhfHRM0rjiFIKLNAAGckUUkmtmw2Ln6b2BqrB8qg8KGdaIcgilh8iZwjZjVXzFwc3Q3ibG6UBHqUxmdeVUXuHSvIq8UBk/wsj67J0At2JRqiK2O5NlcfNeuXSwNGD1OBXZK66eduzm8GyFn9CTI4LOLFuVjcSO6qAyfZDFNFvliNP1QKgtVwZxIWXTQkhy8Jskzv2h6c5L2qPGoSfVYpVt73tJ6E+iTCKKz7bDz72rmNPia2wAnPuS4eJwPLleA==
+	cv=none; b=A2vS4UV9iOSRESJWdSmBWVYyNJThUERSyotcWIS1GMMm4dHSaePTPFMHAFPQTSoWWVGZdW87QF9ByKgAjO6ONafKxi5Nd0zG40ty1vIa+uIBQbkjl8DQqZSJU3J75hHuToGOestsv0Y0bNoNJtFxD3CWdWealKC38kd/17K8BGeCrfgsOGskZX0zFoNzWQnQj/Ni2Ny+7R5PAiMtjyPbemNJCvrXSfqeB/bhzTFYvtZgfNvrT1i5yX74tY+QUTdgOhi8tFWNxRZnTqVZFcEHeZdRAvqACWeafJG4GnnqkOER8x1v2J0sJsAZii71pjL3qD4TKiaNb8qjwY4HGpeRBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1749629124; c=relaxed/relaxed;
-	bh=dAmqS9TFfQgR6ZuXXgUeH384PenfewbVMCpyFtNRxxk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=iaEJlHgXN0R6XGeq/cZUcvu0jGcCU6S7tUSp3i4mRpDSjadCoxBRy8DUGxdxMTeQaX609kHOxhruglRjp8hlYUp52BSkMGOM9UMuQz80y/T1leYJ+E6r71sUuqFouNhhtZAHnC8doaatjOFA0PmDbpxn4fsCFM5bWKPGLhRn6pQL8dIP/FC8iHI8EuT1si/4dGxd+ctcYxQIR14o2oYp5evjIwPHWhjJ204v2FGF2gZB/9vjxzyqc8gZGc/q2odzAW4qn+wInEkUtbhGWFTmsoFylmQ1GJmq4oDcvtuoEGlvGnYGx3A8aAk/9QBOPkOmyQeENdMxwfrFhdl8+xmqMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H3uWBBLo; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=peteryin.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	bh=lXPMVnUwf3/EoxHQfzIlGfhIh7pfwuueI5x8/O9yKtc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=WIulJqyGrq42OJknhTTV2vPwacssj7y37Fe4BRfItOF0VWqpcBhySwSVPeOEsFJvY5OdDXyprWrpoumqltbyxc20kzASxfiYWDgjgHlhvuPkbzrsWLGMR89yNuYB244KtbpbsJd20HjEg8jj0tR0gIgbtPShLBL2MIBqM+sjJ8dhmN++LbJ88kM2Pue6BsbYwX1egtamldT80AbMdjA4HAxU3/K4D1ck1FdQKmz3q90upqhsgEl+ZZlfPu0bx6TvcAAOUNGEL35MCtCfT9YPVfTnx4oEkIzsTbBcH/VbHQra3U0uB/+UzgNxnkt87qf7pyp/5z+/p5NdApljKeo76A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H0sd7Wc5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=peteryin.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H3uWBBLo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=H0sd7Wc5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=peteryin.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=peteryin.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHJ9v75lwz307V
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 18:05:23 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2350fc2591dso6054955ad.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 01:05:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHJ9t5c33z2yMt
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 18:05:22 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-2363616a1a6so16700025ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Jun 2025 01:05:21 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1749629122; x=1750233922; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=dAmqS9TFfQgR6ZuXXgUeH384PenfewbVMCpyFtNRxxk=;
-        b=H3uWBBLolrjPN5fWN22V0oePYXSOi1WlVLSaOjZQ60aYBRKh/5hn60WYwCcmLlhl03
-         w2fS4WahZ/cw10Oy+EIxJV41QFGwMxfV6yEEqslD3OE7c6dD2o5/x8yFXKEwzTAdqd0D
-         ujH3LSiJe90wHS8fv5D7ilbTX9aGbK9JngXsfY73cO0YiCOT9FKliuU3PcunTNfYn4US
-         XmVzueiQNnvIEVvHEJKXAnoNFRbwaqmoizfbnjmhSazu7x3yYPB5Own2zyTALU74JQsr
-         TklFWKps83TTtrHndzrUV+Q/4BP/e/AxBiEpd4Jd50MZBU+WsKpZtotM0kAW+8ZqzY8v
-         JEbA==
+        d=gmail.com; s=20230601; t=1749629119; x=1750233919; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=lXPMVnUwf3/EoxHQfzIlGfhIh7pfwuueI5x8/O9yKtc=;
+        b=H0sd7Wc56UGI9JlrTlR8uF6cQPL9rmqzDq5v91eJjwihZwnicjdDRzcXggHgASxJO3
+         OKZ3Y5oq6bR3/Qehc20BFlO5VrX2lTrnSZ7b4vj2vf+sGQQvw2xeSw+Poep2Sq7OCtul
+         GFeoofL0LxSZvrHi0ZhhYjMlV0NhqfiqMjW1t+Kphl4Okvb2+cusgXSWgWYuCXsBO9tl
+         HAr4mAd7O8aLZDY/Tix1L63zi/CbeAg8K8btfbfSsM1q+s5mFHyRRd1Spr5zFtNjaESF
+         Ra0/YtxHHrcH6adJ9pPlaHb1o9HtBZrEZ7rSGX3BxBm4gwDB4AObvtOCAJfNRYHttKKT
+         n0BQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749629122; x=1750233922;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dAmqS9TFfQgR6ZuXXgUeH384PenfewbVMCpyFtNRxxk=;
-        b=pBflJ6kt85PO0tz+MRaJWbuMnw3aGV+Pl4iBjA6y7ESVeH4tbk1RQD+nlAY+ztFQWQ
-         krhRQRAxk7zxcSSc5cqzd7ZPxKUSsAwa29HpUUVgLPLhvm2entJamA/7AX0Gv8aNGCLo
-         T1D0c0K5uUQ1zDMP73HeEXL/dOXIO9VPOVe1oa5C/4EZjam7XdtAC3361YKI8mxc+KUe
-         AQikJoyiQ1CXnpL5mOc+eJOEOqMK5vCjHkRg2ABv0VNGBHjOto9K/Iq/QrGJTPaGeX1Z
-         gP88c6vrwJwDUa6y2KHmjKXgTXA7pkdXfq6FoVyTY94tgahvZtGBKStql0V8uNvY1RKJ
-         fWYQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUTTGY2WNFnFIEo++la1iTiqLzAsAMSSLr9oR+R0wbVOyBjkoGpL5p3sOhHDbC8pOjkDnRny/v5i3cjqHg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwEPkAaexzzXZ+tRn5iEft9uZnvlMbnsfNkad0MOEAM15wUnire
-	pn6w7/qLEoOf3n2wxk4vCk8TsCb9WHNvFXecpvzNLRnFyw5VZG7lOaHL
-X-Gm-Gg: ASbGnctqGZN2JnaTXhtZtiqIR9HO2Pp7U7Zq5Fe42keR/oKGBXPSG5uH7m1Z20N/gWC
-	pqGuCsA3c1qEKCxALYeBxrllkOday2O/MtyFKjrwRPEYdJi71V5rY4HxKTSDqcMRr0v459L6mvt
-	LlKaZR223Rop938mPDMVLqrOYVrouC/a10JPBLn2HO+zWHy43Cype5EqXdN8te+eEqlknYb3Hjn
-	ZNZRNRIh47rzPUjxgmnNm5h2sr3nBT9VlKuIpPRVMmtxHFt3Z8QOByyuZf651ISANDzf6sTtpXK
-	O2ltRi4IbVl9jocIyyT341r/ieXb1tuZ0fOUPpqCmEdRy5UqJd9hxWqxNhZ3xdWYmY2gGJG80ls
-	9c+YWIYIRd6a0sPy3CHBtA2H0ymKK7Uw/ZIXjXIoDTq2f/8uE09uXNTQhSOCoU68wHvF7d2cONz
-	9u/fF8xhr5uzNPg+k2
-X-Google-Smtp-Source: AGHT+IGDGJ0np861gl/BsOafO+Lck0L1DptXpwjhh1Oi95aNBuT054cfghigc5NOLUKgNHLq69TOBw==
-X-Received: by 2002:a17:902:ce86:b0:232:59b:5923 with SMTP id d9443c01a7336-23641851c95mr37292345ad.23.1749629122052;
-        Wed, 11 Jun 2025 01:05:22 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1749629119; x=1750233919;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=lXPMVnUwf3/EoxHQfzIlGfhIh7pfwuueI5x8/O9yKtc=;
+        b=LS9PyA8YY2FK0y8l3gVPGbtLk2aI4HmBh/5tnqKhbEE9VgqST0BudQS7DazfSB2daO
+         yhpiAvyO9WivEiEy/s+YSJrk1asBCGhOgcLbgcIv8RUqwIEBgVuwPedafkrk/L2Nx+Qo
+         fLLVIz7X0vNlXuhvEbBkTbYsZgBhrSczbD4p5aNRTfT2vgnPYRjYaTPEXN0W4QmaPokj
+         2ZiayqelObFifvYNJpMVsTNWG1cdcBCyNqAVzan8XqZ9+SMiKaV84HJo6+98ClIeGbRn
+         dvWuIKnLK7mSmRKa4lu8i88ImxsZO5N/yLYn8nqlcdpL+QN1ufLgnU3nh/L9p+mPRiIB
+         MoFQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW4zVeWU57/XMxXX4fneDZURlH5tJl/eCUKUBNjKhOFB90OqAauTZf0e51hfbf2YTukwxWLh4brjBrMFog=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzC0JY1gfKsSjTtE7AeiIDV6snyrpnMYo2gwx9HqEF6FMLwdeq5
+	XN+u07q56DxsvBsZ7PlXdgokxQwZug4E2dB6kTPrrb31loeD5nzPgPCs
+X-Gm-Gg: ASbGncsNl87J7A8WHL+S9zFnhS2ixT3ilNwTpZtgCPOH7ierocxSjf7fiT47EL0PIcP
+	w87cxHAXwu23IT1utBLDDTqM6TQOUa729V3WQGQa5LjFprNX3Vw1ROO5fhbl60Scs8K+6W1ioQh
+	b4FZNVQNNXfII+oMckyMOwtXFnSDevWx4zNFn4JU9VcvbSZwDwH3KFe38WRORAef1tPmtdi1Dqp
+	oZ+R0nlJzJG9cyF1VFqCKWIXw7MsbF41S06JdtM9bLc1Lp8WGJXolKhT89+Ur/w/SpM/GSlmxvA
+	Uc4GY3XO+PxLJfZTfTk/LTuVPgtQ0l9MNvG4oo7e/5o/G99PbfBjyFHL0E9XhOD1vEVrwbcc044
+	bBSeni4hGu4enxcwfMnn5MqVl1cvstHrjll9afHAFeryw3W16eiC0RFU8lOfHB3VvuQA8iKyDkZ
+	lW4HEOmud9loUqhnIK
+X-Google-Smtp-Source: AGHT+IHeguJ9PfRvFO2Sr8bPSpOlwMx9Qn9l4lODdIxgT6Z8X+BhIHgTKrD1PU4ZUCit2Tge/jE+KA==
+X-Received: by 2002:a17:902:ecc1:b0:234:ed31:fc98 with SMTP id d9443c01a7336-23641b14d61mr29238475ad.37.1749629118911;
+        Wed, 11 Jun 2025 01:05:18 -0700 (PDT)
 Received: from localhost.localdomain (2001-b400-e357-b8a8-7759-271d-6134-9aa3.emome-ip6.hinet.net. [2001:b400:e357:b8a8:7759:271d:6134:9aa3])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2363ad90982sm21283835ad.220.2025.06.11.01.05.19
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2363ad90982sm21283835ad.220.2025.06.11.01.05.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Jun 2025 01:05:21 -0700 (PDT)
+        Wed, 11 Jun 2025 01:05:18 -0700 (PDT)
 From: Peter Yin <peteryin.openbmc@gmail.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -83,12 +81,10 @@ To: Rob Herring <robh@kernel.org>,
 	linux-aspeed@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
 Cc: peteryin.openbmc@gmail.com
-Subject: [PATCH v2 1/5] ARM: dts: aspeed: harma: add E1.S power monitor
-Date: Wed, 11 Jun 2025 16:05:10 +0800
-Message-Id: <20250611080514.3123335-2-peteryin.openbmc@gmail.com>
+Subject: [PATCH v2 0/5] Revise Meta(Facebook) Harma BMC(AST2600)
+Date: Wed, 11 Jun 2025 16:05:09 +0800
+Message-Id: <20250611080514.3123335-1-peteryin.openbmc@gmail.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20250611080514.3123335-1-peteryin.openbmc@gmail.com>
-References: <20250611080514.3123335-1-peteryin.openbmc@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -104,41 +100,37 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add the E1.S power monitor device node to the Harma device tree
-to enable power monitoring functionality for E1.S drives.
+Summary:
+Revise linux device tree entry related to Meta(Facebook) Harma
+specific devices connected to BMC(AST2600) SoC.
 
-Signed-off-by: Peter Yin <peteryin.openbmc@gmail.com>
----
- .../arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Based on:
+https://github.com/torvalds/linux/blob/master/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
+commit-id: cb3f397b17bbda3f2998eff9e54b040c8fa85cc9
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-index 9cb511a846e3..3a215bb1e220 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts
-@@ -354,11 +354,22 @@ imux22: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+
-+			power-monitor@45 {
-+				compatible = "ti,ina230";
-+				reg = <0x45>;
-+			};
-+
- 		};
- 		imux23: i2c@1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-+
-+			power-monitor@45 {
-+				compatible = "ti,ina230";
-+				reg = <0x45>;
-+			};
- 		};
- 	};
- };
+v1 -> v2
+  - Patch 0001: ARM: dts: aspeed: harma: add E1.S power monitor
+  - Patch 0002: ARM: dts: aspeed: harma: add fan board I/O expander
+  - Patch 0003: ARM: dts: aspeed: harma: add ADC128D818 for voltage monitoring
+  - Patch 0004: ARM: dts: aspeed: Harma: revise gpio bride pin for battery
+  - Patch 0005: ARM: dts: aspeed: harma: add mmc health
+v1
+  - Patch 0001 - Harma: Revise node name
+  - Patch 0002 - Harma: Add retimer device
+  - Patch 0003 - Harma: Revise GPIO line name
+  - Patch 0004 - Harma: add e1s power monitor
+  - Patch 0005 - Harma: fan board io-expander
+
+Peter Yin (5):
+  ARM: dts: aspeed: harma: add E1.S power monitor
+  ARM: dts: aspeed: harma: add fan board I/O expander
+  ARM: dts: aspeed: harma: add ADC128D818 for voltage monitoring
+  ARM: dts: aspeed: Harma: revise gpio bride pin for battery
+  ARM: dts: aspeed: harma: add mmc health
+
+ .../dts/aspeed/aspeed-bmc-facebook-harma.dts  | 85 ++++++++++++++++++-
+ 1 file changed, 83 insertions(+), 2 deletions(-)
+
 -- 
 2.25.1
 
