@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1406-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1407-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DD0FC71136
-	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Jun 2025 10:18:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 704CFC61CE8
+	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Jun 2025 10:19:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bHz4d5bWWz2xQ6;
-	Thu, 12 Jun 2025 20:18:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bHz5c0qH8z2xbX;
+	Thu, 12 Jun 2025 20:19:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749723489;
-	cv=none; b=FHrqHdbxcWA9OwrDhq/RB9SHDqVe882XfnEFbDY1MdM8D2f8PWPoc3ZQuQC/nyXG5MkAZwWLwdKPAT5iu9QS9//yZogu8i7aoJoPAhrlSvaSOUAZzZPDTttaMUXeN9PV3TRrSDFb//O41hVQUICUk81aOYbjXc7UkjVBGxC/hDGSNp4zk7S2HiS3IqIRUgsqkYLSLxJTqkrOdkaI10vmOVLgWqF5bm8crs+Cga4OYIxWIOVFm3ePTZGFsmoWbm89qhygWXlusvZ93RMg32i+VV0Ob9D/UU/WdcBAawme6yHat212MyZukP9C/8sfW8bTQlQ0Z1yzccKkPRX3TQ4JJg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749723540;
+	cv=none; b=YX2JcmJ96XU/yz0P6aeTAFMAY0RFGilPJp+pkZWzcZt6ieItbmCa/ScFSNFCi9BHRXF08XMuaLw/7iBP0hh9j1AHShLdTQOSmxwoz4ASkOYght19oJOUj5DEXWKqLZDlI2YaArw1/vMlpG+LSsVSXoWLBIdJILV9xKI+/nHKLkHOppKrGeVO6ZKF0/epy0kuYctGpCt4qYz9J7dzTNpirKcBhW4CcUcGd4vCUYhOYWQLQGNO+6uPkkTowgui4EXFzbkmUHr/cgl4pOGsgRtANZzvbZYjqZbczw871/wPey7vbr4hlCs/JmXjNFq2sMYdb1RrFFyiUBhM1DIZqXPutA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749723489; c=relaxed/relaxed;
-	bh=Lu8U5b+n07s1SAPTYBLiA3WfPD30MNk969DNa7VGNjE=;
+	t=1749723540; c=relaxed/relaxed;
+	bh=VTa4Ro0Wz6mnKuHxnSTJzW2oiJlhqXG0bH43lvgxYvM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=Beccc8FyFKUcCJ8kpgMJMUwWNLPhGq8025DVo+bIWPWYllIxx/gnNqJ0AJUoFdW8h+6TFy+C051suN7sTC8dRWW6w2Sb+uHpV8CaY2vTAs+8OF3S7miQmGdBQmMJprj5ZZ9mfFJhAWD7ZtY5KcD7hL2qFcd+9MBCDLfo2pY8C9lEDIHvTyeEmcFz+++6fY+BDPEyx0pEDzjolEkLuW+Yz9F7ZrU9dsmdu43v/mKR+NJq6D2dRfoFlAplzs8vmQeGfOUg3pJyTCntAxSlArEmnFeGD+dOMej+Mwj0U1qUiec1M5QO1lYOY+1h7OduJzprZLLrKKl0Ub5zTa3c8oC0Tw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dQYFqmGY; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=moegIKqF/cOnAs1uDTw4r4p3Yf0lLxbE2F72Op0JqwUOFyEvHLf6snPKHNTnJabqwK1wOZiv+f8UXY/hRbLtuQ5ouyhkTCEiey8WN2uvcEOuEy8wpfkevpJxcfrb0B8cxfjXQMrWkN0riP7sgpdV206znQTUZFs5nMRdm6+wNSxxDn6+Pr7K7C8NRdADFPxvi2paNiSCChvtM3c6fufxfIi0iGbi0Gs6W+lTxx1n/6zLox8HWmpz7jzLM0n5k7Hj+TJ+2BlMPUhC3sVynMdk9WoWMqEDmi8qcNi/kckZYwGOHvkTrY5CvJLGtUHfi04NCBeiyjxysZXIRBGBrwIfkg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jAxGOsBy; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dQYFqmGY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jAxGOsBy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHz4c6tHlz2xFl
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Jun 2025 20:18:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHz5b2Nddz2xFl
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Jun 2025 20:18:59 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0172162A05;
-	Thu, 12 Jun 2025 10:18:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B242C4CEED;
-	Thu, 12 Jun 2025 10:17:59 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7E339629E5;
+	Thu, 12 Jun 2025 10:18:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2772C4CEEA;
+	Thu, 12 Jun 2025 10:18:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749723485;
-	bh=haHjCLuyFcjjryC0APdEnmv4gb5nv2DCaiXwfEunHJM=;
+	s=k20201202; t=1749723537;
+	bh=VTa4Ro0Wz6mnKuHxnSTJzW2oiJlhqXG0bH43lvgxYvM=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=dQYFqmGYD9dnEMLAaX7tWl8uJkb68MH4h4zEji8ux2NVi9l54qh4m/jwWVlvrh42N
-	 Z0hrv/Pjkmc462Dn8jaSdyvjs0ya6fhOO2DIgU7kc15G7zvA5lNzEwP9tdnlKhDEx7
-	 gy8fnMRvJOnWAHqgvOe6/9tImJ/TrlyT9Jw8Gsesp3YRyic7RCyqfFys4N5WxHtZdE
-	 E/QwbElGUCd9Z3ff4kvXszezEmgX2tn52SPjBhHiPRq7sCEbsn/xEjTWFvpFli4K3j
-	 hAuTNHUltzD9fd8DM5VAhmx9UJSs88tSp0nyKCB40cpP+Jy/1DzXFm5RvNFezFingB
-	 XmOTOgl8MHq9A==
-Message-ID: <485749d4-b3c4-4965-9714-ad534d37e8c9@kernel.org>
-Date: Thu, 12 Jun 2025 12:17:57 +0200
+	b=jAxGOsByLHV8XjWgZU1BvmIWd2QEVHYNeXAwNDZMTfwXXMVXkQW2n35se3CjHusHj
+	 3uN8l3SmQQudP97K1v5JAaVzJl7F4D7gxnTnBcyKIATLt/oKImbg5mot5Q5r/fORwa
+	 kKu5KiwQ5G7PoEntbBG1oczF5Z1aECfV6OVjYljM4W8REk50Sw5Atgpskqty1MZLwg
+	 llvfDK6qGvM9cDUdbs0y8f8K4z6kZm4ZKX4kI9BnXIz4+sMKFQ8DwJUlT+S5NWoJ8C
+	 nfUeMNPN9WY496b+cIhKfyALR81HvqRiyc4/oXyKm/Pnf5XASwOid/4QpqtUNOLzwu
+	 TTTer+gAr9tJA==
+Message-ID: <648e548d-2aae-4210-a0a1-c378c7a81df9@kernel.org>
+Date: Thu, 12 Jun 2025 12:18:49 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v0 3/5] arm64: dts: aspeed: Add initial AST2700 SoC device
- tree
+Subject: Re: [PATCH v0 5/5] arm64: configs: Update defconfig for AST2700
+ platform support
 To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -81,7 +81,7 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
  wthai@nvidia.com, leohu@nvidia.com, dkodihalli@nvidia.com,
  spuranik@nvidia.com
 References: <20250612100933.3007673-1-ryan_chen@aspeedtech.com>
- <20250612100933.3007673-4-ryan_chen@aspeedtech.com>
+ <20250612100933.3007673-6-ryan_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -127,221 +127,17 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20250612100933.3007673-4-ryan_chen@aspeedtech.com>
+In-Reply-To: <20250612100933.3007673-6-ryan_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 12/06/2025 12:09, Ryan Chen wrote:
-> This add the initial device tree support for the ASPEED AST2700 SoC.
-> 
-> - Add top-level compatible string "aspeed,ast2700" and set up
-> address-cells/size-cells for 64-bit address space.
-> - Describe a quad-core ARM Cortex-A35 CPU cluster with L2 cache,
-> including cache properties and PSCI enable-method.
-> - Add PMU and ARMv8 timer nodes with correct PPI interrupt wiring.
-> - Model the dual-SoC architecture with two simple-bus nodes:
-> soc0 (@0x10000000) and soc1 (@0x14000000).
-> - Add syscon nodes for both SoCs (syscon0, syscon1) with clock/reset
-> cell definitions and address mapping.
-> - Add GICv3 interrupt controller node under soc0, with full register
-> mapping and interrupt properties.
-> - Hierarchical interrupt controller structure:
->   - intc0 under soc0, with child intc0_11 node.
->   - intc1 under soc1, with child intc1_0~intc1_5 nodes.
-> - Add serial4 node under soc0, others serial node under soc1.
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi | 380 ++++++++++++++++++++++
->  1 file changed, 380 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
-> 
-> diff --git a/arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi b/arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
-> new file mode 100644
-> index 000000000000..d197187bcf9f
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
-> @@ -0,0 +1,380 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +#include <dt-bindings/clock/aspeed,ast2700-scu.h>
-> +#include <dt-bindings/reset/aspeed,ast2700-scu.h>
-> +#include <dt-bindings/interrupt-controller/arm-gic.h>
-> +
-> +/ {
-> +	#address-cells = <2>;
-> +	#size-cells = <1>;
-> +	interrupt-parent = <&gic>;
-> +
-> +	cpus {
-> +		#address-cells = <2>;
-> +		#size-cells = <0>;
-> +
-> +		cpu0: cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a35";
-> +			reg = <0x0 0x0>;
-> +			enable-method = "psci";
-> +			i-cache-size = <0x8000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <256>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			next-level-cache = <&l2>;
-> +		};
-> +
-> +		cpu1: cpu@1 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a35";
-> +			enable-method = "psci";
-> +			reg = <0x0 0x1>;
-> +			i-cache-size = <0x8000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <256>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			next-level-cache = <&l2>;
-> +		};
-> +
-> +		cpu2: cpu@2 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a35";
-> +			enable-method = "psci";
-> +			reg = <0x0 0x2>;
-> +			i-cache-size = <0x8000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <256>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			next-level-cache = <&l2>;
-> +		};
-> +
-> +		cpu3: cpu@3 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a35";
-> +			enable-method = "psci";
-> +			reg = <0x0 0x3>;
-> +			i-cache-size = <0x8000>;
-> +			i-cache-line-size = <64>;
-> +			i-cache-sets = <256>;
-> +			d-cache-size = <0x8000>;
-> +			d-cache-line-size = <64>;
-> +			d-cache-sets = <128>;
-> +			next-level-cache = <&l2>;
-> +		};
-> +
-> +		l2: l2-cache0 {
-> +			compatible = "cache";
-> +			cache-level = <2>;
-> +			cache-unified;
-> +			cache-size = <0x80000>;
-> +			cache-line-size = <64>;
-> +			cache-sets = <1024>;
-> +		};
-> +	};
-> +
-> +	arm-pmu {
-> +		compatible = "arm,cortex-a35-pmu";
-> +		interrupts = <GIC_PPI 7 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +	};
-> +
-> +	psci {
-> +		compatible = "arm,psci-1.0";
-> +		method = "smc";
-> +	};
-> +
-> +	timer {
-> +		compatible = "arm,armv8-timer";
-> +		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-> +			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-> +			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-> +			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
-> +		arm,cpu-registers-not-fw-configured;
-> +		always-on;
-> +	};
-> +
-> +	soc0: soc@10000000 {
-> +		compatible = "simple-bus";
-> +		reg = <0x0 0x10000000 0x10000000>;
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		syscon0: syscon@12c02000 {
-> +			compatible = "aspeed,ast2700-scu0", "syscon", "simple-mfd";
-> +			reg = <0x0 0x12c02000 0x1000>;
-> +			ranges = <0x0 0x0 0 0x12c02000 0x1000>;
-> +			#address-cells = <2>;
-> +			#size-cells = <1>;
-> +			#clock-cells = <1>;
-> +			#reset-cells = <1>;
-> +		};
-> +
-> +		gic: interrupt-controller@12200000 {
-> +			compatible = "arm,gic-v3";
-> +			reg = <0 0x12200000 0x10000>, /* GICD */
-> +			      <0 0x12280000 0x80000>, /* GICR */
-> +			      <0 0x40440000 0x1000>;  /* GICC */
-> +			#interrupt-cells = <3>;
-> +			interrupt-controller;
-> +			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +			interrupt-parent = <&gic>;
-> +		};
-> +
-> +		serial4: serial@12c1a000 {
-> +			compatible = "ns16550a";
-> +			reg = <0x0 0x12c1a000 0x1000>;
-> +			clocks = <&syscon0 SCU0_CLK_GATE_UART4CLK>;
-> +			interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
-> +			reg-shift = <2>;
-> +			status = "disabled";
-> +		};
-> +	};
-> +
-> +	soc1: soc@14000000 {
-> +		compatible = "simple-bus";
-> +		reg = <0x0 0x14000000 0x10000000>;
-> +		#address-cells = <2>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		syscon1: syscon@14c02000 {
-> +			compatible = "aspeed,ast2700-scu1", "syscon", "simple-mfd";
-> +			reg = <0x0 0x14c02000 0x1000>;
-> +			ranges = <0x0 0x0 0x0 0x14c02000 0x1000>;
-> +			#address-cells = <2>;
-> +			#size-cells = <1>;
-> +			#clock-cells = <1>;
-> +			#reset-cells = <1>;
-> +		};
-> +
-> +		serial12: serial@14c33b00 {
-> +			compatible = "ns16550a";
-> +			reg = <0x0 0x14c33b00 0x100>;
-> +			clocks = <&syscon1 SCU1_CLK_GATE_UART12CLK>;
-> +			interrupts-extended =
-> +				<&intc1_4 18 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +			reg-shift = <2>;
-> +			status = "disabled";
-> +		};
-> +	};
-> +};
-> +
-> +&soc0 {
+> - Enable options for ASPEED AST2700 SoC.
 
-This is the base DTSI, there is no existing node to override. Just
-define complete SoC node in one place like every other vendor.
+Why is this "-"? Is this a patch format?
 
-
-> +	intc0: interrupt-controller@12100000 {
-> +		compatible = "simple-mfd";
-
-NAK, never tested.
-
-Not allowed, see bindings. And test it next time.
-
+Look at other commits to this file. You can use `git log -- PATH` to
+understand how people write commits.
 
 Best regards,
 Krzysztof
