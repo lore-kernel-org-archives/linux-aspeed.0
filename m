@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1404-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1405-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0D9CC61CE8
-	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Jun 2025 10:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16A9FC71136
+	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Jun 2025 10:16:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bHz0q2YVxz2xQ6;
-	Thu, 12 Jun 2025 20:14:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749723291;
-	cv=none; b=DUv8d6iQpo9BPylCO8Zp2M1WTy7Iy3Ttn2iWzihYUfkVHnWHKmA9tVhf87oyyKz4PWfiNGxtLR0AKZoASqQwastDBI7IKKgCJPJrfJrRnHAg5UCcSjYP6vmRRtKRyemjqc6ULJiUzzqtC+EtpXOWf98ueiih6XUANTg2TSst01QYh/yK0ihMriKnapt5CtDxJ/w0O2WMNy3E98fdia4v2SpjLStGLJP5auF09geaPidBbaasxyzyEI5NXY3QltxI5zeZ2Vm19QZxQfzs8hLkwTXD5yLkJHrpq8SjPP9uRmpvW8Dp+9IVPJweGjX0DjFX3ef12kxC7P5JmzOTBiUV+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bHz2H56m9z2xQ6;
+	Thu, 12 Jun 2025 20:16:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749723367;
+	cv=none; b=eZrKpwqGK64Cs0BZaPOrP94vQx0ckzVIlAWk1pNAu3XQao7KvPG6Nwh0ygX7+FQUrtivbMEJ3WGxjbNu86+8dyzss9neVXC6ANiURq6EcWDifJL7ziQx1t0EDgwZbTfwOXbEJI/wck8cTxPJdX30YtVbGqNSN4eS9VD6zxy+oVi44RTZt5K5+RpodKGfXbnTnIe8sQ498IdLKKbnrODMhqNDqPJjP2K881xRsHEMggrpLsXda5oeVm9ZyIsmdYEbaiNUqRyxX2iQi9SaPjWo9rSjZw4hBHMqelLtbTfZHCO0gx6f+f+hzcDWmo1cjcguEQVOPsOx5UInsFpJTo+cQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749723291; c=relaxed/relaxed;
-	bh=DYbrBlase0oO4ztUlS8jmhmYd8yKTzxvz808aawDrY0=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
-	 In-Reply-To:Content-Type; b=f1uppEjwEWXSkKTwtSkB+uPTg4UeLjERdb+ZRBIY2jZlqGQRR3ZDspzqOH+dB7IuM66AiQKtQwaVyzLFBfPUbdVbNDLt9yTMhkHP5cAqaPI43gsG5dP7w6JmiZSvyiJLaoHTbDUnsR0tL9kMCmW7f4AG2tXaDXoj/WQY3iqoFRE2aKHrhmActbT/iL0aVfekCghccRyxoTe/8yGpNBrcy9ZRLz/uwi+368oY/KNM4woVbMh7netJmdt+frr+bcr9bd6vO/bm0EDSHYNq+OkdEAVwYWDvgKSwl2+q7WmZ8arQ2Nbmvcu4obRWdkjH30qkaTC5+UVkBDiXHrr/qSYMkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vAcrUhXd; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1749723367; c=relaxed/relaxed;
+	bh=EY76ou1m9gK9zjho/3G/XbRunrqXXiNEfkjAJLicmPs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=CF8ofVeizeFk52KHBX23F2jPnNj4ssnhsnfbJ/GtKhVFMsrvq6zGDXXfdgpshHCHnb07v0PWQLrDtv882aE0vNjEm+mqXBS87qbOFRb5oRXCO5fujbdu2FoqB89yVxw1vFTZ/2nM1WOaiMhTPfxzyf4VyWV85yAzPi6DKrAn94EH64DGlDPH3YB3j2V9wueMhjlsRqLzh07z8KwATNCKznIZyW9w7PeVxFTLW7R4Gpjw2fw5EcyhaEm+qSEx2lSo+MRc0BCl1CXEUJzoFHgOkzoGKygUn8Ax/pMqm2/OIHiNEDoHSVGxSas5m/yO2mn/BatYkHsnDyGMT+ImjohGSw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LfakI3ex; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vAcrUhXd;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LfakI3ex;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHz0p44HMz2xPL
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Jun 2025 20:14:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHz2G42TNz2xPL
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Jun 2025 20:16:06 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 98C18A51B3A;
-	Thu, 12 Jun 2025 10:14:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAE77C4CEEA;
-	Thu, 12 Jun 2025 10:14:41 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 9BF075C4D17;
+	Thu, 12 Jun 2025 10:13:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B768EC4CEEA;
+	Thu, 12 Jun 2025 10:15:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749723288;
-	bh=i2cHV/Yqlp5Wqq3ytl1FXkrfZHTvJKGGxfV2IqHWh3Y=;
-	h=Date:Subject:From:To:References:In-Reply-To:From;
-	b=vAcrUhXd6EcHsF0iKvHsD3Y5X6hl+NdM9KDJMh4DLnOgu2j7J/aaLaEJycI7wPEOR
-	 EvylEAEpKln6BP5S30djNorLdSXiYMcdW0LOAynlrPkn+p7sMqGYSJnq327Kmdzp5Z
-	 bv7sipOQg95+hFJqd4vdXf1ne2kvpNtrEC5e02M/UGZpFtnBMt2scFmUNzgqxActkm
-	 p8eelP3YfvcQwekC9vs4u+oLvq5ufnNFQ0QlVLjEHJ0EkOcyPujRiiz701mm7T8uCh
-	 hvmbyMfI0FYedCNm7R/+zlZXfmpQLFYV1xIZgruS+LjWDwTiAEQiJ91Brvtvo1U/g9
-	 7kZr1jjkuL8FQ==
-Message-ID: <0b404d5c-2315-45cd-b25e-d5ab92040887@kernel.org>
-Date: Thu, 12 Jun 2025 12:14:39 +0200
+	s=k20201202; t=1749723362;
+	bh=7FGoClZ0ml34gXc4dFPqG8zZERR14btnitxt2Mt6UNs=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=LfakI3expq8CouXdOICpLytc1xOKKFqPeAcib0tnQ4dxZ588j99YPtCQU9Nv6XYG3
+	 AfkbW8PJrf3dCXCh6DksHTAwRb/r3jnKGFTvRLicPKl4hw1lZKuCwZ16WPsA6nbr6Y
+	 Ydb6lH7vKUnJuHWCDKhypq3Qme8UPbHK7ob3+luuhBpR2nZuLN7Z0AVhqeEdwftOIj
+	 kqj+rXEXWcbjaFx8NCVwH82WaNGs8eb/0xxvHPKqq5/PxPHThId4LW5BI/K0COoD/z
+	 /o2em6nIJCHD0c9nfTuySDNMDOxEURanK96KYz54R0Yj44eOE8gUeZGWCA1QmftrYf
+	 Ifu6KJAGoIqnA==
+Message-ID: <278193c2-7061-4cd3-88e3-402ac85eddf7@kernel.org>
+Date: Thu, 12 Jun 2025 12:15:55 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,8 +60,8 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v0 4/5] arm64: dts: aspeed: Add AST2700 EVB device tree
-From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v0 1/5] dt-bindings: arm: aspeed: Add AST2700 board
+ compatible
 To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -81,8 +81,8 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
  wthai@nvidia.com, leohu@nvidia.com, dkodihalli@nvidia.com,
  spuranik@nvidia.com
 References: <20250612100933.3007673-1-ryan_chen@aspeedtech.com>
- <20250612100933.3007673-5-ryan_chen@aspeedtech.com>
- <7d4d4c53-d18b-421b-8279-6325771a1cb9@kernel.org>
+ <20250612100933.3007673-2-ryan_chen@aspeedtech.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
  xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
@@ -127,32 +127,22 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <7d4d4c53-d18b-421b-8279-6325771a1cb9@kernel.org>
+In-Reply-To: <20250612100933.3007673-2-ryan_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 12/06/2025 12:14, Krzysztof Kozlowski wrote:
-> On 12/06/2025 12:09, Ryan Chen wrote:
->> - Add ast2700-evb.dts for the ASPEED AST2700 Evaluation Board.
->> - Set board model and compatible strings: "aspeed,ast2700-evb",
->> "aspeed,ast2700".
->> - Reference the common AST2700 SoC device tree aspeed-g7.dtsi.
->> - Define memory layout and reserved-memory regions for
->> MCU firmware, ATF, and OP-TEE.
->> - Add OP-TEE firmware node with SMC method.
->> - Set up serial12 as the default console.
->>
->> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+On 12/06/2025 12:09, Ryan Chen wrote:
+> Add device tree compatible string for AST2700 based boards
+> ("aspeed,ast2700-evb" and "aspeed,ast2700") to the Aspeed SoC
+> board bindings. This allows proper schema validation and
+> enables support for AST2700 platforms.
 > 
-> How this can be patch 0?
-> 
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+Align with your colleagues. This is not v0, but vX+1. And X was already
+3 since you sent it!
 
-I meant: v0.
-
-> You need to start using standard tools: git and b4 (see submitting
-> patches and other process docs).
-> 
-> 
+https://lore.kernel.org/all/20241212155237.848336-4-kevin_chen@aspeedtech.com/
 
 Best regards,
 Krzysztof
