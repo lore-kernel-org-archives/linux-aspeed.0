@@ -1,52 +1,86 @@
-Return-Path: <linux-aspeed+bounces-1409-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1410-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E2E2C71149
-	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Jun 2025 20:12:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6712BC61CE8
+	for <linux-aspeed@archiver.kernel.org>; Thu, 12 Jun 2025 23:01:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJDGR5L9Pz306l;
-	Fri, 13 Jun 2025 06:12:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749759151;
-	cv=none; b=PYNNfwwWfyEoSbT+G+aso47IFXoCey+AEqstpfGEtjY+mUenZv/VH8uTjFUzmZZdxlkWh4yNbpQdvSzx1oUaPj1nzTZiL4FkT7iZKdzrDH2sDFm11DV4HOsxo4tRY4cRUWcHlnYRHOR9MooPYqGwz6xvN0eHiFpqcqOxFpA+ffzUbWvHs6+5zQZluzGazcwDpWHBOHSP4dIQoQADR/pIiym7g78PUX3V+B8u5ch1ih9xtuSmHgJoPz9QN2at2XszNh6sirZ1GaNqdEPhnCGyYI5CjJP8HvUmtyO/TO9MR6r+m3WVCr4dP61vnA6JPHwJf2xdt2Cs+i4ne59zexzxng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJJ174h03z308R;
+	Fri, 13 Jun 2025 09:01:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::433"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749712079;
+	cv=none; b=XiUfVMw/kC6MuNXFRBG3Eu+//BQTogLaWxL2mrAKzDnWZbi8O4I5uiuj4NCj3suuROoWCwqTbB0wlX4gPKrpyFTjGMvBHwGyFM6lTVCijD25FuKza/jJ2mKvWVT/C51SzuZUKiIRoQ2C6G7NXAzr3Vb/f+s1tKU6mI0pVBFkeU6O8gE30lfT9coSREiyjWx0RzWl+6yGwmRMAV6mRY8eIo0RX19Ua5bYCnmK4cPniV4bPSgWHDx2lKocoOJPTNNGPMDEO8R0v73zBTirfAmcxAC5nwmzgr2exjqzJWt1u40HeMPedLjIKYByGMH2OLr+usdl8jNC6YMpLuxOVtHj+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749759151; c=relaxed/relaxed;
-	bh=n8UmY+DjVICQvkxkV5qowXtXkSU++ghDZkpNVcnAI3M=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=ENTdlu9kmJebtBjxr8zbQW1GNExjo9Umgyy7IGa9gwyFHjY8XIA2p4DPSc0CBVljGsVxGszYIgWv8mrUzjRt/Wk+ah/BoBole0t8V22AbV0wX7Cf8bxE2oaElE4GsSO1ihveTrMFzf7YDs9wUyFUr78Mcb82Kq8+RRTL1zMS73ZjmEUGGFgMqOsBQ2Y0VlD24HhpqM0RNe8XCmTkFEvMvDPooVh31GmbY1ptq7Y7ELc23c1CC0W3taSz0Rq5c/tDhfID4J527hE3yuk51NVA8URTb4U9g72pHDGH/aodMt5Y+2sV7KmGXsrL/w9bn/gZQRJVFSXZk1JxjSpWnkBdCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UC5n9LvW; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1749712079; c=relaxed/relaxed;
+	bh=dAOjJxhCfv8VWKL7BVvY9ZNzsKcaY5YiZqclR7H4/vs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=TnbgCbUAnRvFVz7fMPPIYFsg7npcQhMjQI7XPV7fGg4spaN4LkIxQMLNLQI09tXwXtHDV0uFX2r9Qvg96HRnPwEnnsnXZIB0Py0SOfHbfrYWkv6j/qTPU62HORILfNVSr6SCjqy0ieKXG+HNGfapAIh6pW0bH0Q4ktsEO+83PqMsEM6fMKzuxalfVV1k/CLrSmkwHHA373pIio58rRfdbE+0SQW/t6OvJTSgS2CoIlvlbnXPaLXKhNyP5FRWMOVPS9eNjDnKDdL9wCwumAzAIFrNz3zlUDRzffxNB80PGmjZ53sA3yWbc/hLZmQzMYGIFwFTR9f/56GjqkLG9mMq7Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nYYvCaA8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=ankitchauhan2065@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UC5n9LvW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nYYvCaA8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::433; helo=mail-pf1-x433.google.com; envelope-from=ankitchauhan2065@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJDGQ65G3z2xQ6
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 06:12:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2E48E42B84;
-	Thu, 12 Jun 2025 20:12:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B8910C4CEEA;
-	Thu, 12 Jun 2025 20:12:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749759148;
-	bh=bIZ8HFvB6OMgNNW2NXkcAGo3Nhl2JK11AbarG/O5N+Y=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=UC5n9LvWLL3JZhvYwMX5kxSKsoXED94YidpkOLAjq+oMTeoMB8cpXOP1D7c/rczip
-	 9aGAul3sQjIBUsgNebjAZae9a18D3eY8afIPf/74C7jrJ4ihLDwAGe73XAXMKSS98f
-	 8NBKQero4YKp3/5mekWKhXl/5zmXkEiIYRr3aTUtJmJY25j5gN1oHuRtp2Wq38ejxT
-	 mZBLjGzUGHI9o2OnMG8dyU/9jduusKQeUuQrvUJCek9mbj7A70IMyEqP+v7QOTZpiu
-	 VjXyc872zaqo9YngpIo/MPl5Yh0DkBcNSToFJ5OvK9lD2KJchsyvbLrIhmFtn5BLrB
-	 DB6v1/rDDUyiw==
-Date: Thu, 12 Jun 2025 15:12:26 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bHtsB0qgZz2xGw
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Jun 2025 17:07:57 +1000 (AEST)
+Received: by mail-pf1-x433.google.com with SMTP id d2e1a72fcca58-7376dd56f8fso870933b3a.2
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 12 Jun 2025 00:07:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1749712075; x=1750316875; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=dAOjJxhCfv8VWKL7BVvY9ZNzsKcaY5YiZqclR7H4/vs=;
+        b=nYYvCaA8AuzCoNh2xgip6JOrcHPH9pjg02cW1hBDvmIdHgnnsLxYg0H0Ms1mksDMzv
+         fBnAZsxI1gmerJBr8OdxCCl8+aGyDSaupytcRZKzzmU1nHxlk8+3KXaYDlFo7RH7RQ1K
+         ND2SlBPN7VauvJB1FGtlcyPY/XXcxFTvoeY1DGFWaI0Nn4eMv1iOqzPEkPCdcH+D6JnO
+         NnuEBcZ8IC10qv0B2g30BDH2YrZ7HK9+l0pKUscpG32cETbGRJuZ27pqTC5ARSjMFgcn
+         pxRBgqmG1B6khx5jTMInYM7/SQDEa0DLulWK1lVXn5EXgKoQvDq3ri4OyfJMoEkB4OZF
+         vLVg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749712075; x=1750316875;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dAOjJxhCfv8VWKL7BVvY9ZNzsKcaY5YiZqclR7H4/vs=;
+        b=F0zL3oCpoH8jB6zHtKquYVYJ86pjs71LZppUf1ZQ6vQc6jXlfwqQJ5Adc00I8Zh0OJ
+         vsjggn73MjUx3VTvpC1r7md71eUsX64s/XcZDbgeABLLE/mhJoRK2opMYuwH6TNwrETe
+         x4D3U8JsJpvhdJ3AIZayPSIBzMbmy8i4GcW5ALoj1sYQ86kP2565l6V46Z2w9M/vHrbr
+         HqovocaFEFKQD0QbUxiosNzK2Oejozas0Jh7f5Qf32VjCuvPA1GDXMInOL1SEggBCtWh
+         a236FWY8bXreodysA4Zq+ICkxgmv6sLEmGJuPo2PDkvNnafnylQ+NGPEJrzxG8lf2eqa
+         VSSw==
+X-Forwarded-Encrypted: i=1; AJvYcCUYie+FIYjTbZ8L6VUuUqtcanK6zI0Ietffl8YMd7vNcq9QbclztUfabe9KcFu+mAta1mOr35DNrB1WSPk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzzKuyE4Ye9mqKs+6lPnbR3+Ybnmm3TTjmq1l5OLWKv8p4non/e
+	VQ/HxQCWQELUD17KqgJjFVgTCzJBzRJeMIGp4EIT7ZzZKyO64ZYRCpPfb7k6+v7BsBA=
+X-Gm-Gg: ASbGncuzfiimlgQS1aKqYAM2rPE0H1xrWqU/WdoMwah2vLtEfp572APUl4PLXzwuvFd
+	fkxnW1GY7qoukkNflCrVsNBJHZCElOL3jw67gvVGvUiSNIlTjt8D8ZPjiewwtgA+AxZG8E9JjtQ
+	YxEBStaY+KYLtqECWtXjp5OkSLl2mTC+6mZjk72NIyfQp1GF3e5gMntaawrBjkeifju6HhgsQLi
+	mDqhLzQsmwlcMioiYhWBE/1Ryny1V1k0xR/TbIl7yE1GdLCDBrpcbrVx7sKVZweCC8jmtvNMxoJ
+	J1ZFeNTKMbqLBEuxbCfH5rSYuswG9bwurtze/2F1VNUJFt+DkqixebzhYxPde1JuaqDf9Yx5fQY
+	luFqEv8h5P1jKtNNFbM2E
+X-Google-Smtp-Source: AGHT+IGfi33QMmP2NxREt3lPErfPBTHFxGftgC5xTDBsF/Wzhv8TdBvW48FWIe805inRamkcxDRnzw==
+X-Received: by 2002:a05:6a20:729c:b0:1ee:efa5:6573 with SMTP id adf61e73a8af0-21f86600846mr9497042637.8.1749712064431;
+        Thu, 12 Jun 2025 00:07:44 -0700 (PDT)
+Received: from ankitchauhan-Legion-5-15ITH6 ([2405:201:4042:d128:1895:113a:65dd:3ae0])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74880a06b64sm738064b3a.143.2025.06.12.00.07.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Jun 2025 00:07:43 -0700 (PDT)
+Date: Thu, 12 Jun 2025 12:36:56 +0530
+From: Ankit Chauhan <ankitchauhan2065@gmail.com>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] arm: lanyang: fix lable->label typo for lanyang dts
+Message-ID: <20250612070656.bir2ywkwu27gxs7d@ankitchauhan-Legion-5-15ITH6>
+References: <20250529-lanyang-lable-fix-v1-1-8a2dcb48bda4@gmail.com>
+ <3fe9885cc54a328932915a63816ac1b7952689a2.camel@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,111 +94,46 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, soc@lists.linux.dev, 
- Mo Elbadry <elbadrym@google.com>, Arnd Bergmann <arnd@arndb.de>, 
- William Kennington <wak@google.com>, Taniya Das <quic_tdas@quicinc.com>, 
- linux-kernel@vger.kernel.org, spuranik@nvidia.com, 
- Eric Biggers <ebiggers@google.com>, Joel Stanley <joel@jms.id.au>, 
- linux-aspeed@lists.ozlabs.org, Will Deacon <will@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Nishanth Menon <nm@ti.com>, 
- Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
- nfraprado@collabora.com, linux-arm-kernel@lists.infradead.org, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
- Rom Lemarchand <romlem@google.com>, devicetree@vger.kernel.org, 
- Geert Uytterhoeven <geert@linux-m68k.org>, leohu@nvidia.com, 
- Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>, 
- Yuxiao Zhang <yuxiaozhang@google.com>, dkodihalli@nvidia.com, 
- wthai@nvidia.com
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-In-Reply-To: <20250612100933.3007673-1-ryan_chen@aspeedtech.com>
-References: <20250612100933.3007673-1-ryan_chen@aspeedtech.com>
-Message-Id: <174975871838.2916138.1953670783794758715.robh@kernel.org>
-Subject: Re: [PATCH v0 0/5] Add initial AST2700 SoC support
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3fe9885cc54a328932915a63816ac1b7952689a2.camel@codeconstruct.com.au>
 
-
-On Thu, 12 Jun 2025 18:09:28 +0800, Ryan Chen wrote:
-> This patch series introduces initial support for the Aspeed AST2700 SoC
-> and the AST2700 Evaluation Board (EVB) to the Linux kernel. The AST2700
-> is the 7th generation Baseboard Management Controller (BMC) SoC from Aspeed,
-> featuring improved performance, enhanced security, and expanded I/O
-> capabilities compared to previous generations.
+On Thu, Jun 12, 2025 at 03:01:58PM +0930, Andrew Jeffery wrote:
+> Hi Ankit, thanks for the fix.
 > 
-> The patchset includes the following changes:
-> - Device tree bindings for AST2700 boards.
-> - Addition of the AST2700 platform to the Kconfig menu.
-> - Basic device tree for the AST2700 SoC.
-> - Device tree for the AST2700-EVB.
-> - Updated defconfig to enable essential options for AST2700.
+> Regarding the subject, can you please use the prefix 'ARM: dts:
+> aspeed:'? From there, I'd prefer something like:
 > 
-> Ryan Chen (5):
->   dt-bindings: arm: aspeed: Add AST2700 board compatible
->   arm64: Kconfig: Add Aspeed SoC family (ast2700) platform option
->   arm64: dts: aspeed: Add initial AST2700 SoC device tree
->   arm64: dts: aspeed: Add AST2700 EVB device tree
->   arm64: configs: Update defconfig for AST2700 platform support
+>    ARM: dts: aspeed: lanyang: Fix 'lable' typo in LED nodes
 > 
->  .../bindings/arm/aspeed/aspeed.yaml           |   5 +
->  arch/arm64/Kconfig.platforms                  |   6 +
->  arch/arm64/boot/dts/Makefile                  |   1 +
->  arch/arm64/boot/dts/aspeed/Makefile           |   4 +
->  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi     | 380 ++++++++++++++++++
->  arch/arm64/boot/dts/aspeed/ast2700-evb.dts    |  54 +++
->  arch/arm64/configs/defconfig                  |   1 +
->  7 files changed, 451 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
->  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
->  create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+> On Thu, 2025-05-29 at 17:09 +0530, Ankit Chauhan wrote:
+> > Fix an obvious spelling error in the dts file for Lanyang BMC.
+> > This was reported by bugzilla a few years ago but never got fixed.
+> > 
+> > Reported by: Jens Schleusener <Jens.Schleusener@fossies.org>
 > 
-> --
-> 2.34.1
+> Please make sure these tags reflect convention:
 > 
+> https://docs.kernel.org/process/submitting-patches.html#using-reported-by-tested-by-reviewed-by-suggested-by-and-fixes
 > 
+> Rather than spaces, they use `-` to separate words, so:
 > 
+> Reported-by: ...
+> 
+> > Closes: https://bugzilla.kernel.org/show_bug.cgi?id=205891
+> > 
+> > Signed-off-by: Ankit Chauhan <ankitchauhan2065@gmail.com>
+> 
+> Finally, all the tags should go together in the 'trailer' (final
+> paragraph). There should not be an empty line between the `Closes:` tag
+> and your `Signed-off-by:` tag above.
+>
 
+Hi Andrew,
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
+Thanks for the feedback. I will make all the necessary changes and send
+a v2 PATCH.
 
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-This patch series was applied (using b4) to base:
- Base: attempting to guess base-commit...
- Base: tags/v6.16-rc1 (exact match)
-
-If this is not the correct base, please add 'base-commit' tag
-(or use b4 which does this automatically)
-
-New warnings running 'make CHECK_DTBS=y for arch/arm64/boot/dts/aspeed/' for 20250612100933.3007673-1-ryan_chen@aspeedtech.com:
-
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: serial@14c33b00 (ns16550a): 'pinctrl-0' is a dependency of 'pinctrl-names'
-	from schema $id: http://devicetree.org/schemas/pinctrl/pinctrl-consumer.yaml#
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@100 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 0, 3844]] is too short
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@110 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 1, 3844]] is too short
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@120 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 2, 3844]] is too short
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@130 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 3, 3844]] is too short
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@140 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 4, 3844]] is too short
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@150 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 5, 3844]] is too short
-	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-
-
-
-
-
+Kind regards,
+Ankit Chauhan
 
