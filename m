@@ -1,154 +1,62 @@
-Return-Path: <linux-aspeed+bounces-1417-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1418-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22507C71136
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 00:52:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B804C71136
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 00:52:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJLSz57x7z2yMF;
-	Fri, 13 Jun 2025 10:52:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749775923;
-	cv=pass; b=VmbUYZAx/grhH98QITc87qE28iaZFZWluUHE4OzCFgVVVTub9IYa0fhRdTHPL+vmg7hhPCQ9pai/Nlct8pfND9UOSoRuycYGi9fadRRVPCMLc9pAehWmbhreVCkRyQmj3NOWGXS3JqHz1PxsSjTBXWlWDmhIbeO1Utu4NiJI8cIhOqj9EeIkzSrS4rJ6cw5UT7m/39hZiFDZajY8Y++sKD7KKlM5ewoH5GnJgDC+2y26MSURmVxtJ4KuDF6K2zGxwgQudqg0Ju0fsq4CbQ04J+yzcrusQKXS3VQhPbUwe+M78xn8mp848kE92fMWy4sDELWAk65N4MYz72dS4VQ2VQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749775923; c=relaxed/relaxed;
-	bh=rF2gWYnCPO0N7heFWCaon+Sa4g2bRmlBhii9uvItDuI=;
-	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=WH/7jOjrLTkV9+x8LcsD7wKJOKXEgA8NAVPwZP55uQDqHxgQ+ExKh1CylFiA88d1I3kCtJHwpFalTEEr13cDhskqK4lKedwS92dPo1auDodgxeHSZTU6LdH6JPQiYYspOeeDb2vNZf34TR0ZdZO47Tm4Vz/QicbB1K226gCoGwZas0RajF7CiADPfb+ki7JgLXrEzR0QwNN8d7gSCZ2ALi9AYQq9HwieGbqYcA3JmJlz0Wmb3UmuxUN3QIZgBCCQARId9k39OW9zBWkqMzBCRaLfprH+eIARgSABeDHSEx7MgB1hqoljAFPzYueEM4ft4v2vBAn8bTPYjFjhLJaGLw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=aspeedtech.com; spf=temperror (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJLTM3Zn7z2yN1;
+	Fri, 13 Jun 2025 10:52:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749775943;
+	cv=none; b=SbPenBzXQOZTg4jMS8UTQ/1al78Lv56JfNwf9BFiuCbmYFGkyejZQvtfmAHcvqVx5kdphSWKg3Dgw92kEHtrgWj4TRSc7puSpbuI/GkZN/SMc284R0/daSq9dzfKhHaMNW0A0P0tMR6a49F0thflpXemLn1e+uPm7CJnx5nyi3V19GgkSmx4EKuzfFMYoUn7HHNnwlrEJkiE9Qo8bTJJo+3Ep3U7pLV0lyFdSnF66jnC9HgzKJIMpM7uLW1T8Qa8q9JopFiSX7tz+7+k/FeVtYth1nJpjQ97fpAQrFHeoWqUvKsYPELSNpGKZl1XvESFGApmqASMp9xjYbIJcY2t5g==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1749775943; c=relaxed/relaxed;
+	bh=EsRJTlab3QCXz7ZpM9mVcFTl4rwFsKjGezndHiqVAmw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=MS4Rlw/75pU/KIBFe4p1DYd7Td7tRO1exEllox7mfLgBzY4JmSPcMUf5ltOHJzahuVC9LkXTJ9OtAA138HG77hu5DtsWKG6Jcxw3TMVvquZyqp7Wj2/MWF1L2a9VDMXvlEJS0aEq4lTr6y8rUGfsqA58ptW4WWc4tIuOXCDGP20110O+s+QdI/hewHO63N4m60n7KYXx73LaBHfuxAR/Hde5PquxFK7PHoe9FpKvQeYw4raBJ0YhkvjOE6Q5dx1G9TYhyjb+mG5CuHSGToit+/jz8LLz8+T0tTGh8NfRqHWjo+4yaUc1SH4DQb8M039oFF/yBLnjZwINu9jbq35u/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aCJsRkh1; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aCJsRkh1;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJLSk4bcwz2xKN
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 10:51:30 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=oPPb3wa1IO+sOZpQF+mW6Ok3axMgDJTdCvXC7mDgwJ0CEJRZTewAEygy5aVLdooZEocdkVsklCVvBI10WiB3somhMLNKEsWA632m26vdX9t7OSedHAPmxtKBpTweeb+QAaHItfDF1zNuoFqmYZXH2gcILPDVIR+VrtnuXLxEymFOVLRQbulD5HZQIlGQrd21bSURGqjMMRtMw05vInIVxXBtFh3DkkdJSSQ2sBALohm79LI1WdzmB8JsCoLkLwsQke/nd3POyOnmw3ILdmezXjWyvluYS1IiReDLfSwxdPpBY+UvsmS1O/tf+OMIDP61ll+ExwG3eXxF8PGBetlemQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=rF2gWYnCPO0N7heFWCaon+Sa4g2bRmlBhii9uvItDuI=;
- b=Qv4RTzlcRXIGNSe6SugUoyMSUOhEXt7OlOUAbhX5VG/Pi72Ugc9wS3VqqQupv0XO19X6KGaO45iclia3P+W3bWXgzjwY7TfI3oeHbTlzCB2aE0oaccE5NEi+5XqXHsAZ7kFFQuU1h/y4p24m5X3lXQ3PZw38LI1vHW0heHo/jMLK/Fs/bJeIUAo/Vb6sed531yAYkXPPqBn0sgHIEEh9qb89Kh8C4xLQeMHGW+zDvo0A3DdX5F5hjeiW1psnALZlSK/KhLMhJtQAfSLLOrMgOrmirE0Q09qIoznwobZj0j5riFPuGW5128f210A76TBVML92pQbsxeWbRLEuXOBPnA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=rF2gWYnCPO0N7heFWCaon+Sa4g2bRmlBhii9uvItDuI=;
- b=nhCO0/6n3mgczcHWb6LxBIhzJxw0G3fASFDLTq2nIOQtsV7WVrXCYcn6vTyha3YKoB5LiVVCM5R111+fejT3W8XhwmfbbrGsOKOMpQO8MpT/GW7+4lcG0lIKawGbrXjfWHaHp2t3qNUFiUaN+G+QuXXRAxpAatBOTxcFrKTjAcjAPQ0FiEpp+OLGDxgB+m8NKui/APpuiwFhYZezzaoVgW8z9FPySUlHKC/74NAUKN0H+61jVhLVZdpa2T0ZyrsuuatrX9vPnoCRZRSretOjIoIntsOTDqx5OtyA1WQf8psbP1KH69E4a1C0f3rNLmOejU7w+H7WypX9M2Gy/VWsvw==
-Received: from TYZPR06MB6568.apcprd06.prod.outlook.com (2603:1096:400:45f::6)
- by JH0PR06MB6296.apcprd06.prod.outlook.com (2603:1096:990:c::5) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.23; Fri, 13 Jun
- 2025 00:51:05 +0000
-Received: from TYZPR06MB6568.apcprd06.prod.outlook.com
- ([fe80::72b8:dce5:355b:e84b]) by TYZPR06MB6568.apcprd06.prod.outlook.com
- ([fe80::72b8:dce5:355b:e84b%5]) with mapi id 15.20.8835.018; Fri, 13 Jun 2025
- 00:51:05 +0000
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>, "jassisinghbrar@gmail.com"
-	<jassisinghbrar@gmail.com>, "robh@kernel.org" <robh@kernel.org>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org"
-	<conor+dt@kernel.org>, "joel@jms.id.au" <joel@jms.id.au>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v3 2/2] mailbox: aspeed: add mailbox driver for AST27XX
- series SoC
-Thread-Topic: [PATCH v3 2/2] mailbox: aspeed: add mailbox driver for AST27XX
- series SoC
-Thread-Index: AQHb2eeI4a5F3MN24Eu/ozXuvO4n07QAO/MAgAAJjEA=
-Date: Fri, 13 Jun 2025 00:51:04 +0000
-Message-ID:
- <TYZPR06MB6568BA93BCEEBEE3B9DE15EBF177A@TYZPR06MB6568.apcprd06.prod.outlook.com>
-References: <20250610091026.49724-1-jammy_huang@aspeedtech.com>
-	 <20250610091026.49724-3-jammy_huang@aspeedtech.com>
- <13b88c1e404a9abe5cfae6673cb93e0b020e3524.camel@codeconstruct.com.au>
-In-Reply-To:
- <13b88c1e404a9abe5cfae6673cb93e0b020e3524.camel@codeconstruct.com.au>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: TYZPR06MB6568:EE_|JH0PR06MB6296:EE_
-x-ms-office365-filtering-correlation-id: f04c6692-4038-45b6-60b6-08ddaa14606b
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|376014|366016|7416014|1800799024|921020|38070700018;
-x-microsoft-antispam-message-info:
- =?iso-8859-1?Q?GsVCL3O88Yb7Xst653ZAx/dJXxD2+aJwsTg2dzNlEQ6WWg+qkSyPoh4fEk?=
- =?iso-8859-1?Q?MW8gFDaBuYuV25XoGIIPqvCSWiDZgdmcApXQAc5h6rWOs4pqKJd1JxrsZr?=
- =?iso-8859-1?Q?BgK+defI6ivEEdUgpjMTsmnwxtF9eQhh+G7Zt6llaxgU7V6Qg6QP+ssKJA?=
- =?iso-8859-1?Q?4GmppscbO4Xn2bErlQvIqP2G3MBQvlijASh/lyTxNz+goqShRtvPp+Y2qO?=
- =?iso-8859-1?Q?qV5GBmsO+ts/eMSokev/Y0D5PZiyfkkxL8Q8vVE9ECEM9d3wak8BTv+zHZ?=
- =?iso-8859-1?Q?1kCCrouS+kPCWEm66CCsMX4KvOx4FIyw684jCXhbMycaiNapS0FBFviHQy?=
- =?iso-8859-1?Q?ICis66HEDPJ5e2ScwlbAXG20SW8Vug17OxILM5YvHWodbdThW4VO0UgS3n?=
- =?iso-8859-1?Q?AwHIXZfNkFf5RKXC/iyz6XuxDisB2CfbUlMbvpd+cP2xk2bJqpbxT4DlDC?=
- =?iso-8859-1?Q?Uk8+jbhTva2BTsRGulbJXwGA1V0FNfDybc99pQE9ye7BAnAcWLrDZplpZS?=
- =?iso-8859-1?Q?omVwOHbEcYBqArdWKxiC6WrIGfehUlWtQVEjnVjOpSSpvrTibk1DznR5dE?=
- =?iso-8859-1?Q?PEO35MAaM5Wv5ex5PdfpqOVwkYsMCBBIXRjL1TDq7jJvxEh0ISNDCH1atK?=
- =?iso-8859-1?Q?7rFmoT+8UR+LLvv3O8XZx9Ds257cmKCi5P1TLFeVSzPtoNGIjQgykHlnYa?=
- =?iso-8859-1?Q?bfBtd0fwFRIuyT03jFEicA2SH5XA2I2/EdrybhXsJPpwylRhRAznBEjUsx?=
- =?iso-8859-1?Q?k3okvd+iCookNkbwg8fw2swMLrVC0OS20UtlFbXzRmUEmd1t2bwlQyAdXA?=
- =?iso-8859-1?Q?XIeUPPhXIasG8L1Ta1Cz4NRWwtGmodihdUb80ZwvKNwmXDFhDVYiPRd6Kd?=
- =?iso-8859-1?Q?CLn9v6NdAnJ9C7U+VMsuzgROfoxwFkUucy4KSyHwYAppLwhaeH2h8aNZPr?=
- =?iso-8859-1?Q?kz+kgsejJJKVLzoXd8JX/AtfUJ+L1PPPQpYzxLimmP8bvyZgQNngpFd3b9?=
- =?iso-8859-1?Q?vQpz5jvrEfAliRISj/O4VDXChE6uwLhiQOu87FVlzHbzZrgjUw9pHAhFRq?=
- =?iso-8859-1?Q?WxNCpD1OQ7Ew6hjjrzYK/oeJulq8SqMUvmQbF6NExXaYRXHrsxQ94krZ53?=
- =?iso-8859-1?Q?OVRX72eboLjyGyPidLlkM+PkCh3NptOYduLRRdAEKjINrkFv0Yd6VY/ZSb?=
- =?iso-8859-1?Q?RhB4SIoP+LHPkLmUlV0u2iJ784GB3YzUJb4/f1pAWmAWZNud3MEJhDhJpr?=
- =?iso-8859-1?Q?mC+zDlJGMLrpnJCbp4xlAuug/9CQdr4TYDeC4RR36t/q85RoIVVQZA+I+N?=
- =?iso-8859-1?Q?CjKsy+zALmcVvXO3IedzaEuOnNfvkVTfMfDwU8AAsc1ZP36EE83l6/pied?=
- =?iso-8859-1?Q?DflSBKijLeyGqnK+H2YsmwHdqHEvwkDhzA3sWMW9SIvUiHnHa2LSn7A3bq?=
- =?iso-8859-1?Q?oRC0ZGplG0R4dga+h4NWZvt84rIARBUANvMkgHivZjoPsSlmLhiTju4/Kr?=
- =?iso-8859-1?Q?UY6gng09Wb1TLphbyyOuwSvEk+IR2bBCbMs0DawoTYvgbdGu/z8zmfTdjn?=
- =?iso-8859-1?Q?8Fxi3BY=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR06MB6568.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(7416014)(1800799024)(921020)(38070700018);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?FHqIIrfcn+I8YvEUaJXolRVHuwNUVcz1i+eU14vn5UQPfYDA2mluO4FSE0?=
- =?iso-8859-1?Q?tmUJAYzVcFKW4Znuj46EatD5MHczydE91LqSFm6bKGQXfBmphrLA/LWgKH?=
- =?iso-8859-1?Q?dyj36nHWltzTlIBvoTOMj/chMWp4zY8HRo/IadZg4B1sD5LBxk51+AfsQP?=
- =?iso-8859-1?Q?P7Z++QhgerBe+kF/3rYS4XMJObyRKP6CH79f1l1FTdhlIJvlwTBtJMOs/X?=
- =?iso-8859-1?Q?xsASuqQkDyrhTyUkzFmii+lE1fPImTZaexyONLk8hxS8avF66a49EBcCSt?=
- =?iso-8859-1?Q?o8157X3Hr1GxBTvqoIsUseJmxnhKZndGVWKCd4AR68aMyyehKl+DU1oFgQ?=
- =?iso-8859-1?Q?/deF4kKGeogzAe/4Tn3uD+nL8cn9OtC2tImq6agvB7cINs+gRkpzdQVTgW?=
- =?iso-8859-1?Q?/cZgPuHmb66RQkc6FhUoA3377LR9kvfN5bLWahsTtbajYnbhmMZwgqbtmY?=
- =?iso-8859-1?Q?+YGPFj4YzhyEx4+rWcCmtBcQ3FDzwp3i/2gRvHxZH7C6b9av4L27Kz6Dcq?=
- =?iso-8859-1?Q?fKgQxQ3YOA4l3PoondrEnJYdvsVitfcy34nvJfEVA5c/Yeo8CW2Kfb9pfE?=
- =?iso-8859-1?Q?+3Am/Wg4882t1J8cF3OyhFTznixyN22BIxQYo/KQuPv29r3CPLR1XzAiAx?=
- =?iso-8859-1?Q?FzLq3hj2FY90m8M5fPMfY8nvQBBBUnUAs26X3BUChTg9y9pNd45LTU4TwQ?=
- =?iso-8859-1?Q?hEfhxoKlZzYyJ8BuTIFTYXXyJiPzkWQ1LLYAJD8N+OyBLLsn1PmAPacVtJ?=
- =?iso-8859-1?Q?hI9Osvn+WBYOpPfrMhRflmUv+89qbuSmrNBEeKKddD2NEvIWZ56kfX6SXz?=
- =?iso-8859-1?Q?m5EWneCUvN5wk49dPzYumYYL2XcjaCp0VXlRnFYmT3Qik85/8DdbgYVEla?=
- =?iso-8859-1?Q?xgvcgR8hn0NYSQVItB2nbzxOovvkOPhzOHrGWsIx5bGW8V6KzfUl1fJY8u?=
- =?iso-8859-1?Q?Eq8c5SWCbZGEFQU4a3ndHwvn3h9u291tN+YzIwvM79vNKYtyXwqJnvlaCA?=
- =?iso-8859-1?Q?ntqj1iiGJqVCHNvpCPUaiztV0iRpiVvkFbNfmQOkfS1mlnWFLhwLvXDLvg?=
- =?iso-8859-1?Q?chneezf+vsppG1Az3/h91SOKD+rU/2OnCnIupucShk+pujSk2eXqpdrtd9?=
- =?iso-8859-1?Q?M/S6SoyV4A+PG7zIDGBMcxZVbSGlC0VmDT7dfjyL0zIFmw3VJvODcq0UJ7?=
- =?iso-8859-1?Q?spAIF2LhdLX8dl+RnUzsRsB0M7HDHHNsh7o4D26Sf7QjpS6DrS0wz+zE3D?=
- =?iso-8859-1?Q?YbT+JkVE/+Rox8IMwv7nQYyvNfcm7sc3hLpvBz7sr6FkzbgynykFmg08O6?=
- =?iso-8859-1?Q?0Lauk5DoUIDd3MDrLVDH1WOcCvByjCDRZnbqOeQN2YcORtajvAuumwgtzU?=
- =?iso-8859-1?Q?VfN8iL0iK+wpgraTGhvLo1CAHqD7qaDhXgu3rfVd4ajOplVi2oHeTfnAbl?=
- =?iso-8859-1?Q?ZB/IPepmJiJfCaRjMCx1qM6NqFCSuRChgphRzMnSRobOsdYXvYG/ulpCs4?=
- =?iso-8859-1?Q?SMpQnV2Dc6J+y4ubBy7quoSR+APphKE6RJqyah0EpAeY3JdWLpQbilrrDh?=
- =?iso-8859-1?Q?sNB0elmPJ3ogi7RdkHbg49/oe677UY8Ocg80LksiPJlOcykfVazavlMWlJ?=
- =?iso-8859-1?Q?3vTLXYCYamNW6qBKD6JD/EKgG8cjCn0R9RUxpGJ2K6FEBsMbFRQNq6Dw?=
- =?iso-8859-1?Q?=3D=3D?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJLTM0TBHz2xKN
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 10:52:23 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1749775942;
+	bh=EsRJTlab3QCXz7ZpM9mVcFTl4rwFsKjGezndHiqVAmw=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=aCJsRkh1nxpMaD3O/wx9w4RKEqg/Ztqmt7W38ro3nCePkl8nZK2zLygRTCCetBKVG
+	 AMBK5X0onSXKizQt/qt2EhAnWsL5Hywo04xCMGIrPCOsEPHbH5iYY7mU7ouKBJktCr
+	 hmEmXU5ZGmRBqpHfum0iFGZo1d4G3wC1OqyVR7lFgs+K4W206PhgfGjTuH/X8hY9eo
+	 0eTIu5KFYuc05vCl5kAdm5M24YvFXYorep22Zg5fKX7Myf7noJujpV8Cb505FxceEG
+	 J54veGIP/HCugIQHN0DOyGC9vV0MC8p5Cr8CR8lu2TTqCFim+eaPqlb2h04nTtLi+p
+	 JW4WK0sr4f/qA==
+Received: from [192.168.68.112] (unknown [180.150.112.166])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id A3B926445B;
+	Fri, 13 Jun 2025 08:52:20 +0800 (AWST)
+Message-ID: <d79fe0b5db34b14e64eee3bc8a187cb25e3d67b1.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v8 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Jason Hsu <jasonhell19@gmail.com>, robh@kernel.org, krzk+dt@kernel.org, 
+ conor+dt@kernel.org, joel@jms.id.au, patrick@stwcx.xyz,
+ devicetree@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org,  linux-kernel@vger.kernel.org
+Cc: yang.chen@quantatw.com, jerry.lin@quantatw.com
+Date: Fri, 13 Jun 2025 10:22:19 +0930
+In-Reply-To: <20250611112650.595554-3-jasonhell19@gmail.com>
+References: <20250611112650.595554-1-jasonhell19@gmail.com>
+	 <20250611112650.595554-3-jasonhell19@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -162,355 +70,88 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB6568.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f04c6692-4038-45b6-60b6-08ddaa14606b
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jun 2025 00:51:04.9741
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: B/5WKWI/VoHdQ4Jcui9Net82Ee6FuwthUV6K9+Q9REXZA+qp61nt4M99o9GcYxJKFzinoqQEr7RATkQRojsEHsLAGU8D+aFpyMAAtTE+dHM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB6296
 
-Hello Andrew,
+SGkgSmFzb24sCgpPbiBXZWQsIDIwMjUtMDYtMTEgYXQgMTk6MjYgKzA4MDAsIEphc29uIEhzdSB3
+cm90ZToKPiBBZGQgTGludXggZGV2aWNlIHRyZWUgcmVsYXRlZCB0byBNZXRhKEZhY2Vib29rKSBW
+ZW50dXJhIHNwZWNpZmljCgpXZSdyZSB3cml0aW5nIHByb3NlLCBub3QgYSBDIGZ1bmN0aW9uIGlu
+dm9jYXRpb24uIENhbiB5b3UgcGxlYXNlIGFkZCBhCnNwYWNlIGFmdGVyICdNZXRhJzoKCiAgIE1l
+dGEgKEZhY2Vib29rKQoKPiBkZXZpY2VzIGNvbm5lY3RlZCB0byBCTUMoQVNUMjYwMCkgU29DLgoK
+Q2FuIHlvdSBwcm92aWRlIGEgYml0IG9mIGEgZGVzY3JpcHRpb24gb2YgdGhlIHBsYXRmb3JtIGRl
+c2lnbj8gVGhpcwp3aWxsIGhlbHAgcmV2aWV3IHRoZSBkZXZpY2V0cmVlIGNvbnRlbnQuCgo+IAo+
+IFNpZ25lZC1vZmYtYnk6IEphc29uIEhzdSA8amFzb25oZWxsMTlAZ21haWwuY29tPgo+IC0tLQo+
+IMKgYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL01ha2VmaWxlwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgIHzCoMKgwqAgMSArCj4gwqAuLi4vYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stdmVudHVy
+YS5kdHPCoMKgwqAgfCAxNDgxICsrKysrKysrKysrKysrKysrCj4gwqAyIGZpbGVzIGNoYW5nZWQs
+IDE0ODIgaW5zZXJ0aW9ucygrKQo+IMKgY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvYXJtL2Jvb3Qv
+ZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1cmEuZHRzCj4gCj4gZGlmZiAtLWdp
+dCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZSBiL2FyY2gvYXJtL2Jvb3QvZHRz
+L2FzcGVlZC9NYWtlZmlsZQo+IGluZGV4IDJlNWY0ODMzYTA3My4uZTA3NjY2ZDkwMmZiIDEwMDY0
+NAo+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZQo+ICsrKyBiL2FyY2gv
+YXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZQo+IEBAIC0yOCw2ICsyOCw3IEBAIGR0Yi0kKENP
+TkZJR19BUkNIX0FTUEVFRCkgKz0gXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vi
+b29rLW1pbmVydmEuZHRiIFwKPiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1mYWNlYm9vay1t
+aW5pcGFjay5kdGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXRpb2dh
+cGFzcy5kdGIgXAo+ICvCoMKgwqDCoMKgwqDCoGFzcGVlZC1ibWMtZmFjZWJvb2stdmVudHVyYS5k
+dGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXdlZGdlNDAuZHRiIFwK
+PiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1mYWNlYm9vay13ZWRnZTEwMC5kdGIgXAo+IMKg
+wqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXdlZGdlNDAwLmR0YiBcCj4gZGlmZiAt
+LWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1
+cmEuZHRzIGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stdmVu
+dHVyYS5kdHMKPiBuZXcgZmlsZSBtb2RlIDEwMDY0NAo+IGluZGV4IDAwMDAwMDAwMDAwMC4uMzRh
+M2VmM2EwZWZlCj4gLS0tIC9kZXYvbnVsbAo+ICsrKyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVl
+ZC9hc3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1cmEuZHRzCj4gQEAgLTAsMCArMSwxNDgxIEBACj4g
+Ky8vIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wKwo+ICsvLyBDb3B5cmlnaHQgKGMp
+IDIwMjMgRmFjZWJvb2sgSW5jLgo+ICsvZHRzLXYxLzsKPiArCj4gKyNpbmNsdWRlICJhc3BlZWQt
+ZzYuZHRzaSIKPiArI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2kyYy9pMmMuaD4KPiArI2luY2x1ZGUg
+PGR0LWJpbmRpbmdzL2dwaW8vYXNwZWVkLWdwaW8uaD4KPiArCj4gKwoKLi4uCgo+ICsmaTJjNSB7
+Cj4gK8KgwqDCoMKgwqDCoMKgc3RhdHVzID0gIm9rYXkiOwo+ICsKPiArwqDCoMKgwqDCoMKgwqAv
+LyBSTUMgRlJVCj4gK8KgwqDCoMKgwqDCoMKgZWVwcm9tQDU0IHsKPiArwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJhdG1lbCwyNGMxMjgiOwo+ICvCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg1ND47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiAr
+wqDCoMKgwqDCoMKgwqAvLyBWUiBURU1QIFUzOTkKPiArwqDCoMKgwqDCoMKgwqB0ZW1wZXJhdHVy
+ZS1zZW5zb3JANGMgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjb21wYXRpYmxl
+ID0gInRpLHRtcDc1IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDB4
+NGM+Owo+ICvCoMKgwqDCoMKgwqDCoH07CgpDYW4geW91IHBsZWFzZSBtYWtlIHN1cmUgdGhlIG5v
+ZGUgb3JkZXJpbmcgYWRoZXJlcyB0byB0aGUgZG9jdW1lbnRhdGlvbgpoZXJlOgoKaHR0cHM6Ly9k
+b2NzLmtlcm5lbC5vcmcvZGV2aWNldHJlZS9iaW5kaW5ncy9kdHMtY29kaW5nLXN0eWxlLmh0bWwj
+b3JkZXItb2Ytbm9kZXMKClBsZWFzZSBjaGVjayB0aGUgcmVzdCBvZiB0aGUgZGV2aWNldHJlZS4K
+Cj4gK8KgwqDCoMKgwqDCoMKgLy8gVlIgVEVNUCBVMzk3Cj4gK8KgwqDCoMKgwqDCoMKgdGVtcGVy
+YXR1cmUtc2Vuc29yQDRkIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0
+aWJsZSA9ICJ0aSx0bXA3NSI7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9
+IDwweDRkPjsKPiArwqDCoMKgwqDCoMKgwqB9Owo+ICvCoMKgwqDCoMKgwqDCoC8vIEJSSUNLIFRF
+TVAgVTM5OAo+ICvCoMKgwqDCoMKgwqDCoHRlbXBlcmF0dXJlLXNlbnNvckA0ZSB7Cj4gK8KgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAidGksdG1wNzUiOwo+ICvCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg0ZT47Cj4gK8KgwqDCoMKgwqDCoMKg
+fTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgdGVtcGVyYXR1cmUtc2Vuc29yQDRmIHsKPiArwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJ0aSx0bXA3NSI7Cj4gK8KgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9IDwweDRmPjsKPiArwqDCoMKgwqDCoMKgwqB9
+Owo+ICt9Owo+ICsKPiArJmkyYzYgewo+ICvCoMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsK
+PiArCj4gK8KgwqDCoMKgwqDCoMKgZ3Bpb0AyMCB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoGNvbXBhdGlibGUgPSAibnhwLHBjYTk1NTUiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqByZWcgPSA8MHgyMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oGdwaW8tY29udHJvbGxlcjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dwaW8t
+Y2VsbHMgPSA8Mj47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgZ3Bp
+b0AyMSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibnhw
+LHBjYTk1NTUiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHgyMT47
+Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGdwaW8tY29udHJvbGxlcjsKPiArwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dwaW8tY2VsbHMgPSA8Mj47Cj4gK8KgwqDCoMKg
+wqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgZ3Bpb0AyMiB7Cj4gK8KgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibnhwLHBjYTk1NTUiOwo+ICvCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHgyMj47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoGdwaW8tY29udHJvbGxlcjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgI2dwaW8tY2VsbHMgPSA8Mj47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKg
+wqDCoMKgcnRjQDUxIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0aWJs
+ZSA9ICJueHAscGNmODU2MyI7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9
+IDwweDUxPjsKPiArwqDCoMKgwqDCoMKgwqB9Owo+ICt9Owo+ICsKPiArJmkyYzcgewo+ICvCoMKg
+wqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsKPiArwqDCoMKgwqDCoMKgwqBidXMtZnJlcXVlbmN5
+ID0gPDEwMDAwMD47Cj4gK8KgwqDCoMKgwqDCoMKgbXVsdGktbWFzdGVyOwo+ICvCoMKgwqDCoMKg
+wqDCoGFzcGVlZCxody10aW1lb3V0LW1zID0gPDEwMDA+OwoKRGlkIHlvdSB0ZXN0IHRoaXMgd2l0
+aCBgbWFrZSBkdGJzX2NoZWNrYD8gSSBleHBlY3Qgbm90LCBhcyBpdCBjYXVzZXMgYQp3YXJuaW5n
+IGlkZW50aWZpZWQgYnkgUm9iJ3MgYm90OgoKYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVl
+ZC1ibWMtZmFjZWJvb2stdmVudHVyYS5kdGI6IGkyY0A0MDAgKGFzcGVlZCxhc3QyNjAwLWkyYy1i
+dXMpOiBVbmV2YWx1YXRlZCBwcm9wZXJ0aWVzIGFyZSBub3QgYWxsb3dlZCAoJ2FzcGVlZCxody10
+aW1lb3V0LW1zJyB3YXMgdW5leHBlY3RlZCkKCWZyb20gc2NoZW1hICRpZDogaHR0cDovL2Rldmlj
+ZXRyZWUub3JnL3NjaGVtYXMvaTJjL2FzcGVlZCxpMmMueWFtbCMKCkNhbiB5b3UgcGxlYXNlIGZp
+eCB0aGF0PwoKQW5kcmV3Cg==
 
-You can find it in chapter of ast2700 datasheet below.
-  III Function Registers -> 12 Inter Processors Communication (IPC)
-
-Regards,
-Jammy Huang
-
->=20
-> Hi Jammy,
->=20
-> As far as I can tell this controller isn't documented in the datasheet fo=
-r the
-> AST2700. Can you point me to the right place? Or, can we get the
-> documentation updated?
->=20
-> On Tue, 2025-06-10 at 17:10 +0800, Jammy Huang wrote:
-> > > Add mailbox controller driver for AST27XX SoCs, which provides
-> > > independent tx/rx mailbox between different processors. There are 4
-> > > channels for each tx/rx mailbox and each channel has an 32-byte FIFO.
-> > >
-> > > Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> > > ---
-> > > =A0drivers/mailbox/Kconfig=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 |=A0=A0 8 ++
-> > > =A0drivers/mailbox/Makefile=A0=A0=A0=A0=A0=A0=A0=A0=A0 |=A0=A0 2 +
-> > > =A0drivers/mailbox/ast2700-mailbox.c | 226
-> > > ++++++++++++++++++++++++++++++
-> > > =A03 files changed, 236 insertions(+)
-> > > =A0create mode 100644 drivers/mailbox/ast2700-mailbox.c
-> > >
-> > > diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig index
-> > > 68eeed660a4a..1c38cd570091 100644
-> > > --- a/drivers/mailbox/Kconfig
-> > > +++ b/drivers/mailbox/Kconfig
-> > > @@ -340,4 +340,12 @@ config THEAD_TH1520_MBOX
-> > > =A0=A0=A0=A0=A0=A0=A0=A0=A0 kernel is running, and E902 core used for=
- power
-> management
-> > > among other
-> > > =A0=A0=A0=A0=A0=A0=A0=A0=A0 things.
-> > >
-> > > +config AST2700_MBOX
-> > > +=A0=A0=A0=A0=A0=A0=A0tristate "ASPEED AST2700 IPC driver"
-> > > +=A0=A0=A0=A0=A0=A0=A0depends on ARCH_ASPEED || COMPILE_TEST
-> > > +=A0=A0=A0=A0=A0=A0=A0help
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0 Mailbox driver implementation for ASPEED AS=
-T27XX SoCs.
-> > > +This driver
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0 can be used to send message between differe=
-nt processors
-> in SoC.
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0 The driver provides mailbox support for sen=
-ding interrupts
-> > > +to the
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0 clients. Say Y here if you want to build th=
-is driver.
-> > > =A0endif
-> > > diff --git a/drivers/mailbox/Makefile b/drivers/mailbox/Makefile
-> > > index 13a3448b3271..9a9add9a7548 100644
-> > > --- a/drivers/mailbox/Makefile
-> > > +++ b/drivers/mailbox/Makefile
-> > > @@ -72,3 +72,5 @@ obj-$(CONFIG_QCOM_CPUCP_MBOX)=A0+=3D
-> qcom-cpucp-mbox.o
-> > > =A0obj-$(CONFIG_QCOM_IPCC)=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0+=3D qcom-ipcc.o
-> > >
-> > > =A0obj-$(CONFIG_THEAD_TH1520_MBOX)=A0=A0=A0=A0=A0=A0=A0=A0+=3D mailbo=
-x-th1520.o
-> > > +
-> > > +obj-$(CONFIG_AST2700_MBOX)=A0=A0=A0=A0=A0+=3D ast2700-mailbox.o
-> > > diff --git a/drivers/mailbox/ast2700-mailbox.c
-> > > b/drivers/mailbox/ast2700-mailbox.c
-> > > new file mode 100644
-> > > index 000000000000..0ee10bd3a6e1
-> > > --- /dev/null
-> > > +++ b/drivers/mailbox/ast2700-mailbox.c
-> > > @@ -0,0 +1,226 @@
-> > > +// SPDX-License-Identifier: GPL-2.0-only
-> > > +/*
-> > > + * Copyright Aspeed Technology Inc. (C) 2025. All rights reserved
-> > > +*/
-> > > +
-> > > +#include <linux/interrupt.h>
-> > > +#include <linux/io.h>
-> > > +#include <linux/iopoll.h>
-> > > +#include <linux/kernel.h>
-> > > +#include <linux/mailbox_controller.h> #include <linux/module.h>
-> > > +#include <linux/of.h> #include <linux/platform_device.h> #include
-> > > +<linux/slab.h>
-> > > +
-> > > +/* Each bit in the register represents an IPC ID */ #define
-> > > +IPCR_TX_TRIG=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A00x00 #define
-> IPCR_TX_ENABLE=A0=A0=A0=A0=A0=A0=A0=A0=A00x04
-> > > +#define IPCR_RX_ENABLE=A0=A0=A0=A0=A0=A0=A0=A0=A00x104 #define
-> IPCR_TX_STATUS
-> > > +0x08 #define IPCR_RX_STATUS=A0=A0=A0=A0=A0=A0=A0=A0=A00x108
-> #define=A0 RX_IRQ(n)
-> > > +BIT(0 + 1 * (n)) #define=A0 RX_IRQ_MASK=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A00xf #define
-> > > +IPCR_TX_DATA=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A00x10 #define
-> IPCR_RX_DATA=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A00x110
-> > > +
-> > > +struct ast2700_mbox_data {
-> > > +=A0=A0=A0=A0=A0=A0=A0u8 num_chans;
-> > > +=A0=A0=A0=A0=A0=A0=A0u8 msg_size;
-> > > +};
-> > > +
-> > > +struct ast2700_mbox {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct mbox_controller mbox;
-> > > +=A0=A0=A0=A0=A0=A0=A0const struct ast2700_mbox_data *drv_data;
-> > > +=A0=A0=A0=A0=A0=A0=A0void __iomem *regs;
-> > > +=A0=A0=A0=A0=A0=A0=A0u32 *rx_buff;
-> > > +};
-> > > +
-> > > +static inline int ch_num(struct mbox_chan *chan) {
-> > > +=A0=A0=A0=A0=A0=A0=A0return chan - chan->mbox->chans; }
-> > > +
-> > > +static inline int ast2700_mbox_tx_done(struct ast2700_mbox *mb, int
-> > > +idx) {
-> > > +=A0=A0=A0=A0=A0=A0=A0return !(readl(mb->regs + IPCR_TX_STATUS) & BIT=
-(idx)); }
-> > > +
-> > > +static irqreturn_t ast2700_mbox_irq(int irq, void *p) {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct ast2700_mbox *mb =3D p;
-> > > +=A0=A0=A0=A0=A0=A0=A0void __iomem *data_reg;
-> > > +=A0=A0=A0=A0=A0=A0=A0int num_words;
-> > > +=A0=A0=A0=A0=A0=A0=A0u32 *word_data;
-> > > +=A0=A0=A0=A0=A0=A0=A0u32 status;
-> > > +=A0=A0=A0=A0=A0=A0=A0int n;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0/* Only examine channels that are currently ena=
-bled. */
-> > > +=A0=A0=A0=A0=A0=A0=A0status =3D readl(mb->regs + IPCR_RX_ENABLE) &
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 readl(mb->regs + IPCR_=
-RX_STATUS);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0if (!(status & RX_IRQ_MASK))
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return IRQ_NONE;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0for (n =3D 0; n < mb->mbox.num_chans; ++n) {
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct mbox_chan *chan =
-=3D &mb->mbox.chans[n];
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!(status & RX_IRQ(n=
-)))
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0continue;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0for (data_reg =3D mb->r=
-egs + IPCR_RX_DATA +
-> > > +mb->drv_data->msg_size * n,
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 word_data =
-=3D chan->con_priv,
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 num_words =
-=3D (mb->drv_data->msg_size /
-> > > +sizeof(u32));
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 num_words;=
- num_words--, data_reg +=3D
-> > > +sizeof(u32), word_data++)
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0*word_data =3D readl(data_reg);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mbox_chan_received_data=
-(chan, chan->con_priv);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0/* The IRQ can be clear=
-ed only once the FIFO is
-> > > +empty. */
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0writel(RX_IRQ(n), mb->r=
-egs + IPCR_RX_STATUS);
-> > > +=A0=A0=A0=A0=A0=A0=A0}
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0return IRQ_HANDLED;
-> > > +}
-> > > +
-> > > +static int ast2700_mbox_send_data(struct mbox_chan *chan, void
-> > > +*data) {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct ast2700_mbox *mb =3D
-> dev_get_drvdata(chan->mbox->dev);
-> > > +=A0=A0=A0=A0=A0=A0=A0void __iomem *data_reg;
-> > > +=A0=A0=A0=A0=A0=A0=A0u32 *word_data;
-> > > +=A0=A0=A0=A0=A0=A0=A0int num_words;
-> > > +=A0=A0=A0=A0=A0=A0=A0int idx =3D ch_num(chan);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0if (!(readl(mb->regs + IPCR_TX_ENABLE) & BIT(id=
-x))) {
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0dev_warn(mb->mbox.dev, =
-"%s: Ch-%d not enabled
-> > > +yet\n", __func__, idx);
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -EBUSY;
-> > > +=A0=A0=A0=A0=A0=A0=A0}
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0if (!(ast2700_mbox_tx_done(mb, idx))) {
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0dev_warn(mb->mbox.dev, =
-"%s: Ch-%d last data has
-> not
-> > > +finished\n", __func__, idx);
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -EBUSY;
-> > > +=A0=A0=A0=A0=A0=A0=A0}
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0for (data_reg =3D mb->regs + IPCR_TX_DATA +
-> > > +mb->drv_data->msg_size * idx,
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 num_words =3D (mb->drv_data->msg_s=
-ize / sizeof(u32)),
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 word_data =3D (u32 *)data;
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 num_words; num_words--, data_reg +=
-=3D sizeof(u32),
-> > > +word_data++)
->=20
-> The readability of this is not great. Can you try to improve it? At least=
- put each
-> header statement on its own line (at the moment the condition statement i=
-s on
-> the same line as the increment statement).
->=20
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0writel(*word_data, data=
-_reg);
->=20
-> I'm not super familiar with the mailbox subsystem, but I feel some
-> commentary on the data size and alignment assumptions would be helpful,
-> given the APIs are all `void *` without a length parameter.
->=20
-> Should you define a type for clients to submit?
->=20
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0writel(BIT(idx), mb->regs + IPCR_TX_TRIG);
-> > > +=A0=A0=A0=A0=A0=A0=A0dev_dbg(mb->mbox.dev, "%s: Ch-%d sent\n", __fun=
-c__, idx);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0return 0;
-> > > +}
-> > > +
-> > > +static int ast2700_mbox_startup(struct mbox_chan *chan) {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct ast2700_mbox *mb =3D
-> dev_get_drvdata(chan->mbox->dev);
-> > > +=A0=A0=A0=A0=A0=A0=A0int idx =3D ch_num(chan);
-> > > +=A0=A0=A0=A0=A0=A0=A0void __iomem *reg =3D mb->regs + IPCR_RX_ENABLE=
-;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0writel_relaxed(readl_relaxed(reg) | BIT(idx), r=
-eg);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0return 0;
-> > > +}
-> > > +
-> > > +static void ast2700_mbox_shutdown(struct mbox_chan *chan) {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct ast2700_mbox *mb =3D
-> dev_get_drvdata(chan->mbox->dev);
-> > > +=A0=A0=A0=A0=A0=A0=A0int idx =3D ch_num(chan);
-> > > +=A0=A0=A0=A0=A0=A0=A0void __iomem *reg =3D mb->regs + IPCR_RX_ENABLE=
-;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0writel_relaxed(readl_relaxed(reg) & ~BIT(idx), =
-reg);
->=20
-> Why are we using relaxed operations for startup and shutdown? If this is =
-valid
-> a comment would be helpful.
->=20
-> > > +}
-> > > +
-> > > +static bool ast2700_mbox_last_tx_done(struct mbox_chan *chan) {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct ast2700_mbox *mb =3D
-> dev_get_drvdata(chan->mbox->dev);
-> > > +=A0=A0=A0=A0=A0=A0=A0int idx =3D ch_num(chan);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0return ast2700_mbox_tx_done(mb, idx) ? true : f=
-alse; }
-> > > +
-> > > +static const struct mbox_chan_ops ast2700_mbox_chan_ops =3D {
-> > > +=A0=A0=A0=A0=A0=A0=A0.send_data=A0=A0=A0=A0=A0=A0=3D ast2700_mbox_se=
-nd_data,
-> > > +=A0=A0=A0=A0=A0=A0=A0.startup=A0=A0=A0=A0=A0=A0=A0=A0=3D ast2700_mbo=
-x_startup,
-> > > +=A0=A0=A0=A0=A0=A0=A0.shutdown=A0=A0=A0=A0=A0=A0=A0=3D ast2700_mbox_=
-shutdown,
-> > > +=A0=A0=A0=A0=A0=A0=A0.last_tx_done=A0=A0=A0=3D ast2700_mbox_last_tx_=
-done, };
-> > > +
-> > > +static int ast2700_mbox_probe(struct platform_device *pdev) {
-> > > +=A0=A0=A0=A0=A0=A0=A0struct ast2700_mbox *mb;
-> > > +=A0=A0=A0=A0=A0=A0=A0const struct ast2700_mbox_data *drv_data;
-> > > +=A0=A0=A0=A0=A0=A0=A0struct device *dev =3D &pdev->dev;
-> > > +=A0=A0=A0=A0=A0=A0=A0int irq, ret;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0if (!pdev->dev.of_node)
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -ENODEV;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0drv_data =3D (const struct ast2700_mbox_data
-> > > +*)device_get_match_data(&pdev->dev);
->=20
-> There's no need for the cast here, device_get_match_data() returns `const=
- void
-> *`.
->=20
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0mb =3D devm_kzalloc(dev, sizeof(*mb), GFP_KERNE=
-L);
-> > > +=A0=A0=A0=A0=A0=A0=A0if (!mb)
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -ENOMEM;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0mb->mbox.chans =3D devm_kcalloc(&pdev->dev,
-> > > +drv_data->num_chans,
-> > >
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 sizeof(*mb->mbox.c
-> hans),
-> > > +GFP_KERNEL);
-> > > +=A0=A0=A0=A0=A0=A0=A0if (!mb->mbox.chans)
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return -ENOMEM;
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0for (int i =3D 0; i < drv_data->num_chans; i++)=
- {
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mb->mbox.chans[i].con_p=
-riv =3D devm_kcalloc(dev,
-> > > +drv_data->msg_size,
-> > >
-> +
->=20
-> > > +sizeof(u8), GFP_KERNEL);
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (!mb->mbox.chans[i].=
-con_priv)
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0return -ENOMEM;
-> > > +=A0=A0=A0=A0=A0=A0=A0}
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0platform_set_drvdata(pdev, mb);
-> > > +
-> > > +=A0=A0=A0=A0=A0=A0=A0mb->regs =3D devm_platform_ioremap_resource(pde=
-v, 0);
-> > > +=A0=A0=A0=A0=A0=A0=A0if (IS_ERR(mb->regs))
-> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return PTR_ERR(mb->regs=
-);
->=20
-> Just checking the controller doesn't require any clock or reset configura=
-tion
-> before we access it?
->=20
-> Andrew
 
