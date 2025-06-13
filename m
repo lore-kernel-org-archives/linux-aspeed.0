@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-1430-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1431-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74B11C61DB2
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 05:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7270AC71135
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 05:11:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJSCy6Dxgz30Qb;
-	Fri, 13 Jun 2025 15:11:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJSCz2r8Rz30DP;
+	Fri, 13 Jun 2025 15:11:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749785425;
-	cv=none; b=nKnOwF6cBY+qak4qSjtX9iNjtShyN62MGE2TgP0FrdMAb9xYRTprca50OzYnCWRYLzBIC1DKRJAw3v9f0GoyzIOdZO5QWHokV0JEPbCmTF32Mg38SHc6R+DZ+9FA57QKDKQluHXuXeVakoiQPPQG4YkMhVE6Y+nZSccBOreZkuBtuzsprEIclTmnF4NJdNBaZcAMl0AHGnw9/utyh29jR8ACeUA9LMw0FfXlOxTyVBo3BfBO0lYycTRQ/DZMfWIJy+eaf+NtlUE8eIuWi7Iu8yQU0FfMvyOPMJrzQmtLYnsjyP7TPjfZIicMqe5BXd8BBnfXZ94HIyChdFOwfEUIVw==
+	cv=none; b=MltTAXUqK9Rq8i5OP3BfsW17xpYqWa19fzjkFodqu+BsGiFgO0kmFAnQ1EqrCc1zDOUKm375S7+EfMStVTEj7h182EhIpwwE2zctnaMNwDmlodo/purvbq8Ikmsa3MQB5GiTBqIS8HyNAbE+ZA+WF7PqqBkU99jllEmsmHIxK0nOUPDhXXZEsUGb4/MHdnhd6xUI6RFM5qY2w3SYPlxmuoBWL+VEjbQhJPpasJSr6EZQwCfommNQPjFkgQa+zsD3rKkvLPzxuoeC/txwwHNImx0GqbSDp6WbseyiFNTfDi5VD8NsMwzJpqIT4NtGheQfXvjAqjZOAew6gptlJzb5+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1749785425; c=relaxed/relaxed;
-	bh=cm0i6X2961Akf+Ls+i0/k+ZjUPURiX4Nw6tGye1S4Nw=;
+	bh=65WmPHyfjPpYD7f4l43ocWMBa8yXZsusQWVewwpUjII=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cEdnYRexYf8JlCumgH2Oa23oYW/RR5ChX/BjuDBlMCzEQvvHNkWLuksobNIDvMxyDIL2GukvifWD29e0di7q8sEnJLsXA+2Tc+ICsJEVQ9BuIcOWNd5AdEEhJT6zE1OyoFk+Cs8JRLJllgas+sFnZyH2o941Eqo9Z5tsLesZdjpzMt68TKEMl4mdqh3cnMyCCf5ROJ3Mb7APSuiSpksHBnHrVbPX6tn+WUEubf79aORa4Z4shhWDiljR+Wf0aoPQOnlM3SGZ2j9of9t/H+xudb6If8TR5pE9a2H59y2Pet+E0mCGedmWbUfjVf/cLSFLdWO5tohAEvv8enYD+uL+xw==
+	 MIME-Version:Content-Type; b=gr5BETXqx+CU4ghLVjiGghYbZFQxLK7FaU9aEvSh1lcdiKrb1Loc2OoZVnktveqfNtvcuEXzK+5RMi5RoEeZkZzXhzb7kByzHs6IWtH6C3NFH3rzwEh8MOXzwfjxiq/kkBfUqeYbBYk9a5YsGkbNGxYbveN3nsWdtuocaeF4FNV6loeDS/dHXhQqhFQJOEADNLGKobr7lSu8R6N3HInz2r/V5ECDj7cmgVzwNU6YvILwHC2qfs56FUoqYxnz3a0b2bndAcWxR5UWJcsuwhJPo6bUqRQNqVhfmn/DIMx57Zi0/Kls92hL9zp+awgY4eue6IvUtFSgvy67HZidjHCT+A==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJPzh4HtWz2xKN
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 13:30:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJPzj1qTKz2xKN
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 13:30:25 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 13 Jun
@@ -44,9 +44,9 @@ To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
 	<linux-gpio@vger.kernel.org>
 CC: <elbadrym@google.com>, <romlem@google.com>, <anhphan@google.com>,
 	<wak@google.com>, <yuxiaozhang@google.com>, <BMC-SW@aspeedtech.com>
-Subject: [PATCH 4/7] ARM: dts: aspeed-g6: Add AST2600 PCIe RC PERST ctrl pin
-Date: Fri, 13 Jun 2025 11:29:58 +0800
-Message-ID: <20250613033001.3153637-5-jacky_chou@aspeedtech.com>
+Subject: [PATCH 5/7] ARM: dts: aspeed-g6: Add PCIe RC node
+Date: Fri, 13 Jun 2025 11:29:59 +0800
+Message-ID: <20250613033001.3153637-6-jacky_chou@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
 References: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
@@ -66,29 +66,77 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Add pinctrl support for PCIe RC PERST pin.
+The AST2600 has one PCIe RC, and add the relative configure regmap.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 53 +++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-index 289668f051eb..a93e15c64a4b 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-@@ -2,6 +2,11 @@
- // Copyright 2019 IBM Corp.
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index 8ed715bd53aa..d46a151e3c99 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -379,6 +379,59 @@ rng: hwrng@1e6e2524 {
+ 				quality = <100>;
+ 			};
  
- &pinctrl {
-+	pinctrl_pcierc1_default: pcierc1_default {
-+		function = "PCIERC1";
-+		groups = "PCIERC1";
-+	};
++			pcie_phy1: pcie-phy@1e6ed200 {
++				compatible = "aspeed,ast2600-pcie-phy", "syscon";
++				reg = <0x1e6ed200 0x100>;
++			};
 +
- 	pinctrl_adc0_default: adc0_default {
- 		function = "ADC0";
- 		groups = "ADC0";
++			pcie_cfg: pcie-cfg@1e770000 {
++				compatible = "aspeed,ast2600-pcie-cfg", "syscon";
++				reg = <0x1e770000 0x80>;
++			};
++
++			pcie0: pcie@1e7700c0 {
++				compatible = "aspeed,ast2600-pcie";
++				device_type = "pci";
++				reg = <0x1e7700c0 0x40>;
++				linux,pci-domain = <0>;
++				#address-cells = <3>;
++				#size-cells = <2>;
++				interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>;
++				bus-range = <0x80 0xff>;
++
++				ranges = <0x01000000 0x0 0x00018000 0x00018000 0x0 0x00008000
++					  0x02000000 0x0 0x70000000 0x70000000 0x0 0x10000000>;
++
++				status = "disabled";
++
++				resets = <&syscon ASPEED_RESET_H2X>,
++					 <&syscon ASPEED_RESET_PCIE_RC_O>;
++				reset-names = "h2x", "perst";
++				clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
++				pinctrl-names = "default";
++				pinctrl-0 = <&pinctrl_pcierc1_default>;
++
++				#interrupt-cells = <1>;
++				msi-parent = <&pcie0>;
++				msi-controller;
++				msi_address = <0x1e77005c>;
++
++				aspeed,ahbc = <&ahbc>;
++				aspeed,pciecfg = <&pcie_cfg>;
++				aspeed,pciephy = <&pcie_phy1>;
++
++				interrupt-map-mask = <0 0 0 7>;
++				interrupt-map = <0 0 0 1 &pcie_intc0 0>,
++						<0 0 0 2 &pcie_intc0 1>,
++						<0 0 0 3 &pcie_intc0 2>,
++						<0 0 0 4 &pcie_intc0 3>;
++				pcie_intc0: interrupt-controller {
++					interrupt-controller;
++					#address-cells = <0>;
++					#interrupt-cells = <1>;
++				};
++			};
++
+ 			gfx: display@1e6e6000 {
+ 				compatible = "aspeed,ast2600-gfx", "syscon";
+ 				reg = <0x1e6e6000 0x1000>;
 -- 
 2.43.0
 
