@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-1428-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1430-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80AB1C71155
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 05:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74B11C61DB2
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 05:11:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJS4J2245z30Ql;
-	Fri, 13 Jun 2025 15:04:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJSCy6Dxgz30Qb;
+	Fri, 13 Jun 2025 15:11:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749785424;
-	cv=none; b=Hatfxz1NzD5K6bOS3eFh20kdtR1aYvIgS9p5qLCT+UJ2bPOxsK8YEVneBgoilafvezv2hciYlvd7ijM9g2Hd4jFh+OnNGV4gonK2f06awA/TBPb7x2ykpFQtoxoM5ZuNlPqlzJDQ1iFPP/eICkHTyGwiNfIuk6y4fdTyHnlZZmUnCZcnXaYmTzEbTEuw7aqHwBWD5XOWs+gNbhdHO1Sapekz9wpBo7Q946SUoq6zuzgdr5XF0peVSGjy+h07T9csQhuEdPH+RQDbiQ/1lGYqKELN19fc4bhR8o1XhLoXbnjPNL8kOU/1gyg6/brnqbg+QknnpT3ZZ80v9jshPL/IYA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749785425;
+	cv=none; b=nKnOwF6cBY+qak4qSjtX9iNjtShyN62MGE2TgP0FrdMAb9xYRTprca50OzYnCWRYLzBIC1DKRJAw3v9f0GoyzIOdZO5QWHokV0JEPbCmTF32Mg38SHc6R+DZ+9FA57QKDKQluHXuXeVakoiQPPQG4YkMhVE6Y+nZSccBOreZkuBtuzsprEIclTmnF4NJdNBaZcAMl0AHGnw9/utyh29jR8ACeUA9LMw0FfXlOxTyVBo3BfBO0lYycTRQ/DZMfWIJy+eaf+NtlUE8eIuWi7Iu8yQU0FfMvyOPMJrzQmtLYnsjyP7TPjfZIicMqe5BXd8BBnfXZ94HIyChdFOwfEUIVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749785424; c=relaxed/relaxed;
-	bh=Mt2IIDVM6+U5cUTpdOyoV20KGSd22stNZ1+aNx10gA0=;
+	t=1749785425; c=relaxed/relaxed;
+	bh=cm0i6X2961Akf+Ls+i0/k+ZjUPURiX4Nw6tGye1S4Nw=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Jxt3fSUMS0qSkn9pXZbn6I819AGyiWhT0ZAEQi2/apQo9WS3NxJsSo6RN01Y8i8TBUDCFVmfNIyLhdH5r8QTkBZdX/m04bbTYiKkJwxFaB4EMJ2lxya9M5BOFJhvWBCrPtCd6idhy9g1wCrikyr/cz7rSag69JZWnBFXaa6rRk4SPT9UXOJP+z6WbFdEG0vx2QxxulUq1inbF8vYZ/hUNAKETqD00bqYvrlfgf32qWC1pZJdX9ssM2Re4Uu5zAaQ6EJLwPhPeUYNvVN4IIUsvrLispT2fld1g3acQnEsBivnL5dJ02Ju3iW+HxvqCH7JusNTpgFAp5yzWFiivmTP5g==
+	 MIME-Version:Content-Type; b=cEdnYRexYf8JlCumgH2Oa23oYW/RR5ChX/BjuDBlMCzEQvvHNkWLuksobNIDvMxyDIL2GukvifWD29e0di7q8sEnJLsXA+2Tc+ICsJEVQ9BuIcOWNd5AdEEhJT6zE1OyoFk+Cs8JRLJllgas+sFnZyH2o941Eqo9Z5tsLesZdjpzMt68TKEMl4mdqh3cnMyCCf5ROJ3Mb7APSuiSpksHBnHrVbPX6tn+WUEubf79aORa4Z4shhWDiljR+Wf0aoPQOnlM3SGZ2j9of9t/H+xudb6If8TR5pE9a2H59y2Pet+E0mCGedmWbUfjVf/cLSFLdWO5tohAEvv8enYD+uL+xw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJPzg6QfJz2xKN
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 13:30:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJPzh4HtWz2xKN
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 13:30:24 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 13 Jun
@@ -44,9 +44,9 @@ To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
 	<linux-gpio@vger.kernel.org>
 CC: <elbadrym@google.com>, <romlem@google.com>, <anhphan@google.com>,
 	<wak@google.com>, <yuxiaozhang@google.com>, <BMC-SW@aspeedtech.com>
-Subject: [PATCH 3/7] dt-bindings: pci: Add document for ASPEED PCIe RC
-Date: Fri, 13 Jun 2025 11:29:57 +0800
-Message-ID: <20250613033001.3153637-4-jacky_chou@aspeedtech.com>
+Subject: [PATCH 4/7] ARM: dts: aspeed-g6: Add AST2600 PCIe RC PERST ctrl pin
+Date: Fri, 13 Jun 2025 11:29:58 +0800
+Message-ID: <20250613033001.3153637-5-jacky_chou@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
 References: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
@@ -66,183 +66,29 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Add device tree binding documentation for the ASPEED PCIe Root Complex
-controller. This binding describes the required and optional properties
-for configuring the PCIe RC node, including support for syscon phandles,
-MSI, clocks, resets, and interrupt mapping. The schema enforces strict
-property validation and provides a comprehensive example for reference.
+Add pinctrl support for PCIe RC PERST pin.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
- .../devicetree/bindings/pci/aspeed-pcie.yaml  | 159 ++++++++++++++++++
- 1 file changed, 159 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/pci/aspeed-pcie.yaml
+ arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/pci/aspeed-pcie.yaml b/Documentation/devicetree/bindings/pci/aspeed-pcie.yaml
-new file mode 100644
-index 000000000000..5b50a9e2d472
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pci/aspeed-pcie.yaml
-@@ -0,0 +1,159 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/pci/aspeed-pcie.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+index 289668f051eb..a93e15c64a4b 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+@@ -2,6 +2,11 @@
+ // Copyright 2019 IBM Corp.
+ 
+ &pinctrl {
++	pinctrl_pcierc1_default: pcierc1_default {
++		function = "PCIERC1";
++		groups = "PCIERC1";
++	};
 +
-+title: ASPEED PCIe Root Complex Controller
-+
-+maintainers:
-+  - Jacky Chou <jacky_chou@aspeedtech.com>
-+
-+description: |
-+  Device tree binding for the ASPEED PCIe Root Complex controller.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2600-pcie
-+      - aspeed,ast2700-pcie
-+
-+  device_type:
-+    const: pci
-+
-+  reg:
-+    maxItems: 1
-+
-+  ranges:
-+    minItems: 2
-+    maxItems: 2
-+
-+  interrupts:
-+    description: IntX and MSI interrupt
-+
-+  resets:
-+    items:
-+      - description: Module reset
-+      - description: PCIe PERST
-+
-+  reset-names:
-+    items:
-+      - const: h2x
-+      - const: perst
-+
-+  msi-parent: true
-+
-+  msi_address:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: MSI address
-+
-+  aspeed,ahbc:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: Phandle to ASPEED AHBC syscon.
-+
-+  aspeed,pciecfg:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: Phandle to ASPEED PCIe configuration syscon.
-+
-+  aspeed,pciephy:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: Phandle to ASPEED PCIe PHY syscon.
-+
-+  clocks:
-+    description: PCIe BUS clock
-+
-+  interrupt-controller:
-+    description: Interrupt controller node for handling legacy PCI interrupts.
-+    type: object
-+    properties:
-+      '#address-cells':
-+        const: 0
-+      '#interrupt-cells':
-+        const: 1
-+      interrupt-controller: true
-+
-+    required:
-+      - '#address-cells'
-+      - '#interrupt-cells'
-+      - interrupt-controller
-+
-+    additionalProperties: false
-+
-+allOf:
-+  - $ref: /schemas/pci/pci-bus.yaml#
-+  - $ref: /schemas/interrupt-controller/msi-controller.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: aspeed,ast2600-pcie
-+    then:
-+      required:
-+        - aspeed,ahbc
-+
-+required:
-+  - interrupts
-+  - bus-range
-+  - ranges
-+  - resets
-+  - reset-names
-+  - msi-parent
-+  - msi-controller
-+  - aspeed,pciephy
-+  - aspeed,pciecfg
-+  - interrupt-map-mask
-+  - interrupt-map
-+  - interrupt-controller
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/arm-gic.h>
-+    #include <dt-bindings/clock/ast2600-clock.h>
-+
-+    apb {
-+      #address-cells = <1>;
-+      #size-cells = <1>;
-+
-+      pcie0: pcie@1e7700C0 {
-+        compatible = "aspeed,ast2600-pcie";
-+        device_type = "pci";
-+        reg = <0x1e7700C0 0x40>;
-+        linux,pci-domain = <0>;
-+        #address-cells = <3>;
-+        #size-cells = <2>;
-+        interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>;
-+        bus-range = <0x80 0xff>;
-+
-+        ranges = <0x01000000 0x0 0x00018000 0x00018000 0x0 0x00008000
-+                  0x02000000 0x0 0x70000000 0x70000000 0x0 0x10000000>;
-+
-+        resets = <&syscon ASPEED_RESET_H2X>,
-+                 <&syscon ASPEED_RESET_PCIE_RC_O>;
-+        reset-names = "h2x", "perst";
-+        clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&pinctrl_pcierc1_default>;
-+
-+        #interrupt-cells = <1>;
-+        msi-parent = <&pcie0>;
-+        msi-controller;
-+        msi_address = <0x1e77005C>;
-+
-+        aspeed,ahbc = <&ahbc>;
-+        aspeed,pciecfg = <&pciecfg>;
-+        aspeed,pciephy = <&pcie_phy1>;
-+
-+        interrupt-map-mask = <0 0 0 7>;
-+        interrupt-map = <0 0 0 1 &pcie_intc0 0>,
-+                        <0 0 0 2 &pcie_intc0 1>,
-+                        <0 0 0 3 &pcie_intc0 2>,
-+                        <0 0 0 4 &pcie_intc0 3>;
-+        pcie_intc0: interrupt-controller {
-+          interrupt-controller;
-+          #address-cells = <0>;
-+          #interrupt-cells = <1>;
-+        };
-+      };
-+    };
+ 	pinctrl_adc0_default: adc0_default {
+ 		function = "ADC0";
+ 		groups = "ADC0";
 -- 
 2.43.0
 
