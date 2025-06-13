@@ -1,61 +1,68 @@
-Return-Path: <linux-aspeed+bounces-1418-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1419-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B804C71136
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 00:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 145DBC61CE8
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 00:57:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJLTM3Zn7z2yN1;
-	Fri, 13 Jun 2025 10:52:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJLZr5F7qz2xWc;
+	Fri, 13 Jun 2025 10:57:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749775943;
-	cv=none; b=SbPenBzXQOZTg4jMS8UTQ/1al78Lv56JfNwf9BFiuCbmYFGkyejZQvtfmAHcvqVx5kdphSWKg3Dgw92kEHtrgWj4TRSc7puSpbuI/GkZN/SMc284R0/daSq9dzfKhHaMNW0A0P0tMR6a49F0thflpXemLn1e+uPm7CJnx5nyi3V19GgkSmx4EKuzfFMYoUn7HHNnwlrEJkiE9Qo8bTJJo+3Ep3U7pLV0lyFdSnF66jnC9HgzKJIMpM7uLW1T8Qa8q9JopFiSX7tz+7+k/FeVtYth1nJpjQ97fpAQrFHeoWqUvKsYPELSNpGKZl1XvESFGApmqASMp9xjYbIJcY2t5g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749776228;
+	cv=none; b=i+QmzDOnsl7oKiELCZdZqrPC2XSDgPLyIdqkneIRuQiXkB0JCgpfmFrPm/TROLY89a/a6HTkgSm+9RZ9fFxIQvhDnVU2fMsS2zKBKSvJyiKYfzGZTQA+0u8HsKQ+3AXxM8TZAP4ceP+1WZb0BoSRNCbVCmKnuk/yYibe/cPObStYjCkdcgvCDtcS6bsoF6Ef353ESVNoOz7UlNLEx7W+NVC0/L3p43LakodVaIQhSBIGu2yejUD3wXniyaTRtYae06t00wamrJbeeJKz1PFT69Y9X8Fclq+CUQf685hMgHMV/OpdcwyzCC+/EaQnCN8OoP0g5aI/mH75iT9ZqZfjPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749775943; c=relaxed/relaxed;
-	bh=EsRJTlab3QCXz7ZpM9mVcFTl4rwFsKjGezndHiqVAmw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=MS4Rlw/75pU/KIBFe4p1DYd7Td7tRO1exEllox7mfLgBzY4JmSPcMUf5ltOHJzahuVC9LkXTJ9OtAA138HG77hu5DtsWKG6Jcxw3TMVvquZyqp7Wj2/MWF1L2a9VDMXvlEJS0aEq4lTr6y8rUGfsqA58ptW4WWc4tIuOXCDGP20110O+s+QdI/hewHO63N4m60n7KYXx73LaBHfuxAR/Hde5PquxFK7PHoe9FpKvQeYw4raBJ0YhkvjOE6Q5dx1G9TYhyjb+mG5CuHSGToit+/jz8LLz8+T0tTGh8NfRqHWjo+4yaUc1SH4DQb8M039oFF/yBLnjZwINu9jbq35u/w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aCJsRkh1; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1749776228; c=relaxed/relaxed;
+	bh=rva0RzQIkUYUcYPpIJdvS6jyS8ngpfdISZUwpw5dy60=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=m0YYDck4MrQRadbEiqrT8nK/rSC+guWoX46v0IKqEdjRXuDvxowNMo/q0vK3HyoKrU7/IDs2h33G8JeaCQG5HOLl84UkwpbG9E8Ugzk2eJc8cEi5+x9VpKulpafaWT7l2S9CJd2cxvwdnq/R74pWtxTefKeGsjOUGbTk47xbUU4+IHTfChLqvcuYNmIN7H7JKCR6+LzH2wF8kDzneth9l+IKSgaWAkQXDHyX/dKcQvZ9gZYbCJYj9Ccmgz0ypHslKAkJpdp+5RJ8dGyTF6E4V3/+RKCPDSFg++GVtXER5xQOvA4xOxaNCsOQI3LfvtP5Ey03yIq4Yts3Zl2UEJMo6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=GCUIthgL; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aCJsRkh1;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=GCUIthgL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJLTM0TBHz2xKN
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 10:52:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJLZr11Ctz2xKN
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 13 Jun 2025 10:57:08 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1749775942;
-	bh=EsRJTlab3QCXz7ZpM9mVcFTl4rwFsKjGezndHiqVAmw=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=aCJsRkh1nxpMaD3O/wx9w4RKEqg/Ztqmt7W38ro3nCePkl8nZK2zLygRTCCetBKVG
-	 AMBK5X0onSXKizQt/qt2EhAnWsL5Hywo04xCMGIrPCOsEPHbH5iYY7mU7ouKBJktCr
-	 hmEmXU5ZGmRBqpHfum0iFGZo1d4G3wC1OqyVR7lFgs+K4W206PhgfGjTuH/X8hY9eo
-	 0eTIu5KFYuc05vCl5kAdm5M24YvFXYorep22Zg5fKX7Myf7noJujpV8Cb505FxceEG
-	 J54veGIP/HCugIQHN0DOyGC9vV0MC8p5Cr8CR8lu2TTqCFim+eaPqlb2h04nTtLi+p
-	 JW4WK0sr4f/qA==
+	d=codeconstruct.com.au; s=2022a; t=1749776227;
+	bh=rva0RzQIkUYUcYPpIJdvS6jyS8ngpfdISZUwpw5dy60=;
+	h=Subject:From:To:Date:In-Reply-To:References;
+	b=GCUIthgLYeq7D5761tx1yj+y8VqQXqv6qRWZ0/43kAIIjK7O84Ey9LDhbekpp4ryg
+	 mq/1+2pumYSwArM5LUUK/8XkBEE3/1JDey9ckJup2qjEs/PAhHXvNgdPAMSnhZQkhi
+	 go0PlroEhiksYOsUZS9wcnS1BHW93tfTIUAGnFdzZC8mtN9NVLCVq2VF9SUOdKacl/
+	 LDPk1Zbmzsx2D1CqAurEfi6VtBpyh+2DPJ4EDgyRc38kDjdqcTGbgk21Zarttvr3td
+	 j7WWOvId8CmjOJDonUn3+LMXWlK4xCUHtTfSXxkhI8lOXO3vFz1F1SVR4QOsbaar4s
+	 WAbbR4ijK4j1A==
 Received: from [192.168.68.112] (unknown [180.150.112.166])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id A3B926445B;
-	Fri, 13 Jun 2025 08:52:20 +0800 (AWST)
-Message-ID: <d79fe0b5db34b14e64eee3bc8a187cb25e3d67b1.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v8 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id D9D746445B;
+	Fri, 13 Jun 2025 08:57:06 +0800 (AWST)
+Message-ID: <831a5bf06f6e7cd7dccce77d11209b5cc0f1387c.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 2/2] mailbox: aspeed: add mailbox driver for AST27XX
+ series SoC
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Jason Hsu <jasonhell19@gmail.com>, robh@kernel.org, krzk+dt@kernel.org, 
- conor+dt@kernel.org, joel@jms.id.au, patrick@stwcx.xyz,
- devicetree@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org,  linux-kernel@vger.kernel.org
-Cc: yang.chen@quantatw.com, jerry.lin@quantatw.com
-Date: Fri, 13 Jun 2025 10:22:19 +0930
-In-Reply-To: <20250611112650.595554-3-jasonhell19@gmail.com>
-References: <20250611112650.595554-1-jasonhell19@gmail.com>
-	 <20250611112650.595554-3-jasonhell19@gmail.com>
+To: Jammy Huang <jammy_huang@aspeedtech.com>, "jassisinghbrar@gmail.com"
+ <jassisinghbrar@gmail.com>, "robh@kernel.org" <robh@kernel.org>, 
+ "krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org"
+ <conor+dt@kernel.org>,  "joel@jms.id.au" <joel@jms.id.au>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, 
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+ <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Date: Fri, 13 Jun 2025 10:27:06 +0930
+In-Reply-To: <TYZPR06MB6568BA93BCEEBEE3B9DE15EBF177A@TYZPR06MB6568.apcprd06.prod.outlook.com>
+References: <20250610091026.49724-1-jammy_huang@aspeedtech.com>
+	 <20250610091026.49724-3-jammy_huang@aspeedtech.com>
+	 <13b88c1e404a9abe5cfae6673cb93e0b020e3524.camel@codeconstruct.com.au>
+	 <TYZPR06MB6568BA93BCEEBEE3B9DE15EBF177A@TYZPR06MB6568.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -71,87 +78,15 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-SGkgSmFzb24sCgpPbiBXZWQsIDIwMjUtMDYtMTEgYXQgMTk6MjYgKzA4MDAsIEphc29uIEhzdSB3
-cm90ZToKPiBBZGQgTGludXggZGV2aWNlIHRyZWUgcmVsYXRlZCB0byBNZXRhKEZhY2Vib29rKSBW
-ZW50dXJhIHNwZWNpZmljCgpXZSdyZSB3cml0aW5nIHByb3NlLCBub3QgYSBDIGZ1bmN0aW9uIGlu
-dm9jYXRpb24uIENhbiB5b3UgcGxlYXNlIGFkZCBhCnNwYWNlIGFmdGVyICdNZXRhJzoKCiAgIE1l
-dGEgKEZhY2Vib29rKQoKPiBkZXZpY2VzIGNvbm5lY3RlZCB0byBCTUMoQVNUMjYwMCkgU29DLgoK
-Q2FuIHlvdSBwcm92aWRlIGEgYml0IG9mIGEgZGVzY3JpcHRpb24gb2YgdGhlIHBsYXRmb3JtIGRl
-c2lnbj8gVGhpcwp3aWxsIGhlbHAgcmV2aWV3IHRoZSBkZXZpY2V0cmVlIGNvbnRlbnQuCgo+IAo+
-IFNpZ25lZC1vZmYtYnk6IEphc29uIEhzdSA8amFzb25oZWxsMTlAZ21haWwuY29tPgo+IC0tLQo+
-IMKgYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL01ha2VmaWxlwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgIHzCoMKgwqAgMSArCj4gwqAuLi4vYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stdmVudHVy
-YS5kdHPCoMKgwqAgfCAxNDgxICsrKysrKysrKysrKysrKysrCj4gwqAyIGZpbGVzIGNoYW5nZWQs
-IDE0ODIgaW5zZXJ0aW9ucygrKQo+IMKgY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvYXJtL2Jvb3Qv
-ZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1cmEuZHRzCj4gCj4gZGlmZiAtLWdp
-dCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZSBiL2FyY2gvYXJtL2Jvb3QvZHRz
-L2FzcGVlZC9NYWtlZmlsZQo+IGluZGV4IDJlNWY0ODMzYTA3My4uZTA3NjY2ZDkwMmZiIDEwMDY0
-NAo+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZQo+ICsrKyBiL2FyY2gv
-YXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZQo+IEBAIC0yOCw2ICsyOCw3IEBAIGR0Yi0kKENP
-TkZJR19BUkNIX0FTUEVFRCkgKz0gXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vi
-b29rLW1pbmVydmEuZHRiIFwKPiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1mYWNlYm9vay1t
-aW5pcGFjay5kdGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXRpb2dh
-cGFzcy5kdGIgXAo+ICvCoMKgwqDCoMKgwqDCoGFzcGVlZC1ibWMtZmFjZWJvb2stdmVudHVyYS5k
-dGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXdlZGdlNDAuZHRiIFwK
-PiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1mYWNlYm9vay13ZWRnZTEwMC5kdGIgXAo+IMKg
-wqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXdlZGdlNDAwLmR0YiBcCj4gZGlmZiAt
-LWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1
-cmEuZHRzIGIvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2stdmVu
-dHVyYS5kdHMKPiBuZXcgZmlsZSBtb2RlIDEwMDY0NAo+IGluZGV4IDAwMDAwMDAwMDAwMC4uMzRh
-M2VmM2EwZWZlCj4gLS0tIC9kZXYvbnVsbAo+ICsrKyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVl
-ZC9hc3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1cmEuZHRzCj4gQEAgLTAsMCArMSwxNDgxIEBACj4g
-Ky8vIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwtMi4wKwo+ICsvLyBDb3B5cmlnaHQgKGMp
-IDIwMjMgRmFjZWJvb2sgSW5jLgo+ICsvZHRzLXYxLzsKPiArCj4gKyNpbmNsdWRlICJhc3BlZWQt
-ZzYuZHRzaSIKPiArI2luY2x1ZGUgPGR0LWJpbmRpbmdzL2kyYy9pMmMuaD4KPiArI2luY2x1ZGUg
-PGR0LWJpbmRpbmdzL2dwaW8vYXNwZWVkLWdwaW8uaD4KPiArCj4gKwoKLi4uCgo+ICsmaTJjNSB7
-Cj4gK8KgwqDCoMKgwqDCoMKgc3RhdHVzID0gIm9rYXkiOwo+ICsKPiArwqDCoMKgwqDCoMKgwqAv
-LyBSTUMgRlJVCj4gK8KgwqDCoMKgwqDCoMKgZWVwcm9tQDU0IHsKPiArwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJhdG1lbCwyNGMxMjgiOwo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg1ND47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiAr
-wqDCoMKgwqDCoMKgwqAvLyBWUiBURU1QIFUzOTkKPiArwqDCoMKgwqDCoMKgwqB0ZW1wZXJhdHVy
-ZS1zZW5zb3JANGMgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjb21wYXRpYmxl
-ID0gInRpLHRtcDc1IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDB4
-NGM+Owo+ICvCoMKgwqDCoMKgwqDCoH07CgpDYW4geW91IHBsZWFzZSBtYWtlIHN1cmUgdGhlIG5v
-ZGUgb3JkZXJpbmcgYWRoZXJlcyB0byB0aGUgZG9jdW1lbnRhdGlvbgpoZXJlOgoKaHR0cHM6Ly9k
-b2NzLmtlcm5lbC5vcmcvZGV2aWNldHJlZS9iaW5kaW5ncy9kdHMtY29kaW5nLXN0eWxlLmh0bWwj
-b3JkZXItb2Ytbm9kZXMKClBsZWFzZSBjaGVjayB0aGUgcmVzdCBvZiB0aGUgZGV2aWNldHJlZS4K
-Cj4gK8KgwqDCoMKgwqDCoMKgLy8gVlIgVEVNUCBVMzk3Cj4gK8KgwqDCoMKgwqDCoMKgdGVtcGVy
-YXR1cmUtc2Vuc29yQDRkIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0
-aWJsZSA9ICJ0aSx0bXA3NSI7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9
-IDwweDRkPjsKPiArwqDCoMKgwqDCoMKgwqB9Owo+ICvCoMKgwqDCoMKgwqDCoC8vIEJSSUNLIFRF
-TVAgVTM5OAo+ICvCoMKgwqDCoMKgwqDCoHRlbXBlcmF0dXJlLXNlbnNvckA0ZSB7Cj4gK8KgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAidGksdG1wNzUiOwo+ICvCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg0ZT47Cj4gK8KgwqDCoMKgwqDCoMKg
-fTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgdGVtcGVyYXR1cmUtc2Vuc29yQDRmIHsKPiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJ0aSx0bXA3NSI7Cj4gK8KgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9IDwweDRmPjsKPiArwqDCoMKgwqDCoMKgwqB9
-Owo+ICt9Owo+ICsKPiArJmkyYzYgewo+ICvCoMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsK
-PiArCj4gK8KgwqDCoMKgwqDCoMKgZ3Bpb0AyMCB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoGNvbXBhdGlibGUgPSAibnhwLHBjYTk1NTUiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqByZWcgPSA8MHgyMD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oGdwaW8tY29udHJvbGxlcjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dwaW8t
-Y2VsbHMgPSA8Mj47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgZ3Bp
-b0AyMSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibnhw
-LHBjYTk1NTUiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHgyMT47
-Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGdwaW8tY29udHJvbGxlcjsKPiArwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2dwaW8tY2VsbHMgPSA8Mj47Cj4gK8KgwqDCoMKg
-wqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgZ3Bpb0AyMiB7Cj4gK8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibnhwLHBjYTk1NTUiOwo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHgyMj47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoGdwaW8tY29udHJvbGxlcjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgI2dwaW8tY2VsbHMgPSA8Mj47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKg
-wqDCoMKgcnRjQDUxIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0aWJs
-ZSA9ICJueHAscGNmODU2MyI7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9
-IDwweDUxPjsKPiArwqDCoMKgwqDCoMKgwqB9Owo+ICt9Owo+ICsKPiArJmkyYzcgewo+ICvCoMKg
-wqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsKPiArwqDCoMKgwqDCoMKgwqBidXMtZnJlcXVlbmN5
-ID0gPDEwMDAwMD47Cj4gK8KgwqDCoMKgwqDCoMKgbXVsdGktbWFzdGVyOwo+ICvCoMKgwqDCoMKg
-wqDCoGFzcGVlZCxody10aW1lb3V0LW1zID0gPDEwMDA+OwoKRGlkIHlvdSB0ZXN0IHRoaXMgd2l0
-aCBgbWFrZSBkdGJzX2NoZWNrYD8gSSBleHBlY3Qgbm90LCBhcyBpdCBjYXVzZXMgYQp3YXJuaW5n
-IGlkZW50aWZpZWQgYnkgUm9iJ3MgYm90OgoKYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVl
-ZC1ibWMtZmFjZWJvb2stdmVudHVyYS5kdGI6IGkyY0A0MDAgKGFzcGVlZCxhc3QyNjAwLWkyYy1i
-dXMpOiBVbmV2YWx1YXRlZCBwcm9wZXJ0aWVzIGFyZSBub3QgYWxsb3dlZCAoJ2FzcGVlZCxody10
-aW1lb3V0LW1zJyB3YXMgdW5leHBlY3RlZCkKCWZyb20gc2NoZW1hICRpZDogaHR0cDovL2Rldmlj
-ZXRyZWUub3JnL3NjaGVtYXMvaTJjL2FzcGVlZCxpMmMueWFtbCMKCkNhbiB5b3UgcGxlYXNlIGZp
-eCB0aGF0PwoKQW5kcmV3Cg==
+On Fri, 2025-06-13 at 00:51 +0000, Jammy Huang wrote:
+> Hello Andrew,
+>=20
+> You can find it in chapter of ast2700 datasheet below.
+> =C2=A0 III Function Registers -> 12 Inter Processors Communication (IPC)
 
+Great, thanks. The description in the memory space allocation table
+doesn't match the chapter heading, which is what tripped me up
+("InterProcessor Controller" vs "Inter Processors Communication").
+
+Andrew
 
