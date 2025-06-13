@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-1448-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1449-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 378D1C71148
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 15:59:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBE3AC71148
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Jun 2025 15:59:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJkbQ50WRz2yfx;
-	Sat, 14 Jun 2025 01:58:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749830338;
-	cv=none; b=QfHKMg0GaxGdnWBdyf4+jiIjPn8IwXBLNInh8mZnabL2hixOrSG8HH28xq/QV5Bjy5y3Hkw99ZVFKGzRWB8ij2hfD+KisGUd9HTV9+v4ofOk8qlv2tc+JifNQCC0f0KqPrSyozp3zf1A/TmGAFJmvf+jOALgSTV3gcDwf1iL+74R+G6ER52Z8bU8q7i40GwPCMXUe9RvEkwvTdRhlYPoMHTUQCa2WpbPRjlIKm1im5wePqOn0xCaMPc1V39vU/ESPIZre5gZBnqL8xpnBVcrEB5AKnRtdQ0Hey2NA/m8jYQZKEMjyEd2eHAGwD0HtoRjgL8kNfWoOmwLPQ+niRvMqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJkcM1VTTz2yb9;
+	Sat, 14 Jun 2025 01:59:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749830387;
+	cv=none; b=K1um7Txbf1f9HUaoiFcG9yyH5fdRPa0aCQglaa+xGSbRKauKYkX4sTiNdBWYGBWnGJzeBjvCZgBmfHuRdJzggHy8gmEJBk+3toIAxu+u3VWu4Hb2aMOHN3KQ92LwWZFjXDXApBK9czUMpJ9OQLgw/VqHZypwuAIprPVxEaM++RZOImkRU8jyipYvlRYNLaP4wLq0vhh9gbpdO2q60nLS/sGmcKwh6mkiKY565cg0BRSdUMYru1i/xyw+IByQC97oMnDOWY7PWmnf+kL+/sAOp+h4/clI4kFVlv+0dfrH6VrItsdTTCpENP1OJIeMSU9xCv3fQN6hyc8R684B6KBiNA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749830338; c=relaxed/relaxed;
-	bh=otyT+YaTJjPBX9e3RtgYlk7uAkCyCMfxu1qgrQAGDgk=;
+	t=1749830387; c=relaxed/relaxed;
+	bh=SQ7GUXRJXqTDf9P/Qm4haDbuby4wi4QGvJKfFQG9Ik8=;
 	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=jgbJnUn1i8R6t9nSzpm6mMmndnKFCHq4BC/ANw+izP0SE934SzQo/JC2zgHEd7lrhX068soKMmFES/XB6M0/HQqIf97Luxy//zlF3HpfYPii/IQM7dV4mp+ipMGWe6Cpk3+/VvbKhQKlg0KXM49YIMgEqwdp2jZCSPtS2Heq8z3Sq184Wkg15piC6GPNZ3VzEgcVdEgmsT1VTMtgJcmDQUbevJNGmK6AnZcp0LtWsslDFxVHLwhIpl80PE9WbeEKTiBSdyLiJ6mG5g2rfwDZG2UWGlDG8+oS8COgo7xQgNd5/FZ8t9fC3TAgAl6vMgK1MsL1IVltF47I+lD/PLE2mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cb2gSlz4; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Disposition:In-Reply-To; b=QFnxccQoGO7UYeWJsoFSsZrSJuinsR/fx7m+bDKLJZbE3R1/iHHlNEJvZuOYfJkFcZ/qd9B7dmGArwKajfspLfQAudEgMR8aVSlN6CxhMKKucngrmVUPi/VPQzqS0XuJ6E2CQRtlqTm7JehvIzevvyLs2UgxayOJP2mPduNPsgDEijkb8B7aKsAucPnKKc3BpV6wUSzEr/usIsRIF2rzyShS3E1Ki5jNQRzGEQ5B36fSYbfz9Lz0MHvnZi5962MYKFBePKMA4pVsm22DwLcgChcx9GW4F26N8PqZVeDh/rLjhCnmdcFilltcibaX76V8obwLJxZNZHf+3EusH02isQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n0zzX3fP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Cb2gSlz4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n0zzX3fP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJkbQ0K2Hz2xBb;
-	Sat, 14 Jun 2025 01:58:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJkcL4fTfz2xBb;
+	Sat, 14 Jun 2025 01:59:46 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 44535A51438;
-	Fri, 13 Jun 2025 15:58:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5B51C4CEE3;
-	Fri, 13 Jun 2025 15:58:54 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 14326629E5;
+	Fri, 13 Jun 2025 15:59:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8987AC4CEE3;
+	Fri, 13 Jun 2025 15:59:43 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749830334;
-	bh=ubx0aSPirWzdiPRt3UtSIssQRIZ/h985GJfW7cPAiJ8=;
+	s=k20201202; t=1749830383;
+	bh=SQ7GUXRJXqTDf9P/Qm4haDbuby4wi4QGvJKfFQG9Ik8=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=Cb2gSlz42q4+9rckZbHNm9mmnaMRvUkvnKuTABMYiq84cfWP92JqlnKt4mc/n1poM
-	 T1TVcBG64hgiXnN1aHOB/gmT48zyQJZyMuDYETaY5RHNIjn6CXyB0f5jMv+qNx8OoK
-	 G2wnFuAqX6HtyA5hVjSFwbyd9k58RoaA+uERxSXQFNexM+5+E+YvraktV0HOcCYw+u
-	 fzC/lxxv9xfphyGnR6gtAC8Of00o1jYtLjo/lL95F/0SKU3b6ob3iwvx57JLO+hoGw
-	 hdtymaQhdLgvfyR0uQzoUfJDQErdB8E/NcxpoZN50++35IjeEINdfnkpPoGoPclMxL
-	 RRUepl/Ha9XoA==
-Date: Fri, 13 Jun 2025 10:58:53 -0500
+	b=n0zzX3fPoRLTKtU+Wvdnf5IHXCu+A8x1xZNu5w/6wgOQjGKbQFeV/0lZl7mE6OVIl
+	 LL5aVqs62RYkY/233ZAY7Wker72IKkGxfsiesN+3BPeO4JGA4e1fzISkzQqpi4cp6V
+	 m400saPoJCII944lgT4+iD0UphSshRlzWNtAaIkt7walOyIdybnhSOKR94PEl6pJeJ
+	 TT87n7a6/GvYSEqItedZbj00JjeSYf/eYjB6Fd+43MQyY/xIR3zdgK1MxjBTdr5JPc
+	 cPeXPYeWLBpoYGUAeXaYGSh1ZwK4TOVV2g7jHOzZhqLb3fbymJctUrPkqdw8pigTxU
+	 HHOSLHP8++VnQ==
+Date: Fri, 13 Jun 2025 10:59:42 -0500
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: Jacky Chou <jacky_chou@aspeedtech.com>
 Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
@@ -58,8 +58,9 @@ Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
 	linux-gpio@vger.kernel.org, elbadrym@google.com, romlem@google.com,
 	anhphan@google.com, wak@google.com, yuxiaozhang@google.com,
 	BMC-SW@aspeedtech.com
-Subject: Re: [PATCH 2/7] dt-bindings: pci: Add document for ASPEED PCIe Config
-Message-ID: <20250613155853.GA962329@bhelgaas>
+Subject: Re: [PATCH 4/7] ARM: dts: aspeed-g6: Add AST2600 PCIe RC PERST ctrl
+ pin
+Message-ID: <20250613155942.GA962477@bhelgaas>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -75,18 +76,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250613033001.3153637-3-jacky_chou@aspeedtech.com>
+In-Reply-To: <20250613033001.3153637-5-jacky_chou@aspeedtech.com>
 
-On Fri, Jun 13, 2025 at 11:29:56AM +0800, Jacky Chou wrote:
-> Add device tree binding documentation for the ASPEED AST2600/AST2700 PCIe
-> configuration syscon block. This shared register space is used by multiple
-> PCIe-related devices to coordinate and manage common PCIe settings.
-> The binding describes the required compatible strings and register space
-> for the configuration node.
+On Fri, Jun 13, 2025 at 11:29:58AM +0800, Jacky Chou wrote:
+> Add pinctrl support for PCIe RC PERST pin.
 
-Make your subject match style of:
-
-  git log --oneline Documentation/devicetree/bindings/pci/
-
-s/Add document for/Add/
+s/PERST/PERST#/ (subject and commit log) to match spec usage.
 
