@@ -1,71 +1,82 @@
-Return-Path: <linux-aspeed+bounces-1451-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1452-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 376B1C71136
-	for <linux-aspeed@archiver.kernel.org>; Sat, 14 Jun 2025 00:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18269C71136
+	for <linux-aspeed@archiver.kernel.org>; Sat, 14 Jun 2025 02:10:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJyB15NQ7z30T8;
-	Sat, 14 Jun 2025 10:41:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20b::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749814400;
-	cv=pass; b=hlJETM+nYLIPm0dwEpX99zIu6XOU3z7F3GVmXXbWXsw8OMhCulPSuPqRo51zXxa0s06KIBQrmc8hUok+Mpbtd1IPS1J73/srL2WDMQKjVHNaYR0/8E0Y16p1b0F4ApuEcpR3DOSff52tgDKBBImyecf7hUOSigFSBNhuc3BcdSQeNI2vQINCjrKUfkHYygQd7NwrFRUjUn1M6ADknrOr+R/eZDrIBn7rhzyGrW9lZ8ZDrqQTKwZBbJcjnFx53NajrlliqFSheZOQgBZGDV1+qpk/hjUloSn3hdDa1OUQmK/f3cB5WeNaOLM9uA2HYKt/lBI3PbZvZT5xdEwRhWb4rg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749814400; c=relaxed/relaxed;
-	bh=5Cyh4VpoXpDR7H7wMROPA5fQDZuu9l3MTgcyBHzsMac=;
-	h=Message-ID:Date:Subject:To:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=P00V0FIS5cTnQNklKJRK/aI4QzItWOqs+G9hUwfo/AfyoCVkAOONNwe41Uzs/TrPgB07OEUlQ1d8Qq2Ghl9hPQR5RkFIt+f8aWcrMlpgwtem/542pdh415Q1BzNgy+33Vx5eRcRO/8g6WM6GdyWvxGBH93Im/vKUrU+AqrPsg8RrVQywnQn1mwD3YtbbjfWwrACV6le9Lx0AkgGQ5VjXls1YohKt1uYpL7IiFxVe5GEP98EbCcPwQi4ll4lx7W6xS30V4bK6euIVo5w+p54SObNghUZBDK4iBZ9vCio4hue32yryX0uIAH2hS73K1cZy82wqhNEe0q7mggDtAv0ukA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io; spf=pass (client-ip=2a01:111:f403:c20b::1; helo=beup281cu002.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org) smtp.mailfrom=siewert.io
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=siewert.io (client-ip=2a01:111:f403:c20b::1; helo=beup281cu002.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org)
-Received: from BEUP281CU002.outbound.protection.outlook.com (mail-germanynorthazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20b::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bK08l1Ss8z2xS2;
+	Sat, 14 Jun 2025 12:10:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749867014;
+	cv=none; b=InyPH3qfhMF0VulvxWWsPx3gPZ+1Ae1aGIxAp+QLLw5TRnMItarzS87LNlCQKmiohgL3f00R27uNiQTWyCQUYy5uTCpT4eOxhXkLTZgxSnd/c+CBSWF2agWrblhIL+i5CE0uueSLWPmIpv+KPuTRiyfTZoZu+r9Amc14JHkxbEqYEwzKZGx2pG24CuX37TnIbS6UNJ/ENqDOKxi8RPnMActrDmwFE+1NjiAsK90J4OzkAdPs4QBF5STKPzssjJQ1SUIw2BaQpMS1J8grvHI8g58gNKJro3E1HKbv6cyfkGeD9Rj+5W28GMVJmcJgz1WB0E3DqLcVN/oMSNTbaxyQsA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1749867014; c=relaxed/relaxed;
+	bh=+dscW/dvb3RIpT4gh7qXnsS5297WNQKrqUPPCMPmLA8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bHynHuKzi+jWZ0ky6jX+235d/NAriLeGtMWHq77zwfGzaa+RMC8u2VAk6Bm7bF/K6mRhWq1BmwwU2Oh9KpUa/YltFih9K3aCuHUW06J06EkYYnF7vaioQk9sNaB8AtCDgEIatDi52EBfdhZdGIDuq56aU34ERiiUxRe0hgAL9aTkaxrC8RnY+6v5yu+Swtw6fWyYgX7FGNvGD/VXAq03OX8tM9OG03OnoqbebA7iD4qFF8hDLxW0HD9MpVrEx5m0dPPPtfpHoRYhlWzxKfQtj4FAe7KOjiQcnIxQ7sdjjGFQJYoGjCSeU7eaaD51YQ651+Wu9hmfeLBjHXikGWuyBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kwtEfrVT; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kwtEfrVT;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 65 seconds by postgrey-1.37 at boromir; Sat, 14 Jun 2025 12:10:12 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJchv0rXwz30HB;
-	Fri, 13 Jun 2025 21:33:18 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=sdoje+ykIXYUVFxwU6fcKDHqILno8aa1FVQykq8Ti9SuQvM/ISjbAwwh/t57lRoK6c57Zbgy9aXMpzPaDBMkAEISrKkkLLWZgbpk/bibNMAIbYNs4pjVHBRPM8JoDPXgiPSEH8N3IEjItPIM+FOr1fdfVQi1IEougKPUi6qTV0n3x97a+RBoY22zcC3H/Qj0CDmrUWtokIGjA4iY8dM+fXfBCeyoqMPts+IX/+9sk06NEYP7bIrBwXHbXGr354UfqiJyvA5aiR5XnbSa/AMycWeGkSUM9M7rvRqoaK7J83vGZuDG7dW1XLLKaFjQ6rCfPP6P2kC+0Tve1futPg3zrw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5Cyh4VpoXpDR7H7wMROPA5fQDZuu9l3MTgcyBHzsMac=;
- b=lrmCscIyeGcqEM2lwskUHMVZvlM+zOU+oRegxvfV/I8CraPpK1fCsP0CFFxxBo7b+2UA/qQvdylqeplypGmXGrpgVnNDaUVL6zGRPg34SpRST9J29bXFunvW9OR6kHBJ5NB+f4dKc/gR3YFJwtGUxnmZbaXJuhWG2k3owg62hsAdw7yEHdTgzB3UNR6C9+RBAqu7PApV9euHra54pdGsKjPQqIoV1+WRuohmmg2cAB503XDQEDRUSlcD0CkW7p+6JmJTf9EqBYjfMnOYTSDxVeLr3nq+3faDW+sRgZxEL1xWCL3drTQA3eD/0F4+CxFywklE76apgfR7vcjlYcUZ4A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=siewert.io; dmarc=pass action=none header.from=siewert.io;
- dkim=pass header.d=siewert.io; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=siewert.io;
-Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d18:2::182)
- by FR4P281MB4229.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:126::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.25; Fri, 13 Jun
- 2025 11:32:52 +0000
-Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
- ([fe80::6ec7:ece3:1787:5e48]) by FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
- ([fe80::6ec7:ece3:1787:5e48%6]) with mapi id 15.20.8835.019; Fri, 13 Jun 2025
- 11:32:52 +0000
-Message-ID: <5e748017-460c-4ff6-a86f-81cf4580684d@siewert.io>
-Date: Fri, 13 Jun 2025 13:32:50 +0200
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pinctrl: aspeed: Log error if SCU protection is active
-Content-Language: en-GB
-To: Andrew Jeffery <andrew@codeconstruct.com.au>,
- Linus Walleij <linus.walleij@linaro.org>, Joel Stanley <joel@jms.id.au>,
- linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
- linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
-References: <20250612151900.32874-1-tan@siewert.io>
- <2cfe3813b7e330ba43f20a882c0c5035751fc7f0.camel@codeconstruct.com.au>
-From: Tan Siewert <tan@siewert.io>
-In-Reply-To: <2cfe3813b7e330ba43f20a882c0c5035751fc7f0.camel@codeconstruct.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: FR4P281CA0079.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:cd::9) To FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d18:2::182)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bK08h0lJLz2xKh;
+	Sat, 14 Jun 2025 12:10:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1749867012; x=1781403012;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=T7F5BTPkmIJqijZcvCaJDzeehyOgLhWobs1d8ZTzUB8=;
+  b=kwtEfrVThfE8heePGwEWKre1n+fzY/odcH3BibuEVW7kWDumkiRgXP3g
+   eh0W3yBAWcW6OSKmTtcxdzv9JOGEkTwgCkMGylJ4SnltpmSYqiDiqkMxm
+   2kiS2uGXa1GADFWT0kxo5s6hdxNkYnrDbcpAanKZrEHrUXXQDVKBdy6hr
+   UfyC38mv8hxZ1fKoiDpiKwLpNSImw6zmtgnuMEste13GaWK0inLNXurk3
+   ObisDD6g2wpmIRagnmG0BgwZO3IVZYuD1gaOURnRj2KVrvNm07CySPg/u
+   nTvzGBGT//7c0KeH4sjaWjTE0mmxHtwdS3pQkRTyzfKRIxRLd9h5TH9Jc
+   w==;
+X-CSE-ConnectionGUID: rCGbPiMlRy2EIDmlY0UkXg==
+X-CSE-MsgGUID: /f2Co/+qRZizyJ88anhvrw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11463"; a="69668264"
+X-IronPort-AV: E=Sophos;i="6.16,235,1744095600"; 
+   d="scan'208";a="69668264"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jun 2025 19:09:02 -0700
+X-CSE-ConnectionGUID: dYhVJh5yTR6s0T8b+3tZig==
+X-CSE-MsgGUID: NmfKjhUOQ6mo1Nvl5ddlFg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,235,1744095600"; 
+   d="scan'208";a="148347803"
+Received: from lkp-server01.sh.intel.com (HELO e8142ee1dce2) ([10.239.97.150])
+  by fmviesa008.fm.intel.com with ESMTP; 13 Jun 2025 19:08:53 -0700
+Received: from kbuild by e8142ee1dce2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uQGJz-000DAM-2X;
+	Sat, 14 Jun 2025 02:08:39 +0000
+Date: Sat, 14 Jun 2025 10:07:51 +0800
+From: kernel test robot <lkp@intel.com>
+To: Jacky Chou <jacky_chou@aspeedtech.com>, bhelgaas@google.com,
+	lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	joel@jms.id.au, andrew@codeconstruct.com.au, vkoul@kernel.org,
+	kishon@kernel.org, linus.walleij@linaro.org, p.zabel@pengutronix.de,
+	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	elbadrym@google.com, romlem@google.com, anhphan@google.com,
+	wak@google.com, yuxiaozhang@google.com, BMC-SW@aspeedtech.com
+Subject: Re: [PATCH 7/7] pci: aspeed: Add ASPEED PCIe host controller driver
+Message-ID: <202506140931.MWdyPxX1-lkp@intel.com>
+References: <20250613033001.3153637-8-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -79,187 +90,167 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: FR3PPFB3D0CF1D2:EE_|FR4P281MB4229:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0b04015b-ce5a-47cf-1d88-08ddaa6e0850
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|376014;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?QWxyL0k4K0ZQeWtsSEl0ai83QnJqd0tkV3VRS0U5dTdiaTBXUXNWMEFQSjU0?=
- =?utf-8?B?Rkk0MlFtZGF1WHZpd3pJQkZ6ZmwxTDlvOHZwQlVSMjZoK2xFOFRzL1E0VUVx?=
- =?utf-8?B?bndSeHoyV1YzZ1lHMG5yUjhwczR4V2ExYXkvOENYUFgwQmY4Vi82ZUhXMjBt?=
- =?utf-8?B?SGozQVJtZGFBU3BldkV4RXd5NzJqVzRDZnVPN1F0ZTdXWkhTNDAxaVAydVZ2?=
- =?utf-8?B?RGt5V3IvanVSS3UxN2dvWGxNQndSb0pnQjBCYTNEWWhpRnA1RjB0ZmtxVURz?=
- =?utf-8?B?UTNRak9pVmxQZEYrT2E2WjlEc2NvdnNPTHRoNWZRcG9XYURpTDRyZjBlVnBG?=
- =?utf-8?B?TlJ4WWpHU25RYzJ2RkV0VjJoMGY0U2p6a2ZZZW1ZV0NxNUt2bk5FcEUrUy9J?=
- =?utf-8?B?SFNONEYxaUQ3RHhKNTFZRVVQUHJjSW9JVmF6SnErRHFwWDlnR3pzSWhpdzZ4?=
- =?utf-8?B?SWlVVm95aFF6N2dRWVVoRis4ZlZjdElDbkVGS1dUcEwzckphY2o4c0Q5VzVi?=
- =?utf-8?B?YlFhV3kvTVQ2cUp1d2Z2T05wT2lLVTAyYjhqSTNqR0UxOGo0WjhJZkdSZWlZ?=
- =?utf-8?B?aUt5TXRpSGlnWjgzb1FtNHFmcjFGRjFpeHVkWVplZU10bDVobDJPYXdMcXMx?=
- =?utf-8?B?WnZybXkvME15Yno1RWViQW51SEpUMXFid2VhWWFCcTdlUUpvU3dhVmNrUURx?=
- =?utf-8?B?Y0ZkLzRtZ2Y3SnhoYVdSaEZzUEtsVHZRWjV3ZHJZQTQySkZ3MmVOeHJGVU91?=
- =?utf-8?B?TkVZVHM4OHRZZUNMWGhYSjlTRmpYRnpyMFRVUHVjZ1p6VjhMeG5LRXlKcWtC?=
- =?utf-8?B?bGFUVEpGRmpUd011cXRSQlJNYnd1RjlQbk9haG0vUExVeGtIcHAyRFBTbU9m?=
- =?utf-8?B?bUU2TVpFbTU2ZUVlVDQ5WUpRRk9JYXFjd0hoVC96V1BzT2txeCtsNUVJYVQv?=
- =?utf-8?B?a3RIWGM3TXVRNk9GcVJHY0Q1ZWlMNjVKS2hNMkZOUllwVVlUaVFZOStSMHNJ?=
- =?utf-8?B?YWhHMEMvbUxaR1g4aEJPKzVNeXJJbVB1SFU1UUlYMWJKYVV2cVoyWGI3M0E2?=
- =?utf-8?B?RHVuNFJXQlUvVjZOUytKenA5N0Q2VXVjem1lMlI2YVVSeFo4SXNUZzgxRmpJ?=
- =?utf-8?B?VFpVZXRoNzMvVFlGZHBDY1RBOThUNjUzT2xveE0rKzZsaG1OOFZTWGUweHdu?=
- =?utf-8?B?c1Q4OVlKREdjYnFXbkxpcDlVSkh3Wm9nS3hYd01sTzBNN0g4dDBQenJVTC95?=
- =?utf-8?B?NWJHb056UWR2THNWNk9mL0txT1RGNlpNTERZK1hRNUpFNjhJd3ZmMEwvNE5F?=
- =?utf-8?B?aXVpT2dtR1hXc2JpTHBGYVVudjcrQkdtbXBlQXJPNXhWaEZ2WVFDSDg3dDht?=
- =?utf-8?B?ME4xVCtGRkRTQWxSbVEwa0I3ckdXTjJvdmlSdTFLNXdIZXVmSUpLQ1JMNElL?=
- =?utf-8?B?Mm5oS3pwL1Q4UlhDMTJpcTJMdkF1aVdHbXd4SUNHQ0FkbE90U0NnYkpIQUlz?=
- =?utf-8?B?M0xFVS9NZEtLSWpxeEhzWjZUK3FLOHRVVmdoSW1vR21QMzZwS3RGNUNrQWNy?=
- =?utf-8?B?eWN1SW54bkdvWFBGYkVoV2RVZjI1VCtXS3RrQ0FuRzZEb092UzlUSTJLZnZP?=
- =?utf-8?B?VXhYRU1Id04xTXh6LzVGWjhOQTRzT3ROcFc0K1BpUzl2SFlrY0Z6NUFzNTRR?=
- =?utf-8?B?SHc2TFgxVzNsQXlsVVozRmZ3KzZJRXZ1S0U4WlIyWXZhZERtVEY1K096NTFk?=
- =?utf-8?B?VVNaQUY0OEpQR2pOdDZQamRnNER3UnZBZmIrTUI3Nmh6cVJKcW4vc092NjVC?=
- =?utf-8?B?dFRaRDhhaWU4Y29HYnZ0bzVzWTFxWHd5dVdaaTIxb28zN2lXT24xWkRFTDNo?=
- =?utf-8?B?eTlBNkFGWUZtTjhlRHYxQmFQa3A4WEtBN3h4VEVZT2ljaHQ0K0J3RTgwSXNE?=
- =?utf-8?Q?oJU9f5RdW08=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?UWhNWmQxMERsWHdCcWE5NWxNWE9Fb25naWVsVXVOS21sTzlZNEsyRnc1UThy?=
- =?utf-8?B?SzIrQjBlRDR4UzdmVGJxRmROL0ptTy9DaG9xY29UY3o5R3kvM2RXZmpXZkhr?=
- =?utf-8?B?RS9LY3RQMXUyQlJ0NGpXcmsxMmZqR2taWDVCcGZaZzRTVDMzVUlRNjBoWUVi?=
- =?utf-8?B?TFgwSk5pR2xQMWFacDBGdS8zMTA5UmxSK1k4ZzFoVk5JREpsZE92aVZpVGFY?=
- =?utf-8?B?UEVobzNreDNvRjlOMWdEcFBxeEpncCtoTGpzTng3RXdpT3Flck01SWJHTHph?=
- =?utf-8?B?Y3JmZjhraW9lMGg3OVp2VTRCb083V0RJWktuQ1Iwb3lYRm1FeHZWYnFLTUta?=
- =?utf-8?B?NTFndjdSeG5FdTBrOEpsUFV1bVJucXV3WTB4UmVuT3QrVFRmajNZZFRweG5J?=
- =?utf-8?B?U3AwYnVzQkJYeHhjWUNMc2g3S0E1alc2MlBQSU5CUThWVjNzMmt5ME5jUTFl?=
- =?utf-8?B?NVgwaCtpaG1NcUhra25PRmQzK1V5MXhkMThQaVBxR2pKcGtxSWhLaWtIa0ww?=
- =?utf-8?B?c3JSQ25tN1hxSlJRd0xVbXpqK1BIWXB4MnIzSEFPRmt3eUE4WFAzVEtKTHBh?=
- =?utf-8?B?YmYzYmlOSVgzSUw1Y1FkRXdYYXY4RUZESkJJNTR5YzZOZ1lZV2JaNndhQXFM?=
- =?utf-8?B?Sll3WnFvMWJMTDZlcUZ0bFpYakxlUXRTTlRCYnBIa0F0eU81VW0xRmxXbis5?=
- =?utf-8?B?VllkYS95UmN3U1F3c3l4bXFlY3VQaVZ4OXd6L21rd3RjdWhZdjdPOU05TFkv?=
- =?utf-8?B?bFRVSWZCYytJcU8valc3emJ6Qk54U2I1TTNVUm4rcHM5TzVLM0FPaHoxYk9X?=
- =?utf-8?B?VTlQTFpNWklmczNUZnBPRU5JekhtVUlLNXQvaTRPZ09BbkJNYU1TMzZYVDg5?=
- =?utf-8?B?TGFBRXNjeC84cnlCVk5SZWNqNDJYa2hRcEVQdUpIT1BEV3Bha1hNQjg2cGEv?=
- =?utf-8?B?Vnc3dXpXOE1OU2pXck40cER0SFdFSGtSNGJQMFZQOUFFc0tjUEk3QnpMbUZ2?=
- =?utf-8?B?bGgvZER6U2V2b2VJSWRkQWdNNCtNVUZTdm5OMkJnWXo0K0ptVDY1TFl0Z2RM?=
- =?utf-8?B?Q29meTFBTVRQZ25NU2NHR1BTTWhSeVVYVklTMHVVM0ROakE5blhjbGtoZzZJ?=
- =?utf-8?B?RDJGMkwrbndhYi9OR2dJSXkxMlhQYXhHK01QSW01Uy9DcHNoWC9jUEd3RkdR?=
- =?utf-8?B?Tjl3V2hnYUlaN2hMZFNLdFljZmpFa0xEZWF5NnFycHNuMVU4dGUvUU1BVUt4?=
- =?utf-8?B?c005Wi82SXpJZ055dVE1TkNyWmhUR2kwQTAzVTJhT1R1S1hxcmtXQlhaazhY?=
- =?utf-8?B?MXErayt5WFFBWldZMkRia003ZVRSOFVZRGVpSmYraWpSUUJ3Qy9SRlpPSGdU?=
- =?utf-8?B?SXNCbUZBMHgzT0o4em9mSXV2V0xOZ2hWcEowcXYrQzNDODdONURtcmVyVzdF?=
- =?utf-8?B?TzF5VFloYkhpUWU5Y0Qweng0Tjd5b2R3QmJTVk9waVJnbjZnWExsUTE4UnhQ?=
- =?utf-8?B?Q3lyTG1UTnRNM2s5elpUVy81QU5HaUpXMmhGTzNXdjVMcUc1UGdZM295cktv?=
- =?utf-8?B?ME1hOTNoU1RxR3RlMmhuWlh0ZTF6eUMweDM3MjlobDVPWHl4NjN2czU0dENX?=
- =?utf-8?B?bkxldDJWMDJoMDF5VlROYi8zYTliWGQxT2NxcG14eUd3SE1vcjZjb21TSGhM?=
- =?utf-8?B?b242N1RQMXJQOWE3cUJpRDluSmxxKzVMaFNSNkFTNElaeVMzeFBWU20xbXFI?=
- =?utf-8?B?aUlOOTJOYVpmQ3JxRnpkdjd2d1pWQjhRZFdyUWtvVDI1cmNqSE5aRDJCVE1F?=
- =?utf-8?B?ZTlkRzBYYUR0YzFYN291MklDOUphTGlZblNsV3psaHBWYldKUXlGOXNYaVZT?=
- =?utf-8?B?UW1kOUVvOTlsUk14b0xEQlV1Z1MrUG55NUtUb2xpNHFHbHNMaWJxaHpVY0FU?=
- =?utf-8?B?aVc5VVNvWk5tdkVKVUZxZzFkcml6cnF1aGRnVElaUUlCeWdWWStCb0pPcDAv?=
- =?utf-8?B?cWE4SzNlcWZhc3dqYkFIQlJLSVovWlQzaW11WURVcEdsYTZQMGF0alFrMUdM?=
- =?utf-8?B?cTBaQTlVU2x3SUEzbVR4b2hEd20rdGJtTmxUNFF6cm5ISjNuaUtUb3Azd2w3?=
- =?utf-8?Q?Bko8=3D?=
-X-OriginatorOrg: siewert.io
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0b04015b-ce5a-47cf-1d88-08ddaa6e0850
-X-MS-Exchange-CrossTenant-AuthSource: FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jun 2025 11:32:52.1585
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: e8b4abbe-444b-4835-b8fd-87ac97451a7e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JqvLD5TJTUofic2UhLvWsJbcAho/NFbVYjfwJGK0EnG7aYQ4vE00+f158JOTtRcA
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: FR4P281MB4229
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250613033001.3153637-8-jacky_chou@aspeedtech.com>
 
-On 13.06.25 08:01, Andrew Jeffery wrote:
-> On Thu, 2025-06-12 at 17:18 +0200, Tan Siewert wrote:
->> ASPEED pinctrl and other drivers accessing SCU registers rely on the
->> bootloader to unlock the SCU before handing over to the kernel.
->>
->> However, some userspace scripts may re-enable SCU protection via
->> /dev/mem,
->>
-> 
-> Hmm, if this was caused by poking /dev/mem, then I'm not sure I'm in
-> favour of it. The source of your problem wasn't apparent to me in our
-> off-list discussion.
+Hi Jacky,
 
-This was only an example of what I've already seen on GA firmware, but 
-it could also be done by some custom out-of-tree driver.
+kernel test robot noticed the following build warnings:
 
-> "Don't do that" :/
+[auto build test WARNING on pci/next]
+[also build test WARNING on pci/for-linus robh/for-next linusw-pinctrl/devel linusw-pinctrl/for-next linus/master v6.16-rc1 next-20250613]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-I agree on that ^^
+url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-phy-Add-document-for-ASPEED-PCIe-PHY/20250613-113331
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
+patch link:    https://lore.kernel.org/r/20250613033001.3153637-8-jacky_chou%40aspeedtech.com
+patch subject: [PATCH 7/7] pci: aspeed: Add ASPEED PCIe host controller driver
+config: s390-allmodconfig (https://download.01.org/0day-ci/archive/20250614/202506140931.MWdyPxX1-lkp@intel.com/config)
+compiler: clang version 18.1.8 (https://github.com/llvm/llvm-project 3b5b5c1ec4a3095ab096dd780e84d7ab81f3d7ff)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250614/202506140931.MWdyPxX1-lkp@intel.com/reproduce)
 
->> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
->> index 774f8d05142f..81680c032b3c 100644
->> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
->> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
->> @@ -28,6 +28,8 @@
->>   #define SIG_EXPR_LIST_DECL_SINGLE SIG_EXPR_LIST_DECL_SESG
->>   #define SIG_EXPR_LIST_DECL_DUAL SIG_EXPR_LIST_DECL_DESG
->>   
->> +#define SCU_UNLOCKED_VALUE 0x00000001
-> 
-> Bit of a nit-pick but I'm not sure this is worthwhile, or that the
-> leading zeros are necessary. I'd be tempted just to use the constant
-> '1' directly inline ...
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202506140931.MWdyPxX1-lkp@intel.com/
 
-This was more of a convenience to make it obvious that the "unlocked" 
-value is meant here (as per the datasheet). The leading zeros are 
-unnecessary, yes.
+All warnings (new ones prefixed by >>):
 
->> +
->>   /*
->>    * The "Multi-function Pins Mapping and Control" table in the SoC datasheet
->>    * references registers by the device/offset mnemonic. The register macros
->> @@ -36,6 +38,7 @@
->>    * reference registers beyond those dedicated to pinmux, such as the system
->>    * reset control and MAC clock configuration registers.
->>    */
->> +#define SCU00           0x00 /* Protection Key Register */
->>   #define SCU2C           0x2C /* Misc. Control Register */
->>   #define SCU3C           0x3C /* System Reset Control/Status Register */
->>   #define SCU48           0x48 /* MAC Interface Clock Delay Setting */
->> @@ -2582,6 +2585,24 @@ static int aspeed_g4_sig_expr_set(struct aspeed_pinmux_data *ctx,
->>                  if (desc->ip == ASPEED_IP_SCU && desc->reg == HW_STRAP2)
->>                          continue;
->>   
->> +               /*
->> +                * The SCU should be unlocked, with SCU00 returning 0x01.
->> +                * However, it may have been locked, e.g. by a
->> +                * userspace script using /dev/mem.
->> +                */
->> +               u32 value;
->> +
->> +               ret = regmap_read(ctx->maps[desc->ip], SCU00, &value);
->> +
->> +               if (ret < 0)
->> +                       return ret;
->> +
->> +               if (value != SCU_UNLOCKED_VALUE) {
-> 
-> ... i.e. `if (value != 1)` here
-> 
->> +                       dev_err(ctx->dev,
->> +                               "SCU protection is active, cannot continue\n");
->> +                       return -EPERM;
->> +               }
->> +
-> 
-> Doing this test for each value in the signal expression seems a bit
-> excessive.
+>> drivers/pci/controller/pcie-aspeed.c:481:6: warning: variable 'status' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
+     481 |         if (bus->number == 0) {
+         |             ^~~~~~~~~~~~~~~~
+   drivers/pci/controller/pcie-aspeed.c:541:9: note: uninitialized use occurs here
+     541 |         writel(status, pcie->reg + H2X_CFGE_INT_STS);
+         |                ^~~~~~
+   drivers/pci/controller/pcie-aspeed.c:481:2: note: remove the 'if' if its condition is always false
+     481 |         if (bus->number == 0) {
+         |         ^~~~~~~~~~~~~~~~~~~~~~~
+     482 |                 /* Internal access to bridge */
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     483 |                 writel(TLP_BYTE_EN(0xf) << 16 | (where & ~3), pcie->reg + H2X_CFGI_TLP);
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     484 |                 writel(CFGI_TLP_FIRE, pcie->reg + H2X_CFGI_CTRL);
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     485 |                 *val = readl(pcie->reg + H2X_CFGI_RET_DATA);
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     486 |         } else {
+         |         ~~~~~~
+   drivers/pci/controller/pcie-aspeed.c:474:24: note: initialize the variable 'status' to silence this warning
+     474 |         u32 bdf_offset, status;
+         |                               ^
+         |                                = 0
+   drivers/pci/controller/pcie-aspeed.c:573:6: warning: variable 'status' is used uninitialized whenever 'if' condition is true [-Wsometimes-uninitialized]
+     573 |         if (bus->number == 0) {
+         |             ^~~~~~~~~~~~~~~~
+   drivers/pci/controller/pcie-aspeed.c:622:9: note: uninitialized use occurs here
+     622 |         writel(status, pcie->reg + H2X_CFGE_INT_STS);
+         |                ^~~~~~
+   drivers/pci/controller/pcie-aspeed.c:573:2: note: remove the 'if' if its condition is always false
+     573 |         if (bus->number == 0) {
+         |         ^~~~~~~~~~~~~~~~~~~~~~~
+     574 |                 /* Internal access to bridge */
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     575 |                 writel(CFGI_WRITE | TLP_BYTE_EN(byte_en) << 16 | (where & ~3),
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     576 |                        pcie->reg + H2X_CFGI_TLP);
+         |                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+     577 |                 writel(val, pcie->reg + H2X_CFGI_WR_DATA);
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     578 |                 writel(CFGI_TLP_FIRE, pcie->reg + H2X_CFGI_CTRL);
+         |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     579 |         } else {
+         |         ~~~~~~
+   drivers/pci/controller/pcie-aspeed.c:552:24: note: initialize the variable 'status' to silence this warning
+     552 |         u32 bdf_offset, status, type;
+         |                               ^
+         |                                = 0
+   2 warnings generated.
 
-Ack
 
-> I was suggesting we only print the warning if we detect the writes
-> failed to stick (this is checked towards the end of e.g.
-> aspeed_g4_sig_expr_set())
+vim +481 drivers/pci/controller/pcie-aspeed.c
 
-Ayy, thanks for pointing this out! I overlooked the 
-`aspeed_sig_expr_eval` check at the end which definitely suits this case.
+   469	
+   470	static int aspeed_ast2700_rd_conf(struct pci_bus *bus, unsigned int devfn,
+   471					  int where, int size, u32 *val)
+   472	{
+   473		struct aspeed_pcie *pcie = bus->sysdata;
+   474		u32 bdf_offset, status;
+   475		u8 type;
+   476		int ret;
+   477	
+   478		if ((bus->number == 0 && devfn != 0))
+   479			return PCIBIOS_DEVICE_NOT_FOUND;
+   480	
+ > 481		if (bus->number == 0) {
+   482			/* Internal access to bridge */
+   483			writel(TLP_BYTE_EN(0xf) << 16 | (where & ~3), pcie->reg + H2X_CFGI_TLP);
+   484			writel(CFGI_TLP_FIRE, pcie->reg + H2X_CFGI_CTRL);
+   485			*val = readl(pcie->reg + H2X_CFGI_RET_DATA);
+   486		} else {
+   487			if (!aspeed_ast2700_get_link(pcie))
+   488				return PCIBIOS_DEVICE_NOT_FOUND;
+   489	
+   490			bdf_offset = aspeed_pcie_get_bdf_offset(bus, devfn, where);
+   491	
+   492			type = (bus->number == 1) ? PCI_HEADER_TYPE_NORMAL : PCI_HEADER_TYPE_BRIDGE;
+   493	
+   494			writel(CRG_READ_FMTTYPE(type) | CRG_PAYLOAD_SIZE, pcie->reg + H2X_CFGE_TLP_1ST);
+   495			writel(AST2700_TX_DESC1_VALUE | (pcie->tx_tag << 8) | TLP_BYTE_EN(0xf),
+   496			       pcie->reg + H2X_CFGE_TLP_NEXT);
+   497			writel(bdf_offset, pcie->reg + H2X_CFGE_TLP_NEXT);
+   498			writel(CFGE_TX_IDLE | CFGE_RX_BUSY, pcie->reg + H2X_CFGE_INT_STS);
+   499			writel(CFGE_TLP_FIRE, pcie->reg + H2X_CFGE_CTRL);
+   500	
+   501			ret = readl_poll_timeout(pcie->reg + H2X_CFGE_INT_STS, status,
+   502						 (status & CFGE_TX_IDLE), 0, 50);
+   503			if (ret) {
+   504				dev_err(pcie->dev,
+   505					"[%X:%02X:%02X.%02X]CR tx timeout sts: 0x%08x\n",
+   506					pcie->domain, bus->number, PCI_SLOT(devfn),
+   507					PCI_FUNC(devfn), status);
+   508				ret = PCIBIOS_SET_FAILED;
+   509				*val = ~0;
+   510				goto out;
+   511			}
+   512	
+   513			ret = readl_poll_timeout(pcie->reg + H2X_CFGE_INT_STS, status,
+   514						 (status & CFGE_RX_BUSY), 0, 50000);
+   515			if (ret) {
+   516				dev_err(pcie->dev,
+   517					"[%X:%02X:%02X.%02X]CR rx timeoutsts: 0x%08x\n",
+   518					pcie->domain, bus->number, PCI_SLOT(devfn),
+   519					PCI_FUNC(devfn), status);
+   520				ret = PCIBIOS_SET_FAILED;
+   521				*val = ~0;
+   522				goto out;
+   523			}
+   524			*val = readl(pcie->reg + H2X_CFGE_RET_DATA);
+   525		}
+   526	
+   527		switch (size) {
+   528		case 1:
+   529			*val = (*val >> ((where & 3) * 8)) & 0xff;
+   530			break;
+   531		case 2:
+   532			*val = (*val >> ((where & 2) * 8)) & 0xffff;
+   533			break;
+   534		case 4:
+   535		default:
+   536			break;
+   537		}
+   538	
+   539		ret = PCIBIOS_SUCCESSFUL;
+   540	out:
+   541		writel(status, pcie->reg + H2X_CFGE_INT_STS);
+   542		pcie->tx_tag = (pcie->tx_tag + 1) % 0xF;
+   543		return ret;
+   544	}
+   545	
 
-Cheers,
-Tan
-
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
