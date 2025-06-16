@@ -1,51 +1,63 @@
-Return-Path: <linux-aspeed+bounces-1481-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1482-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6928FC7115A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Jun 2025 13:14:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61B9FC71155
+	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Jun 2025 13:39:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bLVnp4NSPz3bcW;
-	Mon, 16 Jun 2025 23:14:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750079646;
-	cv=none; b=A77Co5P4oYWEwph9Hrr/iG6h93hQLmW9H+v7U+MCOFRPWg+52p9H1tSiMTDbC+IaGl9w5dw/LTzhdt/0v451Avj7qzk08jfyYMAOXIw31v2+ZsNG09M9IJ/pVtwM6INeHRb3JX+YHqlOCPZNqfYn2q0GOlucmn9127b9ZVq5uR9RQVzFJWP9MbNKPfRA6oa0S4f4sjacsO57vDeGZDbxIskaC4yXrUbR/0r+jJtRZkh1TAqczsmTSP9DZlSStdBJZ8R9jwyTvZtjI7VgHgnt2UdVRfYPTM0jhNfZMth9begz0zXf2bG2OQA6ADQ0DdDM8kbEr8eXbXVqAxxryKOBkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bLWMW6VpMz30RN;
+	Mon, 16 Jun 2025 23:39:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:edc0:2:b01:1d::104"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750081191;
+	cv=none; b=Ji04V+uIsPdYpioUMHZybLidV7dQUAUKNK0sLuokTw3o2k53Q9GBclpov803Mr+XLVmw0Xs67KMDkX8GEWgdHN2pSBfRk5MEi1MbYOF5dBQHpxRNkwbQpri4y17liQPH1I5j5UqNAktHMg5h2+TiXgsfEfgLAhYzK7mIVtN/JVivZCuQ4eAI2xBt3yeX64KjSvKmGyzUw2N93Ti5PB0txOmO+7I45XAyudrjzCFa9imV5j/ldLQNp8ecEOL6wyWZzVX1butR1Gnz1UwpT3sAS3Jf45aP2BtlXJHVGXecDhduLf7vx6vp51ycwQymLkS7fvgvMefddFR3T0qlN6WU+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750079646; c=relaxed/relaxed;
-	bh=6h0ix1ZdixoOBaPO3IlzuOaav+hjON9yVdm3QZ+ABs4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=T/Nu1J0VU3Vi8eH81bKpVhFT/O8ojiZtPSdwIsBkUblfk5meAuoEh/L8yxkP+O9NwDX3IgxupNWgdyj2nzuLgzRw74JElRMJpuueHlumcvXTuh6MMUhk+8qYAjUu/rq0f7+v/V216jiBOjOpV9BtPUYzZ80yVhjTLLcX3dGgej6BtP4WFYVHlnNYzA2ufRj+xpamxG8t5dK6sxA00OjJJ6c2p1jZlBIVdtE8cmHZwu82Ct82OzhGCUW7yVP+4HfxKsiW3okhWKVn2UXvLlh+jVt/tGy/zw0BOxK0seP98FM43WneLyzYkDj6rwlOmnC5c+lVerujRF2dyX67mjwU+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Kor3MH/X; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Kor3MH/X;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	t=1750081191; c=relaxed/relaxed;
+	bh=duYGcmi4EnfLmnSVWEuzIDTi/3dvghq/BtjYskrpPhY=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=eGJ4WpjJ39bQC4r3cLyvcIK95deDlOGzmF2+2siYv1yim46yz6S/tgjKAURnb/aKptHF0tX4HGICSVYVoTfTHb6GEObF9cOi5gdNFoFMzPlKX7bCNqE1oExaiYf0KHCmNCwLY/ys/2I9Zhu8lW4eQCU7AI275EBgb6JxOVWkW6AQPCo2ucbGVYOIYqK9qAUT8gjX8kavlZslG8Td9C1VLt8BDLBuLTnIngPWkFUj//SpMkApuCtrCNLoFE0DHSnjHyePUNq5OUg+sBpRSb1zcRW4BOX/9xEtGLIhV5TlxFslXTz2+BfA1Og3oimMaGWWGJAavxEYi25J2wUbKlBygg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de; spf=pass (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=p.zabel@pengutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=pengutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2a0a:edc0:2:b01:1d::104; helo=metis.whiteo.stw.pengutronix.de; envelope-from=p.zabel@pengutronix.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1029 seconds by postgrey-1.37 at boromir; Mon, 16 Jun 2025 23:39:50 AEST
+Received: from metis.whiteo.stw.pengutronix.de (metis.whiteo.stw.pengutronix.de [IPv6:2a0a:edc0:2:b01:1d::104])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bLVnp18dBz30Vn
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Jun 2025 23:14:06 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1750079645;
-	bh=6h0ix1ZdixoOBaPO3IlzuOaav+hjON9yVdm3QZ+ABs4=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=Kor3MH/XjP0L5Qf7xtsszE318PqOoYFUW4LmZufq+PV1IG00ZaBxZrGo4TV66c7wT
-	 g/nO3IrU50YVymtMloXXIbGQO+f8DLdIeKGiiVz3Q39yBcMJhutjCY1P6IjDZcisrS
-	 Mp4NB+eBYCz2rS1A5RsP1/CnZwOuLKNxHufGdxTqrrcnnrzFDrQuj1rrGpaHw1AygZ
-	 W7rF21jQzGf2p4NFQsopVAid4EohIDoKXZrPsbz1GXOG9DYcwhz3RlB0Ry6fJjxZMR
-	 znMkjUBhJV1S6JgpRCyd+bOGYamCJcDsSsZOIR3i4zyI6uJd3FJ5nWWndufy7SaULP
-	 IP1uL0ys+1VIg==
-Received: from [127.0.1.1] (unknown [180.150.112.166])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0A88368865;
-	Mon, 16 Jun 2025 21:14:04 +0800 (AWST)
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 16 Jun 2025 22:43:47 +0930
-Subject: [PATCH v2 10/10] soc: aspeed: lpc-snoop: Lift channel config to
- const structs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bLWMV4t5qz30P3
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Jun 2025 23:39:50 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.whiteo.stw.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1uR9n5-0003xV-Cd; Mon, 16 Jun 2025 15:22:23 +0200
+Received: from lupine.office.stw.pengutronix.de ([2a0a:edc0:0:900:1d::4e] helo=lupine)
+	by drehscheibe.grey.stw.pengutronix.de with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1uR9n4-003oWd-0b;
+	Mon, 16 Jun 2025 15:22:22 +0200
+Received: from pza by lupine with local (Exim 4.96)
+	(envelope-from <p.zabel@pengutronix.de>)
+	id 1uR9n4-000VBo-0L;
+	Mon, 16 Jun 2025 15:22:22 +0200
+Message-ID: <6aeab5e5b616b1e690c2622d6599c5228a391e69.camel@pengutronix.de>
+Subject: Re: [PATCH 1/8] mmc: sdhci-of-aspeed: Fix sdhci software reset
+ can't be cleared issue.
+From: Philipp Zabel <p.zabel@pengutronix.de>
+To: Cool Lee <cool_lee@aspeedtech.com>, andrew@codeconstruct.com.au, 
+	adrian.hunter@intel.com, ulf.hansson@linaro.org, joel@jms.id.au, 
+	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, 
+	linux-mmc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Date: Mon, 16 Jun 2025 15:22:21 +0200
+In-Reply-To: <20250615035803.3752235-2-cool_lee@aspeedtech.com>
+References: <20250615035803.3752235-1-cool_lee@aspeedtech.com>
+	 <20250615035803.3752235-2-cool_lee@aspeedtech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,222 +71,93 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250616-aspeed-lpc-snoop-fixes-v2-10-3cdd59c934d3@codeconstruct.com.au>
-References: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
-In-Reply-To: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
-To: linux-aspeed@lists.ozlabs.org
-Cc: Joel Stanley <joel@jms.id.au>, Henry Martin <bsdhenrymartin@gmail.com>, 
- Jean Delvare <jdelvare@suse.de>, 
- Patrick Rudolph <patrick.rudolph@9elements.com>, 
- Andrew Geissler <geissonator@yahoo.com>, 
- Ninad Palsule <ninad@linux.ibm.com>, Patrick Venture <venture@google.com>, 
- Robert Lippert <roblip@gmail.com>, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Andrew Jeffery <andrew@codeconstruct.com.au>
-X-Mailer: b4 0.14.2
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: p.zabel@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.whiteo.stw.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-aspeed@lists.ozlabs.org
 
-The shifts and masks for each channel are defined by hardware and
-are not something that changes at runtime. Accordingly, describe the
-information in an array of const structs and associate elements with
-each channel instance, removing the need for the switch and handling of
-its default case.
+On So, 2025-06-15 at 11:57 +0800, Cool Lee wrote:
+> Replace sdhci software reset by scu reset from top.
+>=20
+> Signed-off-by: Cool Lee <cool_lee@aspeedtech.com>
+> ---
+>  drivers/mmc/host/sdhci-of-aspeed.c | 55 +++++++++++++++++++++++++++++-
+>  1 file changed, 54 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-=
+of-aspeed.c
+> index d6de010551b9..01bc574272eb 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/of.h>
+>  #include <linux/of_platform.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/reset.h>
+>  #include <linux/spinlock.h>
+> =20
+>  #include "sdhci-pltfm.h"
+> @@ -39,6 +40,7 @@
+>  struct aspeed_sdc {
+>  	struct clk *clk;
+>  	struct resource *res;
+> +	struct reset_control *rst;
+> =20
+>  	spinlock_t lock;
+>  	void __iomem *regs;
+> @@ -328,13 +330,58 @@ static u32 aspeed_sdhci_readl(struct sdhci_host *ho=
+st, int reg)
+>  	return val;
+>  }
+> =20
+> +static void aspeed_sdhci_reset(struct sdhci_host *host, u8 mask)
+> +{
+> +	struct sdhci_pltfm_host *pltfm_priv;
+> +	struct aspeed_sdhci *aspeed_sdhci;
+> +	struct aspeed_sdc *aspeed_sdc;
+> +	u32 save_array[7];
+> +	u32 reg_array[] =3D {SDHCI_DMA_ADDRESS,
+> +			SDHCI_BLOCK_SIZE,
+> +			SDHCI_ARGUMENT,
+> +			SDHCI_HOST_CONTROL,
+> +			SDHCI_CLOCK_CONTROL,
+> +			SDHCI_INT_ENABLE,
+> +			SDHCI_SIGNAL_ENABLE};
+> +	int i;
+> +	u16 tran_mode;
+> +	u32 mmc8_mode;
+> +
+> +	pltfm_priv =3D sdhci_priv(host);
+> +	aspeed_sdhci =3D sdhci_pltfm_priv(pltfm_priv);
+> +	aspeed_sdc =3D aspeed_sdhci->parent;
+> +
+> +	if (!IS_ERR(aspeed_sdc->rst)) {
+> +		for (i =3D 0; i < ARRAY_SIZE(reg_array); i++)
+> +			save_array[i] =3D sdhci_readl(host, reg_array[i]);
+> +
+> +		tran_mode =3D sdhci_readw(host, SDHCI_TRANSFER_MODE);
+> +		mmc8_mode =3D readl(aspeed_sdc->regs);
+> +
+> +		reset_control_assert(aspeed_sdc->rst);
+> +		mdelay(1);
+> +		reset_control_deassert(aspeed_sdc->rst);
+> +		mdelay(1);
 
-Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
----
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 100 +++++++++++++++-------------------
- 1 file changed, 45 insertions(+), 55 deletions(-)
+Why are there delays here ...
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index 9f88c5471b1b6d85f6d9e1970240f3d1904d166c..2d97b8d5fb429e215c321c9c2ee3fa35d39f8618 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -63,7 +63,16 @@ enum aspeed_lpc_snoop_index {
- 	ASPEED_LPC_SNOOP_INDEX_MAX = ASPEED_LPC_SNOOP_INDEX_1,
- };
- 
-+struct aspeed_lpc_snoop_channel_cfg {
-+	enum aspeed_lpc_snoop_index index;
-+	u32 hicr5_en;
-+	u32 snpwadr_mask;
-+	u32 snpwadr_shift;
-+	u32 hicrb_en;
-+};
-+
- struct aspeed_lpc_snoop_channel {
-+	const struct aspeed_lpc_snoop_channel_cfg *cfg;
- 	bool enabled;
- 	struct kfifo		fifo;
- 	wait_queue_head_t	wq;
-@@ -77,6 +86,23 @@ struct aspeed_lpc_snoop {
- 	struct aspeed_lpc_snoop_channel chan[ASPEED_LPC_SNOOP_INDEX_MAX + 1];
- };
- 
-+static const struct aspeed_lpc_snoop_channel_cfg channel_cfgs[ASPEED_LPC_SNOOP_INDEX_MAX + 1] = {
-+	{
-+		.index = ASPEED_LPC_SNOOP_INDEX_0,
-+		.hicr5_en = HICR5_EN_SNP0W | HICR5_ENINT_SNP0W,
-+		.snpwadr_mask = SNPWADR_CH0_MASK,
-+		.snpwadr_shift = SNPWADR_CH0_SHIFT,
-+		.hicrb_en = HICRB_ENSNP0D,
-+	},
-+	{
-+		.index = ASPEED_LPC_SNOOP_INDEX_1,
-+		.hicr5_en = HICR5_EN_SNP1W | HICR5_ENINT_SNP1W,
-+		.snpwadr_mask = SNPWADR_CH1_MASK,
-+		.snpwadr_shift = SNPWADR_CH1_SHIFT,
-+		.hicrb_en = HICRB_ENSNP1D,
-+	},
-+};
-+
- static struct aspeed_lpc_snoop_channel *snoop_file_to_chan(struct file *file)
- {
- 	return container_of(file->private_data,
-@@ -189,28 +215,27 @@ static int aspeed_lpc_snoop_config_irq(struct aspeed_lpc_snoop *lpc_snoop,
- }
- 
- __attribute__((nonnull))
--static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
--				   struct device *dev,
--				   enum aspeed_lpc_snoop_index index, u16 lpc_port)
-+static int aspeed_lpc_enable_snoop(struct device *dev,
-+				    struct aspeed_lpc_snoop *lpc_snoop,
-+				    struct aspeed_lpc_snoop_channel *channel,
-+				    const struct aspeed_lpc_snoop_channel_cfg *cfg,
-+				    u16 lpc_port)
- {
- 	const struct aspeed_lpc_snoop_model_data *model_data;
--	u32 hicr5_en, snpwadr_mask, snpwadr_shift, hicrb_en;
--	struct aspeed_lpc_snoop_channel *channel;
- 	int rc = 0;
- 
--	channel = &lpc_snoop->chan[index];
--
- 	if (WARN_ON(channel->enabled))
- 		return -EBUSY;
- 
- 	init_waitqueue_head(&channel->wq);
- 
-+	channel->cfg = cfg;
- 	channel->miscdev.minor = MISC_DYNAMIC_MINOR;
- 	channel->miscdev.fops = &snoop_fops;
- 	channel->miscdev.parent = dev;
- 
- 	channel->miscdev.name =
--		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, index);
-+		devm_kasprintf(dev, GFP_KERNEL, "%s%d", DEVICE_NAME, cfg->index);
- 	if (!channel->miscdev.name)
- 		return -ENOMEM;
- 
-@@ -223,39 +248,18 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 		goto err_free_fifo;
- 
- 	/* Enable LPC snoop channel at requested port */
--	switch (index) {
--	case 0:
--		hicr5_en = HICR5_EN_SNP0W | HICR5_ENINT_SNP0W;
--		snpwadr_mask = SNPWADR_CH0_MASK;
--		snpwadr_shift = SNPWADR_CH0_SHIFT;
--		hicrb_en = HICRB_ENSNP0D;
--		break;
--	case 1:
--		hicr5_en = HICR5_EN_SNP1W | HICR5_ENINT_SNP1W;
--		snpwadr_mask = SNPWADR_CH1_MASK;
--		snpwadr_shift = SNPWADR_CH1_SHIFT;
--		hicrb_en = HICRB_ENSNP1D;
--		break;
--	default:
--		rc = -EINVAL;
--		goto err_misc_deregister;
--	}
--
--	/* Enable LPC snoop channel at requested port */
--	regmap_update_bits(lpc_snoop->regmap, HICR5, hicr5_en, hicr5_en);
--	regmap_update_bits(lpc_snoop->regmap, SNPWADR, snpwadr_mask,
--			   lpc_port << snpwadr_shift);
-+	regmap_set_bits(lpc_snoop->regmap, HICR5, cfg->hicr5_en);
-+	regmap_update_bits(lpc_snoop->regmap, SNPWADR, cfg->snpwadr_mask,
-+		lpc_port << cfg->snpwadr_shift);
- 
- 	model_data = of_device_get_match_data(dev);
- 	if (model_data && model_data->has_hicrb_ensnp)
--		regmap_update_bits(lpc_snoop->regmap, HICRB, hicrb_en, hicrb_en);
-+		regmap_set_bits(lpc_snoop->regmap, HICRB, cfg->hicrb_en);
- 
- 	channel->enabled = true;
- 
- 	return 0;
- 
--err_misc_deregister:
--	misc_deregister(&channel->miscdev);
- err_free_fifo:
- 	kfifo_free(&channel->fifo);
- 	return rc;
-@@ -263,30 +267,13 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 
- __attribute__((nonnull))
- static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
--				     enum aspeed_lpc_snoop_index index)
-+				     struct aspeed_lpc_snoop_channel *channel)
- {
--	struct aspeed_lpc_snoop_channel *channel;
--
--	channel = &lpc_snoop->chan[index];
--
- 	if (!channel->enabled)
- 		return;
- 
- 	/* Disable interrupts along with the device */
--	switch (index) {
--	case 0:
--		regmap_update_bits(lpc_snoop->regmap, HICR5,
--				   HICR5_EN_SNP0W | HICR5_ENINT_SNP0W,
--				   0);
--		break;
--	case 1:
--		regmap_update_bits(lpc_snoop->regmap, HICR5,
--				   HICR5_EN_SNP1W | HICR5_ENINT_SNP1W,
--				   0);
--		break;
--	default:
--		return;
--	}
-+	regmap_clear_bits(lpc_snoop->regmap, HICR5, channel->cfg->hicr5_en);
- 
- 	channel->enabled = false;
- 	/* Consider improving safety wrt concurrent reader(s) */
-@@ -299,8 +286,8 @@ static void aspeed_lpc_snoop_remove(struct platform_device *pdev)
- 	struct aspeed_lpc_snoop *lpc_snoop = dev_get_drvdata(&pdev->dev);
- 
- 	/* Disable both snoop channels */
--	aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_0);
--	aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_1);
-+	aspeed_lpc_disable_snoop(lpc_snoop, &lpc_snoop->chan[0]);
-+	aspeed_lpc_disable_snoop(lpc_snoop, &lpc_snoop->chan[1]);
- }
- 
- static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
-@@ -339,6 +326,8 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
- 	if (rc)
- 		return rc;
- 
-+	static_assert(ARRAY_SIZE(channel_cfgs) == ARRAY_SIZE(lpc_snoop->chan),
-+		"Broken implementation assumption regarding cfg count");
- 	for (idx = ASPEED_LPC_SNOOP_INDEX_0; idx <= ASPEED_LPC_SNOOP_INDEX_MAX; idx++) {
- 		u32 port;
- 
-@@ -346,7 +335,8 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
- 		if (rc)
- 			break;
- 
--		rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, idx, port);
-+		rc = aspeed_lpc_enable_snoop(dev, lpc_snoop, &lpc_snoop->chan[idx],
-+					     &channel_cfgs[idx], port);
- 		if (rc)
- 			goto cleanup_channels;
- 	}
+[...]
+> @@ -535,6 +582,12 @@ static int aspeed_sdc_probe(struct platform_device *=
+pdev)
+> =20
+>  	spin_lock_init(&sdc->lock);
+> =20
+> +	sdc->rst =3D devm_reset_control_get(&pdev->dev, NULL);
+> +	if (!IS_ERR(sdc->rst)) {
+> +		reset_control_assert(sdc->rst);
+> +		reset_control_deassert(sdc->rst);
 
--- 
-2.39.5
+... but not here?
 
+regards
+Philipp
 
