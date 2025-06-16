@@ -1,51 +1,50 @@
-Return-Path: <linux-aspeed+bounces-1471-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1472-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27AA7C71155
-	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Jun 2025 13:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B477C71136
+	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Jun 2025 13:14:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bLVnh2KJ8z30Vr;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bLVnh30Jjz30RN;
 	Mon, 16 Jun 2025 23:14:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750079640;
-	cv=none; b=Evw3YXSPDnU0/4ifDIfPAHSOZdKjSQFJPJMTZKhn8jKuqLcDGT9s0HchMBNNK+megNUvtTZMnspTyGW4NeH66yL1KYwh1JlIHuosyoprTPFPc+hZizGSUxVcwPqG5VN0D9wIKZ9MAzf7fpcXB630yy2hN8kVSM+lcat7Qe8PRD/ad0r9ftUO2wWWrkHdvg0smm/FA/dyYmNLW1ted5cD7DeT3TtVwTi6TK9csna1tDQbeuiSWTzv12TTMd32kFBKBiSFnHZQ6y+DdUArhWIxOTFcQKu0O6nEr0y2OFF1yLJ76adIZsioGuOcCAYSS/OVtwj8ELYsJ/HV7PJHieaQLg==
+	cv=none; b=ohJr75Nyz0OiKAzEyhT1JYXx5bsWaZMG7j+fkbzWuRMecO4BKWgYBFGkZ/oX+1UcbfGyjYPVeF97HrhiPWiNVoZ0/5JnYy3DfO+sVhe29/H3HrnwV2tYdU+Rf8WoTLXrHvFKOR2h4tlHgL1OCorCpyUFq+PG8NlTvBAwgH8tnWJGprVZNnqInkYMAmb5hVh4IAlcGuxWUp6EoQVnA2vHMC8hb7dIqYhqTOYDgYXUUNOms/bEfd9a22ZyMPkmxKNAVt1f5hGpJVMQ9Zvre3HIoeX5jORNasWjB9Ek0I3it9BYw7RxDo1kR1z1sNC3nPifOytk3RIWUxm0e4NF1l27Pg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1750079640; c=relaxed/relaxed;
-	bh=YNOjnLRACDOPWRZKVVKbg9U7d4b+QVB/orVEDglJFaU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hG6JpgiEZ52LWhs6BgBG88qOTvBVl0w2lvInqXxNKWiNiF052DYG/nulX7/Td39cGEXP9XHxmyhUZ2tz7bpci37MPqTDh7qngublJQBisunMYM5oZL4P4u0tPVCjioC/puWWpHIwsxscDYyfZwRRnj9ZnG3sP5bpVcegK99XSXSoXNtvOa/psMVpH5ucsBj4zcfhgCEcsQJRxpQgnlgRCbmYlR7mbwfKnmgg7TTT/jzPS0Jm++m/HoiWRklfdMaDfUxczymLsPOD9rX88y6ufTxXyfPNG5z8svCoj/UAaCyIdzXLTz1ZmkgO9ceQXS+dBAruFe4Nm0nL9/b50gKQKQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MTxP81ve; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	bh=uPBAGZy6R1PjnTGdxsiEYdDy+NUG1t2EFZNMiKI6egA=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=b1+pSAuZ1XTGCy2DJpMpTGMy+K8o44sMRBhXHYFKFuadjvLKT0/4mnhCALgsLfdqsgh13PKQBqDOEPp+5FsXC0sdMGElU/WbGYP58sSVBg3OqaW8Fl9UH8al90itcAUcaoc27XkGZosYJqmroycNbbFVCfehN7vzNZIXYktawrqumz50uYPEYtTjLmwodLEiJ5d5fVNUjMaL2d9V8n/SOJ28RyK+fypaNa3vLpDjyscSWlLna7XgYj6QMzEmlMwWfuqPbtp3jaoMd3ucDixaHMUX8DLtblsptSmuPLkIiBOPCyhSjRecYapWgjw1/KuzrzLMcZ+lco3bFy2zGuMBFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=I6KwpY03; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=MTxP81ve;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=I6KwpY03;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bLVng2kmTz30RN
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bLVng2nXWz30T8
 	for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Jun 2025 23:13:59 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1750079638;
-	bh=YNOjnLRACDOPWRZKVVKbg9U7d4b+QVB/orVEDglJFaU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc;
-	b=MTxP81veaxRXticdcirQZoVeYQf/6K29Oc8GVg15i0BLTrSDSCYMPnnBUkfjOUgNU
-	 CsLtsKhqBFpBR6Szbov6sVSjZFzCvrU4AC8UwmvBXMF804+500fjOwzqlHQPau3pPh
-	 0+AXXvj4F1/BNPMJo3I+eD6pMT5syY/Amujjm3goVLaxbIVCypU3ehCNQTDbGft0Xj
-	 PdnL957OzqylE/UwX9P5AbnYdbXkNbRr6BC3pqG8tWkKGd0fbAmmuJVNmpVit2gkQC
-	 3cbLtHQXuRZf46nXMVaHtQPc5LaEDZ3Gkh46GZXZveQ4g9BTdOKGYgIvYVPR2bprHB
-	 RFw4Jbf/9Kbhg==
+	d=codeconstruct.com.au; s=2022a; t=1750079637;
+	bh=uPBAGZy6R1PjnTGdxsiEYdDy+NUG1t2EFZNMiKI6egA=;
+	h=From:Subject:Date:To:Cc;
+	b=I6KwpY03w88PFgiWEf2PmautpWVe9dZGZTdWKrhOf0aHsSlZTZAcWf4qW3uPN/25n
+	 pPIcnBuY49xhsixkLINKjlxQRU9emTcGcTKB+ORxw+4v7yICvZgcqwmXUeff9CrJ/o
+	 HBC14x4EOgZKGbqKbDUcAEcL2Ia5l9A+bfaUlPeEjQPoEf7bH0a4ooFEU1UzH67QBF
+	 1zAyoTG5MwgyQaXtziDa6DJcJmFigh+iatbuzLwU4fZjE6wIM31gdtcMS8oqa9ZCTG
+	 sDGz57TESvcZBSMAGjGi6L6V8JVTCFO+kJKamaFVwDQpFU/XfbcP9zqCttLzLJWzB5
+	 CUNdX8WNfOYLQ==
 Received: from [127.0.1.1] (unknown [180.150.112.166])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 837D668818;
-	Mon, 16 Jun 2025 21:13:57 +0800 (AWST)
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 596AA685DD;
+	Mon, 16 Jun 2025 21:13:55 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Mon, 16 Jun 2025 22:43:38 +0930
-Subject: [PATCH v2 01/10] soc: aspeed: lpc-snoop: Cleanup resources in
- stack-order
+Subject: [PATCH v2 00/10] soc: aspeed: lpc-snoop: Miscellaneous fixes
+Date: Mon, 16 Jun 2025 22:43:37 +0930
+Message-Id: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,9 +60,11 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250616-aspeed-lpc-snoop-fixes-v2-1-3cdd59c934d3@codeconstruct.com.au>
-References: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
-In-Reply-To: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
+X-B4-Tracking: v=1; b=H4sIAIEYUGgC/3WNyw6CMBREf4V07SV9ACGu/A/Domkv0kTb2luIh
+ vDvVjRx5fLMZOasjDA5JHasVpZwceSCLyAPFTOT9hcEZwszyWXLGy5AU0S0cI0GyIcQYXQPJMD
+ Wyr5XViutWBnHhHtRtufhwwnvc/nPv3BylEN67vJFvNOvR/z1LAI4dM3YSolK2248mWDRBE85z
+ SbXJtxqPbNh27YXhBDrSNwAAAA=
+X-Change-ID: 20250401-aspeed-lpc-snoop-fixes-e5d2883da3a3
 To: linux-aspeed@lists.ozlabs.org
 Cc: Joel Stanley <joel@jms.id.au>, Henry Martin <bsdhenrymartin@gmail.com>, 
  Jean Delvare <jdelvare@suse.de>, 
@@ -75,35 +76,49 @@ Cc: Joel Stanley <joel@jms.id.au>, Henry Martin <bsdhenrymartin@gmail.com>,
  stable@vger.kernel.org
 X-Mailer: b4 0.14.2
 
-Free the kfifo after unregistering the miscdev in
-aspeed_lpc_disable_snoop() as the kfifo is initialised before the
-miscdev in aspeed_lpc_enable_snoop().
+Henry's bug[1] and fix[2] prompted some further inspection by
+Jean.
 
-Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
-Cc: stable@vger.kernel.org
-Cc: Jean Delvare <jdelvare@suse.de>
-Acked-by: Jean Delvare <jdelvare@suse.de>
+This series provides fixes for the remaining issues Jean identified, as
+well as reworking the channel paths to reduce cleanup required in error
+paths. It is based on v6.16-rc1.
+
+Lightly tested under qemu and on an AST2600 EVB. Further testing on
+platforms designed around the snoop device appreciated.
+
+[1]: https://bugzilla.kernel.org/show_bug.cgi?id=219934
+[2]: https://lore.kernel.org/all/20250401074647.21300-1-bsdhenrymartin@gmail.com/
+
 Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 ---
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v2:
+- Address comments on v1 from Jean
+- Implement channel indexing using enums to avoid unnecessary tests
+- Switch to devm_clk_get_enabled()
+- Use dev_err_probe() where possible
+- Link to v1: https://patch.msgid.link/20250411-aspeed-lpc-snoop-fixes-v1-0-64f522e3ad6f@codeconstruct.com.au
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index ef8f355589a584d76bfac2b130ba9965c9b06ba5..59c18afa649cd672f54f947066f468f2a78c0d5d 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -263,8 +263,8 @@ static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 		return;
- 	}
- 
--	kfifo_free(&lpc_snoop->chan[channel].fifo);
- 	misc_deregister(&lpc_snoop->chan[channel].miscdev);
-+	kfifo_free(&lpc_snoop->chan[channel].fifo);
- }
- 
- static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+---
+Andrew Jeffery (10):
+      soc: aspeed: lpc-snoop: Cleanup resources in stack-order
+      soc: aspeed: lpc-snoop: Don't disable channels that aren't enabled
+      soc: aspeed: lpc-snoop: Ensure model_data is valid
+      soc: aspeed: lpc-snoop: Constrain parameters in channel paths
+      soc: aspeed: lpc-snoop: Rename 'channel' to 'index' in channel paths
+      soc: aspeed: lpc-snoop: Rearrange channel paths
+      soc: aspeed: lpc-snoop: Switch to devm_clk_get_enabled()
+      soc: aspeed: lpc-snoop: Use dev_err_probe() where possible
+      soc: aspeed: lpc-snoop: Consolidate channel initialisation
+      soc: aspeed: lpc-snoop: Lift channel config to const structs
 
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 224 +++++++++++++++++-----------------
+ 1 file changed, 110 insertions(+), 114 deletions(-)
+---
+base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+change-id: 20250401-aspeed-lpc-snoop-fixes-e5d2883da3a3
+
+Best regards,
 -- 
-2.39.5
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
 
