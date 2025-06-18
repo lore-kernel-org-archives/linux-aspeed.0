@@ -1,88 +1,71 @@
-Return-Path: <linux-aspeed+bounces-1495-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1496-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 389AFC71157
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Jun 2025 10:22:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 825FDC71157
+	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Jun 2025 11:27:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bMftF4pRWz2yFJ;
-	Wed, 18 Jun 2025 20:21:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750242117;
-	cv=none; b=dCydc09uOYKfHeviZCdZDVX2cgjAksMLBfBFz7jZDHMEXhiDW7ZytHmnfMz/3sjhesWKh5BwrmE/CI7+07P6ZclWArpcRN00gGBN2nsgF7eTl5UiHSKfjrJ6KTxWxMVnDrpHblR23KjIQ4JR+JIeWjU/KdBheq/0iJ9IHKBXeMDS1mjyUCp39eI6bqFDM0rYP3cAQwp2AOMCjht56IsiuRFDZ9tumaTSCAWswn1BGyvfQmZF9LAzIpzbSIJ248MO7Dlb+5/UYPk4KDTJCOQRznakFcr4UPVd8dk+JfPOm9G19IMFhV6EknbqIoF2qjhvCCnf8SKphqPRtYdlmVof/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bMhKp5khtz2yFJ;
+	Wed, 18 Jun 2025 21:27:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::135"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750246046;
+	cv=none; b=WaGy+iUfegkE6dZxsUfsUROVMaYISkSz30F44huoxx7SMgjzkeMuPhvPfKoTykvzFRlyCmJSE6TGcy7YJNZwGsi8SqJi8LqgnoGc/W3tj6RC3pzDHg0+zowFwA5Ps1EMjmLUfbD2IPhooHORs4Yhsq9yzacHF0SHYHZu+xGuwFL1KOgCu6MRVZvk2LsladBZusF0KwwZScVg3QXK1VOumERgkG72ibwezPA7QA1L4tDdeQ3pznOQvS5v/kWnkaABsKQKVZeLNF7SAkOw6AH4DOuAHBg4EyR1tZgeEeaUe1qQbCeW6ZfGqWVZBXJC07do9Hbu/U57oVcy8z+rak/V+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750242117; c=relaxed/relaxed;
-	bh=GjmzlSMJGThF/X6xEUPvfYdLDsdkYToZuOGOEJIFwyo=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=meNtFJgMlSAauHMlzLJgC6ESa3V0voeXS91gRomvwDlcHAEy5UaEjDlsHldecb8t4Wv9nxjwYaxr+VzUbpTJN/8xO9vB49118IeUncFf58gjn00RKv03sSIs60cDJVDgP14bxGaz9he8acUUGDSYnaETjD0sQwVmIypSjXufok8KhJQyqOGLRPL89j7PorB8aqkqY/cMblH7aeWjdrBVsWk+6q07DY3r9/mj/VjHWd5VZvYVsEydODn/Uh3H5EEDgoOOY0EL+VDMtUfDVT2gritg97ApzkWs/d4mDXUxrNSXRAAIVMJzK3U3L2c/aWCUN3v9yKL4Ngx5oyDXimun2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=kV746wtd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=zhangjian.3032@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+	t=1750246046; c=relaxed/relaxed;
+	bh=hC/rxmNEx7lBs7LXqlf7wlayqnKtYiiYbKP9iLo7bEA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=cDnvzzSo5kKfF81AJyIpWedqaHoeaRB6opnaEglthNgzwGrbYG7TNVsqPtJSW1Zg0qqxXdVWnNGuTyvarW72q2DYHYPdF4xSv1IcdaOUhvc0SdwE+jrGD3vDZwBQlOH0BU6gJzzDYdZD/uow4LeGElnOk7iev9EiPhtnehKW8wuPGJcaIzBYqAk/UcbYEioKZec6qj6FzEmin41kAYFnrolVh3ReK8bdsbQT2V6YPy4LluOtg9ugK5nq1Nkp3+WdBtuN6gzXTMMHWobGKeYtBo2c4RgMH3JA2gk9ktbR9fgWLnB5hzMAa7rxSU5KdR8kduRO0wEQ9PfsZjBgTQf6Uw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=u47ObV8P; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=kV746wtd;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=u47ObV8P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=zhangjian.3032@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMftC5P8Cz2xS0
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Jun 2025 20:21:55 +1000 (AEST)
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-235d6de331fso83641915ad.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Jun 2025 03:21:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMhKn2jCwz2xPc
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Jun 2025 21:27:24 +1000 (AEST)
+Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-54e7967cf67so6958772e87.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Jun 2025 04:27:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1750242112; x=1750846912; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=GjmzlSMJGThF/X6xEUPvfYdLDsdkYToZuOGOEJIFwyo=;
-        b=kV746wtd4W4Cys5IAHQCyJ9vEP+cdysXH9s5s/fMmcem/hFwrd59PMzTWCacAwfmEU
-         YtHGcnq7iY05NAs9iJPt3VVzXZr/Kay55XlzwRS0cJCTGJhs4oeshbYMKU5bti20LOXw
-         Zps9T3OSLphKdt6XYHABNUKfmDSGVlESsfqTOaXul+71JOKnZYlTUW/pDcbUZOeM2Qa1
-         dGP7NDydBvdq61WzGG5hNpv2ayuE5VIXcb5epPzFpHPDxVL/gb5wKiqrRFVcjs7DZb6I
-         HLoifUPRIsP7ZJ1wwAN0+9ilI7x4n3j/27ur1OphqMpmc1Y8umcyiCSOpyVgdTpubAjR
-         OKkA==
+        d=linaro.org; s=google; t=1750246040; x=1750850840; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hC/rxmNEx7lBs7LXqlf7wlayqnKtYiiYbKP9iLo7bEA=;
+        b=u47ObV8Pj7Blj3fgiensixnPrk1fe5wOS8VXef+bBSb8h5gr9/dFmOETXq8sxChAqG
+         GYaRp/T672lmKFJIM2QMhkkcmuoOw7HThu+4BBtxYzUwhoZa00D/pyn/RONuYd+23bb8
+         Tpn4BCyPTgZV/CRgPUZTrkFf0JEr4otCHXBE4zR418n4uzutYrtaEFtRyEvMlp+Pxdco
+         U7jxPU/+ldV0FPCNrErvrHc1rdryJrnxV/9mqNRvXyjDnXkYRmKw20dukaCbU0fT79rZ
+         FTDe2eSpSGGjme93qm/QAMTtcDOQbVQce1EqKoydNWYQWCPWdn57E1Jr15d/0D6bkVh0
+         orwQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750242112; x=1750846912;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=GjmzlSMJGThF/X6xEUPvfYdLDsdkYToZuOGOEJIFwyo=;
-        b=F4IBRGybB9OWQFF0PE9WMaSd6dNI1tnfIw2nTCYFz9om+luWdslz6pj/2oxAxYqtRg
-         v17JhwVGO6j0XtmfbzJQX5hsHcv2GmwXF3fVVzGRh1MdrT3YUfHzDPIr5q5eBY6z91rg
-         ipfEuAPR1uz952RWeDHdIRNya7WIhQwaRe+iKnmbbIBb0UExHjL4Pz2MCbeRo4zfFKQw
-         jWJrWPrnu+kOnDK7gxRGyVws6zldEBrCuuNZ4Qa/nMtW3m8F7ITwZDQ6K6eAiBc/Bz7y
-         toOlcMVvn8n9JjbxAhkbtWSq6qgWrCX2m0ONz7DOKdfA/n1xkoKfnF9LJGLWCesDL2KI
-         Jnew==
-X-Forwarded-Encrypted: i=1; AJvYcCXOAze+fx51qCgar95dO6RxGBIV3bROZNeq1nEppd0gme7O/EvjKqws9wxitIuy+deDr6qyVZNLn2i3pIA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxSsAT9Lh2+KtwEweYS6jMtQTuKRZLiFH4E4/uVCh57aJ08O4WD
-	KfIDrrga0H9FPfWnqtX9NV/S9woakRSiAnVO7RIudOpwkeL7GiJBiaRfbZpYVrO3Lbs=
-X-Gm-Gg: ASbGncu5X6rEGUUcqJ91uLOSr/KjkvlAgmWOUaSzDYCnjCEWAm9HuXw8nbXYVvTNXDY
-	UTX3GhNwHFMBkzVDapZ16q/r+ZwNud7VcsrM0C4bu0ytuKkjX8hyEqovlV2KQSowOcBvzxS3vvB
-	HBIdsWiPi11pTgxMlOKKqiT2CWGC4PUoDMFeoP9SLjni61m48Ts1Ixehb+tL7Xk2GdaDwY+XqjS
-	eKeDi7/7Haf7LsSXPlxA2v1R9OWmVbhfrZh/IHNC5uFWQMVQ42Nu10ojxxgOWGtVuuCpLE6c5br
-	lffR550f9njc7ysK7/0jYe70xrCm+8k6NZJPSkOT8+rmp6qdI9f4OZjyqVREjxg0UCSVa49sn4Q
-	Mpz9DYAM=
-X-Google-Smtp-Source: AGHT+IFazvSPNlbUxR4VYiAlmcTE9A4W+7BMiVTRCRXWqUGSyQF3kdAvM4//0ZOLw44KbimyVMMUYw==
-X-Received: by 2002:a17:902:c946:b0:234:d292:be95 with SMTP id d9443c01a7336-2366b149f20mr223382045ad.42.1750242112586;
-        Wed, 18 Jun 2025 03:21:52 -0700 (PDT)
-Received: from localhost ([106.38.221.150])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2365de781dfsm96547735ad.131.2025.06.18.03.21.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Jun 2025 03:21:52 -0700 (PDT)
-From: Jian Zhang <zhangjian.3032@bytedance.com>
-To: Ryan Chen <ryan_chen@aspeedtech.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andi Shyti <andi.shyti@kernel.org>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	linux-i2c@vger.kernel.org,
-	openbmc@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] i2c: aspeed: change debug level in irq handler
-Date: Wed, 18 Jun 2025 18:21:48 +0800
-Message-ID: <20250618102148.3085214-1-zhangjian.3032@bytedance.com>
-X-Mailer: git-send-email 2.47.0
+        d=1e100.net; s=20230601; t=1750246040; x=1750850840;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=hC/rxmNEx7lBs7LXqlf7wlayqnKtYiiYbKP9iLo7bEA=;
+        b=KISStYDkaysAyVMZdPfrmTodgSvDRWSqN3piW0ciDPsk67CO361Gtx+r9fJH3LL6Uo
+         cHxVc7LYn7OzH8QDBlwHzwAQfYbXpKoSx6i5fgOnQTFQEnKqr3snmb7lQbo0BBOSZ7Kq
+         2wr7AIfJbgk+A2klGsHTNLmayG5jSg+Fvc04ly39wIMgJnhQYAMQH0k4XMWSVS79gtAb
+         13cZpggrnvoTHftS2xpVezSuCXPq0O/70YPrHro9Tc7Q8wzIC6fai5i8Juf7CPsPjXMo
+         PKCKb7/UmgCpSHzBE4rgcx9kkgF67aYIpszgz/v3tWU9+Ta8EzCpplCNyxnzr08Dz3u5
+         fLRg==
+X-Forwarded-Encrypted: i=1; AJvYcCUrqvTjkF05hOL2H7d/pWlwWiTacz6mt18eTnrhz44VKvEZd/kY/FfvXfXjOPd9KzzLi1JDH3LwOTaan2w=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxr7O3WMt4YXjbL2lYjnZqH3M3bL0otSHy6SyLxAOJZ3yY/W5eB
+	2FW/ZhxSg2gk2/D9TpD4gX+En2IL6CXg66vCSCZQFcypWoAcibRMNCWpK3q18ytPHqShtIhIu4l
+	mSmQy09bpT+JwPL9kdAzPh2LNC3iAdGFGjnCW8mUZag==
+X-Gm-Gg: ASbGncuP7yNoFgO7USsh4CV9h3+gt+3fr3SDO2dNGBVSJauGIEwSCwVYjw3Maw+0SC4
+	MpGC725O61FBsI5V4QMQ0xJ5D0CQxGvzdmhSASi2/s5DEq/xuXqipr3wQbh0VlbkZIvWRfpSI1h
+	VQXaqAt4Yejg7LvlHP1MNMz6PznSXwpXeM0dZ6UinlIMI=
+X-Google-Smtp-Source: AGHT+IH9N3s8eV4QAoWcV3ZISC8T6rNpJ4leRaY7YHuJFlZ4bPXaxx7Hzh/4jfbIVAzp1tapzbe+4WLXZFpaeF/7BEk=
+X-Received: by 2002:a05:6512:39c8:b0:553:2bf7:77ac with SMTP id
+ 2adb3069b0e04-553b6f15af6mr5016567e87.41.1750246040209; Wed, 18 Jun 2025
+ 04:27:20 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -96,118 +79,67 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20250611-pinctrl-const-desc-v2-0-b11c1d650384@linaro.org>
+In-Reply-To: <20250611-pinctrl-const-desc-v2-0-b11c1d650384@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 18 Jun 2025 13:27:09 +0200
+X-Gm-Features: AX0GCFuhKOslIDouO5PgG3-FBiOJa3cs6VfF8AgbesblIRkK52-2f8uLA9uvwos
+Message-ID: <CACRpkdb1YqS00tEeyAUTjjJ-EQQbH5wfE8QzZt-UFwQYCfNHRg@mail.gmail.com>
+Subject: Re: [PATCH v2 00/17] pinctrl: Constify pointers to 'pinctrl_desc' and more
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Cc: Basavaraj Natikar <Basavaraj.Natikar@amd.com>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>, 
+	Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, 
+	Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, 
+	Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, 
+	=?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, 
+	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, Geert Uytterhoeven <geert+renesas@glider.be>, 
+	David Rhodes <david.rhodes@cirrus.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, 
+	Charles Keepax <ckeepax@opensource.cirrus.com>, Lorenzo Bianconi <lorenzo@kernel.org>, 
+	Sean Wang <sean.wang@kernel.org>, Jesper Nilsson <jesper.nilsson@axis.com>, 
+	Lars Persson <lars.persson@axis.com>, Damien Le Moal <dlemoal@kernel.org>, 
+	Vladimir Zapolskiy <vz@mleia.com>, Michal Simek <michal.simek@amd.com>, 
+	Emil Renner Berthing <kernel@esmil.dk>, Jianlong Huang <jianlong.huang@starfivetech.com>, 
+	Hal Feng <hal.feng@starfivetech.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Manivannan Sadhasivam <mani@kernel.org>, 
+	linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
+	linux-sound@vger.kernel.org, patches@opensource.cirrus.com, 
+	linux-mediatek@lists.infradead.org, linux-arm-kernel@axis.com, 
+	linux-riscv@lists.infradead.org, linux-rtc@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, 
+	Florian Fainelli <florian.fainelli@broadcom.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-In interrupt context, using dev_err() can potentially cause latency
-or affect system responsiveness due to printing to console.
+On Wed, Jun 11, 2025 at 8:14=E2=80=AFAM Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org> wrote:
 
-In our scenario, under certain conditions, i2c1 repeatedly printed
-"irq handled != irq. expected ..." around 20 times within 1 second.
-Each dev_err() log introduced approximately 10ms of blocking time,
-which delayed the handling of other interrupts — for example, i2c2.
+> Changes in v2:
+> - Add Rb tags
+> - Patch #1: rephrase commit msg (Geert)
+> - Patch #2: fix/require dependency on OF
+> - Link to v1: https://lore.kernel.org/r/20250528-pinctrl-const-desc-v1-0-=
+76fe97899945@linaro.org
+>
+> Description:
+> ------------
+> In several drivers pointers to 'struct pinctrl_desc' is not modified, so
+> since core does not modify it, it can be made as const.
+>
+> Dependencies/merging:
+> ---------------------
+> Patch #4 "pinctrl: Constify pointers to 'pinctrl_desc'" is a
+> prerequisite for all further patches, including RTC patch, therefore
+> probably everything should be via main pinctrl tree.
 
-At the time, i2c2 was performing a PMBus firmware upgrade. The
-target device on i2c2 was time-sensitive, and the upgrade protocol
-was non-retryable. As a result, the delay caused by frequent error
-logging led to a timeout and ultimately a failed firmware upgrade.
+Patches applied!
 
-Frequent error printing in interrupt context can be dangerous,
-as it introduces latency and interferes with time-critical tasks.
-This patch changes the log level from dev_err() to dev_dbg() to
-reduce potential impact.
-
-Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
----
- drivers/i2c/busses/i2c-aspeed.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
-index 1550d3d552ae..38e23c826f39 100644
---- a/drivers/i2c/busses/i2c-aspeed.c
-+++ b/drivers/i2c/busses/i2c-aspeed.c
-@@ -317,7 +317,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 	switch (bus->slave_state) {
- 	case ASPEED_I2C_SLAVE_READ_REQUESTED:
- 		if (unlikely(irq_status & ASPEED_I2CD_INTR_TX_ACK))
--			dev_err(bus->dev, "Unexpected ACK on read request.\n");
-+			dev_dbg(bus->dev, "Unexpected ACK on read request.\n");
- 		bus->slave_state = ASPEED_I2C_SLAVE_READ_PROCESSED;
- 		i2c_slave_event(slave, I2C_SLAVE_READ_REQUESTED, &value);
- 		writel(value, bus->base + ASPEED_I2C_BYTE_BUF_REG);
-@@ -325,7 +325,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		break;
- 	case ASPEED_I2C_SLAVE_READ_PROCESSED:
- 		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
--			dev_err(bus->dev,
-+			dev_dbg(bus->dev,
- 				"Expected ACK after processed read.\n");
- 			break;
- 		}
-@@ -354,7 +354,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		/* Slave was just started. Waiting for the next event. */;
- 		break;
- 	default:
--		dev_err(bus->dev, "unknown slave_state: %d\n",
-+		dev_dbg(bus->dev, "unknown slave_state: %d\n",
- 			bus->slave_state);
- 		bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
- 		break;
-@@ -459,7 +459,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 
- 	/* We are in an invalid state; reset bus to a known state. */
- 	if (!bus->msgs) {
--		dev_err(bus->dev, "bus in unknown state. irq_status: 0x%x\n",
-+		dev_dbg(bus->dev, "bus in unknown state. irq_status: 0x%x\n",
- 			irq_status);
- 		bus->cmd_err = -EIO;
- 		if (bus->master_state != ASPEED_I2C_MASTER_STOP &&
-@@ -523,7 +523,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 			irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
- 			goto error_and_stop;
- 		} else if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
--			dev_err(bus->dev, "slave failed to ACK TX\n");
-+			dev_dbg(bus->dev, "slave failed to ACK TX\n");
- 			goto error_and_stop;
- 		}
- 		irq_handled |= ASPEED_I2CD_INTR_TX_ACK;
-@@ -546,7 +546,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		fallthrough;
- 	case ASPEED_I2C_MASTER_RX:
- 		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_RX_DONE))) {
--			dev_err(bus->dev, "master failed to RX\n");
-+			dev_dbg(bus->dev, "master failed to RX\n");
- 			goto error_and_stop;
- 		}
- 		irq_handled |= ASPEED_I2CD_INTR_RX_DONE;
-@@ -577,7 +577,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		goto out_no_complete;
- 	case ASPEED_I2C_MASTER_STOP:
- 		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_NORMAL_STOP))) {
--			dev_err(bus->dev,
-+			dev_dbg(bus->dev,
- 				"master failed to STOP. irq_status:0x%x\n",
- 				irq_status);
- 			bus->cmd_err = -EIO;
-@@ -589,7 +589,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
- 		bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
- 		goto out_complete;
- 	case ASPEED_I2C_MASTER_INACTIVE:
--		dev_err(bus->dev,
-+		dev_dbg(bus->dev,
- 			"master received interrupt 0x%08x, but is inactive\n",
- 			irq_status);
- 		bus->cmd_err = -EIO;
-@@ -665,7 +665,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
- 
- 	irq_remaining &= ~irq_handled;
- 	if (irq_remaining)
--		dev_err(bus->dev,
-+		dev_dbg(bus->dev,
- 			"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
- 			irq_received, irq_handled);
- 
--- 
-2.47.0
-
+Yours,
+Linus Walleij
 
