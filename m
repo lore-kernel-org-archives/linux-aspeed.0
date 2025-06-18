@@ -1,52 +1,41 @@
-Return-Path: <linux-aspeed+bounces-1498-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1499-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33A91C71157
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Jun 2025 13:36:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20A24C7115A
+	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Jun 2025 23:25:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bMlBn3ZzNz30VZ;
-	Wed, 18 Jun 2025 23:36:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750253793;
-	cv=none; b=TXM0hPLSxQuLi15OqRNRMyo88waOhw1Laejna00nfrt0DDCdq8hU922o1RrzKNkZII+IcWBGEOEjidUL17jSuFPE8udVC5l5HQArss5mjW7F2CZCITfaSAdVNaQ5BROYzJCy8dDVh7TchFCfam4GQ5lsa1jSLf2ZIgmSEjUyEA4AQvQHfgsksKnfdIrFc2XqP515rGJMsQ50bPFyXEyguc974pwUPkEArNE5djPkbV1BKZniV2i07fhUlLdUQnI2S6a7gHxHrj+g20ZRN5HgM82B2zFLvmQ/fiZFzZNCwP7M045UTKCgBEec/B3kC4TCiXClDyy0tsaWj6wLk80q4w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bN0G51PQxz30TG;
+	Thu, 19 Jun 2025 09:25:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750289117;
+	cv=none; b=FW/sx6rBsR6PBtcHUHzBKyes6ZHmawVtQd35o66dRe9N70z1lu1dzCiQ64Zmx6ujW7+M09GJDNnA+Mjb2VoXpwq3CH8MEc+iP19oL59aoECbIJBLJ+oIP01JB55s1g+9I83Fl/QPKZhqoMqkDsTvTAm80wxvXnHOgCV6BUASZk3J4YdI8FvO3wrztgvyjjqtywOjmaBomW+iUUSl46MdCkw5UHZo5XMwjw+uX7jhskhHaTuxiLm8YsEtXkj7pRKoxFxQWLcM8jGZnOVJntpfBPbXR/CYnjWE75ObgG9C8qIZEXyK7Li3PnsVFERRmtZvxS/7IcONC6533Zk4ZT//xg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750253793; c=relaxed/relaxed;
-	bh=WkjiOAazJwpGQm3aQzeOjFohWBteaepsAMsbUCQ2OcY=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=i+eubjDVEe7r0SLb1WPffsJa9NQjPX6kkkM4hYjZb+tzI4vTH35beYcI/o4Riytn5U/T96AF9qNPY0oRajXCGnjAgNCGhQXLQt75BO57wT/7seAD1dJEBmsyO2ULX2BM7KIcKofyEywRDEslUhZ/CDiOguGxOT9klV67Pc8lnR8ArNAunCtSMj0Qqj+E3kFfu7axzIGIliWj0utBNC9V8BvXlMWl5r3QT8Xben9v97oR1o74WeFnl1BVgaFapcwDy0s7SRJFCOpdbQgaT8/AlzdVyEIqiogxovEkWT4zIloFyr/HxI669Bmh1FWuO/WAqgDWdWx0bReGYl68QRY3mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LpfGMXd8; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LpfGMXd8;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	t=1750289117; c=relaxed/relaxed;
+	bh=GhFeZnoQ2V9lodOI5Au4oU4mRV0Gp+UopakMmZW6ARw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
+	 In-Reply-To:Content-Type; b=QPHnkqV/5ZIU8o9AGzER5C2Tc1RcnV2s7Wu9qngb0GKOsemZxgNmk+lRgl2zdaA9BajetxWWvtvTdh7z+pgkHD70DR1/+sGegBq2HoNOY9QHVgLwsnWgsNTwamq4YqI0WZ5JmmY4yI2xq4Q/pQJ2plQ1yMH80oGoPzojOa4a6KChJMQN00+/PeP3OGFMq+sLr3BP2VuruP8ElyqUEZQQvzayd2RRCD0TaI3u/nGovW6mYQZo1fza3ffyqlW6dO619W/FzthImTNoY0uOPcD1R/R0a0iWDDD5Xbht/K0RxxmuZOtjMmt8o+T4c4ayyFjirji49sRyMs4K825w2QTSuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 322 seconds by postgrey-1.37 at boromir; Thu, 19 Jun 2025 09:25:11 AEST
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMlBm2b7Nz2xS0
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Jun 2025 23:36:32 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 1FA945C5E4A;
-	Wed, 18 Jun 2025 13:34:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58684C4CEEE;
-	Wed, 18 Jun 2025 13:36:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750253789;
-	bh=3PrGbD05/adEL24Dc6BiHTUdSQw3bSiCntd1ctDvbsE=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=LpfGMXd8xQ4zihon0vRIL0W2cnZooibfYbMwdZJHrs5z8tR5yqR8UuYbZEaMsgD9C
-	 ctgFRo1oeOFuKn5P2Rs6k7Nf+Gs9FIwtj3pMxId9YQw7WjYUADn+ddQIdM6KIRyJ3w
-	 WHc32uC9nfV8S3PSd1vR4r49NGYtt6cf5fHMbz5C+ui1bStSmtlBCrZnuHLDFz8BBT
-	 cQgO3L5HfPA41asHpSleWM/OU02FkcBQW8RKVnBfSC8OZcauQyaqC6gtbRLiTYUVry
-	 TPwAPDJatMXzHKByW+tgL2lz9kebviSIANruCcN4e9UUW+QnHaetadX3V2mqNGTfoI
-	 o0bKTKz3pmrmQ==
-Date: Wed, 18 Jun 2025 08:36:28 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bN0Fz3lPTz2xQ6;
+	Thu, 19 Jun 2025 09:25:11 +1000 (AEST)
+Received: from [192.168.0.5] (ip5f5af305.dynamic.kabel-deutschland.de [95.90.243.5])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id EB61D60288261;
+	Thu, 19 Jun 2025 01:18:33 +0200 (CEST)
+Message-ID: <63e740bf-cd0c-4671-9254-6846048b0366@molgen.mpg.de>
+Date: Thu, 19 Jun 2025 01:18:33 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,125 +49,150 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Conor Dooley <conor+dt@kernel.org>, 
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, linux-aspeed@lists.ozlabs.org, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Conor Dooley <conor.dooley@microchip.com>, Tony Luck <tony.luck@intel.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Magnus Damm <magnus.damm@gmail.com>, george.kw.lee@fii-foxconn.com, 
- Leo Wang <leo.jt.wang@fii-foxconn.com>, Joel Stanley <joel@jms.id.au>, 
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- Geert Uytterhoeven <geert+renesas@glider.be>, bruce.jy.hung@fii-foxconn.com, 
- Kees Cook <kees@kernel.org>, linux-renesas-soc@vger.kernel.org, 
- linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
-To: Leo Wang <leo.jt.wang@gmail.com>
-In-Reply-To: <20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com>
-References: <20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com>
-Message-Id: <175025355357.1756335.7026118663202059503.robh@kernel.org>
-Subject: Re: [PATCH 0/2] ARM: dts: Add support for Meta Clemente BMC
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] i2c: aspeed: change debug level in irq handler
+To: Jian Zhang <zhangjian.3032@bytedance.com>
+References: <20250618102148.3085214-1-zhangjian.3032@bytedance.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Joel Stanley <joel@jms.id.au>, Andi Shyti <andi.shyti@kernel.org>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, linux-i2c@vger.kernel.org,
+ openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20250618102148.3085214-1-zhangjian.3032@bytedance.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Dear Jian,
 
 
-On Wed, 18 Jun 2025 17:40:01 +0800, Leo Wang wrote:
-> This series adds initial support for the Meta Clemente BMC based on the ASPEED AST2600 SoC.
+Thank you for the patch.
+
+Am 18.06.25 um 12:21 schrieb Jian Zhang:
+> In interrupt context, using dev_err() can potentially cause latency
+> or affect system responsiveness due to printing to console.
 > 
-> Patch 1 documents the compatible string.
-> Patch 2 adds the device tree for the board.
+> In our scenario, under certain conditions, i2c1 repeatedly printed
+> "irq handled != irq. expected ..." around 20 times within 1 second.
+
+Any idea, why you hit this error at all?
+
+> Each dev_err() log introduced approximately 10ms of blocking time,
+> which delayed the handling of other interrupts — for example, i2c2.
 > 
-> Signed-off-by: Leo Wang <leo.jt.wang@fii-foxconn.com>
+> At the time, i2c2 was performing a PMBus firmware upgrade. The
+> target device on i2c2 was time-sensitive, and the upgrade protocol
+> was non-retryable. As a result, the delay caused by frequent error
+> logging led to a timeout and ultimately a failed firmware upgrade.
+> 
+> Frequent error printing in interrupt context can be dangerous,
+> as it introduces latency and interferes with time-critical tasks.
+> This patch changes the log level from dev_err() to dev_dbg() to
+> reduce potential impact.
+
+Thank you for the patch and the problem description. Hiding an error 
+condition behind debug level is also not good, as administrators might 
+miss hardware issues. I do not have a solution. Is there something 
+similar to WARN_ONCE? Maybe the level should be a warning instead of 
+error, because the system is often able to cope with this?
+
+The code is from 2017, so should be well tested actually, shouldn’t it?
+
+> Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
 > ---
-> Leo Wang (2):
->       Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
->       ARM: dts: aspeed: clemente: add Meta Clemente BMC
+>   drivers/i2c/busses/i2c-aspeed.c | 18 +++++++++---------
+>   1 file changed, 9 insertions(+), 9 deletions(-)
 > 
->  .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
->  arch/arm/boot/dts/aspeed/Makefile                  |    1 +
->  .../dts/aspeed/aspeed-bmc-facebook-clemente.dts    | 1254 ++++++++++++++++++++
->  3 files changed, 1256 insertions(+)
-> ---
-> base-commit: 52da431bf03b5506203bca27fe14a97895c80faf
-> change-id: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
-> 
-> Best regards,
-> --
-> Leo Wang <leo.jt.wang@fii-foxconn.com>
-> 
-> 
-> 
+> diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-aspeed.c
+> index 1550d3d552ae..38e23c826f39 100644
+> --- a/drivers/i2c/busses/i2c-aspeed.c
+> +++ b/drivers/i2c/busses/i2c-aspeed.c
+> @@ -317,7 +317,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   	switch (bus->slave_state) {
+>   	case ASPEED_I2C_SLAVE_READ_REQUESTED:
+>   		if (unlikely(irq_status & ASPEED_I2CD_INTR_TX_ACK))
+> -			dev_err(bus->dev, "Unexpected ACK on read request.\n");
+> +			dev_dbg(bus->dev, "Unexpected ACK on read request.\n");
+>   		bus->slave_state = ASPEED_I2C_SLAVE_READ_PROCESSED;
+>   		i2c_slave_event(slave, I2C_SLAVE_READ_REQUESTED, &value);
+>   		writel(value, bus->base + ASPEED_I2C_BYTE_BUF_REG);
+> @@ -325,7 +325,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   		break;
+>   	case ASPEED_I2C_SLAVE_READ_PROCESSED:
+>   		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
+> -			dev_err(bus->dev,
+> +			dev_dbg(bus->dev,
+>   				"Expected ACK after processed read.\n");
+>   			break;
+>   		}
+> @@ -354,7 +354,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   		/* Slave was just started. Waiting for the next event. */;
+>   		break;
+>   	default:
+> -		dev_err(bus->dev, "unknown slave_state: %d\n",
+> +		dev_dbg(bus->dev, "unknown slave_state: %d\n",
+>   			bus->slave_state);
+>   		bus->slave_state = ASPEED_I2C_SLAVE_INACTIVE;
+>   		break;
+> @@ -459,7 +459,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   
+>   	/* We are in an invalid state; reset bus to a known state. */
+>   	if (!bus->msgs) {
+> -		dev_err(bus->dev, "bus in unknown state. irq_status: 0x%x\n",
+> +		dev_dbg(bus->dev, "bus in unknown state. irq_status: 0x%x\n",
+>   			irq_status);
+>   		bus->cmd_err = -EIO;
+>   		if (bus->master_state != ASPEED_I2C_MASTER_STOP &&
+> @@ -523,7 +523,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   			irq_handled |= ASPEED_I2CD_INTR_TX_NAK;
+>   			goto error_and_stop;
+>   		} else if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
+> -			dev_err(bus->dev, "slave failed to ACK TX\n");
+> +			dev_dbg(bus->dev, "slave failed to ACK TX\n");
+>   			goto error_and_stop;
+>   		}
+>   		irq_handled |= ASPEED_I2CD_INTR_TX_ACK;
+> @@ -546,7 +546,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   		fallthrough;
+>   	case ASPEED_I2C_MASTER_RX:
+>   		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_RX_DONE))) {
+> -			dev_err(bus->dev, "master failed to RX\n");
+> +			dev_dbg(bus->dev, "master failed to RX\n");
+>   			goto error_and_stop;
+>   		}
+>   		irq_handled |= ASPEED_I2CD_INTR_RX_DONE;
+> @@ -577,7 +577,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   		goto out_no_complete;
+>   	case ASPEED_I2C_MASTER_STOP:
+>   		if (unlikely(!(irq_status & ASPEED_I2CD_INTR_NORMAL_STOP))) {
+> -			dev_err(bus->dev,
+> +			dev_dbg(bus->dev,
+>   				"master failed to STOP. irq_status:0x%x\n",
+>   				irq_status);
+>   			bus->cmd_err = -EIO;
+> @@ -589,7 +589,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_bus *bus, u32 irq_status)
+>   		bus->master_state = ASPEED_I2C_MASTER_INACTIVE;
+>   		goto out_complete;
+>   	case ASPEED_I2C_MASTER_INACTIVE:
+> -		dev_err(bus->dev,
+> +		dev_dbg(bus->dev,
+>   			"master received interrupt 0x%08x, but is inactive\n",
+>   			irq_status);
+>   		bus->cmd_err = -EIO;
+> @@ -665,7 +665,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void *dev_id)
+>   
+>   	irq_remaining &= ~irq_handled;
+>   	if (irq_remaining)
+> -		dev_err(bus->dev,
+> +		dev_dbg(bus->dev,
+>   			"irq handled != irq. expected 0x%08x, but was 0x%08x\n",
+>   			irq_received, irq_handled);
+>   
 
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
+Kind regards,
 
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-This patch series was applied (using b4) to base:
- Base: using specified base-commit 52da431bf03b5506203bca27fe14a97895c80faf
-
-If this is not the correct base, please add 'base-commit' tag
-(or use b4 which does this automatically)
-
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com:
-
-arch/arm/boot/dts/aspeed/aspeed-ast2500-evb.dtb: /ahb/apb/timer@1e782000: failed to match any schema with compatible: ['aspeed,ast2400-timer']
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: fsi@1e79b000 (aspeed,ast2600-fsi-master): compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yamp.dtb: /ahb/apb/syscon@1e6e2000/p2a-control@2c: failed to match any schema with compatible: ['aspeed,ast2500-p2a-ctrl']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: timer (arm,armv7-timer): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /sdram@1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: bus@1e600000 (aspeed,ast2600-ahbc): compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
-	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/display@1e6e6000: failed to match any schema with compatible: ['aspeed,ast2600-gfx', 'syscon']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: adc@1e6e9000 (aspeed,ast2600-adc0): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: adc@1e6e9100 (aspeed,ast2600-adc1): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: crypto@1e6fa000 (aspeed,ast2600-acry): 'aspeed,ahbc' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/timer@1e782000: failed to match any schema with compatible: ['aspeed,ast2600-timer']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: lpc@1e789000 (aspeed,ast2600-lpc-v2): reg-io-width: 4 is not of type 'object'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: lpc@1e789000 (aspeed,ast2600-lpc-v2): lpc-snoop@80: 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: kcs@24 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: kcs@28 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: kcs@2c (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: kcs@114 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: sdc@1e740000 (aspeed,ast2600-sd-controller): sdhci@1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: sdc@1e740000 (aspeed,ast2600-sd-controller): sdhci@1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/sdc@1e740000/sdhci@1e740100: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/sdc@1e740000/sdhci@1e740200: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: fsi@1e79b000 (aspeed,ast2600-fsi-master): compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/fsi@1e79b000: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: fsi@1e79b100 (aspeed,ast2600-fsi-master): compatible: ['aspeed,ast2600-fsi-master', 'fsi-master'] is too long
-	from schema $id: http://devicetree.org/schemas/fsi/aspeed,ast2600-fsi-master.yaml#
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/fsi@1e79b100: failed to match any schema with compatible: ['aspeed,ast2600-fsi-master', 'fsi-master']
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: /ahb/apb/dma-controller@1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
-
-
-
-
-
+Paul
 
