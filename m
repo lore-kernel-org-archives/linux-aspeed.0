@@ -1,68 +1,68 @@
-Return-Path: <linux-aspeed+bounces-1513-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1514-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F496C71155
-	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Jun 2025 06:52:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DB7AC7115B
+	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Jun 2025 07:10:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bNp7J6xxlz2yf3;
-	Fri, 20 Jun 2025 16:52:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.41
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750402332;
-	cv=none; b=SHH1hh3Z475BvqmLBCeVSqvvho8oFa0dwVtsJws9tj9+xvS374M8cyD8bqIPQDSvw+M1DZN91Jxet9Vbr87msfGqQJUAwcBtLIlPTOetRGYR8YEk2QxEqt695KjJC19k2momc9dWOhLyAT8VBE+JMUaoOqUZJsj70ywlOXipsTByfr16OnziUnVIiGc2IG6BPQSUPPBXQLU/do7mZbVw8lBCp/nDlP/uICfUdrF+zHg/KV+P6WHEnBvdeeLB24yRjYGBkpXBPCTaiyBBsPiOanYTDU/BMMlJO4ujeISu9RJQbUV/j9EnskiEh4XHE/UC09q39ZcP7x7erEQwoqK8yA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bNpWv042Hz2yf3;
+	Fri, 20 Jun 2025 17:10:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750403402;
+	cv=none; b=aH5GyDkSv5bMffCYIwZRWma4lbPnOCf8a+NbECI1qjp4WsbuAqzX0oeax3xgE/7LKv98tIRMl/YnKFHLkGe3ptb7sPov0PqI5kcD8KvkiMXnqr4nz6quLN4dtRvPdzgKwl5b3OYZtPf6Ssd3PAYaleZYTe10N//Sqfm4e+zJTurqb9DNXdqmBVQU2RvKfdUfzW178vauTCOte4RXQ9CC8n7/xwYlHid+OFmd653yIzQIamp9MwCeC3MgKqroIzC4Fd9ffpV2748NnYJpcWCL+z9gIzvLRev2ngDsiT+bEUkVOZt6JaL9qvgdMdAfaZPywiNlFcyk+0MqBDz9DdMnbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750402332; c=relaxed/relaxed;
-	bh=gEssu/NXd3Hla7QRE6d+TVGXP6/YrFjxNAC/07Z4Nvk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=LzxCaIZk72yhQEgeGJI/hz53ArMBIcvDl56ehm6OSsI/7EHXmWTnI74btoY4WPJQ84SkwtrI6NxXz5THdS8e9qFsIU4AF6jjFyHon7BNFoZ7FEPYhoRwrWq8UjXu7yGDWPa8RPgQT74+NHYjQvqiFpQ3wO3xR+FRCcUDjbAvQFOMNoBwTuEMNlrMUHL9QUbF+S3bwvMZQcGl0F1cS7t5n01EfoNelivdfF2WeOpEkx5VU18CNaBlczu8vW55fw+VnNnHZiEAE2YAce7ijXiEdJqxJ91qLRWNTvBW3pdGeONhjf3b6y+5jMUU9Nww0i63os88DJkWL9f6lf9J0ni0FQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.41; helo=mail-vs1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.41; helo=mail-vs1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-f41.google.com (mail-vs1-f41.google.com [209.85.217.41])
+	t=1750403402; c=relaxed/relaxed;
+	bh=VJVc/Bqimb/04dTPJhdiePqGlWXQYi6s6TXswEG790U=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=hEpztqRhKGHPeM+aFWO/ejjEoKT0p6DgyBe3td3pMUdL6eIAwzv2NTAUO4Z2LU712xwIT938jQ77DGPbsT6hU3gKfmgDBGP7A9Bi9N+m+DH/uxsljlsmS7mNniWJDUMmoE8tDEZ4wdFoD34JgjrEgr8HHNvtYhVKTJNZIE0wbvvWUSzO2+2BUATbzO3jhoHVw+kd0H900lOfct+dm6Z1LtrHKtLzoubi/A83KvkwJnezZxBBXoLhDzJPRS6jq7iL4cCS8ykYwXyFc0rhvyI953xVWaTViJPOkQdepTgDJ2XAlDhV/2hTdPy3uP0wupsK8KV/TquwJRty/9QQ7JB7Cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aw8vMIFr; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aw8vMIFr;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNp7H3LsKz2yYJ
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Jun 2025 16:52:10 +1000 (AEST)
-Received: by mail-vs1-f41.google.com with SMTP id ada2fe7eead31-4c9cea30173so405111137.3
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Jun 2025 23:52:10 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750402325; x=1751007125;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=gEssu/NXd3Hla7QRE6d+TVGXP6/YrFjxNAC/07Z4Nvk=;
-        b=WFFqsVMbujM9oDkEdE5pYQ29GjUKnRzGCeb7W4/G7unDIPZ6A+ag3RrtDwg/BcQiAT
-         Yrt+7Dhd0WFbTv3lI/GgsKgDeSfSoh0DURhSqEVQQ6wJgwsvQIQGkJyDMWBVPlh8lCyn
-         sj5b5jYfqu1thQnJ3Fp406X6eIyyVFw6cyd14eyPgXVCF9lILSy3eGC+uNw+qY/dB7oD
-         jDdRzQImy3+YYxMsqzwEXRYygavTADWplLoxawp8Z09bHup+V7dFpdZsUokof1PVboiG
-         rPoWqaNNRHRL9yDkQyJc7b35nAMCkeruTb0LwpMzTxK9oW++mue/gx0XxxF3aaEnrBWS
-         KYvg==
-X-Forwarded-Encrypted: i=1; AJvYcCWsicH6/d0Xiyy+MtDUvgMt++N9XMYG6KSD6JTw6cM+6kahOzxuOsvsK4MIF/PtQI/MvNu1k7McWA/XH0c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyTjepmVhZJyL4EEYXpEXzLPmsCOtC23+XSK3yF52S9JJ98EMtQ
-	6mf7htRliF1gZ9aXBfjJADhaUUjbHWrp5aLQtLJ9Vn7cqrVkqmeld+oc2mCGPMYl
-X-Gm-Gg: ASbGnctHAhTCtztsi4jE6O0CRtxnWvhdi3JdH+PI07TKXBSo07mQxrsOTcQgNlYvC02
-	4XddObwpNi4sRGKsDigvrnXLyEdkVVYom3ozjfWehGQtLs5deghvuxJIdTdDxsiosmq25672IjQ
-	IXuKvrWeWfskPZpe9F0Y+WqDegvGiGOAWFHYMtgaUkStAx9eDBVJZ2IzxCtcTYUXo0wWboK9aXH
-	9I039PvVvNcMDVNLVy46osw4kaPG3hnrQ2X6mWzKKotsXcgd6v/lWbwYDuA8gmohPx47gvWctdR
-	5nFgpFBIIHrPVzpP418PQQvkNbvKE0pM9ANSpBn/m6+CYY+kmCRcxTHauTCKaEstvXuHX6TOnOF
-	3z9BXAc/6Gu/js9RydAWn7w/Q
-X-Google-Smtp-Source: AGHT+IEGMAXbtRhEem036xLvZWG1MhXvhZ5psIRoXheiTSdjsq6NU8PIlv81tESx73gu8OyPrYpptQ==
-X-Received: by 2002:a05:6102:3051:b0:4e2:c6e4:ab1e with SMTP id ada2fe7eead31-4e9c281661amr802737137.7.1750402325444;
-        Thu, 19 Jun 2025 23:52:05 -0700 (PDT)
-Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com. [209.85.222.45])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-8811acf984bsm204981241.4.2025.06.19.23.52.04
-        for <linux-aspeed@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 19 Jun 2025 23:52:04 -0700 (PDT)
-Received: by mail-ua1-f45.google.com with SMTP id a1e0cc1a2514c-87edd8f4e9fso307702241.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Jun 2025 23:52:04 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCULqJ4OdKHl3dmcr+0PuA8YaFmifr9vEAp7TQxmjW82fZsh/8HlKvj3jZxjs9Jlh5/B/LGUzwfO9T/1T58=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:c4f:b0:4df:8259:eab with SMTP id
- ada2fe7eead31-4e9c2a018f3mr788689137.19.1750402324049; Thu, 19 Jun 2025
- 23:52:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNpWt0Mv5z2xHY;
+	Fri, 20 Jun 2025 17:10:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1750403401;
+	bh=VJVc/Bqimb/04dTPJhdiePqGlWXQYi6s6TXswEG790U=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=aw8vMIFr+cXE2mO/q8Oyu1dt9tnCq1lFaxSAROzAWBthwSXvbUQkKB1U6L6uCSkLL
+	 2+acxXCyNDkhpz0/pbbOIZSy1x4qwTS3WjNq1nqRpnfLjTjFo0L1DCpeNywuHWsQNP
+	 /xmQNCIlx4wV06dP6nDW2tuKvxvIBMeL/eGduIs1nknST7JZlIbBB3mMSOWU/HGi7u
+	 y2y/qZTIOwZgrg6zSoXs3t0MtVzQOeK7/MmIoI9aK6W0XyouS7MCZ00VA2dRKTZQoU
+	 ypcf0Lm4d/vLU3gBemeyjhzLtybrXugWPxjIDkxa8T+/Qx3H+QvBYSdQjl4eD/aXfG
+	 wY/kl+cgKfeMA==
+Received: from [192.168.68.112] (unknown [180.150.112.166])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 40186640A0;
+	Fri, 20 Jun 2025 15:09:58 +0800 (AWST)
+Message-ID: <10d493cb37748aeb1f4c97856929845727c4c3bc.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 6/7] pinctrl: aspeed-g6: Add PCIe RC PERST pin group
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Jacky Chou <jacky_chou@aspeedtech.com>, bhelgaas@google.com, 
+ lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
+ robh@kernel.org,  krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+ vkoul@kernel.org,  kishon@kernel.org, linus.walleij@linaro.org,
+ p.zabel@pengutronix.de,  linux-aspeed@lists.ozlabs.org,
+ linux-pci@vger.kernel.org,  devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,  linux-kernel@vger.kernel.org,
+ linux-phy@lists.infradead.org,  openbmc@lists.ozlabs.org,
+ linux-gpio@vger.kernel.org
+Cc: elbadrym@google.com, romlem@google.com, anhphan@google.com,
+ wak@google.com,  yuxiaozhang@google.com, BMC-SW@aspeedtech.com
+Date: Fri, 20 Jun 2025 16:39:57 +0930
+In-Reply-To: <20250613033001.3153637-7-jacky_chou@aspeedtech.com>
+References: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
+	 <20250613033001.3153637-7-jacky_chou@aspeedtech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -76,50 +76,66 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com>
- <20250618-add-support-for-meta-clemente-bmc-v1-1-e5ca669ee47b@fii-foxconn.com>
- <93c91bda-9c2a-4a23-bc35-a46587077621@kernel.org>
-In-Reply-To: <93c91bda-9c2a-4a23-bc35-a46587077621@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Jun 2025 08:51:52 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWDbp+d=o8F4o7Bw+0am7hBFcKsFNjithgZtHx2bvpMHQ@mail.gmail.com>
-X-Gm-Features: Ac12FXzy1twp29mefSPbzAxxpzkqUQya2cqJCrjgKLlCdSDLERYoEPvlqbB8GoA
-Message-ID: <CAMuHMdWDbp+d=o8F4o7Bw+0am7hBFcKsFNjithgZtHx2bvpMHQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Leo Wang <leo.jt.wang@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Kees Cook <kees@kernel.org>, 
-	Tony Luck <tony.luck@intel.com>, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	linux-hardening@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	bruce.jy.hung@fii-foxconn.com, george.kw.lee@fii-foxconn.com, 
-	Leo Wang <leo.jt.wang@fii-foxconn.com>, Conor Dooley <conor.dooley@microchip.com>
-Content-Type: text/plain; charset="UTF-8"
 
-On Fri, 20 Jun 2025 at 08:37, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> On 18/06/2025 11:40, Leo Wang wrote:
-> > Document the new compatibles used on Meta Clemente.
-> >
-> > Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> How v1 with such subject could have been acked?
+On Fri, 2025-06-13 at 11:30 +0800, Jacky Chou wrote:
+> The PCIe RC PERST uses SSPRST# as PERST#=C2=A0 and enable this pin
+> to output.
+>=20
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> ---
+> =C2=A0drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 12 +++++++++++-
+> =C2=A01 file changed, 11 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl=
+/aspeed/pinctrl-aspeed-g6.c
+> index 5a7cd0a88687..c751703acdb9 100644
+> --- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> +++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+> @@ -17,6 +17,7 @@
+> =C2=A0#include "../pinctrl-utils.h"
+> =C2=A0#include "pinctrl-aspeed.h"
+> =C2=A0
+> +#define SCU040=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A00x04=
+0 /* Reset Control Set 1=C2=A0 */
+> =C2=A0#define SCU400=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A00x400 /* Multi-function Pin Control #1=C2=A0 */
+> =C2=A0#define SCU404=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A00x404 /* Multi-function Pin Control #2=C2=A0 */
+> =C2=A0#define SCU40C=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A00x40C /* Multi-function Pin Control #3=C2=A0 */
+> @@ -52,7 +53,7 @@
+> =C2=A0#define SCU6D0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A00x6D0 /* Multi-function Pin Control #29 */
+> =C2=A0#define SCUC20=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A00xC20 /* PCIE configuration Setting Control */
+> =C2=A0
+> -#define ASPEED_G6_NR_PINS 256
+> +#define ASPEED_G6_NR_PINS 258
+> =C2=A0
+> =C2=A0#define M24 0
+> =C2=A0SIG_EXPR_LIST_DECL_SESG(M24, MDC3, MDIO3, SIG_DESC_SET(SCU410, 0));
+> @@ -1636,6 +1637,12 @@ FUNC_DECL_1(USB11BHID, USBB);
+> =C2=A0FUNC_DECL_1(USB2BD, USBB);
+> =C2=A0FUNC_DECL_1(USB2BH, USBB);
+> =C2=A0
+> +#define D7 257
+> +SIG_EXPR_LIST_DECL_SESG(D7, RCRST, PCIERC1, SIG_DESC_SET(SCU040, 19),
 
-The "real" v1 looked better ;-)
+The documentation for SCU040[19] says it will assert the reset. I
+expect that's not what's desired.
 
-> Please provide lore links.
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0SIG_DESC_=
+SET(SCU500, 24));
 
-https://lore.kernel.org/all/68240d47.170a0220.ba589.0feb@mx.google.com
+SCU500[24] seems okay.
 
-Gr{oetje,eeting}s,
+> +PIN_DECL_(D7, SIG_EXPR_LIST_PTR(D7, RCRST));
+> +FUNC_GROUP_DECL(PCIERC1, D7);
 
-                        Geert
+It only makes sense to describe pins with multiple functions. The other
+function this pin has is the reset line for the secondary service
+processor. Can we describe that too?
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Andrew
 
