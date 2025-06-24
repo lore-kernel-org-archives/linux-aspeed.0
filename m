@@ -1,80 +1,71 @@
-Return-Path: <linux-aspeed+bounces-1546-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1547-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 361DCC77B7C
-	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Jun 2025 07:29:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5523C77B7F
+	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Jun 2025 10:32:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRGmJ6BTMz2yft;
-	Tue, 24 Jun 2025 17:29:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750750160;
-	cv=none; b=kUzf3bkVRaig9Vhpg+OjIyNxN17yygbkURALOQws20iBNNmplrHgG9ixIWb9bCReXT77+jKwBFCuVrpLR7GEl1vVaXemreFiLVPUtao13o8J3ODy3bvhnc/XGW+njRQ2yEGuUZdB1VjcolDafdSW0CDoRW4ttN9wbNdos42GsJ921oRl4T1lhkhlV9CrcusCG1PXCSYodnC1idt8e7BlwnUC/9Ejvhk8JlG0LFbI3THH6eNpHlUYX6Bt62HhHlo4+0l5BY8bFlcvbqjzs2MdFrmD90YYN2zBufCFpzC7MYUzgLDBtyozA8N8fl8mDAdircIT3O3dT7gQqWWOl92shA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bRLqf6DHRz2yft;
+	Tue, 24 Jun 2025 20:32:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::432"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750761150;
+	cv=none; b=SNYWjJVan2nd/xiuI+oWfIMiG3akdm3N9LL/UkNuoCawwCt/ZWD1O7RC+cUJH0SHsyzKJfR34qrxvvYPHzhezeW54yvt1E1lGeupx4P4hhQtV1cfBaNVcSbHOMMYVuO8kAtYSjwqW8MvH+mwgSPS5rqKSRSjGasJPmNGA1Qd7/KQSE4qwMN6B38Z+qMkoUrAUV7HEJEuy1H+jBuNe5//yG/rqAnsAW6n/WatXnB75nG553G5h8KNV0BnNVk2AGyitK5vsgGiMXGqnrqQWLxuh8CBP860sf7P8SBs06U6/k3iL/pnfP3kqTVOeNAy7MDQLVa77XiSRtfhAl1G0i1crA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750750160; c=relaxed/relaxed;
-	bh=vXQvyWKGqoA++0+nLyhrIs47IOqxWVGOvjV4paCklaM=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
-	 In-Reply-To:Content-Type; b=J6JsXcc86iEj2c1ckSFZXvYfoYt/vEv5Le0CYHS1sK/rM9Qr/Xcf0ND4DN5JGEBFafO6MsnXgAneF47QkrBMhy1Bczn2SsDfDZjNSi50uFUXXdCSQYAQso1O2CDcv81qkyQ4gLqcWckNPWVb2GvlLm6kP5jXRkXjwTm3cpBNwivsocSaDVm75IJnTM0SXy0vGgj+jX5ZiY08xfsydhFFSq3hOrWW6YJ0DmntN/Ggnbx7WB2m98WGB0Vx4TNR08URpcJO+fv9N6fak75V50Ofi4JjX2rSHkmLlSN4a/AdIYBUCpTkahHFKb+hD0TL3Uejm8c/V9/9pjTG8yy9RHtPBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=jRxauPZ6; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=neil.armstrong@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	t=1750761150; c=relaxed/relaxed;
+	bh=+qt1G4xdHuGWkr7FJJKwWLSBjfU2TU/J1+xFmV3PeoE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=B13xd0zH0hAGolzWS5s1dEKU9XB/wL8HgATG/do7yhMzvGLOIz4oi4emzxaSap+2VtJobfnEEm5oAm0SGPtDG31P7MP5B9y/tpYzacmoLKki6b7Pq0UOFwml9EElv0j1YsS+m5g0tgav3jpukCAAzxqWo/YRaJC++kH2LzSU7SXDDY2Ml05zgKhxdoDCUDnRuk+x/z6LOki1drmmgaNenwBdwmU3+metpieQji0tAB07Pd8Mc7ujBm5e6p6xREkX0z5inJPV61YicVAtCG6eXBci3yA+sFEqgHKGX/9CgEXtZF3wbvy1xN6thEdyE1RGyrm4E4TmeNSEhACqOG31RA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=E2VhydlX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=zhangjian.3032@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=jRxauPZ6;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=E2VhydlX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=neil.armstrong@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=zhangjian.3032@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRGmH10K9z2xHT
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Jun 2025 17:29:18 +1000 (AEST)
-Received: by mail-wm1-x333.google.com with SMTP id 5b1f17b1804b1-453647147c6so909385e9.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Jun 2025 00:29:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRLqc4nTfz2xHZ
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Jun 2025 20:32:27 +1000 (AEST)
+Received: by mail-pf1-x432.google.com with SMTP id d2e1a72fcca58-7424ccbef4eso4159981b3a.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 24 Jun 2025 03:32:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1750750153; x=1751354953; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=vXQvyWKGqoA++0+nLyhrIs47IOqxWVGOvjV4paCklaM=;
-        b=jRxauPZ6nSuxKSzZPfOVn/7/NkiWyo4+scsZakiZHs1cqxdQITgM7gbr1e8OHNa+Oo
-         Ralb2dk2dS2xlaXi36oFAUHrDWXE14oqnmnbpPmILCQK1um06FqOHav+vwNJyo4jDINz
-         mcOAALquLQ6wBOF+15nzHIhD5a9zQwWfZLenuqlzgC099fNvRt2R1PmxduADeJUcIrPB
-         61rySKBWfgydAJUYm6nd6DnP5p2PrJkDJxwyUtKroJJ3dnvBb6ZcQqa3RgBV+scdAUoq
-         KM7+jE1oKRhGKB7GjN7O4s7hNSRstd3qjpskmExtmCWWOJIAki6pfNzRef9nzDIVPHRb
-         eLhA==
+        d=bytedance.com; s=google; t=1750761145; x=1751365945; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+qt1G4xdHuGWkr7FJJKwWLSBjfU2TU/J1+xFmV3PeoE=;
+        b=E2VhydlXWGLH5VQPi4yM4mXxYX0g0/a2OpQUJYJ53LcInxnkTXrU6VyR3mDbszVezm
+         3Q9ckvPNoPIGShJcIQYPFzV5H0E1MywKGzYyPnHcoP4gNxR4oW48K12BFyZqzYnpoH3b
+         3IY9msjqscOIk4iNDPCMHa+WHec2/KfLzUj+wLsoW77KYhZ5vI34IDl4WTmmnvpRGksb
+         QpZ5JNONc5ndZQWH2K4aChQi+FGNs7zpnbc9wCzKii5/QYpwhw2KzQVeUr/bu2q3aple
+         Z6Dka7Xb/x7tMD3NVUKcL+8NhWnetlpCp11QkuR4yIXEfMf2pBZSheuV+dSg5v7g/2wj
+         BAcw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750750153; x=1751354953;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:subject:reply-to:from:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=vXQvyWKGqoA++0+nLyhrIs47IOqxWVGOvjV4paCklaM=;
-        b=jXXMbAwFP9mndzjN8lAV1QuhV4Xos4jI4jgw4vw2OS+D0L4Y7hMbA8c6dxGrFVT6UX
-         oZhP78lCuuyPFuV/em+puFolkvOFrPBW0XG07NouFRV4rz/3Roh9q2Yy2uj8ZcQYYbKb
-         +vGvgSkOxKO6rpJKFZ0kZJKqey/HIEgvd6CM9EBjJJgUA7Qewcy31tOBlJ3cccnznlm1
-         C/0dQ4s8lY9ftQEx5iyd0o4Ns21CrgbfTdZh7dAlVkdTjTOCdnalhx/B4zlhSByZX570
-         36AIbdro5mipCkA5VPkDkSZRZpdxCFBdLzex/tDwOjeqEid9WN50uF4kSaBSKVz3KvLo
-         nFiA==
-X-Forwarded-Encrypted: i=1; AJvYcCXdb6VMgbME4VhaUQ130zxjgaxVIgLIBHjaT6pS9mfm6xPS9mOaQ9LmsTJAuwtMffKJJg/WzJ2/t3JIBKc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyWDm3W8p4Eqc79HtPm/KRtFKxhXihM/5DtxH2xTnyrS+nT21Z0
-	+4tLthVMUfYYnYtF2vGVqZ3DVPU0aaWTi8reu62DjXVDCfWte7PXlX9rXmDzY6nSbo4=
-X-Gm-Gg: ASbGncsPv4BhcePlDmCWhgfhe+EvmNnXHzffDkjZq2iaTF77zvDAkReJ9VIdMpUIZfe
-	eYQjWhUs4LyK/7flnyAEAVqcx21GmNXZEztjQ0NY4ZdTTt6hdZT7A1KzkPM4x27OYVRyR/M/QUM
-	D7ZQ3o5CDX9wSbm16n7ZgBk0NAkMQnQG1t8Uf04vLrv7dmGPsSqNDdAqZ69a8dCOMphaiIXStzS
-	Wusw+N+vZQJUamp134RoDdJh+ACCGabaokfNwv0sa89cH93FSJA1Cz21PaqhpLO7WdKV79ZXFJY
-	tr3Z+YWw/C19czqky5ioPa0kf4z9A9Z+x1jFDV7oziatQT3wv45P7nfdR855H0wwgiH8fgLOe3h
-	ToeCvoksKEt2QvXfBZ8FQ6Q3Nt+jIyQU2w9XB+yg=
-X-Google-Smtp-Source: AGHT+IFNAvVc0Ym/Nl4SzjssDYkzNoxmE/MYxf9idIfGl+W01JZ50berxeUOTRJ/Uec/VhLDWdvcjg==
-X-Received: by 2002:a5d:64e6:0:b0:3a5:8d0b:600c with SMTP id ffacd0b85a97d-3a6d12bb37emr13160349f8f.3.1750750152898;
-        Tue, 24 Jun 2025 00:29:12 -0700 (PDT)
-Received: from ?IPV6:2a01:e0a:3d9:2080:6fea:600c:ca20:f54a? ([2a01:e0a:3d9:2080:6fea:600c:ca20:f54a])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a6e80f27besm1190928f8f.57.2025.06.24.00.29.11
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 24 Jun 2025 00:29:12 -0700 (PDT)
-Message-ID: <754d260c-1a31-494e-af06-49f6aae1813f@linaro.org>
-Date: Tue, 24 Jun 2025 09:29:11 +0200
+        d=1e100.net; s=20230601; t=1750761145; x=1751365945;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=+qt1G4xdHuGWkr7FJJKwWLSBjfU2TU/J1+xFmV3PeoE=;
+        b=wYGAlIHtikyIdIo1kn++2qg3p1oGvF7fBUtUQj2Kz4Bb/q3cmSXLcmtvaE0e0fsBQJ
+         DLbWM+XbccZwQ4+lJrhRCEB4qEoCfRMceH6SPGE+iHgXB1ScGQWTyTarOu2Iho/n0Tby
+         0E3DBnFJfDL1t+cPCDFyK/3MzDjq2aHmTkKDHm18rzjdF123nhIlQlrPhLfM+RuT3bCc
+         6qELM7a1vC+KjmTExs28xLBorvYs1bIq8xt1GBpUkVhH9KVuaFvzrDmmFAWktUotQsWf
+         O0/3CW6n0tmTh7Kvu3fz66/6FGmCLKidGo0wH8Z6W/IE+3z1va+2h3igQItUoix6kFtv
+         AFDQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXRq1ccS2aMhHIxfi8Dx26yoA8vhovdO9rF1LUhQ72s2+iHsvkgUV+cWH8U4sI0edcM/4xrjEjuSXZM5bc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxrqZT7t8k0G4JiT7RRk9/5ty5Ql50MkBKF1SVdpIXr3s3ssi6w
+	uhZNPnqTw6wrZLGBvb6Y3t+FdhVmwtiSyK7w7xTTs/2BM/bSxJbu9zOE1MB8REd8ilWh3lUehsF
+	yKZIx68Wgm5AxU9/2wbVNdWb9e6LWnTAp8TrI3wPLJQ==
+X-Gm-Gg: ASbGncudaRTGcxLCXEXmZYPk905e7Irvq12qzLZCn6aCFCaKA1moGr+VXta71bXYNWc
+	kx4QoABQyEGTReIdeCgyxWqRqMiYQsho5/DJYoo3MnBTf5UnuoK0LLkAhx0QeW5njnz4uC9SOcx
+	Ra14KPdF8n4AtctPh6bk9+O/oPR9KeR5imIVixBgQDYa/3e1eqR2dSAr/id2J82c6eC/A=
+X-Google-Smtp-Source: AGHT+IH4g1PvpyLx7WVlvE2Rf2SzPuo0lTBgVHeaA3gkX79aw74S2PH91wSbnem7obavXSVF9XsoiTDpbAuofP1c8K8=
+X-Received: by 2002:a05:6a20:9144:b0:1f5:7f56:a649 with SMTP id
+ adf61e73a8af0-22026e92ae5mr23934878637.13.1750761145008; Tue, 24 Jun 2025
+ 03:32:25 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,97 +79,201 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Neil Armstrong <neil.armstrong@linaro.org>
-Reply-To: Neil Armstrong <neil.armstrong@linaro.org>
-Subject: =?UTF-8?B?UmU6IOWbnuimhjogW1BBVENIIDAvN10gQWRkIEFTUEVFRCBQQ0llIFJv?=
- =?UTF-8?Q?ot_Complex_support?=
-To: Jacky Chou <jacky_chou@aspeedtech.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "lpieralisi@kernel.org" <lpieralisi@kernel.org>,
- "kwilczynski@kernel.org" <kwilczynski@kernel.org>,
- "mani@kernel.org" <mani@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
- "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
- "conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
- <joel@jms.id.au>, "andrew@codeconstruct.com.au"
- <andrew@codeconstruct.com.au>, "vkoul@kernel.org" <vkoul@kernel.org>,
- "kishon@kernel.org" <kishon@kernel.org>,
- "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
- "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>,
- "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
-Cc: "elbadrym@google.com" <elbadrym@google.com>,
- "romlem@google.com" <romlem@google.com>,
- "anhphan@google.com" <anhphan@google.com>, "wak@google.com"
- <wak@google.com>, "yuxiaozhang@google.com" <yuxiaozhang@google.com>,
- BMC-SW <BMC-SW@aspeedtech.com>
-References: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
- <7178e816-4cb4-49b3-9a1e-1ecd4caa43ed@linaro.org>
- <SEYPR06MB513414A5AE38EE6749A2902C9D7CA@SEYPR06MB5134.apcprd06.prod.outlook.com>
-Content-Language: en-US, fr
-Autocrypt: addr=neil.armstrong@linaro.org; keydata=
- xsBNBE1ZBs8BCAD78xVLsXPwV/2qQx2FaO/7mhWL0Qodw8UcQJnkrWmgTFRobtTWxuRx8WWP
- GTjuhvbleoQ5Cxjr+v+1ARGCH46MxFP5DwauzPekwJUD5QKZlaw/bURTLmS2id5wWi3lqVH4
- BVF2WzvGyyeV1o4RTCYDnZ9VLLylJ9bneEaIs/7cjCEbipGGFlfIML3sfqnIvMAxIMZrvcl9
- qPV2k+KQ7q+aXavU5W+yLNn7QtXUB530Zlk/d2ETgzQ5FLYYnUDAaRl+8JUTjc0CNOTpCeik
- 80TZcE6f8M76Xa6yU8VcNko94Ck7iB4vj70q76P/J7kt98hklrr85/3NU3oti3nrIHmHABEB
- AAHNKk5laWwgQXJtc3Ryb25nIDxuZWlsLmFybXN0cm9uZ0BsaW5hcm8ub3JnPsLAkQQTAQoA
- OwIbIwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgBYhBInsPQWERiF0UPIoSBaat7Gkz/iuBQJk
- Q5wSAhkBAAoJEBaat7Gkz/iuyhMIANiD94qDtUTJRfEW6GwXmtKWwl/mvqQtaTtZID2dos04
- YqBbshiJbejgVJjy+HODcNUIKBB3PSLaln4ltdsV73SBcwUNdzebfKspAQunCM22Mn6FBIxQ
- GizsMLcP/0FX4en9NaKGfK6ZdKK6kN1GR9YffMJd2P08EO8mHowmSRe/ExAODhAs9W7XXExw
- UNCY4pVJyRPpEhv373vvff60bHxc1k/FF9WaPscMt7hlkbFLUs85kHtQAmr8pV5Hy9ezsSRa
- GzJmiVclkPc2BY592IGBXRDQ38urXeM4nfhhvqA50b/nAEXc6FzqgXqDkEIwR66/Gbp0t3+r
- yQzpKRyQif3OwE0ETVkGzwEIALyKDN/OGURaHBVzwjgYq+ZtifvekdrSNl8TIDH8g1xicBYp
- QTbPn6bbSZbdvfeQPNCcD4/EhXZuhQXMcoJsQQQnO4vwVULmPGgtGf8PVc7dxKOeta+qUh6+
- SRh3vIcAUFHDT3f/Zdspz+e2E0hPV2hiSvICLk11qO6cyJE13zeNFoeY3ggrKY+IzbFomIZY
- 4yG6xI99NIPEVE9lNBXBKIlewIyVlkOaYvJWSV+p5gdJXOvScNN1epm5YHmf9aE2ZjnqZGoM
- Mtsyw18YoX9BqMFInxqYQQ3j/HpVgTSvmo5ea5qQDDUaCsaTf8UeDcwYOtgI8iL4oHcsGtUX
- oUk33HEAEQEAAcLAXwQYAQIACQUCTVkGzwIbDAAKCRAWmrexpM/4rrXiB/sGbkQ6itMrAIfn
- M7IbRuiSZS1unlySUVYu3SD6YBYnNi3G5EpbwfBNuT3H8//rVvtOFK4OD8cRYkxXRQmTvqa3
- 3eDIHu/zr1HMKErm+2SD6PO9umRef8V82o2oaCLvf4WeIssFjwB0b6a12opuRP7yo3E3gTCS
- KmbUuLv1CtxKQF+fUV1cVaTPMyT25Od+RC1K+iOR0F54oUJvJeq7fUzbn/KdlhA8XPGzwGRy
- 4zcsPWvwnXgfe5tk680fEKZVwOZKIEuJC3v+/yZpQzDvGYJvbyix0lHnrCzq43WefRHI5XTT
- QbM0WUIBIcGmq38+OgUsMYu4NzLu7uZFAcmp6h8g
-Organization: Linaro
-In-Reply-To: <SEYPR06MB513414A5AE38EE6749A2902C9D7CA@SEYPR06MB5134.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20250618102148.3085214-1-zhangjian.3032@bytedance.com> <63e740bf-cd0c-4671-9254-6846048b0366@molgen.mpg.de>
+In-Reply-To: <63e740bf-cd0c-4671-9254-6846048b0366@molgen.mpg.de>
+From: Zhang Jian <zhangjian.3032@bytedance.com>
+Date: Tue, 24 Jun 2025 18:32:14 +0800
+X-Gm-Features: AX0GCFsx2E4YDWQnsy0elvsMGQiKKzms4nqUpfwtdkeIHeCrPd6S9MlAaN8RRsQ
+Message-ID: <CA+J-oUvm-3G9GRCzjOd+j8K6iNs1piCFAKBNfwih49iFwiB4pA@mail.gmail.com>
+Subject: Re: [External] Re: [PATCH] i2c: aspeed: change debug level in irq handler
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>, 
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, Joel Stanley <joel@jms.id.au>, 
+	Andi Shyti <andi.shyti@kernel.org>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 20/06/2025 10:20, Jacky Chou wrote:
->>> This series has been tested on AST2600/AST2700 platforms and enables
->>> PCIe device enumeration and operation.
->>>
->>> Feedback and review are welcome.
->>
->> So it seems all PCIe RC code is bundled in a single driver and there's no PCIe
->> PHY driver code, is there a reason for that ? If yes I think it should be described
->> in the cover letter.
->>
-> 
-> Yes, because our design includes the PCIe RC and the PCIe EPs.
-> The two functions use the same PCIe PHY and are mutually exclusive.
-> And there are different configurations on RC and EP.
-> Therefore, we do not use a phy driver to configure our PCIe but use
-> the phandle of phy syscon to set the RC and EP drivers separately.
+Hi Paul;
 
-I don't get why a PHY drive could not exist, it could be used by either
-the RC or EP PCIe driver in an exclusive way.
+Thanks for your reply and sorry for the late reply, I was trying to
+figure out why this log occurred,
+ it's quite hard to reproduce.
 
-Neil
+I traced all the master and slave states, and eventually found that
+the behavior matches
+the description in commit b4cc1cbba519. The issue has already been
+fixed in that commit
+ it was caused by a state machine bug that led to the interrupt not
+being handled correctly.
 
-> 
-> I will add more description in next version.
-> 
-> Thanks,
-> Jacky
-> 
+see: https://github.com/torvalds/linux/commit/b4cc1cbba519
 
+(The state transitions between the master and slave here rely on interrupts=
+.
+ When the signal waveform is incomplete (such as during power off/on),
+it may cause state errors or brief unresponsiveness, resulting in some
+log prints.)
+
+On Thu, Jun 19, 2025 at 7:18=E2=80=AFAM Paul Menzel <pmenzel@molgen.mpg.de>=
+ wrote:
+>
+> Dear Jian,
+>
+>
+> Thank you for the patch.
+>
+> Am 18.06.25 um 12:21 schrieb Jian Zhang:
+> > In interrupt context, using dev_err() can potentially cause latency
+> > or affect system responsiveness due to printing to console.
+> >
+> > In our scenario, under certain conditions, i2c1 repeatedly printed
+> > "irq handled !=3D irq. expected ..." around 20 times within 1 second.
+>
+> Any idea, why you hit this error at all?
+>
+> > Each dev_err() log introduced approximately 10ms of blocking time,
+> > which delayed the handling of other interrupts =E2=80=94 for example, i=
+2c2.
+> >
+> > At the time, i2c2 was performing a PMBus firmware upgrade. The
+> > target device on i2c2 was time-sensitive, and the upgrade protocol
+> > was non-retryable. As a result, the delay caused by frequent error
+> > logging led to a timeout and ultimately a failed firmware upgrade.
+> >
+> > Frequent error printing in interrupt context can be dangerous,
+> > as it introduces latency and interferes with time-critical tasks.
+> > This patch changes the log level from dev_err() to dev_dbg() to
+> > reduce potential impact.
+>
+> Thank you for the patch and the problem description. Hiding an error
+> condition behind debug level is also not good, as administrators might
+> miss hardware issues. I do not have a solution. Is there something
+> similar to WARN_ONCE? Maybe the level should be a warning instead of
+> error, because the system is often able to cope with this?
+Yeah, I'm a bit unsure as well. Maybe I can use dev_err_ratelimited()?
+
+>
+> The code is from 2017, so should be well tested actually, shouldn=E2=80=
+=99t it?
+>
+> > Signed-off-by: Jian Zhang <zhangjian.3032@bytedance.com>
+> > ---
+> >   drivers/i2c/busses/i2c-aspeed.c | 18 +++++++++---------
+> >   1 file changed, 9 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/drivers/i2c/busses/i2c-aspeed.c b/drivers/i2c/busses/i2c-a=
+speed.c
+> > index 1550d3d552ae..38e23c826f39 100644
+> > --- a/drivers/i2c/busses/i2c-aspeed.c
+> > +++ b/drivers/i2c/busses/i2c-aspeed.c
+> > @@ -317,7 +317,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_b=
+us *bus, u32 irq_status)
+> >       switch (bus->slave_state) {
+> >       case ASPEED_I2C_SLAVE_READ_REQUESTED:
+> >               if (unlikely(irq_status & ASPEED_I2CD_INTR_TX_ACK))
+> > -                     dev_err(bus->dev, "Unexpected ACK on read request=
+.\n");
+> > +                     dev_dbg(bus->dev, "Unexpected ACK on read request=
+.\n");
+> >               bus->slave_state =3D ASPEED_I2C_SLAVE_READ_PROCESSED;
+> >               i2c_slave_event(slave, I2C_SLAVE_READ_REQUESTED, &value);
+> >               writel(value, bus->base + ASPEED_I2C_BYTE_BUF_REG);
+> > @@ -325,7 +325,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_b=
+us *bus, u32 irq_status)
+> >               break;
+> >       case ASPEED_I2C_SLAVE_READ_PROCESSED:
+> >               if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_ACK))) {
+> > -                     dev_err(bus->dev,
+> > +                     dev_dbg(bus->dev,
+> >                               "Expected ACK after processed read.\n");
+> >                       break;
+> >               }
+> > @@ -354,7 +354,7 @@ static u32 aspeed_i2c_slave_irq(struct aspeed_i2c_b=
+us *bus, u32 irq_status)
+> >               /* Slave was just started. Waiting for the next event. */=
+;
+> >               break;
+> >       default:
+> > -             dev_err(bus->dev, "unknown slave_state: %d\n",
+> > +             dev_dbg(bus->dev, "unknown slave_state: %d\n",
+> >                       bus->slave_state);
+> >               bus->slave_state =3D ASPEED_I2C_SLAVE_INACTIVE;
+> >               break;
+> > @@ -459,7 +459,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_=
+bus *bus, u32 irq_status)
+> >
+> >       /* We are in an invalid state; reset bus to a known state. */
+> >       if (!bus->msgs) {
+> > -             dev_err(bus->dev, "bus in unknown state. irq_status: 0x%x=
+\n",
+> > +             dev_dbg(bus->dev, "bus in unknown state. irq_status: 0x%x=
+\n",
+> >                       irq_status);
+> >               bus->cmd_err =3D -EIO;
+> >               if (bus->master_state !=3D ASPEED_I2C_MASTER_STOP &&
+> > @@ -523,7 +523,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_=
+bus *bus, u32 irq_status)
+> >                       irq_handled |=3D ASPEED_I2CD_INTR_TX_NAK;
+> >                       goto error_and_stop;
+> >               } else if (unlikely(!(irq_status & ASPEED_I2CD_INTR_TX_AC=
+K))) {
+> > -                     dev_err(bus->dev, "slave failed to ACK TX\n");
+> > +                     dev_dbg(bus->dev, "slave failed to ACK TX\n");
+> >                       goto error_and_stop;
+> >               }
+> >               irq_handled |=3D ASPEED_I2CD_INTR_TX_ACK;
+> > @@ -546,7 +546,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_=
+bus *bus, u32 irq_status)
+> >               fallthrough;
+> >       case ASPEED_I2C_MASTER_RX:
+> >               if (unlikely(!(irq_status & ASPEED_I2CD_INTR_RX_DONE))) {
+> > -                     dev_err(bus->dev, "master failed to RX\n");
+> > +                     dev_dbg(bus->dev, "master failed to RX\n");
+> >                       goto error_and_stop;
+> >               }
+> >               irq_handled |=3D ASPEED_I2CD_INTR_RX_DONE;
+> > @@ -577,7 +577,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_=
+bus *bus, u32 irq_status)
+> >               goto out_no_complete;
+> >       case ASPEED_I2C_MASTER_STOP:
+> >               if (unlikely(!(irq_status & ASPEED_I2CD_INTR_NORMAL_STOP)=
+)) {
+> > -                     dev_err(bus->dev,
+> > +                     dev_dbg(bus->dev,
+> >                               "master failed to STOP. irq_status:0x%x\n=
+",
+> >                               irq_status);
+> >                       bus->cmd_err =3D -EIO;
+> > @@ -589,7 +589,7 @@ static u32 aspeed_i2c_master_irq(struct aspeed_i2c_=
+bus *bus, u32 irq_status)
+> >               bus->master_state =3D ASPEED_I2C_MASTER_INACTIVE;
+> >               goto out_complete;
+> >       case ASPEED_I2C_MASTER_INACTIVE:
+> > -             dev_err(bus->dev,
+> > +             dev_dbg(bus->dev,
+> >                       "master received interrupt 0x%08x, but is inactiv=
+e\n",
+> >                       irq_status);
+> >               bus->cmd_err =3D -EIO;
+> > @@ -665,7 +665,7 @@ static irqreturn_t aspeed_i2c_bus_irq(int irq, void=
+ *dev_id)
+> >
+> >       irq_remaining &=3D ~irq_handled;
+> >       if (irq_remaining)
+> > -             dev_err(bus->dev,
+> > +             dev_dbg(bus->dev,
+> >                       "irq handled !=3D irq. expected 0x%08x, but was 0=
+x%08x\n",
+> >                       irq_received, irq_handled);
+> >
+>
+>
+> Kind regards,
+>
+> Paul
+
+Jian.
 
