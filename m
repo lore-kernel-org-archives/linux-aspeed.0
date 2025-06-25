@@ -1,75 +1,66 @@
-Return-Path: <linux-aspeed+bounces-1572-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1573-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C476AC7EE2A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Jun 2025 20:43:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC159C77B7C
+	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Jun 2025 21:05:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bSDKc3V8Nz309v;
-	Thu, 26 Jun 2025 06:43:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750884180;
-	cv=none; b=mNUzbArGgYn/Yzcwb5k2TDkM7OJsJFqLyufufQrHXwbAF6wnHznB24bVYhERtxo80Sld3tFjJP8+th9XQxF3kDoS8ndqBmMYvI8fT7iNBU7CQN7P/KklZkzsEN1VkSrnTDLdHABVmB/g5QrM/HYguzuX+pVCpc/bLytXDKmzaK2V8ZYzQWp9cx3ZAfS338LijYSL3w0DqC1VWZ451Se70DGuzHhUCaB7EkZ6NRtDwabJEgjPLpmF3QcOyusxAIdK2vyiwYUilX/DsqwF3GkAH3mEE/ny6diqctew+YqCbEE5G0K/VWfICxDq+88QPmu6q1gUrjMGTbT7l/zR0ON5pQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bSDq32TMgz309v;
+	Thu, 26 Jun 2025 07:05:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750885503;
+	cv=none; b=kli0NBPnh2gY0E0vbqgm6UJwI8FlVR3ELxWKq/Hu8OvQ7qPzVu4P9hyqBSqBDztl5b9gX48O5XTOyO1xFm9H06DqzLS2r1cx0kaD5WZnd5px7TYfTazWJbfin7DxotnEAXcqo4XARq4fVcpHVXUD/dfjggzRufcMiK+/Fn5jgYat6WWwjUD2YkmH78BxzdxkMCLY5n92vLx5ECHSbNwaDUq8VLnmCaoHJ2FpZ2CNVpV5E8xrNPmeWzeEU3itVq13x6VW9J4gOktNbQ5pdDntQwmqE4UNywvevO7UMg52xxMHGvMYwC132S0V+Qz3/O2cVP9svkOmsaVxrjjRN0fDFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750884180; c=relaxed/relaxed;
-	bh=ylR3k2y7+4LIBfXUWA/QuAF6NOSRbJi4lKR7STfDHNI=;
+	t=1750885503; c=relaxed/relaxed;
+	bh=xVaMRohSFRgmSbPZ4apQogUHqXg6LrB2kywGldJUPUk=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dgSbaxL42b81fx1Y3NE4KmcoWr1SHKQNcVNROh/LuGPWsjTu7azDx8NtZhxYtkVjb/LN581knVktnMbBUKrHG9btEHFyUS8FgirqNNJ4Jnt/7Q0b57olwaL0b/NaDCR8DJq7DhjWTv6GYfsl2kHZ+eN8xUY2XcLTMrIVW6r70Rzxq0aEXbHJNtA9kAq+iYX673s3CLbrfbXcWG6istjgYMqf+OKBI70NFd63E3iD3SA6DNW6uraDmuhJ+grEgI4Cvyk/io4/lvc1/fNmiyxunYWLGqdB7gJI32vb8Xi5cR6MD35cuIF/AUD4VMl5iJkLNeUQzMdcaJ0mWY1vApiIAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U5TLu1SR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Cg7jCI6+VtFMk6dTTtoR2WU1fZ9j1oW+NphDhkuXAMZCEScp5tTxYRqU35eHM67NwEiDXC818sCTsQrl2vgSZ6BAFps2lC1axri6/cHJjN4QI/rRgeJDqjQ0+jgtU0KvDzYcI5FUWTuuRRAASBwDyp8NiKgGaGIpPXEWEq4OBYluyA2KKjP+HvQwv3FGtDdzoIAg0zcJSUK3GIz9stH8N8zIkWEhhKnZSsdLMIujF4Z1e44qMuuTOIOmpfDcfPiHNUF89hy/ussccYkWklMwhXNrZxgiuOUoIOO7x/GX/mlc+jsANCIOgFDuRYb1Eot5B+e1yvloqlctmRcH4SFONQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fcsXt6oS; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U5TLu1SR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fcsXt6oS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSDKX0ybqz307q
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Jun 2025 06:42:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSDq20h5Gz307q;
+	Thu, 26 Jun 2025 07:05:01 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 329C461425;
-	Wed, 25 Jun 2025 20:42:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9EEDC4CEEA;
-	Wed, 25 Jun 2025 20:42:52 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 648325C5D32;
+	Wed, 25 Jun 2025 21:02:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5DDAFC4CEEA;
+	Wed, 25 Jun 2025 21:04:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750884172;
-	bh=TQ2yeYtVxpuEcSzjUBWcAiYEI/WKnqX64t4Owb5qOrA=;
+	s=k20201202; t=1750885497;
+	bh=TwGs9xcqNKKZwXveR38XoItJjJjoTUCut41NngfDuik=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=U5TLu1SR2eFmHmjOKeSx3aKCAWxa4XTEYdF8wwxUrjql02hOZ09fD7Ik0plJ4vBoe
-	 AS237xzFgsf5hfHMH/KUE+PxIcr73d6Ck6KTq68abVVJFDYB9fbHdhtDY2GtiEz7cA
-	 WTTKhgFQPy9PRD1aYqTPsqRAUc+/riXd10J7jTDsMCYQNLLBoxmbWajwTq4B5LIaiO
-	 VcXlESrEBruI46HNCXmJYbHDMNwwPVyfv2R7LrpEpvvSPgk+boj603uMj71yJU7nf0
-	 D4DYtZjhSYagenKy+5N3BLKiht1FthT8rNrUABrxCkP932kq32xsVcyOaIZgj2ogdq
-	 3eQ/kT5FUWLgQ==
-Date: Wed, 25 Jun 2025 15:42:52 -0500
+	b=fcsXt6oS90PgQatLapdwcdjg5ia5EOeRBAAxyHyXaqEq509DGgKqAH4YB16oiKVbi
+	 gCHFaQ6danRokdU3VaXQHaDBpqN/4H24MIIog8UlfyAJYxnzu99ooq2/0+YXRDMXjk
+	 a9h+XgpAz6LVGHwkYUTGPmFSqAw6Rfoq3exAjLjg2aU6Zz53xULEhZAIRc0t8jhoT9
+	 keXTLpmUQpCKAziaUZLLNRHIFLP9x6Qp6neDgp5c2sLkHaPj7K9hMh7DOMSGfE1WEI
+	 Dn4XES7ca5/ZSM6IXyhhIwbx4CwW+gZ1caGsKqpyzW1G/Hnkz0ubIxFbpmYQvQhnkv
+	 O3QPMeeYOd9Og==
+Date: Wed, 25 Jun 2025 16:04:56 -0500
 From: Rob Herring <robh@kernel.org>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Ryan Chen <ryan_chen@aspeedtech.com>,
-	Catalin Marinas <catalin.marinas@arm.com>, soc@lists.linux.dev,
-	Mo Elbadry <elbadrym@google.com>, Arnd Bergmann <arnd@arndb.de>,
-	William Kennington <wak@google.com>,
-	Taniya Das <quic_tdas@quicinc.com>, linux-kernel@vger.kernel.org,
-	spuranik@nvidia.com, Eric Biggers <ebiggers@google.com>,
-	Joel Stanley <joel@jms.id.au>, linux-aspeed@lists.ozlabs.org,
-	Will Deacon <will@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Nishanth Menon <nm@ti.com>,
-	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>,
-	nfraprado@collabora.com, linux-arm-kernel@lists.infradead.org,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Rom Lemarchand <romlem@google.com>, devicetree@vger.kernel.org,
-	Geert Uytterhoeven <geert@linux-m68k.org>, leohu@nvidia.com,
-	Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>,
-	Yuxiao Zhang <yuxiaozhang@google.com>, dkodihalli@nvidia.com,
-	wthai@nvidia.com
-Subject: Re: [PATCH v0 0/5] Add initial AST2700 SoC support
-Message-ID: <20250625204252.GA2143810-robh@kernel.org>
-References: <20250612100933.3007673-1-ryan_chen@aspeedtech.com>
- <174975871838.2916138.1953670783794758715.robh@kernel.org>
- <7b3be5c104b1fe1033570f2f3e2391991b6d9d42.camel@codeconstruct.com.au>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
+	mani@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	joel@jms.id.au, andrew@codeconstruct.com.au, vkoul@kernel.org,
+	kishon@kernel.org, linus.walleij@linaro.org, p.zabel@pengutronix.de,
+	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org,
+	elbadrym@google.com, romlem@google.com, anhphan@google.com,
+	wak@google.com, yuxiaozhang@google.com, BMC-SW@aspeedtech.com
+Subject: Re: [PATCH 3/7] dt-bindings: pci: Add document for ASPEED PCIe RC
+Message-ID: <20250625210456.GA2177479-robh@kernel.org>
+References: <20250613033001.3153637-1-jacky_chou@aspeedtech.com>
+ <20250613033001.3153637-4-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -83,100 +74,94 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7b3be5c104b1fe1033570f2f3e2391991b6d9d42.camel@codeconstruct.com.au>
+In-Reply-To: <20250613033001.3153637-4-jacky_chou@aspeedtech.com>
 
-On Fri, Jun 13, 2025 at 02:59:43PM +0930, Andrew Jeffery wrote:
-> On Thu, 2025-06-12 at 15:12 -0500, Rob Herring (Arm) wrote:
-> > 
-> > On Thu, 12 Jun 2025 18:09:28 +0800, Ryan Chen wrote:
-> > > This patch series introduces initial support for the Aspeed AST2700 SoC
-> > > and the AST2700 Evaluation Board (EVB) to the Linux kernel. The AST2700
-> > > is the 7th generation Baseboard Management Controller (BMC) SoC from Aspeed,
-> > > featuring improved performance, enhanced security, and expanded I/O
-> > > capabilities compared to previous generations.
-> > > 
-> > > The patchset includes the following changes:
-> > > - Device tree bindings for AST2700 boards.
-> > > - Addition of the AST2700 platform to the Kconfig menu.
-> > > - Basic device tree for the AST2700 SoC.
-> > > - Device tree for the AST2700-EVB.
-> > > - Updated defconfig to enable essential options for AST2700.
-> > > 
-> > > Ryan Chen (5):
-> > >   dt-bindings: arm: aspeed: Add AST2700 board compatible
-> > >   arm64: Kconfig: Add Aspeed SoC family (ast2700) platform option
-> > >   arm64: dts: aspeed: Add initial AST2700 SoC device tree
-> > >   arm64: dts: aspeed: Add AST2700 EVB device tree
-> > >   arm64: configs: Update defconfig for AST2700 platform support
-> > > 
-> > >  .../bindings/arm/aspeed/aspeed.yaml           |   5 +
-> > >  arch/arm64/Kconfig.platforms                  |   6 +
-> > >  arch/arm64/boot/dts/Makefile                  |   1 +
-> > >  arch/arm64/boot/dts/aspeed/Makefile           |   4 +
-> > >  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi     | 380 ++++++++++++++++++
-> > >  arch/arm64/boot/dts/aspeed/ast2700-evb.dts    |  54 +++
-> > >  arch/arm64/configs/defconfig                  |   1 +
-> > >  7 files changed, 451 insertions(+)
-> > >  create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
-> > >  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
-> > >  create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
-> > > 
-> > > --
-> > > 2.34.1
-> > > 
-> > > 
-> > > 
-> > 
-> > 
-> > My bot found new DTB warnings on the .dts files added or changed in this
-> > series.
-> > 
-> > Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-> > are fixed by another series. Ultimately, it is up to the platform
-> > maintainer whether these warnings are acceptable or not. No need to reply
-> > unless the platform maintainer has comments.
-> > 
-> > If you already ran DT checks and didn't see these error(s), then
-> > make sure dt-schema is up to date:
-> > 
-> >   pip3 install dtschema --upgrade
-> > 
-> > 
-> > This patch series was applied (using b4) to base:
-> >  Base: attempting to guess base-commit...
-> >  Base: tags/v6.16-rc1 (exact match)
-> > 
-> > If this is not the correct base, please add 'base-commit' tag
-> > (or use b4 which does this automatically)
-> > 
-> > New warnings running 'make CHECK_DTBS=y for arch/arm64/boot/dts/aspeed/' for 20250612100933.3007673-1-ryan_chen@aspeedtech.com:
-> > 
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: serial@14c33b00 (ns16550a): 'pinctrl-0' is a dependency of 'pinctrl-names'
-> >         from schema $id: http://devicetree.org/schemas/pinctrl/pinctrl-consumer.yaml#
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@100 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 0, 3844]] is too short
-> >         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@110 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 1, 3844]] is too short
-> >         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@120 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 2, 3844]] is too short
-> >         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@130 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 3, 3844]] is too short
-> >         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@140 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 4, 3844]] is too short
-> >         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> > arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@150 (aspeed,ast2700-intc-ic): interrupts-extended: [[6, 5, 3844]] is too short
-> >         from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
-> > 
+On Fri, Jun 13, 2025 at 11:29:57AM +0800, Jacky Chou wrote:
+> Add device tree binding documentation for the ASPEED PCIe Root Complex
+> controller. This binding describes the required and optional properties
+> for configuring the PCIe RC node, including support for syscon phandles,
+> MSI, clocks, resets, and interrupt mapping. The schema enforces strict
+> property validation and provides a comprehensive example for reference.
 > 
-> To draw a line in the sand here: while the existing Aspeed devicetrees
-> (AST2600 and below) produce warnings, I won't accept devicetree patches
-> for the AST2700 and related boards unless they are warning-free.
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/pci/aspeed-pcie.yaml  | 159 ++++++++++++++++++
+>  1 file changed, 159 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/pci/aspeed-pcie.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/pci/aspeed-pcie.yaml b/Documentation/devicetree/bindings/pci/aspeed-pcie.yaml
+> new file mode 100644
+> index 000000000000..5b50a9e2d472
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/pci/aspeed-pcie.yaml
+> @@ -0,0 +1,159 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/pci/aspeed-pcie.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: ASPEED PCIe Root Complex Controller
+> +
+> +maintainers:
+> +  - Jacky Chou <jacky_chou@aspeedtech.com>
+> +
+> +description: |
+> +  Device tree binding for the ASPEED PCIe Root Complex controller.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2600-pcie
+> +      - aspeed,ast2700-pcie
+> +
+> +  device_type:
+> +    const: pci
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  ranges:
+> +    minItems: 2
+> +    maxItems: 2
+> +
+> +  interrupts:
+> +    description: IntX and MSI interrupt
+> +
+> +  resets:
+> +    items:
+> +      - description: Module reset
+> +      - description: PCIe PERST
+> +
+> +  reset-names:
+> +    items:
+> +      - const: h2x
+> +      - const: perst
+> +
+> +  msi-parent: true
+> +
+> +  msi_address:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: MSI address
 
-Thank you. If you hadn't said it, I would have. Hopefully there's some 
-IP reuse that will get the older stuff fixed (if the fix is in the 
-schema).
+What's this for?
+
+> +
+> +  aspeed,ahbc:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: Phandle to ASPEED AHBC syscon.
+> +
+> +  aspeed,pciecfg:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: Phandle to ASPEED PCIe configuration syscon.
+> +
+> +  aspeed,pciephy:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: Phandle to ASPEED PCIe PHY syscon.
+
+Use the phy binding and make the phy control a separate driver.
 
 Rob
 
