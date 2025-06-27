@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1588-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1589-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9CC6C7EE32
-	for <linux-aspeed@archiver.kernel.org>; Fri, 27 Jun 2025 14:46:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FD18C77B7F
+	for <linux-aspeed@archiver.kernel.org>; Fri, 27 Jun 2025 14:47:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bTJKN3ZYmz2yNG;
-	Sat, 28 Jun 2025 00:46:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751035592;
-	cv=none; b=WthLX1Tp7oiIbUtRiVdUaL4wnwk4PweDc8Y7ORQeOow0kaKI82TCGH4qikFI7qwungZmYrvLCSxj6PCVJOjsIy4VN9lf93bAe8/GqLxVR8hDY7TCRjpzk3oIAy6gJqOyz95Cy85zMy0APQEIgJrhaB9/mqBEaFyAF/HMq1GHWUjVW310wuAx22PB5qLF4pE+EHqAmZNFRfiLpEuu3bCjlXd3PBUeui91uUzOQ/QeiIMFs1R5NYuyu509wBySZsM42nGXDTLo+4ARnvyJNFGRhTViaY3Agx6ez2FlzODAdVXkifrNylf5xF0hm7fWpwLZ42CtRsLNO9r18TYKso+c2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bTJLT08b6z2yNG;
+	Sat, 28 Jun 2025 00:47:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751035648;
+	cv=none; b=aOdTN3NLMHrVn0/7SpvoWeqU/8axL79uf+pnkuM6WDqi6aKwInp1gmUM/HyuCJlwn4frMEZGYdiq6Ae7v9y/3cJl40C5Rg3PhicIY+kcjCIdTaC0i+zjVUhFiKHZi/E47kghhblVK3kXe/twvlgAMyiMYf7Q4XqnNVaJswSNnrh+2NHn+CV/RxuFCBXNe+BprBGpQq2ogOHZswI6HAx+ATHZpCbXHBnr14cB5x22i+oVzcEGhOq9mWKx8j7sWQgLc3yyUMtr16T+BnrfxmcXaNxlGd1dqiE1RiyrCeiiUfYm/XQDUuDcoHCVijhdv0oyE7N+U6JKunK2qhR5Utsm0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751035592; c=relaxed/relaxed;
-	bh=qYsoQqkfOPoG/OW8DL7yrsEwwXidtQVRSmT52yxz0fQ=;
+	t=1751035648; c=relaxed/relaxed;
+	bh=RIuOx1s5XzwaWIpE0qIKf0Ib4OIj5trRNQPE0WZD/P0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WzhTxn+mSXWOcpGuHcwNmEvdXFLBx8u6itYojdWeAaDdi0AJiPS2P5jT88vXd8jCljW+bD8IfBYa8IKBErI8QiOXuid5XUTepFT2zl8/5OHukWDAbmyxXfsPoiP+x3SIWBhl6gFy5mZiHwLWpEcK1tyg64KnZQ0jOaSdkU6CZzbL0C8lcNsT93C+kk+kigVVHo1ADP2LM1c+h3sFe8lgIGcRMd5F8VTJMyTX9dfhJV9FmuRAGegZUrS0HzNJR1qQTgAnY31m8Ee7cQIkxO/f+KVwuttKLwXEfgbHfGkO3WOc3pkPD7+iK9pPDlJhgGix3szrpZhbXKk5spviXuY4DQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YVSoUfOJ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=oZPTqsXubKgKmgH6iPvgVzJ7qeou0setnRedZ+L5QBmwxBIXr8tTNG2OlJPHIfUkQEDiGfn+2Giq9JrTp8Q2/D5vpBNGqlVpLwaWxtvaqzsZZcH53CrUdsG23aB1e85qYHbR8LWokCySbmDTcfll2Or4FMSboefCTgmXJ/RFSTHpcICSKwj/Mi/VsZvjfM+K75MXhnU5P0bfqu7yIDKi3h6sQ4HkRoyRs7/mqZHzrtZHtPvUB+FqcQVGTi/pAAPKY1KVd6S9HxZqwvWBZtYzcJjM6Qle3OkyvGt8WvuJSNiayB6bh6nXR3kV47UxZUgJaYpo2EOv7M8V5Lvv3ghGOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y9csjxZp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YVSoUfOJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y9csjxZp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bTJKM3x2Pz2xBb
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 28 Jun 2025 00:46:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bTJLS1xqWz2xBb
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 28 Jun 2025 00:47:28 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4244B4569F;
-	Fri, 27 Jun 2025 14:46:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 843AEC4CEE3;
-	Fri, 27 Jun 2025 14:46:22 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id E13AE6111F;
+	Fri, 27 Jun 2025 14:47:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 40526C4CEE3;
+	Fri, 27 Jun 2025 14:47:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751035589;
-	bh=W9t38McK4tyheidmbY2q/l9zvRrhx/u9kHLbNNljFuY=;
+	s=k20201202; t=1751035645;
+	bh=zJy8DXqoG6CILsDNc8bv2NztRVduZLB9R1XokmiByWQ=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=YVSoUfOJgV1Wm74sHuF8tmm6guVCkvdt8SaryW+pMtBRyYEuL1wc4Y2LN5iBLWS+I
-	 rOtkGWnc2tWx4IVq3S39kVlagKT8egpVTqOrdUKi/NX/nQMf2IenT2/9yKndA+kIcl
-	 Tfhoah2rR2Ay5Frm01P7IkE/u+WL12lyZQj9GsERXwEwiSt8n7vZ/IhUw7at/rdgSq
-	 mDXXeU2nf7Ll/aeKZ5dft9roUdAlW35av4FCU0M+ivtfSbeCrlN47quJh8LIiSoUbK
-	 uoXPzUFaVN15kH6mCfXGYoGTiwhgi8q5d1FkGvDFwQUnidob9YbzOkyQPMVVtUFYtw
-	 YAbnFkNwtByGA==
-Message-ID: <3019258f-8455-4faf-bc5c-4c03d2540bcf@kernel.org>
-Date: Fri, 27 Jun 2025 16:46:19 +0200
+	b=Y9csjxZpH2hosPAAFRJYXHijHz+wX46Xoke9TVNos6FXsV0RQXVqw1Om2hg68wMTl
+	 2H3Vsyl/idFNtQHRTuJbyX05u5aHXhxk4lBBPeC0X4X6TVX3jsEqrMyV1HG0RK6l49
+	 0z6IUaF2skpKNMjWbg7KVWBoQeK7m3f9id3CoEdwxzKZ3ZWlruj1MqqM++vH9VtnMG
+	 XImCYeqcqK3ZII+ZAj7rVjZ0k80ZbKoXWZfbaRY+Gid0yES7zzeJUcwvdZ/jj4vYew
+	 JrmIbGUEb4ognv81dc2CK4QaccxOq9CIW4KTRGUbKV4dYH8rc09vX6Qrdf1M2QXvX7
+	 ZysPukc7DN1MQ==
+Message-ID: <06178661-5665-4b9d-8652-de12c2a55f94@kernel.org>
+Date: Fri, 27 Jun 2025 16:47:16 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,7 +60,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 1/2] dt-bindings: arm: aspeed: add Meta Clemente board
+Subject: Re: [PATCH v5 2/2] ARM: dts: aspeed: clemente: add Meta Clemente BMC
 To: Leo Wang <leo.jt.wang@gmail.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -74,7 +74,7 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  bruce.jy.hung@fii-foxconn.com, george.kw.lee@fii-foxconn.com,
  Leo Wang <leo.jt.wang@fii-foxconn.com>
 References: <20250627-add-support-for-meta-clemente-bmc-v5-0-038ed6f1cb9f@fii-foxconn.com>
- <20250627-add-support-for-meta-clemente-bmc-v5-1-038ed6f1cb9f@fii-foxconn.com>
+ <20250627-add-support-for-meta-clemente-bmc-v5-2-038ed6f1cb9f@fii-foxconn.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -120,21 +120,18 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20250627-add-support-for-meta-clemente-bmc-v5-1-038ed6f1cb9f@fii-foxconn.com>
+In-Reply-To: <20250627-add-support-for-meta-clemente-bmc-v5-2-038ed6f1cb9f@fii-foxconn.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 27/06/2025 09:31, Leo Wang wrote:
 > From: Leo Wang <leo.jt.wang@gmail.com>
 > 
-> Document the new compatibles used on Meta Clemente.
+> Add linux device tree entry for Meta Clemente compute-tray
+> BMC using AST2600 SoC.
 > 
 > Signed-off-by: Leo Wang <leo.jt.wang@fii-foxconn.com>
-Don't send multiple versions per day. You just repeated the mistakes and
-sending next version hides review comments.
-
-Implement the feedback you received. I provided that feedback BEFORE you
-send this v5, so basically you just ignored it.
+No, still checkpatch issues.
 
 Best regards,
 Krzysztof
