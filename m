@@ -1,58 +1,63 @@
-Return-Path: <linux-aspeed+bounces-1581-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1582-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EB10C7EE32
-	for <linux-aspeed@archiver.kernel.org>; Fri, 27 Jun 2025 00:59:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F902C7EE32
+	for <linux-aspeed@archiver.kernel.org>; Fri, 27 Jun 2025 01:53:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bSxzK3T7Nz2xJ1;
-	Fri, 27 Jun 2025 10:59:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bSz8s6mZQz2xKh;
+	Fri, 27 Jun 2025 11:53:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750985981;
-	cv=none; b=URZ3LPkjVjCbqokVY++OGZFiTPfKvkFISVhnerof+yPnIvqhXErw5Us1DYc0PJqcSD0cTrmZAW9ZcscnWFw/bEVdL8uYJmXRUY06j+vpL51lzt9cOR3tAw/wH0u2+C8yvdp+CyDXu2pqhtSzQ9NBKk+Nlk1iWQWdcW8LmmusWsBLODRbZk+VWypOrvb2yGNJKAe+/9LG06P7bbjWe8RkFCKt1zgMmefgMV1fc2RBXlEpgU5xALg0okLewWeazMDoG2vl6G8z6h3IiGWLMaLmW0HQiY+7jUTjByCzhDGQI/73HGYLst0f+ti7JYl30PGusSHeo2xY1k5qTFqCHoPr9w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750989181;
+	cv=none; b=DxcCWBwSKP3i48ASmoZ3wt2S32oAAe4wsYAFSvlW+bVrpF8g+yQblQ06rRh9XRCh15JItRhQ3SzkrjPGPsHjmiS4VYWw/7MYkEBw1WU9ex+K60lvkfpEZlRUvG8Quea+VWGAHwaDw4GG3bmIvr+4efbf78ZVQDi0InLCnTMNgCfas/pJ85Yx3bSjukEcdNBRHLPd+PalzzdGYDC6RLtgrY2jJD1GNKPpOde+paon9e5JeaoAtYRBB76xGcfYr8gv4w10//354yjyi5BV7oH4KluD6L1+iyFVNO/f+M9R7fSRcquPJv60uBK2iEQxUppPW3J849KoZf5jIAN5D7av8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750985981; c=relaxed/relaxed;
-	bh=fbp9P2iizIVjHAFvaoJljb4kc256KKZrn7l4KhzZ0qY=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=DlQhp0ZF7kQuiq51v41LLfeUkxMVlaJzKNR91XtMegr1QNJUZjz+ugiKD8pQcaxE9b5qdc4RHmTuJa7+2asX4KHIw0MRkfjeF8EzO40h+qMG/pnFAU3hxYy4bL5GWgEkWNjn6RGseSdXbp0TdNO+GajLDhuBMQb0puCTQQJtV93osTPUwbw5X6iTqfoNYLDVsp4x6iO/VLFtNoayZFH65O89hFHCsMda6FGAoZY4E4bnoH7+VXKqemGvk2wR7Kea6+AdpUM9PmnpPZ5uu+Cr8VZqAp9lmREPvkaCSTOshFxMRfgCkOeFGfAx9c72Z617NvyhPwfnw517z8586lACLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=EVFoYbCp; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1750989181; c=relaxed/relaxed;
+	bh=O5XFQLvGMv9kDFTYtz6e9bjeFb7odw6E3EhLd0Z5xQA=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=PV1Hk8mmxqNw2Gf1kQS922KhKdd1sMJ38rCm4t5ujgbcocmLHkzGK1ZnpsGfUnIThVZHTcdj7TPe4Wuit1XKBCdDb7UHjK7BW61MFVitQNV0EfL6J82nNyS4wIu30LGTLp4v5e+Q5CoBZ1gAWNIeE3s9AngYn5TTIl82JGYsPqrACceNnw9n7jx7EDZFeyYwtaeSv9AqVYz0coBWheuyzeDK3Po+mzxOgWjFROgsC9lVP+IVHYIqGGJ5kyrHFztXUEofMZWbXMKgv6jtQo0avqQwMked6LqTDLGY5LmSENh9pPQPtWWPHNQ0JOOhEq1azXjKm5AiS+gBdFhZ/8+QUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=LIFew9Pn; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=EVFoYbCp;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=LIFew9Pn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSxzJ3CkYz2xCW
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 27 Jun 2025 10:59:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSz8r3kPYz2xJ1
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 27 Jun 2025 11:53:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1750985978;
-	bh=fbp9P2iizIVjHAFvaoJljb4kc256KKZrn7l4KhzZ0qY=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=EVFoYbCp9fUe9+bqYh1IGMMzlewoor+XFV/4eQA6KKsztO/mqFNQDq8Vm72regOfr
-	 uz4gHpPrVQtZjJr6k+folNRmesr5AKosxwNRoY5qntWS/MLwL+JZeFjt57Q2+vyrhi
-	 mdnf6Hw7GpZIdCiIosvO9KvWU6UWU2NsisqlUaSVyxrwxAXpKY5dVT2wD4EiUt0+rS
-	 rXsemOn5pvFTp4iWWuz/AjSKkwDilBgR7a+n2t/qUx2YFNdct+vAd3dntB1wA2ht4f
-	 9KBaQEwd3LN3HabjO/PvH+ewItNIQgXybrXUtzdD0EzZCnoMQqX4PyfB28FNYlcykV
-	 645UbApT9U8qw==
-Received: from [127.0.1.1] (unknown [180.150.112.166])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 3CCEB6443C;
-	Fri, 27 Jun 2025 08:59:37 +0800 (AWST)
+	d=codeconstruct.com.au; s=2022a; t=1750989179;
+	bh=O5XFQLvGMv9kDFTYtz6e9bjeFb7odw6E3EhLd0Z5xQA=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=LIFew9Pnb2MSiK1ccfZ5i3NSd3zNvworwa5dRBa6r1MGEszTmWLFFBu0kNoTHOQhQ
+	 SKd1t4BTH/6zAAsUNtA+JXnzgmR4C4W9lQ+sYcWpI9Q+v6K+jQKG4oBdL5Ijf9Yq4v
+	 ri/R6bSB7EOg58uQDErUI4MOMeJHInSnqB+0Ps+uZbWNlkwMQ6awtu6mKzGGqLkECQ
+	 T4A11Q4hOxPW2eFGJnRnF0duUWqbITF4C/H+JsdZ7huh0tUv4JwOqvlk8oWiVlOn1d
+	 Py5nt7hy42IpoLmRJ8m5rD7LU7hvb/hTWGNeM5W3HJ7xOr6WOAex7IeoTgvKnitUrT
+	 Ey6uNEAjklLaw==
+Received: from [192.168.68.112] (unknown [180.150.112.166])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id A87186449F;
+	Fri, 27 Jun 2025 09:52:57 +0800 (AWST)
+Message-ID: <9efb52255ee55c6300f97c067d8cec606dab0574.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v5 1/2] dt-bindings: mailbox: Add ASPEED AST2700 series
+ SoC
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Fred Chen <fredchen.openbmc@gmail.com>
-In-Reply-To: <20250625073847.4054971-1-fredchen.openbmc@gmail.com>
-References: <20250625073847.4054971-1-fredchen.openbmc@gmail.com>
-Subject: Re: [PATCH v2 0/2] Add Meta (Facebook) Santabarbara BMC (AST2600)
-Message-Id: <175098597713.150233.11475739280254945170.b4-ty@codeconstruct.com.au>
-Date: Fri, 27 Jun 2025 10:29:37 +0930
+To: Rob Herring <robh@kernel.org>, Jammy Huang <jammy_huang@aspeedtech.com>
+Cc: jassisinghbrar@gmail.com, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	joel@jms.id.au, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
+Date: Fri, 27 Jun 2025 11:22:56 +0930
+In-Reply-To: <20250625155007.GA1489062-robh@kernel.org>
+References: <20250625073417.2395037-1-jammy_huang@aspeedtech.com>
+	 <20250625073417.2395037-2-jammy_huang@aspeedtech.com>
+	 <20250625155007.GA1489062-robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,30 +71,39 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.2
 
-On Wed, 25 Jun 2025 15:38:36 +0800, Fred Chen wrote:
-> Summary:
-> Add linux device tree entry related to Meta (Facebook) Santabarbara
-> specific devices connected to BMC (AST2600) SoC.
-> 
-> Change log
-> v1 -> v2:
->   - Enable mac3 node
->   - Add GPIO line-name FM_MUX1_SEL_R
->   - Remove 'pinctrl-names' from gpio0 node
->   - Reorder top-level nodes alphabetically
->   - Reorder device node properties per style
-> v1:
->   - Create santabarbara dts file.
-> 
-> [...]
+On Wed, 2025-06-25 at 10:50 -0500, Rob Herring wrote:
+> On Wed, Jun 25, 2025 at 03:34:16PM +0800, Jammy Huang wrote:
+> > Introduce the mailbox module for AST27XX series SoC, which is responsib=
+le
+> > for interchanging messages between asymmetric processors.
+> >=20
+> > Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
+>=20
 
-Thanks, I've applied this to be picked up through the BMC tree.
+*snip*
 
--- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+> > +properties:
+> > +=C2=A0 compatible:
+> > +=C2=A0=C2=A0=C2=A0 const: aspeed,ast2700-mailbox
+> > +
+> > +=C2=A0 reg:
+> > +=C2=A0=C2=A0=C2=A0 maxItems: 2
+> > +=C2=A0=C2=A0=C2=A0 description:
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Contains the base addresses and sizes o=
+f the mailbox controller. 1st one
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 is for TX control register; 2nd one is =
+for RX control register.
+>=20
+> Instead, just:
+>=20
+> items:
+> =C2=A0 - description: TX control register
+> =C2=A0 - description: RX control register
 
+Maybe also specify reg-names with "tx" and "rx"? That way we can use
+devm_platform_ioremap_resource_byname() in the linux driver
+implementation, which should look tidier.
+
+Andrew
 
