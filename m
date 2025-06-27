@@ -1,79 +1,164 @@
-Return-Path: <linux-aspeed+bounces-1593-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1594-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBF1AC77B7F
-	for <linux-aspeed@archiver.kernel.org>; Sat, 28 Jun 2025 01:45:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D09CC7EE2A
+	for <linux-aspeed@archiver.kernel.org>; Sat, 28 Jun 2025 01:46:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bTZxw2HS1z2yqn;
-	Sat, 28 Jun 2025 11:45:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751009499;
-	cv=none; b=R5rDAjZcsH9g+w7GlqidZRmcVS06CtHVqSJ9RJqM0yLGxYbEGq4IEGZJMydA1tw9x5xCo53dqupEffVRUWpwRpLMMZUyfuml8spOgXU3Efd9ulAkeIMD9YAluQ/EyNb+M7VoIlRZ+DGeU74wlFdeuKKJ/5K5yVD+zcazITrKGf/hvK0LXdq+rDURquvrnJ/mBpV1ncLwMfcmVLkiuB3YL+tIWi7ijLg+oxNIT1kjdsw9RETq8iT2zocaCkBniY2ZVw0exsW8r05avu3NAM1GRAdoW/FdbYC1303TwGU54sbf/KLgDWDj+ie8mbB1P+qDRI3ks8YywTeS/QLvOXvODg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751009499; c=relaxed/relaxed;
-	bh=9Ulo2IqCqK6lmTR1n2ctrbmpkiinWsFuA6QDYyT+/w0=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=M4XQEYCC20YdB6OrA+954UmLYlC96XrDSAP2lB4e0nyBM9AumfneznmBByW67Gfv9Nmoaq9day9BHwk+iRu6jKEQzNgND9lEE/T9bb/4NTXU0UIrWf06tjPm7BgAtEPgGjTQ8qVzjKJugOKaecjNdJiYru0bFoHg28oDi1eA3j+0BHxodM2+CKW8YBSEgvtYBwKF787sj6Jk081L0n8L7y3Hlbizgw411HPp+K3JzUIwm+7xhxkwFV/a9QSGG1iCkfIn646/c10xeLQTDIydnL0/cEvfkZGCcrhcz9Pv/G0aYXjeTNBR8Y97Gtj65bJQMXX2na0GL9LPSlbzHs9y3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=A//sgkKH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bTZyS6JyWz306l;
+	Sat, 28 Jun 2025 11:46:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751018582;
+	cv=pass; b=FDEHain0lweWwYWIijqzdlZfAhTu+k9j3+AgbkEmB5o9Ntk7vfnKTab08MGprXK9cz2YuUGgfRPosq0ygHF5z9zTN+BCJhtYW4Eh6V6HxXQQcUwcDHctKEFGSaCSyy8rdFG3ynBVv/GdtYu/Hba03tcWwD/rzB97QWS14gIqLucfoyig6s6QnroIYAAQYFvzWFRq+uLMS73YCmeB7I2oEIOFNmVEyioSiyttgBH1GC432ClDWKZhUskMhY1Z/0Fjbbeec46t2Pe42oY23UwKJT+rdLDanIrUv/BnkSczldK3l+15mbxQ6XvlcGnvvc5N531JgWm1b2JSOt2ThBl55Q==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1751018582; c=relaxed/relaxed;
+	bh=OpPjYePwJ+hWkNOkooaP11lAd0Iy6i4O+PzjjJgYpEU=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=nT4M1rzNHzUEciigkIBsZPW1SNDgxf024kydgXEjE4IQu2XzOEhlV5NryblGiLqjOsxT9BPjNrTn08Uq9rTTFttzbsJF+j+LQ25AmJcuQBo7oPlxNo0fxEQHPeaYCFnl+KGCo5oojBFSb6v71eK9R7Hcby+G4zR7FT+D5K9jC114A2ZJaACBkTdW1Y1UM+HQnh8fRX9hmbzixKMIbvz7QR29nNdIVfVAXRL7WDy7m46jgS8QOY9vKPqvy+66fIKRQAasOWl6OgZzUFV41sw+FtiKRLnKkvxwaAup0WjlE4GkJ2uWKGy2pERDctEtW/mDA4gY36T9JtO60vKBKcdlnA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=C7TqAzvz; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=A//sgkKH;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector2 header.b=C7TqAzvz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bT6gZ2xg0z2xsW
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 27 Jun 2025 17:31:37 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-749248d06faso1781275b3a.2
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 27 Jun 2025 00:31:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751009495; x=1751614295; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=9Ulo2IqCqK6lmTR1n2ctrbmpkiinWsFuA6QDYyT+/w0=;
-        b=A//sgkKHxQdbKb44HHf5Tm0u+bb4kiwz1PqqJBYd3KYBsEJXXtUgxDM/wwm+xowLIR
-         SRQ2Dxj2F8pz25Dz+HZ4c9P8J/7lHF+pNTFo2jcWv6uDR0f+CI20bbQ2XRkkf1GcHIFK
-         94Sv1L+6IDd/LPqB8hqlEoZiq/fq505RhnC9q5u0njHPnBPyIYdtfDyrNReewkrjXNHU
-         mYN/kPJcOqjASeXwSzmFlyXZ7LKM8ZX+n2mMdhk8FkjkMuTXKuAlHc9u5o8/44cl8ekK
-         Uazn4byz4cKGKS74g842ap6znfjkU95w/eW4O8/jIKFI9Wy4Ki9fZG3ZrQynrdCnL3cR
-         f1Vg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751009495; x=1751614295;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=9Ulo2IqCqK6lmTR1n2ctrbmpkiinWsFuA6QDYyT+/w0=;
-        b=CZh3AOaodQzuXivi6/n749h7Bz3hRJ1KIPnAikXBn7M6wVcOZWtQsSqnZldOJxREck
-         bgCnwsozuePmfQyVG7cNM1Ep2bi3h2nIl+P0MuBjttM7FV6F0vhGUTitp6GXVdCsFste
-         YI7IzneURrIPmb6rfsd3d922hSQFk0aZ0OIORILZulMUwkLdzwYsF+zOmRn9zhRuIkY9
-         v6v8aMockgkIh6Dn9QxWEG99oc5yga3ic0UWrlfozXOdma5GvahHM1jVwlR+i1rlnNgL
-         FrTz9FZXHYId+juLfpaPxNj2fqCFYeZtSdSh49JET1kC5PLsKx+ckYQGUnNC8NmJf2Vo
-         kr2Q==
-X-Forwarded-Encrypted: i=1; AJvYcCW1HxYPPxJKA6FL+AGw2F0LGUSTnq5aiuCwQBSXNmstSCPRZOjphceDNM1Y/apXqxWbTIP4xUTSkxHcIQY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyfEBpbIpVlBAS1fjc0EOtd4VGParSRVUpD5ldoZ4GqI5nO46Wb
-	JQ0wNNg01sq8TNKmCD6CjnPGLiNnNK2Vd2dcpfoG43Xa8IfAGo072JIH
-X-Gm-Gg: ASbGnctnhiXXlnMBGsEGBCkWqt4MS3T8j7nheasIqmXxP7n5yzbSGzIU6/zsbE+Zy90
-	ccxDWV0HEIJ22rXnZIyvZeUlMtliBhAiwlJ9IyXJb2/3m6euJI5lKae5VkRNhH3TOWNsulGvD8m
-	Xg3rm+uFKerDNETfHh6a86nlCzJokIfYy37VOE0bC/ICcH8HE6cqv8mi0iQIlvkA8Iw8WohjFZd
-	JPSRK8ejjnuQWz+FkUzQLhL0sPPlsfffpopUM9DaeGsjlyF85Ln9I1VF5+4lr8+HMorwh7GJE5T
-	zdZwsgcQEfIrnpUYSNbckp2cFgkEivHrPn1Rb+jh/ZFEhKp27r112HmvobAqc6AVcwLA3m1BlHH
-	RTCjahy1d0eJOAlyHWtF9Via9/M4Ec/8=
-X-Google-Smtp-Source: AGHT+IHWPxrtW7uCSMjhE308lVU3QsfpWpHidLpZ/iou98J5zU0NWKBg4cfBpKfITecjKJM3Ydlp0Q==
-X-Received: by 2002:a05:6a00:18a7:b0:736:4644:86ee with SMTP id d2e1a72fcca58-74af6f4078bmr2943654b3a.14.1751009494749;
-        Fri, 27 Jun 2025 00:31:34 -0700 (PDT)
-Received: from [172.17.0.2] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-74af540a8f6sm1628646b3a.12.2025.06.27.00.31.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Jun 2025 00:31:34 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-X-Google-Original-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
-Subject: [PATCH v5 0/2] ARM: dts: Add support for Meta Clemente BMC
-Date: Fri, 27 Jun 2025 15:31:20 +0800
-Message-Id: <20250627-add-support-for-meta-clemente-bmc-v5-0-038ed6f1cb9f@fii-foxconn.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bTB293mWQz2xsW;
+	Fri, 27 Jun 2025 20:02:57 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=V6lWp4J9wSMgXChbhciE2hHp2X3ofIGyiVtLvZAIaP+puv3AqTafLLQQIsrlQOjvudPi863W1SSb7sxtFoRq8+pZCDtzCnW2ox3PVZi6ciuuaoybMfR57aV0R5Sq1ZoK+Zkv7+H7HfLPvlWk731eHYCkInHXdEtck1wSaoMUn6kTpq3UkE1jSbQNlftWHpVxCpCHB8ce2htw3FNJhLBEH+hImSbfzXkBlGJBn7etmAUG+h3vNw2EZMKwycEx/2JVdCtw9AoS4mGGLxm65lt/hSmYJz78A/Fc0G1piB5OJ5MyVogeglO4IdXeimn89rpunw5v7S9iAURQEvvuvYu0lQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=OpPjYePwJ+hWkNOkooaP11lAd0Iy6i4O+PzjjJgYpEU=;
+ b=CBIG1tr5Ry9zAKeECDCKoygU+gMg0btD1yRQLO/A0dmjNBYwb6X4gtjXSRgLJBYzBHvJO+c1/sEsa0AwAS0mofFPOTnRKK9ZjhTfvJBA7Bbvbdyo9qHlc5X23iHFcwQvnmS/df/+kb5EPzSaT0sZioQk085EC4mjQKM4cVWceg6Ou6akUkVKrWW/PuDTjIaDnyOkvN19M5gt8+Fg1ICXhbqYcNbJ4Kfo/aAwiQe5TqCNSo9KYkXwiOMxQZcCQKPxyNymk7KdxJcwfXe9umV903mlyF19Me40wjIlwtLWcezPehK19hOR25ao5GlzN92sNEJYy43N6GVLuAbtIsJRbQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=OpPjYePwJ+hWkNOkooaP11lAd0Iy6i4O+PzjjJgYpEU=;
+ b=C7TqAzvzpPS55cldO0uY4Q5GlHvaadhZjesUNnIOiBLpt5u1u4vXrLHI4NEWuH0bfr4DOMoUzr9FqXkNdu0qWLk3jzd1LHN+1FcwGUBDmW9e3jm/J9FnnqAi62XjCp1QO9JZmMANIjg9PZCFqSWFkK1tbq1uhwXuBWHXlZBQE88wq18I1A0iizU4c6+5R4JMQTh39c4PQxVeeA8+KDGERUhw1+fyoXiZ8CRANXyaG1o2bwd5Ibf4ltniuNizfgLgFHGeW/EK33P03lGg1Om2lPDEaBZnTxWS+U37yIptSlEDMKSYevuteba/MXhiVfRipxhKAPBvHTqzE9RReQ9Zqg==
+Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
+ by KL1PR06MB6760.apcprd06.prod.outlook.com (2603:1096:820:101::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8880.18; Fri, 27 Jun
+ 2025 10:02:34 +0000
+Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
+ ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
+ ([fe80::6b58:6014:be6e:2f28%5]) with mapi id 15.20.8857.026; Fri, 27 Jun 2025
+ 10:02:34 +0000
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+To: Bjorn Helgaas <helgaas@kernel.org>
+CC: "bhelgaas@google.com" <bhelgaas@google.com>, "lpieralisi@kernel.org"
+	<lpieralisi@kernel.org>, "kwilczynski@kernel.org" <kwilczynski@kernel.org>,
+	"mani@kernel.org" <mani@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
+	"krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org"
+	<conor+dt@kernel.org>, "joel@jms.id.au" <joel@jms.id.au>,
+	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+	"vkoul@kernel.org" <vkoul@kernel.org>, "kishon@kernel.org"
+	<kishon@kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+	"p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "linux-phy@lists.infradead.org"
+	<linux-phy@lists.infradead.org>, "openbmc@lists.ozlabs.org"
+	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
+	<linux-gpio@vger.kernel.org>, "elbadrym@google.com" <elbadrym@google.com>,
+	"romlem@google.com" <romlem@google.com>, "anhphan@google.com"
+	<anhphan@google.com>, "wak@google.com" <wak@google.com>,
+	"yuxiaozhang@google.com" <yuxiaozhang@google.com>, BMC-SW
+	<BMC-SW@aspeedtech.com>
+Subject: [PATCH 5/7] ARM: dts: aspeed-g6: Add PCIe RC node
+Thread-Topic: [PATCH 5/7] ARM: dts: aspeed-g6: Add PCIe RC node
+Thread-Index: AQHb50qa7xgMdI1rPkyV9YYqvYQXFQ==
+Date: Fri, 27 Jun 2025 10:02:34 +0000
+Message-ID:
+ <SEYPR06MB51341AA9C2CED2D55FFADA629D45A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+References:
+ <SEYPR06MB51346BC9292066243CB845699D7BA@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <20250625221653.GA1590146@bhelgaas>
+In-Reply-To: <20250625221653.GA1590146@bhelgaas>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|KL1PR06MB6760:EE_
+x-ms-office365-filtering-correlation-id: 42d998f9-5c6d-41ce-0714-08ddb561bce8
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|376014|7416014|1800799024|366016|38070700018|13003099007;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?jmsTiMnmYwUMptzbQHeNRnggSzH2vytMwNsrurL+1vv4sEps825uX9ZFoCrM?=
+ =?us-ascii?Q?/YQPlIZLqyBijits1Bp3iMppLOa1c0doKEftJpbWvbH2fgTQfKKFTL5NH7kJ?=
+ =?us-ascii?Q?AaugtAbLB21yxQS2j8aj/pAUdzN3fOUCOGWm+Y7mivVU8T77pJQpPpWDuHXF?=
+ =?us-ascii?Q?HUydcdrao9cN9T4xerx4IEc/BjXm3/fSRvE9y3fNWA9ir2GfiS3yMX8MsJvn?=
+ =?us-ascii?Q?/AUu0WD0uhhpTZnM4d4siDG0RwJfaqY+UGTCEacprsrnDNw012o8Eb4f27yE?=
+ =?us-ascii?Q?thEJzcWy1NgSRFmUYt/keCHdgU7u39x0yxzir9D4F0mRq674EL69pFdrKJPc?=
+ =?us-ascii?Q?X/exZI7UvMA9ZvPfpaSMO/YzA3q9Tc38ks9U0JimMy8QCqADrAJuj+PGDOO4?=
+ =?us-ascii?Q?lJi73ANEGlgnYRW+hy5Z0TxNRl9gGiMs6oVUq6vwVEFlAU1F5zkysZMDUEnc?=
+ =?us-ascii?Q?X127OW6P0NB1FGBnRCIHme0sATb1lIKR1asj1HhQIkoNG+C34AUTi6/WzwFN?=
+ =?us-ascii?Q?xntEPa+9gcTVXoN/JGNE1OFIcM5+iu4IVvKHWxL2AqcJVT53ugaDS6x7nQO5?=
+ =?us-ascii?Q?s1aIDQWkZ3fdoLeuzClsz46MCHpRb4RamnboproMHBw8Z1phFTwpyJrZTvKk?=
+ =?us-ascii?Q?kc2BM6cUarn+jGzUMzshhhhLPZvDJCOGGhgFB0SJP0obYxCMlLUReJwi/Vt0?=
+ =?us-ascii?Q?N9dkxyYfBH1MHE0ZmoebPQr32yTc6E7no7WC54kuqWlrbeS3QrLDjsqkn9Fw?=
+ =?us-ascii?Q?r/q++gjOBdYeMbjyqfAO7Wev21WiDJ22kTyWBvvEniG7BtlSasvI1c4qZqi1?=
+ =?us-ascii?Q?3TYEaRkarpJ02sTjNG9T+ymdCFuIqsXNI4B0ODaxu02qkxE1HXT4ozXtLmPL?=
+ =?us-ascii?Q?FrHuVGBiZKHwUx6PXKuMr0GUU3S6Zf0vw3QdX8jbfodjiFMDjdehoRObJdXo?=
+ =?us-ascii?Q?14f+CsGQndgASU7cftzTaS/ylYKe1IxE1Q8SH6B57rE2YqrPv6S/WVhmCPK7?=
+ =?us-ascii?Q?7svjEz2+0xY1FjI01x9+/+qnnoq3EfHIjAQsdNaDTlufGae2ObHTct9ZNPBA?=
+ =?us-ascii?Q?9f549WGlCqrJSwd5sIDmj0Nw3cM5mDnHBJZvf3I6GqRIgIvnwRR7h6ZHx9Ru?=
+ =?us-ascii?Q?HJHfikPEAOpkP+sOkObs48l2ouGvKDj7vMb4LgF1KHCv3BPhkNoeUH70p/E5?=
+ =?us-ascii?Q?ixLuaFf2RNurjBfLRDSAEXzKLpQBglL2yfo/aZTUGdsLnkRkulC857yuQjh3?=
+ =?us-ascii?Q?dKXfp/f+9som52GGrTqGSxghGu7+aTM8ygkdX7uu7vE8z9OqaVSSBlepf0Us?=
+ =?us-ascii?Q?S7jtyOa6rDUgGCpIAshr73xCIW8T+Pdvr28rGr+POFJDGOhLqbZjjZOMTNSu?=
+ =?us-ascii?Q?OtZO8elC87vX0djAKEgi3fct6nuDCvsHpo0hfBf0ULJanYoZr573H8rjchdH?=
+ =?us-ascii?Q?qaj58NvWTR4=3D?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(38070700018)(13003099007);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?2Gk8xEBORt+Rgh7ZqUtXa5M4SyZYYAq5Tzs5Fs1W2KZUtUF5iyGH6Hy3/WJt?=
+ =?us-ascii?Q?QiEWPJ1y7fXZVjekd2Vh/TIRQmO8i9lvULPcLPWcsAobMZDg7i4qgJi/953O?=
+ =?us-ascii?Q?2kb2izxUOpdaA69jB7sjrA6an+Kv4qr8PUpPWhrht6Q5uBJIw2YTMB1xeQE1?=
+ =?us-ascii?Q?Chz30FiZjX0+3biUiaZUyzdtKf3FwoHrg2jE8b56oMkDRT0x4tVhcnBtdUQc?=
+ =?us-ascii?Q?oqTBggTs/ozd92MpzzoRTpQku0q+gJx5VAbGw92ObRllZi+DcKpy7R7/eLaG?=
+ =?us-ascii?Q?LaT9V7nsHSkFVgUpSsoOgSIW6SXjQ2etrj9bqnfqKm04JyjZEPhyR8mlhdSf?=
+ =?us-ascii?Q?q2Kq+F3jT+nPVtFl9oD+qbBQMdvTpUyidmIuFDhH7OAe+Yv4oe8aJlbbKWtX?=
+ =?us-ascii?Q?EoZISo3/dcjl9Q+MacRu+XXjUa19dUgIZrlG0zpEJlZgQNASVVZPFPiIiuz3?=
+ =?us-ascii?Q?JKUPxU4ExpfbkFdkqPsmNTGYv81pledfObFVWybHNoSZvwRE883dCvTLT4nj?=
+ =?us-ascii?Q?4pmQG2TVNi6/sMSiHtfUFHrUo4LcUQuv7Sg6XBRVPTFZ3wTdRuxgG06PRapF?=
+ =?us-ascii?Q?myIJQc9dVTOydjSDvBvIjKIHSyr9bemCQa9M9i3H0BUv20w2ofgtqpOCzgGR?=
+ =?us-ascii?Q?HgtSlXAFjg9wFXESlA+p0baQzmvI9WXHSRlEA9aI/SIjEYSnA4juwOP0YyAs?=
+ =?us-ascii?Q?Y+CJA9tdSK+3QmN5YXPjyrJjQlvAOOG/VkVNm6ncEQqS2oITIs+J2wOtft0O?=
+ =?us-ascii?Q?d+tZr0p5pOGxYTs/lO18HkZ0h7MpZDWP+ieGwFjJxs1lWZWUCy4XkkrPlhz8?=
+ =?us-ascii?Q?ldULxTtxy5X6hus0P3wKg+uAnwopyZVUUysbsOKbkfH2DWXh+mmM5MG2HBRP?=
+ =?us-ascii?Q?CDrZDVT5neAEcpv6/Z6pEGLtShOcjc4hbJQ1/gu9rM3LRnuUzD8sbA6RG7nB?=
+ =?us-ascii?Q?rSpcVPJw/kBionpm1zzkTJ8mt3EI/0uHJQis6br266+IN0lsnpl3LLukHY5l?=
+ =?us-ascii?Q?qX/k4eOgYHXf+PDxG130tUlNFtlg//li7RCiV9Vpp+5PvTcxWB0Scy7FVg1l?=
+ =?us-ascii?Q?LIPMRJQnbPnyJ3/jF0nUqm6rYP6iIRmHM4ug8OULDFn+jtwX67rpY931OfBR?=
+ =?us-ascii?Q?y8txvEYZMf1I6xoxqvfoCmS0vR8bKUk/RQa7oO5P6lTghJpvBFv1KGhg0mlS?=
+ =?us-ascii?Q?GE1kHAzO1S5mvHI3AUXVSnrZVg9z1II0D6O/+giPV3SkENX9NqSgWtarx7m5?=
+ =?us-ascii?Q?LH2YKEg++tv1+9En+LpCpNSfX+ercMfahB0lyWJBNdPhWzWwVPKCghriPIAu?=
+ =?us-ascii?Q?DeVl9z6kgW8aUbdMp/85p9fDO8zPPxNlLl8cTVFUx2PkoSUoaNojgFjeiUDk?=
+ =?us-ascii?Q?dXFdKK/vZWzXKW1giHrvA8xsEzj1Vq0PKo5T/KZA9IjcZV02GRYVbK8HtxHa?=
+ =?us-ascii?Q?HQJNF7pKz6YmXhWZ/61UCZ17vkhcQ5Xb+M4kVv3bPGP966PySxjHUlX22MLw?=
+ =?us-ascii?Q?kiWvvYkBpvrtRwwYT2cQKgEckAvlOlNtH0tqQMgD9MtM360LvoNrlqibV9Ed?=
+ =?us-ascii?Q?aKi7MHI10IDtsTjEqwEKUXmnWf0/8q9x1xGLd2E8?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,77 +172,88 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAMhIXmgC/5XNTWrDMBCG4asErauif1dd9R4lC3k80whqyUiuS
- Qi+e+WsDM3CXX7D8Lx3VrFErOz9dGcFl1hjTm3YlxODS0hfyOPQNlNCWeHkGw/DwOvPNOUyc8q
- FjzgHDt84YpqR9yNwb2QwzvdglWbNmQpSvD4an+e2L7HOudweyUVu1//oi+SCo4XgnEc0Xf9BM
- bbfK+SUXiGPbGssaucqecRVzXVgkYT10nh47uq9q4+4urmglCYCMg7ouWv2bnfENZuLHZHSxgk
- wf911XX8B8kX8AOABAAA=
-X-Change-ID: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, Kees Cook <kees@kernel.org>, 
- Tony Luck <tony.luck@intel.com>, 
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
- Geert Uytterhoeven <geert+renesas@glider.be>, 
- Magnus Damm <magnus.damm@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- linux-hardening@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
- bruce.jy.hung@fii-foxconn.com, george.kw.lee@fii-foxconn.com, 
- Leo Wang <leo.jt.wang@fii-foxconn.com>, Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1751009491; l=1868;
- i=leo.jt.wang@fii-foxconn.com; s=20250618; h=from:subject:message-id;
- bh=9fRWkgV+8VP7UmRHkuiRfuz5hfvvERiwtk8L614dD50=;
- b=0XsbKwFEd4w+7PzCss2Nmt2rO/8TFCmbSJs+qdTQwzawMciw4D7RjYyp2vdqVWZKISYobWBP4
- UD6tzE6U0MHCxtObyeLMadTp/GYPRXTWeuWWAPR/jwtI7cNH8Isi1zI
-X-Developer-Key: i=leo.jt.wang@fii-foxconn.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 42d998f9-5c6d-41ce-0714-08ddb561bce8
+X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Jun 2025 10:02:34.1795
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: NEAeO01K2igXp6JPh4vkeCpEwW5zDfomtTFV5FyaUO/7YyzXdJ1IPU1MWW/g8qMPNfEsbURP+72AcH4Q2rKBLeCC8bci2nM0OLQMB5hXI+I=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: KL1PR06MB6760
 
-This series adds initial support for the Meta Clemente BMC based on the ASPEED AST2600 SoC.
+> > > Yes.  But this driver may be used in the future for other RCs that
+> > > include more than one Root Port, and it would be good if that didn't
+> > > require structural changes to the DT.  Also, there are RCs from
+> > > other vendors that include more than one Root Port, and I'd like all
+> > > the DTs and drivers to have similar structure.
+> >
+> > Thanks.
+> > Is the "pciec" node in arch/arm/boot/dts/marvell/armada-385.dtsi
+> > what you said?  Or could you provide some examples for us to modify
+> > our pcie rc node?
+>=20
+> Here are some examples of DT bindings and corresponding driver code:
+>=20
+> * drivers/pci/controller/dwc/pcie-kirin.c
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
+ocume
+> ntation/devicetree/bindings/pci/hisilicon,kirin-pcie.yaml?id=3Dv6.16-rc1#=
+n108
+>=20
+>     kirin_pcie_parse_port():
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/d=
+rivers/
+> pci/controller/dwc/pcie-kirin.c?id=3Dv6.16-rc1#n399
+>=20
+> * drivers/pci/controller/pci-mvebu.c
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
+ocume
+> ntation/devicetree/bindings/pci/marvell,kirkwood-pcie.yaml?id=3Dv6.16-rc1=
+#n12
+> 5
+>=20
+>     mvebu_pcie_parse_port():
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/d=
+rivers/
+> pci/controller/pci-mvebu.c?id=3Dv6.16-rc1#n1252
+>=20
+> * drivers/pci/controller/pcie-mt7621.c
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
+ocume
+> ntation/devicetree/bindings/pci/mediatek,mt7621-pcie.yaml?id=3Dv6.16-rc1#=
+n11
+> 1
+>=20
+>     mt7621_pcie_parse_port():
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/d=
+rivers/
+> pci/controller/pcie-mt7621.c.c?id=3Dv6.16-rc1#n198
+>=20
+> * drivers/pci/controller/pcie-mediatek.c
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
+ocume
+> ntation/devicetree/bindings/pci/mediatek-pcie.txt?id=3Dv6.16-rc1#n85
+>=20
+>     mtk_pcie_parse_port():
+>=20
+> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/d=
+rivers/
+> pci/controller/pcie-mediatek.c.c?id=3Dv6.16-rc1#n909
 
-Patch 1 documents the compatible string.
-Patch 2 adds the device tree for the board.
+Thank you for your information.
+I will try to refactor our driver in next version.
 
-Signed-off-by: Leo Wang <leo.jt.wang@fii-foxconn.com>
----
-Changes in v5:
-- Remove accidently pasted texts.
-- Link to v4: https://lore.kernel.org/r/20250627-add-support-for-meta-clemente-bmc-v4-0-ce7ff23460c4@fii-foxconn.com
-
-Changes in v4:
-- Move properties of nodes defined in the same file from label ref back to where they belong.
-- Move pinctrl default configs for ncsi3 and ncsi4 to aspeed-g6-pinctrl.dtsi.
-- Add properties to i2c10 and i2c15 to enable MCTP.
-- Link to v3: https://lore.kernel.org/r/20250623-add-support-for-meta-clemente-bmc-v3-0-c223ffcf46cf@fii-foxconn.com
-
-Changes in v3:
-- Modify leakage sensor to reflect current design.
-- Link to v2: https://lore.kernel.org/r/20250621-add-support-for-meta-clemente-bmc-v2-0-6c5ef059149c@fii-foxconn.com
-
-Changes in v2:
-- Fix patch 1/2 subject line to match dt-bindings convention.
-- Reorder device tree nodes in patch 2/2 to follow upstream DTS style.
-- Link to v1: https://lore.kernel.org/r/20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com
-
----
-Leo Wang (2):
-      dt-bindings: arm: aspeed: add Meta Clemente board
-      ARM: dts: aspeed: clemente: add Meta Clemente BMC
-
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
- arch/arm/boot/dts/aspeed/Makefile                  |    1 +
- .../dts/aspeed/aspeed-bmc-facebook-clemente.dts    | 1291 ++++++++++++++++++++
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi    |   11 +
- 4 files changed, 1304 insertions(+)
----
-base-commit: 52da431bf03b5506203bca27fe14a97895c80faf
-change-id: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
-
-Best regards,
--- 
-Leo Wang <leo.jt.wang@fii-foxconn.com>
+Thanks,
+Jacky
 
 
