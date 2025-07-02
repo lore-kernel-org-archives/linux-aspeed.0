@@ -1,74 +1,76 @@
-Return-Path: <linux-aspeed+bounces-1610-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1611-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A95FC83013
-	for <linux-aspeed@archiver.kernel.org>; Wed,  2 Jul 2025 05:04:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8CFEC83038
+	for <linux-aspeed@archiver.kernel.org>; Wed,  2 Jul 2025 05:04:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bX79W1Rlpz30LS;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bX79W1s5Wz30NP;
 	Wed,  2 Jul 2025 15:04:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::531"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751432671;
-	cv=none; b=GP9azKlA8GCVTIDlNABA1z1X3Qc95PnYcv01GhxQbZoHunYThM3cNFZyhWNdT60JtKcrbbuDfaHSTdv0lVnRo6np5zGYZ2Ag0y2C8MwHWbg44t59vtiBlIuALDoebHa3/UIe6wVyq90rWqHcmO2DwKVGeWWrAD9FnLfHPYZukgGPCt8sQZ3an6jC+EYfrGpjJnCJu0QY3BcrVVYWWCz6POSP33oSRXFjm1l4XRNyn4EZ4OiH20lW49PeXbQYxu2J+jj9wdatn+rTtyagu0BLz1TXyMmVIy9ySNFF0TuXqSM3S9m/7qpD/508BW68srSJ7wZbrY+lnTbcPxRpfx2FjA==
+	cv=none; b=OCxjVJ3W1cbD0CsyhDmlC3YgvLnxxRKcBAT8T9Rc/TuPI5cxyEmvzqN5vgqSlFx/11UJfAHG3hyPs/Ff9X1/6tRK6a1S+xYObCU6BetHpbXxL9nH5OXblpFSHx9yZqQO8m2T397NYfy7LpXWv9pE3rRGXiIjeJKXWI5a3/Coht/0p2yJPYUdaRg8iS6ixuoWFhw5c38diU1KSHkCjrUIkOpJ4zNagYJ91Mu0MLVMXrHhKYH2/bw4iYNW+Pporg8SUrbzowG9NuDGjS+qVYNDwahGJ7x9eADsh9NIn74zmriFR4gGvns0rbGZPts2/owqPuFZJNXd6z2Tzi37V1aqdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1751432671; c=relaxed/relaxed;
-	bh=EG55DPXz8+xtKpQRKekjwgyGLv4dODZAuNPTQZ9Shzg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=MQbGtK9xebTAEI8z1Zs8G2+AKlRPZGWb6wlFNNKteu4fdOVJjRCkfCBiLf62V0+Vi474oE238bcBxs1P2Lk712XRed7pZqtHI0NWi000Hh1eflqgm4fhf3x2CygjC3e2fYaJ/omOuYAaki3P+onyNY6+jAfF6+67IxmCwtzv5QeFlVB83lWVT7IXifpYZJmx9nOGUKnYzooSMd6p5+ynKt4fvpZQsc0BDkYF/wkXxan6KK8L0dJC3EC8t0irC32j+oOMfQV7EboqdyphULu+lilpyqYc9cskcUw3lVYVkHr7cVx60AIAPpLPaMP+AW2U1Ldbw00KTjd2ASoag2xMNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Lq8ZBRak; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	bh=QXmso8g2COR1WBKWaY8Z/xRycJZ8eCt0dgwiFP5AhaQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=HLvGmdzzI571xPO41UfmGXQxuXcPwXHRogppWojo0Z6WFuMtYbuviiq+rns5ca7fTzcwvssqqCPjogOdgJWX5tn+e+3OfmyZZRRVSGYqkaIuxgkfhIhBRMdopX397GXlvbuw8zzQVTtaoOkV5GAzfFwGy6Q9YbOJqLfRwGdt7J0nxJfg+kbsRxznjj/64GVT9nGJX5mwHJZRgUtYn5gDNjNlFGbdx+yPnFZ6j56nimJJAgJvwjptjE4JGu3ct88F/PK7kf4/gw1tPd9JKgpCXVZ9ELFmq3Sm4wtSd7epHxKbjfhaYi4xK2sV6E4u6h/LkEpnvPOwq+nDVYVyE9bxlg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Tf1Ngurd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Lq8ZBRak;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Tf1Ngurd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bX79T71SRz305n
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  2 Jul 2025 15:04:28 +1000 (AEST)
-Received: by mail-pg1-x531.google.com with SMTP id 41be03b00d2f7-b321bd36a41so3539338a12.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 01 Jul 2025 22:04:28 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bX79T6qJ2z2xlQ
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  2 Jul 2025 15:04:29 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-3122368d7c4so5229072a91.1
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 01 Jul 2025 22:04:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751432665; x=1752037465; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=EG55DPXz8+xtKpQRKekjwgyGLv4dODZAuNPTQZ9Shzg=;
-        b=Lq8ZBRakcJFCTA/RgYJS+K3MeckJGQnergiao4nPEICz62TPmigR1lt9ZYQNXPxkOA
-         13Nl2m/UUnGX2QjVPxAf9s4afP2nMBCENwmZqW2GzMWohaE3Mz1dl2xMwrkb1oPvBJdB
-         8gU2M2DdQEjNLc3zb9DzEFRYrAuLFeNyO39kEr8HtJWK4Cfcz/KjZtfHs7/cTdHIidWk
-         zi907lLeWhdC1IPZzRTp0OhbbblgKCAYmhP6mKQkk4GbrSucvTZ9uKszU1oCFtYB0iGe
-         /RsfANvCH7MSYq5g7rH4iQJDTrs7ITUYEhoNXwGvcqFSi1fCd4RE7A3n85dGP8YB71lr
-         YzeA==
+        d=gmail.com; s=20230601; t=1751432667; x=1752037467; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QXmso8g2COR1WBKWaY8Z/xRycJZ8eCt0dgwiFP5AhaQ=;
+        b=Tf1NgurdGgmwwUm2a+U2g+VTnn5dMMLyaDEd3mnycI/OAg0/uW3WHPjW0VqyVMampn
+         TXG4mET1zZ6lya/M5C0B34HPVK/ooy6u3jn6vMjTwNB9ywOCXz4KTIgPuITviTDdwEip
+         b0IBb/QA9aAMCC/i4InAOrKVbAtA7U+zDTsAf9tAnqWj+fpvXFSqvqeDxm7a4IgNJbHB
+         iCJYNgOebUhPMQkIwuwFRgIMLNFwBYbnWovZxwbjSxrOZ/aDZH97wdMKTkiQX03EvDWI
+         3Tf+PC+xJLy0lgkQQXyc8sG7yKqDjCrte4isFgbxQPFRXJO6zs/gw6AKB1Orz2GNkWBF
+         ce+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751432665; x=1752037465;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=EG55DPXz8+xtKpQRKekjwgyGLv4dODZAuNPTQZ9Shzg=;
-        b=RSXJEvOouhx8Du4Zq8jtlY6h/l0aydr4zaQM2VMqEg90yisTGe4puo0vS/tncgyhpB
-         QkW0GTawtNldVu273rQKKIGd8mO9NwtPaXEkOtqgW0N35FfSaZn/1iM0E8G0BoQ61Nt8
-         C2IHaWf7489hUIK5ioFBub6MPjT3xrLlwybBvmXIYrIkc0QfLa1EfcmraFWeKnmRzdph
-         4C7YeEHPvXG3tDi0QE7W6x9/yD8iDPV/KQ+7eJ9QN5Ij2j8hD3eFxZ16i3fuNJlwMEIZ
-         7zhJGiPq7D0BIcIlenSo4yhoqSexWvcEX9j39mrhEwuHILDOkkhbkPapUO6VFL6QUblc
-         UYqg==
-X-Forwarded-Encrypted: i=1; AJvYcCUmMITYXm9Cjwkc/kpR89YQ22cZhJVCNgn2iVgAT0y5YEesXn/YP+asLRSITg2n/D/Y3BN89u14iqOTUUI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzvhtqVx85ZytBH3eda0iAzbD7JONWEuzV1YwK+2G5j7iBa4v5Z
-	n6NFQROM0dZMoB7/cZ75qx4CoRUBDX3+Uc9cKUgddrw+JFBPH4KiA9hT
-X-Gm-Gg: ASbGncualISwrg6O0au687Vv2Z5svN8DAJR7BjxYk10u9ZhjHeUwkLqM35zWk3yigfy
-	pYjKO8owSxBiaZXAmj33pJ+1pS30JIHUIs7BdxjOw/zuGgeSdlvqjRir63WfDMipNc2zms+zv4v
-	XEwUI+ijY3qXa6/SuFTcmH0d5VTQvtPKVI1btqR/odnuvbR2rtbzSy7pkrCV7or/oo45IywDLWp
-	+WLocKzbZQt3Txg6UCIskmubAVg2tV/jPuXSXGKi6vW0fWQZNL1feE1wNlXzxjAZFiL3joK3clm
-	+t6+KCFo3xcjC9WQSddE+tvCuz9oeVjjTWPyid8MJljDprPnTYuzmrDZukfROtQxEeMOD2NyNuT
-	7yx+aeVSt1hcufOes7p25ikZK5MOFUEcjDxs9ZJKcXFWGp+7HFA==
-X-Google-Smtp-Source: AGHT+IFAFsQgFBXHekzpj5+jLpvS19bLZNwjrzNUfqbzyt7jsiYooA3Z/RS1UmpTIK1dgo3CN2kBvA==
-X-Received: by 2002:a17:90b:3d8c:b0:312:db8:dbdd with SMTP id 98e67ed59e1d1-31a90bef8a1mr2126382a91.28.1751432665347;
-        Tue, 01 Jul 2025 22:04:25 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1751432667; x=1752037467;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=QXmso8g2COR1WBKWaY8Z/xRycJZ8eCt0dgwiFP5AhaQ=;
+        b=Hbs/Am/Afr3ybP1UWspoWVLJNielypYXaVaRoXoKZKQxCluamlornYxuCx5YebUt63
+         OyufEr7aGZsbu9vcSRCr42HoHfos72otRR2kEBE+7uM/35y+YzOjQNEvL0QV2upBbDrD
+         TJ1XmlVfqmMR9xCcSyrzxi92k235DCo2NEsr5cbDU8R3+3yUFjGTh6YlOkQxY4R/1PsM
+         9qd/GsiDWsuunXfp62oCGJMM4ByLHiyzvjIfNASK7gO5VvPpM0eCA2zU+s3HxYJ4bQQs
+         TfutBD0WGBAv5wD1KI11l9HNJASwCpJUiSYjUNacnXPwsC434DWxmT1C3nrZkVOCA8On
+         0HMw==
+X-Forwarded-Encrypted: i=1; AJvYcCXmwS9NUfRkkgl6PVDO1/TMv9fbs1YIRu+QJ+Y2Yplp0y3Q66NkXRjGYAocdGcmJrZjW2NLDQxWCyLmHn8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywh+X1sFRxBJ9l0ouGLWaxC/Oq6MGRP8EXaVkMrKofkkHGQQ8Q2
+	lGlNoC299Nw/dC88r1eOxvJPgYKRs3oHIofPsQdlWPFFYOPGGHw/amDH
+X-Gm-Gg: ASbGncvUD0tI7ys2iPcgzle9fdIRH/HZr6h8MnSAFpGXdOV9RGc3522G4zyP3FM1Med
+	BSmOt2ODeqTr5sdiWMYggYzEPXs1oTGOYBtlicg8xz8pZdBWRrz8QfDZEA/YjBXUS3qmPsdQFBl
+	HlP9nLrIOaZXhukDZRft8zRSYSb7ziezckmWFLXG7QqOkZLwE8vTh+ygLuZZLy3WBiMv7bmkuwc
+	DesmLjbk4rRxp5FmKjgNLx4YQVjq8vqyGLPOuZF61a3lxJ/jGHbU1MXuvFy0bRuBTg30jpSNaDN
+	zsiWYsAXO8D0s9RJJO1qJSEGakOfH+LCRU5ihx8KEU0YvfxvOSVP/8ODgl/v5RHjr1V0VdWF0kF
+	mTxPfM5635xCgEWPGbks3wSrwy3Kog0YBusnrOO0=
+X-Google-Smtp-Source: AGHT+IHUG5YCrucrr/166eG7coq7r8DcPuqMV7G9sKstOJsamQmMYN1ozIbRh3jEQoxq+KuGWSkBRg==
+X-Received: by 2002:a17:90b:2812:b0:2f8:34df:5652 with SMTP id 98e67ed59e1d1-31a90bd4786mr2068529a91.21.1751432666963;
+        Tue, 01 Jul 2025 22:04:26 -0700 (PDT)
 Received: from localhost.localdomain (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-315f54270a5sm18168323a91.25.2025.07.01.22.04.23
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-315f54270a5sm18168323a91.25.2025.07.01.22.04.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Jul 2025 22:04:24 -0700 (PDT)
+        Tue, 01 Jul 2025 22:04:26 -0700 (PDT)
 From: rentao.bupt@gmail.com
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -81,10 +83,12 @@ To: Rob Herring <robh@kernel.org>,
 	linux-kernel@vger.kernel.org,
 	Tao Ren <taoren@meta.com>
 Cc: Tao Ren <rentao.bupt@gmail.com>
-Subject: [PATCH 0/5] ARM: dts: aspeed: Add Meta Darwin dts
-Date: Tue,  1 Jul 2025 22:04:11 -0700
-Message-ID: <20250702050421.13729-1-rentao.bupt@gmail.com>
+Subject: [PATCH 1/5] ARM: dts: aspeed: Expand data0 partition in facebook-bmc-flash-layout-128.dtsi
+Date: Tue,  1 Jul 2025 22:04:12 -0700
+Message-ID: <20250702050421.13729-2-rentao.bupt@gmail.com>
 X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250702050421.13729-1-rentao.bupt@gmail.com>
+References: <20250702050421.13729-1-rentao.bupt@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,33 +106,43 @@ Content-Transfer-Encoding: 8bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-The patch series introduces the initial device tree for Meta/Facebook
-Darwin AST2600 BMC.
+Expand data0 partition to 64MB in facebook-bmc-flash-layout-128.dtsi for
+larger persistent storage.
 
-Patch #1 extends data0 partition in facebook-bmc-flash-layout-128.dtsi.
+Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+---
+ .../boot/dts/aspeed/facebook-bmc-flash-layout-128.dtsi | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Patch #2, #3 and #4 move eMMC out of ast2600-facebook-netbmc-common.dtsi
-because eMMC is removed from future Meta Network BMC platforms.
-
-Patch #5 adds the initial dts for Meta Darwin BMC.
-
-Tao Ren (5):
-  ARM: dts: aspeed: Expand data0 partition in
-    facebook-bmc-flash-layout-128.dtsi
-  ARM: dts: aspeed: Remove eMMC from ast2600-facebook-netbmc-common.dtsi
-  ARM: dts: aspeed: elbert: Enable eMMC device
-  ARM: dts: aspeed: fuji: Enable eMMC device
-  ARM: dts: aspeed: Add Facebook Darwin (AST2600) BMC
-
- arch/arm/boot/dts/aspeed/Makefile             |  1 +
- .../dts/aspeed/aspeed-bmc-facebook-darwin.dts | 92 +++++++++++++++++++
- .../dts/aspeed/aspeed-bmc-facebook-elbert.dts | 12 +++
- .../dts/aspeed/aspeed-bmc-facebook-fuji.dts   | 12 +++
- .../ast2600-facebook-netbmc-common.dtsi       | 12 ---
- .../aspeed/facebook-bmc-flash-layout-128.dtsi | 10 +-
- 6 files changed, 122 insertions(+), 17 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-darwin.dts
-
+diff --git a/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128.dtsi b/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128.dtsi
+index 7f3652dea550..efd92232cda2 100644
+--- a/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128.dtsi
++++ b/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128.dtsi
+@@ -32,19 +32,19 @@ image-meta@f0000 {
+ 	};
+ 
+ 	/*
+-	 * FIT image: 119 MB.
++	 * FIT image: 63 MB.
+ 	 */
+ 	fit@100000 {
+-		reg = <0x100000 0x7700000>;
++		reg = <0x100000 0x3f00000>;
+ 		label = "fit";
+ 	};
+ 
+ 	/*
+-	 * "data0" partition (8MB) is used by Facebook BMC platforms as
++	 * "data0" partition (64MB) is used by Facebook BMC platforms as
+ 	 * persistent data store.
+ 	 */
+-	data0@7800000 {
+-		reg = <0x7800000 0x800000>;
++	data0@4000000 {
++		reg = <0x4000000 0x4000000>;
+ 		label = "data0";
+ 	};
+ 
 -- 
 2.47.1
 
