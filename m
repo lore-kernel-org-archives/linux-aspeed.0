@@ -1,93 +1,93 @@
-Return-Path: <linux-aspeed+bounces-1635-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1636-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3C00C83F0B
-	for <linux-aspeed@archiver.kernel.org>; Fri,  4 Jul 2025 14:48:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B324C83F03
+	for <linux-aspeed@archiver.kernel.org>; Fri,  4 Jul 2025 15:13:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bYc2d19Nqz30WS;
-	Sat,  5 Jul 2025 00:48:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751640521;
-	cv=none; b=ZNWau6/4/UlEI7AJ3vKhPNb67FdlhqrHotM4cf6UgSnt7vdoKms+ZSedX6WyM0sKJsh8lmsnRt2PR1ZuXRxDws3x/cZ57obQ02xRwr/tiJ+Gv+qxh2ETHFFwFJGpnQOBCCXkvHF/WOWS7T2V82ei3DrMY6WSSZJub19AoVEXRt4p2/FAcARRC/nl8SwsMiYSvRqQ24NKW9oXNlwEngyTofX/tmucqLa9U3JXIsZqx38PwqyVV/IElccPoFJT7kislwi4wqtCrMA1lM35m5QtzYcFs1q3X5V1CSokYnIHpVEZ79zhCH1imePHjhE5tNeYUGrCs5XIEjiaOLhAkwSi8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bYcbH5Z35z3bNt;
+	Sat,  5 Jul 2025 01:13:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751642011;
+	cv=none; b=acrpg8OCSacfVQDxdQ9K1qlVY4Ym1/gc67rtgPt+kE7ffC18r9GRckAx+EatyT/tMBlhg1b8AMvYGaQ771CI7fLsYjNNcsy87mjUufYC49kNPK+KC9gxib+ln/0GUS+SkEke0wuorvQDkX9YXmUAdyOn/rAwf+6yySzH2vZB0h4PQTUHM8ELGw7o92g+OUWi6btcL4DdoigprvEJ1eL8LO5M+2yscWfxTcyt0MYTwaeudlFJ+gFhKjWvmf1W1gsF9aaEObbhefW+9eAFLBDaJ6QZ8Of+0swnGW/nVK6EAKnXWDxamXvjBpKJS4NmzgEqpcMKxS+QbRWsBw9JFcAAiw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751640521; c=relaxed/relaxed;
-	bh=jDuinaPR64zVqK1kEHxNBJvXQ3xp9ELmQCqfHweGrhI=;
+	t=1751642011; c=relaxed/relaxed;
+	bh=A2GjZktKM3Y5oURN46oUVqyGn4fu4vb+qYUJ6tUVUIg=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=lBPISNQ9Z51LbpiofKmqRXI5F4sN7OHQ3q31lJqyzXNTvG20i3NU5eZj2s5wT2icTN08J9XJM5Et//DaDiN4mWqTCO6VuDiq4MfZ31Fl7OEB5tnbSj22ft6cwD0aGop+V8MWE1by3nMSTkix+I7ou01fQ/PCRNi67lmfkZ/YECHek7T0G7PUu1eI2GbOlqy17v70gZsPd9Kp2ZYwRmhYngarvrez2dHSOIPRju51LHgjV8SZ1sMlDyHnhi+gHyUX1OUPj0Evb1eGBnBOdlk4fKlKsLhfDwz0QeuXeVDfyOjIit2wYazKVCAaOA5pt6s+/jZtiDfiQTLDGooA/yy9Iw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JI5jseJB; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=fsbL5TB5; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Yi8oHM7s; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=oRK85OcJ; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jdelvare@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+	 MIME-Version:Content-Type; b=QzvC4gUnV6GMLt6AR175j/JPLiHrjD2I9GRRfSije5v2eBysEwwJQ3dg4wlj9tSaWOn8W31r52t+krgWTb++tpM3K30SNpDrxMCizTvtZ4qEmkF7817USMW1Aocn56D5TGllTZTRU5/kqrcGb3J7pacemhoeAe9isoND9bBupurSPF/ysUrCvzPjO6m8LPHDbiyFiwIVpNZcXQYaabiCpLV/+TjmqepHUl3WiayumMxf9I9YZ417YtVqP7kbz0CDkdDBORpkzXzgTsWYeGAN7S4XqnTQOpWmkQWHLUKEwzm6CDnV/GGwiOvdImGjC0azKcM16kykbD+4BgVr6puW7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=v0j0caA5; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6ixN2WmS; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=OevvFzsM; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=8mHhaZ3e; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jdelvare@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=JI5jseJB;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=fsbL5TB5;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Yi8oHM7s;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=oRK85OcJ;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=v0j0caA5;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6ixN2WmS;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=OevvFzsM;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=8mHhaZ3e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jdelvare@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 334 seconds by postgrey-1.37 at boromir; Sat, 05 Jul 2025 00:48:39 AEST
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=jdelvare@suse.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1827 seconds by postgrey-1.37 at boromir; Sat, 05 Jul 2025 01:13:30 AEST
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bYc2b5sLVz30Vr
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  5 Jul 2025 00:48:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bYcbG3pfSz30hF
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  5 Jul 2025 01:13:30 +1000 (AEST)
 Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 63573211BA;
-	Fri,  4 Jul 2025 14:42:55 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 887122118A;
+	Fri,  4 Jul 2025 15:13:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751640176; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1751642007; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jDuinaPR64zVqK1kEHxNBJvXQ3xp9ELmQCqfHweGrhI=;
-	b=JI5jseJB7B/YhYbzYvXeagZZyF9c2hIdxNnfDIAW81eDpL5Fh/FbdYyV1HQLlHupvjMZEm
-	TuNDP87VhVyizcXbU82dRdXBdfedgny0GvnBrpKzvM02uoCb1kZKVPvi2Igyi+1YFM8Oyt
-	nHob6ZxJv7v3u3FsZYTE7jB3A+HpMd8=
+	bh=A2GjZktKM3Y5oURN46oUVqyGn4fu4vb+qYUJ6tUVUIg=;
+	b=v0j0caA56jDGssv5Dw0KOkj0Of8befju4gIY9xoDO2dNMWq8mOoH68eJN1KfxFr5NHnshe
+	Gi67ZBpRhxLhIoF2bTeNb5RTz+J6KYzIM7PQG8xC5QIAE0VlEfac1yIVRnx+cowLiy4oEv
+	qWQT0yj+ajvFNwVr+kQ36IGcVjw6xY4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751640176;
+	s=susede2_ed25519; t=1751642007;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jDuinaPR64zVqK1kEHxNBJvXQ3xp9ELmQCqfHweGrhI=;
-	b=fsbL5TB5hLciuclaRNawX3H/a+4dnOFecIz/fIv8nHU9mXV28LDI85ld/cM29kx1wKMnVv
-	l8W6RlSuxeUVdtDw==
+	bh=A2GjZktKM3Y5oURN46oUVqyGn4fu4vb+qYUJ6tUVUIg=;
+	b=6ixN2WmShkS92b8vQRjMfrrLWi7Av2QKz1rP65+A1JkFdYaexJaebZZdTDeh3XoeBlYCMu
+	oRGEjvtTiyLxZLCg==
 Authentication-Results: smtp-out1.suse.de;
 	none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751640175; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1751642005; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jDuinaPR64zVqK1kEHxNBJvXQ3xp9ELmQCqfHweGrhI=;
-	b=Yi8oHM7sUV41hh65wylwSGn80poGIh+0wbgJiLwo71CYjFFYLS5dUczUKrxY23tcrK/Ko4
-	XwR2rgINKNPiMQTrv5HPF2NrW20PN+GUhg1Ta03GzTPjS70waIhZxC/i6NOUD63i4KUFXa
-	c0uvuPiVLMIfR1nUgsuX++dRDybcnpI=
+	bh=A2GjZktKM3Y5oURN46oUVqyGn4fu4vb+qYUJ6tUVUIg=;
+	b=OevvFzsMb4OyUbujLhznaW5v43J0IVtrrqycIXCR/zSI48pxqxOQFqQojwuGk6ond2k+cF
+	+eaf6DliMjnoBrYz8OPStmAaXvHYCWsYv0niuHW+ISOtx0lxnibFsSSGPI7hoM8jEXImKR
+	8xTBq2sMbK1jkATIey/XTTosTAQWDZ4=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751640175;
+	s=susede2_ed25519; t=1751642005;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=jDuinaPR64zVqK1kEHxNBJvXQ3xp9ELmQCqfHweGrhI=;
-	b=oRK85OcJA+qB91kIW95y3wnR5u/gfiEy7ES/IzngxEcncAypzncFteNHuzXF0dPNZ6dLoT
-	v3HaT6ILvYDYKwDw==
+	bh=A2GjZktKM3Y5oURN46oUVqyGn4fu4vb+qYUJ6tUVUIg=;
+	b=8mHhaZ3egnzHDBHtebzfnwFwxUIYEzAbbBz0tHN4++oHdIQWoF7ag5slwJ9SlloM4+a9ij
+	pLu0WHpGNQ91chDA==
 Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id E1BA613A71;
-	Fri,  4 Jul 2025 14:42:54 +0000 (UTC)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 1A76113757;
+	Fri,  4 Jul 2025 15:13:25 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
 	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id CgyCNG7oZ2hIfAAAD6G6ig
-	(envelope-from <jdelvare@suse.de>); Fri, 04 Jul 2025 14:42:54 +0000
-Date: Fri, 4 Jul 2025 16:42:39 +0200
+	id qIpcBJXvZ2hrBgAAD6G6ig
+	(envelope-from <jdelvare@suse.de>); Fri, 04 Jul 2025 15:13:25 +0000
+Date: Fri, 4 Jul 2025 17:13:15 +0200
 From: Jean Delvare <jdelvare@suse.de>
 To: Andrew Jeffery <andrew@codeconstruct.com.au>
 Cc: linux-aspeed@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>, Henry
@@ -96,12 +96,12 @@ Cc: linux-aspeed@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>, Henry
  Ninad Palsule <ninad@linux.ibm.com>, Patrick Venture <venture@google.com>,
  Robert Lippert <roblip@gmail.com>, linux-arm-kernel@lists.infradead.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 07/10] soc: aspeed: lpc-snoop: Switch to
- devm_clk_get_enabled()
-Message-ID: <20250704164239.2f3a7d62@endymion>
-In-Reply-To: <20250616-aspeed-lpc-snoop-fixes-v2-7-3cdd59c934d3@codeconstruct.com.au>
+Subject: Re: [PATCH v2 09/10] soc: aspeed: lpc-snoop: Consolidate channel
+ initialisation
+Message-ID: <20250704171315.30300f59@endymion>
+In-Reply-To: <20250616-aspeed-lpc-snoop-fixes-v2-9-3cdd59c934d3@codeconstruct.com.au>
 References: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
-	<20250616-aspeed-lpc-snoop-fixes-v2-7-3cdd59c934d3@codeconstruct.com.au>
+	<20250616-aspeed-lpc-snoop-fixes-v2-9-3cdd59c934d3@codeconstruct.com.au>
 Organization: SUSE Linux
 X-Mailer: Claws Mail 4.2.0 (GTK 3.24.43; x86_64-suse-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
@@ -140,20 +140,135 @@ X-Spamd-Result: default: False [-3.80 / 50.00];
 	FROM_EQ_ENVFROM(0.00)[];
 	TO_MATCH_ENVRCPT_ALL(0.00)[];
 	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,codeconstruct.com.au:email,suse.de:email]
+	DBL_BLOCKED_OPENRESOLVER(0.00)[codeconstruct.com.au:email,imap1.dmz-prg2.suse.org:helo,suse.de:email]
 
-Hello Andrew,
+Hi Andrew,
 
-On Mon, 16 Jun 2025 22:43:44 +0930, Andrew Jeffery wrote:
-> Simplify clock handling as done in other drivers.
+On Mon, 16 Jun 2025 22:43:46 +0930, Andrew Jeffery wrote:
+> Previously, channel initialisation was a bit perilous with respect to
+> resource cleanup in error paths. While the implementation had issues,
+> it at least made an effort to eliminate some of its problems by first
+> testing whether any channels were enabled, and bailing out if not.
 > 
+> Having improved the robustness of resource handling in probe() we can
+> now rearrange the initial channel test to be located with the subsequent
+> test, and rework the unrolled conditional logic to use a loop for an
+> improvement in readability.
+
+I like the idea, this indeed improves readability and would make it
+much easier to add support for more channels. Three suggestions inline
+below.
+
 > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 > ---
->  drivers/soc/aspeed/aspeed-lpc-snoop.c | 20 ++++----------------
->  1 file changed, 4 insertions(+), 16 deletions(-)
-> (...)
+>  drivers/soc/aspeed/aspeed-lpc-snoop.c | 51 +++++++++++++++++------------------
+>  1 file changed, 24 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> index 8dbc9d4158b89f23bda340f060d205a29bbb43c3..9f88c5471b1b6d85f6d9e1970240f3d1904d166c 100644
+> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+> @@ -294,12 +294,21 @@ static void aspeed_lpc_disable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
+>  	kfifo_free(&channel->fifo);
+>  }
+>  
+> +static void aspeed_lpc_snoop_remove(struct platform_device *pdev)
+> +{
+> +	struct aspeed_lpc_snoop *lpc_snoop = dev_get_drvdata(&pdev->dev);
+> +
+> +	/* Disable both snoop channels */
+> +	aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_0);
+> +	aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_1);
 
-LGTM.
+For consistency with the probe function, I think it would make sense to
+use a for loop here as well, instead of hard-coding the channel number
+to 2. That way, no change will be needed if a future device supports
+more than 2 channels.
+
+> +}
+> +
+>  static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+>  {
+>  	struct aspeed_lpc_snoop *lpc_snoop;
+> -	struct device *dev;
+>  	struct device_node *np;
+> -	u32 port;
+> +	struct device *dev;
+> +	int idx;
+>  	int rc;
+>  
+>  	dev = &pdev->dev;
+> @@ -322,12 +331,6 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+>  
+>  	dev_set_drvdata(&pdev->dev, lpc_snoop);
+>  
+> -	rc = of_property_read_u32_index(dev->of_node, "snoop-ports", 0, &port);
+> -	if (rc) {
+> -		dev_err(dev, "no snoop ports configured\n");
+> -		return -ENODEV;
+> -	}
+> -
+>  	lpc_snoop->clk = devm_clk_get_enabled(dev, NULL);
+>  	if (IS_ERR(lpc_snoop->clk))
+>  		return dev_err_probe(dev, PTR_ERR(lpc_snoop->clk), "couldn't get clock");
+> @@ -336,30 +339,24 @@ static int aspeed_lpc_snoop_probe(struct platform_device *pdev)
+>  	if (rc)
+>  		return rc;
+>  
+> -	rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, ASPEED_LPC_SNOOP_INDEX_0, port);
+> -	if (rc)
+> -		return rc;
+> +	for (idx = ASPEED_LPC_SNOOP_INDEX_0; idx <= ASPEED_LPC_SNOOP_INDEX_MAX; idx++) {
+> +		u32 port;
+>  
+> -	/* Configuration of 2nd snoop channel port is optional */
+> -	if (of_property_read_u32_index(dev->of_node, "snoop-ports",
+> -				       1, &port) == 0) {
+> -		rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, ASPEED_LPC_SNOOP_INDEX_1, port);
+> -		if (rc) {
+> -			aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_0);
+> -			return rc;
+> -		}
+> +		rc = of_property_read_u32_index(dev->of_node, "snoop-ports", idx, &port);
+> +		if (rc)
+> +			break;
+> +
+> +		rc = aspeed_lpc_enable_snoop(lpc_snoop, dev, idx, port);
+> +		if (rc)
+> +			goto cleanup_channels;
+>  	}
+>  
+> -	return 0;
+> -}
+> +	return idx == ASPEED_LPC_SNOOP_INDEX_0 ? -ENODEV : 0;
+
+The driver used to log an error message when returning -NODEV:
+"no snoop ports configured". Maybe you could call dev_err_probe()
+here?
+
+It might also be a good idea to add a comment stating that only the
+first channel is mandatory, to explain why the ASPEED_LPC_SNOOP_INDEX_0
+case is handled differently (there used to be a comment
+	/* Configuration of 2nd snoop channel port is optional */
+serving that purpose).
+
+>  
+> -static void aspeed_lpc_snoop_remove(struct platform_device *pdev)
+> -{
+> -	struct aspeed_lpc_snoop *lpc_snoop = dev_get_drvdata(&pdev->dev);
+> +cleanup_channels:
+> +	aspeed_lpc_snoop_remove(pdev);
+>  
+> -	/* Disable both snoop channels */
+> -	aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_0);
+> -	aspeed_lpc_disable_snoop(lpc_snoop, ASPEED_LPC_SNOOP_INDEX_1);
+> +	return rc;
+>  }
+>  
+>  static const struct aspeed_lpc_snoop_model_data ast2400_model_data = {
+> 
+
+None if this is blocking though, so:
 
 Acked-by: Jean Delvare <jdelvare@suse.de>
 
