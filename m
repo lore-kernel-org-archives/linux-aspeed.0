@@ -1,89 +1,62 @@
-Return-Path: <linux-aspeed+bounces-1632-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1633-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 194FBC83030
-	for <linux-aspeed@archiver.kernel.org>; Fri,  4 Jul 2025 04:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B9D8C83030
+	for <linux-aspeed@archiver.kernel.org>; Fri,  4 Jul 2025 07:37:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bYLgv0rRMz2xS2;
-	Fri,  4 Jul 2025 14:46:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751604395;
-	cv=none; b=dtiGdKYzG3Do3n1W/DuB/EH24gK975Y51Z9QZbg+RukneWuaKEhz32TJSu/OtswkUDcUBtPoA90WtIU0+x1ldYTy6JaBHbo+YmRDenKmDOb58pYgrkOTqLYkZ5L/vCVfkuR/PBKlamEgn+JBENxOLBrAS5po5GvUUwxtr0+Lwyh/1RtT2sVS1LGgZ87quRDwqdtp+KQ2BplPdQK1NyfzhgO+mJckqkAfz3PjoYaKihHg2WmmFMTkuJy06pWNi3XlzXZymEM5qVqcLLL10SPt/rIEMq8E2mlV9sSVInSosXj8yUeEASt2LGJpkBv52Lr7LATrL9NMgMKMO2o7+JdjxQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bYQTH5W0Fz2ynh;
+	Fri,  4 Jul 2025 17:37:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751614659;
+	cv=none; b=gl6ellCd6VzaTlBpwVdiIIAUvWx0cX/VyQj7OVRanjyixP4tXcMJ6rAceEZoSBRE324pWY26BWP54n25pE7Wv8IExeIAg6QUfVCj3uGwV5YBfYZd8mLpRfOV43dtQ8kYGevZoltFzXtE9YBFQ69AxiNzJrTgNPQihqAMT5ttu0I6naRoybI9/DvpSocGi5zJB3pbIhzq7XKaOABj+J1rulKWyE5xTPKg0mig5cGlv+d4za8ZpTlPv9jwj+9OyFmP35jB5nLsal36hZYate6TsgSXXMPi50wSYQDKpD9RCqLRjGG7whnoVEtIyAetwrActBUY5F9/k0HirfjbFodOCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751604395; c=relaxed/relaxed;
-	bh=xILUeuNzrr/Yo7TFwfYEmVtweggfhUGpHihnp3c3FuI=;
+	t=1751614659; c=relaxed/relaxed;
+	bh=BBUFPfqcb5RmlLprxF2vX8GSwab9JKWQEi3JfpeiZSg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HyoF078xmOUxvCdRXZ8PxAqhLFSLYTIV21mHoE9ne8Ze/mrhtT21CFY7oK3KQR2Ow4A4EjMDWaCJeGAkjF2vXGn5ozCpu5gt5sva99du7VO4VohDKBx0Iy40g0ApQgDwW1VlvXjvQCFFN2htxSb3HDwDp0VsK9Mw3qnJ8qbAUaDdgszkCHoSGIh9eBk8kpsQf/8UHKU+X0Qw3NRGRCfSNaCn5iK7qQdfXdIOKbUBEwcpSSLePx1kmiTgHlZSUSMmeej93x7M3W4Ku/XS5waxnHSE9kF++5+N4He4JUoTBYMKTwuuPVfFUsiB8trlG+/94eOD7K1eh6nZG4niSLixBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BOI/4nVK; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=jemGbFF/hSYclPQ6etwqiHWm//dGOU3dGE0o8eciOtoiKY0ZY8/7sw4TZGyBBPhygI565ABe26TduM4FYQJb0xniOOg5RAKuLYHiysGPGp1ioqmAZXjNPSTzQZXceXM5gCJ+0Liib0haNMqh/8rdv6m1Ds9b8OEZ5m/ykmQo+LuZZgcmKmzOiORwh0kAxJA8ypFHs7nb3ecqb/ZK0uMto3JlcI8+4Q+1BP4l96B5zBMjYJjF1rfnNR3YyQG5Ih4GgaAmcxl7iHDaO2w7B8i8xTUZdIb/tcL1fCem1FSRDXVTbJKLIZU9U/iqnM9PDhs8Cdzm4NQrl+vAFE+IiKpg4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=u6rduk2c; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BOI/4nVK;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=u6rduk2c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bYLgt3ZXWz2xJ1
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  4 Jul 2025 14:46:34 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2352400344aso6080525ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 03 Jul 2025 21:46:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751604392; x=1752209192; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=xILUeuNzrr/Yo7TFwfYEmVtweggfhUGpHihnp3c3FuI=;
-        b=BOI/4nVK8BzuETxkvK4IMPdWl6j1bvA1hwEyxsU744tz9x3vtD/0SEodwomCk3ucbA
-         Ac4cmyDSunsKpEZQvj4Wr8Hf7CpRXT34lT3y7oqk9p39P0kr4IhlXt0CszGq9ROgOyRe
-         d0StdB5KVrq+AVy29SyNG0VM88ZafRY1Njxh2QK9ncGDUkgRr+ddOzkiCStVhkiKTZpW
-         M7hwF3lKo/hV0lvd/F0dPXJXMQHZyiYz668rRaGDPaHiQgbWSE/5g7UgToSGl2oQ9Qw1
-         NO5BMv7oYHH2D60/ltTO8v8I8NpQxr9WvyvjX8SvCRFONX28pkz2FiQdVL+XcRRI6+pX
-         gEhw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751604392; x=1752209192;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=xILUeuNzrr/Yo7TFwfYEmVtweggfhUGpHihnp3c3FuI=;
-        b=Tdrzi9BgkQd/qdSO4PMb8hRmKSSFhiWIs2whIRz7kJm87TFDJ0Ucgiwr/fUXBd3TV9
-         2DOQMVT6oWOBNkR8VDhGr/Igzpny4daVaHflhXRzZUF9n+jR+2hU2QUs23oPoUSfSrmQ
-         FhQ/SBzfsTAxgpNVCGYUgqFgXNaHYLHT0k4tIwrBmFujFUXfb32mrlo5oQYe2KMKCp+Y
-         IwDH/v9Z3vq8vQAc8PvtFJWOtEDi47iWpJ00xSOB1Tqkr2Uc8JiNxASwP0hQHmmFg8v9
-         gc5Phj8KVK9d9cJUpQNpfJjg+YxvmBqUs9GHfzc830nBejam5nwlYsvYGt8rdJ74XSN3
-         lweQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUfSEd07+PO95IaBTUJAVmzVAUd92pn/5mjpV9lIloLeYUnzArD/rEjSZnF0xaN8tUVLAKuZVfDm2qxjoQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxn7q2bkVivPIfFLUDEseyD5E7eknBVXsRfgAjtbmMDSUFpAL3l
-	I3DJCjpfixQJT069voJxtI0L3OLftNvt7TWt/2+5a0VtAY12qm6n1BsuEbjB6kea
-X-Gm-Gg: ASbGncuZHQcpxXyBrzsH+TsjatiTGlpcRMSNGYN9IHXiQjEPApZXyBt6rs3A2qrv7OF
-	j1ci3Od/b1O2YhyseSWOiYOVbiu5mCZ6/BVXx9TlkjjaRxHvI/xnYvxDmNa4JiIrhVmzk9sApZk
-	IFaXZrL/Addc6pR8sNueBCb+/HF63JBp7DGQ27SGZOQyYDD0RMt0PqiOyoI+1O2pvt6ayvwA+sQ
-	Lcy75FfJoRxdt7blfpGXn0UXfx/UzQ8x9HBSmkhIJoFnPod2kxPgwsAAJxvSjm3NwfcTdfGI6XI
-	wGentPu+wUDlQJsnsIQgFgaiaQ2TAFz22/GF2aT1GjuOSHRfzHLJtgolnqFriwCFF5UsGodtSWt
-	ZrLwosK4kUi+3POWlyVuM2qjXia6S8lVgw8FWh9g=
-X-Google-Smtp-Source: AGHT+IEgR/rCAd1Y5FPgmuwSiO8qntbXNx6FG654nLbacD0JKhCOt3sZTQYV6V2u/abFqRuVhjf1Tw==
-X-Received: by 2002:a17:902:c412:b0:234:1163:ff99 with SMTP id d9443c01a7336-23c862a8090mr23121635ad.43.1751604392392;
-        Thu, 03 Jul 2025 21:46:32 -0700 (PDT)
-Received: from localhost.localdomain (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23c8455cc1asm9413045ad.123.2025.07.03.21.46.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Jul 2025 21:46:31 -0700 (PDT)
-Date: Thu, 3 Jul 2025 21:46:29 -0700
-From: Tao Ren <rentao.bupt@gmail.com>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bYQTG3hYnz2xQ4
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  4 Jul 2025 17:37:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=BBUFPfqcb5RmlLprxF2vX8GSwab9JKWQEi3JfpeiZSg=; b=u6rduk2cLDiZJ613kl3yXRcvou
+	PluTPpMFX5LPyyLMgyVmlIndU0nfNy2cm9KDz2Wd2FO5PUiCTPKRsZuws0DuvHXgUEHawd15w6KIU
+	tc7vp6WuCc8gqz7fU0EnlPHx8g2VKDt7KEhR9C/7DTrG58Rv9q3gXw9gWvolr+g+AdwM=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1uXaz2-000B1n-IZ; Fri, 04 Jul 2025 09:37:20 +0200
+Date: Fri, 4 Jul 2025 09:37:20 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Tao Ren <rentao.bupt@gmail.com>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	Tao Ren <taoren@meta.com>
-Subject: Re: [PATCH 2/5] ARM: dts: aspeed: Remove eMMC from
- ast2600-facebook-netbmc-common.dtsi
-Message-ID: <aGdcpfYM94Itr6ME@localhost.localdomain>
+Subject: Re: [PATCH 5/5] ARM: dts: aspeed: Add Facebook Darwin (AST2600) BMC
+Message-ID: <95ff4056-d1cc-4564-8c44-0535196e7428@lunn.ch>
 References: <20250702050421.13729-1-rentao.bupt@gmail.com>
- <20250702050421.13729-3-rentao.bupt@gmail.com>
- <94e0c5bfe1239e7590cef427cbba405077d56d01.camel@codeconstruct.com.au>
+ <20250702050421.13729-6-rentao.bupt@gmail.com>
+ <a6f6966b-50ee-4b4f-9422-96c6ac9391a2@lunn.ch>
+ <aGW8Nm8ZWMwRYVOo@localhost.localdomain>
+ <220ac6c2-8373-4742-86fa-f322d6ada624@lunn.ch>
+ <aGcBEHMEyQJuzmjj@localhost.localdomain>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -99,25 +72,17 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <94e0c5bfe1239e7590cef427cbba405077d56d01.camel@codeconstruct.com.au>
+In-Reply-To: <aGcBEHMEyQJuzmjj@localhost.localdomain>
 
-On Fri, Jul 04, 2025 at 09:38:39AM +0930, Andrew Jeffery wrote:
-> On Tue, 2025-07-01 at 22:04 -0700, rentao.bupt@gmail.com wrote:
-> > From: Tao Ren <rentao.bupt@gmail.com>
-> > 
-> > Remove eMMC device entries from ast2600-facebook-netbmc-common.dtsi
-> > because eMMC will be removed from future Meta/Facebook AST2600 network
-> > OpenBMC platforms.
+> Hi Andrew,
 > 
-> Please squash this patch with the subsequent two patches so you don't
-> break Fuji and Elbert across a bisect.
+> Got it, and thanks for sharing the context.
 > 
-> Andrew
+> I will reach out to ASPEED offline to see if they are actively working
+> on the MAC fix, or if I have enough knowledge to work out the patch.
 
-Got it. I will take care of it in v2.
+There was some discussion about what needs to be done a couple of
+months ago. Look for emails from aspeed and IBM.
 
-
-Thanks,
-
-Tao
+	Andrew
 
