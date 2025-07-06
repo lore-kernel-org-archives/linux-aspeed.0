@@ -1,108 +1,93 @@
-Return-Path: <linux-aspeed+bounces-1639-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1640-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36C5AC8303D
-	for <linux-aspeed@archiver.kernel.org>; Fri,  4 Jul 2025 16:44:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9103C83F05
+	for <linux-aspeed@archiver.kernel.org>; Sun,  6 Jul 2025 04:12:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bYfc34T3Xz30gC;
-	Sat,  5 Jul 2025 02:44:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751647459;
-	cv=none; b=ehpg631XRjP+zyDlNMvgHjAjWuipen9U13EQyOySI4IaRG2PTrdSeMsFO0ulR5/YJpvWXAqlRxFDpaNch4NmQPHkwYqdjRuk4ONOo0Yl7GRANOXfeZBEF4PANPCzzoOy/3zcN69urDE5+yuOjWPZ9fvSp1+TnWUM3ovXac7uBE2fAfP0H1ecdsp941xd90/Bo/g4nMLNRHnjqGEyrtoAdA36DWKNudvuvxdwP/jTNpUJb2/dJtVgnDPuTi4RmklwfAaoaa26L7W5v5ZY36g48dUnOvttLkwpJClfjMFwZ1iO/eD3kIXU1p+jD8EjoaHI0UC691r634/47/Wn5H7PKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bZYqK0d86z2yRD;
+	Sun,  6 Jul 2025 14:12:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751775133;
+	cv=none; b=NktIm5ZZ/oAcDB9Hv7Lqk/lS/R3/j8h8qNtGP6+EUht71i8VNrwtYRoJ3RBXWF+4ApBWQhrvMYyivbG6U/T3PBYAuerU5V2KPrmu6bQsRPFQDVcyGzGPgyMUfrInijXvU5yU8dkp/WAs/yOXQlprdCg9sZ9mWvrr9gCCKvuMvBR9+R7lSUmu44aVtsiWt1Rd6rEYNT1KlvdP6mHwIKDexwdiJqhIo60+FOXqiTjR4+Mgd4FwuiMVLllSjIVhINBd1ma2xQliXvprsh+d8hm/+atLSI11LpLGLgQXFLqb7rOdTrdr57gZ+Rrlg/9+lXFWLEZExgl5IDkg+Aoa2pb7kQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751647459; c=relaxed/relaxed;
-	bh=qxQHpdBMzlCPDXHMm1ORYDxLqtE7pehFuUdHE7/n4Vo=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YcbW/LJgPbp1KbvUesrHmc+mCxoxzqQBfEU8KdaRae9z4hupUj+4ZJSC6YmXIOEbv1O1NXdcWzcwuZu6U9Qncdpx+GlvEDXFitAkI/c6uF8aEnaHSrDVXzUQwxNUchMt0Uzi4etQVQT7W8m3KmGaSiebg6YJB5zMPtdsB4ryAhFOrYnU0GTM32XhjThkHOGdFIq3SGsd0J7tg9uLBMfmHB50jH7DXTm7gSx1pQyDyO1sG6/N45rfoK03MtLk8WM8n5u/npUfYBi7zC/oNG2HpBacUvXUfw6l2sGuNxeZWCcbUcRgjTcpthtoSMzLgSMsdm5q9IOaefQuqTVQnGlyTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=RcWspLcB; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=BX5TyJQ0; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=RcWspLcB; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=BX5TyJQ0; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jdelvare@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1751775133; c=relaxed/relaxed;
+	bh=hVmb8+ym3rIBDL7U+LhviQ6wlTsutcclIyc87Szy4qU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jicZV+UYLMdeu/HSMvsrVJfNtS7FvV6eP32VZmaqJUisqvbd9SeWCpQkqosdnzm5TjmgcATXGF5c/m79fmEkLDq+tsgqDRU4CT3UZVyzRk7KWp5kJe+TZ17wdcMt93K8f+Bc1W80qu81gtXVm/Pt7FgYmqMKZPkxxaAXxEwlq6JULLeFil8BchfXEkAQjkDTR8bpqJ8KybAXsqIUL286M4hQAV0gGTKF/Rx1UPHex4ZAJeeSSRvyC1JKTxMlDiPJpZJ3ZUEINaMDUIPuqHNAKhqptmqwDSanNaQbcV5Q/HZFuna3KIRepzAdaoH9kXc0F9WO5NyeLkt3f0DLmoaW2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CHj1AiVs; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=RcWspLcB;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=BX5TyJQ0;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=RcWspLcB;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=BX5TyJQ0;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CHj1AiVs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jdelvare@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bYfc04ZLPz30Wn
-	for <linux-aspeed@lists.ozlabs.org>; Sat,  5 Jul 2025 02:44:15 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id A40F7211BA;
-	Fri,  4 Jul 2025 16:44:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751647452; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qxQHpdBMzlCPDXHMm1ORYDxLqtE7pehFuUdHE7/n4Vo=;
-	b=RcWspLcB3YBLz305W0/E2X3o2YDattPqn7XJh+U1iJ4jVh1XmbEzQtiDD/yXmUyz0hdcTa
-	CtxsYq8d0mKgOvWWg0wEK8ORFnD0uC3R1YHtPZBmXSTqdQQ7NU46NDqbzyXPg+6Wu/wrNJ
-	CxOYlhSxiOd5BjKeGyvSGg/mQmJpLmE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751647452;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qxQHpdBMzlCPDXHMm1ORYDxLqtE7pehFuUdHE7/n4Vo=;
-	b=BX5TyJQ0SJEeI7nPi09seMV2vHO8EfK3VDsOUju91z3BoNPwcqgZow/prMeNGGI5irC7NZ
-	vTn6sb+54PzS5ZAg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1751647452; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qxQHpdBMzlCPDXHMm1ORYDxLqtE7pehFuUdHE7/n4Vo=;
-	b=RcWspLcB3YBLz305W0/E2X3o2YDattPqn7XJh+U1iJ4jVh1XmbEzQtiDD/yXmUyz0hdcTa
-	CtxsYq8d0mKgOvWWg0wEK8ORFnD0uC3R1YHtPZBmXSTqdQQ7NU46NDqbzyXPg+6Wu/wrNJ
-	CxOYlhSxiOd5BjKeGyvSGg/mQmJpLmE=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1751647452;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=qxQHpdBMzlCPDXHMm1ORYDxLqtE7pehFuUdHE7/n4Vo=;
-	b=BX5TyJQ0SJEeI7nPi09seMV2vHO8EfK3VDsOUju91z3BoNPwcqgZow/prMeNGGI5irC7NZ
-	vTn6sb+54PzS5ZAg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 32D3113757;
-	Fri,  4 Jul 2025 16:44:12 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id BiWQCdwEaGj+HwAAD6G6ig
-	(envelope-from <jdelvare@suse.de>); Fri, 04 Jul 2025 16:44:12 +0000
-Date: Fri, 4 Jul 2025 18:44:08 +0200
-From: Jean Delvare <jdelvare@suse.de>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: linux-aspeed@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>, Henry
- Martin <bsdhenrymartin@gmail.com>, Patrick Rudolph
- <patrick.rudolph@9elements.com>, Andrew Geissler <geissonator@yahoo.com>,
- Ninad Palsule <ninad@linux.ibm.com>, Patrick Venture <venture@google.com>,
- Robert Lippert <roblip@gmail.com>, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 04/10] soc: aspeed: lpc-snoop: Constrain parameters
- in channel paths
-Message-ID: <20250704184408.32227305@endymion>
-In-Reply-To: <20250616-aspeed-lpc-snoop-fixes-v2-4-3cdd59c934d3@codeconstruct.com.au>
-References: <20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd59c934d3@codeconstruct.com.au>
-	<20250616-aspeed-lpc-snoop-fixes-v2-4-3cdd59c934d3@codeconstruct.com.au>
-Organization: SUSE Linux
-X-Mailer: Claws Mail 4.2.0 (GTK 3.24.43; x86_64-suse-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bZYqH5Nwbz2xHp
+	for <linux-aspeed@lists.ozlabs.org>; Sun,  6 Jul 2025 14:12:10 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-31329098ae8so1555118a91.1
+        for <linux-aspeed@lists.ozlabs.org>; Sat, 05 Jul 2025 21:12:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751775128; x=1752379928; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=hVmb8+ym3rIBDL7U+LhviQ6wlTsutcclIyc87Szy4qU=;
+        b=CHj1AiVsOv+RQJTIkPSlNQw4Zq3OrgkBl1oAxfqn2qHwSM5AmIRocGX9GJpctbK+tL
+         9cLwpcr5HFs4Pm6np2JyufubqR47byn/J4GrMaDAd4ARcteZ/Oypd+LiNhAvrvNMp+qg
+         FbDln/reTndrnTsd2I/y6wk+uyEK+zC/PAfYMK4WUKIbR11583W+j7SLpK99uQAsoGpG
+         127Cbtun4RD7l+TVFt1jJuh3ZADasfPgy8PKETupMCRhtBvrQjqlE7vGKJ2nKZ2JNAv8
+         rvkc345Bsb1i3ypevJbKNxAqjmHrHMk3J1cpROUNU3mHTN+d4YZ0ZJzh5R0TGmRvLUN2
+         o5ZQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751775128; x=1752379928;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hVmb8+ym3rIBDL7U+LhviQ6wlTsutcclIyc87Szy4qU=;
+        b=VFASyNq6nqC/YIFmUROYg9bI87/V6LCyYuU6V2L9ddqcueZ63HdzlHf6zFkaRzCLvv
+         lMRwThw0PLB40b0e/SOSvagjN3QLFQL36sH+uI/BJ7uAQ+xO7fP/EdBaePZlvssruoul
+         UM2RVQ1e49LJBN7jE+XgdsOLYnjcWbEXo1HNznwpi4OQ3Gsbmtq3XvZ+P8y2UCvVwcwf
+         VP1F78fXrzyPtw2eGPD6hQ8SGFwJRHoq58HiRciM5v4OkD5ztV38UvFP/qQ/WCvL76ZN
+         iX3+AHiGyE+Te5XOhzl93VMftIoMLBz//GKgfjYy0JuGlqzlt6BgeD88lnBOQpvXn4xu
+         7k+w==
+X-Forwarded-Encrypted: i=1; AJvYcCU7va4SQCqMdzkUaXkXoUDkaFO29SQ6p6rRtoaiwtRwg77cn1/jBe6Ljw6TDH2cf9xyxa1so+PWIxNU7Sg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz0jyEDfC3CdOi6tWs+umkwzmsXrRESto5lvf9y1zCKlZr9328K
+	VZNjBeIi7GuZZdt1WVQsQs+iL6OdQ/BTNw5Oi8NQzF1G/Vw7Q3NsREpB5siJzDjA
+X-Gm-Gg: ASbGncu19LBx3ZaO3hkb6QWVMhYb8RwUWtTrHOuO+zfwlb2ANzOw2EG2LwRO73fZnel
+	60nTMb1BXFrJKJ4z54hin9kiMXs6zNcmBiPYWNDp6BOLjs3lRrn9Se6z8PZ507BiCjnMvrLObbM
+	u8kow8oC79sa8s0hDJlkRXDSrxitu0LZzDFIAzhlxYth7ZefxUeJ/gfBcyxYynzaiOKtiBAmOs9
+	74oNHq2FZ6qK/DSsBJkeFBkenBZ5RG+386JhpaA1mfHf94sUsFDO120A16gdpScm5/HWBx35P+7
+	retK8gO0EpXxJwAJetW2NpRiFdT0NWKgJDc187O8Sx4EccoofNF4RF/OvkDXCfr9zzjrPMhSflX
+	Qn1GJfYKKbBbc9f9YfIGFUfMA+o3IOTJcFyFVA9E=
+X-Google-Smtp-Source: AGHT+IHvXW5jZXVYlEka38PzKTBwvT3r/GnGzZfU2rZK6jmJT69dhrpF0lmwPqysm1iag9gx8vKZWw==
+X-Received: by 2002:a17:90b:48cb:b0:311:a5ab:3d47 with SMTP id 98e67ed59e1d1-31aab83725dmr12052060a91.1.1751775128288;
+        Sat, 05 Jul 2025 21:12:08 -0700 (PDT)
+Received: from localhost.localdomain (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23c8457f34bsm53310255ad.156.2025.07.05.21.12.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 05 Jul 2025 21:12:07 -0700 (PDT)
+Date: Sat, 5 Jul 2025 21:12:04 -0700
+From: Tao Ren <rentao.bupt@gmail.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Tao Ren <taoren@meta.com>
+Subject: Re: [PATCH 5/5] ARM: dts: aspeed: Add Facebook Darwin (AST2600) BMC
+Message-ID: <aGn3lNXQ8cid6jbf@localhost.localdomain>
+References: <20250702050421.13729-1-rentao.bupt@gmail.com>
+ <20250702050421.13729-6-rentao.bupt@gmail.com>
+ <a6f6966b-50ee-4b4f-9422-96c6ac9391a2@lunn.ch>
+ <aGW8Nm8ZWMwRYVOo@localhost.localdomain>
+ <220ac6c2-8373-4742-86fa-f322d6ada624@lunn.ch>
+ <aGcBEHMEyQJuzmjj@localhost.localdomain>
+ <95ff4056-d1cc-4564-8c44-0535196e7428@lunn.ch>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -116,74 +101,32 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Spamd-Result: default: False [-3.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_RHS_NOT_FQDN(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_TLS_ALL(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	HAS_ORG_HEADER(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[11];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,yahoo.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[lists.ozlabs.org,jms.id.au,gmail.com,9elements.com,yahoo.com,linux.ibm.com,google.com,lists.infradead.org,vger.kernel.org];
-	TO_DN_SOME(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[codeconstruct.com.au:email,imap1.dmz-prg2.suse.org:helo]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <95ff4056-d1cc-4564-8c44-0535196e7428@lunn.ch>
 
-On Mon, 16 Jun 2025 22:43:41 +0930, Andrew Jeffery wrote:
-> Ensure pointers and the channel index are valid before use.
+On Fri, Jul 04, 2025 at 09:37:20AM +0200, Andrew Lunn wrote:
+> > Hi Andrew,
+> > 
+> > Got it, and thanks for sharing the context.
+> > 
+> > I will reach out to ASPEED offline to see if they are actively working
+> > on the MAC fix, or if I have enough knowledge to work out the patch.
 > 
-> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> ---
->  drivers/soc/aspeed/aspeed-lpc-snoop.c | 25 ++++++++++++++++---------
->  1 file changed, 16 insertions(+), 9 deletions(-)
+> There was some discussion about what needs to be done a couple of
+> months ago. Look for emails from aspeed and IBM.
 > 
-> diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> index ca7536213e0986f737606a52996ffea620df2a7a..804c6ed9c4c671da73a6c66c1de41c59922c82dc 100644
-> --- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> +++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-> @@ -25,7 +25,6 @@
->  
->  #define DEVICE_NAME	"aspeed-lpc-snoop"
->  
-> -#define NUM_SNOOP_CHANNELS 2
->  #define SNOOP_FIFO_SIZE 2048
->  
->  #define HICR5	0x80
-> @@ -57,6 +56,12 @@ struct aspeed_lpc_snoop_model_data {
->  	unsigned int has_hicrb_ensnp;
->  };
->  
-> +enum aspeed_lpc_snoop_index {
-> +	ASPEED_LPC_SNOOP_INDEX_0 = 0,
-> +	ASPEED_LPC_SNOOP_INDEX_1 = 1,
-> +	ASPEED_LPC_SNOOP_INDEX_MAX = ASPEED_LPC_SNOOP_INDEX_1,
-> +};
+> 	Andrew
 
-I don't have a strong opinion on this (again, I'm neither the driver
-maintainer nor the subsystem maintainer so my opinion has little
-value), but IMHO the main value of introducing an enum here was to make
-it possible to get rid of the default statement in the switch
-constructs. With switch constructs being gone in patch 10/10 (soc:
-aspeed: lpc-snoop: Lift channel config to const structs), the value of
-this enum seems pretty low now. You could use NUM_SNOOP_CHANNELS
-instead of ASPEED_LPC_SNOOP_INDEX_MAX + 1 and 0 and 1 instead of
-ASPEED_LPC_SNOOP_INDEX_0 and ASPEED_LPC_SNOOP_INDEX_1, respectively,
-and the code would work just the same, while being more simple, with no
-downside that I can see.
+Hi Andrew,
 
--- 
-Jean Delvare
-SUSE L3 Support
+I guess you are referring to the discussions in patch "ARM: dts: aspeed:
+system1: Add RGMII support", and I can find more of your suggestions in
+the thread.
+
+I will remove mac controller from my v2 for now, and will add it back
+when the delay support is added to the MAC driver. Thanks again.
+
+
+- Tao
 
