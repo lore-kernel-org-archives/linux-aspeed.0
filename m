@@ -1,86 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1651-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1652-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15F3BC83F05
-	for <linux-aspeed@archiver.kernel.org>; Sun,  6 Jul 2025 04:37:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE339C83F05
+	for <linux-aspeed@archiver.kernel.org>; Sun,  6 Jul 2025 07:24:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bZZNK5fjjz2yRD;
-	Sun,  6 Jul 2025 14:37:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751776641;
-	cv=none; b=X5f0P4PIRaX3hhqKzq/py51i9EuT6iHTdfzhXhGBep0yvWvJIkk1WHzcNPkNvuoIcZg76E6szttDC3LpbMiYZ3MlHhOSc2P8kGODuXD9XMiHmLeVqEydNi5Mag/liyVUkCl4TnI6O2oCbZjzlvMLQ//AWWyyiLVDc5wpuWIIUehedXvUjc1lGr6Y/WNHXppePiIPAUCCk1QGWiXVv0RMlV4EUYspr+vxJMljEKP1/GM3W7JWeCa/xKAMxPts3io7Sp/+d8jvf+5Wor/zrSy6lXO+2v5ZgXP4Hz/+AW23QecGk2q8poqsMkoB7dGMFKfMalaVx8AekcX0boIwk8wkPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bZf4t2Vlsz2yRD;
+	Sun,  6 Jul 2025 17:24:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751786654;
+	cv=none; b=g2jETQ235QqLthndr0U3cbNPws7wb3jynxsZ9aSex1ot3EeJfOKF1L5KhNfrsIloeVYyVugVA7rwf/3Joz9jD+YsjCwl/QWeqy01h0ewMhkfOGfXYr3vhhCIff5LG6y91P2cZueYk3UXuR6LqZReL/Vs7UxXbc1F4rYVdwpfcYxeBH1v9Q4aXP7IfGO8YAiGFMdEgG0OvVbW5RPAk9Zgl1gqEZKb/S8hKsBEZgCJHUhADFOMYQ8x6nNd796ymzSe40HYEGu9uQaLxaV0kkIB+nFhfrUAObzwKY0Tu89GJ9qWM9FKo94yRcSUaXBixpxq+mr6lmJr8c5M486kWzkz7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751776641; c=relaxed/relaxed;
-	bh=1y2FRrOTA68hlJ+NjGl+jIRexDC9u6D/zy0MCfqEVY4=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=br8MLNaT9HdLojwTNFTrpxUoP2GqAXwKckhXzqyciSKk08L5/xnd8M6BL+XTGbvCF1mgZi32EYgi5tnrbtv00TZAX07/JHb0Yg1gSMJRe4ZrASeraaHTG9mN5bwmu9nclvmyg6FmMLut/plV52N188eF6n5u3jLyG1X13Bw2og35TqdVtudhWYgF7FZLmMd10LPKGwHubT5ODpUt1yYtunfSsPCkiF7Ty4HusX0EYEM16qTd/TgRVOqIXl7/idDmR5xd8XEPfO9HGVjnIDiVawPwOzQNJWu5enOaJUUGgjyWgaaXwnRktvoDFJa0FOKADTxLN72b0IGMr38gmtX0Ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I1qWK56E; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1751786654; c=relaxed/relaxed;
+	bh=CMojNCTXSCuZuFnyUaenwQwEPL03mTPCCiOoGiH2670=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=LXILjwtrVuOc1X/WJVQ9IaJ8rmvzogXECJ9U8omfWVO5Hq735rGus+jI7uaUzqsgZHuhSwlVOBzal4yAs54T75alkrMZAzb4FDFmJouI3ZwWyRvhv/GgLoc/hbZHyaDzrD6SPqFmuBBBP68U94lxBY/QRW12gdOUslxxGxxW5ixdiIkSBiiKgNnZIdLuxGd8ZFfkN21KZfVuGztRkERIsrl24bNaugPMjUFI05Eb0dnRJrENa53jsDaDel1STxqB5tSncM0mBPJOJiS1g41L9v3S7qFxfNFU7j10rnywL9ai6g8SuMUcbYmTQM0VKJHbjVoDpcNb9LRVVI+Ix0mRnA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tC+J2TaE; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I1qWK56E;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tC+J2TaE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bZZNJ18Rhz2xHp
-	for <linux-aspeed@lists.ozlabs.org>; Sun,  6 Jul 2025 14:37:18 +1000 (AEST)
-Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-747e41d5469so2383201b3a.3
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 05 Jul 2025 21:37:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751776637; x=1752381437; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=1y2FRrOTA68hlJ+NjGl+jIRexDC9u6D/zy0MCfqEVY4=;
-        b=I1qWK56EhCSN2v82D59xL5Y3CVxw1tf5e7ifURSYsDOTkQAS6+dfh1YFdy5m1mu7gz
-         VT/7aekJVINwRatfxm5zRJCMgPg/dWLhDfsQfv6QCXT7IQHrg+YNYYV6Y5elEJhuEMjB
-         6JfVdJtAxjhdYY8V3o+B8d67WG+rnSBKKJr5Uqyn6JQ2U6fz4RnLhv+syGkkR3uBWzhl
-         JPo/r5BEqVQDzxGR74YCMkWGX2xugoJLh4cpNpZZScsRUBfyU9byrV35/jCnctGoE1vX
-         mC9x7rGCJN6Sib8QnP+e+HOu5flskA3kdIDDDAZDhVOhOlqYfPNvvdQu6UZnYBd9WE+j
-         5zQA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751776637; x=1752381437;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=1y2FRrOTA68hlJ+NjGl+jIRexDC9u6D/zy0MCfqEVY4=;
-        b=CxrNMxnOOEIoBRlHQ0C7LplARGW8kVLl6oUnpo5SJuw61+gv/XD8Zf7eq9YfBrBfV3
-         7wB5rMmvNp+/2JCm9o82E4c5yCtHMNrOz56vTxDM0lRmtllSLwjjid699a2o5dgPnPk+
-         iPnAMGvs+0Xsj6ksYxETEew3oujb0avuLvEy4izMZs0g9QJY9AmalwyTfhw0z8r1R53b
-         53KkN5rDOG8T0FO0t757YUyuf3x1oX+ZUGdV8fFUjall2cn5jr0G0uVtSEAdTuIQqDjj
-         MzhF59E2l8gOws9oGYNd5iIQ4ZpjVYZrh1+Yy+fHGC+WOz3A6JiqzuYlki2aamHxLJPH
-         0w1A==
-X-Forwarded-Encrypted: i=1; AJvYcCXLzFHp8PLf7tQm7gLNL/TdHD514eq1/stZjQu2IQY+/nX/UVj21hyz1i95uw/DC8bmlh4JH3OVT3AsD9g=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzpNv4l4goTIcQ2ZEoc3xORKjAdyZ1wMYMVOJi3nox5B4QESi27
-	D0rnp2/4T4n9Y5Oz/FYHkveYxIxnwbOZs1m/s2eTwx4ocaz+ZU0wC8g2
-X-Gm-Gg: ASbGnct+lAZG1iLQhctR/CjyQ5Ndc03v72kuxmwzRF2KZJpP1BWZmLJHzamX22a+lqs
-	G6va3KBcA/38QIrEdGBw9ZUfGECch1ZaAWJeTmpxI6LmMMx20WPCmD88aOtb5i+1DHz61jTDU4e
-	0Fy6grkynBn4SQRe3P8nqoes/d/AbYzvSBffszvDVRE1/TQ70FDm9YU88NmtpbEj/nSu1jAbFIG
-	rNzk1nxM26PuIxrrUzZQhDypfkAJtiQDx7POJ83hattBaIJwg+MHuC/p7Lp6QxgFx/4SVQUaGUP
-	/Z/Wdv4tgGp4BDThqC9fTBbGAyRx/vZQR9g0tHhLRBvjmEfkM2HjIBNy7lVtltSib0pHb5az0Jn
-	jqKkVZiX2DAlGwiVF7Vdcup8yP4JXNaYdtqvGY88=
-X-Google-Smtp-Source: AGHT+IG0ByxlfHWwgJ+AcNjU2yUsaqNnzgD75XgpxrmchkB3mZY7uDwPyNr4YJZ7aw0VrdPW/p4HBw==
-X-Received: by 2002:a05:6a20:7f9e:b0:220:658:855 with SMTP id adf61e73a8af0-2260a69f74amr13517414637.13.1751776637206;
-        Sat, 05 Jul 2025 21:37:17 -0700 (PDT)
-Received: from localhost.localdomain (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b38ee62b1acsm5577847a12.56.2025.07.05.21.37.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 05 Jul 2025 21:37:16 -0700 (PDT)
-Date: Sat, 5 Jul 2025 21:37:14 -0700
-From: Tao Ren <rentao.bupt@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Andrew Lunn <andrew@lunn.ch>, Tao Ren <taoren@meta.com>
-Subject: Re: [PATCH v2 0/9] ARM: dts: aspeed: Add Meta Darwin dts
-Message-ID: <aGn9erhghE0Bpgl9@localhost.localdomain>
-References: <20250706042404.138128-1-rentao.bupt@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bZf4r75DTz2xHY
+	for <linux-aspeed@lists.ozlabs.org>; Sun,  6 Jul 2025 17:24:12 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 554F860010;
+	Sun,  6 Jul 2025 07:24:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E53B8C4CEED;
+	Sun,  6 Jul 2025 07:24:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1751786650;
+	bh=GXloaSvCws91FWcTEY826uJkkXeu9ViMmss5Tzk2+zA=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=tC+J2TaE3G34vQ2iuThIuT6V4t04I0qj4jfqGEawToE2u+U5oDLkMygdaTJXSXDt4
+	 qmn5zrEQoXRMyoE41Yy2zFmEMtiG4Fox6x8Rw4n38AFP+uPFoR76gS1fqz/LBiRP5H
+	 8caft/vh+BCaVfamn9Lcm/H7aGNmSO3Cvz9IT5GCsm4uZ5DKaQS+ccl2liPbon9WNP
+	 mL3RG6lbJQnfXLdCqzJEmSrlrDJat3Z0cc7IPyt7p1hJkzgJJ1Su6mlQ8y7lcyfduf
+	 6s535wD17A4V1H5Lk5tzk1xbv/yDEy5mOqQEN8raKHYCKTOmVg6XQYikkfhsDeRbr5
+	 9lHWusOwORA2w==
+Message-ID: <a303bf21-a4d7-46ca-ba4e-2f70f39e6b10@kernel.org>
+Date: Sun, 6 Jul 2025 09:24:04 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -94,42 +59,98 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250706042404.138128-1-rentao.bupt@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 8/9] dt-bindings: arm: aspeed: add Facebook Darwin
+ board
+To: rentao.bupt@gmail.com, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>,
+ Tao Ren <taoren@meta.com>
+References: <20250706042404.138128-1-rentao.bupt@gmail.com>
+ <20250706042404.138128-9-rentao.bupt@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <20250706042404.138128-9-rentao.bupt@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Sat, Jul 05, 2025 at 09:23:50PM -0700, rentao.bupt@gmail.com wrote:
+On 06/07/2025 06:23, rentao.bupt@gmail.com wrote:
 > From: Tao Ren <rentao.bupt@gmail.com>
 > 
-> The patch series introduces the initial device tree for Meta/Facebook
-> Darwin AST2600 BMC.
+> Document the new compatibles used on Meta/Facebook Darwin board.
 > 
-> Patches #1, #2 and #3 fixes the DTB warnings in wedge400/fuji dts and
-> ast2600-facebook-netbmc-common.dtsi.
-> 
-> Patches #4, #5 and #6 introduces a new BMC flash layout to be used by
-> wedge400 and fuji (and later more Meta Network BMC platforms).
-> 
-> Patch #7 moves eMMC entries from ast2600-facebook-netbmc-common.dtsi to
-> each BMC platform because eMMC was removed from future Meta Network BMC
-> platforms.
-> 
-> Patches #8 and #9 adds Meta Darwin BMC and updates devicetree bindings.
+> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+> ---
 
-Hi Krzysztof and Andrew,
-
-I've fixed all the "checkpatch.pl --strict" warnings except the "new
-file" warning, and I guess I can ignore the warning?
-
-Regarding the dtb warnings, I've fixed the warnings from the individual
-dts files, but there are still some warnings from aspeed-g6.dtsi. Are
-these "known" warnings? Or is it because I'm using out-of-dated
-dtschema (2025.6.1)? Please suggest.
-
-Thank you very much for the review and feedback.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
 
-Cheers,
+---
 
-Tao
+<form letter>
+This is an automated instruction, just in case, because many review tags
+are being ignored. If you know the process, you can skip it (please do
+not feel offended by me posting it here - no bad intentions intended).
+If you do not know the process, here is a short explanation:
+
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new versions
+of patchset, under or above your Signed-off-by tag, unless patch changed
+significantly (e.g. new properties added to the DT bindings). Tag is
+"received", when provided in a message replied to you on the mailing
+list. Tools like b4 can help here. However, there's no need to repost
+patches *only* to add the tags. The upstream maintainer will do that for
+tags received on the version they apply.
+
+Full context and explanation:
+https://elixir.bootlin.com/linux/v6.12-rc3/source/Documentation/process/submitting-patches.rst#L577
+</form letter>
+
+Best regards,
+Krzysztof
 
