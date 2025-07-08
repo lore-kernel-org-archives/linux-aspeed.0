@@ -1,80 +1,54 @@
-Return-Path: <linux-aspeed+bounces-1683-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1684-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51CAAC83F1B
-	for <linux-aspeed@archiver.kernel.org>; Sat, 12 Jul 2025 03:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B68FCC83F1A
+	for <linux-aspeed@archiver.kernel.org>; Sat, 12 Jul 2025 03:11:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bfDB84j9hz2xS0;
-	Sat, 12 Jul 2025 13:11:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751969907;
-	cv=none; b=j0vDWqvbyTB6YZKybvwtO8e2L7M8zZ+h8qLUwVweFrIFPHRqATW7LTvfaKGkSbO1fMYGiIK0ikl4BFbWcGljNa/pFPzVBGsv8MVlAWUEeuw+4998QKN5gTaK36/P94bKrZBvUTqxqc4gRUFMxixiTyzPKKNh396CyPlWv/Y2nsQ2sDMpI95kNNZ/AaCphKHqLRqS4pUJ7wCO3LK/Ndcbvr/WelXNu0FK19mT3pl78HN9lp03c9MwmYjgyo7pGuDlm4s2Ij5fKkIb4a3zn9fAUq0VP9gJsQba/MJ+062VMIEy7DZNXA2m2vDsaO/yWGw5HdNwQUhAZIHmdd4mY1n8lQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bfDB92wJ4z2xQ6;
+	Sat, 12 Jul 2025 13:11:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751957767;
+	cv=none; b=WZTyyQyaJsRkKVq5pceDX7k9DhNCCfrfdPKfkMsvuKzNdw7YlqtC99a+QR8EDLnm/PpVLfh0BXHa6KDBoJmVvipf0jxSv2E3j2zuWca1UaA0pi3DEPdNkYX3IfxcwftDjSm2z1FzmWYurlaf2Xg9ifK3Kzhe1RsU9yKbnxnuR4FdrypWGj8VW9/fTm9vZxB4an0u/GwivMM3YkeiYiXkEHGbXFHarimRCHct2lhDK3gatZA3uq+530ZZ86BQboSAd/5KSalQxcAt3ONqY4ey60IhrsVuEcdB1lGm3Twp0AROOrCbY/nZw4KWHMT08lVJvnE6y8kdpH9ADMpi3w4h/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751969907; c=relaxed/relaxed;
-	bh=mdLp0YjegKAXW1He8H6sCHobxtr0SXLGuwvu5w7+xXs=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kr82EZmGR602qHMgCSfPP7pfnM9b4HH9L+K2nHG81Fi4/P9L3M53xnGfbkx5W8snEQjRcCNNxWb5hSoCJr17zbd5UlHUt3CJE4z3Vl3UmwEzJuJs8g4jIU2ms528bvhnazjvYtYnwmchazHIRh4UIsyMvDSUt1OPCP/jiF7DsR8orWqx7GoM5u2tUBVQSgEEqyn6mjexge2UwpV3muu8fxiGLJt570AO2iEc0vYgxskXxD/IxII2+P5sEkc4t/PSes4GwfTE5Max6dHHVq+2OQqCjFXiMqAp2WS0R2edGXCfvoC2iTbvznN6IoubxSp8UEeaFpCzPEG9JRqqOpOfkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IrVMWWm7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IrVMWWm7;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1751957767; c=relaxed/relaxed;
+	bh=JbSp3peXdCYNTVSglrOvDustK5E9hdfInY7j/gm6Ntk=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=b6zBoI4qKzcuRNUSYABP2BZbTvBeL6/l9OixwfE1jYOexJo2JvTl6gXKtv6aCcMIy5ClFMycrOu7pgXCeqI36TPq8vS8jMf52GywnE+/CQ0/W+gzHlWZzL4xqqABOUSybhK6cIpSLoN+kgV8evL5BCZyqFXvFy1uqVLPCeRtH2d7taIwOCK3a9egQP8Ou9dBM2VEYf40PKwNMug0FMjq+xhrPCWby7DNeic9vrHo83p0zPWOtL/+TnWK572Y2OCMScuewaQLmTZ7nUqz1qghZXCWYkk1f/ZHvCt99J+ob/49s+ACxYD7wBmKPHrOvZaKibohJTe4GoCl6Gg53b7cdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bbxry4PqMz3bV6
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  8 Jul 2025 20:18:26 +1000 (AEST)
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-234b440afa7so40251915ad.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 08 Jul 2025 03:18:26 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1751969904; x=1752574704; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=mdLp0YjegKAXW1He8H6sCHobxtr0SXLGuwvu5w7+xXs=;
-        b=IrVMWWm7jjrixzeA99nQ+zx/z/JCW2mcfoGpknmMervUaOUmU6x2G/RKLZwmcb9i/D
-         DwY5ccdTQUIGKI24fRCO4D1HeaKkFI3scQCAHdHLi4VR0pGa73RBeFTSbLiVZCdpm7H+
-         PzDZgEGf8vIXGGnDOUj6I03/LoAQHNMa6IHSs2ol82f9YXAbxIO2WlBdSblkrtaShS5p
-         WqGcAgWA26UGQlbDfTiHEQP9+UE0uLRgtOd1LpRXspIV6DIUAM5Yo69KfM2c7T4sNfPi
-         xcrsXKd9AnxlfAWGlG8w4wedOMAZD4c2WYFCmj/+2q3dePPeO3xOaelJ6V6DrUQGEkXz
-         GQnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751969904; x=1752574704;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mdLp0YjegKAXW1He8H6sCHobxtr0SXLGuwvu5w7+xXs=;
-        b=eKSfLEdPWTdmAi/CS8+r3r+dzSVS5ssDPzWt/etLeY8d5BZV1GO0qglw/HGeI0Pu++
-         qDPXvcEwBefziX0U41nw+8NqKuVBlhxWnL2Ij2icQWFtO1kxHPW1Yg10Fgw6buNesIn0
-         PFHDf8GYBAFrnQwvzPKRQgz0A3YQE9KImiv0RKhz6YKdET35XBB/qmdhkaRKoN4tNOLK
-         PzTC3W0uH224jUiDPHomrud7Btt34VnvKJA3NxYIcIMwO4ABFbWUkmAdhN7/By+rDeX/
-         BABAk/9tHdvjvGV3dBT8MooAlBqMjgyVLet4HsC+KvAvpfxMkM1JJpTuRjgG6a6mAYv8
-         YFrQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU2L9TT4YpKXIgNs43D9zcdH47HsCMBol1LeD4mw3yYUP7g4+baRlB8pWAzR95N6bprxmH8r+YqBKdjglY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw3SQ1YUWdQISKF3IxXSIpUXl8cgijgrjRLldYQREyGeLJCaWo5
-	eI6DMf0gYVYD/4bt/stirfGHgexYkceAlP4aIGLC/34u965KoOHh9L0S
-X-Gm-Gg: ASbGncvuoYFSUsfvhnrQ5wZDXgMR5zR8CnftDCcFa0SUhMWMYOUSIO1JY7dZNKoHdRV
-	4uoR6qAujidGyf9x5uM6q+ao4mBjWdm9FMNKY4GiO0qLR/X+YFlZdH+Gn8WeP3ybzQRc5yCLKRF
-	T2TzWHo5jIVS1idj8jAx7jtFZUUByfEnqQ9CAVIsaXD+1CBOdQpHd6xXoBUQCNuV4vBjbi8DM96
-	TwoHq8dFzwrorPU8Ljcy0bN4CPqMBPyTNKoMzfPF4HYs7oof5oYyMVS+CFzvdiuaM5jQKaCTv8W
-	o3N8TC1GjPiBczzM6PQBtrLKT8g/I+pQFzwjSzCsRlUJr16yHyESOexzsY9Va7VT+UVPwIVsbZt
-	Iv8csy8X0LJP5lCa+3AQqXEzs0CX9iUs=
-X-Google-Smtp-Source: AGHT+IGu7WYapWMHc9637DgsnJHKg4bnLFJuKBic8k4Cy5AmF5szo6dnD7F1fr+X4Zl1kXa/RsNNJA==
-X-Received: by 2002:a17:903:2443:b0:235:779:edfe with SMTP id d9443c01a7336-23dd1d5e471mr35706785ad.43.1751969904340;
-        Tue, 08 Jul 2025 03:18:24 -0700 (PDT)
-Received: from [172.17.0.2] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b38ee4a40e3sm11114709a12.34.2025.07.08.03.18.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Jul 2025 03:18:23 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-X-Google-Original-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
-Date: Tue, 08 Jul 2025 18:18:00 +0800
-Subject: [PATCH v6 1/2] dt-bindings: arm: aspeed: add Meta Clemente board
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bbsMV5vYqz3bTf
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  8 Jul 2025 16:56:06 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 8 Jul
+ 2025 14:55:44 +0800
+Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 8 Jul 2025 14:55:44 +0800
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+To: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<andrew+netdev@lunn.ch>, <davem@davemloft.net>, <edumazet@google.com>,
+	<kuba@kernel.org>, <pabeni@redhat.com>, <robh@kernel.org>,
+	<krzk+dt@kernel.org>, <conor+dt@kernel.org>, <joel@jms.id.au>,
+	<andrew@codeconstruct.com.au>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
+	<p.zabel@pengutronix.de>, <horms@kernel.org>, <jacob.e.keller@intel.com>,
+	<u.kleine-koenig@baylibre.com>, <hkallweit1@gmail.com>
+CC: <BMC-SW@aspeedtech.com>
+Subject: [net-next v3 3/4] ARM: dts: aspeed-g6: Add resets property for MAC controllers
+Date: Tue, 8 Jul 2025 14:55:43 +0800
+Message-ID: <20250708065544.201896-4-jacky_chou@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250708065544.201896-1-jacky_chou@aspeedtech.com>
+References: <20250708065544.201896-1-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,54 +62,54 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250708-add-support-for-meta-clemente-bmc-v6-1-7f3e57bd0336@fii-foxconn.com>
-References: <20250708-add-support-for-meta-clemente-bmc-v6-0-7f3e57bd0336@fii-foxconn.com>
-In-Reply-To: <20250708-add-support-for-meta-clemente-bmc-v6-0-7f3e57bd0336@fii-foxconn.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, Kees Cook <kees@kernel.org>, 
- Tony Luck <tony.luck@intel.com>, 
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
- Geert Uytterhoeven <geert+renesas@glider.be>, 
- Magnus Damm <magnus.damm@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- linux-hardening@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
- Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1751969896; l=880;
- i=leo.jt.wang@fii-foxconn.com; s=20250618; h=from:subject:message-id;
- bh=Vkb9aXhwjRXn290zw8y+gVMx1U5e/fNse2oic6Bf6HY=;
- b=bPsPFlNf9KCv5/kLFTdwnvncwMCBUnDkJASOXjZZIH2IID/WfCpaxiJ2uad0l5I+UtHc3qCyD
- hfxgrBqr8BoD94uBPmk1ePYW7J8Kb4DHtjBSdGA9XGTcRGquyi3YA92
-X-Developer-Key: i=leo.jt.wang@fii-foxconn.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-From: Leo Wang <leo.jt.wang@gmail.com>
+Add the "resets" property to the MAC nodes in the AST2600 device tree,
+using the appropriate ASPEED_RESET_MACx definitions.
 
-Document the new compatibles used on Meta Clemente.
-
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
+Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 01333ac111fbb076582a6c0e801903c3500b459f..ff3fea63cecd99ec2dc56d3cf71403f897681a98 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -81,6 +81,7 @@ properties:
-               - asus,x4tf-bmc
-               - facebook,bletchley-bmc
-               - facebook,catalina-bmc
-+              - facebook,clemente-bmc
-               - facebook,cloudripper-bmc
-               - facebook,elbert-bmc
-               - facebook,fuji-bmc
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index 8ed715bd53aa..f9fe89665e49 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -236,6 +236,7 @@ mac0: ethernet@1e660000 {
+ 			reg = <0x1e660000 0x180>;
+ 			interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>;
++			resets = <&syscon ASPEED_RESET_MAC1>;
+ 			status = "disabled";
+ 		};
+ 
+@@ -244,6 +245,7 @@ mac1: ethernet@1e680000 {
+ 			reg = <0x1e680000 0x180>;
+ 			interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>;
++			resets = <&syscon ASPEED_RESET_MAC2>;
+ 			status = "disabled";
+ 		};
+ 
+@@ -252,6 +254,7 @@ mac2: ethernet@1e670000 {
+ 			reg = <0x1e670000 0x180>;
+ 			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&syscon ASPEED_CLK_GATE_MAC3CLK>;
++			resets = <&syscon ASPEED_RESET_MAC3>;
+ 			status = "disabled";
+ 		};
+ 
+@@ -260,6 +263,7 @@ mac3: ethernet@1e690000 {
+ 			reg = <0x1e690000 0x180>;
+ 			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&syscon ASPEED_CLK_GATE_MAC4CLK>;
++			resets = <&syscon ASPEED_RESET_MAC4>;
+ 			status = "disabled";
+ 		};
+ 
 -- 
-2.43.0
+2.34.1
 
 
