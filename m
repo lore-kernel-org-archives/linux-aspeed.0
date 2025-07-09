@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-1680-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1681-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CE4BC83F1B
-	for <linux-aspeed@archiver.kernel.org>; Sat, 12 Jul 2025 02:49:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBE2DC83F1B
+	for <linux-aspeed@archiver.kernel.org>; Sat, 12 Jul 2025 02:50:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bfCjf1c4sz2y8W;
-	Sat, 12 Jul 2025 12:49:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bfCjt3HhXz2yRD;
+	Sat, 12 Jul 2025 12:50:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752044915;
-	cv=none; b=gSXVst69ATTBbmPCflMmbfe5knYMf558kh2r4YQoXTOlKZD3Nj23Fkgr7WpANMO/ohDH16cXLWZWmmRvdZ+yEoCQRctbdogHz9yM4tW5sAY+Jy9Z2QUXC4rRx6n9lcAD7mabjWcOcWLjChUqnltixb2qkdOPii/0Tny608klZDvtxpQZAYD8w3ruAZL476eypFQKi+krDtgaR29A0+iH8ktInZFlmdIY0OsyLBM89sPFOkSij9iiw4G8jUYJslo81kZF8OTEvoEkicQyMtAi1Q2ZlrJbAZJrIjOzNtUyTHJ74so2Bxyiy+ADFt/WEUTVYV0l1XUHhZOxM3oE/xsQ6w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752044914;
+	cv=none; b=G7bdRnKuznavsZz5vUL2r1bEBQoUHKmy7DDpY58voRTuoo5SpRwY6g8tWgtAZE6IH61KC58zDLQQQTu+nQ3KzE5GN5e33cg5Qj9oWzAdzjcr/k40/MFDx9wv7Zz89zrfftPr7ofG9XdwxBIONKrBlG1YqdceLj7N6g0zzwlHTdltRlz94pcyrg8oeL5TBuRyDgwm+e7KeKLGm5lkmjQAeUDdF0qzt/ybEH5K9AXYJEN6Du7LLytVSKcsD5Vn/vTvQ+ntC+QYeZYNOE9hG8S2cgaCKkCoHPsVgh5fjG3b3mn8JeUsGxZk64qtzemL4Y8/UkExmf4S/lGkG1RKySGOcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752044915; c=relaxed/relaxed;
-	bh=JbSp3peXdCYNTVSglrOvDustK5E9hdfInY7j/gm6Ntk=;
+	t=1752044914; c=relaxed/relaxed;
+	bh=5AR4gXAZXb+yXxeBaXxlmxm5zufcseHNq6stVGKiC2Y=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=YMjF2X5jzTjCunk+Q+2HWPQqewmBOIO1XTbqsDsBKmOCL+Av15MRzgADotrYhCRKrm6oHFeY3zHs4XpHu92BvPCzFEnIg/Vyt77cUK1IxkjazMnQ2oHCPFge1mGrvNLv0CY1x6SnQCwSwE6K+sC5uUi8oXyKSyAXSd80/nAuyIWuWHfJjLr71R0g7G2pwD7GO9PVGrYAISYcVf1xSyvKqFIpiR7pUT+efZ4Lrjm7PbCViVS8cBeGgo710Y3+mKXslVjRcrY5wPlxQhfna5ZV3X/7p6xgY5Wrq22HzCGrdBkqAz4WJ5cs2PXMa0DwKMzaIq7u+0EofVtNWtH8PsGV+A==
+	 MIME-Version:Content-Type; b=J17Sq0bFTdXcgLrE4wFqTR2KzEpKz1NAeV0E3XtkrVYUm3GrudCL6AO0hDGXxtxUe/UlIoGfAOsXL+XQmQ/7OWzI2n1RubbR/iUjpuN7hby9yqhEnKGQNgUX5nJf/PSUU7Z469lpQeOfRUGbNhr0c6fDqNs3SreynvE8e7LMK4aHlFc7hZ+FzwZCYJEbLTzO2oD/JbPSJh/w33OrlD835kPrYBp5i1qoQAe3FZW47wzlLrdBhqwUnSgWXu3aSmAWsTuo5BYxe2legDiculu5LfAXbP/EhE0ShuDBT14LqMuj+mD2Wjv7y5V11QmE3XHMo+N1Pi7TDoSN/cCNWgYJtw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bcTbQ4YbLz2xQ5
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  9 Jul 2025 17:08:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bcTbP5rZqz2xQ5
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  9 Jul 2025 17:08:33 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 9 Jul
@@ -42,10 +42,10 @@ To: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<andrew@codeconstruct.com.au>, <mturquette@baylibre.com>, <sboyd@kernel.org>,
 	<p.zabel@pengutronix.de>, <horms@kernel.org>, <jacob.e.keller@intel.com>,
 	<u.kleine-koenig@baylibre.com>, <hkallweit1@gmail.com>
-CC: <BMC-SW@aspeedtech.com>
-Subject: [net-next v4 3/4] ARM: dts: aspeed-g6: Add resets property for MAC controllers
-Date: Wed, 9 Jul 2025 15:08:08 +0800
-Message-ID: <20250709070809.2560688-4-jacky_chou@aspeedtech.com>
+CC: <BMC-SW@aspeedtech.com>, Conor Dooley <conor.dooley@microchip.com>
+Subject: [net-next v4 2/4] dt-bindings: clock: ast2600: Add reset definitions for MAC1 and MAC2
+Date: Wed, 9 Jul 2025 15:08:07 +0800
+Message-ID: <20250709070809.2560688-3-jacky_chou@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250709070809.2560688-1-jacky_chou@aspeedtech.com>
 References: <20250709070809.2560688-1-jacky_chou@aspeedtech.com>
@@ -65,50 +65,31 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Add the "resets" property to the MAC nodes in the AST2600 device tree,
-using the appropriate ASPEED_RESET_MACx definitions.
+Add ASPEED_RESET_MAC1 and ASPEED_RESET_MAC2 reset definitions to
+the ast2600-clock binding header. These are required for proper
+reset control of the MAC1 and MAC2 ethernet controllers on the
+AST2600 SoC.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Acked-by: Stephen Boyd <sboyd@kernel.org>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/dt-bindings/clock/ast2600-clock.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-index 8ed715bd53aa..f9fe89665e49 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-@@ -236,6 +236,7 @@ mac0: ethernet@1e660000 {
- 			reg = <0x1e660000 0x180>;
- 			interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&syscon ASPEED_CLK_GATE_MAC1CLK>;
-+			resets = <&syscon ASPEED_RESET_MAC1>;
- 			status = "disabled";
- 		};
- 
-@@ -244,6 +245,7 @@ mac1: ethernet@1e680000 {
- 			reg = <0x1e680000 0x180>;
- 			interrupts = <GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&syscon ASPEED_CLK_GATE_MAC2CLK>;
-+			resets = <&syscon ASPEED_RESET_MAC2>;
- 			status = "disabled";
- 		};
- 
-@@ -252,6 +254,7 @@ mac2: ethernet@1e670000 {
- 			reg = <0x1e670000 0x180>;
- 			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&syscon ASPEED_CLK_GATE_MAC3CLK>;
-+			resets = <&syscon ASPEED_RESET_MAC3>;
- 			status = "disabled";
- 		};
- 
-@@ -260,6 +263,7 @@ mac3: ethernet@1e690000 {
- 			reg = <0x1e690000 0x180>;
- 			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&syscon ASPEED_CLK_GATE_MAC4CLK>;
-+			resets = <&syscon ASPEED_RESET_MAC4>;
- 			status = "disabled";
- 		};
- 
+diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
+index 7ae96c7bd72f..f60fff261130 100644
+--- a/include/dt-bindings/clock/ast2600-clock.h
++++ b/include/dt-bindings/clock/ast2600-clock.h
+@@ -122,6 +122,8 @@
+ #define ASPEED_RESET_PCIE_DEV_OEN	20
+ #define ASPEED_RESET_PCIE_RC_O		19
+ #define ASPEED_RESET_PCIE_RC_OEN	18
++#define ASPEED_RESET_MAC2		12
++#define ASPEED_RESET_MAC1		11
+ #define ASPEED_RESET_PCI_DP		5
+ #define ASPEED_RESET_HACE		4
+ #define ASPEED_RESET_AHB		1
 -- 
 2.34.1
 
