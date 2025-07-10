@@ -1,63 +1,57 @@
-Return-Path: <linux-aspeed+bounces-1672-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1673-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCCBCC83F03
-	for <linux-aspeed@archiver.kernel.org>; Wed,  9 Jul 2025 13:24:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0B0BC83F0F
+	for <linux-aspeed@archiver.kernel.org>; Thu, 10 Jul 2025 02:24:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bcdwx2dvyz30Pn;
-	Wed,  9 Jul 2025 23:24:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752067457;
-	cv=none; b=FSoEFICH3ozWeteICd0F6hFk2M1SbR2WmsEjfs/p3r6W+kCsPynVCEcw31BlDhkBL7PHk9I1v2O8NaGguyM6ekygbcL2QKGsAzLS/X/XUzc4S8kGc/iPg47Ag6ZLN8tDr3pw8puSPKZld/G78Q2u2kv+fMZ8eRiTFw1NXj1x/8UsmtT9RHQ4AdihQ7dwc4YIeVsKNQNrfn6+FJ0EpXQ6ZuSM+1vYIZeqY5iVrVs5gv/rmpezAeRZ0U7Aew1NP79Gco9M10AWvHU+oWE7ZCXkDS2MoBJfuJjsAOz+B5AI7bT92mCnw0UX5Abiim2w3f/evXVTCSBg5bSORkm9U12+8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bczF01zW3z30MY;
+	Thu, 10 Jul 2025 12:24:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752114260;
+	cv=none; b=AtRX7I1D+CPjRt2S/v75Ybaqg5Gyed6Cjvo8VKz632Io7kCXXiu6yoaGgcdqQ+jM27B88GsC1cMVfrTWp0Zdl6Waet0g7jNRyE6hu+OLdW1YW2v2OJhQ5U8t3FJXhqXQvR3dcLFf9i2OLGJaFMqfbeZ0KEvV1+HWSScDtpJQ13kMpBrEv3BaGxnmZz/WctbuFHh7wQJzhIPy61q9MzpZdZMZ7WodMhatfudNOshVny+dLDEy7QNCkRMNzCWkVKfMTwjhgSLSY7OB5WTxnEN0fXgjbia2CaR/pccf9sg4svH6W7aO1WNrr8d15DadQwNE/m0zFrGcxEhFHLTlq0cHbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752067457; c=relaxed/relaxed;
-	bh=hQ9HxQ4CL5cwBPjvKDpDZamXchNvQ4T7qK3P3nj85G8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=b+1dZy/FWNcOVCZVVqVyWsqi1nhenfDhseGOopP6R0DzSO/CkF/Z3R1ymaKKdGE3ia6isAVLhDbHvqZLicALtB3akOu+0xOHJpes1J8DlnuOH+hFBIVPyii3UqcuFvBZvdRfPDFKHngTy9X8fmEmnZ3cpOZcgnnSTsQL2FduBxtkZTXtIJtQOxC//rTET8x+SqNcYHOO/QNk63n94yUVFUFyMICO5cW+IqJrmGTTN+m8JGsJb3X/CCAPD5PxTz29TsZghHQtMoKz8k/Dp9QZa49UP1Nwl37gieKKi5jTedvuUC2pCm9anGce/H5h5cxxaIgaZDENh/d1njVRuNWO1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Fe0jgGso; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1752114260; c=relaxed/relaxed;
+	bh=lFaBzW/UFNKRDOoKgOilQk2+bD1ofG50x/0d54hiwwo=;
+	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=MrdAF+V3e4MUEaD3RfmdP/nwdZkLA6gS10z+SOeProKsMBFPxF9J0FdDxjCCMDe8aq0IguuxAAEq3j0zh9dpgvVQAXS8HDE7q3Il/ULjIT6W1U+QI6gAJPtXWHNARVqYH8CvXBNRSYAw9iYcD7X+tZdbtvE6kce0BToqF7JWHJJ0+D7SZ5riVZGd++Zadi/9kyTOw1QBv4jJKcf6wbB94OwtxQ0cQlVPEbY/3/D/SQUWI4+oT2fm6bXbmvwEP196wn054rB8VpR8Hem9+dKi7zi/xGcOelWQ0+0vLG3jFdrGOa8yIcrWu+GGXgXWPWIlcp7XTE6J1Wyj4ijAmI6sRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=O3MbPEDV; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Fe0jgGso;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=O3MbPEDV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bcdwv27FJz2ydj
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  9 Jul 2025 23:24:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=hQ9HxQ4CL5cwBPjvKDpDZamXchNvQ4T7qK3P3nj85G8=; b=Fe0jgGsoitEJIzGGN64xp/8LbW
-	PSANpYST+y4jFNuWxPL1FSw9Flcaw2JOQJMywR6O1NmbtVZaaIcBQ3wgcPIKZTgcvt2Dn424ws8lh
-	9BeU8GQk5eVXBWpUMgiEqoUxiNo1BrJuW5CszAKN9N1V4/Fswlmq39ewio9vZF4N7ULg=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1uZUmG-000waz-04; Wed, 09 Jul 2025 15:24:00 +0200
-Date: Wed, 9 Jul 2025 15:23:59 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: netdev@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
-	kuba@kernel.org, pabeni@redhat.com, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
-	andrew@codeconstruct.com.au, mturquette@baylibre.com,
-	sboyd@kernel.org, p.zabel@pengutronix.de, horms@kernel.org,
-	jacob.e.keller@intel.com, u.kleine-koenig@baylibre.com,
-	hkallweit1@gmail.com, BMC-SW@aspeedtech.com
-Subject: Re: [net-next v4 4/4] net: ftgmac100: Add optional reset control for
- RMII mode on Aspeed SoCs
-Message-ID: <3dee14d4-c8bd-4c27-b9b1-28b449510b84@lunn.ch>
-References: <20250709070809.2560688-1-jacky_chou@aspeedtech.com>
- <20250709070809.2560688-5-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bczDz0Nkpz2yhX
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 10 Jul 2025 12:24:18 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1752114257;
+	bh=lFaBzW/UFNKRDOoKgOilQk2+bD1ofG50x/0d54hiwwo=;
+	h=Subject:From:To:Cc:Date;
+	b=O3MbPEDV8Vl5EyZd0IlS9GM7zFbwanUKbgi8uw38SA+/7kAG7A5I3K6ne6QLYVQ5W
+	 QYE7yjtnUqcs6SXZNOQoj/kRpTxPpnbabtnuBeHjf6ZqZO/Xow2zMoyTTtz8/x2YZz
+	 mM3u9e1zWiE7P7qvwU1e+DhY4ykrkeIJVcCIA+Tcvw4N6nsHPwoGnT2d6yo92Oeztn
+	 dUMJODDPBsu0MHHxcO39SIobpy3QdatzTOhVNLX4+hJ2N52Vr4KpGrQp/64oXoNuGm
+	 8YsAJQzi05wkBJqBKvptPYI5gftXk3EvuiRymsscENZpuzd6NoJk0g4po/FpHeRPRC
+	 Av0g/SX3FK7OA==
+Received: from [192.168.68.112] (unknown [180.150.112.70])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id D972E6508A;
+	Thu, 10 Jul 2025 10:24:14 +0800 (AWST)
+Message-ID: <d119a7b44b25a1e55a710adec7fce3e9a9fc898e.camel@codeconstruct.com.au>
+Subject: [GIT PULL] aspeed: drivers: changes for 6.16-rc6
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: soc <soc@lists.linux.dev>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-aspeed
+ <linux-aspeed@lists.ozlabs.org>, linux-kernel
+ <linux-kernel@vger.kernel.org>,  Joel Stanley <joel@jms.id.au>
+Date: Thu, 10 Jul 2025 11:54:13 +0930
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,21 +65,46 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250709070809.2560688-5-jacky_chou@aspeedtech.com>
 
-On Wed, Jul 09, 2025 at 03:08:09PM +0800, Jacky Chou wrote:
-> On Aspeed SoCs, the internal MAC reset is insufficient to fully reset the
-> RMII interface; only the SoC-level reset line can properly reset the RMII
-> logic. This patch adds support for an optional "resets" property in the
-> device tree, allowing the driver to assert and deassert the SoC reset line
-> when operating in RMII mode. This ensures the MAC and RMII interface are
-> correctly reset and initialized.
-> 
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+Hello SoC maintainers,
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Here are two fixes to the ASPEED LPC snoop driver for the 6.16 release
+cycle.
 
-    Andrew
+Cheers,
+
+Andrew
+
+The following changes since commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494=
+:
+
+  Linux 6.16-rc1 (2025-06-08 13:44:43 -0700)
+
+are available in the Git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git tags/aspeed=
+-6.16-fixes-0
+
+for you to fetch changes up to 56448e78a6bb4e1a8528a0e2efe94eff0400c247:
+
+  soc: aspeed: lpc-snoop: Don't disable channels that aren't enabled (2025-=
+07-02 11:05:20 +0930)
+
+----------------------------------------------------------------
+ASPEED SoC driver fixes for 6.16
+
+Address concerns in the ASPEED LPC snoop driver identified in the first two
+patches of the cleanup series at [1].
+
+[1]: https://lore.kernel.org/all/20250616-aspeed-lpc-snoop-fixes-v2-0-3cdd5=
+9c934d3@codeconstruct.com.au/
+
+----------------------------------------------------------------
+Andrew Jeffery (2):
+      soc: aspeed: lpc-snoop: Cleanup resources in stack-order
+      soc: aspeed: lpc-snoop: Don't disable channels that aren't enabled
+
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
 
