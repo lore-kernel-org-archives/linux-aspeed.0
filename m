@@ -1,57 +1,53 @@
-Return-Path: <linux-aspeed+bounces-1675-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1676-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A59EC83F10
-	for <linux-aspeed@archiver.kernel.org>; Thu, 10 Jul 2025 02:54:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 091B3C83F1A
+	for <linux-aspeed@archiver.kernel.org>; Fri, 11 Jul 2025 01:20:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bczvF3BlZz30MY;
-	Thu, 10 Jul 2025 12:54:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752116041;
-	cv=none; b=GQAFgIdfjJBjglCnHM/5aqDQBD4m1B+Gt09A88q7yGsZ2osf8QX4a4BpaAa/qdFlZfgB9GuX9KMvTzBzPO3juXqj2n8iw2KjfIBGo8NIUlbENu5bBD49WVAM3szb68V/aYABUTzPGyi8/1rtzaUyVk/r5IJZhq1WIVrbhZLHGWxdy1nx+km4f40kjws6tKUaCkjVNvWk1uXmYU0CtuXGX0CoM9hNFrEevf4VJzaDqzhlXvuwt2ORiEUqpQnUEqyPY5WihnmwUeHnASNfUV7uWcYvC/j9YvfPNFSS8zA2Mphlq2qmk51G1YSZpnvMJlW8NvZAOjFu5HTb4ZVtbYLbxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bdYmb3FKxz2ySY;
+	Fri, 11 Jul 2025 11:20:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752196815;
+	cv=none; b=JThhs2qfSiFuXDACvpEZnJzv3//XSl93OTPi7lQJwpSIqYr1HNiCx8mDC7l97xQmARzoVh0bYIXAAU+cgSXtJAZhWp5B35JiBJbO/2ouB/zdGRsMoM7SltbR/YHy4poIlhq4I1n7QNXo9bQEpO6ZdAkzRCP4h7pfzX0G2JmySBtDi94t4ZUTLcU/7zD/uBGNHsNzuiiS3muae1D0Mu/AvFiPoENo0za4sW70i0L/cKO2zfJ++lIecGIPJY/csx0Dohl0uQNeTG1kqCXpMrKaj/z32ZWsju5Fk/LnbFsD4u/qeX7hBjto7wtJX43/pVysgK/BrpmJ3gVMhiRXP9TzIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752116041; c=relaxed/relaxed;
-	bh=8dzREoZ/WsyaHQKz6zD+3j3tk+9rN2BHKiKlFhHQROA=;
-	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=bPKrQmTP8/FtH8jneEeYrGeoktEDTfJSCEfoUlgSSprGLrNyZCtDwK0Ut9sPYois1frPa0YbQmD2Y6ec/of+Wu4x8gFaoy1shogQWVNQbnCtMe1MOTIh7Yoi0A7aRh0zSC0w9TiCB1r0yixzD4byWI+6dLxLShlH5hD85lb1NoogrCmAutbflVRVNAvNWdkZKBj27rMNJzK0n0fK9n6YadUV1Z1rwpRqa1xSVTxUAe+KGm4QDIl1TgIc02DRPENGs1A43Wd7Zc2B3zCkTTiWqZk3xRbI+Y3bgAee8l8sPsMwBnrQgrcc8jsGu5hlLEGLPLY8S3aD3GlaM4F0dXhyxA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bjicqfx2; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1752196815; c=relaxed/relaxed;
+	bh=l4UlN0Wafho6MahmKxGDM1wRAp7sFrpVKSoHrCpTA4c=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=mv8nyWHwHeB1X6YsdYtxc+xrMZrCz15l12zd+a84MKduc4yL3rmDhdXp7V/SfWi1vYDj9B2W1CQV0hVFrZlENubFSW/awzg+HViT9Eagd9qQCKJKYlVtRMgIZv4ibATM1nkMXkXJTJhx5Ct97CjEj8JLFNHHIM5YcPAKGWvc0iD6kiWlOxyy962yuBRKjExQnAN/oUNCh8SWGsf4Esub0hExIqBkPflt1qRKGMMaCwAecvI4fKymYqPv4nxfyWy9izeCio71p60pd6VXI47x7tG8inZcizBunn0JB7fQg5i+pvo0MHWO70yxwvqq1A6/9veMqYobZI+V2eCS6JBrHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NIN+1oRO; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bjicqfx2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NIN+1oRO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bczvD5lD7z2yhX
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 10 Jul 2025 12:54:00 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1752116040;
-	bh=8dzREoZ/WsyaHQKz6zD+3j3tk+9rN2BHKiKlFhHQROA=;
-	h=Subject:From:To:Cc:Date;
-	b=bjicqfx2rgywaAX0RM2JysJJTO3TVqwRoCaMymwSQcoJL5VujZkVZM+TNowxxjUuo
-	 v6BuM6P+Px0ibNyrm/wG0mfebevRTIvUApMST7bTO7upckx19xnc594OiAHYPXRdht
-	 zJuS+zk31AZxWUbG7Y3qnapLI4xjSUyN8RJnypB8GRfkrVDu5LrLqxTaVkCVLKbnaG
-	 vb2SntBDI9QjLtYdlhjT9QANxeVgLG2Tx00M0DBy98Vdtf269dwFjJlFliiDsDGPDU
-	 z6dDpDjnhPnpMVSDlrA9fVdcvq5QDVMxQccQNN+FgSiPPny1CFPlHPpRzB3VtCGPrp
-	 NSCBI15IteGPg==
-Received: from [192.168.68.112] (unknown [180.150.112.70])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id D2D856508A;
-	Thu, 10 Jul 2025 10:53:59 +0800 (AWST)
-Message-ID: <9123f151280e52c63dcb645cb07d4eee3462c067.camel@codeconstruct.com.au>
-Subject: [GIT PULL] aspeed: drivers changes for 6.17
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: soc <soc@lists.linux.dev>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-aspeed
- <linux-aspeed@lists.ozlabs.org>, linux-kernel
- <linux-kernel@vger.kernel.org>,  Joel Stanley <joel@jms.id.au>
-Date: Thu, 10 Jul 2025 12:23:59 +0930
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bdYmZ4X47z2xHp
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 11 Jul 2025 11:20:14 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 83F6347155;
+	Fri, 11 Jul 2025 01:20:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F2D8C4CEF4;
+	Fri, 11 Jul 2025 01:20:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1752196811;
+	bh=IHx4h69R13Or67ZMOMaSeRoVxPzmcWG/NZh6P4Ei+UE=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=NIN+1oRO/ktlMLvxpr5oyhzKdiKGbY37jGX1lxWxCpJkzHZ++lY+dmePCONpYbsoU
+	 1FTjG8FW1ThT69hHy4BW4BxdBeWnACSykXHqLKShlqHZGufGNYWZUjj2d63oOMUfEf
+	 8sM+J+1Q47VeVnzSHkcdCnUgbRVHs74LbjCLjSSgGjM5HYykkNs/uj6OH3EiNb9ycg
+	 ysjFsmQQbHC8pWtSlRE1Mh9btbyasQVJkb8fy2IfvB+6hC5D+fcg9JR5xFNxq4fTAn
+	 0Ar+E8cdOe5XdB/SAXEi/WHWrbKwGpAtGZljUN1OsSe0o3kPLx7v+wjqX9FmawNXPL
+	 ly+HdBmwlqvIA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id AE060383B266;
+	Fri, 11 Jul 2025 01:20:34 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -65,65 +61,55 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Re: [net-next v4 0/4] net: ftgmac100: Add SoC reset support for RMII
+ mode
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: 
+ <175219683324.1724831.15355320324094175037.git-patchwork-notify@kernel.org>
+Date: Fri, 11 Jul 2025 01:20:33 +0000
+References: <20250709070809.2560688-1-jacky_chou@aspeedtech.com>
+In-Reply-To: <20250709070809.2560688-1-jacky_chou@aspeedtech.com>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: netdev@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+ mturquette@baylibre.com, sboyd@kernel.org, p.zabel@pengutronix.de,
+ horms@kernel.org, jacob.e.keller@intel.com, u.kleine-koenig@baylibre.com,
+ hkallweit1@gmail.com, BMC-SW@aspeedtech.com
 
-Hello SoC maintainers,
+Hello:
 
-I've done further rework to the ASPEED LPC snoop driver in addition to
-the immediate fixes found in the PR at [1]. The commits in the tag for
-this PR build directly on top, so those from [1] are also listed in the
-shortlog relative to v6.16-rc1.
+This series was applied to netdev/net-next.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
 
-[1]: https://lore.kernel.org/all/d119a7b44b25a1e55a710adec7fce3e9a9fc898e.c=
-amel@codeconstruct.com.au/
+On Wed, 9 Jul 2025 15:08:05 +0800 you wrote:
+> This patch series adds support for an optional reset line to the
+> ftgmac100 ethernet controller, as used on Aspeed SoCs. On these SoCs,
+> the internal MAC reset is not sufficient to reset the RMII interface.
+> By providing a SoC-level reset via the device tree "resets" property,
+> the driver can properly reset both the MAC and RMII logic, ensuring
+> correct operation in RMII mode.
+> 
+> [...]
 
-Let me know if I should arrange the changes (or the PR description) in
-some other way.
+Here is the summary with links:
+  - [net-next,v4,1/4] dt-bindings: net: ftgmac100: Add resets property
+    https://git.kernel.org/netdev/net-next/c/fc6c8af6d784
+  - [net-next,v4,2/4] dt-bindings: clock: ast2600: Add reset definitions for MAC1 and MAC2
+    https://git.kernel.org/netdev/net-next/c/4dc5f7b2c0cc
+  - [net-next,v4,3/4] ARM: dts: aspeed-g6: Add resets property for MAC controllers
+    (no matching commit)
+  - [net-next,v4,4/4] net: ftgmac100: Add optional reset control for RMII mode on Aspeed SoCs
+    https://git.kernel.org/netdev/net-next/c/af350ee72e9d
 
-Cheers,
-
-Andrew
-
-The following changes since commit 19272b37aa4f83ca52bdf9c16d5d81bdd1354494=
-:
-
-  Linux 6.16-rc1 (2025-06-08 13:44:43 -0700)
-
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git tags/aspeed=
--6.17-drivers-1
-
-for you to fetch changes up to fdf003f30b99e232cd3e61cc42d836ed14d08ccb:
-
-  soc: aspeed: lpc-snoop: Lift channel config to const structs (2025-07-08 =
-11:35:07 +0930)
-
-----------------------------------------------------------------
-ASPEED SoC driver updates for 6.17
-
-The ASPEED LPC snoop driver was recently the cause of some concern. In addi=
-tion
-to the initial fixes, the channel configuration paths are refactored to imp=
-rove
-robustness against errors.
-
-----------------------------------------------------------------
-Andrew Jeffery (10):
-      soc: aspeed: lpc-snoop: Cleanup resources in stack-order
-      soc: aspeed: lpc-snoop: Don't disable channels that aren't enabled
-      soc: aspeed: lpc-snoop: Ensure model_data is valid
-      soc: aspeed: lpc-snoop: Constrain parameters in channel paths
-      soc: aspeed: lpc-snoop: Rename 'channel' to 'index' in channel paths
-      soc: aspeed: lpc-snoop: Rearrange channel paths
-      soc: aspeed: lpc-snoop: Switch to devm_clk_get_enabled()
-      soc: aspeed: lpc-snoop: Use dev_err_probe() where possible
-      soc: aspeed: lpc-snoop: Consolidate channel initialisation
-      soc: aspeed: lpc-snoop: Lift channel config to const structs
-
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 224 ++++++++++++++++++++++++++++++=
-++++++++++++++++++++++++++-------------------------------------------------=
---------
- 1 file changed, 110 insertions(+), 114 deletions(-)
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
 
 
