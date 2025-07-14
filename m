@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1695-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1696-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BEDBC83F1A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 14 Jul 2025 08:23:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3D57C83F17
+	for <linux-aspeed@archiver.kernel.org>; Mon, 14 Jul 2025 08:24:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bgb1b3p7Yz3bsT;
-	Mon, 14 Jul 2025 18:23:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752481411;
-	cv=none; b=cCwdrkmAfP3/0LtJ759kX3cy2ab6s8POVU2DpYcOOMwTlZN0dVEauwN2ynkT/egVijI+L7MVTWDKE/T2rUL9JugD2UT1Qx5FsO5IGwIIXQ+jZ2X4ZY/A1c65eDnj2sIJ8F1h2pgCgH2lUAvLpHsIfYSqq7y4H9lOdGEiuI4/Sy9vgAGskldPGBugxyudtyGfcR45K8Fn4BsbaIaxGgjO58AtPaMN+OIKXJo6ha6wgP+JpJIzt+TjQ1IceZ73EJP80fVkaQunfkF7qfnBJ+jBca9o9GgiDqHkrp6B7T8UBoFf8XqrpTDui9mQQeqWkCmvMfJheXux5OROBAG9LbjQoQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bgb2g02m4z3bsT;
+	Mon, 14 Jul 2025 18:24:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752481466;
+	cv=none; b=OvsnL7+JiuHsGDjAuUGdJcl+HMTU/AmPVwA9mueRd/LmUW09R/HHAEi1IzZi3qC3wamq6XDoURBYucLxMHNPJSzRVc0JvhNpkpUnXSduvT5cedMpj+F7XeLFdQch4jMw34DAwwrUrdlnNZuFkrc7/ipD8cYTBLRjnJBbXU1EIHe0WxnJ4jR4ehjvW9PIM34MPdh0wYwEj5D+i+AY2wnUCkGoBjrwRl05aMyYz5ZKqQqxrQ9rNptmUX92VzvXbGqSoQcPSvGEN9ROSz2a+ZI728dJiCmKDEJvkTSs44HJKn4y3ksX6kDxgYzW/xvGIbMEpwBuLoeERs/p9bo/7eSHcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752481411; c=relaxed/relaxed;
-	bh=tli1pRhKEzSIl0CdIVCduMJ0ZCMzdJoiRaigyAmYtYw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=fLs1Y9PrxnFcJHqbt8jmif+PhUTuGApIY234ZPh4jd0TPQUyGsy6tSKqVFagar7gcIT/AvOJHUHQaJFKuh+azp2MrYi4EEo8K6KYbos1hFQF2XTPUgH/oQgfhM8CWk+UoM2IvYu3q02njGDGyvab8sWUQBbpMAgZ+qH2n/1F1mIKEvp4o95saaEiDyq3Z3VOBnaIGRndasxKl6+Du0Udg/c22H24TkirOzof+E/v2dRFGt55U1scg3OB+/i9FbKXdo1t4Lx3TKJr9Yv0kwAZWQdCZ4uIEM4gSAkqjwKm1BvXJcauGY1Ur5dUTWJZ/8MOZA1XHYeTKYt6g6bk53h+VA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eu1LIng5; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1752481466; c=relaxed/relaxed;
+	bh=74i5bkbq7LbigGolj66yU+OedHB05+DYRTf3A+lEXmY=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:References:
+	 In-Reply-To:Content-Type; b=lKLUI6waC6qA87NdpQ0CqhMdTimcZNvkZ2vDxkkD5oNq1abJAiFc3tjqjB0SsXKsxNuH87/EOJnOCxqtb2Zdl29HUtCsBE07DfRl3bZxumobAFQkFefC2FQUV5zE/wq3NMDcHy3WPd5+ihLVp1Wn+86DbKziPxa0zMOUZApCPKoVbxueDiJ98eRl2M42f9cNV1Wa8Ly0hItxWVOH+mqloQeI+y8kfw/b9emFt6/kCnugbN6YH2RFNJ5T7PS1k4k5J0Ce6+GFYW0ezXeNB/CA+xnc1tr5mpNgAC6UBSklR7YG4JfBoiu8eRAlJj6nvBCMCGDxcB9Mvy6Vn91N8SGiHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jmF7fBS8; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eu1LIng5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jmF7fBS8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bgb1Z4qnyz3bqQ
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Jul 2025 18:23:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bgb2f1v58z3bqQ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 14 Jul 2025 18:24:26 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 30150A53B81;
-	Mon, 14 Jul 2025 08:23:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A979C4CEF5;
-	Mon, 14 Jul 2025 08:23:23 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4F4F75C5B2C;
+	Mon, 14 Jul 2025 08:24:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4E354C4CEF5;
+	Mon, 14 Jul 2025 08:24:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752481407;
-	bh=JPu/HBzuxIQjR8TK1nxLaxAXr3+2nK/+1TEX0DprjD4=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=eu1LIng5KPcq2DVP5oQefEFAREkf8RS8peIcwgyQu9W7XSWjiO0v6nn4ithx6oX/W
-	 f9f7LIXE54MmDF1+qbFGFxel+j4qmYwHxE2K3p6VTqm5F1DTYPO29jtdS3bd04HLbU
-	 q06c0jjPCsZgnp/KbyqiTscXl8zkRSX+Kdi8vogz5FDoHY4Jz5E/rmRGKzB2v/V+Me
-	 fK0SMKanYRJDoVLIURtYWGAbho2tGewl+dWIzaIZD9Vag0qDsW7SJBZzpT9wWj+8lS
-	 EC46PBTN4oP2FuhUb/vacazXoLbEN5I1qmWSt2nq6i2B4rUJ8X6qvsQyXRSO8U0QCG
-	 caQc2bDfTViXA==
-Message-ID: <57c0d48d-1484-45df-a99d-11388b6efdb1@kernel.org>
-Date: Mon, 14 Jul 2025 10:23:21 +0200
+	s=k20201202; t=1752481464;
+	bh=ZhpHrOwI+VqAhJekBmzzDzyP2/Rj/Ucwna5s222LyrA=;
+	h=Date:Subject:From:To:References:In-Reply-To:From;
+	b=jmF7fBS8T0zzgz35v4ihqEjs6uFIcVY49Sd/PvzAVxcC+PV+L1Pes/55QIFh1p7IR
+	 YdfNkBarNHLiBhXNihPnNCQqP0HddHeXKvZZVu5NeUopv5NdMiTlJJVLfEVL3gbLjA
+	 1ev7rzvAZaeca30V81Xm/cKMLwxYhJHnC+foYr4VRJDDiXloDoWuJHrDXiY+PRpR/K
+	 h0cE82g/Y6W53ObZMYQN2yPgaQaRsYljO55XWx6hYHyd3oOOso/3JtDOecI349EfB5
+	 ++hQ0RbeVVwWhEAiKqVTlcesbaMtX0ZCzY3AxA4GespUe6IItXX0Vg90kAudfxWoN0
+	 U5z806W2n24xQ==
+Message-ID: <6685da47-748a-4d90-ba1f-d7bcf82e8677@kernel.org>
+Date: Mon, 14 Jul 2025 10:24:16 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,6 +62,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH] dt-bindings: interrupt-controller: aspeed: Refine AST2700
  binding description and example
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Ryan Chen <ryan_chen@aspeedtech.com>, Thomas Gleixner
  <tglx@linutronix.de>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
@@ -76,7 +77,7 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>, Thomas Gleixner
 References: <20250714071753.2653620-1-ryan_chen@aspeedtech.com>
  <b500647b-31b6-40c9-be0b-1640dc271375@kernel.org>
  <OS8PR06MB7541C0330FDE855FDD360B68F254A@OS8PR06MB7541.apcprd06.prod.outlook.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
+ <57c0d48d-1484-45df-a99d-11388b6efdb1@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
  xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
@@ -121,31 +122,35 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <OS8PR06MB7541C0330FDE855FDD360B68F254A@OS8PR06MB7541.apcprd06.prod.outlook.com>
+In-Reply-To: <57c0d48d-1484-45df-a99d-11388b6efdb1@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 14/07/2025 09:36, Ryan Chen wrote:
->> Subject: Re: [PATCH] dt-bindings: interrupt-controller: aspeed: Refine AST2700
->> binding description and example
->>
->> On 14/07/2025 09:17, Ryan Chen wrote:
->>> - Update block diagram for better readability and accuracy.
->>> - Clarify the relationship and function of INTC0, INTC1, and the GIC.
->>> - Documentation and example refine.
+On 14/07/2025 10:23, Krzysztof Kozlowski wrote:
+> On 14/07/2025 09:36, Ryan Chen wrote:
+>>> Subject: Re: [PATCH] dt-bindings: interrupt-controller: aspeed: Refine AST2700
+>>> binding description and example
 >>>
->>> This enhances the documentation quality and helps developers
->>> understand the interrupt controller hierarchy and usage.
+>>> On 14/07/2025 09:17, Ryan Chen wrote:
+>>>> - Update block diagram for better readability and accuracy.
+>>>> - Clarify the relationship and function of INTC0, INTC1, and the GIC.
+>>>> - Documentation and example refine.
+>>>>
+>>>> This enhances the documentation quality and helps developers
+>>>> understand the interrupt controller hierarchy and usage.
+>>>
+>>> Changing ABI (compatibles) is not enhancing quality and is not explained here.
+>>>
+>> Sorry, I would add following in description.
+>> - add 'aspeed,ast2700-intc0' and 'aspeed,ast2700-intc1' compatible strings
+>> for parent interrupt controller nodes, in addition to the existing
+>> 'aspeed,ast2700-intc-ic' for child nodes.
 >>
->> Changing ABI (compatibles) is not enhancing quality and is not explained here.
->>
-> Sorry, I would add following in description.
-> - add 'aspeed,ast2700-intc0' and 'aspeed,ast2700-intc1' compatible strings
-> for parent interrupt controller nodes, in addition to the existing
-> 'aspeed,ast2700-intc-ic' for child nodes.
 > 
+> It does not say why is this needed in the first place...
+> 
+And also never tested :/. I won't be reviewing it.
 
-It does not say why is this needed in the first place...
 
 Best regards,
 Krzysztof
