@@ -1,65 +1,66 @@
-Return-Path: <linux-aspeed+bounces-1705-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1706-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6DB9C83F22
-	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 20:14:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CC8CC83F17
+	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 22:30:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhVlp32RGz2xgQ;
-	Wed, 16 Jul 2025 06:14:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752610486;
-	cv=none; b=jjTg73/gbEjV3MDFVt0p8DY0tjjOqqEcRVMU+kdlAKDMO6ZuDO5OWsCKpJ588tLWVbwo2OjuQdloWPy0Etck9e19DkauhBtM4AlXfAxeQwdWGypNNCz+dIEsEWv7yUf4726IYvMcV4yQN4dmtfHk52s+A726La2fUqaLlXJ8KZB4CcidrWtT6hKWeuH1sUAsJuoHl1p2tDk/zWGyoN6MSGP6oiPTLrDAKMfZFMIorsYcSFIYc927uNxeGjYAOxNrS53+KV8SLevPSt0PQ9d86YesvE/9rX78RRiZrl0N8KKNEmDlE7b4hbQnRTJaGUjsfNxfoal9Iu/bhXOY2VkTUQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhYm75SRXz2xd6;
+	Wed, 16 Jul 2025 08:30:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752618615;
+	cv=none; b=KdadWGiT7ox2M2v4PTyuW4tg2U2Tzo1G9WfI52kxQq6Ee7jPmGK4+cWfZSEnd8t+mNB9cUTY8HtyCzQmJjQQHPn+bJkEvQOhq0yLB5GN2+tKZ6m24GEcOJyFh4qa6J+nFsdjbJJmN2Uyo12ghQRpkRnfmlfFRKradSSwllKrUjE6qxNyj/lKTLlMYkHAsjj5G0A07mYWfmK/v7K8QkURdwitlDlPoNpE+l4fioDoo5HQVNQRjijqAg1GEXZS36z5I7sSy2rzxs+eubLLMDGZpgjsQIhTDnO7gD+3HxJLvuDs670wy+QK3FikcGNe9/0bJ77VnSg3wv03fCMO2idooA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752610486; c=relaxed/relaxed;
-	bh=Sq2CjF7l+besw1ZeKs/NEZSe/PtB82XT3dJtEgbj7pI=;
+	t=1752618615; c=relaxed/relaxed;
+	bh=P4z0UilpwOeP3VuXbpZflhcYtGlNIMIy++fBOMiI2QU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GH5cCX5gs0xw5W/KLDr/WwmcNYGMIFLVATy/Wtm8NZaLVqwVOc9Lby+fLm1qKjnHionEX5RH9V5bybOeKNE862rceqSahdIytmhDlXDTKw3s2SUFSN2I2Q6LpHkJasOCoJcfEvw/Zj8k8+m+CQP9+nZSIrq9m+woYHr/44zUHatE8+nWaBsD/UDcAGEZ40J6TNFMNTESjBEn+lL7ydkqZlhh3APGYfEoOZPQAHLNCAm2VsN0zeMjMtCEgRLoSyfn6mg0a0Efg5xrn2Vz/c9t4zGwoYhWaMVycuYgt8tYHOIX/7xoOeAjc325rOtDN11RHv1R7LwnK6yKFmZhEAwIsw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=OJDa4TKl; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=fnQoRrfz+fYdWp95JJVeQlp6AcY0v7xR5J9snXXQ/1Icc09s5l6aobjmy1oAk5gGd0RZZLBhcd9FUHoliLfPcTWe/Bk++etVsNmmgDBTEcT4WUy5ikUaLUg7fxIFzLlZhrQgjGwLkLCupTuQ3x0XPfuSMICWOiSuoPc7TP3O4ol9mUWkxbbwuQe8jBpoZy0G2LA0Cee7vwpdAMOvcy2ektsqE0QvBmQ6pfDLwOH2iWpDSCNEee0rtoCRcj4RieREFsd+6ySNjCPu0EBvHj4fU8+8PerKfp3lPj/LsqMH0hlBSAR4HO1+5txSdQxdmQAiEkkS/dkH/t7+pcT5hb3Xyg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HbXyRZy+; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=OJDa4TKl;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HbXyRZy+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Wed, 16 Jul 2025 08:30:12 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhVll47KDz2xd6;
-	Wed, 16 Jul 2025 06:14:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhYm41Sqdz2xQ5;
+	Wed, 16 Jul 2025 08:30:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1752610484; x=1784146484;
+  t=1752618613; x=1784154613;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=eS6Mpdyp46gQ6nUgwPSL7+/IQm0H6qYJBJumRgSICho=;
-  b=OJDa4TKlNW3cpCmcSlwtkWA8zj9usRwubyngMgPGKlLth668S6tIMaZi
-   rQ2JJ9wU/PKC4yqY0CFheIpswzQE/825XpcOtZuu0CtS+hpFlszZmjvrT
-   G2LHot0kIguTfNMvRDb/Skr8TZsn6IQxEfaq2BmI+1liWjC0MSLKiHZbw
-   7G5iNN3f4txxUx+B5qQUcmCOaOouassuOb4k7CKxZ270lBkiVxliQRO1B
-   0WXRICzz0PgR6Mc9J0cA/R2tAwN2ujHGY9gvbCkMFw/9QkN6LdT+L3J3u
-   BTmz97SRot1jq6kLqMqpGugfNgd3mymUCcWpREBbLg8uWvq2OJHZzQKOh
-   Q==;
-X-CSE-ConnectionGUID: PhTeyS8FTRSN58n49J4UEA==
-X-CSE-MsgGUID: RTI7VdqASk661zULo8lC4w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11493"; a="42473897"
+  bh=G7+Ffs9WIWMcBynLHK1Sql++GiExP0QoYD+fUsrCxEU=;
+  b=HbXyRZy+SN4HwIAnxoGH2oJOGGEIYtxj8cZSLdHkIRYWucMvifRes/Xg
+   h0DTAvqOEceXYN26XD02U0q4Alg17/OxKG1iNYal/ILDoNfbwR8RktLtw
+   OIHapuZtKGP8BkTyTbqZs3U2HePjreiebP+aXXE0SNgXlgO6sCgy60WCh
+   u/ivKAJpUY4yzWOfihycdjN3oh5nwRl/zehegiNsO3cSYrH2oKA9yNEqV
+   b+kDHwpj3Ko7Mvsk9pKaD+L4LgeyZscIHCNT0ahqkry5tgjOBiB8Hega0
+   vAgwduAYtEFMMgDHGX0Nx93j5P1ZsZgMPsEZqJkzLbRiqxRud0ptf9/Es
+   A==;
+X-CSE-ConnectionGUID: hyzZf5YnSdOG+EiT/VXHaQ==
+X-CSE-MsgGUID: GJqDDvHGTYi4IiAJVrvVkA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11493"; a="54562885"
 X-IronPort-AV: E=Sophos;i="6.16,314,1744095600"; 
-   d="scan'208";a="42473897"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2025 13:14:39 -0700
-X-CSE-ConnectionGUID: swZoM0+0REi7GGWqObo93g==
-X-CSE-MsgGUID: nZzgw5MpQzKGR4ifrqa3mg==
+   d="scan'208";a="54562885"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2025 15:28:53 -0700
+X-CSE-ConnectionGUID: 43scBKa2Q+GlwkjRdyCeQg==
+X-CSE-MsgGUID: nj7Vi7qCQFKk7YaTE34tRw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.16,314,1744095600"; 
-   d="scan'208";a="161631582"
+   d="scan'208";a="181023525"
 Received: from lkp-server01.sh.intel.com (HELO 9ee84586c615) ([10.239.97.150])
-  by fmviesa005.fm.intel.com with ESMTP; 15 Jul 2025 13:14:34 -0700
+  by fmviesa002.fm.intel.com with ESMTP; 15 Jul 2025 15:28:49 -0700
 Received: from kbuild by 9ee84586c615 with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1ubm2p-000BVn-1r;
-	Tue, 15 Jul 2025 20:14:31 +0000
-Date: Wed, 16 Jul 2025 04:13:31 +0800
+	id 1ubo8k-000Bbf-0v;
+	Tue, 15 Jul 2025 22:28:46 +0000
+Date: Wed, 16 Jul 2025 06:28:22 +0800
 From: kernel test robot <lkp@intel.com>
 To: Jacky Chou <jacky_chou@aspeedtech.com>, bhelgaas@google.com,
 	lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
@@ -68,13 +69,12 @@ To: Jacky Chou <jacky_chou@aspeedtech.com>, bhelgaas@google.com,
 	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
-	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org,
-	linus.walleij@linaro.org, p.zabel@pengutronix.de,
-	BMC-SW@aspeedtech.com
-Subject: Re: [PATCH v2 08/10] PCI: Add FMT and TYPE definition for TLP header
-Message-ID: <202507160314.e3odwyX7-lkp@intel.com>
-References: <20250715034320.2553837-9-jacky_chou@aspeedtech.com>
+Cc: oe-kbuild-all@lists.linux.dev, openbmc@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org, linus.walleij@linaro.org,
+	p.zabel@pengutronix.de, BMC-SW@aspeedtech.com
+Subject: Re: [PATCH v2 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
+Message-ID: <202507160642.yzIrPY1i-lkp@intel.com>
+References: <20250715034320.2553837-10-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,7 +90,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250715034320.2553837-9-jacky_chou@aspeedtech.com>
+In-Reply-To: <20250715034320.2553837-10-jacky_chou@aspeedtech.com>
 
 Hi Jacky,
 
@@ -104,31 +104,21 @@ https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-soc-aspeed-Add-ASPEED-PCIe-Config-support/20250715-114814
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
-patch link:    https://lore.kernel.org/r/20250715034320.2553837-9-jacky_chou%40aspeedtech.com
-patch subject: [PATCH v2 08/10] PCI: Add FMT and TYPE definition for TLP header
-config: i386-buildonly-randconfig-004-20250715 (https://download.01.org/0day-ci/archive/20250716/202507160314.e3odwyX7-lkp@intel.com/config)
-compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250716/202507160314.e3odwyX7-lkp@intel.com/reproduce)
+patch link:    https://lore.kernel.org/r/20250715034320.2553837-10-jacky_chou%40aspeedtech.com
+patch subject: [PATCH v2 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
+config: loongarch-allyesconfig (https://download.01.org/0day-ci/archive/20250716/202507160642.yzIrPY1i-lkp@intel.com/config)
+compiler: clang version 21.0.0git (https://github.com/llvm/llvm-project 16534d19bf50bde879a83f0ae62875e2c5120e64)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250716/202507160642.yzIrPY1i-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202507160314.e3odwyX7-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202507160642.yzIrPY1i-lkp@intel.com/
 
 All warnings (new ones prefixed by >>):
 
-   In file included from <built-in>:1:
-   In file included from ./usr/include/linux/pci.h:21:
->> usr/include/linux/pci_regs.h:1234:39: warning: // comments are not allowed in this language [-Wcomment]
-    1234 | #define PCI_TLP_FMT_3DW_NO_DATA         0x0  // 3DW header, no data
-         |                                              ^
-   1 warning generated.
---
-   In file included from <built-in>:1:
->> ./usr/include/linux/pci_regs.h:1234:39: warning: // comments are not allowed in this language [-Wcomment]
-    1234 | #define PCI_TLP_FMT_3DW_NO_DATA         0x0  // 3DW header, no data
-         |                                              ^
-   1 warning generated.
+>> Warning: drivers/pci/controller/pcie-aspeed.c:179 struct member 'pciephy' not described in 'aspeed_pcie_port'
+   Warning: drivers/pci/controller/pcie-aspeed.c:179 Excess struct member 'phy' description in 'aspeed_pcie_port'
 
 -- 
 0-DAY CI Kernel Test Service
