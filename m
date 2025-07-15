@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-1716-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1717-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA57BC83F27
-	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD032C83F17
+	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:58:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbhB4nnzz3bn8;
-	Wed, 16 Jul 2025 09:56:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbhG6ZZ7z3bsq;
+	Wed, 16 Jul 2025 09:57:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551021;
-	cv=none; b=ZaZzUwE4UGxM07nb5BScRbqtESZbWjJClw4CPBV63KjLMgglDGhyjO/mcPW8tdcC7dCvCWP0VAzVUlEZc9YARM78LQcDAC62K1j7s6BY6nefLDA8ejcwrOdy0FCK7a2NvoG/osa7ONZUppZozYprI4PMqKL1t581bAZveqZcMtASpsjPSB2RlTPtahwyKpYxJbffCr3kZem+gGnzR0sUjWsolKGPz1TALUyotw6dOl1bAuZhUcYR1wgNQAYHqfDhp4qM1QKYZdlEZsW9tQU8PILm5kquT/ri0xmP0lyu8DiMYj8Y2EW1GsKh4llwKlcKDw/C1j4+LuqT6+jIJaziFg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551022;
+	cv=none; b=YCjbXMGh2WXzVXkCwjfO7doSKuNJMpPAE0Ds+AvO1aP2V0SNbm5beFAyUF7+AQ9sSr8VEGiQvdjk9pNjpuulO49l/dRgOnQicvASYbt4XpcsYaqbVJW6WaXz17vM/n5P8MIVhufTJ5ppKrZuajhYVpV07ytiJQdQ30wZ5xA7HsQmTi76hJsxMv4+AcBe+VyYUhXRLFb8BjSkjVeuizWnkjxxilfsXkK+/Gzpn6inn7hS80jpcEmrs1xxfwIA7cDf27aSh2YpCFxD6C26qd6SDhlRJco8XYzfU8kNxHcGTQVXHM8+FeLD0u6i51iBQbK15EU98eWkvL+ULsamXQ126w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752551021; c=relaxed/relaxed;
-	bh=Q9yxueNIc+k7Eb1uC5SYdYsXuc+n34gPCF/CSAr9Fgo=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=NAhCmev2G4K+yIoHjvCzLHyoTG9q16fv2elnZDaj6vi23Yhj53DReTDHMzpN0NKJB7IKqMwMltxhq+YDVUU+jWJjSs8DsV3hTrpTkSUCCY8HctcHMUum2g6UNZHHjZJbcSXUXUG9IcDkh75ocIs9ail32y6k6ve8M0+fdpHSo9pGVbbEbTqXjxZZQUip3W+3vlxs9J0RQSXvt3Qb2oBWGqfuVVGnALbjjTUXcKLZRclhOLLy1zb2u+olqbpuFcm1yFKU5GXVeF+tIamAO3dW/CKrvq3UZgTnsLioqPEhbiG0wlcTAeimOoL8mgShMeMQ3pCu/DVxEtbQSlFBbniIwQ==
+	t=1752551022; c=relaxed/relaxed;
+	bh=k+i/3ki+17xe64ShCyYC+Nb82F7gDLReZhUkgpHwvUk=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PkwO9T8GRgjaodfBhf0enAMqfrJdZxZFAU9bK0cxKnJQcjfCK+Qyt1O33gcsW8/Wx+TPO5Hxw8m06FHtSLewuKzxtgpBXXu0OUTjehYQW/FrStYqvX9qOGPrxokFTdkL/MhjdQKYHKho/oy6oWqbZMZIzogWQxkUo3LpWpu6XZhDXmjaVGGv9THJxjc2iEKsC96YCbReQ43uiDAn83zK+/FLiEquixZ/ZqFTmt+b0pntG4iQcRiGTXr1APUvIPweGCSdSdReNbNBUwI7hXE4yplvDWOs006gNz/3WOT4gRrA0MnRe6c1sWpKy2ADXMkjYPztCT46iqiZKuFh0ia0mw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4m96G7qz3bmY;
-	Tue, 15 Jul 2025 13:43:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4mG0klqz3c5N;
+	Tue, 15 Jul 2025 13:43:42 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 15 Jul
@@ -40,10 +41,12 @@ To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: <openbmc@lists.ozlabs.org>, <linux-gpio@vger.kernel.org>,
 	<linus.walleij@linaro.org>, <p.zabel@pengutronix.de>, <BMC-SW@aspeedtech.com>
-Subject: [PATCH v2 00/10] Add ASPEED PCIe Root Complex support
-Date: Tue, 15 Jul 2025 11:43:10 +0800
-Message-ID: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
+Subject: [PATCH v2 02/10] dt-bindings: soc: aspeed: Add ASPEED PCIe PHY support
+Date: Tue, 15 Jul 2025 11:43:12 +0800
+Message-ID: <20250715034320.2553837-3-jacky_chou@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
+References: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,66 +63,69 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-This patch series adds support for the ASPEED PCIe Root Complex,
-including device tree bindings, pinctrl support, and the PCIe host controller
-driver. The patches introduce the necessary device tree nodes, pinmux groups,
-and driver implementation to enable PCIe functionality on ASPEED platforms.
-Currently, the ASPEED PCIe Root Complex only supports a single port.
+This PHY is used by many modules. In our design, our
+PCIe has RC and EP funcitons. On the different function,
+each driver will use configure and get some information
+from the PHY interface to do somting that it wants to.
+Getting link status, setting syscon credits and so on.
+Therefore, define it as syscon for all modules.
 
-Summary of changes:
-- Add device tree binding documents for ASPEED PCIe PHY, PCIe Config, and PCIe RC
-- Update MAINTAINERS for new bindings and driver
-- Add PCIe RC node and PERST control pin to aspeed-g6 device tree
-- Add PCIe RC PERST pin group to aspeed-g6 pinctrl
-- Implement ASPEED PCIe Root Complex host controller driver
-
-This series has been tested on AST2600/AST2700 platforms and enables PCIe device
-enumeration and operation.
-
-Jacky Chou (10):
-  dt-bindings: soc: aspeed: Add ASPEED PCIe Config support
-  dt-bindings: soc: aspeed: Add ASPEED PCIe PHY support
-  dt-bindings: PCI: Add ASPEED PCIe RC support
-  dt-bindings: pinctrl: aspeed,ast2600-pinctrl: Add PCIe RC PERST# group
-  ARM: dts: aspeed-g6: Add AST2600 PCIe RC PERST#
-  ARM: dts: aspeed-g6: Add PCIe RC node
-  pinctrl: aspeed-g6: Add PCIe RC PERST pin group
-  PCI: Add FMT and TYPE definition for TLP header
-  PCI: aspeed: Add ASPEED PCIe RC driver
-  MAINTAINERS: Add ASPEED PCIe RC driver
-
- .../bindings/pci/aspeed,ast2600-pcie.yaml     |  198 +++
- .../pinctrl/aspeed,ast2600-pinctrl.yaml       |    2 +
- .../bindings/soc/aspeed/aspeed,pcie-cfg.yaml  |   41 +
- .../bindings/soc/aspeed/aspeed,pcie-phy.yaml  |   44 +
- MAINTAINERS                                   |   10 +
- .../boot/dts/aspeed/aspeed-g6-pinctrl.dtsi    |    5 +
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi       |   61 +
- drivers/pci/controller/Kconfig                |   13 +
- drivers/pci/controller/Makefile               |    1 +
- drivers/pci/controller/pcie-aspeed.c          | 1137 +++++++++++++++++
- drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c    |   12 +-
- include/uapi/linux/pci_regs.h                 |   32 +
- 12 files changed, 1555 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/pci/aspeed,ast2600-pcie.yaml
- create mode 100644 Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-cfg.yaml
+Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+---
+ .../bindings/soc/aspeed/aspeed,pcie-phy.yaml  | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-phy.yaml
- create mode 100644 drivers/pci/controller/pcie-aspeed.c
 
----
-v2:
- - Moved ASPEED PCIe PHY yaml binding to `soc/aspeed` directory and
-   changed it as syscon
- - Added `MAINTAINERS` entry for the new PCIe RC driver
- - Updated device tree bindings to reflect the new structure
- - Refactored configuration read and write functions to main bus and
-   child bus ops
- - Refactored initialization to implement multiple ports support
- - Added PCIe FMT and TYPE definitions for TLP header in
-   `include/uapi/linux/pci_regs.h`
- - Updated from reviewer comments
----
-
+diff --git a/Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-phy.yaml b/Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-phy.yaml
+new file mode 100644
+index 000000000000..5fa585d63ca6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-phy.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/aspeed/aspeed,pcie-phy.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED PCIe PHY
++
++maintainers:
++  - Jacky Chou <jacky_chou@aspeedtech.com>
++
++description:
++  The ASPEED PCIe PHY provides the physical layer interface for PCIe
++  controllers in the SoC. This node represents the register block for the PCIe
++  PHY, which is typically accessed by PCIe Root Complex or Endpoint drivers
++  via syscon. It is used to configure and get the status of the PCIe PHY
++  hardware, including power management, link training, and other PHY-specific
++  operations.
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,pcie-phy
++      - const: syscon
++
++  reg:
++    maxItems: 1
++
++  "#phy-cells":
++    const: 0
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    syscon@1e6ed200 {
++      compatible = "aspeed,pcie-phy", "syscon";
++      reg = <0x1e6ed200 0x100>;
++    };
 -- 
 2.43.0
 
