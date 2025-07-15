@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-1710-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1711-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD6CEC83F27
-	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60EFFC83F27
+	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:57:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbg55KnWz3bn8;
-	Wed, 16 Jul 2025 09:56:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbgN6GTNz3bpx;
+	Wed, 16 Jul 2025 09:56:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551029;
-	cv=none; b=D3VqhexIi7bn1nwLWFlDxbQIJlHNay7C7zSvVG66aaUTQ73QupbBLRoOOeDmHWijMpzYp+sGyOnK7yyI9VbzeR/nyygMv9jpFtJoZbk0z+9JdHfJgSwMxVzRaKvRz0VnOm0oEsL3IDr8L9+93uGrzVv+ZD0wQFzhR1qMVRYCyam20m6XQxEPMl8yDjMD19NBHCevisKJme9VTRvzlXv7UMz+PjJO8Ef05VrBFMMiLzn+whNwnbiQMyQeU/am79xzmHEffwKCYuHv1KWixjaVb2f+1ulGlSIHw7onYJ/Aq8Rh7P4s/qDMlU4ZRU1Yui5dixAc1QbL9KFfeK8Wio7TcA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551024;
+	cv=none; b=aGqFzTv0w4F1ytsOPFo6jfO/SFk3ABRTNuwzyfGDfpkcvSYhtI+pjCJaPQGu6BrWY/mYr0N5QwRSgfSbMAQclbU60t+VA142WD51BqqkU0S5ChRp/FjWmzyFF23u7POg+e5X8DLagzaLecWZ3S5gnQHmqTJ6FWpKO7tORdBAv83thK1jlXxVhiRz/PMkyvlFT23v4KjPbbqMUahy0tHEqy1ScekB++DF3XCKJ2DCBJ2oxkPaLcnvXEFtohxlUSJYe4MQgNa6r5mCtTlPeJcEo9luTcgMtL6DcRNi5aGwB3UP6EG/DS4Ywd76uQVpTId2Htaew9hxFhDf61pMp2+yRQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752551029; c=relaxed/relaxed;
-	bh=aMhHpk3FLl0dttTIgPrVeG6ZNiZ1kfm/TXpgwtc9uJE=;
+	t=1752551024; c=relaxed/relaxed;
+	bh=eL28uI7lKCJ8Rfi9gSrcEWAhhPIZq5+PvERJopPLclo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=CzLk15BZ0A94eH7+9dPs3TQgn1CpwmEySSELJ/FumfxcOWqnoHcTDG9gevTt0gvvnIRQ2m4YUKwBE3D4qotwGIpjGd0iLrPGjc63o3nfXJPAUo2OsVGAJ6uZBRmIHKRhnMvl02wOaNcmvuaSqm0nXvQ7rhszX1/9gAH6Iuu+KT+1iYKDn/MkxxMOpvBW8hNSZAclVJfhkIOYmzoSxlyj7BLjtqkBFpLIT+sG9B/+3um67olfSRXGKlaeiIf+M0JEtb08YLtPAsVIROPeAFbB7dKBxg9hP6RbHahyJ31Lw3H9f37gWtoqVtb8XZM+FDp4M3+Ddv+ranC+DRkg+pBgSg==
+	 MIME-Version:Content-Type; b=b5TUEye4dmoPnVtCwoLbeXzmDeH/aLlmfr+c2NNNDLzeCEAqybZ6eGjWtbsNzPU5bJFwBK/p6SX/hyyru247Xa1gZwyrgqz+UlxEM9rEgGmokujUY6js58GOAAIfXPRlU1PKSHm8x1jZYX9VIp8/VzkPfHdzY8S5+nuhrZ6XX9Ktl/2TcssRTBw6aE1a+61gBe10/RLMRPGSy/HGrw//zNOc7rDRz4zW5CkoupK5Iv/uS1NI5U+jdmlN9sQHjev3+0BT83YNl9M8ViUwYB9/tBUOwA15cbhfhqztFX7V7DxN0rmTgBua+kUyz1Y8YRUtMYPRCfycjDIIdhow0f9ywg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4mN5N4Qz3c8Y;
-	Tue, 15 Jul 2025 13:43:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4mH4SbRz3c78;
+	Tue, 15 Jul 2025 13:43:43 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 15 Jul
@@ -41,9 +41,9 @@ To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: <openbmc@lists.ozlabs.org>, <linux-gpio@vger.kernel.org>,
 	<linus.walleij@linaro.org>, <p.zabel@pengutronix.de>, <BMC-SW@aspeedtech.com>
-Subject: [PATCH v2 10/10] MAINTAINERS: Add ASPEED PCIe RC driver
-Date: Tue, 15 Jul 2025 11:43:20 +0800
-Message-ID: <20250715034320.2553837-11-jacky_chou@aspeedtech.com>
+Subject: [PATCH v2 04/10] dt-bindings: pinctrl: aspeed,ast2600-pinctrl: Add PCIe RC PERST# group
+Date: Tue, 15 Jul 2025 11:43:14 +0800
+Message-ID: <20250715034320.2553837-5-jacky_chou@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
 References: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
@@ -63,34 +63,33 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Add maintainer for ASPEED PCIe RC driver.
+Add PCIe PERST# group to support for PCIe RC.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
- MAINTAINERS | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ .../devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml     | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3ecb44458a7e..e1839dc240bc 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3696,6 +3696,16 @@ S:	Maintained
- F:	Documentation/devicetree/bindings/media/aspeed,video-engine.yaml
- F:	drivers/media/platform/aspeed/
+diff --git a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
+index 80974c46f3ef..5d7fbb1c72b7 100644
+--- a/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
++++ b/Documentation/devicetree/bindings/pinctrl/aspeed,ast2600-pinctrl.yaml
+@@ -254,6 +254,7 @@ additionalProperties:
+         - WDTRST2
+         - WDTRST3
+         - WDTRST4
++        - PCIERC1
  
-+ASPEED PCIE CONTROLLER DRIVER
-+M:	Jacky Chou <jacky_chou@aspeedtech.com>
-+L:	linux-aspeed@lists.ozlabs.org (moderated for non-subscribers)
-+L:	linux-pci@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/pci/aspeed,ast2600-pcie.yaml
-+F:	Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-cfg.yaml
-+F:	Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-phy.yaml
-+F:	drivers/pci/controller/pcie-aspeed.c
-+
- ASUS EC HARDWARE MONITOR DRIVER
- M:	Eugene Shalygin <eugene.shalygin@gmail.com>
- L:	linux-hwmon@vger.kernel.org
+     groups:
+       enum:
+@@ -497,6 +498,7 @@ additionalProperties:
+         - WDTRST2
+         - WDTRST3
+         - WDTRST4
++        - PCIERC1
+ 
+     pins: true
+     bias-disable: true
 -- 
 2.43.0
 
