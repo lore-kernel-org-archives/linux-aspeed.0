@@ -1,80 +1,52 @@
-Return-Path: <linux-aspeed+bounces-1706-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1707-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CC8CC83F17
-	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 22:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FCD0C83F17
+	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:56:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhYm75SRXz2xd6;
-	Wed, 16 Jul 2025 08:30:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752618615;
-	cv=none; b=KdadWGiT7ox2M2v4PTyuW4tg2U2Tzo1G9WfI52kxQq6Ee7jPmGK4+cWfZSEnd8t+mNB9cUTY8HtyCzQmJjQQHPn+bJkEvQOhq0yLB5GN2+tKZ6m24GEcOJyFh4qa6J+nFsdjbJJmN2Uyo12ghQRpkRnfmlfFRKradSSwllKrUjE6qxNyj/lKTLlMYkHAsjj5G0A07mYWfmK/v7K8QkURdwitlDlPoNpE+l4fioDoo5HQVNQRjijqAg1GEXZS36z5I7sSy2rzxs+eubLLMDGZpgjsQIhTDnO7gD+3HxJLvuDs670wy+QK3FikcGNe9/0bJ77VnSg3wv03fCMO2idooA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbfZ5NQ1z3bjG;
+	Wed, 16 Jul 2025 09:55:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551027;
+	cv=none; b=Qp9fQdkGcToxfPwK1FLdUe2tYm1gI3wpAFI/LVSKNUQKWVlG7ZzuHARrkpIz7KjQffo0dMGc4EDJZdLmZISTOi/9Z1i17BsDxOlfLL9I5VcT7NUwWPf8o0cdPHrb5y/6yqCD8TaURR4YsWq03J1xLqY/j9ZtHoIINN/D/BOLeRSx9VYnrXvbqIwgwDs0SCM+4Y9nY1k6pfMG1bT7ynQJPGoft0np8ffHb6yETn3tPNF0ENYp9Od5rFW9b98f380fHjcGBpky2DreBpfWfceSKaX/1WRJP8yT4Yg91YcJjQhrDhKNSl9TXfxEOf/37l5+CmGGlCK7gQ/ZJZDfBHsEYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752618615; c=relaxed/relaxed;
-	bh=P4z0UilpwOeP3VuXbpZflhcYtGlNIMIy++fBOMiI2QU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fnQoRrfz+fYdWp95JJVeQlp6AcY0v7xR5J9snXXQ/1Icc09s5l6aobjmy1oAk5gGd0RZZLBhcd9FUHoliLfPcTWe/Bk++etVsNmmgDBTEcT4WUy5ikUaLUg7fxIFzLlZhrQgjGwLkLCupTuQ3x0XPfuSMICWOiSuoPc7TP3O4ol9mUWkxbbwuQe8jBpoZy0G2LA0Cee7vwpdAMOvcy2ektsqE0QvBmQ6pfDLwOH2iWpDSCNEee0rtoCRcj4RieREFsd+6ySNjCPu0EBvHj4fU8+8PerKfp3lPj/LsqMH0hlBSAR4HO1+5txSdQxdmQAiEkkS/dkH/t7+pcT5hb3Xyg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HbXyRZy+; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HbXyRZy+;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Wed, 16 Jul 2025 08:30:12 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
+	t=1752551027; c=relaxed/relaxed;
+	bh=aK01aGUmIPVi7g/grbHmbwBzcBD/ZrD56IJJamDBcTo=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=jhcgiC9mlBNOstuXcTd201IBT9DRciC+HqmIgBhYauI8rcdHA29hKdiSzbpG08QqZFOv68ShYvPyiMvRHeOokCGhuQr1fkA1ikT2QLcSwukqNsTqaSq6cgqxL9cI+hX215E5Gpx5Z/0+M5ndJ6NHWyWx0lqJmRZYrR3RZpY4T2mCnO7wwipTk7e1dwLmyW2En3+p9WOix8MEeQho5mbUlgKScUImhs0kj4ANW2sqwwLXGTBWTBJOMpg6IJU3UYjdiuoC5e4mHusIG4rfaZ72avJP6bielUcHTl9463sPJXk8MSUBz9UEM0vXLKe6xcsMKboqCbBnAguxYTg3KVNEfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhYm41Sqdz2xQ5;
-	Wed, 16 Jul 2025 08:30:11 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1752618613; x=1784154613;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=G7+Ffs9WIWMcBynLHK1Sql++GiExP0QoYD+fUsrCxEU=;
-  b=HbXyRZy+SN4HwIAnxoGH2oJOGGEIYtxj8cZSLdHkIRYWucMvifRes/Xg
-   h0DTAvqOEceXYN26XD02U0q4Alg17/OxKG1iNYal/ILDoNfbwR8RktLtw
-   OIHapuZtKGP8BkTyTbqZs3U2HePjreiebP+aXXE0SNgXlgO6sCgy60WCh
-   u/ivKAJpUY4yzWOfihycdjN3oh5nwRl/zehegiNsO3cSYrH2oKA9yNEqV
-   b+kDHwpj3Ko7Mvsk9pKaD+L4LgeyZscIHCNT0ahqkry5tgjOBiB8Hega0
-   vAgwduAYtEFMMgDHGX0Nx93j5P1ZsZgMPsEZqJkzLbRiqxRud0ptf9/Es
-   A==;
-X-CSE-ConnectionGUID: hyzZf5YnSdOG+EiT/VXHaQ==
-X-CSE-MsgGUID: GJqDDvHGTYi4IiAJVrvVkA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11493"; a="54562885"
-X-IronPort-AV: E=Sophos;i="6.16,314,1744095600"; 
-   d="scan'208";a="54562885"
-Received: from fmviesa002.fm.intel.com ([10.60.135.142])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2025 15:28:53 -0700
-X-CSE-ConnectionGUID: 43scBKa2Q+GlwkjRdyCeQg==
-X-CSE-MsgGUID: nj7Vi7qCQFKk7YaTE34tRw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.16,314,1744095600"; 
-   d="scan'208";a="181023525"
-Received: from lkp-server01.sh.intel.com (HELO 9ee84586c615) ([10.239.97.150])
-  by fmviesa002.fm.intel.com with ESMTP; 15 Jul 2025 15:28:49 -0700
-Received: from kbuild by 9ee84586c615 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1ubo8k-000Bbf-0v;
-	Tue, 15 Jul 2025 22:28:46 +0000
-Date: Wed, 16 Jul 2025 06:28:22 +0800
-From: kernel test robot <lkp@intel.com>
-To: Jacky Chou <jacky_chou@aspeedtech.com>, bhelgaas@google.com,
-	lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	joel@jms.id.au, andrew@codeconstruct.com.au,
-	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, openbmc@lists.ozlabs.org,
-	linux-gpio@vger.kernel.org, linus.walleij@linaro.org,
-	p.zabel@pengutronix.de, BMC-SW@aspeedtech.com
-Subject: Re: [PATCH v2 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
-Message-ID: <202507160642.yzIrPY1i-lkp@intel.com>
-References: <20250715034320.2553837-10-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4mL5cr7z3c5M;
+	Tue, 15 Jul 2025 13:43:46 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 15 Jul
+ 2025 11:43:21 +0800
+Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 15 Jul 2025 11:43:21 +0800
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
+	<mani@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+	<conor+dt@kernel.org>, <joel@jms.id.au>, <andrew@codeconstruct.com.au>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-pci@vger.kernel.org>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>
+CC: <openbmc@lists.ozlabs.org>, <linux-gpio@vger.kernel.org>,
+	<linus.walleij@linaro.org>, <p.zabel@pengutronix.de>, <BMC-SW@aspeedtech.com>
+Subject: [PATCH v2 08/10] PCI: Add FMT and TYPE definition for TLP header
+Date: Tue, 15 Jul 2025 11:43:18 +0800
+Message-ID: <20250715034320.2553837-9-jacky_chou@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
+References: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,39 +60,60 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250715034320.2553837-10-jacky_chou@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Hi Jacky,
+According to PCIe specification, add FMT and TYPE definition
+for TLP header. And also add macro to combine FMT and TYPE to
+1 byte.
 
-kernel test robot noticed the following build warnings:
+Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+---
+ include/uapi/linux/pci_regs.h | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-[auto build test WARNING on pci/next]
-[also build test WARNING on pci/for-linus robh/for-next linusw-pinctrl/devel linusw-pinctrl/for-next linus/master v6.16-rc6 next-20250715]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-soc-aspeed-Add-ASPEED-PCIe-Config-support/20250715-114814
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
-patch link:    https://lore.kernel.org/r/20250715034320.2553837-10-jacky_chou%40aspeedtech.com
-patch subject: [PATCH v2 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
-config: loongarch-allyesconfig (https://download.01.org/0day-ci/archive/20250716/202507160642.yzIrPY1i-lkp@intel.com/config)
-compiler: clang version 21.0.0git (https://github.com/llvm/llvm-project 16534d19bf50bde879a83f0ae62875e2c5120e64)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250716/202507160642.yzIrPY1i-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202507160642.yzIrPY1i-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> Warning: drivers/pci/controller/pcie-aspeed.c:179 struct member 'pciephy' not described in 'aspeed_pcie_port'
-   Warning: drivers/pci/controller/pcie-aspeed.c:179 Excess struct member 'phy' description in 'aspeed_pcie_port'
-
+diff --git a/include/uapi/linux/pci_regs.h b/include/uapi/linux/pci_regs.h
+index a3a3e942dedf..700b915e00f5 100644
+--- a/include/uapi/linux/pci_regs.h
++++ b/include/uapi/linux/pci_regs.h
+@@ -1230,4 +1230,36 @@
+ #define PCI_DVSEC_CXL_PORT_CTL				0x0c
+ #define PCI_DVSEC_CXL_PORT_CTL_UNMASK_SBR		0x00000001
+ 
++/* Fmt[2:0] encoding for TLP Header */
++#define PCI_TLP_FMT_3DW_NO_DATA		0x0  // 3DW header, no data
++#define PCI_TLP_FMT_4DW_NO_DATA		0x1  // 4DW header, no data
++#define PCI_TLP_FMT_3DW_DATA		0x2  // 3DW header, with data
++#define PCI_TLP_FMT_4DW_DATA		0x3  // 4DW header, with data
++#define PCI_TLP_FMT_PREFIX		0x4  // Prefix header
++
++/* Type[4:0] encoding for TLP Header */
++#define PCI_TLP_TYPE_MEM_RD		0x00 // Memory Read Request
++#define PCI_TLP_TYPE_MEM_RDLK		0x01 // Memory Read Lock Request
++#define PCI_TLP_TYPE_MEM_WR		0x00 // Memory Write Request (Fmt must be with data)
++#define PCI_TLP_TYPE_IO_RD		0x02 // IO Read Request
++#define PCI_TLP_TYPE_IO_WR		0x02 // IO Write Request (Fmt must be with data)
++#define PCI_TLP_TYPE_CFG0_RD		0x04 // Config Type 0 Read Request
++#define PCI_TLP_TYPE_CFG0_WR		0x04 // Config Type 0 Write Request (Fmt must be with data)
++#define PCI_TLP_TYPE_CFG1_RD		0x05 // Config Type 1 Read Request
++#define PCI_TLP_TYPE_CFG1_WR		0x05 // Config Type 1 Write Request (Fmt must be with data)
++#define PCI_TLP_TYPE_MSG		0x10 // Message Request (see routing field)
++#define PCI_TLP_TYPE_MSGD		0x11 // Message Request with Data (see routing field)
++#define PCI_TLP_TYPE_CPL		0x0A // Completion without Data
++#define PCI_TLP_TYPE_CPLD		0x0A // Completion with Data (Fmt must be with data)
++#define PCI_TLP_TYPE_CPLLCK		0x0B // Completion Locked
++#define PCI_TLP_TYPE_CPLDLCK		0x0B // Completion with Data Locked (Fmt must be with data)
++#define PCI_TLP_TYPE_FETCH_ADD		0x0C // Fetch and Add AtomicOp Request
++#define PCI_TLP_TYPE_SWAP		0x0D // Unconditional Swap AtomicOp Request
++#define PCI_TLP_TYPE_CMP_SWAP		0x0E // Compare and Swap AtomicOp Request
++#define PCI_TLP_TYPE_LOCAL_PREFIX	0x00 // Local TLP Prefix (Fmt = 0x4)
++#define PCI_TLP_TYPE_E2E_PREFIX		0x10 // End-to-End TLP Prefix (Fmt = 0x4)
++
++/* Macro to combine Fmt and Type into the 8-bit field */
++#define PCIE_TLP_FMT_TYPE(fmt, type)   (((fmt) << 5) | ((type) & 0x1F))
++
+ #endif /* LINUX_PCI_REGS_H */
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+
 
