@@ -1,37 +1,37 @@
-Return-Path: <linux-aspeed+bounces-1714-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1715-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 286E4C83F2D
-	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:57:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D35D9C83F27
+	for <linux-aspeed@archiver.kernel.org>; Tue, 15 Jul 2025 23:57:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbgr5nPXz3bjG;
-	Wed, 16 Jul 2025 09:56:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhbh21brkz3bs2;
+	Wed, 16 Jul 2025 09:56:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551025;
-	cv=none; b=MF89+vDbHk9zWe4DqdRgEcgJmrzTWzny0N+Cqbb0QpQnBJMKyvRk08QNJXg7lW+MVFeZxivIr+RgGHJlrMdlVz3BwISnujjOgUDhzUimVhgOreyibgff2fXbVLv+yLhvlMedI/KU4uMRmjQbO8Qi4a46UNgKkWWz4j6735oSTfr+6sBb9JLRJ9EzRw2HBCv+qwQPSXO+R5//W1Ap0ZlByXSVx5WvWpMGW5Nyr0rw4t1Wj4MsVziNhxcBh+JUWrziR37XfJnnwTTdcpPANgzbTMrj+fxMTD3sap15SSmTaVi2V6YK4eF3ruuohUCoZp5F2H/UfZPyCqNs2xKhatRakQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752551021;
+	cv=none; b=QOS2Pu6W/MtCq/dZ1R951QFQzt50VHHPFramX9ZZQGpctWDXj0G8nT/wVVLN/9rltiF6znWYXjm7mj22JoXVbLJ56S4J46s8DVjH+EyjC9UdvvwEEnZMVWT5AMTYB+/J7xOBTH2Xgw91RK3QE6RVX8G2MaGXx816C7ha8LNX1WY4jLJZwlkVWBAkRDG5nlYxYn9QpA634f4ginjB+PGpnYuUtp58O1mEys7nwQMcktTV/ZzIrl8jB8vUNElPj7cXWCQ2nD0Ox9VWOOzJslEjh8XMhBzBdpKEG3MkioOrbap7JCP7P2ePFOvsaQPR0uV7RHWII90k2wCNn62kfsErzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752551025; c=relaxed/relaxed;
-	bh=KK1+3po0lpD6XTjsRxyqO5W6xZmY+U5UmFlcUZ2ALoQ=;
+	t=1752551021; c=relaxed/relaxed;
+	bh=oQh6vV240tnImvumdSacIM1S/td0hkqCP9jGtPpAdBo=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fkYWzgZISRnZlsnbHQKSsc6MW1Z3laCR1eYUqafAwLIOSraKfTASkkXkIKypXAY+jbcHB29MzMjvondTsYvKKaS7rzI11Q/k3sY+qMG5FRO0N5UiTCdUGg6flNKpUIbn/KzTmj2z5nc7uAlnSnYfpxm35N5wupcGRSw06Ahrl5Tc2KbDdFbD9j631Ni/NsgYON3BFXik11U+ur2ShU9RRCKtUT/2xeXuo1eQPcJlTD/rkw/rxcr3yAb60KCdU7/xA9sqDCrL4iI35DfPNgKott0MKdwsNeNEYKuY66Wsy6bHacqB3bl29BxT30LSxPGGPU03EsgZZY+p3h+f0f/REA==
+	 MIME-Version:Content-Type; b=B80nEiL4zz3ljxTf53dR7+uxhJ8pT+40PsyxMTtdk//IwzTYq/TS8k5gXzgSOLjkzVci5DcvRmZ2jZAKaVYc3pqrlr7sKE9adU3RSDSk0/7EpV7B9MH3GsIkb+x+MxPixJkXNUMFSeH9mslKSeGWjn795eZ8OxHTCVjqoI2PSqOLnQM4pTfPUZ8phuMiQ4+v7im5cC3VuuMDOUbQCgxLW8RgZEG25N+GlXtUXDGpoqZ/EyYnKaPdhOGnT78DCZyOaBwFuDtkP2IoDfkL01P+PC+n4j+hKHscF6K4GJ52CFHeOOTWS31iU3MAToKJ5gVk/iJBgqgfcUdI4fD/h/HHgA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4mJ3cLqz3c85;
-	Tue, 15 Jul 2025 13:43:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh4mF1hwKz3c52;
+	Tue, 15 Jul 2025 13:43:41 +1000 (AEST)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 15 Jul
- 2025 11:43:21 +0800
+ 2025 11:43:20 +0800
 Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Tue, 15 Jul 2025 11:43:21 +0800
+ Transport; Tue, 15 Jul 2025 11:43:20 +0800
 From: Jacky Chou <jacky_chou@aspeedtech.com>
 To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
 	<mani@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
@@ -41,9 +41,9 @@ To: <bhelgaas@google.com>, <lpieralisi@kernel.org>, <kwilczynski@kernel.org>,
 	<linux-kernel@vger.kernel.org>
 CC: <openbmc@lists.ozlabs.org>, <linux-gpio@vger.kernel.org>,
 	<linus.walleij@linaro.org>, <p.zabel@pengutronix.de>, <BMC-SW@aspeedtech.com>
-Subject: [PATCH v2 05/10] ARM: dts: aspeed-g6: Add AST2600 PCIe RC PERST#
-Date: Tue, 15 Jul 2025 11:43:15 +0800
-Message-ID: <20250715034320.2553837-6-jacky_chou@aspeedtech.com>
+Subject: [PATCH v2 01/10] dt-bindings: soc: aspeed: Add ASPEED PCIe Config support
+Date: Tue, 15 Jul 2025 11:43:11 +0800
+Message-ID: <20250715034320.2553837-2-jacky_chou@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
 References: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
@@ -63,29 +63,64 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-Add pinctrl support for PCIe RC PERST#.
+Add the ASPEED PCIe configuration syscon block. This shared register
+space is used by multiple PCIe-related devices to coordinate and manage
+common PCIe settings. The binding describes the required compatible
+strings and register space for the configuration node.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ .../bindings/soc/aspeed/aspeed,pcie-cfg.yaml  | 41 +++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-cfg.yaml
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-index 289668f051eb..ea879f086c25 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
-@@ -2,6 +2,11 @@
- // Copyright 2019 IBM Corp.
- 
- &pinctrl {
-+	pinctrl_pcierc1_default: pcierc1-default {
-+		function = "PCIERC1";
-+		groups = "PCIERC1";
-+	};
+diff --git a/Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-cfg.yaml b/Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-cfg.yaml
+new file mode 100644
+index 000000000000..6b282f06b914
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/aspeed/aspeed,pcie-cfg.yaml
+@@ -0,0 +1,41 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/aspeed/aspeed,pcie-cfg.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- 	pinctrl_adc0_default: adc0_default {
- 		function = "ADC0";
- 		groups = "ADC0";
++title: ASPEED PCIe Configuration
++
++maintainers:
++  - Jacky Chou <jacky_chou@aspeedtech.com>
++
++description: |
++  The ASPEED PCIe configuration syscon block provides a set of registers shared
++  by multiple PCIe-related devices within the SoC. This node represents the
++  common configuration space that allows these devices to coordinate and manage
++  shared PCIe settings, including address mapping, control, and status
++  registers. The syscon interface enables for various PCIe devices to access
++  and modify these shared registers in a consistent and centralized manner.
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,pcie-cfg
++      - const: syscon
++
++  reg:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    syscon@1e770000 {
++      compatible = "aspeed,pcie-cfg", "syscon";
++      reg = <0x1e770000 0x80>;
++    };
 -- 
 2.43.0
 
