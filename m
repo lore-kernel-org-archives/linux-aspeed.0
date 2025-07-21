@@ -1,51 +1,60 @@
-Return-Path: <linux-aspeed+bounces-1767-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1768-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9E77C83F1A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 21 Jul 2025 07:00:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A7DFC83F1A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 21 Jul 2025 07:42:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4blrrc0LYbz2xHp;
-	Mon, 21 Jul 2025 17:00:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753081231;
-	cv=none; b=IrD/QlZdyTlC020xI9AnMK9ZJqrfpn6xj3PUNG1GeroiR+DbkRRKrFk/iMpQeI7bOVnkpO8S8SU9qMeeRgnHj8rzTfuxzXLNpnJNR7GwjGBNIn79+qM/zA/922hjXAvDJpwQYj+OBHQYsKkTuvB51ZYtHAot8Lb728PTVjNgiCXi5B+dEV1RqBP38swqhXCpEcdlyZ638Zldx5t6v1bDzeUa7n4RoNxP6OiB89HfVzzuxfiUymt4yGMz8spjhdKVnSpL8FbOPC0k6xFg9AuUAX2fSM1JXcwfWf6vyYetU29U3QbSIbGcxXeaJ4Pie/x4aSwkn5v6FoBUpfSM8a5pVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4blsn00kp3z2xHp;
+	Mon, 21 Jul 2025 17:42:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753083748;
+	cv=none; b=eA+EV4mc7B/2Ubos5HdDlTYgqG9a/5nyJCJAr0Fe7GidSrqmKqKTCQytre2m/1KOPRi8OVvkX3FUCgx5MCj91iQGISVVX2bHfOs+nUbiWPKcCWxZc765ugzq67eRVe2UgodsGHy+a9oPJe/T8pbugC0Xh4Zx1Oz0EAIcuvIpbAu4upJ1uHZtrMDdn7+SlEzQN6PuR82eV1IPHPTdFj3cqTqY+ncjnfHDcpK18HwAzbZMRl7li48rGwBTsPYVlVWMQLaRmOkvS+oLEOQ70YgtRz1DKCp1+SdJ+iXeRgzbOKtC5jWbMZYppQQ649bUuTkT5AIxPiSCjhSm/HNAueiyPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753081231; c=relaxed/relaxed;
-	bh=oTh0hvREVslrENTt7ZILsymISH5AUbejxYrzytb58N4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jkQRH9FHGvwaKpAa2RgjFf6DoGpyrGRl03rDWcz9U+4EqyxjgpYfBmL5SsxzR1BkHsCoDVQBI1BID2owl/lz6bLClBi9k8Knbumd5BL3C4SpLjBevYD3AQVyMIN4xPoVvpv/EkhDehWmv5cc9MX5heXdrKnTcYaoLX3TbNLBi/mjsEM5kNrHhEnqhxHaNgsUz5ew4CUOz6W2QTFK0hoZMunmQbK2Uji5VsqgzZU8ONnkA+fjv7kFv25baeml5ZS+8J2DANVL3nitp6hV8+j8vOzBsmmmbV9ytpVMmJmbrKvsBjMJ0OC8OXO2BAvd7xsHV2xSiIQ0A+q7xX2CqOFlgQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R/5ToINq; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1753083748; c=relaxed/relaxed;
+	bh=kY/qVqyukbmYuJU8aGt4dNrPbq/KEcARNTpYBPYTnzY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Kwzw//QKwE2sQtBGd0hD3F6yuwYop92pv8fgOu/I4WB+jJZBnLJV1aHef/0tb7H/sJ/xd7rFK7h8eynXK7ADfL5pfNhHRfwUjugFs/ZzwEniWnb45BZ+8z0sIAeFiHuQtmkXFNI0vcxIyxuuYTM/q/ua2xK43qwozQLtuQCeZtNlIJ9O9mP02Bw71LRfsHgnEIwCdkPB/tC5oB9PQroDbrcV2TE57V7n93H/Muj4M//vxSYmIm5T6rLwdax0tB3X44wKeMauVFpKKF4LaKfVxODLT4rd3OU89su7ffTqCYrqIxHlJwMtYacLcwoJqIf67q3Ho1F5vAD77TKcGbUArA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rqw0Vu6c; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=R/5ToINq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rqw0Vu6c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4blrrb1Kn2z2xHY;
-	Mon, 21 Jul 2025 17:00:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4blsmz0ffBz2xCW
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 21 Jul 2025 17:42:27 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 8E7D25C5A84;
-	Mon, 21 Jul 2025 07:00:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E249BC4CEED;
-	Mon, 21 Jul 2025 07:00:23 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 86BC1601DE;
+	Mon, 21 Jul 2025 07:42:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98E87C4CEED;
+	Mon, 21 Jul 2025 07:42:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1753081228;
-	bh=Aq6sqTvO2EJFyQZNPFUjG/kya8yXEfAE0I1DrQtAHzE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=R/5ToINqDFunQxMIXOXkyeOJSkXuGvT3n29ixS8OfDMz+cmZdukN3ZKkp32dyV202
-	 nLAU317BNnhKJv9i7NVBKtbR8L8P8cXlVLQLjHWrFz3nmQWfAkUaY1Q7V8li1UmkOZ
-	 WURkrDv5wCsmpw2X78GzKOKXnBZiu4xsMRDCbpTUgwuT/vwSlt3+pcxOss81mc3MQN
-	 3MMu3z4KqzoMdM3qoPgFrZo6edK45mTyW/sncjC4QN3vX5dPCOOCFm5Oo4Z8ErM7Bn
-	 SekWmBpgdKQfpgdxh6DNyjHelUlrMR3JMcH40FF/IDAb1yg2ZTx9Hc3aL16P238G68
-	 Xc7ndcRFPZ2VQ==
-Message-ID: <61ced029-987e-4484-9a0a-7c911518ffd8@kernel.org>
-Date: Mon, 21 Jul 2025 09:00:21 +0200
+	s=k20201202; t=1753083744;
+	bh=XYtXJcSx59acBjNpYrTcaOZ+McBebEu8GwQdfjrYlxM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=rqw0Vu6cS5IaBiWbim5p6hULKDwdbtHJ26JLb4fSYufdL1D0VYixws+yPTzF8Fhne
+	 eg6YXEPS6EnKMjn4OeT0TDyP7oCF7oqeGz9DcklGt5n36uc1mFN/f5NXo6ihTmacFl
+	 zJlB5duUWRDI9Uohc6JfFlPqqpsLR2bw0qc8YJULxmJ/3O6IcaqlvsmJKDdhWcD9d9
+	 Vhwtzfh9sU6u8oOaTG2rdUZQQdwTMeNIrkx2cbLktSVpHxrQclCbSzkTlWsGrtM1IR
+	 DgUUI1dx065lxFQtYNnOIoWejKjCMuTfDhog7oC8XKb+Jyz3nGmcLmLA+pbJ4ZT6Lm
+	 WXxj8IOMIXSLg==
+Date: Mon, 21 Jul 2025 09:42:21 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Donald Shannon <donalds@nvidia.com>
+Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	joel@jms.id.au, andrew@codeconstruct.com.au, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 1/2] Documentation: devicetree: Add binding for NVIDIA
+ GB200-UT3.0b platform
+Message-ID: <20250721-auspicious-uptight-parrot-b1e19f@kuoka>
+References: <20250718231118.3330855-1-donalds@nvidia.com>
+ <20250718231118.3330855-2-donalds@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,99 +68,55 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: =?UTF-8?B?UmU6IOWbnuimhjogW1BBVENIIHYyIDAzLzEwXSBkdC1iaW5kaW5nczog?=
- =?UTF-8?Q?PCI=3A_Add_ASPEED_PCIe_RC_support?=
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: "bhelgaas@google.com" <bhelgaas@google.com>,
- "lpieralisi@kernel.org" <lpieralisi@kernel.org>,
- "kwilczynski@kernel.org" <kwilczynski@kernel.org>,
- "mani@kernel.org" <mani@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
- "krzk+dt@kernel.org" <krzk+dt@kernel.org>,
- "conor+dt@kernel.org" <conor+dt@kernel.org>, "joel@jms.id.au"
- <joel@jms.id.au>, "andrew@codeconstruct.com.au"
- <andrew@codeconstruct.com.au>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
- "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
- BMC-SW <BMC-SW@aspeedtech.com>
-References: <20250715034320.2553837-1-jacky_chou@aspeedtech.com>
- <20250715034320.2553837-4-jacky_chou@aspeedtech.com>
- <20250716-watchful-enigmatic-condor-0fc6b3@krzk-bin>
- <SEYPR06MB5134F8732785F280CB4339309D5DA@SEYPR06MB5134.apcprd06.prod.outlook.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <SEYPR06MB5134F8732785F280CB4339309D5DA@SEYPR06MB5134.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250718231118.3330855-2-donalds@nvidia.com>
 
-On 21/07/2025 05:44, Jacky Chou wrote:
->>> +patternProperties:
->>> +  "^pcie@[0-9a-f,]+$":
->>
->> Why do you need it? Also, order things according to example schema.
->>
+On Fri, Jul 18, 2025 at 04:11:17PM -0700, Donald Shannon wrote:
+> This is an Aspeed AST2600 based unit testing platform for GB200.
+> UT3.0b is different than nvidia-gb200nvl-bmc due to networking topology
+> differences, additional gpio expanders, and voltage regulator gating
+> some devices.
 > 
-> Thanks for your question.
-> 
-> In the v1 discussion, another reviewer suggested that we should support a
-> multi-port structure for the PCIe root complex, 
-> where each port is represented as a child node (e.g., pcie@...).
-> That's why patternProperties was added here — to explicitly allow such
-> subnodes and validate them properly.
+> Reference to Ast2600 SOC [1].
+> Reference to Blackwell GB200NVL Platform [2].
 
-And schema does not allow it already?
+Please use subject prefixes matching the subsystem. You can get them for
+example with 'git log --oneline -- DIRECTORY_OR_FILE' on the directory
+your patch is touching. For bindings, the preferred subjects are
+explained here:
+https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patches.html#i-for-patch-submitters
+
+A nit, subject: drop second/last, redundant "binding". The
+"dt-bindings" prefix is already stating that these are bindings.
+See also:
+https://elixir.bootlin.com/linux/v6.7-rc8/source/Documentation/devicetree/bindings/submitting-patches.rst#L18
+
+With above two:
+
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+
+<form letter>
+This is an automated instruction, just in case, because many review
+tags are being ignored. If you know the process, just skip it entirely
+(please do not feel offended by me posting it here - no bad intentions
+intended, no patronizing, I just want to avoid wasted efforts). If you
+do not know the process, here is a short explanation:
+
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new
+versions of patchset, under or above your Signed-off-by tag, unless
+patch changed significantly (e.g. new properties added to the DT
+bindings). Tag is "received", when provided in a message replied to you
+on the mailing list. Tools like b4 can help here ('b4 trailers -u ...').
+However, there's no need to repost patches *only* to add the tags. The
+upstream maintainer will do that for tags received on the version they
+apply.
+
+https://elixir.bootlin.com/linux/v6.15/source/Documentation/process/submitting-patches.rst#L591
+</form letter>
 
 Best regards,
 Krzysztof
+
 
