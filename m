@@ -1,64 +1,61 @@
-Return-Path: <linux-aspeed+bounces-1758-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1759-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCD87C83F1A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 21 Jul 2025 01:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CDAFC83F1A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 21 Jul 2025 03:30:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4blj8n4453z30hF;
-	Mon, 21 Jul 2025 11:14:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4blmBZ0LzCz2yRD;
+	Mon, 21 Jul 2025 13:30:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753060441;
-	cv=none; b=NKwM+DV2RP0H57blesDGw5O9Qs8N71d52UgZNDisqqZ1pTY0TmEj1aDUaIulxGvXP8NneyV1nWTzVgylKhIbPpVq5PyMIRpvQrHi2SmNqBGmVuB0e89TsBdI1zhjonc4PMH+4j+rADpX2bbPNOq8Q+K16dlfX6p2dDuaKl5ORbx8dEfO4rl8sfLeZwwEUXQAezVrUJ4VHkhoydIDQuuj1HVs6tfJjeMqJUZGsvOUmuDBqohvmAr47G0Uy3cUFlwp8kChtEjk2FvfbNKt6igLph7VOheVjbRxYWNvemTUGU+p5qVOwJbAXJD/Y7+7EeNdeTUgwTKClZOF4RDmuu+unA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753068645;
+	cv=none; b=Bo5tdcDpecArlwtE5JdUjqyRlhIO7ttbN/7Hk00KccsUD5oSZNMYalIhxjsgbblQd6af0iaxGve2SKfleNaID9Si6YF5pHI45zAjHHmAsDOCIllKEAEyi3apw5pZVFa7zy8e54QRUaHdzTGEXN13hWnemvUKrLMCWgU1kkbbZKslw5CRDyZNI9wMnYxFyQds2Oe6jSV40K8mfEfbEEVDUaMurvqw4mOMkWfQM/J6dJJrhsAd6RQtEzFZbZrkuArFLm4FSR8h7dV+0gMe5lJ3BEluUXscByJ0gIoBmE3rYqQoUYa6eX2mdiVIiI+H7hC4fyfPThv/eV41sCDTL92AXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753060441; c=relaxed/relaxed;
-	bh=Ava61Vivu7w/mcZfCfpTOpBif8IfUW5XaEI9F1IJOB4=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=bAsNOGelPgOQJm55aIfpmVRHnZPByHvRC97blYYNNvvgwfC5kGwqbIN8RAgGE9nZMFwAx0TEqXmwRGefhOtdXK8Z7SvouS1jKhtzzuBWFgi3EtriLAW+3WEMwg6WLTV7Zgga6SaNgGSeRD0GEfaY4VlsLTrwMhsWLOo9NrUqmgrIbWCV9Bp7FIP4vdba71/z/Q3UCi1SF6tkLoAUkx4SyF7rOhdD7q+wrpnGlHWdB54N3Iiu12q2FjMFGB7aZHTcnEJReSTmyFrnYryFCvQo7gwKKq68ySSiuVkmxhwd8ekZ1H0ynJEdhUjzc0y4yB8NZ9xQQPPAhrnLgJnV/vORaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=csbDTtQ2; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1753068645; c=relaxed/relaxed;
+	bh=VuSv0/XI/eD9FBwiYcZx/CO4wUCjzxcc9XNCARjCC6o=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=E+C2BtRGKff+uZleaiWbbG9VK+hK+p9qJMr2o6iOUQMuHWYURJmcWCVq5OEhPCm2NNe3W8tkou21mRPdzo6BI68vZNphHD2yll2FSZ2JI0W5hQXTO5ltQfdZcQgYXysc69LOfW4PlXaod0Yog+/o6hAb97xrt+f+25ksQC5CKMjbgMrMnM7MATjfS9i2RQSc2P3LY4+AGQtFsNt0AD0Pk+EHc1+++tzDWCHE5SybaBr9BdnoN/1ekVyMGIvpMIqJ9ZtSxSOxf2mgWRay0AuTy7zxjrEDWhV6uDSSgiPJIMHtQS0Nd7QTGUv6ZilEHPabduzOz7wteqPfyQZiyALoLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DSouQuv2; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=csbDTtQ2;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DSouQuv2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4blj8n136fz2yfx
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 21 Jul 2025 11:14:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4blmBY4QyWz2yFQ;
+	Mon, 21 Jul 2025 13:30:45 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1753060440;
-	bh=Ava61Vivu7w/mcZfCfpTOpBif8IfUW5XaEI9F1IJOB4=;
-	h=Subject:From:To:Date:In-Reply-To:References;
-	b=csbDTtQ2jgTPppbMqU8+YPTQ1SgrQ9HL3Lbe0Dhffbn3xftWGJ66X4mI6t9ZdKgxH
-	 cesOBugB8X1kPhlHniy8n4njJnYdtELyIWEeQaQ+QB1ySQDFedAFu3RxUDdlyTGNpl
-	 hrtKLAp8anZzDl+T1H0zq2KMxEeUR6QLf+pINuDPOMjvmO65nTvCjUtanpyOz4hQDz
-	 ytAHYh/NAVuso/BsJMy85oZEmMco4h/VE2q4I+CnyeED8mVpVwoZkJbZKdD7pLQRJp
-	 y0sxTBLcUaTo2zMB8xDHqBJdqG9FPUQ1PVRFEg5Qp/azDvSBCCgDJQ7SKBOQvh+YFk
-	 S/n6bWfYWu6Yw==
-Received: from [192.168.68.112] (unknown [180.150.112.70])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id E86056443C;
-	Mon, 21 Jul 2025 09:13:59 +0800 (AWST)
-Message-ID: <f61d9b4f25e18c37e88c56e3222a387b9ece6c0d.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2 6/9] ARM: dts: aspeed: Move flash layout out of
- Facebook netbmc-common.dtsi
+	d=codeconstruct.com.au; s=2022a; t=1753068643;
+	bh=VuSv0/XI/eD9FBwiYcZx/CO4wUCjzxcc9XNCARjCC6o=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=DSouQuv27SyZh06F/ZYCO5G2WVwWjFsbsiPNoh8HGk2orE/qR23g8EAU3fUkCjLdI
+	 Hvov4ZxhWauWqgDW3oCIhchw8bcj9v25Wa4DamYtaujlrup7qb3QyPtxBT4Iprj9i7
+	 nYn79yWqv3jyNZmafxAKheJxGe1dWshVlktl8A1ggstKyM+5u/+xVTxsAwps4IdDvl
+	 raOGV/8/KgVBZZ1lRN1R9Y/cCnztogEvWJoc9FHXrdY9GazNPygU+7x27jCH9XaNqz
+	 DXhpNFACCQ9/qyy7x5S00fMncpFT8oT3UmakjPM1ajuALpk0qZs9e7b5C/1UrYl7Yg
+	 od/N8MsWOdjoA==
+Received: from [127.0.1.1] (unknown [180.150.112.70])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9F6F4640A2;
+	Mon, 21 Jul 2025 11:30:41 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: rentao.bupt@gmail.com, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
- Stanley <joel@jms.id.au>, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Tao Ren
- <taoren@meta.com>
-Date: Mon, 21 Jul 2025 10:43:59 +0930
-In-Reply-To: <20250706042404.138128-7-rentao.bupt@gmail.com>
-References: <20250706042404.138128-1-rentao.bupt@gmail.com>
-	 <20250706042404.138128-7-rentao.bupt@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ openbmc@lists.ozlabs.org, Willie Thai <wthai@nvidia.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Deepak Kodihalli <dkodihalli@nvidia.com>, Ed Tanous <etanous@nvidia.com>, 
+ Leo Huang <leohu@nvidia.com>
+In-Reply-To: <20250717-update-gb200nvl-dts-for-new-hardware-v3-0-f28145c55c98@nvidia.com>
+References: <20250717-update-gb200nvl-dts-for-new-hardware-v3-0-f28145c55c98@nvidia.com>
+Subject: Re: [PATCH v3 0/4] ARM: dts: aspeed: nvidia: Update DTS to support
+ GB200NVL hardware
+Message-Id: <175306864149.1300934.10142311415731184566.b4-ty@codeconstruct.com.au>
+Date: Mon, 21 Jul 2025 13:00:41 +0930
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,90 +69,18 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.2
 
-On Sat, 2025-07-05 at 21:23 -0700, rentao.bupt@gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
->=20
-> Move BMC flash layout from ast2600-facebook-netbmc-common.dtsi to each
-> BMC platform so it's easier to apply different layout settings.
->=20
-> The fuji data0 partition was already extended to 64MB in Meta
-> environment. Elbert flash layout is not changed.
->=20
-> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
-> ---
-> Changes in v2:
-> =C2=A0 - None (the patch is introduced in v2).
->=20
-> =C2=A0arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts=C2=A0=C2=A0=
-=C2=A0=C2=A0 | 6 ++++++
-> =C2=A0arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0 | 6 ++++++
-> =C2=A0.../arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi | 2 --
-> =C2=A03 files changed, 12 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts b/ar=
-ch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts
-> index 74f3c67e0eff..673cabbec92e 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts
-> @@ -50,6 +50,12 @@ spi_gpio: spi {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0};
-> =C2=A0};
-> =C2=A0
-> +&fmc {
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0flash@0 {
-> +#include "facebook-bmc-flash-layout-128.dtsi"
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0};
-> +};
-> +
-> =C2=A0&lpc_ctrl {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0status =3D "okay";
-> =C2=A0};
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts b/arch=
-/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts
-> index 840d19d6b1d4..71f58ad1ff06 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts
-> @@ -223,6 +223,12 @@ eeprom@2 {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0};
-> =C2=A0};
-> =C2=A0
-> +&fmc {
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0flash@0 {
-> +#include "facebook-bmc-flash-layout-128-data64.dtsi"
+On Thu, 17 Jul 2025 09:52:09 +0000, Willie Thai wrote:
+> Update the DTS file for the GB200NVL hardware change.
+> 
+> 
 
-Please don't bury the change of flash layout in a patch that only
-claims to push the layout choice down to the platform dts.
+Thanks, I've applied this to be picked up through the BMC tree.
 
-Also see my reply on patch 5/9 regarding maintenance for the Wedge400
-flash layout.
-
-Andrew
-
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0};
-> +};
-> +
-> =C2=A0&i2c0 {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0multi-master;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bus-frequency =3D <100000=
-0>;
-> diff --git a/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi=
- b/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi
-> index 208cf6567ed4..4f819bf8c909 100644
-> --- a/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi
-> +++ b/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi
-> @@ -54,8 +54,6 @@ flash@0 {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0status =3D "okay";
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0m25p,fast-read;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0label =3D "spi0.0";
-> -
-> -#include "facebook-bmc-flash-layout-128.dtsi"
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0};
-> =C2=A0
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0flash@1 {
+-- 
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
 
