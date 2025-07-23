@@ -1,72 +1,72 @@
-Return-Path: <linux-aspeed+bounces-1790-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1791-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45997C83F1A
-	for <linux-aspeed@archiver.kernel.org>; Wed, 23 Jul 2025 11:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A37CFC83F17
+	for <linux-aspeed@archiver.kernel.org>; Wed, 23 Jul 2025 17:37:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bnBb65Knsz3bjG;
-	Wed, 23 Jul 2025 21:23:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::22d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753269810;
-	cv=none; b=lEMkFwyBObEr/jfCR0sI42znj12JyrB7banqsxCO/4K3t5VjdTd0o++t4qSQaC8VX1rFlwUeljSqUUxg0WI4VQEnvEwxeFngiToI0dTBd0BmChvfp3S7rGTgkfFoMC9By0HNtVTh9byCXkKmLgZqD+lYQ4Z5wtpaljI7p6/g4ZoQWrvW6etrVWHuOnPi/rg5E9/HHRZkjYgQTVNRZte9cm6ClA3+8Oi06x7T9eBBwU+Qz1acp02ido86TTO+VFbERhHqZmXdxVRUrY2RrxW3lwXHaHMXohHxtMIOHS/S94FPzRV3YC6kq4Vw9iU0T/uGTFZbPQmBMIZTR9rI9QsLtA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bnLtn13Bfz3bmc;
+	Thu, 24 Jul 2025 03:37:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753292257;
+	cv=none; b=nOO4q7Uh6nLQijVTgy06zDFTl8ajjbjo/awuzC+tDp5qNzfQBDxdFlcS9dx6+9iTmvoAHt1AMJHoM+cplSOM1RFHmfocxX0PLOt/SNEhWuhO6+zWIgjAjD9Z161gNyiIuJZDbQ9FIeRs44G3vKdg919ptIurJ4BOgDf9GMiczJHKUJdadOHL+ORU5gzRiu2XJoMt8p6aa5vclj0/mIa/hqth7BQ7Bcm2Km36S2cP1L9j7kMJ4wNaQoguD1dWEKOodgnt387/YOs2kmxyDpjLDmpHc6aIndELK+czck5CvWWfg5KcLUogcjXVT5ItzgaVzFRFppEdxmRBcOhKIFbsGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753269810; c=relaxed/relaxed;
-	bh=X1YmU1ykvA77GIulXJEMJLdju3jM88FFVo/Kazht9VA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VUvbiVcLhsE7l9CoS0JzMogDBLw2Jkt+kDwTuxiUTClcnkzbyExW69XaOB1k4TNgh1UC8PkwcuHx+TfgFrxZj5CxSaH15nrNUWGj6SoI/7RXPe73stYkCP9eoSaTdXmIrLFuSnlwKVvCKVx5g1yjgC3D/JjPvleRKM/wR9kwwfPAJvNpG6o2Thg60dCiEzSXW14WaJMHDjcrMll6wNF45WX4njfXyYiJfKaY07Np5BiHjNVaLbtQ/QDaFruogYyWM/J/EMLZNqwtuRrtvvGIyAUoei1u7PYZIJAzIk/EiE2O6/UY1bZJCJLnB8Ras16X99HywDYB0KLfWs+FQ9qAew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=YsqI9paK; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	t=1753292257; c=relaxed/relaxed;
+	bh=NAN36tnPlVScqFyW8H2kecVmf43LbzR0LCpjmIdCB6k=;
+	h=From:To:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=XRiofxsho6f/gj2m+XpB7QvB9lD3vN0pjT8GEFW7c3/JK4W89p70vKp0xIhKx0KTHpRaaLMxYa/AjXjchfO6RYZ0b5wsdz1IjjYhRib4JyftFIt0raESCmAeo9UmOB/OHhTMCeKVq3+cXefYsaeTzguJeDPtzoJdLe7YDCfiMpV70/LF5tie9SjUUlrFQIHPfhryl3ue9YDHhIV9IJiCQiv0rf3P3xtzmynw1/Wk6E5pEpDvYDlIxe1WPoR8M42MSKt884i6GzJfwhaoGgilJSPC8IK3rYFCNBcF4lR2IaKLG0H/vFhLuuHthuU2HD4yOzX+gfDbdviKIh13jp741w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dTEoClWJ; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=V/m9EQLS; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=YsqI9paK;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dTEoClWJ;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=V/m9EQLS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bnBb52NxTz3bh0
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 23 Jul 2025 21:23:27 +1000 (AEST)
-Received: by mail-lj1-x22d.google.com with SMTP id 38308e7fff4ca-32b43c5c04fso8656231fa.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 23 Jul 2025 04:23:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1753269803; x=1753874603; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=X1YmU1ykvA77GIulXJEMJLdju3jM88FFVo/Kazht9VA=;
-        b=YsqI9paKjQaFRdY9FzadOsfGbtc8BVDpIFYLKtnJlLNo+7euDndLZV2QB/2l9KMmVN
-         77tPtNmQyBSzbFUcsSi1iAhcvZfYGlZIHzxfGjJu0VWoZQCxfgeYpFP804kRnVB2CdVv
-         xp52kHhEJ2vXSZFLAAJsLQGFQxIy7Ot2H6khXC4ARhlI8O/NCoL/DOVG9hvgfBpqj4xt
-         s4aR+FdG3gjFOXwKrqsJushysLkwmYPSmuO/N8zrYXAh3OfE9IbJMpyln9JmvpngO9zp
-         lXYicuYLMvIXlYWQf2nmszz6SkN7IY2tXjJ92egfGnV4zFIApX8AYg0WDMthnLvsyccU
-         30Lg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753269803; x=1753874603;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=X1YmU1ykvA77GIulXJEMJLdju3jM88FFVo/Kazht9VA=;
-        b=vW5ile8LwmmJAo29AIXaJ9F5FhwiOCpFFOun1zD98+qdHwEiZajhqNgXbDnhhcGUHd
-         0HT+46WhUG6pSMwl8Hmh+NIoV54HS1OSNcn0ZSDnzWDDitF6R3+mgUXeNZbJCUMdSLIr
-         4x4ycLZefp1OaV2ZLquS009DZPriSuBAkmKXqAdiMZlyi9xbkoTeXsVKDU4380wdm/Sz
-         +PQnZxfg0tE3/9LF47kA6k/KyKHGr1hVbDlPTRox7jgC7Vdayv/ZwPvSymEuMymKS/z1
-         S9o4e3ChhK5RP+qcDOW9spsDQXMitmOOhRfQIEqcZ9Q3sxbCWf5tYwyknnTq7uVMjAdD
-         uU5g==
-X-Forwarded-Encrypted: i=1; AJvYcCXHHtpibwB8IkgMwy2AmfGYTIVIfUqWFBmZk7/bg1R2RFFMz/kFMeMdlnnE5VKl/HFP88tcqlCPPaQd7J4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyB7g9w8jUDJbEyF3P/EEubkuk9VCVY3/UTfeHN017MGrwXxJJh
-	qW1SP6vb9bo2swjHWeuw0UFjf7728hxRpkXgfTZD33D2sSvX2/SEVUtcKOgHCxwpCTjfRuqYUX3
-	uDbPHFnXs3EG2aLl7+3XJmnkuTHLOlmVZ7zINVGOmmw==
-X-Gm-Gg: ASbGnctviwASUz9i+uPZ0MVGWw+FoFKYlok5GpRCBKrm7dZaXOm/Q3j+/IrJL7S9xpA
-	PQjKtqghV+8db9BEm9noSdGUyk32wP9stqgI93IyiQodcaZHX4H6wrQM4YT8BAk36apefRUKSR6
-	d5FXEoEK9e1wedpWJYXecYB8hlPszpwNEGjledqRkck094Osj7XIvVzCiMc6ezWfzql+YpnD3st
-	sqGgbc=
-X-Google-Smtp-Source: AGHT+IGJe5Uxr9HPFMmzv6FKaMGGq0DeXYb8MEs6LCeEdkH2Ux3eyASfDB2156qvlMRtXLw+FwseABeguK4wIAj2U48=
-X-Received: by 2002:a2e:bc1c:0:b0:32b:4441:e1d0 with SMTP id
- 38308e7fff4ca-330dfb33727mr8322611fa.6.1753269802839; Wed, 23 Jul 2025
- 04:23:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bnLtk7374z306d
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 24 Jul 2025 03:37:34 +1000 (AEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1753292247;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=NAN36tnPlVScqFyW8H2kecVmf43LbzR0LCpjmIdCB6k=;
+	b=dTEoClWJpdbZ8dDT/H8RBibW5G3pXOOc7s0AFPsIuxm4wZIG3cAMH4PBg7kS9MSRq90Z7p
+	mdkx7DyiIBN13jDTsP4J3u7cq80L9uQDFENlrOzvWmmllj4cYDp8CWrhP73KFXPFDLa5Rh
+	ufDzvNPhC6DkMEy/jgY/NpIGpgsP+B3UQ2R+FnIHCYfKdbv+bgnfuL8jvPslRiwEdTRDM+
+	auRoX4DfeM7cJO5PagYEI1rkPT+ts9Xzm58KVrqTNA68AAbhiW1Z3PZmG3VezBuwE8bywZ
+	Wzlxur0f6tt0Lb1ZqpQkWyt9g+zWAgLuhXQHESNLqMoyf0QJyzB1S113gM9nsQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1753292247;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=NAN36tnPlVScqFyW8H2kecVmf43LbzR0LCpjmIdCB6k=;
+	b=V/m9EQLSeALkvLMUgne5PHhsAdv3wLFBWfmwy/iiP2pq1OL7lDqxS5TYhKlnJ2UF4PJaNs
+	39ByRYfi3VRICtBw==
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Kevin Chen <kevin_chen@aspeedtech.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+ <linux-aspeed@lists.ozlabs.org>
+Subject: RE: [PATCH v3 2/2] irqchip: aspeed: add debugfs support and AST2700
+ INTC0/INTC1 routing/protection display
+In-Reply-To: <OS8PR06MB7541516DD4FDEBD72A764042F25FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20250722095156.1672873-1-ryan_chen@aspeedtech.com>
+ <20250722095156.1672873-3-ryan_chen@aspeedtech.com> <8734aotfdq.ffs@tglx>
+ <OS8PR06MB7541516DD4FDEBD72A764042F25FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Date: Wed, 23 Jul 2025 19:37:26 +0200
+Message-ID: <87wm7yrep5.ffs@tglx>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,34 +80,30 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250715034320.2553837-1-jacky_chou@aspeedtech.com> <20250715034320.2553837-8-jacky_chou@aspeedtech.com>
-In-Reply-To: <20250715034320.2553837-8-jacky_chou@aspeedtech.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 23 Jul 2025 13:23:11 +0200
-X-Gm-Features: Ac12FXzMES-g3RTrhXb0FNTMk2mTyN5VcSrw3I_gOJGbbpbB-aPDVFXKwi-6bIg
-Message-ID: <CACRpkdarn16N9637dL=Qo8X8o==7T=wBfHdXPczU=Rv3b270KQ@mail.gmail.com>
-Subject: Re: [PATCH v2 07/10] pinctrl: aspeed-g6: Add PCIe RC PERST pin group
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org, 
-	mani@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
-	joel@jms.id.au, andrew@codeconstruct.com.au, linux-aspeed@lists.ozlabs.org, 
-	linux-pci@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org, p.zabel@pengutronix.de, 
-	BMC-SW@aspeedtech.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 
-On Tue, Jul 15, 2025 at 5:43=E2=80=AFAM Jacky Chou <jacky_chou@aspeedtech.c=
-om> wrote:
-
-> The PCIe RC PERST uses SSPRST# as PERST#  and enable this pin
-> to output.
+On Wed, Jul 23 2025 at 06:02, Ryan Chen wrote:
+>> > +struct aspeed_intc {
+>> > +	void __iomem *base;
+>> > +	struct device *dev;
+>> > +	struct dentry *dbg_root;
+>> > +	int (*show_routing)(struct seq_file *s, void *unused);
+>> > +	int (*show_prot)(struct seq_file *s, void *unused); };
+>> 
+>> See the chapter about struct declarations and initializers in the documentation
+>> I linked to above.
 >
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> Sorry, I don't see the struct "> > +	int (*show_prot)(struct seq_file *s, void *unused); };"
 
-This patch 7/10 applied to the pinctrl tree, why not.
+I fatfingered that, but that's not the problem.
 
-Yours,
-Linus Walleij
+> My original submit is following, it should ok. Am I right?
+
+No. Read the chapter I pointed you to.
+
+> https://www.spinics.net/lists/kernel/msg5776957.html
+
+I have replied to this very mail. No need to paste me this and the pointer
+to some random mail archive
+
 
