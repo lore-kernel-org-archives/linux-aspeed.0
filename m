@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1833-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1834-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22FABC87FCD
-	for <linux-aspeed@archiver.kernel.org>; Fri, 25 Jul 2025 07:40:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C6A2C83F26
+	for <linux-aspeed@archiver.kernel.org>; Fri, 25 Jul 2025 07:41:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bpKXd3kmMz3bTf;
-	Fri, 25 Jul 2025 17:40:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753429217;
-	cv=none; b=ekw823YhvQCCvACwQZRjs8z7gP9lzd2o+R4KIxdckF2muYRfR49fFMSA9qEhsKT47V0VsMY+1L4FTl4bQweYEDwDB7waYfJ5g9uXPXrdqSbhcVZjuz431uindA3NNZyY+BCFInTW0/SiWExT4MDxGqQQ+4eQoWOeFL9QtRIDG4gZBITCYjW3A5TaTKukOd+3u1a8btIvu1jOM2P5x0HIhlkamKWey2E3XZ7hBDeTWa+FDceJRaeI9vJk17VFlsOG/ANMHgRNYuXYS72naQnQ9iqr5edWLGBi6tc91UxelRMhtH21U2bAlPOkv0QTjTP5VcMk3vGI3TcX1uWBi3Wkww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bpKZY414kz3bV6;
+	Fri, 25 Jul 2025 17:41:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753429317;
+	cv=none; b=Xroaa8zm0OuQDyp6wfnsStLZSYWmayR0wHj0IXy7WFLf6mGjg2jqQRGL1NJgPf6HziDF9I0Bk28JkbzypNlfWwlrjT/MW+h+Yd/3dTBAPs6Pe2tmUfLifJvSSCOVrY8d7MXG3B+osBw5e9xJP5y3Hg2//vqiVGO08ILTyoBbHnO4irONoCWeOBDQiBYbCBKJMikifNIUQ/Aeo300m7TDQilORJhe1q+OfHokUAeZGrad9GSmLanK3THw+vksdPuGDbqwSqF1SXPCrctOFlu/NK/bzmHQ+e3Ru8MgAtiF9iaEM8DkxnOXaul/mLOQjJHJAi17zuQNZAQtnhxbIqLtPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753429217; c=relaxed/relaxed;
-	bh=zNH/CsduUWCvM5gELuAgq3p7E4AdZC3XhwuB0cWgsv0=;
+	t=1753429317; c=relaxed/relaxed;
+	bh=6ZGxjiEdwRsMG9Q2E2qjJEU3/ioErAZD+Vn9eIyQP6Q=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=fNgkrrzyycv/nMUf8Lugzi681jahdL/EHOpoEMNZsb6nOwIXrzbzcdeHOq34VUvyoi/2NaMzfNRSHH/NUp6y+NuSDhCSTgrhZO+TS/Lu6NVejFKFDHo5UCMOHn3UiQRWqenJt/M7T9gZXTCLl4NaBB1aoI67LwWj38RsbMjBnuBc1Xrv9biZpJQQ42+zXjrxURfl/L0fPIWOM/d8zIJ/M/SGc/PCuC0026AP2PTSqS6pKaf699SMtV8frW3H0PrAb4ivnjEdVb5uOOjFeRWN7XONxhOINVHEodwESL55gXc70vWi4mH4IPGFe+3svtZz/xQ1iQJxgf+glNa5lcGQBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fvLj/ANp; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=beZ5Wthmi1BVsZR5VdlclHbYgVBvm6SV+1/AiqVcXLC2apLdz+U7UKeJv9SdYBCWRLV9v2ksBtZnHKl/+8HPCp2ux2dX1Uq65t0e8bXk5bI/3tv7CEN11wP00J1nyiVKPM+I3laBE/Pap5WQJwVfNS/2yFPLE0gyAjnu13xqZ8TrN0ZeA/WV1FDQEG28+v4Ro6qMkcK5nFwj4EZCjopi8PdhLGHoUCd2hrScHm6iBgeIOCsYMB5G2NPNrHBKC0ACxDDDsw71YWzaEnVN5yYn02NiT41ij4Yps5sfXjklzGKymSdRoMf9+FHz/j6VkJ7Plt4rbFXjnvHlfG5Q5clNbA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OqcWCYGk; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fvLj/ANp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OqcWCYGk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bpKXc5NVTz2xQ6
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 25 Jul 2025 17:40:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bpKZX5bRfz2xQ6
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 25 Jul 2025 17:41:56 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 9C968A56052;
-	Fri, 25 Jul 2025 07:40:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F5CAC4CEE7;
-	Fri, 25 Jul 2025 07:40:10 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 4DFF246831;
+	Fri, 25 Jul 2025 07:41:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FA54C4CEE7;
+	Fri, 25 Jul 2025 07:41:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1753429213;
-	bh=7VzQscuh58heLqHgPQucnd5aA5ZutPjS50+G0o0BO0Y=;
+	s=k20201202; t=1753429314;
+	bh=+oqH1MFh0BVgLR6cjPHsZ04ng4bYIfUcQCNQ4tKmWi4=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=fvLj/ANpkT2bNwQYRbeyhJMU70oyrqXfxsFj7Mou4iNQBHzz21IOMS24MZA4v65qm
-	 wMw8+QYyzq3avcoG94kfAnX2OHP6TVXc+UneLCbFDyPMVI5fR8AV7vjz59D6zatuJc
-	 7lTgFRvqsfeGAwzue0TY86lPQ4rtXGE6Zyed2I43w/fQvUTNMXAezuXx/HyXlFbKX+
-	 TjhEHkoRzVeSfT0e8RqofNNKSc8KvuQCUyZxSSBO7C2WMCKAtW0ZHkEocRTNSRS6jF
-	 FltryL1O+/oslxIaenw3ZSkLhBuSAvznsXbb2x0eQzaXtv3y41z6MAF4s2CphYvGmb
-	 oAvjrcKKlIeig==
-Message-ID: <384635a3-c6ed-44f8-a54a-2b20e20694cd@kernel.org>
-Date: Fri, 25 Jul 2025 09:40:08 +0200
+	b=OqcWCYGkZZjKAXS0oyQgUnyxOiO5YSu7EEyvEwzY0aFdXeonUNISxbTwyT8zG2f/J
+	 VO6lec445cOUHa9UF2myCCnl3vxSPv1Xr8qDDjgcngt1Rwp+zZ14SQipD+/IrTer6J
+	 Mj8oFL3cQINUMxpvC9TLtoYX+ZQNbWA6u5xFe/nN8UvmyBPZhTcbASae9uf5iJjVGh
+	 uXxOiDpwnbomzV5mUj4I8TKoRWex6SDdOu1TqW6aFd3cO+df9LoCAPCe9LXw6/u+EQ
+	 V8JViaZIU7tDLwwVF1ZkJTzBas0tqrna01soWBYkUtJR5L4RygSHCC4TfrYRSxJ7mX
+	 kT39XLIdOHE5g==
+Message-ID: <3c2ce865-0f9b-4b8b-a4c7-d869c6a4f717@kernel.org>
+Date: Fri, 25 Jul 2025 09:41:49 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -75,8 +75,9 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>, Thomas Gleixner
  "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>
 References: <20250722095156.1672873-1-ryan_chen@aspeedtech.com>
  <20250722095156.1672873-2-ryan_chen@aspeedtech.com>
- <001d37c7-f704-4554-a4db-0cc130e07dd6@kernel.org>
- <OS8PR06MB7541F8D3AEE1A618DB31F07BF25FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <a9294387-ce7f-482e-89e1-7c85feaeeee9@kernel.org>
+ <OS8PR06MB754125722911782DBB3CFEFCF25FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <OS8PR06MB75418DB8CDD04D506EB13215F259A@OS8PR06MB7541.apcprd06.prod.outlook.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -122,70 +123,84 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <OS8PR06MB7541F8D3AEE1A618DB31F07BF25FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+In-Reply-To: <OS8PR06MB75418DB8CDD04D506EB13215F259A@OS8PR06MB7541.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 23/07/2025 10:08, Ryan Chen wrote:
->> Subject: Re: [PATCH v3 1/2] dt-bindings: interrupt-controller: aspeed: Add
->> parent node compatibles and refine documentation
->>
->> On 22/07/2025 11:51, Ryan Chen wrote:
->>> +  INTC0 is used to assert GIC if interrupt in INTC1 asserted.
->>> +  INTC1 is used to assert INTC0 if interrupt of modules asserted.
->>> +  +-----+   +---------+
->>> +  | GIC |---|  INTC0  |
->>> +  +-----+   +---------+
->>> +            +---------+
->>> +            |         |---module0
->>> +            | INTC0_0 |---module1
->>> +            |         |---...
->>> +            +---------+---module31
->>> +            |---....  |
->>> +            +---------+
->>> +            |         |     +---------+
->>> +            | INTC0_11| +---| INTC1   |
->>> +            |         |     +---------+
->>> +            +---------+     +---------+---module0
->>> +                            | INTC1_0 |---module1
->>> +                            |         |---...
->>> +                            +---------+---module31
->>> +                            ...
->>> +                            +---------+---module0
->>> +                            | INTC1_5 |---module1
->>> +                            |         |---...
->>> +                            +---------+---module31
->>
->> You binding also said intc1 is the parent of intc-ic, so where is here intc-ic?
->>
->> This diagram and new binding do not match at all.
+On 25/07/2025 09:18, Ryan Chen wrote:
 > 
-> The corresponded compatible is following.
+>> Subject: RE: [PATCH v3 1/2] dt-bindings: interrupt-controller: aspeed: Add parent
+>> node compatibles and refine documentation
+>>
+>>> Subject: Re: [PATCH v3 1/2] dt-bindings: interrupt-controller: aspeed:
+>>> Add parent node compatibles and refine documentation
+>>>
+>>> On 22/07/2025 11:51, Ryan Chen wrote:
+>>>> The AST2700 SoC contains two independent top-level interrupt
+>>>> controllers
+>>>> (INTC0 and INTC1), each responsible for handling different
+>>>> peripheral groups and occupying separate register spaces. Above
+>>>> them, PSP(CA35) GIC controller acts as the root interrupt
+>>>> aggregator. Accurately describing this hierarchical hardware
+>>>> structure in the device tree requires distinct compatible strings for the parent
+>> nodes of INTC0 and INTC1.
+>>>>
+>>>> - Adds 'aspeed,ast2700-intc0' and 'aspeed,ast2700-intc1' compatible
+>>>> strings for parent interrupt controller nodes. (in addition to the
+>>>> existing 'aspeed,ast2700-intc-ic' for child nodes)
+>>>
+>>> I don't understand how this solves your problem at all. Look at old
+>>> diagram - is it correct? If not, what makes you think that new diagram is
+>> correct?
+>>>
+>>> What is the meaning of existing binding and existing intc-ic compatible?
+>>>
+>> The new parent nodes (aspeed,ast2700-intc0/intc1) make the device tree layout
+>> match the actual hardware separation shown in the SoC datasheet.
+>> This allows us to register the full resource region, allocate platform resources
+>> properly, and cleanly extend/debug in the future.
+>>
+>> The previous "aspeed,ast2700-intc-ic" compatible only describes the interrupt
+>> controller instance, not the full register block. In practice, with only a single child
+>> node, there is no way to:
+>> map and manage the entire address space for each INTC block (0x12100000 and
+>> 0x14c18000), or cleanly expose debug features that must access
+>> routing/protection registers outside the intc-ic range.
+>>
+>> The old diagram was incomplete, since it implied that the interrupt controller
+>> block had only the intc-ic instance, but in hardware each INTC region contains
+>> multiple functions and register ranges.
+>>
+>> This binding change is mainly for clarity and correctness, aligning DT and driver
+>> with the real SoC register map and future-proofing for debug/maintenance.
+>>>
+>>>> - Clarifies the relationship and function of INTC0 parent
+>>>>  (intc0_0~x: child), INTC1 parent (intc1_0~x: child), and the GIC
+>>>> in the documentation.
+>>>> - Updates block diagrams and device tree examples to illustrate  the
+>>>> hierarchy and compatible usage.
+>>>> - Refines documentation and example formatting.
+>>>>
+>>>> This change allows the device tree and driver to distinguish between
+>>>> parent (top-level) and child (group) interrupt controller nodes,
+>>>> enabling more precise driver matching SOC register space allocation.
+>>>
+>>> And how it was not possible before? That's poor argument especially
+>>> that DT does not have to ever distinguish that.
+>>>
 > 
->   +-----+   +---------+
->   | GIC |---|  INTC0  | -> (parent : aspeed,ast2700-intc0)
->   +-----+   +---------+
->             +---------+
->             |        |---module0
->             | INTC0_0 |---module1
-> 			(child : aspeed,ast2700-intc-ic)
->             |        |---...
->             +---------+---module31
->             |---....  |
->             +---------+
->             |         |    					 +---------+
->             | INTC0_11 | +----------------------------	| INTC1   |  -> -> (parent : aspeed,ast2700-intc1)
+> Hi Krzysztof,
+> 
+> I wanted to follow up on my previous explanation about separating parent and child nodes for AST2700 INTC in the device tree.
+> There is other SoCs, such as Marvell’s CP110 ICU, also use a similar approach to separate parent controller and functional child nodes in the device tree, as shown here:
+> https://github.com/torvalds/linux/blob/master/Documentation/devicetree/bindings/interrupt-controller/marvell%2Ccp110-icu.yaml#L74-L98
+> Do you need me to provide further details or additional about our SOC design information?
+> Or is there anything specific you’d like clarified regarding the motivation or the binding structure?
 
-AGAIN (second time): that's not what your binding said.
+Start properly wrapping your email responses. All of them are
+misformatted, all the time!
 
-Your binding is explicit here, which is what we want in general. It says
-that inct1 is one of the parents of intc-ic.
-
-Let me be clear, because you will be dragging this talk with irrelevant
-arguments forever - changing this binding is close to no. If you come
-with correct arguments, maybe would work. But the main point is that you
-probably do not have to even change the binding to achieve proper
-hardware description. Work on that.
+You got replies from two DT binding maintainers. Work with that.
 
 Best regards,
 Krzysztof
