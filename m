@@ -1,94 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1837-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1838-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0F87C87FCE
-	for <linux-aspeed@archiver.kernel.org>; Sun, 27 Jul 2025 05:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24DF5C87FCE
+	for <linux-aspeed@archiver.kernel.org>; Sun, 27 Jul 2025 09:36:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bqW9B0T4Rz2y2B;
-	Sun, 27 Jul 2025 15:57:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753595853;
-	cv=none; b=aGHXS0+F6jYKixU/L3I/tbfJiWXNut8TfsLbPJeGxMJ+AlpboTwEv0zfFKNPNM5lkMa+zwIkvbFwjUWKqbYILfIy2GPsGnyioO0ShmdXA+CSQbzSYMiWMmyDm/EWxTPQR7U2lraVPEo+zjwUYjTiIRE6+mk+msPA7zwK0Fbi57q4WlJxeLveAV7tOSUgLmO+SyI0HJrUi40dHVFThaVBK1HNy+auh/xvjV6Jd1nyVPbich4goJuH9LACaeZBT2Xl3qcrHRbXKpRwrcpk72CQpDHPHgp/uFoD2ks0YF7LFfputwZjJCLgaIY0J5e5/OhQcYsJInx1xQJAdUKB0gjp7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bqc1r4q2Zz2y2B;
+	Sun, 27 Jul 2025 19:36:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753608992;
+	cv=none; b=hIAVvZGe9qVXRrhgCHClW06D/HMUllJ2JvIVbYX8M2UVIxbFFeECo+x12hUYC7+l7SZXYM66Sskz13lyfeV6gffXSAX+plF8hVPKYhCzj47RprZ/9Z/DJJCot3qxNoCPslP3Ptrgb5+fPEzb4Oa2kzFARZAjZEJZT+3U/7QB/7R2HK0M3lP92bo/ysnJn++7ayL+FNQPBK3hmWj3C7tRoElViJyhVCqudMQXjilEIAIlUWJP28jEDTwbxBM38oHnBtupZyoX/M9XDzOFpOMFCBKW8R/5uVkk2OhC5GhbP+LRK4uXd0M0D+cFDC0wIp61a7ILGUmOFTtOSpNcG1Bfug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753595853; c=relaxed/relaxed;
-	bh=ouaLqm1R9pYu2kjb2/unKvQ+wVyFyZBELlahYoTUXkA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AavbfXhNI+CaWLHwJehtAsjZUxEhlICS+ApbIXDJvWSOBDT0DWdsldNqGwLXB7iWB0Isvrj8xHm/tymWTc7B08PIpTw1fPz1JGiRtUWpn16a71HQ/GeoZqQQClzgsRvkkZtCBW25gvC+IUMzic88GskUFv97V8fxrvVWjFJNgjtNbKyh0Ce0YSxWE3A/6tZJSvggl42rExgOPMmAjj/dTq5byQD5cZnDOkYL/lnpP5bPI8kYJmQ1ODjmuI0sKU0Lk1N/8oZUVs2Lb/2qgSa640n3dt5NHAn3vfHXWXUthyo7X6tHEUj1JTjrkKsrAbGRLaV12RwHoYlpHA7OQKC25Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KXWoXn8V; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1753608992; c=relaxed/relaxed;
+	bh=RXO7j/EW0YZHZmrgrDHnxMJbXeUhG4A5t7N4/mNJ/U0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=hf5bcvFO6fsxxfWVZsoZAH3CXhs9ayDmb+/Q5zja+E0qL9Ttt117Y/sFHwoS4U9uEtAUARuFXMcSdN2wa6KaMyzcJ8xPZNttezcaL7FtBQ85E9umzDNw7TC/h85a3dXcBQ+oDa6XgWgF0NE5nVsdk2ZaF5I6vK3VYhccTeTQS+dNzeTzNasTaFQmFfo9HiUO/C0gHuYfCg9SbIeOpSeOl4eT4fIqgP8ta9AhhzOVg7rHTjzCcx7g53HYJdRG5/zrjQv0Fzj+3IXw2pc9I1Ol90XlBhXY655J3Tw8mrY+EGgWBBTtMlQ8TgWF51Wokn0CxKEe2ZP11XZHKaARrz6Jvw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CleSKY6o; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KXWoXn8V;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CleSKY6o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bqW981fNHz2xjP
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 27 Jul 2025 15:57:30 +1000 (AEST)
-Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-235f9ea8d08so31956855ad.1
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 26 Jul 2025 22:57:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1753595848; x=1754200648; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ouaLqm1R9pYu2kjb2/unKvQ+wVyFyZBELlahYoTUXkA=;
-        b=KXWoXn8VR32TesVdgtWcmsnUqIlvrg7neo3iVV97ATUUFyCBnEb5zhQ4vdW3JrLc/4
-         zryEpg+Hh5MJh3uLYbYYqnA9m+CexNbB8AJFASFOC50N7zNTVoPzHmfWiQ5qflqCOgOi
-         6ud7qIsndxOKc3IBdRchDNCJeDsNM7Xi0YmQoET1xk/Ojr/pKmoCninfiXJLf/mU3rlQ
-         n2U3zzInDA89U+4E8NBgHrAzgiqMtOgAGhiYUWhRM+Pu6NyEz4/TZI8NAnF3e1/jhGCk
-         NnlEDLMglIMAlR2rohMIBruU+Il4lMMfvq93gHUk5UsrlBCWVii8qi8vAATbE82t63O8
-         pyQg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753595848; x=1754200648;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ouaLqm1R9pYu2kjb2/unKvQ+wVyFyZBELlahYoTUXkA=;
-        b=mXxEiJGJbaxabt2AbO8nuWEtr+2WywuS/voENN/oYCB0dGWyYDi0sEA4eN3+Slf46B
-         KWD1klQ3P/pj5yD+cBZ3ar7OgS2xV5vO7Cv+3lKCKxTd9+MX+9O6V8V4Kz2m813LcHgI
-         RPPv/jAubYFVyRD0mvi8pt5jA6vEk+tCPS6YGoWVqyNgRFe9i4i4lBBCX2kEydS3sr/1
-         Xxxey4D5LckQlcWS8UmZPCk/hom27VSt7SsZTtPhOKg7QxlKw58/97KgVonzfRzb4+b7
-         4eYcMLGwubevS2tZu8SE+HRKVFMIJ0r+MqzuVeAmVlJYNyxoVtQri2NpMRgzg1MqgvwH
-         olig==
-X-Forwarded-Encrypted: i=1; AJvYcCVfJXbd2rxLXxWnv4zPkIgJX89FeWeGs0bl0b+XnGoMvqCKxaXE8IFU7Ll3iSOEcY0nsz6nGPPvq4GUfC8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx+piTQalKmIGZcgTUGSak/vSF/YdDWTTe/RJ1OAG6k5YvcmPET
-	HFSAEbO9BaYw+vFH0SwocZK+YFBDvpS5EMvOfxnZkR8uu0pufySzKM5y
-X-Gm-Gg: ASbGncuxC8sEX7C18rsxYNbOHjpgK9Btep1KF0Jc5x4cPRs613jZhtrN+J2rWbEVHSc
-	Cmkj7xZDhQWeUk7ftx810y95FnZBaGqwnJqITzq3pOnU7fIS+mJZefFsOmiHhDpB3V6/ZdE/Fnw
-	c18gjLWZQb0fGDnh1iPKS3eKcQeCYIG/NnFc34RW/b69BBqLE0FUVkHvD01crqfHMhjNwtukYrg
-	IpOpU/TqQe2j90Cx7m4hTAULQJxA4c2O6mUMMuN70lpCgJs/bmcfi2fyHWqjr+OdySCeVwHnpie
-	Re0r8XC/HXN9SnsRy9XdzjrzKS8vV6M9Q0/aAm6gIy24Ak1MmM3zjxDHqfsPJNH7oLb0xQsBboH
-	0R/V66p1wNLbL16k9UitQv3XCQeEzx8G0Zw54SWMnZc90ar1h0U14eTNAB5cg0wOnR26uFMRie5
-	0=
-X-Google-Smtp-Source: AGHT+IGq8V6jL0qsxc/xLYXjd9K12nmc3vEi5z4imGq1hQgK/s5MM/Z/wf4Ba/rfxpwQws59Tqe8tQ==
-X-Received: by 2002:a17:902:ce8e:b0:23f:6fa4:1567 with SMTP id d9443c01a7336-23fb2fefd31mr99604175ad.8.1753595847477;
-        Sat, 26 Jul 2025 22:57:27 -0700 (PDT)
-Received: from localhost.localdomain (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23fbe30bce5sm28251825ad.27.2025.07.26.22.57.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 26 Jul 2025 22:57:26 -0700 (PDT)
-Date: Sat, 26 Jul 2025 22:57:24 -0700
-From: Tao Ren <rentao.bupt@gmail.com>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Tao Ren <taoren@meta.com>
-Subject: Re: [PATCH v3 10/13] ARM: dts: aspeed: Add Facebook Fuji-data64
- (AST2600) Board
-Message-ID: <aIW/xEfJX/UD1kje@localhost.localdomain>
-References: <20250723233013.142337-1-rentao.bupt@gmail.com>
- <20250723233013.142337-11-rentao.bupt@gmail.com>
- <d09667e5-992e-4ced-ae30-7a4116a72c62@lunn.ch>
- <aIGGdbIX9HaV4dB/@localhost.localdomain>
- <769d6817-ee97-4a23-b013-29bc875a00cb@lunn.ch>
- <aIMTvUyHGd/ikKY9@localhost.localdomain>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bqc1p5bVkz2xRw
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 27 Jul 2025 19:36:30 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id B3D3643F3D;
+	Sun, 27 Jul 2025 09:36:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6F0FC4CEEB;
+	Sun, 27 Jul 2025 09:36:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1753608987;
+	bh=3KwHDBXWQOpr86hh/WgXBV9m9JGz7kpYAsJ27ibYkBc=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=CleSKY6oYIOqUNNodUPeJS3HEm1Cv7ET2XDHb9qBTv6RGO+5Yr8v4eGzHmMUbsQOv
+	 KnEG9Y+kBRcXsgUGzPbgazE/Ro7TV5N520M3eFXqib0dd/jbn3rfhclfK1VstmRkzn
+	 IC0BDYxMawwO/SREWuVmP5qmJzaUMoAvTDKXk+mfs7JdyKObpTG74RMqaVNPT1EKaO
+	 jMs/ZarvFq50IN5/GNPZYnMr8dkoL9RilmsfWBT4UBSddoFOK08SzZnj6Xxy+M+5hY
+	 8ez8LzAEeiAlsCk7b3CQjpLGijkqtTdtGWN/fDo4+6QcMCk1NY8lbDX62emxhIV9P0
+	 6hIRJVdwg+FPA==
+Message-ID: <b8e570ab-313f-4f20-bedb-a1191c672435@kernel.org>
+Date: Sun, 27 Jul 2025 11:36:23 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,57 +59,185 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aIMTvUyHGd/ikKY9@localhost.localdomain>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/2] dt-bindings: interrupt-controller: aspeed: Add
+ parent node compatibles and refine documentation
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Kevin Chen <kevin_chen@aspeedtech.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>
+References: <20250722095156.1672873-1-ryan_chen@aspeedtech.com>
+ <20250722095156.1672873-2-ryan_chen@aspeedtech.com>
+ <001d37c7-f704-4554-a4db-0cc130e07dd6@kernel.org>
+ <OS8PR06MB7541F8D3AEE1A618DB31F07BF25FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <384635a3-c6ed-44f8-a54a-2b20e20694cd@kernel.org>
+ <OS8PR06MB75418BD29DCD6E93F2A44903F25BA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <OS8PR06MB75418BD29DCD6E93F2A44903F25BA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 24, 2025 at 10:18:57PM -0700, Tao Ren wrote:
-> On Thu, Jul 24, 2025 at 02:53:39PM +0200, Andrew Lunn wrote:
-> > On Wed, Jul 23, 2025 at 06:03:49PM -0700, Tao Ren wrote:
-> > > On Thu, Jul 24, 2025 at 02:03:20AM +0200, Andrew Lunn wrote:
-> > > > > +&mac3 {
-> > > > > +	status = "okay";
-> > > > > +	phy-mode = "rgmii";
-> > > > 
-> > > > Does the PCB have extra long clock lines to implement the 2ns delay?
-> > > > 
-> > > > 	Andrew
-> > > 
-> > > Hi Andrew,
-> > > 
-> > > Thank you for catching it. I didn't notice the settings because the file
-> > > is copied from the exiting fuji.dts with minor changes.
-> > > 
-> > > The delay is currently introduced on MAC side (by manually setting SCU
-> > > registers), but I guess I can update phy-mode to "rgmii-id" so the delay
-> > > can be handled by the PHY?
-> > 
-> > That would be good, if it works. The problem with the current code is
-> > that those SCU registers are not set as part of the MAC driver, so it
-> > is hard to know what value they have.
-> > 
-> > 	Andrew
+On 27/07/2025 03:47, Ryan Chen wrote:
+>> Subject: Re: [PATCH v3 1/2] dt-bindings: interrupt-controller: aspeed: Add parent
+>> node compatibles and refine documentation
+>>
+>> On 23/07/2025 10:08, Ryan Chen wrote:
+>>>> Subject: Re: [PATCH v3 1/2] dt-bindings: interrupt-controller:
+>>>> aspeed: Add parent node compatibles and refine documentation
+>>>>
+>>>> On 22/07/2025 11:51, Ryan Chen wrote:
+>>>>> +  INTC0 is used to assert GIC if interrupt in INTC1 asserted.
+>>>>> +  INTC1 is used to assert INTC0 if interrupt of modules asserted.
+>>>>> +  +-----+   +---------+
+>>>>> +  | GIC |---|  INTC0  |
+>>>>> +  +-----+   +---------+
+>>>>> +            +---------+
+>>>>> +            |         |---module0
+>>>>> +            | INTC0_0 |---module1
+>>>>> +            |         |---...
+>>>>> +            +---------+---module31
+>>>>> +            |---....  |
+>>>>> +            +---------+
+>>>>> +            |         |     +---------+
+>>>>> +            | INTC0_11| +---| INTC1   |
+>>>>> +            |         |     +---------+
+>>>>> +            +---------+     +---------+---module0
+>>>>> +                            | INTC1_0 |---module1
+>>>>> +                            |         |---...
+>>>>> +                            +---------+---module31
+>>>>> +                            ...
+>>>>> +                            +---------+---module0
+>>>>> +                            | INTC1_5 |---module1
+>>>>> +                            |         |---...
+>>>>> +                            +---------+---module31
+>>>>
+>>>> You binding also said intc1 is the parent of intc-ic, so where is here intc-ic?
+>>>>
+>>>> This diagram and new binding do not match at all.
+>>>
+>>> The corresponded compatible is following.
+>>>
+>>>   +-----+   +---------+
+>>>   | GIC |---|  INTC0  | -> (parent : aspeed,ast2700-intc0)
+>>>   +-----+   +---------+
+>>>             +---------+
+>>>             |        |---module0
+>>>             | INTC0_0 |---module1
+>>> 			(child : aspeed,ast2700-intc-ic)
+>>>             |        |---...
+>>>             +---------+---module31
+>>>             |---....  |
+>>>             +---------+
+>>>             |         |    					 +---------+
+>>>             | INTC0_11 | +----------------------------	| INTC1   |  -> ->
+>> (parent : aspeed,ast2700-intc1)
+>>
+>> AGAIN (second time): that's not what your binding said.
+>>
+>> Your binding is explicit here, which is what we want in general. It says that inct1 is
+>> one of the parents of intc-ic.
+
+... and you never addressed that. :/
+
+>>
+>> Let me be clear, because you will be dragging this talk with irrelevant arguments
+>> forever - changing this binding is close to no. If you come with correct arguments,
+>> maybe would work. But the main point is that you probably do not have to even
+>> change the binding to achieve proper hardware description. Work on that.
+>>
 > 
-> Hi Andrew,
+> If I do not change the binding, I think the yaml and dts can still fit the interrupt
+> nesting architecture by using both interrupts and interrupts-extended.
 > 
-> I set phy-mode to rgmii-id (letting BCM54616S handle RX/TX delay) and
-> cleared SCU350 (MAC3/4 RGMII delay) register, but somehow BMC is not
-> reachable over ethernet.
+> For first-level controllers, use the standard interrupts property
+> (e.g. with the GIC as the parent).
 > 
-> Let me see if I missed other settings. I will drop the mac entry from v4
-> if I cannot make it work by next Monday.
+> For second-level INTC-IC instances, use interrupts-extended to refer to the
+> first-level INTC-IC, following common Linux practice for stacked interrupt controllers.
+> For example:
+> dts
+> // First level
+> intc0_11: interrupt-controller@12101b00 {
+>     compatible = "aspeed,ast2700-intc-ic";
+>     reg = <...>;
+>     interrupt-controller;
+>     #interrupt-cells = <2>;
+>     interrupts = <GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>, ...;
+> };
+> 
+> // Second level, cascaded
+> intc1_0: interrupt-controller@14c18100 {
+>     compatible = "aspeed,ast2700-intc-ic";
+>     reg = <...>;
+>     interrupt-controller;
+>     #interrupt-cells = <2>;
+>     interrupts-extended = <&intc0_11 0 IRQ_TYPE_LEVEL_HIGH>;
 
-Hi Andrew,
+This looks like changing the meaning of the interrupt. What was the
+interrupt here before? What interrupt is here now?
 
-I made it "work" by updating phy-mode to rgmii-txid, and it seems like
-AST2600 MAC introduces RX delay even though RXCLK delay setting is 0 in
-SCU350 register.
+> };
+> In yaml, I can use:
+> oneOf:
+>   - required: [interrupts]
+>   - required: [interrupts-extended]
+> This allows both cases to be valid.
 
-As I'm not 100% sure where the RX clock delay is introduced, I will drop
-mac3 entry in v4.
+
+Hm? Since when you need both cases?
 
 
-Thanks,
-
-Tao
+Best regards,
+Krzysztof
 
