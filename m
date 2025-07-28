@@ -1,77 +1,77 @@
-Return-Path: <linux-aspeed+bounces-1846-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1847-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FA68C87FCF
-	for <linux-aspeed@archiver.kernel.org>; Mon, 28 Jul 2025 05:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB145C87FCE
+	for <linux-aspeed@archiver.kernel.org>; Mon, 28 Jul 2025 05:56:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4br75X2jNwz30WF;
-	Mon, 28 Jul 2025 15:56:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753682192;
-	cv=none; b=ZZzI7KIeXVSvN1t1NrpkhopfzjhR6gt1V4cTzN9GbwY1FeoVpGv/psVjdOW7FObE35vtaFRTBHMUcWfBgdKZTESmu2sRkcAXTRs+LrrmpUCholTMPDoHaSxS7UemUjqq0kj9gECGcRThuM6+owCmu4hEjPo90Fpz3TWPjsyMr7fOtpCP33cgkbPfxn/X9thW13DNBjZ5vVLMWDp/gLzi+SSUCmqF/FMpUd0irEj6Z/qzTTaXjjh4qUCQigHPmbJVXojQ7RE1uDi/OFTJtZeFAAP6hsVE6VhVrivxT3VMub5whq2kVl69zw96fpVh4ibCHw05DvcqhM/6GRJWsbPF0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4br75Y3cYKz30WS;
+	Mon, 28 Jul 2025 15:56:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753682193;
+	cv=none; b=QYR2RVuem3Z2QqDw2Nd5kU7+rZcnccP2oZ25AFYi4LyHr0/vC8bjcdsxXiba0WUp4HKHG+8LBNyCMqvKWZeQ8AM5ekpvGmbVfNgm8DbYCQLQYDfh0qRBUHbKA4GMYCkNwkt+ZXZ6wh2Y8L9n83iTFmoia83nScn4Ks4rWbt1I5E/A/LZdpHgIWCNxdvDAz7OWcI6y3G902X36AxTkym8QnADrQXxcbAZimVZvM2VMMpM1UaWjDMib9pB4qcFUea3vihabLxciQVCKvDyTP+c3uPHlzaBJL5Ze49xHt68u0vYiz0xUeEZp0W6vPRK2WIoN1nrakwpppQbH2RajkiZ+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753682192; c=relaxed/relaxed;
-	bh=mL3WUAt/E/JB7U4/txK3K9d2bFPzk59C+WVfG91tte0=;
+	t=1753682193; c=relaxed/relaxed;
+	bh=7rbQVOsnj8MtiW9Jyx4x7uRijCuPdjPgMW3Or5zSI/4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AGTlWMNjH+lSO2hIRLN3DBlNfawnNyqsqSfUiwkVeD91B3P8/PpEy42XhcDWZXPPIW4goV+pCrbIzeKuzjG/M0HeB1srOHHfVhuZ2/Le+BYMTpdyR+gnLqS/8fE9/lMcQsRYwrgXo5QL3BKegVf6Puv6YPPdaMUxB/15MzdTIMDyzHUMItfULJbMRVYljc0Dq5Oeiz121Jpys4dXxo7mDQpUDH2ain7Yj+VisrYFk0CO+CmbnzzJQvRgsqmDkwmoJe5434IbbrUM3/dBgohnIj+fGQ2uYNPz6I7ewNLB++XIQfYfYxXnaqiBVZFp1QaItzv3v4y7J+Fh8u+7Mz6OMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OXQ8oM6P; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=QyTFIu2qAElnTc/iieuQ1mtp8cwgiYkKUB99PiME6EwddJhUZGkLPaap5zu3E971xNc6LTpIbUWcOrUAfOjYYK00awpOzU45H2/lv/lpHYchjQ77jKAD7oXbalScORaYOvxQUBHR2DDcGuNl2MuTg4V6iTGOw4J7FWNxatqHgzxYo2MKX1AcsfOIsYGytvhqJXAnbup/n5BIAKLT1p0FOe3pdRdDJ/1+ZEGFmOICvc2+h0V4CB80Yd1QWH1jfe+peOa38khheS9hWui3/8amcA4i7EVfTlidpgmB8FXum4sXrangOMT//kKZ1E+IVSoCiVQ8TP/ejOejrcfANmKL1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lZw8eJHJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OXQ8oM6P;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=lZw8eJHJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4br75W3nQhz307K
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 28 Jul 2025 15:56:31 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-23fc5aedaf0so10499925ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 27 Jul 2025 22:56:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4br75X6kl2z307K
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 28 Jul 2025 15:56:32 +1000 (AEST)
+Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-b321bd36a41so3367845a12.2
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 27 Jul 2025 22:56:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1753682189; x=1754286989; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1753682191; x=1754286991; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=mL3WUAt/E/JB7U4/txK3K9d2bFPzk59C+WVfG91tte0=;
-        b=OXQ8oM6PO7va5SS7WBk8vVaSKpUe7cBzx4DCbiB4Vl0rgeHAkdnVlmCGZ71BBRVPQp
-         UVjWLpmP0FmyBSEfGfMuZ4SLKa7ReFfTjBkYCUWUVWZ+66+MCh6u1mtzquuEW59oFj4x
-         MIWVsQ6QSC+laD7u3WJ7x8ho73wp9cSePDRfq6bBekW6Qhm0qTlabIXIyvRGsUF6BiVW
-         Cs2IsdtIqEWl5V1X4hER1f5AEsH9WcU+gRNQC0BrXxDSUUT456DS/kff16x5voJV8qSh
-         UQJVIJOjRVmtHaBDvrsdG346GghvvyafRDD1eGz9DOMAWgEWRIWC6AG8ByhC7k8h6uQE
-         LqMA==
+        bh=7rbQVOsnj8MtiW9Jyx4x7uRijCuPdjPgMW3Or5zSI/4=;
+        b=lZw8eJHJrzcOwCv4+MqfsR9UoCZ0AIP3vd+XR3QZi9g/9IWAL9eSsDH0PhedNuPJsK
+         smna69+gBMOK7Fvg24jvSFcqssi0enCfOxeL2o7YqgN8BxCfNRF54gIgLwLZadM6lo6R
+         6vMeqnJWrjQ1scs6w0r5Q1V+AaYciut5lO7tfb+yC3f7Bz7asyQIhGiRa1AsQQ0tdRKx
+         TflNAT2ZZUJ+4gh+PomJOdni3w/S2+BPCxbsdHkeIC/vqutRsisSN09J/0Q0rOAu7jrK
+         3gl8BsjGFOIHJVBhqAMNnokgSRpd/0kAwXIZsC0/2Dwx2g21gboVlVxvwPY+9IWtYoHd
+         NYfA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753682189; x=1754286989;
+        d=1e100.net; s=20230601; t=1753682191; x=1754286991;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=mL3WUAt/E/JB7U4/txK3K9d2bFPzk59C+WVfG91tte0=;
-        b=dAZX5OFcWjkiDbeyEEP0IdHKUgUEZ1EkmpgfeSB3dss4JAn1FiaLnCS4jlmJBNh9fK
-         2UATcrdM2tKXS9WCWB+Z7ISmZF3ThTtA/hMgACl2cRmrwjB8RVhFA/4SsBO8PJ4GmRJx
-         tW5BsWmgC7Lfn+tFwV7usSrkPzix1YLkv6nW2ccWkanq1bKI1FxDNQ1lX6oBi/PKF3qc
-         SGfZA6jzP/+g7z3WK8Pd9eTBK6cBoRA7qx/CXH9tVOpdXpyUX20SgyrvMxsgAB6RhiYI
-         tbJ7t0lOjHXJAyDbUENIttkNqKMPRS51MrF8HuEJGYQ0poYVVH09XIBT0ufv2NF4s52U
-         fOZg==
-X-Forwarded-Encrypted: i=1; AJvYcCV3Xk4tAW+TX8a/XftTAez76HvlJRKIQXFQdejCvPZzsPBWRNGmQCkupULUHmi21ptI+2doPHo6M8K2MzM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzmxGcXvGHJDlvFCQ/4R8wTnMXiCQhwQ4MCgI/BpQxlJXrglQbX
-	v1BbS1hlKKeLXgdK8Rvs7fqLulx5wxJiAnNrRfBsq7cW+klHaABXEjiX
-X-Gm-Gg: ASbGnct5pFQ0ErJdsBYvIeJCASZZ+PIHmJQfhuTDYomWx/389jYIHapdCW53DGc2CcX
-	OK25gbXr2j5KAptGnL+Vd8AEiOInclZzCA6eRUpureFlp9ehtod5rL4ykAGFW6bHD6tn4739Aw+
-	fy6z43z5KMB+U9o5FEmXQyRYJ2ARLW4bV6cLAA3Rj12GDVZf+iRewoWzW4AY+ugCbtxTGhZ4H7k
-	rSZtUjW91IdKrHEkJAXI232/vBO75IrSZJwLQHLb0yQ8CXYamBuuyowa+swK7v7tItfgqgKWPEq
-	adM5n+g/OuT7+sOfnFBoPkQIUclEPGxuAPq/YlmbTRHarp0G8KCSDVUEG0jKltpgYWDqS7iHDZN
-	xf9Ms03NCmPKReX8/5H2AwOmN1GedIY9WhW/Pa++vJxgykaOgiuxNyRdvncjd2eueVpXi90wzVS
-	c=
-X-Google-Smtp-Source: AGHT+IFYSrKh0tfdTWTrBVWNM0zAsQJS4EjDsjvUY58SNitCxSLezcS2f29GrbOUsvr7sviStuxoDA==
-X-Received: by 2002:a17:903:1a08:b0:237:ed8e:51d4 with SMTP id d9443c01a7336-23fb30b3205mr188991885ad.24.1753682189146;
-        Sun, 27 Jul 2025 22:56:29 -0700 (PDT)
+        bh=7rbQVOsnj8MtiW9Jyx4x7uRijCuPdjPgMW3Or5zSI/4=;
+        b=fWGKJmfjwYARjUeYpiqk1hF3ZDjAExmZ8bx0i0u8bUcCMfrDeS+8gmNBCT3XhkvElG
+         ggh23JIvrF+6JmxFod63d7VaS2wrYaJi0zVOWXwdtczNJj0e/C2bdJ/9RFGo4DfuGA/o
+         fc6pWo8OzmjNfiDXprcQ4B1v5vvCaRxNpTkkwyGnhTjsLPgOdToEBFqsx+uvS8kEpV/f
+         jlKHUB7gC3SmAdvDWlajAs3G+HrVAPCox44K9l6iki0U0v0VkreeHSZVasgD6QY4wBLa
+         ls0MpMPqDFWrixWQoN50RzmEbcL3Bd5EJNwx72/gUSu8Rdwr0+DqzZGh7nuGJro/+mTp
+         7pvQ==
+X-Forwarded-Encrypted: i=1; AJvYcCX7J9jkB9+FTYyh52FbSI3zVawcsVVdcvTFbrqZQZt26Ift9jFlczr8NNhh3aTqeckZlMUM8zJ6i/7ZaII=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YybSH6xCRlzlC/lPHVItoL0oJX6jpuwLgq0AEw6X0it+Bd3eAqP
+	j17bNf4YGieX7NULSbqWJ6Gq3yQ6kFEAjVrE7PZ7FTZJa+mj7EloGrX1
+X-Gm-Gg: ASbGncvTeWhJPWdZmJGW362m9ZRRC9vwBpD+6jjidcaKmRG7Xmpyoku+2TI5pEXnv1/
+	DsVtf4jTVMkMUM8wb2ET2O4XzdXredmRTXNV26fF8MsqBbz78Nnxg1QXM8QdAIdlBpwRgkIPTMe
+	jKNJT+U/SMbLPCWdjKqqCog8hBWQcnM1oq5N19NERF8U8cNVj/OGZ5lHmqA6RRlA3ASMerTLV7i
+	kn1mSEa2hYMMqs3ceJdXMEAFXPWWVHeeqfDA4OuTl1gJ0/O6ExT3rpYgwq5PkWXfEvW+rA9AJuH
+	pexcauKXK7O8kEC3xrcgFEuLiPeyBFDAXe6JkzvenIq7KTBq/wWadQCtkJRBRSdJM9+238Y0zi9
+	xejmcSWaATwMAgsZgoFivWpev8okHpQeJCUIWZFDCpKvlJAG/NOvOWKmW2BROAUk81Ya+8dzjeM
+	o=
+X-Google-Smtp-Source: AGHT+IEsZ+Ve7h/dSpvrm5oVG5f63/zmNJSGPRE5zLBLKub43uiQvcH1rH25UaQZkyLxvP17RPIH6g==
+X-Received: by 2002:a17:902:f70d:b0:240:3ed3:13f6 with SMTP id d9443c01a7336-2403ed3167cmr11337685ad.18.1753682190828;
+        Sun, 27 Jul 2025 22:56:30 -0700 (PDT)
 Received: from localhost.localdomain (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23fbe514b59sm45091795ad.128.2025.07.27.22.56.27
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23fbe514b59sm45091795ad.128.2025.07.27.22.56.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 27 Jul 2025 22:56:28 -0700 (PDT)
+        Sun, 27 Jul 2025 22:56:30 -0700 (PDT)
 From: rentao.bupt@gmail.com
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -85,9 +85,9 @@ To: Rob Herring <robh@kernel.org>,
 	Andrew Lunn <andrew@lunn.ch>,
 	Tao Ren <taoren@meta.com>
 Cc: Tao Ren <rentao.bupt@gmail.com>
-Subject: [PATCH v4 04/13] ARM: dts: aspeed: Move eMMC out of ast2600-facebook-netbmc-common.dtsi
-Date: Sun, 27 Jul 2025 22:56:06 -0700
-Message-ID: <20250728055618.61616-5-rentao.bupt@gmail.com>
+Subject: [PATCH v4 05/13] ARM: dts: aspeed: Add facebook-bmc-flash-layout-128-data64.dtsi
+Date: Sun, 27 Jul 2025 22:56:07 -0700
+Message-ID: <20250728055618.61616-6-rentao.bupt@gmail.com>
 X-Mailer: git-send-email 2.47.3
 In-Reply-To: <20250728055618.61616-1-rentao.bupt@gmail.com>
 References: <20250728055618.61616-1-rentao.bupt@gmail.com>
@@ -108,9 +108,8 @@ Content-Transfer-Encoding: 8bit
 
 From: Tao Ren <rentao.bupt@gmail.com>
 
-Move eMMC entries from ast2600-facebook-netbmc-common.dtsi to each
-platform because eMMC is removed from future Meta/Facebook AST2600
-Network BMC platforms.
+Add facebook-bmc-flash-layout-128-data64.dts (with 64MB datastore) to be
+used by Meta Network BMC platforms.
 
 Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 ---
@@ -119,76 +118,78 @@ Changes in v4:
 Changes in v3:
   - None.
 Changes in v2:
-  - The 3 emmc-related patches in v1 are squashed into this patch.
+  - None (the patch is introduced in v2 per Andrew's suggestion).
 
- .../boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts   | 12 ++++++++++++
- .../arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts | 12 ++++++++++++
- .../dts/aspeed/ast2600-facebook-netbmc-common.dtsi   | 12 ------------
- 3 files changed, 24 insertions(+), 12 deletions(-)
+ .../facebook-bmc-flash-layout-128-data64.dtsi | 60 +++++++++++++++++++
+ 1 file changed, 60 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128-data64.dtsi
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts
-index 74f3c67e0eff..ff1009ea1c49 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts
-@@ -201,3 +201,15 @@ fixed-link {
- 		full-duplex;
- 	};
- };
+diff --git a/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128-data64.dtsi b/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128-data64.dtsi
+new file mode 100644
+index 000000000000..efd92232cda2
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed/facebook-bmc-flash-layout-128-data64.dtsi
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2020 Facebook Inc.
 +
-+&emmc_controller {
-+	status = "okay";
++partitions {
++	compatible = "fixed-partitions";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	/*
++	 * u-boot partition: 896KB.
++	 */
++	u-boot@0 {
++		reg = <0x0 0xe0000>;
++		label = "u-boot";
++	};
++
++	/*
++	 * u-boot environment variables: 64KB.
++	 */
++	u-boot-env@e0000 {
++		reg = <0xe0000 0x10000>;
++		label = "env";
++	};
++
++	/*
++	 * image metadata partition (64KB), used by Facebook internal
++	 * tools.
++	 */
++	image-meta@f0000 {
++		reg = <0xf0000 0x10000>;
++		label = "meta";
++	};
++
++	/*
++	 * FIT image: 63 MB.
++	 */
++	fit@100000 {
++		reg = <0x100000 0x3f00000>;
++		label = "fit";
++	};
++
++	/*
++	 * "data0" partition (64MB) is used by Facebook BMC platforms as
++	 * persistent data store.
++	 */
++	data0@4000000 {
++		reg = <0x4000000 0x4000000>;
++		label = "data0";
++	};
++
++	/*
++	 * Although the master partition can be created by enabling
++	 * MTD_PARTITIONED_MASTER option, below "flash0" partition is
++	 * explicitly created to avoid breaking legacy applications.
++	 */
++	flash0@0 {
++		reg = <0x0 0x8000000>;
++		label = "flash0";
++	};
 +};
-+
-+&emmc {
-+	status = "okay";
-+
-+	non-removable;
-+	max-frequency = <25000000>;
-+	bus-width = <4>;
-+};
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts
-index 840d19d6b1d4..d0331980d082 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dts
-@@ -1243,3 +1243,15 @@ &mac3 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rgmii4_default>;
- };
-+
-+&emmc_controller {
-+	status = "okay";
-+};
-+
-+&emmc {
-+	status = "okay";
-+
-+	non-removable;
-+	max-frequency = <25000000>;
-+	bus-width = <4>;
-+};
-diff --git a/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi b/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi
-index 208cf6567ed4..0ef225acddfc 100644
---- a/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi
-+++ b/arch/arm/boot/dts/aspeed/ast2600-facebook-netbmc-common.dtsi
-@@ -156,18 +156,6 @@ &vhub {
- 	status = "okay";
- };
- 
--&emmc_controller {
--	status = "okay";
--};
--
--&emmc {
--	status = "okay";
--
--	non-removable;
--	max-frequency = <25000000>;
--	bus-width = <4>;
--};
--
- &rtc {
- 	status = "okay";
- };
 -- 
 2.47.3
 
