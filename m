@@ -1,52 +1,52 @@
-Return-Path: <linux-aspeed+bounces-1867-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1868-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DE2FC87FD2
-	for <linux-aspeed@archiver.kernel.org>; Thu, 31 Jul 2025 22:12:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24326C87FD3
+	for <linux-aspeed@archiver.kernel.org>; Thu, 31 Jul 2025 22:12:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4btNcX5RWPz2yFK;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4btNcX66fxz2yGY;
 	Fri,  1 Aug 2025 08:12:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753999964;
-	cv=none; b=Rl3nxnmTC36gEdL28Pqg8cg5LJn0fc/EerViOF9f5l1QiUHJ41fNSqKYwhI9tO2gpCjMr+GnRWU7K6rpa5C6TqmS3sKByVsrx9UVZGd+DQxB32n1jw8lDUq4N8ESg3dA5KcOelJwfqU4SXLXDxckYFHTSBmunb7R6Z/CwjlJEDy5avFXoBKE0UQbix5YGkpsybE1haT6l4DcOsKvoLVmK7PtH7mZBpvDwtmKYBHdM+bq2mlBlbgZNy2WeP2OmTJ7mAAqfKhyK4/WAoYa4U2wAVJilXxGVRfM/kg7qKXDW8q5Oa/t2fJnvgSx7C9zejScAGaLTe9NHm63Z69EfMlgdQ==
+	cv=none; b=YWkVJm6dC5bHsbmhFX2HkYcZbhMMT0SgdrllDFw/IIY2KXL+OdKil/Hz1KCHxs1xJTAvegHIdziYU3Yf242D6M09x2x/wTKW3+qPb+ioyVTnWEuP5SXQhil31j43hfDGv87d9ZCxSkWzx6GT5Oms26GgjFf7WMx0GUP+0rBTuec9+s1PYawigcJsFAUkFIJHagJA9UCXey1/aD5e135P+YZ7pEsVsa/0yjsa521NnQXwxVxuyS2WKMSJpl9kOVYTiWLMBY4ImvVTaz6zLm93BACJ1NHFcOiZrGCQufOZINLGKz/fPM1Uo6BNhDDEsmACsT1EZmNk8KPDghlt3AXabw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1753999964; c=relaxed/relaxed;
-	bh=n5zF9eYAfet4a2a7y5aVXc8isdMOf/EErsvnjAstrus=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=gi8W1Tp9K35fLDtGh0O25DAow/y6DpmhvBb9CvhVu6VJAboZNJSJ0lgwbFxJQJ1nG/uQVmWMX26iTesp7FkgQXsVycS+f8/zMI0NC536ile5/hL+hxodtr8XsPqKJ7Pxbv7M5VQ0T5S1p9l//Ls1UD5vbBrf6p5DBgCXEKHbx/asYSo1C5iYIHL+qnSSLHQgEuLI7chgo3qqMSphGswN3KDq2LhCVn9X7OUOU8ZE+QP3qWOZkGVzZVzw1/5CFGp+NIfmttKWnWSDtVkvcJSjfQTH6EF13RDHZqKK14fKsdtvW1j89Na/EgoWWR8s8Eu9oxf1nJOg30Pv3TMixu4S2w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oLJcqY90; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	bh=LNB/USS/uG0h39FDRpJoXVY7f/FrpKXXBu/8vBC1B2U=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=ivN+FAzdlZMDjxTSjLjzxaxNDuzewLieO+tMnD5ZwGaI2FmquWfoaox3NOQ3n19V0+xCXq5rIG6zjTKRSp9RRdDEDK3kCqyC0IBoXDISOe9HqWel1evKIzrooF4iLstN26Q2tD6E26BcELHWzOCmKF2RyVZpokzTck990zCwA4UVDNmMrYCY1fcvEossxQZh+yvTiFj9pj5HHTIhxOiJBcNVMIdRyT2k9QTNhP3xDPXa0QFk/guqzrNpU18Y2nzFtnuVpC094xHJTu+hZcMzEiMOjmMCE6fWOdxDz4hiCtSlbxigUSNe04ruM7DjG1m4m3gG44PHgb6P4c682s9/PA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z+a4eReZ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oLJcqY90;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z+a4eReZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4btNcW3C3bz2xRs;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4btNcW3FcMz2y06;
 	Fri,  1 Aug 2025 08:12:43 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 227D543E26;
-	Thu, 31 Jul 2025 22:12:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5A0CC4CEEF;
-	Thu, 31 Jul 2025 22:12:39 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id BDAF3462CB;
+	Thu, 31 Jul 2025 22:12:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CDCAC4CEF4;
+	Thu, 31 Jul 2025 22:12:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1753999960;
-	bh=dGSihHIH6s1bKpn+VJDgTQDiIrWhwFA7/h+sIJx6jwg=;
-	h=From:Subject:Date:To:Cc:From;
-	b=oLJcqY90eQJdOq4+ZVdz9zCLTXxY9bYXetWN3wruycZl68Vv8gOinkMD1NxlUtUU7
-	 KKZdgufnrqxghzfCIpcVsP3a4SUL2gkcBcukTJZTEj+TmrSU4/PCG1awNmtn5dsfwy
-	 MQNiKrUxOePQXuomTAgaRPMUZCjAaSS+ARkk8dc49O91FthtGs1ySu4P+hycZIzoWw
-	 yJwRvZFKpTm8rpsTb9Ayip8A8O1z697Wp/1bZACv9Pq7uqzrOUGwkXbjCRgaCpD/Hs
-	 DipIW8Hnun2M+qLnJ1C338nHAPVgDVH0+SoM+e1SA7/1/YEf+h+MhLZLm1EhasDVH7
-	 9ZVX0dE4D+2Mw==
+	s=k20201202; t=1753999961;
+	bh=iCHNz13YFPJI2rv/3E+irLxUkOjyMiI3w+ZxRLbSXwE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
+	b=Z+a4eReZzye57rk5zFrxJ5GDtFDgGuQS/b9abZkgO+BdyRHsuYPzE3WLL+dcYEgru
+	 j94N2eV/OcsgxYGafKlFM8lOU3JadX0QQEkZiuWyE6lgUeZ1+bOeGeEmbNxBMt0CVt
+	 uwmxI8ja/wfpgU9w4/Es+PrIBob98dsT/GF9BSZGI3zACQ8psN6q0fwQ+SUedklnQX
+	 Gf2iafV3MT9EgGbciiO9e2EaDtdOBQ+7KjMnHg7y9TxeN0WLxtoJUSS+TgJT4xmAf9
+	 +bpMzIsYhbggtOZf4FpksBsDiXD0p7C8FhGuc8aYO/f1w1fpaXkj+UCgMbBdsUwu4n
+	 eWSjQ+BzkpLMg==
 From: "Rob Herring (Arm)" <robh@kernel.org>
-Subject: [PATCH 0/6] ASpeed FSI DT clean-ups
-Date: Thu, 31 Jul 2025 17:12:17 -0500
-Message-Id: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
+Date: Thu, 31 Jul 2025 17:12:19 -0500
+Subject: [PATCH 2/6] ARM: dts: aspeed: Drop "fsi-master" compatibles
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,10 +62,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAEHqi2gC/x3MMQqAMAxA0atIZgNtRQWvIg5qEw1IlUZFKN7d4
- viG/xMoRSGFrkgQ6RaVPWTYsoB5HcNCKD4bnHG1aSuL/kRWwXmjMVyHInvrTVPzZNlAro5ILM9
- /7If3/QC+DbP4YQAAAA==
-X-Change-ID: 20250731-dt-fsi-cleanups-fd1d065fb1f0
+Message-Id: <20250731-dt-fsi-cleanups-v1-2-e7b695a29fc3@kernel.org>
+References: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
+In-Reply-To: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
 To: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>, 
@@ -76,55 +75,166 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-fsi@lists.ozlabs.org
 X-Mailer: b4 0.15-dev
 
-There's a whole bunch of FSI related DT warnings on ASpeed platforms. 
-This series fixes most of them except some related to SBEFIFO.
-
-The remaining SBEFIFO warnings are from some deprecated properties noted 
-with 'remove when userspace is fixed'. Not sure if they can be removed 
-now or soon. If not, perhaps the deprecated properties need to be 
-properly documented.
-
-All the patches here are independent, so DTS changes can go via ASpeed 
-tree and FSI bindings via FSI tree (or ack if you want me to take the 
-bindings instead).
-
-Rob
+The "fsi-master" compatible has been used inconsistently on FSI masters.
+It doesn't have any real use or meaning, so it's easier to drop it
+everywhere than add it where missing. It is also not documented by any
+schemas (only .txt bindings).
 
 Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 ---
-Rob Herring (Arm) (6):
-      ARM: dts: aspeed: Drop "no-gpio-delays"
-      ARM: dts: aspeed: Drop "fsi-master" compatibles
-      ARM: dts: aspeed: Add missing "ibm,spi-fsi" compatibles
-      MAINTAINERS: Add FSI bindings to FSI subsystem entry
-      dt-bindings: fsi: Convert fsi-master-gpio to DT schema
-      dt-bindings: fsi: Convert aspeed,ast2400-cf-fsi-master to DT schema
+ arch/arm/boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts     | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts      | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts      | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts    | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts     | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts       | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts       | 2 +-
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi                 | 4 ++--
+ 10 files changed, 11 insertions(+), 11 deletions(-)
 
- .../bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml | 81 ++++++++++++++++++++++
- .../devicetree/bindings/fsi/fsi-master-ast-cf.txt  | 36 ----------
- .../devicetree/bindings/fsi/fsi-master-gpio.txt    | 28 --------
- .../devicetree/bindings/fsi/fsi-master-gpio.yaml   | 63 +++++++++++++++++
- MAINTAINERS                                        |  1 +
- .../arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts | 24 ++++---
- .../boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts |  3 +-
- .../arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts |  2 +-
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts |  2 +-
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts |  3 +-
- .../boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts    |  2 +-
- .../arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts |  3 +-
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts  |  2 +-
- .../boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts |  2 +-
- arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts  |  2 +-
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |  4 +-
- arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi     | 12 ++--
- arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi     | 12 ++--
- 18 files changed, 188 insertions(+), 94 deletions(-)
----
-base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
-change-id: 20250731-dt-fsi-cleanups-fd1d065fb1f0
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts
+index f42254ba6aeb..79c6919b3570 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts
+@@ -54,7 +54,7 @@ video_engine_memory: jpegbuffer {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
++		compatible = "aspeed,ast2500-cf-fsi-master";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts
+index 370738572a55..87acbfc0a1b7 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts
+@@ -63,7 +63,7 @@ sys_err {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "fsi-master-gpio", "fsi-master";
++		compatible = "fsi-master-gpio";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts
+index 31ff19ef87a0..6c8b966ffccc 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts
+@@ -165,7 +165,7 @@ fan4 {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "fsi-master-gpio", "fsi-master";
++		compatible = "fsi-master-gpio";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 		no-gpio-delays;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts
+index e5b8d07e7622..1b7c25e307bc 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts
+@@ -77,7 +77,7 @@ attention {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
++		compatible = "aspeed,ast2500-cf-fsi-master";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts
+index 45631b47a7b3..c7aa14034dc0 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts
+@@ -55,7 +55,7 @@ identify {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "aspeed,ast2400-cf-fsi-master", "fsi-master";
++		compatible = "aspeed,ast2400-cf-fsi-master";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts
+index 2180fa9b6f24..3c03204869e7 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts
+@@ -68,7 +68,7 @@ power {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
++		compatible = "aspeed,ast2500-cf-fsi-master";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts
+index a0e8c97e944a..39d0fe46fd9e 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts
+@@ -200,7 +200,7 @@ rear-id {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "fsi-master-gpio", "fsi-master";
++		compatible = "fsi-master-gpio";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 		no-gpio-delays;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts
+index 8b1e82c8cdfe..89907b628b65 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts
+@@ -173,7 +173,7 @@ power-button {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "fsi-master-gpio", "fsi-master";
++		compatible = "fsi-master-gpio";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 		no-gpio-delays;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts
+index 9904f0a58cfa..9b49b0aa8b35 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts
+@@ -96,7 +96,7 @@ hdd_fault {
+ 	};
+ 
+ 	fsi: gpio-fsi {
+-		compatible = "fsi-master-gpio", "fsi-master";
++		compatible = "fsi-master-gpio";
+ 		#address-cells = <2>;
+ 		#size-cells = <0>;
+ 		no-gpio-delays;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index 8ed715bd53aa..acdb6ae74b27 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -847,7 +847,7 @@ i2c: bus@1e78a000 {
+ 
+ 			fsim0: fsi@1e79b000 {
+ 				#interrupt-cells = <1>;
+-				compatible = "aspeed,ast2600-fsi-master", "fsi-master";
++				compatible = "aspeed,ast2600-fsi-master";
+ 				reg = <0x1e79b000 0x94>;
+ 				interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
+ 				pinctrl-names = "default";
+@@ -859,7 +859,7 @@ fsim0: fsi@1e79b000 {
+ 
+ 			fsim1: fsi@1e79b100 {
+ 				#interrupt-cells = <1>;
+-				compatible = "aspeed,ast2600-fsi-master", "fsi-master";
++				compatible = "aspeed,ast2600-fsi-master";
+ 				reg = <0x1e79b100 0x94>;
+ 				interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
+ 				pinctrl-names = "default";
 
-Best regards,
---  
-Rob Herring (Arm) <robh@kernel.org>
+-- 
+2.47.2
 
 
