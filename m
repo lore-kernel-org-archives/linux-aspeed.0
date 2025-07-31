@@ -1,59 +1,52 @@
-Return-Path: <linux-aspeed+bounces-1866-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1867-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFB39C87FCA
-	for <linux-aspeed@archiver.kernel.org>; Thu, 31 Jul 2025 03:32:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DE2FC87FD2
+	for <linux-aspeed@archiver.kernel.org>; Thu, 31 Jul 2025 22:12:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bsvlX2gmGz2yLB;
-	Thu, 31 Jul 2025 13:32:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753932728;
-	cv=none; b=cjqczd5EJKcPEwuQX4r3nPfbU/8Pnidun4luyfSHbCp+aBkZkFwZPmOJStHs0ldHbp2k3gPFBRImzIsBii0mNeDr226dms8vxlo8zwrH6+2uFdL42PparNcRNv1jJ5wrWmfzIypKRNP8KJEV75Nre+U0QdO0L/rRjyETHaeajPronCu9siNroJax8HHu+MOCZJLcxZM3Jm50TzDE1AuGyLW/TJH+gIh481EfwZj7wRX2AUR209lG7k0Xrosc1JlZYsi1rl5kTp+y7xsbWFBskA7rSWz6j+zxKWyQkvFEHHx7vYgH3kEgg6DvsLwkIaQm9C4UX05iKJAW0q3FRy0MjA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4btNcX5RWPz2yFK;
+	Fri,  1 Aug 2025 08:12:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753999964;
+	cv=none; b=Rl3nxnmTC36gEdL28Pqg8cg5LJn0fc/EerViOF9f5l1QiUHJ41fNSqKYwhI9tO2gpCjMr+GnRWU7K6rpa5C6TqmS3sKByVsrx9UVZGd+DQxB32n1jw8lDUq4N8ESg3dA5KcOelJwfqU4SXLXDxckYFHTSBmunb7R6Z/CwjlJEDy5avFXoBKE0UQbix5YGkpsybE1haT6l4DcOsKvoLVmK7PtH7mZBpvDwtmKYBHdM+bq2mlBlbgZNy2WeP2OmTJ7mAAqfKhyK4/WAoYa4U2wAVJilXxGVRfM/kg7qKXDW8q5Oa/t2fJnvgSx7C9zejScAGaLTe9NHm63Z69EfMlgdQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753932728; c=relaxed/relaxed;
-	bh=quiVJQfgnApnKSx34eCN3/yRSyocJqA7hv+N5gRbILQ=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=P2yE4DQslWXaDDfTaDsmrNNabqM0p3MMk6NVio7jU6/o5QCwvTQJbxXBOSlKOlc5a+nBLc5SuEUKpln5Qv1NKXTwDj6yMBMikMihZUpwSsfGvjGxb1OkG49yQ9HcLlZ230ewFMay/L07wtlqNJFQIrNxWzpemhQKD/DQNnqx7y4I8Lh35qqpg9hX4DO+TeLp1qxG3YsqW8tB7wYXePnRMU1xbUOf8bf/N7yCAR5ZuuOMFOD+uV5jZF+3nwF5a0L0Cn5iqx+I7ga/DRspVwfFUi6ffOSeO9lhb8JHVpCsy5PDEZJrbreNPQm5XBEZn9Wd+MyrujwgMRlm7jSUW276Vw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=HED3WeGH; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1753999964; c=relaxed/relaxed;
+	bh=n5zF9eYAfet4a2a7y5aVXc8isdMOf/EErsvnjAstrus=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=gi8W1Tp9K35fLDtGh0O25DAow/y6DpmhvBb9CvhVu6VJAboZNJSJ0lgwbFxJQJ1nG/uQVmWMX26iTesp7FkgQXsVycS+f8/zMI0NC536ile5/hL+hxodtr8XsPqKJ7Pxbv7M5VQ0T5S1p9l//Ls1UD5vbBrf6p5DBgCXEKHbx/asYSo1C5iYIHL+qnSSLHQgEuLI7chgo3qqMSphGswN3KDq2LhCVn9X7OUOU8ZE+QP3qWOZkGVzZVzw1/5CFGp+NIfmttKWnWSDtVkvcJSjfQTH6EF13RDHZqKK14fKsdtvW1j89Na/EgoWWR8s8Eu9oxf1nJOg30Pv3TMixu4S2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oLJcqY90; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=HED3WeGH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oLJcqY90;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bsvlW5c3bz2yKw
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 31 Jul 2025 13:32:07 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1753932726;
-	bh=quiVJQfgnApnKSx34eCN3/yRSyocJqA7hv+N5gRbILQ=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=HED3WeGHV0Udep18IegiMfm6WyZlqxMnpgN54EKUnt8wMgVd8M0P+zL0YU6xOr1lO
-	 QmRpXuJL5BNJ4pgcIoRvFv5u6B6FR8zIjKg7jFqkngbo77xRRVHegq8daiCUNuT9pb
-	 3zA/k9KJVq6oeEgE55h+3wpLuwI6MyzLNKmPLhQX/eGppaQ9LSX1rFv5R/EFj+NP2e
-	 VWy7+O6U/GcDfhS8/E46pba3iH2HuLmRAFoQcAA2Ztn3cazv800rajqNjABIh/dgOL
-	 F/sL5gT+Db9YVVfXP1nkufrPIdBh5i6IKvji58x2S+X456962TN3pQaLf5bcuSwof6
-	 b1a3QTn9Ct97w==
-Received: from [127.0.1.1] (unknown [180.150.112.70])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0D10F69374;
-	Thu, 31 Jul 2025 11:32:04 +0800 (AWST)
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Andrew Lunn <andrew@lunn.ch>, Tao Ren <taoren@meta.com>, 
- rentao.bupt@gmail.com
-In-Reply-To: <20250728055618.61616-1-rentao.bupt@gmail.com>
-References: <20250728055618.61616-1-rentao.bupt@gmail.com>
-Subject: Re: [PATCH v4 00/13] ARM: dts: aspeed: Add Meta Darwin dts
-Message-Id: <175393272444.1011263.10036967590309258484.b4-ty@codeconstruct.com.au>
-Date: Thu, 31 Jul 2025 13:02:04 +0930
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4btNcW3C3bz2xRs;
+	Fri,  1 Aug 2025 08:12:43 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 227D543E26;
+	Thu, 31 Jul 2025 22:12:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D5A0CC4CEEF;
+	Thu, 31 Jul 2025 22:12:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1753999960;
+	bh=dGSihHIH6s1bKpn+VJDgTQDiIrWhwFA7/h+sIJx6jwg=;
+	h=From:Subject:Date:To:Cc:From;
+	b=oLJcqY90eQJdOq4+ZVdz9zCLTXxY9bYXetWN3wruycZl68Vv8gOinkMD1NxlUtUU7
+	 KKZdgufnrqxghzfCIpcVsP3a4SUL2gkcBcukTJZTEj+TmrSU4/PCG1awNmtn5dsfwy
+	 MQNiKrUxOePQXuomTAgaRPMUZCjAaSS+ARkk8dc49O91FthtGs1ySu4P+hycZIzoWw
+	 yJwRvZFKpTm8rpsTb9Ayip8A8O1z697Wp/1bZACv9Pq7uqzrOUGwkXbjCRgaCpD/Hs
+	 DipIW8Hnun2M+qLnJ1C338nHAPVgDVH0+SoM+e1SA7/1/YEf+h+MhLZLm1EhasDVH7
+	 9ZVX0dE4D+2Mw==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Subject: [PATCH 0/6] ASpeed FSI DT clean-ups
+Date: Thu, 31 Jul 2025 17:12:17 -0500
+Message-Id: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,22 +62,69 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.2
+X-B4-Tracking: v=1; b=H4sIAEHqi2gC/x3MMQqAMAxA0atIZgNtRQWvIg5qEw1IlUZFKN7d4
+ viG/xMoRSGFrkgQ6RaVPWTYsoB5HcNCKD4bnHG1aSuL/kRWwXmjMVyHInvrTVPzZNlAro5ILM9
+ /7If3/QC+DbP4YQAAAA==
+X-Change-ID: 20250731-dt-fsi-cleanups-fd1d065fb1f0
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+ Eddie James <eajames@linux.ibm.com>, Ninad Palsule <ninad@linux.ibm.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ linux-fsi@lists.ozlabs.org
+X-Mailer: b4 0.15-dev
 
-On Sun, 27 Jul 2025 22:56:02 -0700, rentao.bupt@gmail.com wrote:
-> From: Tao Ren <rentao.bupt@gmail.com>
-> 
-> The patch series introduces the initial device tree for Meta/Facebook
-> Darwin AST2600 BMC.
-> 
-> Patches #1, #2 and #3 fixes the DTB warnings in wedge400/fuji dts and
-> ast2600-facebook-netbmc-common.dtsi.
-> 
-> [...]
+There's a whole bunch of FSI related DT warnings on ASpeed platforms. 
+This series fixes most of them except some related to SBEFIFO.
 
-Thanks, I've applied this to the BMC tree.
+The remaining SBEFIFO warnings are from some deprecated properties noted 
+with 'remove when userspace is fixed'. Not sure if they can be removed 
+now or soon. If not, perhaps the deprecated properties need to be 
+properly documented.
 
--- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+All the patches here are independent, so DTS changes can go via ASpeed 
+tree and FSI bindings via FSI tree (or ack if you want me to take the 
+bindings instead).
+
+Rob
+
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+Rob Herring (Arm) (6):
+      ARM: dts: aspeed: Drop "no-gpio-delays"
+      ARM: dts: aspeed: Drop "fsi-master" compatibles
+      ARM: dts: aspeed: Add missing "ibm,spi-fsi" compatibles
+      MAINTAINERS: Add FSI bindings to FSI subsystem entry
+      dt-bindings: fsi: Convert fsi-master-gpio to DT schema
+      dt-bindings: fsi: Convert aspeed,ast2400-cf-fsi-master to DT schema
+
+ .../bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml | 81 ++++++++++++++++++++++
+ .../devicetree/bindings/fsi/fsi-master-ast-cf.txt  | 36 ----------
+ .../devicetree/bindings/fsi/fsi-master-gpio.txt    | 28 --------
+ .../devicetree/bindings/fsi/fsi-master-gpio.yaml   | 63 +++++++++++++++++
+ MAINTAINERS                                        |  1 +
+ .../arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts | 24 ++++---
+ .../boot/dts/aspeed/aspeed-bmc-inspur-fp5280g2.dts |  3 +-
+ .../arm/boot/dts/aspeed/aspeed-bmc-opp-lanyang.dts |  2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-mowgli.dts |  2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-nicole.dts |  3 +-
+ .../boot/dts/aspeed/aspeed-bmc-opp-palmetto.dts    |  2 +-
+ .../arm/boot/dts/aspeed/aspeed-bmc-opp-romulus.dts |  3 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-swift.dts  |  2 +-
+ .../boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dts |  2 +-
+ arch/arm/boot/dts/aspeed/aspeed-bmc-opp-zaius.dts  |  2 +-
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |  4 +-
+ arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi     | 12 ++--
+ arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi     | 12 ++--
+ 18 files changed, 188 insertions(+), 94 deletions(-)
+---
+base-commit: 19272b37aa4f83ca52bdf9c16d5d81bdd1354494
+change-id: 20250731-dt-fsi-cleanups-fd1d065fb1f0
+
+Best regards,
+--  
+Rob Herring (Arm) <robh@kernel.org>
 
 
