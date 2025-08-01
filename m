@@ -1,72 +1,94 @@
-Return-Path: <linux-aspeed+bounces-1881-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1882-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87092C87FCA
-	for <linux-aspeed@archiver.kernel.org>; Fri,  1 Aug 2025 15:03:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48733C87FCB
+	for <linux-aspeed@archiver.kernel.org>; Sat,  2 Aug 2025 03:14:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4btq3C1kPkz2yfL;
-	Sat,  2 Aug 2025 01:03:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754060631;
-	cv=none; b=NMeLDkkBIbDLnipfR74TYsjlxFuQPpKgb9ndCzkvCWoVMO/UHnSfs/H5aHUZU+VejGYC2WUX9fQ47YmKNSLKiaQTzXQ8VKRWoY7PwZZE6YBGJusBDlHdo6tUDB8Vjk5TGmr7aybc4YipdbBSWZcIelR1MISLlvKKI+PTyUlv5mfY4PD9DizohobpFN2v5/WrED+1e6QDFaqmW3uJ/skuTfYZRd2ya0/Yu6T/uaQKUneJaS/mbXIyx5VYAsqKcPePJ01nx9JmWvAt9tBw4askuvYz9lqULal6oMeIKAd577R3cv8xuTyiPwgYyxiIf5yNBHXnqqsiuWiZJdVg51vpMg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bv7GN6X9mz2y2B;
+	Sat,  2 Aug 2025 13:14:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754057501;
+	cv=none; b=B7ECjBk0goxSU8nUElXYfz2ZBp3QpMYoxp6UBSHutjsnnaFGKPvfZR3nEcpCly7bp780iM+DgpPe14dXEtYOzDVjOJvx2o0HdZNmhWX+T3t90UqTqrmFjJ5CrMo3lnyAjR/hy6xR/ULMP29iXERW4VcWsMDRQlzzbDlKNnXDDyv577WpbCcAcvLLV2rprT/v3ODsnf4GbjvbOr4+Vv/Zeff1IoLT8LzXl8wOygz77yVIRDzN5yXBN7hoqVRgnaipV3rbh1ce3ARzb2nz87N3B/KkvOoEIcGWV8m/qY1LNvHSRmwMEudlAj+AQ+6NLPCGi3TtrYOX97ivlpflBP68Fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754060631; c=relaxed/relaxed;
-	bh=gDmG46Tk3Fu6LK97TgF72a8HHzYJ3HI4cdqzY4OubmQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FGDSGuNAdpa0iVy3gFVVr8f7uNwkjcazxAKkp4090pH0YZtP8L2tbFeR4CJiAJMxE1Yh8rp3t9F4xNyP5RImhs3KZh83xJJjP5hB4hbxAU2mjnaUFAOVcV8xbuZT5XbBoFNR3CK2/JxOwgELuyfC0ZceN7QF6dMlzhbe7HsgyGTI3D1ZkhxJsX9mMtZrw3TU/PLcpIMcQoAvJGd/mDx3+ONQqTGfApYu8pBrAiAgAXvxtBGu2neZP3nfNYvU5CMU00UYjU4JpToO0IgdwMJqYb+DfODkdrJS513CuT1jULj5wbKeMWiOe42QpXBkvJwQDzJvUlK4furWL5fPywhAOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LGI1QlUo; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1754057501; c=relaxed/relaxed;
+	bh=QDlYysWEDC9bsdNUriekyMCwXLSh3PKSI3dkxy/uoG0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eLhSyc672gbiT+xEyFk6tjzz1vGTZjKd1AwMUvgDqAmFofUK+18iLaBnEr8Oy2GJLscVTMZDhbQxOCXWIoBEDjESTJKV2kFDoPtzkW7xV6EQoj8FsFl0hYY6I/4sYDPM+a8ea8fnR4+InelWuYbb9fFBemfIzq7xb9N75so7i1SIZUpB3Hr+MJ/HIyQSPJim3+74J8eqmQgkfetdSOBEqIpc9naZrOg1FvfyCXOTYR/Af4OV+YFwTXkjoap9iI8LIrOhJAly4DqTwcfAIbBVTg3kjXPLqPra6I8hcp/9XDRAVrjIG7Jhlrfg3bCJWWJ6pHKqxU0nqtOJ4npmo2OjHA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YzA7tCJa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LGI1QlUo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YzA7tCJa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4btq3B3Y84z2xjP;
-	Sat,  2 Aug 2025 01:03:50 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 571B6aWW015630;
-	Fri, 1 Aug 2025 15:03:30 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=gDmG46
-	Tk3Fu6LK97TgF72a8HHzYJ3HI4cdqzY4OubmQ=; b=LGI1QlUoUZejyC1agmDUer
-	tb/ipM8pu6VL5ju0GpxYcpGWierr1asbq0zYtwE1V8cPBUAtazux3BGdZWqJoHUh
-	VAkRB8rJNclZIHCWCxyM48v2pprFcrWL+w+LqAeY0El2tw+OASLSHgs8HS7GL//W
-	jgHSG435ncKskKOzpnc+nGvskanN2TQtbnqvLtO1x50qPC+lXII9eqiVyGn/wzTx
-	UbcBoqayVfWANSNYaYla7oDlnIB0aqXFj9+DdhamBiD7ZiS1EkUOOZHv/e/cF8ik
-	HXuF5kuJ8anVMzkNY3LxsumtZ3cieRoqtU6fUgljIDqSkaaAh9oMae5PiGaf78fQ
-	==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 484qfr9c3d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Aug 2025 15:03:30 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 571B1JEW028782;
-	Fri, 1 Aug 2025 15:03:29 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 485c231j4v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Aug 2025 15:03:29 +0000
-Received: from smtpav02.dal12v.mail.ibm.com (smtpav02.dal12v.mail.ibm.com [10.241.53.101])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 571F3SUu56492292
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 1 Aug 2025 15:03:28 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AE5FD5805F;
-	Fri,  1 Aug 2025 15:03:28 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 715D35805A;
-	Fri,  1 Aug 2025 15:03:28 +0000 (GMT)
-Received: from [9.61.163.64] (unknown [9.61.163.64])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  1 Aug 2025 15:03:28 +0000 (GMT)
-Message-ID: <ea5177ba-5905-40aa-91b0-9bcb66b6f0d4@linux.ibm.com>
-Date: Fri, 1 Aug 2025 10:03:25 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4btnv03M2hz2xHY
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  2 Aug 2025 00:11:39 +1000 (AEST)
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-76bd7676e60so752314b3a.0
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 01 Aug 2025 07:11:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1754057496; x=1754662296; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=QDlYysWEDC9bsdNUriekyMCwXLSh3PKSI3dkxy/uoG0=;
+        b=YzA7tCJau4zNzkqJr04K0unn2Re40AQtJZ+GmqxgAwT4K7sD4Rvxm87HVhT5pNHSE7
+         DDYUS6mvXYtL9NMWbxXvH/BzWnKqV7aLzZcNHQPnByiD0iocBzJsjB5aRp6r9o/g5viP
+         3cSSDQOWGL+lUQVV8nZOrWPGopZFT+a42FTWN/WKK/5xdNTIRzenNFJ9O9vvRt89G8Ve
+         u8ybaCZ/FlI2BJ+TmyB1PekaM0PLTuQRKKWUZl2DJ9qV3oC6FecMzj6UEprNdOKEmbC5
+         cJArU4kzVuYr/pB+mPJjdvQ/3P0JZrdUnjfPd69p8WM63SMF2+idZVybUJG7q2PrHkTh
+         TG7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1754057496; x=1754662296;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=QDlYysWEDC9bsdNUriekyMCwXLSh3PKSI3dkxy/uoG0=;
+        b=NIgGcTMkzi4nA5hEHkUjbM0kzf24THmcaaOuoicqgCJTls+AQOUYw5MAquLEO+I+Fi
+         goWjej6HNGr9SP3mtzaYUDPUijRS+6J2CVKmx4osuNyFAlfqPaDnsHTcx2yCV4zsGDXT
+         ZVA+nTmanZ+zui6TUJbbEefk1dApLb0gTF9pu1bB5TlKejehjbf4JZ6CY5n69YCsAX3g
+         XmVUAPFCnv7UGnKNVrbH8XECj0WRcbJWjbMtYWJ1J57k4ZAHeiNf4vKSbDj9wsBsj+2t
+         HcmaDzo01MdLcDgox9IeC22w1Adf5uE7lvRzM12DrHXaLL5DVWMHfD4U35p0O7rU5mYl
+         8NiQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWRhWLmCVFaAW8yJGQVUJLMTejbEatmVM6OU6i95etZB87tfsHxPL6a4QKJgoihrwusyqrCymTsV1Wx4rg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyYJsp7HCnx8NN274Rwly+TpbYc2l+J5VIenPz4j/FXNNV/JcP1
+	XkLfQV2B7LK87TPsbJEvX3Ft5Fsw5QEdhAzaJba1Vxwcaj2qyo7D+env
+X-Gm-Gg: ASbGncuDmiJ3AVskAu+XnSDJkRngTgxADrvgO/6p7G+9KQ80ZhBS+squhI2gx5eFHLg
+	OvHw9SotRUtOICn5opqv0CzND3gy3c8dfouu5PRRgG5jkm0AjoSDx9BHX0JzYSXNAAQ00RTCpkL
+	re4iKKSDvwef9oeS6RDrwCxcp5CbqgraVJDtUTQrCsT+zZyeJcJjSzMPGk33tDeAApfu/KrP8pC
+	TZpHl7Wi+ebUzuZxg1dbp5XioX8uT9S/pl36x70/qRJy53jiBPxlzl4F2ytE5ag7HpKlr/ORRfT
+	RLjdrnBV00zsMW6jCSf1jq8V0WCy7diWYAcBS6dh8g6D4bLkw0Ro0b7E1pC0+ERqiponQvVH1MS
+	3xvjjdaYZKNPgHvaSpBZa4FEWsi73aXMh/wGXTHSwY5zDTw2Ecr7rI0gA2RIjCnaLvvefc/yUEw
+	SDdOM3mh9R
+X-Google-Smtp-Source: AGHT+IGgtdwqNeqGthVbBLzr/jwmqUMgf3GK98QWSEdaavZ7/9GNEF8oAglRAXDDwnehneDYPluCUA==
+X-Received: by 2002:a05:6a20:6a1b:b0:232:1668:848d with SMTP id adf61e73a8af0-23dc0e445aemr19952336637.27.1754057495754;
+        Fri, 01 Aug 2025 07:11:35 -0700 (PDT)
+Received: from pk-pc.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b422bb0db0fsm3849984a12.61.2025.08.01.07.11.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 01 Aug 2025 07:11:35 -0700 (PDT)
+From: "P.K. Lee" <pkleequanta@gmail.com>
+To: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	patrick@stwcx.xyz
+Cc: Jerry.Lin@quantatw.com,
+	Jason-Hsu@quantatw.com,
+	yang.chen@quantatw.com,
+	p.k.lee@quantatw.com
+Subject: [PATCH v10 0/2] Add Meta (Facebook) Ventura BMC (AST2600)
+Date: Fri,  1 Aug 2025 22:11:29 +0800
+Message-ID: <20250801141131.2238599-1-pkleequanta@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,197 +102,75 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 6/6] dt-bindings: fsi: Convert
- aspeed,ast2400-cf-fsi-master to DT schema
-To: "Rob Herring (Arm)" <robh@kernel.org>,
-        Krzysztof Kozlowski <krzk+dt@kernel.org>,
-        Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Ninad Palsule <ninad@linux.ibm.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-fsi@lists.ozlabs.org
-References: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
- <20250731-dt-fsi-cleanups-v1-6-e7b695a29fc3@kernel.org>
-Content-Language: en-US
-From: Eddie James <eajames@linux.ibm.com>
-In-Reply-To: <20250731-dt-fsi-cleanups-v1-6-e7b695a29fc3@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODAxMDExMyBTYWx0ZWRfXwkqOO444EumL
- YXjZ+64rSmUjTmtLSxPfWnM4021W3gqsEQnnSb0HENfzkTFimBJfR7mCrgaIo6aMTMtp3PDbnvM
- epWcngSfV0HEhKtKRrQxQoK+9NcPiAVhyQfODx0jxTdBdy2nZd8xGhdV+fXPCi9kZCJkzhCTSeK
- engtvGWpOoHFHSn+Y7mkAUhYj6Wo8Zwte3SPKhT33BYopPAjiyjoHFqNU1wMZXxGO+ihXqwTAPX
- 6BeVpFhSzoLwJ2E6OCqpijcs2kQkO6SAIXXayKzuzo+fCG2T/islMnKvz5/YcIYIymBYtEHpZ64
- GliIoc1pyV6O6KZ00qfhvJZcSzHhWY0izOpO1DdvbSg6Nktfu9gerXa32A0vke/qe290gez6xPt
- FYa21WDN02TpHENI0YvLrnR46JtLZLb22kXwyDAC2MrdqvB3WCFaQcWMQOzB8QqH1sGnN/sl
-X-Authority-Analysis: v=2.4 cv=Je28rVKV c=1 sm=1 tr=0 ts=688cd742 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=gEfo2CItAAAA:8 a=VnNF1IyMAAAA:8
- a=VwQbUJbxAAAA:8 a=KHSZ2H1nh6ehvMvmo5AA:9 a=QEXdDO2ut3YA:10
- a=sptkURWiP4Gy88Gu7hUp:22
-X-Proofpoint-GUID: ABclAUaAHOJT_qgRJ99oyhE207k_zMBu
-X-Proofpoint-ORIG-GUID: ABclAUaAHOJT_qgRJ99oyhE207k_zMBu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-01_04,2025-08-01_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- mlxlogscore=999 clxscore=1015 lowpriorityscore=0 spamscore=0 adultscore=0
- suspectscore=0 bulkscore=0 malwarescore=0 priorityscore=1501 phishscore=0
- mlxscore=0 impostorscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
- definitions=main-2508010113
+Content-Transfer-Encoding: 8bit
 
+Add Linux device tree entry related to Meta (Facebook) Ventura specific
+devices connected to the BMC (AST2600) SoC. The purpose of Ventura is to
+detect liquid leakage from all compute trays, switch trays and rack
+sensors within the rack, log the events, and take necessary actions
+accordingly.
 
-On 7/31/25 17:12, Rob Herring (Arm) wrote:
-> Convert the ASpeed Coldfire offloaded GPIO FSI master.
->
-> Drop the "fsi-master" compatible as it has not be used consistently and
-> doesn't represent anything.
+---
+v1:
+    1. Create ventura dts file.
+    2. Add commit msg.
+    3. Use format-patch to generate patch.
+    4. Add subject prefixes matching the subsystem.
+---
+v2:
+    1. Modify email content.
+---
+v3:
+    1. Add mail list.
+---
+v4:
+    1. Apply git send-email --thread option.
+    2. Sort nodes in the dts alphanumerically.
+---
+v5:
+    1. Run scripts/checkpatch.pl and fix reported warnings.
+    2. Remove unnecessary 88E6393X CONFIG FRU.
+---
+v6:
+    1. Add a new stage for the DTS change.
+    2. Run scripts/checkpatch.pl and fix reported error.
+    3. Fix the issue in a separate patch.
+---
+v7:
+    1. Fix broken indentation in the device tree file.
+    2. Sort nodes alphabetically, then by address if equal.
+    3. Rename fan sensor nodes from 'hwmon' to 'fan-controller'.
+---
+v8:
+    1. This patch series has significant changes compared to
+       previous versions, and quite some time has passed since the last
+       submission.Therefore, previously received Acked-by/Reviewed-by/Tested-by
+       tags are not included in this version.
+       If needed, tags can be added again after review of thisnew version.
+---
+v9:
+    1. Reordered the node sequence under i2c5.
+    2. Added a description of the platform's intended use to the commit
+       messages.
+    3. Added 3 GPIO expanders to i2c10 and defined the necessary GPIO
+       line names.
+---
+v10:
+    1. Added IRQ support in GPIO expanders under i2c10 to handle edge-triggered
+       events.
+    2. Reordered the nodes.
+---
+P.K. Lee (2):
+  dt-bindings: arm:aspeed add Meta Ventura board
+  ARM: dts: aspeed: ventura: add Meta Ventura BMC
 
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../aspeed/aspeed-bmc-facebook-ventura.dts    | 1578 +++++++++++++++++
+ 3 files changed, 1580 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dts
 
-Acked-by: Eddie James <eajames@linux.ibm.com>
+-- 
+2.43.0
 
-
->
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> ---
->   .../bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml | 81 ++++++++++++++++++++++
->   .../devicetree/bindings/fsi/fsi-master-ast-cf.txt  | 36 ----------
->   2 files changed, 81 insertions(+), 36 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml b/Documentation/devicetree/bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml
-> new file mode 100644
-> index 000000000000..690b6c936f18
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml
-> @@ -0,0 +1,81 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/fsi/aspeed,ast2400-cf-fsi-master.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASpeed ColdFire offloaded GPIO-based FSI master
-> +
-> +maintainers:
-> +  - Eddie James <eajames@linux.ibm.com>
-> +
-> +allOf:
-> +  - $ref: /schemas/fsi/fsi-controller.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2400-cf-fsi-master
-> +      - aspeed,ast2500-cf-fsi-master
-> +
-> +  clock-gpios:
-> +    maxItems: 1
-> +    description: GPIO for FSI clock
-> +
-> +  data-gpios:
-> +    maxItems: 1
-> +    description: GPIO for FSI data signal
-> +
-> +  enable-gpios:
-> +    maxItems: 1
-> +    description: GPIO for enable signal
-> +
-> +  trans-gpios:
-> +    maxItems: 1
-> +    description: GPIO for voltage translator enable
-> +
-> +  mux-gpios:
-> +    maxItems: 1
-> +    description:
-> +      GPIO for pin multiplexing with other functions (eg, external FSI masters)
-> +
-> +  memory-region:
-> +    maxItems: 1
-> +    description:
-> +      Reference to the reserved memory for the ColdFire. Must be 2M aligned on
-> +      AST2400 and 1M aligned on AST2500.
-> +
-> +  aspeed,cvic:
-> +    description: Reference to the CVIC node.
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +
-> +  aspeed,sram:
-> +    description: Reference to the SRAM node.
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +
-> +required:
-> +  - compatible
-> +  - clock-gpios
-> +  - data-gpios
-> +  - enable-gpios
-> +  - trans-gpios
-> +  - mux-gpios
-> +  - memory-region
-> +  - aspeed,cvic
-> +  - aspeed,sram
-> +
-> +unevaluatedProperties: false
-> +
-> +examples:
-> +  - |
-> +    fsi-master {
-> +      compatible = "aspeed,ast2500-cf-fsi-master";
-> +      clock-gpios = <&gpio 0>;
-> +      data-gpios = <&gpio 1>;
-> +      enable-gpios = <&gpio 2>;
-> +      trans-gpios = <&gpio 3>;
-> +      mux-gpios = <&gpio 4>;
-> +      memory-region = <&coldfire_memory>;
-> +      aspeed,cvic = <&cvic>;
-> +      aspeed,sram = <&sram>;
-> +    };
-> diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt b/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-> deleted file mode 100644
-> index 3dc752db748b..000000000000
-> --- a/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-> +++ /dev/null
-> @@ -1,36 +0,0 @@
-> -Device-tree bindings for ColdFire offloaded gpio-based FSI master driver
-> -------------------------------------------------------------------------
-> -
-> -Required properties:
-> - - compatible =
-> -	"aspeed,ast2400-cf-fsi-master" for an AST2400 based system
-> -   or
-> -	"aspeed,ast2500-cf-fsi-master" for an AST2500 based system
-> -
-> - - clock-gpios = <gpio-descriptor>;	: GPIO for FSI clock
-> - - data-gpios = <gpio-descriptor>;	: GPIO for FSI data signal
-> - - enable-gpios = <gpio-descriptor>;	: GPIO for enable signal
-> - - trans-gpios = <gpio-descriptor>;	: GPIO for voltage translator enable
-> - - mux-gpios = <gpio-descriptor>;	: GPIO for pin multiplexing with other
-> -                                          functions (eg, external FSI masters)
-> - - memory-region = <phandle>;		: Reference to the reserved memory for
-> -                                          the ColdFire. Must be 2M aligned on
-> -					  AST2400 and 1M aligned on AST2500
-> - - aspeed,sram = <phandle>;		: Reference to the SRAM node.
-> - - aspeed,cvic = <phandle>;		: Reference to the CVIC node.
-> -
-> -Examples:
-> -
-> -    fsi-master {
-> -        compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
-> -
-> -	clock-gpios = <&gpio 0>;
-> -        data-gpios = <&gpio 1>;
-> -        enable-gpios = <&gpio 2>;
-> -        trans-gpios = <&gpio 3>;
-> -        mux-gpios = <&gpio 4>;
-> -
-> -	memory-region = <&coldfire_memory>;
-> -	aspeed,sram = <&sram>;
-> -	aspeed,cvic = <&cvic>;
-> -    }
->
 
