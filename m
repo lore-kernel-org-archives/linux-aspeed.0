@@ -1,53 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1873-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1874-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7543FC87FDA
-	for <linux-aspeed@archiver.kernel.org>; Thu, 31 Jul 2025 22:12:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23B78C87FCB
+	for <linux-aspeed@archiver.kernel.org>; Fri,  1 Aug 2025 14:17:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4btNcc405rz2yD5;
-	Fri,  1 Aug 2025 08:12:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753999968;
-	cv=none; b=Nt9m44thVDpXjqErD0sS4sncuiP9iZsHdLGyGwp41b2H2cglFijEEUVUMsA6oRU/nAdbpnJVOooMxnm0JdsWNwzVW3NOmlDJAlDEAphJPJ2/lerJpmvZz76abHotV2YcTfQuxVOD4okcNZ7087er6f/13Sr2/Iz25p4V+9K/sAQ7VdedNeR53zTKDAggkriNnFxmZX9FUD512lGuhJJ+YT2f6HUfyUFVo1eeUedKL90N+Dfw5IB67mOJslkBED0qv/xu2PAVuYfh/Epd7g/+rGjcCJvElvnAgaPmdW6Gj5KqfkqfPI0gfOzHsSoqSzPJZJCeFolj0boAnu3/LLZizg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4btp1f3MdRz2yfL;
+	Sat,  2 Aug 2025 00:17:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754057846;
+	cv=none; b=NCxWePgw618KjoQNlvj45LylzhiwYMvTUMlHcXZ+MfJbOaQlU3pF/F0D3PEqTbeNAMrSx7zgM8BzjFA0GudaPlruX6chokEg9xiOvYD1LPw2rGweRjmQtQliQW3p5hZngAhIu8fbHM57xBYEbagLE/J/cq42HOSLXZN8QqM7egho8cq0A2Cs4tDhqOiHNcPa4GjWNa8thA2Hc09HyKFFjuEIYj0Vt/qcH/Y9PmnJN28pKWBHPowJC37JqDOYs6gwmbz6h3LwU8znCNEVh3yX5ETmnm/IYp15og5Vkh1DE4bXwgxlof3NpjfzwbOriAavzVlPyZp+ubUy0N25qlcyYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753999968; c=relaxed/relaxed;
-	bh=cIuHZJr3d0IkRmCu/kJiMSIaqasjuHpmTpf21AWXoDo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=D0Mif3VykWl0rfxRsfPTGuTfbXrVfFMoNkygWpkSSxtVP+QJqyEZA8m6wtsb3/HoOXafT/Sf/1XVF7ed1kKz2Q0Hys/hCdOOHI9a7YK33/iueUil3DkKpla/dECdlgK2Humtwnn4M4+BLAfBnMpm7QPUWny1sgPqOAQL3aDxn+49FUciu/lFQaNhKerNrKsvxxcTvMXuAeBhxOAfN0dddW+yV9Aewm+GdFccduPVvy22wVr0LtWa1w4xqUni3wUtDGojF2WY9ncrDZQQfkrChXZV16Gdlldo9wUiW2Ynr+YIFHGg0uEuYOrl/LBThhwCGqK5jrkfVqCCzdg1c0LKwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WiPdH8bJ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1754057846; c=relaxed/relaxed;
+	bh=0O8k8v6VkWyNLRO6LV6+X5paGC+lB8sVPMPnLlEwvd4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VtbrRVglKg/DImQjEz1kUUQ7I8SbL+oqywzg65j3KaUgUn5ld/Pl1gLeS4fwpTvw4fxHtSQQ8x3kmtv0NtdvG3Ghn3kllHGehoKBw66yoHGL2u/sktKERu8pWaFmuyo69+0Mmfqbx7rJUPNtYlHljC8UVrANxaQDDCErJldxcOK5YwNR8rpJ6YympZPOG1XPs7Pg/Wj6vg64xaRRlifuyI20AGB8UhFDjmDrofCBSfpSOXtZjjFJl3NGXtJizYTtH2DANHSq67MRwTMsMiSG19IpPE+JcERZUUK2RpN9K9sjXY0+EWAQaFYRaO7oA7Nj5s7G8xl5ckXm0+Mno64Q0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Sol4L29a; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WiPdH8bJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Sol4L29a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4btNcZ5Bjkz2yKq;
-	Fri,  1 Aug 2025 08:12:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4btp1d3YbRz2xHY
+	for <linux-aspeed@lists.ozlabs.org>; Sat,  2 Aug 2025 00:17:25 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 353494353A;
-	Thu, 31 Jul 2025 22:12:45 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F38E7C4CEEF;
-	Thu, 31 Jul 2025 22:12:44 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B4D776112D;
+	Fri,  1 Aug 2025 14:17:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D51AC4CEF6;
+	Fri,  1 Aug 2025 14:17:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1753999965;
-	bh=ynT/7P19nBEbnk4v3wUHrwMTXAlpxpXmfSbDLW7QBow=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=WiPdH8bJVZiPwaVYPbRRr523yZEzOPQ+ie6pu6R67AsJQNNDlJEGT7ay45wD7eDkq
-	 LWt9adqI1IaCuV8oC5dgyWEPfcpu0QWaFm81n00/ylYgb66xnFkzMEFgIWG0FbBJYp
-	 dvh8q5g065Hf5jP+cXZ/eg+BAU2Td+fwPUhef4xpkbzfSeI9FKX7sA1ba+y8me/2hc
-	 pN0WY4/A4lK+hUzEbMPDIDPoHZR9R8cdk48SP3pV7KbsIJVTOSEsyyO2ucOLBciLMB
-	 iyTpyCCDMz7xlXpajr2lRYL/VBzx0bxlOT3SDiWhTKYXg4flf5djaa4SSIWFt0u6xI
-	 ZCFD5xkDIvBkg==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Date: Thu, 31 Jul 2025 17:12:23 -0500
-Subject: [PATCH 6/6] dt-bindings: fsi: Convert aspeed,ast2400-cf-fsi-master
- to DT schema
+	s=k20201202; t=1754057842;
+	bh=/dGL8FJB2k7jmU4fx1ZjtOzHw2+joJD4qeXW5OLAM6s=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=Sol4L29agLL1FChmutM5z1UedXm6DKCbOi86TOYW6ti1MHvI2h+sfkuF2IQDzCzIc
+	 0Jb/yHzTZcDGQiL9q3cqK+72n4DSR6HJXqTyhAwf4CuDvTa15yv2sPUiAyh+NwjSL1
+	 G+dg8dUiqgM302SciUuZM/bL+R3RRjxbReayTAmZDVpRYaI2MrJJGLD0Sgeu9Pl/lr
+	 P9CWEsCUFYNpUc5Sjm7TIzJ0pmiq2UPC1448la1rSgKty2TzJXp3MTVSWlQiprYBmu
+	 YVPV4xbBVOvmrRqCbg83ANttEyzu7cw/zxd/MrbTmsUqFX2XosAhmQm6LHoLGNUeBj
+	 48NW5sib1Robw==
+Message-ID: <6452a85c-0b90-4c46-9685-5cd6886dca15@kernel.org>
+Date: Fri, 1 Aug 2025 16:17:17 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,163 +59,75 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v10 1/2] dt-bindings: arm:aspeed add Meta Ventura board
+To: "P.K. Lee" <pkleequanta@gmail.com>, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ patrick@stwcx.xyz
+Cc: Jerry.Lin@quantatw.com, Jason-Hsu@quantatw.com, yang.chen@quantatw.com,
+ p.k.lee@quantatw.com
+References: <20250801141131.2238599-1-pkleequanta@gmail.com>
+ <20250801141131.2238599-2-pkleequanta@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <20250801141131.2238599-2-pkleequanta@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250731-dt-fsi-cleanups-v1-6-e7b695a29fc3@kernel.org>
-References: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
-In-Reply-To: <20250731-dt-fsi-cleanups-v1-0-e7b695a29fc3@kernel.org>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
- Eddie James <eajames@linux.ibm.com>, Ninad Palsule <ninad@linux.ibm.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- linux-fsi@lists.ozlabs.org
-X-Mailer: b4 0.15-dev
 
-Convert the ASpeed Coldfire offloaded GPIO FSI master.
+On 01/08/2025 16:11, P.K. Lee wrote:
+> From: "P.K. Lee" <p.k.lee@quantatw.com>
+> 
+> Document the new compatibles used on Meta Ventura.
+> 
+> Signed-off-by: P.K. Lee <p.k.lee@quantatw.com>
 
-Drop the "fsi-master" compatible as it has not be used consistently and
-doesn't represent anything.
+So you just ignored everything I wrote?
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
----
- .../bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml | 81 ++++++++++++++++++++++
- .../devicetree/bindings/fsi/fsi-master-ast-cf.txt  | 36 ----------
- 2 files changed, 81 insertions(+), 36 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml b/Documentation/devicetree/bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml
-new file mode 100644
-index 000000000000..690b6c936f18
---- /dev/null
-+++ b/Documentation/devicetree/bindings/fsi/aspeed,ast2400-cf-fsi-master.yaml
-@@ -0,0 +1,81 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/fsi/aspeed,ast2400-cf-fsi-master.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASpeed ColdFire offloaded GPIO-based FSI master
-+
-+maintainers:
-+  - Eddie James <eajames@linux.ibm.com>
-+
-+allOf:
-+  - $ref: /schemas/fsi/fsi-controller.yaml#
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2400-cf-fsi-master
-+      - aspeed,ast2500-cf-fsi-master
-+
-+  clock-gpios:
-+    maxItems: 1
-+    description: GPIO for FSI clock
-+
-+  data-gpios:
-+    maxItems: 1
-+    description: GPIO for FSI data signal
-+
-+  enable-gpios:
-+    maxItems: 1
-+    description: GPIO for enable signal
-+
-+  trans-gpios:
-+    maxItems: 1
-+    description: GPIO for voltage translator enable
-+
-+  mux-gpios:
-+    maxItems: 1
-+    description:
-+      GPIO for pin multiplexing with other functions (eg, external FSI masters)
-+
-+  memory-region:
-+    maxItems: 1
-+    description:
-+      Reference to the reserved memory for the ColdFire. Must be 2M aligned on
-+      AST2400 and 1M aligned on AST2500.
-+
-+  aspeed,cvic:
-+    description: Reference to the CVIC node.
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+  aspeed,sram:
-+    description: Reference to the SRAM node.
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+required:
-+  - compatible
-+  - clock-gpios
-+  - data-gpios
-+  - enable-gpios
-+  - trans-gpios
-+  - mux-gpios
-+  - memory-region
-+  - aspeed,cvic
-+  - aspeed,sram
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    fsi-master {
-+      compatible = "aspeed,ast2500-cf-fsi-master";
-+      clock-gpios = <&gpio 0>;
-+      data-gpios = <&gpio 1>;
-+      enable-gpios = <&gpio 2>;
-+      trans-gpios = <&gpio 3>;
-+      mux-gpios = <&gpio 4>;
-+      memory-region = <&coldfire_memory>;
-+      aspeed,cvic = <&cvic>;
-+      aspeed,sram = <&sram>;
-+    };
-diff --git a/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt b/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-deleted file mode 100644
-index 3dc752db748b..000000000000
---- a/Documentation/devicetree/bindings/fsi/fsi-master-ast-cf.txt
-+++ /dev/null
-@@ -1,36 +0,0 @@
--Device-tree bindings for ColdFire offloaded gpio-based FSI master driver
--------------------------------------------------------------------------
--
--Required properties:
-- - compatible =
--	"aspeed,ast2400-cf-fsi-master" for an AST2400 based system
--   or
--	"aspeed,ast2500-cf-fsi-master" for an AST2500 based system
--
-- - clock-gpios = <gpio-descriptor>;	: GPIO for FSI clock
-- - data-gpios = <gpio-descriptor>;	: GPIO for FSI data signal
-- - enable-gpios = <gpio-descriptor>;	: GPIO for enable signal
-- - trans-gpios = <gpio-descriptor>;	: GPIO for voltage translator enable
-- - mux-gpios = <gpio-descriptor>;	: GPIO for pin multiplexing with other
--                                          functions (eg, external FSI masters)
-- - memory-region = <phandle>;		: Reference to the reserved memory for
--                                          the ColdFire. Must be 2M aligned on
--					  AST2400 and 1M aligned on AST2500
-- - aspeed,sram = <phandle>;		: Reference to the SRAM node.
-- - aspeed,cvic = <phandle>;		: Reference to the CVIC node.
--
--Examples:
--
--    fsi-master {
--        compatible = "aspeed,ast2500-cf-fsi-master", "fsi-master";
--
--	clock-gpios = <&gpio 0>;
--        data-gpios = <&gpio 1>;
--        enable-gpios = <&gpio 2>;
--        trans-gpios = <&gpio 3>;
--        mux-gpios = <&gpio 4>;
--
--	memory-region = <&coldfire_memory>;
--	aspeed,sram = <&sram>;
--	aspeed,cvic = <&cvic>;
--    }
-
--- 
-2.47.2
-
+Best regards,
+Krzysztof
 
