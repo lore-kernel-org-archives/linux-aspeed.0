@@ -1,80 +1,71 @@
-Return-Path: <linux-aspeed+bounces-1888-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1889-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7107C87FCB
-	for <linux-aspeed@archiver.kernel.org>; Sat,  2 Aug 2025 03:15:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D68EBC87FCA
+	for <linux-aspeed@archiver.kernel.org>; Sun,  3 Aug 2025 15:18:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bv7Hk2mJlz30T9;
-	Sat,  2 Aug 2025 13:15:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754036598;
-	cv=none; b=dxMnpg8g9RZrtbgkwWvZhwymH779WY4GC+aq2Cr935biG05Pzh6E8lZcNpSRQKNV6TAImcoKFfVal3kdJicaxVjl2S9uwDKjbzwm0dIwRCnonZQcNZrCGZkxfUg9yJz24UlDw9iFPM93nN6IqieMhv+uuoeOG5MqXKE1D1UEDZZ34N6l3xW782rHUKYMMYjOd9fckudFpfLsKc4YMh6rpiSWOswh9jJl6KcjWMpho9SewaP7Bjg67FToN366MyCOr4EY/2sDzkXWpIDv5/Z0k96t34ClpS7WGwlPbNslJkeSp0pg1eYOYldEkGtlc6FdXMTDb2Yf4pR/Bl2twB8uXg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754036598; c=relaxed/relaxed;
-	bh=9XTlkPv0IBw1LQNFKJofErU6zJZ+bp+//Zwh3h0I84U=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=X0HuyCCAmztxoXiDR9shW3xm9zTtjUP72U5tgnsUT6jrkh4ITcV61bObPc1rvsUn7+SPch+BxSSne/QmF6yl/0HgZQJZjyp3b/iM4WIhqELJc7Q8o9V9IWlhTSuXbjbmE2nyuNkA/RaGabZrNYeqVSCPQyKBAaS6StumQGlfftf8VvQwRlOhxsKW/U4f7IMcLoczWUirLi8mLIR9+8kOO50DcQU5zQUKy7zYN/2qdTJ1dkrUfk+AGajXc8HfHOYBxWV1grsFzudE4fEkAml5meG3Sol98/1J+A3C+SP2cEkZJs3eM6PmpIiFEElYFXvPW/I1TSwzAd5DjKSWTslnaw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FOm22BfY; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FOm22BfY;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bw3Hd30pvz2xQ6;
+	Mon,  4 Aug 2025 01:18:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20c::4" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754234333;
+	cv=pass; b=Znn8ODhnbn1iOMPYgD+i+We1DMi012RVG4OILfCvNTe+/wnthl6fbxl2wKgNfovjR0w1knAI+cfmf6Oo53xThM1ktLdjoK3GekYdMvKV5bA5qmRwinIVuMVJs/fyZY3/KDczrR13t/8h+v+SxMH16dUgLfk4ZDBqgIm3wg0FWj9ImHjl7tgUB0TXyS31Kg3ARz7BOneFRq/8iGm6ShahQY6Z8kXF+OvWDD4xRDRke/yc03L3ak5UdcGVnsjW3qP3S0SVPJ6u/q8EAaUJkrm/oe2rJkguOxwylFxnqJxvwM24K9hoPcpYTl7+P/r1w8WUKaJa/oC45F3Mju3S04pNEA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1754234333; c=relaxed/relaxed;
+	bh=yNI+LhHXQ+9iO/YpWo0TJMuaZrrlbQ9uwKMkDKxFoOE=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=hXfz6xfqG8/Vc6dq7HItL2dGjfLwc/ycHl/BVRkGUXmbjoyho2T7t02MZb9P70Dc2aCZ3buPvOsrDYO9Y2xY9RsZYTo0AisBzGgwuqiTbjtKthRQQ6/qJXM+hmC64dRCHLWmPvjABKpbp3S0y0jYkIGaQhQLjglvHV7G+wJ13lG6zbrB1zIJ29O3t46svYvSo5p9/QZdNIwKmvte69mBeCzwh+u+e0o6nasf9rRqpE1s+YtCiXZ1pL+y0MiZ7QZAZjmLXYahcusJaQgZ2hYwIGrA5QSUBv5G4PZmOzFt4EHn0V0jQAseN1w+3h4fnBDa40r+1CCDYODzsPdwnxnt2w==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io; spf=pass (client-ip=2a01:111:f403:c20c::4; helo=fr4p281cu032.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org) smtp.mailfrom=siewert.io
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=siewert.io (client-ip=2a01:111:f403:c20c::4; helo=fr4p281cu032.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org)
+Received: from FR4P281CU032.outbound.protection.outlook.com (mail-germanywestcentralazlp170120004.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20c::4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4btf902CQMz30T9
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  1 Aug 2025 18:23:15 +1000 (AEST)
-Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-31eb744f568so1094111a91.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 01 Aug 2025 01:23:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1754036593; x=1754641393; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=9XTlkPv0IBw1LQNFKJofErU6zJZ+bp+//Zwh3h0I84U=;
-        b=FOm22BfYuEIajLvV92zxvBrHoRhGuljwGcIuWlaQvJdd2azkEML2zN+UqwdnvFZKVB
-         iOCi7c218FjKPZuqWSExNk7zkaNG7PP3wFL6J/ONy/2siXEYCQdAQ9xJZgI5k7IMSEIj
-         7SACnFmuppH9jmwybls2sg2dTZsntBkcXvhKLJG3nkdPsYcx/0vn28VQkDE9cO+kaEQ1
-         wOsxazx90kU+VBHLgk78xIHQnuxsNzr1Oc9AUDb1C69dK3ugAkZ9E21o9Pju0XA4iL9K
-         UeClFGRnsnp90VInQ7vA8AxrHg0pDS70D6tNz+Va6gCZ7rzbR7kKLymd5ILtcChmm11Z
-         qSBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754036593; x=1754641393;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=9XTlkPv0IBw1LQNFKJofErU6zJZ+bp+//Zwh3h0I84U=;
-        b=uBKes5TodD4Xx+8Ne/jYpefcw8LYjQ+TtyaR8IS16cgX0dV4fI9SAX67oqUjfmbw4S
-         WMq4RT8Eg9v+EwafDzY6R6m0iBNMFPMee2TqN14M+Y4So0xV0ULZ7Mcq765BJZ4E2d9C
-         Ds7gdQjN4/uvUhcFQVKgehUBVsZm2xU2ldwaHtlarIaOfEMiinW5QVmoXcepfR7Pr4iX
-         d0Gt2zN9MXQaItas47ZCB8iVNV63TLw3YL/LOqQjGYj5jneDaR8s2NFC5RuydB16TKIh
-         15yMZlBpuf7oRKf9a4ubvqJIStGRLL3TIbSKPfAHPm4q+WnpoVsuTohuM7S8QCpahZWa
-         haEg==
-X-Forwarded-Encrypted: i=1; AJvYcCXYOVNerT1CvH1YYxf4dVuunA7tyDFTgKh3CmBCZhzv+g0IpSyMp1eJpzMqlxUJuxHHli2pe4mQQLF61Nk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxubaysyIxv+F4YFSodeCLve5fCgR5z0u/qwM/ES7fvp405LoN1
-	KOh2wqF1HMQCIz1eoJhblS/qTNl2FsPedHEbnNSfGodeoVexQyicVCbzfVUuNw==
-X-Gm-Gg: ASbGnctc9AAFJ+7CIUVsz+wm+8W3i4Aw94k4/HVQxxqoHK4EcXHaotkU8yKvyaYlOA/
-	nO+V3jcjk88sE5tEgXYdZD7uEQIrqkLrClBcSnxybzBNQh/rybESkA5aPKpp1OhpyZw2rJqt/EH
-	6QeTma22o3BgF7rtqWJ4kGfB5fq03N0lm2WQmwEQlIgnhBfXomuhIV8RQIGc/PVhkICu9k1BI+c
-	pNfdRlyw7yHFjvjTNp7bMKrkOb7y6Zubx35yfFi3ziqZKUUsr6uLSqMwb9r6aej7R+JSG5Ui54G
-	/mryKnrTFqEatdpicBVbt5NGkwJiUYe+Ag/ndTbq0oQu8Gqt3HkZOgvx8hBpcKV9AQJ57aeNMss
-	yLK65Tpshya2AQmIOVkjCztfAJYu7NtPTvGqBHpiX6pOiojUwifZlpji4ZhOHMUb9nIAXIaxBIG
-	C1Lg==
-X-Google-Smtp-Source: AGHT+IGvj0g2SL000bEpFWCRgDs2CE3+7rERXhrbik2vKVQje+4iGkCwmUe9S42Dfhh7fy3ca7XvNQ==
-X-Received: by 2002:a17:90b:1c06:b0:31e:3f7f:d4b1 with SMTP id 98e67ed59e1d1-320fbd13993mr2917452a91.24.1754036592766;
-        Fri, 01 Aug 2025 01:23:12 -0700 (PDT)
-Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-3209a850417sm3992725a91.35.2025.08.01.01.23.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Aug 2025 01:23:12 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-X-Google-Original-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
-Subject: [PATCH v10 0/3] ARM: dts: Add support for Meta Clemente BMC
-Date: Fri, 01 Aug 2025 16:22:47 +0800
-Message-Id: <20250801-add-support-for-meta-clemente-bmc-v10-0-c1c27082583d@fii-foxconn.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bw3Hc510mz2xBb
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  4 Aug 2025 01:18:52 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=o72/XnZ8FsI+gixCxKzI/PM27Aszxy+eOzEYVMrKQgbqxlpHH0G8mu4PR6Te5NEDTk4n+KCINHqaDadfJm9pLIyXOKAhGVqsUP2YBN3JiIu+YSjqNmYUKO12f7QrNOGpqInoK901FxNdlvBNo0jzMYsNpve7MEx7kPaaae/CKq2Zv2TL5Rc7+oxUl1dBXo3j641FauR0u1CTE7g+HVDoJpxWJfbh1/HSAHJ9XqUMEYPcRf4S8CHqG8ONkm3QzMLkFBOyvx1DL3m8ORNf4hTjX8tun2vkhKLPxijAvCF3wlkQXbwE2U2iVU31VadzxsZDXvVK2Hk2lueojBKky/QaRQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=yNI+LhHXQ+9iO/YpWo0TJMuaZrrlbQ9uwKMkDKxFoOE=;
+ b=E748q4qT8c9sljWmBn5xKWi9XRANk7H9cbjS6PFI4dmUv9KZSpBQ1mjlvKf0td3K4higgSrrEFIFnTt015rtXRNW2MJhvYBnCANXFuyKmibkoGo6Z82He6piWBUJKLk6SaeXUAsmORHHy7XMIiMNBm8cL3kS5PjgWL1kj4zdu8DSjFe9K4KyvVVI5E87SaNsIzBDvibYbrvy4cQJtAU4j5AYFKL3LxWrb0rCo4Qlhbk66MmpqUAUaOxa+n1kwIKkqwwfRJQ2idULTai+yRtwgxr4gzT+cWrD7KiR/d6j4MtCOrla688NlyHZ1iF2mJpkHhrgbRXVGzklCZTHFbR9Gg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=siewert.io; dmarc=pass action=none header.from=siewert.io;
+ dkim=pass header.d=siewert.io; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=siewert.io;
+Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d18:2::182)
+ by FRYP281MB1898.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:45::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8989.20; Sun, 3 Aug
+ 2025 15:18:27 +0000
+Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+ ([fe80::32fc:c799:7f09:62b5]) by FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+ ([fe80::32fc:c799:7f09:62b5%7]) with mapi id 15.20.8989.017; Sun, 3 Aug 2025
+ 15:18:27 +0000
+From: Tan Siewert <tan@siewert.io>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Tan Siewert <tan@siewert.io>,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] ARM: dts: aspeed: Convert remaining ASRock systems to NVMEM layout syntax
+Date: Sun,  3 Aug 2025 17:18:16 +0200
+Message-ID: <20250803151822.68080-1-tan@siewert.io>
+X-Mailer: git-send-email 2.49.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: FR0P281CA0212.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:ac::11) To FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d18:2::182)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,105 +79,112 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAFd5jGgC/5XSzWrDMAwH8FcpOc/Dn3K8095j7GDL0mpYkpJko
- aP03ef2ssAySI8S5vcXli7NRGOhqXk5XJqRljKVoa+Fkk+HBo+x/yBRcm00WmonQbUi5iymr9N
- pGGfBwyg6mqPAT+qon0mkDkWwKloICZ02TXVOI3E530Pe3mt9LNM8jN/3zEXduo/oixJSkMMIE
- IisT69cSn17xqHvn3HomlvGoleuVntcXV1ARyxdUDbgtmvWrtnjmuqi1oYZ2QLytmvXrt/j2pt
- LnlkbCxLttusedl11pWkpAytM4Z954df1ctfeoLqeDTmfsjQGtl2/chXscX11s0vJWxfQxbjtt
- mt31z+01dXMEDkZSJK23bBy991DqG7yQD6TzYDtX/d6vf4AdUIfe5kDAAA=
-X-Change-ID: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, Kees Cook <kees@kernel.org>, 
- Tony Luck <tony.luck@intel.com>, 
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
- Geert Uytterhoeven <geert+renesas@glider.be>, 
- Magnus Damm <magnus.damm@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- linux-hardening@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
- leo.jt.wang@fii-foxconn.com, george.kw.lee@fii-foxconn.com, 
- bruce.jy.hung@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>, 
- Conor Dooley <conor.dooley@microchip.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754036588; l=3087;
- i=leo.jt.wang@fii-foxconn.com; s=20250618; h=from:subject:message-id;
- bh=oFW8Pcf+/M0flUeJ4t5z0g/SaacnwFP05q4Nt+4Z9wg=;
- b=aEkmJbS4z4oVHMRyPJVF+2OC67JWDL1S9Gy1HYPiBX98lLoJ4Tit/AnCyZMx10XwXEcHdsqdy
- kAurb9DK/J1BoDXviwLgykl1ayq8RLQQzkQVo2kyyjk5eYPsBgFQC1W
-X-Developer-Key: i=leo.jt.wang@fii-foxconn.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: FR3PPFB3D0CF1D2:EE_|FRYP281MB1898:EE_
+X-MS-Office365-Filtering-Correlation-Id: cec67af5-5dea-4261-bc5b-08ddd2a0ff37
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|366016|1800799024|376014|10070799003|52116014;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?ODEjxedArVCdiJVppkvG3HodoDcdaS5k0E8mm2klm8aTdK0h5nKCNh2RXxAA?=
+ =?us-ascii?Q?RWuO8ANHaKOtTcVnHus3/gZnZmB3sNrrk9PdDX48Q0pN7M8qUTK2auBhrdUl?=
+ =?us-ascii?Q?ovMD0e9ZooEjkgmzZeqhrVCO+eIJ6Zl7k4Pa2vLwrnwrD7ciJZQRAzLfmoZt?=
+ =?us-ascii?Q?rRP7fzluarox6/aMRmkRO+K+HQNSdOFrj972hITHH7aE8643tZ8zt749ltv9?=
+ =?us-ascii?Q?yq7FevL0lpSb6ay/oviDBNAy5lhrhN0EQj+3AHimsanxAyKnE80mE1xec8Ip?=
+ =?us-ascii?Q?EiJZLghhBethISIKr+WjsDsvg8iSV4madC6u2sFEH4oFkgCsbu5rc89BfOjr?=
+ =?us-ascii?Q?2M0aJmSFhOGjdGeNTr1tUveBnSYiSopxfa4NrUXeCeLojBxAUI48G4Hu9HE6?=
+ =?us-ascii?Q?XNLyJ4Csyk09HiToIRaAZkVcmVbQ4CS8LOZetYRfgHVUknxfVuhNR2d2egF+?=
+ =?us-ascii?Q?QPSrrj6jv12umDFx5e0UE8w/GKTrBr9cipM4b24NeLX0Xgpe4yhGhayiWCbH?=
+ =?us-ascii?Q?MYmDYLZ0/f4qqR5511dCUbliHqj0rWOFCZUyLMvilzqVXbYftGAl67UYTT9b?=
+ =?us-ascii?Q?ug5w8bX63p+MVGj6XJ5/PwsZc76mI/M1NlOwT1a8zBiv/Gs4FDNzsG5nGaHM?=
+ =?us-ascii?Q?Jz4VYTeKhmfk/UURL+wDQVS1W7won8wij8MtTmuoX/NqLv7+ojGIorq6HOA4?=
+ =?us-ascii?Q?W5iq8l+B+5SQlv/z8AOe3iCpleRaRq5uFE8EUlYzgkvJl9S6q7wCoTh4apOc?=
+ =?us-ascii?Q?0KLCGB7vtbR/K9VxyVMVkrjiXuZdoUdbMS8mZATM16yLCMD7srOhrQdrRjRR?=
+ =?us-ascii?Q?2vwVN+BFLC6856B/zuEXgO0rUPUzMkbcOeGMJYnfYMN9+Ay8DnIaNQr6va5l?=
+ =?us-ascii?Q?6dzRf48DTKIIdIBrPbdxU9McM/AdflRK3Yux+osu5/qQVZAHf768tH9Cd9+H?=
+ =?us-ascii?Q?htz2UGcdlvYyYjB74g0Mpfo0I0wlvEUss2V27j+enmEin9db7M6HkBK5hZar?=
+ =?us-ascii?Q?hfvvD4XAJSu3b1LIQIA9g+kljjJEB/MGzD1KnFqKTp2qfxwAO1kF//cldkzo?=
+ =?us-ascii?Q?wCtbB8lCyGE2AXkVYEWL0ev9BAORkDhT8FZcGG7k45ICOYpcMiNR8aqpB224?=
+ =?us-ascii?Q?45I9lefV9uARonw3DYxyQ7WxYVF7Kl66O3PvnzUdvGWsMK/TgtYnYjbyZ/4y?=
+ =?us-ascii?Q?LPg5l1fjK8zSJkCLgAy/+vX+aMttFw0l1OQlFgf+9GGFcrg+on3RjY2fhvP+?=
+ =?us-ascii?Q?jjEvLDaJYxWsPLQjEIUF2JRs+H4HjpsKQDQ8nfWGKqWhCtJfn3YsKg8LESd0?=
+ =?us-ascii?Q?KkrDOwgdSp+HpuBgYhX0xHyjM76Iu1qF8LgetCKP+7V5NR89mOLMIS2vG79P?=
+ =?us-ascii?Q?xMkirCdLNzuOwwlEcpr6ixlSzL/zrXExRnHwbBhgKPSvdLKtQrHfzaBPfXXb?=
+ =?us-ascii?Q?/MxYjtWytR8=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(10070799003)(52116014);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?OHPT+ihqAu+7w1UsGhsfRlWDYjNAc3Zo+Qvm5sgwzc7n/DIfspXfAzs3jGDg?=
+ =?us-ascii?Q?q63YA4FRVhoNVyUUZ1gbaIYZFexvjcs+GzDU7hO1zwrLfhlcHRVu5zGCUdCM?=
+ =?us-ascii?Q?hvYLLdg5EKIbUIfZz2Af/DYHHDq0xiDq4FFN3FYATLmvZ6B0JFoTO3oyno+k?=
+ =?us-ascii?Q?2qUYmyT0f8BzFEIQ4sp0XNusKakT2Q3rr4aUV1mkjftaNtfOGSBLnc94bkeI?=
+ =?us-ascii?Q?pphw1YWWsKpb3UYMyCiK3km7n+g/zOaqGzaVBTeDwlxPSTU+PyuVlCFYYwMf?=
+ =?us-ascii?Q?vVlEKRAuvi4h9WirNNPjphkpYxMP931FcELa2m1r8dkxUmCgiWAr9YkvRton?=
+ =?us-ascii?Q?23kP91Tj6ZKyjQXCTzLZPubhmia9Uoox4+INe7P8IvSxsfpDNfgIw0qXuT7q?=
+ =?us-ascii?Q?N5Z/CH8ZZ2hUD4QCmZq0wFISpcaM1E9mvZhIDUOm6OFALbzE8jj5GCcOFogk?=
+ =?us-ascii?Q?zgcdKHmqKoO1i6WZKRuToBvjltfYTYlCODTYK0M/M5KUMgjpIKjILm83MbFk?=
+ =?us-ascii?Q?UGZjrk8pQ/aGNFGRCfN0Yej1cxXQdzGq2f32iz754rSM+N404mfb5Fc5hoYI?=
+ =?us-ascii?Q?okG33H8tSewEuRDUNbXmue14e5SKuAu7rCOoSt/m3id2JhfJ/S6YD1T+8Z5O?=
+ =?us-ascii?Q?ofKPneXdyrhU1qMpg3v1ORzz0yNq4w0+1u2edBw5ZR2Zhuq5FqtmkJRAB+ht?=
+ =?us-ascii?Q?nbtEMO+A4fyz3PHtSFGZqplc/WXjRe/jUS2zOc0xcgxM5CjEuCTIq4m2VI9B?=
+ =?us-ascii?Q?btD9qicv+0xjCX9k3OFmummcmD6Qj8pffyN6rVNK82AS3OShcSJ+2YeHF7wC?=
+ =?us-ascii?Q?yC0t4VBjCtGLde9uBXCE8DWb3uM+aEL9AqAlvMo5IuV8do1bZCD/JTVh7y6G?=
+ =?us-ascii?Q?CqM4a2i+xKqmmfj6pxA37oid4aamq2P0/6l158hoBT/V0SOdiRRyuPzBenZ4?=
+ =?us-ascii?Q?SR6CeSClq9UXtdGZiJMDjYWr3q/yJgHOBIAYoWP1CFwFY1BG+MLUehhNKAiZ?=
+ =?us-ascii?Q?PMlnQs5swpnaKHM4LSrLsHZh7oD6wH8W7rnzXnM2rEje1TX3GhDwKlNQjO7U?=
+ =?us-ascii?Q?BZ4sK8huO0IBZmdY31p/OPUOduC/2P13BJDoKiOcVZ1ZQnZkgrletLiQIRaF?=
+ =?us-ascii?Q?kqoW7PVIC1R4OcePPLplauF7K9mr4YX/leQRzWW+W/U7ikEKfQX5QiCduJE8?=
+ =?us-ascii?Q?MpWqIEv7tHal0eCf8meqAXvHrGkTrTlHLTzWwNoO7oodKFcASvjn3gwrC89d?=
+ =?us-ascii?Q?OltJE91SifLsL+jlE7qLb0QOaOCV3ieCZbWEdYTli9kBQmCIuyTSkHYf4NfZ?=
+ =?us-ascii?Q?zPlkVI1eAxdQh3/F9h4Qnlj7u5nPHyM0FtNoySS76x1Hvnb8GvHCqmoJthVt?=
+ =?us-ascii?Q?NulGB2KWjrFl3cmAhYm1kNZxRtuav2ZWxCBClJ4fDjQyz7ueGV+gImUj84+b?=
+ =?us-ascii?Q?gHGeZGXJegaSVt3GfLiP0ajhH4CYoV1Vy55aGdtbutzxwLuQsK0zlk9xWwnB?=
+ =?us-ascii?Q?OGRhTDfFLVjJ22S2E5IwjoLIwO36jEite09ztoWY33B58xanQ4q+pA9DCuJd?=
+ =?us-ascii?Q?cuR0MkuwLXMjg+/u2NKO7AqNfbStNFELj0ZRFSV7rxv2BxdQltR8y/wyvZ1b?=
+ =?us-ascii?Q?5QBkAveX+Xrz4Bio6mvXcDE=3D?=
+X-OriginatorOrg: siewert.io
+X-MS-Exchange-CrossTenant-Network-Message-Id: cec67af5-5dea-4261-bc5b-08ddd2a0ff37
+X-MS-Exchange-CrossTenant-AuthSource: FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Aug 2025 15:18:27.6464
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: e8b4abbe-444b-4835-b8fd-87ac97451a7e
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: mNbW2yv+qwpIGGVLTyLxz7Bq2ZPaMWcJq60+uc/glnQAaMtgdUT9VEP8ZLUZB3l6
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: FRYP281MB1898
 
-This series adds initial support for the Meta Clemente BMC based on the
-ASPEED AST2600 SoC.
+Hi,
 
-Patch 1 documents the compatible string.
-Patch 2 adds the device tree for the board.
+While investigating an issue with an ASRock Rack platform, I noticed
+that most of the ASPEED device trees using NVMEM cells to populate
+MAC addresses still rely on a deprecated NVMEM binding syntax.
+As a result, the MAC addresses are not populated from the
+device tree/NVMEM cells properly, and an address from "the chip" is
+being used instead.
 
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
----
-Changes in v10:
-- Reordered NCSI pinctrl patch before board DTS.
-- Dropped MAX1363 ADC nodes from the devicetree.
-- Link to v9: https://lore.kernel.org/r/20250723-add-support-for-meta-clemente-bmc-v9-0-b76e7de4d6c8@fii-foxconn.com
+Commit 76c5533925434 ("ARM: dts: aspeed: convert ASRock SPC621D8HM3
+NVMEM content to layout syntax") was the only system that had previously
+been converted to the new layout syntax.
 
-Changes in v9:
-- Fix comment alignment for // PDB TEMP SENSOR.
-- Drop non-standard aspeed,enable-byte property from i2c11 node.
-- Move NCSI3 and NCSI4 pinctrl nodes into a separate patch as requested.
-- Link to v8: https://lore.kernel.org/r/20250717-add-support-for-meta-clemente-bmc-v8-0-2ff6afb36b0e@fii-foxconn.com
+This patch series converts all remaining ASRock Rack systems in the ASPEED
+device trees to use the new NVMEM layout syntax.
 
-Changes in v8:
-- Relocate IOBx_NICx_TEMP TMP421 sensors
-- Enable byte mode for i2c11
-- Link to v7: https://lore.kernel.org/r/20250716-add-support-for-meta-clemente-bmc-v7-0-d5bb7459c5aa@fii-foxconn.com
+Tan Siewert (4):
+  ARM: dts: aspeed: e3c246d4i: convert NVMEM content to layout syntax
+  ARM: dts: aspeed: e3c256d4i: convert NVMEM content to layout syntax
+  ARM: dts: aspeed: romed8hm3: convert NVMEM content to layout syntax
+  ARM: dts: aspeed: x570d4u: convert NVMEM content to layout syntax
 
-Changes in v7:
-- Relocate CBC FRU EEPROMs from i2c13 to i2c12.
-- Link to v6: https://lore.kernel.org/r/20250708-add-support-for-meta-clemente-bmc-v6-0-7f3e57bd0336@fii-foxconn.com
+ .../dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts | 12 ++++++++----
+ .../dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts | 12 ++++++++----
+ .../dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts | 12 ++++++++----
+ .../dts/aspeed/aspeed-bmc-asrock-x570d4u.dts   | 18 +++++++++++-------
+ 4 files changed, 35 insertions(+), 19 deletions(-)
 
-Changes in v6:
-- Correct Author email to match Signed-off-by email address.
-- Link to v5: https://lore.kernel.org/r/20250627-add-support-for-meta-clemente-bmc-v5-0-038ed6f1cb9f@fii-foxconn.com
-
-Changes in v5:
-- Remove accidentally pasted texts.
-- Link to v4: https://lore.kernel.org/r/20250627-add-support-for-meta-clemente-bmc-v4-0-ce7ff23460c4@fii-foxconn.com
-
-Changes in v4:
-- Move properties of nodes defined in the same file from label ref back to where they belong.
-- Move pinctrl default configs for ncsi3 and ncsi4 to aspeed-g6-pinctrl.dtsi.
-- Add properties to i2c10 and i2c15 to enable MCTP.
-- Link to v3: https://lore.kernel.org/r/20250623-add-support-for-meta-clemente-bmc-v3-0-c223ffcf46cf@fii-foxconn.com
-
-Changes in v3:
-- Modify leakage sensor to reflect current design.
-- Link to v2: https://lore.kernel.org/r/20250621-add-support-for-meta-clemente-bmc-v2-0-6c5ef059149c@fii-foxconn.com
-
-Changes in v2:
-- Fix patch 1/2 subject line to match dt-bindings convention.
-- Reorder device tree nodes in patch 2/2 to follow upstream DTS style.
-- Link to v1: https://lore.kernel.org/r/20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com
-
----
-Leo Wang (3):
-      dt-bindings: arm: aspeed: add Meta Clemente board
-      ARM: dts: aspeed: clemente: add NCSI3 and NCSI4 pinctrl nodes
-      ARM: dts: aspeed: clemente: add Meta Clemente BMC
-
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
- arch/arm/boot/dts/aspeed/Makefile                  |    1 +
- .../dts/aspeed/aspeed-bmc-facebook-clemente.dts    | 1250 ++++++++++++++++++++
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi    |   10 +
- 4 files changed, 1262 insertions(+)
----
-base-commit: 52da431bf03b5506203bca27fe14a97895c80faf
-change-id: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
-
-Best regards,
 -- 
-Leo Wang <leo.jt.wang@fii-foxconn.com>
+2.43.0
 
 
