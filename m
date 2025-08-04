@@ -1,74 +1,61 @@
-Return-Path: <linux-aspeed+bounces-1891-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1894-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D0F6C87FDA
-	for <linux-aspeed@archiver.kernel.org>; Sun,  3 Aug 2025 15:20:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CBA8C87FCB
+	for <linux-aspeed@archiver.kernel.org>; Mon,  4 Aug 2025 00:43:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bw3Kd4zbMz2xdg;
-	Mon,  4 Aug 2025 01:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20c::4" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754234437;
-	cv=pass; b=JmcGmwZuJinoTty7Mf6hw8VnPEDXwuirouuUG2ibt98db9ND5Ilx41u8zEvTCrKlOuXqvtdM3LOcGai++s2hvLJDVoT5DC2KQA1Gf90xIkXetdyci57MEudpBbMLxzM7fNsxl9kWgpeXsXCMTNf11P7DodzCDc+eEzpt3y9kBwgEo8OirIRTVMnTg3s/s4mVHTxQTEy+vlcwhgvhV2yuIvizRD2IKmgY1ItLoBV+0rLvOzzgefPw/i/hzV4fgVjLCIwE5KgV4fA4bJxxjmt9MM4PKbuE2zWb/mbqxeFQtdaLn6kpwRd0JO3XY30m+amUbbkYFKLK2NqsHEwcPQinUA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754234437; c=relaxed/relaxed;
-	bh=05cNTLmyz2nmm7kjHhJjXNOWlyiQm9oZ0n10Pz7wFnw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=N5CISl95S2LiCA26xOv5SWSbf6N6OAS1W+wg258NtwUuYcvV8IQnnl+8bbiB8ALQIXxlcCbjWiqQu5yST++ofpXR81w+Tg5MzkCVD+asFmcyRkvI5MrWPHHrS0P3XPAvqHe2/LyY5XJu++nf5cRVWAC27E6HjeZ4gt87yrU1b8OIYUxouA3tnoyIGslJN6Zsw/nGKVRdPlAuwjgHz68oewot/riw8PuR3cErXHIo0kgE4e1k1bhan5iTZSq81nTBtQ1/w2BO2dsq3AH89sDXAmwvRnnJ+tk0eGD/gExLgENPkXBCIpAu1vO/RP+0vrrNYGJTM7tppLicUO/fpZ2WYw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io; spf=pass (client-ip=2a01:111:f403:c20c::4; helo=fr4p281cu032.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org) smtp.mailfrom=siewert.io
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=siewert.io (client-ip=2a01:111:f403:c20c::4; helo=fr4p281cu032.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org)
-Received: from FR4P281CU032.outbound.protection.outlook.com (mail-germanywestcentralazlp170120004.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20c::4])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwHpd6L8kz30RK;
+	Mon,  4 Aug 2025 10:43:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=71.19.156.171
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754268185;
+	cv=none; b=nt1QV6G99qu7dtQKO4ugdvPJ4aF/1LxDnrwwS4IRQKGyXj4GPTcrzn/w0WuhfOJT6jTIefId1QqfBhb24f3uaHj/PXeEaro6mHAbfVdYE0M0kigdhl3Se0dUpbt+8J/qaN/oqjiSVLYPJ0bRznO9bm7NN/UgTa/Mzd7YwXWKqKsZbliw2HkiFSI1PJRaVecW1CL2FPuhMRsBp4OWlU9SRbB9l/XQ5etZ0PSKIIFayCLn6aOzlpcJSizJZZY5d6q1eJzTxvgJaELPG4SzLGUcoUGYKsOnBsIT6a9560HvumyZQ0JTrkcfV8KFem3W6Y+iurYa5M0mZx8vMk0I/YF3FA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1754268185; c=relaxed/relaxed;
+	bh=rZ2GTvtdLR4dKtuUYv6XmG3B25FHcvC5Jt/WkbqgpN0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=E9V7sgYz5i79X6adjD1O8GNLFlKZ3NZFyez0TGztMq3RLbWQ/74xbfexKzWzdep8Bxqswb8Cuk/wxS0QtOlp9uuBldOVWMKpMGSDjyGrhZ3lCiSQWCFpZKcjJNWtHEhpfS5f3R5UREIntlvZGHhnX/m8Bj+dPLusvJyyEPDWDYxOTCqA5kjNacTvWo177yKZ5aVh4E2kqTmsQxNIZk5Tag65g4kyLou3CzcYedlIDBz07cbol0tQ3+tB27eyUTaT4VYeokrDAyYgEniSt1fUhcmGoclhabSCy+EkCHoRjyJG/KHOqNWxsdlNX1629I61fcgv/bw3GSTtWc1XuGybTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=bewilderbeest.net; dkim=pass (1024-bit key; unprotected) header.d=bewilderbeest.net header.i=@bewilderbeest.net header.a=rsa-sha256 header.s=thorn header.b=m+4UT2bm; dkim-atps=neutral; spf=pass (client-ip=71.19.156.171; helo=thorn.bewilderbeest.net; envelope-from=zev@bewilderbeest.net; receiver=lists.ozlabs.org) smtp.mailfrom=bewilderbeest.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=bewilderbeest.net
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=bewilderbeest.net header.i=@bewilderbeest.net header.a=rsa-sha256 header.s=thorn header.b=m+4UT2bm;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bewilderbeest.net (client-ip=71.19.156.171; helo=thorn.bewilderbeest.net; envelope-from=zev@bewilderbeest.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 588 seconds by postgrey-1.37 at boromir; Mon, 04 Aug 2025 10:43:03 AEST
+Received: from thorn.bewilderbeest.net (thorn.bewilderbeest.net [71.19.156.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bw3Kd1Xtcz2xBb
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  4 Aug 2025 01:20:37 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=rY94awZzpfp0sIfuEb/ibs3m+UA3JOxbFjV111pkSZEU2ThyZORmQ+gXU8MpdpClNUOEpfkZFxzl9+Y8XR0lHD51dvMJJTPgGJL+jCvLVzQ9723XSXP1QrVWUPY31xq4Z1CUYNwzuXSurzsvr1dUVKdwQdkpXERQX0KeEynyO0cQOrZh5p0S3srBIDodeYlkIoimL5ZqCcQzovh0NPtZnsbO58EJkqCdPuLz6LVHYDMdyCW9yvq9D+xmE2SEduXXkAvu7duWs2VsFMBgyMAWBRuD+seW5NJZF2u8AUe4V728shy7DosvCUto4naM/5+/3VX6wL2B99zQ9TSsFABDCw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=05cNTLmyz2nmm7kjHhJjXNOWlyiQm9oZ0n10Pz7wFnw=;
- b=PpehYt6R8Db8kJrD7hoZm6oy0yyjGgjjJMCglVTaC5eBzpH7cPWSUfQxUhqttc7Ij/BxZbIbQ+yWwH9yDtVC1js5DOgSEKeWVNVdQNW18KUyJ+f7wexsQu6bJ4gm4dko1cI+1ZCQQC6gfd/RaERsgl2hRAUBp6i34y5N/zFj7360mTu85t625ewigh3LbmRZNz9q9JAQCDVOjsYMmMP3pLeyJHWnhXXoSMrpGO4LBde+b7IXjZJSA9OgJM3RSK/6DXJLoStmEbGb5kldqEfmgobnH1HFQ6wMDA/u6ZGfh11AdyqfYQatDCorDL6Se6P1HN/YOOq8WTtFq3rASBFfvw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=siewert.io; dmarc=pass action=none header.from=siewert.io;
- dkim=pass header.d=siewert.io; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=siewert.io;
-Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d18:2::182)
- by FRYP281MB1898.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:45::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8989.20; Sun, 3 Aug
- 2025 15:20:19 +0000
-Received: from FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
- ([fe80::32fc:c799:7f09:62b5]) by FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
- ([fe80::32fc:c799:7f09:62b5%7]) with mapi id 15.20.8989.017; Sun, 3 Aug 2025
- 15:20:19 +0000
-From: Tan Siewert <tan@siewert.io>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Tan Siewert <tan@siewert.io>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] ARM: dts: aspeed: e3c256d4i: convert NVMEM content to layout syntax
-Date: Sun,  3 Aug 2025 17:19:38 +0200
-Message-ID: <20250803151949.68618-2-tan@siewert.io>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250803151822.68080-1-tan@siewert.io>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwHpb4Czhz2xHp
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  4 Aug 2025 10:43:03 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bewilderbeest.net;
+	s=thorn; t=1754267587;
+	bh=rZ2GTvtdLR4dKtuUYv6XmG3B25FHcvC5Jt/WkbqgpN0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=m+4UT2bm2WHVQ46yE1uRgn0S4VP9FzC0oNr5wheu+bDu1L8wmbe7jR+n2sjbi6pCo
+	 p6SKJ9JiagEp4DE4NOWOOTeHERCb3/dafxI/GDL8dyQP/FpuKO62aK6r8T7lhmNZ16
+	 jS9Du+WwNr6ych95GqYrsyGZ/1g9IRdoleKWod2k=
+Received: from hatter.bewilderbeest.net (unknown [IPv6:2602:61:7e5f:8500::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: zev)
+	by thorn.bewilderbeest.net (Postfix) with ESMTPSA id EA55D198;
+	Sun,  3 Aug 2025 17:33:06 -0700 (PDT)
+Date: Sun, 3 Aug 2025 17:33:05 -0700
+From: Zev Weiss <zev@bewilderbeest.net>
+To: Tan Siewert <tan@siewert.io>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] ARM: dts: aspeed: Convert remaining ASRock systems
+ to NVMEM layout syntax
+Message-ID: <4a58b9cd-8c1f-4a93-8c84-e8f625e1b6c2@hatter.bewilderbeest.net>
 References: <20250803151822.68080-1-tan@siewert.io>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: FR4P281CA0286.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:e7::13) To FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d18:2::182)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -82,120 +69,48 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: FR3PPFB3D0CF1D2:EE_|FRYP281MB1898:EE_
-X-MS-Office365-Filtering-Correlation-Id: 000585ad-7bec-469c-65b3-08ddd2a141fe
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|1800799024|376014|10070799003|52116014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?6pddxk4jRA+QSKaxzgiOW+SVbdFLptmBwlathXUD1TEQPHc5Gl5zbaVPdnQR?=
- =?us-ascii?Q?T2BETVhxF2oPGK8GWBi6hxKgkP3yAujJY3k5jSerghFhx0wlQYv8RtBpHyLb?=
- =?us-ascii?Q?qRRrH/JpFDqjNLJ6Pe8h51hny3tx4bfiOsmMLagcROxMNTM2Z3AVfDaMeo22?=
- =?us-ascii?Q?LpDn9slmyJcay2c+VqQtk5C5L5hkCY7rqjrNYLm+QQAulPDX3N5YSO6FzNcc?=
- =?us-ascii?Q?CgdTxtKxPpdmPLMQkyU5zjcLGhKdP46hDNMOX4Bogy1eRZy4KPhIO78SQj+P?=
- =?us-ascii?Q?BzfBBJ2RRRJfU0npD5vjuWi96QgewOADrgDNzO0ntLFchx4NU/zqu6eZwNT8?=
- =?us-ascii?Q?xi0Nt+VvDjzasCY7Ib9Ny4vEPmwm+6u58tzZFUxrDefJinHTkF0z+AWmkYwn?=
- =?us-ascii?Q?7rRS8g9LfhkD6+zHv2y8h5ZmAFH00XUCWXGnY8jXok5Y7f7UI6BDIxcauT8Z?=
- =?us-ascii?Q?7U+/Q4LKauZQXc/NlRjyd7Y9S6/ce3jOQ7a640VW9AOAv17Hhs3CQ2ug8FMA?=
- =?us-ascii?Q?OozIWAiLThFUzH8LuyrbNdDyzdJSe1eMXLm8RrywlnUGPuKaiTyNUpvfs3LX?=
- =?us-ascii?Q?GmBWhhIUXGU7qF1UrafuhdggWXKJXQd6aa2lHqHRIr7HYALn9Q+quXGb8xJt?=
- =?us-ascii?Q?D007nmdO1u0KXLApXj1X7GWvvEanb3IxVFwmUsESPQyhHyVvkyL0ZaM7W9ev?=
- =?us-ascii?Q?/aaqzfGSrdVqNgs42kQqnlRQHgaiFLM5jRXeytpoFfxWUp6hiuBhun1BOf1N?=
- =?us-ascii?Q?via+huL9yWwlVsQw7N6KB/TEwKQImzPjhMZrsql3slkcFnvdnawk8V1NcPAx?=
- =?us-ascii?Q?9jCgyq/i5XTakhxDuA7RIoZSsq0WKsecRt+QmWXbdAg1XF21cXcj92qU9rLF?=
- =?us-ascii?Q?kzEJjY0a8ZaC6ZMGF/MrSKXRsUbIWt58QOEhXTlgkfkGSFg8IQjg2DvCtDWT?=
- =?us-ascii?Q?xXj+6RTxOGlUiT29PmbAmq0H90gTVOMaQGUIw1ENBgBq8cUJGYmucH41mCBx?=
- =?us-ascii?Q?swZt2GqTUnDM4rLQAq7qOQrMer0vUDi6Pd/jlXpoUG80zFLQ2M56f4A+sSEm?=
- =?us-ascii?Q?bJl/jj+LIS+YLHFlL8LwYjOT2WbUBkP05Adr8FB4sY8qCbvyhKiJZ+h0kJqU?=
- =?us-ascii?Q?/bMVz1tUnG5lMss6mCxtUwSvwZqXko2uyd/+rYHFTdzkPVq/ztS1Cyc2gIvy?=
- =?us-ascii?Q?QH7SkRoZR89yKeEFB2+rR4zqWVx8oll/ImzbOqbjx6TGQUTuPh5BBm/zJas1?=
- =?us-ascii?Q?w0N2dVdhz358VYoobI8NTLkagVAK0eU87Aq4iU6BWVtEqeOs5I5jeQLOr/cT?=
- =?us-ascii?Q?pDWYlbKhjaD9vEwrEgPz+vFGqyA+zDvOo6bm+divl78IIHCmRnUf+TL4ltO2?=
- =?us-ascii?Q?NodgXTLXPK/CYp25XBR2s78Qq0G1dIGcKnQ+6OihrUcUFZV+9XifNz4WsLtn?=
- =?us-ascii?Q?iyRZhMz5+oE=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(376014)(10070799003)(52116014);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?lda4WKJUajmF9c9Sci61DmzXRJq/6laGuWqN3cSpp6gONQcwckrb8VeKPxk2?=
- =?us-ascii?Q?607D4EQ95B37+9+zgGhbXaah6RE37Qvlp1h9bE0S5HnX6GDzjq1bsr1hY6uS?=
- =?us-ascii?Q?UGRsoUOF/rkFCwQXqImbV3gqI9+Tg0YUMS2vGQDqKdDICN9gYYZKg94rBW50?=
- =?us-ascii?Q?qveObFXTWmQxJ6YoDqwCBYjJFdqKbRKBd16ZZ+MRMBHQ9askPP4pXYIVerBY?=
- =?us-ascii?Q?tYc+Wv0hM8LerevMovB/pMp6JV7DOHxSNsa8mEOLVoZ9rT+xJgWnl4RIQ+9h?=
- =?us-ascii?Q?Q7UJei6PJdm6QOJFQn+Kr5nREEKheoLsiLDmSwA+x1oZNCcMPo5lBH3b0VUU?=
- =?us-ascii?Q?2gP9vkbZaCYDJTTgQeTqny+KM7CpZc6OuW41ZG6eeaigYyy1L6LnhmdH6Iw1?=
- =?us-ascii?Q?AKGvnx/7THoU3RQJb8hQFDH2K0h68jlidfYO2adDI6bCemGt7aMGAHas/yoT?=
- =?us-ascii?Q?udLiFSh/r6zgiDOwQ1BFjmL8o767ic/Xsh5idEryJcSSwkUgTVRIL1xI1+up?=
- =?us-ascii?Q?7JC2TvD69G3SWVupWJtLg6R3FEQCXsFbbISBikhQVuzh8HBugAgGW7jhZzql?=
- =?us-ascii?Q?6z3HhFuq1vbfnupDJ8vQ/OWg1YuRb4tkMiTmsUk7XYsFzWnB/5C64MVhf8yn?=
- =?us-ascii?Q?jYp4lDYpkNAPqJzRGC2YUaNOeDlGfZ86Hr7nhEAYZSj50WPxKpjTjHHWwofz?=
- =?us-ascii?Q?OGuSYylq6vYKCs29iAjEg8ZZakftEMhV5lUyY+wfcJtplbAGtxgrGiCyU8Gu?=
- =?us-ascii?Q?W6hffq1r2PKhKVOtkPeLxs4kgywH1mFkKEGQ2okF+jxs6Y23bLQCj+AfEQyx?=
- =?us-ascii?Q?4q6Iix0/5a8E/cAeYRLhu9mCvcH3xlYCaf7J5swEmgokDXGGvXi+/MRPOJIV?=
- =?us-ascii?Q?rVDl0PQIcWp6m+7SPcgsVdYhtyQyIGtiHa25ruRmQb5fVPtkhFHDP1dsq8LZ?=
- =?us-ascii?Q?PP+L1IdRkRFYp8aV/zSJEp9AL5MiR010np7DPEJJSAPX7Xt5RWfmuHfL9JiJ?=
- =?us-ascii?Q?cayhp+op3tv264TlcZD1WrU0Sh8K23GN7nM4PKNskEsjmvEFFHr2lGh+kj5B?=
- =?us-ascii?Q?ZTSOoKhaCRAxcVjyOqZvAtMgUnqvPxxrDQyxGAD3vhq6h0Xp4lKlZiMRSCdn?=
- =?us-ascii?Q?lfo9Ls29hKnaer1BpNDjyZ+MQJEZB6LdzMBj+1Tk3F+I2VkgkQq+sYZoeoGP?=
- =?us-ascii?Q?f1Au4v/c3EyXi1V1OnBOhxuLFjEy61e0jSfupgjo09YznXuphuN1mCaJqHHl?=
- =?us-ascii?Q?9pgvsXeZapHb20fxbn4CT3VereRcKOe9UaKpL4wOw4gxEkkuRypbAOpzhDPd?=
- =?us-ascii?Q?eS3s2bzgBKP90O0U85q0XR29Jj6Sadvzeuya0VQ0i5+7MmpirkLnjrZeThNE?=
- =?us-ascii?Q?JU6tD9CUhH2KK6WOdzs47NJWInJQ71gj2jSTp4vZhUS5xUaQgxifBcMcHqek?=
- =?us-ascii?Q?Sd4iZhiCh9TM2i+KC3FLhELbCx1jTS/qprL7UnyCzLTEzfCcfHtZZAijVb1F?=
- =?us-ascii?Q?e2K+l2TtbLVAXwLg8hTrEdWsA2LzpxbsN9ISJ4Q40FhTZuEj3PMKdXFjYmkB?=
- =?us-ascii?Q?EhhUJtFIArjYiqIKexSWnW6jGWIgk5AEVPnY06Zff3Z1cxQBLSwOd2mESCqY?=
- =?us-ascii?Q?ar+Csv57KGTJpnWtpamk+U4=3D?=
-X-OriginatorOrg: siewert.io
-X-MS-Exchange-CrossTenant-Network-Message-Id: 000585ad-7bec-469c-65b3-08ddd2a141fe
-X-MS-Exchange-CrossTenant-AuthSource: FR3PPFB3D0CF1D2.DEUP281.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Aug 2025 15:20:19.7208
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: e8b4abbe-444b-4835-b8fd-87ac97451a7e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: YrPIjHAJWaCiGSVrQdzSZPniMS6N3Utt3y5LnJVA+mZprTPFO3hkX7fepxlQbZaI
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: FRYP281MB1898
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20250803151822.68080-1-tan@siewert.io>
 
-The used bindings syntax has been deprecated and doesn't work properly
-anymore.
+On Sun, Aug 03, 2025 at 08:18:16AM PDT, Tan Siewert wrote:
+>Hi,
+>
+>While investigating an issue with an ASRock Rack platform, I noticed
+>that most of the ASPEED device trees using NVMEM cells to populate
+>MAC addresses still rely on a deprecated NVMEM binding syntax.
+>As a result, the MAC addresses are not populated from the
+>device tree/NVMEM cells properly, and an address from "the chip" is
+>being used instead.
+>
+>Commit 76c5533925434 ("ARM: dts: aspeed: convert ASRock SPC621D8HM3
+>NVMEM content to layout syntax") was the only system that had previously
+>been converted to the new layout syntax.
+>
+>This patch series converts all remaining ASRock Rack systems in the ASPEED
+>device trees to use the new NVMEM layout syntax.
+>
+>Tan Siewert (4):
+>  ARM: dts: aspeed: e3c246d4i: convert NVMEM content to layout syntax
+>  ARM: dts: aspeed: e3c256d4i: convert NVMEM content to layout syntax
+>  ARM: dts: aspeed: romed8hm3: convert NVMEM content to layout syntax
+>  ARM: dts: aspeed: x570d4u: convert NVMEM content to layout syntax
+>
+> .../dts/aspeed/aspeed-bmc-asrock-e3c246d4i.dts | 12 ++++++++----
+> .../dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts | 12 ++++++++----
+> .../dts/aspeed/aspeed-bmc-asrock-romed8hm3.dts | 12 ++++++++----
+> .../dts/aspeed/aspeed-bmc-asrock-x570d4u.dts   | 18 +++++++++++-------
+> 4 files changed, 35 insertions(+), 19 deletions(-)
+>
+>-- 
+>2.43.0
+>
+>
 
-Use the newer (and non-deprecated) fixed-layout approach. See commit
-bd912c991d2e ("dt-bindings: nvmem: layouts: add fixed-layout") for
-details.
+For the series,
 
-Signed-off-by: Tan Siewert <tan@siewert.io>
----
- .../boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts  | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+Reviewed-by: Zev Weiss <zev@bewilderbeest.net>
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-index 9d00ce9475f2..8c57a071f488 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts
-@@ -191,11 +191,15 @@ eeprom@57 {
- 		compatible = "st,24c128", "atmel,24c128";
- 		reg = <0x57>;
- 		pagesize = <16>;
--		#address-cells = <1>;
--		#size-cells = <1>;
- 
--		eth0_macaddress: macaddress@3f80 {
--			reg = <0x3f80 6>;
-+		nvmem-layout {
-+			compatible = "fixed-layout";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			eth0_macaddress: macaddress@3f80 {
-+				reg = <0x3f80 6>;
-+			};
- 		};
- 	};
- };
--- 
-2.43.0
+Thanks Tan!
 
 
