@@ -1,51 +1,151 @@
-Return-Path: <linux-aspeed+bounces-1911-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1912-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F5A3C87FCA
-	for <linux-aspeed@archiver.kernel.org>; Wed,  6 Aug 2025 06:12:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C970FC87FD1
+	for <linux-aspeed@archiver.kernel.org>; Wed,  6 Aug 2025 06:43:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bxg1S14cdz30W5;
-	Wed,  6 Aug 2025 16:12:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754460732;
-	cv=none; b=Uf3IHNUT9Sz41uSTAgazyHx3uNJR5KRPz+l2HKEOYn47GBKTiPZcb8BoZwjy0DOBr6RGBqKdz6KeafRzwlRguOELmGjKYKXWRM7ua4XfHJ8phZWi1aenRceJ/5TpSHhC/NDpqLjwiBzosPIiRcnoX3xUs9zNTzkpb07Y3CS5j8X4AYYK+V0uqdMcisHwbFlMKWe7N0M9bVQiCLBKVpAhUjbqRoqzT3JxZwRphidAXt0/kLrBEYpHnbyDehOhYEocwHNca7R67ysR+j1jsea3LHBhX+H9w0MzqF44G/RN1r22Q5Wt8ct/B3WvM0Sh85ENZxyHxG3GOUwXyi+fUnoKSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754460732; c=relaxed/relaxed;
-	bh=bNLGop2Jz4ic/YOxvNUojmnOrpzUvTpLGEB9AT4+3/M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CusrMN0v0zQuPTAWs0+47Iua2JRO5xdvkHmsleDrdWy9T4fktXA9Os2Jbkrd18Pyrw7ShT7rzrnPUrioUXV+Y3ZXOJ/Wum3HXAvOh2Zq39+bDGLBgdDuy8qKtRN/P4bJad+fpkx1rRERWVEQSU0Pm5erSIwLjKTgv2VbTFWKuqBJpVFCuYllSzgmsXP/Q2nnKH4QISCl/p87WENvgHbAj7Gq4czmtx6q/oaILAUgyzvNNoRKh0dXiwTmGK6NiuveRfWfS9et2f7CVWDtdW8HhG8NNghAReOLG68wxXYUof4O8lF81ADrIPNGIb7/H4PyGlCTC3W2f1oK06+7/QJlhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G4URkEDa; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bxgk42fTYz30MY;
+	Wed,  6 Aug 2025 16:43:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754462636;
+	cv=pass; b=H6KgW9t2EzLq/borH1wyt0enGqXEx+u/sh/s6PQJNS9pdvMbYjXeHGWbQu1QrDLE2jZZzQUPma3dVofjRBNvkDgVqY5oApAqn7rIV0jMc0OcKe0BqfcW7pzjhTY0hZCnKxivcLC6YaKsKmn2MvGDfP8u+HMIQlYNgt1lDOk3gGavIIIW5daZpLnt6IwMvMWgsqP4kGHrEHyqJUClnm7CCNBsl07BKZrSiIAsLYUNv8M+vG0me0rqFzKbgLRqvO+9ZjBD+2A3zHtvn4CS3eQTgjetNi0ksKo7RSW12Gc3F9a8KrUJ+vSzso5wmKANXQK0ZP/lHZynuiC79w515lLEzw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1754462636; c=relaxed/relaxed;
+	bh=j9qS8qmweyJdhbfOQ9JuNidi4W4EoJkuex8Rr7qCSos=;
+	h=From:To:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=ovTErvCBzuAJq7q1pYs+4pd6Pvbl81V1LK3w40d7iYq25tveFNMGUDFv5SNZNEv1vHfg1HDaNYSbhePcNbBgV4rqSYDz1ccdxCVIMmzNxTls0q2EaHp3Rq1vJjeWb3h8FpLZDBH+LGLSCMSUlqYEwH/w/AMtdJw1qu6T4zUguoIcgJUfrLx3us6syfTpwK8wCyRDXjkmgAYCsfdcFGiKLz78PxgspXxkHZkPrtm7sNtUKYD/r/TZp7+t/QAB7PeyvurQtOS2tJtjZRsp79zHwbjXKU4a+BMcNes1e6YvEGh65uJCYndzm3Jidcijh4SMhQNbBYVMgWmzIQhnvohLXA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=OG00aYe3; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::7; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G4URkEDa;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=OG00aYe3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::7; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxg1R0S0Hz30MY;
-	Wed,  6 Aug 2025 16:12:11 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3FAFE601F9;
-	Wed,  6 Aug 2025 06:12:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67B0AC4CEE7;
-	Wed,  6 Aug 2025 06:12:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754460728;
-	bh=a2OdDodOEbbp9tXUA0xlJL5eokcDTjcd+JbKFopSfyA=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=G4URkEDajiTuCGVqNukl/+g9SEnVUL609qy6u6NM8KhancgmEDtVUobCRfCWysinR
-	 LQP9WUHZBMHaO8JaqN4eQ/BYiFgVMCl4JO2uHLy8F8iHVhwZ2by1sQc71B+4PJa4+a
-	 tHAn3vtcy00k2Ff56Aj1aAwybje464PvUf65HiXr8v6mV8oPDQV7oH0SjlDNnON+R3
-	 NExei84bszGBvDeXjQmiIyTbL8N8DJttKSl7uINjiW7Z+1wHra6C4mptlw5ha2FpuR
-	 E2lalRrHtktt4ZlaZLDx/w8VBSAV0ATtNOR2Y2QR2DJZ7zY6VahQDxb2dc3r+X6Sub
-	 F53anNWdcyOpA==
-Message-ID: <63cfaf2c-a25a-45af-8f76-5352e6adf2f0@kernel.org>
-Date: Wed, 6 Aug 2025 08:12:03 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxgk26DNMz2yLJ
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  6 Aug 2025 16:43:54 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=CUPuQZ9Fm7MOQqV4jbNZ2jHfQ12PzkVIdjdZKKvAJCQVI161N8RPtsz/C7XnxOvCrqWAOltaDP1/6dws1K3rXwIr5FrYguEQuzr1q4BxcedpdHptIAXtt1/NF+CJq2j/TwSYrUY7D2WfO1we9Y8FlCWgDX4qu36IXawYA+OVpcQTowfzUcuDmQ8LSrW6t3aD1zC4KWc4Iwu15BpsW3bwcvnZ001Dd8gDV/eWqf/mUYfPGLPo11sNeEa/ktw8r1WFPE1mB/AbsFLHLY2+zb5Wpg5KED88+EK72q0gc3tGCgwELSGMunhPHwApRaPi5XY4BwVvf2JJFSERFo37qaESCA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=j9qS8qmweyJdhbfOQ9JuNidi4W4EoJkuex8Rr7qCSos=;
+ b=L3zpLod90kuULpAmfk6thBPC+OmG4+accKfHRX1sPDGaM94wctoTtHpVjsdQ2juVOECsm0Im7F6G2yA11Bs+oNQCLQgDEaQpyGXjJUx8aLklozFdLllH6WEOp8nSANgPk09E4KmWwzh22lOwvfD6Z5vyd31TId0cXAoYCU4n+BVeYdMi3kv2UNrKrUr/vCGVwsiNzwrLFlbAeXIM02udoGzzmDq/GSBNYBDCI0/F5DG9WpJn+tpU0eJYIl6/jNgYMRM64w5vAa8QCngmQ+JvChzsUgQN6/ggHj0Shp5yyzNcRI9Casx3v5qUc0rrwBY+iGZnqizlGr/cntChuEx5Pw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=j9qS8qmweyJdhbfOQ9JuNidi4W4EoJkuex8Rr7qCSos=;
+ b=OG00aYe3zXJNVRKsF7zH5LHJdPHaN8y1h46I0hcK0fb7mJrCMcL5Lb1OR5hNDkdgVEnGIizJ3O1AUwP4kkuZgX07wK5QfCujgt93/jdfkKriHGSOlergVHnDqlENe7fRkuy9kLhHpdyyk2nH8uKB1stooTxQgVG9vKuYdYpi4n56REWqF+GLgT5yf99Wk4ldsuT9f89qPJWA/AoZgUM+/68UKOPie4NFA1jd0a3vRO/AEo28DaubAebjy/uievK6bTTSVyby8eWSjQ1yXjup655GJ8uLN9EK8D0iBi+hr08lb2JNwXy1nHJIES+R4nqPlltcC9jW21QMDS/+XP3w9g==
+Received: from OS8PR06MB7541.apcprd06.prod.outlook.com (2603:1096:604:2b1::11)
+ by JH0PR06MB6510.apcprd06.prod.outlook.com (2603:1096:990:30::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8989.21; Wed, 6 Aug
+ 2025 06:43:28 +0000
+Received: from OS8PR06MB7541.apcprd06.prod.outlook.com
+ ([fe80::9f51:f68d:b2db:da11]) by OS8PR06MB7541.apcprd06.prod.outlook.com
+ ([fe80::9f51:f68d:b2db:da11%5]) with mapi id 15.20.9009.013; Wed, 6 Aug 2025
+ 06:43:27 +0000
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Eddie James <eajames@linux.ibm.com>,
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
+ Jeffery <andrew@codeconstruct.com.au>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH 2/2] irqchip/aspeed-scu-ic: Add support for AST2700 SCU
+ interrupt controllers
+Thread-Topic: [PATCH 2/2] irqchip/aspeed-scu-ic: Add support for AST2700 SCU
+ interrupt controllers
+Thread-Index: AQHcBQGAHPbqy57A20e2dQZRkDylV7RTsVEAgAFsyGA=
+Date: Wed, 6 Aug 2025 06:43:27 +0000
+Message-ID:
+ <OS8PR06MB7541C713096CA46636AECEE4F22DA@OS8PR06MB7541.apcprd06.prod.outlook.com>
+References: <20250804053445.1482749-1-ryan_chen@aspeedtech.com>
+ <20250804053445.1482749-3-ryan_chen@aspeedtech.com> <874iumgqar.ffs@tglx>
+In-Reply-To: <874iumgqar.ffs@tglx>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: OS8PR06MB7541:EE_|JH0PR06MB6510:EE_
+x-ms-office365-filtering-correlation-id: 319f491f-a79f-4b08-de16-08ddd4b48cbd
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|1800799024|7416014|376014|38070700018|921020;
+x-microsoft-antispam-message-info:
+ =?us-ascii?Q?Q2xwguXXVllhtiQDhPGaPgW+lMisbHnOTPetENud8QJ79Z+L29QuNWVckrxh?=
+ =?us-ascii?Q?RMJVRjbnOq5kNy9386uTJvpmjrl4P6oOx7eg/AkqBPaDgZOd9Vi0gBnwKDQT?=
+ =?us-ascii?Q?7a+0B1LO93Byk6m2SOvHMValJNPfBeTxS8LJyOGITZNTG1GUwTPJ1roEyhvY?=
+ =?us-ascii?Q?ZVAd1oUCvavbtzZFhiGHZhD8MMF8ryUc4EJxuwQssJLjDVUBZflvI/JZ5oJU?=
+ =?us-ascii?Q?yEUHCIReLrRGFshl8/F5Wi8r5MCVJDEYcq6ElWvBpZHKu8r9yTdk6W2CiUUD?=
+ =?us-ascii?Q?bHf18bfyqIn3ZxtCsHSTsU8VpqYAenJ80qRdhMuLWqQXBNYlG82YrrbQYC55?=
+ =?us-ascii?Q?7Q5UtqU5CoHO+jfQtqZ6NyTt5AhnUAXqLR4SfINQTz3MBrQlfUH0S+DQe4fz?=
+ =?us-ascii?Q?Vi6KnUIcD02OpjZzOMHNNGay8v921UGP+agoqkX/DwzOU9P7BP7A9/tmDpd2?=
+ =?us-ascii?Q?VBU0NtqRK5037HH/+L+xyXBovBByeMxbst2b2uMXl8xnqbDGlVUrMSheiiH3?=
+ =?us-ascii?Q?pNsN/toDItaPtSBKdn4blCxbxBltjE7raJIYlr0L2cTEFnTr6WEliSfjKxOk?=
+ =?us-ascii?Q?7+0HAdgelqGtz2Psu2LEJiDzGVlpLiwLtE1gAaiANpKHbLFXMhpV7iOlw44k?=
+ =?us-ascii?Q?4cS5kiHM1ecGUp8eWHEdGzSBU/6/Ht2F1S9wzCI60omYUL+JSwKYYOvYLfAq?=
+ =?us-ascii?Q?xjLuma3s8mRgGYsqg7T/Eb3QUQsY7GdnjumFTNakA2j37hqf8xwufSJOf02P?=
+ =?us-ascii?Q?SkxNPng0TJLoh9rcgEoZPUaM1ejIGFZ/G+UaujtiQZSHN4SmmTV2gYhaxUcl?=
+ =?us-ascii?Q?XZUMlS4vXQ5gImYR+PSHxnR3wCbDdVyalx+UlAwVhFB8RIgm9HWWpEv4nq49?=
+ =?us-ascii?Q?NcQoGHvV2FAfCSueM0+mORsKokvfkzvGYz8hYYQ/zwDBIZ77NGI2nQP+Gtv0?=
+ =?us-ascii?Q?aZ8VZ1UcGTabxbcH6E/85hqacZvxGw/BVCoxDMjbM+3K+r1cedidSi/vCf5t?=
+ =?us-ascii?Q?rQSWb2hgM4ploC+Z1WGq3iOKDs9+kqxDJXJScije8p2+fcIZ6a/Hk6wkadbQ?=
+ =?us-ascii?Q?VcFo0vPItzLDA6PxuAKuSE7o2eXieckXIPtHQ5C1nH6OlzjowlQejsDaRbmz?=
+ =?us-ascii?Q?tJ8F+iwhRcondumAlJXbhgYXP/5/YuPynGmTnGDno3bBJuRwEmiqMPJzrKlr?=
+ =?us-ascii?Q?yenthDz5JMxkYpwqoZZpoTdoUzUKjARa8mnCabRgX0Pxj4KgwpuG8yXhLEfO?=
+ =?us-ascii?Q?63z5Ha17Cmy2N8rzxXtB9Cb5fFyAt8fhhV7v4h1ZX3xC1fv7b1NXxx+MznJL?=
+ =?us-ascii?Q?Xt2W12vhuaAAyPBhoUWqkVt+mYxM2ImVFQlUUSCFXfAFkDLCrmUwDB7aZ1NB?=
+ =?us-ascii?Q?8nYcbqNm5JYwRC1k7n5XoMhD6M0fl4wMhLulu5ynjyIvm3Z2BtBrAogSBs8j?=
+ =?us-ascii?Q?NP4nXC+p6RhnHLDkp+v5gIEf58JTXpB6YWqrNSSYvTqEQasPDcZ7kXO8SYrB?=
+ =?us-ascii?Q?LuNmbVuhrd6QtA4xi6nZA3qPClWKhNP52zLV?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OS8PR06MB7541.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(38070700018)(921020);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?1VZT/YP1cb9Bl35k7Z0eChItO8OwtdDDDwKYDOcSctOGp06/dyWEzeHftxBS?=
+ =?us-ascii?Q?M5jnunZvAQTuqfx9UJCVVZPdvvGDGR0IXuj95+sdu2C2w7Ixt9K1YFvGGNRb?=
+ =?us-ascii?Q?L48k44+G4EYNsTp+DpkA69My04uEAsWktA5hZROHuflZRhbDfOETK1IsJcJz?=
+ =?us-ascii?Q?AbW4fYTqbhX4wRjTJYq2DScyxpfPdsL+6ZIsLddT3u3qAdfkdtKbkbQZ43nk?=
+ =?us-ascii?Q?/LxMq1qTtNGppNGyWCXH8eYhCm2CmgBuzT56hMKBID7rOkBeXNNyg1YMfPWH?=
+ =?us-ascii?Q?9zXW/JP2InLEnfpIUPNFjtrklOa65pCx7ALeDeiSNwYOvKO4c/BLeSkwy3VY?=
+ =?us-ascii?Q?fJ0MlNZzW2zhzzNeBQwHHt7rJrbEmKebJrAFSmXCy9YAXi0g9GVyttxjFm4P?=
+ =?us-ascii?Q?/imS0d4qQykMWkuAzNMTOZIPcVC41GkCRMrcBYeyHpFZoLJz+RF+DKlqCiQm?=
+ =?us-ascii?Q?9uishv/YN8gNP0hVxq4VCWMGMLChnSVrzCh6RWfVJkKjWNV+4KlKGyfR4/8E?=
+ =?us-ascii?Q?zzmXXeDTNuJfP8sj7mLz85Wsf5uMFVB595sJw2xadwa0w0sQaAgfre0wSDZF?=
+ =?us-ascii?Q?3JPB3QRcnnStj33YqSiA0z9SyYrz+JgZFjP0gD1YEGEE++F+S+q1QFiq5E6s?=
+ =?us-ascii?Q?CgNW65CJh9zALUNLm3bbgfVKFc2lFjwv0miXBDKUo5I+VxfmD+n0MSLNF1c8?=
+ =?us-ascii?Q?VlbOvg659Y3wdwZZLA7rYqA4/YGK8MbLxm3SrVPJ4mB8j6tX2uIppi8TJy47?=
+ =?us-ascii?Q?e4AnyNXLIdKtYGfc+lp1cBiLVV440ilV7AzvxEJkytn3Ro/9afUVLD0Q0G12?=
+ =?us-ascii?Q?YqIewTv0bYDDqBaJiMZ53eyXK5abDc6dfZHsTmr+E+peHhP+iJ7ujdOuh0TE?=
+ =?us-ascii?Q?IFFnH5FhyxbhKAtI33JhdamMVUTJWzoJh7JXkxL3baDFKl/HHOBbBE4Nyjdh?=
+ =?us-ascii?Q?U8LZFMzx/0IjE5Bi0CDSprqj/l9S/OqNKv7zWWAYFC+ZgdwnqR5g0CNyIjdB?=
+ =?us-ascii?Q?sO/RQGbXJw2Lty9ecTQ7MtzQs78uPPomWCwDx33PZsQBWVsB9xBjolLXKqyf?=
+ =?us-ascii?Q?JJop2jT3vmUVCFnLBxzo/DPsBS0Np9x4GGpKdyNwd2dFnzdl434Cmu0UXEzZ?=
+ =?us-ascii?Q?e258MZl00FrLpbmXczDvTzREd12Ip/6czULVCb46G7jBNLao6k/58pbPsw7h?=
+ =?us-ascii?Q?gOqVCalLBvugNwWxiPSY6utZs5Wt4rp++6kvGbCnGGBTJPLJGwXf+NUwoPCT?=
+ =?us-ascii?Q?to5Z1iOPwLyOZaCnpWXf6Pbmk1fKB4zNJfNhFeV7V8XOao728i06v9nr6bZg?=
+ =?us-ascii?Q?xM/kn0DUVXZ1k+njFYxMQdiApFkh1qicBLx8Q1DD7MO86k97Y1uM8kQ1HclC?=
+ =?us-ascii?Q?a3TfWR0T1HaXRna/Iu2jtdrkGbh3qco5i/0+aBl0x3KqrDBh36uS56eF1P/Y?=
+ =?us-ascii?Q?JCXUe97EEVY1E1tDeBT4NL++FMiBMmDvHHJZoGk+WgYnKOrzE+xlSSIf5xXR?=
+ =?us-ascii?Q?A8IFSyix30tJ1bajlzZWe09L+i2PpWZ1upF1hJieS8KbwNjJMD3Q6oZbqXiG?=
+ =?us-ascii?Q?jUm58g68vU4GPM0ecLLl7A4fJFExfCuX5jL4cyq6?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,85 +159,358 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 0/2] Adding device tree and binding for NVIDIA
- GB200-UT3.0b
-To: Donald Shannon <donalds@nvidia.com>
-Cc: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
- andrew@codeconstruct.com.au, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org
-References: <20250723222350.200094-1-donalds@nvidia.com>
- <20250724-affable-gorgeous-dragon-130ac6@kuoka>
- <5e5c8bd2-4c4b-4371-a6b2-d4d4359a4233@nvidia.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <5e5c8bd2-4c4b-4371-a6b2-d4d4359a4233@nvidia.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: OS8PR06MB7541.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 319f491f-a79f-4b08-de16-08ddd4b48cbd
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Aug 2025 06:43:27.6794
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: LXZ2qBR01wzaQEY0n7o+6mI1b6uwNE4oRlQ3+da+zfdZqqL9Uai1eoATcuYm98d/OF9lyjxsV4rZcxci/uWn/qAgy+y/K53ggrtxcnPFkT0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB6510
 
-On 05/08/2025 20:18, Donald Shannon wrote:
->>> Changes v6 -> v7:
->>>    - Removed Acked-by Krzysztof
->> Why? You did not even give me chance to respond to your reply.
->>
->> Best regards,
->> Krzysztof
-> 
-> Hi Krzysztof,
-> 
-> I will reply here to keep our discussion together.
-> 
-> I think that the issue was me using your kernel.org email and not your linaro.org email.
-> I will fix this in the next patch series along with some fixes for the warnings from the other thread.
+> Subject: Re: [PATCH 2/2] irqchip/aspeed-scu-ic: Add support for AST2700 S=
+CU
+> interrupt controllers
+>=20
+> On Mon, Aug 04 2025 at 13:34, Ryan Chen wrote:
+> > +#define ASPEED_AST2700_SCU_IC0_EN_REG	0x1d0
+> > +#define ASPEED_AST2700_SCU_IC0_STS_REG	0x1d4
+> > +#define ASPEED_AST2700_SCU_IC0_SHIFT	0
+> > +#define ASPEED_AST2700_SCU_IC0_ENABLE	\
+> > +	GENMASK(3, ASPEED_AST2700_SCU_IC0_SHIFT)
+>=20
+> Let it stick out, you have 100 characters
+Yes, will update to
+#define ASPEED_AST2700_SCU_IC0_ENABLE   GENMASK(3, ASPEED_AST2700_SCU_IC0_S=
+HIFT)
+And another question, in original code define for AST2600, can I also modif=
+y it in this patch?=20
+or I should be another patch?
+#define ASPEED_AST2600_SCU_IC1_ENABLE   \
+        GENMASK(5, ASPEED_AST2600_SCU_IC1_SHIFT)
+>=20
+> >  struct aspeed_scu_ic {
+> >  	unsigned long irq_enable;
+> >  	unsigned long irq_shift;
+> >  	unsigned int num_irqs;
+> >  	unsigned int reg;
+> > +	unsigned int en_reg;
+> > +	unsigned int sts_reg;
+> > +	bool split_ier_isr;
+>=20
+> Please reformat this struct declaration according to:
+>=20
+> https://www.kernel.org/doc/html/latest/process/maintainer-tip.html#struct=
+-de
+> clarations-and-initializers
 
-You should not "use email" at all. You MUST copy the tag as given,
-without modifying it or writing by yourself. Use for example `b4
-trailers` for that. Or just copy paste.
+Will update struct aspeed_scu_ic to following.
 
-Best regards,
-Krzysztof
+struct aspeed_scu_ic {
+        unsigned long           irq_enable;
+        unsigned long           irq_shift;
+        unsigned int            num_irqs;
+        unsigned int            reg;
+        unsigned int            en_reg;
+        unsigned int            sts_reg;
+        bool                    split_ier_isr;
+        struct regmap           *scu;
+        struct irq_domain       *irq_domain;
+};
+>=20
+> >  	struct regmap *scu;
+> >  	struct irq_domain *irq_domain;
+> >  };
+> > @@ -52,33 +83,51 @@ static void aspeed_scu_ic_irq_handler(struct
+> irq_desc *desc)
+> >  	unsigned long status;
+> >  	struct aspeed_scu_ic *scu_ic =3D irq_desc_get_handler_data(desc);
+> >  	struct irq_chip *chip =3D irq_desc_get_chip(desc);
+> > -	unsigned int mask =3D scu_ic->irq_enable <<
+> ASPEED_SCU_IC_STATUS_SHIFT;
+> > +	unsigned int mask;
+>=20
+> https://www.kernel.org/doc/html/latest/process/maintainer-tip.html#variab=
+le-
+> declarations
+
+Will update by following.
+
+struct aspeed_scu_ic *scu_ic;
+struct irq_chip *chip;
+unsigned long bit, enabled, max, status;
+unsigned int sts, mask;
+
+scu_ic =3D irq_desc_get_handler_data(desc);
+chip =3D irq_desc_get_chip(desc);
+
+>=20
+> >  	chained_irq_enter(chip, desc);
+> >
+> > -	/*
+> > -	 * The SCU IC has just one register to control its operation and read
+> > -	 * status. The interrupt enable bits occupy the lower 16 bits of the
+> > -	 * register, while the interrupt status bits occupy the upper 16 bits=
+.
+> > -	 * The status bit for a given interrupt is always 16 bits shifted fro=
+m
+> > -	 * the enable bit for the same interrupt.
+> > -	 * Therefore, perform the IRQ operations in the enable bit space by
+> > -	 * shifting the status down to get the mapping and then back up to
+> > -	 * clear the bit.
+> > -	 */
+> > -	regmap_read(scu_ic->scu, scu_ic->reg, &sts);
+> > -	enabled =3D sts & scu_ic->irq_enable;
+> > -	status =3D (sts >> ASPEED_SCU_IC_STATUS_SHIFT) & enabled;
+> > -
+> > -	bit =3D scu_ic->irq_shift;
+> > -	max =3D scu_ic->num_irqs + bit;
+> > -
+> > -	for_each_set_bit_from(bit, &status, max) {
+> > -		generic_handle_domain_irq(scu_ic->irq_domain,
+> > -					  bit - scu_ic->irq_shift);
+> > -
+> > -		regmap_write_bits(scu_ic->scu, scu_ic->reg, mask,
+> > -				  BIT(bit + ASPEED_SCU_IC_STATUS_SHIFT));
+> > +	if (scu_ic->split_ier_isr) {
+> > +		mask =3D scu_ic->irq_enable;
+> > +		regmap_read(scu_ic->scu, scu_ic->en_reg, &sts);
+> > +		enabled =3D sts & scu_ic->irq_enable;
+> > +		regmap_read(scu_ic->scu, scu_ic->sts_reg, &sts);
+> > +		status =3D sts & enabled;
+> > +
+> > +		bit =3D scu_ic->irq_shift;
+> > +		max =3D scu_ic->num_irqs + bit;
+> > +
+> > +		for_each_set_bit_from(bit, &status, max) {
+> > +			generic_handle_domain_irq(scu_ic->irq_domain, bit -
+> > +scu_ic->irq_shift);
+> > +
+> > +			regmap_write_bits(scu_ic->scu, scu_ic->sts_reg, mask, BIT(bit));
+> > +		}
+> > +	} else {
+> > +		mask =3D scu_ic->irq_enable << ASPEED_SCU_IC_STATUS_SHIFT;
+> > +		/*
+> > +		 * The SCU IC has just one register to control its operation and rea=
+d
+> > +		 * status. The interrupt enable bits occupy the lower 16 bits of the
+> > +		 * register, while the interrupt status bits occupy the upper 16 bit=
+s.
+> > +		 * The status bit for a given interrupt is always 16 bits shifted fr=
+om
+> > +		 * the enable bit for the same interrupt.
+> > +		 * Therefore, perform the IRQ operations in the enable bit space by
+> > +		 * shifting the status down to get the mapping and then back up to
+> > +		 * clear the bit.
+> > +		 */
+> > +		regmap_read(scu_ic->scu, scu_ic->reg, &sts);
+> > +		enabled =3D sts & scu_ic->irq_enable;
+> > +		status =3D (sts >> ASPEED_SCU_IC_STATUS_SHIFT) & enabled;
+> > +
+> > +		bit =3D scu_ic->irq_shift;
+> > +		max =3D scu_ic->num_irqs + bit;
+> > +
+> > +		for_each_set_bit_from(bit, &status, max) {
+> > +			generic_handle_domain_irq(scu_ic->irq_domain,
+> > +						  bit - scu_ic->irq_shift);
+> > +
+> > +			regmap_write_bits(scu_ic->scu, scu_ic->reg, mask,
+> > +					  BIT(bit + ASPEED_SCU_IC_STATUS_SHIFT));
+> > +		}
+>=20
+> This is horrible, really. Either rework the code so that both chips can s=
+hare it
+> with minimal conditionals or provide seperate handlers. It's not rocket s=
+cience.
+
+Yes, I will update by separate handlers.
+
+older
+static struct irq_chip aspeed_scu_ic_chip =3D {
+	.name			=3D "aspeed-scu-ic",
+	.irq_mask		=3D aspeed_scu_ic_irq_mask,
+	.irq_unmask		=3D aspeed_scu_ic_irq_unmask,
+	.irq_set_affinity	=3D aspeed_scu_ic_irq_set_affinity,
+};
+Add new=20
+
+static struct irq_chip ast2700_scu_ic_chip =3D {
+	.name			=3D "aspeed-scu-ic",
+	.irq_mask		=3D ast2700_scu_ic_irq_mask,
+	.irq_unmask		=3D ast2700_scu_ic_irq_unmask,
+	.irq_set_affinity	=3D ast2700_scu_ic_irq_set_affinity,
+};
+
+if (scu_ic->split_ier_isr)
+    irq_set_chained_handler_and_data(irq, ast2700_scu_ic_irq_handler, scu_i=
+c);
+else
+    irq_set_chained_handler_and_data(irq, aspeed_scu_ic_irq_handler,, scu_i=
+c);
+
+>=20
+> >  	chained_irq_exit(chip, desc);
+> > @@ -87,30 +136,42 @@ static void aspeed_scu_ic_irq_handler(struct
+> > irq_desc *desc)
+>=20
+> >  static void aspeed_scu_ic_irq_mask(struct irq_data *data)  static
+> > void aspeed_scu_ic_irq_unmask(struct irq_data *data)
+>=20
+> >  {
+> >  	struct aspeed_scu_ic *scu_ic =3D irq_data_get_irq_chip_data(data);
+> >  	unsigned int bit =3D BIT(data->hwirq + scu_ic->irq_shift);
+> > -	unsigned int mask =3D bit |
+> > -		(scu_ic->irq_enable << ASPEED_SCU_IC_STATUS_SHIFT);
+> > -
+> > -	/*
+> > -	 * Status bits are cleared by writing 1. In order to prevent the unma=
+sk
+> > -	 * operation from clearing the status bits, they should be under the
+> > -	 * mask and written with 0.
+> > -	 */
+> > -	regmap_update_bits(scu_ic->scu, scu_ic->reg, mask, bit);
+> > +	unsigned int mask;
+> > +
+> > +	if (scu_ic->split_ier_isr) {
+> > +		mask =3D bit;
+> > +		regmap_update_bits(scu_ic->scu, scu_ic->en_reg, mask, bit);
+> > +	} else {
+> > +		mask =3D bit | (scu_ic->irq_enable << ASPEED_SCU_IC_STATUS_SHIFT);
+> > +
+> > +		/*
+> > +		 * Status bits are cleared by writing 1. In order to prevent the
+> unmask
+> > +		 * operation from clearing the status bits, they should be under the
+> > +		 * mask and written with 0.
+> > +		 */
+> > +		regmap_update_bits(scu_ic->scu, scu_ic->reg, mask, bit);
+> > +	}
+>=20
+> This also wants to be consolidated or seperated.
+Yes, will do separated.
+>=20
+> >  }
+> >
+> > +static int __init aspeed_ast2700_scu_ic0_of_init(struct device_node *n=
+ode,
+> > +						 struct device_node *parent)
+> > +{
+> > +	struct aspeed_scu_ic *scu_ic =3D kzalloc(sizeof(*scu_ic), GFP_KERNEL)=
+;
+> > +
+> > +	if (!scu_ic)
+> > +		return -ENOMEM;
+> > +
+> > +	scu_ic->irq_enable =3D ASPEED_AST2700_SCU_IC0_ENABLE;
+> > +	scu_ic->irq_shift =3D ASPEED_AST2700_SCU_IC0_SHIFT;
+> > +	scu_ic->num_irqs =3D ASPEED_AST2700_SCU_IC0_NUM_IRQS;
+> > +	scu_ic->split_ier_isr =3D true;
+> > +	scu_ic->en_reg =3D ASPEED_AST2700_SCU_IC0_EN_REG;
+> > +	scu_ic->sts_reg =3D ASPEED_AST2700_SCU_IC0_STS_REG;
+> > +
+> > +	return aspeed_scu_ic_of_init_common(scu_ic, node); }
+> > +
+> > +static int __init aspeed_ast2700_scu_ic1_of_init(struct device_node *n=
+ode,
+> > +						 struct device_node *parent)
+> > +{
+> > +	struct aspeed_scu_ic *scu_ic =3D kzalloc(sizeof(*scu_ic), GFP_KERNEL)=
+;
+> > +
+> > +	if (!scu_ic)
+> > +		return -ENOMEM;
+> > +
+> > +	scu_ic->irq_enable =3D ASPEED_AST2700_SCU_IC1_ENABLE;
+> > +	scu_ic->irq_shift =3D ASPEED_AST2700_SCU_IC1_SHIFT;
+> > +	scu_ic->num_irqs =3D ASPEED_AST2700_SCU_IC1_NUM_IRQS;
+> > +	scu_ic->split_ier_isr =3D true;
+> > +	scu_ic->en_reg =3D ASPEED_AST2700_SCU_IC1_EN_REG;
+> > +	scu_ic->sts_reg =3D ASPEED_AST2700_SCU_IC1_STS_REG;
+> > +
+> > +	return aspeed_scu_ic_of_init_common(scu_ic, node); }
+> > +
+> > +static int __init aspeed_ast2700_scu_ic2_of_init(struct device_node *n=
+ode,
+> > +						 struct device_node *parent)
+> > +{
+> > +	struct aspeed_scu_ic *scu_ic =3D kzalloc(sizeof(*scu_ic), GFP_KERNEL)=
+;
+> > +
+> > +	if (!scu_ic)
+> > +		return -ENOMEM;
+> > +
+> > +	scu_ic->irq_enable =3D ASPEED_AST2700_SCU_IC2_ENABLE;
+> > +	scu_ic->irq_shift =3D ASPEED_AST2700_SCU_IC2_SHIFT;
+> > +	scu_ic->num_irqs =3D ASPEED_AST2700_SCU_IC2_NUM_IRQS;
+> > +	scu_ic->split_ier_isr =3D true;
+> > +	scu_ic->en_reg =3D ASPEED_AST2700_SCU_IC2_EN_REG;
+> > +	scu_ic->sts_reg =3D ASPEED_AST2700_SCU_IC2_STS_REG;
+> > +
+> > +	return aspeed_scu_ic_of_init_common(scu_ic, node); }
+> > +
+> > +static int __init aspeed_ast2700_scu_ic3_of_init(struct device_node *n=
+ode,
+> > +						 struct device_node *parent)
+> > +{
+> > +	struct aspeed_scu_ic *scu_ic =3D kzalloc(sizeof(*scu_ic), GFP_KERNEL)=
+;
+> > +
+> > +	if (!scu_ic)
+> > +		return -ENOMEM;
+> > +
+> > +	scu_ic->irq_enable =3D ASPEED_AST2700_SCU_IC3_ENABLE;
+> > +	scu_ic->irq_shift =3D ASPEED_AST2700_SCU_IC3_SHIFT;
+> > +	scu_ic->num_irqs =3D ASPEED_AST2700_SCU_IC3_NUM_IRQS;
+> > +	scu_ic->split_ier_isr =3D true;
+> > +	scu_ic->en_reg =3D ASPEED_AST2700_SCU_IC3_EN_REG;
+> > +	scu_ic->sts_reg =3D ASPEED_AST2700_SCU_IC3_STS_REG;
+> > +
+> > +	return aspeed_scu_ic_of_init_common(scu_ic, node); }
+>=20
+> You seriously have no better idea than this copy & pasta orgy?
+>=20
+> static struct scu_variant variants =3D {
+> 	SCU("aspeed,ast2400-scu-ic", ......, whatever...),
+>         ...
+> 	SCU("aspeed,ast2700-scu-ic0", 0x1D0, 0x1D4, 0, GENMASK(3, 0),
+>             4, whatever...),
+>         ...
+> 	SCU("aspeed,ast2700-scu-ic3", 0x10C, 0x108, 0, GENMASK(1, 0),
+>             2, ......),
+> } __initdata;
+>=20
+> static struct scu_variant *find_variant(struct device_node *node) {
+>         for (int i =3D 0; i < ARRAY_SIZE(variant); i++) {
+>         	if (!strcmp(variant[i].name, node->name))
+>                 	return &variant[i];
+> 	}
+>         return NULL;
+> }
+>=20
+> static int __init ast_scu_of_init(struct device_node *node, struct device=
+_node
+> *parent) {
+>         struct variant *v =3D find_variant(node);
+>=20
+>         if (!v)
+>           	...
+>=20
+>         scu_ic =3D kzalloc(...);
+>         *scu_ic =3D v->scu;
+>         ...
+>=20
+> You get the idea.
+>=20
+Thanks, I will do rework first, then add AST2700.=20
+
+> This rework needs to come first and then you can add your new 2700 muck o=
+n
+> top.
+>=20
+> Thanks,
+>=20
+>         tglx
 
