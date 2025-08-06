@@ -1,59 +1,59 @@
-Return-Path: <linux-aspeed+bounces-1906-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1907-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63628C87FD1
-	for <linux-aspeed@archiver.kernel.org>; Wed,  6 Aug 2025 01:06:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34582C87FD1
+	for <linux-aspeed@archiver.kernel.org>; Wed,  6 Aug 2025 01:15:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bxXDd3g0Zz2xck;
-	Wed,  6 Aug 2025 11:06:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bxXR35x68z30WY;
+	Wed,  6 Aug 2025 11:15:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754442385;
-	cv=none; b=jVZak4RZHBQAApJ5cAP2hJipKFXmmvEET/I5DEwLVWyVJ5F1dXyDorJDI0mbGRTK3StEvYoWLb1/ecr6VvoRcfEvGJZZFwxvfiD40Jri8f61PScf1eCoSuPh6y/hQNp7asbOan8jPtjo2CLg3dnZj/DFiNC5H9sdj5NdDy/8FUQyLZhT8+kqQdPAvGNf/t/ge1ZFYvr8DPL0ClYJqHzIh4jngP/puVEVmGrDEG2BB8YWJWs9ZvYaS4oCrHPMjF6LUriAShXMa6JlJYRWxTOFhnF9RrlQQzasqVnaORyEei+3M0WARogbyscmP4GUjKDCpxy30QA7S5h5ECoNGeWXiA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754442927;
+	cv=none; b=YfCZUuEBjxujXN2zAR9YWfpYIl9grlhtgsfS7G1WAumS2PIIVgOwzJBPpFTGbyhlb9UaPwf/rIoUL7J2vsogXgGKTwpCTePWcFUIqghTAW+WSp24Nl88s463zdMv/BH4T+uzd//WonxBIx20OEHd475bRxv0Y8nazbPGV5m+DVBMt9p0fT0JfN7/Ev49a/6q5UgtA3H8dp1UjIwgPQ6MVoHrFsG10LD7/g6xtv7twDOX7TesrF3ICIwlfyJ9onDLUvVfO/RC8PuSquaoz/UQZ8VtIB+CU0tcZE4ZM54laAq9UfyUMcMkhqZD32uw3p5fvFLkqOY5cwSRyRq9iKXidg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754442385; c=relaxed/relaxed;
-	bh=gJIT0RKIFHGb2UNWgeL4YzLrs92/FLX3uGi5Yvs8A6Q=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=V7W78etarp1LqPTRGpr/rFu9Pfhmbaxaba3QNK0Eb+lrhcx5peuciPdGNvFeuc+cB7Q+r5E0efuwQDyWRjXAyHUhTAloAnvV38/UMsZkx1IMLAVsBlnOMafuxd4l2U9NeVRP2rAbMEYu1xGeTfa04bmFfNNLf30y95z4gKIxlcH3q4sane0RgGp0uUiOIpM7wnKAx6M6LukLX4fXkIfFQ0Hk8AjAcHpxRlaeCpa7BcDYVH8bOAZGDbDCdXwNiEljpyfUSoT+X3Q0cXywIjMOM4OfxrqTXWxNWwLsuu4d8TnwauqDozWgI1CKedKyUt3I4VhcMTvMPseMEh3JHf+w+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=TZ81NPG0; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1754442927; c=relaxed/relaxed;
+	bh=q16sqgrcDh4TW6b6QGnthsd0Rh9/8L6NGJ8pTp9TjsQ=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=feSF/hBF0I4NIuT85eGRquUEqAJn2aiU/TTDUf2vMYCHz+EUbwsowfjT0t4UtTOmY/PRh6Y/hV34yfhNPF1ofAxsyta8SCPdZNWUAyiI56oTDz2/vb1E+zyKFaNooSAIBkh79dAoWwEMlZK9DsnpcfauIa/ADEoRgBTdBm2XGJCOkrRFf8f5KjV8twO64bWreFsYQd/yBojwNUEgkCJDO01Y1pvP0Fv7XDTFitnNJKXoTGiLTxYrU6D9mXNijQazsD+AH6oGOSoGqfE1El36B5JU0yUVQ9mSmRC/BsSvYWhddib0kIIN7O3fhD185GWs0phGdnTZ0CxTYSCdeH+JsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Phvbf0Z9; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=TZ81NPG0;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Phvbf0Z9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxXDc6dCWz2xRs
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  6 Aug 2025 11:06:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxXR323s8z2xck
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  6 Aug 2025 11:15:27 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1754442382;
-	bh=gJIT0RKIFHGb2UNWgeL4YzLrs92/FLX3uGi5Yvs8A6Q=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=TZ81NPG0Tpthj1GIOe4bGS2Jubcfz/OZCd47fs81p3MHlpHRx/JE1InaYGm1VNmOk
-	 eegoZnSabX9UsZBc5kuxapDFz38wPr2kJfNLamgqMfqaKGt9KBOM3d2zV2xQJyPvbH
-	 RcgE0jDa5P6hZTKSC762wBbswZAcGQr8R7iyf/uIF1qA5VFEJlMytsYQnRMuquWltS
-	 MsooPpG02HSaArN3UPkzb16C464yxUmRG92PbOAQrrKI6UZ60k0uHV50kfPsphAoWj
-	 uKxxH8XDDXSROrQApO09PBPyG1UTiK5scUtVKJnisHowTMYQrzGg/7kWXkIswrJZoQ
-	 PFRrzAFd7f2Ig==
-Received: from [127.0.1.1] (unknown [180.150.112.70])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 3982D67B49;
-	Wed,  6 Aug 2025 09:06:21 +0800 (AWST)
+	d=codeconstruct.com.au; s=2022a; t=1754442926;
+	bh=q16sqgrcDh4TW6b6QGnthsd0Rh9/8L6NGJ8pTp9TjsQ=;
+	h=Subject:From:To:Date:In-Reply-To:References;
+	b=Phvbf0Z9KeOg7rHlR0UiPwm32b3qtbFS8lDlSG/PwVIw4TIwlThELZnZVwv+O6ILz
+	 DrGVUl+Oo9PkULcyyHBgHV/Wxa6mm2kAnT4DFA4XmRKSLhNZjY9jueaPe0k+BRYCFZ
+	 xzO6UTEgpsVjY7r0A47KjJ/sF8+1S0OU1pIT9xO4qg43tHsc0yjekRvw0KgrCOu8gP
+	 tm3yN/TCZVdQisfqQjPwKvySpr15wYSZjXPpnzlpd6xRUzwE5abW2vJH/h8eNR3Y4c
+	 NK5rjs88ErIgU/GaeIrxy4ybhMXj4ZeJLqYsAFcKFNriwC1LrBuANg3qP+ldg4M9xm
+	 Zqo4VangpeT/w==
+Received: from [192.168.68.112] (unknown [180.150.112.70])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 544F06BFF3;
+	Wed,  6 Aug 2025 09:15:26 +0800 (AWST)
+Message-ID: <182db4f2848dc7b8c110d45bb606e6219983c237.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] drivers/soc/aspeed: Add AST27XX SoC ID support
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Tan Siewert <tan@siewert.io>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20250803151822.68080-1-tan@siewert.io>
-References: <20250803151822.68080-1-tan@siewert.io>
-Subject: Re: [PATCH 0/4] ARM: dts: aspeed: Convert remaining ASRock systems
- to NVMEM layout syntax
-Message-Id: <175444238112.266976.6701389016981871511.b4-ty@codeconstruct.com.au>
-Date: Wed, 06 Aug 2025 10:36:21 +0930
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Date: Wed, 06 Aug 2025 10:45:25 +0930
+In-Reply-To: <20250805063957.1452653-1-ryan_chen@aspeedtech.com>
+References: <20250805063957.1452653-1-ryan_chen@aspeedtech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,23 +67,50 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.2
 
-On Sun, 03 Aug 2025 17:18:16 +0200, Tan Siewert wrote:
-> While investigating an issue with an ASRock Rack platform, I noticed
-> that most of the ASPEED device trees using NVMEM cells to populate
-> MAC addresses still rely on a deprecated NVMEM binding syntax.
-> As a result, the MAC addresses are not populated from the
-> device tree/NVMEM cells properly, and an address from "the chip" is
-> being used instead.
-> 
-> [...]
+Hi Ryan,
 
-Thanks, I've applied this to the BMC tree.
+Regarding the patch subject, can you please follow the patterns
+established by other commits under drivers/soc ?
 
--- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+Separately, can we concentrate efforts on trying to get the platform
+definition bits upstream for the AST2700? Arnd's recent newsoc PR adds
+several new SoCs (as the tag name suggests), which is a helpful
+reference:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git/log/?h=3Dsoc-ne=
+wsoc-6.17
+
+Cheers,
+
+Andrew
+
+On Tue, 2025-08-05 at 14:39 +0800, Ryan Chen wrote:
+> Extend the ASPEED SoC info driver to support AST27XX silicon IDs.
+>=20
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+> =C2=A0drivers/soc/aspeed/aspeed-socinfo.c | 4 ++++
+> =C2=A01 file changed, 4 insertions(+)
+>=20
+> diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/asp=
+eed-socinfo.c
+> index 3f759121dc00..67e9ac3d08ec 100644
+> --- a/drivers/soc/aspeed/aspeed-socinfo.c
+> +++ b/drivers/soc/aspeed/aspeed-socinfo.c
+> @@ -27,6 +27,10 @@ static struct {
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "AST2620", 0x05010203 }=
+,
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "AST2605", 0x05030103 }=
+,
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "AST2625", 0x05030403 }=
+,
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* AST2700 */
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "AST2750", 0x06000003 },
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "AST2700", 0x06000103 },
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0{ "AST2720", 0x06000203 },
+> =C2=A0};
+> =C2=A0
+> =C2=A0static const char *siliconid_to_name(u32 siliconid)
 
 
