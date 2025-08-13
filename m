@@ -1,80 +1,81 @@
-Return-Path: <linux-aspeed+bounces-1951-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1952-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7041CA0EE0
-	for <linux-aspeed@archiver.kernel.org>; Wed, 13 Aug 2025 23:52:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B9E4C87FCF
+	for <linux-aspeed@archiver.kernel.org>; Wed, 13 Aug 2025 23:53:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2QBK0hJJz3cQx;
-	Thu, 14 Aug 2025 09:51:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1033"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755079477;
-	cv=none; b=cpwykDlIq9MkHRwxQ9KlzrqfQqomUHG+E7NcxmLhutHqaL7ChzcVIPLCwkMlR2LpOR8+fJ6KJFbb5FwAAJfJvk9epQsPzAi9EGGPHebeenbj1Kyhs5brqD6VHLvqBbtu5x0j1xE2pqzwS0O4PJAFk5YmoINOc+vVU0Xs0EkWSbSvINBstJV1pBRnpgjiVf9Hv5Gy8kdTY3ZDmd53fJ3KEd0bjRDeh+VANM/AhpcdOLIBDBdQ6eldCWdfweZBNV/POoeNFvzs3ZcuQY0jNbVDtLHtL5PUWiFqB5UCgjHhg+lr1gBOLgK10zWdcyIGcajh8Vd2NslLzthrZvYn6xJB1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2QBL3W4Jz3cPG;
+	Thu, 14 Aug 2025 09:51:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755079481;
+	cv=none; b=iDiJC9S0G7Ix5+cjzBBBLBAXSZrwbb59m2FDtO5YavHZKUFEHOduE2LCVdDzZ2FWSoWOliHM7ah8K06V3LR/Ak7zNQvRAjBpAy0Q0G3FjlCWD3fMGOwB28Lyyn1t3aRVZlQp905xvPQ91WsEW/BU8NWNI0+8p6yYsVgI3SRFy9L4V2x5Uste/EKlqWpy7HrFyXcQkypxmgSZpvmgmF1Z3xwEwTVf4+v/Pk1GTXNSJpyoXmAxEc/LOW8T1EiPiZhvLeZdla1oY4UXLyVJu4zZP578lxEpv4W7J6NxVHkbl4EAm/JWeyx9dMTs4ndgx/hcphRFYYItstR09KnE9ofBtw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755079477; c=relaxed/relaxed;
-	bh=pA6OisM0xiSXM2QYlyPmLpjSFc9U7oYBc1YKa/QuGPA=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=C/+j2gRivO1jXZM+gdNCu3eqGvB9cJYy6joz58tmTfn356E6Vm/3o7LoptgwHT9vcoytOfvNItZsftNE7NXvwWwTFbfO1rbV/o/DcOZZnpclXLX/veAdWDFHPnE+XzRev7rP+oUKgL+g0W6k91oJn95+0+ix8JS/DG+WUZFYbENXUiNziZV1bHOvo6LECgaiL6m+e0f7EYCh3gTwqaw8eiRhTHfdd1iddNsFYX9HACvVJJv25o6i4M3cu+yKnPpJY/27JzWIHroDBB4bZqDCtA3TFM/JSwPtdYpHE8NgonSwFNxbFUNiFyP22x+T7VN4bAZums+MO+Lj6Un/YVFEHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nE0mZduP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1755079481; c=relaxed/relaxed;
+	bh=QrW+x1kwa+TliZEBde/ju7PT5X6BHW9feGK4JCdzymE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=JXJAxaiaVyN7FfF9EvAYbrWhc2lDV3VmLv98X6W5RuzkPzC7lUn4x5+FZ4vxoT+IQzZQAnO8cuMYppO78MK1StcPa2nN7wO6C/qggjMvGOqyHdp79sHXcv1xZWCKIe57VH3zatZWb9CSwZACcLWCNsSP/rCZYcEmdw7FYzaa2ZjSOKHnPhgWfTt9tRzcAkBxh18bbh76M3jz1058Ew1oNZueny+Lf9qlDTr98DHPoU+RGtYvsW/42vF9PR3h27xcoZjKMtbUWUlfB8led/TeSh00TlsnXXCK76Nmn0ezDDb73k4A14kOj5FwGeYwik71gqoxlBEliywiwG8uxy76KQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AVMiMzPw; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nE0mZduP;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AVMiMzPw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c23rM4RCXz2yFK
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 20:04:34 +1000 (AEST)
-Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-321265ae417so6961004a91.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 03:04:34 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c23rS4WMqz30T8
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 20:04:40 +1000 (AEST)
+Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-2400f746440so52533805ad.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 03:04:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755079470; x=1755684270; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=pA6OisM0xiSXM2QYlyPmLpjSFc9U7oYBc1YKa/QuGPA=;
-        b=nE0mZduPB/a/bskpYksgWujkwQEyUZs3sawJfpduNFrlhTSsEcsAW7S+sk0euNrFiY
-         l0z7w+CCns87q9K4MIJPXCBw/EjUzxaElaX12ejF97SRo0II9KxXogCtqiqphr/h4WuH
-         m6E1U4NyWLiXkWgnkHezjinZJArGJiSiQnm68hX5qflMS36e6lTHFQDlB+kW57dgcvD7
-         gaU8BOyXfIO6r69Wg0+Ta+M7m/fKjWAr2jx7h53o9ePaV5R8klD/3W6Iy7EnxiYJbvrL
-         YvYB31yxozRQ1FRfgzjqU5gjxjAqek79XTYeLmBefVTOkTdWIUBrNyICjDJvaLUU+N4k
-         Zo+Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755079470; x=1755684270;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=gmail.com; s=20230601; t=1755079478; x=1755684278; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=pA6OisM0xiSXM2QYlyPmLpjSFc9U7oYBc1YKa/QuGPA=;
-        b=SAJvhtekjlhzf1BH9XrNBetLQdccRu69MaHcP1Gx8V0T7H+UVO0Hhh6rKCufgEeNFv
-         OGufJIUzjyrohQM0bK0K3nUGOEHK8E0KkjHHd59EcrnsWL3w/P7uagjAlEMz268BIUOy
-         z5T0Ijly5Pt0KVT5CRXaotBH5sr+JBlHRp7JymH5WgczFHmSTITqUlWgZxk3DDkrF0DF
-         rsdB9RsoB8VtWzpPhpptmodRlVfLJhfcAM+tZ95L5f3B7nG0FlFB/Wqy6QKivjsYZmvq
-         ZR3kHVgU7e9bZe/rUrG1ARBHnMXspSrsyUDTiBpzKjAAkDE6uz2d1wQE1dhry43kwM5i
-         l/CQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWYv3DVur5KIHeX/UXHccsrAc4kL3shpQT4bVX93lx6Cqv+UiGg/1d09kVFWgNFYfaibmHGQZQzh/z3I/w=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx0hnNcAREJRxTBwIcUEAuurxfydzBHfhomd8bw3hf0QqUUgovQ
-	8U2HkJyksgOakPzmog1AXcFW+zFBGmR0drMtKq8ZB8bA8nKSOB2k/b0g
-X-Gm-Gg: ASbGnctQF4HdkBLbeJXE/RcBWn3elwnTf8tekxr2fX2/lvcudEPNKNkjUrdUM+BHZmk
-	ozDdVcZaJ9gciqUvvh951obGKhpjHh4UkQEIcjmF1ttl11H7p/e0BpUnmf0P555xYST/rnmGGsa
-	EvdskJ+OvDQ8d3Fb4NpPSvmsX8zm5WR75sXVYlgQ/9FYyI5O/qPhpWDfuWEdnIUabu6m3Z1HHI0
-	9BJRwmEY1Hd/S7/XETL8aEM7FeLtmAfjWd0/QHqpLeIU0fYMLx72XK3ciHSNuU4/F9PWyo3OuIn
-	jkoJYyLe4SjFN9NwYJ+4+JTQft1RF5TSkdZVlq0YLkW7Wssw5LuJqhDKTmgVjCssYKOiFcnsvmt
-	ry4jU9zfr5iZNX4fq6RPvXIXJJm7PWDgjky6osaK1yVrX30WH80lA1JpCUIRFyYFzNyCjwf3zFO
-	IojQ==
-X-Google-Smtp-Source: AGHT+IEGRUvzVmCw1gWq+fPL2z8gPf1Lc1jO0/qbCXCywxlp9sv7Gs9Tm2YFFW1IY+GR7t19aZAzjg==
-X-Received: by 2002:a17:902:e889:b0:240:a889:554d with SMTP id d9443c01a7336-2430d21d1d9mr41164265ad.45.1755079470435;
-        Wed, 13 Aug 2025 03:04:30 -0700 (PDT)
+        bh=QrW+x1kwa+TliZEBde/ju7PT5X6BHW9feGK4JCdzymE=;
+        b=AVMiMzPwg6M8wfEh5lNwKN+G27Uf9WDCj9j+Weib/W3eLxLx1yyA2IpHdRhgWh538K
+         Kl/SpJSYVDw6/4B0Mbtd5yn+zTHAXYTzBovtTA5AeO24BqPZTI+IBdWBDH+akgKeNXuq
+         8x3JD5k0X/eoYREdH8jf9MEj1STzWzxAyVzc6GcKZDf99QacVmKCDL9RDwuRbeB+sNLf
+         RvJi7b+I/EQX5sudFZCl5XNc2FAkVp9IwDTzvKgvSgbkx632Z1EK4QanF6DYWgcUmFye
+         mwwNnv1T2fTJu9kbpXjmTZhA3S8xAgc+zhZ2eo94R6lQFtF2pYOKYJdMdeKHYiLlqONy
+         0kvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755079478; x=1755684278;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=QrW+x1kwa+TliZEBde/ju7PT5X6BHW9feGK4JCdzymE=;
+        b=ZHO7pSS2i6U74G8+9q+EUFROPBfXFq+BX+xwrxch7keQjIyFZiVFnb0BVK7iewWi0M
+         J6yR3ABqVDZv0lqVLBXRH4f2dehNKEPfxuA/R9EdSIWrbaM9eXAp0RrBJ8YBCpHs9BbH
+         +Qnq8Bk53g8V94WF39zrGi4Rep8tsmQeX9CdyApMyrD2YLuNrHsAhalrSOA0yv4PrgBd
+         YT0ZGmqu5cnILKnjH1zQaY0TMvL82xZze9I72PhSBbfz1f+xrmtHinDgjqisiWqtOOPl
+         XtN0Y11d5yWu9aB4WzxPEqwE/PSwvmA+KqGvczlgJBtRXStnMB4ZuWJeUwslCJK2sHvQ
+         HOvw==
+X-Forwarded-Encrypted: i=1; AJvYcCUczhgl3E2RfnEyCBI9IG//IYcEFYoYzImRQBeCjnIG53Hi5rAn7eNpziumurjv9j465/DCBKqCDi5Wkd8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwRYYm6a3iNTBQ4x2+PVXiSx2ewTWE0qd0EQtkEOLN0i/llAGxj
+	7KVqj5zqMrjsyNtFIgfxmcYPHDAnn2+HV1jDs+u+iC1FgxRGt1o6ZAiN
+X-Gm-Gg: ASbGncuSUrhMBBQM8+XWmcmBc1BrzZrSO0ToNCl0qZhv3TKnLIPPCuM2TH3g47fneFu
+	lJxuIvHOB9RNTcd+IiBfPV7U2m/JoKI/pQCa9a+gBFjG+u5OCB+xh1QYIfo/dZedeig5AidLGMR
+	Z3YVrobKjcVGzysNBznYJzVTA5sVWO76U6zDyVeOjC420Y5g4DBZumaNt5jDOdeb1HHFhvoRrMt
+	0D1KpdwEZwUZiTQFkT0Y+6UApw5yM/VPhlC8FXR/9lVIRm6cNKYY9atMItp9umQ/PrGCN6/oIg1
+	A+Qs1zR378fH7S4YXMDpyMq2Svjg1Ril0VWJk8sPWVS48bQYSLglLqNUjCcsAUDqJHPF63PSrck
+	QVQ0dScTiyfwEmg4tzQqkaYRMkLokY7p4hKrfcWS7HyiwJX+WVh4gvOFstR8UyIJP8yM=
+X-Google-Smtp-Source: AGHT+IGelUIMCLH/6tAhQk/cnhctQEprBN0ypo3UWDci9hqE88+bnh6T+CG+4JKD4zlV0xkaaGYPMg==
+X-Received: by 2002:a17:903:11c6:b0:240:48f4:40d5 with SMTP id d9443c01a7336-2430d1f5b1dmr36623355ad.39.1755079478041;
+        Wed, 13 Aug 2025 03:04:38 -0700 (PDT)
 Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-241e8aabdedsm321545335ad.167.2025.08.13.03.04.26
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-241e8aabdedsm321545335ad.167.2025.08.13.03.04.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 13 Aug 2025 03:04:29 -0700 (PDT)
+        Wed, 13 Aug 2025 03:04:37 -0700 (PDT)
 From: Leo Wang <leo.jt.wang@gmail.com>
 X-Google-Original-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
-Subject: [PATCH v11 0/3] ARM: dts: Add support for Meta Clemente BMC
-Date: Wed, 13 Aug 2025 18:04:12 +0800
-Message-Id: <20250813-add-support-for-meta-clemente-bmc-v11-0-8970d41f88b0@fii-foxconn.com>
+Date: Wed, 13 Aug 2025 18:04:14 +0800
+Subject: [PATCH v11 2/3] ARM: dts: aspeed: clemente: add NCSI3 and NCSI4
+ pinctrl nodes
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,14 +91,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIABxjnGgC/5XSzWrDMAwH8FcpOc/Dn3Lc095j7GDL8mpYkpJko
- aP03ef00sAycI8S5vcXlq7NRGOmqTkers1IS57y0JdCiJdDgyfffxLLsTQayaXhIFrmY2TT9/k
- 8jDNLw8g6mj3DL+qon4mFDpnTwmtwAY1UTXHOI6V8uYe8f5T6lKd5GH/umYtYu8/oi2CckUEP4
- Ii0DW8p5/L2gkPfv+LQNWvGIjeuFDWuLC6gocSNE9rhvqu2rqpxVXFRSpUSJg2Y9l29dW2Nq1e
- XbEpSaeCo913ztGuKy1VLEZLA4P6ZFx6u5VV7g+LapMjYELlSsO/ajSugxrXFjSYEq41D4/2+2
- 27dqn9oiytTAp+CgsBp33Ubt+4eXHGDBbKRdARs913BH3DLqw5Y8PUiBMqyEGlaFf/Kt9vtFwU
- gvy7zAwAA
-X-Change-ID: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
+Message-Id: <20250813-add-support-for-meta-clemente-bmc-v11-2-8970d41f88b0@fii-foxconn.com>
+References: <20250813-add-support-for-meta-clemente-bmc-v11-0-8970d41f88b0@fii-foxconn.com>
+In-Reply-To: <20250813-add-support-for-meta-clemente-bmc-v11-0-8970d41f88b0@fii-foxconn.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>, Kees Cook <kees@kernel.org>, 
@@ -109,90 +105,49 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  linux-hardening@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
  leo.jt.wang@fii-foxconn.com, george.kw.lee@fii-foxconn.com, 
- bruce.jy.hung@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>, 
- Conor Dooley <conor.dooley@microchip.com>
+ bruce.jy.hung@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755079466; l=3316;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755079466; l=992;
  i=leo.jt.wang@fii-foxconn.com; s=20250618; h=from:subject:message-id;
- bh=CjipzCBLA0dk4QE580Prr8K+4dZdrKP11N9W5AAxlSw=;
- b=BJkjd0kiA5Y8obGHU+q6FUc8+QDJ1WXZD9uSxKU29Zky8R5vRxRpNK01HbH/Vk9qthXmKFUNj
- wq0ZQ7HThYLCdP4EjcBvWj1whob5NKgQ/OA7LXugQL6ituxA13vE96/
+ bh=0XkYbizVBKY9WI9Q/nF7gZY7Z8IkaJEB3NQ1RTG/C8M=;
+ b=8NFtXkhvEhwb3LTNeWPtrGrZ06tX2HEIza1oBDSY7eNjoQ2OsAiRGn59mEA1hRRXYdfeWDWQA
+ ZbyFDG6X6W5B39BS9ytnr++zFZ1s+ftnxvGHxAqw2LcuGQB7yM2bFgn
 X-Developer-Key: i=leo.jt.wang@fii-foxconn.com; a=ed25519;
  pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
 
-This series adds initial support for the Meta Clemente BMC based on the
-ASPEED AST2600 SoC.
+From: Leo Wang <leo.jt.wang@gmail.com>
 
-Patch 1 documents the compatible string.
-Patch 2 Add pinctrl nodes for NCSI3 and NCSI4.
-Patch 3 adds the device tree for the board.
+Add pinctrl nodes for NCSI3 and NCSI4 to the AST2600 pinctrl
+description, enabling support for RMII3 and RMII4 interfaces.
 
 Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
 ---
-Changes in v11:
-- Rebased on bmc/aspeed/dt as requested.
-- Link to v10: https://lore.kernel.org/r/20250801-add-support-for-meta-clemente-bmc-v10-0-c1c27082583d@fii-foxconn.com
+ arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Changes in v10:
-- Reordered NCSI pinctrl patch before board DTS.
-- Dropped MAX1363 ADC nodes from the devicetree.
-- Link to v9: https://lore.kernel.org/r/20250723-add-support-for-meta-clemente-bmc-v9-0-b76e7de4d6c8@fii-foxconn.com
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+index 289668f051eb4271ac48ae3ce9b82587911548ee..e87c4b58994add33938792f732420ade7ea5c23f 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+@@ -412,6 +412,16 @@ pinctrl_mdio4_default: mdio4_default {
+ 		groups = "MDIO4";
+ 	};
+ 
++	pinctrl_ncsi3_default: ncsi3_default {
++		function = "RMII3";
++		groups = "NCSI3";
++	};
++
++	pinctrl_ncsi4_default: ncsi4_default {
++		function = "RMII4";
++		groups = "NCSI4";
++	};
++
+ 	pinctrl_ncts1_default: ncts1_default {
+ 		function = "NCTS1";
+ 		groups = "NCTS1";
 
-Changes in v9:
-- Fix comment alignment for // PDB TEMP SENSOR.
-- Drop non-standard aspeed,enable-byte property from i2c11 node.
-- Move NCSI3 and NCSI4 pinctrl nodes into a separate patch as requested.
-- Link to v8: https://lore.kernel.org/r/20250717-add-support-for-meta-clemente-bmc-v8-0-2ff6afb36b0e@fii-foxconn.com
-
-Changes in v8:
-- Relocate IOBx_NICx_TEMP TMP421 sensors
-- Enable byte mode for i2c11
-- Link to v7: https://lore.kernel.org/r/20250716-add-support-for-meta-clemente-bmc-v7-0-d5bb7459c5aa@fii-foxconn.com
-
-Changes in v7:
-- Relocate CBC FRU EEPROMs from i2c13 to i2c12.
-- Link to v6: https://lore.kernel.org/r/20250708-add-support-for-meta-clemente-bmc-v6-0-7f3e57bd0336@fii-foxconn.com
-
-Changes in v6:
-- Correct Author email to match Signed-off-by email address.
-- Link to v5: https://lore.kernel.org/r/20250627-add-support-for-meta-clemente-bmc-v5-0-038ed6f1cb9f@fii-foxconn.com
-
-Changes in v5:
-- Remove accidentally pasted texts.
-- Link to v4: https://lore.kernel.org/r/20250627-add-support-for-meta-clemente-bmc-v4-0-ce7ff23460c4@fii-foxconn.com
-
-Changes in v4:
-- Move properties of nodes defined in the same file from label ref back to where they belong.
-- Move pinctrl default configs for ncsi3 and ncsi4 to aspeed-g6-pinctrl.dtsi.
-- Add properties to i2c10 and i2c15 to enable MCTP.
-- Link to v3: https://lore.kernel.org/r/20250623-add-support-for-meta-clemente-bmc-v3-0-c223ffcf46cf@fii-foxconn.com
-
-Changes in v3:
-- Modify leakage sensor to reflect current design.
-- Link to v2: https://lore.kernel.org/r/20250621-add-support-for-meta-clemente-bmc-v2-0-6c5ef059149c@fii-foxconn.com
-
-Changes in v2:
-- Fix patch 1/2 subject line to match dt-bindings convention.
-- Reorder device tree nodes in patch 2/2 to follow upstream DTS style.
-- Link to v1: https://lore.kernel.org/r/20250618-add-support-for-meta-clemente-bmc-v1-0-e5ca669ee47b@fii-foxconn.com
-
----
-Leo Wang (3):
-      dt-bindings: arm: aspeed: add Meta Clemente board
-      ARM: dts: aspeed: clemente: add NCSI3 and NCSI4 pinctrl nodes
-      ARM: dts: aspeed: clemente: add Meta Clemente BMC
-
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |    1 +
- arch/arm/boot/dts/aspeed/Makefile                  |    1 +
- .../dts/aspeed/aspeed-bmc-facebook-clemente.dts    | 1250 ++++++++++++++++++++
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi    |   10 +
- 4 files changed, 1262 insertions(+)
----
-base-commit: b785b5d88cc27a521ea22b3afd85804c4c321d4a
-change-id: 20250618-add-support-for-meta-clemente-bmc-941a469bc523
-
-Best regards,
 -- 
-Leo Wang <leo.jt.wang@fii-foxconn.com>
+2.43.0
 
 
