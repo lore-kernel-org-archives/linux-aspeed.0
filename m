@@ -1,56 +1,81 @@
-Return-Path: <linux-aspeed+bounces-1946-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1947-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B6BDCA0EE0
-	for <linux-aspeed@archiver.kernel.org>; Wed, 13 Aug 2025 23:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C15EEC87FCF
+	for <linux-aspeed@archiver.kernel.org>; Wed, 13 Aug 2025 23:51:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2QBF6XZpz2xHp;
-	Thu, 14 Aug 2025 09:51:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755066800;
-	cv=none; b=cuHpZcUq9RRIDPynaeDHv4PYvT3mzDwLGJqdgkxx15Qf5KlovhYCLDOgdyNgQaFuYRKX1nUuaJIlyepcAErnF4RW153K86O9URkfs4nEnVL3OJajW7ypggHCGbLTWdkqMGhEDuuwLw7/6VKGLSjEUwTV3DCYQzbvx2+2x+M9vo5kGoPYXAiTTqQcoCHCapRcVA6T9qssAvpWn7i2WJYJR+6/sCcep+rWszNbvbQm2NuavKOg4c41tEXOzD6GO6KI/5c8QIO+HqU+XHxXkmvlALNu6QBMCAQoBHW/Ik22H4PxiJO7S8VzA66V20O9O7TDgRj+t6J/uwo6OcoerQZxtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2QBG0HKTz30TM;
+	Thu, 14 Aug 2025 09:51:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::532"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755079477;
+	cv=none; b=BHeQa6z1TZsPLo6vgkSAdxMmw4S5qdMkyR0E5+fGugN/csDAYe5lRJK2u455SmT4C+lYS7BtkplgKUo4P5GDnTWPMwtBjKRDxdChqyaM5ssyvwnonqwg3KPu2CAdzUMAYjmJXoq3TvhFPu/lQ0ndWQJRpt8dH7UkpECPdJ1r/bwTyxSHTduFoazHV+WrliGUvIs7mf74dHjeQSrJKyjX87X5FiSDb18LneFrcLitooCnUjO9aaI/Zcy8BGnBY9LMT0jSuwLM5mbpiY1yGdo/3A/EJ/vo8h3Doy6NbXiWGkAt+FA/EF6pA7O7LOmndMZg6VQ0Bcrcp5XPb/N3RRVmWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755066800; c=relaxed/relaxed;
-	bh=iQKMkzuKZ8aQNaYA0xm+uguK3peEC/PfCD9otnle504=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VBsLZ6e0r7UQBL6Y2z0V7YLhrynq22vNiHyCg+kxASf+SiP1uORu9AbDr0CTAAT65QMr5qFGKxcPDC9bX8ID/YMbrcKTvKIzI1kwvBGCQdtmNCPXHGeZs67tCBZywXRTdJgDMvm+lrWu6IeSv/Xf4cbDr0s+fcvuH8IQCLoXdXjkJKqvuQIidzh2W/D2QxP4XVVDzJhVVxbCgvLkyxfRkH5SeUVXoWGRKNa/ac+c4vxggJZsOFNmbkTX9s/Dm2rDuQK/beYrw9G7yDnFHc5Z0QeJgccKPH4KSh/zkT7WMyMvymrS/Lp2O+4zm2Uy2ZoLf+dR2ifPwvy3q/1q6nmmTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1755079477; c=relaxed/relaxed;
+	bh=WDWyXMYmlYyqkjQ5tAi1Mo+9H+BsqxqH2MJaH3c+pQE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=BJZiU2i78/lbfySBmk8OcC44TEOxGV+Ur4KHotWXfE79xkapVZpJge3VnNmJt4txOpB444NS95slYmr8YuzeFJoLuXBMK2bjGZ4cVyGrJ/T5h4q1cuHMkwrMqbOkhkdSIjRjgTVy8nkMdOS3Muw3Tw4L4c7jDlnXe289AvFG11DcvkGgI8dJWqn+0h3LMxg03OxIStPnOaCmO7awLDHZfG8Wz0Cht044DDMWQYlbWMjRO1g5qOGuCK3To7r3X+vxfV9nVg26JAACNcgMkhBWFpGxJ2S116bkuoS4O2QIdzd5vRX56Uo6/EZeIntSPtaY//X5Z//1bPzAwX9mKvCAEg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=b/8mdr/m; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=b/8mdr/m;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1z8Z66Fyz30Vs
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 16:33:18 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 13 Aug
- 2025 14:33:01 +0800
-Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Wed, 13 Aug 2025 14:33:01 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
-	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
-	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>
-CC: Simon Horman <horms@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Po-Yu
- Chuang <ratbert@faraday-tech.com>, <netdev@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<taoren@meta.com>, <bmc-sw2@aspeedtech.com>
-Subject: [net-next v2 1/4] dt-bindings: net: ftgmac100: Restrict phy-mode and delay properties for AST2600
-Date: Wed, 13 Aug 2025 14:32:58 +0800
-Message-ID: <20250813063301.338851-2-jacky_chou@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
-References: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c23rN5yX1z30T8
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 20:04:36 +1000 (AEST)
+Received: by mail-pg1-x532.google.com with SMTP id 41be03b00d2f7-b3bcb168fd5so4294851a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 03:04:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1755079474; x=1755684274; darn=lists.ozlabs.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=WDWyXMYmlYyqkjQ5tAi1Mo+9H+BsqxqH2MJaH3c+pQE=;
+        b=b/8mdr/mAuih7Wfyl8Tx540BlAzpgLc2bcJ/PbtrrVDVJxHnugXNwl6qKiFTLTc+hQ
+         lHGUP4su37VvP9iB6XdlcLXcS4BqoFpCNsmpQ/HvPdT+suGHHZb5NEuG17xyXOR5nMKt
+         k8uibs1EfMhDziIyFNvSbRX4eiDMvmwG5TRbu41dnPBLryj/ahjnmmIDZWxSQlh3yOIH
+         wJLWOCHm1cyfwNa/DrsJxfeBoJ8bjXPdqnz/flIEMltIi3l1k9244GVsM6P33SZTDqh2
+         1SwmjRbEtu2Jq/9/Tnzk/YVzyVjGGrzFw+kwt+LtqUKVrbmSH9Ulf4nOHAAZ4YIcvYpE
+         lYow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755079474; x=1755684274;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WDWyXMYmlYyqkjQ5tAi1Mo+9H+BsqxqH2MJaH3c+pQE=;
+        b=Bd9xshcUX1huuknX9s//XBCOAorX1B/dhKa0XnaWSQRmgtkR71BA55ffaeYHutQVBb
+         OIoUwG99mGPqmLNqtFkv754lR+uiPvMMWw+Ez5dUTFLgdrK3QeFwEW6ktspcMAaMEGKe
+         flWiHsSCBCVomOS3G9Tt1iIADIJoaL7Rzxpemf7B4mJso8upAUriqXmz9iDoKtk1s5ED
+         g4m7Js2K31NtulGPMRqfgAIYj1/MZai2ZidYSmIxbdiSyc2ObpMka/psHWPE7JtlMJ6x
+         xica2Gu4fSb79JWAujgQxHWeC/vNx/c76CL0p4tDAhNNSxRGBSmcgtQSSUhdXDJO3Qyr
+         MdcA==
+X-Forwarded-Encrypted: i=1; AJvYcCXls7pT4wL5yHD/OoRjePdXlMMwQp537QKbgpuKZ2yJ0Jnb7iC8UVDuJ/AdpVlKDtn0raMPRR9B4qRztao=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwXUCvWyaAuI2Kc+mWeb+GvpfOhh0+Oi+RSY/JGELiqNPdIE7u3
+	co+kQpzEJoVwGmzHPP3S/QZNwD6xYchGf6RcX1NO8teAtm5wblqC0ssf
+X-Gm-Gg: ASbGncus6zEKUazbRv5KkAOAq1hQvlhBSsGGUCyZchs+WNPqWxpeSCe8mtbPWpHvtFI
+	BetTWRiCfUcYLeraNBHsZRYvBGElISiwuGzqWRCv3eB4ForpMYx/m87NSrT+a4vYwsfbqXkzhZj
+	nHpnmFX0g5iniWZQn490Ij8fLitnw0YV10vY+qEgypZ8pjbu1OPH8ih1fe3d3d0GIfposutVgWx
+	t/8xm4yvGkMFmN9avpuIOLfon8WHvdSUaa3Kz7xUDWay3+EjQdbRf8IkPdTZeqgvFZRD9XXtSzw
+	CmqJjlSUEXLXk+ho4AYtKeGW3emyExsWSeHp6BKlGmfIvGoZai3wWy1FgRt4lDQMkkmyb0cq8W1
+	qeMmKttzx2eO6+JVFlEm2ePLZxXXxdDWG4803uyv9z7Q7Q4YLLTKufrVILncNduysp0bSi/wGLB
+	SUfw==
+X-Google-Smtp-Source: AGHT+IGT3aAhDjpoio/fVFfqmIOKN4CEmb3nnrCVJEFLXp1M8jEYK3v6BzGjhuS8hShYz0ZD8JlaDw==
+X-Received: by 2002:a17:902:db12:b0:242:a3fc:5917 with SMTP id d9443c01a7336-2430d0dc67bmr45068265ad.2.1755079474310;
+        Wed, 13 Aug 2025 03:04:34 -0700 (PDT)
+Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-241e8aabdedsm321545335ad.167.2025.08.13.03.04.30
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 Aug 2025 03:04:33 -0700 (PDT)
+From: Leo Wang <leo.jt.wang@gmail.com>
+X-Google-Original-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
+Date: Wed, 13 Aug 2025 18:04:13 +0800
+Subject: [PATCH v11 1/3] dt-bindings: arm: aspeed: add Meta Clemente board
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,111 +89,56 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250813-add-support-for-meta-clemente-bmc-v11-1-8970d41f88b0@fii-foxconn.com>
+References: <20250813-add-support-for-meta-clemente-bmc-v11-0-8970d41f88b0@fii-foxconn.com>
+In-Reply-To: <20250813-add-support-for-meta-clemente-bmc-v11-0-8970d41f88b0@fii-foxconn.com>
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, Kees Cook <kees@kernel.org>, 
+ Tony Luck <tony.luck@intel.com>, 
+ "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
+ Geert Uytterhoeven <geert+renesas@glider.be>, 
+ Magnus Damm <magnus.damm@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ linux-hardening@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
+ leo.jt.wang@fii-foxconn.com, george.kw.lee@fii-foxconn.com, 
+ bruce.jy.hung@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>, 
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755079466; l=935;
+ i=leo.jt.wang@fii-foxconn.com; s=20250618; h=from:subject:message-id;
+ bh=+J69e5YqTj9k0Q13XCuEnilTg/3SIAicfVR3jNTVkYE=;
+ b=W00fAaXOnIiR/l9ZRnJcClS1vfLntgZc+ygrhDBzU+WRFiaQLz8OR+xeA5TrFS1TEUl0Noci9
+ +Xx83IRKylaDGTK+9a95nhTQAKVaVg0PhuVGMJ3HoxhQ8Vu3njwx103
+X-Developer-Key: i=leo.jt.wang@fii-foxconn.com; a=ed25519;
+ pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
 
-Create the new compatibles to identify AST2600 MAC0/1 and MAC3/4.
-Add conditional schema constraints for Aspeed AST2600 MAC controllers:
-- For "aspeed,ast2600-mac01", restrict phy-mode to "rgmii-id" and
-  "rgmii-rxid", and require rx/tx-internal-delay-ps properties with 45ps
-  step.
-- For "aspeed,ast2600-mac23", require rx/tx-internal-delay-ps properties
-  with 250ps step.
-- Both require the "scu" property.
-Other compatible values remain unrestricted.
+From: Leo Wang <leo.jt.wang@gmail.com>
 
-Because the RGMII delay on AST2600 MAC0/1 is 45ps and its total delay
-step is 32, cannot cover 2ns delay for RGMII to meet center. We need
-the PHY side enables RX internal delay and the phy_mode must be
-"rgmii-id" or "rgmii-rxid".
+Document the new compatibles used on Meta Clemente.
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
 ---
- .../bindings/net/faraday,ftgmac100.yaml       | 50 +++++++++++++++++--
- 1 file changed, 47 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-index 55d6a8379025..82c7c81eab10 100644
---- a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-+++ b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-@@ -6,9 +6,6 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
- title: Faraday Technology FTGMAC100 gigabit ethernet controller
- 
--allOf:
--  - $ref: ethernet-controller.yaml#
--
- maintainers:
-   - Po-Yu Chuang <ratbert@faraday-tech.com>
- 
-@@ -21,6 +18,8 @@ properties:
-               - aspeed,ast2400-mac
-               - aspeed,ast2500-mac
-               - aspeed,ast2600-mac
-+              - aspeed,ast2600-mac01
-+              - aspeed,ast2600-mac23
-           - const: faraday,ftgmac100
- 
-   reg:
-@@ -69,6 +68,12 @@ properties:
-   mdio:
-     $ref: /schemas/net/mdio.yaml#
- 
-+  scu:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      Phandle to the SCU (System Control Unit) syscon node for Aspeed platform.
-+      This reference is used by the MAC controller to configure the RGMII delays.
-+
- required:
-   - compatible
-   - reg
-@@ -76,6 +81,45 @@ required:
- 
- unevaluatedProperties: false
- 
-+allOf:
-+  - $ref: ethernet-controller.yaml#
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: aspeed,ast2600-mac01
-+    then:
-+      properties:
-+        phy-mode:
-+          enum: [rgmii-id, rgmii-rxid]
-+        rx-internal-delay-ps:
-+          minimum: 0
-+          maximum: 1395
-+          multipleOf: 45
-+        tx-internal-delay-ps:
-+          minimum: 0
-+          maximum: 1395
-+          multipleOf: 45
-+      required:
-+        - scu
-+  - if:
-+      properties:
-+        compatible:
-+          contains:
-+            const: aspeed,ast2600-mac23
-+    then:
-+      properties:
-+        rx-internal-delay-ps:
-+          minimum: 0
-+          maximum: 7750
-+          multipleOf: 250
-+        tx-internal-delay-ps:
-+          minimum: 0
-+          maximum: 7750
-+          multipleOf: 250
-+      required:
-+        - scu
-+
- examples:
-   - |
-     ethernet@1e660000 {
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index b3c9d3310d57c065215054211cf5bd2af816906a..aedefca7cf4a80b5c9d14098b60ce277391fcdcb 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -82,6 +82,7 @@ properties:
+               - asus,x4tf-bmc
+               - facebook,bletchley-bmc
+               - facebook,catalina-bmc
++              - facebook,clemente-bmc
+               - facebook,cloudripper-bmc
+               - facebook,darwin-bmc
+               - facebook,elbert-bmc
+
 -- 
 2.43.0
 
