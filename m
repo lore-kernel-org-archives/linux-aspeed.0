@@ -1,56 +1,62 @@
-Return-Path: <linux-aspeed+bounces-1953-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1954-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB37ECA0EE0
-	for <linux-aspeed@archiver.kernel.org>; Wed, 13 Aug 2025 23:53:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C03BCA0EDC
+	for <linux-aspeed@archiver.kernel.org>; Thu, 14 Aug 2025 08:04:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2QBM39Lnz3cYR;
-	Thu, 14 Aug 2025 09:51:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755066803;
-	cv=none; b=Lq+lh37ZujZPGeXUdll+J49DwipOmggqBRseSfeaoXDPFBvldBOShSnWd7L3YKnwThjUy+SGn6QFF13IzTgD8PYmI5oGjplYt6ULdQ3IRrcXLis1x4d/qhE7TZ85dz/SP4ca8McXNYBzonc6y/h2FSShzfcrswOqsQah6Ns2+ttJtNNH/IWtlvc9ltjcWCnDlosZ5FtvRHC8kpFwtMDfUFxUa5X2nvg53Q9Db4MsFz4ylTizb2ku+zRu3z4DijnOjPldOgdtfdc5g2e9hA4lJ6s5q7bx6L2Eej+pfkXUe4DZHY0wCRGOVR8oU96oJoGqvHn+kifuyQNI1Qh5W779YA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2d6l1Q13z30W5;
+	Thu, 14 Aug 2025 18:03:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755158639;
+	cv=none; b=i7d5O1L7vgFekbzBCzJU8Vzh/iAF89Pm04kC/XSWSXf7hNTSMGdDFOj5dErhY3sLQN6Hs4pKhOZTB8fbLZ5CcZflPEbyHFQIE3T6N5eat2J2BAOaWX8STv2+u/e4a/x/HbA2FbxNB72S5URe/CliqNyAhBqEp4eMjpbZFyoBKzm5OQrM98EL17lU3jqCrsDH32Zaq7zOd6jzL80VfxzPIQebwrQYWrxt8mnaIhB/8+zsrY5QD9A9a7eVcQZ+Vp9Da8GkEqoO2YuOaqoC/h1QlkvsIp8BL5RLKDj+nA58nUx8OL2e4Sor+9q6psTX5A3IKUwL1itlvdQ9fFKadYNosg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755066803; c=relaxed/relaxed;
-	bh=T3mFXKfIUYSJav2Nwa5QdQol2Z1tDuQn3BjGEDu8NPM=;
-	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=TDWnGqjoo3l24Ckd2irFyzfprVebXQhlY3ZhlfoxD1do3c7zmbsjKKnHOYZ86dxXsEaDZEkF1zmoFqWlklKQLYRaRPx/b2QzwDInwL+EXtDx5hn5LscRZUWODgzSoEhGsPPPj+UYXlmp7O0wLQrxFsH/4kq8clAxxAZPMhR5pwOtnaWq8M1vxhjyc8POfDpaAM1kWV9dfUzJROg4yFHHnz8NjvzitlE4L5Wx7i+Ik2wdYXvEGNr/EiS3+3kVDwjjuF06MGRTcZz52gX0T1d9obq/4atAG/ntRWmOfF2DKG5EdFielebzmKYWCQ8avwinuAhCiZRJEkq0uxok07ngVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1755158639; c=relaxed/relaxed;
+	bh=W1AAD98/pMC4llkuyRBMvH/G0ZNX1c8a6i9RG3YNpCM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YIGoVk5I7hgFsBC5aInAIDESaCcWSwH5YwIoHQ/1axvN8vrcS9rPJLKCmBKNOXzXFPm/s2c3eWvhf8I+s4HacBuo4Jl8P6VhFTF7QUKOOmwS3k2Z/R/iilIPO46z7+7AvmES/ZiWQKac5znQxSdyCW7anEOhS8oKBA2Vr1oMMuM0vO0U9ezxU316vdoc64aYLaGu4V1JuS1TW7KPdOuG7fQJz/rwyOGYIUbh6zjVnJYC2lGdXvmYxQqVYVJzUM06Vf5f9XEKDkWRx4YMGxDhffTBncEpcFWrLTYf35RVuJVE1bhen30UHwmCm7/fjkE+HNMFMaN/RkgB6ynTUUO9wQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y0QPM3oC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y0QPM3oC;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1z8f2Bqyz30Vs
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 13 Aug 2025 16:33:22 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 13 Aug
- 2025 14:33:01 +0800
-Received: from mail.aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Wed, 13 Aug 2025 14:33:01 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
-	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
-	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>
-CC: Simon Horman <horms@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>, Po-Yu
- Chuang <ratbert@faraday-tech.com>, <netdev@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<taoren@meta.com>, <bmc-sw2@aspeedtech.com>
-Subject: [net-next v2 3/4] ARM: dts: aspeed: ast2600evb: Add delay setting for MAC
-Date: Wed, 13 Aug 2025 14:33:00 +0800
-Message-ID: <20250813063301.338851-4-jacky_chou@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
-References: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c2d6k3VsXz30VR
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 14 Aug 2025 18:03:58 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id E6D5E44518;
+	Thu, 14 Aug 2025 08:03:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 342F5C4CEEF;
+	Thu, 14 Aug 2025 08:03:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1755158635;
+	bh=X3Zkv1GgYGEV/PFrhjV6JjLBSwA81+ffdc9QPdchXLk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Y0QPM3oCyMK9LWNRNmg59i3pAgrctvv8lnJBbGzCuDxjDcLS7utfL0DmwKI0yFcs3
+	 KL+xoza2Ywl9NslWcJ9zrBL25photeR9qQI+4PtMKU0RrWpuWjwSmj+ujtvvkyKqWi
+	 xcC9OH2qzbJOqjV6OHFgnYBbEiwPKUllpthQbNaTQqhk+piDNONSb2KXV6HuC3O3nx
+	 zRw2GLuDnxvEYkz0oYB8TnHK690hqLWxX884VsND1y8fe7d+sxk37Pcxs9k8HHS9RP
+	 OAFT8UjwaXQ02146plSOQyVNK4hhbUb3WIrFLwX7wWywlsx4m8yZFvSbWRt4UvVQPN
+	 EW6hIEZvRnGEQ==
+Date: Thu, 14 Aug 2025 10:03:52 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Kevin Chen <kevin_chen@aspeedtech.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
+Subject: Re: [PATCH v4 1/2] dt-bindings: interrupt-controller: aspeed: Add
+ parent compatibles and refine documentation
+Message-ID: <20250814-auspicious-thundering-jaybird-b76f4f@kuoka>
+References: <20250812100830.145578-1-ryan_chen@aspeedtech.com>
+ <20250812100830.145578-2-ryan_chen@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,78 +70,223 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250812100830.145578-2-ryan_chen@aspeedtech.com>
 
-We use the rx-internal-delay-ps and the tx-internal-delay-ps to
-configure the RGMII delay. And change the phy_mode of MAC0 and MAC1 to
-"rgmii-id" to enable the TX/RX internal delay on PHY side. MAC0 and
-MAC1 configure on the edge delay.
-Keep the phy_mode of MAC2 and MAC3 to "rgmii". The RGMII delay of MAC2
-and MAC3 can generate the delay to meet clock center, so we just add the
-delay property to let driver to configure 2ns delay.
+On Tue, Aug 12, 2025 at 06:08:29PM +0800, Ryan Chen wrote:
+> AST2700 contains two independent top-level interrupt controllers (INTC0,
+> INTC1). Each occupies its own register space and handles different sets of
+> peripherals. Above them, the PSP (CA35) GIC is the root interrupt
+> aggregator. In hardware, INTC1 outputs are routed into INTC0, and INTC0
+> outputs are routed into the GIC.
+> 
+> Introduce distinct compatibles for these parent blocks so the DT can model
+> the hierarchy and register space layout accurately:
+> 
+>   - aspeed,ast2700-intc0  (parent node at 0x12100000)
+>   - aspeed,ast2700-intc1  (parent node at 0x14c18000)
+> 
+> The existing child compatible:
+> 
+>   - aspeed,ast2700-intc-ic
+> 
+> continues to describe the interrupt-controller instances within each INTC
+> block (e.g. INTC0_0..INTC0_11 and INTC1_0..INTC1_5).
+> 
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+>  .../aspeed,ast2700-intc.yaml                  | 158 +++++++++++++-----
+>  1 file changed, 115 insertions(+), 43 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
+> index 55636d06a674..81304b53c112 100644
+> --- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
+> +++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
+> @@ -10,6 +10,33 @@ description:
+>    This interrupt controller hardware is second level interrupt controller that
+>    is hooked to a parent interrupt controller. It's useful to combine multiple
+>    interrupt sources into 1 interrupt to parent interrupt controller.
+> +  Depend to which INTC0 or INTC1 used.
+> +  INTC0 and INTC1 are two kinds of interrupt controller with enable and raw
+> +  status registers for use.
+> +  INTC0 is used to assert GIC if interrupt in INTC1 asserted.
+> +  INTC1 is used to assert INTC0 if interrupt of modules asserted.
+> +  +-----+   +---------+
+> +  | GIC |---|  INTC0  |
+> +  +-----+   +---------+
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+Same problem as last time. This tells me intc0 has not children...
+
+> +            +---------+
+> +            |         |---module0
+> +            | INTC0_0 |---module1
+> +            |         |---...
+> +            +---------+---module31
+> +            |---....  |
+> +            +---------+
+> +            |         |     +---------+
+> +            | INTC0_11| +---| INTC1   |
+> +            |         |     +---------+
+
+...This tells that inc1 has no children (only intc0_11, which you said
+is aspeed,ast2700-intc-ic !!!)....
+(keep scrolling)
+
+> +            +---------+     +---------+---module0
+> +                            | INTC1_0 |---module1
+> +                            |         |---...
+> +                            +---------+---module31
+> +                            ...
+> +                            +---------+---module0
+> +                            | INTC1_5 |---module1
+> +                            |         |---...
+> +                            +---------+---module31
+>  
+>  maintainers:
+>    - Kevin Chen <kevin_chen@aspeedtech.com>
+> @@ -17,49 +44,70 @@ maintainers:
+>  properties:
+>    compatible:
+>      enum:
+> -      - aspeed,ast2700-intc-ic
+> +      - aspeed,ast2700-intc0
+> +      - aspeed,ast2700-intc1
+>  
+>    reg:
+>      maxItems: 1
+>  
+> -  interrupt-controller: true
+> +  '#address-cells':
+> +    const: 2
+>  
+> -  '#interrupt-cells':
+> +  '#size-cells':
+>      const: 2
+> -    description:
+> -      The first cell is the IRQ number, the second cell is the trigger
+> -      type as defined in interrupt.txt in this directory.
+> -
+> -  interrupts:
+> -    maxItems: 6
+> -    description: |
+> -      Depend to which INTC0 or INTC1 used.
+> -      INTC0 and INTC1 are two kinds of interrupt controller with enable and raw
+> -      status registers for use.
+> -      INTC0 is used to assert GIC if interrupt in INTC1 asserted.
+> -      INTC1 is used to assert INTC0 if interrupt of modules asserted.
+> -      +-----+   +-------+     +---------+---module0
+> -      | GIC |---| INTC0 |--+--| INTC1_0 |---module2
+> -      |     |   |       |  |  |         |---...
+> -      +-----+   +-------+  |  +---------+---module31
+> -                           |
+> -                           |   +---------+---module0
+> -                           +---| INTC1_1 |---module2
+> -                           |   |         |---...
+> -                           |   +---------+---module31
+> -                          ...
+> -                           |   +---------+---module0
+> -                           +---| INTC1_5 |---module2
+> -                               |         |---...
+> -                               +---------+---module31
+>  
+> +  ranges: true
+> +
+> +patternProperties:
+> +  "^interrupt-controller@":
+
+... but this tells me that intc0 and intc1 has children.
+
+> +    type: object
+> +    description: Interrupt group child nodes
+> +    additionalProperties: false
+> +
+> +    properties:
+> +      compatible:
+> +        enum:
+> +          - aspeed,ast2700-intc-ic
+> +
+> +      reg:
+> +        maxItems: 1
+> +
+> +      interrupt-controller: true
+> +
+> +      '#interrupt-cells':
+> +        const: 2
+> +        description:
+> +          The first cell is the IRQ number, the second cell is the trigger
+> +          type.
+> +
+> +      interrupts:
+> +        minItems: 1
+> +        maxItems: 6
+> +        description: |
+> +          The interrupts provided by this interrupt controller.
+> +
+> +      interrupts-extended:
+> +        minItems: 1
+> +        maxItems: 6
+> +        description: |
+> +          This property is required when defining a cascaded interrupt controller
+> +          that is connected under another interrupt controller. It specifies the
+> +          parent interrupt(s) in the upstream controller to which this controller
+> +          is connected.
+
+No, you do not define two. Only interrupts.
+
+> +
+> +    oneOf:
+> +      - required: [interrupts]
+> +      - required: [interrupts-extended]
+> +
+> +    required:
+> +      - compatible
+> +      - reg
+> +      - interrupt-controller
+> +      - '#interrupt-cells'
+>  
+>  required:
+>    - compatible
+>    - reg
+> -  - interrupt-controller
+> -  - '#interrupt-cells'
+> -  - interrupts
+>  
+>  additionalProperties: false
+>  
+> @@ -68,19 +116,43 @@ examples:
+>      #include <dt-bindings/interrupt-controller/arm-gic.h>
+>  
+>      bus {
+> +      #address-cells = <2>;
+> +      #size-cells = <2>;
+> +
+> +      intc0: interrupt-controller@12100000 {
+> +        compatible = "aspeed,ast2700-intc0";
+> +        reg = <0 0x12100000 0 0x4000>;
+> +        ranges = <0x0 0x0 0x0 0x12100000 0x0 0x4000>;
+> +        #address-cells = <2>;
+> +        #size-cells = <2>;
+> +
+> +        intc0_11: interrupt-controller@1b00 {
+> +          compatible = "aspeed,ast2700-intc-ic";
+> +          reg = <0 0x12101b00 0 0x10>;
+
+
+... and that's quite wrong unit address. Also no resources in the
+parent, so this entire split seems superficial and incorrect.
+
+This binding is not improving. You are not responding to REAL problems
+described to you. What's more, you send it in a way making our life
+difficult, look:
+
+b4 diff '20250812100830.145578-2-ryan_chen@aspeedtech.com'
+Using cached copy of the lookup
 ---
- arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+Analyzing 3 messages in the thread
+Could not find lower series to compare against.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts b/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-index de83c0eb1d6e..dc4d437a39ed 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-@@ -123,22 +123,28 @@ ethphy3: ethernet-phy@0 {
- &mac0 {
- 	status = "okay";
- 
--	phy-mode = "rgmii-rxid";
-+	phy-mode = "rgmii-id";
- 	phy-handle = <&ethphy0>;
- 
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rgmii1_default>;
-+
-+	rx-internal-delay-ps = <0>;
-+	tx-internal-delay-ps = <0>;
- };
- 
- 
- &mac1 {
- 	status = "okay";
- 
--	phy-mode = "rgmii-rxid";
-+	phy-mode = "rgmii-id";
- 	phy-handle = <&ethphy1>;
- 
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rgmii2_default>;
-+
-+	rx-internal-delay-ps = <0>;
-+	tx-internal-delay-ps = <0>;
- };
- 
- &mac2 {
-@@ -149,6 +155,9 @@ &mac2 {
- 
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rgmii3_default>;
-+
-+	rx-internal-delay-ps = <2000>;
-+	tx-internal-delay-ps = <2000>;
- };
- 
- &mac3 {
-@@ -159,6 +168,9 @@ &mac3 {
- 
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_rgmii4_default>;
-+
-+	rx-internal-delay-ps = <2000>;
-+	tx-internal-delay-ps = <2000>;
- };
- 
- &emmc_controller {
--- 
-2.43.0
+Best regards,
+Krzysztof
 
 
