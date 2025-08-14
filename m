@@ -1,62 +1,49 @@
-Return-Path: <linux-aspeed+bounces-1954-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1955-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C03BCA0EDC
-	for <linux-aspeed@archiver.kernel.org>; Thu, 14 Aug 2025 08:04:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87856CA0EDC
+	for <linux-aspeed@archiver.kernel.org>; Thu, 14 Aug 2025 08:42:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2d6l1Q13z30W5;
-	Thu, 14 Aug 2025 18:03:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755158639;
-	cv=none; b=i7d5O1L7vgFekbzBCzJU8Vzh/iAF89Pm04kC/XSWSXf7hNTSMGdDFOj5dErhY3sLQN6Hs4pKhOZTB8fbLZ5CcZflPEbyHFQIE3T6N5eat2J2BAOaWX8STv2+u/e4a/x/HbA2FbxNB72S5URe/CliqNyAhBqEp4eMjpbZFyoBKzm5OQrM98EL17lU3jqCrsDH32Zaq7zOd6jzL80VfxzPIQebwrQYWrxt8mnaIhB/8+zsrY5QD9A9a7eVcQZ+Vp9Da8GkEqoO2YuOaqoC/h1QlkvsIp8BL5RLKDj+nA58nUx8OL2e4Sor+9q6psTX5A3IKUwL1itlvdQ9fFKadYNosg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2dyv1FXyz2yhD;
+	Thu, 14 Aug 2025 18:42:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755160935;
+	cv=none; b=VvIqLoWu8Hwr3D9DVQnfxE/ZXawUdLL2Mq6PwZn58A4qpWnNYMeaKVhq4hepecFx5NM0qUCWwSnh7TDwWOwAy21AGERMkR3r1jhsXaNcrbhXuZtDHk79gFoZcvmLCAm3e3p6Oj1nYB5zeg9PECeKgcTi/9cKHmxpqWjCky6rzAe4xlRTyRV7of0US9ULtMWLA/r/4lZnftFZbESasGOgI0sZNdI4fmpRU+3u/9JNC4Ub2rR08PUB4IERvefw5VaM5y4dlwI71nHBOUuEM469DV2FveTeXdT2vPsDCvgyzZkGVRCtmYZ5MWQ94HmHNWdekENE5wOCmvY5OKei2dgMXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755158639; c=relaxed/relaxed;
-	bh=W1AAD98/pMC4llkuyRBMvH/G0ZNX1c8a6i9RG3YNpCM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YIGoVk5I7hgFsBC5aInAIDESaCcWSwH5YwIoHQ/1axvN8vrcS9rPJLKCmBKNOXzXFPm/s2c3eWvhf8I+s4HacBuo4Jl8P6VhFTF7QUKOOmwS3k2Z/R/iilIPO46z7+7AvmES/ZiWQKac5znQxSdyCW7anEOhS8oKBA2Vr1oMMuM0vO0U9ezxU316vdoc64aYLaGu4V1JuS1TW7KPdOuG7fQJz/rwyOGYIUbh6zjVnJYC2lGdXvmYxQqVYVJzUM06Vf5f9XEKDkWRx4YMGxDhffTBncEpcFWrLTYf35RVuJVE1bhen30UHwmCm7/fjkE+HNMFMaN/RkgB6ynTUUO9wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y0QPM3oC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Y0QPM3oC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1755160935; c=relaxed/relaxed;
+	bh=4eCi2RqQ/sT3pVE9pPUjoqwHH7AGiKVW/yswD9iOdDA=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=EiLDK7pT4oFMO3h/2qQ/XCcm+z3q5JM8iLn0URigIMttt8k6KUnYP61YhQjd4CCYbh4MOKHA5WkYtsZw5Bhaw5syhMr2NrVcppToK9NwnSlV4aAq6NuMIy9aq4JhsS/ghPaCIfOTU5WWA7nhghJk7DXhP717tT9hUc0H+zS/TcOCpz4mKiHcaKYmU5ScqP38HCn65KLX910WDR+dxOWcYjpqqOJhR8lLYNnY4lm1oAt8Pkj8UwiQ3Oy1vv9Np0Yo3gRYMbZogHpXUyqLa02jvCuDe47CSkcEjnarvDu+WL4Kr+5pKHo5rU9LXyryi0sbYiisMhR4BGHGXdTQ5yekHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c2d6k3VsXz30VR
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 14 Aug 2025 18:03:58 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E6D5E44518;
-	Thu, 14 Aug 2025 08:03:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 342F5C4CEEF;
-	Thu, 14 Aug 2025 08:03:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755158635;
-	bh=X3Zkv1GgYGEV/PFrhjV6JjLBSwA81+ffdc9QPdchXLk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Y0QPM3oCyMK9LWNRNmg59i3pAgrctvv8lnJBbGzCuDxjDcLS7utfL0DmwKI0yFcs3
-	 KL+xoza2Ywl9NslWcJ9zrBL25photeR9qQI+4PtMKU0RrWpuWjwSmj+ujtvvkyKqWi
-	 xcC9OH2qzbJOqjV6OHFgnYBbEiwPKUllpthQbNaTQqhk+piDNONSb2KXV6HuC3O3nx
-	 zRw2GLuDnxvEYkz0oYB8TnHK690hqLWxX884VsND1y8fe7d+sxk37Pcxs9k8HHS9RP
-	 OAFT8UjwaXQ02146plSOQyVNK4hhbUb3WIrFLwX7wWywlsx4m8yZFvSbWRt4UvVQPN
-	 EW6hIEZvRnGEQ==
-Date: Thu, 14 Aug 2025 10:03:52 +0200
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Kevin Chen <kevin_chen@aspeedtech.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
-Subject: Re: [PATCH v4 1/2] dt-bindings: interrupt-controller: aspeed: Add
- parent compatibles and refine documentation
-Message-ID: <20250814-auspicious-thundering-jaybird-b76f4f@kuoka>
-References: <20250812100830.145578-1-ryan_chen@aspeedtech.com>
- <20250812100830.145578-2-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c2dyt1wBFz2xQ6;
+	Thu, 14 Aug 2025 18:42:13 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 14 Aug
+ 2025 16:41:56 +0800
+Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Thu, 14 Aug 2025 16:41:56 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: <ryan_chen@aspeedtech.com>, <benh@kernel.crashing.org>, <joel@jms.id.au>,
+	<andi.shyti@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
+	<conor+dt@kernel.org>, <andrew@codeconstruct.com.au>,
+	<p.zabel@pengutronix.de>, <andriy.shevchenko@linux.intel.com>,
+	<naresh.solanki@9elements.com>, <linux-i2c@vger.kernel.org>,
+	<openbmc@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>
+Subject: [PATCH v17 0/3] Add ASPEED AST2600 I2C controller driver
+Date: Thu, 14 Aug 2025 16:41:53 +0800
+Message-ID: <20250814084156.1650432-1-ryan_chen@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,223 +57,193 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20250812100830.145578-2-ryan_chen@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Tue, Aug 12, 2025 at 06:08:29PM +0800, Ryan Chen wrote:
-> AST2700 contains two independent top-level interrupt controllers (INTC0,
-> INTC1). Each occupies its own register space and handles different sets of
-> peripherals. Above them, the PSP (CA35) GIC is the root interrupt
-> aggregator. In hardware, INTC1 outputs are routed into INTC0, and INTC0
-> outputs are routed into the GIC.
-> 
-> Introduce distinct compatibles for these parent blocks so the DT can model
-> the hierarchy and register space layout accurately:
-> 
->   - aspeed,ast2700-intc0  (parent node at 0x12100000)
->   - aspeed,ast2700-intc1  (parent node at 0x14c18000)
-> 
-> The existing child compatible:
-> 
->   - aspeed,ast2700-intc-ic
-> 
-> continues to describe the interrupt-controller instances within each INTC
-> block (e.g. INTC0_0..INTC0_11 and INTC1_0..INTC1_5).
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  .../aspeed,ast2700-intc.yaml                  | 158 +++++++++++++-----
->  1 file changed, 115 insertions(+), 43 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
-> index 55636d06a674..81304b53c112 100644
-> --- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
-> +++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
-> @@ -10,6 +10,33 @@ description:
->    This interrupt controller hardware is second level interrupt controller that
->    is hooked to a parent interrupt controller. It's useful to combine multiple
->    interrupt sources into 1 interrupt to parent interrupt controller.
-> +  Depend to which INTC0 or INTC1 used.
-> +  INTC0 and INTC1 are two kinds of interrupt controller with enable and raw
-> +  status registers for use.
-> +  INTC0 is used to assert GIC if interrupt in INTC1 asserted.
-> +  INTC1 is used to assert INTC0 if interrupt of modules asserted.
-> +  +-----+   +---------+
-> +  | GIC |---|  INTC0  |
-> +  +-----+   +---------+
+This series add AST2600 i2c new register set driver. The i2c driver is
+new register set that have new clock divider option for more flexiable
+generation. And also have separate i2c controller and target register
+set for control, patch #2 is i2c controller driver only, patch #3 is add
+i2c target mode driver.
 
-Same problem as last time. This tells me intc0 has not children...
+The legacy register layout is mix controller/target register control
+together. The following is add more detail description about new register
+layout. And new feature set add for register.
 
-> +            +---------+
-> +            |         |---module0
-> +            | INTC0_0 |---module1
-> +            |         |---...
-> +            +---------+---module31
-> +            |---....  |
-> +            +---------+
-> +            |         |     +---------+
-> +            | INTC0_11| +---| INTC1   |
-> +            |         |     +---------+
+v17:
+- move i2c new mode register and feature into driver commit message.
+- aspeed,i2c.yaml
+ - remove multi-master properties.
+ - use aspeed,transfer-mode properties for aspeed,enable-byte/enable-dma.
+-i2c-ast2600.c
+ - rename dma_safe_buf to controller_dma_safe_buf.
+ - fix ast2600_i2c_recover_bus return overflow warnings.
+ - add ast2600_i2c_target_packet_buff_irq unhandle case.
+ - add parameter "cmd" in ast2600_i2c_setup_dma_rx,
+   ast2600_i2c_setup_buff_rx, ast2600_i2c_setup_byte_rx
+ - use reset_control_deassert replace
+   devm_reset_control_get_shared_deasserted.
+ - useaspeed,transfer-mode properties for transfer mode setting.
+ - change compatible = "aspeed,ast2600-i2cv2" to "aspeed,ast2600-i2c-bus".
 
-...This tells that inc1 has no children (only intc0_11, which you said
-is aspeed,ast2700-intc-ic !!!)....
-(keep scrolling)
+v16:
+- aspeed,i2c.yaml: add aspeed,enable-byte properties for force byte mode.
+- i2c-ast2600.c
+ - change include asm/unaligned.h to linux/unaligned.h.
+ - add reset timeout councter when slave active timeout.
+ - modify issue i2c_recovery_bus before slave re-enable.
+ - add aspeed,enable-byte properties.
 
-> +            +---------+     +---------+---module0
-> +                            | INTC1_0 |---module1
-> +                            |         |---...
-> +                            +---------+---module31
-> +                            ...
-> +                            +---------+---module0
-> +                            | INTC1_5 |---module1
-> +                            |         |---...
-> +                            +---------+---module31
->  
->  maintainers:
->    - Kevin Chen <kevin_chen@aspeedtech.com>
-> @@ -17,49 +44,70 @@ maintainers:
->  properties:
->    compatible:
->      enum:
-> -      - aspeed,ast2700-intc-ic
-> +      - aspeed,ast2700-intc0
-> +      - aspeed,ast2700-intc1
->  
->    reg:
->      maxItems: 1
->  
-> -  interrupt-controller: true
-> +  '#address-cells':
-> +    const: 2
->  
-> -  '#interrupt-cells':
-> +  '#size-cells':
->      const: 2
-> -    description:
-> -      The first cell is the IRQ number, the second cell is the trigger
-> -      type as defined in interrupt.txt in this directory.
-> -
-> -  interrupts:
-> -    maxItems: 6
-> -    description: |
-> -      Depend to which INTC0 or INTC1 used.
-> -      INTC0 and INTC1 are two kinds of interrupt controller with enable and raw
-> -      status registers for use.
-> -      INTC0 is used to assert GIC if interrupt in INTC1 asserted.
-> -      INTC1 is used to assert INTC0 if interrupt of modules asserted.
-> -      +-----+   +-------+     +---------+---module0
-> -      | GIC |---| INTC0 |--+--| INTC1_0 |---module2
-> -      |     |   |       |  |  |         |---...
-> -      +-----+   +-------+  |  +---------+---module31
-> -                           |
-> -                           |   +---------+---module0
-> -                           +---| INTC1_1 |---module2
-> -                           |   |         |---...
-> -                           |   +---------+---module31
-> -                          ...
-> -                           |   +---------+---module0
-> -                           +---| INTC1_5 |---module2
-> -                               |         |---...
-> -                               +---------+---module31
->  
-> +  ranges: true
-> +
-> +patternProperties:
-> +  "^interrupt-controller@":
+v15:
+- i2c-ast2600.c
+ - add include unaligned.h
+ - rename all master -> controller, slave -> target.
+ - keep multi-master to align property.
+ - remove no used element in ast2600_i2c_bus.
 
-... but this tells me that intc0 and intc1 has children.
+v14:
+- aspeed,i2c.yaml
+ - v13 change people reviewed-by tag, v14 fixed to original people tag,
+   modify to Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+ - struct ast2600_i2c_bus layout optimal.
+ - ast2600_select_i2c_clock refine.
+ - ast2600_i2c_recover_bus overridden fix.
+ - dma_mapping_error() returned error code shadowed modify.
+ - buffer register in a 4-byte aligned simplified
+ - remove smbus alert
 
-> +    type: object
-> +    description: Interrupt group child nodes
-> +    additionalProperties: false
-> +
-> +    properties:
-> +      compatible:
-> +        enum:
-> +          - aspeed,ast2700-intc-ic
-> +
-> +      reg:
-> +        maxItems: 1
-> +
-> +      interrupt-controller: true
-> +
-> +      '#interrupt-cells':
-> +        const: 2
-> +        description:
-> +          The first cell is the IRQ number, the second cell is the trigger
-> +          type.
-> +
-> +      interrupts:
-> +        minItems: 1
-> +        maxItems: 6
-> +        description: |
-> +          The interrupts provided by this interrupt controller.
-> +
-> +      interrupts-extended:
-> +        minItems: 1
-> +        maxItems: 6
-> +        description: |
-> +          This property is required when defining a cascaded interrupt controller
-> +          that is connected under another interrupt controller. It specifies the
-> +          parent interrupt(s) in the upstream controller to which this controller
-> +          is connected.
+v13:
+ - separate i2c master and slave driver to be two patchs.
+ - modify include header list, add bits.h include. remove of*.h
+ - modify (((x) >> 24) & GENMASK(5, 0)) to (((x) & GENMASK(29, 24)) >> 24)
+ - modify ast2600_select_i2c_clock function implement.
+ - modify ast2600_i2c_recover_bus function u32 claim to
+   u32 state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
 
-No, you do not define two. Only interrupts.
+v12:
+- aspeed,i2c.yaml
+ - add Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+- i2c-ast2600.c
+ - update include by alphabetical order
+ - make just a one TAB and put the last two lines on the single one
+ - remove no used timing_table structre
+ - remove enum explicit assinment
+ - rewritten to avoid this and using loop in ast2600_select_i2c_clock
+ - use GENMASK for most 0xffff
+ - remove too many parentheses
+ - use str_read_write replace read write string
+ - remove redundant blank line after ast2600_i2c_bus_of_table
+ - fix wrong multi-line style of the comment
+ - use macro for i2c standard speeds
+ - remove useless noise dev_info
 
-> +
-> +    oneOf:
-> +      - required: [interrupts]
-> +      - required: [interrupts-extended]
-> +
-> +    required:
-> +      - compatible
-> +      - reg
-> +      - interrupt-controller
-> +      - '#interrupt-cells'
->  
->  required:
->    - compatible
->    - reg
-> -  - interrupt-controller
-> -  - '#interrupt-cells'
-> -  - interrupts
->  
->  additionalProperties: false
->  
-> @@ -68,19 +116,43 @@ examples:
->      #include <dt-bindings/interrupt-controller/arm-gic.h>
->  
->      bus {
-> +      #address-cells = <2>;
-> +      #size-cells = <2>;
-> +
-> +      intc0: interrupt-controller@12100000 {
-> +        compatible = "aspeed,ast2700-intc0";
-> +        reg = <0 0x12100000 0 0x4000>;
-> +        ranges = <0x0 0x0 0x0 0x12100000 0x0 0x4000>;
-> +        #address-cells = <2>;
-> +        #size-cells = <2>;
-> +
-> +        intc0_11: interrupt-controller@1b00 {
-> +          compatible = "aspeed,ast2700-intc-ic";
-> +          reg = <0 0x12101b00 0 0x10>;
+v11:
+- aspeed,i2c.yaml
+ - no change, the same with v10.
+- i2c-ast2600.c
+ - modify alert_enable from int -> boolean.
+ - modify dbg string recovery -> recover.
+ - remove no need to init 0.
+ - remove new line after break.
+ - remove unneeded empty line.
+ - modify dma_alloc_coherent to dmam_alloc_coherent
+ - modify probe nomem return dev_err_probe
+ - modify i2c_add_adapter to devm_i2c_adapter
+ - modify checkpatch: Alignment should match open parenthesis
+ - modify checkpatch: braces {} should be used on all arms of this statement
+ - modify checkpatch: Unbalanced braces around else statement
 
+v10:
+- aspeed,i2c.yaml
+ - move unevaluatedProperties after allOf.
+ - remove extra one blank line.
+- i2c-ast2600.c
+ - no change, the same with v8.
 
-... and that's quite wrong unit address. Also no resources in the
-parent, so this entire split seems superficial and incorrect.
+v9:
+- aspeed,i2c.yaml
+ - backoff to v7.
+  - no fix typo in maintainer's name and email. this would be another patch.
+  - no remove address-cells, size-cells, this would be another patch.
+ - use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ - fix allOf and else false properties for aspeed,ast2600-i2cv2.
+- i2c-ast2600.c
+ - no change, the same with v8
 
-This binding is not improving. You are not responding to REAL problems
-described to you. What's more, you send it in a way making our life
-difficult, look:
+v8:
+- aspeed,i2c.yaml
+ - modify commit message.
+ - Fix typo in maintainer's name and email.
+ - remove address-cells, size-cells.
+- i2c-ast2600.c
+ - move "i2c timeout counter" comment description before property_read.
+ - remove redundant code "return ret" in probe end.
 
-b4 diff '20250812100830.145578-2-ryan_chen@aspeedtech.com'
-Using cached copy of the lookup
----
-Analyzing 3 messages in the thread
-Could not find lower series to compare against.
+v7:
+- aspeed,i2c.yaml
+ - Update ASPEED I2C maintainers email.
+ - use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ - fix allOf and else false properties for aspeed,ast2600-i2cv2.
+- i2c-ast2600.c
+ - remove aspeed,xfer-mode instead of aspeed,enable-dma mode. buffer mode
+   is default.
+ - remove aspeed,timeout instead of i2c-scl-clk-low-timeout-us for
+   timeout setting.
 
-Best regards,
-Krzysztof
+v6:
+- remove aspeed,i2cv2.yaml, merge to aspeed,i2c.yaml -add support for
+  i2cv2 properites.
+- i2c-ast2600.c
+ - fix ast2600_i2c_remove ordering.
+ - remove ast2600_i2c_probe goto labels, and add dev_err_probe -remove
+   redundant deb_dbg debug message.
+ - rename gr_regmap -> global_regs
+
+v5:
+- remove ast2600-i2c-global.yaml, i2c-ast2600-global.c.
+- i2c-ast2600.c
+ - remove legacy clock divide, all go for new clock divide.
+ - remove duplicated read isr.
+ - remove no used driver match
+ - fix probe return for each labels return.
+ - global use mfd driver, driver use phandle to regmap read/write.
+- rename aspeed,i2c-ast2600.yaml to aspeed,i2cv2.yaml -remove bus-frequency.
+- add required aspeed,gr
+- add timeout, byte-mode, buff-mode properites.
+
+v4:
+- fix i2c-ast2600.c driver buffer mode use single buffer conflit in
+  master slave mode both enable.
+- fix kmemleak issue when use dma mode.
+- fix typo aspeed,i2c-ast2600.yaml compatible is "aspeed,ast2600-i2c"
+- fix typo aspeed,i2c-ast2600.ymal to aspeed,i2c-ast2600.yaml
+
+v3:
+- fix i2c global clock divide default value.
+- remove i2c slave no used dev_dbg info.
+
+v2:
+- add i2c global ymal file commit.
+- rename file name from new to ast2600.
+  aspeed-i2c-new-global.c -> i2c-ast2600-global.c
+  aspeed-i2c-new-global.h -> i2c-ast2600-global.h
+  i2c-new-aspeed.c -> i2c-ast2600.c
+- rename all driver function name to ast2600.
+
+Ryan Chen (3):
+  dt-bindings: i2c: aspeed,i2c.yaml: add transfer-mode and global-regs
+    properties and update example
+  i2c: ast2600: Add controller driver for new register layout
+  i2c: ast2600: Add target mode support
+
+ .../devicetree/bindings/i2c/aspeed,i2c.yaml   |   39 +
+ drivers/i2c/busses/Kconfig                    |   23 +-
+ drivers/i2c/busses/Makefile                   |    1 +
+ drivers/i2c/busses/i2c-ast2600.c              | 1598 +++++++++++++++++
+ 4 files changed, 1653 insertions(+), 8 deletions(-)
+ create mode 100644 drivers/i2c/busses/i2c-ast2600.c
+
+-- 
+2.34.1
 
 
