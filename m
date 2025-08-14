@@ -1,64 +1,93 @@
-Return-Path: <linux-aspeed+bounces-1961-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1962-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A09ECA0EDC
-	for <linux-aspeed@archiver.kernel.org>; Thu, 14 Aug 2025 22:30:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 322A4CA0EDC
+	for <linux-aspeed@archiver.kernel.org>; Thu, 14 Aug 2025 23:42:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c30M44sJ1z2xQt;
-	Fri, 15 Aug 2025 08:30:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755210656;
-	cv=none; b=YYPI473tluVj3wBu8ydWE9J2FGowv+xmCE0Z0U3W3imKf0yBYVeemOVA5q2Cr2W8+xVA9s7qDFpAJxo8O8azBaeXgc4xHM/RcFREP2+IOer+DhgPYp6OJuLUstDn2PDTkGE9Q/pCIjaPX06IiKHz4uXyNO9xNd8Q+gCRyfVssMYe9IyxyAXU97usOXrkmOFW/bQ1gMPIKOwAwF0+BqxaoZmwrNg2Dwu1ODgdQ2PnQSRNnbdKp9kldB72jNps23VDFsYh6AMH/S+UNjfBb5szRlOMcSpCe615HWXi1LeE69JpOO+RQGv15OTOB2Ok9vEeuSkb8Z7Yynwnd6qRZrb0cg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c31xh6Dxsz30Yb;
+	Fri, 15 Aug 2025 09:42:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755177446;
+	cv=none; b=R8HflronVpA3m20EzUI6Ja989jhEDG1xrnQVDYXkQnLic77ko4atu3ZHtggcasHjUU/UqAHLQbhfPwY8kOAzc7FLQTtpQ8PkXPpBtT0RnY7ZPFmrWDE9BRfqJyhYJ4phuM9R+iHsHB1IAqPSkJzsl3UmOMLbEr3z/zyrRBA88I8rdTrd2QcmoLk1zteQAIKOa0Z7tWDr2aLvOK7MyS4vVOwb8mRh9A1XmU+CiqS2AUhrl0sN/nhOANBGKWik9JvWdVqgI4M030OM29HfNcxgONfaq5uQKQyXOcGJMGkc7VeLY/0Y3feIqcUsoiASWTGg07/sAdlefEk0y0SiSxqYwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755210656; c=relaxed/relaxed;
-	bh=vIFp7ebVwT9oleEhOGII0IqB6tGpNR9cpd6TYV5Jql0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B0A0AJyXv8fXswooOOS6t2Z37m2tWUHvt1A3IwADeQpsBHZEFWTZopaUN8AEaOq/ZpMUWmtGwhjjb9sz0Z/nfJXesOs/pCk3V+0azzbmSdhA9RSyhYaRV65MtADsYx67Gb1xoA3v6BfA2IieEjFc99wc/HNiKHY5oxAecRneFxbsvFNQzFaNKfeBr42wjv0pXQ5eZG+YfqWQKvRu1Nj0gJ3mXJIuzlEJT5DIjeVoTVdc4VfsNuZM6qvfR6Bqlr4/2gBLxIgcnGAjZBKFO9KXtJ9pjK3l7pWOhQo6TImQZZZJ9nu/xqscrPEFSoObO70ZM7AsNdbiJFEFNIHJa8szwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c8NZu8Q2; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1755177446; c=relaxed/relaxed;
+	bh=Lsr8NoDBS2RQArrp1EpyLZ8skAK+yEiuZh8RDSmxYGs=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Ap9F+GDAF2vE1dDRt75TmUyPf/WDfU5/+EwR/NQHMbbnHWrhyTFEFNln58a8SkSgYp7Jb2EF9YtbVrlZ/l/WaJel5QsrbUMDv28JHBbP8SJhaHS5lgNPgrt4sfulQVzbCYfcK7zhx0CLzsTbx4oPWfhWgnSo27XK07J4G/Xa9/+KXJrStaNKi4KDctlis0p5vQVFnZAA+j9GkBJVJT4zG849Zl2agmve/qGWTXMNmZvfsDMc8VBBpndKF4vV/bLR5+wMK/zyyjC6zWsJooQ9k/bOYwDKL2jdYOhCBcm9CCLguzozT8dHoAYvAJWet7quMv6mHXH/iLnL2v/xhDSlhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=GMnp0nHA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c8NZu8Q2;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=GMnp0nHA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c30M36WcVz2xQ6;
-	Fri, 15 Aug 2025 08:30:55 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3D4D945C0A;
-	Thu, 14 Aug 2025 22:30:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC6FBC4CEED;
-	Thu, 14 Aug 2025 22:30:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755210653;
-	bh=N5VWGitysz6JFmoe9n2FhghAKkO8HINQCHJY2U2kRIs=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=c8NZu8Q23AcSpDXYfCjfS+nijpycYbRazO8ud7muK7v/NQSmnieFRpVKZ9HpE+Se3
-	 ihK/DheTyy0oiRrb1M1422BzweCx9GFLH23gWJEy8hhRFRngUNMiGhj74MtotNPhtF
-	 yqrUOurUhDDUC58YxblyH88j6+KNNTcK/igm+HoklMSc/qyxQ5KQz0I5OYmUnqEyQb
-	 hSHC3P59PHrQpHRwdNhYBEJf+FY2XgcEMPuuTzqg6Z4f866bnKk9VJKWj+onG9pmFj
-	 gWnmU3joyDUmkrHXStOUAiu75Y3Os4fO4BMRMQVIFbAidL1DN8rkqKZOMOECpHF6et
-	 Ltq0O6AyGRRpQ==
-Date: Thu, 14 Aug 2025 17:30:52 -0500
-From: Rob Herring <robh@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: benh@kernel.crashing.org, joel@jms.id.au, andi.shyti@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org,
-	andrew@codeconstruct.com.au, p.zabel@pengutronix.de,
-	andriy.shevchenko@linux.intel.com, naresh.solanki@9elements.com,
-	linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v17 1/3] dt-bindings: i2c: aspeed,i2c.yaml: add
- transfer-mode and global-regs properties and update example
-Message-ID: <20250814223052.GA4004307-robh@kernel.org>
-References: <20250814084156.1650432-1-ryan_chen@aspeedtech.com>
- <20250814084156.1650432-2-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c2m4P6bvMz30W5
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 14 Aug 2025 23:17:25 +1000 (AEST)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-24458272c00so12242995ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 14 Aug 2025 06:17:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1755177444; x=1755782244; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Lsr8NoDBS2RQArrp1EpyLZ8skAK+yEiuZh8RDSmxYGs=;
+        b=GMnp0nHApOSWASb3EuZRcX9MoRmQUcX7MKhQSk1L3mjiQeA6lUJ0I3XyFlfd9DNE56
+         e9QxrXwrpB0RIiiVVryEkqxm2YpvWY4C9EkEbTzdC3SlxBPQAghg9cfL6dm2+9I/Lfbd
+         FXw3FhtCKAEN+qQBVJcV7yJgfgoskdCbI12ETt3J7sYKxucy+A2yuvQi8TBTI0x7lJHj
+         AygYA9dgNu+05ZisDlpDGSUoARsXvRxuiIH8IhyMAsusYSy0bxUOkO0dEbfWgQFtSrSu
+         gia+6Q+fz0ZLrLDiW7jOj3lFQjpaWd0fjqA3IRb70h8xFATfa4RY3jMenXIu2vioYY5j
+         18xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755177444; x=1755782244;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Lsr8NoDBS2RQArrp1EpyLZ8skAK+yEiuZh8RDSmxYGs=;
+        b=Yeymw+Uh+SNeprQLGI2ndOzRkKVoXFd2xgVqXP7guCmFCZ6YjSh3XY+7T+3cPDmIJp
+         eq9i/WOKvxycbYxd1WX+rChD85yS2DxTAClZIwmU/lDvG+ysrPZz3CYuP1yKANwvvbFW
+         MCYCHpbN/ta32+bgLOFuuOv2MKQu0Bx8qhzeRmzgB3rwkNgw8OeJaVlcckSAWmMmFs3Q
+         HyJkZbDGdzofnHPyAfwh+Yb3RojGBwzQdrjZbUyo+KCm5sCzqzcutV7OLoY1BSlyS9Va
+         IVHnhgOEhs7uYEwugmyqZ2IfxWD94Sq4u+4zBvGDu1VnGNE/Mq8ha3/2E60FEe7n76e1
+         xDgA==
+X-Forwarded-Encrypted: i=1; AJvYcCWO5iwra7ifArCc1MIejer/LmlLDsHvejWjW4dC7CTEPTigVOief5aM1cXtKsOqWmbbIddqNuv258bT5+4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxAAl+Swfg3+fKct8NVijvDvl6//NOhvDqZnj+GvB9gU1vT4S0p
+	ZCq17xW2bY/o3+JII7aa7T4APdDYVLgcf8avC70uxf+u+y5yHQob3Thd
+X-Gm-Gg: ASbGncuKFZT+yoh67aimJAXSPz1zVat2BnkXGOr5M9MQiIPmsmXqPjsiXoxeUqyX6C8
+	r4GZb56/T+pl4CfRTpQNEr51EOYi6i0ispW2stBUM0+X9iOMdHHPhYNleB0//TcQqoZQ9pmiMk/
+	pWV78d3/moMOOrU7A/Tb4vCA2heTn2QonSSb/lWq6NE1Srv5H4uAqYhs6YQ9aR8Xbz44kKuu5fZ
+	PJqAO6QIbYz8om6uYRJAdZuswkZ1Dg1lEl+1MtImizZ632jtUb/p/I4PRpQ2FrN17RJBmal6oNq
+	sCls+mV3T2jk7QrjYDAinuCF9XkU+pW3Vz2qAlDu9LGebXfFIIZnIjzrX6v8YBGH20Neu0pNro3
+	y5EhJjLDRmjEPhqKV9DkQz5mWyI13tlEkxYs26N/+1n3YE5w/7L/Vp5EPGljnHgTQlGATRRLEnp
+	TaxICThy7GRfs=
+X-Google-Smtp-Source: AGHT+IE2z0Mn4IzOfVrP5fVEkPK/wTu7L7FYQyC/LTk08Q1390PeBweG1bRkM0f2xG6YdF4ltPjpOA==
+X-Received: by 2002:a17:903:1b50:b0:240:14f9:cf13 with SMTP id d9443c01a7336-244586f6e7amr44650985ad.51.1755177443544;
+        Thu, 14 Aug 2025 06:17:23 -0700 (PDT)
+Received: from fred-System-Product-Name.. (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-24218d8413asm335652995ad.63.2025.08.14.06.17.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 14 Aug 2025 06:17:23 -0700 (PDT)
+From: Fred Chen <fredchen.openbmc@gmail.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 4/4] ARM: dts: aspeed: santabarbara: add sgpio line name for leak detection
+Date: Thu, 14 Aug 2025 21:17:00 +0800
+Message-ID: <20250814131706.1567067-5-fredchen.openbmc@gmail.com>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250814131706.1567067-1-fredchen.openbmc@gmail.com>
+References: <20250814131706.1567067-1-fredchen.openbmc@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,107 +101,42 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250814084156.1650432-2-ryan_chen@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 14, 2025 at 04:41:54PM +0800, Ryan Chen wrote:
-> - Add property "aspeed,global-regs" to get phandle set global
-> register, for register mode selection and clock divider control.
-> - Add an optional property "aspeed,transfer-mode" to
-> allow device tree to specify the desired transfer method used
-> by each I2C controller instance.
-> - Update example to demonstrate usage of 'aspeed,global-regs' and
-> 'aspeed,transfer-mode' for AST2600 I2C controller.
+Add leak-related line names for the SGPIO inputs that report chassis
+leaks, so userspace can detect and handle leak events
 
-All of this is evident reading the patch. Explain here why you need this 
-change.
+Signed-off-by: Fred Chen <fredchen.openbmc@gmail.com>
+---
+ .../dts/aspeed/aspeed-bmc-facebook-santabarbara.dts  | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  .../devicetree/bindings/i2c/aspeed,i2c.yaml   | 39 +++++++++++++++++++
->  1 file changed, 39 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> index 5b9bd2feda3b..2a9f7d1d2ea1 100644
-> --- a/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> +++ b/Documentation/devicetree/bindings/i2c/aspeed,i2c.yaml
-> @@ -44,6 +44,34 @@ properties:
->      description: frequency of the bus clock in Hz defaults to 100 kHz when not
->        specified
->  
-> +  aspeed,transfer-mode:
-> +    description: |
-> +      ASPEED ast2600 platform equipped with 16 I2C controllers each i2c controller
-> +      have 1 byte transfer buffer(byte mode), 32 bytes buffer(buffer mode), and
-> +      share a DMA engine.
-> +      Select I2C transfer mode for this controller. Supported values are:
-> +        - "byte": Use 1 byte for i2c transmit (1-byte buffer).
-> +        - "buffer": Use buffer (32-byte buffer) for i2c transmit. (default)
-> +                    Better performance then byte mode.
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
+index ed2432f37609..6af8b22f72e1 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
+@@ -1767,11 +1767,17 @@ &sgpiom0 {
+ 	"PRSNT_LEAK_CABLE_1_R_N","",
+ 	"PRSNT_LEAK_CABLE_2_R_N","",
+ 	"PRSNT_HDT_N","",
+-	"","",
++	"LEAK_SWB_COLDPLATE","",
+ 	/*P0-P3 line 240-247*/
+-	"","","","","","","","",
++	"LEAK_R3_COLDPLATE","",
++	"LEAK_R2_COLDPLATE","",
++	"LEAK_R1_COLDPLATE","",
++	"LEAK_R0_COLDPLATE","",
+ 	/*P4-P7 line 248-255*/
+-	"","","","","","","","";
++	"LEAK_MB_COLDPLATE","",
++	"LEAK_PDB1_RIGHT_MANIFOLD","",
++	"LEAK_PDB1_LEFT_MANIFOLD","",
++	"LEAK_MB_MANIFOLD","";
+ 	status = "okay";
+ };
+ 
+-- 
+2.49.0
 
-If no 'aspeed,transfer-mode' property defaults to buffer mode, you never 
-need 'aspeed,transfer-mode = "buffer"'.
-
-When would you ever use "byte" mode? Sometimes you want worse 
-performance? That makes no sense.
-
-I feel like we already discussed this, but I'm not going to dig thru 17 
-versions to see.
-
-> +        - "dma": Each controller DMA mode is shared DMA engine. The AST2600 SoC
-> +                 provides a single DMA engine shared for 16 I2C controllers,
-> +                 so only a limited number of controllers can use DMA simultaneously.
-> +                 Therefore, the DTS must explicitly assign which controllers are
-> +                 configured to use DMA.
-> +      Only one mode can be selected per controller.
-
-The only thing that really makes sense is dma, and you need 1 boolean 
-property for that. IOW, what you had on v10 which we gave reviewed-by 2+ 
-years ago.
-
-Do you have any actual test results or usecase that show DMA is useful 
-here? Typical I2C xfers are not streaming large amounts of data to 
-justify the setup costs of DMA. It wouldn't surprise me if DMA was 
-actually slower.
-
-> +      On AST2600, each controller supports all three modes.
-> +      If not specified, buffer mode is used by default.
-> +    enum:
-> +      - byte
-> +      - buffer
-> +      - dma
-> +
-> +  aspeed,global-regs:
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +    description: |
-
-Don't need '|'. Read the documentation about when it is needed or not 
-needed.
-
-> +      The phandle of i2c global register node, For control the i2c register
-> +      define selection, clock divider mode selection and clock divider control.
-> +
->  required:
->    - reg
->    - compatible
-> @@ -66,3 +94,14 @@ examples:
->        interrupts = <0>;
->        interrupt-parent = <&i2c_ic>;
->      };
-> +  - |
-> +    #include <dt-bindings/interrupt-controller/arm-gic.h>
-> +    i2c1: i2c@80 {
-> +      compatible = "aspeed,ast2600-i2c-bus";
-> +      reg = <0x80 0x80>, <0xc00 0x20>;
-> +      aspeed,global-regs = <&i2c_global>;
-> +      clocks = <&syscon ASPEED_CLK_APB>;
-> +      resets = <&syscon ASPEED_RESET_I2C>;
-> +      interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
-> +      aspeed,transfer-mode = "buffer";
-> +    };
-> -- 
-> 2.34.1
-> 
 
