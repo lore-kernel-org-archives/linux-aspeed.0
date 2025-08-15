@@ -1,52 +1,95 @@
-Return-Path: <linux-aspeed+bounces-1979-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1980-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AE55CA0EE4
-	for <linux-aspeed@archiver.kernel.org>; Fri, 15 Aug 2025 21:19:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38FA9CA0EE6
+	for <linux-aspeed@archiver.kernel.org>; Fri, 15 Aug 2025 22:44:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c3Zjv5LdQz3cjT;
-	Sat, 16 Aug 2025 07:19:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755292755;
-	cv=none; b=HR916JaV9Syp8+99Q977V59EOmUJ9bCM+fcnQKSubFvNyJq2L6MnbhTR1yzZKnAmmN9TpwyQiCaDoxKKQ+ZODdI4xXPJjKxkNqVfutMqH2Peraf/G11YMvbHumOu3O5sVhCslu0UXSbpoCy7Zu+KBxoKxnXXppL35AlPjNtLoFX/GlPhgdq2tgh8Q0UtscGn4rGC9e7/dVukesRGF+5YuOufvYknE/X1hlJvhBMldk2/a7bNzjU/6cIXAB7Rv/m/XJtlBMok9EfUaYOdBJ5uuxUbYOOzMATayK+nDkA8Y3ZB+HEXuLHQDnceVZyefsUJSCbVH1BJM6ACmKmzdq+qtw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755292755; c=relaxed/relaxed;
-	bh=ZvE7HcSrm1TIupvk7fabk+Gqg2aIlpj0qnYEvjTM0ns=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=ig2LPE9GdmfFn0hkUEulqzDjoPicA54+In/fKejPRQWVk1Sdiq6f3VPQoGb7dRFl0o7oQta7NyQfpDFlk5LM/I8e79o15YwL7x1maqU9Lk11FG6tuioWV2ym+y06yIyPgSfY9fPg09wcHXAJ85wvP0eOGpw0ZnzgtwVO3I6+YtHxGlSNoeUpaLqQGbTssH07Pq43y+WSkBaPt9yhGnYwHjcCZYeAlhH0PUFkyy6dLx4O5EYNyMpq5vWfUKiYLSGNzCEGqEnLo8R5yZ10W9+0mABchxqcM0L76z7NLd5W3Q6sR9TDgIvg4bavT/3zzD8ZcnOKz1DW8ujkO6oY0Lo6gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IsEt8QSy; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c3cc613Zwz3cYx;
+	Sat, 16 Aug 2025 08:44:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2412::615" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755297862;
+	cv=pass; b=MD7dzIZ5h2dgSXPyxLGpY9G3lus/h5YfW/OibU0reBGfEFr2JHgnreJtt5llE9a97/PBEacHZ+jpdXJF82vK+WZHvNt6p07h9Ufv3ieXgMrSb8rcRDP3OSxl+hCTbz7eSnGyTuZ8S1dONsn9QF8+XR8iHMiQy5n9t9JaGzBIW4yOMYn6hK5wJLNjigWkG7Z+oGCU+IzYZNg6Bc7PaBY+59sBwc9chPHQefmz2c4/z+qhKjMJEeFtOxuK+trzAreNV9n0ZKXe9ZJdRis8oz9exM0/k1mmGDBlrwhTh9DcD6ztgE9XFmaIxUbo4MaTwEVHHDS+H0no5pxsb18IrkvHWg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1755297862; c=relaxed/relaxed;
+	bh=/PJbBvDV+noSKFlIser/JH9z0P+Q4gTCv13gY7hx1Mg=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=BMNaIojPjQaQS/NlLfPRoB/8aPka554QpBcEdih9b/GPBNcQ/1h5GaXyc87wp4SsefwALw/xfNvz/Yqm1+wniXp3sq8VBZ1MWBF/mJEjPFnoe7uuHu2CkPnTq4x9MVAbCjcXB4HVQkTDBkulITo6h75BU2/Yyu9oTAu4g+OBAC2XVqEAKqd8H72F5VXQBM8OpyWsvuTDeeePAm2AM9T5lTyavsLal9+FbKZSTuQvnJwbHHLtxb/B1pLoVHJNRJlcF8aXIoN6CcPjuqgvm8pWiLYpS8eZ0+6Fg5FyPJx42Xb5cghlxR+QDa25M8LbUYfwin75pZMd8vp/eNh472pdXQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=rFG+yO8M; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2412::615; helo=nam10-mw2-obe.outbound.protection.outlook.com; envelope-from=donalds@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IsEt8QSy;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=rFG+yO8M;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2412::615; helo=nam10-mw2-obe.outbound.protection.outlook.com; envelope-from=donalds@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on20615.outbound.protection.outlook.com [IPv6:2a01:111:f403:2412::615])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3Zjt2gkzz3cjQ
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 07:19:14 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1FB5544D79;
-	Fri, 15 Aug 2025 21:19:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8C7EC4CEF8;
-	Fri, 15 Aug 2025 21:19:09 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755292750;
-	bh=K+r06jLu5/QfCZbN9piqdk/fiyOGa1TyF6QkY5xklXQ=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=IsEt8QSynFtXD1ppIMy6AyN46/r047g46cJcO6Fnm0A0yh+84FoNWyizkrNntmYrF
-	 ATInUU6ByuKliIMsIlocgSgfhe3f9NlYYwlHwfqu2l38TqT3oNT5wjjLvFz+ZXFzC2
-	 2fCGv0bWrWRoWzkMr4mrdHq2+Zt0OWylWuHhgrAgWXxSyQGGz1ijTdIV92JC3bm4oL
-	 GEokvA1QfeE6WIhntjac/k65bxdohAqh+eu6Dl1yGHAsfueEViFyG4JeH4OgelV5Pf
-	 A+rmN0XB4RvY314InNBPak8WyZCgfHH0D7XfYVfoT8jdVlGDAWvmrOXO4gEFKfMC0a
-	 yu7t2cPtj11Ew==
-Date: Fri, 15 Aug 2025 16:19:09 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3cc45kXJz3cYP;
+	Sat, 16 Aug 2025 08:44:20 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=faoyaV3RI4QZLFBQyZTQ0VFAy1ulSEt7yQ6f/9hig8eLlp/yQU6hQnWaWo+Dx2vmZT6J6Nh2qohBHg+vGAsdlSQxAbMViNxgbf+Gv5StvgV9WBIkTWN4Y0u9EF6ZrnEdvj6oxlgnSc+ihziWMFKTG0Hx2DOdclJyEgovcHvkkMBQuyvrURSwMHaw/75v0OR6euG13gdtkHCFkPsArvBMRW2h46tC/d64IJytTj69Q3T+GLtEP+I9+TQgoF5B+pHnuh5KzLxOMp0BXKe0tKbNk+NE5CJkeZRP1BKZWiTAAPQ/e2Xb5URqVgKc1zIW7NkjAg+xLDtcdXLbPXZvVPfSag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/PJbBvDV+noSKFlIser/JH9z0P+Q4gTCv13gY7hx1Mg=;
+ b=h+GTRKbudmV9KvCZj79IqvCQr3euq/CZrBrq7UA03eYkCmYrwCd8zArIKAJf5TkrwRgT/0cDGjLuUM/tJpbq1o7mcImIM2Go6URC7+eKVdykP4PTAh7f/nhSrs3nlqFnl4CQJ0GoWWAJ3+TSZFi8TtnV+5J6Tpo1QwVOam3HgY1K2s0GR/kLOpMogjKU8YxxLWXY933uvW8uTqLzTRLGsosvhWk8jovfeAKAxg6zhOLc3FIYdcnYcZ1fvsUPyHEeD6d+7Vz/uhGKsxxfNXdYDHe90WgAdupfFmXuBdfsDd4LlCXbJVkzpHHxeFMQhYvavgB8TiwYmEtQy27S/ZsLhQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 216.228.117.160) smtp.rcpttodomain=kernel.org smtp.mailfrom=nvidia.com;
+ dmarc=pass (p=reject sp=reject pct=100) action=none header.from=nvidia.com;
+ dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=/PJbBvDV+noSKFlIser/JH9z0P+Q4gTCv13gY7hx1Mg=;
+ b=rFG+yO8MNnZOWL+Iz124NZR0d7KsJQNUqEgFDCyrrcjq4wA9+/Vx+Y7NScIzzEunJjtzVzJV/uzp7pK+ApVt0XKlWPZX+LZ5JnyPtkAFft792wZmkRwlrCw1S7o8DudQXrYkQZHazP196qhRd313/Nw2LF4AAUTPfWJYy05yNx6dZ4F5USesbXO+Noc9rpZkWLsB0Si9lSyhU37pvWdt5E9LIGYtHB8xPG8oiIzEDluU3IPnxQzg1++nHQoO5Y7893GI4wuvb8mYRW6T6W76RJ1qXTVi8A67l7mis5kfId1V5ZRPPA8M9SRcfw1B9mBekBdcW0NETduS/tNwzV8HOQ==
+Received: from BN9PR03CA0971.namprd03.prod.outlook.com (2603:10b6:408:109::16)
+ by DM4PR12MB8557.namprd12.prod.outlook.com (2603:10b6:8:18b::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9031.18; Fri, 15 Aug
+ 2025 22:44:00 +0000
+Received: from BN2PEPF000055DB.namprd21.prod.outlook.com
+ (2603:10b6:408:109:cafe::e0) by BN9PR03CA0971.outlook.office365.com
+ (2603:10b6:408:109::16) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9031.19 via Frontend Transport; Fri,
+ 15 Aug 2025 22:43:59 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 216.228.117.160)
+ smtp.mailfrom=nvidia.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=nvidia.com;
+Received-SPF: Pass (protection.outlook.com: domain of nvidia.com designates
+ 216.228.117.160 as permitted sender) receiver=protection.outlook.com;
+ client-ip=216.228.117.160; helo=mail.nvidia.com; pr=C
+Received: from mail.nvidia.com (216.228.117.160) by
+ BN2PEPF000055DB.mail.protection.outlook.com (10.167.245.5) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9052.0 via Frontend Transport; Fri, 15 Aug 2025 22:43:59 +0000
+Received: from rnnvmail205.nvidia.com (10.129.68.10) by mail.nvidia.com
+ (10.129.200.66) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.14; Fri, 15 Aug
+ 2025 15:43:47 -0700
+Received: from rnnvmail202.nvidia.com (10.129.68.7) by rnnvmail205.nvidia.com
+ (10.129.68.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.14; Fri, 15 Aug
+ 2025 15:43:47 -0700
+Received: from dondevbox.nvidia.com (10.127.8.13) by mail.nvidia.com
+ (10.129.68.7) with Microsoft SMTP Server id 15.2.1544.14 via Frontend
+ Transport; Fri, 15 Aug 2025 15:43:47 -0700
+From: Donald Shannon <donalds@nvidia.com>
+To: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+	<donalds@nvidia.com>
+CC: <joel@jms.id.au>, <andrew@codeconstruct.com.au>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+	<openbmc@lists.ozlabs.org>, Krzysztof Kozlowski
+	<krzysztof.kozlowski@linaro.org>
+Subject: [PATCH v8 1/2] dt-bindings: arm: aspeed: Add NVIDIA GB200-UT3.0b  board
+Date: Fri, 15 Aug 2025 15:43:43 -0700
+Message-ID: <20250815224344.908130-2-donalds@nvidia.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20250815224344.908130-1-donalds@nvidia.com>
+References: <20250815224344.908130-1-donalds@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,77 +103,87 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, linux-aspeed@lists.ozlabs.org, 
- linux-arm-kernel@lists.infradead.org, Joel Stanley <joel@jms.id.au>
-To: Fred Chen <fredchen.openbmc@gmail.com>
-In-Reply-To: <20250814131706.1567067-1-fredchen.openbmc@gmail.com>
-References: <20250814131706.1567067-1-fredchen.openbmc@gmail.com>
-Message-Id: <175529259974.3212367.16366822597087067588.robh@kernel.org>
-Subject: Re: [PATCH v2 0/4] Revise Meta Santabarbara devicetree
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-NV-OnPremToCloud: ExternallySecured
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN2PEPF000055DB:EE_|DM4PR12MB8557:EE_
+X-MS-Office365-Filtering-Correlation-Id: 76569be5-7d84-4425-bd92-08dddc4d39df
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|36860700013|1800799024|82310400026|7416014|13003099007;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?1uqPpCxU7duqnv+vXw1RcO9vYHFhzQ3mrFXWNMJa7+JEm62Z4QxEqE0pbTQi?=
+ =?us-ascii?Q?UDllrQKthtxN/pnSABeri7XJi9G6Zts454ewkNevO+Btg1VwqIArlNMn397q?=
+ =?us-ascii?Q?mIFv7IFBwJuFINYn5ZpUEKIqyy9cVna0yoEmPAR2zaPcMWmahWAroMBT0QcG?=
+ =?us-ascii?Q?Lru7s5mNnA4cX9eXy/6sKbD8N9v0LiGdy5cnH/z0w1wlD0MewYQqxZ66+QQS?=
+ =?us-ascii?Q?BDQzmrIQUA5CTK7sHoRu2T4y1GX5IAdRVUeY5kZM3O7iReFjbWuno89F0cs2?=
+ =?us-ascii?Q?tAsi1kWM2l1z6iyaRxVK871HQdwagwm1ki5QzUQytTIXXaRxrBt2SF5hwtCe?=
+ =?us-ascii?Q?T4v0vMJZ/ULyFqNZ724smyU97uOD7uCyu7RQh35yGm4ZgaSH3PWkTlywGz01?=
+ =?us-ascii?Q?YIve/pzpuUvfrhgzp0eXJQVvKpQ2eGwJ19N1AgWA/UzX86/IN7DOfTHmCDPZ?=
+ =?us-ascii?Q?VL1q4JfU7XOMwn6VF/6yQ4IBhTWneBLRIChZhvKo9Tc0IkAByEPdPrTcBbNN?=
+ =?us-ascii?Q?FoS0lWmrOaw9Gy8E2Su9TMw8Juiqmo6LJFPC/+0GQlrDwyBxwTwBt8NiT50S?=
+ =?us-ascii?Q?qxuytjdQVev6xXSpo0l97Fawzxr9Fij9k1C8YAn6QhFwWCRiT6Z89jp3jxAm?=
+ =?us-ascii?Q?2ud1KQPyg6cKbtPgMWa08BBTAZci6PfTT90v8NCiNLhE0+qtLzGk53+Nw6R6?=
+ =?us-ascii?Q?iriasafss3yfWpqIAK6/2biyzc5emscruwut7wlNKxUCtliKSfUlv7G9NtDG?=
+ =?us-ascii?Q?/la/IawGaMNjj9F5XcNQ7XzzJW3oMa8FACNcfV8Q6YZubihd3EuRVIVMl3Dc?=
+ =?us-ascii?Q?i3+dxoiFTJOvn28/Dnl0bBxwHT72P4DZBC9YKlC+Nyl8wNaw64cMMlcErIw5?=
+ =?us-ascii?Q?yf/MBoGhy4KLZsdQL9LN2ANtZfTFeqPo5Y3yf1fHUhXOEzI9ZuBpRblvVfHN?=
+ =?us-ascii?Q?94AEsOcKx94L5o22TG/tLAKDlI6Qhf8lVW8rv0u3ASsDspVJN3NwydT2A5Kl?=
+ =?us-ascii?Q?WaR/HUzjd7lEFcXtVgO6jjLslkvPMF8QAbvWnEL4UaD6uVxaieEgIBCsNtgG?=
+ =?us-ascii?Q?9ut5IJ+IwKQQ6mDUYdrVDhSdQBIzBSxe4KB9um8JVkiG7OXihmzbubPaNQwO?=
+ =?us-ascii?Q?qTzFWSLaepgR1W/OLRsbAMMiCUz4vgHqf8UJTan4oH8N5XP7s1D9fntVXpD+?=
+ =?us-ascii?Q?FVUeXHTlwGiKPngYoIoPOMcctQv7x8dbRoTYanHFaZgv6fGnOr5vxbssPvUB?=
+ =?us-ascii?Q?mZaQQe1rRpT4ApQo3/iMKW/OaPVDLmzoa9ZIq9enZIo7LQtPOCE2FNLXUgi/?=
+ =?us-ascii?Q?H4OHzTcyjMFlnbmBym7bg7xdVgY1kVTc0RTb3T3uA6E5e9tYfpO1aGe/mcpj?=
+ =?us-ascii?Q?wkUfdIJdMO8ewI8evumIzQ3693db/Pi8DlO2iu5xGc6Y/6REfsOVSRvtyiTg?=
+ =?us-ascii?Q?5NL+4hmnkrlQTpDu5SN+o81R3Wme9PfTqLlimHV5xQgzx9veH4ZOdI6ndPj/?=
+ =?us-ascii?Q?Wta60Le4D0NtjfI197QDmHp70ETjMr9frwOx?=
+X-Forefront-Antispam-Report:
+	CIP:216.228.117.160;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:mail.nvidia.com;PTR:dc6edge1.nvidia.com;CAT:NONE;SFS:(13230040)(376014)(36860700013)(1800799024)(82310400026)(7416014)(13003099007);DIR:OUT;SFP:1101;
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Aug 2025 22:43:59.6072
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 76569be5-7d84-4425-bd92-08dddc4d39df
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=43083d15-7273-40c1-b7db-39efd9ccc17a;Ip=[216.228.117.160];Helo=[mail.nvidia.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	BN2PEPF000055DB.namprd21.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB8557
 
+This is an Aspeed AST2600 based unit testing platform for GB200.
+UT3.0b is different than nvidia-gb200nvl-bmc due to networking topology
+differences, additional gpio expanders, and voltage regulator gating
+some devices.
 
-On Thu, 14 Aug 2025 21:16:56 +0800, Fred Chen wrote:
-> Summary:
-> Revise linux device tree entry related to Meta (Facebook) Santabarbara.
-> 
-> Change log
-> v1 -> v2:
->   - add 'bmc_ready_noled' LED and update commit message
->   - add sgpio line name for leak detection
-> v1:
->   - add sensor nodes for extension board
->   - add mctp node for NIC
->   - adjust LED configuration
-> 
-> Fred Chen (4):
->   ARM: dts: aspeed: santabarbara: add sensor support for extension
->     boards
->   ARM: dts: aspeed: santabarbara: Enable MCTP for frontend NIC
->   ARM: dts: aspeed: santabarbara: Adjust LED configuration
->   ARM: dts: aspeed: santabarbara: add sgpio line name for leak detection
-> 
->  .../aspeed-bmc-facebook-santabarbara.dts      | 857 +++++++++++++++++-
->  1 file changed, 853 insertions(+), 4 deletions(-)
-> 
-> --
-> 2.49.0
-> 
-> 
-> 
+Reference to Ast2600 SOC [1].
+Reference to Blackwell GB200NVL Platform [2].
 
+Link: https://www.aspeedtech.com/server_ast2600/ [1]
+Link: https://nvdam.widen.net/s/wwnsxrhm2w/blackwell-datasheet-3384703 [2]
+Signed-off-by: Donald Shannon <donalds@nvidia.com>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-This patch series was applied (using b4) to base:
- Base: attempting to guess base-commit...
- Base: tags/v6.17-rc1-9-g8e4021078863 (exact match)
-
-If this is not the correct base, please add 'base-commit' tag
-(or use b4 which does this automatically)
-
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250814131706.1567067-1-fredchen.openbmc@gmail.com:
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dtb: mctp@10 (mctp-i2c-controller): 'label' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/net/mctp-i2c-controller.yaml#
-
-
-
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index 456dbf7b5ec8..624581db2330 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -99,6 +99,7 @@ properties:
+               - inventec,starscream-bmc
+               - inventec,transformer-bmc
+               - jabil,rbp-bmc
++              - nvidia,gb200-ut30b
+               - nvidia,gb200nvl-bmc
+               - qcom,dc-scm-v1-bmc
+               - quanta,s6q-bmc
+-- 
+2.43.0
 
 
