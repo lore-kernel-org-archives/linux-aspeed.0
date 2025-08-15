@@ -1,46 +1,46 @@
-Return-Path: <linux-aspeed+bounces-1972-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1973-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D176CA0ED1
-	for <linux-aspeed@archiver.kernel.org>; Fri, 15 Aug 2025 18:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6B64CA0EE4
+	for <linux-aspeed@archiver.kernel.org>; Fri, 15 Aug 2025 18:42:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c3Vq90Hykz3cjR;
-	Sat, 16 Aug 2025 04:23:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c3WFV1TjCz3cjS;
+	Sat, 16 Aug 2025 04:42:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755282212;
-	cv=none; b=ZTrmRZPiWtGOd9aofM8hqQjnSLCT1ye+9fHswRqPqgSZm94pdCTsCrNLX5IWFQ292AVgB4KWHNQgOJucX+B57PMMnzb45Z5vI8sXFu7WsgQ0avhnyCdurihLOOhCvL062smycUXYyQl5p/JGOiTzHVV1NzLaWwAKbqXCOORZP3vEeilcMKh26m0cBaYRxXqlqnhAm5uqm8gcdCsaReJY7G12Rv98jnP0DZD174KaFRNmot6EsIZ6D1rTVIMEYBddQzZXK52LEvpqbaHA/rdi++F2aMIQQfl2CQf7jz5GLmcfhDkDvbtIRGVcosn0eDbazOGurjguZZ+vQyI8TjvtMA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755283374;
+	cv=none; b=elQe7+0vrTIjXL1uYuNSktEFATT+6GWzfWAsF+yYT0IRE/fGsWulNRTIgi8GuaRa2sjVUH3cVbvr492gXk7f4txF8wbJUN13Z1jRhAWQ4G4fq0xk2OJQUmRduAkwpLp8BvHA85eiJR919NrOwzRqOQtfU3oGh3TU1VXC95UuGaBLHPSVrSqBWz9i0N8zGdtv+7MaJYYvaAPReaqTqjKpq0YHcpbJPZAHkTjTE1TxVVJ3VfHS23qol1Ge++/FHGaTPeRYFsJk24qRXHt9wD2cQwD4slQdFYHgMvYmTe8XxkQ4uZIwTh+HNauXg2aBDjTvNg6ngPJbVxumQfFQayfLsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755282212; c=relaxed/relaxed;
-	bh=wyQuAg7wHg8xPlkwj5ueliqGmECn9lBdw6/y92GmRzc=;
+	t=1755283374; c=relaxed/relaxed;
+	bh=NFEat3zirg8C2/2oLxu6X/ZdyOC05vJhFKTQnZhl0cg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ex0CtGgAN7Nxl5S4RcovfPvjatxuboBps0wrhP5exhl+x5v/HHENR2rQh15NwFcN8FmSxsKQehlyFaidV4/ijBDLwlvus/i5gD9QGb/3rNbbXWRQgRauAyR8uu0Qj/PT5RX+wjN6n5KMOKpBheVHnLUQIvnrjkg5MV0g5J63KO+oy4XcZDzDGE+a12Rix/b8QVkdCU30V2b3aqpjk36F7msI+7egA3eDQDMTJnMX46K0b2vMVlBCVZ2ca6aY7cpWd/683SfMsl5wNSdOFyKrFiMd+0gLTu9qDKXploqxbqoPpiHn1NMZjI8ou7iODm4wqAsDIxaJWujUE3nZYOpGRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=n/45N6OG; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=EkeaTR2EePkOXP23cMjRrn9XSGBYlILm3Y7JhdvuGJmYWbt0ESUyri4la1Wl8LD2pWQNW3tGV5tGZnMRGTLqAVgZZitekkJ7qcYYfvTPik+WpaD4YI/9P/PSh9Plv96A7oN9FOChof2nrXBC90mdLbEc5sIbpRkhV2TtaDG60j7vq28/avjJN8fsAX1UJgRQ24ZyhN58wChnldTdTLgarU8VVpn3VktyXr/jVyv7uZECouYJYCGo4MqRem323447RViHv7oF5CLN2SOexcFM1+J2yP6B9hy8PK0QTvYW9eZJx8djbv49SzI0Xg33TiT91+ZjKz16ZFemKj9nkNkqvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=GTeAPr8g; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=n/45N6OG;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=GTeAPr8g;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
 Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3Vq839xjz3cjQ
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 04:23:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3WFT1bY4z3cjQ
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 04:42:53 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
 	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
 	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=wyQuAg7wHg8xPlkwj5ueliqGmECn9lBdw6/y92GmRzc=; b=n/45N6OGRV3bCfvLHGn3LmHV8A
-	re3KLppUfb3uwkIiPx0oJBx9dNZAOBkoKFNLc7hUyVoOnpnuZ2/CtqrsdMTaCaGSAyhGbfcoo0sY9
-	p+7kT80BQe2dJCO3YnGoF66HMv1zgjCS4AlJE5FB/++t900OV+YgnCMRga4AkXxCkxbM=;
+	bh=NFEat3zirg8C2/2oLxu6X/ZdyOC05vJhFKTQnZhl0cg=; b=GTeAPr8gn7YNZKVQbSxG+bF1QA
+	CtBH83Hd9XObTUvCNk45wDj5dQNcibQ7ra2s4ipaVsEQqMj7iguXuby5CTgruIH7T60llxk4xKsQ5
+	+Nh+55C3QG53q0Kaj2eiMYJmqtcEyE5S+tvSg6m7oWR4pTBfDE7tNVHxQKRDffL+EBxI=;
 Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
 	(envelope-from <andrew@lunn.ch>)
-	id 1umz54-004qod-Ok; Fri, 15 Aug 2025 20:23:10 +0200
-Date: Fri, 15 Aug 2025 20:23:10 +0200
+	id 1umzNj-004qvW-Bo; Fri, 15 Aug 2025 20:42:27 +0200
+Date: Fri, 15 Aug 2025 20:42:27 +0200
 From: Andrew Lunn <andrew@lunn.ch>
 To: Jacky Chou <jacky_chou@aspeedtech.com>
 Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
@@ -58,11 +58,9 @@ Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
 	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
 	taoren@meta.com, bmc-sw2@aspeedtech.com
-Subject: Re: [net-next v2 4/4] net: ftgmac100: Add RGMII delay configuration
- for AST2600
-Message-ID: <d0948803-b1cb-4a8b-8c4d-55785d5ba39b@lunn.ch>
+Subject: Re: [net-next v2 0/4] Add AST2600 RGMII delay into ftgmac100
+Message-ID: <a9ef3c51-fe35-4949-a041-81af59314522@lunn.ch>
 References: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
- <20250813063301.338851-5-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -78,51 +76,21 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250813063301.338851-5-jacky_chou@aspeedtech.com>
+In-Reply-To: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
 
-On Wed, Aug 13, 2025 at 02:33:01PM +0800, Jacky Chou wrote:
-> In AST2600, the RGMII delay is configured in SCU register.
-> The MAC0/1 and the MAC2/3 on AST2600 have different delay unit with
-> their delay chain.
-> These MACs all have the 32 stage to configure delay chain.
->       |Delay Unit|Delay Stage|TX Edge Stage|RX Edge Stage|
-> ------+----------+-----------+-------------+-------------+
-> MAC0/1|     45 ps|        32 |           0 |           0 |
-> ------+----------+-----------+-------------+-------------+
-> MAC2/3|    250 ps|        32 |           0 |          26 |
-> ------+----------+-----------+-------------+-------------+
-> The RX edge stage of MAC2 and MAC3 are strating from 26.
+On Wed, Aug 13, 2025 at 02:32:57PM +0800, Jacky Chou wrote:
+> This patch series adds support for configuring RGMII internal delays for the 
+> Aspeed AST2600 FTGMAC100 Ethernet MACs.
 
-strating? 
+So i think you are doing things in the wrong order. You first need to
+sort out the mess of most, if not all, AST2600 have the wrong
+phy-mode, because the RGMII delay configuration is hidden, and set
+wrongly.
 
-> +static void ftgmac100_set_internal_delay(struct platform_device *pdev)
-> +{
-> +	struct device_node *np = pdev->dev.of_node;
-> +	struct regmap *scu;
-> +	u32 rgmii_tx_delay;
-> +	u32 rgmii_rx_delay;
-> +	int dly_mask;
-> +	int dly_reg;
-> +	int id;
-> +
-> +	if (!(of_device_is_compatible(np, "aspeed,ast2600-mac01") ||
-> +	      of_device_is_compatible(np, "aspeed,ast2600-mac23")))
-> +		return;
-> +
-> +	/* If lack one of them, do not configure anything */
-> +	if (of_property_read_u32(np, "tx-internal-delay-ps", &rgmii_tx_delay)) {
-> +		dev_warn(&pdev->dev, "failed to get tx-internal-delay-ps\n");
-> +		return;
-> +	}
-> +	if (of_property_read_u32(np, "rx-internal-delay-ps", &rgmii_rx_delay)) {
-> +		dev_warn(&pdev->dev, "failed to get tx-internal-delay-ps\n");
-> +		return;
-> +	}
+Please fix that first.
 
-If these properties are required, but are missing, the DT blob is
-broken. Please return -EINVAL, and fail the probe.
-
-Please make all errors in this function due to a bad DT blob fatal.
+Then consider how you can add fine tuning of the delays. Maybe that
+needs to wait for AST2700.
 
 	Andrew
 
