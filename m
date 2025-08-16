@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1993-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1994-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54F4ACA0EE6
-	for <linux-aspeed@archiver.kernel.org>; Sat, 16 Aug 2025 08:15:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FD1DCA0EE6
+	for <linux-aspeed@archiver.kernel.org>; Sat, 16 Aug 2025 08:16:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c3sGq2ZgGz3cmP;
-	Sat, 16 Aug 2025 18:15:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755332115;
-	cv=none; b=BEatECpf6SdzpedYTUCtZRBxzRwVk7BInyRSimA2y0JykjiNNUZQh/J9hAK7wtWFmj5QZGGEJ5d5CY3JSJSlRgwSIjWndz1wNXwoWsqsOfVC7WYQ3uTWhoBCgDdfEG/J4fo4lbpQVz48u73EC+KVRD41A7PTsyDtJipxoQcmlOe0KnqS+X/1Hb842ZJbBpKIKGhesYrDGB5YEFtVMXlHup2lIIGN15QloQV4+86xXcj84R8Z1pnOEcIBivHJUC600JbMEoVEMqlo52NKm1Pi04bxCzvq+Rb/aee05WbmkxYURSqdlaIFfrhjZX9KQYI7BjbjeZ0gBZDWaYc5r0YR/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c3sHx6rWTz3cmP;
+	Sat, 16 Aug 2025 18:16:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755332173;
+	cv=none; b=gSRMYnjH372sq5evpVFRJTkStF5USBdlgC+yf/i/H4b8RjLIR8WYxHjweqPIL6bIxNUFlLWejHlnRm6jLGc0NySAM41F1ujTgirzC6y76Z8RCfJ3xE2ZNxOUPPsgKHGEE/x6E3a4C6sD7b+Kj87cSjbodNt9FMQsp2lLhGqdM4LMzt6jgXo84UhNhamFWWlP8+ciy3pVnnqnfeQ1WLI+eS4cftn3JaxdImI2DKS1MSfSLT1xUwKi9ORj+HO3MBHznM8/U1JuZ8MnFgGwy6RfeR0ElE2IJGBqokqsDbAMtm9P7K+7a56MeITV+EoIzzFaCdEgB10BZIov8IzdkJHcwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755332115; c=relaxed/relaxed;
-	bh=oEZRhNobuQwT1clzqpxUc/7xS3MNE9Yta/+P3o9/YN0=;
+	t=1755332173; c=relaxed/relaxed;
+	bh=Noz5zABULx+A8HX0fjNJbVtGpLCVMZc/29ZzRsW84O0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=LdbRbMAYiA97uHwwgZyrDiae8WC2hS70IP8i22h5jn/E+1/dWd5N1H8LUtKTFqYnf60dbRERVjqzj5zVaPAUf7BGIWqYx1tXtSkhLDGpn1uc8MM16ZAzm5IiAPh1NUdl6qOFO8gJS5I3LxayJsV20NlpctPiS4i6KpNPUwojiMpCiqcsGgfSR69EgvXxkqvCgonZ9Ml7P8ken4S7VnxD1pEm22ryrxZMQxkIZ6Hm2cyP/54/ru5P1GRRk37lUZ9CfWdIejG6IZT/og/SmBu02Y+YdzktzKRV1jO2klsEkRY0vbNLx1HvX9wp8QW4timw9knoR+PLFUB6oyGDpV0I1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HtgHZh5S; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=BLepnJG0wpzSiyaWxKIACBDFA/ZFdV9xQPPKx4N++wlHwEaF/PQlx/5J+8XYm46R6INQOVJ9blBFgdTbbrwJ4oYlnfPxtS4kKIl5JXs/NDdow0C9Y9aedK5ma/4MxEMrxCGq6E0EzBMa23wSme0iLxDsywFnygsPGXME9F7Ax7dVRb1m3NhrCOjRYA+a0YfOL6SzVzetoH9wXp90XaFwyx9NwAwsdBmKiHOv+k2Bh0tJCwsyOGvfJm2ZmKMTQIh3yrdwT0TlBaXBUodo5/L3IvaP1AUPXi041aFXa5TuoBU4pXMLksWaQNeP5O4Qi9Eo3aeOXFl+K1Tgeqf5F8hwyw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hj9zd/Ju; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HtgHZh5S;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hj9zd/Ju;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3sGp3vfKz3clq
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 18:15:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3sHx13DWz3clq
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 18:16:13 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 00EA9601D7;
-	Sat, 16 Aug 2025 08:15:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD583C4CEEF;
-	Sat, 16 Aug 2025 08:15:08 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A386B4369F;
+	Sat, 16 Aug 2025 08:16:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C980C4CEEF;
+	Sat, 16 Aug 2025 08:16:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755332111;
-	bh=ZFhBY7xvjThXbN1xgDjZz544ykM0RfOlwLp1iy2FJOQ=;
+	s=k20201202; t=1755332170;
+	bh=utJlwuqc/A1sNC8kFSIRdaj1awrZfqBCEB+Y5jGV79k=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=HtgHZh5Scobix5jmRtucG3zsTvKYG8Irs0fiN0Dr1meO1Y5qqctzV8Fb7Ec21eQMf
-	 HsBr5ua0IvHq03x9BA+yAmHqz8dgd7JWu+EaKFYMkXdUWmCwXnUB+ynaK2wZCnukUt
-	 T+gNOTpBFeAy5if95dtQxR6kqeCVqd4kESEjghDLwBp7tNSlXzgBIsemy6WnRr2pMh
-	 ZZubk3Gnl3ixFr8w382R6yxGM2KDTyFG9qKtFoUsXdEgLFhf0ZjRjjE2MrefwwpGyw
-	 lriT1rr3MlZOMAfgyGs0t0/jDToo9My30s/ddR26etZRlCpweurcSK1Q5CSEKL0uQN
-	 508h5ZDumR+EQ==
-Message-ID: <271d4a9e-5ccd-42dd-9828-5d34fb2c0a11@kernel.org>
-Date: Sat, 16 Aug 2025 10:15:06 +0200
+	b=hj9zd/JuitkgVdg6a2/HFHrBXHr7kb/Jfa9USxSjQDIbRjFYBcq9dJ8XYAWN4Gx4E
+	 iTathIsnvoUZywZuap4M9SushC43AAg4TD2quq5LgC3V6qoODnHFljThboJPtPj4Ns
+	 /Jce15G0w4ApC9fjSiJ6gLvmqaxzvJZGRyv4yR6n6EtoVUo4GScMFcDee9r+YYD50J
+	 u1XxfshIrNjF/olp47XbJmP/hGStNpwgeaQh0YGC9YWW5LjFdZTpcMmcPcaN1Lg7eA
+	 klWtBL6PtIxK/DNLe6KXiNoZHhzX0i9iUYxVjG7rT3rpbKPP7TS5vHaFePp9zr5SAH
+	 MgGCsZ2VjHCUQ==
+Message-ID: <f1f7d028-0c8c-44b3-9f3b-0830e5571890@kernel.org>
+Date: Sat, 16 Aug 2025 10:16:06 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,7 +60,8 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/3] dt-bindings: arm: aspeed: Add Nvidia's mgx4u BMC
+Subject: Re: [PATCH 2/3] ARM: dts: aspeed: Add device tree includes for the
+ cx8 switchboard
 To: Marc Olberding <molberding@nvidia.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -68,7 +69,7 @@ To: Marc Olberding <molberding@nvidia.com>, Rob Herring <robh@kernel.org>,
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20250815-mgx4u_devicetree-v1-0-66db6fa5a7e4@nvidia.com>
- <20250815-mgx4u_devicetree-v1-1-66db6fa5a7e4@nvidia.com>
+ <20250815-mgx4u_devicetree-v1-2-66db6fa5a7e4@nvidia.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -114,19 +115,37 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20250815-mgx4u_devicetree-v1-1-66db6fa5a7e4@nvidia.com>
+In-Reply-To: <20250815-mgx4u_devicetree-v1-2-66db6fa5a7e4@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 15/08/2025 21:45, Marc Olberding wrote:
-> Adds a compatible string for Nvidia's mgx4u BMC board.
+> The mgx cx8 switchboard is used to network mgx GPUs
 > 
 > Signed-off-by: Marc Olberding <molberding@nvidia.com>
 > ---
->  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
->  1 file changed, 1 insertion(+)
+>  .../dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi    | 80 ++++++++++++++++++++++
+>  .../dts/aspeed/nvidia-mgx-cx8-switch-south.dtsi    | 80 ++++++++++++++++++++++
+>  2 files changed, 160 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi b/arch/arm/boot/dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi
+> new file mode 100644
+> index 0000000000000000000000000000000000000000..051c8cf0b7d12b1fa4c84db896ca480b21627e23
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi
+> @@ -0,0 +1,80 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
 
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Odd license. Since when GPL-3.0 is okay?
+
+> +
+> +eeprom@56 {
+> +	compatible = "atmel,24c128";
+> +	reg = <0x56>;
+> +};
+> +
+
+This is some completely misplaced DTSI style. Don't do this...
 
 Best regards,
 Krzysztof
