@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-1994-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-1995-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FD1DCA0EE6
-	for <linux-aspeed@archiver.kernel.org>; Sat, 16 Aug 2025 08:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6C91CA0EE6
+	for <linux-aspeed@archiver.kernel.org>; Sat, 16 Aug 2025 08:17:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c3sHx6rWTz3cmP;
-	Sat, 16 Aug 2025 18:16:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755332173;
-	cv=none; b=gSRMYnjH372sq5evpVFRJTkStF5USBdlgC+yf/i/H4b8RjLIR8WYxHjweqPIL6bIxNUFlLWejHlnRm6jLGc0NySAM41F1ujTgirzC6y76Z8RCfJ3xE2ZNxOUPPsgKHGEE/x6E3a4C6sD7b+Kj87cSjbodNt9FMQsp2lLhGqdM4LMzt6jgXo84UhNhamFWWlP8+ciy3pVnnqnfeQ1WLI+eS4cftn3JaxdImI2DKS1MSfSLT1xUwKi9ORj+HO3MBHznM8/U1JuZ8MnFgGwy6RfeR0ElE2IJGBqokqsDbAMtm9P7K+7a56MeITV+EoIzzFaCdEgB10BZIov8IzdkJHcwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c3sKt2bK7z3cmP;
+	Sat, 16 Aug 2025 18:17:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755332274;
+	cv=none; b=M45WM647fzO2XIxvP8tPUQf9o9mq7zSwSrYcGwsFKKYSlTliiaYUl+5IrZ9Wsgdx0eXYZnUpImd8TF1jLMWeSAISHCgTlhoN3u0RQKe+u1Gc74EkTy0n+konMsZnLF2Re2f5C3YnMTbB9jrkqz0MziS4ZYt5Of7lxuhkPwVbNLDxDk8+RyA0VlmZ5fezsQlXra6L5IacImlDf2hSvv+7p3hkeL6Y8X2iZzU3ynOAmG7PObp85++HV4jTm/kFaymS6bo13AxDdU7yYIVLtaIPCAoXTUYkAi4Ci4APzS47TXkloGphp0Xrj+t8jGH/7mJuVUobEQJetF/viMAB7tyJfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755332173; c=relaxed/relaxed;
-	bh=Noz5zABULx+A8HX0fjNJbVtGpLCVMZc/29ZzRsW84O0=;
+	t=1755332274; c=relaxed/relaxed;
+	bh=LCLW+N0+WhmOZ8Vs8rffq/hY58zFhL1RWdKRsiIoYJI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BLepnJG0wpzSiyaWxKIACBDFA/ZFdV9xQPPKx4N++wlHwEaF/PQlx/5J+8XYm46R6INQOVJ9blBFgdTbbrwJ4oYlnfPxtS4kKIl5JXs/NDdow0C9Y9aedK5ma/4MxEMrxCGq6E0EzBMa23wSme0iLxDsywFnygsPGXME9F7Ax7dVRb1m3NhrCOjRYA+a0YfOL6SzVzetoH9wXp90XaFwyx9NwAwsdBmKiHOv+k2Bh0tJCwsyOGvfJm2ZmKMTQIh3yrdwT0TlBaXBUodo5/L3IvaP1AUPXi041aFXa5TuoBU4pXMLksWaQNeP5O4Qi9Eo3aeOXFl+K1Tgeqf5F8hwyw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hj9zd/Ju; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=MlgSavEdnz+FM2fK6D2Abh9+bFZ1VBqmiXW/TAIv5atBgjrGWgTkZAtdMMb/8Sahg6dkvRpJtPIecJ2TwVb4h6kj+Is16iY3B6NXkwFsyQ2g82CXK9oWihkcah8YFeJA5/csh9+tabUYZ1O8d7Z79HE6yxumHB9RbN6tOA5i0xNNTPWvL8X6x5j2JAZxO/3I8TwSqZNPkxKRBMcWRgkzkzjAbtrVgvvmBOn6Dz7VFVfP7UftvSUJJtBJa67/fPjRIErtKCH8mLTBPkaZB0Zklbyo3mF006FoLfh2tsPA6/I8OeG0p+NlzlN4Ie2Wsgs1kiJkiadypOCXACvxxjDegQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RQ+K5Dz8; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hj9zd/Ju;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RQ+K5Dz8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3sHx13DWz3clq
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 18:16:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c3sKs3fMjz3clq
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 16 Aug 2025 18:17:53 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A386B4369F;
-	Sat, 16 Aug 2025 08:16:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C980C4CEEF;
-	Sat, 16 Aug 2025 08:16:07 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 0DCC15C3E76;
+	Sat, 16 Aug 2025 08:17:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 16DD4C4CEEF;
+	Sat, 16 Aug 2025 08:17:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755332170;
-	bh=utJlwuqc/A1sNC8kFSIRdaj1awrZfqBCEB+Y5jGV79k=;
+	s=k20201202; t=1755332270;
+	bh=dkxFSzv5jF+G3mSFmT1qV2yVSNHcZO+E82VDG6eatdA=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=hj9zd/JuitkgVdg6a2/HFHrBXHr7kb/Jfa9USxSjQDIbRjFYBcq9dJ8XYAWN4Gx4E
-	 iTathIsnvoUZywZuap4M9SushC43AAg4TD2quq5LgC3V6qoODnHFljThboJPtPj4Ns
-	 /Jce15G0w4ApC9fjSiJ6gLvmqaxzvJZGRyv4yR6n6EtoVUo4GScMFcDee9r+YYD50J
-	 u1XxfshIrNjF/olp47XbJmP/hGStNpwgeaQh0YGC9YWW5LjFdZTpcMmcPcaN1Lg7eA
-	 klWtBL6PtIxK/DNLe6KXiNoZHhzX0i9iUYxVjG7rT3rpbKPP7TS5vHaFePp9zr5SAH
-	 MgGCsZ2VjHCUQ==
-Message-ID: <f1f7d028-0c8c-44b3-9f3b-0830e5571890@kernel.org>
-Date: Sat, 16 Aug 2025 10:16:06 +0200
+	b=RQ+K5Dz8TMWd64i5J2al719z7VrWVfpV5Cy5JUC+hIjbSSXpxYjr6JBYPhuJROyau
+	 IbZF/9nEP1oXDfoBJe6Qizm6jzpaxLMib5jya7SRY7pG7hi/I0/CS4ltlpebnZCsvZ
+	 A37BAbfGPSOufeIea59aTNWqXBWSC7O0wP9btDxRMXI5qqVrgWZZWCJCRJm2i1j+4q
+	 6paWGXciBx92QvEiJFvK/SFHaVkbWEwmQq0SmglXvJcexNeGuoqPBNMO+fR+OMUfGS
+	 f0+yFqKfdLZq3OOOOEWM9kJY5Gz/rzlFBwWSzRS91CwpOWNUCwN+sw+oatSlVEdns1
+	 2Uq7boKEKG7jw==
+Message-ID: <533e305d-7659-4343-b2e8-ee40391bfa84@kernel.org>
+Date: Sat, 16 Aug 2025 10:17:46 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] ARM: dts: aspeed: Add device tree includes for the
- cx8 switchboard
+Subject: Re: [PATCH 3/3] ARM: dts: aspeed: Add device tree for mgx4u BMC
 To: Marc Olberding <molberding@nvidia.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -69,7 +68,7 @@ To: Marc Olberding <molberding@nvidia.com>, Rob Herring <robh@kernel.org>,
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
 References: <20250815-mgx4u_devicetree-v1-0-66db6fa5a7e4@nvidia.com>
- <20250815-mgx4u_devicetree-v1-2-66db6fa5a7e4@nvidia.com>
+ <20250815-mgx4u_devicetree-v1-3-66db6fa5a7e4@nvidia.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -115,37 +114,620 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20250815-mgx4u_devicetree-v1-2-66db6fa5a7e4@nvidia.com>
+In-Reply-To: <20250815-mgx4u_devicetree-v1-3-66db6fa5a7e4@nvidia.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 15/08/2025 21:45, Marc Olberding wrote:
-> The mgx cx8 switchboard is used to network mgx GPUs
-> 
-> Signed-off-by: Marc Olberding <molberding@nvidia.com>
-> ---
->  .../dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi    | 80 ++++++++++++++++++++++
->  .../dts/aspeed/nvidia-mgx-cx8-switch-south.dtsi    | 80 ++++++++++++++++++++++
->  2 files changed, 160 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi b/arch/arm/boot/dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi
-> new file mode 100644
-> index 0000000000000000000000000000000000000000..051c8cf0b7d12b1fa4c84db896ca480b21627e23
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/nvidia-mgx-cx8-switch-north.dtsi
-> @@ -0,0 +1,80 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-
-Odd license. Since when GPL-3.0 is okay?
-
+> +		i2c69 = &i2c9_mux_6;
+> +		i2c70 = &i2c9_mux_7;
+> +	};
 > +
-> +eeprom@56 {
-> +	compatible = "atmel,24c128";
-> +	reg = <0x56>;
+> +	chosen {
+> +		bootargs = "console=ttyS4,115200n8";
+
+No, use stdout.
+
+> +	};
+> +
+> +	memory@80000000 {
+> +		device_type = "memory";
+> +		reg = <0x80000000 0x80000000>;
+> +	};
+> +
+> +	reserved-memory {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +
+> +		gfx_memory: framebuffer {
+> +			size = <0x01000000>;
+> +			alignment = <0x01000000>;
+> +			compatible = "shared-dma-pool";
+> +			reusable;
+> +		};
+> +
+> +		video_engine_memory: jpegbuffer {
+> +			size = <0x02000000>;	/* 32M */
+> +			alignment = <0x01000000>;
+> +			compatible = "shared-dma-pool";
+> +			reusable;
+> +		};
+> +	};
 > +};
 > +
+> +&ehci1 {
+> +	status = "okay";
+> +};
+> +
+> +&emmc_controller {
+> +	status = "okay";
+> +};
+> +
+> +&emmc {
+> +	non-removable;
+> +	bus-width = <4>;
+> +	max-frequency = <100000000>;
+> +	clk-phase-mmc-hs200 = <9>, <225>;
+> +};
+> +
+> +&fmc {
+> +	status = "okay";
+> +
+> +	flash@0 {
+> +		status = "okay";
+> +		m25p,fast-read;
+> +		label = "bmc";
+> +		spi-rx-bus-width = <4>;
+> +		spi-tx-bus-width = <4>;
+> +		spi-max-frequency = <50000000>;
+> +#include "openbmc-flash-layout-128.dtsi"
+> +	};
+> +};
+> +
+> +&gfx {
+> +	memory-region = <&gfx_memory>;
+> +	status = "okay";
+> +};
+> +
+> +&gpio0 {
+> +	gpio-line-names =
+> +	/*A0-A7*/ "","","","","","","","",
+> +	/*B0-B7*/ "","","","","","","","RST_BMC_8211F_N",
+> +	/*C0-C7*/ "","","","","","","","",
+> +	/*D0-D7*/ "","","","","","","","",
+> +	/*E0-E7*/ "","","","","","","","",
+> +	/*F0-F7*/ "","RST_BIOSROM_1_BMC_N","","RST_SPI_PFRM1_R_N","","","SPI_BIOS_MUX_SEL","",
+> +	/*G0-G7*/ "","","","","","","","",
+> +	/*H0-H7*/ "","","","","","","","",
+> +	/*I0-I7*/ "","","","","","","","",
+> +	/*J0-J7*/ "","","","","","","","",
+> +	/*K0-K7*/ "","","","","","","","",
+> +	/*L0-L7*/ "","","","","","","","",
+> +	/*M0-M7*/ "","","","","","","","",
+> +	/*N0-N7*/ "","","","","","","","",
+> +	/*O0-O7*/ "","","","","","","","",
+> +	/*P0-P7*/ "","","","","","","","",
+> +	/*Q0-Q7*/ "","","","","","","","",
+> +	/*R0-R7*/ "","","","","","","","",
+> +	/*S0-S7*/ "","","","","","","","",
+> +	/*T0-T7*/ "","","","","","","","",
+> +	/*U0-U7*/ "","","","","","","","",
+> +	/*V0-V7*/ "","","SCM_HPM_STBY_RST_N","","SCM_HPM_STBY_EN","","","",
+> +	/*W0-W7*/ "","","","","","","","",
+> +	/*X0-X7*/ "","","","","","","","",
+> +	/*Y0-Y7*/ "","","","","","","","",
+> +	/*Z0-Z7*/ "","","","","","","","";
+> +	status = "okay";
+> +};
+> +
+> +&gpio1 {
+> +	gpio-line-names =
+> +	/*18A0-18A7*/ "","","","","","","","",
+> +	/*18B0-18B7*/ "","","","","SW_MAIN_EN","HOST_GLOBAL_WP_N","","",
+> +	/*18C0-18C7*/ "","","","","","","","",
+> +	/*18D0-18D7*/ "","","","","","","","",
+> +	/*18E0-18E3*/ "","","","";
+> +	status = "okay";
+> +};
+> +
+> +&i2c0 {
+> +	status = "okay";
+> +
+> +	i2c-mux@73 {
+> +		compatible = "nxp,pca9548";
+> +		reg = <0x73>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		i2c0_mux_0: i2c@0 {
+> +			reg = <0>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_mux_1: i2c@1 {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			reg = <1>;
+> +		};
+> +
+> +		i2c0_mux_2: i2c@2 {
+> +			reg = <2>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_mux_3: i2c@3 {
+> +			reg = <3>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			eeprom@51 {
+> +				compatible = "atmel,24c02";
+> +				reg = <0x51>;
+> +			};
+> +		};
+> +
+> +		i2c0_mux_4: i2c@4 {
+> +			reg = <4>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_mux_5: i2c@5 {
+> +			reg = <5>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_mux_6: i2c@6 {
+> +			reg = <6>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			tmp75@4c {
 
-This is some completely misplaced DTSI style. Don't do this...
+Node names should be generic. See also an explanation and list of
+examples (not exhaustive) in DT specification:
+https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+
+> +				compatible = "ti,tmp75";
+> +				reg = <0x4c>;
+> +			};
+> +		};
+> +
+> +		i2c0_mux_7: i2c@7 {
+> +			reg = <7>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +	};
+> +
+> +	i2c-mux@77 {
+> +		compatible = "nxp,pca9548";
+> +		reg = <0x77>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		i2c0_1_mux_0: i2c@0 {
+> +			reg = <0>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_1: i2c@1 {
+> +			reg = <1>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_2: i2c@2 {
+> +			reg = <2>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_3: i2c@3 {
+> +			reg = <3>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_4: i2c@4 {
+> +			reg = <4>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_5: i2c@5 {
+> +			reg = <5>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_6: i2c@6 {
+> +			reg = <6>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c0_1_mux_7: i2c@7 {
+> +			reg = <7>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c3 {
+> +	status = "okay";
+> +
+> +	i2c-mux@72 {
+> +		compatible = "nxp,pca9548";
+> +		reg = <0x72>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		i2c3_mux_6: i2c@6 {
+> +			reg = <6>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c3_mux_7: i2c@7 {
+> +			reg = <7>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c4 {
+> +	status = "okay";
+> +};
+> +
+> +&i2c5 {
+> +	status = "okay";
+> +
+> +	i2c-mux@77 {
+> +		compatible = "nxp,pca9548";
+> +		reg = <0x77>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		i2c5_mux_0: i2c@0 {
+> +			reg = <0>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_1: i2c@1 {
+> +			reg = <1>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_2: i2c@2 {
+> +			reg = <2>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_3: i2c@3 {
+> +			reg = <3>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_4: i2c@4 {
+> +			reg = <4>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_5: i2c@5 {
+> +			reg = <5>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_6: i2c@6 {
+> +			reg = <6>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c5_mux_7: i2c@7 {
+> +			reg = <7>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c6 {
+> +	status = "okay";
+> +
+> +	i2c-mux@70 {
+> +		reg = <0x70>;
+> +		compatible = "nxp,pca9548";
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		i2c-mux-idle-disconnect;
+> +
+> +		i2c6_mux_0: i2c@0 {
+> +			reg = <0>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			tmp75@4a {
+> +				compatible = "ti,tmp75";
+> +				reg = <0x4a>;
+> +			};
+> +
+> +			tmp75@4b {
+> +				compatible = "ti,tmp75";
+> +				reg = <0x4b>;
+> +			};
+> +
+> +			eeprom@51 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x51>;
+> +				pagesize = <32>;
+> +			};
+> +		};
+> +
+> +		i2c6_mux_1: i2c@1 {
+> +			reg = <1>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			/*fan controller 0*/
+> +			max31790@20 {
+> +				compatible = "maxim,max31790";
+> +				reg = <0x20>;
+> +			};
+> +
+> +			/*fan controller 1*/
+> +			max31790@21 {
+> +				compatible = "maxim,max31790";
+> +				reg = <0x21>;
+> +			};
+> +
+> +			eeprom@57 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x57>;
+> +				pagesize = <32>;
+> +			};
+> +
+> +			hpmfanio: pca9555@27 {
+
+Node names should be generic. See also an explanation and list of
+examples (not exhaustive) in DT specification:
+https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+
+
+> +				compatible = "nxp,pca9555";
+> +				reg = <0x27>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
+> +				interrupt-controller;
+> +				#interrupt-cells = <2>;
+> +				interrupt-parent = <&gpio0>;
+> +				interrupts = <11 0>;
+> +				gpio-line-names =
+> +						"HPM_FAN1_INSTALL", "HPM_FAN2_INSTALL",
+> +						"HPM_FAN3_INSTALL", "HPM_FAN4_INSTALL",
+> +						"HPM_FAN5_INSTALL", "",
+> +						"","";
+> +			};
+> +		 };
+> +
+> +		 i2c6_mux_2: i2c@2 {
+> +			reg = <2>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		 };
+> +
+> +		 i2c6_mux_3: i2c@3 {
+> +			reg = <3>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			/* 4056 fan board_EEPROM*/
+> +			eeprom@57 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x57>;
+> +				pagesize = <32>;
+> +			};
+> +
+> +			/*fan controller 0*/
+> +			max31790@20 {
+> +				compatible = "maxim,max31790";
+> +				reg = <0x20>;
+> +			};
+> +			/*fan controller 1*/
+> +			max31790@21 {
+> +				compatible = "maxim,max31790";
+> +				reg = <0x21>;
+> +			};
+> +
+> +			gpufanio: pca9555@27 {
+> +				compatible = "nxp,pca9555";
+> +				reg = <0x27>;
+> +				gpio-controller;
+> +				#gpio-cells = <2>;
+> +				interrupt-controller;
+> +				#interrupt-cells = <2>;
+> +				interrupt-parent = <&gpio0>;
+> +				interrupts = <11 0>;
+> +				gpio-line-names =
+> +						"GPU_FAN1_INSTALL", "GPU_FAN2_INSTALL",
+> +						"GPU_FAN3_INSTALL", "GPU_FAN4_INSTALL",
+> +						"GPU_FAN5_INSTALL", "",
+> +						"","";
+> +			};
+> +		 };
+> +
+> +		i2c6_mux_4: i2c@4 {
+> +			reg = <4>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			/* IO board EEPROM*/
+> +			eeprom@57 {
+> +				compatible = "atmel,24c64";
+> +				reg = <0x57>;
+> +				pagesize = <32>;
+> +			};
+> +		};
+> +
+> +		i2c6_mux_5: i2c@5 {
+> +			reg = <5>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c6_mux_6: i2c@6 {
+> +			reg = <6>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c6_mux_7: i2c@7 {
+> +			reg = <7>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +	};
+> +};
+> +
+> +&i2c7 {
+> +	multi-master;
+> +	status = "okay";
+> +
+> +	i2c-mux@70 {
+> +		compatible = "nxp,pca9548";
+> +		reg = <0x70>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		i2c7_mux_0: i2c@0 {
+> +			reg = <0>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c7_mux_1: i2c@1 {
+> +			reg = <1>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			i2c-mux@71 {
+> +				compatible = "nxp,pca9545";
+> +				reg = <0x71>;
+> +				#address-cells = <1>;
+> +				#size-cells = <0>;
+> +
+> +				i2c7_1_mux_0: i2c@0 {
+> +					reg = <0>;
+> +					#address-cells = <1>;
+> +					#size-cells = <0>;
+> +				};
+> +
+> +				i2c7_1_mux_1: i2c@1 {
+> +					reg = <1>;
+> +					#address-cells = <1>;
+> +					#size-cells = <0>;
+> +
+> +					eeprom@55 {
+> +						compatible = "atmel,24c64";
+> +						reg = <0x55>;
+> +						pagesize = <32>;
+> +					};
+> +
+> +					eeprom@50 {
+> +						compatible = "atmel,24c02";
+> +						reg = <0x50>;
+> +						pagesize = <32>;
+> +					};
+> +
+> +					eeprom@53 {
+> +						compatible = "atmel,24c02";
+> +						reg = <0x53>;
+> +						pagesize = <32>;
+> +					};
+> +				};
+> +
+> +				i2c7_1_mux_2: i2c@2 {
+> +					reg = <2>;
+> +					#address-cells = <1>;
+> +					#size-cells = <0>;
+> +				};
+> +
+> +				i2c7_1_mux_3: i2c@3 {
+> +					reg = <3>;
+> +					#address-cells = <1>;
+> +					#size-cells = <0>;
+> +				};
+> +			};
+> +		};
+> +
+> +		i2c7_mux_2: i2c@2 {
+> +			reg = <2>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +		};
+> +
+> +		i2c7_mux_3: i2c@3 {
+> +			reg = <3>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			/* XDPE19284B - CPU0 PVCCIN VR */
+> +			xdpe152c4@60 {
+> +				compatible = "infineon,xdpe152c4";
+> +				reg = <0x60>;
+> +			};
+> +
+> +			/* XDPE19284B - CPU0 PVCCFA EHV FIVRA / PVCCINF_VR*/
+> +			xdpe152c4@62 {
+> +				compatible = "infineon,xdpe152c4";
+> +				reg = <0x62>;
+> +			};
+> +
+> +			/* XDPE19284B - CPU0 PVCCA EHV PVCCIN VR */
+> +			xdpe152c4@74 {
+> +				compatible = "infineon,xdpe152c4";
+> +				reg = <0x74>;
+> +			};
+> +
+> +			/* XDPE19284B - CPU0 PVVCCD0 & D1 VR */
+> +			xdpe152c4@76 {
+> +				compatible = "infineon,xdpe152c4";
+> +				reg = <0x76>;
+> +			};
+> +		};
+> +
+> +		i2c7_mux_4: i2c@4 {
+> +			reg = <4>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			/* XDPE19284B - CPU1 PVCCIN VR */
+> +			xdpe152c4@60 {
+
+Node names should be generic. See also an explanation and list of
+examples (not exhaustive) in DT specification:
+https://devicetree-specification.readthedocs.io/en/latest/chapter2-devicetree-basics.html#generic-names-recommendation
+
+
+
 
 Best regards,
 Krzysztof
