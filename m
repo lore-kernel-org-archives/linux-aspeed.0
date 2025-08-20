@@ -1,72 +1,179 @@
-Return-Path: <linux-aspeed+bounces-2006-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2007-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA35FCA0EE4
-	for <linux-aspeed@archiver.kernel.org>; Wed, 20 Aug 2025 19:40:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97347CA0EDC
+	for <linux-aspeed@archiver.kernel.org>; Wed, 20 Aug 2025 23:51:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c6cHb6jh1z300M;
-	Thu, 21 Aug 2025 05:40:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755718827;
-	cv=none; b=dWfM9KfLSO/GmsswfmAmQtEljeNt556/r7pScYlexbfeUvTx300o3WjMzMv2dC5QwlVJaAWmbF3ohlpb3JuYHR6XDAIjut/RdnazFvezKEgXhvN98T2ZSdg03rC+ByOnsCv0oRxwnz5bn0IKnS1ShtKCFXC9NN8HVPVGZ/IQuBWttVEK08wlh4CyBIJ4UTVUKK0c1gZMNgUwbNxUyKcHWjU+MTDOTcmiOzcA9S/74weCcEPjkIGmQlEN3gcNoO/2Ull7xWeOSSuuvWc4F4t756cQzt9ra2AJUPvmEs2GTW1Prw3r+koThP1Nh91WbKRpjZlNokmsXWwCP/6Ap/z/eQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755718827; c=relaxed/relaxed;
-	bh=9/KVphgfiv6IwABh1dktxL7uQw8uHuB00Gx8L/er2GQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=S3HIxUB3zok9cU/wbu4Zl0uKRUO4SiZbZ4KdXaacrO2/LCVeekKx79s1P3cTVEVy1Xpf1TJVIqmHuOtGxzeOb0tNF6t8V4VPuYrlPfj6haNJ4lmakrXYX7YFytlDEwz0Ne3DD0cChjJjM6mQ4G9940X92kZDgxgVZ6nqQ9NuW5gc5fwzusFNVjw4EpEqVKxrPRSH9Ko71LrfMYQN43hzkosMLcVlATWJlVG2VkHijxTqmMv2YiMrLI142BU4MjDtbOcQmZtTDPW3QnO2D01TQNBwMpoK1f8tPVvwKFV7ESCrfrpnmeRiwTwy7TOfcNFBQ7l83aQR4MSDGoXGL4kDvw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i6mqZjP1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c6jrx0Wtjz30Lt;
+	Thu, 21 Aug 2025 09:51:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755670217;
+	cv=pass; b=F2xFcpsb8Rvb9pcsJFLxSP60KJ5QXR08k9rJeWhSbTXrPTxgaLXY+GxRVB3gbELk2k/LM0XfBQsYfh6nq9g2gvhLOAWAGVpai5ndIFOTvHXmtQ70Or23G+DuWd8fI0AtwpcaIHA06SN5m4I5quH0ErGbA/Z4UgocRZtseH0SZ0FlVGKBtQWhDICW2DxZ4TEmGk6FOxG+WVgOyRF8b9p++EliHjOCzxFxe+klqiZ60WLVl0Zw3edM421ThbOur+JVNJ1bd1hEAb+yfcanwodbXNKoI9xwLflc9jVP1sjZCTn01FxO/1jl3OapQwfydPD6KqpdBXauEl7a9yGdVb5vBQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1755670217; c=relaxed/relaxed;
+	bh=at9y02Lkcrf0VB1KZz5M/EOAHKvQogiza8ydbN8SURA=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=MUYYzs35cZPVSzpx9UaXQHMLRP7FGBTRrZ5rxAbHR42+/NzlRkHsT2EEG3R/49I96T1usECYyc19Cvo9lBMtiBesbUnQUxg5iEuXqbWalCtaUehpkARzAByqyoMhb1D6BWHI5ayPW4yuUg5BfQdW1sGLngIDOfvEfqZf/pEwiufLi5KLSMnE585grNohLlhfd849Gv8NNNmG1soquZKcZYU5/r0lPy1m/tSzsHiflqsGXazCOV+1O6Qu/58ni6oPfv7k9D4+PikA3JfUBKX+xeQqsY4AOheAjj2b66sTfDYzg8KdgYdPhHY0Xbx/W/YGtUUIjiXCzHswLrb755XYNQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=IeyuL//f; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=i6mqZjP1;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=IeyuL//f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6cHZ5y1tz2yZ6
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 21 Aug 2025 05:40:26 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57KJPjAJ027437;
-	Wed, 20 Aug 2025 19:40:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=9/KVph
-	gfiv6IwABh1dktxL7uQw8uHuB00Gx8L/er2GQ=; b=i6mqZjP18rMHSwwBr6UgkT
-	Ty4StOalb2IsaGlX2Vg3iTEeu0++pOTX9NJa8Fp7T1h1tT6bFopii2N6Id86/kb2
-	hqJrePPREFpQC9hv/dzTv0vIJ+/PHwZw/qghsUHHhEa3Z86I2+eXxDgYZjCidZqf
-	ePWdrB1aREks7Bx1iW0sdjmyMUwDko1RKKPnt7+9lMgPXegztGXwBtFimBG5H7lC
-	zYvL27J/Qi+g0O7oZQoTYY+yHWwlOdGn7/L5bo71r4Fv6mBf6lBp3kVMjUmjTtrn
-	pjXGeEatSEWxnMrW50Mu83eNbK9oWz/wMvwi0x4Mkq0tVARH8GwzNQsUBBqaPSPw
-	==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48n38vd01s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Aug 2025 19:40:17 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57KHUgte015619;
-	Wed, 20 Aug 2025 19:40:16 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 48my424wcm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Aug 2025 19:40:16 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57KJeGmV29491724
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 20 Aug 2025 19:40:16 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ECCB958043;
-	Wed, 20 Aug 2025 19:40:15 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9A19258059;
-	Wed, 20 Aug 2025 19:40:15 +0000 (GMT)
-Received: from [9.61.87.76] (unknown [9.61.87.76])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 20 Aug 2025 19:40:15 +0000 (GMT)
-Message-ID: <f366aedf-0231-43f1-8416-994ca4b91342@linux.ibm.com>
-Date: Wed, 20 Aug 2025 14:40:15 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6GJm2Tsxz2xQt
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 20 Aug 2025 16:10:16 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=m+ZoRXqUGcyigbgxRz/TZYLXQ7ad2hSEUIBaG8AxFBf/FCd3O8MZrhSuGbsOfLfNvA42YMiG76XJZiZ0PSD3h9KjhBdgSFpLXtc+LgDs3J+0pxeR+RqvSOFuq8k7jvO8mxgFB8PBJJXqCrjo+MvLaBXM63pub2HGjxoWhICA67vNcs61T5nNrNFXtA8hq/DeShbIgO3rhtU7WNXL6gzKgwa/wPypxU8TlW2ydk78PIS+BkXwG5RzRjRMsFMJ8RDnb7s0mc01YGvv8cP5+dQoaHLBOOU9wvezlY8DxvuYqBqOIFkpHVNl/dtjPbCyQo/F6htA7B8qKQSx2Os2d4ARxg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=at9y02Lkcrf0VB1KZz5M/EOAHKvQogiza8ydbN8SURA=;
+ b=Z1rTCQqhkwuZxZDaqXzpJB5iHsmZbif4tb9uEf79iZW52eDl0Nrc0CbVDjTjDAm9lXgv/yNcz8ulU5tXXvE4H9Wk8PrGoUyWV5GrzEPShE0qKDv1fHRp0FavesJPaR5ZOEqQQWN19ICzq5awP/BXLlPuTR0lXUSacwGdfgrg4kPNbscQq2VwZ4mng9iTLhTL5BaV1k+ZMRRfnG5LoiO80QB/fOG3iYVmdUwBV82EYEGMOZkIDWABFlVLtUEtQsQIEIzJyaV7SAAXBHFnkkalRMhAzpGWwnLWUM7qlOQ3/si8l4K3NyQUK9qIBcumeHgyEXRvhmdNhUqyocJyx0Ofgw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=at9y02Lkcrf0VB1KZz5M/EOAHKvQogiza8ydbN8SURA=;
+ b=IeyuL//fvyIaqHvirkUBl1k17cWIoZGbzMxR2ZAmd7O58ZB/5y9TMo2DfN5HgeUda8m2aOoRTmHaR4/CAzPPoxsmeB/5kaPevwpkmgdg7OX7w1sJPTHzv0sPHls/ILPU8TO7hjpVMMTs/eETd1gr6DKP41Kpc2pnOX3xM2NGH5tFDyd/oC4wLWAzrBzf8dqXeYkGHguEx0OhnSKzBQMWmoEj+jVF5fbUHpaz5jzJTQgnpCGqz80i14qiCgbZKi85aWqKIhn2YEoPImKIIrFRghKHCrXed5RiTF7x42Gkps5J+OUZ7Zr6HY0dtFysqG91h0iJ4buiBV0WTYsqbKjRwA==
+Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
+ by TYZPR06MB6403.apcprd06.prod.outlook.com (2603:1096:400:428::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9031.24; Wed, 20 Aug
+ 2025 06:09:51 +0000
+Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
+ ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
+ ([fe80::6b58:6014:be6e:2f28%7]) with mapi id 15.20.9052.012; Wed, 20 Aug 2025
+ 06:09:51 +0000
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+To: Andrew Lunn <andrew@lunn.ch>
+CC: Andrew Lunn <andrew+netdev@lunn.ch>, "David S . Miller"
+	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@codeconstruct.com.au>, Simon Horman <horms@kernel.org>, Heiner
+ Kallweit <hkallweit1@gmail.com>, =?utf-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?=
+	<u.kleine-koenig@baylibre.com>, Po-Yu Chuang <ratbert@faraday-tech.com>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "taoren@meta.com" <taoren@meta.com>
+Subject:
+ =?utf-8?B?5Zue6KaGOiDlm57opoY6IFtuZXQtbmV4dCB2MiAwLzRdIEFkZCBBU1QyNjAw?=
+ =?utf-8?Q?_RGMII_delay_into_ftgmac100?=
+Thread-Topic:
+ =?utf-8?B?5Zue6KaGOiBbbmV0LW5leHQgdjIgMC80XSBBZGQgQVNUMjYwMCBSR01JSSBk?=
+ =?utf-8?Q?elay_into_ftgmac100?=
+Thread-Index: AQHcDhRZKIdVUppPdkiWsIaFr0P96LRqtipggAAmHgCAADjcgA==
+Date: Wed, 20 Aug 2025 06:09:51 +0000
+Message-ID:
+ <SEYPR06MB5134C67403A80C14797F8F859D33A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+References: <20250813063301.338851-1-jacky_chou@aspeedtech.com>
+ <a9ef3c51-fe35-4949-a041-81af59314522@lunn.ch>
+ <SEYPR06MB513431EE31303E834E05704B9D33A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <3966765c-876e-4433-9c82-8d89c6910490@lunn.ch>
+In-Reply-To: <3966765c-876e-4433-9c82-8d89c6910490@lunn.ch>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|TYZPR06MB6403:EE_
+x-ms-office365-filtering-correlation-id: 569efc63-71b6-4a48-feca-08dddfb02c99
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|7416014|376014|366016|38070700018;
+x-microsoft-antispam-message-info:
+ =?utf-8?B?VXg5c3pBMzJxaXh4NEh3SmprMDV5eHozcStVanFCTW5QakFlWFR4NEkyUjBj?=
+ =?utf-8?B?TTBKdU1zbDZEQzBmOTVvZE91ZlRTMGM3VGllU0kvT0FCcmxPTmRoRXVPOWxV?=
+ =?utf-8?B?cTl6ZXRlYjVkL1loRWJhbHJNR3BpWThGZ0RydGwxcU14N21YMVgzTHNUWnJJ?=
+ =?utf-8?B?ZXIrR0l2NzdnUkVOTDRXQmMrNFpKRDRyRS9LTXhNS05hbTJVUUpONTFUd1pT?=
+ =?utf-8?B?WVp5UThvck5pYXM4MjZQQmpsTE1ESXdLTWJlejRvL0FqbjlaLy81dno0MHBk?=
+ =?utf-8?B?T0xCN2d4bS95SWVGRnNUczZ4b3Z2NGlUd01DK1BZdkMvNUlCd2dDdTVqNGVU?=
+ =?utf-8?B?cC9tODgwcDBZa0NhUkkvK0lUajhJZFZpUlJYdnllZU04NnJtaU85WVNkdktM?=
+ =?utf-8?B?MGloNjU0WG1QV0RUcXE4MXkxTlBoRWNZYzlWVEczNWdTOTZzS1NES1BvOFgy?=
+ =?utf-8?B?SEtZc25vMm14eWxzMG5TZEMvTVYrdkpXREs4TlNVb2Q3NktTTStWQkVTOEsv?=
+ =?utf-8?B?Q29SdHdxRkNZNkdLRHp4ZTc2Y2h2Q1ZMakNIT0JRUGpYM2lkVFJ4VXNUSllM?=
+ =?utf-8?B?Y1QxcWJUVVppcThaWFdoa1hFM2dhM3c5amxkTk9tcU42bm91MjlGNGJFeXds?=
+ =?utf-8?B?VlV1a1BhaWtzNm1yazAyanRBcGE2Wm93a2k4UUswS0ErYXpVR3RHTUR0Rzdn?=
+ =?utf-8?B?N0gwb3hneHVJTnBqbTlETi9rUlhjWEdSU2srbHh6MVdScHY4dDN3aTkzV2pX?=
+ =?utf-8?B?bjY0VUJybStSbmhwbFV6TVE2NHZTOEdRSkNPMkUwQzIwNHBIRXhEdXE0UHg3?=
+ =?utf-8?B?NHNxdDhaZmJFNnRtT05DYkxPc2VIVWx2aGlucEdmeTZSSlE4cm14SmNUdHpI?=
+ =?utf-8?B?T0xnQ05JS2t0eVgrZ3oxS2lpTU16UTZvWmlnUGE1M0FmRGNLeitVSzBFY0JR?=
+ =?utf-8?B?MG1TeG1rbmN5QWkzd0JtVWp5Zkw3VlFWZkJpV2FLbnBHSmlXZWFjdHhwRGhF?=
+ =?utf-8?B?NnBCc2R4RmVnd1VqM0xTSXFuR2RGS2xlRWlnSkhXbytaK2FnR2ZSRHFsMUND?=
+ =?utf-8?B?YkNWQjhzWWQyZk0vVmdIaXZMTmkyYlBrMmZBRlZpa3BRb3ZweFhwVVBLeitt?=
+ =?utf-8?B?TXVFU1RSRFZTMjZwczFjMkdCZ3R6WFo1c00vZk1mMWZubkY1NjA2MWZqQzUz?=
+ =?utf-8?B?RXErV0hzRWVIZ1NGN1lBN2pvV3JZME1CRWIxaVo2MEMzeHRxaXJ3Wk5KSnVh?=
+ =?utf-8?B?d2ZVSmQrY0RoeStJNTRqcWRRcnhsOHdTZnVvaUp3blhrWGs0NlVnQ0lYTjJo?=
+ =?utf-8?B?eW56RGpmdmtTa3pmSmh0Sll2ak5EV2tOOVorUjI0cjFFWHFhQ0xhaUkwL2VD?=
+ =?utf-8?B?czl6UlNpMDljMm0vN3l6bk1aUjYxTER2VkZZZmg1U1pvOTlqd0l5UlU4aWt4?=
+ =?utf-8?B?UmpkUTgxcmVPNnJIT2U2SWtJOWJaditnd0wzZ2ZvWDFNQVdoejAzSzg3eWE0?=
+ =?utf-8?B?aGc0TWczM2gxVnVRV1VGQ2RVSnNKckF2RVl4L3VSeFR1Tnd4OFdjTTdWRWNa?=
+ =?utf-8?B?cE1nMUR5b2pqakIzOVBoeHJ5RWVjcDRVSEhnNDdDaDl6dklFYXNWUHFhRHdh?=
+ =?utf-8?B?ckdRcWpPUjhmaU1kQnh1ME1jVC9GVklrVGJ5K1ZNZ1k0dWtqYnlaMStia1JL?=
+ =?utf-8?B?Mlk5blg5anVTdnFBT1A5ZTZUWWxTKzFSYlAyRnB5eWdiUzViaTZ0dDJ2RFh3?=
+ =?utf-8?B?Zlp5ekZDd1Z5T0J0WVUrdXoxNDAzZUtvUnBHL1pHeDVmWERqNS81aGc0bGpm?=
+ =?utf-8?B?SjNXTlpGNW9udUZoS3FNejJhaEV4a2JSc0FOdUFTWjh5VHlqMWlyOGlrQXNt?=
+ =?utf-8?B?b2FXNk5QZEJYK2tpVmt2cmV3VDlzeHIzT011VzJyL0ZmZm9VaEFHV0RRdmhO?=
+ =?utf-8?B?ci9OYTBUb2YwM1prK2hVZkFJa0UxYzhTWWlicWNsc3Fub0o2dUtPWVVOZGg1?=
+ =?utf-8?B?RWQ1WkwyYVpnPT0=?=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(38070700018);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?Q0Jwd1d2anRFQ1ArVE93U0JleG1uQnZNaFRzc2hvSnJIVzhiMzY4eUl3aThX?=
+ =?utf-8?B?czVNcnR1ZEdaR3ArSnpuRUpyeWdrdzJENm1zSlhkRU1KaDI0aHNyN0dVMW9a?=
+ =?utf-8?B?SlBIUFdnRytyREZWSUhoQ2dPa1NhV1dKQjJFOVBlMkszRkhwVWE5QVFOTDhy?=
+ =?utf-8?B?WUxySFc0T2dYRVl0M3pYSVJVSmdsS290bWNaUUJOWU9qQXovV0lEWCtKM1ZU?=
+ =?utf-8?B?dTdZWmdOcFVldWhDVDVVQ2Ezdy9lRnl6VW5nV1JQNXUwNVpqS3ZXVHZqRG8z?=
+ =?utf-8?B?b0VGdndQaG5UcjBqUEw5RHQwaFc1b0VzbGZiMjFWaUh6bTgrSnQyc2FtK3R3?=
+ =?utf-8?B?a2NxNGJxWG81bDNablk3YzdZNEQrcGpmZGJRRmZXZDlxUzlqSVVUQmx0QmZ5?=
+ =?utf-8?B?WFNqSEVsUEJvQURuVmNESUVNa1BmbGxmV0Y4MTJ2V1VlRUpZck1Ndzc2aGFo?=
+ =?utf-8?B?SzgwTHltbDBFWjZTcS94eUNTdlRnak1RcDlLZW9sM3UxcDBsV1lkR3UzZ2ZG?=
+ =?utf-8?B?azh4eG5vMnNYdHRaM3M2ZXQwa1VHdDRSeFFsWUJ2NW5zSGI2T0ZHQlExZ21w?=
+ =?utf-8?B?ZXdhbWhvaFZiOUJOUWd1TGNUV2xwR3d1M0FpVk5McG1PeGd2K041YmlGRTlB?=
+ =?utf-8?B?Y21ZdFRjakNEZ1ByZWRmQmYzeGo5cnp1M3lTYmNUTUNpVzlMQWlCU1QrL2xu?=
+ =?utf-8?B?cTExd1B4REhRcmtVdEl5Y1JjSGNUWENzRHhpbHZPaW04Z2J4QlZadkpxRmE2?=
+ =?utf-8?B?YVlhTWZYeTIzYWtKRGhtZlRKcFZ4dkN5T1IzQUZWWjVBbkZpczVJRXNyNUEw?=
+ =?utf-8?B?dldBdUNqdzliVFZzc1NrV3FFQ2xTZkk3b1NubUhnMWg5Zy8yY2lVMlpEZHNF?=
+ =?utf-8?B?NUt6YzBQci9CZFBKZHlaSmN0T1FteE9MQzJrZVVkckFYaVlrUklnWCtEaUNa?=
+ =?utf-8?B?S0xtWE9VMGcvUGtMVjdlOE1ueFphdnVUcDZuTGdTUEtCaFN1NXBhN1JldmNU?=
+ =?utf-8?B?S1NGejN4RzJ3UzZNU1VnV3Fud1ZGK0phZjZLM3R6MHJXbVRjQlpDMmVZUnMw?=
+ =?utf-8?B?VSs0eENScVpiTndQRlNoNVA5cUFraitEZFhIVFRHSHpDYU1OQXFTV3NlRGYr?=
+ =?utf-8?B?RHpteUVONDNsekF5OGUxVGdRRjNXMURmOExSalg2NFNQWTJtYXd0andQT1Uz?=
+ =?utf-8?B?T2M0R1dUL21Tc0xVSXgwK01nZkQ3bXhmcEF4eHQzMWdhZlh1OVhqWERIbXdM?=
+ =?utf-8?B?K1hqb25xcHZkSkwyNGgrUHdsTjFzOHpMQVBlalR3cWFnajR0ejhFSHFWTnJM?=
+ =?utf-8?B?Ni9IM0F0THI5S1AwSjR0aGlYcXhQN1NCbFdjdUpsTXJuN3dRN1dYNXNZc0N3?=
+ =?utf-8?B?eTJwWVc5K21QbWhZZnFjS3FNQkM5Qm5SMDFwWTQ2OWVMR2YycWxMaERFYWwy?=
+ =?utf-8?B?SGtRRytUMEJNNmZIODJjRE1qWFBzUnpOTFBTNTR6aW1Nd1lGeTlGR0NpZllq?=
+ =?utf-8?B?R3QyUzFnMWhaNUVDbU5MeVkzMG1hTUY5Ty9FZmNRRExKVlQ0LzVBT0NaaFd1?=
+ =?utf-8?B?eGdQbWJ6bUdGUzQwYTMramZkaHNKMnBMVHB1RVkyWnJhaHdTUzk1SERnU2Jo?=
+ =?utf-8?B?T0ZEaGZSZG9IVjNYNFJ6b0RlTTVXVzFnRXhtL0IrR0RVMHY2elJVZytQeTV4?=
+ =?utf-8?B?OVlBdTc0ajdVdjB1NHc1ZkNjZjRSZDM2aXowd0pzazlQWU5Sb0FkcUVYRXgy?=
+ =?utf-8?B?bTVCS2NFMjFVWWxmdkVPb0tWNSs5a1NRQVNVMVZocVVnZHJDZUdlRkxabWNM?=
+ =?utf-8?B?REJmVVUxSTdkZm43VmlVVWxaWDNTclRyN3dQa0lra1MzRXJqL0tnVmtkeElr?=
+ =?utf-8?B?U0lVNEdHWnloTjJqcGV5WGJtbG1SRTFjdW9ZcC9xNURadzN4TU1KUzVUTnFG?=
+ =?utf-8?B?U0FLZm9uczJ3ZmFMQ2F3NVE4Y0dtWm5mV0VXTHc0c0dJb0IzWUpUWGhIY1k3?=
+ =?utf-8?B?dmRhVXAzYWNra2ljNzJMV2NCdER0YlJScjBGQlFhVGJCNDBycFQ1VGN1NGpI?=
+ =?utf-8?B?SmtyVVdoYXNkYmJPUFZLSGI2eWFvQVY2TXBZdU1DZVVwaS9ySEt3ejNpeVhP?=
+ =?utf-8?Q?G65zpP0mtmLtWSyhhcGB9mYHd?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,172 +187,34 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 0/4] ARM: dts: aspeed: Add Balcones system
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: linux-aspeed@lists.ozlabs.org, conor+dt@kernel.org,
-        devicetree@vger.kernel.org, andrew@codeconstruct.com.au,
-        krzk+dt@kernel.org
-References: <20250815194730.41695-1-eajames@linux.ibm.com>
- <175530106096.3523003.10423924922951806073.robh@kernel.org>
-Content-Language: en-US
-From: Eddie James <eajames@linux.ibm.com>
-In-Reply-To: <175530106096.3523003.10423924922951806073.robh@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE5MDIyMiBTYWx0ZWRfXxovrEBVRkjcE
- 6LrcuSAdP1xnLVrJMmnPHeG09rdK7TnLxHfbKc9AxNsGCE288WQTRsSBHDD4eeffsPUcKKSo+EW
- /a7zqJBqawkxaBsZRGDhkuvyPvBflSamIrJq0Jjxor0Ox5dpMVhDjQkDqjexr9OLWl109HtdvnF
- NWefepUmyUj6w5OxT07+auXe/UbKMYJeEkKbROEjSWWosFviiyyo7gclqL/ZWLEiumAWDrwfrM5
- 8G5tWWJxisyQiYZoHn6m4inlE/81l9ERH7EWevWJQH6xjUSSfg2v/+Y4Ygg3uBfjwm9feVFZn55
- okxUNZaMKXhFaXwW0pafvmFPOuJJBo6bO4oPmtsC8F9VSlLZai6HcEgDLUVh/hHO/FBzGdLfRUO
- 7EDowsrx7hPeYJK+8SvIEgIBb1cL7Q==
-X-Authority-Analysis: v=2.4 cv=PMlWOfqC c=1 sm=1 tr=0 ts=68a624a1 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=gEfo2CItAAAA:8 a=VnNF1IyMAAAA:8
- a=ii2Ap2AerDCMVg_UhdYA:9 a=QEXdDO2ut3YA:10 a=sptkURWiP4Gy88Gu7hUp:22
- a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: 1d5YrVc__SnDGy5PXZyIItfcX5WxeyY-
-X-Proofpoint-ORIG-GUID: 1d5YrVc__SnDGy5PXZyIItfcX5WxeyY-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-20_04,2025-08-20_03,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- lowpriorityscore=0 malwarescore=0 spamscore=0 phishscore=0 suspectscore=0
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2508110000
- definitions=main-2508190222
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 569efc63-71b6-4a48-feca-08dddfb02c99
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Aug 2025 06:09:51.1739
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: vy0/RNLbqEP/2l6s6ppZwHDqYzaIjsaHKCPJ3PRP3qs1pa/B56TiprxbxMgsSMunTnnNDcHSxIcDyKDcO3TiJdRos+yW3NN+bJdaU++Jwow=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB6403
 
-
-On 8/15/25 6:38 PM, Rob Herring (Arm) wrote:
-> On Fri, 15 Aug 2025 14:47:26 -0500, Eddie James wrote:
->> The Balcones system is similar to Bonnell but with a POWER11 processor.
->>
->> Changes since v3:
->>   - Add max31785 to the max31790 document instead of to trivial-devices
->>   - Fix minor formatting in dps310 document
->>
->> Changes since v2:
->>   - Fix a couple of incorrect i2c addresses
->>   - Document dps310 and max31785 properly
->>   - Drop the UCD binding documentation update, it's been fixed
->>
->> Changes since v1:
->>   - Add all the ucd9000 driver supported compatible strings
->>   - Fix node ordering in Balcones device tree
->>   - Improve commit message to explain addition of ibm-power11-dual.dtsi
->>
->> Eddie James (4):
->>    dt-bindings: arm: aspeed: add IBM Balcones board
->>    dt-bindings: iio: Add Infineon DPS310 sensor documentation
->>    dt-bindings: hwmon: Move max31785 compatibles to max31790 document
->>    ARM: dts: aspeed: Add Balcones system
->>
->>   .../bindings/arm/aspeed/aspeed.yaml           |   1 +
->>   .../devicetree/bindings/hwmon/max31785.txt    |  22 -
->>   .../bindings/hwmon/maxim,max31790.yaml        |   6 +-
->>   .../iio/pressure/infineon,dps310.yaml         |  44 +
->>   .../devicetree/bindings/trivial-devices.yaml  |   2 -
->>   MAINTAINERS                                   |   1 +
->>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
->>   .../dts/aspeed/aspeed-bmc-ibm-balcones.dts    | 609 ++++++++++++++
->>   .../arm/boot/dts/aspeed/ibm-power11-dual.dtsi | 779 ++++++++++++++++++
->>   .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 769 +----------------
->>   10 files changed, 1442 insertions(+), 792 deletions(-)
->>   delete mode 100644 Documentation/devicetree/bindings/hwmon/max31785.txt
->>   create mode 100644 Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
->>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
->>   create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
->>
->> --
->> 2.50.1
->>
->>
->>
-
-Andrew, are these warnings acceptable?
-
-
-Thanks,
-
-Eddie
-
-
->
-> My bot found new DTB warnings on the .dts files added or changed in this
-> series.
->
-> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-> are fixed by another series. Ultimately, it is up to the platform
-> maintainer whether these warnings are acceptable or not. No need to reply
-> unless the platform maintainer has comments.
->
-> If you already ran DT checks and didn't see these error(s), then
-> make sure dt-schema is up to date:
->
->    pip3 install dtschema --upgrade
->
->
-> This patch series was applied (using b4) to base:
->   Base: attempting to guess base-commit...
->   Base: tags/next-20250815 (exact match)
->
-> If this is not the correct base, please add 'base-commit' tag
-> (or use b4 which does this automatically)
->
-> New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250815194730.41695-1-eajames@linux.ibm.com:
->
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-witherspoon.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells', 'fan@0', 'fan@1', 'fan@2', 'fan@3' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: timer (arm,armv7-timer): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /sdram@1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: bus@1e600000 (aspeed,ast2600-ahbc): compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
-> 	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/display@1e6e6000: failed to match any schema with compatible: ['aspeed,ast2600-gfx', 'syscon']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: adc@1e6e9000 (aspeed,ast2600-adc0): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: adc@1e6e9100 (aspeed,ast2600-adc1): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: crypto@1e6fa000 (aspeed,ast2600-acry): 'aspeed,ahbc' does not match any of the regexes: '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: lpc@1e789000 (aspeed,ast2600-lpc-v2): reg-io-width: 4 is not of type 'object'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: lpc@1e789000 (aspeed,ast2600-lpc-v2): lpc-snoop@80: 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: sdc@1e740000 (aspeed,ast2600-sd-controller): sdhci@1e740100:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> 	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: sdc@1e740000 (aspeed,ast2600-sd-controller): sdhci@1e740200:compatible: ['aspeed,ast2600-sdhci', 'sdhci'] is too long
-> 	from schema $id: http://devicetree.org/schemas/mmc/aspeed,sdhci.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/sdc@1e740000/sdhci@1e740100: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/sdc@1e740000/sdhci@1e740200: failed to match any schema with compatible: ['aspeed,ast2600-sdhci', 'sdhci']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: pwm@52 (maxim,max31785a): '#address-cells', '#size-cells' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells', 'fan@0', 'fan@1', 'fan@2', 'fan@3' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /ahb/apb/dma-controller@1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells', 'fan@0', 'fan@1', 'fan@2', 'fan@3', 'fan@4', 'fan@5' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: /: failed to match any schema with compatible: ['ibm,bonnell-bmc', 'aspeed,ast2600']
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells', 'fan@0', 'fan@1', 'fan@2', 'fan@3', 'fan@4', 'fan@5' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells', 'fan@0', 'fan@1', 'fan@2', 'fan@3', 'fan@4', 'fan@5' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
-> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: max31785@52 (maxim,max31785a): '#address-cells', '#size-cells', 'fan@0', 'fan@1' do not match any of the regexes: '^fan-[0-9]+$', '^pinctrl-[0-9]+$'
-> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
->
->
->
->
->
->
+PiA+ID4gPiBUaGlzIHBhdGNoIHNlcmllcyBhZGRzIHN1cHBvcnQgZm9yIGNvbmZpZ3VyaW5nIFJH
+TUlJIGludGVybmFsDQo+ID4gPiA+IGRlbGF5cyBmb3IgdGhlIEFzcGVlZCBBU1QyNjAwIEZUR01B
+QzEwMCBFdGhlcm5ldCBNQUNzLg0KPiA+ID4NCj4gPiA+IFNvIGkgdGhpbmsgeW91IGFyZSBkb2lu
+ZyB0aGluZ3MgaW4gdGhlIHdyb25nIG9yZGVyLiBZb3UgZmlyc3QgbmVlZA0KPiA+ID4gdG8gc29y
+dCBvdXQgdGhlIG1lc3Mgb2YgbW9zdCwgaWYgbm90IGFsbCwgQVNUMjYwMCBoYXZlIHRoZSB3cm9u
+Zw0KPiA+ID4gcGh5LW1vZGUsIGJlY2F1c2UgdGhlIFJHTUlJIGRlbGF5IGNvbmZpZ3VyYXRpb24g
+aXMgaGlkZGVuLCBhbmQgc2V0DQo+IHdyb25nbHkuDQo+ID4gPg0KPiA+ID4gUGxlYXNlIGZpeCB0
+aGF0IGZpcnN0Lg0KPiA+ID4NCj4gPg0KPiA+IFRoZSBSR01JSSBkZWxheSBpcyBjb25maWd1cmVk
+IGluIFUtYm9vdCBzdGFnZSwgYW5kIGl0IGlzIG5vdCBjaGFuZ2VkDQo+ID4gd2hlbiBib290aW5n
+IHRvIExpbnV4LiBJIHdhbnQgdG8ga25vdyB3aGV0aGVyIHRoZSBmaXJzdCB0aGluZyB0bw0KPiA+
+IGNvcnJlY3QgaGVyZSBpcyB3aGV0aGVyIHRoZSBwaHktbW9kZSBpbiBhc3BlZWQtYXN0MjYwMC1l
+dmIuZHRzIGlzDQo+ID4gcmdtaWktaWQuIE91ciBBU1QyNjAwIEVWQiwgdGhlcmUgaXMgbm8gZGVs
+YXkgb24gYm9hcmQsIHNvLCBJIG5lZWQgdG8gY2hhbmdlDQo+ID4gdGhlIHBoeS1tb2RlIHRvICJy
+Z21paS1pZCIgdG8gbWVldCB0aGUgUkdNSUkgdXNhZ2UgZmlyc3Q/DQo+IA0KPiBJZiB0aGVyZSBp
+cyBubyBkZWxheSBvbiB0aGUgUENCLCB0aGVuIHBoeS1tb2RlIGlzICJyZ21paS1pZCIuDQo+IA0K
+DQpJIHdpbGwgc3VibWl0IGEgc2luZ2xlIHBhdGNoIHRvIGNvcnJlY3QgdGhlIHBoeS1tb2RlIHRv
+ICJyZ21paS1pZCIgaW4gb3VyIEVWQiBkdHMsDQphc3BlZWQtYXN0MjYwMC1ldmIuZHRzLg0KDQpU
+aGFua3MsDQpKYWNreQ0KDQo=
 
