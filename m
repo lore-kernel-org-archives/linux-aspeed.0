@@ -1,67 +1,62 @@
-Return-Path: <linux-aspeed+bounces-2078-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2079-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62939CA0FF9
-	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 23:04:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06BB3CA0FF9
+	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 23:05:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cDDPH5jr3z2yrq;
-	Sat, 30 Aug 2025 09:04:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756508691;
-	cv=none; b=J0HXnCavjzToAvbNySz0Aa02vXkgMi81CQquMfmkvzpTFzzOeSu3fgbZVwQPjzdKV3HI3ysrmxaydCiJBQcuxnf5B0JJ201zc8ajhcuoSvfU7AjPntIYOg50uzoU78LptQvfoyGwR9qtFGdF7t1gYhINC6dE1bvSTQYAR4hU1ntMoRX6v9pm/sppCZi4jYlrjypyAyXIStCCMm/47mCIikbQ1edMLCs+aMRDBAlM8z+DuQ+yt5EkBVc99ksIzMfHQ+hUJpaorLJ+flHLH51dKsBMI/4PRTFwAq3in+VgEabJ4c+SYeEaGVs3XQruZDIFpl2zBSP8vQkHii2BWPqukg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cDDPQ4lCtz2ytT;
+	Sat, 30 Aug 2025 09:04:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756508698;
+	cv=none; b=SO5ecTPgLCLhoxvTjNmYq/Z/PVTj4xCJr+f03d5i2gUlxwW5EdNd8BFn6bR2xxK0in+KAMf67HP9o3MxhFS7BV8OAFfce69WZcvKsk07ePSvAQWdv2T9UOO1YOJDlEHdJzRjliyOcVehLz6yxecyDdTRxgiW+PpdJSY8kBPjMfxZrd/dlec/Owp88+ILpd7Ieub2c3d9UptrSb4zvh8WINc5b6pg1LUhzHPhUaeeD0NSXxAyLugKWzGxlV6eteSLTYjkIMmJZ4fU1ulsfPWvCoWlU7Ev4h+JRb+sVUH2xj2P10vaj2JU2FJ7jDkRZyQbqkeJGA1f/UOyeFC0x+X14A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756508691; c=relaxed/relaxed;
-	bh=xkCZhodwr3RomP8vx5KfiL+DMYSIm6v8A61e1GuVIto=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mOf36arevDJ03GKF0jAJ5/H5MSohhNRzGEpEZBFCTa1OruGOkH/mye0zosIV+ICQrOURKRIjtDm+YU4FK8zVbGbFbaq4DtbnyakiRZupU4+m/VGDWCPKj5/Z8vJE93/bLmawrNSahp9G2NVtVZAegP8PHC689pzGJy/BNIaVpjupDti2nHc62REZbKT/9V4yCJud/8e6ftR6QzEp4I/wUoqySxdawO1rlHnG7dgm5VrOjOKi/f461l+e3NFi3Rn6B11tV+wp37CCzLJbLUzvsugqxEkZUIY+KI4AldycwGhO3ztKdp77cM9FiZ0F4clNPCAxnZhrh63jU7r3IXv+MQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n40IqzHf; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756508698; c=relaxed/relaxed;
+	bh=PclyMMgbbDGjur67rW5mJJ9OrsByZ4KCKPvr04JE9L8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eYRfTD24zz7BSXyMxllFbbuwkdkaQtx5DyiJZATzC6eMLhlp0Ui9SrGNlNhlonNN+VNAs9vr4QX/o5yKqjLY1oA94ouwI9b3qb2POjlyxyDdMpC8kDPDF7o0xsd+eaWb85kp2JYoA7pzwofwX/37U4J7O/KCZs8UhEbVpYJJdxGtIA4t1cU0A0Ud+Znq0dhvrHAVq5mqt0zTH7e3K3jY+v7Gw+W7H6XXj3rtnxgtsMDRqi2yE21zCSeSAdA/VWF9OAvqVnRFeIJDvDDTNmOqyC686YtnZqxhXL8diJapIlSBBlmS3VfdcGEVIqQVUy6wFBq1x1ElHJrY7mUb9/hP1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VQWJI8lu; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n40IqzHf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VQWJI8lu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDDPF5Zrsz2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 30 Aug 2025 09:04:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDDPQ05chz2xpn
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 30 Aug 2025 09:04:58 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7F1FE6014D;
-	Fri, 29 Aug 2025 23:04:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12622C4CEF0;
-	Fri, 29 Aug 2025 23:04:47 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E568543D9D;
+	Fri, 29 Aug 2025 23:04:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AA53C4CEF0;
+	Fri, 29 Aug 2025 23:04:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756508687;
-	bh=lVy0nGCp4W9LsUGnCrLcZC8nGhc9aZD0sfWzO1ugqb0=;
+	s=k20201202; t=1756508695;
+	bh=cKMacLufL0Sp3xKcp2iVoauAa71+tRMKOtJUQm7TvL8=;
 	h=From:To:Cc:Subject:Date:From;
-	b=n40IqzHf8NlGH+zlDQkwIjiMqxccwyPOgUi2Gb97TUhyJ0HxLOqJBAgDX/+Ruqrn2
-	 VGsGBVNI6hYorMB0LNfKslKl/xi6j1aEkFz5hRGbFm1MrZiPpLVNItHg7mVbW0Uuom
-	 yLXEkP8LY3BW/7XulqzHf4v6FbZy0xC4EHYRm0roxM3lCLz2QweX9EQVMczT6uTnXg
-	 IXL0w2yvzWfotuDdrbCoAYa3kw44y185fDNL3IbiY6+EDuqEwNL3xyOuZ9D+IXFzVQ
-	 wjvPjr8hfrAFVbxIiPjqDb13MgyUy2G318dovaYNXLWqU/hs5XByEtw7hU89n2o3/w
-	 V0EV0ZL8fXwhg==
+	b=VQWJI8lunJdXCat2wSxvf1PIhGKg4VXqvOMHKs1L/fyq2QteJo8FIXHCA0V85r81X
+	 GInwbhqCJ7F1ejqHbzMMDPfRLMCDQBt5nrV1kXSwXJMO3NZm0jlUYkc0P3kvn9MCm+
+	 9I3ebWWQQ3+rHdTZ/Mej30ZJHmGFag4zXBZyH9fN57IEnLjUHveG0GZ07vNxdjQiWh
+	 iqIaA8qgF1QFZNVmAj8hD+FNrllDuy590NmEFJUtO7xeedVW6S05LipOQ/tYgE/zFp
+	 lSTr1SIVMYbYdB+7hXc7liv+zIeomgASI4gTb6dNTxnTT5KcwSHrXVH3Lz5jkIy1hF
+	 6bDnrOTMNcB6Q==
 From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Joel Stanley <joel@jms.id.au>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
+To: Lee Jones <lee@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Lee Jones <lee@kernel.org>
-Cc: linux-aspeed@lists.ozlabs.org,
-	dri-devel@lists.freedesktop.org,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Andrew Jeffery <andrew@aj.id.au>,
 	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] dt-bindings: gpu: Convert aspeed,ast2400-gfx to DT schema
-Date: Fri, 29 Aug 2025 18:04:40 -0500
-Message-ID: <20250829230442.1495926-1-robh@kernel.org>
+Subject: [PATCH] dt-bindings: mfd: Convert aspeed,ast2400-p2a-ctrl to DT schema
+Date: Fri, 29 Aug 2025 18:04:49 -0500
+Message-ID: <20250829230450.1496151-1-robh@kernel.org>
 X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -78,167 +73,120 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Convert the ASpeed GFX Display Controller binding to DT schema format.
-There was a duplicate, incomplete binding in mfd which can be dropped.
+Convert the aspeed,ast2x00-p2a-ctrl binding to DT schema format. The schema
+is simple enough to just add it to the parent aspeed,ast2x00-scu binding.
 
 Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- .../bindings/gpu/aspeed,ast2400-gfx.yaml      | 58 +++++++++++++++++++
- .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 -------------
- .../devicetree/bindings/mfd/aspeed-gfx.txt    | 17 ------
- MAINTAINERS                                   |  2 +-
- 4 files changed, 59 insertions(+), 59 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
- delete mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
- delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 33 ++++++++++++-
+ .../bindings/misc/aspeed-p2a-ctrl.txt         | 46 -------------------
+ 2 files changed, 32 insertions(+), 47 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
 
-diff --git a/Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml b/Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
-new file mode 100644
-index 000000000000..77ec5ad10ac6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
-@@ -0,0 +1,58 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/gpu/aspeed,ast2400-gfx.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ASPEED GFX Display Controller
-+
-+maintainers:
-+  - Joel Stanley <joel@jms.id.au>
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - aspeed,ast2500-gfx
-+          - aspeed,ast2400-gfx
-+      - const: syscon
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  resets:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  memory-region:
-+    maxItems: 1
-+    description:
-+      a reserved-memory region to use for the framebuffer.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - clocks
-+  - resets
-+  - memory-region
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/aspeed-clock.h>
-+
-+    display@1e6e6000 {
-+        compatible = "aspeed,ast2500-gfx", "syscon";
-+        reg = <0x1e6e6000 0x1000>;
-+        clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
-+        resets = <&syscon ASPEED_RESET_CRT1>;
-+        interrupts = <0x19>;
-+        memory-region = <&gfx_memory>;
-+    };
-diff --git a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-deleted file mode 100644
-index 958bdf962339..000000000000
---- a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-+++ /dev/null
-@@ -1,41 +0,0 @@
--Device tree configuration for the GFX display device on the ASPEED SoCs
--
--Required properties:
--  - compatible
--    * Must be one of the following:
--      + aspeed,ast2500-gfx
--      + aspeed,ast2400-gfx
--    * In addition, the ASPEED pinctrl bindings require the 'syscon' property to
--      be present
--
--  - reg: Physical base address and length of the GFX registers
--
--  - interrupts: interrupt number for the GFX device
--
--  - clocks: clock number used to generate the pixel clock
--
--  - resets: reset line that must be released to use the GFX device
--
--  - memory-region:
--    Phandle to a memory region to allocate from, as defined in
--    Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
--
--
--Example:
--
--gfx: display@1e6e6000 {
--	compatible = "aspeed,ast2500-gfx", "syscon";
--	reg = <0x1e6e6000 0x1000>;
--	reg-io-width = <4>;
--	clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
--	resets = <&syscon ASPEED_RESET_CRT1>;
--	interrupts = <0x19>;
--	memory-region = <&gfx_memory>;
--};
--
--gfx_memory: framebuffer {
--	size = <0x01000000>;
--	alignment = <0x01000000>;
--	compatible = "shared-dma-pool";
--	reusable;
--};
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed-gfx.txt b/Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
-deleted file mode 100644
-index aea5370efd97..000000000000
---- a/Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
-+++ /dev/null
-@@ -1,17 +0,0 @@
--* Device tree bindings for Aspeed SoC Display Controller (GFX)
--
--The Aspeed SoC Display Controller primarily does as its name suggests, but also
--participates in pinmux requests on the g5 SoCs. It is therefore considered a
--syscon device.
--
--Required properties:
--- compatible:		"aspeed,ast2500-gfx", "syscon"
--- reg:			contains offset/length value of the GFX memory
--			region.
--
--Example:
--
--gfx: display@1e6e6000 {
--	compatible = "aspeed,ast2500-gfx", "syscon";
--	reg = <0x1e6e6000 0x1000>;
--};
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 11a58d3279ec..536a0403edda 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7592,7 +7592,7 @@ M:	Joel Stanley <joel@jms.id.au>
- L:	linux-aspeed@lists.ozlabs.org (moderated for non-subscribers)
- S:	Supported
- T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
--F:	Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
-+F:	Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
- F:	drivers/gpu/drm/aspeed/
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+index 5eccd10d95ce..5adb7f6aca45 100644
+--- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+@@ -48,8 +48,34 @@ properties:
  
- DRM DRIVER FOR AST SERVER GRAPHICS CHIPS
+ patternProperties:
+   '^p2a-control@[0-9a-f]+$':
+-    description: See Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
++    description: >
++      PCI-to-AHB Bridge Control
++
++      The bridge is available on platforms with the VGA enabled on the Aspeed
++      device. In this case, the host has access to a 64KiB window into all of
++      the BMC's memory. The BMC can disable this bridge. If the bridge is
++      enabled, the host has read access to all the regions of memory, however
++      the host only has read and write access depending on a register
++      controlled by the BMC.
+     type: object
++    additionalProperties: false
++
++    properties:
++      compatible:
++        enum:
++          - aspeed,ast2400-p2a-ctrl
++          - aspeed,ast2500-p2a-ctrl
++      reg:
++        maxItems: 1
++
++      memory-region:
++        maxItems: 1
++        description:
++          A reserved_memory region to be used for the PCI to AHB mapping
++
++    required:
++      - compatible
++      - reg
+ 
+   '^pinctrl(@[0-9a-f]+)?$':
+     type: object
+@@ -123,6 +149,11 @@ examples:
+         #size-cells = <1>;
+         ranges = <0x0 0x1e6e2000 0x1000>;
+ 
++        p2a-control@2c {
++            compatible = "aspeed,ast2400-p2a-ctrl";
++            reg = <0x2c 0x4>;
++        };
++
+         silicon-id@7c {
+             compatible = "aspeed,ast2500-silicon-id", "aspeed,silicon-id";
+             reg = <0x7c 0x4>, <0x150 0x8>;
+diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+deleted file mode 100644
+index f2e2e28b317c..000000000000
+--- a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
++++ /dev/null
+@@ -1,46 +0,0 @@
+-======================================================================
+-Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge Control Driver
+-======================================================================
+-
+-The bridge is available on platforms with the VGA enabled on the Aspeed device.
+-In this case, the host has access to a 64KiB window into all of the BMC's
+-memory.  The BMC can disable this bridge.  If the bridge is enabled, the host
+-has read access to all the regions of memory, however the host only has read
+-and write access depending on a register controlled by the BMC.
+-
+-Required properties:
+-===================
+-
+- - compatible: must be one of:
+-	- "aspeed,ast2400-p2a-ctrl"
+-	- "aspeed,ast2500-p2a-ctrl"
+-
+-Optional properties:
+-===================
+-
+-- reg: A hint for the memory regions associated with the P2A controller
+-- memory-region: A phandle to a reserved_memory region to be used for the PCI
+-		to AHB mapping
+-
+-The p2a-control node should be the child of a syscon node with the required
+-property:
+-
+-- compatible : Should be one of the following:
+-		"aspeed,ast2400-scu", "syscon", "simple-mfd"
+-		"aspeed,ast2500-scu", "syscon", "simple-mfd"
+-
+-Example
+-===================
+-
+-g4 Example
+-----------
+-
+-syscon: scu@1e6e2000 {
+-	compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
+-	reg = <0x1e6e2000 0x1a8>;
+-
+-	p2a: p2a-control {
+-		compatible = "aspeed,ast2400-p2a-ctrl";
+-		memory-region = <&reserved_memory>;
+-	};
+-};
 -- 
 2.50.1
 
