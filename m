@@ -1,60 +1,67 @@
-Return-Path: <linux-aspeed+bounces-2077-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2078-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 381D0CA0FF0
-	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 21:13:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62939CA0FF9
+	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 23:04:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cD9wz4vFSz2yvv;
-	Sat, 30 Aug 2025 07:13:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756502019;
-	cv=none; b=eITZDhOMtHzOWhgKimA0fPaczr/m0EPYTpY+T+AZ0yHZkxhVmRR1Y2qcIlnGjr29MK7DVcLIc47m0aEeKnTP7C4EBERO/Z8yw+Jz72EivwUTogiR6BfahL0/Tm5KGHpYnKx3jphR4X9ES41zdy52ucjwtsN+9Im6lMqaKw3r4xLayPrEaBahig9KGWTKLgxw6JgsR/A0Ko+GhB1EU0A3zvkJWtqJlWlpIII+qviDyHRLFUpB+m7NWo6AMCiQDG8pCfp5XXRtgmQ2l9Md8pfSUtT2UPUk8ZZPy2TO5HHtISfo/xf8WnAYYREbnVmxuVvyR+2VrS4O9sYRd+vOoLSLOw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cDDPH5jr3z2yrq;
+	Sat, 30 Aug 2025 09:04:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756508691;
+	cv=none; b=J0HXnCavjzToAvbNySz0Aa02vXkgMi81CQquMfmkvzpTFzzOeSu3fgbZVwQPjzdKV3HI3ysrmxaydCiJBQcuxnf5B0JJ201zc8ajhcuoSvfU7AjPntIYOg50uzoU78LptQvfoyGwR9qtFGdF7t1gYhINC6dE1bvSTQYAR4hU1ntMoRX6v9pm/sppCZi4jYlrjypyAyXIStCCMm/47mCIikbQ1edMLCs+aMRDBAlM8z+DuQ+yt5EkBVc99ksIzMfHQ+hUJpaorLJ+flHLH51dKsBMI/4PRTFwAq3in+VgEabJ4c+SYeEaGVs3XQruZDIFpl2zBSP8vQkHii2BWPqukg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756502019; c=relaxed/relaxed;
-	bh=jBRFXBOTZNtalyxQYje6lHR6qBaFS0kltKQZlJ6Krkw=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CJKSvCL2PYaeFbqDI/keSGJ4u2TjdRMUxy3r7BDCKx/8DxBk6Q9JrOo93JMuSxF5fDSMVUR6fQZ9Fgn1SkU1H2rRnO68v1wQhxGw452xNOD1s7/0P+1UGS7eNvhEopPLVRgP6R+zNjjE14S5G6Hm1PR8OxA4ckyJ8oZmCdPiXeGm5ERucIbQt1gPs2VglIDyvA+LD31QqVQqArjW0SdeGoGQ3VVtIiTC+y5vZW6eVw5UtuIna/1apoEuPlEhhNfQ/VxevsGs+5oEe9QQ2+d4bxKIoRUrnqlnvwfaVIqRNPNxDuFult4xdJeQmk90ayu3pf1YhaZXBiNrI0VkuadmcA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t1XC+i7J; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756508691; c=relaxed/relaxed;
+	bh=xkCZhodwr3RomP8vx5KfiL+DMYSIm6v8A61e1GuVIto=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=mOf36arevDJ03GKF0jAJ5/H5MSohhNRzGEpEZBFCTa1OruGOkH/mye0zosIV+ICQrOURKRIjtDm+YU4FK8zVbGbFbaq4DtbnyakiRZupU4+m/VGDWCPKj5/Z8vJE93/bLmawrNSahp9G2NVtVZAegP8PHC689pzGJy/BNIaVpjupDti2nHc62REZbKT/9V4yCJud/8e6ftR6QzEp4I/wUoqySxdawO1rlHnG7dgm5VrOjOKi/f461l+e3NFi3Rn6B11tV+wp37CCzLJbLUzvsugqxEkZUIY+KI4AldycwGhO3ztKdp77cM9FiZ0F4clNPCAxnZhrh63jU7r3IXv+MQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n40IqzHf; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t1XC+i7J;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n40IqzHf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cD9wz0rbbz2yMw
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 30 Aug 2025 07:13:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDDPF5Zrsz2xpn
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 30 Aug 2025 09:04:49 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 40E3F60142;
-	Fri, 29 Aug 2025 21:13:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9429BC4CEF0;
-	Fri, 29 Aug 2025 21:13:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7F1FE6014D;
+	Fri, 29 Aug 2025 23:04:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12622C4CEF0;
+	Fri, 29 Aug 2025 23:04:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756502017;
-	bh=sbyw8T8JAdvdlkAq4zux1rD5z1Wak6PP9egfwjKNvFI=;
+	s=k20201202; t=1756508687;
+	bh=lVy0nGCp4W9LsUGnCrLcZC8nGhc9aZD0sfWzO1ugqb0=;
 	h=From:To:Cc:Subject:Date:From;
-	b=t1XC+i7JMTzBN6/YM6iXaXxS7ND02N38fa8g3j1r5h082lgjCMsr2HzDxexxBeJOm
-	 jmMTeZcSldK/7MG4RwWhIiSweMqSNzncUGPerbH/X7m/kSwZNvPjtWs//EJG0oSdKX
-	 rJ8p4XB3nx6rcRPvFH8Tf/AYy35sc7kE9cGob1NbMXN33Dl7O8eWgU9DTU9lFdwG5o
-	 WCvmH7SowZYmgHQ6wk5CfvZmi6BZxJr/W1opkRFMeE3r22eiLsEkrUnM8tEp0Iut5V
-	 ePbHt7lQzyusXkqHnfxgb0gXRKnffyBgWCTptVBtK4JBXQCwTFwzTShkA7pEzlUjGc
-	 +KxTU45ry+h+A==
+	b=n40IqzHf8NlGH+zlDQkwIjiMqxccwyPOgUi2Gb97TUhyJ0HxLOqJBAgDX/+Ruqrn2
+	 VGsGBVNI6hYorMB0LNfKslKl/xi6j1aEkFz5hRGbFm1MrZiPpLVNItHg7mVbW0Uuom
+	 yLXEkP8LY3BW/7XulqzHf4v6FbZy0xC4EHYRm0roxM3lCLz2QweX9EQVMczT6uTnXg
+	 IXL0w2yvzWfotuDdrbCoAYa3kw44y185fDNL3IbiY6+EDuqEwNL3xyOuZ9D+IXFzVQ
+	 wjvPjr8hfrAFVbxIiPjqDb13MgyUy2G318dovaYNXLWqU/hs5XByEtw7hU89n2o3/w
+	 V0EV0ZL8fXwhg==
 From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Krzysztof Kozlowski <krzk+dt@kernel.org>,
+To: Joel Stanley <joel@jms.id.au>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	David Airlie <airlied@gmail.com>,
+	Simona Vetter <simona@ffwll.ch>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Lee Jones <lee@kernel.org>
+Cc: linux-aspeed@lists.ozlabs.org,
+	dri-devel@lists.freedesktop.org,
+	devicetree@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH] ARM: dts: aspeed: Drop syscon "reg-io-width" properties
-Date: Fri, 29 Aug 2025 16:13:29 -0500
-Message-ID: <20250829211330.1336274-1-robh@kernel.org>
+Subject: [PATCH] dt-bindings: gpu: Convert aspeed,ast2400-gfx to DT schema
+Date: Fri, 29 Aug 2025 18:04:40 -0500
+Message-ID: <20250829230442.1495926-1-robh@kernel.org>
 X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -71,68 +78,167 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The default width is 4 bytes for "syscon" devices, so "reg-io-width" is
-redundant and can be dropped.
+Convert the ASpeed GFX Display Controller binding to DT schema format.
+There was a duplicate, incomplete binding in mfd which can be dropped.
 
 Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 ---
- arch/arm/boot/dts/aspeed/aspeed-g4.dtsi | 1 -
- arch/arm/boot/dts/aspeed/aspeed-g5.dtsi | 2 --
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 2 --
- 3 files changed, 5 deletions(-)
+ .../bindings/gpu/aspeed,ast2400-gfx.yaml      | 58 +++++++++++++++++++
+ .../devicetree/bindings/gpu/aspeed-gfx.txt    | 41 -------------
+ .../devicetree/bindings/mfd/aspeed-gfx.txt    | 17 ------
+ MAINTAINERS                                   |  2 +-
+ 4 files changed, 59 insertions(+), 59 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
+ delete mode 100644 Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+ delete mode 100644 Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
-index 78c967812492..c3d4d916c69b 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g4.dtsi
-@@ -356,7 +356,6 @@ vuart: serial@1e787000 {
- 			lpc: lpc@1e789000 {
- 				compatible = "aspeed,ast2400-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
--				reg-io-width = <4>;
+diff --git a/Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml b/Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
+new file mode 100644
+index 000000000000..77ec5ad10ac6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
+@@ -0,0 +1,58 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/gpu/aspeed,ast2400-gfx.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED GFX Display Controller
++
++maintainers:
++  - Joel Stanley <joel@jms.id.au>
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - aspeed,ast2500-gfx
++          - aspeed,ast2400-gfx
++      - const: syscon
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  memory-region:
++    maxItems: 1
++    description:
++      a reserved-memory region to use for the framebuffer.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - resets
++  - memory-region
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/aspeed-clock.h>
++
++    display@1e6e6000 {
++        compatible = "aspeed,ast2500-gfx", "syscon";
++        reg = <0x1e6e6000 0x1000>;
++        clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
++        resets = <&syscon ASPEED_RESET_CRT1>;
++        interrupts = <0x19>;
++        memory-region = <&gfx_memory>;
++    };
+diff --git a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt b/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
+deleted file mode 100644
+index 958bdf962339..000000000000
+--- a/Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
++++ /dev/null
+@@ -1,41 +0,0 @@
+-Device tree configuration for the GFX display device on the ASPEED SoCs
+-
+-Required properties:
+-  - compatible
+-    * Must be one of the following:
+-      + aspeed,ast2500-gfx
+-      + aspeed,ast2400-gfx
+-    * In addition, the ASPEED pinctrl bindings require the 'syscon' property to
+-      be present
+-
+-  - reg: Physical base address and length of the GFX registers
+-
+-  - interrupts: interrupt number for the GFX device
+-
+-  - clocks: clock number used to generate the pixel clock
+-
+-  - resets: reset line that must be released to use the GFX device
+-
+-  - memory-region:
+-    Phandle to a memory region to allocate from, as defined in
+-    Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+-
+-
+-Example:
+-
+-gfx: display@1e6e6000 {
+-	compatible = "aspeed,ast2500-gfx", "syscon";
+-	reg = <0x1e6e6000 0x1000>;
+-	reg-io-width = <4>;
+-	clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
+-	resets = <&syscon ASPEED_RESET_CRT1>;
+-	interrupts = <0x19>;
+-	memory-region = <&gfx_memory>;
+-};
+-
+-gfx_memory: framebuffer {
+-	size = <0x01000000>;
+-	alignment = <0x01000000>;
+-	compatible = "shared-dma-pool";
+-	reusable;
+-};
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed-gfx.txt b/Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
+deleted file mode 100644
+index aea5370efd97..000000000000
+--- a/Documentation/devicetree/bindings/mfd/aspeed-gfx.txt
++++ /dev/null
+@@ -1,17 +0,0 @@
+-* Device tree bindings for Aspeed SoC Display Controller (GFX)
+-
+-The Aspeed SoC Display Controller primarily does as its name suggests, but also
+-participates in pinmux requests on the g5 SoCs. It is therefore considered a
+-syscon device.
+-
+-Required properties:
+-- compatible:		"aspeed,ast2500-gfx", "syscon"
+-- reg:			contains offset/length value of the GFX memory
+-			region.
+-
+-Example:
+-
+-gfx: display@1e6e6000 {
+-	compatible = "aspeed,ast2500-gfx", "syscon";
+-	reg = <0x1e6e6000 0x1000>;
+-};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 11a58d3279ec..536a0403edda 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -7592,7 +7592,7 @@ M:	Joel Stanley <joel@jms.id.au>
+ L:	linux-aspeed@lists.ozlabs.org (moderated for non-subscribers)
+ S:	Supported
+ T:	git https://gitlab.freedesktop.org/drm/misc/kernel.git
+-F:	Documentation/devicetree/bindings/gpu/aspeed-gfx.txt
++F:	Documentation/devicetree/bindings/gpu/aspeed,ast2400-gfx.yaml
+ F:	drivers/gpu/drm/aspeed/
  
- 				#address-cells = <1>;
- 				#size-cells = <1>;
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
-index 57a699a7c149..39500bdb4747 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g5.dtsi
-@@ -273,7 +273,6 @@ hace: crypto@1e6e3000 {
- 			gfx: display@1e6e6000 {
- 				compatible = "aspeed,ast2500-gfx", "syscon";
- 				reg = <0x1e6e6000 0x1000>;
--				reg-io-width = <4>;
- 				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
- 				resets = <&syscon ASPEED_RESET_CRT1>;
- 				syscon = <&syscon>;
-@@ -441,7 +440,6 @@ vuart: serial@1e787000 {
- 			lpc: lpc@1e789000 {
- 				compatible = "aspeed,ast2500-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
--				reg-io-width = <4>;
- 
- 				#address-cells = <1>;
- 				#size-cells = <1>;
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-index 61983feb2a4e..f8662c8ac089 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-+++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
-@@ -382,7 +382,6 @@ rng: hwrng@1e6e2524 {
- 			gfx: display@1e6e6000 {
- 				compatible = "aspeed,ast2600-gfx", "syscon";
- 				reg = <0x1e6e6000 0x1000>;
--				reg-io-width = <4>;
- 				clocks = <&syscon ASPEED_CLK_GATE_D1CLK>;
- 				resets = <&syscon ASPEED_RESET_GRAPHICS>;
- 				syscon = <&syscon>;
-@@ -572,7 +571,6 @@ peci0: peci-controller@1e78b000 {
- 			lpc: lpc@1e789000 {
- 				compatible = "aspeed,ast2600-lpc-v2", "simple-mfd", "syscon";
- 				reg = <0x1e789000 0x1000>;
--				reg-io-width = <4>;
- 
- 				#address-cells = <1>;
- 				#size-cells = <1>;
+ DRM DRIVER FOR AST SERVER GRAPHICS CHIPS
 -- 
 2.50.1
 
