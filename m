@@ -1,52 +1,61 @@
-Return-Path: <linux-aspeed+bounces-2075-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2076-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28650CA0FF9
-	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 14:27:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E7AFCA0FF9
+	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 21:13:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cD0wS5Sv1z2yqc;
-	Sat, 30 Aug 2025 00:27:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756477656;
-	cv=none; b=XZcyryMw/KMWlRWiuEg+tW4CaEQHQm2Zjg76X8WohckIt8OdjRPrO1mFz96M5MqYXHI7Y23wt68KyA1rDAF+8UvIC2KxPxlv7ET3hbXkAD/SUyCL4bKIXH+uEN+NgCtPuk4fpZfzm/l7Az2vg85Sl7HDoAlNQoFqKQ/3jkWFCHxU7Z+aBVd0+4SkYbaX3zuTDICJtAbml4qusmNsRiQbsL9qayVNCmdMS5zD4BYpo/fvy3T1Xx2YPf9d2o55I2kIDLfVpNoGz2Mk7AqTWSBsCP9MQBLyImMNRD/CQmkaHJk4eLgms9QPBok6hsWmu6tb5gBEQIKq8+DC+IrUaN+rZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cD9wn4SfQz2yfL;
+	Sat, 30 Aug 2025 07:13:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756502009;
+	cv=none; b=hTNe/qny+xkaUyE+8cvq8hDB5iVwZq8zF7LifIXmIbU8TeVhUtZCX/nGct5MMd7mynbHGoFt3BrfNeEZkhRWqHRuBb0B0Y14Q8L0kGroLrsNaWfMYSdwZ5cjUvNVmYX1nJYW51ZzJBz61jZAg6Ra8CLdtIIUvhL1OMbnG837u8v6e1YWuK4j+Z8uFyzyb64cA3MTOZ8sqNBsPxC7uCHtlu1u0bT6ILaSIMMKfZVuD26xuq6UkbcAmawyJZaPawfEKVjQQ0GVt+A2YdNArI2ysvNRcife9l8Rq0yZvYOQk5kbDKZVzrLki7n0D1pNHGvKE4purP2SNUlOuIhg1X8POA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756477656; c=relaxed/relaxed;
-	bh=iAIqu1GlhMpJ08RArt8Sz2LVxQpAO7Pc1abOctlv/7k=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=kL7HmPRGn8f4DBGj4FaDrIhP9Ym7mFLGUm/bX99CXcsz41uNOpTIHg03PvOaIoYIMmf9m4FaFXKlYRL2zYOtAFXpTt4ESRZma3dSnHNp5f1iSQrndHTCJgXKaVZNlpTXDoAPD8PFDTZYoijpXWhA/ok5NWqAR0zlvANmoXGurEzs34VGjseJAOigjpbx8RxNUkjuXDhY5cg6Y8j/tMwP75gCJqcfrutW5SUE6Tq1Ky5N2eLzFp3xPdw6DZBt0+3PN6kH1IKjMw0hQ3MWiYy0sCQtchN83MoUc4sigYyb3Dn4bE7Z/EpWKfwjg+HBMVIYskJDyJ+IVYHllCqbbtACQQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c+B/wrzq; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756502009; c=relaxed/relaxed;
+	bh=CpNW+UpYRuDgoqyyFwuwIoZVC63FH8kw8PohDDp4+kg=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JwY/uGepV4QDJZG3EBaDiU0eZPmPMNRRUmVFdi0vkyDVa+PUCgv/8qDI6UcQfoNEwr72P8fZ/cYgPZV5PYX5fLl/FZu9eTubLXcsWHfOaYqWS9rGYi+mQqZOmOqwa5GGhNulDfMh6167HRVMmH11G6lMwqcC5NildlV/AOlS4xBLL0NupH0NVLvjJ8JOnazNuJdZW4eetNfVBVmggCzcfIovypwxu/cAvWyA5T37BUpQc/k1Fh+vv1gRCc+OzjuZ7nX62wIbajpG3ieOnblA1cC+un7RnJGnVaex09vYxeUCq4CyCwAwfHvnxWGHa+sgvV6ev2JCTcCkWkPqnl/muw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aqXMinr0; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c+B/wrzq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aqXMinr0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cD0wR6dHPz2yqW;
-	Sat, 30 Aug 2025 00:27:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cD9wm6Pygz2yMw
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 30 Aug 2025 07:13:28 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 375D544E4B;
-	Fri, 29 Aug 2025 14:27:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F39B4C4CEF0;
-	Fri, 29 Aug 2025 14:27:33 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7F3EE60142;
+	Fri, 29 Aug 2025 21:13:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DADEDC4CEF0;
+	Fri, 29 Aug 2025 21:13:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756477654;
-	bh=hju7Q0uxuSGvDaWgdSvbm9C1hLSofXR34ZTyBAn5zHc=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=c+B/wrzqg00WSFdgQYwmioWH/awpZYdcKINrzUkM/vSlrIMkqlSffg8EnKt+oIOLa
-	 H6JiI5jirYb/y2E9/+iLGYC/8LdhEaV0SJw0drk/w79xnIJ1F52vHY6lnfUOliwBPM
-	 K1fCTWwkwIWkEECKJsGbbagXLefBDhlzAQT8hh34ZXyPmbjQO+OAr1++EB3KXNE/SV
-	 KYjx+MjcFnZKDqgUz/j0XHmGN8YKfv3bUNKsV1q+NSyrPI1lEvCKxxrZVfjipj7MYY
-	 qjeaLNx9XZCjUd5Jw2VKUuQk2zqhFTjX7YxTe8WUsSfXDECNuaoP/Eg9zok9MxrWdc
-	 5E07BZmYt91Wg==
-Date: Fri, 29 Aug 2025 09:27:33 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	s=k20201202; t=1756502006;
+	bh=JZ0CWieAD+hPk8tcHz5WX7FBAOxPPfeaj0F6aTNx4zg=;
+	h=From:To:Cc:Subject:Date:From;
+	b=aqXMinr0mzFFf3X/Qxc61FXYoalDlBqS+T9E1Unr43Jv3nAytC2tYjUPS8H7H6aVJ
+	 GOOcOMlX0CXlYaFGiD27NXRr6HQ+SPdQtw0AWMhcAsTraMdIqeXvwt7wyAbxCUvIN0
+	 Yfl4/n2cRQ25OMuhUDPlqNL5ICChxRmnh6CY5k70wMMb6ZrK42UyVCUsEJjV2NnoEo
+	 YNJ9OFyNjVmn0mEL4PF5QprtjxR9P2jDbL/y0UA/oQ65w6ScBRIiajsb0shF1ITVaO
+	 SjJ1Ix36+X83Zpk5cDCNdUhLYB4cGUQf30kfNc0U2n9TO3FefHDBroMbaItRVUnR3V
+	 zrlPT9+9a6G9g==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ARM: dts: aspeed: Drop "sdhci" compatibles
+Date: Fri, 29 Aug 2025 16:13:17 -0500
+Message-ID: <20250829211318.1335862-1-robh@kernel.org>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,93 +69,39 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: lee@kernel.org, conor+dt@kernel.org, joel@jms.id.au, 
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
- andrew@codeconstruct.com.au, linux-aspeed@lists.ozlabs.org, 
- krzk+dt@kernel.org, brgl@bgdev.pl, linux-gpio@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, openbmc@lists.ozlabs.org, 
- linus.walleij@linaro.org, BMC-SW@aspeedtech.com
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-In-Reply-To: <20250829073030.2749482-1-billy_tsai@aspeedtech.com>
-References: <20250829073030.2749482-1-billy_tsai@aspeedtech.com>
-Message-Id: <175647746429.734506.7183662123343858780.robh@kernel.org>
-Subject: Re: [PATCH v1 0/4] Add pinctrl support for AST2700 SoC
+Content-Transfer-Encoding: 8bit
 
+The "sdhci" compatible is not documented nor very useful on its own given
+the various features and quirks of SDHCI implementations.
 
-On Fri, 29 Aug 2025 15:30:26 +0800, Billy Tsai wrote:
-> Document and add the pinctrl driver for AST2700 SoC.
-> 
-> Billy Tsai (4):
->   dt-bindings: mfd: aspeed,ast2x00-scu: Support ast2700 pinctrl
->   dt-bindings: pinctrl: aspeed: Add support for AST27xx
->   pinctrl: aspeed: Add AST2700 pinmux support
->   arm64: dts: add AST27xx pinctrl configuration nodes
-> 
->  .../bindings/mfd/aspeed,ast2x00-scu.yaml      |    2 +
->  .../pinctrl/aspeed,ast2700-soc0-pinctrl.yaml  |  135 +
->  .../pinctrl/aspeed,ast2700-soc1-pinctrl.yaml  |  452 +++
->  .../boot/dts/aspeed/aspeed-g7-pinctrl.dtsi    | 1359 +++++++++
->  drivers/pinctrl/aspeed/Kconfig                |    8 +
->  drivers/pinctrl/aspeed/Makefile               |    1 +
->  .../pinctrl/aspeed/pinctrl-aspeed-g7-soc0.c   |  503 ++++
->  .../pinctrl/aspeed/pinctrl-aspeed-g7-soc1.c   | 2523 +++++++++++++++++
->  drivers/pinctrl/aspeed/pinctrl-aspeed.c       |   47 +
->  drivers/pinctrl/aspeed/pinctrl-aspeed.h       |   11 +-
->  drivers/pinctrl/aspeed/pinmux-aspeed.h        |   35 +-
->  11 files changed, 5071 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml
->  create mode 100644 Documentation/devicetree/bindings/pinctrl/aspeed,ast2700-soc1-pinctrl.yaml
->  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7-pinctrl.dtsi
->  create mode 100644 drivers/pinctrl/aspeed/pinctrl-aspeed-g7-soc0.c
->  create mode 100644 drivers/pinctrl/aspeed/pinctrl-aspeed-g7-soc1.c
-> 
-> --
-> 2.25.1
-> 
-> 
-> 
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-This patch series was applied (using b4) to base:
- Base: attempting to guess base-commit...
- Base: tags/next-20250828 (exact match)
-
-If this is not the correct base, please add 'base-commit' tag
-(or use b4 which does this automatically)
-
-New warnings running 'make CHECK_DTBS=y for arch/arm64/boot/dts/aspeed/' for 20250829073030.2749482-1-billy_tsai@aspeedtech.com:
-
-Traceback (most recent call last):
-  File "/home/rob/.local/bin/dt-validate", line 8, in <module>
-    sys.exit(main())
-             ~~~~^^
-  File "/home/rob/proj/dt-schema/dtschema/dtb_validate.py", line 139, in main
-    sg = schema_group(args.preparse)
-  File "/home/rob/proj/dt-schema/dtschema/dtb_validate.py", line 24, in __init__
-    self.validator = dtschema.DTValidator([schema_file])
-                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-  File "/home/rob/proj/dt-schema/dtschema/validator.py", line 376, in __init__
-    if '$id' in schema_cache:
-       ^^^^^^^^^^^^^^^^^^^^^
-TypeError: argument of type 'NoneType' is not iterable
-
-
-
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index acdb6ae74b27..61983feb2a4e 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -662,7 +662,7 @@ sdc: sdc@1e740000 {
+ 				status = "disabled";
+ 
+ 				sdhci0: sdhci@1e740100 {
+-					compatible = "aspeed,ast2600-sdhci", "sdhci";
++					compatible = "aspeed,ast2600-sdhci";
+ 					reg = <0x100 0x100>;
+ 					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+ 					sdhci,auto-cmd12;
+@@ -671,7 +671,7 @@ sdhci0: sdhci@1e740100 {
+ 				};
+ 
+ 				sdhci1: sdhci@1e740200 {
+-					compatible = "aspeed,ast2600-sdhci", "sdhci";
++					compatible = "aspeed,ast2600-sdhci";
+ 					reg = <0x200 0x100>;
+ 					interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
+ 					sdhci,auto-cmd12;
+-- 
+2.50.1
 
 
