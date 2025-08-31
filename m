@@ -1,63 +1,48 @@
-Return-Path: <linux-aspeed+bounces-2079-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2080-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06BB3CA0FF9
-	for <linux-aspeed@archiver.kernel.org>; Fri, 29 Aug 2025 23:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6321CA0EFF
+	for <linux-aspeed@archiver.kernel.org>; Sun, 31 Aug 2025 02:14:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cDDPQ4lCtz2ytT;
-	Sat, 30 Aug 2025 09:04:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756508698;
-	cv=none; b=SO5ecTPgLCLhoxvTjNmYq/Z/PVTj4xCJr+f03d5i2gUlxwW5EdNd8BFn6bR2xxK0in+KAMf67HP9o3MxhFS7BV8OAFfce69WZcvKsk07ePSvAQWdv2T9UOO1YOJDlEHdJzRjliyOcVehLz6yxecyDdTRxgiW+PpdJSY8kBPjMfxZrd/dlec/Owp88+ILpd7Ieub2c3d9UptrSb4zvh8WINc5b6pg1LUhzHPhUaeeD0NSXxAyLugKWzGxlV6eteSLTYjkIMmJZ4fU1ulsfPWvCoWlU7Ev4h+JRb+sVUH2xj2P10vaj2JU2FJ7jDkRZyQbqkeJGA1f/UOyeFC0x+X14A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cDwZ96fPwz2yyx;
+	Sun, 31 Aug 2025 12:14:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756606497;
+	cv=none; b=ba5QHVp94vWqaz5L0g+y+gqjVAc6ECm0pZIP+03X3EsTFhMzbgIL22mVftx8eKXJdbblU4qPoqJRKIFBpK5JBzHyaLOuLoI0lRaItXbBP1qHoqHykwEnpAQ7gI1bVurXQQF0TdYODaBNVhCTvvG5mxsIF8BVnde88m9zHtK7gLJx+vAwLioVe6hy8mS2czjmigbnB2J3Gmfrvh2A+XBYAltu3kzApz3ZZMD6kwoNjobm751N1KQDJ8s7SCp0qzftemz/G4snchZehQEVusWRZRlxpj3M9nJj2wKJ101cfVaq1DXGZFlG0SOvqjEhWdMVD7NdiZzVBDkMiBrGfwL0mA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756508698; c=relaxed/relaxed;
-	bh=PclyMMgbbDGjur67rW5mJJ9OrsByZ4KCKPvr04JE9L8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eYRfTD24zz7BSXyMxllFbbuwkdkaQtx5DyiJZATzC6eMLhlp0Ui9SrGNlNhlonNN+VNAs9vr4QX/o5yKqjLY1oA94ouwI9b3qb2POjlyxyDdMpC8kDPDF7o0xsd+eaWb85kp2JYoA7pzwofwX/37U4J7O/KCZs8UhEbVpYJJdxGtIA4t1cU0A0Ud+Znq0dhvrHAVq5mqt0zTH7e3K3jY+v7Gw+W7H6XXj3rtnxgtsMDRqi2yE21zCSeSAdA/VWF9OAvqVnRFeIJDvDDTNmOqyC686YtnZqxhXL8diJapIlSBBlmS3VfdcGEVIqQVUy6wFBq1x1ElHJrY7mUb9/hP1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VQWJI8lu; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VQWJI8lu;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1756606497; c=relaxed/relaxed;
+	bh=/X5ICgCO9mFK1dcI03FeXGC11uS9PqgDvHYa8gHPgNM=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=ZXuVrQG/0ynAL5ltRVEb2I+Qk0GGEInLMN0jHrHwcPurfoSmrNx+axcxwognGdStQNILx7b11Mn6YLznj+KYrqy34PuSAO+wcBtMzSiOw4DqlUXMYbLoCfLyaEl9vUrrZiYRi8B+n8m5oQGitH2AD6al1cQajZ9RrIm0beIj1/AcpkKYy1KsCQd2+rMwjzgPiGMQ57tXsGtupnlV1C160mxyPmCd6yNctemqnl7DDIptnn1uPdpRk+ij3iumDvLo1WpPXQmbNCxD8TCp7voT1B0hr1u74tWwX7wk5wwItTSAA+Ikj9t56xrESgPFR9cUMvB3JSNDR7nmrSZrXe43nw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDDPQ05chz2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 30 Aug 2025 09:04:58 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E568543D9D;
-	Fri, 29 Aug 2025 23:04:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AA53C4CEF0;
-	Fri, 29 Aug 2025 23:04:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756508695;
-	bh=cKMacLufL0Sp3xKcp2iVoauAa71+tRMKOtJUQm7TvL8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=VQWJI8lunJdXCat2wSxvf1PIhGKg4VXqvOMHKs1L/fyq2QteJo8FIXHCA0V85r81X
-	 GInwbhqCJ7F1ejqHbzMMDPfRLMCDQBt5nrV1kXSwXJMO3NZm0jlUYkc0P3kvn9MCm+
-	 9I3ebWWQQ3+rHdTZ/Mej30ZJHmGFag4zXBZyH9fN57IEnLjUHveG0GZ07vNxdjQiWh
-	 iqIaA8qgF1QFZNVmAj8hD+FNrllDuy590NmEFJUtO7xeedVW6S05LipOQ/tYgE/zFp
-	 lSTr1SIVMYbYdB+7hXc7liv+zIeomgASI4gTb6dNTxnTT5KcwSHrXVH3Lz5jkIy1hF
-	 6bDnrOTMNcB6Q==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Lee Jones <lee@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] dt-bindings: mfd: Convert aspeed,ast2400-p2a-ctrl to DT schema
-Date: Fri, 29 Aug 2025 18:04:49 -0500
-Message-ID: <20250829230450.1496151-1-robh@kernel.org>
-X-Mailer: git-send-email 2.50.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDwZ90W2Pz2yyJ
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 31 Aug 2025 12:14:55 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Sun, 31 Aug
+ 2025 10:14:38 +0800
+Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Sun, 31 Aug 2025 10:14:38 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: ryan_chen <ryan_chen@aspeedtech.com>, Eddie James <eajames@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Lee Jones <lee@kernel.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>
+Subject: [PATCH v2 0/4] irqchip: Add support for Aspeed AST2700 SCU interrupt controller
+Date: Sun, 31 Aug 2025 10:14:34 +0800
+Message-ID: <20250831021438.976893-1-ryan_chen@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,122 +57,43 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Convert the aspeed,ast2x00-p2a-ctrl binding to DT schema format. The schema
-is simple enough to just add it to the parent aspeed,ast2x00-scu binding.
+This series adds support for the SCU (System Control Unit) interrupt
+controllers on the Aspeed AST2700 SoC.
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
----
- .../bindings/mfd/aspeed,ast2x00-scu.yaml      | 33 ++++++++++++-
- .../bindings/misc/aspeed-p2a-ctrl.txt         | 46 -------------------
- 2 files changed, 32 insertions(+), 47 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
+AST2700 follows the same multi-instance SCU interrupt controller design
+as AST2600, with four independent interrupt domains (scu-ic0 to 3).
+However, unlike previous SoCs that use a single register for both enable
+and status bits, AST2700 splits them into separate IER (Interrupt Enable)
+and ISR (Interrupt Status) registers.
 
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-index 5eccd10d95ce..5adb7f6aca45 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-@@ -48,8 +48,34 @@ properties:
- 
- patternProperties:
-   '^p2a-control@[0-9a-f]+$':
--    description: See Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
-+    description: >
-+      PCI-to-AHB Bridge Control
-+
-+      The bridge is available on platforms with the VGA enabled on the Aspeed
-+      device. In this case, the host has access to a 64KiB window into all of
-+      the BMC's memory. The BMC can disable this bridge. If the bridge is
-+      enabled, the host has read access to all the regions of memory, however
-+      the host only has read and write access depending on a register
-+      controlled by the BMC.
-     type: object
-+    additionalProperties: false
-+
-+    properties:
-+      compatible:
-+        enum:
-+          - aspeed,ast2400-p2a-ctrl
-+          - aspeed,ast2500-p2a-ctrl
-+      reg:
-+        maxItems: 1
-+
-+      memory-region:
-+        maxItems: 1
-+        description:
-+          A reserved_memory region to be used for the PCI to AHB mapping
-+
-+    required:
-+      - compatible
-+      - reg
- 
-   '^pinctrl(@[0-9a-f]+)?$':
-     type: object
-@@ -123,6 +149,11 @@ examples:
-         #size-cells = <1>;
-         ranges = <0x0 0x1e6e2000 0x1000>;
- 
-+        p2a-control@2c {
-+            compatible = "aspeed,ast2400-p2a-ctrl";
-+            reg = <0x2c 0x4>;
-+        };
-+
-         silicon-id@7c {
-             compatible = "aspeed,ast2500-silicon-id", "aspeed,silicon-id";
-             reg = <0x7c 0x4>, <0x150 0x8>;
-diff --git a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt b/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
-deleted file mode 100644
-index f2e2e28b317c..000000000000
---- a/Documentation/devicetree/bindings/misc/aspeed-p2a-ctrl.txt
-+++ /dev/null
-@@ -1,46 +0,0 @@
--======================================================================
--Device tree bindings for Aspeed AST2400/AST2500 PCI-to-AHB Bridge Control Driver
--======================================================================
--
--The bridge is available on platforms with the VGA enabled on the Aspeed device.
--In this case, the host has access to a 64KiB window into all of the BMC's
--memory.  The BMC can disable this bridge.  If the bridge is enabled, the host
--has read access to all the regions of memory, however the host only has read
--and write access depending on a register controlled by the BMC.
--
--Required properties:
--===================
--
-- - compatible: must be one of:
--	- "aspeed,ast2400-p2a-ctrl"
--	- "aspeed,ast2500-p2a-ctrl"
--
--Optional properties:
--===================
--
--- reg: A hint for the memory regions associated with the P2A controller
--- memory-region: A phandle to a reserved_memory region to be used for the PCI
--		to AHB mapping
--
--The p2a-control node should be the child of a syscon node with the required
--property:
--
--- compatible : Should be one of the following:
--		"aspeed,ast2400-scu", "syscon", "simple-mfd"
--		"aspeed,ast2500-scu", "syscon", "simple-mfd"
--
--Example
--===================
--
--g4 Example
------------
--
--syscon: scu@1e6e2000 {
--	compatible = "aspeed,ast2400-scu", "syscon", "simple-mfd";
--	reg = <0x1e6e2000 0x1a8>;
--
--	p2a: p2a-control {
--		compatible = "aspeed,ast2400-p2a-ctrl";
--		memory-region = <&reserved_memory>;
--	};
--};
+To support this, the driver is refactored to use a variant-based init
+structure, selected by compatible string. Register access is also
+converted from regmap to MMIO (via `of_iomap()`), and a per-variant
+IRQ handler is used depending on register layout.
+
+v2:
+- Refactor SCU IC driver to support variant-based initialization
+- Add AST2700 compatible strings to YAML and header files
+- Extend DT bindings in mfd and irqchip for AST2700
+- Add IRQ handler logic for separate IER/ISR layout
+
+Ryan Chen (4):
+  irqchip/aspeed-scu-ic: Refactor driver to support variant-based
+    initialization
+  dt-bindings: mfd: aspeed: Add AST2700 SCU compatibles
+  dt-bindings: interrupt-controller: aspeed: Add AST2700 SCU IC
+    compatibles
+  irqchip/aspeed-scu-ic: Add support AST2700 SCU interrupt controllers
+
+ .../aspeed,ast2500-scu-ic.yaml                |   6 +-
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml      |   4 +
+ drivers/irqchip/irq-aspeed-scu-ic.c           | 238 ++++++++++--------
+ .../interrupt-controller/aspeed-scu-ic.h      |  14 ++
+ 4 files changed, 163 insertions(+), 99 deletions(-)
+
 -- 
-2.50.1
+2.34.1
 
 
