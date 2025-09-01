@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-2093-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2094-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA7C5CA0FFD
-	for <linux-aspeed@archiver.kernel.org>; Mon,  1 Sep 2025 05:26:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E0B0CA0FFD
+	for <linux-aspeed@archiver.kernel.org>; Mon,  1 Sep 2025 05:52:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFcmn3H3bz2yrp;
-	Mon,  1 Sep 2025 15:26:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFdLy4pTPz2yrp;
+	Mon,  1 Sep 2025 15:52:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756704393;
-	cv=none; b=eiCaV5bpACqzVitFdP2a4YcFUaggFqTYXWQh7rGc+AdDA3kc+Pz/Drj/lXFpVUdAQhqFi0DjM6LSj47hcQaLESdfu/T9Gdzpg6fIZjYLIpbqAiayhOMiEXaxXMrEQNosyrhiv/KADrzhCfqYnemaK3xyS8y36yOSJriuKP0VFRapJWVnd40y7vKvWWMMOCyppZmoUu5jobsGI9rkfclVTtceQnuW3JBeSKRv7F+jwtd3mSCWA/cHdZMRpeMcewpfacmIXh+vyUoBBZHXNZXjI99zN6Q/hRuoFVDGrtf2HUNsazUOos4c6ckTt2FsPhZqOffJLe8zDx5pMphvec1U/g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756705962;
+	cv=none; b=Q3JzYIfuJhieBv3Q1YXdiDENiFtsc5VT9m3Y5rSfAidAEEXcDuMu7+6gN+DEYm/0FrQ3MiGq3FhUerzMCLPC6sv0P7AMg7RJY1yzobrmUVNSJ3WtB8bb7hs+GXnC5XTbmFsv2xOPaKnqr+325VLLBELv9ZZ4gtWONJXrEExc64qT4i6JfayyWxtIf3GtxmTfaTn0r0Bgit8La46TZtiXDZM8VwfpCTwM9o1YfPLazUS0S3pjwAhX90DmyH8Wje7JUTkEzJMPzHCTUBjfHpQcVfsDbVr+hhEe5ueMGIAXNKucN+20ByeUqMpOwcQRHlJgg7SeZRoxWy+XB+0+6zYEmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756704393; c=relaxed/relaxed;
-	bh=pe1ELgksaiQsiQmE182Vcn0PJJVj38GS1AZbzs9hnko=;
+	t=1756705962; c=relaxed/relaxed;
+	bh=3A/pThmn83M/G3WMrWuLp6qGN+ygTkGRbjnnw1aNW+w=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=AhF0XwgYstRFdIh/gHaQZd1kAENpNcTNFWhHPlomssCisymP1qmrcub0mzr7fhQr7WRySyiC3TOI6HC8zyv0wU+Jze2C+YUzZG7QvCu0GNABTI/cyTk5u+bSNyjIe9Hi5/UK7FX7v3Rq7AbMGoW0aQ/30/eO+ol73Qp8yx6gRRXu1WZHgQ3dAQj1UrAj0Q9iz+SvPip+cl+Om2NaeUR5oEqFDC4/RVvd1plT8sKY4IOtpprc3ABakafVJyPaPbwaha7UbhSkjYK9MkZ+MkjSbwn7KbttHU9JCuDDh5AI/ScUhSCnBlbX2CPLRrfFxXd3enNCGJVokcEQKdjd+Wu/QA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nbvm5O6P; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=Wl5rn7pSjGBGZdix8NXuZlUv3nUg2L3JLZiNmTjH0H4bDjJe9fX3LOtIXR7paQy+UfEy1Ib6/BvcdvbF6ODRZkLRc3v5Z10mruR8ZzwAB8Wg3r6VGEA7OE80BA1lMx0vS+WsgQkrlFfRaNiD3XP4Ks6BxrzXDgjsN6+KnuReV+46Q2kh9u8cEoCkoWdAJ0rKaM+eFdoWnkMYQJlHpwvQFTnwJH/PeNiCDT4RYnavU9FDLtKv6/ta+5G54Jz0zxVzuzc/SRcbmWH8MuF8uw8h38omDcDOpLkczGpD9PrVsqUGU+Mf2GkDeZYIkW/k3taMl3e1dV9ZYGJjfYFOKpV4nA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IGWaSZeE; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nbvm5O6P;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IGWaSZeE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFcmm3slQz2xWc
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  1 Sep 2025 15:26:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFdLx6W5yz2yrm
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  1 Sep 2025 15:52:41 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2BC55444F9;
-	Mon,  1 Sep 2025 05:26:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2E68C4CEF0;
-	Mon,  1 Sep 2025 05:26:22 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5985C43B6D;
+	Mon,  1 Sep 2025 05:52:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30FA8C4CEF0;
+	Mon,  1 Sep 2025 05:52:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756704390;
-	bh=FRFTRStSejwYOz/sgD9a0MfVP0EKn4qNwwC+A2ftFS8=;
+	s=k20201202; t=1756705959;
+	bh=XoTpNOAyoQ2QagVwjJXE09PuDOMwU4O7m89dZyPiwSc=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=Nbvm5O6Pj2OiQimofs8q/FvJwJxK0ea3lWeTfxM64+SNtaoIsxtkwpAUAW6YEUg3g
-	 hQjVipiP5dVZ+rbwYSZQxePI/PK1/BRdbTDp9IawnR22uGF5htHmzsHnFi90VVbZL0
-	 Z8Q9x4TUiORpXbFL3wCZL0XXtjUcmC4t9H/uu2EXk/mC3HV5pScsmQ+oIg74ylapW2
-	 0l/Avrn893QUswQ0fBuP4tKb81ouKe6TZ975iI5u7ScpWsnnOXDOX6BtDFdSsiK8TE
-	 5Z3vP8BnRedowl2dgXNyhDWYiK8c6YSciQ5RWMCqIjP8Jqfe4fRLR5NuFw2JY5iYBS
-	 l3oKzuywFcLkQ==
-Message-ID: <a305a5e3-7164-4aba-b732-7ccb9f2daa76@kernel.org>
-Date: Mon, 1 Sep 2025 07:26:21 +0200
+	b=IGWaSZeEZdzmwetszRWF/zekZx6h8k8kq1SE6iSw72U0kH2ciJ0irXxxY1nPJ7ap4
+	 7kX3uGg7FDThpmuWJ+7NsBd0P5CMreP9f7yEfe/3O1rDHsBP8hkYslrOT0qKM07rT/
+	 GBFg2OuRQMJTCFL47GoqtjjUi/2f/KPGl4PQafQYJMmAFC3BC24fZ3Vaj7AdC4xsfc
+	 OS179rGHV1i001aqZgZ8Yut4mKkXMTu/6aqYFUYkE59Trfl5TCPbuHEd3w9tfJgdGN
+	 lMbeQZzPsZau0QOHDNfABKS9XdRBLqwfww2BXRckT73p7c+AfV+DhNQEjz7DGdyXHX
+	 ahpzDR80xvaQg==
+Message-ID: <f80b0de7-6b31-4b1f-b5ba-84e41a42420b@kernel.org>
+Date: Mon, 1 Sep 2025 07:52:29 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,8 +60,7 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 5/5] arm64: configs: Update defconfig for AST2700
- platform support
+Subject: Re: [PATCH v5 4/5] arm64: dts: aspeed: Add AST2700 Evaluation Board
 To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
  Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
  <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -81,7 +80,7 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
  wthai@nvidia.com, leohu@nvidia.com, dkodihalli@nvidia.com,
  spuranik@nvidia.com
 References: <20250901031311.1247805-1-ryan_chen@aspeedtech.com>
- <20250901031311.1247805-6-ryan_chen@aspeedtech.com>
+ <20250901031311.1247805-5-ryan_chen@aspeedtech.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -127,20 +126,38 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20250901031311.1247805-6-ryan_chen@aspeedtech.com>
+In-Reply-To: <20250901031311.1247805-5-ryan_chen@aspeedtech.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 On 01/09/2025 05:13, Ryan Chen wrote:
-> Enable options for ASPEED AST2700 SoC.
+> ASPEED AST2700 EVB is prototype development board based
+> on AST2700 SOC.
 > 
 > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 > ---
->  arch/arm64/configs/defconfig | 1 +
->  1 file changed, 1 insertion(+)
+>  arch/arm64/boot/dts/Makefile               |  1 +
+>  arch/arm64/boot/dts/aspeed/Makefile        |  4 ++++
+>  arch/arm64/boot/dts/aspeed/ast2700-evb.dts | 22 ++++++++++++++++++++++
+>  3 files changed, 27 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
+>  create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+> 
+> diff --git a/arch/arm64/boot/dts/Makefile b/arch/arm64/boot/dts/Makefile
+> index b0844404eda1..3729e7d480db 100644
+> --- a/arch/arm64/boot/dts/Makefile
+> +++ b/arch/arm64/boot/dts/Makefile
+> @@ -38,3 +38,4 @@ subdir-y += tesla
+>  subdir-y += ti
+>  subdir-y += toshiba
+>  subdir-y += xilinx
+> +subdir-y += aspeed
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+Messed order. We already asked in other patches to keep alphabetical
+order when extending entries.
 
 Best regards,
 Krzysztof
+
 
