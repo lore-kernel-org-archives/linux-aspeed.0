@@ -1,69 +1,52 @@
-Return-Path: <linux-aspeed+bounces-2114-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2115-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C881CA0FFE
-	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Sep 2025 13:07:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FBE0CA1005
+	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Sep 2025 13:18:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cGQy96yqYz2yN1;
-	Tue,  2 Sep 2025 23:07:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756818449;
-	cv=none; b=UnE+nkjyARfq+bz3SVh9UjQsNyreHogOyjG8K1mfpT4rxEKTWkm+3zYq5116ojZ7dXU9Ib2diA5RnNAeZ9G0VPE5G2JckN0Bqw8QLWan64tk5cQDq3ZmV/D5l2CtnSqYh/eA61o7a8QXnHpd43eUx1S765O0H7rhx8Xza3mYm1gClYyITiYyXElJLDM/JHlmOibe4vSXvfAKsRov804ukhyaamhH90b/kmfTQqcCmVNjlB27IArhyjxRzzgv04bgyXLgfydXBOav6OAxTVPFn+A4ipaCUWildesDHracPwquC0zZDw5sKgJ8+bJXgCufb2h2OYAKXnL+1ZtC4BHrlA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cGRBm5kjwz2yN1;
+	Tue,  2 Sep 2025 23:18:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756819104;
+	cv=none; b=Hk72FL5b6NMrlcVGrW80vvL3V6WadIbeGuEtKOKm7Wyd9hT46liwKkcGdkTr56M09fFBPaUaRXBTqFwGQyOjE6bF9HpPCJuNcMEsSaWpZr9QYHJtM52zk29qm9trNkxf0IJI9aU8LnvyeNr9zDfWkgYuRsIDgmAV+E0C6VbTvosql6cSb/zQLXqtKaglo5iLwQSbjn0kpsb04LGwoV+vYt55d6Sd3mauNkw3f7tqHauSoqTuDDcu3F1IgOg/xPi3pIyBL1HtB0PjQj6A9gB82/Mx+t/l7kvlHwI1F0a+akroBemf1NMhGBdAP0b8M3XK+NDdu/RkGw6365RfGYCSjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756818449; c=relaxed/relaxed;
-	bh=+IOP6KQgl7sg4RNv1HB15N9tnpQImYkfB9yocklRZDY=;
-	h=From:To:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=U0j6p7sK+Ey5BtDcHwq9KtsohaUbJEngwHTZxHgfyQl2mjebKS+sNmVZ1u3g0YOz6HKbuDBZ8fsthR+678RZCfESJttw240SYnN77vZy6e/4P1FjSLlSViIbIEVNwaLZbr8dewB3Lesmt2Urd5w5h5jxBYN/+CxE7epLNYv82zovc53Ai9FzlVvDlBIh3rPgKpRVFG6JT446lU06wsJ18vJ9TWAzDpO22daCcGzALQoeXM8FhCd2aToqZx2HVgdvGcZSYWLWrfylEq1Jxcsn7i1NzcsscPLSwiVULkvhPuvhbyRmzBEo7TFkFL+0YaQeCDVGEgNbGDZEWg1LEcQHMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=0MpqbOb0; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AKhUPcae; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1756819104; c=relaxed/relaxed;
+	bh=v1Iud/BNQXl+o9o2nITUUPcYaRdViAkZtM2OJ355Q3U=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=YZksWSOkpSorF4sIW2lKOOIpyu3+ZdLj5X8dH+VwoYvMv7iyvmLCGlZvPdB8gmyIt6aHNaTAd4RnZYS5i/GGIDTDvFYB6D8KuWeOWfCIspMhrfxsVDFC7ARiM8FIA71Z+0k1w+1vA6RWpleUyV/OToT4LlyVe4AsVLJZfgYrIN6QEuB9RLOplH8geTndthe424CzK9GCwdxVJl3YhKzwmFQ2bC66kvWOhXbUE6Arbkas2YWSfXyVGRmHsyPLQwS4clmsnA9G6R1Rvbpwajh8u5YAj5fEoqAdC/Bp4v43j0nRZRbD5JA+xci8nlZv6uf0pOAMWOAE001wUI4/myg6zA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pFPc0Bif; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=0MpqbOb0;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AKhUPcae;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pFPc0Bif;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGQy90NT0z2xnq
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  2 Sep 2025 23:07:28 +1000 (AEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1756818444;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+IOP6KQgl7sg4RNv1HB15N9tnpQImYkfB9yocklRZDY=;
-	b=0MpqbOb0MmctHgGLQpEoK7RvCrWqhe11k7zTcy8rW2Qfo7mEGcPn5YRQkw8nA/4UE4khMk
-	qVglqTWaaErQgvpR6lBTxWvoGi008hP0GLsPHU7H/pp+UX2aUaLx1+7feoS6miXFyPEg9Z
-	iqBXxrZmrXN+K4gbv0NKs1+w3YlIfGOPH2Uk/IWlXPSXd83ArVwnQB3A+coNOQYY0xi91a
-	EQqlpauvguqFqYMV0d3U09qWOkil3jRoUezBM+Ji7uhtq2xn8/ZdOw0STltaDV+3yXvIiL
-	w+eONQLePF81UOj2KAyLncrk+TWHd7+J8U4A22FRez4iuwC+eMkgWjBEaJfnHg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1756818444;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=+IOP6KQgl7sg4RNv1HB15N9tnpQImYkfB9yocklRZDY=;
-	b=AKhUPcaeUUqBybjPoJeHUXRY72ygfIw8wlfOfdrh1iP5zgu2ytXtU3whmTaefPi79pOvkS
-	oV/Hg036JfwXYfDg==
-To: Ryan Chen <ryan_chen@aspeedtech.com>, ryan_chen
- <ryan_chen@aspeedtech.com>, Eddie James <eajames@linux.ibm.com>, Rob
- Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>, Lee Jones <lee@kernel.org>,
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 4/4] irqchip/aspeed-scu-ic: Add support AST2700 SCU
- interrupt controllers
-In-Reply-To: <20250831021438.976893-5-ryan_chen@aspeedtech.com>
-References: <20250831021438.976893-1-ryan_chen@aspeedtech.com>
- <20250831021438.976893-5-ryan_chen@aspeedtech.com>
-Date: Tue, 02 Sep 2025 15:07:21 +0200
-Message-ID: <87y0qx0zqu.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGRBl2sVsz2xdg
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  2 Sep 2025 23:18:23 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1296144377;
+	Tue,  2 Sep 2025 13:18:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C42EC4CEF4;
+	Tue,  2 Sep 2025 13:18:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1756819100;
+	bh=nva1mBFyuVVPLmXTARaBeIiR0B0nMGh017Yl7IN3WDQ=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=pFPc0BifN8nXlB5qQF3uMhlUA2pS/cvrdR7LZYW9cfLFnPrqKhQFg8HjdWMjkJSE6
+	 /2DAUy4Ow72fxShmqCwuvTiaivE2iaaYrs3CaRCSLz4MDrEggMLXEoHOdZU7WtVYM4
+	 MEndwIA0vPKw4cTPzji1gUMPgiqc+rB4UpEb+PurhEiWcQ/BVdcLdovRKdc41HaapM
+	 75mA1fV9TJqGmNZF/F2wZLUNbkbGmvmkYfp8SMpmk0pUj/e4hJFI665+JmZx5p9jSn
+	 YV/YMps4fSvpGyBnJ2r8tz0J4tPp0+KmQ1svnfeQk0qLMqKuWbfwYjyb9rezfsfz/o
+	 7F12oFvJN6sXQ==
+Date: Tue, 02 Sep 2025 08:18:18 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,140 +60,174 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: soc@lists.linux.dev, Conor Dooley <conor+dt@kernel.org>, 
+ dkodihalli@nvidia.com, Arnd Bergmann <arnd@arndb.de>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, 
+ nfraprado@collabora.com, linux-arm-kernel@lists.infradead.org, 
+ Will Deacon <will@kernel.org>, Nishanth Menon <nm@ti.com>, 
+ Yuxiao Zhang <yuxiaozhang@google.com>, Joel Stanley <joel@jms.id.au>, 
+ Eric Biggers <ebiggers@google.com>, Taniya Das <quic_tdas@quicinc.com>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, spuranik@nvidia.com, 
+ Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
+ linux-kernel@vger.kernel.org, 
+ Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>, 
+ linux-aspeed@lists.ozlabs.org, Rom Lemarchand <romlem@google.com>, 
+ Geert Uytterhoeven <geert@linux-m68k.org>, Mo Elbadry <elbadrym@google.com>, 
+ leohu@nvidia.com, Catalin Marinas <catalin.marinas@arm.com>, 
+ devicetree@vger.kernel.org, William Kennington <wak@google.com>, 
+ wthai@nvidia.com
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+In-Reply-To: <20250901031311.1247805-1-ryan_chen@aspeedtech.com>
+References: <20250901031311.1247805-1-ryan_chen@aspeedtech.com>
+Message-Id: <175678731287.878052.15508784585002236677.robh@kernel.org>
+Subject: Re: [PATCH v5 0/5] Introduce ASPEED AST2700 BMC SoC
 
-On Sun, Aug 31 2025 at 10:14, Ryan Chen wrote:
 
-> The AST2700 continues the multi-instance SCU interrupt controller model
-> introduced in the AST2600, with four independent interrupt domains
-> (scu-ic0 to 3).
->
-> Unlike earlier generations that combine interrupt enable and status bits
-> into a single register, the AST2700 separates these into distinct IER and
-> ISR registers. Support for this layout is implemented by using register
-> offsets and separate chained IRQ handlers.
->
-> The variant table is extended to cover AST2700 IC instances, enabling
-> shared initialization logic while preserving support for previous SoCs.
->
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  drivers/irqchip/irq-aspeed-scu-ic.c | 123 +++++++++++++++++++++-------
->  1 file changed, 95 insertions(+), 28 deletions(-)
->
-> diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
-> index cbfc35919281..ffdd9b4e44c1 100644
-> --- a/drivers/irqchip/irq-aspeed-scu-ic.c
-> +++ b/drivers/irqchip/irq-aspeed-scu-ic.c
-> @@ -17,12 +17,16 @@
->  
->  #define ASPEED_SCU_IC_STATUS		GENMASK(28, 16)
->  #define ASPEED_SCU_IC_STATUS_SHIFT	16
-> +#define AST2700_SCU_IC_STATUS		GENMASK(15, 0)
->  
->  struct aspeed_scu_ic_variant {
->  	const char		*compatible;
->  	unsigned long	irq_enable;
->  	unsigned long	irq_shift;
->  	unsigned int	num_irqs;
-> +	bool			split_ier_isr;
+On Mon, 01 Sep 2025 11:13:06 +0800, Ryan Chen wrote:
+> This introduces initial support for the Aspeed AST2700 SoC and the AST2700
+> Evaluation Board (EVB) to the Linux kernel. The AST27XX is the 8th
+> generation Baseboard Management Controller (BMC) SoC from Aspeed,
+> featuring improved performance, enhanced security, and expanded I/O
+> capabilities compared to previous generations.
+> 
+> AST27XX SOC Family
+>  - https://www.aspeedtech.com/server_ast2700/
+>  - https://www.aspeedtech.com/server_ast2720/
+>  - https://www.aspeedtech.com/server_ast2750/
+> 
+> Bindings Dependencies:
+> - intc-ic: Documentation/devicetree/bindings/interrupt-controller/aspeed,ast2700-intc.yaml
+> - scu/silicon-id: Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> - gpio: Documentation/devicetree/bindings/gpio/aspeed,ast2400-gpio.yaml
+> - mdio: Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
+> 
+> v5:
+> - modify ast27XX 7th generation description to 8th generation.
+> - aspeed.yaml
+>  - modify missing blank line.
+> - Kconfig.platforms
+>  - modify ast27XX 7th generation to 8th generation.
+> 
+> v4:
+> - make CHECK_DTBS=y arch/arm64/boot/dts/aspeed/ fix.
+> - modify commit message remove itemlize.
+> - remove modify aspeed,ast2700-intc.yaml patch.
+> - aspeed.yaml
+>  - Add AST2700 board compatible.
+> - aspeed-g7.dtsi
+>  - modify all size-cells from 1 to 2.
+>  - add serial aliases, gpio, mdio, uart0 ~ 14.
+>  - add firmware for optee, reserved memory for atf and optee.
+>  - modify cpu@0 to cpu0: cpu@0.
+>  - fix intc-ic for yaml dependency.
+> - ast2700-evb.dts
+>  - update stdout-path = "serial12:115200n8";
+> 
+> v3:
+> - https://lore.kernel.org/all/20241212155237.848336-1-kevin_chen@aspeedtech.com/
+> - Split clk and reset driver to other commits, which are in series of
+>   "Add support for AST2700 clk driver".
+> - For BMC console by UART12, add uart12 using ASPEED INTC architecture.
+> 
+> aspeed,ast2700-intc.yaml
+> - Add minItems to 1 to fix the warning by "make dtbs_check W=1".
+> - Add intc1 into example.
+> 
+> Kconfig.platforms
+>   - Remove MACH_ASPEED_G7.
+> 
+> Ryan Chen (5):
+>   dt-bindings: arm: aspeed: Add AST2700 board compatible
+>   arm64: Kconfig: Add Aspeed SoC family (ast27XX) Kconfig support
+>   arm64: dts: aspeed: Add initial AST2700 SoC device tree
+>   arm64: dts: aspeed: Add AST2700 Evaluation Board
+>   arm64: configs: Update defconfig for AST2700 platform support
+> 
+>  .../bindings/arm/aspeed/aspeed.yaml           |   6 +
+>  arch/arm64/Kconfig.platforms                  |   6 +
+>  arch/arm64/boot/dts/Makefile                  |   1 +
+>  arch/arm64/boot/dts/aspeed/Makefile           |   4 +
+>  arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi     | 452 ++++++++++++++++++
+>  arch/arm64/boot/dts/aspeed/ast2700-evb.dts    |  22 +
+>  arch/arm64/configs/defconfig                  |   1 +
+>  7 files changed, 492 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/aspeed/Makefile
+>  create mode 100644 arch/arm64/boot/dts/aspeed/aspeed-g7.dtsi
+>  create mode 100644 arch/arm64/boot/dts/aspeed/ast2700-evb.dts
+> 
+> --
+> 2.34.1
+> 
+> 
+> 
 
-How does that end up aligned?
 
-> +	unsigned long	ier;
-> +	unsigned long	isr;
->  };
->  
->  #define SCU_VARIANT(_compat, _shift, _enable, _num) { \
-> @@ -30,13 +34,20 @@ struct aspeed_scu_ic_variant {
->  	.irq_shift		=	_shift,		\
->  	.irq_enable		=	_enable,	\
->  	.num_irqs		=	_num,		\
-> +	.split_ier_isr	=	_split,		\
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
 
-Ditto.
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
 
-> +	.ier			=	_ier,		\
-> +	.isr			=	_isr,		\
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
 
-But what's worse is that '_split, _ier and _isr' come out of thin air as
-SCU_VARIANT does not have corresponding arguments. So how is that
-supposed to work?
+  pip3 install dtschema --upgrade
 
->  }
->  
->  struct aspeed_scu_ic {
-> @@ -45,9 +56,12 @@ struct aspeed_scu_ic {
->  	unsigned int		num_irqs;
->  	void __iomem		*base;
->  	struct irq_domain	*irq_domain;
-> +	bool				split_ier_isr;
 
-Sigh...
+This patch series was applied (using b4) to base:
+ Base: attempting to guess base-commit...
+ Base: tags/v6.17-rc1 (exact match)
 
-> +	unsigned long		ier;
-> +	unsigned long		isr;
->  };
->  
-> -static void aspeed_scu_ic_irq_handler(struct irq_desc *desc)
-> +static void aspeed_scu_ic_irq_handler_combined(struct irq_desc *desc)
->  {
->  	struct aspeed_scu_ic *scu_ic = irq_desc_get_handler_data(desc);
->  	struct irq_chip *chip = irq_desc_get_chip(desc);
-> @@ -84,33 +98,69 @@ static void aspeed_scu_ic_irq_handler(struct irq_desc *desc)
->  	chained_irq_exit(chip, desc);
->  }
->  
-> +static void aspeed_scu_ic_irq_handler_split(struct irq_desc *desc)
-> +{
+If this is not the correct base, please add 'base-commit' tag
+(or use b4 which does this automatically)
 
-...
+New warnings running 'make CHECK_DTBS=y for arch/arm64/boot/dts/aspeed/' for 20250901031311.1247805-1-ryan_chen@aspeedtech.com:
 
->  static void aspeed_scu_ic_irq_mask(struct irq_data *data)
->  {
->  	struct aspeed_scu_ic *scu_ic = irq_data_get_irq_chip_data(data);
-> -	unsigned int mask = BIT(data->hwirq + scu_ic->irq_shift) |
-> -		(scu_ic->irq_enable << ASPEED_SCU_IC_STATUS_SHIFT);
->  
-> -	/*
-> -	 * Status bits are cleared by writing 1. In order to prevent the mask
-> -	 * operation from clearing the status bits, they should be under the
-> -	 * mask and written with 0.
-> -	 */
-> -	writel(readl(scu_ic->base) & ~mask, scu_ic->base);
-> +	if (scu_ic->split_ier_isr) {
-> +		writel(readl(scu_ic->base) & ~BIT(data->hwirq + scu_ic->irq_shift),
-> +		       scu_ic->base + scu_ic->ier);
-> +	} else {
-> +		unsigned int mask = BIT(data->hwirq + scu_ic->irq_shift) |
-> +			(scu_ic->irq_enable << ASPEED_SCU_IC_STATUS_SHIFT);
-> +
-> +		/*
-> +		 * Status bits are cleared by writing 1. In order to prevent the mask
-> +		 * operation from clearing the status bits, they should be under the
-> +		 * mask and written with 0.
-> +		 */
-> +		writel(readl(scu_ic->base) & ~mask, scu_ic->base);
-> +	}
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@12101b00 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@12101b00 (aspeed,ast2700-intc-ic): interrupts: [[0, 192, 4], [0, 193, 4], [0, 194, 4], [0, 195, 4], [0, 196, 4], [0, 197, 4], [0, 198, 4], [0, 199, 4], [0, 200, 4], [0, 201, 4]] is too long
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: syscon@12c02000 (aspeed,ast2700-scu0): #size-cells: 1 was expected
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: syscon@14c02000 (aspeed,ast2700-scu1): compatible: ['aspeed,ast2700-scu1'] is too short
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: syscon@14c02000 (aspeed,ast2700-scu1): 'ranges' is a required property
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: syscon@14c02000 (aspeed,ast2700-scu1): '#address-cells' is a required property
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: syscon@14c02000 (aspeed,ast2700-scu1): '#size-cells' is a required property
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18100 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18100 (aspeed,ast2700-intc-ic): interrupts-extended: [[5, 0]] is too short
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18110 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18110 (aspeed,ast2700-intc-ic): interrupts-extended: [[5, 1]] is too short
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18120 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18120 (aspeed,ast2700-intc-ic): interrupts-extended: [[5, 2]] is too short
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18130 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18130 (aspeed,ast2700-intc-ic): interrupts-extended: [[5, 3]] is too short
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18140 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18140 (aspeed,ast2700-intc-ic): interrupts-extended: [[5, 4]] is too short
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18150 (aspeed,ast2700-intc-ic): #interrupt-cells: 2 was expected
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
+arch/arm64/boot/dts/aspeed/ast2700-evb.dtb: interrupt-controller@14c18150 (aspeed,ast2700-intc-ic): interrupts-extended: [[5, 5]] is too short
+	from schema $id: http://devicetree.org/schemas/interrupt-controller/aspeed,ast2700-intc.yaml#
 
-So you have two different handlers. Why can't you provide two different
-mask/unmask/ functions along with a seperate irq chip instead of
-cluttering the code with conditionals. Thes two variants share no code
-at all.
 
-> -	irq_set_chained_handler_and_data(irq, aspeed_scu_ic_irq_handler,
-> -					 scu_ic);
-> +	if (scu_ic->split_ier_isr)
-> +		irq_set_chained_handler_and_data(irq, aspeed_scu_ic_irq_handler_split,
-> +						 scu_ic);
-> +	else
-> +		irq_set_chained_handler_and_data(irq, aspeed_scu_ic_irq_handler_combined,
-> +						 scu_ic);
->
 
-Please get rid of the line break. You have 100 characters....
 
-Thanks,
 
-        tglx
 
