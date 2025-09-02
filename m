@@ -1,80 +1,69 @@
-Return-Path: <linux-aspeed+bounces-2112-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2113-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 329B9CA1005
-	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Sep 2025 10:25:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9DD9CA1005
+	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Sep 2025 12:56:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cGMM75NYQz2xQ1;
-	Tue,  2 Sep 2025 20:25:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.15
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756808723;
-	cv=none; b=YtsyMgadFXFz/d09iKwYdxPnendk70UXs+xOPU3oZIOveiRK6k7F1RddvSJTXP9Ce3yA3ZXrSW4kA+9dlRICjMLjBbz9lrcG/WMfQtDrEGu7YG8clphyhV5kPOXVXnX3uy3wJ8IdIN6ruk490X9mI04NbHxM+UQhWL4dbERpuNPaEcPGCw7J1IvkGvgg2s0yuWOdjLpuUgtnxuPdegvB/55FF5BdyBIwb2Ud524zxC37IgLhprc9WgWCAK1yyMi2UJD8CKi2UmlJpy01p357E7ehpD9E81MpRirqFNmyAu1qtmcEBlQlAFnKVT1Zqk2OckD+5ewshHSAu1MySsnJfg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cGQjJ2rMNz2yN1;
+	Tue,  2 Sep 2025 22:56:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756817780;
+	cv=none; b=llBXzuwi2LpDQRatsEXgthH3WhZE17IY5GveARKM546Lo8rSk6kPMT/RS188XnUKF8p2d2k3RmIPi/JHaT5VrvtaG370EEc9hPDA5OlGONn3qiyag/QfVKe7EcsFAjurAFIi+9KmP7YCa3LT1irf7UYHVSShp5bkxUn2Z0c85I+Oxbh1J5zvkx4nnDhfFmkON+TVTANPVGn7BHY2uO/LmzfidkcPDE5R9XVt81+SGkjpu0DWMyzPC9rc91mZKTdzkG+C7Yr+mZ/5SFiFcxvkXIa0bd/6cGytlE3lqSgAmwIH8opIOGqSJyMHlyqKI7pnaQ55fGl6M+P1sjuhCj3iXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756808723; c=relaxed/relaxed;
-	bh=QXvHvuIpbygo+XU6oPOlwA7ILTmDuLEiz6X58UM8bJw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lN90/DGxXuwEJ82pwJ5oaA2I/XuMLiSvA9ia6K1g2w2lXBfYb9TyBdmkatFtgYN7fhCdwcqWEEywO1oo6oOaCf5vDSQ1QQ9e5U56pmA1yxhFi5BNhseqG5QlWvV8WI15Kp0MtNShJyHOPVGxfFxFnKDOMzsIteDB43IGoIfo11hyq6EvwnPcnXUEu2hWxHROkLoiIFqiV+uS9n3KxFD/B/0B8IjgaN8czCjsRRlKy3FgOnOgR+Oc8DByM2kpQh3e3/FzXoV2VjzIo9gWv8RaBAcss1Lt/fh82eRlVQ3jTNwhgTG7t6QJsv8/mTE8jSs18OD/a0WQeUU9/WonwoH1eQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eLG5c2Xi; dkim-atps=neutral; spf=pass (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1756817780; c=relaxed/relaxed;
+	bh=fqaO+SeV+juuMOmuDP+CCM9/ezm8a+cuzkEOZBsIzaY=;
+	h=From:To:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Z/x6RtmKbp1q3s8MyR2UzUZ65Dnv7QENvrx28p0QsLCBxJ01xVMZRW7YKOKI6+k9ZQDoLWJU6MNSQA57dHXGRrZnadVGmy2NjWhrofRV68HZQaGdUykjzuYiF5HccDgr6sVniZ08/c6Wb5w2O5/1ngiaqZVum24Svpj3YPxasndtfhlXy2TmzvMBpdqLnXok85e270X8FdQfiXYbt5478Fd//CDwAmAEv/mKhBij84egG2hf3r3TGeut9eFvE+sSkYjttFyKE6qO7S+9eXTXvOekC9ld9nBMWoff9vNWbcG/k1DEofWMKjFxVNVseUYgtCtFzQuq6UuL1qxDpibNrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Jl3Ir6pn; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=cSY2/Zxw; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eLG5c2Xi;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Jl3Ir6pn;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=cSY2/Zxw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.15; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 02 Sep 2025 20:25:21 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGMM51vZRz2xQ0;
-	Tue,  2 Sep 2025 20:25:20 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1756808722; x=1788344722;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=v5NDjFO8lUrsXYBoNk20x/0jTMsSJewfLyzSWN2NvCQ=;
-  b=eLG5c2XiOItou4coPTStWRY36rvccGTvRwxawAqJEvJwup516TVywF4X
-   pAWW+TsdzunhIShrEi/RbcwV14fcZGTMeAN+NPnVSCnM8wnVADLYo/Ff0
-   pE1b1Rj0hFRHJlLhHPOK/k4QsTCiLBlqyhjER39dqZHoxVXkX87ICyFBO
-   ylHA2hISrbPH3xzd44V16FCSIOT9kSCuoG0y8qS+iS/ZFsHh6bgdPqsB2
-   Ag2JX2peWnPWrzSEO37szMXzV+OFnBAZ/2AXM6HzpsxHK/BprIHU1fA6G
-   noMgGnO9rp6lEdfdm7aWL8fUDZbpM/rf/UryY2Hu6rtVlCZ+mZMvUF9Tz
-   w==;
-X-CSE-ConnectionGUID: etJAyd4dR8OrduV1SDeLlQ==
-X-CSE-MsgGUID: 3Nue6E1SQqK/vEpnKMFeRA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11540"; a="62719603"
-X-IronPort-AV: E=Sophos;i="6.18,230,1751266800"; 
-   d="scan'208";a="62719603"
-Received: from orviesa005.jf.intel.com ([10.64.159.145])
-  by orvoesa107.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2025 03:24:12 -0700
-X-CSE-ConnectionGUID: I6HlhqjdSHGTNm9QxC555Q==
-X-CSE-MsgGUID: qaZkQZ/4QvmaUvY93+nUTw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,230,1751266800"; 
-   d="scan'208";a="176556266"
-Received: from lkp-server02.sh.intel.com (HELO 06ba48ef64e9) ([10.239.97.151])
-  by orviesa005.jf.intel.com with ESMTP; 02 Sep 2025 03:24:06 -0700
-Received: from kbuild by 06ba48ef64e9 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1utOBI-0001pP-0p;
-	Tue, 02 Sep 2025 10:24:04 +0000
-Date: Tue, 2 Sep 2025 18:23:07 +0800
-From: kernel test robot <lkp@intel.com>
-To: Jacky Chou <jacky_chou@aspeedtech.com>, linux-pci@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-	bhelgaas@google.com, lpieralisi@kernel.org, kwilczynski@kernel.org,
-	mani@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
-	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
-	vkoul@kernel.org, kishon@kernel.org, linus.walleij@linaro.org,
-	p.zabel@pengutronix.de, linux-aspeed@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, linux-phy@lists.infradead.org,
-	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, jacky_chou@aspeedtech.com
-Subject: Re: [PATCH v3 07/10] PHY: aspeed: Add ASPEED PCIe PHY driver
-Message-ID: <202509021806.1NtrcLpF-lkp@intel.com>
-References: <20250901055922.1553550-8-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGQjH2cMtz2y06
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  2 Sep 2025 22:56:19 +1000 (AEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1756817773;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=fqaO+SeV+juuMOmuDP+CCM9/ezm8a+cuzkEOZBsIzaY=;
+	b=Jl3Ir6pnSxJZNrlzEafpDbybEzAsScYMj2qFx4iAZKmr8ZcHniinwHLqQDkswxZdZVwrkH
+	5TJRXTmcz57EvPHj07PBTrvCJaCEGuftAp+3rgQ14QaoTSXSxu2pyf09OnP9PC7+LX4MbZ
+	pQwN9gposebgqqLa4aLFRNqXgYFOdRtp+CKIn30FTYyvvsgQq6NUwVdqkgqYE+m4/8Rmu1
+	iihZDcz5qzDmpdQgKJMCMh9pVlcg9XvBKwujlRU3ep7YCsASiKAChlRfP3sWpCnFoGkof0
+	ZtDCtMl5DH4mL9cvIsD3CD7GndYOqN9OBv0vEvmDqSizBOTr4ViVXZ3rzoqu4A==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1756817773;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=fqaO+SeV+juuMOmuDP+CCM9/ezm8a+cuzkEOZBsIzaY=;
+	b=cSY2/ZxwSkTcM3n6h5dg0DWREVEm4aceh5FyNagu4bT+lojglO0U9ENF3AeFej8rv30yCv
+	HhNHiyDBYRxVUcBg==
+To: Ryan Chen <ryan_chen@aspeedtech.com>, ryan_chen
+ <ryan_chen@aspeedtech.com>, Eddie James <eajames@linux.ibm.com>, Rob
+ Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
+ Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
+ Jeffery <andrew@codeconstruct.com.au>, Lee Jones <lee@kernel.org>,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 1/4] irqchip/aspeed-scu-ic: Refactor driver to
+ support variant-based initialization
+In-Reply-To: <20250831021438.976893-2-ryan_chen@aspeedtech.com>
+References: <20250831021438.976893-1-ryan_chen@aspeedtech.com>
+ <20250831021438.976893-2-ryan_chen@aspeedtech.com>
+Date: Tue, 02 Sep 2025 14:56:12 +0200
+Message-ID: <871pop2etv.ffs@tglx>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,83 +77,43 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250901055922.1553550-8-jacky_chou@aspeedtech.com>
+Content-Type: text/plain
 
-Hi Jacky,
+On Sun, Aug 31 2025 at 10:14, Ryan Chen wrote:
+>  	scu_ic->irq_domain = irq_domain_create_linear(of_fwnode_handle(node), scu_ic->num_irqs,
+> -						   &aspeed_scu_ic_domain_ops,
+> -						   scu_ic);
+> +						      &aspeed_scu_ic_domain_ops,
+> +						      scu_ic);
 
-kernel test robot noticed the following build errors:
+Please move scu_ic to the previous line.
 
-[auto build test ERROR on pci/for-linus]
-[also build test ERROR on robh/for-next linusw-pinctrl/devel linusw-pinctrl/for-next linus/master v6.17-rc4 next-20250902]
-[cannot apply to pci/next]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
+> +aspeed_scu_ic_find_variant(struct device_node *np)
+>  {
+> -	struct aspeed_scu_ic *scu_ic = kzalloc(sizeof(*scu_ic), GFP_KERNEL);
+> -
+> -	if (!scu_ic)
+> -		return -ENOMEM;
+> +	for (int i = 0; i < ARRAY_SIZE(scu_ic_variants); i++)
+> +		if (of_device_is_compatible(np, scu_ic_variants[i].compatible))
+> +			return &scu_ic_variants[i];
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-soc-aspeed-Add-ASPEED-PCIe-Config/20250901-140231
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git for-linus
-patch link:    https://lore.kernel.org/r/20250901055922.1553550-8-jacky_chou%40aspeedtech.com
-patch subject: [PATCH v3 07/10] PHY: aspeed: Add ASPEED PCIe PHY driver
-config: arm-allmodconfig (https://download.01.org/0day-ci/archive/20250902/202509021806.1NtrcLpF-lkp@intel.com/config)
-compiler: arm-linux-gnueabi-gcc (GCC) 15.1.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250902/202509021806.1NtrcLpF-lkp@intel.com/reproduce)
+the for loop wants curly brackets.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202509021806.1NtrcLpF-lkp@intel.com/
+https://www.kernel.org/doc/html/latest/process/maintainer-tip.html#bracket-rules
 
-All errors (new ones prefixed by >>):
+> +	scu_ic->irq_enable    = variant->irq_enable;
+> +	scu_ic->irq_shift     = variant->irq_shift;
+> +	scu_ic->num_irqs      = variant->num_irqs;
 
-   In file included from drivers/phy/aspeed/phy-aspeed-pcie.c:14:
->> drivers/phy/aspeed/phy-aspeed-pcie.c:195:25: error: 'aspeed_pcie_of_match_table' undeclared here (not in a function); did you mean 'aspeed_pcie_phy_of_match_table'?
-     195 | MODULE_DEVICE_TABLE(of, aspeed_pcie_of_match_table);
-         |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/linux/module.h:250:15: note: in definition of macro 'MODULE_DEVICE_TABLE'
-     250 | static typeof(name) __mod_device_table__##type##__##name                \
-         |               ^~~~
->> include/linux/module.h:250:21: error: '__mod_device_table__of__aspeed_pcie_of_match_table' aliased to undefined symbol 'aspeed_pcie_of_match_table'
-     250 | static typeof(name) __mod_device_table__##type##__##name                \
-         |                     ^~~~~~~~~~~~~~~~~~~~
-   drivers/phy/aspeed/phy-aspeed-pcie.c:195:1: note: in expansion of macro 'MODULE_DEVICE_TABLE'
-     195 | MODULE_DEVICE_TABLE(of, aspeed_pcie_of_match_table);
-         | ^~~~~~~~~~~~~~~~~~~
---
-   In file included from phy-aspeed-pcie.c:14:
-   phy-aspeed-pcie.c:195:25: error: 'aspeed_pcie_of_match_table' undeclared here (not in a function); did you mean 'aspeed_pcie_phy_of_match_table'?
-     195 | MODULE_DEVICE_TABLE(of, aspeed_pcie_of_match_table);
-         |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~
-   include/linux/module.h:250:15: note: in definition of macro 'MODULE_DEVICE_TABLE'
-     250 | static typeof(name) __mod_device_table__##type##__##name                \
-         |               ^~~~
->> include/linux/module.h:250:21: error: '__mod_device_table__of__aspeed_pcie_of_match_table' aliased to undefined symbol 'aspeed_pcie_of_match_table'
-     250 | static typeof(name) __mod_device_table__##type##__##name                \
-         |                     ^~~~~~~~~~~~~~~~~~~~
-   phy-aspeed-pcie.c:195:1: note: in expansion of macro 'MODULE_DEVICE_TABLE'
-     195 | MODULE_DEVICE_TABLE(of, aspeed_pcie_of_match_table);
-         | ^~~~~~~~~~~~~~~~~~~
+Please use a TAB not spaces when you want to align things.
 
+> +IRQCHIP_DECLARE(ast2600_scu_ic0, "aspeed,ast2600-scu-ic0", aspeed_scu_ic_of_init);
+> +IRQCHIP_DECLARE(ast2600_scu_ic1, "aspeed,ast2600-scu-ic1",     aspeed_scu_ic_of_init);
 
-vim +195 drivers/phy/aspeed/phy-aspeed-pcie.c
+Stray TAB in the last line.
 
-   183	
-   184	static const struct of_device_id aspeed_pcie_phy_of_match_table[] = {
-   185		{
-   186			.compatible = "aspeed,ast2600-pcie-phy",
-   187			.data = &pcie_phy_ast2600,
-   188		},
-   189		{
-   190			.compatible = "aspeed,ast2700-pcie-phy",
-   191			.data = &pcie_phy_ast2700,
-   192		},
-   193		{ },
-   194	};
- > 195	MODULE_DEVICE_TABLE(of, aspeed_pcie_of_match_table);
-   196	
+Thanks,
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+        tglx
 
