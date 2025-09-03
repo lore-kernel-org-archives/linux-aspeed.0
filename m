@@ -1,63 +1,94 @@
-Return-Path: <linux-aspeed+bounces-2137-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2139-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15281CA1012
-	for <linux-aspeed@archiver.kernel.org>; Wed,  3 Sep 2025 22:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2072CA1010
+	for <linux-aspeed@archiver.kernel.org>; Wed,  3 Sep 2025 23:42:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHHp13tr0z2xnh;
-	Thu,  4 Sep 2025 08:48:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756939705;
-	cv=none; b=k1KcG9S+kCSBNvFX25LniTgrhrFU9dUuq4X0hbukBeBfF/9Cfkif+ciPUfGyvM8WGOlePfULM6Iku4dTQM6Cnx7uqPPqbzJOLHBT/yJ6qjAO5qbGN85XnNxXS9+6MrIwNxVOs+dGuCK5div1Hyo4NMV8Gzt2wmX6q+YHubX9F8/Q526Sq1MWSN01zAuiPx9n4sO3+MaLlJBGY2GMh/JVZyPsLrUDwedgmEJdaWvF/n8f2AU5JskhHNUws4C4Hlt+iEen04y3X98XSGuiXCmd37QDGibN/NXUWTPnMcs6hTXuWPtj8d5IcPPEhokuGZW+e85tPUggy/eQ+urQchdlFQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHK0G2Xl0z2yrP;
+	Thu,  4 Sep 2025 09:42:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756901172;
+	cv=none; b=guOHFm9eb/hA+lvbLs9N7URPQXhmgr2DVDX9QXCNvrWtu7PUC7c3K7onbXvnvQwQgIY496nOb8rUghtdUziTQ71BTfXEmKfLBAfrdUttcIsfCydeSHfXUPlX8KIDLesQYcyEF80/InlSLhwQDfEXg2AISUt0U8dZrUzP9T6h4FhV2UpZJHXhI5h3NW53l/Qw9KYkEpwJty2Lr/JuNQW1Z9oUxSg7qHtfvUOazbLXWgInyj1TqQ4EBnIgev96HB0ghXDAMT6uEzzuG2/QjHtmfftojUyINAtSGECBUbboHT+yxvW6VjKw16KJ4zfe7rKboW4HqN1rEeDAeeVDFwupSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756939705; c=relaxed/relaxed;
-	bh=kJr/vsg11PDGde+tPwNUDMrCDz/yMniDPFre5VbKIxQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=QeUWQ06av6xGRBe3yoLfjOxfJLpIGvK/XdKrSz0pGz/RNPwIpUn0TjNox90tN4nNaOHAfbWuRwM8Hf1aJp/AIj4SecblbX4FZBQFIT10a5inmYpjbqd//6A1hxVSlfauSVouCon4wZYO8XHs0MmvY4SOPdLP5iCwQjJVWiwC1IanC3nxEOtevV/FFSg3/KqCEC9K61AdClSgoEADz7re/T3Q5bBA/jPMAtLBP7Hv84vHBTLh38rj75qbJJegBtJpKU4BUKeuRNjeV2eODGE0iCCsHGyq5HkvmCtkg/4k6LEeHORDmqPLa0C5K4d/qwAS79ww4NMG+rGJfH4fouFD7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qhyLpheo; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1756901172; c=relaxed/relaxed;
+	bh=j5iEAlc4MoMtFJUAvR6dtjmQqf3jvqvKGSuRvb2CExE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=e7txoh2sEtIiqVBuxFViLq5cNjR/4Kgwl2T5SVkFOrtm6WRJOaYxSUKIW8Cr1fqH765n3k+pcZiLZbcYP1AYUJSNw7a4fZFl5LELZ42ZDnnCaqTLwb80WTpIJVJ8DIhWKDcaJF3dP2Y5MC2qNm23FKGkb5CeIprbMjS4hKUNXOSFzlu9W+JVL5VGVUh/BjYDRRnTZi8qM2v+onzi5+oza6IzKIjzXvVy3g/V9kYhFp9w8SDlIQb+Tgp8l+vz+HdTo/gineAxod4+O9tOlaRh3x2pYfU7q6umkk0BwaSAp3gYHS7JRnS4NQeMbteDajCmtSUiqxypcMPgokoqfHKPag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aSpVGqEB; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qhyLpheo;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=aSpVGqEB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHHp05kTCz2xgp;
-	Thu,  4 Sep 2025 08:48:24 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8E16C4151A;
-	Wed,  3 Sep 2025 22:48:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B871C4CEE7;
-	Wed,  3 Sep 2025 22:48:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756939702;
-	bh=YcfB4l+gmOM4aOgmEy4a8CGvNnhQdJHOOYqURSHDj/g=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=qhyLpheof5ut+vh/LbKCU6pWpxhQ66XWnCqc2B5sVd0zmTjqvde3dV1OMZrH/YTbR
-	 FTXUkWtQY0JcfaUF1fEzYX6/YFTIxAO9ZZN6LoNW7lwkpDaRDa+yVD92hrCkEjzqoH
-	 r4GPh0qGNf1IFkgXD6VKEt5ABn7AwepPj3ao3bN2cGQNt86Krw5aCetyOmHxFucaAh
-	 473zQTCG1yuEu0QYAAxClYv+CS2rKoAhokY0RIjPXXoABWNBxEkqxVZNMxaEQthLv0
-	 qsa3AE+wWhNLwtKsVthiPoJ1qrCrpFy60yRB70u62qhIl/T3MSBh1Bom4snBP/y0mU
-	 D9/fNGSiGMTgw==
-Date: Wed, 3 Sep 2025 17:48:20 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, bhelgaas@google.com,
-	lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
-	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
-	joel@jms.id.au, andrew@codeconstruct.com.au, vkoul@kernel.org,
-	kishon@kernel.org, linus.walleij@linaro.org, p.zabel@pengutronix.de,
-	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	linux-phy@lists.infradead.org, openbmc@lists.ozlabs.org,
-	linux-gpio@vger.kernel.org
-Subject: Re: [PATCH v3 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
-Message-ID: <20250903224820.GA1234878@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cH1Xx1Bylz2xrL
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  3 Sep 2025 22:06:08 +1000 (AEST)
+Received: by mail-pg1-x535.google.com with SMTP id 41be03b00d2f7-b4c72885c8bso4696679a12.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Sep 2025 05:06:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1756901165; x=1757505965; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=j5iEAlc4MoMtFJUAvR6dtjmQqf3jvqvKGSuRvb2CExE=;
+        b=aSpVGqEBRFFNkiBcYTJYLgqYE0Qwo8ImPGiNNR6tbrw7xTwbl6J4/lUpT6duapssid
+         3N2Kagq2lHLTlmYZFSrmlMGOAAqxpOxVP3OIHg7AcvDaIodF+ZK2QzdxTu5Ds3RP+ao9
+         w6BT7bW4Kpm/bm7jCs5qo4tqqoDV2ZfyDR7FIZ07fc7aDhzm/0KQwM/7AGR91LxqoaXA
+         V6GBMSNFZ2f9NHUsTf0Ib6+skJFHu7SqV0kDjO4z9PWTxlWyAy0pZwrIgzdIsooU09VQ
+         8QWxxZr/ICo7s8ROLRmDVHDpHBtwBVbg+6NNLgZvi1vv44r0rvZDNDtW+5tVDyp9E4SB
+         P7sw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756901165; x=1757505965;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=j5iEAlc4MoMtFJUAvR6dtjmQqf3jvqvKGSuRvb2CExE=;
+        b=PIXqZ56D9QQddW4SO51Jr8IjEJlo5wlhd+Opzc0SuZ018axWNGlLWqiGFI4XvzyGE6
+         NeNPodViiy1qkNG8DTUbWpTN5Fs1Tya6T5h6solI6yMNaz7LOgTp8xR3SPweNUfoJjX5
+         hWjGHQ0DOxKiOM9tyZ52ChuNZzshhG80KhXeihxU/OqK3i/tE2pBwnTC+oIyZMFI7xZV
+         LusvMtNB836rXMGZYS/d+EdHCHVF8kaWz1n8BLxuUWtxVCA/mn9cO0drgbxJrEtlwKzt
+         ycZ9LrQuvHFO+2V8G7bfxBoH4O08rsbdU+Wa7PQ9GSiukeAdu/tsPL4Rmk+66Ojfui0Y
+         FBpA==
+X-Forwarded-Encrypted: i=1; AJvYcCWv45z9Fr7g1VBqdQxmmohijrw0D+gmXtDDabQ2W2c3rNTT7XfYKGLlmgh/U2DPqQivkwJm21tKm+Vwv2w=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YynM+jyD7+YhqQ2ZJyHQ7jbu55xJm1PhWHLN86GV1CuUfOA18Xt
+	H2BcHn8308Y2a1whlArsbe3C3a9MaUbfm03E+UpmKDLbuxgWGi76eYZ6
+X-Gm-Gg: ASbGncvLQECYu+EeppzTRgrDvA24oi018k/8vLJNBcASSI1r4U2acqIsx0xdvbMme3G
+	nj/8lh68cpHRnLPlGGc/5AnKQEC1H5zrRuwfnhgvDGRnEELSZjlkJGSTYM0DNl80EmFAoOrzg26
+	MszXAZeJIk0c1eRxfVMWo9br9tTJNyLEJAVRyrW6NQ7kttCoBxGUbHJARhVNv7AsOYZjjWzBK4R
+	qeMYYcvdCAICh2ZQiKSbvZ306FhzYWKfePMuk0BHEm4sDw0+nVpoiHyvZuUWDEU9zjBMaw6F0v4
+	0ERTxvRUVIXQ4H9Bvhf1FLttj213HYPwpSWHuWh+hQuMUGbDkhPlf1UU7zH9PImL2GwTKayseKk
+	gYty91DCP/TdcplriAg1UKm9zhglIrZDSGhvhexKld/jYEm5YNcz45Dyfx8tvQWS7nIS8z2h71V
+	DAIlTH/Q+/PU+INp54CTeRlJxti6Anaw==
+X-Google-Smtp-Source: AGHT+IGmOK+zU4uhlF8L1/G5THkM81+gGkxdGDOsluSdhqpOhIUayM/TmHmVlI5g8VrEuAb6A/4e9g==
+X-Received: by 2002:a17:903:2383:b0:246:570:2d9a with SMTP id d9443c01a7336-24944b1fc6emr204959945ad.59.1756901165063;
+        Wed, 03 Sep 2025 05:06:05 -0700 (PDT)
+Received: from pk-pc.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2490648c89bsm160905185ad.109.2025.09.03.05.06.02
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Sep 2025 05:06:04 -0700 (PDT)
+From: "P.K. Lee" <pkleequanta@gmail.com>
+To: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	patrick@stwcx.xyz
+Cc: Jerry.Lin@quantatw.com,
+	Jason-Hsu@quantatw.com,
+	yang.chen@quantatw.com,
+	p.k.lee@quantatw.com
+Subject: [PATCH v11 0/2] Add Meta (Facebook) Ventura BMC (AST2600)
+Date: Wed,  3 Sep 2025 20:05:58 +0800
+Message-ID: <20250903120600.632041-1-pkleequanta@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,327 +102,80 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250901055922.1553550-10-jacky_chou@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
 
-On Mon, Sep 01, 2025 at 01:59:21PM +0800, Jacky Chou wrote:
-> Introduce PCIe Root Complex driver for ASPEED SoCs. Support RC
-> initialization, reset, clock, IRQ domain, and MSI domain setup.
-> Implement platform-specific setup and register configuration for
-> ASPEED. And provide PCI config space read/write and INTx/MSI
-> interrupt handling.
+Add Linux device tree entry related to Meta (Facebook) Ventura specific
+devices connected to the BMC (AST2600) SoC. The purpose of Ventura is to
+detect liquid leakage from all compute trays, switch trays and rack
+sensors within the rack, log the events, and take necessary actions
+accordingly.
 
-> +/* TLP configuration type 0 and type 1 */
-> +#define CRG0_READ_FMTTYPE                                        \
-> +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                     \
-> +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_NO_DATA, \
-> +				       PCIE_TLP_TYPE_CFG0_RD))
-> +#define CRG0_WRITE_FMTTYPE                                    \
-> +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                  \
-> +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_DATA, \
-> +				       PCIE_TLP_TYPE_CFG0_WR))
-> +#define CRG1_READ_FMTTYPE                                        \
-> +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                     \
-> +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_NO_DATA, \
-> +				       PCIE_TLP_TYPE_CFG1_RD))
-> +#define CRG1_WRITE_FMTTYPE                                    \
-> +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                  \
-> +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_DATA, \
-> +				       PCIE_TLP_TYPE_CFG1_WR))
-> +#define CRG_PAYLOAD_SIZE		0x01 /* 1 DWORD */
+---
+v1:
+    1. Create ventura dts file.
+    2. Add commit msg.
+    3. Use format-patch to generate patch.
+    4. Add subject prefixes matching the subsystem.
+---
+v2:
+    1. Modify email content.
+---
+v3:
+    1. Add mail list.
+---
+v4:
+    1. Apply git send-email --thread option.
+    2. Sort nodes in the dts alphanumerically.
+---
+v5:
+    1. Run scripts/checkpatch.pl and fix reported warnings.
+    2. Remove unnecessary 88E6393X CONFIG FRU.
+---
+v6:
+    1. Add a new stage for the DTS change.
+    2. Run scripts/checkpatch.pl and fix reported error.
+    3. Fix the issue in a separate patch.
+---
+v7:
+    1. Fix broken indentation in the device tree file.
+    2. Sort nodes alphabetically, then by address if equal.
+    3. Rename fan sensor nodes from 'hwmon' to 'fan-controller'.
+---
+v8:
+    1. This patch series has significant changes compared to
+       previous versions, and quite some time has passed since the last
+       submission.Therefore, previously received Acked-by/Reviewed-by/Tested-by
+       tags are not included in this version.
+       If needed, tags can be added again after review of thisnew version.
+---
+v9:
+    1. Reordered the node sequence under i2c5.
+    2. Added a description of the platform's intended use to the commit
+       messages.
+    3. Added 3 GPIO expanders to i2c10 and defined the necessary GPIO
+       line names.
+---
+v10:
+    1. Added IRQ support in GPIO expanders under i2c10 to handle edge-triggered
+       events.
+    2. Reordered the nodes.
+---
+v11:
+    1. Modified the position for i2c3mux0ch6 and i2c3mux0ch7.
 
-What does "CRG" in the above mean?  If it means the same as "CFG",
-i.e., an abbreviation for "configuration", can you use "CFG" instead?
-It it's to match an internal spec, go ahead and keep "CRG".
+P.K. Lee (2):
+  dt-bindings: arm:aspeed add Meta Ventura board
+  ARM: dts: aspeed: ventura: add Meta Ventura BMC
 
-> + * struct aspeed_pcie_rc_platform - Platform information
-> + * @setup: initialization function
-> + * @reg_intx_en: INTx enable register offset
-> + * @reg_intx_sts: INTx status register offset
-> + * @reg_msi_en: MSI enable register offset
-> + * @reg_msi_sts: MSI enable register offset
-> + * @msi_address: HW fixed MSI address
-> + */
-> +struct aspeed_pcie_rc_platform {
-> +	int (*setup)(struct platform_device *pdev);
-> +	int reg_intx_en;
-> +	int reg_intx_sts;
-> +	int reg_msi_en;
-> +	int reg_msi_sts;
-> +	int msi_address;
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../aspeed/aspeed-bmc-facebook-ventura.dts    | 1578 +++++++++++++++++
+ 3 files changed, 1580 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dts
 
-I think this should be u32 to match struct msi_msg.address_lo.
+base-commit: 533cec246f7f0ccadd7d9fb4e664d38418633c6 
+branch: dev-6.6
+-- 
+2.43.0
 
-> +static irqreturn_t aspeed_pcie_intr_handler(int irq, void *dev_id)
-> +{
-> +	struct aspeed_pcie *pcie = dev_id;
-> +	const struct aspeed_pcie_rc_platform *platform = pcie->platform;
-> +	unsigned long status;
-> +	unsigned long intx;
-> +	u32 bit;
-> +	int i;
-> +
-> +	intx = FIELD_GET(PCIE_INTX_STS,
-> +			 readl(pcie->reg + platform->reg_intx_sts));
-> +	for_each_set_bit(bit, &intx, PCI_NUM_INTX)
-> +		generic_handle_domain_irq(pcie->intx_domain, bit);
-> +
-> +	if (IS_ENABLED(CONFIG_PCI_MSI)) {
-> +		for (i = 0; i < 2; i++) {
-> +			int msi_sts_reg = platform->reg_msi_sts + (i * 4);
-> +
-> +			status = readl(pcie->reg + msi_sts_reg);
-> +			writel(status, pcie->reg + msi_sts_reg);
-> +
-> +			/*
-> +			 * AST2700 A1 workaround:
-> +			 * The MSI status needs to clear one more time.
-> +			 */
-> +			if (of_device_is_compatible(pcie->dev->of_node,
-> +						    "aspeed,ast2700-pcie"))
-
-It looks pretty expensive to look this up for every interrupt.  It's
-constant for the life of the driver, so you only need to do it once at
-probe time.
-
-> +				writel(status, pcie->reg + msi_sts_reg);
-> +
-> +			for_each_set_bit(bit, &status, 32) {
-> +				bit += (i * 32);
-> +				generic_handle_domain_irq(pcie->msi_domain,
-> +							  bit);
-> +			}
-> +		}
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-
-> +static int aspeed_msi_set_affinity(struct irq_data *irq_data,
-> +				   const struct cpumask *mask, bool force)
-> +{
-> +	return -EINVAL;
-> +}
-
-From comparing with other drivers, I doubt this is needed.
-
-> +
-> +static struct irq_chip aspeed_msi_bottom_irq_chip = {
-> +	.name = "ASPEED MSI",
-> +	.irq_compose_msi_msg = aspeed_msi_compose_msi_msg,
-
-I would prefer a name that matches irq_chip.irq_compose_msi_msg, e.g.,
-"aspeed_irq_compose_msi_msg()".
-
-> +static int aspeed_pcie_msi_init(struct aspeed_pcie *pcie)
-> +{
-> +	int ret = 0;
-> +
-> +	writel(~0, pcie->reg + pcie->platform->reg_msi_en);
-> +	writel(~0, pcie->reg + pcie->platform->reg_msi_en + 0x04);
-> +	writel(~0, pcie->reg + pcie->platform->reg_msi_sts);
-> +	writel(~0, pcie->reg + pcie->platform->reg_msi_sts + 0x04);
-> +
-> +	struct irq_domain_info info = {
-> +		.fwnode		= dev_fwnode(pcie->dev),
-> +		.ops		= &aspeed_msi_domain_ops,
-> +		.host_data	= pcie,
-> +		.size		= MAX_MSI_HOST_IRQS,
-> +	};
-> +
-> +	pcie->msi_domain = msi_create_parent_irq_domain(&info,
-> +							&aspeed_msi_parent_ops);
-> +	if (!pcie->msi_domain)
-> +		return dev_err_probe(pcie->dev, -ENOMEM,
-> +				     "failed to create MSI domain\n");
-> +
-> +	return ret;
-
-Useless "ret".  Remove it and just "return 0;"
-
-> +static int aspeed_ast2600_setup(struct platform_device *pdev)
-> +{
-> +	struct aspeed_pcie *pcie = platform_get_drvdata(pdev);
-> +	struct device *dev = pcie->dev;
-> +
-> +	if (pcie->host_bus_num != 0x80)
-> +		return dev_err_probe(dev, -EINVAL,
-> +				     "The host bus must be 0x80\n");
-
-Why not check this at the point you read it from the devicetree?
-
-> +	pcie->ahbc = syscon_regmap_lookup_by_phandle(dev->of_node,
-> +						     "aspeed,ahbc");
-> +	if (IS_ERR(pcie->ahbc))
-> +		return dev_err_probe(dev, PTR_ERR(pcie->ahbc),
-> +				     "failed to map ahbc base\n");
-
-Same here.  Looks like a devicetree validation check.
-
-> +static int aspeed_pcie_parse_port(struct aspeed_pcie *pcie,
-> +				  struct device_node *node,
-> +				  int slot)
-> +{
-> +	struct aspeed_pcie_port *port;
-> +	struct device *dev = pcie->dev;
-> +	int ret;
-> +
-> +	port = devm_kzalloc(dev, sizeof(*port), GFP_KERNEL);
-> +	if (!port)
-> +		return -ENOMEM;
-> +
-> +	port->clk = devm_get_clk_from_child(dev, node, NULL);
-> +	if (IS_ERR(port->clk))
-> +		return dev_err_probe(dev, PTR_ERR(port->clk),
-> +				     "failed to get pcie%d clock\n", slot);
-> +
-> +	port->phy = devm_of_phy_get(dev, node, NULL);
-> +	if (IS_ERR(port->phy))
-> +		return dev_err_probe(dev, PTR_ERR(port->phy),
-> +				     "failed to get phy pcie%d\n",
-> +				     port->slot);
-
-port->slot hasn't been set yet.
-
-> +	port->perst = of_reset_control_get_exclusive(node, "perst");
-> +	if (IS_ERR(port->perst))
-> +		return dev_err_probe(dev, PTR_ERR(port->perst),
-> +				     "failed to get pcie%d reset control\n",
-> +				     slot);
-> +	ret = devm_add_action_or_reset(dev, aspeed_pcie_reset_release,
-> +				       port->perst);
-> +	if (ret)
-> +		return ret;
-> +	reset_control_assert(port->perst);
-> +
-> +	port->slot = slot;
-> +	port->pcie = pcie;
-> +
-> +	INIT_LIST_HEAD(&port->list);
-> +	list_add_tail(&port->list, &pcie->ports);
-> +
-> +	return 0;
-> +}
-
-> +static int aspeed_pcie_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct pci_host_bridge *host;
-> +	struct aspeed_pcie *pcie;
-> +	struct device_node *node = dev->of_node;
-> +	const struct aspeed_pcie_rc_platform *md;
-> +	u32 bus_range[2];
-> +	int irq, ret;
-> +
-> +	md = of_device_get_match_data(dev);
-> +	if (!md)
-> +		return -ENODEV;
-> +
-> +	host = devm_pci_alloc_host_bridge(dev, sizeof(*pcie));
-> +	if (!host)
-> +		return -ENOMEM;
-> +
-> +	pcie = pci_host_bridge_priv(host);
-> +	pcie->dev = dev;
-> +	pcie->tx_tag = 0;
-> +	platform_set_drvdata(pdev, pcie);
-> +
-> +	pcie->platform = md;
-> +	pcie->host = host;
-> +	INIT_LIST_HEAD(&pcie->ports);
-> +
-> +	ret = of_property_read_u32_array(node, "bus-range", bus_range,
-> +					 ARRAY_SIZE(bus_range));
-
-No other drivers do this; why do you need it?
-
-> +	if (ret) {
-> +		dev_warn(dev, "failed to get bus range, assuming bus is 0\n");
-> +		pcie->host_bus_num = 0;
-> +	}
-> +	pcie->host_bus_num = bus_range[0];
-> +
-> +	pcie->reg = devm_platform_ioremap_resource(pdev, 0);
-> +	if (IS_ERR(pcie->reg))
-> +		return PTR_ERR(pcie->reg);
-> +
-> +	pcie->domain = of_get_pci_domain_nr(node);
-
-Almost no drivers use this; why do you need it?
-
-> +	pcie->h2xrst = devm_reset_control_get_exclusive(dev, "h2x");
-> +	if (IS_ERR(pcie->h2xrst))
-> +		return dev_err_probe(dev, PTR_ERR(pcie->h2xrst),
-> +				     "failed to get h2x reset\n");
-> +
-> +	ret = devm_mutex_init(dev, &pcie->lock);
-> +	if (ret)
-> +		return dev_err_probe(dev, ret, "failed to init mutex\n");
-> +
-> +	ret = pcie->platform->setup(pdev);
-> +	if (ret)
-> +		return dev_err_probe(dev, ret, "failed to setup PCIe RC\n");
-> +
-> +	ret = aspeed_pcie_parse_dt(pcie);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = aspeed_pcie_init_ports(pcie);
-> +	if (ret)
-> +		return ret;
-> +
-> +	host->sysdata = pcie;
-> +
-> +	ret = aspeed_pcie_init_irq_domain(pcie);
-> +	if (ret)
-> +		return ret;
-> +
-> +	irq = platform_get_irq(pdev, 0);
-> +	if (irq < 0)
-> +		return irq;
-> +
-> +	ret = devm_add_action_or_reset(dev, aspeed_pcie_irq_domain_free, pcie);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = devm_request_irq(dev, irq, aspeed_pcie_intr_handler, IRQF_SHARED,
-> +			       dev_name(dev), pcie);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = pci_host_probe(host);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-
-This is the same as:
-
-  return pci_host_probe(hoste);
-
-> +}
-> +
-> +const struct aspeed_pcie_rc_platform pcie_rc_ast2600 = {
-> +	.setup = aspeed_ast2600_setup,
-> +	.reg_intx_en = 0xc4,
-> +	.reg_intx_sts = 0xc8,
-> +	.reg_msi_en = 0xe0,
-> +	.reg_msi_sts = 0xe8,
-> +	.msi_address = 0x1e77005c,
-
-Where does this .msi_address come from?  Does this depend on an
-address map that could vary based on the platform?  Should it come
-from devicetree?
-
-> +};
-> +
-> +const struct aspeed_pcie_rc_platform pcie_rc_ast2700 = {
-> +	.setup = aspeed_ast2700_setup,
-> +	.reg_intx_en = 0x40,
-> +	.reg_intx_sts = 0x48,
-> +	.reg_msi_en = 0x50,
-> +	.reg_msi_sts = 0x58,
-> +	.msi_address = 0x000000f0,
-> +};
 
