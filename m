@@ -1,59 +1,63 @@
-Return-Path: <linux-aspeed+bounces-2135-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2136-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4539CA0FF2
-	for <linux-aspeed@archiver.kernel.org>; Wed,  3 Sep 2025 14:05:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B5E1CA1010
+	for <linux-aspeed@archiver.kernel.org>; Wed,  3 Sep 2025 22:32:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cH4BX6xy6z2xd6;
-	Thu,  4 Sep 2025 00:05:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756908324;
-	cv=none; b=I6WxaJ/F3T68XeIUSdkiv8mp270Z4zaUNMoNd78KLFz587k+Vvgvi65szHsAQHW+yF8g18xT5xufrZ0Ho3qQthJv+mekjqGempaW3JbUlIR1M9QsI/GLaus+Ctue1rQllR0c0LyEaaB0XnVrRlr+q6EyMGdBGYPML8YWTuwMe+FaeOxmoI1KGVCeaffcnBC6dlHn9FOFJ6MZLnO4zdAIjMO/WXokeo1d6lk8/t0W/zCm7ohbJ1yqSUTQEJ55jrb+pj/Ubzud1oMZXwvouM1JCfZHWm/p7G6ZFWdqgJNwxXFPrSlCX/JN9o/Ir7etFmuli1S80pkTHiqJ1A66AdiXlw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHHRC74v3z2xnh;
+	Thu,  4 Sep 2025 08:32:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756938727;
+	cv=none; b=HfySNjJByhHkB+o3MXtmDSrpJluWa3VTfDQixxaES60i+ZhgGEqmRzYfcIxAWKlJyu7lV5W56yOqB3lrsNFRVK0nCrHU59GQ6g9qMxPYoOdeuLZ3cS72bIh+uX/R4wPMxjRA/Gf0f/BTx3E0JlKzTEuwtpkIl4nY74TTwh2dAo6zlqhfmpnfEkHtkB9Fst3XKcuob/9JzyhY7me/XijgH3JcukytKP4vQuX58R5/x8WQet8m8YpcSt1p1NP5oXuS8iYzHt93rL0NopWopq8uCO7vKhfrAZ4dCUAIu1h2PEhdoSYk5lcP57KZlHdFaxqS3iPTKbOsAvKw6fRyyblMMA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756908324; c=relaxed/relaxed;
-	bh=Vg5ewRXhTTAj3dwOtg+KKWn0lOGtPCOEr24O5UKKpJQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gWzQ+z+Kuv8t2Row51bwdrKc0xsHGn8tQMMJHp/9TvnYQlMCdBAj7rvivFkrifFpVsLA14rMlEkivtrLBIP4xoFZT8MR1G1qI0fCVbRfgWEAYNRUfbPMftEvM9LHpD+DOlIGvlXURePmOWD+Me8mDqWI4oIvINLsGB2s3k3+CMJ5a8ykPVx0Ewe529kaWEcDo10FRMZlvZ95ZmienKYqPbhWGP72/7/ctsRo8ZI8I0oNizN29Moxt5QMNQtwGoIyaJWhLa+CkRrZG59jcZiQO4lomptvSRaWziQBL0MARPkl81pn0laxdkEK2Sh476eMOT82Kh2+RkHoA5Rqy7KusQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GarjbhYP; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756938727; c=relaxed/relaxed;
+	bh=x3WyPe8tzcvkjPJMTuyLmMzJxuLJegDqZyREtGdOCyA=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=f6QqxxizGEg/bEykxSjCaFU8KQJLtS7dMfuBBMozyJw8L46TgsNQMupMq68aVGCtpFju7T/xzL4IPYpPzDNvp/RXs3lJVHBMzrobUcbtsE3MXwysnRM9hQgtDMPr0lqZwZWVCR9fY+/I8f4RyKouG7wlLvsU38ZIM+vEPf3iBA0/jvWLXHu5xtGPM++KDQZhcLu1TqrkuRI1TDWQD3P+6FOn+IHsO3HMMMSU7nEWf7C9jLWQJJVVESkvD3vJaUC25mw7XUKohxoJelhguH0iNT0LdMsRbqnolbPEt5TtnxAKafHYTF0ug93B7lYd2bFTXHqi3NcxvfqNRL5hRqNkwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nrz9NKhM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GarjbhYP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nrz9NKhM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cH4BX0bqDz2xQ1
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  4 Sep 2025 00:05:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHHRC2MM7z2xQ2;
+	Thu,  4 Sep 2025 08:32:07 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B914043A98
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  3 Sep 2025 14:05:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 99F01C4CEF0
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  3 Sep 2025 14:05:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 568336024F;
+	Wed,  3 Sep 2025 22:32:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEB75C4CEE7;
+	Wed,  3 Sep 2025 22:32:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756908321;
-	bh=eKNu0P169Q3NEmF9/2kn88R7etBh4b2ftcRq7KbNGzg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=GarjbhYPuBwzN4LKvw70mu25trun6v2gsNZoMS79qq5b6fFdnkIvAU84g+t/ZNTuA
-	 qItjKLs65j8DmS5uRuHG/tkDx9bXVhY6n/sDUArtE3jYBFiDdbCBST3QfRGBlrIjZZ
-	 0EOijnVmbkyGgntMKf9LztVwMTAF3BXSFTiQIhxDLLh5BAaXagqUwEBIB/EXoG4eUl
-	 281whCCc5omD9u36zHFpRpeOaOwok4ld/LprRIQlPor080oofNvmT9lX50gaNYeXn4
-	 27f6a9fUVkD0fJtu6rpxsExGEGI8IjbPgMEwoK885Yu8kqSJZ31Y78BR6mvEm74tEa
-	 BkIhFCAL3LF5Q==
-Received: by mail-ed1-f45.google.com with SMTP id 4fb4d7f45d1cf-61cd3748c6dso13488736a12.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Sep 2025 07:05:21 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXAAUnTXMat1EMS0Z/GO1x/i5FKtAHYBO4K5fH4/37zFGouxHxlPA5uDHp9BLeJ2hfNri8d/8lFWWeo8pc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzUry3NwUqhMjg8DJcJCFsykh1v9zNzQ128SJ7Z3fB41TE+vCMS
-	zvqWXGFUu4Mxb1AeUEejoxAyqZmxje3FNonCjYuQqQUEmF5Q7caN/J+6gHRnJnj531MXLrDuZWm
-	11RjOMWGd986qfnN1OjCHEqcfL2SO8A==
-X-Google-Smtp-Source: AGHT+IHhgqqdWQtLgJ3n4i+fkorAw1PLf/dG7GMkfPu1VyhaFYexbX0Opd6FI4UepF1zq8MJg0/D/0FlKAcuRTaWSho=
-X-Received: by 2002:a05:6402:1ed6:b0:61e:9ebf:d340 with SMTP id
- 4fb4d7f45d1cf-61e9ebfd58cmr10082183a12.32.1756908320220; Wed, 03 Sep 2025
- 07:05:20 -0700 (PDT)
+	s=k20201202; t=1756938724;
+	bh=0zNxbRiK/0aMy5wdBnW9WCgQpg46kf3uIF2gp8dwHmQ=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=Nrz9NKhMC5qUarkd7J+XDkSpZDWKsfS09dlIk7Cm6jJKudqb+qGchlrAH1B3u2qBH
+	 NxOy+gtbBuB6w0bqYYfEWi6QfniE4omkp5oXpUbC7VLbCjyLivl1eW2YWrxQSCgOQn
+	 VgGPsYF3+fxTUZ6f1T5fgq3F9L1J6DD5DIIzMXE1D8K+S5CpeYQAtX21OXz4pK8HK3
+	 ucbSC3pRXndnyQYZVRe5JXO5apjS3rw8iMp5mtKLM4kbwKatUSPZcMYOaY0aSJMEtt
+	 hOUFxBzIzmltmb5JpiQmUMLEbEuVkvToIWP1FFS3F4jtQfq9Hm+T16ydICw5SgYNLz
+	 oybtOg+x53FlA==
+Date: Wed, 3 Sep 2025 17:32:02 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, bhelgaas@google.com,
+	lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+	joel@jms.id.au, andrew@codeconstruct.com.au, vkoul@kernel.org,
+	kishon@kernel.org, linus.walleij@linaro.org, p.zabel@pengutronix.de,
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-phy@lists.infradead.org, openbmc@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org
+Subject: Re: [PATCH v3 08/10] PCI: Add FMT and TYPE definition for TLP header
+Message-ID: <20250903223202.GA1235935@bhelgaas>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,72 +71,46 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250815230841.3487764-1-robh@kernel.org> <307fa87eb552ac4a1f6dd6139450786195e3892a.camel@codeconstruct.com.au>
- <360776d4dd765dc2c98f0c1b718fe63d4a8a70d4.camel@codeconstruct.com.au>
-In-Reply-To: <360776d4dd765dc2c98f0c1b718fe63d4a8a70d4.camel@codeconstruct.com.au>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 3 Sep 2025 09:05:06 -0500
-X-Gmail-Original-Message-ID: <CAL_Jsq+TcACG=vGp__tT8RE6kOjchoUSq59i=H_+qSRn-ucMkw@mail.gmail.com>
-X-Gm-Features: Ac12FXwkg-WgIKnHEs8UoaeM3TBl6YtocnO-RvpeXFYLKucgpiCnVNz9w-PqANM
-Message-ID: <CAL_Jsq+TcACG=vGp__tT8RE6kOjchoUSq59i=H_+qSRn-ucMkw@mail.gmail.com>
-Subject: Re: [PATCH] ARM: dts: aspeed: Fix/add I2C device vendor prefixes
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Joel Stanley <joel@jms.id.au>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250901055922.1553550-9-jacky_chou@aspeedtech.com>
 
-On Wed, Sep 3, 2025 at 1:52=E2=80=AFAM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> On Wed, 2025-09-03 at 15:01 +0930, Andrew Jeffery wrote:
-> > Hi Rob,
-> >
-> > On Fri, 2025-08-15 at 18:08 -0500, Rob Herring (Arm) wrote:
-> > > The ASpeed DTS files have various I2C devices with missing or incorre=
-ct
-> > > vendor prefixes in their compatible strings. This hasn't really matte=
-red
-> > > and doesn't impact ABI compatibility as I2C devices get matched with =
-their
-> > > vendor prefix stripped.
-> > >
-> > > With this, the "maxim,max31790" nodes now validate and have some
-> > > warnings. Remove the spurious "#address-cells" and "#size-cells"
-> > > properties to fix the warnings.
-> > >
-> > > Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> > > ---
-> > >  .../aspeed-bmc-arm-stardragon4800-rep2.dts    |  2 +-
-> > >  .../dts/aspeed/aspeed-bmc-facebook-harma.dts  |  8 ++-----
-> > >  .../aspeed/aspeed-bmc-facebook-minerva.dts    | 24 +++++------------=
---
-> > >  .../aspeed/aspeed-bmc-facebook-tiogapass.dts  |  2 +-
-> > >  .../dts/aspeed/aspeed-bmc-lenovo-hr855xg2.dts |  2 +-
-> > >  .../dts/aspeed/aspeed-bmc-opp-palmetto.dts    |  2 +-
-> > >  .../boot/dts/aspeed/aspeed-bmc-quanta-s6q.dts |  4 ++--
-> > >  7 files changed, 14 insertions(+), 30 deletions(-)
-> > >
-> >
-> > I see you've applied this to your tree. Sorry for being slow on the up-
-> > take, I've been focusing on other things recently. Happy to take it
-> > though, if you're happy to drop it?
->
-> Actually, do you mind dropping it from your tree? It conflicts with
-> Krzysztof's patch that I'd already applied:
->
-> https://lore.kernel.org/all/20250819131743.86905-2-krzysztof.kozlowski@li=
-naro.org/
->
-> I've applied your patch here with a note in the trailer:
->
-> https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git/commit/?h=
-=3Daspeed/dt&id=3D61a913644a8c5b6c8bd9da09f78f88e50edfaeb
+On Mon, Sep 01, 2025 at 01:59:20PM +0800, Jacky Chou wrote:
+> According to PCIe specification, add FMT and TYPE definition
+> for TLP header.
+> 
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> ---
+>  drivers/pci/pci.h | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
+> 
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 34f65d69662e..45d47d6c4f53 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -81,6 +81,18 @@ struct pcie_tlp_log;
+>  #define PCIE_MSG_CODE_DEASSERT_INTC	0x26
+>  #define PCIE_MSG_CODE_DEASSERT_INTD	0x27
+>  
+> +/* Format of TLP; PCIe r5.0, sec 2.2.1 */
 
-I've dropped it. That was inadvertent.
+Please update to PCIe r7.0.
 
-Rob
+> +#define PCIE_TLP_FMT_3DW_NO_DATA	0x00 /* 3DW header, no data */
+> +#define PCIE_TLP_FMT_4DW_NO_DATA	0x01 /* 4DW header, no data */
+> +#define PCIE_TLP_FMT_3DW_DATA		0x02 /* 3DW header, with data */
+> +#define PCIE_TLP_FMT_4DW_DATA		0x03 /* 4DW header, with data */
+> +
+> +/* Type of TLP; PCIe r5.0, sec 2.2.1 */
+> +#define PCIE_TLP_TYPE_CFG0_RD		0x04 /* Config Type 0 Read Request */
+> +#define PCIE_TLP_TYPE_CFG0_WR		0x04 /* Config Type 0 Write Request */
+> +#define PCIE_TLP_TYPE_CFG1_RD		0x05 /* Config Type 1 Read Request */
+> +#define PCIE_TLP_TYPE_CFG1_WR		0x05 /* Config Type 1 Write Request */
+> +
+>  extern const unsigned char pcie_link_speed[];
+>  extern bool pci_early_dump;
+>  
+> -- 
+> 2.43.0
+> 
 
