@@ -1,80 +1,93 @@
-Return-Path: <linux-aspeed+bounces-2164-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2165-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E906BCA1002
-	for <linux-aspeed@archiver.kernel.org>; Sat,  6 Sep 2025 21:26:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A89ACA101F
+	for <linux-aspeed@archiver.kernel.org>; Sun,  7 Sep 2025 23:53:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cK5rG74Wnz3cYR;
-	Sun,  7 Sep 2025 07:26:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757193998;
-	cv=none; b=YVQILoE1kzbvRV3HXtBee6tZW4IhOwDUfAK5Tgur4rKb0/6FDnlB54taJyvK7j70ti5B0WsxUpXK3IMDwyIjaMjFKKpNt9wqBF0s3v27Z7HINFc6/XSFhexiD3q/SMTANaSbhEXo/8A3ujWEcJx0tFQdKMROL7vybgAawblBhprX8LbkzWAhJCjTdPHBHywU4jYeAA3I5N3H8IxN541WgBtQdduwbhdGrTYO6mCnghUG4bXRooewUAzTQxeoSpggsnb2AA0+rzLsdXsx2L+5KnN7/3Qk3FsMz/dF4y/Q2pZMHHvuQbjAgly6U6CAcyMlC2H11+Qu+PpVzbUcp2J2MA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cKn353hPTz2ytV;
+	Mon,  8 Sep 2025 09:53:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757073209;
+	cv=none; b=CVjudJir9TCXLJ77Mr9o70EAML+Biowg+RCGu5/tEaK78J25pzFpIAH5SeFgWNvOhqOGaPr+59BOg7lyhgPwKEvTVVHdcdzsDeDNtPYE7UqwNQ8CqmklalRBASeO2KM7foEQ7ZVlglDSTgRuXXf6FD4QIlzYodyI/UpcKzYC9IBJYI1tRmPEJqQ9Q33lcDXS0ABQcqQePjnfBN/jih0lfFgD9h6JUbEcKHd9k5vOgE+DoiYLBivOJjpmm0orZ1l8Fywjn+jWEU2iRgPuksL9xJpmM6q7pKo/0dFmD6hpHSgcIjWRXfe2SDZLfqtwcnD7z5HE0DY8wk8PVUEvSUqcww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757193998; c=relaxed/relaxed;
-	bh=bpGvdDDzxeb87tuqFs6ccwLx+keES1rnW17BWnp2DKI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HjR3Mil0WDMvGrzalDc9JuId+xx2wEHZY7Nn8bQjZjazNAPN3b2YCLLg6x6g5QNJMYeLuWTtYpmOYJ4UtNPNkI3RcNRN/V6LjTIrn46fTMuRrxigU+lCHZweVCS2KW/sIiUQFHuC9gdBT6Dhl5B4G9Lq/GwiIaFgZa524zjAb/n71ah0ODGMvVStOecMsPIrG+JChniGKpN0hLeIR5GX4/2jwYek6Gr73cBbYiBWxaQpBfmDixeKb9rkKayNGFUqQKxC02cFTa4doa3fFBXXNHAW15O+aZYEQMHSjDHB+AERT1xpNS4hpwU/ONXUSA88JfNN6L3Gq87EM5FUe5I8Pw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jKsZEYKU; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1757073209; c=relaxed/relaxed;
+	bh=ibSd1EIrnlf1T65R99x8NmkSqz8ymnGekDTIZaoFiU0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=UYM9xcGEO2Vm8HVgd71yxlqa8Bz5iKjsN8xLP1Smy4V3w3Y+82M2aVKDmS9WFgDkXPvuLFZ9iZnR88IMY4lf6DKER9yqocthK7eGkXJxPl83Xx2tED+2oA4U0xjUzQdukXTiTcKj+MficgFr7Ojgk8/fdurwJtazZfqCCck8Ubv0iJSwtJuavufq2+Nz0TUiHHmFdKBF7Tms4mbSP5RYQlutNnkKRoc6SNG72VRsLUlUCYbFxGf2JD6XowC5u5pelq9Ysfx8zdHx3f6twHpHUjppYekWZk0tBdvHvpd+9epXcjuzzU+lH9gdRZEoUlBTrtrpoTXjuSkhqew1ytK1rg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=btnl4tWl; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jKsZEYKU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=btnl4tWl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cK5rD6tlTz3cYL
-	for <linux-aspeed@lists.ozlabs.org>; Sun,  7 Sep 2025 07:26:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1757193997; x=1788729997;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=CMGs8i3Y8nSpfA6lMpvHldw8w4ip7mYjXqWISfeH/PM=;
-  b=jKsZEYKUkWeIXNG+zwcdZdg+3YehNi+ogS09PFpRkTKsnr3UtmJZ4avb
-   U8sBjbFI0VQZLZ5k4HBB/rtyp2GMGcC2NdIlszEnDb5FFQs5pGWn/elg1
-   eI967CicoEpyY4tOgNuwDC01+ZeuCgmTrlOFtbfXHkdXLsMq4zKQJQvGn
-   3B/sptJnZgtMAV2kvK6ppI+p+71xFBwPlcs1zUIp5DTJMG9lghRkE15J/
-   ppQYJaGXelZQrWtqR7XfcjCEch+6aUtthgQQKsONp+nPtsWpTrZ2gD/4d
-   CZnPHTiZaLTapbHRFSIVFMdB+sKQpkvAhiuSIH5S+my8izdxGwuz8PhmB
-   Q==;
-X-CSE-ConnectionGUID: 1ZuuVKbtSBySASaWUYevKA==
-X-CSE-MsgGUID: 0UKCGShSQjSb5Qgs/VjcsA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11545"; a="58715848"
-X-IronPort-AV: E=Sophos;i="6.18,245,1751266800"; 
-   d="scan'208";a="58715848"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2025 14:26:31 -0700
-X-CSE-ConnectionGUID: VbX9FkwRSrCKGheZZSUk1w==
-X-CSE-MsgGUID: XHIZwNXBQuyDKp8oVdJh6g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.18,245,1751266800"; 
-   d="scan'208";a="172009225"
-Received: from lkp-server01.sh.intel.com (HELO 114d98da2b6c) ([10.239.97.150])
-  by orviesa009.jf.intel.com with ESMTP; 06 Sep 2025 14:26:27 -0700
-Received: from kbuild by 114d98da2b6c with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1uv0QT-0001np-1W;
-	Sat, 06 Sep 2025 21:26:25 +0000
-Date: Sun, 7 Sep 2025 05:26:13 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ryan Chen <ryan_chen@aspeedtech.com>,
-	Eddie James <eajames@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJF9M1JRRz3c3w
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  5 Sep 2025 21:53:26 +1000 (AEST)
+Received: by mail-wr1-x436.google.com with SMTP id ffacd0b85a97d-3e1a31c692bso33802f8f.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 05 Sep 2025 04:53:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757073201; x=1757678001; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ibSd1EIrnlf1T65R99x8NmkSqz8ymnGekDTIZaoFiU0=;
+        b=btnl4tWljHmsSxdFvl0Qy/bvdnCZsVuJIzLqQ2KaJ0PjSzz8SyszyQ6rxWt4Jf6o3j
+         S8RQrpHNizlgSMyqi3tfHyIaZWQN17NkN/zVCwYQr8sX5ZlZ3E82EPxBtfjqUZ+WUGMB
+         axWH5iAMkpqJdG2tUjEUBTJxr21pazEmWa2boBVtM4GAPsxgJar8M/mJUCGYgxco2h3p
+         x0J6L1PIhW3AOW2bx/HqNl7+kY6qJVYI+yhLy8nFN/hw7pjPgKvETjDVwcWUP9VjGMdn
+         oBrK4SOxq/ckmyavF+p5fu6KPsVu7odEBxvvmbe4BO/zdFkuOfSEASs6cXQPrzdXAUzC
+         DjeQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757073201; x=1757678001;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ibSd1EIrnlf1T65R99x8NmkSqz8ymnGekDTIZaoFiU0=;
+        b=IOJAOLSEkmX5P3xwAi2qZZ+9ufpD5bEMMhVl4OVWles2HDMjYvZL896VnPUqvTdnHS
+         1KUEi54m7IVCsJ1jHoOc7wzfFQ/J+f4HBfeAfkNdWQ6PWdHDmrU+IcqvRWEvj9dSn6Dp
+         WCJ03VbmuO2Tdj3AFC8l6uPsnNvQqjz3ox9KEDN75xVRQmbOi70SEQTAQxziEvaUb9Cn
+         q7IyQpcLCgyL/sUYogrj+bu8TC9r6BzDGVRLesd+SwHnZV7Oe0tESLeMUX1QdVhvHpyU
+         V2OoKFztJ6H8lcOqjQFDQjneUvZrWvVac8Lp4lHRxTjq4XIY1HiUT883kI0UEYNvE5a2
+         h41A==
+X-Forwarded-Encrypted: i=1; AJvYcCVAilw78cGn6CJHOy7tAla7SinbC3cEbRPlvwGHCIx8KlAw4KyvEHwpoTGb4bxwJlyUzIR3Dp4WWx2YHH4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy8K9xg0cTpSh7G235X2JX8Q71yw4oWCM6PR+zgjcWm3Fab3zAJ
+	OZpvIEX36qnmHd+0Q0SjAdF2t4/qNkcKS8wOTLuOCoH/M727ZhBqJSi2
+X-Gm-Gg: ASbGncv3x0SGm8tYeJ5+seh0J+G5p5DbONK8ZQuW3wjvdSvF1nxW+HNORykqSTsFhEq
+	db9UZswycg34hhXAzuFtRQhMp6MKbhYd8P6iiFNDwoEcOP746E7N5Cb5TYvBITEWvE67sPZpQTt
+	LB3q3bT7A2ApcuDjpzoyP7qjbtvO74zGKsjBFJZcefJEX9Fl/uN81Kt4sMioHdiSZpCm3L6/ADy
+	zk5MxbLQhm3cHYHYkqgqPgYJg/KXaiIjQkQeaq822Hest9NKyYw3Tl38sDOivSv8FkKwPoewGQr
+	pkabJSNTd5FYU6ddUgXOcfpPigx1pZ30bdGf+p1QWvZKMYiPVes8SQAq2SZG5/tKwoHAPdckCV/
+	fwivByh7E79zcjXGolhjTqeH2aUHCDpK1NbBs/JOKrC/dfdpevPR01lslqNBvxcF32zwAyTSd
+X-Google-Smtp-Source: AGHT+IFgyUVRsNnagZ84Pf1RIyYo5EbfYhRyDK79C1hAlhHc/Tz4Dui23mAaHaZv4EihvJszPYZfqQ==
+X-Received: by 2002:a05:600c:3110:b0:45c:b659:6fd8 with SMTP id 5b1f17b1804b1-45cb6597198mr40677645e9.3.1757073200933;
+        Fri, 05 Sep 2025 04:53:20 -0700 (PDT)
+Received: from thomas-precision3591.imag.fr ([2001:660:5301:24:999e:a0c8:e30c:983a])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3e411219ddfsm1903897f8f.57.2025.09.05.04.53.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Sep 2025 04:53:20 -0700 (PDT)
+From: Thomas Fourier <fourier.thomas@gmail.com>
+To: 
+Cc: Thomas Fourier <fourier.thomas@gmail.com>,
+	stable@vger.kernel.org,
+	Neal Liu <neal_liu@aspeedtech.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	Joel Stanley <joel@jms.id.au>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Lee Jones <lee@kernel.org>, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org
-Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev
-Subject: Re: [PATCH v3 4/4] irqchip/aspeed-scu-ic: Add support AST2700 SCU
- interrupt controllers
-Message-ID: <202509070538.5HcCJf2T-lkp@intel.com>
-References: <20250906014846.861368-5-ryan_chen@aspeedtech.com>
+	Dhananjay Phadke <dphadke@linux.microsoft.com>,
+	Johnny Huang <johnny_huang@aspeedtech.com>,
+	linux-aspeed@lists.ozlabs.org,
+	linux-crypto@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] crypto: aspeed - Fix dma_unmap_sg() direction
+Date: Fri,  5 Sep 2025 13:51:11 +0200
+Message-ID: <20250905115112.26309-2-fourier.thomas@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -88,79 +101,33 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250906014846.861368-5-ryan_chen@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
 
-Hi Ryan,
+It seems like everywhere in this file, when the request is not
+bidirectional, req->src is mapped with DMA_TO_DEVICE and req->src is
+mapped with DMA_FROM_DEVICE.
 
-kernel test robot noticed the following build warnings:
+Fixes: 62f58b1637b7 ("crypto: aspeed - add HACE crypto driver")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+---
+ drivers/crypto/aspeed/aspeed-hace-crypto.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[auto build test WARNING on tip/irq/core]
-[also build test WARNING on robh/for-next lee-mfd/for-mfd-next lee-mfd/for-mfd-fixes linus/master v6.17-rc4 next-20250905]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/irqchip-aspeed-scu-ic-Refactor-driver-to-support-variant-based-initialization/20250906-095043
-base:   tip/irq/core
-patch link:    https://lore.kernel.org/r/20250906014846.861368-5-ryan_chen%40aspeedtech.com
-patch subject: [PATCH v3 4/4] irqchip/aspeed-scu-ic: Add support AST2700 SCU interrupt controllers
-config: arm-randconfig-001-20250906 (https://download.01.org/0day-ci/archive/20250907/202509070538.5HcCJf2T-lkp@intel.com/config)
-compiler: clang version 22.0.0git (https://github.com/llvm/llvm-project 7fb1dc08d2f025aad5777bb779dfac1197e9ef87)
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250907/202509070538.5HcCJf2T-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202509070538.5HcCJf2T-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
-   drivers/irqchip/irq-aspeed-scu-ic.c:93:34: warning: variable 'mask' is uninitialized when used here [-Wuninitialized]
-      93 |                 writel((readl(scu_ic->base) & ~mask) |
-         |                                                ^~~~
-   drivers/irqchip/irq-aspeed-scu-ic.c:69:24: note: initialize the variable 'mask' to silence this warning
-      69 |         unsigned int sts, mask;
-         |                               ^
-         |                                = 0
->> drivers/irqchip/irq-aspeed-scu-ic.c:106:20: warning: variable 'mask' set but not used [-Wunused-but-set-variable]
-     106 |         unsigned int sts, mask;
-         |                           ^
-   2 warnings generated.
-
-
-vim +/mask +106 drivers/irqchip/irq-aspeed-scu-ic.c
-
-   100	
-   101	static void aspeed_scu_ic_irq_handler_split(struct irq_desc *desc)
-   102	{
-   103		struct aspeed_scu_ic *scu_ic = irq_desc_get_handler_data(desc);
-   104		struct irq_chip *chip = irq_desc_get_chip(desc);
-   105		unsigned long bit, enabled, max, status;
- > 106		unsigned int sts, mask;
-   107	
-   108		chained_irq_enter(chip, desc);
-   109	
-   110		mask = scu_ic->irq_enable;
-   111		sts = readl(scu_ic->base + scu_ic->isr);
-   112		enabled = sts & scu_ic->irq_enable;
-   113		sts = readl(scu_ic->base + scu_ic->isr);
-   114		status = sts & enabled;
-   115	
-   116		bit = scu_ic->irq_shift;
-   117		max = scu_ic->num_irqs + bit;
-   118	
-   119		for_each_set_bit_from(bit, &status, max) {
-   120			generic_handle_domain_irq(scu_ic->irq_domain, bit - scu_ic->irq_shift);
-   121			writel(BIT(bit), scu_ic->base + scu_ic->isr); // clear interrupt
-   122		}
-   123	
-   124		chained_irq_exit(chip, desc);
-   125	}
-   126	
-
+diff --git a/drivers/crypto/aspeed/aspeed-hace-crypto.c b/drivers/crypto/aspeed/aspeed-hace-crypto.c
+index a72dfebc53ff..fa201dae1f81 100644
+--- a/drivers/crypto/aspeed/aspeed-hace-crypto.c
++++ b/drivers/crypto/aspeed/aspeed-hace-crypto.c
+@@ -346,7 +346,7 @@ static int aspeed_sk_start_sg(struct aspeed_hace_dev *hace_dev)
+ 
+ 	} else {
+ 		dma_unmap_sg(hace_dev->dev, req->dst, rctx->dst_nents,
+-			     DMA_TO_DEVICE);
++			     DMA_FROM_DEVICE);
+ 		dma_unmap_sg(hace_dev->dev, req->src, rctx->src_nents,
+ 			     DMA_TO_DEVICE);
+ 	}
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.0
+
 
