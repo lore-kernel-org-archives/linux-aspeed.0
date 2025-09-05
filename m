@@ -1,159 +1,101 @@
-Return-Path: <linux-aspeed+bounces-2149-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2150-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8136CA1002
-	for <linux-aspeed@archiver.kernel.org>; Fri,  5 Sep 2025 01:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7863CA1012
+	for <linux-aspeed@archiver.kernel.org>; Fri,  5 Sep 2025 02:09:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHzbT3BHrz30Ff;
-	Fri,  5 Sep 2025 11:41:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757036501;
-	cv=pass; b=XA4nDOClIgL1A6iR6MfrSUHVk2I6biOvJcKG4iX8wRVDnFoXAEM81HiRjpLCbFNaYvStJuHbdqZg82AGDHFq48fwAWgMxeUbIRH2U0GIM3cgjBPRHsytNmTwFQ/BuI770lzb5OoZtoYCOLz8L6Rx13H+ODxvmG2h08my0cSXjXiI+mdsyLI6yC7v9E+K0GlBnnWzr012miRDnbxq2+QDAs/b7DYzof9JAuKuSBbpc9U1egEFkfmaoWAEIxLXM0eKOIrINJqvj1/UZaN+MlmUIp9rEpz4scyxG6/Y2kwGDSG4rn7w7VE353tSR3PIUlSRgj5E0GeDpaxnG/cOnP+AyQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJ0CW0CGzz2yr9;
+	Fri,  5 Sep 2025 12:09:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=148.163.141.152 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757038166;
+	cv=pass; b=SvR2UApxfnEY2wf0x/rnqQmGl04msKRzWWLpm5pLwu25YSxXOpK4CggZ87qEetnqthBbf3oYahNOAluqkoHmss9okdgljL07ETWlJHsKiAq/iJclSCO62mFoz0hXWVKzYctGFQ6MZ/C3gMFf1xyyGZRJ8AGkpEenDkPtKj7f+WnYhpTIRmtIXbUTutheDYy0/oUmnfh6oHjr1gPH1a1E5t87Jw/v5AOvohxMUM3LRkKeSWWd0SAbYGTl+uWX1SzjZ1HTNJXGXjfmufT8LyVKTmB2poXL9CO+z7ZHA6XVmFPMoOHN7p2KR8/c6L1aSyMnSzqILJiggDrFdQbVl7K9IQ==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757036501; c=relaxed/relaxed;
-	bh=5qO1kRcHfW3GUuZMT7GD6MofdTG5ccKj8GCpFfhN9i0=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=RlFIT9LI+X6mwCV2ca1GhOHdNsPwmq7N06UyS0HK/rLGzwYRviHPPuhtuTsyyChQoWQf5zRHJqvcv1JtRrIEN9v21f0AMXjMmcQDd0zTwJWgOzUx725NekzMWg3Z6CtgaJv6AJWNYffaXCk1Pyb6EPRJSl2KuLPm+XXq6sGALBNAAhnRNPpXHJWvEDenv2xwYjYD2A1ih/UQJzuS3QBn1eUpPVHMbj0DiIS0Oj23DjOm3pyWLYsTmpRA/ef/IErgj8Ls51JEqDsyaVAjohVKTJbjuQ4g+MlEwLsTksiPRRIyDLVxcKbDGFgDtYGE/AJv0jL0/BpWHRHfj6x3zna8OA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=VeG3D/IC; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	t=1757038166; c=relaxed/relaxed;
+	bh=80pCGVxn6pJdDwZd8pUgDpChvW+OWSY3LIOSTwlrlgA=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=A737DhCcYYfy8nqfSuAAw+m+wxL+ss2974nJsEnSWPV/LFJMLViNYj836meqjUNX10UiJLfp5rotTAbHe6NiXMk3E9Iogo+Hfn+4zIjUQOmF2ou/19odUXruJJu9KreM4JVOadAA+PbJ/wKyxv3+yfZH79UNHVPYlxysSrWybruTI64x7rThd91RZpld+6o5WhQ/RVcRR/g4cPG1wCWcO73RUXqicZMP6uTwHmo2but65L7E2NYlhF/SzR0r3sJTX7ZJKNx2hZAG9cGFNqPTr28rEBHSfWw+LFm40kuy4+BYjlcxY1xZwNAZq13nQBfiQXZniWQB/z7PhuwQ1iWoTQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wiwynn.com; dkim=pass (2048-bit key; secure) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=20250420 header.b=T5ZrztYE; dkim=pass (2048-bit key; unprotected) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=selector2 header.b=X4rWOAcR; dkim-atps=neutral; spf=pass (client-ip=148.163.141.152; helo=mx0b-009a6c02.pphosted.com; envelope-from=delphine_cc_chiu@wiwynn.com; receiver=lists.ozlabs.org) smtp.mailfrom=wiwynn.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wiwynn.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=VeG3D/IC;
+	dkim=pass (2048-bit key; secure) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=20250420 header.b=T5ZrztYE;
+	dkim=pass (2048-bit key; unprotected) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=selector2 header.b=X4rWOAcR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wiwynn.com (client-ip=148.163.141.152; helo=mx0b-009a6c02.pphosted.com; envelope-from=delphine_cc_chiu@wiwynn.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1689 seconds by postgrey-1.37 at boromir; Fri, 05 Sep 2025 12:09:25 AEST
+Received: from mx0b-009a6c02.pphosted.com (mx0b-009a6c02.pphosted.com [148.163.141.152])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHzbS3sSkz2yql;
-	Fri,  5 Sep 2025 11:41:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJ0CT5cvgz2yql
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  5 Sep 2025 12:09:24 +1000 (AEST)
+Received: from pps.filterd (m0462407.ppops.net [127.0.0.1])
+	by mx0b-009a6c02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 5849CYoR3839883;
+	Fri, 5 Sep 2025 09:40:36 +0800
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wiwynn.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=20250420; bh=80pCGVxn6pJdDwZd8pUgDpC
+	hvW+OWSY3LIOSTwlrlgA=; b=T5ZrztYEQD9kKgzj2CLD0FecK03ioZvn0R1wtAY
+	b5Jmy+olSCRAOcyG/1xPZBlaUfXAvukB/5whwyxwqw/gXDT+ZlzvrMEcrYeRVxR/
+	BXrBYgoq9U3E0aTI7WtDKxQclerCk4Z5fPwrKq8cup5e8nL1UpPisDFAU86rKsNy
+	EmRh4Y5/yVRJlxniGLt8nevOk1p/8MVDV6TIVHvn5ca0WjexcmMzqygUx6VhC6IR
+	Pnquixv9UdSPyNnvQgeeor8hEgegpJ1l6FLlpGUW2/1IqjG6CfgY/c0ghfja9M7v
+	xmJPdA0aysB3PxNXw1IkhZYqEJdb12Q6qBuU7oV6BI8DDIg==
+Received: from typpr03cu001.outbound.protection.outlook.com (mail-japaneastazon11012018.outbound.protection.outlook.com [52.101.126.18])
+	by mx0b-009a6c02.pphosted.com (PPS) with ESMTPS id 48y7m98xgx-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Fri, 05 Sep 2025 09:40:35 +0800 (WST)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Og3XgnfxNOlEW2kin+E3Bfvelahx1YIyc78zsPCGHLzsgrntEfVb6LfA/K46xY+HPLV1F5w+falT9l1puGaZxCzF67ELfjELXR8gqM9MlJ1JILvOyr+koBU7aNmqDP83ThO9RJpY2myCRd7fRr7q9vDhqHaFAiSNguaqmEp1zlZgihiBD0aLHaKWducsohS4aRsL7FyTgZLI31oVFoC/crxOxW/+9jdSqWKGNrsVzUpltG55/we2IuVhDyKVHhbdy+RHARrCWPEZIApv3Q0aewZtpZN4rhqKS7dzVCzdniSKBz0q6kHJkHVymhsaHtk+Zd8I60ZpdO1xY1A9lK+xRA==
+ b=TLfmsOd6PsEoqk3JqJSTfJ24LWVvfTZ2l1xuQsiowYj1WLsZYQCCLr4/2JjvDfu69T3dAtR+YdA8y+PXuOjjIVT8PzmrgeF8ndKv8WafTieGLkdqXCaWpwI3U8qprZ4uhvtZ/NrRzoP4GFw7yO5jtoh3haN4s6L1nbifr/xoWbabYzfLHeTOtqpu/LjKTA3+NwLWYCGszN9prE7wyYrmz49++5rZWZXORhsmIwCPyfwgSLDBTIdLZYKPMi+K1qjjKxLhZJDkfdU8uivk/FPbiE57ovtNOMp3ZBiW4bvG2gYdAHMubZIOFTyX0mNBOIXFhjPllDDDCLBjFbj3hNJM+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5qO1kRcHfW3GUuZMT7GD6MofdTG5ccKj8GCpFfhN9i0=;
- b=SAUNxfTFZEUzpIR82e97oFm2OMcWMV/HRTb6nlj7ibKRhKLa/DIJLEssbdYOEP4lToCUT80LvKID1b6KpxesAClnblaHzJukYYLJ6hwB9WoLkev7/AmYDKu+EAEllCainmNkBrgxyFNGWTgfA6r2jWtsvBWI6rIU61D54f8Isc8rVv8WgBxV5IBJ0pe0ab3dvqv42Oa5hUe97DZ7rvkeiIrmXqvYd7ygxFdgBXwJiTPsm3NsG5j0WNfsZkKL/SLWdX8x9+xqgEK9mBDlpon+7VLZoD8Rwwmc1kskS4NAXSTdJrsD9E0nodvDGe4pcvgAcXu7KeIUBZcU400gL+iZsg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
+ bh=80pCGVxn6pJdDwZd8pUgDpChvW+OWSY3LIOSTwlrlgA=;
+ b=XHI3On3LcUMkkJF8+ygKsXvwFdEUQUkH45/xIco9wR/6odS1f2zDZxgL6rcgaTKQYYZu5lsOCNLK29CRSJVz851MJf2V7Vu4Iv/MK2/alDG2iL4X91ggYsyKhVutt9BKylGh6O/wG6NYkmlmKPevRB+8yuYfhlWbP+elUHsIeZFTBVytdYnj5BOoBhdnyAjkYWoBxwNBSSW5E9RbrY19wIlmPJ80hn5hunUMUerhQQEYpzX4n3kjjh3a5sBcrHwtiDCM9feysZv0e+HEGko2dfRR88YmMGI5fmfJyyNhkGn+LMAn046WaXRSQDDMwNXkLZpIxpX0xKif1tISwVyZrQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 211.20.1.79) smtp.rcpttodomain=stwcx.xyz smtp.mailfrom=wiwynn.com; dmarc=fail
+ (p=quarantine sp=quarantine pct=100) action=quarantine
+ header.from=wiwynn.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wiwynn.com;
+ s=selector2;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5qO1kRcHfW3GUuZMT7GD6MofdTG5ccKj8GCpFfhN9i0=;
- b=VeG3D/ICsQReLFm6zXy7VJuN6qRaXOR8GNcRJDwhFUeRxUuczoCsPcHfYL2hEAI9fpFpEUk0HfZfTffzLJS9eo8+jWTWLYQp7qfPYZP0v4ZVlIhmxm3Fo6ddZaiK0tSXh6wpF7mERFr+wnBqYg+4WewAWmjmrU+tXWCyaebjnvzgG9sUerv0Ta3UOUMn2y3y1xnCh8I+J50uLdHXpFzkvwnsub1RioiogL2+6l1otq+W0gS5dZnsQ/BcJJUI0Huc4u4BK80TiL+vFZxrES8nyS9mf6sVWUK8SQMWtZ/WQRX4r3GG6atJbLx0EVPWtV4mLhxMzmIYo+fcnP3x9blhAg==
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
- by JH0PR06MB7210.apcprd06.prod.outlook.com (2603:1096:990:8d::5) with
+ bh=80pCGVxn6pJdDwZd8pUgDpChvW+OWSY3LIOSTwlrlgA=;
+ b=X4rWOAcRI40ybESCfDllIClu5gbhCha1x5x9i3CwFs0eSEMf6W6aVFl12NvgJeC9WuYJZw9SfO0U40u07utxXqruNSbRI4r3aFPYrqVWvWc/k4PhTg3/wH7UEqZh47b++uf99UccxYu9m9YhznHWV5M6+SK7KK8Oleb7mhlDsx+qw2UOSiAUicDqn1M8ncajx/lsGJ4vKpC5mkfS8excv9nMkEWZeqDMl6q9z0GBeBo8afld0BXhN2ub7XE78OhklCAaUOSfhcpwhf3xxyhvy28nYKWNEctM/aAyryNqsEMi7d7sb8ukJVMQ4KdVGhDNANgCi6jL4g1sKmvCJofpeg==
+Received: from SE2P216CA0018.KORP216.PROD.OUTLOOK.COM (2603:1096:101:114::17)
+ by TY0PR04MB5959.apcprd04.prod.outlook.com (2603:1096:400:218::7) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.18; Fri, 5 Sep
- 2025 01:41:13 +0000
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28%7]) with mapi id 15.20.9094.017; Fri, 5 Sep 2025
- 01:41:13 +0000
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"bhelgaas@google.com" <bhelgaas@google.com>, "lpieralisi@kernel.org"
-	<lpieralisi@kernel.org>, "kwilczynski@kernel.org" <kwilczynski@kernel.org>,
-	"mani@kernel.org" <mani@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org"
-	<conor+dt@kernel.org>, "joel@jms.id.au" <joel@jms.id.au>,
-	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"vkoul@kernel.org" <vkoul@kernel.org>, "kishon@kernel.org"
-	<kishon@kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
-	"p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-phy@lists.infradead.org"
-	<linux-phy@lists.infradead.org>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
-	<linux-gpio@vger.kernel.org>
-Subject: [PATCH v3 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
-Thread-Topic: [PATCH v3 09/10] PCI: aspeed: Add ASPEED PCIe RC driver
-Thread-Index: AQHcGwWaph4aFqMwQkOoce6H5iMHG7SCE6UAgAGyyVA=
-Date: Fri, 5 Sep 2025 01:41:13 +0000
-Message-ID:
- <SEYPR06MB5134E916ABFBF7FBB8744F189D03A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-References: <20250901055922.1553550-10-jacky_chou@aspeedtech.com>
- <20250903224820.GA1234878@bhelgaas>
-In-Reply-To: <20250903224820.GA1234878@bhelgaas>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|JH0PR06MB7210:EE_
-x-ms-office365-filtering-correlation-id: 8cf39087-8218-4162-c769-08ddec1d4c5e
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|376014|7416014|1800799024|366016|38070700018;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?3G4OGqqYJEpS1hcn72gZG0s0BkbQfL9SC8qEvdYhKlTtcJP5BZ2JVn7uYzj8?=
- =?us-ascii?Q?CugYCIGdPbfOh4Jrwj5USe5/k4GeeW753w2IxAk+ACZPn6BYU+6Kc0OYioM6?=
- =?us-ascii?Q?jq31ygDjljv2iJM2muhsKFKB1OH4iseG6lwgbUT3JI42b1xDZ6hTwN/l32a6?=
- =?us-ascii?Q?7D1P86pw1jrMegRmkVK7vncDqGyKBrQKDI2trnlB1wBMopNrzP7e2ptc22Vs?=
- =?us-ascii?Q?42xJ9C8/6BQTeenR+YzKAkvhG2OXFd3f7UvclYAtaFS63fDHFVzu5IWrOqvU?=
- =?us-ascii?Q?TQkIrUH2L40cp/DwPRyO0uQAhHYjvm55MZ/3/okHuAZe1Av5fDaamrcxk1WV?=
- =?us-ascii?Q?NqOr3Lrqz3955sY1LEsSC0M14G3N+bfJGYqi/bUsXtdmyTNLWzazeZhBAsr7?=
- =?us-ascii?Q?TRUtymq8/D+h4zRxFym6p39u/N/RlFnrjJb1s4+lWjfbDEtH/C1LSrglgckH?=
- =?us-ascii?Q?PoenvvYlMQv6Jt0pItyo5OUIiPHLML7cDKjIGTIDJtiinGPd5+Nbo77gktef?=
- =?us-ascii?Q?Pw/N3Ee+nS+m+r7YbSPJBOIgV1s7qfBrBV9eNYMc1Ktcor771qxAX19YzFdU?=
- =?us-ascii?Q?/y9KUFTLPaPVZfUATBwVBuWJCF9U2dU+J/6xEvxcgbtc83kMXkStpIgyIO3/?=
- =?us-ascii?Q?dFD1Iddk6RNhpVKAMBXqM5MHQvLhDYjMQ79LhGPe5CCjTQSVfvhPvUwYhUix?=
- =?us-ascii?Q?OmUqERhsKImqbvhtyxfQCGt80hKn97+xU+VjWmQRiwbZjABnyNk0i5D64M6t?=
- =?us-ascii?Q?NHg2f0VU5uS8g794u/A0NLJgvPmUNkhJ4s12FIheQYcEaJcICyoJ2uWSZXrL?=
- =?us-ascii?Q?I0lXy6E+bWBwWjqh2FrZGRYzV7fp6MfLPCGvg7lDP81tEGozCOGCY/Faom5n?=
- =?us-ascii?Q?ebEqBSePKdpskqGrkVF8rRovmvYNGmD/G+EI1wzpnK6CJ51IH3BVchM7piMz?=
- =?us-ascii?Q?L/XS0pyLSParw7i6VO0nRjPUolfF6N/WU+5F+oetzwrf40xOM659gWb1bNuQ?=
- =?us-ascii?Q?cFr8gZyngigTz/jNf14OpOWCC6ztKnXlWFYsgfquoCxBaOO9Pait9lGunmrt?=
- =?us-ascii?Q?rGkvZbEbUrJpY+BKTp3lPaHMaCl0sOxVe/dVs8B1ESUBMWyNaDSkLmhk+70B?=
- =?us-ascii?Q?MlNJHoUFt0M6uzwe7wbOMjIGQmqfRX/61DXCuRWUAum6QgMCHfhb0N8kALrq?=
- =?us-ascii?Q?XuFOv4xiAeyxgvPK9DoRpjjbB1PKDKEB4XN9wW2YkhFLiqg4w+eJJuDmIzZ5?=
- =?us-ascii?Q?yicLePE7w2OwdpwsZSeiQCtrB4Ucqs0dRv3PVeQ6oGAQOtLUUCzMFLUMFo+b?=
- =?us-ascii?Q?nTT5/F7yp332nWHDt8qeeYuPY/BtK3BFn43TnCWkNtRkAmhEU8WTAI/G4/kL?=
- =?us-ascii?Q?bP+ZAlbDcVuMpL2n+zmS5O1mEatqioWCFgbkI793pYGX2x1bDdO25Erd4/W+?=
- =?us-ascii?Q?FiotyckX41Nf61CoolqPWhlCxf4vtcouZvWhDVC4pqVf3rLv9L3D2w=3D=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(1800799024)(366016)(38070700018);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?0koKuglpQa2zik8kfT/uPeJdYiIjJRC1AnlwZWK45JZUJ/akcsv2LnTmt/Vu?=
- =?us-ascii?Q?md1O3a+tRR34l02H6+RamlAY0qJT2eDQP6hn4CofymY/n8s8aKuPexjX7rwb?=
- =?us-ascii?Q?tCrNLbcPSDp2olCcHbY1DeZqcGcdR4zGFHjO0MNgwZHMb7auOXcIZyLEYtN6?=
- =?us-ascii?Q?VhIpr5cFQ/LAHK9vdRHwzogrDAiQOmTNKVtkjO2XWwLKkxBgAkKSnU1/chYk?=
- =?us-ascii?Q?dnOOTHT5G5MtG0GMO9cDxFOhKHn6OPu62+pF10TA1swTUBHuCSeMT+uP7/Y+?=
- =?us-ascii?Q?HKFiJE8Pn14/97LBjnDUMJklptETqYuj5OFZgq943uTZfbKZTjIQtq7D3VPz?=
- =?us-ascii?Q?TGvu4BwAIVZDy0v/fvmrTqEVOE+CSP+qWhlgV5UAHoAhNbvlgr7s9dfGMEk9?=
- =?us-ascii?Q?/aG3hmWAiKu4WQq55eN9jELMlve65xvf6eiBAkMe5FWh/msOiwIN+t/LK/iq?=
- =?us-ascii?Q?2TDjv0DK/p7ZchBBgHFG3qKYxd/tzkhfTKG3pkOJM6qgYLV+49pfIVHf2fpH?=
- =?us-ascii?Q?+iE/cDCCYN7WrmfP75HD3P30c0P8HFGI8DOHAPnZOdveFiNetgJ+tCx12h7r?=
- =?us-ascii?Q?fhLWEMJ8+IrdhAUEOr3KkjYBL51ROeAtpMYaz2fJENyDKQcu4cmmCa4ab55B?=
- =?us-ascii?Q?Tt9w4OTpYwNHXyP/L/zZtyvUuFsXuUKZRfOfn5j04R+AbbPpkD2LGATQf1AM?=
- =?us-ascii?Q?wweyI05ZSy7C1yGcOXBEVtCnbmoVs1chwCnF6NPlHE5MFga2dYsxdFbryPE/?=
- =?us-ascii?Q?m+K7Jj33KE8357Lezd3FtS6Eo0IQt9G6aM3QerqdbYiruqqnPk/PcMBORGwK?=
- =?us-ascii?Q?aJBjU8perIzWh1XciCp0JKxCeNEbxVxWoR7+EjnNOlmoUVKXS+zGbMUZMLBG?=
- =?us-ascii?Q?g5/q+A6ML88uHZo1UFoW6B7EjZsydLBFlyZGhu+F5dJY3V1Ze09Ydkro13yf?=
- =?us-ascii?Q?60C0GDSUhZudvYGhp8FhitgM5AR9mIM7VucOwiGr54VTQXbEBAbTF9O/7jpd?=
- =?us-ascii?Q?ShBcVwTsvmXqqq+LxhWUkWdaVB5Jmp1x0+zxq8ZmF/7idK6tRHkbNIu3YSEG?=
- =?us-ascii?Q?sUfxTDHULJOMvpVgk0MfZIeNtucH0eNkxbpPPZ09WnO4HyR7oOHzLbzmsiun?=
- =?us-ascii?Q?dM0h6VQUorfm/wfZ/VfIOIgFYAwxgNrPE5UQ8MiuzLlbvjgUgVLwQe0khD7m?=
- =?us-ascii?Q?rfxD87IUi3QMKTn4WVOfMGfIoRCMe5BYTcAKeIeU76x4kedJb9WCm4t1+mmh?=
- =?us-ascii?Q?6UEDFs6ZimADLgdYxzCO1y21B78TtVPjjJHmqMGbtxZB7ylSvrH0zteXV7vS?=
- =?us-ascii?Q?pZdPaPlTGFr/CjuTMTz+LN4ekUp8Alecu6s6qFAUN1EFI3Xw7h0+BDl8Tj1C?=
- =?us-ascii?Q?azrGgqu1an6/CQX4Ug5+foxzxMpNlAiyVBEffZPVI+OT1zA36Huyk5gYQH/b?=
- =?us-ascii?Q?N3fTooCnmG2Sh5Pw8xScAOtecSApu73ZUthcFuJx8S79j93YcbRgsdYZNqwg?=
- =?us-ascii?Q?JIvE6ZAn+rOxgZo+NM70kVq2jBZFM453PdtBvs/DhOgxl3wBSzZiUHBQPUBr?=
- =?us-ascii?Q?4g837rSTjVbW2QVJ35LA2wb91cugabynPKdZ1n/H?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9052.29; Fri, 5 Sep
+ 2025 01:40:32 +0000
+Received: from OSA0EPF000000CB.apcprd02.prod.outlook.com
+ (2603:1096:101:114:cafe::56) by SE2P216CA0018.outlook.office365.com
+ (2603:1096:101:114::17) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9094.20 via Frontend Transport; Fri,
+ 5 Sep 2025 01:40:32 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 211.20.1.79)
+ smtp.mailfrom=wiwynn.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=quarantine header.from=wiwynn.com;
+Received-SPF: Fail (protection.outlook.com: domain of wiwynn.com does not
+ designate 211.20.1.79 as permitted sender) receiver=protection.outlook.com;
+ client-ip=211.20.1.79; helo=localhost.localdomain;
+Received: from localhost.localdomain (211.20.1.79) by
+ OSA0EPF000000CB.mail.protection.outlook.com (10.167.240.57) with Microsoft
+ SMTP Server id 15.20.9094.14 via Frontend Transport; Fri, 5 Sep 2025 01:40:31
+ +0000
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+To: patrick@stwcx.xyz, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Cc: Zane Li <zane_li@wiwynn.com>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: [PATCH v1 1/1] ARM: dts: aspeed: yosemite4: allocate ramoops for kernel panic
+Date: Fri,  5 Sep 2025 09:40:08 +0800
+Message-Id: <20250905014009.588269-1-Delphine_CC_Chiu@wiwynn.com>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -167,405 +109,118 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8cf39087-8218-4162-c769-08ddec1d4c5e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 05 Sep 2025 01:41:13.5733
+Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: OSA0EPF000000CB:EE_|TY0PR04MB5959:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 8a37c6de-88b8-4ed8-a825-08ddec1d33b6
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|61400799027|82310400026|376014|36860700013;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?a23jDdnTNxl/btUIx7j3+yUDZo93gYgkHtFd84RFOgxCgdB5L2SglrOSLumY?=
+ =?us-ascii?Q?bRX+1xLHaMxgbpfcgIeJI7aT7QbCxIveb6N6yr5ST0e//6wyeRZ26DC6UYsh?=
+ =?us-ascii?Q?uOTPaMWJ+X+c9x5zk384JelUiK/i+U343+RWYtfVOm/SIWt5WkX2sbXRovNb?=
+ =?us-ascii?Q?tlKO5bmqEMNHa0neEOtAt6KGdAgbeBGqNYawI3AoSOnsstzpvq7JPnhk/z94?=
+ =?us-ascii?Q?ikK7Iek15ehvs8EMt6QfXzj8UIKWHnH+ERpZQ++9NS+UH765wF0PWdmusX2F?=
+ =?us-ascii?Q?raritw+raRqq4/vgHg5XdMAkdzv1vFhEhgK6gNzO7qzA/KcQh6J0B/YCX1XI?=
+ =?us-ascii?Q?eSDkktQuOIhsHvdS55TBWz98D6m2kI3VIw1BPGBSyo7z6EIiRq4qvt4HUZkN?=
+ =?us-ascii?Q?+B/67YzRSAHfw4+xs/6P5ZWdiL7a3V4JSs9371Gx0RIC2FJarjz0ucXAz6Wa?=
+ =?us-ascii?Q?Fcjy3DMwqVZ92yOFqBF1YETVFfIGhkUYEL4SRj+GU+YSLTIJ4rYDaufpC7N3?=
+ =?us-ascii?Q?OA4riVeAwJWoifhfP6F3I4VSWSx2jJrXy7DZGGnPoccRAxluAqrUatnSyw3B?=
+ =?us-ascii?Q?cr1E77N4nE/C8pKlqAyeKWA86MjEyz6ySqtcUi67S7Xdgd0LoVgd+h11Tkt+?=
+ =?us-ascii?Q?E4sAch8suz8sI2TkDVaY9eEszAW+O0+sdTkJ2oHMxZzFnmntcsem+ePZoNSd?=
+ =?us-ascii?Q?IduKuo14xR/cK7vBDz8bpTaveMsWlrKon97DkvIRhpgRXKbWVkzAaPznOALE?=
+ =?us-ascii?Q?xzIQS8VEs4DatUETdaryI/ycRUlA1UDC7F723D4UL+1spf+ZUPB0LcICeqtL?=
+ =?us-ascii?Q?is+oNhZyCZahGoeNpr9fvbdboX41/mDBFW3bZA5JqsFSi12JWjb8mCkHusNK?=
+ =?us-ascii?Q?kE/2IadGVsmzJYrbf05gf4dbggkw+VUKA9gO1sDWYGVYTHGxeKgB8a0opRYQ?=
+ =?us-ascii?Q?iom+CKF8mhVcfI9J199EOxJ3FH/8pZfK2SMsf7Xf5gYZMOVR2h0DvHzfl/mk?=
+ =?us-ascii?Q?zLMoio6T/x5fMD+FZ3zyA1esgVuLTcSa4GZ/bmd7xYajolWZxW+yxlcKLqR8?=
+ =?us-ascii?Q?ZYheASNEHOiMRPL0t9RbymAEhhkci8V1UMZwZg70MOsoprUFJQ5FHalRVU3K?=
+ =?us-ascii?Q?7Hhp6eFWzSAJZnSr8me+v8bwTFE9WRtszq4G6COzzhnHf2RCXmNAu0N0r4M8?=
+ =?us-ascii?Q?YGJ7Nc7v0WBRI7/QZbclXdAm4E+MQWAfiwaFq6HEdqW1kxvKoyMdRVP/yLAI?=
+ =?us-ascii?Q?xrbZwz98G79yk4hCWo1wxrLzijJcx3IwdQRuANHPgkTWtxQbZQNTbaLxehF2?=
+ =?us-ascii?Q?w5UtQBslsX8qOM7mPuuuIFwoIKOJRavCsVeGyNscg/0i3cFgqWmWe43Cn7y1?=
+ =?us-ascii?Q?ItETWiktG8wkcPN9vRNEBpJm5TuMjYy5J4a5X4yNnH5qlocGYI7JrObYPP9P?=
+ =?us-ascii?Q?loiVs0m29T9CthwFLvICY8rxQ0vxfro9dyBDqwmST+b/cKJw7Kb8n+Zwa1/b?=
+ =?us-ascii?Q?qDBcufRhcoZ02oRkjj9RAz6whdGdtH4Oggd/?=
+X-Forefront-Antispam-Report:
+	CIP:211.20.1.79;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:localhost.localdomain;PTR:211-20-1-79.hinet-ip.hinet.net;CAT:NONE;SFS:(13230040)(7416014)(61400799027)(82310400026)(376014)(36860700013);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	oZyBLmX/US+jrfbKsmwV7pXi1+qVYqJsRFpN4DofuCRrS1ELRT2NyOa0XXRArHpHKarC9WcC4Wxz5hPTvkW0MwD0swnsSqA0T8OZjhEIr+DEdArzipGEiPaEowwz3U+AYGxfVR76r6Q9NEmI5C8GeGUHAGRIFc0kxXE+F3dQnS2F6SLA2yc1u+13f5UBNqmTUOnXCJPgy5LGFL+B4hIG4yWgD9+OF0z90cPsgkDhSA2PaanEybAiPe0jnteiahlRv/gsTGlyOqpQDuih+Pce5u1T+ERpM3QhPAV7Ft6IMggdyU34S1y5FAVMvaTO+FFsrAnEuCxqrqxjRUa0SDlaq2izq1p7rvsFYh2NZvZrmQdBZo6TivrxvsZn3gp5e1wQRWUlbvNB4JrNHFz8KJD2SoB6uPU7pxH69YcZbXAOtDUzw1iC4sa0cNxnfV414sL9PpqCymce4KVZ+ZIN5RLScDApF+q3QvHqEhMe1QeIgX8hOPlYK12nVOtMqbhZ4zfGIRjCHLtAm9+PDF9fzKW8BNtFjb07MYbjRcETO8c3Z6+0a7j2uEcWn3boBIj/4sVQhe14ItfYqWJFr0kjV7gPWsSPTK1Df07d3f3lhq57Ym82Ty0PH5W3Y+wYYu4zrYM1
+X-OriginatorOrg: wiwynn.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Sep 2025 01:40:31.5458
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 4cHLPrvtqhSanP7jm81q7jyhmS2J07epe0PUr/k6L2LeOefoLm5b03GROVSPLKm4r9QdvJ8XWZut1KaB5MqAVUKOaY6cyJd9iJgajQBGjDw=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB7210
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8a37c6de-88b8-4ed8-a825-08ddec1d33b6
+X-MS-Exchange-CrossTenant-Id: da6e0628-fc83-4caf-9dd2-73061cbab167
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=da6e0628-fc83-4caf-9dd2-73061cbab167;Ip=[211.20.1.79];Helo=[localhost.localdomain]
+X-MS-Exchange-CrossTenant-AuthSource:
+	OSA0EPF000000CB.apcprd02.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR04MB5959
+X-Proofpoint-ORIG-GUID: d4m5gGRpVl3aj1EA0E0mYY7aY12Q-K9I
+X-Proofpoint-GUID: d4m5gGRpVl3aj1EA0E0mYY7aY12Q-K9I
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA1MDAxMyBTYWx0ZWRfX/g5+fbh0OOZ6
+ XFcLBYmmqUOLKelKb5OnrwJYQpboOFvfvTK6EumTKP1wlN7uiw1z9ttiNp1MYltSRaI4QfDtluW
+ yCBnBDDuDOibOQnhZZniWJw9oeUTDd4TZAxpr6YD6tRMB26mUE4v7bmx9QEsOqhm4C7QyBMd9+a
+ 2+XPmtCHukHBfYQcaGqMxvLZh65tWvUKkSw11GUFXl7DfhnofBldXwKpQtqNfMPuzEZ2aFK4gxy
+ PxthagKeS4tZ6e6EeDpF+mcXis8cChtm6mGe6HmzLaKty4tmFiswSJ7ZHTARNDa3fVPWSQs9AXj
+ wBLjNSZhPwYyXXGm1kpjik+MXdNKogfMmHWCBSbcs9pWjhbvJqqEibBtmzbkzI=
+X-Authority-Analysis: v=2.4 cv=foLcZE4f c=1 sm=1 tr=0 ts=68ba3f93 cx=c_pps
+ a=7d2PKIABdNnGHd8yLCgNxw==:117 a=6rDDh2uRNVCE5HFPCIqeAA==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
+ a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=yJojWOMRYYMA:10 a=4AL28aEVfeMA:10
+ a=cPYzWk29AAAA:8 a=lEIaToS8ZBCf7mqwG3MA:9 a=oSR2DF9YFqZEN4IGatwP:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-05_01,2025-09-04_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 malwarescore=0 adultscore=0 impostorscore=0
+ clxscore=1011 suspectscore=0 phishscore=0 spamscore=0 classifier=typeunknown
+ authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.22.0-2507300000 definitions=firstrun
 
-Hi Bjorn,
+From: Zane Li <zane_li@wiwynn.com>
 
-Thank you for your reply.
+Reserve a ramoops memory region in the Yosemite4 device tree so that
+kernel panic logs can be preserved across reboots. This helps with
+post-mortem debugging and crash analysis.
 
-> > +/* TLP configuration type 0 and type 1 */
-> > +#define CRG0_READ_FMTTYPE
-> \
-> > +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                     \
-> > +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_NO_DATA, \
-> > +				       PCIE_TLP_TYPE_CFG0_RD))
-> > +#define CRG0_WRITE_FMTTYPE
-> \
-> > +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                  \
-> > +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_DATA, \
-> > +				       PCIE_TLP_TYPE_CFG0_WR))
-> > +#define CRG1_READ_FMTTYPE
-> \
-> > +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                     \
-> > +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_NO_DATA, \
-> > +				       PCIE_TLP_TYPE_CFG1_RD))
-> > +#define CRG1_WRITE_FMTTYPE
-> \
-> > +	FIELD_PREP(ASPEED_TLP_COMMON_FIELDS,                  \
-> > +		   ASPEED_TLP_FMT_TYPE(PCIE_TLP_FMT_3DW_DATA, \
-> > +				       PCIE_TLP_TYPE_CFG1_WR))
-> > +#define CRG_PAYLOAD_SIZE		0x01 /* 1 DWORD */
->=20
-> What does "CRG" in the above mean?  If it means the same as "CFG", i.e., =
-an
-> abbreviation for "configuration", can you use "CFG" instead?
-> It it's to match an internal spec, go ahead and keep "CRG".
->=20
+Signed-off-by: Zane Li <zane_li@wiwynn.com>
+---
+ .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts   | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-It is "configuration". I will change "CRG" to "CFG" in next version.
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index aae789854c52..4ec1abae1175 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -49,6 +49,20 @@ memory@80000000 {
+ 		reg = <0x80000000 0x80000000>;
+ 	};
+ 
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		ramoops@b8dfa000 {
++			compatible = "ramoops";
++			reg = <0xb8dfa000 0x6000>;
++			record-size = <0x2000>;
++			console-size = <0x2000>;
++			pmsg-size = <0x2000>;
++			max-reason = <1>;
++		};
++	};
++
+ 	iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
+-- 
+2.25.1
 
-> > + * struct aspeed_pcie_rc_platform - Platform information
-> > + * @setup: initialization function
-> > + * @reg_intx_en: INTx enable register offset
-> > + * @reg_intx_sts: INTx status register offset
-> > + * @reg_msi_en: MSI enable register offset
-> > + * @reg_msi_sts: MSI enable register offset
-> > + * @msi_address: HW fixed MSI address  */ struct
-> > +aspeed_pcie_rc_platform {
-> > +	int (*setup)(struct platform_device *pdev);
-> > +	int reg_intx_en;
-> > +	int reg_intx_sts;
-> > +	int reg_msi_en;
-> > +	int reg_msi_sts;
-> > +	int msi_address;
->=20
-> I think this should be u32 to match struct msi_msg.address_lo.
->=20
-
-Agreed.
-
-> > +static irqreturn_t aspeed_pcie_intr_handler(int irq, void *dev_id) {
-> > +	struct aspeed_pcie *pcie =3D dev_id;
-> > +	const struct aspeed_pcie_rc_platform *platform =3D pcie->platform;
-> > +	unsigned long status;
-> > +	unsigned long intx;
-> > +	u32 bit;
-> > +	int i;
-> > +
-> > +	intx =3D FIELD_GET(PCIE_INTX_STS,
-> > +			 readl(pcie->reg + platform->reg_intx_sts));
-> > +	for_each_set_bit(bit, &intx, PCI_NUM_INTX)
-> > +		generic_handle_domain_irq(pcie->intx_domain, bit);
-> > +
-> > +	if (IS_ENABLED(CONFIG_PCI_MSI)) {
-> > +		for (i =3D 0; i < 2; i++) {
-> > +			int msi_sts_reg =3D platform->reg_msi_sts + (i * 4);
-> > +
-> > +			status =3D readl(pcie->reg + msi_sts_reg);
-> > +			writel(status, pcie->reg + msi_sts_reg);
-> > +
-> > +			/*
-> > +			 * AST2700 A1 workaround:
-> > +			 * The MSI status needs to clear one more time.
-> > +			 */
-> > +			if (of_device_is_compatible(pcie->dev->of_node,
-> > +						    "aspeed,ast2700-pcie"))
->=20
-> It looks pretty expensive to look this up for every interrupt.  It's cons=
-tant for
-> the life of the driver, so you only need to do it once at probe time.
->=20
-
-Calling of_device_is_compatible() in the interrupt path is unnecessary.
-In next version, I will add a variable in private at probe and=20
-have the ISR check the variable instead.
-
-> > +				writel(status, pcie->reg + msi_sts_reg);
-> > +
-> > +			for_each_set_bit(bit, &status, 32) {
-> > +				bit +=3D (i * 32);
-> > +				generic_handle_domain_irq(pcie->msi_domain,
-> > +							  bit);
-> > +			}
-> > +		}
-> > +	}
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
->=20
-> > +static int aspeed_msi_set_affinity(struct irq_data *irq_data,
-> > +				   const struct cpumask *mask, bool force) {
-> > +	return -EINVAL;
-> > +}
->=20
-> From comparing with other drivers, I doubt this is needed.
->=20
-
-Agreed.
-It seems unnecessary. I will remove in next version.
-
-> > +
-> > +static struct irq_chip aspeed_msi_bottom_irq_chip =3D {
-> > +	.name =3D "ASPEED MSI",
-> > +	.irq_compose_msi_msg =3D aspeed_msi_compose_msi_msg,
->=20
-> I would prefer a name that matches irq_chip.irq_compose_msi_msg, e.g.,
-> "aspeed_irq_compose_msi_msg()".
->=20
-
-Agreed.
-
-> > +static int aspeed_pcie_msi_init(struct aspeed_pcie *pcie) {
-> > +	int ret =3D 0;
-> > +
-> > +	writel(~0, pcie->reg + pcie->platform->reg_msi_en);
-> > +	writel(~0, pcie->reg + pcie->platform->reg_msi_en + 0x04);
-> > +	writel(~0, pcie->reg + pcie->platform->reg_msi_sts);
-> > +	writel(~0, pcie->reg + pcie->platform->reg_msi_sts + 0x04);
-> > +
-> > +	struct irq_domain_info info =3D {
-> > +		.fwnode		=3D dev_fwnode(pcie->dev),
-> > +		.ops		=3D &aspeed_msi_domain_ops,
-> > +		.host_data	=3D pcie,
-> > +		.size		=3D MAX_MSI_HOST_IRQS,
-> > +	};
-> > +
-> > +	pcie->msi_domain =3D msi_create_parent_irq_domain(&info,
-> > +							&aspeed_msi_parent_ops);
-> > +	if (!pcie->msi_domain)
-> > +		return dev_err_probe(pcie->dev, -ENOMEM,
-> > +				     "failed to create MSI domain\n");
-> > +
-> > +	return ret;
->=20
-> Useless "ret".  Remove it and just "return 0;"
->=20
-
-Agreed.
-
-> > +static int aspeed_ast2600_setup(struct platform_device *pdev) {
-> > +	struct aspeed_pcie *pcie =3D platform_get_drvdata(pdev);
-> > +	struct device *dev =3D pcie->dev;
-> > +
-> > +	if (pcie->host_bus_num !=3D 0x80)
-> > +		return dev_err_probe(dev, -EINVAL,
-> > +				     "The host bus must be 0x80\n");
->=20
-> Why not check this at the point you read it from the devicetree?
->=20
-
-Sorry.
-Do you mean this check put in aspeed_pcie_parse_dt()?
-
-> > +	pcie->ahbc =3D syscon_regmap_lookup_by_phandle(dev->of_node,
-> > +						     "aspeed,ahbc");
-> > +	if (IS_ERR(pcie->ahbc))
-> > +		return dev_err_probe(dev, PTR_ERR(pcie->ahbc),
-> > +				     "failed to map ahbc base\n");
->=20
-> Same here.  Looks like a devicetree validation check.
->=20
-
-And this also puts to aspeed_pcie_parse_dt()?
-
-> > +static int aspeed_pcie_parse_port(struct aspeed_pcie *pcie,
-> > +				  struct device_node *node,
-> > +				  int slot)
-> > +{
-> > +	struct aspeed_pcie_port *port;
-> > +	struct device *dev =3D pcie->dev;
-> > +	int ret;
-> > +
-> > +	port =3D devm_kzalloc(dev, sizeof(*port), GFP_KERNEL);
-> > +	if (!port)
-> > +		return -ENOMEM;
-> > +
-> > +	port->clk =3D devm_get_clk_from_child(dev, node, NULL);
-> > +	if (IS_ERR(port->clk))
-> > +		return dev_err_probe(dev, PTR_ERR(port->clk),
-> > +				     "failed to get pcie%d clock\n", slot);
-> > +
-> > +	port->phy =3D devm_of_phy_get(dev, node, NULL);
-> > +	if (IS_ERR(port->phy))
-> > +		return dev_err_probe(dev, PTR_ERR(port->phy),
-> > +				     "failed to get phy pcie%d\n",
-> > +				     port->slot);
->=20
-> port->slot hasn't been set yet.
->=20
-
-Agreed.
-I will change it to "slot" in next version.
-
-> > +	port->perst =3D of_reset_control_get_exclusive(node, "perst");
-> > +	if (IS_ERR(port->perst))
-> > +		return dev_err_probe(dev, PTR_ERR(port->perst),
-> > +				     "failed to get pcie%d reset control\n",
-> > +				     slot);
-> > +	ret =3D devm_add_action_or_reset(dev, aspeed_pcie_reset_release,
-> > +				       port->perst);
-> > +	if (ret)
-> > +		return ret;
-> > +	reset_control_assert(port->perst);
-> > +
-> > +	port->slot =3D slot;
-> > +	port->pcie =3D pcie;
-> > +
-> > +	INIT_LIST_HEAD(&port->list);
-> > +	list_add_tail(&port->list, &pcie->ports);
-> > +
-> > +	return 0;
-> > +}
->=20
-> > +static int aspeed_pcie_probe(struct platform_device *pdev) {
-> > +	struct device *dev =3D &pdev->dev;
-> > +	struct pci_host_bridge *host;
-> > +	struct aspeed_pcie *pcie;
-> > +	struct device_node *node =3D dev->of_node;
-> > +	const struct aspeed_pcie_rc_platform *md;
-> > +	u32 bus_range[2];
-> > +	int irq, ret;
-> > +
-> > +	md =3D of_device_get_match_data(dev);
-> > +	if (!md)
-> > +		return -ENODEV;
-> > +
-> > +	host =3D devm_pci_alloc_host_bridge(dev, sizeof(*pcie));
-> > +	if (!host)
-> > +		return -ENOMEM;
-> > +
-> > +	pcie =3D pci_host_bridge_priv(host);
-> > +	pcie->dev =3D dev;
-> > +	pcie->tx_tag =3D 0;
-> > +	platform_set_drvdata(pdev, pcie);
-> > +
-> > +	pcie->platform =3D md;
-> > +	pcie->host =3D host;
-> > +	INIT_LIST_HEAD(&pcie->ports);
-> > +
-> > +	ret =3D of_property_read_u32_array(node, "bus-range", bus_range,
-> > +					 ARRAY_SIZE(bus_range));
->=20
-> No other drivers do this; why do you need it?
->=20
-
-I need to get the number of root bus.
-At 2700 configuration command, it needs to use the next number of root bus
-to send the header type of cfg command of TLP.
-
-static int aspeed_ast2700_child_config(struct pci_bus *bus, unsigned int de=
-vfn,
-				       int where, int size, u32 *val,
-				       bool write)
-{
-
-.....
-
-	if (write)
-		cfg_val |=3D (bus->number =3D=3D (pcie->host_bus_num + 1)) ?
-				   CFG0_WRITE_FMTTYPE :
-				   CFG1_WRITE_FMTTYPE;
-	else
-		cfg_val |=3D (bus->number =3D=3D (pcie->host_bus_num + 1)) ?
-				   CFG0_READ_FMTTYPE :
-				   CFG1_READ_FMTTYPE;
-	writel(cfg_val, pcie->reg + H2X_CFGE_TLP_1ST);
-
-....
-
-> > +	if (ret) {
-> > +		dev_warn(dev, "failed to get bus range, assuming bus is 0\n");
-> > +		pcie->host_bus_num =3D 0;
-> > +	}
-> > +	pcie->host_bus_num =3D bus_range[0];
-> > +
-> > +	pcie->reg =3D devm_platform_ioremap_resource(pdev, 0);
-> > +	if (IS_ERR(pcie->reg))
-> > +		return PTR_ERR(pcie->reg);
-> > +
-> > +	pcie->domain =3D of_get_pci_domain_nr(node);
->=20
-> Almost no drivers use this; why do you need it?
->=20
-
-It is just used for message, must not be requirement.
-I will remove it in next version.
-
-> > +	pcie->h2xrst =3D devm_reset_control_get_exclusive(dev, "h2x");
-> > +	if (IS_ERR(pcie->h2xrst))
-> > +		return dev_err_probe(dev, PTR_ERR(pcie->h2xrst),
-> > +				     "failed to get h2x reset\n");
-> > +
-> > +	ret =3D devm_mutex_init(dev, &pcie->lock);
-> > +	if (ret)
-> > +		return dev_err_probe(dev, ret, "failed to init mutex\n");
-> > +
-> > +	ret =3D pcie->platform->setup(pdev);
-> > +	if (ret)
-> > +		return dev_err_probe(dev, ret, "failed to setup PCIe RC\n");
-> > +
-> > +	ret =3D aspeed_pcie_parse_dt(pcie);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	ret =3D aspeed_pcie_init_ports(pcie);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	host->sysdata =3D pcie;
-> > +
-> > +	ret =3D aspeed_pcie_init_irq_domain(pcie);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	irq =3D platform_get_irq(pdev, 0);
-> > +	if (irq < 0)
-> > +		return irq;
-> > +
-> > +	ret =3D devm_add_action_or_reset(dev, aspeed_pcie_irq_domain_free,
-> pcie);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	ret =3D devm_request_irq(dev, irq, aspeed_pcie_intr_handler,
-> IRQF_SHARED,
-> > +			       dev_name(dev), pcie);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	ret =3D pci_host_probe(host);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	return 0;
->=20
-> This is the same as:
->=20
->   return pci_host_probe(hoste);
->=20
-
-Agreed.
-
-> > +}
-> > +
-> > +const struct aspeed_pcie_rc_platform pcie_rc_ast2600 =3D {
-> > +	.setup =3D aspeed_ast2600_setup,
-> > +	.reg_intx_en =3D 0xc4,
-> > +	.reg_intx_sts =3D 0xc8,
-> > +	.reg_msi_en =3D 0xe0,
-> > +	.reg_msi_sts =3D 0xe8,
-> > +	.msi_address =3D 0x1e77005c,
->=20
-> Where does this .msi_address come from?  Does this depend on an address
-> map that could vary based on the platform?  Should it come from devicetre=
-e?
->=20
-
-The .msi_address is a SoC-fixed MSI doorbell target address used by the RC
-to capture MSI writes. The memory write of MSI will not be mapped to RAM.
-I think it should be keep in the SoC match data rather than Devicetree.
-
-> > +};
-> > +
-> > +const struct aspeed_pcie_rc_platform pcie_rc_ast2700 =3D {
-> > +	.setup =3D aspeed_ast2700_setup,
-> > +	.reg_intx_en =3D 0x40,
-> > +	.reg_intx_sts =3D 0x48,
-> > +	.reg_msi_en =3D 0x50,
-> > +	.reg_msi_sts =3D 0x58,
-> > +	.msi_address =3D 0x000000f0,
-> > +};
-
-Thanks,
-Jacky
 
