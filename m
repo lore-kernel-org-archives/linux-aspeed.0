@@ -1,73 +1,60 @@
-Return-Path: <linux-aspeed+bounces-2152-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2153-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0108CA1010
-	for <linux-aspeed@archiver.kernel.org>; Fri,  5 Sep 2025 07:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 548B2CA0FED
+	for <linux-aspeed@archiver.kernel.org>; Fri,  5 Sep 2025 08:12:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJ7k331GXz3bcy;
-	Fri,  5 Sep 2025 17:47:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757058475;
-	cv=none; b=oBqg4txGEdWgO/SM5wu/7vNngMTW7KYVUt2tAIZvbY9ftQ4W+8NNT52aX1BXCDbGqhcJE6/I+Kuv1TpAaPDC9QDatK7i7uJWTaKeltIFB7xQOm3GihSGPUN4yui6xf4W9vHqMpX6A7ClL0Hm8FI6f8t3hPKU6lpclbGcq7eCjfbMEczqyvCpUEwyOXSNNE9XrB/G3qlNbBvCOecNvJexJRDBNb8F4nGjHF8wJCOYJNo5sQm+17zRqET3e5z0w8KrGIvQYQTT5LspSK5f1e2rMdqNYv88WZqLU8f/Eju8ZCz4J7hidUaQ42qMjAX6Ig6pVD6MlHoHpJDRuhrbax8hFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJ8Fy5b1tz3bhY;
+	Fri,  5 Sep 2025 18:12:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757059926;
+	cv=none; b=BF0gKZRj7DrVkcxQa3cfmoNVG4YVWH0sKk6140onJ+NY4rKi+UPjq7uqEV4XSWfiuhrgl1KbNQ2vhgQBH4iaPwXOkfo3l13kRJK5TuFxQRlaLMrEpiZf2yEv1IevvkKEKSZ0vIc1vwk6wIzMryOGX2fLRFORpR5KsgfK+v930jRayw9GG3WbaaNCUsXnsjiGt32i0JD9wDXAHpk9FKkK1DxR0FfhW/o6FWv+jRONpkhHnQ+RdEnZe2BplldIRyJvntVT59ihe2WydDhxOjZhGHTU+7A3f6qPYYV1CCKRvZDIOOpJ4wAgalCktHh0aRfMoHnTXJUljfvzw4Cmqs6dYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757058475; c=relaxed/relaxed;
-	bh=rBtkAe6H+jyGj4tt5HXrxDOSNwUiyry3aDabLs2QBuI=;
-	h=From:To:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=fgY5xOeuBf+ex9A79pKOczPZf8zy/dbbub4rkzoTf/Ko+lGo7KBWF5NB++/199JSIL829x8Yp52zsSEFzsg1MQOWLiUbfFA2G+P4gdHR6UKTyP9VYn8Ngjp6dXo7h5bLwGR7SrA2QzyMVImGKoQGZDaOlysDmwiaBM5V/bOGxha2JMaBtb8VBe9HSSNApzzSQVVewT9J6Pe7ToQHD9PDYygFzRNx1oIHwJAXk1HbmqzylhMBTdho2SWAqoXOW7AIJHwzbrZ0WULh62ZbLIxAlonC7W5Lrlxdjm+qI/QhBOIqSO7rjoK97k71qKQ6r53SZ2NMudiE6ZYDsze43bZ2Mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=wbJMk1A9; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NJs6nJbE; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1757059926; c=relaxed/relaxed;
+	bh=LqrJFDIp3Qk8Daspity93aOZRCLtvYxKedurcvKPi2w=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HBcFN8xlUK7dCPC8tf10/qFXlZLmCfh6V4TFcaktCGw6+4EwtvVyrVYvc6iyMHsykJcHyNK8+eOc3LtUVdTcNQVlJvRYUlUEyBLWYBntAcux/sx+5R6S0kPxczFwvHVsNEPw9yNbt8E0ssVxGPtfzCZx87h/BGS4O6tESzQfqTv7LvEI16zqsn69JkJkF2cpbntghsPgEXE7PctMAMT8j6UDcy0fViA7pvsbHTLTzjBiDyA6jqb/SR6D0hTHEE1wv6KFQy7dz5Dg2V8IZCsbMpFkXlzaxlZimSn/KU7+W6u4HOEftCbOmyIeUr9t42LZVfgLI4Re/wF2yJ1duMWfWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rjBIK5wn; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=wbJMk1A9;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NJs6nJbE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rjBIK5wn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJ7k22ZBYz3bYx
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  5 Sep 2025 17:47:54 +1000 (AEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1757058467;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rBtkAe6H+jyGj4tt5HXrxDOSNwUiyry3aDabLs2QBuI=;
-	b=wbJMk1A9M/sLp/JYaMOxP5tGNweS3NYiR5ynw15kjZMAZ5rUMMSzHOnG1xBv+8gq4Vxhj+
-	oI1zFvBrXNGizVzbHofs4WCKcyD7In5isJOgPj+8Vc8aIWO2wap9DplKViLeXEQvFB8dPm
-	7gY5pnY/L4llUs8PDxJdWy3PUK7IXezT+B8lUw59CJpDwBlURZ2PzaLH6DlsQOawbKMPvJ
-	guPWRrINA9tUjXJ9RppdoorgcwTpGQJ3k7WnJkAgcttp7blEXkozcrCNWGk+LIl2jBelZk
-	J66iUGfBnBHmZecbdPkARyTfSWWr6SglxrlRTY/2RM77NlSX7RQ+PPrxzTIH6Q==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1757058467;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=rBtkAe6H+jyGj4tt5HXrxDOSNwUiyry3aDabLs2QBuI=;
-	b=NJs6nJbEfespe8MIIJCa7ECvbrIBkCIhMite81FenHjk7bkCHnKDVUp/y1C6hXCIANO45v
-	SdDXOIvxzzqVzYBg==
-To: Ryan Chen <ryan_chen@aspeedtech.com>, Eddie James
- <eajames@linux.ibm.com>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
- Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>, Lee Jones <lee@kernel.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH v2 4/4] irqchip/aspeed-scu-ic: Add support AST2700 SCU
- interrupt controllers
-In-Reply-To: <OS8PR06MB7541CD16E659666868EAECB9F203A@OS8PR06MB7541.apcprd06.prod.outlook.com>
-References: <20250831021438.976893-1-ryan_chen@aspeedtech.com>
- <20250831021438.976893-5-ryan_chen@aspeedtech.com> <87y0qx0zqu.ffs@tglx>
- <OS8PR06MB7541CD16E659666868EAECB9F203A@OS8PR06MB7541.apcprd06.prod.outlook.com>
-Date: Fri, 05 Sep 2025 09:47:46 +0200
-Message-ID: <87tt1hwdb1.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJ8Fy0Sqcz3bh6;
+	Fri,  5 Sep 2025 18:12:05 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6B513442CA;
+	Fri,  5 Sep 2025 08:12:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B0666C4CEF1;
+	Fri,  5 Sep 2025 08:12:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757059923;
+	bh=mNHu3Dq59LBMQxbgLxMaQI+8a9Nh6j71J6ILlJhwpkI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=rjBIK5wn6f7pd2b8kgpHsnktswpp0jsDZKR+mzoJkrpRqXsGOQ8Hq09cIY3lkFHJg
+	 nzUh8vJeVvCdy9sg3kNocvcU8WKjE48Xzke8Ix1mGA+L6jOujXWlGqEKQiScJzXtiT
+	 5hu0HdszSfr9/RVGP78AH7xeJ5J0/kP61EnA1qETBh7gigujUy74ck5aukJnDbbpdo
+	 ceEGFRzCva4VFLytCgA8BZFa31Uh77McjxyDjNeh9C9WbrRs7irDuQZ2wO9B2dsW3q
+	 R4hHdZ5RcHXuB6vVQasltt21cL+OyQihQpV+b/IXU6ogkDBDmcHSHfmCi11schly5c
+	 SSVP5k2l+rypA==
+Date: Fri, 5 Sep 2025 10:12:00 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: lee@kernel.org, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au, 
+	linus.walleij@linaro.org, brgl@bgdev.pl, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org, BMC-SW@aspeedtech.com
+Subject: Re: [PATCH v2 0/4] Add pinctrl support for AST2700 SoC
+Message-ID: <20250905-rough-notorious-leech-dd7a0d@kuoka>
+References: <20250904103401.88287-1-billy_tsai@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -81,40 +68,22 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250904103401.88287-1-billy_tsai@aspeedtech.com>
 
-On Fri, Sep 05 2025 at 05:55, Ryan Chen wrote:
->> So you have two different handlers. Why can't you provide two different
->> mask/unmask/ functions along with a seperate irq chip instead of cluttering
->> the code with conditionals. Thes two variants share no code at all.
->
-> I will add irq_chip in SCU_VARIANT, like following.
->
-> struct aspeed_scu_ic_variant {
-> ..
-> +	struct irq_chip	*irq_chip;	
-> };
->
-> #define SCU_VARIANT(_compat, _shift, _enable, _num,  +_irq_chip, _split, _ier, _isr) { \
-> +	.irq_chip		=	_irq_chip,	\
-> .....
-> }
->
-> static const struct aspeed_scu_ic_variant scu_ic_variants[]	__initconst = {
-> 	SCU_VARIANT("aspeed,ast2400-scu-ic",	0, GENMASK(15, 0),	7, &aspeed_scu_ic_chip_combined,	false,	0,	0),
-> 	SCU_VARIANT("aspeed,ast2500-scu-ic",	0, GENMASK(15, 0),	7, &aspeed_scu_ic_chip_combined,	false,	0,	0),
-> 	SCU_VARIANT("aspeed,ast2600-scu-ic0",	0, GENMASK(5, 0),	6, &aspeed_scu_ic_chip_combined,	false,	0,	0),
-> 	SCU_VARIANT("aspeed,ast2600-scu-ic1",	4, GENMASK(5, 4),	2, &aspeed_scu_ic_chip_combined,	false,	0,	0),
-> 	SCU_VARIANT("aspeed,ast2700-scu-ic0",	0, GENMASK(3, 0),	4, &aspeed_scu_ic_chip_split,	true,	0x00, 0x04),
-> 	SCU_VARIANT("aspeed,ast2700-scu-ic1",	0, GENMASK(3, 0),	4, &aspeed_scu_ic_chip_split,	true,	0x00, 0x04),
-> 	SCU_VARIANT("aspeed,ast2700-scu-ic2",	0, GENMASK(3, 0),	4, &aspeed_scu_ic_chip_split,	true,	0x04, 0x00),
-> 	SCU_VARIANT("aspeed,ast2700-scu-ic3",	0, GENMASK(1, 0),	2, &aspeed_scu_ic_chip_split,	true,	0x04, 0x00),
-> };
+On Thu, Sep 04, 2025 at 06:33:57PM +0800, Billy Tsai wrote:
+> Document and add the pinctrl driver for AST2700 SoC.
+> 
+> Changes since v1:
+> - Update pinctrl aspeed binding files.
 
-You have this split_ier_isr field already, which should be good enough
-to select the chip to assign, similar to what you do with the handler, no?
+Anything is an update.
 
-Thanks,
+Really too vague and some time ago I am sure I complained about this to
+Aspeed.
 
-        tglx
+Best regards,
+Krzysztof
+
 
