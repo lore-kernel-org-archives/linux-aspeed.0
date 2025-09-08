@@ -1,51 +1,94 @@
-Return-Path: <linux-aspeed+bounces-2172-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2173-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFECBCA1017
-	for <linux-aspeed@archiver.kernel.org>; Mon,  8 Sep 2025 01:18:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCDB5CAC582
+	for <linux-aspeed@archiver.kernel.org>; Tue,  9 Sep 2025 00:34:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cKpxX1M8Lz2yx8;
-	Mon,  8 Sep 2025 11:18:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757294320;
-	cv=none; b=FebshEl5OkkvWD0NXDqEApYDN/RG5h7LD1lBahyH2oN4jhZa8JB5H5hehOrArwncLuxDKGhXmI8lHhWUtHMUFd+KQonWOZs8EoAwQ76zuaXvwfsTxekKFet09yr1x4tY8wopl9P/cae5Ym5YSs5n2ELQNq/ZOWTG976yFvmDiv2+cVCXM7QO1z1ttTxXPxA5Wl8Zty6WzzTAL5yTWu5vOzfBhx5NzfDXEJAct58cYNgnGFBIIYRiU57COvtfFapwoYFOp5skFKdY2nPbIjX6vfGhi/BW/bBsoCj2H8A8DTsfaM2Sw60lH7V1chdpKIM++xHLH+wulNViPxx2qihN7w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cLPvh06pSz2yVP;
+	Tue,  9 Sep 2025 10:34:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757318560;
+	cv=none; b=WPEMt96gRGi0AxgpuHoEzqM2NdQIW9dM8FgD8aMqoXhZgqVXKDDRbRYJ4GZfxRZFJGIoXXnPBcQ4RFKyntvD1GzHllH3hUAB+W4LfsQv9lgeUg2ojGEqlAASxKYLCeZcNEXAS3qg5O6a3vVbivsaaKWBuYIboIlLyi8RDJkWsh6pDNWV7FH108eDVypBPyRplEDTj4CMwgW93usJ0ma1QvCfHPZs9nlW4vzbEBXHdM1hJdG6GP960uriDMumIZie/gDZgYcYLBWTeAtov5np/PT8/peOetAIiQdqaTK9NbW/zPhGLC5R9G7dplpY7qZdky/+LRPHHTFH/r3VetWpsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757294320; c=relaxed/relaxed;
-	bh=XJy2JeV/1UVZZG+HugoKhaPuVqDpDsRp9yHPJ5xMpeg=;
+	t=1757318560; c=relaxed/relaxed;
+	bh=1m1HPXvt7ktVSLEbN3p8RtTbvarkVCnLkg7YZFQj7Rk=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=H7VK0XBVH0RgiHewPPe8Q9+NuJzVVXRSkmB5mWPJqzPolmjKgIdC96CP1/MuJfPX9ChMH9pMHdeZ8FYG4IiLFbYrE3NLqK3paIwFraNYDgqt6452GnjasFfOZ7TNl8QguPej3UE9G1ATxLGQ48o+HsZBx3YSr6O54IUMijEI5dr25p8mRDaJkawgImaCEx+sd+eBrtinI4v8EJKHSLDfe9qmnEGfI1nsxiHEA5YExb9A55mQUVxYdAO75pnL+HvEfKLbxu0XXnTP6l4DwWykaJljqgCrCPHEPjuEGvmY+hJbnQb2whKEdxuIPRVZjX53ALnszOut8OWbmKF11lpakw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	 MIME-Version; b=V4hUTxdw1hFaG6FFzvWqdfWG9eGYQYyY3ZJaoJB1oT8U0GsRU88bzzr92x7wVKw5WxZlY3bUNlhl6dWgqR2YyDX2YqPGiEl2pCWIghLOL2ZKC+dmSr/28Ckaep2Yf/qOBnVNf3jndXyMsKV42A070CZqK7uhiYDszWneSV82WewL0kBfuZol9ZCNPHW188efafGfD/8SGAz8h6bYdscotJkbC1zg0/FsfZM5XXMFpQxN2N1bL5dfIPUL9cqEL84gxhfPDUSTtvq4YUY8K7W8UZCYglLNtEXjGB2QAu3lHuz8e3qgcY40W7utU1v8VVzIRL3AHsAm1EH3LUTt4cVg7A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YQf5mw2z; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=YQf5mw2z;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cKpxT2kCcz2ytg
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  8 Sep 2025 11:18:37 +1000 (AEST)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 8 Sep
- 2025 09:18:13 +0800
-Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 8 Sep 2025 09:18:13 +0800
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-To: ryan_chen <ryan_chen@aspeedtech.com>, Eddie James <eajames@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Lee Jones <lee@kernel.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH v4 4/4] irqchip/aspeed-scu-ic: Add support AST2700 SCU interrupt controllers
-Date: Mon, 8 Sep 2025 09:18:12 +0800
-Message-ID: <20250908011812.1033858-5-ryan_chen@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250908011812.1033858-1-ryan_chen@aspeedtech.com>
-References: <20250908011812.1033858-1-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cKzvh0ZZnz2xPy
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  8 Sep 2025 18:02:40 +1000 (AEST)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-76e2ea933b7so3421225b3a.1
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Sep 2025 01:02:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757318558; x=1757923358; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1m1HPXvt7ktVSLEbN3p8RtTbvarkVCnLkg7YZFQj7Rk=;
+        b=YQf5mw2zM0cNDPrT9DQOKo1ntWjOFGWV35dT774SugoDc1mmfm76rdK1kEiWri9afh
+         yLUH4RKCbbNHZsnEsFkCa3yTtrIjluJDIxW+xALxkNNPJgsWTqNi/qJDafGzkorh5WA0
+         Phq2Jq6KdrR9N57PyCLD/2+CztA7ASbVIXd1XcHabihefDQmHt7kx0lS4js2bF616XVh
+         ugxC7ow5+wNNx+DLxILSwvt8qufDnCIWNutHq/SppFOJZo1ygdaRORjBnlMpnmQMLSE8
+         Tu808IL//hfUL3IjdAhgzQHZqqXuRfC5jPdKal4XZ/K6nMob/+moixdtNrf9nkixrNVr
+         q5Ig==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757318558; x=1757923358;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1m1HPXvt7ktVSLEbN3p8RtTbvarkVCnLkg7YZFQj7Rk=;
+        b=ptOTzlKlpRAymvFj8Zr/2TjVAcn52MTcYzdhI3m1JOtuGQMyitzxqsMysBnb9zNyqc
+         515QK+5TvOl5GFPln8vG/DlP6p9LIO98c3Qo8aXWHXXLqzKQ+IOApCL7aLaOCFvu5LSd
+         0PluFEJh2KrSyGjoYFr9xOeC/tyMts/L28RO3cEbajIb5SPtA+7Gb1918PtquSvEXwwW
+         fB92SBEThWDxU9bKoI1QnQbK6wZcQbty6VTUQE06yhLe6RWssQw+Qmy7gYSyLnLCVi67
+         jUoY+x/HH2MdsY2PQG7Pr2xLiQKnkFEfB/jHDjESQXdOA5GPZV/NxctHV6+0cNaOUeWV
+         dB2w==
+X-Forwarded-Encrypted: i=1; AJvYcCUklok438aJL2CO0W85VmAlkkiwncTR6sy7UeuQLrie9UH0Px69RJqhzBjKWPYeZwEPdB8i+28EVAnt/kw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyGyPb2L962yBYDfzfI5GcMj2i+78WeqkCYOxHeOHkgAACI+FCL
+	G3l7SLhp+159d7tVs5+kjLgIlBJKF4MyS9bkEnOxQqvQ3U+2hxEsreWI
+X-Gm-Gg: ASbGncsUsfXo8hL9fKoRjfEgHns82GQUoVvN3yk3gnS+YuHkPvcitck4F6bO9Ew1fg5
+	4zxWXYGocEIj3QjogxUFZnryMTUGueh9KYAZZ/2muBbq2r9uwemkeKNTvKFtNeBGq16jQfqucJ8
+	oKlE77Hkk6kiF/b8ZYvUkF06QCu3ePF75hk8KETApWgwDJZG0fgq8FofzmmujudZ1615fh4nzD5
+	XQXZ9bl9ipYHeiD0DVSZzdLjHfof28/8V9CK7hcHAkHb/P91lcJJciQMz3YUUlAW7R5baeinzzF
+	u5K+jl/vQPkz/XZsZDICo1k5cX6NRaKnOdMv8riD7TEllYmLtLrwdZy0ddldvCDKe5DF3FERWQi
+	BjRentZsU5VGTHTUZE2dn94eKZfc5YWXsqZL0p2Yt/XoArjYyahA68c8HRy0SaYhk4utjxeoMm3
+	rZIf/wxTmIEF5QATmFc767SSgPOEzumdWJ6JygTp20cH38qaUniuuRTQxtzrXDE3YO4jyYVk2Gp
+	IVCOS0gEyHvFXcB
+X-Google-Smtp-Source: AGHT+IGGZJOWnBMUs56283wgft2cbmKqgdlDx4FfdiUkPllQ+scrxhIKHbQGrDZ1bM5Tn41ggy0nJQ==
+X-Received: by 2002:a05:6a00:852:b0:772:736e:656c with SMTP id d2e1a72fcca58-7742e3b5b6bmr7614551b3a.5.1757318558156;
+        Mon, 08 Sep 2025 01:02:38 -0700 (PDT)
+Received: from fred-System-Product-Name.. (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7727bce1b58sm15186600b3a.9.2025.09.08.01.02.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 08 Sep 2025 01:02:37 -0700 (PDT)
+From: Fred Chen <fredchen.openbmc@gmail.com>
+To: Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v3 4/4] ARM: dts: aspeed: santabarbara: add sgpio line name for leak detection
+Date: Mon,  8 Sep 2025 16:02:15 +0800
+Message-ID: <20250908080220.698158-5-fredchen.openbmc@gmail.com>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250908080220.698158-1-fredchen.openbmc@gmail.com>
+References: <20250908080220.698158-1-fredchen.openbmc@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,244 +103,41 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
 
-The AST2700 continues the multi-instance SCU interrupt controller model
-introduced in the AST2600, with four independent interrupt domains
-(scu-ic0 to 3).
+Add leak-related line names for the SGPIO inputs that report chassis
+leaks, so userspace can detect and handle leak events
 
-Unlike earlier generations that combine interrupt enable and status bits
-into a single register, the AST2700 separates these into distinct IER and
-ISR registers. Support for this layout is implemented by using register
-offsets and separate chained IRQ handlers.
-
-The variant table is extended to cover AST2700 IC instances, enabling
-shared initialization logic while preserving support for previous SoCs.
-
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+Signed-off-by: Fred Chen <fredchen.openbmc@gmail.com>
 ---
- drivers/irqchip/irq-aspeed-scu-ic.c | 119 +++++++++++++++++++++++-----
- 1 file changed, 101 insertions(+), 18 deletions(-)
+ .../dts/aspeed/aspeed-bmc-facebook-santabarbara.dts  | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
-index 54d2f187e081..323a113652f4 100644
---- a/drivers/irqchip/irq-aspeed-scu-ic.c
-+++ b/drivers/irqchip/irq-aspeed-scu-ic.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- * Aspeed AST24XX, AST25XX, and AST26XX SCU Interrupt Controller
-+ * Aspeed AST24XX, AST25XX, AST26XX, and AST27XX SCU Interrupt Controller
-  * Copyright 2019 IBM Corporation
-  *
-  * Eddie James <eajames@linux.ibm.com>
-@@ -17,26 +17,37 @@
- 
- #define ASPEED_SCU_IC_STATUS		GENMASK(28, 16)
- #define ASPEED_SCU_IC_STATUS_SHIFT	16
-+#define AST2700_SCU_IC_STATUS		GENMASK(15, 0)
- 
- struct aspeed_scu_ic_variant {
- 	const char		*compatible;
- 	unsigned long	irq_enable;
- 	unsigned long	irq_shift;
- 	unsigned int	num_irqs;
-+	bool		split_ier_isr;
-+	unsigned long	ier;
-+	unsigned long	isr;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
+index de624f4a33f3..c86471fc6314 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
+@@ -1766,11 +1766,17 @@ &sgpiom0 {
+ 	"PRSNT_LEAK_CABLE_1_R_N","",
+ 	"PRSNT_LEAK_CABLE_2_R_N","",
+ 	"PRSNT_HDT_N","",
+-	"","",
++	"LEAK_SWB_COLDPLATE","",
+ 	/*P0-P3 line 240-247*/
+-	"","","","","","","","",
++	"LEAK_R3_COLDPLATE","",
++	"LEAK_R2_COLDPLATE","",
++	"LEAK_R1_COLDPLATE","",
++	"LEAK_R0_COLDPLATE","",
+ 	/*P4-P7 line 248-255*/
+-	"","","","","","","","";
++	"LEAK_MB_COLDPLATE","",
++	"LEAK_PDB1_RIGHT_MANIFOLD","",
++	"LEAK_PDB1_LEFT_MANIFOLD","",
++	"LEAK_MB_MANIFOLD","";
+ 	status = "okay";
  };
  
--#define SCU_VARIANT(_compat, _shift, _enable, _num) { \
-+#define SCU_VARIANT(_compat, _shift, _enable, _num, _split, _ier, _isr) { \
- 	.compatible		=	_compat,	\
- 	.irq_shift		=	_shift,		\
- 	.irq_enable		=	_enable,	\
- 	.num_irqs		=	_num,		\
-+	.split_ier_isr		=	_split,		\
-+	.ier			=	_ier,		\
-+	.isr			=	_isr,		\
- }
- 
- static const struct aspeed_scu_ic_variant scu_ic_variants[]	__initconst = {
--	SCU_VARIANT("aspeed,ast2400-scu-ic",	0,	GENMASK(15, 0),	7),
--	SCU_VARIANT("aspeed,ast2500-scu-ic",	0,	GENMASK(15, 0), 7),
--	SCU_VARIANT("aspeed,ast2600-scu-ic0",	0,	GENMASK(5, 0),	6),
--	SCU_VARIANT("aspeed,ast2600-scu-ic1",	4,	GENMASK(5, 4),	2),
-+	SCU_VARIANT("aspeed,ast2400-scu-ic",	0, GENMASK(15, 0),	7, false,	0,	0),
-+	SCU_VARIANT("aspeed,ast2500-scu-ic",	0, GENMASK(15, 0),	7, false,	0,	0),
-+	SCU_VARIANT("aspeed,ast2600-scu-ic0",	0, GENMASK(5, 0),	6, false,	0,	0),
-+	SCU_VARIANT("aspeed,ast2600-scu-ic1",	4, GENMASK(5, 4),	2, false,	0,	0),
-+	SCU_VARIANT("aspeed,ast2700-scu-ic0",	0, GENMASK(3, 0),	4, true,	0x00, 0x04),
-+	SCU_VARIANT("aspeed,ast2700-scu-ic1",	0, GENMASK(3, 0),	4, true,	0x00, 0x04),
-+	SCU_VARIANT("aspeed,ast2700-scu-ic2",	0, GENMASK(3, 0),	4, true,	0x04, 0x00),
-+	SCU_VARIANT("aspeed,ast2700-scu-ic3",	0, GENMASK(1, 0),	2, true,	0x04, 0x00),
- };
- 
- struct aspeed_scu_ic {
-@@ -45,9 +56,12 @@ struct aspeed_scu_ic {
- 	unsigned int		num_irqs;
- 	void __iomem		*base;
- 	struct irq_domain	*irq_domain;
-+	bool			split_ier_isr;
-+	unsigned long		ier;
-+	unsigned long		isr;
- };
- 
--static void aspeed_scu_ic_irq_handler(struct irq_desc *desc)
-+static void aspeed_scu_ic_irq_handler_combined(struct irq_desc *desc)
- {
- 	struct aspeed_scu_ic *scu_ic = irq_desc_get_handler_data(desc);
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
-@@ -85,7 +99,33 @@ static void aspeed_scu_ic_irq_handler(struct irq_desc *desc)
- 	chained_irq_exit(chip, desc);
- }
- 
--static void aspeed_scu_ic_irq_mask(struct irq_data *data)
-+static void aspeed_scu_ic_irq_handler_split(struct irq_desc *desc)
-+{
-+	struct aspeed_scu_ic *scu_ic = irq_desc_get_handler_data(desc);
-+	struct irq_chip *chip = irq_desc_get_chip(desc);
-+	unsigned long bit, enabled, max, status;
-+	unsigned int sts, mask;
-+
-+	chained_irq_enter(chip, desc);
-+
-+	mask = scu_ic->irq_enable;
-+	sts = readl(scu_ic->base + scu_ic->isr);
-+	enabled = sts & scu_ic->irq_enable;
-+	sts = readl(scu_ic->base + scu_ic->isr);
-+	status = sts & enabled;
-+
-+	bit = scu_ic->irq_shift;
-+	max = scu_ic->num_irqs + bit;
-+
-+	for_each_set_bit_from(bit, &status, max) {
-+		generic_handle_domain_irq(scu_ic->irq_domain, bit - scu_ic->irq_shift);
-+		writel(BIT(bit), scu_ic->base + scu_ic->isr); // clear interrupt
-+	}
-+
-+	chained_irq_exit(chip, desc);
-+}
-+
-+static void aspeed_scu_ic_irq_mask_combined(struct irq_data *data)
- {
- 	struct aspeed_scu_ic *scu_ic = irq_data_get_irq_chip_data(data);
- 	unsigned int mask = BIT(data->hwirq + scu_ic->irq_shift) |
-@@ -99,7 +139,7 @@ static void aspeed_scu_ic_irq_mask(struct irq_data *data)
- 	writel(readl(scu_ic->base) & ~mask, scu_ic->base);
- }
- 
--static void aspeed_scu_ic_irq_unmask(struct irq_data *data)
-+static void aspeed_scu_ic_irq_unmask_combined(struct irq_data *data)
- {
- 	struct aspeed_scu_ic *scu_ic = irq_data_get_irq_chip_data(data);
- 	unsigned int bit = BIT(data->hwirq + scu_ic->irq_shift);
-@@ -114,6 +154,22 @@ static void aspeed_scu_ic_irq_unmask(struct irq_data *data)
- 	writel((readl(scu_ic->base) & ~mask) | bit, scu_ic->base);
- }
- 
-+static void aspeed_scu_ic_irq_mask_split(struct irq_data *data)
-+{
-+	struct aspeed_scu_ic *scu_ic = irq_data_get_irq_chip_data(data);
-+
-+	writel(readl(scu_ic->base) & ~BIT(data->hwirq + scu_ic->irq_shift),
-+	       scu_ic->base + scu_ic->ier);
-+}
-+
-+static void aspeed_scu_ic_irq_unmask_split(struct irq_data *data)
-+{
-+	struct aspeed_scu_ic *scu_ic = irq_data_get_irq_chip_data(data);
-+	unsigned int bit = BIT(data->hwirq + scu_ic->irq_shift);
-+
-+	writel(readl(scu_ic->base) | bit, scu_ic->base + scu_ic->ier);
-+}
-+
- static int aspeed_scu_ic_irq_set_affinity(struct irq_data *data,
- 					  const struct cpumask *dest,
- 					  bool force)
-@@ -121,17 +177,29 @@ static int aspeed_scu_ic_irq_set_affinity(struct irq_data *data,
- 	return -EINVAL;
- }
- 
--static struct irq_chip aspeed_scu_ic_chip = {
--	.name			= "aspeed-scu-ic",
--	.irq_mask		= aspeed_scu_ic_irq_mask,
--	.irq_unmask		= aspeed_scu_ic_irq_unmask,
--	.irq_set_affinity	= aspeed_scu_ic_irq_set_affinity,
-+static struct irq_chip aspeed_scu_ic_chip_combined = {
-+	.name                   = "aspeed-scu-ic",
-+	.irq_mask               = aspeed_scu_ic_irq_mask_combined,
-+	.irq_unmask             = aspeed_scu_ic_irq_unmask_combined,
-+	.irq_set_affinity       = aspeed_scu_ic_irq_set_affinity,
-+};
-+
-+static struct irq_chip aspeed_scu_ic_chip_split = {
-+	.name                   = "ast2700-scu-ic",
-+	.irq_mask               = aspeed_scu_ic_irq_mask_split,
-+	.irq_unmask             = aspeed_scu_ic_irq_unmask_split,
-+	.irq_set_affinity       = aspeed_scu_ic_irq_set_affinity,
- };
- 
- static int aspeed_scu_ic_map(struct irq_domain *domain, unsigned int irq,
- 			     irq_hw_number_t hwirq)
- {
--	irq_set_chip_and_handler(irq, &aspeed_scu_ic_chip, handle_level_irq);
-+	struct aspeed_scu_ic *scu_ic = domain->host_data;
-+
-+	if (scu_ic->split_ier_isr)
-+		irq_set_chip_and_handler(irq, &aspeed_scu_ic_chip_split, handle_level_irq);
-+	else
-+		irq_set_chip_and_handler(irq, &aspeed_scu_ic_chip_combined, handle_level_irq);
- 	irq_set_chip_data(irq, domain->host_data);
- 
- 	return 0;
-@@ -152,8 +220,14 @@ static int aspeed_scu_ic_of_init_common(struct aspeed_scu_ic *scu_ic,
- 		rc = PTR_ERR(scu_ic->base);
- 		goto err;
- 	}
--	writel(ASPEED_SCU_IC_STATUS, scu_ic->base);
--	writel(0, scu_ic->base);
-+
-+	if (scu_ic->split_ier_isr) {
-+		writel(AST2700_SCU_IC_STATUS, scu_ic->base + scu_ic->isr);
-+		writel(0, scu_ic->base + scu_ic->ier);
-+	} else {
-+		writel(ASPEED_SCU_IC_STATUS, scu_ic->base);
-+		writel(0, scu_ic->base);
-+	}
- 
- 	irq = irq_of_parse_and_map(node, 0);
- 	if (!irq) {
-@@ -168,7 +242,9 @@ static int aspeed_scu_ic_of_init_common(struct aspeed_scu_ic *scu_ic,
- 		goto err;
- 	}
- 
--	irq_set_chained_handler_and_data(irq, aspeed_scu_ic_irq_handler,
-+	irq_set_chained_handler_and_data(irq, scu_ic->split_ier_isr ?
-+					 aspeed_scu_ic_irq_handler_split :
-+					 aspeed_scu_ic_irq_handler_combined,
- 					 scu_ic);
- 
- 	return 0;
-@@ -206,6 +282,9 @@ static int __init aspeed_scu_ic_of_init(struct device_node *node, struct device_
- 	scu_ic->irq_enable	= variant->irq_enable;
- 	scu_ic->irq_shift	= variant->irq_shift;
- 	scu_ic->num_irqs	= variant->num_irqs;
-+	scu_ic->split_ier_isr	= variant->split_ier_isr;
-+	scu_ic->ier	= variant->ier;
-+	scu_ic->isr	= variant->isr;
- 
- 	return aspeed_scu_ic_of_init_common(scu_ic, node);
- }
-@@ -214,3 +293,7 @@ IRQCHIP_DECLARE(ast2400_scu_ic, "aspeed,ast2400-scu-ic", aspeed_scu_ic_of_init);
- IRQCHIP_DECLARE(ast2500_scu_ic, "aspeed,ast2500-scu-ic", aspeed_scu_ic_of_init);
- IRQCHIP_DECLARE(ast2600_scu_ic0, "aspeed,ast2600-scu-ic0", aspeed_scu_ic_of_init);
- IRQCHIP_DECLARE(ast2600_scu_ic1, "aspeed,ast2600-scu-ic1", aspeed_scu_ic_of_init);
-+IRQCHIP_DECLARE(ast2700_scu_ic0, "aspeed,ast2700-scu-ic0", aspeed_scu_ic_of_init);
-+IRQCHIP_DECLARE(ast2700_scu_ic1, "aspeed,ast2700-scu-ic1", aspeed_scu_ic_of_init);
-+IRQCHIP_DECLARE(ast2700_scu_ic2, "aspeed,ast2700-scu-ic2", aspeed_scu_ic_of_init);
-+IRQCHIP_DECLARE(ast2700_scu_ic3, "aspeed,ast2700-scu-ic3", aspeed_scu_ic_of_init);
 -- 
-2.34.1
+2.49.0
 
 
