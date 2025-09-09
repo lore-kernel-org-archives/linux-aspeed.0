@@ -1,67 +1,80 @@
-Return-Path: <linux-aspeed+bounces-2178-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2179-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1DA4CA0FED
-	for <linux-aspeed@archiver.kernel.org>; Tue,  9 Sep 2025 08:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 629C8CA0FED
+	for <linux-aspeed@archiver.kernel.org>; Tue,  9 Sep 2025 23:05:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cLck13vvlz30V1;
-	Tue,  9 Sep 2025 18:41:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757407289;
-	cv=none; b=Zi31F0BclhEYq7+jfTzCCZCF35scbZ3eCVaoPS2T2liU05tc8ZYHANWK6stdDorf5hK/oXLYvAucOwJiSsk+3XR+JMWmqxK5MywHoHwJkWJVp+tGLTLf0J20VX60SIJjPgRmLhh7TYbM6GHzkg4LZj4KEi1afw5avQbDTNdXGDB+ysiENeVZUvM9oP7+073B6jmVouDyjE3QJV5W1b2ClBTh1wYbjBsMD0d0JlKYvNEfDW8YSq68anrA77YyAVg4zsdL7NzdzEQ21+BGZUd7NoDUWohVE2BEnsaFmlE+qU7uN1DTOOSsM1hdxKLmk+feQGEM0b7sC5qPJArH+S7nhQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757407289; c=relaxed/relaxed;
-	bh=U7ePnYmOtqTHJjolMf4hlSRaTCGH9Xh1EcH3rMZqHlc=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=SsMTWPhCmhxeeZqRLsA+ZdBmXItFIUcgBZXTj/BvReOoQfAwwu5Sh2bLck6YbJr/3HXS553doFH39LzTjLrZEvWU44ZCXGkCYt6y77Xq/TRuyP9X+3cAGSIMCXf/4BMEAoQ7QRQT0NAJ9Aha2YV65SsqEAqtRGt/0RDp5xih2vtMybdpI07HdUgccAahGmLIi1Z+rbSejcfO5GyxgPmBNZwIsNHiUnvHE2HiH1OWWr8fNAfalxZB32mhyxzrBjn8SSGnbEgPaGd/xqSWByKfgN7HpMsNmCPD4J6nUm6YeAOD+SUzWXaxSBjrfNdH4Eoh5vkV7X5/OyNnGFdfJqkzZw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Sd92CweD; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cLzv76Zj3z3cZt;
+	Wed, 10 Sep 2025 09:05:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2009::609" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757459139;
+	cv=pass; b=Xi1XHiCrA41VFXnRXOPMKpDFfDgaERyvYJbkMcus0p+qoe2DMBwYpTD75e/2i/jsbwvOj14QpM+ci4Jiwf15F5bJbgDo8yMGsdB9u/ZLJ41XhcCjytVjpsTfYECHPjEwnnSpXxetxpADrTo5EZMaDAV7cVhKE5yL5r6q3byoqlTDdWVOPf3eg87EWOehXyZhHuBtxOSLKKbK6MiTTI4qhSoZMAqRSXIYwdDGX0LCP7pORiqoYcLsYQxI28li3LQe7QI/H6kCn83QI8naH3pVaFTd8+ZQMNaFxRvRWfMrm/rAjP4fFKW8IWSCinjOCTzMmnzcpzU6W2a9dWkHDSJ7fw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1757459139; c=relaxed/relaxed;
+	bh=LAbk5u88AWU5i7gF44WXSIwW193lXWWXCvPcfvD9hFY=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=R2822h+s5SzTGUBY2u61My166kLaKZMXUAAGD5beKcL5YVCsFSXooPCBOL6zukZq/3F8MY3q+T/F0mGx+yHcQIej+Y9LiDCME26SaWWETALpw/aRVaENfZqY5TCXJZm9L9JPe+7wi+y1TpGhDdfRFgg+ANHMZOu+XcHCTw1NHUiJp8jxClG2/n/vyTjvfaqdoUb1gPN3LeGmPntxxB4s/sYA3V0riQmMR7pnU5eLYMI/yZDGub2b8PFgIrZtm3RlI3sHMbHMmp+NqbPDEqVoUwuyQVCTYsSYUw0mSuyg6Kl1o4ve02epBEuUbCxTPvteo3hSCWYW0OGaoC+g2XzmlA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=HeeKg7+S; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2009::609; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=donalds@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Sd92CweD;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=HeeKg7+S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2009::609; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=donalds@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on20609.outbound.protection.outlook.com [IPv6:2a01:111:f403:2009::609])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLcjz3Pzkz30Ff
-	for <linux-aspeed@lists.ozlabs.org>; Tue,  9 Sep 2025 18:41:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1757407284;
-	bh=U7ePnYmOtqTHJjolMf4hlSRaTCGH9Xh1EcH3rMZqHlc=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=Sd92CweDx23fukVxldZRkSELHkaUqB8ZI6EDJP1uvQmfLhLM/4VikWAhtALLzUjRi
-	 0KFWWhA9B/3yNtWrdWjO8qrY4FVG/gRgOy1Qu/bq+3kgJX7WUDrYrHvgiXyOJ0Itrx
-	 mx+k1uTk/73Xfhirp8eicIL3NH3C8s3zglU+zsGkOTC70DwRowHAl6Va1Rhembxr7J
-	 i+lOBXo5Sad2n1JS/JaLZwxb5daStYSsnvx9Nr1TfADjiKtWu3BlTAsAE1ENPmXb+6
-	 s+3/y/l0X536QqP/R3yYiHm3D+uzKnIvPx8Ga+Dn6sqoX2LzHmCi/zffMqVHspJfus
-	 uQsKAyx4EdoRQ==
-Received: from [192.168.68.113] (unknown [180.150.112.213])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 08FD36443C;
-	Tue,  9 Sep 2025 16:41:21 +0800 (AWST)
-Message-ID: <1a2ca78746e00c2ec4bfc2953a897c48376ed36f.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v4 1/2] dt-bindings: interrupt-controller: aspeed: Add
- parent compatibles and refine documentation
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
- <ryan_chen@aspeedtech.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski
-	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	 <joel@jms.id.au>, Kevin Chen <kevin_chen@aspeedtech.com>, 
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org
-Date: Tue, 09 Sep 2025 18:11:19 +0930
-In-Reply-To: <20250814-auspicious-thundering-jaybird-b76f4f@kuoka>
-References: <20250812100830.145578-1-ryan_chen@aspeedtech.com>
-	 <20250812100830.145578-2-ryan_chen@aspeedtech.com>
-	 <20250814-auspicious-thundering-jaybird-b76f4f@kuoka>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLzv55xSDz2yrT;
+	Wed, 10 Sep 2025 09:05:37 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ylHICCE5gUphmQscIx/HybOQudChS9bMYd7oEKI2q1+/Y1ghnNYVyj3DVnEzs7bYt3fFdu0/Mbud64brdaxUppbG3dR2lLgVOOmpi+iGs+6OGEBxa81vXqEpQKu9aw9RIEtl4arm6kLgJWHjkoYKYOzDvJiyP1YtyJYs2xqxx5L220xXIpA0r12vh3wJFs0jqieO+ZD87mJi7HDusq2cHsxdwnxk2gByhT+5/sxgKjcvIp5JjX/wVmYTPM9zfvF5eh1fRhV1ucnNSka/dE4zS945kCf+qqJC2IPvR/REpeiPJYMH5kn/OS3w2FVibTgTZE+XjP8K+SDAF1TEpqkvdg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LAbk5u88AWU5i7gF44WXSIwW193lXWWXCvPcfvD9hFY=;
+ b=ShmDOAedvAmWBAj+t4JgZfxXA78FrWo6Mg/SBdFViDFNrKzLV4PoyzD+nqWeJqdTw3VJXT/fu+ATl1EtPTLLBPkjrWZQ3bhOnkbkFZkgvaYiNQRF2dmHa9BEpp6cw8jqvU323LQ1i586bLyHJm0WRsKdFg3meKK6krM09BSCH/o7kVEsaivbzbPpo3wwzAbKaRsuMwIkk+2aNs8sffGJvV1WZ7Ino0yCmRKarRWadwCYaXJesfEDJwcHsLGg1o30wxZkzNVupIwwCBCwdPqHP6HRaqPibd1rAYQ+/fL+IcwBMhco7UHnfjDANfGfFwmk4t3+qm7oLnBc73SIjWQfzg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LAbk5u88AWU5i7gF44WXSIwW193lXWWXCvPcfvD9hFY=;
+ b=HeeKg7+SDxtbc2FkexF6yuD9wVqiU0fq3RG/ObEQpgVtyPuJM6w/+DtBvF9gslKr97+NvBwJdNWvrG4E2fx7orq7+EqA/rBZxlMFIP4gVQM+LumHDPLN5Fnbel1XgCv1DQ9+LHppjcwSIwjKa34rlnQzc+8SrFzPl2JfAPsC2uqyH4Cz1zNIKnY8QZFbnaT/YOssc6eybnWOIuThEzqBvA7KDe6sUqZEj9wNU3sMKEz08kajhfri/oXOntX7CL3Lf9qzrWJ6lidv1dGATAjjXzXgQ0knd7E1p+Kyd6nMFJyiW9JZiMfO5uaM0EG4u+BeqUxY5iIUErGWhLTGk2EDkA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from PH7PR12MB7282.namprd12.prod.outlook.com (2603:10b6:510:209::7)
+ by IA0PR12MB8748.namprd12.prod.outlook.com (2603:10b6:208:482::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Tue, 9 Sep
+ 2025 23:05:16 +0000
+Received: from PH7PR12MB7282.namprd12.prod.outlook.com
+ ([fe80::6f03:f851:7f6c:c68d]) by PH7PR12MB7282.namprd12.prod.outlook.com
+ ([fe80::6f03:f851:7f6c:c68d%3]) with mapi id 15.20.9094.021; Tue, 9 Sep 2025
+ 23:05:16 +0000
+Message-ID: <fcd64668-4232-4d7b-98ec-5326d40d19d7@nvidia.com>
+Date: Tue, 9 Sep 2025 16:05:15 -0700
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/2] ARM: dts: aspeed: Add NVIDIA VR144NVL board
+To: Andrew Jeffery <andrew@codeconstruct.com.au>, robh@kernel.org,
+ krzk+dt@kernel.org, conor+dt@kernel.org, Andrew Lunn <andrew@lunn.ch>
+Cc: joel@jms.id.au, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, etanous@nvidia.com
+References: <20250822203818.4062595-1-donalds@nvidia.com>
+ <20250822203818.4062595-3-donalds@nvidia.com>
+ <f9cd6015c47d390eef9c689d2cb4fcd301c4d123.camel@codeconstruct.com.au>
+Content-Language: en-US
+From: Donald Shannon <donalds@nvidia.com>
+In-Reply-To: <f9cd6015c47d390eef9c689d2cb4fcd301c4d123.camel@codeconstruct.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: SJ0PR05CA0086.namprd05.prod.outlook.com
+ (2603:10b6:a03:332::31) To PH7PR12MB7282.namprd12.prod.outlook.com
+ (2603:10b6:510:209::7)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -75,469 +88,386 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH7PR12MB7282:EE_|IA0PR12MB8748:EE_
+X-MS-Office365-Filtering-Correlation-Id: b482f28a-e8f6-4c77-ef72-08ddeff5571f
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|1800799024|7416014|376014;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?Y1IwbFNrcGErWlEwR3diWmdEUmMvc25GczRjR1MwL2U2RVlVeWhvaStsV2s1?=
+ =?utf-8?B?cXN4VE1kRlgwK2U5ZzVDN3hYUVI4dENmQ1B2YUNKaWtEWjJzRVVKRUJsWjZV?=
+ =?utf-8?B?REhzZmJzbE5uT0svSTFtV243b3NDanFBTzhsUkJ0MS9QZnJoU2VicHN5dkNS?=
+ =?utf-8?B?cFgxTFZsVTJoUHU3R1hvOGNoWlBEL3daSEtXaTIyYkdLL2NySXNXMjdaWTIw?=
+ =?utf-8?B?SkZpWGptVURqRk43Vy9XOVN0emxRUy9KN1laUGFuMVJOU3VJSmRCcG4wOVNC?=
+ =?utf-8?B?eGFpZnc0NzJteitoSXgrRDBjWGpCU1FwcHYrMklyYjZKdU1IcjR5TDRmbkdV?=
+ =?utf-8?B?eE12WUV2bzNIS2JZSmp2MFhka21YUWhjV2lzRDROdktJdWxHMFowVTh6bVVh?=
+ =?utf-8?B?ck90Z0lkRThoNEV4b3lTaTA1alkrUkJnMmg3d3A4S3d3QXJyNzF0bERuOFUz?=
+ =?utf-8?B?S0VnUXlUd0dCWnJ4UmpwVk5oUjNhMXZCN25NcWQ3elBWeVRhT1NLK05KMjVa?=
+ =?utf-8?B?bkJJK2swMlNER3J2eEZVSVZ3UTRtS3pCVlNDKzdVT3J4N1g5M0FDQW0xVFFS?=
+ =?utf-8?B?YXRET1JPM2FEa2wrYmQ0R3hVUTU2OHdhSjhnb1BqaVBqU1d3VGo1SWYveTR1?=
+ =?utf-8?B?VE0wTmcxd201OWM3cFhWUkNPVzBqTUxpdHZiY252ZUpYcHp4eXpOWXdJNDJp?=
+ =?utf-8?B?T2R3dUlYeVRtSHYrdVo3dXVKRU4yK0J5Z05ST1ZMNVltbWYyTEJYVTdkbmIw?=
+ =?utf-8?B?cm5UV3VYVGdvME14U05uWmJNQ2MyQWZIMXgxN0tCMnhwRjlvK2ZzdmwvQ0VV?=
+ =?utf-8?B?a29QTi9sdHRyTk0wOUhJQ2ZOY2Z6N0YvaDhNT3RYYXlITDBtOTNzektGUWI1?=
+ =?utf-8?B?UU1kQ0xwRnZaWGlBdUNUcC9uTW9FaEd6bVBtTlVPSkl5UEtwT244Z2ZqYVJX?=
+ =?utf-8?B?cENieVo4RUlSR2tMZHorRjk1Uk1VRlg0SC9TcTl4NE95dzBrNlZoQ28wRWc1?=
+ =?utf-8?B?UEFHWDEvdmNHa2ovaUI2alZaVVhIeGs5QWRnek9wUldNTVJxdm1jbndTRDd4?=
+ =?utf-8?B?N3IyUXJYMWZ5MG9UcWJweEF5cTU5NkwrWWVWbU5YWko1YWNxbVFESktmK0NV?=
+ =?utf-8?B?bzlMN1ZNbmo3c1dQdkZsQjRUZndTd0tMd3dpQkhHOE0wVStVaUEwWC8wWlRz?=
+ =?utf-8?B?ZHltZ1hVaUJzZ1lKM0F4ZlVUVTUvV2JhV0gyaVFWUm1vS3BOTXpCakltZDAx?=
+ =?utf-8?B?bGU1Z1hISXNLTU42M1FmeHl0TDd6SDB3ZWo2QUhZLy8rWG5JNEltSUIvRnV6?=
+ =?utf-8?B?VG9wWllIWHBQUjc3Vkk5Rm8rZ0dUSnFUY3B6MVhycVdDdld6UmlDaDVTemlm?=
+ =?utf-8?B?Ylk3QXlOV1ZPS1lwdWlkU1FWZERVRk9QMWhkZ2ZacW95OFJ0NDV4Vy9TbmxP?=
+ =?utf-8?B?dHdyRlNYQ1hhd0hjeitUVXY0dTMyc2s0TkRta2cySFpZUWl5dGhQRWRxdWRJ?=
+ =?utf-8?B?OW9HMkNaSkc1bVlkc1U3WWsxTXVtQnhQS0tOZ3hjajR2RExCdThFYlRiWmM4?=
+ =?utf-8?B?dWJWcFo1YWdxSUZuVERjK2xyb1pqeWlBZ0RzdDBrVFMwdzRqZmxJbFh0aEh3?=
+ =?utf-8?B?bSt0WkZGcmEyekhUYitYdUFybWdSK0F1NEdVbVhKeE1WMzFmdTdVUVk4eUIy?=
+ =?utf-8?B?ZFdJVFRWYTBkbDNBYWFCODVOaHJOTHRlTEtHRjRIaHpoLzFrUnZWanlWODZl?=
+ =?utf-8?B?YTlpRjN6OEpuN2hvMnp0OFJ0dlNnbDJlVzV0YllLbm8rU1JDL2JhMEpHL2VZ?=
+ =?utf-8?B?SFJhcUVCZHpJQ001SHMvTmwvc1p5bmhpWVJPbE1BUWpOSHdOcjI2R1ZEYmJp?=
+ =?utf-8?B?Q0VRb1hJQitaRFFGM29td1hmbDIrRkdxb2dHU3p4VmJYSnJETzM2VEVTNTRR?=
+ =?utf-8?Q?pIUn15Hk680=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB7282.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?VkpIUnIxQXJPczZLRWdjaU1VSU1NUXhTUUxFUmY0a3NkblBBUyswZFRLV0Vx?=
+ =?utf-8?B?cVZGOGMvZ3hibTlxdXdrZU5VQ09hMk9oMkw4Ylk4cWJaeGNMSmJhRFlFeUw3?=
+ =?utf-8?B?NnFncks1M0lCUkdZRnkvNkh3dGJnM2FNT2pBbS90bWJOTXBLbFFEU1NXY29E?=
+ =?utf-8?B?a3Uyek5pcGpWRW4ybUtGTkx1eTVmM1VtTU80TlRuTEJaZTYxN2cvYTVpYVRE?=
+ =?utf-8?B?dVJORm5qWjVodlJNOUJqa2FhWFpiRUkwTWhwNDhBNTZubVMzY1AvTGg1ZWsy?=
+ =?utf-8?B?YklOK2hkUG84OXBKUnZ6cEVqRk5sZFZROWZ3NnZ5U050T0owc293VTVuVmRn?=
+ =?utf-8?B?ajRrRExmRlpwWkRHZDRVRGt6R0ZzcjM5UzB3WXBUODhmKzNQSC9FVlgrTmFo?=
+ =?utf-8?B?UUdKS3VxVVlWdFlMM0l2d0VsMVRoYk13NHRETDNQWnVmaGp6RjZpQnZXTldn?=
+ =?utf-8?B?Z0RUWlFnUE9IZkV4Mk82L3VCODBIa1cvVWdtMjkyS3B5WkJQSHMvMU5xMGN2?=
+ =?utf-8?B?eHNwelNpN2J2Vlg4ajk3cVlZS1VKbkRKNEZLTzZEUXhUbXBmbHJZV2NrM3Nt?=
+ =?utf-8?B?RFRHK1N1QXZsc1VJYnp3L2NRK3pEdUNBN2pMWDNyYXJkbk50UXJVYzJQVmty?=
+ =?utf-8?B?ZmhBUFh0ZE9weTZUWHJOOFpWa1V3WmlCenRpcDhwL1ZtL3l3ZFp5eTNYMHdl?=
+ =?utf-8?B?Uk1rTSt6UDI1RENmYS9ndlpUdy9OSkZzNHA0Rm8yRG1qOHJXaXJiZW9abkcw?=
+ =?utf-8?B?UXRseTJnSUdMM1JJUDVjNGRsSzN2RnltdS8wVmdiaytIajc1ckNyQnhWWkZq?=
+ =?utf-8?B?eFN1YkVBaE4vVzc0OHQ0eFQwUll4eDZubG5HZ0pMQk5lSEJpdkYyejZmYktD?=
+ =?utf-8?B?ZHFBNnM3b21aY1NNTkM4SzNtMlM1UFRIdUY1a3hFbVJDMW5BM05IVFd0Q0Rz?=
+ =?utf-8?B?cUtSMWZPanFaMjFURWZpZERIUXZEenRpTnVqdnhHVDEvZEtYcXE1NkRmZk5j?=
+ =?utf-8?B?WVdhNWM2enJaelFJQXhiK1pwWTdHd3lVQnF1ZWN1UWpzRDRtUnNNL2ROaHFS?=
+ =?utf-8?B?OE1NNTR0K3cvdzdPTDZwbnFVeUFHWHpoS0o3Z0ZLSGhZeVYwVDcxYVREQ2JY?=
+ =?utf-8?B?NzVHbmZQcHpjR3ByM0hONkVJU2IrSm85cW95Z1F4azZEVVNDMzZxV3dDRzFQ?=
+ =?utf-8?B?MnFuV0gwNFlpcjBlK1BybThzVXBFUDkyVW5jYjUwaWQyOXVwbjMyUDVmWDZs?=
+ =?utf-8?B?aXlGZ3RVd3F4aG1KdUNmNVdZRUpRTFBTZDJhUHhCdkxCQURiMUdyREJxMVAy?=
+ =?utf-8?B?MUYvWXk2cytkL0o5NS95ekRxQytMTUJaMklQU29aVWIwMjNDQkNFTUI1Ympr?=
+ =?utf-8?B?T2dwM1l0WmtmZUJmV3VVWWJoNDlTczBVMWgzeVlKTjJwSDIwTFA0VWdFUm9m?=
+ =?utf-8?B?a0tpNEpsY0hxOEdYUDRid2I1eGdxZS9oSm9GVnZUZS9YNnBUcWlUUWYzOWFB?=
+ =?utf-8?B?OStNRXphR0Uzdks1UXYxYUJaWUYrY0VVVFdYd0dGS3ZQRXd1anZhSlBEa0FZ?=
+ =?utf-8?B?ZXVyY0ttNDkwa1UxYmsrcmgvRlVDR0J1RGR0ZUxlU1J0QkMvR1d0UzhJYms2?=
+ =?utf-8?B?c1BaYTYrSlhabUwyS0MrTkdCeGl5RnNVMzRuTkZ5c2o4OVhMODNYTjQvMTB3?=
+ =?utf-8?B?TnhmTkRzeStJa0pWTDFEcWhQVlNabzY1T1hBZ2hadU5kUldNK2VCdUkzcUNZ?=
+ =?utf-8?B?YWorWXhpM1FoNG9ib2tnLzl0NnpWZUNIYUQ3cjN2MlluNXI4c1l4VFM1Z0dx?=
+ =?utf-8?B?K2xKcm5kVFFkMnVaK3libGlsYVM0eDBpcFd0cENMbDVEaDlsU0RnY25ndWZt?=
+ =?utf-8?B?Mmh3NXhhTnRUN1gxTGZqS1FJbXdOWnZxdlY4QUJkUEpSeWkvbUVXK295dlhK?=
+ =?utf-8?B?UURuUmFiOUZqUVZFU1N1VmVLRzNRNVhMNThUMFdULzhlSFhBRnVUTEh6UzU3?=
+ =?utf-8?B?MlVUdGszcHFuL2VMbUxKZk5BTjhRdUd0MmEwTnJqbTV2SVE1MUwxc2lYVVZa?=
+ =?utf-8?B?ZzZVNUpMbCtOMlA3S1Y2YW9EU3JlMklnRHpjNVVCUXQrOHJpMWlVRmNVdWQw?=
+ =?utf-8?Q?E2SeW5L7O8gufK5rOJYVkobGq?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b482f28a-e8f6-4c77-ef72-08ddeff5571f
+X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB7282.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Sep 2025 23:05:16.7614
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: liegeal/x1MTvKxDeiFTLB+B57b2PEQjJfSy2XlJeuTdvvsHDSvncws1kqv83CGXh0pi6MX4HSkhHhuVuaqQoQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB8748
 
-On Thu, 2025-08-14 at 10:03 +0200, Krzysztof Kozlowski wrote:
-> On Tue, Aug 12, 2025 at 06:08:29PM +0800, Ryan Chen wrote:
-> > AST2700 contains two independent top-level interrupt controllers (INTC0=
-,
-> > INTC1). Each occupies its own register space and handles different sets=
- of
-> > peripherals. Above them, the PSP (CA35) GIC is the root interrupt
-> > aggregator. In hardware, INTC1 outputs are routed into INTC0, and INTC0
-> > outputs are routed into the GIC.
-> >=20
-> > Introduce distinct compatibles for these parent blocks so the DT can mo=
-del
-> > the hierarchy and register space layout accurately:
-> >=20
-> > =C2=A0 - aspeed,ast2700-intc0=C2=A0 (parent node at 0x12100000)
-> > =C2=A0 - aspeed,ast2700-intc1=C2=A0 (parent node at 0x14c18000)
-> >=20
-> > The existing child compatible:
-> >=20
-> > =C2=A0 - aspeed,ast2700-intc-ic
-> >=20
-> > continues to describe the interrupt-controller instances within each IN=
-TC
-> > block (e.g. INTC0_0..INTC0_11 and INTC1_0..INTC1_5).
-> >=20
-> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> > ---
-> > =C2=A0.../aspeed,ast2700-intc.yaml=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | 158 ++=
-+++++++++++-----
-> > =C2=A01 file changed, 115 insertions(+), 43 deletions(-)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/interrupt-
-> > controller/aspeed,ast2700-intc.yaml
-> > b/Documentation/devicetree/bindings/interrupt-
-> > controller/aspeed,ast2700-intc.yaml
-> > index 55636d06a674..81304b53c112 100644
-> > --- a/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast=
-2700-intc.yaml
-> > +++ b/Documentation/devicetree/bindings/interrupt-controller/aspeed,ast=
-2700-intc.yaml
-> > @@ -10,6 +10,33 @@ description:
-> > =C2=A0=C2=A0 This interrupt controller hardware is second level interru=
-pt controller that
-> > =C2=A0=C2=A0 is hooked to a parent interrupt controller. It's useful to=
- combine multiple
-> > =C2=A0=C2=A0 interrupt sources into 1 interrupt to parent interrupt con=
-troller.
-> > +=C2=A0 Depend to which INTC0 or INTC1 used.
-> > +=C2=A0 INTC0 and INTC1 are two kinds of interrupt controller with enab=
-le and raw
-> > +=C2=A0 status registers for use.
-> > +=C2=A0 INTC0 is used to assert GIC if interrupt in INTC1 asserted.
-> > +=C2=A0 INTC1 is used to assert INTC0 if interrupt of modules asserted.
-> > +=C2=A0 +-----+=C2=A0=C2=A0 +---------+
-> > +=C2=A0 | GIC |---|=C2=A0 INTC0=C2=A0 |
-> > +=C2=A0 +-----+=C2=A0=C2=A0 +---------+
->=20
-> Same problem as last time. This tells me intc0 has not children...
->=20
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 +--=
--------+
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |---module0
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | I=
-NTC0_0 |---module1
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |---...
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 +--=
--------+---module31
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |--=
--....=C2=A0 |
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 +--=
--------+
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0=C2=A0 =
-+---------+
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 | I=
-NTC0_11| +---| INTC1=C2=A0=C2=A0 |
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0=C2=A0 =
-+---------+
->=20
-> ...This tells that inc1 has no children (only intc0_11, which you said
-> is aspeed,ast2700-intc-ic !!!)....
-> (keep scrolling)
->=20
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 +--=
--------+=C2=A0=C2=A0=C2=A0=C2=A0 +---------+---module0
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 | INTC1_0 |---module1
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |---..=
-.
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 +---------+---module31
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 ...
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 +---------+---module0
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 | INTC1_5 |---module1
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |---..=
-.
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 +---------+---module31
-> > =C2=A0
+On 9/3/25 00:07, Andrew Jeffery wrote:
 
-I've taken a look at the datasheet and had a bit of a think about how
-to make progress here.=C2=A0
+> Hi Donald,
+>
+> On Fri, 2025-08-22 at 13:38 -0700, Donald Shannon wrote:
+>> This is an Aspeed AST2600 based BMC board for the NVIDIA VR144NVL
+>> Platform.
+>>
+>> Reference to Ast2600 SOC [1].
+>> Reference to DC-SCM Spec [2].
+>>
+>> Link: https://www.aspeedtech.com/server_ast2600/ [1]
+>> Link: https://www.opencompute.org/w/index.php?title=Server/MHS/DC-SCM-Specs-and-Designs [2]
+>>
+>> Signed-off-by: Donald Shannon <donalds@nvidia.com>
+>> ---
+>>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>>   .../dts/aspeed/aspeed-bmc-nvidia-vr144nvl.dts | 779 ++++++++++++++++++
+>>   2 files changed, 780 insertions(+)
+>>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr144nvl.dts
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>> index 8062c685f7e8..b479824c434b 100644
+>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>> @@ -55,6 +55,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>          aspeed-bmc-lenovo-hr855xg2.dtb \
+>>          aspeed-bmc-microsoft-olympus.dtb \
+>>          aspeed-bmc-nvidia-gb200nvl-bmc.dtb \
+>> +       aspeed-bmc-nvidia-vr144nvl.dtb \
+>>          aspeed-bmc-opp-lanyang.dtb \
+>>          aspeed-bmc-opp-mowgli.dtb \
+>>          aspeed-bmc-opp-nicole.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr144nvl.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr144nvl.dts
+>> new file mode 100644
+>> index 000000000000..5984984b5109
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-vr144nvl.dts
+>> @@ -0,0 +1,779 @@
+>> +// SPDX-License-Identifier: GPL-2.0+
+>> +/dts-v1/;
+>> +
+>> +#include "aspeed-g6.dtsi"
+>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>> +#include <dt-bindings/input/input.h>
+>> +#include <dt-bindings/leds/common.h>
+>> +
+>> +/ {
+>> +       model = "AST2600 VR144NVL BMC";
+>> +       compatible = "nvidia,vr144nvl-bmc", "aspeed,ast2600";
+>> +
+>> +       aliases {
+>> +               serial2 = &uart3;
+>> +               serial4 = &uart5;
+>> +               i2c16 = &c0uphy0;
+>> +               i2c17 = &c0uphy2;
+>> +               i2c24 = &c1uphy0;
+>> +               i2c25 = &c1uphy2;
+>> +               i2c32 = &i2c_usb_hub;
+>> +               i2c33 = &i2c_tpm;
+>> +               i2c34 = &i2c_dp;
+>> +               i2c35 = &i2c_rtc;
+>> +       };
+>> +
+>> +       buttons {
+>> +               compatible = "gpio-keys";
+>> +               button-power {
+>> +                       label = "power_btn";
+>> +                       linux,code = <KEY_POWER>;
+>> +                       gpios = <&exp7 9 GPIO_ACTIVE_LOW>;
+>> +               };
+>> +               button-uid {
+>> +                       label = "uid_btn";
+>> +                       linux,code = <KEY_FN_1>;
+>> +                       gpios = <&exp7 11 GPIO_ACTIVE_LOW>;
+>> +               };
+>> +       };
+>> +
+>> +       chosen {
+>> +               stdout-path = &uart5;
+>> +       };
+>> +
+>> +       leds {
+>> +               compatible = "gpio-leds";
+>> +               hb-led {
+>> +                       gpios = <&gpio0 127 GPIO_ACTIVE_LOW>;
+>> +                       function = LED_FUNCTION_HEARTBEAT;
+>> +                       color = <LED_COLOR_ID_GREEN>;
+>> +                       label = "bmc-hbled";
+>> +                       linux,default-trigger = "heartbeat";
+>> +                       default-state = "on";
+>> +                       retain-state-suspended;
+>> +                       retain-state-shutdown;
+>> +               };
+>> +               pwr-led {
+>> +                       gpios = <&exp7 8 GPIO_ACTIVE_LOW>;
+>> +                       function = LED_FUNCTION_POWER;
+>> +                       color = <LED_COLOR_ID_WHITE>;
+>> +                       label = "pwr-led";
+>> +                       linux,default-trigger = "default-on";
+>> +                       default-state = "on";
+>> +                       retain-state-suspended;
+>> +                       retain-state-shutdown;
+>> +               };
+>> +               uid-led {
+>> +                       gpios = <&exp7 10 GPIO_ACTIVE_LOW>;
+>> +                       function = LED_FUNCTION_INDICATOR;
+>> +                       color = <LED_COLOR_ID_BLUE>;
+>> +                       label = "uid-led";
+>> +                       default-state = "off";
+>> +                       retain-state-suspended;
+>> +                       retain-state-shutdown;
+>> +               };
+>> +               fault-led {
+>> +                       gpios = <&exp7 12 GPIO_ACTIVE_LOW>;
+>> +                       function = LED_FUNCTION_PANIC;
+>> +                       color = <LED_COLOR_ID_WHITE>;
+>> +                       label = "fault-led";
+>> +                       default-state = "off";
+>> +                       retain-state-suspended;
+>> +                       retain-state-shutdown;
+>> +                       panic-indicator;
+>> +               };
+>> +               warn-led {
+>> +                       gpios = <&exp7 15 GPIO_ACTIVE_LOW>;
+>> +                       function = LED_FUNCTION_PANIC;
+>> +                       color = <LED_COLOR_ID_RED>;
+>> +                       label = "warn-led";
+>> +                       default-state = "off";
+>> +                       retain-state-suspended;
+>> +                       retain-state-shutdown;
+>> +               };
+> To be consistent with my request on your other devicetree series, can
+> you please order nodes that either have no unit address or reference a
+> label alphabetically, in line with the DTS style guide?
+>
+>> +       };
+>> +
+>> +       memory@80000000 {
+>> +               device_type = "memory";
+>> +               reg = <0x80000000 0x80000000>;
+>> +       };
+>> +
+>> +       reg_3v3_stby: regulator-3v3-standby {
+>> +               compatible = "regulator-fixed";
+>> +               regulator-name = "3v3-standby";
+>> +               regulator-min-microvolt = <3300000>;
+>> +               regulator-max-microvolt = <3300000>;
+>> +               gpio = <&gpio0 ASPEED_GPIO(M, 3) GPIO_ACTIVE_HIGH>;
+>> +               enable-active-high;
+>> +               regulator-always-on;
+>> +       };
+>> +
+>> +       reserved-memory {
+>> +               #address-cells = <1>;
+>> +               #size-cells = <1>;
+>> +               ranges;
+>> +
+>> +               vga_memory: framebuffer@9f000000 {
+>> +                       no-map;
+>> +                       reg = <0x9f000000 0x01000000>; /* 16M */
+>> +               };
+>> +
+>> +               ramoops@a0000000 {
+>> +                       compatible = "ramoops";
+>> +                       reg = <0xa0000000 0x100000>; /* 1MB */
+>> +                       record-size = <0x10000>; /* 64KB */
+>> +                       max-reason = <2>; /* KMSG_DUMP_OOPS */
+>> +               };
+>> +
+>> +               gfx_memory: framebuffer {
+>> +                       compatible = "shared-dma-pool";
+>> +                       reusable;
+>> +                       size = <0x01000000>;
+>> +                       alignment = <0x01000000>;
+>> +               };
+>> +
+>> +               video_engine_memory: jpegbuffer {
+>> +                       compatible = "shared-dma-pool";
+>> +                       reusable;
+>> +                       size = <0x02000000>;    /* 32M */
+>> +                       alignment = <0x01000000>;
+>> +               };
+>> +       };
+>> +};
+>> +
+>> +// Enable Primary flash on FMC for bring up activity
+>> +&fmc {
+>> +       status = "okay";
+>> +       flash@0 {
+>> +               compatible = "jedec,spi-nor";
+>> +               label = "bmc";
+>> +               spi-max-frequency = <50000000>;
+>> +               status = "okay";
+>> +               partitions {
+>> +                       compatible = "fixed-partitions";
+>> +                       #address-cells = <1>;
+>> +                       #size-cells = <1>;
+>> +
+>> +                       u-boot@0 {
+>> +                               // 896KB
+>> +                               reg = <0x0 0xe0000>;
+>> +                               label = "u-boot";
+>> +                       };
+>> +
+>> +                       kernel@100000 {
+>> +                               // 9MB
+>> +                               reg = <0x100000 0x900000>;
+>> +                               label = "kernel";
+>> +                       };
+>> +
+>> +                       rofs@a00000 {
+>> +                               // 55292KB (extends to end of 64MB SPI - 4KB)
+>> +                               reg = <0xa00000 0x35FF000>;
+>> +                               label = "rofs";
+>> +                       };
+>> +               };
+> This isn't using one of the usual OpenBMC flash layouts? Can you add a
+> comment as to why?
+>
+>> +       };
+>> +};
+>> +
+>> +&spi2 {
+>> +       pinctrl-names = "default";
+>> +       pinctrl-0 = <&pinctrl_spi2_default>;
+>> +       status = "okay";
+>> +       // Data SPI is 64MB in size
+>> +       flash@0 {
+>> +               compatible = "jedec,spi-nor";
+>> +               label = "config";
+>> +               spi-max-frequency = <50000000>;
+>> +               status = "okay";
+>> +               partitions {
+>> +                       compatible = "fixed-partitions";
+>> +                       #address-cells = <1>;
+>> +                       #size-cells = <1>;
+>> +
+>> +                       u-boot-env@0 {
+>> +                               // 256KB
+>> +                               reg = <0x0 0x40000>;
+>> +                               label = "u-boot-env";
+>> +                       };
+>> +
+>> +                       rwfs@40000 {
+>> +                               // 16MB
+>> +                               reg = <0x40000 0x1000000>;
+>> +                               label = "rwfs";
+>> +                       };
+>> +
+>> +                       log@1040000 {
+>> +                               // 40MB
+>> +                               reg = <0x1040000 0x2800000>;
+>> +                               label = "log";
+>> +                       };
+>> +               };
+>> +       };
+>> +};
+>> +
+>> +&mdio0 {
+>> +       status = "okay";
+>> +       ethphy0: ethernet-phy@0 {
+>> +               compatible = "ethernet-phy-ieee802.3-c22";
+>> +               reg = <0>;
+>> +       };
+>> +};
+>> +
+>> +&mac0 {
+>> +       pinctrl-names = "default";
+>> +       phy-mode = "rgmii-id";
+> Is this correct, in the context of the query here?
+>
+> https://lore.kernel.org/all/6a3d7eb4-c091-437f-98f8-2b8577e539a7@lunn.ch/
+>
+> If not, please drop the node from the patch until the MAC driver is
+> fixed with respect to the RGMII delays.
+>
+> Andrew
 
-My feeling is this diagram (and the previous one) undersells the
-complexity of the design by quite some margin. It's probably best to
-start by zooming out quite a lot:
+Hi Andrew,
 
-The AST2700 SoC contains (at least) 4 distinct processors:
+I will change this to alphabetical order.
 
-1. The quad-core ARM Cortex-A35 (PSP: Primary Service Processor)
-2. A Cortex-M4 (SSP: Secondary Service Processor)
-3. Another Cortex-M4 (TSP: Tertiary Service Processor)
-4. The BootMCU - a RISC-V processor to execute the mask ROM
+The extra space in our flash is for root of trust application. I will note this in the next patch.
 
-While the PSP GIC shown in the diagram above is one possible interrupt
-destination, many of the 480 interrupt sources in the package can be
-routed to the dedicated interrupt controller of any of these four
-processors. Likewise, many peripherals of the SoC are mapped into the
-physical address space of each processor. The routing is handled by the
-two interrupt controller blocks described in the binding text above:
+I see that the ftgmac100 drivers do not use the phy-mode parameter so I will leave it out.
 
-+--------------------+
-| +-------+ +------+ |
-| |       | |      | |
-| |  PSP  +-+ GIC  <-+----------+
-| |       | |      | |          |
-| +-------+ +------+ |          |
-+--------------------+          |
-                                |
-+--------------------+          |
-| +-------+ +------+ |          |          +-------+
-| |       | |      | |          |          |       |   INTx
-| |  SSP  +-+ NVIC <-+----------+----------| INTC0 <-----------
-| |       | |      | |          |          |       |
-| +-------+ +------+ |          |          +---^---+
-+--------------------+          |              |
-                                |              |
-+--------------------+          |              |
-| +-------+ +------+ |          |              |
-| |       | |      | |          |              |
-| |  TSP  +-+ NVIC <-+----------+              |
-| |       | |      | |                         |
-| +-------+ +------+ |                         |
-+--------------------+                         |
-                                               |
-+--------------------+                         |
-| +------+ +-------+ |                     +---+---+
-| |      | |       | |                     |       |   INTy
-| | BMCU +-+ APLIC <-+---------------------+ INTC1 <-----------
-| |      | |       | |                     |       |
-| +------+ +-------+ |                     +-------+
-+--------------------+
+Thanks,
+Don
 
-There's a split in the interrupt domain: 0 <=3D INTx <=3D 127 < INTy.
-
-The PSP GIC, SSP NVIC and TSP NVIC destinations for each INTx source is
-selected by a corresponding mux in INTC0.
-
-The destination for each INTy source is selected by a corresponding mux
-in INTC1, where the possible destinations are:
-
-1. A shared interrupt line Ma, routed through INTC0 to the PSP GIC
-2. A mux in INTC0, providing a second level of indirection
-3. A shared interrupt line Md, routed through INTC0 to the PSP GIC
-4. A shared interrupt line Me, routed through INTC0 to the PSP GIC
-5. A shared interrupt line Mb, routed through INTC0 to the SSP NVIC
-6. A shared interrupt line Mc, routed through INTC0 to the TSP NVIC
-7. The BootMCU APLIC
-
-Each shared interrupt line from INTC1 to INTC0 merges up to 32
-interrupt sources.
-
-INTC0 and INTC1 are both mapped into the physical address space of each
-processor. However, to prevent any one of them interfering with
-interrupts dedicated to another, the controller's register map is
-divided into distinct regions whose access is constrained to a specific
-processor. The enable and status registers in INTC0 for shared line
-sets Ma, Md and Me are constrained to the PSP, Mb to the SSP, and Mc to
-the TSP.
-
-                                   +-------+            +-------+
-                                   | INTC0 |            | INTC1 |
-- - - - - - - - - - - - - - - - - -+- - - -+- - - - - - +- - - -+- -
-  +--------------------+           |       |            |       |
-  | +-------+ +------+ |           |       |            |       |
-  | |       | |      | |           |       |            |       |
-  | |  PSP  +-+ GIC  | |           |       |            |       |
-  | |       | |      | |           |       |            |       |
-  | +-------+ |      | |           |       |            |       |
-  |           |      | |           +-------+            |       |
-  |           |  192 <-|-----------+  Ma   <------------|---+   |
-  |           |      | |           +-------+            |   |   |
-  |           |  208 <-|-----------+  Md   <------------|---+   |
-  |           |      | |           +-------+            |   |   |
-  |           |  224 <-|-----------+  Me   <------------|---+   |
-  |           |      | |           +-------+            |   |   |
-  |           +------+ |           |       |            |   |   |
-  +--------------------+           |       |            |   |   |
-- - - - - - - - - - - - - - - - - -+- - - -+- - - - - - +- -|- -+- -
-  +--------------------+           |       |            |   |   |
-  | +-------+ +------+ |           +-------+            |   +---|----------=
---
-  | |  SSP  +-+ NVIC <-|-----------+  Mb   <------------|---+   |   INT128
-  | +-------+ +------+ |           +-------+            |   |   |
-  +--------------------+           |       |            |   |   |
-- - - - - - - - - - - - - - - - - -+- - - -+- - - - - - +- -|- -+- -
-  +--------------------+           |       |            |   |   |
-  | +-------+ +------+ |           +-------+            |   |   |
-  | |  TSP  +-+ NVIC <-|-----------+  Mc   <------------|---+   |
-  | +-------+ +------+ |           +-------+            |       |
-  +--------------------+           |       |            |       |
-- - - - - - - - - - - - - - - - - -+- - - -+- - - - - - +- - - -+- -
-  +--------------------+           |       |            |       |
-  | +------+ +-------+ |           |       |            |       |
-  | | BMCU +-+ APLIC | |           |       |            |       |
-  | +------+ +-------+ |           |       |            |       |
-  +--------------------+           |       |            |       |
-- - - - - - - - - - - - - - - - - -+- - - -+- - - - - - +- - - -+- -
-                                   +-------+            +-------+
-
-
-INTC1 mux destination 2 above allows the PSP to reconfigure the routes
-at runtime at INTC0, rather than submit to a route that might've been
-protected by firmware early in the boot chain, so long as the boot
-firmware chose the appropriate route in INTC1. INTC0 merges these
-interrupts in sets of 32 and operates in much the same way as INTC1 in
-the diagram above, though cannot route to the BootMCU.
-
-I'd prefer we acknowledge all this in the binding, and do enough to
-allow the kernel to configure routing as it wishes. While in some
-applications the routes may be constrained by firmware, the platform-
-specific portion of the devicetree can be written reflect this.
-
-From some experimentation this shouldn't require anything bespoke.
-Using interrupts-extended we can represent the route configuration with
-a phandle to the upstream controller on the cascaded node. To avoid
-some arbitrary interrupt index choices at the node for INTC0, I think
-it's worth describing the register sets for interrupt sets Ma, Md and
-Me as subnodes of INTC0 with their own interrupt resources. This feels
-reasonably tidy, as the selection of the Ma, Md or Me sets completely
-determines its ultimate index at the PSP GIC. Doing so also removes
-them from needing to be described if any changes to some default route
-configuration are required by the platform, necessitating overriding
-the interrupts-extended property of the INTC0 node.
-
-The only curiosity of this approach is that the interrupt-controller
-nodes for the non-PSP processors need to be described so we can
-reference them via phandles for the purpose of routing the interrupts.
-As these controllers are not mapped in the physical address space of
-the PSP we need the devicetree to inform the kernel as much.
-
-Here's an example pseudo-devicetree. Of course there are elements that
-need more work, but I feel we can mine it for parts.
-
-Cheers,
-
-Andrew
-
-/ {
-  primary {
-    compatible =3D "simple-bus";
-    #address-cells =3D <1>;
-    #size-cells =3D <1>;
-    ranges;
-
-    intc0: interrupt-controller@12100000 {
-      compatible =3D "aspeed,ast2700-intc0-a1";
-      reg =3D <0x12100000 0x1b00>;
-      #address-cells =3D <1>;
-      #size-cells =3D <1>;
-      ranges;
-      interrupt-controller;
-      #interrupt-cells =3D <2>;
-      interrupts-extended =3D
-#if GIC
-        /* GICINT0   */ <&gic GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>,
-#elif SSP
-        /* SSPINT0   */ <&ssp_nvic 0 0>,
-#else /* TSP */
-        /* TSPINT0   */ <&tsp_nvic 0 0>,
-#endif
-
-        /* ... */
-
-#if GIC_128 /* Route merged 128-159 interrupts to GICINT128 */
-        /* 128 */ <&gic GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>,
-#elif GIC_160 /* Route merged 128-159 interrupts to GICINT160 */
-        /* 128 */ <&gic GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>,
-#elif GIC_176 /* Route merged 128-159 interrupts to GICINT176 */
-        /* 128 */ <&gic GIC_SPI 176 IRQ_TYPE_LEVEL_HIGH>,
-#elif SSP
-        /* 128 */ <&ssp_nvic 128 0>,
-#else /* TSP */
-        /* 128 */ <&tsp_nvic 128 0>,
-#endif
-
-        /* ... */
-
-        /* 186 */ <&gic 186 0>;
-
-      intcm0: interrupt-controller@12101b00 {
-        compatible =3D "aspeed,ast2700-intcm-a1";
-        reg =3D <0x12101b00 0x10>;
-        interrupt-controller;
-        #interrupt-cells =3D <2>;
-        interrupt-parent =3D <&gic>;
-        interrupts =3D
-          <GIC_SPI 192 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 193 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 194 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 196 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 197 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 201 IRQ_TYPE_LEVEL_HIGH>;
-      };
-
-      intcm30: interrupt-controller@12101b10 {
-        compatible =3D "aspeed,ast2700-intcm-a1";
-        reg =3D <0x12101b10 0x10>;
-        interrupt-controller;
-        #interrupt-cells =3D <2>;
-        interrupt-parent =3D <&gic>;
-        interrupts =3D
-          <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 211 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 212 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 214 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 217 IRQ_TYPE_LEVEL_HIGH>;
-      };
-
-      intcm40: interrupt-controller@12101b20 {
-        compatible =3D "aspeed,ast2700-intcm-a1";
-        reg =3D <0x12101b20 0x10>;
-        interrupt-controller;
-        #interrupt-cells =3D <2>;
-        interrupt-parent =3D <&gic>;
-        interrupts =3D
-          <GIC_SPI 224 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 226 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 227 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 228 IRQ_TYPE_LEVEL_HIGH>,
-          <GIC_SPI 229 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 230 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 231 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 232 IRQ_TYPE_LEVEL_HIGH>;
-          <GIC_SPI 233 IRQ_TYPE_LEVEL_HIGH>;
-      };
-    };
-
-    intc1: interrupt-controller@14c18000 {
-      compatible =3D "aspeed,ast2700-intc1-a1";
-      reg =3D <0x14c18000 0x1000>;
-      interrupt-controller;
-      #interrupt-cells =3D <2>;
-      interrupts-extended =3D
-#if M0
-        /* 0   */ <&intcm0 0 IRQ_TYPE_LEVEL_HIGH>,
-#elif C0
-        /* 0   */ <&intc0 128 IRQ_TYPE_LEVEL_HIGH>,
-#elif M10
-        /* 0   */ <&ssp_nvic 160 0>,
-#elif M20
-        /* 0   */ <&tsp_nvic 160 0>,
-#elif M30
-        /* 0   */ <&intcm30 0 IRQ_TYPE_LEVEL_HIGH>,
-#elif M40
-        /* 0   */ <&intcm40 0 IRQ_TYPE_LEVEL_HIGH>,
-#else /* B */
-        /* 0   */ <&aplic 128 IRQ_TYPE_LEVEL_HIGH>,
-#endif
-        /* ... */
-    };
-
-    vuart1: serial@1e787000 {
-      compatible =3D "aspeed,ast2700-vuart";
-      reg =3D <0x14c30000 0x1000>;
-      reg-shift =3D <2>;
-      interrupts-extended =3D <&intc1 17 IRQ_TYPE_LEVEL_HIGH>;
-    };
-
-    gic: interrupt-controller@fff01000 {
-      compatible =3D "arm,gic-400";
-      #interrupt-cells =3D <3>;
-      #address-cells =3D <0>;
-      interrupt-controller;
-      reg =3D <0x0 0xfff01000 0 0x1000>,
-            <0x0 0xfff02000 0 0x2000>,
-            <0x0 0xfff04000 0 0x2000>,
-            <0x0 0xfff06000 0 0x2000>;
-      interrupts =3D <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HI=
-GH)>;
-    };
-  };
-
-  secondary {
-    #address-cells =3D <2>;
-    /* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/t=
-ree/drivers/of/address.c?h=3Dv6.16#n491 */
-    #size-cells =3D <0>;
-    /* https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/t=
-ree/drivers/of/address.c?h=3Dv6.16#n430 */
-
-    ssp_nvic: interrupt-controller@1,e000e100 {
-      compatible =3D "arm,v7m-nvic";
-      #interrupt-cells =3D <2>;
-      #address-cells =3D <0>;
-      interrupt-controller;
-      reg =3D <1 0xe000e100>;
-    };
-  };
-
-  tertiary {
-    #address-cells =3D <2>;
-    #size-cells =3D <0>;
-
-    tsp_nvic: interrupt-controller@2,e000e100 {
-      compatible =3D "arm,v7m-nvic";
-      #interrupt-cells =3D <2>;
-      #address-cells =3D <0>;
-      interrupt-controller;
-      reg =3D <2 0xe000e100>;
-    };
-  };
-
-  bootmcu {
-    #address-cells =3D <2>;
-    #size-cells =3D <0>;
-
-    aplic1: interrupt-controller@3,d000000 {
-      compatible =3D "riscv,aplic";
-      interrupts-extended =3D <&cpu1_intc 9>,
-      reg =3D <3 0xd000000>;
-      interrupt-controller;
-      #interrupt-cells =3D <2>;
-      riscv,num-sources =3D <480>;
-    };
-  };
-};
 
