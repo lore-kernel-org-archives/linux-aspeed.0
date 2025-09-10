@@ -1,63 +1,59 @@
-Return-Path: <linux-aspeed+bounces-2187-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2188-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95CCECA0FED
-	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Sep 2025 06:45:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DDE9CA0FED
+	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Sep 2025 06:55:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMB5M1ydqz3clY;
-	Wed, 10 Sep 2025 16:45:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMBJl6tmbz3clh;
+	Wed, 10 Sep 2025 16:55:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757486711;
-	cv=none; b=ZPnHdIJBN7rSduAMJRCBaoIEVx4UEuuVk43uFZaHoPSzZ9vkqCOHT9OHd7NtpKkfbU8q9JrH2KwOHMpJ5LI05NV8+zFtqO5ufCLrlLK4jRiv21Y2mFAEUeEhhdPx4296rZBMppwlTfIiukJFGRIv0lpdO2K7tdi/17KmYVwJ8uF4dbUT9WvNgI0tyZlDEOV1quwj2k2tqg0VSpYT1CA8IkjAzsSSEJswJ4wHzAdggxCzrMzn5RNYxJLi6LPxyoJLBU0ZTFuWMJIfrn9eK/IeykRctr0QwlPVt8LbKSG9BdTOoud4P377eNAzcNR0m49jJkcGCLuuDv8d//4j39eVTg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757487303;
+	cv=none; b=mA+90nEgCXvuWDFKOJ6C4XERR1H0ylpFETsRflpYHR/oB9wGQRumx46KCZQSyrhQ9hHx28uuG7oMh/qyeh2BxxGxaGDECRpD1NZlmj8tFbUAHbgpDAOIvpZV8kyLcFIQ9T3sh2oQDsR4DJsXxEe2azMaGlSfmKyqLiaJeRBJoMtpyk0A+RvFMCCeG6nqjiBpUF1pDBpW+4pTVDPdN7LSBGOI7IG3tawLC9I49K5W3UqIa9Qr20HnTnzYpGwiqnNlrC6q2e4z0lHCe2wUY9xxgCL3m9xnoZFyaOGpSCNKGH3kaiuDgjOYnJTm5nuIerHj/mVnX30DVfzITHCfDLUngw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757486711; c=relaxed/relaxed;
-	bh=3YPyGBPViuuy+MQWe1UuKZmxR3auif0+dY1aauOfHdQ=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=MIK9na57cKgeSJgbXxfZq/xoiKoksBJYy0+9k8PJiB4dqsiW1uPs8hZs3hDTX8ILearGPrJzhxL+CIrJ8m18M1NdO+4YBXAMXo2XX7bozJKa7MnHw6xMR30Ig3h4AeGaS9VViIKiF1V+ufXhmUo9i2/BW6O+KAfwdoLDMbgO0oBgbzriOoDvFIWAyWz19xEgP1nFM3LgkTV8M2O5Xcdgm/Mo5F/zZ1tiFxznlE8j960ro7NOITF+mhZN2iLUs79wu8lK3St4SZrU5p9B8Izfr/RoGKky5+r/O5AzCcZRcEPr4kRM5KrHD4wxq/Y/oEGk96OfbIcxhXKsTL7hJSihFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=C5PY8Btm; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1757487303; c=relaxed/relaxed;
+	bh=oe3cxkXt/q2JPyVdIDXoHlk1IlmJAzFO2nNbBbqCMZI=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=bBC3JsYcYWC7mZipvE6Q3J0PpaWnen/0OfcOlzW/raxvO8qelQ5wLA0mfsJVLe6CYc+yb+/pTilmVqLGKiilZZ0/8jpzBxd3xXG0jekYx3P42tzu3dV6GxC3lVBc5Ai82MDL+SCvOy/DjzpILUImS03oCcYgWr2kb1oeuavDmDWw2tPstzCMVM1qQ1QN4NgM8IjkGQHvcF8QwLDi+vwEHJBWoCjMDjeevcX/2KkQaX6ww8IbUgIZ+44h3xwyd48jr783pbTSLW4v0akFfVyQaDnZzMjMY1faScxevpjFXYDUtpXWUSQw+k1AcuAS5SkO2zoBLpdRixowWYv3CVJjow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Wm52vjo0; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=C5PY8Btm;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Wm52vjo0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMB5J5qkpz3cl0
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Sep 2025 16:45:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMBJl3gnSz3ckL
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Sep 2025 16:55:03 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1757486706;
-	bh=3YPyGBPViuuy+MQWe1UuKZmxR3auif0+dY1aauOfHdQ=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=C5PY8BtmZt2m7YaYZKkopUq2hbifUqxPz6rZaBR9758s4MM+boq64U+FicZVIvaqK
-	 OFQsPloKc3+MUxk8lBx1pNNPzJA0Hzbqg8sJg0/QiTyh58fXeBUUjsQcXPjcZPDxot
-	 oh6BUoRMdNEek9zRNC4zj28phwl90yx8Wh2V3DeiDPPkzUCYilEtExmltcOkhU9DK9
-	 QOFpmTENe6Sf1VWTljVLA1gGx5gEfl+yKoeudE3uptrd/7cJmbWFZ9B6i3tjhhD6RX
-	 w38LcO7Biyo1ld9Hqwm/GGmYWjYbG3v0pxsc0xMvsDQ0aCI4ulLnNGwh6MzF3JEO44
-	 MZ0FkIMnivkeg==
-Received: from [192.168.68.113] (unknown [180.150.112.213])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 46F036443C;
-	Wed, 10 Sep 2025 14:45:04 +0800 (AWST)
-Message-ID: <8d8ab9ba45946b23a4c2dcd78d20f577d12a6625.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v11 2/2] ARM: dts: aspeed: ventura: add Meta Ventura BMC
+	d=codeconstruct.com.au; s=2022a; t=1757487302;
+	bh=oe3cxkXt/q2JPyVdIDXoHlk1IlmJAzFO2nNbBbqCMZI=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=Wm52vjo0yGm9yLddJf8W6MO2tmsTQreghqcEGUTooX0HuiOyhYgcc1JAOegg9qIA4
+	 ZKi4Hz2FywXjQfEbMuB68TvFcgR1u6hXWpa8DZMXLC+N6RJlW43Hu5hraj1Knqqn9l
+	 y3fLQ4CESLbcdxW/4S6OhaLINhbpIa2NEncQQ4AfpfmKvYpMLRk+4re6sLuwTmBAiG
+	 Ih2qA3w80tGIvp5WCexHdpkL0QzQg5BHcWifLTXW39ycRy/p8BNO7hMVzVL4T58MNH
+	 vMR8nzf11pQXEqTlh3OlxaCHqufvWGzWu0zxqJ5YtbXabDpyo6+HyVWcW1JClAhFm/
+	 t/ADaFTCPoBug==
+Received: from [127.0.1.1] (unknown [180.150.112.213])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 7B3286443C;
+	Wed, 10 Sep 2025 14:55:02 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: "P.K. Lee" <pkleequanta@gmail.com>, robh@kernel.org, krzk+dt@kernel.org,
-  conor+dt@kernel.org, joel@jms.id.au, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, patrick@stwcx.xyz
-Cc: Jerry.Lin@quantatw.com, Jason-Hsu@quantatw.com, yang.chen@quantatw.com, 
-	p.k.lee@quantatw.com
-Date: Wed, 10 Sep 2025 16:15:03 +0930
-In-Reply-To: <20250903120600.632041-3-pkleequanta@gmail.com>
-References: <20250903120600.632041-1-pkleequanta@gmail.com>
-	 <20250903120600.632041-3-pkleequanta@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-User-Agent: Evolution 3.46.4-2 
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ "Rob Herring (Arm)" <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20250829211330.1336274-1-robh@kernel.org>
+References: <20250829211330.1336274-1-robh@kernel.org>
+Subject: Re: [PATCH] ARM: dts: aspeed: Drop syscon "reg-io-width"
+ properties
+Message-Id: <175748730236.660876.7704019071552566777.b4-ty@codeconstruct.com.au>
+Date: Wed, 10 Sep 2025 16:25:02 +0930
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,97 +67,19 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.2
 
-T24gV2VkLCAyMDI1LTA5LTAzIGF0IDIwOjA2ICswODAwLCBQLksuIExlZSB3cm90ZToKPiBBZGQg
-TGludXggZGV2aWNlIHRyZWUgcmVsYXRlZCB0byBNZXRhIChGYWNlYm9vaykgVmVudHVyYSBzcGVj
-aWZpYwo+IGRldmljZXMgY29ubmVjdGVkIHRvIHRoZSBCTUMgKEFTVDI2MDApIFNvQy4gVGhlIHB1
-cnBvc2Ugb2YgVmVudHVyYSBpcyB0bwo+IGRldGVjdCBsaXF1aWQgbGVha2FnZSBmcm9tIGFsbCBj
-b21wdXRlIHRyYXlzLCBzd2l0Y2ggdHJheXMgYW5kIHJhY2sKPiBzZW5zb3JzIHdpdGhpbiB0aGUg
-cmFjaywgbG9nIHRoZSBldmVudHMsIGFuZCB0YWtlIG5lY2Vzc2FyeSBhY3Rpb25zCj4gYWNjb3Jk
-aW5nbHkuCj4gCj4gU2lnbmVkLW9mZi1ieTogUC5LLiBMZWUgPHBrbGVlcXVhbnRhQGdtYWlsLmNv
-bT4KPiAtLS0KPiDCoGFyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9NYWtlZmlsZcKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoCB8wqDCoMKgIDEgKwo+IMKgLi4uL2FzcGVlZC9hc3BlZWQtYm1jLWZhY2Vi
-b29rLXZlbnR1cmEuZHRzwqDCoMKgIHwgMTU3OCArKysrKysrKysrKysrKysrKwo+IMKgMiBmaWxl
-cyBjaGFuZ2VkLCAxNTc5IGluc2VydGlvbnMoKykKPiDCoGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNo
-L2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1mYWNlYm9vay12ZW50dXJhLmR0cwo+IAo+
-IGRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvTWFrZWZpbGUgYi9hcmNoL2Fy
-bS9ib290L2R0cy9hc3BlZWQvTWFrZWZpbGUKPiBpbmRleCAwZjBiNWI3MDc2NTQuLjQ3NmVlYTgz
-NDQ1YiAxMDA2NDQKPiAtLS0gYS9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvTWFrZWZpbGUKPiAr
-KysgYi9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvTWFrZWZpbGUKPiBAQCAtMzIsNiArMzIsNyBA
-QCBkdGItJChDT05GSUdfQVJDSF9BU1BFRUQpICs9IFwKPiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVk
-LWJtYy1mYWNlYm9vay1taW5pcGFjay5kdGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1j
-LWZhY2Vib29rLXNhbnRhYmFyYmFyYS5kdGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1j
-LWZhY2Vib29rLXRpb2dhcGFzcy5kdGIgXAo+ICvCoMKgwqDCoMKgwqDCoGFzcGVlZC1ibWMtZmFj
-ZWJvb2stdmVudHVyYS5kdHMgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29r
-LXdlZGdlNDAuZHRiIFwKPiDCoMKgwqDCoMKgwqDCoMKgYXNwZWVkLWJtYy1mYWNlYm9vay13ZWRn
-ZTEwMC5kdGIgXAo+IMKgwqDCoMKgwqDCoMKgwqBhc3BlZWQtYm1jLWZhY2Vib29rLXdlZGdlNDAw
-LWRhdGE2NC5kdGIgXAo+IGRpZmYgLS1naXQgYS9hcmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNw
-ZWVkLWJtYy1mYWNlYm9vay12ZW50dXJhLmR0cyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9h
-c3BlZWQtYm1jLWZhY2Vib29rLXZlbnR1cmEuZHRzCj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPiBp
-bmRleCAwMDAwMDAwMDAwMDAuLmUwMDk5MzEwMDAyNwo+IC0tLSAvZGV2L251bGwKPiArKysgYi9h
-cmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1mYWNlYm9vay12ZW50dXJhLmR0cwo+
-IEBAIC0wLDAgKzEsMTU3OCBAQAo+IAoKKnNuaXAqCgpXaGF0IGZvbGxvd3MgYXJlIHRoZSB1c3Vh
-bCByZWZlcmVuY2VzIG1vZGlmeWluZyBub2RlcyBmcm9tIHRoZSBEVFNJLgpSZWNlbnRseSBJJ3Zl
-IHN0YXJ0ZWQgYXNraW5nIHRoYXQgd2Ugb3JkZXIgX3RoZXNlXyBhbHBoYWJldGljYWxseSwgYXMK
-aXQgbWFrZXMgaXQgbXVjaCBlYXNpZXIgZm9yIG1lIHRvIHRlbGwgaWYgdGhleSdyZSBmb2xsb3dp
-bmcgc29tZQpjb25zaXN0ZW50IG9yZGVyIChhcyB0aGUgdW5pdCBhZGRyZXNzIGlzIG5vdCBwcmVz
-ZW50KS4KCkkgcmVhbGlzZSB5b3UndmUgZG9uZSBhIGJ1bmNoIG9mIHJlb3JkZXJpbmcgdG8gdGhp
-cyBwb2ludCBhbHJlYWR5LApwbGVhc2UgZXhjdXNlIHRoaXMgKGhvcGVmdWxseSkgZmluYWwgcmVx
-dWVzdC4KCkhvd2V2ZXIsIEkgYWxzbyBoYXZlIHNvbWUgZnVydGhlciByZXF1ZXN0cyBiZWxvdy4K
-Cj4gKwo+ICsmZm1jIHsKPiArwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSAib2theSI7Cj4gK8KgwqDC
-oMKgwqDCoMKgZmxhc2hAMCB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHN0YXR1
-cyA9ICJva2F5IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgbTI1cCxmYXN0LXJl
-YWQ7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGxhYmVsID0gImJtYyI7Cj4gK8Kg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHNwaS1tYXgtZnJlcXVlbmN5ID0gPDUwMDAwMDAw
-PjsKPiArI2luY2x1ZGUgIm9wZW5ibWMtZmxhc2gtbGF5b3V0LTEyOC5kdHNpIgo+ICvCoMKgwqDC
-oMKgwqDCoH07Cj4gK8KgwqDCoMKgwqDCoMKgZmxhc2hAMSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgbTI1cCxmYXN0LXJlYWQ7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGxh
-YmVsID0gImFsdC1ibWMiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBzcGktbWF4
-LWZyZXF1ZW5jeSA9IDw1MDAwMDAwMD47Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiArfTsKPiArCj4g
-KyZtZGlvMCB7Cj4gK8KgwqDCoMKgwqDCoMKgc3RhdHVzID0gIm9rYXkiOwo+ICt9Owo+ICsKPiAr
-Jm1hYzMgewo+ICvCoMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsKPiArwqDCoMKgwqDCoMKg
-wqBwaHktbW9kZSA9ICJybWlpIjsKPiArwqDCoMKgwqDCoMKgwqBwaW5jdHJsLW5hbWVzID0gImRl
-ZmF1bHQiOwo+ICvCoMKgwqDCoMKgwqDCoHBpbmN0cmwtMCA9IDwmcGluY3RybF9ybWlpNF9kZWZh
-dWx0PjsKPiArwqDCoMKgwqDCoMKgwqBmaXhlZC1saW5rIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgc3BlZWQgPSA8MTAwPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgZnVsbC1kdXBsZXg7Cj4gK8KgwqDCoMKgwqDCoMKgfTsKPiArfTsKPiArCj4gKyZlaGNpMCB7
-Cj4gK8KgwqDCoMKgwqDCoMKgc3RhdHVzID0gIm9rYXkiOwo+ICt9Owo+ICsKPiArJmVoY2kxIHsK
-PiArwqDCoMKgwqDCoMKgwqBzdGF0dXMgPSAib2theSI7Cj4gK307Cj4gKwo+ICsmdWhjaSB7Cj4g
-K8KgwqDCoMKgwqDCoMKgc3RhdHVzID0gIm9rYXkiOwo+ICt9Owo+ICsKPiArJmFkYzAgewo+ICvC
-oMKgwqDCoMKgwqDCoHZyZWYtc3VwcGx5ID0gPCZwMXY4X2JtY19hdXg+Owo+ICvCoMKgwqDCoMKg
-wqDCoHN0YXR1cyA9ICJva2F5IjsKPiArCj4gK8KgwqDCoMKgwqDCoMKgcGluY3RybC1uYW1lcyA9
-ICJkZWZhdWx0IjsKPiArwqDCoMKgwqDCoMKgwqBwaW5jdHJsLTAgPSA8JnBpbmN0cmxfYWRjMF9k
-ZWZhdWx0ICZwaW5jdHJsX2FkYzFfZGVmYXVsdAo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqAmcGluY3RybF9hZGMyX2RlZmF1bHQgJnBpbmN0cmxfYWRjM19kZWZhdWx0Cj4gK8KgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCZwaW5jdHJsX2FkYzRfZGVmYXVsdCAmcGluY3RybF9h
-ZGM1X2RlZmF1bHQKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgJnBpbmN0cmxfYWRj
-Nl9kZWZhdWx0ICZwaW5jdHJsX2FkYzdfZGVmYXVsdD47Cj4gK307CgoKKnNuaXAqCgo+ICsKPiAr
-JmkyYzMgewo+ICvCoMKgwqDCoMKgwqDCoHN0YXR1cyA9ICJva2F5IjsKPiArCj4gK8KgwqDCoMKg
-wqDCoMKgaTJjLW11eEA3NyB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBh
-dGlibGUgPSAibnhwLHBjYTk1NDgiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBy
-ZWcgPSA8MHg3Nz47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCNhZGRyZXNzLWNl
-bGxzID0gPDE+Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjc2l6ZS1jZWxscyA9
-IDwwPjsKPiAKCipzbmlwKgoKPiArCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGky
-YzNtdXgwY2g1OiBpMmNANSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqAjYWRkcmVzcy1jZWxscyA9IDwxPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCNzaXplLWNlbGxzID0gPDA+Owo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDU+Owo+ICsKPiArwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHB3bUAyMCB7Cj4gK8Kg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgY29tcGF0aWJsZSA9ICJtYXgzMTc5MCI7CgpUaGlzIGNhdXNlcyB0aGUgZm9sbG93aW5nIHdh
-cm5pbmc6CgphcmNoL2FybS9ib290L2R0cy9hc3BlZWQvYXNwZWVkLWJtYy1mYWNlYm9vay12ZW50
-dXJhLmR0YjogL2FoYi9hcGIvYnVzQDFlNzhhMDAwL2kyY0AyMDAvaTJjLW11eEA3Ny9pMmNANS9w
-d21AMjA6IGZhaWxlZCB0byBtYXRjaCBhbnkgc2NoZW1hIHdpdGggY29tcGF0aWJsZTogWydtYXgz
-MTc5MCddCgpUaGUgdmFsaWQgY29tcGF0aWJsZSBzdHJpbmcgaXMgIm1heGltLG1heDMxNzkwIi4g
-UGxlYXNlIHVwZGF0ZSBpdC4KCipzbmlwKgoKPiArCj4gKyZpMmMxMCB7Cj4gK8KgwqDCoMKgwqDC
-oMKgc3RhdHVzID0gIm9rYXkiOwo+ICsKPiAKCipzbmlwKgoKPiArCj4gK8KgwqDCoMKgwqDCoMKg
-cG93ZXItbW9uaXRvckA2OSB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBh
-dGlibGUgPSAicG1idXMiOwoKUGxlYXNlIGRyb3AgdGhpcyBub2RlLCBpdCBjYXVzZXMgdGhlIGZv
-bGxvd2luZyB3YXJuaW5nOgoKYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFj
-ZWJvb2stdmVudHVyYS5kdGI6IC9haGIvYXBiL2J1c0AxZTc4YTAwMC9pMmNANTgwL3Bvd2VyLW1v
-bml0b3JANjk6IGZhaWxlZCB0byBtYXRjaCBhbnkgc2NoZW1hIHdpdGggY29tcGF0aWJsZTogWydw
-bWJ1cyddCgpDaGVlcnMsCgpBbmRyZXcKCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oHJlZyA9IDwweDY5PjsKPiArwqDCoMKgwqDCoMKgwqB9Owo+ICt9Owo+ICsK
+On Fri, 29 Aug 2025 16:13:29 -0500, Rob Herring (Arm) wrote:
+> The default width is 4 bytes for "syscon" devices, so "reg-io-width" is
+> redundant and can be dropped.
+> 
+> 
+
+Thanks, I've applied this to the BMC tree.
+
+-- 
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
 
