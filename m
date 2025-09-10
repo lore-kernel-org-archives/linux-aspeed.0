@@ -1,63 +1,90 @@
-Return-Path: <linux-aspeed+bounces-2191-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2192-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C30DDCA0FED
-	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Sep 2025 07:09:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13085CA0FED
+	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Sep 2025 07:25:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMBdr1cHSz3clh;
-	Wed, 10 Sep 2025 17:09:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757488192;
-	cv=none; b=LUViChpcqKJmHJiXofFK/k9D3Nrii4ScqN6Bu9Cp6zH/Ee89yxkVcvZBs6nE7nlalTVNuTGkh+heVHFitaY/+z2XsNMtjIoapLMEvVx89OKld1Nb1vwTxdY/RKQBVCaYpxNtd5So7y7kfRsqE9IPHWe+bLHDKErOviPpa+aw4ttvGWxE0oAYiM7Sav4oYnbe9qGgoLCUN7i5BOdhzbGuOy9uPYswYs83b9lsCfVP3w70MvkNWMnZ8STneDiJW+9RbSIUzGSmr+Rr5NJBG+ZLcbTqDwhc5VqpGKZG6+FxmmYxZ0Z9VnqRjlu/dxbfvQ8ftTShqlXuXjN+8LcgyV0Pxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMBzX4cxkz3clp;
+	Wed, 10 Sep 2025 17:25:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757489112;
+	cv=none; b=KZsELWl+EWJmonjxkg2WKnDFxVgMpz3MOpGRf6xPI8rl9TAE9LDDtYlnARanUmReqbRg3LUju/S2BskqPIVrjnIscazOVBnAD/a8w803922px/tS0NvOV7dDpohsNeD2gNzdVoZkfAO+2qTaCPjjrCBXF+JT1KngixRxK4f0tWwEFx2LqljpEVvpVFTExAcitVfJR8Qekwofyph7PCSeHMuA1/VctRutPg0tYy4jL7DYLW0ohTFY3/wI3yEriSNWL3R4NkQngECW4LUX9JiRH+Z0LcIA/gOBou91ZtFrSUoJgy8+ZS6clKFZ0Esrv/1udGwzeAPAVSJWxhEkXjgNXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757488192; c=relaxed/relaxed;
-	bh=ZK1rWZ/t51dN/1qDp9S2Z+07lrMi9mMDFF6F21ZR9o8=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=gTRsg3IWUaPdHbIkZc2RIo9GHvuXTj3OGeaaC671wChXnAPbFSmGIGUQWfwR5ARWGtZMFgtzafhtJTSs0Jt5CzjCnb0Azz8Rs4GRIK/J5TtNRENXnUIf6U6Q4MX4XxhTWxKZxFoD+62g8GQfpn8KZL7z6bYZpAC/wO7n0ufXOKEwoRhO7BvAFY5vq2zWs60Y8Oh3bXh7GkaRjAix83msGPebBbfDUH0SdCVK7GraS+oWlfhcdbhVTnVPVZ87T4MI6xm15prB08tKKeW7xaOfekxGSZHsZU/VO13GEY+XOTa8BTq6PRurRElPSrX2PK4gy7nK5uTs+5AMZp4rXHb2qA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Vor37hsK; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1757489112; c=relaxed/relaxed;
+	bh=ZGA5dcZRWUigTt8GjmWGSHBP8/IP5ng6CyXB4N9opa0=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=gLQ9H7NYzQ6nyGfjMKiqOplJmmElHIm5YUgE2usUMRHzNewiLIZHun0ANFvqnXRvYjF+nlQS5bRVlBsSFxb9fDc23RhnUniw3pvVXxYvGF+/0deTZnMzB78+5zHQl5lAydbc9Dm4+cXw59eLp3SUZrdvrUZ7U4oVOyoHTdhBo+vqmz/JQwk0PtXKYtibJOIftM6J1lEufp3HZ2RWQPhLowB3jIAn1f67JNZRhCGTIPUZg5yy794yX0mMKYruwDvgY2SOwY+dy8egVx2GTb+aDpEzleGT7wUT6vwIo2HOT/qNQv0vEUvwHbVQiHd4LafUkF5oM3pfJ5MOBtk/k3zchQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=M/Df+4gF; dkim-atps=neutral; spf=pass (client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org; envelope-from=jk@ozlabs.org; receiver=lists.ozlabs.org) smtp.mailfrom=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Vor37hsK;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=M/Df+4gF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ozlabs.org (client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org; envelope-from=jk@ozlabs.org; receiver=lists.ozlabs.org)
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMBdq5q4zz3cl0
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Sep 2025 17:09:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1757488191;
-	bh=ZK1rWZ/t51dN/1qDp9S2Z+07lrMi9mMDFF6F21ZR9o8=;
-	h=Subject:From:To:Date:In-Reply-To:References;
-	b=Vor37hsKY2u76M1kNZxhdfzHZWPwvMO9LieCBptHxdiEaof9//QiNfCs3SKLILejQ
-	 Xz5B7zvzYUob+C6AOCpS0F07S7c28sU/PBQ+isfqhjVSM/EnNUU3aoZjBgNoHutiYs
-	 iu/roDKB8HHXK9Vb8EfO6O36qM7ReEVXuj1ESs5i28jVpZ2XbXC/qAXJvkuGI/Fxn2
-	 SMitKCjo1n0erj4DU0dWBjSRxCgKc4HyG7AFVV807hv0QowQpIqn/w1ePbJoG/wkH9
-	 6VJuvXts5zodTbhOBRGjCTab05cFsITUlRbuawQmcirmuB18YP+zfPszq/zgKxzZN9
-	 NF8YmBq4e9a3Q==
-Received: from [192.168.68.113] (unknown [180.150.112.213])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 92FC26443C;
-	Wed, 10 Sep 2025 15:09:50 +0800 (AWST)
-Message-ID: <7f04c0f1bbb653de33a6a41175cd16f85778ede5.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v3 1/4] ARM: dts: aspeed: santabarbara: add sensor
- support for extension boards
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Fred Chen <fredchen.openbmc@gmail.com>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski
-	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	 <joel@jms.id.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Date: Wed, 10 Sep 2025 16:39:49 +0930
-In-Reply-To: <20250908080220.698158-2-fredchen.openbmc@gmail.com>
-References: <20250908080220.698158-1-fredchen.openbmc@gmail.com>
-	 <20250908080220.698158-2-fredchen.openbmc@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMBzW0LNvz3cll;
+	Wed, 10 Sep 2025 17:25:11 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
+	s=201707; t=1757489109;
+	bh=ZGA5dcZRWUigTt8GjmWGSHBP8/IP5ng6CyXB4N9opa0=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+	b=M/Df+4gFpZo2jnpBnoKNNy4pZfOibmyNCP2ItaqHQzdlNhAKBa/0O+dBS5GgBf4bN
+	 5mcazSvVUOpTQK0w8gbnr0cSGCsKACMEr0oZohlttaK6NqqlncezqOJdM5TNJe4DUD
+	 5IYXoF72KmeTtZlY+Ekg+QHpUdUI4h3Yb0L9VqK68wl74rD89V3tlw+fhwQWdOF1Tw
+	 miNU11LDzRqh6+tvMe9MH1q7+fZdyd0tTKh13APQBm81mAHac4u2JMwhn6r46ZozlD
+	 S7Hx9MvZeR1mvohCH+1YOPlhe2n+MZeBftdPi4tUmK2RlsyvjIF7AVqJTl1PSCEiSc
+	 Db4UnHy8/6b1g==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4cMBzR1HQnz4w2S;
+	Wed, 10 Sep 2025 17:25:07 +1000 (AEST)
+Message-ID: <44ef5c93448a3625fcfd003b47a516e8ba795b62.camel@ozlabs.org>
+Subject: Re: [PATCH v16 1/3] dt-bindings: i2c: aspeed: support for
+ AST2600-i2cv2
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
+ <ryan_chen@aspeedtech.com>
+Cc: "robh@kernel.org" <robh@kernel.org>, "conor+dt@kernel.org"
+	 <conor+dt@kernel.org>, "andriy.shevchenko@linux.intel.com"
+	 <andriy.shevchenko@linux.intel.com>, "andi.shyti@kernel.org"
+	 <andi.shyti@kernel.org>, "linux-aspeed@lists.ozlabs.org"
+	 <linux-aspeed@lists.ozlabs.org>, "devicetree@vger.kernel.org"
+	 <devicetree@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+	 <openbmc@lists.ozlabs.org>, Mo Elbadry <elbadrym@google.com>, 
+	"linux-kernel@vger.kernel.org"
+	 <linux-kernel@vger.kernel.org>, "joel@jms.id.au" <joel@jms.id.au>, 
+	"p.zabel@pengutronix.de"
+	 <p.zabel@pengutronix.de>, "krzk+dt@kernel.org" <krzk+dt@kernel.org>, 
+	"linux-arm-kernel@lists.infradead.org"
+	 <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org"
+	 <linux-i2c@vger.kernel.org>
+Date: Wed, 10 Sep 2025 15:25:05 +0800
+In-Reply-To: <99053328-a117-493e-b5f3-00902669c8e7@kernel.org>
+References: <20250224055936.1804279-1-ryan_chen@aspeedtech.com>
+	 <50327725-f3b8-4a8b-94a2-85afccd2868a@kernel.org>
+	 <OS8PR06MB7541B0DBC64B3EF6838DFE74F2CD2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <d1b184c5-84c1-4d76-a1d0-a9f37f1e363c@kernel.org>
+	 <OS8PR06MB7541D1D2E16C5E77037F3BB0F2CB2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <069b9fe4-c54a-4efd-923e-1558c59fe3f4@kernel.org>
+	 <OS8PR06MB7541C69AB8E6425313DA8606F2DF2@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <677cb075-24ae-45d8-bfb4-9b23fbacc5df@kernel.org>
+	 <OS8PR06MB7541C3B70B15F45F4824772BF2D92@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <994cb954-f3c4-4a44-800e-9303787c1be9@kernel.org>
+	 <SI6PR06MB753542037E1D6BBF5CE8D2E7F2A42@SI6PR06MB7535.apcprd06.prod.outlook.com>
+	 <4523caea-3406-4de0-9ab5-424fb7a0a474@kernel.org>
+	 <SI6PR06MB7535BAD19B51A381171A0E64F2A42@SI6PR06MB7535.apcprd06.prod.outlook.com>
+	 <8e8aa069-af9f-453f-9bd0-e3dc2eab59ab@kernel.org>
+	 <OS8PR06MB7541FD8691B43EA33BDC1D22F2A72@OS8PR06MB7541.apcprd06.prod.outlook.com>
+	 <99053328-a117-493e-b5f3-00902669c8e7@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -73,121 +100,43 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-SGkgRnJlZCwKCk9uIE1vbiwgMjAyNS0wOS0wOCBhdCAxNjowMiArMDgwMCwgRnJlZCBDaGVuIHdy
-b3RlOgo+IGFkZCBwb3dlciBtb25pdG9yIGFuZCB0ZW1wZXJhdHVyZSBzZW5zb3JzIGZvciBleHRl
-bnNpb24gYm9hcmRzIGluIGJ1cyA2LAo+IDgsIDEwIGFuZCAxMy4KPiAKPiBTaWduZWQtb2ZmLWJ5
-OiBGcmVkIENoZW4gPGZyZWRjaGVuLm9wZW5ibWNAZ21haWwuY29tPgo+IC0tLQo+IMKgLi4uL2Fz
-cGVlZC1ibWMtZmFjZWJvb2stc2FudGFiYXJiYXJhLmR0c8KgwqDCoMKgwqAgfCA4MjQgKysrKysr
-KysrKysrKysrKysrCj4gwqAxIGZpbGUgY2hhbmdlZCwgODI0IGluc2VydGlvbnMoKykKPiAKPiBk
-aWZmIC0tZ2l0IGEvYXJjaC9hcm0vYm9vdC9kdHMvYXNwZWVkL2FzcGVlZC1ibWMtZmFjZWJvb2st
-c2FudGFiYXJiYXJhLmR0cyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2FzcGVlZC9hc3BlZWQtYm1jLWZh
-Y2Vib29rLXNhbnRhYmFyYmFyYS5kdHMKPiBpbmRleCBlZTkzYTk3MWM1MDAuLjJmNTcxMmU5YmE5
-ZiAxMDA2NDQKCipzbmlwKgoKPiBAQCAtNTc0LDYgKzYwNiwyMDQgQEAgZWVwcm9tQDUyIHsKPiDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAiYXRtZWwsMjRjMjU2
-IjsKPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9IDwweDUyPjsKPiDCoMKg
-wqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgaTJjLW11eEA3MSB7Cj4gK8KgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibnhwLHBjYTk1NDYiOwo+ICvC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg3MT47Cj4gK8KgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoCNhZGRyZXNzLWNlbGxzID0gPDE+Owo+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqAjc2l6ZS1jZWxscyA9IDwwPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgaTJjLW11eC1pZGxlLWRpc2Nvbm5lY3Q7Cj4gKwo+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqBpMmM2bXV4MGNoMDogaTJjQDAgewo+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDA+Owo+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2FkZHJlc3MtY2VsbHMgPSA8MT47Cj4g
-K8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjc2l6ZS1jZWxs
-cyA9IDwwPjsKPiArCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqB0ZW1wZXJhdHVyZS1zZW5zb3JANjQgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAibWljcm9j
-aGlwLG1jcDk2MDAiOwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9IDwweDY0PjsKPiArwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoH07Cj4gKwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgdGVtcGVyYXR1cmUtc2Vuc29yQDY1IHsKPiArwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqBjb21wYXRpYmxlID0gIm1pY3JvY2hpcCxtY3A5NjAwIjsKPiArwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8MHg2NT47
-Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Owo+ICsK
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHRlbXBlcmF0
-dXJlLXNlbnNvckA2NyB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJtaWNyb2NoaXAsbWNwOTYwMCI7
-Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgcmVnID0gPDB4Njc+Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBpMmMtbXV4QDcyIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjb21wYXRpYmxlID0gIm54cCxwY2E5
-NTQ2IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqByZWcgPSA8MHg3Mj47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2FkZHJlc3MtY2VsbHMgPSA8MT47
-Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgI3NpemUtY2VsbHMgPSA8MD47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgaTJjLW11eC1pZGxlLWRpc2Nvbm5l
-Y3Q7Cj4gKwo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoGkyYzZtdXgxY2gwOiBpMmNAMCB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoHJlZyA9IDwwPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgI2FkZHJlc3MtY2VsbHMgPSA8
-MT47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCNzaXplLWNlbGxzID0gPDA+Owo+ICvCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoH07
-Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgaTJjNm11eDFjaDE6IGkyY0AxIHsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVn
-ID0gPDE+Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjYWRkcmVzcy1jZWxscyA9IDwxPjsKPiAr
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgI3NpemUtY2VsbHMgPSA8MD47Cj4gKwo+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqB2b2x0YWdlLXNlbnNvckA0OCB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBjb21wYXRpYmxlID0gInRpLGFkczc4MzAiOwo+ICvCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDB4NDg+Owo+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqB9Owo+ICsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgdm9sdGFnZS1zZW5zb3JyQDQ5IHsK
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAidGks
-YWRzNzgzMCI7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZWcgPSA8
-MHg0OT47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoH07Cj4gKwo+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqB0ZW1wZXJhdHVyZS1zZW5zb3JANGEgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgY29tcGF0aWJsZSA9ICJ0aSx0bXAxNzUiOwo+ICvCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgcmVnID0gPDB4NGE+Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqB9Owo+ICsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgdGVtcGVyYXR1cmUtc2Vuc29yQDRiIHsK
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbXBhdGlibGUgPSAidGks
-dG1wMTc1IjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJlZyA9IDww
-eDRiPjsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfTsKPiArCj4gK8KgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoGVlcHJvbUA1NiB7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBj
-b21wYXRpYmxlID0gImF0bWVsLDI0YzI1NiI7Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqByZWcgPSA8MHg1Nj47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoH07Cj4gK8Kg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgfTsKPiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBpMmM2bXV4MWNoMjogaTJjQDIgewo+ICvCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqByZWcgPSA8Mj47Cj4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCNhZGRyZXNzLWNlbGxzID0gPDE+
-Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAjc2l6ZS1jZWxscyA9IDwwPjsKPiArwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB9Owo+
-ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoGkyYzZtdXgxY2gzOiBpMmNAMyB7CgpDYW4geW91IHBsZWFzZSBtYWtlIHN1cmUgbm9k
-ZXMgY29uc2lzdGVudGx5IGhhdmUgZW1wdHkgbGluZXMgYmV0d2Vlbgp0aGVtPyBCdW5jaGluZyB0
-aGVtIHRvZ2V0aGVyIGxpa2UgeW91IGhhdmUgYWJvdmUgZGVncmFkZXMgdGhlCnJlYWRhYmlsaXR5
-IGluIG15IG9waW5pb24uCgpQbGVhc2UgYXVkaXQgdGhlIHJlc3Qgb2YgdGhlIHBhdGNoIGZvciB0
-aGUgcHJvYmxlbS4gSWRlYWxseSBhdWRpdCB0aGUKcmVzdCBvZiB0aGUgZGV2aWNldHJlZSB0b28g
-YW5kIHNlbmQgYSBmb2xsb3ctdXAgcGF0Y2ggZml4aW5nIGZ1cnRoZXIKaW5zdGFuY2VzLgoKQW5k
-cmV3Cg==
+Hi Ryan & Krzysztof,
 
+[my response is intended to make progress on the newer v18 submission,
+but we still have this item from v16 to resolve, hence picking up this
+thread]
+
+> Your compatible already expressed that there are two interfaces, so
+> your drivers can just choose whichever they want. If you need to toggle a
+> bit in system controller, it is fine. If you need different compatible,
+> then that's a NAK.
+
+I think the mention of "two register interfaces" is a bit misleading
+here; it implies that it's just two interfaces to the same hardware.
+
+From reading between the lines on the datasheet, it seems that this is
+two completely separate IP cores, that:
+
+ * are mapped to the same MMIO space; but
+ * both happen to be I2C controllers.
+
+- where the single "global register" (which you mention above) provides
+the facility to mux the MMIO mapping between the two. Some versions of
+the overall SoC have only the old core, some have only the new, and some
+have both, selectable via this register.
+
+Ryan, can you confirm whether this is the case?
+
+Given there are actual behavioural differences between the two
+peripherals - beyond just the register set - that would seem to indicate
+separate binding types (+ a syscon mux control) to me, but I'm keen to
+hear any other options.
+
+Krzysztof, if that is the case, any thoughts on the representation of
+separate bindings?
+
+Cheers,
+
+
+Jeremy
 
