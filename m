@@ -1,93 +1,101 @@
-Return-Path: <linux-aspeed+bounces-2201-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2202-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24949CAC58E
-	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Sep 2025 23:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B9CFCAC58E
+	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Sep 2025 01:12:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMcdx605Wz2yGx;
-	Thu, 11 Sep 2025 09:41:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757493300;
-	cv=none; b=RxLlf2KH9J3RECxriWGkLMAnu6BejCXZq5XYzuNoUzT5i2Q6Ou07MalpGTlVXV1yEO54DYz4E/96ZLU5gcuyHwT0Bib1K1fvDuIp9wIkmZ5x/Oz2UnZxEoYaEhwBTVfOXoq3rs1ATqeW3o6BCFg6ShSdfUpbZQ64mSwPJ7Rhz3OfPcckye/wYXgTXBhzIldwXGSEkT1bBLESll6MhrmqluPdMBS+VjVJk526oQVQC1DA8KYhYJl2TEwdIUUHhCcotnnnlofDIAy9BOoyQNzyjVVcHQztQiEZi/IcIvzSl1P7otvLGP5WnuQOHQ0aheziuTEsKEEYrCML3pgfwqSUFA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757493300; c=relaxed/relaxed;
-	bh=5bYSYMP2Z0IUIJfdQoYkXYkAGdrYTGhMeil+naL+UQc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Lg7W4VOssWgscRsQSicPxDKIJsaGaXhgL7x9lCFp3ntVNf+gUzOdxhP2d+7A3V3pYtKSYyzEGzWdRnyy7ozaEtGLcT/fOJX0DtIatuBBIIbg8TeJ4UDhlleKwCB2HmEhy8OiKunABJthIVBmXExP2KJSLxg83bHTFWnJM63T2vNTnvFrCiMoPRweGdO/xbzUpU9plv0cGn/MuIx5V+/fVZubSXlcBF6PWCxec24BfklbGTXuhbN6bzcmmih2yNosXhHUl8fDxITRnAhZOr+NBlL37zMqQ32mLWYywdiNNB98FjOGkzhd3hJAXhmekX5AzDyaUp5a3mWs6BguvyxVLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MrfR+0JG; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMfgJ48yTz2xnx;
+	Thu, 11 Sep 2025 11:12:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=148.163.145.158 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757553164;
+	cv=pass; b=XKQZYMr1yfvjgsMDvsJVnQlPyVWwh0pljyjXXhWi66QRL09dcSWGYukhr5hihrArLYLCg08gvNzfdFxBiwRvf2aom3CSFqUsQoWPob1Nm+9oHXRqA6ZZEbuK0T5gdnVLWtR2VaigZ0oEv9SPNGMeJasPrw5vgL32oeV9GRBRzbJT+aT9bD1/LdKzoHE4wIeAjDCUK+yfh3kjjlFj33EGArXGY054YWB60VNrjgloknpxtwGikAsNyBNuPuffB482Qi/XadOSrLpXCM0H5nsd8rMZ1ZvHJFvbfXRqvTph0bvV/CppKkygMr+Q7vTE7OAzIREkDv341EcMO2/ThwR3bg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1757553164; c=relaxed/relaxed;
+	bh=ZPKQ07RAwabGyk5JJ+I+Ceq/mwkbIDQjsLM6juhzhqk=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=ZHk5fjQUNFeHCZMy/vEzDgo8+NYzC2SNru/1+P6ekJQL5B4KTJVr0HeXqRk0XRVcuXMvBQ453Y4LkZ2ij2xE3WaJAGIMYSZ+iuwWY9k00duWj0ZR7wDE4T12qdTvZT5dFZPY9os24RC0xCHdfuQGtL2TndJCZaTAfv25r+lwO2kvQXK+6Ib+icX/WVMr651AW9AicvSQ25R908S9bBtzq9B5rCUpK8XbFT62FypHTMPkl74I7U3GbbNXQ+hG9wO2TjZzSy2tw18IEXO/T9EjbPP/Tvi7fI/KTBHRaNqiGo5oLKdyo3ik05Zc68ZQwy3Z+c+CAeZQbgNv9loCo319lg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wiwynn.com; dkim=pass (2048-bit key; secure) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=20250420 header.b=YP2ek7cB; dkim=pass (2048-bit key; unprotected) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=selector2 header.b=XZyZTbjG; dkim-atps=neutral; spf=pass (client-ip=148.163.145.158; helo=mx0a-009a6c02.pphosted.com; envelope-from=delphine_cc_chiu@wiwynn.com; receiver=lists.ozlabs.org) smtp.mailfrom=wiwynn.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=wiwynn.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MrfR+0JG;
+	dkim=pass (2048-bit key; secure) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=20250420 header.b=YP2ek7cB;
+	dkim=pass (2048-bit key; unprotected) header.d=wiwynn.com header.i=@wiwynn.com header.a=rsa-sha256 header.s=selector2 header.b=XZyZTbjG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42c; helo=mail-wr1-x42c.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wiwynn.com (client-ip=148.163.145.158; helo=mx0a-009a6c02.pphosted.com; envelope-from=delphine_cc_chiu@wiwynn.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1289 seconds by postgrey-1.37 at boromir; Thu, 11 Sep 2025 11:12:43 AEST
+Received: from mx0a-009a6c02.pphosted.com (mx0a-009a6c02.pphosted.com [148.163.145.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMDX30Jd1z3d8t
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Sep 2025 18:34:58 +1000 (AEST)
-Received: by mail-wr1-x42c.google.com with SMTP id ffacd0b85a97d-3e35d87f961so219952f8f.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Sep 2025 01:34:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1757493294; x=1758098094; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=5bYSYMP2Z0IUIJfdQoYkXYkAGdrYTGhMeil+naL+UQc=;
-        b=MrfR+0JGP3dKADpVUtuyGVe27Z+FglTD9Alk7N4QqAJ3tSsNq8gHvcyFxMZ8/udKXZ
-         /J8ZvrYLIeszpeFbusnrpt+aANRyUjZWUNlLtv/fQyMSXyL3jW3NWM8+P8kDz9C70vg6
-         4QhWBm2LTG2EThy56d4c9QJRaEb7/Rc8EbbhX16Y6nYA1EtAZvniixunr3ijjKsrkxBH
-         1xq5eT+t10guUUHICZ+TjO+9iIeH64PNwyh3Pi8B8Gbe4xLRFha21q8a4X+5ov95S5HZ
-         DxycNZDsceuaFevKGVGliaZFBTDOGbnICYvNNqDfHkqGzqP5FLz95ByMPPIhFY6ZW/0Z
-         L6hQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757493294; x=1758098094;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5bYSYMP2Z0IUIJfdQoYkXYkAGdrYTGhMeil+naL+UQc=;
-        b=Xao3GifUKiT3f3mReEiZkzQJV17/Hhsh0hm7i+frezddilFsAaGUX0pe8uuMSkw+3O
-         Dd06aR04JX1WDpJYKBAcpMbFqJUXKdQ05GPiSdI5v35ocEI1xO24Gw5xGCy2621TmnB6
-         cJBWJQ8a96gQcxgayaFkAWb+4NJFU9ukQHxDZKUcRlrdzBrfsVW2jWVXDurkf4/0xqrD
-         bupBHTgf6yZ7dLESK39EoDZKC06qirbJirXKJMfH9puKRELfy37GFAm4jaboSpWziVjg
-         q5KdjcJiazjD8y/hjDwrLLySbUShJUHICbyHiweoIq4x7MAsQJPM5G/FdSX7G/aAbjrA
-         eqnQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWuF8W/g/84Opg+/60xvike1EM3yP6uHj7yho+9OVA/dHq83+n08DqbF/G+bdwTp0gMSofyKzL2KBwA23w=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzFeULGQxSRLHc36g1BaUz/hOkT+DkI3ZPs6XHVquPLl+SU0W5j
-	/M/3E8xJ1N4I6MJ25PKKtpST5GbaY6KsbhtioWZBAqMoH1wF5zKDHzkb
-X-Gm-Gg: ASbGncuWLDyuXvu56EUjnDI/p/0LBJnAhZ5YDAHYZIdYrSc7RK8d/pjeA/0Eg1R677O
-	NTDU+0DuWS7RPxvnZeYxOvRR2t7/QuFuP21EYlydQqnmMbbyAcLDOKTsbpN+7x0LCw5g/YTDwzP
-	MdWrD8Yl/a+1s7waiwt6pihigpB/iU1jnUC4bKgPLrVDzWjy8TUVbC8AhcMWqI/33Js9wOSTj1s
-	WsnSbybno/8PfBPIkqsSZA/w2+1FFX/4Mnom3qRO1zyyLRrSCCdrouOOEDlQeAmHj2YWG0joqOR
-	yxBbzpOOp7STSMI7GfMJSN0W8q10+kTh+db88UtRtJ1VYY8dytVWVsYwGLcs012Z6633eHpuqKB
-	dPYhtiFYqSgQlLVrszY1hDLtpG/UaIPXCDbTtpo+N3sAxJrJlRL5U1qiOsb5ZWQZw9v4=
-X-Google-Smtp-Source: AGHT+IFvK6FSXou9OenUrrz/PdbIoxF3WcJL69A9lP4CdFPOW3aq92qZPlSoHiBDeanssK1jlGOOKg==
-X-Received: by 2002:a5d:5d05:0:b0:3e4:e4e:3438 with SMTP id ffacd0b85a97d-3e63736d9bcmr5889161f8f.1.1757493294125;
-        Wed, 10 Sep 2025 01:34:54 -0700 (PDT)
-Received: from thomas-precision3591.inria.fr ([2a0d:e487:311f:7c67:b163:f387:29a1:c54d])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3e7521c9a2esm6378854f8f.14.2025.09.10.01.34.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 10 Sep 2025 01:34:53 -0700 (PDT)
-From: Thomas Fourier <fourier.thomas@gmail.com>
-To: 
-Cc: Thomas Fourier <fourier.thomas@gmail.com>,
-	stable@vger.kernel.org,
-	Neal Liu <neal_liu@aspeedtech.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Johnny Huang <johnny_huang@aspeedtech.com>,
-	Dhananjay Phadke <dphadke@linux.microsoft.com>,
-	linux-aspeed@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2] crypto: aspeed - Fix dma_unmap_sg() direction
-Date: Wed, 10 Sep 2025 10:22:31 +0200
-Message-ID: <20250910082232.16723-3-fourier.thomas@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMfgH20j4z2xnn
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Sep 2025 11:12:42 +1000 (AEST)
+Received: from pps.filterd (m0462404.ppops.net [127.0.0.1])
+	by mx0a-009a6c02.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 58AIqLOW3388628;
+	Thu, 11 Sep 2025 08:50:39 +0800
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wiwynn.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=20250420; bh=ZPKQ07RAwabGyk5JJ+I+Ceq
+	/mwkbIDQjsLM6juhzhqk=; b=YP2ek7cB7/H2dexp7J+3J7fOi+OlMxOwARBHDgg
+	kCFA5ozaIlKAJpgsEkeGsFpJsTn29a8OI3KM5CYPvwCNL5/iosDuiiHieGVV1FiF
+	E1rnp5X0l1DFYx32xaEn7yDXFSESjYqqaeLZY4o+SEaJz+ojdJFUUrqEo770tHGY
+	s6DHha0xODcas3F3cT+bfwLBOgulz7BRQfG5ooGDamuLakDHnS5Pd5Sd7A3MSWjG
+	VfGcsU/A0DtJV+gRtBaR6xl+9xCWD2BHzKnjp0B+qdfxIC10Ub4OgNv1asm4I8KH
+	7+ThyRtrcuunuPly5X6sJOQDe0p0IddW6Ytt4OYDmEbMUlw==
+Received: from tydpr03cu002.outbound.protection.outlook.com (mail-japaneastazon11013025.outbound.protection.outlook.com [52.101.127.25])
+	by mx0a-009a6c02.pphosted.com (PPS) with ESMTPS id 493f08raee-1
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 11 Sep 2025 08:50:39 +0800 (WST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ZXVAJ1jOnIF+uvhPqSSgDzIsTi7WvFYtL+vOMWcwowoZWWBQWUB7/qY1Ue5jZV8+cbJmsqEyzULk+d+u4aoRVd8q73448flNJkJgigXWYBK5sHnzcoGI8TW9dTPSvxI8cBX3bkW19DJPd2SGTRRNhGI75yiH97QQcYdrkqFiKyWnrkufky6jzY1ZzKgYJ9NTwibHqbg4Rm4IyYsUzlBdtSEqGRJ8311oqb7oi4qNfLZyBlmMPAfqQVQVDq5lEkFulP2gW4wW8RAQWa7ZwCZXHyu4JPUKnTERYrQLXD+e/Itq37+4gOc/HcfsP6zIIV38Oge2nNvjDucLgnQqVCSGOA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ZPKQ07RAwabGyk5JJ+I+Ceq/mwkbIDQjsLM6juhzhqk=;
+ b=E6NqceHc2ieGyqaZmNyu90vkTC6sCe+4RQIJePnIzlQyEpErg1S9VA955XtojIzaP18AtTSoViWL48T1X/69Y/Dc39NVnjobeSedfRfH9O8zYFb1i4fcwLjWB3YNa5ZO53HM0vcm3mIw/0qegMXm//NgxNlEJks2V++yJJr01640j9M7mSeejliZoARbmPDwfUeiMBQh5r+dU/aDaO5zWkXamxqcw2Q/7pQdBRpbOt4pbKsuqchoByPBhAMQQupxTz/BRmmZwqdxRyJpVv3ym2BI2JYp89TjKaptaw2aXtScOdIcyBcjO/aXvTj9BbiPFT73xTq9MlNVn0URC78d/A==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=fail (sender ip is
+ 211.20.1.79) smtp.rcpttodomain=stwcx.xyz smtp.mailfrom=wiwynn.com; dmarc=fail
+ (p=quarantine sp=quarantine pct=100) action=quarantine
+ header.from=wiwynn.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=wiwynn.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ZPKQ07RAwabGyk5JJ+I+Ceq/mwkbIDQjsLM6juhzhqk=;
+ b=XZyZTbjG1Umb/ZCp+KgolqPyXsdl1+ls+0cw9y3shItXQ8aBcorTXQshOoNZRvJxBA14h5BFAMcJ5YYQt9W9yRizvVFE7dFlP/21n+VU6J2ecbwh0SJd/DzfIrGjh4ZmZthCCKkuZ2EVScst6K/n1wEpl8k3brkR/PEnhaWWT9luYt6O6BAnwsp/jSzdiGgWzE6Ex2C7TwdbW0PVS/iusJ8DXzU6WWb4bxO2HgPiaGmQU2By8hGkBWiwUwkJVSLviEpUDhJBp8rWVWWiDxcdrlHfherAilFTYH/ZQhbdRCd7OGPVZ0dMw4J9OhtQoCF/dArZMORUSsbTwfnFjHhkDw==
+Received: from SE2P216CA0205.KORP216.PROD.OUTLOOK.COM (2603:1096:101:2c3::12)
+ by SG2PR04MB5820.apcprd04.prod.outlook.com (2603:1096:4:1b8::5) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9094.22; Thu, 11 Sep
+ 2025 00:50:34 +0000
+Received: from TY2PEPF0000AB85.apcprd03.prod.outlook.com
+ (2603:1096:101:2c3:cafe::cf) by SE2P216CA0205.outlook.office365.com
+ (2603:1096:101:2c3::12) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9115.17 via Frontend Transport; Thu,
+ 11 Sep 2025 00:50:35 +0000
+X-MS-Exchange-Authentication-Results: spf=fail (sender IP is 211.20.1.79)
+ smtp.mailfrom=wiwynn.com; dkim=none (message not signed)
+ header.d=none;dmarc=fail action=quarantine header.from=wiwynn.com;
+Received-SPF: Fail (protection.outlook.com: domain of wiwynn.com does not
+ designate 211.20.1.79 as permitted sender) receiver=protection.outlook.com;
+ client-ip=211.20.1.79; helo=localhost.localdomain;
+Received: from localhost.localdomain (211.20.1.79) by
+ TY2PEPF0000AB85.mail.protection.outlook.com (10.167.253.5) with Microsoft
+ SMTP Server id 15.20.9115.13 via Frontend Transport; Thu, 11 Sep 2025
+ 00:50:33 +0000
+From: Delphine CC Chiu <Delphine_CC_Chiu@wiwynn.com>
+To: patrick@stwcx.xyz, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        Kees Cook <kees@kernel.org>, Tony Luck <tony.luck@intel.com>,
+        "Guilherme G. Piccoli" <gpiccoli@igalia.com>
+Cc: Zane Li <zane_li@wiwynn.com>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: [PATCH v1 1/1] ARM: dts: aspeed: yosemite4: allocate ramoops for kernel panic
+Date: Thu, 11 Sep 2025 08:50:31 +0800
+Message-Id: <20250911005031.106393-1-Delphine_CC_Chiu@wiwynn.com>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,35 +110,115 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: TY2PEPF0000AB85:EE_|SG2PR04MB5820:EE_
+Content-Type: text/plain
+X-MS-Office365-Filtering-Correlation-Id: 9a9026f0-d154-487a-229e-08ddf0cd3720
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|82310400026|376014|36860700013|61400799027;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?bHMdwlUfZST3Mp7vyQMFEg0Q1WRw+DFqoMiPE+CfMayMwCJRvqFIzXXfEg08?=
+ =?us-ascii?Q?c/EGt1GFfYIT6CGgFWk5Ta430DZG9D/9GGOYtWeOtic4hqsDk9oOE6A3RyX0?=
+ =?us-ascii?Q?kJIKe4ccs7svdPtoAup55u7hgzedO0vuGtl+N6GXlUcL1v5UeuWJL7Z7enm/?=
+ =?us-ascii?Q?c4E3GcJvwxFPiAa7l1OZXakLxCXMm7E/anjBV95mNHFPmBcaQ3d+mRlYEKqq?=
+ =?us-ascii?Q?6pO60N3Me0A6Nz6jZEC+AkXkGyPD+Jt53dTIIai5szNyig5jmrAQy2LWD8iI?=
+ =?us-ascii?Q?cirJnb+ywRTVJ1FKQHdxaUVcKcOtK5GweGAyOpwInsf2KM69HZJCbx9uz7sk?=
+ =?us-ascii?Q?eGQdpONwGu1uL0CUJT3UiWgESPW/EHVC1QrxnVFLewsJJQBNnIDAxhRqpaYh?=
+ =?us-ascii?Q?vknXqoGqPGk6+4uAGKmVfR39CPvxhWikC1JDV8pSnEtukiH5LfHJqKTGW45Y?=
+ =?us-ascii?Q?wBJziSEQHqHWpC7qTvSIi+p//xre8aqcuUlNzA8xaJe05UDoAlVi0xYdCkiT?=
+ =?us-ascii?Q?cfs8+mFGo2+Ej/ueeVjbrDQEbpoVZQkCFiwLN6tTZ+HoY54LlmGIkTflj9sR?=
+ =?us-ascii?Q?RWTMQdWn1eLivAbyJpaDp4cQ+m5M/ka5jq/rHfaOD6QPjZhOW+FGb9xJMR5h?=
+ =?us-ascii?Q?1pzE0TOYD94I8nIqWnS4umLyamp8dgcMrpnH0pcjS0W/3bbuXQQUmUEJzjBw?=
+ =?us-ascii?Q?enQQ2GD1dyMHcNDYmZgnII3bZAqK5nYKboy+rPUJxovI4j2iqQ4GbqJqt1AR?=
+ =?us-ascii?Q?mPUH55ibdThW0yuJqzEoaBQ6fOlsvZgef84tfWUXMo1whuFb86oVc1Pdh7sp?=
+ =?us-ascii?Q?xY1Eh2pmK5hnELOUprZoKhY8B19UIqzxGJKJDEIUpKTQKwAOQeDmYUv3uUD3?=
+ =?us-ascii?Q?8/AGEhIDlFF2I3e8EtLOrFMQ0j3VC0ouOSdJfXBPZmAfa/qoZWCFM3+q10KD?=
+ =?us-ascii?Q?nbt7yWM2mI0xC4ijaaAM/KNFkKfVOOevkT82GFRQSbMJ1NLiJzoVMUiyas/p?=
+ =?us-ascii?Q?y8mUwUYQNRlAi0QgzUBXJS1LNLTe1rdK8LIGtQ+pN7xZnjmgH6OKnS/cU5YD?=
+ =?us-ascii?Q?KgobMJ+eKWGVPc+xJRg6SsUmbQFCXKB+zYdX9p7pqrcgiILPYMeg8UxDfYu6?=
+ =?us-ascii?Q?ZKY5pIb2iFLKhS2TabPdXdt6SlDOb3CoAjjuckQRPHrWH00+Uqswn1Yn+f7e?=
+ =?us-ascii?Q?sATjKoz6HNchHqO8D/hReNLUws+hLJAxr+mpeqGSJFEHWCi1hQb9W/hPx33I?=
+ =?us-ascii?Q?bsfORaEnXgXxF5/J67X5RqgAExZh8KQKoLc82gmXAx6vP5rDoeS+L7t/uZP7?=
+ =?us-ascii?Q?xACi37IHM4PJqtnrJXdB76ac/EAB1H26vG2Qvwi9uMKxhItqiGAVZu1A30im?=
+ =?us-ascii?Q?qphMGn/qzF3m/fa9FggJSQtI2rAk516x9QRzPT7U832KtS/5GTSpRgxPUXHW?=
+ =?us-ascii?Q?GVLFfpaIdz2dY/BiZrLJCUcMGfIXVKLLdA0WETux+sjDNREEp4tI4cMqoduY?=
+ =?us-ascii?Q?I3yz3J9JOsfQ7DFAjBQnmJcBLXkVzZDWsmtD?=
+X-Forefront-Antispam-Report:
+	CIP:211.20.1.79;CTRY:TW;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:localhost.localdomain;PTR:211-20-1-79.hinet-ip.hinet.net;CAT:NONE;SFS:(13230040)(7416014)(82310400026)(376014)(36860700013)(61400799027);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	rk73RPT87GO6zUHStUJdcQZr0wDrOn2wdL+MlLxxIG9c6zhTV1im8c66+khpo5GUgxpMqBCkxA5lAcjyVTSwbvQttg0UeQg+kFD/M9s4FuotvFK9gIYfm5v80sUTYtfrpzRXCcYEFALE8ThabQMNwZPLiXw/Iq7wauZlXea/DzrSZTZGbRsS+Cbhtgg2dAgP9BKvfl4u5tdi/t3qKs5rXmYhIhK2/089sqbsT6hhNWSmFuSxxl2f6pCNWasJ1uaEXIzkRXaUR5dzDez19+vwYH9yj1vBmuJlZ6n74ZGFXBy4c/iJ4suy35wnGoIi1G/qVU2wmE4lUB144c+jhmkmrAy7q2b5w7QgbJ3pMhPPKwOLhhUJBQhGMfNqIQTscuK4tfH7XCMJjtN51f9YI/a/xZdf6o911QDRr/bxkAUwFjOjxK+cKqBCUnwTnbjXU5G5N13o+zUdy4v+adDZBv5Opyf71mEx72QXju6+HKgyWzmaaMiYBB0IvGyBa7Of0D/rodh8UIBnbR6euYAbjFBd5dF7U+nTi2PRGHS1jDq/26yXP5NS73ewIaooAjlXMdRzK+P9Wmfl5qJYuEZteJLpRzap9b795Tq6icsLFJ+DnfgGCrAttZZEz11uG6+ncNbH
+X-OriginatorOrg: wiwynn.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Sep 2025 00:50:33.4638
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 9a9026f0-d154-487a-229e-08ddf0cd3720
+X-MS-Exchange-CrossTenant-Id: da6e0628-fc83-4caf-9dd2-73061cbab167
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=da6e0628-fc83-4caf-9dd2-73061cbab167;Ip=[211.20.1.79];Helo=[localhost.localdomain]
+X-MS-Exchange-CrossTenant-AuthSource:
+	TY2PEPF0000AB85.apcprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SG2PR04MB5820
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTExMDAwNSBTYWx0ZWRfX56m4zyTX6y4u
+ cTMAm3v9pcvhjG0VyV/svSzQ2x9j96belVoZzS9Fw2h6vRLxfzw1hFpP4KfWNemLA7mfIXX1a30
+ F5ucplmfIH1wS4IQrNboE7OHPeZ5dRz4Cv2QldWwwMxOk/VMod6RAXffVRrjmm25utfvpjKPCaU
+ 2SsszjSxwbAkBGSmowgoAcIhpVp8MXXI3cJDl7VDhViip1ksWLiptbj6pFkIAGhVXO7HqpE+2X9
+ 3El2nZz/X1214b3NACyFfKRydvThC9mwkkShHgp70au+Mn5jjwdAmET4LfWO7wTU8vLUZPcUURb
+ fcr9Jcvh8c4fpgPOZtiJDbyYOs0+i9cLNvjmTqMAJ98fzL6ftQZKkCiS2X/ypw=
+X-Proofpoint-ORIG-GUID: An46KwUAR4FalNKCGQNti75L8RY_uJx6
+X-Proofpoint-GUID: An46KwUAR4FalNKCGQNti75L8RY_uJx6
+X-Authority-Analysis: v=2.4 cv=BPKzrEQG c=1 sm=1 tr=0 ts=68c21cdf cx=c_pps
+ a=S6QD7gy098v9jWutmuivGw==:117 a=6rDDh2uRNVCE5HFPCIqeAA==:17
+ a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
+ a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=yJojWOMRYYMA:10 a=4AL28aEVfeMA:10
+ a=cPYzWk29AAAA:8 a=EWjN2FjsdnYFZB9OOiMA:9 a=oSR2DF9YFqZEN4IGatwP:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-10_04,2025-09-10_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 spamscore=0 adultscore=0 impostorscore=0
+ phishscore=0 suspectscore=0 priorityscore=1501 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2507300000 definitions=firstrun
 
-It seems like everywhere in this file, when the request is not
-bidirectionala, req->src is mapped with DMA_TO_DEVICE and req->dst is
-mapped with DMA_FROM_DEVICE.
+Reserve a ramoops memory region in the Yosemite4 device tree so that
+kernel panic logs can be preserved across reboots. This helps with
+post-mortem debugging and crash analysis.
 
-Fixes: 62f58b1637b7 ("crypto: aspeed - add HACE crypto driver")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+Signed-off-by: Zane Li <zane_li@wiwynn.com>
 ---
-v1->v2:
-  - fix confusion between dst and src in commit message 
+ .../dts/aspeed/aspeed-bmc-facebook-yosemite4.dts   | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
- drivers/crypto/aspeed/aspeed-hace-crypto.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/crypto/aspeed/aspeed-hace-crypto.c b/drivers/crypto/aspeed/aspeed-hace-crypto.c
-index a72dfebc53ff..fa201dae1f81 100644
---- a/drivers/crypto/aspeed/aspeed-hace-crypto.c
-+++ b/drivers/crypto/aspeed/aspeed-hace-crypto.c
-@@ -346,7 +346,7 @@ static int aspeed_sk_start_sg(struct aspeed_hace_dev *hace_dev)
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+index aae789854c52..4ec1abae1175 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dts
+@@ -49,6 +49,20 @@ memory@80000000 {
+ 		reg = <0x80000000 0x80000000>;
+ 	};
  
- 	} else {
- 		dma_unmap_sg(hace_dev->dev, req->dst, rctx->dst_nents,
--			     DMA_TO_DEVICE);
-+			     DMA_FROM_DEVICE);
- 		dma_unmap_sg(hace_dev->dev, req->src, rctx->src_nents,
- 			     DMA_TO_DEVICE);
- 	}
++	reserved-memory {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		ramoops@b8dfa000 {
++			compatible = "ramoops";
++			reg = <0xb8dfa000 0x6000>;
++			record-size = <0x2000>;
++			console-size = <0x2000>;
++			pmsg-size = <0x2000>;
++			max-reason = <1>;
++		};
++	};
++
+ 	iio-hwmon {
+ 		compatible = "iio-hwmon";
+ 		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
 -- 
-2.43.0
+2.25.1
 
 
