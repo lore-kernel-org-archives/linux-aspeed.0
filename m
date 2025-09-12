@@ -1,106 +1,52 @@
-Return-Path: <linux-aspeed+bounces-2212-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2213-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D91B1CAC587
-	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Sep 2025 23:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1A86CA101F
+	for <linux-aspeed@archiver.kernel.org>; Fri, 12 Sep 2025 05:22:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNDbq6bthz2xns;
-	Fri, 12 Sep 2025 09:41:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.159
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757568038;
-	cv=none; b=j3izldu4vHp1PEc+bK+g5IXyJkBgLo5BuYFasWeGJ9kZHtJwl+RYPQPxo352Mx2OBAqhDE3LhG6Kh4tx72pO8CbPRj9gwq1Onc+/be2ndN8u72MLjE24fmuS3tPvhYIAkfkmvSkalavYnxQ4+7no37OhlGRutb84Eut1LVQYLfYmjVd87xOGhm/zQR3mWv74on1Swj4YyaLKzy1aAhKqm1XswannFh6WR8KfI0q7/MdxY55iuRGmfTn+sruIjX0UO2jgVgQLFPR377j7nulNwD0WEkZsNkvxPSrxPft0Qt9LGRr4n7G08lx9x6XC8KDBviQGDcgP1/NnhsKIvaaMxQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cNN9P3NR8z3chc;
+	Fri, 12 Sep 2025 15:22:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757654569;
+	cv=none; b=C5VLrB169IDymLwIZtUjXY7SJN7S/P+3lx/E2p65clEP9N0NnCCAkX3A+Qw8AxY+0WQbtU4ZVcRsSxhWu/BIY+pIQdBw8D0HrgZkNpY8UF0HwOpzIgOQgfsEDl3UiHCc4mypLqb0ww/t+WeB47mj3E9SZZWfRFE+Xe/OOnNORaaR8YDgNdV3ZzNc4WGmjD7AKr7PzLMG1eS1Sa2qE3ynvKJnY8ofBPd3rZliqKTdfMXjtqMSMp7lZNu0bMqCUNyD4cVyEb+vO+sFBvo6cw1bV1q4mLZnB3Zc2YmYRgCRjxqwXKtmvXAxvthGiO68Om2ZXruW5g7p6mLGWmWwSj0TTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757568038; c=relaxed/relaxed;
-	bh=gaoZGBVm3mGzgQoEGG09Oyg+9a2qCQexgaNw5V5SpOA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=nVIBs3HM+cAFG9RnZndA3yP1NmtVa8SN9yRgSX1YmqnWHLA+/iJRVPM+g+qfJWEpz7xifVkW0L9UFQltDJV5H1OvTj5aMjl+LTGa9wNDWGKV3fXSMOGuR917l72/zoA+JnU3undxunUvML3aCv9nT/fX+Sp6Q6MuSWXREgqtOgq8ExG/ZvFFATS5oSOkzsdtrqqHNiK8oOODFEItkljX57VnCWAwtpzeALBS6PxIIOEve+4O/UDuS1Q/FpxEhuRgCiJr1HTdbH3luquh/2BDUB/IHiYlQF+Wi6CiCGqtmEtfgHfRMoPtB70etFzgmT/URX0DGcKWaZHj075FUIQvVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bsdio.com; dkim=pass (2048-bit key; unprotected) header.d=bsdio.com header.i=@bsdio.com header.a=rsa-sha256 header.s=fm2 header.b=X4co1BvU; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=HwiLEaYa; dkim-atps=neutral; spf=pass (client-ip=202.12.124.159; helo=fhigh-b8-smtp.messagingengine.com; envelope-from=rebecca@bsdio.com; receiver=lists.ozlabs.org) smtp.mailfrom=bsdio.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bsdio.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bsdio.com header.i=@bsdio.com header.a=rsa-sha256 header.s=fm2 header.b=X4co1BvU;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=HwiLEaYa;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bsdio.com (client-ip=202.12.124.159; helo=fhigh-b8-smtp.messagingengine.com; envelope-from=rebecca@bsdio.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 595 seconds by postgrey-1.37 at boromir; Thu, 11 Sep 2025 15:20:36 AEST
-Received: from fhigh-b8-smtp.messagingengine.com (fhigh-b8-smtp.messagingengine.com [202.12.124.159])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	t=1757654569; c=relaxed/relaxed;
+	bh=BpDziL6osMg9Ig1vmcAUkq5jZiO0svgNxdWob1Eyw5Q=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=HD+PDrdBAls/P/x/xFNxzWSRNbD/g/AJS3i9hYXxdKihT2bQ4yPicKG7doq5a2vpparwikqPomid5Hvpbm6pXgduu5B2n+9rVMiXY/Gp1U6239H4YAzMqopyZ6nyAijcOztDkjrUS6qOrvgM0E4NGfOxiAI9vLUQbFDqqI7/LQkgHhIOEjtlitvUBGNz6xCYteNxa29Y41lfLds+fDJHxunl0tEPTNn0bNULHwkpOlmCXSl17zAeUWtZjNnrKVt0kan+2AbasGk0ZT37ak0ArAveJ1/1i0mPfx3MXeJXur1sY3gqDfuCera7Madjg06MB4JNYdp5/WwDMR5+OS0Tzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMm9J6qr5z2xnM
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Sep 2025 15:20:36 +1000 (AEST)
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id E7A037A0058;
-	Thu, 11 Sep 2025 01:10:37 -0400 (EDT)
-Received: from phl-mailfrontend-01 ([10.202.2.162])
-  by phl-compute-01.internal (MEProxy); Thu, 11 Sep 2025 01:10:38 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bsdio.com; h=cc
-	:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to; s=fm2; t=1757567437; x=1757653837; bh=gaoZGBVm3mGzgQoEGG09O
-	yg+9a2qCQexgaNw5V5SpOA=; b=X4co1BvUqcXccl62w8HrWO4by3iZzqmmRnMGP
-	v+1Nr/PAbw6aI/wFoYJXhGZieFoivmIB1xTTPEGBAd0g0kidAHDxu+h9jXFfsSEC
-	o/BuhtyAy1mgSmcxATpTROtG/yRcJxFTIJ+8/QLi+7ebeIbilUIyX7Kv5vDnwGxZ
-	Ekej56pG1U+7XQ7RrMx+lvuYfIrvWV8gQjFCJdFGNiwx8N3KOBDzFDlA+7L8Fpit
-	snfAL6cyNTR7pJAA2hQHBK3YKvEn0iSdEYXV/2B5PQPIlPLT/DDu+zRc3PvO2qCK
-	JdBtUTCTZxYlQbO8a9gJjaWIllTpwXMldZZE4SkEJw+/VHPVw==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
-	1757567437; x=1757653837; bh=gaoZGBVm3mGzgQoEGG09Oyg+9a2qCQexgaN
-	w5V5SpOA=; b=HwiLEaYaRDf1Tb75MashswycBlfp6ngPG26sVxUHmZbGl8zHbze
-	OUuGHz7JhmSRpgsIcBqZgshalNQ4xkEpbwQvqLBywBU6YhVFiGzC3jXVPqV4jnye
-	D/MOFaegpWxIeoPCtBgjt7BMlN6Ooftr7IBjjH3vA6GZBLZJ6ukk5l/sNt98TL4w
-	68f1CM1YkM3y3AP8Sm3wpn8Zl3xLCf+tB9r5m4KwCZwEKX8Zco6jxS9rPKWGQNG6
-	ZyqbuccGJOrjqDlj/1ndcWDxLwGk4O5GUXmV+TLPtxA52Nn1LnKRouMORb4Hh1LY
-	DSzEIK2kq82zexB0fDCyBWnFp6NJdM7Qmig==
-X-ME-Sender: <xms:zFnCaA4dh6MhsOHOJPaloeKGNsm7erRR37Q-mP14-CFd3Pe15VHgLA>
-    <xme:zFnCaBEOVcHuMGQWoGByHIeHTwtYtvbVZR_GYqCeNRhFEvWUSg4FHb_qJhCxJNnN1
-    yPdsr3lbZxk8sdWCq0>
-X-ME-Received: <xmr:zFnCaCKuty7_tw_nRTJyLtCs4y-_kt0E2PSZzhGV0ovYmsRG4OOWjb5oq5hn7LW2-8i3VIDJ037J>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggddvhedvlecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
-    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
-    hrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpeftvggsvggttggrucev
-    rhgrnhcuoehrvggsvggttggrsegsshguihhordgtohhmqeenucggtffrrghtthgvrhhnpe
-    euvdektdelkeeukefgjeejteetffdtudeiffefheevfefgveeulefghfellefgvdenucev
-    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehrvggsvggttg
-    grsegsshguihhordgtohhmpdhnsggprhgtphhtthhopedutddpmhhouggvpehsmhhtphho
-    uhhtpdhrtghpthhtoheprhhosghhsehkvghrnhgvlhdrohhrghdprhgtphhtthhopehkrh
-    iikhdoughtsehkvghrnhgvlhdrohhrghdprhgtphhtthhopegtohhnohhrodgutheskhgv
-    rhhnvghlrdhorhhgpdhrtghpthhtohepjhhovghlsehjmhhsrdhiugdrrghupdhrtghpth
-    htoheprghnughrvgifsegtohguvggtohhnshhtrhhutghtrdgtohhmrdgruhdprhgtphht
-    thhopeguvghvihgtvghtrhgvvgesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtth
-    hopehlihhnuhigqdgrrhhmqdhkvghrnhgvlheslhhishhtshdrihhnfhhrrgguvggrugdr
-    ohhrghdprhgtphhtthhopehlihhnuhigqdgrshhpvggvugeslhhishhtshdrohiilhgrsg
-    hsrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehvghgvrhdrkhgvrhhn
-    vghlrdhorhhg
-X-ME-Proxy: <xmx:zFnCaOjpULaNaq4e1xD_KLBzFF6NGwlPqRm7a0NltOzraA7l1XcRMA>
-    <xmx:zFnCaAlFKFeBaiEP4bdxWyztaaz3kt8_r7lgcOPIjgSoHMPyTDvjcw>
-    <xmx:zFnCaFURAgP4cAmYx2kVdgkktgAy3bpt3VpC9qjHyrOmYurF2-B6Sw>
-    <xmx:zFnCaNuQzv6IWjSKUioM0tkxfbRm6QMhkypO0VVlj2EQ6U8RjCEaHw>
-    <xmx:zVnCaHIOo2_TRa6BAKadwQcbQ9yS37xiHhRyilljsUX9gsh-C3p5bUn4>
-Feedback-ID: i5b994698:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 11 Sep 2025 01:10:35 -0400 (EDT)
-From: Rebecca Cran <rebecca@bsdio.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Rebecca Cran <rebecca@bsdio.com>
-Subject: [PATCH 0/2] Add device tree for ASRock Rack ALTRAD8 BMC
-Date: Wed, 10 Sep 2025 23:10:03 -0600
-Message-ID: <20250911051009.4044609-1-rebecca@bsdio.com>
-X-Mailer: git-send-email 2.47.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNN9N3Zvmz2xnr
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Sep 2025 15:22:47 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 12 Sep
+ 2025 13:22:31 +0800
+Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Fri, 12 Sep 2025 13:22:31 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: ryan_chen <ryan_chen@aspeedtech.com>, Michael Turquette
+	<mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Philipp Zabel
+	<p.zabel@pengutronix.de>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@codeconstruct.com.au>, Rob Herring <robh@kernel.org>, "Krzysztof
+ Kozlowski" <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
+	<linux-clk@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, Mo Elbadry <elbadrym@google.com>, "Rom
+ Lemarchand" <romlem@google.com>, William Kennington <wak@google.com>, "Yuxiao
+ Zhang" <yuxiaozhang@google.com>, <wthai@nvidia.com>, <leohu@nvidia.com>,
+	<dkodihalli@nvidia.com>, <spuranik@nvidia.com>
+Subject: [PATCH v13 0/3] Add support for AST2700 clk driver
+Date: Fri, 12 Sep 2025 13:22:28 +0800
+Message-ID: <20250912052231.1944937-1-ryan_chen@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -115,26 +61,147 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-The ASRock Rack ALTRAD8 BMC is an Aspeed AST2500-based BMC for the
-ALTRAD8UD-1L2T and ALTRAD8UD2-1L2Q boards with an Ampere Altra
-processor. The BMC runs OpenBMC.
+This patch series is add clk driver for AST2700.
 
-These patches add a device tree and binding for the BMC.
+AST2700 is the 8th generation of Integrated Remote Management Processor
+introduced by ASPEED Technology Inc. Which is Board Management controller
+(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
+is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
 
-Rebecca Cran (2):
-  dt-bindings: arm: aspeed: add ASRock Rack ALTRAD8 board
-  ARM: dts: aspeed: add device tree for ASRock Rack ALTRAD8 BMC
+v13:
+- clk-ast2700.c
+ - remove unnecessary ().
+ - refine ast2700_soc1_configure_i3c_clk to be easy readable.
 
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml |   1 +
- arch/arm/boot/dts/aspeed/Makefile                        |   1 +
- arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dts   | 647 ++++++++++++++++++++
- 3 files changed, 649 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dts
+v12:
+-fix mistakes commit message Acked-by:Krzysztof Kozlowski
+<krzysztof.kozloski@linaro.org> to Acked-by: Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org>
 
+v11:
+-update patch(1/3) commit message subject prefix dt-binding: to dt-bindings:
 
-base-commit: 7aac71907bdea16e2754a782b9d9155449a9d49d
+v10:
+-aspeed,ast2700-scu.h:
+-add SOC0_CLK_AHBMUX, SOC0_CLK_MPHYSRC, SOC0_CLK_U2PHY_REFCLKSRC,
+ SOC1_CLK_I3C.
+-clk-ast2700.c
+-add #include <linux/auxiliary_bus.h>
+-remove #include <soc/aspeed/reset-aspeed.h>
+-use devm_auxiliary_device_create replace aspeed_reset_controller_register
+-reset-aspeed.c:
+-remove aspeed_reset_unregister_adev, aspeed_reset_adev_release,
+ aspeed_reset_controller_register.
+-compatible name change reset_aspeed.reset0/1 -> clk_ast2700.reset0/1
+-remove reset-aspeed.h
+
+v9:
+-aspeed,ast2700-scu.h: no change.
+add more clear commit description.
+-clk-ast2700.c:
+add inlcude bitfield.h
+remove redundant clk_parent_data soc0_mpll_div8/soc0_ahb/uart13clk/
+uart14clk/uart15clk/uart16clk/soc1_ahb/d_clk_sels
+
+v8:
+-aspeed,ast2700-scu.h: remove no use soc0 clock, add new clock
+-clk-ast2700.c: remove include <linux/auxiliary_bus.h>,
+include <linux/clk-provider.h>, include <linux/of_address.h>
+-clk-ast2700.c: add include <linux/mod_devicetable.h>
+-clk-ast2700.c: modify include <soc/aspeed/reset-aspeed.h> order before
+dt-bindings
+-clk-ast2700.c: modify define to be tabbed out space
+-clk-ast2700.c: add union struct for each clk type
+	union {
+		struct ast2700_clk_fixed_factor_data factor;
+		struct ast2700_clk_fixed_rate_data rate;
+		struct ast2700_clk_gate_data gate;
+		struct ast2700_clk_div_data div;
+		struct ast2700_clk_pll_data pll;
+		struct ast2700_clk_mux_data mux;
+	} data;
+-clk-ast2700.c: modify clk_data = device_get_match_data(dev);
+-clk-ast2700.c: modify builtin_platform_driver_probe to 
+arch_initcall(clk_ast2700_init)
+-clk-ast2700.c: ast2700_clk_hw_register_hpll explain: scu010[4:2],
+scu010[4:2] = 010, hpll force 1.8Ghz
+scu010[4:2] = 011, hpll force 1.7Ghz
+scu010[4:2] = 110, hpll force 1.2Ghz
+scu010[4:2] = 111, hpll force 800Mhz
+others depend on hpll parameter register setting.
+
+v7:
+-reset-aspeed.h: fix declare static inline aspeed_reset_controller_register
+if the function is not used.
+
+v6:
+-patch-2: add reset-aspeed.h
+-reset-aspeed: add include cleanup.h for guard()
+-reset-aspeed: change ids name clk_aspeed to reset_aspeed
+-reset-aspeed: move aspeed_reset_controller_register,
+aspeed_reset_adev_release, aspeed_reset_unregister_adev from clk-ast2700.c
+-reset-aspeed: drop base check, since it check in clk-ast2700.c
+-clk-ast2700: sync each gate name from *clk to *clk-gate name.
+-clk-ast2700: add CLK_GATE_ASPEED to diff clk_hw_register_gate and
+ast2700_clk_hw_register_gate.
+
+v5:
+-patch-2 Kconfig: add select AUXILIARY_BUS
+-reset-aspeed: #define to_aspeed_reset(p) turn into static inline function.
+-reset-aspeed: modify spin_lock_irqsave to guard(spinlock_irqsave)
+-reset-aspeed: remove unnecessary parentheses.
+-clk-ast2700: use <linux/units.h> and refrain from define clk
+
+v4:
+-yaml: keep size-cells=<1>.
+-merge clk,reset dt binding header with yaml the same patch.
+-rename clk,reset dt binding header to aspeed,ast2700-scu.h
+-reset-aspeed: update tables tabs sapces to consistent spaces.
+-reset-aspeed: remove no use dev_set_drvdata.
+-clk-ast2700: modify reset_name to const int scu in struct clk_data.
+-clk-ast2700: use scu number in clk_data generate reset_name for reset
+ driver register.
+-clk-ast2700: fix pll number mix up scu0,scu1.
+-clk-ast2700: update dt-binding clock include file.
+
+v3:
+-yaml: v2 missing send yaml patch, v3 add.
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number.
+-dt-bindings: merge clk and reset to be one patch.
+-reset-aspeed: add auxiliary device for reset driver.
+-clk-ast2700: modify reset to be auxiliary add.
+-clk-ast2700: modify to be platform driver.
+-clk-ast2700: modify each clk to const clk array.
+
+v2:
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number
+-clk-ast2700: drop WARN_ON, weird comment.
+
+Ryan Chen (3):
+  dt-bindings: clock: ast2700: modify soc0/1 clock define
+  reset: aspeed: register AST2700 reset auxiliary bus device
+  clk: aspeed: add AST2700 clock driver
+
+ drivers/clk/Kconfig                           |    8 +
+ drivers/clk/Makefile                          |    1 +
+ drivers/clk/clk-ast2700.c                     | 1139 +++++++++++++++++
+ drivers/reset/Kconfig                         |    7 +
+ drivers/reset/Makefile                        |    1 +
+ drivers/reset/reset-aspeed.c                  |  253 ++++
+ .../dt-bindings/clock/aspeed,ast2700-scu.h    |    4 +
+ 7 files changed, 1413 insertions(+)
+ create mode 100644 drivers/clk/clk-ast2700.c
+ create mode 100644 drivers/reset/reset-aspeed.c
+
 -- 
-2.47.3
+2.34.1
 
 
