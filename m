@@ -1,95 +1,105 @@
-Return-Path: <linux-aspeed+bounces-2222-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2223-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F0E8CA101F
-	for <linux-aspeed@archiver.kernel.org>; Fri, 12 Sep 2025 23:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC485CA0EE8
+	for <linux-aspeed@archiver.kernel.org>; Mon, 15 Sep 2025 01:18:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNrx34b1yz2yrL;
-	Sat, 13 Sep 2025 09:58:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.153
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757720232;
-	cv=none; b=Z0A8EgFhUA4eGQb6NSkcZoUlR9wyWlJt5Ca73CIORC2TR9TR4eZZMtqFH7MVx3TFZhug+9q4nwDPBtSjSxINnAeua7yNLrJ9yF6C6mle4EtEkE4/scLFXHsXjh6tHjp9Ahm2Mq/MsZAJLiAfkYiHLyAnCuuAfz2x0nlmpodz74k4g4Uu4m2b8RXur/sR+MPVSlEb4Yw1SR2XBExkei5vqJEqxRMZR9k2QkfNEJoFNTOJU1mJDKX8aIduUVCq2qXPG1lKo0tcSGKo0pBlBTk7rU4dzbKCpfJiAmpXFhN3fYZLO4j8EUvFnUoios5SsFKZfh7DWRbQPBBYEy4lM1gsxA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQ6cf0YL6z3cZ1;
+	Mon, 15 Sep 2025 11:18:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757850993;
+	cv=none; b=OkbSXbbwFj6FHReQ5B5DUJX+mWeyS5P3IqBLnYs/tJsPwE2GZ0kpPifIDvOO2YQyCcj4WVNl/wLykwU2sLRpptbzFMz8EAl3BjFixsCfZfbAjhyHSSMWdfQ/g/0tXHleLTKy831MPN0d8qkljKxd3+Jar0izEHQ4LDwbZ/MbV12rAZ0CuzanTyeB6wLCL+/pkeI+GK1Fp0IAQZ/yN0K/mNc8hloeFl77Xpdar1m6fYeyzIw3nxlF2RKirh0VmK0QBEZ7oiw5bgCXQgJqSK2drHMr6MRr4f+I0Er55HjqcQlhkRlA9x8IqoNFqnPd0BmuM38IIkle0Efm0FOXsY/3Tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757720232; c=relaxed/relaxed;
-	bh=40KXg9kUsO5+HICeEL0Iq0HUslxsWdLGZ0xsN27NPfo=;
-	h=Message-ID:Date:MIME-Version:From:Subject:To:References:
-	 In-Reply-To:Content-Type; b=owdEiDdxNVtzjvbztH/e08XpMqDPtEnjATcfd27DdBR8PBjSeTp1nYlXL2lUcxvFRXCkrI9Xms9zQQ7vJn0uYxHxw/0CeutpBvCQQqJWYZXtakLxwam/9ZN+INVJLEHhmbD5yMouN6a2eC2y100zF4FBmbgcx2MWB8U9GrS9XnloMoqTuDldalzM1CAgOVJliBPLp0ya6EGGTGYIERqjSHaIDbzRDVuvTdm7Yq7SmHo51MD5v0yuaxNOBMyb/D31HgQ+qwYGQZLGUQqRwnjpqpdTwe9qFRkCe5Yrmmo+kxb5hSPP3MNYg3C19Z/3kN7olnrd4kNELf07NvU+u8uWmQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bsdio.com; dkim=pass (2048-bit key; unprotected) header.d=bsdio.com header.i=@bsdio.com header.a=rsa-sha256 header.s=fm2 header.b=NxKfWVKQ; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=RvKv6szh; dkim-atps=neutral; spf=pass (client-ip=202.12.124.153; helo=fhigh-b2-smtp.messagingengine.com; envelope-from=rebecca@bsdio.com; receiver=lists.ozlabs.org) smtp.mailfrom=bsdio.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bsdio.com
+	t=1757850993; c=relaxed/relaxed;
+	bh=V7EEVogNqm3h2fGQuXoQvzBFJfVHtUlo6y8LaBgKxgU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=IyWwZIYwvT/2tTUOKud/aCeRgeDIX9PdbngdYfiROcizsmoUmKP+fXd9UC6VWY+XadsnW6g14eycg71hC3LXwdwEPjqcbjPXhq2q1qUPc+qDa6NxGu3+KPlaL+wzouyKunHAgay4gMaZf02c+Vf8SVlF4sf3CgZFx+ktNp2SUZ7PyV74IgGPld36+unhLDzW3PlPnl7yuepJzONJ1hmFjdfNxoajyQ8qg+h9L3JLSTFBFRoYRkY0GHQ5P6aHtwLGIpXA8Rl05f7dE6SKVUWpVkkxI3ND8r0EOAQi1Wd+v/6JEKmD3toPiHGb5S/b4LX46GfPhdGwltApYm4xt0y+2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZDQKRaw2; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IOevCH1U; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bmasney@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bsdio.com header.i=@bsdio.com header.a=rsa-sha256 header.s=fm2 header.b=NxKfWVKQ;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=RvKv6szh;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZDQKRaw2;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IOevCH1U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bsdio.com (client-ip=202.12.124.153; helo=fhigh-b2-smtp.messagingengine.com; envelope-from=rebecca@bsdio.com; receiver=lists.ozlabs.org)
-Received: from fhigh-b2-smtp.messagingengine.com (fhigh-b2-smtp.messagingengine.com [202.12.124.153])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bmasney@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNrS61Q4Gz2xnk
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 13 Sep 2025 09:37:09 +1000 (AEST)
-Received: from phl-compute-06.internal (phl-compute-06.internal [10.202.2.46])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id B74147A0183;
-	Fri, 12 Sep 2025 19:37:05 -0400 (EDT)
-Received: from phl-mailfrontend-01 ([10.202.2.162])
-  by phl-compute-06.internal (MEProxy); Fri, 12 Sep 2025 19:37:06 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bsdio.com; h=cc
-	:content-transfer-encoding:content-type:content-type:date:date
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm2; t=1757720225;
-	 x=1757806625; bh=40KXg9kUsO5+HICeEL0Iq0HUslxsWdLGZ0xsN27NPfo=; b=
-	NxKfWVKQ4CZWI0LoscpaJX6WEp/yA+hcrArsFRjvTb1Yh/ZSoPIpBPtL4KYOU00M
-	38QVUlT/7a7YMf72tkR097ADhnPbtOkw7DyOZLLwbX6BIOoe7MHHzZb0d/X/gWpi
-	S15rmczJcIaW+7HGY1U/CvmRG0ZkpjEGiaRRzoUzy/9wL5O6W+NwTRXa/OB1CCQC
-	UDb9uoxAQ49XZKMUyLFcx46B0ZUBrSUvtucWYguKS2k03kerl3p4XI68kJqP82Mt
-	0iqgS9PHrmUTnkK33tWqpJCNcKTuLUVQg3NlHKmFxxOHGhpPWzM4eVhjReRaHb/s
-	ZuiSR3iiG/Awpps8xfCiew==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:content-transfer-encoding:content-type
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:subject:subject:to:to:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=fm1; t=1757720225; x=1757806625; bh=4
-	0KXg9kUsO5+HICeEL0Iq0HUslxsWdLGZ0xsN27NPfo=; b=RvKv6szhC/uAWRcFF
-	qLZYBUM/JzLSb/NJYPC5xOdDg7UZlCXmlT2+ZNqZ4NVFI1AvHGAWvpLCH6+NqGQq
-	Q5X5XBnHGImJG3vOGOqi/bH/dWFOMFXZWX2Mz3PhdQ1c4mTaMc/hNZs6lEko+qbS
-	OhxxZgnexJMz+KhEH5PbXt77zd1SXVHcr+QZTazEJ66/BoIL0hkpOp2VIbno6vdV
-	pJhFKOxSkgkKtXBPo7oBpPSwRQuQhrIJgdl7W5CqMLjviXfTDZDWEpQ+9OYY2KLO
-	1B7VrxXtq+vjmU3KrAEZPpObI2UOVepofCwCekRdnZjinhuQhNerjqOGnWD/Kx9h
-	cv1JQ==
-X-ME-Sender: <xms:oK7EaJWYWiIWWi1ubcmf9R1QkKK68HTnHhD5xmKA-HllO9gwbUeDDA>
-    <xme:oK7EaIzwz7QQSi2KUGDzwg6g-Ms4dVfQZuAutLIULmlkMhRdn1C3jNkFKENjVGeBA
-    L8Z2w30mXE5sERHVt0>
-X-ME-Received: <xmr:oK7EaIGe6LRlxraxQZL_KowjeX4CU3Ow2Li3_S0w6HcCogDyvmROIHmuIwEtufnWy_I>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggdeftdeflecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
-    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
-    hrpefkffggfgfhuffvfhgjtgfgsehtkeertddtvdejnecuhfhrohhmpeftvggsvggttggr
-    ucevrhgrnhcuoehrvggsvggttggrsegsshguihhordgtohhmqeenucggtffrrghtthgvrh
-    hnpeevheehieegvddujeeiudffffdtheeifefhteetledvveehudffiefghfevieejueen
-    ucffohhmrghinheplhhinhgrrhhordhorhhgpdguvghvihgtvghtrhgvvgdrohhrghenuc
-    evlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehrvggsvggt
-    tggrsegsshguihhordgtohhmpdhnsggprhgtphhtthhopedutddpmhhouggvpehsmhhtph
-    houhhtpdhrtghpthhtohepkhhriihksehkvghrnhgvlhdrohhrghdprhgtphhtthhopehr
-    ohgshheskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepkhhriihkodgutheskhgvrhhnvg
-    hlrdhorhhgpdhrtghpthhtoheptghonhhorhdoughtsehkvghrnhgvlhdrohhrghdprhgt
-    phhtthhopehjohgvlhesjhhmshdrihgurdgruhdprhgtphhtthhopegrnhgurhgvfiestg
-    houggvtghonhhsthhruhgtthdrtghomhdrrghupdhrtghpthhtohepuggvvhhitggvthhr
-    vggvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqrghrmh
-    dqkhgvrhhnvghlsehlihhsthhsrdhinhhfrhgruggvrggurdhorhhgpdhrtghpthhtohep
-    lhhinhhugidqrghsphgvvggusehlihhsthhsrdhoiihlrggsshdrohhrgh
-X-ME-Proxy: <xmx:oK7EaFucsMrYmPiOzaLV5Joh5nyfmWetEsObfDVTDsCDNRVmkAStbA>
-    <xmx:oK7EaACSPjqS8GeqrVllmbcDFFjpsygEjTtdZhehqkGveIAHoavnnw>
-    <xmx:oK7EaIDAWuJJarms6BbMKlVyAvbbtnCb9TsGiS1g4d4rTqiGhfBQvw>
-    <xmx:oK7EaCrIlYqTfavDdVcugJ8lwrNDX45sk83lJljnJRFozs5xjrL9JA>
-    <xmx:oa7EaJ8VYrSyWOWQR9gC9FDzBO0j_Ikl6dLEyIEqBwFOqz6jMAvU686L>
-Feedback-ID: i5b994698:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
- 12 Sep 2025 19:37:03 -0400 (EDT)
-Message-ID: <04b0799e-b0a3-4dbc-98f3-239869c79305@bsdio.com>
-Date: Fri, 12 Sep 2025 17:37:02 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cPmpm3Qy6z3chL
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 14 Sep 2025 21:56:30 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757850985;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=V7EEVogNqm3h2fGQuXoQvzBFJfVHtUlo6y8LaBgKxgU=;
+	b=ZDQKRaw2GaHRS848UaQX7pzAZTXNAGThzUKJ50Fqy2C0oIkUIFfpN2l7lw1n7gFRgiB7KX
+	3oGulOfkkvoFwJZky+OhpAtb/00lgqCNSoQKv7TuL1HzocvfHrUn49GDut40CVR1ApLz/0
+	8a4xp4dPp3jm95mPNiMpZ5qAEcRKCiE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757850986;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=V7EEVogNqm3h2fGQuXoQvzBFJfVHtUlo6y8LaBgKxgU=;
+	b=IOevCH1U+udPzLC5GYXLuB6JSzGjrKzr6wFeUrPtwTIRjZrV6YiATbv4hVAM18bpln8EDA
+	FMaHDazKr9/ukHqsU/698VliPuP7c46FpkXhM9gekBgAA3CFQzeHWS48OezirSrSEVuImf
+	A1JgZevfKhq22eWiqRIcs79KZzDB7mI=
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com
+ [209.85.222.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-369-Ge7Pf74tMy6lDHYi58XboQ-1; Sun, 14 Sep 2025 07:56:23 -0400
+X-MC-Unique: Ge7Pf74tMy6lDHYi58XboQ-1
+X-Mimecast-MFC-AGG-ID: Ge7Pf74tMy6lDHYi58XboQ_1757850983
+Received: by mail-qk1-f200.google.com with SMTP id af79cd13be357-7e86f8f27e1so945074485a.0
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 14 Sep 2025 04:56:23 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757850983; x=1758455783;
+        h=user-agent:in-reply-to:content-disposition:mime-version:references
+         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=V7EEVogNqm3h2fGQuXoQvzBFJfVHtUlo6y8LaBgKxgU=;
+        b=ZY0Hp43SlMiCyQ2/CGjNGOb4vJWYHvzGuS3fazEU76RPSPcZaHUjWAia6L+DkS5sGz
+         MUUScISzCWiVJJNTC7FlJufBItwrt0YC6503DBva3sdXFIthOriUH5q9Y/Vxh/tOr9LE
+         jpLdLN8fU7LIf/fuc3IqfXylY9yOh1n7KpmHSA21ZX+SBeScS/ArqGboTstoAdl+iRZw
+         RV3Lgs2CurWRxCGMZ6onBGJRxhWclB6J3OweoI/JTjbcOqkltMRNsEhfH6frW1DGUMny
+         T+yhIhRQW1gkntQ33TpSxTH0iK3wuSy42lPVbK544nYjOVW2ZOT2ZKe3YRX3CrM1uZjK
+         fNJA==
+X-Forwarded-Encrypted: i=1; AJvYcCXDnN4TQl6Q3qIPr+vr6KpjCe8c51/DRMNg0mz7sxlfk7QFyKrLHBgalSxmnY9KkZwe5kRD32yExz0v16c=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyC8XBAT7nbrz8EMtn13xFkGAZocM3eW6iAk12+RbriEPRsqEW7
+	e2rf99k9pBq89A+xfSDJhbhQxda1we8s6Na8DtlbTsqk/ARgzidiziLNUU04PGPUaeDEU3zJ8fV
+	FhpUd8z1FWTj1UB8thVT3MinvVPI2cfiSplrtEGgm9bx4fjTA+XVsOuxpSB5NvhF4SbI=
+X-Gm-Gg: ASbGncsqHZhKk+9ZgMY8ez9xvkEmaILP+xRUbU/caiaeMIJpdPPilS4r0PWboB7ivh9
+	E9SxgFSi4d8anIYPWH4I58g+eHg8IO2Hpdc322BaJEpNcS/pRIa1dLqUzchP0cLDBIqU5E8rERz
+	71DouvHpFsCKwtm85jL06hj1k1D/zzdEvwJ/uPSD0TGB2ikCalDRwlax2o0QHyNNM6kt/8PV52S
+	KdfRabaJwN2Ibo8CBVsr6CXgqCKUoWtGeQoqJb0Mxui6fIYRP1cqzhA0X6UfTL/LZd/vh64UUqS
+	3kgV0Udig1y1KTfAJfj/t8VUG4KH6RnaCPEOhp1oJMi3PwZ+qO/kPcADtpICpMaMiIpOOMmA3aW
+	twXXcQOJq9vCM5gj12ZXoWRarzUPRRag=
+X-Received: by 2002:a05:620a:414f:b0:7e8:8f35:1d2b with SMTP id af79cd13be357-81ff181374emr1625000485a.2.1757850982928;
+        Sun, 14 Sep 2025 04:56:22 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFjgXFxjwySPCU3ek1M0DJbAsGYTyjXrUec8xKOuYaZ+ALRKNikNG6Y3NJHY97G0hh6czoOhA==
+X-Received: by 2002:a05:620a:414f:b0:7e8:8f35:1d2b with SMTP id af79cd13be357-81ff181374emr1624998885a.2.1757850982589;
+        Sun, 14 Sep 2025 04:56:22 -0700 (PDT)
+Received: from redhat.com (c-73-183-52-120.hsd1.pa.comcast.net. [73.183.52.120])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-820c974c848sm587652085a.23.2025.09.14.04.56.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 14 Sep 2025 04:56:22 -0700 (PDT)
+Date: Sun, 14 Sep 2025 07:56:20 -0400
+From: Brian Masney <bmasney@redhat.com>
+To: Iwona Winiarska <iwona.winiarska@intel.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Maxime Ripard <mripard@kernel.org>, Stephen Boyd <sboyd@kernel.org>
+Cc: linux-clk@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+	openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] peci: controller: peci-aspeed: convert from round_rate()
+ to determine_rate()
+Message-ID: <aMatZAX6eFI1RmDH@redhat.com>
+References: <20250810-peci-round-rate-v1-1-ec96d216a455@redhat.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,96 +113,28 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-From: Rebecca Cran <rebecca@bsdio.com>
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: add device tree for ASRock Rack
- ALTRAD8 BMC
-To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20250911051009.4044609-1-rebecca@bsdio.com>
- <20250911051009.4044609-3-rebecca@bsdio.com>
- <1e4c65c6-4745-45e2-9e20-9d2e69ae2ea4@kernel.org>
-Content-Language: en-US
-In-Reply-To: <1e4c65c6-4745-45e2-9e20-9d2e69ae2ea4@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20250810-peci-round-rate-v1-1-ec96d216a455@redhat.com>
+User-Agent: Mutt/2.2.14 (2025-02-20)
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: x1yfhUsOFZ-DaltzuBHsF_NmlpYTQiS7L7j55RwFrPk_1757850983
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 9/11/25 00:29, Krzysztof Kozlowski wrote:
-> Never tested.
->
-> It does not look like you tested the DTS against bindings. Please run
-> `make dtbs_check W=1` (see
-> Documentation/devicetree/bindings/writing-schema.rst or
-> https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-sources-with-the-devicetree-schema/
-> for instructions).
+Hi Iwona, Joel, and Andrew,
 
+On Sun, Aug 10, 2025 at 06:21:51PM -0400, Brian Masney wrote:
+> The round_rate() clk ops is deprecated, so migrate this driver from
+> round_rate() to determine_rate() using the Coccinelle semantic patch
+> appended to the "under-the-cut" portion of the patch.
+> 
+> Signed-off-by: Brian Masney <bmasney@redhat.com>
 
-Am I doing something wrong, or are a certain number of validation issues 
-expected?
+Would it be possible to get this picked up for v6.18? I'd like to remove
+this API from drivers/clk in v6.19.
 
-For example, I'm seeing these - most of which are from aspeed-g5.dtsi, 
-not my dts file:
+Thanks,
 
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/memory-controller@1e6e0000: failed to match any schema with 
-compatible: ['aspeed,ast2500-sdram-edac']
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/syscon@1e6e2000/p2a-control@2c: failed to match any schema with 
-compatible: ['aspeed,ast2500-p2a-ctrl']
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/display@1e6e6000: failed to match any schema with compatible: 
-['aspeed,ast2500-gfx', 'syscon']
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/timer@1e782000: failed to match any schema with compatible: 
-['aspeed,ast2400-timer']
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/pwm-tacho-controller@1e786000: failed to match any schema with 
-compatible: ['aspeed,ast2500-pwm-tacho']
-/home/bcran/src/linux/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-fan@0: aspeed,fan-tach-ch: b'\x00\x08' is not of type 'object', 
-'integer', 'array', 'boolean', 'null'
-     from schema $id: http://devicetree.org/schemas/dt-core.yaml#
-
-...
-
-/home/bcran/src/linux/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-lpc@1e789000 (aspeed,ast2500-lpc-v2): reg-io-width: 4 is not of type 
-'object'
-     from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-/home/bcran/src/linux/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-lpc@1e789000 (aspeed,ast2500-lpc-v2): lpc-snoop@90: 'clocks' does not 
-match any of the regexes: '^pinctrl-[0-9]+$'
-     from schema $id: http://devicetree.org/schemas/mfd/aspeed-lpc.yaml#
-/home/bcran/src/linux/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-kcs@24 (aspeed,ast2500-kcs-bmc-v2): 'clocks' does not match any of the 
-regexes: '^pinctrl-[0-9]+$'
-     from schema $id: 
-http://devicetree.org/schemas/ipmi/aspeed,ast2400-kcs-bmc.yaml#
-
-...
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with 
-compatible: ['aspeed,ast2500-lhc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/lpc@1e789000/ibt@140: failed to match any schema with 
-compatible: ['aspeed,ast2500-ibt-bmc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-/ahb/apb/bus@1e78a000/i2c@100/power-supply@3c: failed to match any 
-schema with compatible: ['pmbus']
-/home/bcran/src/linux/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dtb: 
-gpio@1c (nxp,pca9557): '#address-cells', '#size-cells', 'gpio@0', 
-'gpio@1', 'gpio@2', 'gpio@3', 'gpio@4', 'gpio@5', 'gpio@6', 'gpio@7' do 
-not match any of the regexes: '^(hog-[0-9]+|.+-hog(-[0-9]+)?)$', 
-'^pinctrl-[0-9]+$'
-     from schema $id: http://devicetree.org/schemas/gpio/gpio-pca95xx.yaml#
-
-
--- 
-Rebecca Cran
+Brian
 
 
