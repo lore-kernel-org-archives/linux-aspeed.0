@@ -1,62 +1,62 @@
-Return-Path: <linux-aspeed+bounces-2226-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2227-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F583CAC58E
-	for <linux-aspeed@archiver.kernel.org>; Mon, 15 Sep 2025 04:34:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 398CFCAC58E
+	for <linux-aspeed@archiver.kernel.org>; Mon, 15 Sep 2025 04:51:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQByB3dfDz3d36;
-	Mon, 15 Sep 2025 14:34:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQCLF6P3dz3d7n;
+	Mon, 15 Sep 2025 14:51:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757910866;
-	cv=none; b=LGTkPn0AiVakKW4Ta0aI3kOsUvA1JqSwAc4mgkG0bysc4S6BYifa4GBmgWKwS0ktz5lCQlJvHxhdFkn3o4j5mNofjmUcIy8kuEJ+3nBaNqLohVU6MCgmciimQkTS8iYcKlbN+nTLZhxULyeFXnptL6RnBNFYLztQazbhM6qEvDqJvgnfaPYOMhT+Oh4ebEwpnCa+8vaNFEd5s0GNMdlxNyhp/w9hbVHymzEgkIIbK3q3YyhZdPjxFsGtnblj0yAkAeGk/16+xCTMiH+2WSPh9iohI/fuV3PjliCBxjHCSvTh3R5MfHJus4f79EEGqVCJcQCHAazGu0FzvDPpRH063A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757911909;
+	cv=none; b=BRPt/o5lW2tkOunT7TUTuv/TqMu9C7PP7ABCZNHAdjalEDkA+bCnSKwWIYn/FblIqPXJx9+FxDN3JbsreU1JBAS8TxkgpeD2hNklBc1NyyhGXv+mSIJIem+LDeho41vOv2MFnWdrSlqCgVKJMMJHxGuaQh8IlTwRDRPgKaPmnrFFHDBXj9MmaaaPF9CpPl6/2A3PeHAVAz6D7MvtbzhrhNMyMIP2gFJSm55M+67QwEmk5sLhPkmKBNlN+1fILfa7N2oB6tQNjv/DSQzDwARDBkvy/yTTXRQq89cSdCl3TysEYTC+YuXAg0KUDCmAOVAV14gEQPwfW2J9q/C/BjNTQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757910866; c=relaxed/relaxed;
-	bh=jGd9kLzjDaoi+l0HOQu5KE2dhKkmGdqUdNlJgfKDaQ4=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=XbE9ovRLi1xzKQdocgH6ITar2HL22pBm+OTOeqpKtTwTmieDoSJSyLHprTkeXKQdAaapt0FvI9dpX4Nn50MC7NyKlsv8vdSOcr5oS+Zo0n9EKSG1rcZctf9bBmglCpvv7oLEV1ITWc/mo7iWodhzHv6tfBU0ffQ2kYFCAUnWy8+oE/9jdhY9Pvp/RusZK9FwfTrKscOkLCaiNV6PVX3cZhT6QOQmK6w21pAD4IrAHxdjjip4Dk3XASRu75hHO5tW3CtS/dyajgPBbJSZeuEnM+qe5G1RPhe6SFcbV42KlItk+PG+lnqKpLffeHIJo3bmZ/eYlHlF4YRMGxJPSoWmKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=j9l6rePl; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1757911909; c=relaxed/relaxed;
+	bh=BVMHhWMWW+z0ftn6nPGu/42b6y9+COcMk+xOQhhhwi8=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=AmMstUxy6XRNk7onTlpVi2uUb8tEJcZ4UwtVNbvYwGSgzBsSqG+/OU5ryfYiu+7cZFHer17yslUPYGviQBMnxiY67cujSGKPEO5Q5vY7uu7URQquldM/OhGkIHdytw5zy5Ugpq7KcXjDhF+wAgWwqvEq03L+kwJavI3FKLzpDgDVhBqT84pHOex8PTcJbrRybJRSOHvSj2c5OQRzIfm5YEjwT2F6hGapIGcTYL+Dz9slEjFTdZfGAmggmNYkZrYtmCbe3Z7b9umXQ8mfSTP+jeWVQiKBXFnUSDqegrCFQ2kXC3f8buf9DRWktUaaU5Oq8GFpCvyLEjgut6b4BbBa2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bPIeS0xz; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=j9l6rePl;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=bPIeS0xz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQBy94zhRz3d2g;
-	Mon, 15 Sep 2025 14:34:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQCLD3F1Pz3d44
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 15 Sep 2025 14:51:48 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1757910865;
-	bh=jGd9kLzjDaoi+l0HOQu5KE2dhKkmGdqUdNlJgfKDaQ4=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=j9l6rePl1LUachlMBzH84pJ4kBHHVvbIl05HfsxlWo/BECrz1cj/oTJUcTE+mwMxJ
-	 1zhFaWpOsMOT+ws5vGcBytUoqpX60OAE2NGwm7D45vwRgVNN0oHUYMe/MVhyC4KyTz
-	 WDq4LX4lbyF+4K/MdLmV2a5A1ag5A27ZrLDtKbHgyBhHaS/1eNp1XLeS7bCD4Au4HZ
-	 Z5K6pTKPx4A9glzNAfLgQutJM+RqCu1DPmf9H3q+8nKyicoSF2LckL67+bC/qWSkN3
-	 ij1vnEAI/uYsdu3Q8/nv4/oQRdRwiZDEd1crElwzz5MlsqhSSMsGMvotAV+bRScjPa
-	 78Ag7Bu3F/cUA==
+	d=codeconstruct.com.au; s=2022a; t=1757911906;
+	bh=BVMHhWMWW+z0ftn6nPGu/42b6y9+COcMk+xOQhhhwi8=;
+	h=Subject:From:To:Date:In-Reply-To:References;
+	b=bPIeS0xzB0UGuxDe0qaUYJe5B5ngK9Udw24LmmQDg3olfuibtVqhZDjmR9qPA1uf5
+	 6e/O9R4ScNXSvFcagUEcZe+d7VQdQzTqPt9tV57OY6qmcojbUL7dyzzWqsYs9X6nEb
+	 zFJA74uy8JM1C6BI3Db36OuzJhwQGSXsT1c9pu/VatP36fASJG7DVKcTYKTktn0xvW
+	 vaSv+YmdXDAxdaHgfOWkRLRLD6b3PVLImsj4dOB+x53AMp73yDie/sla6ENAmChbQl
+	 e4h7RfL6ZqZsOlwxxoQsSJmW2NtlUhxr7UCJa/pMYIbhEFfIB82iZiquTdQ8ffuc8O
+	 5a3yTSkIEy7rw==
 Received: from [IPv6:2405:6e00:2430:fb15:b2b4:1872:3690:c682] (unknown [120.20.190.44])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 0452B64CF0;
-	Mon, 15 Sep 2025 12:34:21 +0800 (AWST)
-Message-ID: <ae46aa8e57d01208deb56a8fd01f26a9a0bf359b.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2 2/2] ARM: dts: aspeed: Add NVIDIA VR144NVL board
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 398DE64CF0;
+	Mon, 15 Sep 2025 12:51:42 +0800 (AWST)
+Message-ID: <67f2276e99640bcbded80560e8b8d2922b731e81.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: add device tree for ASRock Rack
+ ALTRAD8 BMC
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Donald Shannon <donalds@nvidia.com>, robh@kernel.org,
- krzk+dt@kernel.org, 	conor+dt@kernel.org, Andrew Lunn <andrew@lunn.ch>
-Cc: joel@jms.id.au, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, etanous@nvidia.com
-Date: Mon, 15 Sep 2025 14:04:19 +0930
-In-Reply-To: <f0b75151-d355-4d03-a356-dfbfb7a9e803@nvidia.com>
-References: <20250822203818.4062595-1-donalds@nvidia.com>
-	 <20250822203818.4062595-3-donalds@nvidia.com>
-	 <f9cd6015c47d390eef9c689d2cb4fcd301c4d123.camel@codeconstruct.com.au>
-	 <fcd64668-4232-4d7b-98ec-5326d40d19d7@nvidia.com>
-	 <f0b75151-d355-4d03-a356-dfbfb7a9e803@nvidia.com>
+To: Rebecca Cran <rebecca@bsdio.com>, Krzysztof Kozlowski <krzk@kernel.org>,
+  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,  Joel Stanley <joel@jms.id.au>,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Mon, 15 Sep 2025 14:21:42 +0930
+In-Reply-To: <04b0799e-b0a3-4dbc-98f3-239869c79305@bsdio.com>
+References: <20250911051009.4044609-1-rebecca@bsdio.com>
+	 <20250911051009.4044609-3-rebecca@bsdio.com>
+	 <1e4c65c6-4745-45e2-9e20-9d2e69ae2ea4@kernel.org>
+	 <04b0799e-b0a3-4dbc-98f3-239869c79305@bsdio.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.1-1 
@@ -74,103 +74,46 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi Donald,
+Hi Rebecca,
 
-On Wed, 2025-09-10 at 09:46 -0700, Donald Shannon wrote:
-> On 9/9/25 16:05, Donald Shannon wrote:
-> > On 9/3/25 00:07, Andrew Jeffery wrote:
+On Fri, 2025-09-12 at 17:37 -0600, Rebecca Cran wrote:
+> On 9/11/25 00:29, Krzysztof Kozlowski wrote:
+> > Never tested.
 > >=20
-> > > Hi Donald,
-> > >=20
-> > > On Fri, 2025-08-22 at 13:38 -0700, Donald Shannon wrote:
-> > > > This is an Aspeed AST2600 based BMC board for the NVIDIA VR144NVL
-> > > > Platform.
-> > > >=20
+> > It does not look like you tested the DTS against bindings. Please run
+> > `make dtbs_check W=3D1` (see
+> > Documentation/devicetree/bindings/writing-schema.rst or
+> > https://www.linaro.org/blog/tips-and-tricks-for-validating-devicetree-s=
+ources-with-the-devicetree-schema/
+> > for instructions).
+>=20
+>=20
+> Am I doing something wrong, or are a certain number of validation issues=
+=20
+> expected?
+
+I expect you're not doing anything wrong there. There are a number of
+historical warnings from the ASPEED DTSIs. However, generally, the
+policy is as documented here:
+
+https://docs.kernel.org/process/maintainer-soc.html#validating-devicetree-f=
+ile
+
+>=20
+> For example, I'm seeing these - most of which are from aspeed-g5.dtsi,=
+=20
+> not my dts file:
+>=20
 
 *snip*
 
-> > > > +
-> > > > +&mdio0 {
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 status =3D "okay";
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ethphy0: ethernet-phy@0 {
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 compatible =3D "ethernet-phy-ieee802.3-c22";
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 reg =3D <0>;
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 };
-> > > > +};
-> > > > +
-> > > > +&mac0 {
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pinctrl-names =3D "default";
-> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 phy-mode =3D "rgmii-id";=20
-> > > Is this correct, in the context of the query here?
-> > >=20
-> > > https://lore.kernel.org/all/6a3d7eb4-c091-437f-98f8-2b8577e539a7@lunn=
-.ch/
-> > >=20
-> > > If not, please drop the node from the patch until the MAC driver is
-> > > fixed with respect to the RGMII delays.
-> > >=20
-> > > Andrew=20
-> >=20
-> > Hi Andrew,
-> >=20
-> > I will change this to alphabetical order.
-> >=20
-> > The extra space in our flash is for root of trust application. I will n=
-ote this in the next patch.
-> >=20
-> > I see that the ftgmac100 drivers do not use the phy-mode parameter so I=
- will leave it out.
-> >=20
-> > Thanks,
-> > Don
-> >=20
->=20
-> Hi Andrew,
->=20
-> I am getting conflicting messages in my v3 patch series and want to confi=
-rm what the consensus
-> is for removing or keeping the unused phy-mode parameter.
->=20
+I'm okay with taking new ast2[456]00 devicetrees that don't introduce
+any new warnings of their own. However, given you're contributing a new
+devicetree, it would be super helpful if you could look at removing one
+or two of the warnings from the DTSI while you're at it, as this
+improves the utility of the checking tools for everyone.
 
-The background is that there's been some concerns over phy-mode wrt to
-where the RGMII delays are inserted, and the impact on the phy
-configuration. My intent was that if you were unsure that you would
-remove the entire mac node rather than just the phy-mode property. That
-way there's no networking that can break when ASPEED sort out issues
-with the ftgmac100 driver. You would have to carry a downstream patch
-to add the node back for networking, but I feel that's an improvement
-on carrying the entire devicetree downstream.
-
-However:
-
->  There is some inconsistency in
-> the existing dts-es as well.
-
-Yes, this is part of the problem.
-
->=20
-> Our board phy implements tx and rx delay, so -id would be the appropriate=
- one to use if we
-> decide to use it.
-
-Right, so long as there's no delay configured for the MAC in the SCU
-(see SCU340-35C) and networking functions for your board then I think
-it's fine to keep the node and specify `phy-mode =3D "rgmii-id";`. Any
-fixes to the driver shouldn't break that arrangement (as in this
-configuration it should deconfigure any delays for the MAC in the SCU).
-
-There's some good documentation here:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Doc=
-umentation/devicetree/bindings/net/ethernet-controller.yaml?h=3Dv6.16#n264
-
-and relevant discussion here:
-
-https://lore.kernel.org/all/f28736b5-f4e4-488e-8c9b-55afc7316c5e@lunn.ch/
-
-Sorry for the confusion.
+Cheers,
 
 Andrew
 
