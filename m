@@ -1,78 +1,59 @@
-Return-Path: <linux-aspeed+bounces-2282-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2283-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C85E6CA1013
-	for <linux-aspeed@archiver.kernel.org>; Thu, 18 Sep 2025 22:56:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F7B8CA1013
+	for <linux-aspeed@archiver.kernel.org>; Thu, 18 Sep 2025 22:59:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSWG93RGcz2xns;
-	Fri, 19 Sep 2025 08:56:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1029"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758188627;
-	cv=none; b=D1p5en95v/Eqqy0HkObmXsF6ZMwJwdsVt7y6usOgv6aNIPseN1d5fWG3q8lHxTNTR//U/C21nDbQvuXYSMaj3KyylnWyS+ag6NJQCJwX0aZjXcw3X+WTzjwhA3pBUwm2bEcRVb9GQSe3N81QtB30LLgJQXX4Swkq0P0quDX6IhK9Zc7mHhVDDmFcIzxaCYRRq+GIuHZGayL/ryJuyO1JB5i5G0OrVzBTDAIOhvkcZmV6lqv498n9JYWgQ96W7Z5kVNxIxTl5Ii8x7CAaFEm1fN1xHRg4WkRc6/15CHOd/LiJOCLMuVNwbsq1fq/ZieLfUKGup88yxFilKQmnqy7/ww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSWLB0mMCz2xns;
+	Fri, 19 Sep 2025 08:59:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758236386;
+	cv=none; b=oibybvBj7AV5dShRIXM0qm8IaiHir3LYd6WIhY0Wjehh0IITBI2P3GfM/xpZSTKSPV+AsMwY+O4TKRbVIw1GgscgTTQ1nDzrKYACJcJ4mCSwK1kVLyBlqq9wyw4jzhrapWBkKD3L/J17i1Sc288vQi1PbgyB7BeM8q25el/fynHDxKXLnXQaBrhpDmfHW1aLlWhRpl4EDrG7OCVIXDJIQv6x5PvJxz98aHeSreuXz5IewmNpLhW7M7JtpKlJpGgb6bLRV8oFL39Yw689mjpD8RIzX8teYb76HNTzPSXcspXMxT8hvUeZTyL2qMMEDBa0HgGjh98HFPXSrOSIIZ9LiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758188627; c=relaxed/relaxed;
-	bh=kk2Hrw+IHUis21BiwjLiEv7+4Iu+IibQiFHb8JNRLIM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=GJ7GOOsLcvzDiuEAvtwrYTAmeYK9PTaMuwyMaQiwdbm3zwi8KHMMjOrz+HMeRXsSZaG4PLcTXn1xGSRyOtctzWeMDZOTN/9azcn5ZfMtkEQxtd2wmQeyAHOeciGKNFqJFh9ccWY7nhUC0jeMl3baziJzWWyWi2CCtF4ZMANFPTEoFB+ND9pAPk8yaCqOdcRmps2R+ivgbKItzfOFhiN/LyfkV9o+szS/5U7Er7Y/vF9HpOvQP4GyAfOVuyxQVqRpHMM9aPiCvgj1UPwj58l4dHaKvmGPTCJpXBSsgCxgDCpyY3d8pbRZ7n5U6lcr4kul0L8MSm53ExBxn/QqywTdsw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eJVq9Jso; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1758236386; c=relaxed/relaxed;
+	bh=5dBdUrhbuDqZB0LJbY+sCKlawfFaDrXqi8QilwoIBcw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AsMgh0wyK0zsNNkRbFlwohrqaHUWmIOeBUMpD2it6i2N2kuEeyC67aQEarWq9LAFViSYT0cTcPvsnYr9YTEQJQTM4Y4A/y/TIbmq7jqH6G7ucsGPDzDmaEoREBlzyl0wNftgrdWdyjtgNSYt1g0j/ke7E4E6xDCA40Xzhg70p39Pa7Vyy2GVFsh3dQq0zEZmxjg6Feyxi/MGRKaSdKACcAddDQf26xLnsJC8AgfGZ+dq7hgJs8yfiLr1Q/bHiRLkLSSjP8AWlg58E+w64Ac6QiDDBnFg2cRF48LEHC8tEkHQSdk1A2bbvFkwGuRwl0rDaTqaWnnEBUKx+YGHvIafDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hGzmX8mV; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eJVq9Jso;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hGzmX8mV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cS9gk2hLSz2yGM
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 18 Sep 2025 19:43:45 +1000 (AEST)
-Received: by mail-pj1-x1029.google.com with SMTP id 98e67ed59e1d1-329b760080fso583600a91.1
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 18 Sep 2025 02:43:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758188623; x=1758793423; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=kk2Hrw+IHUis21BiwjLiEv7+4Iu+IibQiFHb8JNRLIM=;
-        b=eJVq9Jso23R29JKTy1WT6F4Qvh8u/hkbsL1MjZp/fSOPz8xlKWVOPNLzRQLNMJ7yU/
-         gaXMr1JMPZRTH00xSjSjzf50iMTpZmGTnwvgEra43p0fwAf/vI1FxxFz/kTLmbtx1+4d
-         tSIt4HctjmfW/2/NQAXgSWBeLbBfa3o6g+/D64bLQ+jMuP3tNWnyW4WM0VkhZH7nf2ox
-         bDb7q6VH/MWti1H37kpFGbZNcPZ2JlAxGM0PfCmRm2jgoCy4HP+YtwHjsefc/I9sPKlp
-         Eg8BVFFMNvQQCeZbtd9KGkrfwSKd+4kIzP3G13WBNb5hmmSeXd/tMQybzkp5OIE+smxY
-         0mMg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758188623; x=1758793423;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kk2Hrw+IHUis21BiwjLiEv7+4Iu+IibQiFHb8JNRLIM=;
-        b=lSfs8gruz+lYAY61hQMJkqor/VAQGNMZl+KaFekJScZWBzNaCHP2z7yyQz17ixDPs8
-         fY5yZNa9QCyM3q5USn/j/5dmXk2rXRm9eqv5evnT1dXDcC5qiz5+AHDFAF2OzN1WLQcG
-         9ZN/NWGf7/7JReMQw9A+C09qS3JXFdthu4IRLZ/qwrXzp/iTpo8N5LQ/uD1yLl5+uUHY
-         zshlLhZQuB/sX+LKwlbphuPzvkNLYreCb/MOPYemRK7F4sq5TkZ+5v8aqWs/dvKPcx+j
-         H+YO5Ki+Au3WO3jlhTAbLVXLa7IGq/Gs5e0P2rC1VEIzXGiUMyOR6vfhq/CVx3mJe1Oe
-         C0rw==
-X-Forwarded-Encrypted: i=1; AJvYcCVmKEq7NscR10Q/ZwYyByyOGm7eihkH1Ux5a7EGXd3XgfFV5Xno9La5D7n8WTJ8S9APTvQIO/iv5BY5+bI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw+fJVfIW2rSYz1GM03r9nlWuhIyGMdp4wDpxIMH0r0E0t5CiUz
-	lfGKgu9yjvrdYw+oSJM+r+mLI7AIbtRZtL6dU1H5Xe18o3RQ2DmeeuYP
-X-Gm-Gg: ASbGncvXUpXGpTiDkIz2vGLoqiYHZPG4fjDVotHG2u1FWr1bBRg5Y/zamDOJJ0lGwjX
-	5OrHWYX7Kc/L7R9ZRkMSuf1bJuU5X0TnP5l74fsEi4NcVRVE+dn/nGgKA6NeaOkx+KbmY86GQny
-	mFmefibZvjnBPYI1tGsiA3Tns4uEJPtiKzhE1qFbeIkEg/CWrPrMxvvyeN3bvEyH8eSQgh7cs2b
-	MpBeLx8FYRNMuwA7DKqa+xxw64SLLY+ntZPMbb3WVxbVd5ebHwTTaFaZmxTviqh9bhwIv/eXgT5
-	TaW24z2haVVT3aWZGCXNY4QqwiLPZczOcythPURhKmhFNHmpjPJXfaTrIZryC9X0h/KVjwuG30U
-	4X48x79/iBqkDju2Zznw9ZQ8CiOAOSzf7Jqooju1JFcofzmg4UJgtLHkMcmey3MFup9YQuFiO9k
-	2x8Q==
-X-Google-Smtp-Source: AGHT+IEgGE0BeH1F+4LDtstgR4GzT3dQ/vnKSyQ7aIVQt/aTAyZb2ZsVJWml9L1MieY7rFzbad5a2A==
-X-Received: by 2002:a17:90b:4c12:b0:32e:5b07:15dd with SMTP id 98e67ed59e1d1-32ee3ec22b6mr6516497a91.1.1758188623083;
-        Thu, 18 Sep 2025 02:43:43 -0700 (PDT)
-Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-32ed276d2f8sm4886810a91.24.2025.09.18.02.43.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Sep 2025 02:43:42 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-Date: Thu, 18 Sep 2025 17:43:06 +0800
-Subject: [PATCH] ARM: dts: aspeed: clemente: add MCTP over I2C support
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSWL92CqCz2xlK
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 19 Sep 2025 08:59:45 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id AA4854033F;
+	Thu, 18 Sep 2025 22:59:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41CA5C4CEE7;
+	Thu, 18 Sep 2025 22:59:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758236382;
+	bh=Y/MgHo2Lae+1QL5MAWZmOnaVrQ/OZef/Rd+kxRivPCg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=hGzmX8mVUJUrABLN1gBBk7KJ47AjqR7CEbm5JF9aiumy4OCa2vOa6b1sPKzyERKfj
+	 vjtReTBLEa4AM9x5K4BTS01UF2090Ag7dmclcZR9+psQM/EPDshQbH8u/mmu6k61KK
+	 MHtpfsrJaLz+uuczz+pC3bciwMR+Ljy0zkBHZlcJuxOV3SSqSbxMpyr7LBMqu2jmyC
+	 mxt/Xo//dd+G0aS1e1JKDIKBqedpokRBooN0ma8n42xFZH+t8RqodEAjReAxl6wWft
+	 tOPBl1mnUbjYW+ngRf9shPlesrPemsBf0wpSzqjmnA3N/h3flRRVJYcCtdKgoMrzm7
+	 HY29RXA/alQrg==
+Date: Thu, 18 Sep 2025 17:59:41 -0500
+From: Rob Herring <robh@kernel.org>
+To: Eddie James <eajames@linux.ibm.com>
+Cc: conor+dt@kernel.org, devicetree@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org, krzk+dt@kernel.org,
+	andrew@codeconstruct.com.au
+Subject: Re: [PATCH v6 0/7] ARM: dts: aspeed: Add Balcones system
+Message-ID: <20250918225941.GA3127900-robh@kernel.org>
+References: <20250918180402.199373-1-eajames@linux.ibm.com>
+ <175823464696.3104136.904298221604133111.robh@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,109 +67,139 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250918-leo-dts-transceiver-v1-1-3e2580325edc@gmail.com>
-X-B4-Tracking: v=1; b=H4sIACnUy2gC/x3MQQqEMAxG4atI1gZsZWD0KuKitL8zAamSiAjSu
- 1tcfov3bjKowGhsblKcYrLlCtc2FP8h/8CSqsl3/tMN7ssrNk6H8aEhW4ScUEaKvUMfvQsL1XJ
- XLHK912ku5QHFt0+wZQAAAA==
-X-Change-ID: 20250918-leo-dts-transceiver-edc31e3c21af
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, bruce.jy.hung@fii-foxconn.com, 
- leo.jt.wang@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758188620; l=2154;
- i=leo.jt.wang@gmail.com; s=20250618; h=from:subject:message-id;
- bh=nVDRdbCkjgVW2Hem9dJFdrSJ8lRD2Z2Fl11Ez5/qXTc=;
- b=gGwy/tJbdh92kaL3iGxdJ0l55f8lVj/pdra8VUU6oBnNsmqeDhiUPxiVekZn/UwIGlSAduWaT
- s65s9f5gLsNBz2gYwdLOzqRJ9FmS9d3xS2QLQLwQXoz1a7on5CCimYt
-X-Developer-Key: i=leo.jt.wang@gmail.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <175823464696.3104136.904298221604133111.robh@kernel.org>
 
-Enable MCTP communication on the Meta Clemente BMC board:
+On Thu, Sep 18, 2025 at 05:33:06PM -0500, Rob Herring (Arm) wrote:
+> 
+> On Thu, 18 Sep 2025 13:03:55 -0500, Eddie James wrote:
+> > The Balcones system is similar to Bonnell but with a POWER11 processor.
+> > 
+> > Changes since v5:
+> >  - Add patch to add address and size cells to max31790 document
+> >  - Don't remove address and size cells in max31785 fixes change
+> > 
+> > Changes since v4:
+> >  - Add patch to fix max31785 warnings
+> >  - Add patch to fix missing Bonnell documentation
+> > 
+> > Changes since v3:
+> >  - Add max31785 to the max31790 document instead of to trivial-devices
+> >  - Fix minor formatting in dps310 document
+> > 
+> > Changes since v2:
+> >  - Fix a couple of incorrect i2c addresses
+> >  - Document dps310 and max31785 properly
+> >  - Drop the UCD binding documentation update, it's been fixed
+> > 
+> > Changes since v1:
+> >  - Add all the ucd9000 driver supported compatible strings
+> >  - Fix node ordering in Balcones device tree
+> >  - Improve commit message to explain addition of ibm-power11-dual.dtsi
+> > 
+> > Eddie James (7):
+> >   dt-bindings: arm: aspeed: add IBM Balcones board
+> >   dt-bindings: arm: aspeed: add IBM Bonnell board
+> >   dt-bindings: iio: Add Infineon DPS310 sensor documentation
+> >   dt-bindings: hwmon: Move max31785 compatibles to max31790 document
+> >   dt-bindings: hwmon: max31790: Document address and size cells
+> >   ARM: dts: aspeed: Add Balcones system
+> >   ARM: dts: aspeed: Fix max31785 fan node naming
+> > 
+> >  .../bindings/arm/aspeed/aspeed.yaml           |   2 +
+> >  .../devicetree/bindings/hwmon/max31785.txt    |  22 -
+> >  .../bindings/hwmon/maxim,max31790.yaml        |  12 +-
+> >  .../iio/pressure/infineon,dps310.yaml         |  44 +
+> >  .../devicetree/bindings/trivial-devices.yaml  |   2 -
+> >  MAINTAINERS                                   |   1 +
+> >  arch/arm/boot/dts/aspeed/Makefile             |   1 +
+> >  .../dts/aspeed/aspeed-bmc-ibm-balcones.dts    | 609 ++++++++++++++
+> >  .../dts/aspeed/aspeed-bmc-ibm-bonnell.dts     |   4 +-
+> >  .../dts/aspeed/aspeed-bmc-ibm-everest.dts     |   8 +-
+> >  .../dts/aspeed/aspeed-bmc-ibm-rainier.dts     |  12 +-
+> >  .../boot/dts/aspeed/aspeed-bmc-opp-tacoma.dts |   8 +-
+> >  .../arm/boot/dts/aspeed/ibm-power11-dual.dtsi | 779 ++++++++++++++++++
+> >  .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 769 +----------------
+> >  14 files changed, 1465 insertions(+), 808 deletions(-)
+> >  delete mode 100644 Documentation/devicetree/bindings/hwmon/max31785.txt
+> >  create mode 100644 Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
+> >  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
+> >  create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
+> > 
+> > --
+> > 2.51.0
+> > 
+> > 
+> > 
+> 
+> 
+> My bot found new DTB warnings on the .dts files added or changed in this
+> series.
+> 
+> Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+> are fixed by another series. Ultimately, it is up to the platform
+> maintainer whether these warnings are acceptable or not. No need to reply
+> unless the platform maintainer has comments.
+> 
+> If you already ran DT checks and didn't see these error(s), then
+> make sure dt-schema is up to date:
+> 
+>   pip3 install dtschema --upgrade
+> 
+> 
+> This patch series was applied (using b4) to base:
+>  Base: attempting to guess base-commit...
+>  Base: tags/next-20250917 (best guess, 10/11 blobs matched)
+> 
+> If this is not the correct base, please add 'base-commit' tag
+> (or use b4 which does this automatically)
+> 
+> New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20250918180402.199373-1-eajames@linux.ibm.com:
+> 
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: timer (arm,armv7-timer): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+> 	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: /sdram@1e6e0000: failed to match any schema with compatible: ['aspeed,ast2600-sdram-edac', 'syscon']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: bus@1e600000 (aspeed,ast2600-ahbc): compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
+> 	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
+> 	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: max31785@52 (maxim,max31785a): fan-0: Unevaluated properties are not allowed ('compatible', 'maxim,fan-dual-tach', 'maxim,fan-fault-pin-mon', 'maxim,fan-no-fault-ramp', 'maxim,fan-no-watchdog', 'maxim,fan-pwm-freq', 'maxim,fan-ramp', 'maxim,fan-rotor-input', 'tach-pulses' were unexpected)
+> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: max31785@52 (maxim,max31785a): fan-1: Unevaluated properties are not allowed ('compatible', 'maxim,fan-dual-tach', 'maxim,fan-fault-pin-mon', 'maxim,fan-no-fault-ramp', 'maxim,fan-no-watchdog', 'maxim,fan-pwm-freq', 'maxim,fan-ramp', 'maxim,fan-rotor-input', 'tach-pulses' were unexpected)
+> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: max31785@52 (maxim,max31785a): fan-2: Unevaluated properties are not allowed ('compatible', 'maxim,fan-dual-tach', 'maxim,fan-fault-pin-mon', 'maxim,fan-no-fault-ramp', 'maxim,fan-no-watchdog', 'maxim,fan-pwm-freq', 'maxim,fan-ramp', 'maxim,fan-rotor-input', 'tach-pulses' were unexpected)
+> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: max31785@52 (maxim,max31785a): fan-3: Unevaluated properties are not allowed ('compatible', 'maxim,fan-dual-tach', 'maxim,fan-fault-pin-mon', 'maxim,fan-no-fault-ramp', 'maxim,fan-no-watchdog', 'maxim,fan-pwm-freq', 'maxim,fan-ramp', 'maxim,fan-rotor-input', 'tach-pulses' were unexpected)
+> 	from schema $id: http://devicetree.org/schemas/hwmon/maxim,max31790.yaml#
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: /ahb/apb/bus@1e78a000/i2c@200/max31785@52/fan-0: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: /ahb/apb/bus@1e78a000/i2c@200/max31785@52/fan-1: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: /ahb/apb/bus@1e78a000/i2c@200/max31785@52/fan-2: failed to match any schema with compatible: ['pmbus-fan']
+> arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: /ahb/apb/bus@1e78a000/i2c@200/max31785@52/fan-3: failed to match any schema with compatible: ['pmbus-fan']
 
-- Add an MCTP I2C controller node at address 0x10 on I2C0
-- Mark selected I2C mux channels as MCTP controllers
-- Remove unused "i2c-mux-idle-disconnect" properties
+Sigh. Are you testing this before sending?
 
-This allows MCTP devices to be discovered and used for
-management communication on the Clemente platform.
+None of these "maxim" properties are documented nor used by any driver. 
+I don't know what a 'pmbus-fan' is as it is not documented.
 
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+For the fan child nodes and their node names, it is quite simple. You 
+have 2 options:
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-index a614f947dafc9a6628c3f3d45b62ff3ca9d2b618..a2f0ed6e7bbefbdcec33f7ddebdf2de62adec164 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-@@ -269,18 +269,23 @@ &gpio1 {
- 
- &i2c0 {
- 	status = "okay";
-+	multi-master;
-+	mctp@10 {
-+		compatible = "mctp-i2c-controller";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+	};
- 
- 	i2c-mux@71 {
- 		compatible = "nxp,pca9546";
- 		reg = <0x71>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		i2c-mux-idle-disconnect;
- 
- 		i2c0mux0ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux0ch1: i2c@1 {
-@@ -332,6 +337,7 @@ i2c0mux0ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux0ch3: i2c@3 {
-@@ -457,12 +463,12 @@ i2c-mux@75 {
- 		reg = <0x75>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		i2c-mux-idle-disconnect;
- 
- 		i2c0mux3ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux3ch1: i2c@1 {
-@@ -514,6 +520,7 @@ i2c0mux3ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux3ch3: i2c@3 {
+fan-[0-9]+:
+- no reg property
+- no #address-cells or #size-cells in the parent node
 
----
-base-commit: c65261717599d419e9c683d85f515d3ca2261549
-change-id: 20250918-leo-dts-transceiver-edc31e3c21af
+fan@[0-9a-f]:
+- must have reg property
+- must have #address-cells or #size-cells in the parent node
 
-Best regards,
--- 
-Leo Wang <leo.jt.wang@gmail.com>
+If the parent device has a concept of fan channels (perhaps pages as 
+the driver calls them?), then you should use 'reg' to map the fan 
+channels to child nodes. For some fan controllers, 'reg' corresponds 
+to the PWM number or pin number. Node names are generally not considered 
+ABI, so you shouldn't be using them at all. That means the "fan-[0-9]+" 
+case has no mapping between the fan node and instances in the fan 
+controller.
 
+Rob
 
