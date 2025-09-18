@@ -1,72 +1,77 @@
-Return-Path: <linux-aspeed+bounces-2272-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2274-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AD14CAC5A5
-	for <linux-aspeed@archiver.kernel.org>; Thu, 18 Sep 2025 03:35:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00CFBCAC59A
+	for <linux-aspeed@archiver.kernel.org>; Thu, 18 Sep 2025 18:04:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cS1WH5qd0z30Jc;
-	Thu, 18 Sep 2025 13:35:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758162105;
-	cv=none; b=dwVe4YNRuNS4gQttvQmCqRXAnKo9sjKRQeEcEwv5JXuE+25dHuTiEicMjEYJCB9YiRnNJC4+lCpRAWWI6nQYQRJVamLW2Fuc7u5mM46GT7lEKgDhcLyUBuXQz1u0rO3LGEMoZNM/aZuh/3uBzF/NYS8bMGY9o7XqWS0C1J40qekHL6o20E1kUCAIlw2wzLyKjV4YUIyWEGDmc2bY/1/QK9vEoKOwi656GoOqEkZzJ+7tAE59zgdgfh+bi306u3jiRT0Sa9/McoeNhLDmpaon3htmmGHlnCw7/qbmdueouHULZoNa09yYgSJxdmsuvTy6A1O+zf4dfm2oKZ8ttNOs3A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSNnL1Hvwz2yMw;
+	Fri, 19 Sep 2025 04:04:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758218662;
+	cv=none; b=SbnKp6AXX12shi/Rb+x8PbFYlv9WK8vd/WPdH96XewQbh9L4baGPaKtMZBhZ8O+AEYFTKbGkbMSpHh4D4ceVL/MNf3qG5dDKVNbgzfUfmtmbySiqrWF7Wh8S6JkLjC08sq7nG0H9j+9CLtPtG1vn/8Z5vQtXdNFpks6B71wWJwbjZnMHtfoHEjFpYwYE4jeIxlcGk2tHgdaHXXRTZSCNJIFgd/m43ctDNkJtJ/yzpSNiEWeJj6S0xyhtUaxPNsNa5uVFNNhlzHk4TPxSrEPcaNxpMnkHc/Butfj6lNiuYB1lgoNX8I4rtsi4Ton3KaQk+/JNGjy0/EqfZ+0hKZP39g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758162105; c=relaxed/relaxed;
-	bh=9AP4EHyPiENgOeGo6lnIyAQbYkHufakN6exnZUysaUA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=bPWdKa0DWPoZJOnrjySW1JesbrX0fYj52zzZO374KNvV0CDFuYYKt7sGTLHCyrlJm0246xcBcf7DPF9YMO1t97msN2f+GdGgHdQ63pSbGtvlNY8Oeltl/oxKXc0SRnXtr1cw9VsbRP8Z14u8+Uc+yB2Q8lXUah/lgDl3eHge2N7W1OPHc/S0SeJ9hgAE9cK72dG+P7MxJH1p+gOwP2d8Mn6aMRviwg/4b7l2EQ7rIia6fuSVQR8H3UBC1EGb/zQopw/23lUt1a5LHoJq9fuy38HZp4zJpTxn03zvCuzHRSv/1Cad0hOiPSvzLRAMZ4Gin9ftohkRAeR95mZjJ1f3xA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=M/Mhd3ZL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1758218662; c=relaxed/relaxed;
+	bh=dxA6/c8hafsPZw566V/Nuvy0x6ch0JN3sXIN7B9j07s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VHBJN74wmucnVZyETBQdTTkeiBzlF5LSVzt9PjF+EY5RQAA71Qgn2KVpGBgwzASacmvcT0s81ScImABCVA7X3ZVJxnN6rlJsQ6gwad/DFu8jV6Iz5LLptFhEW7YfOUsyZobC/t+Iu7VGFAJBAvYsSJjrfgiYosNM7E7jnpkm2iUIdbHK+cgOM4mVjjaXygdwTd8VlOD+ncLYysOYxULWURk4FD+aaUAj0fl5WTYg/E00ad0XPe3lsKsqUGbgUBK3jl3uGrQiuTjmHQaZkcU6dxh50gGgPZs4r6TOfbScu/CON5uar9knduv3Jq1Kh13ukzP9uAC0LQZaNVh/511IGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cbTMG83O; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=M/Mhd3ZL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cbTMG83O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cRzsh4dXkz3000
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 18 Sep 2025 12:21:43 +1000 (AEST)
-Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-77796ad4c13so335675b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Sep 2025 19:21:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758162101; x=1758766901; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=9AP4EHyPiENgOeGo6lnIyAQbYkHufakN6exnZUysaUA=;
-        b=M/Mhd3ZLD6qsUrZYNCDiz2V3/zclMuvhDEEqufLrmIcqY1dt6eSUtTiWeu0wN1kBQl
-         YOQB63BPKj1tg9+KgeVJX9vBEuAPG4T60aqy8KRujsxK7LnIUjI/QL9JzgKbrZW/0uE/
-         T4m6nBmpmhkf0m2mNRGYy1zY5Vbait26EzmLlUYRVxgRixEcVDq4BWQ/ZPvnkrQkHnAs
-         HjoZ532oy9DziVPDLYdYHY9FiuzJ7b88HBiSbihBg1ESQACwstvLgGq1KNF5tK/22kJx
-         /6r477gU7wBvFDTst2xIeWmdAmxv8EU1NPbvlyteiSZOILOWf5PlLCeXRj6F8+MbSkeI
-         HSrA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758162101; x=1758766901;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=9AP4EHyPiENgOeGo6lnIyAQbYkHufakN6exnZUysaUA=;
-        b=s2NaSs+m2ysVk7hs0p95p8n7NjdIwJuaPl831g9X9yMYGCZcFBWavQM9Jq5KFRu4UI
-         3kERdSdlF7YRQFod8tq8hah1MTXzPFWyVhYe0H/ar6WXsJOshB7HRdJBBH+8hJ/9/W4s
-         UYfIDGlm9vV+zSTHDmqHYW4ZGFizZyPV4NxcXCp+snkDmZbQ53ThwKS1iCqxBOI67s5I
-         YGxcusysA6I1dFe8p8/hOjt40SrmeFiB3KwmVKOQ6mDkjZUBZYhtv8WoMMpo0BRBfJVA
-         Pa5EDiop+d/6i6rUCn7H9X/e9G+TIefTJmzJoEFLUO9Ll1QCjvW2kmZhRPuBJdZl9QxP
-         bbzQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWKDifLjOcfNDDqCjOvTVQyIkytT6/NbuMxddiy1v1KGu2eLihX4IZRWPeRrUirLXaIT09BigyZYPsdjzk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwQKtXkSSdgAPv8k/ejNeTO1rYOqsP3QLeVpKahqd3fwkKL2wL1
-	SGvXAB7mC5KRnSxfgrQuWfJmWKtYY8ax17A0Fq8oAm8OXjL/JQgRhY7SqjqzrSV3+kywo1/teLc
-	+XgNJk8pXInC7k3AyI8NfQUNhFnOSKoE=
-X-Gm-Gg: ASbGncuOfM4Tf90rUB3zzRmoS0M6BYvPk704aqGgKEsM61NLK4joY4vu+usno1KMJMX
-	swtgg5VGXV3cX7/TRVodUk84aogADxpzoZQE72oF9YTu2aCJluQLwPktCJ+enBzx9UfcmoVcL63
-	HFpIo2k1CZn8VqRYsKQCiP649D34a0lmUfRYTCHaqHam82W6KkXonJMKJ406n0QiwSgzSXyLC1A
-	47ulRwW+8/nNF0TV3A8h04cfMA=
-X-Google-Smtp-Source: AGHT+IFNb+V//PSot2NdNe8uHywPWrpykUBYjIUlGCyD/yVXRRWQERUfDT3CjUAAlpnDFP1yuGL6Iyf8GhGufhzMKhs=
-X-Received: by 2002:a05:6a20:2590:b0:24e:c235:d7ea with SMTP id
- adf61e73a8af0-27aa85b47fcmr6198309637.47.1758162101119; Wed, 17 Sep 2025
- 19:21:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSNnK06tWz2xnh
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 19 Sep 2025 04:04:20 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58IDLQbU011417;
+	Thu, 18 Sep 2025 18:04:12 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=dxA6/c8hafsPZw566V/Nuvy0x6ch0JN3sXIN7B9j0
+	7s=; b=cbTMG83Ozyl9vRYpAbkqUH/CuMb5yFMO2MR1uboQQvC3oLIBuMpYJiOH8
+	TST0IpESlHUwckcXx7HpJ+9RyZUL5NIjca6WR86unbS8Q7TOFJJ6gkDUWDo9gRzY
+	vGF0nmhNpmddA2eOGBFQky2JhqpQIEEOjneacSL9O6KwSs9bqnFsIEUEGnbS19ML
+	ukF+HjOhGuCY/Giaa/scn/161Wckta8Bki9cHKCMSefv6aHyKtF1B2hQ7NulkvQs
+	i5z16fBBnA4C+/MuepAi3m9cwoPhi97GCAdQ8RZDBnuljMe35XEn3085h2OtvG0h
+	NNqOUqZ8ccLKC+VN6v5zDCTaOSEjg==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 497g4nkhpx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Sep 2025 18:04:11 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58IGg6Es022328;
+	Thu, 18 Sep 2025 18:04:11 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 495kxq047b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Sep 2025 18:04:11 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58II4A1C66650486
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 18 Sep 2025 18:04:10 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 904EC5803F;
+	Thu, 18 Sep 2025 18:04:10 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 69BA558063;
+	Thu, 18 Sep 2025 18:04:10 +0000 (GMT)
+Received: from slate16 (unknown [9.61.169.208])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 18 Sep 2025 18:04:10 +0000 (GMT)
+From: Eddie James <eajames@linux.ibm.com>
+To: linux-aspeed@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, andrew@codeconstruct.com.au,
+        conor+dt@kernel.org, krzk+dt@kernel.org, robh@kernel.org,
+        eajames@linux.ibm.com
+Subject: [PATCH v6 0/7] ARM: dts: aspeed: Add Balcones system
+Date: Thu, 18 Sep 2025 13:03:55 -0500
+Message-ID: <20250918180402.199373-1-eajames@linux.ibm.com>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,47 +85,83 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250917074812.4042797-1-kevin.tung.openbmc@gmail.com> <9bb9929a-8130-48da-983e-2901a7c3da36@lunn.ch>
-In-Reply-To: <9bb9929a-8130-48da-983e-2901a7c3da36@lunn.ch>
-From: Kevin Tung <kevin.tung.openbmc@gmail.com>
-Date: Thu, 18 Sep 2025 10:21:30 +0800
-X-Gm-Features: AS18NWCtilTwOalEuEaTOVX5c4Y78vBcx4wNNE9JzBKwGJPsuMQ80m1HKt2v-vk
-Message-ID: <CABh9gBew1=hbJvg1Mhg5dE7Lr_Z442_kbBX6zTs_6_C2NRyLbw@mail.gmail.com>
-Subject: Re: [PATCH v1 0/2] Add Meta (Facebook) Yosemite5 BMC (AST2600)
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=MN5gmNZl c=1 sm=1 tr=0 ts=68cc499c cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=yJojWOMRYYMA:10 a=Hy7NEVtaT5kuqzZ1rwQA:9
+X-Proofpoint-GUID: ledzNp0aPZ5P7wxnLV0nj5oMky5NKPPE
+X-Proofpoint-ORIG-GUID: ledzNp0aPZ5P7wxnLV0nj5oMky5NKPPE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwNCBTYWx0ZWRfXzcLury+xJ7F1
+ ZMSgGCyNbJB4fVeaaXvcoPKiANtwGV5RLAxoevtRcCPj/rSigbo8FHJJZsLQOilY7x7cYFuCG4X
+ WkD8L/Dzg2haYYXDAdUFxr/SfnLtIRSaOGSbo00tMRdqPs8x1aJ7064jSqEZTkJDJQc/4+Dz3+Q
+ ukeWGvUBnmrk4Gp1Vs16S+Ki7LXvNbYMC9cwAfhYtmLSWeVVIxLYpUlQV4Yu+2w1nBfsoTSuVKM
+ LGTzw/f+naifBsZeijg+FGo4FhpLZCuDnTI7a+xLHTZokglBdGpWuF7fkHypX4e7UpeZk0KXHJN
+ tcZv9CUhTFSW2FITBuvmRgxUaPHso7k9ynsuPRAW8vtAsBt2oP+rtO6+7jbHIBNQW9sYL7Kmwvu
+ 1WXA/WKw
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-18_02,2025-09-18_02,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 spamscore=0 priorityscore=1501 bulkscore=0 impostorscore=0
+ malwarescore=0 adultscore=0 phishscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509160204
 
-On Wed, Sep 17, 2025 at 11:12=E2=80=AFPM Andrew Lunn <andrew@lunn.ch> wrote=
-:
->
-> On Wed, Sep 17, 2025 at 03:48:08PM +0800, Kevin Tung wrote:
-> > Summary:
-> > Add device tree for the Meta (Facebook) Yosemite5 compute node,
-> > based on the AST2600 BMC.
-> >
-> > The Yosemite5 platform provides monitoring of voltages, power,
-> > temperatures, and other critical parameters across the motherboard,
-> > CXL board, E1.S expansion board, and NIC components. The BMC also
-> > logs relevant events and performs appropriate system actions in
-> > response to abnormal conditions.
-> >
-> > Kevin Tung (2):
-> >   dt-bindings: arm: aspeed: add Meta Yosemite5 board
-> >   ARM: dts: aspeed: yosemite5: Add Meta Yosemite5 BMC
->
-> The threading between your patches are broken? How did you send them?
-> git send-email? b4 send?
+The Balcones system is similar to Bonnell but with a POWER11 processor.
 
-Yes, the threading is broken. I initially used git send-email, but for
-some reason, only the cover letter was sent. I then sent the remaining
-dt-bindings and DTS patches separately as a follow-up.
->
->         Andrew
+Changes since v5:
+ - Add patch to add address and size cells to max31790 document
+ - Don't remove address and size cells in max31785 fixes change
+
+Changes since v4:
+ - Add patch to fix max31785 warnings
+ - Add patch to fix missing Bonnell documentation
+
+Changes since v3:
+ - Add max31785 to the max31790 document instead of to trivial-devices
+ - Fix minor formatting in dps310 document
+
+Changes since v2:
+ - Fix a couple of incorrect i2c addresses
+ - Document dps310 and max31785 properly
+ - Drop the UCD binding documentation update, it's been fixed
+
+Changes since v1:
+ - Add all the ucd9000 driver supported compatible strings
+ - Fix node ordering in Balcones device tree
+ - Improve commit message to explain addition of ibm-power11-dual.dtsi
+
+Eddie James (7):
+  dt-bindings: arm: aspeed: add IBM Balcones board
+  dt-bindings: arm: aspeed: add IBM Bonnell board
+  dt-bindings: iio: Add Infineon DPS310 sensor documentation
+  dt-bindings: hwmon: Move max31785 compatibles to max31790 document
+  dt-bindings: hwmon: max31790: Document address and size cells
+  ARM: dts: aspeed: Add Balcones system
+  ARM: dts: aspeed: Fix max31785 fan node naming
+
+ .../bindings/arm/aspeed/aspeed.yaml           |   2 +
+ .../devicetree/bindings/hwmon/max31785.txt    |  22 -
+ .../bindings/hwmon/maxim,max31790.yaml        |  12 +-
+ .../iio/pressure/infineon,dps310.yaml         |  44 +
+ .../devicetree/bindings/trivial-devices.yaml  |   2 -
+ MAINTAINERS                                   |   1 +
+ arch/arm/boot/dts/aspeed/Makefile             |   1 +
+ .../dts/aspeed/aspeed-bmc-ibm-balcones.dts    | 609 ++++++++++++++
+ .../dts/aspeed/aspeed-bmc-ibm-bonnell.dts     |   4 +-
+ .../dts/aspeed/aspeed-bmc-ibm-everest.dts     |   8 +-
+ .../dts/aspeed/aspeed-bmc-ibm-rainier.dts     |  12 +-
+ .../boot/dts/aspeed/aspeed-bmc-opp-tacoma.dts |   8 +-
+ .../arm/boot/dts/aspeed/ibm-power11-dual.dtsi | 779 ++++++++++++++++++
+ .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 769 +----------------
+ 14 files changed, 1465 insertions(+), 808 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/hwmon/max31785.txt
+ create mode 100644 Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
+ create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
+
+-- 
+2.51.0
+
 
