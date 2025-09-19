@@ -1,62 +1,76 @@
-Return-Path: <linux-aspeed+bounces-2293-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2294-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 070E0CAC592
-	for <linux-aspeed@archiver.kernel.org>; Fri, 19 Sep 2025 19:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 503CDCAC59A
+	for <linux-aspeed@archiver.kernel.org>; Fri, 19 Sep 2025 20:53:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cT38z2Ynmz2xcB;
-	Sat, 20 Sep 2025 05:53:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758311619;
-	cv=none; b=gZ3qFwSxkERZkeyuCuKN0LtkmTztTcFpxWfuj8ZECqUNXnS4kTNSav1BdChrVt/5LOGAIIbTt+CssOeG7q4koYfhz89pnPWK9kTSv7LI0VGC0AERKyDMJmWCRXZGK9e8NzPgGFh7xq50akNWSQkC1gwuSwxKiMOV+kfxwKcHA2veTNRScvBR6rA/3G6ljk20PIo/a7bYMM7IRgmk1TVU73C1igRCVE8Feur935fWS6ViE942pPiFSejhLj7/GyXUBRjnQlaNkWQvMZuHOnBjbzanPuQ6cge4zF2jmCapoEAUuwCfP6AZUtBQzq2IzFM3LBJ96ORBpXoik4Nt0Kll/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cT4V56tW4z2yQH;
+	Sat, 20 Sep 2025 06:53:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758315213;
+	cv=none; b=N0hiFBsHFtVD/kT15ldPgSJWpy8/Y5/xs2jvGaaNBfqLi3TuGwqKMiwUnGvj1Or4m1ZaWfoOoAHzQDLim9M3exKY2VYT4jfmt1XTj/GjGUkgOKYY7gC/iZaXDv2ePul/KVyOK/9LEM/9ecBrJJkZO2bOGpIXLMi2ALrQFhV5DXIsfbWer4C7Acxdgh+fp5n9f+OKtObF/M9zACPXkTmN6g5jK2vWXYhp9jibev5o1clHyiNGrHfBcPZf071mwEi2l+AvhRm99SxRu0Shi6OT/a4eEewhYqtZtDzPZr0716OAyqUPU5Ox5XWg5smov+cD7m9uh+ldcJKtlmO60yquNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758311619; c=relaxed/relaxed;
-	bh=QvzknwcqOGAIf0MQXaclEmaRkfVstN6hzNjrF+yWVco=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jiCBDRaxFojdodMxsXNB5mfR3ybqhQTBxFR48IVsDqMQhV6OBgJWhwA4Ey90QwhX4OxmxsFwN5nUi5lY4CF3v9T033dYLH6Mqqm9vx/uWYjdhpCvh0NEk12GHYacQrWFXnptrPJDJheOWPoq+qBIVZE7qR818keRA7NF3ipeo/IlwVC/yBJRumYmh6zKeLjAzuuT84OKj+GVPjDNTDvo+3DBnvZe4Vl6RE49WRQsZmKr7nrUhOzzWby+ppTur5e4dq6hZCVrXFBP/jL/8ppeSPG9eP8hxHoyNcDcEETuEmCH+Ad9VUaeqHReH5w6l0fEyAAreImfAWJD3EKVF2SHEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hz3mMJ8r; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1758315213; c=relaxed/relaxed;
+	bh=glOE5dMfucj+qnBmBQgUz3G1w2LwhX5scC5okr2TCTA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=flIzoVsIRkzxX1QcGdFjaHHzR8H8yM4RNr4N/WgghZfqkEiwszBLTQ2zlI5nMiVeklxIocipfv+/JiTf05pCKY2EILv3zIjQ0IVb5oq5lvbvtS2xZmC2iBU8Wv1c4Ry0hXIyUevogFemUWupx7sGdfp/pT1oX2WGWXIxTbdMzVMPr/7mkg+idZGNDdP2Du+eHs/uFPMUgKakovFh7M0TUd0YqglEPtEGKdJKnmqyweUvqco+DpOdcR5emrMrNuZ3ouOHtgB2xwYhManFx7RcRZdA4LNYfo57m6LGLLgG30fMZFMVqSxMAK7QL021ZRW6mYLTdh+KLWqP0PaP9wk2Bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cADIhg/4; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hz3mMJ8r;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cADIhg/4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cT38y1FlTz2xS9
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 20 Sep 2025 05:53:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cT4V51LZWz2xQ4;
+	Sat, 20 Sep 2025 06:53:33 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 1A85E44A19;
-	Fri, 19 Sep 2025 19:53:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FE43C4CEF7;
-	Fri, 19 Sep 2025 19:53:35 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 141E260145;
+	Fri, 19 Sep 2025 20:53:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97ABEC4CEF0;
+	Fri, 19 Sep 2025 20:53:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758311616;
-	bh=BhNfeUjBhFH3Y3XO7HytlVMbwMMe+nuaGzu6cpTp5HM=;
-	h=From:To:Cc:Subject:Date:From;
-	b=Hz3mMJ8rxvRkBOSq9Jl5+9krcajggcFHmyy/8scaXT+Kvjirh6Fh8Ylsyv2h56ulQ
-	 46cQAlRB1NWdUxXmIX3+WMHHTgSKp0uyXRSO0gZ3oYtrt3tXwfPEKDOPYCfWkaY0qz
-	 ryUgP1C4NloC6qW9/EWMgVU3ISCij13e18BPdHW7Q5zrQ63AmU0wJhiw0Kg2/X+1Tp
-	 HT8VH//kDlU3vIY61E0eqATpUFLgRpMce/4wcV9G1DCl2tfu9jWOes3G5vmGDoEWkt
-	 rqnDkyzqO1uY1cmstFFfI1tp13naHvdenJ8dTBuFFieSs6jXWQhtcaWs40Fyw6plaI
-	 tZHYct2FIXyxg==
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Stefan Schaeckeler <sschaeck@cisco.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] dt-bindings: edac: Convert aspeed,ast2400-sdram-edac to DT schema
-Date: Fri, 19 Sep 2025 14:53:24 -0500
-Message-ID: <20250919195326.2079446-1-robh@kernel.org>
-X-Mailer: git-send-email 2.51.0
+	s=k20201202; t=1758315210;
+	bh=E1ZV+UNqR3veyxuHfX6mAzdM+m+4EnKUxmuyWi+TK24=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cADIhg/49suBO/uC2IsFh0Z7L+funFZc48pMScM7SuZh2dhesxomGab/EsnPO8bdD
+	 BeF+aZ1x7wBm0wJcNgRvxBhY+NZIzza1GoorjrVhGAnu0KMJU8BsAQTn7ZnrZ8cy/v
+	 k2nEtYObhwAaQKGRaorlKhok+oho/mDNS94ZwHXxz3NqaOQv76rzs2SThvkFERpMSD
+	 agfFoSpllXKFRxQBQ5PmodugBYh6s0bt/MmWq0QpygbEpo+3JczH8bcI0ASmFpVxk8
+	 R2li5Bcz9H3VLWwBtpbG2PRrkEbZGjHH0SJa2xd1wasFzPTmaDC+Mvw8qZWv/QYP0y
+	 Fwj2Hwaj1icUw==
+Date: Fri, 19 Sep 2025 15:53:29 -0500
+From: Rob Herring <robh@kernel.org>
+To: Jeremy Kerr <jk@codeconstruct.com.au>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>,
+	"benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+	"joel@jms.id.au" <joel@jms.id.au>,
+	"andi.shyti@kernel.org" <andi.shyti@kernel.org>,
+	"krzk+dt@kernel.org" <krzk+dt@kernel.org>,
+	"conor+dt@kernel.org" <conor+dt@kernel.org>,
+	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
+	"p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
+	"andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+	"naresh.solanki@9elements.com" <naresh.solanki@9elements.com>,
+	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v18 1/3] dt-bindings: i2c: aspeed,i2c.yaml: add
+ transfer-mode and global-regs properties and update example
+Message-ID: <20250919205329.GA2192084-robh@kernel.org>
+References: <20250820051832.3605405-1-ryan_chen@aspeedtech.com>
+ <20250820051832.3605405-2-ryan_chen@aspeedtech.com>
+ <9d6660f0bf5119cedee824cf764f15838622833a.camel@codeconstruct.com.au>
+ <OS8PR06MB7541C0D6696FC754D944D45EF208A@OS8PR06MB7541.apcprd06.prod.outlook.com>
+ <03abda47219b8b0b476a3740c7ed2acc4b2b16dc.camel@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,122 +84,47 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <03abda47219b8b0b476a3740c7ed2acc4b2b16dc.camel@codeconstruct.com.au>
 
-Convert the ASpeed SDRAM EDAC binding to DT schema. It's a
-straight-forward conversion.
+On Mon, Sep 15, 2025 at 11:41:31AM +0800, Jeremy Kerr wrote:
+> Hi Ryan,
+> 
+> > > OK, but the ast2400 and ast2500 I2C peripherals - which this binding also
+> > > describes - do not have that facility. Given the 2600 is a distinct peripheral (as
+> > > discussed on the v16 series), this would seem to warrant a distinct binding.
+> > > 
+> > > Should this be split out into an ast2600-specific binding, to reflect that it is
+> > > different hardware? The reference to the global registers and transfer modes
+> > > would then be added only to the ast2600-i2c-bus binding.
+> > 
+> > I agree it would be cleaner to split out a new binding file specifically for AST2600,
+> > for example: `aspeed,ast2600-i2c.yaml`
+> > But also I think `aspeed,i2cv2.yaml` more better name, that compatible will 
+> > support next generation such like AST2700 .....
+> 
+> The ship may have already sailed on that one, as you already have the
+> existing compatible string describing existing hardware.
+> 
+> I would assume that the compatible string should be fixed for an
+> instance of the specific hardware, but the DT maintainers may be able to
+> provide some input/precedence on changing an existing binding, if
+> necessary.
+> 
+> If this does get changed, I would expect that you would need a
+> corresponding update in the old driver too.
+> 
+> Or, another option may be to keep the current generation ("v2 core with
+> compat registers") as-is (ie., at ast2600-i2c-bus), and introduce a new
+> string for the next - where the primary hardware change might be the
+> removal of compat registers, but it's still new hardware
 
-Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
----
- .../edac/aspeed,ast2400-sdram-edac.yaml       | 48 +++++++++++++++++++
- .../bindings/edac/aspeed-sdram-edac.txt       | 28 -----------
- MAINTAINERS                                   |  2 +-
- 3 files changed, 49 insertions(+), 29 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/edac/aspeed,ast2400-sdram-edac.yaml
- delete mode 100644 Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
+About the only place we use version numbers (without regret) is when the 
+version can be traced back to the actual verilog. This is typically only 
+IP targeted to FPGAs. The reality in SoCs is h/w designers can't help 
+themselves to not change things. In reality, there are almost always 
+some changes.
 
-diff --git a/Documentation/devicetree/bindings/edac/aspeed,ast2400-sdram-edac.yaml b/Documentation/devicetree/bindings/edac/aspeed,ast2400-sdram-edac.yaml
-new file mode 100644
-index 000000000000..09735826d707
---- /dev/null
-+++ b/Documentation/devicetree/bindings/edac/aspeed,ast2400-sdram-edac.yaml
-@@ -0,0 +1,48 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/edac/aspeed,ast2400-sdram-edac.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Aspeed BMC SoC SDRAM EDAC controller
-+
-+maintainers:
-+  - Stefan Schaeckeler <sschaeck@cisco.com>
-+
-+description: >
-+  The Aspeed BMC SoC supports DDR3 and DDR4 memory with and without ECC (error
-+  correction check).
-+
-+  The memory controller supports SECDED (single bit error correction, double bit
-+  error detection) and single bit error auto scrubbing by reserving 8 bits for
-+  every 64 bit word (effectively reducing available memory to 8/9).
-+
-+  Note, the bootloader must configure ECC mode in the memory controller.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - aspeed,ast2400-sdram-edac
-+      - aspeed,ast2500-sdram-edac
-+      - aspeed,ast2600-sdram-edac
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    sdram@1e6e0000 {
-+        compatible = "aspeed,ast2500-sdram-edac";
-+        reg = <0x1e6e0000 0x174>;
-+        interrupts = <0>;
-+    };
-diff --git a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt b/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-deleted file mode 100644
-index 8ca9e0a049d8..000000000000
---- a/Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-+++ /dev/null
-@@ -1,28 +0,0 @@
--Aspeed BMC SoC EDAC node
--
--The Aspeed BMC SoC supports DDR3 and DDR4 memory with and without ECC (error
--correction check).
--
--The memory controller supports SECDED (single bit error correction, double bit
--error detection) and single bit error auto scrubbing by reserving 8 bits for
--every 64 bit word (effectively reducing available memory to 8/9).
--
--Note, the bootloader must configure ECC mode in the memory controller.
--
--
--Required properties:
--- compatible: should be one of
--	- "aspeed,ast2400-sdram-edac"
--	- "aspeed,ast2500-sdram-edac"
--	- "aspeed,ast2600-sdram-edac"
--- reg:        sdram controller register set should be <0x1e6e0000 0x174>
--- interrupts: should be AVIC interrupt #0
--
--
--Example:
--
--	edac: sdram@1e6e0000 {
--		compatible = "aspeed,ast2500-sdram-edac";
--		reg = <0x1e6e0000 0x174>;
--		interrupts = <0>;
--	};
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ec0aba646e7e..b6800e86286a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8848,7 +8848,7 @@ F:	drivers/edac/armada_xp_*
- EDAC-AST2500
- M:	Stefan Schaeckeler <sschaeck@cisco.com>
- S:	Supported
--F:	Documentation/devicetree/bindings/edac/aspeed-sdram-edac.txt
-+F:	Documentation/devicetree/bindings/edac/aspeed,ast2400-sdram-edac.yaml
- F:	drivers/edac/aspeed_edac.c
- 
- EDAC-BLUEFIELD
--- 
-2.51.0
-
+Rob
 
