@@ -1,78 +1,82 @@
-Return-Path: <linux-aspeed+bounces-2326-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2327-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89C93CAC592
-	for <linux-aspeed@archiver.kernel.org>; Mon, 22 Sep 2025 23:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65516CAC5AC
+	for <linux-aspeed@archiver.kernel.org>; Tue, 23 Sep 2025 14:49:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cW07K1Prkz3cBW;
-	Tue, 23 Sep 2025 09:43:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758524591;
-	cv=none; b=i4VS5UDQBi07ybd/IAVOCZr92Cn3HFwrtop4a1+E0fv8NvOF9ot+8x1VRWObEeZ3DMdmjEuYOTCdIPybR6PYNTLU0dixcKmTjXvPyNNXFzX/IEbLwI+PLrJhx2BvvOd/fBPEOe7c5dp/o4Hd0n18Jb/vwc4ACUHG9nVCuFWjzYevPomgl8EGiBb74Ghwid/Yh4Y6OJjg/87VO6DFZ3r/LGAKbJjnU0vHiuK1A531E9yR2aPDZDX+6lTVwq0krw7ovuJ7/0JrHjeUzr2IZTf23NGD3Nub2AbN5YUgofQKz/Ji0T88TauQozbNWaEXYJLL4We5rS0vO/76CtNaGfwW+w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758524591; c=relaxed/relaxed;
-	bh=4VdrnFXMa9rFd83Zher/BcNQQzlodlm+IkoVXej7FCs=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=OaHmnnpoPQKDg1JiE1Qn3VlD4xen/gmhSbOtohHoKXYHLiCZikvbPUVfQDgG12Oc6BWSoyxLyfxY4iVuzOsG13imwN6ut695ohqThrtYYMIbhJffqOuYVbKXTA2V0VOGw2z3ddlnMKp2PewAQot5c2wXbH78l1MVytKsbYNO0t1/2uDZ4AAh0vhGpzr70jH5dnxHptvSo1tACHIw0D9gZ71Kccu99yKffS+uqk+SjQvcaD/sFROufMg3Uk7YNh/J6YtA00QeEOMjMR2fE/wXvU1kOsFaGIEJJ+LsByIlky//uMuUyw6q3OVcLaDb5BApHDM83iP+26eovAlG/52jMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JZMmU25l; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=JZMmU25l;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cWND34tbPz2ymg;
+	Wed, 24 Sep 2025 00:49:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c20c::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758638963;
+	cv=pass; b=Mf6AbJZdiLHyINsA+32S/sMBWqtRnwZErfZjxPbb+4c+J9LN1tJJS8Ycf71xZdPrSmwJAT/O5mmnzbioWHTTa+4TJp9B8Z84Z1yAleJ2vtgM4p+eR3LQWoH/3Dwe2XpFZrwU4YI1jz5ruv9GYXO9Su2LjHxeNTKiYkd/JwTy8x/TCmApfx/Nn2xPuaKkm3vwhDO9g0NeEkKwaBYxJX0dMUggo86kwQzGilMqEj0ZkXtwLkrJnJyYmSVNVVgJq48IT++5Sq8zA4k8q0BmIBP/FA71SZVDkbr5CNK92HBGElQwRwGO7dtaX+7y4EoLHh9nKEGhE0s0E7nASUmdidYcAA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1758638963; c=relaxed/relaxed;
+	bh=AohOVDANkkO+DZbBDlkrxdpVcEgQ8UeG5wnK4hfEl+I=;
+	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
+	 Content-Type:MIME-Version; b=mHaLMO+9jgJf3NKOgUvqObP3RCAa6+jOgs7C6ZkaOOQipSvwKKTd5PTvcrc4KrEy+hVmL0u3jzZgZV6xI2tlsySLkszAPI66RvLTM5LrbGPCYiaIxGtbGlW2Lj2R+JnDfYUtipSF72odTwIh/I1LGGOIBBkvCVvl89OJsouP20Vn3RBd2tDbMpNfYTd3NFQL1oZqKSzQjkUuAI/SF/It+DKNtd71feXAs4pJauVML6WSddjsPhjsG8DEfDgPFehu6IUodB/RNanYfmlr9e2/OHj7Zfw99iKiUfkuyYB1J5C/Gqm03HR0Wd6Gh5miNo3ewG3Huv+snpU1NKqLoTbFmA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io; spf=pass (client-ip=2a01:111:f403:c20c::1; helo=fr6p281cu001.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org) smtp.mailfrom=siewert.io
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=siewert.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=siewert.io (client-ip=2a01:111:f403:c20c::1; helo=fr6p281cu001.outbound.protection.outlook.com; envelope-from=tan@siewert.io; receiver=lists.ozlabs.org)
+Received: from FR6P281CU001.outbound.protection.outlook.com (mail-germanywestcentralazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c20c::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cVYwb1yZrz2xck
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 22 Sep 2025 17:03:10 +1000 (AEST)
-Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-76e4fc419a9so3965970b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 22 Sep 2025 00:03:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758524589; x=1759129389; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=4VdrnFXMa9rFd83Zher/BcNQQzlodlm+IkoVXej7FCs=;
-        b=JZMmU25lUnH0npR4t8CK/PUc3O8Stv7qGo07q9eB8MK0FrGCf03JyeSMHOrGcyvYif
-         E2ojeugTA5/aLkLQBS+jw8WPL2MU8L05k2LvkknvN9CpaENC2rQe/HgeUhtFigIgeKon
-         I+7kSCcJyOlyVnzA2ePI6o/QlRv10yHkBFKYZbrEyica22d5HK3MP3EE+CX5DKgmFEHs
-         c1PrMYqa59rGJLbbBHO25AmYwnwgr+sVh10d62cP5rBRYz/MGAkw3+azbmKqOMmH7qg5
-         PtmIprvuw6k+1SjjD7+UkEYkXs7o1kZMkVHtq/UXQ2N1N8YawAmiOveyDtLyNnFNF6BD
-         k/qA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758524589; x=1759129389;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4VdrnFXMa9rFd83Zher/BcNQQzlodlm+IkoVXej7FCs=;
-        b=W0I+n3U4mI8okASOysD7vi4YRLONWSjJDQietZte2Jp9Jv7Uey7GqTZA3wEDIUJl2S
-         YLpJumnpqd3Xdcjgerpd4pz0nf4Uvq2Y5Hrzb2L+/nMo4BGxMAVyIDepjwCEcmfAW70b
-         OWqodQfbpT5dm5ZM9Xecjf+8cvXEZlRMRSMUufjuunxLZMozjtt0w7XZhxxTPk0vx93c
-         7vh5GhYh0eImRZ5oPWSASR3Ag2OcAdfzHqfWQ/vTWzeRDv0ik6ekUZeFt8uTFEz/vLGz
-         9brVKn2H0vBH8KHHKO5kufssPnHIMTktSkrnfA/8bMhBc8pzDg22r6IGTNPdB5oNDheJ
-         uhJQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVC85xbRCAhLzfkrv2nmT8h8gAZKo/5bg0Vm7IkCq5WMZqz8BnvuWz5q+vWZCqHCWWqNP2aIAWrvG0Ekiw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzW1H8AbvHYuEZKw7mxrQAgtzdBk5eUgguy3yvG5lhHDaitkn0a
-	Dw+nSbwM4eZGVDn/bAU2DY2e8Q50d4gpannUBrnfJABFKucLDtAdqVoy
-X-Gm-Gg: ASbGncuq+mu5nSz3/3TshMRE7YOPbE823gViU/8hEF+lnZSvLcYHg4kRMMnFupf1DjF
-	2SRXoIGbZVuvUD3Gm7wto17nqda2nsiFGuVBjzCwHMpGP8+PyXa0fFWVqqo8Gr8rE4J/0F3mHoW
-	/9OYYDNTwLDBi6hwgJ6+BkU+vF6oFyOM8ieaXSKV2skjAtf6EyeFTcYxLOWS0AjKBkt0MQGnBzS
-	IPT0sFXkSRD+cWGg7aLcm2cy7VoiTpd8n46nUtOYqQqMw9vRWAFFKFJwyBL1Y4g1GeD2v+2/tkE
-	fATNCJ29qt7Y/bZZ1lUk2XTEgXPy3ael5GvUVJhozTOXXU4sSXS9FJqHa1Il+72B50qrkUXDZcu
-	Vf/zubhGvKrX7fc7TFWzEl3guoMX6hjf8G98Ndo0dI5ToK3URZZFWH0BCW/DNBe2D9ic=
-X-Google-Smtp-Source: AGHT+IGJ48A08lAcVKcYdk0WkcJU/k9veu86ugQxlnRCGNKMTcl5D3T3DnGhbnyIKjGQKizhhH8t5A==
-X-Received: by 2002:a17:903:2f4c:b0:263:d6b5:fbe1 with SMTP id d9443c01a7336-269ba56738bmr118340355ad.55.1758524589057;
-        Mon, 22 Sep 2025 00:03:09 -0700 (PDT)
-Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-270cdb02c3bsm61149115ad.102.2025.09.22.00.03.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Sep 2025 00:03:08 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-X-Google-Original-From: Leo Wang <leo.jt.wang@fii-foxconn.com>
-Date: Mon, 22 Sep 2025 15:02:48 +0800
-Subject: [PATCH v2] ARM: dts: aspeed: clemente: add MCTP over I2C support
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cWND249w7z2yGM
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Sep 2025 00:49:22 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=IaB6W1oqErsVetN9GY2lQJkg3K+mK1R8cgiCvgioZyohnxFpP4pGVPUseq6+MvyKL3NrOp8xLu0kiJCF0VnsGw+avQEFjwcga176dtFIvHiBFtW/HjCv9QZxGc+1hJOCUuVCkbRqsbnmatArFefvMYlkz++uxAJfOkWKk8r6AyfvNSoQTHmcgW+42rqRWN9UjFFPAT7rUjnNAGRHmsllMSWUi900KA8JFs/bgjOTgQT+9N3t+gFD1W4PXMxoRdmbMkbeRtjyocQcvaSnuoDSLx54wkkfN1rev+i8uOeKgssjlSgo6pVGj1k5t7+GFU2RoU+RUX2C+byoo/40CXwdYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AohOVDANkkO+DZbBDlkrxdpVcEgQ8UeG5wnK4hfEl+I=;
+ b=mZz4RMVWYMuIUvjK1cy6smY5oiLEdyd1pAQLsdvKx/OW6O9CyR61TkhDEFjUs8eTf/KBZWrVKXk70cV+yJhB64wFQeEFKKZi3StLbMYiYF9oHFxmhxJSZt7mlSZYP2+VD7Q9IpvUSFxYXbsIjfDpKaeJWQ9uQQnU6quh/zVeN7Q/r1jueqLE0zXaM7aRrxIqqo6wXcB2VS5pcksym+Gw5gh+ajQSDpgLJhBkDYGz4joNdBBqi2tMFi3t/H4cAE840GPjONiQ1NzB7eHl6JEvtuzfNVrLfyd1l6uAD/vqcEu53subZ91CF0J/TT2X1EFUYQra0gIqJEDvQtfA3Fa7sA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=siewert.io; dmarc=pass action=none header.from=siewert.io;
+ dkim=pass header.d=siewert.io; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=siewert.io;
+Received: from FR2PPF7274BE471.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d18:2::4f)
+ by FR6P281MB5324.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:197::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9137.17; Tue, 23 Sep
+ 2025 14:49:00 +0000
+Received: from FR2PPF7274BE471.DEUP281.PROD.OUTLOOK.COM
+ ([fe80::fc7d:1a08:950f:3971]) by FR2PPF7274BE471.DEUP281.PROD.OUTLOOK.COM
+ ([fe80::fc7d:1a08:950f:3971%7]) with mapi id 15.20.9137.012; Tue, 23 Sep 2025
+ 14:48:59 +0000
+Message-ID: <0c7a28b7-8d6d-4f91-ac6c-8cf37e128139@siewert.io>
+Date: Tue, 23 Sep 2025 16:48:57 +0200
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: add asrock x470d4u bmc
+Content-Language: en-GB
+To: Rob Herring <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20250919185621.6647-1-tan@siewert.io>
+ <20250919185621.6647-3-tan@siewert.io>
+ <20250922200738.GA1124791-robh@kernel.org>
+From: Tan Siewert <tan@siewert.io>
+Autocrypt: addr=tan@siewert.io; keydata=
+ xjMEXY4MwBYJKwYBBAHaRw8BAQdAdDPxHO4UUyhKcZXkztTv4iVAbjk/+F8ayCYnegO4q4zN
+ HFRhbiBTaWV3ZXJ0IDx0YW5Ac2lld2VydC5pbz7ClAQTFgoAPBYhBJ1bd8XzFb0F9Kx5LnjQ
+ kBYSrhG1BQJnqiY3AhsDBQkSJuqzBAsJCAcEFQoJCAUWAgMBAAIeBQIXgAAKCRB40JAWEq4R
+ tbtDAQDyPybWLk2EYMeY+vv/WID8hk18+jp3fZCNp9aJp9GkJwD9GeQNvCO1LPDUjkMQqf8d
+ DgMM9pmsvbJUFfViYbflbQ7OOARdjgzAEgorBgEEAZdVAQUBAQdAjtzTYeMaO9yG3M1uBtQy
+ JB57UJXf+m+mNDhWkOY69DADAQgHwn4EGBYKACYCGwwWIQSdW3fF8xW9BfSseS540JAWEq4R
+ tQUCZk72AwUJEibqwwAKCRB40JAWEq4RtUkGAP0R8RmddZqdGdqdod1MkVXpw/z5OOptToXf
+ za1W8nsGmgEA5gvQzkN1LJ8oP9LB8YGAmJt82tPvJCmi4WzesI53kQY=
+In-Reply-To: <20250922200738.GA1124791-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: BE1P281CA0284.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:b10:84::8) To FR2PPF7274BE471.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d18:2::4f)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,124 +90,212 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250922-leo-dts-transceiver-v2-1-d2dc0e24a70b@fii-foxconn.com>
-X-B4-Tracking: v=1; b=H4sIAJf00GgC/32NTQrDIBBGrxJm3Sn+IKRd9R4lC9FJMpBoUZGW4
- N1rc4Au34PvfQdkSkwZ7sMBiSpnjqGDugzgVhsWQvadQQllxE2OuFFEXzKWZEN2xJUSkndaknZ
- K2hn68pVo5vdZfU6dV84lps95UuXP/u9ViRI1KTMKrUyvP5bd8nZ1cYeptfYFSinqOrYAAAA=
-X-Change-ID: 20250918-leo-dts-transceiver-edc31e3c21af
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, bruce.jy.hung@fii-foxconn.com, 
- leo.jt.wang@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758524586; l=2794;
- i=leo.jt.wang@fii-foxconn.com; s=20250618; h=from:subject:message-id;
- bh=9m5R4VJWufe7k7yurqqw3z2y+D8AnXNo6e7S0rTybvc=;
- b=H587RMaWwa8qjdxlMqKskZgP2x92LSHN4XC0VLs+x1k0fF8sSLgQ/oghPLxbeWH2ZTr3udvki
- ykREjgsCdz8A2JTncdm266pra8yLsRJBoZ5qb8m1GYIjQptIuBJiPlC
-X-Developer-Key: i=leo.jt.wang@fii-foxconn.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: FR2PPF7274BE471:EE_|FR6P281MB5324:EE_
+X-MS-Office365-Filtering-Correlation-Id: 332eec65-bed5-4af7-6b64-08ddfab05478
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?WVlabVlvcWtzQjRjbHQySksxYkpGSVZlWTJXSFMwUXJQZ28yeDk2QVQzMTQx?=
+ =?utf-8?B?MjJMR1YzVThZaEROTDB4dmJLYXlMS2JDZGR2SmJZUVdpdVIvUitrUXJTeGI4?=
+ =?utf-8?B?SG9oSU1OQXNLeFlQeXdDY0ZoR2hPR3lFVktMSjFSZE1RQnh5dFAyZStSbzdI?=
+ =?utf-8?B?Y2dLM2RidjlnclNDZnhaaVlSUnhyYkh2ZjdIU280SVh4cG5sbDBFVERnY3d4?=
+ =?utf-8?B?SUF3TXowMWxpY3lleEdTS2RJMC96NDg2d3lYSEdOendMMjBQdXpmMUZWWXpR?=
+ =?utf-8?B?cnk4NGlpc2ZIWC9FdkxrK05hS1dWTmNhZEhXKzdMOENxYXV1aHB0eTg3QzZR?=
+ =?utf-8?B?TGMxVlBRS0k5YkRTTHdSNTFYN3VGSnI0bGpDVzk2KytsV2NGTUh3cGw2NjNk?=
+ =?utf-8?B?ZGF2S1dXL1BRWDByRGMzOVFLazlnVmhMUTdSSmZRTVdMRVZRYjJuQnN6TjNj?=
+ =?utf-8?B?Rm1BY1dPNkJrU3dFcGJRNkpZeGdqOVd3VTRSNW1ub0RieEwvRUc4RFBsVzhi?=
+ =?utf-8?B?c1hHSkZrNVg2Nml3OHFaY3o2OGV2c29qYThhMitqMXNXZUJQendDOUUyZU9B?=
+ =?utf-8?B?N2lzKzVrUmUzSTBqb2U3V2JwdGZpbjl1SFRqQWxqTHkxK3RMM3Z3SktRSDNy?=
+ =?utf-8?B?UnhPVFNqd2E5THV2UEFxVWhnNnV3TE9jZEVBYTFXUmdvYXpEUjZOaWI1Uzlp?=
+ =?utf-8?B?UnFUYkRvN05tWkFjemVkaFNPM3NwM2R1OXhaVllZRWlhL081SXpQRkdFeVU5?=
+ =?utf-8?B?WXArUktIdHFFRjNWdW55T215N2o0NzQzRlFIUVA4SXFsaXp3K3pGTjM1N2JI?=
+ =?utf-8?B?NDFpdkpkcHE5enV0U2pFempjcFQ4b2h4TnNJM3lpT21iM3l0VFhoRjNuVHBN?=
+ =?utf-8?B?VThFQkU4dFV2K2YrbS9tUWJGMDFaRThjTFFPaExUNEo0VTRyQzBDMlllRDVz?=
+ =?utf-8?B?ZkJOSVJzVEhad2NlVTBlaUpxUVRmY2dHRURnSi9aejFHeFhpWldMSnFmZVlI?=
+ =?utf-8?B?TUNmdGFnZlZHUXRKeVZDWnF5RHZ1QlY3MndUaW9JODF2Ykh6WUN4dVVUOVVi?=
+ =?utf-8?B?WnJ1ZTdPYTZzQStjSVFJNXZEMC90cGpPazNXMjdsRG52UWJWNFJIdWtaVVAy?=
+ =?utf-8?B?SlgzdW9CazBBd0RrNHQzNEZGZzc1TEZjQ3lBdDZ0ZzdPa20vR2RNU2wyZmZT?=
+ =?utf-8?B?MEl0dG11YzlMc3hucGc1alp2dTFmK1pxcnh1T3p2cUhERzdyWWhnZlFNWUpE?=
+ =?utf-8?B?NjRhSXFFMTN1RjFwRnRZamxhWCs2OWZmdTRkT1hBODNhaHNGeVlHT1p2Y21U?=
+ =?utf-8?B?dlJ6Zm1KNE8vT2kreWRENkd1MHMyUnlWVFZmbzZqdWRVZXZEeUJZU1FSaDZD?=
+ =?utf-8?B?clJYZHYzSU1yZEI5RVVDM3NDWnpxbmMxOXUyUnBVWjZST0xOeE9GMnZHUlhw?=
+ =?utf-8?B?RHNjYWR5dFp2NkVOZ2RYdnBsTEpidEtRTzMvSlU5TTJGenlQMWhMR3pXTFZT?=
+ =?utf-8?B?OWJCbURaUGxTR2FPTjlLWkVzSCtIM1ZuZi84NlI2bDVHbzVnd1YybFVMV2k3?=
+ =?utf-8?B?c2Y0TDNPMkc0SlRpSkpYbUo4UWpkWFYwbUZNWFZKeWV4Zm5RK0RuWG55amZ1?=
+ =?utf-8?B?QlNpMFBTSXdCTENQbnhBUFVjTFZxN1J5L0E3dFg1UXNGTnhETUpSUktzaUVY?=
+ =?utf-8?B?aVZYc3JWY2JNZzdUeUFFb2l3eUEzdGF4UUltWlpSb0NobzRxQyttVElYS3Jh?=
+ =?utf-8?B?VkswZUtSazFTWHZvMlJjMTZST0lvRkNTNTBEcFp6eGNqc1RXeWtveGlWZjRF?=
+ =?utf-8?B?cElLbVNaOW5ncEFsdE1Dc3NDS3FsNml4RDVCLzJpRlFsVU1ZaE1CRjkrZU5j?=
+ =?utf-8?B?OXU5QzdZN0dJOEMvZTlzWndaUzRjM2NlSTNSNndmSVNuYkVEVW1jT2IyNnZQ?=
+ =?utf-8?Q?cEjtOg6solQ=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:FR2PPF7274BE471.DEUP281.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(1800799024);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?utf-8?B?MjJiaXlJQ2Rha2tDMy9OYkFzL3BmL1h0NUNMSmdWV2J3SmlBTnJFL2NRdE5P?=
+ =?utf-8?B?dmFVWm9OUkhzSXJvV1hnUlIwS25nTU4vTWgyK25NRHFVaW9uNzFNVTYwaUhX?=
+ =?utf-8?B?WGNKdzRDNnJ2WHN3Q1NnSzlOUDR3NFNOMW03dGRJSlh1ZE5tempIQnRBSDZK?=
+ =?utf-8?B?azNxUm82SEVoZHVTSWtWaTNJOWtwSHRQb3o1MFF2S0xvOUtwOXpwa2Nkdkc2?=
+ =?utf-8?B?MnZFeEhkMkxOQkJMckpzYkRBa05iZkcxRjNiTjJGVjFxNWwyb3dJbVlMN3Uw?=
+ =?utf-8?B?Ung4WjVETnI0K3BWeENSSGYwRDNsUlVBOWFyZjRyM041VWZyNGp1d0M4TVl6?=
+ =?utf-8?B?YU02Tk1lT0tkUzlma1huaEMvRXVYNE5qMGpjODJNYlZYUFpqdzdMaWpKb0dh?=
+ =?utf-8?B?a0IrTG9mNnJDeG42dVc3dlRHT2ZXdHMzMGw3c1MwSDhGOFpTMUNqRmk5Y3lZ?=
+ =?utf-8?B?N1NjSnJ2TmlSNlNyVDU3dlQ1NmwvWFB5RjRvaWE2Qk1Ia3lyaDByTi9yNGZC?=
+ =?utf-8?B?S0VwQmFJbExhajNyYWFzN0cyZkR1eFp3KzBPWHlSQ2o1UUl2RS9OeXlYbU5M?=
+ =?utf-8?B?dmk2QlNTdFBrK2RxTXgxSnFqQnluWDFhMVhRQ1Fkdk9pdHRlV2pwV1kzVElN?=
+ =?utf-8?B?S2tyYXF0L2JXUjNGeWlOVFh5a3RTN1ZicjVKcGJRRWx6NTJWcTlqUXJIUjhM?=
+ =?utf-8?B?VEtDNFRKV1hRS0EwL1lrYjNIWFhMT3JJR3NRVktRTkZNdnlPazJwYm44bE02?=
+ =?utf-8?B?aHMrYTlSaDlSQ0FzS05PMHlqNDVkZnA5dUJLNzNRRWIrYXE2T215cFM0dDdJ?=
+ =?utf-8?B?Qm9ZVW4zdmxrV3phZTJPSW1teDVuejh5ZElUSUZ6UkxjTlV1aUtoclFoZ1ZH?=
+ =?utf-8?B?NGlva1dMczhGeGY2M29uSGdKZGRxK09UcWd2Y2dZUDlDcGpaeHBBZTdHVWdX?=
+ =?utf-8?B?YmI1RE1hN0dLN2xNc1RuUDFCQ3B4UWZUZksveUFXQlhxaDZ6VklpRlU0cFV2?=
+ =?utf-8?B?NWVsMllXR3pXR2wyZkVZWVpYOURUNTRmOUUvWnJoV2RQdFpQSDRMUnpxNzBP?=
+ =?utf-8?B?SW82RGpEV1crZTd6emxtL0kxYVNUZ3dscDRXNURuMEVHeGRxNDgrelRXMUVt?=
+ =?utf-8?B?bnJQSGNyQlBiOWV1NXRmWnBvZ0pNMWd5anJrME90YVBGSWhXYkt6Ry9SenRk?=
+ =?utf-8?B?SWdEajc2Skc3YndFYjhBVGxBeDJic1JCL1UxMVFiK1kyMWtVSUVIWG1mbXI2?=
+ =?utf-8?B?WWVpdFdEc0l6elVXOTZtdmZ5WUxhRmxZbUdkNTRKRmJXeXRURlNJQ2x3cUUz?=
+ =?utf-8?B?MWQrVzV4TnJ2dzEvSG52Q1E1ZzdjeU1NaWpjeENwdXR3TVZTUEQxWHdqQ0Zx?=
+ =?utf-8?B?WEhmVFUxcjZySVZMcEZGTW5xTFpNc08xTm1OU3BvSUsxeit0bkw0d1N6RkdH?=
+ =?utf-8?B?ZFd0b2QrTmxIRHVPK2pzOGpCbitvellHaUhCd3dwMjEzRmMzRVFvUGVXeWtx?=
+ =?utf-8?B?ekdGaVVDc3R0YUl6SU5GcGxyU1VPdlZ4UVZWZ3dmSmhHRVpaTGpWWFBtYWNR?=
+ =?utf-8?B?d2hWeW9VZHlwVXdmZm4yNnhxZzArQjdDSmlMUXJwdlRjMTFzYllZSXZoTS9u?=
+ =?utf-8?B?ZldzMVlXbTd2aFVHNnlGNU5EbkR6V29RMWdCYVRrRy9pdVBpWTQrbEdTTVlJ?=
+ =?utf-8?B?QUpSZDNjdDMrRmU2TUZjbW5tM0FQSU1yU091YVNwZVJnTGJNMHkwSVk2SDBE?=
+ =?utf-8?B?T2dFRzdxNnJKUzlIOFMxa1FWRkJ2WlpaN2tZSTFCSlVJUHFNVHdJbWVoUmdW?=
+ =?utf-8?B?c0FuU2NkOXlrMGpjQTV6bUdtdlc4U3dBOVQvZ0hTVXdYQ1dMMmFlSzF3QkhI?=
+ =?utf-8?B?alBSRGFKQTJaRDllaXlKRGY1SGlOcUs3Yy9JL01xWnVuaTZ6anpjZHBTVmk1?=
+ =?utf-8?B?NXdCSUNobFBkbjFLQ1NXSVZRNmpaTFBqTHMxNG55ZVc2aFF3c1VURXh4b0xH?=
+ =?utf-8?B?UllFc1FCaHpBZnhLbHFwSHJzWXM4cWpPRldVc0RSckk0Yk9vUVNLZmFGSEF5?=
+ =?utf-8?B?RUpMQ25aU1lMdFNiR1NCT3FmdjZqR3VGM29xMXU4RDZCZGJsL0xBVG9lRitW?=
+ =?utf-8?Q?TBOo=3D?=
+X-OriginatorOrg: siewert.io
+X-MS-Exchange-CrossTenant-Network-Message-Id: 332eec65-bed5-4af7-6b64-08ddfab05478
+X-MS-Exchange-CrossTenant-AuthSource: FR2PPF7274BE471.DEUP281.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Sep 2025 14:48:59.7289
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: e8b4abbe-444b-4835-b8fd-87ac97451a7e
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: tfklPEcjSd6h1+tPfqKvqtAQQ1XPovVDFTabPAvQK4vqz9MUtRX+nNP/LcC0cjFS
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: FR6P281MB5324
 
-From: Leo Wang <leo.jt.wang@gmail.com>
+On 22.09.25 22:07, Rob Herring wrote:
+> On Fri, Sep 19, 2025 at 08:56:18PM +0200, Tan Siewert wrote:
+>> The ASRock Rack X470D4U X470D4U is a single-socket X470-based microATX
+>> motherboard for Ryzen processors with an AST2500 BMC and either 32MB or
+>> 64MB SPI flash.
+>>
+>> This mainboard exists in three known "flavors" which only differ in the
+>> used host NIC, the BMC SPI size and some parts that may be un-populated.
+>>
+>> To keep the complexity low with the BMC SPI, use the 32MB layout
+>> regardless of the used SPI or mainboard flavor.
+>>
+>> Signed-off-by: Tan Siewert <tan@siewert.io>
+>> ---
+>>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
+>>   .../dts/aspeed/aspeed-bmc-asrock-x470d4u.dts  | 345 ++++++++++++++++++
+>>   2 files changed, 346 insertions(+)
+>>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
+>>
+>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+>> index aba7451ab749..fae97b5183e5 100644
+>> --- a/arch/arm/boot/dts/aspeed/Makefile
+>> +++ b/arch/arm/boot/dts/aspeed/Makefile
+>> @@ -13,6 +13,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+>>   	aspeed-bmc-asrock-e3c256d4i.dtb \
+>>   	aspeed-bmc-asrock-romed8hm3.dtb \
+>>   	aspeed-bmc-asrock-spc621d8hm3.dtb \
+>> +	aspeed-bmc-asrock-x470d4u.dtb \
+>>   	aspeed-bmc-asrock-x570d4u.dtb \
+>>   	aspeed-bmc-asus-x4tf.dtb \
+>>   	aspeed-bmc-bytedance-g220a.dtb \
+>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
+>> new file mode 100644
+>> index 000000000000..bae2b521f708
+>> --- /dev/null
+>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
+>> @@ -0,0 +1,345 @@
+>> +// SPDX-License-Identifier: GPL-2.0+
+>> +/dts-v1/;
+>> +
+>> +#include "aspeed-g5.dtsi"
+>> +#include <dt-bindings/gpio/aspeed-gpio.h>
+>> +#include <dt-bindings/leds/common.h>
+>> +#include <dt-bindings/interrupt-controller/irq.h>
+>> +
+>> +/ {
+>> +	model = "Asrock Rack X470D4U-series BMC";
+>> +	compatible = "asrock,x470d4u-bmc", "aspeed,ast2500";
+>> +
+>> +	aliases {
+>> +		serial4 = &uart5;
+>> +	};
+>> +
+>> +	chosen {
+>> +		stdout-path = &uart5;
+>> +	};
+>> +
+>> +	iio-hwmon {
+>> +		compatible = "iio-hwmon";
+>> +		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>, <&adc 4>,
+>> +			<&adc 5>, <&adc 6>, <&adc 7>, <&adc 8>, <&adc 9>,
+>> +			<&adc 10>, <&adc 11>, <&adc 12>;
+>> +	};
+>> +
+>> +	leds {
+>> +		compatible = "gpio-leds";
+>> +
+>> +		heartbeat {
+> 
+> led-0
 
-Enable MCTP communication on the Meta Clemente BMC board:
+I guess `led-heartbeat` would be fine too, right?
 
-- Add an MCTP I2C controller node at address 0x10 on I2C0
-- Mark selected I2C mux channels as MCTP controllers
-- Remove unused "i2c-mux-idle-disconnect" properties
+> 
+> This should have given you a warning. You did run "make dtbs_check"
+> check the warnings, right?
 
-This allows MCTP devices to be discovered and used for
-management communication on the Clemente platform.
+I did and there were no warnings, even after a full clean. The full 
+command I ran before submitting was `make dtbs_check W=1 
+DT_SCHEMA_FILES=Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml`
 
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
----
-Please consider the patch "[PATCH v1 1/1] ARM: dts: aspeed: clemente: add MCTP over I2C support"
-withdrawn.
+Maybe I am missing something here?
 
-After further review we determined that enabling MCTP in the Clemente device-tree is not
-required; the affected devices are managed through other mechanisms and adding MCTP nodes
-would be unnecessary. To avoid confusion and noise, please ignore the previous patch.
+The dt-schema version I am using is `2025.9.dev1+g4b28bc79f`.
 
-Original patch message-id: <20250918-leo-dts-transceiver-v1-1-3e2580325edc@gmail.com>
----
-Changes in v2:
-- Withdraw patch; no functional changes
-- Link to v1: https://lore.kernel.org/r/20250918-leo-dts-transceiver-v1-1-3e2580325edc@gmail.com
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> Use "function" to define the function.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-index a614f947dafc9a6628c3f3d45b62ff3ca9d2b618..a2f0ed6e7bbefbdcec33f7ddebdf2de62adec164 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-@@ -269,18 +269,23 @@ &gpio1 {
- 
- &i2c0 {
- 	status = "okay";
-+	multi-master;
-+	mctp@10 {
-+		compatible = "mctp-i2c-controller";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+	};
- 
- 	i2c-mux@71 {
- 		compatible = "nxp,pca9546";
- 		reg = <0x71>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		i2c-mux-idle-disconnect;
- 
- 		i2c0mux0ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux0ch1: i2c@1 {
-@@ -332,6 +337,7 @@ i2c0mux0ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux0ch3: i2c@3 {
-@@ -457,12 +463,12 @@ i2c-mux@75 {
- 		reg = <0x75>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
--		i2c-mux-idle-disconnect;
- 
- 		i2c0mux3ch0: i2c@0 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <0>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux3ch1: i2c@1 {
-@@ -514,6 +520,7 @@ i2c0mux3ch2: i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <2>;
-+			mctp-controller;
- 		};
- 
- 		i2c0mux3ch3: i2c@3 {
+Thanks for your review, Rob! I will fix the led naming in the next version.
 
----
-base-commit: 1937f781fe7fcde26e537e74dfc6097fc08fc9bb
-change-id: 20250918-leo-dts-transceiver-edc31e3c21af
+-- Tan
 
-Best regards,
--- 
-Leo Wang <leo.jt.wang@fii-foxconn.com>
-
+> 
+>> +			/* led-heartbeat-n */
+>> +			gpios = <&gpio ASPEED_GPIO(H, 6) GPIO_ACTIVE_LOW>;
+>> +			linux,default-trigger = "timer";
+>> +		};
+>> +
+>> +		systemfault {
+> 
+> led-1
+> 
+>> +			/* led-fault-n */
+>> +			gpios = <&gpio ASPEED_GPIO(Z, 2) GPIO_ACTIVE_LOW>;
+>> +			panic-indicator;
+>> +		};
+>> +
+>> +		identify {
+> 
+> led-2
+> 
+>> +			/* led-identify-n */
+>> +			gpios = <&gpio ASPEED_GPIO(D, 6) GPIO_ACTIVE_LOW>;
+>> +		};
+>> +	};
+>> +
 
