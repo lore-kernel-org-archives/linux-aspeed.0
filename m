@@ -1,77 +1,85 @@
-Return-Path: <linux-aspeed+bounces-2350-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2351-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8FA1CAC5B8
-	for <linux-aspeed@archiver.kernel.org>; Sat, 27 Sep 2025 00:41:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 670FACAC5B8
+	for <linux-aspeed@archiver.kernel.org>; Sat, 27 Sep 2025 12:26:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cYTCY669hz304l;
-	Sat, 27 Sep 2025 10:41:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758879468;
-	cv=none; b=gk2LPUWRiN0kAWyyuGNEsyvVlSTJ/tXbwotcpM+oY8Prif4mGKCFNeLwjOJYBxzsZSPHZIrI+6e+c+M8/IH7dXl8tczC941T9isjKDcoNbWGq1qnCKvkYsx/dS9CQWEeGL8EiwKct7oNriJ18CyJq4SrNnt65bvidPZV5YsnbIiLYjqqIDCK9g+7dFxjF7Dv345oyKTlasx5T6Hjs5cqLm9zEaqEZC3AoWU8It3S8I+IfDbG+qksgOi+N/CXod6jzDcvw+uVWkk1O/CZNt+pYqEcrLuvsoTbD5QeSi7ZVnb6fMvKHgLr9Nh6VYelvKZJ+53QwzclctqlP4CDphwzPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cYms61MPPz2yVP;
+	Sat, 27 Sep 2025 22:26:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::435"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758975978;
+	cv=none; b=J8XwGsrwfy9xssAWE7CIoFzfzFWM6CGZSZIfg8taEj4twS4bUIVDZvHPti0kbk7Ro3JS3oYAUiUscWh+KPa2ht2wtibgK1zjkTYlA+uqBVR4ZiG5AeB/PHqjLFENOKOXOkUR+F+Nr3eAKFXfE+n8n4T+8Cd5FHztypWLCBJArn59FRiilT3tMFKYZnZWCV3uL7x0zFUToQecaZcnUkzUIwC7OIeqezsK79zMuALc0SI6KFWjW3J5f+61Zoxx0ViLYkLiLR+nAg3patN3c7gCVJtEKiaoLlHmI8Vc7ihp+VtUrzyx4/HqD1yxj4smL7D2CJtZDmTTWOEfb0ezkhtt1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758879468; c=relaxed/relaxed;
-	bh=UoStl/6O0pPwy/s/NQABzja2ZbIsUSjfUYP6v+Jyo+o=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=F6O7bs2KPDrxBzHuXKFWNVJNM9yvYVBWXKgPFqodhh5R5j9kvOvEv9D7lsmxqyFaoBD/1VTfqPbd5HXMPTXaS0PHAx/JlPGKaOvZJPixLXtwHPz9F5/puiCF6d1h0JFQbsjJBcGJOp180vuylyoi/Ifz7s/biZaLaiejygDcUiI76d0GPWbSIoROl6wrc+sADGqBu+QkXiqABM4GkhtU4sem7S3RlfttRWIQ7uLO58GN1btMDOq/H2sxEh3+kgXpDfpvJYcq+VP7e6Nm/OJXOP+o6iK9zKEHq3d7cftdKF9KSC1ZOKJgPFT2wOtXVGiKKqz9LRGnYxAFkD9wMyrkCw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TQH1bYbL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1758975978; c=relaxed/relaxed;
+	bh=q1CQFEKaI/Sy/SZOKDp8joIn6sS6FqYKFWGC9eEth2o=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=PmbsFxiUWTOVBd2JSUyk4+O6Y4c5plAFzH/MvkNS/fS3Yw6HKcyBgJc9xUN1moL7u5naHNQIWT21idSSWnz9ykR2nsYSHsQsn8/F+sNSsMTeezQPSdDSBS6a2HU9mieyXr4u5ju/VIi8s12ylyTyq15z/ySI8pt34tw0bhlIpgx/aQ1F4GbQxBZzHyiqyek79T2+p65NPj59W5WuB8+pcVwA1jGx6HLgX4hIqJCtEMIdSGLoEF1bvQVqCrq/zrMXDB7zBZvhOQlIQisqZ8EyVaUhvvu6JZFriZDxsIApKchX2ETcZMd8eqWMA3AXeMht8aelKGbYZs3z92h9N85wvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Ajjl3Uz9; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TQH1bYbL;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Ajjl3Uz9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::435; helo=mail-wr1-x435.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com [IPv6:2a00:1450:4864:20::435])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cY5973NgJz2xHY
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 26 Sep 2025 19:37:46 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-33082c95fd0so1996769a91.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 26 Sep 2025 02:37:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cYms415qRz2yF1
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 27 Sep 2025 22:26:14 +1000 (AEST)
+Received: by mail-wr1-x435.google.com with SMTP id ffacd0b85a97d-3f44000626bso1884616f8f.3
+        for <linux-aspeed@lists.ozlabs.org>; Sat, 27 Sep 2025 05:26:14 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758879463; x=1759484263; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=UoStl/6O0pPwy/s/NQABzja2ZbIsUSjfUYP6v+Jyo+o=;
-        b=TQH1bYbL3VG0wADfIeqGVWcRm8/9OBbaS6I3xKQzs+Gbq5g+RslzDtrmcX05SmRvSO
-         MUv6QjreKaQ4z52naM5+q54ej/rxvywq5G2yxkGuaFoaC++6qHPWVaXQy1NNwHNUQYCq
-         +9rBRBEl8x9QuFpNELzTRADpeShjUuvfg/QwBKqp/xH6PM2cdx+OYoaMyuWlL/SkL020
-         0AlSJGB9rbEl9nvJnGRw3iE78svj8xDnxm2w8vIscshmOAu1eV50/f/6yWzmYCqhFENi
-         Q4s/WmvDzKrYstxqnK8IkR6Vt8q5kTTqftN3momZ2yZe210l+Y/eRvExk5FJHuQPzwsN
-         fnRg==
+        d=linaro.org; s=google; t=1758975969; x=1759580769; darn=lists.ozlabs.org;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=q1CQFEKaI/Sy/SZOKDp8joIn6sS6FqYKFWGC9eEth2o=;
+        b=Ajjl3Uz9PgTp0rarMTAA/soU5QiiUYGLBBWbXKVxK+mfdvzZm10fddNwID5fTKplY0
+         cujqUOXuvR/nrzlv6T91j8z2Y7hhSeWcsTHgmqFyyU2n/THZULzDsP4A12nSBlVnG4ZN
+         PTkrPE6baqffa3TCfxRuU2j6VaAe6bSFHd1Z6OtXfdmE5E9iaUdm0w/yWd3cQrRO/Gct
+         ruWEyVW5fIizzaxt6IWXL1kez+njLUCJv6p/H41RJoIqApkUwVxEaspdOzKrCZS++X/2
+         nmB8MK/QAJFE+lx6rASX6hAAOOlYptht1oadnQ9O59uZIs1kiKCE04kP8CPFp0OD9g8j
+         5nUQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758879463; x=1759484263;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=UoStl/6O0pPwy/s/NQABzja2ZbIsUSjfUYP6v+Jyo+o=;
-        b=n7iXNxhyDD5kX+wL9x70Y1/4RyRO+pBskUOm5EvXPu/qT81UwR9QyCIlSYdkTJ9/DA
-         r/Sf+vdYsnGp6KRy8QzQlr8vNSUsFQcTDmXD5SVGb0Ylpbxb9GxYhTcu5kHQl9bgIGjG
-         0/rkpd6KKS37ACwZq4yVzOzvBq19z0CsYLNuvZ7ndeGszxCvnxVTUVvLChu0p0cVYbFH
-         pgs6PeQq61rh6vB++7ocCfciceYkJIUTRuDcgcjkNmW0OaNMG3LTUh3ywkwIouCsa1Cr
-         tMeOB42RjoKXB0AfOCzgvZdx9cdRvzD5vuwMOL42n2gOwNsn97PSWpOcBmjnWyCbsw22
-         eoaA==
-X-Forwarded-Encrypted: i=1; AJvYcCXVCKwox6dqLj5Od5JXt/uSvSGvjIovTNfFt19li+UGwvKDBUFwVj+Hk8I8sixE+11pl/NzvicaY/j+pGs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyegLAiY6vs3UdIefnC8eHK66+x6MPT+QM2A1lp+3rkxVBihDeA
-	63g8ENQJjJjjXyKDJAR2CATNXA30BZVXpEKt3NDn+MqN3RO2T9FCAz+Gbf/paw==
-X-Gm-Gg: ASbGncvt4zRmLVCkiMtUC7F51ozf4Dylq9JHuAnyPVY3WdsdUMxPxQ1xra5Xwq8Jove
-	glIqlkppZY/OtEFO3wpdLlTB632CwGv5/kmYLkx9BDy6J2gVOJxAxh5eg+VcwpB+ExO+h80zG0B
-	ALtJ9d/5TfM2U/4QA0pm0oNftpnL8EysKAdpy0HoLflNfk1/K5od23tYnEUAT73sFH//sRdJChq
-	NSYvRje2LwjYS+a9UlZyROGVpm0M4NRTminB0SvBg1Oizx2kirkOjkGDJ1TyktcIALNeQxiUNXw
-	vlJF/ph/6ET583h5DNBMZ9rcye831QC4LoDl49EyA6EPNAqwC2kIXWN/kBp4y2X6P0jcDd1YxZ9
-	CEPWxeQzxPi4YxjWeOXTycuXVFYxTDaKxdUY+gx2/ksYIgVL4h/HaxVrGtEM=
-X-Google-Smtp-Source: AGHT+IH2wN/vTNpoB41B7wJ4UIGDQlG1DOtuFCeTQt8xZvPtyijptE31fGlsQRHND0LCJie+ahas4g==
-X-Received: by 2002:a17:90b:33c4:b0:330:8c87:8668 with SMTP id 98e67ed59e1d1-3342a259df0mr7079061a91.14.1758879463298;
-        Fri, 26 Sep 2025 02:37:43 -0700 (PDT)
-Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b57c55bd160sm4211056a12.47.2025.09.26.02.37.40
+        d=1e100.net; s=20230601; t=1758975969; x=1759580769;
+        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=q1CQFEKaI/Sy/SZOKDp8joIn6sS6FqYKFWGC9eEth2o=;
+        b=EU5+zn5OduDtt3aWS7NAle+TIwvjRA1ey8T0vjYKW5NS28dXqTVUS2jxkE9BL594VX
+         1HCiqzsz2/oFaXvUJftE35w1KFkEKszByUb7DieFkK/VPaWX+++mi1Ye2wq9XVeYu7qU
+         5NYNedC1GWgKxw+ygW7w/ZBZOJG7WQFEVc2+DJ1uupoHgdCH9zjuzYeJkgKiXu9JybsL
+         EfuAzZD3ngexeP7AJbmmlocsb8pG3KJh063qfwzTNlc2aKGZBJUMvF8KGMjRbwpqNCtU
+         2Y+JmK9vJYQxFSMFYNOMxR+Lnz9W5t/+tZ1TBKKMqk9J8teUTv+nCQHO11nINLqyoC3y
+         RDGQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVgJUQgq77/h+eZTCpSK9Ne89BSBzR4KxRIE6aPWnG2yNJfh7dN8Hu5w6CE5SEpAL4aP1ewWCaZ8FDb85U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyTT/z9eSkho7l9rWCVknCg6SkLf8MlSft9cFqOaM2tOYwnT/6r
+	iXAHA6flNOFtiXMWnUd17MnxNJLYj7+aXVApmlIvSOGjSO3osdAadofFBkUhDob/i7I=
+X-Gm-Gg: ASbGncvrQLp6huJOpOTPGlQtKYKAiYA/vNLloG7SYw1kMcY8Fbkse3KkGqxwKU2S2u2
+	VwjQlOq5fnsY6ealgsdkZHQ3Ul/EZ3IVXrSJblRAsegr2USgydKUJ8bJM1llzUq58N/1CnQZHPv
+	S7MPByuXxHoxs6d7ztDUGrYoTDJi0VdnHUMJ678E8rUGgfj+lCxWC7UAsj0XGHwS+y1gcvAhXx2
+	iWJXcJevpKXoeA496TdS/HO032dJMQo2pUxqZ7oaGy05zmumoTTqhvQ1F1CIFfRFWN3Nxh/z2iS
+	P0qvGO0rkuDUvbxJOsmdM0Y9IzBt+wmPxVgQLu2+R0Dxpt2r2X6uzbeAejk+S/twiDbW7G1mGFm
+	feQZtA4xR7/uakylusxFSm9RoM5eBaWlpriPrvb2r4QwEJLZQ6Q==
+X-Google-Smtp-Source: AGHT+IHsxb/x4MSuZGgdkKW/ZTkoD1gTaQGZDhqAYNlhS+sWUJEsl7l8ii9uzN93TtclonUe8lxATA==
+X-Received: by 2002:a5d:5885:0:b0:3eb:f90a:f6cd with SMTP id ffacd0b85a97d-40e49e728c9mr9989172f8f.60.1758975969377;
+        Sat, 27 Sep 2025 05:26:09 -0700 (PDT)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with UTF8SMTPSA id 5b1f17b1804b1-46e2a996bf1sm154772885e9.1.2025.09.27.05.26.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 26 Sep 2025 02:37:42 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-Date: Fri, 26 Sep 2025 17:37:29 +0800
-Subject: [PATCH] ARM: dts: aspeed: clemente: Add HDD LED GPIO
+        Sat, 27 Sep 2025 05:26:08 -0700 (PDT)
+Date: Sat, 27 Sep 2025 15:26:05 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: Eddie James <eajames@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	kernel-janitors@vger.kernel.org
+Subject: [PATCH next] irqchip/aspeed-scu-ic: Fix an IS_ERR() vs NULL check
+Message-ID: <aNfX3RiyIfr3A0ZG@stanley.mountain>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,74 +93,35 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250926-leo-dts-add-shunt-resistor-v1-1-c871a68792f0@gmail.com>
-X-B4-Tracking: v=1; b=H4sIANhe1mgC/x3MSwqDMBAA0KvIrDsQ06rYqxQX+Yw6IEmZiSKId
- 2/o8m3eBUrCpPBuLhA6WDmnivbRQFhdWgg5VoM1tjOj7XGjjLEouhhR1z0VFFLWkgVN8O71nIf
- OB4IafIVmPv/5Z7rvHwEMnJFsAAAA
-X-Change-ID: 20250926-leo-dts-add-shunt-resistor-0cba43f75bce
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, bruce.jy.hung@fii-foxconn.com, 
- leo.jt.wang@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758879460; l=1436;
- i=leo.jt.wang@gmail.com; s=20250618; h=from:subject:message-id;
- bh=thNDQviaGyibFyGAqfP3goBA/6Fj0do4LHltc3WJriE=;
- b=T71P6S/+uzqAe2pm19qHzYoz2nhygnZpGVvbKLhyWQcQWVsDSelLeccTY+VnuA6uzE1BPL8L4
- Lvp20VxcTRFDYgHucePFNrm13q3hBU7efTHRYQ5iBAKOa87ktB1nm+E
-X-Developer-Key: i=leo.jt.wang@gmail.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Mailer: git-send-email haha only kidding
 
-Define a GPIO expander pin for the HDD LED and expose it via the
-LED subsystem. This allows the BMC to control the front panel
-HDD activity LED.
+The of_iomap() function doesn't return error pointers, it returns NULL.
+Fix the error checking to check for NULL pointers.
 
-Changes include:
- - Add `led-hdd` node under the LED definitions
- - Name the expander pin "HDD_LED_N" in io_expander13
-
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
+Fixes: 86cd4301c285 ("irqchip/aspeed-scu-ic: Refactor driver to support variant-based initialization")
+Signed-off-by: Dan Carpenter <dan.carpenter@linaro.org>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/irqchip/irq-aspeed-scu-ic.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-index a614f947dafc9a6628c3f3d45b62ff3ca9d2b618..450446913e36b1418fab901cde44280468990c7a 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-@@ -95,6 +95,11 @@ led-3 {
- 			label = "bmc_ready_cpld_noled";
- 			gpios = <&gpio0 ASPEED_GPIO(P, 5) (GPIO_ACTIVE_HIGH|GPIO_TRANSITORY)>;
- 		};
-+
-+		led-hdd {
-+			label = "hdd_led";
-+			gpios = <&io_expander13 1 GPIO_ACTIVE_LOW>;
-+		};
- 	};
+diff --git a/drivers/irqchip/irq-aspeed-scu-ic.c b/drivers/irqchip/irq-aspeed-scu-ic.c
+index 5584e0f82cce..bee59c8c4c93 100644
+--- a/drivers/irqchip/irq-aspeed-scu-ic.c
++++ b/drivers/irqchip/irq-aspeed-scu-ic.c
+@@ -215,8 +215,8 @@ static int aspeed_scu_ic_of_init_common(struct aspeed_scu_ic *scu_ic,
+ 	int irq, rc = 0;
  
- 	memory@80000000 {
-@@ -1199,7 +1204,7 @@ io_expander13: gpio@14 {
- 		#gpio-cells = <2>;
- 		gpio-line-names =
- 			"rmc_en_dc_pwr_on",
--			"",
-+			"HDD_LED_N",
- 			"",
- 			"",
- 			"",
-
----
-base-commit: c65261717599d419e9c683d85f515d3ca2261549
-change-id: 20250926-leo-dts-add-shunt-resistor-0cba43f75bce
-
-Best regards,
+ 	scu_ic->base = of_iomap(node, 0);
+-	if (IS_ERR(scu_ic->base)) {
+-		rc = PTR_ERR(scu_ic->base);
++	if (!scu_ic->base) {
++		rc = -ENOMEM;
+ 		goto err;
+ 	}
+ 
 -- 
-Leo Wang <leo.jt.wang@gmail.com>
+2.51.0
 
 
