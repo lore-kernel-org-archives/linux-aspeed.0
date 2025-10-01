@@ -1,64 +1,65 @@
-Return-Path: <linux-aspeed+bounces-2367-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2368-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6714FCAC5BB
-	for <linux-aspeed@archiver.kernel.org>; Wed,  1 Oct 2025 14:45:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76EDDCCA470
+	for <linux-aspeed@archiver.kernel.org>; Wed,  1 Oct 2025 14:45:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ccHlQ5P6Kz3cf7;
-	Thu,  2 Oct 2025 00:45:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ccHlR6m1Qz3cfB;
+	Thu,  2 Oct 2025 00:45:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759329906;
-	cv=none; b=QyU6iI+sPGVusFuqLFsP4b/UDK0fovWREYzaOyuyqyDOpTQFPzygFua4FWlQQQMFz+/R88A5FsCtZKWn/MlPQdVVNh8g4tjgQ/ncypJcxfWRtdbe+aMeYpECt8o4DmVWwW9wTo3VFPuUepwmWA/U79kasuR4rHhya6oFkFb2y4AIlvdAtk107lD+B+iwlFe2ee1lIWKwNjariHvprfSIhXvPHWsY40XSmsvjp24kLEV6vvpADetVXpQaRcvMf5jsSXN7K7+YQ4Z5VRWlpAc9NGSdBy/uhmWgO+lFq1KkXgqci2JYJrvcNe2JnMZpKpBaEdOxtsf6dYn/aveDOmQ63A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759329907;
+	cv=none; b=IDi1UUdyt1dUcvEQKSyQhG3LCIgI6HxPZnlQHON9E4y9Hq536CDlchooehVzGzbCTk+y0xOg/jFKPsEQp/Js+issT8vPiibcB7VfNzztjrDUbr06rOvu9CJ5OwJUtYB85dF90AXPTyFhJ1zVmw20Lq16WzmYau1pPnsC+XvnySa0dgvnSQ9BYdCmXJRZjSir7LdFMOFs7HoCabEsyPlCU3KPq1l46DQlhUkbFsZMsZVuK1aUvXkUl2FmaYAxudpkGDJeNLiOVdkGModFRKzBK3BHpL7ac5CqCMSyg4GKwuaaBJMNTLv+uGLnqYyvFyo8ka8dRtOWaGokcc+16lLTlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759329906; c=relaxed/relaxed;
-	bh=xH8/d/Pd7JhrTL4O5vfuKAguxflwb112mAzbS4M7LUE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=I6fNaMESpHy1g+8eQamV6KK6GPsGrfQR77/tYw8faANfLsQ504sWb5WGYY5nAj0vpxN+gWF989T3Zz6QWhjtUll7tYhi97woknWFrZYmMmku327wihZGP9dNHYJx3FUMdRRhT6R+Q3nvRZfV+qFY9zMfPjfPJTamZgda3+2cAp9roUn822ASw20ebKN2oj1sqQMz0MZHTEM5Z6blh/3CGNGHp7qDAVzq8vZhVPS9yFXpFaAda5pk5K5FhioKZzjl+3uqT77WCDD8ISbNBJjh0QAYoMNeLkEzHsS0bYrRbq3wcWH487EIGni0GnJsw9I4aaHAhGsESfdIzpq6Gq+cUQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UVaQnPrZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1759329907; c=relaxed/relaxed;
+	bh=Hokf1lue+vVbLiF9VZl0cEYqrAg1Uo/ImMJ3thEnMec=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=h5y+VAbtWKKqiA5SGe5bwPkCq7rccDFhJcFo2hrFKXsKrbOS1TsZUiZlu+zOGjne4Yln8bFciextil10m1Ln2ifEOLOioUp88wQJ3ZYuyMAsVviwb//xEnK7XgRn1Ltq3uzP10lzA6fOZtLJFciQ4RhLgzH7+h/KCiCtQEvdw9IMIK3ATUsLcX5N8qhn3tmWylHW66rRKqwGP7l7Ig75XfpX9sV4nphQp9e2tcEtzX/LUSa0YT19T6jGolz20KUCr1xOrwQLhl21zR5JQhjAANWa6K3xwQ4IAQcs7muznsUq6NzQvuR2YipqyIO+A6T4Noj5jmFEVjMSujOzPqZ3YQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Cw4MT6fl; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UVaQnPrZ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Cw4MT6fl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ccHlP4btMz3cdn
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  2 Oct 2025 00:45:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ccHlR2l87z3cdn
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  2 Oct 2025 00:45:07 +1000 (AEST)
 Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 591CxMAW010564;
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5916UoN1005829;
 	Wed, 1 Oct 2025 14:44:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=xH8/d/Pd7JhrTL4O5vfuKAguxflwb112mAzbS4M7L
-	UE=; b=UVaQnPrZv4p23XN7VQQfxHM4nCuU/SHw88OQWMG8lNX9G7PB950M/c2Oz
-	jd+hnqB+5iLf3nZsiqmrVM4Jvf6A5dYKIN+1viwOChdzSXaU8V/HijVCcCyHdDZO
-	5IEt8qvTYDg0ivhKoDWqXBFXMgR9VfDHTEmPm8Z5UhrLrn58TC5Uxx2T+1n9Tviv
-	XTDmh6SumHpYVTGlZofrJu6NjUqeLyO0lfv19YI+uxVg7T67DMSXNz76yhSjRUHT
-	Xwj8YaFamxRK0+ulMZAqCzEWotCuD2In0BCOHSF9rHS1x96gkMHTTEDN+UYw1PZg
-	1tXvKFYLLluyosgiG+s0dN2qvDd8A==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49e7e7g5h1-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=Hokf1lue+vVbLiF9V
+	Zl0cEYqrAg1Uo/ImMJ3thEnMec=; b=Cw4MT6flk09WEVURBK9Ws+5stwRi4x11K
+	6XcixOehWr+4xOkxSUw1kD+6JYsJM7rrrmjU5EozTh4AQaRnex0tT5HtDZKNulAY
+	xtT+mhvZKUTt/Ws7u9Z0saOZ71akhZHGGD51dbiFDZJlioqMPt+SIjIewHexMQTL
+	E/XpPTVZddEQliQ6a13j6joOjZ5/5+GTlCaWd4QUbd/TbFqdDSjjmxTg/dm1KQqh
+	lZSMHzsO1L2Y09tOLXzrCV1b4rnSaS+feLEuTJrdHwbLH4OS3SGGmnO6zsvVDEpP
+	6YFT0G8KBVlkLC9xWtyxNk1R5ygL9NxlDphVVYurVtThLM9AHBKcg==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49e7e7g5h3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Oct 2025 14:44:49 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 591Ck7Qe003599;
-	Wed, 1 Oct 2025 14:44:48 GMT
-Received: from smtprelay06.wdc07v.mail.ibm.com ([172.16.1.73])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 49etmy1dh4-1
+	Wed, 01 Oct 2025 14:44:50 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 591Dc8sc024157;
+	Wed, 1 Oct 2025 14:44:49 GMT
+Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 49evy18y7b-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Oct 2025 14:44:48 +0000
+	Wed, 01 Oct 2025 14:44:49 +0000
 Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay06.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 591EilwN19530336
+	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 591EimsU57868714
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Wed, 1 Oct 2025 14:44:48 GMT
 Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CFB9D58055;
-	Wed,  1 Oct 2025 14:44:47 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 46BC258043;
+	Wed,  1 Oct 2025 14:44:48 +0000 (GMT)
 Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7CA3458043;
+	by IMSVA (Postfix) with ESMTP id D7A2758059;
 	Wed,  1 Oct 2025 14:44:47 +0000 (GMT)
 Received: from slate16 (unknown [9.61.71.223])
 	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
@@ -71,10 +72,12 @@ Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux@roeck-us.net, chanh@os.amperecomputing.com, jic23@kernel.org,
         dlechner@baylibre.com, nuno.sa@analog.com, andy@kernel.org,
         eajames@linux.ibm.com
-Subject: [PATCH v7 RESEND 0/7] ARM: dts: aspeed: Add Balcones system
-Date: Wed,  1 Oct 2025 09:44:34 -0500
-Message-ID: <20251001144441.310950-1-eajames@linux.ibm.com>
+Subject: [PATCH v7 RESEND 1/7] dt-bindings: arm: aspeed: add IBM Balcones board
+Date: Wed,  1 Oct 2025 09:44:35 -0500
+Message-ID: <20251001144441.310950-2-eajames@linux.ibm.com>
 X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20251001144441.310950-1-eajames@linux.ibm.com>
+References: <20251001144441.310950-1-eajames@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,88 +93,49 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: CMC2hCLar303clp7FU2UQeCFdXAZfWrH
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTI3MDAyMCBTYWx0ZWRfXyffcH7rZVZjd
- 0/REGw9bsObBHC20urF66w8YyuzD4xLLU9R7yYLj4U73OCZ1qVaWtIbd8m/298sO6XcqvYCnnRv
- dvHk61nHIRUQLmSJu82x9AZQpqPj0AiOl4jA6yIhhd7Ctd/VAgZzqO+Bn9RoxoZ8e546vO7Oylp
- rTQtOItqp6tJjdYSOsRe4DqxWLj6pdZXqB3QCvdKyDeNIGlH70NhQmX9C6vmzOI/p6V9SP2Uncs
- lkoQcEqCQFpALpOa6olypIQmFR20QOu2XBg4fbxqvSqPk+hCcYUr8C/i2H/atPgbMt92dhLpbBc
- xyisnnAaVxcJ5gpatqWvpXlp5eLF7EBWh4BiRnmjF5qZXBtf1bYMo5x9VMb61WnPQteO7IQRfak
- YPqkWANIMfoBAGD5B9fDNq5u6VSZ1A==
-X-Proofpoint-GUID: CMC2hCLar303clp7FU2UQeCFdXAZfWrH
-X-Authority-Analysis: v=2.4 cv=Jvj8bc4C c=1 sm=1 tr=0 ts=68dd3e61 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=x6icFKpwvdMA:10 a=Hy7NEVtaT5kuqzZ1rwQA:9 a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-ORIG-GUID: -tY1LzVVnLJPn3clXXUS7s3HWKia3Yh5
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTI3MDAyMCBTYWx0ZWRfX4t4n6x9Z5pYn
+ lVmOqwz58SpODlIV6JQJye/TkmYkZAhteQIKFBy+OGzBC8pgn9fZcR8GbHLBVwaJVgGzn2+2WEv
+ r5KR8kiAxSFth4eWG/LwIjFSNRz17eDQDU0AvqHIMwDQ5DBrgzvv2u4xeE3QKAc3bPXYjUybC6R
+ c6KR3JjzxVP3WdxKCz/jAaCTihlAiAd0NyHuRYmTHte/kCtkg85tDUfs0kW99dootH7wE4B7btv
+ rHEUtedd9Je/ddTNzwmlUW1tfu8jTVB2NYXokTuQJtGYtBNf6IoAPekEgTvdx3uMXvXl03eZklt
+ qqcrzEMsu8/9JMGYPtZ98Y2wkFt9X22dN+JGeX7P3Nnijv9FLZvVwMmaQx3crsmRqggMhgxcrVq
+ qUQHDRIamqWX8GxgnmjpMZ/I+rQQ+w==
+X-Proofpoint-GUID: -tY1LzVVnLJPn3clXXUS7s3HWKia3Yh5
+X-Authority-Analysis: v=2.4 cv=Jvj8bc4C c=1 sm=1 tr=0 ts=68dd3e62 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=x6icFKpwvdMA:10 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8 a=AJooQMD86rzp5GWHMWgA:9
+ a=cPQSjfK2_nFv0Q5t_7PE:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-10-01_04,2025-09-29_04,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  lowpriorityscore=0 malwarescore=0 priorityscore=1501 impostorscore=0
- suspectscore=0 phishscore=0 bulkscore=0 clxscore=1011 spamscore=0
+ suspectscore=0 phishscore=0 bulkscore=0 clxscore=1015 spamscore=0
  adultscore=0 classifier=typeunknown authscore=0 authtc= authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2509150000
  definitions=main-2509270020
 
-Resending this series to iio and hwmon maintainers too. Andrew J has merged the
-dts changes with the Aspeed tree already.
+Document a new AST2600 BMC board for IBM P11 server.
 
-The Balcones system is similar to Bonnell but with a POWER11 processor.
+Signed-off-by: Eddie James <eajames@linux.ibm.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-Changes since v6:
- - Remove un-documented fan properties under max31785 nodes
- - Change fan-x to fan@x in max31790 documentation.
-
-Changes since v5:
- - Add patch to add address and size cells to max31790 document
- - Don't remove address and size cells in max31785 fixes change
-
-Changes since v4:
- - Add patch to fix max31785 warnings
- - Add patch to fix missing Bonnell documentation
-
-Changes since v3:
- - Add max31785 to the max31790 document instead of to trivial-devices
- - Fix minor formatting in dps310 document
-
-Changes since v2:
- - Fix a couple of incorrect i2c addresses
- - Document dps310 and max31785 properly
- - Drop the UCD binding documentation update, it's been fixed
-
-Changes since v1:
- - Add all the ucd9000 driver supported compatible strings
- - Fix node ordering in Balcones device tree
- - Improve commit message to explain addition of ibm-power11-dual.dtsi
-
-Eddie James (7):
-  dt-bindings: arm: aspeed: add IBM Balcones board
-  dt-bindings: arm: aspeed: add IBM Bonnell board
-  dt-bindings: iio: Add Infineon DPS310 sensor documentation
-  dt-bindings: hwmon: Move max31785 compatibles to max31790 document
-  dt-bindings: hwmon: max31790: Use addressed fan nodes
-  ARM: dts: aspeed: Add Balcones system
-  ARM: dts: aspeed: Fix max31785 fan properties
-
- .../bindings/arm/aspeed/aspeed.yaml           |   2 +
- .../devicetree/bindings/hwmon/max31785.txt    |  22 -
- .../bindings/hwmon/maxim,max31790.yaml        |  22 +-
- .../iio/pressure/infineon,dps310.yaml         |  44 +
- .../devicetree/bindings/trivial-devices.yaml  |   2 -
- MAINTAINERS                                   |   1 +
- arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../dts/aspeed/aspeed-bmc-ibm-balcones.dts    | 609 ++++++++++++++
- .../dts/aspeed/aspeed-bmc-ibm-bonnell.dts     |   4 -
- .../dts/aspeed/aspeed-bmc-ibm-everest.dts     |   8 -
- .../dts/aspeed/aspeed-bmc-ibm-rainier.dts     |  12 -
- .../boot/dts/aspeed/aspeed-bmc-opp-tacoma.dts |  36 -
- .../arm/boot/dts/aspeed/ibm-power11-dual.dtsi | 779 ++++++++++++++++++
- .../arm/boot/dts/aspeed/ibm-power11-quad.dtsi | 769 +----------------
- 14 files changed, 1456 insertions(+), 855 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/hwmon/max31785.txt
- create mode 100644 Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts
- create mode 100644 arch/arm/boot/dts/aspeed/ibm-power11-dual.dtsi
-
+diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+index aedefca7cf4a8..b2fcfcc4a3b9a 100644
+--- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
++++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
+@@ -93,6 +93,7 @@ properties:
+               - facebook,minerva-cmc
+               - facebook,santabarbara-bmc
+               - facebook,yosemite4-bmc
++              - ibm,balcones-bmc
+               - ibm,blueridge-bmc
+               - ibm,everest-bmc
+               - ibm,fuji-bmc
 -- 
 2.51.0
 
