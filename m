@@ -1,78 +1,62 @@
-Return-Path: <linux-aspeed+bounces-2356-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2357-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C69FCAC5B8
-	for <linux-aspeed@archiver.kernel.org>; Wed,  1 Oct 2025 01:30:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E69CCAC5B8
+	for <linux-aspeed@archiver.kernel.org>; Wed,  1 Oct 2025 02:29:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cby6X3Wqpz2yx8;
-	Wed,  1 Oct 2025 11:30:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759200580;
-	cv=none; b=bKOiGqwA5kQSNW3cGfP0WUOuvPesJ8U1+4FBs7Zm4cuNnIcCiT3QCp5wDEGzs3A4uT8dAj3VyLsW0gZ0yG1d2miIYMY4ejR2qXghzW6LogoN6JrC9/r+lFS1P0x67bjf93u8S9UxogdjVMCnjUmbBVbfd2hTI32Ou8lw0Akk7w8+FgKEd924pNgKFrAiifYue135YNcgfTkQ+pZhIcqxk7EzJa1h7E42M7jKccMy97pU/e1Bmks7hDWvVNXw0YPMbR8yE3okRizfUgJoIe47me41eFg0CUl5jWlb18kfiHbcxuF92RS0mIfTFvTh2sETp4K1VEZZjEzrqxATADqm2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cbzQl55pvz306S;
+	Wed,  1 Oct 2025 12:29:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759285775;
+	cv=none; b=C8OMSLCRBN++tFOIo3SKTi3cdCFdrpgsSXlLRtR0b9/y2j/WrjW0Z42bJkWEtlOckL1XZdNJ5bmEiMMOZzqxNebtfsze39DjWC02SqCZW60sdyj+lPSDCIfxd0y+8IkntoAZbwhhGc+Vf+wvP4kOjBAlhqTDu7M9NtbrBIsU/TcmrbLfXvNTTMmEEy78fRuvbK70V2YLEZAeg3uwukTkEFqiVwR1Cjx2FPi2Yp2RkitIwxy16qj+qwiIqBOHWMuWdo+jSX8R+pe6meX0Oh5MDPndPID21vLjdLCIq46KcxutnmiH6GO1oNwjm5Sp2/iwc9sjoupdpLGffjbw5UbSAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759200580; c=relaxed/relaxed;
-	bh=wq8AM5fpXK6eEk4la14RAF7oSZLrkv9gGWRw1LyBjWA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=EoQ9oVKQ3eoq1HeHCXAoVUq/OAOADYsmVYiYDG1Y7WzOkYDAis8Rg18GkqilJ8lifT4/PcEOwnWtV+CX6RR4wbXzHsuvXk2GY07FJau3q1vL43acOYnKGWhA6Y0KO+c33M9nNAb8lsMRFKh8p03r6hLKx6b8Ga9aURTS0hw0rBmJ0w2cJuHIwx5QJYd51TDtDZQrjV6EdHywQsjNWEzTvZ68XHZ0u902ERjbaeEPTesyZclZMZJsTcIdGXcAmROmJYqArbgTD7GmrTMJHE4kDMgrhswimJW1x5C20uhpidWYqk2YiduydmMFqhVm5TZSUQvQxbBB2zmlWYXSPaeXHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nFEZwtm8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1759285775; c=relaxed/relaxed;
+	bh=93pG2cTrl3v8hG0ltG0HHnvRP5q7qH37lHtkS5rvRE8=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=RDYore/jnhgYakoItaWgyjTs7nI5Xj0/X0f9TRBtb2NaNvIxrJ1eJLmSFaYxAKVlhN6WGKsKh3MAtio+cg/8PtM6a6Mzy+4m42eki7mZ8kBtfSviUPWP0NFwLeF9va5nP/7yyH8Tk+ROH9PKt0kUrJu8KpVDs8ohBun9yKZaHmtphMhhYOE9axLfxYvSM+0RZb4U3U4L9SeXOvl7L5qqOpKCNMkwJ1A/13CCizezeq0kSjBNtPNKvOBpfQb/kslrH7v8ARqckifGC5hdNzt7HdRrT5TmoX3GLI55oqC6Kn50u9RtqAHDLJj+IrUUSjXmaSYV87pciD8Y1eKbhrk8PQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=nLxkowWd; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nFEZwtm8;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=nLxkowWd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cbMwM5GNYz2ywv
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Sep 2025 12:49:38 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-782a77b5ec7so1929778b3a.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 29 Sep 2025 19:49:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cbzQk3kH8z2yN1
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  1 Oct 2025 12:29:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1759200576; x=1759805376; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=wq8AM5fpXK6eEk4la14RAF7oSZLrkv9gGWRw1LyBjWA=;
-        b=nFEZwtm8h9vSQf1Aus2Do41e9hxmPI81ifIp+pyrafOODtAI5bfUk0ySLNtn6PBqME
-         1XDTHDiuCV96MkD7XSuB7zffv/D5ZkeQBng7v5ZZuwlZGMVbZNT55t2Ykx0Ncs5DyWHA
-         8yLlcMNoS2x+b1N9lWnMGasFAHb6heOeAP9p0ZBgD2rgS2O4nIJJT6TZuaU9baY9gDxm
-         XAcT2HrjC3KVH2UvjlHbGwUsKW1r7OySL5n70znEimpNI57qu2JlQ39/ANtuD7UATfyv
-         vuayZ2qjzkM5Ftrzjcbj1TNfAsN0Fw7Foeu3pHzSNq3ahtPUVmfERp4naHddRQNXHCWk
-         qviQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759200576; x=1759805376;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=wq8AM5fpXK6eEk4la14RAF7oSZLrkv9gGWRw1LyBjWA=;
-        b=wP6lOLpc6Xbna+6H0C8a2clVvN9Gy/PiCtVcOseTQsnJIBOmAzEmGrfpUGNZv6Q47+
-         7gshkLruMAGhVylJobD+yJLqDDMNFz7Wtc0R0X2HtiSgiWIhnk770Cd/V8dGcDohsouG
-         arJDssO9EVpfAroC/IPyOe1LYqX0kJIvvkNLJfObeXpyKVOP1yTVeBGdGITN3mTvnafx
-         hCpfKUQMpa/2cRbGoEYDSG9s+CFOIAlV8vmKRO7y9tffznkmYy9SWQiBTvi8bty1+5Uv
-         lduSuRLijXzUoTew6pGeEppdMPznHa5r907J2NyIBC/DeWjdhhzxBwL8uHiT9rZuC9YN
-         gObA==
-X-Forwarded-Encrypted: i=1; AJvYcCVKrbz/I7lnAzZqIUJhmu93uWVynJjZ7PrrojG8KTvte7ellTwTTnfcLJg+Zs68++GwRqPmLYaDVS6zeV0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YymKL+YXXA1vyO4Ubheo11bPTWqIOj6HlnHzurV3ejfj/6+I1Ny
-	PecgqAtUm92u2Jajf2dU72odGlJ6qpT5Bn/Lo8ygcWx9kVbIHcLz/ei/
-X-Gm-Gg: ASbGncs8jwik1/3CuVe5C6Eo3vicLohacjTpCexPaRU69eVzwurHfnF/eiV5uRBJJMl
-	hJb3jv1H2HDMhKhJdi2rkyuLCrUMxJFpqCirkyZ8AQ+lRjWYAmJafa4Pwv5Nk4GeK7kXea8XfhS
-	6XZ+LYKuQXGFv6lJy9OKOGTCav+r92KNtw44PyZqpClvDDENg+ej+7/YQxPSAuG8nqnalDfJOsy
-	o4Hhaf71mN1ME4WvDkCQl1JjhBVhWgbS0BOuH5/x1h1EQS5D2rPuxeAKVhtUGXRIW9R2IOZmZIm
-	krIMmWYGvON/3sih3Sgo4omHsbw0gItSA6P8+ooXDVOTGlWjQWwOHUcqDHFUC1i+qnIvmP5mKaG
-	r1scf9x1sjVqyjjxRuFc2LJsSpglgmJVo4uxt940P3UxCnpzfl4hX+mQfGWh39AhcZiFDTPrbsk
-	OdYvwhkv9CybiuJcVACw==
-X-Google-Smtp-Source: AGHT+IFMe6D44grpGqaN30+IACiK1ag0L1YVwPsQdog/6V2aBU+Upngdj4V9R3NOTeGT0ryw35P7Jw==
-X-Received: by 2002:a05:6a21:3293:b0:2df:b68d:f64 with SMTP id adf61e73a8af0-2e7d4dfb6b7mr24100790637.52.1759200575723;
-        Mon, 29 Sep 2025 19:49:35 -0700 (PDT)
-Received: from [172.17.0.3] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b57c53bb255sm12688305a12.5.2025.09.29.19.49.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Sep 2025 19:49:35 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-Date: Tue, 30 Sep 2025 10:49:23 +0800
-Subject: [PATCH v2] ARM: dts: aspeed: clemente: Add HDD LED GPIO
+	d=codeconstruct.com.au; s=2022a; t=1759285772;
+	bh=93pG2cTrl3v8hG0ltG0HHnvRP5q7qH37lHtkS5rvRE8=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=nLxkowWdJ3hPG4s8670dXGq74doY3FrG6nywm9zsB5SL537KV4oTjgx7Il+mneowR
+	 84HaBVdwy2RKUH5sa2xwgJL3/hU0dPyx5kniGv2QuYoieGBta23lwcURShSC3m02ab
+	 PGIWccSBpT90REbcmY0BhxLKEz1eE+Mhj0kkvkbDCNsAE5TKCSvVctHL8OUKHH7LF+
+	 JFxR6ynULedTnxWfIjdJCkV9fSAjqqdKG2y7yv7tRBkv0NvN2qxfH3KvcAeR3TBHit
+	 E1DiQeYTd35M2AybyodQ8mNk3CMzlUUi9xjptL32HsqL26Ilt7Njz6ePKNsdaFtFqg
+	 3JYpGDZahDWfg==
+Received: from [IPv6:2405:6e00:243e:cd99:1d87:95e3:706d:5dc7] (unknown [120.20.48.42])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 8458464785;
+	Wed,  1 Oct 2025 10:29:30 +0800 (AWST)
+Message-ID: <7751dff931924c151f976feeafe4a888dc2095ad.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v7 6/7] ARM: dts: aspeed: Add Balcones system
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Eddie James <eajames@linux.ibm.com>, linux-aspeed@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, conor+dt@kernel.org, krzk+dt@kernel.org, 
+	robh@kernel.org
+Date: Wed, 01 Oct 2025 11:59:30 +0930
+In-Reply-To: <4632dab2-d6c7-4abf-8449-bd61d5ad94ad@linux.ibm.com>
+References: <20250922175804.31679-1-eajames@linux.ibm.com>
+	 <20250922175804.31679-7-eajames@linux.ibm.com>
+	 <6d117ac3297628ee6e315894460d348647b68c7f.camel@codeconstruct.com.au>
+	 <4632dab2-d6c7-4abf-8449-bd61d5ad94ad@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.1-1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,75 +70,47 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250930-leo-dts-add-shunt-resistor-v2-1-8712984f04c4@gmail.com>
-X-B4-Tracking: v=1; b=H4sIADJF22gC/42NTQ6CMBBGr0Jm7Zi2yp8r72FYlHaASYCaDhIN4
- e5WTuDyvXx53wZCkUnglm0QaWXhMCcwpwzcYOeekH1iMMrkqjYFjhTQL4LWe5ThNS8YSViWEFG
- 51l4vXZm3jiAFnpE6fh/xR5N4OGaf42vVP/tXdtWo0VWltkVV1qZT936yPJ5dmKDZ9/0LDIQHv
- sQAAAA=
-X-Change-ID: 20250926-leo-dts-add-shunt-resistor-0cba43f75bce
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, bruce.jy.hung@fii-foxconn.com, 
- leo.jt.wang@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1759200572; l=1492;
- i=leo.jt.wang@gmail.com; s=20250618; h=from:subject:message-id;
- bh=klDRu2KGjM+0nX0HtilCbWli5VflcdgLmjY2aTzwD5E=;
- b=ZPnwa3kHMLZcbssExhvWUM2QAqYAJS1I7iHpxlKd7keXV5gaKRp07f4D4Fa3UWcplSv0Hmsab
- TM+5DwS+2TIDCG9kMJDLaoT9z5ObGavmkF/TWkmp56UEMqOToPr0+XG
-X-Developer-Key: i=leo.jt.wang@gmail.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
 
-Define a GPIO expander pin for the HDD LED and expose it via the
-LED subsystem. This allows the BMC to control the front panel
-HDD activity LED.
+On Mon, 2025-09-29 at 09:52 -0500, Eddie James wrote:
+>=20
+> On 9/25/25 7:03 PM, Andrew Jeffery wrote:
+> > On Mon, 2025-09-22 at 12:58 -0500, Eddie James wrote:
+> > > The Balcones system is similar to Bonnell but with a POWER11 processo=
+r.
+> > > Like POWER10, the POWER11 is a dual-chip module, so a dual chip FSI
+> > > tree is needed. Therefore, split up the quad chip FSI tree.
+> > >=20
+> > > Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> > > ---
+> > > =C2=A0=C2=A0arch/arm/boot/dts/aspeed/Makefile=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1 +
+> > > =C2=A0=C2=A0.../dts/aspeed/aspeed-bmc-ibm-balcones.dts=C2=A0=C2=A0=C2=
+=A0 | 609 ++++++++++++++
+> > Looking at Balcones specifically, there's still an immediate concern:
+> >=20
+> > =C2=A0=C2=A0=C2=A0 /home/andrew/src/kernel.org/linux/origin/build.arm.a=
+speed_g5/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dtb: pressure-sen=
+sor@76 (infineon,dps310): '#io-channel-cells' does not match any of the reg=
+exes: '^pinctrl-[0-9]+$'
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 from=
+ schema $id: http://devicetree.org/schemas/trivial-devices.yaml#
+>=20
+>=20
+> Hmm, patch 3 in the series fixes this.
+>=20
 
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
----
-Changes in v2:
-- Drop "Changes include" section from commit message
-- Link to v1: https://lore.kernel.org/r/20250926-leo-dts-add-shunt-resistor-v1-1-c871a68792f0@gmail.com
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Indeed.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-index a614f947dafc9a6628c3f3d45b62ff3ca9d2b618..450446913e36b1418fab901cde44280468990c7a 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-@@ -95,6 +95,11 @@ led-3 {
- 			label = "bmc_ready_cpld_noled";
- 			gpios = <&gpio0 ASPEED_GPIO(P, 5) (GPIO_ACTIVE_HIGH|GPIO_TRANSITORY)>;
- 		};
-+
-+		led-hdd {
-+			label = "hdd_led";
-+			gpios = <&io_expander13 1 GPIO_ACTIVE_LOW>;
-+		};
- 	};
- 
- 	memory@80000000 {
-@@ -1199,7 +1204,7 @@ io_expander13: gpio@14 {
- 		#gpio-cells = <2>;
- 		gpio-line-names =
- 			"rmc_en_dc_pwr_on",
--			"",
-+			"HDD_LED_N",
- 			"",
- 			"",
- 			"",
+>  Did you apply that one?=C2=A0
+>=20
 
----
-base-commit: c65261717599d419e9c683d85f515d3ca2261549
-change-id: 20250926-leo-dts-add-shunt-resistor-0cba43f75bce
+I hadn't, as I can only take patches 1-2 and 6-7 through the bmc tree.
+3 and 4-5 should go through the iio and hwmon trees respectively.
 
-Best regards,
--- 
-Leo Wang <leo.jt.wang@gmail.com>
+Having tested after integrating the whole series I've applied 1-2 and
+6-7 to aspeed/arm/dt.
 
+Thanks,
+
+Andrew
 
