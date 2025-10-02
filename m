@@ -1,61 +1,91 @@
-Return-Path: <linux-aspeed+bounces-2384-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2385-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84D6BCAC5B0
-	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Oct 2025 18:46:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F736CAC5B8
+	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Oct 2025 21:38:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cd12y55cbz2yqq;
-	Fri,  3 Oct 2025 04:46:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759430762;
-	cv=none; b=bGgS+EZRmK17XKseiA+N9rGnT1wKp1jSsZ8hdno90L+Pd0w0Tj3I0+onKsBKslcr+fbNxz9GXoN33GqeKKh98NVOSQ+RN71lASpWhbegid9T2uZlZNivzBQ0VMLtn+jGQKGtHBDu1VOcGXVL4mUD/ICg7Bu8TxybpcWzVYUj/lQTnejltpm3hIp2YuNm3e1SlDNOm6Eko8W8WJ2Pv7ej13lxYrmTo0DZpzlyW7amW+HIizy9UkHHdbhL/e/7eHd6YfgbkLsz1uDp2cvMV6EfrmDEi+gvuJTlLfpFZpSlteAmwZTRzIlcq1GZXRalYxKMcTqowZhZ5j1YUf2jXybqpg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cd4sT5gYNz3cj3;
+	Fri,  3 Oct 2025 07:38:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::530"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759441085;
+	cv=none; b=W+na2+uga2yCeOCUfveMWKx3wY61xl1NlA/3QSrfOGHhUKVDeXyWEO6R0X2BGsYe3nC0kH6Fia8B/PV51QIpa1nwbqBCKXvowy3EiyTmZl0l4J5WMl2Xanlp4TQyPmd3am4v5EhBTUGlKSmgGhFlfkMiieschZOXgyeB8sPLZ19gZebJlmCq7wGBmOJCYajsFnv7JoL+U4SMImjSo+c3Fbc5nVqiCZF+ydDMIuJHuK8Svg8Y2WUrEsuWm9/veAn1RhTwHCOfcDvqlGj74AfT7BJ2EitZ8tYkXWyIsaHqRBpM3U1oeIrO5J76eRP6cRXXjSubBugyR4fJPfKXDhd2EQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759430762; c=relaxed/relaxed;
-	bh=a3c8V1hXrVnnDWPg12yqNE/isCFFOAhndMURyTvIpzI=;
+	t=1759441085; c=relaxed/relaxed;
+	bh=3UYjs/DjWtPFJ9SkgiQewKjh9UT4jabvAen7EJXFzrU=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TnZq+CLVYfCbc5puXHLqREy5tYd27MJLpUWt9S62sXARoKXqxhZF5i3XGyc3avAjWc4HLVbUMuZuiHtSp4ZHdPXb5CCVbwFMgn4bDdRNYYRYb3F7okkmIwx2hVdi4lc32/HZ9j7ibJPTetrIaSEDaKdNwqcyDc2ul2km46K/NkVG8tNDtw2Mmn5Gz2tdmUczoxdSxZNpK8qInVaXMtjfgWBZNPh2WC4vR+k8PQLpPhMa4VqWVv49lg8DnkJk4BPckf9q0iHc8jwh87qiPHa90eyiavYIYp070RnbIQXNRl+p2/CLUn6w7p030JIoUDxWQCFa2cF+CN74KcgmfP9CHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iQhyisly; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZJEmDqY1q4FmrTdbRtuKIX+VOnBowcNlpt1JIC4UB5sNn25c//XHxip3QBl1F4JD6saaoe/mrvMCrnguD9gwDpsOk96o+D4zBUYkigdS4W4+HevS897P3KQoPJEuGRSWf94kViIa8XgFkOY0/lFr3FPcafRI7HFNWXryvU42aEsgUdW5ME+O+aY9ITivMJQg9BZwvhvJkQvogNHdCYHxez6o9HylNlQPtI+XZudJPgc9ACo27ePVUXGr1HloqqznmLQM9MyJKb95o2CG1YgAXcRRzmSLHBGmgBHvaiPR1TFIDrGjnHrSgUEMyYH1g2f51DFlXRKXvNvFk4S4Ksq6nA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DVehh11P; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iQhyisly;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DVehh11P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cd12y0ph8z2yfL
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  3 Oct 2025 04:46:01 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id BE79D44CD3;
-	Thu,  2 Oct 2025 18:45:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 27DF9C4CEF4;
-	Thu,  2 Oct 2025 18:45:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1759430758;
-	bh=fTeswSATcB2l4kKFC+T/Jf728hFziZCZ/toefctXIrg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=iQhyisly4HVJjxG8UgkQns4wkNuHmaejeAERzdvdF1DOHjL+v6Bijl7RGahduUQX5
-	 JryMYDLDa2za9Rm7NFm6dfYQHXByP2D0h1nFvvE9WTo/ylGOFSsUjXc2gLBZh2Uzsi
-	 sOxvOaWgZfi78sMocLj7MC6NnndZTXtnjiv1Xhh0PLMCAswpJhAXjB6ITNlkE7Mphr
-	 BJBpw0B+GERHJ99qcq6CblICTnd2PEShT0lrY23J0WX/rClzikI8YutFJ4Pg0m0Wyi
-	 foVB+OzHWCWkoKDHaQIMQfQ2y11tjyk9sOrUh2+6ZXJH9fpu8hpnPEQZihVn0ou21l
-	 zvYQquUQcBCzA==
-Date: Thu, 2 Oct 2025 19:45:53 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Jammy Huang <jammy_huang@aspeedtech.com>
-Cc: mturquette@baylibre.com, sboyd@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
-	andrew@codeconstruct.com.au, linux-clk@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1] dt-bindings: clock: Add AST2500/AST2600 VIDEO reset
- definition
-Message-ID: <20251002-accuracy-gloomily-a3e46d5a3f02@spud>
-References: <20251002095651.2211900-1-jammy_huang@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cd4sS0rPlz3chb
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  3 Oct 2025 07:38:03 +1000 (AEST)
+Received: by mail-pg1-x530.google.com with SMTP id 41be03b00d2f7-b5f2c1a7e48so1128103a12.0
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Oct 2025 14:38:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1759441080; x=1760045880; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=3UYjs/DjWtPFJ9SkgiQewKjh9UT4jabvAen7EJXFzrU=;
+        b=DVehh11PpxQuzWmbO9RgbsQNm6cyXg3v4L+8XY+TwwNG0DV7fUsXK6VIqEf1uPlyVv
+         faJu9h7yKkbgUMLW3m8fU3Aj3TQCIs5DSxTQKCPQGHA5JVWeYBDsnlya8eYjs+/N99f3
+         YbAB9aWYSzXEQLMWMYUQIMWUtwjE1RvPA9lSByiZBbGlVN0yIv4/xrBRobpB4LrAXuzj
+         FfJwCGbB8a9RluyrJIbHu2Oc53aPauuozdC5gTuTxtQgimqwKenhDE7Gtla1NmQerfYF
+         xZa7smRLIDFviLkEJWG2jf7OlzZXq+GQD3lJhgcqJYJRBmEg87FPi5FfxO4dTRc7QcvJ
+         T4Rw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759441080; x=1760045880;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3UYjs/DjWtPFJ9SkgiQewKjh9UT4jabvAen7EJXFzrU=;
+        b=XOkLwysWSWwtOzZCdA4kkx3uO5EdJ+WPljmh3pUE2t+vOrlwKFXD6/lq/LGZ9+Ax4P
+         o5xmERCTYz2R7raWvsjcPyXIjXsDYmwYSU1+v8qU5gbkSh8n39f62QmreaDrgIoRBoXq
+         HVrEcbQPy39beKCnJ3ofYx1L0IoKyAti9YjLDa1PR5fWMFVLOvdcKsq/TwtMTCoArItR
+         nH9Adg17j7nSdcNST6LXZ/9aYZ0UR04xmdMV+VlhAf/J70V3LmnxbWUoN8Aivk8JSV+W
+         rVmhC27E0oW9/t3TgKH5GaOF7Pkg6TgsFp4Lu7glFTMXwL2WsFGuinlV+qDs9dPG2mK6
+         jRCg==
+X-Forwarded-Encrypted: i=1; AJvYcCVzIaT4EbNCbEboIJEp1iWySfCE2uReK8J7uESrMzVcsGWkzf+Zd5mfYIPYKFftDL2C9PkQU1pK31NsN+s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxdRJ4xn8NlVDf48iaEU0iLnHuen7GgTcQ5rBefKvEI/6iMU3ya
+	c0SBttNRr4+pdF9Za4G9zfiHs48CgWQ14p477QAHlsujgtomVkPnFW09
+X-Gm-Gg: ASbGncuVs+TI1YvLeHgBljBWw7aGTzEs9nd6vGNDvEjxr/Lird8wf+ytbKDspMM7q7Z
+	bDfc1DMN1LzxqA5C2USPN8xlngyhBbmSyIQgxeJcIPxE99++A3Ol5P8hhJLlxTUDiOsxXZvH05W
+	+rCn8JEjHzHHxWcgGEG+nu+j4oPQouj61UE2jvo45FZ2tFQ/I6aNFn9CSQkNz+dtZ9uzzKy2rrz
+	V+xv4YGdCOu0R5GFbFJNfdhC3TtcPWeksBXPwUry8j42adRXAYUbf98Nly7OyPwIIcQ/vQfkvkl
+	Rh7sByZkuBe5NxhSKWxBflcBmfmayfZADLE1aE0i4HxkyrhsUv3K4hsdd4O8NEk/zxYcgt176Q1
+	CTVrotKlUwLK/OXdX7kSsYBXUxyftFxKcVgFLop2HLVk9yw0k0d7SYasDpc0=
+X-Google-Smtp-Source: AGHT+IGfpeSt72PLiRG8302u7jW0eS5cM/tPuBTjoCfYGBR7WBrL3m9GghHnqqRwzstji5FK0/L81g==
+X-Received: by 2002:a17:903:2ad0:b0:264:70e9:dcb1 with SMTP id d9443c01a7336-28e9a6fdf1bmr8314995ad.56.1759441080436;
+        Thu, 02 Oct 2025 14:38:00 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-28e8d122d96sm30394595ad.32.2025.10.02.14.37.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Oct 2025 14:37:59 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Thu, 2 Oct 2025 14:37:57 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Eddie James <eajames@linux.ibm.com>
+Cc: linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, andrew@codeconstruct.com.au, joel@jms.id.au,
+	chanh@os.amperecomputing.com, jic23@kernel.org,
+	dlechner@baylibre.com, nuno.sa@analog.com, andy@kernel.org
+Subject: Re: [PATCH v7 RESEND 4/7] dt-bindings: hwmon: Move max31785
+ compatibles to max31790 document
+Message-ID: <4b617318-f76e-47b0-9744-6a79803a149c@roeck-us.net>
+References: <20251001144441.310950-1-eajames@linux.ibm.com>
+ <20251001144441.310950-5-eajames@linux.ibm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,48 +99,19 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="eQ5hYxmKmELL5wam"
-Content-Disposition: inline
-In-Reply-To: <20251002095651.2211900-1-jammy_huang@aspeedtech.com>
-
-
---eQ5hYxmKmELL5wam
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20251001144441.310950-5-eajames@linux.ibm.com>
 
-On Thu, Oct 02, 2025 at 05:56:51PM +0800, Jammy Huang wrote:
-> Add VIDEO reset bit definition for AST2500/AST2600.
->=20
-> Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
-> ---
->  include/dt-bindings/clock/aspeed-clock.h | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/include/dt-bindings/clock/aspeed-clock.h b/include/dt-bindin=
-gs/clock/aspeed-clock.h
-> index 06d568382c77..421ca577c1b2 100644
-> --- a/include/dt-bindings/clock/aspeed-clock.h
-> +++ b/include/dt-bindings/clock/aspeed-clock.h
-> @@ -53,5 +53,6 @@
->  #define ASPEED_RESET_AHB		8
->  #define ASPEED_RESET_CRT1		9
->  #define ASPEED_RESET_HACE		10
-> +#define ASPEED_RESET_VIDEO		21
+On Wed, Oct 01, 2025 at 09:44:38AM -0500, Eddie James wrote:
+> The binding for the max31785 is the same as the max31790, so just add
+> some compatible strings for the max31785 chip.
+> 
+> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
-What's up with the gap here? Are there another 10 resets missing?
+Applied to hwmon-next.
 
---eQ5hYxmKmELL5wam
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaN7IYQAKCRB4tDGHoIJi
-0jpPAPoD3Ml/y5Zj0L/EgesLMAZ+GyKvd9Lokp4c6QrcNGpuVwD+JY5XO5FYrPik
-Fl5hcgGgK1Zfdf1qYGlZVllML/j07Q8=
-=ne6M
------END PGP SIGNATURE-----
-
---eQ5hYxmKmELL5wam--
+Thanks,
+Guenter
 
