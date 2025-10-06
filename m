@@ -1,72 +1,72 @@
-Return-Path: <linux-aspeed+bounces-2396-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2397-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09335CAC5BB
-	for <linux-aspeed@archiver.kernel.org>; Sun,  5 Oct 2025 00:36:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B980CCA471
+	for <linux-aspeed@archiver.kernel.org>; Mon,  6 Oct 2025 13:45:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cfNk43F4vz304h;
-	Sun,  5 Oct 2025 11:36:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759455099;
-	cv=none; b=F+KDw8qIKttg7svK+GqdK+aarQLTdWprQ/uA1ui/cwf/aXmmDVdn8vi4S4lzlEJCXMeTv9Md4EtBY7McffBnXvxQ2UDQ2SnwN1opN3L5EcthIcwYU16tiNmtVU9Hj4UcL5TnvnuQNqmFoYu0oVEk2jkTmQtvsBjgdhVhrtRGu/B+Y6TTe0wGu3thQhxTmsSc6/+AB4OijRmc7QrVypK7cvfrpAh/fyq2ULy+LSJpEez+1SEpoXFgX0ko4yfTzXV4EJaRs/q1qJ/GVP7J/WBhggJTES29dE99Y2IC7vcaT+03rN3nkEjOG67Se3XcSVs9LA6ts45GlA0kPVN6Ybr0FQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cgLB95Cp8z2xnk;
+	Tue,  7 Oct 2025 00:45:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759758321;
+	cv=none; b=nRYK+nULJAbZDNOACSVvnzKKHfsjHKMbAaWJODSAIFIR0uP6u2WWBPoZ3epRo9Jli3X22NQOV3cyCeSvzrgBijf8Q1GnakGF5goSrzMOIvHcGXsb1ZwZEWkAA/psUYU6JApZCNOEWvJupR0XlnuoV/DSznp3E7o0oT+DKP1SvSy9nVgLi0YjWs90hcGQSum9fZRtCallNRygRD+oA9A6ce8Yf1qbW0tSPaERw/dLgpPOqvxDyh5xQGpGZ6ZdNWEnvKALSpWr/9KOMd/JgXxj330tGDqPL0UnnZ9yp8rJYi9NRhB32VCn/Ja8zs5lqekaI6RES/jykuDtipAaIR21uw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759455099; c=relaxed/relaxed;
-	bh=Zgov3mqg1JWQnOI+E7/IFHeQFC41StHTfUVf14re2lo=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=czZ5vkMeZqbIrkHmiWSDjZkKp4hi/luGNyYUqXRWHl0ci+hJlve+fpGj1AEkwNbnzJIh8XwHsfxrebGXIaUnEM25oe1Qr4bnAGn2fQUBMu1IJjT7DEFh+yBmurJa1LwDzs9fuij/STjkdO9oJhf8jZjbRNnPytBi05BRl9WArUy7J7VfCZHU8Ae8R7x/JWa/OdEfx89M5F6KL4N/Lrxiod147gENdvGnXp66s/O9+Ry3S3PN2usmb0CoYpZfwSf9Vr79hStGvZ3NJ0cBMU6r1IlRb3PFHBZzgZHD3iHAWxcYHoUGMRr8JN3YB02t35vWhQvqoeRCB76NvwiczMl6Tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iwSB+ETR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1759758321; c=relaxed/relaxed;
+	bh=aH3eyr2iMrs8pijaLdoabns1MCGmnbJaq59cYFAEH10=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Iu0gCP3BX2Vyz9CBXwNkT7ctYJNj/yMCXZDtS2tRSr6osS0F0ZXwZIRvn02SiU6a3M8v2M9ZJo8nBdCmNBXv/GDGrGFvnlxITVNr8KSYXQc+y8S5byoL5yhmSio2juQRij5vgJT8jJrIII8qhqKpmyzHifc2B+Ig/EjCLPkU91Lp6B/AA3Xm4IoZB7mDsNm9ePQT5zuVXitGxYj9qbdOyTJY/NKNvDCLHky8yPCrzH4Yfn3uo5UHnsjG7IwCFMVKB3kUySMpQdA0+Xn0f7EGWY7NYPJbBE2Rv0CjS5+R0zmws/2t5pexRc3FUBuSsXVmaym8+PD1zhGgTNoDt78onQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J49OC6wj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=iwSB+ETR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=J49OC6wj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42e; helo=mail-pf1-x42e.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42e.google.com (mail-pf1-x42e.google.com [IPv6:2607:f8b0:4864:20::42e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=eajames@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cdB2y3WMjz3cnv
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  3 Oct 2025 11:31:37 +1000 (AEST)
-Received: by mail-pf1-x42e.google.com with SMTP id d2e1a72fcca58-76e4fc419a9so1722903b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Oct 2025 18:31:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1759455095; x=1760059895; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Zgov3mqg1JWQnOI+E7/IFHeQFC41StHTfUVf14re2lo=;
-        b=iwSB+ETRIitQMT6zAvTp0IcMpTL8IoFut3t3jB/3clJ5MLeSNyw0lMEF9EuKnCtIOf
-         KJfLybOKxsbqbjfFNEYsJnIXYYmuhbmVvVP52Kn9ogMdIJ6n0DVGPSUjyD8h2CnaaBnW
-         TBNR0+dZKOCCprLAET1iuVffJzWC9vVGsznGg9yFIP6mVnR7KP92pq+3zm0daJJQ6yQp
-         4qcyzrvVhLuaitjjN0Zeo/2hPEKJ4tWxPqKIdIQk55HRVLO5X0iJfQ37/1sSbiHQp3Oi
-         n8AJeLeScDKx31oCp6wR/+wPUr+k/N3KTKNRjgnoAvftC5seVRUj6Vqr5FqN3LCJBex1
-         PAew==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759455095; x=1760059895;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Zgov3mqg1JWQnOI+E7/IFHeQFC41StHTfUVf14re2lo=;
-        b=FK+WG+k5T9KqUohg72S0CnlFr88fBUeBwN96qWZLz8CV0HNHZxxq9B9lDBLk7hRV7e
-         hBHWrzY1PmxCoOTRfWFLRVoOQnMzqx+Ub5oncg06QPZTgzob08nEN2kg0aHb70Z3aDle
-         0o4jxlEaB7fRSgEjRNlbveON3ogKwp0w7KS3+cMddBvXDWX0d6aEbZsVtdftDtrVQcgB
-         WzNZOG9yTuw/JNY1R/3TtJzC9Ks8Oyy9j2Goc+n1NlKY+pcy9HjumSpPP+jAkDPsI2FE
-         BDm6vftpmPM//CEZKhudj2BZcuWerEfAG3Liqpj1QTCz3AwSD8F6CnNPBaL6FDbQqPh4
-         cJQw==
-X-Forwarded-Encrypted: i=1; AJvYcCXenGAF3RGyxG1pPRZg+AQgd2ef6SoH/fR6HUCqMf/EsNfSgFIJPi/jkyJjaLwuOBHyNB+Cw4PWoN3t9Dc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwVCKDpOJ/Ek2N3UanLd6022LySycOy9rgd7SEYeZdcIp2WB5iT
-	I+hrpFAu78qcSSQYGbDLa5ZxIaY5Rzmlzt2pzTUXNM6qy2iUPya6XgMUmezZlD7L6siUG/+ZJLg
-	YNx4dusF1BoERQmdU+3GznMRwcunwoIQ=
-X-Gm-Gg: ASbGncvh1adznUJ5V8fu2lFEf9BSBKeLxicuI5uAk83E2qB5HH+HhIggovKA2HF3XEp
-	dDkdtPnkSrAVa7EWbr5poMddauWNSKYZhbi8lW1lMCkZwX5fRItSsLWlfvBEvK/rAT/v6E5hT3K
-	uDpaCabzLvcHPyDh6UeiitvFH4GKTmsagcB53CJScjqalNC0JWh/A9qkPW5A7WRxa883mZF2evX
-	X1MEbc3ten7jeE1WDJ5GXe2HqUiTG7f
-X-Google-Smtp-Source: AGHT+IFBBcoMSyrE+QoQm3Vaigr5y1LjVm/kF3OscSB6SjPP3hDzPLZ08qOkm20G5zQLmkLNSTYxFMbrlzXKgiaBYPw=
-X-Received: by 2002:a17:90b:1c83:b0:32e:7270:94aa with SMTP id
- 98e67ed59e1d1-339c27ba06cmr1415539a91.19.1759455094873; Thu, 02 Oct 2025
- 18:31:34 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cgLB83n3sz2xnM
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  7 Oct 2025 00:45:20 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 596B0cgv030070;
+	Mon, 6 Oct 2025 13:44:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=aH3eyr
+	2iMrs8pijaLdoabns1MCGmnbJaq59cYFAEH10=; b=J49OC6wjMC+KuKfQq2PKOU
+	RGgDxqZTk5IX8AYDTbzcIotpTUVZBVxrNVYqVEbxtzNEsgD9DfEr/WkH855rEHu+
+	GeelF75sRoEC+HKcwtA54IZkyF1exsaL0A++PWjpkTlcsvTfQ/iDxqeuxQeYpduZ
+	+zBf3ykI7b/3cl5ZjeTys77xDnK51iv26hSRlhD4jw+5JX+WH9nciOswylViBlMm
+	abg1J5PzWFLSxqL4rPh9MShssrFJtSySC4k6g1S7NbfGGFXpbsBDn3QwsIo04uCv
+	0lcuYAuplR+d+67WKu4RWYHtedWQq3AHtJshyub2Coos+v1uIHtj+6jUqQc1EMVg
+	==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49ju3gsnj2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Oct 2025 13:44:58 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 596CbUxG000886;
+	Mon, 6 Oct 2025 13:44:57 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 49ke9xxcp6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Oct 2025 13:44:57 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 596Div0l9110128
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Oct 2025 13:44:57 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3DB3D5805B;
+	Mon,  6 Oct 2025 13:44:57 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 58F5B58058;
+	Mon,  6 Oct 2025 13:44:56 +0000 (GMT)
+Received: from [9.61.74.248] (unknown [9.61.74.248])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  6 Oct 2025 13:44:56 +0000 (GMT)
+Message-ID: <8ab87732-71e1-4101-9aed-14f68c27fea1@linux.ibm.com>
+Date: Mon, 6 Oct 2025 08:44:55 -0500
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,77 +80,173 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251001-yv5_add_dts-v3-0-54190fbc0785@gmail.com>
- <20251001-yv5_add_dts-v3-1-54190fbc0785@gmail.com> <20251001-bonding-surging-af8cd0d09e07@spud>
- <CABh9gBcKt1zqvMQ=390HESPR5KrA42jaMFj9Ca4qmeS0d0ToAw@mail.gmail.com> <20251002-outmost-epic-9cb3bab4d352@spud>
-In-Reply-To: <20251002-outmost-epic-9cb3bab4d352@spud>
-From: Kevin Tung <kevin.tung.openbmc@gmail.com>
-Date: Fri, 3 Oct 2025 09:31:23 +0800
-X-Gm-Features: AS18NWAaCZIp75UYU-ToloKyuCFQ_kzh-3GlXmpsdfd_oQHvUv7DZqqak8PB7Qk
-Message-ID: <CABh9gBebhm3o49o81JcZTLAJZhQDEocJs7inUS+Gn46zOK5DNw@mail.gmail.com>
-Subject: Re: [PATCH v3 1/2] dt-bindings: arm: aspeed: add Meta Yosemite5 board
-To: Conor Dooley <conor@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, 
-	Amithash Prasasd <amithash@meta.com>, Kevin Tung <Kevin.Tung@quantatw.com>, 
-	Ken Chen <Ken.Chen@quantatw.com>, Leo Yang <Leo-Yang@quantatw.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 RESEND 3/7] dt-bindings: iio: Add Infineon DPS310
+ sensor documentation
+To: Jonathan Cameron <jonathan.cameron@huawei.com>
+Cc: linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-aspeed@lists.ozlabs.org, robh@kernel.org, krzk+dt@kernel.org,
+        conor+dt@kernel.org, andrew@codeconstruct.com.au, joel@jms.id.au,
+        linux@roeck-us.net, chanh@os.amperecomputing.com, jic23@kernel.org,
+        dlechner@baylibre.com, nuno.sa@analog.com, andy@kernel.org
+References: <20251001144441.310950-1-eajames@linux.ibm.com>
+ <20251001144441.310950-4-eajames@linux.ibm.com>
+ <20251003150102.00007dae@huawei.com>
+Content-Language: en-US
+From: Eddie James <eajames@linux.ibm.com>
+In-Reply-To: <20251003150102.00007dae@huawei.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDA0MDAxOCBTYWx0ZWRfX4KDcePseopNg
+ eDkuwDWumPITZpBbmp/fN6p/RmRbs4/e9ENwGJMN91Nk1lg9t549Dgc510d9aRxeZjcQ61Lc1e9
+ nzBwSgUXb5km72VrqizxHvnAn8XQSlewSVwDFSFzeLaCfr+L9CyOb6xqMbcVefnoLxdGOQPhFJJ
+ GIJA38dp7DA72oNJRuFKEmfCm+9gBvhiBT65sESxQPNLCnX+cIYNuGoAk1B3dPljRqapDmgty8w
+ RNnPa9M/9U6/wSd+0OFEfdPIC6t1obHI8Nz1HOa+rWxeIYzDPfMFVfB81XA5HVif/qRjbmGsmC3
+ FRRF+/J087GMuWnOEnjMTi7z6k59R+EOOhKx2UHwUKQJ9D4wTLj7H3jtemrymnPHc9XsdwXdJR8
+ hn/5u2tawh4YIjaQmk+LP3JG0VtUaw==
+X-Authority-Analysis: v=2.4 cv=I4dohdgg c=1 sm=1 tr=0 ts=68e3c7db cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10 a=gEfo2CItAAAA:8 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=cY1baSEh5ss2YjGIKrwA:9 a=QEXdDO2ut3YA:10
+ a=sptkURWiP4Gy88Gu7hUp:22 a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-GUID: zrOExJCPVknGmCmy8eQX-JXXsaTETfWZ
+X-Proofpoint-ORIG-GUID: zrOExJCPVknGmCmy8eQX-JXXsaTETfWZ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-10-06_04,2025-10-02_03,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 lowpriorityscore=0 malwarescore=0 adultscore=0 spamscore=0
+ bulkscore=0 suspectscore=0 clxscore=1011 priorityscore=1501 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2509150000 definitions=main-2510040018
 
-On Fri, Oct 3, 2025 at 2:35=E2=80=AFAM Conor Dooley <conor@kernel.org> wrot=
-e:
+
+On 10/3/25 9:01 AM, Jonathan Cameron wrote:
+> On Wed,  1 Oct 2025 09:44:37 -0500
+> Eddie James <eajames@linux.ibm.com> wrote:
 >
-> On Thu, Oct 02, 2025 at 12:23:47PM +0800, Kevin Tung wrote:
-> > On Thu, Oct 2, 2025 at 2:33=E2=80=AFAM Conor Dooley <conor@kernel.org> =
-wrote:
-> > >
-> > > On Wed, Oct 01, 2025 at 04:47:50PM +0800, Kevin Tung wrote:
-> > > > Document the new compatibles used on Meta Yosemite5.
-> > > >
-> > > > Signed-off-by: Kevin Tung <kevin.tung.openbmc@gmail.com>
-> > >
-> > > You've repeatedly ignored my ack, so I assume you don't want it.
-> > > Maybe you want a nak instead?
-> > >
-> >
-> > Apologies for ignoring your ack repeatedly, that was not intentional.
-> > I truly value your review and will make sure to include it. Would you
-> > suggest that I send a v4 to pick it up, or is it fine to carry it
-> > forward in the next revision?
-> > Thank you again for taking the time to review my patches.
+>> The DPS310 is a barometric pressure and temperature sensor with
+>> an I2C interface. Remove it from trivial-devices.yaml and add its
+>> own documentation.
+> Hi Eddie,
 >
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> Why?  I guess you need the #io-channel-cells which trivial devices
+> doesn't allow because you have a consumer driver?
+
+
+Correct.
+
+
 >
-> The maintainer will add it when they apply, there's no need to make
-> another version for this alone.
+> Obviously the binding patch shouldn't mention that, but it could call
+> out that there can be such consumers.
+
+
+OK, I can add that.
+
+
 >
-Got it, thanks for clarifying.
-> >
-> > Kevin
-> > > > ---
-> > > >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
-> > > >  1 file changed, 1 insertion(+)
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.ya=
-ml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > > > index 456dbf7b5ec8f4442be815284e1ad085287dc443..6f2b12f96bd6ce31b41=
-75e109a78d931dffdfe28 100644
-> > > > --- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > > > +++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-> > > > @@ -89,6 +89,7 @@ properties:
-> > > >                - facebook,minerva-cmc
-> > > >                - facebook,santabarbara-bmc
-> > > >                - facebook,yosemite4-bmc
-> > > > +              - facebook,yosemite5-bmc
-> > > >                - ibm,blueridge-bmc
-> > > >                - ibm,everest-bmc
-> > > >                - ibm,fuji-bmc
-> > > >
-> > > > --
-> > > > 2.51.0
-> > > >
+> I'd also expect to see some supplies even if the driver doesn't yet
+> explicitly handle them.
+
+
+You mean in the example section? Sure. I'll send a patch separately 
+since the rest is merged
+
+
+Thanks,
+
+Eddie
+
+
+>
+> Jonathan
+>
+>> Signed-off-by: Eddie James <eajames@linux.ibm.com>
+>> Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+>> ---
+>>   .../iio/pressure/infineon,dps310.yaml         | 44 +++++++++++++++++++
+>>   .../devicetree/bindings/trivial-devices.yaml  |  2 -
+>>   MAINTAINERS                                   |  1 +
+>>   3 files changed, 45 insertions(+), 2 deletions(-)
+>>   create mode 100644 Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml b/Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
+>> new file mode 100644
+>> index 0000000000000..7c0782e2a821b
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
+>> @@ -0,0 +1,44 @@
+>> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/iio/pressure/infineon,dps310.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: Infineon DPS310 barometric pressure and temperature sensor
+>> +
+>> +maintainers:
+>> +  - Eddie James <eajames@linux.ibm.com>
+>> +
+>> +description:
+>> +  The DPS310 is a barometric pressure and temperature sensor with an I2C
+>> +  interface.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - infineon,dps310
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  "#io-channel-cells":
+>> +    const: 0
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +
+>> +additionalProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    i2c {
+>> +        #address-cells = <1>;
+>> +        #size-cells = <0>;
+>> +
+>> +        pressure-sensor@76 {
+>> +          compatible = "infineon,dps310";
+>> +          reg = <0x76>;
+>> +          #io-channel-cells = <0>;
+>> +        };
+>> +    };
+>> diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
+>> index 7609acaa752d5..a72b7fabc7034 100644
+>> --- a/Documentation/devicetree/bindings/trivial-devices.yaml
+>> +++ b/Documentation/devicetree/bindings/trivial-devices.yaml
+>> @@ -127,8 +127,6 @@ properties:
+>>             - ibm,cffps2
+>>               # IBM On-Chip Controller hwmon device
+>>             - ibm,p8-occ-hwmon
+>> -            # Infineon barometric pressure and temperature sensor
+>> -          - infineon,dps310
+>>               # Infineon IR36021 digital POL buck controller
+>>             - infineon,ir36021
+>>               # Infineon IRPS5401 Voltage Regulator (PMIC)
+>> diff --git a/MAINTAINERS b/MAINTAINERS
+>> index 0c8281ea4cc64..92b9854a0e07d 100644
+>> --- a/MAINTAINERS
+>> +++ b/MAINTAINERS
+>> @@ -12191,6 +12191,7 @@ INFINEON DPS310 Driver
+>>   M:	Eddie James <eajames@linux.ibm.com>
+>>   L:	linux-iio@vger.kernel.org
+>>   S:	Maintained
+>> +F:	Documentation/devicetree/bindings/iio/pressure/infineon,dps310.yaml
+>>   F:	drivers/iio/pressure/dps310.c
+>>   
+>>   INFINEON PEB2466 ASoC CODEC
+>
 
