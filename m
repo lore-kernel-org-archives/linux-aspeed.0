@@ -1,163 +1,81 @@
-Return-Path: <linux-aspeed+bounces-2402-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2403-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F036CCA470
-	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Oct 2025 09:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F5F5CCA470
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Oct 2025 14:46:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cgrB05R0Sz2ywC;
-	Tue,  7 Oct 2025 20:16:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759828616;
-	cv=pass; b=lmyO1LM5arH6otCKbIcNDWbk/6N3XBIYNFjeQqM21OvWNman3PPXiRwC99m0UXoPk1kM9cFMFbUjIlx+MmTWap6IZNvLmj37F9d+bQv649H35hKI8L44n2DV18lvF5G8cLeIkbXkaUuzQ2V9eBdjTD1/XJAxqHh7VG92fwXcgB/ZBGrlEWsqdCEHrFZyZoEjHLWaaYsG/DX7beQ3HtNuBDrPkxxngV4pKHc4OT+xlsryRrpyr6xDbUw5/qXUMWKVdO2su2BZWuKatTCyf6l1VO8uB7weUDqQ5/vsF3GHjanp/6H7T6dUjl04H0nI//pAq2AtVMvq+qV++bnJR6ftvA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759828616; c=relaxed/relaxed;
-	bh=s+rIrVrUKvs9fGqm6tT5bAjFBMGT1ap95AymkDsKAkc=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=OFImzUWZdCKLCyXpnDuFdkYR1pjjW7lYZvGrdPFFpgFlrmbi1VQWf1mOghAWs0Esu4YhNpueRBZ3jOqCkoxMmwegl63Tr+Vn9oyE8EPMP7jD4oArbWhX1HGFMdJl2bmrOlmb8iwtM5ILdt62ewTwQnYYdxdmeah55yJarzLguj8tJJlxNT1hBt6mbv/8279jHNrh/tlYSw3veWkVazjX6YoqMuSPvLOjpgiux+09i11KkFZKvS5JEon3xX4WpMir9ff0r8pWIg5v7HPJv8oM7ThM3iBeTMTn5u9uB/5EcEh7ZsHLnvA50v0QP6YFQIB5vxbnFbjMfizrBhnW2vV5HQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=Hg32GBZU; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cgzV96Nc8z30Qk;
+	Wed,  8 Oct 2025 01:46:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759848385;
+	cv=none; b=SuAFE/ybCuhjuXyONPhm/LQtvC9ue2k5SU01TbhhVTwLVPWACMawbNQdOCZcfcTbA9y+kWOmqoZteEr+MdeGyj0aTyx0uW9LYRYfqiOXivuX5daPmaQA9Xe3GfnEorCkUdQl5pJQdkO5PxPK19U3U/AZFq5Zn8kZ3MXdvUQaQ1kWU1JxZSBfdH1GFMPLDVhlXaGlqglXyiBlpF5jlw4OclAxZsv6P1cPEgJwSAZSptY6SqTbkz+9gqf0uhZTKnVB2UiFw/wz8dbB/mw850h+mkaul3RknPD2+YGu8tIG2BL80Xfi5GEqHnciSvSyiwcoaWTgWd++VxuIheV+duMXCA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1759848385; c=relaxed/relaxed;
+	bh=x7a7yYa2BC6M94EJB0V15A3UsNpa5OhhLhNC4izb/8o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=WIjVSyE+ApnvrkSY2JtTpKvmZEvRVpatqXLIWM0d+WNHIGjUi2OGuJHIxzNMf5HMlrHUmaRQ6q7ph3ZTOZ7t9B+0vtUV+5ZK1RfHiTgLS2Cto3igxpe27O2q1XG/pjy0RlcElO/P0QVCjwWUJPGMUIZlMxmJh/LvqP813LuKibuYIVUtkW14g9JVjIg9FtEzdIK/GXxQ2+0r+UU+hzlvlf9Euw5aE0EBV/YZRtjuUoSuCS0OpPbBrLfWO3X9dI92UZRzjOcw2lvu8xsU+o0zAy5Ttym6CD8sEDiQAa8KoBqqG9lq4Kj2+b72dHNWREX7aZVBl0wg5ZoC4IxfdeuKVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LAJleiz8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=Hg32GBZU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LAJleiz8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cgr9y5htjz2yrm;
-	Tue,  7 Oct 2025 20:16:54 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Z2mk0nNHYug9vY6A3ZImKK2ev3yXlWYY5E6d8JCaJiUD2iDBi5Q903vNNT++kpRBCmaDcUeFdYhDuJnXTlRLUXXBBGL1RwbX1tEc3A71AbXxlGR6pUN2T25Fv5Jg8AdNMvKfgyjjEffqYoZ3XAQNovEskXGCnq0TJjsgm4hwBN1XtvqXMfkwqpOedqvUDn9OuDjJwOCdMkhoizkfFWbVZwCJmyIp2pKwrqgWqrXnzlnnoMdH3zcFNIZ3/mlfS5Jh8cPpl7DAjjikPEgeXxAuRGCvSIV38o21E1j5oEYGgjfEgymINA90pPH0PgHO2XlNId/Y+7afbUnTeRDpQKMQrg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=s+rIrVrUKvs9fGqm6tT5bAjFBMGT1ap95AymkDsKAkc=;
- b=qqGlprduSIQioS/TeyzqVrzmnBjJ1ORgpZpcdt4TqEBHRIQg0Qocsfw6JlpbuOASuQgtLHBDaoPQI8bGI77JWg8npV/tqL/+J5NzDEJ6/4mf2+ZqPtiRwE3L/GZ9o5pDMmFQCySSmPP8Ou1SewAJdrvspOC10Shtpog1f0drLVp+3GXRzecMmZkLeuxx88RS7Hfg/YyFmz4/SAHRc2u7zRN5wObZ0IncD6GdKg4pxYK9MKKqPiqRYO0DeXYPrcR3IHdYTsyTfBCyLck/48HW9AVC08LXALTP5iEVXN91Pfkni75kyB2sAHMAp49UAjjaV52IKgX/oqMXKt8fWszVvw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=s+rIrVrUKvs9fGqm6tT5bAjFBMGT1ap95AymkDsKAkc=;
- b=Hg32GBZUyTH7A+X7Xav7o4/phmHTjZXbnWScn42ecHXlWO31ttS0moYG9mFaRUlU5j1h/QqZOKFcZvyHo6JFDN1mfzVDDQ8MYbxKpf1hhXvcB8WBeEcdzQjvdqJlEIXtJ8CnRCQw1kE+81WdmUOAnuyaRsd9TobNqNO5K4GHl1U0X1VlcVcK7TMBs8GU72gbruI4FRIVuaim7+IDdPSQ9KnBa8ZX1/gx46WKR2k0StlwB9Qh3VfvoDv1wTWkLmeKi4jr5BFI1zBnXKqwBD6PcOfGCte/WIQk3kfuIiVN5cDO0axUmpA9GjY0ZSKc4B+Bh8pqyiZlQh2yPOaX4Hn/DA==
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
- by SEZPR06MB6599.apcprd06.prod.outlook.com (2603:1096:101:17e::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9182.20; Tue, 7 Oct
- 2025 09:16:31 +0000
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::814e:819a:7d52:7448]) by OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::814e:819a:7d52:7448%5]) with mapi id 15.20.9182.017; Tue, 7 Oct 2025
- 09:16:29 +0000
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-CC: "lee@kernel.org" <lee@kernel.org>, "robh@kernel.org" <robh@kernel.org>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>, "conor+dt@kernel.org"
-	<conor+dt@kernel.org>, "joel@jms.id.au" <joel@jms.id.au>,
-	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"linus.walleij@linaro.org" <linus.walleij@linaro.org>, "brgl@bgdev.pl"
-	<brgl@bgdev.pl>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
-	<linux-gpio@vger.kernel.org>, BMC-SW <BMC-SW@aspeedtech.com>
-Subject: Re: [PATCH v2 2/4] dt-bindings: pinctrl: aspeed: Add support for
- AST27xx
-Thread-Topic: [PATCH v2 2/4] dt-bindings: pinctrl: aspeed: Add support for
- AST27xx
-Thread-Index: AQHcHYdz6/9iKI/eoE2qlgWtTAxWebSEP7kAgDJU8xs=
-Date: Tue, 7 Oct 2025 09:16:29 +0000
-Message-ID:
- <OSQPR06MB7252E76F47E7C3B6F0BD13ED8BE0A@OSQPR06MB7252.apcprd06.prod.outlook.com>
-References: <20250904103401.88287-1-billy_tsai@aspeedtech.com>
- <20250904103401.88287-3-billy_tsai@aspeedtech.com>
- <20250905-monumental-camouflaged-butterfly-01faed@kuoka>
-In-Reply-To: <20250905-monumental-camouflaged-butterfly-01faed@kuoka>
-Accept-Language: en-US, zh-TW
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|SEZPR06MB6599:EE_
-x-ms-office365-filtering-correlation-id: 0f4029a2-7c5a-47bb-53c2-08de0582335a
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|366016|376014|7416014|8096899003|38070700021;
-x-microsoft-antispam-message-info:
- =?Windows-1252?Q?uvSq7WwkuiB810a6akK1Q5O51dpq1kxEz/AUzc+AmxZLZ97g7+mzMTQk?=
- =?Windows-1252?Q?BVP11OIUuW8tP8qlkrxdGhk6lOO0WLo/2tPBL+iNw9fiuHCQjFKyz0jY?=
- =?Windows-1252?Q?Y4impsPOhYHQS/uYJLJ6Q/jCq3wAoUbJLJ5irMcHRBHY9IFY7mEAbbWl?=
- =?Windows-1252?Q?HHrzsckhdvLvSjNoqOoDfKBCMpaI8QO+mG/b2FfHCCLS0RseYv6T7Pwo?=
- =?Windows-1252?Q?2oN/oigbmWJmbcVI8F2fYTr/3LzEUNaO/hHjArSJ250tlfDxf3bvh3lX?=
- =?Windows-1252?Q?0ioVBthF2ZfSQBeDSt0F9wsVHu6UDcEQ7fSd5e1va1BjKe7DS/eFU+7o?=
- =?Windows-1252?Q?oBuwcN81NHJj6P+hgdtR8gbf1Cd+X8uTdq67dA5c5IGYnU9CyRfzgrv9?=
- =?Windows-1252?Q?zSXnVoWBhhNgvDLAT92B/kQxGGunp347zclpblFpsxwt0SouGK4i2Gac?=
- =?Windows-1252?Q?IxHAjIY/Fg3XxwzXmeM5cUSQWEjXSx5FsMAstUjezevE7pBUjyCaylKo?=
- =?Windows-1252?Q?tm42izHmQMCKCmXfms2dC0exrSAAoCgJh+1HkY/stRDET76979Ehs3rM?=
- =?Windows-1252?Q?nq0it6PsNp9KG14Op7kC/sEChmbO6tJ/vA+ZlYbDptWKmXpsvBXqA0RZ?=
- =?Windows-1252?Q?Wzvx0pPpsqOnrWhYf+67HPpUs274SRqYkyZgfw901ZWqW7KtwbjwUK48?=
- =?Windows-1252?Q?0zYgqNoOHneczTBPfIrqbfvqsHaV6ON0i8qvaehxIx3jRVSf1uoOLRvL?=
- =?Windows-1252?Q?mzeWZZ4Lt/53mOobFMDnMD/tpICi4D9S8aNoyFfsEP5JJbyLPdM74fBH?=
- =?Windows-1252?Q?4Cidl5NXZCUjyIwXVKq03TGFAtOcqpTBcXqyE7sOKnlDDj6ajGV20FJM?=
- =?Windows-1252?Q?R3Jj54J/X6Iu0O6S5/q/9xCB0EdFYrDu1Yn7qFAjsceF4xNeOcNUFxI/?=
- =?Windows-1252?Q?dIM+1lu7qGr2W0cSoi7qgFD+dy/4upni39yYMJMySexCiJwqa+cplrOm?=
- =?Windows-1252?Q?69Pl9Km3hXk6L4V5Y50p9rHm5Xio9LsEXdR+3RoBT2yZmSwG7xqNLAEw?=
- =?Windows-1252?Q?I9ASDTWXiV5DhOtIBu2MieqiMRDbuwHMQuFxm+h7UGVphg65/OzQRM8+?=
- =?Windows-1252?Q?Goy43kh6XYf6M2ETk150aSkNa62Ak/sUda6LFGYf2NJhryp1UZEeg+Qd?=
- =?Windows-1252?Q?mcctwhLAUyfNUObtYQFC9xL2yk2SjJ8/JWd0GBFA5+c98gOVZYZg5/NJ?=
- =?Windows-1252?Q?TUCl1G6APXbXXZiUlFXcGMaX+uZXtQek6+mS98SD6eMFH4OATTThzoH9?=
- =?Windows-1252?Q?xc3XTI5GTHCyzoD4rRPUFCBmvC0qBJI6B7WI1dVRZYnASic3IAIKjAN3?=
- =?Windows-1252?Q?OQwhuau1KTwaggU7+jjo1bAvWgvoo7TeFaEaiftfuLvdN6bCnqwT7l8q?=
- =?Windows-1252?Q?+fTaqHOmdZ3vycG9CunhZagRFESm9cJMVzEF8bjzgN2HV2A2Cwtp1xDR?=
- =?Windows-1252?Q?FIlFcHWPVuSt6/7FMThlCd94Yyl+2g/kUcQqTXteK1jZ6H+LmaoNcDs5?=
- =?Windows-1252?Q?vrWq7FSoiyk4MdKhMG0aPlNPOVi4eNjWycgDvoJ5gFLsJKRGbAsK4tkS?=
- =?Windows-1252?Q?FowEnEm6J/V1IS/y3fefGPp4?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(8096899003)(38070700021);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?Windows-1252?Q?+vXxwzrP6r7TSaw41MzNvhHu/SpAyw11Jyzmmzw5LsVeErWH1o3dNYIi?=
- =?Windows-1252?Q?MmWik55rk6UuZHjf7b1Gcy67wvr2pxDECBLLPXzE4KyWlZuZzEtA4wF0?=
- =?Windows-1252?Q?jPLbjCGBJG23akeAQA0FRulsDZHTM5jFComfX/DEKMLDm/cejzqVhSUK?=
- =?Windows-1252?Q?0kk8jqlLDAY3c8n1M+cJoxGOAM3I407bQmGHQzUNvU5p50lWOK2l1GPQ?=
- =?Windows-1252?Q?s6P+WcUIBcorzvnHHyhc3LxZPWeE3vSlFjIerV08Ft4j3Oli/Wsg/7M0?=
- =?Windows-1252?Q?sK9w5Gu9MtoeabjEVL2ZYobCUA8w7JlzKb9DayzfqZSRnWNOW5PCS3Uh?=
- =?Windows-1252?Q?sFaa31s2S0LFtGkUO1SZS2lkOF5S0HcZkiFs2vjjJ6qp8EB3vG9yL/tu?=
- =?Windows-1252?Q?KfCwt31ds2wuwT5Apm+zv1GrSnBB6dsMW5OZSCarQNk6ayVtAllRceJs?=
- =?Windows-1252?Q?qlycrfeqiVgnXSBmg3KwXhU/ePifScfgYVTNCZ1wypIFc0PvHZZMcVba?=
- =?Windows-1252?Q?0zLir1zPQmN9A+HzJnp5UP+OUD7kC/iguqac0MR+UaH3yNhmhllho30v?=
- =?Windows-1252?Q?RXYbUgm9H40noVYd0Vz1VVE8Trmq8Vlw/jTNEi7JR3+KZ2LSWZbQDS7O?=
- =?Windows-1252?Q?UxCOUvQpXT/UjsnR5B9si1IuSquGcwyicVRgCOCpfxQGwt/7aMt4Uo90?=
- =?Windows-1252?Q?6w4H/wF1uQ+2dSpnvbhWueo+PkOa3B2/ha4YQiOtzrbPjOxGW9ctvZb4?=
- =?Windows-1252?Q?414EIyeuHQupV24vRfz/0JGW4XkyFGJyl1g3R+I0WDIy2KTvzXahIsLZ?=
- =?Windows-1252?Q?aqvRpRLtpdbJ6ejjfvk3y6UDEhW3z4SxiQAIHuZCmOBQj3d2Rcq2+Wb/?=
- =?Windows-1252?Q?dyXLObTXDNXaEdkYsaZGNd8oWdHv1SJr5GluDnpZeYArPATGHFP/DLiN?=
- =?Windows-1252?Q?/mwSfKSgnMKXVvWwtVwbNOjqDzFFtJBWpBHjpxaC8PopIMWpUPRM18DB?=
- =?Windows-1252?Q?YIRHEklLO5qmmXlgStL7ruK96RXmIO8y35cJFUNlEvtoi9s+yBJiFs9V?=
- =?Windows-1252?Q?b7ynm7hLSRxGqYcnDT2ZYdiMOCMoqplFtZdVRhvbCDyJkWYz6xoFhgOo?=
- =?Windows-1252?Q?GOpegoXMCE5JzQo+5CxtWL1RKQ0fjjdIiBoSubdDwxl2urUYYJ+C3jMe?=
- =?Windows-1252?Q?3LoCKTs/wRb1XiriKfSBBHNv98BlGxmiSDnBn8SEBj/tutWVaQNRyxWU?=
- =?Windows-1252?Q?FdM2lEyNpwuaC1ZYKYFIKi63jcglNjvMEKcEvQD902UCDclUITerkFB4?=
- =?Windows-1252?Q?Ah8le7G+5nJh1O61TVI9WJSJCmJgMklqjkmkcrLA6neZvvrOzZMmWy1K?=
- =?Windows-1252?Q?pYrHK7EMLgWsFvs69E2cT3hnIlIZxoogbpHAj0GN/6DEJuAPcIc9MDlO?=
- =?Windows-1252?Q?bp5BuaLl5w4GnJGCKslMvMvKaDR6zcZaHhzugFK9gH4xEfkS7pVE651h?=
- =?Windows-1252?Q?ZcgWYgVaWS9ke1+DDLRUaQLbIfdRu2T27uM1hn4WaBjcfMr53+PomHpo?=
- =?Windows-1252?Q?MhOOAEnld5Z7klwEw8a3K0FLvfRMZ66sWa54VhpvHhDKRsWMbU6hwdoT?=
- =?Windows-1252?Q?VyMydR3DnM/EpDhOTluWmkZ6sRs5wGPz047AUWlGLCt6fdQc1MQRwirr?=
- =?Windows-1252?Q?MicMbRUv51eD6S1EJJtscVw5050tBNbzYEEpBiq8LXMPAnF1uxdhENGC?=
- =?Windows-1252?Q?u3RzfhAV7rsl/4zIPKM=3D?=
-Content-Type: multipart/alternative;
-	boundary="_000_OSQPR06MB7252E76F47E7C3B6F0BD13ED8BE0AOSQPR06MB7252apcp_"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cgzV805KBz2yZ6
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Oct 2025 01:46:23 +1100 (AEDT)
+Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-b5515eaefceso5961114a12.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Oct 2025 07:46:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1759848381; x=1760453181; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:to:subject:user-agent:mime-version:date
+         :message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=x7a7yYa2BC6M94EJB0V15A3UsNpa5OhhLhNC4izb/8o=;
+        b=LAJleiz8zfow68raKhiVXZt2Rmt/Rmrb2Vycf/RE/f71dG+gRCCdTMGmsPuj2+VrJ5
+         oAd/6VY4H/uUwqemVsLULc9q34sxYx2IcVjWwo2pxYIEopVMLVkboJIhFIYO0wwb6mQC
+         V3nmVBeKxtm2PyitFMShPvFb5xhECUbBRAsXbtkwMsDXTesoinH+Z2PZYCXi1hayeoLl
+         RdONlwLJIpj41T2VZC+/BHZc8znmXK4ZriqVB3xxGIlBYopLzPZAzS4+ywToRO0FbIHU
+         e1gyIcpC6XYojdEbE+QKLEU+NauOwS5YZ8ELSgHy3gDzhrhRWOOPBKezRSx88r1DfgxM
+         0VnQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1759848381; x=1760453181;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:to:subject:user-agent:mime-version:date
+         :message-id:sender:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=x7a7yYa2BC6M94EJB0V15A3UsNpa5OhhLhNC4izb/8o=;
+        b=L+P7GJ4m5PUuPsbPxPeg5MyBHHXIOPZ/51tZihoP8hahNpcED/0uyAQ1p3uNp7rcCh
+         aZ1iqwFkCY98zmUcimws1qU4Gmxa21mqeOq7m9AncsRZavdLc6yVM2CkYsOxoyICkioF
+         s7unJG5UzFrouWQwPcckAVUf8jnlpF/iipufPYp+apHGRRKQPB3fU4jb1iCSvCtbHwBI
+         t2dD1OYzPB2PFIjZAJOURBDIewpLd07wLROry8yEgGcMogum5t6DPLwsphksIU0NHyim
+         Hjdn5DlyuUrntOCRkqDhRrX+GxGR40XaAjSjuZteuju10nWSwmu1xlHhocGsN7aRmtEZ
+         HS9Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVTzsWEQ4rrjgekelLS3R7zRuem12OSylbFDHpN0zozSOhhdyvaWj9kdYggP/Z8ndyeKO8HsJHk1QPPwOo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz2eyiydOnr12469+RGm/EXwvRfXtHYf3yaksLF8FXURZCe6Pu1
+	FDPEQCgUR3DMjbF5to1hJgvzwnjhzs4s21AiKnPqU3ILEXzLImg9EL5a
+X-Gm-Gg: ASbGnctvSpgf3OdKe++XSdkOV2N51HAngp5rs6O589JAKBhZYrp9ol5LEgrT2WCEFFb
+	DHlx2rR5FnQuywS5YFpyn/FS4o+vK6kmmF7ah9LX+j5LA2zPlxRO9gIHeCTWDwRO7ZWrRwFR5k1
+	/ITctPAh83DtPk63Ziqq6Ahdvc5NaKoVRas68QXDYljC9Dd/5nBgqekDaiTQz9wgu77uJ5kPgeI
+	KsYJ/e4t2AF55ShC0DNQOfrStYApc8642O9IB2NcWV0NebRLsNv8wWZehvo2MdKyy2Ku0z1A5ld
+	AO+OJcnkgnFVGEj2i9nCiyZpd/2bse3v7QrlCSaqtzBOOsyEWGtIGbZ5YPRu6onuT7rZWWjIjP9
+	M5iKsD3I5IqqA+ZlBM1+S4/aQPPVxmRSJdZfSwOXZ9JWBAJ9nL33it0W3NQQFe4plzsYDe0xwcD
+	9Q7eR6LlQQMYHCaRHCVKI=
+X-Google-Smtp-Source: AGHT+IHkTsFD9LWAFhO0iOSkzrJT/uIU3911ebutolUwZI//wZBM03f90uGhttRLUzWdNvxdYPBNOw==
+X-Received: by 2002:a17:90b:180d:b0:338:26e3:ffb6 with SMTP id 98e67ed59e1d1-339c27b82c3mr23254788a91.26.1759848380860;
+        Tue, 07 Oct 2025 07:46:20 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-339a6ebdac1sm20685978a91.9.2025.10.07.07.46.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 07 Oct 2025 07:46:20 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <97b3872b-7f4f-482a-ab89-5b345ea0ffb2@roeck-us.net>
+Date: Tue, 7 Oct 2025 07:46:10 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -171,173 +89,140 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0f4029a2-7c5a-47bb-53c2-08de0582335a
-X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Oct 2025 09:16:29.8421
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: p97+J1g2AlEIFECYCzP2FVU6BFXh1z/jRpIdKyDqJIbXDpp2n9R2gl4lVNC8SsiIrBvOmxYf8+RKjCNfyQxZ1WSRlzyjY7Yvg7hXVrQ8Fj0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB6599
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/3] watchdog: aspeed: Support variable number of reset
+ mask registers
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, wim@linux-watchdog.org,
+ robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, joel@jms.id.au,
+ andrew@codeconstruct.com.au, linux-watchdog@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ BMC-SW@aspeedtech.com
+References: <20251007083650.2155317-1-chin-ting_kuo@aspeedtech.com>
+ <20251007083650.2155317-3-chin-ting_kuo@aspeedtech.com>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <20251007083650.2155317-3-chin-ting_kuo@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
---_000_OSQPR06MB7252E76F47E7C3B6F0BD13ED8BE0AOSQPR06MB7252apcp_
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
+On 10/7/25 01:36, Chin-Ting Kuo wrote:
+> Starting from the AST2600 platform, the SoC design has become more
+> complex, with an increased number of reset mask registers.
+> To support this, introduce a new field 'num_reset_masks' in the
+> 'aspeed_wdt_config' structure to specify the number of reset mask
+> registers per platform. This change removes the need for hardcoded
+> platform-specific logic and improves scalability for future SoCs.
+> 
+> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
 
-> > +
-> > +examples:
-> > +  - |
-> > +    pinctrl0: pinctrl{
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-> DTS coding style - missing space.
+> ---
+>   drivers/watchdog/aspeed_wdt.c | 12 ++++++++----
+>   1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/watchdog/aspeed_wdt.c b/drivers/watchdog/aspeed_wdt.c
+> index 837e15701c0e..e15f70c5e416 100644
+> --- a/drivers/watchdog/aspeed_wdt.c
+> +++ b/drivers/watchdog/aspeed_wdt.c
+> @@ -35,6 +35,7 @@ struct aspeed_wdt_config {
+>   	u32 irq_shift;
+>   	u32 irq_mask;
+>   	struct aspeed_wdt_scu scu;
+> +	u32 num_reset_masks;
+>   };
+>   
+>   struct aspeed_wdt {
+> @@ -54,6 +55,7 @@ static const struct aspeed_wdt_config ast2400_config = {
+>   		.wdt_reset_mask = 0x1,
+>   		.wdt_reset_mask_shift = 1,
+>   	},
+> +	.num_reset_masks = 1,
+>   };
+>   
+>   static const struct aspeed_wdt_config ast2500_config = {
+> @@ -66,6 +68,7 @@ static const struct aspeed_wdt_config ast2500_config = {
+>   		.wdt_reset_mask = 0x1,
+>   		.wdt_reset_mask_shift = 2,
+>   	},
+> +	.num_reset_masks = 1,
+>   };
+>   
+>   static const struct aspeed_wdt_config ast2600_config = {
+> @@ -78,6 +81,7 @@ static const struct aspeed_wdt_config ast2600_config = {
+>   		.wdt_reset_mask = 0xf,
+>   		.wdt_reset_mask_shift = 16,
+>   	},
+> +	.num_reset_masks = 2,
+>   };
+>   
+>   static const struct of_device_id aspeed_wdt_of_table[] = {
+> @@ -482,8 +486,9 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>   	if ((of_device_is_compatible(np, "aspeed,ast2500-wdt")) ||
+>   		(of_device_is_compatible(np, "aspeed,ast2600-wdt"))) {
+>   		u32 reset_mask[2];
+> -		size_t nrstmask = of_device_is_compatible(np, "aspeed,ast2600-wdt") ? 2 : 1;
+> +		size_t nrstmask = wdt->cfg->num_reset_masks;
+>   		u32 reg = readl(wdt->base + WDT_RESET_WIDTH);
+> +		int i;
+>   
+>   		reg &= wdt->cfg->ext_pulse_width_mask;
+>   		if (of_property_read_bool(np, "aspeed,ext-active-high"))
+> @@ -503,9 +508,8 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
+>   
+>   		ret = of_property_read_u32_array(np, "aspeed,reset-mask", reset_mask, nrstmask);
+>   		if (!ret) {
+> -			writel(reset_mask[0], wdt->base + WDT_RESET_MASK1);
+> -			if (nrstmask > 1)
+> -				writel(reset_mask[1], wdt->base + WDT_RESET_MASK2);
+> +			for (i = 0; i < nrstmask; i++)
+> +				writel(reset_mask[i], wdt->base + WDT_RESET_MASK1 + i * 4);
+>   		}
+>   	}
+>   
 
-> Unused label.
-
-> And you did not implement Rob's comment.
-
-Does Rob=92s comment mean that I need to move the example to aspeed,ast2x00=
--scu.yaml instead of this DT binding, right?
-
-Should I keep a minimal pinctrl-specific example such as:
-
-examples:
-  - |
-    pinctrl {
-        compatible =3D "aspeed,ast2700-soc0-pinctrl";
-
-        pinctrl_emmcclk_driving: emmcclk-driving {
-            pins =3D "AC14";
-            drive-strength =3D <2>;
-        };
-    };
-
-Thanks
-
-Best regards,
-Billy Tsai
-
---_000_OSQPR06MB7252E76F47E7C3B6F0BD13ED8BE0AOSQPR06MB7252apcp_
-Content-Type: text/html; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns:m=3D"http://schemas.microsoft.com/of=
-fice/2004/12/omml" xmlns=3D"http://www.w3.org/TR/REC-html40">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DWindows-1=
-252">
-<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
-<style><!--
-/* Font Definitions */
-@font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:DengXian;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:"\@DengXian";
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-/* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-p.elementtoproof, li.elementtoproof, div.elementtoproof
-	{mso-style-name:elementtoproof;
-	margin:0cm;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-.MsoChpDefault
-	{mso-style-type:export-only;
-	font-size:10.0pt;
-	mso-ligatures:none;}
-@page WordSection1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 72.0pt 72.0pt 72.0pt;}
-div.WordSection1
-	{page:WordSection1;}
---></style>
-</head>
-<body lang=3D"en-TW" link=3D"#0563C1" vlink=3D"#954F72" style=3D"word-wrap:=
-break-word">
-<div class=3D"WordSection1">
-<p class=3D"elementtoproof" style=3D"mso-margin-top-alt:12.0pt;margin-right=
-:0cm;margin-bottom:12.0pt;margin-left:0cm">
-&gt; &gt; +<br>
-&gt; &gt; +examples:<br>
-&gt; &gt; +&nbsp; - |<br>
-&gt; &gt; +&nbsp;&nbsp;&nbsp; pinctrl0: pinctrl{<br>
-<br>
-&gt; DTS coding style - missing space.<br>
-<br>
-&gt; Unused label.<br>
-<br>
-&gt; And you did not implement Rob's comment.<br>
-<br>
-Does Rob=92s comment mean that I need to move the example to aspeed,ast2x00=
--scu.yaml instead of this DT binding, right?</p>
-<p class=3D"elementtoproof" style=3D"mso-margin-top-alt:12.0pt;margin-right=
-:0cm;margin-bottom:12.0pt;margin-left:0cm">
-<span style=3D"color:black">Should I keep a minimal pinctrl-specific exampl=
-e such as:</span></p>
-<p class=3D"elementtoproof" style=3D"mso-margin-top-alt:12.0pt;margin-right=
-:0cm;margin-bottom:12.0pt;margin-left:0cm">
-<span style=3D"color:black">examples:<o:p></o:p></span></p>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; - |</span><span l=
-ang=3D"EN-US" style=3D"color:black;mso-fareast-language:ZH-TW"><o:p></o:p><=
-/span></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; pinctrl {<=
-o:p></o:p></span></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; &nbsp; &nb=
-sp; compatible =3D &quot;aspeed,ast2700-soc0-pinctrl&quot;;<o:p></o:p></spa=
-n></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
-</p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; &nbsp; &nb=
-sp; pinctrl_emmcclk_driving: emmcclk-driving {<o:p></o:p></span></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; &nbsp; &nb=
-sp; &nbsp; &nbsp; pins =3D &quot;AC14&quot;;<o:p></o:p></span></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; &nbsp; &nb=
-sp; &nbsp; &nbsp; drive-strength =3D &lt;2&gt;;<o:p></o:p></span></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; &nbsp; &nb=
-sp; };<o:p></o:p></span></p>
-</div>
-<div>
-<p class=3D"MsoNormal"><span style=3D"color:black">&nbsp; &nbsp; };<o:p></o=
-:p></span></p>
-<p class=3D"MsoNormal"><span style=3D"color:black"><o:p>&nbsp;</o:p></span>=
-</p>
-<p class=3D"MsoNormal"><span style=3D"color:black">Thanks<o:p></o:p></span>=
-</p>
-<p class=3D"MsoNormal"><br>
-Best regards,<br>
-Billy Tsai<span style=3D"color:black"><o:p></o:p></span></p>
-</div>
-</div>
-</body>
-</html>
-
---_000_OSQPR06MB7252E76F47E7C3B6F0BD13ED8BE0AOSQPR06MB7252apcp_--
 
