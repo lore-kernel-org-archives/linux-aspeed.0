@@ -1,81 +1,81 @@
-Return-Path: <linux-aspeed+bounces-2403-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2404-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F5F5CCA470
-	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Oct 2025 14:46:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DBF2CCA470
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Oct 2025 14:55:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cgzV96Nc8z30Qk;
-	Wed,  8 Oct 2025 01:46:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759848385;
-	cv=none; b=SuAFE/ybCuhjuXyONPhm/LQtvC9ue2k5SU01TbhhVTwLVPWACMawbNQdOCZcfcTbA9y+kWOmqoZteEr+MdeGyj0aTyx0uW9LYRYfqiOXivuX5daPmaQA9Xe3GfnEorCkUdQl5pJQdkO5PxPK19U3U/AZFq5Zn8kZ3MXdvUQaQ1kWU1JxZSBfdH1GFMPLDVhlXaGlqglXyiBlpF5jlw4OclAxZsv6P1cPEgJwSAZSptY6SqTbkz+9gqf0uhZTKnVB2UiFw/wz8dbB/mw850h+mkaul3RknPD2+YGu8tIG2BL80Xfi5GEqHnciSvSyiwcoaWTgWd++VxuIheV+duMXCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cgzhf514Gz30Qk;
+	Wed,  8 Oct 2025 01:55:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759848930;
+	cv=none; b=CzbjMddoEoAOKHajfLSSiOKol9mwOeWUNND4neOZkvwsw/etXlnLTe5aOjT+GXvMKjQKlJ+Jg5U44N4GYFeUnYvUetPz7VPeBJtsAzgZFUPUE1Oe9FdXRy0+Fd19E5uaVRNyo/u9mm1nL2mjBi07Tey4awjT49iLJSHLgYYmDDnvLeEbeX6zNjQfKVOlmCRqnnUViM9hsuQH+AEDpBGKxmR5iKrXD9Uu2uSle1xNPAfRDQW6S4OXXFYEnUfsJa6BsQE7pzJK4fFvWOQQq4ccJmbvhs5yeWJTXg2jEID0vcdeBp3o0pjUqiL7PRsagr52JFuwXuR/BwHrO9ATS1yUxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759848385; c=relaxed/relaxed;
-	bh=x7a7yYa2BC6M94EJB0V15A3UsNpa5OhhLhNC4izb/8o=;
+	t=1759848930; c=relaxed/relaxed;
+	bh=HkyPx7hvenwwKOYWFdLzbbOA8b6X1wKKeSXRsPSnnBw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=WIjVSyE+ApnvrkSY2JtTpKvmZEvRVpatqXLIWM0d+WNHIGjUi2OGuJHIxzNMf5HMlrHUmaRQ6q7ph3ZTOZ7t9B+0vtUV+5ZK1RfHiTgLS2Cto3igxpe27O2q1XG/pjy0RlcElO/P0QVCjwWUJPGMUIZlMxmJh/LvqP813LuKibuYIVUtkW14g9JVjIg9FtEzdIK/GXxQ2+0r+UU+hzlvlf9Euw5aE0EBV/YZRtjuUoSuCS0OpPbBrLfWO3X9dI92UZRzjOcw2lvu8xsU+o0zAy5Ttym6CD8sEDiQAa8KoBqqG9lq4Kj2+b72dHNWREX7aZVBl0wg5ZoC4IxfdeuKVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LAJleiz8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:Content-Type; b=FtXot/rlCsCAaBjLbuDlzEF9l5mhqHotUIQDZGMS3uhEMIa/klokYbqix29jxrNp9+kxoXPr6R55Pezi2zjSbhKaVwJIVyXpiyJ1lWNtpZeDZaN2Qtil+7PIx8tlypgJhtZYcANVV0oRs8zSq0S/+7e7F6s05YrgPYugaKNeGZcySZgwp/5vnkeQ1VwlHhqnSobMgJNzqcbQQF15KMGovVjGXck3N28cUmyC626JFcl9MuJHRZAtswxF7QZOHmdqV85baqahxUNY82/RF705WJeCsOq2BXB2dWPaKwej+41oxUKx8drcwX3hWs6Z0aOySBgrCj1XaYyd/62Yldltfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Agdg7TJG; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LAJleiz8;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Agdg7TJG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cgzV805KBz2yZ6
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Oct 2025 01:46:23 +1100 (AEDT)
-Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-b5515eaefceso5961114a12.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Oct 2025 07:46:23 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cgzhd712Qz2yZ6
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  8 Oct 2025 01:55:28 +1100 (AEDT)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-77f5d497692so7003280b3a.1
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Oct 2025 07:55:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1759848381; x=1760453181; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1759848927; x=1760453727; darn=lists.ozlabs.org;
         h=content-transfer-encoding:in-reply-to:autocrypt:from
          :content-language:references:to:subject:user-agent:mime-version:date
          :message-id:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=x7a7yYa2BC6M94EJB0V15A3UsNpa5OhhLhNC4izb/8o=;
-        b=LAJleiz8zfow68raKhiVXZt2Rmt/Rmrb2Vycf/RE/f71dG+gRCCdTMGmsPuj2+VrJ5
-         oAd/6VY4H/uUwqemVsLULc9q34sxYx2IcVjWwo2pxYIEopVMLVkboJIhFIYO0wwb6mQC
-         V3nmVBeKxtm2PyitFMShPvFb5xhECUbBRAsXbtkwMsDXTesoinH+Z2PZYCXi1hayeoLl
-         RdONlwLJIpj41T2VZC+/BHZc8znmXK4ZriqVB3xxGIlBYopLzPZAzS4+ywToRO0FbIHU
-         e1gyIcpC6XYojdEbE+QKLEU+NauOwS5YZ8ELSgHy3gDzhrhRWOOPBKezRSx88r1DfgxM
-         0VnQ==
+        bh=HkyPx7hvenwwKOYWFdLzbbOA8b6X1wKKeSXRsPSnnBw=;
+        b=Agdg7TJG/o6afzFkEjBGzedjQj1dAwJI+W068jO08NkqffsapUlDQGHH1dGvl8bQtg
+         QIjCku3HZypayThJEKlc4T7UR+bVmAKm3UBCnxumVqOrA9Za1dSh+C0etGfKFLLZ0Np8
+         HMkD5EYCeLOkguyyVc+5jFq06quN6A2GJkBxNNuUEnL1JLzbLlLmpdIIp4G983jOWqjC
+         t9TTDBaY627InTaORHYuxq4FXiQDj6wnonzJq7AOxmpk8pnbKOXmhpVfU4PzK+rahJbr
+         bs31Jkkb+kk1Bzj8Heyz+qOOKdOllewor0aXUguqt8xtzAgpPeyKGZAAYT2KdVKyRbaf
+         yM/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1759848381; x=1760453181;
+        d=1e100.net; s=20230601; t=1759848927; x=1760453727;
         h=content-transfer-encoding:in-reply-to:autocrypt:from
          :content-language:references:to:subject:user-agent:mime-version:date
          :message-id:sender:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=x7a7yYa2BC6M94EJB0V15A3UsNpa5OhhLhNC4izb/8o=;
-        b=L+P7GJ4m5PUuPsbPxPeg5MyBHHXIOPZ/51tZihoP8hahNpcED/0uyAQ1p3uNp7rcCh
-         aZ1iqwFkCY98zmUcimws1qU4Gmxa21mqeOq7m9AncsRZavdLc6yVM2CkYsOxoyICkioF
-         s7unJG5UzFrouWQwPcckAVUf8jnlpF/iipufPYp+apHGRRKQPB3fU4jb1iCSvCtbHwBI
-         t2dD1OYzPB2PFIjZAJOURBDIewpLd07wLROry8yEgGcMogum5t6DPLwsphksIU0NHyim
-         Hjdn5DlyuUrntOCRkqDhRrX+GxGR40XaAjSjuZteuju10nWSwmu1xlHhocGsN7aRmtEZ
-         HS9Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVTzsWEQ4rrjgekelLS3R7zRuem12OSylbFDHpN0zozSOhhdyvaWj9kdYggP/Z8ndyeKO8HsJHk1QPPwOo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz2eyiydOnr12469+RGm/EXwvRfXtHYf3yaksLF8FXURZCe6Pu1
-	FDPEQCgUR3DMjbF5to1hJgvzwnjhzs4s21AiKnPqU3ILEXzLImg9EL5a
-X-Gm-Gg: ASbGnctvSpgf3OdKe++XSdkOV2N51HAngp5rs6O589JAKBhZYrp9ol5LEgrT2WCEFFb
-	DHlx2rR5FnQuywS5YFpyn/FS4o+vK6kmmF7ah9LX+j5LA2zPlxRO9gIHeCTWDwRO7ZWrRwFR5k1
-	/ITctPAh83DtPk63Ziqq6Ahdvc5NaKoVRas68QXDYljC9Dd/5nBgqekDaiTQz9wgu77uJ5kPgeI
-	KsYJ/e4t2AF55ShC0DNQOfrStYApc8642O9IB2NcWV0NebRLsNv8wWZehvo2MdKyy2Ku0z1A5ld
-	AO+OJcnkgnFVGEj2i9nCiyZpd/2bse3v7QrlCSaqtzBOOsyEWGtIGbZ5YPRu6onuT7rZWWjIjP9
-	M5iKsD3I5IqqA+ZlBM1+S4/aQPPVxmRSJdZfSwOXZ9JWBAJ9nL33it0W3NQQFe4plzsYDe0xwcD
-	9Q7eR6LlQQMYHCaRHCVKI=
-X-Google-Smtp-Source: AGHT+IHkTsFD9LWAFhO0iOSkzrJT/uIU3911ebutolUwZI//wZBM03f90uGhttRLUzWdNvxdYPBNOw==
-X-Received: by 2002:a17:90b:180d:b0:338:26e3:ffb6 with SMTP id 98e67ed59e1d1-339c27b82c3mr23254788a91.26.1759848380860;
-        Tue, 07 Oct 2025 07:46:20 -0700 (PDT)
+        bh=HkyPx7hvenwwKOYWFdLzbbOA8b6X1wKKeSXRsPSnnBw=;
+        b=c2U/B07LofQRNOpykOufwBipR7GaJ2r8MQlaI8YPy2P3ThfRcDNmP1cR3+Kt5Nh7EX
+         2J2Xj/vXuv26ZivAXTkAKsMTriz9Lrzj2LY7/DejdRuVmWKUfqAw92wQNqX6hko5WF0s
+         Rcb2IQgMVkZaKN5cVd5KWsIl0nBFSC8O0Yga2s4LY6njk1BpRuVruwltm2to3WYVhjrj
+         nEckHcSyc/Tn/+sfTMAtUg5MyLyeyAg3RtyU1355z/Yg/77xkg9rL3KAQrfM/ArmjL9M
+         d/gMiR5TMRJjeXucsCCfSdCjUK7aq8lewEl15e56Q5aaE2SKAnBu/TyK48A9yoq1+mln
+         nkIw==
+X-Forwarded-Encrypted: i=1; AJvYcCVxtezMeQS6UvcZ11zLEPOa/ONyFIvsVBuBkA0Utuwn9eyi3A+s+eYYSdc7Bq1vezZkmaiF960D01kcKk4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywbd5TCtmjN2m5qK2aAwuDTwsPfP5zZv09ppClYDLyy9JpRQrfJ
+	2vpe7w+6ouiuTRrC9jt1eCTpCEuDbQU1ryamwM97PQtXGcrbn7mdVCoX
+X-Gm-Gg: ASbGncttYH/FbED5WYJxA2n4tt+WUEeM0FQNiGgYxI9fh9+YA3Ajpbf5F7ovB+1Ej8t
+	vGtlmFRinR7F0Kp2ZlTgppjSIO8QjXNPJdUk6PT1kceq3t5Mq0uVkuGwY6rQae61XUkt6M1pu93
+	LN6h+FuzyrXGg/wscHgDcI9+eOuBKnGVeb4lu5HcPsR8xsh7by2FRCpuyMCv2cYxKe7XZEMIpgP
+	vmPnbgkAkKuikN5PNdQEMgYyXnYV7WiCtkKa2Kuq0naj9o3gssscPEP/fLjmPEg5uE4/JFjiAD+
+	wBVpkuMcPuHndX/twWqrPzmEOnMG8Hoy47cExMHsv2jJlF4OAKKr7Me2+EO4edkuEswmJYEb39M
+	ow18v8kGsXkQLFUjOMUkS6xI29IoIQy8D0iuNAq1RPS1Dhn10d7jixjRT9TbP8jgu4INLKL8Iop
+	xTot1v8aKsTK+dNdiwtWg=
+X-Google-Smtp-Source: AGHT+IGdyeoXpxl1XmF0tLtlO/xz3iQ1BZuV8N6S1k1HOqZoXjG87A15BN5CloCPSK/tUguPJ8dO2w==
+X-Received: by 2002:a05:6a00:14d3:b0:783:cb49:c67b with SMTP id d2e1a72fcca58-78c98cf84d3mr22847057b3a.32.1759848926898;
+        Tue, 07 Oct 2025 07:55:26 -0700 (PDT)
 Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-339a6ebdac1sm20685978a91.9.2025.10.07.07.46.19
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-78b02074663sm16035781b3a.74.2025.10.07.07.55.25
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 07 Oct 2025 07:46:20 -0700 (PDT)
+        Tue, 07 Oct 2025 07:55:26 -0700 (PDT)
 Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <97b3872b-7f4f-482a-ab89-5b345ea0ffb2@roeck-us.net>
-Date: Tue, 7 Oct 2025 07:46:10 -0700
+Message-ID: <83a90651-0b46-4c68-ab90-361422192e90@roeck-us.net>
+Date: Tue, 7 Oct 2025 07:55:23 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -158,9 +158,6 @@ On 10/7/25 01:36, Chin-Ting Kuo wrote:
 > platform-specific logic and improves scalability for future SoCs.
 > 
 > Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-
 > ---
 >   drivers/watchdog/aspeed_wdt.c | 12 ++++++++----
 >   1 file changed, 8 insertions(+), 4 deletions(-)
@@ -182,6 +179,9 @@ Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 >   		.wdt_reset_mask_shift = 1,
 >   	},
 > +	.num_reset_masks = 1,
+
+Looking at this again: Why set it on ast2400 ?
+
 >   };
 >   
 >   static const struct aspeed_wdt_config ast2500_config = {
@@ -204,6 +204,19 @@ Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 > @@ -482,8 +486,9 @@ static int aspeed_wdt_probe(struct platform_device *pdev)
 >   	if ((of_device_is_compatible(np, "aspeed,ast2500-wdt")) ||
 >   		(of_device_is_compatible(np, "aspeed,ast2600-wdt"))) {
+
+... because the code here only evaluates it if this is an ast2500 or ast2600.
+
+If num_reset_masks would be set to 0 for ast2400, the value could be used here.
+
+	if (wdt->cfg->num_reset_masks) {
+		...
+	}
+
+and it would not be necessary to add of_device_is_compatible() for new chips.
+
+Guenter
+
 >   		u32 reset_mask[2];
 > -		size_t nrstmask = of_device_is_compatible(np, "aspeed,ast2600-wdt") ? 2 : 1;
 > +		size_t nrstmask = wdt->cfg->num_reset_masks;
