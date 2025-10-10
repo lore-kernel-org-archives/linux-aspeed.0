@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-2411-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2412-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58160CCD18F
-	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Oct 2025 07:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99DA7CCA476
+	for <linux-aspeed@archiver.kernel.org>; Fri, 10 Oct 2025 07:26:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cjdZb6F21z2yN1;
-	Fri, 10 Oct 2025 18:25:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cjdZd1fwwz2yrT;
+	Fri, 10 Oct 2025 18:26:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760081159;
-	cv=none; b=KBoCTSuPjwFjk3TdeNbIGMdUd1+XTGqnXwbFhbDb1vwV2ThDj8Tq1OefIyuRbEYg9Y4Yqb8a3vsfDvPeyOxa7M766YbIlPBkKt1+5T7i2ZrW7g8jUwwNJkCngmtOA+Kgin6ntNKSrnAZLQpJH34JHLDWw4yZYCmrzByi01sIYMb7YPFNbdMyDGCPHWAJ5vfiNmyLTUW4URBpWbXTsC4g3L4/lbg22NMNfnkHmGF7UEjrXRZecsSKK91L8chpwtsX/yQW+A/Yrb5nbDb9Sd+wfBK+mocsM+c/UP6ERXBnaglOamrqr6iJoIrmpT9tPmY1tGs7CfWL8uJftu67Cy08vQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760081161;
+	cv=none; b=ma1wFbhL/60fSBTqvdbE3mA688/CpT31PpYXp+LtbngHBkrQ/1vMagU2pzQ1ISfd7gzSllwaLKbWZE2ghOHCmE0tQGxvbC/iWJ9deTJSz793YR9dYM+C4DIk+5rcYnPeV6lBYEcDmZxxzbbX2Q8PCXQqBWyEFYFZ6JCWJ0McpcTM6keGP+weMSvCwcMciOhJX4GRH8NdLMbP0BUNzRbeiu77wSi5NQSKDAJypjPRWoxUvFzLUxq2sMAwxnGpNICUwPTyQCzvLpraaostm7Olo4+eSFEyB6Qo/WS+IKzFMab0R5aMaQ+uwOeR8CfvvkXLjfmMkcZ3KiCQR4+zCvJ/zg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760081159; c=relaxed/relaxed;
-	bh=n0hyq1V8RjMDSuSevIuGbPrhpwwkluzK5TyXyn6Jo3M=;
+	t=1760081161; c=relaxed/relaxed;
+	bh=q1CnTA8I7oeFYWA1tQLUrHDm34QivvsEzLTjxXZCa80=;
 	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=fZrrfmkBYIJeN/jIkA5O64fmzqntet1fr3CNU0JKQVLSfphkB1sVe7yxGunoAv7rIN4ncVFh5U9RJnXKQmTtAYq3s7obtKIJf9bqyoNlnOosK0R001xgv9kYQsk1GeLo/PclUafRUZ49W44QalSRsBhsAe+w4Gir2rGnocVJx/mnVSUj1qqnaXuenxbT78IWYhtRmn/4yrCWASJQMp5Nqwk/h/5Xye3X003KUH1tT+iGAiO5tBPSipBdm5UJ4dhb7h60Y36hNecqk3nVEMRFtdTJeEu4zaXn0bJFgCtuVFH9bJC7Q35/scY1V/2MTtfy9yYIvWTpSQkALXkiKVM9PA==
+	 MIME-Version:Content-Type; b=Mps9BQ6ORK7JOArLZwp+VG9aBa61QxLgCrrpdnq4NTJziS2aJ+ZP0V6YzrdHV78H4qJvMK7PtHw5Fst7Y58SfDUEtP0orLj7CUrXgI+WxpYzLk9EG1ZCbQySMDhkDPtErWrSjkDvTaoCtQyKXDwlrShk9mgsty8LSOTaeAMbQJ6pMOX/kEZimfRlRAt2VuUHLhwexL5iOWSWMyJq5B1TwDW16m0EPHw62oznrCL+fb8mH67RnHc4NwFaRkLccOFkMHeqMuCgOkeBbLhgOaJUYjNuw8qecYlbybwwqhsqu7BvvlcbzUVLLBHZXl0V/9ebEjQsixf4luUtFZ9SQXqFZQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cjdZb155Bz2xQ0
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Oct 2025 18:25:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cjdZc0Bffz2xQ0
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 10 Oct 2025 18:26:00 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 10 Oct
@@ -45,9 +45,9 @@ To: ryan_chen <ryan_chen@aspeedtech.com>, Brian Masney <bmasney@redhat.com>,
  Kennington <wak@google.com>, "Yuxiao Zhang" <yuxiaozhang@google.com>,
 	<wthai@nvidia.com>, <leohu@nvidia.com>, <dkodihalli@nvidia.com>,
 	<spuranik@nvidia.com>
-Subject: [PATCH v15 2/3] reset: aspeed: register AST2700 reset auxiliary bus device
-Date: Fri, 10 Oct 2025 15:25:39 +0800
-Message-ID: <20251010072540.666673-3-ryan_chen@aspeedtech.com>
+Subject: [PATCH v15 3/3] clk: aspeed: add AST2700 clock driver
+Date: Fri, 10 Oct 2025 15:25:40 +0800
+Message-ID: <20251010072540.666673-4-ryan_chen@aspeedtech.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20251010072540.666673-1-ryan_chen@aspeedtech.com>
 References: <20251010072540.666673-1-ryan_chen@aspeedtech.com>
@@ -67,307 +67,1111 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 
-The AST2700 reset driver is registered as an auxiliary device
-due to reset and clock controller share the same register region.
+Add AST2700 clock controller driver and also use axiliary
+device framework register the reset controller driver.
+Due to clock and reset using the same register region.
 
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Brian Masney <bmasney@redhat.com>
 ---
- drivers/reset/Kconfig        |   7 +
- drivers/reset/Makefile       |   1 +
- drivers/reset/reset-aspeed.c | 253 +++++++++++++++++++++++++++++++++++
- 3 files changed, 261 insertions(+)
- create mode 100644 drivers/reset/reset-aspeed.c
+ drivers/clk/Kconfig       |    8 +
+ drivers/clk/Makefile      |    1 +
+ drivers/clk/clk-ast2700.c | 1055 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1064 insertions(+)
+ create mode 100644 drivers/clk/clk-ast2700.c
 
-diff --git a/drivers/reset/Kconfig b/drivers/reset/Kconfig
-index 635eef469ab7..78b7078478d4 100644
---- a/drivers/reset/Kconfig
-+++ b/drivers/reset/Kconfig
-@@ -22,6 +22,13 @@ config RESET_A10SR
- 	  This option enables support for the external reset functions for
- 	  peripheral PHYs on the Altera Arria10 System Resource Chip.
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index 4d56475f94fc..b3a6eb374a53 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -296,6 +296,14 @@ config COMMON_CLK_ASPEED
+ 	  The G4 and G5 series, including the ast2400 and ast2500, are supported
+ 	  by this driver.
  
-+config RESET_ASPEED
-+	tristate "ASPEED Reset Driver"
++config COMMON_CLK_AST2700
++	bool "Clock driver for AST2700 SoC"
 +	depends on ARCH_ASPEED || COMPILE_TEST
-+	select AUXILIARY_BUS
 +	help
-+	  This enables the reset controller driver for AST2700.
++	  This driver provides support for clock on AST2700 SoC.
++	  The driver is responsible for managing the various clocks required
++	  by the peripherals and cores within the AST2700.
 +
- config RESET_ATH79
- 	bool "AR71xx Reset Driver" if COMPILE_TEST
- 	default ATH79
-diff --git a/drivers/reset/Makefile b/drivers/reset/Makefile
-index a917d2522e8d..f7934f9fb90b 100644
---- a/drivers/reset/Makefile
-+++ b/drivers/reset/Makefile
-@@ -6,6 +6,7 @@ obj-y += starfive/
- obj-y += sti/
- obj-y += tegra/
- obj-$(CONFIG_RESET_A10SR) += reset-a10sr.o
-+obj-$(CONFIG_RESET_ASPEED) += reset-aspeed.o
- obj-$(CONFIG_RESET_ATH79) += reset-ath79.o
- obj-$(CONFIG_RESET_AXS10X) += reset-axs10x.o
- obj-$(CONFIG_RESET_BCM6345) += reset-bcm6345.o
-diff --git a/drivers/reset/reset-aspeed.c b/drivers/reset/reset-aspeed.c
+ config COMMON_CLK_S2MPS11
+ 	tristate "Clock driver for S2MPS1X/S5M8767 MFD"
+ 	depends on MFD_SEC_CORE || COMPILE_TEST
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index 18ed29cfdc11..0c47294715d3 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -64,6 +64,7 @@ obj-$(CONFIG_COMMON_CLK_FSL_SAI)	+= clk-fsl-sai.o
+ obj-$(CONFIG_COMMON_CLK_GEMINI)		+= clk-gemini.o
+ obj-$(CONFIG_COMMON_CLK_ASPEED)		+= clk-aspeed.o
+ obj-$(CONFIG_MACH_ASPEED_G6)		+= clk-ast2600.o
++obj-$(CONFIG_COMMON_CLK_AST2700)	+= clk-ast2700.o
+ obj-$(CONFIG_ARCH_HIGHBANK)		+= clk-highbank.o
+ obj-$(CONFIG_CLK_HSDK)			+= clk-hsdk-pll.o
+ obj-$(CONFIG_COMMON_CLK_K210)		+= clk-k210.o
+diff --git a/drivers/clk/clk-ast2700.c b/drivers/clk/clk-ast2700.c
 new file mode 100644
-index 000000000000..dd2f860a69d7
+index 000000000000..bbb2b571eb72
 --- /dev/null
-+++ b/drivers/reset/reset-aspeed.c
-@@ -0,0 +1,253 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
++++ b/drivers/clk/clk-ast2700.c
+@@ -0,0 +1,1055 @@
++// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (c) 2024 ASPEED Technology Inc.
++ * Author: Ryan Chen <ryan_chen@aspeedtech.com>
 + */
-+
 +#include <linux/auxiliary_bus.h>
-+#include <linux/cleanup.h>
-+#include <linux/device.h>
++#include <linux/bitfield.h>
++#include <linux/clk-provider.h>
 +#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/reset-controller.h>
++#include <linux/mod_devicetable.h>
++#include <linux/platform_device.h>
 +#include <linux/slab.h>
++#include <linux/units.h>
 +
-+#include <dt-bindings/reset/aspeed,ast2700-scu.h>
++#include <dt-bindings/clock/aspeed,ast2700-scu.h>
 +
-+#define SCU0_RESET_CTRL1 0x200
-+#define SCU0_RESET_CTRL2 0x220
-+#define SCU1_RESET_CTRL1 0x200
-+#define SCU1_RESET_CTRL2 0x220
-+#define SCU1_PCIE3_CTRL 0x908
++/* SOC0 */
++#define SCU0_HWSTRAP1		0x010
++#define SCU0_CLK_STOP		0x240
++#define SCU0_CLK_SEL1		0x280
++#define SCU0_CLK_SEL2		0x284
++#define GET_USB_REFCLK_DIV(x)	((GENMASK(23, 20) & (x)) >> 20)
++#define UART_DIV13_EN		BIT(30)
++#define SCU0_HPLL_PARAM		0x300
++#define SCU0_DPLL_PARAM		0x308
++#define SCU0_MPLL_PARAM		0x310
++#define SCU0_D0CLK_PARAM	0x320
++#define SCU0_D1CLK_PARAM	0x330
++#define SCU0_CRT0CLK_PARAM	0x340
++#define SCU0_CRT1CLK_PARAM	0x350
++#define SCU0_MPHYCLK_PARAM	0x360
 +
-+struct ast2700_reset_signal {
-+	bool dedicated_clr; /* dedicated reset clr offset */
-+	u32 offset, bit;
++/* SOC1 */
++#define SCU1_REVISION_ID	0x0
++#define REVISION_ID		GENMASK(23, 16)
++#define SCU1_CLK_STOP		0x240
++#define SCU1_CLK_STOP2		0x260
++#define SCU1_CLK_SEL1		0x280
++#define SCU1_CLK_SEL2		0x284
++#define SCU1_CLK_I3C_DIV_MASK	GENMASK(25, 23)
++#define SCU1_CLK_I3C_DIV(n)	((n) - 1)
++#define UXCLK_MASK		GENMASK(1, 0)
++#define HUXCLK_MASK		GENMASK(4, 3)
++#define SCU1_HPLL_PARAM		0x300
++#define SCU1_APLL_PARAM		0x310
++#define SCU1_DPLL_PARAM		0x320
++#define SCU1_UXCLK_CTRL		0x330
++#define SCU1_HUXCLK_CTRL	0x334
++#define SCU1_MAC12_CLK_DLY	0x390
++#define SCU1_MAC12_CLK_DLY_100M	0x394
++#define SCU1_MAC12_CLK_DLY_10M	0x398
++
++enum ast2700_clk_type {
++	CLK_MUX,
++	CLK_PLL,
++	CLK_HPLL,
++	CLK_GATE,
++	CLK_MISC,
++	CLK_FIXED,
++	CLK_DIVIDER,
++	CLK_UART_PLL,
++	CLK_GATE_ASPEED,
++	CLK_FIXED_FACTOR,
++	CLK_FIXED_DISPLAY,
 +};
 +
-+struct aspeed_reset_info {
-+	unsigned int nr_resets;
-+	const struct ast2700_reset_signal *signal;
++struct ast2700_clk_fixed_factor_data {
++	unsigned int mult;
++	unsigned int div;
++	int parent_id;
 +};
 +
-+struct aspeed_reset {
-+	struct reset_controller_dev rcdev;
-+	struct aspeed_reset_info *info;
-+	spinlock_t lock; /* Protect read-modify-write cycle */
++struct ast2700_clk_gate_data {
++	int parent_id;
++	u32 flags;
++	u32 reg;
++	u8 bit;
++};
++
++struct ast2700_clk_mux_data {
++	const struct clk_hw **parent_hws;
++	const unsigned int *parent_ids;
++	unsigned int num_parents;
++	u8 bit_shift;
++	u8 bit_width;
++	u32 reg;
++};
++
++struct ast2700_clk_div_data {
++	const struct clk_div_table *div_table;
++	unsigned int parent_id;
++	u8 bit_shift;
++	u8 bit_width;
++	u32 reg;
++};
++
++struct ast2700_clk_pll_data {
++	unsigned int parent_id;
++	u32 reg;
++};
++
++struct ast2700_clk_fixed_rate_data {
++	unsigned long fixed_rate;
++};
++
++struct ast2700_clk_display_fixed_data {
++	u32 reg;
++};
++
++struct ast2700_clk_info {
++	const char *name;
++	u32 id;
++	u32 reg;
++	u32 type;
++	union {
++		struct ast2700_clk_fixed_factor_data factor;
++		struct ast2700_clk_fixed_rate_data rate;
++		struct ast2700_clk_display_fixed_data display_rate;
++		struct ast2700_clk_gate_data gate;
++		struct ast2700_clk_div_data div;
++		struct ast2700_clk_pll_data pll;
++		struct ast2700_clk_mux_data mux;
++	} data;
++};
++
++struct ast2700_clk_data {
++	const struct ast2700_clk_info *clk_info;
++	unsigned int nr_clks;
++	const int scu;
++};
++
++struct ast2700_clk_ctrl {
++	const struct ast2700_clk_data *clk_data;
++	struct device *dev;
 +	void __iomem *base;
++	spinlock_t lock; /* clk lock */
 +};
 +
-+static const struct ast2700_reset_signal ast2700_reset0_signals[] = {
-+	[SCU0_RESET_SDRAM] = { true, SCU0_RESET_CTRL1, BIT(0) },
-+	[SCU0_RESET_DDRPHY] = { true, SCU0_RESET_CTRL1, BIT(1) },
-+	[SCU0_RESET_RSA] = { true, SCU0_RESET_CTRL1, BIT(2) },
-+	[SCU0_RESET_SHA3] = { true, SCU0_RESET_CTRL1, BIT(3) },
-+	[SCU0_RESET_HACE] = { true, SCU0_RESET_CTRL1, BIT(4) },
-+	[SCU0_RESET_SOC] = { true, SCU0_RESET_CTRL1, BIT(5) },
-+	[SCU0_RESET_VIDEO] = { true, SCU0_RESET_CTRL1, BIT(6) },
-+	[SCU0_RESET_2D] = { true, SCU0_RESET_CTRL1, BIT(7) },
-+	[SCU0_RESET_PCIS] = { true, SCU0_RESET_CTRL1, BIT(8) },
-+	[SCU0_RESET_RVAS0] = { true, SCU0_RESET_CTRL1, BIT(9) },
-+	[SCU0_RESET_RVAS1] = { true, SCU0_RESET_CTRL1, BIT(10) },
-+	[SCU0_RESET_SM3] = { true, SCU0_RESET_CTRL1, BIT(11) },
-+	[SCU0_RESET_SM4] = { true, SCU0_RESET_CTRL1, BIT(12) },
-+	[SCU0_RESET_CRT0] = { true, SCU0_RESET_CTRL1, BIT(13) },
-+	[SCU0_RESET_ECC] = { true, SCU0_RESET_CTRL1, BIT(14) },
-+	[SCU0_RESET_DP_PCI] = { true, SCU0_RESET_CTRL1, BIT(15) },
-+	[SCU0_RESET_UFS] = { true, SCU0_RESET_CTRL1, BIT(16) },
-+	[SCU0_RESET_EMMC] = { true, SCU0_RESET_CTRL1, BIT(17) },
-+	[SCU0_RESET_PCIE1RST] = { true, SCU0_RESET_CTRL1, BIT(18) },
-+	[SCU0_RESET_PCIE1RSTOE] = { true, SCU0_RESET_CTRL1, BIT(19) },
-+	[SCU0_RESET_PCIE0RST] = { true, SCU0_RESET_CTRL1, BIT(20) },
-+	[SCU0_RESET_PCIE0RSTOE] = { true, SCU0_RESET_CTRL1, BIT(21) },
-+	[SCU0_RESET_JTAG] = { true, SCU0_RESET_CTRL1, BIT(22) },
-+	[SCU0_RESET_MCTP0] = { true, SCU0_RESET_CTRL1, BIT(23) },
-+	[SCU0_RESET_MCTP1] = { true, SCU0_RESET_CTRL1, BIT(24) },
-+	[SCU0_RESET_XDMA0] = { true, SCU0_RESET_CTRL1, BIT(25) },
-+	[SCU0_RESET_XDMA1] = { true, SCU0_RESET_CTRL1, BIT(26) },
-+	[SCU0_RESET_H2X1] = { true, SCU0_RESET_CTRL1, BIT(27) },
-+	[SCU0_RESET_DP] = { true, SCU0_RESET_CTRL1, BIT(28) },
-+	[SCU0_RESET_DP_MCU] = { true, SCU0_RESET_CTRL1, BIT(29) },
-+	[SCU0_RESET_SSP] = { true, SCU0_RESET_CTRL1, BIT(30) },
-+	[SCU0_RESET_H2X0] = { true, SCU0_RESET_CTRL1, BIT(31) },
-+	[SCU0_RESET_PORTA_VHUB] = { true, SCU0_RESET_CTRL2, BIT(0) },
-+	[SCU0_RESET_PORTA_PHY3] = { true, SCU0_RESET_CTRL2, BIT(1) },
-+	[SCU0_RESET_PORTA_XHCI] = { true, SCU0_RESET_CTRL2, BIT(2) },
-+	[SCU0_RESET_PORTB_VHUB] = { true, SCU0_RESET_CTRL2, BIT(3) },
-+	[SCU0_RESET_PORTB_PHY3] = { true, SCU0_RESET_CTRL2, BIT(4) },
-+	[SCU0_RESET_PORTB_XHCI] = { true, SCU0_RESET_CTRL2, BIT(5) },
-+	[SCU0_RESET_PORTA_VHUB_EHCI] = { true, SCU0_RESET_CTRL2, BIT(6) },
-+	[SCU0_RESET_PORTB_VHUB_EHCI] = { true, SCU0_RESET_CTRL2, BIT(7) },
-+	[SCU0_RESET_UHCI] = { true, SCU0_RESET_CTRL2, BIT(8) },
-+	[SCU0_RESET_TSP] = { true, SCU0_RESET_CTRL2, BIT(9) },
-+	[SCU0_RESET_E2M0] = { true, SCU0_RESET_CTRL2, BIT(10) },
-+	[SCU0_RESET_E2M1] = { true, SCU0_RESET_CTRL2, BIT(11) },
-+	[SCU0_RESET_VLINK] = { true, SCU0_RESET_CTRL2, BIT(12) },
++static const struct clk_div_table ast2700_rgmii_div_table[] = {
++	{ 0x0, 4 },
++	{ 0x1, 4 },
++	{ 0x2, 6 },
++	{ 0x3, 8 },
++	{ 0x4, 10 },
++	{ 0x5, 12 },
++	{ 0x6, 14 },
++	{ 0x7, 16 },
++	{ 0 }
 +};
 +
-+static const struct ast2700_reset_signal ast2700_reset1_signals[] = {
-+	[SCU1_RESET_LPC0] = { true, SCU1_RESET_CTRL1, BIT(0) },
-+	[SCU1_RESET_LPC1] = { true, SCU1_RESET_CTRL1, BIT(1) },
-+	[SCU1_RESET_MII] = { true, SCU1_RESET_CTRL1, BIT(2) },
-+	[SCU1_RESET_PECI] = { true, SCU1_RESET_CTRL1, BIT(3) },
-+	[SCU1_RESET_PWM] = { true, SCU1_RESET_CTRL1, BIT(4) },
-+	[SCU1_RESET_MAC0] = { true, SCU1_RESET_CTRL1, BIT(5) },
-+	[SCU1_RESET_MAC1] = { true, SCU1_RESET_CTRL1, BIT(6) },
-+	[SCU1_RESET_MAC2] = { true, SCU1_RESET_CTRL1, BIT(7) },
-+	[SCU1_RESET_ADC] = { true, SCU1_RESET_CTRL1, BIT(8) },
-+	[SCU1_RESET_SD] = { true, SCU1_RESET_CTRL1, BIT(9) },
-+	[SCU1_RESET_ESPI0] = { true, SCU1_RESET_CTRL1, BIT(10) },
-+	[SCU1_RESET_ESPI1] = { true, SCU1_RESET_CTRL1, BIT(11) },
-+	[SCU1_RESET_JTAG1] = { true, SCU1_RESET_CTRL1, BIT(12) },
-+	[SCU1_RESET_SPI0] = { true, SCU1_RESET_CTRL1, BIT(13) },
-+	[SCU1_RESET_SPI1] = { true, SCU1_RESET_CTRL1, BIT(14) },
-+	[SCU1_RESET_SPI2] = { true, SCU1_RESET_CTRL1, BIT(15) },
-+	[SCU1_RESET_I3C0] = { true, SCU1_RESET_CTRL1, BIT(16) },
-+	[SCU1_RESET_I3C1] = { true, SCU1_RESET_CTRL1, BIT(17) },
-+	[SCU1_RESET_I3C2] = { true, SCU1_RESET_CTRL1, BIT(18) },
-+	[SCU1_RESET_I3C3] = { true, SCU1_RESET_CTRL1, BIT(19) },
-+	[SCU1_RESET_I3C4] = { true, SCU1_RESET_CTRL1, BIT(20) },
-+	[SCU1_RESET_I3C5] = { true, SCU1_RESET_CTRL1, BIT(21) },
-+	[SCU1_RESET_I3C6] = { true, SCU1_RESET_CTRL1, BIT(22) },
-+	[SCU1_RESET_I3C7] = { true, SCU1_RESET_CTRL1, BIT(23) },
-+	[SCU1_RESET_I3C8] = { true, SCU1_RESET_CTRL1, BIT(24) },
-+	[SCU1_RESET_I3C9] = { true, SCU1_RESET_CTRL1, BIT(25) },
-+	[SCU1_RESET_I3C10] = { true, SCU1_RESET_CTRL1, BIT(26) },
-+	[SCU1_RESET_I3C11] = { true, SCU1_RESET_CTRL1, BIT(27) },
-+	[SCU1_RESET_I3C12] = { true, SCU1_RESET_CTRL1, BIT(28) },
-+	[SCU1_RESET_I3C13] = { true, SCU1_RESET_CTRL1, BIT(29) },
-+	[SCU1_RESET_I3C14] = { true, SCU1_RESET_CTRL1, BIT(30) },
-+	[SCU1_RESET_I3C15] = { true, SCU1_RESET_CTRL1, BIT(31) },
-+	[SCU1_RESET_MCU0] = { true, SCU1_RESET_CTRL2, BIT(0) },
-+	[SCU1_RESET_MCU1] = { true, SCU1_RESET_CTRL2, BIT(1) },
-+	[SCU1_RESET_H2A_SPI1] = { true, SCU1_RESET_CTRL2, BIT(2) },
-+	[SCU1_RESET_H2A_SPI2] = { true, SCU1_RESET_CTRL2, BIT(3) },
-+	[SCU1_RESET_UART0] = { true, SCU1_RESET_CTRL2, BIT(4) },
-+	[SCU1_RESET_UART1] = { true, SCU1_RESET_CTRL2, BIT(5) },
-+	[SCU1_RESET_UART2] = { true, SCU1_RESET_CTRL2, BIT(6) },
-+	[SCU1_RESET_UART3] = { true, SCU1_RESET_CTRL2, BIT(7) },
-+	[SCU1_RESET_I2C_FILTER] = { true, SCU1_RESET_CTRL2, BIT(8) },
-+	[SCU1_RESET_CALIPTRA] = { true, SCU1_RESET_CTRL2, BIT(9) },
-+	[SCU1_RESET_XDMA] = { true, SCU1_RESET_CTRL2, BIT(10) },
-+	[SCU1_RESET_FSI] = { true, SCU1_RESET_CTRL2, BIT(12) },
-+	[SCU1_RESET_CAN] = { true, SCU1_RESET_CTRL2, BIT(13) },
-+	[SCU1_RESET_MCTP] = { true, SCU1_RESET_CTRL2, BIT(14) },
-+	[SCU1_RESET_I2C] = { true, SCU1_RESET_CTRL2, BIT(15) },
-+	[SCU1_RESET_UART6] = { true, SCU1_RESET_CTRL2, BIT(16) },
-+	[SCU1_RESET_UART7] = { true, SCU1_RESET_CTRL2, BIT(17) },
-+	[SCU1_RESET_UART8] = { true, SCU1_RESET_CTRL2, BIT(18) },
-+	[SCU1_RESET_UART9] = { true, SCU1_RESET_CTRL2, BIT(19) },
-+	[SCU1_RESET_LTPI0] = { true, SCU1_RESET_CTRL2, BIT(20) },
-+	[SCU1_RESET_VGAL] = { true, SCU1_RESET_CTRL2, BIT(21) },
-+	[SCU1_RESET_LTPI1] = { true, SCU1_RESET_CTRL2, BIT(22) },
-+	[SCU1_RESET_ACE] = { true, SCU1_RESET_CTRL2, BIT(23) },
-+	[SCU1_RESET_E2M] = { true, SCU1_RESET_CTRL2, BIT(24) },
-+	[SCU1_RESET_UHCI] = { true, SCU1_RESET_CTRL2, BIT(25) },
-+	[SCU1_RESET_PORTC_USB2UART] = { true, SCU1_RESET_CTRL2, BIT(26) },
-+	[SCU1_RESET_PORTC_VHUB_EHCI] = { true, SCU1_RESET_CTRL2, BIT(27) },
-+	[SCU1_RESET_PORTD_USB2UART] = { true, SCU1_RESET_CTRL2, BIT(28) },
-+	[SCU1_RESET_PORTD_VHUB_EHCI] = { true, SCU1_RESET_CTRL2, BIT(29) },
-+	[SCU1_RESET_H2X] = { true, SCU1_RESET_CTRL2, BIT(30) },
-+	[SCU1_RESET_I3CDMA] = { true, SCU1_RESET_CTRL2, BIT(31) },
-+	[SCU1_RESET_PCIE2RST] = { false, SCU1_PCIE3_CTRL, BIT(0) },
++static const struct clk_div_table ast2700_rmii_div_table[] = {
++	{ 0x0, 8 },
++	{ 0x1, 8 },
++	{ 0x2, 12 },
++	{ 0x3, 16 },
++	{ 0x4, 20 },
++	{ 0x5, 24 },
++	{ 0x6, 28 },
++	{ 0x7, 32 },
++	{ 0 }
 +};
 +
-+static inline struct aspeed_reset *to_aspeed_reset(struct reset_controller_dev *rcdev)
++static const struct clk_div_table ast2700_clk_div_table[] = {
++	{ 0x0, 2 },
++	{ 0x1, 2 },
++	{ 0x2, 3 },
++	{ 0x3, 4 },
++	{ 0x4, 5 },
++	{ 0x5, 6 },
++	{ 0x6, 7 },
++	{ 0x7, 8 },
++	{ 0 }
++};
++
++static const struct clk_div_table ast2700_clk_div_table2[] = {
++	{ 0x0, 2 },
++	{ 0x1, 4 },
++	{ 0x2, 6 },
++	{ 0x3, 8 },
++	{ 0x4, 10 },
++	{ 0x5, 12 },
++	{ 0x6, 14 },
++	{ 0x7, 16 },
++	{ 0 }
++};
++
++static const struct clk_div_table ast2700_hclk_div_table[] = {
++	{ 0x0, 6 },
++	{ 0x1, 5 },
++	{ 0x2, 4 },
++	{ 0x3, 7 },
++	{ 0 }
++};
++
++static const struct clk_div_table ast2700_clk_uart_div_table[] = {
++	{ 0x0, 1 },
++	{ 0x1, 13 },
++	{ 0 }
++};
++
++/* soc 0 */
++static const unsigned int psp_parent_ids[] = {
++	SCU0_CLK_MPLL,
++	SCU0_CLK_HPLL,
++	SCU0_CLK_HPLL,
++	SCU0_CLK_HPLL,
++	SCU0_CLK_MPLL_DIV2,
++	SCU0_CLK_HPLL_DIV2,
++	SCU0_CLK_HPLL,
++	SCU0_CLK_HPLL
++};
++
++static const struct clk_hw *psp_parent_hws[ARRAY_SIZE(psp_parent_ids)];
++
++static const unsigned int hclk_parent_ids[] = {
++	SCU0_CLK_HPLL,
++	SCU0_CLK_MPLL
++};
++
++static const struct clk_hw *hclk_parent_hws[ARRAY_SIZE(hclk_parent_ids)];
++
++static const unsigned int emmc_parent_ids[] = {
++	SCU0_CLK_MPLL_DIV4,
++	SCU0_CLK_HPLL_DIV4
++};
++
++static const struct clk_hw *emmc_parent_hws[ARRAY_SIZE(emmc_parent_ids)];
++
++static const unsigned int mphy_parent_ids[] = {
++	SCU0_CLK_MPLL,
++	SCU0_CLK_HPLL,
++	SCU0_CLK_DPLL,
++	SCU0_CLK_192M
++};
++
++static const struct clk_hw *mphy_parent_hws[ARRAY_SIZE(mphy_parent_ids)];
++
++static const unsigned int u2phy_parent_ids[] = {
++	SCU0_CLK_MPLL,
++	SCU0_CLK_HPLL
++};
++
++static const struct clk_hw *u2phy_parent_hws[ARRAY_SIZE(u2phy_parent_ids)];
++
++static const unsigned int uart_parent_ids[] = {
++	SCU0_CLK_24M,
++	SCU0_CLK_192M
++};
++
++static const struct clk_hw *uart_parent_hws[ARRAY_SIZE(uart_parent_ids)];
++
++/* soc 1 */
++static const unsigned int uartx_parent_ids[] = {
++	SCU1_CLK_UARTX,
++	SCU1_CLK_HUARTX
++};
++
++static const struct clk_hw *uartx_parent_hws[ARRAY_SIZE(uartx_parent_ids)];
++
++static const unsigned int uxclk_parent_ids[] = {
++	SCU1_CLK_APLL_DIV4,
++	SCU1_CLK_APLL_DIV2,
++	SCU1_CLK_APLL,
++	SCU1_CLK_HPLL
++};
++
++static const struct clk_hw *uxclk_parent_hws[ARRAY_SIZE(uxclk_parent_ids)];
++
++static const unsigned int sdclk_parent_ids[] = {
++	SCU1_CLK_HPLL,
++	SCU1_CLK_APLL
++};
++
++static const struct clk_hw *sdclk_parent_hws[ARRAY_SIZE(sdclk_parent_ids)];
++
++#define FIXED_CLK(_id, _name, _rate) \
++	{ \
++		.id = _id,	\
++		.type = CLK_FIXED, \
++		.name = _name, \
++		.data = { .rate = { .fixed_rate = _rate, } }, \
++	}
++
++#define FIXED_DISPLAY_CLK(_id, _name, _reg) \
++		{ \
++			.id = _id, \
++			.type = CLK_FIXED_DISPLAY, \
++			.name = _name, \
++			.data = { .display_rate = { .reg = _reg } }, \
++		}
++
++#define PLL_CLK(_id, _type, _name, _parent_id, _reg) \
++	{ \
++		.id = _id, \
++		.type = _type, \
++		.name = _name, \
++		.data = { .pll = { \
++			.parent_id = _parent_id, \
++			.reg		= _reg, \
++		} }, \
++	}
++
++#define MUX_CLK(_id, _name, _parent_ids, _num_parents, _parent_hws, _reg, _shift, _width) \
++		{ \
++			.id = _id, \
++			.type = CLK_MUX, \
++			.name = _name, \
++			.data = { \
++				.mux = { \
++					.parent_ids  = _parent_ids, \
++					.parent_hws  = _parent_hws, \
++					.num_parents = _num_parents, \
++					.reg = (_reg), \
++					.bit_shift = _shift, \
++					.bit_width = _width, \
++				}, \
++			}, \
++		}
++
++#define DIVIDER_CLK(_id, _name, _parent_id, _reg, _shift, _width, _div_table) \
++	{ \
++		.id = _id,	\
++		.type = CLK_DIVIDER, \
++		.name = _name, \
++		.data = { \
++			.div = { \
++				.parent_id = _parent_id, \
++				.reg = _reg, \
++				.bit_shift = _shift, \
++				.bit_width = _width, \
++				.div_table = _div_table, \
++			}, \
++		}, \
++	}
++
++#define FIXED_FACTOR_CLK(_id, _name, _parent_id, _mult, _div) \
++	{ \
++		.id = _id,	\
++		.type = CLK_FIXED_FACTOR, \
++		.name = _name, \
++		.data = { .factor = { .parent_id = _parent_id, .mult = _mult, .div = _div, } }, \
++	}
++
++#define GATE_CLK(_id, _type, _name, _parent_id, _reg, _bit, _flags) \
++	{ \
++		.id = _id,	\
++		.type = _type, \
++		.name = _name, \
++		.data = { \
++			.gate = { \
++				.parent_id = _parent_id, \
++				.reg = _reg, \
++				.bit = _bit, \
++				.flags = _flags, \
++			}, \
++		}, \
++	}
++
++static const struct ast2700_clk_info ast2700_scu0_clk_info[] __initconst = {
++	FIXED_CLK(SCU0_CLKIN, "soc0-clkin", 25 * HZ_PER_MHZ),
++	FIXED_CLK(SCU0_CLK_24M, "soc0-clk24Mhz", 24 * HZ_PER_MHZ),
++	FIXED_CLK(SCU0_CLK_192M, "soc0-clk192Mhz", 192 * HZ_PER_MHZ),
++	FIXED_CLK(SCU0_CLK_U2PHY_CLK12M, "u2phy_clk12m", 12 * HZ_PER_MHZ),
++	FIXED_DISPLAY_CLK(SCU0_CLK_D0, "d0clk", SCU0_D0CLK_PARAM),
++	FIXED_DISPLAY_CLK(SCU0_CLK_D1, "d1clk", SCU0_D1CLK_PARAM),
++	FIXED_DISPLAY_CLK(SCU0_CLK_CRT0, "crt0clk", SCU0_CRT0CLK_PARAM),
++	FIXED_DISPLAY_CLK(SCU0_CLK_CRT1, "crt1clk", SCU0_CRT1CLK_PARAM),
++	PLL_CLK(SCU0_CLK_HPLL, CLK_HPLL, "soc0-hpll", SCU0_CLKIN, SCU0_HPLL_PARAM),
++	PLL_CLK(SCU0_CLK_DPLL, CLK_PLL, "soc0-dpll", SCU0_CLKIN, SCU0_DPLL_PARAM),
++	PLL_CLK(SCU0_CLK_MPLL, CLK_PLL, "soc0-mpll", SCU0_CLKIN, SCU0_MPLL_PARAM),
++	FIXED_FACTOR_CLK(SCU0_CLK_HPLL_DIV2, "soc0-hpll_div2", SCU0_CLK_HPLL, 1, 2),
++	FIXED_FACTOR_CLK(SCU0_CLK_HPLL_DIV4, "soc0-hpll_div4", SCU0_CLK_HPLL, 1, 4),
++	FIXED_FACTOR_CLK(SCU0_CLK_MPLL_DIV2, "soc0-mpll_div2", SCU0_CLK_MPLL, 1, 2),
++	FIXED_FACTOR_CLK(SCU0_CLK_MPLL_DIV4, "soc0-mpll_div4", SCU0_CLK_MPLL, 1, 4),
++	FIXED_FACTOR_CLK(SCU0_CLK_MPLL_DIV8, "soc0-mpll_div8", SCU0_CLK_MPLL, 1, 8),
++	FIXED_FACTOR_CLK(SCU0_CLK_AXI1, "axi1clk", SCU0_CLK_MPLL, 1, 4),
++	MUX_CLK(SCU0_CLK_PSP, "pspclk", psp_parent_ids, ARRAY_SIZE(psp_parent_ids),
++		psp_parent_hws, SCU0_HWSTRAP1, 2, 3),
++	FIXED_FACTOR_CLK(SCU0_CLK_AXI0, "axi0clk", SCU0_CLK_PSP, 1, 2),
++	MUX_CLK(SCU0_CLK_AHBMUX, "soc0-ahbmux", hclk_parent_ids, ARRAY_SIZE(hclk_parent_ids),
++		hclk_parent_hws, SCU0_HWSTRAP1, 7, 1),
++	MUX_CLK(SCU0_CLK_EMMCMUX, "emmcsrc-mux", emmc_parent_ids, ARRAY_SIZE(emmc_parent_ids),
++		emmc_parent_hws, SCU0_CLK_SEL1, 11, 1),
++	MUX_CLK(SCU0_CLK_MPHYSRC, "mphysrc", mphy_parent_ids, ARRAY_SIZE(mphy_parent_ids),
++		mphy_parent_hws, SCU0_CLK_SEL2, 18, 2),
++	MUX_CLK(SCU0_CLK_U2PHY_REFCLKSRC, "u2phy_refclksrc", u2phy_parent_ids,
++		ARRAY_SIZE(u2phy_parent_ids), u2phy_parent_hws, SCU0_CLK_SEL2, 23, 1),
++	MUX_CLK(SCU0_CLK_UART, "soc0-uartclk", uart_parent_ids, ARRAY_SIZE(uart_parent_ids),
++		uart_parent_hws, SCU0_CLK_SEL2, 14, 1),
++	PLL_CLK(SCU0_CLK_MPHY, CLK_MISC, "mphyclk", SCU0_CLK_MPHYSRC, SCU0_MPHYCLK_PARAM),
++	PLL_CLK(SCU0_CLK_U2PHY_REFCLK, CLK_MISC, "u2phy_refclk", SCU0_CLK_U2PHY_REFCLKSRC,
++		SCU0_CLK_SEL2),
++	DIVIDER_CLK(SCU0_CLK_AHB, "soc0-ahb", SCU0_CLK_AHBMUX,
++		    SCU0_HWSTRAP1, 5, 2, ast2700_hclk_div_table),
++	DIVIDER_CLK(SCU0_CLK_EMMC, "emmcclk", SCU0_CLK_EMMCMUX,
++		    SCU0_CLK_SEL1, 12, 3, ast2700_clk_div_table2),
++	DIVIDER_CLK(SCU0_CLK_APB, "soc0-apb", SCU0_CLK_AXI0,
++		    SCU0_CLK_SEL1, 23, 3, ast2700_clk_div_table2),
++	DIVIDER_CLK(SCU0_CLK_HPLL_DIV_AHB, "soc0-hpll-ahb", SCU0_CLK_HPLL,
++		    SCU0_HWSTRAP1, 5, 2, ast2700_hclk_div_table),
++	DIVIDER_CLK(SCU0_CLK_MPLL_DIV_AHB, "soc0-mpll-ahb", SCU0_CLK_MPLL,
++		    SCU0_HWSTRAP1, 5, 2, ast2700_hclk_div_table),
++	DIVIDER_CLK(SCU0_CLK_UART4, "uart4clk", SCU0_CLK_UART,
++		    SCU0_CLK_SEL2, 30, 1, ast2700_clk_uart_div_table),
++	GATE_CLK(SCU0_CLK_GATE_MCLK, CLK_GATE_ASPEED, "mclk-gate", SCU0_CLK_MPLL,
++		 SCU0_CLK_STOP, 0, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_ECLK, CLK_GATE_ASPEED, "eclk-gate", -1, SCU0_CLK_STOP, 1, 0),
++	GATE_CLK(SCU0_CLK_GATE_2DCLK, CLK_GATE_ASPEED, "gclk-gate", -1, SCU0_CLK_STOP, 2, 0),
++	GATE_CLK(SCU0_CLK_GATE_VCLK, CLK_GATE_ASPEED, "vclk-gate", -1, SCU0_CLK_STOP, 3, 0),
++	GATE_CLK(SCU0_CLK_GATE_BCLK, CLK_GATE_ASPEED, "bclk-gate", -1,
++		 SCU0_CLK_STOP, 4, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_VGA0CLK,  CLK_GATE_ASPEED, "vga0clk-gate", -1,
++		 SCU0_CLK_STOP, 5, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_REFCLK,  CLK_GATE_ASPEED, "soc0-refclk-gate", SCU0_CLKIN,
++		 SCU0_CLK_STOP, 6, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_PORTBUSB2CLK, CLK_GATE_ASPEED, "portb-usb2clk-gate", -1,
++		 SCU0_CLK_STOP, 7, 0),
++	GATE_CLK(SCU0_CLK_GATE_UHCICLK, CLK_GATE_ASPEED, "uhciclk-gate", -1, SCU0_CLK_STOP, 9, 0),
++	GATE_CLK(SCU0_CLK_GATE_VGA1CLK, CLK_GATE_ASPEED, "vga1clk-gate", -1,
++		 SCU0_CLK_STOP, 10, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_DDRPHYCLK, CLK_GATE_ASPEED, "ddrphy-gate", -1,
++		 SCU0_CLK_STOP, 11, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_E2M0CLK, CLK_GATE_ASPEED, "e2m0clk-gate", -1,
++		 SCU0_CLK_STOP, 12, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_HACCLK, CLK_GATE_ASPEED, "hacclk-gate", -1, SCU0_CLK_STOP, 13, 0),
++	GATE_CLK(SCU0_CLK_GATE_PORTAUSB2CLK, CLK_GATE_ASPEED, "porta-usb2clk-gate", -1,
++		 SCU0_CLK_STOP, 14, 0),
++	GATE_CLK(SCU0_CLK_GATE_UART4CLK, CLK_GATE_ASPEED, "uart4clk-gate", SCU0_CLK_UART4,
++		 SCU0_CLK_STOP, 15, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_SLICLK, CLK_GATE_ASPEED, "soc0-sliclk-gate", -1,
++		 SCU0_CLK_STOP, 16, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_DACCLK, CLK_GATE_ASPEED, "dacclk-gate", -1,
++		 SCU0_CLK_STOP, 17, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_DP, CLK_GATE_ASPEED, "dpclk-gate", -1,
++		 SCU0_CLK_STOP, 18, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_E2M1CLK, CLK_GATE_ASPEED, "e2m1clk-gate", -1,
++		 SCU0_CLK_STOP, 19, CLK_IS_CRITICAL),
++	GATE_CLK(SCU0_CLK_GATE_CRT0CLK, CLK_GATE_ASPEED, "crt0clk-gate", -1,
++		 SCU0_CLK_STOP, 20, 0),
++	GATE_CLK(SCU0_CLK_GATE_CRT1CLK, CLK_GATE_ASPEED, "crt1clk-gate", -1,
++		 SCU0_CLK_STOP, 21, 0),
++	GATE_CLK(SCU0_CLK_GATE_ECDSACLK, CLK_GATE_ASPEED, "eccclk-gate", -1,
++		 SCU0_CLK_STOP, 23, 0),
++	GATE_CLK(SCU0_CLK_GATE_RSACLK, CLK_GATE_ASPEED, "rsaclk-gate", -1,
++		 SCU0_CLK_STOP, 24, 0),
++	GATE_CLK(SCU0_CLK_GATE_RVAS0CLK, CLK_GATE_ASPEED, "rvas0clk-gate", -1,
++		 SCU0_CLK_STOP, 25, 0),
++	GATE_CLK(SCU0_CLK_GATE_UFSCLK, CLK_GATE_ASPEED, "ufsclk-gate", -1,
++		 SCU0_CLK_STOP, 26, 0),
++	GATE_CLK(SCU0_CLK_GATE_EMMCCLK, CLK_GATE_ASPEED, "emmcclk-gate", SCU0_CLK_EMMC,
++		 SCU0_CLK_STOP, 27, 0),
++	GATE_CLK(SCU0_CLK_GATE_RVAS1CLK, CLK_GATE_ASPEED, "rvas1clk-gate", -1,
++		 SCU0_CLK_STOP, 28, 0),
++};
++
++static const struct ast2700_clk_info ast2700_scu1_clk_info[] __initconst = {
++	FIXED_CLK(SCU1_CLKIN, "soc1-clkin", 25 * HZ_PER_MHZ),
++	PLL_CLK(SCU1_CLK_HPLL, CLK_PLL, "soc1-hpll", SCU1_CLKIN, SCU1_HPLL_PARAM),
++	PLL_CLK(SCU1_CLK_APLL, CLK_PLL, "soc1-apll", SCU1_CLKIN, SCU1_APLL_PARAM),
++	PLL_CLK(SCU1_CLK_DPLL, CLK_PLL, "soc1-dpll", SCU1_CLKIN, SCU1_DPLL_PARAM),
++	FIXED_FACTOR_CLK(SCU1_CLK_APLL_DIV2, "soc1-apll_div2", SCU1_CLK_APLL, 1, 2),
++	FIXED_FACTOR_CLK(SCU1_CLK_APLL_DIV4, "soc1-apll_div4", SCU1_CLK_APLL, 1, 4),
++	FIXED_FACTOR_CLK(SCU1_CLK_CAN, "canclk", SCU1_CLK_APLL, 1, 10),
++	DIVIDER_CLK(SCU1_CLK_APB, "soc1-apb", SCU1_CLK_HPLL,
++		    SCU1_CLK_SEL1, 18, 3, ast2700_clk_div_table2),
++	DIVIDER_CLK(SCU1_CLK_RMII, "rmii", SCU1_CLK_HPLL,
++		    SCU1_CLK_SEL1, 21, 3, ast2700_rmii_div_table),
++	DIVIDER_CLK(SCU1_CLK_RGMII, "rgmii", SCU1_CLK_HPLL,
++		    SCU1_CLK_SEL1, 25, 3, ast2700_rgmii_div_table),
++	DIVIDER_CLK(SCU1_CLK_MACHCLK, "machclk", SCU1_CLK_HPLL,
++		    SCU1_CLK_SEL1, 29, 3, ast2700_clk_div_table),
++	DIVIDER_CLK(SCU1_CLK_APLL_DIVN, "soc1-apll_divn",
++		    SCU1_CLK_APLL, SCU1_CLK_SEL2, 8, 3, ast2700_clk_div_table),
++	DIVIDER_CLK(SCU1_CLK_AHB, "soc1-ahb", SCU1_CLK_HPLL,
++		    SCU1_CLK_SEL2, 20, 3, ast2700_clk_div_table),
++	DIVIDER_CLK(SCU1_CLK_I3C, "soc1-i3c", SCU1_CLK_HPLL,
++		    SCU1_CLK_SEL2, 23, 3, ast2700_clk_div_table),
++	MUX_CLK(SCU1_CLK_SDMUX, "sdclk-mux", sdclk_parent_ids, ARRAY_SIZE(sdclk_parent_ids),
++		sdclk_parent_hws, SCU1_CLK_SEL1, 13, 1),
++	MUX_CLK(SCU1_CLK_UXCLK, "uxclk", uxclk_parent_ids, ARRAY_SIZE(uxclk_parent_ids),
++		uxclk_parent_hws, SCU1_CLK_SEL2, 0, 2),
++	MUX_CLK(SCU1_CLK_HUXCLK, "huxclk", uxclk_parent_ids, ARRAY_SIZE(uxclk_parent_ids),
++		uxclk_parent_hws, SCU1_CLK_SEL2, 3, 2),
++	DIVIDER_CLK(SCU1_CLK_SDCLK, "sdclk", SCU1_CLK_SDMUX,
++		    SCU1_CLK_SEL1, 14, 3, ast2700_clk_div_table),
++	PLL_CLK(SCU1_CLK_UARTX, CLK_UART_PLL, "uartxclk", SCU1_CLK_UXCLK, SCU1_UXCLK_CTRL),
++	PLL_CLK(SCU1_CLK_HUARTX, CLK_UART_PLL, "huartxclk", SCU1_CLK_HUXCLK, SCU1_HUXCLK_CTRL),
++	MUX_CLK(SCU1_CLK_UART0, "uart0clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 0, 1),
++	MUX_CLK(SCU1_CLK_UART1, "uart1clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 1, 1),
++	MUX_CLK(SCU1_CLK_UART2, "uart2clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 2, 1),
++	MUX_CLK(SCU1_CLK_UART3, "uart3clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 3, 1),
++	MUX_CLK(SCU1_CLK_UART5, "uart5clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 5, 1),
++	MUX_CLK(SCU1_CLK_UART6, "uart6clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 6, 1),
++	MUX_CLK(SCU1_CLK_UART7, "uart7clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 7, 1),
++	MUX_CLK(SCU1_CLK_UART8, "uart8clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 8, 1),
++	MUX_CLK(SCU1_CLK_UART9, "uart9clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 9, 1),
++	MUX_CLK(SCU1_CLK_UART10, "uart10clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 10, 1),
++	MUX_CLK(SCU1_CLK_UART11, "uart11clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 11, 1),
++	MUX_CLK(SCU1_CLK_UART12, "uart12clk", uartx_parent_ids, ARRAY_SIZE(uartx_parent_ids),
++		uartx_parent_hws, SCU1_CLK_SEL1, 12, 1),
++	FIXED_FACTOR_CLK(SCU1_CLK_UART13, "uart13clk", SCU1_CLK_HUARTX, 1, 1),
++	FIXED_FACTOR_CLK(SCU1_CLK_UART14, "uart14clk", SCU1_CLK_HUARTX, 1, 1),
++	GATE_CLK(SCU1_CLK_MAC0RCLK, CLK_GATE, "mac0rclk-gate", SCU1_CLK_RMII,
++		 SCU1_MAC12_CLK_DLY, 29, 0),
++	GATE_CLK(SCU1_CLK_MAC1RCLK, CLK_GATE, "mac1rclk-gate", SCU1_CLK_RMII,
++		 SCU1_MAC12_CLK_DLY, 30, 0),
++	GATE_CLK(SCU1_CLK_GATE_LCLK0, CLK_GATE_ASPEED, "lclk0-gate", -1,
++		 SCU1_CLK_STOP, 0, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_LCLK1, CLK_GATE_ASPEED, "lclk1-gate", -1,
++		 SCU1_CLK_STOP, 1, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_ESPI0CLK, CLK_GATE_ASPEED, "espi0clk-gate", -1,
++		 SCU1_CLK_STOP, 2, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_ESPI1CLK, CLK_GATE_ASPEED, "espi1clk-gate", -1,
++		 SCU1_CLK_STOP, 3, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_SDCLK, CLK_GATE_ASPEED, "sdclk-gate", SCU1_CLK_SDCLK,
++		 SCU1_CLK_STOP, 4, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_IPEREFCLK, CLK_GATE_ASPEED, "soc1-iperefclk-gate", -1,
++		 SCU1_CLK_STOP, 5, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_REFCLK, CLK_GATE_ASPEED, "soc1-refclk-gate", -1,
++		 SCU1_CLK_STOP, 6, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_LPCHCLK, CLK_GATE_ASPEED, "lpchclk-gate", -1,
++		 SCU1_CLK_STOP, 7, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_MAC0CLK, CLK_GATE_ASPEED, "mac0clk-gate", -1,
++		 SCU1_CLK_STOP, 8, 0),
++	GATE_CLK(SCU1_CLK_GATE_MAC1CLK, CLK_GATE_ASPEED, "mac1clk-gate", -1,
++		 SCU1_CLK_STOP, 9, 0),
++	GATE_CLK(SCU1_CLK_GATE_MAC2CLK, CLK_GATE_ASPEED, "mac2clk-gate", -1,
++		 SCU1_CLK_STOP, 10, 0),
++	GATE_CLK(SCU1_CLK_GATE_UART0CLK, CLK_GATE_ASPEED, "uart0clk-gate", SCU1_CLK_UART0,
++		 SCU1_CLK_STOP, 11, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART1CLK, CLK_GATE_ASPEED, "uart1clk-gate", SCU1_CLK_UART1,
++		 SCU1_CLK_STOP, 12, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART2CLK, CLK_GATE_ASPEED, "uart2clk-gate", SCU1_CLK_UART2,
++		 SCU1_CLK_STOP, 13, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART3CLK, CLK_GATE_ASPEED, "uart3clk-gate", SCU1_CLK_UART3,
++		 SCU1_CLK_STOP, 14, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_I2CCLK, CLK_GATE_ASPEED, "i2cclk-gate", -1, SCU1_CLK_STOP, 15, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C0CLK, CLK_GATE_ASPEED, "i3c0clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 16, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C1CLK, CLK_GATE_ASPEED, "i3c1clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 17, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C2CLK, CLK_GATE_ASPEED, "i3c2clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 18, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C3CLK, CLK_GATE_ASPEED, "i3c3clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 19, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C4CLK, CLK_GATE_ASPEED, "i3c4clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 20, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C5CLK, CLK_GATE_ASPEED, "i3c5clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 21, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C6CLK, CLK_GATE_ASPEED, "i3c6clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 22, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C7CLK, CLK_GATE_ASPEED, "i3c7clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 23, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C8CLK, CLK_GATE_ASPEED, "i3c8clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 24, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C9CLK, CLK_GATE_ASPEED, "i3c9clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 25, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C10CLK, CLK_GATE_ASPEED, "i3c10clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 26, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C11CLK, CLK_GATE_ASPEED, "i3c11clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 27, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C12CLK, CLK_GATE_ASPEED, "i3c12clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 28, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C13CLK, CLK_GATE_ASPEED, "i3c13clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 29, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C14CLK, CLK_GATE_ASPEED, "i3c14clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 30, 0),
++	GATE_CLK(SCU1_CLK_GATE_I3C15CLK, CLK_GATE_ASPEED, "i3c15clk-gate", SCU1_CLK_I3C,
++		 SCU1_CLK_STOP, 31, 0),
++	GATE_CLK(SCU1_CLK_GATE_UART5CLK, CLK_GATE_ASPEED, "uart5clk-gate", SCU1_CLK_UART5,
++		 SCU1_CLK_STOP2, 0, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART6CLK, CLK_GATE_ASPEED, "uart6clk-gate", SCU1_CLK_UART6,
++		 SCU1_CLK_STOP2, 1, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART7CLK, CLK_GATE_ASPEED, "uart7clk-gate", SCU1_CLK_UART7,
++		 SCU1_CLK_STOP2, 2, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART8CLK, CLK_GATE_ASPEED, "uart8clk-gate", SCU1_CLK_UART8,
++		 SCU1_CLK_STOP2, 3, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UART9CLK, CLK_GATE_ASPEED, "uart9clk-gate", SCU1_CLK_UART9,
++		 SCU1_CLK_STOP2, 4, 0),
++	GATE_CLK(SCU1_CLK_GATE_UART10CLK, CLK_GATE_ASPEED, "uart10clk-gate", SCU1_CLK_UART10,
++		 SCU1_CLK_STOP2, 5, 0),
++	GATE_CLK(SCU1_CLK_GATE_UART11CLK, CLK_GATE_ASPEED, "uart11clk-gate", SCU1_CLK_UART11,
++		 SCU1_CLK_STOP2, 6, 0),
++	GATE_CLK(SCU1_CLK_GATE_UART12CLK, CLK_GATE_ASPEED, "uart12clk-gate", SCU1_CLK_UART12,
++		 SCU1_CLK_STOP2, 7, 0),
++	GATE_CLK(SCU1_CLK_GATE_FSICLK, CLK_GATE_ASPEED, "fsiclk-gate", -1, SCU1_CLK_STOP2, 8, 0),
++	GATE_CLK(SCU1_CLK_GATE_LTPIPHYCLK, CLK_GATE_ASPEED, "ltpiphyclk-gate", -1,
++		 SCU1_CLK_STOP2, 9, 0),
++	GATE_CLK(SCU1_CLK_GATE_LTPICLK, CLK_GATE_ASPEED, "ltpiclk-gate", -1,
++		 SCU1_CLK_STOP2, 10, 0),
++	GATE_CLK(SCU1_CLK_GATE_VGALCLK, CLK_GATE_ASPEED, "vgalclk-gate", -1,
++		 SCU1_CLK_STOP2, 11, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_UHCICLK, CLK_GATE_ASPEED, "usbuartclk-gate", -1,
++		 SCU1_CLK_STOP2, 12, 0),
++	GATE_CLK(SCU1_CLK_GATE_CANCLK, CLK_GATE_ASPEED, "canclk-gate", SCU1_CLK_CAN,
++		 SCU1_CLK_STOP2, 13, 0),
++	GATE_CLK(SCU1_CLK_GATE_PCICLK, CLK_GATE_ASPEED, "pciclk-gate", -1,
++		 SCU1_CLK_STOP2, 14, 0),
++	GATE_CLK(SCU1_CLK_GATE_SLICLK, CLK_GATE_ASPEED, "soc1-sliclk-gate", -1,
++		 SCU1_CLK_STOP2, 15, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_E2MCLK, CLK_GATE_ASPEED, "soc1-e2m-gate", -1,
++		 SCU1_CLK_STOP2, 16, CLK_IS_CRITICAL),
++	GATE_CLK(SCU1_CLK_GATE_PORTCUSB2CLK, CLK_GATE_ASPEED, "portcusb2-gate", -1,
++		 SCU1_CLK_STOP2, 17, 0),
++	GATE_CLK(SCU1_CLK_GATE_PORTDUSB2CLK, CLK_GATE_ASPEED, "portdusb2-gate", -1,
++		 SCU1_CLK_STOP2, 18, 0),
++	GATE_CLK(SCU1_CLK_GATE_LTPI1TXCLK, CLK_GATE_ASPEED, "ltp1tx-gate", -1,
++		 SCU1_CLK_STOP2, 19, 0),
++};
++
++static struct clk_hw *ast2700_clk_hw_register_fixed_display(void __iomem *reg, const char *name,
++							    struct ast2700_clk_ctrl *clk_ctrl)
 +{
-+	return container_of(rcdev, struct aspeed_reset, rcdev);
++	unsigned int mult, div, r, n;
++	u32 xdclk;
++	u32 val;
++
++	val = readl(clk_ctrl->base + SCU0_CLK_SEL2);
++	if (val & BIT(29))
++		xdclk = 800 * HZ_PER_MHZ;
++	else
++		xdclk = 1000 * HZ_PER_MHZ;
++
++	val = readl(reg);
++	r = val & GENMASK(15, 0);
++	n = (val >> 16) & GENMASK(15, 0);
++	mult = r;
++	div = 2 * n;
++
++	return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL, 0, (xdclk * mult) / div);
 +}
 +
-+static int aspeed_reset_assert(struct reset_controller_dev *rcdev, unsigned long id)
++static struct clk_hw *ast2700_clk_hw_register_hpll(void __iomem *reg,
++						   const char *name, const struct clk_hw *parent_hw,
++						   struct ast2700_clk_ctrl *clk_ctrl)
 +{
-+	struct aspeed_reset *rc = to_aspeed_reset(rcdev);
-+	void __iomem *reg_offset = rc->base + rc->info->signal[id].offset;
++	unsigned int mult, div;
++	u32 val;
 +
-+	if (rc->info->signal[id].dedicated_clr) {
-+		writel(rc->info->signal[id].bit, reg_offset);
++	val = readl(clk_ctrl->base + SCU0_HWSTRAP1);
++	if ((readl(clk_ctrl->base) & REVISION_ID) && (val & BIT(3))) {
++		switch ((val & GENMASK(4, 2)) >> 2) {
++		case 2:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 1800 * HZ_PER_MHZ);
++		case 3:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 1700 * HZ_PER_MHZ);
++		case 6:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 1200 * HZ_PER_MHZ);
++		case 7:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 800 * HZ_PER_MHZ);
++		default:
++			return ERR_PTR(-EINVAL);
++		}
++	} else if ((val & GENMASK(3, 2)) != 0) {
++		switch ((val & GENMASK(3, 2)) >> 2) {
++		case 1:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 1900 * HZ_PER_MHZ);
++		case 2:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 1800 * HZ_PER_MHZ);
++		case 3:
++			return devm_clk_hw_register_fixed_rate(clk_ctrl->dev, name, NULL,
++							       0, 1700 * HZ_PER_MHZ);
++		default:
++			return ERR_PTR(-EINVAL);
++		}
 +	} else {
-+		guard(spinlock_irqsave)(&rc->lock);
-+		writel(readl(reg_offset) & ~rc->info->signal[id].bit, reg_offset);
++		val = readl(reg);
++
++		if (val & BIT(24)) {
++			/* Pass through mode */
++			mult = 1;
++			div = 1;
++		} else {
++			u32 m = val & 0x1fff;
++			u32 n = (val >> 13) & 0x3f;
++			u32 p = (val >> 19) & 0xf;
++
++			mult = (m + 1) / (2 * (n + 1));
++			div = p + 1;
++		}
 +	}
++
++	return devm_clk_hw_register_fixed_factor_parent_hw(clk_ctrl->dev, name,
++							   parent_hw, 0, mult, div);
++}
++
++static struct clk_hw *ast2700_clk_hw_register_pll(int clk_idx, void __iomem *reg,
++						  const char *name, const struct clk_hw *parent_hw,
++						  struct ast2700_clk_ctrl *clk_ctrl)
++{
++	int scu = clk_ctrl->clk_data->scu;
++	unsigned int mult, div;
++	u32 val = readl(reg);
++
++	if (val & BIT(24)) {
++		/* Pass through mode */
++		mult = 1;
++		div = 1;
++	} else {
++		u32 m = val & 0x1fff;
++		u32 n = (val >> 13) & 0x3f;
++		u32 p = (val >> 19) & 0xf;
++
++		if (scu) {
++			mult = (m + 1) / (n + 1);
++			div = p + 1;
++		} else {
++			if (clk_idx == SCU0_CLK_MPLL) {
++				mult = m / (n + 1);
++				div = p + 1;
++			} else {
++				mult = (m + 1) / (2 * (n + 1));
++				div = p + 1;
++			}
++		}
++	}
++
++	return devm_clk_hw_register_fixed_factor_parent_hw(clk_ctrl->dev, name,
++							   parent_hw, 0, mult, div);
++}
++
++static struct clk_hw *ast2700_clk_hw_register_uartpll(void __iomem *reg, const char *name,
++						      const struct clk_hw *parent_hw,
++						      struct ast2700_clk_ctrl *clk_ctrl)
++{
++	unsigned int mult, div;
++	u32 val = readl(reg);
++	u32 r = val & 0xff;
++	u32 n = (val >> 8) & 0x3ff;
++
++	mult = r;
++	div = n * 2;
++
++	return devm_clk_hw_register_fixed_factor_parent_hw(clk_ctrl->dev, name,
++							   parent_hw, 0, mult, div);
++}
++
++static struct clk_hw *ast2700_clk_hw_register_misc(int clk_idx, void __iomem *reg,
++						   const char *name, const struct clk_hw *parent_hw,
++						   struct ast2700_clk_ctrl *clk_ctrl)
++{
++	u32 div = 0;
++
++	if (clk_idx == SCU0_CLK_MPHY) {
++		div = readl(reg) + 1;
++	} else if (clk_idx == SCU0_CLK_U2PHY_REFCLK) {
++		if (readl(clk_ctrl->base) & REVISION_ID)
++			div = (GET_USB_REFCLK_DIV(readl(reg)) + 1) << 4;
++		else
++			div = (GET_USB_REFCLK_DIV(readl(reg)) + 1) << 1;
++	} else {
++		return ERR_PTR(-EINVAL);
++	}
++
++	return devm_clk_hw_register_fixed_factor_parent_hw(clk_ctrl->dev, name,
++							   parent_hw, 0, 1, div);
++}
++
++static int ast2700_clk_is_enabled(struct clk_hw *hw)
++{
++	struct clk_gate *gate = to_clk_gate(hw);
++	u32 clk = BIT(gate->bit_idx);
++	u32 reg;
++
++	reg = readl(gate->reg);
++
++	return !(reg & clk);
++}
++
++static int ast2700_clk_enable(struct clk_hw *hw)
++{
++	struct clk_gate *gate = to_clk_gate(hw);
++	u32 clk = BIT(gate->bit_idx);
++
++	if (readl(gate->reg) & clk)
++		writel(clk, gate->reg + 0x04);
 +
 +	return 0;
 +}
 +
-+static int aspeed_reset_deassert(struct reset_controller_dev *rcdev, unsigned long id)
++static void ast2700_clk_disable(struct clk_hw *hw)
 +{
-+	struct aspeed_reset *rc = to_aspeed_reset(rcdev);
-+	void __iomem *reg_offset = rc->base + rc->info->signal[id].offset;
++	struct clk_gate *gate = to_clk_gate(hw);
++	u32 clk = BIT(gate->bit_idx);
 +
-+	if (rc->info->signal[id].dedicated_clr) {
-+		writel(rc->info->signal[id].bit, reg_offset + 0x04);
-+	} else {
-+		guard(spinlock_irqsave)(&rc->lock);
-+		writel(readl(reg_offset) | rc->info->signal[id].bit, reg_offset);
-+	}
-+
-+	return 0;
++	/* Clock is set to enable, so use write to set register */
++	writel(clk, gate->reg);
 +}
 +
-+static int aspeed_reset_status(struct reset_controller_dev *rcdev, unsigned long id)
-+{
-+	struct aspeed_reset *rc = to_aspeed_reset(rcdev);
-+	void __iomem *reg_offset = rc->base + rc->info->signal[id].offset;
-+
-+	return (readl(reg_offset) & rc->info->signal[id].bit) ? 1 : 0;
-+}
-+
-+static const struct reset_control_ops aspeed_reset_ops = {
-+	.assert = aspeed_reset_assert,
-+	.deassert = aspeed_reset_deassert,
-+	.status = aspeed_reset_status,
++static const struct clk_ops ast2700_clk_gate_ops = {
++	.enable = ast2700_clk_enable,
++	.disable = ast2700_clk_disable,
++	.is_enabled = ast2700_clk_is_enabled,
 +};
 +
-+static int aspeed_reset_probe(struct auxiliary_device *adev,
-+			      const struct auxiliary_device_id *id)
++static struct clk_hw *ast2700_clk_hw_register_gate(struct device *dev, const char *name,
++						   const struct clk_hw *parent_hw,
++						   void __iomem *reg, u8 clock_idx,
++						   unsigned long flags, spinlock_t *lock)
 +{
-+	struct aspeed_reset *reset;
-+	struct device *dev = &adev->dev;
++	struct clk_init_data init;
++	struct clk_gate *gate;
++	struct clk_hw *hw;
++	int ret = -EINVAL;
 +
-+	reset = devm_kzalloc(dev, sizeof(*reset), GFP_KERNEL);
-+	if (!reset)
++	gate = kzalloc(sizeof(*gate), GFP_KERNEL);
++	if (!gate)
++		return ERR_PTR(-ENOMEM);
++
++	init.name = name;
++	init.ops = &ast2700_clk_gate_ops;
++	init.flags = flags;
++	init.parent_names = NULL;
++	init.parent_hws = parent_hw ? &parent_hw : NULL;
++	init.parent_data = NULL;
++	init.num_parents = parent_hw ? 1 : 0;
++
++	gate->reg = reg;
++	gate->bit_idx = clock_idx;
++	gate->flags = 0;
++	gate->lock = lock;
++	gate->hw.init = &init;
++
++	hw = &gate->hw;
++	ret = clk_hw_register(dev, hw);
++	if (ret) {
++		kfree(gate);
++		hw = ERR_PTR(ret);
++	}
++
++	return hw;
++}
++
++static void ast2700_soc1_configure_i3c_clk(struct ast2700_clk_ctrl *clk_ctrl)
++{
++	if (readl(clk_ctrl->base) & REVISION_ID) {
++		u32 val;
++
++		/* I3C 250MHz = HPLL/4 */
++		val = readl(clk_ctrl->base + SCU1_CLK_SEL2) & ~SCU1_CLK_I3C_DIV_MASK;
++		val |= FIELD_PREP(SCU1_CLK_I3C_DIV_MASK, SCU1_CLK_I3C_DIV(4));
++		writel(val, clk_ctrl->base + SCU1_CLK_SEL2);
++	}
++}
++
++static inline const struct clk_hw *get_parent_hw_or_null(struct clk_hw **hws, int idx)
++{
++	if (idx < 0)
++		return NULL;
++	else
++		return hws[idx];
++}
++
++static int ast2700_soc_clk_probe(struct platform_device *pdev)
++{
++	const struct ast2700_clk_data *clk_data;
++	struct clk_hw_onecell_data *clk_hw_data;
++	struct ast2700_clk_ctrl *clk_ctrl;
++	struct device *dev = &pdev->dev;
++	struct auxiliary_device *adev;
++	void __iomem *clk_base;
++	struct clk_hw **hws;
++	char *reset_name;
++	int ret;
++	int i;
++
++	clk_ctrl = devm_kzalloc(dev, sizeof(*clk_ctrl), GFP_KERNEL);
++	if (!clk_ctrl)
++		return -ENOMEM;
++	clk_ctrl->dev = dev;
++	dev_set_drvdata(&pdev->dev, clk_ctrl);
++
++	spin_lock_init(&clk_ctrl->lock);
++
++	clk_base = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(clk_base))
++		return PTR_ERR(clk_base);
++
++	clk_ctrl->base = clk_base;
++
++	clk_data = device_get_match_data(dev);
++	if (!clk_data)
++		return -ENODEV;
++
++	clk_ctrl->clk_data = clk_data;
++	reset_name = devm_kasprintf(dev, GFP_KERNEL, "reset%d", clk_data->scu);
++
++	clk_hw_data = devm_kzalloc(dev, struct_size(clk_hw_data, hws, clk_data->nr_clks),
++				   GFP_KERNEL);
++	if (!clk_hw_data)
 +		return -ENOMEM;
 +
-+	spin_lock_init(&reset->lock);
++	clk_hw_data->num = clk_data->nr_clks;
++	hws = clk_hw_data->hws;
 +
-+	reset->info = (struct aspeed_reset_info *)id->driver_data;
-+	reset->rcdev.owner = THIS_MODULE;
-+	reset->rcdev.nr_resets = reset->info->nr_resets;
-+	reset->rcdev.ops = &aspeed_reset_ops;
-+	reset->rcdev.of_node = dev->parent->of_node;
-+	reset->rcdev.dev = dev;
-+	reset->rcdev.of_reset_n_cells = 1;
-+	reset->base = (void __iomem *)adev->dev.platform_data;
++	if (clk_data->scu)
++		ast2700_soc1_configure_i3c_clk(clk_ctrl);
 +
-+	return devm_reset_controller_register(dev, &reset->rcdev);
++	for (i = 0; i < clk_data->nr_clks; i++) {
++		const struct ast2700_clk_info *clk = &clk_data->clk_info[i];
++		const struct clk_hw *phw = NULL;
++		unsigned int id = clk->id;
++		void __iomem *reg = NULL;
++
++		if (id >= clk_hw_data->num || hws[id]) {
++			dev_err(dev, "clk id %u invalid for %s\n", id, clk->name);
++			return -EINVAL;
++		}
++
++		if (clk->type == CLK_FIXED) {
++			const struct ast2700_clk_fixed_rate_data *fixed_rate = &clk->data.rate;
++
++			hws[id] = devm_clk_hw_register_fixed_rate(dev, clk->name, NULL, 0,
++								  fixed_rate->fixed_rate);
++		} else if (clk->type == CLK_FIXED_FACTOR) {
++			const struct ast2700_clk_fixed_factor_data *factor = &clk->data.factor;
++
++			phw = hws[factor->parent_id];
++			hws[id] = devm_clk_hw_register_fixed_factor_parent_hw(dev, clk->name,
++									      phw, 0, factor->mult,
++									      factor->div);
++		} else if (clk->type == CLK_FIXED_DISPLAY) {
++			reg = clk_ctrl->base + clk->data.display_rate.reg;
++
++			hws[id] = ast2700_clk_hw_register_fixed_display(reg, clk->name, clk_ctrl);
++		} else if (clk->type == CLK_HPLL) {
++			const struct ast2700_clk_pll_data *pll = &clk->data.pll;
++
++			reg = clk_ctrl->base + pll->reg;
++			phw = hws[pll->parent_id];
++			hws[id] = ast2700_clk_hw_register_hpll(reg, clk->name, phw, clk_ctrl);
++		} else if (clk->type == CLK_PLL) {
++			const struct ast2700_clk_pll_data *pll = &clk->data.pll;
++
++			reg = clk_ctrl->base + pll->reg;
++			phw = hws[pll->parent_id];
++			hws[id] = ast2700_clk_hw_register_pll(id, reg, clk->name, phw, clk_ctrl);
++		} else if (clk->type == CLK_UART_PLL) {
++			const struct ast2700_clk_pll_data *pll = &clk->data.pll;
++
++			reg = clk_ctrl->base + pll->reg;
++			phw = hws[pll->parent_id];
++			hws[id] = ast2700_clk_hw_register_uartpll(reg, clk->name, phw, clk_ctrl);
++		} else if (clk->type == CLK_MUX) {
++			const struct ast2700_clk_mux_data *mux = &clk->data.mux;
++
++			reg = clk_ctrl->base + mux->reg;
++			for (int j = 0; j < mux->num_parents; j++) {
++				unsigned int pid = mux->parent_ids[j];
++
++				mux->parent_hws[j] = hws[pid];
++			}
++
++			hws[id] = devm_clk_hw_register_mux_parent_hws(dev, clk->name,
++								      mux->parent_hws,
++								      mux->num_parents, 0,
++								      reg, mux->bit_shift,
++								      mux->bit_width, 0,
++								      &clk_ctrl->lock);
++		} else if (clk->type == CLK_MISC) {
++			const struct ast2700_clk_pll_data *pll = &clk->data.pll;
++
++			reg = clk_ctrl->base + pll->reg;
++			phw = hws[pll->parent_id];
++			hws[id] = ast2700_clk_hw_register_misc(id, reg, clk->name, phw, clk_ctrl);
++		} else if (clk->type == CLK_DIVIDER) {
++			const struct ast2700_clk_div_data *divider = &clk->data.div;
++
++			reg = clk_ctrl->base + divider->reg;
++			phw = hws[divider->parent_id];
++			hws[id] = clk_hw_register_divider_table_parent_hw(dev, clk->name,
++									  phw,
++									  0, reg,
++									  divider->bit_shift,
++									  divider->bit_width, 0,
++									  divider->div_table,
++									  &clk_ctrl->lock);
++		} else if (clk->type == CLK_GATE_ASPEED) {
++			const struct ast2700_clk_gate_data *gate = &clk->data.gate;
++
++			phw = get_parent_hw_or_null(hws, gate->parent_id);
++			reg = clk_ctrl->base + gate->reg;
++			hws[id] = ast2700_clk_hw_register_gate(dev, clk->name, phw, reg, gate->bit,
++							       gate->flags, &clk_ctrl->lock);
++		} else {
++			const struct ast2700_clk_gate_data *gate = &clk->data.gate;
++
++			phw = get_parent_hw_or_null(hws, gate->parent_id);
++			reg = clk_ctrl->base + gate->reg;
++			hws[id] = devm_clk_hw_register_gate_parent_hw(dev, clk->name, phw,
++								      gate->flags, reg, gate->bit,
++								      0, &clk_ctrl->lock);
++		}
++
++		if (IS_ERR(hws[id]))
++			return PTR_ERR(hws[id]);
++	}
++
++	ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get, clk_hw_data);
++	if (ret)
++		return ret;
++
++	adev = devm_auxiliary_device_create(dev, reset_name, (__force void *)clk_base);
++	if (!adev)
++		return -ENODEV;
++
++	return 0;
 +}
 +
-+static const struct aspeed_reset_info ast2700_reset0_info = {
-+	.nr_resets = ARRAY_SIZE(ast2700_reset0_signals),
-+	.signal = ast2700_reset0_signals,
++static const struct ast2700_clk_data ast2700_clk0_data = {
++	.scu = 0,
++	.nr_clks = ARRAY_SIZE(ast2700_scu0_clk_info),
++	.clk_info = ast2700_scu0_clk_info,
 +};
 +
-+static const struct aspeed_reset_info ast2700_reset1_info = {
-+	.nr_resets = ARRAY_SIZE(ast2700_reset1_signals),
-+	.signal = ast2700_reset1_signals,
++static const struct ast2700_clk_data ast2700_clk1_data = {
++	.scu = 1,
++	.nr_clks = ARRAY_SIZE(ast2700_scu1_clk_info),
++	.clk_info = ast2700_scu1_clk_info,
 +};
 +
-+static const struct auxiliary_device_id aspeed_reset_ids[] = {
-+	{ .name = "clk_ast2700.reset0", .driver_data = (kernel_ulong_t)&ast2700_reset0_info },
-+	{ .name = "clk_ast2700.reset1", .driver_data = (kernel_ulong_t)&ast2700_reset1_info },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(auxiliary, aspeed_reset_ids);
-+
-+static struct auxiliary_driver aspeed_reset_driver = {
-+	.probe		= aspeed_reset_probe,
-+	.id_table	= aspeed_reset_ids,
++static const struct of_device_id ast2700_scu_match[] = {
++	{ .compatible = "aspeed,ast2700-scu0", .data = &ast2700_clk0_data },
++	{ .compatible = "aspeed,ast2700-scu1", .data = &ast2700_clk1_data },
++	{ /* sentinel */ }
 +};
 +
-+module_auxiliary_driver(aspeed_reset_driver);
++MODULE_DEVICE_TABLE(of, ast2700_scu_match);
 +
-+MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-+MODULE_DESCRIPTION("ASPEED SoC Reset Controller Driver");
-+MODULE_LICENSE("GPL");
++static struct platform_driver ast2700_scu_driver = {
++	.probe = ast2700_soc_clk_probe,
++	.driver = {
++		.name = "clk-ast2700",
++		.of_match_table = ast2700_scu_match,
++	},
++};
++
++module_platform_driver(ast2700_scu_driver);
 -- 
 2.34.1
 
