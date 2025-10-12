@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-2422-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2423-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E47DCCD184
-	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Oct 2025 03:03:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C087CCCA476
+	for <linux-aspeed@archiver.kernel.org>; Sun, 12 Oct 2025 03:03:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cklfV56kmz2yrt;
-	Sun, 12 Oct 2025 14:03:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cklgL1Nbjz2yrt;
+	Sun, 12 Oct 2025 14:03:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760238194;
-	cv=none; b=I4VRRmJslpAQQ71puT1LAwRW5FNGA39GmF8Vz03SV7wVme7OustuZPX2xN1Np1osBBJ0s3R6ij+JSlr9xZKFBmZqYLuQXLMLp2/zzIXbtMOkNEojgozWnPHLk3a2v/ZxLPAizAyd75KTfQEt/DJ46OaSKJr30JCnnzvWGoahEklRf0YL6R8C/4Jg1rfFexciMc+sbDknUp6fBYuVWeILlJD0+SsZy3X9RJVaoCnkw9FIocYJJpGhHBhUuTbNaUCaVWzwbvVHPk5DQ3wAgrY2ZO//4XomFWGf4yxbsZr5qmW0gwRKvsO3wCk2r1ZklaP5ueTE/vdYrSv+ypRhORVOqw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760238238;
+	cv=none; b=HFm8zLHUPJnmm5JUhk4i+G0exy9GRJcCzNDJb1P8BmJA9NiqK8q2Po9zubSHBWvDRumrWke+nPCC3plB1Xpitp7PMmM9fr8OYtg4vOSVEgOF4CSGqX3Gf+mXbbrB9Si6HsX/WS5YH7wkkLKv1j+nz7BF6RBj2HV94GwRqoyUNc/CIOk9l9PkhYoVlffBCSf8QiCCEePAOUsuCy51Q639AWBCmdNVKQA+B+qTB7tB/ttM38S9A/zFnIVCfJFPe7n5iTtw1A5T4JAB2qPRmc9muU5fSlDz5ChAY0yXCJKc4AHSubLA4bF7Sat9+9NrKEhX6nQANVw4HHqKHJBn04WJPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760238194; c=relaxed/relaxed;
-	bh=giHqp9du718WZTvmAfvZwzSYFMHZ3RlJ/FBXHJxcbX0=;
+	t=1760238238; c=relaxed/relaxed;
+	bh=liSLP5hB0Nk08OOBO/eMacrJETAzug4Xf9obFYhVZzQ=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OfJyuP5xm/QCJSCLmFx8RHU0745w9ZQM2yl8G1RAiWGOQZTi+JZ9HEs8+KdqC129hX/jHNscSElyAHwLD1fuknyBwe2jYRmqiXA0TefTle87KLFnrSKoLS6JndPpyuD4J4LwF6DMc0DXXWNoKEc+fOjHRFitIpCbrEpG5ygAwhiXt3vct/729xRT+1MSrlQJ3iHH9FhvobSvnMb62yf76V6LLK21Hz/6sgkTk1xIrjJ4SII/rulWhaqfX3Zr9SLQtEfdvDxdtOVgZwXMXFuqB9w/oaqcdfKZm7t4cItfwmxIPyyTsfmEzL8nQQDpswQK1QdI3CuQpAp2D1E2aFZASg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nRFy+Ts8; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=C/9FZH0F7I1lOS6l2vjUklaHn44xndPz/wV00nfuJ9utqKMfJ7nHLx6bOfCW7m8T/nNkagOGH07vncxvpqmt7MGBkQ6lnjof9P/XSzsngU+XMVKM+Goe+WELNLFV2VFM1HG8ut1wLLva3cbkJ8oX6HsuEcinrJ5icRst4ZpVNEOn17mF68P/7cpec0aIM062oJxX3Pk/pm91lzKJ5zXsBxo83WafQOjEdQVWqKmwA7HxSSa+KMt6BaDFo01OiDA+RWT9v/u2aIi0Q88rUmQPp8qifyeXlXm2YJ4OIVFN+z9cJJI67v91L0oUckCy8atsWkLM1bm2GRTLTbNWLTWKXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cBGDoE6K; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nRFy+Ts8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cBGDoE6K;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cklfT56Zmz2yMh
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Oct 2025 14:03:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cklgK1bg1z2yMh
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 12 Oct 2025 14:03:57 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3CC36435BA;
-	Sun, 12 Oct 2025 03:03:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88891C4CEF9;
-	Sun, 12 Oct 2025 03:03:04 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id A830243CD2;
+	Sun, 12 Oct 2025 03:03:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22026C4CEF9;
+	Sun, 12 Oct 2025 03:03:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760238188;
-	bh=VPTtgaMr5euPlgimNxDzHmFqZLDuqJfISHa3mZ914p0=;
+	s=k20201202; t=1760238235;
+	bh=SZVkkewNXdYOKTm/xJ4ImkuY+McMUm1jxAPnOzBZZOs=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=nRFy+Ts8RZPvY9kCY2/cWW9YyyFrMAmLUdWCm23AahcdyQz26pVANgV2VbOzNTzoS
-	 +efHYTYwLH4ApNJ8D4CgpT3fkpMEsEqkOwE68kAWAA43cBfGUbxrFkVFGOqaoH5EmS
-	 Y6hQp3PqosU4xm58DcS1IvVJ7iJ4coVi9PY4ucGSpoearDmnkCNcAnGYB/Bro8ol6s
-	 KtnAMm7bmvZbMl8vakjWDR9S9lIB4ZrcdIE3wqdN5HPCc7bWjW7gyx1adBT5iOrZ+q
-	 XAAoIEcrDO3ucJo585mIfN/2OT+zIcckrxuiwgfDbslUW8ssy/rmJe1U6zeYgb2x/y
-	 7Z2EYPGthBofQ==
-Message-ID: <5faef61e-a746-4a8f-b147-ce2106c33620@kernel.org>
-Date: Sun, 12 Oct 2025 05:03:02 +0200
+	b=cBGDoE6K7+pLJY2Idn+3bX5kcsyaodK4WE3iiHK7cwHtF34W3qvGbg4S+BtYG/lmi
+	 Sb1S+DRrXZbF930wpiRUhBWSlmyo3JDQ+q2nRhzktGW6pVKTXEohJfzj71tRJ8pIOU
+	 tAgFRAqOEJPCJWT/pf2Oi49BYFLnMDPyTSnCdxFxu1ks58wmTeDqUWQQT+shZ7vIF/
+	 xUgJ088hwBQResz0HwFqW7u+t7JS8xjIGQ6mbJ9SLlSu5v63KR/0/ADxf/BrQ1K+BP
+	 zfqT6WJYK3NGzk8hD0TMTzb2HWHimNM4Z2inF8OnSz95fKNYp7LtkyvZYwNbrlql/p
+	 Ivtb73oCMGH5A==
+Message-ID: <32553bb9-c5cd-431b-80fb-45f7e35d66db@kernel.org>
+Date: Sun, 12 Oct 2025 05:03:46 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,17 +60,16 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: add asrock x470d4u bmc
-To: Tan Siewert <tan@siewert.io>, Rob Herring <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
+Subject: Re: [PATCH v2 1/2] dt-bindings: arm: aspeed: add ASRock X470D4U BMC
+To: Tan Siewert <tan@siewert.io>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Zev Weiss <zev@bewilderbeest.net>, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-References: <20250919185621.6647-1-tan@siewert.io>
- <20250919185621.6647-3-tan@siewert.io>
- <20250922200738.GA1124791-robh@kernel.org>
- <0c7a28b7-8d6d-4f91-ac6c-8cf37e128139@siewert.io>
+References: <20251011112124.17588-1-tan@siewert.io>
+ <20251011112124.17588-2-tan@siewert.io>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -116,94 +115,39 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <0c7a28b7-8d6d-4f91-ac6c-8cf37e128139@siewert.io>
+In-Reply-To: <20251011112124.17588-2-tan@siewert.io>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 23/09/2025 16:48, Tan Siewert wrote:
-> On 22.09.25 22:07, Rob Herring wrote:
->> On Fri, Sep 19, 2025 at 08:56:18PM +0200, Tan Siewert wrote:
->>> The ASRock Rack X470D4U X470D4U is a single-socket X470-based microATX
->>> motherboard for Ryzen processors with an AST2500 BMC and either 32MB or
->>> 64MB SPI flash.
->>>
->>> This mainboard exists in three known "flavors" which only differ in the
->>> used host NIC, the BMC SPI size and some parts that may be un-populated.
->>>
->>> To keep the complexity low with the BMC SPI, use the 32MB layout
->>> regardless of the used SPI or mainboard flavor.
->>>
->>> Signed-off-by: Tan Siewert <tan@siewert.io>
->>> ---
->>>   arch/arm/boot/dts/aspeed/Makefile             |   1 +
->>>   .../dts/aspeed/aspeed-bmc-asrock-x470d4u.dts  | 345 ++++++++++++++++++
->>>   2 files changed, 346 insertions(+)
->>>   create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
->>>
->>> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
->>> index aba7451ab749..fae97b5183e5 100644
->>> --- a/arch/arm/boot/dts/aspeed/Makefile
->>> +++ b/arch/arm/boot/dts/aspeed/Makefile
->>> @@ -13,6 +13,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->>>   	aspeed-bmc-asrock-e3c256d4i.dtb \
->>>   	aspeed-bmc-asrock-romed8hm3.dtb \
->>>   	aspeed-bmc-asrock-spc621d8hm3.dtb \
->>> +	aspeed-bmc-asrock-x470d4u.dtb \
->>>   	aspeed-bmc-asrock-x570d4u.dtb \
->>>   	aspeed-bmc-asus-x4tf.dtb \
->>>   	aspeed-bmc-bytedance-g220a.dtb \
->>> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
->>> new file mode 100644
->>> index 000000000000..bae2b521f708
->>> --- /dev/null
->>> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
->>> @@ -0,0 +1,345 @@
->>> +// SPDX-License-Identifier: GPL-2.0+
->>> +/dts-v1/;
->>> +
->>> +#include "aspeed-g5.dtsi"
->>> +#include <dt-bindings/gpio/aspeed-gpio.h>
->>> +#include <dt-bindings/leds/common.h>
->>> +#include <dt-bindings/interrupt-controller/irq.h>
->>> +
->>> +/ {
->>> +	model = "Asrock Rack X470D4U-series BMC";
->>> +	compatible = "asrock,x470d4u-bmc", "aspeed,ast2500";
->>> +
->>> +	aliases {
->>> +		serial4 = &uart5;
->>> +	};
->>> +
->>> +	chosen {
->>> +		stdout-path = &uart5;
->>> +	};
->>> +
->>> +	iio-hwmon {
->>> +		compatible = "iio-hwmon";
->>> +		io-channels = <&adc 0>, <&adc 1>, <&adc 2>, <&adc 3>, <&adc 4>,
->>> +			<&adc 5>, <&adc 6>, <&adc 7>, <&adc 8>, <&adc 9>,
->>> +			<&adc 10>, <&adc 11>, <&adc 12>;
->>> +	};
->>> +
->>> +	leds {
->>> +		compatible = "gpio-leds";
->>> +
->>> +		heartbeat {
->>
->> led-0
+On 11/10/2025 13:21, Tan Siewert wrote:
+> Document ASRock's X470D4U BMC board compatible.
 > 
-> I guess `led-heartbeat` would be fine too, right?
-> 
->>
->> This should have given you a warning. You did run "make dtbs_check"
->> check the warnings, right?
-> 
-> I did and there were no warnings, even after a full clean. The full 
-> command I ran before submitting was `make dtbs_check W=1 
-> DT_SCHEMA_FILES=Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml`
+> Signed-off-by: Tan Siewert <tan@siewert.io>
+> ---
+> v2: No changes
 
-This is not the command to run. You run `make dtbs_check W=1`. See my
-slides from OSSEU for introduction to Devicetree.
+
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+
+<form letter>
+This is an automated instruction, just in case, because many review tags
+are being ignored. If you know the process, just skip it entirely
+(please do not feel offended by me posting it here - no bad intentions
+intended, no patronizing, I just want to avoid wasted efforts). If you
+do not know the process, here is a short explanation:
+
+Please add Acked-by/Reviewed-by/Tested-by tags when posting new versions
+of patchset, under or above your Signed-off-by tag, unless patch changed
+significantly (e.g. new properties added to the DT bindings). Tag is
+"received", when provided in a message replied to you on the mailing
+list. Tools like b4 can help here ('b4 trailers -u ...'). However,
+there's no need to repost patches *only* to add the tags. The upstream
+maintainer will do that for tags received on the version they apply.
+
+Full context and explanation:
+https://elixir.bootlin.com/linux/v6.15/source/Documentation/process/submitting-patches.rst#L591
+</form letter>
+
 Best regards,
 Krzysztof
 
