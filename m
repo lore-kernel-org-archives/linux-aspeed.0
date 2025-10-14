@@ -1,81 +1,81 @@
-Return-Path: <linux-aspeed+bounces-2431-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2432-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C4F9CCD184
-	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 03:20:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A28C6CCD187
+	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 03:44:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4clzx60GWpz3cYg;
-	Tue, 14 Oct 2025 14:20:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760412009;
-	cv=none; b=dTG7TG6OIKaxbwY4TCoULwJxeTT6Ida/egKHh9jOJKs2e5ZR+3nTI3IkD5666m0ur+gusEbozrY0iUI3p62BT5ixPynsesGVrpZJp225MVLD3foiAPkI+7C8sVWxTYqsD/8o+NDGTFmzH7jQW8JPMDAHRKNzxX0H6MBS72BdkwqQom/GJCJokwiKRvaJUpnGHQXeiZIXfd2pNLx+y027TInUeszXySmxpayK1Lby13YWARiWjPOSUgTku6YvrWdyUdMoNhsTbEpYSCyOA0qRwsK5iRaPGT16SIO56cVzWP/oza80k00tWFo+iqeAYJ4pixv8y4MbXAOX/r+Yr5TU7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm0T21S3Nz2yr9;
+	Tue, 14 Oct 2025 14:44:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760413462;
+	cv=none; b=Zg8PmpR7jufpSJdUTGS9+zqyoK+XDpvPF1i5VrHoCf0Dq2E3BIx4hqc6V6PAe/pRkj49VUJd6j7gWOpS71KSj/AF+CXOEHBYRKZmMxc/D5oh02Hrom+n+IkwgOEQtRCN0EiHnkGr9sE1w7ZvjqtfLgs/lyG6qSe+mUMTTNpcRrVQissR3xX8axb4ZTwkdHGV4BndAdsydxChvknGdTdxX8/6/NVEz8S/fGXE9+Osa2J8/lM4+3+UaZiev57rAzLIrTbsReHyv69SVU6zhtJcHgCoM2iSkksdU/fBBSps6owD/biV2icRvwP1c3zj7kMbZqNyFmOMiAVhbnKOhB6htQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760412009; c=relaxed/relaxed;
-	bh=l6UJfRMC7vI8XJ/lVMtg2P/k+rG1cg8dROQofj14ZQo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FboCvmyXXPQBYvbiu0Kpg84e5HlNTHcXa1SUmnuQNkNni7+ExKmw0GbIrYSmEQqeutIoDok2i6CE2zuoK78BkguxiOfakYAMnJUWRA2QS98/so/dK2oBYsJnN817ZdV/urpKWeQ/BZSxn19oN/xM6NUEKMp279i/TlwXQkXulyYAgqxGaQTLRfNoPqCcielx4MmGDrkv6n9e+6yt+AXM6x5Bf3IcJJ7G/vl5qgKB/XIW7j9dWx3rg3S+n34BwlqtvUufWPSx3LyDyr6tbvQ0Ae/PXPw1RqH8346zM2oUaNLiWNF6ofjbBSuimkPeHA/nX2JBAPdpiXMETsyhdgEhqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EA587Bbn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1760413462; c=relaxed/relaxed;
+	bh=h2hE9dVU4dDBKSr5RQ6ulWC8RhSPxx36Nra/5fv0QXM=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=Z9fmlcWzCvvXiJ+1+JordoSAvlNqME4KoXj/r1bzNRvwaFKmeDWEc6CJad8m/38emMP+sXhQQG2ty9oYGDpFLBR13s/hudv49KzzaBnZHW7r5D8ep34d4sBgJxsgMPWj5w7+XWdmyPTHAqE2gtW4ZiuyHXqoqqKtfeDljX+qCp5BGIVLMDpYdmaW7GT38Oo2HhGntv+vs+mIxqXye2HZfJP1elRQW4+BfF9ot9L2oNwe6pE3qLm8CQDcQhllUS10JqJKGh5PAV4TcRgIH1n9ugn5WnCWM7tIMztG5L+mJ9kyQbSopeVtNLcC+vTu39k80jQk+cHFKlNgS/AZamcP6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=m7x98AuU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EA587Bbn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=m7x98AuU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4clzx42hplz2yr9
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Oct 2025 14:20:07 +1100 (AEDT)
-Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-793021f348fso4407712b3a.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Oct 2025 20:20:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cm0T13R5Tz2xQ0
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Oct 2025 14:44:20 +1100 (AEDT)
+Received: by mail-pl1-x62f.google.com with SMTP id d9443c01a7336-27d3540a43fso45682075ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Oct 2025 20:44:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1760412005; x=1761016805; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=l6UJfRMC7vI8XJ/lVMtg2P/k+rG1cg8dROQofj14ZQo=;
-        b=EA587Bbn46Tl8keRsJziKN93bDpfd2p9I8cywYFjY/OmqRSg+F7Mwnbcpd7/lE59x3
-         YW+Pap8O/M1snD+x/r5h9VQfQD6JuOk7Ulvc62JdQcLZ2TbXwIMQ/5ZkXmJ+URe+bSOR
-         ALAPsLq9hT/5LpCHEs44Hab4tFnx8CbYJmix6hZu6+9k5WfvVpUn0CElsxixEGzQjV2a
-         sxPIBcNy3QlauWa+/x4u5DIQsylDw3nYJrqmy5AJ5Slr8zoD0KvpdaKkaVXUXAJhv4hk
-         ASVKXteq5A4G/MT7uY1J03u4dPOt04+042v1+E0lSyovXoNwucwEDDIqpHa8CzZ4TcHY
-         ITsw==
+        d=gmail.com; s=20230601; t=1760413459; x=1761018259; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :references:cc:to:from:subject:user-agent:mime-version:date
+         :message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=h2hE9dVU4dDBKSr5RQ6ulWC8RhSPxx36Nra/5fv0QXM=;
+        b=m7x98AuUq0bDliC/0xiieuDL2CQMl0GMxc9TTlYQ4I2Wtki3n4d782ybEcF9PZjIQL
+         4qNRi6HMjLd06Y8FJNIkuO+whyfP7HMptWrqPiv9oMKvmjmkKWtBBB0chYDe2royrzs3
+         tY7GEjSwXRatoQQXEVXGZXbCiEE84J1JR5LLx/lbFHWktog2r+JRcHg/yyNmqsL1Pa+q
+         c7Qo++UsNL0mL8B55Xiep+DJN6boYRZ9TXcg6p72yC/mfiQjWU95dyYoN0coKmgHMaiM
+         kuqqpSYSOIv7vTpwBWZI/VvKYgcOzHRfxsrUO4NBGscXu8Fj+uBW+nRDI2I00vdFnUjF
+         AfJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760412005; x=1761016805;
-        h=content-transfer-encoding:in-reply-to:autocrypt:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20230601; t=1760413459; x=1761018259;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :references:cc:to:from:subject:user-agent:mime-version:date
+         :message-id:sender:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=l6UJfRMC7vI8XJ/lVMtg2P/k+rG1cg8dROQofj14ZQo=;
-        b=g/iXShwdPlmRdRtZWjPTfJxTXD22oS1mPJ2BospRFFtP20KXifyiKfklrUy1QM+sTh
-         Co41GbFAoV0u1ncImznjmW1roVSZhV0GErCZcHvJEJGHONTxwfrA6gEDsYpiZTimj4qh
-         wN9TOrWe7EoGrOl7AFgHmJ4v/YNUPJSwG2/d0WB48WyhI4qTpjnl8cGLQmqHaOJQeaYe
-         g405+pin9g/try8wjZ7lZMy5oCD/hO2V0EMoFXiCOLJM2A8umccP4HHipMIRxl9UcZLL
-         /Ir/RTYjQFl3HoI/+9TRcbq+GK67JUM8q9PVu3UKmDTqsG707yi7h4gpJYW4QfBdB3G5
-         5dWQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV/ffiRzXknyZE9MPJ0co1ola9lEi33gupnnFCECZGfMt3DM8Oq94XAPP7kiqME7KzIwZjvR+P+HxbactA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzJHp9zd+Gz3tXNkqIwXL2HNKGQbSZOMi5puu8cs8LOb557zzTg
-	DFbHyaZccShtUwSV77DIi4NlgR2NzzUJcNA8NCf+2sYRfwBIDNFKAELX
-X-Gm-Gg: ASbGncu+OhJ+WzzDYmmUXXtXSpAAexAJIxgWNJLjrr+RRtx793xc3YkMDnTW9AXzjQz
-	J0sEH3XP+9pl5bpRM31wtc3FysBJBNItyHOw3SO76s8LymgQ2RK/5EnlsSiuc20otNPn5IGAVe9
-	zf3NllTkRQ9Fn+TFPY0+pWi5uIAoLQJEyXTnHgnQpWrnDozRX6wTq3aVWNa6hTSGU/7pzhHKhZO
-	3JZynoFGku6YCu3l7HAt6jEP84fjBGoRXOvCjoAXtumDjuUv/2ZUX3LIemGiZKC/923b2+7T8jA
-	Q8S/FPCtCnvYh2aOJihotcgx3674R+rlZfGhwGYJR842qwPSyy9exA3ahxEBROmg1ooKEWMT+Td
-	FlaXTlP51jpWkYSUmNDVmkMSl33fDWMa5LYpH3gjZkdzyoY2d3VYWpl+aS6WQPPQY4Io3W8LyGe
-	wepPd1zZYDJPMzkL5Bl85Itw6t
-X-Google-Smtp-Source: AGHT+IE2bL3FW7iscYvEusgSbZQ3EznMhjFPvP3ZLjEF/s4fklES93VBIW8vBAnhYEqbAtzcszCZqQ==
-X-Received: by 2002:a05:6a00:b84:b0:781:1481:897d with SMTP id d2e1a72fcca58-7938763169cmr30189229b3a.17.1760412004876;
-        Mon, 13 Oct 2025 20:20:04 -0700 (PDT)
+        bh=h2hE9dVU4dDBKSr5RQ6ulWC8RhSPxx36Nra/5fv0QXM=;
+        b=J+yMZ61kk0CUP4DGPCZPXhIGFPSayrNLrge9CotlgXO6t07g+EPcUuTaooTufJgxbV
+         kPgwb0PZE9M8Giv20I2ZFE1jWXgmLR5XPiisDvt/o9DUNMWdDO23eZVy1QQFTpTMX8Ci
+         pA1a52Zy6dSpa9Drm5g9F/72xIVnISPaAMa4avzgwiYedgI93950BPI0Q0F2Cq0fCpA5
+         2x+bMgbVrB61H8IZXqCBWcT0h/14+mNiOhKfOZcgBXBUormjVfMFVfVFzy7tfRbk2jka
+         dz5mRCPLyeoXFxsutVffDSBvcB0mNneLD64XrRgGtgvM/Hv5Mi6SWHvNU/PlptGpG9I3
+         6Suw==
+X-Forwarded-Encrypted: i=1; AJvYcCUWYpbSmj0lIC0bJOyf4imRCLrd6KjxthsqRG97nXzByZH+zzYSUXOJItl1sTJvtoWmdR2qtpgE6V35gzA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyliBU0TpCtnH9lZ+LPwlAOnM7VZ6bJ68p2SQInniuhvKIiBU8X
+	aypFbV0JP92LNmnFL70LOl5GIPGtISxMNc1LwCyVpP3pqn4iL6fnTYw2
+X-Gm-Gg: ASbGncsKeQ/Jer8VnMr2kYqBZnHjARa9uoBHGcPdxQONONDoSfxoZo9aamprV7YcV+y
+	2G+hQeEZ0DthWX1QIpSCdLHLxiCQ82ISXRWZiZC5aPEnr21uPWJQMoDAwWOU4ZB9nBTTXzrIJ1B
+	hvLuT6gh5W8t6FA7reDN/LvA8bungLgbDiUzRKPNTejNfIkJsEeglfCYT/At+HD8m8rgH2aD/Ki
+	EaA1Q8PIH/uW1Somtujw9Xd9co9hWAo5UT3MNSZDd306kE6M/Y3XMcEfaR5x2jt9449Y0zzmBaX
+	/te8mK4HI71soKLMxpVpD5bPb17CK8CutCzet6WxPSxrN4xVAFrJhSAOWVPybHeC2HKBsVuMkat
+	QsXkmoVIsvxpPGxhm23xrvoDoqzszzR/Exc2QI0qGofskgZQgFujHKaT4jsAXa9xegNdfMth7qT
+	DP/4ldvI/BeMOpZg==
+X-Google-Smtp-Source: AGHT+IEZhWXWpwus8ChUcDCamrlYbdhxVRgqmS7EMLMZ6ANGP8vAcpE08Mz2FQZlW0+Zvn5ycGBKFg==
+X-Received: by 2002:a17:903:19e8:b0:28e:ccd7:dd61 with SMTP id d9443c01a7336-29027305380mr282716995ad.57.1760413458712;
+        Mon, 13 Oct 2025 20:44:18 -0700 (PDT)
 Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7992b73334asm13266281b3a.21.2025.10.13.20.20.03
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29034f961c5sm148224085ad.129.2025.10.13.20.44.17
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Oct 2025 20:20:04 -0700 (PDT)
+        Mon, 13 Oct 2025 20:44:18 -0700 (PDT)
 Sender: Guenter Roeck <groeck7@gmail.com>
-Message-ID: <e3dc7aee-c8af-4276-84e5-0f0c7926be05@roeck-us.net>
-Date: Mon, 13 Oct 2025 20:20:02 -0700
+Message-ID: <054cf209-61af-4d21-9a3b-d0f6dd24ee3b@roeck-us.net>
+Date: Mon, 13 Oct 2025 20:44:17 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -92,6 +92,7 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v4 11/13] ARM: dts: aspeed: facebook-fuji: Include
  facebook-fuji-data64.dts
+From: Guenter Roeck <linux@roeck-us.net>
 To: Tao Ren <rentao.bupt@gmail.com>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
@@ -102,8 +103,8 @@ Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 References: <20250728055618.61616-1-rentao.bupt@gmail.com>
  <20250728055618.61616-12-rentao.bupt@gmail.com>
  <79ddc7b9-ef26-4959-9a16-aa4e006eb145@roeck-us.net> <aO2kLyxGlGt12sKD@fedora>
+ <e3dc7aee-c8af-4276-84e5-0f0c7926be05@roeck-us.net>
 Content-Language: en-US
-From: Guenter Roeck <linux@roeck-us.net>
 Autocrypt: addr=linux@roeck-us.net; keydata=
  xsFNBE6H1WcBEACu6jIcw5kZ5dGeJ7E7B2uweQR/4FGxH10/H1O1+ApmcQ9i87XdZQiB9cpN
  RYHA7RCEK2dh6dDccykQk3bC90xXMPg+O3R+C/SkwcnUak1UZaeK/SwQbq/t0tkMzYDRxfJ7
@@ -147,68 +148,75 @@ Autocrypt: addr=linux@roeck-us.net; keydata=
  F0WaMvQMNrk9UAUziVcUkLU52NS9SXqpVg8vgrO0JKx97IXFPcNh0DWsSj/0Y8HO/RDkGXYn
  FDMj7fZSPKyPQPmEHg+W/KzxSSfdgWIHF2QaQ0b2q1wOSec4Rti52ohmNSY+KNIW/zODhugJ
  np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
-In-Reply-To: <aO2kLyxGlGt12sKD@fedora>
+In-Reply-To: <e3dc7aee-c8af-4276-84e5-0f0c7926be05@roeck-us.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 10/13/25 18:15, Tao Ren wrote:
-> Hi Guenter,
-> 
-> On Mon, Oct 13, 2025 at 05:20:57PM -0700, Guenter Roeck wrote:
->> Hi,
+On 10/13/25 20:20, Guenter Roeck wrote:
+> On 10/13/25 18:15, Tao Ren wrote:
+>> Hi Guenter,
 >>
->> On Sun, Jul 27, 2025 at 10:56:13PM -0700, rentao.bupt@gmail.com wrote:
->>> From: Tao Ren <rentao.bupt@gmail.com>
+>> On Mon, Oct 13, 2025 at 05:20:57PM -0700, Guenter Roeck wrote:
+>>> Hi,
 >>>
->>> Include "facebook-fuji-data64.dts" in facebook-fuji dts to avoid
->>> duplicated code.
+>>> On Sun, Jul 27, 2025 at 10:56:13PM -0700, rentao.bupt@gmail.com wrote:
+>>>> From: Tao Ren <rentao.bupt@gmail.com>
+>>>>
+>>>> Include "facebook-fuji-data64.dts" in facebook-fuji dts to avoid
+>>>> duplicated code.
+>>>>
+>>>> Fuji-data64 and Fuji are identical except the BMC flash layout.
+>>>>
+>>>> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
 >>>
->>> Fuji-data64 and Fuji are identical except the BMC flash layout.
+>>> With this patch in the mainline kernel, the Ethernet interface I use for
+>>> testing does not come online when loading fuji-bmc in qemu.
 >>>
->>> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+>>> Reverting this patch fixes the problem.
+>>>
+>>> Looking into this patch,
+>>>
+>>>> -
+>>>> -#include <dt-bindings/leds/common.h>
+>>>> -#include "ast2600-facebook-netbmc-common.dtsi"
+>>>> +#include "aspeed-bmc-facebook-fuji-data64.dts"
+>>> ...
+>>>> -&mac3 {
+>>>> -    status = "okay";
+>>>> -    phy-mode = "rgmii";
+>>>> -    phy-handle = <&ethphy3>;
+>>>> -    pinctrl-names = "default";
+>>>> -    pinctrl-0 = <&pinctrl_rgmii4_default>;
+>>>> -};
+>>>
+>>> I don't see this in aspeed-bmc-facebook-fuji-data64.dts, meaning that
+>>> interface is now disabled. Adding it back in fixes the problem.
+>>> Also, MAC3 is explicitly enabled for fuji-bmc in qemu.
+>>>
+>>> Was the interface disabled on purpose ?
+>>>
+>>> Thanks,
+>>> Guenter
 >>
->> With this patch in the mainline kernel, the Ethernet interface I use for
->> testing does not come online when loading fuji-bmc in qemu.
+>> The mac3 interface was removed in the latest patch (v4) per Andrew Lunn's
+>> feedback, because the rgmii setting is incorrect.
 >>
->> Reverting this patch fixes the problem.
+>> I was planning to add mac3 back as soon as rgmii support is properly
+>> handled in aspeed mac driver, but kindly let me know if you have other
+>> suggestions.
 >>
->> Looking into this patch,
->>
->>> -
->>> -#include <dt-bindings/leds/common.h>
->>> -#include "ast2600-facebook-netbmc-common.dtsi"
->>> +#include "aspeed-bmc-facebook-fuji-data64.dts"
->>>   
->> ...
->>> -&mac3 {
->>> -	status = "okay";
->>> -	phy-mode = "rgmii";
->>> -	phy-handle = <&ethphy3>;
->>> -	pinctrl-names = "default";
->>> -	pinctrl-0 = <&pinctrl_rgmii4_default>;
->>> -};
->>
->> I don't see this in aspeed-bmc-facebook-fuji-data64.dts, meaning that
->> interface is now disabled. Adding it back in fixes the problem.
->> Also, MAC3 is explicitly enabled for fuji-bmc in qemu.
->>
->> Was the interface disabled on purpose ?
->>
->> Thanks,
->> Guenter
 > 
-> The mac3 interface was removed in the latest patch (v4) per Andrew Lunn's
-> feedback, because the rgmii setting is incorrect.
-> 
-> I was planning to add mac3 back as soon as rgmii support is properly
-> handled in aspeed mac driver, but kindly let me know if you have other
-> suggestions.
+> All I can say is that it worked just fine with the qemu emulation,
+> and that it is broken now. Since it was broken on purpose I guess I'll
+> have to find a workaround or stop testing network interfaces with
+> that emulation entirely.
 > 
 
-All I can say is that it worked just fine with the qemu emulation,
-and that it is broken now. Since it was broken on purpose I guess I'll
-have to find a workaround or stop testing network interfaces with
-that emulation entirely.
+Ah, I see that mac3 was the only enabled Ethernet interface on that system,
+so you effectively disabled networking on it.
+
+I don't claim to understand the logic (how can anyone continue to use this bmc
+without network interface ?) but I guess it is what it is. I'll stop testing it.
 
 Guenter
 
