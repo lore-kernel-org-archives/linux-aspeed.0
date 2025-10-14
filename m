@@ -1,115 +1,81 @@
-Return-Path: <linux-aspeed+bounces-2438-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2439-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 871BBCCD192
-	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 13:09:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4E6ACCD192
+	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 14:49:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmF0t5T8Bz3bW7;
-	Wed, 15 Oct 2025 00:09:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760447358;
-	cv=none; b=ntHWqk8MCNByRHB+9flLjj6/surFyeF4RTchHyxAbrM4cICaRqFR6eKWHzLKquYYCCHJ6+gGBhN5kxI+iEawgXPlnOkbH00qzQR0CQx0a5Ysm1KBt1dOcYV39PjmEQwtms5J5b6Tr6XlCfsc1zGFBnuYDEHPXGg6eeyypIPDcWCd7oBoXTjeQA1FbvlbFv6hnHLCqK6MtFl32mpOUHg3z5B7gScsL+08ptA/d6tb48W9AUFA5ItGo5l1I5QrsyapRLvFE3Enc1rkMuQY3I9Ceq138Voul3rejRLbePNs9RqYThVtQuLrD20DKBxwUGBhOo7sz5mB3MeRwfjgdNczuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmHDL2ZYhz3cBW;
+	Wed, 15 Oct 2025 01:49:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760453362;
+	cv=none; b=MWy8T1svCmt9iGjpXLVnJ4snb9JgvSOHpnUSGVNNjpf8sGlIuZ1IZaLgKJYfcDzg5yUfUIlWR2VrWxb45Zg0Q0S53BwkCdUZ+eavWdHNCRbHVX79/0VuPQo+2TP3S+NSZPs6mZLBVhhPT2oLRTgwZ4Ua16ZxzoKXxY2/R1flPJY14MRyUcRLaNm99Qu90dfF9N/dj4OFxyYRS4H/4naozx7PGS3+R7GRgJ/BGPAXVV9IhCxO5ITiApYcIpgteb3iSqwS6fkKqIIGOeKuIQwhnC/l+Zs7DHrqdfZeuKVBLBWvOrJZfqXcSNzAOFR37vEOW2KFPFzjwui4x/rIyTA/Og==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760447358; c=relaxed/relaxed;
-	bh=XBmndkyEtmuH2zqfJVf2MipvEX2Eu2YJsa5R9Svl5+o=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JHbZ7VEFF6rtOAuvEpIrMR6xTt/MKHXyKJGtR+vRrVPJPvazlHHujcQOP7TWuXeOP4OD/q0DCyKMGwHsm3gLAwM/EbToiyJo349Yt/E8p7+lvZZpzaiE6UGQ+TgnpiExERJVsYSNMoVrj7F815rJQcdxr40mU0hX7w8nVAGsWFjM4UhfHIMSCaULNc3OM7L91p58X7rnBWNb5U8vIwl5lzTSOAKxiDQTGbkLFS8hconDSa6K3zHrlZrkKt/5p084BLETSKn2VUjnWW0nx95O8D6NgjWRl1ADpO/VP8AzRXTPBpF4Q6djDFT0smdGnzF1f85FC+YoOcUt4ark8/snMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Nd+ZlOYm; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42e; helo=mail-wr1-x42e.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1760453362; c=relaxed/relaxed;
+	bh=WSEdxW8vhqoLFw4XnO2RSQdydgt5roCSWClRMQwsv5Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=h1UIp3yALE4PYibBii2Xs1EB7jw2awfyfGNp6s83vql2kc7/bbTexbNErRutl6e41GT+KAMb6ZsabBa9u1yg4jw/1tPGP8TOQ1u8tr7lHSr42tqFUONdCes/Ii/5XtBzz3BRg4XR76Slza3vQO82HyBbqeN9xNNajUi+eOixQMFp0nrhIp772PNcS8dC7TTf3tmlNqAY0eMjoqMNUyB2gep0KpFbehivJHKDEMxz13y758b4AEBWDjewTAsueElaQZgKEWVJAEyZte6lvG0VIJdvAPtf1Rd8rqh1ut5gg2ZQ9tKJTc72ryuQWCGLw/vPps+iypLS0GRnb+/tUYEnjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nKsQcGYi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Nd+ZlOYm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=nKsQcGYi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42e; helo=mail-wr1-x42e.google.com; envelope-from=pmladek@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmF0s2HVfz30V1
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Oct 2025 00:09:16 +1100 (AEDT)
-Received: by mail-wr1-x42e.google.com with SMTP id ffacd0b85a97d-421851bcb25so2448603f8f.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Oct 2025 06:09:16 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmHDJ1hb5z30M0
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Oct 2025 01:49:19 +1100 (AEDT)
+Received: by mail-pf1-x42a.google.com with SMTP id d2e1a72fcca58-77f343231fcso3388734b3a.3
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Oct 2025 07:49:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1760447353; x=1761052153; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=XBmndkyEtmuH2zqfJVf2MipvEX2Eu2YJsa5R9Svl5+o=;
-        b=Nd+ZlOYmTYGDZRk9h3HO11/sG4ve8MJ/zJfflLbC/iH8iLAuiH/UgvA6xyA7Mp1J8B
-         KBgAwdnLBvuxdRvUdGbMKwC3Rb++CRmYQktNc/Qluxddf6Sa/0Phcu8GHuFqEBvh27s4
-         v1VdTo4pCMVM78eg3NPrs0d6cqPLtLi8dKw2OW+iSy7XPXZrtqUjerafzk+Hj5dpqNeV
-         vS05TNTDPYKHPfSWDBcVoGN3YCz1FdIryur2Xlb1cYT/7fv1IktQL+CudRaISBwu2m1m
-         f7jVnL2h7MeL6HTwGvEdsHFpDKKNFHIvugElNkpJLCFyadz2Nc5ZY2vB+e7lGm7uHR0i
-         8ZIg==
+        d=gmail.com; s=20230601; t=1760453356; x=1761058156; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=WSEdxW8vhqoLFw4XnO2RSQdydgt5roCSWClRMQwsv5Y=;
+        b=nKsQcGYiFFX148tN4ZKT3s+zF7nAlP8RC2ZmClVt+OKxVBYxXwcE7oLXYdqGBOMzU2
+         AtlqMaHMSsGQyiLCuCSUkC6qeLxfJN57umXbl7oFmslmJFSv3bfEm7fJ1Tcexfa5yQ6J
+         3ZBTOkn+GRgOLel9XVsJ7ej8JDP4btMlrwnLq+dD9Jrh+ci44vo4NtIVnKJsgQhCjf+r
+         VqcB5vZmo4iLbmqqmQIU4zaNb8gFlcVrwMjMG5TT1OCgwXgJa4UuAXqNdE+1DtshP8sO
+         UjYPrheuio1pAniD/cLStqe+Sy3J/RiKSwbDD63fjoT6BUCpQp/mh2C7GKmUC/fMSOZK
+         0TxQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760447353; x=1761052153;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=1e100.net; s=20230601; t=1760453356; x=1761058156;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=XBmndkyEtmuH2zqfJVf2MipvEX2Eu2YJsa5R9Svl5+o=;
-        b=QorH6wEXncM87J3/5d1AyO1JEsBxd2I0uwd3icF8ZGhZhjdMP8V8euQcntlbAiKCym
-         xmNNScjgSd0kvVhAIJI+PtBCDbhRR7M6nOzE41xyhfWeX3wbF+W8v9vIZZtpaVnGKtVU
-         AqIyrTCKbrfbaZfR13mIri2+onA644sGr+HXzaoMOfKgwvyVnOMvk9vX5X7zg6vHUUd4
-         RwMyaKfIG4lH/iAEpFX9uDN0jLlaMBJAc/3midtA+1DE5LpFZcg2aZeFhAYyl8JQfRcw
-         ez/ARV7fKEPcbvAIgloK+4WEci0yqfQh+bbWtKFCffgjgo69ynL7+KjgPsbbNHaVJK40
-         b1FQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWzfSdMdPR0+6zpvl2k5WZEmD2s5ofFaN/uFJ47YPAd06scDmRVFHvl04J/Qujpjd+TU6ZdEybRCuEXSvA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzAELDjLClhOjfC573gSFpf6uCP3+BKRatOg3cDM5e7BzYq95EA
-	40ywFxrFiBb8OfDnYkTqc3wQvkxTxJNGkAcsqFMyCTo8WA5AnRwK9k/CDLNZzUlfwfw=
-X-Gm-Gg: ASbGncv6v82J9igFua5mHdV4/pelUVcC5Yn4FqDQLADDoj7tEf9+kr5mAhjQB2RopfQ
-	e/mY9FYJTbBZN3kAMsq2i7KLEa8L8Q+Nb4grB77t9lC8xwAFx0UfJ4Lu5LMj4gTfWXoYII/0+Rx
-	Pmjh7xo+MnD7276dIOfoZn/lMV+gh6VQyTp3s39cRi+jlrlXeMcUVt0vfFgLapH6DgFvBaoVJ65
-	LYaeUCmSvh5Yo4nRQHBt4OxgUv749UBMunek62L8hxNdt7nR6dlLQ/KiPhOgh0dwBfyECuam79/
-	P37+TqYFpz0IcKCByo0cCHocnOWMQKBnMmGDkxdvCmheHI8L2Qs7pEjRxRSl+PpHr/arX+Hj0qy
-	jfdYl4Jy8FZ0UuD+13M5N6AWSVh9M20ty+fHvUv4PsfAsLmw8Ahhy/TjCvAtDHqgF1IFciw==
-X-Google-Smtp-Source: AGHT+IFGpYfRWYGhqIaSZxufyw3cU/D950Wt8EiMNsuJCAolvX6QytVu1nn4m6ZLSmt3VXgOJE+wuQ==
-X-Received: by 2002:a05:6000:43d4:20b0:426:ed9d:4072 with SMTP id ffacd0b85a97d-426ed9d43d7mr1534097f8f.21.1760447352714;
-        Tue, 14 Oct 2025 06:09:12 -0700 (PDT)
-Received: from pathway.suse.cz (nat2.prg.suse.com. [195.250.132.146])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-426ce5cf70fsm22846162f8f.27.2025.10.14.06.09.11
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Oct 2025 06:09:12 -0700 (PDT)
-Date: Tue, 14 Oct 2025 15:09:10 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: "Li,Rongqing" <lirongqing@baidu.com>
-Cc: Lance Yang <lance.yang@linux.dev>,
-	"wireguard@lists.zx2c4.com" <wireguard@lists.zx2c4.com>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-	David Hildenbrand <david@redhat.com>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Stanislav Fomichev <sdf@fomichev.me>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Joel Stanley <joel@jms.id.au>, Russell King <linux@armlinux.org.uk>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Shuah Khan <shuah@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Joel Granados <joel.granados@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Phil Auld <pauld@redhat.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-	Simon Horman <horms@kernel.org>,
-	Anshuman Khandual <anshuman.khandual@arm.com>,
-	Florian Westphal <fw@strlen.de>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	Kees Cook <kees@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-	"Paul E . McKenney" <paulmck@kernel.org>,
-	Feng Tang <feng.tang@linux.alibaba.com>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>
-Subject: Re: [????] Re: [PATCH][v3] hung_task: Panic after fixed number of
- hung tasks
-Message-ID: <aO5Ldv4U8QSGgfog@pathway.suse.cz>
-References: <20251012115035.2169-1-lirongqing@baidu.com>
- <588c1935-835f-4cab-9679-f31c1e903a9a@linux.dev>
- <aO4boXFaIb0_Wiif@pathway.suse.cz>
- <e3f7ddf68c2e42d7abf8643f34d84a18@baidu.com>
+        bh=WSEdxW8vhqoLFw4XnO2RSQdydgt5roCSWClRMQwsv5Y=;
+        b=KEJsb+lRyFFDORMfFO/l9ZWOz/fhxnFzIZ26nJgHn022gIdgKhjgKC+o49gf8mvMGF
+         46PUSFPKkWQko8t3YvlLH1rlTHXHAFWSP7PIsrvyX0Rt9F548ZmTnb/NX80CiC1fgGYL
+         8RNAgl9WpEKhA81EeQTBb8p4nr54x/Jd+12hW9grjSU9ZJHhLuQXh8oPIlJpGqfy6sXE
+         GoItfkknmJWmJ6CS+owYZSsHcLvLtUknXuxFF2YYNcSwIwJjptuLF4l5pPy7GzVhj/cW
+         NzAyjzVdGshBAfmDnq6gaTvNAPdKplD5VyyCWodAz3vWli8ycugMvCTYue3yG6GNhwjg
+         Kw7g==
+X-Forwarded-Encrypted: i=1; AJvYcCU6i4bh61G9nGC3pDtdPMjEkIwnYekEibDejSt/FeNBp3bCDsW5o/eYtbvYmhiRHf1RJvBCk9CZ36rliLg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzmJ5mEM3nYTzedIPi7jfkDOrbomTEJ4rbBD+0BDe48eGdwS0iB
+	0XAsCLVD9qlZw6oGA9OWGEwAQJXO/G5EYziNy1BcoiUzJm3zypVXj1+5
+X-Gm-Gg: ASbGncvlWZ+rfgzJ2oy1nsj0gftiNU3y3Z3j2qfTQ/GHkCIKBGKNTUwcp9IkyHwITKV
+	mvFWp8Z53wqODaocyrmMKH6A77a4QIsl8OVQ2Q/+kMBl8MjAM7oGne9Q6aMLNF2I+YVAp4cKYnB
+	RMov+jPzcj7YgtWuwG5M5xiufnU/PB9UVso+rgjO9OXTadpBR0FZa7TZmfTtl9IE1IiC78/OE2x
+	4SLVOPeGXQ/9YKoXq7XpRbyWdOBzyDT+X41gluiyLph3fx3i4m97yHQwjfi6VwXS9s3L5mlKGp+
+	ntdObn24o1NlrrG2QXh1+3jEtzUomdSaQPXd2MTDgtDR9L0wxtp7gbMyKFtMtMtt45mKldIetIB
+	vguVZSgg8rjrHwoX2S6Ag7bF6Qnax4fzjZV83gJetoUNWHrK/8CSIULCj08sOLPBJ77EDijH8yh
+	1V17/E/PhwEwzERQ==
+X-Google-Smtp-Source: AGHT+IHRMZjidw1IlMPsFc5xiHiThksQokSbYFWWjCCXkhTX53XdUxvSbAMrz6e0Awv6re5tpQfvqA==
+X-Received: by 2002:a17:903:17cb:b0:290:7803:9e8 with SMTP id d9443c01a7336-29078030e8cmr41790895ad.48.1760453356132;
+        Tue, 14 Oct 2025 07:49:16 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29034f35382sm167317035ad.85.2025.10.14.07.49.14
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Oct 2025 07:49:15 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <4e099ead-e6df-4489-a775-1730bc852dcf@roeck-us.net>
+Date: Tue, 14 Oct 2025 07:49:13 -0700
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -123,77 +89,133 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e3f7ddf68c2e42d7abf8643f34d84a18@baidu.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 11/13] ARM: dts: aspeed: facebook-fuji: Include
+ facebook-fuji-data64.dts
+To: Andrew Lunn <andrew@lunn.ch>, Tao Ren <rentao.bupt@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Tao Ren <taoren@meta.com>
+References: <20250728055618.61616-1-rentao.bupt@gmail.com>
+ <20250728055618.61616-12-rentao.bupt@gmail.com>
+ <79ddc7b9-ef26-4959-9a16-aa4e006eb145@roeck-us.net> <aO2kLyxGlGt12sKD@fedora>
+ <ea64d3c1-e517-4bd8-9a2e-56432f286347@lunn.ch>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <ea64d3c1-e517-4bd8-9a2e-56432f286347@lunn.ch>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue 2025-10-14 10:49:53, Li,Rongqing wrote:
+On 10/14/25 05:08, Andrew Lunn wrote:
+> On Mon, Oct 13, 2025 at 06:15:27PM -0700, Tao Ren wrote:
+>> Hi Guenter,
+>>
+>> On Mon, Oct 13, 2025 at 05:20:57PM -0700, Guenter Roeck wrote:
+>>> Hi,
+>>>
+>>> On Sun, Jul 27, 2025 at 10:56:13PM -0700, rentao.bupt@gmail.com wrote:
+>>>> From: Tao Ren <rentao.bupt@gmail.com>
+>>>>
+>>>> Include "facebook-fuji-data64.dts" in facebook-fuji dts to avoid
+>>>> duplicated code.
+>>>>
+>>>> Fuji-data64 and Fuji are identical except the BMC flash layout.
+>>>>
+>>>> Signed-off-by: Tao Ren <rentao.bupt@gmail.com>
+>>>
+>>> With this patch in the mainline kernel, the Ethernet interface I use for
+>>> testing does not come online when loading fuji-bmc in qemu.
+>>>
+>>> Reverting this patch fixes the problem.
+>>>
+>>> Looking into this patch,
+>>>
+>>>> -
+>>>> -#include <dt-bindings/leds/common.h>
+>>>> -#include "ast2600-facebook-netbmc-common.dtsi"
+>>>> +#include "aspeed-bmc-facebook-fuji-data64.dts"
+>>>>   
+>>> ...
+>>>> -&mac3 {
+>>>> -	status = "okay";
+>>>> -	phy-mode = "rgmii";
+>>>> -	phy-handle = <&ethphy3>;
+>>>> -	pinctrl-names = "default";
+>>>> -	pinctrl-0 = <&pinctrl_rgmii4_default>;
+>>>> -};
+>>>
+>>> I don't see this in aspeed-bmc-facebook-fuji-data64.dts, meaning that
+>>> interface is now disabled. Adding it back in fixes the problem.
+>>> Also, MAC3 is explicitly enabled for fuji-bmc in qemu.
+>>>
+>>> Was the interface disabled on purpose ?
+>>>
+>>> Thanks,
+>>> Guenter
+>>
+>> The mac3 interface was removed in the latest patch (v4) per Andrew Lunn's
+>> feedback, because the rgmii setting is incorrect.
+>>
+>> I was planning to add mac3 back as soon as rgmii support is properly
+>> handled in aspeed mac driver, but kindly let me know if you have other
+>> suggestions.
 > 
-> > On Tue 2025-10-14 13:23:58, Lance Yang wrote:
-> > > Thanks for the patch!
-> > >
-> > > I noticed the implementation panics only when N tasks are detected
-> > > within a single scan, because total_hung_task is reset for each
-> > > check_hung_uninterruptible_tasks() run.
-> > 
-> > Great catch!
-> > 
-> > Does it make sense?
-> > Is is the intended behavior, please?
-> > 
+> If it is already in mainline, i don't care too much if it is wrong. We
+> don't want to cause regressions.
 > 
-> Yes, this is intended behavior
-> 
-> > > So some suggestions to align the documentation with the code's
-> > > behavior below :)
-> > 
-> > > On 2025/10/12 19:50, lirongqing wrote:
-> > > > From: Li RongQing <lirongqing@baidu.com>
-> > > >
-> > > > Currently, when 'hung_task_panic' is enabled, the kernel panics
-> > > > immediately upon detecting the first hung task. However, some hung
-> > > > tasks are transient and the system can recover, while others are
-> > > > persistent and may accumulate progressively.
-> > 
-> > My understanding is that this patch wanted to do:
-> > 
-> >    + report even temporary stalls
-> >    + panic only when the stall was much longer and likely persistent
-> > 
-> > Which might make some sense. But the code does something else.
-> > 
-> 
-> A single task hanging for an extended period may not be a critical
-> issue, as users might still log into the system to investigate.
-> However, if multiple tasks hang simultaneously-such as in cases
-> of I/O hangs caused by disk failures-it could prevent users from
-> logging in and become a serious problem, and a panic is expected.
+> I only object when adding new nodes which are wrong. If we keep adding
+> broken nodes, there is no incentive to fix the broken driver to do the
 
-I see. This another approach and it makes sense as well.
-An this is much more clear description than the original text.
+This wasn't adding an allegedly (sorry, it worked for me) broken node,
+it was removing one that worked for me all along. Obviously I do not know
+if it worked (or if it is even used) on real hardware, but it worked for
+the fuji-bmc qemu emulation.
 
-I would also update the subject to something like:
+Guenter
 
-    hung_task: Panic when there are more than N hung tasks at the same time
-
-
-
-That said, I think that both approaches make sense.
-
-Your approach would trigger the panic when many processes are stuck.
-Note that it still might be a transient state. But I agree that
-the more stuck processes exist the more serious the problem
-likely is for the heath of the system.
-
-My approach would trigger panic when a single process hangs
-for a long time. It will trigger more likely only when the problem
-is persistent. The seriousness depends on which particular process
-get stuck.
-
-I am fine with your approach. Just please, make more clear that
-the number means the number of hung tasks at the same time.
-And mention the problems to login, ...
-
-Best Regards,
-Petr
 
