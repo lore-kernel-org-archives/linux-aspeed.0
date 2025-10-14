@@ -1,64 +1,63 @@
-Return-Path: <linux-aspeed+bounces-2440-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2441-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 825BDCCD184
-	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 15:11:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E72ABCCD194
+	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 15:30:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmHkF647Sz30M0;
-	Wed, 15 Oct 2025 02:11:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760454709;
-	cv=none; b=BeUouV9/23iOe+p3FJ0V6cMmtkt2PvN4G80MfXDMIL5q1br7euOXu8b0MwFln4MtntasU52IOcZai51+IVBt3N0CIqy8bxj9Z1PVNhKqrwHHUD2BdIYMMnF7O2MIfauPjkptvd2y/5oRyfKTxSyNhJvWRS7Ys08sK5+xnjiiCoQsAXLR0QSjTT8ORAtHiqSegD2dD6b/QhKtVZlyT1xLNn2OW8N1VcQK6PV2p3p/B1UNlWu1t/f38iAf0NKxZWVIKF9DmW0jjGh38NsN+5IKFKhucIWWMoMeSkxxrduVtiT5nWSbhoylowEu7aek38COFLTpIq4qicy1IckU9Wedbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmJ791zWNz3cYg;
+	Wed, 15 Oct 2025 02:29:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760455797;
+	cv=none; b=aBfS9xSYYDMEXBHYL+gJGsvOwSh346XZWuayTRXg/MKODVmrVf+Bju6E5nVDNK3eGXLYu7IxmAY65ah2GGwxQkeB90TJiaCxMLhJ7eLM8lp6qZ6JaQ8O525PwTDW39TkPoHdLcUy/GakI5uNxg/e3jXAFsKupkIObVoBXM4q6VBCkQWxhhIqIDR9FDk/NMesdaPkH8uZUQ6BBCK062/7RWDg2PgFM2trOlUSgas6xkfH8vqF7R0i00cRoqh7tssJDwlyC6CxJTn2t9UVV8bhp9aeO9sDwLsJAbpMaA1otSrUf4CRQA0ONK/q+qSJsbnnubb7XRje8PbGl5MLItQ4RQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760454709; c=relaxed/relaxed;
-	bh=37Nmg2NVeBxxzfJbfuXsD1Mwnh3yE228KQ/4hDiITzo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dnGN3fMXsE3BxBW8FL5DQ03U6w+sVxry0IA4diTRrMm0F0DD5aPmQfEWLtdUBJ8hQzbWmHo5kZzVHeHh5VqszT7m7aj8iAsStSzrGfoau6zftAKcFu/bWSB3Rg3u32U6R/GD/oDEY3LKPH72sBqV6h6E9JSWFQlCO57oOKd3DUDz6q6Kio+Tcf6kYEy+uhf9nJM6Os4z2NWs9qbUCjKxtiEWdxYePFyhtUkv7LCWGqUELeUBuKOB/ZKjBeuBwgW/+R62SIvXme+CIF8soaWd/X6UHiD3sP2x0zpAHv+pa9Sr/CUHq0yKaSD2kbnmymVk8MpJwjwzlxhLa8vEvG1zfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=dPNOZ9MP; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1760455797; c=relaxed/relaxed;
+	bh=WJ3wgMAYUBjmffEpxEcFsRtBghftLqNL1ylvJ36Y1bw=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=g51uy72ToghbJLT229hoX6wV3R6Le5byV3AV0KxrnhQPHRJs6AmLn0cRwlsZIIE9ceV23nY1f8JVdcW9Uy8JjQ0KUXJe6WFkfTIavIsFY9iOJprd/kI5dCsMGTEmVa/urqiPWKgsuRwhsNQj+8pC0cn8o1QEFkeMKBB+FEiIMyMugMM5BQiN4ZVk3PRHRCc/zRH0uzzOkXhLLh49IklBUvb9sXFIOazomlnQN7zopfsi/R0dybVStwUUE2kh+cxIcf4B6ICbj6XKnsedkxurqh8aYDb03DGyWnFDq1S6ek9fNkcHcWTu0Y66hbDhhDAC/MY+ywEyzEtTHIafzXhdQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eMkaAH4V; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=dPNOZ9MP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eMkaAH4V;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmHkF018Mz2xPx
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Oct 2025 02:11:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=37Nmg2NVeBxxzfJbfuXsD1Mwnh3yE228KQ/4hDiITzo=; b=dPNOZ9MPtW2WVRmqQR3u2LpP6L
-	uptROoyNGK69M2qy303wCSQ08YH58U2pV6nabHmV4yubRoZo3KZwD6KYU4wT/PC7p9jIp5x/zyLnv
-	my7lTuyeVrrF2PsuULGhQHqYtNq+z+4Dw8VxhlwXeNUGZkU2qbO4Wukrq7DxsDDbN+P0=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1v8ggM-00AvfK-Pb; Tue, 14 Oct 2025 17:11:22 +0200
-Date: Tue, 14 Oct 2025 17:11:22 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Tao Ren <rentao.bupt@gmail.com>, Rob Herring <robh@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmJ783XnTz2yrZ
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Oct 2025 02:29:56 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 85CDC6230A;
+	Tue, 14 Oct 2025 15:29:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F40A1C4CEE7;
+	Tue, 14 Oct 2025 15:29:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760455793;
+	bh=zYExi83W0RHyJrqMwtyqJRZDpbfqUykmcag8kOhkVUI=;
+	h=From:To:Cc:Subject:Date:From;
+	b=eMkaAH4VUyJhLA+HEJG27I9pneelGaB8Y6DWmSQOO2qeeoZXmbHeHdaRSz/LHr53U
+	 JPYOf98BlNoLSMpffIHQoztBZpWlMtYt//Z+NMY0C8lTN6IkgBtGj+7sZaFBKvazQK
+	 E9CtgO2JZrsSYLEub6xnkVsKyOp4AhLYEisIjvdpRIP1O2+7+P2jkRaUBf1tzHqlfH
+	 Od4tZLfPZ1AKRu1RegKMPhC2hGkEE4jilFtA7C3oxCdksozbgdtDOoVcIe2rNQvbih
+	 2H4v9pDdDYwYpxfza+OAhd/gDcolFANkctu1tFo+4aYdsjhR+LX7aiqEH1EE3GDS1/
+	 ocRhZ/HwW3phw==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Corey Minyard <corey@minyard.net>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Tao Ren <taoren@meta.com>
-Subject: Re: [PATCH v4 11/13] ARM: dts: aspeed: facebook-fuji: Include
- facebook-fuji-data64.dts
-Message-ID: <f801a4cb-3d27-439c-82f2-d5ee5aa0d810@lunn.ch>
-References: <20250728055618.61616-1-rentao.bupt@gmail.com>
- <20250728055618.61616-12-rentao.bupt@gmail.com>
- <79ddc7b9-ef26-4959-9a16-aa4e006eb145@roeck-us.net>
- <aO2kLyxGlGt12sKD@fedora>
- <ea64d3c1-e517-4bd8-9a2e-56432f286347@lunn.ch>
- <4e099ead-e6df-4489-a775-1730bc852dcf@roeck-us.net>
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: openipmi-developer@lists.sourceforge.net,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] dt-bindings: ipmi: Convert aspeed,ast2400-ibt-bmc to DT schema
+Date: Tue, 14 Oct 2025 10:29:47 -0500
+Message-ID: <20251014152948.3782738-1-robh@kernel.org>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,26 +71,104 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e099ead-e6df-4489-a775-1730bc852dcf@roeck-us.net>
+Content-Transfer-Encoding: 8bit
 
-> > If it is already in mainline, i don't care too much if it is wrong. We
-> > don't want to cause regressions.
-> > 
-> > I only object when adding new nodes which are wrong. If we keep adding
-> > broken nodes, there is no incentive to fix the broken driver to do the
-> 
-> This wasn't adding an allegedly (sorry, it worked for me) broken node,
-> it was removing one that worked for me all along. Obviously I do not know
-> if it worked (or if it is even used) on real hardware, but it worked for
-> the fuji-bmc qemu emulation.
+Convert the aspeed,ast2400-ibt-bmc binding to DT schema format. It's a
+straight-forward conversion.
 
-It probably does work on real hardware, because it is one of those
-"two wrongs makes a right" cases. So i see this as a regression. The
-node should not be removed. It should hopefully get corrected sometime
-in the future when somebody actually fixes the aspeed driver, and
-fixes both wrongs.
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ .../bindings/ipmi/aspeed,ast2400-ibt-bmc.txt  | 28 ------------
+ .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml | 44 +++++++++++++++++++
+ 2 files changed, 44 insertions(+), 28 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt
+ create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
 
-   Andrew
+diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt
+deleted file mode 100644
+index 25f86da804b7..000000000000
+--- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt
++++ /dev/null
+@@ -1,28 +0,0 @@
+-* Aspeed BT (Block Transfer) IPMI interface
+-
+-The Aspeed SOCs (AST2400 and AST2500) are commonly used as BMCs
+-(BaseBoard Management Controllers) and the BT interface can be used to
+-perform in-band IPMI communication with their host.
+-
+-Required properties:
+-
+-- compatible : should be one of
+-	"aspeed,ast2400-ibt-bmc"
+-	"aspeed,ast2500-ibt-bmc"
+-	"aspeed,ast2600-ibt-bmc"
+-- reg: physical address and size of the registers
+-- clocks: clock for the device
+-
+-Optional properties:
+-
+-- interrupts: interrupt generated by the BT interface. without an
+-  interrupt, the driver will operate in poll mode.
+-
+-Example:
+-
+-	ibt@1e789140 {
+-		compatible = "aspeed,ast2400-ibt-bmc";
+-		reg = <0x1e789140 0x18>;
+-		interrupts = <8>;
+-		clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
+-	};
+diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
+new file mode 100644
+index 000000000000..c4f7cdbbe16b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
+@@ -0,0 +1,44 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-ibt-bmc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Aspeed Block Transfer (BT) IPMI interface
++
++maintainers:
++  - Joel Stanley <joel@jms.id.au>
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-ibt-bmc
++      - aspeed,ast2500-ibt-bmc
++      - aspeed,ast2600-ibt-bmc
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - clocks
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/aspeed-clock.h>
++
++    bt@1e789140 {
++        compatible = "aspeed,ast2400-ibt-bmc";
++        reg = <0x1e789140 0x18>;
++        interrupts = <8>;
++        clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
++    };
+-- 
+2.51.0
+
 
