@@ -1,90 +1,68 @@
-Return-Path: <linux-aspeed+bounces-2453-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2454-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCC95CCD18E
-	for <linux-aspeed@archiver.kernel.org>; Tue, 14 Oct 2025 23:21:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7202CCD184
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Oct 2025 00:13:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmVbQ2YpMz2yGM;
-	Wed, 15 Oct 2025 10:21:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::32f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760484098;
-	cv=none; b=Wl1OC5HvixafvG0/v5gWNvZl5YMcFxlkJrjnNoTN9scQDHN//KwRyXM9Uc8+bobKDX6kbVE2+nHJXpif/0dVVwLsW+1UYTjC3oy6P/pxzchmYNJBEF99Fr6xP+7ivrH1BIzoMvSRa95B8pZfA78gN3QmTVUe5SCi+2vfUezXo7zUuPkRjxsXLjbKzI5RZLK9ah9fn2U33grODj9aRzne6rEw/BNqX83i83deubljHaqCaWDKq0lR8w2Y3txqM3tceFuZfMnSPtsX0dGxCgPUNoHh8N3eBZ+DV32cB6CRwI9awiSnGy1fzVjnKpPjUb1SSrg60wOVcf8at2AuKnGMOw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmWky20Xjz3cBW;
+	Wed, 15 Oct 2025 11:13:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760487194;
+	cv=none; b=HlV4qLwKaQeaG1X9JZ8Q2jOos5kG9K3pJaz45WXZR2r1ZWIthe8sgtnufh7pFoyWSmaPEXgqJhhYJYPHbG/dSGgOYvSAlMZiziK5iUNy5iqV2C1h5be8CVqPxUZnZK+EfcACZZHmsKHNt9a1AKOOpMtSm/lMGTOm0XJ9euk5O5AYdGD4psdT+Zanl5PLi3lI1K2Ey5/nNeREwRYHDvIBJiuSxRyLU41wuEeBjRGg5TO1y6Tpf/QEOipLfBZ811SSd8qnbqsK34MnVx4HiXfvIp67k7nQasKp/acHUx6TymAcXVt9ZyrEj6HZg+IQ9jkdzsrPTDf7wN93FbyxRqm+zQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760484098; c=relaxed/relaxed;
-	bh=OSShFjPEhGZS0W8PMTI5EHo4sFmoEnYAkCUykXUZUtk=;
+	t=1760487194; c=relaxed/relaxed;
+	bh=2a11Ly75LEhJitU7lNgDTcJn7h18/2bw5D0PDGOg2uQ=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PRhfM/CsDJZ22TYA25i9xk4aVpjTeYRbk8Eu8jZVmpb8vP7wSaIuGHNo9l6l3UFGLL8uTy6+DDnsFqiuT1X6XA8X9kzYtX8k1OzHM/3j2OXkX135xXU+8ZOvIlDaz31btp8TZlemRg/11Pdhj6e3sxjKsUq0XRXakqEoV2oi4putUY4TrC4cArAbAFkXy/t+7fFeHdmfBzZkvLWkWH1C2GjNQeX0bpYeLykR/kw1nUBce5vsRPwZWBfaQuAYFBKp5H29lTu3hVLU6T9NFicxoSbxDlKZXWzPPGXlRSnWjR2mnJ4vksYvzmaS4lc4sk/GyX4RMTH4ftg7CLonqKSXGw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=minyard.net; dkim=pass (2048-bit key; unprotected) header.d=minyard-net.20230601.gappssmtp.com header.i=@minyard-net.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=mc+dbgx4; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::32f; helo=mail-ot1-x32f.google.com; envelope-from=corey@minyard.net; receiver=lists.ozlabs.org) smtp.mailfrom=minyard.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=minyard.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=DjgMb3DK5ael4frOurGHcQb5KC4fT9fHTVFw7edpNdeclrzG5pMHKzmO9Mbvmok47Rh/j4yKi/Iq/w0xMJTb3uR7UKyLtolcq914HTRZr4V4wAgh7HQEsdlE2ihepmJbMnqIP/VqueD0ZPfl8z0EcBuPaUiLG1QL2F65UaHu95UiOA1VcNk/cSgCQOccUEE4IoLaZ1tuNn7+wBrcuvtMZXWb3AblCoGYe8End6c7oN6HWfyOWwj7wROoms2qu1DmcSsSnwr+5IO09dIJwLCgMHd9xhCqIjgST0rWOYF3JoNYufm7AgKNfSt9ERbpzDR6Qe6aj1qFRvm6qqEeMMPYqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=MU2FHFDB; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=minyard-net.20230601.gappssmtp.com header.i=@minyard-net.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=mc+dbgx4;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=MU2FHFDB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=minyard.net (client-ip=2607:f8b0:4864:20::32f; helo=mail-ot1-x32f.google.com; envelope-from=corey@minyard.net; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x32f.google.com (mail-ot1-x32f.google.com [IPv6:2607:f8b0:4864:20::32f])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmVbN6R4Gz2xcB
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Oct 2025 10:21:36 +1100 (AEDT)
-Received: by mail-ot1-x32f.google.com with SMTP id 46e09a7af769-7a76561c291so3685803a34.1
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 14 Oct 2025 16:21:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=minyard-net.20230601.gappssmtp.com; s=20230601; t=1760484093; x=1761088893; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=OSShFjPEhGZS0W8PMTI5EHo4sFmoEnYAkCUykXUZUtk=;
-        b=mc+dbgx4wqSHIwXVTiUb/FD8P/fZpb8KM3mxBv089ZWPhMFlzNQ1kayogEalQBMCeZ
-         PYbamVJ6HXI2j8T4OwvLBJOXuRUz8G9jdzplBzd8BxMWX+WacGjVL2x0fxjTEW15UwLS
-         oLCzU+jVLTIPfoaGlizynwrqxl0FIoLMbv5kMwXL3mkYtQ6KuvSbM8Te0x65cQdBfmZe
-         42htOr6JtSQJfeL3JjCN6iShqrLgLgYczbYFJUnkzbjAtnjrrnDQ6xOKIQqUY1N1KpNJ
-         GY7UFNPa7soTLoL/nM6xJVWnmnFu10/uBaxcw6mOJVrZPqkwtKD0AnARfQWwvSD9q5BK
-         Y7qw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760484093; x=1761088893;
-        h=in-reply-to:content-disposition:mime-version:references:reply-to
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=OSShFjPEhGZS0W8PMTI5EHo4sFmoEnYAkCUykXUZUtk=;
-        b=G8/VT1IzAe1OKFwCfjSkT/mYd580hF8srur+r35aq/Pse52kulwGehe5Z3Xi6+OmHx
-         k2vgtPkyZgrzW5NqHud87GeIONDeXAJ1RaC7bl7WnqvNXBu/Kb2LNRTbEyZIxPSYrQk0
-         E4x485f6E7gweFvyFp9LoUMBHVcvZL5j+jXQ00oXPSsbJ879HIZ5ZzQROt2V3iX/tIe8
-         BmmuftJrZQSGgdC0woG/XJ2KrP8x0fmwBa9EQgdaHit+EmB63WrPj5fAnYs0WEhMeEkG
-         5FUTMJFUPVgu0JevBZlbLmbvysvI0cBCns2dubbD4WLmwGSLk6oBTJd0QkGGnRyspVj5
-         cwHA==
-X-Forwarded-Encrypted: i=1; AJvYcCW+b2+zOFAoEkMmvHc7HcAYsC+0RKSDz7JpZY6OcGQM+ia/KTm1IFhisBN/1vaNvyQIkyUEewyQejA+fT8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxkNLv5FOfowDlcMOTpAQ4dlhNnkj5o9o3PbpoJJ+LlMrFwQSPo
-	x3iRvM9ndOriic9NDuvnUc87j7uKZJWRB1w7K+pJhggwUyp/qKLZNZowEji5x/lfmck=
-X-Gm-Gg: ASbGncvjslLP5/FMhCVQLDo4CRDpK0mfDbm6FmGLKjIBynsYoF7BV99h6+QtygqVwEA
-	xb3NKw1MrvpCZvX5FddcF8wQRfaotuvdJ3uFTM+hSTmeHyCysMekqqYCxciJSZYop3Pl8cxWUZ4
-	Mkr40PTMn+TAkV+JgnKNYpNV5MLXrRSnJIJAbuNRxht9ZoFgvgww1yXei9XsSagVpLmtO8zkFeC
-	Xv4DPosdNI5uc+IeWyYQmm41Ax1dqlhJfC/oEpkNCrip+DLonFtqnc5gj601hGld+0UCvDz89WB
-	Ssb6sjs/9aXzm2kIUkEuB8yIFyby3gleZ6JeqxCI9NNrPSnC+4+3js/DQFczakZvf/0MLPtlgbu
-	dTcFQGX6NNNws6YXYytpDXTy1msx2GPsS53381PYkQ2Zr9ckE0oVVa3g=
-X-Google-Smtp-Source: AGHT+IFyq+WDPFYOSKVvyIdkGtxTVAzzTyKhwOBWQXTwZ3nOyJ35Dj36gHaI4KcaGzemEBsN+8m9XA==
-X-Received: by 2002:a05:6830:661a:b0:799:bdea:3470 with SMTP id 46e09a7af769-7c0df6bc4famr15912480a34.18.1760484093234;
-        Tue, 14 Oct 2025 16:21:33 -0700 (PDT)
-Received: from mail.minyard.net ([2001:470:b8f6:1b:ad63:63fb:ee1c:2ee9])
-        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7c0f90510dfsm4856881a34.5.2025.10.14.16.21.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Oct 2025 16:21:31 -0700 (PDT)
-Date: Tue, 14 Oct 2025 18:21:26 -0500
-From: Corey Minyard <corey@minyard.net>
-To: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmWkx492Wz3bwk
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 15 Oct 2025 11:13:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=2a11Ly75LEhJitU7lNgDTcJn7h18/2bw5D0PDGOg2uQ=; b=MU2FHFDBYBDD2Cwr2NgqvMr4FQ
+	c97EMfO7/hKIxqVgd5c9mkR+mPAKvHv+FXXOd0/DcyhkYuHV7WnpPzpBCocQ4CMYHVX2Xaoc0T3NT
+	ClOWqa/a0Ht0CtD5G5dKPi0tRsVA0PIMu/QljKdRLn7h7AH1MTzMGSqTYWOCUEuAxlT8=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1v8p8J-00Axwr-It; Wed, 15 Oct 2025 02:12:47 +0200
+Date: Wed, 15 Oct 2025 02:12:47 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Tao Ren <rentao.bupt@gmail.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	openipmi-developer@lists.sourceforge.net,
 	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dt-bindings: ipmi: Convert aspeed,ast2400-ibt-bmc to DT
- schema
-Message-ID: <aO7a9moI23th0Oo9@mail.minyard.net>
-Reply-To: corey@minyard.net
-References: <20251014152948.3782738-1-robh@kernel.org>
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Tao Ren <taoren@meta.com>
+Subject: Re: [PATCH v4 11/13] ARM: dts: aspeed: facebook-fuji: Include
+ facebook-fuji-data64.dts
+Message-ID: <2cf3132e-d255-48ca-b49a-f7b6303efe50@lunn.ch>
+References: <20250728055618.61616-1-rentao.bupt@gmail.com>
+ <20250728055618.61616-12-rentao.bupt@gmail.com>
+ <79ddc7b9-ef26-4959-9a16-aa4e006eb145@roeck-us.net>
+ <aO2kLyxGlGt12sKD@fedora>
+ <ea64d3c1-e517-4bd8-9a2e-56432f286347@lunn.ch>
+ <4e099ead-e6df-4489-a775-1730bc852dcf@roeck-us.net>
+ <f801a4cb-3d27-439c-82f2-d5ee5aa0d810@lunn.ch>
+ <7197bfc7-fef6-40b2-b3f3-182e9428dc12@roeck-us.net>
+ <33b9d6d4-bb2f-47e6-8d3d-94a2ca2b8474@lunn.ch>
+ <aO7RJs8ceO3mwjn4@localhost.localdomain>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,112 +78,28 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251014152948.3782738-1-robh@kernel.org>
+In-Reply-To: <aO7RJs8ceO3mwjn4@localhost.localdomain>
 
-On Tue, Oct 14, 2025 at 10:29:47AM -0500, Rob Herring (Arm) wrote:
-> Convert the aspeed,ast2400-ibt-bmc binding to DT schema format. It's a
-> straight-forward conversion.
-
-Queued for 6.19, with Andrew's review.
-
-Thanks,
-
--corey
-
+> The fuji-data64.dts was copied from fuji.dts mainly for larger
+> persistent data partition (64MB), and the latest fuji.dts includes
+> fuji-data64.dts (instead of vice versa) because we wish to deprecate
+> fuji.dts in the long term.
 > 
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> ---
->  .../bindings/ipmi/aspeed,ast2400-ibt-bmc.txt  | 28 ------------
->  .../bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml | 44 +++++++++++++++++++
->  2 files changed, 44 insertions(+), 28 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt
->  create mode 100644 Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
+> So it is a regression for fuji, but fuji-data64.dts is a new node..
 > 
-> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt
-> deleted file mode 100644
-> index 25f86da804b7..000000000000
-> --- a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.txt
-> +++ /dev/null
-> @@ -1,28 +0,0 @@
-> -* Aspeed BT (Block Transfer) IPMI interface
-> -
-> -The Aspeed SOCs (AST2400 and AST2500) are commonly used as BMCs
-> -(BaseBoard Management Controllers) and the BT interface can be used to
-> -perform in-band IPMI communication with their host.
-> -
-> -Required properties:
-> -
-> -- compatible : should be one of
-> -	"aspeed,ast2400-ibt-bmc"
-> -	"aspeed,ast2500-ibt-bmc"
-> -	"aspeed,ast2600-ibt-bmc"
-> -- reg: physical address and size of the registers
-> -- clocks: clock for the device
-> -
-> -Optional properties:
-> -
-> -- interrupts: interrupt generated by the BT interface. without an
-> -  interrupt, the driver will operate in poll mode.
-> -
-> -Example:
-> -
-> -	ibt@1e789140 {
-> -		compatible = "aspeed,ast2400-ibt-bmc";
-> -		reg = <0x1e789140 0x18>;
-> -		interrupts = <8>;
-> -		clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-> -	};
-> diff --git a/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> new file mode 100644
-> index 000000000000..c4f7cdbbe16b
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/ipmi/aspeed,ast2400-ibt-bmc.yaml
-> @@ -0,0 +1,44 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/ipmi/aspeed,ast2400-ibt-bmc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Aspeed Block Transfer (BT) IPMI interface
-> +
-> +maintainers:
-> +  - Joel Stanley <joel@jms.id.au>
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2400-ibt-bmc
-> +      - aspeed,ast2500-ibt-bmc
-> +      - aspeed,ast2600-ibt-bmc
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  clocks:
-> +    maxItems: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - clocks
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/clock/aspeed-clock.h>
-> +
-> +    bt@1e789140 {
-> +        compatible = "aspeed,ast2400-ibt-bmc";
-> +        reg = <0x1e789140 0x18>;
-> +        interrupts = <8>;
-> +        clocks = <&syscon ASPEED_CLK_GATE_LCLK>;
-> +    };
-> -- 
-> 2.51.0
-> 
+> My original plan is to add mac3 back to fuji-data64.dts (which will fix
+> fuji.dts) when the rgmii fix is ready in aspeed mac driver, but I can
+> add it back now if we need to fix the fuji regression asap. Please
+> suggest.
+
+Yes, please fix the regression.
+
+> BTW, the current mac3 settings work in real fuji hardware because rgmii
+> delay is configured in u-boot.
+
+Which is the second wrong in "two wrongs make a right". Neither
+u-boot, nor the driver should be adding delays with
+phy-mode = 'rgmii'. That means the PCB is adding the delays.
+
+	Andrew
 
