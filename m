@@ -1,46 +1,80 @@
-Return-Path: <linux-aspeed+bounces-2478-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2479-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03FB0CCD199
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Oct 2025 22:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 501ABCCD183
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Oct 2025 22:36:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cnjRL5fWqz3cYr;
-	Fri, 17 Oct 2025 09:33:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760591289;
-	cv=none; b=dxh//Q5sM+WdnJhaKfd0DLEFXUGqNf1nTFT9iXVo6JC+UFp4kQfPShMlzVuanBOo+9NtAzF5GmvmrRanuuXuvyarnLnCWynI70tVklDnXHo7VBe72ZV224ie4y979OmjTa6ETYuhX/SfHTw5hj7qTTA7qcpLDdFWPx8B8nilOEaOrgKx+JA3+xaRL986cSvhfOuxrYoaIbgZAAa1q0SsIIrs/osdeOLWulM6Zwduut4Rp0a2QYjcGC/JmY5vHAFCqsZPBECBTLYJIuzRLbIEbDB6QwjzSmypsDt3RNzMYV3wJPpBKw9bmcL0vTt/5pRX0bX2FOAP+FUH6/QSqzulrA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760591289; c=relaxed/relaxed;
-	bh=SCAq3Tpy90yiw+VRqp/jzmhdqwWtKZRonlnTXaNao8c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=GsoWlN3Tbg5tndTfESBo+EUbygZiVmadoRs0zqiWeV69bjaM2kAcftYuieiBAgKMX8F3284Vc6Z7ZqzeaJF3SIAKCrSyHt/RQ0q5fFoUqW9pgYtlYjHfOSOjUQ4NafcLMY3oUbrUENdmgHk1qSxs4o11qHwF7wmkyUWT5m5KGrqlWf80DgwjAwkFrEw7AjvfHtiGX5juQQ6vKEeiC295x4bVlKMCeMtrlJDns7vJav2udFXT9yie97yVNDNhIfVZDvpLTvVfEyFQkSGalq9kAYxrGzaXSnqzVfTzslIjtEAlRyv41WPsbWQTc2IXKIDnT3YEhI6OmsFGrO3H6NxYwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=geBJxByL; dkim-atps=neutral; spf=pass (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cnjV05H6rz3cZR;
+	Fri, 17 Oct 2025 09:36:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c10c::1" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760628630;
+	cv=pass; b=SETHaGv1hg+eKPPq0vS3OQb9mnmlZeH6Pok5OJ2vyqYNjcJEYYl1v+9zDhum6D9ZQHz/HRydPgK/md/AypgGEcX4NGGz/ZAWjyh/Koo7NTR5wXLogM3/6XYxU3p/TZJueVeCgZ53C79+HhvrXiigRnEAQjNwKLYfNQxVm48GLTy6Eo+oku6YT+T8mAmGYg5dupaFiT+NbBp9iAsVQ6AcaKq0jpqvjE/fWIif6VOMy9vWuVLz27K3QYDi6G7g6XmRSF12r12CT+ka5eHWDZz8IKHaKE4XPyCEr7Ebrg+2htkmufrfBqSuzshB+MMIzYxPZHK5En4p9Ih6HdpxnHX85A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1760628630; c=relaxed/relaxed;
+	bh=+/MLiJg51SYPDQ0KmRrlhauci0+hgrMX8yUnq9LHGCo=;
+	h=From:To:Cc:Subject:Date:Message-ID:Content-Type:MIME-Version; b=jnx1IoWwKjcXS5KNSGO/A5Vxt803zrFcXBmXsAioXL2Cgg2bMlMaeGKyanebtTbcDk2c8iatAXoLdlTQVJfwTVKrrGJKuYaPGawA+p/uCPJg3bq9HmlKqlOUIrwVx5h9tse6IZX+uCcFjNmW+JBYio9+jPg6H0R+PZeUmqmTRe5YFXZg/1WLtZoeUotOXhcJjCuuvU96k39GwLmCAG/3cVfdSKVTuSQZvOoFDdQisNWz6M1Ht51mw22YQbKvN70lLHB4tYDPpfwQdu/i56FzumJyV7ucdUY/Zs23G50yFf58Nn1L+nPJ2iKQOKVjKsBAntEzzeJs9T94blxgMOjYSQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=HU/6Dqe/; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=coking@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=geBJxByL;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=HU/6Dqe/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=lance.yang@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com [91.218.175.172])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:c10c::1; helo=sa9pr02cu001.outbound.protection.outlook.com; envelope-from=coking@nvidia.com; receiver=lists.ozlabs.org)
+Received: from SA9PR02CU001.outbound.protection.outlook.com (mail-southcentralusazlp170130001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c10c::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnGDj5mhDz2yqq
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Oct 2025 16:08:04 +1100 (AEDT)
-Message-ID: <4db3bd26-1f74-4096-84fd-f652ec9a4d27@linux.dev>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1760591263;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=SCAq3Tpy90yiw+VRqp/jzmhdqwWtKZRonlnTXaNao8c=;
-	b=geBJxByLcvWBiujKOiaOahCqNyndVoWuu2mZ45TF8xE284+jE46+6ntqZCrEJOY3tjLJtS
-	CA04TcSdtSgMTu+1LyL0JCiZYt8KyHlnhHzez+oDkOoqTGathzLcXzzn8tcestdiOMA31r
-	Wv+r/T6z/ByuejbAoTutxC4uLBsXkfs=
-Date: Thu, 16 Oct 2025 13:07:23 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnX2s65flz2ywC;
+	Fri, 17 Oct 2025 02:30:29 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=mE51AKu0/np9h+NzJoLlXJbHgcmvlMgqOO6hadzg7IsaKkDqiAmAm/CSsNF9kOqyXj4vtUw2hsAR4VugB/pQn0B/p/zs/EaCU7dOmuMUMYDeLgFhz87xbOdl6dBaoi5AgB+2k1eN4tv0tFYBsw61KbOE89jfbUjh01z6JvNeLgu1FcgNwg4HswuOzbLFLSbiynFciy/7wwKi0tX9HA2Ol4946HkBi7t15dwnMBe4g7+e7lIlOiAK6RvnJHeaMGwkKGNhkftFgEOsUnoFqbbHI/oEaEJEDqsBhURyTl4JCReWodOgjJ5UD8W4o3EPLHG1B3YBLSbWa7B98JnIAeQIuQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=+/MLiJg51SYPDQ0KmRrlhauci0+hgrMX8yUnq9LHGCo=;
+ b=k1aaplzHu2+1+BufTAI9qN9/231pi/dnZ20OBarFCKKHMNSENNCqn5c0AiWvkJ4Dom+LeMmDdOpglAhu23SsUPWazK4Ae2Yu/kTh85171MczzAeSuJ7lloa4HgjZ+egUoiMI7EPH0Lpz3beFBlpK78C74vFj/OZq3UyRneswgwwxT6fESDtL72/kTkITlVNwvXSFEcWqbLZWpIxf/wlEl+Z1tXaPdNtxnVMSQ0PmnHj+zdOx8w3b73WNX070Tr1HTaf0g/9UcFsxYCL1R8kUpLcqV2e8ei5dqmHoVVZNW/Mp6kZt7UyD3bzPFrKx8vuR5IE5Y6sNa3ngo+E7k21vsg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=+/MLiJg51SYPDQ0KmRrlhauci0+hgrMX8yUnq9LHGCo=;
+ b=HU/6Dqe/xb3ntUvwcmKJ8QCY0OZWslpSi5iD1Q3mX3srMvdcWYGIpM8ExPf2onPoavJa7EzGGmoNfIELDuQ/lzmmtfIKW8sKh8tKAgVb1+AceaGx7vt2oAWjZllDCrXJj8wfOtd9ObtKf5SBjH/8NVziLFdzkT7cc7BOAXYVTcIdlfV9pgN4ZaQpvTwQ2vJ8bdP8HpvBsncnubwaH9Vz2ncEgbdxCCoaeGv83opawwudvVDy6SX5Csy0Ncwg9eo9MtSL+QDzSJ/n1CRiqiG6q1UFLM+nCYPRZsqF5HTZEzkEq1DBcAITXqmsBhTeTprJ3agw0IyZJ/G6Q3wBf7IS7Q==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS0PR12MB8294.namprd12.prod.outlook.com (2603:10b6:8:f4::16) by
+ IA1PR12MB6412.namprd12.prod.outlook.com (2603:10b6:208:3af::17) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9228.13; Thu, 16 Oct
+ 2025 15:30:03 +0000
+Received: from DS0PR12MB8294.namprd12.prod.outlook.com
+ ([fe80::d6a9:5e83:27dc:a968]) by DS0PR12MB8294.namprd12.prod.outlook.com
+ ([fe80::d6a9:5e83:27dc:a968%7]) with mapi id 15.20.9228.012; Thu, 16 Oct 2025
+ 15:30:02 +0000
+From: Colin Ian King <coking@nvidia.com>
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
+	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+	Mark Brown <broonie@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	linux-aspeed@lists.ozlabs.org,
+	openbmc@lists.ozlabs.org,
+	linux-spi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org
+Cc: kernel-janitors@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH][next] spi: aspeed: fix spelling mistake "triming" -> "trimming"
+Date: Thu, 16 Oct 2025 16:30:00 +0100
+Message-ID: <20251016153000.9142-1-coking@nvidia.com>
+X-Mailer: git-send-email 2.51.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: LO4P123CA0317.GBRP123.PROD.OUTLOOK.COM
+ (2603:10a6:600:197::16) To DS0PR12MB8294.namprd12.prod.outlook.com
+ (2603:10b6:8:f4::16)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -54,123 +88,102 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Subject: Re: [PATCH][v4] hung_task: Panic when there are more than N hung
- tasks at the same time
-Content-Language: en-US
-To: lirongqing <lirongqing@baidu.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, wireguard@lists.zx2c4.com,
- netdev@vger.kernel.org, linux-kselftest@vger.kernel.org,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- Anshuman Khandual <anshuman.khandual@arm.com>, Arnd Bergmann
- <arnd@arndb.de>, David Hildenbrand <david@redhat.com>,
- Florian Wesphal <fw@strlen.de>, Jakub Kacinski <kuba@kernel.org>,
- "Jason A . Donenfeld" <jason@zx2c4.com>,
- Joel Granados <joel.granados@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Jonathan Corbet <corbet@lwn.net>, Kees Cook <kees@kernel.org>,
- Liam Howlett <liam.howlett@oracle.com>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- "Paul E . McKenney" <paulmck@kernel.org>,
- Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
- Petr Mladek <pmladek@suse.com>, Phil Auld <pauld@redhat.com>,
- Randy Dunlap <rdunlap@infradead.org>, Russell King <linux@armlinux.org.uk>,
- Shuah Khan <shuah@kernel.org>, Simon Horman <horms@kernel.org>,
- Stanislav Fomichev <sdf@fomichev.me>, Steven Rostedt <rostedt@goodmis.org>,
- linux-kernel@vger.kernel.org
-References: <20251015063615.2632-1-lirongqing@baidu.com>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Lance Yang <lance.yang@linux.dev>
-In-Reply-To: <20251015063615.2632-1-lirongqing@baidu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Migadu-Flow: FLOW_OUT
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR12MB8294:EE_|IA1PR12MB6412:EE_
+X-MS-Office365-Filtering-Correlation-Id: a6fc90f6-9e7b-4d13-4833-08de0cc8e01e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?3yWIe2/i6rcYOtUrwBjcFQRtyYjoaNnbuilPd+JObjoi1kQ5/g1kmdfvcGWO?=
+ =?us-ascii?Q?c8uV31NKGNhFjOltv1gKtUclNiMz4sPuFW0Rs0L315KS7JCpFUJ5zpf1BbLK?=
+ =?us-ascii?Q?XDSu3wq0+ninPgk+8qu2ceJBmiC0LbTfAMBkZeinsA0DolnmwfqZwGXlv22O?=
+ =?us-ascii?Q?QY74ncR2UeeRPWwIj+afmAtfh1q0bMKjyPjoHn7YoQNdaVDYvYqbR1gRytYz?=
+ =?us-ascii?Q?a0uSteAb0lfBfo3CVA6y52BdhUswGoRgfxjR9nL41e79Md6AinXU8gLTGFYp?=
+ =?us-ascii?Q?lvmncm/USt9MQzVWRagTbZUUnGOF/AM0/q/NqZzI2y+OxyzvLBXJ2H0Flikz?=
+ =?us-ascii?Q?it6vjJdlBsU+fp/k87RWrJcT6M+SAMHc1r4W75eEJnDCHqSn6DmnU3axpPdn?=
+ =?us-ascii?Q?Jx0LmzDARwscgzWs2bTge1OlhkMDSnCW5nfSirvEuIQyD8eHIWYYWGTvbtma?=
+ =?us-ascii?Q?4tnQ7LfTU3wRcI4SsDa9SoXE0yuBjJFkbZQKe94guBImjpFJ1zDm602SWYrV?=
+ =?us-ascii?Q?f/VGBAv6ZGWQDQyAMH2VXicMCTkaHocAFmDYrmB5iLv847LOrEDQC4yFYA7g?=
+ =?us-ascii?Q?vB+pHxkzk+SF98XWxCv63k2wCboESjjdko9RO6gRozuzN00Z4V7JD1mzMroT?=
+ =?us-ascii?Q?dpggbFB0OwRZPfc+0Svmg+ObKjQK5p383Us3Yd06KpInXAA3/2Kl3A2T8A7E?=
+ =?us-ascii?Q?hgbVTbuPbyFPeiOWXDjgH1C9t6wuPmOUeWEJ35EvY5Rhp8RDLBipzAhRzhR+?=
+ =?us-ascii?Q?ynmssOV3CJjW6GrOu4f8n5Z4PbQHGwdVrcatfaG5prAN/h6M0Rlc8Ue/lRh+?=
+ =?us-ascii?Q?aiBas7EF7W93R4nRc1tNoOTEl5KVGVc33FGgTC3ivVcS+hFqekYvcbvNt3jX?=
+ =?us-ascii?Q?oBhs9cTJ5p1erjxa+q4SKTlt1GAyh5LNbqlGxD62NK1CZxcE+RakSUqErwdu?=
+ =?us-ascii?Q?ZSsJZw3dppUm+XrqTBXOZbZ/bP///Eo04RE7AM+wT37unkU5sh6DEyBvuAv2?=
+ =?us-ascii?Q?mrVth+SwMzkkLfMeLDBQy/jmbWUWbACqQh64dlY3EQJYPadRQxeUt7VDFq+P?=
+ =?us-ascii?Q?1DoVE9HijkXpLguJFkVFmo17lBZQ0MaBcVLU4FFpWK87gLmhNj22QCiTnLE4?=
+ =?us-ascii?Q?XYgJ5bWulrjPami1qWKf1Z2OBZ7Q3MrU51tq/GwqaBGRqAcNjlUfJyUnjWE/?=
+ =?us-ascii?Q?mJsdQ52gZvEI1L87vqy918kg4UyUvU3WUtbfIXeMiZdmOWo4MaY1rx/FRTk7?=
+ =?us-ascii?Q?/D/8HZJ45Ne69fcwNnbem/h8udNEEN/Gw4Jy+71ejDGbH/221o/oukNI3glP?=
+ =?us-ascii?Q?YabBpB+FHUL5oyqcRBIW1qi9aAmChkPxkf27bHKicty0BvYcakS6IGTnQ0Gj?=
+ =?us-ascii?Q?SuPrS7NS1RF+x++DoZlqro0DKKjrjjm2KZ6t9wPSPrHQfunNVqkaTBnB3ddq?=
+ =?us-ascii?Q?g9+LHowN+ZKYuHFuA7mQlervFrsiAXds?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB8294.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?NFS6LnUO+5YM2fK29+X4UQFddWjnvc+Qwu0UIpTdIcGOVhlqmZLKCRbVwXuj?=
+ =?us-ascii?Q?qf4avjmg0PxH2G9PpUmMxlofSoECTwxBg3MK2jJ4CNVHaFAYs6ol/8fpgdwK?=
+ =?us-ascii?Q?5Xf8T+wX+0ICGb2Xwe/0xxw+na2cAB0Y2GS3xOngjpheyMKYVChNlHSEk74N?=
+ =?us-ascii?Q?OwTeYhSGFmuEgFV7+1j4lEXU+8Cbr8zheyRREniXgQS3QIdbzfwhNLdjbJYO?=
+ =?us-ascii?Q?vuGUMRhAWgaO6CG5aQqDvLIviD4OmVHI5i9hhZ4bBvVfSNZ0OAB9yF4MLmIB?=
+ =?us-ascii?Q?Xi23Wy+6yPFowbsHvcDrKUuJNJL7Sb67YjO1jRuI3rsiP2zrjeUUFftclOOb?=
+ =?us-ascii?Q?K8CfNqfDKMt70aHqyZlsDZrG4TKfwNagF1yiN6UGdEU0kBp1zCss/8m06Sup?=
+ =?us-ascii?Q?lTPrb864PfBLIEEU6VN1iJPpHs/Aqer1+2FrYjuN8bauCKEBRtemKd5EMGWg?=
+ =?us-ascii?Q?KSgdp46F3q4FhH5Nn8n8xVCERhNio6JxS96hoWGEoRjv0QJkSyPk2P9vc5Z8?=
+ =?us-ascii?Q?L4OilWIHjk7G74psuFvj/G2ir4NeXzJPtCFaxukD/C2+0uJc/gbPd+bSaDYX?=
+ =?us-ascii?Q?7H/619KX9zg37p7EV8Qg++8HxwG6J+PCD1OOOfHI3tO4rN3fm4MSwSRoEdMY?=
+ =?us-ascii?Q?l/5mHrcU+fkzWJzeuEGiPDuQ7SfD8xxBN+g+G0MAaDze7yZU8nJR6BZJp8b3?=
+ =?us-ascii?Q?/jQRkRkZmq4di5WdAu2T/onys6JbC7i8Jhdghr9zaXRGMZbXbVq2+Pnnl2PC?=
+ =?us-ascii?Q?/vlyYFVAtQLr7toMv6wryaewER27jvdzkdCLx8J0ABGrHw2aP/Qe2ZnGkZ37?=
+ =?us-ascii?Q?43Dr+PClGKsWaGVG5V9r4ENMWWq1gO+HhY093TvBXuCsYb6TkYYtn3lOrcIf?=
+ =?us-ascii?Q?ltA+Uco0/KP+/LdvQVxTviK+0HLyMKVABtU3PzB0yRk8H8NpZdhFIunhIjYf?=
+ =?us-ascii?Q?NYKdvnGgWrWHR3e1n5EaU5qZndyWI4c+HRePf7Y/ugWM3lFFnqmNi1U+Ib87?=
+ =?us-ascii?Q?kFIpyp/k94IR8G0pLdkUwpeD7RiBhjHmG60V8HDcodkEgwWCMQ8eeB0E+o+O?=
+ =?us-ascii?Q?qQUbQgxd1IDlT4RINCAAYGKC99AmI152g9FCAso+0hcFQgBgaLXCZ1/jDPvP?=
+ =?us-ascii?Q?Iw+60uxsCGrFni6wlDR19aqDqTtdObFocycdaAYKbXCa1huj3/v3M86NM514?=
+ =?us-ascii?Q?JVjPjRRJ/+8QywZyP+YICuTH+FjhOdX1jEyVTctnPDsfZV3oG86AE/vy/e5G?=
+ =?us-ascii?Q?U107bZBtDAXjSg5wtBZjKkSPg0aCfnCpaoY792ZKaeKdbrZOAiR90Mpq6HtS?=
+ =?us-ascii?Q?hTCwsBoyswXpeDi6D5OX89sv9JVgJwB3OePRQmsE2xL6+GHyowV1nYujeeV0?=
+ =?us-ascii?Q?nw00Ej2gGRdd0BWx+n+vWWXA8p259LehkBgKiUnWIWM30BIZjsIPImf+3129?=
+ =?us-ascii?Q?4caK3R866oVIreKMNhCsD4B1OZXabldzH5FtkT1olHcV/04IcPM5cdmxXb57?=
+ =?us-ascii?Q?Z2R/vVqpHymGrdpzGTLrYrIar75ADA+xACBvi9/KA5Z82BNgiJVqq1SIN8cm?=
+ =?us-ascii?Q?mkX4axaqgy8uTxHSpbBodBm33OJKk/aHhe9P3mB9?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a6fc90f6-9e7b-4d13-4833-08de0cc8e01e
+X-MS-Exchange-CrossTenant-AuthSource: DS0PR12MB8294.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Oct 2025 15:30:02.9064
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6HtCjBWgmNuhsSw0fZbDsUNDUVZktD4CL4RRN2vaM9EB7KzqMaD+ppIBo/WMqRappSjlkFqu2GqubMf86aLo8g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB6412
 
-LGTM. It works as expected, thanks!
+There is a spelling mistake in a dev_warn message. Fix it.
 
-On 2025/10/15 14:36, lirongqing wrote:
-> From: Li RongQing <lirongqing@baidu.com>
+Signed-off-by: Colin Ian King <coking@nvidia.com>
+---
+ drivers/spi/spi-aspeed-smc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-For the commit message, I'd suggest the following for better clarity:
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index 0c3de371fd39..f3a7189afd51 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -539,7 +539,7 @@ static int aspeed_spi_trim_window_size(struct aspeed_spi *aspi)
+ 	} while (total_sz > aspi->ahb_window_size);
+ 
+ 	if (trimmed) {
+-		dev_warn(aspi->dev, "Window size after triming:\n");
++		dev_warn(aspi->dev, "Window size after trimming:\n");
+ 		for (cs = 0; cs < aspi->data->max_cs; cs++) {
+ 			dev_warn(aspi->dev, "CE%d: 0x%08x\n",
+ 				 cs, chips[cs].ahb_window_size);
+-- 
+2.51.0
 
-```
-The hung_task_panic sysctl is currently a blunt instrument: it's all
-or nothing.
-
-Panicking on a single hung task can be an overreaction to a transient
-glitch. A more reliable indicator of a systemic problem is when multiple
-tasks hang simultaneously.
-
-Extend hung_task_panic to accept an integer threshold, allowing the kernel
-to panic only when N hung tasks are detected in a single scan. This
-provides finer control to distinguish between isolated incidents and
-system-wide failures.
-
-The accepted values are:
-- 0: Don't panic (unchanged)
-- 1: Panic on the first hung task (unchanged)
-- N > 1: Panic after N hung tasks are detected in a single scan
-
-The original behavior is preserved for values 0 and 1, maintaining full
-backward compatibility.
-```
-
-If you agree, likely no need to resend - Andrew could pick it up
-directly when applying :)
-
-> 
-> Currently, when 'hung_task_panic' is enabled, the kernel panics
-> immediately upon detecting the first hung task. However, some hung
-> tasks are transient and allow system recovery, while persistent hangs
-> should trigger a panic when accumulating beyond a threshold.
-> 
-> Extend the 'hung_task_panic' sysctl to accept a threshold value
-> specifying the number of hung tasks that must be detected before
-> triggering a kernel panic. This provides finer control for environments
-> where transient hangs may occur but persistent hangs should be fatal.
-> 
-> The sysctl now accepts:
-> - 0: don't panic (maintains original behavior)
-> - 1: panic on first hung task (maintains original behavior)
-> - N > 1: panic after N hung tasks are detected in a single scan
-> 
-> This maintains backward compatibility while providing flexibility for
-> different hang scenarios.
-> 
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> Cc: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: David Hildenbrand <david@redhat.com>
-> Cc: Florian Wesphal <fw@strlen.de>
-> Cc: Jakub Kacinski <kuba@kernel.org>
-> Cc: Jason A. Donenfeld <jason@zx2c4.com>
-> Cc: Joel Granados <joel.granados@kernel.org>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Kees Cook <kees@kernel.org>
-> Cc: Lance Yang <lance.yang@linux.dev>
-> Cc: Liam Howlett <liam.howlett@oracle.com>
-> Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> Cc: "Masami Hiramatsu (Google)" <mhiramat@kernel.org>
-> Cc: "Paul E . McKenney" <paulmck@kernel.org>
-> Cc: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-> Cc: Petr Mladek <pmladek@suse.com>
-> Cc: Phil Auld <pauld@redhat.com>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Shuah Khan <shuah@kernel.org>
-> Cc: Simon Horman <horms@kernel.org>
-> Cc: Stanislav Fomichev <sdf@fomichev.me>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> ---
-
-So:
-
-Reviewed-by: Lance Yang <lance.yang@linux.dev>
-Tested-by: Lance Yang <lance.yang@linux.dev>
-
-Cheers,
-Lance
 
