@@ -1,65 +1,90 @@
-Return-Path: <linux-aspeed+bounces-2494-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2495-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37995CCD195
-	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 07:43:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1710ECCD19A
+	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 10:54:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cnxdh5f10z2yMh;
-	Fri, 17 Oct 2025 18:43:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760687016;
-	cv=none; b=fVmxL40ESZl+tlBNXJH92Tc7d1oGYQRwEUsbMaSloCj41JD3noRNA1sCkWSu60kcNwcpWuKd5b5oYyztOoTImy4L2lmHLfzXTDAwOfQAMhEijrWBzhUsfJinrHcHGDSe4Sy58OCgDh6TK2F8s4VSB+1ENZbspg/0P3501TLXON40z6BLOG+CCFSjl27wO7c2goj8mSS3p1KxXOS3hWIOLw9uvUuXhJUD9uwpp0TQk/gxZaP9+R9xjq+z0v+76dPBthuo/yU7amx7h9agHEavH8Gs1vlLQGLGqkXdKsl1V2ICBs0ApLGmeHZY/FLfy87LSe/jx8g6ZXKB3HpA90qtcA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cp1t94RkXz3ccS;
+	Fri, 17 Oct 2025 21:54:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760698481;
+	cv=none; b=lZmGwlemprJBOiO+RcvE9MWP7a01ld2evsahYC3h03y+BXCsbFNjLjtJFpvBi/1FXLBYr4i8Uggw+XH8BFftZJrhEwCqvEgCXRWgWi8ODsPfx97JLO3N4/C1warxbKgOZvBDAk7bFxak4QqtX4psabodWvWePnU9f7bM9FSHVBRwBUqz4qUTP2f3s0CqPeRSQ6OeZfOaoL0YqCmES8Ur36WHRoZH3jKtYqUJSMtBNWh7g9bklw2K3VLaj9nWgs+9EgfFYblOv9N9uuihZbDLnoxEbSRCRIzp36sFC9muTVTWo/sTv90pWoyShTzIEkfCLWexKJwUiXnUm5fVY2ovpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760687016; c=relaxed/relaxed;
-	bh=XQrvP1GlmV9hF254YFykYp7sZklQgP8zUBpeNxqA/go=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B8a488HJRgFXROqOMTmGzguh64Pw6qneZ71khcTFJw9ihpzwe+bFzGv/IZXy//wUCmogwTwTMDlREimg7cGDxF3GnixK+oiPYaAJpxGSjzYWljcE9L6ynJLxQhqxnq54bfYbCZ3Oka4y3KvRRDQPGaq48e9kE7tk+uaEWnhSVnTWqJCknIdb8Bnedq1rSKA/dnmbx5XT5Aos05reiaDod3Wdw0oiz67QiG9NyB0SRAPg6PE+93TX/U1DzeeOgx3aiJB6PaWLPGDDpCijSZa1+abUUTx3OI+nbiGpsSJZm2seZI0F9XVfw/lia7uo2ZOsPlZnfO9sqU6NuRgwmGInqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=rbgnTyiR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=rbgnTyiR;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	t=1760698481; c=relaxed/relaxed;
+	bh=Avg+PvzgJ2ryyS677CJfzcxOpCJhiMuXD395MGs9E+A=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=W+Y7DKdxwBF7LX8IdEOB7s48FLLVR7zS10fdWeqq1IHHVvVlZ2Ou+TV3q/f9dvTd3LzBvhk83brNfhi280g4nFa6ozd6lNhlEJ+Z5iU4hKeZlZqDhj2dAydp2J6p9ySyxLufR0Ps+5d1uwXWHvP6c8wcTR83XO7Yw02khR170JwSBi2fYgcP2QSQh/RURlbrk/7UfsUKOd5jqJXHVaOqtIOl5ToZCyar+mp+TkwoLrisYaLrKcw72TmgXtjFhPctwrBdH/FKOJOJI7lkBVCjT1TKnGskvBOCAq3sCYKsqta0JKukTeG0X/RFgba7gJy0S3Yw/JDb+MHjgvvIwffqoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=fde1=42=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=fde1=42=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnxdf2rbZz2xcB;
-	Fri, 17 Oct 2025 18:43:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cp1t81n5Xz3ccF
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 21:54:40 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id AE04C6036C;
-	Fri, 17 Oct 2025 07:43:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3942C4CEE7;
-	Fri, 17 Oct 2025 07:43:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1760687011;
-	bh=Ghawdb9l72IEZCfQwNVJ0wErDbWEow5FhFKT+ciucco=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rbgnTyiRwNqzWTCsT9SFJ0M0y6ewfizs6HV6j9R9MCeXDn5I+PfLLTbX7sIZzLKdb
-	 2CLT0UiaisCdgatT2tsNx53BuVw1axilp0cVSfN3oo61y9gcRgaA5AbPgN6rFvEW+K
-	 y3LwXgi9MYsbutny94X7lRDSlaUPH76FX4X3wTQI=
-Date: Fri, 17 Oct 2025 09:43:28 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Brian Masney <bmasney@redhat.com>,
-	Iwona Winiarska <iwona.winiarska@intel.com>,
-	Joel Stanley <joel@jms.id.au>, Maxime Ripard <mripard@kernel.org>,
-	Stephen Boyd <sboyd@kernel.org>, linux-clk@vger.kernel.org,
-	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] peci: controller: peci-aspeed: convert from round_rate()
- to determine_rate()
-Message-ID: <2025101721-twiddling-huskiness-4852@gregkh>
-References: <20250810-peci-round-rate-v1-1-ec96d216a455@redhat.com>
- <aMatZAX6eFI1RmDH@redhat.com>
- <28dc3bd8aeca7e3164747960747f75060c596704.camel@codeconstruct.com.au>
- <aPEZSY6RC-UVclxN@redhat.com>
- <ba2e6b78e59afb7c89e5022770a142ec8c31659a.camel@codeconstruct.com.au>
- <2025101759-runner-landing-374b@gregkh>
- <2975918e3f3a7de245e93fbee52335acb78bb23a.camel@codeconstruct.com.au>
+	by tor.source.kernel.org (Postfix) with ESMTP id 84EDC642C2;
+	Fri, 17 Oct 2025 10:54:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C4B6C4CEE7;
+	Fri, 17 Oct 2025 10:54:28 +0000 (UTC)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	David Miller <davem@davemloft.net>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Crt Mori <cmo@melexis.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Shan-Chun Hung <schung@nuvoton.com>,
+	Yury Norov <yury.norov@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Alex Elder <elder@ieee.org>,
+	David Laight <david.laight.linux@gmail.com>,
+	Vincent Mailhol <mailhol.vincent@wanadoo.fr>,
+	Jason Baron <jbaron@akamai.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Tony Luck <tony.luck@intel.com>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Kim Seer Paller <kimseer.paller@analog.com>,
+	David Lechner <dlechner@baylibre.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Richard Genoud <richard.genoud@bootlin.com>,
+	Cosmin Tanislav <demonsingur@gmail.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Jianping Shen <Jianping.Shen@de.bosch.com>
+Cc: linux-clk@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	linux-edac@vger.kernel.org,
+	qat-linux@intel.com,
+	linux-gpio@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-iio@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v4 0/4] Non-const bitfield helpers
+Date: Fri, 17 Oct 2025 12:54:08 +0200
+Message-ID: <cover.1760696560.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,76 +98,140 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2975918e3f3a7de245e93fbee52335acb78bb23a.camel@codeconstruct.com.au>
+Content-Transfer-Encoding: 8bit
 
-On Fri, Oct 17, 2025 at 05:57:44PM +1030, Andrew Jeffery wrote:
-> On Fri, 2025-10-17 at 08:41 +0200, Greg Kroah-Hartman wrote:
-> > On Fri, Oct 17, 2025 at 04:52:37PM +1030, Andrew Jeffery wrote:
-> > > Hi Greg,
-> > > 
-> > > On Thu, 2025-10-16 at 12:11 -0400, Brian Masney wrote:
-> > > > Hi Andrew and Iwona,
-> > > > 
-> > > > On Mon, Sep 15, 2025 at 02:36:48PM +0930, Andrew Jeffery wrote:
-> > > > > Hi Brian,
-> > > > > 
-> > > > > On Sun, 2025-09-14 at 07:56 -0400, Brian Masney wrote:
-> > > > > > Hi Iwona, Joel, and Andrew,
-> > > > > > 
-> > > > > > On Sun, Aug 10, 2025 at 06:21:51PM -0400, Brian Masney wrote:
-> > > > > > > The round_rate() clk ops is deprecated, so migrate this
-> > > > > > > driver from
-> > > > > > > round_rate() to determine_rate() using the Coccinelle
-> > > > > > > semantic patch
-> > > > > > > appended to the "under-the-cut" portion of the patch.
-> > > > > > > 
-> > > > > > > Signed-off-by: Brian Masney <bmasney@redhat.com>
-> > > > > > 
-> > > > > > Would it be possible to get this picked up for v6.18? I'd
-> > > > > > like to remove
-> > > > > > this API from drivers/clk in v6.19.
-> > > > > 
-> > > > > My (strong) preference is that Iwona applies it, but I'll keep
-> > > > > an eye
-> > > > > out for any unusual delays.
-> > > > 
-> > > > This patch wasn't picked up for v6.18. Any chance this can get
-> > > > picked up
-> > > > now for v6.19?
-> > > > 
-> > > > I'm hoping to get this merged so that we can remove the
-> > > > round_rate() clk
-> > > > op from the clk core. The clk maintainer (Stephen) mentioned this
-> > > > work
-> > > > in his last pull to Linus.
-> > > > 
-> > > > https://lore.kernel.org/linux-clk/20251007051720.11386-1-sboyd@kernel.org/
-> > > 
-> > > Are you happy to pick this up directly in Iwona's absence?
-> > 
-> > Why me?
-> 
-> I figured that would be sensible since Iwona historically sent you PRs
-> for the PECI subsystem.
+	Hi all,
 
-I did not remember that, sorry.  The MAINTAINERS file does not mention
-this at all, and it lists many other maintainers that should be able to
-take this patch:
-	$ ./scripts/get_maintainer.pl  drivers/peci/controller/peci-aspeed.c
-	Iwona Winiarska <iwona.winiarska@intel.com> (maintainer:ASPEED PECI CONTROLLER)
-	Joel Stanley <joel@jms.id.au> (maintainer:ARM/ASPEED MACHINE SUPPORT)
-	Andrew Jeffery <andrew@codeconstruct.com.au> (maintainer:ARM/ASPEED MACHINE SUPPORT)
-	linux-aspeed@lists.ozlabs.org (moderated list:ASPEED PECI CONTROLLER)
-	openbmc@lists.ozlabs.org (moderated list:ASPEED PECI CONTROLLER)
-	linux-arm-kernel@lists.infradead.org (moderated list:ARM/ASPEED MACHINE SUPPORT)
-	linux-kernel@vger.kernel.org (open list)
-	ASPEED PECI CONTROLLER status: Supported
-	PECI SUBSYSTEM status: Supported
-	ARM/ASPEED MACHINE SUPPORT status: Supported
+<linux/bitfield.h> contains various helpers for accessing bitfields, as
+typically used in hardware registers for memory-mapped I/O blocks.
+These helpers ensure type safety, and deduce automatically shift values
+from mask values, avoiding mistakes due to inconsistent shifts and
+masks, and leading to a reduction in source code size.
 
-thanks,
+The existing FIELD_{GET,PREP}() macros are limited to compile-time
+constants.  However, it is very common to prepare or extract bitfield
+elements where the bitfield mask is not a compile-time constant (e.g. it
+comes from a table, or is created by shifting a compile-time constant).
+To avoid this limitation, the AT91 clock driver introduced its own
+field_{prep,get}() macros.  During the past four years, these have been
+copied to multiple drivers, and more copies are on their way[1], leading
+to the obvious review comment "please move this to <linux/bitfield.h>".
 
-greg k-h
+Hence this series makes field_{prep,get}() available for general use
+(first two patches), and converts a few Renesas drivers to the existing
+FIELD_{GET,PREP}() and the new field_{get,prep}() helpers (last two
+patches).
+
+Alternatives would be to use the typed {u*,be*,le*,...}_{get,encode}_bits()
+macros instead (which currently do not work with non-constant masks
+either, and the first attempt to change that generates much worse code),
+or to store the low bit and width of the mask instead (which would
+require changing all code that passes masks directly, and also generates
+worse code).
+
+Changes compared to v3[2]:
+  - Update recently introduced FIELD_MODIFY() macro,
+  - Add Acked-by,
+  - Rebase on top of commit 7c68005a46108ffa ("crypto: qat - relocate
+    power management debugfs helper APIs") in v6.17-rc1,
+  - Convert more recently introduced upstream copies:
+      - drivers/edac/ie31200_edac.c
+      - drivers/iio/dac/ad3530r.c
+
+Changes compared to v2[3]:
+  - New patch "[PATCH v3 1/4] bitfield: Drop underscores from macro
+    parameters",
+  - Add Acked-by,
+  - Drop underscores from macro parameters,
+  - Use __auto_type where possible,
+  - Correctly cast reg to the mask type,
+  - Introduces __val and __reg intermediates to simplify the actual
+    operation,
+  - Drop unneeded parentheses,
+  - Clarify having both FIELD_{GET,PREP}() and field_{get,prep}(),
+
+Changes compared to v1[4]:
+  - Cast val resp. reg to the mask type,
+  - Fix 64-bit use on 32-bit architectures,
+  - Convert new upstream users:
+      - drivers/crypto/intel/qat/qat_common/adf_gen4_pm_debugfs.c
+      - drivers/gpio/gpio-aspeed.c
+      - drivers/iio/temperature/mlx90614.c
+      - drivers/pinctrl/nuvoton/pinctrl-ma35.c
+      - sound/usb/mixer_quirks.c
+  - Convert new user queued in renesas-devel for v6.15:
+      - drivers/soc/renesas/rz-sysc.c
+  - Drop the last 14 RFC patches.
+    They can be updated/resubmitted/applied later.
+
+I plan to take all four patches through the Renesas tree, and provide an
+immutable branch + tag with the first two patches, so subsystem
+maintainers that want to queue patches that depend on this can easily do
+so.  Once that tag has been merged in subsystem trees or upstream, I
+plan to update and resend actual conversions (see patches 4-17 in
+v1[4]).
+
+Thanks for your comments!
+
+[1] Work-in-progress new copies posted during the last few months (there
+    may be more):
+      - "[PATCH 10/24] mtd: rawnand: sunxi: cosmetic: move ECC_PAT_FOUND register in SoC caps"
+	https://lore.kernel.org/20251016142752.2627710-11-richard.genoud@bootlin.com
+      - "[PATCH 12/24] mtd: rawnand: sunxi: cosmetic: move NFC_ECC_MODE offset in SoC caps"
+	https://lore.kernel.org/20251016142752.2627710-13-richard.genoud@bootlin.com
+      - "[PATCH v2 05/15] mtd: rawnand: sunxi: rework pattern found registers"
+	https://lore.kernel.org/20251013152645.1119308-6-richard.genoud@bootlin.com
+      - "[PATCH v2 07/15] mtd: rawnand: sunxi: introduce ecc_mode_mask in sunxi_nfc_caps"
+	https://lore.kernel.org/20251013152645.1119308-8-richard.genoud@bootlin.com
+      - "[PATCH v5 2/2] iio: imu: smi330: Add driver"
+	https://lore.kernel.org/20251009153149.5162-3-Jianping.Shen@de.bosch.com
+      - "[PATCH v3 2/8] pwm: rzg2l-gpt: Add info variable to struct rzg2l_gpt_chip"
+	https://lore.kernel.org/20250923144524.191892-3-biju.das.jz@bp.renesas.com
+      - "[PATCH v2 3/3] gpio: gpio-ltc4283: Add support for the LTC4283 Swap Controller"
+	https://lore.kernel.org/20250903-ltc4283-support-v2-3-6bce091510bf@analog.com
+      - "[PATCH v7 15/24] media: i2c: add Maxim GMSL2/3 serializer and deserializer framework"
+	https://lore.kernel.org/20250718152500.2656391-16-demonsingur@gmail.com
+[2] "[PATCH v3 0/4] Non-const bitfield helpers"
+    https://lore.kernel.org/all/cover.1739540679.git.geert+renesas@glider.be/
+[3] "[PATCH v2 0/3] Non-const bitfield helpers"
+    https://lore.kernel.org/all/cover.1738329458.git.geert+renesas@glider.be
+[4] "[PATCH 00/17] Non-const bitfield helper conversions"
+    https://lore.kernel.org/all/cover.1637592133.git.geert+renesas@glider.be
+
+Geert Uytterhoeven (4):
+  bitfield: Drop underscores from macro parameters
+  bitfield: Add non-constant field_{prep,get}() helpers
+  clk: renesas: Use bitfield helpers
+  soc: renesas: Use bitfield helpers
+
+ drivers/clk/at91/clk-peripheral.c             |   1 +
+ drivers/clk/at91/pmc.h                        |   3 -
+ drivers/clk/renesas/clk-div6.c                |   6 +-
+ drivers/clk/renesas/rcar-gen3-cpg.c           |  15 +-
+ drivers/clk/renesas/rcar-gen4-cpg.c           |   9 +-
+ .../intel/qat/qat_common/adf_pm_dbgfs_utils.c |   8 +-
+ drivers/edac/ie31200_edac.c                   |   4 +-
+ drivers/gpio/gpio-aspeed.c                    |   5 +-
+ drivers/iio/dac/ad3530r.c                     |   3 -
+ drivers/iio/temperature/mlx90614.c            |   5 +-
+ drivers/pinctrl/nuvoton/pinctrl-ma35.c        |   4 -
+ drivers/soc/renesas/renesas-soc.c             |   4 +-
+ drivers/soc/renesas/rz-sysc.c                 |   3 +-
+ include/linux/bitfield.h                      | 142 +++++++++++-------
+ sound/usb/mixer_quirks.c                      |   4 -
+ 15 files changed, 108 insertions(+), 108 deletions(-)
+
+-- 
+2.43.0
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
