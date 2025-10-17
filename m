@@ -1,72 +1,60 @@
-Return-Path: <linux-aspeed+bounces-2484-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2485-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8275CCCD199
-	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 05:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4FF6CCD199
+	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 05:42:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cntPZ5Jbyz2yhX;
-	Fri, 17 Oct 2025 16:17:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cntyC68Yxz2yqh;
+	Fri, 17 Oct 2025 16:42:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760678274;
-	cv=none; b=Vkk0a9qQNnkp0ycV0gporcd7FUEEPgF7p8TMbEeiS+D5Pu83ekI2rfZm6vOVbZvOzCkYPMxbQTOuC3WXNnnz2FUYjVUzh0iRA2FaKCkjCv1p3PU3FjYH2clgh1Lu//MlM79tuAcuwCZq6mas1cpOD+N9bKsgI0iHMWrMF/7zx/yzpH1U7J3I3TMo4BvyewNYkGC0UzodJxGYpP28EBb8CkwDTfCnH2iaRN0yVJYdk5YyLqc2dfVRXS0vj5+qasmrBv6W8nDVBo47VjVK3fEzHLDhi4dfZq3sj44vqi74+cLTWt/IPLQt88GTimKfdCUtulv0Ll4AyGJ9RzeM63QSSA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760679763;
+	cv=none; b=Pbu6dXkdGV+F1D5R8S02kTWqlcGxPEaeu08iya7gtwJobPNfU/jW/GVomA39IfzbFkhybDiW+bXCupF4zJ5Wu0V0Tdt4CSPHGii8C1VDRKfQDe2yPH0359JdHEEKA+zEs6+S6x/KC9zS0WfpsEdOdy+OQCd6dkvxFDK45EiNrrJiazoG6nE8r1HVcdBRGcoqg7Gx1W1WHWu4QXZonheptWNngzrEzFUNmtiYpAK+WVIltQw/pSC3lDc1Mus1jztMzKITIKcn1yv2RukGySmMA2S0RND7zuYbhBwe13H+ySEqwSs9VRFGuEuPiHMAvo+0dj5DZg5s8mYHU/wgiFt+GA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760678274; c=relaxed/relaxed;
-	bh=JPM4mlpiishQWeQFEupQtI0yWXJaRSHmeNe+WZxInAk=;
+	t=1760679763; c=relaxed/relaxed;
+	bh=FBOBE2lJJ4ubL1SZFxRHcJFjs6sCvB23xdXmM4GToK8=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=fcKRGSj2qSCCX6iVJoZu5ez9JZj4vPFrZSaaFgU7Rsiy56R/TS3ad+wiF9XWcR6dU7QntalHt/p1CbnF3ayRaINInQttMDp7+0GyaH4pXyDD5NYOns1fhkzHqvDz6bA+zzvJVZoe9ySxSi+AakmJxe5V6w2hCfCV1Y/zi2J023V8GOWrxusbX2DbOEG6gPk6gFii1uMosZCvMjkA+iAeu0jJZS0ZiEi1A7DXlVInjGlrgJ+SpCYgywGIVeUJfPENJV2voa8IaQgEyIpZ/1xGXKMU7AHVXElq9De3e4NEPRIs9xOQFAdwV99+Frook16dwsXB6MNdR0MmzaHrGSLjAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=jPvbvixb; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=mxmzjnBPL6saDKud0QcFI+hzD+csWc8IF6ZD2TW8oEkdTQUDYsOgvz7sbp7HXHYzR5JQl2+LYRBqz8+kMVKC5PdjZFzoSZEQ3Hf94060jp5Qd5LMRuEhtEyYTpl8hUpyPSL0xwzUEKa79k/R6GuTQ6eRRgOOsD6XGNgQAwQycdZQgaWyJF6DO7eAYF1/knsLknGMj8zkGn9zbA0ZiBXfsKOVBRY4lNEchTz4AqNE4KbVI79k4M5ebV36R4xA18losS1C+QbygpDgFXONFf7G294FSfo9QTWrsDMEJIS62LCY6gu8SE7pw1uqLvNBRy8LPSrF5S7b06LyqtFGjYpQnA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Hm0yU3a2; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=jPvbvixb;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Hm0yU3a2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cntPZ2PtCz2xBV
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 16:17:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cntyC37Fyz2yhX
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 16:42:43 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1760678273;
-	bh=JPM4mlpiishQWeQFEupQtI0yWXJaRSHmeNe+WZxInAk=;
+	d=codeconstruct.com.au; s=2022a; t=1760679762;
+	bh=FBOBE2lJJ4ubL1SZFxRHcJFjs6sCvB23xdXmM4GToK8=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=jPvbvixbXMKZqhbOdvGCGRfbQ6xz4XZW5OoEp834zvcbcUzeT0DEZQShCifFLvXH/
-	 7VNXYSdU2G7KBQWNNJLvpdVm+M3neujB8Z53erIEdu1UJ2Ur/ZNsImsaJHlj4fM+hg
-	 pXJ6iktIeSvvkWXkQePecL2LJGSXwTBivc0u1kUyxGFPoHq8uPoFGCjZLd1T70h288
-	 XUtXbfrycVVCuJeeKaPuRXQTaJ2o8tU0V5LH3J2I97AhMweppeCmPHR8J6FZsKDRD8
-	 AXTsyoypYXqYM3OOtceSmolxJvsYijbhLEvWUBCtsx2wbK42Z7FgkrL++vG1zbFzKz
-	 wxyyk4y8wDU0A==
+	b=Hm0yU3a2z4bD4DKGw34ZbPDfR4rW6dPHM7WeC4kQPhcDJVhiSCwheDLG7f3xa0io2
+	 5H/RYHexWp3moLpTsY05ufX3r1a7hG4pRri3O9/rWF1BwkofObOZcvlSrYycV0aCvw
+	 REsTNvcvGFUcT+RqwUVeaChsa7nLBkhXXYTFN8O8177yP4u0tm+ranaQChlIQQVTQT
+	 QSxuaeyPqBJSz/3EpmlmIJ1R7MiYaGKmPVNyx4yJsBzcQ/5D86RLiQVhPG82yIAogi
+	 0GKMzuIzyg1tVgF91bMvdOtfyWDX4m8iD7aYuO15s1k1US+vBSe2AcUbZpz7Lx2rFF
+	 Rt0o3NL2o9G0g==
 Received: from [192.168.68.113] (unknown [180.150.112.213])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 882AA766F5;
-	Fri, 17 Oct 2025 13:17:46 +0800 (AWST)
-Message-ID: <57dffe112a461a218c7dab6bfc3b02967440cc77.camel@codeconstruct.com.au>
-Subject: Re: [PATCH][v4] hung_task: Panic when there are more than N hung
- tasks at the same time
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id E4193766F5;
+	Fri, 17 Oct 2025 13:42:41 +0800 (AWST)
+Message-ID: <eb9ed79a820b67d7d3dbb0ab7ec6349bf962fe9c.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v2 2/2] ARM: dts: aspeed: add asrock x470d4u bmc
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: lirongqing <lirongqing@baidu.com>, Andrew Morton
- <akpm@linux-foundation.org>,  Lance Yang <lance.yang@linux.dev>, Masami
- Hiramatsu <mhiramat@kernel.org>, linux-kernel@vger.kernel.org
-Cc: linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, wireguard@lists.zx2c4.com,
- netdev@vger.kernel.org, 	linux-kselftest@vger.kernel.org, Anshuman Khandual
- <anshuman.khandual@arm.com>,  Arnd Bergmann	 <arnd@arndb.de>, David
- Hildenbrand <david@redhat.com>, Florian Wesphal	 <fw@strlen.de>, Jakub
- Kacinski <kuba@kernel.org>, "Jason A . Donenfeld"	 <jason@zx2c4.com>, Joel
- Granados <joel.granados@kernel.org>, Joel Stanley	 <joel@jms.id.au>,
- Jonathan Corbet <corbet@lwn.net>, Kees Cook <kees@kernel.org>,  Liam
- Howlett <liam.howlett@oracle.com>, Lorenzo Stoakes
- <lorenzo.stoakes@oracle.com>, "Paul E . McKenney"	 <paulmck@kernel.org>,
- Pawan Gupta <pawan.kumar.gupta@linux.intel.com>, Petr Mladek
- <pmladek@suse.com>, Phil Auld <pauld@redhat.com>, Randy Dunlap
- <rdunlap@infradead.org>,  Russell King <linux@armlinux.org.uk>, Shuah Khan
- <shuah@kernel.org>, Simon Horman <horms@kernel.org>,  Stanislav Fomichev	
- <sdf@fomichev.me>, Steven Rostedt <rostedt@goodmis.org>
-Date: Fri, 17 Oct 2025 15:47:45 +1030
-In-Reply-To: <20251015063615.2632-1-lirongqing@baidu.com>
-References: <20251015063615.2632-1-lirongqing@baidu.com>
+To: Tan Siewert <tan@siewert.io>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
+ Stanley <joel@jms.id.au>
+Cc: Zev Weiss <zev@bewilderbeest.net>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Date: Fri, 17 Oct 2025 16:12:41 +1030
+In-Reply-To: <20251011112124.17588-3-tan@siewert.io>
+References: <20251011112124.17588-1-tan@siewert.io>
+	 <20251011112124.17588-3-tan@siewert.io>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.1-1 
@@ -84,68 +72,91 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-On Wed, 2025-10-15 at 14:36 +0800, lirongqing wrote:
-> From: Li RongQing <lirongqing@baidu.com>
+On Sat, 2025-10-11 at 13:21 +0200, Tan Siewert wrote:
+> The ASRock Rack X470D4U X470D4U is a single-socket X470-based microATX
+> motherboard for Ryzen processors with an AST2500 BMC and either 32MB or
+> 64MB SPI flash.
 >=20
-> Currently, when 'hung_task_panic' is enabled, the kernel panics
-> immediately upon detecting the first hung task. However, some hung
-> tasks are transient and allow system recovery, while persistent hangs
-> should trigger a panic when accumulating beyond a threshold.
+> This mainboard exists in three known "flavors" which only differ in the
+> used host NIC, the BMC SPI size and some parts that may be un-populated.
 >=20
-> Extend the 'hung_task_panic' sysctl to accept a threshold value
-> specifying the number of hung tasks that must be detected before
-> triggering a kernel panic. This provides finer control for environments
-> where transient hangs may occur but persistent hangs should be fatal.
+> To keep the complexity low with the BMC SPI, use the 32MB layout
+> regardless of the used SPI or mainboard flavor.
 >=20
-> The sysctl now accepts:
-> - 0: don't panic (maintains original behavior)
-> - 1: panic on first hung task (maintains original behavior)
-> - N > 1: panic after N hung tasks are detected in a single scan
->=20
-> This maintains backward compatibility while providing flexibility for
-> different hang scenarios.
->=20
-> Signed-off-by: Li RongQing <lirongqing@baidu.com>
-> Cc: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: David Hildenbrand <david@redhat.com>
-> Cc: Florian Wesphal <fw@strlen.de>
-> Cc: Jakub Kacinski <kuba@kernel.org>
-> Cc: Jason A. Donenfeld <jason@zx2c4.com>
-> Cc: Joel Granados <joel.granados@kernel.org>
-> Cc: Joel Stanley <joel@jms.id.au>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Kees Cook <kees@kernel.org>
-> Cc: Lance Yang <lance.yang@linux.dev>
-> Cc: Liam Howlett <liam.howlett@oracle.com>
-> Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> Cc: "Masami Hiramatsu (Google)" <mhiramat@kernel.org>
-> Cc: "Paul E . McKenney" <paulmck@kernel.org>
-> Cc: Pawan Gupta <pawan.kumar.gupta@linux.intel.com>
-> Cc: Petr Mladek <pmladek@suse.com>
-> Cc: Phil Auld <pauld@redhat.com>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Shuah Khan <shuah@kernel.org>
-> Cc: Simon Horman <horms@kernel.org>
-> Cc: Stanislav Fomichev <sdf@fomichev.me>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Tan Siewert <tan@siewert.io>
 > ---
-> diff with v3: comments modification, suggested by Lance, Masami, Randy an=
-d Petr
-> diff with v2: do not add a new sysctl, extend hung_task_panic, suggested =
-by Kees Cook
+> v2:
+> =C2=A0 - fix led node names [robh]
+> =C2=A0 - fix missing gfx memory region and other offenses [Tan]
+> ---
+> =C2=A0arch/arm/boot/dts/aspeed/Makefile=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0=C2=A0 1 +
+> =C2=A0.../dts/aspeed/aspeed-bmc-asrock-x470d4u.dts=C2=A0 | 350 ++++++++++=
+++++++++
+> =C2=A02 files changed, 351 insertions(+)
+> =C2=A0create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d=
+4u.dts
 >=20
-> =C2=A0Documentation/admin-guide/kernel-parameters.txt=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 | 20 +++++++++++++-------
-> =C2=A0Documentation/admin-guide/sysctl/kernel.rst=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 9 +++++----
-> =C2=A0arch/arm/configs/aspeed_g5_defconfig=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 =
-2 +-
+> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed=
+/Makefile
+> index 0f0b5b707654..c601af36915e 100644
+> --- a/arch/arm/boot/dts/aspeed/Makefile
+> +++ b/arch/arm/boot/dts/aspeed/Makefile
+> @@ -13,6 +13,7 @@ dtb-$(CONFIG_ARCH_ASPEED) +=3D \
+> =C2=A0	aspeed-bmc-asrock-e3c256d4i.dtb \
+> =C2=A0	aspeed-bmc-asrock-romed8hm3.dtb \
+> =C2=A0	aspeed-bmc-asrock-spc621d8hm3.dtb \
+> +	aspeed-bmc-asrock-x470d4u.dtb \
+> =C2=A0	aspeed-bmc-asrock-x570d4u.dtb \
+> =C2=A0	aspeed-bmc-asus-x4tf.dtb \
+> =C2=A0	aspeed-bmc-bytedance-g220a.dtb \
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts b/arc=
+h/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
+> new file mode 100644
+> index 000000000000..e9804b0ace9f
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-x470d4u.dts
+> @@ -0,0 +1,350 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/dts-v1/;
+> +
+> +#include "aspeed-g5.dtsi"
+> +#include <dt-bindings/gpio/aspeed-gpio.h>
+> +#include <dt-bindings/leds/common.h>
+> +#include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +/ {
+> +	model =3D "Asrock Rack X470D4U-series BMC";
+> +	compatible =3D "asrock,x470d4u-bmc", "aspeed,ast2500";
+> +
+> +	aliases {
+> +		serial4 =3D &uart5;
+> +	};
+> +
+> +	chosen {
+> +		stdout-path =3D &uart5;
+> +	};
+>=20
+>=20
 
-For the aspeed_g5_defconfig change:
+*snip*
 
-Acked-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> nvmem-cell-names =3D "mac-address";
+> +};
+> +
+> +&mac1 {
+> +	status =3D "okay";
+> +	pinctrl-names =3D "default";
+> +	pinctrl-0 =3D <&pinctrl_rmii2_default &pinctrl_mdio2_default>;
+
+If you're using NCSI you don't need the MDIO pins here, right?
+
+> +	use-ncsi;
+> +
+> +	nvmem-cells =3D <&eth1_macaddress>;
+> +	nvmem-cell-names =3D "mac-address";
+> +};
+> +
+
+Andrew
 
