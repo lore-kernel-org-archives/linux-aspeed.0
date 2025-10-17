@@ -1,119 +1,79 @@
-Return-Path: <linux-aspeed+bounces-2503-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2504-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08156CCD195
-	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 12:32:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A887BCCD195
+	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 15:19:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cp43V4Sglz3cYx;
-	Fri, 17 Oct 2025 23:32:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760704374;
-	cv=none; b=U2AVTUgpgK7d7AMzizuabv69J+PIzlOwzLwRcrQMXTZDKaqr6aWcYBvnWQHTf/k3gWkSZpgcrGrAryQquIN8hrLBkZgMfzwOU+HncIXc3OGu9t5tVNJfFEwD+jZsc28na8iznHCGBdjdwh4rUlGSgs/nhhTIs+UEGNdhK0xZdRkA5a2HK1Iyh5pqs3JMHbg/QB/sy2Be89pQVKhBxMeG5zVWKXk1WMGFoeI39/F/2FuJbTlJcyEBq0zVKTVuidADmXgbqaJLdKU1JskdaS34gB04Tzvj1KLX3OCIbkilbuZjMRx52sHZ/Lh+HCOowp2mZTD1Xm8tk23g1+O1k2VA2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cp7lV70vMz3cYL;
+	Sat, 18 Oct 2025 02:19:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760714358;
+	cv=none; b=Q1IodTxkoyqx6ltJyv+BuvTjPalyi9BfZgdeG107nUz8szD1un5XV2/Oy+CWz9moyRwkCSTxyRj9yJiPRJ+ILYYZnCuSWEE5w3k/RbILOK34DKkUTYwJcF+xflPbSCF2k+gz0waGWgDayMuJKWeFTwMibupZ3iR9iJfAG6pvkWkkOxrxw2IiqjKqnj0haqwCNgTHRgmvo3gQW3EB/RlY8K/rI+zwpBb+qfHEwajeN2HjrHwsmcD83MavX68tfntXITtuqiKY9nsrUzjZby13VfxzfYb9SKQhU5ta0aq7lbV2hvpKk6VOiKNkr/XNukUck3HbUdVYh7NYmTnDdOu7fQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760704374; c=relaxed/relaxed;
-	bh=4lviR4y4KLE3n7RRy47fCgv6ELqJOqJ04I0KWYPDO7E=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=oC/s2FYSodxpSB+QwdJQszmPhNx6VQuywOF/PWbkwHu6uH2Gh/9zVfqYHCXjAPfRHHifU/tmuLRt3ZEmhM4EwraxaT/0Gt8R8GCS3L/LlxeQ9U24orrCCudJhR/HvU/i7oM0j4WJt7Se4OcAuLNRNioE88MmAxretAj0vBIqTlS0++OCjnr12PCnSgLPzEWK4ikxd+ibu7fK/ppUSHu1uJA0jfXQpgWT2DA5NLkIprXHfK1WdcPHxxShclWn6Z5rp52lhCawdZmsi4qdinrnfBiMA6mo7qR+pAT8fW81/h5M/tdMtkq7lYwT2EaPMoFDXn1nFP5Svt3UklVqdB5TUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=E5Md/483; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=noname.nuno@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1760714358; c=relaxed/relaxed;
+	bh=HvFafWwrcKX1Mgad3ZplZOLBBSkBgF7muWWIqZuMyqU=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=LEIsH9pHVW+wTwtd8Nu38yRGV4G26hDClTNhjrjgTQMLdMq1fDTRd9+nMP3wSjDLUuuNbVZku6CQ88VqRmHIaW+IlUcI3Ofhy9uYtN6lSH5hFJyv+CbaJF2G3VOGCwk+jJoO1ttRV4LOOQmIjOmESBnOKpbF69fYgnI1LxC673J0ej7cUzEGF2MBxzO9fi8V2yOd4uY1QYh/VqUEB21GxZZx2hcJLiJmZxkuaTFaM/U6NFKqf75YJPWdDwJWJOvNmmolqDEsPqrktc/hVJ1/8J31t6Do/Jl2VUVhowgBYzwY25s9k2maVKc4RpLnpwdJLF+GFS8VRyANxolcQSblqg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DBJGnQw2; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=E5Md/483;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DBJGnQw2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=noname.nuno@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=kuba@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cp43T0S5Tz3cYg
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 23:32:52 +1100 (AEDT)
-Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4710665e7deso8962895e9.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 05:32:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1760704369; x=1761309169; darn=lists.ozlabs.org;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=4lviR4y4KLE3n7RRy47fCgv6ELqJOqJ04I0KWYPDO7E=;
-        b=E5Md/483pBf3eqD3RcXed1jMyKmdvkOg2UhEpDTntx1cpfCmkLP6ECSyLVc2pokgK6
-         YmOSY/TuhjVcLGrr3LHF+RuSJYe05rqW/mQO08yBrAlSn13mUI7cISNlKQnnnm0hWsha
-         XHDQ/ELGhjf/1B4Nycahg2+qQ7bsmoptSetSFiqICaMxwCiiqagG58w6jIJHtti+OQtR
-         B4fZQdIaTD0OwG9yl23KAuM0IWL7Hzcf8jpewi7PZkHGl0J6OdyH/DFtDjmYIphw2v1s
-         7rFq7O+25t/aKvvcXJIiWwHSJLf7ndBHJrlN0bWMxEoEk6n10Sk6vPPwUP1j11MzW5k9
-         8BpA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760704369; x=1761309169;
-        h=mime-version:user-agent:content-transfer-encoding:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=4lviR4y4KLE3n7RRy47fCgv6ELqJOqJ04I0KWYPDO7E=;
-        b=cLCowq4vOa7oAwoYvNscTxGyvyNzUztWl6Uh/Sa0/oI3aCyt4RKgdv5VZIEowVD8T1
-         1IdYNfMEf1t0VIp0C7A09EGHADgcXs0B9jpmKLPbhYKDP2Em43VQUyCSxCSaLbKTqTw/
-         4fXwEx1ScGaRP1j1bFzZOJw3cbmUGlsKD40//wz69KZ+L7SUSxdF6+2jil1Z5pDHlcMz
-         T5nRmLncn5D/UIsDuB4zZThMEyabgbd7VDq7zR8OoSvElpzY7OTaCiPAIg2V6RnO1KNv
-         e+fQ6/rjOyDgqxG5KQkFe3FdbWUc6M/zowVRwUlO13j2wOOGwpBEy9rNIs2JWbUl3I/H
-         U6Aw==
-X-Forwarded-Encrypted: i=1; AJvYcCVNk6RXCjTFvNFpA/UH32fnSBxzwqJazh7GE1ECtmGfWZthY1nUiPz2sSWifKlXtkgjB5B+xo99VAaKOWk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyBQ17hV2FsUHbQoi8MFEfzueYu7A0w1kxPp8WhRA6zSqfOjLa8
-	TkYfjUANS2SD245WIhbtSzlcSSRNaKjiNzm1jlUY8rtu1iPEuuTstfaN
-X-Gm-Gg: ASbGnctmn8PK6colw0dEjjBLP7n05hegrV595kG5bC73zdYNFKuRGw+mWZjlMal+SGd
-	oQSs16mrw8a7mpXsXRVEtS/dL5gL1GyeV4+ACs3Q4Sp6IXlbRcoEJjxB0/0II1Pj36PEPmVC8cF
-	zdgEKPL13LgERKKU7AzvalM7Ne27/dCx0WLiqJmTBiklu1A8+DWY+CgIOKsWKL/P3CB8MQYiFxF
-	gv4eGE3hxY3+LQFu/JJX060jNzVeLjXQa237WNkV127kX8H7ZGmgZenG6TuFUfP4DZZGkGyXAPs
-	rKTU6bZ9jjwQ9UFLdYfhjCEemPSAftbPXgfyJEl1SFkvxYiILw6wgK6G+npDIjSdlZ/rfsxlngk
-	0fh9klfykXQfqepDlMNGnnbXmP243HF3TXFxYcwO4oLAsmE0bq1f+J86sMBymoDM1jChjHrN5sY
-	IipWM=
-X-Google-Smtp-Source: AGHT+IE4Z4uZhoJlnHZ4fZWGzVqlXcJ3VtJT0uS7DlsTcLhos7f+a2+qMfmhSL+PiYtMShO/dK+2CQ==
-X-Received: by 2002:a05:600c:548c:b0:468:9e79:bee0 with SMTP id 5b1f17b1804b1-471177bc126mr27325425e9.0.1760704368843;
-        Fri, 17 Oct 2025 05:32:48 -0700 (PDT)
-Received: from [10.5.0.2] ([195.158.248.102])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4270539be85sm5263938f8f.7.2025.10.17.05.32.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Oct 2025 05:32:48 -0700 (PDT)
-Message-ID: <f2b879d3e8120c7aeb0e6c9a5fd45b15a2b8e5a0.camel@gmail.com>
-Subject: Re: [PATCH v4 2/4] bitfield: Add non-constant field_{prep,get}()
- helpers
-From: Nuno =?ISO-8859-1?Q?S=E1?= <noname.nuno@gmail.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette	
- <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Nicolas Ferre	
- <nicolas.ferre@microchip.com>, Alexandre Belloni
- <alexandre.belloni@bootlin.com>,  Claudiu Beznea
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cp7lT6gjzz3cYG
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Oct 2025 02:19:17 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3975B4B60C;
+	Fri, 17 Oct 2025 15:19:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98656C4CEE7;
+	Fri, 17 Oct 2025 15:19:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760714355;
+	bh=Jkoxv5jBiXwh3/Xam1mL3Rb7nwPNp22HhVGe+o5k1sY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=DBJGnQw29zw6lCVTKtpBhIgSG7SMX4VZD9MlmLUEPUBMWipU3K8+xfy/xqlmxz8Qi
+	 mLxaq5V5Z7Et2fOTaRuUiiEspXQRrhIZZJ9xRqScULqTAgvTGjzSlFIQWaMNs3MR+A
+	 dKeaol6kFcz4lkdW7DFiMk5bbpEA1Dgh/SH6u6TIXDXdKDqoochxfVVvitpFaYDKlL
+	 bULb536qkalBIUpX9fU7Dk2QB8zCg/3nMjXL1nlc2Ddg/ayrRE+8/4gAavHoyhpk1Y
+	 0fREHXWYLfsbUhrNzXSgnVS+UpYAnpmQOfquXa1v8/EjnKyNDqrbCpraPpvMaG8lGT
+	 yY3YmE4+sr2qw==
+Date: Fri, 17 Oct 2025 08:19:12 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre
+ Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea
  <claudiu.beznea@tuxon.dev>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- Herbert Xu	 <herbert@gondor.apana.org.au>, David Miller
+ Herbert Xu <herbert@gondor.apana.org.au>, David Miller
  <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Bartosz
- Golaszewski <brgl@bgdev.pl>, Joel Stanley	 <joel@jms.id.au>, Andrew Jeffery
- <andrew@codeconstruct.com.au>, Crt Mori	 <cmo@melexis.com>, Jonathan
- Cameron <jic23@kernel.org>, Lars-Peter Clausen	 <lars@metafoo.de>, Jacky
- Huang <ychuang3@nuvoton.com>, Shan-Chun Hung	 <schung@nuvoton.com>, Yury
- Norov <yury.norov@gmail.com>, Rasmus Villemoes	 <linux@rasmusvillemoes.dk>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai	 <tiwai@suse.com>, Johannes
- Berg <johannes@sipsolutions.net>, Jakub Kicinski	 <kuba@kernel.org>, Alex
- Elder <elder@ieee.org>, David Laight	 <david.laight.linux@gmail.com>,
- Vincent Mailhol <mailhol.vincent@wanadoo.fr>,  Jason Baron
- <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck
- <tony.luck@intel.com>,  Michael Hennerich <Michael.Hennerich@analog.com>,
- Kim Seer Paller <kimseer.paller@analog.com>, David Lechner	
- <dlechner@baylibre.com>, Nuno =?ISO-8859-1?Q?S=E1?= <nuno.sa@analog.com>, 
- Andy Shevchenko	 <andy@kernel.org>, Richard Genoud
- <richard.genoud@bootlin.com>, Cosmin Tanislav	 <demonsingur@gmail.com>,
- Biju Das <biju.das.jz@bp.renesas.com>, Jianping Shen	
- <Jianping.Shen@de.bosch.com>
-Cc: linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-renesas-soc@vger.kernel.org, linux-crypto@vger.kernel.org, 
-	linux-edac@vger.kernel.org, qat-linux@intel.com,
- linux-gpio@vger.kernel.org, 	linux-aspeed@lists.ozlabs.org,
- linux-iio@vger.kernel.org, 	linux-sound@vger.kernel.org,
- linux-kernel@vger.kernel.org, Jonathan Cameron	
+ Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, Jonathan Cameron
+ <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang
+ <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, Yury Norov
+ <yury.norov@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Johannes
+ Berg <johannes@sipsolutions.net>, Alex Elder <elder@ieee.org>, David Laight
+ <david.laight.linux@gmail.com>, Vincent Mailhol
+ <mailhol.vincent@wanadoo.fr>, linux-clk@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
+ linux-crypto@vger.kernel.org, qat-linux@intel.com,
+ linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org,
+ linux-iio@vger.kernel.org, linux-sound@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Jonathan Cameron
  <Jonathan.Cameron@huawei.com>
-Date: Fri, 17 Oct 2025 13:33:19 +0100
-In-Reply-To: <67c1998f144b3a21399672c8e4d58d3884ae2b3c.1760696560.git.geert+renesas@glider.be>
-References: <cover.1760696560.git.geert+renesas@glider.be>
-	 <67c1998f144b3a21399672c8e4d58d3884ae2b3c.1760696560.git.geert+renesas@glider.be>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.58.1 
+Subject: Re: [PATCH treewide v3 2/4] bitfield: Add non-constant
+ field_{prep,get}() helpers
+Message-ID: <20251017081912.2ad26705@kernel.org>
+In-Reply-To: <2d30e5ffe70ce35f952b7d497d2959391fbf0580.1739540679.git.geert+renesas@glider.be>
+References: <cover.1739540679.git.geert+renesas@glider.be>
+	<2d30e5ffe70ce35f952b7d497d2959391fbf0580.1739540679.git.geert+renesas@glider.be>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -127,349 +87,157 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Fri, 2025-10-17 at 12:54 +0200, Geert Uytterhoeven wrote:
+On Fri, 14 Feb 2025 14:55:51 +0100 Geert Uytterhoeven wrote:
 > The existing FIELD_{GET,PREP}() macros are limited to compile-time
-> constants.=C2=A0 However, it is very common to prepare or extract bitfiel=
-d
+> constants.  However, it is very common to prepare or extract bitfield
 > elements where the bitfield mask is not a compile-time constant.
->=20
+> 
 > To avoid this limitation, the AT91 clock driver and several other
 > drivers already have their own non-const field_{prep,get}() macros.
 > Make them available for general use by consolidating them in
 > <linux/bitfield.h>, and improve them slightly:
-> =C2=A0 1. Avoid evaluating macro parameters more than once,
-> =C2=A0 2. Replace "ffs() - 1" by "__ffs()",
-> =C2=A0 3. Support 64-bit use on 32-bit architectures.
->=20
+>   1. Avoid evaluating macro parameters more than once,
+>   2. Replace "ffs() - 1" by "__ffs()",
+>   3. Support 64-bit use on 32-bit architectures.
+> 
 > This is deliberately not merged into the existing FIELD_{GET,PREP}()
 > macros, as people expressed the desire to keep stricter variants for
 > increased safety, or for performance critical paths.
->=20
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-> Acked-by: Crt Mori <cmo@melexis.com>
-> ---
 
-Hopefully this gets merged soon. About time to have these variants (I do ha=
-ve a
-driver submitted - in review - which is adding yet another variant of this)
-=20
-Acked-by: Nuno S=C3=A1 <nuno.sa@analog.com>
+We already have helpers for this, please just don't know they exist :/
 
-> v4:
-> =C2=A0 - Add Acked-by,
-> =C2=A0 - Rebase on top of commit 7c68005a46108ffa ("crypto: qat - relocat=
-e
-> =C2=A0=C2=A0=C2=A0 power management debugfs helper APIs") in v6.17-rc1,
-> =C2=A0 - Convert more recently introduced upstream copies:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/edac/ie31200_edac.c
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/iio/dac/ad3530r.c
->=20
-> v3:
-> =C2=A0 - Add Acked-by,
-> =C2=A0 - Drop underscores from macro parameters,
-> =C2=A0 - Use __auto_type where possible,
-> =C2=A0 - Correctly cast reg to the mask type,
-> =C2=A0 - Introduces __val and __reg intermediates to simplify the actual
-> =C2=A0=C2=A0=C2=A0 operation,
-> =C2=A0 - Drop unneeded parentheses,
-> =C2=A0 - Clarify having both FIELD_{GET,PREP}() and field_{get,prep}(),
->=20
-> v2:
-> =C2=A0 - Cast val resp. reg to the mask type,
-> =C2=A0 - Fix 64-bit use on 32-bit architectures,
-> =C2=A0 - Convert new upstream users:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/crypto/intel/qat/qat_common/adf_=
-gen4_pm_debugfs.c
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/gpio/gpio-aspeed.c
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/iio/temperature/mlx90614.c
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/pinctrl/nuvoton/pinctrl-ma35.c
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - sound/usb/mixer_quirks.c
-> =C2=A0 - Convert new user queued in renesas-devel for v6.15:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - drivers/soc/renesas/rz-sysc.c
-> ---
-> =C2=A0drivers/clk/at91/clk-peripheral.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 1 +
-> =C2=A0drivers/clk/at91/pmc.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 |=C2=A0 3 --
-> =C2=A0.../intel/qat/qat_common/adf_pm_dbgfs_utils.c |=C2=A0 8 +----
-> =C2=A0drivers/edac/ie31200_edac.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=
-=A0 4 +--
-> =C2=A0drivers/gpio/gpio-aspeed.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
- |=C2=A0 5 +--
-> =C2=A0drivers/iio/dac/ad3530r.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 |=C2=A0 3 --
-> =C2=A0drivers/iio/temperature/mlx90614.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 5 +--
-> =C2=A0drivers/pinctrl/nuvoton/pinctrl-ma35.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0 |=C2=A0 4 ---
-> =C2=A0drivers/soc/renesas/rz-sysc.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 |=C2=A0 3 +-
-> =C2=A0include/linux/bitfield.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0 | 36 +++++++++++++++++++
-> =C2=A0sound/usb/mixer_quirks.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0 |=C2=A0 4 ---
-> =C2=A011 files changed, 42 insertions(+), 34 deletions(-)
->=20
-> diff --git a/drivers/clk/at91/clk-peripheral.c b/drivers/clk/at91/clk-
-> peripheral.c
-> index e700f40fd87f9327..e7208c47268b6397 100644
-> --- a/drivers/clk/at91/clk-peripheral.c
-> +++ b/drivers/clk/at91/clk-peripheral.c
-> @@ -3,6 +3,7 @@
-> =C2=A0 *=C2=A0 Copyright (C) 2013 Boris BREZILLON <b.brezillon@overkiz.co=
-m>
-> =C2=A0 */
-> =C2=A0
-> +#include <linux/bitfield.h>
-> =C2=A0#include <linux/bitops.h>
-> =C2=A0#include <linux/clk-provider.h>
-> =C2=A0#include <linux/clkdev.h>
-> diff --git a/drivers/clk/at91/pmc.h b/drivers/clk/at91/pmc.h
-> index 5daa32c4cf2540d7..543d7aee8d248cdb 100644
-> --- a/drivers/clk/at91/pmc.h
-> +++ b/drivers/clk/at91/pmc.h
-> @@ -117,9 +117,6 @@ struct at91_clk_pms {
-> =C2=A0	unsigned int parent;
-> =C2=A0};
-> =C2=A0
-> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
-> -
-> =C2=A0#define ndck(a, s) (a[s - 1].id + 1)
-> =C2=A0#define nck(a) (a[ARRAY_SIZE(a) - 1].id + 1)
-> =C2=A0
-> diff --git a/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-> b/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-> index 69295a9ddf0ac92f..4ccc94ed9493a64c 100644
-> --- a/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-> +++ b/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-> @@ -1,18 +1,12 @@
-> =C2=A0// SPDX-License-Identifier: GPL-2.0-only
-> =C2=A0/* Copyright(c) 2025 Intel Corporation */
-> +#include <linux/bitfield.h>
-> =C2=A0#include <linux/bitops.h>
-> =C2=A0#include <linux/sprintf.h>
-> =C2=A0#include <linux/string_helpers.h>
-> =C2=A0
-> =C2=A0#include "adf_pm_dbgfs_utils.h"
-> =C2=A0
-> -/*
-> - * This is needed because a variable is used to index the mask at
-> - * pm_scnprint_table(), making it not compile time constant, so the comp=
-ile
-> - * asserts from FIELD_GET() or u32_get_bits() won't be fulfilled.
-> - */
-> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -
-> =C2=A0#define PM_INFO_MAX_KEY_LEN	21
-> =C2=A0
-> =C2=A0static int pm_scnprint_table(char *buff, const struct pm_status_row=
- *table,
-> diff --git a/drivers/edac/ie31200_edac.c b/drivers/edac/ie31200_edac.c
-> index 5a080ab65476dacf..dfc9a9cecd74207d 100644
-> --- a/drivers/edac/ie31200_edac.c
-> +++ b/drivers/edac/ie31200_edac.c
-> @@ -44,6 +44,7 @@
-> =C2=A0 * but lo_hi_readq() ensures that we are safe across all e3-1200 pr=
-ocessors.
-> =C2=A0 */
-> =C2=A0
-> +#include <linux/bitfield.h>
-> =C2=A0#include <linux/module.h>
-> =C2=A0#include <linux/init.h>
-> =C2=A0#include <linux/pci.h>
-> @@ -139,9 +140,6 @@
-> =C2=A0#define IE31200_CAPID0_DDPCD		BIT(6)
-> =C2=A0#define IE31200_CAPID0_ECC		BIT(1)
-> =C2=A0
-> -/* Non-constant mask variant of FIELD_GET() */
-> -#define field_get(_mask, _reg)=C2=A0 (((_reg) & (_mask)) >> (ffs(_mask) =
-- 1))
-> -
-> =C2=A0static int nr_channels;
-> =C2=A0static struct pci_dev *mci_pdev;
-> =C2=A0static int ie31200_registered =3D 1;
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index 7953a9c4e36d7550..3da999334971d501 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -5,6 +5,7 @@
-> =C2=A0 * Joel Stanley <joel@jms.id.au>
-> =C2=A0 */
-> =C2=A0
-> +#include <linux/bitfield.h>
-> =C2=A0#include <linux/cleanup.h>
-> =C2=A0#include <linux/clk.h>
-> =C2=A0#include <linux/gpio/aspeed.h>
-> @@ -31,10 +32,6 @@
-> =C2=A0#include <linux/gpio/consumer.h>
-> =C2=A0#include "gpiolib.h"
-> =C2=A0
-> -/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-> -#define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) &
-> (_mask))
-> -
-> =C2=A0#define GPIO_G7_IRQ_STS_BASE 0x100
-> =C2=A0#define GPIO_G7_IRQ_STS_OFFSET(x) (GPIO_G7_IRQ_STS_BASE + (x) * 0x4=
-)
-> =C2=A0#define GPIO_G7_CTRL_REG_BASE 0x180
-> diff --git a/drivers/iio/dac/ad3530r.c b/drivers/iio/dac/ad3530r.c
-> index 6134613777b8e1d4..b97b46090d808ee7 100644
-> --- a/drivers/iio/dac/ad3530r.c
-> +++ b/drivers/iio/dac/ad3530r.c
-> @@ -53,9 +53,6 @@
-> =C2=A0#define AD3530R_MAX_CHANNELS			8
-> =C2=A0#define AD3531R_MAX_CHANNELS			4
-> =C2=A0
-> -/* Non-constant mask variant of FIELD_PREP() */
-> -#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) &
-> (_mask))
-> -
-> =C2=A0enum ad3530r_mode {
-> =C2=A0	AD3530R_NORMAL_OP,
-> =C2=A0	AD3530R_POWERDOWN_1K,
-> diff --git a/drivers/iio/temperature/mlx90614.c
-> b/drivers/iio/temperature/mlx90614.c
-> index 8a44a00bfd5ece38..1ad21b73e1b44cb0 100644
-> --- a/drivers/iio/temperature/mlx90614.c
-> +++ b/drivers/iio/temperature/mlx90614.c
-> @@ -22,6 +22,7 @@
-> =C2=A0 * the "wakeup" GPIO is not given, power management will be disable=
-d.
-> =C2=A0 */
-> =C2=A0
-> +#include <linux/bitfield.h>
-> =C2=A0#include <linux/delay.h>
-> =C2=A0#include <linux/err.h>
-> =C2=A0#include <linux/gpio/consumer.h>
-> @@ -68,10 +69,6 @@
-> =C2=A0#define MLX90614_CONST_SCALE 20 /* Scale in milliKelvin (0.02 * 100=
-0) */
-> =C2=A0#define MLX90614_CONST_FIR 0x7 /* Fixed value for FIR part of low p=
-ass filter
-> */
-> =C2=A0
-> -/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-> -#define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) &
-> (_mask))
-> -
-> =C2=A0struct mlx_chip_info {
-> =C2=A0	/* EEPROM offsets with 16-bit data, MSB first */
-> =C2=A0	/* emissivity correction coefficient */
-> diff --git a/drivers/pinctrl/nuvoton/pinctrl-ma35.c
-> b/drivers/pinctrl/nuvoton/pinctrl-ma35.c
-> index cdad01d68a37e365..8d71dc53cc1de1f8 100644
-> --- a/drivers/pinctrl/nuvoton/pinctrl-ma35.c
-> +++ b/drivers/pinctrl/nuvoton/pinctrl-ma35.c
-> @@ -81,10 +81,6 @@
-> =C2=A0#define MVOLT_1800			0
-> =C2=A0#define MVOLT_3300			1
-> =C2=A0
-> -/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-> -#define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) &
-> (_mask))
-> -
-> =C2=A0static const char * const gpio_group_name[] =3D {
-> =C2=A0	"gpioa", "gpiob", "gpioc", "gpiod", "gpioe", "gpiof", "gpiog",
-> =C2=A0	"gpioh", "gpioi", "gpioj", "gpiok", "gpiol", "gpiom", "gpion",
-> diff --git a/drivers/soc/renesas/rz-sysc.c b/drivers/soc/renesas/rz-sysc.=
-c
-> index 9f79e299e6f41641..73eaf8b9d69f7208 100644
-> --- a/drivers/soc/renesas/rz-sysc.c
-> +++ b/drivers/soc/renesas/rz-sysc.c
-> @@ -5,6 +5,7 @@
-> =C2=A0 * Copyright (C) 2024 Renesas Electronics Corp.
-> =C2=A0 */
-> =C2=A0
-> +#include <linux/bitfield.h>
-> =C2=A0#include <linux/cleanup.h>
-> =C2=A0#include <linux/io.h>
-> =C2=A0#include <linux/mfd/syscon.h>
-> @@ -16,8 +17,6 @@
-> =C2=A0
-> =C2=A0#include "rz-sysc.h"
-> =C2=A0
-> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -
-> =C2=A0/**
-> =C2=A0 * struct rz_sysc - RZ SYSC private data structure
-> =C2=A0 * @base: SYSC base address
-> diff --git a/include/linux/bitfield.h b/include/linux/bitfield.h
-> index 7ff817bdae19b468..c999fe70076f6684 100644
-> --- a/include/linux/bitfield.h
-> +++ b/include/linux/bitfield.h
-> @@ -220,4 +220,40 @@ __MAKE_OP(64)
-> =C2=A0#undef __MAKE_OP
-> =C2=A0#undef ____MAKE_OP
-> =C2=A0
-> +/**
-> + * field_prep() - prepare a bitfield element
-> + * @mask: shifted mask defining the field's length and position
-> + * @val:=C2=A0 value to put in the field
-> + *
-> + * field_prep() masks and shifts up the value.=C2=A0 The result should b=
-e
-> + * combined with other fields of the bitfield using logical OR.
-> + * Unlike FIELD_PREP(), @mask is not limited to a compile-time constant.
-> + */
-> +#define field_prep(mask, val)						\
-> +	({								\
-> +		__auto_type __mask =3D (mask);				\
-> +		typeof(mask) __val =3D (val);				\
-> +		unsigned int __shift =3D sizeof(mask) <=3D 4 ?		\
-> +				=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __ffs(__mask) :
-> __ffs64(__mask);	\
-> +		(__val << __shift) & __mask;	\
-> +	})
-> +
-> +/**
-> + * field_get() - extract a bitfield element
-> + * @mask: shifted mask defining the field's length and position
-> + * @reg:=C2=A0 value of entire bitfield
-> + *
-> + * field_get() extracts the field specified by @mask from the
-> + * bitfield passed in as @reg by masking and shifting it down.
-> + * Unlike FIELD_GET(), @mask is not limited to a compile-time constant.
-> + */
-> +#define field_get(mask, reg)						\
-> +	({								\
-> +		__auto_type __mask =3D (mask);				\
-> +		typeof(mask) __reg =3D=C2=A0 (reg);				\
-> +		unsigned int __shift =3D sizeof(mask) <=3D 4 ?		\
-> +				=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 __ffs(__mask) :
-> __ffs64(__mask);	\
-> +		(__reg & __mask) >> __shift;	\
-> +	})
-> +
-> =C2=A0#endif
-> diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
-> index 828af3095b86ee0a..6eee89cbc0867f2b 100644
-> --- a/sound/usb/mixer_quirks.c
-> +++ b/sound/usb/mixer_quirks.c
-> @@ -3311,10 +3311,6 @@ static int snd_bbfpro_controls_create(struct
-> usb_mixer_interface *mixer)
-> =C2=A0#define RME_DIGIFACE_REGISTER(reg, mask) (((reg) << 16) | (mask))
-> =C2=A0#define RME_DIGIFACE_INVERT BIT(31)
-> =C2=A0
-> -/* Nonconst helpers */
-> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
-> -
-> =C2=A0static int snd_rme_digiface_write_reg(struct snd_kcontrol *kcontrol=
-, int
-> item, u16 mask, u16 val)
-> =C2=A0{
-> =C2=A0	struct usb_mixer_elem_list *list =3D snd_kcontrol_chip(kcontrol);
+The "const" version of the helpers are specifically defined to work
+on masks generated with BIT() and GENMASK(). If the mask is not
+constant we should expect it to have a well defined width.
+
+I strongly prefer that we do this instead and convert the users to
+the fixed-width version:
+
+---->8----------------
+
+Subject: bitfield: open code the fixed-width non-const helpers so that people see them
+
+There is a number of useful helpers defined in bitfield.h but
+they are mostly invisible to the reader because they are all
+generated by macros. Open code the 32b versions (which are
+most commonly used) to give developers a chance to discover them.
+
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+---
+ include/linux/bitfield.h | 82 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 81 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/bitfield.h b/include/linux/bitfield.h
+index 5355f8f806a9..0356e535f37d 100644
+--- a/include/linux/bitfield.h
++++ b/include/linux/bitfield.h
+@@ -173,6 +173,11 @@
+ 		*(_reg_p) |= (((typeof(_mask))(_val) << __bf_shf(_mask)) & (_mask));	\
+ 	})
+ 
++/* Non-constant, fixed-width helpers follow
++ * Open code u32 and le32 versions for documentation / visibility,
++ * be32 and other widths exist but are generated using macroes.
++ */
++
+ extern void __compiletime_error("value doesn't fit into mask")
+ __field_overflow(void);
+ extern void __compiletime_error("bad bitfield mask")
+@@ -188,6 +193,81 @@ static __always_inline u64 field_mask(u64 field)
+ 	return field / field_multiplier(field);
+ }
+ #define field_max(field)	((typeof(field))field_mask(field))
++
++/**
++ * u32_encode_bits() - prepare a u32 bitfield element (non-const)
++ * @v: value to put in the field
++ * @field: shifted mask defining the field's length and position
++ *
++ * Equivalent of FIELD_PREP() for u32, field does not have to be constant.
++ *
++ * Note that the helper is available for other field widths (generated below).
++ */
++static __always_inline __u32 u32_encode_bits(u32 v, u32 field)
++{
++	if (__builtin_constant_p(v) && (v & ~field_mask(field)))
++		__field_overflow();
++	return ((v & field_mask(field)) * field_multiplier(field));
++}
++
++/**
++ * u32_replace_bits() - change a u32 bitfield element (non-const)
++ * @old: old u32 value to modify
++ * @val: value to put in the field
++ * @field: shifted mask defining the field's length and position
++ *
++ * Remove the current contents of the @field in @old and set it to @new.
++ *
++ * Note that the helper is available for other field widths (generated below).
++ */
++static __always_inline __u32 u32_replace_bits(__u32 old, u32 val, u32 field)
++{
++	return (old & ~(field)) | u32_encode_bits(val, field);
++}
++
++/**
++ * u32_get_bits() - get u32 bitfield element (non-const)
++ * @v: value to extract the field from
++ * @field: shifted mask defining the field's length and position
++ *
++ * Extract the value of the field and shift it down.
++ *
++ * Note that the helper is available for other field widths (generated below).
++ */
++static __always_inline u32 u32_get_bits(__u32 v, u32 field)
++{
++	return ((v) & field) / field_multiplier(field);
++}
++
++static __always_inline void u32p_replace_bits(__u32 *p, u32 val, u32 field)
++{
++	*p = (*p & ~(field)) | u32_encode_bits(val, field);
++}
++
++static __always_inline __le32 le32_encode_bits(u32 v, u32 field)
++{
++	if (__builtin_constant_p(v) && (v & ~field_mask(field)))
++		__field_overflow();
++	return cpu_to_le32((v & field_mask(field)) * field_multiplier(field));
++}
++
++static __always_inline __le32 le32_replace_bits(__le32 old, u32 val, u32 field)
++{
++	return (old & ~cpu_to_le32(field)) | le32_encode_bits(val, field);
++}
++
++static __always_inline void le32p_replace_bits(__le32 *p, u32 val, u32 field)
++{
++	*p = (*p & ~cpu_to_le32(field)) | le32_encode_bits(val, field);
++}
++
++static __always_inline u32 le32_get_bits(__le32 v, u32 field)
++{
++	return (le32_to_cpu(v) & field) / field_multiplier(field);
++}
++
++/* Auto-generate bit ops for other field width and endian combination */
++
+ #define ____MAKE_OP(type,base,to,from)					\
+ static __always_inline __##type __must_check type##_encode_bits(base v, base field)	\
+ {									\
+@@ -215,7 +295,7 @@ static __always_inline base __must_check type##_get_bits(__##type v, base field)
+ 	____MAKE_OP(u##size,u##size,,)
+ ____MAKE_OP(u8,u8,,)
+ __MAKE_OP(16)
+-__MAKE_OP(32)
++____MAKE_OP(be32,u32,cpu_to_be32,be32_to_cpu) /* Other 32b types open coded */
+ __MAKE_OP(64)
+ #undef __MAKE_OP
+ #undef ____MAKE_OP
+-- 
+2.51.0
+
 
