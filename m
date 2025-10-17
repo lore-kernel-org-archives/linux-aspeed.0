@@ -1,59 +1,59 @@
-Return-Path: <linux-aspeed+bounces-2490-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2491-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59BF4CCD195
-	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 06:31:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85377CCD184
+	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 06:33:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cnw236WQqz3cQx;
-	Fri, 17 Oct 2025 17:31:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cnw4p0ktXz2yrt;
+	Fri, 17 Oct 2025 17:33:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760682667;
-	cv=none; b=Mg9PLSJoFXXM7yGPI3BO6Tl/XFe7HzWQuMz1tCAnaa/fR4+PpBrFZgxm7RFZrIwowRq/eVwoB7n1fu1kw70FykLQJIUuWD1vIJSn/Vd/zuH4ODN25Z1Davd/QQCAXXPukivhX4hSob//M9zGcEfDSS4pGn1UOd8PtgcXxb+zDvioonchdFxE9Nn3n3MSJTW4/wUo9VBfavptRdoGJS8JPze7AYZjgpxw7iwg2xe/jEclX2l3suepDuqUB7sXBSYeGQO/vSmVQ28RPZenQA7WJeh/xd7bef8eycblGa06Gov9d6mC7zjTXpc1WaFIKTC6YRqEqxsORk/rKSOdauxz4g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760682809;
+	cv=none; b=ONCYUfxIfE2jfPQAZwOeklfFZVJNi1r4VVZYY2smvfo9ksVHK6NcTe7NSDpi0HbPtnVHC2OQKVxqIzViOGlSN/4DXthv2ml/V3S2cGBUeJpjtNaXkZZlM0wokq9mJ4bQ70d/dtNiBY9lolMX1ZaqtwydNDwc9TtG5zr7+VsntWylG7xJ/C5+qRyVvqNTNuuQmL97KsrFSvPSOQ3o8aAC5urB7ieHor5RE1GShpdKKXdxaALe+SE93TubG4Emah4h6te8D0mjLNBLyQvKnVWiSH++FZC8IwpM4D7DeFNljLiCZAj5buDv0O2kPcxdPk7P/6Aw6+Opd2dcGsVGz16qlA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760682667; c=relaxed/relaxed;
-	bh=R2shE/vXKGK6XxDN3EEo6pLrsf8hO3g7K+H5vR1Pf/s=;
+	t=1760682809; c=relaxed/relaxed;
+	bh=l4zzfEVXv3kCRK1+tRhEDpGxTNtWTV7qUWhG7JQ8YIo=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Ub+aLzEaRJLGMnMeN/FXpGkyKCX2QpQxHxgQeTWwZE66GHHxQ2fkpyau+6clKvoQdl0iKHLblgw6ecJfqmjJTxuypbERNqPmywu2dWnC3lSBy0ECw4afQMVxIA/S/EdkooyJFfe9uFmiRuKrO8N5U8G/qAILU9OVN4G5fFcdje1cA/2zq8uS39sxcXro19cQDH+2nOlmJwRxJYMaejOxBx/MP8DC+NWiJhnkqqCYCe+h9ixaPojB/SPnqt+3A0o8Mf88I1wIidDj/KabucnqY+nVMrpkihGMLPHQ1s4LZ+4p+v+LlYw0rF3S1mzdpMHL2qWYI/r4crqiS5lyEWi5CQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Dk4+OInX; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=FfRdsFBk/lFtJeMxFbXt+KTgLzAdtFKmbvUiYYPUrdXvyD4krTcmYxVLfG1DtImWXRKN6lRSPE327xH+Qp8+22+bCZr6JsEaZ5qV1fU2WYqP5rX9PqGOLkXG77u0oirEbQhuaFYfhVI3HVoEQd7w/F2TZ13dqh3epnrPYxt7YKYzWMdvhpF8CYVgLjjvUMK2UCBRPsNwN5YMplVSSHj8P3hliM5jsp+mrY1f9IoCnmXJNNpk8HLV9yka3l7qyEFMRZoO7OTmWqBz/boztmCtLtlC0wjHBREEPpCwEGsGnAakTHiU9qYnNdaUC1pFMXLqfmV4+Q/RwQE0TUkmb2u4Cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=STF6XOpt; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Dk4+OInX;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=STF6XOpt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnw222DC5z2yhX
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 17:31:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnw4m2rVLz2xQ0
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 17:33:28 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1760682665;
-	bh=R2shE/vXKGK6XxDN3EEo6pLrsf8hO3g7K+H5vR1Pf/s=;
+	d=codeconstruct.com.au; s=2022a; t=1760682807;
+	bh=l4zzfEVXv3kCRK1+tRhEDpGxTNtWTV7qUWhG7JQ8YIo=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=Dk4+OInXAebpYC/bzwaUKlZrUu+oraR1IiDv+GhH4Mik82X6l/EHqwhdYdFxD9lS0
-	 H+TA+9KK7XG+lWKRHkOfhbhccYhMO/vlmRMGoyECB2cZnr7tHhtXeomcWBWbtuiOzd
-	 /I8OiuN/Z/11Xuf4ieP6u3hLXesAtSBQNlYnTerFZxB5pU+gzmRa+x4m8Fii+4QyRk
-	 CQGqhD5RtxSG1+dRp0BsXlTX/4hTFZmONsvz2dL/xTMMaVAzPpwQyTDuU7RxSDWoGo
-	 L/xyI0U5DRd/uGP52+/BEBWYYTl1v8B+K0pRZfy+HO+O9cCdGeayhbVpTu4QXDnu/9
-	 xLwecaSHHTRLA==
+	b=STF6XOptFjEdvztYJZwPnC0JyF6vqPLgDYj+odIW6iC4xrMsgOUu1dfvk5Hggrdfk
+	 Z1nlI8gOrbCAB5obJh5jS0l47Ed0gTddOrs8sXOSM2qvt+AL3pcz2x3BlrqSPptDfb
+	 Ghzz7Tsp1a83YtdmlKCHDDndNwStg1z+lbxlhI893/kEk5sgabe9Wkj8J/p/xxp0PU
+	 OItXpZqj7Z7cNUNnxhjvgAdyBiYYHEr7ORzntoPlKozXdtE+XbDi5HtEOU8Sv/VsdA
+	 EslNzMXdoPc8kCH2pGRB4AF/2Jjx2sOGSgxLLWhqLltHKnc89xnqVBcK+rHgVO+dVf
+	 O4+fKXtQSvVNw==
 Received: from [192.168.68.113] (unknown [180.150.112.213])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 26EAE77272;
-	Fri, 17 Oct 2025 14:31:05 +0800 (AWST)
-Message-ID: <b63b53521d44c1b765cccd3f9f03d7f778b7984c.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 0/3] gpio: aspeed: remove the "gpiolib.h" include
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id E420D7702D;
+	Fri, 17 Oct 2025 14:33:26 +0800 (AWST)
+Message-ID: <8bf232de1d4254afc408b415d3476c2c2183a4ac.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] ARM: dts: aspeed: bletchley: remove WDTRST1 assertion
+ from wdt1
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Linus Walleij
-	 <linus.walleij@linaro.org>, Joel Stanley <joel@jms.id.au>, Kent Gibson
-	 <warthog618@gmail.com>
-Cc: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Bartosz
- Golaszewski	 <bartosz.golaszewski@linaro.org>
-Date: Fri, 17 Oct 2025 17:01:04 +1030
-In-Reply-To: <20251016-aspeed-gpiolib-include-v1-0-31201c06d124@linaro.org>
-References: <20251016-aspeed-gpiolib-include-v1-0-31201c06d124@linaro.org>
+To: Cosmo Chou <chou.cosmo@gmail.com>, robh@kernel.org, krzk+dt@kernel.org, 
+	conor+dt@kernel.org, joel@jms.id.au
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	cosmo.chou@quantatw.com
+Date: Fri, 17 Oct 2025 17:03:26 +1030
+In-Reply-To: <20251016052727.881576-1-chou.cosmo@gmail.com>
+References: <20251016052727.881576-1-chou.cosmo@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.1-1 
@@ -71,16 +71,18 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-On Thu, 2025-10-16 at 11:09 +0200, Bartosz Golaszewski wrote:
-> gpiolib.h is a header internal to the GPIO core. Drivers should not
-> include them. gpio-aspeed only needs to be able to determine the
-> hardware offset of the GPIO given the descriptor. Expose the relevant
-> symbol in the consumer header which allows us to stop pulling in the
-> private one.
->=20
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+On Thu, 2025-10-16 at 13:27 +0800, Cosmo Chou wrote:
+> Remove the external signal configuration from wdt1 to prevent the
+> WDTRST1 pin from being asserted during watchdog resets.
 
-For the series:
+Yes, this is certainly the immediate impact of the patch.
 
-Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+But what's the motivation? And if asserting WDTRST1 was the wrong thing
+to be doing, why was it done to start with?
+
+Please address both questions in an update to the commit message.
+
+Thanks,
+
+Andrew
 
