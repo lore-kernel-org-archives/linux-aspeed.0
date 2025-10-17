@@ -1,58 +1,67 @@
-Return-Path: <linux-aspeed+bounces-2487-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2488-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47526CCD195
-	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 06:20:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56204CCD195
+	for <linux-aspeed@archiver.kernel.org>; Fri, 17 Oct 2025 06:22:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cnvnH4n3gz2yhX;
-	Fri, 17 Oct 2025 17:20:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cnvrJ5NNJz2yqh;
+	Fri, 17 Oct 2025 17:22:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760682003;
-	cv=none; b=VrmgCi0O/KrekTg344Ac1eWgfG6ZYBhgj0CwwjzAbqUM/qzJ5he93zpxSILcb/NbGlkWvNWY5aDyiCIMETFwLxPuRBaXn201rf0ONSagwp6el0SuMO+XfU2Me3RX0DEIevQ2ANVPzm/plJfNimwwHTFP53ufx15L0EL0mNp2vtRhk3UwALYjGBur5DRx3dL1grenjZXZ6COKvsfFRSAWNbzxNVtJMSaVAMC6PSmuHrMUHnfOk/A8Nqaduy3V1GkMejzh3Nt8N8ezjBZDVXspgN+5E64dVwo9ZtaG30YMEAPfrkLGCBieuhRT5KM09kVl7ajjN14lD63uyXrzxI39qg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760682160;
+	cv=none; b=GXyl6PmUPsjZnxmB5PehUltNDw8Q64GdkpM01Zuve86RO8vbl+MNkjJkct/WPpTLkttMn7vDMADLVUXyovk6LGnF1Uqaq7iXUCMqJga/FaqehbAjvRCmmMvNYgXpQ8REjB9v99TrxOspygB8a4v18KpE4QJRirht+HOz4XhOtHoV29p1f5IRdnCpovpRFlLDG9dFg7HMfTdENh16ZdHy0dQ/rRXNrEZVChLqnw3haok7W8BbtZrGAvEXr3XPj8ifWnBthY6qAc+tOoVxUasg4E6xEJNWE6T5jJrFda2OM2S0mpmrJM9mEk0vltiX9ZOf9cpcg9BvGP8RpqQEVjIc+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760682003; c=relaxed/relaxed;
-	bh=LuLa4eedzbUwTpnlaZPmlkTyolIBXjzmkHFoMfgfTB4=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=YMbPpf1CCdsi/M2soS2xdnF40ePm7YNyf0Lpsz2tA7V0UYqpb0BdXzAtn1fCo4iD/BKTeVgpZq/GzqCM5jjwWkkWImS5FC2xjxV3AuNz4xScAXjbx1t9GtNYabwnS+2j28ltSKL92SzPO/B88e8StbljaecasEA3VGaTs7IsUBk4ogt8fQxL2WSigYyodVVdtE4rIcaLT8r1OZzolcr9Z3hlu4sK73tHrJ4PSLKp5ytJjvW29Ye3NMqwFMk3N6ts2t3LWvrWHICqtyTCmLg4e9D/LZZJZxTGXUZt6hJnOcO7pgV99O+66ZW/CNpxoDngC6z/hJA0yz1tgszmSjgRsw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=GrJehQx+; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1760682160; c=relaxed/relaxed;
+	bh=ECOUsH1noeAgZRtyf60EKc9L4f4Ba1khmYrgNO6yCKI=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=HvdKqEulWXDIu0I/IEoxeQO1DGhF1b227zV5oFkTUDhguoBh+vFamYoOCfDO+Q0jfePwz53GX/TY38+5+xVsvvuMLn/oXpXqclaeI47BNHvZi6kFCJdWotCLuONlH0YvDV0TRgSd3JNlggytnUdNcJvUh2hIqjcSle7i1kjV03icZyRs2UyHWiUUTsOG5a+Zj21AuigLas+CHtkgR+0IZ1vSGeXCdu9Bteyua5gq23UcUrz6nG6EGH+iTFrikTIr+uYzfgTygSxSd3/OLsBizWRc1fZ1xFF2fvdtsFsVZwBNrNrF/85MK6Qd63t1ctgkt+QYGjGcwyFSSMoRiu4IMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hvLneN0/; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=GrJehQx+;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hvLneN0/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnvnG5TCxz2xQ0
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 17:20:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnvrJ1VdMz2xQ0;
+	Fri, 17 Oct 2025 17:22:40 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1760682000;
-	bh=LuLa4eedzbUwTpnlaZPmlkTyolIBXjzmkHFoMfgfTB4=;
-	h=From:To:In-Reply-To:References:Subject:Date;
-	b=GrJehQx+sir5LqSm5whp4UV/1rcumxx6hSvrVCa2Fp8sbksHf12BtcyNy+RUFWzxj
-	 yNMZ+60tOqqyITTdKfE8bCVdac927tJyq4PwkPjScJxb8d9eEjgKATv9vR9XdRw2zS
-	 jRFAqy+gF/k0j3WxY4sSgIM+01MQz9yHeCH1aH1TOUl1bmmnM4s8YCwzXOrk/lGA1T
-	 pSvsjeKNKtleawZWuq/0ASt3gbcs7JUA/pQhRpUqr4nzAkYiyaU8kVFIxAmoq0OX0R
-	 WDo6zNhPN5+mli9NeEkORugtSF6d3zaX+qEzhExf/aHJAcJNak0n/dQTimSQQ8zFCh
-	 yvAs4Q1Ycl84g==
-Received: from [127.0.1.1] (unknown [180.150.112.213])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 12B3A6477A;
-	Fri, 17 Oct 2025 14:19:59 +0800 (AWST)
+	d=codeconstruct.com.au; s=2022a; t=1760682159;
+	bh=ECOUsH1noeAgZRtyf60EKc9L4f4Ba1khmYrgNO6yCKI=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=hvLneN0/Px7YzZp8b/zEB/xqh4Q/3+FDAw7zlSsc4TeURYycGuPdfKTZ3AnO7n/e0
+	 dhUJwk5jSVHBT5GDP00eYJSTeCx1s03MhFSu8gi1YqapD10A3v9X4qqLrAAjfvRAuy
+	 BA/l/adLjPGmTQp/adoDUvyk1LN2XrKbc9KwnxIpsExPKG+Iq5DN16jA3jB6Rp1NiO
+	 18K5D1Ukc3IIEOUsC8W8YSr78oGfK8XoDXz7eJKZiyv3iS8KveEisQFKdE+bXfCKZE
+	 2WNy9vSuS+0oONiu+wxcoFIxwrwQyxJfVavPLlBbEFpoS5zT5TEKTvrIFQfIWZUPXo
+	 /VJuozz3Mh/ug==
+Received: from [192.168.68.113] (unknown [180.150.112.213])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 73D1B6477A;
+	Fri, 17 Oct 2025 14:22:38 +0800 (AWST)
+Message-ID: <ba2e6b78e59afb7c89e5022770a142ec8c31659a.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] peci: controller: peci-aspeed: convert from
+ round_rate() to determine_rate()
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Fred Chen <fredchen.openbmc@gmail.com>
-In-Reply-To: <20251015143916.1850450-1-fredchen.openbmc@gmail.com>
-References: <20251015143916.1850450-1-fredchen.openbmc@gmail.com>
-Subject: Re: [PATCH v4 0/7] Revise Meta Santabarbara devicetree
-Message-Id: <176068199902.287212.1469611481983268246.b4-ty@codeconstruct.com.au>
-Date: Fri, 17 Oct 2025 16:49:59 +1030
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Brian Masney <bmasney@redhat.com>, Iwona Winiarska
+	 <iwona.winiarska@intel.com>, Joel Stanley <joel@jms.id.au>, Maxime Ripard
+	 <mripard@kernel.org>, Stephen Boyd <sboyd@kernel.org>, 
+	linux-clk@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org
+Date: Fri, 17 Oct 2025 16:52:37 +1030
+In-Reply-To: <aPEZSY6RC-UVclxN@redhat.com>
+References: <20250810-peci-round-rate-v1-1-ec96d216a455@redhat.com>
+	 <aMatZAX6eFI1RmDH@redhat.com>
+	 <28dc3bd8aeca7e3164747960747f75060c596704.camel@codeconstruct.com.au>
+	 <aPEZSY6RC-UVclxN@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.1-1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -66,36 +75,44 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-cfd50
 
-On Wed, 15 Oct 2025 22:38:56 +0800, Fred Chen wrote:
-> Summary:
-> Revise linux device tree entry related to Meta (Facebook) Santabarbara.
-> 
-> Change log
-> v3 -> v4:
->   - add blank lines between nodes for readability
->   - drop changes to already defined LEDs
->   - add gpio name debug-card-mux and FM_MAIN_PWREN_RMC_EN_ISO_R
->   - enable amd apml interface
->   - add eeprom for prot module
-> v2 -> v3:
->   - remove mctp node label
-> v1 -> v2:
->   - add 'bmc_ready_noled' LED and update commit message
->   - add sgpio line name for leak detection
-> v1:
->   - add sensor nodes for extension board
->   - add mctp node for NIC
->   - adjust LED configuration
-> 
-> [...]
+Hi Greg,
 
-Thanks, I've applied this to the BMC tree.
+On Thu, 2025-10-16 at 12:11 -0400, Brian Masney wrote:
+> Hi Andrew and Iwona,
+>=20
+> On Mon, Sep 15, 2025 at 02:36:48PM +0930, Andrew Jeffery wrote:
+> > Hi Brian,
+> >=20
+> > On Sun, 2025-09-14 at 07:56 -0400, Brian Masney wrote:
+> > > Hi Iwona, Joel, and Andrew,
+> > >=20
+> > > On Sun, Aug 10, 2025 at 06:21:51PM -0400, Brian Masney wrote:
+> > > > The round_rate() clk ops is deprecated, so migrate this driver from
+> > > > round_rate() to determine_rate() using the Coccinelle semantic patc=
+h
+> > > > appended to the "under-the-cut" portion of the patch.
+> > > >=20
+> > > > Signed-off-by: Brian Masney <bmasney@redhat.com>
+> > >=20
+> > > Would it be possible to get this picked up for v6.18? I'd like to rem=
+ove
+> > > this API from drivers/clk in v6.19.
+> >=20
+> > My (strong) preference is that Iwona applies it, but I'll keep an eye
+> > out for any unusual delays.
+>=20
+> This patch wasn't picked up for v6.18. Any chance this can get picked up
+> now for v6.19?
+>=20
+> I'm hoping to get this merged so that we can remove the round_rate() clk
+> op from the clk core. The clk maintainer (Stephen) mentioned this work
+> in his last pull to Linus.
+>=20
+> https://lore.kernel.org/linux-clk/20251007051720.11386-1-sboyd@kernel.org=
+/
 
--- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+Are you happy to pick this up directly in Iwona's absence?
 
+Andrew
 
