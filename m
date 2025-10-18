@@ -1,92 +1,64 @@
-Return-Path: <linux-aspeed+bounces-2515-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2516-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FD5ACCD193
-	for <linux-aspeed@archiver.kernel.org>; Sat, 18 Oct 2025 04:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2BAACCD195
+	for <linux-aspeed@archiver.kernel.org>; Sun, 19 Oct 2025 22:21:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cpTQ53J0dz3cdV;
-	Sat, 18 Oct 2025 15:35:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760762125;
-	cv=none; b=nDKwnm7IIPSjvlcOZ9JtfBCF0WMDLyJS9J6nJfcsXaTAzib5fB6l2zLNGlhOMevLeOvObsY9j/+/CKfiKG1A8ifremGv4PjcExefrARhxflSvT7vOBx19AAfmI85RSwQTX3iiIW8CFT5nT1N3VyqN9EctBTxc0ETU0pWD0U7PiZzKWgmbVdNgAk5lafs9G2w1n71Rw347G7uikA8ul0WRstaAxujZHk0tSVWiQxOX2dkaazcqO2ZinSjLryxEvIBVtNnwldl+ANcY2koVMNa7WgScOzViMm0Wnph+oj9SEmGnd6dsn8Xwr/pS9srcu7VZZAplYLQSh9xrDuEWAGhEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cqY1P5nlzz2yqf;
+	Mon, 20 Oct 2025 09:21:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760759951;
+	cv=none; b=Xkt6Ogf9z+NvsP7hthoiQYaWCykAGKyKwzcN6vCm1I2nJhzvyKrWtQJCf9Q1C1IJWx2DpdcsjGSNTtYif+DuCO/Zl7Kt+pwMu09mDyOJMz/HlSgunMqp56YOOPgEm6dHZfl+WD2pnlQ174oUXSZz/afpTmSd3mNwn0zJdXKqd7aergQefRrmJNzL+4XguCToKdWpRQX98EWW/QzdO8qhOkUp13PlPfn+DFAcCLlNmIGJcGcWqNRyUwm51zfCGmnqZCJZHgurCB1/uUu8vkMSz5krwIkjhCqNJrbs4WgfiUiqVRlkLQRNVEY+fThHa3F4iBoMpEsQVm0mH7cHCo3rdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760762125; c=relaxed/relaxed;
-	bh=FwE+FlafPdFDMuivWnU+BJHVFOy/nLZHlq4G67TTc0k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=C+TytifLTYPbsgAQtuqjNXzEUvjUhXG/AVx2SqXpoRAwbTH8OZqwY4Wxvlp+QeGsHKBrrW/2SI/fBK+X744QgZsev3v8uTeuSmLomkauGkHLNDl9rblVBPS7PxpIYu0TQpABlZ3U42lSHyphutfH165gDhoXiyl3+uXw7otiGFAfr868O569sOyo7IHXOCZjU+9ixJjCtOCUkN1ynWVIOmo6KW0uDH3i0wJqaL5cyy2Pjt8jLQ/E5kdfrFQmJAlfSu5AjKfGzSPxeXidwHhtu9sw5jfwWEGI6m5u5N+UfUuHHC+jXnG91WQ2c5ZApwtQbelVd4Z8o6qXvKl1XHu4wQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eF52snIX; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1760759951; c=relaxed/relaxed;
+	bh=Qw4YXAl9CtY6hAowDvx/pdZbXjPBYE782Swc9Cge1go=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=MciIQ5mgG8im8C2tSrR/7UPgVevzGHCqu6Z7vsQ0RoZbuAFUUMuTBzFouKnJAilXoAaIxKGrQYjaq1ds0Tc7aYMnYWoJ2GZBp4o/OBf5z6M6QfrR74RaubBbA0/Lkxl7L1pScSy6eZrianPTh4u+ecsPFlLLt5PQhSfz7TlXHRmdhrPbHEAkWsRtW8+AYPq1E1UqLFlnFd34vlrMDor+ov/oCAeqYjPhmpS1G1M0GrQ9p0WpzvpQ5LXICsCKuE0FND1mcGJGu7d7I6Xzxep1I3EwSIfY3kAKp9IFyJHj1jv3RxDTnqOHxDOrq/14hDMXByRM4Q5CHB5dH6yTBLl0lg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=krIfENMf; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eF52snIX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=krIfENMf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cpTQ41nrPz3cdG
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 18 Oct 2025 15:35:23 +1100 (AEDT)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-26e68904f0eso26494455ad.0
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 17 Oct 2025 21:35:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1760762121; x=1761366921; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=FwE+FlafPdFDMuivWnU+BJHVFOy/nLZHlq4G67TTc0k=;
-        b=eF52snIXb7+7XXpOqjTXbKChtK9/P2D59QbJZs8AnK5USZGH7L14KpOvqQlbnF5Sp3
-         4YSyupfpt0a+BdA1bEMaFBDtxAa/wbpRKntVu13+VIMpGmMrlURO2uDZgDRcoSa4bH0h
-         ihC9nGvoeQskc9x1bKbozn8dzrhIVpWIKaeIiU94iZhiH/sHopfrckm+p9CEUbFKK9Rx
-         UX0+Q0ykp5vPlAgCu+Homp3/KvEBUrTeTn1gN00h8tpgh3fFJgLB+4WzrqgHuJsEIQRw
-         q8/c5ubTN1sP5taCYdnI24Om02gq6v3ZR1DHuaJYhf6CMRyKrxLgXC2ateYu8M6vK6L8
-         VGkw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760762121; x=1761366921;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=FwE+FlafPdFDMuivWnU+BJHVFOy/nLZHlq4G67TTc0k=;
-        b=AmoUaQhLZ64ENNAc/xiUfFZ8rYnZMdvqhH1hr02pUTeBjB20bkjecSugOHVK+njv9c
-         gHJLRDsQSM8JLDEGObTuge5rRmOa0MMoxIY0DuIjn9aQInby+p99oUTzFWx+wB+sO7no
-         C+ARu31cWAxvcvR9wdVAXCIs0h3TcDM3jUS6+a7aFlim5NOCNmaMiUch5hVb4pBUfpac
-         bfg0q2Zixh5JZvOgMrpW/7ISsPlAS2vu9rBgzwqpb17dfzt2t2swy1BRNwPnb1rcmVVB
-         12b7808jlJ8gtGLbDMZXzJe0pUppoDDr2xgcJIDZ6W6vVZJrWMOeS9EbfXb+n04OI9LO
-         CMlA==
-X-Forwarded-Encrypted: i=1; AJvYcCWuMXMm8h9VQZfLH/moQIHUdlBRtaal64s+Pb1A/BXapNI/AIkeZ9vJ8VVyAn4kSvyNU0HceFoZG24uYi8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz38OIBierNtAmYnXkGhA0cb1qjgRfPr3p97wNXu9BH6NPIEG0a
-	j6edZty2+z6nSk40FFuf7Byj40cv1c1p9G371tH+lQO7FWDue8I67wyH
-X-Gm-Gg: ASbGncvnF5SGeSKEO2GY2FX/kJ1l5Dv3ejTq88cfU1CLPYqFH5DTDcYh09NpaEaG/Xg
-	4VRSB9lUDjWsbj3ddVYmUrDCvdGmI8MPDH3wbuse5byoWREdt0wgrN3+Kybp4Qm8PnEUYawTqpZ
-	k4fcakEbjETaltBpJDaj73f124qCLzX2Dv8bgFfdaMg7gn1OttCg4f6o2Jk6wwib1lpy4awJWfV
-	osZ4a4FbUskhh8sB/0UCJXm6IHIhA98UTqSav0ePReY3aFCKQIFbegQK5l+DNkDkKSWRxZNPaYR
-	WZnjE44qWDxK2HvAdTLszMTxhzJb3ztFxXsJualzeHHw/VaVfK+dpJhGCcNVCHumf4GXgGyR9wj
-	hO1AezNW5ByD4unujRWXMQIcJDfe9pjMuyoE4y5sa+B+ycBgOQiosZcm6h8J9WnFzu6pLd9BkIF
-	8XsngyJ5QlbOdNC7fVqbemTH/z7PN9Hi0EZdGPxd0D9NsM7cLwurUrXispK3w1GRUip8kz0A77s
-	ID1
-X-Google-Smtp-Source: AGHT+IFjj+JR7R/Q2O8WxGOAy+zB1ukpFPQ6elAKB9VmH+ImOjLf6iOrU+WTRyaZ3nV4hWJdz9cmxA==
-X-Received: by 2002:a17:903:3bc4:b0:290:b131:31dd with SMTP id d9443c01a7336-290c99aa9a0mr69186125ad.0.1760762120750;
-        Fri, 17 Oct 2025 21:35:20 -0700 (PDT)
-Received: from cosmo-ubuntu-2404.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29247218eafsm12167715ad.101.2025.10.17.21.35.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Oct 2025 21:35:20 -0700 (PDT)
-From: Cosmo Chou <chou.cosmo@gmail.com>
-To: robh@kernel.org,
-	krzk+dt@kernel.org,
-	conor+dt@kernel.org,
-	joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	cosmo.chou@quantatw.com,
-	Cosmo Chou <chou.cosmo@gmail.com>
-Subject: [PATCH v2] ARM: dts: aspeed: bletchley: remove WDTRST1 assertion from wdt1
-Date: Sat, 18 Oct 2025 12:33:09 +0800
-Message-ID: <20251018043310.1056032-1-chou.cosmo@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cpScG4Qvxz2yrg;
+	Sat, 18 Oct 2025 14:59:10 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 225F941B3C;
+	Sat, 18 Oct 2025 03:59:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0E640C4CEF8;
+	Sat, 18 Oct 2025 03:59:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760759947;
+	bh=EU6U5Z1y6eCiRh+fXNU8O/thPLmzUksR4n4H3faDx18=;
+	h=Date:From:To:cc:Subject:In-Reply-To:References:From;
+	b=krIfENMfuFjiHhOD9R6DJZJbEI9qyq58vTH4tVORoQRTS2pGY5lkJEIZDY6cO/JsF
+	 7rV4qf/QB3xJavBLHP0t1tOOd2ijiKeeH7r5PBJer2K+56mKaBeK4gxS6ShjW6W321
+	 VkvkNEiUhE+GJg+MsRokLA9CNBFgs7U0v7KF5BOur/qWmLZ7DKTce6BLHyqQ3UmI3d
+	 h3G0koy5DXW63vce1vAszW8CD0JUM4rwNfwwIrL7aT81malR9QIBv5/P/aZVWwdmzB
+	 yRQW1/nRqFaZ64tNvz5lQ6FqKOjnXl5DoM5YdsFKHtq3AqF25dzypI1i46AMW/sKZH
+	 62a7C0hJMLpqQ==
+Date: Fri, 17 Oct 2025 21:59:03 -0600 (MDT)
+From: Paul Walmsley <pjw@kernel.org>
+To: Trevor Woerner <twoerner@gmail.com>
+cc: linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+    linux-aspeed@lists.ozlabs.org, linux-arm-msm@vger.kernel.org, 
+    openbmc@lists.ozlabs.org, linux-hexagon@vger.kernel.org, 
+    loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+    linux-stm32@st-md-mailman.stormreply.com, linux-mips@vger.kernel.org, 
+    linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+    linux-riscv@lists.infradead.org, linux-sh@vger.kernel.org, 
+    sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] defconfig: cleanup orphaned CONFIG_SCHED_DEBUG
+In-Reply-To: <20250828103828.33255-1-twoerner@gmail.com>
+Message-ID: <e88ab2ff-dc16-dab7-0ff3-702f093563ce@kernel.org>
+References: <20250828103828.33255-1-twoerner@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,39 +72,27 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
 
-Remove the external signal configuration from wdt1 to prevent the
-WDTRST1 pin from being asserted during watchdog resets.
+On Thu, 28 Aug 2025, Trevor Woerner wrote:
 
-The WDTRST1 pin was originally configured to reset the TPM during
-watchdog events. However, the pin is incorrectly routed to SRST#
-on the hardware, causing unintended system resets. Since the TPM
-is not currently utilized on this platform, remove the external
-signal configuration to avoid the incorrect reset behavior.
+> In commit b52173065e0a ("sched/debug: Remove CONFIG_SCHED_DEBUG") this
+> Kconfig option was removed since CONFIG_SCHED_DEBUG was made unconditional
+> by patches preceding it.
+> 
+> Signed-off-by: Trevor Woerner <twoerner@gmail.com>
+> ---
 
-Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts | 6 ------
- 1 file changed, 6 deletions(-)
+[ ... ]
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-index 24969c82d05e..abdb1562115a 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
-@@ -1080,11 +1080,5 @@ pinctrl_gpiov2_unbiased_default: gpiov2 {
- 
- &wdt1 {
- 	status = "okay";
--	pinctrl-names = "default";
--	pinctrl-0 = <&pinctrl_wdtrst1_default>;
- 	aspeed,reset-type = "soc";
--	aspeed,external-signal;
--	aspeed,ext-push-pull;
--	aspeed,ext-active-high;
--	aspeed,ext-pulse-duration = <256>;
- };
--- 
-2.43.0
+>  arch/riscv/configs/nommu_k210_defconfig        | 1 -
+>  arch/riscv/configs/nommu_k210_sdcard_defconfig | 1 -
+>  arch/riscv/configs/nommu_virt_defconfig        | 1 -
 
+[ ... ]
+
+Acked-by: Paul Walmsley <pjw@kernel.org>  # for arch/riscv
+
+
+- Paul
 
