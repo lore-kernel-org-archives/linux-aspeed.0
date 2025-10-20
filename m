@@ -1,49 +1,52 @@
-Return-Path: <linux-aspeed+bounces-2535-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2536-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99770CCD193
-	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Oct 2025 10:17:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 245DCCCD193
+	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Oct 2025 11:35:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cqrw40nXVz30Ff;
-	Mon, 20 Oct 2025 21:17:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760955460;
-	cv=none; b=fWaudwMd9jXQC8VPAZvV/ndO2OcrN12ej2ci2nYeyiRI3ZxVtQ0AQzQlT4Tecx4dXLQbFvjnySVeUXurEOdOjW8TC6Fi4GjHOaWH0KmzIcwHz+SiUp7eE5KQ6YG7FWX098pGUcHw85nqB18KSXLgh3h6BCIzCCQcQv9X2+8rXS66d5SvSQ/SousW8s6yY5ajlkJaQqHniMVTrzpmVDgU7eEkp98pfC9pgApYAY0n0E7isN3cPTJnTZLm4eZltIb08u5hpZk+iWsIKuuYVXbMw1YL8EQZUTMmZLl84xeoxoS7CDq9uomsyPE3LwJ6FVFPLENkiq32a/5ZtuoJEdfheQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cqtdn06hbz3020;
+	Mon, 20 Oct 2025 22:35:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760960124;
+	cv=none; b=LLorQPPCMTLFC+nH3v0df03CnGyI7FlEqihpGA9CMIwonzn26+LuJT7aQVBsM2hQ7QRij1pAy3HuMzrfIT4mrMQ1ug7UF2iG2YtXKggC9p042XcyW/N7T/rIFvhm86Q5x4pRwmjD3iwFZWbxAERM6uW2QKP5YTt/jPO6dbf5azqQHLQ0kzR20ZTGYoPT7hu/xZ7+N/8qr84/fhKFAtTcy28uvO99tLLkzjGAjmps+VDfAQAQ2G3tWlYtrRMuNBsLCpHy2vTs/Ro/cwWXdCx55Y2Nn7YuGYJaBppy2mIxr20P3sP2JuKjNsBLTcq7JWSEx/RODncB6PlCvY829PJGuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760955460; c=relaxed/relaxed;
-	bh=tBfnaIFfXFUyw9gmo9JBhlQPED6cDEu7l8Hb4rXpNDc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AFegjO58X/o4AFWtqWM9LnwoYYQLsmUmjI6XzSlqFaMdcFpXRwvDybQB9FnL3Tlq8qTyXPOuriXpsmXCKOJ1pw0EVmSjK61aJkFVDzLPcgCtEcds8w2H5y437KRrEg2i8rNnTvT52LAAjx9MBxQzCsE8N1rIkN88pjk6AewuoozZJjf6wByXvTh5bxanVVY8SFQbWtFQ9vcnfgkSfv1HzTfduke3LCXZVEQV7NlD4oGfchxw7pjxRsbsJwTVh8yI0EAPXMon2/1Q5vSDQ18A3dHmlwa1rZW6iAg6rEq6DgIXoQqmfHBbrFi78JCjQIWeIW4yBbGCkx4ODw7P86uJbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.21; helo=cstnet.cn; envelope-from=vulab@iscas.ac.cn; receiver=lists.ozlabs.org)
-X-Greylist: delayed 352 seconds by postgrey-1.37 at boromir; Mon, 20 Oct 2025 21:17:39 AEDT
-Received: from cstnet.cn (smtp21.cstnet.cn [159.226.251.21])
+	t=1760960124; c=relaxed/relaxed;
+	bh=0UtO/Ve7QiGpMlUuu0IVSIrQoQ/KH9yo8ixVSg0L1bc=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=Qk9ogFXPhYhgzl+6hNr6Cin38bmLjcUrWBZg5Z4nUb+uGIWWWghFlJohDV5faKtyRIdCsdypGVhds0QhSWkpqY+P6Lcl10V7fdpR568onC9prhExX/DuCBEtbtj+C5sA2H3yv/254XsSf7WULL92FD9lgJpUe546osEtY1b7GPTyx0XVFhHhfEymmomtuYyaOauoHks+u4wTve274lMdimjua6bDHb53NHWLYodaerg2PLoAm86tN8aATdFiQiRa3x5rf2EwR1xyjN10Ld9ojYNtmAUe9IJl2TMpznHOL8IAwkz+CqKdFtquoB5nDJ00gcJV7QhQnARp0sxudvKKig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MfN84N3F; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MfN84N3F;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cqrw30sVSz3000
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 21:17:38 +1100 (AEDT)
-Received: from DESKTOP-L0HPE2S (unknown [124.16.141.245])
-	by APP-01 (Coremail) with SMTP id qwCowADnPaDLCvZoHdfdEQ--.2307S2;
-	Mon, 20 Oct 2025 18:11:23 +0800 (CST)
-From: Haotian Zhang <vulab@iscas.ac.cn>
-To: neal_liu@aspeedtech.com,
-	herbert@gondor.apana.org.au,
-	davem@davemloft.net
-Cc: joel@jms.id.au,
-	andrew@codeconstruct.com.au,
-	linux-aspeed@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	Haotian Zhang <vulab@iscas.ac.cn>
-Subject: [PATCH] crypto: aspeed - fix double free caused by devm
-Date: Mon, 20 Oct 2025 18:11:09 +0800
-Message-ID: <20251020101109.1030-1-vulab@iscas.ac.cn>
-X-Mailer: git-send-email 2.50.1.windows.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cqtdk5j9tz300M;
+	Mon, 20 Oct 2025 22:35:22 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 373E1489C1;
+	Mon, 20 Oct 2025 11:35:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4A9DC4CEF9;
+	Mon, 20 Oct 2025 11:35:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760960120;
+	bh=ZioengeclCBPyaIw8m5VBq2tqjHhRbeGcSeZSVPGoOk=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=MfN84N3FvlrHrKO6hwp0uof+Ta7bEnnpHDT3YaLa+WZMR3CMdo0kZHWC3c1U6E2pF
+	 J5umlW8m4tmUBXWCdMwHbR4/0xVpTKgZPBLKDvRhZKJDxJztlux+q0MDAfDEkL6tk4
+	 8OYnemTQgRJ0/6UVcCgGgfTHTwvb9712A6SjcKvzTp9OqaiU46BCKQI2Ydk8t6rmO0
+	 EPlKRiwgd6lPVQLKfkryxc/KWv8F9NGbZx7wNrM1RS06vHJfcAyHaIhAQpol9wOgAt
+	 CEIBujREfOOxhdxe8FDc9qugI9RYC1kUt+djUMqMw1/KQ0j89XW7VWnow0FdMexgWY
+	 J7M8KbhYwuI/g==
+Date: Mon, 20 Oct 2025 06:35:18 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -57,62 +60,75 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:qwCowADnPaDLCvZoHdfdEQ--.2307S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Kr18AFWfAr4DKrWUZr48Xrb_yoW8Gry5pa
-	yrJ3yFkFW7JF45GFWUJayvqF15J3y5t3yagayxG3W7X3y3JrnYqFZaka1jvFW5AFWkuF1I
-	yF4DJr1UuFn8uFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUU9G14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r4j6ryUM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4j
-	6F4UM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s
-	0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r106r15McIj6I8E87Iv67AKxVW8JVWxJwAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxa
-	n2IY04v7MxkF7I0En4kS14v26r1q6r43MxkIecxEwVAFwVW8twCF04k20xvY0x0EwIxGrw
-	CFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE
-	14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2
-	IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI0_Jr0_Gr1lIxAIcVCF04k26cxK
-	x2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI
-	0_Jr0_GrUvcSsGvfC2KfnxnUUI43ZEXa7VUbQVyDUUUUU==
-X-Originating-IP: [124.16.141.245]
-X-CM-SenderInfo: pyxotu46lvutnvoduhdfq/1tbiCQ4BA2j12CK++wAAsn
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: andi.shyti@kernel.org, linux-i2c@vger.kernel.org, 
+ andriy.shevchenko@linux.intel.com, naresh.solanki@9elements.com, 
+ p.zabel@pengutronix.de, linux-arm-kernel@lists.infradead.org, 
+ openbmc@lists.ozlabs.org, conor+dt@kernel.org, 
+ linux-aspeed@lists.ozlabs.org, joel@jms.id.au, krzk+dt@kernel.org, 
+ andrew@codeconstruct.com.au, linux-kernel@vger.kernel.org, 
+ benh@kernel.crashing.org, devicetree@vger.kernel.org
+To: Ryan Chen <ryan_chen@aspeedtech.com>
+In-Reply-To: <20251020013200.1858325-2-ryan_chen@aspeedtech.com>
+References: <20251020013200.1858325-1-ryan_chen@aspeedtech.com>
+ <20251020013200.1858325-2-ryan_chen@aspeedtech.com>
+Message-Id: <176096011475.23064.13799548826512417145.robh@kernel.org>
+Subject: Re: [PATCH v19 1/4] dt-bindings: i2c: Split AST2600 binding into a
+ new YAML
 
-The clock obtained via devm_clk_get_enabled() is automatically managed
-by devres and will be disabled and freed on driver detach. Manually
-calling clk_disable_unprepare() in error path and remove function
-causes double free.
 
-Remove the manual clock cleanup in both aspeed_acry_probe()'s error
-path and aspeed_acry_remove().
+On Mon, 20 Oct 2025 09:31:57 +0800, Ryan Chen wrote:
+> The AST2600 I2C controller is a new hardware design compared to the
+> I2C controllers in previous ASPEED SoCs (e.g., AST2400, AST2500).
+> 
+> It introduces new features such as:
+>  - A redesigned register layout
+>  - Separation between controller and target mode registers
+>  - Transfer mode selection (byte, buffer, DMA)
+>  - Support for a shared global register block for configuration
+> 
+> Due to these fundamental differences, maintaining a separate
+> devicetree binding file for AST2600 helps to clearly distinguish
+> the hardware capabilities and configuration options from the older
+> controllers.
+> 
+> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/i2c/aspeed,i2c.yaml   |  3 +-
+>  .../devicetree/bindings/i2c/ast2600-i2c.yaml  | 67 +++++++++++++++++++
+>  2 files changed, 68 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/i2c/ast2600-i2c.yaml
+> 
 
-Fixes: 2f1cf4e50c95 ("crypto: aspeed - Add ACRY RSA driver")
-Signed-off-by: Haotian Zhang <vulab@iscas.ac.cn>
----
- drivers/crypto/aspeed/aspeed-acry.c | 2 --
- 1 file changed, 2 deletions(-)
+My bot found errors running 'make dt_binding_check' on your patch:
 
-diff --git a/drivers/crypto/aspeed/aspeed-acry.c b/drivers/crypto/aspeed/aspeed-acry.c
-index 8d1c79aaca07..5993bcba9716 100644
---- a/drivers/crypto/aspeed/aspeed-acry.c
-+++ b/drivers/crypto/aspeed/aspeed-acry.c
-@@ -787,7 +787,6 @@ static int aspeed_acry_probe(struct platform_device *pdev)
- err_engine_rsa_start:
- 	crypto_engine_exit(acry_dev->crypt_engine_rsa);
- clk_exit:
--	clk_disable_unprepare(acry_dev->clk);
- 
- 	return rc;
- }
-@@ -799,7 +798,6 @@ static void aspeed_acry_remove(struct platform_device *pdev)
- 	aspeed_acry_unregister(acry_dev);
- 	crypto_engine_exit(acry_dev->crypt_engine_rsa);
- 	tasklet_kill(&acry_dev->done_task);
--	clk_disable_unprepare(acry_dev->clk);
- }
- 
- MODULE_DEVICE_TABLE(of, aspeed_acry_of_matches);
--- 
-2.25.1
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/i2c/ast2600-i2c.yaml: warning: ignoring duplicate '$id' value 'http://devicetree.org/schemas/i2c/aspeed,i2c.yaml#'
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/i2c/ast2600-i2c.yaml: properties:reg: {'minItems': 1, 'maxItems': 2, 'items': [{'description': 'address offset and range of bus'}, {'description': 'address offset and range of bus buffer'}]} should not be valid under {'required': ['maxItems']}
+	hint: "maxItems" is not needed with an "items" list
+	from schema $id: http://devicetree.org/meta-schemas/items.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/i2c/ast2600-i2c.yaml: $id: Cannot determine base path from $id, relative path/filename doesn't match actual path or filename
+ 	 $id: http://devicetree.org/schemas/i2c/aspeed,i2c.yaml
+ 	file: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/i2c/ast2600-i2c.yaml
+Documentation/devicetree/bindings/i2c/ast2600-i2c.example.dtb: /example-0/i2c@40: failed to match any schema with compatible: ['aspeed,ast2600-i2c-bus']
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20251020013200.1858325-2-ryan_chen@aspeedtech.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
 
