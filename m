@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-2526-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2527-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D13EBCCD199
-	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Oct 2025 06:39:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 895B6CCD199
+	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Oct 2025 06:40:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cqm4f2lSvz3000;
-	Mon, 20 Oct 2025 17:39:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760942386;
-	cv=none; b=FPR25Gr6cwAfrvcJM/pseIGErphABQMX6ELvMhJZh6N5lRpJK+O7n+YKa0DzS0dCd7aIp+hfbAwFKfS6arUTp3vWE/2NeV85LmiDdOBXXhiZp/0w+qDiYIa8ZK4zVQ4/GjCjFWJHBtL51ByRl88iIz9I4frj88u2KD831Dyld/ejUTPgs2QlrwLnOA+PKYtYBJq5uWon/HEOvquItiaUYF1HtbBepYe6kCu8TLirIBU47jO5U2bMPol02Gwv91Cbm8NHmW00g0UOmCNUDxXlAtt9jhD8aJ2v7sSJluXRVVDwzSDSzCie2kAC0J4Nse08cvT1KWMF/0yhotkvd+DcNA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cqm5c0dR9z3000;
+	Mon, 20 Oct 2025 17:40:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760942436;
+	cv=none; b=B9rlLPSwAaJkNldNs3JJOPKK5TR/hojSbjB7FaCcNDxMrMIzF23MVv2eX+7DJobPAEVooTOIFyhk2mKVkz9ek/H40ffef4BD+GWKhhqZDC2jEB+jy6zgTnt5Gb75Id/3TqxF63RJJwQlzj3jMTi3xXprZDJOTov2FlvHWSLBbNT3B45HmFwvvhl9VLQNwUFTFs7gm7MHXCgGVTjnNJyxoYTD3WLaVgiD9UQmT/jUssj8dkB/Cr0s+ciwSR151UvjhuodusUnrEIqxjcICUbOWSreAtULlowN+Wzs4L8ACV7hmtJYZAO7x5ZnhuAVxJ2blWNX9OQqxLZAsYFGh/1RXw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760942386; c=relaxed/relaxed;
-	bh=bXu0fLNIjNsnlnYxafZfaEBKLToeO/gwBqpczT/1DcQ=;
+	t=1760942436; c=relaxed/relaxed;
+	bh=Yx2JP7P7r2dszg72QONYsTzWX02D3Bj0Jaxh0gu3AXM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=XzYiZldkhB7Ofzs/PKK9YGT4h1ShwEUY8Gc4qbpNh9hz1Fq9gLBe3SU/kEe5xzYmmPJ10130OomqczIjFSfIAhnGLH1Hrf7uTcOlXQ9+pbt6t8yPK5Clqn8XEqVLOtBPRLKSs3Bd8KK1m7Nw/PHUp2hv9Q76hzwf6z7ujf8aKNYF2l0CkqZuj+82erhPxZLQa/xTrUU8/UUJiGCA2RjK4DgpteO8aUG1AEE4mqoyn92mLlEMqU0YUFV1mBvvnt/bfUkmI4b4t079VLdu8n3VkCfmRs9coWFkAwTCJzmPT0N4+8OLKA6OOvbfLxjyboufG9GmQo2dIUmPo9MkhK+nWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tTu1DQQz; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=S+Y8vrWGQ53VAt3QkpH7QZzTm+R7X96RR0W9dFWoW6iR+Lt36uBbg9gRu8uIU0EQcMlEEfhi3ZRXimabZXUQ6ItDEDBJn6bLDmBed2YAG+NnWjN5jHRH1fS2GobUhsdwscdEJp00nu329qnWOgINS004Z6aO/RJeEMLzD7JDNqF7jEcUomrRDrxO9GbAHp72AZT3zlpgKSn6WD4jfY27N3kZ/yxaZgBAEC+oh3QbWURmiFyBgLxbIbrGninR3PqBWE41u6i/5ojbDJBBeDFxt++wC8GN8TRK1zWYntmWNLt9OiRhsZWeb9PHB4/Wn6DoyC95AQcgJI0ZzHTaCFvrMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BpT25Pxe; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tTu1DQQz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BpT25Pxe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cqm4d4cSnz2yVP
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 17:39:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cqm5Z4hNhz2yVP
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 17:40:34 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4C36440987;
-	Mon, 20 Oct 2025 06:39:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9EA60C4CEF9;
-	Mon, 20 Oct 2025 06:39:40 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 487E460289;
+	Mon, 20 Oct 2025 06:40:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9787FC4CEF9;
+	Mon, 20 Oct 2025 06:40:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760942383;
-	bh=AkTb0mj50pn+U0cFUoZLlc9k8U196wci3Nbv8tGI4MQ=;
+	s=k20201202; t=1760942432;
+	bh=UJTlw/pu3vywNn13Ms+E5luWG1v4DvAhkTCP9OzzQOc=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=tTu1DQQzXhEvvm8Tr9Mmkt66tuBnO3RogFKJ6gvqvuYvMH7kgnukEAXse7FKBg4Ro
-	 FLpnV48VIpVZv76j35x82KU3L6qCH7Co3EEqwGp2ZQDMljyXDgJtTJABJ1XcY9wXDN
-	 cEwX9/pc0nhXJVeQH43s7ngPjhFF+KSk2PfttgdMiQ+pCj9Z4K7Czkxh6eLJEq28tJ
-	 j5EBjOxHeE7NU1ntRvWEIYZNGANR8UDJULEVjHa+njO5jdtSwTTA4H7whDIvJAoujj
-	 fCTuONCu/oCcW9h+lCrCA+Lu7wWCWVDqqYIFYaRQ6Pi35U69cER7WR8HctxU2OTCrI
-	 LM4nNc8dYubdA==
-Message-ID: <6b30c646-cc52-4552-8311-86974c1459e7@kernel.org>
-Date: Mon, 20 Oct 2025 08:39:38 +0200
+	b=BpT25Pxe1mhGst83DZD9Z6TJ3ZHdU1xjdlaoh/Zf17hKKYEc+1Nf8GAb05LhVQ2Z7
+	 FgtNhXTr4Q7WYA9muS0+V1kRjtizrKrvKBj7rfN31h6iyCmB7iUC5A+vle0G8m6YWf
+	 jqVP5vI2ET3vRrE3hjXsZB3LwzqUCAGtXkdvA7jRwlLmvL2rQy1SlchjqsI/aR6hSp
+	 D8sr/01r83oweAJBJeWDaSCuII4fZSdtem+jk0QH1qPdD9IfrGY2tdxBs8wwUWl18Y
+	 VxAhUgzVeHpfau1l5rJ+LJMcFG+7osVCsSDQ4evzrZlBzXg/9gY8Nv9Zc1IrwPm/pq
+	 rhsieA9VGUwRw==
+Message-ID: <2eb2d833-03e0-4570-8979-3a28d708b21f@kernel.org>
+Date: Mon, 20 Oct 2025 08:40:23 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,20 +60,33 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] dt-bindings: mfd: aspeed,ast2x00-scu: allow #size-cells
- range
-To: Ryan Chen <ryan_chen@aspeedtech.com>, Lee Jones <lee@kernel.org>,
+Subject: Re: [PATCH v5 0/5] Introduce ASPEED AST2700 BMC SoC
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Arnd Bergmann <arnd@arndb.de>,
  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
  Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Nishanth Menon <nm@ti.com>,
+ =?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>,
+ Taniya Das <quic_tdas@quicinc.com>,
+ "Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>,
+ Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
+ Eric Biggers <ebiggers@google.com>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linux-arm-kernel@lists.infradead.org"
  <linux-arm-kernel@lists.infradead.org>,
  "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20251020020745.2004916-1-ryan_chen@aspeedtech.com>
- <b38321e8-d243-460a-a9d6-6770a41627cd@kernel.org>
- <TY2PPF5CB9A1BE6CDC6F04CC0F472FE6451F2F5A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "soc@lists.linux.dev" <soc@lists.linux.dev>, Mo Elbadry
+ <elbadrym@google.com>, Rom Lemarchand <romlem@google.com>,
+ William Kennington <wak@google.com>, Yuxiao Zhang <yuxiaozhang@google.com>,
+ "wthai@nvidia.com" <wthai@nvidia.com>, "leohu@nvidia.com"
+ <leohu@nvidia.com>, "dkodihalli@nvidia.com" <dkodihalli@nvidia.com>,
+ "spuranik@nvidia.com" <spuranik@nvidia.com>
+References: <20250901031311.1247805-1-ryan_chen@aspeedtech.com>
+ <41705e13-c61d-4249-9492-b83f1371d3f9@app.fastmail.com>
+ <OS8PR06MB7541AEC5560E3445C33009BEF21FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -119,39 +132,55 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <TY2PPF5CB9A1BE6CDC6F04CC0F472FE6451F2F5A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+In-Reply-To: <OS8PR06MB7541AEC5560E3445C33009BEF21FA@OS8PR06MB7541.apcprd06.prod.outlook.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 20/10/2025 08:31, Ryan Chen wrote:
->> Subject: Re: [PATCH] dt-bindings: mfd: aspeed,ast2x00-scu: allow #size-cells
->> range
+On 25/09/2025 10:00, Ryan Chen wrote:
+>> Subject: Re: [PATCH v5 0/5] Introduce ASPEED AST2700 BMC SoC
 >>
->> On 20/10/2025 04:07, Ryan Chen wrote:
->>> The #size-cells property in the Aspeed SCU binding is currently fixed
->>> to a constant value of 1. However, newer SoCs (ex. AST2700) may
->>> require two size cells to describe certain subregions or
+>> On Mon, Sep 1, 2025, at 05:13, Ryan Chen wrote:
+>>> This introduces initial support for the Aspeed AST2700 SoC and the
+>>> AST2700 Evaluation Board (EVB) to the Linux kernel. The AST27XX is the
+>>> 8th generation Baseboard Management Controller (BMC) SoC from Aspeed,
+>>> featuring improved performance, enhanced security, and expanded I/O
+>>> capabilities compared to previous generations.
+>>>
+>>> AST27XX SOC Family
+>>>  - https://www.aspeedtech.com/server_ast2700/
+>>>  - https://www.aspeedtech.com/server_ast2720/
+>>>  - https://www.aspeedtech.com/server_ast2750/
 >>
->> "may"? So there is no issue yet?
+>> Hi Ryan,
+>>
+>> Thanks for you submission earlier. I see that you had sent the series to several
+>> lists including soc@lists.linux.dev, which is what I use to keep track of patches
+>> that have been successfully reviewed and that are ready to be merged through
+>> the soc tree.
+>>
+>> Unless you have been told to send it here by Joel and Andrew, I assume that
+>> they will pick up the series through the "bmc"
+>> tree once they are happy with it like they do with the 32-bit Aspeed SoC
+>> (ast24xx/25xx/26xx) patches, and I have dropped the series from
+>> https://patchwork.kernel.org/project/linux-soc
+>> now.
+>>
+>> For future submission, please send the patches only "to"
+>> them, with the other people in the "cc" field to avoid this confusion, and leave
+>> out the "soc@lists.linux.dev"
+>> recipient. You can add me as arnd@arndb.de to the Cc list for reviews though.
+>>
+>> Please also add a patch that changes the MAINTAINERS entry to reflect the
+>> added arch/arm64 contents.
+>>
+>>      Arnd
 > 
-> while I submit ast2700 platform,
-
-So there is no warning currently? Then don't mention. You cannot use
-argument of possible future warning as there is a warning needing to be
-fixed. This makes no sense. Like you add bug in your patchset and then
-send *different* patch claiming you are fixing a bug.
+> Hello Arnd,
+> 	Thanks your notify. I will remove soc@lists.linux.dev, in next patch.
 
 
-> These warnings appear when validating the AST2700 EVB device tree.
-> The SCU nodes on AST2700 have subdevices (such as clock and reset controllers)
-> that require two address cells, which is not allowed by the current `const: 1`
-> constraint in the schema. 
-> 
-> Here is the related report:
->   https://lkml.org/lkml/2025/9/2/1165
-
-This must be together, so we can review entire picture, not pieces by
-pieces. Organize your work correctly, so reviewing will be easy.
+No, this patchset still has known (reported) warnings/bugs, which need
+to be addressed here before merging it.
 
 Best regards,
 Krzysztof
