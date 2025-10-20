@@ -1,69 +1,69 @@
-Return-Path: <linux-aspeed+bounces-2537-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2538-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2928ACCD199
-	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Oct 2025 12:21:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 681EACCD193
+	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Oct 2025 13:09:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cqvfV3Mzvz3020;
-	Mon, 20 Oct 2025 23:21:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.166.178
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760962866;
-	cv=none; b=YjJZ0eWHJ1NoHJHJbG3HYiQdlvFSdmiQzkdCpNKUgASWzIjmmpzBw5KVP14bC5S/RWjklzsYgYZHYWWt9Bx7xnyhU7iHweet7n8akKa2KCEAzWrjQmOa1BMviFVrQiKqpFJ2vpmTnx2JGsCS803YH/udEtbKhmfW7nk+o5XlbaXIjCXCA0hlUbp1vclaT0oF0Fl5cEuYEnvDgvAXhGOgOX/uRZ+tLIXW6+z/PoDp0JS/TeSH0r3Jd9StlnUEBFPF6uNxlR/24H0IaMhHuGweYgB5T8gHAKw7ze+/QlL6Ps35c+WITRsYYzSk2GIITYzH3C9CAZV7PQ5E0EzKLVs7lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cqwjl5nrXz3020;
+	Tue, 21 Oct 2025 00:08:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.219.42
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760965739;
+	cv=none; b=SztwGZ3JGmWPSmNBc7ch70rIT+9rr88liIMS34kuI6txoHujxqrZpy0Y60DIJZfvt3MLJ0SmG8QITUKRFeUVWl2Qy8R4j/IvCVkEfHBM2GFq9950hXEsimEDe4VX+MYOhxtAC3V5EGn2XE34/gsiHmtrYZkci0ixr+qPThvmJL+zE9U9TvaHFm7nFvQAafoU8Wp9PIxzmc59s/uSW+uZmSFeKq9FHMEbvoj9u5zHSibS3d3BZwpdrIMbuJv5B1tm3xpt/j/d8FLU0YdHWOjpqpdW1niZrJ7sxu8apf+KWY6Y8urBfBgNHCEcupToFD1afzlZLcoaaOGnRhOwu1Sjpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760962866; c=relaxed/relaxed;
-	bh=Pomt2ITXhIHlFit8dq3w5svz3PMdwi8h98cx9ZzxHC0=;
+	t=1760965739; c=relaxed/relaxed;
+	bh=WTAfAvg+E5E0/JeW2qvrB22XDr/x/zemAkA2zC9bvaY=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=moS+u9TfF8y9kw9zUJCzroiNzsZ8t1dSMOd1HIeMsqTADKAbKiMmpY7bhlACv83Mql9D9GU9uZ8vsuszZNPaX06WJ4aIYwecGYAV6ytl6GmHx+DIu8CTloq4cX4UA7RK15b/0oECnUK5oyK3LJv4P9iyhymLn4xDg+tV5V8/rlYHeTf5NqaW+S4OmL1ZgYcORRQ8tYl9AZhk43E+G/YsMjhuQv2rpDyAw/dXAWxpNTvv8YHWfic9NFpQhmZr9RzBur97BkSR4VdqDhPGU9qThRqBqgCmGSyGynZxeif5bPeWyvoHDjrEA///ZMAa6tlknYp67nFcITd/Ug/xkGdnnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.166.178; helo=mail-il1-f178.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=d+aTEQ1xDPzGt+3ruW1nxicIpENeCmS+9AHb/hWxlXp+RuKcnwmifC1ScTancuS1hM7Qx8NJpBddbMH57zGNSYgr3jw4SM7pTrShtJkFzzEyBazjPFaJLkGJ3yjHOOVVibdKqe6WnYqm6vf1ddgqHucKCpQANxn6BbMvIccUJbeU6fFGbNL+a52KrMgA75ksKQp1kmayb+SpiNUA5gFYuZ4wiKI/65FVi5G+Q8ycrJ3rpXLLNptT0fOf8iU8EhJh1QJdepf3s9GTd/w99Vy/jBvNMfn01DW2KbXMJwHK+Q6fBg9ey4q86PxTQ5N/kaG4MlQf3UnvQWoDwKvdJqh7aw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.219.42; helo=mail-qv1-f42.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.178; helo=mail-il1-f178.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-il1-f178.google.com (mail-il1-f178.google.com [209.85.166.178])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.219.42; helo=mail-qv1-f42.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qv1-f42.google.com (mail-qv1-f42.google.com [209.85.219.42])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cqvfT0MmDz2yjw
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 23:21:04 +1100 (AEDT)
-Received: by mail-il1-f178.google.com with SMTP id e9e14a558f8ab-430ca464785so28320095ab.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 05:21:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cqwjk3cNnz2ySV
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 21 Oct 2025 00:08:57 +1100 (AEDT)
+Received: by mail-qv1-f42.google.com with SMTP id 6a1803df08f44-87c21c5d3eeso60786306d6.2
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 06:08:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1760962860; x=1761567660;
+        d=1e100.net; s=20230601; t=1760965734; x=1761570534;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Pomt2ITXhIHlFit8dq3w5svz3PMdwi8h98cx9ZzxHC0=;
-        b=ikgD+pv90vTAX2a95K/7hZIj42XYAeHErbf3zG/r+elfUsu5b4wkU02Y1PdfXlV2Pu
-         gFho2bTEpUIDYTv9ehSYIxYx8KoxnqCCrwKg5kwtxcQDxgYYkkEu+j9SLZwx2D0Cdh4N
-         DB8yJp8TolvI9s219lggvSvR5pqoivIBdLe+Mtc/kIEGB1oubL2UTATnonyVOa98qIl+
-         r1zWx2Yu8jlVHIobYYlA4MIko03L7EOO+Jpr+jSHc+47Jr8xCBaMkL8tFAqgp3n/f80o
-         d6Qg3KQ9loFwA/5RzEcAJhCKAxLZ/3w9ZTH/hMQmcsVzLvqoTrgQKMMcKT8if3E7KBPa
-         4l4w==
-X-Forwarded-Encrypted: i=1; AJvYcCUfNeqvC5TED6JJBalU8O6hEe0y+v7S4BSJApWa+FwHH4N0oms/euEZQHd6sxq2rTtLWQzZJ6TkgozyOjE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxTZLKhY7UojsqiJpcQH9YgI5BHS6Ab3VjSKlRz+2T1LAr8QZIc
-	sYZdS9nIo7cQzEmq4eYZDrY8Vpd8QpUpj/R2qMdkIHXSgHRCXYOkXgTqRE/yDxmJ
-X-Gm-Gg: ASbGncu3acCS9w911N0dzU4+RZAzqnU9Pyh0fsI1smIDNjbiDtoI4aVnEb8jKHtzojL
-	US/DG//QWwUoAoGivAIsczxHZJHOLDy+xBNgwEd1lgVnf6U1e1L5rxP8CIinJ7XPCgk8z5vi6Kd
-	H59ZBz3rp3bUWdnYS5sMbVHlYFZLpg2+8yc3r6gF6Oo4rz2gXoTOoODSdT76U4oeejnx8sjyQQ2
-	mERidV2NHAa288EAMt/YyqEgorqCWjpATYgydinfJNNlb2lxwUa0zbqZy0JXlM9MY46o05hyJx6
-	6XPhh2hnA0hNt2JUOvZBTn0cpWp45lYMTePNzqjXcXnUM4zX4vOPnOh+bxeMIyA8nyPPXzedWmj
-	lqwGr3mbH1njLWZV4gPNYsehzDAJ+Jki7xdWyTVHs+IAhNWa3omwiOAfYtwWhKDGbWtasHpYmvw
-	U6pdmtN4GXh24WSH4difumuha36YN/AWVTJ4zgMApAlzdM/HArm+6931GzqTv/k90=
-X-Google-Smtp-Source: AGHT+IGfImXXJwkSkaEyG4FJ3/Q6yGtLUYJGKFkJvWMj8XzSuUVcOs4Q9fkO00Hd02XJZikDRzXK4g==
-X-Received: by 2002:a05:6e02:1fe8:b0:430:c403:97ea with SMTP id e9e14a558f8ab-430c524fbb3mr191842785ab.2.1760962859940;
-        Mon, 20 Oct 2025 05:20:59 -0700 (PDT)
-Received: from mail-il1-f178.google.com (mail-il1-f178.google.com. [209.85.166.178])
-        by smtp.gmail.com with ESMTPSA id e9e14a558f8ab-430d07b4372sm29868135ab.32.2025.10.20.05.20.59
+        bh=WTAfAvg+E5E0/JeW2qvrB22XDr/x/zemAkA2zC9bvaY=;
+        b=aHd6E8wzAaJIAWFxaS+JzlFNyx5f364SmNGqsn+nIBB5qDuIQEhgugAOVWTLYXPYRi
+         ycLE8KJEYpomaEBbLdoI6Ah0vorSDYUjbazWXj0EswRVZ7J4EmE7hJrmgHFusys5OWn6
+         vnR46722OfbawsuJGQtDkMP62j5JBUJaWoUg5DflmswmlplD83qoaKr2XNyzu9DQSlxg
+         vBF2n27+DBN5dwCzB3vqO/Kc3TV153F9cyK/fS11bN1NEiWOe3wI17A30+fYYryVQnD2
+         21u8LOKdN9DYS6NFmVmD53P/HrkWiR33FO61CkgXlK7ca8F80Pj7gMLjY1rczoDu7qsS
+         605w==
+X-Forwarded-Encrypted: i=1; AJvYcCXuDZdwHJ98HkNViV+0cIeSl0lXOGXN9CoTkjlqPMsPL/5QFWNpLnZEE3tZ4qWZswyPaHGFx3nkXeEjRKw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx/5xNKtakYt1cfmwHtGnMho3RgLx5ibz2i2eEjOxgJUF6VllhI
+	ysYdHK35DUl+Vxok5unemyRITdmhKPBU496X5RD0b3EqONQquW200LURmUVy98Sf
+X-Gm-Gg: ASbGncvWNrcxJSaqaIgpCEJUBF5ntBmISWnwYkg+IHZAyy5FeiKjYs0momB/sMuPRKL
+	1Z8U8UTi40b+X+DVHDXfFIzEeEVl7IJ+5NA6kno8KYVfQlENTPsjiZ8vwOSwBa+K7aTudRFgSfq
+	uTgdhNkka67eW2ZS6FD4N6XSkCWb68KTwB+32rkC2LFXsMmhvKA6t2G89NfnEtHbKKL4YGOwMNo
+	ERjacI6iKIz6nMMoJM1P9O5ONmB7G0Zjxe/r7qURZuxHabFGPDMTxe+gZOkKmGWqlU2CnP02Lpw
+	3XvXVK6wiS/1ACXagw17/fr76IEerVoshOkAMxXhrOEeMntvNaEE8hERadgn6zXSVLEZmurArtn
+	HTfiPufKeTxy6wV+Olu0WeRTaJSLeu8/e+shwjECzRAFWFIICLl6TleIIStkD/tYw97d4CajFwN
+	PtYP7BCxZVko0ZUhz6IhrFXrSKhg9OTsnuZdsWoy8gCIj6mvZEejMyCGGw2RA=
+X-Google-Smtp-Source: AGHT+IF4yxgTb1qWdYsuee+oy4MbbQF2FkYIauzn71kpC9PX1upMd94UJxcy6lMZw/Qu7Y19e0vz3Q==
+X-Received: by 2002:a05:6214:5184:b0:7ef:d35f:e1e3 with SMTP id 6a1803df08f44-87c2081e870mr143193206d6.57.1760965734229;
+        Mon, 20 Oct 2025 06:08:54 -0700 (PDT)
+Received: from mail-qv1-f44.google.com (mail-qv1-f44.google.com. [209.85.219.44])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-87d02d89323sm50457346d6.55.2025.10.20.06.08.53
         for <linux-aspeed@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 20 Oct 2025 05:20:59 -0700 (PDT)
-Received: by mail-il1-f178.google.com with SMTP id e9e14a558f8ab-430c97cbe0eso25352205ab.2
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 05:20:59 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVMfutF3AzdacX5cGOHisNFXU/MqSDBLL+/Md+BkslEK1XQSyOEALh2k3Pye3HtV0czSIrpiPp0rw9/JsE=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:50a2:b0:5d5:f6ae:38ca with SMTP id
- ada2fe7eead31-5d7dd6f4c27mr3609494137.41.1760962417639; Mon, 20 Oct 2025
- 05:13:37 -0700 (PDT)
+        Mon, 20 Oct 2025 06:08:53 -0700 (PDT)
+Received: by mail-qv1-f44.google.com with SMTP id 6a1803df08f44-879b99b7ca8so66464276d6.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 06:08:53 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXKsYrY7R1tRwkUr50yg4jT0/M9Ln5mS6mCmWfLVlS+dtqWJDP3E3TbiFcVYNyiUNr8YmDPgu/rimRMvBQ=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:f09:b0:5d5:f6ae:38d1 with SMTP id
+ ada2fe7eead31-5db093f61bfmr207405137.38.1760965235930; Mon, 20 Oct 2025
+ 06:00:35 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,15 +77,15 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1760696560.git.geert+renesas@glider.be> <792d176149bc4ffde2a7b78062388dc2466c23ca.1760696560.git.geert+renesas@glider.be>
- <aPJwtZSMgZLDzxH8@yury>
-In-Reply-To: <aPJwtZSMgZLDzxH8@yury>
+References: <cover.1760696560.git.geert+renesas@glider.be> <67c1998f144b3a21399672c8e4d58d3884ae2b3c.1760696560.git.geert+renesas@glider.be>
+ <aPKQMdyMO-vrb30X@yury>
+In-Reply-To: <aPKQMdyMO-vrb30X@yury>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 20 Oct 2025 14:13:26 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXCoqZmSqRAfujib=2fk0Ob1FiPYWBj8vMXfuXNoKhfVg@mail.gmail.com>
-X-Gm-Features: AS18NWDS1vbUG4-z_--VlQ3gjSspwjijy0fs8EPqX7O88cWCZQUNQKHTmAYei1k
-Message-ID: <CAMuHMdXCoqZmSqRAfujib=2fk0Ob1FiPYWBj8vMXfuXNoKhfVg@mail.gmail.com>
-Subject: Re: [PATCH v4 1/4] bitfield: Drop underscores from macro parameters
+Date: Mon, 20 Oct 2025 15:00:24 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdXq7xubX4a6SZWcC1HX+_TsKeQigDVQrWvA=js5bhaUiQ@mail.gmail.com>
+X-Gm-Features: AS18NWBop_uORR3NT3_HDoVoJ_Tyxhm-9TufWw0aoroSF1IMR97eq1M8wyRugog
+Message-ID: <CAMuHMdXq7xubX4a6SZWcC1HX+_TsKeQigDVQrWvA=js5bhaUiQ@mail.gmail.com>
+Subject: Re: [PATCH v4 2/4] bitfield: Add non-constant field_{prep,get}() helpers
 To: Yury Norov <yury.norov@gmail.com>
 Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
 	Nicolas Ferre <nicolas.ferre@microchip.com>, 
@@ -109,67 +109,186 @@ Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>
 	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, qat-linux@intel.com, 
 	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
 	linux-iio@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
+	linux-kernel@vger.kernel.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Content-Type: text/plain; charset="UTF-8"
 
 Hi Yury,
 
-On Fri, 17 Oct 2025 at 18:37, Yury Norov <yury.norov@gmail.com> wrote:
-> On Fri, Oct 17, 2025 at 12:54:09PM +0200, Geert Uytterhoeven wrote:
-> > There is no need to prefix macro parameters with underscores.
-> > Remove the underscores.
+On Fri, 17 Oct 2025 at 20:51, Yury Norov <yury.norov@gmail.com> wrote:
+> On Fri, Oct 17, 2025 at 12:54:10PM +0200, Geert Uytterhoeven wrote:
+> > The existing FIELD_{GET,PREP}() macros are limited to compile-time
+> > constants.  However, it is very common to prepare or extract bitfield
+> > elements where the bitfield mask is not a compile-time constant.
 > >
-> > Suggested-by: David Laight <david.laight.linux@gmail.com>
+> > To avoid this limitation, the AT91 clock driver and several other
+> > drivers already have their own non-const field_{prep,get}() macros.
+> > Make them available for general use by consolidating them in
+> > <linux/bitfield.h>, and improve them slightly:
+> >   1. Avoid evaluating macro parameters more than once,
+> >   2. Replace "ffs() - 1" by "__ffs()",
+> >   3. Support 64-bit use on 32-bit architectures.
+> >
+> > This is deliberately not merged into the existing FIELD_{GET,PREP}()
+> > macros, as people expressed the desire to keep stricter variants for
+> > increased safety, or for performance critical paths.
+> >
 > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> > Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+> > Acked-by: Crt Mori <cmo@melexis.com>
 > > ---
 > > v4:
-> >   - Update recently introduced FIELD_MODIFY() macro,
+> >   - Add Acked-by,
+> >   - Rebase on top of commit 7c68005a46108ffa ("crypto: qat - relocate
+> >     power management debugfs helper APIs") in v6.17-rc1,
+> >   - Convert more recently introduced upstream copies:
+> >       - drivers/edac/ie31200_edac.c
+> >       - drivers/iio/dac/ad3530r.c
+>
+> Can you split out the part that actually introduces the new API?
+
+Unfortunately not, as that would cause build warnings/failures due
+to conflicting redefinitions.
+That is a reason why I want to apply this patch ASAP: new copies show
+up all the time.
 
 > > --- a/include/linux/bitfield.h
 > > +++ b/include/linux/bitfield.h
-> > @@ -60,68 +60,68 @@
+> > @@ -220,4 +220,40 @@ __MAKE_OP(64)
+> >  #undef __MAKE_OP
+> >  #undef ____MAKE_OP
 > >
-> >  #define __bf_cast_unsigned(type, x)  ((__unsigned_scalar_typeof(type))(x))
-> >
-> > -#define __BF_FIELD_CHECK(_mask, _reg, _val, _pfx)                    \
-> > +#define __BF_FIELD_CHECK(mask, reg, val, pfx)                                \
-> >       ({                                                              \
-> > -             BUILD_BUG_ON_MSG(!__builtin_constant_p(_mask),          \
-> > -                              _pfx "mask is not constant");          \
-> > -             BUILD_BUG_ON_MSG((_mask) == 0, _pfx "mask is zero");    \
-> > -             BUILD_BUG_ON_MSG(__builtin_constant_p(_val) ?           \
-> > -                              ~((_mask) >> __bf_shf(_mask)) &        \
-> > -                                     (0 + (_val)) : 0,               \
-> > -                              _pfx "value too large for the field"); \
-> > -             BUILD_BUG_ON_MSG(__bf_cast_unsigned(_mask, _mask) >     \
-> > -                              __bf_cast_unsigned(_reg, ~0ull),       \
-> > -                              _pfx "type of reg too small for mask"); \
-> > -             __BUILD_BUG_ON_NOT_POWER_OF_2((_mask) +                 \
-> > -                                           (1ULL << __bf_shf(_mask))); \
-> > +             BUILD_BUG_ON_MSG(!__builtin_constant_p(mask),           \
-> > +                              pfx "mask is not constant");           \
-> > +             BUILD_BUG_ON_MSG((mask) == 0, pfx "mask is zero");      \
-> > +             BUILD_BUG_ON_MSG(__builtin_constant_p(val) ?            \
-> > +                              ~((mask) >> __bf_shf(mask)) &  \
-> > +                                     (0 + (val)) : 0,                \
-> > +                              pfx "value too large for the field"); \
-> > +             BUILD_BUG_ON_MSG(__bf_cast_unsigned(mask, mask) >       \
-> > +                              __bf_cast_unsigned(reg, ~0ull),        \
-> > +                              pfx "type of reg too small for mask"); \
-> > +             __BUILD_BUG_ON_NOT_POWER_OF_2((mask) +                  \
-> > +                                           (1ULL << __bf_shf(mask))); \
-> >       })
+> > +/**
+> > + * field_prep() - prepare a bitfield element
+> > + * @mask: shifted mask defining the field's length and position
+> > + * @val:  value to put in the field
+> > + *
+> > + * field_prep() masks and shifts up the value.  The result should be
+> > + * combined with other fields of the bitfield using logical OR.
+> > + * Unlike FIELD_PREP(), @mask is not limited to a compile-time constant.
+> > + */
+> > +#define field_prep(mask, val)                                                \
+> > +     ({                                                              \
+> > +             __auto_type __mask = (mask);                            \
+> > +             typeof(mask) __val = (val);                             \
+> > +             unsigned int __shift = sizeof(mask) <= 4 ?              \
+> > +                                    __ffs(__mask) : __ffs64(__mask); \
+> > +             (__val << __shift) & __mask;    \
 >
-> I agree that underscored parameters are excessive. But fixing them has
-> a side effect of wiping the history, which is a bad thing.
->
-> I would prefer to save a history over following a rule that seemingly
-> is not written down. Let's keep this untouched for now, and if there
-> will be a need to move the code, we can drop underscores as well.
+> __ffs(0) is undef. The corresponding comment in
+> include/asm-generic/bitops/__ffs.h explicitly says: "code should check
+> against 0 first".
 
-Fair enough.
-So I assume you are fine with not having underscored parameters in
-new code, like in [PATCH v4 2/4]?
+An all zeroes mask is a bug in the code that calls field_{get,prep}().
+
+> I think mask = 0 is a sign of error here. Can you add a code catching
+> it at compile time, and maybe at runtime too? Something like:
+>
+>  #define __field_prep(mask, val)
+>  ({
+>         unsigned __shift = sizeof(mask) <= 4 ? __ffs(mask) : __ffs64(mask);
+>         (val << __shift) & mask;
+>  })
+>
+>  #define field_prep(mask, val)
+>  ({
+>         unsigned int __shift;
+>         __auto_type __mask = (mask), __ret = 0;
+>         typeof(mask) __val = (val);
+>
+>         BUILD_BUG_ON_ZERO(const_true(mask == 0));
+
+Futile, as code with a constant mask should use FIELD_PREP() instead.
+
+>
+>         if (WARN_ON_ONCE(mask == 0))
+>                 goto out;
+>
+>         __ret = __field_prep(__mask, __val);
+>  out:
+>         ret;
+>  })
+
+Should we penalize all users (this is a macro, thus inlined everywhere)
+to protect against something that is clearly a bug in the caller?
+E.g. do_div() does not check for a zero divisor either.
+
+> > +
+> > +/**
+> > + * field_get() - extract a bitfield element
+> > + * @mask: shifted mask defining the field's length and position
+> > + * @reg:  value of entire bitfield
+> > + *
+> > + * field_get() extracts the field specified by @mask from the
+> > + * bitfield passed in as @reg by masking and shifting it down.
+> > + * Unlike FIELD_GET(), @mask is not limited to a compile-time constant.
+> > + */
+> > +#define field_get(mask, reg)                                         \
+> > +     ({                                                              \
+> > +             __auto_type __mask = (mask);                            \
+> > +             typeof(mask) __reg =  (reg);                            \
+>
+> This would trigger Wconversion warning. Consider
+>         unsigned reg = 0xfff;
+>         field_get(0xf, reg);
+>
+> <source>:6:26: warning: conversion to 'int' from 'unsigned int' may change the sign of the result [-Wsign-conversion]
+>     6 |     typeof(mask) __reg = reg;
+>       |                          ^~~
+>
+> Notice, the __auto_type makes the __mask to be int, while the reg is
+
+Apparently using typeof(mask) has the same "issue"...
+
+> unsigned int. You need to do:
+>
+>         typeof(mask) __reg = (typeof(mask))(reg);
+
+... so the cast is just hiding the issue? Worse, the cast may prevent the
+compiler from flagging other issues, e.g. when accidentally passing
+a pointer for reg.
+
+>
+> Please enable higher warning levels for the next round.
+
+Enabling -Wsign-conversion gives lots of other (false positive?)
+warnings.
+
+> Also, because for numerals __auto_type is int, when char is enough - are
+> you sure that the macro generates the optimal code? User can workaround it
+> with:
+>
+>         field_get((u8)0xf, reg)
+>
+> but it may not be trivial. Can you add an example and explanation please?
+
+These new macros are intended for the case where mask is not a constant.
+So typically it is a variable of type u32 or u64.
+
+> > +             unsigned int __shift = sizeof(mask) <= 4 ?              \
+> > +                                    __ffs(__mask) : __ffs64(__mask); \
+>
+> Can you use BITS_PER_TYPE() here?
+
+Yes, I could use BITS_PER_TYPE(unsigned long) here, to match the
+parameter type of __ffs() (on 64-bit platforms, __ffs() can be used
+unconditionally anyway), at the expense of making the line much longer
+so it has to be split.  Is that worthwhile?
+
+>
+> > +             (__reg & __mask) >> __shift;    \
+> > +     })
+> > +
+>
+> When mask == 0, we shouldn't touch 'val' at all. Consider
+>
+>         field_get(0, get_user(ptr))
+>
+> In this case, evaluating 'reg' is an error, similarly to memcpy().
+
+Again, a zero mask is a bug.
+
+Thanks!
 
 Gr{oetje,eeting}s,
 
