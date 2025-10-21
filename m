@@ -1,79 +1,76 @@
-Return-Path: <linux-aspeed+bounces-2551-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2552-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF911CCD1AA
-	for <linux-aspeed@archiver.kernel.org>; Tue, 21 Oct 2025 22:05:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C229CCD1A5
+	for <linux-aspeed@archiver.kernel.org>; Tue, 21 Oct 2025 22:35:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4crmZr29LTz2yvk;
-	Wed, 22 Oct 2025 09:05:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761016556;
-	cv=none; b=K4b89xfH7kLeOlCFXRY7c0vDnS9MVYqReBhhIgMVrz177DhmocHXI0nC1/4EPTtOElBYFHw8phTkM0Y3kDoNzAvHdkczB8euMfrN/LVLumkfLUr7IdZFYodu/pNAvLGdkqhPMzXYZJQeW0OdEVKp1Dz96mKJ+/CvsJrkSaTk+qw0H1w4WkbyVtJZzW9EyMhHR3supkbTJcNgE3uco5zRbYbaWnBEe60oxzIzvobICP+4QU/OjNC0mImPel6kge/4JUaLebkzypx9qxMrPo/Gx+EYAqMy0ReiXV4F89yp8YzACM7DKOPKr5bG+e/c/hCHdLC/30x29oJWhf7Gtv2oTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4crnDl3MT9z2yvk;
+	Wed, 22 Oct 2025 09:35:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761086119;
+	cv=none; b=Dpm35/ytWoj+YCsvF5zX6AjESLxRF7ItoAfp2tBGOToPy06ZCSu6+11bjKMpqbk0ucg/eg125uuLy5dxYFXdI23peGuNuBB91Nz4kiBalx2Rszi0WaRpS7GPAXt6Bn2jWprwNZ/Ld1o24Du8vpwvXLSq9/IxB8AVEOadOM1dIffeOCmnk8PeqCz8zKNWPIX1+O83SNBW76vU2vJTLhW9Vz2Rl2WM5ZiSwTU/sFd5iKhXqhj05xR8l3F4w3sKUQpXgOVlDTFihDKhVDAy+EdR8X4ajK/NK13nkV5yvKAewtwHHhViKDe28riOhuFnoMvkUSQBPeI54e44Ac9hrTMcPg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761016556; c=relaxed/relaxed;
-	bh=MIc5Jk6uXrpT5vKhUN3R3BidtAKxdUPzX/dU/naleU8=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Xpf714zNFDQP6w8NVCGstWOPUhNjERNf3/gUvFwPGqaA0j8egpE8Iay4OEJakFM8LkxoOuYHS8yeKIRa6uM120Up27tKIcZTPlJma8g8GOc+OJHV+yQsu8pRLh610eh6P2SyX8fLFvw+QDt6/sqJ0n9ntzsGcKx/ZxQ62g+aQty5g9OHUYB33vYtQiCpWntTFpvWK+JkFNWIKgfwJLtqTtNF+6ZJ0/pvdDjD5zOY7QvbyeJq6DZgDLceV/bbEhufn6wgHO0b/vTzoqDWHYufbPRgrBkGnSqahhgotMYcojVLLpL/6WpYSRquEJV6kQ0Ralw3jJSaF4tdMB+Dr0BoxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y+loLgrn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1761086119; c=relaxed/relaxed;
+	bh=j6Z5RyFXrHpvFc4eRiFbkrrxzN6WfAoXMcnq2pqicfw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=UlBdqPc3fRSozTdqoMRSYerkHNrkGEMk7nELgFkzNWkI06Uc3FlUXo9NSCSy57snTReusRu2Zx7mAVhxsDxYF2Hjx1wBCuvpAWqfl5RLZi9GNid3zIw13APfkWeYGXu277FkwmgN690wCLPJzKAQTWhOmJXQ9r01NTYvNPkdZNSwB+MkS7Y9rdAh1bXWN3tMFEaW9UihResSskOpjBRif3AQi/Rpd9xH1ZrVo8fwfk3ha7snC7/ZsTBnSlDcgfG3OGWk2ymVd82JxRCwmmbmxNblfWn53bG6iMx/KgOUR5Bvx8DQP8CNjkx13cVhfG5o5S/7+3cya8XnLQWyg8r7qA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=NwVzHpcr; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y+loLgrn;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=NwVzHpcr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=leo.jt.wang@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4crHVz0MDGz2yhD
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 21 Oct 2025 14:15:54 +1100 (AEDT)
-Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-b5515eaefceso4197276a12.2
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Oct 2025 20:15:53 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4crnDk0JM2z2yjp;
+	Wed, 22 Oct 2025 09:35:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761016551; x=1761621351; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=MIc5Jk6uXrpT5vKhUN3R3BidtAKxdUPzX/dU/naleU8=;
-        b=Y+loLgrn1/fFC5jq8w+DCAIOWvBybghDiN1GRZfKkvY8xISBENGHblHbGg41ya1Wy4
-         Oxl7hNs4eEhoaUn+v+OeB69wpsvd32OVPtUHH4rFoawaRlz4SN2ip77De1QRYBiT2yZg
-         WbWlApQVk0NwrRTcgmX0AmcnGvL4Z8L1ThgihHUVUjtTTICWN82b+EJXpstyZgjhnJXd
-         5a8gmdreWt2g+G3BP4ygLSGuBChiSUtygir5s9hq7IRO8sm1WfKTR5CqeSk8ly1GJakJ
-         63SJuB+g39yGtRURJZqYeQKQPryWYb37TMHrYFkUpUkwwMbjuhHTWrbVE6VmP8+3udhZ
-         tCiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761016551; x=1761621351;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=MIc5Jk6uXrpT5vKhUN3R3BidtAKxdUPzX/dU/naleU8=;
-        b=OSfbSVPw/BVrxmrukMaND5gs5Rq7CRwBFpRj1bqLDwhjWajf08x0mJPjkJMvTY1BEh
-         9Xkt3K7jRuOwNFeqhoyMwdMcAeLH+Mz9JK1kCV95xQvJxCjCCYIp9N00v4UYUgY7nxwx
-         QV0lqX4NeY5WfEOypaEp2GUiT95nyHgBNhny93/IGt8T2VMTY2wQd4SZCf3U5Ld4uVax
-         Vch7NhoRdehyoTUo4ZRNDMD3LiAQ+MsUF6IR13ux9EziL2tvkjlD4A+uenDtLr5uJZJF
-         VoUUmJYIXJ8HDK2H4l6ThxojGKRLyoYhuTyfx67kxbCf38sIlTL4olOkU0A6G+ziTLnv
-         sCpg==
-X-Forwarded-Encrypted: i=1; AJvYcCVHiluYzh3gbp0U0KjcbS+a7L2WAOrE1y/4YY6ITcc+5dr4Anq/5ZC+bl16bn+G1Ln4zoO7gsZ9wpC9pNQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxIRCRbzeBIqtITuOq5LENB4/aJH/fnRX9zJGlIrBnRVW2qO2zY
-	x57MV7PAyMbw2+07zXWnDsJyLd8iXCH+8HRSigxlVi0cvD6mvvfwCnc6
-X-Gm-Gg: ASbGncvT9O8mJ1zlPW0fcIT5+xMXtvL90pRLjm/mlM7Gj8RkKSMnG2bnpvluAzwj+iT
-	9/IzoYqNy7MdkuInDNnNgdhzchjiStq4ypJAkYdbiYYuaaAyL0G+jB/AJ3La/xxJRa25MEnJ3Gi
-	j0l7dT5XGyYRtrNrOFArvLntHnSKsbGX/HrlJLupoCVk2XAlNv1ezhJJ0yLORufagAt+/TO3tTU
-	rYLRy6bFvV5spUBOiPsTDjzBfikufV+UcK3oWmLWsXYsZOQJnBwJI0pApqdNHXUWWfHjiwNqC3O
-	Yeggv+jFrxlYNv/PI+qhjQq3xythITBB1J1b3Hb+uokkilW/PK9+PVDAVhcEWhB2W1wjLpY0Rm9
-	YgfqPVjnysjABYeVXBoAoSFyn1TyArv7wMFzIvPulODLF8WBtaiEebVNjcwpe+LTQ7cJjxQTzBt
-	wqpssDwzHsTEi4Q4hvBR/2HST90jdDq8EVS90Z
-X-Google-Smtp-Source: AGHT+IHvc2OdIns7Dhqd5TV4LyvC/HJfGjCUatzoXh06HQxZAcairq7EJA2klU28lcwGsK1CQQDx2g==
-X-Received: by 2002:a17:903:2b0d:b0:272:f9c3:31f7 with SMTP id d9443c01a7336-290cbe2ae84mr56298125ad.50.1761016551034;
-        Mon, 20 Oct 2025 20:15:51 -0700 (PDT)
-Received: from [172.17.0.2] (125-227-29-20.hinet-ip.hinet.net. [125.227.29.20])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29246fcc2b1sm94889765ad.27.2025.10.20.20.15.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Oct 2025 20:15:50 -0700 (PDT)
-From: Leo Wang <leo.jt.wang@gmail.com>
-Date: Tue, 21 Oct 2025 11:15:39 +0800
-Subject: [PATCH] ARM: dts: aspeed: clemente: Add EEPROMs for boot and data
- drive FRUs
+	d=codeconstruct.com.au; s=2022a; t=1761086116;
+	bh=j6Z5RyFXrHpvFc4eRiFbkrrxzN6WfAoXMcnq2pqicfw=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=NwVzHpcr0vkIJvUKi4uJ0cl729CK2k58bT2Z9Ridpa0BoeNFzr4MFJoyHmGl5fbzL
+	 gYMCighc5YVlazpkf8da3p75/KNSwBfP0ZG2KsCPTB4YLtUh+alrSexKuCyr7nNRkG
+	 LBhYY6ftXBx6U6YFmeKdl+dzpeEh+kIivnR6uYPC9VMKf6dBXAzF4L4vdCQqKHRTaV
+	 8lolNXRaQ+P5jNzfc7yWl5ErfUyvSn6RrmZIMqxg3QnMC9O13/h/SYXQQVE1VE1Hbw
+	 L0da78AKJ5pE5O8L81Bkf01EzxTShIlzcfSiZFAkH2K4nmMtgdASu2tgLNzHs+f6IQ
+	 QTIbNS/9CZZpg==
+Received: from [192.168.68.113] (unknown [180.150.112.213])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id C76C57406C;
+	Wed, 22 Oct 2025 06:35:13 +0800 (AWST)
+Message-ID: <4aa22124cefc6bd23d75bdb0d5a85a2f38c22a77.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] peci: controller: peci-aspeed: convert from
+ round_rate() to determine_rate()
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: "Winiarska, Iwona" <iwona.winiarska@intel.com>, 
+ "gregkh@linuxfoundation.org"
+	 <gregkh@linuxfoundation.org>, "bmasney@redhat.com" <bmasney@redhat.com>
+Cc: "joel@jms.id.au" <joel@jms.id.au>, "linux-aspeed@lists.ozlabs.org"
+	 <linux-aspeed@lists.ozlabs.org>, "sboyd@kernel.org" <sboyd@kernel.org>, 
+ "linux-kernel@vger.kernel.org"
+	 <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	 <linux-arm-kernel@lists.infradead.org>, "linux-clk@vger.kernel.org"
+	 <linux-clk@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+	 <openbmc@lists.ozlabs.org>, "mripard@kernel.org" <mripard@kernel.org>
+Date: Wed, 22 Oct 2025 09:05:13 +1030
+In-Reply-To: <d53256b35ee7089607463c66bb4a8c3420faf058.camel@intel.com>
+References: <20250810-peci-round-rate-v1-1-ec96d216a455@redhat.com>
+			 <aMatZAX6eFI1RmDH@redhat.com>
+			 <28dc3bd8aeca7e3164747960747f75060c596704.camel@codeconstruct.com.au>
+			 <aPEZSY6RC-UVclxN@redhat.com>
+			 <ba2e6b78e59afb7c89e5022770a142ec8c31659a.camel@codeconstruct.com.au>
+			 <2025101759-runner-landing-374b@gregkh>
+			 <2975918e3f3a7de245e93fbee52335acb78bb23a.camel@codeconstruct.com.au>
+			 <2025101721-twiddling-huskiness-4852@gregkh>
+		 <13566a08eeaed313ad789abcae1920d9b00483b0.camel@codeconstruct.com.au>
+	 <d53256b35ee7089607463c66bb4a8c3420faf058.camel@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.1-1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,114 +84,102 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251021-leo-dts-add-nvme-eeprom-v1-1-33166b3665b4@gmail.com>
-X-B4-Tracking: v=1; b=H4sIANr69mgC/x3MQQqEMBAF0atIr21IZ3REryIuxHy1YUwkERkQ7
- 25w+RZVFyVERaKuuCji1KTBZ0hZ0LSOfgGryyZrbC3GCv8Q2B2JR+fYnxsY2GPY+CPfqpG2bid
- rKNd7xKz/99wP9/0A40cKRWkAAAA=
-X-Change-ID: 20251021-leo-dts-add-nvme-eeprom-316471959c20
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, bruce.jy.hung@fii-foxconn.com, 
- leo.jt.wang@fii-foxconn.com, Leo Wang <leo.jt.wang@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1761016548; l=2272;
- i=leo.jt.wang@gmail.com; s=20250618; h=from:subject:message-id;
- bh=FozCj5Qtilnm6MTFQqUJJBi0+f5aDzs/7epoDnQr8Rw=;
- b=8BInr5iA6wBDcAL4sY8DnyKW4muBdm9myjKyhrNgz4zvC7PgZByz+aciemOqaw2l3lP+Dk17F
- WiRuYEfnT9MAdWDDJm8CfcmcWioWtAmA94gNx57lZN4uJoHCmtiSswe
-X-Developer-Key: i=leo.jt.wang@gmail.com; a=ed25519;
- pk=x+DKjAtU/ZbbMkkAVdwfZzKpvNUVgiV1sLJbidVIwSQ=
 
-Add EEPROM devices on the I2C buses used for the boot and data NVMe
-drives. These EEPROMs store FRU information for each drive, allowing
-the BMC to identify.
+On Tue, 2025-10-21 at 21:01 +0000, Winiarska, Iwona wrote:
+> On Mon, 2025-10-20 at 09:30 +1030, Andrew Jeffery wrote:
+> > On Fri, 2025-10-17 at 09:43 +0200, Greg Kroah-Hartman wrote:
+> > > On Fri, Oct 17, 2025 at 05:57:44PM +1030, Andrew Jeffery wrote:
+> > > > On Fri, 2025-10-17 at 08:41 +0200, Greg Kroah-Hartman wrote:
+> > > > > On Fri, Oct 17, 2025 at 04:52:37PM +1030, Andrew Jeffery wrote:
+> > > > > > Hi Greg,
+> > > > > >=20
+> > > > > > On Thu, 2025-10-16 at 12:11 -0400, Brian Masney wrote:
+> > > > > > > Hi Andrew and Iwona,
+> > > > > > >=20
+> > > > > > > On Mon, Sep 15, 2025 at 02:36:48PM +0930, Andrew Jeffery wrot=
+e:
+> > > > > > > > Hi Brian,
+> > > > > > > >=20
+> > > > > > > > On Sun, 2025-09-14 at 07:56 -0400, Brian Masney wrote:
+> > > > > > > > > Hi Iwona, Joel, and Andrew,
+> > > > > > > > >=20
+> > > > > > > > > On Sun, Aug 10, 2025 at 06:21:51PM -0400, Brian Masney wr=
+ote:
+> > > > > > > > > > The round_rate() clk ops is deprecated, so migrate this
+> > > > > > > > > > driver from
+> > > > > > > > > > round_rate() to determine_rate() using the Coccinelle
+> > > > > > > > > > semantic patch
+> > > > > > > > > > appended to the "under-the-cut" portion of the patch.
+> > > > > > > > > >=20
+> > > > > > > > > > Signed-off-by: Brian Masney <bmasney@redhat.com>
+> > > > > > > > >=20
+> > > > > > > > > Would it be possible to get this picked up for v6.18? I'd
+> > > > > > > > > like to remove
+> > > > > > > > > this API from drivers/clk in v6.19.
+> > > > > > > >=20
+> > > > > > > > My (strong) preference is that Iwona applies it, but I'll k=
+eep
+> > > > > > > > an eye
+> > > > > > > > out for any unusual delays.
+> > > > > > >=20
+> > > > > > > This patch wasn't picked up for v6.18. Any chance this can ge=
+t
+> > > > > > > picked up
+> > > > > > > now for v6.19?
+> > > > > > >=20
+> > > > > > > I'm hoping to get this merged so that we can remove the
+> > > > > > > round_rate() clk
+> > > > > > > op from the clk core. The clk maintainer (Stephen) mentioned =
+this
+> > > > > > > work
+> > > > > > > in his last pull to Linus.
+> > > > > > >=20
+> > > > > > > https://lore.kernel.org/linux-clk/20251007051720.11386-1-sboy=
+d@kernel.org/
+> > > > > >=20
+> > > > > > Are you happy to pick this up directly in Iwona's absence?
+> > > > >=20
+> > > > > Why me?
+> > > >=20
+> > > > I figured that would be sensible since Iwona historically sent you =
+PRs
+> > > > for the PECI subsystem.
+> > >=20
+> > > I did not remember that, sorry.
+> > >=20
+> >=20
+> > No worries.
+> >=20
+> > > =C2=A0 The MAINTAINERS file does not mention
+> > > this at all, and it lists many other maintainers that should be able =
+to
+> > > take this patch:
+> > > 	$ ./scripts/get_maintainer.pl=C2=A0 drivers/peci/controller/peci-
+> > > aspeed.c
+> > > 	Iwona Winiarska <iwona.winiarska@intel.com> (maintainer:ASPEED PECI
+> > > CONTROLLER)
+> > > 	Joel Stanley <joel@jms.id.au> (maintainer:ARM/ASPEED MACHINE
+> > > SUPPORT)
+> > > 	Andrew Jeffery <andrew@codeconstruct.com.au> (maintainer:ARM/ASPEED
+> > > MACHINE SUPPORT)
+> >=20
+> > Iwona currently appears unresponsive, as mentioned. Joel's stepped back
+> > from maintaining the ASPEED bits as of earlier this year; I worked with
+> > him to add myself as a maintainer there, hence the last entry, and now
+> > getting in touch with you.
+> >=20
+> > I can apply the patch and send you a PR if that helps, if Iwona doesn't
+> > respond in the mean time.
+>=20
+> Hi!
+>=20
+> Sorry for the delay - for some reason this entire thread didn't land in m=
+y inbox
+> and I just found it now, randomly browsing mailing list :/
+>=20
+> I will sent it as a PR for v6.19.
 
-Signed-off-by: Leo Wang <leo.jt.wang@gmail.com>
----
- .../dts/aspeed/aspeed-bmc-facebook-clemente.dts    | 30 ++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+Ah, super! Thanks Iwona.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-index 450446913e36b1418fab901cde44280468990c7a..885c50a7d66593dfa8493d2d031700174b452382 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-@@ -311,6 +311,12 @@ i2c0mux0ch1mux0ch0: i2c@0 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <0>;
-+
-+					// HDD NVMe SSD FRU 0
-+					eeprom@53 {
-+						compatible = "atmel,24c02";
-+						reg = <0x53>;
-+					};
- 				};
- 
- 				i2c0mux0ch1mux0ch1: i2c@1 {
-@@ -323,6 +329,12 @@ i2c0mux0ch1mux0ch2: i2c@2 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <2>;
-+
-+					// HDD NVMe SSD FRU 1
-+					eeprom@53 {
-+						compatible = "atmel,24c02";
-+						reg = <0x53>;
-+					};
- 				};
- 
- 				i2c0mux0ch1mux0ch3: i2c@3 {
-@@ -493,6 +505,12 @@ i2c0mux3ch1mux0ch0: i2c@0 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <0>;
-+
-+					// HDD NVMe SSD FRU 2
-+					eeprom@53 {
-+						compatible = "atmel,24c02";
-+						reg = <0x53>;
-+					};
- 				};
- 
- 				i2c0mux3ch1mux0ch1: i2c@1 {
-@@ -505,6 +523,12 @@ i2c0mux3ch1mux0ch2: i2c@2 {
- 					#address-cells = <1>;
- 					#size-cells = <0>;
- 					reg = <2>;
-+
-+					// HDD NVMe SSD FRU 3
-+					eeprom@53 {
-+						compatible = "atmel,24c02";
-+						reg = <0x53>;
-+					};
- 				};
- 
- 				i2c0mux3ch1mux0ch3: i2c@3 {
-@@ -619,6 +643,12 @@ i2c0mux5ch1: i2c@1 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			reg = <1>;
-+
-+			// BOOT DRIVE FRU
-+			eeprom@53 {
-+				compatible = "atmel,24c02";
-+				reg = <0x53>;
-+			};
- 		};
- 
- 		i2c0mux5ch2: i2c@2 {
-
----
-base-commit: 6953afcd81a2cc73784e3dd23faa0a1aaf97441a
-change-id: 20251021-leo-dts-add-nvme-eeprom-316471959c20
-
-Best regards,
--- 
-Leo Wang <leo.jt.wang@gmail.com>
-
+Andrew
 
