@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-2564-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2565-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1175ACCD195
-	for <linux-aspeed@archiver.kernel.org>; Wed, 22 Oct 2025 08:07:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F498CCD1AB
+	for <linux-aspeed@archiver.kernel.org>; Wed, 22 Oct 2025 08:08:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cs1x32zBcz2yrb;
-	Wed, 22 Oct 2025 19:07:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761120455;
-	cv=none; b=JjKBIde9Ej1OK079hUtSIFlr6xuLQyLAuise/MPxfFnMC4yIFFlmn7RdG7bKplzgw4WrS4RfwIOhqWo1T4tNJG/XI0gjY77ferrH5FrWG0DFSjgynvJLOQDT9HBPL3rLmnQ2aGaGjhcgnpOQPe6/TqZVMYKWf2g5AZe04MXFFMAtGRRCKAdxTmc42CTENQqiUQ0BIpg3BTrPnByxdI+sJRcYJGvSgzApqmJshaJebRr1jUeyaV1rPK/WTHZLOgJtPzOkItiC7LoH2bpnKRDuzbq7fMDudbV3cWzY8LQcWQINehrPSi6RQz9gV4rAuJM5qijLnG0cc6ifaH5bVUEOMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cs1xs5fTnz30Qk;
+	Wed, 22 Oct 2025 19:08:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761120497;
+	cv=none; b=LRguppRou6oFZt0mHr/9M9UH30z2iGbWE/Jvfy+motuxuiFtWLS+jAUTLfEOa/TDxpu/wbHTJZsRCt9TBUqyRVemILWt+AvnuoS48mzr2uYJ9IX/bHomPsxPF4T0GmDulQpIMeWfyB2gTf315H/LerTSQoc2eAqR1YyzdOAXC3vw4bsvaSSkpsCOg3d0mOL/qiszAbdZCFnE4vTUocl8WE3WKUaDLLnJh85m5U4v3XFjOH20v+z/UQli7Cnh3y8rXUMjFaRRlntK3JWNYwQfZTxifEo8O8Grr3UGnlhsz0874vO+VDfF/y12Nnmx8wbkUz5+y3eWUl65LPSMcUAZXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761120455; c=relaxed/relaxed;
-	bh=pTHXZ3cWr3a5CwcX+aoyYOof1uEnXduMqB7SDGrFVlI=;
+	t=1761120497; c=relaxed/relaxed;
+	bh=4CY9ufpi8MZpRZwnmpMfbneVb9fdIVfKETyTH6/+bPk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=NjNYhgxCBhJSVyUydiFpZA2hCXVNa18a5DoWsL2pvlk4fSmLYGdmbD8QRMS4f4lVbVdk8N+8ZKj9Lgh7ddCAqpgayK9KKqjLpKq7xb97WqZ5MTZzMYcKfoLfYxHQG7c05CUnAAr8la1xeA0AEvSKo9cbqiVEPNbuVeeSqMJP/T6/HkDHGfJAGvXzsWyY5/KoXIzDQgO0hkRapY6JXk1Gt4RHOera1AoHfARkMoC5SdL54p0b0bBVnLtIki56bm+VKmmhF5sPiauhc0JKamfkJd+fvadTIZ5mhUgBOfEPE8e185JiVgzecOHgMpviyhbYSB8rc9JbMENzk3Iq+r7S0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GiUc6+VY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=YvnIOVN9a2gwY99qoneKsm8R9pONn4PN1ST2z73iYg4bz80BrxiKLaOKw2tQUVAXuMDep4+jaBYaO6pcvCuHiZ2MERdyA+HCdZHI2B5BzAH28Z3X+r1CkVzYLFU1n4mKt/2yj8n2WBudpx9LknRLK8Es2L7TUGgjhv5plyyuXPz92FtZqxo0vU9BD7m4BgAvHYBfBAdNBHQB3dYC9HMGhcVKOf9yhjLSCAYuu6IPlt0rjIZnbNeg511/EgzLdRvDhfexlAEEe1u/8GzzGN+qAWHzMbAXqhEFCq1dhsm41Qs7IljlynDCfAqlHtZ8GyJl8XkzYysuTtHlZMjYUj/LyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sxBmd546; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GiUc6+VY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sxBmd546;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cs1x23gKPz2yjx
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 22 Oct 2025 19:07:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cs1xs0BdGz2yrb
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 22 Oct 2025 19:08:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8D32C40942;
-	Wed, 22 Oct 2025 08:07:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84A96C4CEF5;
-	Wed, 22 Oct 2025 08:07:25 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 20742628C3;
+	Wed, 22 Oct 2025 08:08:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98F78C4CEF7;
+	Wed, 22 Oct 2025 08:08:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1761120451;
-	bh=7piWhSL+6yI7WXuDzvfXN1N2u6hvyDZKCo4JVdnp0BE=;
+	s=k20201202; t=1761120494;
+	bh=4ww9RQLz9/g3IUAwovrnw3zZW4CAbBKrfAKcx3iO+to=;
 	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=GiUc6+VYjb3ggVr/qz09wz4qn+UKrb+6+RjFMOGlth6V7zsxY9aGZoN4OhBVz4H02
-	 MNnNs8cvNDvjhZ5R0XZSQDUZxuEWXhV+8QRybVjHlys2Vl8+w6zaASOCIH17jfSwic
-	 vNNCzR2Sp3s0cSbW1wo50fEn202YC3+hKhY/rDviDbVZGXHYuzMjCIlaI6/D4NIKIs
-	 9trxDl0K0skq4wYGjTDUh7qRpF5lxt3/hMUA4IhTFlV7jfHRJVduw3HZH1/0OlALlX
-	 uUi+Z0mGoCVMMvpProy2ma0VHyneQE0vtK6Am6KxNXoAr6j3Sp9957MI5SA0FM8ngR
-	 62FouD+JjIKKA==
-Message-ID: <590aada3-4f3a-418c-804b-8ac7feb83305@kernel.org>
-Date: Wed, 22 Oct 2025 10:07:23 +0200
+	b=sxBmd546cTg9GrvgGhMKn/T8L8WWy0DAYz5SkedDIgxVdlaz2eY46YZSP9/ga9Whr
+	 4YqiCKYOMWf4WuW9NJ/wXgmzAgb5R0hsTYzTKn0ZeMr+XGsbhrvtD3xS7TPufHUejD
+	 DHGLpeWvdocFmtG6HAqGoJsjFJlsD+0qcCUmieKL7jInOZU8hkInJ2TsYQYlL84LmP
+	 OH9dIV5nWIJ7XDaayWiKo1D3HQaOETc1AaK+6gbsTez7gSEUUCBFiyrivJO4G3XVhh
+	 J+5B5ZGFi9EzdDZuQNOwbTSHIPtT3nwwpfmwegZHwWzjFBAWuD1++RSYSiy41LP4Lf
+	 Khb28p4vqOfWA==
+Message-ID: <624530ac-078a-4312-b8da-c2a090aec7c4@kernel.org>
+Date: Wed, 22 Oct 2025 10:08:08 +0200
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -138,29 +138,9 @@ On 22/10/2025 09:05, Ryan Chen wrote:
 > while maintaining compatibility with existing platforms.
 > It also resolves dt-binding validation warnings reported
 > by `make dt_binding_check`.
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> index da1887d7a8fe..ee7855845e97 100644
-> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> @@ -38,7 +38,7 @@ properties:
->      maximum: 2
->  
->    '#size-cells':
-> -    const: 1
-> +    enum: [1, 2]
->  
 
-I said no last time and now when we see the DTS it is visible it makes
-no sense. Please reply in the DTS patch in the EXACT place where this is
-being used.
-
-NAK
+There is no such warning! I think I told you that already. Don't invent
+fake, future warnings.
 
 Best regards,
 Krzysztof
