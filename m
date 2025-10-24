@@ -1,69 +1,70 @@
-Return-Path: <linux-aspeed+bounces-2593-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2594-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 007C2CCD1A5
-	for <linux-aspeed@archiver.kernel.org>; Fri, 24 Oct 2025 07:57:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30D26CCD1A5
+	for <linux-aspeed@archiver.kernel.org>; Fri, 24 Oct 2025 08:06:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ctFcD3Tyyz301K;
-	Fri, 24 Oct 2025 18:57:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.43
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761292636;
-	cv=none; b=afYCsQb0QZu4U+JD8ppfxos9CDI2Vcy7jOfr06pYfDj/cbsmNjhxak62UufCXCHiQcNdn3jSmYX50jItLp+TQbDO++nD+xruGtuAGecoV7VGIMe/wrYjekvKeRQK6VznjEoc8dk8U1DfO1j0SEJtTvHFXhSXTwIF42fOtLVMjRVyU/KliYFIUEUyBebex+GUfN/y4m31HJYGpBJl+PjG1D8mWtlTX0Ki6J+RsD0hhIeUHhx+sCfAzfiV9FfaKMdrrgxnXG6pYNlztKRm/FWyv/emvDuBLh9wuSOLZyiywSNa4lm90L6+wU2D6IlW+QEXeQzPJerrlglTBhttg6S+bg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ctFpX5Xxhz30RJ;
+	Fri, 24 Oct 2025 19:06:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761293172;
+	cv=none; b=X7HKO0QibdhPDIAajbu9Br5oCQhtzkrM1ICV5GRpL3xi+5yaZye3W/gk7+eWAWPu02m5vqvgy3mZl/CSW86ID7Ie48E1fX+Sj9uO3MgDHs6pVO/rNjrFFus9gu4sYzKov4WUk6oPUZClV3yyEkWhmSV6LcLXVzkUYulZ9TbYgOi8gsM/T0HkvaOX9nNGY2bSOOT900EbC7ni9hXu8zZ0pdrZLkz/qNF4xExup6vWB+KshCGLAFZwSfATTSRcUNDkb/LL+nF8YSzFSoyzUJbQU45qc0L7/V9FfX5kIuC3aFFVtiGAo8dRIp2kTqthByQiR0f1m1CrYcTx65TktsUC/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761292636; c=relaxed/relaxed;
-	bh=2H0+Y+0nbHCT1nPmHP2N1suTimvZ79Q7MXGtF4XoMw0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=itoUCwDONs9GaOQ83xz5TfbAWOvm1NjEMBi/wqlkCNTwTn3TQfZeUVoyvZHBqZuqDvbsMTQYy/NIetgeKXAfIqwPhkQsRSHn/g5h7T1RL3w3Ci7fVCQBPi/ByPEVUWbwTdBi1YUokyDkqRJtdhyPWtyV6sJC8AbaJ1s7Vns4nW1sWjZwRemMSTu9jgk4en+as8mt+/NtBO/Ce6gdNyLkoAy5VJj6bDmEHQzrpZfUGKfM48ydhlsXlM4N1Grrm8241f/6gwJJyYcl1O6wogrbJjHxwGbBwcFjDLMAHniwrzKInJhtjRBbC+fgJ2WephzrzKRuR8l+y8xTOnkJFLHSSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.43; helo=mail-vs1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.43; helo=mail-vs1-f43.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-f43.google.com (mail-vs1-f43.google.com [209.85.217.43])
+	t=1761293172; c=relaxed/relaxed;
+	bh=HvOaKA7yATNHviA11gu4zFrMYg2AOIM8mTYHs1HrhIQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Mrvgi2594/AGj2f7LAoYatyrp8Ve0s5jWb1wxdH2xDdXovrH8MZznULHodvFau6TjIM0LQ9QoHLqxaX+p9aMaHkvl4rmpyvFPLQzsgyqmV8EDxbbRDvWri3adtyl0kKos1bF8V39jLGYW5YvDq9PokHGmuhmf3alq586NI+Cb+X4kLngXet+W/BNZgjj/0To1H/aXIbq+3XZs5mMLMzRFF7uznsa6/Z71iNl63FfvQ5+YoEbTM8dbeZvIdxIDXtIAz/hB3YOS+/YuKK5Kb+M5cCiw/PQV1sm8bpf1EePp/nx/6TeleHg8y9IrIYhEF/Eo6sXbJpxFYt/iiOthtSoCw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=eTgClpl/; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=eTgClpl/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org)
+X-Greylist: delayed 603 seconds by postgrey-1.37 at boromir; Fri, 24 Oct 2025 19:06:10 AEDT
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ctFcB6nfSz2yx8
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 24 Oct 2025 18:57:13 +1100 (AEDT)
-Received: by mail-vs1-f43.google.com with SMTP id ada2fe7eead31-5db394cf0d1so566004137.3
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 24 Oct 2025 00:57:13 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761292631; x=1761897431;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2H0+Y+0nbHCT1nPmHP2N1suTimvZ79Q7MXGtF4XoMw0=;
-        b=fggrl7mAb/LL1lqnsHoHp7vC87geKbwgTZSy9qOHYb2NYhEQc3SRiJcmLDrZE+9DLx
-         qGnlWEpQia9Faln6nY+bntfw119NWBOLTFsYzlCZ7dwpoMhkl0leuCRSEb8hSOBrKqO/
-         lgWnwKyN+5/k8zl5plP797NS5AWgpbiaZ8V7Mo/3ZHM3HOL0m0nML81NT/nft6g4X0F/
-         FLdAVt8kp7tNp+9g965HqgI8aG4356MIMDaeqWaT6vvnCbEW3ZpfnbJCbY5zCVYukx1o
-         k+EXUvtiwHrWzXgcNhCmJmk8NJAnETRaloLV4A16omvG/YTAOLh0Y93dIQtoEEZ+h4mO
-         7G9A==
-X-Forwarded-Encrypted: i=1; AJvYcCWR058OXvt3P7USWkfHskXmqGXhoNwKhkoou+UjUfN+hWZHajIeL6us6cKHUQab0V39tvBRv/GswRaEe+0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6W3PU09acNTUYwvrJdJ2fNherGHfgjqrZaVRyi6ESyObq5CTb
-	7yxyv8gHVpnNq5rDWLj3fCeY03l+xK4uM/KFij/kcYnBQXSqWu/l983pQmvCuahQ
-X-Gm-Gg: ASbGnctkzfXjFFYQNsPpMrkW5oFEIxyJ3L8i6ecFDFxNtBZKoN0HBNrj/bs9yUi26tZ
-	E6uxlDN9tJ5JhWcRfZeURUeA3oaKeNLKZVcq1qu0U2PvADmJDRAtf1rDSUNnbfIaZtqBOkU41Z4
-	r93uEF6Ag5NqmS9rYczrNGa+xWfOFoTYONQ3a2Fx+xrCxWmRe1gNCx796W4TmmnXXUT7UBo5qTL
-	B2i40GqDaWSC9T3pg5Gys0H5HgToXrCQmQf6kK9GBFRaaG34xoCS3Po/vGHqK9cyIJJFX+8EQp2
-	8jdWFnXTwSYrpAG8kytuJc0zEATRxTgWpKs6T+WlFTj1BmbuKjEhiKgXTjdaOaKo4Inzo3EIgWz
-	kKX+b7nOrrjpcQIFV+k8kM8h1ajAHvsI6JPS3NqPkSMHhOKaI1qonBbbexvFG4Q0KhwzEiVzavP
-	pMJ8wYNxG9hcj3Pkl1bngr9bX5SZXjP1qWx0a1hiIDUnGsm/XuNBNNcGJr2hM=
-X-Google-Smtp-Source: AGHT+IEGFGjHlPyOUBqG/MPkEKa6ogxjoi94AjO5TwigwjFwCpu3mvShMYWRQUg20AuX3SKsC0zVdQ==
-X-Received: by 2002:a05:6102:5f0c:b0:5db:27b9:c20b with SMTP id ada2fe7eead31-5db27b9ce0amr3146823137.34.1761292630684;
-        Fri, 24 Oct 2025 00:57:10 -0700 (PDT)
-Received: from mail-vs1-f52.google.com (mail-vs1-f52.google.com. [209.85.217.52])
-        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-934aba93695sm1816881241.4.2025.10.24.00.57.09
-        for <linux-aspeed@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 24 Oct 2025 00:57:09 -0700 (PDT)
-Received: by mail-vs1-f52.google.com with SMTP id ada2fe7eead31-5db2d2030bbso762657137.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 24 Oct 2025 00:57:09 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVAAB//pgfwF+8Heh5uKaTbB8ir4JFzhFVFTAV1n+BgiuHCluXV1dimAK+rMOBNHhhoGwUG7yM1jHkVciw=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:50a3:b0:5db:2f62:c15 with SMTP id
- ada2fe7eead31-5db2f621029mr1782604137.41.1761292628800; Fri, 24 Oct 2025
- 00:57:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ctFpV0kbyz2yx8;
+	Fri, 24 Oct 2025 19:06:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1761292565;
+	bh=HvOaKA7yATNHviA11gu4zFrMYg2AOIM8mTYHs1HrhIQ=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=eTgClpl//Z89Gd3mJ26u/c4wtzTyfWBNQOqpjPZtVQzGYTvZMQdVv1/Wpm/Rr2afn
+	 ixqp5Glry95DeQ2s9NOePqNV048rEplCbVMt2Ul1jOE/rEOgl1Dg/zfWxmeQR5yNML
+	 XNCBrPiNacSqWAd+MngipGJyTrP5Osv2FMm4YfJEGOPidCmGebP0fiXHOS6ZipyiFq
+	 wbATJ/kvggqZTwHSbM7FPjb6+CADOaSZkY51KEnzJaLr4g3rrlSF/At0W9aPaOZU1M
+	 w+v6N7CGvrjRFtZxssmUwbCS8reLoFtOy35NSpeH8uE/Jgx9uk/TT+312sYqmAeAzL
+	 hAR2vW9ZYV+og==
+Received: from pecola.lan (unknown [159.196.93.152])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 1412F72F33;
+	Fri, 24 Oct 2025 15:56:04 +0800 (AWST)
+Message-ID: <bf3d6690b9124ecf74df6c0f9f1c0f72ae1db9f7.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v20 1/4] dt-bindings: i2c: Split AST2600 binding into a
+ new YAML
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
+ <ryan_chen@aspeedtech.com>
+Cc: benh@kernel.crashing.org, joel@jms.id.au, andi.shyti@kernel.org, 
+ robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+ andrew@codeconstruct.com.au, p.zabel@pengutronix.de, 
+ andriy.shevchenko@linux.intel.com, naresh.solanki@9elements.com, 
+ linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org,
+ devicetree@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org,  linux-kernel@vger.kernel.org
+Date: Fri, 24 Oct 2025 15:56:03 +0800
+In-Reply-To: <2939cae6-2e8a-4528-8e27-8c932e2f82de@kernel.org>
+References: <20251021013548.2375190-1-ryan_chen@aspeedtech.com>
+	 <20251021013548.2375190-2-ryan_chen@aspeedtech.com>
+	 <20251024-dark-ringtail-of-defiance-1daabd@kuoka>
+	 <2939cae6-2e8a-4528-8e27-8c932e2f82de@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,121 +78,24 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251022070543.1169173-1-ryan_chen@aspeedtech.com>
- <20251022070543.1169173-5-ryan_chen@aspeedtech.com> <b5441728-06a7-44ea-8876-3a9fc3cf55be@app.fastmail.com>
- <TY2PPF5CB9A1BE626A2F0F6307461D8F64BF2F0A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
- <6a97fbb4-19c2-4ffa-9c73-26aea02c27e4@app.fastmail.com>
-In-Reply-To: <6a97fbb4-19c2-4ffa-9c73-26aea02c27e4@app.fastmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 24 Oct 2025 09:56:57 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXTZZK-Tk0gerpARfr+jUNGPhEfRqGOtTvTTJp=SZ2ayg@mail.gmail.com>
-X-Gm-Features: AWmQ_bnSAouTBsQ6YdE-Y1_3m37NwmxEYp_NrgytrqguGhvssb4gZifd3I_f9eg
-Message-ID: <CAMuHMdXTZZK-Tk0gerpARfr+jUNGPhEfRqGOtTvTTJp=SZ2ayg@mail.gmail.com>
-Subject: Re: [PATCH v6 4/6] arm64: dts: aspeed: Add initial AST2700 SoC device tree
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Ryan Chen <ryan_chen@aspeedtech.com>, BMC-SW <BMC-SW@aspeedtech.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Jeremy Kerr <jk@codeconstruct.com.au>, Lee Jones <lee@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>, Nishanth Menon <nm@ti.com>, 
-	=?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>, 
-	Taniya Das <quic_tdas@quicinc.com>, 
-	"Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Eric Biggers <ebiggers@kernel.org>, 
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 23 Oct 2025 at 22:11, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Thu, Oct 23, 2025, at 09:37, Ryan Chen wrote:
-> >> > +  aliases {
-> >> > +          serial0 = &uart0;
-> >> > +          serial1 = &uart1;
-> >> > +          serial2 = &uart2;
-> >> > +          serial3 = &uart3;
-> >> > +          serial4 = &uart4;
-> >> > +          serial5 = &uart5;
-> >> > +          serial6 = &uart6;
-> >> > +          serial7 = &uart7;
-> >> > +          serial8 = &uart8;
-> >> > +          serial9 = &uart9;
-> >> > +          serial10 = &uart10;
-> >> > +          serial11 = &uart11;
-> >> > +          serial12 = &uart12;
-> >> > +          serial13 = &uart13;
-> >> > +          serial14 = &uart14;
-> >> > +  };
-> >>
-> >> This looks like you just list all the uarts that are present on the chip, which is
-> >> not how the aliases are meant to be used. Move this block into the board
-> >> specific file and only list the ones that are actually enabled on that particular
-> >> board.
-> >>
-> >> In particular, the alias names are meant to be local to the board and don't
-> >> usually correspond to the numbering inside of the chip. In the defconfig, we
-> >> currently set CONFIG_SERIAL_8250_NR_UARTS=8, which is enough for any
-> >> board we support so far, but that means only the first
-> >> 8 aliases in the list will actually work.
-> >
-> > Understood. I'll move the aliases block from the SoC dtsi into the
-> > EVB board dts. For the EVB, UART12 is used as the default console,
-> > and the board labels match the SoC numbering, so I plan to keep:
-> >
-> > Does that look acceptable?
-> > ast2700-evb.dts
-> >       aliases {
-> >               serial0 = &uart0;
-> >               serial1 = &uart1;
-> >               serial2 = &uart2;
-> >               serial3 = &uart3;
-> >               serial4 = &uart4;
-> >               serial5 = &uart5;
-> >               serial6 = &uart6;
-> >               serial7 = &uart7;
-> >               serial8 = &uart8;
-> >               serial9 = &uart9;
-> >               serial10 = &uart10;
-> >               serial11 = &uart11;
-> >               serial12 = &uart12;
-> >               serial13 = &uart13;
-> >               serial14 = &uart14;
-> > }
->
-> I think this would be broken for the defconfig if the consol is
-> on serial12. I would recommend using serial0 as the console, like
->
-> aliases {
->        serial0 = &uart12;
-> }
->
-> in this case. If additional uarts are enabled, add those as
-> further aliases.
+Hi Krzysztof,
 
-Indeed. Are all these serial ports exposed on the board?
-Aliases is mean to list only the ones that are exposed, and the alias
-number should match the label on the board/port ("serialN", "debugN",
-...), ideally.
+> Although now I saw next patch, so clearly this commit is incomplete.
 
-Typically only a few ports are exposed, so you may end up with something like:
+The split that Ryan has done here - by shifting to an identical separate
+binding, then making the changes explicit - allows us to review the
+actual changes without losing them in the move. Sounds like a benefit to
+me?
 
-arch/arm64/boot/dts/renesas/rzg3s-smarc.dtsi:           serial0 = &scif1;
-arch/arm64/boot/dts/renesas/rzg3s-smarc.dtsi:           serial1 = &scif3;
-arch/arm64/boot/dts/renesas/rzg3s-smarc.dtsi:           serial3 = &scif0;
+> You just need allOf:if:then: section to narrow the
+> constraints/presence of properties.
 
-I deliberately picked this example, as it shows how the serialN
-numbering does not need to match the scifM (or uartM) numbering.
+That seems like a more complex approach. This is separate IP from the
+2500 controllers, wouldn't that warrant a new binding spec?
 
-Gr{oetje,eeting}s,
+Cheers,
 
-                        Geert
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Jeremy
 
