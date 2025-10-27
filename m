@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-2652-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2653-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95EDDCCF9E5
-	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Oct 2025 18:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B09ACCF9E5
+	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Oct 2025 18:44:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwMqv1Cdgz2yFw;
-	Tue, 28 Oct 2025 05:44:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761590683;
-	cv=none; b=LWBEeUwlx18zqG77vngJSPDv2pnp8MPDt82kcm6iWJNuk+Z8/5NwN1pqGBdfpvYFh2pFQerssdrEtan9veBSsxL8twQQTs8qaAHCTXyk3jQYpuxakeGCwKQre5iii37YWbkEXfgSAoS70zFL29FXQsu0kfTx3fJSP6wJR3bsZP1VkxMFD+UA28EiG9W0hFCC8fsP6zys+4UBp5mKGgOQ262ZT0W0qkWI+kO7ruB8X4mrwddD5uWThRh3nzWbJ7eeq+oixRWPYtLPHhru1gchPhGfOgv4TqF79oKZ+HSu2267qYe1f2a02S+73ZacsCZuN5MMvh+Sfpk+RAuBPXoLOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwMr507jQz2ypW;
+	Tue, 28 Oct 2025 05:44:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761590692;
+	cv=none; b=mGO1oTe9FK+p01er21c4aQOt0ZnG/r2fAGcsD5bQj9/pas6qt98bMW6xYF4UYaSxlkijJhSzUbuZqJYHOWGLmts7D+TAs/VACH1xvJqlEB25UenwtxGJB17/EX1QHtCCEb3MidB3QKtQK86q8IV4TuDin1pbKlOcKa/4Wp6Wl4cNAoXML243qKAUcBA1WPm7kjf58tAvOUxPOWHmx0q4QJo5U8ExMjaJF6TGSnadGa3ZBaPVgZGHgKcxe/fPEPCgQWATUuSmQQlyICUwaRoFq69ghRbnnPYhC4nvupf9FMjQJgB76mp5KSs0y0odgU1o1DT2KXMEXLOZ07UPqxGnjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761590683; c=relaxed/relaxed;
-	bh=IQJ+aJGbQhWsj8x6b5VvjdS0X14HMIFRj7kFTFPr1fk=;
+	t=1761590692; c=relaxed/relaxed;
+	bh=eYyLpKPAljbxO/F1ClhOFRM69txNgo0zgYjGtspJ1NE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lWhlUoUV17KGAo7Rqu7wulnxKaa2Hz5ehdQYvFDyyuZMfrShzO7E9VkNbMEky7xwqVI2MXZipBRDsGj6hcgC4HXDodnwQvVgsQ//YFuy/8ab6vEgcMD2+amBRsGV7VCY9iBaRkKZTlhIYI5KcrOfDYgilJHxvYJ5RU3utw+2c4PCrntmGSC+3RZKcWxVnABm3DFb9lVCsmOOxHKnXgXfnTCP3U+gIizmZ2Hm8vladREsMmOG0CwlllqI3e2vra/9u6Rb3/eQofMjrk3Va9ChHs8iYFEoJYNhj7keQEgkcMYUoND8/DEwo1l9B5aGoyh73nRikVhhCVQAYINwd3PEYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=WWI1wTJcxuEfKgxiLHkSZx+91/yHn+nH14u2vjjjHK/dobsAVjIprLpeep9bgXE3l9BS2O1XfnSNxMq5vpxcdnp+fiv/rYVfhpmV4Y4m4mfKzBwgXOmiXsTg4EWvyknIn6CrV5SrjifLjq+LCvV7Naz0QWQA5NFprJneTJB9dGz2VArziGtPgtNZ2DtA0tLXkySyyrblHIdEac/z4gzcggqix6BjqWDPdWHhDheTC4R5M62U6ofrKKQaPlHIxv4EPI0RPl7aS9z9iIIDcGIGCB5CGw/Fee68eG5uFBfk9iVcxoXd+UKEjJPwGra+SMBLJy7jo8bO0af5rIdQpocRFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwMqt48Ptz2xlK
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 05:44:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwMr41f7Zz2yjy
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 05:44:52 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7F8184446F;
+	by tor.source.kernel.org (Postfix) with ESMTP id 1724861CC9;
+	Mon, 27 Oct 2025 18:44:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7643C4CEF1;
 	Mon, 27 Oct 2025 18:44:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6544CC4CEF1;
-	Mon, 27 Oct 2025 18:44:31 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
 	Stephen Boyd <sboyd@kernel.org>,
@@ -83,9 +83,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>,
 	Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v5 16/23] iio: dac: Convert to common field_prep() helper
-Date: Mon, 27 Oct 2025 19:41:50 +0100
-Message-ID: <c35442070b3484d6312e4c4ce197b00713d08656.1761588465.git.geert+renesas@glider.be>
+Subject: [PATCH v5 17/23] iio: mlx90614: Convert to common field_{get,prep}() helpers
+Date: Mon, 27 Oct 2025 19:41:51 +0100
+Message-ID: <8ea8d9d6c33d9589e8761f6000639546f1bd5148.1761588465.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1761588465.git.geert+renesas@glider.be>
 References: <cover.1761588465.git.geert+renesas@glider.be>
@@ -104,34 +104,45 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drop the driver-specific field_prep() macro, in favor of the globally
-available variant from <linux/bitfield.h>.
+Drop the driver-specific field_get() and field_prep() macros, in favor
+of the globally available variants from <linux/bitfield.h>.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Acked-by: Crt Mori <cmo@melexis.com>
 ---
 v5:
   - Extracted from "bitfield: Add non-constant field_{prep,get}()
     helpers".
 ---
- drivers/iio/dac/ad3530r.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/iio/temperature/mlx90614.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/iio/dac/ad3530r.c b/drivers/iio/dac/ad3530r.c
-index 5684d11137f29948..b97b46090d808ee7 100644
---- a/drivers/iio/dac/ad3530r.c
-+++ b/drivers/iio/dac/ad3530r.c
-@@ -53,10 +53,6 @@
- #define AD3530R_MAX_CHANNELS			8
- #define AD3531R_MAX_CHANNELS			4
+diff --git a/drivers/iio/temperature/mlx90614.c b/drivers/iio/temperature/mlx90614.c
+index de5615fdb396aa3c..1ad21b73e1b44cb0 100644
+--- a/drivers/iio/temperature/mlx90614.c
++++ b/drivers/iio/temperature/mlx90614.c
+@@ -22,6 +22,7 @@
+  * the "wakeup" GPIO is not given, power management will be disabled.
+  */
  
--/* Non-constant mask variant of FIELD_PREP() */
++#include <linux/bitfield.h>
+ #include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/gpio/consumer.h>
+@@ -68,12 +69,6 @@
+ #define MLX90614_CONST_SCALE 20 /* Scale in milliKelvin (0.02 * 1000) */
+ #define MLX90614_CONST_FIR 0x7 /* Fixed value for FIR part of low pass filter */
+ 
+-/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
+-#undef field_get
+-#define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
 -#undef field_prep
 -#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
 -
- enum ad3530r_mode {
- 	AD3530R_NORMAL_OP,
- 	AD3530R_POWERDOWN_1K,
+ struct mlx_chip_info {
+ 	/* EEPROM offsets with 16-bit data, MSB first */
+ 	/* emissivity correction coefficient */
 -- 
 2.43.0
 
