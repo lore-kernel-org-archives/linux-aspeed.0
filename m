@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-2639-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2640-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB5B2CCF9E0
-	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Oct 2025 18:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEEFDCCF9E0
+	for <linux-aspeed@archiver.kernel.org>; Mon, 27 Oct 2025 18:42:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwMnY32Bwz2yFw;
-	Tue, 28 Oct 2025 05:42:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761590561;
-	cv=none; b=BgDISTfGdPf/6cOgN3UprWd9L/jttsKFu6MSZzVmrmVmh5cUOhPHLcUY3ka67FJw6llMb6dZ/nTuzTtWBncY89E4ZWguEQHyuepO1/LcUIl2XwlUZH8DKF/huBvV9kaHpfmbZoH1RherKOjrG8pHJqvPFQxCY2kKiJH5/dOUuJwCclBHaGVreu1fBXEqTe+WRiKWSXsmG+GU0DYMRCATs4U8aaAKLJfohOXkRPdPfrtI8Xh1MpFPh4zDRCJtlZI80nNKooMXlilBMxBGjw3PSvEnVtJTsCnyqdjwFRiF0BpCD9PiGZ5WD3KFxqFCKj/5jOAJr2bosKi+PC9lOhKgDw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwMnk0fVlz2yTK;
+	Tue, 28 Oct 2025 05:42:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761590570;
+	cv=none; b=DHSfecN5UQjYo3IK/nD4c5Cy5mQT5QYCmFtaY9iWrmmaJjt53zNm5xJ9rqAGbFYL73XawdcsIbnt2UzFJKSUX3q6kv8hd92xL8usS7p062nk+oAoo+lpUlCl/AR6xXO38upRIPLyxmxlKWApb45xq3ZX4jWO9SVM3lAgw95HTo+5BdItfyoz/+tOf7peonb4tU0cjkAx0uHUJJVvrTcvZvZOBoPE9DXjfGQLfAA5FJP9aio+veSvaZ+sUu2gRIjQ6fowGvbodlMZ5sCUzfjUOZRILX/QuN+C94pBEX49oVG8AWz4n5AakybU20ZhVfjQyJufIo6vn0Eqyoc/UdEM2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761590561; c=relaxed/relaxed;
-	bh=/vq/SqgCzwUly388nyJO3ZGPzPRU0+JRYcl5mEtqLaM=;
+	t=1761590570; c=relaxed/relaxed;
+	bh=EuxkQF+NBgztps7wYt5PzfsUUS7vHqDOARgE5yOOKqs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=QRl2CLeiXT6yD3sscpY7pIaWt9ep5MT5EhVaj42KkCf8/KuxnwM5r0MYweZSUFjodzFMS7ufkJvtnq9yormxgUx3r5Vadmf1Q8AygX77a5mRy7+8B2Ev2pr0uLufx285M2yp5+Tmq2qDzceDJktFEENwL9oWHTOGGl5a/4+ishaxa6LoW4Zmeb9qkYo1ExZ0sPd7VnLAFKSSsmqMmIMhnyYRKhtv4TEiYJv7xQQkrwB5TO6dZhvrIU+ltod9G+fWyxJoLyaIdLr0BOE95lrtOB5AAqmyDMzlgIZBmJcZXe72jMTzVrVeUkN9wuZvCVFA9UnsmQJfa3826YdBESL0Rw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=RV8aHvwx0WQv+ijYRfgqXy9J5qvN6GV/2TinWYTowytzSG8j+4xp0oq8n6Wqjlucn0EJFFfHdR9bKDXZfFlXuibnubG1Ue/y7YJ1ylpXppQoa/hfzsY7B/MEF8et8BM+1yTPwYAycQvxaL1Hcccutt+9hxS64UuCmospM0OSxix+mRAGaFueOEnZEC8exuqFh96Iv4oBodq6BZu999eCzgzc/MWPaD6XKV/sNht2e1J+MqvDsl4200oUoTKDSz4TgoigUBTG0VSLnbi6f2vY75NdONbUZ7gWClPQ7EUpmCeQYGnntkAQ9JyMyx5rfQg9MecsCnEYjcEhJKYUBUJY7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=nyk2=5e=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwMnX6N19z2xlK
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 05:42:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwMnj3wwSz2xlK
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 05:42:49 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id EB06A61753;
+	by sea.source.kernel.org (Postfix) with ESMTP id ECCD64642F;
+	Mon, 27 Oct 2025 18:42:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08CAEC113D0;
 	Mon, 27 Oct 2025 18:42:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6CB5C4CEF1;
-	Mon, 27 Oct 2025 18:42:29 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Michael Turquette <mturquette@baylibre.com>,
 	Stephen Boyd <sboyd@kernel.org>,
@@ -82,9 +82,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 03/23] EDAC/ie31200: #undef field_get() before local definition
-Date: Mon, 27 Oct 2025 19:41:37 +0100
-Message-ID: <8b53fc6b3e290c1d33cbcb9eff09bb23305814da.1761588465.git.geert+renesas@glider.be>
+Subject: [PATCH v5 04/23] gpio: aspeed: #undef field_{get,prep}() before local definition
+Date: Mon, 27 Oct 2025 19:41:38 +0100
+Message-ID: <76ac5587c5ff3aae3c23f7b41e2f3eacb32ebd21.1761588465.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1761588465.git.geert+renesas@glider.be>
 References: <cover.1761588465.git.geert+renesas@glider.be>
@@ -103,10 +103,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Prepare for the advent of a globally available common field_get() macro
-by undefining the symbol before defining a local variant.  This prevents
-redefinition warnings from the C preprocessor when introducing the common
-macro later.
+Prepare for the advent of globally available common field_get() and
+field_prep() macros by undefining the symbols before defining local
+variants.  This prevents redefinition warnings from the C preprocessor
+when introducing the common macros later.
 
 Suggested-by: Yury Norov <yury.norov@gmail.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
@@ -114,21 +114,23 @@ Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 v5:
   - New.
 ---
- drivers/edac/ie31200_edac.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/gpio/gpio-aspeed.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/edac/ie31200_edac.c b/drivers/edac/ie31200_edac.c
-index 5a080ab65476dacf..72290f430126c631 100644
---- a/drivers/edac/ie31200_edac.c
-+++ b/drivers/edac/ie31200_edac.c
-@@ -140,6 +140,7 @@
- #define IE31200_CAPID0_ECC		BIT(1)
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 7953a9c4e36d7550..ef4ccaf74a5b379e 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -32,7 +32,9 @@
+ #include "gpiolib.h"
  
- /* Non-constant mask variant of FIELD_GET() */
+ /* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
 +#undef field_get
- #define field_get(_mask, _reg)  (((_reg) & (_mask)) >> (ffs(_mask) - 1))
+ #define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
++#undef field_prep
+ #define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
  
- static int nr_channels;
+ #define GPIO_G7_IRQ_STS_BASE 0x100
 -- 
 2.43.0
 
