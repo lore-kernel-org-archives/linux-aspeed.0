@@ -1,73 +1,79 @@
-Return-Path: <linux-aspeed+bounces-2672-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2673-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A632CCF9E0
-	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 14:20:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CB48CCD1BF
+	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 14:23:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwswh12zLz304x;
-	Wed, 29 Oct 2025 01:20:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::22c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761661236;
-	cv=none; b=ETtq1eqyjnPt5aJ4+Y1cFQxl8eOc/eOB1kut0i+5RTV/0cy6zu+QSt43n69k80ajployOMOv+ZuXBx3XZFxqZLyfplVlsmPzC39rJgzb0Gb0UKCcRuUsAdB9Lmv6ADQYm3lsktmYI0iTt8k7O4b58Ev+aUwxtvRcMyVtISfyfPdA5PtM6dvTo1AxVHNLjOsFkWu1mH86kQ/Tukwqy0cHcJ/luZJu2YBacDSFER8Lgao7xQVaYWD9p3j7PIqRpQFgQVqWpe2EUd90VEGNg5gngQ1jH/QJMW0dpsaQ/+bNCC8rHZsBKZ5uh7OVpoqcFT9osoiiNfT8vBhU3r4nwhhrQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwt0063x7z3c4d;
+	Wed, 29 Oct 2025 01:23:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761661408;
+	cv=none; b=nXhcgGJGagOa1kcmMJkgmvlSVu8lZkMy4sOrK5zf8dnDvDrJ/nR0CF0s93GPbK2FDFKBJR9oCBdotxkKeUXak1pei9iQ7sJlWcWj5P3pbEDox9acb3raK9dX7qMj4e8HIoutPCS4Xyx1YiWoXowdZjk49VJc/znKNYOYaDvO8b5eUvzDFACeYPvnTIAF8iNjCcCHc5XNT3SNgzTno9f9EUqotsXisO5IWJEAr6mH3J/17+LnnlX7Bym+xBR1s4KlfGlGvXq7iq37k69di+6Kpwx7Iou69XDhoMCewC1CNXwYumY8fRraNZ9/TuCkU1dl08LYALnHo86d1Y8qUyTHgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761661236; c=relaxed/relaxed;
-	bh=sOmSiTMyA8cqAorOzkSzQ5xujNoDEMVqXsbHnkkNM1c=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hHcflTnkgaROADLZfwxbDFViICBJ01Nd/P+9ubi77FcLhujHESal2pO5r0wZKbtJYMa6qHzkp5F3uOPc2iuWzm9Jce6eMWAIRYTHIe/xC8G7snMDgCeLlXf+1YY+pSld5YNZ+w8RuUYpY42nOs/7CQCWQZ9msTj/shelZQtrGBKoTOvwVrXmOnQyWANqnm6fElKewAk7Ly7fw8wN8FZT2iXHXqbPQl9izNabMe6t4Eyl3O4CT5Gn15UQHPNdauCfwinZUnCITrt353aS+g3rkyMp90uY/FgGj8ESERq8/a0jjSHYsr8vy/8RL6U3yDBCte4wku3fWtIQ+EoNKvh/Tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=VNyVdBha; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::22c; helo=mail-lj1-x22c.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org) smtp.mailfrom=bgdev.pl
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+	t=1761661408; c=relaxed/relaxed;
+	bh=rLVBKT2oGchqTwKApmRrbu5Y88FTRxXcdGMqxVea4JE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YPq9jDVWmpJuOUQNvh+YpyQU/rqziPK57UzbSHyyGTZ9bmw9LbH6tF8Y+rZQeD1YrjOcbfRNmDNsZrPl7E8UwxnxBs8tGEyh1VUpo+5EQ0DlERoWfUZqWb2TOhoNOi2kHyeouoa/EUtcsPQDMil5L4EXxF/waQqVCDxOPcsLs7BBKj5sOmyuivQOjnTAHhEUbZMfxoHAua9N8ZqWOSU7fGl8UQ6aImnoU8FEAEX1dCM9JiEapE4ahD8n7iIrZvfKJLOgWasWnspnT8YVUWYzVDMkeBxLEm7i7a+nUKCT2YF//SIwNrKqMUNqxSYmsXc+QFYO/46bk+TrUJ8fOE6+Vg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PsIUYkIK; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=VNyVdBha;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PsIUYkIK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bgdev.pl (client-ip=2a00:1450:4864:20::22c; helo=mail-lj1-x22c.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwswd3tjDz2xS2
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 01:20:31 +1100 (AEDT)
-Received: by mail-lj1-x22c.google.com with SMTP id 38308e7fff4ca-376466f1280so90823261fa.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 07:20:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1761661227; x=1762266027; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=sOmSiTMyA8cqAorOzkSzQ5xujNoDEMVqXsbHnkkNM1c=;
-        b=VNyVdBhad0ZQOTC4+XfgwTE2NSlbvzP5IH8IloTm9CPVgYcE66PqBhGSyyygXC9pmx
-         sQjC7LKrrT6FUhT4c+Tin6K8K2tjF+8C25qvhgcEqhA69L6WRQOZ7ILifL5dsMLUf/9t
-         gLnwKkVakmLmYuph+0/CN259o22fFV7fCiIYoFjiONohyZ5v2Q3GpOL5IYRUcfAP2zKv
-         09X5CbXwy8R3fH2vYm7vACEDe+uk3865zu87lnk8xJkqDgJ8uogZRrxNDlqchUInsKXH
-         TqyzBuigz5zK5rWEsakGapHyC+n7GxFtXvh7IqbDrVGpTPVZ+6h7ESrafxPETmw3Heyt
-         mEnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761661227; x=1762266027;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=sOmSiTMyA8cqAorOzkSzQ5xujNoDEMVqXsbHnkkNM1c=;
-        b=s2jKyA02EdZcR+j3rLTZ9BBGoRy4vsWO2OKT08EPfT6TWkdm6VLtCqrDhIdCKgqQT4
-         H37DE91KlfZaf6TNAm4OKBGszOxn41QT+eqN8zjD2U6ceh2aiKLfdVO/Pa5QHfD4+Gp/
-         w7sY4ySHkVf4FowBzfnhxO528Uk3d96s4E9L7R0fN5diWbv/aHN2950eV5xiwUuJPIou
-         7Y4mgHe9JdfhfWJnUfEX91xYDtIBnotlPhy8btqS+CsxV/+6k9RnudASvjnfgoIWW8F/
-         +MxqL6q6rMxNXwEw2/ga7cbljMGsUBvmSMmDSEKType1itF/eRX68FUrurBaxKQoL4Tf
-         lUrg==
-X-Forwarded-Encrypted: i=1; AJvYcCWwpwawonHGP908TOQkN5833tCok1fJBZWmo2q3y/ZJX2EovcktM0K/UnkKXzS7mpP+2L04CRPJ/FqeOGc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwFvn/oq1jKhhrAkenXrV3F4hmxcxGiVZIulcUadmbYIE0zwwlb
-	K3o/T8qZ8dDayw5oeyCRAr4iYWmDhkg9WiiuLuisEjjCCgp9czbJc27w1q6hO7l4fyZUYlhsKZA
-	rN/81gEeEOrPIZKGgzIB/4c7At8sz95LAh/phFBWCqw==
-X-Gm-Gg: ASbGnctnDpFAzbe8NiNufPzVXlgk9ZdMjb77PhC8O5O6SdCNy2mP+HvQcw6CCBemUuE
-	vjkte3vrEClSgDbpbs25MXWHOw3VN3AOZS8freY0NJdepQF3nU7miKgSN4s3bkEJg61/iKioA6f
-	yP+Gou+7clCfRbIgXt3LBDopVY46At1oJDcLpieM28hmpMv1kVlUadQ+DOtQ9kbVbXQ4DtkJc06
-	OxnA0c+nRDOG/h1ejmKTAMDw/UvJhsncPbG3MQ8LLlvv9CcK9WEl8rmK0CMgBDOaXoPbOntQgoe
-	n6ats2CTFEsujZRU1ecdKLl2qzo=
-X-Google-Smtp-Source: AGHT+IEa9/49xzFtkrl2WuFSbF2nGR0Ee3sa2JYGGK47IcVnnhS7gaKd3pqPtDHg3v3/2iaUnvbb9dKc2W6cTL8KA/s=
-X-Received: by 2002:a05:651c:2354:10b0:351:62e3:95d6 with SMTP id
- 38308e7fff4ca-3790773c607mr10303011fa.28.1761661226962; Tue, 28 Oct 2025
- 07:20:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwszx5Yghz304x;
+	Wed, 29 Oct 2025 01:23:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761661406; x=1793197406;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=ZjKITrPWlUyYajJm3Ljrd+gMFKVlc9juJxipai/H3sg=;
+  b=PsIUYkIKLqKF9d3z+hTFsh8m58M9FKh85uVjoQsYZJzYZi7NsdZPNR2V
+   PbFxqNZ0Q5Z91Wv/Yi8y1nIUQtEgk2RzX5l2Lo4bEbmW9/5cQbbVquN7O
+   MwESt2Wp3d/miHGmDJY7bjDNXwZdT+13C31m9GinWSt8OrGMYdFbb/4jC
+   nYcRmsEOd4fE0wAEFDr/lHYkmld2WDZIwEtPZB7rBVFiVwI4ow0CK+XHJ
+   YfVYhVEp9EPM5nkePwA0svxWt04Z/MJte4cHjFOfwAAZsVkJ3q+lsj+7N
+   C4IipmBvSac06L7dJJ3I7xgSu3wwjysddx1H1l1zIYzhQA3k2KkoYGjTe
+   Q==;
+X-CSE-ConnectionGUID: 5sRG1F1vQAiHVFMGfdnehA==
+X-CSE-MsgGUID: HqWKsMU8SgymlN//eqvt8g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="62966671"
+X-IronPort-AV: E=Sophos;i="6.19,261,1754982000"; 
+   d="scan'208";a="62966671"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2025 07:23:21 -0700
+X-CSE-ConnectionGUID: rJqVb9lsQW6rF8W3nrYn0g==
+X-CSE-MsgGUID: 5bWYwMMeSPSqrq/PhxgLNw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,261,1754982000"; 
+   d="scan'208";a="184987007"
+Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
+  by orviesa009.jf.intel.com with ESMTP; 28 Oct 2025 07:23:16 -0700
+Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1vDkbR-000JE1-2i;
+	Tue, 28 Oct 2025 14:23:13 +0000
+Date: Tue, 28 Oct 2025 22:22:14 +0800
+From: kernel test robot <lkp@intel.com>
+To: Jacky Chou <jacky_chou@aspeedtech.com>, lpieralisi@kernel.org,
+	kwilczynski@kernel.org, mani@kernel.org, robh@kernel.org,
+	bhelgaas@google.com, krzk+dt@kernel.org, conor+dt@kernel.org,
+	joel@jms.id.au, andrew@codeconstruct.com.au, vkoul@kernel.org,
+	kishon@kernel.org, linus.walleij@linaro.org, p.zabel@pengutronix.de,
+	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org
+Cc: oe-kbuild-all@lists.linux.dev, jacky_chou@aspeedtech.com
+Subject: Re: [PATCH v4 8/9] PCI: aspeed: Add ASPEED PCIe RC driver
+Message-ID: <202510282225.yqfv0wel-lkp@intel.com>
+References: <20251027095825.181161-9-jacky_chou@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -81,75 +87,60 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1761588465.git.geert+renesas@glider.be> <76ac5587c5ff3aae3c23f7b41e2f3eacb32ebd21.1761588465.git.geert+renesas@glider.be>
-In-Reply-To: <76ac5587c5ff3aae3c23f7b41e2f3eacb32ebd21.1761588465.git.geert+renesas@glider.be>
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 28 Oct 2025 15:20:13 +0100
-X-Gm-Features: AWmQ_bkGEmC8OCwW4QksGegCfgNPPWl_EjVB0knvBjv-hfBoqYq6hENcwtWJ0QE
-Message-ID: <CAMRc=MdcH-56_cJ7oDUhHRsJRnDqbss5ET-3yGrBffGmEK_ieQ@mail.gmail.com>
-Subject: Re: [PATCH v5 04/23] gpio: aspeed: #undef field_{get,prep}() before
- local definition
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
-	David Miller <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, 
-	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Shan-Chun Hung <schung@nuvoton.com>, Yury Norov <yury.norov@gmail.com>, 
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Johannes Berg <johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>, 
-	David Laight <david.laight.linux@gmail.com>, Vincent Mailhol <mailhol.vincent@wanadoo.fr>, 
-	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, 
-	Michael Hennerich <Michael.Hennerich@analog.com>, Kim Seer Paller <kimseer.paller@analog.com>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Richard Genoud <richard.genoud@bootlin.com>, 
-	Cosmin Tanislav <demonsingur@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Jianping Shen <Jianping.Shen@de.bosch.com>, linux-clk@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, qat-linux@intel.com, 
-	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-iio@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251027095825.181161-9-jacky_chou@aspeedtech.com>
 
-On Mon, Oct 27, 2025 at 7:42=E2=80=AFPM Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
->
-> Prepare for the advent of globally available common field_get() and
-> field_prep() macros by undefining the symbols before defining local
-> variants.  This prevents redefinition warnings from the C preprocessor
-> when introducing the common macros later.
->
-> Suggested-by: Yury Norov <yury.norov@gmail.com>
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> --
-> v5:
->   - New.
-> ---
->  drivers/gpio/gpio-aspeed.c | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-> index 7953a9c4e36d7550..ef4ccaf74a5b379e 100644
-> --- a/drivers/gpio/gpio-aspeed.c
-> +++ b/drivers/gpio/gpio-aspeed.c
-> @@ -32,7 +32,9 @@
->  #include "gpiolib.h"
->
->  /* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-> +#undef field_get
->  #define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> +#undef field_prep
->  #define field_prep(_mask, _val)        (((_val) << (ffs(_mask) - 1)) & (=
-_mask))
->
->  #define GPIO_G7_IRQ_STS_BASE 0x100
-> --
-> 2.43.0
->
+Hi Jacky,
 
-Acked-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on pci/next]
+[also build test WARNING on pci/for-linus robh/for-next linusw-pinctrl/devel linusw-pinctrl/for-next linus/master v6.18-rc3 next-20251028]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-phy-aspeed-Add-ASPEED-PCIe-PHY/20251027-180856
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
+patch link:    https://lore.kernel.org/r/20251027095825.181161-9-jacky_chou%40aspeedtech.com
+patch subject: [PATCH v4 8/9] PCI: aspeed: Add ASPEED PCIe RC driver
+config: loongarch-randconfig-r113-20251028 (https://download.01.org/0day-ci/archive/20251028/202510282225.yqfv0wel-lkp@intel.com/config)
+compiler: loongarch64-linux-gcc (GCC) 13.4.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251028/202510282225.yqfv0wel-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202510282225.yqfv0wel-lkp@intel.com/
+
+sparse warnings: (new ones prefixed by >>)
+>> drivers/pci/controller/pcie-aspeed.c:1084:38: sparse: sparse: symbol 'pcie_rc_ast2600' was not declared. Should it be static?
+>> drivers/pci/controller/pcie-aspeed.c:1093:38: sparse: sparse: symbol 'pcie_rc_ast2700' was not declared. Should it be static?
+
+vim +/pcie_rc_ast2600 +1084 drivers/pci/controller/pcie-aspeed.c
+
+  1083	
+> 1084	const struct aspeed_pcie_rc_platform pcie_rc_ast2600 = {
+  1085		.setup = aspeed_ast2600_setup,
+  1086		.reg_intx_en = 0xc4,
+  1087		.reg_intx_sts = 0xc8,
+  1088		.reg_msi_en = 0xe0,
+  1089		.reg_msi_sts = 0xe8,
+  1090		.msi_address = 0x1e77005c,
+  1091	};
+  1092	
+> 1093	const struct aspeed_pcie_rc_platform pcie_rc_ast2700 = {
+  1094		.setup = aspeed_ast2700_setup,
+  1095		.reg_intx_en = 0x40,
+  1096		.reg_intx_sts = 0x48,
+  1097		.reg_msi_en = 0x50,
+  1098		.reg_msi_sts = 0x58,
+  1099		.msi_address = 0x000000f0,
+  1100	};
+  1101	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
