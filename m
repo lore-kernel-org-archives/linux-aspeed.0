@@ -1,75 +1,63 @@
-Return-Path: <linux-aspeed+bounces-2670-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2671-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59C5CCCF9E0
-	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 10:15:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14CF4CCF9E0
+	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 13:46:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwmTN4DR0z3bjb;
-	Tue, 28 Oct 2025 21:15:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761646504;
-	cv=none; b=BtMOCZlzdaEp/Kj0sLogalBQPY2eVjtJ2nLoSCxHsKKeo9W1059ya12lKPUaqjs7E1+VRvRLZgQASqOoT+ztIyO7nY5YteJ5vTVV602ZjHYEBlzEHCd+cY9iEtytL9Hys/yYk6t9CKhTkUShQ0zGUqUYgXjIgFrQWxgHiVgHlZYPksYkd5QqSUk+rGPQ+gDES50bN/Wv08/M3xtsXKW/wFd16n6o2L9IbU2AcqVR3K7+o/kkh7CbB+5tvwVD2WnCVwVt+YV/r4SimsbVkHut/0CIhRfL7OKgDdlj8m+iYZokRF9L5sZA/+9LYGOrN1Ai6JZrwUwHkRaSOpENifK5LQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cws9h4R4tz3dTv;
+	Wed, 29 Oct 2025 00:46:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761659208;
+	cv=none; b=HiERoQQ7rHQVIhdyIqQNnz/uUas9DMQ7Ezkaa4TV59r3LKBo5mjk/mXHrfVL2TtgJpX6PTjDbG8XGUmZy4VGiHC7dkn452WNy7WJvZ65OxrQ3VVOyuOtbKVnQvWkPWZsOAylMv5VuZsX/T5epBKU7OPGtEkufigBHvNAFP6Gpn9+jzE6MCwBi6QdBKF6otSOi+aIfhBC4eVIhsX/I4il9ASFKEjS8gNPO3cXka4qHawKPFdl5XKKnnW7VE1KLD3QA/aIdGcl83VIuzZ7kJZKuo+5CB3eZ2cTlpLceA6qw9USBwZcaj13cJxbSOU3P3VdrpHoE1QZKhdWDQdIZ8qiVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761646504; c=relaxed/relaxed;
-	bh=oDXbdM4qDrP50j7J2TcIVdmGclkOYUoKSDYJlKuQXMg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lLGMlU5MnBwFw6AZXDj8kjNi0JMbwXXmk92cwcVKmRTvZ92wTh7x6bpQwTJHXqvCGtm3NkGmTyyR/2tRbiHRo+jyVFbOZHz6Rgv9yhCJHtmcG1+dXDY8ZJX684fPSpiIpVcslcc4aywdG396+Lc5oVwXNCjH/J+JFgtG1ppIQ1hDIbr2FwEs5TU+UVpe+jsUAWfzJckfU2djsvNRWnHXTF/L63+lt3A3wsla7m1eq2PDqqaDv7ZN2abXHuom+1AL80bv7P4Y8cI8PGcluQSI7SiVvDNa60sOW26U/gdwx66JjiHeRUxKYCuthzS0xR2+KNLBiMf0YKT7NVkTa7ruSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GHozA4zc; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1761659208; c=relaxed/relaxed;
+	bh=DzKeKz377bw+AjGXtS7hvPLMXs0p4OIhaxJNCl5JKj0=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=HayD4X+STdhfAeckVXGLLQoijJey4WtdI0IN3BLjmug2xR4JmXSDuLBT11u4KqCiFg1zeoXKIG0x4QezYohyaILeBD8TUKPVeKwznbiN9Hw6l89yfD1L/jNbBc6T34Vzft2BAxLCHf4UzOEPPNxtIB5ObDRH7YOFpyt2YNl3w3X4biNOJk8fB5zs7kbu3j/bp0OfkVdiwNDaCiSwH2ghQG0IL3pHNWsnkHZShjMVuiRPToN68dCBqQ3FORbjzfdIxuwcVI0JxOKF/n6l65q3QwcuDWyqlZsT+n547f/s4sbBBHvolD/vbwX3JRY3r7gI5VWuxREy850CV8RjJhZkIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HyngrGjL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GHozA4zc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HyngrGjL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwmTL18Jmz2xC3
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 21:14:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761646502; x=1793182502;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=4xas4y94vi3/3tBwp2J+Ktp/jrZPl//0sQ0Xoe5S36I=;
-  b=GHozA4zckgbjjdwjtl3oA53pqGmkoypRFYjYdSs+ND+F7bJ1qcQk7FBD
-   SQxqKrWYfz/xPb8I+B6yk1U3aoIYHfiqzBw40KDQJBnOgDx7DhZ1sOS51
-   4NKhGg6/772TNTfy6XKFT9dTEXfciYBOX7QYLvAndq2/mePqU6JUJSVNx
-   NEBTbN57ZAe1iXsreVrx5YVqVFTABXQNBaEWHBaY+ofK1d4iLgEztSmxR
-   IKvrmsOmiDWLGlODWa3sq9Q2wUP2b0D+4yBajkg+6L+2gBWbFd4SwSeUn
-   8Ar2CLf7qyUdfHS6oQI/XknScgzK8kQ/IYiAxUIc+eKCEU67LnzZz8H9J
-   Q==;
-X-CSE-ConnectionGUID: bN9S07ngQxK1g0w2JzTeeg==
-X-CSE-MsgGUID: 7OOHaGxAQDeQhRpA/DqZpA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="63646026"
-X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; 
-   d="scan'208";a="63646026"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2025 03:14:57 -0700
-X-CSE-ConnectionGUID: iFQ8YCGpRB2ERMJDAZdzpg==
-X-CSE-MsgGUID: 721JDO40R1+Z9Qpg7Dkeug==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,261,1754982000"; 
-   d="scan'208";a="215964946"
-Received: from dalessan-mobl3.ger.corp.intel.com (HELO ashevche-desk.local) ([10.245.244.136])
-  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2025 03:14:55 -0700
-Received: from andy by ashevche-desk.local with local (Exim 4.98.2)
-	(envelope-from <andriy.shevchenko@intel.com>)
-	id 1vDgj5-00000003HMI-2Wgx;
-	Tue, 28 Oct 2025 12:14:51 +0200
-Date: Tue, 28 Oct 2025 12:14:51 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: jic23@kernel.org, dlechner@baylibre.com, nuno.sa@analog.com,
-	andy@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
-	linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] iio: adc: aspeed: clear reference voltage bits before
- configuring vref
-Message-ID: <aQCXm_rvwpB6-UUq@smile.fi.intel.com>
-References: <20251028054102.1954503-1-billy_tsai@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cws9g5rC7z3dBZ;
+	Wed, 29 Oct 2025 00:46:47 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id C4F5660398;
+	Tue, 28 Oct 2025 13:46:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4601DC116C6;
+	Tue, 28 Oct 2025 13:46:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761659205;
+	bh=gHTXG47ZT83HtioVGkOdOgeWLg99afniblJgeCrheGk=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=HyngrGjLb54dCOStOExNIW8Y0NWfQzBXP7/lfZg2CrXY7+IMVLq42u0PG+z1cEhOL
+	 M9rvJLEAEy7zeEAWnuV/unlMTMS3/MUsv0ix70sVbD2swTqZWjJ73oXB/FnRpo6ibM
+	 5estbSa3g/FRLspY7MtCd9VANbOrV9/5esg2D/G+7NIUhmjdRsQO8xY/aVRcPYRGXb
+	 X/UIMn6YkUr50ydC9753IDyWw8dnp67i7nUJy9ediQGszIl+HEj5mZ17iKfEPbiCQI
+	 yV1LFP3RB+1kFvEmWfqvRVyp0cXJ70Zaz3/Whr5ecoe3Wqctp9aXbfY9yaLyAIIFK6
+	 M+094b4nEUMzQ==
+Date: Tue, 28 Oct 2025 08:46:44 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
+	robh@kernel.org, bhelgaas@google.com, krzk+dt@kernel.org,
+	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+	vkoul@kernel.org, kishon@kernel.org, linus.walleij@linaro.org,
+	p.zabel@pengutronix.de, linux-aspeed@lists.ozlabs.org,
+	linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-phy@lists.infradead.org, openbmc@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org
+Subject: Re: [PATCH v4 2/9] dt-bindings: PCI: Add ASPEED PCIe RC support
+Message-ID: <20251028134644.GA1506590@bhelgaas>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,24 +73,93 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251028054102.1954503-1-billy_tsai@aspeedtech.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+In-Reply-To: <20251027095825.181161-3-jacky_chou@aspeedtech.com>
 
-On Tue, Oct 28, 2025 at 01:41:02PM +0800, Billy Tsai wrote:
-> Ensures the reference voltage bits are cleared in the ADC engine
-> control register before configuring the voltage reference. This
-> avoids potential misconfigurations caused by residual bits.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
+On Mon, Oct 27, 2025 at 05:58:18PM +0800, Jacky Chou wrote:
+> ASPEED AST2600 provides one PCIe RC for Gen2 and AST2700 provides three
+> PCIe RC for two Gen4 and one Gen2. All of these RCs have just one root
+> port to connect to PCIe device. And also have Mem, I/O access, legacy
+> interrupt and MSI.
 
-It's a v2 and here a changelog is missing.
-No need to resend, just reply with a missing piece.
+> +description:
+> +  The ASPEED PCIe Root Complex controller provides PCI Express Root Complex
+> +  functionality for ASPEED SoCs, such as the AST2600 and AST2700.
+> +  This controller enables connectivity to PCIe endpoint devices, supporting
+> +  memory and I/O windows, MSI and legacy interrupts, and integration with
+> +  the SoC's clock, reset, and pinctrl subsystems. On AST2600, the PCIe Root
+> +  Port device number is always 8.
 
--- 
-With Best Regards,
-Andy Shevchenko
+s/legacy/INTx/
 
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - aspeed,ast2600-pcie
+> +      - aspeed,ast2700-pcie
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  ranges:
+> +    minItems: 2
+> +    maxItems: 2
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +    description: IntX and MSI interrupt
 
+s/IntX/INTx/
+
+> +    pcie0: pcie@1e770000 {
+> +      compatible = "aspeed,ast2600-pcie";
+> +      device_type = "pci";
+> +      reg = <0x1e770000 0x100>;
+> +      #address-cells = <3>;
+> +      #size-cells = <2>;
+> +      interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>;
+> +      bus-range = <0x00 0xff>;
+> +
+> +      ranges = <0x01000000 0x0 0x00018000 0x00018000 0x0 0x00008000
+> +                0x02000000 0x0 0x60000000 0x60000000 0x0 0x20000000>;
+> +
+> +      resets = <&syscon ASPEED_RESET_H2X>;
+> +      reset-names = "h2x";
+> +      pinctrl-0 = <&pinctrl_pcierc1_default>;
+> +      pinctrl-names = "default";
+> +
+> +      #interrupt-cells = <1>;
+> +      msi-controller;
+> +
+> +      aspeed,ahbc = <&ahbc>;
+> +
+> +      interrupt-map-mask = <0 0 0 7>;
+> +      interrupt-map = <0 0 0 1 &pcie_intc0 0>,
+> +                      <0 0 0 2 &pcie_intc0 1>,
+> +                      <0 0 0 3 &pcie_intc0 2>,
+> +                      <0 0 0 4 &pcie_intc0 3>;
+> +      legacy-interrupt-controller {
+> +        interrupt-controller;
+> +        #address-cells = <0>;
+> +        #interrupt-cells = <1>;
+> +      };
+
+IIUC, Rob says there's no need for a separate interrupt-controller
+stanza and it can be directly in the host bridge [1].
+
+I think that does make interrupt-map a little more verbose because the
+parent unit address will use the host bridge #address-cells (3)
+instead of the interrupt controller #address-cells (0), e.g., this
+from [2]:
+
+  pcie@10e40000 {
+      compatible = "renesas,r9a08g045-pcie";
+      #address-cells = <3>;
+      #interrupt-cells = <1>;
+      interrupt-map = <0 0 0 1 &pcie 0 0 0 0>, /* INTA */
+                      <0 0 0 2 &pcie 0 0 0 1>, /* INTB */
+                      <0 0 0 3 &pcie 0 0 0 2>, /* INTC */
+                      <0 0 0 4 &pcie 0 0 0 3>; /* INTD */
+
+[1] https://lore.kernel.org/linux-pci/20250509204905.GA4080349-robh@kernel.org/
+[2] https://lore.kernel.org/linux-pci/20251007133657.390523-2-claudiu.beznea.uj@bp.renesas.com/
 
