@@ -1,125 +1,63 @@
-Return-Path: <linux-aspeed+bounces-2675-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2676-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F9DACCD1BF
-	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 16:20:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52585CCF9EB
+	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 17:13:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwwZt3X6Gz3btg;
-	Wed, 29 Oct 2025 03:20:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761668422;
-	cv=none; b=o0NPq9tLFp9q/eRpi47KSgB5wdk/lIbjVhWqAQvBZllBUuLHCMx3JRYIwIUogOOBsYXnPSci+02db9v3XU+bCA70yPdIOMtNdpIGtKzcb3nFpIs5AO1R7oq+6s579Ko1z6d5Ke/GmNEohcLLk4kSLQ4nrj9gjTb4RuR3qRUcPyGJOk5dm1e6/xGtT+QU0V+mh25A39Se+WSnV9kgK7Yry9BRTZGxoewFThg/461yqooAOms2siibTkJQvUN7EHgXDw5uW5+SmsZcBHppMVBlQ1hJcgp+++rMr9SwVOCyxak9caIBlRJP2pRiuVDBdq/3/lEYmhZnXeBo9faJxAt6Mg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwxmH5Cjyz2yD5;
+	Wed, 29 Oct 2025 04:13:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761671615;
+	cv=none; b=DMj6NTorQg+QN9NXLHHpd8inwdd4iJAqZIt6XC3R8q+Q+hOE1Wj6i3WoFur9WgJtlBNkuFdOWLdznixJqTY95QjIMbvh8VwJoIZzuRFzhAYrHjr65cY2M1FuItjjhkiklZQbVv1u+sSQr6Kg1hiIM4TRw5SgjL3Qr24DYJoraY/RqG1sySUYp3nBDhOi52n9/Noww2d1vWbKKUmXBEgz1K7u1NPqT7q2/RKQELP5kqEJ3cy2Gr38M/Biz+zi9pcT8Cnim7dppZN1ST6H6QvFpjuf1/AOoEw3GPW7sHwJtVvs6fJQjfp8JtA3hqF7QNPKhDZg4d1mZn0YojkuLh3Dog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761668422; c=relaxed/relaxed;
-	bh=pSosvxi5dPFtdhC5U0/TTS2WAyGF8TeP5oXRsKZhx7U=;
-	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=eOlQTzVm7D22OL+qSRnjWPjKqch4CkLSYe4VvisWrkaPOQjEzDGWhsCTDWaaLcQ/K9c+RVf8PNDsCfjFaITbXQJEfg1f4jgy4B/u6WI23Al3OORdNuKPweiQBepI9a9Oi/JWcAQU/W1bbT6AMZLD0E9LFHTMfqIE75n5eDkJJEVA73HXIJ2JAhlxRczxiH1f//4vilBwfNUwUedeLoo/9y28MiyO/RSAqDl2TAz2rSwXPwnGEQvhaZJDVwJrDxNnAu7Gu6J7mp27bfb+5O+yKa5q194IBslYGWNJqvmZnAxZRPzDamaq6tWXP+lFpTPqKLHEo5qbY9OkuqMSad6xIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KjJPEYPJ; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Gw2QrTQ4; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KjJPEYPJ; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Gw2QrTQ4; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1761671615; c=relaxed/relaxed;
+	bh=CdJ+7CGRqx2pwaR7nFsvxokq6e2hsboYVcp35XvnspA=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=ED+H0QYZM0HgRKdHC64+2SIIcmSADsjgsfGckW1vUq9il1t2bMOaGBmbE2g6XFeCfnmb2pISS/3oREldfFFhpH2vl3yja2KOfX3WuHP8+nKApsh418Y4zvSwDbuyjt12wuNKC+RcHNxG9cfbEAJvJj2sLbLrJd0rh5rvv0lIVKqriYuZSZTojF+NlZ+tq1ypbN3bzjkkvVlBS8scW2cyl6Vj5qJoMuKRDAjRhHxHm0k6L7487KpC2jPpR3976R7WRGimsCDBXwH0h0/kvjViSlUvZqcEUhLF4bSghCxN4oLOLoBSm5bBnMBAWjmOlw4f1CohbyUuWyO/6oOoGbcY5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GHWgETQ1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KjJPEYPJ;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Gw2QrTQ4;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=KjJPEYPJ;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Gw2QrTQ4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GHWgETQ1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 416 seconds by postgrey-1.37 at boromir; Wed, 29 Oct 2025 03:20:21 AEDT
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwwZs2PpYz2ypw
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 03:20:21 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id C99BD21A64;
-	Tue, 28 Oct 2025 16:13:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1761667999; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pSosvxi5dPFtdhC5U0/TTS2WAyGF8TeP5oXRsKZhx7U=;
-	b=KjJPEYPJ7HZdpBT02TjYQ61cQjBJIEBgA6xrd5hVWW6xAJANi0wiYFNW6d5v7xV2N7YmlE
-	h6SetL0FQi/IqvkJSpicxJI7317JmcnGp5XrGSNF69XjHib4Xs4pSezxRpirGmBaonvMPF
-	xG/ODKCnE+Q8Gml9lNP6EM6O/Lt0Fag=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1761667999;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pSosvxi5dPFtdhC5U0/TTS2WAyGF8TeP5oXRsKZhx7U=;
-	b=Gw2QrTQ427yrPNuYnSYVl0sYdSQd5/RgHd0ptf3XwxfdMZudizoPqUBaiHtRb5cqG4Is5B
-	5/rgTt+d8ttytfBA==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1761667999; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pSosvxi5dPFtdhC5U0/TTS2WAyGF8TeP5oXRsKZhx7U=;
-	b=KjJPEYPJ7HZdpBT02TjYQ61cQjBJIEBgA6xrd5hVWW6xAJANi0wiYFNW6d5v7xV2N7YmlE
-	h6SetL0FQi/IqvkJSpicxJI7317JmcnGp5XrGSNF69XjHib4Xs4pSezxRpirGmBaonvMPF
-	xG/ODKCnE+Q8Gml9lNP6EM6O/Lt0Fag=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1761667999;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=pSosvxi5dPFtdhC5U0/TTS2WAyGF8TeP5oXRsKZhx7U=;
-	b=Gw2QrTQ427yrPNuYnSYVl0sYdSQd5/RgHd0ptf3XwxfdMZudizoPqUBaiHtRb5cqG4Is5B
-	5/rgTt+d8ttytfBA==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7D26E13A7D;
-	Tue, 28 Oct 2025 16:13:18 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id udwmHJ7rAGmPCAAAD6G6ig
-	(envelope-from <tiwai@suse.de>); Tue, 28 Oct 2025 16:13:18 +0000
-Date: Tue, 28 Oct 2025 17:13:18 +0100
-Message-ID: <87o6prf1i9.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>,	Stephen Boyd
- <sboyd@kernel.org>,	Nicolas Ferre <nicolas.ferre@microchip.com>,	Alexandre
- Belloni <alexandre.belloni@bootlin.com>,	Claudiu Beznea
- <claudiu.beznea@tuxon.dev>,	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,	David Miller
- <davem@davemloft.net>,	Linus Walleij <linus.walleij@linaro.org>,	Bartosz
- Golaszewski <brgl@bgdev.pl>,	Joel Stanley <joel@jms.id.au>,	Andrew Jeffery
- <andrew@codeconstruct.com.au>,	Crt Mori <cmo@melexis.com>,	Jonathan Cameron
- <jic23@kernel.org>,	Lars-Peter Clausen <lars@metafoo.de>,	Jacky Huang
- <ychuang3@nuvoton.com>,	Shan-Chun Hung <schung@nuvoton.com>,	Yury Norov
- <yury.norov@gmail.com>,	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
-	Jaroslav Kysela <perex@perex.cz>,	Takashi Iwai <tiwai@suse.com>,	Johannes
- Berg <johannes@sipsolutions.net>,	Jakub Kicinski <kuba@kernel.org>,	Alex
- Elder <elder@ieee.org>,	David Laight <david.laight.linux@gmail.com>,
-	Vincent Mailhol <mailhol.vincent@wanadoo.fr>,	Jason Baron
- <jbaron@akamai.com>,	Borislav Petkov <bp@alien8.de>,	Tony Luck
- <tony.luck@intel.com>,	Michael Hennerich <Michael.Hennerich@analog.com>,
-	Kim Seer Paller <kimseer.paller@analog.com>,	David Lechner
- <dlechner@baylibre.com>,	Nuno =?ISO-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>,	Richard Genoud
- <richard.genoud@bootlin.com>,	Cosmin Tanislav <demonsingur@gmail.com>,	Biju
- Das <biju.das.jz@bp.renesas.com>,	Jianping Shen
- <Jianping.Shen@de.bosch.com>,	linux-clk@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,	linux-renesas-soc@vger.kernel.org,
-	linux-crypto@vger.kernel.org,	linux-edac@vger.kernel.org,
-	qat-linux@intel.com,	linux-gpio@vger.kernel.org,
-	linux-aspeed@lists.ozlabs.org,	linux-iio@vger.kernel.org,
-	linux-sound@vger.kernel.org,	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 09/23] ALSA: usb-audio: #undef field_{get,prep}() before local definition
-In-Reply-To: <8f19d783dd783df5510408ffe9664dc6ef0d9434.1761588465.git.geert+renesas@glider.be>
-References: <cover.1761588465.git.geert+renesas@glider.be>
-	<8f19d783dd783df5510408ffe9664dc6ef0d9434.1761588465.git.geert+renesas@glider.be>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwxmG6TcPz2xlK;
+	Wed, 29 Oct 2025 04:13:34 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3B9306124B;
+	Tue, 28 Oct 2025 17:13:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B658BC4CEE7;
+	Tue, 28 Oct 2025 17:13:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761671611;
+	bh=+cenkb0yL5U6fkb9PXEJLOZBBfbIw/K5JcCnxUVgehI=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=GHWgETQ1RNiG4NgBjVLnhJH9atMiVJdloWNMv11jPg99tyK+rmBwAzqK9hTb4gVhT
+	 2ZtFnJKwxLI4s2Q1P8yhoci5coU0j5l4vn2zCzKepsIfscxlIj7Zu5fXo/n3/KWGIz
+	 hHMqKbrGfsuMHEa9JXdVniJNLDuD3aTag4FRYpY8MZC7Tdt+1tj5Isr/dt42Ncc8NJ
+	 sH4jdipg5MKIr6H7mirxdjLBByUiKYKRocaUoLgV9TRC+GCZAmUas2q83NjwZJ561i
+	 7CYd2BuJMIACVxarC+376c/AlA60uR1HFbp6n2bx39j1c/IyYibnP+f7s04InfotSN
+	 hUMwQm5MxpCww==
+Date: Tue, 28 Oct 2025 12:13:30 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: lpieralisi@kernel.org, kwilczynski@kernel.org, mani@kernel.org,
+	robh@kernel.org, bhelgaas@google.com, krzk+dt@kernel.org,
+	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+	vkoul@kernel.org, kishon@kernel.org, linus.walleij@linaro.org,
+	p.zabel@pengutronix.de, linux-aspeed@lists.ozlabs.org,
+	linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-phy@lists.infradead.org, openbmc@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org
+Subject: Re: [PATCH v4 8/9] PCI: aspeed: Add ASPEED PCIe RC driver
+Message-ID: <20251028171330.GA1506282@bhelgaas>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -132,69 +70,116 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=US-ASCII
-X-Spamd-Result: default: False [-1.80 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	TAGGED_RCPT(0.00)[renesas];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	TO_DN_SOME(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,wanadoo.fr];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[baylibre.com,kernel.org,microchip.com,bootlin.com,tuxon.dev,intel.com,gondor.apana.org.au,davemloft.net,linaro.org,bgdev.pl,jms.id.au,codeconstruct.com.au,melexis.com,metafoo.de,nuvoton.com,gmail.com,rasmusvillemoes.dk,perex.cz,suse.com,sipsolutions.net,ieee.org,wanadoo.fr,akamai.com,alien8.de,analog.com,bp.renesas.com,de.bosch.com,vger.kernel.org,lists.infradead.org,lists.ozlabs.org];
-	R_RATELIMIT(0.00)[to_ip_from(RLr5uiezb5xkkwytzfr8x566qh)];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[50];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251027095825.181161-9-jacky_chou@aspeedtech.com>
 
-On Mon, 27 Oct 2025 19:41:43 +0100,
-Geert Uytterhoeven wrote:
-> 
-> Prepare for the advent of globally available common field_get() and
-> field_prep() macros by undefining the symbols before defining local
-> variants.  This prevents redefinition warnings from the C preprocessor
-> when introducing the common macros later.
-> 
-> Suggested-by: Yury Norov <yury.norov@gmail.com>
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> --
-> v5:
->   - New.
-> ---
->  sound/usb/mixer_quirks.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
-> index 828af3095b86ee0a..713a8498b975e1ac 100644
-> --- a/sound/usb/mixer_quirks.c
-> +++ b/sound/usb/mixer_quirks.c
-> @@ -3312,7 +3312,9 @@ static int snd_bbfpro_controls_create(struct usb_mixer_interface *mixer)
->  #define RME_DIGIFACE_INVERT BIT(31)
->  
->  /* Nonconst helpers */
-> +#undef field_get
->  #define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> +#undef field_prep
->  #define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
->  
->  static int snd_rme_digiface_write_reg(struct snd_kcontrol *kcontrol, int item, u16 mask, u16 val)
+On Mon, Oct 27, 2025 at 05:58:24PM +0800, Jacky Chou wrote:
+> Introduce PCIe Root Complex driver for ASPEED SoCs. Support RC
+> initialization, reset, clock, IRQ domain, and MSI domain setup.
+> Implement platform-specific setup and register configuration for
+> ASPEED. And provide PCI config space read/write and INTx/MSI
+> interrupt handling.
 
-Acked-by: Takashi Iwai <tiwai@suse.de>
+> +config PCIE_ASPEED
+> +	bool "ASPEED PCIe controller"
+> +	depends on ARCH_ASPEED || COMPILE_TEST
+> +	depends on OF
+> +	depends on PCI_MSI
+> +	select IRQ_MSI_LIB
+> +	help
+> +	  Enable this option to support the PCIe controller found on ASPEED
+> +	  SoCs.
+> +
+> +	  This driver provides initialization and management for PCIe
+> +	  Root Complex functionality, including interrupt and MSI support.
 
+Maybe "INTx and MSI support", since MSI is an interrupt?
 
-thanks,
+> +/* Complete status */
 
-Takashi
+"Completion"
+
+> +static int aspeed_ast2700_ahb_remap_to_bar(struct aspeed_pcie *pcie)
+> +{
+> +	struct resource_entry *win, *tmp;
+> +	struct pci_host_bridge *bridge = pcie->host;
+> +
+> +	/* Configure AHB remapping to BAR on AST27x0.
+> +	 * The BAR region is HW-fixed in AST27x0, these BARs will be filled
+> +	 * in the ranges of pcie node in DT.
+> +	 */
+
+I don't understand what "HW-fixed" means here.  It looks like you're
+writing host bridge window addresses (that came from DT) to the
+hardware.  That sounds like they're not actually "fixed" but
+programmable.
+
+Host bridge windows are not BARs themselves.  Mem space for devices
+below the host bridge is allocated from the windows, and the addresses
+are programmed into BARs of those downstream devices.
+
+Multi-line comment style:
+
+  /*
+   * Configure ...
+   */
+
+Wrap to fill 78 columns, or add blank lines between paragraphs.
+
+> +	resource_list_for_each_entry_safe(win, tmp, &bridge->windows) {
+> +		struct resource *res = win->res;
+> +
+> +		if (resource_type(res) == IORESOURCE_MEM &&
+> +		    !(res->flags & IORESOURCE_MEM_64)) {
+> +			writel(ASPEED_REMAP_BAR_BASE(res->start),
+> +			       pcie->reg + ASPEED_H2X_REMAP_DIRECT_ADDR);
+> +			return 0;
+> +		}
+> +	}
+> +
+> +	return -ENODEV;
+> +}
+> +
+> +static int aspeed_ast2700_setup(struct platform_device *pdev)
+> +{
+> +	struct aspeed_pcie *pcie = platform_get_drvdata(pdev);
+> +	struct device *dev = pcie->dev;
+> +	int ret;
+> +
+> +	pcie->cfg = syscon_regmap_lookup_by_phandle(dev->of_node,
+> +						    "aspeed,pciecfg");
+> +	if (IS_ERR(pcie->cfg))
+> +		return dev_err_probe(dev, PTR_ERR(pcie->cfg),
+> +				     "failed to map pciecfg base\n");
+> +
+> +	regmap_update_bits(pcie->cfg, ASPEED_SCU_60,
+> +			   ASPEED_RC_E2M_PATH_EN | ASPEED_RC_H2XS_PATH_EN |
+> +			   ASPEED_RC_H2XD_PATH_EN | ASPEED_RC_H2XX_PATH_EN |
+> +			   ASPEED_RC_UPSTREAM_MEM_EN,
+> +			   ASPEED_RC_E2M_PATH_EN | ASPEED_RC_H2XS_PATH_EN |
+> +			   ASPEED_RC_H2XD_PATH_EN | ASPEED_RC_H2XX_PATH_EN |
+> +			   ASPEED_RC_UPSTREAM_MEM_EN);
+> +	regmap_write(pcie->cfg, ASPEED_SCU_64,
+> +		     ASPEED_RC0_DECODE_DMA_BASE(0) |
+> +		     ASPEED_RC0_DECODE_DMA_LIMIT(0xff) |
+> +		     ASPEED_RC1_DECODE_DMA_BASE(0) |
+> +		     ASPEED_RC1_DECODE_DMA_LIMIT(0xff));
+> +	regmap_write(pcie->cfg, ASPEED_SCU_70, ASPEED_DISABLE_EP_FUNC);
+> +
+> +	aspeed_host_reset(pcie);
+> +
+> +	writel(0, pcie->reg + ASPEED_H2X_CTRL);
+> +	writel(ASPEED_H2X_BRIDGE_EN | ASPEED_H2X_BRIDGE_DIRECT_EN,
+> +	       pcie->reg + ASPEED_H2X_CTRL);
+> +
+> +	ret = aspeed_ast2700_ahb_remap_to_bar(pcie);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret, "failed to assign BAR\n");
+
+This is not assigning *BARs*.  A host bridge doesn't have BARs in the
+PCI spec sense.  It might have programmable address ranges, but the
+host bridge is not itself a PCI device, so its programmability is
+device specific.
 
