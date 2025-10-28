@@ -1,79 +1,124 @@
-Return-Path: <linux-aspeed+bounces-2673-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2674-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CB48CCD1BF
-	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 14:23:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22734CCF9E0
+	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 16:13:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwt0063x7z3c4d;
-	Wed, 29 Oct 2025 01:23:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761661408;
-	cv=none; b=nXhcgGJGagOa1kcmMJkgmvlSVu8lZkMy4sOrK5zf8dnDvDrJ/nR0CF0s93GPbK2FDFKBJR9oCBdotxkKeUXak1pei9iQ7sJlWcWj5P3pbEDox9acb3raK9dX7qMj4e8HIoutPCS4Xyx1YiWoXowdZjk49VJc/znKNYOYaDvO8b5eUvzDFACeYPvnTIAF8iNjCcCHc5XNT3SNgzTno9f9EUqotsXisO5IWJEAr6mH3J/17+LnnlX7Bym+xBR1s4KlfGlGvXq7iq37k69di+6Kpwx7Iou69XDhoMCewC1CNXwYumY8fRraNZ9/TuCkU1dl08LYALnHo86d1Y8qUyTHgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwwRJ5JKyz3bt9;
+	Wed, 29 Oct 2025 03:13:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761668028;
+	cv=none; b=OvdVTwowsQqNOZ9cJa5DSjmaV3a8j3KDpC26qYrW7IY8HVHESynosT5L6ys7suVT2pde3twAxCaxXZe76+Ae78hds+HyD3Fc/n97aNx9pWZpDoj1dUce9YvkN3xfu22xoj/Gf2S+BvUKwpP6vxmfb6rfKac3Qs5xFCczc+ZVSPTGCj+UAjyierskfIoqfYM9dWJuh0vVW9hLYbVmuJZRt4bZUGA5XSvz51WbjvK1YyWSjdCQyladWGnT+4Zxw9KBbibAh7ML9rf/Nw1HwBKNtkZE7yYBcy1NJQ38Ue9vl2qhnwrtmqy6sFWHU1/ZZhBiiIcAtZa98PVCBKJwMxXrAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761661408; c=relaxed/relaxed;
-	bh=rLVBKT2oGchqTwKApmRrbu5Y88FTRxXcdGMqxVea4JE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YPq9jDVWmpJuOUQNvh+YpyQU/rqziPK57UzbSHyyGTZ9bmw9LbH6tF8Y+rZQeD1YrjOcbfRNmDNsZrPl7E8UwxnxBs8tGEyh1VUpo+5EQ0DlERoWfUZqWb2TOhoNOi2kHyeouoa/EUtcsPQDMil5L4EXxF/waQqVCDxOPcsLs7BBKj5sOmyuivQOjnTAHhEUbZMfxoHAua9N8ZqWOSU7fGl8UQ6aImnoU8FEAEX1dCM9JiEapE4ahD8n7iIrZvfKJLOgWasWnspnT8YVUWYzVDMkeBxLEm7i7a+nUKCT2YF//SIwNrKqMUNqxSYmsXc+QFYO/46bk+TrUJ8fOE6+Vg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PsIUYkIK; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1761668028; c=relaxed/relaxed;
+	bh=aIkfaA109e058juxrbARLnbhnw+30Zzst1672lVORwA=;
+	h=Date:Message-ID:From:To:Cc:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=C7NI9pPIKS8qyXM44J5GLCj2VJI9h+euOJDPiyMtNWQ/idV3zaLFnYLv2gXhN8BxbnmC4JAhzsqjNMx27egOEztSBOqCtaXsK3C/57ifGo1ubd0ivwM2NGRwqgROSCLN2gxY/wxP3duqJsc29Q0pGxX3hRam4D0I5zZeLW6UDF6k+rQj4YGwhx3vB1sA4CvP0uPVe54IQCMC5tXNopTxGEH46yXpVRI/ZlWr+2fVFVStlE4SrZAC0nZjh2F9x8KMDjKDgG0b4KuBQswllKgOqF7jagumJ9AwQTY1sv0j3BdqlE7C9UNNBt+2WiPwXrU9qN0Gq3cb1D0uKeehViJp/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=HtMDbF8r; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ytJTULRp; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=HtMDbF8r; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ytJTULRp; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PsIUYkIK;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=HtMDbF8r;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ytJTULRp;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=HtMDbF8r;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=ytJTULRp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tiwai@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwszx5Yghz304x;
-	Wed, 29 Oct 2025 01:23:24 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761661406; x=1793197406;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=ZjKITrPWlUyYajJm3Ljrd+gMFKVlc9juJxipai/H3sg=;
-  b=PsIUYkIKLqKF9d3z+hTFsh8m58M9FKh85uVjoQsYZJzYZi7NsdZPNR2V
-   PbFxqNZ0Q5Z91Wv/Yi8y1nIUQtEgk2RzX5l2Lo4bEbmW9/5cQbbVquN7O
-   MwESt2Wp3d/miHGmDJY7bjDNXwZdT+13C31m9GinWSt8OrGMYdFbb/4jC
-   nYcRmsEOd4fE0wAEFDr/lHYkmld2WDZIwEtPZB7rBVFiVwI4ow0CK+XHJ
-   YfVYhVEp9EPM5nkePwA0svxWt04Z/MJte4cHjFOfwAAZsVkJ3q+lsj+7N
-   C4IipmBvSac06L7dJJ3I7xgSu3wwjysddx1H1l1zIYzhQA3k2KkoYGjTe
-   Q==;
-X-CSE-ConnectionGUID: 5sRG1F1vQAiHVFMGfdnehA==
-X-CSE-MsgGUID: HqWKsMU8SgymlN//eqvt8g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="62966671"
-X-IronPort-AV: E=Sophos;i="6.19,261,1754982000"; 
-   d="scan'208";a="62966671"
-Received: from orviesa009.jf.intel.com ([10.64.159.149])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2025 07:23:21 -0700
-X-CSE-ConnectionGUID: rJqVb9lsQW6rF8W3nrYn0g==
-X-CSE-MsgGUID: 5bWYwMMeSPSqrq/PhxgLNw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,261,1754982000"; 
-   d="scan'208";a="184987007"
-Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
-  by orviesa009.jf.intel.com with ESMTP; 28 Oct 2025 07:23:16 -0700
-Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1vDkbR-000JE1-2i;
-	Tue, 28 Oct 2025 14:23:13 +0000
-Date: Tue, 28 Oct 2025 22:22:14 +0800
-From: kernel test robot <lkp@intel.com>
-To: Jacky Chou <jacky_chou@aspeedtech.com>, lpieralisi@kernel.org,
-	kwilczynski@kernel.org, mani@kernel.org, robh@kernel.org,
-	bhelgaas@google.com, krzk+dt@kernel.org, conor+dt@kernel.org,
-	joel@jms.id.au, andrew@codeconstruct.com.au, vkoul@kernel.org,
-	kishon@kernel.org, linus.walleij@linaro.org, p.zabel@pengutronix.de,
-	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
-	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org
-Cc: oe-kbuild-all@lists.linux.dev, jacky_chou@aspeedtech.com
-Subject: Re: [PATCH v4 8/9] PCI: aspeed: Add ASPEED PCIe RC driver
-Message-ID: <202510282225.yqfv0wel-lkp@intel.com>
-References: <20251027095825.181161-9-jacky_chou@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwwRH3DtZz2ypw
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 03:13:47 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 71D431F46E;
+	Tue, 28 Oct 2025 16:13:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1761668022; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aIkfaA109e058juxrbARLnbhnw+30Zzst1672lVORwA=;
+	b=HtMDbF8r2wRWDGifnv9gYxSNAhmS0ojzB1YP8QtBcy8ubsAT3ZsONof3Bhi32jnCH/lw5z
+	Hq6v+a16uHNBw7YVLG0EXbD607lh+hXWEV2szjXMyw6CmEW2DhnqmsfmuG+WL6eiBIJi6S
+	EIT708Ji0KWfCPRQ6wSJTudLeMIbq9Q=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1761668022;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aIkfaA109e058juxrbARLnbhnw+30Zzst1672lVORwA=;
+	b=ytJTULRp9UW/jr9bzPTDO3cAAmBQor2fn8ie0J+jiQytAqY1LFwxRRsg/XxfPqgAg/w4Xj
+	zB2K4ve4Da2VOpCw==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1761668022; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aIkfaA109e058juxrbARLnbhnw+30Zzst1672lVORwA=;
+	b=HtMDbF8r2wRWDGifnv9gYxSNAhmS0ojzB1YP8QtBcy8ubsAT3ZsONof3Bhi32jnCH/lw5z
+	Hq6v+a16uHNBw7YVLG0EXbD607lh+hXWEV2szjXMyw6CmEW2DhnqmsfmuG+WL6eiBIJi6S
+	EIT708Ji0KWfCPRQ6wSJTudLeMIbq9Q=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1761668022;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=aIkfaA109e058juxrbARLnbhnw+30Zzst1672lVORwA=;
+	b=ytJTULRp9UW/jr9bzPTDO3cAAmBQor2fn8ie0J+jiQytAqY1LFwxRRsg/XxfPqgAg/w4Xj
+	zB2K4ve4Da2VOpCw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 22B2113A7D;
+	Tue, 28 Oct 2025 16:13:41 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id h0gZB7XrAGm0CAAAD6G6ig
+	(envelope-from <tiwai@suse.de>); Tue, 28 Oct 2025 16:13:41 +0000
+Date: Tue, 28 Oct 2025 17:13:40 +0100
+Message-ID: <87ms5bf1hn.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>,	Stephen Boyd
+ <sboyd@kernel.org>,	Nicolas Ferre <nicolas.ferre@microchip.com>,	Alexandre
+ Belloni <alexandre.belloni@bootlin.com>,	Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>,	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,	David Miller
+ <davem@davemloft.net>,	Linus Walleij <linus.walleij@linaro.org>,	Bartosz
+ Golaszewski <brgl@bgdev.pl>,	Joel Stanley <joel@jms.id.au>,	Andrew Jeffery
+ <andrew@codeconstruct.com.au>,	Crt Mori <cmo@melexis.com>,	Jonathan Cameron
+ <jic23@kernel.org>,	Lars-Peter Clausen <lars@metafoo.de>,	Jacky Huang
+ <ychuang3@nuvoton.com>,	Shan-Chun Hung <schung@nuvoton.com>,	Yury Norov
+ <yury.norov@gmail.com>,	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Jaroslav Kysela <perex@perex.cz>,	Takashi Iwai <tiwai@suse.com>,	Johannes
+ Berg <johannes@sipsolutions.net>,	Jakub Kicinski <kuba@kernel.org>,	Alex
+ Elder <elder@ieee.org>,	David Laight <david.laight.linux@gmail.com>,
+	Vincent Mailhol <mailhol.vincent@wanadoo.fr>,	Jason Baron
+ <jbaron@akamai.com>,	Borislav Petkov <bp@alien8.de>,	Tony Luck
+ <tony.luck@intel.com>,	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Kim Seer Paller <kimseer.paller@analog.com>,	David Lechner
+ <dlechner@baylibre.com>,	Nuno =?ISO-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,	Richard Genoud
+ <richard.genoud@bootlin.com>,	Cosmin Tanislav <demonsingur@gmail.com>,	Biju
+ Das <biju.das.jz@bp.renesas.com>,	Jianping Shen
+ <Jianping.Shen@de.bosch.com>,	linux-clk@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,	linux-renesas-soc@vger.kernel.org,
+	linux-crypto@vger.kernel.org,	linux-edac@vger.kernel.org,
+	qat-linux@intel.com,	linux-gpio@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org,	linux-iio@vger.kernel.org,
+	linux-sound@vger.kernel.org,	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 20/23] ALSA: usb-audio: Convert to common field_{get,prep}() helpers
+In-Reply-To: <91f957d8857d64df9eae33824203cc770b0182b3.1761588465.git.geert+renesas@glider.be>
+References: <cover.1761588465.git.geert+renesas@glider.be>
+	<91f957d8857d64df9eae33824203cc770b0182b3.1761588465.git.geert+renesas@glider.be>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,61 +131,71 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251027095825.181161-9-jacky_chou@aspeedtech.com>
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+Content-Type: text/plain; charset=US-ASCII
+X-Spamd-Result: default: False [-1.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SUSPICIOUS_RECIPS(1.50)[];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TAGGED_RCPT(0.00)[renesas];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	TO_DN_SOME(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com,wanadoo.fr];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[baylibre.com,kernel.org,microchip.com,bootlin.com,tuxon.dev,intel.com,gondor.apana.org.au,davemloft.net,linaro.org,bgdev.pl,jms.id.au,codeconstruct.com.au,melexis.com,metafoo.de,nuvoton.com,gmail.com,rasmusvillemoes.dk,perex.cz,suse.com,sipsolutions.net,ieee.org,wanadoo.fr,akamai.com,alien8.de,analog.com,bp.renesas.com,de.bosch.com,vger.kernel.org,lists.infradead.org,lists.ozlabs.org];
+	R_RATELIMIT(0.00)[to_ip_from(RLr5uiezb5xkkwytzfr8x566qh)];
+	FROM_EQ_ENVFROM(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCPT_COUNT_GT_50(0.00)[50];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,suse.de:email]
 
-Hi Jacky,
+On Mon, 27 Oct 2025 19:41:54 +0100,
+Geert Uytterhoeven wrote:
+> 
+> Drop the driver-specific field_get() and field_prep() macros, in favor
+> of the globally available variants from <linux/bitfield.h>.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> v5:
+>   - Extracted from "bitfield: Add non-constant field_{prep,get}()
+>     helpers".
+> ---
+>  sound/usb/mixer_quirks.c | 6 ------
+>  1 file changed, 6 deletions(-)
+> 
+> diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
+> index 713a8498b975e1ac..6eee89cbc0867f2b 100644
+> --- a/sound/usb/mixer_quirks.c
+> +++ b/sound/usb/mixer_quirks.c
+> @@ -3311,12 +3311,6 @@ static int snd_bbfpro_controls_create(struct usb_mixer_interface *mixer)
+>  #define RME_DIGIFACE_REGISTER(reg, mask) (((reg) << 16) | (mask))
+>  #define RME_DIGIFACE_INVERT BIT(31)
+>  
+> -/* Nonconst helpers */
+> -#undef field_get
+> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
+> -#undef field_prep
+> -#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
+> -
+>  static int snd_rme_digiface_write_reg(struct snd_kcontrol *kcontrol, int item, u16 mask, u16 val)
+>  {
+>  	struct usb_mixer_elem_list *list = snd_kcontrol_chip(kcontrol);
 
-kernel test robot noticed the following build warnings:
+Acked-by: Takashi Iwai <tiwai@suse.de>
 
-[auto build test WARNING on pci/next]
-[also build test WARNING on pci/for-linus robh/for-next linusw-pinctrl/devel linusw-pinctrl/for-next linus/master v6.18-rc3 next-20251028]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Jacky-Chou/dt-bindings-phy-aspeed-Add-ASPEED-PCIe-PHY/20251027-180856
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/pci/pci.git next
-patch link:    https://lore.kernel.org/r/20251027095825.181161-9-jacky_chou%40aspeedtech.com
-patch subject: [PATCH v4 8/9] PCI: aspeed: Add ASPEED PCIe RC driver
-config: loongarch-randconfig-r113-20251028 (https://download.01.org/0day-ci/archive/20251028/202510282225.yqfv0wel-lkp@intel.com/config)
-compiler: loongarch64-linux-gcc (GCC) 13.4.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251028/202510282225.yqfv0wel-lkp@intel.com/reproduce)
+thanks,
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202510282225.yqfv0wel-lkp@intel.com/
+Takashi
 
-sparse warnings: (new ones prefixed by >>)
->> drivers/pci/controller/pcie-aspeed.c:1084:38: sparse: sparse: symbol 'pcie_rc_ast2600' was not declared. Should it be static?
->> drivers/pci/controller/pcie-aspeed.c:1093:38: sparse: sparse: symbol 'pcie_rc_ast2700' was not declared. Should it be static?
-
-vim +/pcie_rc_ast2600 +1084 drivers/pci/controller/pcie-aspeed.c
-
-  1083	
-> 1084	const struct aspeed_pcie_rc_platform pcie_rc_ast2600 = {
-  1085		.setup = aspeed_ast2600_setup,
-  1086		.reg_intx_en = 0xc4,
-  1087		.reg_intx_sts = 0xc8,
-  1088		.reg_msi_en = 0xe0,
-  1089		.reg_msi_sts = 0xe8,
-  1090		.msi_address = 0x1e77005c,
-  1091	};
-  1092	
-> 1093	const struct aspeed_pcie_rc_platform pcie_rc_ast2700 = {
-  1094		.setup = aspeed_ast2700_setup,
-  1095		.reg_intx_en = 0x40,
-  1096		.reg_intx_sts = 0x48,
-  1097		.reg_msi_en = 0x50,
-  1098		.reg_msi_sts = 0x58,
-  1099		.msi_address = 0x000000f0,
-  1100	};
-  1101	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
 
