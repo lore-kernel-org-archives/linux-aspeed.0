@@ -1,46 +1,64 @@
-Return-Path: <linux-aspeed+bounces-2665-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2666-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26FF8CCD1BF
-	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 05:41:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E1F9CCD1BF
+	for <linux-aspeed@archiver.kernel.org>; Tue, 28 Oct 2025 07:48:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwfPW53YKz3fmr;
-	Tue, 28 Oct 2025 16:41:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761630079;
-	cv=none; b=BzBnZXO/cTs6iyQzMeu6LPSyDR/GzlzGjD4xTadpGnkY9Zy648ceFalQT2wgePk2MPPPqqMdMoG6v9CQTGb3hffyleaT8AdjWp7IKof3sM2Ji1Q9mVw5b8FfeE7qnQGhdCP7C4lyRxP7u8leD616cqGYFCB/u+LqywktMLYaMrPpsfusqq3eqy9JRwBiZ3d65dxMRkJgUAu/6/9tJkCjnYKdiiu6JjJTYfhN+lPM3mu7JgtxGS9PCGeDeZdaE+XdlhidfsEX35rNGzuN5F+5GpTAc5hTaji2a2SdQTZm+B7IeGWMY/ZyLdlrdK9g5vnLj+/IqkRF+tvo7Sj/PNdmiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwjCn2MtRz3f6k;
+	Tue, 28 Oct 2025 18:48:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761637685;
+	cv=none; b=M0GCtx3/N42VrhKVNP5+2buEs4eBMVnVGq3h+LohCKOlf6yYxz00BU8rtzs/vAjojhXf6UKpKFAfEcpNQhXOUQGkFJXxToW6T+EjkK1tdCE9/A6QPeHDCPqDUUCUch0weaLvHOwTS+RPw+0XxLJUmxav8mGoQrEdG1xQhzw3m1V5NsVUwZxUVjAC2/S6yIIX5kjWnvlRifpArkkj6Wdxk9tDzK0QxqepFnJS6BzCqt/xpIa9PnhIsM+uaozk+7QL6FARP5PJLRoeXfTnkYKuYHwQ/IMfaeOaGcOYC5kPNWfs/5DrcMyC95MsZOIniaV9GHWj1cSzAIPyiSRW9BWhBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761630079; c=relaxed/relaxed;
-	bh=+mIfOpnHq7Ncvl2okapXBd1CISdGuR9CpvlASf+RZxw=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=WXa3t0RusJeJ2yY14wdO+PGopIPcuy3meLmPXqK7nGkV9pFj3nCscoK/YAooE/FthYD7w8OVNg1IxxDHmKlrMO98+YHcoPCKF76I7UsWgzpQRpqNfZhOOAusQcGJLp8XHyQnTRn37iMojv3sKqZhBruqMK0EI1MrCkmn0o+U9qjbvrsrm/awtpw80/jun01SwtUyalxY+I58XDIBIu6Tf5+PfX8LcX08vASOMsa2hswB/WHHvUICLlIr/vlJM7BuOiXVkD3FpPooB85XvR2R5sOiCaqVBo3i+QH+b25MDgRNSZK8/1qouKHfcZtvvYcyDxOZ/OCusOyvX6K1w8KaVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1761637685; c=relaxed/relaxed;
+	bh=QL8VsAg1at7SuW5tNZ8SM68KMxfARdF7RwLyGMZNOH0=;
+	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Itjrp7RrnQE4so+57uqYqgmndmFQRxjTAGRKdd/dvB6xj22k3lesgBOMeAMZ2bmX0C4efveIfKTSaw2r/n2sBMk3ahfV4pPVa/PPauSF0EvW3bzbNfyaq+QPoucmsPZ+DOTTKCVKQiXrSOSokQ2EjHCp8Wu1hdAuOWHNhEaCBTpRTTMecq2YdmIjwN4K1huRk3oWrLWA6W121jDwn5YCwCM2wQ4aRFKBFTIYvxaHw3T8M0K0m80DomhxdV4hOfQlg3jE6vy0vjMftOql7OwEqle2Hmk7UmsnxUx91BJyNMohns6VDFQaiuPQ+qrbWen0+ifoIgsQlhOelouURXMtSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JSp4dhCX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JSp4dhCX;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwfPV6m9Wz3fmq
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 28 Oct 2025 16:41:18 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 28 Oct
- 2025 13:41:02 +0800
-Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Tue, 28 Oct 2025 13:41:02 +0800
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: <jic23@kernel.org>, <dlechner@baylibre.com>, <nuno.sa@analog.com>,
-	<andy@kernel.org>, <joel@jms.id.au>, <andrew@codeconstruct.com.au>,
-	<billy_tsai@aspeedtech.com>, <linux-iio@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] iio: adc: aspeed: clear reference voltage bits before configuring vref
-Date: Tue, 28 Oct 2025 13:41:02 +0800
-Message-ID: <20251028054102.1954503-1-billy_tsai@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwjCm1Xhzz3f29;
+	Tue, 28 Oct 2025 18:48:04 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9E8046027E;
+	Tue, 28 Oct 2025 07:48:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BD480C113D0;
+	Tue, 28 Oct 2025 07:48:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761637681;
+	bh=KClJh703ruviggVORWywOzunQO6HBuBT/e1jnVpnPXc=;
+	h=Date:From:To:Subject:References:In-Reply-To:From;
+	b=JSp4dhCXz/ltiFCTPO0JZcMRQ0fsKve6CAnHmMlvgGjKIsE9cs2S5JvV5W2MW7nAn
+	 82HXAZqM6GUp1+SVIebgExEctwbw5eR8rdTw73RBFVFYfA+vDmsp+U4HqdAgSoU5F/
+	 /TKhjJf/vrUuHq96xsIZAhivbBsQ/tgYZuM83LA1aYES/wvftOKN+q0du0hlugp8Sz
+	 fa01y6qXoBel8u57qib+5TEcobWqo/i4L+Cz73uiN0CdPftCQZDwWT1lXiIESFogAy
+	 6OQvGLFdXKq9D1mZ7L2/12L7C9M+hmgdIEAFAJ83G+sJ30s0jnr9tUhLF61qe4Wa7r
+	 a9BW8d4ARqz2g==
+Date: Tue, 28 Oct 2025 08:47:58 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, bmc-sw@aspeedtech.com, 
+	benh@kernel.crashing.org, joel@jms.id.au, andi.shyti@kernel.org, jk@codeconstruct.com.au, 
+	robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+	andrew@codeconstruct.com.au, p.zabel@pengutronix.de, andriy.shevchenko@linux.intel.com, 
+	naresh.solanki@9elements.com, linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v21 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
+ global-regs and transfer-mode properties
+Message-ID: <20251028-ingenious-dazzling-jackdaw-af487d@kuoka>
+References: <20251027061240.3427875-1-ryan_chen@aspeedtech.com>
+ <20251027061240.3427875-3-ryan_chen@aspeedtech.com>
+ <93a2ff5f-2f8e-494b-9652-b93bc243c229@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -54,31 +72,47 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <93a2ff5f-2f8e-494b-9652-b93bc243c229@kernel.org>
 
-Ensures the reference voltage bits are cleared in the ADC engine
-control register before configuring the voltage reference. This
-avoids potential misconfigurations caused by residual bits.
+On Mon, Oct 27, 2025 at 08:14:45PM +0100, Krzysztof Kozlowski wrote:
+> On 27/10/2025 07:12, Ryan Chen wrote:
+> > The AST2600 I2C controller supports three transfer modes: byte,
+> > buffer, and DMA. To allow board designers and firmware to
+> > explicitly select the preferred transfer mode for each controller
+> > instance. "aspeed,transfer-mode" to allow device tree to specify
+> > the desired transfer method used by each I2C controller instance.
+> > 
+> > And AST2600 i2c controller have two register mode, one is legacy
+> > register layout which is mix controller/target register control
+> > together, another is new mode which is separate controller/target
+> > register control.
+> > 
+> 
+> This implies your "reg" properties have now completely different meaning
+> and this would be quite an ABI break. We discussed this probably 15
+> revisions ago. Where did you document the resolution of that discussion?
+> 
+> >  
+> >  unevaluatedProperties: false
+> >  
+> > @@ -57,10 +85,12 @@ examples:
+> >        #address-cells = <1>;
+> >        #size-cells = <0>;
+> >        compatible = "aspeed,ast2600-i2c-bus";
+> > -      reg = <0x40 0x40>;
+> > +      reg = <0x80 0x80>, <0xc00 0x20>;
+> 
+> Not relevant to this patch. You just added this line in patch #1, so did
+> you add incorrect code just to fix it right away?
+> 
+> No, fix your example when creating it.
 
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/iio/adc/aspeed_adc.c | 1 +
- 1 file changed, 1 insertion(+)
+Heh, and this was not even tested... you have warnings here (see
+maintainer soc profiles).
 
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index 1d5fd5f534b8..8ab29948214a 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -415,6 +415,7 @@ static int aspeed_adc_vref_config(struct iio_dev *indio_dev)
- 	}
- 	adc_engine_control_reg_val =
- 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
-+	adc_engine_control_reg_val &= ~ASPEED_ADC_REF_VOLTAGE;
- 
- 	ret = devm_regulator_get_enable_read_voltage(data->dev, "vref");
- 	if (ret < 0 && ret != -ENODEV)
--- 
-2.25.1
+Best regards,
+Krzysztof
 
 
