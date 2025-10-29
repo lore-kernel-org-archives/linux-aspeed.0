@@ -1,51 +1,73 @@
-Return-Path: <linux-aspeed+bounces-2686-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2687-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72C50CCF9EB
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 11:19:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86BBACCF9E9
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 14:20:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cxPsl73k2z3bfV;
-	Wed, 29 Oct 2025 22:19:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761736795;
-	cv=none; b=PBo420LeraE0HMSb9Ry3O3WzFoHE5DN07lVC2A46SlGPzuRp35gG3exLcNUuGMQMme8CXfFPe9XNaPBWQFl+dltRploHppQwy59W6WU85Prsd9Q5OeIgDDH35Mamv5WyoNCrkVAkrqWzq/0SAjoYGx4yFxQoZzoxUDfpD6EFnKjrv/r8Y5OZcM4Uwb5QoO4cQ/8hEkuGPfKogkbZ1/l8TlpHEqyOUIGuJM01lccbZaLGbcfaFlkgCGUyRmW8C4BM2MGxHyOCv985dqu5B7Di6hSpZtACtu+dEH4B1q9loGCxLtrvAZrDA/kxmRj4EKciPcuYreFRFqzYHL++KE7Ggw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cxTsd0V2sz2yrm;
+	Thu, 30 Oct 2025 01:20:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761747605;
+	cv=none; b=C+wxWDr9CHxc9tlfVozRyW6d02QEqH3bnQnZCrSI+n/TGddRtIu81CLRy1E1U/CHBUe/klLLshLLT+kb9g04W9waClrt5oW88lnQVxErPYIhYKCrgyFmdeciZB6DuqqOfzB4jhqrNiyTv+dPsi/2ABC4nIvZy0cETZh9c4gYGMFsQU29/xSgtzbIoQl/8XZ5XOz+mjGp8PMnukmAU2v/T2T+1EEzzK56QIZvzHrS3gcwVDxb7NjLu7HMqIC22tsOuBhdJ9Y+PSaRAstb+8tIUPX1eoOY6jARRoEgcDpp8czxqb+NywuEOVTEgwDwp1T2PQIQicX63I+5i81Ib+U2kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761736795; c=relaxed/relaxed;
-	bh=KyNXtI6PbEnTz7FPWb3eNnVb1ZmsgCXb6Hy6YuuOSsc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=LUiCqd1xMvEjv9iIu7w9AFA1BoNGDZE+nMhEO7f7EuEvNrkPspoKizDBgPD8vQJI4sB8bLmFM5gF7vH5ZUlP8ZGex3Fj9fuVILxVmnO1asmhpofhfz0VVvEcTnH4HdwzlodW5rBHEuvO0/QGoRH8GigRutJRYuaL5fKxOdftCAriYw4HOZSZ08K3UtO5/U8bNL79RJ969s7q/GHxWR8qGuTl4JDpi6csfY+g956V/HPsduZHy4OJVHJGQJe7YB/j3Sr0qHKzIqtD+5v7FbaemrhHhbYo8HFkW7jk766mTLRtwdv5TXfwIxMONnKtp4PCs+4F+2ekFXy8EYJnoKPr/Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B7EVqC+o; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1761747605; c=relaxed/relaxed;
+	bh=oOeCj7atBm+jp74qXquxytnJSCplsW/eyoN4u7SHchg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=J5+wS7+7UAGKZjqSLIZkfJOTpRucg2ewPUDtYUPU0azY54CbzrJUaA+9r3pw4rx6vrtMydI/+3kl3Q/eaUjESbZGlEqCFLk9jxai5C2PYKkiALXJwuxtqCOa+vxWQPGboWZ1pF8WboZ0MIrq/my+0TQWIdwJoERfcfcSUPN+O0abBff7GPUcGVxsgPqoBQgJhJlHKlzWR2arUIEnITw+dZ4ShczsNoq64IfYUj7VhOJbaal/KuXEYP2EnSPDPoKfDxGhmge7x4GpdEmxeg6/jJIMoA+8m747GjpU+/JPIKepT3gzsBpHuRFbNHzEK9qFAUq5gwIu/MPYEDD7dqMzFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=z3sYTBxu; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B7EVqC+o;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=z3sYTBxu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxPsl0Dvvz3bfN;
-	Wed, 29 Oct 2025 22:19:54 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id AF23E601CF;
-	Wed, 29 Oct 2025 11:19:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B2D60C4CEF7;
-	Wed, 29 Oct 2025 11:19:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1761736792;
-	bh=Dh+ZcU4ASdDvqiZiGQmIVyEEV0pygfzZVWIqYkkSB78=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=B7EVqC+obkpJ9cwtEEcxn+iPMh/RHAaEh8y5xfgsskC3Un69QoGea8ahrJ7JgNUl0
-	 vplNQl1bHY195dhxlLgNopw/mw/BVkpMHiUekW5wts4juE7MF4d7SqqhdXm1PgAQWg
-	 ik/ewch9b/0OUBhWXqOgEF1RNaWWL6rXqs0nLFn1KpMh39/YiEdzs+1HO22xmeXZOL
-	 jIb7HyhQvnE3btnI8oPRNa70rP3vRZXGWcsg9kYCUIvax4tft/71NLPdpDWsb3TkZY
-	 hiBn6TFT4IPMILYhl6c1nBp+37V6m+iy08qM7xj6O/PjKTSmlo1oMbpIPDuPfPxx/X
-	 lZs6NNNQg3krA==
-Message-ID: <36e2b87f-5567-4bd6-bd1b-789623441461@kernel.org>
-Date: Wed, 29 Oct 2025 12:19:44 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxTsb36h2z2yjm
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 01:20:02 +1100 (AEDT)
+Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-59303607a3aso5631257e87.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:20:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1761747598; x=1762352398; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=oOeCj7atBm+jp74qXquxytnJSCplsW/eyoN4u7SHchg=;
+        b=z3sYTBxuHDXo4VTGOC4wltXMbXZnhOvOrebqeiHhB3JYC5xg4jCTjvWPNa9F7la3ua
+         /GzI9US0eF+ahgr6DuT3T1UyyGQRn5aQ8zxOp7ld1HPf3cTWnSGdGRcs6o+dLWeYb0T/
+         O7Hg5+w/FIybNGFT921Kf1vykvptfcjngHtltswcGtYkboJcHXSDblbkcBAJib7URSsU
+         57BEG1fQlZ8eoTbkEjDaqqdm22Zgj3Z9wGkHesLOzsaDD3t/SN42D8ktL2K/sPVVKe64
+         nWG846s2TcMGIaGLSpEXFH1csbEF3Uf15oxYj5RDwpyevbH2vHQQKxKeBEHeYPHbPvJF
+         oNrQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761747598; x=1762352398;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oOeCj7atBm+jp74qXquxytnJSCplsW/eyoN4u7SHchg=;
+        b=a4SuV71p/Xzd8/3aFwCJ++Zbc0fMZfjJM/7+hYoBNv1D0m4sQK2fdA3b5dK1I+MXrv
+         qPlXBzkzVouR5qdah1PysTYyL2aneXZVCLXIhcF4FZAx8r0Mv93GI5kuFq06czdZA0+9
+         +XFs/cAvOJLo496k3TpVhv7CXqqe75p9Ik9agRjIEckPTTfHArjpRZaUcvGPHQW81Oe5
+         eswBy92KNhejj5Grh6Rq1cDILtYHnu/f6rRglapJ9TcyE9JCWBzK//2+sweWswifG+Dr
+         B5TMab5ilHF1KXwdDOYkdrYKiUSbBhC/Ri2xPmmaYUzyAZyVonIm5KQxst/kpBN8u79s
+         hY7w==
+X-Forwarded-Encrypted: i=1; AJvYcCW4e4vWohlo2yeHCLE3wfNz+iBgOECVP25sKj+GsqegCrrVJ+pH7XENgsCHjI5eqyGdnXEluwJnYKvzblY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywr80RkuiXUWCOA/GXPUvaH6Ar71eNRtvt00KtyS8d9Wac/lBFS
+	fLgPmuSqDj+y6DnfJJe5ghuw6jiKZeTU0se2kswQY66UgsrMJ+KgQr6PZ+lu1Y4ob+csAcJcAGm
+	ALgHtzo5JAKYJNF0OPL/Lav/qe5/aHAPH7n31fK5MHA==
+X-Gm-Gg: ASbGnctOxAiSpkIWAeIh57l/Ol0/Atnbd5PxTKv6vdyO0AUMnL7QqITKCAwnywV1HNW
+	NRbqnq78PpBQuGRA723rXct3H3jSzJrlwGXWQZYBMBcFjR8jFBnUkJM+09WSgiLXabgZ+MaY6ko
+	U6OILMX1LeyXsClsuKmqH9BMy009nrM5oAl5hvnIIQoUlnGNpT2hquJLYNiznmyK2H2W1eLycqv
+	HE1IK7yuxcDl+IaJHFJYPzMnP16mQdjCYw3Amg4Y12eM+uF7zTowd2cqOwXIpPhVLKTLTPWZITu
+	dY71eA==
+X-Google-Smtp-Source: AGHT+IG59+bQUerf6uihfCFWCYSjQICr8Xo4ZbiwSS1E65/x2rl3ls+2t5ioYCJKzMBcQXa5Sk43LYjN69G8TJb8SWg=
+X-Received: by 2002:a05:6512:3055:b0:592:fc68:5b9d with SMTP id
+ 2adb3069b0e04-594128623cfmr1174582e87.10.1761747597543; Wed, 29 Oct 2025
+ 07:19:57 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,118 +81,58 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v21 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
- global-regs and transfer-mode properties
-To: Ryan Chen <ryan_chen@aspeedtech.com>, BMC-SW <BMC-SW@aspeedtech.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "joel@jms.id.au" <joel@jms.id.au>,
- "andi.shyti@kernel.org" <andi.shyti@kernel.org>,
- "jk@codeconstruct.com.au" <jk@codeconstruct.com.au>,
- "robh@kernel.org" <robh@kernel.org>, "krzk+dt@kernel.org"
- <krzk+dt@kernel.org>, "conor+dt@kernel.org" <conor+dt@kernel.org>,
- "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
- "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>,
- "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
- "naresh.solanki@9elements.com" <naresh.solanki@9elements.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20251027061240.3427875-1-ryan_chen@aspeedtech.com>
- <20251027061240.3427875-3-ryan_chen@aspeedtech.com>
- <93a2ff5f-2f8e-494b-9652-b93bc243c229@kernel.org>
- <TY2PPF5CB9A1BE6DCA78BEDC3178B74FD75F2FAA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <TY2PPF5CB9A1BE6DCA78BEDC3178B74FD75F2FAA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <cover.1761588465.git.geert+renesas@glider.be> <03a492c8af84a41e47b33c9a974559805d070d8d.1761588465.git.geert+renesas@glider.be>
+In-Reply-To: <03a492c8af84a41e47b33c9a974559805d070d8d.1761588465.git.geert+renesas@glider.be>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Wed, 29 Oct 2025 15:19:45 +0100
+X-Gm-Features: AWmQ_bk2MMp0FQz04qrj-8hmhOAMRkHeQZjiqCVvFpO75M_-67m5zTnOfqmkGUQ
+Message-ID: <CACRpkda6ykSZ0k9q4ChBW5NuPZvmjVjH2LPxyp3RB-=fJLBPFg@mail.gmail.com>
+Subject: Re: [PATCH v5 07/23] pinctrl: ma35: #undef field_{get,prep}() before
+ local definition
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+	Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
+	David Miller <davem@davemloft.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, 
+	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, 
+	Shan-Chun Hung <schung@nuvoton.com>, Yury Norov <yury.norov@gmail.com>, 
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Johannes Berg <johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>, 
+	David Laight <david.laight.linux@gmail.com>, Vincent Mailhol <mailhol.vincent@wanadoo.fr>, 
+	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, 
+	Michael Hennerich <Michael.Hennerich@analog.com>, Kim Seer Paller <kimseer.paller@analog.com>, 
+	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Andy Shevchenko <andy@kernel.org>, Richard Genoud <richard.genoud@bootlin.com>, 
+	Cosmin Tanislav <demonsingur@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
+	Jianping Shen <Jianping.Shen@de.bosch.com>, linux-clk@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
+	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, qat-linux@intel.com, 
+	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	linux-iio@vger.kernel.org, linux-sound@vger.kernel.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On 29/10/2025 10:25, Ryan Chen wrote:
->> Subject: Re: [PATCH v21 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add global-regs
->> and transfer-mode properties
->>
->> On 27/10/2025 07:12, Ryan Chen wrote:
->>> The AST2600 I2C controller supports three transfer modes: byte,
->>> buffer, and DMA. To allow board designers and firmware to explicitly
->>> select the preferred transfer mode for each controller instance.
->>> "aspeed,transfer-mode" to allow device tree to specify the desired
->>> transfer method used by each I2C controller instance.
->>>
->>> And AST2600 i2c controller have two register mode, one is legacy
->>> register layout which is mix controller/target register control
->>> together, another is new mode which is separate controller/target
->>> register control.
->>>
->>
->> This implies your "reg" properties have now completely different meaning and
->> this would be quite an ABI break. We discussed this probably 15 revisions ago.
->> Where did you document the resolution of that discussion?
-> 
-> Let me explain more about "reg"
-> The 'reg' property continues to describe the same register regions
-> (bus and buffer) as in the legacy layout. The selection between the legacy
-> and new register layout is controlled by a bit in the SoC-level global
-> register block, referenced through the new 'aspeed,global-regs' property.
-> Therefore, the meaning of the 'reg' property does not change and no DT ABI
-> break occurs.
-> 
-> Should I add it in commit message about "reg" ?
+Hi Geert,
 
-Then why does the address change from 0x40 to 0x80. If it is the same,
-it cannot change.
+thanks for your patch!
 
-You are describing the IO address space, total address space, as defined
-by datasheet. Not whatever is in the driver.
+On Mon, Oct 27, 2025 at 7:43=E2=80=AFPM Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
 
+> Prepare for the advent of globally available common field_get() and
+> field_prep() macros by undefining the symbols before defining local
+> variants.  This prevents redefinition warnings from the C preprocessor
+> when introducing the common macros later.
+>
+> Suggested-by: Yury Norov <yury.norov@gmail.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Best regards,
-Krzysztof
+Do you want me to just merge this patch to the pinctrl tree or do
+you have other plans?
+
+Yours,
+Linus Walleij
 
