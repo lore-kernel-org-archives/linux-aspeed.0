@@ -1,73 +1,72 @@
-Return-Path: <linux-aspeed+bounces-2687-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2688-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86BBACCF9E9
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 14:20:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6406ECCF9E9
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 14:21:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cxTsd0V2sz2yrm;
-	Thu, 30 Oct 2025 01:20:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761747605;
-	cv=none; b=C+wxWDr9CHxc9tlfVozRyW6d02QEqH3bnQnZCrSI+n/TGddRtIu81CLRy1E1U/CHBUe/klLLshLLT+kb9g04W9waClrt5oW88lnQVxErPYIhYKCrgyFmdeciZB6DuqqOfzB4jhqrNiyTv+dPsi/2ABC4nIvZy0cETZh9c4gYGMFsQU29/xSgtzbIoQl/8XZ5XOz+mjGp8PMnukmAU2v/T2T+1EEzzK56QIZvzHrS3gcwVDxb7NjLu7HMqIC22tsOuBhdJ9Y+PSaRAstb+8tIUPX1eoOY6jARRoEgcDpp8czxqb+NywuEOVTEgwDwp1T2PQIQicX63I+5i81Ib+U2kw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cxTvd6hg9z2yrm;
+	Thu, 30 Oct 2025 01:21:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::130"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761747709;
+	cv=none; b=Gy2pUO+vWVuPDxwwwEoObDgm6sO+GRgxPJSr/y6O8Q6xXZtmLFVoGEfxxeGP8DAJ4r0mwAuVC6fc30g0ZDYgrOY3fZUn9Z+P/90Js0obiFrGbPU23tb7jYKZUFSjHx21539g21fGBqP/2fBi4Yib9yDHxUGzSJRwltQDm7gunee4ynsLMYj2q2IWMtu9kOaRRFPDr2cysEpjnOXqrA25Mkj8SKG+lvhK4hDnUZiw7/VF/UFW5x10jfpiSeMfFPn2PmdtaJjmLHppvIkjVwXl5+QdhA2NvhPuyJ5jkffbXC6hOCH3MXzZaydGvIDycmoovmSTyCIcXPdzTNRgqcEKPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761747605; c=relaxed/relaxed;
-	bh=oOeCj7atBm+jp74qXquxytnJSCplsW/eyoN4u7SHchg=;
+	t=1761747709; c=relaxed/relaxed;
+	bh=LVuX2dWoAgb7QHLLOTB16BwhmwEzZ8jO6zQdan0Y+2I=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=J5+wS7+7UAGKZjqSLIZkfJOTpRucg2ewPUDtYUPU0azY54CbzrJUaA+9r3pw4rx6vrtMydI/+3kl3Q/eaUjESbZGlEqCFLk9jxai5C2PYKkiALXJwuxtqCOa+vxWQPGboWZ1pF8WboZ0MIrq/my+0TQWIdwJoERfcfcSUPN+O0abBff7GPUcGVxsgPqoBQgJhJlHKlzWR2arUIEnITw+dZ4ShczsNoq64IfYUj7VhOJbaal/KuXEYP2EnSPDPoKfDxGhmge7x4GpdEmxeg6/jJIMoA+8m747GjpU+/JPIKepT3gzsBpHuRFbNHzEK9qFAUq5gwIu/MPYEDD7dqMzFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=z3sYTBxu; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+	 To:Cc:Content-Type; b=IYm67EP5eFJe1vFV9ez03VjTU+bPcB61t0grebJa8w4fP/B58f5K/wp9uIFQTcBzBTv1Tk/VX7Ky0CLuRsme8NnRRJtYGoYHyDVmMT4bP97EFAzGviucdaF8VHKIsnCxAnkUsmPddBNICZtWESClgP0AM5lxIqdEy2Dqntjv7rQQL6sPLvtzLrWJq3kEKCEMtPXEtRzg9Af/dZ9LIshdG54QRk7v0nh20LBLkl+Y91hU3sFrdJSJBJQbSbOSKMzTGV6+4AERGcVvpiOHP5rNgcSaLyMhVijHrgifRe9QsnFbg4TOCMylPEWbvjqrFqgzr3qkKka0BfGHeJWSRZM4yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=v21k/bm5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=z3sYTBxu;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=v21k/bm5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxTsb36h2z2yjm
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 01:20:02 +1100 (AEDT)
-Received: by mail-lf1-x12b.google.com with SMTP id 2adb3069b0e04-59303607a3aso5631257e87.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:20:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxTvc596Cz2yjm
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 01:21:48 +1100 (AEDT)
+Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-58d29830058so8476232e87.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:21:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1761747598; x=1762352398; darn=lists.ozlabs.org;
+        d=linaro.org; s=google; t=1761747705; x=1762352505; darn=lists.ozlabs.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=oOeCj7atBm+jp74qXquxytnJSCplsW/eyoN4u7SHchg=;
-        b=z3sYTBxuHDXo4VTGOC4wltXMbXZnhOvOrebqeiHhB3JYC5xg4jCTjvWPNa9F7la3ua
-         /GzI9US0eF+ahgr6DuT3T1UyyGQRn5aQ8zxOp7ld1HPf3cTWnSGdGRcs6o+dLWeYb0T/
-         O7Hg5+w/FIybNGFT921Kf1vykvptfcjngHtltswcGtYkboJcHXSDblbkcBAJib7URSsU
-         57BEG1fQlZ8eoTbkEjDaqqdm22Zgj3Z9wGkHesLOzsaDD3t/SN42D8ktL2K/sPVVKe64
-         nWG846s2TcMGIaGLSpEXFH1csbEF3Uf15oxYj5RDwpyevbH2vHQQKxKeBEHeYPHbPvJF
-         oNrQ==
+        bh=LVuX2dWoAgb7QHLLOTB16BwhmwEzZ8jO6zQdan0Y+2I=;
+        b=v21k/bm5rslh5LcSn3Lfs8sU6Sd2POq5R1zKz0oGpjh6nrnATxRgAwgdZXzCx+Rxhk
+         kKQOcf595CGCZAyCS5l36AQBIm5W0zr0kdQt23dCA/XMvgTpAKrr4Y++zwOahgwGGOiy
+         ecGrEYdhoRE5D+6lCpKzEwip2dJ7SJwR1PCiUf8JBMVT+XWgeK+IVuZv72SpZeMEGcEP
+         XzMqgIlKCYk0vmihOAEGJsuLNWQR1pNwMfTR7rSsBFfthPkvcX7e1ACpxtjxeoUyzkzm
+         kjtCSXSFMGo6UksweVMMDM/rAiFEJOYLmOvDgVsL9u+aeKTno6mM1v7ZhnXnnganJyK8
+         yX+A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761747598; x=1762352398;
+        d=1e100.net; s=20230601; t=1761747705; x=1762352505;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=oOeCj7atBm+jp74qXquxytnJSCplsW/eyoN4u7SHchg=;
-        b=a4SuV71p/Xzd8/3aFwCJ++Zbc0fMZfjJM/7+hYoBNv1D0m4sQK2fdA3b5dK1I+MXrv
-         qPlXBzkzVouR5qdah1PysTYyL2aneXZVCLXIhcF4FZAx8r0Mv93GI5kuFq06czdZA0+9
-         +XFs/cAvOJLo496k3TpVhv7CXqqe75p9Ik9agRjIEckPTTfHArjpRZaUcvGPHQW81Oe5
-         eswBy92KNhejj5Grh6Rq1cDILtYHnu/f6rRglapJ9TcyE9JCWBzK//2+sweWswifG+Dr
-         B5TMab5ilHF1KXwdDOYkdrYKiUSbBhC/Ri2xPmmaYUzyAZyVonIm5KQxst/kpBN8u79s
-         hY7w==
-X-Forwarded-Encrypted: i=1; AJvYcCW4e4vWohlo2yeHCLE3wfNz+iBgOECVP25sKj+GsqegCrrVJ+pH7XENgsCHjI5eqyGdnXEluwJnYKvzblY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywr80RkuiXUWCOA/GXPUvaH6Ar71eNRtvt00KtyS8d9Wac/lBFS
-	fLgPmuSqDj+y6DnfJJe5ghuw6jiKZeTU0se2kswQY66UgsrMJ+KgQr6PZ+lu1Y4ob+csAcJcAGm
-	ALgHtzo5JAKYJNF0OPL/Lav/qe5/aHAPH7n31fK5MHA==
-X-Gm-Gg: ASbGnctOxAiSpkIWAeIh57l/Ol0/Atnbd5PxTKv6vdyO0AUMnL7QqITKCAwnywV1HNW
-	NRbqnq78PpBQuGRA723rXct3H3jSzJrlwGXWQZYBMBcFjR8jFBnUkJM+09WSgiLXabgZ+MaY6ko
-	U6OILMX1LeyXsClsuKmqH9BMy009nrM5oAl5hvnIIQoUlnGNpT2hquJLYNiznmyK2H2W1eLycqv
-	HE1IK7yuxcDl+IaJHFJYPzMnP16mQdjCYw3Amg4Y12eM+uF7zTowd2cqOwXIpPhVLKTLTPWZITu
-	dY71eA==
-X-Google-Smtp-Source: AGHT+IG59+bQUerf6uihfCFWCYSjQICr8Xo4ZbiwSS1E65/x2rl3ls+2t5ioYCJKzMBcQXa5Sk43LYjN69G8TJb8SWg=
-X-Received: by 2002:a05:6512:3055:b0:592:fc68:5b9d with SMTP id
- 2adb3069b0e04-594128623cfmr1174582e87.10.1761747597543; Wed, 29 Oct 2025
- 07:19:57 -0700 (PDT)
+        bh=LVuX2dWoAgb7QHLLOTB16BwhmwEzZ8jO6zQdan0Y+2I=;
+        b=foRmUQmjOdfIHIwA2Uaj7sA1FDt7EqmFFFhxbZ0O0HEQwrYhdzBevZceZ99usNqSYs
+         ZK2mw5M8DbW9C9NjfODDtp3the7z5idJAk3Og/Iwrhwp9JYWNDcU+aFsqRdpPKEWdJ6i
+         F9GImt01RV2HK3/gDRycK1aylhYw07BYdy+K5fUYH4tf1bNqdO8W2ssWdjFAqWdFsnHu
+         oOYUXyGSjBa/vLc+Kykdv/8F9C5qeoMZ1/FZQoIxcn0We49/EiWTwGnFKGlokhyCnHA8
+         NcqAfA0ecVdWNOslk/QDP5H5eNZW7IveirbCs5eOz6Dj+5L3vZhTz7YF7LbYeElNGOoc
+         Sgig==
+X-Forwarded-Encrypted: i=1; AJvYcCU1+ZJSKGbt1Y100MCMmEFRSG397tJaG0xAC6NNrRfNmWq7y1TKR4Cctpqxa2P5d40mHo3p3//pe2afwBw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyhoUtSXnDp6M6RXnXFmmvfrzMXELrrZqC2YIg23j8AC08S27aN
+	yXHYaJuDKFHyBqQL/YiDOuYlwJ9KByUD1j6k1nbbDpXW6YpTWYMOU5vBBDc00IGiP7INYkco2o5
+	DuQ2ae8v7PY3ajQr7jE/klaXBAfwS+udcKRYZaPdKUA==
+X-Gm-Gg: ASbGnct9elw8b6XFBrHoQnLAS2fKVspjQ/kOaY0ghixBFvJBuj6s7m/J2z45OvNsU8U
+	nEAl8kkjkiUGry0SpJTbsxtoO2ONX//Bkc0+ffnJk6ayry+nUaqVa4P2WrJI1MaglYLUlWLFclg
+	8DC/JcQ45omhUV4mssY8xJb92yPCHYij9UTNjxi52IzZ3umiaNBnZd7C8ZVWrtLO6/K01CEYwxr
+	4NGqAD2qySBnsE0FbNH20a2hZJnsmpVssnIqwU5Qr5QPch2jCgbRvFVdV9E
+X-Google-Smtp-Source: AGHT+IH/WV9TTRDue/YlQPKqZJ/rOmSLCumqELYgQ//HXfU7luOPdKKEVQrj3vn51BUY/zZkRojEs9B5VMPxZwJpOnE=
+X-Received: by 2002:a05:6512:238f:b0:592:f814:3852 with SMTP id
+ 2adb3069b0e04-594128b7bd8mr1157709e87.20.1761747703432; Wed, 29 Oct 2025
+ 07:21:43 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -81,14 +80,14 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1761588465.git.geert+renesas@glider.be> <03a492c8af84a41e47b33c9a974559805d070d8d.1761588465.git.geert+renesas@glider.be>
-In-Reply-To: <03a492c8af84a41e47b33c9a974559805d070d8d.1761588465.git.geert+renesas@glider.be>
+References: <cover.1761588465.git.geert+renesas@glider.be> <ac3e718c5de6a23375055dd3c2e4ed6daf7542d5.1761588465.git.geert+renesas@glider.be>
+In-Reply-To: <ac3e718c5de6a23375055dd3c2e4ed6daf7542d5.1761588465.git.geert+renesas@glider.be>
 From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 29 Oct 2025 15:19:45 +0100
-X-Gm-Features: AWmQ_bk2MMp0FQz04qrj-8hmhOAMRkHeQZjiqCVvFpO75M_-67m5zTnOfqmkGUQ
-Message-ID: <CACRpkda6ykSZ0k9q4ChBW5NuPZvmjVjH2LPxyp3RB-=fJLBPFg@mail.gmail.com>
-Subject: Re: [PATCH v5 07/23] pinctrl: ma35: #undef field_{get,prep}() before
- local definition
+Date: Wed, 29 Oct 2025 15:21:32 +0100
+X-Gm-Features: AWmQ_bn0qj1HdhGI-E5owVSGvqmNxBgXc48MF5-9CHRtkVWKXcvNelNuCdps5kE
+Message-ID: <CACRpkdYMv+R-NJ5R4+UyhK1+DJia0z72kZgt45+0eubXMuGpEw@mail.gmail.com>
+Subject: Re: [PATCH v5 18/23] pinctrl: ma35: Convert to common
+ field_{get,prep}() helpers
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
 	Nicolas Ferre <nicolas.ferre@microchip.com>, 
@@ -115,23 +114,21 @@ Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Geert,
-
-thanks for your patch!
-
-On Mon, Oct 27, 2025 at 7:43=E2=80=AFPM Geert Uytterhoeven
+On Mon, Oct 27, 2025 at 7:44=E2=80=AFPM Geert Uytterhoeven
 <geert+renesas@glider.be> wrote:
 
-> Prepare for the advent of globally available common field_get() and
-> field_prep() macros by undefining the symbols before defining local
-> variants.  This prevents redefinition warnings from the C preprocessor
-> when introducing the common macros later.
+> Drop the driver-specific field_get() and field_prep() macros, in favor
+> of the globally available variants from <linux/bitfield.h>.
 >
-> Suggested-by: Yury Norov <yury.norov@gmail.com>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> v5:
+>   - Extracted from "bitfield: Add non-constant field_{prep,get}()
+>     helpers".
 
-Do you want me to just merge this patch to the pinctrl tree or do
-you have other plans?
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+
+I guess this needs to go with the rest of the patches?
 
 Yours,
 Linus Walleij
