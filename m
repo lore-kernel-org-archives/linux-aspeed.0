@@ -1,69 +1,63 @@
-Return-Path: <linux-aspeed+bounces-2691-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2692-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E36FACCF9F6
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 14:41:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2517CCF9EE
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 18:54:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cxVLl3HqMz2yrm;
-	Thu, 30 Oct 2025 01:41:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.42
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761748911;
-	cv=none; b=E/REoYP6OEoJtXG9WKo9AIe8I22X4mrKbgkoZ06BcSh+54z4Qu02aag0T/39C+OJy16GkO51EKzpxTm/7XkwKcoZBl/NW+rcEv+eeK3z2mQYN7AnNkDOj66oUlx/XtiDLekR2PjJDsKmK3TJ2eTV9+F3QiujRgqcZmt/oqsOHOrbye7PJeo+dnQVeYm8doTEueAo94D5pDtZZDnuztiBwKoAlZRqeR51lb7tHu2+3xK41O5Mf4a3pI/Hj/cmdDI6IPdI++yJWM6gpgC6LjUMRSr6ko8AIOxocaRAwR9HGZkjL7k+jyi2/5akEsGHP8/Jlug+uoN4eHT5JPrOq59vPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cxbyp2ZX2z2yG3;
+	Thu, 30 Oct 2025 05:54:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761764098;
+	cv=none; b=ggNlyc6AdOk1y7BxlhXXdwMWpFQ36BXVUIfzi0VBdV1ifKfZg4xjaOX6UuU8PJxWNz/GLlfcfrSw9BhKPdIRGTCreRwbdM/oefct9YVI56WsbnZ2zxlc6PDHlhx6MzLdLhPGnPxEmGRuutCbVhPs7pgtrwWtj6MZIMYY4zi4yApyx14jRkFqoijXYGWd1ZGLVT2gMwYmLtVxzFm1X/aggFeZnCMJdN5RGKU0boDHseZTgK/eL/g9ppNHcjd8chR+OsIs2265CLueCaktDww3tYv+4erPK+QO96JpYmOKIQVCDW16SaA5zB98LIJdz8GU+xova7q/uzfHlypohFjKKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761748911; c=relaxed/relaxed;
-	bh=ohi/8MFIs+pUNYTuSKDH5KUVpFMJO5wn0YyhdMa7QIc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PFMr8hHE0ozBCjBCwQaw6i7TCD8RzHcYHcgjjBXy9X30KYwRq0tpbbCvWlnnyKIYHX0bZW+ob6grXnJUtqf900YZvjt3fqh8GYJhVHW02dHK8WF6xQzWJAf2n9luvMTklMs+wnc+vjs51AqmLRM/9cFiXIy0AcVLlHYD/cCkS0qxouyszG5hUMDs4gAHuSmS4jSYL0hm6jLCopgd5oFBNimrMu/+1ad8N5GuyNIIGDMViotkUEknvp2u7fg3zpKeOHEAoQRbwMxuG+f0CWLF9+mvtNo0fGaJdlzzKED6RrTTH8g3tjWLmt5AFd9eTAYk+EVg0fNgc8YJ7XHZZ93zmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.42; helo=mail-ua1-f42.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.42; helo=mail-ua1-f42.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com [209.85.222.42])
+	t=1761764098; c=relaxed/relaxed;
+	bh=YsBOpAAqa1N3JbCYBbVWgB5n+zm6R9AZZTXVVHL0rwI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PTFm7Kbuio/ZeMmAiZ63D5Ftr82rRoxIcAHETqJ5D22rorcB+Y6RvmxjPETDUbMgvFbyhmJDzhqksY/LeP4X4V6cP5D0wy3TK+okFqyQII5kp3Sxf6pfgD9/rRK4D1ZKw760WJIb7UUe+8Qpq9btCpgTEFP8Zjwkmy7zFv1yvJzO2LMSRaXUUnQB+JoEgudHjVcVAGQ0fxDzf8RC7e09htodi2MIlApPLpLsjfprzeOuMurlojaQVVgYms99MklfXYgyjDpRf2hBOsgXimnNa+WDMK5VXpecZi0cW8GybG4XK3srUQnyCY7nuVGdtNB/cD64cQx2mLxKKsEYV7me7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sVS4zzVo; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sVS4zzVo;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxVLk4pl8z2yjm
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 01:41:50 +1100 (AEDT)
-Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-8eafd5a7a23so734838241.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:41:50 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761748908; x=1762353708;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ohi/8MFIs+pUNYTuSKDH5KUVpFMJO5wn0YyhdMa7QIc=;
-        b=V/I7wEXV8eWJFtA8Ra5P/0R9XMgKOZwVKdcsk1jPrsvHfWeYntLpsq9zhrtVxj1uzf
-         rKghNWCBBEqS/xFy86zKsFEJxgQ6XaD3NbW7nPtXvLvWZ+00tk+p2eAFWds1O2eLXthM
-         1jx1reEOezLqQ4FoCG7nxvRoTvTHZ26iXoUpO7xEKQ0ZfN5xaRdJTrYo4Nlckzn6l6I/
-         312KK6qf4FwuqCzj/Ipp2iQ5Kauv1FMKnuP7xSTdKFKHys2kPkVHAGjHPqVywxU/xPDm
-         Z0BOGcbT/q81hIKWjOmjwY1YSeEqiYcydvTQr2qXcW4lP7eeWInyKPcr4LMh7AbZHd8r
-         Dd9g==
-X-Forwarded-Encrypted: i=1; AJvYcCUF9mrhUucGG0tJoIZjAQ+Cla3wnUq+lwOJY7JMORPjWpq0zGFqe3arWWTR/XkWPEGYljf0ntiZOZqr3k8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzlj4tXWEyWz0VjUbLrqopzyecJY0IHHNLGhB21pValrVUOYqcG
-	WR+qugglsKYtlcXsU1d/J9ZUfJtJz+Kq3fjQeIeIBtpn93leV+B4E86eJdZ9Htx1
-X-Gm-Gg: ASbGncv00u5kllStgHBjd7EcII/EEFZ7vU0tMVhAb8JHojkneyT/YPy3+ewRq5q78JH
-	YHj55m/2D3j+KmrCxrAE15P+N4RT5eMk0bzDg6cW+guzzYk6KQjeI5RYUFO/Zj+K3o1DE6LrNxj
-	Ccp1emlu+/xgtqSyO12CEmCQnm5K3JFTzVpyUrXGTjk2Zt/lrU9y2X8c9tlXqqoN6Zi2tghCwa1
-	1U8jshLhlOZYdxVP6sNODooL/9Y1PgOnw1Yb9ZML2SEwlPJhspo9PgFQQdW7Ku1SOl1mHz428rg
-	4mesU49pJBBxgdHol+D6YgHZSfJ+Bcx2zHUx3hik/xSOljmwOW7YE6MFEKc8Fg/2LEXf2LmNMbU
-	rjb70ZlGP64vLGB3p0b5UXCvuzOII3DDYGI59SGGHEoJQtG6VPq+rp7t+2JbEjbiEtlWKWHaEmu
-	Q8u1mMH/eXXyHoXWDlCTisDHoEnJBe9oxPMgjEYNMkoQwsYSWkiRk2
-X-Google-Smtp-Source: AGHT+IFGOh/QDhNVLDKT7AyqMXj5atavGvEvO7z/0UP9r4+B219t++fVPTvY4fav4YQ4snYw9j63DQ==
-X-Received: by 2002:a05:6102:1a04:20b0:59c:1727:f59d with SMTP id ada2fe7eead31-5db7e205124mr1972512137.11.1761748907562;
-        Wed, 29 Oct 2025 07:41:47 -0700 (PDT)
-Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-557ddb06b1csm5791212e0c.8.2025.10.29.07.41.47
-        for <linux-aspeed@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Oct 2025 07:41:47 -0700 (PDT)
-Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-5d5fbfca7e2so203137.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:41:47 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUwB1l6XKf8zVdysel7OVWQGfgKD5QNR06M4yj36N9W/F6LLiEfPdlivIP15iRNnHM9bsZr78lMmWB9CjU=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:2acd:b0:5db:9b88:1fec with SMTP id
- ada2fe7eead31-5db9b88219emr535412137.9.1761748503547; Wed, 29 Oct 2025
- 07:35:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxbyn1snKz2xsq
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 05:54:57 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6E3B241AAF;
+	Wed, 29 Oct 2025 18:54:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7164C4CEF8;
+	Wed, 29 Oct 2025 18:54:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761764095;
+	bh=Ux2ENO/i6V+guiQo5qhqzoW+zBs4ctUVICsR7hoAkmM=;
+	h=From:To:Cc:Subject:Date:From;
+	b=sVS4zzVoWEbn3QNcolgohy69sS19mV2rlckr+Nb1zlcn94jHeFxnwQuWxg2DHk6BR
+	 igkJp82NMhShSfHOAPUq24eD+mGpH0QvxJv5r2lWjm9GKBe3az64cj9fhB0eZGaidy
+	 GtcLGhr4poM+za/wWzkLrP2at6lO0Bhu58WHOlV5yNHL7cswjeNgNX3vOkTdBy11BH
+	 Ax2+WrZY59Ww4m0riErBCGxbdr7U53xiZeruL+TohdZjmleelKKid3663ihTaWc/NG
+	 rHGxe2y6yJMfGcbI6AGlNEtck/TQC+G2RhMfqKzDX1qVj1LKBNW/oR+U+dQTVXGUbX
+	 aBEXlLI3AR2jQ==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Guenter Roeck <linux@roeck-us.net>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: linux-hwmon@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] dt-bindings: hwmon: Convert aspeed,ast2400-pwm-tacho to DT schema
+Date: Wed, 29 Oct 2025 13:54:47 -0500
+Message-ID: <20251029185448.2121857-1-robh@kernel.org>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -77,78 +71,217 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1761588465.git.geert+renesas@glider.be> <ac3e718c5de6a23375055dd3c2e4ed6daf7542d5.1761588465.git.geert+renesas@glider.be>
- <CACRpkdYMv+R-NJ5R4+UyhK1+DJia0z72kZgt45+0eubXMuGpEw@mail.gmail.com>
-In-Reply-To: <CACRpkdYMv+R-NJ5R4+UyhK1+DJia0z72kZgt45+0eubXMuGpEw@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 29 Oct 2025 15:34:52 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdUvLH-8yNRoqBdTB+mcmOUedwVGpJ_HGdq8sqgLNB4dvw@mail.gmail.com>
-X-Gm-Features: AWmQ_blZ8dUVr2aBwtWAAkAOaE93AtUSPNFDpslgvmXepFfW4tMWIOUWnRJkksY
-Message-ID: <CAMuHMdUvLH-8yNRoqBdTB+mcmOUedwVGpJ_HGdq8sqgLNB4dvw@mail.gmail.com>
-Subject: Re: [PATCH v5 18/23] pinctrl: ma35: Convert to common
- field_{get,prep}() helpers
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
-	David Miller <davem@davemloft.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, 
-	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Shan-Chun Hung <schung@nuvoton.com>, Yury Norov <yury.norov@gmail.com>, 
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Johannes Berg <johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>, 
-	David Laight <david.laight.linux@gmail.com>, Vincent Mailhol <mailhol.vincent@wanadoo.fr>, 
-	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, 
-	Michael Hennerich <Michael.Hennerich@analog.com>, Kim Seer Paller <kimseer.paller@analog.com>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Richard Genoud <richard.genoud@bootlin.com>, 
-	Cosmin Tanislav <demonsingur@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Jianping Shen <Jianping.Shen@de.bosch.com>, linux-clk@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, qat-linux@intel.com, 
-	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-iio@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 
-Hi Linus,
+Convert the ASpeed fan controller binding to DT schema format.
 
-On Wed, 29 Oct 2025 at 15:21, Linus Walleij <linus.walleij@linaro.org> wrot=
-e:
-> On Mon, Oct 27, 2025 at 7:44=E2=80=AFPM Geert Uytterhoeven
-> <geert+renesas@glider.be> wrote:
->
-> > Drop the driver-specific field_get() and field_prep() macros, in favor
-> > of the globally available variants from <linux/bitfield.h>.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > ---
-> > v5:
-> >   - Extracted from "bitfield: Add non-constant field_{prep,get}()
-> >     helpers".
->
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+The '#cooling-cells' value used is 1 rather than 2. '#size-cells' is 0
+rather 1.
 
-Thanks!
+Some users define more that 8 fan nodes where 2 fans share a PWM. The
+driver seems to let the 2nd fan just overwrite the 1st one. That also
+creates some addressing errors in the DT (duplicate addresses and wrong
+unit-addresses).
 
-> I guess this needs to go with the rest of the patches?
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ .../hwmon/aspeed,ast2400-pwm-tacho.yaml       | 105 ++++++++++++++++++
+ .../bindings/hwmon/aspeed-pwm-tacho.txt       |  73 ------------
+ 2 files changed, 105 insertions(+), 73 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml
+ delete mode 100644 Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
 
-There is no hard requirement for that, but if 07/23 goes in, why not
-include this one, too?
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml
+new file mode 100644
+index 000000000000..018249f97a5d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml
+@@ -0,0 +1,105 @@
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/hwmon/aspeed,ast2400-pwm-tacho.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED AST2400/AST2500 PWM and Fan Tacho controller
++
++maintainers:
++  - Joel Stanley <joel@jms.id.au>
++  - Andrew Jeffery <andrew@codeconstruct.com.au>
++
++description: >
++  The ASPEED PWM controller can support upto 8 PWM outputs. The ASPEED Fan Tacho
++  controller can support upto 16 Fan tachometer inputs.
++
++  There can be up to 8 fans supported. Each fan can have 1 PWM output and
++  1-2 Fan tach inputs.
++
++properties:
++  compatible:
++    enum:
++      - aspeed,ast2400-pwm-tacho
++      - aspeed,ast2500-pwm-tacho
++
++  reg:
++    maxItems: 1
++
++  '#address-cells':
++    const: 1
++
++  '#size-cells':
++    const: 0
++
++  '#cooling-cells':
++    const: 1
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++patternProperties:
++  '^fan@[0-7]$':
++    description: Fan subnode
++    type: object
++    additionalProperties: false
++
++    properties:
++      reg:
++        description: PWM source port index (0 = PWM A, ..., 7 = PWM H)
++        maximum: 7
++
++      cooling-levels:
++        description: PWM duty cycle values for cooling states
++        $ref: /schemas/types.yaml#/definitions/uint8-array
++        minItems: 1
++        maxItems: 16  # Should be enough
++
++      aspeed,fan-tach-ch:
++        description: Fan tachometer input channel
++        $ref: /schemas/types.yaml#/definitions/uint8-array
++        minItems: 1
++        maxItems: 2
++        items:
++          maximum: 15
++
++    required:
++      - reg
++      - aspeed,fan-tach-ch
++
++required:
++  - compatible
++  - reg
++  - '#address-cells'
++  - '#size-cells'
++  - clocks
++  - resets
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/clock/aspeed-clock.h>
++
++    fan-controller@1e786000 {
++        compatible = "aspeed,ast2500-pwm-tacho";
++        reg = <0x1e786000 0x1000>;
++        #address-cells = <1>;
++        #size-cells = <0>;
++        #cooling-cells = <1>;
++        clocks = <&syscon ASPEED_CLK_APB>;
++        resets = <&syscon ASPEED_RESET_PWM>;
++
++        fan@0 {
++            reg = <0x00>;
++            cooling-levels = /bits/ 8 <125 151 177 203 229 255>;
++            aspeed,fan-tach-ch = /bits/ 8 <0x00>;
++        };
++
++        fan@1 {
++            reg = <0x01>;
++            aspeed,fan-tach-ch = /bits/ 8 <0x01 0x02>;
++        };
++    };
+diff --git a/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt b/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
+deleted file mode 100644
+index 8645cd3b867a..000000000000
+--- a/Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
++++ /dev/null
+@@ -1,73 +0,0 @@
+-ASPEED AST2400/AST2500 PWM and Fan Tacho controller device driver
+-
+-The ASPEED PWM controller can support upto 8 PWM outputs. The ASPEED Fan Tacho
+-controller can support upto 16 Fan tachometer inputs.
+-
+-There can be upto 8 fans supported. Each fan can have one PWM output and
+-one/two Fan tach inputs.
+-
+-Required properties for pwm-tacho node:
+-- #address-cells : should be 1.
+-
+-- #size-cells : should be 1.
+-
+-- #cooling-cells: should be 2.
+-
+-- reg : address and length of the register set for the device.
+-
+-- pinctrl-names : a pinctrl state named "default" must be defined.
+-
+-- pinctrl-0 : phandle referencing pin configuration of the PWM ports.
+-
+-- compatible : should be "aspeed,ast2400-pwm-tacho" for AST2400 and
+-	       "aspeed,ast2500-pwm-tacho" for AST2500.
+-
+-- clocks : phandle to clock provider with the clock number in the second cell
+-
+-- resets : phandle to reset controller with the reset number in the second cell
+-
+-fan subnode format:
+-===================
+-Under fan subnode there can upto 8 child nodes, with each child node
+-representing a fan. If there are 8 fans each fan can have one PWM port and
+-one/two Fan tach inputs.
+-For PWM port can be configured cooling-levels to create cooling device.
+-Cooling device could be bound to a thermal zone for the thermal control.
+-
+-Required properties for each child node:
+-- reg : should specify PWM source port.
+-	integer value in the range 0 to 7 with 0 indicating PWM port A and
+-	7 indicating PWM port H.
+-
+-- cooling-levels: PWM duty cycle values in a range from 0 to 255
+-                  which correspond to thermal cooling states.
+-
+-- aspeed,fan-tach-ch : should specify the Fan tach input channel.
+-                integer value in the range 0 through 15, with 0 indicating
+-		Fan tach channel 0 and 15 indicating Fan tach channel 15.
+-		At least one Fan tach input channel is required.
+-
+-Examples:
+-
+-pwm_tacho: pwmtachocontroller@1e786000 {
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	#cooling-cells = <2>;
+-	reg = <0x1E786000 0x1000>;
+-	compatible = "aspeed,ast2500-pwm-tacho";
+-	clocks = <&syscon ASPEED_CLK_APB>;
+-	resets = <&syscon ASPEED_RESET_PWM>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_pwm0_default &pinctrl_pwm1_default>;
+-
+-	fan@0 {
+-		reg = <0x00>;
+-		cooling-levels = /bits/ 8 <125 151 177 203 229 255>;
+-		aspeed,fan-tach-ch = /bits/ 8 <0x00>;
+-	};
+-
+-	fan@1 {
+-		reg = <0x01>;
+-		aspeed,fan-tach-ch = /bits/ 8 <0x01 0x02>;
+-	};
+-};
+-- 
+2.51.0
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
 
