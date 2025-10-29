@@ -1,72 +1,69 @@
-Return-Path: <linux-aspeed+bounces-2688-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2689-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6406ECCF9E9
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 14:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 572B9CCF9F0
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 14:34:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cxTvd6hg9z2yrm;
-	Thu, 30 Oct 2025 01:21:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::130"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761747709;
-	cv=none; b=Gy2pUO+vWVuPDxwwwEoObDgm6sO+GRgxPJSr/y6O8Q6xXZtmLFVoGEfxxeGP8DAJ4r0mwAuVC6fc30g0ZDYgrOY3fZUn9Z+P/90Js0obiFrGbPU23tb7jYKZUFSjHx21539g21fGBqP/2fBi4Yib9yDHxUGzSJRwltQDm7gunee4ynsLMYj2q2IWMtu9kOaRRFPDr2cysEpjnOXqrA25Mkj8SKG+lvhK4hDnUZiw7/VF/UFW5x10jfpiSeMfFPn2PmdtaJjmLHppvIkjVwXl5+QdhA2NvhPuyJ5jkffbXC6hOCH3MXzZaydGvIDycmoovmSTyCIcXPdzTNRgqcEKPw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cxV9p4mNmz2yrm;
+	Thu, 30 Oct 2025 01:34:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.47
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761748446;
+	cv=none; b=ohHycIDHL1AYsHaaPDbhtzvwz5jhqHsqm33SpbpBexZBji+UzpfGTokR7LhbXEwn/cuMgz353hQDEPlrkual86nwMdMIY+fcFixA7e+CL5DITSJp/qH9ow/vFrGXuVzqVbAnFA06LyQ+KJI3WJL6Mq8nhnX9MnVKf2oEUZMKPmQAcNtGBgkAraexAKWwLKoCpFvetfDpv7VEpLig/nWDqPSIssrM9OE9kG+EKRaRGDjvaLCvbQlP9xkJVZ6PXLRU7QqK69g/9PqNyTJ3pMVVP5MuxUzkEcFbU7GONV1B+3HmM5SGwgAxs6S0qmolojHxwvpZQORNjzos469xN/JLCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761747709; c=relaxed/relaxed;
-	bh=LVuX2dWoAgb7QHLLOTB16BwhmwEzZ8jO6zQdan0Y+2I=;
+	t=1761748446; c=relaxed/relaxed;
+	bh=kNDkhDDabcFgtYSzLRibzijDMaquJ035sDb5A+sIiAE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IYm67EP5eFJe1vFV9ez03VjTU+bPcB61t0grebJa8w4fP/B58f5K/wp9uIFQTcBzBTv1Tk/VX7Ky0CLuRsme8NnRRJtYGoYHyDVmMT4bP97EFAzGviucdaF8VHKIsnCxAnkUsmPddBNICZtWESClgP0AM5lxIqdEy2Dqntjv7rQQL6sPLvtzLrWJq3kEKCEMtPXEtRzg9Af/dZ9LIshdG54QRk7v0nh20LBLkl+Y91hU3sFrdJSJBJQbSbOSKMzTGV6+4AERGcVvpiOHP5rNgcSaLyMhVijHrgifRe9QsnFbg4TOCMylPEWbvjqrFqgzr3qkKka0BfGHeJWSRZM4yw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=v21k/bm5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=v21k/bm5;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::130; helo=mail-lf1-x130.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x130.google.com (mail-lf1-x130.google.com [IPv6:2a00:1450:4864:20::130])
+	 To:Cc:Content-Type; b=jQ7X5BlZTZSBuyt1b4wOGanN5JRakjJQD3V1o6iiuTBc4hXuNqU279NGkl6uj5mPABBXYYE1OMbmK4OxsEjx0+c9vDKe6UEOVlF5DgxRxAF8vPdxUobnObhJ5eF4YGZ+1HRKfqRGo02cNGxTqYCYOTgzXxNW2Bck0RSmgDMoUwCN5ynUI9Iw0F3SYggzEGiP0kOqbBJK8YfkTjpK1UbaIKlQZwiR7gZEDa2ZLa6XFIx30pWdcvUtxXgMgRwPWTHsUAKOnbaQYtrlifq40e/mt1RVjZUEFd83JWSs86hDj1BWxH1RKSIxDn3+KC+7i5EoQzFuX3zvKvFwUcG6B8UXwQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.47; helo=mail-ua1-f47.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.47; helo=mail-ua1-f47.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-f47.google.com (mail-ua1-f47.google.com [209.85.222.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxTvc596Cz2yjm
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 01:21:48 +1100 (AEDT)
-Received: by mail-lf1-x130.google.com with SMTP id 2adb3069b0e04-58d29830058so8476232e87.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:21:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1761747705; x=1762352505; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=LVuX2dWoAgb7QHLLOTB16BwhmwEzZ8jO6zQdan0Y+2I=;
-        b=v21k/bm5rslh5LcSn3Lfs8sU6Sd2POq5R1zKz0oGpjh6nrnATxRgAwgdZXzCx+Rxhk
-         kKQOcf595CGCZAyCS5l36AQBIm5W0zr0kdQt23dCA/XMvgTpAKrr4Y++zwOahgwGGOiy
-         ecGrEYdhoRE5D+6lCpKzEwip2dJ7SJwR1PCiUf8JBMVT+XWgeK+IVuZv72SpZeMEGcEP
-         XzMqgIlKCYk0vmihOAEGJsuLNWQR1pNwMfTR7rSsBFfthPkvcX7e1ACpxtjxeoUyzkzm
-         kjtCSXSFMGo6UksweVMMDM/rAiFEJOYLmOvDgVsL9u+aeKTno6mM1v7ZhnXnnganJyK8
-         yX+A==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxV9n28kXz2yjm
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 01:34:05 +1100 (AEDT)
+Received: by mail-ua1-f47.google.com with SMTP id a1e0cc1a2514c-932cf836259so2957617241.3
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:34:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761747705; x=1762352505;
+        d=1e100.net; s=20230601; t=1761748442; x=1762353242;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=LVuX2dWoAgb7QHLLOTB16BwhmwEzZ8jO6zQdan0Y+2I=;
-        b=foRmUQmjOdfIHIwA2Uaj7sA1FDt7EqmFFFhxbZ0O0HEQwrYhdzBevZceZ99usNqSYs
-         ZK2mw5M8DbW9C9NjfODDtp3the7z5idJAk3Og/Iwrhwp9JYWNDcU+aFsqRdpPKEWdJ6i
-         F9GImt01RV2HK3/gDRycK1aylhYw07BYdy+K5fUYH4tf1bNqdO8W2ssWdjFAqWdFsnHu
-         oOYUXyGSjBa/vLc+Kykdv/8F9C5qeoMZ1/FZQoIxcn0We49/EiWTwGnFKGlokhyCnHA8
-         NcqAfA0ecVdWNOslk/QDP5H5eNZW7IveirbCs5eOz6Dj+5L3vZhTz7YF7LbYeElNGOoc
-         Sgig==
-X-Forwarded-Encrypted: i=1; AJvYcCU1+ZJSKGbt1Y100MCMmEFRSG397tJaG0xAC6NNrRfNmWq7y1TKR4Cctpqxa2P5d40mHo3p3//pe2afwBw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyhoUtSXnDp6M6RXnXFmmvfrzMXELrrZqC2YIg23j8AC08S27aN
-	yXHYaJuDKFHyBqQL/YiDOuYlwJ9KByUD1j6k1nbbDpXW6YpTWYMOU5vBBDc00IGiP7INYkco2o5
-	DuQ2ae8v7PY3ajQr7jE/klaXBAfwS+udcKRYZaPdKUA==
-X-Gm-Gg: ASbGnct9elw8b6XFBrHoQnLAS2fKVspjQ/kOaY0ghixBFvJBuj6s7m/J2z45OvNsU8U
-	nEAl8kkjkiUGry0SpJTbsxtoO2ONX//Bkc0+ffnJk6ayry+nUaqVa4P2WrJI1MaglYLUlWLFclg
-	8DC/JcQ45omhUV4mssY8xJb92yPCHYij9UTNjxi52IzZ3umiaNBnZd7C8ZVWrtLO6/K01CEYwxr
-	4NGqAD2qySBnsE0FbNH20a2hZJnsmpVssnIqwU5Qr5QPch2jCgbRvFVdV9E
-X-Google-Smtp-Source: AGHT+IH/WV9TTRDue/YlQPKqZJ/rOmSLCumqELYgQ//HXfU7luOPdKKEVQrj3vn51BUY/zZkRojEs9B5VMPxZwJpOnE=
-X-Received: by 2002:a05:6512:238f:b0:592:f814:3852 with SMTP id
- 2adb3069b0e04-594128b7bd8mr1157709e87.20.1761747703432; Wed, 29 Oct 2025
- 07:21:43 -0700 (PDT)
+        bh=kNDkhDDabcFgtYSzLRibzijDMaquJ035sDb5A+sIiAE=;
+        b=t+zQaVzrK4s2JDyzovkaMorEtdmliju9s2f1hyy6hPv9aj4LE7MUq6bfMEXiT8AbNy
+         CKa98M2QeWfQZjU/UkWzou7oAVHvQ9LG7or6oCrdSuEB1FmEblBk522Pyz+Q/pd26izw
+         Lt8JmmQzK+/Pm7sxUsohY7JsKkRzi1lcT9f6pQRhuDZoLV5LAKA2PIqAOseJtbahAm+L
+         rl0M1t3+Qu9pcQ5g1k7quj55CqoPSKTxHw6v5RNFTBkiNWX570RDNMFkOV0mTDjWUqs/
+         VbbB/OpNFdSRysHRpAgHXJW7xHrZtUhaAt4eSUvT9MhhYmzGJAgz+zE+16zJXrcgVCK8
+         KLEQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWbAeQ4pBNH2rpt8WCxIHjsbRUpm8ErEtAbFNq1xFGzexfLVapxcWNd2ow0DhVlaXm4ClYPGq5KV/AytRk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw0wXcin1/Hd66QcrUAp6tzMfkjVL5XSIkkKrgSfx9L+2tNo2vU
+	BuoaBoMWVPw1mUJngvD8UTgnUmM6KPVR6wCLDTW3LKR3pT4NESUZtQnblB5GYcWB
+X-Gm-Gg: ASbGncsaEMiuthzioSmiqFg62/uYyl93N+zgt8M6VKgZDhUbBik/BWFYjAz55oWTiPk
+	0sv1+4EDQBE4RBgqK6Q3wMsmmKv5fB0O1nrDGXFvlnarUdzQ7KqxY9L6jJUwYW83PqzwJ2kNv1/
+	FN60u/ClrpPeFPf3lLEUeaHY9v0L1057dvmDu/BuhFSEZ7HmlBGU0/QSV06j3krNJIhBou4k2h4
+	xijv4Ib5bM89CumkvjLG93gjNKRAHAogdjLT7Bt1EwEtTjlY2HcfctcR8c4DO3uKZYfjsKnniLk
+	3fPLuIXCeD/E46N4OSgCOoT8TIDBctoSCY0Jxd+Di11FfnZNP7FMcYJ+EDMY/F6u+CJOgzuboCh
+	R3Po7jyFr4LmcoBoIM9QjAB6OYD62CSaLrAhdQZgF98GnOzbvr7TjwlDd6s5YoiAfPKxVpd7G+x
+	2dF7sCJUQdm5UL7fCVc/fIJQudcqPQGUvPH5utBZPT/by78blmu5aq
+X-Google-Smtp-Source: AGHT+IG3Fa6IWa/5e8+Ue0L73Q9XZicavq68DLFO15OBwPtDZJg2ZMrIcvXLlWjInEB+1nu07Qui8Q==
+X-Received: by 2002:a05:6102:1624:b0:5d5:d1ba:439b with SMTP id ada2fe7eead31-5db905d8f89mr974396137.11.1761748441748;
+        Wed, 29 Oct 2025 07:34:01 -0700 (PDT)
+Received: from mail-vs1-f50.google.com (mail-vs1-f50.google.com. [209.85.217.50])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-934c3ed019fsm5235245241.2.2025.10.29.07.34.00
+        for <linux-aspeed@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Oct 2025 07:34:01 -0700 (PDT)
+Received: by mail-vs1-f50.google.com with SMTP id ada2fe7eead31-5d967b66fedso4432637137.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 07:34:00 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCV/C0hf8mz1nlZVhfszlMpAOcic2w8R08tw6kjcbcLrtaUIY+iTyMuyq/uGReuMVMqJ5gQ2UWqrWfucbGg=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:26d3:b0:5d6:156f:fedb with SMTP id
+ ada2fe7eead31-5db90694687mr933346137.36.1761748440676; Wed, 29 Oct 2025
+ 07:34:00 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,24 +77,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1761588465.git.geert+renesas@glider.be> <ac3e718c5de6a23375055dd3c2e4ed6daf7542d5.1761588465.git.geert+renesas@glider.be>
-In-Reply-To: <ac3e718c5de6a23375055dd3c2e4ed6daf7542d5.1761588465.git.geert+renesas@glider.be>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 29 Oct 2025 15:21:32 +0100
-X-Gm-Features: AWmQ_bn0qj1HdhGI-E5owVSGvqmNxBgXc48MF5-9CHRtkVWKXcvNelNuCdps5kE
-Message-ID: <CACRpkdYMv+R-NJ5R4+UyhK1+DJia0z72kZgt45+0eubXMuGpEw@mail.gmail.com>
-Subject: Re: [PATCH v5 18/23] pinctrl: ma35: Convert to common
- field_{get,prep}() helpers
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+References: <cover.1761588465.git.geert+renesas@glider.be> <03a492c8af84a41e47b33c9a974559805d070d8d.1761588465.git.geert+renesas@glider.be>
+ <CACRpkda6ykSZ0k9q4ChBW5NuPZvmjVjH2LPxyp3RB-=fJLBPFg@mail.gmail.com> <aQIlB8KLhVuSqQvt@yury>
+In-Reply-To: <aQIlB8KLhVuSqQvt@yury>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 29 Oct 2025 15:33:49 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdUTR2VnQ++j_ccUN3-GzKmSzS3H3QNyYqZNacfOBXD50Q@mail.gmail.com>
+X-Gm-Features: AWmQ_blqiXGJheNiHtKi_cJSwq0gfFP8sAonrx_tsjN_f5pUMr0aiWqvAOsiPck
+Message-ID: <CAMuHMdUTR2VnQ++j_ccUN3-GzKmSzS3H3QNyYqZNacfOBXD50Q@mail.gmail.com>
+Subject: Re: [PATCH v5 07/23] pinctrl: ma35: #undef field_{get,prep}() before
+ local definition
+To: Yury Norov <yury.norov@gmail.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Michael Turquette <mturquette@baylibre.com>, 
+	Stephen Boyd <sboyd@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, 
 	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
 	Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
 	David Miller <davem@davemloft.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, 
 	Andrew Jeffery <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, 
 	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Shan-Chun Hung <schung@nuvoton.com>, Yury Norov <yury.norov@gmail.com>, 
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Shan-Chun Hung <schung@nuvoton.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
 	Johannes Berg <johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>, 
 	David Laight <david.laight.linux@gmail.com>, Vincent Mailhol <mailhol.vincent@wanadoo.fr>, 
 	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, 
@@ -114,22 +113,54 @@ Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 27, 2025 at 7:44=E2=80=AFPM Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
+Hi Yury,
 
-> Drop the driver-specific field_get() and field_prep() macros, in favor
-> of the globally available variants from <linux/bitfield.h>.
+On Wed, 29 Oct 2025 at 15:30, Yury Norov <yury.norov@gmail.com> wrote:
+> On Wed, Oct 29, 2025 at 03:19:45PM +0100, Linus Walleij wrote:
+> > On Mon, Oct 27, 2025 at 7:43=E2=80=AFPM Geert Uytterhoeven
+> > <geert+renesas@glider.be> wrote:
+> > > Prepare for the advent of globally available common field_get() and
+> > > field_prep() macros by undefining the symbols before defining local
+> > > variants.  This prevents redefinition warnings from the C preprocesso=
+r
+> > > when introducing the common macros later.
+> > >
+> > > Suggested-by: Yury Norov <yury.norov@gmail.com>
+> > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >
+> > Do you want me to just merge this patch to the pinctrl tree or do
+> > you have other plans?
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> v5:
->   - Extracted from "bitfield: Add non-constant field_{prep,get}()
->     helpers".
+> There's a couple nits from Andy, and also a clang W=3D1 warning to
+> address. So I think, v6 is needed.
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Indeed....
 
-I guess this needs to go with the rest of the patches?
+> But overlall, the series is OK, and I'd like to take it in bitmaps
+> branch as it's more related to bits rather than a particular
+> subsystem.
 
-Yours,
-Linus Walleij
+OK, fine for me (if I can still get an immutable branch ;-)
+
+Note that as of today there are two more to fix in next:
+commit d21b4338159ff7d7 ("mtd: rawnand: sunxi: introduce ecc_mode_mask
+in sunxi_nfc_caps") in next-20251029
+commit 6fc2619af1eb6f59 ("mtd: rawnand: sunxi: rework pattern found
+registers") in next-20251029
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
 
