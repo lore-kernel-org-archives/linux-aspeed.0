@@ -1,69 +1,69 @@
-Return-Path: <linux-aspeed+bounces-2683-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2684-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9F5CCCF9EE
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 09:52:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5EE3CCF9E9
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Oct 2025 09:58:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cxMwr34h9z3bfF;
-	Wed, 29 Oct 2025 20:52:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.170
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761731548;
-	cv=none; b=oLa1NghX8zgfYoMwePViDUty+zK5CxujDcKShpoQC2o34JfyeRuM2e3eSHbXew409ZtY3NAgTKywV4Ir7m2v1moQOvGiFGITL34hidXjB3nivkmBvzk/vbrGYEfxC1sZbBcpO13xko4rt8WvOqsA28lGqgjdD/VG6ibsTn1IqT98T/whvonAfotpVGkLWZtbmpOfiMTY87Vtn6ZHq4dtmCj08ZwTGhBEsAB66JtsNnXMrWFKLC+fx/lULumt0glq2s4SD9W0MEtPPnPVfATy38Nsna39AtXLk4a6RIbXBSNoaZzJZioWvTeewKOGIidRdJPfn2H3+Gdew84ckMmHMw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cxN4F1VKfz3bfF;
+	Wed, 29 Oct 2025 20:58:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.160.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761731933;
+	cv=none; b=XmQPCjUON+rn78al0s14TsxoPQFgYp4aYKAxuCrzrlIobgpdp3MnZ85cFahYCidz82M+o/o3kin1f9wbwsGJ2o19X+YaEkG/KctRE/4hHvOX1b/jeN/ufC8CLPTqLoCgeb5Bjg08ndUVOLDDna95IdGTRnZoYYCtKE2k4LwOlDMCoaW4C5kkuAUq+0plaruGR8s6YUCKtiAsQqzficJ2Gl3dgakwLARZUHHHw7QFthcEYu9VelFLBBbAK8CnU67xIYKsHqwC1PWqJeSxZtxY2gdl1e7eqoY4HPlYXTrvxwfJQP2z9d3QItx4j97uv9dYyv72mp3sd2L63aCEWV0F5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761731548; c=relaxed/relaxed;
-	bh=dn3HJmw1LqF1sl88KtOEIxVUxtlj7baFmpOOANtcNAA=;
+	t=1761731933; c=relaxed/relaxed;
+	bh=tdMmTEVXmrdUQVal1cKnxdF6jTyKX4No0foVL6qsIc0=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=kJN5e0t1bXzzq1wbwHcNyt5QhARlp1IvWUQOn9YFKZUTKYqdAYKIEYOtArqiqBKInOKyvQrkIn/lfNwf0zZJhO40Bow+yIE76pWhAh2LX+5tKaAqN5OgwBHH3F/8Ei6vE8TFhO6co3H1fi8ZMemODX0b+R7yTYBFklVzUHYVf7bkCcSCtsFnxTleV2/gkz78fg36R3FuFueKSB5nRHOBQOa31uUqT/3YcbzPXuvVa67qQ2vxJO8aRO5QPslPWT/6qjHn3RlsVrUapD5s/wqC8ozDKXVwBTTt0dgZMfdefCqWMvOmYLcjG/GREqsxnHJx8D7sNQkrA0aHz5SPy63H7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.170; helo=mail-vk1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 To:Cc:Content-Type; b=QA1bQjcIhpJ6GpUAKbeb6lnfvz5DheuwyaVWb+yllIMiOtJkksy70DkzkHJIVVaP5w1+UoNlNccVFxck8Oi3mwHXlbnJSQ+udK+lT5oNij9tMMZ0mQi5WAbG9YnyhyDpNT3ZWBDm2n0eUtc5X17CloAGZBpGjiGPrka5fP31E8Q5q9y4nFNk9lpKyc3tF9iJhMHmN1XWNmWK5PrLhD79oupO/3yLKrWa7Strh/p7/Opf/qVdwOkeiUmat4wXhFzF7vBdESIo3w5vLGJSJYLpDP4D/nuFN46Yl8FUWOJI758TKQnrdiFI5PVIlkwECSs2kutox1QrYkx8RE91juuoLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.160.172; helo=mail-qt1-f172.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.170; helo=mail-vk1-f170.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vk1-f170.google.com (mail-vk1-f170.google.com [209.85.221.170])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.172; helo=mail-qt1-f172.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-qt1-f172.google.com (mail-qt1-f172.google.com [209.85.160.172])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxMwp6Lxzz30hP
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 20:52:26 +1100 (AEDT)
-Received: by mail-vk1-f170.google.com with SMTP id 71dfb90a1353d-55716c1ffeeso1965910e0c.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 02:52:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxN4D18DFz30hP
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 20:58:51 +1100 (AEDT)
+Received: by mail-qt1-f172.google.com with SMTP id d75a77b69052e-4eceef055fbso72274401cf.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 02:58:51 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761731542; x=1762336342;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=dn3HJmw1LqF1sl88KtOEIxVUxtlj7baFmpOOANtcNAA=;
-        b=Ky/WFTEmCD8cbQvHNR6hQmN3I0LO5iyaiNSfmklLqfjeAZTZeQHZ09BnKMZpNrC6Z/
-         nkONOIjHmIlQW2I2OP0ihVLmo7uoAuJYZ4qoJtvuJxi7nYgTn4/kgio8tNX8YImT8knv
-         6Ka/aQMf8tKLZgcYaG/HIbOPNSMxvC+K9cidRy5OKfC5LS8/BovsZg+csYB7yUtCYXNt
-         JKVeL3MEuXO+f5XcVUaJ6XZ9uS5xjg8YiTMRq/sZ8+3PMNHs5cWfuCTLZ/QWMC5aRGAM
-         G2m03gd/S3jQuVmtFTWrUU9be38Lz21VPAf+/Gn6wWOIpHldZNk06X7h5PNE8l6kUquI
-         XO9A==
-X-Forwarded-Encrypted: i=1; AJvYcCUmZgjD3qBadJolbMP/qFKCOMncApuqO30ZJpIQX9SlcesKkOiQadFNcRKwC7etZJiBLMowpdoz47v3peQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwVMfHeXYsy3Fedq4cRzmx0/Esb/7fWY7itEtuo7thH0uzitTmK
-	XPL3y1ANTUVW80lU3m56jGsKC4a9Q8MKRjFdOH/RUOZjHN5P/a0lDwu9swfHPk0k
-X-Gm-Gg: ASbGncvB9nFe44IaOJgN7V3gMFlEQAziMZ8FZxmkF9RLYUhwy4S5ta5fTVe3DziSX1y
-	0MLRKiM+NVpfzrTrXweMp4xk/08ZErTyg7PZNlHfrApTfSzH+pic+nCAWTUHkqLKv9oNmZlf1Gi
-	cz/bZTubdnxcskJjzmKRj39egBpTcH0TRVghumJGvGPgou9TDnsdD1OotvYsEFGNsfHmPglt+90
-	9ajkBi2uzibB7ylh35B8v6OPSODtgOjcVXaFwP1NuNIc4EvHMi22oN3tHWjFaE4j+r7mSU5pLg8
-	2WTe8FQ/UTZYrytNfN/No74gInHVFcvIjLZeb+vzX/1sYRyhUVFrf0Ge/TX1LotTsBEC7+FDRVf
-	nAr91QHNSpuMk15Mcd2I8gEaCdRS64+YXdGYYBMZ2YjmBeqZ8OXFmR84NMB6VB8HImv03wOuc6i
-	H+RppjOdFlKBoUk3g2hvIUydmrYD7Ww9cGUyoB2iFEcCc3DWt9
-X-Google-Smtp-Source: AGHT+IGiwJ2MjEbzVyX8xebCaJ83GG+X/oJ8YXrC0BV9qx1PQOpLHRdps3u1YZ0IUKqHFOqPkY1c3A==
-X-Received: by 2002:a05:6122:16a0:b0:557:c573:d226 with SMTP id 71dfb90a1353d-558141572eemr533677e0c.5.1761731542360;
-        Wed, 29 Oct 2025 02:52:22 -0700 (PDT)
-Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com. [209.85.222.44])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-557ddb5f493sm5285324e0c.17.2025.10.29.02.52.22
+        d=1e100.net; s=20230601; t=1761731928; x=1762336728;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=tdMmTEVXmrdUQVal1cKnxdF6jTyKX4No0foVL6qsIc0=;
+        b=r30LtXFL8kFSF75V/+cLjUuEW2w5dMlF+FV8OhWe0pGpuHeg9HoCV+FtAuFX0p0gNM
+         vTgnE7G8GI0FRMOSsVk307BlRbOVKifzANfVjV4TcCw6paaNOsuuiKqpFBLmuXeXryS1
+         S+v+G1l6wtCBl2MroRY7/h6fUM2YiP76IYaNYtbOcEIdCUn5Kkd3Qa+4UxJxrSq8jKg5
+         PvHI5WCzdKOqmiuBEDzouy+q5nl1nBCHQNacOBfdHojgu9ThqlTS6ttfEks4nwjEAf46
+         EiA2XnDfYpnHMZkftofpRVSvfdnxW24kTgDqA6YkpIeZgcs4Hvq5YO3H6IA0DjKC24a3
+         sfOw==
+X-Forwarded-Encrypted: i=1; AJvYcCX7Mt3m/rlK/jw3oCSBYXeHLLETLX/JjJzBvBPkZuLeFM13USTk1fv7GeeW2GYUVK6xJF7Cd5URopLV5ps=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx99Sp0PHkFUmLne1+xAzLKc+tObnMYmQ6M7Ku5GPyu4NdlCo/W
+	Wa9l3dmQlRGFxWD2ai8XD08uFbCn3xNaudU6YduBjnHlhAiq66OaL9DQdHpZ8ym/
+X-Gm-Gg: ASbGncueP3yBmRd85ueJIf3XE8jkjcgCJv5zPvmM97V/vBFVyq2RbY4HJlUUEGq3Cj5
+	YfY7SijLFLZS62OGrqee5/c5qLvQvycmzPyJNLaRzMnkRR1maHdacvzlvmEvnKabZwuMBn71HFv
+	jrGukXCxuRW98PI0hw9cl8Y1aAcKp7FpjWFjlTv7l4ng8zzDAr8IySUO1MGraSJ+Ml+KWIJRUst
+	mRNsOlRFkEUcY1PV/3NGggdn65B9HV8czWu1aMRYunz2WZZ+/xhjTi+NdBeN7PzY8SQsGnOo4Sg
+	x5ksUG7axZ/bWtYXqMtC6c3yKBIIF1xkGktCtBNRcz33j3mFyI5+PWRjYoK+tjB8TrKwBx6d7mH
+	8laivndyNHmxZGUhRLuGas0TU45+j4m6zfv0UH7umKWbXivo7AUFnj53ixPd7HzbpLz2jCIa9iS
+	GVEUMPJgM2v+mEhpSSRG8jHvyLl+dxX+z2LxITABfXyA==
+X-Google-Smtp-Source: AGHT+IGJfiXkJPJ2q31IKqO1qWk7oZeyQMGPhNgwuVP8fSomhNdCkEXXIaHJTvvFHZumRUFa4OIt6Q==
+X-Received: by 2002:ac8:7dc9:0:b0:4e7:2b6a:643a with SMTP id d75a77b69052e-4ed15b336e1mr31375481cf.12.1761731927861;
+        Wed, 29 Oct 2025 02:58:47 -0700 (PDT)
+Received: from mail-qt1-f178.google.com (mail-qt1-f178.google.com. [209.85.160.178])
+        by smtp.gmail.com with ESMTPSA id d75a77b69052e-4eba3860692sm90164261cf.30.2025.10.29.02.58.47
         for <linux-aspeed@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 29 Oct 2025 02:52:22 -0700 (PDT)
-Received: by mail-ua1-f44.google.com with SMTP id a1e0cc1a2514c-932bbd6ba76so2374468241.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 02:52:22 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVuOaYptNWNOdTRQQqOVjBXxTSRiOwR6oHJCJi15FhidzLqcykcay0Z/TQa3AUVJCQep1gRYpO71R7StPw=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:942:b0:5d7:de89:ddd6 with SMTP id
- ada2fe7eead31-5db9057bad9mr557441137.1.1761731536861; Wed, 29 Oct 2025
- 02:52:16 -0700 (PDT)
+        Wed, 29 Oct 2025 02:58:47 -0700 (PDT)
+Received: by mail-qt1-f178.google.com with SMTP id d75a77b69052e-4eb9fa69fb8so59350691cf.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Oct 2025 02:58:47 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW8Dh6rlsJeZxnn00DW060eaPrvxigQds5X63YaW0eIzotQt0nccFWH18Dkbaj+D2+D7XEb44E0ARXaB6c=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:d87:b0:5d5:f6ae:390a with SMTP id
+ ada2fe7eead31-5db906e1ea2mr632557137.40.1761731454123; Wed, 29 Oct 2025
+ 02:50:54 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -83,21 +83,21 @@ References: <20251022070543.1169173-1-ryan_chen@aspeedtech.com>
  <6a97fbb4-19c2-4ffa-9c73-26aea02c27e4@app.fastmail.com> <TY2PPF5CB9A1BE6CF8336D211641A18E2DEF2F1A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
  <71df9bdf-53b2-45e2-a9e3-5b00a556f957@lunn.ch> <TY2PPF5CB9A1BE6F3E95C7FD61CF4F90ECAF2FEA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
  <fdbc471f-514e-4521-b7a1-dcf6127d64ff@lunn.ch> <TY2PPF5CB9A1BE6DD93D0F397C961D5CB5AF2FCA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
- <01573262-69a8-44cf-ae02-2e9842c59dde@lunn.ch> <CAMuHMdXAOPemhTjdJqminXhi+1+Dsc5rN1GLqAUcfF3ZyphRoQ@mail.gmail.com>
- <TY2PPF5CB9A1BE6D0FC241696E44EB1F463F2FAA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-In-Reply-To: <TY2PPF5CB9A1BE6D0FC241696E44EB1F463F2FAA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+ <01573262-69a8-44cf-ae02-2e9842c59dde@lunn.ch> <TY2PPF5CB9A1BE665D988A413B8BCD5CA27F2FAA@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+ <7c0c966b-c45f-47ad-9243-b945036a9bd2@app.fastmail.com>
+In-Reply-To: <7c0c966b-c45f-47ad-9243-b945036a9bd2@app.fastmail.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 29 Oct 2025 10:52:05 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWKsyt_bXaJ=smtCaGst_5O2trQakxmaKp2K1Jzc=Y9uA@mail.gmail.com>
-X-Gm-Features: AWmQ_bnPsVrgzrwpS4yuU54P6rGfuwJuhD3QhZm5C-G0nVGXJf4URRbbI7AGLcc
-Message-ID: <CAMuHMdWKsyt_bXaJ=smtCaGst_5O2trQakxmaKp2K1Jzc=Y9uA@mail.gmail.com>
+Date: Wed, 29 Oct 2025 10:50:43 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVueyxmATwS_EnqBBPtX-O0bw6Ubnj-Dey8wN=pEvo_zA@mail.gmail.com>
+X-Gm-Features: AWmQ_blS6idckwhpIjkOWHP0NGDWxrc7vZpSwkjlsFZQOSpuaInPPIOtTjyVPpU
+Message-ID: <CAMuHMdVueyxmATwS_EnqBBPtX-O0bw6Ubnj-Dey8wN=pEvo_zA@mail.gmail.com>
 Subject: Re: [PATCH v6 4/6] arm64: dts: aspeed: Add initial AST2700 SoC device tree
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Arnd Bergmann <arnd@arndb.de>, BMC-SW <BMC-SW@aspeedtech.com>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	Jeremy Kerr <jk@codeconstruct.com.au>, Lee Jones <lee@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>, Andrew Lunn <andrew@lunn.ch>, 
+	BMC-SW <BMC-SW@aspeedtech.com>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Jeremy Kerr <jk@codeconstruct.com.au>, 
+	Lee Jones <lee@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
 	Bjorn Andersson <bjorn.andersson@oss.qualcomm.com>, Nishanth Menon <nm@ti.com>, 
 	=?UTF-8?B?TsOtY29sYXMgRi4gUi4gQS4gUHJhZG8=?= <nfraprado@collabora.com>, 
 	Taniya Das <quic_tdas@quicinc.com>, 
@@ -108,80 +108,76 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Arnd Bergmann <arnd@arndb.de>, BMC-SW <BMC-SW@
 	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
 	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ryan,
+Hi Arnd,
 
-On Wed, 29 Oct 2025 at 03:38, Ryan Chen <ryan_chen@aspeedtech.com> wrote:
-> > Subject: Re: [PATCH v6 4/6] arm64: dts: aspeed: Add initial AST2700 SoC=
- device
-> > On Mon, 27 Oct 2025 at 13:01, Andrew Lunn <andrew@lunn.ch> wrote:
-> > > On Mon, Oct 27, 2025 at 02:42:01AM +0000, Ryan Chen wrote:
-> > > > > Subject: Re: [PATCH v6 4/6] arm64: dts: aspeed: Add initial
-> > > > > AST2700 SoC device tree
-> > > > >
-> > > > > > SoC0, referred to as the CPU die, contains a dual-core
-> > > > > > Cortex-A35 cluster and two Cortex-M4 cores, along with its own
-> > > > > > clock/reset domains and high-speed peripheral set.
-> > > > >
-> > > > > > SoC1, referred to as the I/O die, contains the Boot MCU and its
-> > > > > > own clock/reset domains and low-speed peripheral set, and is
-> > > > > > responsible for system boot and control functions.
-> > > > >
-> > > > > So is the same .dtsi file shared by both systems?
-> > > >
-> > > > This .dtsi represents the Cortex-A35 view only and is not shared
-> > > > with the Cortex-M4 or the Boot MCU side, since they are separate
-> > > > 32-bit and 64-bit systems running independent firmware.
-> > >
-> > > DT describes the hardware. The .dtsi file could be shared, you just
-> > > need different status =3D <>; lines in the dtb blob.
-> > >
-> > > > > How do you partition devices
-> > > > > so each CPU cluster knows it has exclusive access to which periph=
-erals?
-> > > >
-> > > > Before the system is fully brought up, Boot MCU configure hardware
-> > > > controllers handle the resource partitioning to ensure exclusive ac=
-cess.
-> > >
-> > > Are you saying it modifies the .dtb blob and changes some status =3D
-> > > "okay"; to "disabled";?
+On Wed, 29 Oct 2025 at 08:26, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Wed, Oct 29, 2025, at 03:31, Ryan Chen wrote:
+> >> Subject: Re: [PATCH v6 4/6] arm64: dts: aspeed: Add initial AST2700 SoC device
+> >> tree
+> >>
+> >> On Mon, Oct 27, 2025 at 02:42:01AM +0000, Ryan Chen wrote:
+> >> > > Subject: Re: [PATCH v6 4/6] arm64: dts: aspeed: Add initial AST2700
+> >> > > SoC device tree
+> >> > >
+> >> > > > SoC0, referred to as the CPU die, contains a dual-core Cortex-A35
+> >> > > > cluster and two Cortex-M4 cores, along with its own clock/reset
+> >> > > > domains and high-speed peripheral set.
+> >> > >
+> >> > > > SoC1, referred to as the I/O die, contains the Boot MCU and its
+> >> > > > own clock/reset domains and low-speed peripheral set, and is
+> >> > > > responsible for system boot and control functions.
+> >> > >
+> >> > > So is the same .dtsi file shared by both systems?
+> >> >
+> >> > This .dtsi represents the Cortex-A35 view only and is not shared with
+> >> > the Cortex-M4 or the Boot MCU side, since they are separate 32-bit and
+> >> > 64-bit systems running independent firmware.
+> >>
+> >> DT describes the hardware. The .dtsi file could be shared, you just need
+> >> different status = <>; lines in the dtb blob.
 > >
-> > "reserved" is the appropriate status value for that.
+> > Could you please share an example of a .dtsi that is shared between
+> > different CPU architectures?
 >
-> Thanks for the clarification.
+> I can think of three that are shared between arm and riscv, with both
+> able to boot Linux using a variation of the same device tree, with
+> the .dtsi file being included from the respective other side:
 >
-> Since the SoC-level .dtsi is shared by all users (potentially other platf=
-orms),
-> I don=E2=80=99t actually know in advance which peripherals will be assign=
-ed to
-> which CPU. For this reason, marking nodes as `status =3D "reserved"` in t=
-he
-> .dtsi might be misleading.
+> arch/riscv/boot/dts/renesas/r9a07g043f.dtsi
+> arch/arm/boot/dts/allwinner/sun8i-t113s.dtsi
+> arch/arm64/boot/dts/sophgo/sg2000.dtsi
+>
+> All of these however use the same basic physical address layout
+> as seen from the two CPUs, with only the set of on-chip devices
+> being slightly different, such as using the native irqchip
+> instance per CPU.
 
-Sure, not in the SoC-specific .dtsi.
+I can't speak for the last two ones, but the first one is not what Ryan
+is looking for, as r9a07g043 has either an ARM (r9a07g043u) or a
+RISC-V (r9a07g043f) CPU core, not both.
 
-> I think it=E2=80=99s more appropriate to keep all peripherals as
-> `status =3D "disabled"` in the common .dtsi, and let each board-level .dt=
-s or
-> firmware-specific DT decide whether a device should be `okay` or `reserve=
-d`
-> depending on the actual resource assignment.
+> In the AST2700 design, even though we have both Cortex-A35 (64-bit)
+> > and Cortex-M4 (32-bit) cores, each runs in a distinct address space
+> > and sees a different memory map.
+>
+> This is similar to the Cortex-M4 on i.MX7D. This is supported by
+> the Linux code, but I don't see the corresponding dts file for it now,
+> it may have never been merged.
 
-Correct.
+The keyword here is "System DT", where you have a single file describing
+the whole SoC. From this, separate DTS files are generated that
+describe the view for the application CPU core, real-time CPU core,
+control CPU core, etc...
 
 Gr{oetje,eeting}s,
 
                         Geert
 
---=20
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
                                 -- Linus Torvalds
 
