@@ -1,68 +1,61 @@
-Return-Path: <linux-aspeed+bounces-2701-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2702-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDBA7CCF9F6
-	for <linux-aspeed@archiver.kernel.org>; Thu, 30 Oct 2025 06:04:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB8EDCCF9F8
+	for <linux-aspeed@archiver.kernel.org>; Thu, 30 Oct 2025 08:23:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cxtqG241Zz2yvv;
-	Thu, 30 Oct 2025 17:04:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761804266;
-	cv=none; b=fmTQKsk/dSbGf0m4cXRxkkYACZLYoMXrXie4Ulxg3xjHnWsCzUUVjL7ZkfD5AC+NLjQCgv1IKAqn4LoPa1gw+3uRXQld2mAFBN8948CE3zToW4L4zDQWeMgcQIsViuyIJ/loafmHpPI4xd3LFEpbTIoIjtCM1qAoBo32G9pwCxCoTbWamtspcqukwL9NC9xR5HfMB0G4uJ6SAoZ+kPoo9slUTvB/J+8grZz7gk3ShHvV9ruEQc6rNV1z/qt/mfrbaVcGn3jMaq3cWG9ROXdZPZpjMFDst9z47shLJgdpG4mfdcA/esr+JBAcP0U9CYFEcmrdJPCa/WRwDMU50OKORw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cxxvV3C6wz2yvv;
+	Thu, 30 Oct 2025 19:23:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761812598;
+	cv=none; b=HySifPMdOpirOhwoC0JU5CLdAHhwoyOMj7exdMIZM+IVIV1OJGdrKoliH2hwKKPWg9bKI8FgLGa8/dat8bkagRAF2dwZXBJUG5p5VfN7C0Lye2fQ8soJY95OyF6wKLOSuCNemL7RsBka5efHaA8ewQK/KpMHHXfZ5zDV+FMbRcybLCxwIcQqIpN/uyCIFv50I+PVnjfiD1UTa8m5Ywi8JEJfDVxz00yYFy7yFV+xrPo/6rne8Ptuq9+0X6hMikbcknV+9OuWXlkKt+3w+JPV7x4Qw5cFAXCw84aY7hfcrzYB4yXKWh6rD7ZmG/4dKOvYA48//JHYmWY2LcECazi9Sw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761804266; c=relaxed/relaxed;
-	bh=FUv49txHvrAzjdgWs80ani5/jiFVnH1I1J/VQnA/JbY=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=DMYzLgKDt/lbFADEL9EIl8HeKe69JWEu4VJnHE5fr8DT7VEKje2dGioFq48pkgYyJY5wZBRSMylx4rmrGjJROz6hjnrlJPmNvyDsIWjSpd1VTaVFLL8uwsKnlYoKZqUQxyMb5hFp4BAgKhMnfFF3pHdvzq7WK+ACyIUW/By3BwyoJAqRthDVY1SSRNO9/029FUteIYWgLcltrLgzsuulJket5SnkD4zSIf4t26QM2i/keXCtcpfxyVtTd/xU0VwGPm/vtm+rfERtm3419xXrECS4zfEkEW68zfzB3Grky2jEWpH1g+cVN1srjikjOeyLQzFHiu20VfoKdPhNTYNqkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=VNcTJt4c; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1761812598; c=relaxed/relaxed;
+	bh=mlhldOdvaZaZ1srD5ujBcQc7mljH6nOsOP3aJyeImGs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VZHPYR7QSOyhvnp71kVqKA9hMHGPo+7Y2ZpFrnJb5EFrsYQWHz81g1gjjOrfxUqdEp9l6gslksmlVT+rNIYAgr/vE3kaeQ26nvaaRSMZ7zK2cFgAUJ3MdMod7NhiUs84eua7eDfb92RjpA7FS9y0ey2dGzkfBS+zjbFqUc1xvAY7WGEUm72kfgu/vzX53IjpPMTWUKx7LaFqdX/g+x1z42SwjrBqWpDd6yAqGbJaZyIO6hsdAF6slNntWiLAkf+NZa0Bv/7S1iZs6KhAt0N546fB464H3sU3oHEsaiLXgegVDexc5pjNzc0yi/ryR3ogL/TQoPb2QqPElcquoD9R+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f7zxrP78; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=VNcTJt4c;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f7zxrP78;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxtq91K9yz2xsq;
-	Thu, 30 Oct 2025 17:04:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1761804259;
-	bh=FUv49txHvrAzjdgWs80ani5/jiFVnH1I1J/VQnA/JbY=;
-	h=Subject:From:To:Date:In-Reply-To:References;
-	b=VNcTJt4cIN2/f4WEgxABC6Id7AAblH/HICBg+PaRPVG+ji+iJv43te7VZKyYtZMc0
-	 pAo0haH4Uqg1V7ki/IASKd0f6fTmhAjTQPBaRdNvvhiPp4SKWK2/Wtef+/9tCi/bpu
-	 SAuz5YgVaLZUs8McGlWx9QY8lGAcCZbEKXtiJgFs9kLQx8d91MOSSTe20kKbNvG8Gz
-	 ORlORw1Rl+GSloNCrshWXebTlQd4lb6hWFM8dpxutMHVJivq0uBOvyemIq2DTUI/wy
-	 c14EsHCY/aQmvBRPlJ1UqMfYHPCxTPgn3AR9FUKjEKg8TdbuHO+GEtWmqQTIUeidhm
-	 IMbhNU3/dSQYQ==
-Received: from pecola.lan (unknown [159.196.93.152])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 59CA379118;
-	Thu, 30 Oct 2025 14:04:18 +0800 (AWST)
-Message-ID: <0b9abd87b877595c13011a3d8b4e80e05488effc.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v21 1/4] dt-bindings: i2c: Split AST2600 binding into a
- new YAML
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
- <ryan_chen@aspeedtech.com>,  bmc-sw@aspeedtech.com,
- benh@kernel.crashing.org, joel@jms.id.au,  andi.shyti@kernel.org,
- robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
- andrew@codeconstruct.com.au, p.zabel@pengutronix.de, 
- andriy.shevchenko@linux.intel.com, naresh.solanki@9elements.com, 
- linux-i2c@vger.kernel.org, openbmc@lists.ozlabs.org,
- devicetree@vger.kernel.org,  linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org,  linux-kernel@vger.kernel.org
-Date: Thu, 30 Oct 2025 14:04:18 +0800
-In-Reply-To: <59d4d107-4f35-4906-8524-f45b9b85f0ff@kernel.org>
-References: <20251027061240.3427875-1-ryan_chen@aspeedtech.com>
-	 <20251027061240.3427875-2-ryan_chen@aspeedtech.com>
-	 <59d4d107-4f35-4906-8524-f45b9b85f0ff@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cxxvT2pfDz2xxS
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Oct 2025 19:23:17 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 4D41043967;
+	Thu, 30 Oct 2025 08:23:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 98014C4CEF1;
+	Thu, 30 Oct 2025 08:23:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761812594;
+	bh=cRGe7WHHw1LCeccNstuWW+P/ZSv12NIwuoWjOgarCIk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=f7zxrP78KLIn7rJa+lpFRnHDGsei5y5pkM56Ke9U5jrC2ifsXej5C5GllJs8a9tQu
+	 J/ZDekzbyKARQF/w4JRHaKsjFAzcrmPcaD/YOKGsCyUFktU/LqyBTScliEuD2P8DzS
+	 naF/jtNiTJVRaDbLahNkneYi3smJnP/bHSz02jBCCg0V6pVIm04Je5SWBfoSLTOO0k
+	 Qxhmr2+tBtjM4LqPLRSHsS8JpBizv/VMqwiqgEc05WGmgRIMO5MvDqtay/0zgkyIH7
+	 ehD3qGVX1rsaNeoBVrUGCoho3p6ATff8xItvaCzSkHRsSMgQIgwk41l+CqbUMPIuTp
+	 5S4Ok1oBSd1VQ==
+Date: Thu, 30 Oct 2025 09:23:11 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dt-bindings: hwmon: Convert aspeed,ast2400-pwm-tacho to
+ DT schema
+Message-ID: <20251030-zealous-amiable-gorilla-b64ffc@kuoka>
+References: <20251029185448.2121857-1-robh@kernel.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -76,75 +69,48 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20251029185448.2121857-1-robh@kernel.org>
 
-Hi Kyzysztof,
+On Wed, Oct 29, 2025 at 01:54:47PM -0500, Rob Herring (Arm) wrote:
+> Convert the ASpeed fan controller binding to DT schema format.
+> 
+> The '#cooling-cells' value used is 1 rather than 2. '#size-cells' is 0
+> rather 1.
+> 
+> Some users define more that 8 fan nodes where 2 fans share a PWM. The
+> driver seems to let the 2nd fan just overwrite the 1st one. That also
+> creates some addressing errors in the DT (duplicate addresses and wrong
+> unit-addresses).
+> 
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> ---
+>  .../hwmon/aspeed,ast2400-pwm-tacho.yaml       | 105 ++++++++++++++++++
+>  .../bindings/hwmon/aspeed-pwm-tacho.txt       |  73 ------------
+>  2 files changed, 105 insertions(+), 73 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml
+>  delete mode 100644 Documentation/devicetree/bindings/hwmon/aspeed-pwm-tacho.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml b/Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml
+> new file mode 100644
+> index 000000000000..018249f97a5d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml
+> @@ -0,0 +1,105 @@
 
-> > +++ b/Documentation/devicetree/bindings/i2c/ast2600-i2c.yaml
-> > @@ -0,0 +1,66 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/i2c/ast2600-i2c.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: ASPEED I2C on the AST26XX SoCs
-> > +
-> > +maintainers:
-> > +=C2=A0 - Ryan Chen <ryan_chen@aspeedtech.com>
-> > +
-> > +allOf:
-> > +=C2=A0 - $ref: /schemas/i2c/i2c-controller.yaml#
-> > +
-> > +properties:
-> > +=C2=A0 compatible:
-> > +=C2=A0=C2=A0=C2=A0 enum:
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - aspeed,ast2600-i2c-bus
-> > +
-> > +=C2=A0 reg:
-> > +=C2=A0=C2=A0=C2=A0 minItems: 1
->=20
-> <form letter>
-> This is a friendly reminder during the review process.
->=20
-> It seems my or other reviewer's previous comments were not fully
-> addressed. Maybe the feedback got lost between the quotes, maybe you
-> just forgot to apply it. Please go back to the previous discussion
-> and
-> either implement all requested changes or keep discussing them.
->=20
-> Thank you.
-> </form letter>
->=20
-> > +=C2=A0=C2=A0=C2=A0 items:
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - description: address offset and range=
- of bus
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - description: address offset and range=
- of bus buffer
-> > +
-> > +=C2=A0 interrupts:
-> > +=C2=A0=C2=A0=C2=A0 maxItems: 1
-> > +
-> > +=C2=A0 clocks:
-> > +=C2=A0=C2=A0=C2=A0 maxItems: 1
->=20
-> Nothing improved
+Missing SPDX. Few other checkpatch warnings like typos. I guess you will
+see it in the Patchwork, so just writing here that it should not be
+picked up by PWM folks.
 
-That was mostly the point - this first patch just splits out the 2600
-definitions to the new file, with zero change.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/hwmon/aspeed,ast2400-pwm-tacho.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: ASPEED AST2400/AST2500 PWM and Fan Tacho controller
 
-That means the *actual* changes to the binding are visible via the diff
-in 2/4, and not hidden by the copy.
+Best regards,
+Krzysztof
 
-This was mentioned on v20, and you replied saying it was irrelevant to
-the separate discussion around the rationale for the change, but didn't
-object to the split-patches approach.
-
-If your preference is to *not* do this via a verbatim copy as an initial
-step (and essentially squash with 2/4), that's also fine, but I'm sure
-that knowing your preference would help Ryan out here.
-
-Cheers,
-
-
-Jeremy
 
