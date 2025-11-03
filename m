@@ -1,73 +1,40 @@
-Return-Path: <linux-aspeed+bounces-2709-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2710-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0469ACCF9E3
-	for <linux-aspeed@archiver.kernel.org>; Sun,  2 Nov 2025 23:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A6C4CCF9FE
+	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Nov 2025 07:39:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d09Y82C1pz2ytT;
-	Mon,  3 Nov 2025 10:15:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762125308;
-	cv=none; b=lggAD3mdIo34hZen9sf4Ux8R1ynx2tm5LCs35QnktQotQBYUcyCK9GqfiHs8IV3lFZg7rSpgiWmf4o4Eecnxk5quXlkZlMiWElgzA+3Tm7YSUjOuraRIRw1GB42vXZfGMVkvpstQ3wcnShyU8d3Digf2czUk3WFEg6Ei+5kAw86D02n0a9++cKOII436SgBcWoPysvagrtG9j+S5CAqRuogp4+zSKawxQwIgtDdU7B+0/H4SmLJhC57NKkpNlpeXopUQBTmt70NlZvA4AhHzvpbly5mezqIbe/IDd3gD9C8C/sVGfgsGKoT5ZSd619h6HFg4i1SMl/W/Lo/LeP001w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d0NlV0W20z30T8;
+	Mon,  3 Nov 2025 18:39:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762155590;
+	cv=none; b=Wdu78QX6ufwDrJTIDBnyc3xOTkjU2D6cduarPK3aHtERp/qn6Ew+jTksvAZSht/0eDY+b+YiWOm8zKdgfI54BtzlqQoaxPFYy1zqNGY8XDDvaJG51kZL153lT9RnRYaNEcdI6POkhtxbw3XGwUk30pJzy+PIvL782vvwD5uVQAsbh05W9URbst8nhJnPXbkN37sTe1JdQh5uRbmwkbcdPogGWouB6ORyDlWj8iN5c3MmpZd6F4AB3Rqt/X4AjWlvcZP30tWb3n/5dJbsVLW9xsJFzGLyUAsvpSIOKxE2ZE6CKVGXDvzu+wCBtMkRUydalW2rjI7Srf1w6BJQoDub2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762125308; c=relaxed/relaxed;
-	bh=yhefXJf25nlZX433BsR2ypBCZ8ChrLrkfTMoigu+ucU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JX+RWtVfcDkPflJz0sWl8n2cyLD5EzdXCFs7lrYDounOvzXNz0jUlIk+ARbqTY6SqebTEHqo+MQBzoz8PNNYbmQ7vsnGsfox+TiJpjLukvLPvETEcM+rNVD3n41QzIoAKoadkHAwrHxN9Sry3Pkuj5o3T9mydu4GcO55V4HxPdNrsswUCl9jelrRsLWsneXDg8wG89vmETxpQ/iO/lrV7vbpmu9THLB9wxD97agmQFcsufPlpAQwtbsfYFh+mmK5QhvS6UZag7nSUleQsvui1HdQTnaineohbMM5vVxbrKAigpU0SB6m2vkaYgf6lCYPd78Zi2w4MuQxbn9ICS8WKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=UoM2jcMR; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=UoM2jcMR;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1762155590; c=relaxed/relaxed;
+	bh=HyBWjGCdQ56N5mUJS4FqY/Xhl2MrYCXAoeOEUBzSX2E=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=QL2HuadY+rW3BUFUE+oXy6YeVyA/QD/pSHvaO6knbEXqqm/tUnlcuczRXqBTucE28FXJU6azgUSZm2w4UN9he+fas9wRcfmWDOmZ4O06GqZKLxnCeQtnQGiRDcqpgA5eoeFYq5NIQy7EdkFS6HIFmWfU42vkv7WsJZzRnXhfNpZEo22kpbIGb0weQV3Yzpm0/tavHE5jkuk96qvIrIBCZ46X3jRZ6LwY4kZ6eBnR6c/NvLtsizrlWmjWFoaQCQkmexp2ot79u8yOktpY9EaxpsR88lIn9oAB0L4pI14MS0P7VBeEM8bD+HND8z6u3qpqrYW8ve40NVtO8gj/4F+GOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d09Y65sfJz2yrT
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Nov 2025 10:15:05 +1100 (AEDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-5941567218eso4171956e87.1
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 02 Nov 2025 15:15:05 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1762125301; x=1762730101; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yhefXJf25nlZX433BsR2ypBCZ8ChrLrkfTMoigu+ucU=;
-        b=UoM2jcMR9ZebQ9YJ6f3skxn6b2QBD3qTOjcvuWbb86cuB/cbeTw4T8U+eYeIMU3wLj
-         LbHlrzttHul7GeHUXEfKoztzRQOnvPQnlY1lduGAAEEOSveCtLQO8e6wnGYtC8w0Osua
-         yxqoFWD2RDtG67ezhJqtJ0LkjAhhpx0esREofexGCexu/qt1LcLvnFhZjKCz8h7/LLoT
-         y7P9LjdV6WHH4XnGx3oJs+DS0MyEOS7dZwCMuDflmpvfgHmPu7LIpuIbJ/jMEeqvjGC4
-         T7pMk2Z9AOqdukYj/GzMHhCpX0d5RDJB7PWz7io7kAKqJbreuhoZwRRdXn1lSxh92+iC
-         XHIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762125301; x=1762730101;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=yhefXJf25nlZX433BsR2ypBCZ8ChrLrkfTMoigu+ucU=;
-        b=vrnYuUOqHP3D/8RmpycDNDTeYA6iIaqzqL+UFk6+h0HfitrvGl8G5xVVigQVVyqAuW
-         tlBIwZX3Ezf8U6EiyTR6tTgXXBbPXh/bGkZC3ctdWonevhJIullDdp+Tqwu8O22hCnoq
-         if5/hFk4aR5SXNsuVUp5Yuaue10/Dzw5i1hBwMjvTalhfsUwtg7mZPIQvLNXkqAU6Vp4
-         h3RNwRMF+xs4TTWEhoGMlj3+1Fw8piL++mLVpRoGO6BD0YT/xJYlK3qzUc1D1+EL49zI
-         5sOYjOrnXV93wrf6DxSczXPARZYhg7jZaP9tVFp4DKyMlikOEuih4RTmbdqZHWQNtTjd
-         n8Vg==
-X-Forwarded-Encrypted: i=1; AJvYcCWxwOxhFPSI5n7DrJXMYrM/Q3PSv/ieHY/rZ0pCTwFK4u6UDy93TEX51KSCEEdjS7LaLfem9WtD2jec0d8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxBcCjph4104RC9hMgUTe2ChXYPbKo2Mtaw513CbUxTey+g5Kb5
-	xti85/ect9Jr0omep23QQrkdMk54ztbCemVh99ERHl6UmdQQ1i8xJh76LF90e8fgwIQHRpevRyW
-	zrr+UrcCX9l8a4PAVTBRbee5ZnuKr7jSs3yjr0wy4cA==
-X-Gm-Gg: ASbGncutl23xUKeHid5L3CZU3lDdRbYVcYDjfaI6VpfRLqheHXWx0HEmgQ6mteavtzW
-	9DXap1S0+nnSfGNjEGfJ92wbUn4KWv9alcZ69HDaDLhqy+r1hoTiOu/H/es8JDsbO9fu9yq1kRy
-	7Wwh7xZ4xJHCEonGimvhK82ReS5Fhi1eHkfa//vGSB24ts6T0T/lxsRQTAlZO0EUCROx55AzKSF
-	2aZ2jgN5COjdCfIJHt9dYjQIPIDYQnxESWdLUz6WY+kg1aNNjROqIr14JRqc5eBZBGUNKghgtwq
-	fE9FdA==
-X-Google-Smtp-Source: AGHT+IHNOSftU4LA4kaZ2zit5fbsUjeer+Cqtnxd6HV9vMAwCSf0ZxvdazFj8kc8iFBA+Oyhy9hRt9pMH+krWfgjY8s=
-X-Received: by 2002:a05:6512:1453:20b0:594:2646:2350 with SMTP id
- 2adb3069b0e04-594264628f8mr1107502e87.21.1762125301355; Sun, 02 Nov 2025
- 15:15:01 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d0NlT150pz30RN
+	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Nov 2025 18:39:48 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 3 Nov
+ 2025 15:39:31 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Mon, 3 Nov 2025 15:39:31 +0800
+From: Jacky Chou <jacky_chou@aspeedtech.com>
+Subject: [PATCH net-next v3 0/4] Add AST2600 RGMII delay into ftgmac100
+Date: Mon, 3 Nov 2025 15:39:15 +0800
+Message-ID: <20251103-rgmii_delay_2600-v3-0-e2af2656f7d7@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -81,69 +48,88 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1761588465.git.geert+renesas@glider.be> <03a492c8af84a41e47b33c9a974559805d070d8d.1761588465.git.geert+renesas@glider.be>
- <CACRpkda6ykSZ0k9q4ChBW5NuPZvmjVjH2LPxyp3RB-=fJLBPFg@mail.gmail.com> <CAMuHMdWriu9eUHMSKcv7ojSqbquP3=z2oaquQZLx5nmN0EcGaA@mail.gmail.com>
-In-Reply-To: <CAMuHMdWriu9eUHMSKcv7ojSqbquP3=z2oaquQZLx5nmN0EcGaA@mail.gmail.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 3 Nov 2025 00:14:50 +0100
-X-Gm-Features: AWmQ_bkG07aYa3yfLgn8mo--U0KGtThYfcOHYFtKUjSupbZy0y5m0bQWTypUrbs
-Message-ID: <CACRpkdbR+5jh+OqYAU4vyUP-aQSjgMG3RRBkUTWnWz=VEy2Oew@mail.gmail.com>
-Subject: Re: [PATCH v5 07/23] pinctrl: ma35: #undef field_{get,prep}() before
- local definition
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Herbert Xu <herbert@gondor.apana.org.au>, 
-	David Miller <davem@davemloft.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, 
-	Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, 
-	Shan-Chun Hung <schung@nuvoton.com>, Yury Norov <yury.norov@gmail.com>, 
-	Rasmus Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Johannes Berg <johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>, 
-	David Laight <david.laight.linux@gmail.com>, Vincent Mailhol <mailhol.vincent@wanadoo.fr>, 
-	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, 
-	Michael Hennerich <Michael.Hennerich@analog.com>, Kim Seer Paller <kimseer.paller@analog.com>, 
-	David Lechner <dlechner@baylibre.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, Richard Genoud <richard.genoud@bootlin.com>, 
-	Cosmin Tanislav <demonsingur@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, 
-	Jianping Shen <Jianping.Shen@de.bosch.com>, linux-clk@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, 
-	linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org, qat-linux@intel.com, 
-	linux-gpio@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-iio@vger.kernel.org, linux-sound@vger.kernel.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIACNcCGkC/x3MQQrCMBBG4auEWRuYpLWKV5FS0vQ3DmiUpEik5
+ O4NXX6L9zbKSIJMN7VRwk+yfGJDd1Lkny4GaFmaybI9G+6MTuEtMi14uf9kB2btmGe2/dVfMFD
+ LvgkPKcfyThGrjigrjbXupxSX7mwAAAA=
+X-Change-ID: 20251031-rgmii_delay_2600-a00b0248c7e6
+To: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
+	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Po-Yu Chuang <ratbert@faraday-tech.com>, Joel Stanley
+	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>
+CC: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <taoren@meta.com>, Jacky Chou
+	<jacky_chou@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1762155571; l=2614;
+ i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
+ bh=PqRciZ9pt8w7E8BTpp5PCJ9LMcXBFSAE7sxgLoWY5qw=;
+ b=ZsJ8ICqzAmlkil/2X2ZC7pjgchQy9vsSXnfRLxbn93VAb2AZ7aFqIKPI55aDCy+mKjYG59Tvr
+ xGzWRAravsVAlfBgdPT3x9YoiA7roBDKdmhSD7nvuhS1ZpkX9EDnUso
+X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
+ pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
 
-On Wed, Oct 29, 2025 at 3:59=E2=80=AFPM Geert Uytterhoeven <geert@linux-m68=
-k.org> wrote:
-> On Wed, 29 Oct 2025 at 15:20, Linus Walleij <linus.walleij@linaro.org> wr=
-ote:
-> > On Mon, Oct 27, 2025 at 7:43=E2=80=AFPM Geert Uytterhoeven
-> > <geert+renesas@glider.be> wrote:
-> >
-> > > Prepare for the advent of globally available common field_get() and
-> > > field_prep() macros by undefining the symbols before defining local
-> > > variants.  This prevents redefinition warnings from the C preprocesso=
-r
-> > > when introducing the common macros later.
-> > >
-> > > Suggested-by: Yury Norov <yury.norov@gmail.com>
-> > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> >
-> > Do you want me to just merge this patch to the pinctrl tree or do
-> > you have other plans?
->
-> My plan (cfr. cover letter) was to take it myself, as this is a hard
-> dependency for 11/23.
+This patch series adds support for configuring RGMII internal delays for the
+Aspeed AST2600 FTGMAC100 Ethernet MACs. It introduces new compatible strings to
+distinguish between MAC0/1 and MAC2/3, as their delay chains and configuration
+units differ.
+The device tree bindings are updated to restrict the allowed phy-mode and delay
+properties for each MAC type. Corresponding changes are made to the device tree
+source files and the FTGMAC100 driver to support the new delay configuration.
 
-OK go ahead:
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Summary of changes:
+- dt-bindings: net: ftgmac100: Add conditional schema for AST2600 MAC0/1 and
+  MAC2/3, restrict delay properties, and require SCU phandle.
+- ARM: dts: aspeed-g6: Add ethernet aliases to indentify the index of
+  MAC.
+- ARM: dts: aspeed-ast2600-evb: Add new compatibles, scu handle and
+  rx/tx-internal-delay-ps properties and update phy-mode for MACs.
+- net: ftgmac100: Add driver support for configuring RGMII delay for AST2600
+  MACs via SCU.
 
-I see there are other review comments, I trust you will fix them up
-and merge the result nicely.
+This enables precise RGMII timing configuration for AST2600-based platforms,
+improving interoperability with various PHYs
 
-Yours,
-Linus Walleij
+---
+v3:
+ - Add new item on compatible property for new compatible strings
+ - Remove the new compatible and scu handle of MAC from aspeed-g6.dtsi
+ - Add new compatible and scu handle to MAC node in
+   aspeed-ast2600-evb.dts
+ - Change all phy-mode of MACs to "rgmii-id"
+ - Keep "aspeed,ast2600-mac" compatible in ftgmac100.c and configure the
+   rgmii delay with "aspeed,ast2600-mac01" and "aspeed,ast2600-mac23"
+v2:
+ - added new compatible strings for MAC0/1 and MAC2/3
+ - updated device tree bindings to restrict phy-mode and delay properties
+ - refactored driver code to handle rgmii delay configuration
+---
+
+Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+
+---
+Jacky Chou (4):
+      dt-bindings: net: ftgmac100: Add delay properties for AST2600
+      ARM: dts: aspeed-g6: Add ethernet alise
+      ARM: dts: aspeed: ast2600-evb: Configure RGMII delay for MAC
+      net: ftgmac100: Add RGMII delay support for AST2600
+
+ .../devicetree/bindings/net/faraday,ftgmac100.yaml |  50 ++++++++++
+ arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts    |  28 +++++-
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |   4 +
+ drivers/net/ethernet/faraday/ftgmac100.c           | 110 +++++++++++++++++++++
+ drivers/net/ethernet/faraday/ftgmac100.h           |  15 +++
+ 5 files changed, 203 insertions(+), 4 deletions(-)
+---
+base-commit: 01cc760632b875c4ad0d8fec0b0c01896b8a36d4
+change-id: 20251031-rgmii_delay_2600-a00b0248c7e6
+
+Best regards,
+-- 
+Jacky Chou <jacky_chou@aspeedtech.com>
+
 
