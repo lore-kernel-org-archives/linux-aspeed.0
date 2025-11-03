@@ -1,50 +1,79 @@
-Return-Path: <linux-aspeed+bounces-2718-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2719-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CA9ECCFA05
-	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Nov 2025 10:52:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0BEFCCF9F8
+	for <linux-aspeed@archiver.kernel.org>; Mon,  3 Nov 2025 15:21:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d0T1v3ZwCz2yrm;
-	Mon,  3 Nov 2025 21:52:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762167155;
-	cv=none; b=jAMWHQdpovla7vH8G4VuGd5EpancrMGFPbrwzsDFQJWwSy8qapprpO/yeoM8leww4I4mvF0Q2m4TM45odKQr/DVPvw0BBkFsPjaLC0zQqOYhKy3mFIsL6U/7D78nMtR9yPTHM1bUCN+8phyWzmz5jO32Jjc5FEeGwRfWq+rMObw6KM/samduqbFK/QoHWHH8EenqmI6GCcd7RpHAmsNRLVxOfFDv8dJnP/XFcdIIhD9/8Qr23xNogM3N6uMfgmKcNUONImm+sWv2AIyeOohqGhNVtFZ+6/5uKiirWZx49qHEhh7tLE5nhm05nNFkqlzT3Rbr+vJmn/kg1Fhr9dnNTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d0Zzb3TPVz2yrm;
+	Tue,  4 Nov 2025 02:20:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::336"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762183259;
+	cv=none; b=QEyR23c948X4w3135ACZp18HDIFt3aJpUNWBsNEmP02EFk8NC69jh+PL5qp67CJxKPyRzoWEp2aZz1UVulRZdS7R/TCqhtoGCUhPSyZS7jfSpvxFFSVvgMdSvbgH8Rf8unE3izfjSbFizzNGPlWhIzdncS4+YlaiQJYHqubimgCOzxwjP2ntSTXRlrBXoi75dWSvdFlSods/Elot/E7gXYb2XfY6O7+a4fC1MBBhbQcOZF7UA3BtqbkbRAxOmPsGjffuxj9k13pzJ97M6bpDIaJa0D6l6Xrf1xQSwS/K3nQfoA9A2BbfT0HFCXX26NzUg4tiE+4MnQK0LJYVg0QNhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762167155; c=relaxed/relaxed;
-	bh=P2iXB5W67n7YO4OssVtAEv8fDCZhOHZ+N8v9CZniUss=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JQrIrJ7T7WZIM19K3GpsNXbPQC+0IgYxsaQovqx4SzA3r5vhXZBGo2J3utwiWyQskpwOZDshwSgLHAYaK0VLP9PvdPyc90eR4JMveAAw0fiDJABFBY7Xgu5Uka186AlFoG0uE1LpeLC0/hiKvvN03yfiC6PBkESu8dV9IplalKVv+bYXkH7ksqb73XDbP3HdLPTFHbP4VVxFW8Xyvxb5Qp6KPPvpmPrmwQKK+3CUO4NFbo8sXa8avkEaxb56QCZacSZwV5XPonxBzPKLV8pnTfL/bnb5KA7FWLEMUQNLiybrJgVa4QZ/zmNJoSTlGQ+3jP47P/v6GPI3xtjXLLgz7g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1762183259; c=relaxed/relaxed;
+	bh=UU3IMwLVIuqUs9WFksfEbffdOpEdabEos7vPHn21iN0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=P9fg20dxYzTAQrZWjBEGg4ITLyg35mmSWAaYD8ybLqMEAeW+38r14vUf3mA3/e0HAnemHQMElizTj1yF3wDjtDeekbJ1AOEu2j6UkvzhZZH7XWN2nVdyVMzBq3KVfvEA4g1ETUgnFhOcmodbkFu19AX2RgYvT6G/7a7nEoquXBj7VMPq5IRCU7IV3CLsz/9GsCDpsNcWK6Lb+rfieuB7j76/tAXwmW7fTuQheiM0fKZ9gIxmkuWunq4WSbk2nA1sPZPZQUiqOXXSs2BCMPc06xZduVXhSx0CX9KKFwYNNEXQ7JPXxXRIpc9y6NCx9tnFGOaMPCSrb4WdTLlCtodmKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=dhVtcWNJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::336; helo=mail-ot1-x336.google.com; envelope-from=dlechner@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=dhVtcWNJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=2607:f8b0:4864:20::336; helo=mail-ot1-x336.google.com; envelope-from=dlechner@baylibre.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d0T1t6lrhz2xnx
-	for <linux-aspeed@lists.ozlabs.org>; Mon,  3 Nov 2025 21:52:34 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 3 Nov
- 2025 18:52:17 +0800
-Received: from twmbx02.aspeed.com (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 3 Nov 2025 18:52:17 +0800
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: <jic23@kernel.org>, <dlechner@baylibre.com>, <nuno.sa@analog.com>,
-	<andy@kernel.org>, <robh@kernel.org>, <krzk+dt@kernel.org>,
-	<conor+dt@kernel.org>, <joel@jms.id.au>, <andrew@codeconstruct.com.au>,
-	<billy_tsai@aspeedtech.com>, <linux-iio@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v1 2/2] iio: adc: aspeed: Add AST2700 ADC support
-Date: Mon, 3 Nov 2025 18:52:17 +0800
-Message-ID: <20251103105217.1764355-2-billy_tsai@aspeedtech.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20251103105217.1764355-1-billy_tsai@aspeedtech.com>
-References: <20251103105217.1764355-1-billy_tsai@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d0ZzY3nxDz2xS9
+	for <linux-aspeed@lists.ozlabs.org>; Tue,  4 Nov 2025 02:20:54 +1100 (AEDT)
+Received: by mail-ot1-x336.google.com with SMTP id 46e09a7af769-7c53400935fso2851916a34.1
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 03 Nov 2025 07:20:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1762183251; x=1762788051; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=UU3IMwLVIuqUs9WFksfEbffdOpEdabEos7vPHn21iN0=;
+        b=dhVtcWNJP6PlPPfUbwPWCUVnywXkZdcKWVqNAAM2IP4dTcDy8daJZULpC5Sv58qzo8
+         V5kbSld4qyJgYgBCehSlZqJS6qg3Q3epY8szHtaTisTIComIsJ6AsKFTJbZhiIEdvDWV
+         tFj0nsTmxBJYX+4bvnl6SpcA8WW6d0kmIlcHzMdGt5sFSUaYNqkofjWNaefyAzZvq9RE
+         MyD/6Gbfn2enr+g7FpcS9I1na6N68EH0oNq2EIWaXrQjOcA3HnzRr1Pmm6j+tADyVPOO
+         lUBuIyvWQDx+kcRVjEEYRkUH9fYEkTSK2DCcGr7q1KBC9lgy8b3B6gl+b5bd0ymrasMn
+         Ac5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762183251; x=1762788051;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=UU3IMwLVIuqUs9WFksfEbffdOpEdabEos7vPHn21iN0=;
+        b=XcxjQUO0rLJ6G/1XK7l6WEdQrSrNuBwRMicgHAvmIxnNBRAxXVFDKS8YU8T8JdExee
+         KzJ+VFg3t79gk97If205e0ZmVXG6x0rQEe6vUW9SkP7/4wkx9obyyeIQpvUR/TDJk4u8
+         rb23mfXqL09WBI1vJ+34eJUR0Lr7SZeyASoJoByOax+BImmsHEm8Ik8X+RQ8wzHYrZeS
+         hutaOapQlXo55RNdoO37JVWXT6TMsgEHllZFzG+pIw0fvJSics8BmLMgVnrnuMS5EgID
+         MXoYpBcPIYnV2kg0P4X01XE0/iQlTpYMrwSZrR2whD/Yab8oOF9gIm+oMKlDLCOrHRQv
+         2q5w==
+X-Forwarded-Encrypted: i=1; AJvYcCVYzWiqFtXr+Ge4vjsLEEdKH6ab261iM4XUbOKfMud+THhXTHnYOrt7/rXEWzprA4DbLZdOq9vLlcXqUEc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwzmQJuL/ESWg+z54H9+wr3J4ZL10f/OWrMHcBpGDgHEaBQhJQo
+	YUTiTpvnabhgmwZ4b6QKt2bi/WtJ+PZyyRyf0tWm8KypULAxEWc0U0eTK2E6rAW5y/Y=
+X-Gm-Gg: ASbGncs/sx6Xsatu2WGboqygkJ5ppi0+Uh32UgM2ViXBODPob7I0SULzGK43gJPBMYu
+	24WRKy6/qjnn/uXH4DopRilESp/2N4xIVH9XvBv5eDNzVTO1sPUdnhdAcg1nGYE0azLEk+a0nXp
+	OLmKGbWphzo2Iz1KNpUT/85GeziYA37Ox0VRaqyMKcWxlB/F6QRMb7bPlC6ikCKZ3XJgfgbu62Z
+	NcJcSACBvxV7hHgnxhBVY3+tduNGXZIiujn2HLfgeQSLfheUO1VYlNYWFN2WofsGvAAljMIXGzV
+	rbxQmYcGAFS8qEPMDZakzvhw0cJvKzLyGX7EWQGdwYGqvYDIJbFCxxQx0qyDvSwP9uaQH1KGWuv
+	xtOIRXgHs2ggy4tZo7Ws0iBI3px9TwNnmGwM8ttI++x72PETVeIpyUvBWfYp/qMBe24KGwI3/82
+	pbGWiedlW3wEICvcSgN/T+SC8ZIafBZVUPScm11hLNyFjTUpefeq+te0y38csU
+X-Google-Smtp-Source: AGHT+IEI7oaPwbMLZyrFhJm3x/2HChGggXyz1ZeRNUlqpKNsCrcEcUIruRtbDhBeLo27AIpbulOZpA==
+X-Received: by 2002:a05:6830:67e3:b0:7c5:3bbb:9ba6 with SMTP id 46e09a7af769-7c68c82fecamr8720707a34.4.1762183250808;
+        Mon, 03 Nov 2025 07:20:50 -0800 (PST)
+Received: from ?IPV6:2600:8803:e7e4:500:37c9:fd3e:34ae:9253? ([2600:8803:e7e4:500:37c9:fd3e:34ae:9253])
+        by smtp.gmail.com with ESMTPSA id 46e09a7af769-7c6c2448c9bsm208886a34.3.2025.11.03.07.20.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 03 Nov 2025 07:20:49 -0800 (PST)
+Message-ID: <3d2fde56-d82e-40c2-9d0b-2888160a642b@baylibre.com>
+Date: Mon, 3 Nov 2025 09:20:48 -0600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,77 +87,30 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 2/2] iio: adc: aspeed: Add AST2700 ADC support
+To: Billy Tsai <billy_tsai@aspeedtech.com>, jic23@kernel.org,
+ nuno.sa@analog.com, andy@kernel.org, robh@kernel.org, krzk+dt@kernel.org,
+ conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+ linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20251103105217.1764355-1-billy_tsai@aspeedtech.com>
+ <20251103105217.1764355-2-billy_tsai@aspeedtech.com>
+Content-Language: en-US
+From: David Lechner <dlechner@baylibre.com>
+In-Reply-To: <20251103105217.1764355-2-billy_tsai@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-This patch adds support for the ADCs found on the Aspeed AST2700 SoC,
-which includes two instances: "ast2700-adc0" and "ast2700-adc1". While
-they are functionally similar to those on AST2600, the OTP trimming data
-is located at the same offset (0x820), but uses different bitfields.
-
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/iio/adc/aspeed_adc.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
-
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index 8ab29948214a..9df6e7f68f19 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -646,6 +646,16 @@ static const struct aspeed_adc_trim_locate ast2600_adc1_trim = {
- 	.field = GENMASK(7, 4),
- };
- 
-+static const struct aspeed_adc_trim_locate ast2700_adc0_trim = {
-+	.offset = 0x820,
-+	.field = GENMASK(3, 0),
-+};
-+
-+static const struct aspeed_adc_trim_locate ast2700_adc1_trim = {
-+	.offset = 0x820,
-+	.field = GENMASK(7, 4),
-+};
-+
- static const struct aspeed_adc_model_data ast2400_model_data = {
- 	.model_name = "ast2400-adc",
- 	.vref_fixed_mv = 2500,
-@@ -690,11 +700,35 @@ static const struct aspeed_adc_model_data ast2600_adc1_model_data = {
- 	.trim_locate = &ast2600_adc1_trim,
- };
- 
-+static const struct aspeed_adc_model_data ast2700_adc0_model_data = {
-+	.model_name = "ast2700-adc0",
-+	.min_sampling_rate = 10000,
-+	.max_sampling_rate = 500000,
-+	.wait_init_sequence = true,
-+	.bat_sense_sup = true,
-+	.scaler_bit_width = 16,
-+	.num_channels = 8,
-+	.trim_locate = &ast2700_adc0_trim,
-+};
-+
-+static const struct aspeed_adc_model_data ast2700_adc1_model_data = {
-+	.model_name = "ast2700-adc1",
-+	.min_sampling_rate = 10000,
-+	.max_sampling_rate = 500000,
-+	.wait_init_sequence = true,
-+	.bat_sense_sup = true,
-+	.scaler_bit_width = 16,
-+	.num_channels = 8,
-+	.trim_locate = &ast2700_adc1_trim,
-+};
-+
- static const struct of_device_id aspeed_adc_matches[] = {
- 	{ .compatible = "aspeed,ast2400-adc", .data = &ast2400_model_data },
- 	{ .compatible = "aspeed,ast2500-adc", .data = &ast2500_model_data },
- 	{ .compatible = "aspeed,ast2600-adc0", .data = &ast2600_adc0_model_data },
- 	{ .compatible = "aspeed,ast2600-adc1", .data = &ast2600_adc1_model_data },
-+	{ .compatible = "aspeed,ast2700-adc0", .data = &ast2700_adc0_model_data },
-+	{ .compatible = "aspeed,ast2700-adc1", .data = &ast2700_adc1_model_data },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, aspeed_adc_matches);
--- 
-2.25.1
+On 11/3/25 4:52 AM, Billy Tsai wrote:
+> This patch adds support for the ADCs found on the Aspeed AST2700 SoC,
+> which includes two instances: "ast2700-adc0" and "ast2700-adc1". While
+> they are functionally similar to those on AST2600, the OTP trimming data
+> is located at the same offset (0x820), but uses different bitfields.
+> 
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+Reviewed-by: David Lechner <dlechner@baylibre.com>
 
 
