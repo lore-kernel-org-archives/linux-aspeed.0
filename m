@@ -1,72 +1,60 @@
-Return-Path: <linux-aspeed+bounces-2744-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2745-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DA4BCCFA06
-	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Nov 2025 13:51:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83D93CCFA04
+	for <linux-aspeed@archiver.kernel.org>; Tue,  4 Nov 2025 17:23:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d18xh5kpSz3bf3;
-	Wed,  5 Nov 2025 00:51:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762264280;
-	cv=none; b=Vqse8xrmlCDPBjcFTA0fbMwO8T5ESvGHKE0xLTnBv5Kn6ZviaQNLlu98ohDCPLf2bL1/mRAJZM0bFvmcwU6850i7p972HqPvu76a659SnHs/fJ6A5lrzsvBQpa89c3AwsgVPAPLyAALPSZ6IdFM3v5qqAbVGT54l2sEf3q841kdtTvnBiY7ypS4sel94GgcClbgy4ojsMbGN8MELkMBjlMY1hhwrcFINRbrRipZJTcblbDVewyA8klX/zX9YaGtgdfKOVn64n/T3wuCSsRK1sqvdSLoKTycCy5wd+PbUQHJIFqUIff4dRo78hbw6FV711cdWt3o1MwQYX1UFVXQWHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1FfJ0cZWz3bf3;
+	Wed,  5 Nov 2025 04:23:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762277000;
+	cv=none; b=FdQCfYENS0+BnnUUoDf/wzOc654nJ4s9j5EXtEUC8Hfcosne15WWDjndYDEqZaPGV5UWbKqe4KbEpUTOSwJ5vVpE1Kc9E8yZ0uS8GtWc/AvbLHNj0MFBYfsPPUji8rFYyXJ1U8tu+NT3SWqWySh0x87pwCMNQMxqJSvDKeEsBFlq/cHhJdq1SBcbt0S2+1ix88UQmr3jVMto/glsq0bYZo8sQL/ZbVW7xgwwrWZJaN+Eqgs+GAo0BqfOPPIuwQSfcWtjtxiXgm/lO5gs2yFaTsrxnGz4e6Ms3+J91Uxvj30vMzPAtn78DWRP2wg4NlE73BnnwlgNc158oIBulMJquQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762264280; c=relaxed/relaxed;
-	bh=1RoProTG9PzhyYdQtnEke6X8DcnYXk+jaxvxgzqlOOM=;
+	t=1762277000; c=relaxed/relaxed;
+	bh=H1XSY0vT6OMbSFwYM3WYl0nmIcd2JaGA5/JSzPeHm6U=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kAIdI8/XeEMqrpEqKwDzTq9IKFEUDGgZRZEVtcewEvNqQ2LLuGJWXR6ZHiTW4jfqWcOTsJvzeq2i8qoKBlYNRDsdp4+jAhhGqRufkcWtz5v4OKGTTVO7hNs/oSTlSw+VuydrKqnUea6C5Ul8eos1vaW0Onq7dCleaTZ2p69TdrZtu3k3ohJi1pXh4AJt9rTZq16jSopuapZghVCiDp2/qj3duCZgnou2b3C4K0QeoO9fUHA02rT5o1MMLdBTDJ6K8TmtS8ISKrX+C3rkth3bSdHrycRYd6KOvQ+NaWSmOX2wFrPW/htZsoviaZHEghJ4/rzaNjclvqYftXFkBYlhOg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=0fVMoEM2; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=kh2qev8e2PJ8Zd8ZoE32puwQ/1thLkJ1nrB4n+8t0oFHMZCVd0PstA18ChXKC+Yp0vF3e72mE9JW331w6UajCiWsa3vgNihMN1GiZ6KCSv6K8DvViOO3EqnMRtC6nvYriy2CYiBDHc13VaTnASSkV3JKOQLdjPKZfgp/vLwRPkOX8mScTXlgu6ZChaEh1wSmos71f1Gpi+GQUsIyBFT65foV5goAhi74dxQYQLQSM8vU7qlUzwFaKevUQQagSFj4j+/gGnb3eo8QjEWZx8wMZVVe0OkW5rweVJTzIbDIiXhOzGguO2b6enaPA9uodpPU5TUGOQQZp6AZnGGQcyl4Jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HaetDQwr; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=0fVMoEM2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HaetDQwr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d18xc5GHVz304H
-	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Nov 2025 00:51:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=1RoProTG9PzhyYdQtnEke6X8DcnYXk+jaxvxgzqlOOM=; b=0fVMoEM2YIUsV39yO4/4GFCh1C
-	W4SVgioyHTwO+McaUh/604S2HDExj5aRUIq2NI6OU8B1J79LrMxGrh49mMr5DR6Nb+qT7RaGc6gLl
-	iuzuYrhb0OSwO6VXHp76u6bRwdoKoiAnDZe9JjVQ/aok5ME/MUIPVXT/AZvq/+R8su7I=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vGHQy-00CtNF-Ri; Tue, 04 Nov 2025 14:50:52 +0100
-Date: Tue, 4 Nov 2025 14:50:52 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Po-Yu Chuang <ratbert@faraday-tech.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"taoren@meta.com" <taoren@meta.com>
-Subject: Re: =?utf-8?B?5Zue6KaGOiBbUEFUQ0ggbmV0LW5l?=
- =?utf-8?Q?xt_v3_1=2F4=5D_dt-bindings?= =?utf-8?Q?=3A?= net: ftgmac100: Add
- delay properties for AST2600
-Message-ID: <eaff1dbb-b836-42b1-a9f0-715698bd0a6f@lunn.ch>
-References: <20251103-rgmii_delay_2600-v3-0-e2af2656f7d7@aspeedtech.com>
- <20251103-rgmii_delay_2600-v3-1-e2af2656f7d7@aspeedtech.com>
- <cf5a3144-7b5e-479b-bfd8-3447f5f567ab@lunn.ch>
- <SEYPR06MB5134396D2CD9BD7EE47137F09DC4A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1FfH2C0dz2yvv
+	for <linux-aspeed@lists.ozlabs.org>; Wed,  5 Nov 2025 04:23:19 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8FB52601FE;
+	Tue,  4 Nov 2025 17:23:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E99B8C4CEF7;
+	Tue,  4 Nov 2025 17:23:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762276996;
+	bh=E5LlO3nuIGMGzEZzuymHEqptWv1aueAZNyEcApu+pa0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=HaetDQwrl/7Fkot0PU9d+nSTeVzFdfuXVDZmdtpJpJVeBaaA0klVmA1eENrt1+e+5
+	 TvhgjKUbjrZtovhEDg0p/Am7ivqIXvS57RaliFTnO9C2HOAGLORQ+0s4yJ1549qzi5
+	 gnwahsmhyujkKSeMLxE7Jq6+mB8ZvHH3Eqy2gdJKkij38H6iV88jCabEwF+N90TP+d
+	 nkBwS/85Hd9v0+6QjTt5T3ckOMj14HwnAD/nWS9HVhCHfN326C9iagieA4W0sQaU1i
+	 OHNav7/x0N7m+JDB2QKDKumsi6pntWjK6Fai4t3GiS1oW6jXuTiAMboyPolY1CBmjo
+	 4EbUobAL5zV1w==
+Date: Tue, 4 Nov 2025 17:23:11 +0000
+From: Conor Dooley <conor@kernel.org>
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: linux@roeck-us.net, robh@kernel.org, krzk+dt@kernel.org,
+	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+	linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 1/2] dt-bindings: hwmon: Add AST2700 compatible
+Message-ID: <20251104-grumbling-document-6483add9415e@spud>
+References: <20251104055112.2679087-1-billy_tsai@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,52 +68,61 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="EAVUn09jG7fwpxUy"
+Content-Disposition: inline
+In-Reply-To: <20251104055112.2679087-1-billy_tsai@aspeedtech.com>
+
+
+--EAVUn09jG7fwpxUy
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <SEYPR06MB5134396D2CD9BD7EE47137F09DC4A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 04, 2025 at 05:22:59AM +0000, Jacky Chou wrote:
-> > > diff --git
-> > > a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-> > > b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-> > > index d14410018bcf..de646e7e3bca 100644
-> > > --- a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-> > > +++ b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
-> > > @@ -19,6 +19,12 @@ properties:
-> > >                - aspeed,ast2500-mac
-> > >                - aspeed,ast2600-mac
-> > 
-> > I don't know if it is possible, but it would be good to mark aspeed,ast2600-mac
-> > as deprecated.
-> > 
-> > I also think some comments would be good, explaining how
-> > aspeed,ast2600-mac01 and aspeed,ast2600-mac23 differ from
-> > aspeed,ast2600-mac, and why you should use them.
-> > 
-> 
-> Thanks for the suggestion.
-> We keep "aspeed,ast2600-mac" in the compatible list mainly for backward compatibility.
-> There are already many existing device trees and systems using this string.
-> Removing or deprecating it right now might break those setups.
+On Tue, Nov 04, 2025 at 01:51:11PM +0800, Billy Tsai wrote:
+> Adds support for the AST2700 PWM/Tach controller by extending the
+> compatible string enumeration in the device tree binding.
+>=20
+> The AST2700 PWM/Tach hardware is compatible with the existing binding
+> schema and requires no additional properties or modifications beyond
+> the new compatible string.
 
-I'm not saying remove it. I'm just saying mark it as deprecated. For
-properties you add an extra attribute, e.g.
+With this commit message, I expected there to be a fallback compatible.
+Why isn't one used?
 
-https://elixir.bootlin.com/linux/v6.17.7/source/Documentation/devicetree/bindings/net/snps,dwmac.yaml#L433
+>=20
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+>  Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.y=
+aml b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> index 9e5ed901ae54..d6ff4182085e 100644
+> --- a/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> +++ b/Documentation/devicetree/bindings/hwmon/aspeed,g6-pwm-tach.yaml
+> @@ -20,6 +20,7 @@ properties:
+>    compatible:
+>      enum:
+>        - aspeed,ast2600-pwm-tach
+> +      - aspeed,ast2700-pwm-tach
+> =20
+>    reg:
+>      maxItems: 1
+> --=20
+> 2.25.1
+>=20
 
-but for a compatible, i've no idea if YAML supports it. However,
-snps,dwmac.yam actually places st,spear600-gmac at the end of the list
-after a comment. Maybe that is the best way to do this, and in the
-comment you can explain what it gets wrong and why you should not use
-it.
+--EAVUn09jG7fwpxUy
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> In the future, if someone submits a new DTS for an AST2600-based platform,
-> I think they should add the new compatible string and properly describe the TX/RX delay and 
-> phy-mode properties in their DTS.
+-----BEGIN PGP SIGNATURE-----
 
-Yes, i agree. It would be good if you can keep on out of for such
-patches, and make review comments. I assume you will also update the
-vendor documentation with this recommendation.
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaQo2fwAKCRB4tDGHoIJi
+0sYTAQDbftqnYaV1ZmhlGS+OCOMPY79jqcr4MOlskykoteVUhgD6AqEmQ/T3y0h7
+Z5h+xKS/iDZ9j7HhE/bIphciTJDIMgQ=
+=uT06
+-----END PGP SIGNATURE-----
 
-	Andrew
+--EAVUn09jG7fwpxUy--
 
