@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-2769-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2770-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F4DCCCFA05
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 620FACCFA05
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:36:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NW21QY6z2xS2;
-	Fri,  7 Nov 2025 00:35:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NWD5cpmz2xdg;
+	Fri,  7 Nov 2025 00:36:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436158;
-	cv=none; b=MRI5BODWAxcIPIBDJtyuwmCgReOowOpdhBT3IfgP1IXLSDvjxskzqu7sS9qK5nI+kbChWNMQf3ZrUO/9og0HSFGHpj+guvEM4j9yMIDL2fXNsw5tD9DhHvZZ7jDcMQnT7oVOW0lXkruP+tbgsf/7gb7ChKwLo8gPKX3P/ml4RraTxdOE1YdCwVomQBdTeJ7FhCWbCDFxGCACi+V/qRlwGCNhJmvQ7QeoJaW9K8mglpvHS6iRY8vp11jiYdmLYzUEXcvVkK5urjmQHXEHKp4CFRQzGhfjW3e5btI5pztFcwyMznesFSfwpEn6Us5MAD/5Jbu2MOaCKpDDg59feZO9lg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436168;
+	cv=none; b=dZhBLZjJ03BHa/6X7Od77wEwL2ePRQ69ZzdrhkciWPgPBM2CDxezRJ5+0bL1Z+dCCsgqsv0K+ZzBNdYEP1w5h0ctkifnBRwiC3ayVKPUHmLEyHz8qB4p3QKmxYctEJEP34IRv9vIz9SKJ6Jeh1va31hS4J7Kn9UBO93ZNnpAnvSv7cT+DoCiE5vVFpMqvlwXETvyLLC2d1sFo3bZof6wGZikWa2IMUs/Em7tk/W++ZuRfEuEUgHvNd40EUIpybKzV4rD0u3kUaKPfk8ryLiFz/Q30DRc7VxP260DuFXAbLU7H/qD4DwyiWUs8DaEOAjVlAQVPSwSbfWQGMimmjM7yw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762436158; c=relaxed/relaxed;
-	bh=Ik1VHyohc+He3Wp4NLXOfpxSmT91UDxeIRiUUnRBdnY=;
+	t=1762436168; c=relaxed/relaxed;
+	bh=ZYm2HRoQJ1ZbudzkEnqOwlEF9iefZ8EVejU6azYJTZw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Vs+H+ch4irGsU2Lf5bxR7Ek3AZ1I9K48qBH5yB+ArFTa2AXo6ionkIl6tGJPSL2c/uxSPuBDkg0GYllV+kgXz1fQeuVoEehBNm2SoZUQWhO1RZeJLYH2Yvcy6C4x06l51obXZK8IQngDDGAtCkWguMFT8ZCjKJfwnJ5zX+E9ATWqUv+hGfHx5yLgfMTzmgvmsA5oHXE9QXSiscvWv+Fk6UHAtUkqeTH6sZ6QfTt4n2d4T5C8j+T8rH//U5JkaFoRCTL+OxRfsWmge8hrErowPhhzivdTkseXtb+xcz3dHHkrapVwt9x+ThlE2nONDgni16yxZq4fRjWmcOla4jgnXw==
+	 MIME-Version; b=eeUch6wFeN2gnJZAfwqUP5+b7Wb7S8SzstuPZo/3AZXDn+UzV4qBPX0HaPvJdTXgUaLlkjwTeHS4e/JnJFZssLlTVVwXuoo9n973HNKI7kc7o1HwpZEdqxbxvE0dppY1mbKO62uq8zd3r/tcr5CZedMHf6iA0nCR/1YfAjNvKppm2++dli/KifwaAwtXUNLOZAxdf4NSrPGYXdsAIwMV8YujSHojex+uWy5xd2vlijDojKHuGH1UQihVZLkmqyiMlK72/vkFrYhtUvUPsSd/mIxAXwF/wFSu523tDfYriccxbJHSJH2LHyqZ8Aq4KWfzODUf5RDyLhuuL+N9jwct/Q==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NW14cx1z2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:35:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NWD037Wz2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:36:07 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 823ED6022E;
+	by tor.source.kernel.org (Postfix) with ESMTP id 0A69860226;
+	Thu,  6 Nov 2025 13:36:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 97896C4CEFB;
 	Thu,  6 Nov 2025 13:35:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55176C116C6;
-	Thu,  6 Nov 2025 13:35:45 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
@@ -87,10 +87,11 @@ Cc: linux-clk@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linux-mtd@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 08/26] soc: renesas: rz-sysc: #undef field_get() before local definition
-Date: Thu,  6 Nov 2025 14:33:56 +0100
-Message-ID: <7feec8e9cf823dd365d6e0f21004f943964e52a0.1762435376.git.geert+renesas@glider.be>
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH v6 09/26] ALSA: usb-audio: #undef field_{get,prep}() before local definition
+Date: Thu,  6 Nov 2025 14:33:57 +0100
+Message-ID: <57114f0f4fcd3fcf8bbbcb5eaa2c0b4d22e9075c.1762435376.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
@@ -109,35 +110,38 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Prepare for the advent of a globally available common field_get() macro
-by undefining the symbol before defining a local variant.  This prevents
-redefinition warnings from the C preprocessor when introducing the common
-macro later.
+Prepare for the advent of globally available common field_get() and
+field_prep() macros by undefining the symbols before defining local
+variants.  This prevents redefinition warnings from the C preprocessor
+when introducing the common macros later.
 
 Suggested-by: Yury Norov <yury.norov@gmail.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Takashi Iwai <tiwai@suse.de>
 ---
 v6:
-  - No changes,
+  - Add Acked-by,
 
 v5:
   - New.
 ---
- drivers/soc/renesas/rz-sysc.c | 1 +
- 1 file changed, 1 insertion(+)
+ sound/usb/mixer_quirks.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/soc/renesas/rz-sysc.c b/drivers/soc/renesas/rz-sysc.c
-index 9f79e299e6f41641..b9880085d3634065 100644
---- a/drivers/soc/renesas/rz-sysc.c
-+++ b/drivers/soc/renesas/rz-sysc.c
-@@ -16,6 +16,7 @@
+diff --git a/sound/usb/mixer_quirks.c b/sound/usb/mixer_quirks.c
+index 828af3095b86ee0a..713a8498b975e1ac 100644
+--- a/sound/usb/mixer_quirks.c
++++ b/sound/usb/mixer_quirks.c
+@@ -3312,7 +3312,9 @@ static int snd_bbfpro_controls_create(struct usb_mixer_interface *mixer)
+ #define RME_DIGIFACE_INVERT BIT(31)
  
- #include "rz-sysc.h"
- 
+ /* Nonconst helpers */
 +#undef field_get
  #define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
++#undef field_prep
+ #define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
  
- /**
+ static int snd_rme_digiface_write_reg(struct snd_kcontrol *kcontrol, int item, u16 mask, u16 val)
 -- 
 2.43.0
 
