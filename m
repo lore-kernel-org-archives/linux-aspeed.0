@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-2765-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2766-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86B4DCCFA13
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:35:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01E3ECCFA05
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:35:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NVF6vSVz2xS2;
-	Fri,  7 Nov 2025 00:35:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436117;
-	cv=none; b=KJE0YwjUcD6lRzaAU2Y73GeXbmDOpen4rSMm5SAHM6rvdgl1LJmAF1jsUoq7Ph5WEL48RsIhPA2oxF4U9LAprSTlBSpH9XymBpX+DRd+kNPUSswjPRtD+BQeo3nV/vJoFIE5KqHVxkywiYoNGsgNPVUsxK+KnjzXHSNkl3iRcextqd1uksWqTvCJuC35oFW5ZtFfLopUBUL1PnGk2lfhdbA+BEvTfe0AWBpil1JjxaYkFDjeghYnXQV7rRIP5WyBbfYm2h4qmDcn0ZQA/DQWzD0+8tgrEg3Fuhj855rDJkgYPtq0oiScZ1obOobsQGCuWlLekKoaj65bkjhqBgwC6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NVQ3ylDz2xdg;
+	Fri,  7 Nov 2025 00:35:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436126;
+	cv=none; b=VZuzhqbyTu8oTQUyrXK9oSFNdPQbxkjrvNkXCy5T8BqjRCHBEGTbT+UpDrB+mvnR2ufWtOUjf8yNbWPsSU2ak5OxtW47L4GP4X9Y/5oIrMOM09SOT+K1IB22rsigNKCjWbJg3rdniFKD3X2GaG8r4djBW/iHOT1M7IAIG5b7ym5l7bj54+RWxOZlPhgG4EIK5hrvlkiYGa3QMyi7caaZ50xv0I6CaJH4sN9I0R50S6QA9D7sTmOBLT6o242N6ZgaEFb2fU3NLx3k7NV1nvWgmij8NToTO3Eo5u1EC+OzzVI325Jkg9dP6Hz+xJsfGP9/Tj/CoJDBI/PW7R94DYuCTg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762436117; c=relaxed/relaxed;
-	bh=S2JVYEH2hrHtKFFp392B2aTqfSdo/GRJZDWSP/hL4+w=;
+	t=1762436126; c=relaxed/relaxed;
+	bh=waclbF8g9MjmrwgOe4gJI4d6MhD4kQUa1DkP49e3D24=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gL8gYxOEYVgaELtkUcLJtN/LfKTuuA/1EEBiIRbgvhXFBDSjpTfuBSTyRHeXYSgxNQobuXi8a2/5kgyYdV9xLxqaSsgGKC6dDoodKaxWoFxGIi6+gfyhfOkPsooswB8ItU0B0LUUH0uUw1Jyf343bHZvQaQP7N4IxPSIupZVVKK56raHxwVwIBWMb56GsDJtq5uY0o785fM5wik6x7I22bFaPVqirJcy8Tfhhv+fzZhvbLyGAGeC7LBUA/yZfFL4kBr/J8E8ZwmzKYjnK+3/6ZWtY2BK4WN12p0brdepkCj88QuIZfY3Ftnyf2uudnnzjYgA332Hv/gsEe9O5zZbTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=QH++/YSX5VkdOpf/nH9vHsTNL31lUWZ4DsK4Zrbf4V/YOK0VuJCRYUw2Vl4KygQHjG/AaMZi74TTcwGwZTal1RvmjnDz46wWOotZACvT9zkR9ZNe2LRk3sBOUOMdojSNYz6rBJ7ZrEBq/tSq8OJeGYJXdiWSvI1dga33ULNvUwMVGtoF7Ddke0VmIbLSPz3lmJTvjyEQUmlrorpEIZ1VCpgqiC0aBWfGN60KVr6ngOXX6F/FTqhwDf6ro6+8cVXiLt1E1JI2F/3YL+k0bCFk92MyZ+UacAWKKa+PzeldnMyRkexxy7Yhk1qaTZk4VBkMYU+GpTEmMuembh9PL8YQkQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NVF0HlPz2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:35:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NVP74J7z2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:35:25 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4F486601DA;
+	by sea.source.kernel.org (Postfix) with ESMTP id 5D0954332C;
+	Thu,  6 Nov 2025 13:35:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 62A4DC116D0;
 	Thu,  6 Nov 2025 13:35:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBD19C4CEFB;
-	Thu,  6 Nov 2025 13:35:03 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
@@ -87,11 +87,10 @@ Cc: linux-clk@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linux-mtd@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH v6 04/26] gpio: aspeed: #undef field_{get,prep}() before local definition
-Date: Thu,  6 Nov 2025 14:33:52 +0100
-Message-ID: <d1442e895f689ed1872c3cccd04f01f2aa38c37b.1762435376.git.geert+renesas@glider.be>
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v6 05/26] iio: dac: ad3530r: #undef field_prep() before local definition
+Date: Thu,  6 Nov 2025 14:33:53 +0100
+Message-ID: <a2466d9201cb8c25504e25ac531a69ef8bd6e958.1762435376.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
@@ -110,38 +109,35 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Prepare for the advent of globally available common field_get() and
-field_prep() macros by undefining the symbols before defining local
-variants.  This prevents redefinition warnings from the C preprocessor
-when introducing the common macros later.
+Prepare for the advent of a globally available common field_prep() macro
+by undefining the symbol before defining a local variant.  This prevents
+redefinition warnings from the C preprocessor when introducing the common
+macro later.
 
 Suggested-by: Yury Norov <yury.norov@gmail.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 ---
 v6:
-  - Add Acked-by,
+  - No changes,
 
 v5:
   - New.
 ---
- drivers/gpio/gpio-aspeed.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/iio/dac/ad3530r.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
-index 7953a9c4e36d7550..ef4ccaf74a5b379e 100644
---- a/drivers/gpio/gpio-aspeed.c
-+++ b/drivers/gpio/gpio-aspeed.c
-@@ -32,7 +32,9 @@
- #include "gpiolib.h"
+diff --git a/drivers/iio/dac/ad3530r.c b/drivers/iio/dac/ad3530r.c
+index 6134613777b8e1d4..5684d11137f29948 100644
+--- a/drivers/iio/dac/ad3530r.c
++++ b/drivers/iio/dac/ad3530r.c
+@@ -54,6 +54,7 @@
+ #define AD3531R_MAX_CHANNELS			4
  
- /* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-+#undef field_get
- #define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
+ /* Non-constant mask variant of FIELD_PREP() */
 +#undef field_prep
  #define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
  
- #define GPIO_G7_IRQ_STS_BASE 0x100
+ enum ad3530r_mode {
 -- 
 2.43.0
 
