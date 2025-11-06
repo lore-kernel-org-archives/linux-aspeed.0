@@ -1,54 +1,54 @@
-Return-Path: <linux-aspeed+bounces-2803-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2804-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96E3ACCFA13
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 22:51:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A4EDCCFA1A
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 22:51:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2cqj2gZMz2xlQ;
-	Fri,  7 Nov 2025 09:51:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762448356;
-	cv=none; b=dV1stvMDj8QvOeoF9T2BGB752V6GhQftl8iyyxbcqHYSJLZRH7rYAEive7IN3KW01IGQMA+RXq5S+y1DuidDqjX7Dl5x2r2C4d+z3+hhsYmmQWHaI1Cz0GzNfUPiC1eMGqrSZ1xfwgCssy3E+WvUjTLd8dNS17u9lOjOJ157L8bE0BuvcbUBuS/WWtacPWtmcO3sBoq/MLq9Fo/38rjPboWH9Bbrlw/b80bK/fM6RbEfmxkdtkXWMZ2q470L9yWI1As3ICP7PXQd1GUpMWIlufYHTJTmKwY3T3tCDNbTjcRKQZ5zA15b/Tq1CkKemkg5kwCQnXijxVrDzprE1WMuDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2cqk315gz2xQ4;
+	Fri,  7 Nov 2025 09:51:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762399750;
+	cv=none; b=LkaF9NwHxk1k00tyyD37AYPX2zNrMpVfh/xvp+u0jYPFmKT2DvQ3NpnqtKShZico42UyG6hnXS/cGSGg4MTGJhi6571Y5O4d8OVoOHSpHi5NrBEzyp6BQ9K/KdlLetSAYyVV7RHaSrAtBKHPHGl31pQgD7P7XE52oEDtRVnlzkTvrT/DtFMq35l/VRNQgHZup1s3EjKHzXI5LZOG+/dYkGOsPHB0qtojaHbfpqsXkZ9ejU0GzBQu5xmFFH/T5dyaeEQ50oGdFMwXnWoelUdjOxrav6soQcx87xthzlN7E+pj4apgqpVJM3jwZrAkKJizNuylpNcffixRkJ3K7ND6Qg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762448356; c=relaxed/relaxed;
-	bh=rvdBRXuVZQm8G2d5SpNLaJ207ItUCAtXqb2fjgCGcoQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=Aufhh3GbbOCBVtDDIOsYTMvHBHs2vVvfqWFOb9YSEKeK5MFYNCKCTaJFNIYL4Nwu+YJ6f1FcmMFTwMybthUHPo8qku74pAhkpwmgAgSXKHcBQwMI3iEHMj/QWmohGC3ojhR3/kk1ELqI4ZMV3Wr9pS5nnPMY2i9oEG5K9pO1Szl+APWdp2JrDjOX/nKgMZvqLWdU7rH9ipG8ZpjTaNhz4hl5fevrfgS+Ta5aUaOGi4Yzv5Nmo/9IEasnQmqkcNJN/OmLCQ20Io51uyEJcPk7XE0WRdYaui8Du7e/gQTkAO1kh9GIjF8olyfhDz/xN41RRPsPVkJ0Fr/YZObbUtjT2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m/pF21hX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+kimi.zy.chen.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1762399750; c=relaxed/relaxed;
+	bh=ILy73sttCQKjQ905fT2jb4GJKnPBKwJV0b2jd47RFds=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=h7rsrIsESyOymFTSsldGMVq1i2Db73pkLx5917FjUMStaDDdRV2QWi2AuRcfoZ/T9t7Cc+gu/Eyy3YdFImwUCfq4asvfLne9go706RVv6unruzpd3mFagO5RyB3NPxwP/XQKAH/4mGZ+62h0xlO0w4wZKjzU6iQwS11L9lI10Ntmt9MPQfF1FGRkdlYlpzFImGiafy0GuG73fmvJrfgWJlBUMuzV4gV60VkzOH9q5sAjkZCFL36u/N2l48nSLkKCXUszykgfkXyP2kRJ82Uf0U79mviyfUkve7DqxYKNYu7CgtZf9F478JArurBUAXZ9x7WTS7diZhHP6wXc91wbfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dh/0XwzC; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+kimi.zy.chen.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m/pF21hX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dh/0XwzC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+kimi.zy.chen.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+kimi.zy.chen.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2T1b6lpgz30MY
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 03:59:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d272s3BSVz2xdg
+	for <linux-aspeed@lists.ozlabs.org>; Thu,  6 Nov 2025 14:29:09 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4D7BC6191B;
-	Thu,  6 Nov 2025 16:59:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id E7582C4CEF7;
-	Thu,  6 Nov 2025 16:59:12 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id B1DB160051;
+	Thu,  6 Nov 2025 03:29:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 55A9DC4CEF5;
+	Thu,  6 Nov 2025 03:29:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762448353;
-	bh=5zVxDLJDS4HgZvm0mUPMa4NXwy0uzOr1eXabb1arNpI=;
+	s=k20201202; t=1762399746;
+	bh=M0+1u9tcjtZAWeIYRMKAetnt82+eDnNc/pxxjVmeGJ8=;
 	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=m/pF21hXXdxtUQjEpD7ImAPfMVCmNCJ2tehEPz5uAKfbfWxrAQnoXZPNFBbgOe+A6
-	 VyU4Gr6tnm/VOVLcTJIsz8H2+IFUox0CEJF3M25ALvUjI6qwJ+M23+yi68cfIhFcg9
-	 Iokb74FJ1ZmUNMPv5qBKvvCpMQbccALrAlRtUB8dCFNz+k4yk+hyUm8ZIAk9m6qREs
-	 ZaA0G8RRFZCikQck59el+G/yILo0vRrVxw/9zzEnfmLM+1PGZ/ozslAgVoenTS1X64
-	 uobNY6wQ7vIDer2ViUmnr7nFcyCNtQzy4CjD60pQd3QwRygy+NKpxX7XZg6rDF+VCG
-	 Bh0ISPmF1I24g==
+	b=Dh/0XwzCtPCb0+qYPzg7D7KZCE9NvK2+eQz0QYIYPccpP3TpZCVGlWnTBz/kDIP+I
+	 VXA59TVihOTPfE3z700wZC8gLk/1MxZF95f8JJ5P+QDe1Wx57NEtOdFUjfv3LCvC7i
+	 0ZPVuir+WBdj6jXJk6+bVx7VtydAp/iOWprFEJDYs5PB3gGGhiLfoA6mqpcz/bcX44
+	 aT2N+7JDGvi0JyAOVQRqxHpWdUHz5Ivd3N6jaijEBGMbTHl05FbWtL+EfJ9ygVO/fB
+	 AXEP0egvtMYYyAwNoPBy0V/NsTw9aJP4WmY7U3MeG1SRw+yi+YFigpA9Vf8jKg+ePZ
+	 IR3dpCojZa3Vg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D679ACCFA13;
-	Thu,  6 Nov 2025 16:59:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E65ACCF9F8;
+	Thu,  6 Nov 2025 03:29:06 +0000 (UTC)
 From: Kimi Chen via B4 Relay <devnull+kimi.zy.chen.fii-foxconn.com@kernel.org>
-Date: Fri, 07 Nov 2025 00:58:39 +0800
-Subject: [PATCH v2] ARM: dts: aspeed: clemente: add gpio line name to io
+Date: Thu, 06 Nov 2025 11:28:57 +0800
+Subject: [PATCH] ARM: dts: aspeed: clemente: add gpio line name to io
  expander
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -65,11 +65,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251107-dts-add-gpio-to-io-expander-v2-1-585d48845546@fii-foxconn.com>
-X-B4-Tracking: v=1; b=H4sIAL7TDGkC/42NQQ6CMBBFr2Jm7RhaAaMr72FYlOkUZmGHtIRgC
- He3cgI3P3l/8d4GmZNwhsdpg8SLZNFYwJ5PQKOLA6P4wmAr2xhTtejnjM57HCZRnBXL8jq56Dm
- hq+lqiULTOgfFMCUOsh72V1d4lDxr+hyxxfze/7yLQYN9fWsbqu6We34GEQy6ksZ4IX1Dt+/7F
- 3ryuuvMAAAA
+Message-Id: <20251106-dts-add-gpio-to-io-expander-v1-1-b4765c092ebe@fii-foxconn.com>
+X-B4-Tracking: v=1; b=H4sIAPgVDGkC/x3MMQqAMAxA0atIZgO2WgevIg6hiTVLW1oRQby7x
+ eXDW/4DVYpKhaV7oMilVVNsMH0H/qAYBJWbwQ7WGTPMyGdFYsaQNeGZsFXuTJGlIE1+tN7vbia
+ CdshFdr3/+7q97weaqovrbQAAAA==
 X-Change-ID: 20251106-dts-add-gpio-to-io-expander-a4c32ccf56aa
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
@@ -78,11 +77,11 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
  george.kw.lee@fii-foxconn.com, Kimi Chen <kimi.zy.chen@fii-foxconn.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1762448350; l=1406;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1762399744; l=1184;
  i=kimi.zy.chen@fii-foxconn.com; s=20251105; h=from:subject:message-id;
- bh=q3Hjka33GAqrC98JfV2gHVz/SyvVpQc9OOGcXtH2A3s=;
- b=NrYZXH/6ZM0K5uh1E4Dpz9BEY/90j+EqlD+xpSNYCWBMgYSWb8gU3AUlhgA9eKPNOTBjBQ8xF
- hI/8nERMKFgDSBf2fbZg1SHASISyBZ14VLdDlX6u4mgFSYLGXe1XLtL
+ bh=AqtmtuP+jr8hv72i4Nsvgu+5GWsxpYdSguFgfPJMrrg=;
+ b=gWTwCX2zWlQlFmQ63qT3cV1Pcm+eKRpXeZgl3/1S5mJQoeNAfaz9EI1I+tUftf1a7t2j1hDTo
+ eWJkfoeyTbcD7nRo1MdQ4AHqWcYF0SRWvsqNNqGdct6+z+VvOuuCC5b
 X-Developer-Key: i=kimi.zy.chen@fii-foxconn.com; a=ed25519;
  pk=3zHetsW/3CYYIgQlYV9dqSS7aW7aZXLUaIvc+OKr3NM=
 X-Endpoint-Received: by B4 Relay for kimi.zy.chen@fii-foxconn.com/20251105
@@ -101,10 +100,6 @@ PCA9555 IO expander at line 10 to notify the CPLD to execute the hard
 shutdown host function.
 
 Signed-off-by: Kimi Chen <kimi.zy.chen@fii-foxconn.com>
----
-Changes in v2:
-- Add "hard_shutdown_host" GPIO line name to PCA9555 IO expander for Clemente platform.
-- Link to v1: https://lore.kernel.org/r/20251106-dts-add-gpio-to-io-expander-v1-1-b4765c092ebe@fii-foxconn.com
 ---
  arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
