@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-2780-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2781-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84680CCFA05
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:37:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C8FBCCFA13
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:38:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NYC6WWLz2xS2;
-	Fri,  7 Nov 2025 00:37:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436271;
-	cv=none; b=UZyvaXfoTLk6hsHQtgZ/gVw4KtTmabDMEibmLf2kW4xcuae5lzPLaFaKkqJrPvtX8g0gB8loILhnoQzKRs1PDw0WyVVmi4UF8vu3P0XYQJt0BLAYY+x0q4lAvA5zn8JBdbvNJ5Ye7mkBUvMmkYSRClfKWxdLLwEjjEkHliJSLYAeD8JLT1oKw5KMY1tA/ZmEX2WikFk54TuF5KqjvKnE8rewXMOfitSGwooQ43FGRuUHqeHF7Or5jxvx6P7ecpv9u4ok2z4lkfNLUG3XBHEXIRUI+djuB54wVS04uIhP6NVWu930xSNMb0WTWremaCy9G6jKWBQyfj/UFOopFFWqsQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NYR0Z1lz300F;
+	Fri,  7 Nov 2025 00:38:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436283;
+	cv=none; b=TG4D0PW+lHF+1wh9pfjwTG6Yv7gu3HjGdY2uK5yjlIAckiR7Wzv5F9UfBh9HqqNxEgM315tXF1sIRDb0DtfRUXm6Q/Hn++LhFTYU4NP8oPYtDEO+kJM4wfyycEWpHf6mnRQv3d1HTn/ZP+p+E+xCVFQQCHIv527CW036QTEI750ppwCXj2I71cvT3Rix65fcLROQECB9Tb6mizdbuVySOVAJhy2C4zhyXxjcACDWEeQhM/4w0qYT2qcUw9OsnptawtDfvrHnpHKfz8MCjn0py8daoGbRH2TTjiT902gq6TwPUjWpG+hllK99POADW5B08zxaKO9iuZV0uy9mBDbe8w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762436271; c=relaxed/relaxed;
-	bh=JW/QMxbqQX0DlbFiAucDxG2kyctSlsf3XPw5E0xtJQk=;
+	t=1762436283; c=relaxed/relaxed;
+	bh=3GO8pvTMZO5L+W5iPZt31aKovPwZR2jVKreJnzB/Ib0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oQrBYU8kr7vdi+52PeOpqs69SbUPScstgFgE2U7OEj1WLfb5xQXLiSBrZmgO9LK53J1G+BdrvZ0AT3ZiqMAIKkev6GC+pxIL/BrmAHwJrVq2+4bLjizuJsZNxu7Gw1+OIxwhUwZpDtiExSTg3Y+ZW+UUuY3NclRdMwStJVAm5R9/MfRSxqqdEGBiHQ1vO+swh8Md+sEID6GoZQ6qWzcfT25Vhez/0QPkEgT33+tACILPraWSTkv+7/sidsf+ceHPQN4/3Zec7jmhT+IqIw7bBbIZRuaUZJB7QSLrfMcXRY6EJopHhb/o5dQK6tr/lFgTZgevVRuREFt3KbZq9baT9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=XoZ4r63H3Tiww8p1Q97hPerCEtVJkD/Di/q7laJNq9p3EFpn46R0MrT5WWMkoVyUI0HxkkfpJapVvYPfa47IlV54NzQLAT+VVARne567vKgZGWRrQ3qNdPIFdIXpuJFVDwGjiwZV5eQ9gzBiG64YH/msQEqH5j2Ysa09Eigvkgveh5pGCjJ+JVLgSxlg95R2Ji/NpQhQkQQo65QKT2bS51KuFr6+b/DLT+grkK6adGvEutRbFvoKowBiGibPtu0HfkGtsphm2kFbJRYn65ktyNMxd6tFikOQcJSn7O0AIUZ8anMXuEq31ClK6rOgQ5ijlxeYlZoWAd52vfqxIJ/jLQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NYC1SZhz2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:37:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NYQ1rYjz2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:38:02 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 98B7644800;
+	by tor.source.kernel.org (Postfix) with ESMTP id 20BBD6021A;
+	Thu,  6 Nov 2025 13:38:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF761C16AAE;
 	Thu,  6 Nov 2025 13:37:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BA7CC116C6;
-	Thu,  6 Nov 2025 13:37:39 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
@@ -87,11 +87,10 @@ Cc: linux-clk@vger.kernel.org,
 	linux-sound@vger.kernel.org,
 	linux-mtd@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v6 19/26] iio: mlx90614: Convert to common field_{get,prep}() helpers
-Date: Thu,  6 Nov 2025 14:34:07 +0100
-Message-ID: <007e72b33aee33726e161acd9d92f801b7051838.1762435376.git.geert+renesas@glider.be>
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v6 20/26] pinctrl: ma35: Convert to common field_{get,prep}() helpers
+Date: Thu,  6 Nov 2025 14:34:08 +0100
+Message-ID: <2e7d92c7b668ae1f669177a47928548eceb9351b.1762435376.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
@@ -114,34 +113,25 @@ Drop the driver-specific field_get() and field_prep() macros, in favor
 of the globally available variants from <linux/bitfield.h>.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Acked-by: Crt Mori <cmo@melexis.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
 v6:
-  - No changes,
+  - Add Reviewed-by,
 
 v5:
   - Extracted from "bitfield: Add non-constant field_{prep,get}()
     helpers".
 ---
- drivers/iio/temperature/mlx90614.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/pinctrl/nuvoton/pinctrl-ma35.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/drivers/iio/temperature/mlx90614.c b/drivers/iio/temperature/mlx90614.c
-index de5615fdb396aa3c..1ad21b73e1b44cb0 100644
---- a/drivers/iio/temperature/mlx90614.c
-+++ b/drivers/iio/temperature/mlx90614.c
-@@ -22,6 +22,7 @@
-  * the "wakeup" GPIO is not given, power management will be disabled.
-  */
- 
-+#include <linux/bitfield.h>
- #include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/gpio/consumer.h>
-@@ -68,12 +69,6 @@
- #define MLX90614_CONST_SCALE 20 /* Scale in milliKelvin (0.02 * 1000) */
- #define MLX90614_CONST_FIR 0x7 /* Fixed value for FIR part of low pass filter */
+diff --git a/drivers/pinctrl/nuvoton/pinctrl-ma35.c b/drivers/pinctrl/nuvoton/pinctrl-ma35.c
+index 925dd717c9deead5..8d71dc53cc1de1f8 100644
+--- a/drivers/pinctrl/nuvoton/pinctrl-ma35.c
++++ b/drivers/pinctrl/nuvoton/pinctrl-ma35.c
+@@ -81,12 +81,6 @@
+ #define MVOLT_1800			0
+ #define MVOLT_3300			1
  
 -/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
 -#undef field_get
@@ -149,9 +139,9 @@ index de5615fdb396aa3c..1ad21b73e1b44cb0 100644
 -#undef field_prep
 -#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
 -
- struct mlx_chip_info {
- 	/* EEPROM offsets with 16-bit data, MSB first */
- 	/* emissivity correction coefficient */
+ static const char * const gpio_group_name[] = {
+ 	"gpioa", "gpiob", "gpioc", "gpiod", "gpioe", "gpiof", "gpiog",
+ 	"gpioh", "gpioi", "gpioj", "gpiok", "gpiol", "gpiom", "gpion",
 -- 
 2.43.0
 
