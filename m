@@ -1,22 +1,22 @@
-Return-Path: <linux-aspeed+bounces-2776-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2777-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94161CCFA03
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:37:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D90F6CCFA03
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:37:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NXR0NMzz2xS2;
-	Fri,  7 Nov 2025 00:37:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NXd29wNz2xdg;
+	Fri,  7 Nov 2025 00:37:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436231;
-	cv=none; b=CmYSMh5+VwZNUH5NG/eT1EaGilkw2UgNtJRzkBukkmX1tWEFPFGXoLh/viKgTT3VmnhJ6lnkdgYOQe6iIxk0rACdTbKeOZui2fneaU/2Jsuua81prRsAJC8n6CbN/1H0la3wzTUJbA8izx1EvJ/67pHiVuivkH/ic9BHnLdDPEu7dLhgC2gj1PXHCW5IMcQ0R9BM3Fq5L6lssSrebJQvq490FybWaIuLULQoF0IinUpNqfbJUilIypPflX45NelCu/M3GEwkQVybPoPgRylshvkJ6J3l9M4CMCOyjYx8gYVNg9H7dewKDCvMcfsfLdQnGgwA4WEGDFU75ek2xtcNcg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436241;
+	cv=none; b=CwBN3oM/4takSObrUpYUmkhk95AMeYfjQmuYyDs0YjHW+UqNursCDztfEJF+/yOgsbknuEfOHJ1zh0RJEFBCcYiZkQZLG4v+uwzKRZ3IR+SPQaepJSzzqjfPxKvP9SrC8D3bubrWyKZ+k92JQuzNURjE1ygG+bcNB+W9Uh3LaWTJ2HK9aY9jXNyoQR+spT56Smfyz3uZzM3r3BzMwR4DB92A75P7il33GlpRR1gHbY6ZwGVOY64/6nvIjP+UprlQ0M6FXBpJDrLZMW3Lp8oWerZ1KtWXPbptEMbg6/RhsI7Bs/vKOjGtfFa5Xn6VcFF5xTyAldHxETtXUeZ2uH8vTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762436231; c=relaxed/relaxed;
-	bh=sHGA2YcX0MXxzV6RzoJUYUfShYMAb8CEN/6KcZsI1Ms=;
+	t=1762436241; c=relaxed/relaxed;
+	bh=YNuGK3cDqqEmI3ls/Gp1IonjspwA92FNppB28NGU0Ag=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HIjhZRxh1HhlPkvgzl/Dq0Axz+mVduEtYf+Ltrjc46GisYtyCWTp9hwBHR7D0uiz41cizItgt+WGuKdXQIHjFHsj1WHRtLPlccryYd0wFZDTYU+PSX20g5XlX8wxWt5+/dHUUVyZuJsCQZA8+vZl0uH9OwIwQcfMF4MM6Q39YGMPqFrz9JR07PI1xFpfelndBY96BOg4fRa+fWrBb2jnKL0PSMAxy7t2ynBBNhBZ7eMkDFfH0HHDOu5XxONyVE66pHN6fVpk6R0ouRt3NE38RAKpKE9g/v2/krUiUNtDN6PaRWcM5iOiaBoRRZRh3BKSVQ1q8GsurGk+Uiwt6rit4w==
+	 MIME-Version; b=bkkt2FHJUZVHftFCgEPC8Ij0SdPE4wx3jE0/3+Kd1nPhHNMjGemQJdIP0iZv2eCaVp9SS9O1S2gOYWpLHtuIgh9APHvEV8WGKxF/hrkEO32POxWxphAYZbBkyBUvpf9Eqa9nJbCvcNbhXZhLVWAH5y7Y2WiPkdkp36w0+ueLXblhZ+c8y10P4DigSrmhQZ28+tIkndjaTjH8Vj29GfNt51JDUdN5n+5z5PTiSVtOiLyZX+Y4UU1A1oz4hyPTtabCKCao3fLk9034EPIB3akvZt9MCHypbu8uR5gHdHHGYWwlHEd2BC8eLjJMKkyu6b6FAK5HQlJHy0RWtvyD/7oTdg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
@@ -24,13 +24,13 @@ Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NXQ1Mjpz2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:37:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NXc3CmLz2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:37:20 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0EFA74361F;
+	by sea.source.kernel.org (Postfix) with ESMTP id 5CA9541B74;
+	Thu,  6 Nov 2025 13:37:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57804C4CEFB;
 	Thu,  6 Nov 2025 13:37:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 056E1C4CEF7;
-	Thu,  6 Nov 2025 13:36:57 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
@@ -88,9 +88,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-mtd@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 15/26] crypto: qat - convert to common field_get() helper
-Date: Thu,  6 Nov 2025 14:34:03 +0100
-Message-ID: <950aacf2c39845b20f33696fe178a435140f28fe.1762435376.git.geert+renesas@glider.be>
+Subject: [PATCH v6 16/26] EDAC/ie31200: Convert to common field_get() helper
+Date: Thu,  6 Nov 2025 14:34:04 +0100
+Message-ID: <56ec4d8e40d24ead68a14948cbbe122c5aaa1405.1762435376.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
@@ -113,43 +113,40 @@ Drop the driver-specific field_get() macro, in favor of the globally
 available variant from <linux/bitfield.h>.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Giovanni Cabiddu <giovanni.cabiddu@intel.com>
 ---
 v6:
-  - Add Acked-by,
+  - No changes,
 
 v5:
   - Extracted from "bitfield: Add non-constant field_{prep,get}()
     helpers".
 ---
- drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/edac/ie31200_edac.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c b/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-index 6186fafb4a7b0dab..4ccc94ed9493a64c 100644
---- a/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-+++ b/drivers/crypto/intel/qat/qat_common/adf_pm_dbgfs_utils.c
-@@ -1,19 +1,12 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /* Copyright(c) 2025 Intel Corporation */
+diff --git a/drivers/edac/ie31200_edac.c b/drivers/edac/ie31200_edac.c
+index 72290f430126c631..dfc9a9cecd74207d 100644
+--- a/drivers/edac/ie31200_edac.c
++++ b/drivers/edac/ie31200_edac.c
+@@ -44,6 +44,7 @@
+  * but lo_hi_readq() ensures that we are safe across all e3-1200 processors.
+  */
+ 
 +#include <linux/bitfield.h>
- #include <linux/bitops.h>
- #include <linux/sprintf.h>
- #include <linux/string_helpers.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+@@ -139,10 +140,6 @@
+ #define IE31200_CAPID0_DDPCD		BIT(6)
+ #define IE31200_CAPID0_ECC		BIT(1)
  
- #include "adf_pm_dbgfs_utils.h"
- 
--/*
-- * This is needed because a variable is used to index the mask at
-- * pm_scnprint_table(), making it not compile time constant, so the compile
-- * asserts from FIELD_GET() or u32_get_bits() won't be fulfilled.
-- */
+-/* Non-constant mask variant of FIELD_GET() */
 -#undef field_get
--#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
+-#define field_get(_mask, _reg)  (((_reg) & (_mask)) >> (ffs(_mask) - 1))
 -
- #define PM_INFO_MAX_KEY_LEN	21
- 
- static int pm_scnprint_table(char *buff, const struct pm_status_row *table,
+ static int nr_channels;
+ static struct pci_dev *mci_pdev;
+ static int ie31200_registered = 1;
 -- 
 2.43.0
 
