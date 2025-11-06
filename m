@@ -1,81 +1,80 @@
-Return-Path: <linux-aspeed+bounces-2796-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2797-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88E28CCFA19
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 16:16:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25918CCF9F8
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 16:16:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2S4Z3cqPz2yvk;
-	Fri,  7 Nov 2025 03:16:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762445806;
-	cv=none; b=GELRGcCtT9b+6Jpi+b/BqZrxbMlZ7YVOxxaELzs3IUo0NmUdhc1Sel2BSbB0mHL47FP5Nu5rjiAMWR5k16bQwT9/DKmgVvHFWbQhtBRJ3TkfsjH6KvkrR5Zne5T9Ln3V/Y2yljSTH+a7GVk4qtXqIfreKJ68gMyA+6sDZ+FGZP900zIEHjLfB6+bST/e77h1PGIr1OpouEqcyTH3bzG2ZzxjKfsvtwaAM5Fmk9k0/mH0eliQKy+aBtZjgb9gBUHPji55gUCD4Zpy3h+66juDNYRUdXWqDkrHR+hXGeXAtbHKDLAiQzo3FlToEPNOEMtIXZBhjIZmVr/Ga9X3S3JmFg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2S4c5G9Hz300F;
+	Fri,  7 Nov 2025 03:16:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::534"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762445808;
+	cv=none; b=i05yYHhEOkk66kdF2X7WTGdLDZk44BWMt+zl1K4q0Gjs/I1LdKaZk1GzgQncW9hnl1+hlwwccBLLQN+gBr+zI0qkLg0hsFrRtM20/1iMNUfGbkGmosG7qVCvlaaW5hcNTfYIYPQOfZFsNCQy4CenGq6FxDO3QxluRxEhu75QkuXjl5WoqzFHg/cSLcfrue7JJAwb7R5Ek1HDcUqv5QU6nVf4/GNh6bNlyd0g9Ea9pP9WZv4JuBU3q3eqlYjCSLeSndu9vKKANfznVnGiKXFJfQS+zNQMb7/mMJ8w0/i6qrqhR6CNJ16m5fVteAhrAvti8zq4TLU8dT6Kl7aLOD9y5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762445806; c=relaxed/relaxed;
-	bh=bB4z51LIflJklurj0g7UdBUTO3OdObbc/NJxwgKEh/c=;
+	t=1762445808; c=relaxed/relaxed;
+	bh=LNxxLoSaj80bOvxwS+x8aO/LQaPqTkbFKbIYZM/ccx0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hNQpTRxHFuxS55HXk2MRJR/hvwPdsoVj41vDhVeJGoqVS6l+QxXA5iKwVBVBJQgRKJd4n84c7SKbyXnVeRzDCwqtc7tRiXNVCVs9HLv/7zfbPUYEbQ0Jfu/TuV417yJrHZs46dlC1ogtz/XhnH3ynvLiiKTlcdTm87F/OU2Zvy0+LJcNcbDq+UIqEWz40wgxHr/87vyIbBspPAyZ4S5G2ZHIC6EIeMAoNf3fuXssYBFHe51inXmKuBMvBlx5A3DinSAJRgn6oUJtUH77fkfF7Qo3pp0dMOfX8g1dOp6TMPFwfjiNjOD3KyIiFyIULIhOAYy1Zmv0jxdHA/AZr0KZxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=b9wad8v1; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+	 In-Reply-To:To:Cc; b=N/P4Q1kXq9FUx5vD1OcpGzOoc/QcIygr7fvi0QSTpMRS/T2X8V5H8jjVe7tuqELQ5gKubOs1uzZgHM5n2GOe+p1/GNKQR+6r36RGrcNjOQmjsVjj5JjBRrxLSUXNvAb88PkXL+JmrQw0FaNLZcu+823qF8a3sDCokD2rfAkdPQTqUNSQZgbd0KJTGSSxvmiSyFCKm0DQtEhhvjtgkKzSEO2q9fFBejI2HP0JPat7FmsxKVmtgmQbYpg/sfSSGUtRhyU9B/5KGzX/r8WT1LFxBMP/0OTbe7nweG2HwHkSih1CWAmdxkNBwyMTxwwpgNHwzhaEjqv42kisfHRGVJ+x+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=rimo8knz; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=b9wad8v1;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=rimo8knz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::534; helo=mail-ed1-x534.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x534.google.com (mail-ed1-x534.google.com [IPv6:2a00:1450:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2S4Y3V4rz2xS2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 03:16:45 +1100 (AEDT)
-Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-64075080480so189815a12.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 06 Nov 2025 08:16:45 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2S4b52sMz2xS2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 03:16:47 +1100 (AEDT)
+Received: by mail-ed1-x534.google.com with SMTP id 4fb4d7f45d1cf-640e970598cso210811a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 06 Nov 2025 08:16:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1762445802; x=1763050602; darn=lists.ozlabs.org;
+        d=linaro.org; s=google; t=1762445805; x=1763050605; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=bB4z51LIflJklurj0g7UdBUTO3OdObbc/NJxwgKEh/c=;
-        b=b9wad8v1J0bV12ESXokREzVwSSVJBLwwD+aiyK05X/LmAYc9/OHqkzdv6PDUJBrdW0
-         +Ml4KYoKmi2S44oQgtUZpWlHDutump3PXd7rJxABfcUaz/vodd06WpKCJOXhWFzAZXrf
-         ZcaELmE78LbZPVCXMhr1pTG7TH/NGR227PheC0p6qrewQjCu+GKsXea8zycrE69CcUsK
-         Bs/o3m0iMHiCodAPE4e46/3q86eioWxA288bbhjufr6Ouy696bkylXYmxn7ElclWkYyN
-         DNqpFBqQf58ddbh9A2cdOo3nPwZmBWKvVWJpHp+V7zmzwou4goWhcJAK8JcXLaYFQdjp
-         SPBA==
+        bh=LNxxLoSaj80bOvxwS+x8aO/LQaPqTkbFKbIYZM/ccx0=;
+        b=rimo8knzwF4m2TccMJ7Je6OMqwP9tGS9nFtTMW0H4JklS0vfPMKgX3UKr/PUhWSmIf
+         ctnhpRDGeqdTiH0R8SYJpVnToUfKIhrsHGMminAPhxHgH4rp3z/fy9yN1tk8sPiGTBoe
+         EwtYIqmXSnWsJfoa0ED12KVjb/Iapu6sY1l/Yz2VlCd4x990NN5hwL0zIgztirLbfmo1
+         6RqB3Dvxp2V8kOykp8+o+xCq7M7LTjNdbYbUPDiBLEx8YWinftPXHGVKKxmuOfn+fKH9
+         rcw/tpXPjc8jdgWNwVBoFLVqIfkobw6kmPu0a2yVMEXJrFwL0nQmok+chb6CONa5QBUX
+         iS/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762445802; x=1763050602;
+        d=1e100.net; s=20230601; t=1762445805; x=1763050605;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=bB4z51LIflJklurj0g7UdBUTO3OdObbc/NJxwgKEh/c=;
-        b=KPVTHaCf/8KET3hqcAaoRfNZmESFRkRSbXJ1CfLgl3u549mRRyAoBTWUKdjbdA5yAm
-         kBkBQz2cSQ2a82NBS6LO0FtiI78p/5xcg59udKrdgd++Ei+X4Tuo34kxphTihDsqOsSf
-         LRSBImPoYenK7kfXIzo+xZpLeAaZ39dIjFYk9EvD6CXrIYnw36nXYWi8XSfEspPSfRCj
-         qersXEdTUSVnhxy3fd4VPHqVbbbOsHHP6F7l45RNdUCS7GhpdKMiQC/w1rAsZ5KJL8pV
-         EDUassHKc0c2KilH6Ua5/cJbLtPiHR07zxAY8KQ9iEppq7kLAIMGLInxe2S+CpKHzjXt
-         BZYg==
-X-Forwarded-Encrypted: i=1; AJvYcCUCzIR2aepxTCpFxAX6iIvuLC8uiO7CcKSJwlpQCWVbMevplhxfHZ2kKHP3T2xAI2cfzYWIiV/oBuCXJYs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwipfOLMmAj2bHl0LhZNLMevhQ2JXR7sOD4zD+3L8MFgwYoZiSj
-	t0MKeAVVb894niEahQI3SsBGJXKmozvo9a4btK9DUvLkyHJDUk1+C9UYeWvPafM99/0=
-X-Gm-Gg: ASbGncvV0ZwGZKbdGWYRBa5E+wijEJlE2mc0mE8ry4skzoUfjOqV7/zMnHHDWJdNnWH
-	jKapENEJ1yIu88HVnAjAD+Vuzuo3UJgYLQol5QctPgljFp/oRg0vhlCJS1EwwvuHpcJj7r83C4f
-	EP3aildLg+sWHEf3mxKZ1egFkCAFJ5tsbX9vVUxyKnzkypPokdb5g+d+M/iXd1suJ4TDyTYAurd
-	BJlV36Db50UvfN3U1PtNl9LMEkiCHK9VjJot3+w47JoPk2FL4Z5slA/SsZ+YfRvlJWCNcMRPOWG
-	Hmq8WTl8CYauEQOsFnm+NJ52X18w8YKARuhm88aJ2RAlGCtYyVlqkQp6oZYFCSnCkY71VKbnqqk
-	XNS76OSFGJ3STzvuOHR1EETCp8gaOct+btDvr+camzAPzxCBFHm29TasYlRcCcxclbLDklvfCER
-	VGY7bgPWqY1w+Mo/VGNQzjL5dhWGI=
-X-Google-Smtp-Source: AGHT+IFtC1GinaspbkQnd4wYug5IUHjv3SVNkj0rWIxppV9FyKPtYa1YcloDSaQrqrRVLMWxj8ovrQ==
-X-Received: by 2002:a05:6402:26c9:b0:640:9eb3:3683 with SMTP id 4fb4d7f45d1cf-6411f615d03mr1806671a12.1.1762445802063;
-        Thu, 06 Nov 2025 08:16:42 -0800 (PST)
+        bh=LNxxLoSaj80bOvxwS+x8aO/LQaPqTkbFKbIYZM/ccx0=;
+        b=kekxnpPmkN8kKWYkLv8UeXaFbhCvJlrzJsgz7g/rC4nuc3ijFueeVYG90UFEyw2aSE
+         L80sDFWsfpU2UmTByPBZn0dHxUi87iG0rBubGrXaJ5IL0gaNpviSYNrf9hNOo9o6GPRf
+         wy/NYQzObODCdNmHdqeANMpMATbJPeRaaMa/gfgkJkVX01zdN9q4DsImNxEcH6TZ77af
+         d5YrI/8AlmAf5lnfR588qKR8G0CTzQu9YnXSC0SgbOrGVdAfKNfNyXBySpRpuST10MlO
+         M3D7rj+ZGEUDMa3SIGfPGV6EPYkJnrfDfxjNljMp1K7yofO/+v0HgPESau6E/5rhPiku
+         qitw==
+X-Forwarded-Encrypted: i=1; AJvYcCVwgcOJ5qPyMboUIros6yRliScUSPgh2b0xvTTKFuVlJvidZT3jl/Xh16zQgsGhiSU46MTKHLCCJSEZHzI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyXuYjCHNvBvCstMq5bD45/aEeyBXRv+nahA5w+V3M+ZOf9L7At
+	DA4xtsxoPbkrHz3eEcTHrOfAhoOckhzq/JvIHxP+GFvUdXzm3BJEJHaRGtguSn6wsqU=
+X-Gm-Gg: ASbGncurIHJeTGrdMgi5SL6ANbGay5DnLzrl0jsy42GoxXzbNbf4zvrCY9/QVOFip8v
+	4Zh1xmCU/7HMeogf1aVgHTXAfoioUg/CGWYbrs4ZRScUip5GL4rk1vmyXt1oxU8VAtCa41H6Hxm
+	SG435bHoxBJgVZClTpfOby4+6UrVZ/wznwgvdOr96sNhqZYEpg3D5TW+nxUkb4yrwPezRs+wrpo
+	X69TK2/fx2fUYrLuKNCrGp+rZ/sXldD6a2PrM+w8Dv0woD+7/uQkvKMJebLsai4/pZ6TmFxW1Xb
+	5Yxc9OALgeseiFIDpoAl43mZiaJBJLv02ubMa6zOkEgBQ0x197Ve7wK+pWrAt1Z0Hy2osJfNP9U
+	WuG2/5LAubSQaE4sfqQu42kkS+7gwc/LU+NnHHisJ+pvydKVyVzsZjzwMCUwUfoNPBsNiUV6cYz
+	k+wkSzS8lBQYTh7bI/TKUBqorrLKM=
+X-Google-Smtp-Source: AGHT+IGxqQY1TKHhlv59jD9rXPj3NM3yoBtmJAbJOzQqYLTcCXhQ3w1hdyfA1R6qDfeGfCwDVofBBg==
+X-Received: by 2002:a05:6402:35cb:b0:640:9b11:5d7d with SMTP id 4fb4d7f45d1cf-64105b79e3cmr4181740a12.7.1762445804550;
+        Thu, 06 Nov 2025 08:16:44 -0800 (PST)
 Received: from [127.0.1.1] ([178.197.219.123])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6411f813eabsm2113408a12.11.2025.11.06.08.16.40
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6411f813eabsm2113408a12.11.2025.11.06.08.16.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Nov 2025 08:16:41 -0800 (PST)
+        Thu, 06 Nov 2025 08:16:43 -0800 (PST)
 From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Date: Thu, 06 Nov 2025 17:16:27 +0100
-Subject: [PATCH 3/4] gpio: creg-snps: Simplify with
- of_device_get_match_data()
+Date: Thu, 06 Nov 2025 17:16:28 +0100
+Subject: [PATCH 4/4] gpio: zynq: Simplify with of_device_get_match_data()
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -91,7 +90,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251106-gpio-of-match-v1-3-50c7115a045e@linaro.org>
+Message-Id: <20251106-gpio-of-match-v1-4-50c7115a045e@linaro.org>
 References: <20251106-gpio-of-match-v1-0-50c7115a045e@linaro.org>
 In-Reply-To: <20251106-gpio-of-match-v1-0-50c7115a045e@linaro.org>
 To: Linus Walleij <linus.walleij@linaro.org>, 
@@ -105,21 +104,21 @@ Cc: linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
  Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1132;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1280;
  i=krzysztof.kozlowski@linaro.org; h=from:subject:message-id;
- bh=8j8xzdpWWGIQJTuLOAuFntqmfK/jylg0S/LsK5+N6+E=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBpDMngzkBYrj3JN8lP0o3ovEK2e++MYdMvcveA8
- m4ZPs0/rzmJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCaQzJ4AAKCRDBN2bmhouD
- 1/57D/4pRWUnTW5hXv8wZdB6uRuQ55K28z8ZH3FaoCDGOnKAN61qaX0gKcjyK1QpdBM92q8dQlX
- 7WOn1TtYWAGTHFqZ0FYGKUVtRg4AA40VNmIBZS0onPYiR3iUWjL91r8g+jFJRB2IsLwSt7sl1Gq
- aA8Xl3cHY3fo+3OVmd2TcZNyffc2f+8zM23RJHTHC2vO2JO7UgyiwzK+D8FukZVWziot6mdGL0s
- Z7BNjDHl8QiwXA4KWruLpwle9ZSdWVEM3zYUXEHb/UmvDvDHtyIhrW/7+ar1nPSXgWNLAys3C6p
- e8aU5fpUXAotF7tV+80nDFZe1fMdKUzUX2y2aeR3ErcwwuH+S7B5biM0GMzctAs/JaADM6JIKVA
- twdMBzL4Gw+dgCByJDc7fyqMY+vu3YtPwyla7Lw8PbtVd1OFaXAsJMEKoBb03X6xoHosdxtBR+i
- xrFfcnQBVxZi8UDPDa8gIgfK84U7Hp/6B4S47THfEkyZuJF511L1ii8URMSs1sPrFGMbCi0jKoB
- 9cBGcwJqifeOyVVm/O+r2r9CSMGKdf+pXk2RVCW1CtCGEt4QyVYtucVFqw96bgGmqaJwkp2wKC5
- JdUL+O0Tk9wvaEynfCPgNCQSDSUUhm78cVRhcsmdO40bTXxVrupADbP2q/6asWxvHK/z02SPoq4
- V5KGI9l4mXh3aFg==
+ bh=KyCK4WaX8DTPr8e9FQEpVrY1lPGKIUEEeXomozdcgIk=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBpDMnhaeYJvXX2uO3vKVe9JEZmeNPGFfrC9cmTl
+ 8PnkWe0SIaJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCaQzJ4QAKCRDBN2bmhouD
+ 14SHD/0RJ4iQBsacOdNNfDcM2yGY5n7EhMle4k1LQGwzgE8xaJZd0bNJ5SuXB7KiK8M0d+ncBIG
+ Vpgc5uJxPllzlkLTWU57w6XNurghRyy10l5bLnj3zVPqE8uDm8zaYb2f2KCLUY0ZFHBwC6ZZD0S
+ EywKXF8tXCNuyHqUd/d2gc/hufQSKswUKOk0awanMijo9zIoPIAvdWP/68XTrDaJrUggH0VLWDA
+ DirP1LDVncWKXiLonYBU0Dzj+E6zW9e09uUsKpYlzqLp9X5b0nZqAky4VSuFbrlQOTYP5qOQYI8
+ 6mcG6WQJGAQizQ5aDwZqz9BVLYC5A4wUFrZEOzZITZlVateMtaA36tFKB9ykvpXKYOtZbyDNzrY
+ vF5L6KKkjCRSQMKv/97axV9dFeuK62nPFn6zCzJhtfuVW2X5gl/S7p4SKcVW+XzIb9B9Fd6UgWP
+ xPUerlWtE7IzxdDyf5dKH0FnDkSm6SsqecuZaHZHyj1YvZOa8P+CK9o5BudRj9cUprLWEckBgGh
+ vyk+OrhUR9i6hakDiow8oUA49HjhJCl3AAtwwFm9u0lRDlNi1XKdtGXrfZWUXbgT+BcW316eDTy
+ c8bwP6f+3kHFzKoVOnytycrNZ1R3CfM400ReIYFDpY5ucGP37m3DcHa3ZSoiNYwzWaMPxuK5DhU
+ Mad4nYQwDNFnyyw==
 X-Developer-Key: i=krzysztof.kozlowski@linaro.org; a=openpgp;
  fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
 
@@ -129,31 +128,35 @@ simplified with of_device_get_match_data().
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
- drivers/gpio/gpio-creg-snps.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/gpio/gpio-zynq.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/gpio/gpio-creg-snps.c b/drivers/gpio/gpio-creg-snps.c
-index f8ea961fa1de..cdb103b0fae3 100644
---- a/drivers/gpio/gpio-creg-snps.c
-+++ b/drivers/gpio/gpio-creg-snps.c
-@@ -134,7 +134,6 @@ static const struct of_device_id creg_gpio_ids[] = {
- 
- static int creg_gpio_probe(struct platform_device *pdev)
- {
+diff --git a/drivers/gpio/gpio-zynq.c b/drivers/gpio/gpio-zynq.c
+index 0ffd76e8951f..26071ed1bf22 100644
+--- a/drivers/gpio/gpio-zynq.c
++++ b/drivers/gpio/gpio-zynq.c
+@@ -904,18 +904,16 @@ static int zynq_gpio_probe(struct platform_device *pdev)
+ 	struct zynq_gpio *gpio;
+ 	struct gpio_chip *chip;
+ 	struct gpio_irq_chip *girq;
 -	const struct of_device_id *match;
- 	struct device *dev = &pdev->dev;
- 	struct creg_gpio *hcg;
- 	u32 ngpios;
-@@ -148,8 +147,7 @@ static int creg_gpio_probe(struct platform_device *pdev)
- 	if (IS_ERR(hcg->regs))
- 		return PTR_ERR(hcg->regs);
  
--	match = of_match_node(creg_gpio_ids, pdev->dev.of_node);
--	hcg->layout = match->data;
-+	hcg->layout = of_device_get_match_data(dev);
- 	if (!hcg->layout)
+ 	gpio = devm_kzalloc(&pdev->dev, sizeof(*gpio), GFP_KERNEL);
+ 	if (!gpio)
+ 		return -ENOMEM;
+ 
+-	match = of_match_node(zynq_gpio_of_match, pdev->dev.of_node);
+-	if (!match) {
+-		dev_err(&pdev->dev, "of_match_node() failed\n");
++	gpio->p_data = of_device_get_match_data(&pdev->dev);
++	if (!gpio->p_data) {
++		dev_err(&pdev->dev, "of_device_get_match_data() failed\n");
  		return -EINVAL;
+ 	}
+-	gpio->p_data = match->data;
+ 	platform_set_drvdata(pdev, gpio);
  
+ 	gpio->base_addr = devm_platform_ioremap_resource(pdev, 0);
 
 -- 
 2.48.1
