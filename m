@@ -1,61 +1,96 @@
-Return-Path: <linux-aspeed+bounces-2760-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2761-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B655BCCFA13
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 11:34:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73400CCFA03
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:34:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Kpt0p8vz2ySP;
-	Thu,  6 Nov 2025 22:34:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NTS0BQ9z2xS2;
+	Fri,  7 Nov 2025 00:34:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762428870;
-	cv=none; b=K2WO7kFK5c2CEOnU5yWj5aShZuS/k/j4KvCK1ELpLjOqe9qU9UvyZumWNYxim3RtHeby4NPOnJQiMX0c0icO4cif4m2GmJKX98U6WdihgOvT4BF2V6RJbLKvOTUIxbvWUChfF1TGAcJfghE6duRlN4ihjTE7ErFfWVYa6F7szavTNTmvptFXKD+I9i5ge2o2lOmTPG7kuZq4/5p5BnLMqiEXFxbUd1NVkF6zWMo+zjV1M+ixAe94fKKM+8mWT1wmk9AJbHCSG78UVjVtF+1ij5vd9zVfD45JEjMmRlFwsHWCh2A1saZVFAaMzyfT+oZYd/GCrNfK5zhrFb1V6V5Bgw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436075;
+	cv=none; b=fRa3vx84co+gjNr+uq2o2g5txoA5+QhiYZdJf3mMow4GC+myttLjKKTA015BxBito5WyJI+Gi89YwthfGrjXAo0xzpF69iDTp1zliNed5nm8myimVv9tanSK+D8HP0rmqi+ECUUi6NDG+vpwfe54PGPi6ABqXre1f2ie9z/U7iwpk8quDaybmrHz2MvmBCEEidrgXzqkV/byw0eQSPx2DajiPeoEzTkukSE6qjsFmNBaP9yRTddUxDavwVe/nVVv6uNnDE7sJ+TUx8w/wNWihp36pmZ7hwZufHCKdwooBTE3VQpdWqCnqchF44RvIdJWbpbS0KsNcMzLovtn+Gw0Ow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762428870; c=relaxed/relaxed;
-	bh=uoAWLLaS6pd9UzlUzg92jVaWk5xwlBah0mG1uy97Rxo=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=Hp7sd7//QIzPTBb55xrMAkqxnoK97wAEZo75Vm18KEQWjRTtEORlVe1s9IdQHuDPt8hzSd7TZzKbuJygqjVNapvQwfB52sqUWfTBDL58t2NZF9+zwPaM3WLJoJEhjg+pz5OB1mRGNOA1OIPKqChutWuQmO2ExLlEE9bC2v1L8ZbmpyZ65V9DJnvPAQNqhwsZaRDVT/MUTukTC55xv1brvyAO0C+B9uauvly4a137YEJduWpfscQMzKw6xIM0JAShPHlv+HboRyCbRCTbxd6U2NrBmv3rLlS22weEfjg5ZgjL+hmWFRYkjJN0NlJNG5iQ2SrsBiYPKnI16gd+g5ugvQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=capru84j; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=capru84j;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+	t=1762436075; c=relaxed/relaxed;
+	bh=nm+cncea/N5B+JSN8kAH2Fp+yXlKRb6xEKajXMEgQns=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fWWfDDdZpfJ1QLaefth28qQFm9Nr+H0GH83K+ujulNML2yQcQhgrOVqalsZ/MLCMLyPSqtmihYriXqbr5tmBA6UOaMRUTWrmYGk++i+NmGhqf9+UOHKZ9ub7EVowb4WKY9f6vfD7Pp4idBrEaxUA5xW4/XQqYQTjrWWqcWVdSXpMsxMx4qNO483MxEx2j4GLcfEHP82vw3DKU58o3wu7YEd8WB6xCeXQXnjKKqQZMZcVt43oGP2iuz61Y1hKV+xC/ezhTakBOrFrKM00825qeJOleMNLgjRHhSjbM5R8esRSpV8Et2GvDBoeoh4AyMgI2he1+r4MK9qVUDW51pCpMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2Kps1JVDz2xdg;
-	Thu,  6 Nov 2025 22:34:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NTQ54zMz2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:34:34 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 59C3F4345B;
-	Thu,  6 Nov 2025 11:34:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0BC49C4CEF7;
-	Thu,  6 Nov 2025 11:34:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762428861;
-	bh=BMvBp0vVYTdKvDSUYn73f7UGpreVUIWzVn6Q8Jb768A=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=capru84jwTfVANq97uUdwiKStahByghPYOfcSZsfq7pqGdSWPnZQX0ejEBzEqm/1x
-	 hCPX8mxyjURRZeQDpwl1uf9BpSNKJ1k/WARaamJNL9BFjx3vl2s9Xh++0+A+nRu8k+
-	 y8zVeQcnh5MAnqu0vYoTXoCpt3ZY06s9ibVXKjWU7iMpfAKiREQf55fzfeN6s+1irx
-	 0QB7yl6Vg/8dQqU40OVcnTyk/g8PI3OMy88aWZgKD+j+vf0KMzJTxvqWYu1ZTw6TFg
-	 PYehweac4njn/0tcc2ITP10V8kpAPZWKoOzDKTL16kRjNknJK1Em5t6ir7u66U5Van
-	 uE82QDdn8kNOg==
-From: Mark Brown <broonie@kernel.org>
-To: joel@jms.id.au, andrew@codeconstruct.com.au, clg@kaod.org, 
- linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, 
- linux-spi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-Cc: kernel test robot <lkp@intel.com>
-In-Reply-To: <20251105084952.1063489-1-chin-ting_kuo@aspeedtech.com>
-References: <20251105084952.1063489-1-chin-ting_kuo@aspeedtech.com>
-Subject: Re: [PATCH] spi: aspeed: Use devm_iounmap() to unmap
- devm_ioremap() memory
-Message-Id: <176242885811.2357454.3184590153610422112.b4-ty@kernel.org>
-Date: Thu, 06 Nov 2025 11:34:18 +0000
+	by sea.source.kernel.org (Postfix) with ESMTP id 28529444CC;
+	Thu,  6 Nov 2025 13:34:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18EB8C116C6;
+	Thu,  6 Nov 2025 13:34:21 +0000 (UTC)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Yury Norov <yury.norov@gmail.com>,
+	Michael Turquette <mturquette@baylibre.com>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	David Miller <davem@davemloft.net>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Crt Mori <cmo@melexis.com>,
+	Jonathan Cameron <jic23@kernel.org>,
+	Lars-Peter Clausen <lars@metafoo.de>,
+	Jacky Huang <ychuang3@nuvoton.com>,
+	Shan-Chun Hung <schung@nuvoton.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Alex Elder <elder@ieee.org>,
+	David Laight <david.laight.linux@gmail.com>,
+	Vincent Mailhol <mailhol.vincent@wanadoo.fr>,
+	Jason Baron <jbaron@akamai.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Tony Luck <tony.luck@intel.com>,
+	Michael Hennerich <Michael.Hennerich@analog.com>,
+	Kim Seer Paller <kimseer.paller@analog.com>,
+	David Lechner <dlechner@baylibre.com>,
+	=?UTF-8?q?Nuno=20S=C3=A1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>,
+	Richard Genoud <richard.genoud@bootlin.com>,
+	Cosmin Tanislav <demonsingur@gmail.com>,
+	Biju Das <biju.das.jz@bp.renesas.com>,
+	Jianping Shen <Jianping.Shen@de.bosch.com>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>
+Cc: linux-clk@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	linux-edac@vger.kernel.org,
+	qat-linux@intel.com,
+	linux-gpio@vger.kernel.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-iio@vger.kernel.org,
+	linux-sound@vger.kernel.org,
+	linux-mtd@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v6 00/26] Non-const bitfield helpers
+Date: Thu,  6 Nov 2025 14:33:48 +0100
+Message-ID: <cover.1762435376.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,43 +104,209 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-a6db3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Wed, 05 Nov 2025 16:49:52 +0800, Chin-Ting Kuo wrote:
-> The AHB IO memory for each chip select is mapped using
-> devm_ioremap(), so it should be unmapped using devm_iounmap()
-> to ensure proper device-managed resource cleanup.
-> 
-> 
+	Hi all,
 
-Applied to
+<linux/bitfield.h> contains various helpers for accessing bitfields, as
+typically used in hardware registers for memory-mapped I/O blocks.
+These helpers ensure type safety, and deduce automatically shift values
+from mask values, avoiding mistakes due to inconsistent shifts and
+masks, and leading to a reduction in source code size.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
+The existing FIELD_{GET,PREP}() macros are limited to compile-time
+constants.  However, it is very common to prepare or extract bitfield
+elements where the bitfield mask is not a compile-time constant (e.g. it
+comes from a table, or is created by shifting a compile-time constant).
+To avoid this limitation, the AT91 clock driver introduced its own
+field_{prep,get}() macros.  During the past four years, these have been
+copied to multiple drivers, and more copies are on their way[1], leading
+to the obvious review comment "please move this to <linux/bitfield.h>".
+
+Hence this series
+  1. Takes preparatory steps in drivers definining local
+     field_{get,prep}() macros (patches 1-11),
+  2. Introduces __FIELD_{PREP,GET}() helpers to avoid clang W=1 warnings
+     (patch 12),
+  3. Makes field_{prep,get}() available for general use (patch 13),
+  4. Converts drivers with local variants to the common helpers (patches
+     14-24),
+  5. Converts a few Renesas drivers to the existing FIELD_{GET,PREP}()
+     and the new field_{get,prep}() helpers (patches 25-26).
+
+Alternatives would be to use the typed {u*,be*,le*,...}_{get,encode}_bits()
+macros instead (which currently do not work with non-constant masks
+either, and the first attempt to change that generates much worse code),
+or to store the low bit and width of the mask instead (which would
+require changing all code that passes masks directly, and also generates
+worse code).
+
+Changes compared to v5[2]:
+  - Add Acked-by, Reviewed-by,
+  - Update sunxi rawnand driver in linux-next,
+  - Align \,
+  - Add Return sections to kerneldoc,
+  - Document field_{get,prep} in top comment block,
+  - New patch to add less-checking __FIELD_{GET,PREP}() helpers,
+  - Use less-checking __FIELD_{GET,PREP}() to avoid build issues with
+    clang and W=1.
+
+Changes compared to v4[3]:
+  - Add preparatory patches to #undef field_{get,prep}() in individual
+    drivers before defining local variants,
+  - Update new smi330 IIO IMU driver in linux-next,
+  - Add Acked-by,
+  - Document that mask must be non-zero,
+  - Document typical usage pattern,
+  - Recommend using FIELD_{PREP,GET}() directly to ensure compile-time
+    constant masks,
+  - Check BITS_PER_TYPE(mask) instead of sizeof(mask),
+  - Wire field_{get,prep}() to FIELD_{GET,PREP}() when mask is
+    constant, to improve type checking,
+  - Extract conversion of individual drivers into separate patches.
+
+Changes compared to v3[4]:
+  - Update recently introduced FIELD_MODIFY() macro,
+  - Add Acked-by,
+  - Rebase on top of commit 7c68005a46108ffa ("crypto: qat - relocate
+    power management debugfs helper APIs") in v6.17-rc1,
+  - Convert more recently introduced upstream copies:
+      - drivers/edac/ie31200_edac.c
+      - drivers/iio/dac/ad3530r.c
+
+Changes compared to v2[5]:
+  - New patch "[PATCH v3 1/4] bitfield: Drop underscores from macro
+    parameters",
+  - Add Acked-by,
+  - Drop underscores from macro parameters,
+  - Use __auto_type where possible,
+  - Correctly cast reg to the mask type,
+  - Introduces __val and __reg intermediates to simplify the actual
+    operation,
+  - Drop unneeded parentheses,
+  - Clarify having both FIELD_{GET,PREP}() and field_{get,prep}(),
+
+Changes compared to v1[6]:
+  - Cast val resp. reg to the mask type,
+  - Fix 64-bit use on 32-bit architectures,
+  - Convert new upstream users:
+      - drivers/crypto/intel/qat/qat_common/adf_gen4_pm_debugfs.c
+      - drivers/gpio/gpio-aspeed.c
+      - drivers/iio/temperature/mlx90614.c
+      - drivers/pinctrl/nuvoton/pinctrl-ma35.c
+      - sound/usb/mixer_quirks.c
+  - Convert new user queued in renesas-devel for v6.15:
+      - drivers/soc/renesas/rz-sysc.c
+  - Drop the last 14 RFC patches.
+    They can be updated/resubmitted/applied later.
+
+In the meantime, two more copies ended up in the IIO and MTD trees and
+in linux-next (commit 89cba586b8b4cde0 ("iio: imu: smi330: Add driver"
+in next-20251021 and later, commits 6fc2619af1eb6f59 ("mtd: rawnand:
+sunxi: rework pattern found registers") and d21b4338159ff7d7 ("mtd:
+rawnand: sunxi: introduce ecc_mode_mask in sunxi_nfc_caps") in
+next-20251029 and later).  As these commits are not yet upstream, any
+updates (patches 10, 11, 23 and 24) for these drivers cannot be applied
+with the rest of this series yet.
+
+Yury kindly offered to take the lionshare of this series through his
+bitmap tree, thanks for that!
+I am fine with that, if he would also provide an immutable branch + tag,
+which I can merge into the Renesas tree before taking patches 25 and 26
+myself.  Once that tag has been merged in subsystem trees or upstream, I
+plan to update and resend actual conversions (see patches 4-17 in
+v1[6]).
+
+To avoid build issues in linux-next, the IIO resp. MTD maintainers
+should:
+  1. Apply patch 10 resp. 11 now, and
+  2. Apply patch 23 resp. 24 later, either after
+       a. merging the immutable branch/tag, or
+       b. the new helpers in <linux/bitfield.h> are upstream,
+
+Note that there is also a minor conflict with linux-next due to the
+removal of an include file from drivers/gpio/gpio-aspeed.c.
 
 Thanks!
 
-[1/1] spi: aspeed: Use devm_iounmap() to unmap devm_ioremap() memory
-      commit: 2f538ef9f6f7c3d700c68536f21447dfc598f8c8
+[1] Work-in-progress new copies posted during the last few months (there
+    may be more):
+      - "[PATCH v2 3/3] gpio: gpio-ltc4283: Add support for the LTC4283 Swap Controller"
+	https://lore.kernel.org/20250903-ltc4283-support-v2-3-6bce091510bf@analog.com
+      - "[PATCH v7 15/24] media: i2c: add Maxim GMSL2/3 serializer and deserializer framework"
+	https://lore.kernel.org/20250718152500.2656391-16-demonsingur@gmail.com
+[2] "[PATCH v5 00/23] Non-const bitfield helpers"
+    https://lore.kernel.org/all/cover.1761588465.git.geert+renesas@glider.be
+[3] "[PATCH v4 0/4] Non-const bitfield helpers"
+    https://lore.kernel.org/cover.1760696560.git.geert+renesas@glider.be
+[4] "[PATCH v3 0/4] Non-const bitfield helpers"
+    https://lore.kernel.org/all/cover.1739540679.git.geert+renesas@glider.be
+[5] "[PATCH v2 0/3] Non-const bitfield helpers"
+    https://lore.kernel.org/all/cover.1738329458.git.geert+renesas@glider.be
+[6] "[PATCH 00/17] Non-const bitfield helper conversions"
+    https://lore.kernel.org/all/cover.1637592133.git.geert+renesas@glider.be
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Geert Uytterhoeven (26):
+  clk: at91: pmc: #undef field_{get,prep}() before definition
+  crypto: qat - #undef field_get() before local definition
+  EDAC/ie31200: #undef field_get() before local definition
+  gpio: aspeed: #undef field_{get,prep}() before local definition
+  iio: dac: ad3530r: #undef field_prep() before local definition
+  iio: mlx90614: #undef field_{get,prep}() before local definition
+  pinctrl: ma35: #undef field_{get,prep}() before local definition
+  soc: renesas: rz-sysc: #undef field_get() before local definition
+  ALSA: usb-audio: #undef field_{get,prep}() before local definition
+  [-next] iio: imu: smi330: #undef field_{get,prep}() before definition
+  [-next] mtd: rawnand: sunxi: #undef field_{get,prep}() before local
+    definition
+  bitfield: Add less-checking __FIELD_{GET,PREP}()
+  bitfield: Add non-constant field_{prep,get}() helpers
+  clk: at91: Convert to common field_{get,prep}() helpers
+  crypto: qat - convert to common field_get() helper
+  EDAC/ie31200: Convert to common field_get() helper
+  gpio: aspeed: Convert to common field_{get,prep}() helpers
+  iio: dac: Convert to common field_prep() helper
+  iio: mlx90614: Convert to common field_{get,prep}() helpers
+  pinctrl: ma35: Convert to common field_{get,prep}() helpers
+  soc: renesas: rz-sysc: Convert to common field_get() helper
+  ALSA: usb-audio: Convert to common field_{get,prep}() helpers
+  [-next] iio: imu: smi330: Convert to common field_{get,prep}() helpers
+  [-next] mtd: rawnand: sunxi: Convert to common field_{get,prep}()
+    helpers
+  clk: renesas: Use bitfield helpers
+  soc: renesas: Use bitfield helpers
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+ drivers/clk/at91/clk-peripheral.c             |  1 +
+ drivers/clk/at91/pmc.h                        |  3 -
+ drivers/clk/renesas/clk-div6.c                |  6 +-
+ drivers/clk/renesas/rcar-gen3-cpg.c           | 15 +--
+ drivers/clk/renesas/rcar-gen4-cpg.c           |  9 +-
+ .../intel/qat/qat_common/adf_pm_dbgfs_utils.c |  8 +-
+ drivers/edac/ie31200_edac.c                   |  4 +-
+ drivers/gpio/gpio-aspeed.c                    |  5 +-
+ drivers/iio/dac/ad3530r.c                     |  3 -
+ drivers/iio/imu/smi330/smi330_core.c          |  4 -
+ drivers/iio/temperature/mlx90614.c            |  5 +-
+ drivers/mtd/nand/raw/sunxi_nand.c             |  4 -
+ drivers/pinctrl/nuvoton/pinctrl-ma35.c        |  4 -
+ drivers/soc/renesas/renesas-soc.c             |  4 +-
+ drivers/soc/renesas/rz-sysc.c                 |  3 +-
+ include/linux/bitfield.h                      | 95 +++++++++++++++++--
+ sound/usb/mixer_quirks.c                      |  4 -
+ 17 files changed, 106 insertions(+), 71 deletions(-)
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+-- 
+2.43.0
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+Gr{oetje,eeting}s,
 
-Thanks,
-Mark
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
