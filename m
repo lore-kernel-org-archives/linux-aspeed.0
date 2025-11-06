@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-2777-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2778-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D90F6CCFA03
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:37:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 700DFCCFA05
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:37:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NXd29wNz2xdg;
-	Fri,  7 Nov 2025 00:37:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436241;
-	cv=none; b=CwBN3oM/4takSObrUpYUmkhk95AMeYfjQmuYyDs0YjHW+UqNursCDztfEJF+/yOgsbknuEfOHJ1zh0RJEFBCcYiZkQZLG4v+uwzKRZ3IR+SPQaepJSzzqjfPxKvP9SrC8D3bubrWyKZ+k92JQuzNURjE1ygG+bcNB+W9Uh3LaWTJ2HK9aY9jXNyoQR+spT56Smfyz3uZzM3r3BzMwR4DB92A75P7il33GlpRR1gHbY6ZwGVOY64/6nvIjP+UprlQ0M6FXBpJDrLZMW3Lp8oWerZ1KtWXPbptEMbg6/RhsI7Bs/vKOjGtfFa5Xn6VcFF5xTyAldHxETtXUeZ2uH8vTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NXq6RP3z2yvk;
+	Fri,  7 Nov 2025 00:37:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436251;
+	cv=none; b=k4U1wqUVkLfJ0aUX4WObEH4u14RgaoRCiDsT0qzSZuwkI99XtW9p8RDtje5npDledi/57M+8L5dFeQMrVUDnExcM+kGBfGFX9uhG7xHYiSKnGbQ/0mIItjjn1P6ygU9YWSV/tjYKS/kveZQtfAmjjpjNOm6qNml0RkVGCjAKNV0evvIq5JTBTSsbCwXKHgdLWYg3Ir9QpSQX8p8YDnpB2644Vqbx5roZs/TnDHmaIgq4cZ3e2pb1Oy+h+9WZK1Gzp3RWpRoLCag3kRg+vR2ZQfGZzRnxB++WZCjbgMU/9arCh2IGcyeg1zDkStcMpJuucbi2STcBHWuWIWhH9HGYUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762436241; c=relaxed/relaxed;
-	bh=YNuGK3cDqqEmI3ls/Gp1IonjspwA92FNppB28NGU0Ag=;
+	t=1762436251; c=relaxed/relaxed;
+	bh=Yl3g0pcjdi/SSWcjvS9bhpNXAS3a+zblEom6Kaxq3a0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=bkkt2FHJUZVHftFCgEPC8Ij0SdPE4wx3jE0/3+Kd1nPhHNMjGemQJdIP0iZv2eCaVp9SS9O1S2gOYWpLHtuIgh9APHvEV8WGKxF/hrkEO32POxWxphAYZbBkyBUvpf9Eqa9nJbCvcNbhXZhLVWAH5y7Y2WiPkdkp36w0+ueLXblhZ+c8y10P4DigSrmhQZ28+tIkndjaTjH8Vj29GfNt51JDUdN5n+5z5PTiSVtOiLyZX+Y4UU1A1oz4hyPTtabCKCao3fLk9034EPIB3akvZt9MCHypbu8uR5gHdHHGYWwlHEd2BC8eLjJMKkyu6b6FAK5HQlJHy0RWtvyD/7oTdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=lQweygjIuF8zYw+GswWMgWc3G2uBOGFplVnaAFjH1/+BeFQ3MnlPtG4QlhbzUQ7Ou+fU//Fv1oeY6pLadcdEF6RrDgoD9G2e/tfv67RoOJlI1L2gexVbW/cosC3lBuqZnJGXdq2O29N4GB4Iv3owmHNv2ycsPWRg93a6RZw8wNJnB/4KjIVjjyIUfgeFl5RuHLvCiDhRm7TwqfcDArUaDz1lKGcfRdMi2V+iC2VOeI+uMNee533vNjGjFcEDwh8WeUJtBaGC4QRK1HhLRCvcFQ10G+iuOAdInGDkmpOKxefHIeWzr+2s0M8UiZIwWLgMfbHhNU129G7pH28YTZTT+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NXc3CmLz2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:37:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NXq0XS4z2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:37:31 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5CA9541B74;
+	by tor.source.kernel.org (Postfix) with ESMTP id D50846022D;
+	Thu,  6 Nov 2025 13:37:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4618C4CEFB;
 	Thu,  6 Nov 2025 13:37:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57804C4CEFB;
-	Thu,  6 Nov 2025 13:37:08 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
@@ -88,9 +88,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-mtd@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 16/26] EDAC/ie31200: Convert to common field_get() helper
-Date: Thu,  6 Nov 2025 14:34:04 +0100
-Message-ID: <56ec4d8e40d24ead68a14948cbbe122c5aaa1405.1762435376.git.geert+renesas@glider.be>
+Subject: [PATCH v6 17/26] gpio: aspeed: Convert to common field_{get,prep}() helpers
+Date: Thu,  6 Nov 2025 14:34:05 +0100
+Message-ID: <ffb0f5369c393ccbf5c2cc6de877984d9c15fa62.1762435376.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
@@ -109,8 +109,8 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Drop the driver-specific field_get() macro, in favor of the globally
-available variant from <linux/bitfield.h>.
+Drop the driver-specific field_get() and field_prep() macros, in favor
+of the globally available variants from <linux/bitfield.h>.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
@@ -121,32 +121,34 @@ v5:
   - Extracted from "bitfield: Add non-constant field_{prep,get}()
     helpers".
 ---
- drivers/edac/ie31200_edac.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/gpio/gpio-aspeed.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/edac/ie31200_edac.c b/drivers/edac/ie31200_edac.c
-index 72290f430126c631..dfc9a9cecd74207d 100644
---- a/drivers/edac/ie31200_edac.c
-+++ b/drivers/edac/ie31200_edac.c
-@@ -44,6 +44,7 @@
-  * but lo_hi_readq() ensures that we are safe across all e3-1200 processors.
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index ef4ccaf74a5b379e..3da999334971d501 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -5,6 +5,7 @@
+  * Joel Stanley <joel@jms.id.au>
   */
  
 +#include <linux/bitfield.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/pci.h>
-@@ -139,10 +140,6 @@
- #define IE31200_CAPID0_DDPCD		BIT(6)
- #define IE31200_CAPID0_ECC		BIT(1)
+ #include <linux/cleanup.h>
+ #include <linux/clk.h>
+ #include <linux/gpio/aspeed.h>
+@@ -31,12 +32,6 @@
+ #include <linux/gpio/consumer.h>
+ #include "gpiolib.h"
  
--/* Non-constant mask variant of FIELD_GET() */
+-/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
 -#undef field_get
--#define field_get(_mask, _reg)  (((_reg) & (_mask)) >> (ffs(_mask) - 1))
+-#define field_get(_mask, _reg)	(((_reg) & (_mask)) >> (ffs(_mask) - 1))
+-#undef field_prep
+-#define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
 -
- static int nr_channels;
- static struct pci_dev *mci_pdev;
- static int ie31200_registered = 1;
+ #define GPIO_G7_IRQ_STS_BASE 0x100
+ #define GPIO_G7_IRQ_STS_OFFSET(x) (GPIO_G7_IRQ_STS_BASE + (x) * 0x4)
+ #define GPIO_G7_CTRL_REG_BASE 0x180
 -- 
 2.43.0
 
