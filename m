@@ -1,51 +1,48 @@
-Return-Path: <linux-aspeed+bounces-2758-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2759-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 845D3CCFA03
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 08:25:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE7DDCCFA03
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 09:19:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Fd60QDlz2yrq;
-	Thu,  6 Nov 2025 19:25:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762417545;
-	cv=none; b=ZHapCY3FOp8K50jv6cOc962/fJxNc4GEtOUD6X7W5v54BWdDDsAN1LMXpeZVVNVaZNrWjmTwI9DbCLJmw6ndKA0uO+Pk96UFr8rN60E3jQVgcu4s+Pfoh0JkS1wRvhcTF2uAR/9ahwSJ7b9KVvHdEbKzqj1+xgyNZXfkpkDiVG2e7ANT3d5mx7pHuGK2d00hq9r67mQ0c45weUORb72GcY4TUbEjNyBNmgWYV5da5CvDnQG8RdTYAG5j0Fi9tZ/Ulz0Hk12wBc2O2JwBBgLA9cFIrxswmZZP0Ly1i3opO5TKRdrbhy/79KUpDX2Se5WpG+JfcxIsgeKpvM0uTIXf6A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Gpx1Y2Sz3bs7;
+	Thu,  6 Nov 2025 20:19:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762420761;
+	cv=none; b=IHpGUi7lXfx3UxZSmRZ/RrSHAkFLQn18uz+j/p9n8SnWLxyloxDvms0toKM6SsZbysUNC5I+Cfcjv3EKaBRZyWzUVN0QjAvANnFeBOgHm3owZohlS+JvzpA9s58kcqrYrP96x0bMt8apGY5akJDXsHcQNiJE7/9p2Zj5L0yV9jsrJtd0d+SCkVv8q5k2VAI9pLH3sfnSAjjV4wxFYarnNFBfiye/aqSsBky+WjABB14GaO8rIklaCxhWkkwbuaZqaorkE2uZ/eXEczAJ2BMKn5yMK1Z6hqgfFhanoetRVx7Htx9v2qNi5sxbfMRqIQ+CdkKAWVdxnkvvxf7M+jYKnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762417545; c=relaxed/relaxed;
-	bh=eScuLIkUxRIPtIqEAvPGMRjpBX5AffvPWMd1EMYumTo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ZfqZQ6CYB5kxNHVx9DWIdjTvhGzQC2MS+IcHpwG0RSX3BSxVdZ233olHP0TWg/BolGMqsWfpWjhcyzQNcpb1LiW7Jo05tgLWuoBrLX0tkUl7N16/UVwO16+nA09y4UaRKhgH8gbuR9DNdY2/w+GzLhVzfSOV2rBxkkUWGA6+rVHdoU5cc2Epq0lOPb2BAbfG03CgEYamcJPPblWlP8Xi0kxWcQ75eSVJWAJUGWEJQNe7tsETVKR30BwMSSbBG/wwO10OJwVe1NuBIcTmTtmYqP0lYzHSto9+W8Plt70fZXsKZR+c3Yn0AnAH/BYQLfi7fKnBQzBopAXmWifCM7aTdg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o2X8erI1; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=o2X8erI1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1762420761; c=relaxed/relaxed;
+	bh=R1e+n2STAIZSlmEJ0HT7X+M8eC3OwmeptdqDHQ1pxSo=;
+	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=obfEug1+Qn7ds9eXKIGa68A0Hkc2qzC0hjZic8LLBnXbqgd1+RPkD1q4jyRCmnQOCYNtk/EDKsbxHyZ2fzw+AMIb4pX0ESVaqzLMImcPPtNULnpnU0cuaQsUX9h05X3V8DYPnq12tA9C1SXGBpLuRi9LtjhOwbNnmvduDwSycEorOfFQRmRX6HevTGhwHTSmSP+Ipa3lUlnqbbGd749YVIxk0VHFxRKeJx7eSXHCGhiR2Dz1jZWjzhgAV89Lgd5jDLUvIo8fnK2OqUhcaV8qQzAh8sF1p9ICu0nP2yS84K8JPNGRfuNIPNt3fOgwlQPh4if7EI+nqxB5aY+fQaolAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2Fd50100z2ySP
-	for <linux-aspeed@lists.ozlabs.org>; Thu,  6 Nov 2025 19:25:44 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2EBF460216;
-	Thu,  6 Nov 2025 08:25:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F66FC4CEF7;
-	Thu,  6 Nov 2025 08:25:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762417541;
-	bh=DCnfh7mLbukTm540wr5ypp9ub3cRbfvtzASA2bFr5UQ=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=o2X8erI1WCidQeB/fJ3hxdn68JhhCmdtURxZ6pDYRokF3gwUy3KaKMn7O4GTtA3TS
-	 1rb3a9qyv6iCCJaD1KO3ta7K8muaEObJoUT7o/VwawUWqzkWOb7Ndqintz04nuqFxQ
-	 +WnOkaOIXhS6BYJYesjASd3tTIvP33NmpdgxJuhpVhxKlGeVrg33QiSyf/ROHm5vfB
-	 eUUmf2jQCB02sOhlqFCt43Lg/o3o/NfI8tq4WTa7EKswLccErikKuZdAOXXig9GQaq
-	 q6QJdpvp1kYqYw2hE7tFTecDW2hSeEiix/pGJ8VUufDI2eqjYJ+6Z3smGLqvSrpow7
-	 SWjL0CCqsJSiA==
-Message-ID: <1f3106e6-c49f-4fb3-9d5a-890229636bcd@kernel.org>
-Date: Thu, 6 Nov 2025 09:25:36 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2Gpw2lTjz2ySP;
+	Thu,  6 Nov 2025 20:19:19 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 6 Nov
+ 2025 17:19:03 +0800
+Received: from aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Thu, 6 Nov 2025 17:19:03 +0800
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+To: <joel@jms.id.au>, <andrew@codeconstruct.com.au>, <clg@kaod.org>,
+	<broonie@kernel.org>, <linux-aspeed@lists.ozlabs.org>,
+	<openbmc@lists.ozlabs.org>, <linux-spi@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+	<BMC-SW@aspeedtech.com>
+CC: kernel test robot <lkp@intel.com>, Paul Menzel <pmenzel@molgen.mpg.de>,
+	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@redhat.com>
+Subject: [PATCH v2] spi: aspeed: Use devm_iounmap() to unmap devm_ioremap() memory
+Date: Thu, 6 Nov 2025 17:19:03 +0800
+Message-ID: <20251106091903.2800981-1-chin-ting_kuo@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,127 +56,37 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH net-next v3 1/4] dt-bindings: net: ftgmac100: Add delay
- properties for AST2600
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Po-Yu Chuang <ratbert@faraday-tech.com>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
- "taoren@meta.com" <taoren@meta.com>
-References: <20251103-rgmii_delay_2600-v3-0-e2af2656f7d7@aspeedtech.com>
- <20251103-rgmii_delay_2600-v3-1-e2af2656f7d7@aspeedtech.com>
- <20251104-victorious-crab-of-recreation-d10bf4@kuoka>
- <SEYPR06MB5134B91F5796311498D87BE29DC4A@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <9ae116a5-ede1-427f-bdff-70f1a204a7d6@kernel.org>
- <SEYPR06MB5134004879B45343D135FC4B9DC2A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <SEYPR06MB5134004879B45343D135FC4B9DC2A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 
-On 06/11/2025 06:41, Jacky Chou wrote:
->>>>> Create the new compatibles to identify AST2600 MAC0/1 and MAC3/4.
->>>>> Add conditional schema constraints for Aspeed AST2600 MAC controllers:
->>>>> - For "aspeed,ast2600-mac01", require rx/tx-internal-delay-ps properties
->>>>>   with 45ps step.
->>>>> - For "aspeed,ast2600-mac23", require rx/tx-internal-delay-ps properties
->>>>>   with 250ps step.
->>>>
->>>> That difference does not justify different compatibles. Basically you
->>>> said they have same programming model, just different hardware
->>>> characteristics, so same compatible.
->>>>
->>>
->>> This change was originally based on feedback from a previous review
->> discussion.
->>> At that time, another reviewer suggested introducing separate
->>> compatibles for
->>> MAC0/1 and MAC2/3 on AST2600, since the delay characteristics differ
->>> and they might not be fully compatible.
->>
->>
->> Your commit msg does not provide enough of rationale for that.
->> Difference in DTS properties is rather a counter argument for having separate
->> compatibles. That's why you have these properties - to mark the difference.
->>
-> 
-> Actually, on the AST2600 there are two dies, and each die has its own MAC.
-> The MACs on these two dies indeed have different delay configurations.
+Use devm_iounmap() to unmap memory mapped with devm_ioremap().
+Thus ensure proper cleanup of device-managed resources.
 
-Is this the logic like: we have multiple snps,dw-apb-uart UARTs on the
-device, so we need snps,dw-apb-uart-1, snps,dw-apb-uart-2 and
-snps,dw-apb-uart-3?
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202510292356.JnTUBxCl-lkp@intel.com/
+Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+Reviewed-by: Cédric Le Goater <clg@redhat.com>
+---
+V2: Refine commit message for clarity.
 
-> 
-> Previously, the driver did not configure these delays — they were set earlier during 
-> the bootloader stage. Now, I’m planning to use the properties defined in 
-> ethernet-controller.yaml to configure these delays properly within the driver.
-> 
-> Since these legacy settings have been used for quite some time, I’d like to deprecate 
-> the old compatible and clearly distinguish that the AST2600 contains two different 
-> MACs. Future platforms based on the AST2600 will use the new compatibles with 
-> the correct PHY and delay configurations.
+ drivers/spi/spi-aspeed-smc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Why are you repeating the same? So I will repeat the same. You need to
-provide rationale why different compatible is justified. Difference in
-delay itself is not the enough. Please write concise answer based on
-device programming model differences or other rules expressed in writing
-bindings or numerous presentations.
+diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+index e8bd8fe6c4e7..179c47ffbfeb 100644
+--- a/drivers/spi/spi-aspeed-smc.c
++++ b/drivers/spi/spi-aspeed-smc.c
+@@ -396,7 +396,7 @@ static int aspeed_spi_set_window(struct aspeed_spi *aspi)
+ 
+ 	for (cs = 0; cs < aspi->data->max_cs; cs++) {
+ 		if (aspi->chips[cs].ahb_base) {
+-			iounmap(aspi->chips[cs].ahb_base);
++			devm_iounmap(dev, aspi->chips[cs].ahb_base);
+ 			aspi->chips[cs].ahb_base = NULL;
+ 		}
+ 	}
+-- 
+2.34.1
 
-Best regards,
-Krzysztof
 
