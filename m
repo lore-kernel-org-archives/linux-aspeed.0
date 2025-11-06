@@ -1,36 +1,36 @@
-Return-Path: <linux-aspeed+bounces-2767-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2768-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4017ACCFA05
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF5A7CCFA03
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 13:35:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NVd66ZHz2yvk;
-	Fri,  7 Nov 2025 00:35:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2NVr1wJwz300F;
+	Fri,  7 Nov 2025 00:35:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436137;
-	cv=none; b=UwVypu+t5VRc++XqRUtuyLn/tlt8L3TTGmYAopHyio6q8Etsq9IdzK1JoccdeN2moQwhl++5q/N2dzXMqh9746/YtpUN9dFw9NESj5MnVBZz2lWx0y0BmMSfZy/9CKAO2K1s3iTSAfS/Gga7VRGG18L90txXQ7UX/Nd2kUAzyqTLFMEcjt8nNs1rkI7gGlnhCuwaTC+VgZK6guXzfqi6J9S9MaeskOzawXbr+exHrnV2Q7kW1IXZToyBL3PTy34xN8VFZR2yTVy6ItY1esmxuUWyFKzD8mY6yS/+TbEAaenlRuGmNuCROnxllyurlRVeRJ8GPiJbID3F1bXeNtnHIg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762436148;
+	cv=none; b=Lr8+YTmrfEsfYbmggPOFYZHxaO/QWFtVAnaiUec4kfoO258cXOdrkHstpDUIDyAdPYnZXbG9DUioV5mnb9hjCVuGkLUv60sReeA09vaivlVAPE1U7AkSkI9SNJmTKpU1/ZoE2Loq083elYjf1RKEsF8Lq9tG0V21D3WYyp2sAG8OEOCRpkmOkl2ss9HkkdRgxEnJ3JOlZ5eiSkatfycfFHgn6tNxeT0TVn5NsGBKi9eKLa6I74XhYxRPpL67fWbydwG/A8iNG4Df+bpXmuLoW9OwAx5ZO2idewzY7uo0kDfIQJWBBqGVQQtCsvJNUGaAzmrpWZNSrYqBTggtdNSRzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762436137; c=relaxed/relaxed;
-	bh=WazW5gpzBwM0AUxxc29gQdWqpX4Z69E/Yqo8og6A238=;
+	t=1762436148; c=relaxed/relaxed;
+	bh=UNdHS6Ab9Mp/daFaDRIseOid7JYOByYqEUQfBpEhGB8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kZ8HIe+pdwDepKCLfAia4TOojUb8hm0IGdpdYhEhbddULTrhs361UZYdkgfqjx/t0zMQ2WJmFGXTRcd3MIP7YqQWaSS8UKOF5im/9AZtqYgY73FAhbo6TfLl/RGvhjFnSieUMh/sOD6flv+oS4El8Oj7Qeq9Nt1DY9mjE4AcUSdhEQYTlaVuODdaX5IOmL+LGKj8DmxD0PsLG97qkU3poAmJQaqD9tK0F5zYQmnoW/hi7LgTTwpdkDF3euTsKyO6RKTchI3gw6Vvdts9movkkk4jVQH6b8ZoQFaSgW8fKnJxXElT3nYv5N+l14uv7y9GRW5IKSi5Pv+6pSkERCPiJQ==
+	 MIME-Version; b=lAEscTxUFA20yju1X4uLFNHEecA6dnTqK/kNGBlWDjBfBYwHOJnTR1NKU3V+3A2XgrKA9iQkUlh0o+gs8yy7bysfbFh6NUt9vNu9TnaiQwxR63VhTtm6yDQCw5ydaoAQoK9RZr7JAAYVhq6+mytvcchI+RZM/cKe43t2NfnQKpDsMB+D1KJoxlzVWCRazNrg4KB2MtskkgX70tuAGL0XTQSsPplfH1dkdvU6zFOvj+9cAO1MIkekPDmOJdH1ve51EfqDXm27NQDj4n5teGf7JWerekjwWE9u1aMhonUIPVMVrzXe1uIhybQlJ0WA1kUrn7C771bgRVnDKwphsdt0Fg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=kmvc=5o=glider.be=geert+renesas@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NVd0dFhz2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:35:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2NVq3LwDz2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 00:35:47 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E8C286021F;
+	by tor.source.kernel.org (Postfix) with ESMTP id 3F8C360223;
+	Thu,  6 Nov 2025 13:35:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0913AC4CEFB;
 	Thu,  6 Nov 2025 13:35:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB744C4CEF7;
-	Thu,  6 Nov 2025 13:35:24 +0000 (UTC)
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
@@ -88,9 +88,9 @@ Cc: linux-clk@vger.kernel.org,
 	linux-mtd@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 06/26] iio: mlx90614: #undef field_{get,prep}() before local definition
-Date: Thu,  6 Nov 2025 14:33:54 +0100
-Message-ID: <6c773f03da99ccc081a33d2363879957ac96ce33.1762435376.git.geert+renesas@glider.be>
+Subject: [PATCH v6 07/26] pinctrl: ma35: #undef field_{get,prep}() before local definition
+Date: Thu,  6 Nov 2025 14:33:55 +0100
+Message-ID: <0840ef3c986f6474a980c1e3e5e95aea803a3581.1762435376.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
@@ -116,22 +116,23 @@ when introducing the common macros later.
 
 Suggested-by: Yury Norov <yury.norov@gmail.com>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 ---
 v6:
-  - No changes,
+  - Add Acked-by,
 
 v5:
   - New.
 ---
- drivers/iio/temperature/mlx90614.c | 2 ++
+ drivers/pinctrl/nuvoton/pinctrl-ma35.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/iio/temperature/mlx90614.c b/drivers/iio/temperature/mlx90614.c
-index 8a44a00bfd5ece38..de5615fdb396aa3c 100644
---- a/drivers/iio/temperature/mlx90614.c
-+++ b/drivers/iio/temperature/mlx90614.c
-@@ -69,7 +69,9 @@
- #define MLX90614_CONST_FIR 0x7 /* Fixed value for FIR part of low pass filter */
+diff --git a/drivers/pinctrl/nuvoton/pinctrl-ma35.c b/drivers/pinctrl/nuvoton/pinctrl-ma35.c
+index cdad01d68a37e365..925dd717c9deead5 100644
+--- a/drivers/pinctrl/nuvoton/pinctrl-ma35.c
++++ b/drivers/pinctrl/nuvoton/pinctrl-ma35.c
+@@ -82,7 +82,9 @@
+ #define MVOLT_3300			1
  
  /* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
 +#undef field_get
@@ -139,7 +140,7 @@ index 8a44a00bfd5ece38..de5615fdb396aa3c 100644
 +#undef field_prep
  #define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
  
- struct mlx_chip_info {
+ static const char * const gpio_group_name[] = {
 -- 
 2.43.0
 
