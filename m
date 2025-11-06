@@ -1,68 +1,68 @@
-Return-Path: <linux-aspeed+bounces-2791-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2792-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FBA9CCFA05
-	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 16:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E01ACCF9F8
+	for <linux-aspeed@archiver.kernel.org>; Thu,  6 Nov 2025 16:09:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2RvY39TVz2ySP;
-	Fri,  7 Nov 2025 03:08:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.21
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762445337;
-	cv=none; b=Rz0EkWlm71jdbw1tL2MHjSzudgPO7osfVbBf8fBSxl5hXy6Su7BA9vWwYWJ0jMU3MdSTTX5NxjdWl0AfwDfp/drfLn+d/DgA4fLDPgvSjVmyJ2FDirEfVapB3GK/gYar5PBU/u9Qfk7FP4i7hqKSKK1wB+1z/RGNK7B3rZM7w27aD/4WT1mZTMxR/QZo1+AfEIkaxSKXLiMvUITgeBAyBTqVI5KOAKXo8p+8GpbzyxAjP+sJgl9nQoP5Ci9LMH2YuHLm/zS1P7IfTVNOyKes//drFcGSWq7yVZyMMlMnZN8tvWE90zKOIk4U/1S9fzynnIKrVziz27wWvV44DY80NA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Rw6229Dz2ymg;
+	Fri,  7 Nov 2025 03:09:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762445366;
+	cv=none; b=F+ZFxfQkgaCkcGkEmCfvyThE78WyjUaoBJ7UpB7yQlesX8iFMRMPYR3b8LsQNX9HhYpok3hiwi32SqVRbfoFL2NjnESwXQpRriGUjbcBMs1YwraxQ+qfL12XHB0Njt/wlSJrBd7B2+GDaXAsTi9MvS0g6FMCSxYvzpYkGBrbI4vPFIxqqALOt7nlNi8kjwbIrcTmPOkHCKGiWRr2RORzYuNTDqpDASwo3wbdQoVFh3NObv/JOv4IfBsE4N2OYL00UGNadnqOJ6kCH6sYI7+jFm9ZCjmAlNGxTBdp1duxCido90Tkx0Zd/W5djC3kZM79wqInUkAzoF8q/fyF3DLVSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762445337; c=relaxed/relaxed;
-	bh=nz+pK57me0GYD7xykSprYkBKTfwkflWPuCYpx3wRWXo=;
+	t=1762445366; c=relaxed/relaxed;
+	bh=QWMFqahXnFZEYXUQN8+YT87PcScezAnXnt1bCMlV22c=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aAlTehSr9SZpy0lxY8krUy/9nQ92/dwWYZ2X3YsK/Hv/UXH/8vwOPL7GtiF8g9qNDL5nmgAGtepmfazubQYL3xW/4ExCc0KmpySvb5ssJyD24j4lpl7Ts5Q8fFKyqncCOrdep6HWGN89Mlu0DmZY2ZNdxO0lGdbb4hkOw+sy6GkVyyI3e9+elIiVKDKmTIUZHPh2VQYybIf3SNEEzVmzUr5/1DsdInS0l18JHb5trSlDLd1l3X6gY/bF3WUtQA15cyamZehphsQK+0jVwMTjmv/2fimo38F2s1FapIvGXl9wHyYeJP/kERYP/l75TnAjgGIX2a/TfY+hHNtEfuL40g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nuUb8dqb; dkim-atps=neutral; spf=pass (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=NnzHGUNl+EpxE1CFy9mkkDvti4o+83bf/SG5sLt/Jg5kmhykOav2m8oXT7V/lWy8peAie91k46bZh+das1C3gnuqKb6FZr+9oj0YMaQ6b4A5cy7KaINg5UW87+qrKmblId74pH297d9eaDAV1u/De8Q/SecNcDCjaPeQZUU/UvMcXxkJfFpFZ721fIKjdNo9keJ5t6jVywYo3rtbhP3zK4JxQQ77JxTqZTEzrpuVh5CYjjogKnCYhbfZCInEMEwVoMEnD0e6sylvFMdI1mBQCqPDW2oWgT6/asvGGaJZPEWyHnFFWikhkpp/XZA3wPRm3Y4mpS6+OjKMzPMUkyO/sw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cJuCbf93; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nuUb8dqb;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=cJuCbf93;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.21; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.21])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2RvV73qSz2xR2
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 03:08:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2Rw50G3qz2xR2
+	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 03:09:24 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1762445335; x=1793981335;
+  t=1762445365; x=1793981365;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=BxSiubnDJFoi3hF0gZEV1dDowKtMOnRvt3PDCt/YgRc=;
-  b=nuUb8dqbKMZF/H42fYGejenaBtjAbEfdZJFLpSUCVI8eVIc4bBe8vm1J
-   SNJwPVdZ4UHPsORFvKmnV9jr/Fc4IT2mZ00glK3hCpGiCBxIMCa+upEA+
-   nKqXchkWQVOtKUBRNvYtrQZ+iigjbX2ORzgV6TUn8xItmoOjxeMoxdiCY
-   Kl+ee0hbcSM9K23P6h+YOeAaiiMa67F3ANxzuab4u6RNfgjaJccdWJGTK
-   WC34ZEhUWWxA5JXMG6oEaQ4dc8/gGAjjidSInsPiTlEo/FH68GqeS8CGs
-   8Fp4nm39Ir1Cne7tyOdyVOEjSFMVMidl5ZghC91bSYspN70ZI+lmrm6ZQ
-   Q==;
-X-CSE-ConnectionGUID: /B8xbqxASLKNwVYMxLN4yw==
-X-CSE-MsgGUID: vjV3Zsy/QpqCSGJYMua47Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="64495054"
-X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; 
-   d="scan'208";a="64495054"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa113.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Nov 2025 08:08:50 -0800
-X-CSE-ConnectionGUID: csRhl/YrR3mh6V3vjCg1UA==
-X-CSE-MsgGUID: aB5X0TIERP63avd4sWT1og==
+  bh=Vw8ubo+7N9WsgP5kvlylaSWSYsq/SxO6iOGciGtc5m0=;
+  b=cJuCbf93XzhRO6MLgWls6fK2e0dQWmINGGuo1L6zXMCkMqSsa2R6F2Hb
+   +1oeJFuP5C6Hjb8CpyPkeyXktTfKUamcqlp/KOXy7u/PDQG+vF7nwkkfY
+   kQKRZ8HzaZt1PUWU2fnLBkRXIixYIK2pLsauJyZurg6Tuynv9E7Isb+6h
+   lGrRzT+kVyzefMlZdVJzyQat8Z6+tL9lvxR+gZU7P8VlS7GDf/i0vS+9C
+   ntVBo8yok3eJCSvSbmJYxcwYtwpPeVlsLmMxyb+a8Nh/teXTHCbB/KZbH
+   MBHFdahqd6QX93sByEwm53kcYBe6gT2a3PBpHsgEhbTCRcnthJ7dfFv3Y
+   g==;
+X-CSE-ConnectionGUID: Z00+a2RuSE2c+Q4eYtB8yg==
+X-CSE-MsgGUID: Vg4+abByQJOAPRzMfwI0tg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11604"; a="74877958"
+X-IronPort-AV: E=Sophos;i="6.19,284,1754982000"; 
+   d="scan'208";a="74877958"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Nov 2025 08:09:23 -0800
+X-CSE-ConnectionGUID: NMtAY4RTQwCRyv5pYJWnNw==
+X-CSE-MsgGUID: 7q5zGf4ISXWoFKQH6Cd2fQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.19,284,1754982000"; 
-   d="scan'208";a="187454619"
+   d="scan'208";a="192150660"
 Received: from abityuts-desk.ger.corp.intel.com (HELO ashevche-desk.local) ([10.245.244.224])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Nov 2025 08:08:39 -0800
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Nov 2025 08:09:11 -0800
 Received: from andy by ashevche-desk.local with local (Exim 4.98.2)
 	(envelope-from <andriy.shevchenko@intel.com>)
-	id 1vH2XJ-00000006BqD-4AI9;
-	Thu, 06 Nov 2025 18:08:33 +0200
-Date: Thu, 6 Nov 2025 18:08:33 +0200
+	id 1vH2Xq-00000006Bqk-1JoP;
+	Thu, 06 Nov 2025 18:09:06 +0200
+Date: Thu, 6 Nov 2025 18:09:06 +0200
 From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Yury Norov <yury.norov@gmail.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Yury Norov <yury.norov@gmail.com>,
 	Michael Turquette <mturquette@baylibre.com>,
 	Stephen Boyd <sboyd@kernel.org>,
 	Nicolas Ferre <nicolas.ferre@microchip.com>,
@@ -107,11 +107,11 @@ Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
 	linux-iio@vger.kernel.org, linux-sound@vger.kernel.org,
 	linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH v6 12/26] bitfield: Add less-checking __FIELD_{GET,PREP}()
-Message-ID: <aQzIAd91tlR3o9hu@smile.fi.intel.com>
+Message-ID: <aQzIIqNnTY41giH_@smile.fi.intel.com>
 References: <cover.1762435376.git.geert+renesas@glider.be>
  <cfc32f8530d5c0d4a7fb33c482a4bf549f26ec24.1762435376.git.geert+renesas@glider.be>
  <aQy0T2vUINze_6_q@smile.fi.intel.com>
- <aQzGY4AKiMQpuL0R@yury>
+ <CAMuHMdXVUJq36GvNUQE8FnHsX+=1jG4GOJ_034r=fgr_Rw4Djg@mail.gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -127,47 +127,55 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aQzGY4AKiMQpuL0R@yury>
+In-Reply-To: <CAMuHMdXVUJq36GvNUQE8FnHsX+=1jG4GOJ_034r=fgr_Rw4Djg@mail.gmail.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Thu, Nov 06, 2025 at 11:01:39AM -0500, Yury Norov wrote:
-> On Thu, Nov 06, 2025 at 04:44:31PM +0200, Andy Shevchenko wrote:
+On Thu, Nov 06, 2025 at 03:49:03PM +0100, Geert Uytterhoeven wrote:
+> Hi Andy,
+> 
+> On Thu, 6 Nov 2025 at 15:44, Andy Shevchenko
+> <andriy.shevchenko@intel.com> wrote:
 > > On Thu, Nov 06, 2025 at 02:34:00PM +0100, Geert Uytterhoeven wrote:
 > > > The BUILD_BUG_ON_MSG() check against "~0ull" works only with "unsigned
 > > > (long) long" _mask types.  For constant masks, that condition is usually
 > > > met, as GENMASK() yields an UL value.  The few places where the
 > > > constant mask is stored in an intermediate variable were fixed by
 > > > changing the variable type to u64 (see e.g. [1] and [2]).
-> > > 
+> > >
 > > > However, for non-constant masks, smaller unsigned types should be valid,
 > > > too, but currently lead to "result of comparison of constant
 > > > 18446744073709551615 with expression of type ... is always
 > > > false"-warnings with clang and W=1.
-> > > 
+> > >
 > > > Hence refactor the __BF_FIELD_CHECK() helper, and factor out
 > > > __FIELD_{GET,PREP}().  The later lack the single problematic check, but
 > > > are otherwise identical to FIELD_{GET,PREP}(), and are intended to be
 > > > used in the fully non-const variants later.
-> > > 
+> > >
 > > > [1] commit 5c667d5a5a3ec166 ("clk: sp7021: Adjust width of _m in
 > > >     HWM_FIELD_PREP()")
 > > > [2] commit cfd6fb45cfaf46fa ("crypto: ccree - avoid out-of-range
 > > >     warnings from clang")
-> > 
-> > 
+> >
 > > Also can be made as
-> > 
+> >
 > > Link: https://git.kernel.org/torvalds/c/5c667d5a5a3ec166 [1]
-> > 
-> > The positive effect that one may click that on Git Web.
-> > Ideally, of course, would be an additional parses on Git Web kernel.org uses to
-> > parse that standard "commit ...()" notation to add the respective HREF link.
 > 
-> Those flying over Atlantic or cruising cross Caribbean would disagree. :)
+> Nooooh... torvalds might click on it, and complain ;-)
 
-They won't. The purpose of these Links is described in the above commit message.
-Even they read the commit message before clicking.
+See my reply to Yury.
+
+> > > +     BUILD_BUG_ON_MSG(__bf_cast_unsigned(mask, mask) >               \
+> > > +                      __bf_cast_unsigned(reg, ~0ull),                \
+> > > +                      pfx "type of reg too small for mask")
+> >
+> > Perhaps we may convert this (and others?) to static_assert():s at some point?
+> 
+> Nick tried that before, without success:
+> https://lore.kernel.org/all/CAKwvOdm_prtk1UQNJQGidZm44Lk582S3p=of0y46+rVjnSgXJg@mail.gmail.com
+
+Ah, this is unfortunate.
 
 -- 
 With Best Regards,
