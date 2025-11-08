@@ -1,118 +1,57 @@
-Return-Path: <linux-aspeed+bounces-2837-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2838-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04F12CCFA0D
-	for <linux-aspeed@archiver.kernel.org>; Sat,  8 Nov 2025 04:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DBD3CCFA13
+	for <linux-aspeed@archiver.kernel.org>; Sat,  8 Nov 2025 17:51:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d3NYJ6VXgz3bfX;
-	Sat,  8 Nov 2025 15:41:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762470711;
-	cv=none; b=CE8ag1U72S6RKn3ITERVw1Jl9Y5FJ7vRPxTwMc1NyclUXnlL9iyX5sJkgeMFaIEnMVdF+Y0bSDM0Uq7IcAJ7XQMJ8kHLlvR7twTYylKWlCjm4HJ51MUXeTEHiPeTDLN4HuihkoQNlGlwDA6wd7vako2nSuz7/SqBcw1bpXumCYzEHqx0IIcW9CL4dH19HxWKBkXuAHquPEROf6DvLmXEo3IKSNAad09xPULPbO8z7+fIFba8jOA0Av+Rgl2NPEZcrZjKWz9yvTimjrlvUCWda5lFv5gQvHOx3U/P+Q4VQ8HUrwpx6AZ7W4yDvULShgDHUzfk7XCGHQxNqOOCVjXCfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d3k4X5drXz3c1J;
+	Sun,  9 Nov 2025 04:51:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762624268;
+	cv=none; b=gVv54KMvB6auyYWhNFBScikyllWMEVy6Qqqrl/VqY9uXrvYuUIB0IKoJWwVEREndnIbEyPq98XMpZCC2S4bWYzR4kjFwFUydQaAS0LMa+dxwjEBWPq9G9yZ/rzisCD6r7niYPJXWP1nqjbadIHKiMCgAjvPQhXV9Rr3v2RhA3xPfHSiUzo6vRFbRNv2xqRNFTgZWgovsjAk3i29FqVelXCtgakBOfdrKsOMs0pNXaw7b3ATo6XlxYMmzbhoFvk7y6kqxrAORB80siOZBplsNAgvUKwxem/KzC+X9OdfGZi8u0uYodyRCmZgV5kTAw4tiie/ZnckxFsnaqy2L1u4/Eg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762470711; c=relaxed/relaxed;
-	bh=QXr28wg8D7Sns2qkEeLZq8j8Ed6Tt4Rhy3ccABxhAR4=;
+	t=1762624268; c=relaxed/relaxed;
+	bh=w5F5crbl5PXGRN0zWCBy1QeKvlywUYTj3rLQO8PeMZ4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=j048BrDCiQesk0aEKL26AuySD28k6mvbj2mzX+Mg8HSk22Jnpw4XlNJUBLruXgwzZQLm7f1ghLgyNhCbQDX7hwnd6uyghaRy1FzpMjokLryLQuy9xwgPDLokfjhUmj0Q1wN/t15/GeFznT86TfhiJGT9wrssX35+IbMdt6OyDLZYpMVJl9bP+j1eMSTXFXobYYXx2h3wZikkC/MftU+vMfq9R3XyYa6i55zRenFGMwMvBnW6KaziND35OlwK/PRuH4s08yG41cj3WyPyO5uYk3qTimK8onKZoVa+GhNaMgppmujt3QGBfNr8pV8TaWfmVLOq5rbQ/Rp9pRZ0G6JIOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ffoNfZt+; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LEvNrYRk; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bmasney@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=HRnwd+e2ODAdR6WIXTAaTAV3ypepseB+3tv7MKRZeoQc9R68GA7eJkbE9JY/uu1eUKXt9B2KSNFBejPD9AwoFrEWrN0uwPlVJXviP4bU8J+1di7heeN2eg80aaw6IgmGpnej9/atZYt5umJ4yJbDHkerhPoN+i7TqCJ+NVB0dSAkpaCqJvMiJiQrZsnddCtA5Kr6JIk5j2a8tk9QZCJUJqE+KEXv8bsc2EOdpgNOd+ncmSvTNYX6FQxCeIU4LGg3CV6ERVjVBjLdRHazgETtLQSNPFqfRHDZaxNTJmW1NcwksRBWJ2jdTDsZfFF2l4ULV0Qltp5ZIGLmZJYpk2gw3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=E/8+gc3y; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ffoNfZt+;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=LEvNrYRk;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=E/8+gc3y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bmasney@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2dHV2PRfz2xlQ
-	for <linux-aspeed@lists.ozlabs.org>; Fri,  7 Nov 2025 10:11:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1762470703;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QXr28wg8D7Sns2qkEeLZq8j8Ed6Tt4Rhy3ccABxhAR4=;
-	b=ffoNfZt+4EwKYQZhUq9CmQ7krU9OWDgy2PcqqjcavAJ+302QZWMBE3OQp41akYkDml5xQN
-	t3j3R2sh5X1HxLx4VN/LXhD7SB3EphW4bAd6qdM1rpG4YJAvhcd1ojiAtG0LH5EI6ap5y4
-	JxnRcLKT+5R8dCkk6Uzz3dJI5ySmWHw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1762470704;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QXr28wg8D7Sns2qkEeLZq8j8Ed6Tt4Rhy3ccABxhAR4=;
-	b=LEvNrYRkaZz4jYvuQQ2XF/Tj/zEhk3ISbDBoM+ig1fEs789q/7jRKLJW4Z9NkfO+htCqHj
-	AeCnigrl/oAa0/z04pipHlhjoOl5adfRvLPAnZovOaLu70tk48XupLErXAwUq3qHia9COj
-	EFOPa1+EjA1Vxm6Q0LETYuNKzbp8S5Q=
-Received: from mail-qk1-f197.google.com (mail-qk1-f197.google.com
- [209.85.222.197]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-573-at4zc_5bOJuN7PNNJTm3hQ-1; Thu, 06 Nov 2025 18:11:42 -0500
-X-MC-Unique: at4zc_5bOJuN7PNNJTm3hQ-1
-X-Mimecast-MFC-AGG-ID: at4zc_5bOJuN7PNNJTm3hQ_1762470702
-Received: by mail-qk1-f197.google.com with SMTP id af79cd13be357-8b1c1d39066so39066885a.3
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 06 Nov 2025 15:11:42 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762470701; x=1763075501;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=QXr28wg8D7Sns2qkEeLZq8j8Ed6Tt4Rhy3ccABxhAR4=;
-        b=k5lGKI4q1OP4jth9thAPcwZKOSK7fUwBzFfE4eOK55L+hRPrxNfrKMl+rM+TC3Wifd
-         DHqcF5VcAZgCwIWZHLf7k3tA8ps4OozpRhxVTepAm6RBCfX2lpGe7kw1jIoKvqMz6x0+
-         88zvNeGYtPIye8PCMTnZ4RVVj7aiRlOgQFHa1Q5Xu81j6fQjP1h5op2S8rAizV4rwURY
-         DtIV3727zZpT+zWnoS5cThk3jGa+SfXvXQ4mrV76UaNXUwNb0ZXE5VdDoeBRKS+uqcgY
-         HQjKuhiotKorymjqzfxo/QpqjwSQYqx4Z3r4hLo8OHDO8p8EbLGNtMEW6W03rMUuNhao
-         HGDw==
-X-Forwarded-Encrypted: i=1; AJvYcCVp4aVymDom0Z+0mwcX4dTFVjMUyoSFXApyj2PoDc1Z0zKITBrTOuTDjIV53vHKqzV1zSTuYewfSm+t/r8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz7/b6Em6WmLoakhHrAIJr3srINnKySJVV4Xi1MbzTpNwiVVmiS
-	TD0J0S0XZiAswdoY30upUycjMkr2dJQN2HAPcfA+aVbwgRyyRdf8miSY42+cELrJoDyhAh8I2eX
-	F4tasbG7hDte0rL+pB1RtJJZ9ufnRc26N826+5r1eU23uCA5GkGOuHqKpdXrJALcQknY=
-X-Gm-Gg: ASbGnctkB1ouaytusPXpQIKGESFGXdJZinNpHzV3s6cjQpUpUBNfcAz0RE0VbHIeqbm
-	M7AxiPQCeC42Cy6t1l7H61TViek+PjI5+PSOImuwqfq6XmoT3+YFMBmYhLfLHl4v5oHur3XLsY5
-	zNp2adeJEJ6NhahdevD01Lckl2NcrtF5RvjyNwcYVsgLm5Bv4uS7RUGGI9VWfuCNSOBAm6lXMKZ
-	ZQFL+X0ivJLBRzKhyGIiHg0Kt++HiYVbIdh2z2kxCgYTERGb4fwC9NThmWNgotjRrEXWJ2tO9jE
-	bEJt6P1UE343RX5dUy6Qck7o5brRcqG6lUgXsL6VCsTARiI0vRcAVloA6Y+rxclL9LgVx10RcnM
-	HU1fa2UlucTAhVGKceOu5twMZEZVIy7QL6Q==
-X-Received: by 2002:a05:620a:31a4:b0:8b2:43f7:c07a with SMTP id af79cd13be357-8b2452a2167mr193181285a.22.1762470701620;
-        Thu, 06 Nov 2025 15:11:41 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IHVetiFRByjjykyfxVb5wuiQuE2TgT+5D6JC3vwCG5rcTtdy2u5B3i2rGtKd9IxnXFml+2NaA==
-X-Received: by 2002:a05:620a:31a4:b0:8b2:43f7:c07a with SMTP id af79cd13be357-8b2452a2167mr193177985a.22.1762470701157;
-        Thu, 06 Nov 2025 15:11:41 -0800 (PST)
-Received: from redhat.com (c-73-183-52-120.hsd1.pa.comcast.net. [73.183.52.120])
-        by smtp.gmail.com with ESMTPSA id af79cd13be357-8b2355e56c0sm281056785a.14.2025.11.06.15.11.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 06 Nov 2025 15:11:40 -0800 (PST)
-Date: Thu, 6 Nov 2025 18:11:35 -0500
-From: Brian Masney <bmasney@redhat.com>
-To: "Winiarska, Iwona" <iwona.winiarska@intel.com>
-Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
-	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"joel@jms.id.au" <joel@jms.id.au>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"sboyd@kernel.org" <sboyd@kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"mripard@kernel.org" <mripard@kernel.org>
-Subject: Re: [PATCH] peci: controller: peci-aspeed: convert from round_rate()
- to determine_rate()
-Message-ID: <aQ0rJ3ahOV0gmUVM@redhat.com>
-References: <20250810-peci-round-rate-v1-1-ec96d216a455@redhat.com>
- <aMatZAX6eFI1RmDH@redhat.com>
- <28dc3bd8aeca7e3164747960747f75060c596704.camel@codeconstruct.com.au>
- <aPEZSY6RC-UVclxN@redhat.com>
- <ba2e6b78e59afb7c89e5022770a142ec8c31659a.camel@codeconstruct.com.au>
- <2025101759-runner-landing-374b@gregkh>
- <2975918e3f3a7de245e93fbee52335acb78bb23a.camel@codeconstruct.com.au>
- <2025101721-twiddling-huskiness-4852@gregkh>
- <13566a08eeaed313ad789abcae1920d9b00483b0.camel@codeconstruct.com.au>
- <d53256b35ee7089607463c66bb4a8c3420faf058.camel@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d3k4Q3t0fz3btw
+	for <linux-aspeed@lists.ozlabs.org>; Sun,  9 Nov 2025 04:51:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=w5F5crbl5PXGRN0zWCBy1QeKvlywUYTj3rLQO8PeMZ4=; b=E/8+gc3yS2jjfM0yGN//wqd4Vo
+	PzfTOGt41E1l80JdPzTOxWi1zLCYFAlGK7oyy6ly4WlhemKdvNxLhDEu2u78id1YVT4ZesuIEtbKn
+	dmxlFxLBSyEpDaoXePzGt3nj1QFcF7nOSpU/VxmU1ZSCcmb6Sh0zaK3Ln+Nvj1y1nDtY=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1vHn5H-00DOZW-2W; Sat, 08 Nov 2025 18:50:43 +0100
+Date: Sat, 8 Nov 2025 18:50:43 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Marc Olberding <molberding@nvidia.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] dts: aspeed: Add a dts for the nvidia msx4 hpm
+Message-ID: <21b57a52-040b-4376-8ac0-6abdbc8d43c6@lunn.ch>
+References: <20251107-msx1_devicetree-v2-0-6e36eb878db2@nvidia.com>
+ <20251107-msx1_devicetree-v2-2-6e36eb878db2@nvidia.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -126,31 +65,23 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <d53256b35ee7089607463c66bb4a8c3420faf058.camel@intel.com>
-User-Agent: Mutt/2.2.14 (2025-02-20)
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: 3KDTsj4_gjrfuuhKIDU80RffyBBpv9ASo1_-xQp16EM_1762470702
-X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20251107-msx1_devicetree-v2-2-6e36eb878db2@nvidia.com>
 
-Hi Iwona,
+> +&mac0 {
+> +	// bootloader takes care of proper mac delays for now.
+> +	// set the phy mode to rgmii, and if/when the driver is
+> +	// fixed, we can make the switchover to rgmii-id
+> +	// and have the phy handle the delays.
+> +	phy-mode = "rgmii";
+> +	phy-handle = <&ethphy3>;
+> +	status = "okay";
+> +};
 
-On Tue, Oct 21, 2025 at 09:01:23PM +0000, Winiarska, Iwona wrote:
-> Sorry for the delay - for some reason this entire thread didn't land in my inbox
-> and I just found it now, randomly browsing mailing list :/
-> 
-> I will sent it as a PR for v6.19.
+There is some progress being made on this at the moment. So please
+just drop this node for the moment. You can add the correct node once
+the MAC driver is fixed.
 
-I'm just checking if this patch should show up in linux-next by now?
-
-Sorry to be a pest. This patch, and one other series in another
-subsystem is all that's holding me back from removing a legacy API in
-the clk subsystem. I'd really like to get these dependencies merged for
-v6.19 so that I can do that cleanup work in v6.20.
-
-Thanks,
-
-Brian
-
+	Andrew
 
