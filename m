@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-2845-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2846-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAAE9CCFA13
-	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Nov 2025 13:35:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65D15CCFA13
+	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Nov 2025 13:39:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4DMb286tz2yrm;
-	Mon, 10 Nov 2025 00:35:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762695355;
-	cv=none; b=Wl76WfGg81vHE3B6Hva2343XHM7HzoPfWR6UtjJ+8qows0tV0vXtaXBWMAYgD/gkvPiy77nRQf3v/oG88do5A9PmyeUgQJAlVIvLtMdWUqIYqUPxwatviOFHnhLLYGHSNGyVIqlkIk3Z/IlysApwmy58Iv2vJy2Jpru2WGbSLT8/YbP1rjNyqyX8x+4yk/FUPXDnkI5ASAvizpF232bTPrB141Mk7IF/KmC7Bu/bTZASOAWDTccgB6DprwTVJlYTLzDDEZ93SeVBPP3AUG9aVsEBWxsTA/JdrolRBKDbXB57+ScyFU6WuERHQCHGuRJId6qHiDiR/9pOPyYCkLYySg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4DRc6xVHz30M0;
+	Mon, 10 Nov 2025 00:39:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762695564;
+	cv=none; b=g4G/zDvuY/iNhPByG5UirxH8SlfhLfpWyn5y0PedYH0H4GjJzguzkUC1no8XiXV4GEDr2hkC84GzgPUFQzjE0MKx5cRWWTk0cKSdkACoJ+uRh+piO4o3VwwDtUh51jNhz79MQdOvW5FLwi49GNLNk5S6kYTBg4BY5Cx62tnciCmHmy7H+tI8Od4+y16c26Jb5RdjI01dkw5FDZB1lyGGueyNDvp2OtCW2qfRlYIxCG31NWo4jwWnT2CjnMvNeU7cx8fKKlO+i/0jIZHbtWdyL4/+S16VtyrRYdc0+HkrokVGYAz1Ph8aWIsp+w5oVNP08JvfbnGnlmaF4S0vYZVmYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762695355; c=relaxed/relaxed;
-	bh=n6Irv+vDU/Q0rfiBgoM32DfWEkvZtWWYawhKMOr73ZM=;
+	t=1762695564; c=relaxed/relaxed;
+	bh=XdPr4dEiHhJ0nx4RbQgokxdeBy4l/0iyJLr4y4wwBiE=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=EiiJwSSe0TO40D2a+o36hSLDUDiTAZWYqtlZW8ttZt5Fgynpwqxg9OQ2tIf2KtSFFrGe+CVw4hVoUaegqxPNkBV7TmNBjLQferZOfGInthKJxItsj1XtKbwa6rSbrxXtD3i6KKZhLmKxC8o3K7kuIEldmshkjhlXUUn6vRbNiFkuoUwH9KSg3h4d258vwKRfq+l9wGYjkIgLSXbU9enEj7r3UNrs0Udff3RYEUYsYS1BkoWLBItpy+N/+6ee678s4akNWACqiE40xorFpKLj8cHy7dEC22agnH7BF8QJGQh4nLIaCToVFVBjkcL80QnPELoOM0yWqQbFpBz40Vx1hg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eh/R4uiY; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=Ica6HdVq/toqFQPHgasR4MjQchdBH4ThqPmqPtygpUuanKB1C1Y/j1nTLHDgYEkbGgb+++OKtf2/JNBvM0ITO/qGtZLMBJ0+WfzcceKa6nu3tck/z065fX+vKDkXCOIMTd33VX/kC5v5iiaNhtHRsYzlMw9+/WutTpBTDwQ99Lk5DDE+x28r4QuvHijKZMx2Kp21lL8wDR726QlE+nUoFjTh6MlQmAUsqE50DV/aq3wHAakQo/YD2/cKyQXSlE42H9ZXKPh6f248Sx2tXSzNwF9pOBCBc9b0pkwrSVOw/msYwDF7wJInItaYhOS/tb+aLj9NDUFtIky7Exzdrk69hw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eRuJdceF; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eh/R4uiY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eRuJdceF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4DMZ3mryz2xlQ
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 00:35:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4DRb5j35z2xlQ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 00:39:23 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 595F5600AC;
-	Sun,  9 Nov 2025 13:35:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBFBCC4CEF8;
-	Sun,  9 Nov 2025 13:35:38 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 73F95600B0;
+	Sun,  9 Nov 2025 13:39:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3DF5C4CEF7;
+	Sun,  9 Nov 2025 13:39:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762695352;
-	bh=O/YevAPjyQGJdjnwul8SWCeizRWaGIKJUDYVqj133Q0=;
+	s=k20201202; t=1762695561;
+	bh=TmS8CkFMzA8p257zgP8ajlZZj7NKktorZzJfGu8kADk=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=Eh/R4uiYje//x/E5NBguFrAqNCuLNel2cOHVhB27Mg9Ytw5ykUA7PQ8TDbMs/JZjX
-	 f1oopBccD9AxDT/b5bTaUSCsognIXnybjXtM46XVqUITHz1ROp+Zg8I24NX+Lq7LAv
-	 xnEVEIa4W6NUN3MQQwkPuZopRE7KDBtY7covt4n6cMIJa4/lRpvS8y99BUDZkG+BAI
-	 QLJLaDrWai+mDshH9IzoBP5cBagFVRBQyeGWSKBqI63izs4ODJ8DCKMsY6YtYSBIzD
-	 t+VQiT8DuVUPVwNqVTLmyaG/5qdjzCcdv+utzFlsriA8NN6vyQ6iW64snJa8cW7h6V
-	 Wf2dpoQrjO4Sw==
-Date: Sun, 9 Nov 2025 13:35:34 +0000
+	b=eRuJdceFQsdR7lWVjZXcQ5eo2LTrpkwCjVnhqhWqMgsWHpPaOmCSWAruleR0rDa3c
+	 zewmxH8r/ugX+Auz1z/GzwLYEmryJP7Yxt9ENJ0AKXlgrY5A6lsFG5/fgdl/WlQuI0
+	 wm5J1acBHw4E/gK68u06+opel8VRhYcrJcvtOFcncyLFMAVSPe89x4T+DcAQy3aEQQ
+	 oX85a3JCzSZAbUxwWvjBgSMTrD8mI2+wsSwQYY/Cvor7FYRe2eXlHmti2qvQabVS0/
+	 o+scmlpg9ZtBwS6CeH2c/exLXcnhRK2SIJLAmWLQvpPhhKxsXEyIVR2Jv6uyzWZ37T
+	 Qr+4vzbXZuRrg==
+Date: Sun, 9 Nov 2025 13:39:04 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Yury Norov <yury.norov@gmail.com>, Michael Turquette
@@ -79,12 +79,12 @@ Cc: Yury Norov <yury.norov@gmail.com>, Michael Turquette
  linux-aspeed@lists.ozlabs.org, linux-iio@vger.kernel.org,
  linux-sound@vger.kernel.org, linux-mtd@lists.infradead.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 06/26] iio: mlx90614: #undef field_{get,prep}()
- before local definition
-Message-ID: <20251109133534.3326fb4b@jic23-huawei>
-In-Reply-To: <6c773f03da99ccc081a33d2363879957ac96ce33.1762435376.git.geert+renesas@glider.be>
+Subject: Re: [PATCH -next v6 23/26] iio: imu: smi330: Convert to common
+ field_{get,prep}() helpers
+Message-ID: <20251109133904.5eff2558@jic23-huawei>
+In-Reply-To: <a2275bd69f25d33f9fd3345409b2d8ae6285b9a7.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
-	<6c773f03da99ccc081a33d2363879957ac96ce33.1762435376.git.geert+renesas@glider.be>
+	<a2275bd69f25d33f9fd3345409b2d8ae6285b9a7.1762435376.git.geert+renesas@glider.be>
 X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -102,15 +102,47 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Thu,  6 Nov 2025 14:33:54 +0100
+On Thu,  6 Nov 2025 14:34:11 +0100
 Geert Uytterhoeven <geert+renesas@glider.be> wrote:
 
-> Prepare for the advent of globally available common field_get() and
-> field_prep() macros by undefining the symbols before defining local
-> variants.  This prevents redefinition warnings from the C preprocessor
-> when introducing the common macros later.
+> Drop the driver-specific field_get() and field_prep() macros, in favor
+> of the globally available variants from <linux/bitfield.h>.
 > 
-> Suggested-by: Yury Norov <yury.norov@gmail.com>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+
+This will need a revist next cycle. I preferred not to have
+the odd looking undef in the driver at introduction so prefixed with smi330_
+instead.  Only one instance so it wasn't worth comments to make ti clear what was going on.
+
+J
+
+
+> ---
+> v6:
+>   - No changes,
+> 
+> v5:
+>   - New.
+> ---
+>  drivers/iio/imu/smi330/smi330_core.c | 6 ------
+>  1 file changed, 6 deletions(-)
+> 
+> diff --git a/drivers/iio/imu/smi330/smi330_core.c b/drivers/iio/imu/smi330/smi330_core.c
+> index a79964fe68fadf47..83e0dff5d973d046 100644
+> --- a/drivers/iio/imu/smi330/smi330_core.c
+> +++ b/drivers/iio/imu/smi330/smi330_core.c
+> @@ -67,12 +67,6 @@
+>  #define SMI330_CHIP_ID 0x42
+>  #define SMI330_SOFT_RESET_DELAY 2000
+>  
+> -/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
+> -#undef field_get
+> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
+> -#undef field_prep
+> -#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
+> -
+>  #define SMI330_ACCEL_CHANNEL(_axis) {					\
+>  	.type = IIO_ACCEL,						\
+>  	.modified = 1,							\
+
 
