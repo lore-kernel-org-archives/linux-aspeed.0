@@ -1,90 +1,63 @@
-Return-Path: <linux-aspeed+bounces-2846-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2847-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65D15CCFA13
-	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Nov 2025 13:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C2DBCCFA1A
+	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Nov 2025 15:04:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4DRc6xVHz30M0;
-	Mon, 10 Nov 2025 00:39:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762695564;
-	cv=none; b=g4G/zDvuY/iNhPByG5UirxH8SlfhLfpWyn5y0PedYH0H4GjJzguzkUC1no8XiXV4GEDr2hkC84GzgPUFQzjE0MKx5cRWWTk0cKSdkACoJ+uRh+piO4o3VwwDtUh51jNhz79MQdOvW5FLwi49GNLNk5S6kYTBg4BY5Cx62tnciCmHmy7H+tI8Od4+y16c26Jb5RdjI01dkw5FDZB1lyGGueyNDvp2OtCW2qfRlYIxCG31NWo4jwWnT2CjnMvNeU7cx8fKKlO+i/0jIZHbtWdyL4/+S16VtyrRYdc0+HkrokVGYAz1Ph8aWIsp+w5oVNP08JvfbnGnlmaF4S0vYZVmYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4GKM23zlz2yrm;
+	Mon, 10 Nov 2025 02:04:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762700647;
+	cv=none; b=ffbrZCJ00W/LW5Vf9Z5b6j6WcDDiOeflOuWCUNL19adoqDh7T7jBKkHE3UzUFHUnBwIeL92AYvLiPtWK6bxXFQTZiXAF2qypUQWpAMDVt3GYBTD+Z6amvrOsPDV3dBDpG0rE5Ax3Jvm2iK54WvNqRsdK3+HCS3ZY5dC7o7yGfssx7a8kBi97QP/W3gWXWjQnvkuyiMqfyKK75YI6H9Rpk2+BsOPg5woXivny4bgKEaSK4X6zuzpobjnoXKoO6v8x5zIXOuYlErMImiTbR+LZkDHLRLZD53Um1E6zbIocsNAuRrA29t1rUSS1qJ9FmiKi+jHtjLFnCoURY09iRpOG2g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762695564; c=relaxed/relaxed;
-	bh=XdPr4dEiHhJ0nx4RbQgokxdeBy4l/0iyJLr4y4wwBiE=;
+	t=1762700647; c=relaxed/relaxed;
+	bh=o8wlgQwiaapKDvuuMcG/LHnApbqP6But5sj6HSYDOJ8=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Ica6HdVq/toqFQPHgasR4MjQchdBH4ThqPmqPtygpUuanKB1C1Y/j1nTLHDgYEkbGgb+++OKtf2/JNBvM0ITO/qGtZLMBJ0+WfzcceKa6nu3tck/z065fX+vKDkXCOIMTd33VX/kC5v5iiaNhtHRsYzlMw9+/WutTpBTDwQ99Lk5DDE+x28r4QuvHijKZMx2Kp21lL8wDR726QlE+nUoFjTh6MlQmAUsqE50DV/aq3wHAakQo/YD2/cKyQXSlE42H9ZXKPh6f248Sx2tXSzNwF9pOBCBc9b0pkwrSVOw/msYwDF7wJInItaYhOS/tb+aLj9NDUFtIky7Exzdrk69hw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eRuJdceF; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=SDdn0ElMywWUg7NRiE8GF7brmZX3vNff5qStDGh9A1vUQ8mv9gdw+vsBAspzs6UwKwMRQsejq873q/r5raYiIUCF6AQ+U5TthbhfDMoya/iLrTcxftk7GS42Jm/v5SjCJa/teYb6XBtsuJLij/6X3OUz7r5zxOmz6IEVJTV0VtyCVug/h7mSlVubBarMjbPXvN2HglTRVmq263U0IoltDMWxuakUpEixAUbzlAdJtA07O2rAayx34EaREkMtR4dhkDLAYJdNLw/WGFa/Ho7SXuGn2qqy5ghlwn3cEz5UhL1W4BB6tlKKbYXZxwfznGLaxgJQ3umBPlYA/i9Yqz8+dw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DkIOeFV1; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eRuJdceF;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DkIOeFV1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4DRb5j35z2xlQ
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 00:39:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4GKL5QRpz2yjr
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 02:04:06 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 73F95600B0;
-	Sun,  9 Nov 2025 13:39:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B3DF5C4CEF7;
-	Sun,  9 Nov 2025 13:39:07 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 5468D402F6;
+	Sun,  9 Nov 2025 15:04:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5045C116B1;
+	Sun,  9 Nov 2025 15:04:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762695561;
-	bh=TmS8CkFMzA8p257zgP8ajlZZj7NKktorZzJfGu8kADk=;
+	s=k20201202; t=1762700644;
+	bh=IUXxyPcnqpDHiv1qOb2dy4VYfAq79Wb3o8hOBTShskU=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=eRuJdceFQsdR7lWVjZXcQ5eo2LTrpkwCjVnhqhWqMgsWHpPaOmCSWAruleR0rDa3c
-	 zewmxH8r/ugX+Auz1z/GzwLYEmryJP7Yxt9ENJ0AKXlgrY5A6lsFG5/fgdl/WlQuI0
-	 wm5J1acBHw4E/gK68u06+opel8VRhYcrJcvtOFcncyLFMAVSPe89x4T+DcAQy3aEQQ
-	 oX85a3JCzSZAbUxwWvjBgSMTrD8mI2+wsSwQYY/Cvor7FYRe2eXlHmti2qvQabVS0/
-	 o+scmlpg9ZtBwS6CeH2c/exLXcnhRK2SIJLAmWLQvpPhhKxsXEyIVR2Jv6uyzWZ37T
-	 Qr+4vzbXZuRrg==
-Date: Sun, 9 Nov 2025 13:39:04 +0000
+	b=DkIOeFV1+f18yDyApLUJy74bTRcPycSJScKMDXtjh3tIhxmXLqADiOOBXZhAF0uqo
+	 h3rVu6lHHaCdm2TISoR9+A117zDZhQKc8IM4iXJSOMDV7LaHpYL6eK3nMWlDBiLRur
+	 YBD8oaHA44QzSL665ddvLAmpZvaph/jDhKh+C74COZxwvp7q1k7PxUIyvLiUA/USjB
+	 czfi8cgRi9iyQo3bV3TOzBNxFs0QDaxxbFOfxh3WB23vr+yHNKCQC2o8FPr3vxUx33
+	 qlBAE3cjey5WcPjgh3W4IzGu/U6zai62L5drBm1ksFsV6wJKgHOhbrjVLM7oyNQM5q
+	 5fmyCrqvVBVLw==
+Date: Sun, 9 Nov 2025 15:03:57 +0000
 From: Jonathan Cameron <jic23@kernel.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Yury Norov <yury.norov@gmail.com>, Michael Turquette
- <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Nicolas Ferre
- <nicolas.ferre@microchip.com>, Alexandre Belloni
- <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>,
- Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Herbert Xu
- <herbert@gondor.apana.org.au>, David Miller <davem@davemloft.net>, Linus
- Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery
- <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, Lars-Peter
- Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun
- Hung <schung@nuvoton.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Johannes
- Berg <johannes@sipsolutions.net>, Jakub Kicinski <kuba@kernel.org>, Alex
- Elder <elder@ieee.org>, David Laight <david.laight.linux@gmail.com>,
- Vincent Mailhol <mailhol.vincent@wanadoo.fr>, Jason Baron
- <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, Tony Luck
- <tony.luck@intel.com>, Michael Hennerich <Michael.Hennerich@analog.com>,
- Kim Seer Paller <kimseer.paller@analog.com>, David Lechner
- <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy
- Shevchenko <andy@kernel.org>, Richard Genoud <richard.genoud@bootlin.com>,
- Cosmin Tanislav <demonsingur@gmail.com>, Biju Das
- <biju.das.jz@bp.renesas.com>, Jianping Shen <Jianping.Shen@de.bosch.com>,
- Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers
- <nick.desaulniers+lkml@gmail.com>, Miquel Raynal
- <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Vignesh
- Raghavendra <vigneshr@ti.com>, linux-clk@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
- linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org,
- qat-linux@intel.com, linux-gpio@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-iio@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next v6 23/26] iio: imu: smi330: Convert to common
- field_{get,prep}() helpers
-Message-ID: <20251109133904.5eff2558@jic23-huawei>
-In-Reply-To: <a2275bd69f25d33f9fd3345409b2d8ae6285b9a7.1762435376.git.geert+renesas@glider.be>
-References: <cover.1762435376.git.geert+renesas@glider.be>
-	<a2275bd69f25d33f9fd3345409b2d8ae6285b9a7.1762435376.git.geert+renesas@glider.be>
+To: David Lechner <dlechner@baylibre.com>
+Cc: Billy Tsai <billy_tsai@aspeedtech.com>, nuno.sa@analog.com,
+ andy@kernel.org, robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org,
+ joel@jms.id.au, andrew@codeconstruct.com.au, linux-iio@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 2/2] iio: adc: aspeed: Add AST2700 ADC support
+Message-ID: <20251109150357.513e3a25@jic23-huawei>
+In-Reply-To: <3d2fde56-d82e-40c2-9d0b-2888160a642b@baylibre.com>
+References: <20251103105217.1764355-1-billy_tsai@aspeedtech.com>
+	<20251103105217.1764355-2-billy_tsai@aspeedtech.com>
+	<3d2fde56-d82e-40c2-9d0b-2888160a642b@baylibre.com>
 X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -102,47 +75,25 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Thu,  6 Nov 2025 14:34:11 +0100
-Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+On Mon, 3 Nov 2025 09:20:48 -0600
+David Lechner <dlechner@baylibre.com> wrote:
 
-> Drop the driver-specific field_get() and field_prep() macros, in favor
-> of the globally available variants from <linux/bitfield.h>.
+> On 11/3/25 4:52 AM, Billy Tsai wrote:
+> > This patch adds support for the ADCs found on the Aspeed AST2700 SoC,
+> > which includes two instances: "ast2700-adc0" and "ast2700-adc1". While
+> > they are functionally similar to those on AST2600, the OTP trimming data
+> > is located at the same offset (0x820), but uses different bitfields.
+> > 
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> > ---  
+> Reviewed-by: David Lechner <dlechner@baylibre.com>
 > 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-This will need a revist next cycle. I preferred not to have
-the odd looking undef in the driver at introduction so prefixed with smi330_
-instead.  Only one instance so it wasn't worth comments to make ti clear what was going on.
+Series applied.  I'd have preferred a cover letter given more than one patch
+as it both gives a meaningful series name in patchwork and provides a common
+place for replies like this one.
 
-J
+Thanks,
 
-
-> ---
-> v6:
->   - No changes,
-> 
-> v5:
->   - New.
-> ---
->  drivers/iio/imu/smi330/smi330_core.c | 6 ------
->  1 file changed, 6 deletions(-)
-> 
-> diff --git a/drivers/iio/imu/smi330/smi330_core.c b/drivers/iio/imu/smi330/smi330_core.c
-> index a79964fe68fadf47..83e0dff5d973d046 100644
-> --- a/drivers/iio/imu/smi330/smi330_core.c
-> +++ b/drivers/iio/imu/smi330/smi330_core.c
-> @@ -67,12 +67,6 @@
->  #define SMI330_CHIP_ID 0x42
->  #define SMI330_SOFT_RESET_DELAY 2000
->  
-> -/* Non-constant mask variant of FIELD_GET() and FIELD_PREP() */
-> -#undef field_get
-> -#define field_get(_mask, _reg) (((_reg) & (_mask)) >> (ffs(_mask) - 1))
-> -#undef field_prep
-> -#define field_prep(_mask, _val) (((_val) << (ffs(_mask) - 1)) & (_mask))
-> -
->  #define SMI330_ACCEL_CHANNEL(_axis) {					\
->  	.type = IIO_ACCEL,						\
->  	.modified = 1,							\
-
+Jonathan
 
