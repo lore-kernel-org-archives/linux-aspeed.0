@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-2844-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2845-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C18CDCCFA13
-	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Nov 2025 13:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAAE9CCFA13
+	for <linux-aspeed@archiver.kernel.org>; Sun,  9 Nov 2025 13:35:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4DMF0MnDz2yrm;
-	Mon, 10 Nov 2025 00:35:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762695337;
-	cv=none; b=X0QaBjwb60qdqn1s3WTUP89Dj8d+qEAouNoDo9oc9Z6TqqIoljWzZa4yO4UCv05iUb00miMq1abMusCNvuoxdqh/C0PzpSYem6kL0N569U//idtz8LiB7WAJixg0qJTQQ5VFIqGpNNQVr8NyL8Nx/61GORz2V0++LD/LLiHBZc4xC8EKTo+GxHjMxJTIIp/W2l3glf+0JLbczEMgArRRg3qx4RG/i1slFXiHqL7oJ7bS5jUuYd7xQvTneL1yoPRnw0eYx7I8CTHs/w+5nJWgUfDtqHGEL2grOvBkw/paI1ai7RVf3HUsGAz2xb15K0DRmQuyZk1UpbpEDK74cXJq1Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4DMb286tz2yrm;
+	Mon, 10 Nov 2025 00:35:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762695355;
+	cv=none; b=Wl76WfGg81vHE3B6Hva2343XHM7HzoPfWR6UtjJ+8qows0tV0vXtaXBWMAYgD/gkvPiy77nRQf3v/oG88do5A9PmyeUgQJAlVIvLtMdWUqIYqUPxwatviOFHnhLLYGHSNGyVIqlkIk3Z/IlysApwmy58Iv2vJy2Jpru2WGbSLT8/YbP1rjNyqyX8x+4yk/FUPXDnkI5ASAvizpF232bTPrB141Mk7IF/KmC7Bu/bTZASOAWDTccgB6DprwTVJlYTLzDDEZ93SeVBPP3AUG9aVsEBWxsTA/JdrolRBKDbXB57+ScyFU6WuERHQCHGuRJId6qHiDiR/9pOPyYCkLYySg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762695337; c=relaxed/relaxed;
-	bh=1lefflMraCHr+sWHVHbgPHN40f0is5iaMzcdBjTpgz8=;
+	t=1762695355; c=relaxed/relaxed;
+	bh=n6Irv+vDU/Q0rfiBgoM32DfWEkvZtWWYawhKMOr73ZM=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=jr3ML/tQfzS6gpQQVa84CnVZTR3TjyYW4hDXf2DFj75g/DBV0WYzslapQle/fu+IpPmymJZU93T1srSuB3dB3ML7TScld4rvDJqezwvq+CE5ljsKx6uE+vCKLMUHXRp8C/aXxbZYnSeYHzrwjNt4TwWMQY2agTC7bS+Xik+m8TTRwfE1UmHCmpNQwnQgMYb5LaoWChzgQET1vjq85Cx/tcRzCmuPUsA7HDJVV/Gnfml6iMiL71AkdjWpCnQuC4Ngccxo5nTMEWMGyV/OenOUh6e3iCz9Pexd4hV66hdHDSqnrjCx7/DJapbcFFUmNeeybi6KH32Bo6H+b8oDTICgUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OUq4YlSc; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=EiiJwSSe0TO40D2a+o36hSLDUDiTAZWYqtlZW8ttZt5Fgynpwqxg9OQ2tIf2KtSFFrGe+CVw4hVoUaegqxPNkBV7TmNBjLQferZOfGInthKJxItsj1XtKbwa6rSbrxXtD3i6KKZhLmKxC8o3K7kuIEldmshkjhlXUUn6vRbNiFkuoUwH9KSg3h4d258vwKRfq+l9wGYjkIgLSXbU9enEj7r3UNrs0Udff3RYEUYsYS1BkoWLBItpy+N/+6ee678s4akNWACqiE40xorFpKLj8cHy7dEC22agnH7BF8QJGQh4nLIaCToVFVBjkcL80QnPELoOM0yWqQbFpBz40Vx1hg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eh/R4uiY; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OUq4YlSc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Eh/R4uiY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4DMD1W9Vz2xlQ
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 00:35:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4DMZ3mryz2xlQ
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 00:35:54 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 482B74065F;
-	Sun,  9 Nov 2025 13:35:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E73F0C19423;
-	Sun,  9 Nov 2025 13:35:17 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 595F5600AC;
+	Sun,  9 Nov 2025 13:35:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBFBCC4CEF8;
+	Sun,  9 Nov 2025 13:35:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762695333;
-	bh=75xVTH6rL41i5gNYi5D5wNYFSB4OID9FByUjwxNSe6Q=;
+	s=k20201202; t=1762695352;
+	bh=O/YevAPjyQGJdjnwul8SWCeizRWaGIKJUDYVqj133Q0=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=OUq4YlScR9Yr3lqdI8+Yp0fI/C5dkrRC8Cq+F3uyLXMiZuA7Hfzg0VIC4P2u9QNCf
-	 C9AHZ2WTv5ZZUwgeHDjJ7ysaW4HPELl7S/VLwzmiEWmH9x7XuuSN+Ln99YomjKvbMq
-	 i3MhKBHc5WBbb6gdQpeOjbaUu7qebuQ00zSVfr+hMjBXHDv4tF+JB3hNcGYAPVP0Bg
-	 YBFDxk8I51LYyPl31nWk18LZDNHXhTQPG0l9XQKqXzTP5bnECbCZypFzgHezD1SqP0
-	 VkIWa5JPPo0EKvKltofU/ebvRFI1V7map8EhrzGaM4iK3tb4gIY5z3XHz3ztCpG+JO
-	 I0PjTLazIvM+Q==
-Date: Sun, 9 Nov 2025 13:35:13 +0000
+	b=Eh/R4uiYje//x/E5NBguFrAqNCuLNel2cOHVhB27Mg9Ytw5ykUA7PQ8TDbMs/JZjX
+	 f1oopBccD9AxDT/b5bTaUSCsognIXnybjXtM46XVqUITHz1ROp+Zg8I24NX+Lq7LAv
+	 xnEVEIa4W6NUN3MQQwkPuZopRE7KDBtY7covt4n6cMIJa4/lRpvS8y99BUDZkG+BAI
+	 QLJLaDrWai+mDshH9IzoBP5cBagFVRBQyeGWSKBqI63izs4ODJ8DCKMsY6YtYSBIzD
+	 t+VQiT8DuVUPVwNqVTLmyaG/5qdjzCcdv+utzFlsriA8NN6vyQ6iW64snJa8cW7h6V
+	 Wf2dpoQrjO4Sw==
+Date: Sun, 9 Nov 2025 13:35:34 +0000
 From: Jonathan Cameron <jic23@kernel.org>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Yury Norov <yury.norov@gmail.com>, Michael Turquette
@@ -79,12 +79,12 @@ Cc: Yury Norov <yury.norov@gmail.com>, Michael Turquette
  linux-aspeed@lists.ozlabs.org, linux-iio@vger.kernel.org,
  linux-sound@vger.kernel.org, linux-mtd@lists.infradead.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 05/26] iio: dac: ad3530r: #undef field_prep() before
- local definition
-Message-ID: <20251109133513.195e6baa@jic23-huawei>
-In-Reply-To: <a2466d9201cb8c25504e25ac531a69ef8bd6e958.1762435376.git.geert+renesas@glider.be>
+Subject: Re: [PATCH v6 06/26] iio: mlx90614: #undef field_{get,prep}()
+ before local definition
+Message-ID: <20251109133534.3326fb4b@jic23-huawei>
+In-Reply-To: <6c773f03da99ccc081a33d2363879957ac96ce33.1762435376.git.geert+renesas@glider.be>
 References: <cover.1762435376.git.geert+renesas@glider.be>
-	<a2466d9201cb8c25504e25ac531a69ef8bd6e958.1762435376.git.geert+renesas@glider.be>
+	<6c773f03da99ccc081a33d2363879957ac96ce33.1762435376.git.geert+renesas@glider.be>
 X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -102,40 +102,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Thu,  6 Nov 2025 14:33:53 +0100
+On Thu,  6 Nov 2025 14:33:54 +0100
 Geert Uytterhoeven <geert+renesas@glider.be> wrote:
 
-> Prepare for the advent of a globally available common field_prep() macro
-> by undefining the symbol before defining a local variant.  This prevents
-> redefinition warnings from the C preprocessor when introducing the common
-> macro later.
+> Prepare for the advent of globally available common field_get() and
+> field_prep() macros by undefining the symbols before defining local
+> variants.  This prevents redefinition warnings from the C preprocessor
+> when introducing the common macros later.
 > 
 > Suggested-by: Yury Norov <yury.norov@gmail.com>
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Acked-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-
-
-> ---
-> v6:
->   - No changes,
-> 
-> v5:
->   - New.
-> ---
->  drivers/iio/dac/ad3530r.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/iio/dac/ad3530r.c b/drivers/iio/dac/ad3530r.c
-> index 6134613777b8e1d4..5684d11137f29948 100644
-> --- a/drivers/iio/dac/ad3530r.c
-> +++ b/drivers/iio/dac/ad3530r.c
-> @@ -54,6 +54,7 @@
->  #define AD3531R_MAX_CHANNELS			4
->  
->  /* Non-constant mask variant of FIELD_PREP() */
-> +#undef field_prep
->  #define field_prep(_mask, _val)	(((_val) << (ffs(_mask) - 1)) & (_mask))
->  
->  enum ad3530r_mode {
-
 
