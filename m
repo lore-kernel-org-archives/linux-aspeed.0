@@ -1,41 +1,52 @@
-Return-Path: <linux-aspeed+bounces-2854-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2855-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DADECCF9E3
-	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 11:10:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07269CCFA13
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 12:29:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4n58001nz2xql;
-	Mon, 10 Nov 2025 22:10:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762773019;
-	cv=none; b=BivHtB6g6DG8cCPKXFQcxHNTJwzPCcUpJ33bPV+oauVr2zXQgMg8OjnOQzpslfPBI4b8uuyjctSsH80asdkeOhcAafmYsdwExy784QfDYjBYtP58LOfp3EI7wemuBBquRUY0ExJP+oyFlpgcwA0clxRqYPHenrjJ1ULP6lMKsVq2iHf+Fiht6LVWHjuQKkrrmA3adsmr7Po9n3SN1lfMROn/4g+1G4G384FcZP9nRtALp+GON5QljbnSh5Gc+9RFV6wmzKjvK/wKY7+skemD6CIsGF98FO1Fx5pfcluZDj4YI1lBj5xRlzndsfes8xuWTW8qizZB3AnnSLaEUGNVQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4prs41zHz2xqL;
+	Mon, 10 Nov 2025 23:29:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762777789;
+	cv=none; b=hwpThH8KpCBK+aUQXg8hjg71dVXeiTVQPB6MZ/I+PyhJkN4C7gcUKmBlxSrE9Nj2P4qVRxvHhDvZ/BZF7fetZhLNiBu/Lmjvl+UAu5e8+nRwkSSi2gc7Y8XBj6wZaCG44U4VneCi2bL0T08Zw0Fekb6rolHwOtmFvyExKrEq1VK1EZAI9sSS1pwJURtNrpm/+LJFZqsydtr3nvlufIdCTjfMvH2ILAo7gZ2g18b7JG99Ef+1uXdKphaB2Da2sRev+OKNGX7s2JQi66/OVmiAUfBDYRvB6SvrTOpi4li+slSyibnwRxIiJNucQmxhav3fzXfIwwaEx4Zcm6o2A3CTkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762773019; c=relaxed/relaxed;
-	bh=ksR0yuhaDMjET3u5lNvEZjILjZQ7H4c4AFEmMqYEvW4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=nn6sWbxPDx+ypyqZTqcfkuAcgQSJDNtxLZWrkVZ/GVX1j6iqqkeZaCNRfEt7OBUB6zrLwtBiyIhZO9iqxQDLYarzLvltvZAJL5Hg21ZV8wrGFSPHA1BoRakvth4P3rmhSYINenhYnrwVvkSTdUtcLlyoRhR4inelC2CvlhDVN4+U4JlDbHK5jIzwa7zew2ydD9+cYjtrCL0WTopeKvsr043VhYnFehK1gmvSPcTnpfOVc8rr4fID+kFRi1auQJiF5l21wBXHEulggv3FnkaEFDBawkvadZriI/x5wyp5MFIsRQv+ma67g5QA66yKd9392i+j8ARor6sXy0rqtndeLw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1762777789; c=relaxed/relaxed;
+	bh=mNOOJCB8albSnOy2PW8ozy7g2ecjY5FgeI9tcxPt244=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=lojI/NxWQHJmZuoBy0tsdQBei/i2yVID6iDf8eEyG6LDeBN+RuWGtnRmTp0zPtZlYBdZW9pymPA/ii4ZVpnBFFWuL3pW/SNrvv3KxYMYde4SmbYmigv9aAHfUgnduyPfCZlGtIUk8s/GS4lnvs9KzlM5tlEI5e17NUSut5RQddQ5Bq/e9wULby+wam9kpuiPaeo1MEdexKKePbItYKi4tDpqv4ZWmcyXdtTHer23J+1MFqoyeeT0WwIoJH74JmIjyQb7CslCN0vi5VQcDrmiNI6DEd6DK+0W/oZl803Lys9CfLhvvhtOv8ilJ3ugdqobqKA5GmvFe2ptcGhhWIx5Tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Vojs3Ny7; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Vojs3Ny7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4n572Xkjz2xFT
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 22:10:19 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 10 Nov
- 2025 19:09:56 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 10 Nov 2025 19:09:56 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-Date: Mon, 10 Nov 2025 19:09:28 +0800
-Subject: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
- for AST2600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4prr3CXpz2xFT
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 23:29:48 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id AAC4F443AA;
+	Mon, 10 Nov 2025 12:29:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 384CFC16AAE;
+	Mon, 10 Nov 2025 12:29:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762777785;
+	bh=CHqHQvKuqRvxJRHlw0G9YM2cvk8+dDccmko+WcI99KA=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=Vojs3Ny7+r1bvs7xTzB+Em17tnHg4ejqwiAsKUBRNYBKq2ESJ8HM7869IXkyne2Ic
+	 kQYYlyBmu1zFWRa+XAKfg+syhhn8K7Ke/Aot2v11KTSHp0E+iUNBkh4cD9IDovyqLm
+	 I3qy+942BJ+DIqcDZ5xo75PyknQcArDRNJRFGjwoGZrHJkkyzGqNWYn6yS5v1Sfu+F
+	 T3edgQ6vZ1QXPQogA+ippFN1frbOwGnby77b3KjRDBEAT/mjKLLSmsiCAn4JPUwmez
+	 yfrUUnoHWOXIgAiE4QYBaHHoDbQ7usE/VbAQ4+F+cBaKnNnNbymnEDKXE29apneaw/
+	 xxSWFOH6NdReg==
+Date: Mon, 10 Nov 2025 06:29:43 -0600
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -49,271 +60,84 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, netdev@vger.kernel.org, 
+ Andrew Lunn <andrew+netdev@lunn.ch>, devicetree@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ taoren@meta.com, Po-Yu Chuang <ratbert@faraday-tech.com>, 
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, linux-aspeed@lists.ozlabs.org
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+In-Reply-To: <20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com>
 References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
-In-Reply-To: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
-To: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
-	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
-	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Po-Yu Chuang <ratbert@faraday-tech.com>, Joel Stanley
-	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>
-CC: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <taoren@meta.com>, Jacky Chou
-	<jacky_chou@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1762772996; l=8377;
- i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
- bh=86E1tmDnqxW676P46rlqb0ZTP5Jjau+psLSHnvkWES8=;
- b=r8e9agtlYPZOR9Iz4O2IGKSeJbhLQRq18IOsxKQeLXKYnb84azuu3jZdwOdDhVHfZU5J60eg/
- VP5/pAt6HQdCvTHqNSo3Mdu/ZeXcdEo4MYs3Dd1OPt0e5Nu9IIb83HL
-X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
- pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
+ <20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com>
+Message-Id: <176277778351.3693581.6347765163045847296.robh@kernel.org>
+Subject: Re: [PATCH net-next v4 1/4] dt-bindings: net: ftgmac100: Add delay
+ properties for AST2600
 
-On the AST2600 platform, the RGMII delay is controlled via the
-SCU registers. The delay chain configuration differs between MAC0/1
-and MAC2/3, even though all four MACs use a 32-stage delay chain.
-+------+----------+-----------+-------------+-------------+
-|      |Delay Unit|Delay Stage|TX Edge Stage|RX Edge Stage|
-+------+----------+-----------+-------------+-------------+
-|MAC0/1|     45 ps|        32 |           0 |           0 |
-+------+----------+-----------+-------------+-------------+
-|MAC2/3|    250 ps|        32 |           0 |          26 |
-+------+----------+-----------+-------------+-------------+
-For MAC2/3, the "no delay" condition starts from stage 26.
-Setting the RX delay stage to 26 means that no additional RX
-delay is applied.
-Here lists the RX delay setting of MAC2/3 below.
-26 -> 0   ns, 27 -> 0.25 ns, ... , 31 -> 1.25 ns,
-0  -> 1.5 ns, 1  -> 1.75 ns, ... , 25 -> 7.75 ns
 
-Therefore, we calculate the delay stage from the
-rx-internal-delay-ps of MAC2/3 to add 26. If the stage is equel
-to or bigger than 32, the delay stage will be mask 0x1f to get
-the correct setting.
-The delay chain is like a ring for configuration.
-Example for the rx-internal-delay-ps of MAC2/3 is 2000 ps,
-we will get the delay stage is 2.
+On Mon, 10 Nov 2025 19:09:25 +0800, Jacky Chou wrote:
+> The AST2600 contains two dies, each with its own MAC, and these MACs
+> require different delay configurations.
+> Previously, these delay values were configured during the bootloader
+> stage rather than in the driver. This change introduces the use of the
+> standard properties defined in ethernet-controller.yaml to configure
+> the delay values directly in the driver.
+> 
+> Add the new property, "aspeed,rgmii-delay-ps", to specify per step of
+> RGMII delay in different MACs. And for Aspeed platform, the total steps
+> of RGMII delay configuraion is 32 steps, so the total delay is
+> "apseed,rgmii-delay-ps' * 32.
+> Default delay values are declared so that tx-internal-delay-ps and
+> rx-internal-delay-ps become optional. If these properties are not present,
+> the driver will use the default values instead.
+> Add conditional schema constraints for Aspeed AST2600 MAC controllers:
+> - For MAC0/1, aspeed,rgmii-delay-ps property is 45 ps
+> - For MAC2/3, aspeed,rgmii-delay-ps property is 250 ps
+> - Both require the "aspeed,scu" and "aspeed,rgmii-delay-ps" properties.
+> Other compatible values remain unrestricted.
+> 
+> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+> ---
+>  .../devicetree/bindings/net/faraday,ftgmac100.yaml | 35 ++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+> 
 
-Strating to this patch, driver will remind the legacy dts to update the
-"phy-mode" to "rgmii-id, and add the corresponding rgmii delay with
-"rx-internal-delay-id" and "tx-internal-delay-id".
-If lack these properties, driver will configure the default rgmii delay,
-that means driver will disable the TX and RX delay in MAC side.
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
----
- drivers/net/ethernet/faraday/ftgmac100.c | 148 +++++++++++++++++++++++++++++++
- drivers/net/ethernet/faraday/ftgmac100.h |  20 +++++
- 2 files changed, 168 insertions(+)
+yamllint warnings/errors:
 
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-index a863f7841210..5cecdd4583f6 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.c
-+++ b/drivers/net/ethernet/faraday/ftgmac100.c
-@@ -26,6 +26,9 @@
- #include <linux/if_vlan.h>
- #include <linux/of_net.h>
- #include <linux/phy_fixed.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/regmap.h>
-+#include <linux/bitfield.h>
- #include <net/ip.h>
- #include <net/ncsi.h>
- 
-@@ -1833,6 +1836,146 @@ static bool ftgmac100_has_child_node(struct device_node *np, const char *name)
- 	return ret;
- }
- 
-+static int ftgmac100_set_ast2600_rgmii_delay(struct ftgmac100 *priv,
-+					     u32 rgmii_tx_delay,
-+					     u32 rgmii_rx_delay)
-+{
-+	struct device *dev = priv->dev;
-+	struct device_node *np;
-+	u32 rgmii_delay_unit;
-+	u32 rx_delay_index;
-+	u32 tx_delay_index;
-+	struct regmap *scu;
-+	int dly_mask;
-+	int dly_reg;
-+	int mac_id;
-+	int ret;
-+
-+	np = dev->of_node;
-+
-+	/* Add a warning to notify the existed dts based on AST2600. It is
-+	 * recommended to update the dts to add the rx/tx-internal-delay-ps to
-+	 * specify the RGMII delay and we recommend using the "rgmii-id" for
-+	 * phy-mode property to tell the PHY enables TX/RX internal delay and
-+	 * add the corresponding rx/tx-internal-delay-ps properties.
-+	 */
-+	if (priv->netdev->phydev->interface != PHY_INTERFACE_MODE_RGMII_ID)
-+		dev_warn(dev, "Update the phy-mode to 'rgmii-id'.\n");
-+
-+	scu = syscon_regmap_lookup_by_phandle(np, "aspeed,scu");
-+	if (IS_ERR(scu)) {
-+		dev_err(dev, "failed to get aspeed,scu");
-+		return PTR_ERR(scu);
-+	}
-+
-+	ret = of_property_read_u32(np, "aspeed,rgmii-delay-ps",
-+				   &rgmii_delay_unit);
-+	if (ret) {
-+		dev_err(dev, "failed to get aspeed,rgmii-delay-ps value\n");
-+		return -EINVAL;
-+	}
-+
-+	/* According to the register base address to specify the corresponding
-+	 * values.
-+	 */
-+	switch (priv->res->start) {
-+	case AST2600_MAC0_BASE_ADDR:
-+		mac_id = 0;
-+		break;
-+	case AST2600_MAC1_BASE_ADDR:
-+		mac_id = 1;
-+		break;
-+	case AST2600_MAC2_BASE_ADDR:
-+		mac_id = 2;
-+		break;
-+	case AST2600_MAC3_BASE_ADDR:
-+		mac_id = 3;
-+		break;
-+	default:
-+		dev_err(dev, "Invalid mac base address");
-+		return -EINVAL;
-+	}
-+
-+	if (mac_id == 0 || mac_id == 1) {
-+		if (rgmii_delay_unit != AST2600_MAC01_CLK_DLY_UNIT) {
-+			dev_err(dev, "aspeed,rgmii-delay-ps %u is invalid\n",
-+				rgmii_delay_unit);
-+			return -EINVAL;
-+		}
-+		dly_reg = AST2600_MAC01_CLK_DLY;
-+	} else {
-+		if (rgmii_delay_unit != AST2600_MAC23_CLK_DLY_UNIT) {
-+			dev_err(dev, "aspeed,rgmii-delay-ps %u is invalid\n",
-+				rgmii_delay_unit);
-+			return -EINVAL;
-+		}
-+		dly_reg = AST2600_MAC23_CLK_DLY;
-+	}
-+
-+	tx_delay_index = DIV_ROUND_CLOSEST(rgmii_tx_delay, rgmii_delay_unit);
-+	if (tx_delay_index >= 32) {
-+		dev_err(dev, "The %u ps of TX delay is out of range\n",
-+			rgmii_tx_delay);
-+		return -EINVAL;
-+	}
-+
-+	rx_delay_index = DIV_ROUND_CLOSEST(rgmii_rx_delay, rgmii_delay_unit);
-+	if (rx_delay_index >= 32) {
-+		dev_err(dev, "The %u ps of RX delay is out of range\n",
-+			rgmii_rx_delay);
-+		return -EINVAL;
-+	}
-+
-+	/* Due to the hardware design reason, for MAC2/3 on AST2600, the zero
-+	 * delay ns on RX is configured by setting value 0x1a.
-+	 * List as below:
-+	 * 0x1a -> 0   ns, 0x1b -> 0.25 ns, ... , 0x1f -> 1.25 ns,
-+	 * 0x00 -> 1.5 ns, 0x01 -> 1.75 ns, ... , 0x19 -> 7.75 ns, 0x1a -> 0 ns
-+	 */
-+	if (mac_id == 2 || mac_id == 3)
-+		rx_delay_index = (AST2600_MAC23_RX_DLY_0_NS + rx_delay_index) &
-+				 AST2600_MAC_TX_RX_DLY_MASK;
-+
-+	if (mac_id == 0 || mac_id == 2) {
-+		dly_mask = ASPEED_MAC0_2_TX_DLY | ASPEED_MAC0_2_RX_DLY;
-+		tx_delay_index = FIELD_PREP(ASPEED_MAC0_2_TX_DLY, tx_delay_index);
-+		rx_delay_index = FIELD_PREP(ASPEED_MAC0_2_RX_DLY, rx_delay_index);
-+	} else {
-+		dly_mask = ASPEED_MAC1_3_TX_DLY | ASPEED_MAC1_3_RX_DLY;
-+		tx_delay_index = FIELD_PREP(ASPEED_MAC1_3_TX_DLY, tx_delay_index);
-+		rx_delay_index = FIELD_PREP(ASPEED_MAC1_3_RX_DLY, rx_delay_index);
-+	}
-+
-+	regmap_update_bits(scu, dly_reg, dly_mask, tx_delay_index | rx_delay_index);
-+
-+	return 0;
-+}
-+
-+static int ftgmac100_set_internal_delay(struct ftgmac100 *priv)
-+{
-+	struct device_node *np = priv->dev->of_node;
-+	u32 rgmii_tx_delay;
-+	u32 rgmii_rx_delay;
-+	int err;
-+
-+	if (!(of_device_is_compatible(np, "aspeed,ast2600-mac")))
-+		return 0;
-+
-+	if (of_property_read_u32(np, "tx-internal-delay-ps", &rgmii_tx_delay))
-+		/* Default to 0 ps delay */
-+		rgmii_tx_delay = 0;
-+
-+	if (of_property_read_u32(np, "rx-internal-delay-ps", &rgmii_rx_delay))
-+		/* Default to 0 ps delay */
-+		rgmii_rx_delay = 0;
-+
-+	err = ftgmac100_set_ast2600_rgmii_delay(priv,
-+						rgmii_tx_delay,
-+						rgmii_rx_delay);
-+
-+	return err;
-+}
-+
- static int ftgmac100_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
-@@ -2004,6 +2147,11 @@ static int ftgmac100_probe(struct platform_device *pdev)
- 		if (of_device_is_compatible(np, "aspeed,ast2600-mac"))
- 			iowrite32(FTGMAC100_TM_DEFAULT,
- 				  priv->base + FTGMAC100_OFFSET_TM);
-+
-+		/* Configure RGMII delay if there are the corresponding compatibles */
-+		err = ftgmac100_set_internal_delay(priv);
-+		if (err)
-+			goto err_phy_connect;
- 	}
- 
- 	/* Default ring sizes */
-diff --git a/drivers/net/ethernet/faraday/ftgmac100.h b/drivers/net/ethernet/faraday/ftgmac100.h
-index 4968f6f0bdbc..d19d44d1b8e0 100644
---- a/drivers/net/ethernet/faraday/ftgmac100.h
-+++ b/drivers/net/ethernet/faraday/ftgmac100.h
-@@ -271,4 +271,24 @@ struct ftgmac100_rxdes {
- #define FTGMAC100_RXDES1_UDP_CHKSUM_ERR	(1 << 26)
- #define FTGMAC100_RXDES1_IP_CHKSUM_ERR	(1 << 27)
- 
-+/* Aspeed SCU */
-+#define AST2600_MAC01_CLK_DLY	0x340
-+#define AST2600_MAC23_CLK_DLY	0x350
-+#define AST2600_MAC01_CLK_DLY_UNIT	45	/* ps */
-+#define AST2600_MAC01_TX_DLY_0_NS	0
-+#define AST2600_MAC01_RX_DLY_0_NS	0
-+#define AST2600_MAC23_CLK_DLY_UNIT	250	/* ps */
-+#define AST2600_MAC23_TX_DLY_0_NS	0
-+#define AST2600_MAC23_RX_DLY_0_NS	0x1a
-+#define AST2600_MAC_TX_RX_DLY_MASK	0x1f
-+#define ASPEED_MAC0_2_TX_DLY		GENMASK(5, 0)
-+#define ASPEED_MAC0_2_RX_DLY		GENMASK(17, 12)
-+#define ASPEED_MAC1_3_TX_DLY		GENMASK(11, 6)
-+#define ASPEED_MAC1_3_RX_DLY		GENMASK(23, 18)
-+
-+#define AST2600_MAC0_BASE_ADDR		0x1e660000
-+#define AST2600_MAC1_BASE_ADDR		0x1e680000
-+#define AST2600_MAC2_BASE_ADDR		0x1e670000
-+#define AST2600_MAC3_BASE_ADDR		0x1e690000
-+
- #endif /* __FTGMAC100_H */
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml: properties:aspeed,rgmii-delay-ps: 'anyOf' conditional failed, one must be fixed:
+	'maxItems' is a required property
+		hint: Only "maxItems" is required for a single entry if there are no constraints defined for the values.
+	'type' is not one of ['maxItems', 'description', 'deprecated']
+		hint: Only "maxItems" is required for a single entry if there are no constraints defined for the values.
+	Additional properties are not allowed ('type' was unexpected)
+		hint: Arrays must be described with a combination of minItems/maxItems/items
+	'type' is not one of ['description', 'deprecated', 'const', 'enum', 'minimum', 'maximum', 'multipleOf', 'default', '$ref', 'oneOf']
+	hint: cell array properties must define how many entries and what the entries are when there is more than one entry.
+	from schema $id: http://devicetree.org/meta-schemas/cell.yaml
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml: properties:aspeed,rgmii-delay-ps:type: 'integer' is not one of ['boolean', 'object']
+	from schema $id: http://devicetree.org/meta-schemas/core.yaml
 
--- 
-2.34.1
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
 
