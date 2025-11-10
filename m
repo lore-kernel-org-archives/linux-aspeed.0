@@ -1,46 +1,46 @@
-Return-Path: <linux-aspeed+bounces-2858-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2859-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D77BECCFA13
-	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 15:22:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29453CCFA13
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 15:35:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4th10gTGz2xqh;
-	Tue, 11 Nov 2025 02:22:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4tzC2W1Jz2xqh;
+	Tue, 11 Nov 2025 02:35:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762788145;
-	cv=none; b=QRCJvIM9F7+20UY5S6S6efJ0I9bzZGvQSIhhiBd9bLSqjOLQkXX/WtNVlaxaMF7aogK+dG6TDqdI3rXqr/jbLuBCQ7yneACCBcgKmTwsyFKKcUZ0+BU2MxI5zmdGF2BhTG/HpAbG8p0KxKBLuoxob+5KWYtnl/3/G3mhCvRPqiLae6xb6gR520P6heq1cpHSxrl0A88CYBOukbYUAUCNZFv88qITvLQwrSElmk/aPQrxoa5I5ZiEbmph3bVY/ieSKTF0mr/hTCRN5tK23PIezrz1SjWPYsaZbV3tsWsCGCmbLGmlAuN+ANfwjV+/W+Fd3EyDsGz3HjDupNbivsU4VA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762788935;
+	cv=none; b=ne7LrE9k44PXqzohFMR2yg9mOZIDyfx96PxzLIJtwPoPdLoLGoxQixIVgK5CHZo59WglbjWb5P+Crkdcy2HfgP8gV1kv1I/g5oDuKvFd6yA8o8Fg/dReK5LQO0F0cD4RULBC1TLLbF6Ei46qQNjFzsGceVs04oJs52BRv+pZu2ZYJY+qlhJOOMQc3ifVRAJavYHEX+F+a6xg7C6LIJ3eKflbILi4BULI+cL2O44ZIKG2Fh5llHiLjCFo7gOs6hAg5x/WIGUnZluaGSxOrxTAuNegPUj0E7YKIrZljnCrS38SXi3t8kf1RKuTt4OmZvt8X2f37jaoWKZu3s45aV1PEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762788145; c=relaxed/relaxed;
-	bh=Awr+81kQsRnEBxn06SpEGdo1D44sv/W67zP5wVfdji8=;
+	t=1762788935; c=relaxed/relaxed;
+	bh=01rfLZwpM4pmMKU3kqbEEzw3i2BzLBr0hbB6YkfV3no=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZF8gvFMS4g8aavKtjXLJGDUg4NXGOWVpSTzcTT4mm5N/Gri2zoAY78CKBEw+bmZOZW+SzFSoSaQhdOUCE0znfVrmMDtNOehaN0ObKJAbNT+heqWUt8LY7FnNVU77RWOoHbCvPf+rUv7CdTHnOKbbS6WrBXkpMIGu4OwGPZP1FZ3bsGT5tUTaCbMp0y29LMiDAh+uuRxK/kjK2kScmfOl1/AmHc7G6tvyCY2SZH93TThdYHJ5DP+49xFIlAQ1mpoMAjcGpFimIIQbeVPMJ3JYiMydJkn9htHxoGCXOrRRoXMwWmJHS2/7zcfYIuZqsSI5a5sis8VQLBawQO0fyCGuBg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ztiH7bgv; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=C9g3qvNb3siZN/QVrEBUk2IOkwLNBhDf+ZtJFHtyWZOT2XL3WapHOZj9wXrzlr9ewxreJUTjfQ1lEGjNPKeQDhxVNgKEenbibF0ef9gCZvvwp3qVf9R+5wfluhNFroZurmwGIoG3GIrZeAHWokS5D0DEEkVOExOWGYF+K03LQI2gepP+RNZVrk6mJe4QQLzPQlIsx5yhK19XO5y3nirLPmlUEt8jRQCJFGL/THuwkcS05+/C+VEHKAejdFvIMj+ZzNbf0eNVNaU2srnWgcwhW2IrNy4BuH8NpXsGYABkaHP0ig6+pz1lqUQFdujbokbSD8Hyv1ieKqli37JPu5TdhQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=B0vBeX50; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ztiH7bgv;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=B0vBeX50;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
 Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4tgx6mmJz2xqZ
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Nov 2025 02:22:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4tzB421mz2xqZ
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Nov 2025 02:35:34 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
 	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
 	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
 	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=Awr+81kQsRnEBxn06SpEGdo1D44sv/W67zP5wVfdji8=; b=ztiH7bgviNzNanjroR1I3K9ala
-	g4VP79+oXXvnv4jp8O3mC+I7CpuE7e3ZyKbul3ax9mvMQ6uF7ZgjsEZNlsmW9dsatq3/x3Y8DcaYg
-	mJNFvp8XO6OaYEG83DMlc/K8uhCnXFrzIYQ4gaGxb/KYyaWvHCnkNFd/0FERfx4c+qj4=;
+	bh=01rfLZwpM4pmMKU3kqbEEzw3i2BzLBr0hbB6YkfV3no=; b=B0vBeX50L5XIgkqjrniD4kQSsI
+	sbc+Q3WoA0Z19I03hXsGH6xMRB6yrOs2MvmnCW9nxDEe+IvAzmQts2rvB0n+uCUWjToSn28T/4WH4
+	O/jWqx8JNxLcvgL+fV9SkJhzTrr6bXtzXXOwU1KVkOKIvxJjUg8lIHcD16tWYd9XzuQU=;
 Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
 	(envelope-from <andrew@lunn.ch>)
-	id 1vITi7-00DX2g-4E; Mon, 10 Nov 2025 16:21:39 +0100
-Date: Mon, 10 Nov 2025 16:21:39 +0100
+	id 1vITvF-00DX7o-GK; Mon, 10 Nov 2025 16:35:13 +0100
+Date: Mon, 10 Nov 2025 16:35:13 +0100
 From: Andrew Lunn <andrew@lunn.ch>
 To: Jacky Chou <jacky_chou@aspeedtech.com>
 Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
@@ -56,11 +56,11 @@ Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
 	netdev@vger.kernel.org, devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org, taoren@meta.com
-Subject: Re: [PATCH net-next v4 1/4] dt-bindings: net: ftgmac100: Add delay
- properties for AST2600
-Message-ID: <aeb5d294-d8c7-4dbb-a159-863963d38059@lunn.ch>
+Subject: Re: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
+ for AST2600
+Message-ID: <68f10ee1-d4c8-4498-88b0-90c26d606466@lunn.ch>
 References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
- <20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com>
+ <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -76,19 +76,42 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com>
+In-Reply-To: <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
 
-> Add the new property, "aspeed,rgmii-delay-ps", to specify per step of
-> RGMII delay in different MACs. And for Aspeed platform, the total steps
-> of RGMII delay configuraion is 32 steps, so the total delay is
-> "apseed,rgmii-delay-ps' * 32.
+> +	/* Add a warning to notify the existed dts based on AST2600. It is
+> +	 * recommended to update the dts to add the rx/tx-internal-delay-ps to
+> +	 * specify the RGMII delay and we recommend using the "rgmii-id" for
+> +	 * phy-mode property to tell the PHY enables TX/RX internal delay and
+> +	 * add the corresponding rx/tx-internal-delay-ps properties.
+> +	 */
 
-You already have hard coded base addresses to identify the MAC
-instances. So i don't see the need for this in DT. Just extend the
-switch statement with the delay step.
+I would not say that exactly. Normally you don't need
+rx/tx-internal-delay-ps. It is only requires for badly designed boards
+where the designer did not correctly balance the line lengths.  So i
+would word this such that it is recommended to use "rgmii-id", and if
+necessary, add small "rx/tx-internal-delay-ps" values.
 
-    Andrew
+> +	scu = syscon_regmap_lookup_by_phandle(np, "aspeed,scu");
+> +	if (IS_ERR(scu)) {
+> +		dev_err(dev, "failed to get aspeed,scu");
+> +		return PTR_ERR(scu);
+> +	}
 
----
-pw-bot: cr
+This is an optional property. If it does not exist, you have an old DT
+blob. It is not an error. So you need to do different things depending
+on what the error code is. If it does not exist, just return 0 and
+leave the hardware alone. If it is some other error report it, and
+abort the probe.
+
+> +
+> +	ret = of_property_read_u32(np, "aspeed,rgmii-delay-ps",
+> +				   &rgmii_delay_unit);
+> +	if (ret) {
+> +		dev_err(dev, "failed to get aspeed,rgmii-delay-ps value\n");
+> +		return -EINVAL;
+> +	}
+
+Again, optional.
+
+	Andrew
 
