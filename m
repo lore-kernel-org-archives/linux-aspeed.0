@@ -1,66 +1,212 @@
-Return-Path: <linux-aspeed+bounces-2860-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2861-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83067CCF9E3
-	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 15:46:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BDD0CCFA13
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 22:39:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4vCb6xKrz2xqj;
-	Tue, 11 Nov 2025 02:46:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762789579;
-	cv=none; b=axhd3LT/rmoMBb6NZfZc8pPOa8s6+XbYOnZ+66gJH+R5v/gN0Dy1eGPqRw2DSG0k4EnHae8GEXLGqIeBHUkWbE+ZcQrft8MJ/S70X5KC6jbPQOfUXGmklQM/28tH1wFMuvhYYq4Sxs7uZ7x8NjEcfgDoM9CvlJxmlfDIPB9B1rd18rBEqTdZ7EKbvU/UzVjpxWjKmZT2YHPxsshNyMAcR+gPl9AKQW5Miv7nT3S5mQx8OaUZHHxahesPQhdfSrqSulVNqbzvgyrrwzMGWeBaBk63Ke9Bbdl8CuiyNpFqcSVLHgCtwxEHOFHJ+S6GNBm/GRdqZo5qMyyeDkZXnBbmQQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762789579; c=relaxed/relaxed;
-	bh=8nZLD9diL5Nl54JqOLMmgecUuCsULo/6MkV2RzeMUYA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NSnNOpJcRg7RmFE9XJ1XVSn1+jdfzAL+GTZZD9FVKEQ41EAB83ysfLBoPvtH2oyNqisHMBlCPQ5bS35L1tFy7PJj91gq/SV1bbEZysiKfhDVBVxvEwD1YBq6W01yAMUjiaE75zrZ2hWsdtfvi+2T+zfgHgqPnUK5x202udX6CNjGaTKDxjyEhvLrfoYU9jyJVJpQ8te6LY7ByjJUd9JoMAi+w1l4VAle4ds3T/IJmxR2o++fhtfM3ZwBGCNOnhbRpSFz2MEmN+89i/rRxVj6UHG00IDwJZ6/0A3TI3ZvuLtPiKCm9439lVg6kAYIkjNoYgWhjKRwgLMVBwWtJyPL9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=F7VuTdwM; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d54Nh6X7Sz2ytT;
+	Tue, 11 Nov 2025 09:39:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=192.198.163.16 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762783490;
+	cv=pass; b=ep/wu3QGeNpRt6lo/CYUVWTWOk7/bhQFo3jrFT8j8ZLHAiX3twaxJyz+b6/gAmaDVLja5pZYvcPNxES/AUw0PjsK8HhKQEDsCXq2yp27FHN12THEKrpVme+12Bqt+MmYCMz1jaJjze4F8eNxQs7V/aaYQk62vFE4CGH0OCiuwrJNZipRA8FHhPh1e6IKPYLsZ9V54b9DgqV3HcX8hcnDNcm+Y8+ZLc2lVnf4ilkfWcFXEFQzfDekvFJ6fh9XDWSPe/Q4ZQrN4JfnCppz/2fmjduB7Ma4I+Jh+azfNTJJA4iwmyeD6tAenmaIYIYQIQSEC3xHJn210UuaMQM/H2Zwfg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1762783490; c=relaxed/relaxed;
+	bh=Ti3QfC4kLuRh/p3T4LZ8K0uYWdBUcfZzpFVkYEWehFY=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=aXnAfIV7hXaUZfOxp2H4QuF5RFQ17YYK6DMDdaan7KnEUeQEecDQq3DEDJ37eLYYt/KiIoNRMrj0Qlvc439Il8P4059mXVRoGg7L84Izr/0AguXNplqqRQa6n4OSYv5vuFHwJqHentmo8/dt5wkgdyogy/OQCnSo3Qz3AUIIQjIbzhgxOPP+ePxsV+N6E7TmjlLzNDA0zIEN9HuHQm8rrU+z0Xc6XXSOO8CnUuwbsWAMCz/FSRgHRQKVhtv0EvNUkPVqgeTt+Q4UffMWxGsx157nn7TFJGSeEOpsKGnuyxgFjoa6A3TEIcxR2Ja718D1nKtuoCd6yMSHY/DhwtffAw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EStYl+3m; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=qiuxu.zhuo@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=F7VuTdwM;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EStYl+3m;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=qiuxu.zhuo@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4vCb2VCdz2xqh
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Nov 2025 02:46:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=8nZLD9diL5Nl54JqOLMmgecUuCsULo/6MkV2RzeMUYA=; b=F7VuTdwMDensrQoEHPLpu3zbJi
-	62AkImrh5wvQK3G572aiWMaUpJbB2vNNXs6TxVhfz1pVQ8gU+8Cycs3KCY9PGuIeYiScScJj4Q77/
-	H4/1yTstNex7J7LSb+gGbvhqamTNVcVqL4NDtUE9IovP4a5Cwwq9+hYQzPG9RDHvewmQ=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vIU5e-00DXER-4n; Mon, 10 Nov 2025 16:45:58 +0100
-Date: Mon, 10 Nov 2025 16:45:58 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Po-Yu Chuang <ratbert@faraday-tech.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	netdev@vger.kernel.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, taoren@meta.com
-Subject: Re: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
- for AST2600
-Message-ID: <8c6e1286-782a-44c5-ac9b-21d1db177d6e@lunn.ch>
-References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
- <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4ryT2Bntz2xqL
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Nov 2025 01:04:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1762783489; x=1794319489;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-transfer-encoding:mime-version;
+  bh=Ti3QfC4kLuRh/p3T4LZ8K0uYWdBUcfZzpFVkYEWehFY=;
+  b=EStYl+3m/TeOnDNI6OxZCUmT+YfxTM3F+tfRwjH2Ipfm0322i4IFVfFr
+   VilQefuzGksbGybZZS2kA1E6xtogURgSXjKncQybdfNPTZCg5DpIkZ8nA
+   ZHu8IpRmuONTzOMyCSamZRk7Esd6Z10atw6Ls2ZJeN742RMUBl5Kt7W82
+   N0aGGvkhg87j90GCccwRHn7D+CorxWmwqmwUGrVt4oTTte1DZvDlzfZ+2
+   Ky+1F37UJ3fWdPflbLoicFNDqLe+P9Xu1h3PAQqDTiSjYJfXoNyr0n7n4
+   ki14mNGuYuyzsF194+/7Vpf1XezBAL6JySQ0OAf1nuxaQuE1pvclF0wdx
+   g==;
+X-CSE-ConnectionGUID: WjA8HrywTu608gDralK/1A==
+X-CSE-MsgGUID: 5mpbYv5LQK23DaYzCMTAhQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="52390122"
+X-IronPort-AV: E=Sophos;i="6.19,293,1754982000"; 
+   d="scan'208";a="52390122"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2025 06:03:44 -0800
+X-CSE-ConnectionGUID: 94E4WRgpS+yx+Ck0PSdIKw==
+X-CSE-MsgGUID: Q/8P3qqHTpu6Vi8g89usZA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,293,1754982000"; 
+   d="scan'208";a="187989543"
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+  by orviesa010.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2025 06:03:44 -0800
+Received: from ORSMSX903.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.27; Mon, 10 Nov 2025 06:03:43 -0800
+Received: from ORSEDG902.ED.cps.intel.com (10.7.248.12) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.27 via Frontend Transport; Mon, 10 Nov 2025 06:03:43 -0800
+Received: from SJ2PR03CU001.outbound.protection.outlook.com (52.101.43.63) by
+ edgegateway.intel.com (134.134.137.112) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.2562.27; Mon, 10 Nov 2025 06:03:43 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=hqIPCzk+WbZaq3xwuGppGS5thN6dNC4t1/35aJsDPK9qWBFOBIi5ZWy+xCICwmBN9Hij7+cXRRi0hSg+poLncyKMyAeQjY5VZQ0MOObwV1yPkUIjthH6lmwCt1g1KB73FOdV/sbER2DU27EsTTytQP8RvsJv37mrnY7BTxm0ITT+xsZvcY4D21pXoZyP6zSP84ODLMipxUV3OVIiVeUNW3o6RgR1GIiImS6UVBIJhBGJadKSFRTOKXjO5d0t1nUUGUFrz1d5JWv7SRPBWOj6A5KHdhJYQQz8yZtseitE7aqQo1ZR9kXa3e1hio+Y6RqTSmaEeFpA5qZegPXMEhudkg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Ti3QfC4kLuRh/p3T4LZ8K0uYWdBUcfZzpFVkYEWehFY=;
+ b=YE4oltW0ccHZO8AxeYzvQiH1urmwxxKEK8woSwNG01o8t2jEdSIA9wKI4Ib4UhGT1HJJlBzcdvkMITadQiHkTNkILeCAPN+/MGZOY8qlQgu+La7sKP2wH0lgqk+tg2cRxpkUwHEkrysrpwHXy02TxjSOV8Y/AZnmyGsafoCbwMghQ61VKJs4DEEFpSqze5gTTpksKWe6vjvsDU/diYR/I3a4srOwJBOe393fN1gZYk3jUcHIBjftc1mZFTPbhAlk6BsCbxCiY1pckjaPQLTozGR9sURCFkOfRhkvAH4MZHvg26HdPhYb17AAjbrH/Oov20l1WRJ2joAdLLE9dIK3/g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from CY8PR11MB7134.namprd11.prod.outlook.com (2603:10b6:930:62::17)
+ by DS4PPF7A0031045.namprd11.prod.outlook.com (2603:10b6:f:fc02::33) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9298.16; Mon, 10 Nov
+ 2025 14:03:41 +0000
+Received: from CY8PR11MB7134.namprd11.prod.outlook.com
+ ([fe80::5670:5b2e:6ecb:dcaf]) by CY8PR11MB7134.namprd11.prod.outlook.com
+ ([fe80::5670:5b2e:6ecb:dcaf%4]) with mapi id 15.20.9298.015; Mon, 10 Nov 2025
+ 14:03:41 +0000
+From: "Zhuo, Qiuxu" <qiuxu.zhuo@intel.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Yury Norov
+	<yury.norov@gmail.com>, Michael Turquette <mturquette@baylibre.com>, "Stephen
+ Boyd" <sboyd@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea
+	<claudiu.beznea@tuxon.dev>, "Cabiddu, Giovanni" <giovanni.cabiddu@intel.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>, David Miller <davem@davemloft.net>,
+	Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski
+	<brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, Jonathan Cameron
+	<jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, Jacky Huang
+	<ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, Rasmus Villemoes
+	<linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
+	<tiwai@suse.com>, Johannes Berg <johannes@sipsolutions.net>, Jakub Kicinski
+	<kuba@kernel.org>, Alex Elder <elder@ieee.org>, David Laight
+	<david.laight.linux@gmail.com>, Vincent Mailhol <mailhol.vincent@wanadoo.fr>,
+	Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>, "Luck, Tony"
+	<tony.luck@intel.com>, Michael Hennerich <Michael.Hennerich@analog.com>, "Kim
+ Seer Paller" <kimseer.paller@analog.com>, "Lechner, David"
+	<dlechner@baylibre.com>, =?iso-8859-1?Q?Nuno_S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Richard Genoud
+	<richard.genoud@bootlin.com>, Cosmin Tanislav <demonsingur@gmail.com>, "Biju
+ Das" <biju.das.jz@bp.renesas.com>, Jianping Shen
+	<Jianping.Shen@de.bosch.com>, Nathan Chancellor <nathan@kernel.org>, "Nick
+ Desaulniers" <nick.desaulniers+lkml@gmail.com>, Miquel Raynal
+	<miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, "Vignesh
+ Raghavendra" <vigneshr@ti.com>
+CC: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-renesas-soc@vger.kernel.org"
+	<linux-renesas-soc@vger.kernel.org>, "linux-crypto@vger.kernel.org"
+	<linux-crypto@vger.kernel.org>, "linux-edac@vger.kernel.org"
+	<linux-edac@vger.kernel.org>, qat-linux <qat-linux@intel.com>,
+	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>,
+	"linux-sound@vger.kernel.org" <linux-sound@vger.kernel.org>,
+	"linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v6 16/26] EDAC/ie31200: Convert to common field_get()
+ helper
+Thread-Topic: [PATCH v6 16/26] EDAC/ie31200: Convert to common field_get()
+ helper
+Thread-Index: AQHcTyO4u5UeWvoBYU2LiD69V832hrTr9xnA
+Date: Mon, 10 Nov 2025 14:03:40 +0000
+Message-ID: <CY8PR11MB7134E33018D0A0BB4FBA477089CEA@CY8PR11MB7134.namprd11.prod.outlook.com>
+References: <cover.1762435376.git.geert+renesas@glider.be>
+ <56ec4d8e40d24ead68a14948cbbe122c5aaa1405.1762435376.git.geert+renesas@glider.be>
+In-Reply-To: <56ec4d8e40d24ead68a14948cbbe122c5aaa1405.1762435376.git.geert+renesas@glider.be>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: CY8PR11MB7134:EE_|DS4PPF7A0031045:EE_
+x-ms-office365-filtering-correlation-id: 621cb6b4-fb1a-423b-b05f-08de2061f405
+x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;ARA:13230040|1800799024|7416014|376014|366016|38070700021|921020;
+x-microsoft-antispam-message-info: =?iso-8859-1?Q?qwNJE0AKgyrcoqKyDVu/dw1hkRrF5/gnKFiftxCCQtMk3cBIO8K/h7XW0t?=
+ =?iso-8859-1?Q?jlSrVfktdkGaGkaF8uLblZ0zIXqizcDnq/lgf20S6Oo870O8oSiHXKhCiN?=
+ =?iso-8859-1?Q?iIxffZuSksONEh4TBYFtftCok/98ubrX7oMAEVtX8yvkgZIn88VkWlXAqn?=
+ =?iso-8859-1?Q?XKIFOzw7vWNTXpwy15tJLw6y8Kwfng2apjx8eHe7wKMRdPsNbxf/4vS79Y?=
+ =?iso-8859-1?Q?lfi4C38TzPd0f/T1LbB4eKdNF1TOXCg+sA3bAEQDDBeADoWN9groEE2c07?=
+ =?iso-8859-1?Q?ldieEyBfPNGssxc/2by+lA+kFUMdpIIXbqLnQ0VBPx699CBYbvHrOH9ldt?=
+ =?iso-8859-1?Q?tfqfADlSFIbBHRAE7sSsVobnFhBiEc47odNrqXZsE1+vbK/vs2OzfV7FTg?=
+ =?iso-8859-1?Q?xvugCm+gEDkre1EPvgexmbNRLeyYOtFLgAndgWk/RiPMyXw5si6QBe3XFz?=
+ =?iso-8859-1?Q?da4tkpT8H2cz0WeBV/FbSgS6GRXfaWXDloXHPSulEsMJOl24wwIfsIYi5o?=
+ =?iso-8859-1?Q?8JNTVRYbrEJTtMOveBzmAVM9Zpr2W/xEKgiyrXdS9XBGlD7Dvddx4d0RvV?=
+ =?iso-8859-1?Q?jDfe2iRgrD3fxsUlp3xt+bDzPZtRBbJn1AyyNSDp4Wrsjm3fcDz8CS1KjP?=
+ =?iso-8859-1?Q?8YNOTIZ8PjJt8Bd5ktt2ruQa9Ok8Og4WtJZwBT6ZzIrnb74fkpQND/lHAK?=
+ =?iso-8859-1?Q?bAsYPoMfiydIeiMn5Fr3seKlVxV4BWu1BMlCJhLbhwg66MFfUPm6JEMyzK?=
+ =?iso-8859-1?Q?MXcqfSf0m2T71S8Mtx8i82VMOp+tNAUF6Dduw+/y4KAplhD4XEmBJlpHIR?=
+ =?iso-8859-1?Q?18CrJoNQSJmrBTfAm23p2mY5iV5XnQj0/WedtsGvXXRGI/hjPIfCCWBMWt?=
+ =?iso-8859-1?Q?NDwpu4BK6ucXp9Pka+RNYB+rWpwPDmQqTvNN+rml1l2vimHv9ojo7Xqly8?=
+ =?iso-8859-1?Q?olXujx19RffjTOCVMxHZ3+lNhrwoq9KKWdX/bN50YBIOo4AhQaHEGQ2WAU?=
+ =?iso-8859-1?Q?6sFeHXfqZhpfZWHRlruGEhpUTRhZRrAu6Z832KbXbCj7o56oo2kzg0tGlw?=
+ =?iso-8859-1?Q?ciV5o9Q4MJLAQNcK2Mhu0RhggncFOjPzCRYhPSUtYBpYh7QK27HUKR7q2Q?=
+ =?iso-8859-1?Q?X8Ob8wgV/1FuquyNFjvrIXIfCljV4CU6TNlHpjqGMSHH0Ln5YAss/sBCDU?=
+ =?iso-8859-1?Q?7Wsbo3C9k9MmPAt9YEy3Aa4ZqdTrYHQSlaCJ8TPJaVVSULjaGU0lPn6Mit?=
+ =?iso-8859-1?Q?goav0TPhA3Fx/62IHHYAeVWZ1SRBOKLvAR59qRwx3M3ZgcvG6si7Fd5Dl8?=
+ =?iso-8859-1?Q?OJssNf9PBrwZpW8c5UgjlJ3PTzOU3jlpAXN7rgwjBN/LOwc5mroXwQuOEO?=
+ =?iso-8859-1?Q?LjdHlmzJKMcCSuGC1WrWRiM0HpIEnf9sQGpV+WiGPvHluGVaOjumbCRYhd?=
+ =?iso-8859-1?Q?AGsrDRdhmZZT1UslPLz8yiqc3eJJzAVdYd99UCNXk2I4p2GPnYlO4hLxsP?=
+ =?iso-8859-1?Q?235F9bp1GdllSs4XW0JK86aQYUCcT/+K1c8kfYjcnsNnO15fconWD0ErRp?=
+ =?iso-8859-1?Q?8/FudqvKrsR+ILjUGVQUDG410je9cnQHLYHQG1WtLSkwmeIzAQ=3D=3D?=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY8PR11MB7134.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(38070700021)(921020);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?iso-8859-1?Q?bzaCV2nYWMMpwye3ErfcmsY66BV1CZiT4xDSBYY4aqqjOSAJb4Sgmj2IFN?=
+ =?iso-8859-1?Q?KqWFAVC/6SDfEaqPyrujW3Zs1nAW9LMZ/Ev2nFZG1BEXFULyP9YSBLV3cO?=
+ =?iso-8859-1?Q?OShX45a7aR5V4q4UogInsm2jw7i1eBbbFc36qOWRYPOUllsBhXYppEjtNw?=
+ =?iso-8859-1?Q?fqmVBtSizUcK5bCLbLAZvUEV1ouUvMbzCuvzRJ4RGLGW476C4P3wwnbpuz?=
+ =?iso-8859-1?Q?K6/0rTTLX3x8COzI2L5jMcNasjigWD+ITQigkZL7YctTl+j9pbW4VMN0fJ?=
+ =?iso-8859-1?Q?+iqtGYDJbhVQSVC9SsyZkgGes5SjqfqCn2FUSmV+v+zcpADYRnjmYOrdfF?=
+ =?iso-8859-1?Q?we+N9ujoIlnRFxczETRpb7CgvV4mOV/Luw7PK53npbpsFgOX9+EAQptIyf?=
+ =?iso-8859-1?Q?+05p08ScnRdUo31NJ/3nE/JfQCvTnV1tmYBaKFHkQZwHLZhyMNhq9g9WFm?=
+ =?iso-8859-1?Q?Gh4SZZjHZvOem7m3gVHFVFkJkuPI9l3dbgQVDyURA8XIb4nmUNlB2vcuZS?=
+ =?iso-8859-1?Q?peTDxddhfebXC2/7cSWcDEuFZGvwEi9PrJ6dSI7cDlyeyBmkaHCv3D382v?=
+ =?iso-8859-1?Q?hwWKhbC/jdUG1DG01Yia+WGTItiU4YWOKB2VhsVNJkZz4yoB/pwpSwllXz?=
+ =?iso-8859-1?Q?6FqMORGdiDwy/mOxtcIkDc5Rij8TqnZFyl7VZXKUSt3uSIsS8TL3AMFZcq?=
+ =?iso-8859-1?Q?nJVO05cCCNNYI1GHlmcU+i20kQlN+UQDaIdNwYsUj2Y6SupxYavflSnrsc?=
+ =?iso-8859-1?Q?tx/0Ha37uUBRZtAvEoDs/rNuLpPv5yPoMNogGOqbR6IkFfpNigdIryI0fl?=
+ =?iso-8859-1?Q?E5ruXCsjUTkuaG26iXv8uKShp8dWJ1PbQEZ859PFSM+U/RwzYHr7LlgyAF?=
+ =?iso-8859-1?Q?Yh79Re/Blg2pvz9ZoqxI/WslauhN2h2fMUJd0sFe12tV+Id97v4FSFoLEu?=
+ =?iso-8859-1?Q?27CiIx1pwWGml8hq7yErj4Q+2yECbtWCG50rtZ+KAD0WIhcHS8VG/pn4qE?=
+ =?iso-8859-1?Q?rWuqb7bs8K8P1s+5V5Tp43OeWvZ+Oax0RDdL+jEzKwlbe1eaw6MQ+BU/z9?=
+ =?iso-8859-1?Q?l9aldRwvLQrp0uKXNRbrSRbVTPsu7J1RTx24JLF8aluo+4JN4EuvTGbdVc?=
+ =?iso-8859-1?Q?Va+M6C+jCFabUM8Fyz5m0rcXoQovL2aR1JcwEkLiOI0KNVoDZUKPnOTSzE?=
+ =?iso-8859-1?Q?vlRQT+PAO6RByg+i4otVP0TcqooxaJiO2JbW941MAU6LUlycpY1jn5hDxx?=
+ =?iso-8859-1?Q?T181iPrpGxA/Lx3RyQZRhNN/1WdDspxzAm7mcpU+7knCYqYiXDVXXWLawi?=
+ =?iso-8859-1?Q?50NH2/lEjXsgJUlI3zwdqgM5DSl6JLCG4WsPaBIKdYmMhEBgZBdS/xJ2ut?=
+ =?iso-8859-1?Q?wiIObCffh8N9PgZlzGznZy4qv+wjCXvPS3JK860lGI+N/4fDCFG+XSxXff?=
+ =?iso-8859-1?Q?Xn/+f7qndLXYNcuQKUE1Y5VyBfLBqjcdV1oPeJoK20jvmBj+3QYFFHWmnX?=
+ =?iso-8859-1?Q?IAaDIEHzwyMagunYXRJvErDO7sESCGakDX2SS4p2FIhjPZ/9IJ5zwF1i9w?=
+ =?iso-8859-1?Q?HqNL75xadzQf4Bhi4HPtANW69LUp7i71w9EQ0T6aEFhVRRPWp6pfcRuKgt?=
+ =?iso-8859-1?Q?8uvWEUnho6PUrWKtt0ua9OwJM5UU5GRIV8?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,122 +220,70 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CY8PR11MB7134.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 621cb6b4-fb1a-423b-b05f-08de2061f405
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Nov 2025 14:03:40.9992
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: O3Dclrjj610Ir3Bm2a9SMkkSvUoUKI6zM63G2VVWbICpObVUDqzYheQpuhprb4FVflm9Yfg3Wx+DWYrRtibAIQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS4PPF7A0031045
+X-OriginatorOrg: intel.com
 
-On Mon, Nov 10, 2025 at 07:09:28PM +0800, Jacky Chou wrote:
-> On the AST2600 platform, the RGMII delay is controlled via the
-> SCU registers. The delay chain configuration differs between MAC0/1
-> and MAC2/3, even though all four MACs use a 32-stage delay chain.
-> +------+----------+-----------+-------------+-------------+
-> |      |Delay Unit|Delay Stage|TX Edge Stage|RX Edge Stage|
-> +------+----------+-----------+-------------+-------------+
-> |MAC0/1|     45 ps|        32 |           0 |           0 |
-> +------+----------+-----------+-------------+-------------+
-> |MAC2/3|    250 ps|        32 |           0 |          26 |
-> +------+----------+-----------+-------------+-------------+
-> For MAC2/3, the "no delay" condition starts from stage 26.
-> Setting the RX delay stage to 26 means that no additional RX
-> delay is applied.
-> Here lists the RX delay setting of MAC2/3 below.
-> 26 -> 0   ns, 27 -> 0.25 ns, ... , 31 -> 1.25 ns,
-> 0  -> 1.5 ns, 1  -> 1.75 ns, ... , 25 -> 7.75 ns
-> 
-> Therefore, we calculate the delay stage from the
-> rx-internal-delay-ps of MAC2/3 to add 26. If the stage is equel
-> to or bigger than 32, the delay stage will be mask 0x1f to get
-> the correct setting.
-> The delay chain is like a ring for configuration.
-> Example for the rx-internal-delay-ps of MAC2/3 is 2000 ps,
-> we will get the delay stage is 2.
-> 
-> Strating to this patch, driver will remind the legacy dts to update the
-> "phy-mode" to "rgmii-id, and add the corresponding rgmii delay with
-> "rx-internal-delay-id" and "tx-internal-delay-id".
-> If lack these properties, driver will configure the default rgmii delay,
-> that means driver will disable the TX and RX delay in MAC side.
-> 
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-> ---
->  drivers/net/ethernet/faraday/ftgmac100.c | 148 +++++++++++++++++++++++++++++++
->  drivers/net/ethernet/faraday/ftgmac100.h |  20 +++++
->  2 files changed, 168 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/faraday/ftgmac100.c b/drivers/net/ethernet/faraday/ftgmac100.c
-> index a863f7841210..5cecdd4583f6 100644
-> --- a/drivers/net/ethernet/faraday/ftgmac100.c
-> +static int ftgmac100_set_ast2600_rgmii_delay(struct ftgmac100 *priv,
-> +					     u32 rgmii_tx_delay,
-> +					     u32 rgmii_rx_delay)
-> +{
-> +	struct device *dev = priv->dev;
-> +	struct device_node *np;
-> +	u32 rgmii_delay_unit;
-> +	u32 rx_delay_index;
-> +	u32 tx_delay_index;
-> +	struct regmap *scu;
-> +	int dly_mask;
-> +	int dly_reg;
-> +	int mac_id;
-> +	int ret;
-> +
-> +	np = dev->of_node;
-> +
-> +	/* Add a warning to notify the existed dts based on AST2600. It is
-> +	 * recommended to update the dts to add the rx/tx-internal-delay-ps to
-> +	 * specify the RGMII delay and we recommend using the "rgmii-id" for
-> +	 * phy-mode property to tell the PHY enables TX/RX internal delay and
-> +	 * add the corresponding rx/tx-internal-delay-ps properties.
-> +	 */
-> +	if (priv->netdev->phydev->interface != PHY_INTERFACE_MODE_RGMII_ID)
-> +		dev_warn(dev, "Update the phy-mode to 'rgmii-id'.\n");
-> +
-> +	scu = syscon_regmap_lookup_by_phandle(np, "aspeed,scu");
-> +	if (IS_ERR(scu)) {
-> +		dev_err(dev, "failed to get aspeed,scu");
-> +		return PTR_ERR(scu);
-> +	}
+> From: Geert Uytterhoeven <geert+renesas@glider.be>
+> Sent: Thursday, November 6, 2025 9:34 PM
+> To: Yury Norov <yury.norov@gmail.com>; Michael Turquette
+> <mturquette@baylibre.com>; Stephen Boyd <sboyd@kernel.org>; Nicolas
+> Ferre <nicolas.ferre@microchip.com>; Alexandre Belloni
+> <alexandre.belloni@bootlin.com>; Claudiu Beznea
+> <claudiu.beznea@tuxon.dev>; Cabiddu, Giovanni
+> <giovanni.cabiddu@intel.com>; Herbert Xu <herbert@gondor.apana.org.au>;
+> David Miller <davem@davemloft.net>; Linus Walleij
+> <linus.walleij@linaro.org>; Bartosz Golaszewski <brgl@bgdev.pl>; Joel Sta=
+nley
+> <joel@jms.id.au>; Andrew Jeffery <andrew@codeconstruct.com.au>; Crt
+> Mori <cmo@melexis.com>; Jonathan Cameron <jic23@kernel.org>; Lars-
+> Peter Clausen <lars@metafoo.de>; Jacky Huang <ychuang3@nuvoton.com>;
+> Shan-Chun Hung <schung@nuvoton.com>; Rasmus Villemoes
+> <linux@rasmusvillemoes.dk>; Jaroslav Kysela <perex@perex.cz>; Takashi Iwa=
+i
+> <tiwai@suse.com>; Johannes Berg <johannes@sipsolutions.net>; Jakub
+> Kicinski <kuba@kernel.org>; Alex Elder <elder@ieee.org>; David Laight
+> <david.laight.linux@gmail.com>; Vincent Mailhol
+> <mailhol.vincent@wanadoo.fr>; Jason Baron <jbaron@akamai.com>; Borislav
+> Petkov <bp@alien8.de>; Luck, Tony <tony.luck@intel.com>; Michael
+> Hennerich <Michael.Hennerich@analog.com>; Kim Seer Paller
+> <kimseer.paller@analog.com>; Lechner, David <dlechner@baylibre.com>;
+> Nuno S=E1 <nuno.sa@analog.com>; Andy Shevchenko <andy@kernel.org>;
+> Richard Genoud <richard.genoud@bootlin.com>; Cosmin Tanislav
+> <demonsingur@gmail.com>; Biju Das <biju.das.jz@bp.renesas.com>;
+> Jianping Shen <Jianping.Shen@de.bosch.com>; Nathan Chancellor
+> <nathan@kernel.org>; Nick Desaulniers <nick.desaulniers+lkml@gmail.com>;
+> Miquel Raynal <miquel.raynal@bootlin.com>; Richard Weinberger
+> <richard@nod.at>; Vignesh Raghavendra <vigneshr@ti.com>
+> Cc: linux-clk@vger.kernel.org; linux-arm-kernel@lists.infradead.org; linu=
+x-
+> renesas-soc@vger.kernel.org; linux-crypto@vger.kernel.org; linux-
+> edac@vger.kernel.org; qat-linux <qat-linux@intel.com>; linux-
+> gpio@vger.kernel.org; linux-aspeed@lists.ozlabs.org; linux-
+> iio@vger.kernel.org; linux-sound@vger.kernel.org; linux-
+> mtd@lists.infradead.org; linux-kernel@vger.kernel.org; Geert Uytterhoeven
+> <geert+renesas@glider.be>
+> Subject: [PATCH v6 16/26] EDAC/ie31200: Convert to common field_get()
+> helper
+>=20
+> Drop the driver-specific field_get() macro, in favor of the globally avai=
+lable
+> variant from <linux/bitfield.h>.
+>=20
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-You are adding the scu to the dtsi.
+Good to see the global field_{get,prep}() macros are available for use.
+Thanks.
 
-> +
-> +	ret = of_property_read_u32(np, "aspeed,rgmii-delay-ps",
-> +				   &rgmii_delay_unit);
-> +	if (ret) {
-> +		dev_err(dev, "failed to get aspeed,rgmii-delay-ps value\n");
-> +		return -EINVAL;
-> +	}
+Reviewed-by: Qiuxu Zhuo <qiuxu.zhuo@intel.com>
 
-This is probably going away, replaced by hard coded values.
-
-> +	tx_delay_index = DIV_ROUND_CLOSEST(rgmii_tx_delay, rgmii_delay_unit);
-> +	if (tx_delay_index >= 32) {
-> +		dev_err(dev, "The %u ps of TX delay is out of range\n",
-> +			rgmii_tx_delay);
-> +		return -EINVAL;
-> +	}
-> +
-> +	rx_delay_index = DIV_ROUND_CLOSEST(rgmii_rx_delay, rgmii_delay_unit);
-> +	if (rx_delay_index >= 32) {
-> +		dev_err(dev, "The %u ps of RX delay is out of range\n",
-> +			rgmii_rx_delay);
-> +		return -EINVAL;
-> +	}
-
-> +	regmap_update_bits(scu, dly_reg, dly_mask, tx_delay_index | rx_delay_index);
-
-How does backwards compatibility work? rgmii_rx_delay and
-rgmii_tx_delay default to zero? So by default, todays working DT blobs
-will have 'rgmii', so end up turning off delays here. And then they
-pass _RGMII to the PHY, and have no delays. And networking is broken.
-
-I think you actually need to be reading the current SCU settings and
-then deciding if you want to override it or not.
-
-I suggest you change the order of the patches in this series. Move
-this patch before you update your RDK .dts file. That way, you get to
-test both an old and new blob.
-
-	Andrew
+> [...]
 
