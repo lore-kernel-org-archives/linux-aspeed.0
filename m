@@ -1,52 +1,66 @@
-Return-Path: <linux-aspeed+bounces-2857-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2858-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4396CCF9E3
-	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 14:34:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D77BECCFA13
+	for <linux-aspeed@archiver.kernel.org>; Mon, 10 Nov 2025 15:22:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4sd32K1rz2xqj;
-	Tue, 11 Nov 2025 01:34:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762785287;
-	cv=none; b=NS28BVumHwotBSs28rkzYGBHfSAo8Knx0viee5Hf0uho7Gq8DUZ2EzN5KINwDjh0Nl3yv0vg9dSFvSR8zjM3PawfKzVIxL8bfXGARqds/1RoE6+pf9sKxRoNXSMj+WLasw3wu/dnjZvZARwvlH/Ps8ObWy7cYdxXacO3tRry7lz85Jr4z5Py7ARhBsjDbeDHU+liTp4VGtu6EX0sHCEC61r6Ov9bu1Kb0YDqst/JO6ZFeR4EQIZKutZ6msT/+nWuIXHZQlixq7FbHs5ZciVB+XsokTavfUYTe60UCuiGzA6Z78jfzwNTJzsKhu9Wl6VeXAuzMf7IRWGYoBeDVcXecQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4th10gTGz2xqh;
+	Tue, 11 Nov 2025 02:22:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762788145;
+	cv=none; b=QRCJvIM9F7+20UY5S6S6efJ0I9bzZGvQSIhhiBd9bLSqjOLQkXX/WtNVlaxaMF7aogK+dG6TDqdI3rXqr/jbLuBCQ7yneACCBcgKmTwsyFKKcUZ0+BU2MxI5zmdGF2BhTG/HpAbG8p0KxKBLuoxob+5KWYtnl/3/G3mhCvRPqiLae6xb6gR520P6heq1cpHSxrl0A88CYBOukbYUAUCNZFv88qITvLQwrSElmk/aPQrxoa5I5ZiEbmph3bVY/ieSKTF0mr/hTCRN5tK23PIezrz1SjWPYsaZbV3tsWsCGCmbLGmlAuN+ANfwjV+/W+Fd3EyDsGz3HjDupNbivsU4VA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762785287; c=relaxed/relaxed;
-	bh=SCCf38nnkWNjOJ81ZyYL98GTxpP0uUx/lAku/bbM36E=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=GOmTWXT6ANsyfoJdvxIUKvUzJnd1iwToBEBo0KQa+1iKwC1b8ca1KNEjUOaC5YoIh+HP6c6+Jet/NccFORNXYB19scuTpgzreSeedEvSW5fWh7MgcpevV97GUVDUt5PGN8GoDbom2ACUw31lamoeNOTqCq1+CkdptsuKRFMdC3CX2tPGQqzSoUY0KWGMhuwczfE51gxLeo3zVUZo/AfLENN9XFXpjd5w8QZMBlmt6mEE9dKBNH5ewCMKTmI62sLl4zJSsOfp3w7zGRn9+6ovdyMBQsP6K1P/ICu0avjzg5r+WiBmdCWsOLjy1Zv0LE4IFwY3K+XqXFljXQr+iX8jeg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WmKM6mky; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1762788145; c=relaxed/relaxed;
+	bh=Awr+81kQsRnEBxn06SpEGdo1D44sv/W67zP5wVfdji8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ZF8gvFMS4g8aavKtjXLJGDUg4NXGOWVpSTzcTT4mm5N/Gri2zoAY78CKBEw+bmZOZW+SzFSoSaQhdOUCE0znfVrmMDtNOehaN0ObKJAbNT+heqWUt8LY7FnNVU77RWOoHbCvPf+rUv7CdTHnOKbbS6WrBXkpMIGu4OwGPZP1FZ3bsGT5tUTaCbMp0y29LMiDAh+uuRxK/kjK2kScmfOl1/AmHc7G6tvyCY2SZH93TThdYHJ5DP+49xFIlAQ1mpoMAjcGpFimIIQbeVPMJ3JYiMydJkn9htHxoGCXOrRRoXMwWmJHS2/7zcfYIuZqsSI5a5sis8VQLBawQO0fyCGuBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ztiH7bgv; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WmKM6mky;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ztiH7bgv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4sd21mbVz2xqL
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Nov 2025 01:34:46 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 63AF5601BA;
-	Mon, 10 Nov 2025 14:34:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92187C2BCB5;
-	Mon, 10 Nov 2025 14:34:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762785282;
-	bh=k/nZbTOGu0yXW0E7gJe16QIVdAo/xRXoYrYNFsxy19I=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=WmKM6mkyfZO5xgAO/PWi8il6wQBeRwumaZXLjf12CWX7qVPePJsq+Du8caI65sGkN
-	 SBIYG6GxaRD6FJlkiRsUyTZ2SxX+eYxL7qJ7+Aelr9RbGn+fFiYF0/uvl7+pUtDuFJ
-	 CitvswaCnr78MwnFqdBGICZ4LJDVd0rcaaiKEPJ1OPJAc0DDe4GcESyly5kxCRIC3l
-	 lRSKIOiO9I6rTIK/d14uQ75PvugBkTeHQvH7RLPG2RvbCP4orOiQ4uSjicdwaNtrVf
-	 9nIO/KFdiWlvc41ZYqzhrACM7ApMDElMFdQvtOuyq/kcyE/RkL67jyilCr4Xcha9Fq
-	 5sNCVbN2cZ/NQ==
-Date: Mon, 10 Nov 2025 08:34:41 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4tgx6mmJz2xqZ
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 11 Nov 2025 02:22:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=Awr+81kQsRnEBxn06SpEGdo1D44sv/W67zP5wVfdji8=; b=ztiH7bgviNzNanjroR1I3K9ala
+	g4VP79+oXXvnv4jp8O3mC+I7CpuE7e3ZyKbul3ax9mvMQ6uF7ZgjsEZNlsmW9dsatq3/x3Y8DcaYg
+	mJNFvp8XO6OaYEG83DMlc/K8uhCnXFrzIYQ4gaGxb/KYyaWvHCnkNFd/0FERfx4c+qj4=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1vITi7-00DX2g-4E; Mon, 10 Nov 2025 16:21:39 +0100
+Date: Mon, 10 Nov 2025 16:21:39 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Po-Yu Chuang <ratbert@faraday-tech.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	netdev@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, taoren@meta.com
+Subject: Re: [PATCH net-next v4 1/4] dt-bindings: net: ftgmac100: Add delay
+ properties for AST2600
+Message-ID: <aeb5d294-d8c7-4dbb-a159-863963d38059@lunn.ch>
+References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
+ <20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,416 +74,21 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Conor Dooley <conor+dt@kernel.org>, Jakub Kicinski <kuba@kernel.org>, 
- Eric Dumazet <edumazet@google.com>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- taoren@meta.com, Paolo Abeni <pabeni@redhat.com>, 
- linux-aspeed@lists.ozlabs.org, devicetree@vger.kernel.org, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, 
- Po-Yu Chuang <ratbert@faraday-tech.com>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-In-Reply-To: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
-References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
-Message-Id: <176278493665.154784.3408272608380491276.robh@kernel.org>
-Subject: Re: [PATCH net-next v4 0/4] Add AST2600 RGMII delay into ftgmac100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251110-rgmii_delay_2600-v4-1-5cad32c766f7@aspeedtech.com>
 
+> Add the new property, "aspeed,rgmii-delay-ps", to specify per step of
+> RGMII delay in different MACs. And for Aspeed platform, the total steps
+> of RGMII delay configuraion is 32 steps, so the total delay is
+> "apseed,rgmii-delay-ps' * 32.
 
-On Mon, 10 Nov 2025 19:09:24 +0800, Jacky Chou wrote:
-> This patch series adds support for configuring RGMII internal delays for the
-> Aspeed AST2600 FTGMAC100 Ethernet MACs. It introduces new compatible strings to
-> distinguish between MAC0/1 and MAC2/3, as their delay chains and configuration
-> units differ.
-> The device tree bindings are updated to restrict the allowed phy-mode and delay
-> properties for each MAC type. Corresponding changes are made to the device tree
-> source files and the FTGMAC100 driver to support the new delay configuration.
-> 
-> Summary of changes:
-> - dt-bindings: net: ftgmac100: Add conditional schema for AST2600 MAC0/1 and
->   MAC2/3.
-> - ARM: dts: aspeed-g6: Add aspeed,rgmii-delay-ps and aspeed,scu
->   properties.
-> - ARM: dts: aspeed-ast2600-evb: Add rx/tx-internal-delay-ps properties and
->   update phy-mode for MACs.
-> - net: ftgmac100: Add driver support for configuring RGMII delay for AST2600
->   MACs via SCU.
-> 
-> This enables precise RGMII timing configuration for AST2600-based platforms,
-> improving interoperability with various PHYs
-> 
-> To: Andrew Lunn <andrew+netdev@lunn.ch>
-> To: David S. Miller <davem@davemloft.net>
-> To: Eric Dumazet <edumazet@google.com>
-> To: Jakub Kicinski <kuba@kernel.org>
-> To: Paolo Abeni <pabeni@redhat.com>
-> To: Rob Herring <robh@kernel.org>
-> To: Krzysztof Kozlowski <krzk+dt@kernel.org>
-> To: Conor Dooley <conor+dt@kernel.org>
-> To: Po-Yu Chuang <ratbert@faraday-tech.com>
-> To: Joel Stanley <joel@jms.id.au>
-> To: Andrew Jeffery <andrew@codeconstruct.com.au>
-> Cc: netdev@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-aspeed@lists.ozlabs.org
-> Cc: taoren@meta.com
-> 
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-> ---
-> Changes in v4:
-> - Remove the compatible "aspeed,ast2600-mac01" and
->   "aspeed,ast2600-mac23"
-> - Add new property to specify the RGMII delay step for each MACs
-> - Add default value of rx/tx-internal-delay-ps
-> - For legacy dts, a warning message reminds users to update phy-mode
-> - If lack rx/tx-internal-delay-ps, driver will use default value to
->   configure the RGMII delay
-> - Link to v3: https://lore.kernel.org/r/20251103-rgmii_delay_2600-v3-0-e2af2656f7d7@aspeedtech.com
-> 
-> Changes in v3:
-> - Add new item on compatible property for new compatible strings
-> - Remove the new compatible and scu handle of MAC from aspeed-g6.dtsi
-> - Add new compatible and scu handle to MAC node in
->   aspeed-ast2600-evb.dts
-> - Change all phy-mode of MACs to "rgmii-id"
-> - Keep "aspeed,ast2600-mac" compatible in ftgmac100.c and configure the
->   rgmii delay with "aspeed,ast2600-mac01" and "aspeed,ast2600-mac23"
-> - Link to v2: https://lore.kernel.org/r/20250813063301.338851-1-jacky_chou@aspeedtech.com
-> 
-> Changes in v2:
-> - added new compatible strings for MAC0/1 and MAC2/3
-> - updated device tree bindings to restrict phy-mode and delay properties
-> - refactored driver code to handle rgmii delay configuration
-> - Link to v1: https://lore.kernel.org/r/20250317025922.1526937-1-jacky_chou@aspeedtech.com
-> 
-> ---
-> Jacky Chou (4):
->       dt-bindings: net: ftgmac100: Add delay properties for AST2600
->       ARM: dts: aspeed-g6: Add scu and rgmii delay value per step for MAC
->       ARM: dts: aspeed: ast2600-evb: Configure RGMII delay for MAC
->       net: ftgmac100: Add RGMII delay support for AST2600
-> 
->  .../devicetree/bindings/net/faraday,ftgmac100.yaml |  35 +++++
->  arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts    |  20 ++-
->  arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |   8 ++
->  drivers/net/ethernet/faraday/ftgmac100.c           | 148 +++++++++++++++++++++
->  drivers/net/ethernet/faraday/ftgmac100.h           |  20 +++
->  5 files changed, 227 insertions(+), 4 deletions(-)
-> ---
-> base-commit: a0c3aefb08cd81864b17c23c25b388dba90b9dad
-> change-id: 20251031-rgmii_delay_2600-a00b0248c7e6
-> 
-> Best regards,
-> --
-> Jacky Chou <jacky_chou@aspeedtech.com>
-> 
-> 
-> 
+You already have hard coded base addresses to identify the MAC
+instances. So i don't see the need for this in DT. Just extend the
+switch statement with the delay step.
 
+    Andrew
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
-
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
-
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
-
-  pip3 install dtschema --upgrade
-
-
-This patch series was applied (using b4) to base:
- Base: a0c3aefb08cd81864b17c23c25b388dba90b9dad (use --merge-base to override)
-
-If this is not the correct base, please add 'base-commit' tag
-(or use b4 which does this automatically)
-
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com:
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-quanta-s6q.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-sbp1.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-gb200nvl-bmc.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-opp-tacoma.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge-4u.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-transformers.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-transformers.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-transformers.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-transformers.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite4.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-blueridge.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-starscream.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-starscream.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-starscream.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-inventec-starscream.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji-data64.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji-data64.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji-data64.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji-data64.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-1s4u.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-rainier-4u.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-catalina.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-bonnell.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtjefferson.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-asus-x4tf.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-tyan-s7106.dtb: fan@2: aspeed,fan-tach-ch: b'\x02' is not of type 'object', 'integer', 'array', 'boolean', 'null'
-	from schema $id: http://devicetree.org/schemas/dt-core.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-qcom-dc-scm-v1.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-qcom-dc-scm-v1.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-qcom-dc-scm-v1.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-qcom-dc-scm-v1.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ufispace-ncplite.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ufispace-ncplite.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ufispace-ncplite.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ufispace-ncplite.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ampere-mtmitchell.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-fuji.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minerva.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-darwin.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-darwin.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-darwin.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-darwin.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-system1.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dtb: ethernet@1e660000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dtb: ethernet@1e680000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [45] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dtb: ethernet@1e670000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dtb: ethernet@1e690000 (aspeed,ast2600-mac): aspeed,rgmii-delay-ps: [250] is not of type 'integer'
-	from schema $id: http://devicetree.org/schemas/net/faraday,ftgmac100.yaml
-
-
-
-
-
+---
+pw-bot: cr
 
