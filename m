@@ -1,90 +1,155 @@
-Return-Path: <linux-aspeed+bounces-2866-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2867-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13099CCFA18
-	for <linux-aspeed@archiver.kernel.org>; Tue, 11 Nov 2025 19:17:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6508CCFA1A
+	for <linux-aspeed@archiver.kernel.org>; Tue, 11 Nov 2025 22:16:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d5bsD3Xx7z2yvK;
-	Wed, 12 Nov 2025 06:17:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762888672;
-	cv=none; b=duaNs/qWAV8DOIfkcQHtAxfk38aS8VEQD3F8CDMOBeNKgtjy4j4npbSqJrGf3rC0aXw367SgS90kIhSbfi6KUJ8sN4TCmXH3bjZhSjnRZfUAQKYiPy9vvIWlGS1BiCw+IEgAk15l2gY9nUyv/D7gEEJHps/s8QAxVTQR+tySc9jJOnIC7i5PglxWJ9TOPFz+v0LjDGaySJqV6g7AqtaWQoZXW/7nph2mFV0JFPNXCR0YJ5Xwmzo/1vOGi9FbCG7eR3fZSMCZMBbISq5Hq78/GirtYOquIHCxIeI1cSBd9MX3KIaggVDehhpvKKHkA4zKd0h0EOFkWTSwq/xQrllPHQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d5gq11pJGz2yv6;
+	Wed, 12 Nov 2025 09:16:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.75.126.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762742932;
+	cv=none; b=fmlp3ar/mag+3W0iVo0yMtpfInvMECrTNA6npV9rAVbi/U27ChfWYoRdZVPhevVMlBdUHptC/QzOcPYa9jCCbJBYYSluAf9Bwsbh/a+uLNVTmNXMEs4FRU2soNkb0zMq1AzoJo/HFsowlyIO8LzaoPM5npoTIRjMeu4JnU6AksPqeEpjPX4l8uSve/JPRz20xV5jbVLifDpA933JnBm/JhXlbEo6kW8EjvJ4bXgX7wpvDOLFJBugA/pz8CY+DCSYcinlDS9yxzSWlEMWYC3Je251uvK8jUVkUFs3ytIMteL3QfV2z6ZvsyTgLQXrYqBUwrSciPk0StnSjuBS7HSE0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762888672; c=relaxed/relaxed;
-	bh=Gq4OYm6IJVW0ysZKlScrQA08mwLQ6YFMo97/reDWBt4=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Bs8mCVZXnrkFYZpo4z69RZcv2DGf9CryBZ6LNXJ15gkL1GlHlfkgLTI5rcgA2winQTvTI/+S6c2pwbV4ZPPd/Z20LIWd2ODoSU1inbk/lws9MTbZ1Hwbd4LtRHzLva6zAMQrbYe8Jy1cZka1461s9naWpcOuRKb5gSYI8AaWePht9SC0oj/WPaubkyc3+V6yHcWmAVV1HuefqgTcQA1ND8oWUA0gd/cErRgj4elx7dDNxS9LAJeRdjzOY/WsZYE8XKjk8zHf8xJsiRT/x5Qn5gJKge9daxfsxs+H8WqWrd6PKeFsPE1kzK0zPUcXLpP4YOAPtN9ZdFVEu61axz9ZLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WAB3TiSt; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1762742932; c=relaxed/relaxed;
+	bh=1cIL7/KPl3K5v0wQHaJ0tGfwMgE5xx/pMZWjRm2tfIk=;
+	h=From:To:CC:Subject:Date:Message-ID:References:Content-Type:
+	 MIME-Version; b=gvBUpON4OIJmFF2YR2tPOokY2cxi5pNrDmaeepU8ZTLMxhCRkMLp9ZxVs6y/Cimgg8OrMYlTSyyH2uz2HwxsB/GqV2ULygIizrIq8VsZxTRPQcjmo2N/WiFOGW1cqO9kZRGqDTheJunqx9NUef9/4b7Cs6Cqbbh1U+9q46JrHWfvgcU23BcuWAuiIXeKlxzsadhutPxUQEt1QvVefLwdHzM01qjOc87xE1dwc/HMhwh7CqKfwgfPed0Fadh6BAz1rZy2o3z/Zy7wDhlP/Qfb7yG8e3y3x9QUFTTuZzVe6uCRnmh9VcbHhtwR3OW1SXjt3oxHg54r29JvwPierDOrCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=realtek.com; dkim=pass (2048-bit key; unprotected) header.d=realtek.com header.i=@realtek.com header.a=rsa-sha256 header.s=dkim header.b=NXeu6m4w; dkim-atps=neutral; spf=pass (client-ip=211.75.126.72; helo=rtits2.realtek.com.tw; envelope-from=pkshih@realtek.com; receiver=lists.ozlabs.org) smtp.mailfrom=realtek.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=realtek.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WAB3TiSt;
+	dkim=pass (2048-bit key; unprotected) header.d=realtek.com header.i=@realtek.com header.a=rsa-sha256 header.s=dkim header.b=NXeu6m4w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=realtek.com (client-ip=211.75.126.72; helo=rtits2.realtek.com.tw; envelope-from=pkshih@realtek.com; receiver=lists.ozlabs.org)
+Received: from rtits2.realtek.com.tw (rtits2.realtek.com [211.75.126.72])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5bsC2zTFz2yN1
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 12 Nov 2025 06:17:51 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 63312438C0;
-	Tue, 11 Nov 2025 19:17:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D8EDC4CEFB;
-	Tue, 11 Nov 2025 19:17:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762888668;
-	bh=41RLRtaKbXKVyhTCyKGvYapSSOb8728iYPhMLtH1kSQ=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=WAB3TiStxkM1FNwO8Op8NHHDZWFMtIxWcQcyMeysB/zEXMu7NC5jN7X7oCAZuO/uB
-	 kcb7FtT/bygYU7KdFv5BXUDnSmTnFkOZ8nnrMugK3rc8YAb9Myqj0+j/30pn8eY8Mi
-	 FkINs55JVB5sRHCnTlFQ5BMCeVelWSh/mOsZSAa3tc2o2UVRqLAHzjnGrk3XfMFmKE
-	 yUZtkwYIljsWxIjRlVV5OUJuG4eBUG7Ex4ojuJLvn0I0Ye5hWgfKtnWEOSOBCHSp4c
-	 JDb7nCKhP6NvnxojBfFa0FUjKp21Eg/jL89c2RHwG69wReDvu3Q1lYYDIxR5d/e8TK
-	 8F/IQbicLA9ig==
-Date: Tue, 11 Nov 2025 19:17:33 +0000
-From: Jonathan Cameron <jic23@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4YyV13WFz2xBV
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 10 Nov 2025 13:48:48 +1100 (AEDT)
+X-SpamFilter-By: ArmorX SpamTrap 5.80 with qID 5AA2hbGwB716235, This message is accepted by code: ctloc85258
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=realtek.com; s=dkim;
+	t=1762742617; bh=1cIL7/KPl3K5v0wQHaJ0tGfwMgE5xx/pMZWjRm2tfIk=;
+	h=From:To:CC:Subject:Date:Message-ID:References:Content-Type:
+	 Content-Transfer-Encoding:MIME-Version;
+	b=NXeu6m4w8KSIT/e89NQIAhnT0TTUgnu/lICYnlmDLN6lG+JAS5BBSg4pfyHxOZ+3G
+	 MzKwilsYGhtBNzZkD7rUNJCT3VNQl98gZXpKjgSPPQiuTxDdeIuzegB6cC4M5XsTJS
+	 AV7e9bElud20xerYcARWvseFofGg25WQqasBBRr5eZAnHJU18VeEzJYtSPiNV8xEjE
+	 78GOeYXYKc+5Kjgu9vL26BGNE5uua7vNEW7kgceGHaDh/qy5GivYAfodqfyMvlq2ap
+	 9zwrtSw2nup/b6fBieuy1tiYv1l7lLfGHKxd1nnqQcgtG3k9Hw7RTQVM7B8bAUUUrb
+	 a5rLbIXf8JWcA==
+Received: from mail.realtek.com (rtkexhmbs04.realtek.com.tw[10.21.1.54])
+	by rtits2.realtek.com.tw (8.15.2/3.13/5.93) with ESMTPS id 5AA2hbGwB716235
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 10 Nov 2025 10:43:37 +0800
+Received: from RTKEXHMBS06.realtek.com.tw (10.21.1.56) by
+ RTKEXHMBS04.realtek.com.tw (10.21.1.54) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.27; Mon, 10 Nov 2025 10:43:37 +0800
+Received: from RTKEXHMBS06.realtek.com.tw (10.21.1.56) by
+ RTKEXHMBS06.realtek.com.tw (10.21.1.56) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1544.27; Mon, 10 Nov 2025 10:43:37 +0800
+Received: from RTKEXHMBS06.realtek.com.tw ([::1]) by
+ RTKEXHMBS06.realtek.com.tw ([fe80::744:4bc9:832c:9b7e%10]) with mapi id
+ 15.02.1544.027; Mon, 10 Nov 2025 10:43:37 +0800
+From: Ping-Ke Shih <pkshih@realtek.com>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre
- Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea
- <claudiu.beznea@tuxon.dev>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, David Miller
- <davem@davemloft.net>, Linus Walleij <linus.walleij@linaro.org>, Bartosz
- Golaszewski <brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
- <andrew@codeconstruct.com.au>, Crt Mori <cmo@melexis.com>, Lars-Peter
- Clausen <lars@metafoo.de>, Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun
- Hung <schung@nuvoton.com>, Yury Norov <yury.norov@gmail.com>, Rasmus
- Villemoes <linux@rasmusvillemoes.dk>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, Johannes Berg <johannes@sipsolutions.net>,
- Jakub Kicinski <kuba@kernel.org>, Alex Elder <elder@ieee.org>, David Laight
- <david.laight.linux@gmail.com>, Vincent Mailhol
- <mailhol.vincent@wanadoo.fr>, Jason Baron <jbaron@akamai.com>, Borislav
- Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>, Michael Hennerich
- <Michael.Hennerich@analog.com>, Kim Seer Paller
- <kimseer.paller@analog.com>, David Lechner <dlechner@baylibre.com>, Nuno
- =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>,
- Richard Genoud <richard.genoud@bootlin.com>, Cosmin Tanislav
- <demonsingur@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, Jianping
- Shen <Jianping.Shen@de.bosch.com>, linux-clk@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org,
- linux-crypto@vger.kernel.org, linux-edac@vger.kernel.org,
- qat-linux@intel.com, linux-gpio@vger.kernel.org,
- linux-aspeed@lists.ozlabs.org, linux-iio@vger.kernel.org,
- linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next v5 10/23] iio: imu: smi330: #undef
- field_{get,prep}() before definition
-Message-ID: <20251111191351.06c0e660@jic23-huawei>
-In-Reply-To: <CAMuHMdX8c1VkBuPDpJ5mpCcRH+zEX4F1bQKFf_V8N9ZZtCYqxA@mail.gmail.com>
-References: <cover.1761588465.git.geert+renesas@glider.be>
-	<97549838f28a1bb7861cfb42ee687f832942b13a.1761588465.git.geert+renesas@glider.be>
-	<20251102104326.0f1db96a@jic23-huawei>
-	<CAMuHMdUkm2hxSW1yeKn8kZkSrosr8V-QTrHKSMkY2CPJ8UH_BQ@mail.gmail.com>
-	<20251109125956.106c9a1a@jic23-huawei>
-	<CAMuHMdX8c1VkBuPDpJ5mpCcRH+zEX4F1bQKFf_V8N9ZZtCYqxA@mail.gmail.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
+CC: Andy Shevchenko <andriy.shevchenko@intel.com>,
+        Yury Norov
+	<yury.norov@gmail.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        "Stephen
+ Boyd" <sboyd@kernel.org>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea
+	<claudiu.beznea@tuxon.dev>,
+        Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        David Miller <davem@davemloft.net>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski
+	<brgl@bgdev.pl>, Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery
+	<andrew@codeconstruct.com.au>,
+        Crt Mori <cmo@melexis.com>, Jonathan Cameron
+	<jic23@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Jacky Huang
+	<ychuang3@nuvoton.com>,
+        Shan-Chun Hung <schung@nuvoton.com>,
+        Rasmus Villemoes
+	<linux@rasmusvillemoes.dk>,
+        Jaroslav Kysela <perex@perex.cz>, Takashi Iwai
+	<tiwai@suse.com>,
+        Johannes Berg <johannes@sipsolutions.net>,
+        Jakub Kicinski
+	<kuba@kernel.org>, Alex Elder <elder@ieee.org>,
+        David Laight
+	<david.laight.linux@gmail.com>,
+        Vincent Mailhol <mailhol.vincent@wanadoo.fr>,
+        Jason Baron <jbaron@akamai.com>, Borislav Petkov <bp@alien8.de>,
+        Tony Luck
+	<tony.luck@intel.com>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        "Kim
+ Seer Paller" <kimseer.paller@analog.com>,
+        David Lechner
+	<dlechner@baylibre.com>,
+        =?utf-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>,
+        "Andy
+ Shevchenko" <andy@kernel.org>,
+        Richard Genoud <richard.genoud@bootlin.com>,
+        Cosmin Tanislav <demonsingur@gmail.com>,
+        Biju Das
+	<biju.das.jz@bp.renesas.com>,
+        Jianping Shen <Jianping.Shen@de.bosch.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nick Desaulniers
+	<nick.desaulniers+lkml@gmail.com>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Richard Weinberger <richard@nod.at>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>,
+        "linux-renesas-soc@vger.kernel.org"
+	<linux-renesas-soc@vger.kernel.org>,
+        "linux-crypto@vger.kernel.org"
+	<linux-crypto@vger.kernel.org>,
+        "linux-edac@vger.kernel.org"
+	<linux-edac@vger.kernel.org>,
+        "qat-linux@intel.com" <qat-linux@intel.com>,
+        "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+        "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+        "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>,
+        "linux-sound@vger.kernel.org" <linux-sound@vger.kernel.org>,
+        "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        linux-wireless
+	<linux-wireless@vger.kernel.org>
+Subject: RE: [PATCH v6 12/26] bitfield: Add less-checking __FIELD_{GET,PREP}()
+Thread-Topic: [PATCH v6 12/26] bitfield: Add less-checking
+ __FIELD_{GET,PREP}()
+Thread-Index: AQHcTzpEEEZZM/7p4kSHE1AyVJF587TmYVZQ///87ICAAIzmQIAETHKg
+Date: Mon, 10 Nov 2025 02:43:37 +0000
+Message-ID: <5cc8a69c155948078bd14e5f031e4468@realtek.com>
+References: <cover.1762435376.git.geert+renesas@glider.be>
+ <cfc32f8530d5c0d4a7fb33c482a4bf549f26ec24.1762435376.git.geert+renesas@glider.be>
+ <aQy0T2vUINze_6_q@smile.fi.intel.com>
+ <CAMuHMdXVUJq36GvNUQE8FnHsX+=1jG4GOJ_034r=fgr_Rw4Djg@mail.gmail.com>
+ <aQzIIqNnTY41giH_@smile.fi.intel.com>
+ <CAMuHMdW8ndAdGnSHopYFMWvw7wk7wKz_7+N91M1jRHoqK1KBrg@mail.gmail.com>
+ <c62eb5a727f149fb9d8b4a4c8d77418a@realtek.com>
+ <CAMuHMdU3hWDOWXxuOJcBA7tphBT7X-0H+g0-oq0tZdKw+O5W3A@mail.gmail.com> 
+Accept-Language: en-US, zh-TW
+Content-Language: zh-TW
+x-originating-ip: [172.21.6.42]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -98,69 +163,63 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 
-On Mon, 10 Nov 2025 09:59:34 +0100
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> Hi Jonathan,
-
-Hi Geert,
-
-> 
-> On Sun, 9 Nov 2025 at 14:01, Jonathan Cameron <jic23@kernel.org> wrote:
-> > On Mon, 3 Nov 2025 11:09:36 +0100
-> > Geert Uytterhoeven <geert@linux-m68k.org> wrote:  
-> > > On Sun, 2 Nov 2025 at 11:43, Jonathan Cameron <jic23@kernel.org> wrote:  
-> > > > On Mon, 27 Oct 2025 19:41:44 +0100
-> > > > Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> > > >  
-> > > > > Prepare for the advent of globally available common field_get() and
-> > > > > field_prep() macros by undefining the symbols before defining local
-> > > > > variants.  This prevents redefinition warnings from the C preprocessor
-> > > > > when introducing the common macros later.
-> > > > >
-> > > > > Suggested-by: Yury Norov <yury.norov@gmail.com>
-> > > > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>  
-> > > >
-> > > > So this is going to make a mess of merging your series given this is
-> > > > queued up for next merge window.
-> > > >
-> > > > I can pick this one up perhaps and we loop back to the replacement of
-> > > > these in a future patch?  Or perhaps go instead with a rename
-> > > > of these two which is probably nicer in the intermediate state than
-> > > > undefs.  
-> > >
-> > > Renaming would mean a lot of churn.
-> > > Just picking up the #undef patch should be simple and safe? The
-> > > removal of the underf and redef can be done in the next cycle.
-> > > Thanks!  
-> >
-> > Only 1 call of each of these in the driver, so churn is small either way.
-> >
-> > To avoid a bisection problem if your tree merges first I need to modify
-> > this stuff in the original patch or leave it for Linus to deal with as
-> > a merge conflict resolution which is mess I'd rather do without.  
-> 
-> If you add the #undef, there won't be any bisection problem?
-
-Two different things.  The bisection comment was about squashing into the
-original driver patch - not what was squashed.  Your tree may well merge
-before mine does and a bisection could therefore land in between the 
-driver introduction and a patch I merge today.
-
-The rename is a preference only because I don't want an undef that smells
-like a hack / bug work around kicking around in the tree for significant time
-(probably a whole kernel cycle). In this case the churn is very similar
-with that or a rename of the macros - so rename it is.
-
-Jonathan
-
- 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-
+SGkgR2VlcnQsDQoNClBpbmctS2UgU2hpaCA8cGtzaGloQHJlYWx0ZWsuY29tPiB3cm90ZToNCj4g
+R2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4gd3JvdGU6DQo+ID4gSGkg
+UGluZy1LZSwNCj4gPg0KPiA+IE9uIEZyaSwgNyBOb3YgMjAyNSBhdCAwMjoxNiwgUGluZy1LZSBT
+aGloIDxwa3NoaWhAcmVhbHRlay5jb20+IHdyb3RlOg0KPiA+ID4gR2VlcnQgVXl0dGVyaG9ldmVu
+IDxnZWVydEBsaW51eC1tNjhrLm9yZz4gd3JvdGU6DQo+ID4gPiA+IFRoZSBleHRyYSBjaGVja2lu
+ZyBpbiBmaWVsZF9wcmVwKCkgaW4gY2FzZSB0aGUgY29tcGlsZXIgY2FuDQo+ID4gPiA+IGRldGVy
+bWluZSB0aGF0IHRoZSBtYXNrIGlzIGEgY29uc3RhbnQgYWxyZWFkeSBmb3VuZCBhIHBvc3NpYmxl
+IGJ1Zw0KPiA+ID4gPiBpbiBkcml2ZXJzL25ldC93aXJlbGVzcy9yZWFsdGVrL3J0dzg5L2NvcmUu
+YzpydHc4OV9yb2NfZW5kKCk6DQo+ID4gPiA+DQo+ID4gPiA+ICAgICBydHc4OV93cml0ZTMyX21h
+c2socnR3ZGV2LCByZWcsIEJfQVhfUlhfRkxUUl9DRkdfTUFTSywgcnR3ZGV2LT5oYWwucnhfZmx0
+cik7DQo+ID4gPiA+DQo+ID4gPiA+IGRyaXZlcnMvbmV0L3dpcmVsZXNzL3JlYWx0ZWsvcnR3ODkv
+cmVnLmg6DQo+ID4gPiA+DQo+ID4gPiA+ICAgICAjZGVmaW5lIEJfQVhfUlhfTVBEVV9NQVhfTEVO
+X01BU0sgR0VOTUFTSygyMSwgMTYpDQo+ID4gPiA+ICAgICAjZGVmaW5lIEJfQVhfUlhfRkxUUl9D
+RkdfTUFTSyAoKHUzMil+Ql9BWF9SWF9NUERVX01BWF9MRU5fTUFTSykNCj4gPiA+ID4NCj4gPiA+
+ID4gc28gaXQgbG9va3MgbGlrZSBCX0FYX1JYX0ZMVFJfQ0ZHX01BU0sgaXMgbm90IHRoZSBwcm9w
+ZXIgbWFzayBmb3INCj4gPiA+ID4gdGhpcyBvcGVyYXRpb24uLi4NCj4gPiA+DQo+ID4gPiBUaGUg
+cHVycG9zZSBvZiB0aGUgc3RhdGVtZW50cyBpcyB0byB1cGRhdGUgdmFsdWVzIGV4Y2x1ZGluZyBi
+aXRzIG9mDQo+ID4gPiBCX0FYX1JYX01QRFVfTUFYX0xFTl9NQVNLLiBUaGUgdXNlIG9mIEJfQVhf
+UlhfRkxUUl9DRkdfTUFTSyBpcyB0cmlja3ksIGJ1dA0KPiA+ID4gdGhlIG9wZXJhdGlvbiBpcyBj
+b3JyZWN0IGJlY2F1c2UgYml0IDAgaXMgc2V0LCBzbyBfX2ZmcyhtYXNrKSByZXR1cm5zIDAgaW4N
+Cj4gPiA+IHJ0dzg5X3dyaXRlMzJfbWFzaygpLiBUaGVuLCBvcGVyYXRpb24gbG9va3MgbGlrZQ0K
+PiA+ID4NCj4gPiA+ICAgIG9yaWcgPSByZWFkKHJlZyk7DQo+ID4gPiAgICBuZXcgPSAob3JpZyAm
+IH5tYXNrKSB8IChkYXRhICYgbWFzayk7DQo+ID4gPiAgICB3cml0ZShuZXcpOw0KPiA+DQo+ID4g
+VGhhbmtzIGZvciB5b3VyIHF1aWNrIGNvbmZpcm1hdGlvbiENCj4gPiBTbyB0aGUgaW50ZW50aW9u
+IHJlYWxseSBpcyB0byBjbGVhciBiaXRzIDIyLTMxLCBhbmQgd3JpdGUgdGhlIHJ4X2ZsdHINCj4g
+PiB2YWx1ZSB0byBiaXRzIDAtMTU/DQo+ID4NCj4gPiBpZiB0aGUgY2xlYXJpbmcgaXMgbm90IG5l
+ZWRlZCwgaXQgd291bGQgYmUgYmV0dGVyIHRvIHVzZQ0KPiA+ICNkZWZpbmUgQl9BWF9SWF9GTFRS
+X0NGR19NQVNLIEdFTk1BU0soMTUsIDApDQo+IA0KPiBCdXQgaXQgc2hvdWxkIGJlDQo+ICNkZWZp
+bmUgQl9BWF9SWF9GTFRSX0NGR19NQVNLIChHRU5NQVNLKDMxLCAyMikgfCBHRU5NQVNLKDE1LCAw
+KSkNCj4gDQo+IE9yaWdpbmFsbHkgKHdpdGggYnVnKSB3ZSBqdXN0IGJhY2t1cCByeF9mbHRyIGFu
+ZCB3cml0ZSB3aG9sZSAzMi1iaXRzIGJhY2ssDQo+IGJ1dCBpdCdzIGluY29ycmVjdCB0byBtb2Rp
+ZnkgR0VOTUFTSygyMSwgMTYpIHdoaWNoIGlzIHdyaXR0ZW4gYnkgYW5vdGhlcg0KPiBjb2RlLg0K
+PiANCj4gT25lIHdheSBpcyB0byBpbXBsZW1lbnQgYSBzcGVjaWFsIGZ1bmN0aW9uIHRvIHJlcGxh
+Y2UNCj4gICBydHc4OV93cml0ZTMyX21hc2socnR3ZGV2LCByZWcsIEJfQVhfUlhfRkxUUl9DRkdf
+TUFTSywgcnR3ZGV2LT5oYWwucnhfZmx0cik7DQo+IFN1Y2ggYXMNCj4gICBydHc4OV93cml0ZV9y
+eF9mbHRlcihydHdkZXYsIHJ0d2Rldi0+aGFsLnJ4X2ZsdHIpDQo+ICAgew0KPiAgICAgb3JpZyA9
+IHJlYWQocmVnKTsNCj4gICAgIG5ldyA9IChvcmlnICYgfm1hc2spIHwgKGRhdGEgJiBtYXNrKTsN
+Cj4gICAgIHdyaXRlKG5ldyk7DQo+ICAgfQ0KPiANCj4gQW5vdGhlciB3YXkgaXMgdGhhdCBJIGFk
+ZCB2YWx1ZSBvZiBCX0FYX1JYX01QRFVfTUFYX0xFTl9NQVNLIGludG8NCj4gcnR3ZGV2LT5oYWwu
+cnhfZmx0ci4gVGhlbiwganVzdCB3cml0ZSB3aG9sZSAzMi1iaXQsIG5vIG5lZWQgbWFzay4NCj4g
+DQo+ID4NCj4gPiBJZiB0aGUgY2xlYXJpbmcgaXMgbmVlZGVkLCBJIHN0aWxsIHRoaW5rIGl0IHdv
+dWxkIGJlIGJldHRlciB0bw0KPiA+IGNoYW5nZSBCX0FYX1JYX0ZMVFJfQ0ZHX01BU0ssIGFuZCBz
+cGxpdCB0aGUgY2xlYXJpbmcgb2ZmIGluIGEgc2VwYXJhdGUNCj4gPiBvcGVyYXRpb24sIHRvIG1h
+a2UgaXQgbW9yZSBleHBsaWNpdCBhbmQgb2J2aW91cyBmb3IgdGhlIGNhc3VhbCByZWFkZXIuDQoN
+CkkgbWlzc2VkIHRoaXMgcGFyYWdyYXBoIGxhc3Qgd2VlaywgYnV0IHRoYXQgaXMgbGlrZSBteSB0
+aG91Z2h0Lg0KVGhlbiBJIHNwaW4gYSBSRlQgWzFdLiBQbGVhc2UgdHJ5IGlmIGl0IGNhbiB3b3Jr
+IHdpdGggeW91ciBjaGFuZ2VzLg0KDQpbMV0gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGludXgt
+d2lyZWxlc3MvMjAyNTExMTAwMjM3MDcuNjI3Mi0xLXBrc2hpaEByZWFsdGVrLmNvbS9ULyN1DQoN
+Cj4gPg0KPiA+ID4gU2luY2Ugd2UgZG9uJ3QgdXNlIEZJRUxEX3tHRVQsUFJFUH0gbWFjcm9zIHdp
+dGggQl9BWF9SWF9GTFRSX0NGR19NQVNLLCBob3cNCj4gPiA+IGNhbiB5b3UgZmluZCB0aGUgcHJv
+YmxlbT8gUGxlYXNlIGd1aWRlIHVzLiBUaGFua3MuDQo+ID4NCj4gPiBJIHN0aWxsIGhhdmUgIltQ
+QVRDSC9SRkMgMTcvMTddIHJ0dzg5OiBVc2UgYml0ZmllbGQgaGVscGVycyINCj4gPg0KPiBodHRw
+czovL2xvcmUua2VybmVsLm9yZy9hbGwvZjdiODExMjJmNzU5NmZhMDA0MTg4YmZhZTY4ZjI1YTY4
+YzJkMjM5Mi4xNjM3NTkyMTMzLmdpdC5nZWVydCtyZW5lc2FzQGdsaWQNCj4gPiBlci5iZS8NCj4g
+PiBpbiBteSBsb2NhbCB0cmVlLCB3aGljaCBzdGFydGVkIGZsYWdnaW5nIHRoZSB1c2Ugb2YgYSBk
+aXNjb250aWd1b3VzDQo+ID4gbWFzayB3aXRoIHRoZSBpbXByb3ZlZCBjaGVja2luZyBpbiBmaWVs
+ZF9wcmVwKCkuDQo+IA0KPiBHb3QgaXQuIFlvdSBhcmUgZG9pbmcgIk5vbi1jb25zdCBiaXRmaWVs
+ZCBoZWxwZXIgY29udmVyc2lvbnMiLg0KPiANCj4gUGluZy1LZQ0KDQo=
 
