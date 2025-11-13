@@ -1,63 +1,47 @@
-Return-Path: <linux-aspeed+bounces-2885-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2886-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A71DCCFA18
-	for <linux-aspeed@archiver.kernel.org>; Thu, 13 Nov 2025 08:00:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C5E8CD5BA1
+	for <linux-aspeed@archiver.kernel.org>; Thu, 13 Nov 2025 08:53:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d6XlC58hBz2yvY;
-	Thu, 13 Nov 2025 19:00:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763020855;
-	cv=none; b=HKPpIpMNIpajbFu6Sy9Ke2RQDohAEY/Aw/0lmGWUjVtjDbTRUOEpJXYRiBvGXvItn1mZPkoQpaSNgZg2l9VhE5wJIS8Ny4J0gyGWE5hQXzgoPt7vEnIFkZ0NteyJX879zTyURyI7yGOIKHIzEe9dD0brre6Wj6Cyr+fAe9hsbfebIxeFpmlPj6vhp3ElnLvT51bthEwBgec6hKzlpN5ZWsuUdIxyLk/LPuRBSU96TM7MvrRW0wx8a4sjx4DMDhykWkIBLni4I8EGw/xUmdTsDC6F9JUqmjPiarflZXYlBlxvFbdYSxzlRwJoNev+nhbHB/RANr+1qm0rdJQAW8sgEA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d6YwG5mtQz2yw7;
+	Thu, 13 Nov 2025 19:53:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763024030;
+	cv=none; b=PtUpFyjeHFpH445DW11HeSYkgA9Fj/vd1Ruv07pVuBTdJQYWhk2IP9e/n6yd0/13KokPaKWICLhVajy0Mxk9FMxoVT4wXpbo86S0bnCgQ8Jx/+b4S1HBxhDYFo6YiENDVJqNsUZy2muFH8I9Ffv2OwJ5wdhnEL4v1FfQme5TFFPPZgGG9qd9/q+svIMNytOoHI0f2oB67IGHUgFuNppm9Fbv9KJpjs0uspGUiMzDU6rh5J6PJFvz7bk9jGVPUa88czuBHTKviesIB6bXdhn/tUX+V2GYGOjYY8ObYNkdEKP1UzYPrqQxkXeGT2YjNuo1LV1553JOKOXsQC2HAdRTFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763020855; c=relaxed/relaxed;
-	bh=OGzk/NRGfq8NtTrbMxnWq8fnT7IBrxgexYVyf86wUgY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PEXQstXqfyZ2MVqWqEhwh2UAUuVVqhqJj0Xo0dKmpUsoEzbV4V0An3yZn26hut+fr0Jl6ghLw32z3j8RUckXTNt8+v35MXaj7w+udPG2EER+KTUyPGRgpqaXE6hfPcuO3yao24Zhfh+tU2xGEtjGzXkr2J8biZSwAhVQO4PzmNqXvCtXvdNkGCg14tFxXxQVb9PdHUqKgVcbzwpgvVuaqVGXOkc+HxnSOdYhXnC2hblwuIC+a/oql+vwKkwxsCBsEtwXbgi6tdsAiRKBP+q3pyQfda6LQ24S+ZeZTRRgVM9oOncn9rzZVwdPjsZnSdmdDiZ3njlSg4EEHLpnt0rMDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MvngG+gP; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MvngG+gP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1763024030; c=relaxed/relaxed;
+	bh=4/QhMm6cQEsf97law7i0DvmF8IobIzkeG2umGfTg0+A=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Z1obikAHF5pDvHY/eLH57Sw89utmnxloafswsMRpu75lAlSnXtKbBb3HNTq5+oWWTJRstqX0KSkIJ7nlaQyJw4tmW8te08otB13IuL2JWdUD9jFJKJUSaqs46+0PWloNun8143g/Ipttk5NNwgPaWsf/JoasNyWk83XI59fM2xGuL5jaIho/BCewf+lPUxq1GoW+lg2I+BAIotyYRXzW+9dxJHYvCK2zKUkzb3C5KDJ5w9IYc6aBTt9KeYN/pZfaV3rqVmePjkhdG5e9jIu218ZL5z/an0oTjFYO/+gdEAf3IQfZWtM9Vxs7mUxY1UlPVDXtq/5wp7zMBE9i2Nv8mw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d6XlB5hdwz2yjq;
-	Thu, 13 Nov 2025 19:00:54 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0058644050;
-	Thu, 13 Nov 2025 08:00:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D933C4CEF8;
-	Thu, 13 Nov 2025 08:00:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763020851;
-	bh=WmqkW3UkMPxJ2hqmmHl3aY1fYJJukh2KzhzojgxvCVw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=MvngG+gP69SHM63Z5iI4/xBcHcRs5CX3CfTI4J8cHRSjueLzf1e79gBMCBFR16cDe
-	 pW0tfxhuQ9L76KNMppP5d6rV1Vl5AjD1q2qhwkSoLbHEqj6OC3R27NLlZEqXJzyV0X
-	 yc4nRv7c4ySqJKX4+z/EVNbxvMlPHMZerq8edYClXV1ka6zr7npFiBQWJGaIFmGiQr
-	 YK62ZoCZu9cXjNk6cUzPSKAUh9nJQ65kNcp7PgOslvJDq0oYMKh5nYXJLizxnxrhxH
-	 5Wk1hoq7bTIePtEoeYN6Mzy1J0YbKpIN9KOo+ZMScmRR2K9DYCkXrpPZDYPrHpDscU
-	 VF5xF+BI5UbOg==
-Date: Thu, 13 Nov 2025 09:00:49 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: bmc-sw@aspeedtech.com, benh@kernel.crashing.org, joel@jms.id.au, 
-	andi.shyti@kernel.org, jk@codeconstruct.com.au, robh@kernel.org, krzk+dt@kernel.org, 
-	conor+dt@kernel.org, andrew@codeconstruct.com.au, p.zabel@pengutronix.de, 
-	andriy.shevchenko@linux.intel.com, naresh.solanki@9elements.com, linux-i2c@vger.kernel.org, 
-	openbmc@lists.ozlabs.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v22 1/4] dt-bindings: i2c: Split AST2600 binding into a
- new YAML
-Message-ID: <20251113-waxbill-of-awesome-fame-8a84d1@kuoka>
-References: <20251112085649.1903631-1-ryan_chen@aspeedtech.com>
- <20251112085649.1903631-2-ryan_chen@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d6YwF6KKgz2yvd;
+	Thu, 13 Nov 2025 19:53:49 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 13 Nov
+ 2025 16:53:33 +0800
+Received: from aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Thu, 13 Nov 2025 16:53:32 +0800
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+To: <robh@kernel.org>, <krzk+dt@kernel.org>, <conor+dt@kernel.org>,
+	<joel@jms.id.au>, <andrew@codeconstruct.com.au>, <clg@kaod.org>,
+	<clg@redhat.com>, <broonie@kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <openbmc@lists.ozlabs.org>,
+	<linux-spi@vger.kernel.org>, <BMC-SW@aspeedtech.com>
+Subject: [PATCH 0/4] spi: aspeed: Add AST2700 SoC support and Quad SPI handling update
+Date: Thu, 13 Nov 2025 16:53:28 +0800
+Message-ID: <20251113085332.89688-1-chin-ting_kuo@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,89 +55,28 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20251112085649.1903631-2-ryan_chen@aspeedtech.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-On Wed, Nov 12, 2025 at 04:56:46PM +0800, Ryan Chen wrote:
-> The AST2600 I2C controller introduces a completely new register
-> map and Separate control/target register sets, unlike the mixed
-> layout used in AST2400/AST2500.
-> 
-> In addition, at new AST2600 configuration registers and transfer
-> modes require new DT properties, which are incompatible with
-> existing bindings. Therefore, this creates a dedicated binding
-> file for AST2600 to properly describe these new hardware
-> capabilities.
-> 
-> A subsequent change will modify this new binding to properly
-> describe the AST2600 hardware.
-> 
-> The example section updated to reflect the actual AST2600 SoC
-> register layout and interrupt configuration.
-> Reference: aspeed-g6.dtsi (lines 885-897)
-> 
-> -I2C bus and buffeset address offsets
->  - AST2600 I2C controller register base starts from 0x80, and the
->    buffer region is located at 0xc00, as defined in AST2600 SOC
->    register map.
-> 
-> -Interrupt configuration
->  - AST2600 U2C controller are connected to ARM GIC interrupt
->    controller rather than the legacy internal interrupt controller.
-> 
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-> ---
->  .../bindings/i2c/aspeed,ast2600-i2c.yaml      | 67 +++++++++++++++++++
->  .../devicetree/bindings/i2c/aspeed,i2c.yaml   |  3 +-
->  2 files changed, 68 insertions(+), 2 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
-> 
-> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml b/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
-> new file mode 100644
-> index 000000000000..e6ed84c53639
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
-> @@ -0,0 +1,67 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/i2c/aspeed,ast2600-i2c.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: ASPEED I2C on the AST26XX SoCs
-> +
-> +maintainers:
-> +  - Ryan Chen <ryan_chen@aspeedtech.com>
-> +
-> +allOf:
-> +  - $ref: /schemas/i2c/i2c-controller.yaml#
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - aspeed,ast2600-i2c-bus
-> +
-> +  reg:
-> +    minItems: 1
-> +    maxItems: 2
-> +    description:
-> +      The first region covers the controller registers.
-> +      The optional second region covers the controller's buffer space.
+This series adds AST2700 support to the ASPEED FMC/SPI driver and
+bindings, introduces 64-bit address compatibility, and improves
+Quad SPI page programming behavior. It also implements AST2700-specific
+segment logic, where range adjustment is not required because the
+AST2700 SPI hardware controller already fixes decoding issues on
+the existing platforms and adopts an updated scheme.
 
-1. List the items instead. We discussed this already and this had
-correct format in the past and now it is getting to some odd style. Why?
+Chin-Ting Kuo (4):
+  dt-bindings: spi: aspeed,ast2600-fmc: Add AST2700 SoC support
+  spi: aspeed: Enable Quad SPI mode for page program
+  spi: aspeed: Use phys_addr_t for bus addresses to support 64-bit
+    platforms
+  spi: aspeed: Add support for the AST2700 SPI controller
 
-2. How region can be optional? Device either has it or does not have it.
-Please explain me how one, same SoC has optional IO address space? I
-asked to explain WHY this is flexible.
+ .../bindings/spi/aspeed,ast2600-fmc.yaml      |   4 +-
+ drivers/spi/spi-aspeed-smc.c                  | 107 +++++++++++++++---
+ 2 files changed, 95 insertions(+), 16 deletions(-)
 
-You never replied.
-
-NAK, we are discussing same over and over again. I am not reviewing the
-rest. Go to previous versions and read the feedback again.
-
-Best regards,
-Krzysztof
+-- 
+2.34.1
 
 
