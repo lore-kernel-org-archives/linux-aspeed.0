@@ -1,61 +1,64 @@
-Return-Path: <linux-aspeed+bounces-2902-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2903-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52612CDB480
-	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Nov 2025 03:39:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1F12CDE001
+	for <linux-aspeed@archiver.kernel.org>; Fri, 14 Nov 2025 03:57:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d72vS04Pdz2ySq;
-	Fri, 14 Nov 2025 14:39:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d73Hf2qsWz2ySq;
+	Fri, 14 Nov 2025 14:57:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763091587;
-	cv=none; b=KEK+GRe1EVML4OkMJbLY2NFJI8iDsz9jqQxngou8zeUOfMzwHM5Y/C3Q+yxi1Rjsho10PMtjtyWk6C3mOn2w4zsXxs3JKYWedVE8e4TgDh8fVc2PfEEwzYb7W8Vss+j7vIBS6BAZ0MJk7zX+HLScB64xQ7VDLPvimEW6idpjR0lfVEAabi+0TDuuW5FiwZfo4CJJCeiAn9Rp1Ib/cqejz74dgUYFCktWidfbQN9M5c7PswWPxpD85uTNOgbwHlCfhDD4JLhiI3AgnAN6iUuKF1ghTSpVKb3bzeIvKxtjG+6mGsRjqPlsA0U3UW+dsGGTZFHEajv4muNsGnHf544cPg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763092638;
+	cv=none; b=RGpbcO9QfjH+UEI8aXryKbO5WFcddLLwgAo0u7aM3r/siEN+No0Yn/nuFb5P9mcXFcqvsY2CzNZIkhH+wREAZwFU/oFIHIBqAOdMmspZ15Qee0k7tt7WtdJlvv3x5YhnR+6ugcD2Xt0p/8LMTT9XTuxvBbPTX43IgVnnMJB5UBrsMOZcb9V3uA1kFRG1N+E72IyfgR2gI1TWI0bgoaiRNcA1Sm4R/UejGJ0cNKjLP+jsjglL/OjA+YkSDNqKYzdK4EUxeHrx9vVX73DeNufxgmGXJ98FVxb4vyILha3s9CtqR5qPf3xPfF3CcOz4VDvTeRSPA5398rBVzf9x9amM9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763091587; c=relaxed/relaxed;
-	bh=n7Wa5zv6kJms6DiLqqXPzKVowzYle1GvZ5G3rdIqE/s=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=JAPtgerbH72Q7pL1aRDgmCqege1rMCSmD4CiFcn28Dex3CPwynvDMKaHqsfngasczCTjz27pq3Nr4D/HxG97CFLUwZCguqANfpXKWkoG920xEPKIvI1izBivdFJSpD+BWw2Baf8JO6gn2BWgg/RrtvpiT/mV+2L7yNiaPSBiNAJCByBnbdTdW8m31ih7YEw3cuGl2R9CPJD7EwoE7OCv0QDOOKWG84PWNQxcwwaT1TgSCdaoJukDIPHkr2/txkMIibBSCqWq5uy3CYd2gigPYjJXBtT8kyzN89+CxuHpsTTQ+bJObWhA8TDvVOZ29nMw6Fvkfvkohgt820m+fHQMSg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=G7YEiJQ/; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1763092638; c=relaxed/relaxed;
+	bh=PBEe7m4ruu9JlDhXEHQH8OB4d4RdZCG95qxZSNdiuTY=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=IQXv+sgFUwQgeNgGli8oqv96FQacVcVqBKjKlCmF9lSBTDJvgGduku85OzcJxdHR9RHHt2BJKJycBfE1waqSWNxWwVXEguBl2ASRbfBok2RL9ONALWbWnydtkOnJd4elbhcfEPBXmTzOteq520JVcoqErgCXeN2pIOLWMntwAOXzJrnQEI8E8zWOJNR32zDSb186fJEE1o9pJRsqQNfpizcZKflX3xFvFA3nIqGg0iDduZ2ePouhIvI4RlENjTNHupj60Eg3c6jl8rvvVvSRlZs5jq4njEVVzeHM00eVN9pAFnQKMkaq9YgZ1HzjSWvZbHsV/ohtYBT9VTrgcQ40+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aLxhxlYH; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=G7YEiJQ/;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aLxhxlYH;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d72vR36dMz2xnh
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 14 Nov 2025 14:39:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d73Hd4slcz2xnh
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 14 Nov 2025 14:57:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1763091585;
-	bh=n7Wa5zv6kJms6DiLqqXPzKVowzYle1GvZ5G3rdIqE/s=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=G7YEiJQ/nxh6zWkZGsKi3M65JA1ugHSdZF+jmP5H0v4cN2bIrF3lkDgJhefkRuRtZ
-	 UoMGsHHBNydzEo07wb+HD8z+eObQllZZngvB6J/SAX9eMk26dBocMqPGSLL7/J4a2q
-	 CMzlTPqPSHnMgM3MevKx9yTqVLp0OAi65gj8Yn243xBowKCbx6LuJ1bbEJ9XMWgxtd
-	 Jbod5EFnS4u7ZgBBBXA5nhIf0XBr7YmDNKZQvEzyTDU3NkB82OolpnYLXfKk8BWqV+
-	 dYGrIvy1yX7VIDEIPY9CW9KxdhmqoKh/acHgEvJzNub9rpK0aBSpL8FOnPYMOE95tD
-	 6v56rZV7xlryw==
-Received: from [127.0.1.1] (unknown [180.150.112.244])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id CF0CB783DF;
-	Fri, 14 Nov 2025 11:39:44 +0800 (AWST)
+	d=codeconstruct.com.au; s=2022a; t=1763092637;
+	bh=PBEe7m4ruu9JlDhXEHQH8OB4d4RdZCG95qxZSNdiuTY=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=aLxhxlYHg2hEiiWKzEYXsroGVyP6tEsllRg0s94dGktPw0RofSA9ijkHG8FF/F8Dt
+	 dI7hgQVrAO/cPcx5AhN6WWJwHb4wdOynv4GwtrHCxfqDMi5Fs1fRKcKBDARkSJzroS
+	 FaBRKGR7hQj2aNoXKlb4bot3zw4eHiRt2ugKzPAtjxcMVeVkPdeiZqxr17xPrSmyV1
+	 vvbzLcyMXTPOKtbNmUyuCqjqR1mHVkNT+Kby05srb5zpEItW2ExrTFr63MRB8nb5YS
+	 NbxgVsIXvxMj3jFNrCNzd4sF/sWpsarQjuFo9kBRD+3mZJY1MLPgWzIwNWEg2Ey8Ec
+	 uK19jp5cSwzUw==
+Received: from [192.168.68.115] (unknown [180.150.112.244])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 752DD783DF;
+	Fri, 14 Nov 2025 11:57:16 +0800 (AWST)
+Message-ID: <0118d17eb884ee664a035d44ddbbec56a418e353.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] dt: aspeed: clemente: move hdd_led to its own gpio-leds
+ group
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Leo Wang <leo.jt.wang@gmail.com>
+To: alex.ts.wang@fii-foxconn.com
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, bruce.jy.hung@fii-foxconn.com, 
- leo.jt.wang@fii-foxconn.com
-In-Reply-To: <20251021-leo-dts-add-nvme-eeprom-v1-1-33166b3665b4@gmail.com>
-References: <20251021-leo-dts-add-nvme-eeprom-v1-1-33166b3665b4@gmail.com>
-Subject: Re: [PATCH] ARM: dts: aspeed: clemente: Add EEPROMs for boot and
- data drive FRUs
-Message-Id: <176309158432.894995.1068506101584521049.b4-ty@codeconstruct.com.au>
-Date: Fri, 14 Nov 2025 14:09:44 +1030
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	george.kw.lee@fii-foxconn.com, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
+ Stanley <joel@jms.id.au>
+Date: Fri, 14 Nov 2025 14:27:16 +1030
+In-Reply-To: <20251023-leo-dts-add-shunt-resistor-v1-1-5d9980aba308@fii-foxconn.com>
+References: 
+	<20251023-leo-dts-add-shunt-resistor-v1-1-5d9980aba308@fii-foxconn.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.1-1+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,20 +72,37 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.14.3
 
-On Tue, 21 Oct 2025 11:15:39 +0800, Leo Wang wrote:
-> Add EEPROM devices on the I2C buses used for the boot and data NVMe
-> drives. These EEPROMs store FRU information for each drive, allowing
-> the BMC to identify.
-> 
-> 
+On Thu, 2025-10-23 at 18:26 +0800, Alex Wang via B4 Relay wrote:
+> From: Alex Wang <alex.ts.wang@fii-foxconn.com>
+>=20
+> The gpio-leds driver requires all GPIOs in a group to be available;
+> if any GPIO in the group is missing the whole group will not be
+> created.
+>=20
 
-Thanks, I've applied this to the BMC tree.
+To me its behaviour appears inconsistent. Contrast:
 
--- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/dri=
+vers/leds/leds-gpio.c?h=3Dv6.18-rc1#n176
 
+with
+
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/dri=
+vers/leds/leds-gpio.c?h=3Dv6.18-rc1#n281
+
+The driver should probably pick one policy or the other?
+
+>  The hdd_led GPIO is only present after standby power is
+> enabled, which can prevent other LEDs in the same group from being
+> created and blocks properly setting 'bmc_ready_noled'.
+>=20
+> Move the 'hdd_led' node into a separate gpio-leds group so that other
+> LEDs are not blocked and the 'bmc_ready_noled' flag can be set
+> correctly.
+
+How is standby power applied? What are you doing to enable the use of
+hdd-leds once that occurs?
+
+Andrew
 
