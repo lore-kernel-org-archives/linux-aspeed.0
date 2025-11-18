@@ -1,71 +1,96 @@
-Return-Path: <linux-aspeed+bounces-2948-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2949-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1D18CEE35A
-	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Nov 2025 22:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12455CF2561
+	for <linux-aspeed@archiver.kernel.org>; Tue, 18 Nov 2025 22:11:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9zMw20srz2yvZ;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9zMw2ZqLz2yvc;
 	Wed, 19 Nov 2025 09:11:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763452235;
-	cv=none; b=F2v0SK4K9l5iySeLWGVoPX85W8kAXPaf32pJuApHfgL1LVpMkKLG8+HO3GKMSy7681ml6VjZ8nDiowRAXAkBakUmNq1qaoCJSUadQCFKQlFdRjJ817Ck4LlGpfgIgEexrA6yYGM69jAAtapInt/Q6fNgjnrUdt/V+BSEkcBdzadntfSVRc1Mv9ten4Eja1G1UzryFFO+DNJvbkp4B9MHQOWyORZhbHt1ToOTRl5qTZKmvxLGpv6zUOZCFxziYFFXMAgguVQXDe+tZtaqUH6nf/rb6V38u8qsEaOYezPkI47snv+FdkQslTWiy/kWSuys3mT7LqiLpqbWly3jn79lCQ==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763439074;
+	cv=none; b=Eh7RJuW0MPYQQAUkj/Lnda5uuTJLVXYXPn74pI3APdnq3ShdiZJ4Dq7u+LetvPiQUUvfdX1ZreR5KLW5a4nyq9ltwcrZBqKbd3tB5myxq9qEmgq0GczO2zK+YN1aNFujWyE7/y5l5z7AfSr/tBIQTCACUPhYQFb1AoB9VKe8bKnFGWvfdKv/FrJzUQ5EktX3paHTWN5o6giQ31BIjvXDVfFyjrvHgJBiThuaJYmixsJSs9xHupHA8a10/NslT6swcDjdnWPlPpiCWRk9bu7f26ZCAfzWPXciv8X3KGIGjQ6NnIww0wPJ1bAkVCzBvghTdgHQmb2Htn2VkFBC7VY4vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763452235; c=relaxed/relaxed;
-	bh=Xex7XR6jVSgg3L3vk1U6Dn6Osj6JtZek+CvCDL5wlyM=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=gTSf6l1y8AFjSzJw0/cpeWQ2wUCAajsfGAwGfbapfo56SBlc45gb/Ntp1SB64qFKDer0zeNHZG6s1x/JJ5vf4R+QQv6rHKwBp+5LpK5SG4NDAdkd8bDYadBSiZTMkrkmcQfmKT9/ZwhPPN3O1FEk3NdDTMmzZGHoOBvzeJZyHexIohQOa1NH80stJn3wSJeY3OT7DUrz6KqaT55iI1y9LvCIesfVlIbERuF0pAJGy5NQ++nnhuHHkZTc1btFXdCXzypswZJNquqt3JJfIwFfUhGS3IAADBfrj90O0HHkkQo6a9v/pHSJgpWUHkgaT5LVkCMKcEGUeVsXzHrCYyhMPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Ch7vL5ZB; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::633; helo=mail-ej1-x633.google.com; envelope-from=sjg168@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1763439074; c=relaxed/relaxed;
+	bh=BDAoJsdvgOOXOBHWJUVVxiGfTHyo8kvSzyzlmWb+VEU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=lI1btN0fJ/kj2xjju18R1Q7EdNj9wdlzTqzreNAJPDAWA2dzCnDfU252UfClSk29AVsSi4+9mY2YoSwbojICACvWz4aEEMx05FCB9GGxiMjc0xyfovdL2jwC22W4MmHNXYiKA1OdqIMYX25yr4UXs5H0gebzeBMkA4ZYkhtAsQMHKpsoYDtQdchMBVv5zaGCpSyQ9dm9MugS4bdmDaS0ulIaMdsBCWyhAeqiMnLHylvdDMFTbAvr0Ws2m1WaLj4WFFRF9fSuNTqJqgjLMSeRhklF/4E1SIc4ePrSIgzH/ffVWjvxReHV9ENIFHb2atIcTJDmlnPf7wA6JiWyFrKPRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WHYnJiRr; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=sjg168@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Ch7vL5ZB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WHYnJiRr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::633; helo=mail-ej1-x633.google.com; envelope-from=sjg168@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com [IPv6:2a00:1450:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=sjg168@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9cGx5nGqz2xQr
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Nov 2025 18:50:32 +1100 (AEDT)
-Received: by mail-ej1-x633.google.com with SMTP id a640c23a62f3a-b739ef3f739so300626366b.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Nov 2025 23:50:32 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9WPm60dHz2xqr
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 18 Nov 2025 15:11:08 +1100 (AEDT)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-29516a36affso59139695ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 17 Nov 2025 20:11:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1763452225; x=1764057025; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=Xex7XR6jVSgg3L3vk1U6Dn6Osj6JtZek+CvCDL5wlyM=;
-        b=Ch7vL5ZBZGzwIApXXrLcym+QU/9c4OuiawWJL3Po5J98LE46w/dd9jR8Rqf6V63Ixt
-         BOvccCbCdSW15a7p68WlNXTz6ZwDVDp61XeV4pzF42bMR5oDQhoAwcILES7LkiEm+oLY
-         NBprHvpZ/W4F3DhADxF8KnDbvSyqueBo8l+MApGhViozCghZdoZkbdI9xepVF5H06QWg
-         oLrUR7lYkl8Vcu1UmEdemwKAIT5oJcT770SgyjiIqXeIEmFOO1zM1+0MLE/umtdD32Za
-         FtSIbbr9+hOetg1s98dnPSYWn8tU9CinKQ02jUJNdygaFmnxQihQfj7d3sCseJeA90ID
-         efmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763452225; x=1764057025;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1763439066; x=1764043866; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Xex7XR6jVSgg3L3vk1U6Dn6Osj6JtZek+CvCDL5wlyM=;
-        b=Zusq6u3iplrDhYcPMPkCX98k4eQf8xFjgyxBKAOYVe3cIy7u/bu4cW8iUpP3Zsgp3w
-         52KFcTHz4cEQZnpftl2ZB/24KLNbgXaP45nxVy7MQRTjsVjTEylcgKianZ2f3C3ns+pE
-         vE7Y1l5st8pLWerd+aPJTRdFHOeTASt9bDc1v0+fN52sfZeWcSFV6FsMmddjTUisOBZb
-         Xmv2n1rAW208d4JNfz6bojw2rYxp6sHGk+5NrSbUp7TAkRWAkJjhdTiVpCuBTlqsRjtb
-         qzOde5ZKNkoZcWpoUQPMkcv5RxHk9zBHyj+gCvZ4Og4FDRaYc3CgfU0hPlN9IGddNPum
-         KHTA==
-X-Forwarded-Encrypted: i=1; AJvYcCXRsEnjGvuZ3pdVF9DPslIZzpx353jbauEmsAdKOS/Pa6m2fW81DJ+9ZZF5bCsOocmX0wwSQx2LQQyTZFI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yxaqj+IhwZ1uJDWQKHnRrP6gxXIny2yVL0vw7+e4Azng9/X51nA
-	b4zhzQkl+nZDbnWH9K2DjWk+a0JzFyNCN2oA2785xOo5sPBZF0luQEvr1Y5D6HXb8kZj8HPfXrZ
-	O0F+pPxeVkRyaylaoyXk1iuj6OyTz5/0=
-X-Gm-Gg: ASbGncsRayd7jLeh2PGutLiRQMM71JsKreKCzMSXGR5EGxHzRM3/uHjH7Ng9jaN50HF
-	dD/Pa6BKqd/ifqpEZp18+XZ7oiZM4V9/Mt5vQfO8TohJ34SyMRG7EwCJAV8V2Zy27WwxgeFYudv
-	p68qzV9cxdMN7wBfY9SCaZqj3pasTm/6lS3OdBNyfqjoBY+7pSz0jFK0SmkEaMOT0uQGaNRDkze
-	KkAXLA5i5dHLsDBJgDf3wL4BaLBJjZTLd7D5hBFdiEJUlYnWWAQoAzbmUX6iA==
-X-Google-Smtp-Source: AGHT+IE9v+0TlsUR7JISK8UBlFe0cUgxOnKW9XDhUTAwsDs1eLryxkWMaLTPvozR1hXBNvsus4P1W20dT14zz6inIkk=
-X-Received: by 2002:a17:907:7216:b0:b73:7b5d:e781 with SMTP id
- a640c23a62f3a-b737b5de9d2mr1449305566b.48.1763452224503; Mon, 17 Nov 2025
- 23:50:24 -0800 (PST)
+        bh=BDAoJsdvgOOXOBHWJUVVxiGfTHyo8kvSzyzlmWb+VEU=;
+        b=WHYnJiRrJJAUcX/byM2moX0T532ad5sMt8f5n5zdqqp+PhU70GEa5PBNhdEszgCHhV
+         CDEfDkwLKOJ8A7m5qij1IU2IL3K13b9ZlxKjJjlgTTKZP9qTvb7vOqkFhestatL4LkW4
+         L8qIAXBynOyBetIh8vtbwrV3e4bKjwOTCaoV063aGwTiI/GLgOwlWrBDthIxxzuIlR4b
+         fqhIiLtQqnA5u4d9q5GlP/AoqG3hvFpg2WxSp6rcS4lEOpU/dmZkYUg+5b7TKg/6PEww
+         etK59uIfF7uAS9iVXoiBSVwCaoK2+J7gn6UdRBEPnIgShLT9gByF9q8xBzC/jCNlIA2g
+         p+aw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763439066; x=1764043866;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=BDAoJsdvgOOXOBHWJUVVxiGfTHyo8kvSzyzlmWb+VEU=;
+        b=Dn5vopgl96ADyhM0gMzH3twDpv2GDszg00I1LuFkvOu8Hq7egle0fEcxR6B4VBJCCU
+         NNj2LbBLq0HSxj2Rq/Q8UuNFxCjx4on4gSofBnyqStplhvGFU2wSjTbOHo741OguF9Gm
+         a1lt2+YsRII7V0vcMStOlFKPqtegMNE49OtoMzBOEC1uyxXf3m8cAsy925cdV41Dxzfx
+         8MatOZyep1TKxpqIUORdnuLAV3STg+Jg8uO8BS0KwPO/XFHRGkRstc5AOdycTDr9ofEb
+         pokvU7/RdURlTquri9IaNdZ8XKWKiJZU7JnJ1kA56JCwUoQSTCAFiXTBCHoJTgWa/GG1
+         ylsw==
+X-Forwarded-Encrypted: i=1; AJvYcCWMEO8cpmzge/DYutEkpDQ08KJm+5OMvQSKj5pC7NY3g6atRzLccixOSdhi8HymPvr2IQfSN8q4Ng2nBEc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxx/abyDR7l0HRNNwPpcXcF78WQW7kZhDWVRXfFj6qGyo/q4wLi
+	T4nzKQtA/dHqvk+es4Mt5a+WvpwucXMdXA9TAe4Jm3vQV2SevEUkp3Ke
+X-Gm-Gg: ASbGnctJ/+kiysQ28YxXWexXNvOy0ILDz/7nqjv2bONa87NF0Iqkf7NlIPCLnTR0C+P
+	yj3MYWm1q4VuujOs8/c1Q83tXIG5EN+WSNTPmg5B35PJpU94IPBAKIAhX5FBihlyVCgBMCK6Vu4
+	Nh7tRY7C4oXxZakS9RjMJ/nYFkMhntoOS4z/sblCalUi68jehAOwod5BaBJhSDJS9rfmdQa81bx
+	GAV3hubzMryQj0jAdzJDLHo6549hozKFkT5J6rJvKVpLZg+lX6Vx3pJ9U5QroiExmJv+IA7DpHq
+	MmA3RMuhOCSvEUACV3K5fYgYaul+aNr8ER/arzMtHiZn5HtsZUjo07pqK2QxMiGnf/ndwagCcvc
+	Vr6JExXHPbTaOmDqaTtfbT6TuEDPWBorqya8f17qs57Wgl28oWDCudV0OYlTRZx/ayQfaJgdncs
+	FJRw==
+X-Google-Smtp-Source: AGHT+IFWfA9iG7jd5oINwxqC9subA2gUrhWeuBi98jZqy9meWujj94Sw12xkpdJk1gBOH1qHv6uzdg==
+X-Received: by 2002:a17:903:2449:b0:295:275d:21d8 with SMTP id d9443c01a7336-2986a5eb5e1mr178663325ad.0.1763439065671;
+        Mon, 17 Nov 2025 20:11:05 -0800 (PST)
+Received: from gmail.com ([218.32.81.133])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2985c2cca00sm155514805ad.101.2025.11.17.20.11.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 17 Nov 2025 20:11:05 -0800 (PST)
+From: Peter Shen <sjg168@gmail.com>
+To: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Joel Stanley <joel@jms.id.au>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	peter.shen@amd.com,
+	Peter Shen <sjg168@gmail.com>
+Subject: [PATCH v7 0/2] ARM: dts: aspeed: Add Device Tree for Facebook Anacapa BMC
+Date: Tue, 18 Nov 2025 12:10:56 +0800
+Message-Id: <20251118041058.1342672-1-sjg168@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20251112211248.3711889-1-sjg168@gmail.com>
+References: <20251112211248.3711889-1-sjg168@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -79,123 +104,48 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251112211248.3711889-1-sjg168@gmail.com> <20251118041058.1342672-1-sjg168@gmail.com>
- <20251118041058.1342672-2-sjg168@gmail.com> <c061ee38-5026-497d-b757-b0b9db2e6729@kernel.org>
-In-Reply-To: <c061ee38-5026-497d-b757-b0b9db2e6729@kernel.org>
-From: Peter Shen <sjg168@gmail.com>
-Date: Tue, 18 Nov 2025 02:50:13 -0500
-X-Gm-Features: AWmQ_bnbEYonPjOqK-4abVH4iA619CMxk5vxL-6KmJne-B9gyNDlRjhdYRO6cQw
-Message-ID: <CAJTz7Jc7esTcv8Xrfm_p-WQpj6gKaohLEdpNMnMJ8F0pqku9JQ@mail.gmail.com>
-Subject: Re: [PATCH v7 1/2] dt-bindings: arm: aspeed: Add compatible for
- Facebook Anacapa BMC
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, Joel Stanley <joel@jms.id.au>, 
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	peter.shen@amd.com
-Content-Type: multipart/alternative; boundary="0000000000006b84660643d9b7a3"
+Content-Transfer-Encoding: 8bit
 
---0000000000006b84660643d9b7a3
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+This patch series introduces the initial Device Tree support for the 
+Facebook Anacapa BMC platform, which is based on the Aspeed AST2600 SoC. 
+It configures the platform-specific peripherals and aliases for OpenBMC 
+usage.
 
-Hi Krzysztof,
+The series is comprised of two patches:
+1. Adds the compatible string for the board to the binding documentation.
+2. Adds the main Device Tree Source file for the Anacapa BMC.
 
-Thanks for your detailed explanation. I apologize for ignoring it earlier.
-I understand now about the Acked-by/Reviewed-by/Tested-by tags and the
-importance of not attaching patchsets to unrelated threads.
+**This patch series is a re-submission of v6 (series starting at:**
+**<https://lore.kernel.org/all/20251112211248.3711889-1-sjg168@gmail.com>)**
 
-I will make sure to follow the process correctly from now on, and also fix
-my local b4 environment so that generating the proper trailers works
-smoothly.
+Changes in v7:
+* Dropped the unused 'pcc_memory' reserved memory region as suggested 
+    by Andrew Jeffery.
+* Reordered the 'spi-gpio' properties to group all '-gpios' properties 
+    together for better readability (Andrew Jeffery).
+* Moved the 'pinctrl_ncsi3_default' pinctrl group from the board DTS 
+    file to 'arch/arm/boot/dts/aspeed-g6.dtsi' (assuming this dtsi 
+    change is applied separately or already in the base) to make it 
+    available for other platforms (Andrew Jeffery).
+* Revised the 'gpio-line-names' for better clarity and alignment with 
+    schematic signal names, avoiding confusion with pin-muxed functions 
+    (Andrew Jeffery).
+* Improved the formatting and readability of 'sgpio-line-names' list.
+* Removed the unused 'led-2' definition from the 'leds' node.
+* Added support for the ADC128D818 sensor to the I2C bus.
+* No functional changes in the binding patch (1/2).
 
-Best regards,
-Peter
+Peter Shen (2):
+  dt-bindings: arm: aspeed: Add compatible for Facebook Anacapa BMC
+  ARM: dts: aspeed: Add Device Tree for Facebook Anacapa BMC
 
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../aspeed/aspeed-bmc-facebook-anacapa.dts    | 1044 +++++++++++++++++
+ 3 files changed, 1046 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
 
-Krzysztof Kozlowski <krzk@kernel.org> =E6=96=BC 2025=E5=B9=B411=E6=9C=8818=
-=E6=97=A5 =E9=80=B1=E4=BA=8C =E4=B8=8A=E5=8D=882:21=E5=AF=AB=E9=81=93=EF=BC=
-=9A
+-- 
+2.34.1
 
-> On 18/11/2025 05:10, Peter Shen wrote:
-> > This patch adds the compatible string for the Facebook Anacapa BMC
-> > which uses an Aspeed AST2600 SoC. This is required before adding
-> > the board's device tree source file.
-> >
-> > Signed-off-by: Peter Shen <sjg168@gmail.com>
-> > ---
-> >  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
-> >  1 file changed, 1 insertion(+)
->
->
-> So you just ignored everything I wrote? Long explanation and you just
-> don't care?
->
-> If so, then:
->
-> NAK,
->
-> Also, do not attach (thread) your patchsets to some other threads
-> (unrelated or older versions). This buries them deep in the mailbox and
-> might interfere with applying entire sets. See also:
->
-> https://elixir.bootlin.com/linux/v6.16-rc2/source/Documentation/process/s=
-ubmitting-patches.rst#L830
->
-> Best regards,
-> Krzysztof
->
-
---0000000000006b84660643d9b7a3
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><div>Hi Krzysztof,</div><div><br></div><d=
-iv>Thanks for your detailed explanation. I apologize for ignoring it earlie=
-r.=C2=A0=C2=A0</div><div>I understand now about the Acked-by/Reviewed-by/Te=
-sted-by tags and the importance of not attaching patchsets to unrelated thr=
-eads.=C2=A0=C2=A0</div><div><br></div><div>I will make sure to follow the p=
-rocess correctly from now on, and also fix my local b4 environment so that =
-generating the proper trailers works smoothly.</div><div><br></div><div>Bes=
-t regards,</div><div>Peter</div><div><br></div></div></div><br><div class=
-=3D"gmail_quote gmail_quote_container"><div dir=3D"ltr" class=3D"gmail_attr=
-">Krzysztof Kozlowski &lt;<a href=3D"mailto:krzk@kernel.org">krzk@kernel.or=
-g</a>&gt; =E6=96=BC 2025=E5=B9=B411=E6=9C=8818=E6=97=A5 =E9=80=B1=E4=BA=8C =
-=E4=B8=8A=E5=8D=882:21=E5=AF=AB=E9=81=93=EF=BC=9A<br></div><blockquote clas=
-s=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid r=
-gb(204,204,204);padding-left:1ex">On 18/11/2025 05:10, Peter Shen wrote:<br=
->
-&gt; This patch adds the compatible string for the Facebook Anacapa BMC<br>
-&gt; which uses an Aspeed AST2600 SoC. This is required before adding<br>
-&gt; the board&#39;s device tree source file.<br>
-&gt; <br>
-&gt; Signed-off-by: Peter Shen &lt;<a href=3D"mailto:sjg168@gmail.com" targ=
-et=3D"_blank">sjg168@gmail.com</a>&gt;<br>
-&gt; ---<br>
-&gt;=C2=A0 Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +<b=
-r>
-&gt;=C2=A0 1 file changed, 1 insertion(+)<br>
-<br>
-<br>
-So you just ignored everything I wrote? Long explanation and you just<br>
-don&#39;t care?<br>
-<br>
-If so, then:<br>
-<br>
-NAK,<br>
-<br>
-Also, do not attach (thread) your patchsets to some other threads<br>
-(unrelated or older versions). This buries them deep in the mailbox and<br>
-might interfere with applying entire sets. See also:<br>
-<a href=3D"https://elixir.bootlin.com/linux/v6.16-rc2/source/Documentation/=
-process/submitting-patches.rst#L830" rel=3D"noreferrer" target=3D"_blank">h=
-ttps://elixir.bootlin.com/linux/v6.16-rc2/source/Documentation/process/subm=
-itting-patches.rst#L830</a><br>
-<br>
-Best regards,<br>
-Krzysztof<br>
-</blockquote></div>
-
---0000000000006b84660643d9b7a3--
 
