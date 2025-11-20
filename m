@@ -1,40 +1,62 @@
-Return-Path: <linux-aspeed+bounces-2961-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2962-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A289CF256D
-	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Nov 2025 03:52:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1975CF64AB
+	for <linux-aspeed@archiver.kernel.org>; Thu, 20 Nov 2025 09:40:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dBkvc4mF0z2yG1;
-	Thu, 20 Nov 2025 14:52:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763610764;
-	cv=none; b=IqwDhaNchI2ZeI8F0Drjn21jmDzbs3Efsj7Bim2dFymcdVrEwpvwWU6ul34dXMXxCw7y5XOSXGh+6OdiN9xEBsH87ODsR4r6Rpqa4ET8lRZ82TC5oHsKqOl6VnTU9vA95ziLWAUyHURnQMoo7GrE82tpi34+b0m8BGQedDho1+rYbN5OUSTQW9bEikpCYZnNQS9gf4/fnlF+drD24ZuaRg2hNOzuSVNBIi7pfNc3SrR3ohB7Jpt4sVvCriV1eqVKESTLnUbTwG3Ao6IZVlcE4d/gYLztqWbVrQywLn5wTITD+q3G2GjP0NT9YdBUS+CsOfT4Ef3XjYMl69SdhoZYmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dBtd40ZQjz2yr9;
+	Thu, 20 Nov 2025 20:40:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763631639;
+	cv=none; b=cv/Ok0vViEAkrZ/oELQXutgtnLPcHRs9kAwgleDYcqh05qSp4bjRVn2+dXdl1CzUFswxTAkPeoEmlJoLToDBoZWQIjxkucjqbsV716zMIQmheycdCKAH921eYeVe795VkagjmswtXugOe7+Nhw7HKl/qZV69rHSK8mn9I+7U+Mzx//9Xwi+MQTzNU15zqpBcByMgW520K3bn0QNsN37rC5h2m2LRbgBLz+nsxdH+MEr9hw8lR4wQV4uMHpUFf96RSH8dseBCwdS7J3wiqiGZcN/7fjJx4CRH6CPevGbIo5pB83E3Byhm7ACFNmeWkWaUKT3fzaAJSN1xFlyMmVVoIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763610764; c=relaxed/relaxed;
-	bh=uAJYPrM4K5gSwb8aiZs+R+QjqSI51/lCfO33+UlXeXM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=TwyhRCNM7iKWSPTszrYCxXLvT/okwMD7Jt5OTErNJF+SNQIZLcCVczDbaAq6rvJv7JDMrEaEInBE7Xd3vKJkMimJ4s7olJbnSfk+NLW+li/khTXtiZRJQUlkfrL54INSLagyqhPtyrCVgz/y+jyD+zDkkZj91ZLYOWuHk5Mp5pBwARaqowmfLtQQukqzcXIPHAfk08HQZAloL2A+yDlVxdIzcYYiPYLES7DFJcBOxkVrVgP+242LXurijpFoEGgKs8JckElrE+Yk38YbjmBM4mv/H3Jz5QGeWqgDDX8Dd0TpYBX5Sp8+1AWkY8Fz0+GkkBfIfj7LweoBpF6s4tXDxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1763631639; c=relaxed/relaxed;
+	bh=SUi5lS5rCzVuDAcHFYLYCYAitVuFZQocxlSp+9/3pB8=;
+	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=Sqoa1M1SFFnoPW3eckmLKFOxQbuzzZxTwa/VvCowNov9t3kj9LYrE9v/ACO/BynOZe7IMGMajzoYX2/RXrbv3UiwTZlj58HpG0jeiaexFTX+LQmRfQiLJIeoGLqTpTf3czOeuIKgw9wCAScbyByKUzrw237BIU/ZL8aDchca1FS1mqbR8Tjq9AP5U9+ijN8zpmTxcQ6tmMCs4tbgaFSrA5Xubw5QKAthXE1TH93Ch2OcQBbsuv9DRkeLxjTnLIJO07py20hiklxdyq6XAeqaN+ucw9oSKeN97GB71vk8uG1GDO4LYA0U6bJ4mz245n7YH7XRhbI8XRrYlNfnLbQOlw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D8x5dMDI; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D8x5dMDI;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dBkvb5By2z2yFy
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 20 Nov 2025 14:52:42 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 20 Nov
- 2025 11:52:26 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Thu, 20 Nov 2025 11:52:26 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-Date: Thu, 20 Nov 2025 11:52:03 +0800
-Subject: [PATCH net-next v2] dt-bindings: net: aspeed: add AST2700 MDIO
- compatible
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dBtd32T8hz2yG5;
+	Thu, 20 Nov 2025 20:40:39 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 31DE042DA0;
+	Thu, 20 Nov 2025 09:40:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B22B0C4CEF1;
+	Thu, 20 Nov 2025 09:40:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763631636;
+	bh=d9gi6IAhGMrPheyNCbI0JonIbRfzHt0QW40OJqiT97M=;
+	h=From:To:In-Reply-To:References:Subject:Date:From;
+	b=D8x5dMDI9qJnYU21qSlLei8gHq6Zp6XE3Ht93IoCv3k7PJAFzVClSKbtAgejBTKQ9
+	 Mlfkw1A7ZzKb+RXGRyRjn44BAeRKBXZkSIw6dDMVgPLcb4V86Y6I7sMSO17zYx81q8
+	 Lb5p2niv4ymriPG4Rh4qDWJUCqR3AXLPVdGP+enV5nTKiKhcvUEMsjwNR5IxksI+iI
+	 pOuGw0lIbm+/s4GAY7s5IaveZtqiSuhHzrVxN0SfktEXbcH3diGb4+WggKOSWAetV5
+	 hJZhfgmu6eLjeVPX9gEw+PGJqSjehjYiliL4+9+a0TF+R5/jlR0BSczu8Z2OYlYOdh
+	 sQ3lludhl8vrw==
+From: Mark Brown <broonie@kernel.org>
+To: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+ joel@jms.id.au, andrew@codeconstruct.com.au, clg@kaod.org, clg@redhat.com, 
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org, BMC-SW@aspeedtech.com, 
+ Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+In-Reply-To: <20251114101042.1520997-1-chin-ting_kuo@aspeedtech.com>
+References: <20251114101042.1520997-1-chin-ting_kuo@aspeedtech.com>
+Subject: Re: [PATCH v2 0/4] spi: aspeed: Add AST2700 SoC support and Quad
+ SPI handling update
+Message-Id: <176363163164.560683.4991477364624751148.b4-ty@kernel.org>
+Date: Thu, 20 Nov 2025 09:40:31 +0000
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -50,78 +72,50 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20251120-aspeed_mdio_ast2700-v2-1-0d722bfb2c54@aspeedtech.com>
-X-B4-Tracking: v=1; b=H4sIAGKQHmkC/32NwQqDMBBEf0X23JRNGtH25H8UkTSudQ8mkoRgE
- f+9wd57HN7Mmx0iBaYIj2qHQJkje1eCulRgZ+PeJHgsGRSqWkrZCBNXonFYRvaDiUk1iMIYbO9
- WT6gbDWW5Bpp4O61PcJSEoy1BX8jMMfnwOe+yPPlfc5ZCipbsC/GmprrW3a+VyM5X6xfoj+P4A
- pggdPvFAAAA
-X-Change-ID: 20251117-aspeed_mdio_ast2700-aa089c4f0474
-To: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
-	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
-	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>
-CC: Andrew Jeffery <andrew@aj.id.au>, <netdev@vger.kernel.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Conor Dooley
-	<conor.dooley@microchip.com>, Jacky Chou <jacky_chou@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1763610746; l=1764;
- i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
- bh=wmlwbzLwa1koSK2nuP5aUDcsxGgFbO+ySPwBTpaVBGE=;
- b=EQwlHKt16UBrHnbKrYwuae5GVZPaRI0ZvrdLxxtPSwzgIl19qVZQn7nEwAvXm0CflvUE215b4
- ZoofOto8IIyD90g3yw629h1lKDYScsXryAa6gTti/xdU6fbiNeZHY7F
-X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
- pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
+X-Mailer: b4 0.15-dev-a6db3
 
-Add "aspeed,ast2700-mdio" compatible to the binding schema with a fallback
-to "aspeed,ast2600-mdio".
+On Fri, 14 Nov 2025 18:10:38 +0800, Chin-Ting Kuo wrote:
+> This series adds AST2700 support to the ASPEED FMC/SPI driver and
+> bindings, introduces 64-bit address compatibility, and improves
+> Quad SPI page programming behavior. It also implements AST2700-specific
+> segment logic, where range adjustment is not required because the
+> AST2700 SPI hardware controller already fixes decoding issues on
+> the existing platforms and adopts an updated scheme.
+> 
+> [...]
 
-Although the MDIO controller on AST2700 is functionally the same as the
-one on AST2600, it's good practice to add a SoC-specific compatible for
-new silicon. This allows future driver updates to handle any 2700-specific
-integration issues without requiring devicetree changes or complex
-runtime detection logic.
+Applied to
 
-For now, the driver continues to bind via the existing
-"aspeed,ast2600-mdio" compatible, so no driver changes are needed.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
----
-Changes in v2:
-- Remove AST2700 description from aspeed,ast2600-mdio.yaml
-- Link to v1: https://lore.kernel.org/r/20251117-aspeed_mdio_ast2700-v1-1-8ecb0032f554@aspeedtech.com
----
- Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+Thanks!
 
-diff --git a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-index d6ef468495c5..a105dc07ed12 100644
---- a/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-+++ b/Documentation/devicetree/bindings/net/aspeed,ast2600-mdio.yaml
-@@ -19,7 +19,12 @@ allOf:
- 
- properties:
-   compatible:
--    const: aspeed,ast2600-mdio
-+    oneOf:
-+      - const: aspeed,ast2600-mdio
-+      - items:
-+          - enum:
-+              - aspeed,ast2700-mdio
-+          - const: aspeed,ast2600-mdio
- 
-   reg:
-     maxItems: 1
+[1/4] dt-bindings: spi: aspeed,ast2600-fmc: Add AST2700 SoC support
+      commit: be6671d3908e97a2128f5327610a1dcb4d420cfa
+[2/4] spi: aspeed: Enable Quad SPI mode for page program
+      commit: 716d0a0a2ab00c601120c19bb357f4373f4722d1
+[3/4] spi: aspeed: Use phys_addr_t for bus addresses to support 64-bit platforms
+      commit: 508f3d3b688e1650ed383fe208b323aa6c164420
+[4/4] spi: aspeed: Add support for the AST2700 SPI controller
+      commit: 9e510e677090bb794b46348b10e1c8038286e00a
 
----
-base-commit: c9dfb92de0738eb7fe6a591ad1642333793e8b6e
-change-id: 20251117-aspeed_mdio_ast2700-aa089c4f0474
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
 
-Best regards,
--- 
-Jacky Chou <jacky_chou@aspeedtech.com>
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
 
 
