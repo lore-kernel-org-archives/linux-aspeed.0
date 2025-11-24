@@ -1,60 +1,61 @@
-Return-Path: <linux-aspeed+bounces-2983-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2984-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCE00CFD313
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Nov 2025 04:53:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63059CFA466
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Nov 2025 05:05:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dFD3d2Tcvz2yvN;
-	Mon, 24 Nov 2025 15:53:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dFDL56Wkvz2yvN;
+	Mon, 24 Nov 2025 16:05:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763959997;
-	cv=none; b=hrR/ebh5lP88uptXmkNyO0fP+CTCxzBsB4/VI0HhRWVKln/HaaFWvPoGelgPmVBE0QqLKIr5aeW7GsiDRp+7gf21mys7K+S1LDUKkg6dCft1MYSj6xSNWgm58mYKwtaKOSJFmMZNmp2wSFkoWOH1goW9URWNb4z/3pkMKIxy21X9ZxkSl5vfH0T956aR65SRCcEIXBhzQhvmP5abJNcp5LQnMmEgpl/5tpFH3kLTyvbs6rnr9/9qr3dMhk96bPXldE8l1bje81OGzVRt798RSDvxZOdz+pzpgvWtQ9Voc5UafXtdzNsAHITaptLx0MVHPwWKQuOjJbD8FHI6s63bgQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763960749;
+	cv=none; b=oh5ANMdRvOJzhKww6n9QchwhikTWcFHbxsCK5qYgiZKjAqTvLBCoXZH78nWSl2PyTM/1aBUyYLMowEUr9pSKcyfWQ6E68rpYmUAhRRTTMrhAZhjYuxjor0SbMVbqNJdZ7rYTS4Pou4HBSunEq5LBKjtOHIv04BNOJaGWw18tvy3TZXgeYVzT+wGHMqVr3TsaMiRVyfxMW4AXwvn7pXYCIS1MNIMENLiqiPmXz9AUx1302hqi9uQif19U6Kp/J0TpzEtbELiXnIBZwSmf9/WwuNnxoT0JjXTpmbY3hsYEoS1y9lCFvxXGbcntvj6I9b2l7BdV+oLGeaPZgl6bGBK0Lw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763959997; c=relaxed/relaxed;
-	bh=9I9iLfORj0tnccwQ6JBu3v4qfLj7ltvuhaVoT+aRCJY=;
+	t=1763960749; c=relaxed/relaxed;
+	bh=MmvYsdYLqi8x/SH3dyd0R5ZjK0zEZ9vTir8J+3U8sXY=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=PQo7d4ULhJKQYcOZPovbXTiQwWpVpz4b23OgKm6cOeO7mhV28+zqVKb/YDnWdHo2dhqegcMJ5ycH3tIH70D2GQyrqdVPbmE8Tins0KL0+Nt1mY8DD8bsfJFCjVTNxwYhnCZMICTePq0XwTF20knnWwXGDmbPxhHWWbTc7Bp8O0/Wpd3WlTO31IklQDSITEbT6EIW9kgZmnDS0UraHmiGASgSXy84cjwGOZb8etSWGMqn1AwlqYrZQz0XinJgaz2k11+NE4CIzxoZPuXgIDLR4Br+oZQnwuusm3tX+pzerEnginDFBlRqIfxaFveUNWObrwBT7s7KxgC5attST6w/UQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=XPlfbWiq; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=ZKgK4SsvH8ZjWq7f2pJckz6a5rQv2tEbexavAcE/RtZUTjoJ1nm3wr2SEhXZX821yz/DprPqJOoK3ozPFoGv1iuWgLmO1icV8C+zBhWhBmdDsWiyV0jpRdpiOi65MAnC3Q+VtJ+80GSHj17qZaZ/yMbiLXwqTiCrq/QGjN2idszzBE1+yXb1qIz+LVeyxFqjj7aOVV/E7xTfhlZwtrHe3oNnCFrXTd5+TRF4HrBuaxsbvUPL8NERvWdDJwZUw899HaxSdPQVvtObYSwz34X7rSNtQcuB8FQCH2UUSG3tesmz/jK75e4GlojIq0cSStH3hbAR0LuCBLKf5EqQeUzX1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=U4n1f8Na; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=XPlfbWiq;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=U4n1f8Na;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dFD3c4GTNz2xQs
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Nov 2025 15:53:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dFDL53hn1z2xQs
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Nov 2025 16:05:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1763959995;
-	bh=9I9iLfORj0tnccwQ6JBu3v4qfLj7ltvuhaVoT+aRCJY=;
+	d=codeconstruct.com.au; s=2022a; t=1763960748;
+	bh=MmvYsdYLqi8x/SH3dyd0R5ZjK0zEZ9vTir8J+3U8sXY=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=XPlfbWiqWeeK8tagGbtC5l+y33JIHb4VYe96JR3a2f1W8XzsROquq/UhdHch4VOx9
-	 l5Em4ycrOn7lR30IydhrxAvOk5zkjhyeMjsYzVVTyaSKjKuvg5ouV6cUAXmFwKaMaW
-	 m0SVoEqVo+oG/cVx2WbpspzcClZDx9WyB047HHqpNrEqKhXy8WdxKN1GA9sn+EgZ9W
-	 XgtX8Mz2VvsaNRTS1gYNwIdwuX6JAnEoqmwhHEZ0abMMJKCNRkxutlVtqWfMZDtg5j
-	 aguJYtHYJax89EtbDNd5mQ586yEunWEA+r7tlRcew09XLJjPPDFPbkcJ+S+PHZd2gY
-	 UUgj93nr2tm9A==
+	b=U4n1f8Nai6P/wji1kcpqWMJCN1Pgwyp7L6Hc/2dmWMe9f19pTgvDvuDOsuOtxq+pP
+	 uQd8JsuBDJxBZZLBWlF+ssOO1J0kLRvyWePn4iSWYMkP6FJBnkxDMqGgppd1LfEMeh
+	 W3rOt5uwLnflvUn5noi9fLGhdHojb/j9cQboiMr6wlA4yO/X3MKjIcM2Bnm50aPzmC
+	 d8hBKLbK0+CssWRCUC/FuzkHdzmqT0tKta1IYs4FC6oRs2gTaYbKYuhjWKFWFBhn3L
+	 XK3BCs8CsNEauTX5dKEm8YEvtLOVzfVF0/GG+EtjPFiYMcV04OC+80oi8JWMVtTVzZ
+	 02lM+KhhKUmog==
 Received: from [192.168.68.115] (unknown [180.150.112.38])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 4FECA64DF5;
-	Mon, 24 Nov 2025 12:53:15 +0800 (AWST)
-Message-ID: <c56ef6e76858c7df19ec43a3a18ccf79ff3cc489.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2 0/4] Revise Meta Yosemite5 devicetree
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 563C464DF5;
+	Mon, 24 Nov 2025 13:05:47 +0800 (AWST)
+Message-ID: <9e322334bbb18d559c5f1a73947976218f84f3fc.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3] ARM: dts: aspeed: clemente: add gpio line name to io
+ expander
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Kevin Tung <kevin.tung.openbmc@gmail.com>, Rob Herring
- <robh@kernel.org>,  Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>
+To: kimi.zy.chen@fii-foxconn.com, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
+ Stanley <joel@jms.id.au>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Amithash
- Prasasd	 <amithash@meta.com>, Kevin Tung <Kevin.Tung@quantatw.com>, Ken
- Chen	 <Ken.Chen@quantatw.com>, Leo Yang <Leo-Yang@quantatw.com>
-Date: Mon, 24 Nov 2025 15:23:14 +1030
-In-Reply-To: <20251120-yv5_revise_dts-v2-0-4d7de701c5be@gmail.com>
-References: <20251120-yv5_revise_dts-v2-0-4d7de701c5be@gmail.com>
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	george.kw.lee@fii-foxconn.com
+Date: Mon, 24 Nov 2025 15:35:47 +1030
+In-Reply-To: <20251120-dts-add-gpio-to-io-expander-v3-1-cb650ac76f85@fii-foxconn.com>
+References: 
+	<20251120-dts-add-gpio-to-io-expander-v3-1-cb650ac76f85@fii-foxconn.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -72,26 +73,22 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi Kevin,
-
-On Thu, 2025-11-20 at 13:25 +0800, Kevin Tung wrote:
-> Summary:
-> Revise linux device tree entry related to Meta (Facebook) Yosemite5.
+On Thu, 2025-11-20 at 10:41 +0800, Kimi Chen via B4 Relay wrote:
+> From: Kimi Chen <kimi.zy.chen@fii-foxconn.com>
 >=20
-> Changes in v2:
-> - Add ipmb node for OCP debug card
-> - Link to v1: https://lore.kernel.org/r/20251118-yv5_revise_dts-v1-0-fcd6=
-b44b4497@gmail.com
+> The chassis power cycle process requires a forced shutdown before
+> cutting off the standby power. The SCM CPLD implements a hard shutdown
+> host function that is controlled through the IO expander in the
+> Clemente platform.
 >=20
-> Changes in v1:
-> - Increase i2c4/i2c12 bus speed to 400 kHz
-> - Update sensor configuration
-> - Rename sgpio P0_I3C_APML_ALERT_L
+> This change adds a new GPIO line named "shdn_force_l_cpld" to the
+> PCA9555 IO expander at line 10.
+>=20
 
-Sorry, I replied with comments on v1 before I saw v2.
-
-Can you please resolve the discussions on v1 and send a follow-up
-series if necessary?
+This doesn't line up with my count of where you've inserted it in the
+gpio-line-names property? Is there some explanation for that? Are you
+referencing pin 10 of the device? If so I feel it would be more helpful
+to describe it as "IO0_6" or some such.
 
 Andrew
 
