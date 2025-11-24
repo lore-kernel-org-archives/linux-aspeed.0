@@ -1,39 +1,64 @@
-Return-Path: <linux-aspeed+bounces-2978-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2979-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA93CFD316
-	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Nov 2025 03:05:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D7B1CFA466
+	for <linux-aspeed@archiver.kernel.org>; Mon, 24 Nov 2025 04:37:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dF9gd5fNNz2yvd;
-	Mon, 24 Nov 2025 14:05:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763953549;
-	cv=none; b=DZH7TKE4tv+IdY7JYIC2wWYHNgtQ7SAfnio2jmVtcnwZ9vVUUcRCFp3UFTRDOqTPrHa4hR0oKU5TWQD9QS2KxCaKvRsx8DsKa0HPQ61V41T56ZK8k+O5tTK2qsOEi4A6yrX2u0AF6ilFmFccFayfbtQnbrJp90jV9pUf32EMekYMO0PxGeJWPXQOTlYikdcD9C+vl2mhrgysIRzkrpfpgLSMuqxE0IaMj7nbgkA3a1H+KJEfDe2fgebjILdZvnMTt8bfbvnLND4pVqoMlpnEaz44MURPX5KyfuQzbpABC3gey5LArxdmDOBAZd/E1X1HOCganNh5lzkbSIEwmWhcew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dFChv3wTXz302V;
+	Mon, 24 Nov 2025 15:37:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763959023;
+	cv=none; b=SMQeNi5wieVismtgs+MZhw3LaGDRFGOynrN4YvydMTACAM77Cfn+lqCm/5PEqHVNPIDW5G/ExOhdiYdAaVI7Eos8G/xU+qepXI6hoGPF0GOcqryNyU8HdAhohf8PKUWX3X7Ph9QbMMsJa/HkUCqxrl8d+Tm50t1HN6GGKyaWzC625UXtRyELIe4lPnPYjl97PHBdmJhVWg5OodCP/5mr7zwYZVQ4CGCZF9/Gv+NvDLMbRLFlsDIn+0NEqKhwo1Ph7kT7YFaxzAIiy4sr/oBH5wHDdp5ZCDpdUfAILObFe6zjJwbHKtgk1uIDRfzvpB15z4JrX32FnkhYgO6dv5eJXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763953549; c=relaxed/relaxed;
-	bh=Mc6O4SdjGVe0glDr2dRtnu/v/hHIP/v2O9TVaWZr76U=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=eMb4phgtbakAIVcT5N8P+oCNDF/eYr/EcYoELgN7L9BWqbhCZt2dE9w6idj5QUscncCaZv7HfhDvWMXmqYH6+67VWphrzcRdfOLy+cDMQoBj5O2tba9N8Evob65tz8t2+2wza0QdFtH6pwNS+eIhKtu+levoTWRKkToHkO+0wHOdc+y5wMqgv1yNA23PbOL8mcHV/htdXDjsKxGcLlmYpOM6Wz63006jlHBcuyUXqcvBDIOMpZQejHn6qN13WetRifLexMR9FasmrjZjtN1IU4hAT9SBGT7zTmpn0+qUv/4UwLcBn6eq2YUT8bdww9mk7bPNgEvdvorGfPsQzQ6qgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jammy_huang@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1763959023; c=relaxed/relaxed;
+	bh=hAUDklng+BZKqI8KusNe8mWtzFQ70FVKUEy2GEFuPik=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=gbn32Ahiky/j+VySTP19Z5gs9enY0VQGXOHT1KyfhlIGVSTN+VcJqBmX/kza63/Twi9vCkIU8oqdAfsffezf0ZvCO84w8JdTtBBfkxRFhjFDBkB48laCK8+8RUdrH9r0mB/yI4vLJlPwQAcYsIxryPr0LyrWd9l3uPHGIabj+k9FnUeBnGZnUJ17DjP/LZv7OALe2NbNERdYfNckwFW+Zae6nMKqu8BLd7MWe0QV7XPVRuatuWXxsgmx1o3wWxErfssNwom3aEFNTL8nC53yQi/l3Ql0UNJiTu2JJ5y7Z6aA1zuUoQLFOWJb+hVJLUW/Z/fzyLGOaNfGGvjshK1kug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hLEZV6MS; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hLEZV6MS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dF9gc4MBhz2xS2;
-	Mon, 24 Nov 2025 14:05:47 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 24 Nov
- 2025 11:05:30 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 24 Nov 2025 11:05:30 +0800
-From: Jammy Huang <jammy_huang@aspeedtech.com>
-Date: Mon, 24 Nov 2025 11:05:14 +0800
-Subject: [PATCH] media: aspeed: Fix dram hang at res-change
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dFCht2VXBz2yvB
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 24 Nov 2025 15:37:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1763959020;
+	bh=hAUDklng+BZKqI8KusNe8mWtzFQ70FVKUEy2GEFuPik=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=hLEZV6MSqW4qgVqLjIdJTLJBeZMw2XDp88xQXAHJOVtBBvmKT8dd9bNtgY/yYQ4yU
+	 b0KAynblrFCdrVvos9RXuzvRPvqxWpFiPCIke8xLJdNqFntEi0qmJGytgd0ZsvFzpK
+	 Myh1HT3MU8A6IVvivAy4gqwwRdb1jqrfIUr2uMEe5N0Ke6kdKQ28l6q/JXCS0RKBO3
+	 y1gCweF3qsJCwk3oBdTZPfQAHQFZDn02nAYKHMCfcFBUps/gWJ8b8S5rGcZF2OXJb2
+	 dIY7Uo1lrNsPsEOHqsHXvKj+M5Rz8AYo0Mz1d1baUG32sMhaXxdyNdxnQwRguRk8gH
+	 E8Tu2eBdVge6A==
+Received: from [192.168.68.115] (unknown [180.150.112.38])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 30E4464DF5;
+	Mon, 24 Nov 2025 12:36:57 +0800 (AWST)
+Message-ID: <b610d86a2f71bf8289deeaa1c361005146985d2a.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 2/2] dts: aspeed: Add a dts for the nvidia msx4 hpm
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Marc Olberding <molberding@nvidia.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ devicetree@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, 	linux-kernel@vger.kernel.org
+Date: Mon, 24 Nov 2025 15:06:56 +1030
+In-Reply-To: <aRbLqH8pLWCQryhu@molberding.nvidia.com>
+References: <20251108-msx1_devicetree-v3-0-c7cb477ade27@nvidia.com>
+	 <20251108-msx1_devicetree-v3-2-c7cb477ade27@nvidia.com>
+	 <a030d7a2e2d36064bd86fe2af1ec6e4baabd9946.camel@codeconstruct.com.au>
+	 <aRbLqH8pLWCQryhu@molberding.nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -47,124 +72,106 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20251124-video_dram_reset-v1-1-9d37229e4ec5@aspeedtech.com>
-X-B4-Tracking: v=1; b=H4sIAGnLI2kC/x3MQQqAIBBA0avErBNSs6CrRITlWLMoYwwJwrsnL
- d/i/xciMmGEoXqBMVGkcBbIuoJ1t+eGglwxqEYZKVUrEjkMs2N7zIwRb7EaLX23WNNrDyW7GD0
- 9/3Kccv4AB0H6jmIAAAA=
-X-Change-ID: 20251124-video_dram_reset-c531f6ba573f
-To: Eddie James <eajames@linux.ibm.com>, Mauro Carvalho Chehab
-	<mchehab@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>, Philipp Zabel <p.zabel@pengutronix.de>
-CC: <linux-media@vger.kernel.org>, <openbmc@lists.ozlabs.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, Jammy Huang <jammy_huang@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1763953530; l=3275;
- i=jammy_huang@aspeedtech.com; s=20251124; h=from:subject:message-id;
- bh=T6tPkI8Yhq/QCiReLdboMNyc54/4lLjHBMvqDCJv39c=;
- b=eLjDgw5bFeCqwi/if6MHl7scB8sgk6NJB2zQCtHChWUuSG7CfiFUfK7iM21/k5xMbau7Yqt2i
- EqdhlEqPRi6BjXdvgWfAM/l/O1kQmhA1OYr/dMLO9HPhxxrSpxJPXO8
-X-Developer-Key: i=jammy_huang@aspeedtech.com; a=ed25519;
- pk=E5YwijeJZZcuDR6srvwNlXrNHvLxwipUg3Mb/xxUF9o=
 
-Dram hang could happen in the steps below:
-1. start capture/compression
-2. out-of-lock watchdog raise irq because of res-change.
-3. aspeed_video_irq_res_change do clk-off
+On Thu, 2025-11-13 at 22:26 -0800, Marc Olberding wrote:
+> On Fri, Nov 14, 2025 at 02:46:19PM +1030, Andrew Jeffery wrote:
+> > > +	model =3D "AST2600 MSX4 Kernel";
+> >=20
+> > I find this to be a curious model name :)
+> >=20
+> > Are there no other reasonable names?
+> >=20
+> For better or worse, this is the most accurate name, and matches the hpm =
+hardware itself.
 
-At step3, capture/compression could be not accomplished yet. If clk-off
-in the middle of video operation, dram controller could hang at ast2500.
+hpm?
 
-Use reset rather than clk-off/on to avoid this problem.
+> We may need multi-hpm support for the resulting firmware at some point, s=
+o matching
+> the hpm to the device tree seemed like the simplest thing to do. If this =
+doesn't
+> match the way the kernel deals with this sort of thing, please let me kno=
+w the best path forward.
 
-Signed-off-by: Jammy Huang <jammy_huang@aspeedtech.com>
----
-On Aspeed KVM testing, we found it could lead to dram-hang if
-res-change. Although the issue rarely happens, the impact is serious.
+I guess to clarify my concern: what does "Kernel" refer to here?
 
-To avoid this issue, we use reset only rathar than clk-off/on in
-res-change to avoid this issue.
----
- drivers/media/platform/aspeed/aspeed-video.c | 22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
+The devicetree describes the hardware, so references to things such as
+"driver" and "kernel" tend to be a little suspicious.
 
-diff --git a/drivers/media/platform/aspeed/aspeed-video.c b/drivers/media/platform/aspeed/aspeed-video.c
-index b83e432452..41cb96f601 100644
---- a/drivers/media/platform/aspeed/aspeed-video.c
-+++ b/drivers/media/platform/aspeed/aspeed-video.c
-@@ -26,6 +26,7 @@
- #include <linux/workqueue.h>
- #include <linux/debugfs.h>
- #include <linux/ktime.h>
-+#include <linux/reset.h>
- #include <linux/regmap.h>
- #include <linux/mfd/syscon.h>
- #include <media/v4l2-ctrls.h>
-@@ -310,6 +311,7 @@ struct aspeed_video {
- 	void __iomem *base;
- 	struct clk *eclk;
- 	struct clk *vclk;
-+	struct reset_control *reset;
- 
- 	struct device *dev;
- 	struct v4l2_ctrl_handler ctrl_handler;
-@@ -720,6 +722,13 @@ static void aspeed_video_on(struct aspeed_video *video)
- 	set_bit(VIDEO_CLOCKS_ON, &video->flags);
- }
- 
-+static void aspeed_video_reset(struct aspeed_video *v)
-+{
-+	reset_control_assert(v->reset);
-+	usleep_range(100, 150);
-+	reset_control_deassert(v->reset);
-+}
-+
- static void aspeed_video_bufs_done(struct aspeed_video *video,
- 				   enum vb2_buffer_state state)
- {
-@@ -742,7 +751,9 @@ static void aspeed_video_irq_res_change(struct aspeed_video *video, ulong delay)
- 
- 	video->v4l2_input_status = V4L2_IN_ST_NO_SIGNAL;
- 
--	aspeed_video_off(video);
-+	aspeed_video_write(video, VE_INTERRUPT_CTRL, 0);
-+	aspeed_video_write(video, VE_INTERRUPT_STATUS, 0xffffffff);
-+	aspeed_video_reset(video);
- 	aspeed_video_bufs_done(video, VB2_BUF_STATE_ERROR);
- 
- 	schedule_delayed_work(&video->res_work, delay);
-@@ -1984,8 +1995,7 @@ static void aspeed_video_stop_streaming(struct vb2_queue *q)
- 		 * Need to force stop any DMA and try and get HW into a good
- 		 * state for future calls to start streaming again.
- 		 */
--		aspeed_video_off(video);
--		aspeed_video_on(video);
-+		aspeed_video_reset(video);
- 
- 		aspeed_video_init_regs(video);
- 
-@@ -2230,6 +2240,12 @@ static int aspeed_video_init(struct aspeed_video *video)
- 	}
- 	dev_info(video->dev, "irq %d\n", irq);
- 
-+	video->reset = devm_reset_control_get(dev, NULL);
-+	if (IS_ERR(video->reset)) {
-+		dev_err(dev, "Unable to get reset\n");
-+		return PTR_ERR(video->reset);
-+	}
-+
- 	video->eclk = devm_clk_get(dev, "eclk");
- 	if (IS_ERR(video->eclk)) {
- 		dev_err(dev, "Unable to get ECLK\n");
+For reference, here's a sample of other model names that have been
+used:
 
----
-base-commit: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d
-change-id: 20251124-video_dram_reset-c531f6ba573f
+   > git grep model arch/arm/boot/dts/aspeed/ | shuf | head
+   arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts: model =3D "Faceb=
+ook Harma";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-e3c256d4i.dts:       model =
+=3D "ASRock E3C256D4I BMC";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-minipack.dts:      model =
+=3D "Facebook Minipack 100 BMC";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts:  model =
+=3D "Facebook Santabarbara BMC";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-elbert.dts:        model =
+=3D "Facebook Elbert BMC";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-greatlakes.dts:    model =
+=3D "Facebook Greatlakes BMC";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-fuji.dts:       model =3D "Fuji"=
+;
+   arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-cmm.dts:   model =3D "Faceb=
+ook Backpack CMM BMC";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-balcones.dts:   model =3D "Balco=
+nes";
+   arch/arm/boot/dts/aspeed/aspeed-bmc-vegman-rx20.dts:    model =3D "YADRO=
+ VEGMAN Rx20 BMC";
 
-Best regards,
--- 
-Jammy Huang <jammy_huang@aspeedtech.com>
+These don't tend to reference either the SoC or the kernel, rather the
+platform that the SoC sits in. "MSX4" might be enough?
 
+>=20
+> > > +	compatible =3D "nvidia,msx4-bmc", "aspeed,ast2600";
+> > > +
+> > > +	aliases {
+> > > +		serial0 =3D &uart1;
+> > > +		serial1 =3D &uart2;
+> > > +		serial2 =3D &uart3;
+> > > +		serial3 =3D &uart4;
+> > > +		serial4 =3D &uart5;
+> >=20
+> > Just checking whether you're actually using all of these? I guess the
+> > uart nodes further down suggest so?
+> >=20
+>=20
+> These UARTs are wired up on this platform. Userspace may not use them tod=
+ay,
+> but we want to enable doing so without needing further device tree update=
+s, in
+> case they are needed for debug where a BMC firmware flash would be unpala=
+table.
+>=20
+> >=20
+> > Seems curious to enable all of these I2C controllers yet have no
+> > devices under them? Can you elaborate?
+> >=20
+> > Andrew
+>=20
+> Unfortunately, the devices that we need over i2c are not
+> guaranteed to be available at BMC boot, and are probed in userspace throu=
+gh
+> the new_device sysfs node from the i2c subsystem. The BMC doesn't
+> have direct control over when these devices are accessible,
+> they are available after the host has completed POST.
+>=20
+> As far as I can tell, there isn't a great way to defer probe for devices
+> that the BMC doesn't have immediate control over whether its accessible.
+> Regulators seem like a match, but it seems to assume that you can directl=
+y
+> turn on the power domain that the device is tied to, which isn't the case=
+ here
+> for various reasons.
+>=20
+> Please let me know if I'm ignorant of a way to deal with this issue.
+
+No dramas, however, I'd appreciate a comment in the devicetree along
+these lines.
+
+Andrew
 
