@@ -1,53 +1,75 @@
-Return-Path: <linux-aspeed+bounces-2997-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2998-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C59FD0EE0F
-	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Nov 2025 18:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97F50D0EE18
+	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Nov 2025 23:50:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dG9h44Vgpz2xqf;
-	Wed, 26 Nov 2025 05:09:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764094180;
-	cv=none; b=GPcgybMd5a/2cPwUu/lueaYcoRhViq3cAFK2yF/gD2IWldyO3bdHCk5OK6iZ4YKl0MXBOar4RrggXbxAcMUr/XN/+UnrpgBPS1rIcuiyVWF3qcpy/W/o+r5H3JF6KrpbWcIho7A0TkCBsDEAZDHFDmMpxJsYpsbkeHhE12U3rf3Ov5UhRkzEZ6HRe64NWcvF57IjGWmybPkDZVy3XGM8cp/wWvsVDcTueAvh96z6CpLwfYS7KOD24pA3Dh23TCm4XrM8ao4o8CrSWIb76mqzhTL5drx9fcLegohD1gzhoKhzQfAkUShW/vmc06SPIJad4YIvSEsQo7wew6uK7EXMQw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dGKFN1qfgz2yrT;
+	Wed, 26 Nov 2025 10:50:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764114632;
+	cv=none; b=F2myuOQQbtN0ZPFX6ygJA5NhSRPV35qGlP1M4cWaMF6DasFLSng9ZpjtHhV4x31slbmtBPTY5glyvUjxmxYOCT9Fd7fsiKT+6Jg5vC+az2rQSnQeW+3bclmggbN35kj+WWQFsv4Uj09SOOSw6B3k2KD8b8GSOMSXLIbfaVyW9mQO5H6infE1yy0BEtdKsPbRH8x1IRLVUzq4RGYOZBc/lGd9jpn7IpP5UidHtdsmQUOCVJ4NpIsYeyTgU7ReVHrpZKvg25HRzJMQNLYaGleGpUwvI64uyMMK5cNNlw0TesEPD+w5PzVdWJGh+4/lGMWmQCWU6wvct/kxEj0jzzJMFQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764094180; c=relaxed/relaxed;
-	bh=j3/S4Hf1y59pjCnEL7qw1EexDcmqot8Q1p1anizWLA8=;
-	h=From:Date:Content-Type:MIME-Version:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=VxNnDdstyJ9n4n1pJWKLGPex5elhdtIhFXjeHXnAjArIImGS0prgph6B6pryjXwbf148e0rxRl0EHEjZlT0FHITKcsRXHk4hX+Q3tO3pTKztwbz4e/rz4H6Ke4qC1z1a7wmOa5zhtZHwj4CMRxTT9z0prHPJAHFG9IlHbB14QpZhPMziwgmlpjUcW51NUna9soy5gIMKcw2K1aGQP3+wsADTA0dZ8XV+ShuNBotLFNttgadLSj4YVOo869lbh2mbY9jo+11hlfdAFictDgcIHWfv7NisASOhQ8NDNNVIipueUS3Qs5vKPYdkrtj055V/THRTqmZOqE/Gb6sGXCRvQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T5xXmqeS; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1764114632; c=relaxed/relaxed;
+	bh=v5DEfi++1C8bftapZgqYGj62YjX3kAgMlduZ/oN7pZ4=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=BY1QlWhwsf1imulN87/kMqSj2oi0f7OOGCfxkdXRSedOQH7vZW7p6uAdZsKHDqP2/2sxIy2R/LA7hyWtmK89vTlTNewEF399eOyz/wosp0IahNpuFzS3g6X9TiFZi4xoHhjKEols4BO0CDHQ0vvWKacJTn+hJ/2Ri50/MDs7Qz3gGWfqgtrPqLgoHOJ8+DxvsoMslZmybLb+RYMtZEhZFLk/GRO95QH0UGkw13bINsxR0o2EsZX3E433XLSW7XcKTxGp4urRycMX/0fSYoLJcn7bE/NblTrLbrGPICJb9NdzWyrlZrIYoZa8Y/Zn2UJAgs13Q1tp1aVOPUe9hZ4lIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=LO3hDRES; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T5xXmqeS;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=LO3hDRES;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dG9h343qVz2xPy
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 05:09:39 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id A3D1A6023C;
-	Tue, 25 Nov 2025 18:09:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5372CC4CEF1;
-	Tue, 25 Nov 2025 18:09:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764094177;
-	bh=/mvfUzi1Qw/4Y5kr212cUVhQ1RqPh58sZxHLxmDAY+M=;
-	h=From:Date:Cc:To:In-Reply-To:References:Subject:From;
-	b=T5xXmqeS+/oH53FIpbyhDSoWH/3vPI/1rNwHCdWGhlaVbQI8Sh8EvfLvn4fgZCN+J
-	 0UhbZVikkjQqQM3F+qdS0qmkYrakKQukVb+NsriVuDgkqs+l/7W1762mlVTl4p/Beo
-	 qaCYC7fvlYxeRYgOcM4gflVSwBtNHLnCgoQoTJC8O05IrFkLUYlV9/3zYTYOX9GbIw
-	 XAuQHRoWoQA9P0McfnRMmBvC2klCkjI2oL3KEVzqO2jDU/1HrwXrJZVnfI5GOCvtqz
-	 x1DeUdbNhxnowfC78YZePpKtK1f4dyOdyD3k4W/h19xwQhXIYk7rs5VnPLTBxHBkaf
-	 GDv0f44YyThOA==
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 25 Nov 2025 12:09:35 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dGKFK69Gvz2yr9
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 10:50:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=v5DEfi++1C8bftapZgqYGj62YjX3kAgMlduZ/oN7pZ4=; b=LO3hDRESQrCbqmtAAAldsvnpKS
+	oB2F7027X8GPBxEB5HXMPoON3NcEYL7a8m2rDjC7OwKAo/00pFXnIDPIjPxmqs5ll1LfYHhbI/qjM
+	IA+xdcVV7tSrOsqWvX5SghR1oYbfrvFQ29wKqPMGjjYPJMdXtiacYOjEXDcmOP7PGVKA=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1vO2nF-00F5Jm-3I; Wed, 26 Nov 2025 00:49:57 +0100
+Date: Wed, 26 Nov 2025 00:49:57 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Po-Yu Chuang <ratbert@faraday-tech.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"taoren@meta.com" <taoren@meta.com>
+Subject: Re: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
+ for AST2600
+Message-ID: <1c2ace4e-f3bb-4efa-a621-53c3711f46cb@lunn.ch>
+References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
+ <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
+ <68f10ee1-d4c8-4498-88b0-90c26d606466@lunn.ch>
+ <SEYPR06MB5134EBA2235B3D4BE39B19359DCCA@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <3af52caa-88a7-4b88-bd92-fd47421cc81a@lunn.ch>
+ <SEYPR06MB51342977EC2246163D14BDC19DCDA@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <041e23a2-67e6-4ebb-aee5-14400491f99c@lunn.ch>
+ <SEYPR06MB5134BC17E80DB66DD385024D9DD1A@SEYPR06MB5134.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -61,113 +83,103 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Cc: Conor Dooley <conor.dooley@microchip.com>, 
- Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org, 
- Joel Stanley <joel@jms.id.au>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, linux-kernel@vger.kernel.org, 
- linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-To: Marc Olberding <molberding@nvidia.com>
-In-Reply-To: <20251124-msx1_devicetree-v4-0-a3ebe3110a67@nvidia.com>
-References: <20251124-msx1_devicetree-v4-0-a3ebe3110a67@nvidia.com>
-Message-Id: <176409395426.3843808.13226161866300781148.robh@kernel.org>
-Subject: Re: [PATCH v4 0/2] Add device tree for Nvidia BMC msx4 cx8
- switchboard
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <SEYPR06MB5134BC17E80DB66DD385024D9DD1A@SEYPR06MB5134.apcprd06.prod.outlook.com>
 
-
-On Mon, 24 Nov 2025 15:14:16 -0800, Marc Olberding wrote:
-> Patch 1 Adds the binding for the msx4 cx8 switchboard
-> Patch 2 Adds the device tree for the msx4 cx8 switchboard reference implementation.
+> I try to summary in the following informations that I understand.
 > 
-> This is an Aspeed AST2600 based reference implementation for a BMC
-> managing the nvidia mgx cx8 switchboard.
+> 1. with rx-internal-delay-ps OR tx-internal-delay-ps OR both
 > 
-> Reference to Ast2600 Soc [1].
+>   Use "rx/tx-internal-delay-ps" property to configure RGMII delay at MAC side
+>   Pass "phy-mode" to PHY driver by calling of_phy_get_and_connect()
+
+Yes, since they are new properties, you can assume the phy-mode is
+correct for these delays. We just need to watch out for DT developers
+setting these delays to 2000ps and 'rgmii', which would be against the
+guidelines.
+
+
+> 2. withour rx-internal-delay-ps AND tx-internal-delay-ps
 > 
-> Link: https://www.aspeedtech.com/server_ast2600/ [1]
+>   If "phy-mode" is 'rgmii-rxid' or 'rgmii-txid':
+> 	Keep original delay
+> 	Print Warning message
+> 	  "Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
 > 
-> Signed-off-by: Marc Olberding <molberding@nvidia.com>
-> ---
-> Changes in v4:
-> - Changed model name to be accurate per Andrew Jeffery
-> - Added comments about why there are no i2c devices described here per Andrew Jeffery
-> - Added support for probing the backup spi device through fmc
-> - Link to v3: https://lore.kernel.org/r/20251108-msx1_devicetree-v3-0-c7cb477ade27@nvidia.com
+> There are FOUR conditions in delay configuration:
+> 'X' means RGMII delay setting from bootloader
+> A: 7500 <= X <= 8000, 0 <= X <= 500
+> B: 500 < X < 1500
+> C: 1500 <= X <= 2500
+> 	Mean "Enable RGMII delay" at MAC side
+> D: 2500 < X < 7500
 > 
-> Changes in v3:
-> - Removed mac and mdio node completely per Andrew Lunn's request. Will add back
->     once the mac driver is fixed
-> - Link to v2: https://lore.kernel.org/r/20251107-msx1_devicetree-v2-0-6e36eb878db2@nvidia.com
+>   If "phy-mode" is 'rgmii':
+> 	Condition A:
+> 		Keep original delay
+> 		Update "phy-mode" to 'rgmii-id'
+> 		Print Information message
+> 			"Forced 'phy-mode' to rgmii-id"
+
+So 0 <= X <= 500 is a small tuning value, so yes, is correct.
+
+> 	Condition B and D
+> 		Keep original delay
+> 		Print Warning message
+> 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+
+Yes.
+
+> 	Condition C:
+> 		Disable RGMII delay at MAC side
+> 		Update "phy-mode" to 'rgmii-id'
+> 		Print Warning message
+> 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+
+'rx/tx-internal-delay-ps are probably not required in this case, the
+2ns from the PHY is probably sufficient.
+
 > 
-> Changes in v2:
-> - Added ack by Conor Dooley on patch 1
-> - Changed phy-mode attribute after discussion with Andrew Jeffery and feedback from Andrew Lunn
->     and added a comment with a better explanation
-> - Link to v1: https://lore.kernel.org/r/20250918-msx1_devicetree-v1-1-18dc07e02118@nvidia.com
-> 
-> ---
-> Marc Olberding (2):
->       dt-bindings: arm: aspeed: Add Nvidia msx4 board
->       dts: aspeed: Add a dts for the nvidia msx4 hpm
-> 
->  .../devicetree/bindings/arm/aspeed/aspeed.yaml     |   1 +
->  arch/arm/boot/dts/aspeed/Makefile                  |   1 +
->  .../boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts | 248 +++++++++++++++++++++
->  3 files changed, 250 insertions(+)
-> ---
-> base-commit: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d
-> change-id: 20250908-msx1_devicetree-7af2c1fc15d0
-> 
-> Best regards,
-> --
-> Marc Olberding <molberding@nvidia.com>
-> 
-> 
+>   If "phy-mode" is 'rgmii-id':
+> 	Condition A:
+> 		Keep original delay
+> 		Keep "phy-mode" to 'rgmii-id'
+> 	Condition B and D
+> 		Keep original delay
+> 		Print Warning message
+> 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+> 	Condition C:
+> 		Disable RGMII delay at MAC side
+> 		Update "phy-mode" to 'rgmii-id'
+> 		Print Warning message
+> 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
 > 
 
+These look correct.
 
-My bot found new DTB warnings on the .dts files added or changed in this
-series.
+How many different boards do you have you can test with? Do you only
+have access to RDKs? Or do you have a test farm of customer boards for
+regression testing. I would throw the patchset at as many boards as
+you can to make sure there are no regressions.
+ 
+> Because the driver may need to update the "phy-mode" of dts, it need to add
+> CONFIG_OF_DYNAMIC in ftgma100 of Kconfig.
 
-Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
-are fixed by another series. Ultimately, it is up to the platform
-maintainer whether these warnings are acceptable or not. No need to reply
-unless the platform maintainer has comments.
+I don't think you need this. At least, i would not patch the DT blob.
 
-If you already ran DT checks and didn't see these error(s), then
-make sure dt-schema is up to date:
+You are only fixing 2600. 2700 will be correct from day 1. You don't
+need any of this code for the 2700. The 2500 also does not need any of
+this, from what i have seen of the 2500. I've not looked at 2400, but
+i also assume none of this is needed there.
 
-  pip3 install dtschema --upgrade
+The current ftgmac100_probe() is very complex. So i would pull it
+apart into helpers. It looks like the ncsi is generic across all
+versions. So that can be put into a helper. I would then probably have
+helpers for 2400/2500, 2600, and sometime in the future 2700. In the
+2600, i would look at replacing the of_phy_get_and_connect() with a
+call to of_get_phy_mode() and of_phy_connect(), changing the interface
+value passed to of_phy_connect() as needed.
 
-
-This patch series was applied (using b4) to base:
- Base: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d (use --merge-base to override)
-
-If this is not the correct base, please add 'base-commit' tag
-(or use b4 which does this automatically)
-
-New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20251124-msx1_devicetree-v4-0-a3ebe3110a67@nvidia.com:
-
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: timer (arm,armv7-timer): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: sdram@1e6e0000 (aspeed,ast2600-sdram-edac): compatible: ['aspeed,ast2600-sdram-edac', 'syscon'] is too long
-	from schema $id: http://devicetree.org/schemas/edac/aspeed,ast2400-sdram-edac.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: bus@1e600000 (aspeed,ast2600-ahbc): compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
-	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: adc@1e6e9000 (aspeed,ast2600-adc0): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: adc@1e6e9100 (aspeed,ast2600-adc1): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: crypto@1e6fa000 (aspeed,ast2600-acry): 'aspeed,ahbc' does not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
-arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/dma-controller@1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
-
-
-
-
-
+	Andrew
 
