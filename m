@@ -1,94 +1,53 @@
-Return-Path: <linux-aspeed+bounces-2996-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-2997-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A1F6D0E6EC
-	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Nov 2025 13:59:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C59FD0EE0F
+	for <linux-aspeed@archiver.kernel.org>; Tue, 25 Nov 2025 18:09:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dG47k5yWkz2yFW;
-	Wed, 26 Nov 2025 00:59:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764079186;
-	cv=none; b=fG4QpGG69WAae2hHJJkUqLt3yHQ8YgSWrgFUOv1ayHld3IJN9PM80os4fbxrJNEnFOjRKFKPHXednRi6wQRIjd3uDP5apkdAvOWFw0n451wq7xIdb46N3pofhR/va/pkEl3w3wo5SV+GXrchi+j+NB5bJ57VzkN4XSYKDpHKVf4KXvXNmEX4+6Rhg5Ero6Zo7cdv9J2+37tc3C2A4NvoRuswEXW7dNcs4kVd7xdNSAr7FF4OzmaWDiDZFURux44MghanXDLNEhp3/DepUF0ch6k3ozuDwEUMh1cOSvFRoIPGW+fcvjEMRhl3jg1b4E97/Ero8A8ooyS750MTMnGAmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dG9h44Vgpz2xqf;
+	Wed, 26 Nov 2025 05:09:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764094180;
+	cv=none; b=GPcgybMd5a/2cPwUu/lueaYcoRhViq3cAFK2yF/gD2IWldyO3bdHCk5OK6iZ4YKl0MXBOar4RrggXbxAcMUr/XN/+UnrpgBPS1rIcuiyVWF3qcpy/W/o+r5H3JF6KrpbWcIho7A0TkCBsDEAZDHFDmMpxJsYpsbkeHhE12U3rf3Ov5UhRkzEZ6HRe64NWcvF57IjGWmybPkDZVy3XGM8cp/wWvsVDcTueAvh96z6CpLwfYS7KOD24pA3Dh23TCm4XrM8ao4o8CrSWIb76mqzhTL5drx9fcLegohD1gzhoKhzQfAkUShW/vmc06SPIJad4YIvSEsQo7wew6uK7EXMQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764079186; c=relaxed/relaxed;
-	bh=8Wq6qWRdMJT8JkFWrdlIBvOjsRwtEbw2p0Rqikaex0U=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=E/DMfA8YcJYL65WIhJ2XY9sZ/aw99ekdKvk9tYWtbP5YBOJB0IHha4oWHyKx8YIYvyxyyu9cmim6H9XBJMUtUHT4G6aeQopmE/YW9CTXzeFo/jim+JDPPrpobhDCgMsFL3su+BPGV/CRXEQdRiQKtOTg4Iupg7W5Qg46MfN1zgDdUWb7TNYR5d1F0m94aD9Rvtipt374XsAZgoN72g57ff/OVL4vDx43yY95QiB9/B0kiN+06WphWX7CfvQzj77aa5DZlYy3uLbrqeRwcpHVPxN9g8BhB0mllyK/WFD9VqG7GR9PM1FoWDQDAQrmL9JOnIjbYxGPbzlwZWxqbk5mRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=S9ryirAh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1764094180; c=relaxed/relaxed;
+	bh=j3/S4Hf1y59pjCnEL7qw1EexDcmqot8Q1p1anizWLA8=;
+	h=From:Date:Content-Type:MIME-Version:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=VxNnDdstyJ9n4n1pJWKLGPex5elhdtIhFXjeHXnAjArIImGS0prgph6B6pryjXwbf148e0rxRl0EHEjZlT0FHITKcsRXHk4hX+Q3tO3pTKztwbz4e/rz4H6Ke4qC1z1a7wmOa5zhtZHwj4CMRxTT9z0prHPJAHFG9IlHbB14QpZhPMziwgmlpjUcW51NUna9soy5gIMKcw2K1aGQP3+wsADTA0dZ8XV+ShuNBotLFNttgadLSj4YVOo869lbh2mbY9jo+11hlfdAFictDgcIHWfv7NisASOhQ8NDNNVIipueUS3Qs5vKPYdkrtj055V/THRTqmZOqE/Gb6sGXCRvQg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T5xXmqeS; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=S9ryirAh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T5xXmqeS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dG47k0Psxz2xqf
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 00:59:46 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-7aad4823079so4870595b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 25 Nov 2025 05:59:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1764079184; x=1764683984; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=8Wq6qWRdMJT8JkFWrdlIBvOjsRwtEbw2p0Rqikaex0U=;
-        b=S9ryirAh+FGDP2dQT0VQy1LrbV9a7QreiIMGY/P4/PHqbTjNAdJmNIZC6Xe16IWwEG
-         Lgv3pQb/qNrJvydiVtSbCIHPcZiy9kjTLXBcsTYYcLVR8+mvdxE5+ymbx6qEL1oCTIRw
-         YpDk1WfzQta6/AP3yUFQrMC/MEA00fBJgJ6sRC8hpGZ1rxn+tjHHEa19uOmbc/4GU58i
-         Fdioe9YGpPYYZkCb/UK93vvKxjpWF2TBG9Dz4t89c+GPRHB+VmPyLtEZ5hWcEy3uE9sU
-         yhveaDc90TN0xEcXfW6UUZ6ZLNVdTXZkcdyGziip77rRD4JuEVsZ7Z61BwaQVZY4xy8z
-         hG+g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764079184; x=1764683984;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=8Wq6qWRdMJT8JkFWrdlIBvOjsRwtEbw2p0Rqikaex0U=;
-        b=c2h0N0cpA+lG8mo7+tMXxs7D+IyY7/epWk/K8pZEjT0+2fsN2yxQJ0MrBlcGZYzfm9
-         T485t7qIpYPHVS6CkjE/nDn6Pq565lKmLWZayW/QoJMK1mz+nZCjHSTnjVNNMKwbu2LQ
-         W+bgiu+as5WsZcCsPQz5U2WFFTOyfjM0Aj5UfnxIH/v4OJrI1D4ed4dkwiARsi+EMPXG
-         Y+W7hVAfdVbN16PjXkdt+6jAx2Bt6y9PZiMfkn1AhuD70LWIiqgD140hV/Rq435cn+w2
-         CWX7jyaqoPBDcfwt5+M0hqCPxW41Xn4K+uKps3VIT+aA/LsydDNZv2kdX5+r7J5ejF14
-         O8+g==
-X-Forwarded-Encrypted: i=1; AJvYcCV6N68oE9AYEjIwFuDzVKhepjWmyZOnzKTIbtNxLMkUDgL0HtHr4tQ1YWxLgvN3pCc2hOPx15VEzHyoVBg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzfSh2+a1W5qXNco1A3T2+TY3FX8hojabJPZqbA6VjlfIA9wFLi
-	ODIbf0l6ck+34i5DkGyRRtadeE1PyP26DZy6/1HHld+P2OXHyc3BSbrK
-X-Gm-Gg: ASbGncu9AM+IePJk3gG5clVqO0AGgUK+APlT5Ai0/6CeGDt+mDTvFRzDIQIeMBLHwRn
-	+OgDp9h1wabXj3i2Ag87udvcP+ksVcv9I3aw53u3YfP2JKTuVVPvhBtUBtlilOvma4UIXiPs8+I
-	ybu6F6d+qyrDYYjZRAj74cEAzpwOYnRDXdQpAfpGTddb5/phpFTXMExPoDelk7npOT74aX5bPZt
-	5N0mLVjUvMazv9uxwXCECF/0O7oFsiO73/HDbIZeIe+ljT5M/L5+yBZX+XAXla8AVAc+/+8fnfY
-	TmxdWiWRgMsfVm1JyndK3EEBkD5NlucuDIRZCpyk0ga2NFnZRfXv2W4lnuNTgzmeO1ty+WlTpTn
-	IGbnvV4e9jEH6suiwmdGTFs9yLqcESzBFzFSSClxpOYR+3BoHm2eaeBDK24w0MokuwvfoXUwco7
-	MU4qsk+6T5AdUzy/SKEPbPbPfQGPy3BEq+/6kJ0JRFCr9Kvg8xxzSBxTydlLd0zEKdZoMIAXrHb
-	yM=
-X-Google-Smtp-Source: AGHT+IGLG5ulH7QtmwgR215gpFL6u62RMBu83STuoUngtVM+z2Xb/xW3EJ/jrvfLs+uU70SnKpeLsQ==
-X-Received: by 2002:a05:6a00:3d12:b0:7b9:df65:93a9 with SMTP id d2e1a72fcca58-7c58eaf27a7mr17838247b3a.32.1764079184121;
-        Tue, 25 Nov 2025 05:59:44 -0800 (PST)
-Received: from fred-System-Product-Name.. (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7c3f0b63dbcsm18216028b3a.50.2025.11.25.05.59.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 25 Nov 2025 05:59:43 -0800 (PST)
-From: Fred Chen <fredchen.openbmc@gmail.com>
-To: Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v1 2/2] ARM: dts: aspeed: santabarbara: Enable ipmb device for OCP debug card
-Date: Tue, 25 Nov 2025 21:59:31 +0800
-Message-ID: <20251125135934.3138781-3-fredchen.openbmc@gmail.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20251125135934.3138781-1-fredchen.openbmc@gmail.com>
-References: <20251125135934.3138781-1-fredchen.openbmc@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dG9h343qVz2xPy
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 05:09:39 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id A3D1A6023C;
+	Tue, 25 Nov 2025 18:09:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5372CC4CEF1;
+	Tue, 25 Nov 2025 18:09:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764094177;
+	bh=/mvfUzi1Qw/4Y5kr212cUVhQ1RqPh58sZxHLxmDAY+M=;
+	h=From:Date:Cc:To:In-Reply-To:References:Subject:From;
+	b=T5xXmqeS+/oH53FIpbyhDSoWH/3vPI/1rNwHCdWGhlaVbQI8Sh8EvfLvn4fgZCN+J
+	 0UhbZVikkjQqQM3F+qdS0qmkYrakKQukVb+NsriVuDgkqs+l/7W1762mlVTl4p/Beo
+	 qaCYC7fvlYxeRYgOcM4gflVSwBtNHLnCgoQoTJC8O05IrFkLUYlV9/3zYTYOX9GbIw
+	 XAuQHRoWoQA9P0McfnRMmBvC2klCkjI2oL3KEVzqO2jDU/1HrwXrJZVnfI5GOCvtqz
+	 x1DeUdbNhxnowfC78YZePpKtK1f4dyOdyD3k4W/h19xwQhXIYk7rs5VnPLTBxHBkaf
+	 GDv0f44YyThOA==
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 25 Nov 2025 12:09:35 -0600
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,35 +61,113 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Cc: Conor Dooley <conor.dooley@microchip.com>, 
+ Conor Dooley <conor+dt@kernel.org>, devicetree@vger.kernel.org, 
+ Joel Stanley <joel@jms.id.au>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>, linux-kernel@vger.kernel.org, 
+ linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: Marc Olberding <molberding@nvidia.com>
+In-Reply-To: <20251124-msx1_devicetree-v4-0-a3ebe3110a67@nvidia.com>
+References: <20251124-msx1_devicetree-v4-0-a3ebe3110a67@nvidia.com>
+Message-Id: <176409395426.3843808.13226161866300781148.robh@kernel.org>
+Subject: Re: [PATCH v4 0/2] Add device tree for Nvidia BMC msx4 cx8
+ switchboard
 
-Add an IPMB node for OCP debug card to support IPMI communication.
 
-Signed-off-by: Fred Chen <fredchen.openbmc@gmail.com>
----
- .../boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts   | 7 +++++++
- 1 file changed, 7 insertions(+)
+On Mon, 24 Nov 2025 15:14:16 -0800, Marc Olberding wrote:
+> Patch 1 Adds the binding for the msx4 cx8 switchboard
+> Patch 2 Adds the device tree for the msx4 cx8 switchboard reference implementation.
+> 
+> This is an Aspeed AST2600 based reference implementation for a BMC
+> managing the nvidia mgx cx8 switchboard.
+> 
+> Reference to Ast2600 Soc [1].
+> 
+> Link: https://www.aspeedtech.com/server_ast2600/ [1]
+> 
+> Signed-off-by: Marc Olberding <molberding@nvidia.com>
+> ---
+> Changes in v4:
+> - Changed model name to be accurate per Andrew Jeffery
+> - Added comments about why there are no i2c devices described here per Andrew Jeffery
+> - Added support for probing the backup spi device through fmc
+> - Link to v3: https://lore.kernel.org/r/20251108-msx1_devicetree-v3-0-c7cb477ade27@nvidia.com
+> 
+> Changes in v3:
+> - Removed mac and mdio node completely per Andrew Lunn's request. Will add back
+>     once the mac driver is fixed
+> - Link to v2: https://lore.kernel.org/r/20251107-msx1_devicetree-v2-0-6e36eb878db2@nvidia.com
+> 
+> Changes in v2:
+> - Added ack by Conor Dooley on patch 1
+> - Changed phy-mode attribute after discussion with Andrew Jeffery and feedback from Andrew Lunn
+>     and added a comment with a better explanation
+> - Link to v1: https://lore.kernel.org/r/20250918-msx1_devicetree-v1-1-18dc07e02118@nvidia.com
+> 
+> ---
+> Marc Olberding (2):
+>       dt-bindings: arm: aspeed: Add Nvidia msx4 board
+>       dts: aspeed: Add a dts for the nvidia msx4 hpm
+> 
+>  .../devicetree/bindings/arm/aspeed/aspeed.yaml     |   1 +
+>  arch/arm/boot/dts/aspeed/Makefile                  |   1 +
+>  .../boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts | 248 +++++++++++++++++++++
+>  3 files changed, 250 insertions(+)
+> ---
+> base-commit: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d
+> change-id: 20250908-msx1_devicetree-7af2c1fc15d0
+> 
+> Best regards,
+> --
+> Marc Olberding <molberding@nvidia.com>
+> 
+> 
+> 
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-index 4312ead311df..0a3e2e241063 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-@@ -845,7 +845,14 @@ temperature-sensor@49 {
- };
- 
- &i2c7 {
-+	multi-master;
- 	status = "okay";
-+
-+	ipmb@10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
- };
- 
- &i2c8 {
--- 
-2.49.0
+
+My bot found new DTB warnings on the .dts files added or changed in this
+series.
+
+Some warnings may be from an existing SoC .dtsi. Or perhaps the warnings
+are fixed by another series. Ultimately, it is up to the platform
+maintainer whether these warnings are acceptable or not. No need to reply
+unless the platform maintainer has comments.
+
+If you already ran DT checks and didn't see these error(s), then
+make sure dt-schema is up to date:
+
+  pip3 install dtschema --upgrade
+
+
+This patch series was applied (using b4) to base:
+ Base: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d (use --merge-base to override)
+
+If this is not the correct base, please add 'base-commit' tag
+(or use b4 which does this automatically)
+
+New warnings running 'make CHECK_DTBS=y for arch/arm/boot/dts/aspeed/' for 20251124-msx1_devicetree-v4-0-a3ebe3110a67@nvidia.com:
+
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: timer (arm,armv7-timer): 'clocks' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/timer/arm,arch_timer.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: sdram@1e6e0000 (aspeed,ast2600-sdram-edac): compatible: ['aspeed,ast2600-sdram-edac', 'syscon'] is too long
+	from schema $id: http://devicetree.org/schemas/edac/aspeed,ast2400-sdram-edac.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: bus@1e600000 (aspeed,ast2600-ahbc): compatible: ['aspeed,ast2600-ahbc', 'syscon'] is too long
+	from schema $id: http://devicetree.org/schemas/bus/aspeed,ast2600-ahbc.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: syscon@1e6e2000 (aspeed,ast2600-scu): 'smp-memram@180' does not match any of the regexes: '^interrupt-controller@[0-9a-f]+$', '^p2a-control@[0-9a-f]+$', '^pinctrl(@[0-9a-f]+)?$', '^pinctrl-[0-9]+$', '^silicon-id@[0-9a-f]+$'
+	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/syscon@1e6e2000/smp-memram@180: failed to match any schema with compatible: ['aspeed,ast2600-smpmem']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: adc@1e6e9000 (aspeed,ast2600-adc0): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: adc@1e6e9100 (aspeed,ast2600-adc1): 'interrupts' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/iio/adc/aspeed,ast2600-adc.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: crypto@1e6fa000 (aspeed,ast2600-acry): 'aspeed,ahbc' does not match any of the regexes: '^pinctrl-[0-9]+$'
+	from schema $id: http://devicetree.org/schemas/crypto/aspeed,ast2600-acry.yaml
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/lpc@1e789000/lhc@a0: failed to match any schema with compatible: ['aspeed,ast2600-lhc']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/lpc@1e789000/ibt@140: failed to match any schema with compatible: ['aspeed,ast2600-ibt-bmc']
+arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dtb: /ahb/apb/dma-controller@1e79e000: failed to match any schema with compatible: ['aspeed,ast2600-udma']
+
+
+
+
 
 
