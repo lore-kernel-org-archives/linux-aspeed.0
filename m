@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-2999-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3000-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 497BED1038F
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE512D1038C
 	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Nov 2025 08:26:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dGXj54jDLz2ynP;
-	Wed, 26 Nov 2025 19:26:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dGXj626tPz2yvH;
+	Wed, 26 Nov 2025 19:26:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764145609;
-	cv=none; b=iBYAsz4EVknYXtVxItS/HOVFmR043j3cKBAx5wNDkCeuQnYlUKsE6ocBxo3hGzkEd11JB+VEkK0f1X6fwpGxEa48wayXMewK03B9S6vL/mzCtdvIRbxc3rsXn/ofotsnCRVlBt8UVJAkQtotQEFLivkdX2QdHQhKxjrGfKJOEkThtXjeJM6+sUbDR4yiRzpkUrxW1du9sY5TfcwRGg0TcHo3T70FTKvPrk3N9tU9ASp3XSR4fIHM76nH1L+/HZ257JsO4FZ7CoKR2ftOEOhq3SQDommxKPkJzNQLQdmrTXGCbqS7zanzaBVdO0JUUw0oGIc0o04o4cjUKBDJeKVKhQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764145610;
+	cv=none; b=AEAjTc6xukGGv3+MdUcsqG4LetXnibXE1H2J6hrYR+WzAkJNPJVn1vXZHJgkn0PNWj2eMTVi3XrWWu3yGKvzTGMiEUBB/HMw4Htcf5uQKngwVQjcLROsmNnaG7A3n+V/9Yo7r0sP4Jjyba60fSBsQM04KFqS36GMUN69XRJ95scsuQz+N8nSf3VZiTcM6Z+CZBsfPV9dTKFFt+V7uuT2iGHHdxSlvS3234dYhuxBUyBnli5pgMZwj78vw/4vJPSdmo6yJhBJuZNCRsz7bRDRv4Jd9Ob0Nk6/WJHV/daxwNnkzerq2mACbcqCGm621Z7PUK7i76sk+O9VXFhsvqitPQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764145609; c=relaxed/relaxed;
-	bh=+vJ8EaE+nu0lIUJABRQHfDnIDkTZEuMj0mTHD0scIYU=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=mynjvzWPtX51rPquaZHgxjfBGcgg2KabbmVyF3a/W7Z9boGUleblcv0W7x8RqleFnAZkIXf6RT1o0YvzYmu/uSei8U25RNuM/hgZYwHwbz6lPfW0vY41o30CGr1bqLRjAhdBL/aUeHXUlD2wCUYFqFKNlDaswXvBFxpN2J5w+3WkqF5gaMxrqllCZE1LJa0CP/wz5t/Mhxmyb9HTwTr6Jtt8I8NZ4mo/FD1XC/X2d0PFhjNQbBkwQQp9UqVko85N2arwZWQzoz86qr552M4BQvP3mZrQ+DfcXsgY+j4IFL+w4pSR6Jt8NTR4gr73HJ8UoFNXzeGgyI8Lyhbc27JAfA==
+	t=1764145610; c=relaxed/relaxed;
+	bh=p1a16dCHqSoV1bGYQwsQfBHDNzGYIAnms9DNH2Gqpd4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=KeQps8ZOPZNWH58RZdAEWwfVI+Rf/1idt3w2mgP6OIvhUGIX6NgY9m4vQZre5c7PIyJ02icyQ4vxXwfre4YD0rC8qeh9G57n949dTBHrtdpNhQyM+xtHyNszHHS8pQbZODV5YpsHfAwqCkRo4V9AI9VXrGsDAtAbNhSjgdSkn4tPrsfPz0+l+ibLJgmX9w7WGXdUoJp1IVtg8Yfr+h2sPtJh1B5oSC+N3OnP5Lsoinw0EfG+p/9LjZX0Vc9czvp35zGFpdaKtwBtsZWivUJ7xRXVWcT9ZnILphG85Ao8Qw3HJyZrdTRI0LN2UN8eFBIGbuN/goZ7T/rpoR9IXnoC0g==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dGXj44fxhz2xPy
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 19:26:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dGXj55K2jz2xPy
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 19:26:49 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 26 Nov
@@ -32,9 +33,8 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Wed, 26 Nov 2025 16:26:30 +0800
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Subject: [PATCH 0/2] Add AST2700 support for Aspeed vhub
-Date: Wed, 26 Nov 2025 16:26:29 +0800
-Message-ID: <20251126-upstream_vhub-v1-0-910709937ee0@aspeedtech.com>
+Date: Wed, 26 Nov 2025 16:26:30 +0800
+Subject: [PATCH 1/2] dt-bindings: usb: aspeed,usb-vhub: Add ast2700 support
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -50,10 +50,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIALW5JmkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDI1NDQyNT3dKC4pKi1MTc+LKM0iRd41QjAxML40QTU9NUJaCegqLUtMwKsHn
- RsbW1AJvgbwNfAAAA
-X-Change-ID: 20251125-upstream_vhub-3e20483a455e
+Message-ID: <20251126-upstream_vhub-v1-1-910709937ee0@aspeedtech.com>
+References: <20251126-upstream_vhub-v1-0-910709937ee0@aspeedtech.com>
+In-Reply-To: <20251126-upstream_vhub-v1-0-910709937ee0@aspeedtech.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
 	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
 	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
@@ -63,35 +62,64 @@ CC: <linux-usb@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
 	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1764145590; l=793;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1764145590; l=1317;
  i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=7cC5jeCkWsYO33bINv8Y064Z31IpWkHiFJYzubZI4AA=;
- b=vEIO1LfVfQsPoR4eEKhpTG48ZIF//W0qo8MEjrlqB1chhzuwEI/NdKsBkFpT4MhOn0WevIT6E
- yUvLUm5ZfSiAy8uqh+Uh6cFFrNf8ODVkst3oLi1RJDHX9pHr0D+kZPu
+ bh=HEzWWYIHW1xKDw5/cUq64msPdNcRWYQ7CNoSj8s7Tc0=;
+ b=/akVg1W5dYhU+EFX3V4YbmlsHawqShE/aW/7otTU9xNBzwfv2BAVdGtZjeZCZLSeEanHdxVzb
+ hGiaFh5PeyOAdlM0Qi8k8o2S393xmdPTdzTBUGRyQozqnU+4MNQoe0D
 X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
  pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-This series add Aspeed vhub support for AST2700.
-The AST2700 vhub requires a reset and uses 64-bit DMA.
-This series updates the binding and driver to support these two
-requirements.
+Add the "aspeed,ast2700-usb-vhub" compatible. The ast2700 vhub
+controller requires an reset, so make the "resets" property
+mandatory for this compatible to reflect the hardware requirement.
 
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
-Ryan Chen (2):
-      dt-bindings: usb: aspeed,usb-vhub: Add ast2700 support
-      usb: gadget: aspeed-vhub: Add ast2700 support
+ Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
- .../devicetree/bindings/usb/aspeed,usb-vhub.yaml   | 14 ++++++++++
- drivers/usb/gadget/udc/aspeed-vhub/core.c          | 30 ++++++++++++++++++++++
- drivers/usb/gadget/udc/aspeed-vhub/vhub.h          |  1 +
- 3 files changed, 45 insertions(+)
----
-base-commit: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d
-change-id: 20251125-upstream_vhub-3e20483a455e
+diff --git a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+index 7f22f9c031b2..c9ebb6e004d1 100644
+--- a/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
++++ b/Documentation/devicetree/bindings/usb/aspeed,usb-vhub.yaml
+@@ -26,6 +26,7 @@ properties:
+       - aspeed,ast2400-usb-vhub
+       - aspeed,ast2500-usb-vhub
+       - aspeed,ast2600-usb-vhub
++      - aspeed,ast2700-usb-vhub
+ 
+   reg:
+     maxItems: 1
+@@ -33,6 +34,9 @@ properties:
+   clocks:
+     maxItems: 1
+ 
++  resets:
++    maxItems: 1
++
+   interrupts:
+     maxItems: 1
+ 
+@@ -107,6 +111,16 @@ required:
+   - aspeed,vhub-downstream-ports
+   - aspeed,vhub-generic-endpoints
+ 
++if:
++  properties:
++    compatible:
++      contains:
++        const: aspeed,ast2700-usb-vhub
++
++then:
++  required:
++    - resets
++
+ additionalProperties: false
+ 
+ examples:
 
-Best regards,
 -- 
-Ryan Chen <ryan_chen@aspeedtech.com>
+2.34.1
 
 
