@@ -1,40 +1,108 @@
-Return-Path: <linux-aspeed+bounces-3001-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3002-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2F0DD10390
-	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Nov 2025 08:26:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64B7AD1038C
+	for <linux-aspeed@archiver.kernel.org>; Wed, 26 Nov 2025 08:57:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dGXj71ftfz2xPy;
-	Wed, 26 Nov 2025 19:26:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764145611;
-	cv=none; b=LT1TXJavIT40E+azaIO83pDpgvr6Wryca6ulL8TkhrA1L2+Z3mEfW9WmW/Ec1Rb1uTnTlnGOl3xILxv19Nt7++BaWmn4dJtYoIclb/S253uQz539y9Ww7PySAuw/mLK7VDfQMu+5cvuG5uR7gRckfd1eMlSstJ7d2d3g/5342aQrhwd31a/gsrjJzbjJUftyeK/CdFsNQHNXhuBuR8Cbly1m5cEcx7rEaWaJjKyUajKPPeenpZvdXOoA8kSLF5eDRAGE3TnoUl/Aqny6117sPFTGyURwhqrtwTY4hC6ZQOrbSKgzPy4nZ8yXxB39Ns7dy3cbzyM5L3V+I+5edz2sTA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dGYNW4WyQz2ynP;
+	Wed, 26 Nov 2025 19:57:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764147451;
+	cv=none; b=DFjiWug9YlxX3G0Dog0OMQFi1E4/8kqNg9lDXGrjVvwCVvBN3BiNYRBz+kDK0+piOzaX5x2/1oqi/1OdjDVjT4QSBZoAj/+8Xy3cbxLSl2lAp3/mnMpeVcUKRx4uYya+8x5WFu+5tPAWSDvmRUNq5dz7QL2dFjzz+iSu4XgD1VYRdWtuW+QbdC7kTNKgO20LZVEdhmz+0z7hf1ZKFsKANADiEG6eUzMb7T09C6W4sT0qbZob3bgO602PdOSYDwXnWZJzlX8Fyl97pnEAN6cexV44JXc2qyZGfZzuZq5urj+jtDyKT/i64sSC3PLnze6Tgn9yAJmWe/ns1trOa68UUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764145611; c=relaxed/relaxed;
-	bh=yFLEfYAYFrOaTSfjRn6pWq/oFrmnU+L3G+p2MzgqcCA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=lyq4kV3do6GWOv2bZhHqh73z3AS4qacUc8HuFnAi3R8oFwyzba2MYydD8O+bsANjqwcb4OMwG4iRY1DW8rNiNG+aUQpWI99Xf4n3oh569m8xf0ABlh9O7g3GdQ52bgTMdpD/9Nt9OKCo7t9UjpyRrDWVK8tsmkFZ/TLsuNH95I7mBfgjzJwosgdhOuEaAU4yQD9oCw54j2KB80hRGV+Dy56TCQ8oo4N9anO7gv+GYYjihotGd4RrirleZuV1FGL8mNDuaI6Ne94lVjuWIMNnc4dCRZQFZmtQbWVSOOxdouB4V8Xy8Dr36q122CnggDMGQmdRDjkQOAl2ADA1MLpzVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1764147451; c=relaxed/relaxed;
+	bh=OyD4sn9jsMLtWXgnyFdyRLUkPxYCW2TqpmGHV9ixsxU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=h4bu1NqVMIOWHB+N7B+7AV9b0vuGHlOK1CxzGtqmPyrYV2d0EN2pMGkEdommPlF8cob0O1Uy8QpL9zVcQHuZes/KC6Y0s1eW36MxGGMH5nCsgwDRl8evfKoASPR0NefkNQGOfj4ICFeMlK6nSQsocAeTelLZzSyJdh3mwJ+Wu/KRy219rge4G5M/ARFPGs6AmpezlyS9zCtZyA46Gd/1suRIlL+A+UkB3qv66x+pPJ79QLGA8qL2ecXyowdRfi3cIsYt0zaFKvSJFGXb8UDzwng99LDUStZU3xMEbhjOo2NNqHGq2NJNfjYs4p9EP7l00b+QEurKYc8LDYtR8MvBZQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=cWmaGLRx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=cWmaGLRx;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122f; helo=mail-dl1-x122f.google.com; envelope-from=rentao.bupt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122f.google.com (mail-dl1-x122f.google.com [IPv6:2607:f8b0:4864:20::122f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dGXj62yXKz2yvP
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 19:26:50 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 26 Nov
- 2025 16:26:30 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Wed, 26 Nov 2025 16:26:30 +0800
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Wed, 26 Nov 2025 16:26:31 +0800
-Subject: [PATCH 2/2] usb: gadget: aspeed-vhub: Add ast2700 support
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dGYNV1GSvz2xPB
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 19:57:28 +1100 (AEDT)
+Received: by mail-dl1-x122f.google.com with SMTP id a92af1059eb24-11b6bc976d6so808296c88.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 26 Nov 2025 00:57:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1764147446; x=1764752246; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=OyD4sn9jsMLtWXgnyFdyRLUkPxYCW2TqpmGHV9ixsxU=;
+        b=cWmaGLRxU1cL8qjtuwSVblS2YQdRAMe2Aikt3Las35thd2DBR0INenxKJkZvUC+NZC
+         43srWnA2dnWaurxzQv08lKZfNT0nX7rRn1spPDftzk6lCthAn0/UJWeqdQyeYFbyYATF
+         dOeJ9oen1ARMEwpnU9zYosG87Qrw5TS4A6aJk8omEn2AHTXL1sECyVyL2rvsHxtWVTvS
+         ZcE8uSTG9Mbgo8vuqrGpABhHc1/oNDxRgd/XDUG8y8pECb8UeacXlm78N80Wau+gQDGN
+         grTHyT8YFYgkzqFi4bjkOUlpFwA5aMj1KxL/uDn5WLEZ3YtjFyF6VS3FSbHBkhhGAAQI
+         Qf0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764147446; x=1764752246;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=OyD4sn9jsMLtWXgnyFdyRLUkPxYCW2TqpmGHV9ixsxU=;
+        b=oOB6Awq8H+UCPeMfV562Ubjaagv5AvCgu+wK1vdlMLNs7KNYbA6CPD4gDx1daS00Rj
+         rAHkJheojgj6ITH48cKZN/M+RdEH7LAG4a9VvZF/+KK3hCGgf6XrFZB6g5gwh+7j17gK
+         tQCuW3dI0HEzLg/m+RsrhCtkKUHTn2hgD8N5tuSl4Nh7UNvsA7ZmXNE5srhgDr0aQdTN
+         QBSLP9cJLIdiExQ8+0OXWzYQebdMBYrbJ3ma4/fBXFM9TcxuigW3j0cD2nFQhArqL50Q
+         ExTJPg8fvTZIVSadrGFuiVx2/5ZH7Zd31lQU+JzrUoikNBwElWr3wFJn1XV+cOrEh+Cx
+         zrJw==
+X-Forwarded-Encrypted: i=1; AJvYcCUvZbX+kVuOxu5YMWmzoa6ueXS4biakullhN0NVF6aIkiy3i9YaiCwRETKjWN/qJBGhk8NcVdpYJ5sAVsY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzgGGORbUTHd44yb1Bk8ve5e6q+gyGWYUVnIqvHOof7TmP3CK6m
+	icUR2SvVP0iaXI+cAXYNwuwwZta+NwGZjvT4rZ34z8DRgUgfxFBjZtT/
+X-Gm-Gg: ASbGncslAD9peOb++R8PjTECqO8APJCR3izgF1lLWY4ITE5sPhniF6WLsOoAybbEu5R
+	M0xYdhn8lvhkxXKJ5TsBDffxRTW8DH+q2y3SEhPeWI6iY1w+TVScYzZ/Pfebb0ioiF8dyUlyAqW
+	GnCoLPXOERh63AoIZOkyqAcm1wxjoMPUzNrlOMKGnBFM5Ui7Zs656C0EZlHfyBc13bpMMuGSClZ
+	2T97zZ+oy2+ff6UhEoRcmn9C+r3wrbIokkm5egfZ+gT9FibKUyaadMbeuajt6wyGSh1g7yfwY8H
+	6phV64rlR2NEBQb4Nkkd1Fe2rphi03uC2vbiJOX1Vy7QJFyDJyJD7fW+fBbnPwbCqks0tLjWtSA
+	6GaAw5qGaVAWUsAEa6v2iavBpd3W46efwVWLyXKtdCYBHGgpaScVlsJZpkFtsQSJFrjgjxp+4s6
+	5vk6VWVGkkI3yu+QNduGn8Evjqfk0ursCKlxEnetb3esQ=
+X-Google-Smtp-Source: AGHT+IFrIMIkTPrxwRfvEMQ5cEoCTFWA9fomBn7RLpjcNkpm60ZPM71v6rIQ9mqGMQwZqmC/nqOzYQ==
+X-Received: by 2002:a05:7022:ec17:b0:11b:9386:a382 with SMTP id a92af1059eb24-11c9cabc4f0mr12703137c88.21.1764147445929;
+        Wed, 26 Nov 2025 00:57:25 -0800 (PST)
+Received: from fedora (c-76-133-73-115.hsd1.ca.comcast.net. [76.133.73.115])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-11c93db556csm92664267c88.1.2025.11.26.00.57.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 26 Nov 2025 00:57:25 -0800 (PST)
+Date: Wed, 26 Nov 2025 00:57:22 -0800
+From: Tao Ren <rentao.bupt@gmail.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jacky Chou <jacky_chou@aspeedtech.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Po-Yu Chuang <ratbert@faraday-tech.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"taoren@meta.com" <taoren@meta.com>
+Subject: Re: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
+ for AST2600
+Message-ID: <aSbA8i5S36GeryXc@fedora>
+References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
+ <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
+ <68f10ee1-d4c8-4498-88b0-90c26d606466@lunn.ch>
+ <SEYPR06MB5134EBA2235B3D4BE39B19359DCCA@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <3af52caa-88a7-4b88-bd92-fd47421cc81a@lunn.ch>
+ <SEYPR06MB51342977EC2246163D14BDC19DCDA@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <041e23a2-67e6-4ebb-aee5-14400491f99c@lunn.ch>
+ <SEYPR06MB5134BC17E80DB66DD385024D9DD1A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <1c2ace4e-f3bb-4efa-a621-53c3711f46cb@lunn.ch>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,139 +116,99 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20251126-upstream_vhub-v1-2-910709937ee0@aspeedtech.com>
-References: <20251126-upstream_vhub-v1-0-910709937ee0@aspeedtech.com>
-In-Reply-To: <20251126-upstream_vhub-v1-0-910709937ee0@aspeedtech.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>, Philipp Zabel <p.zabel@pengutronix.de>
-CC: <linux-usb@vger.kernel.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1764145590; l=3392;
- i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=XJdF9MCn8Pm6rI4iV4Bh37iuRCq4FiLatSLLzYg37h8=;
- b=k2Ze75FXE2h0eA718POum8cFam+q5CvdRbLXHXrZ3VFlrEZqA1dLFcckFGktL/yhO3sXIbFYu
- Lal8osCN+tjBimjMMpnDxxjN9PZx4aAkXNr62u+2hzruinIdUVSm0/V
-X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
- pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1c2ace4e-f3bb-4efa-a621-53c3711f46cb@lunn.ch>
 
-Add support for the AST2700 SOC in the vhub gadget driver. AST2700
-uses a 64-bit DMA addressing capability, so select 64-bit DMA mask
-for compatible. AST2700 vhub also requires an reset line, so hook
-up the optional reset control and assert/deassert it during probe
-and remove.
+Hi Andrew,
 
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
----
- drivers/usb/gadget/udc/aspeed-vhub/core.c | 30 ++++++++++++++++++++++++++++++
- drivers/usb/gadget/udc/aspeed-vhub/vhub.h |  1 +
- 2 files changed, 31 insertions(+)
+On Wed, Nov 26, 2025 at 12:49:57AM +0100, Andrew Lunn wrote:
+> > I try to summary in the following informations that I understand.
+> > 
+> > 1. with rx-internal-delay-ps OR tx-internal-delay-ps OR both
+> > 
+> >   Use "rx/tx-internal-delay-ps" property to configure RGMII delay at MAC side
+> >   Pass "phy-mode" to PHY driver by calling of_phy_get_and_connect()
+> 
+> Yes, since they are new properties, you can assume the phy-mode is
+> correct for these delays. We just need to watch out for DT developers
+> setting these delays to 2000ps and 'rgmii', which would be against the
+> guidelines.
+> 
+> 
+> > 2. withour rx-internal-delay-ps AND tx-internal-delay-ps
+> > 
+> >   If "phy-mode" is 'rgmii-rxid' or 'rgmii-txid':
+> > 	Keep original delay
+> > 	Print Warning message
+> > 	  "Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+> > 
+> > There are FOUR conditions in delay configuration:
+> > 'X' means RGMII delay setting from bootloader
+> > A: 7500 <= X <= 8000, 0 <= X <= 500
+> > B: 500 < X < 1500
+> > C: 1500 <= X <= 2500
+> > 	Mean "Enable RGMII delay" at MAC side
+> > D: 2500 < X < 7500
+> > 
+> >   If "phy-mode" is 'rgmii':
+> > 	Condition A:
+> > 		Keep original delay
+> > 		Update "phy-mode" to 'rgmii-id'
+> > 		Print Information message
+> > 			"Forced 'phy-mode' to rgmii-id"
+> 
+> So 0 <= X <= 500 is a small tuning value, so yes, is correct.
+> 
+> > 	Condition B and D
+> > 		Keep original delay
+> > 		Print Warning message
+> > 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+> 
+> Yes.
+> 
+> > 	Condition C:
+> > 		Disable RGMII delay at MAC side
+> > 		Update "phy-mode" to 'rgmii-id'
+> > 		Print Warning message
+> > 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+> 
+> 'rx/tx-internal-delay-ps are probably not required in this case, the
+> 2ns from the PHY is probably sufficient.
+> 
+> > 
+> >   If "phy-mode" is 'rgmii-id':
+> > 	Condition A:
+> > 		Keep original delay
+> > 		Keep "phy-mode" to 'rgmii-id'
+> > 	Condition B and D
+> > 		Keep original delay
+> > 		Print Warning message
+> > 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+> > 	Condition C:
+> > 		Disable RGMII delay at MAC side
+> > 		Update "phy-mode" to 'rgmii-id'
+> > 		Print Warning message
+> > 	  		"Update 'phy-mode' to rgmii-id and add 'rx/tx-internal-delay-ps'"
+> > 
+> 
+> These look correct.
+> 
+> How many different boards do you have you can test with? Do you only
+> have access to RDKs? Or do you have a test farm of customer boards for
+> regression testing. I would throw the patchset at as many boards as
+> you can to make sure there are no regressions.
 
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/core.c b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-index f2685f89b3e5..19c1849ae665 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/core.c
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/core.c
-@@ -23,6 +23,7 @@
- #include <linux/of.h>
- #include <linux/regmap.h>
- #include <linux/dma-mapping.h>
-+#include <linux/reset.h>
- 
- #include "vhub.h"
- 
-@@ -280,6 +281,8 @@ static void ast_vhub_remove(struct platform_device *pdev)
- 	if (vhub->clk)
- 		clk_disable_unprepare(vhub->clk);
- 
-+	reset_control_assert(vhub->rst);
-+
- 	spin_unlock_irqrestore(&vhub->lock, flags);
- 
- 	if (vhub->ep0_bufs)
-@@ -294,6 +297,7 @@ static void ast_vhub_remove(struct platform_device *pdev)
- static int ast_vhub_probe(struct platform_device *pdev)
- {
- 	enum usb_device_speed max_speed;
-+	const u64 *dma_mask_ptr;
- 	struct ast_vhub *vhub;
- 	struct resource *res;
- 	int i, rc = 0;
-@@ -348,6 +352,16 @@ static int ast_vhub_probe(struct platform_device *pdev)
- 		goto err;
- 	}
- 
-+	vhub->rst = devm_reset_control_get_optional_shared(&pdev->dev, NULL);
-+	if (IS_ERR(vhub->rst)) {
-+		rc = PTR_ERR(vhub->rst);
-+		goto err;
-+	}
-+
-+	rc = reset_control_deassert(vhub->rst);
-+	if (rc)
-+		goto err;
-+
- 	/* Check if we need to limit the HW to USB1 */
- 	max_speed = usb_get_maximum_speed(&pdev->dev);
- 	if (max_speed != USB_SPEED_UNKNOWN && max_speed < USB_SPEED_HIGH)
-@@ -370,6 +384,12 @@ static int ast_vhub_probe(struct platform_device *pdev)
- 		goto err;
- 	}
- 
-+	dma_mask_ptr = (u64 *)of_device_get_match_data(&pdev->dev);
-+	if (dma_mask_ptr) {
-+		rc = dma_coerce_mask_and_coherent(&pdev->dev, *dma_mask_ptr);
-+		if (rc)
-+			goto err;
-+	}
- 	/*
- 	 * Allocate DMA buffers for all EP0s in one chunk,
- 	 * one per port and one for the vHub itself
-@@ -412,15 +432,25 @@ static int ast_vhub_probe(struct platform_device *pdev)
- 	return rc;
- }
- 
-+static const u64 dma_mask_32 =	DMA_BIT_MASK(32);
-+static const u64 dma_mask_64 =	DMA_BIT_MASK(64);
-+
- static const struct of_device_id ast_vhub_dt_ids[] = {
- 	{
- 		.compatible = "aspeed,ast2400-usb-vhub",
-+		.data = &dma_mask_32,
- 	},
- 	{
- 		.compatible = "aspeed,ast2500-usb-vhub",
-+		.data = &dma_mask_32,
- 	},
- 	{
- 		.compatible = "aspeed,ast2600-usb-vhub",
-+		.data = &dma_mask_32,
-+	},
-+	{
-+		.compatible = "aspeed,ast2700-usb-vhub",
-+		.data = &dma_mask_64,
- 	},
- 	{ }
- };
-diff --git a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-index 6b9dfa6e10eb..aca2050e2db0 100644
---- a/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-+++ b/drivers/usb/gadget/udc/aspeed-vhub/vhub.h
-@@ -388,6 +388,7 @@ struct ast_vhub {
- 	spinlock_t			lock;
- 	struct work_struct		wake_work;
- 	struct clk			*clk;
-+	struct reset_control		*rst;
- 
- 	/* EP0 DMA buffers allocated in one chunk */
- 	void				*ep0_bufs;
+I synced with Jacky offline a few times, and I'm happy to test the
+patches on my Facebook Network OpenBMC platforms.
 
--- 
-2.34.1
+Hi Jacky,
 
+Looking forward to your v5, and please don't hesitate to ping me offline
+if you need more info about my test hardware.
+
+
+Cheers,
+
+Tao
 
