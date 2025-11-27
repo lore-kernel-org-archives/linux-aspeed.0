@@ -1,165 +1,55 @@
-Return-Path: <linux-aspeed+bounces-3012-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3013-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCB16D11183
-	for <linux-aspeed@archiver.kernel.org>; Thu, 27 Nov 2025 08:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8F8CD111A8
+	for <linux-aspeed@archiver.kernel.org>; Thu, 27 Nov 2025 22:41:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dH97X3C5Rz2yrX;
-	Thu, 27 Nov 2025 19:48:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764233304;
-	cv=pass; b=bvjLdothOMD4v5Ouqb+GO4AiX6UA1qGI8q7ZG1OnSxJMr9Ol7k5V09pR0PHut9E87xkLi8hDgC236NFGyLEDlSoEECOPs4RxyCpOMT0pYZenS0g/ddkehLD+xXb9cNUxV+QYHro5LdPJFOXw3lrO8+lmyDOR1r5SWsLqxKzr9GBj0RMrweq9UTKd1QcShcvxI/B5nBt/Omv1WdbavqBsFjZcRyJmmdJMAMopSj+jn7WFflTHp5ttS3M22KvWXIBo/b2bpCYQpBu/ab/qD14MG2bC3I3ZEKO794+k7RVIaYjQJv9B4t/rAQ+onEM6iw6s+1tZLdpbODUqsc8hPXP/Dw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764233304; c=relaxed/relaxed;
-	bh=uf3GAWl6jVajrIrFShlLKzRLLAFATFR9uuKEB++wxsI=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=XVsBFHo9WUXjB2vXQ+WOh3Zv1ardRmVOkT7X7P8y6MRPXeRI7C8jPxUC6iCCn6FhI66zF9HfrCdEe07ZfkrKJ7m+wTU1qYSgHQIIg0v3E5YtLDLbbzkfn8RpNnnHeYsa1Eh9nQ4gK849JgaNiERlU0HiiaA5J45FFEjH1F5T+jZZjI0jJAXWFot4GX1RUgCC2bawKWZhT3n27C9RRFcN9QmE4+QPfT+fYfqed+rlybZOG1vS3/W0sSjQRCKoHPh9zwx49oPHcRl79UhVJlq1PmKj6+3lTNGNqOn2Ut0SxE7BzKr6EiDWgAboOBjDEZtteHTVxUIPOmp/2TYBQqoQpw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=ctyKHF9k; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dHWcS1qtJz2yFT;
+	Fri, 28 Nov 2025 09:41:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764236700;
+	cv=none; b=nyQ5Ffgw/jKgY0s0oK5glFIfvkeV7/JOXRFvEC01VqrS1Ye8iKekup7oBz2hYwk3NJ/n3gnM3xGdYQbHscIpGKhhiKHCwwutGM7PSn0rYpuo07z4SNE9NnKvEHlcI+ccqCswL5vFZo9g0MGDu6VRDZCv0MknI2nesF+iOA2+SciMtj/B/g0DuPkgOrImAXU+ZtvGiCW6SiN5VePT8xQ1xzMWpu3tZrSP7FXP0jazwjIaTc3ac4RMuHZRxT937GpPBMUW7r4vcbhZ3zLPV5bDszrj6TOQ3N0j5wSxrQmtXA0QhkA3ui3KL1xuXkwk075My7fULuWIsGwYi248ytXGzQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1764236700; c=relaxed/relaxed;
+	bh=B7aWgkMd1s3k3QG7Ff/3VcVkI1wHMDyzAgylqZcvSFA=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=dN+MIixmt1XuM+O3UwXWVmlkvd7TYvdlh9H2qqwKwVnLnEWIxuCaHBcxk/IVw6KK3lgClYKxJ5JM1o4tOSNpSEMcXgZsGXnmCIjSdVR0DOgppVPcMlrSW8BukAqSk2vI2KxfjrqVVM+ww4g4keUcQ3FMLwU7Jy3wXg8HVsqeJGGbLvirwD/La4pUohBS0YYYeS8ssjINs7OwAnueTl7hjnUCLoqeqrgSJMndOddpJ88cbrbr0A9h0cwyDFFI/X3ePepC2pHWzJmP6zoAlgXYXZQ0STVU0Q9LDY2K6BfmgrKb9IXylxnWqOFYV2fExCqE3dwL4QCYbZ/xdou0LvTG6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U0WmI92g; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+alex.ts.wang.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=ctyKHF9k;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U0WmI92g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::6])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+alex.ts.wang.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dH97W2NHKz2yl2
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 27 Nov 2025 19:48:22 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nFWx/Td4tuSfxfKZLNIXjY7NGjmYgKs11c9NWlfFwiRyb2NCk93m1SnVRZAR0EfZ8CLeHmROkzDlLS0l0nxm7c4Beyz9dTra7B1pJ69l30Jp6kXukmuoYysnvRGTFE0siafOmKjcAZz0bd3yOSnSR+iNZC7t7YjhJnio84yMI1m2X3LWZpxyWf3WQw4820RNxMm82WXzj6Yfcvu9QlxWTo6BORY+CgwKDgaN09Mc5NEV9C6HJo5G9z+//Q4aUt2e/mfsnN2HZdlfVOf4p+DHTrBL7NIbPHXkt/DWDwKXx0/mdhEovk4u5Zfsyw3FMQ0OnAiNr5kE//bbvXAP33O1yQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=uf3GAWl6jVajrIrFShlLKzRLLAFATFR9uuKEB++wxsI=;
- b=vZ+4alRTc5iJYd6fDBETTaC6A/ZDd71GONZnAxbT+2KQTLwnurekh52s/FYGZfp1rABbmXaHAlN6ia2YUzMHb//I7VrGKnddBw07h4SnU65M2ISeoX5c3AXSKg1Pz97M+nawtx6tbT5kiA+i9rbyrAVyanGuSsbsCd2tUh1OUnZTK464om6hldWC7AuMppxNvn4D1K2PKs25/f9h0TGnHOH/Nr3hUevXf7FHOj7HTCJuDhMRoEK5bzlkcTKUxKlImPNxMQDTgpUNGXqZKmHkTj4GNu5+5xynSaklOIYbyn6+kOd+2iTi8Y7fO6+nwiGvFo6x8q7QCJDchT/mKnhWFA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=uf3GAWl6jVajrIrFShlLKzRLLAFATFR9uuKEB++wxsI=;
- b=ctyKHF9kDH/V4zRWAK7oZXHWscQWzufZisIdreGVh++t6NxrRwcyrVJKDjFZBO8mdWKdj2qsvKOHKV0adcRBEHWM6wGl9LrAnjsgmiBicaeZfsI4RkVcWKhATPksFXV0bfAG9GAcvA0BZUXhCHRU/T3OiteqrjOnHr8zDiVQck0kDKoK3fcaDP8b0FlkK+ySraz4nmn/1/tFJVi2U4Nm9GVok8k/Hb8VEJ2RDWYU+bh7ug5DZFY0unaOG9dkH47H3Yex9TQx9xL9D2YLTRUtKS2vkz9R1gprwixNhVsxuV2iAD4yhX3V3ldIMdM/aTafQ2fkeXhIxWtbsvi5G7aSyA==
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
- by TYSPR06MB7136.apcprd06.prod.outlook.com (2603:1096:405:90::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9366.13; Thu, 27 Nov
- 2025 08:47:54 +0000
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28%6]) with mapi id 15.20.9366.009; Thu, 27 Nov 2025
- 08:47:54 +0000
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Tao Ren <rentao.bupt@gmail.com>, Andrew Lunn <andrew@lunn.ch>
-CC: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
-	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
-	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
-	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
-	<conor+dt@kernel.org>, Po-Yu Chuang <ratbert@faraday-tech.com>, Joel Stanley
-	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "taoren@meta.com" <taoren@meta.com>
-Subject: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support for
- AST2600
-Thread-Topic: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
- for AST2600
-Thread-Index:
- AQHcUjKRp/5wUPPeG0Wo2Pz9fS4A+7TsCtCAgAJeVpCAAKBqgIABWbLAgAPq3QCADnQYkIABZcyAgACY8gCAAYfhoA==
-Date: Thu, 27 Nov 2025 08:47:54 +0000
-Message-ID:
- <SEYPR06MB513424DDB2D32ADB9C30B5119DDFA@SEYPR06MB5134.apcprd06.prod.outlook.com>
-References: <20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com>
- <20251110-rgmii_delay_2600-v4-4-5cad32c766f7@aspeedtech.com>
- <68f10ee1-d4c8-4498-88b0-90c26d606466@lunn.ch>
- <SEYPR06MB5134EBA2235B3D4BE39B19359DCCA@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <3af52caa-88a7-4b88-bd92-fd47421cc81a@lunn.ch>
- <SEYPR06MB51342977EC2246163D14BDC19DCDA@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <041e23a2-67e6-4ebb-aee5-14400491f99c@lunn.ch>
- <SEYPR06MB5134BC17E80DB66DD385024D9DD1A@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <1c2ace4e-f3bb-4efa-a621-53c3711f46cb@lunn.ch> <aSbA8i5S36GeryXc@fedora>
-In-Reply-To: <aSbA8i5S36GeryXc@fedora>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|TYSPR06MB7136:EE_
-x-ms-office365-filtering-correlation-id: 5685a1b4-cf2a-4821-2c42-08de2d91a826
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|7416014|376014|1800799024|366016|38070700021;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?HOZRwR85wt+gihx14wmrWBmGz700ZaniOaMWkVCntgBJ7vUIe79JmSUpM0o/?=
- =?us-ascii?Q?vuiAkTsOxKf7vnzHEIJkf0+7Ij7hAum2XRJK13+EOMyHuzQ/xL7ZzvV2UYiA?=
- =?us-ascii?Q?xrsBoiG/xYKHYvjgDx5/juWPhP6/UtSqZQvsDiOEn1xHpnGCrQH0BlZ02jnU?=
- =?us-ascii?Q?Etggg0J8pp5vNWbWm4PpbKgGUFjxzlzqPfgtIvm/7RKVsFGPkiYJuWXUxdcd?=
- =?us-ascii?Q?m2eRfem3DKUPcY/aKvttVuAApahx46DZmhC9rbjmqbxzF7sVfXtdaFc8L1kj?=
- =?us-ascii?Q?L08FVnZX07NlTcibnoaqf7MFIjuEa2cWEq0EITlXQ/MisX3fXpJkqDXsPEpP?=
- =?us-ascii?Q?YoksZ2TGpakSIVdqHdG6x1z3wXo+/R4XH8c40j0zkFGLeqj4D54WBtnDyma5?=
- =?us-ascii?Q?N4qvEV6OIwGIeDHhBqEUOKYQBwnzfAy5uAWy3bXmG4FK9moFI1Y8JL3VJqU2?=
- =?us-ascii?Q?uybEdwlD19hxYTGW4T5+qWkvncefF+/4VuvnOvTl7KCBwIviFxQwi4Iw9m2u?=
- =?us-ascii?Q?CWZ7gVHmp2xJlq8lX/JzloZY5y7pJjirxULEvTDmmWSu5QMRklhFnrtkgz/i?=
- =?us-ascii?Q?nGgvO1g/eLiTAAkomZZNJ7mYX6MOfUAQxnOxDByekT0ONVhwuM5PVfZXIC6U?=
- =?us-ascii?Q?Tsa1W5KEUevdU7iTHugxrvza9jScDGsYNna8bmQojP7xttqqcJJaCfc6uiGZ?=
- =?us-ascii?Q?4oFwfTJWlLXBgmQZrMsj03TXtN3KXBWc4T6pvG4IDbuibdCncYT01M3gwKJU?=
- =?us-ascii?Q?JjLwFz7QyKffTN+RMAVwFJrdjSOlBFTrH6kYAEd5+UNT4GApXnc4hBwjigL6?=
- =?us-ascii?Q?JiJ8UjYYiHILSm+cgpHO2DU+YOFZnKCWlFlKqCh2h0ptE459TFHB7z2jOTuc?=
- =?us-ascii?Q?1tB5ufZraRIyh+Y9tOQ9JoGE6x3BRVfzneX65D2bSehZm5P8mEPwyNHNmqVd?=
- =?us-ascii?Q?9jPR+WbeI5OQ4eOGfzIyukuQ7oHltEKhCwPvgz3cEGLm7gR5e5WmrVPcJU5J?=
- =?us-ascii?Q?EtlT/+0Jw7TUgc4ifqp4x3O8jcCSa1oNhTA2Y5CBqG8Jvb1i/YgtvNcz/9U2?=
- =?us-ascii?Q?51NChMH6Xof0LQ+dWYP6D0sJeVL6dhwjAwSjzjiH85xAS0l5eUAuSx9GR5Sn?=
- =?us-ascii?Q?IYZhAZvUaND1kd9Yj2f1jqJNyebpAEeiI9NEoV8KPFvC4itGYusG2P3arZ58?=
- =?us-ascii?Q?eRKGIdyHG8VP9xRplCAhsQ2fJ7qVch8JUwPfmZ9g5gq/OBtMgwIO1AJJpDOK?=
- =?us-ascii?Q?b7Md3pNevR4+4sGOfloMzqsdxpdfrGJbIGL+ary8w+TOw3g4JUF2WOgZnzaF?=
- =?us-ascii?Q?oSuBJiinXL/DhograAkaS5sAEDpdhMvcHkni5/gg3iKeA7C4xtyfwvjadtAH?=
- =?us-ascii?Q?2GeCE6NR3Yn6mc+YzmvvxKpEmzCq6S06pclf3pjha/xHP+FAlN8nr+pJeJwS?=
- =?us-ascii?Q?M76kg1Henz5GehQqTtL2S948rE1I1bb0z0U1HozPOW60mrW2CwRlAmKndYJL?=
- =?us-ascii?Q?z6SS6INKuTWIfvuC90WtaZqYcryG/fGCJQ8I?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(1800799024)(366016)(38070700021);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?D03X1v1/Y+pUIS4llCDvZGhJMM3aL7JwuN3Ur7nQDRLQXLnwEL67RtVt52bh?=
- =?us-ascii?Q?2v7qmcji5WJxcemQc5M+qH6+jwr/ITFl2mq3K0Riie4Er+enzMse2wOZx1qW?=
- =?us-ascii?Q?tow80r9/BnKDi4ST7Una43iO0jlOPCMgFBc3Tj8PX0UH5F9/tLjT0mYGOyZH?=
- =?us-ascii?Q?OXAsSCzWQ6OdLM98jh58oQ+wA3cie9udRSI8avMg/OLycL5ixZGsh94M9poN?=
- =?us-ascii?Q?GilAoV8GbI5qgMDZhgh4GrPu5Bg5GD8s9jjOpG5f05yunOCMpskaFygB5twu?=
- =?us-ascii?Q?idPeahHQtR94f6L+oBMs7ryhgCFYQNO7MbebK7oSeXQYyyk5zyvh4fHfvexY?=
- =?us-ascii?Q?/rb5DRMhnikQW0zKoQ+dBnP08I+N1DfY9BGro7j1ISvKk0h6vuuqOQoO7yjd?=
- =?us-ascii?Q?eSlbjmIc6JncRSdQTk2ZNNWVjd68niuvvEr5XfUBpw6fOjfVBQk/6qSinwhy?=
- =?us-ascii?Q?uWpu1YOs01NL6pxLWuxC4eWG4v79DqSBey0EqgIcS9wfWb1wuAliAu5Ji1HI?=
- =?us-ascii?Q?c0BqfrKfO1pYqSUZQxzoE7O2lIUcAPRTC1HX9jpXQ3COIn1dqdT8mNn700I1?=
- =?us-ascii?Q?KFPY3492VEUrCyKyphyZbKtRonyfcIVK6M2F8PpSt/y27IFFe4kgpN61YfDW?=
- =?us-ascii?Q?3CQskCf015gusWFBY7KpHn3X9ph7rulp0YJtjBDuKbFcuwiI/ZBNkURq4/b1?=
- =?us-ascii?Q?vuyOLndwq8foaYOFyTyUsnfx57YIUZJK0AXFmY4eKEc2QgVSMN9mRh0wm4j8?=
- =?us-ascii?Q?DiDtGi29J91InaTDVJhni+pH5rUu+hEeo53oIeoY/upIVljIo5Yn609Uk3uj?=
- =?us-ascii?Q?ShCmA+RydxRwTtbp5H2qTGoQ/qihKhWTqtuvpWIfnxDXzhnWQws/sTYMZvZX?=
- =?us-ascii?Q?7AOXbAi1DrYSM9ZLJ7TllpS/9u+2nPB5gv+zje1Dop16q6qWefQZp990MD6c?=
- =?us-ascii?Q?9/7LnIwMjh89VtVqi/iIb+jorvSb9v6pETNOrJS8x6p28lCZlyt+G0GqfmaQ?=
- =?us-ascii?Q?FbOhz9sFqPyFzck4OPvAdOO7PpIHoQaClKrGh8ok14E1pk6OpCvGN/D6ATFb?=
- =?us-ascii?Q?myqOK6G4IUpAhKe378DWs+mHrp3jYtK77aiSq9QVukopvHAUNmDpRESDdkDF?=
- =?us-ascii?Q?DlXLfQHMSCqySYA4NDalqpji8VAbrCmtE/L0areV/1BMOTHbrRq12csVdVss?=
- =?us-ascii?Q?7FoTRbjXxd/lDP3Vk6ABJkBlQmH4CK58ad6+LoCH2x4gFmDvlE+cV8Wpz8W5?=
- =?us-ascii?Q?gA2/B7aBFykmL03ZeBKFMa2XMcTeRETObK4q+D/4Fh6PKJWJyVDQ37Gh1ID3?=
- =?us-ascii?Q?ikrCi9WTVHleGFAK5jwm/SyHspKLkK3xA6Ya6zEaUtD0M9Lg/bYVHOWR6uua?=
- =?us-ascii?Q?GRgOz+xF2xWfGSL+TbkiJFDcuFa+CdnblxH24eWsz+qSbSZJxPMv4BnuhZoB?=
- =?us-ascii?Q?JJGn84s26/7CkdcnXx0epncf4tH+74lrWxBqkMVR7KDTY7z+NHUtB1qVDrjD?=
- =?us-ascii?Q?fvICkE+Gd8C+Yqiixbkj5hv2YMAKytxcgPB0S/jEY9+K7oJejI1WkigAzIAx?=
- =?us-ascii?Q?BuKOOaFwvHUK7/r9zW3TYvSftfd3InihzIytrF/okxXaSFjleF/kyZtYWh0Y?=
- =?us-ascii?Q?Zg=3D=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dHBNq1Yfcz2xP9
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 27 Nov 2025 20:44:59 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3958860017;
+	Thu, 27 Nov 2025 09:44:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D7CA2C4CEF8;
+	Thu, 27 Nov 2025 09:44:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764236695;
+	bh=wDdtL7Ds9riVbV6ICXm79kvDBRYPemWXZfNDHX2irog=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=U0WmI92gGBB9JMQhD9F2KjevMPDcnLEq76dYwYYvD0zUwOAZejibICAiMVofNbMaE
+	 2ph8cSjaZy19bvNlEw5RXLOFHRMWnNK1qnHGmUM/StHniZMaW445Sr5fX2WV+w/ZGA
+	 dO4zILc6K3uUUTm6sXebvZ212A84oQIIHvvjL+adgUXrZLiRmT7LuH38Co4u0Y51Dh
+	 5LTEvZqMKSL4A3o6yM98KLFbtY90x0JUsPAAywIYKqkp/nmKtb1tB8cvJ5skxNohqN
+	 VJLTRm51opPilBcWoQZH5q5OAc7q0iGLD+DhwPpDphlAzblpmqTSmumj/K9ksIaxl6
+	 TV2tsZfbw7Chw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1E1BD116E2;
+	Thu, 27 Nov 2025 09:44:55 +0000 (UTC)
+From: Alex Wang via B4 Relay <devnull+alex.ts.wang.fii-foxconn.com@kernel.org>
+Date: Thu, 27 Nov 2025 17:44:51 +0800
+Subject: [PATCH v2] dt: aspeed: clemente: move hdd_led to its own gpio-leds
+ group
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -173,47 +63,90 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5685a1b4-cf2a-4821-2c42-08de2d91a826
-X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Nov 2025 08:47:54.7340
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: QPi4Izr7xLR2vq90hpz90sIuZNn6JM3iRzFiwR99xPeORKBI66eFw6dHkC2q0qcO8pUhCRb6I+UETHDt0KR2w2Q6CKUAdDDEcXsGZ/sDNCs=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYSPR06MB7136
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20251127-leo-dts-add-shunt-resistor-v2-1-c77dfbfb826c@fii-foxconn.com>
+X-B4-Tracking: v=1; b=H4sIAJIdKGkC/42NQQrCMBBFr1Jm7UiSEmldeQ/pIiZTO6CJZGqol
+ N7d2BO4fJ/H+ysIZSaBc7NCpsLCKVYwhwb85OKdkENlMMpYrUyLD0oYZkEXAsr0jjNmEpY5ZTR
+ dNdTJ2eAIauCVaeRlj1+HytOuffavon/rX9miUaMNfd8pd3Ot6i4jM45p8SnGo09PGLZt+wI3H
+ A6KygAAAA==
+X-Change-ID: 20251023-leo-dts-add-shunt-resistor-2810206a5dae
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ george.kw.lee@fii-foxconn.com, Alex Wang <alex.ts.wang@fii-foxconn.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1764236694; l=2118;
+ i=alex.ts.wang@fii-foxconn.com; s=20251023; h=from:subject:message-id;
+ bh=XvfoAuDaFi0LEYIxrGZlYJX6g2aVVWHGpukneXb5b2k=;
+ b=SXG/ZRsEzAm0y+7zt1tH9Ydnb+YuQ8Z7nkeAo5L/ekXuavdkD1Ale8faYlW8bQmxmf8E7FYoW
+ 4p9x7BbeD/6BzqaKejgS49RqwnHxC/r9cz33N53NCEPzRlctPJ3nLVM
+X-Developer-Key: i=alex.ts.wang@fii-foxconn.com; a=ed25519;
+ pk=m/IrKXb14uSdDm4KGXemjNIxgL6TrqXCc9NX09SUJp0=
+X-Endpoint-Received: by B4 Relay for alex.ts.wang@fii-foxconn.com/20251023
+ with auth_id=551
+X-Original-From: Alex Wang <alex.ts.wang@fii-foxconn.com>
+Reply-To: alex.ts.wang@fii-foxconn.com
 
-> > How many different boards do you have you can test with? Do you only
-> > have access to RDKs? Or do you have a test farm of customer boards for
-> > regression testing. I would throw the patchset at as many boards as
-> > you can to make sure there are no regressions.
->=20
-> I synced with Jacky offline a few times, and I'm happy to test the patche=
-s on my
-> Facebook Network OpenBMC platforms.
->=20
-> Hi Jacky,
->=20
-> Looking forward to your v5, and please don't hesitate to ping me offline =
-if you
-> need more info about my test hardware.
->=20
->=20
+From: Alex Wang <alex.ts.wang@fii-foxconn.com>
 
-Hi Andrew,
+The gpio-leds driver requires all GPIOs in a group to be available;
+if any GPIO in the group is not available the whole group will not be
+created. The hdd_led GPIO is only present after standby power is
+enabled, which can prevent other LEDs in the same group from being
+created and blocks properly setting 'bmc_ready_noled'.
 
-Thank you for your suggestions and feedback.
-I will update the patches based on our discussion in the next version.
+Move the 'hdd_led' node into a separate gpio-leds group so that other
+LEDs are not blocked and the 'bmc_ready_noled' flag can be set
+correctly.
 
-Hi Tao,
+Signed-off-by: Alex Wang <alex.ts.wang@fii-foxconn.com>
+---
+Changes in v2:
+- I changed “missing” to “not available”. The hdd_led and bmc_ready_noled 
+do not disappear; it's just that hdd_led only becomes available after 
+standby power is enabled, and this process takes some time. The hdd_led 
+becomes available only after bmc_ready_noled is supposed to be set, 
+which causes bmc_ready_noled to fail to be generated and set in time.
 
-Thank you for your support.
-Once I have version 5 ready, I will reach out to you. I appreciate your hel=
-p in=20
-verifying the patches on your hardware.
+- Standby power is enabled during the BMC boot process.
 
-Thanks,
-Jacky
+- The hdd_led will only be configured after the BMC boots, when a 
+dedicated service starts and applies the settings.
+
+- Link to v1: https://lore.kernel.org/r/20251023-leo-dts-add-shunt-resistor-v1-1-5d9980aba308@fii-foxconn.com
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
+index dfe8f6d0eeef..ea1bf6f402bd 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
+@@ -96,7 +96,12 @@ led-3 {
+ 			gpios = <&gpio0 ASPEED_GPIO(P, 5) (GPIO_ACTIVE_HIGH|GPIO_TRANSITORY)>;
+ 		};
+ 
+-		led-hdd {
++	};
++
++	hdd-leds {
++		compatible = "gpio-leds";
++
++		led-0 {
+ 			label = "hdd_led";
+ 			gpios = <&io_expander13 1 GPIO_ACTIVE_LOW>;
+ 		};
+
+---
+base-commit: c6fea62a8379f9e24b243ea4ba1fd482f8cd0d83
+change-id: 20251023-leo-dts-add-shunt-resistor-2810206a5dae
+
+Best regards,
+-- 
+Alex Wang <alex.ts.wang@fii-foxconn.com>
+
+
 
