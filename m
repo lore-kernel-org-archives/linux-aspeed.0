@@ -1,96 +1,57 @@
-Return-Path: <linux-aspeed+bounces-3018-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3019-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AB65CFD2F6
-	for <linux-aspeed@archiver.kernel.org>; Sat, 29 Nov 2025 12:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8BF0CFD376
+	for <linux-aspeed@archiver.kernel.org>; Sun, 30 Nov 2025 22:06:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dJVJK1HGQz2yvH;
-	Sat, 29 Nov 2025 23:45:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764420337;
-	cv=none; b=XuWjLrevszRxTXzPDCNHGmS7qI9CLwos8tAv0XepF3R0XCTcItobmd93aPNxRFuKD1F9L3j9twq9fk5PZ7TWyG2XfaHIkEOdiJY5xttiRqeb6HA07d9uDl7HtzIfD6NHOyajt2jY1+4fmolkxW3iCAWGhuJofSUSV/5kLtzukxk11UrZG1Mxk1CYlipnZYMSEiOrpmwgHrQokkrfhwilXAS1wHiKWRiWxAozTWNoby6tT5aTr6wZ1T/qqvKrZRLcCZRIwNi+ZjAmA6C3uki5/1rcuB5P1IoSwpisbJ9HZiVUS+hn1Or+f/DzDp1IL9BFB8H6GfJSbLz2tmsL4Ycvqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dKLhl2pxSz2yvY;
+	Mon, 01 Dec 2025 09:06:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.97.181.73
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764327656;
+	cv=none; b=ftHuev3tWhxGS9rRRPXU0di3ld5FxlWDX1+/Z9b1QItaF6+lvJ9Hzjfyh73eeQgetomrE1JcPhHTDctG13uqHHcKDBPijXk12vim4rUai5JYjD+SMQIyn7hOYJICvOvRnq6qnt1ltNiaoQXrji1C2ScfvHNWEM2hJQjNzJm8fUOmJjjXFbexj1ro2tfnbJUcnxRkgi6i/+c0ivd41WGG24KzhxAuMtnT0co3ysR5y3ztzR1E2qdUqmuwsw+3lsqBdBGj5M0g6ZwmJR0PHUyme7RoeX4xDAKvMeq0DMiwQtKLmV0JTshHjd6++dSKh3D8HZQzOD/9U82+QzQZuoG8dw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764420337; c=relaxed/relaxed;
-	bh=TImXxPp3fH8t3WgGQuC2IHIt10tqIWX7TcyUqtyR31I=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=TdjBIYRXu+63pCCtY6GkmZCupz61xd2u+l3QguXweZzoDse2TLT71WupROmXYiBrBQprJnnusSjBye4BLkVJJk7YZEuxZCe91wIBihl5O6rHnWNwpnepAMaq/xofYlWjofVXkG6+oLX8MN1SuL0W0W0yqPQD3qlkR4qz+jMOhJciOnnUnV8U6K/3WMtF6FEaiC5nFgfH4E2vSzEla12ffOqYY5gUCVO8SIxdt4ejH9bMNzsdiBk+Um1pQWhRWeL9CAtuDAsbyk3EUq/jEDy5pSvfM813XZc+fr2K+N4LszXipiJI/0reJp2dvAp0jTTogE9PGF6WcwFybN3Nv8wc9g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=KpLK2to1; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=KpLK2to1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dJVJH0rF7z2xQs
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 29 Nov 2025 23:45:32 +1100 (AEDT)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 09F734E41971;
-	Sat, 29 Nov 2025 12:45:28 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id BBCF760706;
-	Sat, 29 Nov 2025 12:45:27 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 109BA11910699;
-	Sat, 29 Nov 2025 13:45:09 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1764420325; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=TImXxPp3fH8t3WgGQuC2IHIt10tqIWX7TcyUqtyR31I=;
-	b=KpLK2to1cF7NAB3dxoOLV/QWk7f3DOgDWnlCCQ/eWjBGe2OiLoz4MRPaxtNjJ5LhgTdO2x
-	liQWrTjoV8SzbJ0IRNAWzjSTpxuBdKdZK+nMBBo+lz6eN4ScfF10Zi8hpoNB3oNhnhPAkB
-	EBcOP1L5+m8y1BhDyM8QV2Sd1zOhoSjtmlz4x+NWF5bSJDvmY6HuADwinRYPvMGebmhy3r
-	ecHZmVrqRYz0ygRRnstaU1i/ARfGhaUjItbgMb+f1cIphEqym8E4UMuA0rRIXKXq4K6uEQ
-	20vrn9fsYJ9NCOmjJv1jyigd96ejKGwakw15qyOFOaK5wOwWkE03lUfTBtfXBQ==
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Yury Norov <yury.norov@gmail.com>,  Michael Turquette
- <mturquette@baylibre.com>,  Stephen Boyd <sboyd@kernel.org>,  Nicolas
- Ferre <nicolas.ferre@microchip.com>,  Alexandre Belloni
- <alexandre.belloni@bootlin.com>,  Claudiu Beznea
- <claudiu.beznea@tuxon.dev>,  Giovanni Cabiddu
- <giovanni.cabiddu@intel.com>,  Herbert Xu <herbert@gondor.apana.org.au>,
-  David Miller <davem@davemloft.net>,  Linus Walleij
- <linus.walleij@linaro.org>,  Bartosz Golaszewski <brgl@bgdev.pl>,  Joel
- Stanley <joel@jms.id.au>,  Andrew Jeffery <andrew@codeconstruct.com.au>,
-  Crt Mori <cmo@melexis.com>,  Jonathan Cameron <jic23@kernel.org>,
-  Lars-Peter Clausen <lars@metafoo.de>,  Jacky Huang
- <ychuang3@nuvoton.com>,  Shan-Chun Hung <schung@nuvoton.com>,  Rasmus
- Villemoes <linux@rasmusvillemoes.dk>,  Jaroslav Kysela <perex@perex.cz>,
-  Takashi Iwai <tiwai@suse.com>,  Johannes Berg
- <johannes@sipsolutions.net>,  Jakub Kicinski <kuba@kernel.org>,  Alex
- Elder <elder@ieee.org>,  David Laight <david.laight.linux@gmail.com>,
-  Vincent Mailhol <mailhol.vincent@wanadoo.fr>,  Jason Baron
- <jbaron@akamai.com>,  Borislav Petkov <bp@alien8.de>,  Tony Luck
- <tony.luck@intel.com>,  Michael Hennerich <Michael.Hennerich@analog.com>,
-  Kim Seer Paller <kimseer.paller@analog.com>,  David Lechner
- <dlechner@baylibre.com>,  Nuno =?utf-8?Q?S=C3=A1?= <nuno.sa@analog.com>,
-  Andy Shevchenko
- <andy@kernel.org>,  Richard Genoud <richard.genoud@bootlin.com>,  Cosmin
- Tanislav <demonsingur@gmail.com>,  Biju Das <biju.das.jz@bp.renesas.com>,
-  Jianping Shen <Jianping.Shen@de.bosch.com>,  Nathan Chancellor
- <nathan@kernel.org>,  Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-  Richard Weinberger <richard@nod.at>,  Vignesh Raghavendra
- <vigneshr@ti.com>,  linux-clk@vger.kernel.org,
-  linux-arm-kernel@lists.infradead.org,  linux-renesas-soc@vger.kernel.org,
-  linux-crypto@vger.kernel.org,  linux-edac@vger.kernel.org,
-  qat-linux@intel.com,  linux-gpio@vger.kernel.org,
-  linux-aspeed@lists.ozlabs.org,  linux-iio@vger.kernel.org,
-  linux-sound@vger.kernel.org,  linux-mtd@lists.infradead.org,
-  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -next v6 11/26] mtd: rawnand: sunxi: #undef
- field_{get,prep}() before local definition
-In-Reply-To: <703d7eec56074148daed4ea45b637f8a83f15305.1762435376.git.geert+renesas@glider.be>
-	(Geert Uytterhoeven's message of "Thu, 6 Nov 2025 14:33:59 +0100")
-References: <cover.1762435376.git.geert+renesas@glider.be>
-	<703d7eec56074148daed4ea45b637f8a83f15305.1762435376.git.geert+renesas@glider.be>
-User-Agent: mu4e 1.12.7; emacs 30.2
-Date: Sat, 29 Nov 2025 13:45:09 +0100
-Message-ID: <87h5udm2i2.fsf@bootlin.com>
+	t=1764327656; c=relaxed/relaxed;
+	bh=++QQz+fDQSXp2wxnYajiRIbIGoYp0tgrN6Cs06rk9o4=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 MIME-Version:Message-ID; b=J3vm7UDyREvdTsKZyb2ppF5mZ4VuqzhfCLDvT3DE+HCh5AQqJhyZ/+m3vDKsOdGtGdJcIJsPO2yLrlhCPuRT3ShoU5n1jYUSQs/gD5FO8v+v2oMJziXe+kf/omwPGaaLJi7yOAUvFHzOwnxZRduVEKEQ/GkJ5MF+PsayUp6gurNPpGS/tSZWVNhj3wqEJh92x+4WVcyVXerfmtD6RF3gZWDurK1SK6b8/k1dA+zGLCx+nxxxkmGgsPu47Ich+3Q/TNmcge2/267Ny2i8fC8ms9kMonoXOTC4rIQzWQbCFBES+LLfbyhEpYk8Y5TVInqQU2Z6MmyiAaHKb5ItOrkMuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn; spf=pass (client-ip=209.97.181.73; helo=zg8tmja5ljk3lje4ms43mwaa.icoremail.net; envelope-from=wangmin@phytium.com.cn; receiver=lists.ozlabs.org) smtp.mailfrom=phytium.com.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=phytium.com.cn (client-ip=209.97.181.73; helo=zg8tmja5ljk3lje4ms43mwaa.icoremail.net; envelope-from=wangmin@phytium.com.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 739 seconds by postgrey-1.37 at boromir; Fri, 28 Nov 2025 22:00:53 AEDT
+Received: from zg8tmja5ljk3lje4ms43mwaa.icoremail.net (zg8tmja5ljk3lje4ms43mwaa.icoremail.net [209.97.181.73])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dHr1x6k2mz2yrg;
+	Fri, 28 Nov 2025 22:00:52 +1100 (AEDT)
+Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
+	by hzbj-icmmx-6 (Coremail) with SMTP id AQAAfwBnVVzxfSlp5WcOAQ--.9919S2;
+	Fri, 28 Nov 2025 18:48:17 +0800 (CST)
+Received: from wangmin$phytium.com.cn ( [218.76.62.144] ) by
+ ajax-webmail-mail (Coremail) ; Fri, 28 Nov 2025 18:48:08 +0800 (GMT+08:00)
+X-Originating-IP: [218.76.62.144]
+Date: Fri, 28 Nov 2025 18:48:08 +0800 (GMT+08:00)
+X-CM-HeaderCharset: UTF-8
+From: =?UTF-8?B?546L5pWP?= <wangmin@phytium.com.cn>
+To: "Jammy Huang" <jammy_huang@aspeedtech.com>
+Cc: "Eddie James" <eajames@linux.ibm.com>,
+	"Mauro Carvalho Chehab" <mchehab@kernel.org>,
+	"Joel Stanley" <joel@jms.id.au>,
+	"Andrew Jeffery" <andrew@codeconstruct.com.au>,
+	"Philipp Zabel" <p.zabel@pengutronix.de>,
+	linux-media@vger.kernel.org, openbmc@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	=?UTF-8?B?6IiS5aWV5qOL?= <shuyiqi@phytium.com.cn>
+Subject: Re: [PATCH] media: aspeed: Fix dram hang at res-change
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version 2024.3-cmXT6 build
+ 20250512(e7b47ee3) Copyright (c) 2002-2025 www.mailtech.cn OP_ICM_ICMVM
+In-Reply-To: <20251124-video_dram_reset-v1-1-9d37229e4ec5@aspeedtech.com>
+References: <20251124-video_dram_reset-v1-1-9d37229e4ec5@aspeedtech.com>
+Content-Transfer-Encoding: base64
+X-CM-CTRLDATA: TCYTXGZvb3Rlcl90eHQ9NDMxNTozODM=
+Content-Type: text/plain; charset=UTF-8
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -104,26 +65,104 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Last-TLS-Session-Version: TLSv1.3
+Message-ID: <120162b9.3256.19aca13d4e0.Coremail.wangmin@phytium.com.cn>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID:AQAAfwA3j+zofSlpISQIAA--.9978W
+X-CM-SenderInfo: 5zdqwzdlq61x51wl3zoofrzhdfq/1tbiAQAICGkosKwG5wACs-
+Authentication-Results: hzbj-icmmx-6; spf=neutral smtp.mail=wangmin@ph
+	ytium.com.cn;
+X-Coremail-Antispam: 1Uk129KBjvJXoWfGryUXrykGF1kAF18AF47Jwb_yoWDKrWfp3
+	Wxt3y8Aw1UK3W7J39ayw18AryrA3y5Gr47Jw1Iq3yUAw1UJrsIgrnxKFWDJ3Wjg3y0vrs8
+	tr1qqrs8Xr1UtwUanT9S1TB71UUUUjDqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
+	DUYxn0WfASr-VFAU7a7-sFnT9fnUUIcSsGvfJ3UbIYCTnIWIevJa73UjIFyTuYvj4RJUUU
+	UUUUU
 
-Hello,
+CgoKPiAtLS0tLeWOn+Wni+mCruS7ti0tLS0tCj4g5Y+R5Lu25Lq6OiAiSmFtbXkgSHVhbmciIDxq
+YW1teV9odWFuZ0Bhc3BlZWR0ZWNoLmNvbT4KPiDlj5HpgIHml7bpl7Q6MjAyNS0xMS0yNCAxMTow
+NToxNCAo5pif5pyf5LiAKQo+IOaUtuS7tuS6ujogIkVkZGllIEphbWVzIiA8ZWFqYW1lc0BsaW51
+eC5pYm0uY29tPiwgIk1hdXJvIENhcnZhbGhvIENoZWhhYiIgPG1jaGVoYWJAa2VybmVsLm9yZz4s
+ICJKb2VsIFN0YW5sZXkiIDxqb2VsQGptcy5pZC5hdT4sICJBbmRyZXcgSmVmZmVyeSIgPGFuZHJl
+d0Bjb2RlY29uc3RydWN0LmNvbS5hdT4sICJQaGlsaXBwIFphYmVsIiA8cC56YWJlbEBwZW5ndXRy
+b25peC5kZT4KPiDmioTpgIE6IGxpbnV4LW1lZGlhQHZnZXIua2VybmVsLm9yZywgb3BlbmJtY0Bs
+aXN0cy5vemxhYnMub3JnLCBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcsIGxp
+bnV4LWFzcGVlZEBsaXN0cy5vemxhYnMub3JnLCBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
+LCAiSmFtbXkgSHVhbmciIDxqYW1teV9odWFuZ0Bhc3BlZWR0ZWNoLmNvbT4KPiDkuLvpopg6IFtQ
+QVRDSF0gbWVkaWE6IGFzcGVlZDogRml4IGRyYW0gaGFuZyBhdCByZXMtY2hhbmdlCj4gCj4gRHJh
+bSBoYW5nIGNvdWxkIGhhcHBlbiBpbiB0aGUgc3RlcHMgYmVsb3c6Cj4gMS4gc3RhcnQgY2FwdHVy
+ZS9jb21wcmVzc2lvbgo+IDIuIG91dC1vZi1sb2NrIHdhdGNoZG9nIHJhaXNlIGlycSBiZWNhdXNl
+IG9mIHJlcy1jaGFuZ2UuCj4gMy4gYXNwZWVkX3ZpZGVvX2lycV9yZXNfY2hhbmdlIGRvIGNsay1v
+ZmYKPiAKPiBBdCBzdGVwMywgY2FwdHVyZS9jb21wcmVzc2lvbiBjb3VsZCBiZSBub3QgYWNjb21w
+bGlzaGVkIHlldC4gSWYgY2xrLW9mZgo+IGluIHRoZSBtaWRkbGUgb2YgdmlkZW8gb3BlcmF0aW9u
+LCBkcmFtIGNvbnRyb2xsZXIgY291bGQgaGFuZyBhdCBhc3QyNTAwLgo+IAo+IFVzZSByZXNldCBy
+YXRoZXIgdGhhbiBjbGstb2ZmL29uIHRvIGF2b2lkIHRoaXMgcHJvYmxlbS4KPiAKPiBTaWduZWQt
+b2ZmLWJ5OiBKYW1teSBIdWFuZyA8amFtbXlfaHVhbmdAYXNwZWVkdGVjaC5jb20+Cj4gLS0tCj4g
+T24gQXNwZWVkIEtWTSB0ZXN0aW5nLCB3ZSBmb3VuZCBpdCBjb3VsZCBsZWFkIHRvIGRyYW0taGFu
+ZyBpZgo+IHJlcy1jaGFuZ2UuIEFsdGhvdWdoIHRoZSBpc3N1ZSByYXJlbHkgaGFwcGVucywgdGhl
+IGltcGFjdCBpcyBzZXJpb3VzLgoKQ2FwdHVyaW5nIGFuZCBjb21wcmVzc2luZyB0aGUgdmlkZW8g
+c3RyZWFtIHRha2VzIGxvbmdlciB0aGFuIHRoZSB2aWRlbyBlbmdpbmXigJlzIGlkbGUgcGVyaW9k
+LiAKSWYgdGhpcyBpcyBub3QgdGhlIGludGVuZGVkIGJlaGF2aW9yLCBwbGVhc2UgaW5jcmVhc2Ug
+dGhlIGZyYW1lIHJhdGUuIFRoaXMgbWFrZXMgcmVzb2x1dGlvbiAKc3dpdGNoZXMgbW9yZSBwcm9u
+ZSB0byBoYXBwZW4gd2hlbiB0aGUgdmlkZW8gZW5naW5lIGlzIHdvcmtpbmcuIEhvd2V2ZXIsIGFj
+Y29yZGluZyB0byB5b3VyIAplbWFpbCwgdGhpcyBpc3N1ZSByYXJlbHkgb2NjdXJzLiBJcyB0aGVy
+ZSBhIHNpbWlsYXIgaXNzdWUgb24gdGhlIEFTVDI2MDAgU29DPwoKPiAKPiBUbyBhdm9pZCB0aGlz
+IGlzc3VlLCB3ZSB1c2UgcmVzZXQgb25seSByYXRoYXIgdGhhbiBjbGstb2ZmL29uIGluCj4gcmVz
+LWNoYW5nZSB0byBhdm9pZCB0aGlzIGlzc3VlLgo+IC0tLQo+ICBkcml2ZXJzL21lZGlhL3BsYXRm
+b3JtL2FzcGVlZC9hc3BlZWQtdmlkZW8uYyB8IDIyICsrKysrKysrKysrKysrKysrKystLS0KPiAg
+MSBmaWxlIGNoYW5nZWQsIDE5IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4gCj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvbWVkaWEvcGxhdGZvcm0vYXNwZWVkL2FzcGVlZC12aWRlby5jIGIv
+ZHJpdmVycy9tZWRpYS9wbGF0Zm9ybS9hc3BlZWQvYXNwZWVkLXZpZGVvLmMKPiBpbmRleCBiODNl
+NDMyNDUyLi40MWNiOTZmNjAxIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvbWVkaWEvcGxhdGZvcm0v
+YXNwZWVkL2FzcGVlZC12aWRlby5jCj4gKysrIGIvZHJpdmVycy9tZWRpYS9wbGF0Zm9ybS9hc3Bl
+ZWQvYXNwZWVkLXZpZGVvLmMKPiBAQCAtMjYsNiArMjYsNyBAQAo+ICAjaW5jbHVkZSA8bGludXgv
+d29ya3F1ZXVlLmg+Cj4gICNpbmNsdWRlIDxsaW51eC9kZWJ1Z2ZzLmg+Cj4gICNpbmNsdWRlIDxs
+aW51eC9rdGltZS5oPgo+ICsjaW5jbHVkZSA8bGludXgvcmVzZXQuaD4KPiAgI2luY2x1ZGUgPGxp
+bnV4L3JlZ21hcC5oPgo+ICAjaW5jbHVkZSA8bGludXgvbWZkL3N5c2Nvbi5oPgo+ICAjaW5jbHVk
+ZSA8bWVkaWEvdjRsMi1jdHJscy5oPgo+IEBAIC0zMTAsNiArMzExLDcgQEAgc3RydWN0IGFzcGVl
+ZF92aWRlbyB7Cj4gIAl2b2lkIF9faW9tZW0gKmJhc2U7Cj4gIAlzdHJ1Y3QgY2xrICplY2xrOwo+
+ICAJc3RydWN0IGNsayAqdmNsazsKPiArCXN0cnVjdCByZXNldF9jb250cm9sICpyZXNldDsKPiAg
+Cj4gIAlzdHJ1Y3QgZGV2aWNlICpkZXY7Cj4gIAlzdHJ1Y3QgdjRsMl9jdHJsX2hhbmRsZXIgY3Ry
+bF9oYW5kbGVyOwo+IEBAIC03MjAsNiArNzIyLDEzIEBAIHN0YXRpYyB2b2lkIGFzcGVlZF92aWRl
+b19vbihzdHJ1Y3QgYXNwZWVkX3ZpZGVvICp2aWRlbykKPiAgCXNldF9iaXQoVklERU9fQ0xPQ0tT
+X09OLCAmdmlkZW8tPmZsYWdzKTsKPiAgfQo+ICAKPiArc3RhdGljIHZvaWQgYXNwZWVkX3ZpZGVv
+X3Jlc2V0KHN0cnVjdCBhc3BlZWRfdmlkZW8gKnYpCj4gK3sKPiArCXJlc2V0X2NvbnRyb2xfYXNz
+ZXJ0KHYtPnJlc2V0KTsKPiArCXVzbGVlcF9yYW5nZSgxMDAsIDE1MCk7Cj4gKwlyZXNldF9jb250
+cm9sX2RlYXNzZXJ0KHYtPnJlc2V0KTsKPiArfQo+ICsKPiAgc3RhdGljIHZvaWQgYXNwZWVkX3Zp
+ZGVvX2J1ZnNfZG9uZShzdHJ1Y3QgYXNwZWVkX3ZpZGVvICp2aWRlbywKPiAgCQkJCSAgIGVudW0g
+dmIyX2J1ZmZlcl9zdGF0ZSBzdGF0ZSkKPiAgewo+IEBAIC03NDIsNyArNzUxLDkgQEAgc3RhdGlj
+IHZvaWQgYXNwZWVkX3ZpZGVvX2lycV9yZXNfY2hhbmdlKHN0cnVjdCBhc3BlZWRfdmlkZW8gKnZp
+ZGVvLCB1bG9uZyBkZWxheSkKPiAgCj4gIAl2aWRlby0+djRsMl9pbnB1dF9zdGF0dXMgPSBWNEwy
+X0lOX1NUX05PX1NJR05BTDsKPiAgCj4gLQlhc3BlZWRfdmlkZW9fb2ZmKHZpZGVvKTsKPiArCWFz
+cGVlZF92aWRlb193cml0ZSh2aWRlbywgVkVfSU5URVJSVVBUX0NUUkwsIDApOwo+ICsJYXNwZWVk
+X3ZpZGVvX3dyaXRlKHZpZGVvLCBWRV9JTlRFUlJVUFRfU1RBVFVTLCAweGZmZmZmZmZmKTsKPiAr
+CWFzcGVlZF92aWRlb19yZXNldCh2aWRlbyk7Cj4gIAlhc3BlZWRfdmlkZW9fYnVmc19kb25lKHZp
+ZGVvLCBWQjJfQlVGX1NUQVRFX0VSUk9SKTsKPiAgCj4gIAlzY2hlZHVsZV9kZWxheWVkX3dvcmso
+JnZpZGVvLT5yZXNfd29yaywgZGVsYXkpOwo+IEBAIC0xOTg0LDggKzE5OTUsNyBAQCBzdGF0aWMg
+dm9pZCBhc3BlZWRfdmlkZW9fc3RvcF9zdHJlYW1pbmcoc3RydWN0IHZiMl9xdWV1ZSAqcSkKPiAg
+CQkgKiBOZWVkIHRvIGZvcmNlIHN0b3AgYW55IERNQSBhbmQgdHJ5IGFuZCBnZXQgSFcgaW50byBh
+IGdvb2QKPiAgCQkgKiBzdGF0ZSBmb3IgZnV0dXJlIGNhbGxzIHRvIHN0YXJ0IHN0cmVhbWluZyBh
+Z2Fpbi4KPiAgCQkgKi8KPiAtCQlhc3BlZWRfdmlkZW9fb2ZmKHZpZGVvKTsKPiAtCQlhc3BlZWRf
+dmlkZW9fb24odmlkZW8pOwo+ICsJCWFzcGVlZF92aWRlb19yZXNldCh2aWRlbyk7Cj4gIAo+ICAJ
+CWFzcGVlZF92aWRlb19pbml0X3JlZ3ModmlkZW8pOwo+ICAKPiBAQCAtMjIzMCw2ICsyMjQwLDEy
+IEBAIHN0YXRpYyBpbnQgYXNwZWVkX3ZpZGVvX2luaXQoc3RydWN0IGFzcGVlZF92aWRlbyAqdmlk
+ZW8pCj4gIAl9Cj4gIAlkZXZfaW5mbyh2aWRlby0+ZGV2LCAiaXJxICVkXG4iLCBpcnEpOwo+ICAK
+PiArCXZpZGVvLT5yZXNldCA9IGRldm1fcmVzZXRfY29udHJvbF9nZXQoZGV2LCBOVUxMKTsKPiAr
+CWlmIChJU19FUlIodmlkZW8tPnJlc2V0KSkgewo+ICsJCWRldl9lcnIoZGV2LCAiVW5hYmxlIHRv
+IGdldCByZXNldFxuIik7Cj4gKwkJcmV0dXJuIFBUUl9FUlIodmlkZW8tPnJlc2V0KTsKPiArCX0K
+PiArCj4gIAl2aWRlby0+ZWNsayA9IGRldm1fY2xrX2dldChkZXYsICJlY2xrIik7Cj4gIAlpZiAo
+SVNfRVJSKHZpZGVvLT5lY2xrKSkgewo+ICAJCWRldl9lcnIoZGV2LCAiVW5hYmxlIHRvIGdldCBF
+Q0xLXG4iKTsKPiAKPiAtLS0KPiBiYXNlLWNvbW1pdDogYWMzZmQwMWU0YzFlZmNlOGYyYzA1NGNk
+ZWIyZGRkMmZjMGZiMTUwZAo+IGNoYW5nZS1pZDogMjAyNTExMjQtdmlkZW9fZHJhbV9yZXNldC1j
+NTMxZjZiYTU3M2YKPiAKPiBCZXN0IHJlZ2FyZHMsCj4gLS0gCj4gSmFtbXkgSHVhbmcgPGphbW15
+X2h1YW5nQGFzcGVlZHRlY2guY29tPgo+CgoKDQoNCuS/oeaBr+WuieWFqOWjsOaYju+8muacrOmC
+ruS7tuWMheWQq+S/oeaBr+W9kuWPkeS7tuS6uuaJgOWcqOe7hOe7h+aJgOaciSzlj5Hku7bkurrm
+iYDlnKjnu4Tnu4flr7nor6Xpgq7ku7bmi6XmnInmiYDmnInmnYPliKnjgILor7fmjqXmlLbogIXm
+s6jmhI/kv53lr4Ys5pyq57uP5Y+R5Lu25Lq65Lmm6Z2i6K645Y+vLOS4jeW+l+WQkeS7u+S9lees
+rOS4ieaWuee7hOe7h+WSjOS4quS6uumAj+mcsuacrOmCruS7tuaJgOWQq+S/oeaBr+OAgg0KSW5m
+b3JtYXRpb24gU2VjdXJpdHkgTm90aWNlOiBUaGUgaW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRo
+aXMgbWFpbCBpcyBzb2xlbHkgcHJvcGVydHkgb2YgdGhlIHNlbmRlcidzIG9yZ2FuaXphdGlvbi5U
+aGlzIG1haWwgY29tbXVuaWNhdGlvbiBpcyBjb25maWRlbnRpYWwuUmVjaXBpZW50cyBuYW1lZCBh
+Ym92ZSBhcmUgb2JsaWdhdGVkIHRvIG1haW50YWluIHNlY3JlY3kgYW5kIGFyZSBub3QgcGVybWl0
+dGVkIHRvIGRpc2Nsb3NlIHRoZSBjb250ZW50cyBvZiB0aGlzIGNvbW11bmljYXRpb24gdG8gb3Ro
+ZXJzLg==
 
-On 06/11/2025 at 14:33:59 +01, Geert Uytterhoeven <geert+renesas@glider.be>=
- wrote:
-
-> Prepare for the advent of globally available common field_get() and
-> field_prep() macros by undefining the symbols before defining local
-> variants.  This prevents redefinition warnings from the C preprocessor
-> when introducing the common macros later.
->
-> Suggested-by: Yury Norov <yury.norov@gmail.com>
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-
-Finally applied to nand/next, will be part of the next merge window.
-
-Thanks,
-Miqu=C3=A8l
 
