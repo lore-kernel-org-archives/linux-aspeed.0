@@ -1,55 +1,40 @@
-Return-Path: <linux-aspeed+bounces-3013-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3014-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8F8CD111A8
-	for <linux-aspeed@archiver.kernel.org>; Thu, 27 Nov 2025 22:41:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BAAAD111A8
+	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Nov 2025 00:27:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dHWcS1qtJz2yFT;
-	Fri, 28 Nov 2025 09:41:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764236700;
-	cv=none; b=nyQ5Ffgw/jKgY0s0oK5glFIfvkeV7/JOXRFvEC01VqrS1Ye8iKekup7oBz2hYwk3NJ/n3gnM3xGdYQbHscIpGKhhiKHCwwutGM7PSn0rYpuo07z4SNE9NnKvEHlcI+ccqCswL5vFZo9g0MGDu6VRDZCv0MknI2nesF+iOA2+SciMtj/B/g0DuPkgOrImAXU+ZtvGiCW6SiN5VePT8xQ1xzMWpu3tZrSP7FXP0jazwjIaTc3ac4RMuHZRxT937GpPBMUW7r4vcbhZ3zLPV5bDszrj6TOQ3N0j5wSxrQmtXA0QhkA3ui3KL1xuXkwk075My7fULuWIsGwYi248ytXGzQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dHYzY52HCz2yvC;
+	Fri, 28 Nov 2025 11:27:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764289673;
+	cv=none; b=lzZBdwFzZ1c5mwOYgZl4LLGiDIWIwNHKQLS4QOWT7FJ4MRAwCQhxE5Z4oSX8jlXTPmAUXO6i/yXdl3cHfSEwLUX9ZO/TxNfv5ykiCAZkJ8VwKiStNSbFbDGmCktIAFvFrzHuQJd9Y4cAAd0KkHqkBUWB+Ka8gJv6YtrSZCAyCIn7sv8A981SDAqjTllxpKNB/cE501huHnK6NEmXZ539shNuceDRhwrDX2uBMz+dgn8JVlzHnSz6DSVtFHziqgBj8KgFEyJAjeUmNZqD/JDZac5rSPEgZxj/9mQTbI7RuiDpQZXfIRBCewkjCW47rXXNu7413BRESZEtusPF/F2RnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764236700; c=relaxed/relaxed;
-	bh=B7aWgkMd1s3k3QG7Ff/3VcVkI1wHMDyzAgylqZcvSFA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=dN+MIixmt1XuM+O3UwXWVmlkvd7TYvdlh9H2qqwKwVnLnEWIxuCaHBcxk/IVw6KK3lgClYKxJ5JM1o4tOSNpSEMcXgZsGXnmCIjSdVR0DOgppVPcMlrSW8BukAqSk2vI2KxfjrqVVM+ww4g4keUcQ3FMLwU7Jy3wXg8HVsqeJGGbLvirwD/La4pUohBS0YYYeS8ssjINs7OwAnueTl7hjnUCLoqeqrgSJMndOddpJ88cbrbr0A9h0cwyDFFI/X3ePepC2pHWzJmP6zoAlgXYXZQ0STVU0Q9LDY2K6BfmgrKb9IXylxnWqOFYV2fExCqE3dwL4QCYbZ/xdou0LvTG6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U0WmI92g; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+alex.ts.wang.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U0WmI92g;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+alex.ts.wang.fii-foxconn.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1764289673; c=relaxed/relaxed;
+	bh=zxVVOgVSj9TQ/Mlnput3vdsEy1oKs7sCGU+ne47+YG4=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=YPq3CUn4IDh5ZOHR4dMVhmb6vrOUfOPFMdIHMM+jmyjXon3DWZy+hdH0OIzwF/f8jJz+t08luwT//Ewi+uWqjwYEWwpWO0YlYTaJGLmhXUjJFf3DsEB+uMQ3qaGsXeBAb4ilN6Y8uQlTWNAPrvqmKBWr79vFlFAApT+QshuZ1RfuuiaqXrsEVpAB52uc1AfhGq5DCT+e9o/v6EiMaTrvPEpthAjjPp7x/IAQbE1aFcIJ7VEnu7GBP3wV3aRpiAkkZZUlqwWtl2TtY+eO5lgBKx6CZ7NDVZ6UxLYeyIl5uDB6ShazoyTX8Yo7z5G3fKBa8rDZBY6ME/xJG+VqLFptMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dHBNq1Yfcz2xP9
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 27 Nov 2025 20:44:59 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 3958860017;
-	Thu, 27 Nov 2025 09:44:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D7CA2C4CEF8;
-	Thu, 27 Nov 2025 09:44:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764236695;
-	bh=wDdtL7Ds9riVbV6ICXm79kvDBRYPemWXZfNDHX2irog=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=U0WmI92gGBB9JMQhD9F2KjevMPDcnLEq76dYwYYvD0zUwOAZejibICAiMVofNbMaE
-	 2ph8cSjaZy19bvNlEw5RXLOFHRMWnNK1qnHGmUM/StHniZMaW445Sr5fX2WV+w/ZGA
-	 dO4zILc6K3uUUTm6sXebvZ212A84oQIIHvvjL+adgUXrZLiRmT7LuH38Co4u0Y51Dh
-	 5LTEvZqMKSL4A3o6yM98KLFbtY90x0JUsPAAywIYKqkp/nmKtb1tB8cvJ5skxNohqN
-	 VJLTRm51opPilBcWoQZH5q5OAc7q0iGLD+DhwPpDphlAzblpmqTSmumj/K9ksIaxl6
-	 TV2tsZfbw7Chw==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1E1BD116E2;
-	Thu, 27 Nov 2025 09:44:55 +0000 (UTC)
-From: Alex Wang via B4 Relay <devnull+alex.ts.wang.fii-foxconn.com@kernel.org>
-Date: Thu, 27 Nov 2025 17:44:51 +0800
-Subject: [PATCH v2] dt: aspeed: clemente: move hdd_led to its own gpio-leds
- group
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dHYzX2ylJz2yFT
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 28 Nov 2025 11:27:51 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 28 Nov
+ 2025 08:27:34 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Fri, 28 Nov 2025 08:27:34 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Subject: [PATCH v2 0/2] Add AST2700 support for Aspeed vhub
+Date: Fri, 28 Nov 2025 08:27:29 +0800
+Message-ID: <20251128-upstream_vhub-v2-0-1fa66a5833c2@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,89 +49,56 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20251127-leo-dts-add-shunt-resistor-v2-1-c77dfbfb826c@fii-foxconn.com>
-X-B4-Tracking: v=1; b=H4sIAJIdKGkC/42NQQrCMBBFr1Jm7UiSEmldeQ/pIiZTO6CJZGqol
- N7d2BO4fJ/H+ysIZSaBc7NCpsLCKVYwhwb85OKdkENlMMpYrUyLD0oYZkEXAsr0jjNmEpY5ZTR
- dNdTJ2eAIauCVaeRlj1+HytOuffavon/rX9miUaMNfd8pd3Ot6i4jM45p8SnGo09PGLZt+wI3H
- A6KygAAAA==
-X-Change-ID: 20251023-leo-dts-add-shunt-resistor-2810206a5dae
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- george.kw.lee@fii-foxconn.com, Alex Wang <alex.ts.wang@fii-foxconn.com>
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAHHsKGkC/13MywrCMBSE4VcpZ20kl8barnwPKRLT0WTRC0kbl
+ NJ3NxbcuPwH5lspInhEaoqVApKPfhxyyENB1pnhCea73CS51EJIzZYpzgGmvyW33JmC5OVZmVJ
+ rUP5MAQ//2r1rm9v5OI/hvfNJfNefdPqTkmCc1YJXvK5VBfCLiRPQzbDuaMee2m3bPmllE7ivA
+ AAA
+X-Change-ID: 20251125-upstream_vhub-3e20483a455e
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring
+	<robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+	<conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@codeconstruct.com.au>, Benjamin Herrenschmidt
+	<benh@kernel.crashing.org>, Philipp Zabel <p.zabel@pengutronix.de>
+CC: <linux-usb@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1764236694; l=2118;
- i=alex.ts.wang@fii-foxconn.com; s=20251023; h=from:subject:message-id;
- bh=XvfoAuDaFi0LEYIxrGZlYJX6g2aVVWHGpukneXb5b2k=;
- b=SXG/ZRsEzAm0y+7zt1tH9Ydnb+YuQ8Z7nkeAo5L/ekXuavdkD1Ale8faYlW8bQmxmf8E7FYoW
- 4p9x7BbeD/6BzqaKejgS49RqwnHxC/r9cz33N53NCEPzRlctPJ3nLVM
-X-Developer-Key: i=alex.ts.wang@fii-foxconn.com; a=ed25519;
- pk=m/IrKXb14uSdDm4KGXemjNIxgL6TrqXCc9NX09SUJp0=
-X-Endpoint-Received: by B4 Relay for alex.ts.wang@fii-foxconn.com/20251023
- with auth_id=551
-X-Original-From: Alex Wang <alex.ts.wang@fii-foxconn.com>
-Reply-To: alex.ts.wang@fii-foxconn.com
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1764289654; l=1048;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=UrnAKGkKlxEe5ApYlVlupJbZmp/owkUSOCyzAFd03ac=;
+ b=LGYVQGQ8i7g94NwVJWfNatY7KQZfrIp01emaDZlFrkoo8xIBtzqqpnkJqSdwTnEeuJh1jA+92
+ 9gQFRTNpRNdBXDIiyX6INWMuNOUOjzWveU5LwipX8snqn31NnmtAYc1
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-From: Alex Wang <alex.ts.wang@fii-foxconn.com>
+This series add Aspeed vhub support for AST2700.
+The AST2700 vhub requires a reset and uses 64-bit DMA.
+This series updates the binding and driver to support these two
+requirements.
 
-The gpio-leds driver requires all GPIOs in a group to be available;
-if any GPIO in the group is not available the whole group will not be
-created. The hdd_led GPIO is only present after standby power is
-enabled, which can prevent other LEDs in the same group from being
-created and blocks properly setting 'bmc_ready_noled'.
-
-Move the 'hdd_led' node into a separate gpio-leds group so that other
-LEDs are not blocked and the 'bmc_ready_noled' flag can be set
-correctly.
-
-Signed-off-by: Alex Wang <alex.ts.wang@fii-foxconn.com>
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
 Changes in v2:
-- I changed “missing” to “not available”. The hdd_led and bmc_ready_noled 
-do not disappear; it's just that hdd_led only becomes available after 
-standby power is enabled, and this process takes some time. The hdd_led 
-becomes available only after bmc_ready_noled is supposed to be set, 
-which causes bmc_ready_noled to fail to be generated and set in time.
-
-- Standby power is enabled during the BMC boot process.
-
-- The hdd_led will only be configured after the BMC boots, when a 
-dedicated service starts and applies the settings.
-
-- Link to v1: https://lore.kernel.org/r/20251023-leo-dts-add-shunt-resistor-v1-1-5d9980aba308@fii-foxconn.com
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-index dfe8f6d0eeef..ea1bf6f402bd 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts
-@@ -96,7 +96,12 @@ led-3 {
- 			gpios = <&gpio0 ASPEED_GPIO(P, 5) (GPIO_ACTIVE_HIGH|GPIO_TRANSITORY)>;
- 		};
- 
--		led-hdd {
-+	};
-+
-+	hdd-leds {
-+		compatible = "gpio-leds";
-+
-+		led-0 {
- 			label = "hdd_led";
- 			gpios = <&io_expander13 1 GPIO_ACTIVE_LOW>;
- 		};
+- add an else to block resets properties false on other platforms.
+- add AST2700 in capability in description.
+- Link to v1: https://lore.kernel.org/r/20251126-upstream_vhub-v1-0-910709937ee0@aspeedtech.com
 
 ---
-base-commit: c6fea62a8379f9e24b243ea4ba1fd482f8cd0d83
-change-id: 20251023-leo-dts-add-shunt-resistor-2810206a5dae
+Ryan Chen (2):
+      dt-bindings: usb: aspeed,usb-vhub: Add ast2700 support
+      usb: gadget: aspeed-vhub: Add ast2700 support
+
+ .../devicetree/bindings/usb/aspeed,usb-vhub.yaml   | 22 ++++++++++++++--
+ drivers/usb/gadget/udc/aspeed-vhub/core.c          | 30 ++++++++++++++++++++++
+ drivers/usb/gadget/udc/aspeed-vhub/vhub.h          |  1 +
+ 3 files changed, 51 insertions(+), 2 deletions(-)
+---
+base-commit: ac3fd01e4c1efce8f2c054cdeb2ddd2fc0fb150d
+change-id: 20251125-upstream_vhub-3e20483a455e
 
 Best regards,
 -- 
-Alex Wang <alex.ts.wang@fii-foxconn.com>
-
+Ryan Chen <ryan_chen@aspeedtech.com>
 
 
