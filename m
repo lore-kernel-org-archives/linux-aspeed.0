@@ -1,66 +1,96 @@
-Return-Path: <linux-aspeed+bounces-3017-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3018-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 724C1D116E2
-	for <linux-aspeed@archiver.kernel.org>; Fri, 28 Nov 2025 17:32:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AB65CFD2F6
+	for <linux-aspeed@archiver.kernel.org>; Sat, 29 Nov 2025 12:45:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dJ0jX0K4nz2yG7;
-	Sat, 29 Nov 2025 04:32:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764351135;
-	cv=none; b=h96qXW/LcitXYsniMH3c3mBxwPbFnIDKcJj05img6V3Sw+xawrTZpJVnsfoZEnzucir2HQqVNUlZFPnktor8b/YZCRdKihx/G0uE7vS3XkLw7qUyZBGDLkBXGO1f2mOBTtjn01Ggy6dTJ4aZ0DK/FMngLOqVwYAw2/QwdUWCwOsdB2f3msV5VNjY8VqKsiMq5fw91hy6W0Ft3yB3ZmLzOc4Rugi/hSS1xitVKEYJMcnF9QxHFwQU+tkhI3mIQZ9QiGBbvJW3PEnEqsbRq/z05eL7PmO9XN5mlVYd5cig+KTS2G5wiGtKxED1b4SEdB18weXsuYATYwNtu076h+4WKA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dJVJK1HGQz2yvH;
+	Sat, 29 Nov 2025 23:45:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764420337;
+	cv=none; b=XuWjLrevszRxTXzPDCNHGmS7qI9CLwos8tAv0XepF3R0XCTcItobmd93aPNxRFuKD1F9L3j9twq9fk5PZ7TWyG2XfaHIkEOdiJY5xttiRqeb6HA07d9uDl7HtzIfD6NHOyajt2jY1+4fmolkxW3iCAWGhuJofSUSV/5kLtzukxk11UrZG1Mxk1CYlipnZYMSEiOrpmwgHrQokkrfhwilXAS1wHiKWRiWxAozTWNoby6tT5aTr6wZ1T/qqvKrZRLcCZRIwNi+ZjAmA6C3uki5/1rcuB5P1IoSwpisbJ9HZiVUS+hn1Or+f/DzDp1IL9BFB8H6GfJSbLz2tmsL4Ycvqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764351135; c=relaxed/relaxed;
-	bh=DXtdLdYNGI2Def47xLdO+K+KvZUz52lKdw1ZAleee5k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eB6ctYBGP0OaEFoowzuQ/292OTSqxBpEb4ytZodqOt1/aOEHkhYaGzLMWeDEeIOgO6qs3NSMF6uPDdA48SykrcvcZ/VyHF92LfRrCuufPJ+jX+fHDX1aOnqbiuY2TEjzY8f7dzCb1qyymcAxFB1qKaKwCpS/h/j0KNTwDH/F6i2zlE0Wv0UBWJRCzcUigNUo3nfS1stP8cAjYNC3kXMq0CxURz1LYmRD9mfv5r3SvAfomq3q+A3h4b8VUzgylogqFVG0QdWn+sFcTbleEbj99YuUN1Fol5x7XAXReswYCwVcNONucHKCE/waOj8oyzmqwrMu2LNgWAlnGQrbzAQfFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dYkSpEqa; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1764420337; c=relaxed/relaxed;
+	bh=TImXxPp3fH8t3WgGQuC2IHIt10tqIWX7TcyUqtyR31I=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=TdjBIYRXu+63pCCtY6GkmZCupz61xd2u+l3QguXweZzoDse2TLT71WupROmXYiBrBQprJnnusSjBye4BLkVJJk7YZEuxZCe91wIBihl5O6rHnWNwpnepAMaq/xofYlWjofVXkG6+oLX8MN1SuL0W0W0yqPQD3qlkR4qz+jMOhJciOnnUnV8U6K/3WMtF6FEaiC5nFgfH4E2vSzEla12ffOqYY5gUCVO8SIxdt4ejH9bMNzsdiBk+Um1pQWhRWeL9CAtuDAsbyk3EUq/jEDy5pSvfM813XZc+fr2K+N4LszXipiJI/0reJp2dvAp0jTTogE9PGF6WcwFybN3Nv8wc9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=KpLK2to1; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dYkSpEqa;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=KpLK2to1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dJ0jW036gz2yG5
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 29 Nov 2025 04:32:14 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id C5FB560125;
-	Fri, 28 Nov 2025 17:32:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C628EC4CEF1;
-	Fri, 28 Nov 2025 17:32:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764351131;
-	bh=DXtdLdYNGI2Def47xLdO+K+KvZUz52lKdw1ZAleee5k=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=dYkSpEqaLqnSBU6hF/5r6RXEsVVv5oXSmgzA8qNIH9Fn1IBazC9GKCNNXu3o6nbjM
-	 mN8A+4UefvGHlGZG6yDmLE6EV/tKM0faRfVmKcw01Z4KRYVy1d9Q8bHRCdaNvZ2AMn
-	 kjId8/Wqf2dDVWYrgRNTbeeZvlPSY3/3J3GSiaQ9pwebN+K/859W0Q/5Hu1M1CNLph
-	 4pRhmMizHErz/2hqh8Z238J8fb9mkTwDKyFaud4dOg3SJSlx875Jv5YnqMl7qo1WJ8
-	 ZKAXDbBGG7ug66gJLSVIF+7p4BNrbzSvPwvgum0Uvdnk2OPDDRHVVbn+RyJ3rwy+En
-	 Jbr9/wLCexsUw==
-Date: Fri, 28 Nov 2025 17:32:06 +0000
-From: Conor Dooley <conor@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-usb@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] dt-bindings: usb: aspeed,usb-vhub: Add ast2700
- support
-Message-ID: <20251128-ajar-headcount-a8589beec00c@spud>
-References: <20251128-upstream_vhub-v2-0-1fa66a5833c2@aspeedtech.com>
- <20251128-upstream_vhub-v2-1-1fa66a5833c2@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dJVJH0rF7z2xQs
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 29 Nov 2025 23:45:32 +1100 (AEDT)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 09F734E41971;
+	Sat, 29 Nov 2025 12:45:28 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id BBCF760706;
+	Sat, 29 Nov 2025 12:45:27 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 109BA11910699;
+	Sat, 29 Nov 2025 13:45:09 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1764420325; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=TImXxPp3fH8t3WgGQuC2IHIt10tqIWX7TcyUqtyR31I=;
+	b=KpLK2to1cF7NAB3dxoOLV/QWk7f3DOgDWnlCCQ/eWjBGe2OiLoz4MRPaxtNjJ5LhgTdO2x
+	liQWrTjoV8SzbJ0IRNAWzjSTpxuBdKdZK+nMBBo+lz6eN4ScfF10Zi8hpoNB3oNhnhPAkB
+	EBcOP1L5+m8y1BhDyM8QV2Sd1zOhoSjtmlz4x+NWF5bSJDvmY6HuADwinRYPvMGebmhy3r
+	ecHZmVrqRYz0ygRRnstaU1i/ARfGhaUjItbgMb+f1cIphEqym8E4UMuA0rRIXKXq4K6uEQ
+	20vrn9fsYJ9NCOmjJv1jyigd96ejKGwakw15qyOFOaK5wOwWkE03lUfTBtfXBQ==
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Yury Norov <yury.norov@gmail.com>,  Michael Turquette
+ <mturquette@baylibre.com>,  Stephen Boyd <sboyd@kernel.org>,  Nicolas
+ Ferre <nicolas.ferre@microchip.com>,  Alexandre Belloni
+ <alexandre.belloni@bootlin.com>,  Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>,  Giovanni Cabiddu
+ <giovanni.cabiddu@intel.com>,  Herbert Xu <herbert@gondor.apana.org.au>,
+  David Miller <davem@davemloft.net>,  Linus Walleij
+ <linus.walleij@linaro.org>,  Bartosz Golaszewski <brgl@bgdev.pl>,  Joel
+ Stanley <joel@jms.id.au>,  Andrew Jeffery <andrew@codeconstruct.com.au>,
+  Crt Mori <cmo@melexis.com>,  Jonathan Cameron <jic23@kernel.org>,
+  Lars-Peter Clausen <lars@metafoo.de>,  Jacky Huang
+ <ychuang3@nuvoton.com>,  Shan-Chun Hung <schung@nuvoton.com>,  Rasmus
+ Villemoes <linux@rasmusvillemoes.dk>,  Jaroslav Kysela <perex@perex.cz>,
+  Takashi Iwai <tiwai@suse.com>,  Johannes Berg
+ <johannes@sipsolutions.net>,  Jakub Kicinski <kuba@kernel.org>,  Alex
+ Elder <elder@ieee.org>,  David Laight <david.laight.linux@gmail.com>,
+  Vincent Mailhol <mailhol.vincent@wanadoo.fr>,  Jason Baron
+ <jbaron@akamai.com>,  Borislav Petkov <bp@alien8.de>,  Tony Luck
+ <tony.luck@intel.com>,  Michael Hennerich <Michael.Hennerich@analog.com>,
+  Kim Seer Paller <kimseer.paller@analog.com>,  David Lechner
+ <dlechner@baylibre.com>,  Nuno =?utf-8?Q?S=C3=A1?= <nuno.sa@analog.com>,
+  Andy Shevchenko
+ <andy@kernel.org>,  Richard Genoud <richard.genoud@bootlin.com>,  Cosmin
+ Tanislav <demonsingur@gmail.com>,  Biju Das <biju.das.jz@bp.renesas.com>,
+  Jianping Shen <Jianping.Shen@de.bosch.com>,  Nathan Chancellor
+ <nathan@kernel.org>,  Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+  Richard Weinberger <richard@nod.at>,  Vignesh Raghavendra
+ <vigneshr@ti.com>,  linux-clk@vger.kernel.org,
+  linux-arm-kernel@lists.infradead.org,  linux-renesas-soc@vger.kernel.org,
+  linux-crypto@vger.kernel.org,  linux-edac@vger.kernel.org,
+  qat-linux@intel.com,  linux-gpio@vger.kernel.org,
+  linux-aspeed@lists.ozlabs.org,  linux-iio@vger.kernel.org,
+  linux-sound@vger.kernel.org,  linux-mtd@lists.infradead.org,
+  linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next v6 11/26] mtd: rawnand: sunxi: #undef
+ field_{get,prep}() before local definition
+In-Reply-To: <703d7eec56074148daed4ea45b637f8a83f15305.1762435376.git.geert+renesas@glider.be>
+	(Geert Uytterhoeven's message of "Thu, 6 Nov 2025 14:33:59 +0100")
+References: <cover.1762435376.git.geert+renesas@glider.be>
+	<703d7eec56074148daed4ea45b637f8a83f15305.1762435376.git.geert+renesas@glider.be>
+User-Agent: mu4e 1.12.7; emacs 30.2
+Date: Sat, 29 Nov 2025 13:45:09 +0100
+Message-ID: <87h5udm2i2.fsf@bootlin.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,37 +104,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="PTCSciaf+pNNOYVt"
-Content-Disposition: inline
-In-Reply-To: <20251128-upstream_vhub-v2-1-1fa66a5833c2@aspeedtech.com>
-
-
---PTCSciaf+pNNOYVt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
+X-Last-TLS-Session-Version: TLSv1.3
 
-On Fri, Nov 28, 2025 at 08:27:30AM +0800, Ryan Chen wrote:
-> Add the "aspeed,ast2700-usb-vhub" compatible. The ast2700 vhub
-> controller requires an reset, so make the "resets" property
-> mandatory for this compatible to reflect the hardware requirement.
->=20
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+Hello,
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-pw-bot: not-applicable
+On 06/11/2025 at 14:33:59 +01, Geert Uytterhoeven <geert+renesas@glider.be>=
+ wrote:
 
---PTCSciaf+pNNOYVt
-Content-Type: application/pgp-signature; name="signature.asc"
+> Prepare for the advent of globally available common field_get() and
+> field_prep() macros by undefining the symbols before defining local
+> variants.  This prevents redefinition warnings from the C preprocessor
+> when introducing the common macros later.
+>
+> Suggested-by: Yury Norov <yury.norov@gmail.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
 
------BEGIN PGP SIGNATURE-----
+Finally applied to nand/next, will be part of the next merge window.
 
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaSnckgAKCRB4tDGHoIJi
-0lyuAQDcadUyChIKt4hLNny6wAUoqQNARS1SLjiQFJLqGfv2rAEA6tf88roWmvmr
-QQPQ4wsg2bKnhY9WdzB5cH62ydNRGAc=
-=yqmb
------END PGP SIGNATURE-----
-
---PTCSciaf+pNNOYVt--
+Thanks,
+Miqu=C3=A8l
 
