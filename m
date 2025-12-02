@@ -1,77 +1,63 @@
-Return-Path: <linux-aspeed+bounces-3031-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3032-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73CC8D116F6
-	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Dec 2025 13:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B617ED1267F
+	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Dec 2025 22:56:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dLMJ75LTXz3bhY;
-	Wed, 03 Dec 2025 00:36:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764682615;
-	cv=none; b=n65LkehXsfQKLWql76qjP2kOs9RaqmSej/ZZeV+zMA07O7cO3ZFZxU/VYjBcoTaRiZQkZsGG26A8lgJeOkwKg2ByektH6rzaie+zBUHnu4qp9bJeNRu+7N5SR9E5HWAN2CVH/JPx8XJvcEK7XXe33gSTYM9lxWEAvALMS0wqNc8rchL0qxeFQ5jWxYduSp9bOF4QQM9p0biQDXWQpxTHdC84BrDyKcprEYe/h6n+EReTo4I7VLQtYtbrhcZv/le+jPuDALOHQMiElLdK0Sp7d7/73hTusGRIW9C74bFl0KUGNGI5B2OjXOUDJSZ4OXEmMjTNNB4HhOV635/9rAjOag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dLbjS0dJcz3c9l;
+	Wed, 03 Dec 2025 09:56:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.97.181.73
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764660555;
+	cv=none; b=nOnTzk1zOf6z+Iwz41Chq4oboz/mBX/+R+TV7+c7rcztA2llhVrTd1c6Q3us4l5pUTciQ5Zgx45oZNNvlI0/lVYa183Ioaj82LgjesIKOj8tq/7uI4hFVFVHNfXNeD5hUTJEaYKRFjuhKppWVnBXf45QBC2xFmenN4NUObEGrWN81Iv4PndrrTq+EDdKqOBHEgzwBmgX3x09H6PF39DgQ/ELOl5CAwqKI7YlSpFBK1xPRzHXu+bN3KtRiGdqnKBZmVheRWnZearqU/bhCcVl0h5VvfyvkNX3zlNitFSc7gClDrw07N2RYVDn0mQFd/bwX8rvtljfDtbdxrqqqE7o/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764682615; c=relaxed/relaxed;
-	bh=1Wpx9IjkcuCXJrN+lvoQ0/PWGUe4eWqI7yjH11ZhMTc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H1fZkQ0iWQgH6pRokz2QQpU8h7WvdIHI1iGq/jeas/4oPaZ+DSzUXUqKqU7oqJosDPYetUcorHat6ZpOkJFxXwx4yJE5v3ADtjcg912jtOx7S5XxYFDLbcjtKH79EHK/GyfFey3tPpFSu7zogbTFGUe/S8j6hR+r9fFERCt+yOqlTV6srMy+B6BYVqxHTB83BEMe+e9uzIya0McWmJE9fXvxkUM8RLN84aKQDiGvbQoNzfkuJGyvgPzvriHTbOybta7zJ/PohgFgRgDkvCbmZIxZMhhqRkHS3GGHOQWw4TIqab8/jmsp7dKMioo4mdmOxRQlQevZaBDk2hyPz5RyXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=VC9d/UAn; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=VC9d/UAn;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dLMJ61SJ8z3bhH
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Dec 2025 00:36:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=1Wpx9IjkcuCXJrN+lvoQ0/PWGUe4eWqI7yjH11ZhMTc=; b=VC9d/UAnse+naHpZdifFVmTv3e
-	21BAnHhjw8HPGF19RKmyVaDfCX6uHMOxsibeLkKxh5KZZeEQwS0ZaR2Ua03HSCUyahL8vElefUN41
-	iBZxxnp/a8B+iPeb1ShSxBRSNEViUIygvNlf3anjA6FMYUa0PzxmLXuwq5Uhc3Ct54bE=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vQQY7-00FhXN-UW; Tue, 02 Dec 2025 14:36:11 +0100
-Date: Tue, 2 Dec 2025 14:36:11 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Tao Ren <rentao.bupt@gmail.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Po-Yu Chuang <ratbert@faraday-tech.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	t=1764660555; c=relaxed/relaxed;
+	bh=VP1GEmKc2xcUXfgRIUMZubutxAF5X9jiP5l4OdsRReU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
+	 MIME-Version:Message-ID; b=edPlRnnuOXiLBkJz+RBVHpW+fixQettvR3DHj0x69DOMgIs9tCNAfbvpNqTJAOERVmPXyFL17Jnp3HWnfXRojAB1NWNwK2L71jtX3gLGgPOETCk+5wgNbSFu5GlSDym4KQ+IfWVMDGvT6fBxaDPm6oaDMmpKBp5nmAv88kRCKyE74g0OpbNyRUSrdcpy7BPQKpHyD9/dFbAl93NNZQZodfUH2tELeOLgQG6NNc3xPNTsrM4DH9u48A1+xCDWd9AA2Vs5OpvnoDrHT0zu6CdG0diLDc5TKKHfZQOj23iD2671i0nOs6simY3+035at2ajVAy4qHE8KjI98HvosxKqsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn; spf=pass (client-ip=209.97.181.73; helo=zg8tmja5ljk3lje4ms43mwaa.icoremail.net; envelope-from=wangmin@phytium.com.cn; receiver=lists.ozlabs.org) smtp.mailfrom=phytium.com.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=phytium.com.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=phytium.com.cn (client-ip=209.97.181.73; helo=zg8tmja5ljk3lje4ms43mwaa.icoremail.net; envelope-from=wangmin@phytium.com.cn; receiver=lists.ozlabs.org)
+Received: from zg8tmja5ljk3lje4ms43mwaa.icoremail.net (zg8tmja5ljk3lje4ms43mwaa.icoremail.net [209.97.181.73])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dLC7s1jk1z3bmS;
+	Tue, 02 Dec 2025 18:29:11 +1100 (AEDT)
+Received: from prodtpl.icoremail.net (unknown [10.12.1.20])
+	by hzbj-icmmx-6 (Coremail) with SMTP id AQAAfwAnCCVDlS5pFSAkAQ--.16470S2;
+	Tue, 02 Dec 2025 15:29:07 +0800 (CST)
+Received: from wangmin$phytium.com.cn ( [218.76.62.144] ) by
+ ajax-webmail-mail (Coremail) ; Tue, 2 Dec 2025 15:28:46 +0800 (GMT+08:00)
+X-Originating-IP: [218.76.62.144]
+Date: Tue, 2 Dec 2025 15:28:46 +0800 (GMT+08:00)
+X-CM-HeaderCharset: UTF-8
+From: =?UTF-8?B?546L5pWP?= <wangmin@phytium.com.cn>
+To: "Jammy Huang" <jammy_huang@aspeedtech.com>
+Cc: "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+	"Eddie James" <eajames@linux.ibm.com>,
+	"Mauro Carvalho Chehab" <mchehab@kernel.org>,
+	"Joel Stanley" <joel@jms.id.au>,
+	"Andrew Jeffery" <andrew@codeconstruct.com.au>,
+	"Philipp Zabel" <p.zabel@pengutronix.de>,
+	"linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
 	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"taoren@meta.com" <taoren@meta.com>
-Subject: Re: [PATCH net-next v4 4/4] net: ftgmac100: Add RGMII delay support
- for AST2600
-Message-ID: <4f0e4aa0-166d-4a7f-b91e-42dbc6b832e5@lunn.ch>
-References: <68f10ee1-d4c8-4498-88b0-90c26d606466@lunn.ch>
- <SEYPR06MB5134EBA2235B3D4BE39B19359DCCA@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <3af52caa-88a7-4b88-bd92-fd47421cc81a@lunn.ch>
- <SEYPR06MB51342977EC2246163D14BDC19DCDA@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <041e23a2-67e6-4ebb-aee5-14400491f99c@lunn.ch>
- <SEYPR06MB5134BC17E80DB66DD385024D9DD1A@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <1c2ace4e-f3bb-4efa-a621-53c3711f46cb@lunn.ch>
- <aSbA8i5S36GeryXc@fedora>
- <SEYPR06MB513424DDB2D32ADB9C30B5119DDFA@SEYPR06MB5134.apcprd06.prod.outlook.com>
- <SEYPR06MB5134A5D1603F39E6025629A19DD8A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	=?UTF-8?B?6IiS5aWV5qOL?= <shuyiqi@phytium.com.cn>
+Subject: Re: RE: RE: [PATCH] media: aspeed: Fix dram hang at res-change
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version 2024.3-cmXT6 build
+ 20250512(e7b47ee3) Copyright (c) 2002-2025 www.mailtech.cn OP_ICM_ICMVM
+In-Reply-To: <TYZPR06MB65685571EFD73A850A452A71F1D8A@TYZPR06MB6568.apcprd06.prod.outlook.com>
+References: <20251124-video_dram_reset-v1-1-9d37229e4ec5@aspeedtech.com>
+ <120162b9.3256.19aca13d4e0.Coremail.wangmin@phytium.com.cn>
+ <TYZPR06MB656876892F6046F22AD87073F1DBA@TYZPR06MB6568.apcprd06.prod.outlook.com>
+ <720c855b.36b0.19addc99578.Coremail.wangmin@phytium.com.cn>
+ <TYZPR06MB65685571EFD73A850A452A71F1D8A@TYZPR06MB6568.apcprd06.prod.outlook.com>
+Content-Transfer-Encoding: base64
+X-CM-CTRLDATA: +OZEKGZvb3Rlcl90eHQ9Njk4NjozODM=
+Content-Type: text/plain; charset=UTF-8
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,35 +71,153 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <SEYPR06MB5134A5D1603F39E6025629A19DD8A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+Message-ID: <7ecc072f.36ed.19addf6bbe6.Coremail.wangmin@phytium.com.cn>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID:AQAAfwA3ke4ulS5pivUIAA--.10857W
+X-CM-SenderInfo: 5zdqwzdlq61x51wl3zoofrzhdfq/1tbiAQAMCGkt9q4CigABsQ
+Authentication-Results: hzbj-icmmx-6; spf=neutral smtp.mail=wangmin@ph
+	ytium.com.cn;
+X-Coremail-Antispam: 1Uk129KBjvAXoW3CF1UWw4fCFyxGF43GFyfZwb_yoW8Ww45Go
+	Z7WFnxJF1DJrsrArs5C3WDGF15Grn8JFW8Ar4kC3Z5XF1UJr10kryqvw4fJrnrJ39xJa40
+	vw4Utry0qryUG3WDn29KB7ZKAUJUUUU3529EdanIXcx71UUUUU7KY7ZEXasCq-sGcSsGvf
+	J3UbIjqfuFe4nvWSU8nxnvy29KBjDU0xBIdaVrnUUvcSsGvfC2KfnxnUUI43ZEXa7xR_UU
+	UUUUUUU==
 
-> Hi Andrew,
-> 
-> I miss one condition is using fixed-link property.
-> In ftgmac100, there are RGMII, NC-SI and fixed-link property.
-> On RGMII, we have solution on dedicated PHY, but there is an issue on fixed-link
-> property.
-> 
-> Example on dedicated PHY.
-> The driver can pass the "rgmii-id" to tell PHY driver to enable the internal delay on
-> PHY side. Therefore, we can force to disable RGMII delay on MAC side.
-> But there is not any driver when using fixed-link property, which means
-> no body can tell the outside device, like switch or MAC-to-MAC, to enable the internal
-> delay on them. Also mean the phy-mode in fixed-link case is not used.
-> 
-> Therefore, could we ignore the RGMII delay on MAC side when the ftgmac100 driver gets
-> the fixed-link property? Just keep the original delay value?
+CgoKPiAtLS0tLeWOn+Wni+mCruS7ti0tLS0tCj4g5Y+R5Lu25Lq6OiAiSmFtbXkgSHVhbmciIDxq
+YW1teV9odWFuZ0Bhc3BlZWR0ZWNoLmNvbT4KPiDlj5HpgIHml7bpl7Q6MjAyNS0xMi0wMiAxNTox
+NTo1NSAo5pif5pyf5LqMKQo+IOaUtuS7tuS6ujog546L5pWPIDx3YW5nbWluQHBoeXRpdW0uY29t
+LmNuPiwgIm9wZW5ibWNAbGlzdHMub3psYWJzLm9yZyIgPG9wZW5ibWNAbGlzdHMub3psYWJzLm9y
+Zz4KPiDmioTpgIE6ICJFZGRpZSBKYW1lcyIgPGVhamFtZXNAbGludXguaWJtLmNvbT4sICJNYXVy
+byBDYXJ2YWxobyBDaGVoYWIiIDxtY2hlaGFiQGtlcm5lbC5vcmc+LCAiSm9lbCBTdGFubGV5IiA8
+am9lbEBqbXMuaWQuYXU+LCAiQW5kcmV3IEplZmZlcnkiIDxhbmRyZXdAY29kZWNvbnN0cnVjdC5j
+b20uYXU+LCAiUGhpbGlwcCBaYWJlbCIgPHAuemFiZWxAcGVuZ3V0cm9uaXguZGU+LCAibGludXgt
+bWVkaWFAdmdlci5rZXJuZWwub3JnIiA8bGludXgtbWVkaWFAdmdlci5rZXJuZWwub3JnPiwgImxp
+bnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZyIgPGxpbnV4LWFybS1rZXJuZWxAbGlz
+dHMuaW5mcmFkZWFkLm9yZz4sICJsaW51eC1hc3BlZWRAbGlzdHMub3psYWJzLm9yZyIgPGxpbnV4
+LWFzcGVlZEBsaXN0cy5vemxhYnMub3JnPiwgImxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmci
+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPiwg6IiS5aWV5qOLIDxzaHV5aXFpQHBoeXRp
+dW0uY29tLmNuPgo+IOS4u+mimDogUkU6IFJFOiBbUEFUQ0hdIG1lZGlhOiBhc3BlZWQ6IEZpeCBk
+cmFtIGhhbmcgYXQgcmVzLWNoYW5nZQo+IAo+IEhpIFdhbmcsCj4gCj4gVGhpcyBtYWlsIHRocmVh
+ZCBpcyBub3QgZm9yIHByb2R1Y3Qgc3VwcG9ydCBidXQgZm9yIGxpbnV4IGtlcm5lbCB1cHN0cmVh
+bS4KPiAKPiBJZiB5b3UgZW5jb3VudGVyIHNvbWUgaXNzdWUgdXNpbmcgQVNQRUVEIHByb2R1Y3Qs
+IHBsZWFzZSBjb250YWN0IG91ciBzYWxlcyB3aG8KPiB3aWxsIHByb3ZpZGUgcHJvcGVyIHJlc3Bv
+bnNlIGZvciB5b3VyIGlzc3VlLgo+IApHb3QgaXQuIEFwcHJlY2lhdGUgeW91ciBxdWljayByZXNw
+b25zZS4KPiA+ID4KPiA+ID4gSGkgV2FuZywKPiA+ID4KPiA+ID4gVGhhbmtzIGZvciB5b3VyIGZl
+ZWRiYWNrLgo+ID4gPgo+ID4gPiBSZWdhcmRzLAo+ID4gPiBKYW1teSBIdWFuZwo+ID4gPgo+ID4g
+PiA+ID4KPiA+ID4gPiA+IERyYW0gaGFuZyBjb3VsZCBoYXBwZW4gaW4gdGhlIHN0ZXBzIGJlbG93
+Ogo+ID4gPiA+ID4gMS4gc3RhcnQgY2FwdHVyZS9jb21wcmVzc2lvbgo+ID4gPiA+ID4gMi4gb3V0
+LW9mLWxvY2sgd2F0Y2hkb2cgcmFpc2UgaXJxIGJlY2F1c2Ugb2YgcmVzLWNoYW5nZS4KPiA+ID4g
+PiA+IDMuIGFzcGVlZF92aWRlb19pcnFfcmVzX2NoYW5nZSBkbyBjbGstb2ZmCj4gPiA+ID4gPgo+
+ID4gPiA+ID4gQXQgc3RlcDMsIGNhcHR1cmUvY29tcHJlc3Npb24gY291bGQgYmUgbm90IGFjY29t
+cGxpc2hlZCB5ZXQuIElmCj4gPiA+ID4gPiBjbGstb2ZmIGluIHRoZSBtaWRkbGUgb2YgdmlkZW8g
+b3BlcmF0aW9uLCBkcmFtIGNvbnRyb2xsZXIgY291bGQKPiA+ID4gPiA+IGhhbmcgYXQKPiA+ID4g
+PiBhc3QyNTAwLgo+ID4gPiA+ID4KPiA+ID4gPiA+IFVzZSByZXNldCByYXRoZXIgdGhhbiBjbGst
+b2ZmL29uIHRvIGF2b2lkIHRoaXMgcHJvYmxlbS4KPiA+ID4gPiA+Cj4gPiA+ID4gPiBTaWduZWQt
+b2ZmLWJ5OiBKYW1teSBIdWFuZyA8amFtbXlfaHVhbmdAYXNwZWVkdGVjaC5jb20+Cj4gPiA+ID4g
+PiAtLS0KPiA+ID4gPiA+IE9uIEFzcGVlZCBLVk0gdGVzdGluZywgd2UgZm91bmQgaXQgY291bGQg
+bGVhZCB0byBkcmFtLWhhbmcgaWYKPiA+ID4gPiA+IHJlcy1jaGFuZ2UuIEFsdGhvdWdoIHRoZSBp
+c3N1ZSByYXJlbHkgaGFwcGVucywgdGhlIGltcGFjdCBpcyBzZXJpb3VzLgo+ID4gPiA+Cj4gPiA+
+ID4gQ2FwdHVyaW5nIGFuZCBjb21wcmVzc2luZyB0aGUgdmlkZW8gc3RyZWFtIHRha2VzIGxvbmdl
+ciB0aGFuIHRoZQo+ID4gPiA+IHZpZGVvIGVuZ2luZeKAmXMgaWRsZSBwZXJpb2QuCj4gPiA+IFNv
+cnJ5LCBidXQgdGhpcyBpcyBub3Qgd2hhdCBJIG1lYW4uIFRoZSBpc3N1ZSBoYXBwZW5zIGJlY2F1
+c2UgdmlkZW8KPiA+ID4gZW5naW5lJ3MgY2xrIGlzIHR1cm5lZCBvZmYgZHVyaW5nIGNhcHR1cmUv
+Y29tcHJlc3Npb24uCj4gPiA+Cj4gPiA+ID4gSWYgdGhpcyBpcyBub3QgdGhlIGludGVuZGVkIGJl
+aGF2aW9yLCBwbGVhc2UgaW5jcmVhc2UgdGhlIGZyYW1lCj4gPiA+ID4gcmF0ZS4gVGhpcyBtYWtl
+cyByZXNvbHV0aW9uIHN3aXRjaGVzIG1vcmUgcHJvbmUgdG8gaGFwcGVuIHdoZW4gdGhlIHZpZGVv
+Cj4gPiBlbmdpbmUgaXMgd29ya2luZy4KPiA+ID4gPiBIb3dldmVyLCBhY2NvcmRpbmcgdG8geW91
+ciBlbWFpbCwgdGhpcyBpc3N1ZSByYXJlbHkgb2NjdXJzLiBJcyB0aGVyZQo+ID4gPiA+IGEgc2lt
+aWxhciBpc3N1ZSBvbiB0aGUgQVNUMjYwMCBTb0M/Cj4gPiA+IEluY3JlYXNlIGZyYW1lIHJhdGUg
+d291bGQgbm90IGhlbHBmdWwuIFRoaXMgaXMgYSB2aWRlbyBjb21wcmVzc2lvbgo+ID4gPiBlbmdp
+bmUuIFRoZSB0aW1lIHRha2VuIGZvciBlYWNoIGZyYW1lJ3MgY2FwdHVyZS9jb21wcmVzc2lvbiBp
+cyB0aGUKPiA+ID4gc2FtZS4gVGhlIHdheSB0byByZXByb2R1Y2UgdGhpcyBpc3N1ZSB3ZSBkaWQg
+aXMgY29udGludW91c2x5Cj4gPiByZXNvbHV0aW9uLXN3aXRjaC4KPiA+ID4KPiA+IFRoYW5rIHlv
+dSBmb3IgdGhlIGNsYXJpZmljYXRpb24uCj4gPiAKPiA+IEkgYW0gZW5jb3VudGVyaW5nIGFub3Ro
+ZXIgaXNzdWUgcmVsYXRlZCB0byByZXNvbHV0aW9uIHN3aXRjaGluZyBvbiB0aGUKPiA+IEFTVDI1
+MDAgU29DLgo+ID4gV2hlbiByZXBlYXRlZGx5IHN3aXRjaGluZyBmcm9tIG90aGVyIHJlc29sdXRp
+b25zIHRvIDE2ODB4MTA1MCwgb3IgZnJvbQo+ID4gMTY4MHgxMDUwIHRvIG90aGVyIHJlc29sdXRp
+b25zLCB0aGVyZSBpcyBhIGhpZ2ggbGlrZWxpaG9vZCB0aGF0IGVpdGhlciB0aGUgQk1DCj4gPiBP
+UyB3aWxsIGhhbmcgb3IgdGhlIEtWTSBzY3JlZW4gd2lsbCBleHBlcmllbmNlIHRlYXJpbmcuIENv
+dWxkIHlvdSBwbGVhc2UKPiA+IGF0dGVtcHQgdG8gcmVwcm9kdWNlIHRoaXMgaXNzdWUgYW5kIHBy
+b3ZpZGUgYSByZXNvbHV0aW9uPwo+ID4gCj4gPiA+ID4KPiA+ID4gPiA+Cj4gPiA+ID4gPiBUbyBh
+dm9pZCB0aGlzIGlzc3VlLCB3ZSB1c2UgcmVzZXQgb25seSByYXRoYXIgdGhhbiBjbGstb2ZmL29u
+IGluCj4gPiA+ID4gPiByZXMtY2hhbmdlIHRvIGF2b2lkIHRoaXMgaXNzdWUuCj4gPiA+ID4gPiAt
+LS0KPiA+ID4gPiA+ICBkcml2ZXJzL21lZGlhL3BsYXRmb3JtL2FzcGVlZC9hc3BlZWQtdmlkZW8u
+YyB8IDIyCj4gPiA+ID4gPiArKysrKysrKysrKysrKysrKysrLS0tCj4gPiA+ID4gPiAgMSBmaWxl
+IGNoYW5nZWQsIDE5IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4gPiA+ID4gPgo+ID4g
+PiA+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWVkaWEvcGxhdGZvcm0vYXNwZWVkL2FzcGVlZC12
+aWRlby5jCj4gPiA+ID4gPiBiL2RyaXZlcnMvbWVkaWEvcGxhdGZvcm0vYXNwZWVkL2FzcGVlZC12
+aWRlby5jCj4gPiA+ID4gPiBpbmRleCBiODNlNDMyNDUyLi40MWNiOTZmNjAxIDEwMDY0NAo+ID4g
+PiA+ID4gLS0tIGEvZHJpdmVycy9tZWRpYS9wbGF0Zm9ybS9hc3BlZWQvYXNwZWVkLXZpZGVvLmMK
+PiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvbWVkaWEvcGxhdGZvcm0vYXNwZWVkL2FzcGVlZC12aWRl
+by5jCj4gPiA+ID4gPiBAQCAtMjYsNiArMjYsNyBAQAo+ID4gPiA+ID4gICNpbmNsdWRlIDxsaW51
+eC93b3JrcXVldWUuaD4KPiA+ID4gPiA+ICAjaW5jbHVkZSA8bGludXgvZGVidWdmcy5oPgo+ID4g
+PiA+ID4gICNpbmNsdWRlIDxsaW51eC9rdGltZS5oPgo+ID4gPiA+ID4gKyNpbmNsdWRlIDxsaW51
+eC9yZXNldC5oPgo+ID4gPiA+ID4gICNpbmNsdWRlIDxsaW51eC9yZWdtYXAuaD4KPiA+ID4gPiA+
+ICAjaW5jbHVkZSA8bGludXgvbWZkL3N5c2Nvbi5oPgo+ID4gPiA+ID4gICNpbmNsdWRlIDxtZWRp
+YS92NGwyLWN0cmxzLmg+Cj4gPiA+ID4gPiBAQCAtMzEwLDYgKzMxMSw3IEBAIHN0cnVjdCBhc3Bl
+ZWRfdmlkZW8gewo+ID4gPiA+ID4gIAl2b2lkIF9faW9tZW0gKmJhc2U7Cj4gPiA+ID4gPiAgCXN0
+cnVjdCBjbGsgKmVjbGs7Cj4gPiA+ID4gPiAgCXN0cnVjdCBjbGsgKnZjbGs7Cj4gPiA+ID4gPiAr
+CXN0cnVjdCByZXNldF9jb250cm9sICpyZXNldDsKPiA+ID4gPiA+Cj4gPiA+ID4gPiAgCXN0cnVj
+dCBkZXZpY2UgKmRldjsKPiA+ID4gPiA+ICAJc3RydWN0IHY0bDJfY3RybF9oYW5kbGVyIGN0cmxf
+aGFuZGxlcjsgQEAgLTcyMCw2ICs3MjIsMTMgQEAKPiA+ID4gPiA+IHN0YXRpYyB2b2lkIGFzcGVl
+ZF92aWRlb19vbihzdHJ1Y3QgYXNwZWVkX3ZpZGVvICp2aWRlbykKPiA+ID4gPiA+ICAJc2V0X2Jp
+dChWSURFT19DTE9DS1NfT04sICZ2aWRlby0+ZmxhZ3MpOyAgfQo+ID4gPiA+ID4KPiA+ID4gPiA+
+ICtzdGF0aWMgdm9pZCBhc3BlZWRfdmlkZW9fcmVzZXQoc3RydWN0IGFzcGVlZF92aWRlbyAqdikg
+ewo+ID4gPiA+ID4gKwlyZXNldF9jb250cm9sX2Fzc2VydCh2LT5yZXNldCk7Cj4gPiA+ID4gPiAr
+CXVzbGVlcF9yYW5nZSgxMDAsIDE1MCk7Cj4gPiA+ID4gPiArCXJlc2V0X2NvbnRyb2xfZGVhc3Nl
+cnQodi0+cmVzZXQpOyB9Cj4gPiA+ID4gPiArCj4gPiA+ID4gPiAgc3RhdGljIHZvaWQgYXNwZWVk
+X3ZpZGVvX2J1ZnNfZG9uZShzdHJ1Y3QgYXNwZWVkX3ZpZGVvICp2aWRlbywKPiA+ID4gPiA+ICAJ
+CQkJICAgZW51bSB2YjJfYnVmZmVyX3N0YXRlIHN0YXRlKSAgeyBAQCAtNzQyLDcKPiA+ICs3NTEs
+OSBAQCBzdGF0aWMKPiA+ID4gPiA+IHZvaWQgYXNwZWVkX3ZpZGVvX2lycV9yZXNfY2hhbmdlKHN0
+cnVjdAo+ID4gPiA+ID4gYXNwZWVkX3ZpZGVvICp2aWRlbywgdWxvbmcgZGVsYXkpCj4gPiA+ID4g
+Pgo+ID4gPiA+ID4gIAl2aWRlby0+djRsMl9pbnB1dF9zdGF0dXMgPSBWNEwyX0lOX1NUX05PX1NJ
+R05BTDsKPiA+ID4gPiA+Cj4gPiA+ID4gPiAtCWFzcGVlZF92aWRlb19vZmYodmlkZW8pOwo+ID4g
+PiA+ID4gKwlhc3BlZWRfdmlkZW9fd3JpdGUodmlkZW8sIFZFX0lOVEVSUlVQVF9DVFJMLCAwKTsK
+PiA+ID4gPiA+ICsJYXNwZWVkX3ZpZGVvX3dyaXRlKHZpZGVvLCBWRV9JTlRFUlJVUFRfU1RBVFVT
+LCAweGZmZmZmZmZmKTsKPiA+ID4gPiA+ICsJYXNwZWVkX3ZpZGVvX3Jlc2V0KHZpZGVvKTsKPiA+
+ID4gPiA+ICAJYXNwZWVkX3ZpZGVvX2J1ZnNfZG9uZSh2aWRlbywgVkIyX0JVRl9TVEFURV9FUlJP
+Uik7Cj4gPiA+ID4gPgo+ID4gPiA+ID4gIAlzY2hlZHVsZV9kZWxheWVkX3dvcmsoJnZpZGVvLT5y
+ZXNfd29yaywgZGVsYXkpOyBAQCAtMTk4NCw4Cj4gPiA+ID4gPiArMTk5NSw3IEBAIHN0YXRpYyB2
+b2lkIGFzcGVlZF92aWRlb19zdG9wX3N0cmVhbWluZyhzdHJ1Y3QgdmIyX3F1ZXVlCj4gPiAqcSkK
+PiA+ID4gPiA+ICAJCSAqIE5lZWQgdG8gZm9yY2Ugc3RvcCBhbnkgRE1BIGFuZCB0cnkgYW5kIGdl
+dCBIVyBpbnRvIGEgZ29vZAo+ID4gPiA+ID4gIAkJICogc3RhdGUgZm9yIGZ1dHVyZSBjYWxscyB0
+byBzdGFydCBzdHJlYW1pbmcgYWdhaW4uCj4gPiA+ID4gPiAgCQkgKi8KPiA+ID4gPiA+IC0JCWFz
+cGVlZF92aWRlb19vZmYodmlkZW8pOwo+ID4gPiA+ID4gLQkJYXNwZWVkX3ZpZGVvX29uKHZpZGVv
+KTsKPiA+ID4gPiA+ICsJCWFzcGVlZF92aWRlb19yZXNldCh2aWRlbyk7Cj4gPiA+ID4gPgo+ID4g
+PiA+ID4gIAkJYXNwZWVkX3ZpZGVvX2luaXRfcmVncyh2aWRlbyk7Cj4gPiA+ID4gPgo+ID4gPiA+
+ID4gQEAgLTIyMzAsNiArMjI0MCwxMiBAQCBzdGF0aWMgaW50IGFzcGVlZF92aWRlb19pbml0KHN0
+cnVjdAo+ID4gPiA+ID4gYXNwZWVkX3ZpZGVvCj4gPiA+ID4gKnZpZGVvKQo+ID4gPiA+ID4gIAl9
+Cj4gPiA+ID4gPiAgCWRldl9pbmZvKHZpZGVvLT5kZXYsICJpcnEgJWRcbiIsIGlycSk7Cj4gPiA+
+ID4gPgo+ID4gPiA+ID4gKwl2aWRlby0+cmVzZXQgPSBkZXZtX3Jlc2V0X2NvbnRyb2xfZ2V0KGRl
+diwgTlVMTCk7Cj4gPiA+ID4gPiArCWlmIChJU19FUlIodmlkZW8tPnJlc2V0KSkgewo+ID4gPiA+
+ID4gKwkJZGV2X2VycihkZXYsICJVbmFibGUgdG8gZ2V0IHJlc2V0XG4iKTsKPiA+ID4gPiA+ICsJ
+CXJldHVybiBQVFJfRVJSKHZpZGVvLT5yZXNldCk7Cj4gPiA+ID4gPiArCX0KPiA+ID4gPiA+ICsK
+PiA+ID4gPiA+ICAJdmlkZW8tPmVjbGsgPSBkZXZtX2Nsa19nZXQoZGV2LCAiZWNsayIpOwo+ID4g
+PiA+ID4gIAlpZiAoSVNfRVJSKHZpZGVvLT5lY2xrKSkgewo+ID4gPiA+ID4gIAkJZGV2X2Vycihk
+ZXYsICJVbmFibGUgdG8gZ2V0IEVDTEtcbiIpOwo+ID4gPiA+ID4KPiA+ID4gPiA+IC0tLQo+ID4g
+PiA+ID4gYmFzZS1jb21taXQ6IGFjM2ZkMDFlNGMxZWZjZThmMmMwNTRjZGViMmRkZDJmYzBmYjE1
+MGQKPiA+ID4gPiA+IGNoYW5nZS1pZDogMjAyNTExMjQtdmlkZW9fZHJhbV9yZXNldC1jNTMxZjZi
+YTU3M2YKPiA+ID4gPiA+Cj4gPiA+ID4gPiBCZXN0IHJlZ2FyZHMsCj4gPiA+ID4gPiAtLQo+ID4g
+PiA+ID4gSmFtbXkgSHVhbmcgPGphbW15X2h1YW5nQGFzcGVlZHRlY2guY29tPgo+ID4gPiA+ID4K
+PiA+ID4gPgo+ID4gCj4gPiAKPiA+IOS/oeaBr+WuieWFqOWjsOaYju+8muacrOmCruS7tuWMheWQ
+q+S/oeaBr+W9kuWPkeS7tuS6uuaJgOWcqOe7hOe7h+aJgOaciSzlj5Hku7bkurrmiYDlnKjnu4Tn
+u4flr7kKPiA+IOivpemCruS7tuaLpeacieaJgOacieadg+WIqeOAguivt+aOpeaUtuiAheazqOaE
+j+S/neWvhizmnKrnu4/lj5Hku7bkurrkuabpnaLorrjlj68s5LiN5b6X5ZCR5Lu75L2VCj4gPiDn
+rKzkuInmlrnnu4Tnu4flkozkuKrkurrpgI/pnLLmnKzpgq7ku7bmiYDlkKvkv6Hmga/jgIIKPiA+
+IEluZm9ybWF0aW9uIFNlY3VyaXR5IE5vdGljZTogVGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBp
+biB0aGlzIG1haWwgaXMgc29sZWx5Cj4gPiBwcm9wZXJ0eSBvZiB0aGUgc2VuZGVyJ3Mgb3JnYW5p
+emF0aW9uLlRoaXMgbWFpbCBjb21tdW5pY2F0aW9uIGlzCj4gPiBjb25maWRlbnRpYWwuUmVjaXBp
+ZW50cyBuYW1lZCBhYm92ZSBhcmUgb2JsaWdhdGVkIHRvIG1haW50YWluIHNlY3JlY3kgYW5kIGFy
+ZQo+ID4gbm90IHBlcm1pdHRlZCB0byBkaXNjbG9zZSB0aGUgY29udGVudHMgb2YgdGhpcyBjb21t
+dW5pY2F0aW9uIHRvIG90aGVycy4KCg0KDQrkv6Hmga/lronlhajlo7DmmI7vvJrmnKzpgq7ku7bl
+jIXlkKvkv6Hmga/lvZLlj5Hku7bkurrmiYDlnKjnu4Tnu4fmiYDmnIks5Y+R5Lu25Lq65omA5Zyo
+57uE57uH5a+56K+l6YKu5Lu25oul5pyJ5omA5pyJ5p2D5Yip44CC6K+35o6l5pS26ICF5rOo5oSP
+5L+d5a+GLOacque7j+WPkeS7tuS6uuS5pumdouiuuOWPryzkuI3lvpflkJHku7vkvZXnrKzkuInm
+lrnnu4Tnu4flkozkuKrkurrpgI/pnLLmnKzpgq7ku7bmiYDlkKvkv6Hmga/jgIINCkluZm9ybWF0
+aW9uIFNlY3VyaXR5IE5vdGljZTogVGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBpbiB0aGlzIG1h
+aWwgaXMgc29sZWx5IHByb3BlcnR5IG9mIHRoZSBzZW5kZXIncyBvcmdhbml6YXRpb24uVGhpcyBt
+YWlsIGNvbW11bmljYXRpb24gaXMgY29uZmlkZW50aWFsLlJlY2lwaWVudHMgbmFtZWQgYWJvdmUg
+YXJlIG9ibGlnYXRlZCB0byBtYWludGFpbiBzZWNyZWN5IGFuZCBhcmUgbm90IHBlcm1pdHRlZCB0
+byBkaXNjbG9zZSB0aGUgY29udGVudHMgb2YgdGhpcyBjb21tdW5pY2F0aW9uIHRvIG90aGVycy4=
 
-MAC to MAC is one of the edge cases where phy-mode is not great. What
-is generally accepted it to use rx-internal-delay-ps and
-tx-internal-delay-ps with 2ns and a comment explaining it is a MAC to
-MAC link, with this MAC adding the delays.
-
-I suggest you see how messy it is to implement this for 2600. If the
-code looks horrible, keep the bootloader delays. For 2700 you have a
-clean slate, you can implement all this correctly from the start.
-
-	Andrew
 
