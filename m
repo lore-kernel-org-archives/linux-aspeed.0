@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-3045-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3046-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 686E3D2F7CF
-	for <linux-aspeed@archiver.kernel.org>; Fri,  5 Dec 2025 09:53:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B37D0D2F7CD
+	for <linux-aspeed@archiver.kernel.org>; Fri,  5 Dec 2025 09:53:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dN6C06hBHz2xrM;
-	Fri, 05 Dec 2025 20:53:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dN6C14xWLz2xrk;
+	Fri, 05 Dec 2025 20:53:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764928412;
-	cv=none; b=XL2LSj145bTnLwZGvzIWMXVwUwZzeuunn7B2/QEdbEm9RFxlByr5HXJvKfhYu1a1TNty+HZV6tigB6FS7V1HszYcFYs0NIlxmvoiV42I9IWBjltgJGJz938DFbJkguQQ77ufVmv2asfP6heRKVcpPf7puV/i5bMp5sObuZ8RyZvS0k+t+8OLBO5ze1LMSWcEMc4EYGNT/dV+fNomS6AzoUnyZ/qquQfyWeg2YST425PD1J0KOxIBC7tZr5dPzABDCLh06PwIWXMK1XSodCNTXLCBOU3EqLxFt+M8bxURgHgvS/I5Y78C/eClNMfxtEo5gwFVLxk9EJ3qkmlv8wvS/g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764928413;
+	cv=none; b=BCWhcd46wUkpA7uzYSZdCSpol+iJrZgytxL2ZJEV00Bq8t6hu4shznVPRGlMsHjFaah2rR79IrqPz76GPXDoaplo2hjYsj7EiyfHZ/b/3YDFd9LIDUeRLdfmDFwV1XNzE+oa7aib5D2XcrrUp/JTU0RiF1I1Z19mkl7CXDjQ4Gv0bRs/MYGyumReVO4En1F0xBs8OtJ0HJal45LHSbajR8ls/zpSJ8jCY85030xlAQxuCQTshhlixCIOERviYqr5Fezs8wweFBwo/CsbHScYoKuMLc/zzfCgz9TPQDiPzVQn6qGov4pkrREja6gp3Xmnu5pqtNDS0TrgxLhHh8XhtA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764928412; c=relaxed/relaxed;
-	bh=ptP5cEbAK43v4gem7Uz1051o/9jk5rqIHpjQ9VKUPIk=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=mMGm+l/LfxBDAk29Zyd0r1W4sMwD05U2yheFNi1Hx7/1GN4LKlUF8LAuarkg1lqHkIEPUpO1EiJvMLF7soeIwOE+Prs3g+ALGg7Etf0iljsjaXXQihMzmIOsknnI0KuwIVM4meFDlShZ2D/X0LSVyKzXFoLkWtYKm/5MwAB6/h0SuE524lOWhzxreNyFmntZhtQXSf3GfdC8LUKnLndY40vhX3aoD9u1Pzi7N/An1NOYNX9GY/8H+T1ksZ0Jy35raDAtJvWqTOzJd6TUfX+OVhTdMMxN/uTB8uUqpzIGkl4LZiW5nz7r2cnmkAHPjHpVF7VQEidaTM+1PGsdS6Y2dw==
+	t=1764928413; c=relaxed/relaxed;
+	bh=KHQEZvIaT9ZEN2IviuzwdDi6REMVFYwYRfKloz4i2+4=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=M6x6EOq3InZAxPBv2lx+ktj3fhERbd0IAOB6MWFnpFEwEIVXOZIC8f6QDwQ8ZgvSjTPThajsnvowZ1lYoSVBIxMollCB35MCkLxm0i6qF/80LaLeRS8nnCgc0tgt9AgoyxrmUExtWcAR1tBR8hgjG8wtmHgumF3npsa6lyXwSsB70IpFAl7G85iXktn0uC8a0m/wQPcIXP8/hFAvKZc1wkjEr4ASHmH3P17B4e6SnFzEtU5gR0VUHohohLjOzdz353LlTeflY7gtZW2EfbrCywj7IXbI04h462yyalNImqfPJoNyTfNGqInTxRAFNfBwbD6dkbB1D4DQM1P8inAsqQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dN6C00VfDz2xFn
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 05 Dec 2025 20:53:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dN6C10PGGz2xFn
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 05 Dec 2025 20:53:33 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 5 Dec
@@ -32,9 +33,9 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Fri, 5 Dec 2025 17:53:15 +0800
 From: Jacky Chou <jacky_chou@aspeedtech.com>
-Subject: [PATCH net-next v5 0/4] Add AST2600 RGMII delay into ftgmac100
-Date: Fri, 5 Dec 2025 17:53:14 +0800
-Message-ID: <20251205-rgmii_delay_2600-v5-0-bd2820ad3da7@aspeedtech.com>
+Date: Fri, 5 Dec 2025 17:53:15 +0800
+Subject: [PATCH net-next v5 1/4] dt-bindings: net: ftgmac100: Add delay
+ properties for AST2600
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -50,12 +51,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAIqrMmkC/4XQ0WrDIBQG4FcpXs9wPEZNd7X3GCU4PWnc2qRTG
- xpK3n0uhW3Qwq7kcPg/Of+VJYqBEnveXFmkKaQwDmVQTxvmejvsiQdfZoaASoAUPO6PIbSeDnZ
- uUQNwC/AGWDfOkGYldorUhctKvrKBMh/oktmubPqQ8hjn9a9JrPtvtqimPFvESijUW2m44O/Wf
- cyt68fzi00nIp/J9ZUbj6s04W+6ERK0lCAqKZtGif/D8icsykn3F02SAye0HWqlO+PNQ6X+owh
- 4oNRFUc56ic7o4twpy62tSJ/n0nu+VbZbli9NrY04lQEAAA==
-X-Change-ID: 20251031-rgmii_delay_2600-a00b0248c7e6
+Message-ID: <20251205-rgmii_delay_2600-v5-1-bd2820ad3da7@aspeedtech.com>
+References: <20251205-rgmii_delay_2600-v5-0-bd2820ad3da7@aspeedtech.com>
+In-Reply-To: <20251205-rgmii_delay_2600-v5-0-bd2820ad3da7@aspeedtech.com>
 To: Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
 	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
 	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Rob Herring
@@ -67,80 +65,85 @@ CC: <netdev@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<linux-aspeed@lists.ozlabs.org>, <taoren@meta.com>, Jacky Chou
 	<jacky_chou@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1764928395; l=3209;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1764928395; l=2965;
  i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
- bh=mfxL0uUIjxrFMdPcCRvbeueWw7KboedpnEge2ljo6CI=;
- b=C8V5JhC5awYAnXB6CpeQ932sjXs9JodBsINryrvjKvjIehpMpOKDxD4gfTha0lCZHrKQYNj8a
- Nq/LqtHJIdmA+X8fkLupp5tBUCVARFNtyzVzKdmRXBVCi6Y736bzQhH
+ bh=10M+NTu6cKgwCMa/PYvFJoSlsso1k74bA21xmxMKlok=;
+ b=Kh2WP6QLBI3wSvDKNvjpCbZYvYBuRfBemttZPEqGdj/Ge9IxrY3cZQc6Xr69W9YTeqqLiTmJa
+ 9+yHR4PJKdGDUalzjzU4tP10JMDte6PU5geXmz+L06GIe8aumCVoqoa
 X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
  pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
 
-This patch series adds support for configuring RGMII internal delays for the
-Aspeed AST2600 FTGMAC100 Ethernet MACs. It introduces new compatible strings to
-distinguish between MAC0/1 and MAC2/3, as their delay chains and configuration
-units differ.
-The device tree bindings are updated to restrict the allowed phy-mode and delay
-properties for each MAC type. Corresponding changes are made to the device tree
-source files and the FTGMAC100 driver to support the new delay configuration.
+The AST2600 contains two dies, each with its own MAC, and these MACs
+require different delay configurations.
+Previously, these delay values were configured during the bootloader
+stage rather than in the driver. This change introduces the use of the
+standard properties defined in ethernet-controller.yaml to configure
+the delay values directly in the driver.
 
-This enables precise RGMII timing configuration for AST2600-based platforms,
-improving interoperability with various PHYs
+Each Aspeed platform has its own delay step value. And for Aspeed platform,
+the total steps of RGMII delay configuraion is 32 steps, so the total delay
+is delay-step-ps * 32.
+Default delay values are declared so that tx-internal-delay-ps and
+rx-internal-delay-ps become optional. If these properties are not present,
+the driver will use the default values instead.
+Add conditional schema constraints for Aspeed AST2600 MAC controllers:
+- For MAC0/1, per delay step for rgmii is 45 ps
+- For MAC2/3, per delay step for rgmii is 250 ps
+- Both require the "aspeed,scu" and "aspeed,rgmii-delay-ps" properties.
+Other compatible values remain unrestricted.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
-Changes in v5:
-- Remove the new property, "aspeed,rgmii-delay-ps" from yaml and driver
-- Add aspeed,scu to aspeed-g6 dtsi back
-- Determine delay value from bootloader and tx/rx-internal-delay-ps to
-  configure RGMII delay value with phy-mode
-- Add a helper for AST2600 to get phy driver handle
-- Link to v4: https://lore.kernel.org/r/20251110-rgmii_delay_2600-v4-0-5cad32c766f7@aspeedtech.com
+ .../devicetree/bindings/net/faraday,ftgmac100.yaml | 27 ++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-Changes in v4:
-- Remove the compatible "aspeed,ast2600-mac01" and
-  "aspeed,ast2600-mac23"
-- Add new property to specify the RGMII delay step for each MACs
-- Add default value of rx/tx-internal-delay-ps
-- For legacy dts, a warning message reminds users to update phy-mode
-- If lack rx/tx-internal-delay-ps, driver will use default value to
-  configure the RGMII delay
-- Link to v3: https://lore.kernel.org/r/20251103-rgmii_delay_2600-v3-0-e2af2656f7d7@aspeedtech.com
+diff --git a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
+index d14410018bcf..00f7a0e56106 100644
+--- a/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
++++ b/Documentation/devicetree/bindings/net/faraday,ftgmac100.yaml
+@@ -69,6 +69,30 @@ properties:
+   mdio:
+     $ref: /schemas/net/mdio.yaml#
+ 
++  aspeed,scu:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description:
++      Phandle to the SCU (System Control Unit) syscon node for Aspeed platform.
++      This reference is used by the MAC controller to configure the RGMII delays.
++
++  rx-internal-delay-ps:
++    description:
++      RGMII Receive Clock Delay defined in pico seconds. There are 32
++      steps of RGMII delay for Aspeed platform. Each Aspeed platform has its
++      own delay step value, it is fixed by hardware design. Total delay is
++      calculated by delay-step * 32. A value of 0 ps will disable any
++      delay. The Default is no delay.
++    default: 0
++
++  tx-internal-delay-ps:
++    description:
++      RGMII Transmit Clock Delay defined in pico seconds. There are 32
++      steps of RGMII delay for Aspeed platform. Each Aspeed platform has its
++      own delay step value, it is fixed by hardware design. Total delay is
++      calculated by delay-step * 32. A value of 0 ps will disable any
++      delay. The Default is no delay.
++    default: 0
++
+ required:
+   - compatible
+   - reg
+@@ -85,6 +109,9 @@ allOf:
+     then:
+       properties:
+         resets: true
++        aspeed,scu: true
++        rx-internal-delay-ps: true
++        tx-internal-delay-ps: true
+     else:
+       properties:
+         resets: false
 
-Changes in v3:
-- Add new item on compatible property for new compatible strings
-- Remove the new compatible and scu handle of MAC from aspeed-g6.dtsi
-- Add new compatible and scu handle to MAC node in
-  aspeed-ast2600-evb.dts
-- Change all phy-mode of MACs to "rgmii-id"
-- Keep "aspeed,ast2600-mac" compatible in ftgmac100.c and configure the
-  rgmii delay with "aspeed,ast2600-mac01" and "aspeed,ast2600-mac23"
-- Link to v2: https://lore.kernel.org/r/20250813063301.338851-1-jacky_chou@aspeedtech.com
-
-Changes in v2:
-- added new compatible strings for MAC0/1 and MAC2/3
-- updated device tree bindings to restrict phy-mode and delay properties
-- refactored driver code to handle rgmii delay configuration
-- Link to v1: https://lore.kernel.org/r/20250317025922.1526937-1-jacky_chou@aspeedtech.com
-
----
-Jacky Chou (4):
-      dt-bindings: net: ftgmac100: Add delay properties for AST2600
-      ARM: dts: aspeed-g6: add aspeed,scu property for MAC
-      net: ftgmac100: Add RGMII delay support for AST2600
-      ARM: dts: aspeed: ast2600-evb: Configure RGMII delay for MAC
-
- .../devicetree/bindings/net/faraday,ftgmac100.yaml |  27 ++
- arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts    |  20 +-
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |   4 +
- drivers/net/ethernet/faraday/ftgmac100.c           | 288 ++++++++++++++++++++-
- drivers/net/ethernet/faraday/ftgmac100.h           |  25 ++
- 5 files changed, 358 insertions(+), 6 deletions(-)
----
-base-commit: 8f7aa3d3c7323f4ca2768a9e74ebbe359c4f8f88
-change-id: 20251031-rgmii_delay_2600-a00b0248c7e6
-
-Best regards,
 -- 
-Jacky Chou <jacky_chou@aspeedtech.com>
+2.34.1
 
 
