@@ -1,40 +1,62 @@
-Return-Path: <linux-aspeed+bounces-3059-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3060-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 963B1D3B7DD
-	for <linux-aspeed@archiver.kernel.org>; Mon,  8 Dec 2025 06:50:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93366D3B7E7
+	for <linux-aspeed@archiver.kernel.org>; Mon,  8 Dec 2025 13:47:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dPt0M0S96z2yGD;
-	Mon, 08 Dec 2025 17:50:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765176627;
-	cv=none; b=YazbLTVLvxnh24U/g6R31p0i09mmmL/wcvh0G8InAzb+sVNu1ioMod/UwEKYKrUPxep6viNZkOSsVv1Y3kh72BOxuqTLph/CD8ED4nnluf7i2fFTQb9/GbbD+aIY3p/W0qw1XPTqd6/MQxuZBRbcjW2nIzkOd7MWWyuPmwQN926IB0Dsg7Uj8epDpVn4N0TcaVjqWDTk7Za+7piqiIbhUwFuhU2Lr0afM5REn5PHIU7rjiFIRbk0GQxa1n/+Ig8wa/Alv3ontyp8qbZt+P7NNaXhuqQct1/DtzkCiHELufqy05grwEZseTDkKKUpIV1Aq5NlZhH2Bj+E4m4xm18ipw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dQ3FR0d2Cz2yYJ;
+	Tue, 09 Dec 2025 00:47:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765201643;
+	cv=none; b=FhNyVjkLxgepF45QgxeEKN8ikO2mXo/3M2X3Ctt7YQmbBBR7QEu3A1lANxrTnLAgXK48iWUKMDsA+RXzXyYP1nuQy2NzY4MONoaflPEVG8IE9DM8KuRpJEf2Uo4GH6miQnaAC641ncpr+0Sot7+61ErkQ3KiNRrXRqv/UFwWsRSJCJFlMgyfmQGWSQwAoTh9RMf0paayS5ItiNND/lmolvps8TFlk4Vbfr7vp35Tn5XsA24uJ6Hw4TVXQT5OGFhxDdjxDfVnI8FE4D0ZRx/jn+pi2LbtBw3ZEHB8jd23YuH+fEslXcR+TlCnSxGCpUsdenN5ywfKX8YFGVk91MPvNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765176627; c=relaxed/relaxed;
-	bh=XCJR9swgHzHfYMJ+M8ZgfcfJUdNeaqkdgbzM1Ymi5Vc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:To:CC; b=PK+SPIUtphduXqDa6Ancis+ekPiUYND+aVWbdSfWfSXmZft+h896Aot1VZJpDBuvqJi1x2v/gOfcAUue28FWI4Qs8Dg5uwikfncDcp8Z6+l9TDMkAY2H1YzYfPrshwZDg7S0OrkFu8t/jANvv5TyCCJ8FjC+4BbmFqrvHIyl5weuIXfI877SbnI/xRF3fS6lAMOV/7Lls4cmnHBKdfiKEwqMGb12Ed1Hj44IhQCRU4UNoIziI1fdmS/TAO/2ZouK0cVCpK36T+WAL5jqjMFnkBnF57L504NvBORKRZ4zS025Xdc/Ba730u+tDigqTtjP/790VEdPvaGGmmuvIRfMQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1765201643; c=relaxed/relaxed;
+	bh=A/sml+u6a8CEZsJFpF3d5AMtMazVBG0Mrdny6cktA2Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IwmJSbSXQrjLt3IS6VGBGJMfIGKavbZTbnnGZyw+1q4qVEDf5Wp88iTLWu0Fc4npUpatSDFPa4LSRmk65kUrpkPmO1SSDumOuPY0hUwJnrmwo1KtdGEAPB9QwHkrz9e18MfldmjR14Vk1XKRReToZsAPoiuc9sYiz4Fx+SoS+4kTFIxVh6DwBKZGLh0gZZpGArXlETMlftCDfF/WN2ekxZkHCuFKnXkMnB6+qEJpgSSdpqkJgqzQswFISBfhHphrcG2/9Uwj5RMpRthlP71W/QQcg2KaVSCov8enJ8Igd3cxw1AUrqmyC4bn008Pzltb1fjxtCEZL7sEC+btms9r7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ko9nLS11; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ko9nLS11;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dPt0L16llz2yG7
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Dec 2025 17:50:25 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 8 Dec
- 2025 14:50:07 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Mon, 8 Dec 2025 14:50:07 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-Date: Mon, 8 Dec 2025 14:49:56 +0800
-Subject: [PATCH net] net: mdio: aspeed: add dummy read to avoid
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQ3FN5S8cz2yTK
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 09 Dec 2025 00:47:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=A/sml+u6a8CEZsJFpF3d5AMtMazVBG0Mrdny6cktA2Q=; b=ko9nLS11fjpRJtP5ZP4Kif3Ed7
+	pWgzCrQ8dYO8fzp2in8a69Z7yuhGG0c7SMlpivS1hnC3oWaXuUR/tuVW5V3Ikbmu9SPJazlbMl4jb
+	Wt7nNgjpMPpM/7L8Irnqv8ubW3bdbxVwoIjVU0392LbCuhcWZFpq/OIxA0K00Tu8WG9o=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1vSbZf-00GNYB-T0; Mon, 08 Dec 2025 14:46:47 +0100
+Date: Mon, 8 Dec 2025 14:46:47 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: Heiner Kallweit <hkallweit1@gmail.com>,
+	Russell King <linux@armlinux.org.uk>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Potin Lai <potin.lai@quantatw.com>, netdev@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH net] net: mdio: aspeed: add dummy read to avoid
  read-after-write issue
+Message-ID: <57860c7c-2294-4ea6-a998-8bc92dda2ed2@lunn.ch>
+References: <20251208-aspeed_mdio_add_dummy_read-v1-1-0a1861ad2161@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,74 +70,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20251208-aspeed_mdio_add_dummy_read-v1-1-0a1861ad2161@aspeedtech.com>
-X-B4-Tracking: v=1; b=H4sIABN1NmkC/x3MQQrCMBAF0KuUWRtIAqWDVxEJo/Ors0haEhWl9
- O6GLt/mbdRQDY3Ow0YVH2u2lI5wGuj+lPKAM+2m6OMYomcnbQU0ZbUliWrSd86/VCHqRp7kxuy
- Zw0Q9WCtm+x75hQpedN33Px2NPj5xAAAA
-X-Change-ID: 20251208-aspeed_mdio_add_dummy_read-587ab8808817
-To: Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
-	Russell King <linux@armlinux.org.uk>, "David S. Miller"
-	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
-	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Joel Stanley
-	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Potin Lai
-	<potin.lai@quantatw.com>
-CC: <netdev@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Jacky Chou
-	<jacky_chou@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1765176607; l=1761;
- i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
- bh=Fifsoq6L0rsVImG8RoDFYXbWdp8xBrChzw1XsvErTOs=;
- b=9ew34t6mAacKgfcW7cQqS3ktVoIHh8IJ1JL7IPVqkV6mjia6haubldqw8OoYpIrooiBORT2ax
- eOZ9BTZwTU/AZMQO7Vjv++X9wYuBk7+ILuD+kvzOdFTEkl1jhqJMi5D
-X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
- pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251208-aspeed_mdio_add_dummy_read-v1-1-0a1861ad2161@aspeedtech.com>
 
-The Aspeed MDIO controller may return incorrect data when a read operation
-follows immediately after a write. Due to a controller bug, the subsequent
-read can latch stale data, causing the polling logic to terminate earlier
-than expected.
+On Mon, Dec 08, 2025 at 02:49:56PM +0800, Jacky Chou wrote:
+> The Aspeed MDIO controller may return incorrect data when a read operation
+> follows immediately after a write. Due to a controller bug, the subsequent
+> read can latch stale data, causing the polling logic to terminate earlier
+> than expected.
+> 
+> To work around this hardware issue, insert a dummy read after each write
+> operation. This ensures that the next actual read returns the correct
+> data and prevents premature polling exit.
+> 
+> This workaround has been verified to stabilize MDIO transactions on
+> affected Aspeed platforms.
+> 
+> Fixes: 737ca352569e ("net: mdio: aspeed: move reg accessing part into separate functions")
 
-To work around this hardware issue, insert a dummy read after each write
-operation. This ensures that the next actual read returns the correct
-data and prevents premature polling exit.
+That seems like an odd Fixes: tag. That is just moving code around,
+but the write followed by a read existed before that. Why not:
 
-This workaround has been verified to stabilize MDIO transactions on
-affected Aspeed platforms.
+commit f160e99462c68ab5b9e2b9097a4867459730b49a
+Author: Andrew Jeffery <andrew@aj.id.au>
+Date:   Wed Jul 31 15:09:57 2019 +0930
 
-Fixes: 737ca352569e ("net: mdio: aspeed: move reg accessing part into separate functions")
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
----
- drivers/net/mdio/mdio-aspeed.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+    net: phy: Add mdio-aspeed
+    
+    The AST2600 design separates the MDIO controllers from the MAC, which is
+    where they were placed in the AST2400 and AST2500. Further, the register
+    interface is reworked again, so now we have three possible different
+    interface implementations, however this driver only supports the
+    interface provided by the AST2600. The AST2400 and AST2500 will continue
+    to be supported by the MDIO support embedded in the FTGMAC100 driver.
+    
+    The hardware supports both C22 and C45 mode, but for the moment only C22
+    support is implemented.
+    
+    Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
+    Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-diff --git a/drivers/net/mdio/mdio-aspeed.c b/drivers/net/mdio/mdio-aspeed.c
-index e55be6dc9ae7..7d11add3c05e 100644
---- a/drivers/net/mdio/mdio-aspeed.c
-+++ b/drivers/net/mdio/mdio-aspeed.c
-@@ -63,6 +63,13 @@ static int aspeed_mdio_op(struct mii_bus *bus, u8 st, u8 op, u8 phyad, u8 regad,
- 
- 	iowrite32(ctrl, ctx->base + ASPEED_MDIO_CTRL);
- 
-+	/* Workaround for read-after-write issue.
-+	 * The controller may return stale data if a read follows immediately
-+	 * after a write. A dummy read forces the hardware to update its
-+	 * internal state, ensuring that the next real read returns correct data.
-+	 */
-+	(void)ioread32(ctx->base + ASPEED_MDIO_CTRL);
-+
- 	return readl_poll_timeout(ctx->base + ASPEED_MDIO_CTRL, ctrl,
- 				!(ctrl & ASPEED_MDIO_CTRL_FIRE),
- 				ASPEED_MDIO_INTERVAL_US,
+
+    Andrew
 
 ---
-base-commit: 0373d5c387f24de749cc22e694a14b3a7c7eb515
-change-id: 20251208-aspeed_mdio_add_dummy_read-587ab8808817
-
-Best regards,
--- 
-Jacky Chou <jacky_chou@aspeedtech.com>
-
+pw-bot: cr
 
