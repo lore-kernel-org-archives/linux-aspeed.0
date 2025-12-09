@@ -1,62 +1,71 @@
-Return-Path: <linux-aspeed+bounces-3060-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3061-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93366D3B7E7
-	for <linux-aspeed@archiver.kernel.org>; Mon,  8 Dec 2025 13:47:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B2D0D3B7E2
+	for <linux-aspeed@archiver.kernel.org>; Tue,  9 Dec 2025 00:16:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dQ3FR0d2Cz2yYJ;
-	Tue, 09 Dec 2025 00:47:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765201643;
-	cv=none; b=FhNyVjkLxgepF45QgxeEKN8ikO2mXo/3M2X3Ctt7YQmbBBR7QEu3A1lANxrTnLAgXK48iWUKMDsA+RXzXyYP1nuQy2NzY4MONoaflPEVG8IE9DM8KuRpJEf2Uo4GH6miQnaAC641ncpr+0Sot7+61ErkQ3KiNRrXRqv/UFwWsRSJCJFlMgyfmQGWSQwAoTh9RMf0paayS5ItiNND/lmolvps8TFlk4Vbfr7vp35Tn5XsA24uJ6Hw4TVXQT5OGFhxDdjxDfVnI8FE4D0ZRx/jn+pi2LbtBw3ZEHB8jd23YuH+fEslXcR+TlCnSxGCpUsdenN5ywfKX8YFGVk91MPvNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dQKC15Dknz2xqh;
+	Tue, 09 Dec 2025 11:16:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765239373;
+	cv=none; b=LCyj8DloT3W1bvyxeeSeogNZg9vM7vGcP9k5lmizM3+uM5kBuGFcoiNCDtKsesa9/4UIVwumjpiahtuwXC8PUGywJpA40fX021DlAAoHv0rdJ+L7sddjLYxs7fnO0vCuwz+9VYTAk4YpefbqD8GKMv/PI/URpNXSc6Lb1UM7dwhi9UwOaM+lmPQyf1ldrdOHdRr7W6g7oQpovR0x3sVenTvg9tu9K2BgiKqF4AYfcYdSnJ16xAiIFWS0gbuTAsvLVFHxQNfRRT4IElZhi35qsl60RScLkb1DsEceqKSFP7ni05y0LC1iJiUSh3js/EZsNKEOZn1BMi+dMRcOFnvcHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765201643; c=relaxed/relaxed;
-	bh=A/sml+u6a8CEZsJFpF3d5AMtMazVBG0Mrdny6cktA2Q=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IwmJSbSXQrjLt3IS6VGBGJMfIGKavbZTbnnGZyw+1q4qVEDf5Wp88iTLWu0Fc4npUpatSDFPa4LSRmk65kUrpkPmO1SSDumOuPY0hUwJnrmwo1KtdGEAPB9QwHkrz9e18MfldmjR14Vk1XKRReToZsAPoiuc9sYiz4Fx+SoS+4kTFIxVh6DwBKZGLh0gZZpGArXlETMlftCDfF/WN2ekxZkHCuFKnXkMnB6+qEJpgSSdpqkJgqzQswFISBfhHphrcG2/9Uwj5RMpRthlP71W/QQcg2KaVSCov8enJ8Igd3cxw1AUrqmyC4bn008Pzltb1fjxtCEZL7sEC+btms9r7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ko9nLS11; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1765239373; c=relaxed/relaxed;
+	bh=2ZscvsbGvY30JuXEtwJ/NklAkr1juTvT+P51+rUN4M8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=O/asjiRwIPc9Tj1in2qSMIoaXxl95BxN2P3XM2ehBXwVJeDOhwV1H3HRUU/mSeBwgmmIUfFIm0KVJ+d+7YGPzfzgjdLVBtNrFG4LrNdSpHxxDmcRyv3ck0bxczelAYTopRwhVO+zoTILMAypv5Kk1U0hl5yODJPs1JXuEg5IstQNPdOe6onNemPXU1vjqZMReZWKTz14wQ2HBqP2pu8wMmTXs9Tx/c77mEYQRckebo05ChFEL8xgsSAYzOlPueoeweL1uKe0+cTORzQjKecXGTHJoT/a7x4aN635C8CkBs9oB2DTFJ+64v5/6HszUD4lfqj9cvlLpY5T5nFQhb0HKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nzqe2YsL; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=ko9nLS11;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Nzqe2YsL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQ3FN5S8cz2yTK
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 09 Dec 2025 00:47:20 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=A/sml+u6a8CEZsJFpF3d5AMtMazVBG0Mrdny6cktA2Q=; b=ko9nLS11fjpRJtP5ZP4Kif3Ed7
-	pWgzCrQ8dYO8fzp2in8a69Z7yuhGG0c7SMlpivS1hnC3oWaXuUR/tuVW5V3Ikbmu9SPJazlbMl4jb
-	Wt7nNgjpMPpM/7L8Irnqv8ubW3bdbxVwoIjVU0392LbCuhcWZFpq/OIxA0K00Tu8WG9o=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vSbZf-00GNYB-T0; Mon, 08 Dec 2025 14:46:47 +0100
-Date: Mon, 8 Dec 2025 14:46:47 +0100
-From: Andrew Lunn <andrew@lunn.ch>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQKC03MjCz2xbQ;
+	Tue, 09 Dec 2025 11:16:12 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 31F6060125;
+	Tue,  9 Dec 2025 00:11:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF78BC4CEF1;
+	Tue,  9 Dec 2025 00:11:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765239068;
+	bh=7ptARhGnIW0rweJs/X7vTtC/SQB8ulRmWeebM2Urvl0=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=Nzqe2YsLmvHdUUpvvSUvm6rLElIkqyZsP8E7UC7VgLN1jMvslaQaB65EuuR2M3tQD
+	 ++rs5KQFBsdOe7SSQ8hVf+DJAugUoPM5Mqrfs69Wm5NDb1BwhrWGYUAduiY2Yokwcw
+	 UnX/Dznj2igM6Bvu9sfjXeM7bTJaA4vS7oKDjiqP6a78W6GKZiw//u+Q7WQb61e+KS
+	 HRkk6gQ/8ovRTrwFr5gibfZmzjuyR5eHFLZzYqvj1cKSwTFL0LbWpbU7omxzWiVhGp
+	 mAEOHH5Lmz7F8T0wk0TahZiroHww1QftElDdmGAe4Dk+Qfg0wy4JVD6zQ794GMZXJu
+	 /flhU9gTQ0Z9A==
+Date: Mon, 8 Dec 2025 18:11:07 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
 To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Heiner Kallweit <hkallweit1@gmail.com>,
-	Russell King <linux@armlinux.org.uk>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Joel Stanley <joel@jms.id.au>,
+Cc: Vinod Koul <vkoul@kernel.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Potin Lai <potin.lai@quantatw.com>, netdev@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net] net: mdio: aspeed: add dummy read to avoid
- read-after-write issue
-Message-ID: <57860c7c-2294-4ea6-a998-8bc92dda2ed2@lunn.ch>
-References: <20251208-aspeed_mdio_add_dummy_read-v1-1-0a1861ad2161@aspeedtech.com>
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Philipp Zabel <p.zabel@pengutronix.de>,
+	linux-aspeed@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	Andrew Jeffery <andrew@aj.id.au>, openbmc@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org
+Subject: Re: [PATCH v6 6/7] PCI: aspeed: Add ASPEED PCIe RC driver
+Message-ID: <20251209001107.GA3430423@bhelgaas>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,49 +81,217 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20251208-aspeed_mdio_add_dummy_read-v1-1-0a1861ad2161@aspeedtech.com>
+In-Reply-To: <20251201-upstream_pcie_rc-v6-6-8c8800c56b16@aspeedtech.com>
 
-On Mon, Dec 08, 2025 at 02:49:56PM +0800, Jacky Chou wrote:
-> The Aspeed MDIO controller may return incorrect data when a read operation
-> follows immediately after a write. Due to a controller bug, the subsequent
-> read can latch stale data, causing the polling logic to terminate earlier
-> than expected.
-> 
-> To work around this hardware issue, insert a dummy read after each write
-> operation. This ensures that the next actual read returns the correct
-> data and prevents premature polling exit.
-> 
-> This workaround has been verified to stabilize MDIO transactions on
-> affected Aspeed platforms.
-> 
-> Fixes: 737ca352569e ("net: mdio: aspeed: move reg accessing part into separate functions")
+On Mon, Dec 01, 2025 at 02:29:16PM +0800, Jacky Chou wrote:
+> Introduce PCIe Root Complex driver for ASPEED SoCs. Support RC
+> initialization, reset, clock, IRQ domain, and MSI domain setup.
+> Implement platform-specific setup and register configuration for
+> ASPEED. And provide PCI config space read/write and INTx/MSI
+> interrupt handling.
+> ...
 
-That seems like an odd Fixes: tag. That is just moving code around,
-but the write followed by a read existed before that. Why not:
+> +struct aspeed_pcie {
+> +	struct pci_host_bridge *host;
+> +	struct device *dev;
+> +	void __iomem *reg;
+> +	struct regmap *ahbc;
+> +	struct regmap *cfg;
+> +	const struct aspeed_pcie_rc_platform *platform;
+> +	struct list_head ports;
+> +
+> +	u8 tx_tag;
+> +	int host_bus_num;
 
-commit f160e99462c68ab5b9e2b9097a4867459730b49a
-Author: Andrew Jeffery <andrew@aj.id.au>
-Date:   Wed Jul 31 15:09:57 2019 +0930
+Only needs a u8.
 
-    net: phy: Add mdio-aspeed
-    
-    The AST2600 design separates the MDIO controllers from the MAC, which is
-    where they were placed in the AST2400 and AST2500. Further, the register
-    interface is reworked again, so now we have three possible different
-    interface implementations, however this driver only supports the
-    interface provided by the AST2600. The AST2400 and AST2500 will continue
-    to be supported by the MDIO support embedded in the FTGMAC100 driver.
-    
-    The hardware supports both C22 and C45 mode, but for the moment only C22
-    support is implemented.
-    
-    Signed-off-by: Andrew Jeffery <andrew@aj.id.au>
-    Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+> +static int aspeed_pcie_port_init(struct aspeed_pcie_port *port)
+> +{
+> +	struct aspeed_pcie *pcie = port->pcie;
+> +	struct device *dev = pcie->dev;
+> +	int ret;
+> +
+> +	ret = clk_prepare_enable(port->clk);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret,
+> +				     "failed to set clock for slot (%d)\n",
+> +				     port->slot);
+> +
+> +	ret = phy_init(port->phy);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret,
+> +				     "failed to init phy pcie for slot (%d)\n",
+> +				     port->slot);
+> +
+> +	ret = phy_set_mode_ext(port->phy, PHY_MODE_PCIE, PHY_MODE_PCIE_RC);
+> +	if (ret)
+> +		return dev_err_probe(dev, ret,
+> +				     "failed to set phy mode for slot (%d)\n",
+> +				     port->slot);
+> +
+> +	reset_control_deassert(port->perst);
+> +	mdelay(PCIE_RESET_CONFIG_WAIT_MS);
 
+I think this should use msleep().
 
-    Andrew
+> +static int aspeed_ast2600_setup(struct platform_device *pdev)
+> +{
+> +	struct aspeed_pcie *pcie = platform_get_drvdata(pdev);
+> +	struct device *dev = pcie->dev;
+> +
+> +	pcie->ahbc = syscon_regmap_lookup_by_phandle(dev->of_node,
+> +						     "aspeed,ahbc");
+> +	if (IS_ERR(pcie->ahbc))
+> +		return dev_err_probe(dev, PTR_ERR(pcie->ahbc),
+> +				     "failed to map ahbc base\n");
+> +
+> +	aspeed_host_reset(pcie);
+> +
+> +	regmap_write(pcie->ahbc, ASPEED_AHBC_KEY, ASPEED_AHBC_UNLOCK_KEY);
+> +	regmap_update_bits(pcie->ahbc, ASPEED_AHBC_ADDR_MAPPING,
+> +			   ASPEED_PCIE_RC_MEMORY_EN, ASPEED_PCIE_RC_MEMORY_EN);
+> +	regmap_write(pcie->ahbc, ASPEED_AHBC_KEY, ASPEED_AHBC_UNLOCK);
+> +
+> +	/* Due to the BAR assignment is fixed mapping on 0x6000_0000.*/
+> +	writel(ASPEED_AHB_REMAP_LO_ADDR(0x600) | ASPEED_AHB_MASK_LO_ADDR(0xe00),
+> +	       pcie->reg + ASPEED_H2X_AHB_ADDR_CONFIG0);
+> +	writel(ASPEED_AHB_REMAP_HI_ADDR(0),
+> +	       pcie->reg + ASPEED_H2X_AHB_ADDR_CONFIG1);
 
----
-pw-bot: cr
+I assume this ASPEED_H2X_AHB_ADDR_CONFIG is doing basically the same
+thing as aspeed_ast2700_remap_pci_addr() below, so see the comments
+there.
+
+> +	writel(ASPEED_AHB_MASK_HI_ADDR(~0),
+> +	       pcie->reg + ASPEED_H2X_AHB_ADDR_CONFIG2);
+> +	writel(ASPEED_H2X_BRIDGE_EN, pcie->reg + ASPEED_H2X_CTRL);
+> +
+> +	writel(ASPEED_PCIE_RX_DMA_EN | ASPEED_PCIE_RX_LINEAR |
+> +	       ASPEED_PCIE_RX_MSI_SEL | ASPEED_PCIE_RX_MSI_EN |
+> +	       ASPEED_PCIE_WAIT_RX_TLP_CLR | ASPEED_PCIE_RC_RX_ENABLE |
+> +	       ASPEED_PCIE_RC_ENABLE,
+> +	       pcie->reg + ASPEED_H2X_DEV_CTRL);
+> +
+> +	writel(ASPEED_RC_TLP_TX_TAG_NUM, pcie->reg + ASPEED_H2X_DEV_TX_TAG);
+> +
+> +	pcie->host->ops = &aspeed_ast2600_pcie_ops;
+> +	pcie->host->child_ops = &aspeed_ast2600_pcie_child_ops;
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_ast2700_remap_pci_addr(struct aspeed_pcie *pcie)
+> +{
+> +	struct device_node *dev_node = pcie->dev->of_node;
+> +	struct of_pci_range range;
+> +	struct of_pci_range_parser parser;
+> +	int ret;
+> +
+> +	ret = of_pci_range_parser_init(&parser, dev_node);
+> +	if (ret)
+> +		return ret;
+> +
+> +	for_each_of_pci_range(&parser, &range) {
+> +		if ((range.flags & IORESOURCE_TYPE_BITS) == IORESOURCE_MEM) {
+> +			writel(ASPEED_REMAP_PCI_ADDR_31_12(range.pci_addr),
+> +			       pcie->reg + ASPEED_H2X_REMAP_PCI_ADDR_LO);
+> +			writel(ASPEED_REMAP_PCI_ADDR_63_32(range.pci_addr),
+> +			       pcie->reg + ASPEED_H2X_REMAP_PCI_ADDR_HI);
+> +			return 0;
+
+It looks like this is essentially hardcoding the offset between the
+parent-bus-address and the child-bus-address in the DT 'ranges'
+property.  Since ASPEED_REMAP_PCI_ADDR_31_12() and
+ASPEED_REMAP_PCI_ADDR_63_32() do nothing except mask out the low 12
+bits, I assume that offset is zero.
+
+But this should not be hard-coded at all; it should be extracted from
+'ranges'.  I don't think we really have a consistent way of doing
+this, but you can take a look at how these other drivers program
+"outbound" mappings like this using bridge->windows:
+
+  cdns_pcie_hpa_host_init_address_translation()
+  dw_pcie_iatu_setup()
+  mobiveil_host_init()
+  xgene_pcie_map_ranges()
+  iproc_pcie_map_ranges()
+  rzg3s_pcie_parse_map_ranges()
+
+> +static int aspeed_pcie_parse_dt(struct aspeed_pcie *pcie)
+> +{
+> +	struct device *dev = pcie->dev;
+> +	struct device_node *node = dev->of_node;
+> +	int ret;
+> +
+> +	for_each_available_child_of_node_scoped(node, child) {
+> +		int slot;
+> +		const char *type;
+> +
+> +		ret = of_property_read_string(child, "device_type", &type);
+> +		if (ret || strcmp(type, "pci"))
+> +			continue;
+> +
+> +		ret = of_pci_get_devfn(child);
+> +		if (ret < 0)
+> +			return dev_err_probe(dev, ret,
+> +					     "failed to parse devfn\n");
+> +
+> +		slot = PCI_SLOT(ret);
+> +
+> +		ret = aspeed_pcie_parse_port(pcie, child, slot);
+> +		if (ret)
+> +			return ret;
+
+It looks unnecessarily complicated to put each port on a list in
+aspeed_pcie_parse_port() and then iterate over that list in
+aspeed_pcie_init_ports().
+
+I think you could just do something like:
+
+  aspeed_pcie_parse_port();
+  aspeed_pcie_port_init();
+
+and get rid of the list completely.
+
+> +	}
+> +
+> +	if (list_empty(&pcie->ports))
+> +		return dev_err_probe(dev, -ENODEV,
+> +				     "No PCIe port found in DT\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_pcie_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct pci_host_bridge *host;
+> +	struct aspeed_pcie *pcie;
+> +	struct resource_entry *entry;
+> +	const struct aspeed_pcie_rc_platform *md;
+> +	int irq, ret;
+> +
+> +	md = of_device_get_match_data(dev);
+> +	if (!md)
+> +		return -ENODEV;
+> +
+> +	host = devm_pci_alloc_host_bridge(dev, sizeof(*pcie));
+> +	if (!host)
+> +		return -ENOMEM;
+> +
+> +	pcie = pci_host_bridge_priv(host);
+> +	pcie->dev = dev;
+> +	pcie->tx_tag = 0;
+> +	platform_set_drvdata(pdev, pcie);
+> +
+> +	pcie->platform = md;
+> +	pcie->host = host;
+> +	INIT_LIST_HEAD(&pcie->ports);
+> +
+> +	/* Get root bus num for cfg command to decide tlp type 0 or type 1 */
+> +	entry = resource_list_first_type(&host->windows, IORESOURCE_BUS);
+> +	if (entry)
+> +		pcie->host_bus_num = entry->res->start;
+
+s/host_bus_num/root_bus_nr/   to match struct altera_pcie
 
