@@ -1,85 +1,81 @@
-Return-Path: <linux-aspeed+bounces-3067-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3068-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9E38D3B9BA
-	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Dec 2025 02:18:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ECB4D3C521
+	for <linux-aspeed@archiver.kernel.org>; Wed, 10 Dec 2025 02:51:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dQzsQ6sLFz2xqk;
-	Wed, 10 Dec 2025 13:18:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=52.101.127.84 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765333098;
-	cv=pass; b=Ayv238cdRTrpNNCMoVwl4aNXrjmLA4b960qnIEsNOUHQqgOLixGpN+OCiZphOsHN/mDBkkImP2JIzT6U8Ww2AS9CQmvhqsmg2YpdnfSBH4o7GsGEt2XCVV0jrezxPD4CU1fQfu3Ab8J56/STuGZ6aeCqQF0B3XGrS/+ComErhs25jZoTAOwW6uI6MokuDrJNgt8YmaKwuFEaWRu8CSFPxZj33VXMzm3C41C5uyNbAVka/8CVzqQL2PRttQ7RikdWD5bGHdyKOu8F/K9j7LslnQCPOSnkD+SPmhfN16e61XFw2WAMp+UK0nPUjWUtyE1oqkKexzn8tcMVYsKXN6nmXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dR0cC3gYjz2xqk;
+	Wed, 10 Dec 2025 13:51:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=40.107.44.128 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765335115;
+	cv=pass; b=gIiW9LewLF+Dseif1DNpCSz/nP/sESt5Qu7qxyaitlq66Xe+m56M/Rp3jOewTFX1Bj5EnCV6OoLsbWKFvVG1ZwI81GeCspb+k7+lFUjeYsktphXNPQNpHjGgDwgHuOxHVK5AV9O8pWkiO8dXnmv07flK997Kx39SS7WjQa6ODpyZY04M02+7yjz0Fcbps8H/UcuA6Nl+HCo5dyia6WVJmMUH5nb3Bt8JdoP68mOc2JWqtTJm+VWuZ0w2CgQDwS0nf9PLAVdqqF72bhcH5JT7XJn5i9DAj//A3XWNI4ZMsWQADU4oVgNZefy/dMVJ4wWP4nrn7AU2ypP8wUdzycPA+Q==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765333098; c=relaxed/relaxed;
-	bh=76kyZTOr2fNUh/Z7Kb4mtA1jNzGaTrbt1mV2hfprjAw=;
+	t=1765335115; c=relaxed/relaxed;
+	bh=8xH3drQAYYtji0Fzx5XrFrFtMAZ09XIO82H9YDmLYd0=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=k+VaQJQXfXsGbcBs8Puln2OypQxzZMhz5tcwSl8kinEztDW0j5umXNWfMHN1ZB0YrAj92fT3WeswJKNRL9S1W1AmHV4klmugnfGQdtZz+LCV5GSnn5l/bUAFsKnx2vaLA3IzqXYmA2B21fP420kc3QfC5hDT3kmK5RXPBP6EsYltDigy0VdbLm9eAQy+tDw2Z7HFr9jXyiR6Fo3QwqS8nASN2V5Kre7SWhqZ4tp3wvDWooUgUDFWAJxXc8SuK1a9cR0btIVcs6xy069DJdetUuopkGos9MzH+j3YB/Qv4DWOhOJuPRCKiS9w1nIZIJ1NbzF8wZSHRaWuyAWScoFoqA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=et4sO8HO; dkim-atps=neutral; spf=pass (client-ip=52.101.127.84; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	 Content-Type:MIME-Version; b=ZzZ9Mh95VVrBXE6IrcKwTXgFxGNCJ0odzJt7B04q80m56A8eOO88dndlXdmr6CigTVr6AA9wSGlXESU6w+c/Q1wMTvAFLltI4kLVvMWWlx3w0ZG+4K4e404DJMMcKzy3PorImTjYN+7OODVXYRi1tQCx+kn/s0ez3s0skN12YS7Xobf15sXFj4dVhLgjJU4gLWSwvd7qjIqI0CDM4ep79rPCPVTcnBsgchLasztPpY+w+rCumrbOqRu9tdZmuQe1B7BbfR8RSm0F3omfuqXjma59YbLw2AZCaliPshvQvl4YO1PNYsHjhtDIvrmJ6r2QVlaJfRzkN0VTzP0nIJl+fQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=OFl/K0J2; dkim-atps=neutral; spf=pass (client-ip=40.107.44.128; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=et4sO8HO;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=OFl/K0J2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=52.101.127.84; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazon11023084.outbound.protection.outlook.com [52.101.127.84])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=40.107.44.128; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazon11023128.outbound.protection.outlook.com [40.107.44.128])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQzsN3jTcz2xJ6;
-	Wed, 10 Dec 2025 13:18:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dR0cB3b81z2xJ6
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 10 Dec 2025 13:51:54 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Z2WJDgdG8qEARFSChT570VYmCmHYbrlQQQjTPbL78IfMmblkGRKCApW0aLgjYB3pSuK0JdE/P6nDhBUoXIioAXBbtlueAU37nscKh4jnmYNsDkc5gZ7fQB3w8XRD3OtUFxtwr/eKAJMVnqLRxC69+eyPS1zqooylg+hVbbwZ1AKmPYjG9JqgourX5zDhMWHyWKSSy/1vi54s+k0LwpKvp0yUSepqhp+Mj7QV+aRVIqb9X8VVQLdBYelXphUuy/yh1grirLUVcn1HvvPGf/yhDXfkg9cXFQp8fzXOd7a2ICzFBYqgLOvjTC7KjyVWVYemmBf5XXeCoEMbWdLyxETjWg==
+ b=s3MvzjeydETtLWzFL1Soc+eb4ZeTMjzOhbu9XHS70WToh2TBUz8Kzu6OzWJ51dBu2KPPLMgYrza2/DZglM6UgaCq7hIBFSE3lpedgXsxoCKmdtprDecgzeDZ+PWi2PZFRSxjrQbxI2RV1KPB+gVevmYQStLih5cA7x+c4qxpycJxVZUdiiAjRcaYYZjEPalWx5pyuR1UoDLRMZHvOGcy5I6+nWVuE7oZqGiwkCQfSuIE7EO7TdBzG1v/AaPpD5Toh5vqJdG0H0NMlQFX5WFGA85UxjR1NQlKUrIo2kDJbKObpQkPe4W/6gRymXOM6iMHnZX/ELh6raIMpRsbigi1AA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=76kyZTOr2fNUh/Z7Kb4mtA1jNzGaTrbt1mV2hfprjAw=;
- b=p2XeMrQzMmr7eS4sN4JoM5UL+G4ynZncBDxciUgpyE4j9yzfU7BNC+0ujv+oxxN9E2ufmMv7nsiKG3J9jmu0MZKXVMk9mPgr4XRiDeJljGrCm8A1D9rO2oTCmvmoBikrATLPXpCWeloShXOxoorujHRVpV3IZAU5+xl9i0vFySAM5suqsdbg0WY9XXWk6E+dejt+MSOkOUWACTi4LFF+dklGfO+e45sHoV3qvv1Ij34kVBJzfOtPaJyPbSF8XGT+3o65S8Fs5w3exerWeWV8eJwvn0evnk//tsAuDySRKx6CiCoQ2M+PSPsCYtdN2CUUFb5WSN61XAelOjInVyWTGg==
+ bh=8xH3drQAYYtji0Fzx5XrFrFtMAZ09XIO82H9YDmLYd0=;
+ b=mKtdYPNJA1o8zYRhzxH51MFhE+wrU/GBT/Wnj/1u09nfJI4norCVw74ES0ELhjMqKhMLdyqpWA0Iha1lowiF48QuysSuWO4or50MidNdau3zvIn+Pe4wI49FaK3l4Fal3dm8n4GV+3h0Cywvv41PVbQ1Mym6Z8QYSsRaV3RNN0qvjh1ube1qabB2xcKNRDZ0yUxtvzIfU7JF/a/T4yXteP0wJLOQsbXsXEP9GX4FbvutEC+gI5u0hp+vbWcM6vQ75b1kmVMpqolEd8XoUEAWXzif28j9Tlct+VH4yQXKNhbsBsChZizLo6WLixm6jAf6KkYpyVb8DHQ5U43wnFRq5A==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
  header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=76kyZTOr2fNUh/Z7Kb4mtA1jNzGaTrbt1mV2hfprjAw=;
- b=et4sO8HOruEYiBLqh/2qWZAJ/5oCLFplzktr4LmvxvL5MTtmQ17lGAbmZw4vuKuLgF6sdfdl3i3sWdgc7qMIaueSIpjKQBe6hEg5fhqTDrbeYtwbE9UtPhJKNPxyK7xlMM9aJ6hkn0ra8k5MV5kiCLPo0HVn5Ozqu+2OP5ad6bW100Z1pgOWmDU1BeRGDVuJQvvffNu6zyiyPQn4v08p3xBEbRkjlLXNzhPziPmQuI4jZYqmgkijt/lHIDWGBtBbNDDGq/Vdbi18HMPfL1iqI98fPHWmJIq6+NygxdPBcJWHp+DkLUvKfm2LHunnMscXNNDKB73do+qCjSisciIlvA==
+ bh=8xH3drQAYYtji0Fzx5XrFrFtMAZ09XIO82H9YDmLYd0=;
+ b=OFl/K0J2HxmpkFo0YfPuVc91dGCII/mivXPm/5OSzNEPnSYNYDCMe/hwiL+vRfsP8h+7GWEsQFhE6n8QyAAB1LLZAovXSAmq+SEwY+6gwGaALygy8jJGn9BhYimlZDE1IEYuGeG3mC07NbEreK+cHQeunH79rEaim5NlVbD6qltemsZMf0Mib34R9/+4WqA/hvVKjFgDw2EdElFjQkzGfRiBRE2CpPiEXoTbyEQpwg+1uw4Xf3PmDR/wIO+7yqHHOOH3l13SIw4aa/qt1YruK0p3hC/WJlppoQOdOmyaz4kLYCZ6weTwWq5XHexPIkSZFpcvhPVz6S/hNIEjiaFskQ==
 Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
- by SE1PPF158EAB38C.apcprd06.prod.outlook.com (2603:1096:108:1::40a) with
+ by SI2PR06MB5138.apcprd06.prod.outlook.com (2603:1096:4:1ad::6) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9366.17; Wed, 10 Dec
- 2025 02:17:32 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.7; Wed, 10 Dec
+ 2025 02:51:12 +0000
 Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
  ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
  ([fe80::6b58:6014:be6e:2f28%6]) with mapi id 15.20.9388.009; Wed, 10 Dec 2025
- 02:17:31 +0000
+ 02:51:12 +0000
 From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-CC: Vinod Koul <vkoul@kernel.org>, Kishon Vijay Abraham I <kishon@kernel.org>,
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>, Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	=?iso-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>, Manivannan
- Sadhasivam <mani@kernel.org>, Linus Walleij <linus.walleij@linaro.org>,
-	Philipp Zabel <p.zabel@pengutronix.de>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
-	<linux-pci@vger.kernel.org>, "linux-phy@lists.infradead.org"
-	<linux-phy@lists.infradead.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, Andrew Jeffery <andrew@aj.id.au>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
-Subject: [PATCH v6 6/7] PCI: aspeed: Add ASPEED PCIe RC driver
-Thread-Topic: [PATCH v6 6/7] PCI: aspeed: Add ASPEED PCIe RC driver
-Thread-Index: AQHcYovau3E4PFuPz0uUFTRwyGlUlLUYe4mAgAG0h1A=
-Date: Wed, 10 Dec 2025 02:17:31 +0000
+To: Russell King <linux@armlinux.org.uk>
+CC: Andrew Lunn <andrew@lunn.ch>, Heiner Kallweit <hkallweit1@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Joel
+ Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Potin
+ Lai <potin.lai@quantatw.com>, "netdev@vger.kernel.org"
+	<netdev@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>
+Subject: [PATCH net v2] net: mdio: aspeed: add dummy read to avoid
+ read-after-write issue
+Thread-Topic: [PATCH net v2] net: mdio: aspeed: add dummy read to avoid
+ read-after-write issue
+Thread-Index: AQHcaP0lz9UNiPjziEO/AE8/Qcm1NLUZK8GAgAEBmrA=
+Date: Wed, 10 Dec 2025 02:51:11 +0000
 Message-ID:
- <SEYPR06MB513497D82F1FBBFAC6B9EE309DA0A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-References: <20251201-upstream_pcie_rc-v6-6-8c8800c56b16@aspeedtech.com>
- <20251209001107.GA3430423@bhelgaas>
-In-Reply-To: <20251209001107.GA3430423@bhelgaas>
+ <SEYPR06MB5134FEDC81B12477031E2C179DA0A@SEYPR06MB5134.apcprd06.prod.outlook.com>
+References:
+ <20251209-aspeed_mdio_add_dummy_read-v2-1-5f6061641989@aspeedtech.com>
+ <aTgHva-UVEPl9EAR@shell.armlinux.org.uk>
+In-Reply-To: <aTgHva-UVEPl9EAR@shell.armlinux.org.uk>
 Accept-Language: zh-TW, en-US
 Content-Language: zh-TW
 X-MS-Has-Attach:
@@ -87,73 +83,71 @@ X-MS-TNEF-Correlator:
 authentication-results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=aspeedtech.com;
 x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|SE1PPF158EAB38C:EE_
-x-ms-office365-filtering-correlation-id: dfcc7df3-0376-41d9-a183-08de37924654
+x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|SI2PR06MB5138:EE_
+x-ms-office365-filtering-correlation-id: 919b57a0-ba26-421f-d0ee-08de3796fa82
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam:
- BCL:0;ARA:13230040|7416014|376014|366016|1800799024|38070700021;
+ BCL:0;ARA:13230040|1800799024|376014|7416014|366016|38070700021;
 x-microsoft-antispam-message-info:
- =?iso-8859-2?Q?M9G+IOzuSspFIPtsDXMvS89O2wCjmb27c3wNdbBXX1sBfNNdzTnYvFgwW2?=
- =?iso-8859-2?Q?bGd6Ibd2aCMPIYvQ35hgwjdL21HwmQC049n/Ghb46vznAsPVkVuJhdSRsz?=
- =?iso-8859-2?Q?fuqxUpfPwV2rqFYHoYMlq9fqaKeUey3IrP72gChvJuW0aSNbRDT2oL0Pb1?=
- =?iso-8859-2?Q?o6SKiwSlS1rIJLgMY0WeD5C0/a6KakJ2jyNoVWA02mOLved7l+ckLxZx5j?=
- =?iso-8859-2?Q?fLu0iV6uTRol3fH/3wDjqbqZiLIowy0uMwZcWNBm3kxaEOhT1G3hlWSX+2?=
- =?iso-8859-2?Q?mcanyHgiinAua918T+xNDq9IZwWEj5P3Tr0TY8kxrpVuRVZo9mpRd1FOwK?=
- =?iso-8859-2?Q?8SgHZmxXZZgwMf/em6624kerTUbRN51Ked/aHfm3HrJVwMZxVPqvkv93Zn?=
- =?iso-8859-2?Q?i4IBwlr+Lflw7o01heKYUG4n1hCS78WAWpaSv9Yq2hrI8fHV9YyNLVG4dk?=
- =?iso-8859-2?Q?+kNxeHO+EX3SSl6Scp1MMLB+njg6yyma3p+IWhMk42kGmq5jgs3ENMVIu3?=
- =?iso-8859-2?Q?xtyGuZmko/wVNx80HaLBLaKXxTg5pF8Rx05TSl6jh9m3Xr0AP9p+CRGQaa?=
- =?iso-8859-2?Q?QZ5u7kpLbOZuhop0FxOmUGaWHEUvLb/5HDhQwhhgp8L3PwNYmUH7Ji6ZE9?=
- =?iso-8859-2?Q?yiD6piiP0XHvLTwYdL8jrJJYvg8PnaVrT90VvHsL1EyLyOZsWgqDtqvdjZ?=
- =?iso-8859-2?Q?IPoDtCEWeH2IHMNaTyWFRWpvD8RdD1UulCPR72hQn5UalzMrYLIuRyQUwh?=
- =?iso-8859-2?Q?NDRnCxoAKtlmdd2+9934KREFoiNRIhuJK4jT0xBGuMazB6NO0mRw8e5afm?=
- =?iso-8859-2?Q?LF7yWKdkLFDnMtybqWQ70w8SL8Z+c+vWU8AmSj40XBk7BAosWQKOBD3PW6?=
- =?iso-8859-2?Q?BwUO/dz07awm7jE8vTSc7sz9EQzYZ9CSbHy6xB5nwe5V7FRtC/iw8XxaiQ?=
- =?iso-8859-2?Q?CYlLuaw8mZ1tFq3EyVqkNOtRYl0ny1fTAdMRy4RabYFg8yr+CaW6dUo3hg?=
- =?iso-8859-2?Q?KD7o5IQnbrsKqmYwJRAogmDt73uUBgDZZUVOuENKXiHSl2zJtu+GEIh4h1?=
- =?iso-8859-2?Q?h/e5yH/TX/kOca4lHeQOQdW3eAuQvc+R4xUcQuleng24QeVzc2XpdTC/XH?=
- =?iso-8859-2?Q?S9GG2wGNgco/y1g+yY5IcaFZ6/5e5LK0UutF8JVeo7wxn/0RdfStX+eK6s?=
- =?iso-8859-2?Q?UB+y88KKmfKcK69ITExj/E0v+71VIiUbbs6KXD3QX1O2TB3kfaSzfMu2Uj?=
- =?iso-8859-2?Q?EIqvlh5LBDp4ojg8Tvso+kPOe+Up65p+Ev4LPr+9SYEwOpx7CcPxYmZh3d?=
- =?iso-8859-2?Q?16hmz90aFVzgfyMm+eD0Spu1um8n6OkUY4bUOKPy5OrlfNJnqXnmSzvjic?=
- =?iso-8859-2?Q?A5K8ENhGhnRLMrsurQhYElBKMRcVuXxGa/4rlDm0tkF6weFkxVYhT2+wZK?=
- =?iso-8859-2?Q?P+NTvFsyhdJXnumh/rH06KSO6Ioli2PRBWPPRSSdv9fdJHKHQEE1EztNWa?=
- =?iso-8859-2?Q?SHOvLLKuDZHF9o++Xah+8dKsTDb0/su4Lmrc48LMIc177MuMQ929hYALWz?=
- =?iso-8859-2?Q?QhEWoRPa4KxOGmqswMzZ1ehXfFGf?=
+ =?us-ascii?Q?AVtHLZg5PJFF7yo9DOYQ46XYFpRk62mJK/Q8Bzchp/RAcFSUxTBM/oUI0ugJ?=
+ =?us-ascii?Q?7YiD8kyy9p3D9QfN1BgMW9uCzc8KdMv14TRnc1z8OyITHoGG/9ScmYB3cr54?=
+ =?us-ascii?Q?dL+qu6BxdapxetQ1m+1mgqGdkY6blmdBWDpH8QQtgm5TatlLNzDXGAom0tZg?=
+ =?us-ascii?Q?XxkfhGK+SX/0REozp+RBeJd8lEvuTbSQPYK9yLbFgn0PGlDqeBh9qeC6sCLL?=
+ =?us-ascii?Q?+j+m+4CFBPDqSgV0ZyqiKSJAJTaUdc0QrkscIVd1867alEmyte0KOoL9MtFb?=
+ =?us-ascii?Q?jQLB0iVw2KOw1SqvJyBAMO3ViHh4061vRp3QMDang4L1n5VduUuMyjgcuVjT?=
+ =?us-ascii?Q?9gTH6dmea9akVvWOFW6An9NhhAUs1CwbCNe8lAbn6REX8Dstl/uOFYNgTW3t?=
+ =?us-ascii?Q?suZlZhXm8O4fbos5Z2SsdSsdrwIAlqIkTKrMdX7r9UPlN20AkPQ3tdIuQhpS?=
+ =?us-ascii?Q?UI8vTgw1IzOV2YzI+r8FBKfCcDJ5o3d1NcvTWBwCx3uevyelY4VpGIFtcDpX?=
+ =?us-ascii?Q?9ubwsZJj8P0VlW+7KYp/RLarBPcTbkfwwjZ99fgmRDwwBhGB6SUy6deeeUXM?=
+ =?us-ascii?Q?HJDAvFRfMBB4ZTsqJcgWNuodBDaDZp20nkMnw5VsuC5RpU50Jop6fGMKq/jl?=
+ =?us-ascii?Q?R+K3F7xKCY6QjlpL1E9P3sztLQUhSbYWQyA2GuW57DRC9d0t2fNpvYwCa6RW?=
+ =?us-ascii?Q?RH7xCmXlu+AjUmuhCKH0+54LHNWMZNQILeFCGIs7wknHmC+8UIz4751/tdZZ?=
+ =?us-ascii?Q?iYbiw+/mSJFocy0upzUVc4B8Ld/Q+d7fLFNIW3UuqWR6bOORKkEkAS1CJ+IA?=
+ =?us-ascii?Q?m4tZS8xefscY0+9PPMNtkMZ6d3QtT67XqdkPLObi3HmrhQhuDTCA27Wn8nCa?=
+ =?us-ascii?Q?VC+qlUGloYRyHTSKbgCAPh6K59ydcemisbK3fBhzPVkCp8FmkppLad0sjW4T?=
+ =?us-ascii?Q?c7mOVd4BLaHOIqUrph79358eX24WttlsruTyFkNqjBKq8iNQygqlbtjUG3LX?=
+ =?us-ascii?Q?hWkcBBziptppDVJB75ulyh+CdPkxukiP4fAFAFbDn+zJg8IimrNMWIu9x3lQ?=
+ =?us-ascii?Q?OBOmagHqRH4BCkI8MG0UahKogiGGgN4KpmwW4SAf3yAubQO0qxZkmIrcL9Xa?=
+ =?us-ascii?Q?Ea719y/OOXE9yS4hHdUsbLxe9H4hibzE6+wZdWonp4gGtAoVyC2ZJvdLKuiG?=
+ =?us-ascii?Q?uP2MvTjgog+h8E43PNUrEhKIQnVyp/JClWj0dzk/xXsEzyU4chN6aRHH9t7f?=
+ =?us-ascii?Q?6EL4C0fz53GE1ivP0LnaIOWZj3iy//s6dh6UYMOKSoL/g0IljWbsUo1gWSqm?=
+ =?us-ascii?Q?9Ga6AKBUbxoBpjIkO5puecz50tfTljoeAVsRk9PQcLZu7gAxu6eDNrQtwtWl?=
+ =?us-ascii?Q?8yKUCr6eZFVcDDtJ6/dtdg3ZoJgsk18rjDcFS6bd2VlFHQwjCEuLNT8iD8wr?=
+ =?us-ascii?Q?gFDcQE5dJXERBX97neQrD6mtUuhInP6ZYpFjSKgRJKwGkfI9MPT6W32EBH1J?=
+ =?us-ascii?Q?czsTHDyGWkxXkgKsSyPENk9EAShWLR7DGuAh?=
 x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(38070700021);DIR:OUT;SFP:1102;
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(38070700021);DIR:OUT;SFP:1102;
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-2?Q?7sx3NoGi0me58el+EnjGllsdqg7lw7N9fzeMaQC2o3mknqEsKXTpdhhkFi?=
- =?iso-8859-2?Q?D4r9Y90+AeevF6c4pX+4BZiqp8wXQxvI5S8iPca1dDCZoS8mGijWy81wqx?=
- =?iso-8859-2?Q?6Tciqo1iYnljGHeB+6Y8frHtcE00TFaWt3Dg4QpvfhzPpw4TZ3TXiiOMkq?=
- =?iso-8859-2?Q?T0SKlrmDjCp76YRqyUsDu2jCdxf+Pdr6F5FLaxoCqxmeNh28lVZwqiVPXT?=
- =?iso-8859-2?Q?k45Kh2Rm23X0gOwi/EgQq6pcmLQ7ouJw+mhNvgv0lOW/ktQLDyqI85+0Yi?=
- =?iso-8859-2?Q?ICgymqyMq04brQjGV03+RP3ANSLFZlWzLr4dNBZYTTnGDxA2I6rffiORNf?=
- =?iso-8859-2?Q?Fljc2H0c08TFeO1P9I9m+63fEDDscmJmWUXGt7dtC4jpKXN8GMdk8A0Q8i?=
- =?iso-8859-2?Q?ejC8aEdF1uU/tGofw1w/G3Ort/ITng0lzgSjq2Xu/nyS2mlGOFv/BGireh?=
- =?iso-8859-2?Q?LKDcSvXOtfEKqwrCcG9beRGLTxwkmnIBLbSsKVy3nggtX0bIbTeSyGKDOo?=
- =?iso-8859-2?Q?2iFRzMwHcV4X2RoHlo/W2pNn+fh5i9UK58Uk2fD4FDX7GAyRNZknGBz6UI?=
- =?iso-8859-2?Q?qBHKzdVvGfGrp9Dc+pO5EIhVAGBZxzTCKXKXX0E6PBvLctLil5AznzWmRy?=
- =?iso-8859-2?Q?Ecxc4ItI58n1D8UvWoH3VkZRPnaESGJqBUnKArwvToWQBgqulyQTKjKyUh?=
- =?iso-8859-2?Q?Xicq1jSoMv8IDRkCLa6Qtir/qfyJm3uWr7CNHk0E+6EKN4PDSKCHf0ce5+?=
- =?iso-8859-2?Q?EYc9SvF2+n5kN3qofh3UE7moM62R2/pUR6bTT044aBZyLVsMlNb4O4lbsf?=
- =?iso-8859-2?Q?9yJDg+svi+Mr4/dZ93Oqpms80ywB6xMBgdok7HwVbpDT86+bNPMTcWC72+?=
- =?iso-8859-2?Q?WtsxZecdvl4hQqGB7Gr5C8/lPjMzbqDEPPGWrw7YYzPwR1n6e6ZlLVSMth?=
- =?iso-8859-2?Q?vleEFH3gRy+S8MUbBvCDPbH51/j98PbtWz9eGYHHdyjrRCf0RMtI0yq68T?=
- =?iso-8859-2?Q?dmFkwGCLuCwwKZglbtErdhtcxjgG7gBuNK2c8axhFgmHj0W0npsVZiF4KP?=
- =?iso-8859-2?Q?dSxTXOyksV2X7//aveQe3tDHsHteFSZ0CtFNZEX6gpGHoKw+xEICKajq/e?=
- =?iso-8859-2?Q?R9SGAUjYBnPlu0I43JDx1H6e4UbFMeg412WaztZFUnNg9pwuGGwSUszDUK?=
- =?iso-8859-2?Q?7gJNrn7ZmTDGqz3jJ2aNNVYB4e2Bv/HnrhGyKP7MkO53iuhEq+Ajgwpxl4?=
- =?iso-8859-2?Q?eMYxXyfqOzR0gv3W10NRGZpkUbStvsAih1wIZRCR0KQuYtpNQl4i5EEORp?=
- =?iso-8859-2?Q?sm7azs4HdFSD6rnMPjFCSqzzxekbmBDOAnUm2VqtwaQ1XhO82rLDvK7ftC?=
- =?iso-8859-2?Q?dU3rb/zirEIlIgxm4PQP+VQxneatnIMkSqlyrs1dSnF2TWjcpUTQz81C/Q?=
- =?iso-8859-2?Q?TDiAq7n3KwdP465+V2s53M7SnDAYq3q4vV1s29p6v3byVH7Qwx0R3lxiKf?=
- =?iso-8859-2?Q?Gkg7obDenfvG5ULDlGPqDXE4mX7IosTmG05bPmdTcejcMii6BXt2ZO8TWq?=
- =?iso-8859-2?Q?YUvUJiiWeEBAkELrbPU4DzNpDe0bl4vCFxoQqotRykhPPDs0OhDY92zgNP?=
- =?iso-8859-2?Q?Craf1dTDQHK7q41THOOOKJlw6WKcLevagq?=
-Content-Type: text/plain; charset="iso-8859-2"
+ =?us-ascii?Q?XICwqIZQaUTu4yBb4jsAYJwbwrv5LyEsDm786otJpL1cKwsK/2qNSaWFKwrm?=
+ =?us-ascii?Q?Awc0R387+2tcABzus/mNt9YUCm6AtLxo1EM4GX9o7rQhjV8IkrzQJt4rT57F?=
+ =?us-ascii?Q?O3PhCgSutSuDDgSgGl+xWClFZGRPtYdRq8mnxhQf5PKFhoZWrD7kN4fwNUFm?=
+ =?us-ascii?Q?/dd3cFl2+KQKi2Mne88npuGIVzYh5+pM3F67itpiNjSkrItvVFQHk4QO99P1?=
+ =?us-ascii?Q?y0Prj9jNsSVw60/HK1AwYAkgqmxcTuZ0NLCvTYECVYYOy60X3tlezBUyFpI9?=
+ =?us-ascii?Q?e54gff80W9rfc8zgQ5WeOrL+7Ll4qGNFFet0jhWhFKHRfmLY9OHSsgiihbeX?=
+ =?us-ascii?Q?l+kvRUBpZCD8XIaYmfFBUzeSsdsjwO72crj/YG2UtSPQKiRAf5h+9sT+lLUc?=
+ =?us-ascii?Q?ZKJGwYRnU9AiNSRJz0rjjw3Wqo4ks5/UGuWb3GnTAgoFb8WeF0KwbqhUzspb?=
+ =?us-ascii?Q?H+7p7qP4zFqYakHfx5QMBiUEaLVlC+iKopJHCWFgjGG9JSOseuHrcFbgqH3K?=
+ =?us-ascii?Q?mPdGfdpfZT4kFpdXMghO7oWXfPX+h/Mea3nuAXq58Qb3C6hLL44lDt0IpRjz?=
+ =?us-ascii?Q?hKShLiBf4BW05iyfCVyDuIo7kNk2z57FFb5Tv3p7YvKB0jwxcd7wznrPsWMc?=
+ =?us-ascii?Q?/uDLhlJneJC4+qVt9u8wuMpuWbCK97TEb3keYr4M6xo2iEe1/Llw9QaPtB+C?=
+ =?us-ascii?Q?2KIL3zS8JVv8mqz7lTbQ7pw671Qw38bBvIBJyVNGdIQmSxFJpbzAUTga3+06?=
+ =?us-ascii?Q?xOB0GoHrwhAg1vnNOE9uljt7BBG1R0XnwDez0H2EVtcjdJhGrqgS0VmlLOCi?=
+ =?us-ascii?Q?QNxfIDuoMOckGfE3tHhJVXP9AuwkqCI8iy0fxLWDnzYHP5sS61UOR13zmDyt?=
+ =?us-ascii?Q?waRyQTJ+PHfwNQdOdlVeKyLjj29m+c29hwzexQxEv74rnODdwFIfEOzbKr84?=
+ =?us-ascii?Q?4SKhhR1Ljh3XV0SERibRRYFHvFESQ/x3tweY1+jd5Shk3DY+If92SfzhsgB2?=
+ =?us-ascii?Q?2/rqgmMd/y4aHLTFBiagBkC7kgL/xfz5ffH+HcAok4Cn28HSnsp70BQaa2fF?=
+ =?us-ascii?Q?pElHAHRe2c7QQwFRBIqxIGTeUBxQ0gyagiNo9chJmTz9rnUZCm766x/TeQkX?=
+ =?us-ascii?Q?MZ3AY4OHcLNtyz9h9UUFeUZ0NnGuKKM2ji011y0EKOBpYTX92/T5Xc96yvXA?=
+ =?us-ascii?Q?q1fNH36WqQsaJVwMvyH1l1NASAWW/XuW5wW+UTl2stX0IwXYedrrAOyp4ksf?=
+ =?us-ascii?Q?GfkeKYLSr4SN5HsXQf5Y1zerFOsnyKgWL/o2lexVl/VMQAgLqn4r0p23ND4A?=
+ =?us-ascii?Q?K5S70d/yVy/BWW6rkxLbXYaqcHZrQUsuHNaY2aazzg7OwtmKTiCGLgv0U7JF?=
+ =?us-ascii?Q?I442cZ3mjPfwAXqlpchyfdKc4v+mAOQMoJPYgvJk2sjJNptyuyHtdV53Z2m/?=
+ =?us-ascii?Q?Js/b1PEpSlxlrkc1MkyV1Rat05zgZIoJ+2yI0rZaPPeDYvEEiqsVokyz4dZA?=
+ =?us-ascii?Q?5L9MtXrEbUCgBQrj9+Bo8hCKwwmm5KYUCj8PC+PxQsG/1+zcs35Uu0Q/08cH?=
+ =?us-ascii?Q?yAl8v4+qDbcBxAPRsa/DEQJLcGsJew6RbLuvWJ+M?=
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -171,236 +165,33 @@ MIME-Version: 1.0
 X-OriginatorOrg: aspeedtech.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: dfcc7df3-0376-41d9-a183-08de37924654
-X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Dec 2025 02:17:31.7665
+X-MS-Exchange-CrossTenant-Network-Message-Id: 919b57a0-ba26-421f-d0ee-08de3796fa82
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Dec 2025 02:51:12.0253
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: FoQkla87/rhiG4Ei4zUQPPsqJB0pyCJNWq6aYxKNDStgnQQM7XnZI7TbbL3cUkktpu82pnhFwYeBj2bHk5//MjRT5Z4fU8+4aaIBPGNoddA=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SE1PPF158EAB38C
+X-MS-Exchange-CrossTenant-userprincipalname: 1an7oemPZHrjay7QumF1B5KBbfkPBc8z4TZQWvnYJzoxuoTMSCvwxLa0uuAnE6kvKEQLP1OlEhILLyU7nE6/tmQz0Rh+JnvEOjSr0XxO4xA=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI2PR06MB5138
 
-Hi Bjorn,
+Hi Russell King,
 
-Thank you for your reply.
-
-> > +	u8 tx_tag;
-> > +	int host_bus_num;
+> > +	(void)ioread32(ctx->base + ASPEED_MDIO_CTRL);
 >=20
-> Only needs a u8.
+> What purpose does this cast to void achieve in an already void context?
 >=20
-
-Agreed.
-
-> > +static int aspeed_pcie_port_init(struct aspeed_pcie_port *port) {
-> > +	struct aspeed_pcie *pcie =3D port->pcie;
-> > +	struct device *dev =3D pcie->dev;
-> > +	int ret;
-> > +
-> > +	ret =3D clk_prepare_enable(port->clk);
-> > +	if (ret)
-> > +		return dev_err_probe(dev, ret,
-> > +				     "failed to set clock for slot (%d)\n",
-> > +				     port->slot);
-> > +
-> > +	ret =3D phy_init(port->phy);
-> > +	if (ret)
-> > +		return dev_err_probe(dev, ret,
-> > +				     "failed to init phy pcie for slot (%d)\n",
-> > +				     port->slot);
-> > +
-> > +	ret =3D phy_set_mode_ext(port->phy, PHY_MODE_PCIE,
-> PHY_MODE_PCIE_RC);
-> > +	if (ret)
-> > +		return dev_err_probe(dev, ret,
-> > +				     "failed to set phy mode for slot (%d)\n",
-> > +				     port->slot);
-> > +
-> > +	reset_control_deassert(port->perst);
-> > +	mdelay(PCIE_RESET_CONFIG_WAIT_MS);
->=20
-> I think this should use msleep().
+> We have plenty of functions that get called in the kernel that return a v=
+alue
+> which the caller ignores, never assigning to a variable, none of these wa=
+rn.
 >=20
 
-Agreed.
+Thanks for pointing this out.
 
-> > +static int aspeed_ast2600_setup(struct platform_device *pdev) {
-> > +	struct aspeed_pcie *pcie =3D platform_get_drvdata(pdev);
-> > +	struct device *dev =3D pcie->dev;
-> > +
-> > +	pcie->ahbc =3D syscon_regmap_lookup_by_phandle(dev->of_node,
-> > +						     "aspeed,ahbc");
-> > +	if (IS_ERR(pcie->ahbc))
-> > +		return dev_err_probe(dev, PTR_ERR(pcie->ahbc),
-> > +				     "failed to map ahbc base\n");
-> > +
-> > +	aspeed_host_reset(pcie);
-> > +
-> > +	regmap_write(pcie->ahbc, ASPEED_AHBC_KEY,
-> ASPEED_AHBC_UNLOCK_KEY);
-> > +	regmap_update_bits(pcie->ahbc, ASPEED_AHBC_ADDR_MAPPING,
-> > +			   ASPEED_PCIE_RC_MEMORY_EN,
-> ASPEED_PCIE_RC_MEMORY_EN);
-> > +	regmap_write(pcie->ahbc, ASPEED_AHBC_KEY, ASPEED_AHBC_UNLOCK);
-> > +
-> > +	/* Due to the BAR assignment is fixed mapping on 0x6000_0000.*/
-> > +	writel(ASPEED_AHB_REMAP_LO_ADDR(0x600) |
-> ASPEED_AHB_MASK_LO_ADDR(0xe00),
-> > +	       pcie->reg + ASPEED_H2X_AHB_ADDR_CONFIG0);
-> > +	writel(ASPEED_AHB_REMAP_HI_ADDR(0),
-> > +	       pcie->reg + ASPEED_H2X_AHB_ADDR_CONFIG1);
->=20
-> I assume this ASPEED_H2X_AHB_ADDR_CONFIG is doing basically the same
-> thing as aspeed_ast2700_remap_pci_addr() below, so see the comments
-> there.
->=20
-
-Yes.
-
-> > +	writel(ASPEED_AHB_MASK_HI_ADDR(~0),
-> > +	       pcie->reg + ASPEED_H2X_AHB_ADDR_CONFIG2);
-> > +	writel(ASPEED_H2X_BRIDGE_EN, pcie->reg + ASPEED_H2X_CTRL);
-> > +
-> > +	writel(ASPEED_PCIE_RX_DMA_EN | ASPEED_PCIE_RX_LINEAR |
-> > +	       ASPEED_PCIE_RX_MSI_SEL | ASPEED_PCIE_RX_MSI_EN |
-> > +	       ASPEED_PCIE_WAIT_RX_TLP_CLR |
-> ASPEED_PCIE_RC_RX_ENABLE |
-> > +	       ASPEED_PCIE_RC_ENABLE,
-> > +	       pcie->reg + ASPEED_H2X_DEV_CTRL);
-> > +
-> > +	writel(ASPEED_RC_TLP_TX_TAG_NUM, pcie->reg +
-> ASPEED_H2X_DEV_TX_TAG);
-> > +
-> > +	pcie->host->ops =3D &aspeed_ast2600_pcie_ops;
-> > +	pcie->host->child_ops =3D &aspeed_ast2600_pcie_child_ops;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int aspeed_ast2700_remap_pci_addr(struct aspeed_pcie *pcie) {
-> > +	struct device_node *dev_node =3D pcie->dev->of_node;
-> > +	struct of_pci_range range;
-> > +	struct of_pci_range_parser parser;
-> > +	int ret;
-> > +
-> > +	ret =3D of_pci_range_parser_init(&parser, dev_node);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	for_each_of_pci_range(&parser, &range) {
-> > +		if ((range.flags & IORESOURCE_TYPE_BITS) =3D=3D IORESOURCE_MEM) {
-> > +			writel(ASPEED_REMAP_PCI_ADDR_31_12(range.pci_addr),
-> > +			       pcie->reg + ASPEED_H2X_REMAP_PCI_ADDR_LO);
-> > +			writel(ASPEED_REMAP_PCI_ADDR_63_32(range.pci_addr),
-> > +			       pcie->reg + ASPEED_H2X_REMAP_PCI_ADDR_HI);
-> > +			return 0;
->=20
-> It looks like this is essentially hardcoding the offset between the
-> parent-bus-address and the child-bus-address in the DT 'ranges'
-> property.  Since ASPEED_REMAP_PCI_ADDR_31_12() and
-> ASPEED_REMAP_PCI_ADDR_63_32() do nothing except mask out the low 12
-> bits, I assume that offset is zero.
->=20
-> But this should not be hard-coded at all; it should be extracted from 'ra=
-nges'.
-> I don't think we really have a consistent way of doing this, but you can =
-take a
-> look at how these other drivers program "outbound" mappings like this usi=
-ng
-> bridge->windows:
->=20
->   cdns_pcie_hpa_host_init_address_translation()
->   dw_pcie_iatu_setup()
->   mobiveil_host_init()
->   xgene_pcie_map_ranges()
->   iproc_pcie_map_ranges()
->   rzg3s_pcie_parse_map_ranges()
->=20
-
-Thank you for providing the information.
-We will refer to this information to integrate the PCIe mapping range.
-
-> > +static int aspeed_pcie_parse_dt(struct aspeed_pcie *pcie) {
-> > +	struct device *dev =3D pcie->dev;
-> > +	struct device_node *node =3D dev->of_node;
-> > +	int ret;
-> > +
-> > +	for_each_available_child_of_node_scoped(node, child) {
-> > +		int slot;
-> > +		const char *type;
-> > +
-> > +		ret =3D of_property_read_string(child, "device_type", &type);
-> > +		if (ret || strcmp(type, "pci"))
-> > +			continue;
-> > +
-> > +		ret =3D of_pci_get_devfn(child);
-> > +		if (ret < 0)
-> > +			return dev_err_probe(dev, ret,
-> > +					     "failed to parse devfn\n");
-> > +
-> > +		slot =3D PCI_SLOT(ret);
-> > +
-> > +		ret =3D aspeed_pcie_parse_port(pcie, child, slot);
-> > +		if (ret)
-> > +			return ret;
->=20
-> It looks unnecessarily complicated to put each port on a list in
-> aspeed_pcie_parse_port() and then iterate over that list in
-> aspeed_pcie_init_ports().
->=20
-> I think you could just do something like:
->=20
->   aspeed_pcie_parse_port();
->   aspeed_pcie_port_init();
->=20
-> and get rid of the list completely.
->=20
-
-Agreed.
-We will remove the list and initialize the port directly.
-
-> > +	}
-> > +
-> > +	if (list_empty(&pcie->ports))
-> > +		return dev_err_probe(dev, -ENODEV,
-> > +				     "No PCIe port found in DT\n");
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int aspeed_pcie_probe(struct platform_device *pdev) {
-> > +	struct device *dev =3D &pdev->dev;
-> > +	struct pci_host_bridge *host;
-> > +	struct aspeed_pcie *pcie;
-> > +	struct resource_entry *entry;
-> > +	const struct aspeed_pcie_rc_platform *md;
-> > +	int irq, ret;
-> > +
-> > +	md =3D of_device_get_match_data(dev);
-> > +	if (!md)
-> > +		return -ENODEV;
-> > +
-> > +	host =3D devm_pci_alloc_host_bridge(dev, sizeof(*pcie));
-> > +	if (!host)
-> > +		return -ENOMEM;
-> > +
-> > +	pcie =3D pci_host_bridge_priv(host);
-> > +	pcie->dev =3D dev;
-> > +	pcie->tx_tag =3D 0;
-> > +	platform_set_drvdata(pdev, pcie);
-> > +
-> > +	pcie->platform =3D md;
-> > +	pcie->host =3D host;
-> > +	INIT_LIST_HEAD(&pcie->ports);
-> > +
-> > +	/* Get root bus num for cfg command to decide tlp type 0 or type 1 */
-> > +	entry =3D resource_list_first_type(&host->windows, IORESOURCE_BUS);
-> > +	if (entry)
-> > +		pcie->host_bus_num =3D entry->res->start;
->=20
-> s/host_bus_num/root_bus_nr/   to match struct altera_pcie
-
-Agreed.
+On some older compilers I used to encounter warnings when ignoring a=20
+function's return value, so adding (void) became a habitual practice.
+You're right that it is unnecessary in the kernel context today.
+I'll remove it in the next revision.
 
 Thanks,
 Jacky
