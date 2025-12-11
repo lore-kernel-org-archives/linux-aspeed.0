@@ -1,65 +1,81 @@
-Return-Path: <linux-aspeed+bounces-3105-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3106-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55EA9D43343
-	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Dec 2025 19:58:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA087D43346
+	for <linux-aspeed@archiver.kernel.org>; Thu, 11 Dec 2025 20:28:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dS3Kl0K0Wz2y6G;
-	Fri, 12 Dec 2025 06:58:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765483083;
-	cv=none; b=GeagtvHeB6JM4+2rsdwh2WQvF16Q7uPYlJFxcsrkkDB3Mvrryv9S483pJetv0HBbadCoEwPeyGsMBLzeAijWqWWVT/Hk6bG2UZMsDJfROeMShAQ4rjtDfrmVJnL2TfIUtmnsP4Qahx8+PJGRI6Xx22YYc0MjgeGMHAijB6GvJ/ClHK6aFf6ZI0VvLjR15RNDinjFKOjpEE16MMkhBwQbuQ6FC6C9VhLhjX+CLdiXlvVQ1qaEBdoLltkVQmdZpGmhPDWs6GNb94WbkqxrOBbBXpGnjMAJzd6AFs7ilqN/BORvJIA28Rprop6YE0OxiCdHD39w8ayV/2Hus7rSJzdkew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dS41M31G3z2xZt;
+	Fri, 12 Dec 2025 07:28:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.171
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765484935;
+	cv=none; b=I1Vn9a/EeqkR9JNyKpxxUJVx1IThez9hvoBqr2Kkc68pztWmqoMfx+iUujpxB+W1iVr9rk9hDGLqQEn2vJZx6AjvWPDQ0YD1r/Exkx1wNih7Sh/JxJek+TWVDv1xz87VtzPVr90qm1KJ7zKgFL1vN9b1BOevHuYx4TVeCRGAbY5suhsI+JoddbWd6eSS7GfPg07OGS4FLduWAfsRZIulk+MsT9LgW9yYgHw16WOc+F6W6JAE3VzY+8Tx3pfhv9tO28qn/R+99/um0cTN2Q6MzvuIqIgWGJGMkfrHPKcPzax4eMKYUgvhCnBxcVII/Ppk0L5bMeQWhjwesbGGdpAzZg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765483083; c=relaxed/relaxed;
-	bh=ONbXaRWBXX1LTRSqFq8fMOHEMVLQiTenj9LKRYRLWuE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=jCNTv+5sexml4Kan/T9gjWUX33HtS4DWjt64EB3QDMOSsie9vEFjAhALf4rU4c8gy4hKQ0AmlARmrfyYCylc0DSL/MXeFvM7L4DWs+jKEgRN0wEHqd9SbAaXfF3DBPpDeA44FvQMvZSCspSevlmYrFHxBZWxY1h8OyFrOddkMQQTcxN6QUDuKpD9ZhSOTqZAyoG704UooPC/Wcd8TJxEVsJEQirSRyTmQMHOGdCruFEw1CDZuqPXdoYHDV8Xs7DKd5ywUz9KEN5xP6PTNUC2L6AIdS5m+t9i98uL6G6hdeEsRsIzOGIIqx6GnkAAIDvnF+3ULqidCws9X+t3B+S74w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ATJJ9+uk; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1765484935; c=relaxed/relaxed;
+	bh=RFNvjy025P4j3juJp/7mMNUGy36biZNwQLRzE8g0SZM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CS1b2xDFkVuUB+sFA3AFr+HRrAceFUq9y/DB4+umQlpPzlKTbaze8OwitTZIB+CgOcodHsZrgiPqRFY12SiC+R+qfhE3+CPNpLCzMzU9ljV46XTMAHuJ5w7Z5KyfhMyjAAkhifDNb8NSxfgky1ewik2CcYTa/k/lO2AHnZezW6wscy5L3tvnC54Jj+TFzfaqQfXy/E1wrCdHOUBUBhV0ovcYQ6XpXIknC+viarjkk3CRuQmSuSI6jzcW/xiqzewBOtBL3HEFYcCNYA0SJk3ZBss3IcOWLn8UKFsKfodEPlavNBrMSu4BRLcXfeWaFMyNf1h/M633fyQsAMIONv5qKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WK5sF6Si; dkim-atps=neutral; spf=pass (client-ip=209.85.210.171; helo=mail-pf1-f171.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ATJJ9+uk;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WK5sF6Si;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.171; helo=mail-pf1-f171.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-f171.google.com (mail-pf1-f171.google.com [209.85.210.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dS3Kk371wz2xZt;
-	Fri, 12 Dec 2025 06:58:02 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E0DAE4012D;
-	Thu, 11 Dec 2025 19:58:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8A12DC4CEF7;
-	Thu, 11 Dec 2025 19:58:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765483080;
-	bh=3/wJayDctxhp5vTQT4wNVc8YtzAiKTCUMkMHSROR2NY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=ATJJ9+ukH0IzvEXvHTv6Bh/v+OnGQoKbctRpgp2vE2zMixw/67hkREvUItUMDl1Bi
-	 Ax4mAc4VKjE3f8920syuzKruVfyJQh1CdFvGLdQPohTQD/u4HK4KOeVHSBlOg6g7pg
-	 BpWKTfhsRW/WnJ1y3ztBDdx4NoJ+oZQSQrWLOG/BjJ/33uexE+QQYMDU48ryMEPKCZ
-	 uQ+3GZvJjVBrUjMDhS9ucXX5lhF4d1RdytB5w8TqLegOatCfksxC4uf9NFkE9cvQoD
-	 gQ3QPmkY96buSBIuUQdQd+YpWx6c4TjNhqzzomPQyE9PlSYDk4AIw0/bEixNX9sVW8
-	 6WH/8wPsNXDzg==
-Date: Thu, 11 Dec 2025 13:57:57 -0600
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	Linus Walleij <linusw@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	linux-gpio@vger.kernel.org, linux-hwmon@vger.kernel.org,
-	linux-crypto@vger.kernel.org, Joel Stanley <joel@jms.id.au>,
-	linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-	openbmc@lists.ozlabs.org, linux-iio@vger.kernel.org,
-	linux-mmc@vger.kernel.org, Conor Dooley <conor+dt@kernel.org>
-Subject: Re: [PATCH RFC 14/16] dt-bindings: iio: adc: Allow interrupts
- property for AST2600
-Message-ID: <176548307744.1801669.10354753289483698774.robh@kernel.org>
-References: <20251211-dev-dt-warnings-all-v1-0-21b18b9ada77@codeconstruct.com.au>
- <20251211-dev-dt-warnings-all-v1-14-21b18b9ada77@codeconstruct.com.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dS41K4ZQWz2x9W
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 12 Dec 2025 07:28:53 +1100 (AEDT)
+Received: by mail-pf1-f171.google.com with SMTP id d2e1a72fcca58-7b80fed1505so517111b3a.3
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 11 Dec 2025 12:28:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1765484871; x=1766089671; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=RFNvjy025P4j3juJp/7mMNUGy36biZNwQLRzE8g0SZM=;
+        b=WK5sF6SisZ0iGGJ+Ied5tB3vMY5MKismqXmCn1C8aah4dTZ1WD1dnK7V9aEisSRGSW
+         amDcMk2J7AfOqLGsRK0FTzB+0DU05Sd2XgxTLoM7NGI3FD948IZGFzeUz5rzniKsCioZ
+         5U0BIttgEs1QyZLHqkVFJu/+iNOWi2jhlkTSdUtYdfYH/EcW6G+XO1EiaLHWo6KWXcfF
+         nYQ67Vly0PhR2BSClQ61hY6EowfTLSLZhzqDnjIAf2nMm3NVJFzC9uouyFK/zJ6FQ3aE
+         TNvvI1BH2NU+qn+JjncA/++nDKUorGAsKu5wJsHQsE7QWh3ZtXb4M/iy+j0DTfFh17UW
+         AD5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1765484871; x=1766089671;
+        h=content-transfer-encoding:in-reply-to:autocrypt:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:sender:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=RFNvjy025P4j3juJp/7mMNUGy36biZNwQLRzE8g0SZM=;
+        b=MVHtcRP3HBH4wzoSnBQWxITjMXd+45A5qMTdNqOmk0MkSq0eoKD+BauMBgyVaxaW43
+         zY+eT5oOwwJczm852CvWS56M65r+zr3xVphnHITAqaZlp9a+fV0DAS8w6HkIT2pE6EEN
+         JmhLnKkOSkQ/j0UkWna0t8aG64oTQgNfWRJNEdAMnku1VoZY8S9Thtpm62h/udZCobxw
+         wQJicUUj64UIuriB5+YxXIxkJqkjy76nAEX8sIbJm/6JG2tDQsPOrY2HoRb+JRgR97RL
+         qAeBvQww5AjjmRb23MaQMB3A+1K+/NShz0rPBhgfERQxXIqKhIH3es/YiK49JJP3kY5Q
+         +J8Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVlxsUA7Dama1CGW6K+/aIEarG9Hwtb23ts0PD2V5f/4W2IFma9itYNUlrVrPrMsj/fws5gK9LDaOnRqN0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxbWfMkMYMiOMDcnpbOdW16yowOD/uvSOV4LbbC8muZ36b2jnNE
+	/kSSCog9uIT2FDL8Ae3bttcoTIqNTZKA4JABACe8sPGKDUz/uO6G2kFB
+X-Gm-Gg: AY/fxX6Wi/xaJHVfZUjdi3uHYddSh5drCiptTV60DjJfVtqztxIxPYEkU7czOJPj1Rf
+	y6+7oa0996N7tLIvGgn2lmfUlG3xgNBoYlZFiYzkG3cDzTNl4Ke+93UjSPo6k9im/hClxOSfQP2
+	LNDaiIQoV6owvn/Ki6FA5wAQs4n+KGZCe50V+vI3SgXt2ssydxUg5fKBZJ/YG8kzTtMwrG7VaY7
+	1R9nCbY74CG8jABWTK9+BEBFOXVQIhX9bGzhVkAmBwSI05iyk6KeQermU+iQeY8RoBXjYXv/GBA
+	Nm4rTKlutSOzrNjO9Sa7PkOIELr9AvZx0wRqK9WexhZJFUXI/218zal1yW19s/a6qL+S+9FUR0m
+	6VY9zbcwh4MKKNf7EyR8oWIDUuuOgdaxrSVFFoZ+PHhiL613YWuNupyGc3Ielg11JhoX40G3IMt
+	2oIdf9i8oA9th3LyC062ViSp6kpohV/UcAtTN/yxkroM8o4NKkLddpXWlXYTY=
+X-Google-Smtp-Source: AGHT+IHV4Iszd+K6pE+L70YOIdvHkZVJ03UYXalyKOYspoVp8AFbIBx4gAlLx501zb5azUo1ikN80g==
+X-Received: by 2002:a05:6a21:6d89:b0:244:d3d0:962a with SMTP id adf61e73a8af0-366e0de878dmr8196886637.22.1765484871216;
+        Thu, 11 Dec 2025 12:27:51 -0800 (PST)
+Received: from ?IPV6:2600:1700:e321:62f0:da43:aeff:fecc:bfd5? ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c0c2ae4e3casm3142680a12.21.2025.12.11.12.27.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 11 Dec 2025 12:27:50 -0800 (PST)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Message-ID: <f17d93db-f96b-469d-88f0-0878a0fc9fe7@roeck-us.net>
+Date: Thu, 11 Dec 2025 12:27:48 -0800
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,22 +89,88 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251211-dev-dt-warnings-all-v1-14-21b18b9ada77@codeconstruct.com.au>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RFC 01/16] dt-bindings: hwmon: Convert
+ aspeed,ast2400-pwm-tacho to DT schema
+To: Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Linus Walleij <linusw@kernel.org>
+Cc: Joel Stanley <joel@jms.id.au>, linux-hwmon@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-iio@vger.kernel.org
+References: <20251211-dev-dt-warnings-all-v1-0-21b18b9ada77@codeconstruct.com.au>
+ <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
+Content-Language: en-US
+From: Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ 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
+ np3900V20aS7eD9K8GTU0TGC1pyz6IVJwIE=
+In-Reply-To: <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-
-On Thu, 11 Dec 2025 17:45:56 +0900, Andrew Jeffery wrote:
-> The device has interrupts allocated according to the datasheet, and
-> the devicetree already defines the interrupt property. Address existing
-> warnings by allowing the property.
+On 12/11/25 00:45, Andrew Jeffery wrote:
+> From: "Rob Herring (Arm)" <robh@kernel.org>
 > 
+> Convert the ASpeed fan controller binding to DT schema format.
+> 
+> The '#cooling-cells' value used is 1 rather than 2. '#size-cells' is 0
+> rather 1.
+> 
+> Some users define more that 8 fan nodes where 2 fans share a PWM. The
+> driver seems to let the 2nd fan just overwrite the 1st one. That also
+> creates some addressing errors in the DT (duplicate addresses and wrong
+> unit-addresses).
+> 
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
 > Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> ---
->  Documentation/devicetree/bindings/iio/adc/aspeed,ast2600-adc.yaml | 3 +++
->  1 file changed, 3 insertions(+)
-> 
 
-Acked-by: Rob Herring (Arm) <robh@kernel.org>
+I am not sure I understand what the plan is here. I am assuming it will be
+applied through a non-hwmon branch.
+
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
 
