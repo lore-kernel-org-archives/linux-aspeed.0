@@ -1,62 +1,59 @@
-Return-Path: <linux-aspeed+bounces-3138-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3139-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49455D65C63
-	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 22:53:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 905C7D65C63
+	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 22:59:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWpxs3cTvz2xqj;
-	Thu, 18 Dec 2025 09:53:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWq4g0t4Xz2xDD;
+	Thu, 18 Dec 2025 09:59:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766012033;
-	cv=none; b=BIxT5so6S44ETPhbUiF41YjLs3I1Oi/V0rownJAuMN1nNB5laTPScS9qeFz20P4HeHHsPAjPEACStr22LRuYZlsjNZ621g4cozqk/dzgWgFG+pDdW/nJPkDJfiVhiwLgl4uAXeMP1/DvXBKrMCvu/NUY71rPBUx29+MuRw7zohckMxbg9C/PUcUnu1A4tb+rkqhBDaFo6owg1rnU4ntVBHZZ4bJSnhn3DEeWihGvk9gBqiB6s8yEbzgKUjYjWsIsbPDwtE8QiqfZQsTAkOGGI9sXVipoRxzdar/nK1Rl92NPLU8GXa1SLj0C+1isHPYE8vhqtHuMruNCEFdQaMk/Yg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766012387;
+	cv=none; b=oprWlAd6akZal2Nc5kozsc703hKx3xhIY5664w5P/nEn8ClHQVpitHLddY73x9RAvgS/8ntB5TXbW3b7I1k1wmFTJUDEegjLL+0eXHKghyDO9i4S+T/c9KQPRW8YEe0SU5uhUckd6504e491Iv3pyj6gaCWm2CwrbmVAes0MfUlAOQfCQMmf8U1FaJwqLs7hvqX9fnBU0k8nb5PSplhq/w1F6MNDGbz4heA2gIZQ9g5s8qkMYeN2TkGpWBRFfzVf33VdFKSIiJOmpNZ8xoRPUgBMcgngVocg1kGginX74q4PYSl9C0M1SH8H61DwkXS4g4puYz4G88Qs1EwbCHC78Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766012033; c=relaxed/relaxed;
-	bh=J1EO9nRN3BOzOyJvyc6Rau/FS5vQn8zuB3tbnQRn2do=;
+	t=1766012387; c=relaxed/relaxed;
+	bh=h0ZQpPnP6V0VHVG4T/qTaG7HGafVff3MtURtDkNB+7o=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=bDigWwIE7f8wwAFIlgfq3f0JBljprMV7D+wO03toskYY9awSakzou4JBKEKn00efxIQB7kQyx1QJHZF4MSlVmSmeYD/kJ80sJ6QEY4tJKdKosfFaTrv1jR4EAQ+7EIYI12VhpGKq4fzOWXZkzHcOsoNGyKKPYVGlu4ufXvJpUvn5Fd2Lfuj6ESXDoW7KDYl1wce4+xkJkpJ07yXgBuFa6sqrl78nnI5bxMjP37LZ26k4jHRIOhLEZcV9/sQ11wqReUWiTnNYiG5d+yOOR+MiwTc+aDaKZxewPrQBqnuarxU5p6WZLe4x2MyDpHxtFoNNsUZ6TuJn80O9+VojWCkU9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DB0aI9Lu; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=QpZ+wMA1tjAfrz3myS52IJ8uabUzoGRGIC/ceeMEWKV9vZIEFjhiKlbxrD3ZExh9+MYCpqnbwScGwgNX0gg7ch8wqSs1lFGnLbFNen+0f1xXVMrZm1Nn4hM2fG3O7NGw9HVWwp0wD37FqzaIBBOdiOf3w0p7mTc3I9XjQ9+pX2GjRtmqcprNggQzh8LWj08pYTQR7T2sDH8bgBz4/9gfn+Ruf7uaqIXEbFGOcu5gD19Bmn0KjWzgXDxS5Tmvk1ShXtldEflq4VTRGP1hahQWu0EZ2XxEJipnr6H0cWysGnNYsJsFcyhPKyIRvVE4EnLjilVEO690GbtFj2m5pTvh9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=D6L574Kl; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=DB0aI9Lu;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=D6L574Kl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWpxr4d2Gz2x99
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 18 Dec 2025 09:53:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWq4f0Cxsz2x99;
+	Thu, 18 Dec 2025 09:59:45 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1766012032;
-	bh=J1EO9nRN3BOzOyJvyc6Rau/FS5vQn8zuB3tbnQRn2do=;
+	d=codeconstruct.com.au; s=2022a; t=1766012385;
+	bh=h0ZQpPnP6V0VHVG4T/qTaG7HGafVff3MtURtDkNB+7o=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=DB0aI9Lu6IkzUxPvmlzKi1NLFN8r/PmBrtmRFY8KT4Fe3rTAKnTkjsK11cfhX/CUp
-	 tXWT5e+HaySUTzD3d4GwVolw4P0CpnP4ReH0wOAlFxahthjJYNYzsq0DO6j9J7R/gj
-	 ppKIU8TPT/A/GKufXp4RouX0am0IlXPXN/dMNPebaO04RrK0mw6juY+GJToO2KbLEt
-	 tmJMxbYhm9VCdzxwoCi7KP/sFDtnGuyxUGqQ5uYpdwT1N1PuQj4FpvsC5JtcAn7G6L
-	 I8tGti09g1HiXqFYtFwaGOl0I6pWkvVv6g2bUP/bL1rCoOiUgfxEkw+iuLOg+Bb3Tf
-	 ZvxpBg3R/DFpQ==
+	b=D6L574KlgyqzSiWjJnQy9D8H7anarJ75r5sI+bRpxh5ii3G2KVXGenqFNpIFW03G3
+	 9chSFdeSExk1LhJTLixQa0Rtkp4mZ2cTamqmy5LpgLXeYrixa0LPPmSt8Xgo7IcBW9
+	 MK6vkDTNKvWpvhFM5H2RA2XD1EdhQkSbudltYdehH/6CuVxo0WKxqJNreLhyRLeoS7
+	 HdcZ3w01f1DmE7Zc8BDo9aqKFP6S9R0wg6Ffq/A5LT+r2YltNEcbfMBYYjA9pvqxZZ
+	 pmpJW+MRqyE3y8C38vClToSpNSfFpu+Cb2dENC6tga6iEcr6qT4j2gSgDdz6jSsf55
+	 z7DKlQOWcuHVw==
 Received: from [192.168.68.115] (unknown [180.150.112.216])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 706157C1B2;
-	Thu, 18 Dec 2025 06:53:51 +0800 (AWST)
-Message-ID: <ee0acf89f82555a1c0705fba5818875811a3a27e.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v5 2/2] ARM: dts: aspeed: add device tree for ASRock
- Rack ALTRAD8 BMC
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 03A677C1B2;
+	Thu, 18 Dec 2025 06:59:44 +0800 (AWST)
+Message-ID: <61f561d95af86a46f1e1075df39e1ce0f1324098.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] arm: dts: aspeed: add an alt 128M flash layout
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Rebecca Cran <rebecca@bsdio.com>, Rob Herring <robh@kernel.org>, 
+To: Marc Olberding <molberding@nvidia.com>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski
 	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	 <joel@jms.id.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Cc: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Thu, 18 Dec 2025 09:23:50 +1030
-In-Reply-To: <20251211165700.29206-3-rebecca@bsdio.com>
-References: <20251211165700.29206-1-rebecca@bsdio.com>
-	 <20251211165700.29206-3-rebecca@bsdio.com>
+	 <joel@jms.id.au>, openbmc@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Thu, 18 Dec 2025 09:29:44 +1030
+In-Reply-To: <20251211-alt-128-layout-v1-1-100f57d2bc4a@nvidia.com>
+References: <20251211-alt-128-layout-v1-1-100f57d2bc4a@nvidia.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -74,96 +71,67 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi Rebecca,
-
-On Thu, 2025-12-11 at 09:56 -0700, Rebecca Cran wrote:
-> The ALTRAD8 BMC is an Aspeed AST2500-based BMC for the ASRock Rack
-> ALTRAD8UD-1L2T and ALTRAD8UD2-1L2Q boards.
+On Thu, 2025-12-11 at 13:35 -0800, Marc Olberding wrote:
+> Add a 128M layout for the BMC flash chip we didn't boot from.
+> Including
+> this allows the user to write to each partition on the alternate spi
+> chip. This dtsi follows the existing standard of using the same
+> layout
+> as non alt version and prepending `alt` to each partition's name.
 >=20
-> Signed-off-by: Rebecca Cran <rebecca@bsdio.com>
+> Testing: Include this in msx4 and cat size, offsets and name
+> ```
+> for devdir in /sys/class/mtd/mtd*; do
+> > =C2=A0=C2=A0=C2=A0 [[ -d $devdir && -r $devdir/name ]] || continue
+> > =C2=A0=C2=A0=C2=A0 name=3D$(<"$devdir/name")
+> > =C2=A0=C2=A0=C2=A0 [[ $name =3D=3D alt* ]] || continue
+> >=20
+> > =C2=A0=C2=A0=C2=A0 size=3D$(<"$devdir/size")
+> > =C2=A0=C2=A0=C2=A0 offset=3D0
+> > =C2=A0=C2=A0=C2=A0 [[ -r $devdir/offset ]] && offset=3D$(<"$devdir/offs=
+et")
+> >=20
+> > =C2=A0=C2=A0=C2=A0 dev=3D$(basename "$devdir")
+> > =C2=A0=C2=A0=C2=A0 printf "%s name=3D%s offset=3D0x%X size=3D0x%X\n" "$=
+dev" "$name" \
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 "$offset" "$size"
+> > done
+> mtd10 name=3Dalt-rofs offset=3D0xA00000 size=3D0x5600000
+> mtd11 name=3Dalt-rwfs offset=3D0x6000000 size=3D0x2000000
+> mtd7 name=3Dalt-u-boot offset=3D0x0 size=3D0xE0000
+> mtd8 name=3Dalt-u-boot-env offset=3D0xE0000 size=3D0x20000
+> mtd9 name=3Dalt-kernel offset=3D0x100000 size=3D0x900000
+> ```
+>=20
+> Also ran dtbs_check on an existing dts with this included.
+>=20
+> Signed-off-by: Marc Olberding <molberding@nvidia.com>
 > ---
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dts
-> b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dts
-> new file mode 100644
-> index 000000000000..4898ddede1c2
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-altrad8.dts
-> @@ -0,0 +1,624 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/dts-v1/;
-> +
-> +#include "aspeed-g5.dtsi"
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +#include <dt-bindings/leds/common.h>
-> +#include <dt-bindings/i2c/i2c.h>
-> +
-> +/ {
-> +	model =3D "ASRock ALTRAD8 BMC";
-> +	compatible =3D "asrock,altrad8-bmc", "aspeed,ast2500";
-> +
-> +	aliases {
-> +		serial4 =3D &uart5;
-> +		i2c50 =3D &nvme1;
-> +		i2c51 =3D &pcie4;
-> +		i2c52 =3D &pcie5;
-> +		i2c53 =3D &pcie6;
-> +		i2c54 =3D &pcie7;
-> +		i2c55 =3D &nvme3;
-> +		i2c56 =3D &nvme2;
-> +		i2c57 =3D &nvme0;
-> +		i2c58 =3D &nvme4;
-> +		i2c59 =3D &nvme5;
-> +		i2c60 =3D &nvme6;
-> +		i2c61 =3D &nvme7;
-> +		i2c62 =3D &nvme8;
-> +		i2c63 =3D &nvme9;
-> +		i2c64 =3D &nvme10;
-> +		i2c65 =3D &nvme11;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path =3D "uart5:115200n8";
-> +	};
-> +
-> +	iio-hwmon {
-> +		compatible =3D "iio-hwmon";
-> +		io-channels =3D	<&adc 0>, <&adc 1>, <&adc 2>, <&adc
-> 3>,
-> +				<&adc 4> ,<&adc 5>, <&adc 6>, <&adc
-> 7>,
-> +				<&adc 8>, <&adc 9>, <&adc 10>, <&adc
-> 11>,
-> +				<&adc 12>, <&adc 13>, <&adc 14>,
-> <&adc 15>;
-> +	};
-> +
+> Add a layout for an alternate 128M flash layout. This is
+> useful for the aspeed ast2500[2] and ast2600[1] SoCs,
+> where it has the ability to boot from one of two spi chips,
+> nominally the primary and backup SPIs. Adding a layout allows
+> userspace
+> to flash the alternate spi by partition and switch over to it,
+> allowing
+> lower downtime for firmware flash, or for updating the primary
+> flash from the golden backup flash. This is already an established
+> scheme for the 32M and 64M layouts, where the layout is the same
+> but each partition has `alt` prepended to its name. This allows
+> userspace to just prepend alt to the images in the update process
+> to specify which flash chip to update.
+>=20
+> References:
+>=20
+> [1] https://www.aspeedtech.com/server_ast2600/
+> [2] https://www.aspeedtech.com/server_ast2500/
+> ---
+> =C2=A0.../dts/aspeed/openbmc-flash-layout-128-alt.dtsi=C2=A0=C2=A0 | 32
+> ++++++++++++++++++++++
+> =C2=A01 file changed, 32 insertions(+)
 
-*snip*
-
-> +&adc {
-> +	status =3D "okay";
-
-Please add the necessary pinctrl properties to request the ADC lines as
-used for the iio-hwmon bridge. This ensures their exclusive use so they
-can't otherwise be muxed as e.g. GPIOs and produce surprising system
-behaviour.
-
-> +};
-> +
-
-*snip*
-
-> +&pinctrl {
-> +	aspeed,external-nodes =3D <&gfx &lhc>;
-
-This property is now set in aspeed-g5.dtsi so it's unnecessary to do so
-here in the dts. I also have a cleanup at [1] that impacts it, so the
-less we can propagate the problem the better
-
-[1]: https://lore.kernel.org/all/20251211-dev-dt-warnings-all-v1-0-21b18b9a=
-da77@codeconstruct.com.au/
-
-Otherwise the patch looks okay to me.
+This may be fine, but please add it in a series that also introduces a
+board that consumes it.
 
 Andrew
 
