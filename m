@@ -1,76 +1,78 @@
-Return-Path: <linux-aspeed+bounces-3125-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3126-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D5DBD6406C
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC6F2D6406E
 	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 02:43:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWJ563L0lz2ySV;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWJ563wtcz2ySY;
 	Wed, 17 Dec 2025 13:43:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.175
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.170
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765939402;
-	cv=none; b=Y07NRXepUJD8c1mKaysZ9CWXD8SoaR+fLegEN/mh0SG3ocsEfB6mKa0eL6bLRBPUFTaeI7tX2vRLmfVUYVcCFPYqtmf39/w8O+AaTdZD0smRshyEYyOjG+kJg5wb3ixci51j5DcRIgXdxTaIQ7p+70WD1rEnK7+6a5jYIRRdpLBCIzM2UYXHJAu/ImpaWbq6VKUH8qBgzYGVpsTaffIdR5SxJh+jsfbSS4Sj/AHaQcAeOHOQ0pUULkgZaVC9RKezIfd5MKOznXSzUAcsO2EKicWWxg6OuCIXRSvJapmFyIU4Vi6SqVBK+C/tO4VY2Cu2hUWtx8Po5WoFMMPa8jyNXQ==
+	cv=none; b=Cu1vG4CsNzbl1Q2qHPthEhPpj9hmjDz3CPHTOQmV4vaGr4IVvFS9i6zyYvGPzEy5hyqNVRZFjNq7fL/SqH1Xs9+umLbqJzlxnIN4F18mLTR2xJ+YuGq9E8TdvBnPmRUnyMO0hqFcR8IsvofIaZVuhMHIBCjTYrQcj/AVk7f6ivKU58F5Fgx51QLaSNjxi+NH6ndnF9ER2IR15TKiXdX7B/24MjZp/ER1yt6MFfFT9wWK/uef0C9dHwmOb6FAjeMBs+xiGGvkqpwh2Ij+3jOfgDrFC4G+B4OWmRSaiFH1rlej7FHnfGmjlW6Fpl7snrB/vHoVgTpITIZbBrpaFLTV+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1765939402; c=relaxed/relaxed;
-	bh=SXY85Uw4s718bBbfWJ62Db0PnAMMSAWmGr9NoDA95ks=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WmOpID2sFijCLjmpmqIaCI8k1PKUt3FtpTzkSMCgaG/jcqnF1Agz2qr4ZM3F+kB/jAzevWLylWnbiSNJ9f0NXjTmwDeQ7rOxM4jrzMkYdU/5xP3vPVfKjYZ7oewZvMvaK+aAbvyo3x8BntqT5uHWhD5cG9/M+wdO2wHqJWYGWETYSFzdhTDawhzFK99RKinzbCfAxXtB0a9nYQZbkjVhj9uQkpxAjyxk5optM2SD6DH4CM0zzvFde+aBodSu0Y6UlaRW0UiU7s3s2mY12oAQXS7TWGXMkkuFy4xyFCmDOfhLztIzn3G7RhyvEiUG+XES9VTe1jJp6qovDSzpk7Rtwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NhFaHuyI; dkim-atps=neutral; spf=pass (client-ip=209.85.210.175; helo=mail-pf1-f175.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	bh=g+r102hR9zDuFntSAOHLz1qhcLIKv7rvOLb1bWkWV94=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=VUFv95NiYzL09f6pAfu7QDcdwXJT2VGgpdDadJtet9dNZ6AhFe1K/esY2V0ylmKP7BdP3U7w02gRAkRlrgYfczK2jEk0EajCbbQNfIcheGDwmXAsbUyym81gm9Twx45pspdhkshX1blbC+pE/dCugU+uj4eWHmav9DMw3dvbFhXuyiBDRWmqIZ4FpninW0Td7QskwaNmeI6Tk/lKWmsur8VsNnGnwd2IW7pDDl9coEr1e8IilXQjFhgFGdNb7+M68p/hjm2zCC91dNgfsnvjFhMapRLY5JLOeEgUDGl7DkAmMVlsrOIjsW2nOEj8jnA6LDC61fPEpdqPXS+FgAb7bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eHn6S2L9; dkim-atps=neutral; spf=pass (client-ip=209.85.210.170; helo=mail-pf1-f170.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NhFaHuyI;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=eHn6S2L9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.175; helo=mail-pf1-f175.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.170; helo=mail-pf1-f170.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-f170.google.com (mail-pf1-f170.google.com [209.85.210.170])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWJ546LMRz2yGq
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 13:43:19 +1100 (AEDT)
-Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-7f651586be1so67063b3a.1
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 16 Dec 2025 18:43:19 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWJ555JsQz2ySB
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 13:43:21 +1100 (AEDT)
+Received: by mail-pf1-f170.google.com with SMTP id d2e1a72fcca58-7aa2170adf9so4300564b3a.0
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 16 Dec 2025 18:43:21 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765939337; x=1766544137; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=SXY85Uw4s718bBbfWJ62Db0PnAMMSAWmGr9NoDA95ks=;
-        b=NhFaHuyIojX4UL8nUHqoh/up09jpsHN5wFpzLc5MVISOP0eu0/a7YAk0+7d+o+jH6W
-         GiRGuQe53BMjNGQ4u/BmvS9lK5YtLXr6Y/UdcHDHuwBmsr3AVw6haGmxukDWf52e/DNN
-         ZPdhp2xJLguRagIl7WnMsxxTzUkdopVgsMQnluIsCAODuwfIOHMmNXRhoMFFiG447aJ/
-         nkixQIJQ2pfP/NtQd8OBmOYKcsh4he2wjI8VNqZo5/pKAOHGvoUJ2ueFDuucdOD0VEMb
-         KZg+acOYZ3jAzpjIL/Ca5D/pb+Gom5Z3TbpcGea7k7xiAFISWQfQ4O5GzPMmuqIeEbiX
-         j9zw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765939337; x=1766544137;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1765939340; x=1766544140; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=SXY85Uw4s718bBbfWJ62Db0PnAMMSAWmGr9NoDA95ks=;
-        b=pblcOU9/A/rj+TUceZo/2QGdCGVC/Tyh5/aS6xsiQZNydvphDDrkXymWkL+HjzttGS
-         so64fXcUDv0vWLML3ocx4ks29SslIE40OILcTWSJnoV2Qc+xsgvU5Yd6ZC0p5gtJaAI2
-         Z+0dnPgUe3OEw6OruU3u64x27zw0mcYAiJTXcav74d5hObQkuMMhUCnMIpvz5G+O1zou
-         V79148v3FNxaz9/O3Sg85JW75nrmy1nmYA367XyM8nqHSVgXw2JmPfNS5lSj0Oo9vFwx
-         zqPjc98Bqrq5mhfplsBM+TQF5RKSCeo6wZmtPQYlvtmc5X1W5IhrrFodn7J/gdrrphaJ
-         0EpQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWQbe7ndN6z0FUyZaIB2AEISUqfFrFk3TkXIjYMKFVRRW3mgfgRqzbBDEvzE5/MrjrPhg9/+TFjytViXOw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yytja7dVS7rWTh5F+B7myKMVJkHxp7Z9UOKutrgvLdnOAE9U+qU
-	FS7a1rCdCcBIS6BWExX9CbOm3RROzC57ywnfIc4i53OnYdIdnFOUsBR2
-X-Gm-Gg: AY/fxX6s9freU9FmuArYJqFcC8xsaYlvkfoWvqn8KlyRn5LFs+z8Lq51UU0wCYFckWz
-	PvcFQR2a4jOdUojgjtlMkByMM5Q81dtdPvBnsvXsmrXfR4Xcer37mJaMTcfgZsEABb6etfwnhSH
-	6wTwBEhLMlnGjZyMkSA1JdVXJ0i4gCUDLkRsqlQlNDnEwA33Sax9dst5L0VUUxXoIrZVBOmGMt8
-	At6lspj2BjQmFFCxPN6a7AgCKEDBNhCIMAUNbabR4cW+OvMVBtBPv4Ci3mTuyN0UmPB5RjdC6uF
-	9bBhxDkVoZK8IWpzRZvuhulWxgOfcd6hnLYOMf0tYOjziwN2FOETA3Rsov7mK38DKCvHeBXCMnI
-	wxwEyyKm03+yswqhBesSO9iiQ8w0CGXa9ixhYGWQCdoLpuEZF+tmMqYdfWLhfFuzv2yvLYtiDm3
-	nU6aUm7rFtEOsfrl6OKRfvAfIbb4sTOsoIV+txk8w12cBbMvrLNKsx9gtM6pPOkdNE7FgjSUZP+
-	Mt4tfPPc0P+G+Q=
-X-Google-Smtp-Source: AGHT+IHsL7dhoNmgnind5e824EvL1VoebSronNRlFQj2ywcoJod8TlpwxQtVbzBWrHsh8omPPq5EiQ==
-X-Received: by 2002:a05:6a00:330a:b0:7e8:3fcb:bc3f with SMTP id d2e1a72fcca58-7f6691b4951mr13932466b3a.20.1765939337346;
-        Tue, 16 Dec 2025 18:42:17 -0800 (PST)
+        bh=g+r102hR9zDuFntSAOHLz1qhcLIKv7rvOLb1bWkWV94=;
+        b=eHn6S2L9HOnXQxCwTesCoKSFCd1iVEjQIJY5GF0mQ/8tyPXTHfNYy4U+C4qxaD4KTs
+         f2Q4U/772u9ImulvRVok0Jreq0MoUfbzJOPYf+GkksJfRkl1BqXh312tyTNpI0DJYye8
+         bwpQbmO9gMlnTUqnO2gDeS8XFsh+K7BinDZJWmAoIWthRbKAcvRM9q/fICv6ieuszSwc
+         preidpKB3xBygxqHnVEL11zm0vcRqyWGIykiIqT/JCwAZ770q1RHAb0+B8ZEzFsNV53K
+         Ggy5lLUNblBVgGxEL8raupd013/QHXi8dkPfIECK/vo750IgBavFyO7R9lnUTNUrUWW9
+         Djmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1765939340; x=1766544140;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=g+r102hR9zDuFntSAOHLz1qhcLIKv7rvOLb1bWkWV94=;
+        b=wUlaDNZkTwAnijwiRFdyIVeKP/WrXWLWv9d3PvHGKMBSvrQPqQuOI9N0H1eBYoZS65
+         xaVOFdLGvJn6DXKf2W0n/bGyRPTuyAmFclgvpwspUE82aOXyBCJWgsD+AmGg0dqdrNWO
+         DC0R99Mc2geMYLGxhbRO83VNPLBlbFMosBF+gLEZu0hKaJbpf4kDB34/z8g8uRN8hi5H
+         6ne7w5t4pC55ky+jvkrj4nQiQh4sN65Va993SlkbjzF9NBIMd/KdkyzQDyge+Md3zbN1
+         +d6DoMmQ5uS09jzJYNNbk69KmxJeJhlPodoWJ/hxxS6u411UMaukg2+tEKLUO4zKtijk
+         wKlA==
+X-Forwarded-Encrypted: i=1; AJvYcCU0jK2EJu1fMfDm99p7M3bWik/B+AVvF1sNvi5DUeMbespzjBsyevVOtbCcMwXuvWsE9A209S33tzMYAgY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywd2D4G577x4cVj2pj/u5xtBdStS+2LNU7Z02MdeQy+gQly2keJ
+	p+GMQ+YAqGqNOUD689O4nHAQI3oNKdwlTxqLwfA5BQtVvVWLz6DGrB0B
+X-Gm-Gg: AY/fxX7f8vYa1eyUSccKO0/S4nYC5Sv4VgSU/63XqfaCbpXsHlnDfNSZnPJIcj1ohBl
+	6zEsO7pPHs7gry5qX5Tp7TYNGpP2ZzHFnSNPr91H02bHj56REhoEKMXwa8Hkzj3mTfcG2QcClBc
+	iqZVsviqke43w0TH0K+pXZZwQhdBXZcYREe80f9kbfBCqw1uMDVuwQhzWuww5V/ivroVRMfbJoL
+	Nku6kuSZeTBa/YEiWWY9FRprFc7yyAXVVpVbQfG4VtbbsLISt1BmCPd7CWucy26s9nB1oXzifoy
+	bgrwBVT1fk9KYsDv438EyBw7kS9XToY1ckHkiNISjwpTauk+WkH4cp4UgzSMvK2mjM0QJvKVvs2
+	9d2IftK7kO+qyoY2X0AwQUB3rG1zgNBLH17ePey6CNK85bHK1NQlnH60vRYYs2EKHZD3ncmGq2D
+	WfDg/uJb4XC6UMRWRKDsIzAu5zb5nfkWV9NAoCzn3CQb6W7J4Mk3vbNYs5HSi3sOZI2eSoM4Lnh
+	x/O/JOOG8oWtNuCITx5Y8PWgQ==
+X-Google-Smtp-Source: AGHT+IGzXtV/pP5X31xR86Zl+foQoI5ZOx0o6hr3iWfkE+akqdst4RveLg7C30cUfY07vcJgFJiDIQ==
+X-Received: by 2002:a05:6a00:6c95:b0:7e8:43f5:bd3f with SMTP id d2e1a72fcca58-7f6692aadf6mr15691763b3a.43.1765939339626;
+        Tue, 16 Dec 2025 18:42:19 -0800 (PST)
 Received: from cosmo-ubuntu-2404.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7fcb8c29738sm941342b3a.17.2025.12.16.18.42.15
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7fcb8c29738sm941342b3a.17.2025.12.16.18.42.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Dec 2025 18:42:17 -0800 (PST)
+        Tue, 16 Dec 2025 18:42:19 -0800 (PST)
 From: Cosmo Chou <chou.cosmo@gmail.com>
 To: robh@kernel.org,
 	krzk+dt@kernel.org,
@@ -83,10 +85,12 @@ Cc: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	cosmo.chou@quantatw.com,
 	Cosmo Chou <chou.cosmo@gmail.com>
-Subject: [PATCH v2 0/5] ARM: dts: aspeed: bletchley: Fix dt-schema warnings
-Date: Wed, 17 Dec 2025 10:39:33 +0800
-Message-ID: <20251217023938.445721-1-chou.cosmo@gmail.com>
+Subject: [PATCH v2 1/5] ARM: dts: aspeed: bletchley: Use generic node names
+Date: Wed, 17 Dec 2025 10:39:34 +0800
+Message-ID: <20251217023938.445721-2-chou.cosmo@gmail.com>
 X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20251217023938.445721-1-chou.cosmo@gmail.com>
+References: <20251217023938.445721-1-chou.cosmo@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,23 +106,239 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series fixes dt-schema validation warnings by using generic node
-names, correcting GPIO property suffixes, and removing unsupported
-properties. No functional changes.
+Use generic node names to fix dt-schema warnings:
+- spi1_gpio: rename to generic "spi" node name
+- LED nodes: rename to led-N and move names to label properties
+- GPIO key nodes: add "-switch" suffix to node names
 
-Changes in v2:
-- Split single patch into 5 separate patches by change type
+Signed-off-by: Cosmo Chou <chou.cosmo@gmail.com>
+---
+ .../aspeed/aspeed-bmc-facebook-bletchley.dts  | 77 ++++++++++++-------
+ 1 file changed, 49 insertions(+), 28 deletions(-)
 
-Cosmo Chou (5):
-  ARM: dts: aspeed: bletchley: Use generic node names
-  ARM: dts: aspeed: bletchley: Fix SPI GPIO property names
-  ARM: dts: aspeed: bletchley: Remove unused pca9539 properties
-  ARM: dts: aspeed: bletchley: Remove unused i2c13 property
-  ARM: dts: aspeed: bletchley: Fix ADC vref property names
-
- .../aspeed/aspeed-bmc-facebook-bletchley.dts  | 100 ++++++++++--------
- 1 file changed, 54 insertions(+), 46 deletions(-)
-
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
+index abdb1562115a..9cb01381e482 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts
+@@ -34,7 +34,7 @@ iio-hwmon {
+ 			<&adc1 4>, <&adc1 5>, <&adc1 6>, <&adc1 7>;
+ 	};
+ 
+-	spi1_gpio: spi1-gpio {
++	spi1_gpio: spi {
+ 		compatible = "spi-gpio";
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -54,7 +54,8 @@ tpm@0 {
+ 
+ 	front_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sys_log_id {
++		led-0 {
++			label = "sys_log_id";
+ 			default-state = "off";
+ 			gpios = <&front_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+@@ -62,42 +63,50 @@ sys_log_id {
+ 
+ 	fan_gpio_leds {
+ 		compatible = "gpio-leds";
+-		fan0_blue {
++		led-0 {
++			label = "fan0_blue";
+ 			retain-state-shutdown;
+ 			default-state = "on";
+ 			gpios = <&fan_leds 8 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan1_blue {
++		led-1 {
++			label = "fan1_blue";
+ 			retain-state-shutdown;
+ 			default-state = "on";
+ 			gpios = <&fan_leds 9 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan2_blue {
++		led-2 {
++			label = "fan2_blue";
+ 			retain-state-shutdown;
+ 			default-state = "on";
+ 			gpios = <&fan_leds 10 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan3_blue {
++		led-3 {
++			label = "fan3_blue";
+ 			retain-state-shutdown;
+ 			default-state = "on";
+ 			gpios = <&fan_leds 11 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan0_amber {
++		led-4 {
++			label = "fan0_amber";
+ 			retain-state-shutdown;
+ 			default-state = "off";
+ 			gpios = <&fan_leds 12 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan1_amber {
++		led-5 {
++			label = "fan1_amber";
+ 			retain-state-shutdown;
+ 			default-state = "off";
+ 			gpios = <&fan_leds 13 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan2_amber {
++		led-6 {
++			label = "fan2_amber";
+ 			retain-state-shutdown;
+ 			default-state = "off";
+ 			gpios = <&fan_leds 14 GPIO_ACTIVE_HIGH>;
+ 		};
+-		fan3_amber {
++		led-7 {
++			label = "fan3_amber";
+ 			retain-state-shutdown;
+ 			default-state = "off";
+ 			gpios = <&fan_leds 15 GPIO_ACTIVE_HIGH>;
+@@ -106,12 +115,14 @@ fan3_amber {
+ 
+ 	sled1_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sled1_amber {
++		led-0 {
++			label = "sled1_amber";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled1_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+-		sled1_blue {
++		led-1 {
++			label = "sled1_blue";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled1_leds 1 GPIO_ACTIVE_LOW>;
+@@ -120,12 +131,14 @@ sled1_blue {
+ 
+ 	sled2_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sled2_amber {
++		led-0 {
++			label = "sled2_amber";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled2_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+-		sled2_blue {
++		led-1 {
++			label = "sled2_blue";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled2_leds 1 GPIO_ACTIVE_LOW>;
+@@ -134,12 +147,14 @@ sled2_blue {
+ 
+ 	sled3_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sled3_amber {
++		led-0 {
++			label = "sled3_amber";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled3_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+-		sled3_blue {
++		led-1 {
++			label = "sled3_blue";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled3_leds 1 GPIO_ACTIVE_LOW>;
+@@ -148,12 +163,14 @@ sled3_blue {
+ 
+ 	sled4_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sled4_amber {
++		led-0 {
++			label = "sled4_amber";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled4_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+-		sled4_blue {
++		led-1 {
++			label = "sled4_blue";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled4_leds 1 GPIO_ACTIVE_LOW>;
+@@ -162,12 +179,14 @@ sled4_blue {
+ 
+ 	sled5_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sled5_amber {
++		led-0 {
++			label = "sled5_amber";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled5_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+-		sled5_blue {
++		led-1 {
++			label = "sled5_blue";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled5_leds 1 GPIO_ACTIVE_LOW>;
+@@ -176,12 +195,14 @@ sled5_blue {
+ 
+ 	sled6_gpio_leds {
+ 		compatible = "gpio-leds";
+-		sled6_amber {
++		led-0 {
++			label = "sled6_amber";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled6_leds 0 GPIO_ACTIVE_LOW>;
+ 		};
+-		sled6_blue {
++		led-1 {
++			label = "sled6_blue";
+ 			retain-state-shutdown;
+ 			default-state = "keep";
+ 			gpios = <&sled6_leds 1 GPIO_ACTIVE_LOW>;
+@@ -191,32 +212,32 @@ sled6_blue {
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 
+-		presence-sled1 {
++		presence-sled1-switch {
+ 			label = "presence-sled1";
+ 			gpios = <&gpio0 ASPEED_GPIO(H, 2) GPIO_ACTIVE_LOW>;
+ 			linux,code = <ASPEED_GPIO(H, 2)>;
+ 		};
+-		presence-sled2 {
++		presence-sled2-switch {
+ 			label = "presence-sled2";
+ 			gpios = <&gpio0 ASPEED_GPIO(H, 3) GPIO_ACTIVE_LOW>;
+ 			linux,code = <ASPEED_GPIO(H, 3)>;
+ 		};
+-		presence-sled3 {
++		presence-sled3-switch {
+ 			label = "presence-sled3";
+ 			gpios = <&gpio0 ASPEED_GPIO(H, 4) GPIO_ACTIVE_LOW>;
+ 			linux,code = <ASPEED_GPIO(H, 4)>;
+ 		};
+-		presence-sled4 {
++		presence-sled4-switch {
+ 			label = "presence-sled4";
+ 			gpios = <&gpio0 ASPEED_GPIO(H, 5) GPIO_ACTIVE_LOW>;
+ 			linux,code = <ASPEED_GPIO(H, 5)>;
+ 		};
+-		presence-sled5 {
++		presence-sled5-switch {
+ 			label = "presence-sled5";
+ 			gpios = <&gpio0 ASPEED_GPIO(H, 6) GPIO_ACTIVE_LOW>;
+ 			linux,code = <ASPEED_GPIO(H, 6)>;
+ 		};
+-		presence-sled6 {
++		presence-sled6-switch {
+ 			label = "presence-sled6";
+ 			gpios = <&gpio0 ASPEED_GPIO(H, 7) GPIO_ACTIVE_LOW>;
+ 			linux,code = <ASPEED_GPIO(H, 7)>;
 -- 
 2.43.0
 
