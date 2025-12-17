@@ -1,50 +1,92 @@
-Return-Path: <linux-aspeed+bounces-3124-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3125-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86AE1D637B3
-	for <linux-aspeed@archiver.kernel.org>; Tue, 16 Dec 2025 22:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D5DBD6406C
+	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 02:43:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWBqT15Zyz2y6G;
-	Wed, 17 Dec 2025 09:46:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.181.50.185
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765873106;
-	cv=none; b=VMpqZGYybYmL42zsbvMHW0cWKCDiqYcmewbdy9JP3125637sYbn0P1Vfqps51+5Vr4lIvTqBvuMBRykhNL9EniHakaimQv0N+sqdS7wvuh0aAx1GDTZSrNBs1gR5e4OqA2Ok4R3D1aQu9ZOXeC4d5lGprsg+tqctF+oNodjWa2aVHTwADMOrA2JTu3PxjcY2fTN20kM/jCR83uyuRxoHVqvH9j56Unrv4Vlor1QWTQm58lAoQBkhEgCjfUX/nRyIEKlCLcNoz/TECVjyg4/vP+8wCRq1XxUSGX7D1g0x+vkf+YivwxK3vCd9lPnSXfQjYF/YO9UXdD5/dZy5yfNO+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWJ563L0lz2ySV;
+	Wed, 17 Dec 2025 13:43:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.175
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765939402;
+	cv=none; b=Y07NRXepUJD8c1mKaysZ9CWXD8SoaR+fLegEN/mh0SG3ocsEfB6mKa0eL6bLRBPUFTaeI7tX2vRLmfVUYVcCFPYqtmf39/w8O+AaTdZD0smRshyEYyOjG+kJg5wb3ixci51j5DcRIgXdxTaIQ7p+70WD1rEnK7+6a5jYIRRdpLBCIzM2UYXHJAu/ImpaWbq6VKUH8qBgzYGVpsTaffIdR5SxJh+jsfbSS4Sj/AHaQcAeOHOQ0pUULkgZaVC9RKezIfd5MKOznXSzUAcsO2EKicWWxg6OuCIXRSvJapmFyIU4Vi6SqVBK+C/tO4VY2Cu2hUWtx8Po5WoFMMPa8jyNXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765873106; c=relaxed/relaxed;
-	bh=xy8kBN2hBlAN5+FWs5IwS8QGlB0Qe+3MTckLj99rKug=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=luIZI9fAIvh+I18zEjh7kqDBrohf0zu3CWKCkE+x/4vo2nOIQosN+mC1XgQYu7OLRN7XJ48jbFKo2Z7BqiRpZty0lLisKQCYGejMOdpH9izggb2hkNewGmMZg8/8q7QebxYu+oPlAUXuv2qO1dQNv7epdH+4BrjlnjmX7AOU+f/7stZ6FM2WbTLNj6vqr3vyYcrOgjYF1ahZ91zwiy7vmz7ZtkLYc0lcl/LMp4pxQVJawqJBVr4QZSK8Y1ab9onx2gH1V66+I84OMevuo/Uo1pP/NwXrnHo/dIlpNR3czdCSuzV9a1MUuqy2cmayqyw4NB9JwenuZFiunzyu0/OG8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass (client-ip=220.181.50.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org) smtp.mailfrom=baidu.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baidu.com (client-ip=220.181.50.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1858 seconds by postgrey-1.37 at boromir; Tue, 16 Dec 2025 19:18:25 AEDT
-Received: from baidu.com (mx22.baidu.com [220.181.50.185])
+	t=1765939402; c=relaxed/relaxed;
+	bh=SXY85Uw4s718bBbfWJ62Db0PnAMMSAWmGr9NoDA95ks=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WmOpID2sFijCLjmpmqIaCI8k1PKUt3FtpTzkSMCgaG/jcqnF1Agz2qr4ZM3F+kB/jAzevWLylWnbiSNJ9f0NXjTmwDeQ7rOxM4jrzMkYdU/5xP3vPVfKjYZ7oewZvMvaK+aAbvyo3x8BntqT5uHWhD5cG9/M+wdO2wHqJWYGWETYSFzdhTDawhzFK99RKinzbCfAxXtB0a9nYQZbkjVhj9uQkpxAjyxk5optM2SD6DH4CM0zzvFde+aBodSu0Y6UlaRW0UiU7s3s2mY12oAQXS7TWGXMkkuFy4xyFCmDOfhLztIzn3G7RhyvEiUG+XES9VTe1jJp6qovDSzpk7Rtwg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NhFaHuyI; dkim-atps=neutral; spf=pass (client-ip=209.85.210.175; helo=mail-pf1-f175.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NhFaHuyI;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.175; helo=mail-pf1-f175.google.com; envelope-from=chou.cosmo@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-f175.google.com (mail-pf1-f175.google.com [209.85.210.175])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dVqZ92ZnCz2xqf;
-	Tue, 16 Dec 2025 19:18:23 +1100 (AEDT)
-From: lirongqing <lirongqing@baidu.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Lance Yang
-	<lance.yang@linux.dev>
-CC: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
-	<chleroy@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Eduard
- Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
-	<yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, KP
- Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo
-	<haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
-	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-openrisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<dri-devel@lists.freedesktop.org>, <bpf@vger.kernel.org>,
-	<linux-kselftest@vger.kernel.org>, <wireguard@lists.zx2c4.com>,
-	<netdev@vger.kernel.org>, Li RongQing <lirongqing@baidu.com>
-Subject: [PATCH] watchdog: softlockup: panic when lockup duration exceeds N thresholds
-Date: Tue, 16 Dec 2025 02:45:21 -0500
-Message-ID: <20251216074521.2796-1-lirongqing@baidu.com>
-X-Mailer: git-send-email 2.17.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWJ546LMRz2yGq
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 13:43:19 +1100 (AEDT)
+Received: by mail-pf1-f175.google.com with SMTP id d2e1a72fcca58-7f651586be1so67063b3a.1
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 16 Dec 2025 18:43:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1765939337; x=1766544137; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=SXY85Uw4s718bBbfWJ62Db0PnAMMSAWmGr9NoDA95ks=;
+        b=NhFaHuyIojX4UL8nUHqoh/up09jpsHN5wFpzLc5MVISOP0eu0/a7YAk0+7d+o+jH6W
+         GiRGuQe53BMjNGQ4u/BmvS9lK5YtLXr6Y/UdcHDHuwBmsr3AVw6haGmxukDWf52e/DNN
+         ZPdhp2xJLguRagIl7WnMsxxTzUkdopVgsMQnluIsCAODuwfIOHMmNXRhoMFFiG447aJ/
+         nkixQIJQ2pfP/NtQd8OBmOYKcsh4he2wjI8VNqZo5/pKAOHGvoUJ2ueFDuucdOD0VEMb
+         KZg+acOYZ3jAzpjIL/Ca5D/pb+Gom5Z3TbpcGea7k7xiAFISWQfQ4O5GzPMmuqIeEbiX
+         j9zw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1765939337; x=1766544137;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SXY85Uw4s718bBbfWJ62Db0PnAMMSAWmGr9NoDA95ks=;
+        b=pblcOU9/A/rj+TUceZo/2QGdCGVC/Tyh5/aS6xsiQZNydvphDDrkXymWkL+HjzttGS
+         so64fXcUDv0vWLML3ocx4ks29SslIE40OILcTWSJnoV2Qc+xsgvU5Yd6ZC0p5gtJaAI2
+         Z+0dnPgUe3OEw6OruU3u64x27zw0mcYAiJTXcav74d5hObQkuMMhUCnMIpvz5G+O1zou
+         V79148v3FNxaz9/O3Sg85JW75nrmy1nmYA367XyM8nqHSVgXw2JmPfNS5lSj0Oo9vFwx
+         zqPjc98Bqrq5mhfplsBM+TQF5RKSCeo6wZmtPQYlvtmc5X1W5IhrrFodn7J/gdrrphaJ
+         0EpQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWQbe7ndN6z0FUyZaIB2AEISUqfFrFk3TkXIjYMKFVRRW3mgfgRqzbBDEvzE5/MrjrPhg9/+TFjytViXOw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yytja7dVS7rWTh5F+B7myKMVJkHxp7Z9UOKutrgvLdnOAE9U+qU
+	FS7a1rCdCcBIS6BWExX9CbOm3RROzC57ywnfIc4i53OnYdIdnFOUsBR2
+X-Gm-Gg: AY/fxX6s9freU9FmuArYJqFcC8xsaYlvkfoWvqn8KlyRn5LFs+z8Lq51UU0wCYFckWz
+	PvcFQR2a4jOdUojgjtlMkByMM5Q81dtdPvBnsvXsmrXfR4Xcer37mJaMTcfgZsEABb6etfwnhSH
+	6wTwBEhLMlnGjZyMkSA1JdVXJ0i4gCUDLkRsqlQlNDnEwA33Sax9dst5L0VUUxXoIrZVBOmGMt8
+	At6lspj2BjQmFFCxPN6a7AgCKEDBNhCIMAUNbabR4cW+OvMVBtBPv4Ci3mTuyN0UmPB5RjdC6uF
+	9bBhxDkVoZK8IWpzRZvuhulWxgOfcd6hnLYOMf0tYOjziwN2FOETA3Rsov7mK38DKCvHeBXCMnI
+	wxwEyyKm03+yswqhBesSO9iiQ8w0CGXa9ixhYGWQCdoLpuEZF+tmMqYdfWLhfFuzv2yvLYtiDm3
+	nU6aUm7rFtEOsfrl6OKRfvAfIbb4sTOsoIV+txk8w12cBbMvrLNKsx9gtM6pPOkdNE7FgjSUZP+
+	Mt4tfPPc0P+G+Q=
+X-Google-Smtp-Source: AGHT+IHsL7dhoNmgnind5e824EvL1VoebSronNRlFQj2ywcoJod8TlpwxQtVbzBWrHsh8omPPq5EiQ==
+X-Received: by 2002:a05:6a00:330a:b0:7e8:3fcb:bc3f with SMTP id d2e1a72fcca58-7f6691b4951mr13932466b3a.20.1765939337346;
+        Tue, 16 Dec 2025 18:42:17 -0800 (PST)
+Received: from cosmo-ubuntu-2404.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7fcb8c29738sm941342b3a.17.2025.12.16.18.42.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Dec 2025 18:42:17 -0800 (PST)
+From: Cosmo Chou <chou.cosmo@gmail.com>
+To: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	cosmo.chou@quantatw.com,
+	Cosmo Chou <chou.cosmo@gmail.com>
+Subject: [PATCH v2 0/5] ARM: dts: aspeed: bletchley: Fix dt-schema warnings
+Date: Wed, 17 Dec 2025 10:39:33 +0800
+Message-ID: <20251217023938.445721-1-chou.cosmo@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,256 +100,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.127.73.8]
-X-ClientProxiedBy: bjhj-exc8.internal.baidu.com (172.31.3.18) To
- bjkjy-exc3.internal.baidu.com (172.31.50.47)
-X-FEAS-Client-IP: 172.31.50.47
-X-FE-Policy-ID: 52:10:53:SYSTEM
+Content-Transfer-Encoding: 8bit
 
-From: Li RongQing <lirongqing@baidu.com>
+This series fixes dt-schema validation warnings by using generic node
+names, correcting GPIO property suffixes, and removing unsupported
+properties. No functional changes.
 
-The softlockup_panic sysctl is currently a binary option: panic immediately
-or never panic on soft lockups.
+Changes in v2:
+- Split single patch into 5 separate patches by change type
 
-Panicking on any soft lockup, regardless of duration, can be overly
-aggressive for brief stalls that may be caused by legitimate operations.
-Conversely, never panicking may allow severe system hangs to persist
-undetected.
+Cosmo Chou (5):
+  ARM: dts: aspeed: bletchley: Use generic node names
+  ARM: dts: aspeed: bletchley: Fix SPI GPIO property names
+  ARM: dts: aspeed: bletchley: Remove unused pca9539 properties
+  ARM: dts: aspeed: bletchley: Remove unused i2c13 property
+  ARM: dts: aspeed: bletchley: Fix ADC vref property names
 
-Extend softlockup_panic to accept an integer threshold, allowing the kernel
-to panic only when the normalized lockup duration exceeds N watchdog
-threshold periods. This provides finer-grained control to distinguish
-between transient delays and persistent system failures.
+ .../aspeed/aspeed-bmc-facebook-bletchley.dts  | 100 ++++++++++--------
+ 1 file changed, 54 insertions(+), 46 deletions(-)
 
-The accepted values are:
-- 0: Don't panic (unchanged)
-- 1: Panic when duration >= 1 * threshold (20s default, original behavior)
-- N > 1: Panic when duration >= N * threshold (e.g., 2 = 40s, 3 = 60s.)
-
-The original behavior is preserved for values 0 and 1, maintaining full
-backward compatibility while allowing systems to tolerate brief lockups
-while still catching severe, persistent hangs.
-
-Signed-off-by: Li RongQing <lirongqing@baidu.com>
----
- Documentation/admin-guide/kernel-parameters.txt      | 10 +++++-----
- arch/arm/configs/aspeed_g5_defconfig                 |  2 +-
- arch/arm/configs/pxa3xx_defconfig                    |  2 +-
- arch/openrisc/configs/or1klitex_defconfig            |  2 +-
- arch/powerpc/configs/skiroot_defconfig               |  2 +-
- drivers/gpu/drm/ci/arm.config                        |  2 +-
- drivers/gpu/drm/ci/arm64.config                      |  2 +-
- drivers/gpu/drm/ci/x86_64.config                     |  2 +-
- kernel/watchdog.c                                    |  8 +++++---
- lib/Kconfig.debug                                    | 13 +++++++------
- tools/testing/selftests/bpf/config                   |  2 +-
- tools/testing/selftests/wireguard/qemu/kernel.config |  2 +-
- 12 files changed, 26 insertions(+), 23 deletions(-)
-
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a8d0afd..27c5f96 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -6934,12 +6934,12 @@ Kernel parameters
- 
- 	softlockup_panic=
- 			[KNL] Should the soft-lockup detector generate panics.
--			Format: 0 | 1
-+			Format: <int>
- 
--			A value of 1 instructs the soft-lockup detector
--			to panic the machine when a soft-lockup occurs. It is
--			also controlled by the kernel.softlockup_panic sysctl
--			and CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC, which is the
-+			A value of non-zero instructs the soft-lockup detector
-+			to panic the machine when a soft-lockup duration exceeds
-+			N thresholds. It is also controlled by the kernel.softlockup_panic
-+			sysctl and CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC, which is the
- 			respective build-time switch to that functionality.
- 
- 	softlockup_all_cpu_backtrace=
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 2e6ea13..ec558e5 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -306,7 +306,7 @@ CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_PANIC_TIMEOUT=-1
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BOOTPARAM_HUNG_TASK_PANIC=1
- CONFIG_WQ_WATCHDOG=y
- # CONFIG_SCHED_DEBUG is not set
-diff --git a/arch/arm/configs/pxa3xx_defconfig b/arch/arm/configs/pxa3xx_defconfig
-index 07d422f..fb272e3 100644
---- a/arch/arm/configs/pxa3xx_defconfig
-+++ b/arch/arm/configs/pxa3xx_defconfig
-@@ -100,7 +100,7 @@ CONFIG_PRINTK_TIME=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_SHIRQ=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- # CONFIG_SCHED_DEBUG is not set
- CONFIG_DEBUG_SPINLOCK=y
- CONFIG_DEBUG_SPINLOCK_SLEEP=y
-diff --git a/arch/openrisc/configs/or1klitex_defconfig b/arch/openrisc/configs/or1klitex_defconfig
-index fb1eb9a..984b0e3 100644
---- a/arch/openrisc/configs/or1klitex_defconfig
-+++ b/arch/openrisc/configs/or1klitex_defconfig
-@@ -52,5 +52,5 @@ CONFIG_LSM="lockdown,yama,loadpin,safesetid,integrity,bpf"
- CONFIG_PRINTK_TIME=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BUG_ON_DATA_CORRUPTION=y
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index 2b71a6d..a4114fc 100644
---- a/arch/powerpc/configs/skiroot_defconfig
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -289,7 +289,7 @@ CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
- CONFIG_WQ_WATCHDOG=y
-diff --git a/drivers/gpu/drm/ci/arm.config b/drivers/gpu/drm/ci/arm.config
-index 411e814..d7c5167 100644
---- a/drivers/gpu/drm/ci/arm.config
-+++ b/drivers/gpu/drm/ci/arm.config
-@@ -52,7 +52,7 @@ CONFIG_TMPFS=y
- CONFIG_PROVE_LOCKING=n
- CONFIG_DEBUG_LOCKDEP=n
- CONFIG_SOFTLOCKUP_DETECTOR=n
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=n
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=0
- 
- CONFIG_FW_LOADER_COMPRESS=y
- 
-diff --git a/drivers/gpu/drm/ci/arm64.config b/drivers/gpu/drm/ci/arm64.config
-index fddfbd4..ea0e307 100644
---- a/drivers/gpu/drm/ci/arm64.config
-+++ b/drivers/gpu/drm/ci/arm64.config
-@@ -161,7 +161,7 @@ CONFIG_TMPFS=y
- CONFIG_PROVE_LOCKING=n
- CONFIG_DEBUG_LOCKDEP=n
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- 
- CONFIG_DETECT_HUNG_TASK=y
- 
-diff --git a/drivers/gpu/drm/ci/x86_64.config b/drivers/gpu/drm/ci/x86_64.config
-index 8eaba388..7ac98a7 100644
---- a/drivers/gpu/drm/ci/x86_64.config
-+++ b/drivers/gpu/drm/ci/x86_64.config
-@@ -47,7 +47,7 @@ CONFIG_TMPFS=y
- CONFIG_PROVE_LOCKING=n
- CONFIG_DEBUG_LOCKDEP=n
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- 
- CONFIG_DETECT_HUNG_TASK=y
- 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 0685e3a..a5fa116 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -363,7 +363,7 @@ static struct cpumask watchdog_allowed_mask __read_mostly;
- 
- /* Global variables, exported for sysctl */
- unsigned int __read_mostly softlockup_panic =
--			IS_ENABLED(CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC);
-+			CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC;
- 
- static bool softlockup_initialized __read_mostly;
- static u64 __read_mostly sample_period;
-@@ -879,7 +879,9 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 
- 		add_taint(TAINT_SOFTLOCKUP, LOCKDEP_STILL_OK);
- 		sys_info(softlockup_si_mask & ~SYS_INFO_ALL_BT);
--		if (softlockup_panic)
-+		duration = duration / get_softlockup_thresh();
-+
-+		if (softlockup_panic && duration >= softlockup_panic)
- 			panic("softlockup: hung tasks");
- 	}
- 
-@@ -1228,7 +1230,7 @@ static const struct ctl_table watchdog_sysctls[] = {
- 		.mode		= 0644,
- 		.proc_handler	= proc_dointvec_minmax,
- 		.extra1		= SYSCTL_ZERO,
--		.extra2		= SYSCTL_ONE,
-+		.extra2		= SYSCTL_INT_MAX,
- 	},
- 	{
- 		.procname	= "softlockup_sys_info",
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index ba36939..17a7a77 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1110,13 +1110,14 @@ config SOFTLOCKUP_DETECTOR_INTR_STORM
- 	  the CPU stats and the interrupt counts during the "soft lockups".
- 
- config BOOTPARAM_SOFTLOCKUP_PANIC
--	bool "Panic (Reboot) On Soft Lockups"
-+	int "Panic (Reboot) On Soft Lockups"
- 	depends on SOFTLOCKUP_DETECTOR
-+	default 0
- 	help
--	  Say Y here to enable the kernel to panic on "soft lockups",
--	  which are bugs that cause the kernel to loop in kernel
--	  mode for more than 20 seconds (configurable using the watchdog_thresh
--	  sysctl), without giving other tasks a chance to run.
-+	  Set to a non-zero value N to enable the kernel to panic on "soft
-+	  lockups", which are bugs that cause the kernel to loop in kernel
-+	  mode for more than (N * 20 seconds) (configurable using the
-+	  watchdog_thresh sysctl), without giving other tasks a chance to run.
- 
- 	  The panic can be used in combination with panic_timeout,
- 	  to cause the system to reboot automatically after a
-@@ -1124,7 +1125,7 @@ config BOOTPARAM_SOFTLOCKUP_PANIC
- 	  high-availability systems that have uptime guarantees and
- 	  where a lockup must be resolved ASAP.
- 
--	  Say N if unsure.
-+	  Say 0 if unsure.
- 
- config HAVE_HARDLOCKUP_DETECTOR_BUDDY
- 	bool
-diff --git a/tools/testing/selftests/bpf/config b/tools/testing/selftests/bpf/config
-index 558839e..2485538 100644
---- a/tools/testing/selftests/bpf/config
-+++ b/tools/testing/selftests/bpf/config
-@@ -1,6 +1,6 @@
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BPF=y
- CONFIG_BPF_EVENTS=y
- CONFIG_BPF_JIT=y
-diff --git a/tools/testing/selftests/wireguard/qemu/kernel.config b/tools/testing/selftests/wireguard/qemu/kernel.config
-index 0504c11..bb89d2d 100644
---- a/tools/testing/selftests/wireguard/qemu/kernel.config
-+++ b/tools/testing/selftests/wireguard/qemu/kernel.config
-@@ -80,7 +80,7 @@ CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_WQ_WATCHDOG=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BOOTPARAM_HUNG_TASK_PANIC=1
- CONFIG_PANIC_TIMEOUT=-1
- CONFIG_STACKTRACE=y
 -- 
-2.9.4
+2.43.0
 
 
