@@ -1,59 +1,68 @@
-Return-Path: <linux-aspeed+bounces-3136-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3137-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 080D2D65C6C
-	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 15:37:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D14D5D68BC1
+	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 22:01:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWdGd3X90z2yvL;
-	Thu, 18 Dec 2025 02:37:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765985865;
-	cv=none; b=K8z3DXod6HGcHOe4XRFoXiWIOtoUAyYAYNgyeG3I9VqA1Ny4dObonnZ7cyJoLrJ7BadbYLhyI3GHkQZz0N5l0vw45ysUvctpt3bzqXE+RjBPYoyKNADmKKgTj6e7zgxI4h8raKxfWTa3gcyME5WuzghBGLsDAhmIo1bK3wqCcA1hteQ7+4cGVZYHvMeWFQXW2CmIwtwSw7DOBMXRL133OZY/pvi9xBW3RkCUrFrpgDwusW0G3Y2ViCqF5zKLN2eijdN+FhQHVP0iZZ0yFGwruGUs5W/13YaEKEYc7TVqKp5PAnrk+yur42J6k7sNrvHoANPJ1XFY5n2s4rCPjAvqeA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWnmr1BWZz30W5;
+	Thu, 18 Dec 2025 09:01:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766008860;
+	cv=none; b=g79wPkERUJJKeUyxcJNB6msmefIgnd8cDLvtt1VGwup1ZXGKDrc6mroP7vomVWPj56oiVxhOqdgD0x4PhPuAPI1JGoTDaI6RBI3v31VTwDRVhM4YjO1Vnh0ekVpgEsQl66EZicd5YC0ezX7q77b0bCKro0MgoKQi+yYa415sGnEH/mvEvBxaFtI8TCZO9THK5Oy31Zf8n8fC1rlMWrJnRAiGvM2IlMgBGJgxKphUC+6soZOKPiEGDMesOm3I3Fl8umv0ckISzAYogu7R4O+aVlPgVIGc3xXS3aWlyrPnaZZIVT3GSFWKhYoEI97/vgzmdHI3cm5Al8xj0lFEpyRZgw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765985865; c=relaxed/relaxed;
-	bh=P4Hj6kUIjPKS1U4b5WrIC6hTm+90YDETyj8ZGZZXRGE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=aQQlfzIxrAKVP2G2k/0dTeTETfEN1lHN6nwVSOuGJJ9Zg8UMwfdBXGl8HporyO4kZBA2mIn4DbrDZVSfw8CgFmRgU2lDFOpGZ7rgyGMc/kv+4GaNoDXX2pyFb/nW8fdo/cToOpDujBxOupPbuEcqoJ4JAu5ifE3sK73dgUOMr+q/sGEprpfjh54YOUcgtYJWKvJiJ0kTg0WtYPqcH7dT4971BP3zxBfsIAxCyYYX1YcHe5nSUVtcR9ZJ9B8V7/eRFUagJwbWHXurG/qrVt66Xvg0yd9lx6XzYUvIsSb0H7RH2JKMoBRoCxGZ2jELnl3pPih/dZk1xcT/vBFxrRTGOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMNPbQfH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1766008860; c=relaxed/relaxed;
+	bh=fzcRsvXylZN9aaLtqwzTReh1wZfElthhV45WDpSLtLM=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=f5f090CeSX4i830cefDn5tA2Pz8mTIjA/rdsmQOps764ctiQqjMmPkeKgvEHGHReJDVgGNKGfQHYyxxD3s4ULOuusV5jS6t/YceTwin1sZPbq+zKMG36Inb9+bEM/gQlNCZFsUcsleDM1WkpHeae4YqNL+FYqkfbXcA4gIInDrfc1/nB7dTLsh9Uzxh3ZgehnteFTMIfEVa8McF579chBt/DpdjM4r7ZuP/k4T4Z6u+vdCqru/0gHtvFwrtEKTak49CRrDVxfaoWZK9opLl5d/noRRCBCF/2RbgG7vAhcE/fqjmIP8JZOHBz3X9A3vUiZHJRdkUeMotTl2PPgpWZ1w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=fApoOOfA; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMNPbQfH;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=fApoOOfA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWdGc39Kdz2yvK
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 18 Dec 2025 02:37:44 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0275F44186
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 15:37:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF72AC2BCAF
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 15:37:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765985861;
-	bh=3zWGgAak/FBm7Vkk94ZrLytELeHbedaeePRas4C5o5A=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=hMNPbQfHkiOGVqJHw5AtuOCvRV0FWKVO23ESw20F2cpxcqWTBIOhlBqGNkwequi0i
-	 3oeUmzcEgHgSCtPoeLi5W9KvVXmE1VGX7UUnHrN1mtR68GvWl08uXF7HTsH54i7ZE9
-	 KfYRP9/8MnbbeqwSYkqRzywXs1Oee8xupqaf+a3s5LDAgTLnveEoDXptQ80gqAbzq5
-	 bjMNZezJ7p4GnTY2AwYJ0eq5AHSinGdYScOtbFN/Adxv8qepgBFrnvzwv9d+LJGjra
-	 iG70B1IeKSjTYdQQgNkT1NrvCLmUQmuqa9VxS8bv5ivZq+pOTD21TTRtZYR98YCKkC
-	 GNKlOB4AN3+tA==
-Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-b7ce5d6627dso491671766b.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 07:37:41 -0800 (PST)
-X-Forwarded-Encrypted: i=1; AJvYcCXNGmHPjnR2YH3eN7MhzePdloLTQew/FAr/F7a2OQOgrd0nHekpHxuKJ/Ke2f5To1QVDvDViQ5A2mvyjyg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyP7qMT9fKD+7t/hivbN3Uht5GgXFrntcEk7JNhirAY+RBFNYfd
-	Ca1EGUTRTO+FQaXeg6EBTYoUR8Idg9ipRqKNPUiLxjdBeA/jdzfA98YZ0EbxFcgDNNLOaKUZMRs
-	yTsUryZrxHClLZYiqbsfeYC5mQ0ZvfQ==
-X-Google-Smtp-Source: AGHT+IE+MbpVy0D9cI7vtayEcuAQ5BpKDVDav3dQlj552I/4svzEpwf9VDtWU/NeRoVokGuFNkCPT8ATPD0NU91eNy8=
-X-Received: by 2002:a17:907:3cca:b0:b72:c261:3ad2 with SMTP id
- a640c23a62f3a-b7d23af00e6mr1859042566b.50.1765985860268; Wed, 17 Dec 2025
- 07:37:40 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWnmp6T0Kz2xl0;
+	Thu, 18 Dec 2025 09:00:58 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1766008855;
+	bh=fzcRsvXylZN9aaLtqwzTReh1wZfElthhV45WDpSLtLM=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=fApoOOfAOl/WLHh2U99ktvCT0tJMUee5y+YJOw2D6yPmlO3QXfrC4pXyDavNvNOFQ
+	 0ZrLl2bX3drG8K46ydoTHG/YL8MJMBt3Pe/eVVR1eqZnijWe1OvGNMSVrM8q7bfXJs
+	 brC4+s/JlkwpbSiFhenmsEWkVTI5ibT6QqI+0gUr7p0qDPwDtBCBsWoXwo43xF/+vi
+	 lMW7yiKE8BHSKDNwW7TiyML1D20eSbBYZFMhNZ2ZHfluXXf1HbQdQv358qvwkwywKt
+	 VaVXXCJC+ozudhxI89GAzXLN1F4yrkcFrCPjXWe8s43Y7u44/mfwV4Ignyu/jXDdJn
+	 fUSaF6GA/zSUg==
+Received: from [192.168.68.115] (unknown [180.150.112.216])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5400D7C1B2;
+	Thu, 18 Dec 2025 06:00:54 +0800 (AWST)
+Message-ID: <d6046a94820cda6bfcc3953d6c737152a9f0cf37.camel@codeconstruct.com.au>
+Subject: Re: [PATCH RFC 01/16] dt-bindings: hwmon: Convert
+ aspeed,ast2400-pwm-tacho to DT schema
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Rob Herring <robh@kernel.org>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>,  Linus Walleij <linusw@kernel.org>, Joel Stanley
+ <joel@jms.id.au>, linux-hwmon@vger.kernel.org, 	devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, 	linux-aspeed@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, 	openbmc@lists.ozlabs.org,
+ linux-gpio@vger.kernel.org, linux-mmc@vger.kernel.org, 
+	linux-crypto@vger.kernel.org, linux-iio@vger.kernel.org
+Date: Thu, 18 Dec 2025 08:30:51 +1030
+In-Reply-To: <CAL_JsqJUaKKsJ8BCNbVXe4vLVsQ2Av7VuWqf9DnUKHeLzLb8NQ@mail.gmail.com>
+References: 
+	<20251211-dev-dt-warnings-all-v1-0-21b18b9ada77@codeconstruct.com.au>
+	 <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
+	 <CAL_JsqJUaKKsJ8BCNbVXe4vLVsQ2Av7VuWqf9DnUKHeLzLb8NQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,51 +76,26 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251211-dev-dt-warnings-all-v1-0-21b18b9ada77@codeconstruct.com.au>
- <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
-In-Reply-To: <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 17 Dec 2025 09:37:28 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJUaKKsJ8BCNbVXe4vLVsQ2Av7VuWqf9DnUKHeLzLb8NQ@mail.gmail.com>
-X-Gm-Features: AQt7F2q-nb9Xy6ZmXCdkQqrO-_0mpnqJ_RWJ9ZzKv3sOBl98lQ-TH7L8rvtaBLo
-Message-ID: <CAL_JsqJUaKKsJ8BCNbVXe4vLVsQ2Av7VuWqf9DnUKHeLzLb8NQ@mail.gmail.com>
-Subject: Re: [PATCH RFC 01/16] dt-bindings: hwmon: Convert aspeed,ast2400-pwm-tacho
- to DT schema
-To: Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Linus Walleij <linusw@kernel.org>, Joel Stanley <joel@jms.id.au>, linux-hwmon@vger.kernel.org, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org, 
-	linux-mmc@vger.kernel.org, linux-crypto@vger.kernel.org, 
-	linux-iio@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Dec 11, 2025 at 2:46=E2=80=AFAM Andrew Jeffery
-<andrew@codeconstruct.com.au> wrote:
->
-> From: "Rob Herring (Arm)" <robh@kernel.org>
->
-> Convert the ASpeed fan controller binding to DT schema format.
->
-> The '#cooling-cells' value used is 1 rather than 2. '#size-cells' is 0
-> rather 1.
+On Wed, 2025-12-17 at 09:37 -0600, Rob Herring wrote:
+> On Thu, Dec 11, 2025 at 2:46=E2=80=AFAM Andrew Jeffery
+> <andrew@codeconstruct.com.au> wrote:
+> >=20
+> > From: "Rob Herring (Arm)" <robh@kernel.org>
+> >=20
+> > Convert the ASpeed fan controller binding to DT schema format.
+> >=20
+> > The '#cooling-cells' value used is 1 rather than 2. '#size-cells' is 0
+> > rather 1.
+>=20
+> Okay, I can't figure out why I thought '#cooling-cells' needed to be 1
+> here. I don't see that anywhere in the tree. The driver for sure only
+> supports 2, so anything that's not is an error in any case.
 
-Okay, I can't figure out why I thought '#cooling-cells' needed to be 1
-here. I don't see that anywhere in the tree. The driver for sure only
-supports 2, so anything that's not is an error in any case.
+Yeah, I'd started doing some digging to understand your statement about
+it needing to be 1 but hadn't got to the bottom of it.
 
-> Some users define more that 8 fan nodes where 2 fans share a PWM. The
-> driver seems to let the 2nd fan just overwrite the 1st one. That also
-> creates some addressing errors in the DT (duplicate addresses and wrong
-> unit-addresses).
->
-> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
-> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-> ---
->  .../bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml   | 106 +++++++++++++++=
-++++++
->  .../devicetree/bindings/hwmon/aspeed-pwm-tacho.txt |  73 --------------
->  2 files changed, 106 insertions(+), 73 deletions(-)
+If it can be 2 then great, I can fix up the #size-cells and resend.
+
+Andrew
 
