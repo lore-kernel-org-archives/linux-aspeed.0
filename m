@@ -1,72 +1,59 @@
-Return-Path: <linux-aspeed+bounces-3135-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3136-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 276C0D65C49
-	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 14:07:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 080D2D65C6C
+	for <linux-aspeed@archiver.kernel.org>; Wed, 17 Dec 2025 15:37:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWbGr0dDyz2yvh;
-	Thu, 18 Dec 2025 01:07:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765980467;
-	cv=none; b=S7vmYl2W+i3+XajeQS5qLR2fps/DGavD8VdrLqQjmbn87Iid1234JvFwLltniMi4Cz8gCj6RHPDfP59J41zze+Ls72eANVZTh4k9hDW72oHqL+WoaJyIUCBxnG3A8Cze2p0UuK9zN/Jq14xCrZDZWgwtgGC2369RF8alAh86GbD5e/EVHB2oQ6FHdy7hL2sW8/KdacS5ESAwui+XSk7lLb6DDW2MGJjpQxbymHos9xZE6Xdpx0BOuY1xK83ceOHr6xz8XE7KvaNR0+AAVncch+ptLGzM1l5mclh9MeIPF9hOdGiWhy8FNZfe96dZpoOUaBdWcJlYh53gdg8Cb+urag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWdGd3X90z2yvL;
+	Thu, 18 Dec 2025 02:37:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765985865;
+	cv=none; b=K8z3DXod6HGcHOe4XRFoXiWIOtoUAyYAYNgyeG3I9VqA1Ny4dObonnZ7cyJoLrJ7BadbYLhyI3GHkQZz0N5l0vw45ysUvctpt3bzqXE+RjBPYoyKNADmKKgTj6e7zgxI4h8raKxfWTa3gcyME5WuzghBGLsDAhmIo1bK3wqCcA1hteQ7+4cGVZYHvMeWFQXW2CmIwtwSw7DOBMXRL133OZY/pvi9xBW3RkCUrFrpgDwusW0G3Y2ViCqF5zKLN2eijdN+FhQHVP0iZZ0yFGwruGUs5W/13YaEKEYc7TVqKp5PAnrk+yur42J6k7sNrvHoANPJ1XFY5n2s4rCPjAvqeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765980467; c=relaxed/relaxed;
-	bh=QUgIqK1Xxrn9AmObRt4JA+pI2mdjg2peBLShKt0t0ZU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=HBfUOrUy/zogfz0N6rWRU+4jvFRctns4tugF4WE57VgbpO2TL2PZkdR6YfiDuRllEHvASnZBFE6Xxvm6qnWK1+FAFFgREAzPwgGO6zETjNo+Gk64E7mu6fxsqZt07Iy7UTgXlHWQjTOHJjWev6zqcvyRLp5nowixHafr6kAutkHcuZy8mOLY4sj6DJlfvPNckJ21H9PB0IRDKzTBMyaQp/2UnpiLP5Pqll2tIF6bZQel/Z88hLUWzKGew1Us64GwOGgApn1w5qOCqk6tJDqYXUOvd7FNClyrTTLybwm+EG3qE5ioLiwWWxxuGxfnPnxOvRm+aoKzpPu4ArEg2kXDkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=COj/Z3nK; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1765985865; c=relaxed/relaxed;
+	bh=P4Hj6kUIjPKS1U4b5WrIC6hTm+90YDETyj8ZGZZXRGE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=aQQlfzIxrAKVP2G2k/0dTeTETfEN1lHN6nwVSOuGJJ9Zg8UMwfdBXGl8HporyO4kZBA2mIn4DbrDZVSfw8CgFmRgU2lDFOpGZ7rgyGMc/kv+4GaNoDXX2pyFb/nW8fdo/cToOpDujBxOupPbuEcqoJ4JAu5ifE3sK73dgUOMr+q/sGEprpfjh54YOUcgtYJWKvJiJ0kTg0WtYPqcH7dT4971BP3zxBfsIAxCyYYX1YcHe5nSUVtcR9ZJ9B8V7/eRFUagJwbWHXurG/qrVt66Xvg0yd9lx6XzYUvIsSb0H7RH2JKMoBRoCxGZ2jELnl3pPih/dZk1xcT/vBFxrRTGOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMNPbQfH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=COj/Z3nK;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hMNPbQfH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWbGq338Vz2yvZ;
-	Thu, 18 Dec 2025 01:07:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWdGc39Kdz2yvK
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 18 Dec 2025 02:37:44 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 62282601A5;
-	Wed, 17 Dec 2025 14:07:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D7828C4CEF5;
-	Wed, 17 Dec 2025 14:07:13 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0275F44186
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 15:37:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF72AC2BCAF
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 15:37:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765980434;
-	bh=BBej7b2TZcIfv26VO07aVWI/nJSmjhBy+pY5L+9zcb8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=COj/Z3nKklzgE1lymvXRLZGmg/6UR6V78uX8ycnn0SpbWOJFD//Tg/lKvkrv+zzpt
-	 KJmm3fOvLHd4j4ZFg+6/uGG4WACNgTs/vdylLOhGT5TANFGTJK2lPvQN4/Z1QG26CY
-	 Jj2buSSzuYkRB41d1MQmoOV6hGIL2FdNUHCgu0Uoo0WNYpPU2XS3yp5nwVsioshvWP
-	 cGUceKKnL2caC3UC1OAflD7JMCoqIWXwNe8O5eaiMPqs7HJ2EMcAhYjt8I+IFQtxQs
-	 3HlkLx7Kss0Kh/B/ENnxkaAwJxYiJzpVokdyTv6qtVRgPJfTodJSPLHuxzcH2dOQwj
-	 Rwr2agbdZ/hXQ==
-Date: Wed, 17 Dec 2025 08:07:09 -0600
-From: "Rob Herring (Arm)" <robh@kernel.org>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Andrew Jeffery <andrew@aj.id.au>,
-	Kishon Vijay Abraham I <kishon@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>,
-	openbmc@lists.ozlabs.org, Vinod Koul <vkoul@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	linux-phy@lists.infradead.org, devicetree@vger.kernel.org,
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-gpio@vger.kernel.org,
-	linux-aspeed@lists.ozlabs.org,
-	Linus Walleij <linus.walleij@linaro.org>, linux-pci@vger.kernel.org,
-	Joel Stanley <joel@jms.id.au>, Bjorn Helgaas <bhelgaas@google.com>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Subject: Re: [PATCH v7 2/7] dt-bindings: PCI: Add ASPEED PCIe RC support
-Message-ID: <176598042865.925447.819427829703405501.robh@kernel.org>
-References: <20251216-upstream_pcie_rc-v7-0-4aeb0f53c4ce@aspeedtech.com>
- <20251216-upstream_pcie_rc-v7-2-4aeb0f53c4ce@aspeedtech.com>
+	s=k20201202; t=1765985861;
+	bh=3zWGgAak/FBm7Vkk94ZrLytELeHbedaeePRas4C5o5A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=hMNPbQfHkiOGVqJHw5AtuOCvRV0FWKVO23ESw20F2cpxcqWTBIOhlBqGNkwequi0i
+	 3oeUmzcEgHgSCtPoeLi5W9KvVXmE1VGX7UUnHrN1mtR68GvWl08uXF7HTsH54i7ZE9
+	 KfYRP9/8MnbbeqwSYkqRzywXs1Oee8xupqaf+a3s5LDAgTLnveEoDXptQ80gqAbzq5
+	 bjMNZezJ7p4GnTY2AwYJ0eq5AHSinGdYScOtbFN/Adxv8qepgBFrnvzwv9d+LJGjra
+	 iG70B1IeKSjTYdQQgNkT1NrvCLmUQmuqa9VxS8bv5ivZq+pOTD21TTRtZYR98YCKkC
+	 GNKlOB4AN3+tA==
+Received: by mail-ej1-f53.google.com with SMTP id a640c23a62f3a-b7ce5d6627dso491671766b.2
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 17 Dec 2025 07:37:41 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCXNGmHPjnR2YH3eN7MhzePdloLTQew/FAr/F7a2OQOgrd0nHekpHxuKJ/Ke2f5To1QVDvDViQ5A2mvyjyg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyP7qMT9fKD+7t/hivbN3Uht5GgXFrntcEk7JNhirAY+RBFNYfd
+	Ca1EGUTRTO+FQaXeg6EBTYoUR8Idg9ipRqKNPUiLxjdBeA/jdzfA98YZ0EbxFcgDNNLOaKUZMRs
+	yTsUryZrxHClLZYiqbsfeYC5mQ0ZvfQ==
+X-Google-Smtp-Source: AGHT+IE+MbpVy0D9cI7vtayEcuAQ5BpKDVDav3dQlj552I/4svzEpwf9VDtWU/NeRoVokGuFNkCPT8ATPD0NU91eNy8=
+X-Received: by 2002:a17:907:3cca:b0:b72:c261:3ad2 with SMTP id
+ a640c23a62f3a-b7d23af00e6mr1859042566b.50.1765985860268; Wed, 17 Dec 2025
+ 07:37:40 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,23 +67,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251216-upstream_pcie_rc-v7-2-4aeb0f53c4ce@aspeedtech.com>
+References: <20251211-dev-dt-warnings-all-v1-0-21b18b9ada77@codeconstruct.com.au>
+ <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
+In-Reply-To: <20251211-dev-dt-warnings-all-v1-1-21b18b9ada77@codeconstruct.com.au>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 17 Dec 2025 09:37:28 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJUaKKsJ8BCNbVXe4vLVsQ2Av7VuWqf9DnUKHeLzLb8NQ@mail.gmail.com>
+X-Gm-Features: AQt7F2q-nb9Xy6ZmXCdkQqrO-_0mpnqJ_RWJ9ZzKv3sOBl98lQ-TH7L8rvtaBLo
+Message-ID: <CAL_JsqJUaKKsJ8BCNbVXe4vLVsQ2Av7VuWqf9DnUKHeLzLb8NQ@mail.gmail.com>
+Subject: Re: [PATCH RFC 01/16] dt-bindings: hwmon: Convert aspeed,ast2400-pwm-tacho
+ to DT schema
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Linus Walleij <linusw@kernel.org>, Joel Stanley <joel@jms.id.au>, linux-hwmon@vger.kernel.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org, 
+	linux-mmc@vger.kernel.org, linux-crypto@vger.kernel.org, 
+	linux-iio@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Dec 11, 2025 at 2:46=E2=80=AFAM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> From: "Rob Herring (Arm)" <robh@kernel.org>
+>
+> Convert the ASpeed fan controller binding to DT schema format.
+>
+> The '#cooling-cells' value used is 1 rather than 2. '#size-cells' is 0
+> rather 1.
 
-On Tue, 16 Dec 2025 09:50:01 +0800, Jacky Chou wrote:
-> ASPEED AST2600 provides one PCIe RC for Gen2 and AST2700 provides three
-> PCIe RC for two Gen4 and one Gen2. All of these RCs have just one root
-> port to connect to PCIe device. And also have Mem, I/O access, legacy
-> interrupt and MSI.
-> 
-> Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
+Okay, I can't figure out why I thought '#cooling-cells' needed to be 1
+here. I don't see that anywhere in the tree. The driver for sure only
+supports 2, so anything that's not is an error in any case.
+
+> Some users define more that 8 fan nodes where 2 fans share a PWM. The
+> driver seems to let the 2nd fan just overwrite the 1st one. That also
+> creates some addressing errors in the DT (duplicate addresses and wrong
+> unit-addresses).
+>
+> Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
 > ---
->  .../bindings/pci/aspeed,ast2600-pcie.yaml          | 182 +++++++++++++++++++++
->  1 file changed, 182 insertions(+)
-> 
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
-
+>  .../bindings/hwmon/aspeed,ast2400-pwm-tacho.yaml   | 106 +++++++++++++++=
+++++++
+>  .../devicetree/bindings/hwmon/aspeed-pwm-tacho.txt |  73 --------------
+>  2 files changed, 106 insertions(+), 73 deletions(-)
 
