@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-3150-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3151-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF242D6E2DC
-	for <linux-aspeed@archiver.kernel.org>; Thu, 18 Dec 2025 19:31:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82E99D6E2DC
+	for <linux-aspeed@archiver.kernel.org>; Thu, 18 Dec 2025 19:33:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dXLQ830M4z2xrM;
-	Fri, 19 Dec 2025 06:31:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dXLRw6ZVxz2xs1;
+	Fri, 19 Dec 2025 06:33:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766086304;
-	cv=none; b=fbtW/+MlWofoGYXMsM2h3reo1iUsQLrU1uYFfor3KVZN1Q9QdbKBpmOMPUF28rLvkm/2WWmAaQbYatMHxyPg+1CVTeeoT2C7p442o6FXDkUUIx13WzMMqLZjQw0MXkkwhfJYP/GngwSXUKI9S/1PQyUAikvRfPxpbvQojwowCDW+XCvxoCnwACOmYNaSlkVr/JVurCq/7EQ222qbXi99l3YNw52ZLN5ZSiTb6TL7R7BVTY7f6J4YGBj4TudsoEZ7KElYrPGXgc6Ys8KyEMMJACqyb/TuYIOKDi7f3pZmurEUl4n/uwJMm4YXbDNtUncWMQ9GQx9rmMJLIG6HWSf+Sg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766086396;
+	cv=none; b=CDsdRv18A4GXBFmJJHtRfcis8xvZIte71cGfR2deobEOXv6S+zErXZr2xvIa5DsBs9YJNpyvat/jzE/xGRlpnOuac91mfl44QHoRVJ0nAWghNYm0beecYIyd4V6qvXtrKdL5vvIFDKOTjXLSqz4AQwm6Y0am2cbqtDDiIgCEulGGW5m69q9jyQX9VXn90ojW4JLq426F5biC1jP/S83oPF2Ej8WMMwf+T/aZbR6jRvSTV8i2OEz4KKSsgvNqqlBK4iak3ulSnJq1SGxSIemtjMp9X2iK1pyqMp/ilZu08GfW5itT5R2eEt/tNhf/eh8UoDHx5OCnTpYZNsRu023cKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766086304; c=relaxed/relaxed;
-	bh=wXZ59zbGXuIZ0bKdNs8tPNB7wcdnwwc5SaFFZk2fpQ0=;
+	t=1766086396; c=relaxed/relaxed;
+	bh=vfOd17sFvgXYzzmjEBB7MiCt2zpD3HP8yGYg31O0lAU=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=du1LK2AYpF8zChC9kGabnJeLg2D8JDvcOHwdTSp5aFa3FPYpiR7xa6c9vgLKev4E4BVWKDVHHCFkpaF7ekALFhL/oCc9qShyRbR/D5RcGt1DpwaRX0WXE5A4yZaVZSW48e2xzVtdzvL5sPdl/CG6/mIHwAYSJ8PZsJlFWz+LjxrqcPz/ZcZT0eKynWFA+grNo4HFudfMBRL3zVKtQJa2dSGqxqrUUmydu4KLTJZZqIzhIN07rQcPw2sI7MSo4NvuuSSkYEfWR3BkrizCrvXHdsQZADL6wM4f3f/qvt81OZGIoo/bSa+c4AoHSboJatlWskWK7SkWx7JbJtdaCXlR+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J3SJEGC7; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=j/9Zsm6CyABWL9VdZwigb5DUVaNR+jovCYNV7VrwiAbvgWiAd4am2I9VP0SUrVjn9ZJ1dV+X92RH41sZsp+oFhuMeG8BArOhIvzAnfkLaHIEKxxyqmDpv3kpMeuqyS8zWwYllv3MKDqS+x8hQgDUegMQQcKezBM03kZqCcmSiL1Na1JpZgpl+clKQdDq+VSz7tglfZdNHSe902h12vZ4DqR7Z4JODJCLBJ56caVdsoUS4fsSFSBfxIujkMsym6GMxzBLYEs9g9LFc9qKmLAbj0GYodp2GfyCa2hQ1j3VBdt250UcPSGA+vON95+2c6klTaE25QeWZSYuWR/zZ7L4Eg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DoSKR5QO; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J3SJEGC7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DoSKR5QO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXLQ66xX5z2xpm
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 19 Dec 2025 06:31:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXLRw0vd3z2xrk
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 19 Dec 2025 06:33:16 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B954960149;
-	Thu, 18 Dec 2025 19:31:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76A0DC116D0;
-	Thu, 18 Dec 2025 19:31:34 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EFF00600AC;
+	Thu, 18 Dec 2025 19:32:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66EE9C4CEFB;
+	Thu, 18 Dec 2025 19:32:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766086299;
-	bh=QQuW2NMPKvO1lAvnMHe2NLJWr5l1I0xjIzysFFQlGNU=;
+	s=k20201202; t=1766086363;
+	bh=QTIvfgfNH8fNbeFqqyGQZweOXbmsPpkBY0B7Od463HA=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=J3SJEGC7ccXV5DO4hAeyFNUD/AK/bOxOyoN82Umg48Nubb4mi54diBuiMHzLs7Nkm
-	 gqxQo92EkLrP/KNVK6nHK3a7hjDXDk0JOAxm2RwZaR5EAkNXVUufGV2acXDcb4we0v
-	 4LOAVU2YZK438vSz8ZGxoCY/2Xr0kIXJpePzQ/CglREcrrQZy9YaOAKW33WhGJJdBq
-	 2LHzegIoeZHtpjz+whqwV+d5Q3WRNCUxesMrSfix6mnwvV5/1/JWAaGYwswMUpUUuU
-	 fiUdeIulenx7h/MvIR6yxkSQrQcBhz3B5yLj4uiILawogEO07H7nFQknnYgyJrJ3c4
-	 MYxBUgFjclniA==
-Message-ID: <d215c5dd-b402-4cd2-b4c6-48358b5b2491@kernel.org>
-Date: Thu, 18 Dec 2025 20:31:31 +0100
+	b=DoSKR5QOawIWhGkEGLUXeyzKVnlzro8Mo2TckhJoQ9lfzH5cFIcj5cLKDBGdpFpYA
+	 P+fKsgU9Z930bLlOYjQsz6bV7h1y70cRnQWgZlRJGRWtC50wpu05r8crti+SrPITyL
+	 YObHL1MYdW5/0n/1MSlmu6l+Jwuc3fpAEkNaRmePcHANW3z7x+Cq1Vitbrnzhjsq/t
+	 QgehTfJu0AWtJH69B64RDTy8e1RtfLY1qyJkGesbrDdy5ICuXKQEUjxbNY7Is6QN35
+	 7A3oJuY8ui4G2Rk6uE3ExRv2DV6v2Iy9u3bOAN0mYFhX/RyfWZhPb0t4mpAeS8tQ4T
+	 yCGjMZ9MLf6wg==
+Message-ID: <4ca60f87-39dd-44d1-bce5-c6071f226210@kernel.org>
+Date: Thu, 18 Dec 2025 20:32:37 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,11 +62,10 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v6 1/2] dt-bindings: arm: aspeed: add ASRock Rack ALTRAD8
  board
-To: Rebecca Cran <rebecca@bsdio.com>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>,
- Tan Siewert <tan.siewert@hetzner.com>, devicetree@vger.kernel.org,
+To: Tan Siewert <tan.siewert@hetzner.com>, Rebecca Cran <rebecca@bsdio.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+ Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 Cc: Billy Tsai <billy_tsai@aspeedtech.com>,
@@ -74,7 +73,7 @@ Cc: Billy Tsai <billy_tsai@aspeedtech.com>,
 References: <20251218161816.38155-1-rebecca@bsdio.com>
  <20251218161816.38155-2-rebecca@bsdio.com>
  <5aa36c56-798a-40cc-b0b8-be3f7c92136f@kernel.org>
- <4eff8506-8049-46e9-997e-a41edff32bbc@bsdio.com>
+ <b10a233e-02c3-4b02-8f11-098f6fb8197c@hetzner.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -120,12 +119,12 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <4eff8506-8049-46e9-997e-a41edff32bbc@bsdio.com>
+In-Reply-To: <b10a233e-02c3-4b02-8f11-098f6fb8197c@hetzner.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 18/12/2025 19:34, Rebecca Cran wrote:
-> On 12/18/25 09:21, Krzysztof Kozlowski wrote:
+On 18/12/2025 17:44, Tan Siewert wrote:
+> On 18.12.25 17:21, Krzysztof Kozlowski wrote:
 >> On 18/12/2025 17:18, Rebecca Cran wrote:
 >>> Document ASRock Rack ALTRAD8 (ALTRAD8UD-1L2T and ALTRAD8UD2-1L2Q)
 >>> compatibles.
@@ -133,21 +132,16 @@ On 18/12/2025 19:34, Rebecca Cran wrote:
 >>> Signed-off-by: Rebecca Cran <rebecca@bsdio.com>
 >>> Acked-by: Conor Dooley <conor.dooley@microchip.com>
 >>> Tested-by: Tan Siewert <tan.siewert@hetzner.com>
+>>
 >> How was the binding tested?
 > 
-> I ran "make ARCH=arm CHECK_DTBS=y aspeed/aspeed-bmc-asrock-altrad8.dtb"
-> to check for errors
+> My bad for sending the wrong trailing header in v4. Tested-by should've 
+> been only on the dts instead of the dt-bindings+dts. Either way, `make 
+> dt_binding_check` was what I did to check if there are any errors 
+> produced for `asrock,altrad8-bmc`.
 
-That's a build check for DTS, not binding. I compiled this code - so it
-is also Tested-by?
-
-> 
-> and have used the dts file in an ASRock Rack ALTRAD8UD-1L2T system with
-> Linux 6.12.61 running OpenBMC.
-
-This does not test anything from the binding.
-
-Please don't add fake tests... Building instructions are not testing.
+Yeah, that's not testing. It's a build command and running build process
+is not a test. Otherwise why there is no Tested-by for Rob...
 
 Best regards,
 Krzysztof
