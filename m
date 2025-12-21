@@ -1,70 +1,67 @@
-Return-Path: <linux-aspeed+bounces-3187-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3188-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F014E668AF
-	for <linux-aspeed@archiver.kernel.org>; Sat, 20 Dec 2025 06:56:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA500E67482
+	for <linux-aspeed@archiver.kernel.org>; Sun, 21 Dec 2025 12:04:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dYFZ35T3Sz2yFW;
-	Sat, 20 Dec 2025 17:56:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.181.50.185
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765957502;
-	cv=none; b=OKHwTOC1Ocyw4YKGEI+U4nh8OhQ3BewiX8tydYaePiuCMjV5zpW2zeaAbKTn/XdsU9dWWI5BUmicw/YnrHTFjKaIMDN3DoQ9ckdrs5PmBhzhhG9a8aI/e8lkJKuA17V6nlX8UXLoT+gTk7kz2yTWDRF+6p/8ivMjrptvvZSUW76QWvAtzAHtVTLLGINKRXBgzSdWcJCNZa1cdeU9jMWd4CaP+WW4vsREoH7f1pEINMItna7f5q0aMVMJwygjyQEHvQ5042VMYxzDasO/C8YxTy1AEuDgbIoPLTn9/Mnw9WmOlFHi69MoI9euQTcBRLmGAdAHToXsL2cKdgL6A563hg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dZ0M96TvQz2yFQ;
+	Sun, 21 Dec 2025 23:04:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766318693;
+	cv=none; b=S1RtdeO/hK1ac8wlYlQnfVLLVE+lcB5n+RVq1YCH8Df6Hi54/G1ixLzKRLQRaNtmKx410wuy1dLtHESlSXDXB8V1Q/A3y0cgCtyVnQaRFWk9/L9KRwYnYFFC7Jijbmza0zfpPuZjplaFqzMW0ONJMkp2D3st1Xk30Owf48FDfQQgd+G0l2O/8CbF6M8WfdzrQx0RNCgtNdfTr4zTytGcEhTnhryfHY9a+VgdgSXSq6CaSCdrcxVy3RYcz6+guU2XQ6o8FlIGXqEuVwWvztxfDvx5N2EadKHoE9+MVXLBjUiGRQu0ZW8JkmMqcB9fo8fFT2TaLGJMhlRnOHEbvVuPGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765957502; c=relaxed/relaxed;
-	bh=Z+Jzz041A/hSxFfjiERCGO9Bw7pgIwdNbbfMviJ0dxM=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=HhGtaJFgvRBPOIPEC0Ts/ZaYvnufgIqIQYBjWXe5bsU1EF9ONLS0HeMTmtUqNt+uIeoEGwA9Ioux7Kdt9yPH6AMIPD1io2a3OenCUW/ufXQZyWh3GD1jJKohW4PDgP1xMNjhJhT2dS70m0olSPDNfpF1BAf7SSq+aSCMIcmqUX5vTscd5QiuRq5C0A6gtsnAg7qjJ/CiawBJX/wXgA7g3C6JL8E3x5P2basCDkg5mR6GcTQSciJdfSMh1wPksEs1bcFy5WnU2H5NEbrS9IeZn31rH2foFsgXe9g4GkcrMpf6harHDUgUOA9R95BDD+w6mfzq5L2D5VQwdPFq+I3vJQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass (client-ip=220.181.50.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org) smtp.mailfrom=baidu.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baidu.com (client-ip=220.181.50.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org)
-Received: from baidu.com (mx22.baidu.com [220.181.50.185])
+	t=1766318693; c=relaxed/relaxed;
+	bh=thuT7JPzP6ijGee2PwFI/Fkh7CU0FprxFiOeg3tcdUM=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MMuW6SWDcwA3RvGzzUti2IZXmg3hKmjqv+YHT5xNMpHrEmHr7z3svA7+Khh3gJrArD/9h/vk976GJmlt7rjtrzpQAThj6/E5vQAQe3E6OcCjSTw7siTecDIWG/CSKvEhY5nkb9yikg8JuMYm6xj5JVBppoCqLCC3rxIMiBwRfsIcdID1yzrKUaXVLc3CTljAis5ivLeoAZV/ChdkZay3CIYrH+tkVDVZV0g1I0QHzYvm9cvjWu9OSIxfVdQjng5aMCxc576OMGAYMi/4SkRsFJYsUJpGzI26Ewf7xMLv+sesicEq4qVbtKfFLz9XDcZBbUFl5n7oyn6ouO+ymaeC/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oqDNeUcy; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oqDNeUcy;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWQn85CH7z2yjp;
-	Wed, 17 Dec 2025 18:44:57 +1100 (AEDT)
-From: "Li,Rongqing" <lirongqing@baidu.com>
-To: Lance Yang <lance.yang@linux.dev>
-CC: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
-	<chleroy@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, "Eduard
- Zingerman" <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
-	<yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, "KP
- Singh" <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo
-	<haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
-	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-openrisc@vger.kernel.org"
-	<linux-openrisc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>, "dri-devel@lists.freedesktop.org"
-	<dri-devel@lists.freedesktop.org>, "bpf@vger.kernel.org"
-	<bpf@vger.kernel.org>, "linux-kselftest@vger.kernel.org"
-	<linux-kselftest@vger.kernel.org>, "wireguard@lists.zx2c4.com"
-	<wireguard@lists.zx2c4.com>, "netdev@vger.kernel.org"
-	<netdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: =?utf-8?B?562U5aSNOiBb5aSW6YOo6YKu5Lu2XSBSZTogW1BBVENIXSB3YXRjaGRvZzog?=
- =?utf-8?B?c29mdGxvY2t1cDogcGFuaWMgd2hlbiBsb2NrdXAgZHVyYXRpb24gZXhjZWVk?=
- =?utf-8?Q?s_N_thresholds?=
-Thread-Topic: =?utf-8?B?W+WklumDqOmCruS7tl0gUmU6IFtQQVRDSF0gd2F0Y2hkb2c6IHNvZnRsb2Nr?=
- =?utf-8?B?dXA6IHBhbmljIHdoZW4gbG9ja3VwIGR1cmF0aW9uIGV4Y2VlZHMgTiB0aHJl?=
- =?utf-8?Q?sholds?=
-Thread-Index: AQHcbl/9zLj0PrwWtkKQBC8uxPlgN7Uk2YoAgACa3iA=
-Date: Wed, 17 Dec 2025 07:43:48 +0000
-Message-ID: <e7296a3d65a6445fa6ad4f81a3f7cd55@baidu.com>
-References: <20251216074521.2796-1-lirongqing@baidu.com>
- <e216e4ae-b882-454d-be8f-24f21a3549d9@linux.dev>
-In-Reply-To: <e216e4ae-b882-454d-be8f-24f21a3549d9@linux.dev>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-x-originating-ip: [10.127.72.29]
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dZ0M86CTmz2xQB
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 21 Dec 2025 23:04:52 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3FD3942B10;
+	Sun, 21 Dec 2025 12:04:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22B2BC4CEFB;
+	Sun, 21 Dec 2025 12:04:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766318690;
+	bh=7LVQ8OFSH90aBTKeJHbT6h52O5X5Gibty3PLGF89PDw=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=oqDNeUcywridYkQcEhbD4MFn2rDVLVbge9+UENfHQXADzdMeBATSju97wySENj2Pz
+	 d+tUuRRLIJykix21Wv9ZJG0k4s53SmnsutnxtFtp0VFZIs5vft8m2o/J1L5aEvtaOF
+	 aFA5GwrQ6lJTn3IS1Top2ShQDW/vlOEBj+NbCfUDh9HUhPwrlkU346ODM9jUH4+sXx
+	 6jt72+9OwPTJh3U4HXnoQvVIFc27XFg8FaOeG1A5s9L3t+2fR6KVzhYlVTA+fz/Zkc
+	 /tGUuMTQf8qyeR4Jbar9BIkUSnemwSK+KZxq6Dj4Z1zc9YfGxCL7wvZNh8yb+MWc7m
+	 p8kgIzemsGaAA==
+Date: Sun, 21 Dec 2025 12:04:39 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Joel Stanley
+ <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Krzysztof
+ Kozlowski <krzk@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>, Heiko
+ Stuebner <heiko@sntech.de>, Orson Zhai <orsonzhai@gmail.com>, Baolin Wang
+ <baolin.wang@linux.alibaba.com>, Chunyan Zhang <zhang.lyra@gmail.com>,
+ linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH 0/5] iio: adc: Simplify with dev_err_probe
+Message-ID: <20251221120439.3aa841ca@jic23-huawei>
+In-Reply-To: <20251219-iio-dev-err-probe-v1-0-bd0fbc83c8a0@oss.qualcomm.com>
+References: <20251219-iio-dev-err-probe-v1-0-bd0fbc83c8a0@oss.qualcomm.com>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -78,116 +75,40 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-FEAS-Client-IP: 172.31.50.47
-X-FE-Policy-ID: 52:10:53:SYSTEM
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-PiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2FkbWluLWd1aWRlL2tlcm5lbC1wYXJhbWV0
-ZXJzLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9rZXJuZWwtcGFyYW1ldGVy
-cy50eHQNCj4gPiBpbmRleCBhOGQwYWZkLi4yN2M1Zjk2IDEwMDY0NA0KPiA+IC0tLSBhL0RvY3Vt
-ZW50YXRpb24vYWRtaW4tZ3VpZGUva2VybmVsLXBhcmFtZXRlcnMudHh0DQo+ID4gKysrIGIvRG9j
-dW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9rZXJuZWwtcGFyYW1ldGVycy50eHQNCj4gPiBAQCAtNjkz
-NCwxMiArNjkzNCwxMiBAQCBLZXJuZWwgcGFyYW1ldGVycw0KPiA+DQo+ID4gICAJc29mdGxvY2t1
-cF9wYW5pYz0NCj4gPiAgIAkJCVtLTkxdIFNob3VsZCB0aGUgc29mdC1sb2NrdXAgZGV0ZWN0b3Ig
-Z2VuZXJhdGUgcGFuaWNzLg0KPiA+IC0JCQlGb3JtYXQ6IDAgfCAxDQo+ID4gKwkJCUZvcm1hdDog
-PGludD4NCj4gPg0KPiA+IC0JCQlBIHZhbHVlIG9mIDEgaW5zdHJ1Y3RzIHRoZSBzb2Z0LWxvY2t1
-cCBkZXRlY3Rvcg0KPiA+IC0JCQl0byBwYW5pYyB0aGUgbWFjaGluZSB3aGVuIGEgc29mdC1sb2Nr
-dXAgb2NjdXJzLiBJdCBpcw0KPiA+IC0JCQlhbHNvIGNvbnRyb2xsZWQgYnkgdGhlIGtlcm5lbC5z
-b2Z0bG9ja3VwX3BhbmljIHN5c2N0bA0KPiA+IC0JCQlhbmQgQ09ORklHX0JPT1RQQVJBTV9TT0ZU
-TE9DS1VQX1BBTklDLCB3aGljaCBpcyB0aGUNCj4gPiArCQkJQSB2YWx1ZSBvZiBub24temVybyBp
-bnN0cnVjdHMgdGhlIHNvZnQtbG9ja3VwIGRldGVjdG9yDQo+ID4gKwkJCXRvIHBhbmljIHRoZSBt
-YWNoaW5lIHdoZW4gYSBzb2Z0LWxvY2t1cCBkdXJhdGlvbiBleGNlZWRzDQo+ID4gKwkJCU4gdGhy
-ZXNob2xkcy4gSXQgaXMgYWxzbyBjb250cm9sbGVkIGJ5IHRoZSBrZXJuZWwuc29mdGxvY2t1cF9w
-YW5pYw0KPiA+ICsJCQlzeXNjdGwgYW5kIENPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5J
-Qywgd2hpY2ggaXMNCj4gdGhlDQo+ID4gICAJCQlyZXNwZWN0aXZlIGJ1aWxkLXRpbWUgc3dpdGNo
-IHRvIHRoYXQgZnVuY3Rpb25hbGl0eS4NCj4gDQo+IFNlZW1zIGxpa2Uga2VybmVsL2NvbmZpZ3Mv
-ZGVidWcuY29uZmlnIHN0aWxsIGhhcyB0aGUgb2xkIGZvcm1hdCAiIw0KPiBDT05GSUdfQk9PVFBB
-UkFNX1NPRlRMT0NLVVBfUEFOSUMgaXMgbm90IHNldCIgLi4uDQo+IA0KPiBTaG91bGQgYmUgdXBk
-YXRlZCB0byAiQ09ORklHX0JPT1RQQVJBTV9TT0ZUTE9DS1VQX1BBTklDPTAiLCByaWdodD8NCj4g
-DQoNCldpbGwgZml4IA0KDQoNCj4gPg0KPiA+ICAgCXNvZnRsb2NrdXBfYWxsX2NwdV9iYWNrdHJh
-Y2U9DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2NvbmZpZ3MvYXNwZWVkX2c1X2RlZmNvbmZp
-Zw0KPiA+IGIvYXJjaC9hcm0vY29uZmlncy9hc3BlZWRfZzVfZGVmY29uZmlnDQo+ID4gaW5kZXgg
-MmU2ZWExMy4uZWM1NThlNSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL2FybS9jb25maWdzL2FzcGVl
-ZF9nNV9kZWZjb25maWcNCj4gPiArKysgYi9hcmNoL2FybS9jb25maWdzL2FzcGVlZF9nNV9kZWZj
-b25maWcNCj4gPiBAQCAtMzA2LDcgKzMwNiw3IEBAIENPTkZJR19TQ0hFRF9TVEFDS19FTkRfQ0hF
-Q0s9eQ0KPiA+ICAgQ09ORklHX1BBTklDX09OX09PUFM9eQ0KPiA+ICAgQ09ORklHX1BBTklDX1RJ
-TUVPVVQ9LTENCj4gPiAgIENPTkZJR19TT0ZUTE9DS1VQX0RFVEVDVE9SPXkNCj4gPiAtQ09ORklH
-X0JPT1RQQVJBTV9TT0ZUTE9DS1VQX1BBTklDPXkNCj4gPiArQ09ORklHX0JPT1RQQVJBTV9TT0ZU
-TE9DS1VQX1BBTklDPTENCj4gPiAgIENPTkZJR19CT09UUEFSQU1fSFVOR19UQVNLX1BBTklDPTEN
-Cj4gPiAgIENPTkZJR19XUV9XQVRDSERPRz15DQo+ID4gICAjIENPTkZJR19TQ0hFRF9ERUJVRyBp
-cyBub3Qgc2V0DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2NvbmZpZ3MvcHhhM3h4X2RlZmNv
-bmZpZw0KPiA+IGIvYXJjaC9hcm0vY29uZmlncy9weGEzeHhfZGVmY29uZmlnDQo+ID4gaW5kZXgg
-MDdkNDIyZi4uZmIyNzJlMyAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL2FybS9jb25maWdzL3B4YTN4
-eF9kZWZjb25maWcNCj4gPiArKysgYi9hcmNoL2FybS9jb25maWdzL3B4YTN4eF9kZWZjb25maWcN
-Cj4gPiBAQCAtMTAwLDcgKzEwMCw3IEBAIENPTkZJR19QUklOVEtfVElNRT15DQo+ID4gICBDT05G
-SUdfREVCVUdfS0VSTkVMPXkNCj4gPiAgIENPTkZJR19NQUdJQ19TWVNSUT15DQo+ID4gICBDT05G
-SUdfREVCVUdfU0hJUlE9eQ0KPiA+IC1DT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9
-eQ0KPiA+ICtDT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9MQ0KPiA+ICAgIyBDT05G
-SUdfU0NIRURfREVCVUcgaXMgbm90IHNldA0KPiA+ICAgQ09ORklHX0RFQlVHX1NQSU5MT0NLPXkN
-Cj4gPiAgIENPTkZJR19ERUJVR19TUElOTE9DS19TTEVFUD15DQo+ID4gZGlmZiAtLWdpdCBhL2Fy
-Y2gvb3BlbnJpc2MvY29uZmlncy9vcjFrbGl0ZXhfZGVmY29uZmlnDQo+ID4gYi9hcmNoL29wZW5y
-aXNjL2NvbmZpZ3Mvb3Ixa2xpdGV4X2RlZmNvbmZpZw0KPiA+IGluZGV4IGZiMWViOWEuLjk4NGIw
-ZTMgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9vcGVucmlzYy9jb25maWdzL29yMWtsaXRleF9kZWZj
-b25maWcNCj4gPiArKysgYi9hcmNoL29wZW5yaXNjL2NvbmZpZ3Mvb3Ixa2xpdGV4X2RlZmNvbmZp
-Zw0KPiA+IEBAIC01Miw1ICs1Miw1IEBADQo+IENPTkZJR19MU009ImxvY2tkb3duLHlhbWEsbG9h
-ZHBpbixzYWZlc2V0aWQsaW50ZWdyaXR5LGJwZiINCj4gPiAgIENPTkZJR19QUklOVEtfVElNRT15
-DQo+ID4gICBDT05GSUdfUEFOSUNfT05fT09QUz15DQo+ID4gICBDT05GSUdfU09GVExPQ0tVUF9E
-RVRFQ1RPUj15DQo+ID4gLUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz15DQo+ID4g
-K0NPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz0xDQo+ID4gICBDT05GSUdfQlVHX09O
-X0RBVEFfQ09SUlVQVElPTj15DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdz
-L3NraXJvb3RfZGVmY29uZmlnDQo+ID4gYi9hcmNoL3Bvd2VycGMvY29uZmlncy9za2lyb290X2Rl
-ZmNvbmZpZw0KPiA+IGluZGV4IDJiNzFhNmQuLmE0MTE0ZmMgMTAwNjQ0DQo+ID4gLS0tIGEvYXJj
-aC9wb3dlcnBjL2NvbmZpZ3Mvc2tpcm9vdF9kZWZjb25maWcNCj4gPiArKysgYi9hcmNoL3Bvd2Vy
-cGMvY29uZmlncy9za2lyb290X2RlZmNvbmZpZw0KPiA+IEBAIC0yODksNyArMjg5LDcgQEAgQ09O
-RklHX1NDSEVEX1NUQUNLX0VORF9DSEVDSz15DQo+ID4gICBDT05GSUdfREVCVUdfU1RBQ0tPVkVS
-RkxPVz15DQo+ID4gICBDT05GSUdfUEFOSUNfT05fT09QUz15DQo+ID4gICBDT05GSUdfU09GVExP
-Q0tVUF9ERVRFQ1RPUj15DQo+ID4gLUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz15
-DQo+ID4gK0NPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz0xDQo+ID4gICBDT05GSUdf
-SEFSRExPQ0tVUF9ERVRFQ1RPUj15DQo+ID4gICBDT05GSUdfQk9PVFBBUkFNX0hBUkRMT0NLVVBf
-UEFOSUM9eQ0KPiA+ICAgQ09ORklHX1dRX1dBVENIRE9HPXkNCj4gPiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9ncHUvZHJtL2NpL2FybS5jb25maWcNCj4gPiBiL2RyaXZlcnMvZ3B1L2RybS9jaS9hcm0u
-Y29uZmlnIGluZGV4IDQxMWU4MTQuLmQ3YzUxNjcgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9n
-cHUvZHJtL2NpL2FybS5jb25maWcNCj4gPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vY2kvYXJtLmNv
-bmZpZw0KPiA+IEBAIC01Miw3ICs1Miw3IEBAIENPTkZJR19UTVBGUz15DQo+ID4gICBDT05GSUdf
-UFJPVkVfTE9DS0lORz1uDQo+ID4gICBDT05GSUdfREVCVUdfTE9DS0RFUD1uDQo+ID4gICBDT05G
-SUdfU09GVExPQ0tVUF9ERVRFQ1RPUj1uDQo+ID4gLUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tV
-UF9QQU5JQz1uDQo+ID4gK0NPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz0wDQo+ID4N
-Cj4gPiAgIENPTkZJR19GV19MT0FERVJfQ09NUFJFU1M9eQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvZ3B1L2RybS9jaS9hcm02NC5jb25maWcNCj4gPiBiL2RyaXZlcnMvZ3B1L2RybS9j
-aS9hcm02NC5jb25maWcgaW5kZXggZmRkZmJkNC4uZWEwZTMwNyAxMDA2NDQNCj4gPiAtLS0gYS9k
-cml2ZXJzL2dwdS9kcm0vY2kvYXJtNjQuY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9ncHUvZHJt
-L2NpL2FybTY0LmNvbmZpZw0KPiA+IEBAIC0xNjEsNyArMTYxLDcgQEAgQ09ORklHX1RNUEZTPXkN
-Cj4gPiAgIENPTkZJR19QUk9WRV9MT0NLSU5HPW4NCj4gPiAgIENPTkZJR19ERUJVR19MT0NLREVQ
-PW4NCj4gPiAgIENPTkZJR19TT0ZUTE9DS1VQX0RFVEVDVE9SPXkNCj4gPiAtQ09ORklHX0JPT1RQ
-QVJBTV9TT0ZUTE9DS1VQX1BBTklDPXkNCj4gPiArQ09ORklHX0JPT1RQQVJBTV9TT0ZUTE9DS1VQ
-X1BBTklDPTENCj4gPg0KPiA+ICAgQ09ORklHX0RFVEVDVF9IVU5HX1RBU0s9eQ0KPiA+DQo+ID4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9jaS94ODZfNjQuY29uZmlnDQo+ID4gYi9kcml2
-ZXJzL2dwdS9kcm0vY2kveDg2XzY0LmNvbmZpZw0KPiA+IGluZGV4IDhlYWJhMzg4Li43YWM5OGE3
-IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9jaS94ODZfNjQuY29uZmlnDQo+ID4g
-KysrIGIvZHJpdmVycy9ncHUvZHJtL2NpL3g4Nl82NC5jb25maWcNCj4gPiBAQCAtNDcsNyArNDcs
-NyBAQCBDT05GSUdfVE1QRlM9eQ0KPiA+ICAgQ09ORklHX1BST1ZFX0xPQ0tJTkc9bg0KPiA+ICAg
-Q09ORklHX0RFQlVHX0xPQ0tERVA9bg0KPiA+ICAgQ09ORklHX1NPRlRMT0NLVVBfREVURUNUT1I9
-eQ0KPiA+IC1DT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9eQ0KPiA+ICtDT05GSUdf
-Qk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9MQ0KPiA+DQo+ID4gICBDT05GSUdfREVURUNUX0hV
-TkdfVEFTSz15DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEva2VybmVsL3dhdGNoZG9nLmMgYi9rZXJu
-ZWwvd2F0Y2hkb2cuYyBpbmRleA0KPiA+IDA2ODVlM2EuLmE1ZmExMTYgMTAwNjQ0DQo+ID4gLS0t
-IGEva2VybmVsL3dhdGNoZG9nLmMNCj4gPiArKysgYi9rZXJuZWwvd2F0Y2hkb2cuYw0KPiA+IEBA
-IC0zNjMsNyArMzYzLDcgQEAgc3RhdGljIHN0cnVjdCBjcHVtYXNrIHdhdGNoZG9nX2FsbG93ZWRf
-bWFzaw0KPiA+IF9fcmVhZF9tb3N0bHk7DQo+ID4NCj4gPiAgIC8qIEdsb2JhbCB2YXJpYWJsZXMs
-IGV4cG9ydGVkIGZvciBzeXNjdGwgKi8NCj4gPiAgIHVuc2lnbmVkIGludCBfX3JlYWRfbW9zdGx5
-IHNvZnRsb2NrdXBfcGFuaWMgPQ0KPiA+IC0JCQlJU19FTkFCTEVEKENPTkZJR19CT09UUEFSQU1f
-U09GVExPQ0tVUF9QQU5JQyk7DQo+ID4gKwkJCUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9Q
-QU5JQzsNCj4gPg0KPiA+ICAgc3RhdGljIGJvb2wgc29mdGxvY2t1cF9pbml0aWFsaXplZCBfX3Jl
-YWRfbW9zdGx5Ow0KPiA+ICAgc3RhdGljIHU2NCBfX3JlYWRfbW9zdGx5IHNhbXBsZV9wZXJpb2Q7
-IEBAIC04NzksNyArODc5LDkgQEAgc3RhdGljDQo+ID4gZW51bSBocnRpbWVyX3Jlc3RhcnQgd2F0
-Y2hkb2dfdGltZXJfZm4oc3RydWN0IGhydGltZXIgKmhydGltZXIpDQo+ID4NCj4gPiAgIAkJYWRk
-X3RhaW50KFRBSU5UX1NPRlRMT0NLVVAsIExPQ0tERVBfU1RJTExfT0spOw0KPiA+ICAgCQlzeXNf
-aW5mbyhzb2Z0bG9ja3VwX3NpX21hc2sgJiB+U1lTX0lORk9fQUxMX0JUKTsNCj4gPiAtCQlpZiAo
-c29mdGxvY2t1cF9wYW5pYykNCj4gPiArCQlkdXJhdGlvbiA9IGR1cmF0aW9uIC8gZ2V0X3NvZnRs
-b2NrdXBfdGhyZXNoKCk7DQo+IA0KPiBOaXQ6IHJldXNpbmcgImR1cmF0aW9uIiBoZXJlIG1ha2Vz
-IHRoaW5ncyBhIGJpdCBjb25mdXNpbmcsIG1heWJlIGp1c3QgdXNlIGEgdGVtcA0KPiB2YXJpYWJs
-ZT8NCj4gDQo+IAl0aHJlc2hfY291bnQgPSBkdXJhdGlvbiAvIGdldF9zb2Z0bG9ja3VwX3RocmVz
-aCgpOw0KPiANCj4gCWlmIChzb2Z0bG9ja3VwX3BhbmljICYmIHRocmVzaF9jb3VudCA+PSBzb2Z0
-bG9ja3VwX3BhbmljKQ0KPiAJCXBhbmljKCJzb2Z0bG9ja3VwOiBodW5nIHRhc2tzIik7DQo+IA0K
-DQpXaWxsIGNoYW5nZSBpbiBuZXh0IHZlcnNpb24sIHRoYW5rcw0KDQpbTGksUm9uZ3FpbmddIA0K
-DQoNCg==
+On Fri, 19 Dec 2025 15:31:49 +0100
+Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com> wrote:
+
+> Use dev_err_probe() to make error code handling simpler and handle
+> deferred probe nicely (avoid spamming logs).
+> 
+> Best regards,
+> Krzysztof
+Thanks. Series applied.
+
+Jonathan
+
+> 
+> ---
+> Krzysztof Kozlowski (5):
+>       iio: adc: aspeed: Simplify with dev_err_probe
+>       iio: adc: exynos: Simplify with dev_err_probe
+>       iio: adc: qcom-spmi-rradc: Simplify with dev_err_probe
+>       iio: adc: rockchip: Simplify with dev_err_probe
+>       iio: adc: sc27xx: Simplify with dev_err_probe
+> 
+>  drivers/iio/adc/aspeed_adc.c      |  9 ++++---
+>  drivers/iio/adc/exynos_adc.c      | 29 ++++++++---------------
+>  drivers/iio/adc/qcom-spmi-rradc.c | 20 ++++++----------
+>  drivers/iio/adc/rockchip_saradc.c | 13 ++++-------
+>  drivers/iio/adc/sc27xx_adc.c      | 49 ++++++++++++++-------------------------
+>  5 files changed, 43 insertions(+), 77 deletions(-)
+> ---
+> base-commit: cc3aa43b44bdb43dfbac0fcb51c56594a11338a8
+> change-id: 20251219-iio-dev-err-probe-59b3104c8d4b
+> 
+> Best regards,
+
 
