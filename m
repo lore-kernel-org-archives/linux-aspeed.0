@@ -1,61 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3197-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3198-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8741E6F079
-	for <linux-aspeed@archiver.kernel.org>; Tue, 23 Dec 2025 10:36:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE22BE6F091
+	for <linux-aspeed@archiver.kernel.org>; Tue, 23 Dec 2025 13:54:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbBHr1Vnhz2xlP;
-	Tue, 23 Dec 2025 21:36:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766486168;
-	cv=none; b=Q5wqyAFa+FHg/f34AVdKzoxXWJDRol0x6aUcSl4CNSFC1pdPxeZojVS7A0IlRUeWgrkWZX0SruhecJ7i+LcCL88AIpjVjEoRsECAiF5IbWmQHh7IB0jXeAh0sUn9BQjSUYU1ixNNa1ToBSPTMCZYeeV/ox07L+n0l8PSwzLYHOZmkzjkV13gGbxmsXRZuWKY85OLcdIpCL1NVDohN8QokCQB7jVhM1WPZyM5eOFTPOcwUL/pTYcRoH4ptCk9jFhYfO/jlL5P7pv/g69GcJskiZtlVSyZQMxIZX2K/3Pc4+zL19s+1NtHPf1qhR6r9Y1Xc+DCxR0hJoc1558kdTZthA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbGj62Q09z2xQK;
+	Wed, 24 Dec 2025 00:54:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766498090;
+	cv=none; b=WoQ5bw+6grrKtuvysaaDer3HtcVBrs2aLPdiO/COl+FXAhRb7juRwFxANPnnbin3Da1/5iAS+G7o60CasQM3d6v1zKDrKNpdoHJybDzKPVHisGP2K9FGkrzd1GTKiDLsmdZJE0vUMw4qUrmSB/tBB4m4Xzs++UjpiT3PJzbbWDDeF8NWExF0pa4XTwF8ARS1Sa6oN/HvbTwvUJAC3avooGxpQd0d/+UuPh0Y+J9nNfx7EloW/QnAU39zlBIatLKtVNZlHkIbcmLiJggYAoqdsZ76lDGm4+iyNYviBX0m9SJoMxV7QRlI2pE7woizy+Oh6wBZuX4fZMBaSEFLBoU8Wg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766486168; c=relaxed/relaxed;
-	bh=havzK/SwF0OREzHRiv691TKr+k8MMceBKF0LuOOygAE=;
+	t=1766498090; c=relaxed/relaxed;
+	bh=2m1nXDkMRbgyrNZ3fWvlis7fsd1EOi9IRHGFWYhTUl0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RvvoOVQEj1r5Yed2dgch1edO0AhwnGtmBOx49acBatSrwaBpj8B8Cbo2nW4Jn2k5gsfOwZgk8t+dWkf2bUvDcmSKkASIymwmFx3QW7tungX3+Nq+cs6Qj+sDCg0jPVX43DfOgoSfvpH0nyzqUXq4VChzFlfXQq3IOzud+k4k9iiGVQfwq8RWw3WFLFqrTXtOyhSTwi4EEw8LC4YN8wGRlhxISFrm2i9H0mHsEO6mrZXjS5JH/HP8waiJj3o77rxnlYELgYtT23N59tVLWZtfqqfzVSf21R0JMS9lVADC/iujfj67xN8dlOXeuk7sqkphJyVQuUxfGJphkk7qL6oHYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=aZLauevL; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=XHBVXuxcMGgnRZBG98Gq6V1PgCPQpN4Q3QNtoo9ivTRkdAYRcQ3KGonU+RL9r41xxJ8KqvOJ51g0rVagIR+evQWyQ2ZNu/uVzQH4rX470SsDFfRrTm9nFltc2pZM8gwT9e9i95JXUuhAR5ohyzgmdYQbL1Qdwc0kIgk1nQt+++S99MADCpCc+lOnPpLNtwrwbufSK9tN2DPVNWdDuJpiZhzVGrSCkdiUMLLNLIaS7etq4GhuGBP2hASmTv1BWYH4YzTd+OL3qa9ZJeznGfGhydWCFX+/cMjiam1xZwFQeyakyRd6d16euii+2HzO2bIqfLh/T+wVd8yw12ymwQqnEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qrmsdykT; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=aZLauevL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qrmsdykT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbBHm5r87z2xQK
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 23 Dec 2025 21:36:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=havzK/SwF0OREzHRiv691TKr+k8MMceBKF0LuOOygAE=; b=aZLauevLcwMG/dS6u3X7JjCQ3D
-	HuNgnIbUxXzfYaLmd4Tpc/2qGNVx/XpFkh7MT/c0ALJF8vlsufhUVxT1LmponF6eHjliWP57PiuMY
-	sFY4/9T97AFGLzfZJPzKGd6JuQJP2BRr6vY3MYRLl8DU9Biy2icAyl0WjOKZ1ORlgPcA=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vXzjw-000HuJ-IF; Tue, 23 Dec 2025 11:35:40 +0100
-Date: Tue, 23 Dec 2025 11:35:40 +0100
-From: Andrew Lunn <andrew@lunn.ch>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbGj53x7dz2x99
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Dec 2025 00:54:49 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 64A9360123;
+	Tue, 23 Dec 2025 13:54:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9EBEDC113D0;
+	Tue, 23 Dec 2025 13:54:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766498056;
+	bh=AiITmCreaKBX7HKqX2F5SX04cacgCiPL74DHqx+cHiY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=qrmsdykTICzc1mqAHBjdG9SAc/oCv5sxGKGxwnXadPn1+LOy1LVhoMMzrBhhBkuDP
+	 w2K07fAkYvb3vTL6xolLw35bpdOQqJAmGrdrEwXfdrobtJe8tibdsHa4nwC/pq9P01
+	 ma2qh2+JsjFFIa5o3aZRLYbkNVhyEfQadnc+P41mkK60xosPQDc0Sptz3Mj2dwkopE
+	 jRCW2U+pVv3Jkgfmi6+LzzJZkDzq6lvnXARy4IeKr+89d46c9FCsLBqnxIbP0m7vCQ
+	 Kkkf5GPDTZxUkPZwNK6G3RvQHHut/6W6guZ9aCsNxLfbAKZ1jqx5wLKouSTNu7anUo
+	 F1Ay4F91canbA==
+Date: Tue, 23 Dec 2025 14:54:13 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Kyle Hsieh <kylehsieh1995@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+Cc: Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
-Message-ID: <1e21f828-1b06-492d-bfcd-ab5721621e8a@lunn.ch>
+Subject: Re: [PATCH 1/2] dt-bindings: arm: aspeed: add Meta ventura2 board
+Message-ID: <20251223-ginger-worm-of-swiftness-a8fa05@quoll>
 References: <20251222-ventura2_initial_dts-v1-0-1f06166c78a3@gmail.com>
- <20251222-ventura2_initial_dts-v1-2-1f06166c78a3@gmail.com>
- <c069b452-df22-4afa-bf6a-c48949f40ebc@lunn.ch>
- <CAF7HswN_jEXOU_9K4LpLnbhvd+RD0qqELAHxMBbp=hGtMjS4kQ@mail.gmail.com>
- <35f3eba9-5ec4-4cba-8a64-fb521dc65b79@lunn.ch>
- <CAF7HswN0hhJQ-gmE59cKTuPyzrs1A3rM8Xw+Z8i3_AsHRiNcug@mail.gmail.com>
+ <20251222-ventura2_initial_dts-v1-1-1f06166c78a3@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,30 +69,21 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAF7HswN0hhJQ-gmE59cKTuPyzrs1A3rM8Xw+Z8i3_AsHRiNcug@mail.gmail.com>
+In-Reply-To: <20251222-ventura2_initial_dts-v1-1-1f06166c78a3@gmail.com>
 
-> > What make/model of switch is it? Is it unmanaged, or does it use SPI
-> > or I2C for management?
+On Mon, Dec 22, 2025 at 03:45:43PM +0800, Kyle Hsieh wrote:
+> Document the new compatibles used on Facebook ventura2.
+> 
+> Signed-off-by: Kyle Hsieh <kylehsieh1995@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 
-> The switch is connected via RMII to the MAC and is managed over MDIO.
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-O.K. What make/model?
+Best regards,
+Krzysztof
 
-> On our board, MDIO is not wired directly to the processor; instead, we
-> use a USB-to-MPSSE bridge (FT2232) to toggle the MDIO signals for
-> switch management.
-
-I have to push back on you using a closed source user space driver,
-given that i help maintain the Ethernet switch drivers...
-
-I know there have been attempts to get GPIO support added for FT2232,
-but i don't think any got as far as mainline. That is probably the
-only part you are missing. You can describe USB devices in DT. So you
-should be able to describe such a GPIO controller. You can then
-instantiate an virtual,mdio-gpio driver to give you an MDIO bus. And
-then add nodes for the switch using DSA.
-
-     Andrew
 
