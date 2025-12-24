@@ -1,164 +1,40 @@
-Return-Path: <linux-aspeed+bounces-3200-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3201-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A701DE74903
-	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Dec 2025 05:32:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46660E74902
+	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Dec 2025 05:37:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbgWK6c1Kz2xqf;
-	Wed, 24 Dec 2025 16:32:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=52.101.127.120 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766554365;
-	cv=pass; b=YxlQEWG6DutOl74gBUbts9pi9idWMXZZE8ZZ+0f52AFZZZlif/zSnRuuJvAQPpUEh0LOOvehhU76itXCqonvaLKrp1P0J+EutAesgzVVljdei7m0wpUEl8rinJh3RLoGMKIE3gndl1N2qdDKnGoZwgEVJygjQT8YKekkSuA3U0G326LeLN6PJMm9zbjGfU9Es984YxJFwCrakGA6L/OK+H73+HIizFnEaErOJRZO9jRKjsOhcK8ULZSipq5kePfr364uhwfjnaqGJtilsK9KvSb1gh4Z4k1ompb3ArudrGSO6r07my260YSlsxGAak2ScZA07avYpUSmuHstUJW0Eg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766554365; c=relaxed/relaxed;
-	bh=MnupctpBpZx80ILeiUo9M+sDSWIYxASWnF6PmTij0Gg=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=leFDn9LnkUe9OA94Xw7hsvIfncuMxnBeTLNg3KNqysHItIpxo4pV1RRkEngqFCMoKd2m0wCcwiHio6lqcwFxgQGIlkRcimrQZC0en/H3T5tUWf+R5yR3M34Wyyn9zUKGVtAe3bkqzpCEULTMTT1aOwNyxDqSgVBm9gAuFZsGhUBqXPQQ/+R+xdDk4WQRw0VqjJya1wPyhenLBW1rflBGlAhKMwT8KVYq/WFe9Smp9nngIWHfEHn/3MaT9KyuccQqwJj7E2RrES+eRbImONsfC8S9hT290oSHv06GSj/TGnD8J2b+Qkg4JCePkP6EM9lykZzoScz9QllnQ/2+Rikp2A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=lFgsXZR5; dkim-atps=neutral; spf=pass (client-ip=52.101.127.120; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbgd05tpHz2xqm;
+	Wed, 24 Dec 2025 16:37:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766554660;
+	cv=none; b=ZrHJLZHLK7X/pCBr+pMqw8a5vxs1c/DyQ19t3SDKDVUeGECq52W1UqeoQ4Klvw1U7XZc/7CzXj1YyLEBs65TFFW31bfvt4SVZW+CGVm7H5KyCNg+qGRWBcma7ZTt4FOhbM2qaVLL320W+y9Rz1rEV2wvwAWKDDwVm0NTg9U56r2rxxq9m9Vr7XDqOopdOGBYKPlEN2kgL/qZuYukuDjEo8nojPj0zrSstijQvWgyAHXgjnFQGwVAs4va40/WMAJS3qX4RI0JNCjs3OHwRTVT4+2uT/KsrpQLlnxotzvTrfJaO1WRx0T+UwFOvl5T0z89D2YtV/WnbRvcPQvvkyhCQg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1766554660; c=relaxed/relaxed;
+	bh=0JA5zElQ0y7tpR6Gdr4GuuKm83vrvl7i/h+Klm6fB+Y=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=TdN/tPtiuUvKWTxUwjY1spoiW3yH2rT23r+ACBqwIVUd1SubXQ0UT0h+i9q2F2ivTgvT6ONIFV9+8+uBK/4RhCsc+QV/mk7k/BgEJ793bOYeGVZimB1Ce34yg2Ib2yJ6qsM8yDR8dEjy/Od8hL1tckPqIV/6RqL1+rYB6fe+sHtXKjxjvOe5F78SHjJ4THxpspTX8wpg0zLQkEZCSU9nkxx1V/O7qrgW323eHWoJzbI6Qidsban8lclbooNZxMbUC1APUB7FZS2NCfMVQaG+URwWjU0lARPYAkY4NYBDiOtcRzIn/9aRhxJYGJ7Ra4ijJcBNBRHWOjFXDR9/uXbbNw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=lFgsXZR5;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=52.101.127.120; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazon11023120.outbound.protection.outlook.com [52.101.127.120])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbgWH6b0rz2xlM;
-	Wed, 24 Dec 2025 16:32:43 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=t/iCJR9rz/bcwpX3U9Mf+1Z05QuWnX5speZ2JALIyoa6XRHvCvyLTblaaK/JjO+uM7sX3jY63XWMf85upe+4zj+1nRoa/iq8F51SOI2AVNk7+n9zIXLIXUUGWPx0hjAvAYF4g/EevTkZcytvB0qwOhQ6uL15sL9+whSAQ/EpGYXa8D9rZTbcJGoA20ApCV8OT8Mya5ZtbQQFRUru/2+RZMTN8APkqz7EJhdexRYlmsUBSPBRTQaFge9JlGJesHmzafpNO4XgWSnKY4cIfKd2iGWoASchsv3g0d2eKvX+6u1gCNFhKVzlDMJnNALCunxEW9aWRCo0/uQ5NqrP8VV4iw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=MnupctpBpZx80ILeiUo9M+sDSWIYxASWnF6PmTij0Gg=;
- b=c71JJgk34xRQ2ZV3Bsrd+U37+5r0GECBOwwebM51QRUd3z8oNMuUSh2FqrX9uCmjZxtLVzgbikpmQw2/I9cmd+c0GR7BgzHWlR4nqo9D6+/EhHYaXelpvDjh+52FxHYU9MxEP7Fs1WqfCJaw/ywGJY0MCwqEVmGixN0lpfRszbQXXQ/Mjx7IG+TQGGPD53PAhAf+UxFJ/mL2KzcMc2dxYT09GdsZIOTK9IbF0fsCOog77ei/ld0WS0Q/CiRzAF+OiI08m1zqSTpwiVB0hR+Bm0oi8c8ghmsbmqoJy0OA2bOK6bbtQ2HmRsxoeSrId1CoRtgw1C7IyOgXinSc3qEloQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=MnupctpBpZx80ILeiUo9M+sDSWIYxASWnF6PmTij0Gg=;
- b=lFgsXZR5t6E+LRbXeEz1ZHSQjSebvx/+2Z65ZhwWjIozhsAYngquSU3vWIufpEqHpMGHWktDTwFpTRRqVCHuO4wMeBPddYvReHTkjCDagMvtr2G8AIs0wAXc89UWth+8tVYNaJuPggYmeRpQ90ffXnU6d8uUArrtfst5ySk5CzvPVSIPyjflkoaWUyO1iQvGpMdT4asxhnkd117YgdnXOsHGh1K/u3LociU5NWEHSy6I76UPlT7NyWpdDUaTorUU5BtPG2yeAFy7ENhvjcWovzlfpGXvEeA3z2f+GcTq8suAQ9m7JjkWrBxnx4U62VdwJOVKwW7EVJj0kzsiMCki3A==
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com (2603:1096:101:5a::12)
- by TY0PR06MB6854.apcprd06.prod.outlook.com (2603:1096:405:10::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9434.11; Wed, 24 Dec
- 2025 05:32:00 +0000
-Received: from SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28]) by SEYPR06MB5134.apcprd06.prod.outlook.com
- ([fe80::6b58:6014:be6e:2f28%6]) with mapi id 15.20.9412.011; Wed, 24 Dec 2025
- 05:32:00 +0000
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-To: Vinod Koul <vkoul@kernel.org>
-CC: Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Bjorn Helgaas <bhelgaas@google.com>, Lorenzo Pieralisi
-	<lpieralisi@kernel.org>, =?iso-8859-2?Q?Krzysztof_Wilczy=F1ski?=
-	<kwilczynski@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, Linus
- Walleij <linus.walleij@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>,
-	Neil Armstrong <neil.armstrong@linaro.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
-	<linux-pci@vger.kernel.org>, "linux-phy@lists.infradead.org"
-	<linux-phy@lists.infradead.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, Andrew Jeffery <andrew@aj.id.au>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
-Subject: [PATCH v7 4/7] PHY: aspeed: Add ASPEED PCIe PHY driver
-Thread-Topic: [PATCH v7 4/7] PHY: aspeed: Add ASPEED PCIe PHY driver
-Thread-Index: AQHcbi5Sg3H9Wgp35E2Sp8TbUiyc77UvaBQAgADmf4A=
-Date: Wed, 24 Dec 2025 05:32:00 +0000
-Message-ID:
- <SEYPR06MB51340F64E40B19975A2FD9D79DB2A@SEYPR06MB5134.apcprd06.prod.outlook.com>
-References: <20251216-upstream_pcie_rc-v7-0-4aeb0f53c4ce@aspeedtech.com>
- <20251216-upstream_pcie_rc-v7-4-4aeb0f53c4ce@aspeedtech.com>
- <aUq3hF7Xfk-f35Nh@vaman>
-In-Reply-To: <aUq3hF7Xfk-f35Nh@vaman>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SEYPR06MB5134:EE_|TY0PR06MB6854:EE_
-x-ms-office365-filtering-correlation-id: acf746f4-ee2a-455b-b9a8-08de42adc326
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|7416014|376014|38070700021;
-x-microsoft-antispam-message-info:
- =?iso-8859-2?Q?c3yVevG88P/6vPa6o8eM3Cxj4P8IM1hgr40kAGC5iZ3FvTO3NW/96+Sm9G?=
- =?iso-8859-2?Q?DrQ1XhiJKJYWT6XRrVIDgxiJuyI99nz/RYz7rzLj/jB4G8VGPaos10bGbo?=
- =?iso-8859-2?Q?5zznQwE5X2Q2lrcDvzR0xKq3gZicgcf/NoRH6iIfh+Px+vFsGgkmeHLgsU?=
- =?iso-8859-2?Q?5OeaD7TV3fFo3pDEEmM6Lv2ASDgrEtAIBn7X3kMD27ZNW6Ev0R8IKU5akh?=
- =?iso-8859-2?Q?X7Ox5ZGlHbVs37Et1iMaompAtWejREE4TU9QyUiUcZsWcY7W1Fclp7R0mx?=
- =?iso-8859-2?Q?t+DE2PdlXGOEbNDc8l+CjGm1HIca1RXZwuFnb/sg1sJrCRf8bfy5xJ5c1w?=
- =?iso-8859-2?Q?4KBchSbBIVFaeDBCSdFzHLGjsEzmBRQt+9eH784LE6tsmBfQbk9sZbDc/Q?=
- =?iso-8859-2?Q?xfsDWMmvTNWZoxwslYRv1z6xjdCZ8nheb+/0/BcMy8GG0PMkqrkpL7EXWs?=
- =?iso-8859-2?Q?mwKN0O9aFvJzUMNLJ6IP6sfpE3ZUVLkfsf8S05IEa+fT84DghFkzd//F9M?=
- =?iso-8859-2?Q?XseJecwiNW+PuP/7i8+DWTNBxVshL9cAZTkyVTjYNJ/hBC8R2NqRtnFXSO?=
- =?iso-8859-2?Q?O4R4835lzDbyFtsm9oCBgGcuHtfWiHFsSPsqgXjUJ4iwwz5L/MAK7SJJ5h?=
- =?iso-8859-2?Q?1rpKdUugRLUgkq4ZwR/96N2CWj4mJUmlWf+Lh8lKwjnN0mVj6O9Bq5SbJd?=
- =?iso-8859-2?Q?P2bkP2IHaynfJXfEnIUexjzx6Vbf7LmFJJqkNOAIUqzHfK/faOWTXoQ8sc?=
- =?iso-8859-2?Q?rlMv4fBQXl7gQ7dx6PTD20Wtb8WBNI+801BlnGAX6hmv5jaNr5LN6Ee277?=
- =?iso-8859-2?Q?i0mxEvTHJ6qavJ+3YWkEOhZx6CxxSJrCF+CGeGWIwLsqCOAC8NQcC68z+O?=
- =?iso-8859-2?Q?jV2SKIaHIEh3ccQ8Vmh/O4Xx/6LsDx/u7rZzzSydSHv/3PEBNe5sp9UaHd?=
- =?iso-8859-2?Q?prelKe/nJaG5Xvlk26p+3/9rlbeRkFempWkqUIUzRX4EOL+JgzPZAhBQwn?=
- =?iso-8859-2?Q?hZ3GrFlVh81EjV+7g5t04NhNSab/WpSfmMTAQnpn3KcwuXN0NIWDKdOJLa?=
- =?iso-8859-2?Q?ZEzGC0eKWwTkUGM8O0QCDpHjc5oxx55JXT4bz2AD0234eU/onBKngF/tWP?=
- =?iso-8859-2?Q?4ZFPDBH2SdPeDekpqmXYpoYjKD8pbWlCTTgmeB/DXCKU1Ml93Wd2Taxw41?=
- =?iso-8859-2?Q?18TOIXc6JaooTqUc1nvz8XiQHi1y0Iy20MmlSUwW0W3+7duQhOqe/QEsgx?=
- =?iso-8859-2?Q?jizrxWZ0YCLGiQCMK7AZQlrk7dKmbRWZDn3iVMIGxqRm+IQA8SmmbuoGlQ?=
- =?iso-8859-2?Q?UsoR8XHGFH3376chmlgkru0a9tuBGgGFblltXDtYzmyoGZlwKiVsHkjpbN?=
- =?iso-8859-2?Q?hvFKigThNgOIxmHVvPjJelytBRcRjO0TiSPgzn+cgvaFt7Jlpip09okRpB?=
- =?iso-8859-2?Q?1hdWj7LbLErM0+BKKeW7CC4qLmEeP8g8jmQBy7J/u8qPe+iPy+4wQW+kMh?=
- =?iso-8859-2?Q?B9lrlYMakCkbWcaiwcILU3t/RKqXIA2qnzBrhakBsTlLHjm4RLKlMWvtok?=
- =?iso-8859-2?Q?aBdhRKUxC9lptzR9vBXI9vY6IWwS?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SEYPR06MB5134.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(38070700021);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-2?Q?oq03pIl1Bo3FOA1zL85vSDNwvvRGw+56u+c3lkwm2JHWtt8fC0B05gOX7J?=
- =?iso-8859-2?Q?wlYTCKIKbl1oof/qIzFhWq3fMMtU2nZItL27/b08i1zFU6/yr3Y1ntou9q?=
- =?iso-8859-2?Q?8+2jpYw/BNeEFekMacIrUrL34vUzAkN+VuM/ru1TaLhcPpAgTusAlv8JTm?=
- =?iso-8859-2?Q?PDAjubL9uaTUsJS7f2Txgm4yxgwmK5VS9W/qPUtZdYqzLsaDJc4qeqNgjB?=
- =?iso-8859-2?Q?XycUTTCWwYyPmWcHLpK45jSxZw2qWkDTFHbVmb9kta2bYFoqCnzJp/2gXY?=
- =?iso-8859-2?Q?SFprLEtGVEnd26CmQCc87bx3yqBKEnWq1HhWORBc7emqYSVPGnlA9TwSet?=
- =?iso-8859-2?Q?NBKpSc1P7XPdf1N/KafYcVOx1MBEIZDBmVh2I0jXmXojNqQuTP8ais1azm?=
- =?iso-8859-2?Q?i3KkgC19dYkMLU/s67LwdtnYiXjsyrYsGf7sGzdH2pvHBaIEoOc1tvUdTh?=
- =?iso-8859-2?Q?P71kd+8gpRjRsG4I4RJIGXRRiyxBuVKo0GmZpBVKsz+wqq2Jnx82K/nW7H?=
- =?iso-8859-2?Q?jeDoF5ZXt6os5A9bn7KYKzg5lhcF/+KHbx5FoXNpXvHnyR6M88T4xPHVpV?=
- =?iso-8859-2?Q?uCagkHvzjXMlplAH045gUN0YrIBk0qUuBvmg21Yu4Dq7oeXSvJL2cfGm4w?=
- =?iso-8859-2?Q?9IzT2FhFeqnVa3sRJQmNWBHq17G4YWxLyl8UGzVLPI2o/DAmw3vx5xUdSd?=
- =?iso-8859-2?Q?5nBxFHE0IG/71SF6sEJY2/D2mn5i/4zZZ5ZXjiCsu9Yezz/mJMHMVpyEAD?=
- =?iso-8859-2?Q?H3XJEnLJ2cmattkljPO8xUYxI3hg3MQjT7TmDAQIgNUJgCNIaoGTMb6FFV?=
- =?iso-8859-2?Q?JbeLs5kWv16UvhJ5l8qPlVD3ypMjq8N9lMtMGVg6gW//JJ3ygOipG7zshL?=
- =?iso-8859-2?Q?Dn71rQo+nwIItafzVNHn7Z631KaE8hL68JSGYWzaJkle/qHdcdLcKZ3UKy?=
- =?iso-8859-2?Q?CUMt8MwakwY966+RkNH15SQYib3kdtUN0pZAFicWVx0d8TbOl7EAFgbQ0H?=
- =?iso-8859-2?Q?Jel2IfOw2CVy8A/+Iroj8TYZ0AublVhW9F9KpHzb1HxhI+O18FEIsC+gwQ?=
- =?iso-8859-2?Q?z6T9EU/B+bzwI6idnACllYqxH19WwzN9CNlL4PxlM6g+j6uvt7H4LnO/+I?=
- =?iso-8859-2?Q?mzgjealuXs2SHJCWtlHXPijC8v0wUyQNyrB6hamM0ZtHJnXeqpx7Tuwn7v?=
- =?iso-8859-2?Q?TRE6XJ9aJOcaTXq0cvYTl29bXJQ5mLJU5ioKomiKxIm110DgvO4i9W1BK/?=
- =?iso-8859-2?Q?JlXjAAV91OLIWMA/ZbD0NB3bqdqULY0hj62f5K6ICZglkuuf0vwLvIzxAh?=
- =?iso-8859-2?Q?0sdWRQAAsNCwustWK2cCkOp/GaZSCf40DJnxJ5qNZ2SPlTahO2RZBHDFqy?=
- =?iso-8859-2?Q?CeSBHnAf3saUHRN+PATeU8ldGLQeLggtzIC3tG7nRIKl23peHvfOSozceC?=
- =?iso-8859-2?Q?r8dYFc6K98MLPDUwKohsGH2/4J3wFzDrSPUHgcRTc9JTw7r0cS5ufMRTH8?=
- =?iso-8859-2?Q?xW7s8ABJVheAgK6tEjSC7rQ5yqnlXnPyiwMEIQ0yR46DJ/uC1FTbklv74J?=
- =?iso-8859-2?Q?j1ei76no+5NBxOJC2SecbxC4p1OBqg98gCNzsVv0BRdnV84PoNQx2A2YJl?=
- =?iso-8859-2?Q?0BA6zmUtOP0tRAtC0JdlduLYvVzv3me62UPaKSZeixDuSovwepEfpHzMsl?=
- =?iso-8859-2?Q?2kSf55T4YjhXHGB+3/lx6cTAIol3860E9/6OsghO3LbAfeLrGWVU0s4KOo?=
- =?iso-8859-2?Q?Iev7K9jv7/no73YzloVb2n0siTOyndZm5lP0ZpYgwv8vtuB2O5oIpQPI1t?=
- =?iso-8859-2?Q?a2qEnzPh5w=3D=3D?=
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbgd00ltxz2xqf
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Dec 2025 16:37:39 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 24 Dec
+ 2025 13:37:23 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Wed, 24 Dec 2025 13:37:23 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Subject: [PATCH v16 0/3] Add support for AST2700 clk driver
+Date: Wed, 24 Dec 2025 13:37:21 +0800
+Message-ID: <20251224-upstream_clk-v16-0-8c1318f56c3c@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -172,123 +48,202 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SEYPR06MB5134.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: acf746f4-ee2a-455b-b9a8-08de42adc326
-X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Dec 2025 05:32:00.3716
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: AmhT+g2tDVcVgHhJBs+M8O27Kb7oGJRv23zt/QWMfKNeGWK15CFhpwswLr0sdEq43qCijhrfD2U1lLe/wWboDql9URUU69bRMcqVPcJsc/U=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB6854
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIABF8S2kC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDM10FJSSM
+ xLz0lN1M1OAAkpGBkamhkZGxrqlBcUlRamJufHJOdm6FuZmJpaJiUmGFimJSkAtBUWpaZkVYPO
+ iY2trAeMGfoJfAAAA
+X-Change-ID: 20251223-upstream_clk-87649aab18da
+To: Brian Masney <bmasney@redhat.com>, Michael Turquette
+	<mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Joel Stanley
+	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>
+CC: <linux-kernel@vger.kernel.org>, <linux-clk@vger.kernel.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+	"Ryan Chen" <ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1766554643; l=7782;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=ib/Oy8qRtohZwWwB1efICR1YhSExrYIChzuEkdcOkhU=;
+ b=U+3ijaB6+vKzSU+sak5Jk8TKDmKv0XdhEJUuCuuSCo/IefFKiu9h8qSZTyJIuSJZVtqg4WDWZ
+ 3KkvZe3Q1kxACk6nYXbnCROZkiK6g4Y8O10QltGof/RUJQbLH5OlJdJ
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-Hi Vinod,
+This patch series is add clk driver for AST2700.
 
-Thank you for your reply.
+AST2700 is the 8th generation of Integrated Remote Management Processor
+introduced by ASPEED Technology Inc. Which is Board Management controller
+(BMC) SoC family. AST2700 have two SoC connected, one is SoC0, another
+is SoC1, it has it's own scu, this driver inlcude SCU0 and SCU1 driver.
 
-> > Introduce support for Aspeed PCIe PHY controller available in
-> > AST2600/2700.
->=20
-> What is with the uppercase "PHY" in patch title instead of lowercase 'phy=
-' as is
-> the convention
->=20
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+---
+Changes in v16
+- clk/aspeed: move existing ASPEED clk drivers to drivers/clk/aspeed subdirectory
+- MAINTAINERS: Add ASPEED clock drivers entry
+- Link to v15: https://lore.kernel.org/all/20251010072540.666673-1-ryan_chen@aspeedtech.com/
 
-Got it. I will change the title to lowercase 'phy' in next version.
+Changes in v15:
+- clk-ast2700.c
+- remove #include <linux/of_platform.h>.
+- use inline 12MHZ, 24MHZ, 25MHZ, 192MHZ define.
+- use clk_hw pointers, index member instead of .fw_name and .name members.
+- use module_platform_driver().
+- Link to v14: https://lore.kernel.org/all/20250917020539.3690324-1-ryan_chen@aspeedtech.com/
 
-> > +++ b/drivers/phy/aspeed/Kconfig
-> > @@ -0,0 +1,15 @@
-> > +# SPDX-License-Identifier: GPL-2.0-only # # Phy drivers for Aspeed
-> > +platforms # config PHY_ASPEED_PCIE
-> > +	tristate "ASPEED PCIe PHY driver"
-> > +	select GENERIC_PHY
-> > +	depends on ARCH_ASPEED
-> > +	default y
->=20
-> NO! why should this driver be default!
->=20
+Changes in v14:
+- patch (3/3) : remove duplcate Signed-off-by.
+-Link to v13: https://lore.kernel.org/all/20250912052231.1944937-1-ryan_chen@aspeedtech.com/
 
-Agreed - this should not be default.
-I'll remove `default y` in the next revision.
+Changes in v13:
+- clk-ast2700.c
+ - remove unnecessary ().
+ - refine ast2700_soc1_configure_i3c_clk to be easy readable.
+-Link to v12: https://lore.kernel.org/all/20250708052909.4145983-1-ryan_chen@aspeedtech.com/
 
-> > +	help
-> > +	  This option enables support for the ASPEED PCIe PHY driver.
-> > +	  The driver provides the necessary interface to control and
-> > +	  configure the PCIe PHY hardware found on ASPEED SoCs.
-> > +	  It is required for proper operation of PCIe devices on
-> > +	  platforms using ASPEED chips.
-> > \ No newline at end of file
->=20
-> ??
->=20
+Changes in v12:
+-fix mistakes commit message Acked-by:Krzysztof Kozlowski
+<krzysztof.kozloski@linaro.org> to Acked-by: Krzysztof Kozlowski
+<krzysztof.kozlowski@linaro.org>
+-Link to v11: https://lore.kernel.org/all/20250707011826.3719229-1-ryan_chen@aspeedtech.com/
 
-I'll add the missing newline at end of file in the next revision.
+Changes in v11:
+-update patch(1/3) commit message subject prefix dt-binding: to dt-bindings:
+-Link to v10: https://lore.kernel.org/all/20250611073139.636724-1-ryan_chen@aspeedtech.com/
 
-> > diff --git a/drivers/phy/aspeed/Makefile b/drivers/phy/aspeed/Makefile
-> > new file mode 100644 index 000000000000..7203152f44bf
-> > --- /dev/null
-> > +++ b/drivers/phy/aspeed/Makefile
-> > @@ -0,0 +1,2 @@
-> > +# SPDX-License-Identifier: GPL-2.0
-> > +obj-$(CONFIG_PHY_ASPEED_PCIE)		+=3D phy-aspeed-pcie.o
-> > \ No newline at end of file
->=20
-> Are we expecting more drivers for aspeed, if not move it to drivers/phy/ =
-once
-> we have couple of them we can add a directory
->=20
+Changes in v10:
+-aspeed,ast2700-scu.h:
+-add SOC0_CLK_AHBMUX, SOC0_CLK_MPHYSRC, SOC0_CLK_U2PHY_REFCLKSRC,
+ SOC1_CLK_I3C.
+-clk-ast2700.c
+-add #include <linux/auxiliary_bus.h>
+-remove #include <soc/aspeed/reset-aspeed.h>
+-use devm_auxiliary_device_create replace aspeed_reset_controller_register
+-reset-aspeed.c:
+-remove aspeed_reset_unregister_adev, aspeed_reset_adev_release,
+ aspeed_reset_controller_register.
+-compatible name change reset_aspeed.reset0/1 -> clk_ast2700.reset0/1
+-remove reset-aspeed.h
+-Link to v9: https://lore.kernel.org/all/20250224095506.2047064-1-ryan_chen@aspeedtech.com/
 
-Yes, we are expecting more PHY drivers for ASPEED.
+Changes in v9:
+-aspeed,ast2700-scu.h: no change.
+add more clear commit description.
+-clk-ast2700.c:
+add inlcude bitfield.h
+remove redundant clk_parent_data soc0_mpll_div8/soc0_ahb/uart13clk/
+uart14clk/uart15clk/uart16clk/soc1_ahb/d_clk_sels
+-Link to v8: https://lore.kernel.org/all/20250210085004.1898895-1-ryan_chen@aspeedtech.com/
 
-This is the first ASPEED PHY driver, and additional ASPEED-specific
-PHY drivers will be submitted later, so having a dedicated
-drivers/phy/aspeed/ directory is intentional.
+Changes in v8:
+-aspeed,ast2700-scu.h: remove no use soc0 clock, add new clock
+-clk-ast2700.c: remove include <linux/auxiliary_bus.h>,
+include <linux/clk-provider.h>, include <linux/of_address.h>
+-clk-ast2700.c: add include <linux/mod_devicetable.h>
+-clk-ast2700.c: modify include <soc/aspeed/reset-aspeed.h> order before
+dt-bindings
+-clk-ast2700.c: modify define to be tabbed out space
+-clk-ast2700.c: add union struct for each clk type
+        union {
+                struct ast2700_clk_fixed_factor_data factor;
+                struct ast2700_clk_fixed_rate_data rate;
+                struct ast2700_clk_gate_data gate;
+                struct ast2700_clk_div_data div;
+                struct ast2700_clk_pll_data pll;
+                struct ast2700_clk_mux_data mux;
+        } data;
+-clk-ast2700.c: modify clk_data = device_get_match_data(dev);
+-clk-ast2700.c: modify builtin_platform_driver_probe to
+arch_initcall(clk_ast2700_init)
+-clk-ast2700.c: ast2700_clk_hw_register_hpll explain: scu010[4:2],
+scu010[4:2] = 010, hpll force 1.8Ghz
+scu010[4:2] = 011, hpll force 1.7Ghz
+scu010[4:2] = 110, hpll force 1.2Ghz
+scu010[4:2] = 111, hpll force 800Mhz
+others depend on hpll parameter register setting.
+-Link to v7: https://lore.kernel.org/all/20241028053018.2579200-1-ryan_chen@aspeedtech.com/
 
-> > diff --git a/drivers/phy/aspeed/phy-aspeed-pcie.c
-> > b/drivers/phy/aspeed/phy-aspeed-pcie.c
-> > new file mode 100644
-> > index 000000000000..3de43a86ac17
-> > --- /dev/null
-> > +++ b/drivers/phy/aspeed/phy-aspeed-pcie.c
-> > @@ -0,0 +1,209 @@
-> > +// SPDX-License-Identifier: GPL-2.0+
-> > +/*
-> > + * Copyright 2025 Aspeed Technology Inc.
-> > + */
-> > +
-> > +#include <linux/clk.h>
-> > +#include <linux/clk-provider.h>
-> > +#include <linux/delay.h>
-> > +#include <linux/err.h>
-> > +#include <linux/io.h>
-> > +#include <linux/iopoll.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/mfd/syscon.h>
-> > +#include <linux/module.h>
-> > +#include <linux/of.h>
-> > +#include <linux/of_address.h>
->=20
-> why do you need this
->=20
-> > +#include <linux/phy/pcie.h>
-> > +#include <linux/phy/phy.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/regmap.h>
-> > +#include <linux/regulator/consumer.h> #include <linux/reset.h>
-> > +#include <linux/slab.h>
->=20
->=20
-> Do you need all headers here?
->=20
+Changes in v7:
+-reset-aspeed.h: fix declare static inline aspeed_reset_controller_register
+if the function is not used.
+-Link to v6: https://lore.kernel.org/all/20241023090153.1395220-1-ryan_chen@aspeedtech.com/
 
-Thanks for pointing this out.
+Changes in v6:
+-patch-2: add reset-aspeed.h
+-reset-aspeed: add include cleanup.h for guard()
+-reset-aspeed: change ids name clk_aspeed to reset_aspeed
+-reset-aspeed: move aspeed_reset_controller_register,
+aspeed_reset_adev_release, aspeed_reset_unregister_adev from clk-ast2700.c
+-reset-aspeed: drop base check, since it check in clk-ast2700.c
+-clk-ast2700: sync each gate name from *clk to *clk-gate name.
+-clk-ast2700: add CLK_GATE_ASPEED to diff clk_hw_register_gate and
+ast2700_clk_hw_register_gate.
+-Link to v5: https://lore.kernel.org/all/20241009060521.2971168-1-ryan_chen@aspeedtech.com/
 
-I'll confirm which headers are actually required and clean up
-the unused includes in the next revision.
+Changes in v5:
+-patch-2 Kconfig: add select AUXILIARY_BUS
+-reset-aspeed: #define to_aspeed_reset(p) turn into static inline function.
+-reset-aspeed: modify spin_lock_irqsave to guard(spinlock_irqsave)
+-reset-aspeed: remove unnecessary parentheses.
+-clk-ast2700: use <linux/units.h> and refrain from define clk
+-Link to v4: https://lore.kernel.org/all/20240923075012.2264573-1-ryan_chen@aspeedtech.com/
 
-Thanks,
-Jacky
+Changes in v4:
+-yaml: keep size-cells=<1>.
+-merge clk,reset dt binding header with yaml the same patch.
+-rename clk,reset dt binding header to aspeed,ast2700-scu.h
+-reset-aspeed: update tables tabs sapces to consistent spaces.
+-reset-aspeed: remove no use dev_set_drvdata.
+-clk-ast2700: modify reset_name to const int scu in struct clk_data.
+-clk-ast2700: use scu number in clk_data generate reset_name for reset
+ driver register.
+-clk-ast2700: fix pll number mix up scu0,scu1.
+-clk-ast2700: update dt-binding clock include file.
+-Link to v3: https://lore.kernel.org/all/20240916091039.3584505-1-ryan_chen@aspeedtech.com/
+
+Changes in v3:
+-yaml: v2 missing send yaml patch, v3 add.
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number.
+-dt-bindings: merge clk and reset to be one patch.
+-reset-aspeed: add auxiliary device for reset driver.
+-clk-ast2700: modify reset to be auxiliary add.
+-clk-ast2700: modify to be platform driver.
+-clk-ast2700: modify each clk to const clk array.
+-Link to v2: https://lore.kernel.org/all/20240828062740.1614744-1-ryan_chen@aspeedtech.com/
+
+Changes in v2:
+-yaml: drop 64bits address example.
+-yaml: add discription about soc0 and soc1
+-dt-bindings: remove (), *_NUMS, reserved.
+-dt-bindings: remove dulipated define number
+-clk-ast2700: drop WARN_ON, weird comment.
+-Link to v1: https://lore.kernel.org/all/20240808075937.2756733-1-ryan_chen@aspeedtech.com/
+
+---
+Ryan Chen (3):
+      clk: aspeed: Move the existing ASPEED clk drivers into aspeed subdirectory.
+      MAINTAINERS: Add entry for ASPEED clock drivers.
+      clk: aspeed: add AST2700 clock driver
+
+ MAINTAINERS                            |    9 +
+ drivers/clk/Kconfig                    |   13 +-
+ drivers/clk/Makefile                   |    3 +-
+ drivers/clk/aspeed/Kconfig             |   21 +
+ drivers/clk/aspeed/Makefile            |    4 +
+ drivers/clk/{ => aspeed}/clk-aspeed.c  |    0
+ drivers/clk/{ => aspeed}/clk-aspeed.h  |    0
+ drivers/clk/{ => aspeed}/clk-ast2600.c |    0
+ drivers/clk/aspeed/clk-ast2700.c       | 1055 ++++++++++++++++++++++++++++++++
+ 9 files changed, 1091 insertions(+), 14 deletions(-)
+---
+base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
+change-id: 20251223-upstream_clk-87649aab18da
+
+Best regards,
+-- 
+Ryan Chen <ryan_chen@aspeedtech.com>
 
 
