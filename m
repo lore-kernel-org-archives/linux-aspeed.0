@@ -1,64 +1,80 @@
-Return-Path: <linux-aspeed+bounces-3207-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3208-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9129EE75442
-	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Dec 2025 09:20:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 274A7E75453
+	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Dec 2025 13:40:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbmZQ0c8Xz2yFY;
-	Wed, 24 Dec 2025 20:20:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766568046;
-	cv=none; b=cO4IPVuso9OOQpS/zZyJXoygPKj5Mq0W2XR1D1hsoY05k4uGc8xpqEKgILRdPRJupzLS/xewSJ5anInn/eTbn6xcIvHqKySYtXRjJyBXJiIp33XNbyqGVs5hsZf+WKHdVt+8kzp9XXaGz1sSPPQc2wPg/vKSiU4gu7SaVdVjsqtjYessjaqb8wxQSnME//ZN9w0aitFW4jLIWlPTOrNQiPTkvgywYvS1Dx7GthbQnR1gLwij15b3by3mLgWIaCaQlKNo7ONGTfvCRpybIfxAoOT6nqC/z+MV7XnRysmlWAF8GM5s+b9HO3MQap3Aee/8sOFJPjoY4OeIsD2TvIhjGA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbtKt2MN5z2yN1;
+	Thu, 25 Dec 2025 00:40:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.119.170.32
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766583618;
+	cv=none; b=AHQCp/oVYDWCbvNbjPlrYHr2A1XxTKn4VF5klhTkOSI8hurnQY8HEXGntFZOCgQsEe+vazZ3JzdfqHxd6UtSEvx1LMIs2VXHsSPFs/5erZR/A/0JXI34hOPCrFyz7fmeCHoIZ2Pt0XeaywprhsnMTw54pUI8TWokRev8h66v/ZexIjIbinfnsnHVKrgCH94B+Nungt+Q++Gj6zxhkQfY7dp6x0NKJQuPfsj+SbW/TB2H6W9iEHY/Wvz2O0mUvgDIM5pkWAsgNUGIKSD52e+Hti0fGQhKBlDJQz4tp6Nl46cS+oS1Gi/L2Zr+5VZAzJBziGkAZoJmXvuodE2Hx5LJfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766568046; c=relaxed/relaxed;
-	bh=og+Ux3x/arfwiOpRBPCbvWYwNi8map9YcJ7XOxJZxGA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=c8whwz6zugYxshlpgDLH9KHnuq4eL6/3qFAy18/js+haNRcOm9z3HuY/rsv+81FxPS0fST1DhxngO0whK9igGzeSy/ZdtdJHOyncT0M529PpDq40rguBaL/N2jvTQl5E4aeZrmCQ3q1Ejr/+kpli72sV+sM5bQZTdnqFxFUM1XDoBvNnWiFroBrquHjvuSf32EyNNxTtxQuQORTSqGQpFW+vHiu+M15MC4xfBZdjK71BW5U3+UuduvLMRWEpObMqGUeZTL/Qhbv/8maqZmfxqbADlxWSzWTHJYynop9uIfuY+SdFDshfjPjQO3yOleD4hRTPfM5VR4PySfqhlhTOnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=hEGjb/QW; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1766583618; c=relaxed/relaxed;
+	bh=xbu83KDb8EzV5fBCpVF9Ofv9QvuINTQfWgSaYI2v7SA=;
+	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=VuZriQSuTbh6w6ScIAsYxPzSrnVy9zwvaqgNpeRjrL80Ty5c2CFkfI9cPh4FClmesGlPuNIdME9s4BWIbZadrLCkXCRlVigNfNJtHStSdQbAooP+MhlkBt7YD5c0oMajXphLQQxzP0uUQeY4kxhHCOxOgr2vah5lGKHG4DqbmO/XM2Li1uVEUDM2PfWmy9ntBgkuueRhNWYRVOX6PaDQET6y/SUSETO9pzrNG9WL20t0u9xCSiU2ZgkF1EFOOkk/w82G8xj0OsNMoRO5CUfBjjYM6RGsDDRGxaLyx9s+b7RtqzQmfc1xXRGF23Q5Ap5d/eda56L5ghhx52iOVe1bTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net; dkim=pass (1024-bit key; unprotected) header.d=crapouillou.net header.i=@crapouillou.net header.a=rsa-sha256 header.s=mail header.b=DEHZIvg4; dkim-atps=neutral; spf=pass (client-ip=185.119.170.32; helo=aposti.net; envelope-from=paul@crapouillou.net; receiver=lists.ozlabs.org) smtp.mailfrom=crapouillou.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=crapouillou.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=hEGjb/QW;
+	dkim=pass (1024-bit key; unprotected) header.d=crapouillou.net header.i=@crapouillou.net header.a=rsa-sha256 header.s=mail header.b=DEHZIvg4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=crapouillou.net (client-ip=185.119.170.32; helo=aposti.net; envelope-from=paul@crapouillou.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 487 seconds by postgrey-1.37 at boromir; Thu, 25 Dec 2025 00:40:17 AEDT
+Received: from aposti.net (aposti.net [185.119.170.32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbmZP1fmFz2xqf
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 24 Dec 2025 20:20:44 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Transfer-Encoding:Content-Disposition:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:
-	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Content-Disposition:
-	In-Reply-To:References; bh=og+Ux3x/arfwiOpRBPCbvWYwNi8map9YcJ7XOxJZxGA=; b=hE
-	Gjb/QWuTRrKy/elfnoXQGAxsz3lHe01RhnyEGCL+KU1uLVKaRaFFag3yNR9W0sVVyou0xDbsriE2v
-	7mhfgvWZ38SIcDoM7OplqSjOx966l9U3iN1u4D6jAAWOrpmKQsjQlmD1vIpeziRbQIJmIf5+bhuhv
-	Kn39wZdha559GFM=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vYL2a-000OlF-00; Wed, 24 Dec 2025 10:20:20 +0100
-Date: Wed, 24 Dec 2025 10:20:19 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Kyle Hsieh <kylehsieh1995@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: ventura2: Add Meta ventura2 BMC
-Message-ID: <32ff7ca8-9cb0-4889-adb0-a6dae735630b@lunn.ch>
-References: <20251222-ventura2_initial_dts-v1-0-1f06166c78a3@gmail.com>
- <20251222-ventura2_initial_dts-v1-2-1f06166c78a3@gmail.com>
- <c069b452-df22-4afa-bf6a-c48949f40ebc@lunn.ch>
- <CAF7HswN_jEXOU_9K4LpLnbhvd+RD0qqELAHxMBbp=hGtMjS4kQ@mail.gmail.com>
- <35f3eba9-5ec4-4cba-8a64-fb521dc65b79@lunn.ch>
- <CAF7HswN0hhJQ-gmE59cKTuPyzrs1A3rM8Xw+Z8i3_AsHRiNcug@mail.gmail.com>
- <1e21f828-1b06-492d-bfcd-ab5721621e8a@lunn.ch>
- <CAF7HswP7Oejs42K=jG8bkNiBoDhXR2LbeHoppk0nnNon6_afwA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbtKs300jz2yHB
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 25 Dec 2025 00:40:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=crapouillou.net;
+	s=mail; t=1766583118;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=xbu83KDb8EzV5fBCpVF9Ofv9QvuINTQfWgSaYI2v7SA=;
+	b=DEHZIvg4Ki+CGC9dPeVP65atqr2lD/HbbCKx2IgDAZyJ++LHBm6mGdJpLvqm1yVa6wvdCo
+	e33UpVsAOyw6MNZnD9cFpL+K1heqU7rD5VAIJijN9F4mwjYwoixKdfDqpvXni9X7q/WsRp
+	D55qOu5YZ0UXQidG7niJggEcy9NMSOc=
+Message-ID: <e661a947f0cefb1651dcd3f7f57855313ad9fd7a.camel@crapouillou.net>
+Subject: Re: [PATCH 3/4] mmc: jz4740: Fix Wvoid-pointer-to-enum-cast warning
+From: Paul Cercueil <paul@crapouillou.net>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Aubin
+ Constans <aubin.constans@microchip.com>, Ulf Hansson
+ <ulf.hansson@linaro.org>, Nicolas Ferre	 <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,  Claudiu Beznea
+ <claudiu.beznea@tuxon.dev>, Robert Richter <rric@kernel.org>, Andrew
+ Jeffery	 <andrew@codeconstruct.com.au>, Adrian Hunter
+ <adrian.hunter@intel.com>, Joel Stanley <joel@jms.id.au>, Nathan Chancellor
+ <nathan@kernel.org>, Nick Desaulniers	 <nick.desaulniers+lkml@gmail.com>,
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ linux-mmc@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, 	linux-mips@vger.kernel.org,
+ linux-aspeed@lists.ozlabs.org, 	openbmc@lists.ozlabs.org,
+ llvm@lists.linux.dev
+Date: Wed, 24 Dec 2025 14:30:56 +0100
+In-Reply-To: <20251224124431.208434-7-krzysztof.kozlowski@oss.qualcomm.com>
+References: <20251224124431.208434-5-krzysztof.kozlowski@oss.qualcomm.com>
+	 <20251224124431.208434-7-krzysztof.kozlowski@oss.qualcomm.com>
+Autocrypt: addr=paul@crapouillou.net; prefer-encrypt=mutual;
+ keydata=mQENBF0KhcEBCADkfmrzdTOp/gFOMQX0QwKE2WgeCJiHPWkpEuPH81/HB2dpjPZNW03ZM
+ LQfECbbaEkdbN4YnPfXgcc1uBe5mwOAPV1MBlaZcEt4M67iYQwSNrP7maPS3IaQJ18ES8JJ5Uf5Uz
+ FZaUawgH+oipYGW+v31cX6L3k+dGsPRM0Pyo0sQt52fsopNPZ9iag0iY7dGNuKenaEqkYNjwEgTtN
+ z8dt6s3hMpHIKZFL3OhAGi88wF/21isv0zkF4J0wlf9gYUTEEY3Eulx80PTVqGIcHZzfavlWIdzhe
+ +rxHTDGVwseR2Y1WjgFGQ2F+vXetAB8NEeygXee+i9nY5qt9c07m8mzjABEBAAG0JFBhdWwgQ2VyY
+ 3VlaWwgPHBhdWxAY3JhcG91aWxsb3UubmV0PokBTgQTAQoAOBYhBNdHYd8OeCBwpMuVxnPua9InSr
+ 1BBQJdCoXBAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEHPua9InSr1BgvIH/0kLyrI3V0f
+ 33a6D3BJwc1grbygPVYGuC5l5eMnAI+rDmLR19E2yvibRpgUc87NmPEQPpbbtAZt8On/2WZoE5OIP
+ dlId/AHNpdgAtGXo0ZX4LGeVPjxjdkbrKVHxbcdcnY+zzaFglpbVSvp76pxqgVg8PgxkAAeeJV+ET
+ 4t0823Gz2HzCL/6JZhvKAEtHVulOWoBh368SYdolp1TSfORWmHzvQiCCCA+j0cMkYVGzIQzEQhX7U
+ rf9N/nhU5/SGLFEi9DcBfXoGzhyQyLXflhJtKm3XGB1K/pPulbKaPcKAl6rIDWPuFpHkSbmZ9r4KF
+ lBwgAhlGy6nqP7O3u7q23hRU=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,59 +88,45 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAF7HswP7Oejs42K=jG8bkNiBoDhXR2LbeHoppk0nnNon6_afwA@mail.gmail.com>
 
-On Wed, Dec 24, 2025 at 02:40:39PM +0800, Kyle Hsieh wrote:
-> On Tue, Dec 23, 2025 at 6:35 PM Andrew Lunn <andrew@lunn.ch> wrote:
-> >
-> > > > What make/model of switch is it? Is it unmanaged, or does it use SPI
-> > > > or I2C for management?
-> >
-> > > The switch is connected via RMII to the MAC and is managed over MDIO.
-> >
-> > O.K. What make/model?
-> >
-> The device is a Marvell 88E6393X switch. In our design, the BMC connects
+Hi Krzysztof,
 
-Which Linux does have a driver for.
+Le mercredi 24 d=C3=A9cembre 2025 =C3=A0 13:44 +0100, Krzysztof Kozlowski a
+=C3=A9crit=C2=A0:
+> "jz4740" is an enum, thus cast of pointer on 64-bit compile test with
+> clang W=3D1 causes:
+>=20
+> =C2=A0 jz4740_mmc.c:1055:18: error: cast to smaller integer type 'enum
+> jz4740_mmc_version' from 'const void *' [-Werror,-Wvoid-pointer-to-
+> enum-cast]
+>=20
+> Signed-off-by: Krzysztof Kozlowski
+> <krzysztof.kozlowski@oss.qualcomm.com>
 
-> to the device via RMII with fixed link parameters to retrieve ethernet.
-> > > On our board, MDIO is not wired directly to the processor; instead, we
-> > > use a USB-to-MPSSE bridge (FT2232) to toggle the MDIO signals for
-> > > switch management.
-> >
-> > I have to push back on you using a closed source user space driver,
-> > given that i help maintain the Ethernet switch drivers...
-> >
-> > I know there have been attempts to get GPIO support added for FT2232,
-> > but i don't think any got as far as mainline. That is probably the
-> > only part you are missing. You can describe USB devices in DT. So you
-> > should be able to describe such a GPIO controller. You can then
-> > instantiate an virtual,mdio-gpio driver to give you an MDIO bus. And
-> > then add nodes for the switch using DSA.
+Reviewed-by: Paul Cercueil <paul@crapouillou.net>
 
-> Apologies for the confusion in my previous reply.
-> The BMC connects to the peer via an RMII fixed-link.
-> The link parameters are fixed at design time and there is no runtime
-> MDIO-managed PHY or switch control from the BMC.
+Cheers,
+-Paul
 
-So you use the USB-MDIO to program the EEPROM? The switch boots using
-the settings in the EEPROM? It is then an unmanaged hub? You are not
-using UMSD in userspace? That code looks terrible.
-
-So if you connect multiple of these unmanaged hubs together in a loop,
-your network disappears in a broadcast storm? Yes, you can use these
-switches in a dumb mode, but it has consequences. If you let Linux
-manage it, you gain a lot of functionality, such as STP, to break
-loops.
-
-But you seem to be opposed to this. At least add in a comment
-explaining the purpose of the fixed link. DT describes hardware, so
-there is no harm in describing the hardware, even if it is a comment
-and not real properties.
-
-	Andrew
+> ---
+> =C2=A0drivers/mmc/host/jz4740_mmc.c | 2 +-
+> =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/mmc/host/jz4740_mmc.c
+> b/drivers/mmc/host/jz4740_mmc.c
+> index 6a0d0250d47b..6a3c26b7c82d 100644
+> --- a/drivers/mmc/host/jz4740_mmc.c
+> +++ b/drivers/mmc/host/jz4740_mmc.c
+> @@ -1052,7 +1052,7 @@ static int jz4740_mmc_probe(struct
+> platform_device* pdev)
+> =C2=A0	host =3D mmc_priv(mmc);
+> =C2=A0
+> =C2=A0	/* Default if no match is JZ4740 */
+> -	host->version =3D (enum
+> jz4740_mmc_version)device_get_match_data(&pdev->dev);
+> +	host->version =3D (unsigned long)device_get_match_data(&pdev-
+> >dev);
+> =C2=A0
+> =C2=A0	ret =3D mmc_of_parse(mmc);
+> =C2=A0	if (ret)
 
