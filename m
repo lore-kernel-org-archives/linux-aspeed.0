@@ -1,64 +1,66 @@
-Return-Path: <linux-aspeed+bounces-3209-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3210-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B78AE776F0
-	for <linux-aspeed@archiver.kernel.org>; Wed, 24 Dec 2025 16:33:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 936E5E92716
+	for <linux-aspeed@archiver.kernel.org>; Sat, 27 Dec 2025 17:44:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dby964SZKz2yPM;
-	Thu, 25 Dec 2025 03:32:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=68.232.154.123
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766593978;
-	cv=none; b=hMI4icYwmT48v74n3/hw8QRPcTo6tnDOL0PhskT45OuzCxIB3eCFLYhF83iJ2Wnk3h7DNWyahJshcd/ERJ4qHlPU7Tr1ofTVyQ8EENSbeuV7R319EQLS9aA/pELxxb4rjGgW2hNn5BvdeGjT3KfOofrJGOmYpHu/GwArc1SLyM3LheWnO1VJ8SpOKQ2pVDwD19fQKc91xyYOZuQWsYwLO7FgC2cuycYliw6Dx5YprTTwpmn8lvsQOxqEIDeGvGpUqj8aZCND6PaDGF8/t+Vjdn7KURE5kXOq9pLsanRL4QoLTBzsvsGjFsNsPfDdPz0NAc8pGAwiKQrWyTmzXVcFvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ddqcS4gF6z2xQK;
+	Sun, 28 Dec 2025 04:44:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766857480;
+	cv=none; b=PSJ/Rj29iU5qgKPImRYyJjlaXerax4aUCDxbgPcZnDVhTLzkVqqwdfcy8X2E8korafSPgntBD8R+8fMvg3ztNSPLtAx/M5Qs9OdzNPrNiygejGsp8KywSz2sP7RteXVSZMoOxhtyHZ+Y3ktAEGsEOBSWVnAPoDMLet9J/krN9BerQVmNs+AtxPXqR3SyRI0vgI1Nq+plduzrwbVoC3KRZk8KWhH+KTR69EZUYpDmcjlUOmmU7yHsCb4ss+O0OWHKXG4WwkEvv/MHjlrKeMX1krldf4FwZeVHi+C+xYKjXVausPj4W4zRK9LEsL2u8TVgilVforRPQcGuyXFn7nI9eQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766593978; c=relaxed/relaxed;
-	bh=eb1GWSMtwiCjjrRom1gCzEi9SBcGoDJFeRiB5e+S/SU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=cjM7R4EY9Q6Bom5NbadszOyaFijjJvknLm0ju+liPeGF1XghjABijA5+b9R7X8g9WArOgaxbTpxR/rdkwbMDUo7dC8hDZInV5mmYcLYcqOUUFnA7BEF5uIswCcox1btlO0RYM0V+izMSxjXD+vMbMb9vjZ+/gaF2Tbfi+1xSemtWKho0ayIrUwMRNbN9VzpSYGUoWIhjSIZPEZCpRJCEBiFiPf2UpGahKOez64IqtyeKoGVlCJ6j5RT9qxEHLZhtmiYRQWwrkeJDWHhgyffMwz0EnFui3b8C4WpJko74P9/sekitO77nJpNMsBz31zDKEcc/YzEvUx2jbcpIgLKoSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=microchip.com; dkim=pass (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=drhZpYRG; dkim-atps=neutral; spf=pass (client-ip=68.232.154.123; helo=esa.microchip.iphmx.com; envelope-from=prvs=4464f8a09=nicolas.ferre@microchip.com; receiver=lists.ozlabs.org) smtp.mailfrom=microchip.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=microchip.com
+	t=1766857480; c=relaxed/relaxed;
+	bh=8JON7EhFTDNEelfylKALMXTbkwUkKqxujg/BRlfMbsc=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=mbGzr550LAm3C7diFeVPfbxS1pAmDQShAheK2bFe5KPIOwTP3y2OQKJddufuhh3xWzso/AYaR25MKtpG5SXyjxVcMzJi0non720c8ayv2rEDWLeWKupv4To5PD2Nmbgf9v4vbH/EHxunapfnVXdqljC5Qf473ZQ7cf4e965bmV14kz0QDE6tKl8lCCoYZi0YeF4tflWG+UpEO/VrdiFH+zXxU7GzveL2K+f2tTJFdEFRqLn5UVQoKpMtZ2Ld7TgATId6KvNDYQW86zqQNIP8hRmNeRvx64Bl9xM7qJPfrguVrGzE9hPzWA7FFs79MRwpuO1iNn5EI32inpPSOiY63g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=plgRFm2x; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=drhZpYRG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=plgRFm2x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=microchip.com (client-ip=68.232.154.123; helo=esa.microchip.iphmx.com; envelope-from=prvs=4464f8a09=nicolas.ferre@microchip.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 123 seconds by postgrey-1.37 at boromir; Thu, 25 Dec 2025 03:32:56 AEDT
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dby943DJbz2yLg;
-	Thu, 25 Dec 2025 03:32:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1766593976; x=1798129976;
-  h=message-id:date:mime-version:subject:to:references:from:
-   in-reply-to:content-transfer-encoding;
-  bh=xnT+EvR0s5oIZp/3XXt4XA68h5snb9BsA7e9vL/N/vM=;
-  b=drhZpYRG0jYy4s+kgDoXF7JwGzgGt/VORI1y8MdOXX3YtmcmwUjrUnuE
-   2AvRPev5Po+xvTJMxEzstgqGof7FilCj/Ld0NF79Ns1KSS29UZQIJQ3M6
-   nl6gx2eNik2VcW+jbsqv89OC8dVsOkD+E3Ktj7obBMv9TlqhAZdf76bya
-   Bnf9vxZGIjakWLrdeN3uhjHazL/5iE+uOmoh8z1B5bC7kfYuPvjhx3O+A
-   mGDiPEsyiz0Fqcm6QZTIrUhjdluAdVJM3HsnZ+DUnyuOEowuljh4mYwU/
-   5BNE8ONaRRH5IjVWfRdR3jfJT8i2BdukijY9E5TWN9zWYhbvgKJojoLKr
-   g==;
-X-CSE-ConnectionGUID: 1mpAtqqvTWKDWP3ouM+OuA==
-X-CSE-MsgGUID: bJulCPQ/SGmZ0iD/Mn03NA==
-X-IronPort-AV: E=Sophos;i="6.21,174,1763449200"; 
-   d="scan'208";a="51495333"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
-  by esa2.microchip.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256; 24 Dec 2025 09:29:48 -0700
-Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.58; Wed, 24 Dec 2025 09:29:25 -0700
-Received: from [10.171.248.28] (10.10.85.11) by chn-vm-ex02.mchp-main.com
- (10.10.85.144) with Microsoft SMTP Server id 15.1.2507.58 via Frontend
- Transport; Wed, 24 Dec 2025 09:29:20 -0700
-Message-ID: <9faff0a3-0f3d-4e51-ab5b-0cf0204ee4fd@microchip.com>
-Date: Wed, 24 Dec 2025 17:29:19 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddqcR3clLz2x99
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 28 Dec 2025 04:44:39 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 34BCE43246;
+	Sat, 27 Dec 2025 17:44:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CA24C4CEF1;
+	Sat, 27 Dec 2025 17:43:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766857446;
+	bh=rEzyn2bOa/coEWORVff+5bDDXl1nAaryf+Cd927xIOk=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=plgRFm2xv3fqWW5WRh8lT7O/Wmj2z7xu9xX/s7k4mnHrgMJaVSaAIgUsOCHQxxJxf
+	 e6mTos4LuKjclLyR3T6+coydKFAv2N0HxD4b3au0Nb53KzuTbrBqNdvHEyliG8JKtu
+	 fXiK6hG42cOmNtGWdwQ2HnSUsXb6lFMVGlWV5WG4Y90IjVbaF3u5zWUYaXHUOOHGfi
+	 T4kb34NP9bp5miMS5tqjAdInUe7MkV/qIg2DSNX0OUYLIkOhT8IGd4O9Ht9ptxB6dC
+	 b0B5vlls0XTmDuY9T3iuZHkSWJbQzmzXS9tvbgpr7h2Wiu0YnJGKZbh05vwAISYNZU
+	 Bxz63eR8a1ZCg==
+Date: Sat, 27 Dec 2025 17:43:55 +0000
+From: Jonathan Cameron <jic23@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: David Lechner <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?=
+ <nuno.sa@analog.com>, Andy Shevchenko <andy@kernel.org>, Joel Stanley
+ <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Krzysztof
+ Kozlowski <krzk@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>, Heiko
+ Stuebner <heiko@sntech.de>, Philipp Zabel <p.zabel@pengutronix.de>,
+ linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH 1/3] iio: adc: aspeed: Simplify probe() with local 'dev'
+ and 'np'
+Message-ID: <20251227174355.0677f93f@jic23-huawei>
+In-Reply-To: <20251221142602.47368-4-krzysztof.kozlowski@oss.qualcomm.com>
+References: <20251221142602.47368-4-krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,98 +74,21 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/4] mmc: atmel-mci: Simplify with scoped for each OF
- child loop
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>, Aubin Constans
-	<aubin.constans@microchip.com>, Ulf Hansson <ulf.hansson@linaro.org>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea
-	<claudiu.beznea@tuxon.dev>, Robert Richter <rric@kernel.org>, Paul Cercueil
-	<paul@crapouillou.net>, Andrew Jeffery <andrew@codeconstruct.com.au>, "Adrian
- Hunter" <adrian.hunter@intel.com>, Joel Stanley <joel@jms.id.au>, "Nathan
- Chancellor" <nathan@kernel.org>, Nick Desaulniers
-	<nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, "Justin
- Stitt" <justinstitt@google.com>, <linux-mmc@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
-	<linux-mips@vger.kernel.org>, <linux-aspeed@lists.ozlabs.org>,
-	<openbmc@lists.ozlabs.org>, <llvm@lists.linux.dev>
-References: <20251224124431.208434-5-krzysztof.kozlowski@oss.qualcomm.com>
-From: Nicolas Ferre <nicolas.ferre@microchip.com>
-Content-Language: en-US, fr
-Organization: microchip
-In-Reply-To: <20251224124431.208434-5-krzysztof.kozlowski@oss.qualcomm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On 24/12/2025 at 13:44, Krzysztof Kozlowski wrote:
-> Use scoped for-each loop when iterating over device nodes to make code a
-> bit simpler.
+On Sun, 21 Dec 2025 15:26:03 +0100
+Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com> wrote:
+
+> Simplify the probe function by using local 'dev' and 'np' variables
+> instead of full pointer dereferences.  This makes several lines shorter,
+> which allows to avoid wrapping making code more readable.  While
+> touching the return line, simplify by avoiding unnecessary 'ret'
+> assignment.
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+All 3 patches applied to the togreg branch of iio.git.
+Initially pushed out as testing to let the bots have a play.
 
-Reviewed-by: Nicolas Ferre <nicolas.ferre@microchip.com>
-
-Thanks Krzysztof, best regards,
-   Nicolas
-
-> ---
->   drivers/mmc/host/atmel-mci.c | 12 +++---------
->   1 file changed, 3 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-> index fdf6926ea468..3b4928f5b9b2 100644
-> --- a/drivers/mmc/host/atmel-mci.c
-> +++ b/drivers/mmc/host/atmel-mci.c
-> @@ -629,14 +629,13 @@ static int atmci_of_init(struct atmel_mci *host)
->   {
->          struct device *dev = host->dev;
->          struct device_node *np = dev->of_node;
-> -       struct device_node *cnp;
->          u32 slot_id;
->          int err;
-> 
->          if (!np)
->                  return dev_err_probe(dev, -EINVAL, "device node not found\n");
-> 
-> -       for_each_child_of_node(np, cnp) {
-> +       for_each_child_of_node_scoped(np, cnp) {
->                  if (of_property_read_u32(cnp, "reg", &slot_id)) {
->                          dev_warn(dev, "reg property is missing for %pOF\n", cnp);
->                          continue;
-> @@ -645,7 +644,6 @@ static int atmci_of_init(struct atmel_mci *host)
->                  if (slot_id >= ATMCI_MAX_NR_SLOTS) {
->                          dev_warn(dev, "can't have more than %d slots\n",
->                                   ATMCI_MAX_NR_SLOTS);
-> -                       of_node_put(cnp);
->                          break;
->                  }
-> 
-> @@ -658,10 +656,8 @@ static int atmci_of_init(struct atmel_mci *host)
->                                                "cd", GPIOD_IN, "cd-gpios");
->                  err = PTR_ERR_OR_ZERO(host->pdata[slot_id].detect_pin);
->                  if (err) {
-> -                       if (err != -ENOENT) {
-> -                               of_node_put(cnp);
-> +                       if (err != -ENOENT)
->                                  return err;
-> -                       }
->                          host->pdata[slot_id].detect_pin = NULL;
->                  }
-> 
-> @@ -673,10 +669,8 @@ static int atmci_of_init(struct atmel_mci *host)
->                                                "wp", GPIOD_IN, "wp-gpios");
->                  err = PTR_ERR_OR_ZERO(host->pdata[slot_id].wp_pin);
->                  if (err) {
-> -                       if (err != -ENOENT) {
-> -                               of_node_put(cnp);
-> +                       if (err != -ENOENT)
->                                  return err;
-> -                       }
->                          host->pdata[slot_id].wp_pin = NULL;
->                  }
->          }
-> --
-> 2.51.0
-> 
-
+Jonathan
 
