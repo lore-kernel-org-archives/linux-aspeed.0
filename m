@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-3234-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3236-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7631CE9410F
-	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Dec 2025 05:58:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01617E94113
+	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Dec 2025 05:58:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dgMp15t6Hz2yDk;
-	Tue, 30 Dec 2025 16:58:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dgMp321N8z2yFK;
+	Tue, 30 Dec 2025 16:58:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767074297;
-	cv=none; b=jQbPJP3O5X+M0QO3tGlk8dzTaZaX9CwZ5WucYFZso4RMOnwCuZKpLBt3JCsImjhnK46Z4MCz7UYuICJpZ69ejKKA6erOUta2s80awjZqAnnnlNG1WgLL4kcwL5YvuELnIXuNY8vVSo3/q3TB669PyQ72cdn1lwJe+nqSiSDbrwcVdcT3FMLnePLqI/perEq2qFCNhE/Kwig0KHft+UOI3r8xATw78FL+mB+bKPVc5drCOqVrCLYZqE98xT5fR4edEsXl/xMVAsrYLdqjnoStqIVNkruI3wiJYfSYfgXH0x5ln9OeW/xPFwOeU+qvG/0jyc12r+PxrxpNBjD1fDkTKA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767074299;
+	cv=none; b=CKbX0RyU4E5NW3zEIcUWXXaGrxLKrp27QELyfpIUfZrVQVMjjDszCt77Qx+89Kj/ukHnBrAguy/5hMCdfekvtBRTK4wgCus7rfjePz7NoVGNjq5koUowdzjrwqx7KtqKJyHhZLc/o6cT24oiu3zT863KkmYXtPYrgLmZdrvaTnE+lTCFtQZ5qbIo/On+Zk7SOOCVi+qiF68IJ64ml0PKG6FG9+4WzpMpA9rqgW/3rPHB34ynrpoY96u5AadTHPWs8Ki2EK6puvvQzWwXTwD90OQkOt7ZfdIi0i/5HWXbrJ/EhJc880vbWJjOtY9YsbGqAireDIGJYzAIqMQBtc7y/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767074297; c=relaxed/relaxed;
-	bh=8tZOm4p7hAq1iCexXv8TwYdUZemzTyizd7MbbyfklQQ=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=MgwcO7uems7DA/HV/HzWRdOKH1z+ziPPqME3JEO/PoFWFJvtJvgt898nXNtCsKaXUT+EcHeWBT/VkDLijn3/6ytG1KWY2kzEi1WSbzoc+yIJwPW6cmc3wh67VFVURWSAdx+jMRH0Cv5pSd0mhoT2iEuONmTYINbLZjyiQI8UQFy3bxlZkGC71ffgmuL1YtdOzEGUFPsKWPv8X5fxnO/sH4JrdYVLUZbmZAc1HS3Z2DB4cR5StlX9wAjOJRppAUj+ph7pjSS3YWwIIO6076sEP5K/2qrDYK5n94IBlOF5WAk99OmIhIgbbbaf0P+BPzoWxSO/HKUx/N8OhFnd8muufQ==
+	t=1767074299; c=relaxed/relaxed;
+	bh=LfqexJKc1HyTDWacbGo5fXTjyEpEyhUkshJjop1yCB8=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=MIXtG6E63yjBjn1clYWQ39OJuNd+actEw/IgBjMDmKLP3iyKK1671xijQW1XT+xC+S3Mq6Lrwx/exsiUqfK5lxBKR9ZgX56hWcwMwk/CODLrH4JHAmru+2XKx/8gSUZVMPcANcGw78z8ITXtGE02hee1reQFGpLnGd1M7ndvhrYwna43bP/ciVUyY9XnoNJnQgt3zLsonJMuE59DVARmlpdksaIWXHCDzVox1uPBbIaBQA1XuAmc2Ty0BR219R8CB9cMJPZBmNTLDvn820YHqZaP+5jkW0CkocjtawK0TYyY0SfbLCF6FQNl99CAEFb0Nc8QAyjSF5ZQrYrqB3EYhQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dgMp06Zz0z2xgX
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Dec 2025 16:58:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dgMp25FHDz2xgX
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Dec 2025 16:58:18 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 30 Dec
@@ -32,9 +33,8 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Tue, 30 Dec 2025 13:57:59 +0800
 From: Jacky Chou <jacky_chou@aspeedtech.com>
-Subject: [PATCH v8 0/4] Add ASPEED PCIe PHY support
-Date: Tue, 30 Dec 2025 13:57:57 +0800
-Message-ID: <20251230-upstream_pcie_rc-v8-0-03598cdd80cd@aspeedtech.com>
+Date: Tue, 30 Dec 2025 13:57:59 +0800
+Subject: [PATCH v8 2/4] ARM: dts: aspeed-g6: Add PCIe RC and PCIe PHY node
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -50,13 +50,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAOVpU2kC/43QQWrDMBCF4asErSszo9FIcla9RylGVpRaLYmN7
- JiGkLtXyaIuxJAun+D/BnQRY8wpjmK7uYgc5zSm/liGe9mI0PnjR5RpV7ZQoBgRSJ6GccrRH5o
- hpNjkIJ3WbLnetQ5JlGzIcZ++7+Tbe9ldGqc+n+8XZry93jEwSEAEgBUhkyErUX768HVuQtefX
- v04xLibYuiq0B/ETZrVUltkIE0KKsVM7j81LXUNCMy1UhWWmhme1/q3RlAWanaKK3SIBp/HvMS
- I9vEPZ5YgW+2xdmyND/tVxSyKAlxRTFFccA4gsGnRrCr2j4JmRbFF0T62sGcKOsQH5Xq9/gCIm
- rOqOAIAAA==
-X-Change-ID: 20251103-upstream_pcie_rc-8445759db813
+Message-ID: <20251230-upstream_pcie_rc-v8-2-03598cdd80cd@aspeedtech.com>
+References: <20251230-upstream_pcie_rc-v8-0-03598cdd80cd@aspeedtech.com>
+In-Reply-To: <20251230-upstream_pcie_rc-v8-0-03598cdd80cd@aspeedtech.com>
 To: Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
 	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
@@ -65,127 +61,105 @@ CC: <linux-aspeed@lists.ozlabs.org>, <linux-phy@lists.infradead.org>,
 	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kernel@vger.kernel.org>, Jacky Chou <jacky_chou@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1767074279; l=5242;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1767074279; l=2703;
  i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
- bh=mJ6CAzj7csowkPDHckG6xiofX22C+TX2RFXXrChBJAo=;
- b=InCnTgqDtABRSeQEh7aOeE19GyPLupzdA+tbSZx4f52CusgmuuJ0GPQ5U9UeFN52k5QSw4bDu
- bPYl3VQjeU4CFulY4LPpam23yPILxMUDzySXAoMB0uYhm7MipoEkYPJ
+ bh=WucACgBEVr41rzAvQJGKyFXe0ozjjV/dKi/l/xqeoAY=;
+ b=kMjFtp+Py35zDp/DX+PpOXplj8HWq9l1/yvPv0El7FhbP40YOMNnVlm6AOBjZ5NvFv5xxR/uu
+ d191xsJz2QIBSerQUXnCo6ylSCWgMgxAhJ451I6vNVOSCfWAvQyC16s
 X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
  pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
 
-This patch series adds support for the ASPEED PCIe PHY,
-including device tree bindings and PCIe PHY driver. 
-The patches introduce the necessary device tree nodes.
-
-Summary of changes:
-- Add device tree binding documents for ASPEED PCIe PHY
-- Update MAINTAINERS for new bindings and driver
-- Implement ASPEED PCIe PHY driver
-
-This series has been tested on AST2600/AST2700 platforms and enables PCIe device
-enumeration and operation.
+The AST2600 has one PCIe RC and add the PCIe PHY for RC.
+And add pinctrl support for PCIe RC PERST#.
 
 Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
 ---
-Changes in v8:
-- Update the title of cover letter
-- Remove 'default y' from Kconfig
-- Change 'PHY:' to 'phy:' in the title of ASPEED PCIe PHY commit.
-- Remove unnecessary headers from phy-aspeed-pcie.c.
-- Add ASPEED PCIe PHY MAINTAINERS
-- Remove applied patches
-  [v7,2/7] dt-bindings: PCI: Add ASPEED PCIe RC support
-  [v7,5/7] PCI: Add FMT, TYPE and CPL status definition for TLP header
-  [v7,6/7] PCI: aspeed: Add ASPEED PCIe RC driver
-  [v7,7/7] MAINTAINERS: Add ASPEED PCIe RC driver
-- Link to v7: https://lore.kernel.org/r/20251216-upstream_pcie_rc-v7-0-4aeb0f53c4ce@aspeedtech.com
+ arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi |  5 +++
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi         | 53 +++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+)
 
-Changes in v7:
-- Add PCIe port into aspeed,ast2600-pci.yaml.
-- Remove aspeed_pcie_init_ports() and merge aspeed_pcie_port_init() to
-  aspeed_pcie_parse_port()
-- Refactor aspeed remap pcie addr to aspeed_pcie_map_ranges()
-- Link to v6: https://lore.kernel.org/r/20251201-upstream_pcie_rc-v6-0-8c8800c56b16@aspeedtech.com
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+index e87c4b58994a..d46f2047135c 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi
+@@ -2,6 +2,11 @@
+ // Copyright 2019 IBM Corp.
+ 
+ &pinctrl {
++	pinctrl_pcierc1_default: pcierc1-default {
++		function = "PCIERC1";
++		groups = "PCIERC1";
++	};
++
+ 	pinctrl_adc0_default: adc0_default {
+ 		function = "ADC0";
+ 		groups = "ADC0";
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index f8662c8ac089..dde8f87db2e3 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -379,6 +379,59 @@ rng: hwrng@1e6e2524 {
+ 				quality = <100>;
+ 			};
+ 
++			pcie_phy1: phy@1e6ed200 {
++				compatible = "aspeed,ast2600-pcie-phy";
++				reg = <0x1e6ed200 0x100>;
++				#phy-cells = <0>;
++
++				status = "disabled";
++			};
++
++			pcie0: pcie@1e770000 {
++				compatible = "aspeed,ast2600-pcie";
++				device_type = "pci";
++				reg = <0x1e770000 0x100>;
++				#address-cells = <3>;
++				#size-cells = <2>;
++				interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>;
++				bus-range = <0x00 0xff>;
++
++				ranges = <0x01000000 0x0 0x00018000 0x00018000 0x0 0x00008000
++					  0x02000000 0x0 0x60000000 0x60000000 0x0 0x20000000>;
++
++				status = "disabled";
++
++				resets = <&syscon ASPEED_RESET_H2X>;
++				reset-names = "h2x";
++
++				#interrupt-cells = <1>;
++				msi-controller;
++
++				aspeed,ahbc = <&ahbc>;
++
++				interrupt-controller;
++				interrupt-map-mask = <0 0 0 7>;
++				interrupt-map = <0 0 0 1 &pcie0 0>,
++						<0 0 0 2 &pcie0 1>,
++						<0 0 0 3 &pcie0 2>,
++						<0 0 0 4 &pcie0 3>;
++
++				pcie@8,0 {
++					compatible = "pciclass,0604";
++					reg = <0x00004000 0 0 0 0>;
++					#address-cells = <3>;
++					#size-cells = <2>;
++					device_type = "pci";
++					resets = <&syscon ASPEED_RESET_PCIE_RC_O>;
++					reset-names = "perst";
++					clocks = <&syscon ASPEED_CLK_GATE_BCLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_pcierc1_default>;
++					phys = <&pcie_phy1>;
++					ranges;
++				};
++			};
++
+ 			gfx: display@1e6e6000 {
+ 				compatible = "aspeed,ast2600-gfx", "syscon";
+ 				reg = <0x1e6e6000 0x1000>;
 
-Changes in v6:
-- Refer to pci-cpi-bridge.yaml to update aspeed,ast2600-pcie.yaml and
-  the pcie node of aspeed-g6.dtsi.
-- 'dt-bindings: pinctrl: aspeed,ast2600-pinctrl: Add PCIe RC PERST#
-  group' have applied, remove it from this version.
-- Adjust the defnitions in pci.h. 
-- Link to v5: https://lore.kernel.org/r/20251117-upstream_pcie_rc-v5-0-b4a198576acf@aspeedtech.com
-
-Changes in v5:
-- Remove legacy-interrupt-controller and the INTx points to pcie node itself.
-- Correct bar mapping description and implementation to PCIe address
-  configuration in pcie-aspeed.c driver.
-- Link to v4: https://lore.kernel.org/r/20251027095825.181161-1-jacky_chou@aspeedtech.com/
-
-Changes in v4:
-- Remove aspeed,ast2700-pcie-cfg.yaml
-- Add more descriptions for AST2600 PCIe RC in aspeed,ast2600-pcie.yaml
-- Change interrupt-controller to legacy-interrupt-controller in yaml
-  and dtsi
-- Remove msi-parent property in yaml and dtsi
-- Modify the bus range to starting from 0x00 in aspeed-g6.dtsi
-- Fixed the typo on MODULE_DEVICE_TABLE() in phy-aspeed-pcie.c
-- Add PCIE_CPL_STS_SUCCESS definition in pci/pci.h
-- Add prefix ASPEED_ for register definition in RC driver
-- Add a flag to indicate clear msi status twice for AST2700 workaround
-- Remove getting domain number
-- Remove scanning AST2600 HOST bridge on device number 0
-- Remove all codes about CONFIG_PCI_MSI
-- Get root but number from resouce list by IORESOURCE_BUS
-- Change module_platform_driver to builtin_platform_driver
-- Link to v3: https://lore.kernel.org/r/20250901055922.1553550-1-jacky_chou@aspeedtech.com/
-
-Changes in v3:
-- Add ASPEED PCIe PHY driver
-- Remove the aspeed,pciecfg property from AST2600 RC node, merged into RC node
-- Update the binding doc for aspeed,ast2700-pcie-cfg to reflect the changes
-- Update the binding doc for aspeed,ast2600-pcie to reflect the changes
-- Update the binding doc for aspeed,ast2600-pinctrl to reflect the changes
-- Update the device tree source to reflect the changes
-- Adjusted the use of mutex in RC drivers to use GRAND
-- Updated from reviewer comments
-- Link to v2: https://lore.kernel.org/r/20250715034320.2553837-1-jacky_chou@aspeedtech.com/
-
-Changes in v2:
-- Moved ASPEED PCIe PHY yaml binding to `soc/aspeed` directory and
-  changed it as syscon
-- Added `MAINTAINERS` entry for the new PCIe RC driver
-- Updated device tree bindings to reflect the new structure
-- Refactored configuration read and write functions to main bus and
-  child bus ops
-- Refactored initialization to implement multiple ports support
-- Added PCIe FMT and TYPE definitions for TLP header in
-  `include/uapi/linux/pci_regs.h`
-- Updated from reviewer comments
-- Link to v1: https://lore.kernel.org/r/20250613033001.3153637-1-jacky_chou@aspeedtech.com/
-
----
-Jacky Chou (4):
-      dt-bindings: phy: aspeed: Add ASPEED PCIe PHY
-      ARM: dts: aspeed-g6: Add PCIe RC and PCIe PHY node
-      phy: aspeed: Add ASPEED PCIe PHY driver
-      MAINTAINERS: Add ASPEED PCIe PHY driver
-
- .../bindings/phy/aspeed,ast2600-pcie-phy.yaml      |  42 +++++
- MAINTAINERS                                        |   8 +
- arch/arm/boot/dts/aspeed/aspeed-g6-pinctrl.dtsi    |   5 +
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |  53 ++++++
- drivers/phy/Kconfig                                |   1 +
- drivers/phy/Makefile                               |   1 +
- drivers/phy/aspeed/Kconfig                         |  14 ++
- drivers/phy/aspeed/Makefile                        |   2 +
- drivers/phy/aspeed/phy-aspeed-pcie.c               | 194 +++++++++++++++++++++
- 9 files changed, 320 insertions(+)
----
-base-commit: 8640b74557fc8b4c300030f6ccb8cd078f665ec8
-change-id: 20251103-upstream_pcie_rc-8445759db813
-
-Best regards,
 -- 
-Jacky Chou <jacky_chou@aspeedtech.com>
+2.34.1
 
 
