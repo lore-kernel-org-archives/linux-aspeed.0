@@ -1,40 +1,72 @@
-Return-Path: <linux-aspeed+bounces-3238-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3239-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7DCEE9410F
-	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Dec 2025 05:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA6C9EE0217
+	for <linux-aspeed@archiver.kernel.org>; Tue, 30 Dec 2025 15:35:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dgMp44N4Zz2yFW;
-	Tue, 30 Dec 2025 16:58:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767074300;
-	cv=none; b=D5gR2VEyinlaO7SWbTQQwH2zFIfowm20kszZYnYJ61nsPFL3ehajJqOo8QXSWWZybDTab0fZ9Yo6KgP0RtwfJSCz+uzhimXiZP0u7btPW5jy8wJOCDukCPQPB3P7lBVfRkbWXx62JT0OPjm+XOljU7kBKsn2lH3QwANRPQIacxTq/DFWoKwzgytjVOHP7553TjmIc8uVywjziTBEbbNZzgMPtvEGCMyz/Lz5ZC1NoLwxRCN+w0jsQR9Q2c9TgiCDeAkREHFG4JT4Bewmu9HlNdBDFRkSBGfa/INPyfmh8lvkFiEfk/LWFeP5N+kw//O/BxUS5Gu2r+S3LNawT/Sgkg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dgcbv4y0Kz2yF1;
+	Wed, 31 Dec 2025 02:35:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.208.182
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767108923;
+	cv=none; b=Cvnw/y9vgkXBO7CF8KB3xAmwBRL/Ski9SuFxV1oSnrIOQr7IyGepXV0G5M+swSGFX5ycngsojHiDkn+toJYQ0KKBbu8+n+NvSPgBHFvsqwDVGwmklk4JFPU9l41JdwkcuETND2O+ZkL2/nA79gq2g6bWyfdR6gz8Kkhg+19CY2B6+Duer/+K6by4DHPYMk/Ewxj+ulLlgvNR8aUyM5RbhGbUTdZqgyRal64iKixPLw0Xk+M3bOyzdNbpPzwIOyzPH5Pqcp5iaCzEEnqI/iVt5RYZUr3TLrnMJJfNh3nUqN+n+Z7OTcpkIYHWbttGC8aJcDsgCQdZna4jSL+GQF8tLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767074300; c=relaxed/relaxed;
-	bh=OkMPDFc+7+pvTUkgEgcry1QzhyDZMwTYtSS48pRapTg=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=bkw2onLyOvgXNHX3odZZ0Zvq4JqDMr4vWcaoa35EH2Tqal3IqNN8SIpmnti6kRIJFLRvKQ7uxHxQFFv29ryotbUknns4R/+URhJ34iRtS3v6A9irFOCbHgLqotrCVhMQu4fkfg3cTrbQpjyUuOypYG+1s7YWMHJt8QE5blsQobbCamPoMdwnIEVPzMBwf5FtH/mp/BwslTDzOat820Oamfvc/tt4PDwgsNGU/uRDRpnOeGUJF6u/9r68b1YtGfeLI7t76dFuZx+ib18pYcz1vhFrnMCjYHUprzmiYKciirMffomIk7mLO+iTCmQhVJUeFsjbB0vPN0QVytfyQQqAXg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=jacky_chou@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1767108923; c=relaxed/relaxed;
+	bh=nXCQAS3HJRf+jQxCM70PqHXnYYGKX1vopCn4f1WZ9cE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=W3ycEMWUWW+n6kvrTM4iaZFpttDDswdx4Q07Byop81uAoHMHCtcijiY56lc1D+7WABCcpkn4uhqHxaQq+lR56U5J5Dm/RNjMpLwz5lfce0axGn7PAbeZFLDpH1om1dCEd5UtIHpEZ8l1yQ2+CxLRPvSS2vjNnMRfUhvarQpudM7ympgT3CvdqTcP9vkhhotXV4RH3qEDV/3UazoFt3Lb04PZGi8+tkggsOcahFk7oQMSO8Kt+1KIbi5nFh76483ojVr8JRWBAd6cr4M+/vkJ7EHCHQCNi8F5y2IenJrYtWBT85GN5ZW/z42AyS+xasa/tJ69eQRsgaYZ6s+h2o7Vnw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OYNAHmds; dkim-atps=neutral; spf=pass (client-ip=209.85.208.182; helo=mail-lj1-f182.google.com; envelope-from=ulf.hansson@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OYNAHmds;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=209.85.208.182; helo=mail-lj1-f182.google.com; envelope-from=ulf.hansson@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lj1-f182.google.com (mail-lj1-f182.google.com [209.85.208.182])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dgMp40SbGz2xgX
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Dec 2025 16:58:20 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 30 Dec
- 2025 13:57:59 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Tue, 30 Dec 2025 13:57:59 +0800
-From: Jacky Chou <jacky_chou@aspeedtech.com>
-Date: Tue, 30 Dec 2025 13:58:00 +0800
-Subject: [PATCH v8 3/4] phy: aspeed: Add ASPEED PCIe PHY driver
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dgcbs5DXhz2xs1
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 31 Dec 2025 02:35:20 +1100 (AEDT)
+Received: by mail-lj1-f182.google.com with SMTP id 38308e7fff4ca-37b983fbd45so76667691fa.3
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 30 Dec 2025 07:35:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1767108857; x=1767713657; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=nXCQAS3HJRf+jQxCM70PqHXnYYGKX1vopCn4f1WZ9cE=;
+        b=OYNAHmdsB/xLSJqtrHEZv7go4EeEX1+Q61CqjahFveJDsxQDl/xqfHmj1h5cbMowum
+         2wIbAZsdhdZvGcBqcR85gvqHBmZUxN81B0IpaThzWvVOXub7Isyqq94GOsRb4EfN5QdI
+         8Pyq+6SBifS/5zH2z9oMPliK1BBgEvnRri+tFA/zq2WEJssbNTX0okU1HluhbU7SLyLs
+         bJdPjC5ebMx8hxIbigeuwgdCLC0m6/S5sqRA5YNLFoYx9vIgsIWRAS0lzf1RhYhVgnth
+         i9xuDBpvCweubBABZMlppijbiDotP++Fx5ARVfXRv26Yx8LA+aAQfpXUiQD2s9XWpriC
+         Sd1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767108857; x=1767713657;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=nXCQAS3HJRf+jQxCM70PqHXnYYGKX1vopCn4f1WZ9cE=;
+        b=PqYH/nbcAfJa4d9VZd0dfiwdHJIj3aoo+OSaTjSA36XeaPGCp45yUGn4JV/DMOazmr
+         BFbtH5iS0SjAXbjdPUnHE3Xt4ZM79w9PxjopwWu2T1W4jJtgTt8wYrUf9rOEZQ5CUv4H
+         XOxnhF6GPQp+Pk2mcg0iW2+BE1uGJIV6pCFIr1NpuTxlEC1m2T9qmaXEqioYI7nd6/+R
+         Y22QyXRnFRVOeiZWMbmJjVAFewbMD991NxvEsXe5leWk9Ig5Pm9yudY8rhcWP7WGztPQ
+         4sbUuqBlbnNaNONHTVsZGR+jU1ef+DbPeHTo/HN/oiNyZYmULXInDnbMw/9Nf1bqgVAw
+         +n3w==
+X-Forwarded-Encrypted: i=1; AJvYcCUT049+Kk+XX1d2n0lCUGHSUFvK5ProGK12Jt5oxS0H59s09XZNYGfIReAshm8TmTYPrgc2cHUHIMjzixY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzkcDFaEaTBEBxiLBcwiQxV4ouMUSWOwp3QDJml3VoTFT+96wVh
+	vqpbHiUc81beHOPR0U5MZNXnxO1hho80yRsk9Pnna9wV7DyOCdQRtY48Pez2TJzTWqzoHrz5pZe
+	uBccW0NIgCfsBYIUezvxyY6AquNnsXbq3FuJTLsuxaQ==
+X-Gm-Gg: AY/fxX4WcE3WpgzZYhFkxm7gqZL3vRk6S8fvUnZV8o2RJw5wbuVKDu7r849qfybC/Np
+	C+NJLAXfwEzH58PXoL3BjHCgNTNJiUxs8SiJyZUXNBpZwtrPD4evQkrDn7wBywVDs9/A4S5itVG
+	hWd24F6UzT6LhBm1L85JzcWCQltq2DlrE7hNI92FjkU+71Nz6lOW7OMX0yi7/2exGAXZ+SQpEiV
+	kPTH/EH6KQRYVWSu4Dc2cCph9rnhzxTO/w2GtqWr4qs4Uyy26GqZ0xHEiJczlmqyM1Fbxb9x0sU
+	Ut+j3MY=
+X-Google-Smtp-Source: AGHT+IF8m67UtLFJYo+1Sd/5xP1asTd78BRhH0xaCX+pqytxUScESGkOS8OTTGNkp77INxT4etPPBh36TlR00OdBV7U=
+X-Received: by 2002:a2e:a801:0:b0:37b:b952:5e2 with SMTP id
+ 38308e7fff4ca-3812158e6d1mr92229501fa.16.1767108856717; Tue, 30 Dec 2025
+ 07:34:16 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,293 +80,74 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20251230-upstream_pcie_rc-v8-3-03598cdd80cd@aspeedtech.com>
-References: <20251230-upstream_pcie_rc-v8-0-03598cdd80cd@aspeedtech.com>
-In-Reply-To: <20251230-upstream_pcie_rc-v8-0-03598cdd80cd@aspeedtech.com>
-To: Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
- Jeffery" <andrew@codeconstruct.com.au>
-CC: <linux-aspeed@lists.ozlabs.org>, <linux-phy@lists.infradead.org>,
-	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, Jacky Chou <jacky_chou@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1767074279; l=7886;
- i=jacky_chou@aspeedtech.com; s=20251031; h=from:subject:message-id;
- bh=iuA+GjJ84VtsIS3gDieMnU9uSG5jEHnAHxGjEw3iUOE=;
- b=o5sKUQF6StNa1Y/EZ3wjlXgfAydS8Nbjq1hm1Q/WPKrPB1HAXu6V/x4tqkzykbXJVOcWMqx9z
- boWx/EyECBxCCpoV+u8gWA1OdbEK0jkhsJlH5bKcYmdTzDt1JdohA+t
-X-Developer-Key: i=jacky_chou@aspeedtech.com; a=ed25519;
- pk=8XBx7KFM1drEsfCXTH9QC2lbMlGU4XwJTA6Jt9Mabdo=
+References: <20251224124431.208434-5-krzysztof.kozlowski@oss.qualcomm.com> <20251224124431.208434-8-krzysztof.kozlowski@oss.qualcomm.com>
+In-Reply-To: <20251224124431.208434-8-krzysztof.kozlowski@oss.qualcomm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Tue, 30 Dec 2025 16:33:39 +0100
+X-Gm-Features: AQt7F2oKPch5XI3ozINSBYMELnoLnRJYzcAZlrhoJTH7OcGc0z1qpY0CIewnVRk
+Message-ID: <CAPDyKFp3X0EeiGRHLQqzE3vkVoLmOwi=1813S32sLTqXab43gQ@mail.gmail.com>
+Subject: Re: [PATCH 4/4] mmc: sdhci: aspeed: Simplify with scoped for each OF
+ child loop
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Aubin Constans <aubin.constans@microchip.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+	Robert Richter <rric@kernel.org>, Paul Cercueil <paul@crapouillou.net>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, Adrian Hunter <adrian.hunter@intel.com>, 
+	Joel Stanley <joel@jms.id.au>, Nathan Chancellor <nathan@kernel.org>, 
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, 
+	Justin Stitt <justinstitt@google.com>, linux-mmc@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-mips@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	openbmc@lists.ozlabs.org, llvm@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
 
-Introduce support for Aspeed PCIe PHY controller available in
-AST2600/2700.
+On Wed, 24 Dec 2025 at 13:44, Krzysztof Kozlowski
+<krzysztof.kozlowski@oss.qualcomm.com> wrote:
+>
+> Use scoped for-each loop when iterating over device nodes to make code a
+> bit simpler.
+>
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
----
- drivers/phy/Kconfig                  |   1 +
- drivers/phy/Makefile                 |   1 +
- drivers/phy/aspeed/Kconfig           |  14 +++
- drivers/phy/aspeed/Makefile          |   2 +
- drivers/phy/aspeed/phy-aspeed-pcie.c | 194 +++++++++++++++++++++++++++++++++++
- 5 files changed, 212 insertions(+)
+All patches in the series applied for next, thanks!
 
-diff --git a/drivers/phy/Kconfig b/drivers/phy/Kconfig
-index 678dd0452f0a..f6a8f06fd244 100644
---- a/drivers/phy/Kconfig
-+++ b/drivers/phy/Kconfig
-@@ -103,6 +103,7 @@ config PHY_NXP_PTN3222
- 
- source "drivers/phy/allwinner/Kconfig"
- source "drivers/phy/amlogic/Kconfig"
-+source "drivers/phy/aspeed/Kconfig"
- source "drivers/phy/broadcom/Kconfig"
- source "drivers/phy/cadence/Kconfig"
- source "drivers/phy/freescale/Kconfig"
-diff --git a/drivers/phy/Makefile b/drivers/phy/Makefile
-index bfb27fb5a494..18990c87dfb0 100644
---- a/drivers/phy/Makefile
-+++ b/drivers/phy/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_PHY_AIROHA_PCIE)		+= phy-airoha-pcie.o
- obj-$(CONFIG_PHY_NXP_PTN3222)		+= phy-nxp-ptn3222.o
- obj-y					+= allwinner/	\
- 					   amlogic/	\
-+					   aspeed/	\
- 					   broadcom/	\
- 					   cadence/	\
- 					   freescale/	\
-diff --git a/drivers/phy/aspeed/Kconfig b/drivers/phy/aspeed/Kconfig
-new file mode 100644
-index 000000000000..f7aad553f3fd
---- /dev/null
-+++ b/drivers/phy/aspeed/Kconfig
-@@ -0,0 +1,14 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+#
-+# Phy drivers for Aspeed platforms
-+#
-+config PHY_ASPEED_PCIE
-+	tristate "ASPEED PCIe PHY driver"
-+	select GENERIC_PHY
-+	depends on ARCH_ASPEED
-+	help
-+	  This option enables support for the ASPEED PCIe PHY driver.
-+	  The driver provides the necessary interface to control and
-+	  configure the PCIe PHY hardware found on ASPEED SoCs.
-+	  It is required for proper operation of PCIe devices on
-+	  platforms using ASPEED chips.
-diff --git a/drivers/phy/aspeed/Makefile b/drivers/phy/aspeed/Makefile
-new file mode 100644
-index 000000000000..3edce7f522e1
---- /dev/null
-+++ b/drivers/phy/aspeed/Makefile
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0
-+obj-$(CONFIG_PHY_ASPEED_PCIE)		+= phy-aspeed-pcie.o
-diff --git a/drivers/phy/aspeed/phy-aspeed-pcie.c b/drivers/phy/aspeed/phy-aspeed-pcie.c
-new file mode 100644
-index 000000000000..a3a696df459e
---- /dev/null
-+++ b/drivers/phy/aspeed/phy-aspeed-pcie.c
-@@ -0,0 +1,194 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright 2025 Aspeed Technology Inc.
-+ */
-+
-+#include <linux/phy/pcie.h>
-+#include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
-+
-+/* AST2600 PCIe Host Controller Registers */
-+#define PEHR_GLOBAL		0x30
-+#define  AST2600_PORT_TYPE_MASK		GENMASK(5, 4)
-+#define  AST2600_PORT_TYPE(x)		FIELD_PREP(AST2600_PORT_TYPE_MASK, x)
-+#define PEHR_LOCK		0x7c
-+#define  PCIE_UNLOCK			0xa8
-+
-+/* AST2700 PEHR */
-+#define PEHR_MISC_58		0x58
-+#define  LOCAL_SCALE_SUP		BIT(0)
-+#define PEHR_MISC_5C		0x5c
-+#define  CONFIG_RC_DEVICE		BIT(30)
-+#define PEHR_MISC_60		0x60
-+#define  AST2700_PORT_TYPE_MASK		GENMASK(7, 4)
-+#define  PORT_TYPE_ROOT			BIT(6)
-+#define PEHR_MISC_70		0x70
-+#define  POSTED_DATA_CREDITS(x)		FIELD_PREP(GENMASK(15, 0), x)
-+#define  POSTED_HEADER_CREDITS(x)	FIELD_PREP(GENMASK(27, 16), x)
-+#define PEHR_MISC_78		0x78
-+#define  COMPLETION_DATA_CREDITS(x)	FIELD_PREP(GENMASK(15, 0), x)
-+#define  COMPLETION_HEADER_CREDITS(x)	FIELD_PREP(GENMASK(27, 16), x)
-+
-+/**
-+ * struct aspeed_pcie_phy - PCIe PHY information
-+ * @dev: pointer to device structure
-+ * @reg: PCIe host register base address
-+ * @phy: pointer to PHY structure
-+ * @platform: platform specific information
-+ */
-+struct aspeed_pcie_phy {
-+	struct device *dev;
-+	void __iomem *reg;
-+	struct phy *phy;
-+	const struct aspeed_pcie_phy_platform *platform;
-+};
-+
-+/**
-+ * struct aspeed_pcie_phy_platform - Platform information
-+ * @phy_ops: phy operations
-+ */
-+struct aspeed_pcie_phy_platform {
-+	const struct phy_ops *phy_ops;
-+};
-+
-+static int ast2600_phy_init(struct phy *phy)
-+{
-+	struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-+
-+	writel(PCIE_UNLOCK, pcie_phy->reg + PEHR_LOCK);
-+
-+	return 0;
-+}
-+
-+static int ast2600_phy_set_mode(struct phy *phy, enum phy_mode mode,
-+				int submode)
-+{
-+	struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-+
-+	switch (submode) {
-+	case PHY_MODE_PCIE_RC:
-+		writel(AST2600_PORT_TYPE(0x3), pcie_phy->reg + PEHR_GLOBAL);
-+		break;
-+	default:
-+		dev_err(&phy->dev, "Unsupported submode %d\n", submode);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct phy_ops ast2600_phy_ops = {
-+	.init		= ast2600_phy_init,
-+	.set_mode	= ast2600_phy_set_mode,
-+	.owner		= THIS_MODULE,
-+};
-+
-+static int ast2700_phy_init(struct phy *phy)
-+{
-+	struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-+
-+	writel(POSTED_DATA_CREDITS(0xc0) | POSTED_HEADER_CREDITS(0xa),
-+	       pcie_phy->reg + PEHR_MISC_70);
-+	writel(COMPLETION_DATA_CREDITS(0x30) | COMPLETION_HEADER_CREDITS(0x8),
-+	       pcie_phy->reg + PEHR_MISC_78);
-+	writel(LOCAL_SCALE_SUP, pcie_phy->reg + PEHR_MISC_58);
-+
-+	return 0;
-+}
-+
-+static int ast2700_phy_set_mode(struct phy *phy, enum phy_mode mode,
-+				int submode)
-+{
-+	struct aspeed_pcie_phy *pcie_phy = phy_get_drvdata(phy);
-+	u32 cfg_val;
-+
-+	switch (submode) {
-+	case PHY_MODE_PCIE_RC:
-+		writel(CONFIG_RC_DEVICE, pcie_phy->reg + PEHR_MISC_5C);
-+		cfg_val = readl(pcie_phy->reg + PEHR_MISC_60);
-+		cfg_val &= ~AST2700_PORT_TYPE_MASK;
-+		cfg_val |= PORT_TYPE_ROOT;
-+		writel(cfg_val, pcie_phy->reg + PEHR_MISC_60);
-+		break;
-+	default:
-+		dev_err(&phy->dev, "Unsupported submode %d\n", submode);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct phy_ops ast2700_phy_ops = {
-+	.init		= ast2700_phy_init,
-+	.set_mode	= ast2700_phy_set_mode,
-+	.owner		= THIS_MODULE,
-+};
-+
-+const struct aspeed_pcie_phy_platform pcie_phy_ast2600 = {
-+	.phy_ops = &ast2600_phy_ops,
-+};
-+
-+const struct aspeed_pcie_phy_platform pcie_phy_ast2700 = {
-+	.phy_ops = &ast2700_phy_ops,
-+};
-+
-+static int aspeed_pcie_phy_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct phy_provider *phy_provider;
-+	struct aspeed_pcie_phy *pcie_phy;
-+	const struct aspeed_pcie_phy_platform *md;
-+
-+	md = of_device_get_match_data(dev);
-+	if (!md)
-+		return -ENODEV;
-+
-+	pcie_phy = devm_kzalloc(dev, sizeof(*pcie_phy), GFP_KERNEL);
-+	if (!pcie_phy)
-+		return -ENOMEM;
-+
-+	pcie_phy->reg = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(pcie_phy->reg))
-+		return PTR_ERR(pcie_phy->reg);
-+
-+	pcie_phy->dev = dev;
-+	pcie_phy->platform = md;
-+
-+	pcie_phy->phy = devm_phy_create(dev, dev->of_node,
-+					pcie_phy->platform->phy_ops);
-+	if (IS_ERR(pcie_phy->phy))
-+		return dev_err_probe(dev, PTR_ERR(pcie_phy->phy),
-+				     "failed to create PHY\n");
-+
-+	phy_set_drvdata(pcie_phy->phy, pcie_phy);
-+	phy_provider = devm_of_phy_provider_register(dev, of_phy_simple_xlate);
-+
-+	return PTR_ERR_OR_ZERO(phy_provider);
-+}
-+
-+static const struct of_device_id aspeed_pcie_phy_of_match_table[] = {
-+	{
-+		.compatible = "aspeed,ast2600-pcie-phy",
-+		.data = &pcie_phy_ast2600,
-+	},
-+	{
-+		.compatible = "aspeed,ast2700-pcie-phy",
-+		.data = &pcie_phy_ast2700,
-+	},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, aspeed_pcie_phy_of_match_table);
-+
-+static struct platform_driver aspeed_pcie_driver = {
-+	.probe		= aspeed_pcie_phy_probe,
-+	.driver = {
-+		.name	= "aspeed-pcie-phy",
-+		.of_match_table = aspeed_pcie_phy_of_match_table,
-+	},
-+};
-+
-+module_platform_driver(aspeed_pcie_driver);
-+
-+MODULE_AUTHOR("Jacky Chou <jacky_chou@aspeedtech.com>");
-+MODULE_DESCRIPTION("ASPEED PCIe PHY");
-+MODULE_LICENSE("GPL");
+Kind regards
+Uffe
 
--- 
-2.34.1
 
+> ---
+>  drivers/mmc/host/sdhci-of-aspeed.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+> index ca97b01996b1..4296def69436 100644
+> --- a/drivers/mmc/host/sdhci-of-aspeed.c
+> +++ b/drivers/mmc/host/sdhci-of-aspeed.c
+> @@ -519,7 +519,7 @@ static struct platform_driver aspeed_sdhci_driver = {
+>  static int aspeed_sdc_probe(struct platform_device *pdev)
+>
+>  {
+> -       struct device_node *parent, *child;
+> +       struct device_node *parent;
+>         struct aspeed_sdc *sdc;
+>         int ret;
+>
+> @@ -548,12 +548,11 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
+>         dev_set_drvdata(&pdev->dev, sdc);
+>
+>         parent = pdev->dev.of_node;
+> -       for_each_available_child_of_node(parent, child) {
+> +       for_each_available_child_of_node_scoped(parent, child) {
+>                 struct platform_device *cpdev;
+>
+>                 cpdev = of_platform_device_create(child, NULL, &pdev->dev);
+>                 if (!cpdev) {
+> -                       of_node_put(child);
+>                         ret = -ENODEV;
+>                         goto err_clk;
+>                 }
+> --
+> 2.51.0
+>
 
