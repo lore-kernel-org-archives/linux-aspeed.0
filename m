@@ -1,56 +1,62 @@
-Return-Path: <linux-aspeed+bounces-3248-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3249-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70ACBC2A072
-	for <linux-aspeed@archiver.kernel.org>; Mon,  5 Jan 2026 04:41:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E2B0CEFD11
+	for <linux-aspeed@archiver.kernel.org>; Tue,  6 Jan 2026 21:32:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl1pG3Ql4z2xqG;
-	Mon, 05 Jan 2026 15:41:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767588070;
-	cv=none; b=LMlDJDArF629tG7R9ZsqP/bzT/+EDWuR52YrEu2lmHz6RtGDUno7RycyYEhYoHQ3o9yXk2E8RUdlB1mKpC0tKGgb3xHaLOuu0VymIZqhmNzx86hisoqript+/4L52DYFTLr2Z4JNpbbKkM+nddpPs0vPf60N+l6reE2z5cTqmmBL7zKOKrs11FGXMhM7CB+Ok9s6A9GdnQY944HXCKaiGHrCgmDxJ3XirG14X5qTnzQEu3pXLmbF+TrrOHT3H14CjulECUdivGMNH/F/QN7cIt0WVQue55x55J/69sfsqi9i2K/Moqq3bycYS67nViLMXIJnUFAJ7w2gZ+umdjN28A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dm4B95pGYz2xHt;
+	Wed, 07 Jan 2026 08:32:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767735121;
+	cv=none; b=MqTT1ZPylK6/ckD5e1/hmPQQCa6pDF4pYVPI2d15GZYdDdV+pX/2LpTZ4jscv7x+4c3nO3DN6p0UYpNJvsIKL1MAMqD4SzUS+AtuvO1o7WMFoCxhnRNNTQAQgvT/RX/OdZAEDIKBBxnZTgbia2lhCeLBbr76M/W+UOIbsDH5oO8Ixvcj+PBAUFnfAMczoS8jUjfHElVdSbkdP/mDgiY2jclGlE3IzwKrMIOlOrF2GrFg4pjkJsmCGe/4qlwdI4bm0AqaX8PzUc35OmHYnnQRGvs527AavSjbx9CfJkS3rB8c9cPXEORegCJ04MDY8iHcuCAqqWLOV2PYkiNWRdI6pw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767588070; c=relaxed/relaxed;
-	bh=tSnwqQ4DEG5Xd/QNiEqxoVCY2/oYuSe+axqra58I6ko=;
-	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=KNZS+qiEeHuvmjhllX6GNApRBIzF5W2wVfOl0K+y0PZmq/xMXTVNliBL4vdXdDbeq15hCn9UtGKyXf1To2z188XAE5fLt3XHyll0aU/o6m4gakVCmC0h6YFL9/4u+kqZ9m7slhHshrXVYzCyXn13XSwmFbN0AI0jo45ppP7f/U/1UQNEvBcRqvCaqJfEsm02skWFYLBUKoB+cKWuEyn/y7cvxoQjurZ0p6iYj9eK7OhS2wl0X64GZtZBYQtZa6JWFhnLWGihnT4bmRipkpa2lQWRUnEK9hQM+5oCHOScEoONZIBiHJRHRlTThQeq0ZBEroLXH5kuBHrxaxeKVXSlCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=m03LK9lh; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1767735121; c=relaxed/relaxed;
+	bh=7AvG0msAbo2Y83aHAD2fhIUaGZrg+4t+Ti3xDsgkl6M=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=b+z6+sXdKLe6UT1OCuC5oi8guxdZkr3z+OTGp9rMwVQLrE0+zu1+TyHuAjtlfYnrBaWVeHf+kwRecIsLdnynM0FPJHVvfUxIlj9cGLGC3am92gNIsDivoV5mZsc9Uly/QFGirsKSLa4pgR7WoRFQjRIni9svY2k3AnioUwgppkyGAOBWhn1/P+Ke9QXV7J4pQQaBU4j5AzZCtYCWH8XQNz2QsdooOZWCs0Y0E+4VOGnaLYYtmZ/Hh34446Oc4PEkraAjheiptZlgxYJr5l7zQAOVccrZ/Hba7Md/eHSKbADo4+lgFX3/AcMrib4jG0rT+sVJlmLuaPeSkAa+B424Xg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jL0mkEce; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=m03LK9lh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jL0mkEce;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl1pD3hcXz2xm5
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 05 Jan 2026 15:41:08 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1767588067;
-	bh=tSnwqQ4DEG5Xd/QNiEqxoVCY2/oYuSe+axqra58I6ko=;
-	h=Subject:From:To:Cc:Date;
-	b=m03LK9lhp4zWDB6gJBtFLHzjJ5LzZfmvgtajryyBo+CFzyqXiXNm0e1ajCeqjHO71
-	 iwH7I5qkN0I2LgxDy7gu7rzhKb9AVCCTzj2ijJdmAjI/l6TdfyCT4mBIwIUgpUij1t
-	 Iy/4yN1B3Q+AOL8awvYxQNWHo6653S9Q70rohj/obfHP6FoJVlucR2bv5bcU2V43wp
-	 xCjhBnBzOMJyKNMgJ2A4C9BrFF9HbZ4ZDP0JyrGXEucAjJ6Yqv4nUzz1HYreZKpjhn
-	 VqFpoeG+PSbfKcGxK09n4pwHQcepK3xnMPcuVzxGpa03exudol54CAv8WvVP1BnLKu
-	 WnTmw6V0TacjQ==
-Received: from [192.168.68.115] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 8B88B7C1B2;
-	Mon,  5 Jan 2026 12:41:04 +0800 (AWST)
-Message-ID: <4ab756729c4e26f7e544156c8613e839a9a9bebe.camel@codeconstruct.com.au>
-Subject: [GIT PULL] aspeed: first batch of devicetree changes for 6.20
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: soc <soc@lists.linux.dev>
-Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Joel Stanley <joel@jms.id.au>
-Date: Mon, 05 Jan 2026 15:11:03 +1030
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dm4B83WSvz2xHP
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 07 Jan 2026 08:32:00 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id A5EDF43D26;
+	Tue,  6 Jan 2026 21:31:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C3B4C116C6;
+	Tue,  6 Jan 2026 21:31:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767735117;
+	bh=c0S+UPILWQZ/bfTmY0vB12LguAXEd/SuBL+v3igeD1U=;
+	h=From:To:Cc:Subject:Date:From;
+	b=jL0mkEceaEmkQMi7RsnupTDbuwGDxnHWFEKBV4+1cihn6nHCd/hFhNNB1wWCV9Ms4
+	 P9jdDj+Wd8VqHCbvQC70qQtN87CwUjSn5VBRysgkS3WD6zj1DvVLO0V/Lcgw6pSbEP
+	 7WOfcUjN4vzFaG+RAs3lt5z5OUHopp0yTgnmQ6a91LATBLhEpOpjSiREDn5/pjsm/U
+	 xwNjsv+xwgWse8vlOQq1uY5ssLSoyUApBxTrcuVzs5NYxrW44qFLBQXME/MA5qBua5
+	 DkO+SWgfJshZc36iavjQOJCw9cBWHO3EBrrQyyBwfgoLj6UngEpB3WZ3vgxOqjULUy
+	 8UvbOFtZN+znQ==
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Eddie James <eajames@linux.ibm.com>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ARM: dts: aspeed: ibm: Use non-deprecated AT25 properties
+Date: Tue,  6 Jan 2026 15:31:51 -0600
+Message-ID: <20260106213153.2766411-1-robh@kernel.org>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,107 +70,608 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-The following changes since commit 8f0b4cce4481fb22653697cced8d0d04027cb1e8=
-:
+The at25,* properties have been deprecated since 2012. These platforms
+weren't upstream until 2020 and 2023, so it should be safe to switch
+over to the "new" properties and just drop the deprecated ones.
 
-  Linux 6.19-rc1 (2025-12-14 16:05:07 +1200)
+Signed-off-by: Rob Herring (Arm) <robh@kernel.org>
+---
+ .../dts/aspeed/aspeed-bmc-ibm-everest.dts     | 128 +++++++++---------
+ .../arm/boot/dts/aspeed/ibm-power10-dual.dtsi |  64 ++++-----
+ .../arm/boot/dts/aspeed/ibm-power10-quad.dtsi |  64 ++++-----
+ 3 files changed, 128 insertions(+), 128 deletions(-)
 
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git tags/aspeed=
--6.20-devicetree-0
-
-for you to fetch changes up to 459a5aa171c0f13fcd78faa9594dc4aa5a95770b:
-
-  ARM: dts: aspeed: bletchley: Fix ADC vref property names (2025-12-17 15:5=
-3:31 +1030)
-
-----------------------------------------------------------------
-First batch of ASPEED Arm devicetree changes for 6.20
-
-New platforms:
-
-- NVIDIA MSX4 BMC
-
-  The NVIDIA MSX4 HPM (host platform module) is a reference board for
-  managing up to 8 PCIe connected NVIDIA GPUs via ConnectX-8 (CX8)
-  SuperNICs. The BMC manages all GPUs and CX8s for both telemetry and
-  firmware update via MCTP over USB. The host CPUs are dual socket Intel
-  Granite Rapids processors.
-
-  For more detail on this architecture:
-
-  https://developer.nvidia.com/blog/nvidia-connectx-8-supernics-advance-ai-=
-platform-architecture-with-pcie-gen6-connectivity/
-
-Updated platforms:
-
-- ast2600-evb (ASPEED): Various tidy-ups to address binding warnings
-- bletchley (Meta): Watchdog fix, tidy-ups to address binding warnings
-- clemente (Meta): HDD LED fix, GPIO line names, EEPROMs
-- harma (Meta): fanboard presence GPIO
-- santabarbara (Meta): IPMB, GPIO line names, additional IO expander
-
-----------------------------------------------------------------
-Alex Wang (1):
-      ARM: dts: aspeed: clemente: move hdd_led to its own gpio-leds group
-
-Andrew Jeffery (6):
-      ARM: dts: aspeed: Remove sdhci-drive-type property from AST2600 EVB
-      ARM: dts: aspeed: Use specified wp-inverted property for AST2600 EVB
-      ARM: dts: aspeed: Drop syscon compatible from EDAC in g6 dtsi
-      ARM: dts: aspeed: g6: Drop unspecified aspeed,ast2600-udma node
-      ARM: dts: aspeed: ast2600-evb: Tidy up A0 work-around for UART5
-      ARM: dts: aspeed: g6: Drop clocks property from arm,armv7-timer
-
-Cosmo Chou (6):
-      ARM: dts: aspeed: bletchley: remove WDTRST1 assertion from wdt1
-      ARM: dts: aspeed: bletchley: Use generic node names
-      ARM: dts: aspeed: bletchley: Fix SPI GPIO property names
-      ARM: dts: aspeed: bletchley: Remove unused pca9539 properties
-      ARM: dts: aspeed: bletchley: Remove unused i2c13 property
-      ARM: dts: aspeed: bletchley: Fix ADC vref property names
-
-Daniel Hsu (1):
-      ARM: dts: aspeed: harma: add fanboard presence sgpio
-
-Fred Chen (2):
-      ARM: dts: aspeed: santabarbara: Add swb IO expander and gpio line nam=
-es
-      ARM: dts: aspeed: santabarbara: Enable ipmb device for OCP debug card
-
-Kimi Chen (1):
-      ARM: dts: aspeed: clemente: add gpio line name to io expander
-
-Leo Wang (1):
-      ARM: dts: aspeed: clemente: Add EEPROMs for boot and data drive FRUs
-
-Marc Olberding (2):
-      dt-bindings: arm: aspeed: Add NVIDIA MSX4 board
-      ARM: dts: aspeed: Add NVIDIA MSX4 HPM
-
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml      |   1 +
- arch/arm/boot/dts/aspeed/Makefile                             |   1 +
- arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts               |   7 +++---=
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+index 5a0975d52492..561633d31039 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-ibm-everest.dts
+@@ -2806,13 +2806,13 @@ cfam4_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
 -
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-bletchley.dts    | 106 ++++++=
-++++++++++++++++++++++++++++++++++++++++++++++++---------------------------=
--------------------------
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-clemente.dts     |  43 ++++++=
-+++++++++++++++++++++++++++++++------
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-harma.dts        |   8 ++++++=
---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts |  29 ++++++=
-+++++++++++++++++++----
- arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts       | 246 ++++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi                       |  12 +-----=
-------
- 9 files changed, 374 insertions(+), 79 deletions(-)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -2823,13 +2823,13 @@ cfam4_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -2840,13 +2840,13 @@ cfam4_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -2857,13 +2857,13 @@ cfam4_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+@@ -3181,13 +3181,13 @@ cfam5_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3198,13 +3198,13 @@ cfam5_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3215,13 +3215,13 @@ cfam5_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3232,13 +3232,13 @@ cfam5_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+@@ -3556,13 +3556,13 @@ cfam6_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3573,13 +3573,13 @@ cfam6_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3590,13 +3590,13 @@ cfam6_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3607,13 +3607,13 @@ cfam6_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+@@ -3931,13 +3931,13 @@ cfam7_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3948,13 +3948,13 @@ cfam7_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3965,13 +3965,13 @@ cfam7_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -3982,13 +3982,13 @@ cfam7_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+diff --git a/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi b/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi
+index 06fac236773f..79eaf442c5bf 100644
+--- a/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi
++++ b/arch/arm/boot/dts/aspeed/ibm-power10-dual.dtsi
+@@ -88,13 +88,13 @@ cfam0_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -105,13 +105,13 @@ cfam0_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -122,13 +122,13 @@ cfam0_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -139,13 +139,13 @@ cfam0_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+@@ -257,13 +257,13 @@ cfam1_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -274,13 +274,13 @@ cfam1_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -291,13 +291,13 @@ cfam1_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -308,13 +308,13 @@ cfam1_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+diff --git a/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi b/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi
+index 9501f66d0030..a54be7d0af0b 100644
+--- a/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi
++++ b/arch/arm/boot/dts/aspeed/ibm-power10-quad.dtsi
+@@ -739,13 +739,13 @@ cfam2_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -756,13 +756,13 @@ cfam2_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -773,13 +773,13 @@ cfam2_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -790,13 +790,13 @@ cfam2_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+@@ -1114,13 +1114,13 @@ cfam3_spi0: spi@0 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -1131,13 +1131,13 @@ cfam3_spi1: spi@20 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -1148,13 +1148,13 @@ cfam3_spi2: spi@40 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 
+@@ -1165,13 +1165,13 @@ cfam3_spi3: spi@60 {
+ 				#size-cells = <0>;
+ 
+ 				eeprom@0 {
+-					at25,byte-len = <0x80000>;
+-					at25,addr-mode = <4>;
+-					at25,page-size = <256>;
+-
+ 					compatible = "atmel,at25";
+ 					reg = <0>;
+ 					spi-max-frequency = <1000000>;
++
++					address-width = <24>;
++					pagesize = <256>;
++					size = <0x80000>;
+ 				};
+ 			};
+ 		};
+-- 
+2.51.0
 
 
