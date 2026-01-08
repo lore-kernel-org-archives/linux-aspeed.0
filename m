@@ -1,65 +1,59 @@
-Return-Path: <linux-aspeed+bounces-3257-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3258-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54010D14893
-	for <linux-aspeed@archiver.kernel.org>; Thu,  8 Jan 2026 05:22:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EDB9D148A0
+	for <linux-aspeed@archiver.kernel.org>; Thu,  8 Jan 2026 05:30:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmtZp71fCz2yG3;
-	Thu, 08 Jan 2026 16:22:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmtlS71Vfz2yG3;
+	Thu, 08 Jan 2026 16:30:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767849762;
-	cv=none; b=aJTOZwdA3Ueb8KPMTAUh5qKr1K1LT0pWoT1okHRXibvJbopAAJew5KNpkNfmE1nvW6kruC/Cn4NWF5KpF6NE7e5ct+GCtzPN3NqPdB2mo3zJX6ANxN0JyXMLHuC0KM9TJ304HUeIVxgPoCenFyWcuLoDR6fo3Wpi/p9GcD92ejBNe9mwgFhCr7ir1lFIC3evB18rciarjFTIONmG7vYexJYrLuqBEy4Bb9NkRu0zmQwCDeRcy+i4Cto/utYKWsNKTD8IgtwLIsliJx1Khir/FtIZ0feF9quk0IaqJfklC7xCIhwBlinNsahmuQEW5KY+Wj0NX0XcuD3Rx+9INLi6Iw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767850212;
+	cv=none; b=SxYKqO0k1JiZWkGhCSOlc4BOF1pUwp8nlOf2UayaM5r6z4NXRzXLqnqhUX1ITJ9hU1C3x8+4PH5K8CBY7bQLQ6o7NtOR1OekfqMHuwk44E0DI5ybUU9hA251fkvHBjuLHHY3iU+zR2WxARE+ic8o2VmIfvU+a+hgvVA0vz1YzY9HATKgAQ3+8KKsFwV6NpuuiHDZvTdHRTEDDQsIRuvu2RXogERCrVUuiueZ98U46WW+xh1VRFMXPmy/paZVWcDHAwA1OMxosJzFsHlDbNfLmNuFTvbuSYieIPNLOeONRNl4Pd7sP1JRKElcfp/bkitGHRx+M5CwTIfh7ZeyTH4THA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767849762; c=relaxed/relaxed;
-	bh=hPSe2rlEHvzyi69dJB3VX99Hot44xCw/39GofG4V748=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ec161kuncW9OjDsnxhhOOp9iDCraBNqAEJ08/7Ju8J7JGJ3h+zgw4kSAD83IkMRYDPUbnb882IgicLcgjj/+SkVwE+sZeZoilH4G/IcVY8BhxHX6nE4/D7Go1ENGqwkKWRxLR2k8mu0NMV9mNhsd8QwvKD8jTxWbl1qCqJGLKjFIOSiir+7qsu+P89Ti6Q1qk9AAqSzd61UM5MZlk34XzOX1ktRxMnQ5nQ14UOcukB1IH7Bw3spNJh1xv99PEvudXGFgSSqETmqNG3H3kidL/dyDQ9tE90meLtrTdLBOIhv3t6uuc8hrutzp+RgYKmAWlqsBJMbzjBg3YE1GJDkApw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=R/HdhE2Q; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1767850212; c=relaxed/relaxed;
+	bh=MfTEXcf5zciGZot0fekZJidEbYo8hYFDlzJ4aD4mgVc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=OCYzGcW9/hqqMb4QKXTDSvxHP4XAj8L7XYNogy3N3Ykq/265rXunal/dlCcVf/3ANqLx/B3LztBc29aQlhMuBRJgBfSkJt2L06jFABuL19OF4TtJjVpwX158cHMFR1M0ckswLEv/5wLH0DHDyB5VGD9bA3obBWkf7sBQVGfXamddMPf5pwUWNoxJbpGCweVNmUGCsS4ah9IvK4PvbW/v511OMcAihy0QLGl8OnllMjBQxDTpdOgS8lZOOkTNoxgreQ2xUUlR3Ju8MCTVeellDVryOg9B7m5yYSzBQCvEQ+OIOGRhbIbzdMKKObDQSkO575QqBfgeYZDkzY273hMaow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Rm5e8stj; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=R/HdhE2Q;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Rm5e8stj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmtZp3yHxz2yF1
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 08 Jan 2026 16:22:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmtlS2Qj0z2yF1
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 08 Jan 2026 16:30:12 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1767849762;
-	bh=hPSe2rlEHvzyi69dJB3VX99Hot44xCw/39GofG4V748=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=R/HdhE2Q8L7sSX56r7227YzjCDQjxo4Dhg/bw3c0g4GesSdeGUC22BahmZFuMYpUY
-	 +Y8MsANXUSCOj6mQAqangpaW7M1VonBWINZlo9DM0LfpObeA7jI5YSmXMhz1XD+JJX
-	 XGL+hobqTpSuS7Y1zuWmaPZEy12TwR/Cj6KqE5spQqnQiM7jQu0XibvW+i4CCloVi/
-	 OWxFR13Y8w9g8AZYLsMZMlVLFMKNGLDyCujZxmVi+xC9H5tnobUyKxWYlYc9iX0Dqa
-	 ZScipnCTHJz/Uda+MUvBsxnlJyYwDMUUcaAfiHqAjG3eCTq6MILuGNUNPuJDOHn/Re
-	 m1mUqlz/0V8Iw==
-Received: from [192.168.68.115] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5BF7C79F8C;
-	Thu,  8 Jan 2026 13:22:41 +0800 (AWST)
-Message-ID: <4441e66d607fe442e392b8a82c134adced03a5dc.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v3 5/5] ARM: dts: aspeed: yosemite5: Correct power
- monitor shunt resistor
+	d=codeconstruct.com.au; s=2022a; t=1767850211;
+	bh=MfTEXcf5zciGZot0fekZJidEbYo8hYFDlzJ4aD4mgVc=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=Rm5e8stjXFPtDa9xewdJ1RB82WuVDvStDj2Lopa19weEhxIYhCWkjIDTKHVn0IqE9
+	 8VvQgSrSR4bTvuYkBdS3urYWXj3HKZ30DFFl0Tf98STxAAO/9Gh6ywnRYQcUMsvjz1
+	 Pwnu6yVxU5Y/10s9bvygwMO1b2wvMfeUCVOUJKf+NiEIekq8gJokbDCH57ZqiXcgkN
+	 bRVKnK35RwaK6FljS8jziMgPR7Zc0KiD2Amh3UxFVKnV8F8nWFgwu+8yWffmLthPWZ
+	 umyifu0JiDbfyObUG1Sd/Mhy8ySTe8UljQYU5JTR+f7mQWs++Rt+7e/UCLHhBBp/SZ
+	 qumSRY1G/5eyA==
+Received: from [127.0.1.1] (unknown [180.150.112.60])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 218887C834;
+	Thu,  8 Jan 2026 13:30:11 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Kevin Tung <kevin.tung.openbmc@gmail.com>, Rob Herring
- <robh@kernel.org>,  Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>
+To: robh@kernel.org, krzk+dt@kernel.org, conor+dt@kernel.org, 
+ joel@jms.id.au, Cosmo Chou <chou.cosmo@gmail.com>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Amithash
- Prasasd	 <amithash@meta.com>, Kevin Tung <Kevin.Tung@quantatw.com>, Ken
- Chen	 <Ken.Chen@quantatw.com>, Leo Yang <Leo-Yang@quantatw.com>
-Date: Thu, 08 Jan 2026 15:52:40 +1030
-In-Reply-To: <20251219-yv5_revise_dts-v3-5-ca1d5a382013@gmail.com>
-References: <20251219-yv5_revise_dts-v3-0-ca1d5a382013@gmail.com>
-	 <20251219-yv5_revise_dts-v3-5-ca1d5a382013@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ cosmo.chou@quantatw.com
+In-Reply-To: <20251219062948.528824-1-chou.cosmo@gmail.com>
+References: <20251219062948.528824-1-chou.cosmo@gmail.com>
+Subject: Re: [PATCH] ARM: dts: aspeed: bletchley: Remove try-power-role
+ from connectors
+Message-Id: <176785021104.871508.750215017284279406.b4-ty@codeconstruct.com.au>
+Date: Thu, 08 Jan 2026 16:00:11 +1030
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,15 +67,21 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.14.3
 
-Hi Kevin,
+On Fri, 19 Dec 2025 14:29:48 +0800, Cosmo Chou wrote:
+> Remove the "try-power-role = sink" property from all USB-C connectors.
+> The try mechanism is unnecessary and wastes time during connection.
+> Since power-role = "dual" is already configured, standard USB PD
+> negotiation is sufficient and more efficient.
+> 
+> 
 
-On Fri, 2025-12-19 at 16:09 +0800, Kevin Tung wrote:
-> Correct the shunt resistor value in the DTS with the hardware setting
-> to ensure accurate power and current measurements.
+Thanks, I've applied this to the BMC tree.
 
-Why were the existing values wrong? Why are the new values correct? Can
-you please add more information here explaining both concerns?
+-- 
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
-Andrew
 
