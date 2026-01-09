@@ -1,50 +1,73 @@
-Return-Path: <linux-aspeed+bounces-3270-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3271-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78D8AD232E2
-	for <linux-aspeed@archiver.kernel.org>; Fri,  9 Jan 2026 06:35:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40822D26D9C
+	for <linux-aspeed@archiver.kernel.org>; Fri,  9 Jan 2026 21:07:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dnX8N4WsRz2xQ1;
-	Fri, 09 Jan 2026 17:35:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767940532;
-	cv=none; b=HyW/t1Q6ih2c6WXFmLO2pWbPUv+oHx7/73Z1W5pcRkGkJPQLelm4szbTMjU88A3THQoBcIXmM5pl+kY7/zVmxgyQSbFLyxoFYf+Q8BWooOYj78e2ApJCuTmSoezEXdtQ2vrFvwjNQJNIkV7qkCbfCEucRrwIjRhjicglqr8P9jdYCVTG2ShsO3RepF0CqpeBw/qZmYjE6XUIvLZR7sbaOTUuuxCIkRPi332jlJY9RU1w8bXkSYWHzcRPbHq/kjdUdHW+o7FxXOsllNiNCX2PuyauVJ3Us2W2MozZEqd49FhR+mt5Xzr1oNmLpgMTlo+5OH9eWH+I+3Kz/rsUuspF+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dnvTv6bX4z2xGY;
+	Sat, 10 Jan 2026 08:06:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.214.169
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767992819;
+	cv=none; b=UB+Y7zKMMluA8Ou2IcaP3aqDFtHg/S0ocXsmetNz0k1Cm3izS/HEdKuWZk7pl82osTE/T33ryxCX3HlAfLMTUIcBIDlJ6g1Ub3NdbFj2DRqGRzG3lqJaSR51vyWBucjH9ZAgftyfq1b7dqrqSzxJi3Llw7zXsTDYWcfHhEom9tjjrcl5/3CSp7VfICyGlXdzRG743Ml7OLY3xG0bpIqjzqK5wiYHBt9Q5yhSYlhwo36hteAXHOsi/G+uK6ULvTrtHX0Fd3tjDKFk42dMtww/U2HP32yBBmTsRas88D6FiKq/dYYWjzyg7WdVrVlTSicunQ5w51WRi7KceLEOV4Tn3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767940532; c=relaxed/relaxed;
-	bh=eiZT9sXBg4HL79BKEk2OPu5rQrW7DOHG5+KhdLse1nM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=k7jGY9ZfOuaDYbL/rz35jSB+UGHsmSD2YIQAsjZtGQHpf1tFkKEA6pqxmzo8Bn9c0mX1Xr1e+xtMI+beOcrvp2VXBILbsDF4F9SIeUzxvakMsxbcQPnv3Z8mIS5p2tUY4+TZy4df4B90zVc40YDDPQpqSkUB1qk8++tJdhS7cRzFYqdYU+Rf97GLhR1dxW54vDOrCsNRsjoJFq2Vw9Tr3xGB7q4mKmIZ4GLn3oIOw3rRvO8MhltZq8N3Dndn7iA7YHsTzdhOWuJDTGYoLwp14gDjj2ivv+oNkVpwig5+IIM9L0w0SKG+5nJ1LYdYwF1U0LudbanmBY+BBH9cePq1UQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=beS2t433; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1767992819; c=relaxed/relaxed;
+	bh=f+kn0nlzGkQ0BViOYfFFGO8lkUm/rT4hSAopw8yn9RE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=amiy6J2+bP2Okugeg2vlOxUL75dtMgHTFqBUEpHyarptt/Vpoj0JeR9t0PKK9BOnI4VULDINQUMd9sLuUj83TfhtpWhH2CDODzHHdvPmZ5dOjLA/DsiSGDe2sQecIM6nFVqvw4Es8gda82t8reWGFbkXRCAropOgi+S35TRrf+vlrkikbMoFm13uNBQWnidzguLwvBRn9K4GXBBiVYWKnfIsb6R4jW+A2ZpJgR/2h+x4u1ADuqfAt98u0GyWefCU6IznDvTed+jriBU7hVeseLoT19AcLkGKr/JdKaGf5La7qeghrpiwZEQyDyjlBvBylq0HZAkaz1s2jZQ10nxOqQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=googlemail.com; dkim=pass (2048-bit key; unprotected) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20230601 header.b=MrEEhE4Q; dkim-atps=neutral; spf=pass (client-ip=209.85.214.169; helo=mail-pl1-f169.google.com; envelope-from=martin.blumenstingl@googlemail.com; receiver=lists.ozlabs.org) smtp.mailfrom=googlemail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=googlemail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=beS2t433;
+	dkim=pass (2048-bit key; unprotected) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20230601 header.b=MrEEhE4Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=googlemail.com (client-ip=209.85.214.169; helo=mail-pl1-f169.google.com; envelope-from=martin.blumenstingl@googlemail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-f169.google.com (mail-pl1-f169.google.com [209.85.214.169])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dnX8N0vPcz2xGF
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 09 Jan 2026 17:35:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dnvTv1k8Wz2x9M
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 10 Jan 2026 08:06:59 +1100 (AEDT)
+Received: by mail-pl1-f169.google.com with SMTP id d9443c01a7336-29f1bc40b35so53566535ad.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 09 Jan 2026 13:06:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1767940531;
-	bh=eiZT9sXBg4HL79BKEk2OPu5rQrW7DOHG5+KhdLse1nM=;
-	h=From:Date:Subject:To:Cc;
-	b=beS2t433FJ6u6bIljM3aTHPk6T49f9Toc1y6B8godI9KhHF6D/lmHoIogkf36Iqyf
-	 YMG5T18VIity3jOkFohkmYR6an3bP08DqZcAbTsTQwV7T8epMUYpGPvIUCGmHC7pxD
-	 oe2D7QNlcYRP5uCa5Fby4FUbBKjA1CzAxSHw/WX7IPj7ck/QQjIdMnxB3+W/mXwA4B
-	 QDiF2qdinPXMhiUXAsZdfAEtxnw5cWw/4BSJ9EMDKmgGm2XBtor/qn98V4PLrL6tLQ
-	 sEugBUA7pg7ws0cSduUJQNSvLgnYVYGW/fpyjMV5j0Wm/roL21s1BqXzGeHNX3wZ7n
-	 ACMQsT7TfWZbw==
-Received: from [127.0.1.1] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5CBB97C834;
-	Fri,  9 Jan 2026 14:35:30 +0800 (AWST)
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-Date: Fri, 09 Jan 2026 17:05:18 +1030
-Subject: [PATCH] dt-bindings: mfd: Document smp-memram subnode for
- aspeed,ast2x00-scu
+        d=googlemail.com; s=20230601; t=1767992757; x=1768597557; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=f+kn0nlzGkQ0BViOYfFFGO8lkUm/rT4hSAopw8yn9RE=;
+        b=MrEEhE4QQbAxbW4DB7/MXwMOrhWj9Wn5uPEdOnaO2xSgG0847w1uKWWFA7hzRI61gc
+         EByXxC7lBxvn1vxZgb5wVlLnOGsauCNDd2iOgfUxcZRlocpdPnVe89oRaTwPpPcSf+4f
+         saslUX8nqnQkWIB+O207eEuCRW1h1R/kzdefdmqrvTQ1DibvzeEs/iibHy+namT+XLJu
+         yEsBY/bMu3L03eikQg+QwqN/pz/3icMDdUxKO6gU00bbQeshXtrZ6gay3Zmk1mYsrxQ4
+         TDJgijmSWF7ZjE/RsgmgzdNxHpr2Li04OuBc9fzkb7bLNRAR1Tkey/k4RP/xET616Di1
+         vezA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767992757; x=1768597557;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=f+kn0nlzGkQ0BViOYfFFGO8lkUm/rT4hSAopw8yn9RE=;
+        b=NhCzWi5YFXY06e649HL//QspaSKQgaZegiOdlLY+Rq4IIkR23qsdkAdRW/OJj9WhSQ
+         vlkULVkxoT0m5Vz3kmRbHyiLQZ9Ogf4y4P28V6Yjf5XnpQ4ili2wWLYWYX/ipwlk/iYJ
+         M0BShTGntOygHCmsAoErcu+itTAKAzGnIhMi44oCfWWvwYNAoFyCsCVQm7W6OyXKiu/8
+         101RvBn8upLmGEop7OTWDFSwUpFf41byuPmrPvH2sV76zAi/QoqY+UfdtzxAx15pb3gv
+         71n8C+zVk7Yo0BtO7Ex4ECIWLW5FYhh4Q9qWaxnBzsl12/Qb19aC+IG1VYssNaQm+u49
+         P+hw==
+X-Forwarded-Encrypted: i=1; AJvYcCX6V4O5eg3FJqhGGyMA2R19/C4qVrRuVoX4mHf5TAyXY93tuzoaqGoUpw/plG2zdXydm7bjERP0LL3y50k=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwGl6/AT3aDZlenPMBqotapLCj6DwHmQ8kdrIcA8Jvu6aYW6/El
+	oWjHAastyWGoN6lBOQyZt2Z0+FeakdYulFkrZXXjzWLAgVKzpbALkj0bjBWG5IlaqEToZRQCw3y
+	pCvXorY/6ukxADj0gBZSMFMjvW9dZrYw=
+X-Gm-Gg: AY/fxX5vS8Yq6/pZ24Wfqhb5FtPSKI70ulxiUrGvLEIeoN8fdoRj3R/0GsKz7TGegeh
+	xL3moVmYiz/4WbCzWDI9agS3b7464uUtEzXFHIHC7XQtuOIi2bLNXDv+FGQ1s5cOONXwTedmrmZ
+	oM/EYVcj6txs3OvWvL27TWwTtnv8RaM1MTmrd6jvVh4+2LYIsAGCfAO63urVGRuKMYBzzfKvffk
+	T4jUTewRzWj1VWzeb/G0Ycf+JABOeIMb9s1ADjiXFuX5PyNBFTrbwXk8Us4etCI1Vo4smkZhfKw
+	YQ0qOhW9MuU5euioSXRzWFMYaDwCpZWMZfphB7Q=
+X-Google-Smtp-Source: AGHT+IGzEqZSKhDh+mfZnkqq/TwV9IRDJvdndDZXOgFLWIDXGIN31XCilSikaluLQUb1REl5xfFtQyCdyy3ZvPXVWkE=
+X-Received: by 2002:a17:903:1acc:b0:295:592f:94a3 with SMTP id
+ d9443c01a7336-2a3ee49b5camr115632895ad.48.1767992757127; Fri, 09 Jan 2026
+ 13:05:57 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -58,81 +81,109 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260109-dev-dt-warnings-mfd-v1-1-1aabe37e9a14@codeconstruct.com.au>
-X-B4-Tracking: v=1; b=H4sIAKWhYGkC/x3MPQqAMAxA4atIZgNtwd+riIOatGawSisqFO9uc
- fyG9xJEDsIR+iJB4Eui7D5DlwUs6+Qdo1A2GGVqpVWHxBfSifcUvHgXcbOEc9Ww4s7SYlvI5RH
- YyvNfh/F9P4+sds5lAAAA
-X-Change-ID: 20260109-dev-dt-warnings-mfd-b57e0e9fdcf8
-To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>
-Cc: Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Andrew Jeffery <andrew@codeconstruct.com.au>
-X-Mailer: b4 0.14.3
+References: <20260108203004.3538449-1-andriy.shevchenko@linux.intel.com> <20260108203004.3538449-3-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <20260108203004.3538449-3-andriy.shevchenko@linux.intel.com>
+From: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
+Date: Fri, 9 Jan 2026 22:05:46 +0100
+X-Gm-Features: AZwV_QgnJP_ucVFfV4UzfxU71gNnGoxRPDRc5QYDA0rdtBqGfiMffeomtdZlKmw
+Message-ID: <CAFBinCDzAOC9Sc_LZEbLhtajvPC4zjRiaoq6k9at2iJQnJxwjw@mail.gmail.com>
+Subject: Re: [PATCH v1 2/4] spi: Drop duplicate of_node assignment
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Mark Brown <broonie@kernel.org>, 
+	Varshini Rajendran <varshini.rajendran@microchip.com>, 
+	Mikhail Kshevetskiy <mikhail.kshevetskiy@iopsys.eu>, 
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Sunny Luo <sunny.luo@amlogic.com>, 
+	Janne Grunau <j@jannau.net>, Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, 
+	CL Wang <cl634@andestech.com>, Manikandan Muralidharan <manikandan.m@microchip.com>, 
+	David Lechner <dlechner@baylibre.com>, Florian Fainelli <florian.fainelli@broadcom.com>, 
+	Jonas Gorski <jonas.gorski@gmail.com>, Hang Zhou <929513338@qq.com>, Jun Guo <jun.guo@cixtech.com>, 
+	Philipp Stanner <phasta@kernel.org>, Charles Keepax <ckeepax@opensource.cirrus.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, =?UTF-8?Q?Beno=C3=AEt_Monin?= <benoit.monin@bootlin.com>, 
+	Shiji Yang <yangshiji66@outlook.com>, James Clark <james.clark@linaro.org>, 
+	Jonathan Marek <jonathan@marek.ca>, Carlos Song <carlos.song@nxp.com>, 
+	Sakari Ailus <sakari.ailus@linux.intel.com>, Huacai Chen <chenhuacai@kernel.org>, 
+	Xianwei Zhao <xianwei.zhao@amlogic.com>, 
+	Prajna Rajendra Kumar <prajna.rajendrakumar@microchip.com>, 
+	Sergio Perez Gonzalez <sperezglz@gmail.com>, Miquel Raynal <miquel.raynal@bootlin.com>, 
+	Qianfeng Rong <rongqianfeng@vivo.com>, Haibo Chen <haibo.chen@nxp.com>, 
+	Gabor Juhos <j4g8y7@gmail.com>, Md Sadre Alam <quic_mdalam@quicinc.com>, 
+	Rosen Penev <rosenp@gmail.com>, Luis de Arquer <luis.dearquer@inertim.com>, 
+	Geert Uytterhoeven <geert+renesas@glider.be>, 
+	Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>, 
+	Tudor Ambarus <tudor.ambarus@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Longbin Li <looong.bin@gmail.com>, Patrice Chotard <patrice.chotard@foss.st.com>, 
+	=?UTF-8?Q?Cl=C3=A9ment_Le_Goffic?= <clement.legoffic@foss.st.com>, 
+	Alessandro Grassi <alessandro.grassi@mailbox.org>, Chen-Yu Tsai <wens@kernel.org>, 
+	Darshan R <rathod.darshan.0896@gmail.com>, Aaron Kling <webgeek1234@gmail.com>, 
+	Vishwaroop A <va@nvidia.com>, Haixu Cui <quic_haixcui@quicinc.com>, 
+	Darshan Rathod <darshanrathod475@gmail.com>, linux-spi@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linux-amlogic@lists.infradead.org, asahi@lists.linux.dev, 
+	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, 
+	linux-rpi-kernel@lists.infradead.org, linux-sound@vger.kernel.org, 
+	patches@opensource.cirrus.com, imx@lists.linux.dev, 
+	linux-arm-msm@vger.kernel.org, linux-riscv@lists.infradead.org, 
+	linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, 
+	linux-renesas-soc@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 
+	linux-stm32@st-md-mailman.stormreply.com, linux-sunxi@lists.linux.dev, 
+	linux-tegra@vger.kernel.org, virtualization@lists.linux.dev, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
+	Lorenzo Bianconi <lorenzo@kernel.org>, Ray Liu <ray.liu@airoha.com>, Sven Peter <sven@kernel.org>, 
+	Neal Gompa <neal@gompa.dev>, =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Ryan Wanner <ryan.wanner@microchip.com>, 
+	Michael Hennerich <michael.hennerich@analog.com>, =?UTF-8?B?TnVubyBTw6E=?= <nuno.sa@analog.com>, 
+	Kamal Dasu <kamal.dasu@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, William Zhang <william.zhang@broadcom.com>, 
+	Kursad Oney <kursad.oney@broadcom.com>, Anand Gore <anand.gore@broadcom.com>, 
+	=?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, 
+	David Rhodes <david.rhodes@cirrus.com>, Richard Fitzgerald <rf@opensource.cirrus.com>, 
+	Vladimir Oltean <olteanv@gmail.com>, Frank Li <Frank.Li@nxp.com>, Jean-Marie Verdun <verdun@hpe.com>, 
+	Nick Hawkins <nick.hawkins@hpe.com>, Yang Shen <shenyang39@huawei.com>, 
+	Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, 
+	Lixu Zhang <lixu.zhang@intel.com>, Yinbo Zhu <zhuyinbo@loongson.cn>, 
+	Neil Armstrong <neil.armstrong@linaro.org>, Kevin Hilman <khilman@baylibre.com>, 
+	Jerome Brunet <jbrunet@baylibre.com>, Conor Dooley <conor.dooley@microchip.com>, 
+	Daire McNamara <daire.mcnamara@microchip.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, 
+	Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, 
+	Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Han Xu <han.xu@nxp.com>, 
+	Yogesh Gaur <yogeshgaur.83@gmail.com>, Linus Walleij <linusw@kernel.org>, 
+	Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, 
+	Robert Jarzmik <robert.jarzmik@free.fr>, Chris Packham <chris.packham@alliedtelesis.co.nz>, 
+	Heiko Stuebner <heiko@sntech.de>, Fabrizio Castro <fabrizio.castro.jz@renesas.com>, 
+	Andi Shyti <andi.shyti@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Paul Walmsley <pjw@kernel.org>, Samuel Holland <samuel.holland@sifive.com>, 
+	Orson Zhai <orsonzhai@gmail.com>, Baolin Wang <baolin.wang@linux.alibaba.com>, 
+	Chunyan Zhang <zhang.lyra@gmail.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, Alain Volmat <alain.volmat@foss.st.com>, 
+	Jernej Skrabec <jernej.skrabec@gmail.com>, Li-hao Kuo <lhjeff911@gmail.com>, 
+	Masahisa Kojima <masahisa.kojima@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>, 
+	Laxman Dewangan <ldewangan@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Sowjanya Komatineni <skomatineni@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	=?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, 
+	Michal Simek <michal.simek@amd.com>, Max Filippov <jcmvbkbc@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The platform initialisation code for the AST2600 implements the custom
-SMP bringup protocol, and searches for the relevant compatible. As a
-consequence, define the requisite node and the compatible string, which
-in-turn tidies up the dtb check results.
-
-Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
----
-Hello,
-
-This change was original part of an RFC series tidying up the AST2600
-EVB devicetree at [1]. Many of those ended up being merged directly, so
-I'm splitting out what remains into separate, smaller series.
-
-Please review.
-
-Changes since RFC:
-- Address the warning from Rob's bot
-- Tidy a description line that was dropped unnecessarily
-- Remove RFC label
-
-Link: https://lore.kernel.org/all/20251211-dev-dt-warnings-all-v1-16-21b18b9ada77@codeconstruct.com.au/ [1]
----
- .../devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml     | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-index da1887d7a8fe..a87f31fce019 100644
---- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-+++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-@@ -130,6 +130,23 @@ patternProperties:
-           - description: silicon id information registers
-           - description: unique chip id registers
- 
-+  '^smp-memram@[0-9a-f]+$':
-+    description: Memory region used for the AST2600's custom SMP bringup protocol
-+    type: object
-+    additionalProperties: false
-+
-+    properties:
-+      compatible:
-+        const: aspeed,ast2600-smpmem
-+
-+      reg:
-+        description: The SMP memory region
-+        maxItems: 1
-+
-+    required:
-+      - compatible
-+      - reg
-+
- required:
-   - compatible
-   - reg
-
----
-base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
-change-id: 20260109-dev-dt-warnings-mfd-b57e0e9fdcf8
-
-Best regards,
--- 
-Andrew Jeffery <andrew@codeconstruct.com.au>
-
+On Thu, Jan 8, 2026 at 9:30=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+>
+> The SPI core provides the default of_node for the controller,
+> inherited from the actual (parent) device. No need to repeat it
+> in the driver.
+>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+[...]
+>  drivers/spi/spi-amlogic-spifc-a1.c   | 1 -
+>  drivers/spi/spi-amlogic-spisg.c      | 1 -
+[...]
+>  drivers/spi/spi-meson-spicc.c        | 1 -
+>  drivers/spi/spi-meson-spifc.c        | 1 -
+For the Amlogic and Amlogic Meson drivers:
+Reviewed-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
 
