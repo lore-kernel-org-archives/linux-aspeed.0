@@ -1,76 +1,74 @@
-Return-Path: <linux-aspeed+bounces-3278-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3279-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24979D25031
-	for <linux-aspeed@archiver.kernel.org>; Sun, 11 Jan 2026 23:11:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E54C7D2502E
+	for <linux-aspeed@archiver.kernel.org>; Sun, 11 Jan 2026 23:11:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqB8w2Gfnz2yk6;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqB8w4506z2ykf;
 	Mon, 12 Jan 2026 10:11:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.182
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768162341;
-	cv=none; b=Krh987435EU/cXgJhg9twAqIlJuWS4XynImKg5+e1Dv/HUd5RTARPlB5nGtWV0NFKa2iucFNWOTNnLJ9z5VEeJ76hSdO1RRAS8t9NLyxav8SN/nEaQeRMDvEzkOG6xfi3vZ1mrx3tRmeBJTWtqLRJHC/qJZGGqAimj+AU7Z5Hx+jMVvZvTNFZMzJuzZnA1HTRThgt1wqXrP4jT8h4l7cmq83ZFhZhXaiWyF0IcQbhmfEtedAuEEp+NLu/3Fnlf5+4SLt5a0MIM6FRKQu/nXBAIMXR7Fwk+e0h2Wu6W8kWueidQWWS80mTNgphFk26wauYPuCkucS3E/H7RC+VHMXuw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.224.45
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768162331;
+	cv=none; b=QW78QJQtYTYEdK0YxrmDSCEYj2yd5MyC90ICLZrUdb6AdAnZ+/jHC8C6uPEG0qixMhYa1pNUjtqukWqcE8T0BeBPsbSpKM5FkCcYN/po8yZYySc6OQaD1wY7EfY0glOs5+KSlWoLK0cSD9Cxpj/m75CNYfhFfsHX8a4JD0BcHap+E6C6a4do8r18D/hXi0SdE0FLr3TQ6twbCHbHVWidDgbckWT0937Svpyxc5h7fKDzMDhLUTBVYNBeFkCo1ZFH784i8mNBq24+LDDty48IylAp320RIZN4IEUE2bg1oFOn5tUpBzmWyhEM7npfuf2QIWzcHnr2WuUX3qup1NhTSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768162341; c=relaxed/relaxed;
-	bh=MI+UfjdZ4KBl70/kcazNDAuL61XOS5jgfeZZ52BwtA0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Xqan2hifJZDmNds4YfnkjvN1JkDpsXERiTW4s8IbTdZsJw1rriyZ2vl4eu1XP67JOXorf6QF4BoCI5U8F8uP0qVd/C9Mz9oSdUTRLsOasEBorEXKRY7Blda+IZbGtyDirTxdoLQL9WzAzWKiA/2hDkXOERows7pKfgQwYKx0dN9v0pNkCQnHw6XkkYYeHnid/PT5QPRPTI78j7sDYAHAupZcr1XUmbu/1Igq9o/YxMa9duYo3rFeTRoifpIRfc8fTbKKagtLb+W3vHMFhHy1G4pteRNPwhlq6R7fptPsigI2znbd8oMDZQtCVbiY+noY9FeMA/IOXf9sY7ggoR0sEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Fl8EbRjD; dkim-atps=neutral; spf=pass (client-ip=209.85.128.182; helo=mail-yw1-f182.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1768162331; c=relaxed/relaxed;
+	bh=3WjMx6HuwU1Wy+8RcNWFYu7YuaIy2oBjUVHx01Ru4Xc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VeTzNqLqafpEsJOvRh8A11zaCEMhg/z0hA/HNUgPJK/pi9WgnAvV9b0EISDrSL71Hi66EKH7haWBOfFPHXDznJfFracaaO96c+Vyxzqr8sfLGeUHilb3ewFwiUYzRs7mX8OW4fz5nFcwhXFLr+oeT/e1yPHttvmDhkJjqRWlTTg6ZQAV9d7IeTuu30epd97Jsl4Q9K37hwAY0UeZNe8GOAb2Q6Zrd6Mh8+sG662rV9Zs6z6fMLHW4Zc8uS2aFNL5ySnZPrhn+QnncZSA0wjklkqjIJQu64sIXVuubeoI7K8Nm1RUcKehRs6lxExw0ARl6ZX3FAMxaq/ufS1f1iiowA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Sz+i4PU6; dkim-atps=neutral; spf=pass (client-ip=74.125.224.45; helo=mail-yx1-f45.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Fl8EbRjD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Sz+i4PU6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.182; helo=mail-yw1-f182.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-f182.google.com (mail-yw1-f182.google.com [209.85.128.182])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.224.45; helo=mail-yx1-f45.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-f45.google.com (mail-yx1-f45.google.com [74.125.224.45])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dq69w73Z1z2yKp
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 12 Jan 2026 07:12:20 +1100 (AEDT)
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-7927541abfaso9300957b3.3
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 11 Jan 2026 12:12:20 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dq69j57CDz2yKp
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 12 Jan 2026 07:12:08 +1100 (AEDT)
+Received: by mail-yx1-f45.google.com with SMTP id 956f58d0204a3-6446c924f9eso5314135d50.1
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 11 Jan 2026 12:12:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768162279; x=1768767079; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MI+UfjdZ4KBl70/kcazNDAuL61XOS5jgfeZZ52BwtA0=;
-        b=Fl8EbRjDYWdyNQ7wvR0Ck1KqslBdgPwVkU/jaops9PsKStL7zI24t/Jm/UFHQ15j8Y
-         BcokWcTbDYJYP8ppETVxIGV6nr4rUe+TEVViXq+vWY/UPO5sSzyWdeXS9CtlulbsDXzY
-         wZzZTqImrJBeV5WQFYuhZ08R6WBgoA0iu9lmjS9RhIPkpohMn0fmSMTJQJm+v4RbBgb9
-         gL5rY5mnZCRLoCRKGt/2LizPwPhA/bD9yFcsc25OzGQxjDxdGDzAK/n6kqWrK0j+tTTR
-         kdv2zWCh4uJcciVr208n4sd6KvuAm43JvszibjH2sQKx6/egQNgSqoklsYcE9xQ7DzoN
-         2H8g==
+        d=gmail.com; s=20230601; t=1768162265; x=1768767065; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=3WjMx6HuwU1Wy+8RcNWFYu7YuaIy2oBjUVHx01Ru4Xc=;
+        b=Sz+i4PU6Kawtw5eLvRDA6ZjKw4LIpgOJw85Ly88bFBLyDfS7Y92UHZxIQd1P3SHNHj
+         KYN35uoy0OHQ1vS51fQznUYGh90pRpDs0t/Sbb8Gq1dtygWF+LNlHDOfzeEvQUQXDQfu
+         fmZgvZaRqIWZpK8Nn4xXI+yOsWeyu3tf72MdM+5CiS2YYEIBUw2lYyQ5IhTZ7yY/8vbO
+         NVc2W1fHpuaSFD34ud1WPFdrlXdWOcmucp/g/H9EOfcZMVBte7qtHN5LBdxuU1toaUXI
+         TUldo+JLQX3GyTWke2bsA097lLhaZ2kn/b2oTh8dGicxMmbgiiDlCAu9RCAbxnQ7t+vu
+         yC2g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768162279; x=1768767079;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=MI+UfjdZ4KBl70/kcazNDAuL61XOS5jgfeZZ52BwtA0=;
-        b=U8jSkHTWcIf6wBFfZpHEMQBETMT+h3tpv3nElOSuPzp/nHB/qG4wgmxsD1LhdIqmUF
-         0p7yUKBrab8C4ignPFExB1rkzV/Jog8NuKxxu8oG45WQEGGHiT3bB3bWezedY2pV7BcH
-         MmppHIKwIDYodeMoGylp9zqT+znHwjx/63DppVfr7ZV24VmRHHdvrY0flfZpHWQxIFmL
-         +bK3VSU1JSx116kj3S/Lm/aFXyepJpz++gGCsoM7qqWklYG64dJmkObUbfr56gYePRCb
-         gHwEaCkGM1Lhtck2briV/pLqtCUKkQFOdJ3IPQILhDzhQ4+NmcACQ6o539FmiRN3SOde
-         FoUQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWAcrvJ17KQp/RH79VKYGHJ87sGAnqhIisUmKw50bHQ2AecL0UU35pBR4jouUqcGk7yOHQAQekF/9z+Fng=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwRIsCOq6V7pTkTw1PCgvKCTnqUUBT8plGlmgE/qEoI+oR3sEzx
-	zgDriLxhgwW8jwaXYw1+ZM1+I7rl5Qtn5/2l1TnkNO7q+3ftqFCaZxPx
-X-Gm-Gg: AY/fxX62qdILJfkWVeA5woAZT5uFCwg/LBchVQZyhSHLfvmT4wtZSiHVB55vRsaPGTb
-	UbpgPx3rbyMzBQlVkjxHe/AI+FahdOMlpOjX1RWglJIfFi22n2wbkhpOqMUGCsUusgBVtFJy9DZ
-	ts/J01QYqzVImrRWGLAV/f2XUOFNG9WNxJIpyHCLmdxMGQGVsN6G8/ZYJh8g6h40wp88QqMOiCn
-	MKYzCZMzP55huTgriY4ycpmKp0DExcKVLBNt9ZQ95ep2YOf1EW/Z/ThdFGGchoQMBf/I2072Kqb
-	MzWxrM1ghXO7aeqj/7JwvjjOq8sS2XII7mRTEWf+fu5oZXD0MY2XVkgQpy/G7tdunVx+/rUDKRu
-	V/n4N+LbExj/3iJIkoIUQ+pQHn9G39lC9ukYheTJF0qam0O20kmDr1PxsBe0UKt7kcPqn
-X-Google-Smtp-Source: AGHT+IHgokj+1DLIRRT5f41nJ6r1E0Go/K7YSYrys1I9AtjEk7wX5wSAvv1S4isYPAgdLHvOV/iVBg==
-X-Received: by 2002:a05:690c:5:b0:786:45ce:9bd3 with SMTP id 00721157ae682-790b57942f1mr140423197b3.34.1768162278890;
-        Sun, 11 Jan 2026 12:11:18 -0800 (PST)
+        d=1e100.net; s=20230601; t=1768162265; x=1768767065;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3WjMx6HuwU1Wy+8RcNWFYu7YuaIy2oBjUVHx01Ru4Xc=;
+        b=J2achz09aobANQCoylj6j1UJB1pGQ3NlK8+og28sHZShavQilKTOH8nX6oiv7zEDRJ
+         6qTuuuyi6XzAmOXMeEY2UXMmi886UT7RD5ztbkEiHDBoBqkNwAeMyJy4e1U7A8FOHSLp
+         4ewCQhl5j0/7KOkc6Hz6neZCNmwrIWoOqp8Mv07GS8GZOlHjY8igOL+LlHc9Kx6kgfGB
+         1SM6dukE+Ft8dN6s9A3hlX+83sNz0JFTNnx7tnwndsCBQURW/Cl9vDI/Sh4t7fvPGb8x
+         oXqf1toH+lJyea9NWH1He3gHSHJglFL7pga5QmQJeuep7VMCuIBPGWvvdl+/P/wzJZ5Z
+         Ug3A==
+X-Forwarded-Encrypted: i=1; AJvYcCVvujxDN1hY7Lkcpw9mwuE944jwzM5Y9rE/2DQNPF+h/9yorlqidvqt7fBt0R9ZuEQhf6VXnbYN5OeJSyA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzLcD3Xut1b3T8nXtAegp0zA8yQpSEqGD7mRjsKQ2qIUOBOVF8w
+	qQsjHo2R8pNDhsl15dmXBC4JNcU7khE4HIFK/BMTkUsnXt22OYjoMMdh
+X-Gm-Gg: AY/fxX5ZQ1SqpkPzCHeOqQ37bhMJ/w5sHR7amARN51xt1XLooNVsPrjD6U1irIvdVa8
+	+tL3Uzl8ebtrM0OLU6MaXA0hHKip4Taxe3HuE/hUVYOPVnrUWiwSml3rshj2z+1AiVsJ9SODZwe
+	wN6TOuYgETex2Nh/kjM14kW4N2WX+K5SCB7B+EOlRIpbN16FOLrvEQdXYIe0G2ti/gGoMWC39/M
+	uA6/hU8la6nB1h6Q8hA/cdfTLsWZ2Vl4AE6M2zf4z7E03FQ1QplTiew57wVQ3vvoE1590SP7uB8
+	Gj2V4NlDuuCyWTgk8M/rwsZ+dWgMN4qs5DMlAs3/4l1sDfAB9Z2F7SNcAGKzBGxl+nkMufx5fUb
+	0XjhFXVI3LMm+fd8O7yFA4HNNs1Ji3hjeivrdU5agPHi2a2p07l0botMmoSNy9NDZVyB8
+X-Google-Smtp-Source: AGHT+IGtpefdIwaz1zrj3LX0ANB3EkQVjPbjQhL8KzEpUBfzS7Z79abIt8/S9RwcfiKfM++zWNHWgQ==
+X-Received: by 2002:a05:690e:12ca:b0:63f:b410:e93 with SMTP id 956f58d0204a3-64716bd1ba8mr12791408d50.42.1768162265218;
+        Sun, 11 Jan 2026 12:11:05 -0800 (PST)
 Received: from toolbx ([2600:1700:220:59e0::914])
-        by smtp.googlemail.com with ESMTPSA id 00721157ae682-790aa5762f6sm62175717b3.15.2026.01.11.12.11.17
+        by smtp.googlemail.com with ESMTPSA id 00721157ae682-790aa5762f6sm62175717b3.15.2026.01.11.12.11.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 11 Jan 2026 12:11:18 -0800 (PST)
+        Sun, 11 Jan 2026 12:11:04 -0800 (PST)
 From: Anirudh Srinivasan <anirudhsriniv@gmail.com>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -82,12 +80,10 @@ Cc: anirudhsriniv@gmail.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ARM: dts: aspeed: Add Asus IPMI card
-Date: Sun, 11 Jan 2026 14:10:32 -0600
-Message-ID: <20260111201040.162880-3-anirudhsriniv@gmail.com>
+Subject: [PATCH 0/2] Add device tree for Asus IPMI Card
+Date: Sun, 11 Jan 2026 14:10:30 -0600
+Message-ID: <20260111201040.162880-1-anirudhsriniv@gmail.com>
 X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260111201040.162880-1-anirudhsriniv@gmail.com>
-References: <20260111201040.162880-1-anirudhsriniv@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,169 +99,38 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add device tree for Asus IPMI card, an AST2600 BMC PCIe card
+Adds support for Asus IPMI Card [1], which is a PCIe card with an
+AST2600 on it that provides BMC functionality to any host without an
+onboard BMC as long as it has a PCIe slot.
 
-Signed-off-by: Anirudh Srinivasan <anirudhsriniv@gmail.com>
----
+Currently supported functionality includes UART, NIC, booting from SPI,
+KVM functionality(usb gadget for host, reading VGA framebuffer from
+host) and LED/Power Control via GPIOs. This functionality has been
+tested on an OpenBMC build available here [2]. This requires a modified
+u-boot device tree [3], which I can also submit if needed.
+
+The card supports some additional functionality in it's stock firmware
+like fan headers with fan speed control, host bios flashing via SPI, PSU
+monitoring via an SMBUS connector, a custom ASUS SMBUS connector to talk
+to select ASUS motherboards that support it and exposing a IPMI device
+via PCIe to the host. These are unsupported at the moment.
+
+
+[1] https://www.asus.com/supportonly/ipmi%20expansion%20card/helpdesk_manual/
+[2] https://github.com/openbmc/openbmc/compare/master...Genius1237:openbmc:asus-ipmi-card
+[3] https://github.com/Genius1237/u-boot/commit/1b1b7daa85f6c998e5f404296b3da43077a2758e
+
+
+Anirudh Srinivasan (2):
+  dt-bindings: arm: aspeed: Add Asus IPMI card
+  ARM: dts: aspeed: Add Asus IPMI card BMC
+
+ .../bindings/arm/aspeed/aspeed.yaml           |   1 +
  arch/arm/boot/dts/aspeed/Makefile             |   1 +
- .../dts/aspeed/aspeed-bmc-asus-ipmi-card.dts  | 136 ++++++++++++++++++
- 2 files changed, 137 insertions(+)
+ .../dts/aspeed/aspeed-bmc-asus-ipmi-card.dts  | 137 ++++++++++++++++++
+ 3 files changed, 139 insertions(+)
  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts
 
-diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-index 9adf9278dc94..ff40d9ab88b7 100644
---- a/arch/arm/boot/dts/aspeed/Makefile
-+++ b/arch/arm/boot/dts/aspeed/Makefile
-@@ -15,6 +15,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
- 	aspeed-bmc-asrock-spc621d8hm3.dtb \
- 	aspeed-bmc-asrock-x570d4u.dtb \
- 	aspeed-bmc-asus-x4tf.dtb \
-+	aspeed-bmc-asus-ipmi-card.dtb \
- 	aspeed-bmc-bytedance-g220a.dtb \
- 	aspeed-bmc-delta-ahe50dc.dtb \
- 	aspeed-bmc-facebook-bletchley.dtb \
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts
-new file mode 100644
-index 000000000000..fea94360245c
---- /dev/null
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts
-@@ -0,0 +1,136 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright 2025 Anirudh Srinivasan
-+
-+/dts-v1/;
-+
-+#include "aspeed-g6.dtsi"
-+#include "aspeed-g6-pinctrl.dtsi"
-+#include <dt-bindings/i2c/i2c.h>
-+#include <dt-bindings/gpio/aspeed-gpio.h>
-+
-+/ {
-+	model = "ASUS IPMI Card BMC";
-+	compatible = "asus,ipmi-card-bmc", "aspeed,ast2600";
-+
-+	aliases {
-+		serial4 = &uart5;
-+	};
-+
-+	chosen {
-+		stdout-path = "serial4:115200n8";
-+	};
-+
-+	memory@80000000 {
-+		device_type = "memory";
-+		reg = <0x80000000 0x40000000>;
-+	};
-+
-+	reserved-memory {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
-+
-+		video_engine_memory: video {
-+			size = <0x04000000>;
-+			alignment = <0x01000000>;
-+			compatible = "shared-dma-pool";
-+			reusable;
-+		};
-+	};
-+
-+	leds {
-+		compatible = "gpio-leds";
-+
-+		led-fault {
-+			gpios = <&gpio1 ASPEED_GPIO(C, 5) GPIO_ACTIVE_HIGH>;
-+			panic-indicator;
-+			default-state = "off";
-+		};
-+
-+		led-heartbeat {
-+			gpios = <&gpio0 ASPEED_GPIO(A, 7) GPIO_ACTIVE_LOW>;
-+			linux,default-trigger = "timer";
-+		};
-+
-+	};
-+};
-+
-+&mdio2 {
-+	status = "okay";
-+
-+	ethphy2: ethernet-phy@0 {
-+		compatible = "ethernet-phy-ieee802.3-c22";
-+		reg = <0>;
-+	};
-+};
-+
-+&mac2 {
-+	status = "okay";
-+
-+	/* Bootloader sets up the MAC to insert delay */
-+	phy-mode = "rgmii";
-+	phy-handle = <&ethphy2>;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_rgmii3_default>;
-+};
-+
-+
-+&fmc {
-+	status = "okay";
-+
-+	flash@0 {
-+		status = "okay";
-+		m25p,fast-read;
-+		label = "bmc";
-+		spi-max-frequency = <50000000>;
-+#include "openbmc-flash-layout-64.dtsi"
-+	};
-+};
-+
-+&video {
-+	status = "okay";
-+	memory-region = <&video_engine_memory>;
-+};
-+
-+&vhub {
-+	status = "okay";
-+};
-+
-+&gpio0 {
-+	gpio-line-names =
-+	/*A0 0*/	"", "", "", "", "", "", "", "BMC_HBLED",
-+	/*B0 8*/	"", "", "", "", "", "", "", "",
-+	/*C0 16*/	"", "", "", "", "", "", "", "",
-+	/*D0 24*/	"", "", "", "", "", "", "", "",
-+	/*E0 32*/	"", "", "", "", "", "", "", "",
-+	/*F0 40*/	"", "", "", "", "", "", "", "",
-+	/*G0 48*/	"", "", "", "", "", "", "", "",
-+	/*H0 56*/	"", "", "", "", "", "", "", "",
-+	/*I0 64*/	"", "", "", "BMC_RSTBTN", "", "", "", "",
-+	/*J0 72*/	"", "", "", "", "", "", "", "",
-+	/*K0 80*/	"", "", "", "", "", "", "", "",
-+	/*L0 88*/	"", "", "", "", "", "", "", "",
-+	/*M0 96*/	"", "", "", "", "", "", "", "",
-+	/*N0 104*/	"", "", "", "", "", "", "", "",
-+	/*O0 112*/	"", "", "", "", "", "", "", "",
-+	/*P0 120*/	"", "", "", "", "", "", "", "",
-+	/*Q0 128*/	"", "", "", "", "", "", "", "",
-+	/*R0 136*/	"", "", "", "", "", "", "", "",
-+	/*S0 144*/	"", "", "", "", "", "", "", "",
-+	/*T0 152*/	"", "", "", "", "", "", "", "",
-+	/*U0 160*/	"", "", "", "", "", "", "", "",
-+	/*V0 168*/	"", "", "", "", "BMC_PWRBTN", "", "MB_S0_DETECT", "",
-+	/*W0 176*/	"", "", "", "", "", "", "", "",
-+	/*X0 184*/	"", "", "", "", "", "", "", "",
-+	/*Y0 192*/	"", "", "", "", "", "", "", "",
-+	/*Z0 200*/	"", "", "", "", "", "", "", "";
-+};
-+
-+&gpio1 {
-+	gpio-line-names =
-+	/*18A0 0*/  "","","","","","","","",
-+	/*18B0 8*/  "","","","","","","","",
-+	/*18C0 16*/ "","","","","","BMC_MLED","","",
-+	/*18D0 24*/ "","","","","","","","",
-+	/*18E0 32*/ "","","","","","","","";
-+};
 -- 
 2.52.0
 
