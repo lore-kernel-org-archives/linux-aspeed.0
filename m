@@ -1,73 +1,165 @@
-Return-Path: <linux-aspeed+bounces-3296-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3297-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A53F4CF45D4
-	for <linux-aspeed@archiver.kernel.org>; Mon, 12 Jan 2026 22:41:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F352CF45D5
+	for <linux-aspeed@archiver.kernel.org>; Mon, 12 Jan 2026 22:41:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqnRH1k1mz2yCL;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqnRH3sBhz2yK7;
 	Tue, 13 Jan 2026 09:41:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.82.46
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768252683;
-	cv=none; b=I7cYV4G6MHGJKfqWIyIR3VL5ekfsgFelONbtpkueMg0rOTtrGGAlj1Kk+NliOuMYQaNCPYxdRbnIgyAh0rqlkGtRCP34dnZBD0XjyIcdTfDzdONTMVMNGONC5fwIrnAK4ORbJ/Fx5RPHs8fK72kIFHvMjQIeLdlU9R+QdAehwOkaV0azy5VS9r+PsifveilTYpLhqFz9cCY7XYQWFrVuwflHFq0L+T6i5+d0pDtK5uCpIwF5NEqrPP4qIr68q9oiKhcnEllDhUlKVLwUA7JXLRedvz5mtkB7cpuFO9dAHKTnbn8utnbfMyzxZfNLTRq6GMQg1hKga25zNoz88YVl2w==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768227611;
+	cv=none; b=ON/kKmDi6UTrgU1KhwPJ4s/LwszRTAYjCr4t4mPpJivG87vAhLgwUUgG+qNhcpMI+oB4Cq/TJ+Un3vagQutzGtba/q0+b3ho7qrVW0WwqdB/oNi34wOIp6SeHgneDJX/qdHQmpYpRKRPyb2u+PvQxfo7mMcmNI0XfrXgSCmMu1Wiy0Ok7nPuSFBSJIT0vDQ1ymYaRHfAQC0mSDGqpq0GiXuKpmrRO/r/b+UMCQMID61sTDDBmCwstpWUEA4xipjuzfyD8uZghKckQv/p+KMB01WbowQVwyKrGUzbHittlY/abpQtgAYbrEPNqyO7sYwhq7MKrbgEYcsijM2/W5CLig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768252683; c=relaxed/relaxed;
-	bh=ldGPuGZG523RSoakys4MiKPAfsrjJwPEUi50RijOKj4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=k4pCHwHiJVmbPgCigrOpjMC1ezh1CgiQpHgNcxZ3qUp3dqhOWJKJuABeei+cjDLf1CQlbsQzFUIFj8k9zdlzZ9D6IOSlCoTTbKf65en/HXqCphD7TlbxpmAE3o5hduPOqOWulrVptpugSvqEsvc/wa1t6IxHyyj1QyL+wx/CoE8h4Od5D2HH1jY5kc7CJvxDYd+++AR6e9tMY0aL9NoUtHW5dfxJ0PN/jzkFCMu6Mubn5mJwHn9pVIA2F6m46JHi951EhkJ+xTi9lIVqphe9cpnLXje/YyBhCpIS5f/mXpOdJZLahiiAKoAkXL5jbfLFlcVSlVCIOg4Ev7IwiP+pIQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LPzhM3iG; dkim-atps=neutral; spf=pass (client-ip=74.125.82.46; helo=mail-dl1-f46.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1768227611; c=relaxed/relaxed;
+	bh=S8c2ARP9HcnV+reUeOF4Vcg2quHBkPmCAqYrhfyr6c0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Gzw84Kep/HgM5xv/5PUc2Q+oAmjpPm72sICytexfuz8ZqtNpTii2AekYU9n01PyM3dD6xEQPzV9IAgKcGg3NhCrGO2omBM35sie53Kt86ngd/vgjZACcsgITAmL6kfjX67qDB8J1hJBWE3ZoeYIDDd0OrUCge6BWNGKSPkBBnLjaNmZCJjfrvc+oyLm1eW/TKCxClHw1FTNBZQl8jYcqJGs40ZHke7igdGoVmUUorNx3Fg95ZuEd/G6TSnzCedt7oqc6XU8oUcDLTATDOYDEih9012BaQCssjyRAHbGGz0xXhZnXTeRk1J72zUN3bBnOpsBDzEcb/XkNh3VNLO2fyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=CakAumhF; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=benoit.monin@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=LPzhM3iG;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=CakAumhF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.82.46; helo=mail-dl1-f46.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-f46.google.com (mail-dl1-f46.google.com [74.125.82.46])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=benoit.monin@bootlin.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 503 seconds by postgrey-1.37 at boromir; Tue, 13 Jan 2026 01:20:06 AEDT
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqlbG32vzz2xKx
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Jan 2026 08:18:01 +1100 (AEDT)
-Received: by mail-dl1-f46.google.com with SMTP id a92af1059eb24-11f36012fb2so8970761c88.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 12 Jan 2026 13:18:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768252619; x=1768857419; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ldGPuGZG523RSoakys4MiKPAfsrjJwPEUi50RijOKj4=;
-        b=LPzhM3iGipYwegx0fT407ySj/K55dMVv02qtRdF+OMcSm/AdmOeO6IzYFDkuxhVjcs
-         VG8YQjE6VBODJzUKnjrDkfcQ4WDz+iQRsZu53nQxYYO8I0v4EAP04pESZA62HDautVjf
-         AD5O4gBTtoricdpwBGuAvJVEi3Dp9gkUWyZHkLO+a1NBEyO0Ce/g0siwWAL2f5S1IWwu
-         u1LDCnbjDAV604cdgxUsW0TYNgCW523LeeEq4a1rL2Yhy/IpMaWIpUwFWh1wOvtur9Zw
-         WOYju1JkKCqshCsURiDgQJ3Gdwrg713VflLnCB63Qd/91+OWNBKQZPFqWhN3lHx8nI30
-         Pa5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768252619; x=1768857419;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=ldGPuGZG523RSoakys4MiKPAfsrjJwPEUi50RijOKj4=;
-        b=ACq31MahW6BJrzf0P6syafe9F2CghBgGpA09gUEilLL2rwSLBBS76TW9e9fnZ7wPqY
-         G6NUGvN+rgcaunR856RCuHpMys2AUZg4V3V11lmqmGzLjmvJW1GUgoq+snzlZySTD+1I
-         XBtwSBXMek4RpFMHLxm/Lr2YKyrv4XocXK8tNBPIHs0LpeVoazC38uMx+0hXZROEyij4
-         3yEqoNwotBJZr+3oG5CJQsEAwwc6GTffDLzNlHKmDsNYi994UUgf3c3lJOlpXMXh0/ct
-         G6ba2lpeednwSgfUle8YTz/yCaUp3T/gtUFt7Ar2lu8IMF4bmlrKnvQqlliUQ+Bus0LF
-         nu9A==
-X-Forwarded-Encrypted: i=1; AJvYcCWv4r0NdyvCzVP4/qu3ZtO1DfXCRJr5g+nM+nd3PJ2cmCXbATe6V2OipY3K2ijDUvGXCHHtIRafgaZC11w=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxBdhzVKsCCptKcMuYSJTIwQ7g/FxWieAYkRTsQQXOhw7lURW8i
-	07gk2f5t6PC0UzHhI2thAwKHp7UmvzDfiCxz5VU1aTCMRjUGbtnsIH6kotkiovlUSzTZulYgsMy
-	RpWN4mXLOjJ2V5x4lcHqwemmhNuT3fqU=
-X-Gm-Gg: AY/fxX6giSzOwwGp3itggivkQXU5yQJTuqISOZxogtd1l87W3nWJzIqTC+KRZHNOt9C
-	dgg3Xnr8NORFLg8YVNcfdOdQh6oYGMxXhkvB8+I/WB3RahjTgbqBzszQ7898HUDkqRJfoa5vo0e
-	Vb85FBE5SH+HKK3Zwc4z0JmjCM4sNtqcjD4OMFeybEvosrmrEc/1JUd/o8YBwzJWR17+lsJupVM
-	pHsrr4wzuEL/WiLO3XBiRpcd0p5wEtKM+Z6060X2QkrKhUqXBsLsiekdi/bODFHS/rSD5zld8PG
-	8ux6zXwS
-X-Google-Smtp-Source: AGHT+IEOZLPJwj/S58CaKJrV3wQ5O6ZbtxN7uz0O09Ew9vCMcJuDYyeoj1bB1o5HdriBJYahGUi2SE9K8dooarY3xtM=
-X-Received: by 2002:a05:7022:670f:b0:122:1e3:534c with SMTP id
- a92af1059eb24-12201e35454mr14780318c88.46.1768252619049; Mon, 12 Jan 2026
- 13:16:59 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqZK26kqfz2xHW
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 13 Jan 2026 01:20:05 +1100 (AEDT)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 3609A4E42085;
+	Mon, 12 Jan 2026 14:11:37 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id DEFBC60732;
+	Mon, 12 Jan 2026 14:11:36 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 736BF103C8C61;
+	Mon, 12 Jan 2026 15:10:37 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1768227090; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=S8c2ARP9HcnV+reUeOF4Vcg2quHBkPmCAqYrhfyr6c0=;
+	b=CakAumhFpasu+3ZI3BaB812kdRiuu+v1Tg/Sp3TTEi8pdVKDZEtVO84AoLEgEc1xrnFluT
+	i+SAwVNTU/VK298rD4GgfOlbL1x1IRBq+LMtmjrslvr8iNw/wqHBq7SowNZ+1bxrqAdaPR
+	ziVMPo032s+fSJqG9mpYJmDIazpKyi53yb/qGj1zj4VwwbAj77lJfzPnCy7GfnRvSCaoiG
+	VLNhV0T9IC//MbbHQG1tnGAF03XNmqvN+K3xG6/Renyw+hJ5Ia+fO3n6d7mTvuZI7e4oUm
+	CIup66ln9btW8iWglHRpKXcMS5I6EydGAat63GN0yLYYuyDF497mBLdXxOQ06g==
+From: =?UTF-8?B?QmVub8OudA==?= Monin <benoit.monin@bootlin.com>
+To: Mark Brown <broonie@kernel.org>,
+ Varshini Rajendran <varshini.rajendran@microchip.com>,
+ Mikhail Kshevetskiy <mikhail.kshevetskiy@iopsys.eu>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+ Sunny Luo <sunny.luo@amlogic.com>, Janne Grunau <j@jannau.net>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, CL Wang <cl634@andestech.com>,
+ Manikandan Muralidharan <manikandan.m@microchip.com>,
+ David Lechner <dlechner@baylibre.com>,
+ Florian Fainelli <florian.fainelli@broadcom.com>,
+ Jonas Gorski <jonas.gorski@gmail.com>, Hang Zhou <929513338@qq.com>,
+ Jun Guo <jun.guo@cixtech.com>, Philipp Stanner <phasta@kernel.org>,
+ Charles Keepax <ckeepax@opensource.cirrus.com>,
+ Bartosz Golaszewski <brgl@kernel.org>, Shiji Yang <yangshiji66@outlook.com>,
+ James Clark <james.clark@linaro.org>, Jonathan Marek <jonathan@marek.ca>,
+ Carlos Song <carlos.song@nxp.com>,
+ Sakari Ailus <sakari.ailus@linux.intel.com>,
+ Huacai Chen <chenhuacai@kernel.org>, Xianwei Zhao <xianwei.zhao@amlogic.com>,
+ Prajna Rajendra Kumar <prajna.rajendrakumar@microchip.com>,
+ Sergio Perez Gonzalez <sperezglz@gmail.com>,
+ Miquel Raynal <miquel.raynal@bootlin.com>,
+ Qianfeng Rong <rongqianfeng@vivo.com>, Haibo Chen <haibo.chen@nxp.com>,
+ Gabor Juhos <j4g8y7@gmail.com>, Md Sadre Alam <quic_mdalam@quicinc.com>,
+ Rosen Penev <rosenp@gmail.com>, Luis de Arquer <luis.dearquer@inertim.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>,
+ Tudor Ambarus <tudor.ambarus@linaro.org>,
+ Krzysztof Kozlowski <krzk@kernel.org>, Longbin Li <looong.bin@gmail.com>,
+ Patrice Chotard <patrice.chotard@foss.st.com>,
+ =?UTF-8?B?Q2zDqW1lbnQ=?= Le Goffic <clement.legoffic@foss.st.com>,
+ Alessandro Grassi <alessandro.grassi@mailbox.org>,
+ Chen-Yu Tsai <wens@kernel.org>, Darshan R <rathod.darshan.0896@gmail.com>,
+ Aaron Kling <webgeek1234@gmail.com>, Vishwaroop A <va@nvidia.com>,
+ Haixu Cui <quic_haixcui@quicinc.com>,
+ Darshan Rathod <darshanrathod475@gmail.com>, linux-spi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-amlogic@lists.infradead.org, asahi@lists.linux.dev,
+ linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
+ linux-rpi-kernel@lists.infradead.org, linux-sound@vger.kernel.org,
+ patches@opensource.cirrus.com, imx@lists.linux.dev,
+ linux-arm-msm@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-renesas-soc@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, linux-sunxi@lists.linux.dev,
+ linux-tegra@vger.kernel.org, virtualization@lists.linux.dev,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Nicolas Ferre <nicolas.ferre@microchip.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+ Lorenzo Bianconi <lorenzo@kernel.org>, Ray Liu <ray.liu@airoha.com>,
+ Sven Peter <sven@kernel.org>, Neal Gompa <neal@gompa.dev>,
+ =?UTF-8?B?Q8OpZHJpYw==?= Le Goater <clg@kaod.org>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+ Ryan Wanner <ryan.wanner@microchip.com>,
+ Michael Hennerich <michael.hennerich@analog.com>,
+ Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>,
+ Kamal Dasu <kamal.dasu@broadcom.com>,
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+ Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+ William Zhang <william.zhang@broadcom.com>,
+ Kursad Oney <kursad.oney@broadcom.com>, Anand Gore <anand.gore@broadcom.com>,
+ =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+ David Rhodes <david.rhodes@cirrus.com>,
+ Richard Fitzgerald <rf@opensource.cirrus.com>,
+ Vladimir Oltean <olteanv@gmail.com>, Frank Li <Frank.Li@nxp.com>,
+ Jean-Marie Verdun <verdun@hpe.com>, Nick Hawkins <nick.hawkins@hpe.com>,
+ Yang Shen <shenyang39@huawei.com>, Shawn Guo <shawnguo@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>, Lixu Zhang <lixu.zhang@intel.com>,
+ Yinbo Zhu <zhuyinbo@loongson.cn>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Conor Dooley <conor.dooley@microchip.com>,
+ Daire McNamara <daire.mcnamara@microchip.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>,
+ Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>,
+ Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>,
+ Han Xu <han.xu@nxp.com>, Yogesh Gaur <yogeshgaur.83@gmail.com>,
+ Linus Walleij <linusw@kernel.org>, Daniel Mack <daniel@zonque.org>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>,
+ Robert Jarzmik <robert.jarzmik@free.fr>,
+ Chris Packham <chris.packham@alliedtelesis.co.nz>,
+ Heiko Stuebner <heiko@sntech.de>,
+ Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
+ Andi Shyti <andi.shyti@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>,
+ Paul Walmsley <pjw@kernel.org>, Samuel Holland <samuel.holland@sifive.com>,
+ Orson Zhai <orsonzhai@gmail.com>,
+ Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Chunyan Zhang <zhang.lyra@gmail.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Alain Volmat <alain.volmat@foss.st.com>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>, Li-hao Kuo <lhjeff911@gmail.com>,
+ Masahisa Kojima <masahisa.kojima@linaro.org>,
+ Jassi Brar <jaswinder.singh@linaro.org>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Jonathan Hunter <jonathanh@nvidia.com>,
+ Sowjanya Komatineni <skomatineni@nvidia.com>,
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Jonathan =?UTF-8?B?TmV1c2Now6RmZXI=?= <j.neuschaefer@gmx.net>,
+ Michal Simek <michal.simek@amd.com>, Max Filippov <jcmvbkbc@gmail.com>
+Subject: Re: [PATCH v1 4/4] spi: Drop duplicate device_set_node() call
+Date: Mon, 12 Jan 2026 15:10:36 +0100
+Message-ID: <2776743.vuYhMxLoTh@benoit.monin>
+In-Reply-To: <20260108203004.3538449-5-andriy.shevchenko@linux.intel.com>
+References:
+ <20260108203004.3538449-1-andriy.shevchenko@linux.intel.com>
+ <20260108203004.3538449-5-andriy.shevchenko@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -81,88 +173,28 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260111201040.162880-1-anirudhsriniv@gmail.com>
- <20260111201040.162880-3-anirudhsriniv@gmail.com> <20260112-upbeat-gay-chachalaca-ecb74c@quoll>
-In-Reply-To: <20260112-upbeat-gay-chachalaca-ecb74c@quoll>
-From: Anirudh Srinivasan <anirudhsriniv@gmail.com>
-Date: Mon, 12 Jan 2026 15:16:47 -0600
-X-Gm-Features: AZwV_QiIk_am64aGoJ59TKkJjjSWuft6c_UwxN_mAcvJf8KPJOFciUjwqcXNWP8
-Message-ID: <CAJ13v3TqhKyT62NZFRz0dP0tov=q8fz99X_HgrJnwkd6Y5nEig@mail.gmail.com>
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: Add Asus IPMI card
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+X-Last-TLS-Session-Version: TLSv1.3
 
-Hi Krzysztof,
+On Thursday, 8 January 2026 at 21:23:41 CET, Andy Shevchenko wrote:
+> The SPI core provides the default fwnode for the controller,
+> assigned by device_set_node(). No need to repeat it in the driver.
+>=20
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On Mon, Jan 12, 2026 at 5:48=E2=80=AFAM Krzysztof Kozlowski <krzk@kernel.or=
-g> wrote:
->
-> > +
-> > +     leds {
-> > +             compatible =3D "gpio-leds";
-> > +
-> > +             led-fault {
-> > +                     gpios =3D <&gpio1 ASPEED_GPIO(C, 5) GPIO_ACTIVE_H=
-IGH>;
-> > +                     panic-indicator;
-> > +                     default-state =3D "off";
->
-> Missing color and function. Or at least label.
+>  drivers/spi/spi-dw-core.c           | 2 --
+>=20
+Works fine on Mobileye EyeQ6Lplus SoC in both host and target mode.
 
-I will add this.
+Tested-by: Beno=C3=AEt Monin <benoit.monin@bootlin.com> # dw mobileye
 
->
-> > +             };
-> > +
-> > +             led-heartbeat {
-> > +                     gpios =3D <&gpio0 ASPEED_GPIO(A, 7) GPIO_ACTIVE_L=
-OW>;
-> > +                     linux,default-trigger =3D "timer";
-> > +             };
-> > +
->
-> Drop redundant blank lines.
->
-> > +&mac2 {
-> > +     status =3D "okay";
-> > +
-> > +     /* Bootloader sets up the MAC to insert delay */
-> > +     phy-mode =3D "rgmii";
-> > +     phy-handle =3D <&ethphy2>;
-> > +     pinctrl-names =3D "default";
-> > +     pinctrl-0 =3D <&pinctrl_rgmii3_default>;
-> > +};
-> > +
-> > +
->
-> Like this as well. It's a sign of sloppy coding.
+Thanks,
+=2D-=20
+Beno=C3=AEt Monin, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
 
-Will remove
 
->
-> > +&fmc {
-> > +     status =3D "okay";
-> > +
-> > +     flash@0 {
-> > +             status =3D "okay";
-> > +             m25p,fast-read;
-> > +             label =3D "bmc";
-> > +             spi-max-frequency =3D <50000000>;
-> > +#include "openbmc-flash-layout-64.dtsi"
-> > +     };
-> > +};
->
-> Best regards,
-> Krzysztof
->
 
---=20
-Regards
-Anirudh Srinivasan
 
