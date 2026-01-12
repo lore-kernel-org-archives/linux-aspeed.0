@@ -1,61 +1,194 @@
-Return-Path: <linux-aspeed+bounces-3287-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3288-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 248C5C9EC7B
-	for <linux-aspeed@archiver.kernel.org>; Mon, 12 Jan 2026 11:48:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE194C9EC7A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 12 Jan 2026 12:04:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqVy33xTmz3050;
-	Mon, 12 Jan 2026 22:48:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768218507;
-	cv=none; b=dj2hU5v/mGHO6XU0XeP/9QqcytU/kGxiPdAG3gx4A5oOsXlQWZ8KoxF4W6mfBmF8RTVTngYrznAX9u1rYrtszA5NjFMjaXPfdPfp5PQFcGEwnrw+cfmMlUshjDlgggCgX2T8TKKOl5HDphqS/6lLqvMcQ11G+Vvafbi6c5SrxIZ7weVqmWzveVLcjEAZN/QRrsbH8lCrTCiezFkFWpuqkcEGxeTNKc6FyeJjqRnr4xTNl0v2IM4MXH8z4bxgd5zgefyJexOr9brYQLWb3rMBX6o1fpr6mCxLQyIUJo2oUG8KbQe3lFtiEFhA6HP3BNL2law1tRM8wWrwcXQLOY385g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqWJf2hj2z308P;
+	Mon, 12 Jan 2026 23:04:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768219474;
+	cv=none; b=dizd42cbEzfSMayaIUlb8I+3jObW/oU+19oD3ITaPI6/yIJwzmynlenKBKTrOOv7S48n5tfLE3FejMCdezUMZK/kQ4C6+VFBgVKIuHBjcPye5LrvN7LJYxs67KqiMt6FwldJJhKLUuOIj2DZr7FpUsayCrfqZb9GmoajAwD2uTHT6ytM+BBvHXROGJriaYhtjh/LFT48D8lZtSg3dOgSjjjqFPnvws5m7orCGjrEqAmgot2yrdTj4z1Gti3RWfL5qoM0J/lO8oi2nAY1WEUVZZEcVPRq88M7ClPMcDwpY+UqYpLiU/8rf5uAfP3MLjqQoPfpvJh/GmZvfyq4/PyCsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768218507; c=relaxed/relaxed;
-	bh=wDvjeCxmeHvlZ9VVx01hx9d17Spsbg7HFQEHfiqAH8M=;
+	t=1768219474; c=relaxed/relaxed;
+	bh=Wxs+qjr5nDGobnt3QTZgndIEJMo19D5435ExYe496Ws=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=A2bT4f9Z/OWb4MgrZTW85lDI39iu58E+KPmwt7bVhxrjJ44QAQeuftsbFX3AukrnJA+24c4CAkOI0CqGg7/cP095wPBJcHsgqcje7n/0/63SX09P5ol9GeLX2wEDdb8XGUewYr3tLON80/xev2CI8gIY9P5NQeu3dR/hGPZ4nIumEQKhZle/1P0bnP13ynoFLbaCFzrDpVABnf/k2zpEMXsbXzaOHbyLF7+tDrPm7RgI/uLyF8dAJ/97FJSgqcMo7odaJP5xtZLA036JncqkRGlRrsNMqvVI+tBexAnYttHoAa31vf/Yjji3yvojp4tWCnP5QJmhex6Ohj8etsfqnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cRdLqqmk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=X05+TI82wNZxtNzFJgfgNLKGNemYcbyXAbEi8lXqn/SNLGDXiQ+VEwCfaaV5CMn8Jn4YZxUEEAtWoYVXm05oiZ7N0+GGuFJkgGOznUt1acgaokFbOhmg/NTiprMsEOd1QGpvPuw5VlF5IZEI4W2G4yXaCHKmo/7Mi9+3Y5LojHV6ZuIbJuX0y+Rovgo0uGJ6yo88f4dliq9sC71AgDxffiptvKV/QqAeoDRa4QruRMNp1hz81uPbw7itQAO3GPiRypH/4f/7qse88x8FuY7IKvOjbgg3dm/r8rpfSuQ4HlHqujxtcn3E/A4yTGyQMJIIMUY7ti+O80rXJ2dLs+zn0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=U14jl0WG; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cRdLqqmk;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=U14jl0WG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqVy25VL3z2ynn
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 12 Jan 2026 22:48:26 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D0FD06001D;
-	Mon, 12 Jan 2026 11:48:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04067C16AAE;
-	Mon, 12 Jan 2026 11:48:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768218504;
-	bh=URDluMm2oQAGrABVnCxy8FFxRYxGizv+hrewS1N56j8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=cRdLqqmkPFRspZ/V5pmAzefvbhoMTp69aXHe94XB9hlP26X/Q560gdoGe5WtaHqN9
-	 2lyRZ4RqBvpFsbOq57qa1xLl70Kxefkzjj1vv85Kdf/nPTo/uQJXNyVSTDY1YSFm36
-	 nsvdHPdwaK7P6xEcyZdmiBzTvsdJZcL4goRAKqApa5T0CVHFDaNdamchF2IPw2mDqf
-	 M+TFPOMB6gN9jZ3DSMIDO5bKMM9YzQqk7zHjE7hrw5TywWdpXcK42KU077Zrwb7HoZ
-	 zC+5R3G53xBx5knYNveWEElodIzbh3urfSz7Y5tRWbZb1XVLamUnN7M6BeulZRFUhz
-	 C0GChan0K58Vw==
-Date: Mon, 12 Jan 2026 12:48:22 +0100
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Anirudh Srinivasan <anirudhsriniv@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ARM: dts: aspeed: Add Asus IPMI card
-Message-ID: <20260112-upbeat-gay-chachalaca-ecb74c@quoll>
-References: <20260111201040.162880-1-anirudhsriniv@gmail.com>
- <20260111201040.162880-3-anirudhsriniv@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqWJb1MM1z3050;
+	Mon, 12 Jan 2026 23:04:28 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1768219472; x=1799755472;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=5BiEA3YT3OvxJlu4+BexDLoaIF8cPC1fj4FQDGyymNA=;
+  b=U14jl0WGEStOWs4HoiFtTptEh1y18IisBWH/s1lU4uRfSgFaQCC0S2m3
+   YJuiTGViAC7VgsEKmlLUxp6OTxiigneq+ylS99lYVDBPzp303kBX3mVAb
+   o2q7q+3NrOautyhB8vfguBXyc8WyqiiWvYYFfDfaedz16TSMJAxCp6JXx
+   wn8kkXacwk86RxLsIBqrvZvRScg8ouefuaiMI6CjGk1vS7UYZcjVbNnWg
+   PvRLOGyMbfFnNve/Y7W9Fxvw5olZ5vcUKzFXdWpEK+JuCYrYbKR+GNhwQ
+   T/CE+HXCIEqNwYqJVLiAt+JEA/rrWMxbtlwndXJLeJMXOxZUhGd0f1Tqj
+   g==;
+X-CSE-ConnectionGUID: PpB9ds2MQMi2yyNQ/65m7A==
+X-CSE-MsgGUID: A56o2pP6Roq35M6nbC4L0g==
+X-IronPort-AV: E=McAfee;i="6800,10657,11669"; a="80597353"
+X-IronPort-AV: E=Sophos;i="6.21,219,1763452800"; 
+   d="scan'208";a="80597353"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2026 04:04:25 -0800
+X-CSE-ConnectionGUID: XAibRldxTZ6xSE7cKV3erw==
+X-CSE-MsgGUID: kqm52HRnSw29im3jfiPOTw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,219,1763452800"; 
+   d="scan'208";a="208554124"
+Received: from dhhellew-desk2.ger.corp.intel.com (HELO localhost) ([10.245.245.37])
+  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2026 04:03:57 -0800
+Date: Mon, 12 Jan 2026 14:03:54 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Charles Keepax <ckeepax@opensource.cirrus.com>
+Cc: Mark Brown <broonie@kernel.org>,
+	Varshini Rajendran <varshini.rajendran@microchip.com>,
+	Mikhail Kshevetskiy <mikhail.kshevetskiy@iopsys.eu>,
+	AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
+	Sunny Luo <sunny.luo@amlogic.com>, Janne Grunau <j@jannau.net>,
+	Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>,
+	CL Wang <cl634@andestech.com>,
+	Manikandan Muralidharan <manikandan.m@microchip.com>,
+	David Lechner <dlechner@baylibre.com>,
+	Florian Fainelli <florian.fainelli@broadcom.com>,
+	Jonas Gorski <jonas.gorski@gmail.com>, Hang Zhou <929513338@qq.com>,
+	Jun Guo <jun.guo@cixtech.com>, Philipp Stanner <phasta@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	=?iso-8859-1?Q?Beno=EEt?= Monin <benoit.monin@bootlin.com>,
+	Shiji Yang <yangshiji66@outlook.com>,
+	James Clark <james.clark@linaro.org>,
+	Jonathan Marek <jonathan@marek.ca>,
+	Carlos Song <carlos.song@nxp.com>,
+	Sakari Ailus <sakari.ailus@linux.intel.com>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Xianwei Zhao <xianwei.zhao@amlogic.com>,
+	Prajna Rajendra Kumar <prajna.rajendrakumar@microchip.com>,
+	Sergio Perez Gonzalez <sperezglz@gmail.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Qianfeng Rong <rongqianfeng@vivo.com>,
+	Haibo Chen <haibo.chen@nxp.com>, Gabor Juhos <j4g8y7@gmail.com>,
+	Md Sadre Alam <quic_mdalam@quicinc.com>,
+	Rosen Penev <rosenp@gmail.com>,
+	Luis de Arquer <luis.dearquer@inertim.com>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>,
+	Tudor Ambarus <tudor.ambarus@linaro.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Longbin Li <looong.bin@gmail.com>,
+	Patrice Chotard <patrice.chotard@foss.st.com>,
+	=?iso-8859-1?Q?Cl=E9ment?= Le Goffic <clement.legoffic@foss.st.com>,
+	Alessandro Grassi <alessandro.grassi@mailbox.org>,
+	Chen-Yu Tsai <wens@kernel.org>,
+	Darshan R <rathod.darshan.0896@gmail.com>,
+	Aaron Kling <webgeek1234@gmail.com>, Vishwaroop A <va@nvidia.com>,
+	Haixu Cui <quic_haixcui@quicinc.com>,
+	Darshan Rathod <darshanrathod475@gmail.com>,
+	linux-spi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+	asahi@lists.linux.dev, linux-aspeed@lists.ozlabs.org,
+	openbmc@lists.ozlabs.org, linux-rpi-kernel@lists.infradead.org,
+	linux-sound@vger.kernel.org, patches@opensource.cirrus.com,
+	imx@lists.linux.dev, linux-arm-msm@vger.kernel.org,
+	linux-riscv@lists.infradead.org, linux-mediatek@lists.infradead.org,
+	linux-rockchip@lists.infradead.org,
+	linux-renesas-soc@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-sunxi@lists.linux.dev, linux-tegra@vger.kernel.org,
+	virtualization@lists.linux.dev,
+	Nicolas Ferre <nicolas.ferre@microchip.com>,
+	Alexandre Belloni <alexandre.belloni@bootlin.com>,
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+	Lorenzo Bianconi <lorenzo@kernel.org>, Ray Liu <ray.liu@airoha.com>,
+	Sven Peter <sven@kernel.org>, Neal Gompa <neal@gompa.dev>,
+	=?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Wanner <ryan.wanner@microchip.com>,
+	Michael Hennerich <michael.hennerich@analog.com>,
+	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
+	Kamal Dasu <kamal.dasu@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
+	William Zhang <william.zhang@broadcom.com>,
+	Kursad Oney <kursad.oney@broadcom.com>,
+	Anand Gore <anand.gore@broadcom.com>,
+	=?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+	David Rhodes <david.rhodes@cirrus.com>,
+	Richard Fitzgerald <rf@opensource.cirrus.com>,
+	Vladimir Oltean <olteanv@gmail.com>, Frank Li <Frank.Li@nxp.com>,
+	Jean-Marie Verdun <verdun@hpe.com>,
+	Nick Hawkins <nick.hawkins@hpe.com>,
+	Yang Shen <shenyang39@huawei.com>, Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	Lixu Zhang <lixu.zhang@intel.com>, Yinbo Zhu <zhuyinbo@loongson.cn>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Kevin Hilman <khilman@baylibre.com>,
+	Jerome Brunet <jbrunet@baylibre.com>,
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Daire McNamara <daire.mcnamara@microchip.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Avi Fishman <avifishman70@gmail.com>,
+	Tomer Maimon <tmaimon77@gmail.com>,
+	Tali Perry <tali.perry1@gmail.com>,
+	Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+	Benjamin Fair <benjaminfair@google.com>, Han Xu <han.xu@nxp.com>,
+	Yogesh Gaur <yogeshgaur.83@gmail.com>,
+	Linus Walleij <linusw@kernel.org>, Daniel Mack <daniel@zonque.org>,
+	Haojian Zhuang <haojian.zhuang@gmail.com>,
+	Robert Jarzmik <robert.jarzmik@free.fr>,
+	Chris Packham <chris.packham@alliedtelesis.co.nz>,
+	Heiko Stuebner <heiko@sntech.de>,
+	Fabrizio Castro <fabrizio.castro.jz@renesas.com>,
+	Andi Shyti <andi.shyti@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Paul Walmsley <pjw@kernel.org>,
+	Samuel Holland <samuel.holland@sifive.com>,
+	Orson Zhai <orsonzhai@gmail.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Chunyan Zhang <zhang.lyra@gmail.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Alain Volmat <alain.volmat@foss.st.com>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Li-hao Kuo <lhjeff911@gmail.com>,
+	Masahisa Kojima <masahisa.kojima@linaro.org>,
+	Jassi Brar <jaswinder.singh@linaro.org>,
+	Laxman Dewangan <ldewangan@nvidia.com>,
+	Thierry Reding <thierry.reding@gmail.com>,
+	Jonathan Hunter <jonathanh@nvidia.com>,
+	Sowjanya Komatineni <skomatineni@nvidia.com>,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+	Michal Simek <michal.simek@amd.com>,
+	Max Filippov <jcmvbkbc@gmail.com>
+Subject: Re: [PATCH v1 1/4] spi: Propagate default fwnode to the SPI
+ controller device
+Message-ID: <aWTjKvbThxx9hSuL@smile.fi.intel.com>
+References: <20260108203004.3538449-1-andriy.shevchenko@linux.intel.com>
+ <20260108203004.3538449-2-andriy.shevchenko@linux.intel.com>
+ <aWTgzqXrGMcdpFOr@opensource.cirrus.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -69,137 +202,29 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260111201040.162880-3-anirudhsriniv@gmail.com>
+In-Reply-To: <aWTgzqXrGMcdpFOr@opensource.cirrus.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Sun, Jan 11, 2026 at 02:10:32PM -0600, Anirudh Srinivasan wrote:
-> Add device tree for Asus IPMI card, an AST2600 BMC PCIe card
+On Mon, Jan 12, 2026 at 11:53:50AM +0000, Charles Keepax wrote:
+> On Thu, Jan 08, 2026 at 09:23:38PM +0100, Andy Shevchenko wrote:
+> > Most of the SPI controller drivers share the parent's fwnode
+> > by explicit assignment. Propagate the default by SPI core,
+> > so they may drop that in the code. Only corner cases may require
+> > a special treatment and we simply (re)assign the controller's
+> > fwnode explicitly (as it's done right now, no changes required
+> > for that).
 > 
-> Signed-off-by: Anirudh Srinivasan <anirudhsriniv@gmail.com>
-> ---
->  arch/arm/boot/dts/aspeed/Makefile             |   1 +
->  .../dts/aspeed/aspeed-bmc-asus-ipmi-card.dts  | 136 ++++++++++++++++++
->  2 files changed, 137 insertions(+)
->  create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts
-> 
-> diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
-> index 9adf9278dc94..ff40d9ab88b7 100644
-> --- a/arch/arm/boot/dts/aspeed/Makefile
-> +++ b/arch/arm/boot/dts/aspeed/Makefile
-> @@ -15,6 +15,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
->  	aspeed-bmc-asrock-spc621d8hm3.dtb \
->  	aspeed-bmc-asrock-x570d4u.dtb \
->  	aspeed-bmc-asus-x4tf.dtb \
-> +	aspeed-bmc-asus-ipmi-card.dtb \
->  	aspeed-bmc-bytedance-g220a.dtb \
->  	aspeed-bmc-delta-ahe50dc.dtb \
->  	aspeed-bmc-facebook-bletchley.dtb \
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts
-> new file mode 100644
-> index 000000000000..fea94360245c
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-ipmi-card.dts
-> @@ -0,0 +1,136 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +// Copyright 2025 Anirudh Srinivasan
-> +
-> +/dts-v1/;
-> +
-> +#include "aspeed-g6.dtsi"
-> +#include "aspeed-g6-pinctrl.dtsi"
-> +#include <dt-bindings/i2c/i2c.h>
-> +#include <dt-bindings/gpio/aspeed-gpio.h>
-> +
-> +/ {
-> +	model = "ASUS IPMI Card BMC";
-> +	compatible = "asus,ipmi-card-bmc", "aspeed,ast2600";
-> +
-> +	aliases {
-> +		serial4 = &uart5;
-> +	};
-> +
-> +	chosen {
-> +		stdout-path = "serial4:115200n8";
-> +	};
-> +
-> +	memory@80000000 {
-> +		device_type = "memory";
-> +		reg = <0x80000000 0x40000000>;
-> +	};
-> +
-> +	reserved-memory {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +
-> +		video_engine_memory: video {
-> +			size = <0x04000000>;
-> +			alignment = <0x01000000>;
-> +			compatible = "shared-dma-pool";
-> +			reusable;
-> +		};
-> +	};
-> +
-> +	leds {
-> +		compatible = "gpio-leds";
-> +
-> +		led-fault {
-> +			gpios = <&gpio1 ASPEED_GPIO(C, 5) GPIO_ACTIVE_HIGH>;
-> +			panic-indicator;
-> +			default-state = "off";
+> Reviewed-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+> Tested-by: Charles Keepax <ckeepax@opensource.cirrus.com>
 
-Missing color and function. Or at least label.
+Thank you very much! I'm now pretty much confident about the change.
 
-> +		};
-> +
-> +		led-heartbeat {
-> +			gpios = <&gpio0 ASPEED_GPIO(A, 7) GPIO_ACTIVE_LOW>;
-> +			linux,default-trigger = "timer";
-> +		};
-> +
+-- 
+With Best Regards,
+Andy Shevchenko
 
-Drop redundant blank lines.
-
-> +	};
-> +};
-> +
-> +&mdio2 {
-> +	status = "okay";
-> +
-> +	ethphy2: ethernet-phy@0 {
-> +		compatible = "ethernet-phy-ieee802.3-c22";
-> +		reg = <0>;
-> +	};
-> +};
-> +
-> +&mac2 {
-> +	status = "okay";
-> +
-> +	/* Bootloader sets up the MAC to insert delay */
-> +	phy-mode = "rgmii";
-> +	phy-handle = <&ethphy2>;
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_rgmii3_default>;
-> +};
-> +
-> +
-
-Like this as well. It's a sign of sloppy coding.
-
-> +&fmc {
-> +	status = "okay";
-> +
-> +	flash@0 {
-> +		status = "okay";
-> +		m25p,fast-read;
-> +		label = "bmc";
-> +		spi-max-frequency = <50000000>;
-> +#include "openbmc-flash-layout-64.dtsi"
-> +	};
-> +};
-
-Best regards,
-Krzysztof
 
 
