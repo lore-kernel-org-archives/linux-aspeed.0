@@ -1,99 +1,98 @@
-Return-Path: <linux-aspeed+bounces-3321-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3322-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6D38D3CC86
-	for <linux-aspeed@archiver.kernel.org>; Wed, 14 Jan 2026 22:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 510A6D3CC82
+	for <linux-aspeed@archiver.kernel.org>; Wed, 14 Jan 2026 22:25:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ds0zQ2VT4z2xqG;
-	Thu, 15 Jan 2026 09:24:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ds0zk0GNZz2xrL;
+	Thu, 15 Jan 2026 09:25:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768404629;
-	cv=none; b=oceSI5NZTBFPuAw8ZiwTQ7jpbJiCmZRC+I7z55fQ05/gmju1M9IQG8vWtXKHtO4ajdcvm0CVcb9FWo04kUGggslTzPjrbY1lFhda3O7SP+t5QKqy1h0fdrPnuvn8eX2doF3rfsnf1P31U6jHZXdpttuautu8coTjuIlRHwauwn5j7B4yRYegOwHQ9hGmD4JmWTL5xzok1haZCD8i91wm1yomod45gkmfVP3Rq/aLjpzBkEKd8FOLZjRKLXWRUrGfG7/LS/UoxaZQeGGxTdcyabXOLS8TSONdpNwEATd/8SM+MmYfVvYBf7NTz+gqdapYwSm8waeUuLxFB/fHSz+TRQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768404628;
+	cv=none; b=DbBupiNpYU7Q0vrfWCey68aMZiWvXFseVV15+K2VmL38hFwMK7BRePoSHZYc9tZ3Gc/fm5mMDGXNo/S7v3vWo3m5Ie1jbqO9B8K9A+LXXwjmuzY5pTDCW0khRpMrLi4X/sNZcJvOYXdpOLxSHYFiER/S1+/fB99MNGmmQP1T5M0Za0T653DRhOPcWveuz3HXg9bB1MI8Au5O/dOa+haMknaUtF2uRn75RV2b9Ii9sPzuSlIWvcpw4yvUXSEbryuPmPYXDEROIYm1qaKrV9uoBHLvREjSjQ78Lb9rFdFsSdHmW54CbbMPNwq0TXMHdG3gnOnExEsP++vmf9tCak3pHg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768404629; c=relaxed/relaxed;
-	bh=TQOWmZ4i8qr9JpAuK61Y9RoWdOmJcEUPWfdU+wHADeY=;
+	t=1768404628; c=relaxed/relaxed;
+	bh=RTM8QP4WDE86GBG0NkZNuey0Iun+lulG+w2rdXJWnfI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hSbOxN2KujgXCH6jheZRDmWCFKCQTT+WzUxnZCd7Yok+ngUBlcsOoVyXZjEIAAAJStAurFsc7kAzQBwspOMhR2b5D8TXd0XfUk+GgjnfshQdMzJmAlAzkAnSQVjvYAIs+mAHXlmjV5ZHvl5UZ4ZSLEQBe1tJERr6DgOfS+eV7xn1AOykJ5S/rXTEK0H9jHhOf9Apg8mpnwxyfDyu/nDXmm7lKFDw2f4PCpNK/6STYz0hJPWYOUvQDj7LgLb0ABiULSFGKcdHQ75ubw1sWFxJoaVDX7JKGFQwy0PoYzeIsqbV1/XGHi0hQuOEUX/kltGKKOyB4H31V5CX5G9ig2aaeg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Nd+c0nG/; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=V8cqkF0a; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:To:Cc; b=hgjnTLpdj9pPL0L43YYksJ8efm7ckzkx91BQoPriInM0Sd94mExALvkILEf1572ErOSdxQkYh//d1zSCf9TEL+b5qzelvZTshp9rRsxdA7zs9Q5l4uVq1oHLzXCk1sL9uO4k1XKXKFAjyIf/hy4CPld1CWA+HEZR7LVhcq/Hw33yAcgrINymrXceEDDFLvk/A8kVVx0/2hq11X8gHgzTkMhoIDfc5tSpdN3NtLWVYOh46FsmcdiGh7V/+17f3IWEqTEJML1Pw+0DZFq47bk5qulSJtGyExrI53iM8vDJ9gzu6MwURBenwejecmakqAZOP+wwhxFlBY4mvjHaFomeQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AzCSBoD9; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=c3IUq3Rh; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Nd+c0nG/;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=V8cqkF0a;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=AzCSBoD9;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=c3IUq3Rh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4drqnK1FxGz2xYk
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Jan 2026 02:30:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4drqnG5jbDz2xYk
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Jan 2026 02:30:26 +1100 (AEDT)
 Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60EDiIG52082120
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 15:30:27 GMT
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 60EDnmKE2081707
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 15:30:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	TQOWmZ4i8qr9JpAuK61Y9RoWdOmJcEUPWfdU+wHADeY=; b=Nd+c0nG/FDs7XoIV
-	szExDaUVSYkyrbiaHalQ7Ap9+Ae6UJ/LuHmENsYmw2Y917XAkpOSA5PDn/ucsIXw
-	RLjTwBfwp+vw9JlBmnZtHYYPA+nuxAqdd1pB4mQdMxi8gLqJiqMqFue9dtxzWhhw
-	z2Mh4kP3YONo/VwuqMbCWqIdg2ZulAZiBjr4/v+VsHOzRPeea0BMSLLBuepXEfaK
-	4TcnFo8VnR36XVqUEY+VzZlVDB5GSRQreJSVMoii0SAdOXRljAxbNb1718WPAMnT
-	H1EH+vCGRqzwWc6iLgCOM8ppr/Cv0FkS9cCCOv2YBPPewR6rimIDRchIvZsKHfwn
-	UwREZQ==
-Received: from mail-qk1-f198.google.com (mail-qk1-f198.google.com [209.85.222.198])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bnu58uyx7-1
+	RTM8QP4WDE86GBG0NkZNuey0Iun+lulG+w2rdXJWnfI=; b=AzCSBoD9J/kAgn5b
+	NYPVaY6w6+Qs5o+wVDPdmbCawKNIhRSVPAqH4gl4pai6bAKuHoVYlq7/WKsYLNjB
+	KQrB6jYs0vWaY6+W+3SN1noeudRgeyidixzfP+OYATvIPWpHkiBDpg3e23JWTX1p
+	4fhGq2IJnlZ5KJqbzP+NLxCB5Fc1xLFL8bw49SWoU1rGDiQ5rHou2y4mHufOcRST
+	Ob3AkdvukE7IKJsynwD1ZBbOatQM6y+aklUfu6NiWhUft8INyUsny/4bx+2bR/QX
+	ghWJPg8SbaF1jmdhlrH19G4Z/HY6XW41soqrc0WF1wihTWOXPxte9gbGFoCEMnSl
+	JSycfQ==
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com [209.85.222.199])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bnu58uywx-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 15:30:27 +0000 (GMT)
-Received: by mail-qk1-f198.google.com with SMTP id af79cd13be357-8bb9f029f31so2434643785a.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 07:30:27 -0800 (PST)
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 15:30:24 +0000 (GMT)
+Received: by mail-qk1-f199.google.com with SMTP id af79cd13be357-8c5297cfe68so328046185a.0
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 07:30:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1768404626; x=1769009426; darn=lists.ozlabs.org;
+        d=oss.qualcomm.com; s=google; t=1768404623; x=1769009423; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=TQOWmZ4i8qr9JpAuK61Y9RoWdOmJcEUPWfdU+wHADeY=;
-        b=V8cqkF0aUvZ3rLJkEDWyizoXu4BDUOGbnxVYx5aQpRwQZXZEt7rCuGpEKGfv5LacM+
-         YRi6B1/cqiV7kkBMxk6dgQ8j9UwQDMWc2IoFKjkmyECykVAM7EcG9mIKahLOYJAtZq4p
-         NtEELVxAdboNt6zyCt/b8aw1mS0XKGE50VlF8TLxxVPjB+VZ/x9U86V5llGskRasNfub
-         j3fStP2Zz0ZfL33hzWPWxv4ewdAnty8U+rxQZSC6d4jugmjK1tkIpTl/my0/32jK0LM+
-         q3TcYBHbjsI85AVehEiZWx2wX87WbvN+J9I4CEFLY+28NyhwCYWWysZsyX7I5enK5mf1
-         qeyw==
+        bh=RTM8QP4WDE86GBG0NkZNuey0Iun+lulG+w2rdXJWnfI=;
+        b=c3IUq3RhErxjfbciEc8i0mB6dBn1DOIsUR9AhBBt8caJNN4cdYDm2gTg1ZiK314iw0
+         oh0YTt+P6X1sP5jeL0TDhMak6RsMITSUeqhSSAnxFzpSjEh7urfO2coVUIQduAiy4fFg
+         LUHRWMzWVysfnosDnGYMjuq0PsqcoSfFpqBI7OAAv0dQ88ul/ZzzaGRMW1HJurPizqcu
+         QY6/ZetDENd3C43oOslZuysQ7EMZSvGyzwbCqXGkvvmyh00Z56w2EH5VxS1K29f4Vltn
+         YRVNXsqXAiFOG4S4Sds0lie1kSWszGNyoOiEyGxBMxRZHsMwQmHmlJb/uRfTID96RtsB
+         yBog==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768404626; x=1769009426;
+        d=1e100.net; s=20230601; t=1768404623; x=1769009423;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=TQOWmZ4i8qr9JpAuK61Y9RoWdOmJcEUPWfdU+wHADeY=;
-        b=szx2G6sXOMFhvoszG8AISRUjb2xn+QcwPipJvTtGftP+nUGJbOTrvNumVg2q3Fk6Zc
-         t9t7uyucfDNiefdCQM7f1LNDfUycTYChygui+N+2s3eWGyYut3g6Pvw4pgmY88kSDkuE
-         qZi0IcFAcJzrLD6Kl1jmZZq6IqBBs2gzMnOk3YGO74gV73czDk3qJMCSyD8EOONg9ESq
-         nnP2kteSdeRR2EbOAfSLkZ+0dOVG8YBGif7FDi9Nl9FvolIWN/cZBbZSMgC5pTYJbxqg
-         3X/omoE/OfIMbLTrOZ1M7oScPlAxpCoHfXv0HB/SckM4krjokk0CR4QjzvBcdiJw7S9L
-         lt1g==
-X-Gm-Message-State: AOJu0Yw9FSywS4jJxOt5y+CLt55bHTs+i2ej+v8h9zP7Q4Bsj40bpiUM
-	91zJmWQ2DVCRaeRQdKvZS+FVw8EqYG42hZ06FIaNGNylQXNstY62QuERsaLMwAOo+NiaX4RUaLt
-	HJHFHA8qg9bxDtwdMRdAPc8D380HS1BWGvAxPfZxr8PFoiDzb8CUFN7EYBjn+Xh1eWM44
-X-Gm-Gg: AY/fxX6zoNFPWm0IqqIDjtfE6+qusgWtdapRz/ldl9mAEo9x6YYDMP45FAP7XsWchQm
-	x6XNBYICQzjxJ/jq+ERbFozaG0q8G49cXMqp5lkTxcMHCJW10ee4ayFJ5Wbcdu72WoLXmvhv9Dj
-	d+OLNjrkg5mwmPhX5hWpTSIthPVDlHg3IZW07jvqJ/T2XpV7RLjXvH4r9aObFrvJVnEMPQJhDav
-	pxB0a+Z4O+MseNSZQ3OYC3utt2v4qtEN0WCb3k9tS9zOeDGK38fuoyV7nu0zHsvKwMDJyEjqzVp
-	6ropayTuOLrdOl0ssb1f3iw4p9LL7kt3HPge0Q003fwG9lLQ7LUk/r4oUFL+UUvon7uFcM/zoFZ
-	J4/JvfmhkFyFfIsoIR9Atu82ZtbCZXW1CrQ==
-X-Received: by 2002:a05:620a:44c4:b0:8ba:5255:107 with SMTP id af79cd13be357-8c52fb2406emr386807685a.18.1768404625751;
-        Wed, 14 Jan 2026 07:30:25 -0800 (PST)
-X-Received: by 2002:a05:620a:44c4:b0:8ba:5255:107 with SMTP id af79cd13be357-8c52fb2406emr386788385a.18.1768404624120;
-        Wed, 14 Jan 2026 07:30:24 -0800 (PST)
+        bh=RTM8QP4WDE86GBG0NkZNuey0Iun+lulG+w2rdXJWnfI=;
+        b=YM9gsE107KkTjLUxYI0X61U0Xy+TPSBQYLoj2KyMrqn+aWsg4wF/akB1SynJY5559s
+         BPeJgcJlpqYXoIVIz158lon6uC2BzTWO+aobrIt15aEcfUK/SO3zd1/oKmH93kFnEShh
+         k5U1ZfvrObXg55j8sZ92nM04PHs3QmBX8LJNT9/qSlBT4y/fRnFSAfrHshzmKI3Qeman
+         UsQOhbBr94dGBOU1DR76drAT2uSAKs5lUWVw6/sX7YWnOr81INj89X+gL7QsZdOywIzq
+         /mOJoc/6rywHyh3Bssq3y6+VFHTwKb9BMMVZwoiBY0CiuVEmH7VdYgbz5Nd7gdt63wtX
+         yNgw==
+X-Gm-Message-State: AOJu0YxqRlv8jbdNqHKn7CPyz5kB89mlB/ZZUlb7DZV7D3aOsygjJJpY
+	nWofs8V4NWJ9Dm9Rcsxx6aNQaMLo0CqicrcHCdN2Vr2VtjQy/eBou0FRflStCt7OcKkwG5CZT33
+	tr7FZfhcsVUutCRjcCQayJrC5ceUu+4ToRNaF9o3emo1y9cAybAATLX3p6njAkJQXmNfe
+X-Gm-Gg: AY/fxX7zwzMpxDXuLVmJckYgfa2fmPNClC/GZEYRzOXROxq34yCfMaO0DPH0Rrwb3fm
+	zWi7L7Y0JzNZrWs7qvNVEAryS5LbhCNtnBq7NekhhEuwUDD5qGes2Y1/XU/pkLJEOxmQQG4nUw4
+	qOd09D37/NMrpmpcLM5LqDL750VD+lnLahUEwdbkZ4dkivEjNSCq8nHgDL4ujQtacdNT1m58xnc
+	6em9i6dEUhuCP6uf7GvmqPSBS6BZJOCVBcRrHTVKyJ6nuEBCd9gkBP09N1Lvggz4t1otYfojAqK
+	D5ZwGdNdAWCL4SiFYafJ0CTZTUeLJfVHXDXRZEIy4IuBZtF1zWkgUcLkck51OUBDTPMJBCMxtVN
+	t+qggInVSK4/HMTPJufy20jfGQ9P+5186Pg==
+X-Received: by 2002:a05:620a:2556:b0:8b2:d72d:e41b with SMTP id af79cd13be357-8c52fbdd3aamr433297385a.44.1768404622684;
+        Wed, 14 Jan 2026 07:30:22 -0800 (PST)
+X-Received: by 2002:a05:620a:2556:b0:8b2:d72d:e41b with SMTP id af79cd13be357-8c52fbdd3aamr433288585a.44.1768404622116;
+        Wed, 14 Jan 2026 07:30:22 -0800 (PST)
 Received: from [127.0.1.1] ([178.197.218.229])
-        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6507bf667fcsm22812989a12.29.2026.01.14.07.30.22
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6507bf667fcsm22812989a12.29.2026.01.14.07.30.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jan 2026 07:30:23 -0800 (PST)
+        Wed, 14 Jan 2026 07:30:21 -0800 (PST)
 From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Date: Wed, 14 Jan 2026 16:30:03 +0100
-Subject: [PATCH 02/11] pinctrl: starfive: jh7110-sys: Cleanup header
- includes
+Date: Wed, 14 Jan 2026 16:30:02 +0100
+Subject: [PATCH 01/11] pinctrl: aspeed: Cleanup header includes
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -109,7 +108,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260114-pinctrl-cleanup-guard-v1-2-a14572685cd3@oss.qualcomm.com>
+Message-Id: <20260114-pinctrl-cleanup-guard-v1-1-a14572685cd3@oss.qualcomm.com>
 References: <20260114-pinctrl-cleanup-guard-v1-0-a14572685cd3@oss.qualcomm.com>
 In-Reply-To: <20260114-pinctrl-cleanup-guard-v1-0-a14572685cd3@oss.qualcomm.com>
 To: Andrew Jeffery <andrew@codeconstruct.com.au>,
@@ -134,38 +133,38 @@ Cc: linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
         linux-tegra@vger.kernel.org, linux-rockchip@lists.infradead.org,
         Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=openpgp-sha256; l=906;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2516;
  i=krzysztof.kozlowski@oss.qualcomm.com; h=from:subject:message-id;
- bh=vQTc4Cx1cuzPah8LLXL26kybe/0nRvPEYAbDNlVXaL0=;
- b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBpZ7aBbIM2DWPBQNuBnGlAmRqfublmk+ABnSOCP
- +eX7CJ/kqCJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCaWe2gQAKCRDBN2bmhouD
- 13B7D/9HNpUgwKflmRiVEQKiqAHJlihytGsm6xhqvuPk0OXM6g4wK8KWJ7AoXqklkhVGJfLYvjS
- EVoKICEkLULEFDlMFEFKdNqN/uGc1TUwNp5gMcRJRrlIE+ZYvRo4LIknCsvHV1jT9i+Y2L23c3p
- +uDVB8dH2uwJv3IuhJUnA1gGMQM4xpw4ac7NB+UCOk2LnfcACtKncHKQ7jr4vbc3O0f3pfTQpJp
- dZkWVtWxp4BQm+5d1XuZwVzvgj4b/xAJcvhU0BzFKw41RORAakfzsVxAkTHHtP62LHFxnKZSwKi
- E8XvqOwq5O+74OFdv+vHFLcG/6f+rPsNDMLHCxupzCLkx6Pwqg6qJp9qYbsQJCEuj1EJyrotryy
- ANOtROt7QabL1HCVBOeWE7/I1c/PzdUslygkZyhowuMmtTrgMAsawR3fzOXHuQOQhjeKsN9lt/M
- fx0zuszc+shjokj+huAOTlufmrLlWzFxqM4Hu67hEma3ScG2iv485ncOEg87MQQpuFfjrtb+vDK
- ICaUVJAoHNSRifaTDmw6lMDG1ZAAU7vvujZpio8eHVdgOh3jPCnAMmeTePFgqI8N3JIJ+bkQyuz
- 2wHidhJCNQckjPlFZ10HKxqor1PXsDvliPHX6i68yW1W61YZ+wIbn5bOmZ0GIDO6/jOlooNoy63
- tkrtX+1GbUIJE4Q==
+ bh=BOg98/1JJXf+vGTTUwHW2mMQjVbfd13nI6bPXirGFB4=;
+ b=owEBbQKS/ZANAwAKAcE3ZuaGi4PXAcsmYgBpZ7aA2bajX7HJFoPmqSFCGOiGBqLJt6NM8LzAd
+ XAIqmeyi3uJAjMEAAEKAB0WIQTd0mIoPREbIztuuKjBN2bmhouD1wUCaWe2gAAKCRDBN2bmhouD
+ 1zSHD/97RdnKd17RjQ4GZXnl1GK1sM4fAIbv/Er4l/nCYrCsRStOmpsNfQQNQ7KbiFIy6ka6EQQ
+ RmCybnj6DI01+PJ7LKfZjIhsVOdQRCKSSRsSOzZ2sWtH7UtF7Qco6eaNduwhfUDaSknYVE8yIKS
+ q89qtgMa00kGUI0EqHfiZ8qCSnSWxZL+xPFwD+VaK2PMANj3eijWok9TKqlbKkGTmMKho7c3WOD
+ kkTSfcVXpAaccbQNmgEAkCUer3aTG6Z0QKWdyinivpOZRSpzni6zy3iZTvH5qnQ5okqQ8+u1yVL
+ ZcUZ45bRE9Lxm2YaqTb/8FMSOpMAAXKgnB8X6QA+InLQGRJSNoaNEwmu6nNF/vR2K8ztj6axVXY
+ 0vmcCDYOnJbcX5YBUAIDooVFlUG0XDfrGrUzdObWOPhSE4k/LWR6KvxxHSM13yiEttuiUh5j5Wc
+ uyOWQQHPn+CHVSxzd/HqrsGACkpKblq5HaElBupSYgsEcP/sLU1GEEwHHqCpdn+EPpwcITg6hft
+ gzyvN7ZCzN1S8gDsA7ykKbGnB5dKBWHADzwQtqQEP8YvZiOnvQuPH0X2k8Vbd6e0GSxIUydR1xh
+ u9u70zyMvvsb2RcwG5zaIi3AprWfNihRSpPswPd5WpF2M6sS9zQbZzeHDly67NBW2wG1jPitQdo
+ U7H9zvpSdKlaUmA==
 X-Developer-Key: i=krzysztof.kozlowski@oss.qualcomm.com; a=openpgp;
  fpr=9BD07E0E0C51F8D59677B7541B93437D3B41629B
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE0MDEzMCBTYWx0ZWRfXw7R+OoZVWRRt
- Md9XWv2iBAQyDGjkv6IcxGZTTLOs52rmyl1JO1wX9IbPBwWLB8GOcos894bPiKHstoIBVjUw2lG
- PMkRvkFOJmAAeyIWFatxzslPnOZUFPUzEX7dymCUrUFIhM600cslELKgR/OAWhtrVvrz9CRrrXV
- Hb6i3MO1gAiX+l1nTlcwPDkeDeT6/9ioaqM4E4Lbu3rHPZfsWFT7ns8N2XOeQDzEw2WPlV+gVl8
- 0hGISLElhVESpET8XNHaePan3o+LC54+mC5ARtjfdFklYoeLrXkrzIF6j3ALOEIrnF7nXf5k8OP
- LXjQWXM5D6Xj1D3/NGFRQ0CDcMK8uYYQs0XiUIIzhTWuD+C0x77rHiSbqGsZKmV4UsSyVcSPZd6
- kSoWZ3RcMb13z6qMHO2/N1S7lFD5RCtOiANhMbPHz+zt2g2T66J2xZTkr3wYM/BqYtb9tIU0etY
- /js6fqocgI6JMK4pFaA==
-X-Authority-Analysis: v=2.4 cv=BZnVE7t2 c=1 sm=1 tr=0 ts=6967b693 cx=c_pps
- a=qKBjSQ1v91RyAK45QCPf5w==:117 a=Eb9f15NH/cHKzfGOmZSO4Q==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTE0MDEzMCBTYWx0ZWRfX2dm34usbgyA+
+ Bebf0gatpEoHseXlAkahnmvdgXJpQE0ZwfjCupVnb+gT5rn7B3HeXrNGgprDJIMfEmjRXS4mfhu
+ d7x6T7mPqchTbihsw5jume7Z+3lYkQG2cfdzgteMWky7brH5eUTB/HA6hcAQ+6Ky4OpsGdC4sE7
+ jeWC80nXa6yQHhN8zc3aqK88YQhdkA+2SFMcarNEWEidX/coRUb79dTpljvtZuioYazUvpHN2jy
+ 0cOpcxYuVghKRaQYGihEKDa988unxKFf0V4k5Qo1deVbtHVy893B5VN8hMv/sL/OfHfeVdNuIzu
+ cm34tvPlZ70fHPWdlWCv7zCV623UJ2BNso3iXGiQc1pl89OEuj9bU2xrEIk2NWK4b1xcFv+5FJ3
+ pJKNfZ9mPfUCOn6BxNBIe1PmhoQ2y9mopVA5HpCEhXyTmMDnfb/wJbV193YodB/pTpzX85dSrmD
+ tyX8TG8VFzpMK9rnQiA==
+X-Authority-Analysis: v=2.4 cv=BZnVE7t2 c=1 sm=1 tr=0 ts=6967b690 cx=c_pps
+ a=HLyN3IcIa5EE8TELMZ618Q==:117 a=Eb9f15NH/cHKzfGOmZSO4Q==:17
  a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=b-TtO4hhcUHcL_E8iecA:9
- a=QEXdDO2ut3YA:10 a=NFOGd7dJGGMPyQGDc5-O:22
-X-Proofpoint-ORIG-GUID: lNc6by1do9cRfR7yI9ocbPVFlYybfOVz
-X-Proofpoint-GUID: lNc6by1do9cRfR7yI9ocbPVFlYybfOVz
+ a=VkNPw1HP01LnGYTKEx00:22 a=EUspDBNiAAAA:8 a=KvQaFmux51imLjMCrhIA:9
+ a=QEXdDO2ut3YA:10 a=bTQJ7kPSJx9SKPbeHEYW:22
+X-Proofpoint-ORIG-GUID: aUXGrIbTIfhSmpby2cKOGe-52XZaLPBP
+X-Proofpoint-GUID: aUXGrIbTIfhSmpby2cKOGe-52XZaLPBP
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2026-01-14_04,2026-01-14_01,2025-10-01_01
@@ -175,32 +174,75 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2601140130
 
-Remove unused includes: no clocks, mutexes and resets.
+Remove unused includes (no mutexes, string functions, no OF functions)
+and bring directly used mod_devicetable.h (previously pulled via of.h).
 
 Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 ---
- drivers/pinctrl/starfive/pinctrl-starfive-jh7110-sys.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c | 4 +---
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c | 3 +--
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c | 5 +----
+ 3 files changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/pinctrl/starfive/pinctrl-starfive-jh7110-sys.c b/drivers/pinctrl/starfive/pinctrl-starfive-jh7110-sys.c
-index 9b67063a0b0b..44f84e4c29bf 100644
---- a/drivers/pinctrl/starfive/pinctrl-starfive-jh7110-sys.c
-+++ b/drivers/pinctrl/starfive/pinctrl-starfive-jh7110-sys.c
-@@ -7,14 +7,11 @@
-  */
- 
- #include <linux/bits.h>
--#include <linux/clk.h>
- #include <linux/gpio/driver.h>
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
+index cb295856dda1..f9d8fb1ab1ec 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g4.c
+@@ -6,14 +6,12 @@
+ #include <linux/init.h>
  #include <linux/io.h>
- #include <linux/mod_devicetable.h>
- #include <linux/module.h>
+ #include <linux/kernel.h>
 -#include <linux/mutex.h>
+-#include <linux/of.h>
++#include <linux/mod_devicetable.h>
  #include <linux/platform_device.h>
--#include <linux/reset.h>
- #include <linux/spinlock.h>
- 
  #include <linux/pinctrl/pinctrl.h>
+ #include <linux/pinctrl/pinmux.h>
+ #include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/pinconf-generic.h>
+-#include <linux/string.h>
+ #include <linux/types.h>
+ 
+ #include "../core.h"
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+index 792089628362..9934ef6205d6 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g5.c
+@@ -7,14 +7,13 @@
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+ #include <linux/mfd/syscon.h>
+-#include <linux/mutex.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/pinctrl/pinctrl.h>
+ #include <linux/pinctrl/pinmux.h>
+ #include <linux/pinctrl/pinconf.h>
+ #include <linux/pinctrl/pinconf-generic.h>
+-#include <linux/string.h>
+ #include <linux/types.h>
+ 
+ #include "../core.h"
+diff --git a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+index b0c7e4f6df9c..8cf61aab81b1 100644
+--- a/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
++++ b/drivers/pinctrl/aspeed/pinctrl-aspeed-g6.c
+@@ -4,13 +4,10 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+-#include <linux/mfd/syscon.h>
+-#include <linux/mutex.h>
+-#include <linux/of.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/platform_device.h>
+ #include <linux/pinctrl/pinctrl.h>
+ #include <linux/pinctrl/pinmux.h>
+-#include <linux/string.h>
+ #include <linux/types.h>
+ 
+ #include "../core.h"
 
 -- 
 2.51.0
