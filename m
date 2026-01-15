@@ -1,78 +1,72 @@
-Return-Path: <linux-aspeed+bounces-3352-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3353-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5759D4662F
-	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Jan 2026 23:11:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F11CED4662F
+	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Jan 2026 23:12:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dsdzG2cdPz2yFY;
-	Fri, 16 Jan 2026 10:11:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768455096;
-	cv=none; b=LVuf1bG6Ml2T/iyT/9cbEEmSylXphsHugDCBN5CmG9bcnkYFuxPe2L+qKwW6Z8+lttIOX4ChoB9KoWoencjqHEblzt+CyJYT1OJDxqcyGXTA/J4mK08q1kq5vtQ+Sl+ZiJyqiFi+R1ySE2hLzaUVjE+Ni8vqzCi0Js1CKr1WcBQvgVN1B00YgaTjAYZk/xL2lwkMe8WnLaA9lZLXVc3Hly7/OReONhzn0q4EtqYI8DDo9cwfv0YIJdCW35TbDdo55tcuveIjTiPqOgoGERTQVtHNXweF8fKbcQtL2l844Bx19BlFx6M1y7a0h4JAiQg1SCUt71LwCjLZ1mgUgXC3MA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dsdzN2nmmz2yFh;
+	Fri, 16 Jan 2026 10:12:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::122b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768451920;
+	cv=none; b=KfdPtbF6DjcsirMMWyr6w7SSTL8aLsFbbvsMjqqZkcehAUhIGRF5+dGBjHiVzmOgkyjmK8C+REUDleVYo03v4gJMqfucId16O6S5ekY7nDpxwoE8+rY7DQsA53nXbXJ4WNOE4b4Vv8Fa6a+0rUagINPXiISttA7ya8thxQY9wtD5EXHFGWlHNHcO7SsnelQEL8VoQxAc3dG9QpOBtww1fAiJuPtzS25Do/CC2zhY0QtdqWLo7Ti7NgfLUTDI8cdxw+Mx1QLtNzehZTZ1cqyO/RhT9exKXQH5aRvrlclvJ37gdZeipkLpZ1YbTxip/A1+E0FCAhI0DAF+gh9nEcvdBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768455096; c=relaxed/relaxed;
-	bh=AzrY2zyUlFdBwp56KpRsHxbj2guX634diWbsvb3BOuw=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=aclt4Hjv8vR6muGo4fDpz2+wL9R0NXlfW+SleCSv3fTqneekjFKsWt+IHOVr2Uzv5HFc4dwmthLcHLslFBvnVpauSWfewzJ2MtlibAn5fINnsUCmdNK5PhDdF2NuOMa4Z1Jiyy9HIrQ4mHiKGGsjoT5WZTlc4oS0t/+HaDQV82XIwX9Td3B+99kkNU6wMv+7hUTyEm0HgNlGu/hmpfiuaX3iNsYid/5JEQmXoW0j7Zi9w2CDjMQQZ4FpyonamCOPIKFinJNpgGHGT70FZFerA3qgQP1m7nDILOIFDodXhQNO22nP1B/lrmn7KSEqKCFWeJoW53JiN4vIuNs9NuVMUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BSPlz/7l; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1768451920; c=relaxed/relaxed;
+	bh=K6fjjXfXdXI+f3gfu+7LUUm7YVOdAS+PartG2/fB8Co=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=fKQyrS0aEZOawHx/QOaJbQXSZcOzKB4YZ/4tFNpI6D7iohLsda7i5+OhoH+aKbe0GQVX3PQ2XzKEPn+K8JD0cDFjF5mPGvfO0VOm8+PTCJ2VIcSuEawn8C8PsPKYXXaTD7zfS9HliLqO5iksZs/4MhsUr1oEwdGBtkwDEe2r9LrCtP2Tr5/ja3gHQhY6CcgTQp4gmm/DGLLs/J6q42a/n/iYXGXsDMVH2qULUo5Ds0N74r2i+og7qvcpY2eRpENL2u0x+9NJxk1Zm2LtWMTjlZ7Sl77k2Jzxsyuf7/1ZOEEMLKo6/3g/NtnBAbCyAXtxTjOxD4i6hZojv6Zx0jWBfw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dWvdFA1k; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::122b; helo=mail-dl1-x122b.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BSPlz/7l;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dWvdFA1k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::122b; helo=mail-dl1-x122b.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x122b.google.com (mail-dl1-x122b.google.com [IPv6:2607:f8b0:4864:20::122b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsBRq0XMhz2xHW
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Jan 2026 16:31:34 +1100 (AEDT)
-Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-790ac42fd00so4596827b3.3
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 21:31:34 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ds9Gk6n8Gz2xHW
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Jan 2026 15:38:37 +1100 (AEDT)
+Received: by mail-dl1-x122b.google.com with SMTP id a92af1059eb24-11f3a10dcbbso467929c88.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 14 Jan 2026 20:38:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1768455092; x=1769059892; darn=lists.ozlabs.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=AzrY2zyUlFdBwp56KpRsHxbj2guX634diWbsvb3BOuw=;
-        b=BSPlz/7ldGaqLKaWUT0Sx7FUo+8syUf1l/WfDjlE1ALp8Im10qUpbsPAMz9rAxvENe
-         I0XVOEmxbXhO8mwKTfqJMUxvFi4WylMeMkblpkuLyOMf4jSGwsth3LZR7W5f+o7jsCoF
-         Z3yctfoqpPW5Ekx1YaPwMHMurlRBjE9ZdC6v+RMNeE0AakOBFFSWML4B/zWXMNPcmrPs
-         QK66wHY0Pe+rHjiOxMi5B2CmrGQxQ2lDi8lRkBkuhUtl47eUnsX+LCqlJR7sMvbC6eU7
-         snTfl5X+Ianfmn8hzimtVFzIq88nT1B6y54gs5ZCP7ZNKRbToeKpzyZiVC2g8HV1zXqO
-         xFKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1768455092; x=1769059892;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1768451915; x=1769056715; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=AzrY2zyUlFdBwp56KpRsHxbj2guX634diWbsvb3BOuw=;
-        b=ZqwmqKFpZMFI1bs3hu81pZ9Cu13BvGFsXjO/d9iMvVTfXo3mDaMO85bZChKAHDWO3e
-         GD2GQ+R+HoR4GCPRaE9A8VddnQCJL3bFdiLJxRxVamIse5cXcQO7/QKSw/ODDRuEZgzp
-         Qt4ZwXIZxju7Hk8vjSbHWrhwY9zik7QIqus9NRNmKl3jPepL6JEbElsIjgLtySFCOChq
-         6EnRQIrn8i/AaJz3iicBKRO3gnOCWOvoeDmMaIy/K8N6HM1HY+t+ZtOwX3FE+uH6SwH/
-         2UcPgmNTwNfX9QK6VDL/aKSkMZu4q358plas/x31kHN+8hLclLBWKdgCB0BeClRoOwKE
-         0JOg==
-X-Forwarded-Encrypted: i=1; AJvYcCW2E2ePYOXhAkKkAHmEoKDIRdXKTapox9bbUgndjSdj5KYWGgReUOOJ37SgKDeVBIdrHbnAgJPqIPr36TI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxZV9A+Vx4gZPIhrWcnot9goP8dvVWbYlB1ZhgvbaNBjWeL17Ya
-	lNalz1ySOFfV2iP6I5OHQt2hXuuCevynOkytoqmt3Rv11jFXOXwcQDJ+
-X-Gm-Gg: AY/fxX4z4l/ZPPCKUPoF6MIZIOWfw6q0Ak8kMk+754UYrrgVgTmr9lGAoK4ccjpovzs
-	T//VWW+tY+MCAycBd+q+RpmzHV7ZqLH5+mDnZfTEdtWi5sBx81DbmgPJX5dE9iiYutcRRqQXXm9
-	nHeIBq8GSanGpOJqNjTspKozjMDPsrsoeuQn0uW+Kln60r8sq1pjgkZayFZQ7YqLqffuW/dM/Qh
-	eTI73jmmi/QPw+Uwz3oUYBIfdm+sohJUC8Cbk8hOWX22didPgFb8bzTDaIjw5HTYYc+/WxLMnoU
-	wOAE209FXSWJmLRv617gs96PSCWk2FJ3nOXbOJnV6EIwgbkHPk5HEr+h/N7IJDvS0ubLcIe3EAi
-	lkqHeExu8KY2nf1kp+Dp+ZeHARq3/PNtOh23j4vu5JdCi5xTZPFZXCrEhQz0HDd/1pW1bgdFI+V
-	TOWRBY
-X-Received: by 2002:a05:690c:6a06:b0:789:3f0f:ac6a with SMTP id 00721157ae682-793a19ba6e5mr95950467b3.16.1768455092178;
-        Wed, 14 Jan 2026 21:31:32 -0800 (PST)
-Received: from [192.168.2.165] ([2600:1700:220:59e0::914])
-        by smtp.googlemail.com with ESMTPSA id 00721157ae682-790aa553172sm99259437b3.11.2026.01.14.21.31.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 14 Jan 2026 21:31:31 -0800 (PST)
-From: Anirudh Srinivasan <anirudhsriniv@gmail.com>
-Subject: [PATCH v2 0/2] Add device tree for Asus Kommando IPMI Card
-Date: Wed, 14 Jan 2026 23:31:06 -0600
-Message-Id: <20260114-asus-ipmi-expansion-card-v2-0-12b72d20a9b9@gmail.com>
+        bh=K6fjjXfXdXI+f3gfu+7LUUm7YVOdAS+PartG2/fB8Co=;
+        b=dWvdFA1kHLHgFnzTdKqOkG7k6LBS6nXnIvXchQ5yUsE6mALUlLXWHQiXvIp+9W4zVI
+         bUH4B0Roisn5tDM0dwrdhdhX8FiS7sizfqKCqMDhe/gDSQIkWDHFQ/sl/4PlccYtzu9B
+         0ps/TH9OqJuXLb94AXnDUZi6R3MX9KwXlOtLYYSbgXoc6Tm9ALTFcST0vOC+nIW7K34P
+         Qcbs/4OvngzTvYq/x3ZbIV9ih12Ai7/5gbnaypiDgEf4B6pMHcYnS+OmhvCqkKL55akm
+         yFrtw52Zl2JqDyLtimoIMlJHDNxo5YrG3qz+EsHyasZB1LCPw5rPcF3xpKkjVnMqya1t
+         Voog==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768451915; x=1769056715;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=K6fjjXfXdXI+f3gfu+7LUUm7YVOdAS+PartG2/fB8Co=;
+        b=YxlQM1hOim0pYG5zuEOhV5LUF1TysMujKe3QZTzUDwIZ146uoYgyrKtD0KfWfiEPf3
+         vyxxjf7Mmf0ZLrepO/+bi5y9TFkrxvCo8isgIjCALRFZQeebRFl2Ajr9juYlb5+dp49W
+         0c77QldU9yPnUpZTlVNcuu67yJcXx1A5nn+L+VT7rQ21rRnDiP1Q9Q3d0jDOnjTglTS7
+         n9c77LtTbTay7b5xs6/8FGzfs9Fl4rk8XmC38VwuroD1vvF0STUPQV8BEv+f16Uprv+5
+         at1OXrbBV15DBZlrbLfTiQ6inLhhmKFDFDFC6nsR5LU7/GqchyBmdqvp1Z3wr+1nKuEs
+         +iDA==
+X-Forwarded-Encrypted: i=1; AJvYcCVG7GsTwpPjOwvX3LATB4jd7GKqfpvEdZwpNjPwp8mIZkECGLLEWMf1Gc7iHgpaRIizdn7XSu5ay9FaeQY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzc0qJb+ad37c0NONSRdP7t2TpG04n2gYRegXI8MwHvllPrNdrV
+	l3Z2AgsgfF0mQxEKmNg6kG9oQcW0jVdrXQ0KVSVGZgx4Wns/nIQt7dgGe/84eMTKgwQleu3wi0x
+	mLUGpXW8XXhx7t4VK6enShVk2LHZgQYQ=
+X-Gm-Gg: AY/fxX7oIqUenEe4t1vz84eioEF5k0FFZl+eYgPUMdCzLaZGQn0POpFYe553qWqXy23
+	hsSv33jYmGwMk/79HZdau/cY/ElQJTSY7O3Im47jqnd+9Uc45VMuiJHN2IGxV/b4ufvT2L0vooW
+	wXKcGoO7ktuZsrSbAW06LajCYVc8Qqvv9/iEr5VhWq+MPeUMGVudlxv0V0aQbprXuQw5Sb0FZ9I
+	t3LjePDTc0X//YOu34fNKpPHDU3uOk9Fu8lkfq7zmHTDhAvAhhkG/HjYg5WpUYpOnsPhZJMJlKE
+	X2PA2g==
+X-Received: by 2002:a05:701b:2714:b0:11b:ceee:a49f with SMTP id
+ a92af1059eb24-12336a247cdmr4745181c88.8.1768451914862; Wed, 14 Jan 2026
+ 20:38:34 -0800 (PST)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,69 +80,68 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJp7aGkC/5XOQQqDMBCF4atI1h1J0iK2q95DXExNNANNIhMVi
- 3j3RndddvnDm4/ZRLJMNolHsQm2CyWKIYe+FKJzGAYLZHILLXUllVKAaU5Aoyew64jh2EOHbOC
- FxiBeq7uujcjnI9ue1pNu2tw9Rw+TY4s/oJZK3mSpKl3XErIfiGfjElOg5Tl4pHfZRX+IjtIU+
- XP+uqjD/Vtp933/AraGxV30AAAA
-X-Change-ID: 20260111-asus-ipmi-expansion-card-baddaa36928d
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Anirudh Srinivasan <anirudhsriniv@gmail.com>
-X-Mailer: b4 0.14.2
+References: <20260111201040.162880-1-anirudhsriniv@gmail.com>
+ <20260111201040.162880-2-anirudhsriniv@gmail.com> <45bdf2a6c0d33dd6ce0fd3cc279ef6edc509a540.camel@codeconstruct.com.au>
+ <20260112-whimsical-annoying-fulmar-25e4d9@quoll> <CAJ13v3RKydFK+sP_Cm-HnQjsOJSDyX_dsGs_Yy564V=Wc7tQFw@mail.gmail.com>
+ <e97b7a193f8bbfca9ec00037808ad80a5baf9f00.camel@codeconstruct.com.au>
+ <CAJ13v3QYWRfyivrbP=+hreHuMkYWGPkngW3kJyq6xNVL6YdpgQ@mail.gmail.com> <0e611132794491eecbcd3426222b6dca09a35b84.camel@codeconstruct.com.au>
+In-Reply-To: <0e611132794491eecbcd3426222b6dca09a35b84.camel@codeconstruct.com.au>
+From: Anirudh Srinivasan <anirudhsriniv@gmail.com>
+Date: Wed, 14 Jan 2026 22:38:22 -0600
+X-Gm-Features: AZwV_QiAZ2miykzbN0XeJ-opRxy8zZQtPtnuJhtoFTPjOMJKnrOQBUdwpXszwIE
+Message-ID: <CAJ13v3S+u7fi2h1MUQ1QvFm6Ouz4TDrNwJq3fJvDmBf37h8LGQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: arm: aspeed: Add Asus IPMI card
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Adds support for Asus Kommando IPMI Card [1] [2], which is a PCIe card
-with an AST2600 on it that provides BMC functionality to any host
-without an onboard BMC as long as it has a PCIe slot. The model name
-Kommando is based off the model description in the vendor fw.
+On Wed, Jan 14, 2026 at 7:03=E2=80=AFPM Andrew Jeffery
+<andrew@codeconstruct.com.au> wrote:
+>
+> KODO is pretty consistent in the firmware update file name. KOMMANDO as
+> the product identifier also seems reasonable, even if it only appears
+> in FW_DESC in the latest release. KODO -> KOMMANDO seems reasonable.
+>
+> A brief bit of binwalking suggests it's an AMI MegaRAC implementation,
+> and so I expect 'SPX-13' in FW_DESC refers to MegaRAC SP-X[1]. The
+> significance of 'TB2' isn't yet unclear to me.
 
-Currently supported functionality includes UART, booting from SPI,
-KVM functionality(usb gadget for host, reading VGA framebuffer from
-host) and LED/Power Control via GPIOs. NIC support is not included,
-requiring additional patches which will be sent later on [3]. The
-entire BMC functionality has been tested on an OpenBMC build 
-available here [4] (which uses a modified u-boot device tree [5]).
+Yup. The screenshot in the PDF you linked looks a lot like the webui
+on stock firmware. AMI has sources for a bunch of stuff ( "unmodified"
+source tarballs and patches to apply on top of them manually) over
+here [1].
 
-The card supports some additional functionality in it's vendor firmware
-like fan headers with fan speed control, host bios flashing via SPI, PSU
-monitoring via an SMBUS connector, a custom ASUS SMBUS connector to talk
-to select ASUS motherboards that support it and exposing a IPMI device
-via PCIe to the host. These are unsupported at the moment.
+>
+> I'm not super concerned about the length of "asus,kommando-ipmi-
+> expansion-card" - I'd prefer it over incorporating the 'kodo'
+> contraction.
 
-[1] https://www.asus.com/ie/business/resources/news/asus-ipmi-expansion-card-gaming-pc-to-workstation/
-[2] https://www.asus.com/supportonly/ipmi%20expansion%20card/helpdesk_manual/
-[3] https://github.com/openbmc/linux/compare/dev-6.18...Genius1237:linux:asus-ipmi-card-6.18
-[4] https://github.com/openbmc/openbmc/compare/master...Genius1237:openbmc:asus-ipmi-card
-[5] https://github.com/Genius1237/u-boot/commit/1b1b7daa85f6c998e5f404296b3da43077a2758e
+Understood.
 
----
-Changes in v2:
-- Changed board name/compatible/dtb to be consistent with product name
-- Added ast2600 to the compatible string to bindings
-- Removed ethernet mac and phy, and extra blank lines from DT
-- Reordered phandle references in alpabetic order in DT
-- Added a label for LED nodes in DT
-- Link to v1: https://lore.kernel.org/r/20260111201040.162880-1-anirudhsriniv@gmail.com
+>
+> I guess it's still unclear whether 'kommando' is a (future) line of
+> products or refers to the specific AST2600-based design. Perhaps we
+> could solve a few problems with 'asus,kommando-ast2600' and including
+> the phrase 'IPMI expansion card' in the binding description for
+> something searchable.
 
----
-Anirudh Srinivasan (2):
-      dt-bindings: arm: aspeed: Add Asus Kommando IPMI card
-      ARM: dts: aspeed: Add Asus Kommando IPMI card
+I will make the compatible "asus,ast2600-kommando-ipmi-card" and have
+the model name in the DT contain the phrase "IPMI expansion card" for
+searchability. You mention about adding something to the binding
+description (that'd end up being more than a one line change to the
+bindings) but we could just have the DT model name have that
+information.
 
- .../devicetree/bindings/arm/aspeed/aspeed.yaml     |   1 +
- arch/arm/boot/dts/aspeed/Makefile                  |   1 +
- .../aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts  | 117 +++++++++++++++++++++
- 3 files changed, 119 insertions(+)
----
-base-commit: 9448598b22c50c8a5bb77a9103e2d49f134c9578
-change-id: 20260111-asus-ipmi-expansion-card-baddaa36928d
+I'll send out a second version of this series shortly. Thank you for
+bearing with me on this. Naming things is hard.
 
-Best regards,
--- 
-Anirudh Srinivasan <anirudhsriniv@gmail.com>
+[1] https://github.com/ami-megarac/OSSW-v13/tree/master/Core/
 
+--
+Regards
+Anirudh Srinivasan
 
