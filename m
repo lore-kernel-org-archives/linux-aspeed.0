@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-3341-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3342-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F2ECD41150
-	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Jan 2026 09:53:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DBF7D41149
+	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Jan 2026 09:54:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dsJFg6G1cz2yFm;
-	Thu, 15 Jan 2026 20:53:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dsJGl5MtHz2yFm;
+	Thu, 15 Jan 2026 20:54:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768470791;
-	cv=none; b=OsFDOsVC9pa4UWOvknXsorKh31j62EJnfSe6HB70Kj74vxzSeT4hZyCc8Y0eFa9TuRga/PTd6BdFKVxOW+KFteIb77xLr3MavpII7l5xpW1YaySuUfe2+MivufTB7simfJoE4yZZmNGkwwMBErZpwyd4GVWZmnREI0Lfgoc8HBvz7oKlCnjBXXprvxSLt2Xrs8q5nbRFpnMNh1iq/O2AhTk/zLlWbExWptlSqEtSHYUOPvLeYe7ZbS71fhq2Uk6dxrwVvWgF5nRtfYBguSSyz4X+DZRii8ghz+HRbVB86+/ZNh7PLV2sNZTP1J4T3R6Vo66TK0KLLgtgwoqix4YAaA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768470847;
+	cv=none; b=MJIzhRA4Mxqzksx9vQNocraF4OoqC1wi0KDrI/FdK4yt9gba7o9s6jdUylID3uPmTY12V+Wjy9htwo2gwTiH4J6tEe7la8BEBPJ5PPPTnZ2M5OBsioih41G5zrNT1Don/X1KTwWjkhU3x6JIUGes+5grXm/fMg0Hv8eN8Qjc3ERruTmRa/cSGJbA1DfoX/Jj7IrG8yhj4MQbNnBbEKOgBNlkNxYdb2vsWW7UWZjxbOxIiYCDpdmDJKukTY2kQfjfcVgt6DE52f1yq7PT/7FSsna8cemJyRKf6ZtMOmabMLqBWHqJRh0ZlUvhsw6TDJ2E27tDiH5ezL+sFYd3I3+OGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768470791; c=relaxed/relaxed;
-	bh=34ePLiQweY9GaVt0+JeMBd4C7K5vjm7UpK2K4R8k86w=;
+	t=1768470847; c=relaxed/relaxed;
+	bh=73WOwkJLL7iSfNQnuhhw0SEVGcjxcZqbf/znKTcFg2Q=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QQarF/Fa27QiG+/KlRsRJgZP6uKcXaKL1k2VvTGuncEievpvK9ikfN32xtnYTfJSJBHhh+G0qTrHBG+qDuSrnV0MPD7MCNjrZR6kEV+AQLNTCnIsgRm3mBERwono2H0Mp/Qr2naft7bN5ec2U0/SsHFiR186Ooc6koMaEK2bc9y6jfNFwxnTF8+LXQoH390hSHztLLNRYXpZnQdGNYRowqT91uoA2jhOuEo7fy+ATi4eo+KrDIiH+CxTFAxGkjuSr/sbwm+g9i94o9LZCD/2JXH2lRKWPU1wq/BTLPrBXSxbMH0jfz4HPyYdxkSw/ujvsOTsSpZ1wFj69ene5veQpA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SEb+448v; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=bQVTkafQItDAuaPgewb0WTrGLkxFFhMj/dDJpQJzpVs6MQdLl6oo2Wrf0Lp2mg70l3oqjaFFMXxBTJvolw471w0jJ2W7xwOD3wiFyAmwZduN/zXRG2ES9XDblXeprSjbEmwXVhYYl/xf/VYg6uqGkb+PlcOOJRRQNYVmpEBoj3AH3bvK0/c5l8Y4MItzTuDS6fIfdLvfe8W6QQYygpN8bh/CKuMj1vxGJJOjq1fj3OqRNfi2V69kutj5zMimzZt1zesiDKhIxL5QbnGZuBxGvIBtwcdy4v9a/1O4I1J3iu8ynJ76PB6HvhzcUa71po8C4TwmsSNLgpqpucUypzkpiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lGYM9Ku4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=SEb+448v;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lGYM9Ku4;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsJFg28P4z2xNg
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Jan 2026 20:53:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsJGl1F8kz2xNg
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 15 Jan 2026 20:54:07 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2397B601B9;
-	Thu, 15 Jan 2026 09:53:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4D54CC116D0;
-	Thu, 15 Jan 2026 09:53:08 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4DA94601B3;
+	Thu, 15 Jan 2026 09:54:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76C13C116D0;
+	Thu, 15 Jan 2026 09:54:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768470788;
-	bh=nQRGCmfmTv/HFL3TGgfPhp5kkEYvJqdN5RCn3LswyN0=;
+	s=k20201202; t=1768470843;
+	bh=rkwmLhl2NdMkUxqtMKpON4EP2ZPIE5XSzoXvo0xv198=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=SEb+448vdOLkMsqGqmm0r51xQieYMuN9whjnOzn4yQXYQueUi2b3wJijiiBXFQKHh
-	 vMjUi9ELwJx1NtfnQAWQIaWi5vuNYyaCkeWxCeVBYFb7wlXbuTqB47Pq+yHplO34/p
-	 e04Q5DJm4FtFwXf77ev6yugp+uUgJ0OY2we+6CyfBpoWoYF6l4aVtuxEzVsZAg2X/F
-	 JrcFBBk9IvPQpz8hqDdObSP6ckWaPhvMxdR9u4/RhPaGNzUyi6lowmf2rBh3F3VVNw
-	 AYEVLGihQzQFfc5bO7VjTGroJzZCzRXJV0tErqiv/7JUT0WmF1qXrcJMtAJ7g7gKsf
-	 Dhi+Fp29CRTZg==
-Date: Thu, 15 Jan 2026 10:53:06 +0100
+	b=lGYM9Ku4NOF+zHabNVCMzyZz6JHwydepB5DeMtLL8+Gi5kFK2EGFz7vjFpQTErOk/
+	 +yTyrBwGatJcfNAlQ+ArcnCg45NghWuqqOHz6nItZV6lMvm+/5CA8m3nme7TtP3Dd/
+	 r9S3RJYxgG/G6WYCr/TyQfqPpeMw9NuaV5Ms4jXSweXjHK1eye66cxaAYFeR32/3hN
+	 nxeyEOIzQWgUQIKcp3tU7lbnTw2E15qsmOtNOrI/Uzq78NC737x5pVnCqYYg3V6msS
+	 JMEN8vUVdQiEzqep2nnhYDxQrYn3aUCYQqt5wZNUT7OgnzpHzXFtDmP/529+Ma9XGA
+	 xRbAXI5W9eMKw==
+Date: Thu, 15 Jan 2026 10:54:00 +0100
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Ryan Chen <ryan_chen@aspeedtech.com>
 Cc: Vinod Koul <vkoul@kernel.org>, 
@@ -53,10 +53,10 @@ Cc: Vinod Koul <vkoul@kernel.org>,
 	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
 	Philipp Zabel <p.zabel@pengutronix.de>, linux-phy@lists.infradead.org, devicetree@vger.kernel.org, 
 	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] phy: add AST2700 usb3.2 phy driver
-Message-ID: <20260115-jaguarundi-of-optimal-fruition-09d32e@quoll>
+Subject: Re: [PATCH 1/3] dt-bindings: phy: aspeed: Document AST2700 USB3.0 PHY
+Message-ID: <20260115-tricky-invaluable-snake-abec06@quoll>
 References: <20260114-upstream_usb3phy-v1-0-2e59590be2d7@aspeedtech.com>
- <20260114-upstream_usb3phy-v1-2-2e59590be2d7@aspeedtech.com>
+ <20260114-upstream_usb3phy-v1-1-2e59590be2d7@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,40 +72,66 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260114-upstream_usb3phy-v1-2-2e59590be2d7@aspeedtech.com>
+In-Reply-To: <20260114-upstream_usb3phy-v1-1-2e59590be2d7@aspeedtech.com>
 
-On Wed, Jan 14, 2026 at 03:13:11PM +0800, Ryan Chen wrote:
-> Add AST2700 USB3.2 PHY driver support.
+On Wed, Jan 14, 2026 at 03:13:10PM +0800, Ryan Chen wrote:
+> Document AST2700 USB3.2 PHY. This IP is connected between
+> USB3 controller and PHY module.
 > 
 > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 > ---
->  drivers/phy/aspeed/Kconfig           |  13 ++
->  drivers/phy/aspeed/Makefile          |   2 +
->  drivers/phy/aspeed/phy-aspeed-usb3.c | 236 +++++++++++++++++++++++++++++++++++
->  3 files changed, 251 insertions(+)
+>  .../bindings/phy/aspeed,ast2700-usb3-phy.yaml      | 50 ++++++++++++++++++++++
+>  1 file changed, 50 insertions(+)
 > 
-> diff --git a/drivers/phy/aspeed/Kconfig b/drivers/phy/aspeed/Kconfig
+> diff --git a/Documentation/devicetree/bindings/phy/aspeed,ast2700-usb3-phy.yaml b/Documentation/devicetree/bindings/phy/aspeed,ast2700-usb3-phy.yaml
 > new file mode 100644
-> index 000000000000..93bb5a913633
+> index 000000000000..83da224d99b1
 > --- /dev/null
-> +++ b/drivers/phy/aspeed/Kconfig
-> @@ -0,0 +1,13 @@
-> +# SPDX-License-Identifier: GPL-2.0-only
+> +++ b/Documentation/devicetree/bindings/phy/aspeed,ast2700-usb3-phy.yaml
+> @@ -0,0 +1,50 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/phy/aspeed,ast2700-usb3-phy.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
 > +
-> +#
-> +# PHY drivers for ASPEED
-> +#
+> +title: ASPEED AST2700 USB 3.2 PHY
 > +
-> +config PHY_ASPEED_USB3
-> +	tristate "ASPEED USB3 PHY driver"
-> +	select GENERIC_PHY
-> +	depends on ARCH_ASPEED
+> +maintainers:
+> +  - Ryan Chen <ryan_chen@aspeedtech.com>
+> +
+> +properties:
+> +  compatible:
+> +    const: aspeed,ast2700-usb3-phy
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  clocks:
+> +    maxItems: 1
+> +    description: USB 3.0 PHY clock
 
-COMPILE_TEST
+Drop description, obvious, you just repeated the block name
 
-> +	default n
+> +
+> +  resets:
+> +    maxItems: 1
+> +    description: USB 3.0 PHY reset
 
-It's the default, so maybe you meant 'ARCH_ASPEED'?
+Ditto
+
+> +
+> +  '#phy-cells':
+> +    const: 0
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - clocks
+> +  - resets
+> +  - '#phy-cells'
+
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
 Best regards,
 Krzysztof
