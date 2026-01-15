@@ -1,76 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3348-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3349-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 169DDD44C66
-	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Jan 2026 16:15:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 592A9D46603
+	for <linux-aspeed@archiver.kernel.org>; Thu, 15 Jan 2026 17:16:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dsSkZ340Qz309H;
-	Fri, 16 Jan 2026 03:15:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.11.138.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768493718;
-	cv=none; b=TFdUVMYONpv9HUis1FF3UmIz75ztEks+pI/+gKPPZB4nyb9dV3tjIjX9FVYuAD9aq5dBGXXk0uDUoC4xDJ1GNHDo6Qs4VbKIIPsBmsPVr2yGDgeanprKXenLV5e6QDK2ssLorJC8/ugoz0q6YRqcet+frSa1UMQE3NAnIGKqc/A9miRw+I/WeMdecKeb1jhgvum88j9htkwWZUSF9s8qD7monXeQ4V5FCuVRHemhHgLZkM078/iXdLtcDPYI839eRacPl5fIeDGfYvBy0lRkJMYVKDIweCd+PCQdcfGJFZTd4SLghiVqslX1i2w81K/1QLQyRvaionnLiyc64poYdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dsV5J6846z2yFm;
+	Fri, 16 Jan 2026 04:16:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768497396;
+	cv=none; b=daGzY/eLoLjexUXuDMAgN5dByBUZBD29xDLoJ4v21hMdSBLk8T93/EULtd/NLQaAxu4xg/7PBJzlOab0ZkpD+6LXQwB85pIARQvsZUh/2yJHXHQN+jKmArpaGOmGxMj7NI3pU6G46/9wqpmUxmXMqBuJVWoKlN5vEzSv/c2FOlYMHIKoszJ4Vfxwxcd6e1fVeHwM5Mun5o+yFIFWUthZWw/njF2sHSCp44BbxwW0HgwGsBReg5Q4Y4zgMNE0XOGbjrBfKrfQU+uUVMuRL2VuIJJvtDL265d0ij2hlwdyAZTn7wybvawQjZv78d4TNhJpm4PT1gnNuevnrHIgHa2grA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768493718; c=relaxed/relaxed;
-	bh=zjAI4sw5fZWleNcy5E+bpQXvW8kKtlqPBKTICHmyuec=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=KYLiEIhRvwpKwoDGqsVnrDa/xFzn113eViM4FwS+1GScYuqHISC7CkOE/2JhV5qfAhpVF+UIieuU/ZaZdEicl65eLFzETLiOfujz+6updC7ljVxAkr7QWaDddfTudXivlHvKpvllZYg5VaG8nXngkYLRc3aKrujsHV38l28Cy+xTH9/3o0hGVbgVcrR4CEEpXCKw2vpmd5mI1cosoTWKT+5RB8LjZmbVlzd/T2dlxVYxkqS/a5ksImw+g9SW/paErdplzYFvx7DRL2gjl1RvWPwPSjN5ggVqgrD7GyJowkpf84ubkbai7cfy7A8LOxG3EDylueeQUx7/vXS5rGH5JQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sntech.de; dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=SgdIcZUf; dkim-atps=neutral; spf=pass (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org) smtp.mailfrom=sntech.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sntech.de
+	t=1768497396; c=relaxed/relaxed;
+	bh=nTQZnv34DAjTZEd7quvl5eWf+Bs88jcQBsc8cMge4ow=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ol5UlNWEquGTvcF7wWQpmVWTgu69Q+vyBADeUAm4SUYLHdZGNAA211JmSqQqaOz5putstc6PHSuxH3I4wElTvmszVtyGGDr0LkbwtYn8SvTFlekbBuHHAMJRmO7lm9SboPm/CYiyFY1VjbtgkLmCp179lrxxvGKBt22eYmgADvPM5kKKvMqSqm0pFc2VFvmELieigPtA0FwdpoucOnKc66LBKYZccY6/vmRnL/CgvThJ8vmQ84wNgmp9vRlUnszvRHzxzv6LyV3Fza/9J0Jfn2ZqUM8Hv30dWD2j5v8y0G7tEqefm06dNwlJqhrvoK20z27PHPYAark/zUqBuScuog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KlESdXIR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sntech.de header.i=@sntech.de header.a=rsa-sha256 header.s=gloria202408 header.b=SgdIcZUf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KlESdXIR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sntech.de (client-ip=185.11.138.130; helo=gloria.sntech.de; envelope-from=heiko@sntech.de; receiver=lists.ozlabs.org)
-Received: from gloria.sntech.de (gloria.sntech.de [185.11.138.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsSkW45mmz2xNg;
-	Fri, 16 Jan 2026 03:15:12 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=sntech.de;
-	s=gloria202408; h=Content-Type:Content-Transfer-Encoding:MIME-Version:
-	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Reply-To;
-	bh=zjAI4sw5fZWleNcy5E+bpQXvW8kKtlqPBKTICHmyuec=; b=SgdIcZUflo3NqJzUtZoYf3GC3K
-	JoftSOW3X/lY1Pi0hsKuGnEAdP4Xkf5RvordXf9jqy/NXsqZI+Z3rm0864ea3sOV7wd/8n9x7TvtR
-	ARiOH/6XDRwyxFUUZHmrpZt0rTw3cKAEfr/8D2rBa/g7KXdHd4XnhJA71SnSWDqVtE46lIRk+gy1J
-	Q0WOnuPWm0qZF9cm/OdeCNOkNotf4XE+ZUvm31xeAo65yyG78TGmmnh9t5FRX88lrDB46GzObUFAh
-	+/gpCNBZZk3YysdtvJL0VWcu3kTeeVsfbo57gmVuXzvKtkhX3JI40zs0p7BTnQcxIo1BAyB3m1W7H
-	bUiVO0eg==;
-Received: from i53875b85.versanet.de ([83.135.91.133] helo=diego.localnet)
-	by gloria.sntech.de with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <heiko@sntech.de>)
-	id 1vgPzV-002UXc-0C; Thu, 15 Jan 2026 17:14:33 +0100
-From: Heiko =?UTF-8?B?U3TDvGJuZXI=?= <heiko@sntech.de>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>,
- Linus Walleij <linusw@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Emil Renner Berthing <kernel@esmil.dk>, Hal Feng <hal.feng@starfivetech.com>,
- Chen Wang <unicorn_wang@outlook.com>, Inochi Amaoto <inochiama@gmail.com>,
- Basavaraj Natikar <Basavaraj.Natikar@amd.com>,
- Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
- Bartosz Golaszewski <brgl@kernel.org>,
- Steen Hegelund <Steen.Hegelund@microchip.com>,
- Daniel Machon <daniel.machon@microchip.com>, UNGLinuxDriver@microchip.com,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- Patrice Chotard <patrice.chotard@foss.st.com>,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Cc: linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
- linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, sophgo@lists.linux.dev,
- linux-tegra@vger.kernel.org, linux-rockchip@lists.infradead.org,
- Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Subject:
- Re: [PATCH 10/11] pinctrl: rockchip: Simplify locking with scoped_guard()
-Date: Thu, 15 Jan 2026 17:14:32 +0100
-Message-ID: <2415619.22IY78Rhhi@diego>
-In-Reply-To:
- <20260114-pinctrl-cleanup-guard-v1-10-a14572685cd3@oss.qualcomm.com>
-References:
- <20260114-pinctrl-cleanup-guard-v1-0-a14572685cd3@oss.qualcomm.com>
- <20260114-pinctrl-cleanup-guard-v1-10-a14572685cd3@oss.qualcomm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dsV5H6mSPz2xNg
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Jan 2026 04:16:35 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id A7D5060007;
+	Thu, 15 Jan 2026 17:16:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39E66C116D0;
+	Thu, 15 Jan 2026 17:16:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1768497392;
+	bh=EoDuHPKYADtTQ3CbH8ajn3cz4Fwrwq6IKHjrNnSNqVA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=KlESdXIRDi4LaDQt/CNKvfnKjJ7Y6Snc9KH+I3n6uqvXVDaiD4jZonAkz0RnY/GL4
+	 GArii35s6IZn9a/VYHwwlHrTzMC3vtBQ3r7Ytdvly+/ZbnHNqztKL/2BdT/FpIX642
+	 pXqXb8QllzIwqfiOB3DMMA+jIvzb/MPRjHqx9o5KgjbLEp+bDjg4MBGAUHkyvsfGkL
+	 YAiO6lSUymNqEMVRqCF8UlmBAu5tURwePPF/G1aNsiGLYTLamyrpQmYvHf8k+ISQnT
+	 9NVBQ/Paj2Z6XSTvkKb5IWXSVGtGudZO50YkPbINj2jsI9QIjJrNz5/9Vm5igbRy1Z
+	 Hp9f4ilsveKnQ==
+Date: Thu, 15 Jan 2026 11:16:31 -0600
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, devicetree@vger.kernel.org,
+	Andrew Jeffery <andrew@aj.id.au>, Joel Stanley <joel@jms.id.au>,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, Lee Jones <lee@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Subject: Re: [PATCH] dt-bindings: mfd: Document smp-memram subnode for
+ aspeed,ast2x00-scu
+Message-ID: <176849739064.906870.7559981756194987059.robh@kernel.org>
+References: <20260109-dev-dt-warnings-mfd-v1-1-1aabe37e9a14@codeconstruct.com.au>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -84,17 +69,38 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260109-dev-dt-warnings-mfd-v1-1-1aabe37e9a14@codeconstruct.com.au>
 
-Am Mittwoch, 14. Januar 2026, 16:30:11 Mitteleurop=C3=A4ische Normalzeit sc=
-hrieb Krzysztof Kozlowski:
-> Simplify error handling by removing two mutex_unlock() calls with
-> scoped_guard().
->=20
-> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+On Fri, 09 Jan 2026 17:05:18 +1030, Andrew Jeffery wrote:
+> The platform initialisation code for the AST2600 implements the custom
+> SMP bringup protocol, and searches for the relevant compatible. As a
+> consequence, define the requisite node and the compatible string, which
+> in-turn tidies up the dtb check results.
+> 
+> Signed-off-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+> ---
+> Hello,
+> 
+> This change was original part of an RFC series tidying up the AST2600
+> EVB devicetree at [1]. Many of those ended up being merged directly, so
+> I'm splitting out what remains into separate, smaller series.
+> 
+> Please review.
+> 
+> Changes since RFC:
+> - Address the warning from Rob's bot
+> - Tidy a description line that was dropped unnecessarily
+> - Remove RFC label
+> 
+> Link: https://lore.kernel.org/all/20251211-dev-dt-warnings-all-v1-16-21b18b9ada77@codeconstruct.com.au/ [1]
+> ---
+>  .../devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml     | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
 
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
 
