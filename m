@@ -1,40 +1,96 @@
-Return-Path: <linux-aspeed+bounces-3359-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3361-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B429FD4A5F1
-	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Jan 2026 02:53:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A678D4899E
+	for <linux-aspeed@archiver.kernel.org>; Fri, 16 Jan 2026 12:51:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dskvD2THmz2xrC;
-	Fri, 16 Jan 2026 13:53:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768532024;
-	cv=none; b=n/5hVUt9/mQV/tAMa8/lkxSN/DqMb9zo6MTsrio0IciUd1g1HmChX7Cjn7U2tffOYzAks6rE110DgmUUTvNC0PgheS/P9gsllDsMBiyha5Dx6qm9qw9e6vnc/rjs0RRdR2CG1/lLeeJmFk2DY4UtLxqoUw96884oh9irK4qAj54lYUknCV4Xr/CiiTs5rdxhZultfVyqI8IX8+jnwO2O76cx2xhEgZyLKrd4SI3QHF6aRTwTTJkUv8A6n9Zzx1A+66IIcBNFjqH6NEAaUAYp4vGPKHd3hEusDxb+cBZSQwhfdpxn2WTERT2etGvE+JalW/5iLD9n3XB/HqtFH6zzhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dt08X2wFNz2xnj;
+	Fri, 16 Jan 2026 23:51:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768567868;
+	cv=none; b=BTl67SjTOPr0v3klfZjIcSy2FyK0V2LJeRrtfuQB2u9Xac6lm0zjbagC5J/G/c1lV5wF2zkxlPTMj/p0QYj8hsbeas5ryeeSusfSLfIUcT3DgNB8HFan/lqMBBgYSlklQssJsaInto33Zd5o6dZDLc0dx5zNVB6EWmSQhuZ0/fRMe77Germ0e/S1UlV/KFY7rS4q9UFZYhIqOffNvf6ipyA5UBI3XTcJMTJ74bX2/owFqvUm4lYJLzI9VIYXvxgp7YsiJbIvfqE9ekkwz919s0cP0RQN/NBqyzK+xrAVRuwIO2JdaHm0qTQqksZ4GEwY4LwrD4reMHUWOFX9y8xQKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768532024; c=relaxed/relaxed;
-	bh=UlAbUUUDz9aGwg93Yg0zKJyC3yzFBT2jO7Toz9lb0lM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=gJI59E+Z1bRrqPp8q+NdWXg5QXscWo0gcpMNEz6PZJ8ogGjs6xTCN1ZeYTVB8It0QP8A00UTjuXl5YSomUViAhaDUIO/wqNJmNwAXlLuz1Hp/4jcIGRD+5xQk/L9tgjXib4IWxqIIbOHe7vhUJLv937fEEXCfZ+reOo2JlEbFWmXsrVWsdIcRhtpMJGh2IYB8eRjk/lfC1/5cys3C8KRkUhLsGwdUi1Z0uO8NmXs/k3gcaiLUSIAtZi1bzCNNwmccWmnC9d7sRLn4q7HKoP8yLhbDoyVoGuSRxkpqcw8gPJvaMRptEN9K6A9/+FMnDL6206rWFvZ52SD0nMbhtpGSQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1768567868; c=relaxed/relaxed;
+	bh=zTkxHu8mh7w4aqi9Nu456ezpUXh108CX0ltHIeT0yH8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jmg2G3hTPMTr0q4PxcISWHuWs180m0SEoPu+2UpRidtkfz5wrQrGrIpKsCUf26N6jrfIdhqRfc7Wi/y8nHQmXmvRvUMOMLFcVP63/H3rC2CN2cBHlBQTyZj5skX8kq8+7EJszzerkeJmG9UsbLC7zXBPNskWxl7ub4BCjgDuW59eEZQ/lTl/l4z11ZP3eAPSgK9a7idHpBZF1k4K45ycDGLkHIeFy59Uadu/3qg7L9zu/9OHi0H4OaHsKaTx0pKw/uW+/45/tpZDvzxJfOu/z0f3I6PP/phtAmhFSLflROmwM/RHIk53UtbAtc4xs/w+JOQZ0FwGCIu5q/ELqLSglA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kF/+dBNp; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=thierry.reding@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=kF/+dBNp;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=thierry.reding@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dskvC52szz2xPL
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Jan 2026 13:53:43 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 16 Jan
- 2026 10:53:26 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Fri, 16 Jan 2026 10:53:26 +0800
-From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Fri, 16 Jan 2026 10:53:25 +0800
-Subject: [PATCH v2 2/3] phy: add AST2700 usb3.2 phy driver
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dt08V5HQtz2xm3
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Jan 2026 23:51:06 +1100 (AEDT)
+Received: by mail-wm1-x32c.google.com with SMTP id 5b1f17b1804b1-47ee3a63300so19247675e9.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 16 Jan 2026 04:51:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1768567862; x=1769172662; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=zTkxHu8mh7w4aqi9Nu456ezpUXh108CX0ltHIeT0yH8=;
+        b=kF/+dBNpqBdTzgiUzJzwfRDDubDv8uQDKX2vvRK1TJQI7ZbQkXAQheMOaM6ZgidZ3C
+         J9RlXg40fFX6xeuwqas4FDM2qIssiad8a4BTbWgChSjP0CYgGKUGAs3ZjtLsSAkHz1Kb
+         xzww3Mb+j6uH5JqUFQZMRKN+zlmtjZgi1enCn3iXz/VqpcFm9x+Gg6frl8SWd/XJImhV
+         ulljeDYHqPXdNUy+4bwF3l/ETnikPyFrIjU3rGVrAU42vnZ4wLoHigpDh3/yRvHEWHkA
+         DTp9zRNkh3ps1bykxE6H0/ZIc3nNz2tiwpTRmBa/S4ASHr8kQ4TCQHztjS6HHgkb4sDR
+         EEww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768567862; x=1769172662;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=zTkxHu8mh7w4aqi9Nu456ezpUXh108CX0ltHIeT0yH8=;
+        b=A3l+gCy/iljPfDF+as1Qz68eECcAVbz4mlsQjzSwY3OeXH8l7XhNmYdGqB9ozTHm07
+         8OCeFTjPmgU3F0SrrEs2FPgo3idS69cCQzYHI02WcqG60lCe4ZtN1cMfbNo1Z8cbrQoi
+         KwKSbXzCQvStIxCAl+I/SvXK1UYY+XLHPUaXpPLZimmcG/Td64Vi4ky6dQ+XCOCK5B3s
+         IF6rpPceBV2GRVHgZDX0hD8tVKWIYRh0dVpmEa6uDMpHtBCOCNfvEKQjdsKDjJiDfpeG
+         Am3XbDAlUv5NUsBYak2KCUBtZo26iDolhEQNWuHfScZtRjve7Uh0DSF4epYgryYZRBRb
+         ftzg==
+X-Forwarded-Encrypted: i=1; AJvYcCUtGDFHd9muqeLrBRO43llgcRvt4bN1x6nPiFMObVqocnj1PRBF+9l1QpAB1ipn1m6QVgXyeIO4KpMTIUU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx+cyiVpvlP2clDi6OnPv/m4mz9dnWuL6m8vh9DsRF6pilSQHqf
+	bGKcBTJ5l+J++ciSqxt1vzRClTsdPqAWoixPSPgpvbnxbqm3r5tuPsCU
+X-Gm-Gg: AY/fxX6yn7U/zeZMOfRXbFfvUM3GdIX843hJ/gp7XdKpC0UwDBb+8h++0s8Qk7t0eZ4
+	ZVRvMBfZpsrp2AFCvnhAzYaJcjbG+lFETEGVDt/nC8BOA0kcEkYt70euT7qWGFb7w3yi3ZFyg4w
+	2caidwPWwZz3lJC+oprFQEQnuSKjiPhK3roFQKgIshIE0atEX8F0ACmo40oWNgIIdoYFp/1FM5s
+	+fLfYjw2aBZkjlt4WzEaK6Gw8NMGycHiRtWKtnPwOz8d3BM7UX4lyinAyHrC6ZrD2Tx48e8c4SY
+	sE17hqVUMuQtQmccRgJactel18sEtekevWf78NdXdcDOuoPR4DSLJZI38d0r6ZkPSs3/DUTADKs
+	XoNeqoc7Kg0EpSbGBYD92Y+RmInONHzCQ837DYXZFea1+446vvKc4bS/2HGWz8uHJWsuGXVLU1t
+	8SKJ0gFgqytliEfOIVQftn5OqGfqGOhSCejVFmTVtsR/jPPmQqwIEUVYEnsTlT+c7970v7LcXM1
+	g==
+X-Received: by 2002:a05:6000:2004:b0:433:2f55:7cab with SMTP id ffacd0b85a97d-43569bbafd6mr3570766f8f.37.1768567861918;
+        Fri, 16 Jan 2026 04:51:01 -0800 (PST)
+Received: from orome (p200300e41f0ffa00f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f0f:fa00:f22f:74ff:fe1f:3a53])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4356997eb0bsm5012584f8f.34.2026.01.16.04.50.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Jan 2026 04:51:00 -0800 (PST)
+Date: Fri, 16 Jan 2026 13:50:58 +0100
+From: Thierry Reding <thierry.reding@gmail.com>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Linus Walleij <linusw@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Emil Renner Berthing <kernel@esmil.dk>, Hal Feng <hal.feng@starfivetech.com>, 
+	Chen Wang <unicorn_wang@outlook.com>, Inochi Amaoto <inochiama@gmail.com>, 
+	Basavaraj Natikar <Basavaraj.Natikar@amd.com>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, 
+	Bartosz Golaszewski <brgl@kernel.org>, Steen Hegelund <Steen.Hegelund@microchip.com>, 
+	Daniel Machon <daniel.machon@microchip.com>, UNGLinuxDriver@microchip.com, 
+	Jonathan Hunter <jonathanh@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, 
+	Patrice Chotard <patrice.chotard@foss.st.com>, linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, 
+	linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, sophgo@lists.linux.dev, linux-tegra@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org
+Subject: Re: [PATCH 08/11] pinctrl: tegra-xusb: Return void in padctl
+ enable/disable functions
+Message-ID: <aWo0LESc5bIs1kHi@orome>
+References: <20260114-pinctrl-cleanup-guard-v1-0-a14572685cd3@oss.qualcomm.com>
+ <20260114-pinctrl-cleanup-guard-v1-8-a14572685cd3@oss.qualcomm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -48,307 +104,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260116-upstream_usb3phy-v2-2-0b0c9f3eb6f4@aspeedtech.com>
-References: <20260116-upstream_usb3phy-v2-0-0b0c9f3eb6f4@aspeedtech.com>
-In-Reply-To: <20260116-upstream_usb3phy-v2-0-0b0c9f3eb6f4@aspeedtech.com>
-To: Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
-	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
- Jeffery" <andrew@codeconstruct.com.au>, Philipp Zabel
-	<p.zabel@pengutronix.de>
-CC: <linux-phy@lists.infradead.org>, <devicetree@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1768532005; l=8999;
- i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=jyw6oDw6XZIYiOpYKMeRBecsl5SUmpxaajHSnz4WIDs=;
- b=L5SeqSOvv4PCaCFASD8x1dqdBZnyYebua2zHBRKLEH63wi+8y+kILP/lvKymE9g+Fo9nFlylM
- ww6vw88+tRPAs8m+01/UcRfEvYBmrmPVfRemgPmxoJlDV7NgRO01WCG
-X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
- pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="bhhiv6s43avuu3l7"
+Content-Disposition: inline
+In-Reply-To: <20260114-pinctrl-cleanup-guard-v1-8-a14572685cd3@oss.qualcomm.com>
 
-Add AST2700 USB3.2 PHY driver support.
 
-Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
----
- drivers/phy/aspeed/Kconfig           |  12 ++
- drivers/phy/aspeed/Makefile          |   2 +
- drivers/phy/aspeed/phy-aspeed-usb3.c | 236 +++++++++++++++++++++++++++++++++++
- 3 files changed, 250 insertions(+)
+--bhhiv6s43avuu3l7
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [PATCH 08/11] pinctrl: tegra-xusb: Return void in padctl
+ enable/disable functions
+MIME-Version: 1.0
 
-diff --git a/drivers/phy/aspeed/Kconfig b/drivers/phy/aspeed/Kconfig
-new file mode 100644
-index 000000000000..72b4fc17a85e
---- /dev/null
-+++ b/drivers/phy/aspeed/Kconfig
-@@ -0,0 +1,12 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+#
-+# PHY drivers for ASPEED
-+#
-+
-+config PHY_ASPEED_USB3
-+	tristate "ASPEED USB3 PHY driver"
-+	select GENERIC_PHY
-+	depends on (ARCH_ASPEED || COMPILE_TEST)
-+	help
-+	  Enable driver support for Aspeed AST2700 USB3 PHY.
-diff --git a/drivers/phy/aspeed/Makefile b/drivers/phy/aspeed/Makefile
-new file mode 100644
-index 000000000000..20b5ac7b7e64
---- /dev/null
-+++ b/drivers/phy/aspeed/Makefile
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0
-+obj-$(CONFIG_ASPEED_USB3_PHY)		+= phy-aspeed-usb3.o
-diff --git a/drivers/phy/aspeed/phy-aspeed-usb3.c b/drivers/phy/aspeed/phy-aspeed-usb3.c
-new file mode 100644
-index 000000000000..872d2163fcf5
---- /dev/null
-+++ b/drivers/phy/aspeed/phy-aspeed-usb3.c
-@@ -0,0 +1,236 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright 2026 Aspeed Technology Inc.
-+ */
-+
-+#include <linux/bitfield.h>
-+#include <linux/clk.h>
-+#include <linux/io.h>
-+#include <linux/iopoll.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/phy/phy.h>
-+#include <linux/platform_device.h>
-+#include <linux/reset.h>
-+
-+#define PHY3S00		0x00
-+#define PHY3S00_INIT_DONE		BIT(15)
-+#define PHY3S00_SRAM_BYPASS		BIT(7)
-+#define PHY3S00_SRAM_EXT_LOAD	BIT(6)
-+#define PHY3S04		0x04
-+#define PHY3C00		0x08
-+#define PHY3C04		0x0C
-+#define PHY3P00		0x10
-+#define PHY3P00_RX_ADAPT_AFE_EN_G1	BIT(0)
-+#define PHY3P00_RX_ADAPT_AFE_EN_G2	BIT(1)
-+#define PHY3P00_RX_ADAPT_DFE_EN_G1	BIT(2)
-+#define PHY3P00_RX_ADAPT_DFE_EN_G2	BIT(3)
-+#define PHY3P00_RX_CDR_VCO_LOWFREQ_G1	BIT(4)
-+#define PHY3P00_RX_CDR_VCO_LOWFREQ_G2	BIT(5)
-+#define PHY3P00_RX_EQ_AFE_GAIN_G1	GENMASK(9, 6)
-+#define PHY3P00_RX_EQ_AFE_GAIN_G2	GENMASK(13, 10)
-+#define PHY3P00_RX_EQ_ATT_LVL_G1	GENMASK(16, 14)
-+#define PHY3P00_RX_EQ_ATT_LVL_G2	GENMASK(19, 17)
-+#define PHY3P00_RX_EQ_CTLE_BOOST_G1	GENMASK(24, 20)
-+#define PHY3P00_RX_EQ_CTLE_BOOST_G2	GENMASK(29, 25)
-+#define PHY3P00_RX_EQ_DELTA_IQ_G1_LO	GENMASK(31, 30)
-+
-+#define PHY3P04		0x14
-+#define PHY3P04_RX_EQ_DELTA_IQ_G1_HI	GENMASK(1, 0)
-+#define PHY3P04_RX_EQ_DELTA_IQ_G2	GENMASK(5, 2)
-+#define PHY3P04_RX_EQ_DFE_TAP1_G1	GENMASK(13, 6)
-+#define PHY3P04_RX_EQ_DFE_TAP1_G2	GENMASK(21, 14)
-+#define PHY3P04_RX_LOS_LFPS_EN		BIT(22)
-+#define PHY3P04_RX_LOS_THRESHOLD	GENMASK(25, 23)
-+#define PHY3P04_RX_TERM_CTRL		GENMASK(28, 26)
-+#define PHY3P04_TX_EQ_MAIN_G1_LO	GENMASK(31, 29)
-+
-+#define PHY3P08		0x18
-+#define PHY3P08_TX_EQ_MAIN_G1_HI	GENMASK(1, 0)
-+#define PHY3P08_TX_EQ_MAIN_G2		GENMASK(6, 2)
-+#define PHY3P08_TX_EQ_OVRD		BIT(7)
-+#define PHY3P08_TX_EQ_POST_G1		GENMASK(12, 9)
-+#define PHY3P08_TX_EQ_POST_G2		GENMASK(16, 13)
-+#define PHY3P08_TX_EQ_PRE_G1		GENMASK(20, 17)
-+#define PHY3P08_TX_EQ_PRE_G2		GENMASK(24, 21)
-+#define PHY3P08_TX_IBOOST_LVL		GENMASK(28, 25)
-+#define PHY3P08_TX_TERM_CTRL		GENMASK(31, 29)
-+
-+#define PHY3P0C		0x1C
-+#define PHY3P0C_TX_VBOOST_EN		BIT(0)
-+
-+#define PHY3CMD		0x40
-+
-+#define PHY3P_RX_EQ_CTLE_BOOST_G1_DEFAULT	0x7
-+#define PHY3P_RX_EQ_CTLE_BOOST_G2_DEFAULT	0x7
-+#define PHY3P_RX_EQ_DELTA_IQ_G1_DEFAULT	0x3
-+#define PHY3P_RX_EQ_DELTA_IQ_G2_DEFAULT	0x5
-+#define PHY3P_RX_LOS_THRESHOLD_DEFAULT		0x3
-+#define PHY3P_RX_TERM_CTRL_DEFAULT		0x2
-+#define PHY3P_TX_EQ_MAIN_G1_DEFAULT		0xa
-+#define PHY3P_TX_EQ_MAIN_G2_DEFAULT		0x9
-+#define PHY3P_TX_EQ_POST_G1_DEFAULT		0x4
-+#define PHY3P_TX_EQ_POST_G2_DEFAULT		0x3
-+#define PHY3P_TX_EQ_PRE_G2_DEFAULT		0x2
-+#define PHY3P_TX_IBOOST_LVL_DEFAULT		0xf
-+#define PHY3P_TX_TERM_CTRL_DEFAULT		0x2
-+
-+#define PHY3P00_DEFAULT ( \
-+	PHY3P00_RX_ADAPT_AFE_EN_G1 | \
-+	PHY3P00_RX_ADAPT_AFE_EN_G2 | \
-+	PHY3P00_RX_ADAPT_DFE_EN_G1 | \
-+	PHY3P00_RX_ADAPT_DFE_EN_G2 | \
-+	FIELD_PREP(PHY3P00_RX_EQ_CTLE_BOOST_G1, PHY3P_RX_EQ_CTLE_BOOST_G1_DEFAULT) | \
-+	FIELD_PREP(PHY3P00_RX_EQ_CTLE_BOOST_G2, PHY3P_RX_EQ_CTLE_BOOST_G2_DEFAULT) | \
-+	FIELD_PREP(PHY3P00_RX_EQ_DELTA_IQ_G1_LO, \
-+		   PHY3P_RX_EQ_DELTA_IQ_G1_DEFAULT & 0x3) \
-+)
-+
-+#define PHY3P04_DEFAULT ( \
-+	FIELD_PREP(PHY3P04_RX_EQ_DELTA_IQ_G1_HI, \
-+		   PHY3P_RX_EQ_DELTA_IQ_G1_DEFAULT >> 2) | \
-+	FIELD_PREP(PHY3P04_RX_EQ_DELTA_IQ_G2, PHY3P_RX_EQ_DELTA_IQ_G2_DEFAULT) | \
-+	PHY3P04_RX_LOS_LFPS_EN | \
-+	FIELD_PREP(PHY3P04_RX_LOS_THRESHOLD, PHY3P_RX_LOS_THRESHOLD_DEFAULT) | \
-+	FIELD_PREP(PHY3P04_RX_TERM_CTRL, PHY3P_RX_TERM_CTRL_DEFAULT) | \
-+	FIELD_PREP(PHY3P04_TX_EQ_MAIN_G1_LO, \
-+		   PHY3P_TX_EQ_MAIN_G1_DEFAULT & 0x7) \
-+)
-+
-+#define PHY3P08_DEFAULT ( \
-+	FIELD_PREP(PHY3P08_TX_EQ_MAIN_G1_HI, PHY3P_TX_EQ_MAIN_G1_DEFAULT >> 3) | \
-+	FIELD_PREP(PHY3P08_TX_EQ_MAIN_G2, PHY3P_TX_EQ_MAIN_G2_DEFAULT) | \
-+	FIELD_PREP(PHY3P08_TX_EQ_POST_G1, PHY3P_TX_EQ_POST_G1_DEFAULT) | \
-+	FIELD_PREP(PHY3P08_TX_EQ_POST_G2, PHY3P_TX_EQ_POST_G2_DEFAULT) | \
-+	FIELD_PREP(PHY3P08_TX_EQ_PRE_G2, PHY3P_TX_EQ_PRE_G2_DEFAULT) | \
-+	FIELD_PREP(PHY3P08_TX_IBOOST_LVL, PHY3P_TX_IBOOST_LVL_DEFAULT) | \
-+	FIELD_PREP(PHY3P08_TX_TERM_CTRL, PHY3P_TX_TERM_CTRL_DEFAULT) \
-+)
-+
-+#define PHY3P0C_DEFAULT \
-+	PHY3P0C_TX_VBOOST_EN
-+
-+struct aspeed_usb3_phy {
-+	void __iomem *regs;
-+	struct reset_control *rst;
-+	struct device *dev;
-+	struct clk *clk;
-+};
-+
-+static int aspeed_usb3_phy_init(struct phy *phy)
-+{
-+	struct aspeed_usb3_phy *aspeed_phy = phy_get_drvdata(phy);
-+	u32 val;
-+	int ret;
-+
-+	ret = clk_prepare_enable(aspeed_phy->clk);
-+	if (ret) {
-+		dev_err(aspeed_phy->dev, "Failed to enable clock %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = reset_control_deassert(aspeed_phy->rst);
-+	if (ret) {
-+		clk_disable_unprepare(aspeed_phy->clk);
-+		return ret;
-+	}
-+
-+	/* Wait for USB3 PHY internal SRAM initialization done */
-+	ret = readl_poll_timeout(aspeed_phy->regs + PHY3S00, val,
-+				 val & PHY3S00_INIT_DONE,
-+				 USEC_PER_MSEC, 10 * USEC_PER_MSEC);
-+	if (ret) {
-+		dev_err(aspeed_phy->dev, "SRAM init timeout\n");
-+		goto err_assert_reset;
-+	}
-+
-+	val = readl(aspeed_phy->regs + PHY3S00);
-+	val |= PHY3S00_SRAM_BYPASS;
-+	writel(val, aspeed_phy->regs + PHY3S00);
-+
-+	/* Set protocol1_ext signals as default PHY3 settings based on SNPS documents.
-+	 * Including PCFGI[54]: protocol1_ext_rx_los_lfps_en for better compatibility
-+	 */
-+	writel(PHY3P00_DEFAULT, aspeed_phy->regs + PHY3P00);
-+	writel(PHY3P04_DEFAULT, aspeed_phy->regs + PHY3P04);
-+	writel(PHY3P08_DEFAULT, aspeed_phy->regs + PHY3P08);
-+	writel(PHY3P0C_DEFAULT, aspeed_phy->regs + PHY3P0C);
-+
-+	return 0;
-+
-+err_assert_reset:
-+	reset_control_assert(aspeed_phy->rst);
-+	clk_disable_unprepare(aspeed_phy->clk);
-+	return ret;
-+}
-+
-+static int aspeed_usb3_phy_exit(struct phy *phy)
-+{
-+	struct aspeed_usb3_phy *aspeed_phy = phy_get_drvdata(phy);
-+
-+	reset_control_assert(aspeed_phy->rst);
-+	clk_disable_unprepare(aspeed_phy->clk);
-+
-+	return 0;
-+}
-+
-+static const struct phy_ops aspeed_usb3_phy_ops = {
-+	.init		= aspeed_usb3_phy_init,
-+	.exit		= aspeed_usb3_phy_exit,
-+	.owner		= THIS_MODULE,
-+};
-+
-+static int aspeed_usb3_phy_probe(struct platform_device *pdev)
-+{
-+	struct aspeed_usb3_phy *aspeed_phy;
-+	struct phy_provider *phy_provider;
-+	struct device *dev = &pdev->dev;
-+	struct phy *phy;
-+
-+	aspeed_phy = devm_kzalloc(dev, sizeof(*aspeed_phy), GFP_KERNEL);
-+	if (!aspeed_phy)
-+		return -ENOMEM;
-+
-+	aspeed_phy->dev = dev;
-+
-+	aspeed_phy->clk = devm_clk_get(dev, NULL);
-+	if (IS_ERR(aspeed_phy->clk))
-+		return PTR_ERR(aspeed_phy->clk);
-+
-+	aspeed_phy->rst = devm_reset_control_get_exclusive(dev, NULL);
-+	if (IS_ERR(aspeed_phy->rst))
-+		return PTR_ERR(aspeed_phy->rst);
-+
-+	aspeed_phy->regs = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(aspeed_phy->regs))
-+		return PTR_ERR(aspeed_phy->regs);
-+
-+	phy = devm_phy_create(dev, NULL, &aspeed_usb3_phy_ops);
-+	if (IS_ERR(phy))
-+		return PTR_ERR(phy);
-+
-+	phy_set_drvdata(phy, aspeed_phy);
-+
-+	phy_provider = devm_of_phy_provider_register(dev, of_phy_simple_xlate);
-+	return PTR_ERR_OR_ZERO(phy_provider);
-+}
-+
-+static const struct of_device_id aspeed_usb3_phy_match_table[] = {
-+	{
-+		.compatible = "aspeed,ast2700-usb3-phy",
-+	},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, aspeed_usb3_phy_match_table);
-+
-+static struct platform_driver aspeed_usb3_phy_driver = {
-+	.probe		= aspeed_usb3_phy_probe,
-+	.driver		= {
-+		.name	= KBUILD_MODNAME,
-+		.of_match_table	= aspeed_usb3_phy_match_table,
-+	},
-+};
-+module_platform_driver(aspeed_usb3_phy_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("ASPEED USB3.0 PHY Driver");
+On Wed, Jan 14, 2026 at 04:30:09PM +0100, Krzysztof Kozlowski wrote:
+> Make the padctl functions a bit simpler by returning void instead of
+> always '0'.  The callers - phy init/exit - still need to return 0, but
+> these are smaller function without if/branching.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> ---
+>  drivers/pinctrl/tegra/pinctrl-tegra-xusb.c | 14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 
--- 
-2.34.1
+Acked-by: Thierry Reding <treding@nvidia.com>
 
+--bhhiv6s43avuu3l7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmlqNDIACgkQ3SOs138+
+s6HKVA//WbWB3AVvEbOYpT8fr129RiWvQ5lRtQceA8fb/1Ep4k0qX0M5cVujq72g
+OFie2IcJyCzuci1ZmKEf7fTaR/cjlzExIrXvmox2TLmtKm5kBAFTu2UcHzvAbRcs
+VbasfUeQ/Wi7dlT6+I6JeNLYaXbstuH2RQV3NQ2BC3zPUsJk27p7DARdqBLUSNTJ
+7jX2sBu0xKu5n0hrBhesTMi/zBLMI3pZvqmMlhGzTU01GSlmPz72GMI5J6YmeeF0
+Midhy4ZCbs40l7nJPghjxdtQoKLhUPG6z+NzTyp9Hfelr7q/cYZ1avlAGkJ/39fI
+ugJEOfjl0ed/HMarlvwrRPSTjF6f2BUKH1Ub2xGxErbhGaGvOsKGJizbjsK0CGzl
+jdVsdFUF/wmzPeX27RIel8DxTdTYnhpUyZoylg7l9thjdhYGceKGJHeHb1DaOOZ+
+OhsSUZlejccTbalvk7OeBxtnujGfE56nEXsSByA0C6kaDRxPZmsH9WWtp4mwIzXg
+rvw2hOERLedWoFTjFynl0+3hazgw2hh21iH/uE+uOEiVwHNhPiEXeb+lJMGQbH/9
+Bm2mL/1gvDYA3KxeFZbTTyNwEiGkZyPFLvwZ4hpapk8AvhFdEu/60sMZWsTRlSgx
+H7CJIWp6MSs4e2ErCXbhjjucu3eJo1lFTm/bGVBosixPjjSZ720=
+=VB+5
+-----END PGP SIGNATURE-----
+
+--bhhiv6s43avuu3l7--
 
