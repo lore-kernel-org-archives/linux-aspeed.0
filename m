@@ -1,63 +1,41 @@
-Return-Path: <linux-aspeed+bounces-3372-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3373-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 190C6C98327
-	for <linux-aspeed@archiver.kernel.org>; Sat, 17 Jan 2026 15:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BE64CA5FE1
+	for <linux-aspeed@archiver.kernel.org>; Sat, 17 Jan 2026 23:49:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dth1135yZz2xqG;
-	Sun, 18 Jan 2026 02:47:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768664821;
-	cv=none; b=hnG69vJAjQfh+RHajTdr6OUKpOA4oMRg9T/AAAURtSMZ7V65ki9iZ8bDeL8MvtsXuMu2FjG/v18HxPnwwfBVaicAVPF7HM9iSghGz6Ifmgi9vRCXQbu2Lr2Jiyqrr3njDDJ4QFfUXijq5LkNplRDDxtSkFsMZvaF4iwKDx9dbUHc2QRNfaXnNTcZfhAsmSab15LtCij/ipf9QbTJmlRO3uc4fzX0s2454WG58qGRd7LQZTfcBjxqm7AkjYHk+POxZwaczalsJERnsHvVmtZMLX30mknuo0WGhm6eXwhcGTUv083vQYMAOXy1yYuCum1WD8k/Xhrj2H/0PUSwgPfF6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dttjd3tLlz2xlM;
+	Sun, 18 Jan 2026 10:49:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=141.14.17.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768693765;
+	cv=none; b=F7zQcxX3Ng2kakC3VGAsBOajq4erNXNcdxE/xCmgA3tzcstGGeN+UXe64OHKiTOGPGg4JN8kk0xdgwjQ20w0hRgVXZFp15rjLIK49mA3XFP72kSxMacAT5meJKxuvR6UAlLbfkGZLW9zTWVWNl+/1SRYtZkuV5Mf5X5nh/5aAoBvxFF96YpSX5d6EE2pvZYTdF9dnLK4+ogate9nE4S2Sg3h3Aa3U5dClRqlOFthv6+/mXhdi45vPgbhAgYD2m5NNLFpQWDzOCWk/Vn+dsa/6txW4K+uacCcZ5hLNMzUf2DsZR7icMpxBsGYWwEw1dHRt5P2h5+Gx/nQZtLrWaRqww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768664821; c=relaxed/relaxed;
-	bh=gF8+Zq1qK4nUISuq8ZYKam6dKSKTtWo9A81RsKUSatk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cPmavUdWY6O0R2jmNjxGzkpWoiTDI/+g0fnXTn/5OAnPJI9VF9UWCR/8q/fUjYTT4/KPVO6ktL/GzI9K9HDIKlcpGbo4y/Ev7OYk5TIIQ9Ag+aINmg+gH7gdobo6DGJ4LHOBLcuzpCQEaHCEbhYYkko6zCOEy9nOD9JDQ64zXP4O0JayR/NE5/Rwd/sx5TcjORwaWiS6f1U89A055rA8cI3/Bdlk5U7tyPC3YEJIiJvBH4lZr6Xt1dmBpnAFbhNswuLWw/qAT0E6e0P9LC3r1Tb1TbNF3O0osXJ3WpVF8GBOUlEbkJsQtrQYXT+43XjIupa+165LeJZjB5nPOiXoxQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=fFxoiG5o; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=fFxoiG5o;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+	t=1768693765; c=relaxed/relaxed;
+	bh=otIkd+LO6QKagpEPq00JPFJXYFw6mYJcj2mQ1vgAGDM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
+	 In-Reply-To:Content-Type; b=O2+umT5T2RFAjYzPOy47QmGb+tf0a6mcipwyeTBSdK/LbXcgVaiyxveMix/0WjOZSKnWumsF8IufAyRRQtMOTVgp6aa7O1wfSv2p6tlPsAe2RnQZ/842Zy9kVZt/+EGJPaL5bs5T1DHebg5Yo/s/VqhG+2c50whzfAebuci9kGIt+lUxmFZ0ni+W2eFf/ZeZADuYsWIhgEkTeyxQsEjk759zMhBchlwHKttXIJy07smUHod74by8A6RKUWZFrhOl22vMWPhwRqTduO2e/ljgUirfzoPTjapZM9Hu7vhdSCh2fl2xZhEYwM1iKRBoCY44OkxrbqVe1U9YEbiibMdFQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de; spf=pass (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org) smtp.mailfrom=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=molgen.mpg.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=molgen.mpg.de (client-ip=141.14.17.11; helo=mx3.molgen.mpg.de; envelope-from=pmenzel@molgen.mpg.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 60 seconds by postgrey-1.37 at boromir; Sun, 18 Jan 2026 10:49:23 AEDT
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dth0y5PdCz2xQC
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 18 Jan 2026 02:46:57 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=gF8+Zq1qK4nUISuq8ZYKam6dKSKTtWo9A81RsKUSatk=; b=fFxoiG5ouamEjvJWtIjJJqiZmZ
-	ETa+cz75RUWA6SQbZuAAIwaD6U7YvThjuoYnJld2ETo7MDh6SNe9ENtr/+MUgD8W/Uslb4wpbD/cS
-	W2Lsc2ZEzRzEUtD2Uv1FZ22e+IlEGXE28W+koektM/uK/4g4nlGqQni5usy4HXoir3zA=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vh8VU-003DhI-R8; Sat, 17 Jan 2026 16:46:32 +0100
-Date: Sat, 17 Jan 2026 16:46:32 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linux-gpio@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, Andrew Jeffery <andrew@aj.id.au>,
-	devicetree@vger.kernel.org, bmc-sw@aspeedtech.com
-Subject: Re: [PATCH 3/5] gpio: aspeed-sgpio: Create llops to handle hardware
- access
-Message-ID: <55fbb766-12b5-441a-b06c-d807097e5476@lunn.ch>
-References: <20260117-upstream_sgpio-v1-0-850ef3ffb680@aspeedtech.com>
- <20260117-upstream_sgpio-v1-3-850ef3ffb680@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dttjb4QpVz2xLv;
+	Sun, 18 Jan 2026 10:49:23 +1100 (AEDT)
+Received: from [10.0.57.151] (unknown [62.214.191.67])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: pmenzel)
+	by mx.molgen.mpg.de (Postfix) with ESMTPSA id 508CD4C4430071;
+	Sun, 18 Jan 2026 00:48:40 +0100 (CET)
+Message-ID: <3153512e-8325-4d0b-a869-a2a5062abefd@molgen.mpg.de>
+Date: Sun, 18 Jan 2026 00:48:37 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,85 +49,315 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260117-upstream_sgpio-v1-3-850ef3ffb680@aspeedtech.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/2] spi: aspeed: Add support for non-spi-mem devices
+To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+References: <20260117134216.595436-1-chin-ting_kuo@aspeedtech.com>
+ <20260117134216.595436-3-chin-ting_kuo@aspeedtech.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: clg@kaod.org, broonie@kernel.org, boris.brezillon@bootlin.com,
+ joel@jms.id.au, andrew@codeconstruct.com.au, linux-aspeed@lists.ozlabs.org,
+ openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ BMC-SW@aspeedtech.com
+In-Reply-To: <20260117134216.595436-3-chin-ting_kuo@aspeedtech.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Sat, Jan 17, 2026 at 07:17:10PM +0800, Billy Tsai wrote:
-> Add low-level operations (llops) to abstract the register access for SGPIO
-> registers. With this abstraction layer, the driver can separate the
-> hardware and software logic, making it easier to extend the driver to
-> support different hardware register layouts.
-
-With a quick look at the code, it appears the register numbers stay
-the same? Is that true?
-
-I think you have reinvented regmap.
-
-> @@ -318,30 +278,25 @@ static int aspeed_sgpio_set_type(struct irq_data *d, unsigned int type)
->  	u32 type0 = 0;
->  	u32 type1 = 0;
->  	u32 type2 = 0;
-> -	u32 bit, reg;
-> -	const struct aspeed_sgpio_bank *bank;
->  	irq_flow_handler_t handler;
-> -	struct aspeed_sgpio *gpio;
-> -	void __iomem *addr;
-> -	int offset;
-> -
-> -	irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-> +	struct aspeed_sgpio *gpio = irq_data_get_irq_chip_data(d);
-> +	int offset = irqd_to_hwirq(d);
->  
->  	switch (type & IRQ_TYPE_SENSE_MASK) {
->  	case IRQ_TYPE_EDGE_BOTH:
-> -		type2 |= bit;
-> +		type2 = 1;
->  		fallthrough;
->  	case IRQ_TYPE_EDGE_RISING:
-> -		type0 |= bit;
-> +		type0 = 1;
->  		fallthrough;
->  	case IRQ_TYPE_EDGE_FALLING:
->  		handler = handle_edge_irq;
->  		break;
->  	case IRQ_TYPE_LEVEL_HIGH:
-> -		type0 |= bit;
-> +		type0 = 1;
->  		fallthrough;
->  	case IRQ_TYPE_LEVEL_LOW:
-> -		type1 |= bit;
-> +		type1 = 1;
->  		handler = handle_level_irq;
->  		break;
-
-This change is not obviously correct to me. It is not about
-abstracting register accesses, what you actually write to the
-registers appears to of changed. Maybe you could add a refactoring
-patch first which does this change, with a commit message explaining
-it, and then insert the register abstraction?
+Dear Chin-Ting,
 
 
-> @@ -374,16 +318,14 @@ static void aspeed_sgpio_irq_handler(struct irq_desc *desc)
->  {
->  	struct gpio_chip *gc = irq_desc_get_handler_data(desc);
->  	struct irq_chip *ic = irq_desc_get_chip(desc);
-> -	struct aspeed_sgpio *data = gpiochip_get_data(gc);
-> +	struct aspeed_sgpio *gpio = gpiochip_get_data(gc);
+Thank you for your patch.
 
-This rename does not belong in this patch. You want lots of small
-patches, each doing one logical thing, with a good commit message, and
-obviously correct. Changes like this make it a lot less obviously
-correct.
+Am 17.01.26 um 14:42 schrieb Chin-Ting Kuo:
+> The ASPEED FMC/SPI controller may be shared by spi-mem devices and
+> other SPI peripherals that do not use the spi-mem framework.
+> 
+> The driver currently assumes spi-mem semantics for all devices,
+> while the controller also supports direct user mode access commonly
+> used by non-spi-mem devices. This mismatch can result in incorrect
+> behavior when different types of devices share the same controller.
+> 
+> Update the driver to properly handle non-spi-mem devices, allowing
+> them to operate correctly in pure user mode alongside spi-mem
+> devices on a shared SPI controller.
 
->  	/* Disable IRQ and clear Interrupt status registers for all SGPIO Pins. */
-> -	for (i = 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-> -		bank =  &aspeed_sgpio_banks[i];
-> +	for (i = 0; i < gpio->chip.ngpio; i += 2) {
+It’d be great if you added a paragraph on how the driver ist updated.
 
-Why are ARRAY_SIZE() gone? There probably is a good reason, so doing
-this in a patch of its own, with a commit message explaining "Why?"
-would make this easier to review.
+Also, documented on how to test your change, would be great.
 
-      Andrew
+> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+> ---
+>   drivers/spi/spi-aspeed-smc.c | 134 +++++++++++++++++++++++++++++++++--
+>   1 file changed, 128 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
+> index db3e096f2eb0..3949f94b6667 100644
+> --- a/drivers/spi/spi-aspeed-smc.c
+> +++ b/drivers/spi/spi-aspeed-smc.c
+> @@ -48,6 +48,8 @@
+>   /* CEx Address Decoding Range Register */
+>   #define CE0_SEGMENT_ADDR_REG		0x30
+>   
+> +#define FULL_DUPLEX_RX_DATA		0x1e4
+> +
+>   /* CEx Read timing compensation register */
+>   #define CE0_TIMING_COMPENSATION_REG	0x94
+>   
+> @@ -81,6 +83,7 @@ struct aspeed_spi_data {
+>   	u32	hclk_mask;
+>   	u32	hdiv_max;
+>   	u32	min_window_size;
+> +	bool	full_duplex;
+>   
+>   	phys_addr_t (*segment_start)(struct aspeed_spi *aspi, u32 reg);
+>   	phys_addr_t (*segment_end)(struct aspeed_spi *aspi, u32 reg);
+> @@ -105,6 +108,7 @@ struct aspeed_spi {
+>   
+>   	struct clk		*clk;
+>   	u32			 clk_freq;
+> +	u8			 cs_change;
+>   
+>   	struct aspeed_spi_chip	 chips[ASPEED_SPI_MAX_NUM_CS];
+>   };
+> @@ -280,7 +284,8 @@ static ssize_t aspeed_spi_write_user(struct aspeed_spi_chip *chip,
+>   }
+>   
+>   /* support for 1-1-1, 1-1-2 or 1-1-4 */
+> -static bool aspeed_spi_supports_op(struct spi_mem *mem, const struct spi_mem_op *op)
+> +static bool aspeed_spi_supports_mem_op(struct spi_mem *mem,
+> +				       const struct spi_mem_op *op)
+>   {
+>   	if (op->cmd.buswidth > 1)
+>   		return false;
+> @@ -305,7 +310,8 @@ static bool aspeed_spi_supports_op(struct spi_mem *mem, const struct spi_mem_op
+>   
+>   static const struct aspeed_spi_data ast2400_spi_data;
+>   
+> -static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
+> +static int do_aspeed_spi_exec_mem_op(struct spi_mem *mem,
+> +				     const struct spi_mem_op *op)
+>   {
+>   	struct aspeed_spi *aspi = spi_controller_get_devdata(mem->spi->controller);
+>   	struct aspeed_spi_chip *chip = &aspi->chips[spi_get_chipselect(mem->spi, 0)];
+> @@ -367,11 +373,12 @@ static int do_aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *o
+>   	return ret;
+>   }
+>   
+> -static int aspeed_spi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
+> +static int aspeed_spi_exec_mem_op(struct spi_mem *mem,
+> +				  const struct spi_mem_op *op)
+>   {
+>   	int ret;
+>   
+> -	ret = do_aspeed_spi_exec_op(mem, op);
+> +	ret = do_aspeed_spi_exec_mem_op(mem, op);
+>   	if (ret)
+>   		dev_err(&mem->spi->dev, "operation failed: %d\n", ret);
+>   	return ret;
+> @@ -773,8 +780,8 @@ static ssize_t aspeed_spi_dirmap_read(struct spi_mem_dirmap_desc *desc,
+>   }
+>   
+>   static const struct spi_controller_mem_ops aspeed_spi_mem_ops = {
+> -	.supports_op = aspeed_spi_supports_op,
+> -	.exec_op = aspeed_spi_exec_op,
+> +	.supports_op = aspeed_spi_supports_mem_op,
+> +	.exec_op = aspeed_spi_exec_mem_op,
+>   	.get_name = aspeed_spi_get_name,
+>   	.dirmap_create = aspeed_spi_dirmap_create,
+>   	.dirmap_read = aspeed_spi_dirmap_read,
+> @@ -843,6 +850,110 @@ static void aspeed_spi_enable(struct aspeed_spi *aspi, bool enable)
+>   		aspeed_spi_chip_enable(aspi, cs, enable);
+>   }
+>   
+> +static int aspeed_spi_user_prepare_msg(struct spi_controller *ctlr,
+> +				       struct spi_message *msg)
+> +{
+> +	struct aspeed_spi *aspi =
+> +		(struct aspeed_spi *)spi_controller_get_devdata(ctlr);
+> +	const struct aspeed_spi_data *data = aspi->data;
+> +	struct spi_device *spi = msg->spi;
+> +	u32 cs = spi_get_chipselect(spi, 0);
+> +	struct aspeed_spi_chip *chip = &aspi->chips[cs];
+> +	u32 ctrl_val;
+> +	u32 clk_div = data->get_clk_div(chip, spi->max_speed_hz);
+> +
+> +	ctrl_val = chip->ctl_val[ASPEED_SPI_BASE];
+> +	ctrl_val &= ~CTRL_IO_MODE_MASK & data->hclk_mask;
+> +	ctrl_val |= clk_div;
+> +	chip->ctl_val[ASPEED_SPI_BASE] = ctrl_val;
+> +
+> +	if (aspi->cs_change == 0)
+> +		aspeed_spi_start_user(chip);
+> +
+> +	return 0;
+> +}
+> +
+> +static int aspeed_spi_user_unprepare_msg(struct spi_controller *ctlr,
+> +					 struct spi_message *msg)
+> +{
+> +	struct aspeed_spi *aspi =
+> +		(struct aspeed_spi *)spi_controller_get_devdata(ctlr);
+> +	struct spi_device *spi = msg->spi;
+> +	u32 cs = spi_get_chipselect(spi, 0);
+> +	struct aspeed_spi_chip *chip = &aspi->chips[cs];
+> +
+> +	if (aspi->cs_change == 0)
+> +		aspeed_spi_stop_user(chip);
+> +
+> +	return 0;
+> +}
+> +
+> +static void aspeed_spi_user_transfer_tx(struct aspeed_spi *aspi,
+> +					struct spi_device *spi,
+> +					const u8 *tx_buf, u8 *rx_buf,
+> +					void *dst, u32 len)
+> +{
+> +	const struct aspeed_spi_data *data = aspi->data;
+> +	bool full_duplex_transfer = data->full_duplex && tx_buf == rx_buf;
+> +	u32 i;
+> +
+> +	if (full_duplex_transfer &&
+> +	    !!(spi->mode & (SPI_TX_DUAL | SPI_TX_QUAD |
+> +			    SPI_RX_DUAL | SPI_RX_QUAD))) {
+> +		dev_err(aspi->dev,
+> +			"full duplex is only supported for single IO mode\n");
+> +		return;
+> +	}
+> +
+> +	for (i = 0; i < len; i++) {
+> +		writeb(tx_buf[i], dst);
+> +		if (full_duplex_transfer)
+> +			rx_buf[i] = readb(aspi->regs + FULL_DUPLEX_RX_DATA);
+> +	}
+> +}
+> +
+> +static int aspeed_spi_user_transfer(struct spi_controller *ctlr,
+> +				    struct spi_device *spi,
+> +				    struct spi_transfer *xfer)
+> +{
+> +	struct aspeed_spi *aspi =
+> +		(struct aspeed_spi *)spi_controller_get_devdata(ctlr);
+> +	u32 cs = spi_get_chipselect(spi, 0);
+> +	struct aspeed_spi_chip *chip = &aspi->chips[cs];
+> +	void __iomem *ahb_base = aspi->chips[cs].ahb_base;
+> +	const u8 *tx_buf = xfer->tx_buf;
+> +	u8 *rx_buf = xfer->rx_buf;
+> +
+> +	dev_dbg(aspi->dev,
+> +		"[cs%d] xfer: width %d, len %u, tx %p, rx %p\n",
+> +		cs, xfer->bits_per_word, xfer->len,
+> +		tx_buf, rx_buf);
+> +
+> +	if (tx_buf) {
+> +		if (spi->mode & SPI_TX_DUAL)
+> +			aspeed_spi_set_io_mode(chip, CTRL_IO_DUAL_DATA);
+> +		else if (spi->mode & SPI_TX_QUAD)
+> +			aspeed_spi_set_io_mode(chip, CTRL_IO_QUAD_DATA);
+> +
+> +		aspeed_spi_user_transfer_tx(aspi, spi, tx_buf, rx_buf,
+> +					    (void *)ahb_base, xfer->len);
+> +	}
+> +
+> +	if (rx_buf && rx_buf != tx_buf) {
+> +		if (spi->mode & SPI_RX_DUAL)
+> +			aspeed_spi_set_io_mode(chip, CTRL_IO_DUAL_DATA);
+> +		else if (spi->mode & SPI_RX_QUAD)
+> +			aspeed_spi_set_io_mode(chip, CTRL_IO_QUAD_DATA);
+
+Should other modes be handled?
+
+> +
+> +		ioread8_rep(ahb_base, rx_buf, xfer->len);
+> +	}
+> +
+> +	xfer->error = 0;
+> +	aspi->cs_change = xfer->cs_change;
+> +
+> +	return 0;
+> +}
+> +
+>   static int aspeed_spi_probe(struct platform_device *pdev)
+>   {
+>   	struct device *dev = &pdev->dev;
+> @@ -899,6 +1010,9 @@ static int aspeed_spi_probe(struct platform_device *pdev)
+>   	ctlr->cleanup = aspeed_spi_cleanup;
+>   	ctlr->num_chipselect = of_get_available_child_count(dev->of_node);
+>   	ctlr->dev.of_node = dev->of_node;
+> +	ctlr->prepare_message = aspeed_spi_user_prepare_msg;
+> +	ctlr->unprepare_message = aspeed_spi_user_unprepare_msg;
+> +	ctlr->transfer_one = aspeed_spi_user_transfer;
+>   
+>   	aspi->num_cs = ctlr->num_chipselect;
+>   
+> @@ -1455,6 +1569,7 @@ static const struct aspeed_spi_data ast2400_fmc_data = {
+>   	.hclk_mask     = 0xfffff0ff,
+>   	.hdiv_max      = 1,
+>   	.min_window_size = 0x800000,
+> +	.full_duplex   = false,
+>   	.calibrate     = aspeed_spi_calibrate,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2400,
+>   	.segment_start = aspeed_spi_segment_start,
+> @@ -1471,6 +1586,7 @@ static const struct aspeed_spi_data ast2400_spi_data = {
+>   	.timing	       = 0x14,
+>   	.hclk_mask     = 0xfffff0ff,
+>   	.hdiv_max      = 1,
+> +	.full_duplex   = false,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2400,
+>   	.calibrate     = aspeed_spi_calibrate,
+>   	/* No segment registers */
+> @@ -1485,6 +1601,7 @@ static const struct aspeed_spi_data ast2500_fmc_data = {
+>   	.hclk_mask     = 0xffffd0ff,
+>   	.hdiv_max      = 1,
+>   	.min_window_size = 0x800000,
+> +	.full_duplex   = false,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2500,
+>   	.calibrate     = aspeed_spi_calibrate,
+>   	.segment_start = aspeed_spi_segment_start,
+> @@ -1502,6 +1619,7 @@ static const struct aspeed_spi_data ast2500_spi_data = {
+>   	.hclk_mask     = 0xffffd0ff,
+>   	.hdiv_max      = 1,
+>   	.min_window_size = 0x800000,
+> +	.full_duplex   = false,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2500,
+>   	.calibrate     = aspeed_spi_calibrate,
+>   	.segment_start = aspeed_spi_segment_start,
+> @@ -1520,6 +1638,7 @@ static const struct aspeed_spi_data ast2600_fmc_data = {
+>   	.hclk_mask     = 0xf0fff0ff,
+>   	.hdiv_max      = 2,
+>   	.min_window_size = 0x200000,
+> +	.full_duplex   = false,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2600,
+>   	.calibrate     = aspeed_spi_ast2600_calibrate,
+>   	.segment_start = aspeed_spi_segment_ast2600_start,
+> @@ -1538,6 +1657,7 @@ static const struct aspeed_spi_data ast2600_spi_data = {
+>   	.hclk_mask     = 0xf0fff0ff,
+>   	.hdiv_max      = 2,
+>   	.min_window_size = 0x200000,
+> +	.full_duplex   = false,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2600,
+>   	.calibrate     = aspeed_spi_ast2600_calibrate,
+>   	.segment_start = aspeed_spi_segment_ast2600_start,
+> @@ -1556,6 +1676,7 @@ static const struct aspeed_spi_data ast2700_fmc_data = {
+>   	.hclk_mask     = 0xf0fff0ff,
+>   	.hdiv_max      = 2,
+>   	.min_window_size = 0x10000,
+> +	.full_duplex   = true,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2600,
+>   	.calibrate     = aspeed_spi_ast2600_calibrate,
+>   	.segment_start = aspeed_spi_segment_ast2700_start,
+> @@ -1573,6 +1694,7 @@ static const struct aspeed_spi_data ast2700_spi_data = {
+>   	.hclk_mask     = 0xf0fff0ff,
+>   	.hdiv_max      = 2,
+>   	.min_window_size = 0x10000,
+> +	.full_duplex   = true,
+>   	.get_clk_div   = aspeed_get_clk_div_ast2600,
+>   	.calibrate     = aspeed_spi_ast2600_calibrate,
+>   	.segment_start = aspeed_spi_segment_ast2700_start,
+
+
+Kind regards,
+
+Paul
 
