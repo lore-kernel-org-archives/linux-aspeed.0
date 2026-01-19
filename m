@@ -1,58 +1,49 @@
-Return-Path: <linux-aspeed+bounces-3392-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3393-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7523AC9830C
-	for <linux-aspeed@archiver.kernel.org>; Mon, 19 Jan 2026 02:10:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5A12C9830C
+	for <linux-aspeed@archiver.kernel.org>; Mon, 19 Jan 2026 02:39:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dvYnS0Xzdz2xS5;
-	Mon, 19 Jan 2026 13:10:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768788604;
-	cv=pass; b=YdhPmgqtAZJD2SoSpdG5GK1uJV2n2Myo2snUkusZLOCEjV++qoa4q00gBD9Al8XFNwJx/GPhPpwbW8UfKCBVufKCEsA4ItERYV0zVNBLM4/FfR9wgWI+5rgt4oDeTIMBe5jLASeifyLyhxWFpyjJQb+9bEfUQPHzrF8unL92RYCO87sdNwGbSqJmGYinD3pXSNjp8P5rhtJvLRuJyCPDB818FxX37+OpW7ytmZiuc+TnUZ/eNpUR0pIQhzTsZDdsadVXwx+T18JZXj1AE79AjBXzHzdAce6b4ZYQncSsfuNWTq67gz1ybdvIKmnpYmkXy7p7G7hwp3uEKZewlBXw8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dvZRY24Z1z2xS5;
+	Mon, 19 Jan 2026 13:39:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:c405::7"
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768790377;
+	cv=fail; b=eDnEJPcH1KCY34oQunem3kjR1zJAIXCDFSCwSPYwDb8Ib7L8FSq9jn4063x5+HIKKdmc323sszwxwez/2fpVwOp6t/73tFklAjrL4RIgTwC4DjO3ObrT0SghlXVZwcVBWMwBd7cVEJo7t2wTRXOKJd6i5LwqRjwnsam+DpDwmzQEnMA2yCEBhazNT/KnDiz2krYQHovxs3izd/DgaO3h1qDWoex3x8vAB6iSOlMhIjB915a8Lg3cJbamIdQ8pCLVbPl2xgMp9bchDtMfDk15z6LxDWweAtWWhRbnqy2j0ZLVyLoSnobFTDtKatOt5YaJQs53FbkVVixX86abMiZ66g==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768788604; c=relaxed/relaxed;
-	bh=Rx5jmfo2Kbf12nfLFmLe2kMtM06s6zFkPW75bIBG7+I=;
+	t=1768790377; c=relaxed/relaxed;
+	bh=cMeTnSvjoh+C/Oglk8Lz9NHoM/pRiPf/jC4gMkf9Sio=;
 	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=h8gedgVzEac0L0VFdkFnVjL4gTaMK6u9oUz/qPlmxV/ZbgJyXGIqEJ2619RgZA8126Awz0svg4qqZXd3vD5M7o02tpVocEuwcBtxD183hsp2ciaa8NvRDclYea8VqxUX8xfx5PsnM6Nq235mHB2xZ0q4JsEhCQs8vAat+b+nP1ogfTNTnYwBGBhBgSZ4kUINvJn8TxPp5/IgLYE+ekS6xOJM3UB7Z87f/YYbndLE8tRIG2tIufZETf81WIDzf5RyVI9m7nZKCnvHn71A6gXE+Fri6cBn79zrpum1BAFVcI73x+ZQHfPYxlYNludVBWheknvxdfegGVWKiNZgWi22cg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=kZod77qX; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	 Content-Type:MIME-Version; b=d6Y3m7+ui167RhWhCKP/80FxVk/VXzL0S/B5kkBHx5k5r9e6oFS+k6CVh2aq0iOUqB5TNlJqVK1hvxP5fOgvemRJEQ0iymNWGKX6bPQBg9ObC5L0yFL1xkrIad+0KQLKmiqAMIwdg+2I+NW194J/eCg1ZMKRbPdEpm1kjw+9sQn0lVenQJ5cG7U6RWq0iSMk4ENxKUaITQzSsOt+8h4O/dSUf4oK1zZGWSerEEiQanGnWpyo3zNVMSAFavs7P7P3ZMSUKOiD+zYfjpC/B/pLl5JFKpsPZuLQ7F0feGO/8/9ye48JhuYFtc07/rGTgNhNZJSZakkG+XUUL5lUY8EPDg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=oFCx4+2e; dkim=fail (2048-bit key) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=kZod77qX reason="signature verification failed"; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=kZod77qX;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=oFCx4+2e;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=kZod77qX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvYnQ3SB6z2xRm
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 19 Jan 2026 13:10:02 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=WE561qc5RgpX1WoB63qXz/vqyQts3AmU9uzblLEpfRss2spYJuWT2GpICDBM9ksEuqOYxp0mnFDk8EZEKpITyn0idynhlLur+6GGHYI6KF/OH5WvT7F4Sut1+dzl9+lbYigXQdvp2TZVlwwjhW2Kfuvh3D6aZXndy5fqJfbwXkgBxTeBCdtENNyLzdzS04F4gTX3SZ7jlU5gsUXdX6lX/epSLpR0gXJOKd5C24K4CdjxiZIVlGTy2d/+Xj/+mMW3B9YI2XztgnbhaoVmr6XmD6NSzrztjCnbuFikqrySOxXyI9KBjc7FH7d3ICPVHYGqqJst8QDaBngG/zIwRbdRSw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Rx5jmfo2Kbf12nfLFmLe2kMtM06s6zFkPW75bIBG7+I=;
- b=YYCL8nSjpJrJ8bla/w+YQz5scRTxoR9HkZ1aDqpt4nfnvV+cwTnUuMD3Hn3BcTQCkW4P19zd4FUo0PhYOOa2GIfQ9kFSDcH4BevRh+rTOupdBIvVHFNESTsqV3S4ziu2iJSkfJ6DYZq5FtfVDa+FEQNMsWmYQeWaX3JMWEq5Flt/nQ8MUy5yrHYa74Ros/314sXpGimEQNPTckGf8B115+awfBZIaVRPEywz6E79eyYoWob8FV65UXNYB+iQKfRW/QtkStPh1wwZkXlKM69kKsfqpTcPRzVzA3tnh1OEoYQlGCuunMy/m1DdcAzJGrRTelcQS110HtEleHzEJGf40g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvZRX0pDWz2xRm
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 19 Jan 2026 13:39:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Rx5jmfo2Kbf12nfLFmLe2kMtM06s6zFkPW75bIBG7+I=;
- b=kZod77qXv48jZebobzaaYRIvZyg1aEMOffwiaKKWHaTeDPfvrSE5fZ72Oavcq8XnDOPWolisoAzERft/WR0pqHOjkzW3mLKLRUocI+wJJuA/xSyxfsBGW/GZ5di+QFLPd+hCfHzN/8sh9fIXatfqLxPHKIzTUuMuY/nDYqqgPJDGOvvjlkJ+nfEo99c58hAElT55q4J7fJYPGfp9wIASqGe0symoXU6Gdo+e/q9U1URG+tUWH7mv+h9utpG/v7sKbDdUK/Qor0uuKyt/qqs8+hdjPlihpMcAOOmlFFAQwwAlnwxpq+eqFDf/SdyEjJkMCvt5A499S7MEEDRAQnA4tg==
+ bh=cMeTnSvjoh+C/Oglk8Lz9NHoM/pRiPf/jC4gMkf9Sio=;
+ b=oFCx4+2eimWYcUcH/64k4oy8tb+kPG5guo7JPchZws71mZFk1HKhXr+5xIiJcf/hg8bcUrlVedyhSJWm9uB+6GJ2CcdRb96c4vtx9KIx6byQLWNgAoov/iJmVUlEO9PHpq0U5CjPdwyV3HZuOuWfzYI8O9zwobYsWXhZFoAamvekP6765c/pmycSeiq+KJpW2Mop5snnt8XgGUCsiZeXAqOWeRaDTTwabxRohSD/LbWKA15td0cX9G/j9SZwYGqzP4bGF2g9tyOSGowCuY5PfsNzKPrjiq12HaQRKfsQDCKbmfMRUMGNjituRsRHABurkJDyH0OyVAy/DUgyt3qzXg==
 Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
- by TY0PR06MB5495.apcprd06.prod.outlook.com (2603:1096:400:266::12) with
+ by TYZPR06MB6894.apcprd06.prod.outlook.com (2603:1096:405:20::13) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9520.11; Mon, 19 Jan
- 2026 02:09:33 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9520.12; Mon, 19 Jan
+ 2026 02:39:13 +0000
 Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
  ([fe80::814e:819a:7d52:7448]) by OSQPR06MB7252.apcprd06.prod.outlook.com
  ([fe80::814e:819a:7d52:7448%3]) with mapi id 15.20.9520.006; Mon, 19 Jan 2026
- 02:09:33 +0000
+ 02:39:13 +0000
 From: Billy Tsai <billy_tsai@aspeedtech.com>
 To: Andrew Lunn <andrew@lunn.ch>
 CC: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
@@ -70,9 +61,9 @@ Subject: Re: [PATCH 3/5] gpio: aspeed-sgpio: Create llops to handle hardware
 Thread-Topic: [PATCH 3/5] gpio: aspeed-sgpio: Create llops to handle hardware
  access
 Thread-Index: AQHch6LbTxZfi00O+EG9xRc0ikvT8LVWgaEAgAI3VL8=
-Date: Mon, 19 Jan 2026 02:09:33 +0000
+Date: Mon, 19 Jan 2026 02:39:12 +0000
 Message-ID:
- <OSQPR06MB725219B6ED261DBB4E8BC33D8B88A@OSQPR06MB7252.apcprd06.prod.outlook.com>
+ <f94ea2f9d0d241509d256d87f02c6de2OSQPR06MB725219B6ED261DBB4E8BC33D8B88A@OSQPR06MB7252.apcprd06.prod.outlook.com>
 References: <20260117-upstream_sgpio-v1-0-850ef3ffb680@aspeedtech.com>
  <20260117-upstream_sgpio-v1-3-850ef3ffb680@aspeedtech.com>
  <55fbb766-12b5-441a-b06c-d807097e5476@lunn.ch>
@@ -82,84 +73,114 @@ Content-Language: en-US
 X-MS-Has-Attach:
 X-MS-TNEF-Correlator:
 msip_labels:
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 0c4a117d-79c7-4b53-4818-08de5703ee73
+x-ms-traffictypediagnostic:
+ OSQPR06MB7252:EE_|TY0PR06MB5495:EE_|OSQPR06MB7252:EE_|TYZPR06MB6894:EE_
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|7416014|376014|366016|1800799024|14060799003|35042699022|38070700021;
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(14060799003)(35042699022)(38070700021);DIR:OUT;SFP:1102;
+x-ms-exchange-crosstenant-authas: Internal
+x-ms-exchange-crosstenant-authsource: OSQPR06MB7252.apcprd06.prod.outlook.com
+x-ms-exchange-crosstenant-network-message-id:
+ 41541a69-2443-4910-7d04-08de56ffc9b5
+x-ms-exchange-crosstenant-originalarrivaltime: 19 Jan 2026 02:09:33.3417 (UTC)
+x-ms-exchange-crosstenant-fromentityheader: Hosted
+x-ms-exchange-crosstenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+x-ms-exchange-transport-crosstenantheadersstamped: TY0PR06MB5495
 authentication-results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|TY0PR06MB5495:EE_
-x-ms-office365-filtering-correlation-id: 41541a69-2443-4910-7d04-08de56ffc9b5
+arc-seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=WE561qc5RgpX1WoB63qXz/vqyQts3AmU9uzblLEpfRss2spYJuWT2GpICDBM9ksEuqOYxp0mnFDk8EZEKpITyn0idynhlLur+6GGHYI6KF/OH5WvT7F4Sut1+dzl9+lbYigXQdvp2TZVlwwjhW2Kfuvh3D6aZXndy5fqJfbwXkgBxTeBCdtENNyLzdzS04F4gTX3SZ7jlU5gsUXdX6lX/epSLpR0gXJOKd5C24K4CdjxiZIVlGTy2d/+Xj/+mMW3B9YI2XztgnbhaoVmr6XmD6NSzrztjCnbuFikqrySOxXyI9KBjc7FH7d3ICPVHYGqqJst8QDaBngG/zIwRbdRSw==
+arc-message-signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Rx5jmfo2Kbf12nfLFmLe2kMtM06s6zFkPW75bIBG7+I=;
+ b=YYCL8nSjpJrJ8bla/w+YQz5scRTxoR9HkZ1aDqpt4nfnvV+cwTnUuMD3Hn3BcTQCkW4P19zd4FUo0PhYOOa2GIfQ9kFSDcH4BevRh+rTOupdBIvVHFNESTsqV3S4ziu2iJSkfJ6DYZq5FtfVDa+FEQNMsWmYQeWaX3JMWEq5Flt/nQ8MUy5yrHYa74Ros/314sXpGimEQNPTckGf8B115+awfBZIaVRPEywz6E79eyYoWob8FV65UXNYB+iQKfRW/QtkStPh1wwZkXlKM69kKsfqpTcPRzVzA3tnh1OEoYQlGCuunMy/m1DdcAzJGrRTelcQS110HtEleHzEJGf40g==
+arc-authentication-results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
 x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|7416014|376014|366016|1800799024|38070700021|8096899003;
 x-microsoft-antispam-message-info:
- =?Windows-1252?Q?I47k8d1kFWndkL37PdzUpuaz7xCj72K/Tb9YnFyWlKX/fRydxjmouAxX?=
- =?Windows-1252?Q?o4JPvLP+ZNWIep+lAn3XI9IAglMvOKVCyBhnJ5TCCopTg8yLufCqd/aO?=
- =?Windows-1252?Q?iZ8DgeMR1kS83qvezPw1iPsEJxnlnExyrVg4cwk3PBbzTWMuGM+2nl5U?=
- =?Windows-1252?Q?6Zt7n+hGflGEEWCh7a9mCgtk0tUFe7lEruSgwCfBfJbW3HqAbvYRLUjM?=
- =?Windows-1252?Q?Spw/Etxr1Hdm+WIGZQeh7XX5UZZCts5KYfs0PAQ/61S3Ou17ngfC4XRn?=
- =?Windows-1252?Q?b9nXfLfDe30IkobHg7IF1hofXliBrWgkzwo7GVsQOxiI1ZLYTIqKvLhh?=
- =?Windows-1252?Q?99eIbpCme78StQODaJ0X4WToGcEdL0BsVVbNFIBUF7TDpC+BjOYbLS0c?=
- =?Windows-1252?Q?Udj26M2cSoZWs9pH8QGeOxZAuOFtF5G+GPeDJQrwNIUE/pJhsdfrQ0Ki?=
- =?Windows-1252?Q?F1izqEHDMvtjt8mfGd2GaQ7uEPj2qQsEQF68GbSJUUyPHQF9CdPInUqq?=
- =?Windows-1252?Q?CqUFEQa6ZoS/hjOKjSsdfTitDVxyOcHsB0Q0a1uMMLaA6QUwIeTAG4/R?=
- =?Windows-1252?Q?1t28607cD2Xyhjm2xkUznWQ6jyeairGBViITTYa+zDWMqGSyrra8IOmc?=
- =?Windows-1252?Q?J+XRVyYdjK9xaeFL/sZYDbiskbP6htBAheTaB7XdfwgG7i5UoShsKR9P?=
- =?Windows-1252?Q?KY2UFwxkgubRH1jNy4eTKgAcGTNj2z8+q5AeQ8uq2DSx/DtuumVZvraD?=
- =?Windows-1252?Q?a4FgpdWm3HSgKkFovh3GyALn2mhA3s3gbmwzZvT7eb7TzVNEyrQFcUBD?=
- =?Windows-1252?Q?SL43dbwJmAeLPPvH8hwhxZFT8FfXFfyZfRb6a6WHLjkO0VFHRd8dDMln?=
- =?Windows-1252?Q?dsb50F0qclW1l/z1zOKGrxnrRKf2K88cqR5+IASal6pOaESr/ZRWYThO?=
- =?Windows-1252?Q?jnrCuO34womDybiWuymz2jrjtmrobyaWUSL7h3tmRfc+21EDGWX7hRJ0?=
- =?Windows-1252?Q?9kluEm6kt4HzAmqT7B3d+1SrXpJ4fpdCR1VQ3ZQqCCtyzw39Y+0YPBtN?=
- =?Windows-1252?Q?u5RFRJDGrcItNq70KVUv1ezX6ml0qiQ7ZzE5/6R0lxTWsPpumOfycOXM?=
- =?Windows-1252?Q?hjv4HmtxYk2dSr3t0iYGkYLX8jbwY6y6SUF9DPhr+DX2HDcdoMtzDpOI?=
- =?Windows-1252?Q?ukzAzmVLoyp/SEClKx1UHhG/yWpu8FxmJrcOR7z/vZ79dCnj8AcX0w0t?=
- =?Windows-1252?Q?2U3qVesjVjHizNJc16JtpPVjLhrjwt7pyp8g0bLieZHVx+usyQZMilN5?=
- =?Windows-1252?Q?QTDYtL6DeUN+LRWeWybf1uNz/5+yS1aXFGxsfTtljZooM9/oqjZefGWx?=
- =?Windows-1252?Q?h8sRXY0CiQJ9enao3dbkm/+JojNdXjlzRUaoGFmlNO2IEIZ8FAvXfBSw?=
- =?Windows-1252?Q?ck+DdJsCZlnC941zj756LhJb/0HrIUEvypQY1jLeV5OBKZggxw00K/QJ?=
- =?Windows-1252?Q?OGOGuQTeJWuKq1znmfnS7cALUhlHe0jlkfq7mz64919ONC9Z9bnvnLu8?=
- =?Windows-1252?Q?C+QDvgSsrefzMtMBuS7ErI/nqqXEJCh8S/iRQEwTsQNM+ZExuTfQ1Iav?=
- =?Windows-1252?Q?KqL5F8odJuzWeAYBoQ2oUzWfBtoVc87wpB6jAdoCInoQC18mvrzaT64/?=
- =?Windows-1252?Q?4hWneTvQpRenGMI0KwWpji1nKINAmU4ClNc8HQ5CTvKm348a25U1hkjX?=
- =?Windows-1252?Q?3wnkN5bPgRZZ/C9ST+0=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024)(38070700021)(8096899003);DIR:OUT;SFP:1102;
+ =?Windows-1252?Q?1f3Fxa9LE9T/6ipiEB9tBlMMtFAEXpioa3nrZWNB6lnJH8mkby/RJXZt?=
+ =?Windows-1252?Q?94ODd2wtvNt3s2L2K7LIVJeIwE2iKhp4sDona7GhpF5yUjSH2VoIIHl+?=
+ =?Windows-1252?Q?1nBA97EGpaaIG5Kz+Hulgu6XxqzdeoOji1femAs0oVWlwvj29Vpk0bQt?=
+ =?Windows-1252?Q?9AOan13HTDGtY7WPGOOHtvJTSzXHGA4wJ+yg6TJcF4PAdXn/Kk59PBfM?=
+ =?Windows-1252?Q?chZSrs5UG0ZFWz7ATm4k1+O+0FjYHS7OXHC0wDhDTvjlpNuDsktsUEAr?=
+ =?Windows-1252?Q?8TwnZkN+91Ay/n5wxbSPko86XpBEGI7mqA/JGlLiSqHemvt34X0Xulp2?=
+ =?Windows-1252?Q?G6z+eqecJ1442CvmX2B8eOJpZ7YFn6q/0VaLBD0yqLl0e6/+f+2eL7zM?=
+ =?Windows-1252?Q?85TsJS/jziA+wcMFsVWMihaNRgwAZ5I8KorR2JV58rsLvWZisY6Bc5RW?=
+ =?Windows-1252?Q?i4prRv1PO+PB+TG0utA5fSsWaNgZ95mmI/Bkvjv+MdVhUrFCzFOgVE0P?=
+ =?Windows-1252?Q?uQxfiMz3IwiP76FSKG0V5LMX5K+dpoE/JP8lNZVUCgIG0Dayq1Rpn+pd?=
+ =?Windows-1252?Q?1QiDNW2qE6pZzejwuyj2+dSThQDC+lruD90w1a6Kt1WnMEFRbt3yr3d4?=
+ =?Windows-1252?Q?1G3K9v0GhXXCw2omrXdYTYVlnlKQXz/ZJg3yTvbgrQpthXMzYHzVoG7l?=
+ =?Windows-1252?Q?8pKSzTLxjykYSaj6Z+dQiBB815zTTAw2pQ3LwGzgGxT0qCN2lYP/yZng?=
+ =?Windows-1252?Q?jUmrE+OwdKuR5FUoqi9wVYyeXzIp/Ovnsd4+gghj1cvm22XkVuZpdrQH?=
+ =?Windows-1252?Q?lpgJqG2D3qOOnFYtL/p2aLqdOcTIlesDAm/rJrj+up70PWzkzhIybRjF?=
+ =?Windows-1252?Q?FFzcJnxxiRmQmzhLirjHAplPmrPwF1FV2ED2qdeGcI0LoR7bFssW1/Mj?=
+ =?Windows-1252?Q?3t2vTe9i1haJCO9fMvlR6DUjUa/X4oAE1rZHxG3HdqobIt0z25nW/JQ8?=
+ =?Windows-1252?Q?bVHQkR1zB82Nfx+ly0ksWax1Fok1Mekb8jMnRy5ovonBbm2oF+x5J88K?=
+ =?Windows-1252?Q?+vo4h3Vmxyi2XgHB/Clq8yzC7TXsldMlMvnyPSi5xHGvEgwqGte5/GZv?=
+ =?Windows-1252?Q?1Oz70XNwVxT6jU3Mshuip0hnQVTzfSKuCV47YuE4YLpho5M9vMxAsXrr?=
+ =?Windows-1252?Q?kKhTSBUgXO///mVzbQuR7lTlc55XGZMlpOpv4y1I1kunrXY3CVZ8K81o?=
+ =?Windows-1252?Q?94r7i8wnBklNYgvvumydMy0lAB7Q76mssZxblK61snyBUA9OwrArjx18?=
+ =?Windows-1252?Q?85mMb7vQb/NRP4HTP5sXvtUYc84HHdLaCF9zHrg2txuORKigXKmj8Fbx?=
+ =?Windows-1252?Q?gcbAzwsU1vR/ypcKY3iaU4nKWNuTpEQwUn4N7HosjmuExm6FJ/8gEJRE?=
+ =?Windows-1252?Q?qWQdY/XF2cUfeiZha+fwrABk9Yj/KoXxBKyDi2cPRIsf265d4DojI7g4?=
+ =?Windows-1252?Q?ORPuG7JSWakV7mHN25evZwnCHMIUPjakuDlQpbm2+baKZubnGdeXOp5P?=
+ =?Windows-1252?Q?T1DtQOy+iE3XK77UZOBmQWJZnjfQ+REyL7SCbq3L6V0nMNDQGc3aM9hZ?=
+ =?Windows-1252?Q?txoHe8n76C/Gi8DSgATPYCLLHOo1uq03PUWfAfv5uEfaONszLBljQvP+?=
+ =?Windows-1252?Q?gj7Z6I1YdvHMq+h78c9LaR/PaU1oBozwq1WoGQjq3O5FDkY4aUVFoZg6?=
+ =?Windows-1252?Q?oKAXHH/xUomPcp/Q8IQ=3D?=
+x-ms-exchange-crosstenant-mailboxtype: HOSTED
+x-ms-exchange-crosstenant-userprincipalname:
+ NN5JmIit2OGS4HolIvIXeralEd8ZfoyuQ5V+Ic1ExP2xo0lzP0Ne1JVGgTA4FRtx+29BdpAOLV/QNlcQb1QGPGzJzWwbMA+SM5GqvyJ4cJY=
+dkim-signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Rx5jmfo2Kbf12nfLFmLe2kMtM06s6zFkPW75bIBG7+I=;
+ b=kZod77qXv48jZebobzaaYRIvZyg1aEMOffwiaKKWHaTeDPfvrSE5fZ72Oavcq8XnDOPWolisoAzERft/WR0pqHOjkzW3mLKLRUocI+wJJuA/xSyxfsBGW/GZ5di+QFLPd+hCfHzN/8sh9fIXatfqLxPHKIzTUuMuY/nDYqqgPJDGOvvjlkJ+nfEo99c58hAElT55q4J7fJYPGfp9wIASqGe0symoXU6Gdo+e/q9U1URG+tUWH7mv+h9utpG/v7sKbDdUK/Qor0uuKyt/qqs8+hdjPlihpMcAOOmlFFAQwwAlnwxpq+eqFDf/SdyEjJkMCvt5A499S7MEEDRAQnA4tg==
 x-ms-exchange-antispam-messagedata-chunkcount: 1
 x-ms-exchange-antispam-messagedata-0:
- =?Windows-1252?Q?rkRwalyl4T4U6y/2CQ0vMXuJ9/zF23wEnUERgbloydG3c5vRYgHzhbt3?=
- =?Windows-1252?Q?xuL1I9sh+Lyk+CJHMxXibG8EfMnTXut6klEGWReVCvvbCUyzKeSMpRQC?=
- =?Windows-1252?Q?JvWDNM55M91hFeU3WZMPQzzhjVa2DimN42waYmUuwhbB+7dTzKn5AM3G?=
- =?Windows-1252?Q?3K0fiGXa7UFKkWTDcE+QTG2pro1J+0tMtpUEnEBvCM6Lxd7tJ0Wq1v/B?=
- =?Windows-1252?Q?i+ZXwsadKVSP85EYRgK4FN/dRl7vRnESFKsWjl7YWge0IpmBQ7DZp1WL?=
- =?Windows-1252?Q?fuBbgFOPLttDzgSWCVgID8rjxJbV+EYXTqbdxVhCXwSwgz1wbZX+mis9?=
- =?Windows-1252?Q?NsgE/JpAk33dNkXc9H4FJKS/XgKNP8QL+0fiNu6vtnYO8epEtLxlaamW?=
- =?Windows-1252?Q?HxCXkvoXdDRZESasi0bm5E6R+YjCj2mY2POVRddCyorX9WN5JAJwt5c+?=
- =?Windows-1252?Q?7wYpwrs0teHoWnSLwGF+cO/zKl3VEaF+rdyaEPLEWtNpIDj6+bojWheK?=
- =?Windows-1252?Q?4ADoM4VeOOQnkoqr9PJV8uTmFlfDwTiV+/jR/GbKoX11XnEdNUSq26Cm?=
- =?Windows-1252?Q?GJwNmaHA9FRVtUJflpZRJulsDl/T66+6aQ2UFp3Pjf2TxZ1lQg9lAK5/?=
- =?Windows-1252?Q?D+xslwKZzhI0ZbJLPv/TXvX25uiyK6UFNWYsQb2TV3oUXxp0AWRVGq9a?=
- =?Windows-1252?Q?9FgMjtXYr5ESAYS5QO/y7B/3g1SoNN251oK22MeehA/s4XP6EPtIESAv?=
- =?Windows-1252?Q?td9MNfKSk8B6GzzGZxiM7sY0h/fUL6XW1ceQHi4MUhd5x57W8n9aQfDj?=
- =?Windows-1252?Q?5FNh0l3ga9OKUq7QR1hIuv6+ve9/N91D/UGaw9I6dOv9F0HNgDN+6ET8?=
- =?Windows-1252?Q?Ed5uW4RCj7kECmOkqIpXbIwloC0HcekeBGAFlqMb569JtBac6m56Qe7K?=
- =?Windows-1252?Q?kRxoLJN/XtsPM9GXlGbFyDiVtO9f0PI/3y+lmtqz2dW7GZd6VgXM+sQU?=
- =?Windows-1252?Q?gZLjRIDy1kvDRdCRQ6ZtbeSMDgw4M+VZCxl2x/80pS87PZMSuwQNQlvz?=
- =?Windows-1252?Q?z0hL7cGgkfrHLgd4i8gy+iAavo1kHpYAse4LcD1zEdxmVXuGe4tYgsof?=
- =?Windows-1252?Q?BYdlNtNXGwHRLrGGa5Rn+bFXEtckY+/OMRgw4ZqZcc+y6qfStadJ7nDz?=
- =?Windows-1252?Q?QmTrWUjVl1OMrCWqLYGu5rGJw0dseBVYfG8Dt2Ekn2F43laHBm2daPi7?=
- =?Windows-1252?Q?HDnnkCyTmDpcoV3FDP72kl6oe9HeToPCa3k5dSJ2++0GpuxZ16QYLBaU?=
- =?Windows-1252?Q?ibP2KlLzfEAD0vJ49C1ebNgAWAba+UMZi9h0/1x0DKwUgpi6WiXl9FEC?=
- =?Windows-1252?Q?dwuKXQopw4qI2hrPCMT69kP9qgvqumk7/5IyTav7E0QxPF4twLQ+0td0?=
- =?Windows-1252?Q?aSV4esxM7XhfGw36Jx7adzKbdWOLpOYCYnAkay+I6Msd+dKkgtj5TTOj?=
- =?Windows-1252?Q?GRa88YdiJ52YnveoLiD/NUICcLydhZxSiS/2zrK3r/znNdugEmXh2O7K?=
- =?Windows-1252?Q?DFDGpVW4a2PJNzHdi43Ru0/t/O9co7CtrZbXakcIBdosC1Gtat3hnvlh?=
- =?Windows-1252?Q?AN3P/rnFZYZw9Q0qM58ibMMrQHV/K+cTlzZyp2n1gIzYNB7dtst3tuep?=
- =?Windows-1252?Q?uKf/HyRw9Av0q2bBS0dmbMKdsuTUqSJM1nH0XtLUQmi01G2Bj0hMLzus?=
- =?Windows-1252?Q?JbOr1+X+67rEBGaVrGl6LSX+rgAjjJHmz+IThnoWKqNbnWieTHq1WXiI?=
- =?Windows-1252?Q?Wmx81Mg/5xeUUa0qbXHFB6+1GYhrNqqSMLmorFRx7a7fcIF1TDTsrWIC?=
- =?Windows-1252?Q?WK7bsXJ5LBhH27LYQAqqnRRm0GPMCxvB19w=3D?=
-Content-Type: multipart/alternative;
-	boundary="_000_OSQPR06MB725219B6ED261DBB4E8BC33D8B88AOSQPR06MB7252apcp_"
+ =?Windows-1252?Q?GXcFt8S91EJ7ujlTxgb0nhzSV2W0uJsP+FLUqiVMFYYrwW+/UjMtKf2T?=
+ =?Windows-1252?Q?uX/dq1hlJiX6iJ5InxQ059jnHGiQUrMkQzavDuvUWeRS64VSBavV86Fw?=
+ =?Windows-1252?Q?MyUnvXHlx3Prx2/yvIp10eQgyW011CQuvOQPjcaBD//L4V0PrfAgzJBX?=
+ =?Windows-1252?Q?lqsicCFg+9Y88emeYOy6IJFJ9rSfCYC8Ic2tXT2bKaqK1a3s2PAWmM48?=
+ =?Windows-1252?Q?jNeSvZyaIL/fiVIj4eJiwi1MFz1XQ3wm76sHYiTarecVhJ0weqBnl+q3?=
+ =?Windows-1252?Q?OKemlJcVCcPUW7np0i9xdLYAtcLoyVxgerF8es93LlbSg/Z53UXzFErv?=
+ =?Windows-1252?Q?5FUg3Ch/4N499JBoAQnQ+N+rVNfWZoPVmLq1chEp5Ci8E4hUWIHNGVex?=
+ =?Windows-1252?Q?p/vhgxp9BP36UP44gZYgHmR0HJ+qpZJRC/PE2YGOeXIOZIb3d+pHf7TJ?=
+ =?Windows-1252?Q?0eL89DMCjdodsxe3WY+SmU6FoSbZ/1i3Tez+gE7p3Ldypua36Ps2pOuP?=
+ =?Windows-1252?Q?et2IjFv5ppwZNnXX1Bho9auY82yAUYb+CDNmP0Fw/z59E628MhXQbkLR?=
+ =?Windows-1252?Q?KVKxMG0oaOOQxAL3TcXvyoa/qTonxjffSgw/ZP+BJ/ST8TLITuU6Vw+P?=
+ =?Windows-1252?Q?dccM/KGjYXrvoD7Edq6bibhGS1X0HrLoubI+yVykvw+O0N/d87XaX5iV?=
+ =?Windows-1252?Q?7VFCsRFYexvybijNDRQ5AbwNDfSDHDiGb4jbUNpoUOQodxKT71wVYrxV?=
+ =?Windows-1252?Q?5F9IQlJosTOFtPa/1HZ7AIbD+Viy5hKxUONqsrDBw0TDN6GNRUPhhqLF?=
+ =?Windows-1252?Q?i8e4d70QHpGZKXNyJOcc+rsl4+ymZAHO73lQiK6hHdwCc4N2uh7OFV94?=
+ =?Windows-1252?Q?QNOl7bikK3Bd2bbhURiuX/nmEI5eom1lL3reAo8ZiGKcahWOIjOqFmKI?=
+ =?Windows-1252?Q?B3+IdT3jCgmxVJI5hpjq0EXieICcq+j3QyUoGzZCb/3qB12AjP4QZlkv?=
+ =?Windows-1252?Q?nA9xzYO6APFGT1wRgWjUa16FxENl+2iQLKb3KYJDhLuEgHSf5ejjYAz9?=
+ =?Windows-1252?Q?GWta0XOyOERCsSqNJiDZLH0fa6+fQ1I+N6s/+vb3KUCvUT/FnGz/k8gb?=
+ =?Windows-1252?Q?9C6Enaq6Bz0+fmMS0+FVNEmG+e8SD5eJVrR3Cie7Yl+kqz1KJiqvmGfn?=
+ =?Windows-1252?Q?AgxImn0NSLaGt/HwkJwQlqK3EWDQpQM/Iq6FxWqZm8tc/lv7EG3+TqTG?=
+ =?Windows-1252?Q?Lo/3cWMdQ5QWabid/ISl8B944jkcUKO2ShUkbCG/mY0lnY7QwHtCU4Qs?=
+ =?Windows-1252?Q?w37G6lk5UK1oLTjpa82kDNfBG2D+CHJWGb9nMk8iMKXx8aY+lVgRYqGC?=
+ =?Windows-1252?Q?j56TZOk6GKWi+TNPQ0L15NOo0L6EwrPZhV6PAeosGto5uii5rD9Yiq/M?=
+ =?Windows-1252?Q?mccF/szTFuHjA0JAIyEhZxxNW15g1I9a55iKA5GmYYQezH0xuDQxZxpV?=
+ =?Windows-1252?Q?/eK1oPxjyxcfF/s9q3GTGSiMgh9iIy+y98xEwCqjoyfFXnY7G4WYnLHY?=
+ =?Windows-1252?Q?8lGjzdtSFa1LDYwgF0B66j8slJVIk3VN6bsXCY8K3XRtPEUQdn+Nh7/X?=
+ =?Windows-1252?Q?242G3GdLbClcntb7ypWwr7nJFAaffVs92R502CGiPJhQ1JlL+mLDx6cV?=
+ =?Windows-1252?Q?7WmjxCXk/QhaI4M7QUWzWg+p1R+hP/+ylUvk3c08IzMdfq/eFDytoWvZ?=
+ =?Windows-1252?Q?Lkk5kPJQD/w+08giA1aJMM53e0ejvIEF/SVoBMBUWe0BFw4SCcRGMilR?=
+ =?Windows-1252?Q?AfdYzXYeqCKvCzGoPs2U+Zuc8tuOgN8UeTjPfFmyebozGZTLOmUftmP3?=
+ =?Windows-1252?Q?MQkL9B/bgFDqVA=3D=3D?=
+x-ms-exchange-antispam-relay: 0
+x-ms-office365-filtering-correlation-id-prvs:
+ 41541a69-2443-4910-7d04-08de56ffc9b5
+Content-Type: text/plain; charset="Windows-1252"
+Content-ID: <BF515AE31A98C542AA9145F25925EFE5@apcprd06.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -176,406 +197,156 @@ MIME-Version: 1.0
 X-OriginatorOrg: aspeedtech.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 41541a69-2443-4910-7d04-08de56ffc9b5
-X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Jan 2026 02:09:33.3417
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0c4a117d-79c7-4b53-4818-08de5703ee73
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Jan 2026 02:39:13.0010
  (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: NN5JmIit2OGS4HolIvIXeralEd8ZfoyuQ5V+Ic1ExP2xo0lzP0Ne1JVGgTA4FRtx+29BdpAOLV/QNlcQb1QGPGzJzWwbMA+SM5GqvyJ4cJY=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY0PR06MB5495
+X-MS-Exchange-CrossTenant-userprincipalname: +48wFlY07IAqc9uzI7v1pVcBVgTg836AmJDDq/vZJmVM4V0kzSG9lYPiYMH21YgAysEI5g6pwXiwQMwx8x35OmreWdxT73p5Yhh0YSEsgpk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB6894
 
---_000_OSQPR06MB725219B6ED261DBB4E8BC33D8B88AOSQPR06MB7252apcp_
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
-
-
-Thanks for the detailed review =97 your comments are very helpful.
-
+=A0=0A=
+Thanks for the detailed review =97 your comments are very helpful.=0A=
+=A0=0A=
 > > Add low-level operations (llops) to abstract the register access for SG=
-PIO
-> > registers. With this abstraction layer, the driver can separate the
-> > hardware and software logic, making it easier to extend the driver to
-> > support different hardware register layouts.
-
-> With a quick look at the code, it appears the register numbers stay
-> the same? Is that true?
-> I think you have reinvented regmap.
-
-Yes, the register numbers remain unchanged for ASPEED G4 in this patch.
+PIO=0A=
+> > registers. With this abstraction layer, the driver can separate the=0A=
+> > hardware and software logic, making it easier to extend the driver to=
+=0A=
+> > support different hardware register layouts.=0A=
+=A0=0A=
+> With a quick look at the code, it appears the register numbers stay=0A=
+> the same? Is that true?=0A=
+> I think you have reinvented regmap.=0A=
+=A0=0A=
+Yes, the register numbers remain unchanged for ASPEED G4 in this patch.=0A=
 The intent of introducing the llops abstraction is to decouple the driver l=
-ogic
+ogic=0A=
 from the underlying register layout so that we can support SoCs with differ=
-ent
+ent=0A=
 SGPIO register organizations in the future. The actual AST2700-specific sup=
-port
-will be added in a subsequent patch.
-
+port=0A=
+will be added in a subsequent patch.=0A=
+=A0=0A=
 We did consider regmap. However, llops is intended to abstract not only reg=
-ister
-access but also layout-specific bit mapping, which is difficult to express
-cleanly with a flat regmap interface.
-
+ister=0A=
+access but also layout-specific bit mapping, which is difficult to express=
+=0A=
+cleanly with a flat regmap interface.=0A=
+=A0=0A=
 > > @@ -318,30 +278,25 @@ static int aspeed_sgpio_set_type(struct irq_data =
-*d, unsigned int type)
-> >       u32 type0 =3D 0;
-> >       u32 type1 =3D 0;
-> >       u32 type2 =3D 0;
-> > -     u32 bit, reg;
-> > -     const struct aspeed_sgpio_bank *bank;
-> >       irq_flow_handler_t handler;
-> > -     struct aspeed_sgpio *gpio;
-> > -     void __iomem *addr;
-> > -     int offset;
-> > -
-> > -     irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset);
-> > +     struct aspeed_sgpio *gpio =3D irq_data_get_irq_chip_data(d);
-> > +     int offset =3D irqd_to_hwirq(d);
-> >
-> >       switch (type & IRQ_TYPE_SENSE_MASK) {
-> >       case IRQ_TYPE_EDGE_BOTH:
-> > -             type2 |=3D bit;
-> > +             type2 =3D 1;
-> >               fallthrough;
-> >       case IRQ_TYPE_EDGE_RISING:
-> > -             type0 |=3D bit;
-> > +             type0 =3D 1;
-> >               fallthrough;
-> >       case IRQ_TYPE_EDGE_FALLING:
-> >               handler =3D handle_edge_irq;
-> >               break;
-> >       case IRQ_TYPE_LEVEL_HIGH:
-> > -             type0 |=3D bit;
-> > +             type0 =3D 1;
-> >               fallthrough;
-> >       case IRQ_TYPE_LEVEL_LOW:
-> > -             type1 |=3D bit;
-> > +             type1 =3D 1;
-> >               handler =3D handle_level_irq;
-> >               break;
-
-> This change is not obviously correct to me. It is not about
-> abstracting register accesses, what you actually write to the
-> registers appears to of changed. Maybe you could add a refactoring
-> patch first which does this change, with a commit message explaining
-> it, and then insert the register abstraction?
-
+*d, unsigned int type)=0A=
+> >=A0=A0=A0=A0=A0=A0 u32 type0 =3D 0;=0A=
+> >=A0=A0=A0=A0=A0=A0 u32 type1 =3D 0;=0A=
+> >=A0=A0=A0=A0=A0=A0 u32 type2 =3D 0;=0A=
+> > -=A0=A0=A0=A0 u32 bit, reg;=0A=
+> > -=A0=A0=A0=A0 const struct aspeed_sgpio_bank *bank;=0A=
+> >=A0=A0=A0=A0=A0=A0 irq_flow_handler_t handler;=0A=
+> > -=A0=A0=A0=A0 struct aspeed_sgpio *gpio;=0A=
+> > -=A0=A0=A0=A0 void __iomem *addr;=0A=
+> > -=A0=A0=A0=A0 int offset;=0A=
+> > -=0A=
+> > -=A0=A0=A0=A0 irqd_to_aspeed_sgpio_data(d, &gpio, &bank, &bit, &offset)=
+;=0A=
+> > +=A0=A0=A0=A0 struct aspeed_sgpio *gpio =3D irq_data_get_irq_chip_data(=
+d);=0A=
+> > +=A0=A0=A0=A0 int offset =3D irqd_to_hwirq(d);=0A=
+> >=0A=
+> >=A0=A0=A0=A0=A0=A0 switch (type & IRQ_TYPE_SENSE_MASK) {=0A=
+> >=A0=A0=A0=A0=A0=A0 case IRQ_TYPE_EDGE_BOTH:=0A=
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type2 |=3D bit;=0A=
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type2 =3D 1;=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 fallthrough;=0A=
+> >=A0=A0=A0=A0=A0=A0 case IRQ_TYPE_EDGE_RISING:=0A=
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type0 |=3D bit;=0A=
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type0 =3D 1;=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 fallthrough;=0A=
+> >=A0=A0=A0=A0=A0=A0 case IRQ_TYPE_EDGE_FALLING:=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 handler =3D handle_edge_irq;=
+=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 break;=0A=
+> >=A0=A0=A0=A0=A0=A0 case IRQ_TYPE_LEVEL_HIGH:=0A=
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type0 |=3D bit;=0A=
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type0 =3D 1;=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 fallthrough;=0A=
+> >=A0=A0=A0=A0=A0=A0 case IRQ_TYPE_LEVEL_LOW:=0A=
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type1 |=3D bit;=0A=
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 type1 =3D 1;=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 handler =3D handle_level_irq;=
+=0A=
+> >=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 break;=0A=
+=A0=0A=
+> This change is not obviously correct to me. It is not about=0A=
+> abstracting register accesses, what you actually write to the=0A=
+> registers appears to of changed. Maybe you could add a refactoring=0A=
+> patch first which does this change, with a commit message explaining=0A=
+> it, and then insert the register abstraction?=0A=
+=A0=0A=
 You=92re right =97 viewed together, this change is not obviously correct an=
-d makes
-the refactoring harder to review.
-
-While the llops interface is designed to handle bit positioning internally
+d makes=0A=
+the refactoring harder to review.=0A=
+=A0=0A=
+While the llops interface is designed to handle bit positioning internally=
+=0A=
 (changing the semantics from passing a bitmask to passing a value), combini=
-ng
-this semantic change with the abstraction refactoring increases review
-complexity.
-
-To address this, I will respin the series and split it into:
-                1.            a preparatory refactoring patch that introduc=
-es the llops helpers without
-changing behavior, and
-                2.            a follow-up patch that switches callers to th=
-e new value-based interface,
-with a commit message explicitly explaining the semantic change.
-
+ng=0A=
+this semantic change with the abstraction refactoring increases review=0A=
+complexity.=0A=
+=A0=0A=
+To address this, I will respin the series and split it into:=0A=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 1.=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0 a preparatory refactoring patch that introduces the llops helpers wi=
+thout=0A=
+changing behavior, and=0A=
+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 2.=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0 a follow-up patch that switches callers to the new value-based inter=
+face,=0A=
+with a commit message explicitly explaining the semantic change.=0A=
+=A0=0A=
 > > @@ -374,16 +318,14 @@ static void aspeed_sgpio_irq_handler(struct irq_d=
-esc *desc)
-> >  {
-> >       struct gpio_chip *gc =3D irq_desc_get_handler_data(desc);
-> >       struct irq_chip *ic =3D irq_desc_get_chip(desc);
-> > -     struct aspeed_sgpio *data =3D gpiochip_get_data(gc);
-> > +     struct aspeed_sgpio *gpio =3D gpiochip_get_data(gc);
-
-> This rename does not belong in this patch. You want lots of small
-> patches, each doing one logical thing, with a good commit message, and
-> obviously correct. Changes like this make it a lot less obviously
-> correct.
-
+esc *desc)=0A=
+> >=A0 {=0A=
+> >=A0=A0=A0=A0=A0=A0 struct gpio_chip *gc =3D irq_desc_get_handler_data(de=
+sc);=0A=
+> >=A0=A0=A0=A0=A0=A0 struct irq_chip *ic =3D irq_desc_get_chip(desc);=0A=
+> > -=A0=A0=A0=A0 struct aspeed_sgpio *data =3D gpiochip_get_data(gc);=0A=
+> > +=A0=A0=A0=A0 struct aspeed_sgpio *gpio =3D gpiochip_get_data(gc);=0A=
+=A0=0A=
+> This rename does not belong in this patch. You want lots of small=0A=
+> patches, each doing one logical thing, with a good commit message, and=0A=
+> obviously correct. Changes like this make it a lot less obviously=0A=
+> correct.=0A=
+=A0=0A=
 Agreed. I will revert the rename from this patch and handle it separately i=
-f
-needed.
-
-> >       /* Disable IRQ and clear Interrupt status registers for all SGPIO=
- Pins. */
-> > -     for (i =3D 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {
-> > -             bank =3D  &aspeed_sgpio_banks[i];
-> > +     for (i =3D 0; i < gpio->chip.ngpio; i +=3D 2) {
-
-> Why are ARRAY_SIZE() gone? There probably is a good reason, so doing
-> this in a patch of its own, with a commit message explaining "Why?"
-> would make this easier to review.
-
+f=0A=
+needed.=0A=
+=A0=0A=
+> >=A0=A0=A0=A0=A0=A0 /* Disable IRQ and clear Interrupt status registers f=
+or all SGPIO Pins. */=0A=
+> > -=A0=A0=A0=A0 for (i =3D 0; i < ARRAY_SIZE(aspeed_sgpio_banks); i++) {=
+=0A=
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 bank =3D=A0 &aspeed_sgpio_banks[i=
+];=0A=
+> > +=A0=A0=A0=A0 for (i =3D 0; i < gpio->chip.ngpio; i +=3D 2) {=0A=
+=A0=0A=
+> Why are ARRAY_SIZE() gone? There probably is a good reason, so doing=0A=
+> this in a patch of its own, with a commit message explaining "Why?"=0A=
+> would make this easier to review.=0A=
+=A0=0A=
 The change from ARRAY_SIZE(aspeed_sgpio_banks) to gpio->chip.ngpio is requi=
-red
-because AST2700 does not use a fixed bank-based register layout.
-
+red=0A=
+because AST2700 does not use a fixed bank-based register layout.=0A=
+=A0=0A=
 Using ngpio removes the dependency on a static bank array and allows the IR=
-Q
-handling code to work with SoCs that have different SGPIO organizations.
+Q=0A=
+handling code to work with SoCs that have different SGPIO organizations.=0A=
 I agree this change deserves a dedicated patch with a commit message explai=
-ning
-the rationale, and I will split it out accordingly.
-
+ning=0A=
+the rationale, and I will split it out accordingly.=0A=
+=A0=0A=
 Thanks again for the review. I=92ll send a revised version with the changes=
- above.
-
-Billy Tsai
-
---_000_OSQPR06MB725219B6ED261DBB4E8BC33D8B88AOSQPR06MB7252apcp_
-Content-Type: text/html; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=3D"urn:sc=
-hemas-microsoft-com:office:word" xmlns:m=3D"http://schemas.microsoft.com/of=
-fice/2004/12/omml" xmlns=3D"http://www.w3.org/TR/REC-html40">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DWindows-1=
-252">
-<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
-<style><!--
-/* Font Definitions */
-@font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:DengXian;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:"\@DengXian";
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-/* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;}
-.MsoChpDefault
-	{mso-style-type:export-only;
-	font-size:10.0pt;
-	mso-ligatures:none;}
-@page WordSection1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 72.0pt 72.0pt 72.0pt;}
-div.WordSection1
-	{page:WordSection1;}
---></style>
-</head>
-<body lang=3D"en-TW" link=3D"#0563C1" vlink=3D"#954F72" style=3D"word-wrap:=
-break-word">
-<div class=3D"WordSection1">
-<div>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Thanks for the detailed review =97 your comments are=
- very helpful.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; Add low-level operations (llops) to abstra=
-ct the register access for SGPIO<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; registers. With this abstraction layer, th=
-e driver can separate the<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; hardware and software logic, making it eas=
-ier to extend the driver to<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; support different hardware register layout=
-s.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; With a quick look at the code, it appears the r=
-egister numbers stay<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; the same? Is that true?<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; I think you have reinvented regmap.<o:p></o:p><=
-/p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Yes, the register numbers remain unchanged for ASPEE=
-D G4 in this patch.<o:p></o:p></p>
-<p class=3D"MsoNormal">The intent of introducing the llops abstraction is t=
-o decouple the driver logic<o:p></o:p></p>
-<p class=3D"MsoNormal">from the underlying register layout so that we can s=
-upport SoCs with different<o:p></o:p></p>
-<p class=3D"MsoNormal">SGPIO register organizations in the future. The actu=
-al AST2700-specific support<o:p></o:p></p>
-<p class=3D"MsoNormal">will be added in a subsequent patch.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">We did consider regmap. However, llops is intended t=
-o abstract not only register<o:p></o:p></p>
-<p class=3D"MsoNormal">access but also layout-specific bit mapping, which i=
-s difficult to express<o:p></o:p></p>
-<p class=3D"MsoNormal">cleanly with a flat regmap interface.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; @@ -318,30 +278,25 @@ static int aspeed_sg=
-pio_set_type(struct irq_data *d, unsigned int type)<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u32 ty=
-pe0 =3D 0;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u32 ty=
-pe1 =3D 0;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u32 ty=
-pe2 =3D 0;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; u32 bit, reg;<o:=
-p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; const struct asp=
-eed_sgpio_bank *bank;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; irq_fl=
-ow_handler_t handler;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; struct aspeed_sg=
-pio *gpio;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; void __iomem *ad=
-dr;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; int offset;<o:p>=
-</o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; irqd_to_aspeed_s=
-gpio_data(d, &amp;gpio, &amp;bank, &amp;bit, &amp;offset);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp; struct aspeed_sg=
-pio *gpio =3D irq_data_get_irq_chip_data(d);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp; int offset =3D i=
-rqd_to_hwirq(d);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; switch=
- (type &amp; IRQ_TYPE_SENSE_MASK) {<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case I=
-RQ_TYPE_EDGE_BOTH:<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type2 |=3D bit;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type2 =3D 1;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fallthrough;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case I=
-RQ_TYPE_EDGE_RISING:<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type0 |=3D bit;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type0 =3D 1;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fallthrough;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case I=
-RQ_TYPE_EDGE_FALLING:<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler =3D handle_edge_irq;<o:p>=
-</o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; break;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case I=
-RQ_TYPE_LEVEL_HIGH:<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type0 |=3D bit;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type0 =3D 1;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fallthrough;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case I=
-RQ_TYPE_LEVEL_LOW:<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type1 |=3D bit;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type1 =3D 1;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; handler =3D handle_level_irq;<o:p=
-></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; break;<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; This change is not obviously correct to me. It =
-is not about<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; abstracting register accesses, what you actuall=
-y write to the<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; registers appears to of changed. Maybe you coul=
-d add a refactoring<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; patch first which does this change, with a comm=
-it message explaining<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; it, and then insert the register abstraction?<o=
-:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">You=92re right =97 viewed together, this change is n=
-ot obviously correct and makes<o:p></o:p></p>
-<p class=3D"MsoNormal">the refactoring harder to review.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">While the llops interface is designed to handle bit =
-positioning internally<o:p></o:p></p>
-<p class=3D"MsoNormal">(changing the semantics from passing a bitmask to pa=
-ssing a value), combining<o:p></o:p></p>
-<p class=3D"MsoNormal">this semantic change with the abstraction refactorin=
-g increases review<o:p></o:p></p>
-<p class=3D"MsoNormal">complexity.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">To address this, I will respin the series and split =
-it into:<o:p></o:p></p>
-<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a preparatory refactoring patch that intro=
-duces the llops helpers without<o:p></o:p></p>
-<p class=3D"MsoNormal">changing behavior, and<o:p></o:p></p>
-<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; a follow-up patch that switches callers to=
- the new value-based interface,<o:p></o:p></p>
-<p class=3D"MsoNormal">with a commit message explicitly explaining the sema=
-ntic change.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; @@ -374,16 +318,14 @@ static void aspeed_s=
-gpio_irq_handler(struct irq_desc *desc)<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp; {<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct=
- gpio_chip *gc =3D irq_desc_get_handler_data(desc);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct=
- irq_chip *ic =3D irq_desc_get_chip(desc);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; struct aspeed_sg=
-pio *data =3D gpiochip_get_data(gc);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp; struct aspeed_sg=
-pio *gpio =3D gpiochip_get_data(gc);<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; This rename does not belong in this patch. You =
-want lots of small<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; patches, each doing one logical thing, with a g=
-ood commit message, and<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; obviously correct. Changes like this make it a =
-lot less obviously<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; correct.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Agreed. I will revert the rename from this patch and=
- handle it separately if<o:p></o:p></p>
-<p class=3D"MsoNormal">needed.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; &gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Dis=
-able IRQ and clear Interrupt status registers for all SGPIO Pins. */<o:p></=
-o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp; for (i =3D 0; i =
-&lt; ARRAY_SIZE(aspeed_sgpio_banks); i++) {<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bank =3D&nbsp; &amp;aspeed_sgpio_banks[i];<=
-o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; &gt; +&nbsp;&nbsp;&nbsp;&nbsp; for (i =3D 0; i =
-&lt; gpio-&gt;chip.ngpio; i +=3D 2) {<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">&gt; Why are ARRAY_SIZE() gone? There probably is a =
-good reason, so doing<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; this in a patch of its own, with a commit messa=
-ge explaining &quot;Why?&quot;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; would make this easier to review.<o:p></o:p></p=
->
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">The change from ARRAY_SIZE(aspeed_sgpio_banks) to gp=
-io-&gt;chip.ngpio is required<o:p></o:p></p>
-<p class=3D"MsoNormal">because AST2700 does not use a fixed bank-based regi=
-ster layout.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Using ngpio removes the dependency on a static bank =
-array and allows the IRQ<o:p></o:p></p>
-<p class=3D"MsoNormal">handling code to work with SoCs that have different =
-SGPIO organizations.<o:p></o:p></p>
-<p class=3D"MsoNormal">I agree this change deserves a dedicated patch with =
-a commit message explaining<o:p></o:p></p>
-<p class=3D"MsoNormal">the rationale, and I will split it out accordingly.<=
-o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Thanks again for the review. I=92ll send a revised v=
-ersion with the changes above.<br>
-<br>
-<span lang=3D"EN-US">Billy Tsai</span><span lang=3D"EN-US"><o:p></o:p></spa=
-n></p>
-</div>
-</div>
-</body>
-</html>
-
---_000_OSQPR06MB725219B6ED261DBB4E8BC33D8B88AOSQPR06MB7252apcp_--
+ above.=0A=
+=0A=
+Billy Tsai=
 
