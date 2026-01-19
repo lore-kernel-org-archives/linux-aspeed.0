@@ -1,63 +1,69 @@
-Return-Path: <linux-aspeed+bounces-3395-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3396-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CD53D29C2A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 19 Jan 2026 13:37:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43997D29C28
+	for <linux-aspeed@archiver.kernel.org>; Mon, 19 Jan 2026 14:21:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dvs2P4dMqz3bfZ;
-	Tue, 20 Jan 2026 00:37:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768829837;
-	cv=none; b=A4c5mlpqR3Y97gzDl2IS/upENo01d+wKpPNrVvATCzp6w1X7pI8HKAkckQA498WyzdaCqxCI3ZHGxbdIxWslDrm6FR4PZbn0UoFTZleGaoqiBK+ulaGHhvvNmpi1a+mVmSp39H/nosWDPXfmqbsCWSwcWftZYdnicsNcMpfrG6GbeaMOcoMNWEN87SkGh7BxIRtaWu0oFSHY8HfJOnymRjS4GxVMR4C11zRBBXtlpRGlxck30okwE473WMTkkNYUf120c9QTX7C0WhIc2uOvb9xrboHTP+HLfjbooX4FzT7RsH3ylN92RiWQ07n4mlZYqxDPY4g+IIUGNFwHxM5p+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dvt0x5c33z3bjb;
+	Tue, 20 Jan 2026 01:21:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768832465;
+	cv=none; b=V/sT9WwXZK9+/flOxHtk8qtqJrX/VgwlqaVPpSDrDtRmUiw7Jx5cCf/rSU4kIfZCuadaWKFVNRFvq63+1luv+MrxJSrX1FNx+T9R8Bh5o69A3NkX8kEMsfoQNETZ/U96FaM8Yc2TZuXvx0GQI6xA8tuxcgPDdBBKxG9Ymuutl19gwg0sHp5rkkgWCfVHjdn9A7UGGp12+/ZHy/5MDCGMwtBl+HaOGNF2X3KGU7M5cEenPxM1a+32O6q+zV+/+UWbi/SIcoRtvFRA7GReES9k/R6ax3sFyASpJbLAi6iksx1u9B2AMUCcTE5TxTonx15I6fwKJejUfYh1AsyJKdgG9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768829837; c=relaxed/relaxed;
-	bh=lJb3R19nkiYopQmNx5R8476OrkmBP08hMcFQKv47fKY=;
+	t=1768832465; c=relaxed/relaxed;
+	bh=c7Ep0GD4eG911kODoOvUPprYM2xLb7geaPpEU8Rcz+g=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=E07VvsF7uSsUPP+Wpx7B7zxrliVg7zt0xet8F2szTtCZe+EoYrXle50ROZ0QeAWhJl8wItka+AlPhW1cwSKIFdGxkSbZEz50TfCGRdurMABz0FkbVBr1RFiRqBDumxLPeMXTcPTJBoLDku65dWPdNUPQqqu/BZB3cAZ2Fi8801uf1slj/ieNu4cEK90sGWbealBTcj5uJaaJI4LkRCYiWt2BHX/U4GYRXtfVwx08TRu1H9djlkW9sjeNWQICr/FTngpCExOv//CkM8HKEwKAAUL5hz+wAkJ7bn+7S5jWbnMChjVfJwhIb5Hghzj881MLDSst93FPTaNBiz6ICT4JCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A0Yy+O9m; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=POrzz3NWM8qF2oilAtWEbH/EiJRAbXhouz+9UWjWjeYUcvmLnui01onGSeSTTfPwSfJFs9hERN9Brbb6bL5MN6PGmmlIlCf/awtVHLQgrX28uEFU9k5ZSj/Gv6fm7C6p5egbetHUOVkGF6kt7nc2aX2y7JwZxGtpjV1QxIbdr/Ljb+yFrWybSRAn7/wUpwgkefpwC/Jqw8UfCTkFmHYXZzVy/Q8f0QWeUY9YGhiWW85rPA5/fx6B/ka891tyMoXG3+HlohlQLl+MCs4socYHL3Aj6wOIxl1JzZRXBzilh4LncJ0OQaKJK3r9bkqm2B1hpYx3f0J6vulEOF50CLu1/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=CA3py8ft; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A0Yy+O9m;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=CA3py8ft;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvs2N64tKz3bfY;
-	Tue, 20 Jan 2026 00:37:16 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 677F543C4C;
-	Mon, 19 Jan 2026 13:37:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09E63C116C6;
-	Mon, 19 Jan 2026 13:37:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768829833;
-	bh=NQhlNmakp9XzCvOKm+K/DiXWdOuvD8Ykc7UWybaRfrA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=A0Yy+O9m3bpEWejSb8AZVey2Vkiwx0Eax1Yq7MFX+zQfpIW9vXJjBQavwlH/TErRH
-	 qW66JhnYseJiJfY2MKbXCI54CthEcjVWyI6bb/ms2w53GHTvZLz6J3jazd5/uSl2Ps
-	 FTn7n87f/C1RBrwV1i6bt5ETR8tzAWb0QlnyYbPPk0g6AQe4B1dYCGNXRpxzsRjpvG
-	 O/O1cX7wCx42r0asHpVNvtwg9Az048pE37WW7oOey/+uBFiI33P8bnOHzVHf9i0y12
-	 XwB/K0dlvP1LZpCmhHgmmT6v5qbWg3jaahCpW3/N9FB90ik68JPzCM7hNszYr4JJ4q
-	 hXVNgNbeGbjXQ==
-Date: Mon, 19 Jan 2026 13:37:08 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, clg@kaod.org,
-	boris.brezillon@bootlin.com, joel@jms.id.au,
-	andrew@codeconstruct.com.au, linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	BMC-SW@aspeedtech.com
-Subject: Re: [PATCH v2 2/2] spi: aspeed: Add support for non-spi-mem devices
-Message-ID: <e4f133db-928e-49ae-9ee8-99e119d14708@sirena.org.uk>
-References: <20260117134216.595436-1-chin-ting_kuo@aspeedtech.com>
- <20260117134216.595436-3-chin-ting_kuo@aspeedtech.com>
- <3153512e-8325-4d0b-a869-a2a5062abefd@molgen.mpg.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvt0v0T71z3bf8
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 20 Jan 2026 01:21:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=c7Ep0GD4eG911kODoOvUPprYM2xLb7geaPpEU8Rcz+g=; b=CA3py8ftIBYki7YqehhBkcUCAE
+	Jq7C+1KCwjIrVDFC+GK3VKxuTunuovVb/OOJLH4mvTDrjY9ZYAsq64o/VUCK+zUCJVX18CKCiZgwJ
+	nlEuzXZNNYKP51fFNdGzccFRUqUQ3D7Cv9ycIXAkCOtHHRr9Ap3iqOw2o8Cp1r46+4wU=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1vhq7T-003VPQ-Ln; Mon, 19 Jan 2026 15:20:39 +0100
+Date: Mon, 19 Jan 2026 15:20:39 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Andrew Jeffery <andrew@aj.id.au>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	BMC-SW <BMC-SW@aspeedtech.com>
+Subject: Re: [PATCH 3/5] gpio: aspeed-sgpio: Create llops to handle hardware
+ access
+Message-ID: <bb5bdcf2-6bd3-49c7-b3e5-210b7f332137@lunn.ch>
+References: <20260117-upstream_sgpio-v1-0-850ef3ffb680@aspeedtech.com>
+ <20260117-upstream_sgpio-v1-3-850ef3ffb680@aspeedtech.com>
+ <55fbb766-12b5-441a-b06c-d807097e5476@lunn.ch>
+ <OSQPR06MB725219B6ED261DBB4E8BC33D8B88A@OSQPR06MB7252.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,47 +77,20 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="gk42q0GFzUogNGdb"
-Content-Disposition: inline
-In-Reply-To: <3153512e-8325-4d0b-a869-a2a5062abefd@molgen.mpg.de>
-X-Cookie: Does not include installation.
-
-
---gk42q0GFzUogNGdb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <OSQPR06MB725219B6ED261DBB4E8BC33D8B88A@OSQPR06MB7252.apcprd06.prod.outlook.com>
 
-On Sun, Jan 18, 2026 at 12:48:37AM +0100, Paul Menzel wrote:
-> Am 17.01.26 um 14:42 schrieb Chin-Ting Kuo:
-> > The ASPEED FMC/SPI controller may be shared by spi-mem devices and
-> > other SPI peripherals that do not use the spi-mem framework.
-> >=20
-> > The driver currently assumes spi-mem semantics for all devices,
-> > while the controller also supports direct user mode access commonly
-> > used by non-spi-mem devices. This mismatch can result in incorrect
-> > behavior when different types of devices share the same controller.
+> We did consider regmap. However, llops is intended to abstract not only
+> register
+> 
+> access but also layout-specific bit mapping, which is difficult to express
+> 
+> cleanly with a flat regmap interface.
 
-Please delete unneeded context from mails when replying.  Doing this
-makes it much easier to find your reply in the message, helping ensure
-it won't be missed by people scrolling through the irrelevant quoted
-material.
+O.K. I was just thinking, if you can swap to regmap, you could maybe
+then go one step further and use gpio_regmap_register(). But if you
+have extra logic in here, that will not work.
 
---gk42q0GFzUogNGdb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmluM4MACgkQJNaLcl1U
-h9AOpAf+KY6H92cdg3gOoQqgQu7crH6a+7XIW9D8d4DUyutJ3AVxvUSJHgxNAl3c
-V4ilv0msLOJJ6HpX/r5PQwBxtXyJ8B+4awixyqucFxMc5rOTbOhTUfSQs5CEk0Ye
-ZA0i4zbi0ugsYRl329wp62zOsYNbdZu0zDZmaAwIGUnZhuyarMsk3xfSkg8i7oor
-/uQhG8Z+bw1Y9rW5+WBFPLHsEiOhsf/o7pIIKUtTkaJkrE8hvfvszgIzObDQwKPM
-EXIlzMbd2tlKgIHfwIRcRK+NzbpvC/BIHEBZmiYPR/Ura1meOTlsrD9UR0rpd5Gg
-RrZG1vxcsH4KwCDJfTCUxBBlMfcFlg==
-=Arfl
------END PGP SIGNATURE-----
-
---gk42q0GFzUogNGdb--
+     Andrew
 
