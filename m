@@ -1,158 +1,40 @@
-Return-Path: <linux-aspeed+bounces-3397-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3398-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0794D29C2E
-	for <linux-aspeed@archiver.kernel.org>; Mon, 19 Jan 2026 14:25:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEAE6D2ECF7
+	for <linux-aspeed@archiver.kernel.org>; Tue, 20 Jan 2026 11:43:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dvt6P35XRz3bhG;
-	Tue, 20 Jan 2026 01:25:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::6" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768832749;
-	cv=pass; b=bvEA1MWccEL9ZPOz4+QOF8uXFYqxwvGOHDZDhteLH7Fhlk5h8JwCHwM3+ODeP69itT5VukwII0XVuFaMwbhhdCojqPlAcuQctJXtIPLENvb+lD7p3kPfWPC7ilspWgdzVp59BRaWVqAi9/ypHBhVJFrPWgvg2MHgxor9gzvmHBZe5KkcIKN8J8tMuSfK3WgdS9QRZPU6vUoVu3aW99v0X2eF9lsZNcVGHIsSQxoV4BsOcKJNdUnu+y6c0KjbvRYWoebTiyy2UefLN6coGvVpO6WRQ4kkJXZlZZoVYcUUkLIw7lOLA6fLbnLxkEVikQHyS+cIgZguYh2xToQHnknEBQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768832749; c=relaxed/relaxed;
-	bh=gATY+seX5xwChAYcMLXK8PDVIdnWCiHwD3KGyej40S4=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=l7j7Ho1lYfDC3O1WRDZ58m2tuqNiFMOpkL+0Xr9r7g+7asdQQ53+ceis58gBV56cHP8+yA6n8SoaQQfMOThPrUJt+V0z3Jpk/Aoq7DHNnjHixB9aw0Qw5rPrkcxHlOBZg1Wb1WlEMraes3nTJJRRhxe3Clra5Xv+N8Q+mLbDyDNOphWf6hQPiP7uV1UnugvfxkaWHCFGjtGM6GRGqFv15Vhg5iTl7OxQZRzqsUVm+urmCA6zdvwyPN8kZEarITMBIwPkLnhVsIKMvWJvwYtuG+exV2C6PGK0ZByWzY0pDBMTrykDzHMtdKhYNUVkS9RmB/Ejr67e0R/UXcgrMuJ6jQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=hIsGEIz0; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dwQSW6KHQz2xSN;
+	Tue, 20 Jan 2026 22:43:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768909403;
+	cv=none; b=QBbKxOKRA1ustZ//O4kdlOhNzTfkMli8Ik4pdn5KXx2WGYkFWGAg9GSDaDCVIK2vPqM846ER65CkbqcRW3qvE7/b1pVEYt6u2oG/rWaUR1oLK/fIuNDgdCc6fhfOx41bZSGS3T+mBh9ZiGeyAcbq1oJGxJlY40GhwmGMH7VMtOo2grpCEWtU3cKcpJMk5/nAeCNFj8YvdM6pXZEn846gkVGgg4Vh/Pc003lUW4U28JHHfGCU2JQKEyGnNgy8gPk8gp4AJy81XuG/NbLq7VUAPF712SUGqI5dyiLp2nX+6Gxwgv3Jv6lWfyqOZinE1AIZtIXCulw4IJQP7hP/WiHsVg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1768909403; c=relaxed/relaxed;
+	bh=dKEiXSCwdojell1kyAFXQf/IfqH1mRcSaT2Kaw98+kw=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=R3ZEL/F4Nt6RyQuUA6piQpI6AMNITrEppZJhVKQ8SfYJzai3Ls2xszwyGQw77oFiH5Zf3NAx4xoZn2nOZ7oYgnzEKniL78uNsdDM/SPx821BAnZyBAeWXo0JQ0wDxJX7TpXY0bpn/SmEJogJg3z5mZetynHPSN6lK8FZnLaRlyvSh9RV4vKJ6Ypcl7xpK8azt1364i8I+7mHvyydjtK/qGvUAehTvMWccLk0TKtKPYpmElw/hXOFSbvCYxNqbgtkt55K+nJDk+7aN0Wm78R/UhwcbxEgAsUiQo0vPeOHsuWVyFBR6MEdI7GHeC8UAYTxhJ9fSnKfyGilq/s4th1HrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=hIsGEIz0;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::6])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dvt6M38fxz3bf8;
-	Tue, 20 Jan 2026 01:25:47 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lkIfGy+BTFf6suzM9hv9dO0tkLsgVK9JIXCJXXslFArGruMvWs3QL1DUsTx+NEKvfmSObedcEqQGYjpN2+clpmFOWGfMyF0qwN0lc9TpvP8vJIgozTwXbSMnvTH6HoBaZ0MSTzVbwl2m36aB+xKm9AUcup36V2j9gjytuv3mwhRxD4OBocZgQpI8e3O32e86Zig9RfmKuOzFPTbtO+Sz0MSRjMajhDIIXJ1L73y2w38Sfbgc+bQ/ELFy0Oo0G9mKwNXLkkkCzqeEa7GenFlw7I/jO7LPiMK+mAJLxFfYRbPyUp8ctlwkXHtISMvsfU5Y2TqgNFy2+xLACTPPUeMYxA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=gATY+seX5xwChAYcMLXK8PDVIdnWCiHwD3KGyej40S4=;
- b=a1FmDPuCCnEwHM8eE0rlWrte14AR2pbKoYlQHIvBU9VchrTX6xAqrDMqSrpbsUygWs9U20bn9A3N4K7D4OyxDr17FEsowcuTfXpuL4gqkNlh8ZJv6olYAo8zeq5/vu0oXELzWOh8EEmyRIis6BWRExSiBWogMJ4chc2mg/d8YhDhOmcdHxVD1IjfXh6lJXAFgCcJ2sX2WQwR7izXD1RJ57BKvj/4p0M1LdORLnOzZ1k1mmxeSAZZKMYXfAzKbY8h0jVCGil25BSNvvdLvcg84/Gjf60jDc1LBUHMpSQE4DrjZxu7ODOgwTvyuyRi2fvyuTccoBbCKS6zgXG+/sPWhg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=gATY+seX5xwChAYcMLXK8PDVIdnWCiHwD3KGyej40S4=;
- b=hIsGEIz0PnoIubBSL5BF0pWR41PFrellwgtmLvt0His0B34wKeKBYbhEe+9KcOn1oXnllEDuy3eXEJ+GRfZtqc4fg65B0rv2MiBGUXcMbhWlG+wFLPc3Yk9gjr+LEThylLk3MP8VAxOJ+yVcMFbFoQVu1v77ADckENzXXt92+EWqKvrFGhd8Lso/VHzLbJKTxqWUG0V4FYO7yENCS1zUj3VethQTeeZuSabWTZQOlqs8tXCVyx05l1vNmnVyRhTA7FIbGx8SmNlB3/R7kYYrTIJG66qJleBKgj2s6RbDfP49in5gNGmLqvqHUlFE1EqD5v8hGVVssMQZ7kp6OZ+W1g==
-Received: from TYZPR06MB5203.apcprd06.prod.outlook.com (2603:1096:400:1f9::9)
- by SE1PPF59C9ED6A9.apcprd06.prod.outlook.com (2603:1096:108:1::418) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9520.11; Mon, 19 Jan
- 2026 14:25:23 +0000
-Received: from TYZPR06MB5203.apcprd06.prod.outlook.com
- ([fe80::e25a:ec7b:633d:7489]) by TYZPR06MB5203.apcprd06.prod.outlook.com
- ([fe80::e25a:ec7b:633d:7489%3]) with mapi id 15.20.9520.010; Mon, 19 Jan 2026
- 14:25:23 +0000
-From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-To: Mark Brown <broonie@kernel.org>, Paul Menzel <pmenzel@molgen.mpg.de>
-CC: "clg@kaod.org" <clg@kaod.org>, "boris.brezillon@bootlin.com"
-	<boris.brezillon@bootlin.com>, "joel@jms.id.au" <joel@jms.id.au>,
-	"andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, BMC-SW <BMC-SW@aspeedtech.com>
-Subject: RE: [PATCH v2 2/2] spi: aspeed: Add support for non-spi-mem devices
-Thread-Topic: [PATCH v2 2/2] spi: aspeed: Add support for non-spi-mem devices
-Thread-Index: AQHch7cbAQl19CEQ6kOCsI3Fk+BkmLVXCCqAgAJ50QCAAAz90A==
-Date: Mon, 19 Jan 2026 14:25:23 +0000
-Message-ID:
- <TYZPR06MB5203305392403192577AC26CB288A@TYZPR06MB5203.apcprd06.prod.outlook.com>
-References: <20260117134216.595436-1-chin-ting_kuo@aspeedtech.com>
- <20260117134216.595436-3-chin-ting_kuo@aspeedtech.com>
- <3153512e-8325-4d0b-a869-a2a5062abefd@molgen.mpg.de>
- <e4f133db-928e-49ae-9ee8-99e119d14708@sirena.org.uk>
-In-Reply-To: <e4f133db-928e-49ae-9ee8-99e119d14708@sirena.org.uk>
-Accept-Language: en-US, zh-TW
-Content-Language: zh-TW
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: TYZPR06MB5203:EE_|SE1PPF59C9ED6A9:EE_
-x-ms-office365-filtering-correlation-id: b97436c2-143a-4513-4174-08de57669544
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|7416014|376014|366016|38070700021;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?daAgXzUEZuZ0O70GgJCgotZF53Kf8DQPPlq2D9UagZaM8pjiCCvyVqqToq4d?=
- =?us-ascii?Q?4QKLIutzpJfFZSjvKt08J0bQNzaXopZqg1cxt8vkH/iv02/QANpMJTPz60kL?=
- =?us-ascii?Q?VISqhZlnr6KkLbmGJgCp7wRBMCUUO1a7fqmRomxDF169XsYGc+VlVIPxTbzR?=
- =?us-ascii?Q?u1p3Tp5vxYRE5JjFsiDipsdERPCv/0cBPlqSVgBXvM9snENwwmBbTrdjuRYB?=
- =?us-ascii?Q?av/6zC0dZYKdw+4QctgigUUhF+8Mw9Wn+2XrYIYRTtsoc7ncqfna6xSLCth3?=
- =?us-ascii?Q?MdFo85gsf9x0p/rMK4s/wlg+fiiXvwrX05i51tPNmU/Nf2f+MOsiel5tYZ8S?=
- =?us-ascii?Q?G75gKTyME1j+WOR5a8Ma1B8l26U7t4PHrFxtFz9Zs3kTxpfkiN0M1BGPEize?=
- =?us-ascii?Q?IHYyKSPXT4itfXNctXMEqelVhyYPOuiachbIOmpOklJ0evB0aetr/3/bywiC?=
- =?us-ascii?Q?W4tURRWftURMfOAK+yKWB9w0e1Ah5k8HNx8alv3c6tNk6UveSuqcGKaKXxtt?=
- =?us-ascii?Q?4xsA2jlHGha0XwTw4x9Evp9hjGT0anfMrNfnHng+Tn/7ZggZdSy7QSfadSOL?=
- =?us-ascii?Q?cOkb8TNOm8qQBHaU9Wk4k3aQxFp1FgswE9KvtPA+B+6TcspSdyxe4sa1tWnO?=
- =?us-ascii?Q?FxGnMNyW18y1gN4XrrUbm4QHGw+VerR64qYWTI6rex5eb93LNavKCx8lwokf?=
- =?us-ascii?Q?sLZ8jKlQx4NRhffZBhPmWRmrJKNmZfZliQxeK8fdvNSipzAvZ/Giwd+rf+bl?=
- =?us-ascii?Q?J5AipzAKN+qoxkrPXP+wX8YjYSjPhs91M2xmygZbzjZb4aO/Bsr5rKCDm7mG?=
- =?us-ascii?Q?8nJBwoLT52Wzar8fbpfWqV/kfUqBoLZKBVwKpp2SJjUnJJcIwu0+O4v9IOyh?=
- =?us-ascii?Q?t/uwjy6KbPJscyqTQOyRNK2GvP5a0RuFsEWZF/wcuAVs+bWB/YhdLkafilxF?=
- =?us-ascii?Q?rtzOY3+hpdD0tJx5dDoVjecgWxUBh2qtsE7swjxMdMuNpCS3lLM3zIGzHJXD?=
- =?us-ascii?Q?WyEaS5rsdCk+hYEPNTE+ljxh08GR3j8zGJnwwkpOcjBlrQEwXfsR1qP4SuZx?=
- =?us-ascii?Q?PYuCOoaAJk7MTH1n1sg/by11E40cwt9YlcenyHq6OPSH2S3Nvt8UFrA/T6mB?=
- =?us-ascii?Q?z08RtIx685xCaj9u8X40mxGR8zLFAZaSnUqK+u/gL4I0uUye1MQLMSkkDaDH?=
- =?us-ascii?Q?Zp6TvYcSKFeZhdUh2LERQeqbygF9qV5b3er2rXF+8JcGjO85y/lBP2QW6ASu?=
- =?us-ascii?Q?R6A7HaezJ60wvErV7CiuphQYv1TbF+kBZTQfPtaurISPSOiEcqLrV2jpRzqM?=
- =?us-ascii?Q?+ckE/H2rjE8KOjxVYAZsVe53zmjoMwe0xpWHEawxxCAt2TRi/JxVImqtXRmt?=
- =?us-ascii?Q?Bt9yfT/HZv2DyzW7hyaN0J4dV+/NFVPTlSDNqsolvbPtJozGc7uBtKlW8jWw?=
- =?us-ascii?Q?meu1p+1xYSmMEaWySxfzPg2bGrVgbsInGtloNSVFmSzH1pV51FwvhuHDYZm6?=
- =?us-ascii?Q?dXapMw7s+u6Pom1PqY9kH1JY9zGufHEcKkTUKbDKmvlYAyGxgWEJ2mXkgntU?=
- =?us-ascii?Q?udkoU1UFEKl++o8IvEXCadeNULPmMYqQ5g7/raWimSs5nMUxujsojj3Qga9G?=
- =?us-ascii?Q?H7R8c1g1Fsh+02yxpwiiT0U=3D?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR06MB5203.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016)(38070700021);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?TjKgIQiaAVRQQNMjY5tJ+fhR/Lx34HjHDuNID+WSlq5J/39Tq0JNpjkskCYn?=
- =?us-ascii?Q?mrxh5E5oHXFqkZoR39kk575P4l+QsELjYtQdIQ6eB8rj4LwzB7ltBoLHwcB9?=
- =?us-ascii?Q?8Nxd4zwzxf1la8z+9l3FDBZjsMPSUAvZXYJEshQ9m1H4PkPa5+CRmMaiEhkO?=
- =?us-ascii?Q?VNLNxkCj2wz8EhK+7Y5jkmbioRPFeyseUE8rrdB2Jv1KSua+7mnX9u9ihBCM?=
- =?us-ascii?Q?MnLF0k6KAw2uvKM6JLKYTErjKXG+KaUizmQDeFDWedzV3Sxk4XXnGYnPUR9m?=
- =?us-ascii?Q?1AjIyTq2yfafi6k6UE9dhN9ker2KaFZOj4RP2xpi11iIm4aX66eykR2lHF/u?=
- =?us-ascii?Q?4g4bYs5DZ+YUoXZOn6LhLaOqMGUinR5LURkVJW2T4ABHE512x3wsL4vz5rb5?=
- =?us-ascii?Q?MN24Za6NjzFyZVYKXvpgLtND94tlXnUD/sPPiMkYdOH996mEnimebsUHYQax?=
- =?us-ascii?Q?fPm4Yz+J21rCa+9fzSeo6zhC5XoyTuYKDBbYqqmwVKc0g8wGnxaszBmI/Fw4?=
- =?us-ascii?Q?a2yi339mxcNdpvbLC/zYicTvhYKnZJEUParDkogMiMHRHY3s1YjKTamgVILC?=
- =?us-ascii?Q?lSxEvKLCr4fuE22tjF9j1s9vp+mObJ10Gr0eMLrAhPHCnIZDn66rDbBGWPlv?=
- =?us-ascii?Q?3cJWB5X2fZeLGhYrWdeaFeCMfwkgTb83fepi+1hMJpU1jpEXxA7YAd7r+l1B?=
- =?us-ascii?Q?BXAiEREF6lnmIUG5xkrnzkDmjyh/ZltXnLXHm0FQ1LuvWKLl+5u5GQUHE4Df?=
- =?us-ascii?Q?7jbykpUOzI+UgFmvg7YtDnrHtlGJMpz+MoHIDu1Zvyh3sO21JhQ5dKkJoKxI?=
- =?us-ascii?Q?+0CUotl3Q1qUJSkQYHxSgDAsIACLD28OjzcGuzMBPKABVzEW5gm4HYOM1Fzl?=
- =?us-ascii?Q?EL2Or3Cnr/0ZXIBIEU5ZiYcGb9WXKcp3Bi47hOUWfX9kyU5V9z005Wd2aca5?=
- =?us-ascii?Q?t3Hw9gHgt/KBHIFbtJc+xFYgYnx3G5GRw+HzJJTaoFHM3namtWs2rxitk2yk?=
- =?us-ascii?Q?Y+TlY+pGM+zse7f9/7WzYbTsDDs9E5aC1Z3ZrLk4Z6Rd/adWzBqBsED19MKT?=
- =?us-ascii?Q?rSAM+llza6SiYx2w794bYd0VjVGARdRjKHdrbF4StF3eVNBaqtk7dbxnz58U?=
- =?us-ascii?Q?NrWC0MixkOVZ0WR2ZQsxPMMLKPr0FtR+ZlWtHF35xu7Ps3tWLecx4WwND388?=
- =?us-ascii?Q?t/nijtOXOIn/tcLWhnKpu0ywbI7A9E1HE5qPgfrPqK0HsdqVIO3we9tm90rZ?=
- =?us-ascii?Q?dWR3DXVweDhvKgSPTqyvCJNos47sIjR/jpD/fFUw2Hs1DZ83pPNwBaLkXew1?=
- =?us-ascii?Q?MPpIsKNCQw8o16oPtuSQqBpYICmjv/Re04ZbVfcH+PBJRYRaKoj7yO/H+T0q?=
- =?us-ascii?Q?sQO8sa/tN2HuCh/mmJO1WZAlpBZz4v4D0NoypO2S7IsWNpWp+uTv+qSvaJdW?=
- =?us-ascii?Q?25Y9FpaaC4TfCkOwf8tC6fskL7Ami4mo+tiMivPgim9tR4dWfA6o5R4b6tLE?=
- =?us-ascii?Q?uycaVcj8LNZt9QprJXe5AQM83+oR9GOhy01ny4nlDORY0ETUvjSajvd9ng1j?=
- =?us-ascii?Q?Ig9AGhYlO7pnAnHqBT2oH3zX8VhRk4xi+ZZYZdnWnWQsIFjP9+V/Mw9sly6R?=
- =?us-ascii?Q?IrfKrIwm1LJ6ioPyoHGXeTCs9Tn7arkBrgsL0MjJsjMtarH9vZmSAist2iAu?=
- =?us-ascii?Q?gG7kxwUcE3dzc6sGzyRGAIH0UxtOE2Ta0UGL/jCa+ufyfFG1tIItmVN8s1Xz?=
- =?us-ascii?Q?WvqgQr6AzCybvUDNn+rlOrpAwg9MHZM=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwQSV6S3pz2x99;
+	Tue, 20 Jan 2026 22:43:22 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 20 Jan
+ 2026 19:43:05 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 20 Jan 2026 19:43:05 +0800
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Subject: [PATCH v3 0/3] Add pinctrl support for AST2700 SoC
+Date: Tue, 20 Jan 2026 19:43:04 +0800
+Message-ID: <20260120-upstream_pinctrl-v3-0-868fbf8413b5@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -166,41 +48,98 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB5203.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b97436c2-143a-4513-4174-08de57669544
-X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Jan 2026 14:25:23.5507
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 0BMCWeh1VCEv7gsHbmttxr5PMZ9NRmriM8tLvzipEFATFi9u4pEP/EsepBBUt54litokT+QO84JF/gVxY9f7Kz882L0txWKhvhwpq5CEWSQ=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SE1PPF59C9ED6A9
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAEhqb2kC/z3MQQ7CIBBA0as0s5YGaEmpK+9hTIN0kEloSwCNp
+ undJS5cvsX/O2RMhBnOzQ4JX5RpWyu6UwPWm/WBjOZqkFwqIYViz5hLQrNMkVZbUmDaiVHNjpt
+ xUFCzmNDR+7e83qpd2hZWfG3+Iz7yXvCu56LVWuqBCXanED5TyYYuJkfEuaD1rd0WOI4vfEq54
+ KUAAAA=
+X-Change-ID: 20251215-upstream_pinctrl-8f195df0a975
+To: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, "Krzysztof
+ Kozlowski" <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "Joel
+ Stanley" <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	"Linus Walleij" <linusw@kernel.org>, Billy Tsai <billy_tsai@aspeedtech.com>,
+	"Bartosz Golaszewski" <brgl@kernel.org>
+CC: Andrew Jeffery <andrew@aj.id.au>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <openbmc@lists.ozlabs.org>,
+	<linux-gpio@vger.kernel.org>, <bmc-sw@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1768909385; l=3007;
+ i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
+ bh=XQLWMm3YsOhtEHJ6iLz4rU8Uz2JmnALhlntXC1iQkvA=;
+ b=Gxi0bOC2k4CwxLCGJ3+75SuENKeJa42aygju/Eb16ieiH0uqpGEPvIX1fxidn3KU7k4v7A5Ps
+ XtN9gTyxx6EA2EG7f/Ajdtc5Z9m9A08NkB9awKP6WiVs6dQwixj8jxr
+X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
+ pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
+This series adds device tree bindings and a pinctrl driver for the
+ASPEED AST2700 SoC.
 
-> -----Original Message-----
-> From: Mark Brown <broonie@kernel.org>
-> Sent: Monday, January 19, 2026 9:37 PM
-> Subject: Re: [PATCH v2 2/2] spi: aspeed: Add support for non-spi-mem devi=
-ces
->=20
-> On Sun, Jan 18, 2026 at 12:48:37AM +0100, Paul Menzel wrote:
-> > Am 17.01.26 um 14:42 schrieb Chin-Ting Kuo:
-> > > The ASPEED FMC/SPI controller may be shared by spi-mem devices and
-> > > other SPI peripherals that do not use the spi-mem framework.
-> > >
-> > > The driver currently assumes spi-mem semantics for all devices,
-> > > while the controller also supports direct user mode access commonly
-> > > used by non-spi-mem devices. This mismatch can result in incorrect
-> > > behavior when different types of devices share the same controller.
->=20
-> Please delete unneeded context from mails when replying.  Doing this make=
-s
-> it much easier to find your reply in the message, helping ensure it won't=
- be
-> missed by people scrolling through the irrelevant quoted material.
+AST2700 is composed of two interconnected SoC instances, each providing
+its own pin control hardware. This series introduces bindings describing
+the AST2700 pinctrl architecture and adds pinctrl driver support for the
+SoC0 instance.
 
-Okay, thanks for the reminder.
+The bindings document the AST2700 dual-SoC design and follow common
+pinctrl conventions, while the driver implementation builds upon the
+existing ASPEED pinctrl infrastructure.
+
+---
+Changes in v3:
+dt-bindings: pinctrl: aspeed: AST2700 pinctrl improvements
+- Improved binding descriptions for SoC0 and SoC1 to better explain the
+  AST2700 dual-SoC architecture with independent pin control blocks
+- Switched from additionalProperties to patternProperties using the
+  '-state$' suffix to restrict child node naming
+- Removed per-binding examples based on review feedback
+- Added additionalProperties: false at the top level for stricter schema
+  validation
+- Dropped the aspeed,ast2700-soc1-pinctrl binding, as the SoC1 pinctrl
+  registers follow a regular layout and can be described using an
+  existing generic pinctrl binding
+- Updated the function and group enum lists to match the definitions
+  used by the AST2700 pinctrl driver
+
+dt-bindings: mfd: aspeed: Add AST2700 SCU example with pinctrl
+- Added a complete AST2700 SCU0 example demonstrating pinctrl integration
+- Example covers both pin function/group configuration and pin
+  drive-strength settings
+- Updated child node naming to use the '-state' suffix, following common
+  pinctrl conventions
+
+pinctrl: aspeed: AST2700 SoC0 driver improvements
+- Refactored pin and signal declarations to use common ASPEED pinmux
+  macros (SIG_EXPR_LIST_DECL_SEMG, SIG_EXPR_LIST_DECL_SESG, PIN_DECL_*)
+- Added SCU010 register definition for hardware strap control
+- Reworked code structure to better align with existing ASPEED pinctrl
+  drivers
+
+- Link to v2: https://lore.kernel.org/r/20250904103401.88287-1-billy_tsai@aspeedtech.com
+
+Changes in v2:
+- Update pinctrl aspeed binding files.
+- Update the commit message for pinctrl binding patch.
+- Link to v1: https://lore.kernel.org/r/20250829073030.2749482-1-billy_tsai@aspeedtech.com
+
+---
+Billy Tsai (3):
+      Add compatible strings for AST2700 pinctrl to the SCU binding.
+      dt-bindings: pinctrl: aspeed: Add support for AST27xx
+      pinctrl: aspeed: add G7(AST2700) SoC0 pinctrl support
+
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml           |  28 +
+ .../pinctrl/aspeed,ast2700-soc0-pinctrl.yaml       | 130 ++++
+ drivers/pinctrl/aspeed/Kconfig                     |   8 +
+ drivers/pinctrl/aspeed/Makefile                    |   1 +
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g7-soc0.c    | 683 +++++++++++++++++++++
+ 5 files changed, 850 insertions(+)
+---
+base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
+change-id: 20251215-upstream_pinctrl-8f195df0a975
+
+Best regards,
+-- 
+Billy Tsai <billy_tsai@aspeedtech.com>
 
 
