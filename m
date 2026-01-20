@@ -1,52 +1,47 @@
-Return-Path: <linux-aspeed+bounces-3405-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3406-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3135D2ECE9
-	for <linux-aspeed@archiver.kernel.org>; Tue, 20 Jan 2026 12:27:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B531D2ED0F
+	for <linux-aspeed@archiver.kernel.org>; Tue, 20 Jan 2026 12:30:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dwRRs1F6lz3bf4;
-	Tue, 20 Jan 2026 23:27:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768912073;
-	cv=none; b=bwlBoj/blWPDyTXsWP9f9iziyf/wqYsNLSqp9YMikxik3Qhf3fbJjV0PflLD2IbrdnYM0SaobX1AzisndxjIZwcFPur3Z19eq1mo0wUCBZBCZPKpgDQMFnP1BZCnpH5okW9gfh4y3qepsSj/NRDLIFZlHs5mhmwco6eC8z7IzlvwaL/iZbtoxRnP4sSethb/vAeAQVUAUuUl6QCtg93qx7PU2g9Es7wgO4pjb5EVC2NYJ+L9V69tgIGxrR53sp5fIGzjmfc2z3nPWX18VCFBag93HxWGNcOfq+RWAj/SsQxc5H8qzS3QjPCL9yaO+bxgu2AV9jUX0nqW9QizJE+MwA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dwRVj5G6xz3bjN;
+	Tue, 20 Jan 2026 23:30:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768912221;
+	cv=none; b=UBl6Ti+WO5fo7WannUKseIHwUpN3VhmyBHvMNs21e8L/5AInzuMAcdpmj1ImebWg2u62lXv0BxV9xW1cNBQt1Xv94clJIp1VHmiNBfOJ+9Og7LenHf8eGO50tDknTDiJcnbHJAV2s/960UOh/DXJKBRQejlifJeWCluIfJrCaVNKrxsXpaYyjMwGOh9l8gjCgNa7qUr1SirkASoOTgznsGZas71z/Eo3tYJy44qCJNYZJ2HnCpVcZtkz3lzizOzoYk+Xjaz6OdH4uFgVVrp7pfi6hPp39ikTW8Mnt/6PMS1El20qQDxRE02+C6TLeij3FlrZC0MrpfgjVsY7JzRq+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768912073; c=relaxed/relaxed;
-	bh=dWzUL86zeloyhVgkXz4snN6gH5GJmE76J80J6yEf0kk=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=jebF9VdZ2izzUNmp40IoRdW3KEkpCASj3kKTeJ436wfFlw2v7CPtGEiIn3z7X9OPSNrZZVNMA9LvuPxWR871jZh194KuMCIo6+kq+J578wf0SDhHPiDlWETwNsKcVXTREzsW5BhpNJSxHaSen0GPQ07+6asUDOv84+Rlpq0RVKv2u5PUXCFtiYNlpx1p7uVdrZKZkfShDbs+k38vot8m1TRQ7SzmLku278hFkPYVsQL1VwgQnEntXf9HI5WRjuQFiUGUaJSbINkucu2vbm3kXn28BpuSjbxvy4V/uMAEoliZmSaZB9z/OHUTuUNQMXWPMVW5XmPNYN6GmKcrgVlfVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hHyqsg7S; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hHyqsg7S;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1768912221; c=relaxed/relaxed;
+	bh=DDksfQrsY3g2XAa9C6Rs2i6hobw1pNmsqvxtNGtaKvA=;
+	h=From:To:Subject:Date:Message-ID:MIME-Version:Content-Type; b=WtB7ElUjg09uS0FyXLBhy993vGHGYbZUdA/q6jCL5Zb3oQaZG0bj9J/5paHWvoLzIY/Ai9T8C5SsyLhqhpMoJIml2Jj56FN19eZtf6lvWtWNmXtX4W3FAF3VSKuatjHweishOtgH7IKA3oDU8dB+WbCeBe3cjN6gAB3EuX4O+8XSHgY75BZNzukijVFKhRkUR51+oLksFsx2ML9KipjfrGCAt08C1mujIixTtQ41+ScRiWToe+rDBiFZfJ5rJMRQUwnYyWHMiClIm5dIcrehTju2+X4IUggoa+LNBHjQlEMd0GRjEcHdYtQyWDhpiuwFt/5kBRrhC5kx5dmErVjhYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwRRr2XfJz30T8;
-	Tue, 20 Jan 2026 23:27:52 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3380D4376F;
-	Tue, 20 Jan 2026 12:27:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B855DC16AAE;
-	Tue, 20 Jan 2026 12:27:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768912069;
-	bh=OBQa66E8qIIZZ+a5/f/YUB/uMB9Oa+5RXnBGA2tH1VA=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=hHyqsg7SLKU6D/+NrFAwaN3MhGr5XHbaGDgQQaIQvl+t/iY5qBmfoYu4l8P1Lcgm2
-	 oqJ3zQmgw1zYfVFAqf8RWA870XZkWL9FQDro7p9evW2z0tw4c4/sBvgKaSQtE4S5hn
-	 CdQsPuEKhcpai1OKgQmiT+5ZVmFPe9frZIGN4ZfeuxtJ7DNvwhniQ85cZa9PK0IB8T
-	 LRTiByz0h8vDb+LxO4ccWKXYiOI8JKsTMY1lsJ9exLUtk9yiLYW4Mi8tjUvTgSQUVa
-	 U4O5JcFDH62U61e3HJyoNXKzJhwJ7VTiD1wcAU6iW1MKXr8WJHEzxlNP0uS3iWfgpB
-	 YOcSVoJ6njokA==
-Date: Tue, 20 Jan 2026 06:27:48 -0600
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dwRVh2lgCz3bfY;
+	Tue, 20 Jan 2026 23:30:19 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 20 Jan
+ 2026 20:30:05 +0800
+Received: from aspeedtech.com (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 20 Jan 2026 20:30:05 +0800
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+To: <clg@kaod.org>, <broonie@kernel.org>, <boris.brezillon@bootlin.com>,
+	<joel@jms.id.au>, <andrew@codeconstruct.com.au>,
+	<linux-aspeed@lists.ozlabs.org>, <openbmc@lists.ozlabs.org>,
+	<linux-spi@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, <BMC-SW@aspeedtech.com>,
+	<pmenzel@molgen.mpg.de>
+Subject: [PATCH v3 0/2] spi: aspeed: Improve handling of shared SPI controllers
+Date: Tue, 20 Jan 2026 20:30:03 +0800
+Message-ID: <20260120123005.1392071-1-chin-ting_kuo@aspeedtech.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,87 +55,36 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: bmc-sw@aspeedtech.com, Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org, 
- Linus Walleij <linusw@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
- openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Bartosz Golaszewski <brgl@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Lee Jones <lee@kernel.org>, linux-gpio@vger.kernel.org
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-In-Reply-To: <20260120-upstream_pinctrl-v3-2-868fbf8413b5@aspeedtech.com>
-References: <20260120-upstream_pinctrl-v3-0-868fbf8413b5@aspeedtech.com>
- <20260120-upstream_pinctrl-v3-2-868fbf8413b5@aspeedtech.com>
-Message-Id: <176891206887.1610236.16662937885214497301.robh@kernel.org>
-Subject: Re: [PATCH v3 2/3] dt-bindings: pinctrl: aspeed: Add support for
- AST27xx
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
+This patch series improves handling of SPI controllers that are
+shared by spi-mem devices and other SPI peripherals.
 
-On Tue, 20 Jan 2026 19:43:06 +0800, Billy Tsai wrote:
-> Add bindings for the pin controller found in ASPEED AST27xx SoCs.
-> 
-> The AST2700 SoC consists of two interconnected SoC instances, each
-> with its own pin controller register block managed by a separate
-> System Control Unit (SCU).
-> 
-> Introduce the "aspeed,ast2700-soc0-pinctrl" compatible string to
-> describe the SoC0 pin controller, which is not compatible with
-> existing ASPEED pinctrl bindings.
-> 
-> The SoC1 pin controller follows a regular and predictable register
-> layout and can be described using an existing generic pinctrl
-> binding, therefore no dedicated AST2700-specific compatible string
-> is introduced for it.
-> 
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
->  .../bindings/mfd/aspeed,ast2x00-scu.yaml           |  27 +++++
->  .../pinctrl/aspeed,ast2700-soc0-pinctrl.yaml       | 130 +++++++++++++++++++++
->  2 files changed, 157 insertions(+)
-> 
+The primary goal of this series is to support non-spi-mem devices in
+the ASPEED FMC/SPI controller driver. It also addresses an issue in
+the spi-mem framework observed when different types of SPI devices
+operate concurrently on the same controller, ensuring that spi-mem
+operations are properly serialized.
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Changes in v2:
+  - Separate transfer_one_message() function implementation into
+    transfer_one() and prepare_message() in controller driver.
 
-yamllint warnings/errors:
+Changes in v3:
+  - Add testing information for both patches.
+  - Expand commit message descriptions for the non-spi-mem device
+    support changes.
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml: patternProperties:-state$: 'anyOf' conditional failed, one must be fixed:
-	'pins' is not one of ['$ref', 'additionalItems', 'additionalProperties', 'allOf', 'anyOf', 'const', 'contains', 'default', 'dependencies', 'dependentRequired', 'dependentSchemas', 'deprecated', 'description', 'else', 'enum', 'exclusiveMaximum', 'exclusiveMinimum', 'items', 'if', 'minItems', 'minimum', 'maxItems', 'maximum', 'multipleOf', 'not', 'oneOf', 'pattern', 'patternProperties', 'properties', 'required', 'then', 'typeSize', 'unevaluatedProperties', 'uniqueItems']
-	'type' was expected
-	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml: patternProperties:-state$: 'anyOf' conditional failed, one must be fixed:
-	'drive-strength' is not one of ['$ref', 'additionalItems', 'additionalProperties', 'allOf', 'anyOf', 'const', 'contains', 'default', 'dependencies', 'dependentRequired', 'dependentSchemas', 'deprecated', 'description', 'else', 'enum', 'exclusiveMaximum', 'exclusiveMinimum', 'items', 'if', 'minItems', 'minimum', 'maxItems', 'maximum', 'multipleOf', 'not', 'oneOf', 'pattern', 'patternProperties', 'properties', 'required', 'then', 'typeSize', 'unevaluatedProperties', 'uniqueItems']
-	'type' was expected
-	from schema $id: http://devicetree.org/meta-schemas/keywords.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml: patternProperties:-state$: 'pins' is not one of ['type', 'description', 'dependencies', 'dependentRequired', 'dependentSchemas', 'properties', 'patternProperties', 'additionalProperties', 'unevaluatedProperties', 'deprecated', 'required', 'not', 'if', 'else', 'then', 'allOf', 'anyOf', 'oneOf', '$ref']
-	from schema $id: http://devicetree.org/meta-schemas/nodes.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml: patternProperties:-state$: 'drive-strength' is not one of ['type', 'description', 'dependencies', 'dependentRequired', 'dependentSchemas', 'properties', 'patternProperties', 'additionalProperties', 'unevaluatedProperties', 'deprecated', 'required', 'not', 'if', 'else', 'then', 'allOf', 'anyOf', 'oneOf', '$ref']
-	from schema $id: http://devicetree.org/meta-schemas/nodes.yaml
-Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.example.dts:63.13-50: Warning (ranges_format): /example-1/syscon@12c02000:ranges: "ranges" property has invalid length (16 bytes) (parent #address-cells == 1, child #address-cells == 1, #size-cells == 1)
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.example.dtb: syscon@12c02000 (aspeed,ast2700-scu0): reg: [[0, 314580992], [0, 4096]] is too long
-	from schema $id: http://devicetree.org/schemas/mfd/aspeed,ast2x00-scu.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.example.dtb: pinctrl@400 (aspeed,ast2700-soc0-pinctrl): 'reg' does not match any of the regexes: '-state$', '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.example.dtb: pinctrl@400 (aspeed,ast2700-soc0-pinctrl): emmcclk-driving-state: 'drive-strength', 'pins' do not match any of the regexes: '^pinctrl-[0-9]+$'
-	from schema $id: http://devicetree.org/schemas/pinctrl/aspeed,ast2700-soc0-pinctrl.yaml
+Chin-Ting Kuo (2):
+  spi: spi-mem: Protect dirmap_create() with spi_mem_access_start/end
+  spi: aspeed: Add support for non-spi-mem devices
 
-doc reference errors (make refcheckdocs):
+ drivers/spi/spi-aspeed-smc.c | 134 +++++++++++++++++++++++++++++++++--
+ drivers/spi/spi-mem.c        |  11 ++-
+ 2 files changed, 138 insertions(+), 7 deletions(-)
 
-See https://patchwork.kernel.org/project/devicetree/patch/20260120-upstream_pinctrl-v3-2-868fbf8413b5@aspeedtech.com
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
+-- 
+2.34.1
 
 
