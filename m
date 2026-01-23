@@ -1,66 +1,40 @@
-Return-Path: <linux-aspeed+bounces-3420-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3421-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89481D6CFDC
-	for <linux-aspeed@archiver.kernel.org>; Fri, 23 Jan 2026 06:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01D15D72364
+	for <linux-aspeed@archiver.kernel.org>; Fri, 23 Jan 2026 09:26:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dy7Rz0cTXz2xJ5;
-	Fri, 23 Jan 2026 17:33:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769150030;
-	cv=none; b=ccKhy5wWXNmxRqmgW4Rn4All1LocmTlpP1cbC2XrRHfxCZONEcBWmVQxiRLD+JzKxyuPvNzNiNWeYAMfTHYp0euX58O3fRK0fjANvccQ0J3rLqPD0iMX38ImMOJvsWeAld3e5Py5IX+T9gYLZiaivASJgDyjqr6Hb5bZb1sLLaBu87Td9DmxETxVDVJ+sSwF9Bz+AcXWY9Hy68ZoBP0pDlCTIMBaC4vcOGDfJhVmj2D+WENu5EKpmFhob1OCeqLvHDi9SC6FLhKKfaMhlnL+bwOeDN3M1NNg9/o5+Z3JnBzN84eQYduJZzZGiT5HBQ+CnGX8spdjLs9AEZbXIfcOUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dyCHV3Pt9z2yFK;
+	Fri, 23 Jan 2026 20:26:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769160406;
+	cv=none; b=g2RZUuy1w0lQM9Hgvuk6ooJe2InhIcfoxVwlnjm6yJsJAQ2gwGUEQFnvP3Wpyi1YKAxqhR8HgfEo1sp80c6yRQN9mB8nMptYtdrv8UmfwoNWswFIcPYOsY7kCTb3tGvrO56jSfcAIcYTwtK2QiW8DYodj9IGBo5K5hBi/yUILjb7gLAMTZTsvmbaALopLZsx4w+GHB6uWNaj1Slu78CPmytHiVajjwNAfYK4bWL4aylCOviCakvAICV1yU2v4UJY1auLgq/ilCrCxvvH6ozzStjEkzamAYC8ga6RDBBONlsIrdARx/POgxW7W8gL73JsTlM+cPBqQPBhN3FYQrVUxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769150030; c=relaxed/relaxed;
-	bh=hnUiivgV1GJFcmOh4pDO9k/tTrjNiMK55wQcL+7/7RA=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=SgOC5U2qRpE2HoAtxTIkTmayt5u7Ijx5fdytApbaaXUvVfgzT62pDKaQNzlD4yOscsiHb6wtx8kWKrCwawM38Ze+ts3tlUCK9uvs9A6ioHSnhsEm6g70eEQjdj12zUkljmXd//P+zBGutncByr2yRlz1TQXv3cZgNzjJuSGdCd37OkFSGhf5sxsq/RxyHv2ZEYVHyp1QyUa5tMIOtaZt/Cg8xeJ1cLFLwKnwjjYUGVS/iIzrJZNVI7hGN5UMto1N/Pf+pdFfmvw9NISJKgSppaDk8dmTnqaYroDNLdmchcgvBytbGvAyJvum3QyKaG0eVYKhqW3RNe+xxKTcWwq4yw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=W5vjeQei; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=W5vjeQei;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1769160406; c=relaxed/relaxed;
+	bh=LXDjO0Zits+baQGNf4iaD7rt+XiqyDuXVlNSdn+765A=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=DcTqq36qkOSEsxU6XksEf3Ch7kNo8eB1lpZzB6TIaLW8WyoPCL/poZmWRcdqVja8G5pCVAlGYQQXKirsPUEpvfXnCFyX4B1SuGDz/AKbWPtINDor7pSpuZoHI7Wf7nxyCswqeaGVD8ViowqfpQr5mwEtBfpH8+wiHGzBJeOTR9lTjbOHS0QlXfutEJBXSp1gD8ZgxYJalWcGYs8datV92FiY8gnNmGTrP6YM/bBzSqj5N42EQdPSLjMcVZ6o1fEsyZZ0D2KxAyh2TLf+yHg2pvGvI5nESXM+pRMJ46ezJ3PjQYQaz2CQ+yNB8UTGZ7mf4idkqy5jEFHvSpYoltdW1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dy7Rx6DKKz2x9M;
-	Fri, 23 Jan 2026 17:33:49 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1769150028;
-	bh=hnUiivgV1GJFcmOh4pDO9k/tTrjNiMK55wQcL+7/7RA=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=W5vjeQeiU0ULdPQtUv9eAf70pYeEokLhFo21iZX0KDC3rHz4fGY+DMK2en6l6RbxT
-	 ubNmsduQCSihVOdVHiTEzDdHb9QYkr88QX2j8Y0dsp5YmXJvKLQrl7WwnQw6bNn8fH
-	 PrRjnuRiUpgy2WQhq7RlsVHnjb5Gj6ve3pEsB2sL0WEcSghQ9ardd/1JuYPoy0Uy6S
-	 81exLyxBAYf1P9Cn3jDbAvZdUypm1nCqymrQniDwLrO25Aq1RzDdM/uDWuLsFnFk0G
-	 P5eHOOXOhs8PCx8JHKccE5MSTsY4jKxFAN9y+R3P8g30Ll0zT6R2KNaIH1tCe8NzlQ
-	 tGFau5QEV+LXg==
-Received: from [192.168.68.117] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 66DCE7C8E7;
-	Fri, 23 Jan 2026 14:33:44 +0800 (AWST)
-Message-ID: <459f84c56a5010910ecbf8b445c092674f060691.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v3 1/3] Add compatible strings for AST2700 pinctrl to
- the SCU binding.
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Billy Tsai <billy_tsai@aspeedtech.com>, Lee Jones <lee@kernel.org>, Rob
- Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
- Dooley	 <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Linus Walleij
-	 <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>
-Cc: Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, 
-	linux-gpio@vger.kernel.org, bmc-sw@aspeedtech.com
-Date: Fri, 23 Jan 2026 17:03:43 +1030
-In-Reply-To: <20260120-upstream_pinctrl-v3-1-868fbf8413b5@aspeedtech.com>
-References: <20260120-upstream_pinctrl-v3-0-868fbf8413b5@aspeedtech.com>
-	 <20260120-upstream_pinctrl-v3-1-868fbf8413b5@aspeedtech.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dyCHT2v3Zz2xKh
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 23 Jan 2026 20:26:44 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 23 Jan
+ 2026 17:26:26 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Fri, 23 Jan 2026 17:26:26 +0800
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Subject: [PATCH v2 0/6] Add Aspeed G7 sgpio support
+Date: Fri, 23 Jan 2026 17:26:25 +0800
+Message-ID: <20260123-upstream_sgpio-v2-0-69cfd1631400@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,124 +48,66 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAME+c2kC/13Myw6CMBCF4Vchs7amU+SiK9/DEFPLFGYBbVokG
+ tJ3t7B0+Z/kfBtECkwRbsUGgVaO7OYc6lSAGfU8kOA+NyipKlSqFG8fl0B6esbBsxON7FusTH3
+ ReIV88oEsfw7w0eUeOS4ufA9/xX3dqVoiNv/UikKKtpJkS2tfdSvvOnqifiEzno2boEsp/QB37
+ HVnsQAAAA==
+X-Change-ID: 20251223-upstream_sgpio-70d815c64a19
+To: Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>,
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+CC: <linux-gpio@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, "Andrew
+ Jeffery" <andrew@aj.id.au>, <devicetree@vger.kernel.org>,
+	<bmc-sw@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, "Krzysztof
+ Kozlowski" <krzysztof.kozlowski@oss.qualcomm.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1769160386; l=1733;
+ i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
+ bh=GhxpaNbciIaCWw72u2Iibpyx+V9XGyJ6u4X/43gCPWI=;
+ b=ha0IbVquhucHyhVDOj7Ik/OXkimaaMGrNIIgmEHWVcXtkMlFT8YWsrZpZun6A/6r2OrwYLp2p
+ +c/MUBgaX6/DJhz3EpuHv5ijNQ47OZCitYyPv5W1+HSOefr3kae3Oh6
+X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
+ pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
-On Tue, 2026-01-20 at 19:43 +0800, Billy Tsai wrote:
-> AST2700 consists of two interconnected SoC instances. Each SoC has
-> its own pinctrl register block, which needs to be described
-> independently in the device tree.
->=20
-> Introduce "aspeed,ast2700-soc0-pinctrl" for the SoC0 pinctrl, which
-> follows the same usage model as the existing AST2600 pinctrl.
->=20
-> The SoC1 pinctrl registers follow a regular and predictable layout,
-> which allows describing them using an existing generic pinctrl
-> binding without introducing a new SoC-specific compatible string.
->=20
-> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> ---
-> =C2=A0Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml | 1 +
-> =C2=A01 file changed, 1 insertion(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yam=
-l b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> index da1887d7a8fe..ff6cf8f63cbc 100644
-> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> @@ -87,6 +87,7 @@ patternProperties:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-- aspeed,ast2400-pinctrl
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-- aspeed,ast2500-pinctrl
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
-- aspeed,ast2600-pinctrl
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - asp=
-eed,ast2700-soc0-pinctrl
-> =C2=A0
-> =C2=A0=C2=A0=C2=A0=C2=A0 required:
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - compatible
+The Aspeed 7th generation SoC features two SGPIO master controllers: both
+with 256 serial inputs and outputs. The main difference from the previous
+generation is that the control logic has been updated to support
+per-pin control, allowing each pin to have its own 32-bit register for
+configuring value, interrupt type, and more.
+This patch serial also add low-level operations (llops) to abstract the
+register access for SGPIO registers making it easier to extend the driver
+to support different hardware register layouts.
 
-So, in addition to Krzysztof's concern about the patch subject, I think
-it's worth mulling over some further concerns that we might address
-with a clean break for the AST2700. Specifically, whether we can tidy
-up historical baggage by exploiting auxiliary bus[0] instead continuing
-to pretend the SCU is an simple-mfd.
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+Changes in v2:
+- Split the IRQ-related llops conversion into a separate patch to keep changes logically scoped.
+- Minimized unrelated changes (such as variable renaming) to reduce diff noise and ease review.
+- Clarified the llops design intent and semantics.
+- Link to v1: https://lore.kernel.org/r/20260117-upstream_sgpio-v1-0-850ef3ffb680@aspeedtech.com
 
-[0]: https://docs.kernel.org/driver-api/auxiliary_bus.html
+---
+Billy Tsai (6):
+      gpio: aspeed-sgpio: Change the macro to support deferred probe
+      gpio: aspeed-sgpio: Remove unused bank name field
+      gpio: aspeed-sgpio: Create llops to handle hardware access
+      gpio: aspeed-sgpio: Convert IRQ functions to use llops callbacks
+      dt-bindings: gpio: aspeed,sgpio: Support ast2700
+      gpio: aspeed-sgpio: Support G7 Aspeed sgpiom controller
 
-The original AST2400 SCU bindings were cooked up in darker times and
-have been a regular source of regret (same for the LPC bindings - we
-can consider them later). The use of simple-mfd unnecessarily invokes a
-bunch of machinery in the driver core to avoid explicit iteration of
-subnodes in the driver(s), and causes tension between the need to
-specify regs and the typically haphazard register layout of the SCUs.
+ .../devicetree/bindings/gpio/aspeed,sgpio.yaml     |   4 +-
+ drivers/gpio/gpio-aspeed-sgpio.c                   | 362 +++++++++++++--------
+ 2 files changed, 227 insertions(+), 139 deletions(-)
+---
+base-commit: 39d3389331abd712461f50249722f7ed9d815068
+change-id: 20251223-upstream_sgpio-70d815c64a19
 
-Related, this entry from "DOs and DON=E2=80=99Ts for designing and writing
-Devicetree bindings"[1] stands out:
+Best regards,
+-- 
+Billy Tsai <billy_tsai@aspeedtech.com>
 
- * DON=E2=80=99T create nodes just for the sake of instantiating drivers.
-   Multi-function devices only need child nodes when the child nodes
-   have their own DT resources. A single node can be multiple providers
-   (e.g. clocks and resets).
-
-[1]: https://docs.kernel.org/devicetree/bindings/writing-bindings.html#over=
-all-design
-
-We have a collection of all sorts of odd-ball bits of functionality,
-and all of it can largely be implied by the SCU compatible. Avoiding
-specifying things that are implied is also touched on by[2]:
-
- * DON=E2=80=99T add properties to avoid a specific compatible. DON=E2=80=
-=99T add
-   properties if they are implied by (deducible from) the compatible.
-
-[2]: https://docs.kernel.org/devicetree/bindings/writing-bindings.html#prop=
-erties
-
-So, can we use auxiliary bus instead, and avoid extending the regret in
-the devicetree?
-
-Well, the interesting news is that auxiliary bus is already on the way
-by way of the AST2700 clock and reset drivers[3].
-
-[3]: https://lore.kernel.org/all/20250917020539.3690324-1-ryan_chen@aspeedt=
-ech.com/
-
-A noteworthy observation is the auxiliary bus approach for pinctrl was
-already used by (at least) the mobileye eyeq5 platform:
-
-- Documentation/devicetree/bindings/soc/mobileye/mobileye,eyeq5-olb.yaml
-- arch/mips/boot/dts/mobileye/eyeq5.dtsi
-- arch/mips/boot/dts/mobileye/eyeq5-pins.dtsi
-- drivers/clk/clk-eyeq.c
-- drivers/pinctrl/pinctrl-eyeq5.c
-
-So, we're not inventing anything new here.
-
-Going down this path for pinctrl to fix the SCU situation will require
-some rework of what's already merged for the AST2700. However, we've
-not yet merged either a DTS or DTSI using the compatibles (and by
-extension, aren't using the AST2700 support from the drivers), so I
-hope that allows us to do a course-correction without too much
-collateral damage.
-
-A possible path forward is to:
-
- * Move AST2700 definitions out of mfd/aspeed,ast2x00-scu.yaml into one
-   of:
-    - soc/aspeed/aspeed,ast2700-scu.yaml: Follow the example of
-      mobileye,eyeq5-olb?
-    - arm/aspeed/aspeed,ast2700-scu.yaml: We already have e.g. the secure
-      boot controller documented under arm/aspeed
- * Retain compatible strings but require simple-mfd is not specified
- * Rework AST2700 support introduced in:
-    - drivers/irqchip/irq-aspeed-scu-ic.c
-    - drivers/soc/aspeed/aspeed-socinfo.c
-
-This is my preference, at least for the moment. The change to make the
-SoC0 pinctrl driver compatible with auxiliary bus shouldn't take much
-overall. Unwinding the binding situation is a little more involved, but
-not too much. I think it just needs consensus on the direction from the
-devicetree maintainers.
-
-Andrew
 
