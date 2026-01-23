@@ -1,78 +1,66 @@
-Return-Path: <linux-aspeed+bounces-3419-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3420-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37684C44500
-	for <linux-aspeed@archiver.kernel.org>; Thu, 22 Jan 2026 08:40:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89481D6CFDC
+	for <linux-aspeed@archiver.kernel.org>; Fri, 23 Jan 2026 06:33:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dxZJN5LkLz2yFm;
-	Thu, 22 Jan 2026 19:40:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769071220;
-	cv=none; b=nfXjK6mIUiqx0wKjx7g7qS64HrSbvxuc9M0o7fAjguDrXP0D7LBoM+13oiQYUTbp9ZbOcCGWv0TrgxdwSQ8f65s21bU3KQ4FuLbVr5mtf4zXa2K+jcotcOtH2z0hngPvZVRn1L4eMlbo6eK/wgLfJJUqge/tSro8u+JmGnSA8Y7ekqawRyd1zThEpRyDTh6TxfVC5hbMQAOf9scCxFOmA99GeNEV2EFptrzmi/Of2y6IQxADbTRjQE80cPNNtuOMx9hiT/QpKrD79ReXHfXPvbFLsh2wnmMNDeD8IXpdIAQWnX3Dq9zCBkjs6WCY6Qvjde7Zv8s+SLtSiodxaMvq/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dy7Rz0cTXz2xJ5;
+	Fri, 23 Jan 2026 17:33:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769150030;
+	cv=none; b=ccKhy5wWXNmxRqmgW4Rn4All1LocmTlpP1cbC2XrRHfxCZONEcBWmVQxiRLD+JzKxyuPvNzNiNWeYAMfTHYp0euX58O3fRK0fjANvccQ0J3rLqPD0iMX38ImMOJvsWeAld3e5Py5IX+T9gYLZiaivASJgDyjqr6Hb5bZb1sLLaBu87Td9DmxETxVDVJ+sSwF9Bz+AcXWY9Hy68ZoBP0pDlCTIMBaC4vcOGDfJhVmj2D+WENu5EKpmFhob1OCeqLvHDi9SC6FLhKKfaMhlnL+bwOeDN3M1NNg9/o5+Z3JnBzN84eQYduJZzZGiT5HBQ+CnGX8spdjLs9AEZbXIfcOUw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769071220; c=relaxed/relaxed;
-	bh=hpMnG7yo/s/EPaRILMIXawP8xxRqeEWUw6ffTIMdA+E=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=ZRMR4e29lgimCJFG3KGmj9eT6qH3nh5L07p6pJT9gk5UlWpQGBLCmB2/su9uoROEfylgrdLpRXFLd7wisdqPyRWVdXEAkW5Dye3f/wCq4RBy0a61WcKkbbPthLVn42x9EHCHCGRbnnFWcretiEX8pYuWasFilIvEa6cVC71hee0rWRX+gm8yvh2rYKYER+E6Sqlhl03gP30ZaNc/xdg3yBKArplMWeafTwTm28OguQdlkkVQLwEVev+hJ39/D0oypj4jl5qy5HtsvVgK5oKLe7wy333EjUD3sBUmS+xU/ksSf6771Kb7U3TH3PvppvVpx/YfnG3XVYwj+ksTK2a33Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=A4WnzsDi; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1769150030; c=relaxed/relaxed;
+	bh=hnUiivgV1GJFcmOh4pDO9k/tTrjNiMK55wQcL+7/7RA=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=SgOC5U2qRpE2HoAtxTIkTmayt5u7Ijx5fdytApbaaXUvVfgzT62pDKaQNzlD4yOscsiHb6wtx8kWKrCwawM38Ze+ts3tlUCK9uvs9A6ioHSnhsEm6g70eEQjdj12zUkljmXd//P+zBGutncByr2yRlz1TQXv3cZgNzjJuSGdCd37OkFSGhf5sxsq/RxyHv2ZEYVHyp1QyUa5tMIOtaZt/Cg8xeJ1cLFLwKnwjjYUGVS/iIzrJZNVI7hGN5UMto1N/Pf+pdFfmvw9NISJKgSppaDk8dmTnqaYroDNLdmchcgvBytbGvAyJvum3QyKaG0eVYKhqW3RNe+xxKTcWwq4yw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=W5vjeQei; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=A4WnzsDi;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=W5vjeQei;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dxZJM2yH5z2xS5
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 22 Jan 2026 19:40:18 +1100 (AEDT)
-Received: by mail-pl1-x62a.google.com with SMTP id d9443c01a7336-2a09757004cso6571545ad.3
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 22 Jan 2026 00:40:18 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dy7Rx6DKKz2x9M;
+	Fri, 23 Jan 2026 17:33:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769071215; x=1769676015; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=hpMnG7yo/s/EPaRILMIXawP8xxRqeEWUw6ffTIMdA+E=;
-        b=A4WnzsDiQnNoB107i72CQ+nezFNoClZESS28gOVSoXqtCagLQcci1abW0J7TvlgxFi
-         RYUthWWnVzFir+aERxggKdjbkGmrVbZcl7ZT99YqqqfeFJELxFcnCxemRrle835OwCqr
-         WrWwn5M42WMuuJfprMp9kjTp7dhg8AhwcYynfV8uKCtuTf55hx+Mvzpv7N+icqYP8z1L
-         NexikkargduRwUJdJ+uB43t2hwm3EAoHkpqvJ+uQ5PgeA7y4x9a5lD7Je2tuwF8j/Rpt
-         U28AVd21BD8i+z7gv4f8eIvUViSuUQm6/hmOfgonpNtGGMRItxU67rDAdUEq7Dq8kMpz
-         cgIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769071215; x=1769676015;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hpMnG7yo/s/EPaRILMIXawP8xxRqeEWUw6ffTIMdA+E=;
-        b=hdJEkF8RTmbcBFJmP/pDxeol1afHgT/+bLtqkEaP6KCC7e0e/CyaGK0X+2v0cLgvjV
-         PPv0CAKLxKgKSr+tuXorQKGA18CKE/V5xV79ppNulPdJvIjie1tIvsUQjX962ljGg9xN
-         0YyyNZFNR6ZSr6mWWCyNDpveEkNgxRWJDELutvakEetpglQyYSHXeFNbRDXYxuRFHs/g
-         Ex1FryDrlLWtCObXFSIbUXb5Chj1ZhRoHwzXekfWXJzjDeqkd+IqC3IB5LqoTOHUw6Mp
-         AsS91V09Az8BLEkuKxTYiWoK3WdufFXpNH2hty2PGdnOgD2/7FCns13okLG3CjPJscW/
-         T+PQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWXxBn76Sod39MSZmZ8Ke/yfZnrgIAPTy5nr7j+W6eNYthXBn644l7AOSd3qgyW2ac27SgfolGhXY7Y3Bw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx+83dmATBtcp8/mtB/0QDnXlWml86cqkAEpRm6ixoxLyBozlz8
-	qLNFoj6Wvqs6+N+s8ZkzGq/bpbwLQvV6A6HNxdhzSEkK6Opj+fecCocj
-X-Gm-Gg: AZuq6aKxJSek0sUGOtUIZJ0pqXzoA/6zza5kk9cIPa4qf0ROlPfKW6miG8x+NuBvvFA
-	nHgQPEFM/5s6wLvkTH1kxkelT35Dt/7wOP6Z7Ybq5zwXXaD9PZ4I68TLaxvgJ2jhmePmyz9JOsz
-	ahkQEvmfN1eZawF/GHj7vnnHe7m9aAh3ZKu2iQBGYfRPitxbpBhm8WRlS53cQS4vBdoe7mHpgFF
-	Lq6iVS81eQRHiFrMj8UgSFQmsvdenAxLD3Aj0RYRmzfPDM6FHVXpNliJPiN4TggtOsnCXm+Od7a
-	OsfH+5o1wZRUyMj2sz8WQHGOuDPweqL0YHyIl3eo0frCSIYVg09pLetLEjKbBlBdgucvHo/x7Ee
-	0Md1mySOK5wE2O/6ZdjHTQOyt2F/jmLbI20xx1bV7V05g75GD7tPeAziGisjzLDi2Wn9uhMvTit
-	j42dWaTfPPcUY/K591cZOMUDa3C2YszKRMYqexCkY9gGSBDX5V5eq7H1G4a8/KHRY=
-X-Received: by 2002:a17:903:2b04:b0:2a0:c1fc:3de5 with SMTP id d9443c01a7336-2a7176c5798mr159612595ad.51.1769071215454;
-        Thu, 22 Jan 2026 00:40:15 -0800 (PST)
-Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a7b03945c7sm38423085ad.102.2026.01.22.00.40.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 22 Jan 2026 00:40:15 -0800 (PST)
-From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Thu, 22 Jan 2026 16:37:56 +0800
-Subject: [PATCH] soc: aspeed: soninfo: mask table entries for accurate SoC
- ID matching
+	d=codeconstruct.com.au; s=2022a; t=1769150028;
+	bh=hnUiivgV1GJFcmOh4pDO9k/tTrjNiMK55wQcL+7/7RA=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=W5vjeQeiU0ULdPQtUv9eAf70pYeEokLhFo21iZX0KDC3rHz4fGY+DMK2en6l6RbxT
+	 ubNmsduQCSihVOdVHiTEzDdHb9QYkr88QX2j8Y0dsp5YmXJvKLQrl7WwnQw6bNn8fH
+	 PrRjnuRiUpgy2WQhq7RlsVHnjb5Gj6ve3pEsB2sL0WEcSghQ9ardd/1JuYPoy0Uy6S
+	 81exLyxBAYf1P9Cn3jDbAvZdUypm1nCqymrQniDwLrO25Aq1RzDdM/uDWuLsFnFk0G
+	 P5eHOOXOhs8PCx8JHKccE5MSTsY4jKxFAN9y+R3P8g30Ll0zT6R2KNaIH1tCe8NzlQ
+	 tGFau5QEV+LXg==
+Received: from [192.168.68.117] (unknown [180.150.112.60])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 66DCE7C8E7;
+	Fri, 23 Jan 2026 14:33:44 +0800 (AWST)
+Message-ID: <459f84c56a5010910ecbf8b445c092674f060691.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 1/3] Add compatible strings for AST2700 pinctrl to
+ the SCU binding.
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Billy Tsai <billy_tsai@aspeedtech.com>, Lee Jones <lee@kernel.org>, Rob
+ Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor
+ Dooley	 <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Linus Walleij
+	 <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>
+Cc: Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	linux-gpio@vger.kernel.org, bmc-sw@aspeedtech.com
+Date: Fri, 23 Jan 2026 17:03:43 +1030
+In-Reply-To: <20260120-upstream_pinctrl-v3-1-868fbf8413b5@aspeedtech.com>
+References: <20260120-upstream_pinctrl-v3-0-868fbf8413b5@aspeedtech.com>
+	 <20260120-upstream_pinctrl-v3-1-868fbf8413b5@aspeedtech.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,62 +74,124 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260122-soc_aspeed_name_fix-v1-1-33a847f2581c@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAOThcWkC/x2MQQqAIBAAvyJ7TsglIvpKhCy61R4ycSEC6e9Jx
- xmYqaBchBVmU6HwLSpXauA6A+GgtLOV2Biwx7F3iFav4Ekzc/SJTvabPJbGIWxEGKchQCtz4ab
- /67K+7wevLlqeZQAAAA==
-To: Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Patrick Williams <patrick@stwcx.xyz>, 
- Cosmo Chou <cosmo.chou@quantatw.com>, Potin Lai <potin.lai@quantatw.com>, 
- Potin Lai <potin.lai.pt@gmail.com>
-X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1769071213; l=1296;
- i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=NcA+4V/eKoD7laEnrtITGzEvL6h6C7wMkK//E+tf3IU=;
- b=rLkSU4ZR7LLrHUbxt3uEiBVvpobZHIDelmOZTOc6BulV862CLv2zf2tyIwEKQpsl0CCu7vUkh
- pdED0LZMfZGCPrqpPmWs9sJdqSz+cplTG8ilFHqfaN5x1F2PlHwB6nJ
-X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
- pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-The siliconid_to_name function currently masks the input silicon ID with
-0xff00ffff, but compares it against unmasked table entries. This causes
-matching to fail if the table entries contain non-zero values in the
-bits covered by the mask (bits 16-23).
+On Tue, 2026-01-20 at 19:43 +0800, Billy Tsai wrote:
+> AST2700 consists of two interconnected SoC instances. Each SoC has
+> its own pinctrl register block, which needs to be described
+> independently in the device tree.
+>=20
+> Introduce "aspeed,ast2700-soc0-pinctrl" for the SoC0 pinctrl, which
+> follows the same usage model as the existing AST2600 pinctrl.
+>=20
+> The SoC1 pinctrl registers follow a regular and predictable layout,
+> which allows describing them using an existing generic pinctrl
+> binding without introducing a new SoC-specific compatible string.
+>=20
+> Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> ---
+> =C2=A0Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml | 1 +
+> =C2=A01 file changed, 1 insertion(+)
+>=20
+> diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yam=
+l b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> index da1887d7a8fe..ff6cf8f63cbc 100644
+> --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
+> @@ -87,6 +87,7 @@ patternProperties:
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+- aspeed,ast2400-pinctrl
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+- aspeed,ast2500-pinctrl
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+- aspeed,ast2600-pinctrl
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - asp=
+eed,ast2700-soc0-pinctrl
+> =C2=A0
+> =C2=A0=C2=A0=C2=A0=C2=A0 required:
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - compatible
 
-Update the logic to apply the 0xff00ffff mask to the table entries
-during comparison. This ensures that only the relevant model and
-revision bits are considered, providing a consistent match across
-different manufacturing batches.
+So, in addition to Krzysztof's concern about the patch subject, I think
+it's worth mulling over some further concerns that we might address
+with a clean break for the AST2700. Specifically, whether we can tidy
+up historical baggage by exploiting auxiliary bus[0] instead continuing
+to pretend the SCU is an simple-mfd.
 
-Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
----
- drivers/soc/aspeed/aspeed-socinfo.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[0]: https://docs.kernel.org/driver-api/auxiliary_bus.html
 
-diff --git a/drivers/soc/aspeed/aspeed-socinfo.c b/drivers/soc/aspeed/aspeed-socinfo.c
-index 67e9ac3d08ec..a90b100f4d10 100644
---- a/drivers/soc/aspeed/aspeed-socinfo.c
-+++ b/drivers/soc/aspeed/aspeed-socinfo.c
-@@ -39,7 +39,7 @@ static const char *siliconid_to_name(u32 siliconid)
- 	unsigned int i;
- 
- 	for (i = 0 ; i < ARRAY_SIZE(rev_table) ; ++i) {
--		if (rev_table[i].id == id)
-+		if ((rev_table[i].id & 0xff00ffff) == id)
- 			return rev_table[i].name;
- 	}
- 
+The original AST2400 SCU bindings were cooked up in darker times and
+have been a regular source of regret (same for the LPC bindings - we
+can consider them later). The use of simple-mfd unnecessarily invokes a
+bunch of machinery in the driver core to avoid explicit iteration of
+subnodes in the driver(s), and causes tension between the need to
+specify regs and the typically haphazard register layout of the SCUs.
 
----
-base-commit: 24d479d26b25bce5faea3ddd9fa8f3a6c3129ea7
-change-id: 20260122-soc_aspeed_name_fix-a64cfaa2d84c
+Related, this entry from "DOs and DON=E2=80=99Ts for designing and writing
+Devicetree bindings"[1] stands out:
 
-Best regards,
--- 
-Potin Lai <potin.lai.pt@gmail.com>
+ * DON=E2=80=99T create nodes just for the sake of instantiating drivers.
+   Multi-function devices only need child nodes when the child nodes
+   have their own DT resources. A single node can be multiple providers
+   (e.g. clocks and resets).
 
+[1]: https://docs.kernel.org/devicetree/bindings/writing-bindings.html#over=
+all-design
+
+We have a collection of all sorts of odd-ball bits of functionality,
+and all of it can largely be implied by the SCU compatible. Avoiding
+specifying things that are implied is also touched on by[2]:
+
+ * DON=E2=80=99T add properties to avoid a specific compatible. DON=E2=80=
+=99T add
+   properties if they are implied by (deducible from) the compatible.
+
+[2]: https://docs.kernel.org/devicetree/bindings/writing-bindings.html#prop=
+erties
+
+So, can we use auxiliary bus instead, and avoid extending the regret in
+the devicetree?
+
+Well, the interesting news is that auxiliary bus is already on the way
+by way of the AST2700 clock and reset drivers[3].
+
+[3]: https://lore.kernel.org/all/20250917020539.3690324-1-ryan_chen@aspeedt=
+ech.com/
+
+A noteworthy observation is the auxiliary bus approach for pinctrl was
+already used by (at least) the mobileye eyeq5 platform:
+
+- Documentation/devicetree/bindings/soc/mobileye/mobileye,eyeq5-olb.yaml
+- arch/mips/boot/dts/mobileye/eyeq5.dtsi
+- arch/mips/boot/dts/mobileye/eyeq5-pins.dtsi
+- drivers/clk/clk-eyeq.c
+- drivers/pinctrl/pinctrl-eyeq5.c
+
+So, we're not inventing anything new here.
+
+Going down this path for pinctrl to fix the SCU situation will require
+some rework of what's already merged for the AST2700. However, we've
+not yet merged either a DTS or DTSI using the compatibles (and by
+extension, aren't using the AST2700 support from the drivers), so I
+hope that allows us to do a course-correction without too much
+collateral damage.
+
+A possible path forward is to:
+
+ * Move AST2700 definitions out of mfd/aspeed,ast2x00-scu.yaml into one
+   of:
+    - soc/aspeed/aspeed,ast2700-scu.yaml: Follow the example of
+      mobileye,eyeq5-olb?
+    - arm/aspeed/aspeed,ast2700-scu.yaml: We already have e.g. the secure
+      boot controller documented under arm/aspeed
+ * Retain compatible strings but require simple-mfd is not specified
+ * Rework AST2700 support introduced in:
+    - drivers/irqchip/irq-aspeed-scu-ic.c
+    - drivers/soc/aspeed/aspeed-socinfo.c
+
+This is my preference, at least for the moment. The change to make the
+SoC0 pinctrl driver compatible with auxiliary bus shouldn't take much
+overall. Unwinding the binding situation is a little more involved, but
+not too much. I think it just needs consensus on the direction from the
+devicetree maintainers.
+
+Andrew
 
