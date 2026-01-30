@@ -1,82 +1,82 @@
-Return-Path: <linux-aspeed+bounces-3450-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3451-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 403ABE65298
-	for <linux-aspeed@archiver.kernel.org>; Sun,  1 Feb 2026 22:41:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A469ED172AB
+	for <linux-aspeed@archiver.kernel.org>; Sun,  1 Feb 2026 22:41:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f44V570sDz309S;
-	Mon, 02 Feb 2026 09:41:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::441"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769761239;
-	cv=none; b=Yb/QcHlvqei6Asa5l+Q08chydBaGueXA3755oaZhVd3x1pV9fK+MxZ5kEj3Gqbu8AQlpgsO2TkbJBckTzd2mr44Skeqsb86hxy7pS0EGi2h4PKDGLwlMwvReB9IhbQ7z1CspEsDriBaRSkT/ExzLOnaZ/gNZWr/6tyCt5EqHfD9gCAqcx57asb/W7Uzz84yqalzf4N0J6vJyOdwjYpwvpM5egRMT788hADzI4oLX96YE0wR4Zemxq7UmYR3OQ6LDVfbJ5sy4QzHZtUDwxvvwx1u4dRh7qAHg/xFW1vX3EbuxYKmcszldIYE64M3ozWc+y2p+eGWZLYOkfUGZv9p6dw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f44V65Qydz30FP;
+	Mon, 02 Feb 2026 09:41:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1769761233;
+	cv=none; b=hZ6cEg7BE/GDOEUycZxhQs8gD4lMzW7HNqnQJkYBvndobGZk8CM7eSWw/dxORn2sQ7Bngo2HY+Ep5nhQYsYrzUETOs4AQumnjO8bmkTfPrXdNlKxrDnn2Cl/BPO5RR3z8+Vf72Dv33VvWS+VDuzuf9KuNSsK36N34w0B0Wwjv6G6F61YG4QWlxuMk6hSeMoOakFtFgY3weR0nexY+T2Q9SpZZwSYCIgHyMmyyVsPI/xCRlthHPmGH+y+Co1ApWziPrCHDCWIOQWMqm4lbSCIL2BT12HrksSCo1n5rFT2F7ShB1E5U9uSpL950c/qiBUbwUHrPlxL2KpdRJqmxOmbWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1769761239; c=relaxed/relaxed;
-	bh=Xti7XG40UH6O6PxwKMMYsKnB+u1Uo2o6K+zvBRm+Q+0=;
+	t=1769761233; c=relaxed/relaxed;
+	bh=ajY33JbgcBo2+n4qVxxMLBcw2crou+yf+Z7Z73b2liI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=X6TMkksed3lKcmqeTTW1XlLA86t8R9/ZlRQ+WOekRFNzqS8adJTGQzFGZqcGF6UAVQnmMsilaRbpXSSR6rLfbaIVVaEfRA/qwPao004/B94c9pK9fuh/Iing0JTvWQiq9YGE/KtZD90qQlG1vICafTE+vfHrTN1vu+GPmAG0P4YBep+GqATEbJVbAWaqVrxy5fNrtTUYWZxSZM7fQkoxpQ9wN3BoqeTjR8pB4qjxIrv8Z/9y3G28YslYpSg0YliBc+yrqqxQKF/vCIFPQ3o1YNomyEdYCBZbUHU1+5v2x7us54O9eLZlafCkOnzSi/0IfPbpapXEwhcml+1uL2zVdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Hb6hQAZb; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=k3QiaoTHDTI19tA/Q6OFbCgJUIFaJwaIh9LDAtgYT2YbPf7Uh08QHOZ0cHQxjx2bQlegdddARBYKajmTtLNvJNB5C0Rn6JBzHls2ZfSlUJmqeFTh2c/GYbOtNm7zmBnq716hokYF47K/oO+/U2yY3Z++GqIS8zCHGosg1aqNtMHOG9VPO3Q+lunU7kl0FrytqJX3JAXbg4DEQutoiRZ2QoUMZFUCvBksi/cYOBxUWtC6kAx7WR2OEijgyI7tA03QsQ1pAgnJ/QbXIJTmyPwE38EJuLeILng1JTyowO/rgfhNZkZAsz10rROHrZaEYsFfQ9JQcdQ3flfNF467v/STOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DFxhiD7X; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Hb6hQAZb;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=DFxhiD7X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2TTy54QGz2xjP
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Jan 2026 19:20:38 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id d2e1a72fcca58-81e8b1bdf0cso1153954b3a.3
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Jan 2026 00:20:38 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f2TTr2r00z2xjP
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Jan 2026 19:20:32 +1100 (AEDT)
+Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2a7a9b8ed69so17850195ad.2
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 30 Jan 2026 00:20:32 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1769761237; x=1770366037; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1769761230; x=1770366030; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=Xti7XG40UH6O6PxwKMMYsKnB+u1Uo2o6K+zvBRm+Q+0=;
-        b=Hb6hQAZb24HyN0LldGgVB9GJsiPpH+cY4vde7C8u1bVl1mQx2/l7iMsqdQZcikH8uU
-         OVsKlKmfuumyzT0JdalOWAQbkD3ppIIc3gxW4BnHRJDsej5BIp5WBbt5si2kHMp8BZFo
-         CiIShmhFzBKFpCLXlrIpu5FnobUnF/prVH/DGikcY56i8YB9nXRkWbEsRUI+2A4GxNfR
-         5/2XGPa7iC+TX5atuTbZ/Jsl0FyqDe4C5mDz9y1OU+Wi/sLdN8W7IFqq4MITL0InuF40
-         S7WcekD9ytdsiWm1o/W6j9lqhqkems6kA7+1E6b3bSnLljOXD/uMgdD7uAZSDvwtC96B
-         FUlw==
+        bh=ajY33JbgcBo2+n4qVxxMLBcw2crou+yf+Z7Z73b2liI=;
+        b=DFxhiD7Xs3d/qOBwayZdb+ylHPLH5m1CBHljA8dJ1Z744sSr6rmFVHE8KARFCi+D7F
+         pII7o6tnXWgzVDvDXvRiPqZR2Mcz0fd9jlliIVtZ6Gr5Miv6Z7JUUBJ4TnrWNmTDjAUJ
+         6y6BkvmcfQjdHsN5e8rknOjLbrwDR5xsZo7TYTdQWpZ6kfwoYe8cbTNpn3RTG+P88UOn
+         /du2JP0BsutW3x7fILhTGmkWWlpo24XguWWmIKQh/1IfDanWDqe1Tn7oiQXEbuEi0FW6
+         pFOUHzZiEeeco/GsRfdVhMB9ok9uyo61vaPHnnH6K4XXPbAIWzg4m+ldN+PejXxZ9Cne
+         W+IA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1769761237; x=1770366037;
+        d=1e100.net; s=20230601; t=1769761230; x=1770366030;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=Xti7XG40UH6O6PxwKMMYsKnB+u1Uo2o6K+zvBRm+Q+0=;
-        b=mOe6lloYZyg+Men7pthMAkXQ6Xem9QlpbmEx7iCQKTvNo7lNihFfgljTgTSLPsnzvE
-         m74CX/oxVmVsnFqlHHXLwe51qAg9fcMc9oYgQpF1WLRa8u+bjYtTATh13ZUTjC07K4c1
-         paqXMRQ2g/j+wZFZ1kxNAwo/PNioJwpIiWuGbr/TOcyh/McaDfaxEFbhNauui760jxNk
-         u4hhiWaJN+lynN223/ays3kWHVVYRM4bP0nuGEkJsS0DigIWAshuR+/Qx9eGPNiH91Af
-         Dgc4AEKWnaOlTndGEKaEvdOqvpMZxa4e30q1Dsq0o1raMwm38FBDSH5+YxeEqgsr6rca
-         bd3Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVcz7zghHmfgoQT4oVuUnrjtehX85QieegK6cXKD+5Ms0NwuuNR4ATax33r/PgM8Q5meSWSQmOynVnCkBQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YywtY9HQTJ26MV6M6l9cVyqv6pPkIINnDPc2drkwTMjfeqBkY3M
-	3NPtBFD8xcTnC7QqG+AFXe2EEwZ13ITH5FrX1ZFHjs7tUGomeDTwNcHa
-X-Gm-Gg: AZuq6aLu4LHfZXb61Qu40mahCIStXBhuCB9eEi+9Af2Xgg127z8uzEvgF6wPpFfaJpe
-	JFy+RjxDDUyt6jJFWJhugn+r+lOOV0jpIksF0t77WEL8pegrxd2Nsw5FmlIGxCa21nnpA2VpD7J
-	1FTvdBfKsF5VYxU7fv/U/OFBC6MrdsKgv+RKmSSpF7BSMhjxvTO9oPNRjvWYhbMA+ogmPQAg5Fv
-	Cc6S/8sOVuiQx6bP14ekbeT5yB/xm2ytyUQCz2iHbOmYwigEqwlMQjWikNIpVZeKpYW94gOeFaQ
-	YCKJU3PqQ9xM8WIx28f70cEsk2a3lbs81QdEhHYfJHFjjcJRjA3Gh9Ed6llXy1xQtrlVXi4gk5p
-	SndVGERHk0dqaiqRCOeyIl63PJDHqgqeLTMXpCnj2GttgI+PK2F5s1g5f2CTzmQ0dCIT2w0A9H0
-	Nk36wYqYe7uTp7kw3Dh3ByTY+B6h4BK69FV7p/h8TmakfskuSPI3y+tZ22la15OqQypLFraWWWN
-	0jLi3n0vvBLfkjjCMNuEt+VrHSNbro7TMFCAeUpiPRGQpvs6w+6UU70TyjB+sf7h/yVbQvSlfsv
-	aPA8xptQvssd
-X-Received: by 2002:a05:6a00:8015:b0:823:1570:1e81 with SMTP id d2e1a72fcca58-823aa931c1fmr2112930b3a.53.1769761236703;
-        Fri, 30 Jan 2026 00:20:36 -0800 (PST)
+        bh=ajY33JbgcBo2+n4qVxxMLBcw2crou+yf+Z7Z73b2liI=;
+        b=Mgt1MWz+GrGQSEY31qG7Q86f8/fwmjmpUwvgHoqKw31yIF7Ilc2sUSxJ1nvdXn4c5I
+         goMaXWGptMz/G03hK+qh8WhX8OTFX4iSR5k7Y9SvDoOVA7fBqSnqDcbHM/BiFFNe2Umj
+         Ga/v/mDz7nrHg+3hivy2jbQTg4lj2+v+8MU5uor8X1tG6sCzb3QVMoGffKcxHWwpVnYf
+         jp7PM98ACVNAD/6o0OxFP+1uPKO6oCAskMkOG77bA1XznZOov6e1ecMB0Xu6/jknjzPo
+         NyUpCHoa6xzuYUvv8fMkZ9qZB5Kr5eiHIxZBcFeaqX6xBgL2HGzbgS/90r2E7rWYtq4t
+         ko1w==
+X-Forwarded-Encrypted: i=1; AJvYcCW9GbZHGsS9HQJBOgNvwigvlNO5ZRLtSp3cs1Bh1FJ0caY5PDPcWyacnb2Gllc3IQakMJFpYH5FeL+eLTY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxE8TyGY5OZRLyVknns/e1G6Jf5Uds8StZ3de+yNU27Q3UVeBB1
+	0L8OKtXDcJCuqf/hBe17j6hwhMN9znjkoMdfGpsQBc3wdK271Agioird
+X-Gm-Gg: AZuq6aIn66GkL5uqqtsukahAT2E/3EPaQb3CDzBAxc0olSv6J95uzl/warJv3VqRu1w
+	FzDnvjBqTZ4bkmyHF0s8eKkYkHy5t2UR1OvoOIUW89Ni83Sy/H73k97ihPpfI7HB/AFqdQhPpeI
+	dL7rHZ6K5wEHWqWgU2ZZ707czksUJKojQqkl/VPd0SLUyJ0piHZtTsIEPkKa7d14RXcdW/TaX/G
+	whk1vyqKdFCDZWYY8P9mI8SiA4BOAz42pyyWh8oTbmAdsA6pQXjYIJhMQDuXP5vqQUCWgzIWyqf
+	vAO1xx8CbUztOWndK7m2MR3w/nkjNyRQEPRk60Sy7FyYRbSQTvE/MPlnxp7tMaZRuDDznAypxVQ
+	siTJ/DgKM7IQY8dCI9xOLcv7AQbqXQYAj7D+ZiXog0821IfSCEmu7gr8b8LKWs5GH4YBo0/VD3I
+	Aoq491Qzzutxu50QNMKOefA1oyx7J1WhOEW78kyJG8Pfi5Uh4wrYDz1BAGTsm063h2SjV0HCwCV
+	GosTF2PLuEVXy7pjqOgV0dn5gb4zAqi0j9zldRn/sHPaH04nzezhy1Kzn/GtUmf3rd9btEmg3QH
+	2JcP3ZeSIpNA
+X-Received: by 2002:a17:903:1447:b0:2a1:5d2:2e45 with SMTP id d9443c01a7336-2a8d9a85d83mr22102745ad.59.1769761230333;
+        Fri, 30 Jan 2026 00:20:30 -0800 (PST)
 Received: from 2001-b400-e3e0-2a58-5bcf-a65d-c80e-2087.emome-ip6.hinet.net (2001-b400-e3e0-2a58-5bcf-a65d-c80e-2087.emome-ip6.hinet.net. [2001:b400:e3e0:2a58:5bcf:a65d:c80e:2087])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82379bfc712sm7866018b3a.40.2026.01.30.00.20.33
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82379bfc712sm7866018b3a.40.2026.01.30.00.20.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 30 Jan 2026 00:20:36 -0800 (PST)
+        Fri, 30 Jan 2026 00:20:30 -0800 (PST)
 From: Kevin Tung <kevin.tung.openbmc@gmail.com>
-Date: Fri, 30 Jan 2026 16:20:15 +0800
-Subject: [PATCH v4 7/7] ARM: dts: aspeed: yosemite5: Add debug card bypass
- GPIO
+Date: Fri, 30 Jan 2026 16:20:13 +0800
+Subject: [PATCH v4 5/7] ARM: dts: aspeed: yosemite5: Correct power monitor
+ shunt resistor
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -92,7 +92,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260130-yv5_revise_dts-v4-7-4d924455f3a7@gmail.com>
+Message-Id: <20260130-yv5_revise_dts-v4-5-4d924455f3a7@gmail.com>
 References: <20260130-yv5_revise_dts-v4-0-4d924455f3a7@gmail.com>
 In-Reply-To: <20260130-yv5_revise_dts-v4-0-4d924455f3a7@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -105,43 +105,86 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Jackson Liu <Jackson.Liu@quantatw.com>, 
  Kevin Tung <kevin.tung.openbmc@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1769761212; l=1580;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1769761212; l=2209;
  i=kevin.tung.openbmc@gmail.com; s=20250924; h=from:subject:message-id;
- bh=e4DAb0AqZOq3AWW4s/35NURRVqdT9q3pcfBbOpjvHRI=;
- b=yNNqOLbWXzjovfNGoeiqX69Gh4ImH0IhqpGS9SQJLT5J8mWHP8GLT7wzQeD3n0ODQnXvqfxFA
- zuNXkioHV+6B/q378yqFfgfHcbHvMvs1UeN6YOZWw4vWEQGt3bxi+b7
+ bh=xJ4jSm7ucaz8Rq11dl/v2sadnR+9Q4t/tqVDqA3oOEA=;
+ b=MPGZXI3K7EwDVf3iP1xdEiwNx8Gw/EdFZ5MD8WuQYvke+Oa98YGg0p8X/7fw9xuc6+aD3ukLf
+ Wz12IaCBA24DhksL6kj+wgOmVgfjrmA9401ODbKemoi7XzkIXnygNwP
 X-Developer-Key: i=kevin.tung.openbmc@gmail.com; a=ed25519;
  pk=PjAss0agA0hiuLfIBlA9j/qBmJaPCDP+jmQIUB6SE7g=
 
-On Yv5, the SCM CPLD bypass OCP debug card commands to the BMC.
-These commands share the same I2C bus used by the BMC to access the
-SCM CPLD for firmware updates, which can cause bus conflicts.
+The shunt resistor value defined in the DTS was incorrect and did not
+reflect the resistor value populated on the board. As a result, power
+and current readings derived from this value were inaccurate.
 
-To avoid this, the SCM CPLD provides a bypass control GPIO connected
-to GPIOO7. When asserted by the BMC, this GPIO isolates debug card
-commands and prevents conflicts during SCM CPLD access.
-
-Add the DEBUG_CARD_BYPASS GPIO to support this behavior.
+This change updates the DTS to use the correct shunt resistor value
+according to the hardware design, restoring accurate power and current
+measurements.
 
 Signed-off-by: Kevin Tung <kevin.tung.openbmc@gmail.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-index 48f864b52d1a22b12f8a39ba9703a90349ed930d..61e78d5e712ff45e1a0691979b9b36408404cd2d 100644
+index 84d3731b17f7c7c87338672bbcc859de2b89b722..524597a81365ef10cd03b67d35eeb88a965cbe0a 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-@@ -166,7 +166,8 @@ &gpio0 {
- 			"led-postcode-3","led-postcode-4","led-postcode-5",
- 			"led-postcode-6","led-postcode-7",
- 	/*O0-O7*/	"RUN_POWER_PG","PWR_BRAKE","CHASSIS_AC_LOSS","BSM_PRSNT_N",
--			"PSU_SMB_ALERT","FM_TPM_PRSNT_0_N","PSU_FW_UPDATING_N","",
-+			"PSU_SMB_ALERT","FM_TPM_PRSNT_0_N",
-+			"PSU_FW_UPDATING_N","DEBUG_CARD_BYPASS",
- 	/*P0-P7*/	"PWR_BTN_BMC_N","IPEX_CABLE_PRSNT","ID_RST_BTN_BMC_N",
- 			"RST_BMC_RSTBTN_OUT_N","BMC_PWR_LED","RUN_POWER_EN","SHDN_FORCE","",
- 	/*Q0-Q7*/	"IRQ_PCH_TPM_SPI_LV3_N","USB_OC0_REAR_N","UART_MUX_SEL",
+@@ -415,7 +415,7 @@ power-sensor@42 {
+ 	power-monitor@43 {
+ 		compatible = "lltc,ltc4287";
+ 		reg = <0x43>;
+-		shunt-resistor-micro-ohms = <250>;
++		shunt-resistor-micro-ohms = <100>;
+ 	};
+ 
+ 	power-sensor@44 {
+@@ -461,25 +461,25 @@ eeprom@57 {
+ 	power-monitor@58 {
+ 		compatible = "renesas,isl28022";
+ 		reg = <0x58>;
+-		shunt-resistor-micro-ohms = <1000>;
++		shunt-resistor-micro-ohms = <10000>;
+ 	};
+ 
+ 	power-monitor@59 {
+ 		compatible = "renesas,isl28022";
+ 		reg = <0x59>;
+-		shunt-resistor-micro-ohms = <1000>;
++		shunt-resistor-micro-ohms = <10000>;
+ 	};
+ 
+ 	power-monitor@5a {
+ 		compatible = "renesas,isl28022";
+ 		reg = <0x5a>;
+-		shunt-resistor-micro-ohms = <1000>;
++		shunt-resistor-micro-ohms = <10000>;
+ 	};
+ 
+ 	power-monitor@5b {
+ 		compatible = "renesas,isl28022";
+ 		reg = <0x5b>;
+-		shunt-resistor-micro-ohms = <1000>;
++		shunt-resistor-micro-ohms = <10000>;
+ 	};
+ 
+ 	psu@5c {
+@@ -723,13 +723,13 @@ gpio-expander@21 {
+ 	power-sensor@40 {
+ 		compatible = "ti,ina230";
+ 		reg = <0x40>;
+-		shunt-resistor = <2000>;
++		shunt-resistor = <1000>;
+ 	};
+ 
+ 	power-sensor@41 {
+ 		compatible = "ti,ina230";
+ 		reg = <0x41>;
+-		shunt-resistor = <2000>;
++		shunt-resistor = <1000>;
+ 	};
+ 
+ 	power-sensor@42 {
 
 -- 
 2.52.0
