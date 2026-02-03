@@ -1,80 +1,79 @@
-Return-Path: <linux-aspeed+bounces-3471-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3472-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C5C8E8306E
-	for <linux-aspeed@archiver.kernel.org>; Tue,  3 Feb 2026 09:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90679E83073
+	for <linux-aspeed@archiver.kernel.org>; Tue,  3 Feb 2026 09:50:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f4zJ55N7bz30M6;
-	Tue, 03 Feb 2026 20:50:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770112245;
-	cv=none; b=CvNBMSPd4Ee8HzUKpTi86H5cVA8isja8nPzMs1+7WyBGWxg1pt/5cVP86XuTiD2c5dpiVzF6MEcfy+k9NlFOle8/dyroSk/YHZuZZJAV1PU0aw2EEsgvl+n7YmaPJlk3p5JFDIQHirSb4RxHSFV3W6sMgCqv8Gr6XuwBhhfWHYnIu8OS43UWoWLKVpQxP6tvVpi9rWqZWQyNvPozsGBPqTN3GpRnVIxYhlYlTOUIetmt9RH3jKMKNKppE6xdtOOnfrTHUkRwNZW7X6+LS2YIz5Evkpf8YCrl0Z3RMNTxpsywQgAnppOw3BHItzCZUmn95/dllh2rnweVfx9IJZpX8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f4zJ86pjmz30MY;
+	Tue, 03 Feb 2026 20:50:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::534"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770112248;
+	cv=none; b=lS9AugPAtzDatccjTnUZkZKWMbffrWnprKE2oOW0Ol0hPwV4ruJfFWre17remRIKCBk8+Un7ue27gnhoiWfc0BYr1n8qiQO97QQDZt8ZCJlnksiTPIeYahW+xITlEmAJH2m7nND97vgNAJ+AIJQRw/QBfcT9tKgdatRQVUHFVg2kv21EHDgS4fvJv1TIjQiT+Y1qFo7xXoiOLFQsBChXVfoV8UE2Sv69fuVbMLkywHdcvP6ruG9k4NWme1S00s0xGM4BWJzXiwpfBNZPGSKzKMXgoMFIYCUI93km7ZFf0mUXG32rGeeb9HF2ejYvyw3eg7wsqQ52Ix6Yf/G9NgjqaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770112245; c=relaxed/relaxed;
-	bh=HE5glzw2S4WCKHAKIYJ8k8reipPAB965cTMWcHuh4wE=;
+	t=1770112248; c=relaxed/relaxed;
+	bh=1Yh+3ZR5JSz7a16w/q3BwxHacvTB8f4NyfsXjqmmx1c=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=d+MOzBSgv5BW5hob3zSZigQxS8G1yMykuSP3jFKbQmFg0a8wYl24LdY5MXRJkPvDKaDF01Ijr9mXFYacni2Op/XwcvUvH7GcZu6AD/yDDeEkYimbQYkVIA9cqD6jpGE7TheeYHd2qIauOKyns05ntiq3Za3Jk2NYav7yjgfnq9dfFD+J3A4CVJxmVDb4p6w6a+sDVOwKWsnnNiV9EZDRakWpk6KA4pxS9GeuAUVPBCe8ONzSVY9O9tkFNXRvLNq0SRhiLP2cusCqEbMUvtSjzq9Vj/GtOUUq6ScsxNBP2/i9WKfg2xWqXXeDQq94dwtjYYzyzTfY8zyu5Yih41fFhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dkzti1oa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=WAq4+MmRe34XqfjsYX7Bd1tfRghcq5WtGgsqgKm1Mjc74CGsMbmmJR/Ldn5+MRKBALA5EBn3g8Coz9AoNrwe2CcNo95tFsBrzdMJdoo4zMmZBm1VTkGJoJFZ3k1wvntQmXRRQSkBYA8xiK9rub4oBbzh1L9HnKNR2UIpevw9F+iREBcYzZgVkc7QcPfGfguPU57NcK1B8NSYa1b4560f6lRhzupjuNGPsC2lOUvTUSn0q6Nj5jAKow07iSgQVe4a8p0HCh4fu+EkfWelSuv3zXIkq5Mdc18KvApxFWuuTsKUkaGRZmgOO9+yS5yMZTdbYCB0e51LBvDY6QAeFsVUyw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=fRzezeF7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=dkzti1oa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=fRzezeF7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::534; helo=mail-pg1-x534.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x534.google.com (mail-pg1-x534.google.com [IPv6:2607:f8b0:4864:20::534])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4zJ46Z22z30GV
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 03 Feb 2026 20:50:44 +1100 (AEDT)
-Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-c46d68f2b4eso3355229a12.2
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 03 Feb 2026 01:50:44 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f4zJ76lHnz30GV
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 03 Feb 2026 20:50:47 +1100 (AEDT)
+Received: by mail-pg1-x534.google.com with SMTP id 41be03b00d2f7-c626bd75628so2010275a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 03 Feb 2026 01:50:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1770112243; x=1770717043; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1770112246; x=1770717046; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=HE5glzw2S4WCKHAKIYJ8k8reipPAB965cTMWcHuh4wE=;
-        b=dkzti1oaRxh7mh18KOMYBz0yWkBsH+UM/VWrKX5QIYl042TpIZL9dP62r+WHhNeu7Y
-         gdDrjcf+lLaohr4x58LvQ84ljyNzZ5ttyocO34DtJ/UAVRGQ6v5nfTeL5yV9msNxPO9n
-         LO4sSI9xG4WkVJWGITRFANGjIARTtLRFid1QCoiZYC1l8OrdFqlNftSSsZx70IgSH37z
-         7H1vgDiRjz9FLudGXcZcrFjWTh+JITS17Z7/w2ybz+dmag6dNuuu5Er+pcdAFn0dBU6B
-         +H6/xljSaJ/MUIesKiXoE4xZtoCcz5I+G3MoOs1pjAcAoqE1/n+yhrZuEMnFIjyR4BIj
-         maZg==
+        bh=1Yh+3ZR5JSz7a16w/q3BwxHacvTB8f4NyfsXjqmmx1c=;
+        b=fRzezeF7qgo/69AbKO2HvDElvRC7yg1/X7bq+XhTJObgoidLZ0u2j3I5YIMivkXIAD
+         dpd7UPNWoh48bGr6yXuvKYFF1VTW/mj1sT110cM7BbavpBJrILkCDtxr9RzYydlPfzBW
+         tySeCOqpK1J+eo7Q4rINhEWsouGfdCcFoQk611tBqcDjzLf4qhx3wuP6hcyjd+rwdnKS
+         HRfl8pFik9sNDT3mIvN+A9cSunoR3Diu7xsVrGItKj8eKoZooEwRQOJiqiezkSIFguSt
+         i4CPfNr14/CUq/AAzmYGS5C/RUzDF8gi9gXZALoDNnyrs+qWdqtCvyz2lhTMNjY7x9aa
+         7Mug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1770112243; x=1770717043;
+        d=1e100.net; s=20230601; t=1770112246; x=1770717046;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=HE5glzw2S4WCKHAKIYJ8k8reipPAB965cTMWcHuh4wE=;
-        b=Y3Y/Mx01p08QOhaRB/CBWtTTuvI1Sh8OZhhX7kZ419dOzRnB18OgZ7YnguouSPfrvO
-         21ERYAd5akS3rhLd/rYyiSRSQW8hpDwnFQKIZ3zXvNfww6acmBadUyWBtH6oeBx0RcAb
-         1Q8PKWewJvF4WK2ToJePS61EGqxIrVlhRuIfmqLDQXyRSncBvpIoGAeRYqOWqafBCm69
-         XZQ/VB5KddfK1kZvOYtKPAl4YM21TXgJ4ByV5Plvcs0gXHkFUfxS/ApB9UZKCkmBFmhK
-         CrzrpR4n/vHyxuv+DBk9bfVfFSWWZrOqNWYJgJLVYTU2g6bgkA1jq2Oelunlzy+3vLgU
-         gZ+g==
-X-Forwarded-Encrypted: i=1; AJvYcCWKXMsDTvQcHxcKcuEg5+oDS4VSWxvoc89X4TCqliCzS3vc/JIxJBK8we1pu4SDyWoUqnN/O49gcjlvnx4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyEdOvzzx9QIu/1XLmS3UBMVpnsMq4Yua0CWCN1iWcnL9XDNpfM
-	nWAFKC/q2rKWFvgkn3AsyQGX1L8qsZ8o8SsGRSBNBs26TlE2mXsTyuhs
-X-Gm-Gg: AZuq6aIiCsoLjz22jZlaudEbkwyuRIL7a5excwiNVsZOZtvtqZE7kfTJ2X5IaAllfY+
-	JbMVuc5fhk4HzEkmpo40C3HC58uL4bZLMpxXO+HD0cPKssiyp/6owm+MSdlL1h1AIIsapprWY8y
-	aJuPNBDjr+73WAtmETrNSw6K6KAhvBLUeGzApfK8wJTaUtSVXO/KiJmNEzfDvlBMjhU8gvZYjbH
-	qWcx3z+rt2EpzvIEFqlNuBC2/JoTifZRB5bSmtLYaptYoAep/MSoVyvCIrbhXH2YATkL0/Y1udm
-	Ff31usd5OqgdQN19Ildv/mPbMihwyeAsZHreC6JiaHrsRgy15H0m225a5QkWYMLXINhkv3AXzZS
-	ZBs64XWK6ZxqT/Ik4IXznxgZbD6/OSSvwwQDeNf24v0v83TEilX4ibS+TpMyK72ANVLnHmgNgOe
-	HzfOY/og2KtmdLBuFLNu5/o1CyDOinjG43lMaV6Qf0PO8ObZlUsnILP2qrqnyHmweg0nfecfDPA
-	Q==
-X-Received: by 2002:a05:6a21:7804:b0:393:8fc:5284 with SMTP id adf61e73a8af0-39308fc8453mr7414208637.70.1770112242816;
-        Tue, 03 Feb 2026 01:50:42 -0800 (PST)
+        bh=1Yh+3ZR5JSz7a16w/q3BwxHacvTB8f4NyfsXjqmmx1c=;
+        b=KqG6Imt9dCyAAOeAnX6qK+TmCvi1IepeWv/U3JPYilw8eLF4qteOTBQA5S2ltYzsxM
+         iF+iHhH3tBgyWa25yH9mykl4MoVzKYL4aUwgRx04WOZUk0Q88uGmLwDSyJLwZ1ZL95Ed
+         HkR5taOd8/+vOyTN3LdMgL/t7usHZ5cOnhnYTS9r2YZkb3EkGEUIcMO/xgS8JuYJ/0m/
+         Fadi6ZyvrVn6+pXjJ7AaHsKbRa91wgYWhzv8MzOPePKiKIOrvbNi1HPzlnMZeFdog3L3
+         3983OgsvuAOfkRv8wbOL5NFjfhWS2+J/CZSymdFSklu+xu/Q9abhLErA6pCWarLvDfpx
+         mpjg==
+X-Forwarded-Encrypted: i=1; AJvYcCU+8ccPz6SfDwe+Ylacf/2zGqzou72J+tulH3s+RU8ZYVmm/IUbRhF7q/rWMSaoPJYw9XC7Z6FnFGB+FhU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwhVvRSRsvUIT1YnddosDIpTRJYmZ/n0FsfzkSGA520CDzvaZKs
+	2ekrk7Y6k2NAmJ6Kf3GzdmerzP7vIP/DJpsY+55U9RR4PesX4GGjzfMq
+X-Gm-Gg: AZuq6aLXru8xqe1TLN7Rlt79s1oh7DqELwnoAvD+vnJIwQFGdgrOa4hKLrd0tua658S
+	z2JQdVIBRKdmYAQ98bQ2w9qm9d9SDDnDoVkcerWHtZdQ6P6mv5K7CgAHsCBu3lQpUKLE6hRKmU7
+	L2bAMYFM87vTH+Da0QrE8Fr+1HZa9z4ssbkdVSvGYnQFHV14C1ELJ389g55HGx+/bjLAwQT63xP
+	oY8Z4infjLqvQfu/O5SKWlDlKB3T7Wi4UUhU6REoLxMknAky9Gxn3aL+c5XuP20tjZYBOy7Fx+a
+	5o+eOfg4yQRjTk/EaGprawGrBROb1zkky3vs4a6pdUhvXBt9xiomJve44pVO6JlhMQHU9Ky1sbc
+	9TDG/hBPboRx4/tKmk3TbbgPqQadJvZh+tGLAKpH1faBJOr6M3nwH+uqaCmJIGcPabGJ0udVWvX
+	Xm+c5jG0n1qSWrhLsUOiyCqJ3fA24BTpPIaEwS78EyOx7lRVhSx/9eaIuGMOF5ExM=
+X-Received: by 2002:a05:6a21:3286:b0:38c:4371:23f8 with SMTP id adf61e73a8af0-392e014f157mr14080449637.67.1770112245669;
+        Tue, 03 Feb 2026 01:50:45 -0800 (PST)
 Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c642a336a1csm17535332a12.19.2026.02.03.01.50.40
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c642a336a1csm17535332a12.19.2026.02.03.01.50.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Feb 2026 01:50:42 -0800 (PST)
+        Tue, 03 Feb 2026 01:50:45 -0800 (PST)
 From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Tue, 03 Feb 2026 17:48:14 +0800
-Subject: [PATCH v2 1/2] dt-bindings: arm: aspeed: add Meta SanMiguel BMC
+Date: Tue, 03 Feb 2026 17:48:15 +0800
+Subject: [PATCH v2 2/2] ARM: dts: aspeed: add Meta SanMiguel BMC
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,7 +89,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260203-sanmiguel_init_dts-v2-1-6a5682c32b38@gmail.com>
+Message-Id: <20260203-sanmiguel_init_dts-v2-2-6a5682c32b38@gmail.com>
 References: <20260203-sanmiguel_init_dts-v2-0-6a5682c32b38@gmail.com>
 In-Reply-To: <20260203-sanmiguel_init_dts-v2-0-6a5682c32b38@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -103,33 +102,1202 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Potin Lai <potin.lai@quantatw.com>, Roger Kan <Roger.Kan@quantatw.com>, 
  Potin Lai <potin.lai.pt@gmail.com>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1770112237; l=841;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1770112237; l=28554;
  i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=awDe2howAZDyvltIFZvQ9S1Z3NdAcsc3EqMeuy1puZc=;
- b=6Btw6wU97hhwe3vFKaiSmnwtqfWoR5H5FeSRtHNAThM6D2qJ/ppeb7Nl+1bqScZU3xQ3yYFxs
- zv5FMUtvvQvDlQMXkVYE35LS2ReTJrYjkluEoxdLbqAdirSmUJXIhQc
+ bh=6CEMF0J24xTyya+kAavoNDL7Gxazys4V8KtyCAr6uQI=;
+ b=nHZbskH5tZkpgAgxoB9YacFOnsyntV7cR+uf2xzP5lT9XPfvTitQVc5eHjAN/HipPCJRA4XCT
+ JT8lxY0H6txDJ3pbMtdPGQKrAeU1xdq0AZXhZsHC2kHI3oZvEH29EeZ
 X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
  pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Add Meta (Facebook) SanMiguel BMC board compatible.
+Add linux device tree entry for Meta (Facebook) SanMiguel compute-tray
+BMC using AT2620 SoC.
 
 Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/aspeed/Makefile                  |    1 +
+ .../dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts   | 1161 ++++++++++++++++++++
+ 2 files changed, 1162 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 9298c1a75dd1..6c84e6c80978 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -91,6 +91,7 @@ properties:
-               - facebook,greatlakes-bmc
-               - facebook,harma-bmc
-               - facebook,minerva-cmc
-+              - facebook,sanmiguel-bmc
-               - facebook,santabarbara-bmc
-               - facebook,yosemite4-bmc
-               - facebook,yosemite5-bmc
+diff --git a/arch/arm/boot/dts/aspeed/Makefile b/arch/arm/boot/dts/aspeed/Makefile
+index 9adf9278dc94..ab2effc29f6f 100644
+--- a/arch/arm/boot/dts/aspeed/Makefile
++++ b/arch/arm/boot/dts/aspeed/Makefile
+@@ -30,6 +30,7 @@ dtb-$(CONFIG_ARCH_ASPEED) += \
+ 	aspeed-bmc-facebook-harma.dtb \
+ 	aspeed-bmc-facebook-minerva.dtb \
+ 	aspeed-bmc-facebook-minipack.dtb \
++	aspeed-bmc-facebook-sanmiguel.dtb \
+ 	aspeed-bmc-facebook-santabarbara.dtb \
+ 	aspeed-bmc-facebook-tiogapass.dtb \
+ 	aspeed-bmc-facebook-wedge40.dtb \
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
+new file mode 100644
+index 000000000000..39b2b79cfefe
+--- /dev/null
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
+@@ -0,0 +1,1161 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright (c) 2025 Facebook Inc.
++
++/dts-v1/;
++#include "aspeed-g6.dtsi"
++#include <dt-bindings/gpio/aspeed-gpio.h>
++#include <dt-bindings/usb/pd.h>
++#include <dt-bindings/leds/leds-pca955x.h>
++#include <dt-bindings/interrupt-controller/irq.h>
++#include <dt-bindings/i2c/i2c.h>
++#include <dt-bindings/leds/common.h>
++
++/ {
++	model = "AST2600 VR NVL144 BMC";
++	compatible = "aspeed,ast2600";
++
++	aliases {
++		serial0 = &uart1;
++		serial1 = &uart2;
++		serial2 = &uart3;
++		serial3 = &uart4;
++		serial4 = &uart5;
++		i2c16	= &imux16;
++		i2c17	= &imux17;
++		i2c18	= &imux18;
++		i2c19	= &imux19;
++		i2c20   = &i2c20;
++		i2c21   = &i2c21;
++	};
++
++	chosen {
++		stdout-path = "serial4:57600n8";
++	};
++
++	memory@80000000 {
++		device_type = "memory";
++		reg = <0x80000000 0x80000000>;
++	};
++
++	iio-hwmon {
++		compatible = "iio-hwmon";
++		io-channels = <&adc0 0>, <&adc0 1>, <&adc0 2>, <&adc0 3>,
++			      <&adc0 4>, <&adc0 5>, <&adc0 6>;
++	};
++
++	spi2_gpio: spi {
++		compatible = "spi-gpio";
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		sck-gpios = <&gpio0 ASPEED_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
++		mosi-gpios = <&gpio0 ASPEED_GPIO(X, 4) GPIO_ACTIVE_HIGH>;
++		miso-gpios = <&gpio0 ASPEED_GPIO(X, 5) GPIO_ACTIVE_HIGH>;
++		cs-gpios = <&gpio0 ASPEED_GPIO(X, 2) GPIO_ACTIVE_LOW>;
++		num-chipselects = <1>;
++
++		tpm@0 {
++			compatible = "infineon,slb9670", "tcg,tpm_tis-spi";
++			spi-max-frequency = <33000000>;
++			reg = <0>;
++		};
++	};
++
++	standby_power_regulator: standby-power-regulator {
++		status = "okay";
++		compatible = "regulator-fixed";
++		regulator-name = "standby_power";
++		gpio = <&gpio0 ASPEED_GPIO(M, 3) GPIO_ACTIVE_HIGH>;
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		enable-active-high;
++		regulator-always-on;
++		regulator-boot-on;
++	};
++
++	scm-leds {
++		compatible = "gpio-leds";
++		led-0 {
++			label = "bmc_heartbeat_amber";
++			gpios = <&gpio0 ASPEED_GPIO(P, 7) GPIO_ACTIVE_LOW>;
++			linux,default-trigger = "heartbeat";
++		};
++	};
++
++	fio-leds {
++		compatible = "gpio-leds";
++		led-0 {
++			label = "power_blue";
++			gpios = <&fio_ioexp 4 GPIO_ACTIVE_HIGH>;
++		};
++		led-1 {
++			label = "power_amber";
++			gpios = <&fio_ioexp 5 GPIO_ACTIVE_LOW>;
++		};
++		led-2 {
++			label = "id_blue";
++			gpios = <&fio_ioexp 6 GPIO_ACTIVE_HIGH>;
++		};
++		led-3 {
++			label = "id_amber";
++			gpios = <&fio_ioexp 7 GPIO_ACTIVE_LOW>;
++		};
++	};
++};
++
++&fmc {
++	status = "okay";
++	flash@0 {
++		status = "okay";
++		m25p,fast-read;
++		label = "bmc";
++		spi-max-frequency = <50000000>;
++#include "openbmc-flash-layout-128.dtsi"
++	};
++	flash@1 {
++		status = "okay";
++		m25p,fast-read;
++		label = "alt-bmc";
++		spi-max-frequency = <50000000>;
++	};
++};
++
++&uart1 {
++	status = "okay";
++};
++
++&uart3 {
++	status = "okay";
++};
++
++&uart5 {
++	status = "okay";
++};
++
++&uart_routing {
++	status = "okay";
++};
++
++&mdio0 {
++	status = "okay";
++	ethphy0: ethernet-phy@0 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0>;
++	};
++};
++
++&mac0 {
++	status = "okay";
++	pinctrl-names = "default";
++	phy-mode = "rgmii-id";
++	phy-handle = <&ethphy0>;
++	pinctrl-0 = <&pinctrl_rgmii1_default>;
++};
++
++&ehci1 {
++	status = "okay";
++	hub@1 {
++		reg = <1>;
++		hub@2 {
++			reg = <2>;
++			hub@1 {
++				reg = <1>;
++				device@1 {
++					reg = <1>;
++					cp2112a: interface@1 {
++						reg = <1 1>;
++
++						gpio-controller;
++						interrupt-controller;
++						#gpio-cells = <2>;
++						#interrupt-cells = <2>;
++
++						i2c20: i2c {
++							#address-cells = <1>;
++							#size-cells = <0>;
++						};
++					};
++				};
++				hub@3 {
++					reg = <3>;
++					cp2112c: device@2 {
++						reg = <2>;
++						gpio-controller;
++						#gpio-cells = <2>;
++						interrupt-controller;
++						#interrupt-cells = <2>;
++
++						gpio-line-names =
++							"IOB0_MCP_P0_2-B",
++							"IOB0_MCU_RST_L-O",
++							"IOB0_MCU_RECOVERY_L-O",
++							"IOB0_GLOBAL_WP-O",
++							"IOB0_GLOBAL_ADDR_L_R-O",
++							"IOB0_GLOBAL_ADDR_U_D-O",
++							"IOB0_PWR_EN-O",
++							"IOB0_MCU_READY_STATUS-I";
++					};
++				};
++				hub@4 {
++					reg = <4>;
++					cp2112d: device@2 {
++						reg = <2>;
++						gpio-controller;
++						#gpio-cells = <2>;
++						interrupt-controller;
++						#interrupt-cells = <2>;
++
++						gpio-line-names =
++							"IOB1_MCP_P0_2-B",
++							"IOB1_MCU_RST_L-O",
++							"IOB1_MCU_RECOVERY_L-O",
++							"IOB1_GLOBAL_WP-O",
++							"IOB1_GLOBAL_ADDR_L_R-O",
++							"IOB1_GLOBAL_ADDR_U_D-O",
++							"IOB1_PWR_EN-O",
++							"IOB1_MCU_READY_STATUS-I";
++					};
++				};
++			};
++			hub@2 {
++				reg = <2>;
++				device@1 {
++					reg = <1>;
++					cp2112b: interface@1 {
++						reg = <1 1>;
++
++						gpio-controller;
++						interrupt-controller;
++						#gpio-cells = <2>;
++						#interrupt-cells = <2>;
++
++						i2c21: i2c {
++							#address-cells = <1>;
++							#size-cells = <0>;
++						};
++					};
++				};
++				hub@3 {
++					reg = <3>;
++					cp2112e: device@2 {
++						reg = <2>;
++						gpio-controller;
++						#gpio-cells = <2>;
++						interrupt-controller;
++						#interrupt-cells = <2>;
++
++						gpio-line-names =
++							"IOB2_MCP_P0_2-B",
++							"IOB2_MCU_RST_L-O",
++							"IOB2_MCU_RECOVERY_L-O",
++							"IOB2_GLOBAL_WP-O",
++							"IOB2_GLOBAL_ADDR_L_R-O",
++							"IOB2_GLOBAL_ADDR_U_D-O",
++							"IOB2_PWR_EN-O",
++							"IOB2_MCU_READY_STATUS-I";
++					};
++				};
++				hub@4 {
++					reg = <4>;
++					cp2112f: device@2 {
++						reg = <2>;
++						gpio-controller;
++						#gpio-cells = <2>;
++						interrupt-controller;
++						#interrupt-cells = <2>;
++
++						gpio-line-names =
++							"IOB3_MCP_P0_2-B",
++							"IOB3_MCU_RST_L-O",
++							"IOB3_MCU_RECOVERY_L-O",
++							"IOB3_GLOBAL_WP-O",
++							"IOB3_GLOBAL_ADDR_L_R-O",
++							"IOB3_GLOBAL_ADDR_U_D-O",
++							"IOB3_PWR_EN-O",
++							"IOB3_MCU_READY_STATUS-I";
++					};
++				};
++			};
++		};
++	};
++};
++
++&adc0 {
++	aspeed,int-vref-microvolt = <2500000>;
++	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_adc0_default &pinctrl_adc1_default
++		&pinctrl_adc2_default &pinctrl_adc3_default
++		&pinctrl_adc4_default &pinctrl_adc5_default
++		&pinctrl_adc6_default>;
++};
++
++&wdt1 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_wdtrst1_default>;
++	aspeed,reset-type = "soc";
++	aspeed,external-signal;
++	aspeed,ext-push-pull;
++	aspeed,ext-active-high;
++	aspeed,ext-pulse-duration = <256>;
++};
++
++&i2c0 {
++	status = "okay";
++	aspeed,enable-byte;
++
++	ssif-bmc@10 {
++		compatible = "ssif-bmc";
++		reg = <0x10>;
++		alert-gpios = <&gpio1 ASPEED_GPIO(D, 7) GPIO_ACTIVE_LOW>;
++		timeout-ms = <5000>;
++	};
++};
++
++&i2c1 {
++	status = "okay";
++};
++
++&i2c2 {
++	status = "okay";
++
++	hpm0_ioexp_20: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		vcc-supply = <&standby_power_regulator>;
++		gpio-line-names =
++			"B0_M0_SHDN_FORCE_L-O",
++			"B0_M0_STBY_POWER_PG-I",
++			"B0_M0_THERM_OVERT_L-I",
++			"B0_M0_THERM_WARN_L-I",
++			"B0_M0_GLOBAL_WP-O",
++			"B0_M0_USB_HUB0_RST_L-O",
++			"B0_M0_PRE_SYS_RST_L-O",
++			"B0_M0_LEAK_DETECT_ALERT_L-I",
++			"B0_M0_RUN_POWER_EN-O",
++			"B0_M0_RUN_POWER_PG-I",
++			"B0_M0_CPU_CHIPTHROT_L-O",
++			"B0_M0_SHDN_REQ_L-O",
++			"B0_M0_CPU_SHDN_OK_L-I",
++			"B0_M0_CPLD_READY-I",
++			"B0_M0_PWR_BRAKE_L-O",
++			"B0_M0_PWR_BRAKE_STATUS_L-I";
++	};
++
++	hpm0_ioexp_21: gpio@21 {
++		compatible = "nxp,pca9555";
++		reg = <0x21>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		vcc-supply = <&standby_power_regulator>;
++
++		gpio-line-names =
++			"B0_M0_I2C_BUS_MUX_RESET_L-O",
++			"B0_M0_HPM_MCU_OK-I",
++			"B0_M0_AIC_USB_EN-O",
++			"B0_M0_C0_SOCAMM_DAC_SEL0-O",
++			"B0_M0_C1_SOCAMM_DAC_SEL1-O",
++			"B0_M0_C0_SOCAMM_I2C_SEL_R-O",
++			"B0_M0_C1_SOCAMM_I2C_SEL_R-O",
++			"B0_M0_EEPROM_POWER_DISABLE-O",
++			"B0_M0_L0L1_RST_L-I",
++			"B0_M0_L2_RST_L-I",
++			"B0_M0_BRD_ID_0-I",
++			"B0_M0_BRD_ID_1-I",
++			"B0_M0_BMC_LEAK_TEST_L-O",
++			"B0_M0_MCU_BMC_ALERT_L-I",
++			"B0_M0_CPU_BOOT_COMPLETE_3V3-I",
++			"B0_M0_BRD_ID_2-I";
++	};
++};
++
++&i2c3 {
++	status = "ok";
++
++	hmc_fru: eeprom@51 {
++		compatible = "atmel,24c02";
++		reg = <0x51>;
++	};
++
++	hpm0_fru: eeprom@52 {
++		compatible = "atmel,24c02";
++		reg = <0x52>;
++	};
++
++	hpm1_fru: eeprom@53 {
++		compatible = "atmel,24c02";
++		reg = <0x53>;
++	};
++};
++
++&i2c4 {
++	status = "okay";
++};
++
++&i2c5 {
++	status = "okay";
++
++	smm_ioexp_20: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"HMC_RST_R_L-O", "HMC_RECOVERY_R-O",
++			"HMC_SPI_MUX_R_SEL-O", "GLOBAL_WP-O",
++			"HMC_READY-I", "HMC_PRSNT_R-I",
++			"BMC_SELF_PWR_CYCLE-O", "EEDO_LED2-O",
++			"PWR_LED_L-O", "PWR_BTN_L-I",
++			"UID_LED_L-O", "UID_BTN_L-I",
++			"FAULT_LED_L-O", "USB2_HUB_RST_L-O",
++			"IOX_GPIO_P16_TP", "WARN_LED_L-O";
++	};
++
++	smm_ioexp_21: gpio@21 {
++		compatible = "nxp,pca9555";
++		reg = <0x21>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"BMC_HMC_MUX_SEL-O", "BMC_TPM_MUX_SEL-O",
++			"BMC_USB2_MUX_SEL-O", "HMC_PGOOD_3V3-I",
++			"BF3_AOC_NCSI_PRSNT_L-I", "HDR_SPI_PRSNT_L-I",
++			"SW_NRESET_R_L-O", "MUX_I2C_ESPI_SEL-O",
++			"I2C_BUS_MUX_RESET_L-O", "USB_MUX_EN-O",
++			"PDB_TRAY_RST-O", "USB_PWR_EN-O",
++			"RTC_CLR_L-O", "I2C_RTC_ALERT_L-I",
++			"I2C_PDB_ALERT_L-I", "BMC_MUX_PI3DP_SEL-O";
++	};
++
++	smm_temp: temperature-sensor@4e {
++		compatible = "national,lm75";
++		reg = <0x4e>;
++	};
++
++	smm_fru: eeprom@50 {
++		compatible = "atmel,24c02";
++		reg = <0x50>;
++	};
++
++	rtc@6f {
++		compatible = "nuvoton,nct3018y";
++		reg = <0x6f>;
++	};
++};
++
++&i2c6 {
++	status = "okay";
++
++	hmc_ioexp: gpio@20 {
++		compatible = "ti,tca6408";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"", "", "HMC_EROT_FATAL_ERROR_L-I", "",
++			"", "HMC_EROT_RECOVERY_L-O", "HMC_EROT_RESET_L-O", "";
++	};
++
++	i2c-mux@70 {
++		compatible = "nxp,pca9546";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x70>;
++		i2c-mux-idle-disconnect;
++
++		imux16: i2c@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++		};
++
++		imux17: i2c@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++		};
++
++		imux18: i2c@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++		};
++
++		imux19: i2c@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			rtc@6f {
++				compatible = "nuvoton,nct3018y";
++				reg = <0x6f>;
++			};
++		};
++	};
++};
++
++&i2c7 {
++	status = "okay";
++
++	hpm1_ioexp_20: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		vcc-supply = <&standby_power_regulator>;
++		gpio-line-names =
++			"B1_M0_SHDN_FORCE_L-O",
++			"B1_M0_STBY_POWER_PG-I",
++			"B1_M0_THERM_OVERT_L-I",
++			"B1_M0_THERM_WARN_L-I",
++			"B1_M0_GLOBAL_WP-O",
++			"B1_M0_USB_HUB0_RST_L-O",
++			"B1_M0_PRE_SYS_RST_L-O",
++			"B1_M0_LEAK_DETECT_ALERT_L-I",
++			"B1_M0_RUN_POWER_EN-O",
++			"B1_M0_RUN_POWER_PG-I",
++			"B1_M0_CPU_CHIPTHROT_L-O",
++			"B1_M0_SHDN_REQ_L-O",
++			"B1_M0_CPU_SHDN_OK_L-I",
++			"B1_M0_CPLD_READY-I",
++			"B1_M0_PWR_BRAKE_L-O",
++			"B1_M0_PWR_BRAKE_STATUS_L-I";
++	};
++
++	hpm1_ioexp_21: gpio@21 {
++		compatible = "nxp,pca9555";
++		reg = <0x21>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		vcc-supply = <&standby_power_regulator>;
++
++		gpio-line-names =
++			"B1_M0_I2C_BUS_MUX_RESET_L-O",
++			"B1_M0_HPM_MCU_OK-I",
++			"B1_M0_AIC_USB_EN-O",
++			"B1_M0_C0_SOCAMM_DAC_SEL0-O",
++			"B1_M0_C1_SOCAMM_DAC_SEL1-O",
++			"B1_M0_C0_SOCAMM_I2C_SEL_R-O",
++			"B1_M0_C1_SOCAMM_I2C_SEL_R-O",
++			"B1_M0_EEPROM_POWER_DISABLE-O",
++			"B1_M0_L0L1_RST_L-I",
++			"B1_M0_L2_RST_L-I",
++			"B1_M0_BRD_ID_0-I",
++			"B1_M0_BRD_ID_1-I",
++			"B1_M0_BMC_LEAK_TEST_L-O",
++			"B1_M0_MCU_BMC_ALERT_L-I",
++			"B1_M0_CPU_BOOT_COMPLETE_3V3-I",
++			"B1_M0_BRD_ID_2-I";
++	};
++};
++
++&i2c8 {
++	status = "okay";
++};
++
++&i2c9 {
++	status = "okay";
++
++	pdb_mps_hsc1: power-monitor@10 {
++		compatible = "mps,mp5926";
++		reg = <0x10>;
++	};
++
++	pdb_ti_hsc1: power-monitor@11 {
++		compatible = "ti,lm5066i";
++		reg = <0x11>;
++		shunt-resistor-micro-ohms = <763>;
++	};
++
++	pdb_mps_hsc2: power-monitor@12 {
++		compatible = "mps,mp5926";
++		reg = <0x12>;
++	};
++
++	pdb_ti_hsc2: power-monitor@13 {
++		compatible = "ti,lm5066i";
++		reg = <0x13>;
++		shunt-resistor-micro-ohms = <294>;
++	};
++
++	pdb_mps_hsc3: power-monitor@14 {
++		compatible = "mps,mp5926";
++		reg = <0x14>;
++	};
++
++	pdb_ti_hsc3: power-monitor@15 {
++		compatible = "ti,lm5066i";
++		reg = <0x15>;
++		shunt-resistor-micro-ohms = <294>;
++	};
++
++	pdb_mps_hsc4: power-monitor@16 {
++		compatible = "mps,mp5926";
++		reg = <0x16>;
++	};
++
++	pdb_ti_hsc4: power-monitor@17 {
++		compatible = "ti,lm5066i";
++		reg = <0x17>;
++		shunt-resistor-micro-ohms = <381>;
++	};
++
++	pdb_temp: temperature-sensor@4e {
++		compatible = "national,lm75";
++		reg = <0x4e>;
++	};
++
++	pdb_fru: eeprom@50 {
++		compatible = "atmel,24c02";
++		reg = <0x50>;
++	};
++
++	pdb_ioexp_20: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"PDB_STRAP-I", "STBY_POWER_EN-O", "STBY_PWR_OK-I", "",
++			"", "MAIN_PWR_EN-O", "MAIN_PWR_OK-I", "GLOBAL_WP-O",
++			"PDB_PWR_BRK_L-I", "FAN_PRSNT-I", "", "",
++			"", "", "", "";
++	};
++
++	pdb_ioexp_75: gpio@75 {
++		compatible = "nxp,pca9555";
++		reg = <0x75>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"SNN_PDB_RUN_IO0_A_R_PG-I", "RST_STBY_R_L-O",
++			"SNN_PDB_RUN_IO0_B_R_EN-O", "PSU1_PRSNT_R_N-O",
++			"PSU2_PRSNT_R_N-O", "PSU3_PRSNT_R_N-O",
++			"PSU4_PRSNT_R_N-O", "PDB_12V_PG_R-I",
++			"PDB_12V_2_PG_R-I", "PDB_12V_2_EN_R-O",
++			"PDB_12V_EN_N_R-O", "",
++			"HSC_PG_VIN_PG_R-I", "PDB_PSU_SMB_ALERT_L_R-O",
++			"SNN_JSB2_17_R-I", "TRAY_RST_L_R-I";
++	};
++};
++
++&i2c10 {
++	status = "okay";
++
++	scm_temp: temperature-sensor@48 {
++		compatible = "national,lm75";
++		reg = <0x48>;
++	};
++
++	scm_fru: eeprom@50 {
++		compatible = "atmel,24c128";
++		reg = <0x50>;
++	};
++};
++
++&i2c11 {
++	status = "ok";
++
++	sw_config: eeprom@50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++};
++
++&i2c12 {
++	status = "ok";
++};
++
++&i2c13 {
++	status = "ok";
++	mctp-controller;
++	multi-master;
++
++	mctp@10 {
++		compatible = "mctp-i2c-controller";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++	};
++
++	smm_ext_ioexp: gpio@38 {
++		compatible = "nxp,pca9554";
++		reg = <0x38>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		gpio-line-names =
++			"SSD0_PRSNT_L-I", "E1S_PWR_EN-O",
++			"SSD0_PWRDIS-O", "I2C_PDB_ALERT_L-I",
++			"BMC_SSD0_RST_L-O", "GLOBAL_WP_E1S-O",
++			"12V_SSD0_PGD-I", "SSD0_LED-O";
++	};
++
++	smm_ext_fru: eeprom@55 {
++		compatible = "atmel,24c02";
++		reg = <0x55>;
++	};
++};
++
++&i2c14 {
++	status = "okay";
++
++	fio_ioexp: gpio@20 {
++		compatible = "nxp,pca9555";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <ASPEED_GPIO(B, 6) IRQ_TYPE_LEVEL_LOW>;
++		gpio-line-names =
++			"", "", "", "",
++			"PWR_LED_BLUE", "PWR_LED_AMBER_R_N",
++			"BEEP_ID_LED_BLUE", "BEEP_ID_LED_AMBER_R_N",
++			"", "", "", "",
++			"FM_MAIN_PWREN_RMC_ISO_EN_N", "LEAK_DETECT_RMC_N",
++			"PWRGD_RMC_N", "SMALL_LEAK_RMC_N";
++
++		pwrgd-rmc-hog {
++			gpio-hog;
++			gpios = <14 GPIO_ACTIVE_LOW>;
++			output-low;
++		};
++	};
++
++	fio_fru: eeprom@50 {
++		compatible = "atmel,24c64";
++		reg = <0x50>;
++	};
++};
++
++&i2c15 {
++	status = "okay";
++};
++
++&gpio0 {
++	gpio-line-names =
++	/*A0-A7*/	"", "", "", "", "", "", "", "",
++	/*B0-B7*/	"", "", "", "", "", "", "", "",
++	/*C0-C7*/	"", "", "", "", "", "", "", "",
++	/*D0-D7*/	"", "", "", "", "", "FPGA_PEX_RST_L", "", "",
++	/*E0-E7*/	"RTL8221_PHY_RST_L-O", "RTL8211_PHY_INT_L-I", "", "",
++			"", "", "", "MUX_SGPIO_SEL-O",
++	/*F0-F7*/	"", "", "", "", "", "", "", "",
++	/*G0-G7*/	"", "", "", "", "", "", "", "",
++	/*H0-H7*/	"", "", "", "", "", "", "", "",
++	/*I0-I7*/	"", "", "", "",
++			"", "QSPI2_RST_L-O",
++			"GLOBAL_WP_BMC-I", "BMC_DDR4_TEN-O",
++	/*J0-J7*/	"", "", "", "", "", "", "", "",
++	/*K0-K7*/	"", "", "", "", "", "", "", "",
++	/*L0-L7*/	"", "", "", "", "", "", "", "",
++	/*M0-M7*/	"USB_HUB_RST_N-O", "BMC_FRU_WP-O",
++			"", "HMC_STBY_POWER_EN-O",
++			"STBY_POWER_PG-I", "PCIE_EP_RST_L-O", "", "",
++	/*N0-N7*/	"", "", "", "", "", "", "", "",
++	/*O0-O7*/	"", "", "", "", "", "", "", "",
++	/*P0-P7*/	"", "", "", "", "", "", "", "",
++	/*Q0-Q7*/	"", "", "", "", "", "", "", "",
++	/*R0-R7*/	"", "SP0_AP_INTR_N-I", "", "", "", "", "", "",
++	/*S0-S7*/	"", "", "", "", "", "", "", "",
++	/*T0-T7*/	"", "", "", "", "", "", "", "",
++	/*U0-U7*/	"", "", "", "", "", "", "", "",
++	/*V0-V7*/	"", "", "", "", "", "PCB_TEMP_ALERT-I",	"", "",
++	/*W0-W7*/	"", "", "", "", "", "", "", "CPU_RST_L-I",
++	/*X0-X7*/	"", "", "", "", "", "", "", "",
++	/*Y0-Y7*/	"", "", "", "EMMC_RST-O", "", "", "", "",
++	/*Z0-Z7*/	"HMC_EROT_SPI_INT_L-I", "", "", "", "", "", "", "";
++};
++
++&gpio1 {
++	/* 36 1.8V GPIOs */
++	gpio-line-names =
++	/*A0-A7*/	"", "", "", "", "", "", "", "",
++	/*B0-B7*/	"", "", "", "",
++			"AP_EROT_REQ-O", "EROT_AP_GNT-I",
++			"IO_EXPANDER_INT_L-I", "",
++	/*C0-C7*/	"", "", "", "", "", "", "", "",
++	/*D0-D7*/	"", "", "", "", "", "", "", "I2C_SSIF_ALERT_L-I",
++	/*E0-E7*/	"", "", "", "", "", "", "", "";
++};
++
++&i2c20 {
++	hpm0_sma_ioexp_50: gpio@50 {
++		compatible = "nxp,pca9555";
++		reg = <0x50>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112a>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CPU0_IROT_RECOVERY_L_3V3-I",
++			"CPU0_IROT_FATAL_ERR_L_3V3-I",
++			"CPU0_OVERT_L-I",
++			"C0_THERM_WARN_N-I",
++			"C0_SOC_THERM_OVERT_N-I",
++			"CPU0_CHIPTHROT_L-I",
++			"C0_SOCAMM_0_ID_PRSNT_N-I",
++			"C0_SOCAMM_1_ID_PRSNT_N-I",
++			"C0_SOCAMM_2_ID_PRSNT_N-I",
++			"C0_SOCAMM_3_ID_PRSNT_N-I",
++			"C0_SOCAMM_4_ID_PRSNT_N-I",
++			"C0_SOCAMM_5_ID_PRSNT_N-I",
++			"C0_SOCAMM_6_ID_PRSNT_N-I",
++			"C0_SOCAMM_7_ID_PRSNT_N-I",
++			"JTAG_BYPASS_CPU0_S_DIE-O",
++			"JTAG_BYPASS_CPU0_C_DIE-O";
++	};
++	hpm0_sma_ioexp_51: gpio@51 {
++		compatible = "nxp,pca9555";
++		reg = <0x51>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112a>;
++		interrupts = <1 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"C0_UPHY0_PRSNT0_L-I",
++			"C0_UPHY0_PRSNT2_L-I",
++			"C0_UPHY_PRSNT1_L-I",
++			"C0_UPHY2_PRSNT0_L-I",
++			"C0_UPHY2_PRSNT2_L-I",
++			"C0_UPHY3_PRSNT0_L-I",
++			"C0_UPHY3_PRSNT1_L-I",
++			"GPU_THERM_WARN_N-I",
++			"JTAG_BYPASS_GPU1-O",
++			"JTAG_BYPASS_GPU2-O",
++			"C0_ALL_SOCAMM_PGOOD-I",
++			"DDR_VDDQ_PGOOD-I",
++			"CPU0_OOB_CS1_L-O",
++			"CPU0_OOB_CS0_L-O",
++			"LEAK_SELF_TEST_L-I",
++			"TRAY_FAST_SHDN_L-I";
++	};
++	hpm0_sma_ioexp_52: gpio@52 {
++		compatible = "nxp,pca9555";
++		reg = <0x52>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112a>;
++		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"C0_WAKE_L-I",
++			"MCU_THERM_OVERT_N-I",
++			"MCU_THERM_WARN_N-I",
++			"PRIMARY_NODE_L-I",
++			"GLOBAL_WP-I",
++			"PCIE_CLKBUF_LOS-I",
++			"LEAK_DETECT_L-I",
++			"vLeakDetect1Status0-I",
++			"vLeakDetect1Status1-I",
++			"vLeakDetect2Status0-I",
++			"vLeakDetect2Status1-I",
++			"BMC_IOX_INT_L-I",
++			"MCU_BMC_ALERT_L-I",
++			"MCU_HMC_ALERT_L-I",
++			"MCU_USER_STRAP-I",
++			"HPM_MCU_OK-I";
++	};
++	hpm0_sma_ioexp_53: gpio@53 {
++		compatible = "nxp,pca9555";
++		reg = <0x53>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112a>;
++		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"CPLD_RESET_L-I",
++			"CPLD_PSEQ_FAULT-I",
++			"CPLD_READY-I",
++			"CPLD_PROGRAM-I",
++			"MCU_12V_HSCC_PGOOD-I",
++			"RUN_PWR_EN-I",
++			"MODULE_PWR_GOOD-I",
++			"VDD_1V8_PGOOD-I",
++			"VDD_3V3_PGOOD-I",
++			"C0_CVDD_PGOOD-I",
++			"C0_5V_SOCAMM_PGOOD-I",
++			"OOB_MUX_CTRL1-O",
++			"OOB_MUX_CTRL0-O",
++			"C2CVDD_PGOOD-I",
++			"SLOT_PWR_BRAKE_EN_L-I",
++			"MCU_I2C_RTC_ALERT_L-I";
++	};
++	hpm0_sma_ioexp_54: gpio@54 {
++		compatible = "nxp,pca9555";
++		reg = <0x54>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112a>;
++		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"JTAG_SEL_MCU-O",
++			"JTAG_TCK_MCU-O",
++			"JTAG_TMS_MCU-O",
++			"JTAG_TDO_MCU-I",
++			"JTAG_TDI_MCU-O",
++			"JTAG_TRST_L_MCU-O",
++			"CPU0_SSIF_ALERT_L_3V3-O",
++			"USB_HMC_TO_CPU_FORCE_EN-O",
++			"MCU_RECOVERY_L-I",
++			"v_BUS_BAR_OVERT-I",
++			"v_CPLD_AUTH_FAIL-I",
++			"",
++			"",
++			"",
++			"",
++			"";
++	};
++};
++
++&i2c21 {
++	hpm1_sma_ioexp_50: gpio@50 {
++		compatible = "nxp,pca9555";
++		reg = <0x50>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112b>;
++		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"SEC_CPU0_IROT_RECOVERY_L_3V3-I",
++			"SEC_CPU0_IROT_FATAL_ERR_L_3V3-I",
++			"SEC_CPU0_OVERT_L-I",
++			"SEC_C0_THERM_WARN_N-I",
++			"SEC_C0_SOC_THERM_OVERT_N-I",
++			"SEC_CPU0_CHIPTHROT_L-I",
++			"SEC_C0_SOCAMM_0_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_1_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_2_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_3_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_4_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_5_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_6_ID_PRSNT_N-I",
++			"SEC_C0_SOCAMM_7_ID_PRSNT_N-I",
++			"SEC_JTAG_BYPASS_CPU0_S_DIE-O",
++			"SEC_JTAG_BYPASS_CPU0_C_DIE-O";
++	};
++	hpm1_sma_ioexp_51: gpio@51 {
++		compatible = "nxp,pca9555";
++		reg = <0x51>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112b>;
++		interrupts = <1 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"SEC_C0_UPHY0_PRSNT0_L-I",
++			"SEC_C0_UPHY0_PRSNT2_L-I",
++			"SEC_C0_UPHY_PRSNT1_L-I",
++			"SEC_C0_UPHY2_PRSNT0_L-I",
++			"SEC_C0_UPHY2_PRSNT2_L-I",
++			"SEC_C0_UPHY3_PRSNT0_L-I",
++			"SEC_C0_UPHY3_PRSNT1_L-I",
++			"SEC_GPU_THERM_WARN_N-I",
++			"SEC_JTAG_BYPASS_GPU1-O",
++			"SEC_JTAG_BYPASS_GPU2-O",
++			"SEC_C0_ALL_SOCAMM_PGOOD-I",
++			"SEC_DDR_VDDQ_PGOOD-I",
++			"SEC_CPU0_OOB_CS1_L-O",
++			"SEC_CPU0_OOB_CS0_L-O",
++			"SEC_LEAK_SELF_TEST_L-I",
++			"SEC_TRAY_FAST_SHDN_L-I";
++	};
++	hpm1_sma_ioexp_52: gpio@52 {
++		compatible = "nxp,pca9555";
++		reg = <0x52>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112b>;
++		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"SEC_C0_WAKE_L-I",
++			"SEC_MCU_THERM_OVERT_N-I",
++			"SEC_MCU_THERM_WARN_N-I",
++			"SEC_PRIMARY_NODE_L-I",
++			"SEC_GLOBAL_WP-I",
++			"SEC_PCIE_CLKBUF_LOS-I",
++			"SEC_LEAK_DETECT_L-I",
++			"SEC_vLeakDetect1Status0-I",
++			"SEC_vLeakDetect1Status1-I",
++			"SEC_vLeakDetect2Status0-I",
++			"SEC_vLeakDetect2Status1-I",
++			"SEC_BMC_IOX_INT_L-I",
++			"SEC_MCU_BMC_ALERT_L-I",
++			"SEC_MCU_HMC_ALERT_L-I",
++			"SEC_MCU_USER_STRAP-I",
++			"SEC_HPM_MCU_OK-I";
++	};
++	hpm1_sma_ioexp_53: gpio@53 {
++		compatible = "nxp,pca9555";
++		reg = <0x53>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112b>;
++		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"SEC_CPLD_RESET_L-I",
++			"SEC_CPLD_PSEQ_FAULT-I",
++			"SEC_CPLD_READY-I",
++			"SEC_CPLD_PROGRAM-I",
++			"SEC_MCU_12V_HSCC_PGOOD-I",
++			"SEC_RUN_PWR_EN-I",
++			"SEC_MODULE_PWR_GOOD-I",
++			"SEC_VDD_1V8_PGOOD-I",
++			"SEC_VDD_3V3_PGOOD-I",
++			"SEC_C0_CVDD_PGOOD-I",
++			"SEC_C0_5V_SOCAMM_PGOOD-I",
++			"SEC_OOB_MUX_CTRL1-O",
++			"SEC_OOB_MUX_CTRL0-O",
++			"SEC_C2CVDD_PGOOD-I",
++			"SEC_SLOT_PWR_BRAKE_EN_L-I",
++			"SEC_MCU_I2C_RTC_ALERT_L-I";
++	};
++	hpm1_sma_ioexp_54: gpio@54 {
++		compatible = "nxp,pca9555";
++		reg = <0x54>;
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		interrupt-parent = <&cp2112b>;
++		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
++
++		gpio-line-names =
++			"SEC_JTAG_SEL_MCU-O",
++			"SEC_JTAG_TCK_MCU-O",
++			"SEC_JTAG_TMS_MCU-O",
++			"SEC_JTAG_TDO_MCU-I",
++			"SEC_JTAG_TDI_MCU-O",
++			"SEC_JTAG_TRST_L_MCU-O",
++			"SEC_CPU0_SSIF_ALERT_L_3V3-O",
++			"SEC_USB_HMC_TO_CPU_FORCE_EN-O",
++			"SEC_MCU_RECOVERY_L-I",
++			"SEC_v_BUS_BAR_OVERT-I",
++			"SEC_v_CPLD_AUTH_FAIL-I",
++			"",
++			"",
++			"",
++			"",
++			"";
++	};
++};
 
 -- 
 2.31.1
