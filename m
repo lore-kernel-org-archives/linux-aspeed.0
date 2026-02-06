@@ -1,72 +1,70 @@
-Return-Path: <linux-aspeed+bounces-3491-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3492-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44235EB28D4
-	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Feb 2026 07:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0434EE2092
+	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Feb 2026 11:34:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f6lpc5f0Vz2xqk;
-	Fri, 06 Feb 2026 18:19:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770362392;
-	cv=none; b=BmwY7Xhu938KP3Snj4/GHSxoHGS3av7RJbKUkBw73lRqkzgXBlGwuZ4MHRrPK8ajLhgmEo77cEBSKx8mvDTXwkMdbhUbXYG8D/fwpBlkfaH+HuwxXe8/itKn3z20jlP2Gl7nQzE/ChTwWcYryhWUSSpuH8h7a+pqEIJf0AwV05E9HlSryLegRFF+IVmH5z+Gziu9sf8mO56xW4FFUe/4Q2voIcVSa2e6aZv++Wo/IK/enCeLEVCUIoh1vb0mrgW/hPta8APrGKjaex+yRjFMrDn6sceTlE0KhIHHN8JFcJ8/Mqze/oraGQT//3ejcN1N9qjY9Usn96spdtzcBFNj5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f6sSW5JFMz2xqk;
+	Fri, 06 Feb 2026 22:34:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770377675;
+	cv=none; b=jC/Q+P8egJSFi90weVa84wskzJlLOSflgWQYQNZFOq0EDodFk5CEo4Wm3VEwhFlc1Es3ec51pbScgy+7ptd8vfC5mD5AA44itTdMRWU7we3z/tmqXaZXlkfdbiIAv4j9OZ5nCjrrh1KBRG6AGDyiSYfPCno9TE2RbqP3w5a04RZoX5xxb+eT6dJFORnVWa9zMUeymgwDbGo95u+fn6xQflsTxmOPXJISUvYV8mGbAzdYot6Dez8FewWN4SkA1kHOWO20r2tHSfq8YC/R0x+bDfWAZQEToqvGKpouTgYzZyoFR0LWBM+vHFT9xq9CX1IXWSCRPGQvxv2gxYcHXHm5lA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770362392; c=relaxed/relaxed;
-	bh=6zxvmzGfn77oMv8f/L64ck9Alqnf3zfR2ACLTuFHnTY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=H4CIDGUvEADJl2vjUOKPahLmgKwlv0q5cSiq10TEj4dCNMPsLNoPpLBU/SVkPINt7Lb/e6qWDj70ZOPM8HSLJTknEiSXErnl7vGyB2i9kuDM5S9sI5kREULVkOmpe8VPrtbjYPKT+2FHdd7fHWL0t5beplvdIpx0JSemaH7NDTFiVwpDTzvsqoOSSYMp1SqHTTL+bf0yrn4H45U1xotduKTMqB5E8MCWa+2Y7SkjfaarFDyJvhVJVnbYMZG/4Kjvz4AFWUZbjZnzQf8bdDTQHGBNTN64bYeP2qT/2uhOjRMvoRbBGTtO+u4hgtuq4zgPAhx9Olu8U70S6oiTDpHyng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=XWfbtXZm; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1770377675; c=relaxed/relaxed;
+	bh=e88o2vkHKEQ7ct2edtyijEFQqfue9/krGUvH82zBYvA=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=i3vePrfX0VZHXlHIIzQzZ0nCkTwU6tyoUxlwmRhje18QqNVnFpek69J7yhm946pNYXnhtPDCg3q57rrno0fzJrK4sYaHZcknOTwP2sDG7OlFz+2IiJ4hPYMBCBtt8gnqMEoD8Zlp3d8ZvBiXLD6azFtwIZrhK7mrqriMSlvBH9DBUZMjzYf6cL/kYg6TNgPi6zkpZdp4kqpweCr1o7UwpPhFfHfH7uUqcHybwOd+0bXPpG+jEqsYiXaQy6vcp01I7XjSYVObUif5FYeG5NjySHvewBQjKhmTCWnV4EI2blSYhKszt4laPgBdhYN0kgp7eAYUvkRCvpN3CYiUMGyKiA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=GCxv/oCF; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=RpSn/lhU; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=XWfbtXZm;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=GCxv/oCF;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=RpSn/lhU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f6lpb4Nvlz2xWJ
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Feb 2026 18:19:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1770362389;
-	bh=6zxvmzGfn77oMv8f/L64ck9Alqnf3zfR2ACLTuFHnTY=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=XWfbtXZm184np09WhKFbaS0tWU1bijU/u7H3sLzCqp6rN9cBQBa9Welim19zq4OMT
-	 xNE/+2j79PCI3RUrr0jqrqIUlEEdMKYQciDfgz391kQPC/2+MDN/yUS/9tgkuy8BKE
-	 ZhNsoVLmBI54+0px9u9Foyq+j5pCq1zen8Bfll7lWOsgK/r65nDuZUbCQTJHGAyBSC
-	 XWt2G4aS1aKN4SfpWS0dBkC0gTwQS2YENwPCQIOT53goAVv0BA/YqUbgAO9YKk/W5Z
-	 jPPrMxwQ9I3vna6TtqmaxfZPhdmmnkvxUi/Gy1trFnzR6p+Ddy8+DDtGX2Bruf12uX
-	 12zv2rnFODgrw==
-Received: from [192.168.68.117] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B90EC6015A;
-	Fri,  6 Feb 2026 15:19:45 +0800 (AWST)
-Message-ID: <6de719dc84324166ed60bb8ec130cf2c9ef351f5.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 0/4] Add AST2700 INTC0/INTC1 support
-From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
- <ryan_chen@aspeedtech.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>, Paul Walmsley
- <pjw@kernel.org>, Palmer Dabbelt	 <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexandre Ghiti	 <alex@ghiti.fr>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
- "devicetree@vger.kernel.org"	 <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"	
- <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"	
- <linux-aspeed@lists.ozlabs.org>, "linux-riscv@lists.infradead.org"	
- <linux-riscv@lists.infradead.org>, Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Fri, 06 Feb 2026 17:49:44 +1030
-In-Reply-To: <d5e45c9f-f3c7-4289-8991-02bd2c5b9587@kernel.org>
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4f6sSV2kjFz2xRv
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Feb 2026 22:34:34 +1100 (AEDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1770377659;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=e88o2vkHKEQ7ct2edtyijEFQqfue9/krGUvH82zBYvA=;
+	b=GCxv/oCFt+944O66V6ahoJel5fXljNGqn5VedO4GLzHrg3pYabGiunu+7F059Wu3I5SXwV
+	zEdVj4FV0I5R0KYa1bRske29/qNpvMhozPQc3z73ZEUJw5IyMdiI2P0zKyB2lYg5rIzmuR
+	u8CgDNwl4dsgEYfdfVBazzi6sw2VlMGLlLu3LzFOHvz7dpKLomJGI8c4pKpllqSHf/C/qM
+	tSYGhSD2Gq6UnqyXjhnWm/gFgrss6z8pCN6xvZQP6Ev2Vj8VvpW7hqaZ1tOKE7p7lvBPIP
+	IKH5Sdvy4coKo6MjJqujjtaJq6gVjhhcN8A89IuKM0eRtvca8Z+sk4L5Yquaxg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1770377659;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=e88o2vkHKEQ7ct2edtyijEFQqfue9/krGUvH82zBYvA=;
+	b=RpSn/lhUuWmAbV1MUQJX3yCHQha5g4vDOU9oVTffdM/R68le4+t6oUetF554mlcFFGz50H
+	d7GDic+AypymrhDw==
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Paul Walmsley <pjw@kernel.org>, Palmer
+ Dabbelt <palmer@dabbelt.com>, Albert
+ Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, Ryan Chen <ryan_chen@aspeedtech.com>
+Subject: Re: [PATCH 2/4] irqchip/ast2700-intcx: Add AST2700 INTC0/INTC1 support
+In-Reply-To: <20260205-irqchip-v1-2-b0310e06c087@aspeedtech.com>
 References: <20260205-irqchip-v1-0-b0310e06c087@aspeedtech.com>
-	 <20260205-intrepid-vengeful-deer-14e2eb@quoll>
-	 <TY2PPF5CB9A1BE69B07F90DFB245FAB735DF299A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-	 <d5e45c9f-f3c7-4289-8991-02bd2c5b9587@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+ <20260205-irqchip-v1-2-b0310e06c087@aspeedtech.com>
+Date: Fri, 06 Feb 2026 12:34:18 +0100
+Message-ID: <87h5ru14xx.ffs@tglx>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,166 +78,499 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain
 
-Hi Krzysztof,
+On Thu, Feb 05 2026 at 14:07, Ryan Chen wrote:
+> @@ -88,6 +88,7 @@ obj-$(CONFIG_MVEBU_PIC)			+= irq-mvebu-pic.o
+>  obj-$(CONFIG_MVEBU_SEI)			+= irq-mvebu-sei.o
+>  obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
+>  obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+> +obj-$(CONFIG_ASPEED_AST2700_INTC)	+= irq-ast2700.o irq-ast2700-intc0.o irq-ast2700-intc1.o
+>  obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
+>  obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-intc.o
+>  obj-$(CONFIG_STM32MP_EXTI)		+= irq-stm32mp-exti.o
+> diff --git a/drivers/irqchip/irq-ast2700-intc0-test.c b/drivers/irqchip/irq-ast2700-intc0-test.c
 
-I've been working with Ryan to address what I considered some
-shortcomings of the original approach. For reference, I outlined my
-concerns on v4 of the previous series[1].
+How is this kunit test supposed to be built?
 
-[1]: https://lore.kernel.org/all/1a2ca78746e00c2ec4bfc2953a897c48376ed36f.c=
-amel@codeconstruct.com.au/
+Also split this kunit thing out into a separate patch. It is not
+relevant for the functional part.
 
-That reply proposed the new DT structure, and this series is a
-refinement & implementation of those ideas
+> new file mode 100644
+> index 000000000000..d6bc19676b2e
+> --- /dev/null
+> +++ b/drivers/irqchip/irq-ast2700-intc0-test.c
+> @@ -0,0 +1,474 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + *  Copyright (C) 2026 Code Construct
+> + */
+> +#include <kunit/test.h>
+> +#include "irq-ast2700.h"
+> +
+> +static void aspeed_intc0_resolve_route_bad_args(struct kunit *test)
+> +{
+> +	static const struct aspeed_intc_interrupt_range c1ranges[] = { 0 };
+> +	static const aspeed_intc_output_t c1outs[] = { 0 };
+> +	struct aspeed_intc_interrupt_range resolved;
+> +	const struct irq_domain c0domain = { 0 };
+> +
 
-With that context:
+Pointless newline
 
-> On Thu, 2026-02-05 at 10:56 +0100, Krzysztof Kozlowski wrote:
-> On 05/02/2026 10:49, Ryan Chen wrote:
->=20
-> > Subject: Re: [PATCH 0/4] Add AST2700 INTC0/INTC1 support
-> >=20
-> > On Thu, Feb 05, 2026 at 02:07:18PM +0800, Ryan Chen wrote:
-> > > This series replaces the existing AST2700 interrupt controller bindin=
-g
-> > > and driver. The original implementation was focused on a narrow,
-> > > PSP-centric view and could not fully describe the complexity of the
-> > > AST2700 interrupt fabric:
-> > >=20
-> > > * It was focused primarily on the perspective of the Primary Service
-> > > > Processor (PSP).
-> > > * It could not handle interrupt route configuration.
-> > > * It could not handle interrupt register protection.
-> > >=20
-> > > By contrast, the new bindings and drivers describe the interrupt
-> > > controllers at the block-function level and provide a unified binding
-> > > design that can be used from the perspective of any of the four
-> > > integrated processors (the Primary, Secondary and Tertiary Service
-> > > Processors, and the Boot MCU):
-> > >=20
-> > > Where and how did you address last feedback given to you here:
-> > >=20
-> > > https://lore.kernel.org/all/20250814-auspicious-thundering-jaybird-b7=
-6f4f@ku
-> > > oka/
+> +	int rc;
+> +
+> +	rc = aspeed_intc0_resolve_route(NULL, 0, c1outs, 0, c1ranges, NULL);
+> +	KUNIT_EXPECT_EQ(test, rc, -EINVAL);
+> +
+> +	rc = aspeed_intc0_resolve_route(&c0domain, 0, c1outs,
+> +					ARRAY_SIZE(c1ranges), c1ranges,
+> +					&resolved);
+> +	KUNIT_EXPECT_EQ(test, rc, -ENODEV);
+> +
+> +	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
+> +					0, c1ranges, &resolved);
+> +	KUNIT_EXPECT_EQ(test, rc, -ENODEV);
+> +}
+> +
+> +static int
+> +arm_gicv3_fwnode_read_string_array(const struct fwnode_handle *fwnode_handle,
+> +				   const char *propname, const char **val,
+> +				   size_t nval)
 
-At this point the answer is that there wasn't a direct response.
+Please use the full 100 character you have available and avoid extra
+line breaks. It fits nicely into two lines:
 
-I acknowledge that I'm not Ryan, and that it is important that he
-responds directly to queries on his own patches. However, with the goal
-of having an upstream binding that better represents the hardware
-(along with a capable driver), I've pulled the concerns out of your
-linked feedback for discussion below.
+static int arm_gicv3_fwnode_read_string_array(const struct fwnode_handle *fwnode_handle, 
+			                      const char *propname, const char **val, size_t nval)
 
-> > +  +-----+   +---------+
-> > +  | GIC |---|  INTC0  |
-> > +  +-----+   +---------+
->=20
-> Same problem as last time. This tells me intc0 has not children...
+There is also no real point to have these overly long function and
+argument names.
 
+> +#include <asm-generic/errno.h>
+
+That's wrong. Include <linux/errno.h>
+
+> +#include <dt-bindings/interrupt-controller/arm-gic.h>
+> +
+> +#include "irq-ast2700.h"
+
+Missing newline
+
+> +#define INT_NUM 480
+> +#define INTM_NUM 50
+> +#define SWINT_NUM 16
+> +
+> +#define INTM_BASE (INT_NUM)
+> +#define SWINT_BASE (INT_NUM + INTM_NUM)
+> +#define INT0_NUM (INT_NUM + INTM_NUM + SWINT_NUM)
+> +
+> +#define GIC_P2P_SPI_END 128
+> +
+> +#define INTC0_SWINT_IER 0x10
+> +#define INTC0_SWINT_ISR 0x14
+> +#define INTC0_INTBANKX_IER 0x1000
+> +#define INTC0_INTBANK_GROUPS 11
+> +#define INTC0_INTBANKS_PER_GRP 3
+> +#define INTC0_INTMX_IER 0x1b00
+> +#define INTC0_INTMX_ISR 0x1b04
+> +#define INTC0_INTM_BANK_NUM 3
+> +#define INTM_IRQS_PER_BANK 10
+
+If you make these defines tabular and they become readable:
+
+#define INT_NUM			480
+#define INTM_NUM		50
 ...
-
-> > +            +---------+
-> > +            |         |     +---------+
-> > +            | INTC0_11| +---| INTC1   |
-> > +            |         |     +---------+
->=20
-> ...This tells that inc1 has no children (only intc0_11, which you said
-> is aspeed,ast2700-intc-ic !!!)....
-> (keep scrolling)
-
+#define INTM_BASE 		(INT_NUM)
 ...
-
-> > +patternProperties:
-> > +  "^interrupt-controller@":
->=20
-> ... but this tells me that intc0 and intc1 has children.
-
+#define GIC_P2P_SPI_END		128
 ...
+#define INTC0_SWINT_IER		0x10
 
-> > +        intc0_11: interrupt-controller@1b00 {
-> > +          compatible =3D "aspeed,ast2700-intc-ic";
-> > +          reg =3D <0 0x12101b00 0 0x10>;
->=20
->=20
-> ... and that's quite wrong unit address. Also no resources in the
-> parent, so this entire split seems superficial and incorrect.
+See?
 
-This gets to the heart of it. I share the view that the split was
-superficial. It tried to recombine existing components to account for
-some change in hardware design between early revisions of the AST2700
-SoC. The original binding from Kevin was too fine-grained.
+> +struct aspeed_intc0 {
+> +	struct device *dev;
+> +	void __iomem *base;
+> +	raw_spinlock_t intc_lock;
+> +	struct irq_domain *local;
+> +	struct device_node *parent;
+> +	struct aspeed_intc_interrupt_ranges ranges;
+> +};
 
-I don't think the design of the diagrams helped the cause for
-understanding the proposed binding or the hardware architecture, and
-were misleading in the manner you outlined in the comments above.
+https://www.kernel.org/doc/html/latest/process/maintainer-tip.html#struct-declarations-and-initializers
 
-My reply at [1] above was an (indirect) attempt to address your
-concerns, though again I acknowledge I'm not Ryan and that review
-feedback needs direct responses from patch authors.
+I pointed you to that documentation before. Do I really have to remind
+you every couple of week?
 
-The binding proposed in this series eliminates the subnodes and enables
-a complete implementation of routing for the hardware, as demonstrated
-by the proposed drivers. I think it better conforms to the documented
-DOs and DON'Ts for writing bindings by moving anything implied by the
-compatible to the driver implementation. I hadn't yet merged the base
-arch patches for the SoC because I had contentions with the already-
-accepted binding, and merging the arch patches would make an already
-difficult job of reversing that acceptance harder again.
+> +
+> +static void aspeed_swint_irq_mask(struct irq_data *data)
+> +{
+> +	struct aspeed_intc0 *intc0 = irq_data_get_irq_chip_data(data);
+> +	int bit = data->hwirq - SWINT_BASE;
+> +	unsigned int mask;
+> +
+> +	guard(raw_spinlock_irqsave)(&intc0->intc_lock);
 
-In essence, this is some pain, but I view it as pain on the path
-towards better DTS outcomes than we had for prior generations of ASPEED
-BMC SoCs.
+s/_irqsave// Interrupts are disabled when this is invoked.
 
-> > >=20
-> > > "This binding is not improving. You are not responding to REAL proble=
-ms
-> > > described to you. What's more, you send it in a way making our life
-> > > difficult, look:"
-> > >=20
-> > > So how did you make our life easier now?
-> >=20
-> > Hi Krzysztof,
-> >=20
-> > Thanks for your feedback.
-> >=20
-> > The series you commented on in Aug 2025 (v4 1/2) attempted to model
-> > The hardware by introducing parent compatibles (aspeed,ast2700-intc0 /
-> > aspeed,ast2700-intc1) with child "interrupt-controller@" nodes using
-> > aspeed,ast2700-intc-ic. In hindsight, that approach did not align well
-> > with the actual hardware structure and resulted in inconsistencies
-> > between the diagrams, the schema, and the register layout (including
-> > unit-address issues). It was also difficult to review in isolation.
->=20
-> Read my question again:
->=20
-> "So how did you make our life easier now?"
->=20
-> And then read the earlier comment - what I expected of you. Please
-> answer these after the "look:" part.
->=20
-> Answer these please. I am not going to review any of these because you
-> keep ignoring our process of handling patches and not really responding
-> to review comments.
+> +	mask = readl(intc0->base + INTC0_SWINT_IER) & ~BIT(bit);
+> +	writel(mask, intc0->base + INTC0_SWINT_IER);
+> +	irq_chip_mask_parent(data);
+> +}
+> +
+> +static void aspeed_swint_irq_unmask(struct irq_data *data)
+> +{
+> +	struct aspeed_intc0 *intc0 = irq_data_get_irq_chip_data(data);
+> +	int bit = data->hwirq - SWINT_BASE;
+> +	unsigned int unmask;
+> +
+> +	guard(raw_spinlock_irqsave)(&intc0->intc_lock);
+> +	unmask = readl(intc0->base + INTC0_SWINT_IER) | BIT(bit);
 
-For what it's worth, Ryan has adopted b4 and so hopefully some of the
-expectations around the mechanics of patch review are less of a
-concern.
+These unmask/mask variable are simply not helpful. What's wrong with
+naming them 'ier' because that's what this is about. And while at it the
+data type for hardware related variables is u32 not unsigned int to make
+it clear.
 
-In this specific case, because of the divergence in direction, we went
-with a separate series. The failure to link that earlier series in the
-cover letter was an unfortunate oversight. I'll take responsibility for
-that, as part of developing the series with Ryan.
+> +static struct irq_chip aspeed_swint_chip = {
+> +	.name = "ast2700-swint",
+> +	.irq_eoi = aspeed_swint_irq_eoi,
+> +	.irq_mask = aspeed_swint_irq_mask,
+> +	.irq_unmask = aspeed_swint_irq_unmask,
+> +	.irq_set_affinity = irq_chip_set_affinity_parent,
+> +	.flags = IRQCHIP_SET_TYPE_MASKED,
 
-Sorry for causing you frustration.
+See above
 
-Is it acceptable if we take the following actions:
+> +
+> +#define INTC0_IN_NUM 480
+> +#define INTC0_ROUTE_NUM 5
 
-   1. Do some b4 magic to transplant this series back onto [1]
-   2. Send a follow up revision with a link to this discussion in the
-      cover letter
+Those should be at the top of the file next to the other constants.
 
-Andrew
+> +static const aspeed_intc_output_t aspeed_intc0_routes[INTC0_IN_NUM / 32][INTC0_ROUTE_NUM] = {
+> +	[0] = {
+> +		[0b000] = 0,
+> +		[0b001] = 256,
+> +		[0b010] = 426,
+> +		[0b011] = AST2700_INTC_INVALID_ROUTE,
+> +		[0b100] = AST2700_INTC_INVALID_ROUTE,
 
+Seriously? What's the point of this binary notation and the insane
+amount of space this table occupies?
+
+	[0] = {   0, 256, 426, AST2700_INTC_INVALID_ROUTE, AST2700_INTC_INVALID_ROUTE },
+	[1] = {  32, 288, 458, AST2700_INTC_INVALID_ROUTE, AST2700_INTC_INVALID_ROUTE },
+	[4] = { 128, 384, 554, 160, 176 },
+        ...
+
+
+> +
+> +#define INTC0_INTM_NUM 50
+> +
+> +static const aspeed_intc_output_t
+> +	aspeed_intc0_intm_routes[INTC0_INTM_NUM / 10] = {
+
+pointless line break
+
+> +		[0] = 192, /* INTM00 ~ INTM09 */
+> +		[1] = 416, /* INTM10 ~ INTM19 */
+> +		[2] = 586, /* INTM20 ~ INTM29 */
+> +		[3] = 208, /* INTM30 ~ INTM39 */
+> +		[4] = 224, /* INTM40 ~ INTM49 */
+> +	};
+> +
+> +static bool range_contains_element(u32 start, u32 count, u32 value)
+
+in_range32() provides that already
+
+> +{
+> +	if (WARN_ON_ONCE((U32_MAX - count) < start))
+> +		return false;
+> +
+> +	return value >= start && value < start + count;
+> +}
+> +
+> +static int
+> +resolve_input_from_child_ranges(const struct aspeed_intc0 *intc0,
+> +				const struct aspeed_intc_interrupt_range *range,
+> +				u32 outpin, u32 *input)
+> +{
+> +	u32 offset;
+> +	u32 base;
+
+One line
+
+> +
+> +	if (!range_contains_element(range->start, range->count, outpin))
+> +		return -ENOENT;
+> +
+> +	if (range->upstream.param_count == 0)
+> +		return -EINVAL;
+> +
+> +	base = range->upstream.param[0];
+> +	offset = outpin - range->start;
+> +	if ((U32_MAX - offset) < base) {
+
+        if (!in_range32(...)
+
+
+> +		dev_warn(intc0->dev,
+> +			 "%s: Arithmetic overflow for input derivation: %u + %u\n",
+
+Pointless line break. Please fix them all over the place.
+
+> +			 __func__, base, offset);
+> +		return -EINVAL;
+> +	}
+> +
+> +	*input = base + offset;
+> +	return 0;
+> +static int resolve_parent_route_for_input(const struct aspeed_intc0 *intc0,
+> +					  const struct fwnode_handle *parent, u32 input,
+> +					  struct aspeed_intc_interrupt_range *resolved)
+> +{
+> +	aspeed_intc_output_t c0o;
+> +	int rc = -ENOENT;
+> +
+> +	if (input < INT_NUM) {
+> +		bool found;
+> +
+> +		dev_dbg(intc0->dev, "%s: Resolving parent route for linear input %u\n",
+> +			__func__, input);
+
+Do you really still need all those debug prints or are you trusting your
+code by now?
+
+If they still are considered valuable then shorten them in a sensible
+way so they nicely hide in the code instead of cluttering it to the
+point of making it unreadable.
+
+> +{
+> +	struct aspeed_intc0 *intc0;
+> +	struct fwnode_handle *parent_fwnode;
+> +	int ret;
+
+See Documentation about variable declarations...
+
+> +	for (size_t i = 0; i < nc1outs; i++) {
+> +		aspeed_intc_output_t c1o = c1outs[i];
+> +
+> +		if (c1o == AST2700_INTC_INVALID_ROUTE) {
+> +			dev_dbg(intc0->dev, "%s: Invalid output at route index %zu\n",
+> +				__func__, i);
+> +			continue;
+> +		}
+> +
+> +		dev_dbg(intc0->dev, "%s: Have output %u for route index %zu\n",
+> +			__func__, c1o, i);
+> +
+> +		for (size_t j = 0; j < nc1ranges; j++) {
+> +			struct aspeed_intc_interrupt_range c1r = c1ranges[j];
+> +			u32 input;
+> +
+> +			dev_dbg(intc0->dev,
+> +				"%s: Inspecting candidate range %zu starting at %u for %u\n",
+> +				__func__, j, c1r.start, c1r.count);
+> +
+> +			/*
+> +			 * Range match for intc1 output pin
+> +			 *
+> +			 * Assume a failed match is still a match for the purpose of testing,
+> +			 * saves a bunch of mess in the test fixtures
+> +			 */
+> +			if (!(c0domain == irq_find_matching_fwspec(&c1r.upstream,
+> +								   c0domain->bus_token) ||
+> +			      IS_ENABLED(CONFIG_ASPEED_AST2700_INTC_TEST))) {
+> +				dev_dbg(intc0->dev, "%s: Parent mismatch for candidate range %zu\n",
+> +					__func__, j);
+> +				continue;
+> +			}
+> +
+> +			ret = resolve_input_from_child_ranges(intc0, &c1r, c1o, &input);
+> +			if (ret) {
+> +				if (ret == -ENOENT)
+> +					dev_dbg(intc0->dev,
+> +						"%s: Output %u not in candidate range %zu starting at %u for %u\n",
+> +						__func__, c1o, j, c1r.start, c1r.count);
+> +				continue;
+
+All of this is unreadable and I told you about the bracket rules before, no?
+
+> +			}
+> +			dev_dbg(intc0->dev,
+> +				"%s: Resolved INTC0 input to %u using candidate range %zu: [%u, %u)\n",
+> +				__func__, input, j, c1r.start, c1r.start + c1r.count);
+> +
+> +			/*
+> +			 * INTC1 should never request routes for peripheral interrupt sources
+> +			 * directly attached to INTC0.
+> +			 */
+> +			if (input < GIC_P2P_SPI_END) {
+> +				dev_dbg(intc0->dev,
+> +					"%s: Invalid range specification at index %zu routed INTC1 output to unreachable INTC0 input\n",
+> +					__func__, j);
+> +				continue;
+> +			}
+> +
+> +			ret = resolve_parent_route_for_input(intc0, parent_fwnode, input, NULL);
+> +			if (ret < 0)
+> +				continue;
+> +
+> +			/* Route resolution succeeded */
+> +			resolved->start = c1o;
+> +			resolved->count = 1;
+> +			resolved->upstream = c1r.upstream;
+> +			resolved->upstream.param[0] = input;
+> +			dev_dbg(intc0->dev,
+> +				"%s: Route resolution selected INTC1 output %u via index %zu\n",
+> +				__func__, c1o, i);
+> +			/* Cast protected by prior test against nc1outs */
+> +			return (int)i;
+> +		}
+> +	}
+> +
+> +	ret = -EHOSTUNREACH;
+> +	return ret;
+
+Impressive.
+
+> +}
+> +EXPORT_SYMBOL_GPL(aspeed_intc0_resolve_route);
+
+What is this export for? All usage sites are built in, no?
+
+> +static int aspeed_intc0_irq_domain_map(struct irq_domain *domain,
+> +				       unsigned int irq, irq_hw_number_t hwirq)
+> +{
+> +	if (hwirq < GIC_P2P_SPI_END)
+> +		irq_set_chip_and_handler(irq, &linear_intr_irq_chip,
+> +					 handle_level_irq);
+
+Make this one line. Otherwise you need brackets.
+
+> +	else if (hwirq < INTM_BASE)
+> +		return -EINVAL;
+> +	else if (hwirq < SWINT_BASE)
+> +		irq_set_chip_and_handler(irq, &aspeed_intm_chip,
+> +					 handle_level_irq);
+> +	else if (hwirq < INT0_NUM)
+> +		irq_set_chip_and_handler(irq, &aspeed_swint_chip,
+> +					 handle_level_irq);
+> +	else
+> +		return -EINVAL;
+> +
+> +	irq_set_chip_data(irq, domain->host_data);
+> +	return 0;
+> +}
+
+> +static int aspeed_intc0_irq_domain_activate(struct irq_domain *domain,
+> +					    struct irq_data *data, bool reserve)
+> +{
+> +	struct aspeed_intc0 *intc0 = irq_data_get_irq_chip_data(data);
+> +
+> +	if (data->hwirq < INT_NUM) {
+> +		int bank = data->hwirq / 32;
+> +		int bit = data->hwirq % 32;
+> +		u32 mask = BIT(bit);
+> +		int route;
+> +
+> +		route = resolve_parent_route_for_input(intc0,
+> +						       intc0->local->parent->fwnode,
+> +						       data->hwirq, NULL);
+> +		if (route < 0)
+> +			return route;
+> +
+> +		guard(raw_spinlock_irqsave)(&intc0->intc_lock);
+> +		for (int i = 0; i < 3; i++) {
+> +			void __iomem *sel = intc0->base + 0x200 + bank * 4 + 0x100 * i;
+
+Magic constants 0x200 4 and 0x100. Use proper defines and a macro/inline
+to calculate the register address and not this incomprehensible garbage.
+
+> +			u32 reg = readl(sel);
+> +
+> +			if (route & BIT(i))
+> +				reg |= mask;
+> +			else
+> +				reg &= ~mask;
+> +
+> +			writel(reg, sel);
+> +			if (readl(sel) != reg)
+> +				return -EACCES;
+> +		}
+> +	} else if (data->hwirq < INT0_NUM) {
+> +		return 0;
+> +	} else {
+> +		return -EINVAL;
+> +	}
+
+If you rearrange those conditions you can avoid the indentation all
+together
+
+        if (in_range32(data->hwirq, INTM_BASE, INTM_NUM + SWINT_NUM))
+        	return 0;
+        if (data->hwirq >= INT_NUM)
+        	return -EINVAL;
+
+No?
+
+> +
+> +	return 0;
+> +}
+> +
+> +static void aspeed_intc0_disable_intbank(struct aspeed_intc0 *intc0)
+> +{
+> +	int i, j;
+> +
+> +	for (i = 0; i < INTC0_INTBANK_GROUPS; i++) {
+> +		for (j = 0; j < INTC0_INTBANKS_PER_GRP; j++) {
+
+Both i and j should be declared in the for () statement. Your coding
+style is so inconsistent it's not even funny anymore. 
+
+> +			u32 base = INTC0_INTBANKX_IER + (0x100 * i) + (0x10 * j);
+> +
+> +			writel(0, intc0->base + base);
+> +		}
+> +	}
+> +}
+> +IRQCHIP_PLATFORM_DRIVER_BEGIN(ast2700_intc0)
+> +IRQCHIP_MATCH("aspeed,ast2700-intc0-ic", aspeed_intc0_ic_probe)
+> +IRQCHIP_PLATFORM_DRIVER_END(ast2700_intc0)
+> +
+> +#ifdef CONFIG_ASPEED_AST2700_INTC_TEST
+> +#include "irq-ast2700-intc0-test.c"
+> +#endif
+
+Yikes. What's wrong with Makefile?
+
+> diff --git a/drivers/irqchip/irq-ast2700-intc1.c b/drivers/irqchip/irq-ast2700-intc1.c
+> +static void aspeed_intc1_ic_irq_handler(struct irq_desc *desc)
+> +{
+> +	struct aspeed_intc1 *intc1 = irq_desc_get_handler_data(desc);
+> +	struct irq_chip *chip = irq_desc_get_chip(desc);
+> +	unsigned long bit, status;
+> +
+> +	chained_irq_enter(chip, desc);
+> +
+> +	for (int bank = 0; bank < INTC1_BANK_NUM; bank++) {
+> +		status = readl(intc1->base + INTC1_ISR + (0x10 * bank));
+> +		if (!status)
+> +			continue;
+> +
+> +		for_each_set_bit(bit, &status, INTC1_IRQS_PER_BANK) {
+> +			generic_handle_domain_irq(intc1->local,
+> +						  (bank * INTC1_IRQS_PER_BANK) +
+> +							  bit);
+> +			writel(BIT(bit),
+> +			       intc1->base + INTC1_ISR + (0x10 * bank));
+
+My eyes bleed by now.
+
+Thanks,
+
+        tglx
 
