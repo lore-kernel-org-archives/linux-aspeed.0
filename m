@@ -1,59 +1,58 @@
-Return-Path: <linux-aspeed+bounces-3496-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3497-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8EBCEF06FA
-	for <linux-aspeed@archiver.kernel.org>; Mon,  9 Feb 2026 00:49:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ABF3EF0708
+	for <linux-aspeed@archiver.kernel.org>; Mon,  9 Feb 2026 04:43:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f8R1F2WVSz2xN2;
-	Mon, 09 Feb 2026 11:49:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f8XBM4rtZz2yFm;
+	Mon, 09 Feb 2026 15:43:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770598193;
-	cv=none; b=OknZShJR8bZO6lDIQ4NV9/UQ7auT6zQ9CahKI9HqNlPoSprfbxNJ2SJzpVD2bdgzSoxyM9NA0hPuCT0kLOkJF7nWdndpgcrfpaz9Oxlih32GH/+U+3xSEJMWu76wV6MxFpImGEuPaSIkTqvjJmb7XkTki8C0LLm+plSaXRcyKNggD0TlxZ3nq9aLk+D9k4lrfxyIZniuSd9NtWTPxyZ0cURGyiZoAoT9Y+wELbx5vGqMRGRAQr5zvNcjo0rqC7OBOKSBP+iQLUrPfa1O0K3DeT/gjuHgvD0lqbQixh1DeOzZcPvTgJhSL5qBow6ketXAlon5uQ1JuPjRsGDQnTb2Pg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770612187;
+	cv=none; b=iuu7/WpMGMlliNgzxGsziKL1+haRNx8pgeTlNBqRE8yq8+Ayc2jNnpFwlTgOaCc8Dkw1fsXCUqILq11yOyP7eLtk2Z49PdPs00bOmHb572vOzv74oJXATlkTLRwpXi7BpfRV9cphJbVzIvQOfmlbu754BLOWWry9164eJZTzVYjKFrUEdBj8wy/OQfBKJUkRevcSvyZq5NbyI32jwv/jFLfizdRej6LsIMF3dMsXDdLbuNYXzlbPhOhyorP8lbmWJ9N0PbGl741gpLyUe1PB5zoSZoFZPf2eRpGM4foA7HoHKz+JhmS5tVxIVed1bWWVFmKtQu7DSJ+X5w6b58cl1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770598193; c=relaxed/relaxed;
-	bh=r7MCCqP45D0dY/QaEr0D6Ms9HT2gRvnzr4MI+SBARCU=;
+	t=1770612187; c=relaxed/relaxed;
+	bh=2EDJMPOdQUIkj7B+MtnJTuwRWWsGcynJpHj9KDB1EX4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=j7V4Pc1LGJDjAIyOzWOPgtjLIU4RAiNy5056VMUw6jzeLt3Nw01wdaRxLajwa/V3N32Xh0IxvFnx8Bh5Bu3UH1zE8sLGrlABkXE74UM0afJ2ZFeNEkeRR++Wa69bGJ374G/Ye7qXaXb5HaeBTIQ1nw0f9ffqWMaP+k5f2Gxjm/5EE8Ei5HG/x2xpOh21GQaV4TQ8stXU7iRKJkfOHIVgp+tmKLHvYLpf4BSgXX63P7v/P1hjU2vRPhj7fBBHUlRlujg5xI54KNxIEd9tIPPw1jYs0Vs40JpKf9HlZN/qnF8yXql1rSvBt1f1RPlBh2lDSixIWISdtAiXa3+exqnS1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Qsv95FT3; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 MIME-Version:Content-Type; b=J/fxnm6WfKYOh8b77NJ0qFhSy9wJS8FhfBMqt+w6CKPQIz6uYwlrdECzT3pfxvCfqz+ib1s+CtJ6vQCr55ysCPTgc9+YbetEkaVYXxfUzcbOQLHPOYvLCWfvjW+8STddG2M6GsDuK3Gr2tPstFSE0JQWVWIwj5HOqxjwbPcwtC81TW+gNnkpEgCtgdLqhYUwyUdiG5qTcVLeeCtMqBFcHRGwyjrjh0xo9laeL5iF5dIAEfQQVBJByzUHtWuYnHLTQNpIZElVAspOhc9wt4DlEBRqCrS/XTHrKgfJVZLyB1u1G760vH4WIwEqrlcPvpYRSNbEga/rtSC7q2VyW7P2+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=LM8TiHiw; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Qsv95FT3;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=LM8TiHiw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8R1C42lDz2xLv
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 09 Feb 2026 11:49:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8XBL6J9lz2xnl
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 09 Feb 2026 15:43:06 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1770598189;
-	bh=r7MCCqP45D0dY/QaEr0D6Ms9HT2gRvnzr4MI+SBARCU=;
+	d=codeconstruct.com.au; s=2022a; t=1770612185;
+	bh=2EDJMPOdQUIkj7B+MtnJTuwRWWsGcynJpHj9KDB1EX4=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=Qsv95FT3JdSqVtCZt3NjwNcCnqE7TpLFpUEwRs6P6zgVBZepyXw4WDPudVkrI+rlI
-	 +DXpoZSJPRHqZ7iytabmfOudbuTL5Se9YCVItkelw2W0caa3RjAM5gagZlCmXBk84T
-	 9N38H53KsEEJ3lCDRxmmEMx3LyLm3Zg9g3PpJgC5z95PqkrNDLcTMQDBRttEESbign
-	 CD0XUf2CM0ofN1ZTC7ztpbtxQiK9bhdHkNYGBVj9f5Efe8a22do6Eh4DUiO+sIuvt9
-	 xtk3UdqIdqPTpNQMosbHFMN0JUkEy4s9jJiSUmc0vulrOd0WImOP1GKfq/NJgsuTdT
-	 tvYnDJS+HrL3Q==
+	b=LM8TiHiwLMi4JpxMmygPXU2C3mwSlUbSkF43jtqGvY2th0eP04oho0fdrfmkx4mcq
+	 xcgN3b/mtuH2h2wFxPyNmvGSGK+WKhPzBcWkMKcuHXCdZ61nP3EUf79QvNuneU/+sf
+	 VjnRi5Ei0q+nYEorLZxdK05JaAEDAFLn/UyGklTE7GGSpLhnBWs+SqPiXWGIsCaqww
+	 ButJkpEb+LhtcV486396eGDPbQUQMtvhsVwlRROTMNP8cna4h1Ptka2z2Qm+b++PWN
+	 XEGLqThGTkVwBnMkCWIYNoIWpltFL1tsB0GVyQYXYNt1H+BonrTj69NeH66xgOG0U9
+	 WX+t4+RYVhRmA==
 Received: from [127.0.1.1] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B77AB60360;
-	Mon,  9 Feb 2026 08:49:46 +0800 (AWST)
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 72C846024E;
+	Mon,  9 Feb 2026 12:43:04 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Anirudh Srinivasan <anirudhsriniv@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20260114-asus-ipmi-expansion-card-v2-0-12b72d20a9b9@gmail.com>
-References: <20260114-asus-ipmi-expansion-card-v2-0-12b72d20a9b9@gmail.com>
-Subject: Re: [PATCH v2 0/2] Add device tree for Asus Kommando IPMI Card
-Message-Id: <177059818618.793195.12078369893551899945.b4-ty@codeconstruct.com.au>
-Date: Mon, 09 Feb 2026 11:19:46 +1030
+ Marc Olberding <molberding@nvidia.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20260120-alt-128-v4-1-0e5c491a532c@nvidia.com>
+References: <20260120-alt-128-v4-1-0e5c491a532c@nvidia.com>
+Subject: Re: [PATCH v4] ARM: dts: aspeed: add an alt 128M flash layout
+Message-Id: <177061218409.863052.13158700639798064370.b4-ty@codeconstruct.com.au>
+Date: Mon, 09 Feb 2026 15:13:04 +1030
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -71,18 +70,14 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.14.3
 
-On Wed, 14 Jan 2026 23:31:06 -0600, Anirudh Srinivasan wrote:
-> Adds support for Asus Kommando IPMI Card [1] [2], which is a PCIe card
-> with an AST2600 on it that provides BMC functionality to any host
-> without an onboard BMC as long as it has a PCIe slot. The model name
-> Kommando is based off the model description in the vendor fw.
+On Tue, 20 Jan 2026 12:34:14 -0800, Marc Olberding wrote:
+> Add a 128M layout for the BMC flash chip we didn't boot from. Including
+> this allows the user to write to each partition on the alternate spi
+> chip. This dtsi follows the existing standard of using the same layout
+> as non alt version and prepending `alt` to each partition's name.
 > 
-> Currently supported functionality includes UART, booting from SPI,
-> KVM functionality(usb gadget for host, reading VGA framebuffer from
-> host) and LED/Power Control via GPIOs. NIC support is not included,
-> requiring additional patches which will be sent later on [3]. The
-> entire BMC functionality has been tested on an OpenBMC build
-> available here [4] (which uses a modified u-boot device tree [5]).
+> This patch also adds this alt spi flash layout to
+> aspeed-bmc-nvidia-msx4-bmc.dts
 > 
 > [...]
 
