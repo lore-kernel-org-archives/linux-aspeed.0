@@ -1,54 +1,73 @@
-Return-Path: <linux-aspeed+bounces-3510-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3511-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7315E94620
-	for <linux-aspeed@archiver.kernel.org>; Mon,  9 Feb 2026 23:11:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC81CEA3F0F
+	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Feb 2026 07:26:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f90nR4B5Hz2ydq;
-	Tue, 10 Feb 2026 10:11:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770623945;
-	cv=none; b=h80jjYBDT4fShfwbAdmIexX7XtlhkX/Uzq7FinmxKRuLtMno77ynHrTk/R6wFX3ofxmAwVP5WNJBxPvy6p+uvBopxcgB/5sM/VcaALtzEhwFu7PWDeQF0iWp2Rv+3eiPmvMDKH6qL+ls3Iq7wLgs87kT18Ahe9Jw1gfWx939wronIXIF1DGdDUzo327557adpkW+VuKjouwh8xHVoMaOnDJFD4JC5raCPS/6UnDTiukX6Ub4Obi/E7EWz8WoIpgbfcCsLXCJdHem9WJ3XJmO78vkiyBkYzjfVZTgUBEWUSNsPAqLyLh1UftgChDEV+B734OW8rQ6LTSGUIQ/3xbedA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f9Clw2wspz30FP;
+	Tue, 10 Feb 2026 18:26:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770708364;
+	cv=none; b=OAsRk4yjEQRoEQulx9a1/ItVc3P+MD4fFbcX8t/e661qCIS1vrdJJdceNViF4T/Zaie1VzMK8lo2kP74PFrOlMf15Q4uGcCcxHHpLCeDZUo999JtKkFo0iswkBch5uyeGhu5JAXM9ckrMQpjXpDZH82PcN8jML1hqUtta3mJHre4dqrxdv0IULQRRoiApizUZ4dGMUw9Pm2W28zs2bmzdFI2XXJUKBWKhtSTNbB2AWYK2pPYqKmBgmcFutTcN80hR4ODFJB9ShyLXcvPAtD4dKXkWNe2alxgHLOFR5BF344YzMDNG/SoCOV17UObJgXs0C0StaWul5MMEWODBH2A+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770623945; c=relaxed/relaxed;
-	bh=z44YXzKmyMtQgvTiaKGbV8un2m5fsA276LfQu7lOjC0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=UgZ7coEEcc+2S81ppvZ/mcUCcuaQVsiQhQ+vjDMPQm3rMEyXMkCCsVfUhyt5+q1NY4hDw52wkpf628El68pAwICX3o6DiEpNB1aA9vnzBeMH2691xUNzKkYMYOgH2iHifHhc141o2I4r2p2ouThn7Fh4CzWusKkgn4sEuOKeFYFMvvYzKWWrjg0NxXFEoop4TypbkEa3Q5afrQ0iXqYZJBKcF9AtC1guUvF0UCwT+4KSgVQ5E8iLhIDOa6AkDCp2PbROv1jZ33yww3m0tEUslLbYHvAUkHFwf1v37VES8ofyoeCioucb4cSL6Mi1pWiyGYSbkvLHXROV7VMZSL+MhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qZfUOlTn; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+dirkchen.amd.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1770708364; c=relaxed/relaxed;
+	bh=8ledWZbn+TzX2T22Aa+xwzh+iAFsRkUxzf+EyA9TX7s=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=ZyGugPCbtRfeCOrtKq5NVX94xoIRHmti6QyZ1SZ5M2sFQWNEgXFCGayYWi+7KaBWnQc8QWb5ZXHVFdXWVdSAwbRcGiFcQDe5AhpFUHQ9cDm9mWSZQKhcKNO5428bWWJO2mUZe7RzXE1RkNnx6Q4W/ZV4wxh0ezqz9wRg0qQAu+msEaXnEYwsuNfEzYVcdIKCT5wEOYuGaPTXSNWFO/FwfDGrvFjJO43FwYy3uSDu/c2neSnIaZ1UIES567U2gYJPnELMMzL7K9LctynfETe6m2cnR3AbDQm3g6g5Mni8Oq0cXGd/obqyf7ElnpbHmS6kp02pCmKdYHqrZLoBOdruVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=E+HqPabo; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qZfUOlTn;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=E+HqPabo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+dirkchen.amd.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f8cXS0y52z2xc8
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 09 Feb 2026 18:59:04 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id ACF4540A70;
-	Mon,  9 Feb 2026 07:59:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 80C45C116C6;
-	Mon,  9 Feb 2026 07:59:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1770623941;
-	bh=EvZLo8yBPuNQ2ZWhWlIOFY5LAjRlRTBuCqsicIyWtNs=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=qZfUOlTnBdSEk5iVMZaxtqVbSDShf99WcsVyOJB1R3Spo6wkhqwHL1Bp7qYhmRe60
-	 nn6V5EVP6IeO0DirysjrtX6BcoxPO6HwUkGm2bVwY1CGiWXjJbI3gJ3ZdoqQkC9oN+
-	 StMtBgVJNamevWZ2eDjIjTc46vmKsg45faAF5zyytTndnfZSMvJyJcjwqZXIPLOUN4
-	 3b5EpSsEj2AoERT3A6RCyoQbtkTINk7z9PK/jK7JwpcuE3zRoXzxlNQ8NIleOiYO0b
-	 g9itA46W4LbnMaSFCtxsojx4dCRLdPALdZbB/ZNi3eira4KQ+4Wnap9WD/RA0V+uLn
-	 uaWNy1gjmq5UA==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5436AEF0711;
-	Mon,  9 Feb 2026 07:59:01 +0000 (UTC)
-From: Dirk Chen via B4 Relay <devnull+dirkchen.amd.com@kernel.org>
-Date: Mon, 09 Feb 2026 15:58:53 +0800
-Subject: [PATCH v2] ARM: dts: aspeed: anacapa: Add retimer EEPROMs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9Clt65Cxz309N
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Feb 2026 18:26:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1770708361;
+	bh=8ledWZbn+TzX2T22Aa+xwzh+iAFsRkUxzf+EyA9TX7s=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=E+HqPabozX7gbg0tjWTuECfyirjpr0nWgXujSn25Ar2B8oaYpH00TUh9B6IaioJHK
+	 eqU8tsIKfX2npYQkA6VV+LUbeg3jeX5Y2Lp6C3QlDl3gMmxV7cvzCR0up3C42CRskV
+	 gL5Re3fuUEVoMqQhoTsTCvPf9mBuv6DQeL5ijfZL3TgWi4JED1isiv96UgEinTPqia
+	 0vuJioL5O2vOOTjQaUd9Ej0WeZECD8LcpZ0dYoPhUwD2bORMRPCMxY/u+ouZGTzSAT
+	 KCNvYAYKiXaEZf2ASacIaApc7p3K7HOa68CmC+7YlH+XFkdyIJOB7BgjpzaLc8T6Qo
+	 6kclYs2fn75UA==
+Received: from [192.168.68.117] (unknown [180.150.112.60])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 179126024E;
+	Tue, 10 Feb 2026 15:25:59 +0800 (AWST)
+Message-ID: <feedc58438adad98f4b2a74a1499b2afa92a5eae.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 0/4] Add AST2700 INTC0/INTC1 support
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
+ <ryan_chen@aspeedtech.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>, Paul Walmsley
+ <pjw@kernel.org>, Palmer Dabbelt	 <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Alexandre Ghiti	 <alex@ghiti.fr>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+ "devicetree@vger.kernel.org"	 <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"	
+ <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"	
+ <linux-aspeed@lists.ozlabs.org>, "linux-riscv@lists.infradead.org"	
+ <linux-riscv@lists.infradead.org>, Jeremy Kerr <jk@codeconstruct.com.au>
+Date: Tue, 10 Feb 2026 17:55:58 +1030
+In-Reply-To: <6de719dc84324166ed60bb8ec130cf2c9ef351f5.camel@codeconstruct.com.au>
+References: <20260205-irqchip-v1-0-b0310e06c087@aspeedtech.com>
+		 <20260205-intrepid-vengeful-deer-14e2eb@quoll>
+		 <TY2PPF5CB9A1BE69B07F90DFB245FAB735DF299A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+		 <d5e45c9f-f3c7-4289-8991-02bd2c5b9587@kernel.org>
+	 <6de719dc84324166ed60bb8ec130cf2c9ef351f5.camel@codeconstruct.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -62,87 +81,37 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260209-b4-anacapa-dts-fix-v2-1-fe446a7038bf@amd.com>
-X-B4-Tracking: v=1; b=H4sIALyTiWkC/32NOw7CMBBErxJtzSLbmF8q7oFSrH/ERZzIjixQ5
- Luz5AA0I72R5s0GxefoC/TdBtnXWOKcGNShAztSenmMjhmUUBfBgUYjJbK0ELq1YIhvVOIagr/
- TyQgLPFyy53qXPgfmMZZ1zp/9o8pf+1dXJUp2Om2ElPp21g+a3NHOEwyttS/r+y4osgAAAA==
-X-Change-ID: 20260202-b4-anacapa-dts-fix-207ffe9a3b0c
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Dirk Chen <dirkchen@amd.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1770623940; l=1517;
- i=dirkchen@amd.com; s=20260202; h=from:subject:message-id;
- bh=q1pvDHup26t2gWq6fHUSx5KhOyJaw4CQELJ2qKSf88g=;
- b=+d5clqSgm87rC1q9Ol08GoDm3+lw2SvRxI9fXdTjZLhpFf6cW2vjFrUdJO1WfZNI5XmE+g+Y/
- MM6fJ1mG6qvBV6X7Na2+2Ueg2+YOlKAL0bUl9n0YQWIk4i4HvpKoSGY
-X-Developer-Key: i=dirkchen@amd.com; a=ed25519;
- pk=NBIyLsVg/YYtGLruq9XLdLWx2PP/1MH4jDDQ1V+7wes=
-X-Endpoint-Received: by B4 Relay for dirkchen@amd.com/20260202 with
- auth_id=622
-X-Original-From: Dirk Chen <dirkchen@amd.com>
-Reply-To: dirkchen@amd.com
 
-From: Dirk Chen <dirkchen@amd.com>
+Hi Krzysztof,
 
-The Anacapa board features Atmel 24C2048 EEPROMs on i2c0 and i2c1, which
-are used to store retimer configurations. Add the corresponding device
-tree nodes to support these components.
+On Fri, 2026-02-06 at 17:49 +1030, Andrew Jeffery wrote:
+> Is it acceptable if we take the following actions:
+>=20
+> =C2=A0=C2=A0 1. Do some b4 magic to transplant this series back onto [1]
+> =C2=A0=C2=A0 2. Send a follow up revision with a link to this discussion =
+in the
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 cover letter
 
-Signed-off-by: Dirk Chen <dirkchen@amd.com>
----
-Changes in v2:
-- Improved commit description to clarify that the change reflects
-  actual hardware as requested by the reviewer.
-- Removed mentions of other platforms to avoid confusion.
-- Link to v1: https://lore.kernel.org/r/20260202-b4-anacapa-dts-fix-v1-1-20d4b0114854@amd.com
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+Following up my own post, I don't think we should attempt such
+grafting. [1] references v4. v4 was superseded by v6 at [2], which was
+merged.
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-index 221af858cb6b..b8d248d99d7c 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-@@ -328,6 +328,12 @@ i2c0mux0ch3: i2c@3 {
- 			#size-cells = <0>;
- 		};
- 	};
-+
-+	eeprom@50 {
-+		compatible = "atmel,24c2048";
-+		reg = <0x50>;
-+		pagesize = <128>;
-+	};
- };
- 
- // R Bridge Board
-@@ -362,6 +368,12 @@ i2c1mux0ch3: i2c@3 {
- 			#size-cells = <0>;
- 		};
- 	};
-+
-+	eeprom@50 {
-+		compatible = "atmel,24c2048";
-+		reg = <0x50>;
-+		pagesize = <128>;
-+	};
- };
- 
- // MB - E1.S
+Because of that merge, separating this proposal into a new series seems
+warranted, but has the downside of making it difficult to compare to v4
+of that earlier series.
 
----
-base-commit: 4c87cdd0328495759f6e9f9f4e1e53ef8032a76f
-change-id: 20260202-b4-anacapa-dts-fix-207ffe9a3b0c
+I have gone through each of your feedback items from the earlier series
+to consider recurring issues. Defining a new binding is unfortunate but
+its addition side-steps an ABI break - perhaps rather than remove the
+existing binding we can deprecate it, and keep the associated driver
+(assuming this isn't overkill, given there are no in-tree users).
+Otherwise it looks to me like the proposal has concerns covered, but
+let me know if not.
 
-Best regards,
--- 
-Dirk Chen <dirkchen@amd.com>
+Andrew
 
-
+[1]: https://lore.kernel.org/all/1a2ca78746e00c2ec4bfc2953a897c48376ed36f.c=
+amel@codeconstruct.com.au/
+[2]: https://lore.kernel.org/all/20251030060155.2342604-1-ryan_chen@aspeedt=
+ech.com/
 
