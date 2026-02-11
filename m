@@ -1,70 +1,65 @@
-Return-Path: <linux-aspeed+bounces-3511-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3512-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC81CEA3F0F
-	for <linux-aspeed@archiver.kernel.org>; Tue, 10 Feb 2026 07:26:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85E75EB596E
+	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Feb 2026 07:07:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4f9Clw2wspz30FP;
-	Tue, 10 Feb 2026 18:26:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4f9qHW6r28z2xlk;
+	Wed, 11 Feb 2026 18:07:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770708364;
-	cv=none; b=OAsRk4yjEQRoEQulx9a1/ItVc3P+MD4fFbcX8t/e661qCIS1vrdJJdceNViF4T/Zaie1VzMK8lo2kP74PFrOlMf15Q4uGcCcxHHpLCeDZUo999JtKkFo0iswkBch5uyeGhu5JAXM9ckrMQpjXpDZH82PcN8jML1hqUtta3mJHre4dqrxdv0IULQRRoiApizUZ4dGMUw9Pm2W28zs2bmzdFI2XXJUKBWKhtSTNbB2AWYK2pPYqKmBgmcFutTcN80hR4ODFJB9ShyLXcvPAtD4dKXkWNe2alxgHLOFR5BF344YzMDNG/SoCOV17UObJgXs0C0StaWul5MMEWODBH2A+g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1770793623;
+	cv=none; b=aXzP6ZcQLRLFbOInL/ffqjXpqDyVsKKNFhRTQrqtzHplFLbr4FqaAyYRzOgfH6ByWJgjnZbYMeBlmw+WvBMYlkvzK53YMEP9/MjC3BBxNM5kcpvpFC3LEB/+h/6jmDbVBsMFDmgF2jHuyzoK4MKhF2g29FXdGwcKIbJXDzt+dBv6TRixZJVE2oIaDETEwtr4qaEgQy6Bw6Jc+/wP7Am9fjMWPASaGp6bpskV7HzZlwYvv1xG6swNcPv/W4EWTh9RuYv8FNrqA2v7ys2d8VUwQ42uU9zDob8fngbZK3QvZMUXIsPbAGdfSf9EcOMRQRuk4SLNpjCEutkr4KUwNbEo0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1770708364; c=relaxed/relaxed;
-	bh=8ledWZbn+TzX2T22Aa+xwzh+iAFsRkUxzf+EyA9TX7s=;
+	t=1770793623; c=relaxed/relaxed;
+	bh=ekwU2eOw8Ug7JuWGM23DP3Zt8xIe9aWbc8KSy6O2ZiA=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ZyGugPCbtRfeCOrtKq5NVX94xoIRHmti6QyZ1SZ5M2sFQWNEgXFCGayYWi+7KaBWnQc8QWb5ZXHVFdXWVdSAwbRcGiFcQDe5AhpFUHQ9cDm9mWSZQKhcKNO5428bWWJO2mUZe7RzXE1RkNnx6Q4W/ZV4wxh0ezqz9wRg0qQAu+msEaXnEYwsuNfEzYVcdIKCT5wEOYuGaPTXSNWFO/FwfDGrvFjJO43FwYy3uSDu/c2neSnIaZ1UIES567U2gYJPnELMMzL7K9LctynfETe6m2cnR3AbDQm3g6g5Mni8Oq0cXGd/obqyf7ElnpbHmS6kp02pCmKdYHqrZLoBOdruVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=E+HqPabo; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=OrSnpnrMOh2TlJOp3ke06p0k3s4IymrUgPTotvv6bv7hBeh83viD9tULy1/vbnr0YJ0Sl/CMSqje7aCQGx9NMg0cpmh4V5to/JD3EhREgeBsVKUJ5fxVHbalQd5abl80Qi9Ic4q4SwXrjwl/3wPRtQOBtA7ly/4RWRfl/e4cu7XsjYiTRhP9uOmbGzNYA/AHGRF/OIMFdpl3jJoflw/z0ZrPQfAAFmb2vPihVDUs0OOKs85ZzIcC7J/msYrBStXipVCLFqzTNCkc1iiCX8MMMrwIAgwyZnzXEJKHVxxpIvi7cmvFkIGUhJ06Ml/iwEBy5X5xLxDCGsZeL/uRb6gYHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=P9M0s6tm; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=E+HqPabo;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=P9M0s6tm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9Clt65Cxz309N
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Feb 2026 18:26:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4f9qHV6GvQz2xSb;
+	Wed, 11 Feb 2026 18:07:02 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1770708361;
-	bh=8ledWZbn+TzX2T22Aa+xwzh+iAFsRkUxzf+EyA9TX7s=;
+	d=codeconstruct.com.au; s=2022a; t=1770793620;
+	bh=ekwU2eOw8Ug7JuWGM23DP3Zt8xIe9aWbc8KSy6O2ZiA=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=E+HqPabozX7gbg0tjWTuECfyirjpr0nWgXujSn25Ar2B8oaYpH00TUh9B6IaioJHK
-	 eqU8tsIKfX2npYQkA6VV+LUbeg3jeX5Y2Lp6C3QlDl3gMmxV7cvzCR0up3C42CRskV
-	 gL5Re3fuUEVoMqQhoTsTCvPf9mBuv6DQeL5ijfZL3TgWi4JED1isiv96UgEinTPqia
-	 0vuJioL5O2vOOTjQaUd9Ej0WeZECD8LcpZ0dYoPhUwD2bORMRPCMxY/u+ouZGTzSAT
-	 KCNvYAYKiXaEZf2ASacIaApc7p3K7HOa68CmC+7YlH+XFkdyIJOB7BgjpzaLc8T6Qo
-	 6kclYs2fn75UA==
+	b=P9M0s6tmcbwCi6R7qtb9G7n9zjrlhTdWDjrCSNhFhzlYolQSCANRFcMHilkBkkoOH
+	 8C5d/18JDioaWOfFnBe2EfO/xlBqrzgtBJAguPI3qj1EYxv7Dmr02z8pkSxyfXNGLT
+	 csWtmJ1Dc9ePK7bk/9tlbaS/74ddev/TnjVEHKUALXGsFrOS4S7plZBx++8fxXhrVN
+	 cyFEYZlQkcA+/xsPsE85UoTevoL6bMD6PQN9OJaBLQr65pYpJL5fJEtrpL5Hmov0wX
+	 KqSDB4BjiWyVO2czOwvkUksWj133s+z8bmHW8NTQFEEyaY5vfYClOdMHmHyQbM0L35
+	 /9wVgqf3VefZw==
 Received: from [192.168.68.117] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 179126024E;
-	Tue, 10 Feb 2026 15:25:59 +0800 (AWST)
-Message-ID: <feedc58438adad98f4b2a74a1499b2afa92a5eae.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 0/4] Add AST2700 INTC0/INTC1 support
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id BEB226040B;
+	Wed, 11 Feb 2026 15:06:58 +0800 (AWST)
+Message-ID: <31a3283787df06b7b44796ef78cca3fd380ee18d.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 1/3] Add compatible strings for AST2700 pinctrl to
+ the SCU binding.
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Ryan Chen
- <ryan_chen@aspeedtech.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley	 <joel@jms.id.au>, Paul Walmsley
- <pjw@kernel.org>, Palmer Dabbelt	 <palmer@dabbelt.com>, Albert Ou
- <aou@eecs.berkeley.edu>, Alexandre Ghiti	 <alex@ghiti.fr>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
- "devicetree@vger.kernel.org"	 <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"	
- <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"	
- <linux-aspeed@lists.ozlabs.org>, "linux-riscv@lists.infradead.org"	
- <linux-riscv@lists.infradead.org>, Jeremy Kerr <jk@codeconstruct.com.au>
-Date: Tue, 10 Feb 2026 17:55:58 +1030
-In-Reply-To: <6de719dc84324166ed60bb8ec130cf2c9ef351f5.camel@codeconstruct.com.au>
-References: <20260205-irqchip-v1-0-b0310e06c087@aspeedtech.com>
-		 <20260205-intrepid-vengeful-deer-14e2eb@quoll>
-		 <TY2PPF5CB9A1BE69B07F90DFB245FAB735DF299A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-		 <d5e45c9f-f3c7-4289-8991-02bd2c5b9587@kernel.org>
-	 <6de719dc84324166ed60bb8ec130cf2c9ef351f5.camel@codeconstruct.com.au>
+To: Billy Tsai <billy_tsai@aspeedtech.com>, Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>
+Cc: Andrew Jeffery <andrew@aj.id.au>, Conor Dooley <conor+dt@kernel.org>, 
+ Joel Stanley <joel@jms.id.au>, Linus Walleij <linusw@kernel.org>, Bartosz
+ Golaszewski <brgl@kernel.org>,  Lee Jones <lee@kernel.org>, Rob Herring
+ <robh@kernel.org>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org, 
+	linux-gpio@vger.kernel.org, bmc-sw@aspeedtech.com
+Date: Wed, 11 Feb 2026 17:36:57 +1030
+In-Reply-To: <459f84c56a5010910ecbf8b445c092674f060691.camel@codeconstruct.com.au>
+References: <20260120-upstream_pinctrl-v3-0-868fbf8413b5@aspeedtech.com>
+		 <20260120-upstream_pinctrl-v3-1-868fbf8413b5@aspeedtech.com>
+	 <459f84c56a5010910ecbf8b445c092674f060691.camel@codeconstruct.com.au>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -82,36 +77,38 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi Krzysztof,
-
-On Fri, 2026-02-06 at 17:49 +1030, Andrew Jeffery wrote:
-> Is it acceptable if we take the following actions:
+On Fri, 2026-01-23 at 17:03 +1030, Andrew Jeffery wrote:
 >=20
-> =C2=A0=C2=A0 1. Do some b4 magic to transplant this series back onto [1]
-> =C2=A0=C2=A0 2. Send a follow up revision with a link to this discussion =
-in the
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 cover letter
+> Going down this path for pinctrl to fix the SCU situation will require
+> some rework of what's already merged for the AST2700. However, we've
+> not yet merged either a DTS or DTSI using the compatibles (and by
+> extension, aren't using the AST2700 support from the drivers), so I
+> hope that allows us to do a course-correction without too much
+> collateral damage.
+>=20
+> A possible path forward is to:
+>=20
+> =C2=A0* Move AST2700 definitions out of mfd/aspeed,ast2x00-scu.yaml into =
+one
+> =C2=A0=C2=A0 of:
+> =C2=A0=C2=A0=C2=A0 - soc/aspeed/aspeed,ast2700-scu.yaml: Follow the examp=
+le of
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 mobileye,eyeq5-olb?
+> =C2=A0=C2=A0=C2=A0 - arm/aspeed/aspeed,ast2700-scu.yaml: We already have =
+e.g. the secure
+> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 boot controller documented under arm/aspee=
+d
+> =C2=A0* Retain compatible strings but require simple-mfd is not specified
+> =C2=A0* Rework AST2700 support introduced in:
+> =C2=A0=C2=A0=C2=A0 - drivers/irqchip/irq-aspeed-scu-ic.c
+> =C2=A0=C2=A0=C2=A0 - drivers/soc/aspeed/aspeed-socinfo.c
+>=20
 
-Following up my own post, I don't think we should attempt such
-grafting. [1] references v4. v4 was superseded by v6 at [2], which was
-merged.
+... but perhaps that is too much churn for this stage.
 
-Because of that merge, separating this proposal into a new series seems
-warranted, but has the downside of making it difficult to compare to v4
-of that earlier series.
-
-I have gone through each of your feedback items from the earlier series
-to consider recurring issues. Defining a new binding is unfortunate but
-its addition side-steps an ABI break - perhaps rather than remove the
-existing binding we can deprecate it, and keep the associated driver
-(assuming this isn't overkill, given there are no in-tree users).
-Otherwise it looks to me like the proposal has concerns covered, but
-let me know if not.
+Krzysztof: If you think the rework is worthwhile, let me know and we
+can look at that design, otherwise I think Billy can proceed by
+incorporating your current feedback for a v4.
 
 Andrew
-
-[1]: https://lore.kernel.org/all/1a2ca78746e00c2ec4bfc2953a897c48376ed36f.c=
-amel@codeconstruct.com.au/
-[2]: https://lore.kernel.org/all/20251030060155.2342604-1-ryan_chen@aspeedt=
-ech.com/
 
