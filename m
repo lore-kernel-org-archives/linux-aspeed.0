@@ -1,78 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3523-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3524-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F02E8E9A02C
-	for <linux-aspeed@archiver.kernel.org>; Wed, 18 Feb 2026 23:11:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43F49E9A03B
+	for <linux-aspeed@archiver.kernel.org>; Thu, 19 Feb 2026 04:21:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fGXLn3WRrz309S;
-	Thu, 19 Feb 2026 10:11:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771402608;
-	cv=none; b=VlN5/aOLVSuw+SI3lIuNiv09oosMvH6uvuVV/k5OK9iFquwxLNsqB05g54vj6Y+CWjBzTbxWDWIA4vEGfRA+ONPBoyLjeOlDQ8PkhCkbdEh73iwPY8GQnFnJOu9d96akqL4Qy6RGt8bPkfCIaYKEKiIMglf/W02Mx31ApPK4yARQaowvljLTiIR80eQ6t/pPpN+g/gdK4yhMEn5DiprWCxCGeiUTyPFu6/yUPAwQy5r6ekO7Z2OQk1K2z1HvfE8421zeWvJ77rurNVNns41o+FmweBlzyWgQrbWm7HbliQuMowdhga+jjNmKoD3IJAajgC6xqFmW0FlWOwoytWlPtw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fGgDD09VWz2xlj;
+	Thu, 19 Feb 2026 15:21:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771474859;
+	cv=none; b=N8E6sG+eSxSAnYrNUUJJijqwzimzSgaPVqFyyt/tS+Up/NF+G5X0qW5kRS+j1iqdLUOI+EHzcCHo+5iTSRRk0z0ANOL3V3PamCyBkpYJsLuXv9Wk8gc8oh2wau4/tDUwofu9ZeSzmVhfgnn4LPvQaemI7ODYBrOzny9t/RK8ljN3KmdI5rYlsLRls0H/v/6qO5p6quvtGkTObsQXAINtXtUrwWHGLDpoaWLKzdsGhmKJCqnb/9YZZarkc0TXwE1V9TFtsVtHgwxHqxACUYYxYlGugApMIXKXGZ6IFGUBCTQ51v0Xi0V/Fwrg8GSdSfaZVnYZpPF/MoL/PChYVE4zVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771402608; c=relaxed/relaxed;
-	bh=o0bP01qFBrwLQV21WFsuN0zM6OdwGcJ2YrdhXKOaIYw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=ZVEbKxZPkgLhbAzL1Gl+v7dqtyng1BqlDArOmTR7dciS+AmX2LpyVq0QA0hemJyj6GH1dybJ+tAGvtFb/KlBkRxnS+35TJhGLDb+jP6xxICGzg23xA3mkmWanwiyillNKmscj8WRtgK1nw1DM6eJC4cEqjZ0yTJXDyJcPqvxJyqTMhjiTG2f0ryvJP/6HETVBvAwgqGBP+pmsguewgVvd9Wuu1rWVi/ZEt8akN4+nhzpbPWMEhNbkFDqvtDqyk2zVE/naitEjrQWuutYWjqZeDxW1OujFfNJtbGs1R1+lmildlS48GHjoUEzsI9+FmGIbfE+xJVqNUeI2bXP1VSmjg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=d6hFZ69G; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=ustc.gu@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1771474859; c=relaxed/relaxed;
+	bh=hXrvUZQrcqQlGaHQ11Cid7iVmcJJZTJxmPs9kL1e/rs=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=UNbUJjQjkIcd45hQtSbsFGqe18nUVBZg82jOy8rLJSOkfkmtMFNDJSw12D2riyjM7Ds3DOc+JHGY0N2RIhb0XiO5vGMfgiGCnlvc94lhCj9JC8j54bL9axB0RXLLqavN9IS/p/b4JiQnbS9PW6m1JwNQUdzUZdmkR5h/3ryr4LKN+BDpvImO9KN9AiDT7g2qy4xu3uMkDmvWD6SSUi8L/7Q2/z/S1kkBw3USFoUoQKmHrLoQ4vME3foQnS7gTNRoGhgqsiW818DHGFiJvpj7DlFuVhWlGNfZoy4qY2Os0QLEJbzsDUsiIXblYntmjzuDrTIfpBGCDXPOkCuqA2diYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Bwojwkgh; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=d6hFZ69G;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Bwojwkgh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=ustc.gu@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fG8Vl0svpz2xlk
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Feb 2026 19:16:45 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-82361bcbd8fso2487445b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 18 Feb 2026 00:16:45 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fGgDC1q2Jz2xN8
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 19 Feb 2026 15:20:58 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771402603; x=1772007403; darn=lists.ozlabs.org;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=o0bP01qFBrwLQV21WFsuN0zM6OdwGcJ2YrdhXKOaIYw=;
-        b=d6hFZ69GfUlWGotJzOBw8ILSjCgPQd6kRb8eVQRejAT9HgaKyiOE5AWZNHMhpByABb
-         IrbbTdivHgHW/ggngTIX4n+kjSv0xo4lE/0WCTm2p4Bnjh8Pr0Y9I9jhuSpBlCstNMQt
-         fXVKwRAJq92ijXSMk6NfaL3l3VEX41nA66sRi4TT+9OHQum5DgiF3ab+Z3eYz5JfDoX3
-         F4B9KzRMm2ydtak017W99oorjK6sKb0r1UmrvD83x+LW0eVIGLJhdJpuWY08jHyoaU/B
-         RIkcw6A5HPF3DkHT2GJRRiLkMdCP9+xHSCEEXKHtPiekUTfpFAoli70uN0qKasF+DmYS
-         qNBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771402603; x=1772007403;
-        h=cc:to:message-id:content-transfer-encoding:mime-version:subject
-         :date:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=o0bP01qFBrwLQV21WFsuN0zM6OdwGcJ2YrdhXKOaIYw=;
-        b=tee5xqrdmySYhQDDkplspwK9JkToO/X0ZxttGqXp102s3UPNv8daTSYJe6yeBzyhCJ
-         NCcym3pCZf6S4mnQNu9JNdrS9JM/cEQFcSWMIeaRdLtBtSrbcRo14Gp+cZKqQzVQXKdJ
-         6iruk5D6+FF2Dc/p5Lsl1/6cNRUItUOIFP1tFbO8qb605dohUrtr+tVykhnFBvIFUC2C
-         14Qpoe1GoHkKXhjElZr42NWtSJB5H9pF53rNbh++WXgkk20ocxp7NCYxHAYyw8BGFpY6
-         KxZvhk3xxIEfJZ/ik1YEdbs/1pcApAxgQ4ujJeOmOZBruuCiD3xRRrAPfSoiu6XN8QU4
-         HQSQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXx6f6zviSCDPUtsG1gq/wJU7/JfI23Wv3pp3aYWPfIdPHE0gLrsea+N7PK2M0bTaAaMx4r1zlYbzBEGqw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyJP6eOb7x8vt4NNjIQXWgcXI9Ekw8hyr8okIvDUGe7VZmllPpk
-	7nDmLiq6S0UX0ZptitaxMTKCwHbeQac6XG7YpOB/t05HPdwwmnDOxaLXTHJtFU9j
-X-Gm-Gg: AZuq6aIu3qR28baBP0UuCF41CyXJCJI+qONaQR9pkv1Owfw5hgO6/qAXYeRPDtG8Bbq
-	REKAL8TBdA4g0bgRDEqBg/U52zp6AY1obkQWhJltvRvc9X+Fq7GZrVC6GtL6AVNkvgtgq0+lpSC
-	fgcQi+zGwASuu7m+2ORthv6E+fuhpe8piWgE/yaFy7/br9v6P5cnlJHOrsZt11aWkCtP9PVMKkO
-	FIoJm9bXzEp8MBFkFH/rG+qXQoY8Se9/bwIJ2N7HX0a8HT1b1lG5sv41PpLt9qKc+NdvEAaXtQw
-	kJnJl508gObqjtOMWB7MyPQ+sMb1JRD+Vh0DpydL4rhSTUqqarOBsYqjOIATkdpvfsNwVi9mIxC
-	Qb7kcH6G0aJvxObfgI338yFNARcqBiDf7YetKeCZzYtG1n15/efjZJDUO8VwMj/5YS2KRbcaSJf
-	TTuLLYRkuDhUkvKpHUk9YQ1Z8THOeq9Bn9kFgZ
-X-Received: by 2002:a05:6a21:748e:b0:38d:f250:7a79 with SMTP id adf61e73a8af0-39483780690mr12105647637.15.1771402602733;
-        Wed, 18 Feb 2026 00:16:42 -0800 (PST)
-Received: from junjungu-PC.localdomain ([2408:820c:9008:ba52:403:e988:3f54:236b])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c6e5331ba14sm11966535a12.29.2026.02.18.00.16.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Feb 2026 00:16:42 -0800 (PST)
-From: Felix Gu <ustc.gu@gmail.com>
-Date: Wed, 18 Feb 2026 16:16:37 +0800
-Subject: [PATCH] clk: aspeed: ast2700: Add missing NULL pointer check for
- devm_kasprintf()
+	d=codeconstruct.com.au; s=2022a; t=1771474857;
+	bh=hXrvUZQrcqQlGaHQ11Cid7iVmcJJZTJxmPs9kL1e/rs=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=Bwojwkghc4xDICaeOQpHCSeB8PghyUnrrJCRmCC47tvOKYdQauZ9ySpiEMgRFHQje
+	 W7XQ9bOGmCwzJzAxSgb2kQWMHDnx/ck8uhmj78B3mgYQd5yosqtJWjc/aDRaobYMyG
+	 1ievMsTD9NDe9y/4hZJpDuMYcEeSZ3CCfADJ8yASmQo+o5gwgvR8A12pyU8vI6HtjI
+	 0IkXNFnda2+4MMi1XQliOtPXfvhNz1fd72yaFBtJxUdN58Lcmj0y9qqNtfYGLK2fin
+	 ml2MnBIN3YNT9i2P2sMskWwrRTHdNUV04FscunCJESHRjbT4iScD7f1Zj110Q19EG7
+	 2ajMkwQcxDSQw==
+Received: from [192.168.68.114] (unknown [180.150.112.60])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 1839760033;
+	Thu, 19 Feb 2026 12:20:55 +0800 (AWST)
+Message-ID: <6192440acc150d216de5e074299e579e891fc845.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v2] ARM: dts: aspeed: anacapa: Add retimer EEPROMs
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: dirkchen@amd.com, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Thu, 19 Feb 2026 14:50:54 +1030
+In-Reply-To: <20260209-b4-anacapa-dts-fix-v2-1-fe446a7038bf@amd.com>
+References: <20260209-b4-anacapa-dts-fix-v2-1-fe446a7038bf@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,61 +69,74 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260218-ast2700-v1-1-2388e0fe3597@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAGR1lWkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDI0ML3cTiEiNzAwNds+Q0C/OUJHMjyzQDJaDqgqLUtMwKsEnRsbW1AAt
- +zz5ZAAAA
-X-Change-ID: 20260218-ast2700-6cf87db729f0
-To: Ryan Chen <ryan_chen@aspeedtech.com>, Joel Stanley <joel@jms.id.au>, 
- Michael Turquette <mturquette@baylibre.com>, 
- Stephen Boyd <sboyd@kernel.org>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>, 
- Brian Masney <bmasney@redhat.com>
-Cc: linux-clk@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Felix Gu <ustc.gu@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1771402600; l=1056;
- i=ustc.gu@gmail.com; h=from:subject:message-id;
- bh=ATLkbn8TN+9WkJGc0zUgyg102ukNwiK3cRL5DAp1VH4=;
- b=mbhAFVh+U+0K5i8+MeMwiZF5g2QdlgYBo36O8enjZLUm7iFq7+Vaki2aS8uPGORp5U/erYDXe
- TirWXZT+NRjA8lBL1zQsJf5Aq5gsMXEhCXt30+bItwC7kLUzMkRglut
-X-Developer-Key: i=ustc.gu@gmail.com; a=ed25519;
- pk=fjUXwmjchVN7Ja6KGP55IXOzFeCl9edaHoQIEUA+/hw=
 
-devm_kasprintf() can return NULL on memory allocation failure.
+Hi Dirk,
 
-Check the return value and return -ENOMEM if allocation fails in
-ast2700_soc_clk_probe().
+On Mon, 2026-02-09 at 15:58 +0800, Dirk Chen via B4 Relay wrote:
+> From: Dirk Chen <dirkchen@amd.com>
+>=20
+> The Anacapa board features Atmel 24C2048 EEPROMs on i2c0 and i2c1, which
+> are used to store retimer configurations. Add the corresponding device
+> tree nodes to support these components.
+>=20
+> Signed-off-by: Dirk Chen <dirkchen@amd.com>
+> ---
+> Changes in v2:
+> - Improved commit description to clarify that the change reflects
+> =C2=A0 actual hardware as requested by the reviewer.
+> - Removed mentions of other platforms to avoid confusion.
+> - Link to v1: https://lore.kernel.org/r/20260202-b4-anacapa-dts-fix-v1-1-=
+20d4b0114854@amd.com
+> ---
+> =C2=A0arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts | 12 +++++=
++++++++
+> =C2=A01 file changed, 12 insertions(+)
+>=20
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/a=
+rch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+> index 221af858cb6b..b8d248d99d7c 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+> @@ -328,6 +328,12 @@ i2c0mux0ch3: i2c@3 {
+> =C2=A0			#size-cells =3D <0>;
+> =C2=A0		};
+> =C2=A0	};
+> +
+> +	eeprom@50 {
 
-Fixes: fdc1eb624ddc ("clk: aspeed: add AST2700 clock driver")
-Signed-off-by: Felix Gu <ustc.gu@gmail.com>
----
- drivers/clk/aspeed/clk-ast2700.c | 2 ++
- 1 file changed, 2 insertions(+)
+Please order these nodes by ascending address. The node currently above
+this one is i2c-mux@70 - eeprom@50 should go before it.
 
-diff --git a/drivers/clk/aspeed/clk-ast2700.c b/drivers/clk/aspeed/clk-ast2700.c
-index bbb2b571eb72..011f8be03edc 100644
---- a/drivers/clk/aspeed/clk-ast2700.c
-+++ b/drivers/clk/aspeed/clk-ast2700.c
-@@ -901,6 +901,8 @@ static int ast2700_soc_clk_probe(struct platform_device *pdev)
- 
- 	clk_ctrl->clk_data = clk_data;
- 	reset_name = devm_kasprintf(dev, GFP_KERNEL, "reset%d", clk_data->scu);
-+	if (!reset_name)
-+		return -ENOMEM;
- 
- 	clk_hw_data = devm_kzalloc(dev, struct_size(clk_hw_data, hws, clk_data->nr_clks),
- 				   GFP_KERNEL);
+https://docs.kernel.org/devicetree/bindings/dts-coding-style.html#order-of-=
+nodes
 
----
-base-commit: fe9e3edb6a215515d1148d32a5c445c5bdd7916f
-change-id: 20260218-ast2700-6cf87db729f0
+> +		compatible =3D "atmel,24c2048";
+> +		reg =3D <0x50>;
+> +		pagesize =3D <128>;
+> +	};
+> =C2=A0};
+> =C2=A0
+> =C2=A0// R Bridge Board
+> @@ -362,6 +368,12 @@ i2c1mux0ch3: i2c@3 {
+> =C2=A0			#size-cells =3D <0>;
+> =C2=A0		};
+> =C2=A0	};
+> +
+> +	eeprom@50 {
 
-Best regards,
--- 
-Felix Gu <ustc.gu@gmail.com>
+Same for this one.
 
+> +		compatible =3D "atmel,24c2048";
+> +		reg =3D <0x50>;
+> +		pagesize =3D <128>;
+> +	};
+> =C2=A0};
+> =C2=A0
+> =C2=A0// MB - E1.S
+>=20
+> ---
+> base-commit: 4c87cdd0328495759f6e9f9f4e1e53ef8032a76f
+> change-id: 20260202-b4-anacapa-dts-fix-207ffe9a3b0c
+>=20
+> Best regards,
 
