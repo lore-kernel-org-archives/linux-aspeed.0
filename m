@@ -1,82 +1,82 @@
-Return-Path: <linux-aspeed+bounces-3537-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3538-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A3D1EEC2A8
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B78FFEEC2A9
 	for <linux-aspeed@archiver.kernel.org>; Mon, 23 Feb 2026 23:00:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fKbtT1Sg3z3c9M;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fKbtT2jS1z2xnl;
 	Tue, 24 Feb 2026 10:00:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771845470;
-	cv=none; b=inQvisKkjwEP1IiLHKeiqLrRpOrg2U9+liMJgZ25qPFQop1dAKuanfeVxGOxi16FMlPX4jpp656esveh4Y25HuPvqTxrxy7739I8HUCxD+FwMbqgDuVf+qTgkzHZssDxiHzkomW9lZYC/TY6NVvl8p0VsNGrfQq5mmO4a7A+bAhZRqahMT4nWQEWMxkSzX6w6DXGeFD5PofjpFYXStXs2bbrTVqEZp8Nu1dplkIwiDPwtffxd9juRdH+Pxkf0dVGHgudHzuKnIJ/j2VCGt1OGOxGVlkY7kmnYeHD1+TOUHyB9gMHPduOEUV36QKLmYWnvhoFD2MIAk1iV18mEgMkSw==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771845464;
+	cv=none; b=Oe+XJpZL7eVyxybRLis4/NdGH197GcAD7Fe9cmUkS0uFZGlQVUfNah8mm2IyercvEQlMuYo2aFxpCQDUegJen73lbIj+yhnffiBv4thCUGdp5do3xwI4gWTvrG8dUayA5wknfioZYxjesU3ZjG+fPFsdev2geakvJvSsWaKgHJy5bGde3f5BEwIwDvAzQgwUj4OYgHrE6W1OwJ/VmOndGTf/wY0byNPdSA0e7Y+MxSwvwG9KluFbS2q9kvep5RGltKOdDkyui7UAMUQeOfswvQWG2+lhrMjtvQrPH3o6CFEl1TAEJgz++MLlukN4/Bgli5d7wy3nPgFYzvJBcVsFfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771845470; c=relaxed/relaxed;
-	bh=5wwrI25iLIFnHM5KoM7IfI6VZoQcq26sDFnBNFy9YZM=;
+	t=1771845464; c=relaxed/relaxed;
+	bh=dekzOzjCcZH9VxfMLTSix7P8omyyrbtHyX+5U1//3bk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=eUBxRDIcIZoPgQjhqASMBjk92dEhCV+bI21UejlbiLPX2/GGsmTYJv0VL5dpKIGDDlhcN2uQDyVb0TPCcEbLMolrxfhrcgu6gouvQefzkOMK6cjeQCGLb1XI767pKgG8ILTe0TEBRQEF/t7/cjR+SXq2+JqxfT2IpJOFyy4d2j38QkJtJh3hgVkiKYVuIEf0vVWBpakR5FI0KTynnfqMuKH7nscIizmSDhLSyriiIna35njkK1Pkj1S0cadXv/IzDNDWZEtFRskzOsdfdPLTAwfDjA3eoA8SoOIdHs6a9Cvq7J7MvG+6j4eydaJ41kTft/fJRR08SgpL7YDaMlVq/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AXo7/NMF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 In-Reply-To:To:Cc; b=PzqdrgOlBQ4hrpItdumsTNb+iFWuDAlHWZzC1JncrQBcrVMEOiLZACSsdzQGnYwFO2DOkr5IgmhP7J+OpyOpkcPXvWCEsIT2/ou/Bb7Q2LCGKee/ytKRUAh8ORxgqB3Fdfhdngf9vQEmfg+UMrbT4NTQ3Pw96fCX7frxd5SqUfnCWWHnXMJhD/9yoP+wRFocQYSbpcKFntClld1EqomjqRNnLWW+bbImDCJhOmCneU8+n9j2PbW+eNDnlgqWu/hdMTl4FFwSr/Pg+jblWk+n+ZSjRNoboyCiKSg/DSycFVNWGyN3bvo6yQ+3R4PUvHqUT411JawT2fbc7MySZHPSug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jA5iVz7a; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AXo7/NMF;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jA5iVz7a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKJHL0MnTz2xN8
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Feb 2026 22:17:49 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id d9443c01a7336-2a9296b3926so28478815ad.1
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Feb 2026 03:17:49 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKJHD1nVyz2yDk
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Feb 2026 22:17:44 +1100 (AEDT)
+Received: by mail-pg1-x52a.google.com with SMTP id 41be03b00d2f7-c06cb8004e8so1787691a12.0
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Feb 2026 03:17:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771845468; x=1772450268; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1771845462; x=1772450262; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=5wwrI25iLIFnHM5KoM7IfI6VZoQcq26sDFnBNFy9YZM=;
-        b=AXo7/NMFigp8fJQa5JBjizzyP46h0tU+PUYpKkhrM/yqsuCpCcFvHsTq7IvDJMN1IM
-         L2u2J38amsHGuK70fq1EQxf8henmYzGk2ZTFa+dVy1VE9i8qWZPM7FLVVco5ucWz9YX0
-         sVAQ0bSztyrpR9Ctph4lMslc2+DoMPXrjrBHHFksurciaNN9CC8SyZ9epPCfLfrfX54m
-         9jFk+mmLQuFgZScUwV4Dp13r9IWHE371lNm73pPfip04zqqVCPdu1SKsOyY2lp7GoU6b
-         orWGVKJstFv9ZBEYiSH0aUNaiP63LUGQwjUlLe9HYrVNI45A+AsWlBe0EwrF9QnwRVj2
-         Z6dw==
+        bh=dekzOzjCcZH9VxfMLTSix7P8omyyrbtHyX+5U1//3bk=;
+        b=jA5iVz7a5ziUP+qidQ1SGJi0533oqncDHT6SyEx/qHt/IqtOzXNcmHq4VcxE+skR1O
+         /vxflHmBrnOlUre5dEbJZYeQAUayQYIGQ3XGhwelJWsL+1DkPgeh720I4TgD/BkLb2zw
+         lM1rhYgl48GWRo2Vg7kJRJoaoKAVKxutqf5xpDL4GKe1GEnAuXmUEaCZUuSC/TIUE3c6
+         SXulDgbvngEJ0V2936Yv5rYRMPMERBKdQ9rdlh4yd1Pc8I8XBRzafOL5oRaImzbrdhNB
+         JJEi+LXyWWGSli31eTdQLyHnA/zN9BYQYZKroQ4ZJYGG5EF8eUkkLYVuHq15itjMRNW2
+         4IVg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771845468; x=1772450268;
+        d=1e100.net; s=20230601; t=1771845462; x=1772450262;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=5wwrI25iLIFnHM5KoM7IfI6VZoQcq26sDFnBNFy9YZM=;
-        b=jbrRAn73LX25OqX7G3fi/cFzPkcKvRPcTgpUmY9i0LdLooP1haeFsvXCXBd0YjYiy5
-         cztqAhp5Dj56RK+QFgVo7ax2V1C9hsBsZ8b2oxBrZOY7BklDci54gkH21l31UT/wyQnb
-         FQdwJzYaDLnig+zQYwVOGJONINJVo1v+3b6Y0Wjobv6AnnO7hEm7SUSeF8E4I8E+eLbC
-         W5qM7ErQTV58JbFAB6bXp1o4hSqqZoed0Ay/1yTtEfNh+5+4ZxCmJ70hS43AWkHmNz7k
-         LDva54r1wiFS/UktqHFNZBgEw1i+/UuMJOD48t3QtCJlTxDOcOe5X7d+Xf4ZldFIgrGd
-         oTnA==
-X-Forwarded-Encrypted: i=1; AJvYcCXzvH+i63JLXJCvVueSIilRSrUt3S2BzX0fa/JcXgFVtMoSZ05DqPU6h1wCXTq0aUG+D/OBMHZuAHn13bY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzr//GCPvNDR+JpNAyBIOkWqKXwvcoEaGl8rttmlQVKXr4QVFY6
-	8bKwduyYH/xAMI7xzmVwiNXiyh2ecasYndTj+rV2Fwj3wcu6fA+f2ucA
-X-Gm-Gg: ATEYQzyb4U8xPhMFjPJ1BJjXczmqEPF7QvsewMktUnlJtW1lZ6YN1MNPSjyCmHcH/jw
-	PSQZu/CUkLAM5uQxnJat9gmZVeFPnufyVrxwEQSKk96UsesYWAm4R2ZsgUjEK60Fqov8gDmNNL5
-	5vtRIntWf8S86EsurFVoQ+jqnG/MGRv6n6NGDUv5n8ugIucrJnAfH+b/vj65HKBPZ4c1WLPEfyQ
-	sS5YMbxLxLHOb+UhixbTkNVrEx7s2JoylPgHyob/bTFW4Fqk94AwLy+9lovz8mF8vfa3iiR6zgh
-	rhbu5FPbEwCEC3rP9ZS2YvNl5zizPGF5i2+yAwDhTBnLKEu6kBu0EE2hV3UcXDoCNdi3YuhpDYa
-	JiScoYvcB2jO1iCxpTHfkVFffShtfbkn0OnKUoT5GsDcJGEPh59HP6zYjHEvqZKASyakolkXDcO
-	6OzC3AD+rjU4mwH0qQZMOatf1ZiKVv2qRqux93Vfr9GTPgHWlIRaisNPSlWtmWRiPOSsI79CFcx
-	gVh3DBtq2g8CrZi61PNgN5hJLQoBbHtXiJxf2F/PyXRTat0YkYDbi2n2qYeq7Da//GLfQPxVQwq
-	ZCFMAE2PrTP1Afgq4EbpLatIsXazHBo=
-X-Received: by 2002:a17:903:1a8f:b0:2aa:f2ce:5ac5 with SMTP id d9443c01a7336-2ad744e0d19mr87934095ad.32.1771845468170;
-        Mon, 23 Feb 2026 03:17:48 -0800 (PST)
+        bh=dekzOzjCcZH9VxfMLTSix7P8omyyrbtHyX+5U1//3bk=;
+        b=NJObGbXQxUSs84qy9OJbhgt4r/NQnVHlq8a754mSDksUxA3e3QJVoyWqeGMQKDxdSP
+         J+bfB8IG8+l4AiiBiH9S8kOlFyhBTzX2hpqVyvVmiueKfTS/7Pq5paKgm8IPHf/qBu8W
+         U+etXF1xgOKPuB7xZ1W0wFX3yKGovqlc6PwPRZHN+bYahxChVkmwsmCCJ4B3HycCqGJ2
+         49csb/X4Vh808jDY8qQuVuaQ7LDUuZRZjCUvImwP6GNHm80BFAxJ0uKtf4a6GgtgtJMx
+         oqwHMuwcq5QzKKj8vCg3yzbEi6iDvmWepHLYHO9KxhBJ7kqwBICrc4s3U+exyvjRFzvO
+         5Xgg==
+X-Forwarded-Encrypted: i=1; AJvYcCW4MkFpw7QXxzOO9dwlZUQttr+GVCHJNIdnuHlT5LESECl0ZnwixH91R9V/W909BbGoqoyOyEPGtqJngQI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyMB1mYgeTj90/kJRkLB8LMpUSBzxkxpE5hK/lWv64N8wVvKUtk
+	oW9SSgXj4AlkM4r2otiKT6x446IiIA7mHWv3n5dCag5pY6VKg9f7BpOL
+X-Gm-Gg: ATEYQzxB0+/qT0qggfhIUdtq2YRvY300vefY/gP34srdHUmiuYHlVnpJHV8E/XM2Ifd
+	Lpj/MSiQaCPPP4oT7R3RtYgKoLNs1K6Z4hA4nZD6dOuPo6ax9qQdzobsTL2H5NVUz7FYIrgB2VZ
+	vkZQrsQicC0Mc5n45TPyykcGD24zxff1sOb16jih1G7HvQGwORrPNRtfINCcPV26V4vxc4js7X2
+	W00QCCSS0gKGbfXdStyVXuotuhmDI7Sj6t+t2SFaVz4JKomqZsEKlkpdg4aTjCP8dnCI79VAjrx
+	9ZSz3VXA+lwmV4xnSau1TKE6cNe4Wip6lqwwU2ARXLsSNL8PHcEA1SxTvTqlJ/mRmeuJvM0HVWf
+	AhqjP1bsgbCJo9hqYDhRDbCE4POX0QOj6fSdIS3nIl61LNW6oYJ8WjLTAJkz6eGjAE5akPqhH5X
+	uvTr44aHG2NlKhOO+PggLCYI9nYzCEP18OSjY/O47exh6RoGcCzM9wJb1zAW1ae8NCkzHmNvm9M
+	TbqfKfmvlBydLOGtnxHlj6s0wf/9MFNj4jqOidYOnVSnIC+DmhgyR+MACqdYdUic8pv6aN+f7Dv
+	n40/sSbWtjW27csV+w/5
+X-Received: by 2002:a17:902:e88f:b0:2aa:d289:2d95 with SMTP id d9443c01a7336-2ad74463f60mr80278615ad.17.1771845462066;
+        Mon, 23 Feb 2026 03:17:42 -0800 (PST)
 Received: from 2001-b400-e3a6-b683-040b-c296-04cb-fbc3.emome-ip6.hinet.net (2001-b400-e3a6-b683-040b-c296-04cb-fbc3.emome-ip6.hinet.net. [2001:b400:e3a6:b683:40b:c296:4cb:fbc3])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad74d36911sm71799335ad.0.2026.02.23.03.17.45
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad74d36911sm71799335ad.0.2026.02.23.03.17.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Feb 2026 03:17:47 -0800 (PST)
+        Mon, 23 Feb 2026 03:17:41 -0800 (PST)
 From: Kevin Tung <kevin.tung.openbmc@gmail.com>
-Date: Mon, 23 Feb 2026 19:17:35 +0800
-Subject: [PATCH v5 3/8] ARM: dts: aspeed: yosemite5: Add new SGPIO line
- names and rename signal
+Date: Mon, 23 Feb 2026 19:17:33 +0800
+Subject: [PATCH v5 1/8] ARM: dts: aspeed: yosemite5: Increase i2c4/i2c12
+ bus speed to 400 kHz
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -92,7 +92,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260223-yv5_revise_dts-v5-3-fc913e902488@gmail.com>
+Message-Id: <20260223-yv5_revise_dts-v5-1-fc913e902488@gmail.com>
 References: <20260223-yv5_revise_dts-v5-0-fc913e902488@gmail.com>
 In-Reply-To: <20260223-yv5_revise_dts-v5-0-fc913e902488@gmail.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
@@ -106,80 +106,43 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Daniel Hsu <Daniel-Hsu@quantatw.com>, 
  Kevin Tung <kevin.tung.openbmc@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1771845456; l=1856;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1771845456; l=1020;
  i=kevin.tung.openbmc@gmail.com; s=20250924; h=from:subject:message-id;
- bh=uTj4gapYUMyafJqifSahFMkj6rVicJqXTR5n6i+21+w=;
- b=HNnQYw21qw/5gIdn25f/liNOn6HycN5hMNxj1h1M8Hd4NAbVZdYM4erJQgerztGtI+WIRUPhJ
- K6MsgL/vOYgB5DYpyxQENGiO2ESFXi0de/QBlYMC+SvhKVbWQOME2qa
+ bh=Y8FxaZ3tGkhfSNOMUB9wrvZLgHj3UUmc4MXQt4g53Xs=;
+ b=9PqZ9iEvttl4uBW+fcNE3uPsZFp3PxYjAx1wpMdNwgGio2/smtdbhOC9H8Xc385a4xsseqnIC
+ 517wY5pxrxlBN/jjCoUegTvRbKseZvnPJXc2fms7ZaE3+VSHms9SExk
 X-Developer-Key: i=kevin.tung.openbmc@gmail.com; a=ed25519;
  pk=PjAss0agA0hiuLfIBlA9j/qBmJaPCDP+jmQIUB6SE7g=
 
-Add new SGPIO line names for user space monitoring and event logging.
-
-Also rename PADDLE_BD_IOEXP_INT to ALERT_IRQ_PMBUS_PWR2_N to match
-hardware naming. The original PADDLE_BD_IOEXP_INT is unused, so this
-change does not affect current system functionality.
+Configure i2c4 and i2c12 to operate at 400 kHz instead of 100 kHz.
+This update aligns the bus settings with the hardware capabilities
+and improves MCTP communication performance.
 
 Signed-off-by: Kevin Tung <kevin.tung.openbmc@gmail.com>
 ---
- .../dts/aspeed/aspeed-bmc-facebook-yosemite5.dts   | 31 ++++++++++++++++++----
- 1 file changed, 26 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-index 45b8ac2e8c65a4f672e64571631b7f6944f26213..983aebc394d9159c7e3db2e7c39e963f7b64c855 100644
+index 2486981f3d6bd36f3fe780b21e834b85242f8aa9..7991e9360847532cff9aad4ad4ed57d4c30668a0 100644
 --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
 +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-@@ -978,7 +978,7 @@ &sgpiom0 {
- 	"E1S_0_BD_IOEXP","",
- 	"E1S_1_BD_IOEXP","",
- 	/*bit88-bit95*/
--	"PADDLE_BD_IOEXP_INT","",
-+	"ALERT_IRQ_PMBUS_PWR2_N","",
- 	"FM_BOARD_REV_ID0","",
- 	"FM_BOARD_REV_ID1","",
- 	"FM_BOARD_REV_ID2","",
-@@ -991,16 +991,37 @@ &sgpiom0 {
- 	"PRSNT_BOOT_N_FF","",
- 	"PRSNT_MCIO1A_N_FF","",
- 	"NIC_PRSNT_N","",
--	"","",
-+	"FM_CPU_BMC_RST_N","",
- 	"","",
- 	"","",
- 	"","",
- 	/*bit104-bit111*/
--	"","","","","","","","","","","","","","","","",
-+	"MASTER_PWR_EN","",
-+	"MASTER_PWR2_EN","",
-+	"PRSNT_MCIO0A_E1S0_N","",
-+	"","",
-+	"PRSNT_MCIO0A_E1S1_N","",
-+	"","",
-+	"","",
-+	"Fault","",
- 	/*bit112-bit119*/
--	"","","","","","","","","","","","","","","","",
-+	"FM_CPLD_RSVD_MCIO0A_SB1","",
-+	"FM_CPLD_RSVD_MCIO0A_SB2","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
- 	/*bit120-bit127*/
--	"","","","","","","","","","","","","","","","";
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","",
-+	"","";
+@@ -231,6 +231,7 @@ sbtsi@4c {
+ &i2c4 {
+ 	multi-master;
+ 	mctp-controller;
++	clock-frequency = <400000>;
  	status = "okay";
- };
  
+ 	mctp@10 {
+@@ -782,6 +783,7 @@ adc@4b {
+ &i2c12 {
+ 	multi-master;
+ 	mctp-controller;
++	clock-frequency = <400000>;
+ 	status = "okay";
+ 
+ 	mctp@10 {
 
 -- 
 2.53.0
