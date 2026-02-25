@@ -1,82 +1,40 @@
-Return-Path: <linux-aspeed+bounces-3545-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3546-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFD3FEEC2AC
-	for <linux-aspeed@archiver.kernel.org>; Mon, 23 Feb 2026 23:07:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C73A8EFD20B
+	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Feb 2026 09:20:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fKc1N7362z3cCh;
-	Tue, 24 Feb 2026 10:06:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1771845473;
-	cv=none; b=bcIdhlxavPC1pJwyky3wAWFX5vZFICUb9z7hagc6/9om0mMFaTXgSOFocumog/lgjy8WDtDCV+7k6FOuEnjXQX/x9DlepIH+TInc4Fe3SmcvCiCU/At7PTV8O5x6PTwp9eCP2cNNs53W/WNzLsECD41cXiZiGyEtg9Bd/Rc4WGilPm+QgdebvNe7D0+Q0I7taZ4weF/FSf6aehDZJg3gB9L6pSaGh0emU18eL7cb8hG3Kzugd6QcduC+Dnd4rM3cILsKHrj8coIrnoJ5JuWUtIMrwdzLygRF7Yj6aqirON6ahl4RQ9gX6mDZxAMq5/6AwOCsui710zxL13SKmOYqhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fLTZS0bySz3dWb;
+	Wed, 25 Feb 2026 20:20:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772011199;
+	cv=none; b=Y3+J+YL5/4pl04bj6hqf3CMiYCxfIi/zcObyzeeKKm4MnhH0gbBdOVWYOyVXMPdpH736VaeGa7uY+xQJqj46KFoKpxKjscdR1OMwzYIBXnrAbwdnmKR357bpmLvPpT94WA/R31RT2vg6g31LwmNH/58I+T9YqYCMpGKHrr1XEakgy4Hk+jpfDlHkMexvA8sqwlqZJ1XiV+yn5nUfAMnMKm11qIe/pNabVJctZWVSKr/KzTtlu6+E01FicmeQubEc9SvSpB0cVivaOIot0aBboUerO2jUj+jR7fSV3hzg6DchxRBwFPx6ofACXmBy1HsDBRoBCBRMvldC09SDmIaNQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1771845473; c=relaxed/relaxed;
-	bh=hRCjL+EE42kWhMnb2piV+g1yh/Py8//tJ9ex6KvyCIo=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DP/sQid99uu60P7jvYxPg5Pa0zMR1Iv92PhQtXBnmzvyzkH27nsbC7LxKTYsFLm4bCQLOhka/3Os2AFgefVTj5GO1zEKGVL+M1hr9TS13BWcTVrTRDYEco7rDRV0ec4yzoA+fioX5Y3JGwSOKwzgSS7wZoEdzZ5YcgCCPNNORpdG0RdGZ7QxyqmHZ9zTMrqe7jNuLiPfq4SbUjcEyfj799orrfCaPsZ7hJcD5Rqms87lYBmrgaNjYK+gYrhoBEmu8k2jbUEQfOqpmMGJSZRtpaQwVjOKus63NYGL7gDqDbw7ILfl0L/AZcHuiryPWfsVXA/Fi134fM4owRXzCLEWnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AP51XXXj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AP51XXXj;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=kevin.tung.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1772011199; c=relaxed/relaxed;
+	bh=Ws9lbXm9di+zXOuhIhW4LFkpTYfje9DUd1QQETsXCWI=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=AXTPiz2rYbahwW0LfQgNLMwj42EZ6TPZ92icgVRhqsB4OxzCjISNnKyimAn9ji8EaESZwPzj8KEs6ElSoNJDfYE6nBxPjmd7fM5yDaP2rYb+ds17Ip66baoFYa6/4wBR9HXcibjbqu9bK0e7l/1D4T0gB8py0OKp7e3i7ZeH9TZ88eC1FR+9EbzcTvxuIX9YSe3Gwlw3pMaRoiARMVcCxPgU4gYr1eKWkapM4ZbKtFAS3d6G3HB3D2K0T6UTJOiWLuMRnIQrbER7A3HZa/KlFrGOzQXBHVWjIca9Q3qWRG/mdLFa3aTDnJcZs1eUe4Ea2KxEHwUtz/9TKBZhyXEygA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fKJHP2VRfz2xN8
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Feb 2026 22:17:53 +1100 (AEDT)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-2aadc18f230so25771675ad.3
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Feb 2026 03:17:53 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1771845471; x=1772450271; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hRCjL+EE42kWhMnb2piV+g1yh/Py8//tJ9ex6KvyCIo=;
-        b=AP51XXXjbxsY36VGg3GJvmyIrgcCtQDleAga5Y71ledYq9ce9YD8JpkmQoEjd+lPA0
-         +rgXQzGf5A2yo0D8zPk+bbx4/o5hpC6GZ3RvCS+3hnpnK8NsBbDQshwHhJE4NJtx1RoD
-         PxzE+WuEARF5Gaoosw1BtCuNLKSISrx2A+E79GK7pOopzxs0IDIzusk4n1eRMgvcUBHO
-         3/UB1/nT7oV7CIr7y59Ref8DZi8LYNl9b7IRD0tBt9NmADuGCt4ByUTZnVF09qbrBp6F
-         90f8BKcbD9CZndaMDVz9u2U244GcFslC5kI0BBwn632gl+Yi2t1O5plBqb/v4PvERHkn
-         7k2g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1771845471; x=1772450271;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=hRCjL+EE42kWhMnb2piV+g1yh/Py8//tJ9ex6KvyCIo=;
-        b=TkbFSIhmbbhOXh3ZAnhc57l6MJHvQTrMybiW0bsfVFoHPKfR0g4nUesl74AQSQwJly
-         vqv/ttBajlh3Z4T2A5E98Zih327oPhQ23uiYC3boftsd6rOEkes9B5TVF023Yyl68FPv
-         ldOBb//s0QzLhHfCPOmPSAC98lW7Vqzg29JKt4KK01bFcJd7CgkHv8csIiukHK82M0X1
-         7RRWwR0AHP0fNdmI/7ouDCLnOySeaOerY/A0tqGf7CTxBoclmD5BGzanw9SeqkYijVaA
-         52k+R7E3BO0btjJt65daLyGVstURjxhN6MLob7slZFwKVJ94X38zVEVspq8f4RbKJLMb
-         Cxkw==
-X-Forwarded-Encrypted: i=1; AJvYcCW1KcaXDSLHm9V4p2qdS1tKMRvfV+tKcxxn3V7gpp/m0ZOmGCqBtIutIOmVSTYwGoDvDtPFfQxs92JhepU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw+v+93/+qTtOsR9cPXVcwn8w4qC81EmntJ1d5XWMzXVf/9bODz
-	Tt2df9Gr4noXIa03xW0/KLG7SJzpxjSbC7MplvU2Tlb9De7KyQIw0E8l
-X-Gm-Gg: ATEYQzw+GkhzJ/MYj/lGoLNQ4P5ltP54aMjs6s/E+lYlJl93jD84jnFvczLOxiFOVHO
-	dy0+Fb+MIJvr/icjpblpoZc7MxrLaIvyh1hPKAO4IbpYjUDh03JkH2i++1VJwl7ZL7/7XYbL7DV
-	Z6t3CXPyjHxd2qqpAJpqEwSfyw2u5312BRaOp42FvOJexMJsD0WBjZpj/dQNZVpRL3IaoVgeMOL
-	0WzBqkd9NbpaIYW2u+cCoI4zN9ZNN58J+a+pKHaOu3PFJsal6lv1WBnF3tmMKS/xv5GWGRDLtMv
-	Vbm29x3f+EyJF44FoHQh4UxK4narEVeZuXBhJr7hdaADvzHrs9sJPu+quXkqgokjqcL0u7x3iZn
-	NCpC17jcIQWsz/beIe4wRf4fg3Z0w2JgpVzWQT4ELJvZ7RF+7+EpDCejfx5fCf+hmPwQxn1Feix
-	drkfhqq62o7T4WHedoNgF5Gry1CVZznHoAGlJYsT2LKg2XbWWROZWFu/LCa1QY4brgFiAsCmDYV
-	WYwh+/p7FofRHnwN6qYojoLgKI9Xd4uWjAJ49j91mYTov7TZmLhpE++jZlwOGNNg+kxsgMJzV56
-	mPm7l+v8zHztpHljkbtom6+CWrTTKCU=
-X-Received: by 2002:a17:903:1a2b:b0:2a9:6414:719c with SMTP id d9443c01a7336-2ad74463c78mr70338135ad.16.1771845471195;
-        Mon, 23 Feb 2026 03:17:51 -0800 (PST)
-Received: from 2001-b400-e3a6-b683-040b-c296-04cb-fbc3.emome-ip6.hinet.net (2001-b400-e3a6-b683-040b-c296-04cb-fbc3.emome-ip6.hinet.net. [2001:b400:e3a6:b683:40b:c296:4cb:fbc3])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2ad74d36911sm71799335ad.0.2026.02.23.03.17.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Feb 2026 03:17:50 -0800 (PST)
-From: Kevin Tung <kevin.tung.openbmc@gmail.com>
-Date: Mon, 23 Feb 2026 19:17:36 +0800
-Subject: [PATCH v5 4/8] ARM: dts: aspeed: yosemite5: Add IPMB node for OCP
- debug card
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fLTZQ4vBKz3dLc;
+	Wed, 25 Feb 2026 20:19:57 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Wed, 25 Feb
+ 2026 17:19:40 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Wed, 25 Feb 2026 17:19:40 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Subject: [PATCH v25 0/4] Add ASPEED AST2600 I2C controller driver
+Date: Wed, 25 Feb 2026 17:19:37 +0800
+Message-ID: <20260225-upstream_i2c-v25-0-9f4bdd954f3f@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -91,58 +49,328 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260223-yv5_revise_dts-v5-4-fc913e902488@gmail.com>
-References: <20260223-yv5_revise_dts-v5-0-fc913e902488@gmail.com>
-In-Reply-To: <20260223-yv5_revise_dts-v5-0-fc913e902488@gmail.com>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- Amithash Prasasd <amithash@meta.com>, Kevin Tung <Kevin.Tung@quantatw.com>, 
- Ken Chen <Ken.Chen@quantatw.com>, Leo Yang <Leo-Yang@quantatw.com>, 
- Jackson Liu <Jackson.Liu@quantatw.com>, 
- Daniel Hsu <Daniel-Hsu@quantatw.com>, 
- Kevin Tung <kevin.tung.openbmc@gmail.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1771845456; l=881;
- i=kevin.tung.openbmc@gmail.com; s=20250924; h=from:subject:message-id;
- bh=av+7nUIzNcRonWagw3z99/fjVjTYsiFRkATkeneAA4s=;
- b=Ws5ihelxDVqIQUxXO7hw5CQ8FFbcVwALjS3z506cbC48qdvhgLgy/1do0c8xHzKjvqTLQPwIa
- 6QORwth6PbQBSujcIM/QV5/IyS/+WnHx6oDBUJmTR5cy5cxV0So2jxG
-X-Developer-Key: i=kevin.tung.openbmc@gmail.com; a=ed25519;
- pk=PjAss0agA0hiuLfIBlA9j/qBmJaPCDP+jmQIUB6SE7g=
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAKm+nmkC/x2MQQqAIBAAvyJ7TpCNMvtKRJSttYcstCII/550n
+ IGZFyIFpgiteCHQzZF3nwGrQoBdR7+Q5DkLQIW1QizldcQz0LgNjFbSNCvtGqNLYyEnRyDHz//
+ r+pQ+4N7b6F8AAAA=
+X-Change-ID: 20260223-upstream_i2c-ebd07f89739c
+To: <jk@codeconstruct.com.au>, <andriy.shevchenko@linux.intel.com>, Andi Shyti
+	<andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	<joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, "Benjamin
+ Herrenschmidt" <benh@kernel.crashing.org>, Rayn Chen
+	<rayn_chen@aspeedtech.com>, Philipp Zabel <p.zabel@pengutronix.de>
+CC: <linux-i2c@vger.kernel.org>, <devicetree@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<linux-kernel@vger.kernel.org>, <openbmc@lists.ozlabs.org>, Ryan Chen
+	<ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1772011180; l=13091;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=u8J7UrQpkyWbh4effhyn3bGorygzvqjFtO4hP9+XJQY=;
+ b=EOePL5OKNBdYOg0WIlpwj3PFypFx+coH08IcRSL+mXy3umjzEyXuIxcJZZajAtFzImsXGfLpI
+ CE5wfxp++s8DqWt31ONHcHPMtYCSSCsw8G6deiakTSKNEydSShCQot7
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-Add the device tree node to enable the IPMB interface used by
-the OCP debug card.
+This series adds support for the AST2600 I2C controller “new register
+set” implementation.
 
-Signed-off-by: Kevin Tung <kevin.tung.openbmc@gmail.com>
+The AST2600 I2C controller introduces a revised register layout which
+separates controller and target functionality into distinct register
+blocks, and extends clock divider configuration, packet-based transfer
+support, and DMA capabilities compared to the legacy mixed register
+layout used on earlier ASPEED SoCs.
+
+The current driver implementation for the AST2600 I2C peripheral is
+through the hardware's "compatibility mode", which exposes a register
+set that matches the previous generation hardware (AST2500 and earlier).
+
+Instead, add a driver that works in new-register-set mode, to allow the
+new features, and will provide support for future hardware that will
+not implement compatibility mode.
+
+In order to support the new mode, we need a couple of DT binding changes
+to reflect the expanded hardware interfaces: references to a global
+register set, and buffer mode selection. Since the binding still
+represents the same (AST2600 SoC) physical hardware, we continue to use
+the existing compatible string of "aspeed,ast2600-i2c-bus".
+
+However: since we're changing semantics for an existing binding, we
+allow backwards compatibility by selecting on presence/absence of the
+newly-added properties, and fall back to the old driver (ie., in
+compatibility mode) when we detect a DT using the old binding spec.
+
+Specifically:
+
+- ast2600-i2c-bus nodes that provide the `aspeed,global-regs` property
+  (which is mandatory in the new binding and absent in the legacy
+  binding) will be successfully probed by the new driver
+
+- ast2600-i2c-bus nodes without `aspeed,global-regs` continue to use the
+  existing driver (in legacy register mode), ensuring that platforms
+  with the current DTBs remain functional
+
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
+Changes in v25:
+- Use b4 to send series.
+- Rebase on v7.0-rc1.
+- Clarify cover letter and commit logs based on review feedback.
+- Remove the i2c-aspeed-core multiplexer infrastructure and
+  implement driver selection via conditional -ENODEV handling
+  in individual probe() functions.
+- 3/4: incorporate review feedback and refactor new driver
+- Link to v24: https://lore.kernel.org/r/20251118014034.820988-1-ryan_chen@aspeedtech.com
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-index 983aebc394d9159c7e3db2e7c39e963f7b64c855..84d3731b17f7c7c87338672bbcc859de2b89b722 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
-@@ -365,7 +365,14 @@ i2c6mux0ch3: i2c@3 {
- 
- /* SCM CPLD I2C */
- &i2c7 {
-+	multi-master;
- 	status = "okay";
-+
-+	ipmb@10 {
-+		compatible = "ipmb-dev";
-+		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
-+		i2c-protocol;
-+	};
- };
- 
- &i2c8 {
+Changes in v24:
+- aspeed,ast2600-i2c.yaml
+ - fix make dt_binding_check blank warning.
+- Link to v23: https://lore.kernel.org/all/20251117025040.3622984-1-ryan_chen@aspeedtech.com/
 
+Changes in v23:
+- update typo patch (1/4) commit message.
+- aspeed,ast2600-i2c.yaml
+ - update reg and description.
+- i2c-ast2600.c controller
+ - replace ast2600_select_i2c_clock to ast2600_i2c_ac_timing_config.
+- i2c-ast2600.c target
+ - I2C_TARGET_MSG_BUF_SIZE 256 to 4096
+ - remove blank line.
+ - refine Master comment description to controller
+- Link to v22: https://lore.kernel.org/all/20251112085649.1903631-1-ryan_chen@aspeedtech.com/
+
+Changes in v22:
+- update patch (1/4) commit message add dts example reason.
+- aspeed,ast2600-i2c.yaml @patch (1/4)
+ - rename ast2600-i2c.yaml to aspeed,ast2600-i2c.yaml.
+ - update reg, clock-frequency description.
+- aspeed,ast2600-i2c.yaml @patch (2/4)
+ - aspeed,transfer-mode, aspeed,transfer-mode add for ast2600.
+- i2c-aspeed-core.c,h @patch (3/4)
+ - add i2c-aspeed-core allow both old and new device trees using the
+   same compatible string "aspeed,ast2600-i2c-bus".
+- Link to v21: https://lore.kernel.org/all/20251027061240.3427875-1-ryan_chen@aspeedtech.com/
+
+Changes in v21:
+- update patch (1/4) commit message
+- i2c-ast2600.c
+ - move rst to local variable in ast2600_i2c_probe().
+- Link to v20: https://lore.kernel.org/all/20251021013548.2375190-1-ryan_chen@aspeedtech.com/
+
+Changes in v20:
+- ast2600-i2c.yaml
+ - fix warning at make dt_binding_check.
+- Link to v19: https://lore.kernel.org/all/20251020013200.1858325-1-ryan_chen@aspeedtech.com/
+
+Changes in v19:
+- Split AST2600 binding into its own YAML file
+ - Removed `aspeed,ast2600-i2c-bus` from `aspeed,i2c.yaml`
+ - Added `aspeed,global-regs` and `aspeed,transfer-mode` to AST2600 binding
+- Link to v18: https://lore.kernel.org/all/20250820051832.3605405-1-ryan_chen@aspeedtech.com/
+
+Changes in v18:
+- refine patch (1/3) commit message (reason for commit not list.)
+- i2c-ast2600.c
+ - remove redundant reset_control_deassert in driver probe.
+ - remove reset_control_assert(i2c_bus->rst) in driver remove.
+- Link to v17: https://lore.kernel.org/all/20250814084156.1650432-1-ryan_chen@aspeedtech.com/
+
+Changes in v17:
+- move i2c new mode register and feature into driver commit message.
+- aspeed,i2c.yaml
+ - remove multi-master properties.
+ - use aspeed,transfer-mode properties for aspeed,enable-byte/enable-dma.
+-i2c-ast2600.c
+ - rename dma_safe_buf to controller_dma_safe_buf.
+ - fix ast2600_i2c_recover_bus return overflow warnings.
+ - add ast2600_i2c_target_packet_buff_irq unhandle case.
+ - add parameter "cmd" in ast2600_i2c_setup_dma_rx,
+   ast2600_i2c_setup_buff_rx, ast2600_i2c_setup_byte_rx
+ - use reset_control_deassert replace
+   devm_reset_control_get_shared_deasserted.
+ - useaspeed,transfer-mode properties for transfer mode setting.
+ - change compatible = "aspeed,ast2600-i2cv2" to "aspeed,ast2600-i2c-bus".
+- Link to v16: https://lore.kernel.org/all/20250224055936.1804279-1-ryan_chen@aspeedtech.com/
+
+Changes in v16:
+- aspeed,i2c.yaml: add aspeed,enable-byte properties for force byte mode.
+- i2c-ast2600.c
+ - change include asm/unaligned.h to linux/unaligned.h.
+ - add reset timeout councter when slave active timeout.
+ - modify issue i2c_recovery_bus before slave re-enable.
+ - add aspeed,enable-byte properties.
+- Link to v15: https://lore.kernel.org/all/20241007035235.2254138-1-ryan_chen@aspeedtech.com/
+
+Changes in v15:
+- i2c-ast2600.c
+ - add include unaligned.h
+ - rename all master -> controller, slave -> target.
+ - keep multi-master to align property.
+ - remove no used element in ast2600_i2c_bus.
+- Link to v14: https://lore.kernel.org/all/20241002070213.1165263-1-ryan_chen@aspeedtech.com/
+
+Changes in v14:
+- aspeed,i2c.yaml
+ - v13 change people reviewed-by tag, v14 fixed to original people tag,
+   modify to Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+ - struct ast2600_i2c_bus layout optimal.
+ - ast2600_select_i2c_clock refine.
+ - ast2600_i2c_recover_bus overridden fix.
+ - dma_mapping_error() returned error code shadowed modify.
+ - buffer register in a 4-byte aligned simplified
+ - remove smbus alert
+- Link to v13: https://lore.kernel.org/all/20240819092850.1590758-1-ryan_chen@aspeedtech.com/
+
+Changes in v13:
+ - separate i2c master and slave driver to be two patchs.
+ - modify include header list, add bits.h include. remove of*.h
+ - modify (((x) >> 24) & GENMASK(5, 0)) to (((x) & GENMASK(29, 24)) >> 24)
+ - modify ast2600_select_i2c_clock function implement.
+ - modify ast2600_i2c_recover_bus function u32 claim to
+   u32 state = readl(i2c_bus->reg_base + AST2600_I2CC_STS_AND_BUFF);
+- Link to v12: https://lore.kernel.org/all/20230714074522.23827-1-ryan_chen@aspeedtech.com/
+
+Changes in v12:
+- aspeed,i2c.yaml
+ - add Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+- i2c-ast2600.c
+ - update include by alphabetical order
+ - make just a one TAB and put the last two lines on the single one
+ - remove no used timing_table structre
+ - remove enum explicit assinment
+ - rewritten to avoid this and using loop in ast2600_select_i2c_clock
+ - use GENMASK for most 0xffff
+ - remove too many parentheses
+ - use str_read_write replace read write string
+ - remove redundant blank line after ast2600_i2c_bus_of_table
+ - fix wrong multi-line style of the comment
+ - use macro for i2c standard speeds
+ - remove useless noise dev_info
+- Link to v11: https://lore.kernel.org/all/20230430041712.3247998-1-ryan_chen@aspeedtech.com/
+
+Changes in v11:
+- aspeed,i2c.yaml
+ - no change, the same with v10.
+- i2c-ast2600.c
+ - modify alert_enable from int -> boolean.
+ - modify dbg string recovery -> recover.
+ - remove no need to init 0.
+ - remove new line after break.
+ - remove unneeded empty line.
+ - modify dma_alloc_coherent to dmam_alloc_coherent
+ - modify probe nomem return dev_err_probe
+ - modify i2c_add_adapter to devm_i2c_adapter
+ - modify checkpatch: Alignment should match open parenthesis
+ - modify checkpatch: braces {} should be used on all arms of this statement
+ - modify checkpatch: Unbalanced braces around else statement
+- Link to v10: https://lore.kernel.org/all/20230415012848.1777768-1-ryan_chen@aspeedtech.com/
+
+Changes in v10:
+- aspeed,i2c.yaml
+ - move unevaluatedProperties after allOf.
+ - remove extra one blank line.
+- i2c-ast2600.c
+ - no change, the same with v8.
+- Link to v9: https://lore.kernel.org/all/20230405022825.333246-1-ryan_chen@aspeedtech.com/
+
+Changes in v9:
+- aspeed,i2c.yaml
+ - backoff to v7.
+  - no fix typo in maintainer's name and email. this would be another patch.
+  - no remove address-cells, size-cells, this would be another patch.
+ - use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ - fix allOf and else false properties for aspeed,ast2600-i2cv2.
+- i2c-ast2600.c
+ - no change, the same with v8
+- Link to v8: https://lore.kernel.org/all/20230330073259.485606-1-ryan_chen@aspeedtech.com/
+
+Changes in v8:
+- aspeed,i2c.yaml
+ - modify commit message.
+ - Fix typo in maintainer's name and email.
+ - remove address-cells, size-cells.
+- i2c-ast2600.c
+ - move "i2c timeout counter" comment description before property_read.
+ - remove redundant code "return ret" in probe end.
+- Link to v7: https://lore.kernel.org/all/20230327092524.3916389-1-ryan_chen@aspeedtech.com/
+
+Changes in v7:
+- aspeed,i2c.yaml
+ - Update ASPEED I2C maintainers email.
+ - use aspeed,enable-dma property instead of aspeed,xfer-mode selection.
+ - fix allOf and else false properties for aspeed,ast2600-i2cv2.
+- i2c-ast2600.c
+ - remove aspeed,xfer-mode instead of aspeed,enable-dma mode. buffer mode
+   is default.
+ - remove aspeed,timeout instead of i2c-scl-clk-low-timeout-us for
+   timeout setting.
+- Link to v6: https://lore.kernel.org/all/20230226031321.3126756-1-ryan_chen@aspeedtech.com/
+
+Changes in v6:
+- remove aspeed,i2cv2.yaml, merge to aspeed,i2c.yaml -add support for
+  i2cv2 properites.
+- i2c-ast2600.c
+ - fix ast2600_i2c_remove ordering.
+ - remove ast2600_i2c_probe goto labels, and add dev_err_probe -remove
+   redundant deb_dbg debug message.
+ - rename gr_regmap -> global_regs
+- Link to v5: https://lore.kernel.org/all/20230220061745.1973981-1-ryan_chen@aspeedtech.com/
+
+Changes in v5:
+- remove ast2600-i2c-global.yaml, i2c-ast2600-global.c.
+- i2c-ast2600.c
+ - remove legacy clock divide, all go for new clock divide.
+ - remove duplicated read isr.
+ - remove no used driver match
+ - fix probe return for each labels return.
+ - global use mfd driver, driver use phandle to regmap read/write.
+- rename aspeed,i2c-ast2600.yaml to aspeed,i2cv2.yaml -remove bus-frequency.
+- add required aspeed,gr
+- add timeout, byte-mode, buff-mode properites.
+- Link to v4: https://lore.kernel.org/all/20230201103359.1742140-1-ryan_chen@aspeedtech.com/
+
+Changes in v4:
+- fix i2c-ast2600.c driver buffer mode use single buffer conflit in
+  master slave mode both enable.
+- fix kmemleak issue when use dma mode.
+- fix typo aspeed,i2c-ast2600.yaml compatible is "aspeed,ast2600-i2c"
+- fix typo aspeed,i2c-ast2600.ymal to aspeed,i2c-ast2600.yaml
+- Link to v3: https://lore.kernel.org/all/20220516064900.30517-1-ryan_chen@aspeedtech.com/
+
+Changes in v3:
+- fix i2c global clock divide default value.
+- remove i2c slave no used dev_dbg info.
+- Link to v2: https://lore.kernel.org/all/20220413101735.27678-1-ryan_chen@aspeedtech.com/
+
+Changes in v2:
+- add i2c global ymal file commit.
+- rename file name from new to ast2600.
+  aspeed-i2c-new-global.c -> i2c-ast2600-global.c
+  aspeed-i2c-new-global.h -> i2c-ast2600-global.h
+  i2c-new-aspeed.c -> i2c-ast2600.c
+- rename all driver function name to ast2600.
+- Link to v1: https://lore.kernel.org/all/20220323004009.943298-1-ryan_chen@aspeedtech.com/
+
+---
+Ryan Chen (4):
+      dt-bindings: i2c: Split AST2600 binding into a new YAML
+      dt-bindings: i2c: ast2600-i2c.yaml: Add global-regs and transfer-mode properties
+      i2c: ast2600: Add controller driver for AST2600 new register set
+      i2c: ast2600: Add target mode support
+
+ .../bindings/i2c/aspeed,ast2600-i2c.yaml           |   91 ++
+ .../devicetree/bindings/i2c/aspeed,i2c.yaml        |    3 +-
+ drivers/i2c/busses/Makefile                        |    2 +-
+ drivers/i2c/busses/i2c-aspeed.c                    |    5 +
+ drivers/i2c/busses/i2c-ast2600.c                   | 1545 ++++++++++++++++++++
+ 5 files changed, 1643 insertions(+), 3 deletions(-)
+---
+base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
+change-id: 20260223-upstream_i2c-ebd07f89739c
+
+Best regards,
 -- 
-2.53.0
+Ryan Chen <ryan_chen@aspeedtech.com>
 
 
