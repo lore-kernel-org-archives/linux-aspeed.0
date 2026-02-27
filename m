@@ -1,51 +1,51 @@
-Return-Path: <linux-aspeed+bounces-3557-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3558-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4487AFEFB4B
-	for <linux-aspeed@archiver.kernel.org>; Fri, 27 Feb 2026 13:00:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38597FEFB5E
+	for <linux-aspeed@archiver.kernel.org>; Fri, 27 Feb 2026 15:35:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fMpMS3hsvz3bn7;
-	Sat, 28 Feb 2026 00:00:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772197204;
-	cv=none; b=jvbVfB6qUqa/XPeHjY51VO58nTXEvuFVYPh3y/MSOBaAkgQq5/1ZCXl8pch62MxthmS/zvPfvfYJSUqVmi/2XpeKDWpCL06eXnFBO2mQMa+metOEKp0BYY4QknsjbaAsJF6ujzVwC545VTehom8pFPmU7iadHi3eZgt9nEWH6bkohs7VuTUpZMcslOZkKmhUGnQEBPT5iI2JXprOam0ZlU1wROeOOG7YmEeMOfOmy2cT/E8+iqOszfMuL8YsgVSTiCNdEnANNnVWYBHWiuJigJtU1JcM9qgVjLkMDRvvIfoAnW39xqKPYZRqcIp1fD2844ugSGDnka1XAnqWoV6QOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fMspn1yk3z2xMt;
+	Sat, 28 Feb 2026 02:35:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772206529;
+	cv=none; b=krLTJwAdbT0ZZTAnwn3urmjBs8Ntc+6GLH2WWQxYtRmMNNWs4MrWUZ2WfkNHl1YuOlk/xffc7ARouBLdVEvVqnhUpS8vtycDcW7YJqh3gMn6ZLc0XHAV5HncGqwvrqdkSKaLoxQpzFU8oDBNfZJE9FyXiaU5RbXGcCTDyHYSY3fHr0e1wYs9ee5RUhOFAOPL0q+CG4cpHb4o7YXjPyiXa0sghGKl/eh3eSCVPZyIiwHxdt8AlKv+NOoOKyY42gNm4xml64YzYMomdxwIchG5aoEbdM4wWoRqGBv5qivnWHXU61vaBRpT/B6P6llgK+YFIcRDEf19E4O/p3dr63HRJw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772197204; c=relaxed/relaxed;
-	bh=LcM5XyDcpLb0PhOorF2jb2DHFCjP+KLwgBmp3QxZwRA=;
+	t=1772206529; c=relaxed/relaxed;
+	bh=eyqwVWUTGrUNr2YSjQrLWGuiGvW9UrMxWVL1Po8p7BM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DksyCpizJw7GvFwk+jcG/tw0azFrY4O3Ad/E4RjVXWzqva5YXuBRBGTac++ULMqpYzNHPLtgS1NwXfDWXvWUpl9M3HDgG/HBZhlLvPdtjjHXpdbNhKPoAxOAHSL/394Y1TAl9ii84lptAX7rekdDvaHTiUPmheZA0DkLOhvhqQe/lgFKSre+OhXrTnq0GmBCfmWYQd3DZf+ztvFqavqIywT2yIsXt6iH5XsTGn9mAkP9Ck9Sh1uZi+ER8/DMnweLOW0QNTbWKGub3FI+GrMtac5IjRxmfMYzXKHvkz0L7FjLxwa2hYFE6+TII2L/mwzpK33Bz7F374AqYTnMdmX3AA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EHgf7A7O; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:Content-Type; b=X4aOEdFcKznJgjML71H7yUGymY9swQxTwIf7WQuqpxzIde0xIt2Bq3EbokIKkxku5q3EAl/9VRjzfKd7ZrEMPU8xtJ7sc3QVYCQR7Eaf3vP49P2hCVsU6VExvEQbTARUlBnQGXQyYMvJtF+MFN7MgXvAiaJEylnAx2dTSJC+sQBpmIU9LBXX78u3A6zNJSkSubbF39pyoeGSCzVKzV+HBxvMXnBOLtMTMKjSgz9hv/XvSp6PFZw3mAG/sMQkkxN4if/nc2b7okKIozIY3u9sRqdSICt5qM1ALhGPI02UPLN+qnBHe9Y8iqySFsJ+ZfeaA8RsW/KdQeal/7RThzcJmw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f6sQZdp+; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EHgf7A7O;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f6sQZdp+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMpMR2MBrz3bmk
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 28 Feb 2026 00:00:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMspm2x4Pz2xLv
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 28 Feb 2026 02:35:28 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 52B81600AA;
-	Fri, 27 Feb 2026 13:00:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C96F8C116C6;
-	Fri, 27 Feb 2026 12:59:56 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 2C14660054;
+	Fri, 27 Feb 2026 15:35:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5973C116C6;
+	Fri, 27 Feb 2026 15:35:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1772197200;
-	bh=Ht7fSTZQd4wApGfPuWbxP0qgxkhUKiciwim4gfBpCsA=;
+	s=k20201202; t=1772206525;
+	bh=2wm97TyyZjI/SrmKi1/wNI1HD8jHbl9Gjn52e3rRCIM=;
 	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=EHgf7A7O0EtMAbmUkWPHiIrfK8T0W+JOUT9wx8cDNc6qCbl6W9ha7kL7b7qeQaplq
-	 lOmU6DzTxqyp359WIndMvuSxCiFZPlii9lzeaQ0Tgzd+3Zm0ITax1564M3VwF5NBqx
-	 AsurOa9TBEYoBGlvXtHOyxQi4I6zK/iQ5XkEULqn+THg3gpF+HOJ4oHFizuPHvf0g8
-	 EAwP4bloEagbTq5yDARnDvqRoCn60ti+IIUDRhoRsZROjvLITAH2FiE4/9ArvBAxAW
-	 kaXVVMXvC+mQ7rQkUmJYNMtFcd4A8QFdYwk1h+vNwDHJ+v19jU/xOLQ+J9X8JP1lUN
-	 l8u+5W//Ipvwg==
-Message-ID: <8060fe77-18ec-4aa0-90a1-50eee398a55b@kernel.org>
-Date: Fri, 27 Feb 2026 13:59:54 +0100
+	b=f6sQZdp+LbTmEM/oHmeJsTS7ZJkowj3EDdtlJlNcMBWMcgSmmDiJCKl8lbQ02Tv4K
+	 drKSDsqNCBvjYRfIaYS9TFDifBIs8qSoYeDmNxxBX9S0gl96ty1dkqPP8QF6Bry5pV
+	 iMF2M9f9Gmoh1FKzovPo/dXy4M8K+PLnw9lpPeA375TA5DPYoxaIkLsh95w8fwaDjz
+	 qqM4wPd7+bWpHJqwuKJghXTA+loymkP2gmeKA27NKrISbC7R0Y3qXYzuJhXLU+hhYt
+	 jE3PSkaPVTB7g6VdpTV6RG1jcD9eQgpt7wFVjIxhRfR6/cMYVGRr2OR+eVqs/eiSju
+	 lKxCz3EEjlbmw==
+Message-ID: <54b36faa-62b3-4561-bfc9-0c507d9e148e@kernel.org>
+Date: Fri, 27 Feb 2026 16:35:20 +0100
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -75,6 +75,8 @@ Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
  open list <linux-kernel@vger.kernel.org>,
  "open list:COMMON CLK FRAMEWORK" <linux-clk@vger.kernel.org>
 References: <20260227123837.70079-1-haiyuewa@163.com>
+ <8060fe77-18ec-4aa0-90a1-50eee398a55b@kernel.org>
+ <0bc7875c-106c-48e1-8d40-72919ca227c4@163.com>
 From: Krzysztof Kozlowski <krzk@kernel.org>
 Content-Language: en-US
 Autocrypt: addr=krzk@kernel.org; keydata=
@@ -120,44 +122,51 @@ Autocrypt: addr=krzk@kernel.org; keydata=
  jWt87ecuHlpL3uuQ0ZZNWqHgZoQLXoqC2ZV5KrtKWb/jyiFX/sxSrodALf0zf+tfHv0FZWT2
  zHjUqd0t4njD/UOsuIMOQn4Ig0SdivYPfZukb5cdasKJukG1NOpbW7yRNivaCnfZz6dTawXw
  XRIV/KDsHQiyVxKvN73bThKhONkcX2LWuD928tAR6XMM2G5ovxLe09vuOzzfTWQDsm++9UKF a/A=
-In-Reply-To: <20260227123837.70079-1-haiyuewa@163.com>
+In-Reply-To: <0bc7875c-106c-48e1-8d40-72919ca227c4@163.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 27/02/2026 13:38, Haiyue Wang wrote:
-> The aspeed video (be compatible for ast2400, ast2500, ast2600) now needs
-> the reset DTS handle specified, otherwise it will fail to load:
+On 27/02/2026 16:18, Haiyue Wang wrote:
 > 
-> [    0.000000] OF: reserved mem: initialized node video, compatible id shared-dma-pool
-> [    0.000000] OF: reserved mem: 0xbb000000..0xbeffffff (65536 KiB) map reusable video
-> [    0.377039] videodev: Linux video capture interface: v2.00
-> [    4.809494] aspeed-video 1e700000.video: irq 57
-> [    4.809977] aspeed-video 1e700000.video: Unable to get reset
-> [    4.810341] aspeed-video 1e700000.video: probe with driver aspeed-video failed with error -2
 > 
-> Fixes: e83f8dd668ea ("media: aspeed: Fix dram hang at res-change")
-> Signed-off-by: Haiyue Wang <haiyuewa@163.com>
-> ---
->  arch/arm/boot/dts/aspeed/aspeed-g4.dtsi   | 1 +
->  arch/arm/boot/dts/aspeed/aspeed-g5.dtsi   | 1 +
->  arch/arm/boot/dts/aspeed/aspeed-g6.dtsi   | 1 +
->  include/dt-bindings/clock/ast2600-clock.h | 1 +
+> On 2/27/2026 8:59 PM, Krzysztof Kozlowski wrote:
+>> On 27/02/2026 13:38, Haiyue Wang wrote:
+>>> The aspeed video (be compatible for ast2400, ast2500, ast2600) now needs
+>>> the reset DTS handle specified, otherwise it will fail to load:
+>>>
+>>> [    0.000000] OF: reserved mem: initialized node video, compatible id shared-dma-pool
+>>> [    0.000000] OF: reserved mem: 0xbb000000..0xbeffffff (65536 KiB) map reusable video
+>>> [    0.377039] videodev: Linux video capture interface: v2.00
+>>> [    4.809494] aspeed-video 1e700000.video: irq 57
+>>> [    4.809977] aspeed-video 1e700000.video: Unable to get reset
+>>> [    4.810341] aspeed-video 1e700000.video: probe with driver aspeed-video failed with error -2
+>>>
+>>> Fixes: e83f8dd668ea ("media: aspeed: Fix dram hang at res-change")
+>>> Signed-off-by: Haiyue Wang <haiyuewa@163.com>
+>>> ---
+>>>   arch/arm/boot/dts/aspeed/aspeed-g4.dtsi   | 1 +
+>>>   arch/arm/boot/dts/aspeed/aspeed-g5.dtsi   | 1 +
+>>>   arch/arm/boot/dts/aspeed/aspeed-g6.dtsi   | 1 +
+>>>   include/dt-bindings/clock/ast2600-clock.h | 1 +
+>>
+>> Please run scripts/checkpatch.pl on the patches and fix reported
+>> warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
+>> patches and (probably) fix more warnings. Some warnings can be ignored,
+>> especially from --strict run, but the code here looks like it needs a
+>> fix. Feel free to get in touch if the warning is not clear.
+>>
+>>
+>> Please use subject prefixes matching the subsystem. You can get them for
+>> example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
+>> your patch is touching. For bindings, the preferred subjects are
+>> explained here:
+>> https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patches.html#i-for-patch-submitters
+>>
+> 
+> Seperated into two patches in v2, please help to review.
 
-Please run scripts/checkpatch.pl on the patches and fix reported
-warnings. After that, run also 'scripts/checkpatch.pl --strict' on the
-patches and (probably) fix more warnings. Some warnings can be ignored,
-especially from --strict run, but the code here looks like it needs a
-fix. Feel free to get in touch if the warning is not clear.
-
-
-Please use subject prefixes matching the subsystem. You can get them for
-example with `git log --oneline -- DIRECTORY_OR_FILE` on the directory
-your patch is touching. For bindings, the preferred subjects are
-explained here:
-https://www.kernel.org/doc/html/latest/devicetree/bindings/submitting-patches.html#i-for-patch-submitters
-
->  4 files changed, 4 insertions(+)
-
+No, please wait. One posting per day. We have enough of other patches to
+review.
 
 Best regards,
 Krzysztof
