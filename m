@@ -1,59 +1,60 @@
-Return-Path: <linux-aspeed+bounces-3567-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3568-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53E4EFD0076
-	for <linux-aspeed@archiver.kernel.org>; Mon,  2 Mar 2026 00:22:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FCB4D58E6A
+	for <linux-aspeed@archiver.kernel.org>; Mon,  2 Mar 2026 07:04:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fPKPT1rBqz2yFK;
-	Mon, 02 Mar 2026 11:22:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772205409;
-	cv=none; b=JEstlX+akaW5zGnJegq529JvqMqeA35zHmlbjh0v9xwCsmPiwBL3Ud2iV+0xIcmiceAmGEOJgWCuJgk7Z49znCwIACknO9EHHO9CvvhEyCw4sNa5k7eBDA1nnbNOqG9CvQnZ2tg2ABrtsdMalN5ldys1nkh8tyOTCaupILVpX7Kes770JbH8+uQfCjTmMgLofVmhYRb8/Lpchfh0lqguTN3sbynq7aVBJV1+/VBtOlismh/3u0FRRtpFINmYww1H5JVlBkZDuIILAjXbRavtx0w5BJ/7enVhEcO6fmLLmr1sFcrJLVnEve08qw/hM5F4ZlYR/2Z4lTM2cM4rIMPSLQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fPVKW49tqz2xc8;
+	Mon, 02 Mar 2026 18:04:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772435055;
+	cv=none; b=dI1P1wj2G26aBUAVkrnJBoembJYt/B5CsFy4/hb3E+js/3yVgQrJVPdrtZ+Dz/vFMgZ/VCObe0rRs/XnKENDlgB0cLoa3ITsF1noRbyKNWA79RpGD6QO6pM4R59OKYRNQv8dcgExnflGpWk+qXoHzt5Fi8kv1vVgzG+Y1kyOKSDRX2o6Krj5y+8cjnKAA6Ib8X7yMg12eN5edNRlv5d4y/ijYDzoHgu5P8dFgKTj1TAgCp4jDPZkGEADUyUSoJhB19d/HJH6o80o3nxT7x5wN4DuCztC8WRXQDmNRFiaRuKhpOH3OkTLo6fPAnuV6SAPLTNTk8aU9/iHNGeqXVlGwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772205409; c=relaxed/relaxed;
-	bh=hVf/sLLyMfBbOFMouNBS3a/wY4p35CZfpPTEALfC59E=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=KE2tqdKMoWsm3k371+wI0kx7VtLmjbY3tG8hX/wLXO2P63R8yY2W4DYs0LbpFEa4NGONLWhyNz34Y6uI7S7k6LhTIrTG3AmweaSVYBg+55pGCdxSuV7z4Aqe0I9rUqOgJDLvYER/6BxUjT3cT+xnVjrGLqaWYwwAQB+GpNoS6t/BLL0/cXvD0oiRl4RaoEvQcWQ3j7Vwuic9MTHI/HsV48PtWy7JO6pgpMofkugIkv3lffQ0Dep/CEccbUp1eFQ8gDTvmIcf8WPsdl15AxRjH0mAauWuTkGz2RB1h27Iz9zX15aCluukJsCIVzbYEW+z5b0OhhtA0sz2hz/p7h+FdA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=ovejl7fM; dkim-atps=neutral; spf=pass (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1772435055; c=relaxed/relaxed;
+	bh=0dfE7IQfZ8Ju3U9EmYq9XV/mqrVlX/tVKj8XPlse454=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Be2gOdTVPASHI3QR03PJTdRiHEsmd20hJOLo3KlnKBLtqsaiWr00utz/psjfAG5n5hZWgiUyjFmbaYC2bJUHNJenyhI3Cbnia7AYQdy/L1K85/S+a+mk+OV1L9dbl2pnKxvw62YMk+JLeDQo1eLzpaTRivtxRMVzcEwU+pfTQJKOtDW7z5NMa/3qxi4SYqqItFjcMZzy2e+NKB3GzdUfP2v7ExFvA0C4tpOYJv2xQpQmlVRyhK7nY7s4LNbzQBfXWDybfIuz6bHsh2DqJO19EJfa+mqC0fGYjRliTby4rbE2PE+DZIK81W1jb+rkPjVK9PUx0y90tGCCzaxapWLegg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nQ8iqSxv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=ovejl7fM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nQ8iqSxv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fMsPB22svz2xYw
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 28 Feb 2026 02:16:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=hV
-	f/sLLyMfBbOFMouNBS3a/wY4p35CZfpPTEALfC59E=; b=ovejl7fMMWqfiqOUD9
-	2OlhRjKmEAnmTTxFaebBWmIEvb+XCUQdhCeS7UeUrSTdFkxcO9wkpETIZFhmLcPA
-	7GFLaEiep5dkYMwScwkzYXKL2MGGAQwAIkAsnUTivpbugnKWRDz3QyJ+bBxllM22
-	F/P4FXo5s6mtFQPbWNmWFlccw=
-Received: from haiyue-pc.localdomain (unknown [])
-	by gzsmtp1 (Coremail) with SMTP id PCgvCgD39_A2taFpCwnpPg--.7205S2;
-	Fri, 27 Feb 2026 23:16:09 +0800 (CST)
-From: Haiyue Wang <haiyuewa@163.com>
-To: linux-aspeed@lists.ozlabs.org
-Cc: Haiyue Wang <haiyuewa@163.com>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Hans Verkuil <hverkuil+cisco@kernel.org>,
-	Jammy Huang <jammy_huang@aspeedtech.com>,
-	linux-clk@vger.kernel.org (open list:COMMON CLK FRAMEWORK),
-	devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v2 1/2] dt-bindings: clock: ast2600: Add reset definition for video
-Date: Fri, 27 Feb 2026 23:13:14 +0800
-Message-ID: <20260227151602.829-1-haiyuewa@163.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fPVKT6lX5z2xYw
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 02 Mar 2026 18:04:13 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id ABED042ABE;
+	Mon,  2 Mar 2026 07:04:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05CFEC2BCB0;
+	Mon,  2 Mar 2026 07:04:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772435051;
+	bh=BEjq3tA3JtO6h36oS89C6amKbmPWOTaLgD17ByLFZZo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=nQ8iqSxvt4d3WmEXGN3VIj+ZdkGx1YeULyWqwch11M9K7vZhLgTq8mQmT/wU1Sq3p
+	 8YchhqL2fb5gsIJSUMz6Rd4XDfjq/O2t5V7sgpa9Ap1rZNEckUMGByuSKG0ZKlJtN3
+	 LMjZMQmA+ix3MvZD2QeltYjb4dmRGekQJ8cavjsN+CnvxpO4HWfX/oilpnmCiSjzcS
+	 MwyMrvyag0GXb2SmLP5YY55qZ/CvmtyUtekfggPRPmC+UA6DNTUNbJRpHPqcU3wtFw
+	 JIMjDU8Eef2yERXE8cjD0HoNcS8yZ3k5RefDOWF7UlwFYatqDfPUfxT0PmAJgsENTA
+	 BO8eXydY/csBA==
+Date: Mon, 2 Mar 2026 08:04:09 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Haiyue Wang <haiyuewa@163.com>
+Cc: devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	"open list:COMMON CLK FRAMEWORK" <linux-clk@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 1/2] dt-bindings: clock: ast2600: Add reset definition
+ for video
+Message-ID: <20260302-interesting-tactful-wren-0e2e51@quoll>
+References: <20260302011651.94682-1-haiyuewa@163.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -67,43 +68,30 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PCgvCgD39_A2taFpCwnpPg--.7205S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrKr4rWr1kur17try3uFykKrg_yoWkGwc_C3
-	srZw4DJr1fZrZ5KFs0yF4DJw4rt34UAF9aqr90vrnIkrWYyrn0gFs5XrZIy3W8Gan3AF97
-	AasYgw1fZFs7GjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7xRpyIUUUUUUU==
-X-Originating-IP: [101.228.113.192]
-X-CM-SenderInfo: 5kdl53xhzdqiywtou0bp/xtbCzRo+qWmhtTo0-QAA3O
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20260302011651.94682-1-haiyuewa@163.com>
 
-Add ASPEED_RESET_VIDEO reset definition to the ast2600-clock binding
-header. It is required for proper reset control of the video on the
-AST2600 SoC for aspeed-video driver.
+On Mon, Mar 02, 2026 at 09:15:00AM +0800, Haiyue Wang wrote:
+> Add ASPEED_RESET_VIDEO reset definition to the ast2600-clock binding
+> header. It is required for proper reset control of the video on the
+> AST2600 SoC for aspeed-video driver.
+> 
+> Signed-off-by: Haiyue Wang <haiyuewa@163.com>
+> ---
+> v3:
+>   - Drop 'Fixes:' tag in header file patch.
+> v2: https://lore.kernel.org/all/20260227151602.829-1-haiyuewa@163.com/
+>   - Fix checkpatch.pl warning, and send dt-bindings as single patch as
+>     the submitting-patches guide.
+> v1: https://lore.kernel.org/all/20260227123837.70079-1-haiyuewa@163.com/
+> ---
+>  include/dt-bindings/clock/ast2600-clock.h | 1 +
+>  1 file changed, 1 insertion(+)
 
-Fixes: e83f8dd668ea ("media: aspeed: Fix dram hang at res-change")
-Signed-off-by: Haiyue Wang <haiyuewa@163.com>
----
-v2:
-  - Fix checkpatch.pl warning, and send dt-bindings as single patch as
-    the submitting-patches guide.
-v1: https://lore.kernel.org/all/20260227123837.70079-1-haiyuewa@163.com/
----
- include/dt-bindings/clock/ast2600-clock.h | 1 +
- 1 file changed, 1 insertion(+)
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-index f60fff261130..7b9b80c38a8b 100644
---- a/include/dt-bindings/clock/ast2600-clock.h
-+++ b/include/dt-bindings/clock/ast2600-clock.h
-@@ -124,6 +124,7 @@
- #define ASPEED_RESET_PCIE_RC_OEN	18
- #define ASPEED_RESET_MAC2		12
- #define ASPEED_RESET_MAC1		11
-+#define ASPEED_RESET_VIDEO		6
- #define ASPEED_RESET_PCI_DP		5
- #define ASPEED_RESET_HACE		4
- #define ASPEED_RESET_AHB		1
--- 
-2.53.0
+Best regards,
+Krzysztof
 
 
