@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-3587-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3588-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A543EDEC01
-	for <linux-aspeed@archiver.kernel.org>; Wed,  4 Mar 2026 02:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6322AEDEC01
+	for <linux-aspeed@archiver.kernel.org>; Wed,  4 Mar 2026 02:41:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fQcNy5kSmz30FP;
-	Wed, 04 Mar 2026 13:41:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fQcP95NYHz3bt7;
+	Wed, 04 Mar 2026 13:41:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772592066;
-	cv=none; b=RD+cwjVKsZGp5MeZyKOUX2OFG32dCRCh8OFjtcmmxjPe1LG68QCKQwEDKelSEmPIqA15b8Lzm9akXz9bNDyE0M3n22r+hbYsH/akPz2tcIK5vi9cExqFkLIdlnDEbaSLoJaWmSCKMoz46xZJhp6GhjHlLrCT4NeldrsWZs8PbvkMXXXJUHrUpmdwI9PpCphMybKApGtn/8gy0PZ1WSu0noy2LKKTqFiBb9EnNOc2VBTK+sebe1TlbnWPiU00Akscgk5bX1XjlIHKxUFuFOe+oDIVt92MQ87FA+YmnBQFXAXh0IM3pv638WrN1NIuwJn1nHSTTvG1/cRYG4RRyaE3Bw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772592077;
+	cv=none; b=I/04lowBt6PgZoT6ac15t2RQOhIohpLjJz3rV745Ww3AHnPj92x8fIR6VFuMg7O3GDPUy+XGLNI/6gD0BD7ryVGccep+2sXVfeKhMfRowDuH1bfUE+AAUZrrTTVbEQgZri17q8OhZmQt2FGnAZ6ED569z5KiEWb4KZAv70uwc1Kd3rOPZGImaxzQQIVuIvROJdRL84NpmBJdUiH221E/+bTSOFl86Tur3nAeDHg0c3FXjJp0UnXSWod0bkpYZrEN7dPMzTrIwWvWXTPtsN/whGnhmqhfM4T7F9fKUg01H3X9ICcYJ8QM5MuJFgYnWsuhRU2O1V8dRracqQVJV5+NPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772592066; c=relaxed/relaxed;
-	bh=Ih8XBInDkYJdrPvgQj+yzh+6t6OHwUs1ab86hkiTbV4=;
+	t=1772592077; c=relaxed/relaxed;
+	bh=96lQsWqDKySGJZInYDPP1iz7MJpHJVtnNEeUPS7642k=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=oPWArRlaXyDHAyQ5Kh6vDF+soR+e9ePYvfvS1IDtoeLS4JvmBFdQKBEGyqpDm4qy+XqoAPI2jar8q0oYFKfpjvm2eZ6I0ZTIFRffSLacoaBIukvx7dycoGBozB9JZf6ahRSLQQ+3cc06zSnHyMXVaysGvKu7HmXKaG5jFEHPcZ3qpgppkB4a3slPOrorvKwkX/9+eVDQXUF+b9Lm5SwZ/juAnmEPF7REdlwDboAOpzEwlZy+8VXDvt9WpouSvtelSI9F+wiRUg0IMIpaAjRQKw1Gi96V3IViRq78SBaEn1tZx7/SLr7U7zCKhV9UWAun2qyZ5bBWKCDxmdtTu7JfZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=SalvJloe; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=Dhwcw2NVm1Nvy0uK8VVAtyn54q345Na7KmwhmNSzIe4tge9qPVT3MbwFmDALbwxhKz6paDUugZsZc5o+O1raTGkDlLI1MC5WddlotmJH4zgNeDcFHZhIwNKjW0Q9QK/80Y4TiCVK7K1d9H24cLBgfJoGXzF0g2DtxrCNfwFx6ZPHVp+CzzFPiPbr3bJV1PAIu30+PlU6TixQvxNtRQAiaZ1CIMqva4mkofEKgvgDpJaBQqHXsXcyTn59qd6SBOOQtocvRc/o95re/xnjmkU/o16656GnlCbvgeZZ4KjYgMJNlHbj/duHONDSZ66OuF7dg2YainwbDu+C+KmOHBQbKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=lHZfQy0/; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=SalvJloe;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=lHZfQy0/;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQcNx6KvZz2yLH
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 04 Mar 2026 13:41:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fQcP92B4Dz2yLH
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 04 Mar 2026 13:41:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1772592063;
-	bh=Ih8XBInDkYJdrPvgQj+yzh+6t6OHwUs1ab86hkiTbV4=;
+	d=codeconstruct.com.au; s=2022a; t=1772592076;
+	bh=96lQsWqDKySGJZInYDPP1iz7MJpHJVtnNEeUPS7642k=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=SalvJloerZOYvex+zkrwh5UMW3MGxyhruNDEFL83KHvFNP8bYTJoq3fe1rizA3YJB
-	 tms5oPmwKDAxRx2zBqjtQXszG3mgr81wHMWJhjq8O7/cNElXxH0m0vs+mNewFj770X
-	 sm+famqvqJ5TG6U1ZCqUwKE1i+rpFx0pdaWjbLyTVEldTLpGyJpJuJcvJ+U02RxTfc
-	 f0g0KqrpGfelQXbhMUuJB/w6fuunQ9R5AH2OuqymTxL5mZQw6cqWcq5PyfixqUczAQ
-	 JBFvPK2STremjsw79QuSjFU0/iz9oJeVLrTwaJEpnfzGlfI9aRtE7E/LkwsW5Xt9wJ
-	 Bjb1FsQoPR9PA==
+	b=lHZfQy0/G6rk0rkPwPdvfIMI8Mh7+Ivf/8PBeFOKXWFLcoeCs1/pU62LFbkvL86T4
+	 Kgpczg1MfdW81pTAR7H7ttfWH/VN6iYywfBC7RZebRac3dmR+RP3LlCiA41OvaunC+
+	 iiSL8gjFT9D3OdB1lddQtX2+RsKE6/jshGjIngquVcWENpoOvOQjcF8reYuxAEFeiQ
+	 t65g1VTuB1sRNVCsKumnK8LktMFxnYtPbMdJV/CMD45q+LwkUdUDN+TiHn5CxRsKF+
+	 u9n5xXefWzjABKeMO+fN1xFgUO4esLN/h4PtY99OUkcZpaLAKaVtmRyOV52uZvA57L
+	 ++s8Xtj003JuQ==
 Received: from [192.168.68.117] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 9C80C6000D;
-	Wed,  4 Mar 2026 10:41:00 +0800 (AWST)
-Message-ID: <391b9b912492c07fd1fd7a737b7f49382d361fe2.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v5 3/8] ARM: dts: aspeed: yosemite5: Add new SGPIO line
- names and rename signal
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 6DBB16000D;
+	Wed,  4 Mar 2026 10:41:16 +0800 (AWST)
+Message-ID: <73ea41bf341df0e3215c58a029c9ea2386c4ef8a.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v5 2/8] ARM: dts: aspeed: yosemite5: Remove ambiguous
+ power monitor DTS nodes
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Kevin Tung <kevin.tung.openbmc@gmail.com>, Rob Herring
  <robh@kernel.org>,  Krzysztof Kozlowski	 <krzk+dt@kernel.org>, Conor Dooley
@@ -54,10 +54,10 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Prasasd	 <amithash@meta.com>, Kevin Tung <Kevin.Tung@quantatw.com>, Ken
  Chen	 <Ken.Chen@quantatw.com>, Leo Yang <Leo-Yang@quantatw.com>, Jackson
  Liu	 <Jackson.Liu@quantatw.com>, Daniel Hsu <Daniel-Hsu@quantatw.com>
-Date: Wed, 04 Mar 2026 13:10:59 +1030
-In-Reply-To: <20260223-yv5_revise_dts-v5-3-fc913e902488@gmail.com>
+Date: Wed, 04 Mar 2026 13:11:16 +1030
+In-Reply-To: <20260223-yv5_revise_dts-v5-2-fc913e902488@gmail.com>
 References: <20260223-yv5_revise_dts-v5-0-fc913e902488@gmail.com>
-	 <20260223-yv5_revise_dts-v5-3-fc913e902488@gmail.com>
+	 <20260223-yv5_revise_dts-v5-2-fc913e902488@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -75,34 +75,30 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
+Hi Kevin,
+
+Sorry for the patchy replies so far, but this series bothers me and
+other priorities keep bumping it down the list.
+
 On Mon, 2026-02-23 at 19:17 +0800, Kevin Tung wrote:
-> Add new SGPIO line names for user space monitoring and event logging.
+> Two different power monitor devices, using different drivers, reuse
+> I2C addresses 0x40 and 0x45 on bus 10 across Yosemite5 board variants.
+> Defining these devices statically in the DTS can lead to incorrect
+> driver binding on newer boards when the wrong device is instantiated.
+
+There are effective methods of maintaining devicetrees for variants.
+Why are we choosing to remove information about the platform rather
+than use existing techniques to properly describe them?
+
 >=20
-> Also rename PADDLE_BD_IOEXP_INT to ALERT_IRQ_PMBUS_PWR2_N to match
-> hardware naming. The original PADDLE_BD_IOEXP_INT is unused, so this
-> change does not affect current system functionality.
+> Therefore, remove 10-0040 and 10-0045 device nodes, and let the driver
+> selection is instead handled in user space by the OpenBMC Entity
+> Manager based on the actual board configuration.
 
-Why are these two problems being solved in the one patch?
-
-https://docs.kernel.org/process/submitting-patches.html#split-changes
-
-Essentially, your use of "Also" is a bit of a red flag here.
-
-However, on the specifics, why was the PADDLE_BD_IOEXP_INT hardware
-naming wrong to begin with? What changed?
-
-Broadly, it feels a lot like you're revising platform designs, then
-trying to make the one devicetree fit the current design, and are not
-explicitly communicating that this is what you're doing.
-
-If that _is_ what you're doing, then we can come up with much better
-schemes to handle it that aren't a constant stream of compatibility
-breaks.
-
-I need you to engage with this concern.
-
-From inspection, I only find patches 1, 4 and 7 of this series to be
-something I'd consider applying without further discussion.
+As a separate problem to the one above, while you may run OpenBMC on
+this platform, I'd rather keep the description abstract. We can finish
+the sentence at "... is instead handled in user space" and remove the
+rest.
 
 Andrew
 
