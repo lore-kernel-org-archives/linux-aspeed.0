@@ -1,72 +1,91 @@
-Return-Path: <linux-aspeed+bounces-3596-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3597-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F21FF3092C
-	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Mar 2026 13:16:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 822F2F513E6
+	for <linux-aspeed@archiver.kernel.org>; Thu,  5 Mar 2026 22:39:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fRVS04Pv6z3c5f;
-	Fri, 06 Mar 2026 00:16:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772716608;
-	cv=none; b=MxUJ9/ulreTcOnMab38mGWoJeAEmXliZLx7tDvkZX/OEnJG8njeWRbndN2u9ctfZ44Bo3Y8l4Zb4WipGmJCnW0To7Pu3szI6UZLczy8bPyPzQuGwi9O/8CTy2rtZu6cGNKk08VxhjAkuSMwq8cds/x5+zMLF8bTzbmHFeypgK/gljo3FXxIzlDMNfi5CtFRIOf1iP7nrFErTmmdUw0s/rZDJ64n29oMTAYnfY1SNmS0HofhXiK9fDLVA0iXkXgDpnJQpScCea/8wMlmw5adxGNje7mDvcCdBC3huJtI0z49Tmb6M6eBvglnZENQfU24s60C49VFKPbo1cIQDh3Hhpg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fRkwt2lNLz3c8x;
+	Fri, 06 Mar 2026 09:39:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772700542;
+	cv=none; b=j9z6BVTZtryAlVZQp9v19GZXoQnYH3/WydjBzTm+TV/6JVpcHdXYLSifzky9HBi+d28WkdtniptEUqT47Z8Qrj31HGdKRjr81suLjTiYwEGx4MA6rnpiCd1Ievhlp9dlWoMUy8DdzNvw2u+ekdcLG//RSpLPuY3ypViz4FYYoUzarPRuM/OL2uL6edZhdsLjED0zkHkefh97xbq/SH8hfIsDQBhhi+U7jBTMiX2S9hpJU9iKBsopjKIFn2iO9aHKMNJp1pT41INr85Gmt+330/3YqumgfTmC5yT+Zo7hCKnY2ZS3CzQwSUu8NgLR8EPItrVr2EY/mHeTaNs3JSDSvQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772716608; c=relaxed/relaxed;
-	bh=12ucEdAFXfC6E20WpVMMZDujwQClNo1zj9TEZw+WEZQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=kemuwN79dfAO72uRQ713yc2UHqdvRtLfDzv2Y+3mYonf9UOw3p5SCIVddSVi1CgYZUC5D9+P5WIgZ/FaWoy0G6px/hPsVLhf+wCH94D9sKtCeQiRrdNm0rnq3b3ktbr6PgxAwsIMDRTYgfAXCeKwdsG4Al7BPRQT8LbqA2qPWSiOP1edMh865+dfxLUwkZwwUa5u/Xe9vdO0m4HPK81qmh9TNXuNGI0Ig/7mebUqUFUeYBT/W3igp0Ux4DZIMCZxA0ZGobUSr1wQwh2NMvkncuFrlc/AQ55MgJfio9mgMkcIXYnvkeMKiYhqHKzNVk7mbSrqVdZVkWIQrI4ycrLkow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Z7PFjdGz; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1772700542; c=relaxed/relaxed;
+	bh=uLXMGyCvCYaOpNewWGAXwBi4Q3TPN5Jmwds2Ju3CvEs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZjyNl5N2gxPwwNXWZsi5cj0PEyIc3nopXqBsgOX2YzYa4r78/wvRcfGCaGBCWwfuYaEwYi1Qj4mIH1+ilBg7SosEY/MYibhVY92YM9UbMCCnftsWIzXFlMnzaHGAApa/WEiuh2pd7GTeZXQsnkZl7mNrjUPxwbCKq/0W+dxsZcRSvShHNw3XBFb51AZLwrCgJwzePFoVadtZLFzVtb3eH/LL5OJqJ/vpIjLJU6YrEpqqmeLc5HLvzJl/GEuXi/2DlUGgmWkCvk5nwuYWE/iDV49vdesYz++H8QLFevLVH7uJ9UliSgbQ6D2805jdGsaa/XAH/BC30xax0QCyAwJMmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RRlAYW0u; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=d486250@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Z7PFjdGz;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RRlAYW0u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52e; helo=mail-pg1-x52e.google.com; envelope-from=d486250@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fRVRz1j74z30MZ
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Mar 2026 00:16:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Transfer-Encoding:Content-Disposition:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:
-	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Content-Disposition:
-	In-Reply-To:References; bh=12ucEdAFXfC6E20WpVMMZDujwQClNo1zj9TEZw+WEZQ=; b=Z7
-	PFjdGzuNOxxgbi7rXc+QGGG1TooRwb7XHvOaOXpw/tlJOv5pAlEHE2vg3AYFGI6cK4gtTWDmL9vwV
-	nr6rLbxAy3vyUsp42wOSZxCl6aUVnPdzotD8P/pf3Bk2t2+fzfVA9Mlnpw35GsxeCvAA9HXCd3cAi
-	HRL5I4pGs2tstA8=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1vy8Yl-00AJih-0P; Thu, 05 Mar 2026 14:16:11 +0100
-Date: Thu, 5 Mar 2026 14:16:10 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Jacky Chou <jacky_chou@aspeedtech.com>
-Cc: Andrew Lunn <andrew+netdev@lunn.ch>,
-	"David S. Miller" <davem@davemloft.net>,
-	Eric Dumazet <edumazet@google.com>,
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Po-Yu Chuang <ratbert@faraday-tech.com>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"taoren@meta.com" <taoren@meta.com>
-Subject: Re: [PATCH net-next v6 5/5] ARM: dts: aspeed: ast2600-evb: Configure
- RGMII delay for MAC
-Message-ID: <70ed84fd-ac9d-4157-ad20-36deec0c5f82@lunn.ch>
-References: <20260302-rgmii_delay_2600-v6-0-68319a4c4110@aspeedtech.com>
- <20260302-rgmii_delay_2600-v6-5-68319a4c4110@aspeedtech.com>
- <d38f54b2-4a99-4a54-8403-e4f4a9704386@lunn.ch>
- <SEYPR06MB5134AE0B0042E05E8E58A5239D7DA@SEYPR06MB5134.apcprd06.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fRNW11DsHz2yFl
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Mar 2026 19:48:59 +1100 (AEDT)
+Received: by mail-pg1-x52e.google.com with SMTP id 41be03b00d2f7-c648bc907ebso4852138a12.3
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 05 Mar 2026 00:48:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1772700537; x=1773305337; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=uLXMGyCvCYaOpNewWGAXwBi4Q3TPN5Jmwds2Ju3CvEs=;
+        b=RRlAYW0u8hfAnrZ7lPLLZ5kjQJTsRZRQDfHrH8Uk1qVSuTmnh3k8vlrsSsRwVAv/8E
+         DUEAD8Q9V3SjslYvH9SaGPwct8jkf/R1xVDeSjXEdHZ6KdnMDwgvFekhbdVVY5GG7EtO
+         1xgN2RrEwNGCNjVGWrXpNdyIZ1PGc/8gdo79rIKcAI6WYRH4IKys3PZZd+jeuJ1cqZby
+         bH5M8Yk+QfpuKIaNa35/vopnsZBC0Rx+lpQE+BVNVQIx6wRq9D6xbArpInJ3X32Zj+j6
+         4zPVZiy42ajODseLy+vFMW/E6QVHFHTjSdlbeZDFmi1RcSU6AZbwczlNpXUGw+kwkVVj
+         G8wg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1772700537; x=1773305337;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uLXMGyCvCYaOpNewWGAXwBi4Q3TPN5Jmwds2Ju3CvEs=;
+        b=XB+XbaaO9tNGNH8DnIWT0uqOTN+9dj1sAJi6JF9MVgcdzAgGCaoLZ04PpENHWDFaMK
+         b9YkoengHy2mcWWuDYGwaa7q9Sxdvc9fCRfUzBPDC74kn1BpZdXv6fbfW32uaAHVJYOj
+         NB/CRtzgHMzhW0lyJLnDtRrZAMaNEWrPgeJ6IJwU3uy8QNzT/nR5/FmJimYMqCgjRlvk
+         CMAc6dL6I65wtgURFQrC7i6SG9Z9IFd0yA2SBGgwnqDj9Gn9fetOf5q/Lnw0aIvyP9IM
+         pFO7ry73hJCINvs1V0Td+eduXHXVfF8hiEbfGJ0PnA5BTFQToGcfdAySPBO7AnzQcJXl
+         0w7Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXIxx2hq3kocJQhzimFdfJ0XLZPooFNtPc5dvc5U1qlPDYnv34ZsYt0NyRrqaD69GHPodXe5iEhvUTpVC4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwPA8R9mwZc93k8TYB/kcWv0xi3QuXbpsrwR+KirJjGUFL55F/6
+	DE75xaqJvqrWmFoTDwMR3ucNY7nqpTlfU4JR4fbsq+gYDi7SIh/z0Z7r
+X-Gm-Gg: ATEYQzyUHD2X1NbHDowLBhH29oL+AY8xey7SdtgjHwqK3RHGDuTHq33uTwfQwKwK6uH
+	dgN+68Cl5bj1etwARI4904t5PNosHdI2IkOI1IwyC7pY1zUfotKYkRm0zSv5VLrVoKpzM7oVWor
+	Q8McVbAi2iYrKxGFws2qIrnRQDtjh8e4WYwBfzTWCoeP/DICnMTV6ak3ZNrl3xxPXuQYAdaDLuH
+	4OIgykG9zcOHkdcQSOYX552RTcIjCktQdEOp46M34+RoVDvaWZgH08AkjdcmbNqmeJXd+ObhJV9
+	jiIvcHyPBTehTUTdvxauNveuEU12vxOpbb6NqBnBNRlGA+v/Dhm8SjlBSxeAaMLomH7QQFaLnKA
+	CsV+XW8FfIjtm6NIuYyidQEhwyTY4XzuERM2KOeOk9NMpjkDmYIC/403QC90OKLBDMZSlS+f+4a
+	hz82Klx44MdrDYkVLi+8aj3moTlkxdCO65Bw0F9tdtJ4/0X1xV3AFrAsjUiNe0E6BRVlMUK7EXg
+	O6KnjbhIr5vYne215txNQ==
+X-Received: by 2002:a17:902:d501:b0:2ab:230d:2da9 with SMTP id d9443c01a7336-2ae6ab28e3cmr48197565ad.48.1772700537028;
+        Thu, 05 Mar 2026 00:48:57 -0800 (PST)
+Received: from bu9-daniel.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2adfb69f277sm289309515ad.55.2026.03.05.00.48.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 05 Mar 2026 00:48:56 -0800 (PST)
+From: Daniel Hsu <d486250@gmail.com>
+X-Google-Original-From: Daniel Hsu <Daniel-Hsu@quantatw.com>
+To: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Daniel Hsu <Daniel-Hsu@quantatw.com>
+Subject: [PATCH] ARM: dts: aspeed: yosemite5: Add MP5998 power monitor
+Date: Thu,  5 Mar 2026 16:46:50 +0800
+Message-ID: <20260305084650.24511-1-Daniel-Hsu@quantatw.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,100 +99,36 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <SEYPR06MB5134AE0B0042E05E8E58A5239D7DA@SEYPR06MB5134.apcprd06.prod.outlook.com>
 
-On Thu, Mar 05, 2026 at 05:05:03AM +0000, Jacky Chou wrote:
-> Hi Andrew,
-> 
-> Thank you for yor reply.
-> 
-> > On Mon, Mar 02, 2026 at 06:24:32PM +0800, Jacky Chou wrote:
-> > > This change sets the rx-internal-delay-ps and tx-internal-delay-ps
-> > > properties to control the RGMII signal delay.
-> > > The phy-mode for MAC0–MAC3 is updated to "rgmii-id" to enable TX/RX
-> > > internal delay on the PHY and disable the corresponding delay on the
-> > > MAC.
-> > >
-> > > Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-> > > ---
-> > >  arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts | 20
-> > > ++++++++++++++++----
-> > >  1 file changed, 16 insertions(+), 4 deletions(-)
-> > >
-> > > diff --git a/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-> > > b/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-> > > index 3f2ca9da0be2..a2a1c1dbb830 100644
-> > > --- a/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-> > > +++ b/arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts
-> > > @@ -123,42 +123,54 @@ ethphy3: ethernet-phy@0 {
-> > >  &mac0 {
-> > >  	status = "okay";
-> > >
-> > > -	phy-mode = "rgmii-rxid";
-> > > +	phy-mode = "rgmii-id";
-> > >  	phy-handle = <&ethphy0>;
-> > >
-> > >  	pinctrl-names = "default";
-> > >  	pinctrl-0 = <&pinctrl_rgmii1_default>;
-> > > +
-> > > +	rx-internal-delay-ps = <0>;
-> > > +	tx-internal-delay-ps = <0>;
-> > 
-> > In the binding, you said these default to 0. So you don't need them.
-> > 
-> > It is also odd that rgmii-rxid becomes rmgii-id, yet both delays are 0?
-> > 
-> > What was the bootloader doing? This is worth a comment in the commit
-> > messages.
-> > 
-> 
-> Before this patch, aspeed-ast2600-evb.dts is an existed old dts in mainline kernel.
-> In this series, ftgmac100 for AST2600 will configure the MAC RGMII internal delay
-> via SCU register, so this patch is changing this dts as a NEW dts for driver to configure
-> RGMII delay from the properties of MAC nodes.
-> 
-> Old dts: generally, leak tx/rx-internal-delay-ps -> Calculate the RGMII delay that is configured
-> from bootloader and decide whether keep the original value
-> 
-> New dts: In AST2600, we expect the MAC node includes the rx/tx-internal-delay-ns properties
-> and the driver directly uses these properties to configure RGMII delay.
+Add the MP5998 power monitor device on I2C bus with address 0x46
+for the Yosemite5 platform.
 
-You did not answer my question...
+This allows the hwmon driver to probe the device and expose the
+power monitoring telemetry to userspace.
 
-> It is also odd that rgmii-rxid becomes rmgii-id, yet both delays are 0?
+Signed-off-by: Daniel Hsu <Daniel-Hsu@quantatw.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-I could understand "rgmii" becoming "rgmii-id" with both delays being
-0. But that is not what you have here. It is starting as
-"rgmii-rxid". So the PHY is being asked to insert the RX delay, but
-not the TX delay. Where is the TX delay coming from?
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
+index 2486981f3d6b..6287f80d70d9 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
+@@ -422,6 +422,11 @@ power-sensor@45 {
+ 		shunt-resistor = <1000>;
+ 	};
+ 
++	power-monitor@46 {
++		compatible = "mps,mp5998";
++		reg = <0x46>;
++	};
++
+ 	power-monitor@47 {
+ 		compatible = "ti,tps25990";
+ 		reg = <0x47>;
+-- 
+2.43.0
 
-I assume the MAC? Has the bootloader configured the MAC to insert the
-TX delay? But look at all the board vendors who have been submitting
-DT patches, and i've been rejecting them. They all seem to use rgmii,
-not rgmii-rxid.
-
-Why is this different to all the other boards? This is what i would
-like to see in the commit message, an explanation of this oddness.
-
-> We hope this series can keep the old dts works fine
-
-Hope is not sufficient. Backwards compatibility is required. You need
-to convince the reviewer the code changes are backwards
-compatible. You can use the commit messages and comments in the code
-to explain how backwards compatibility is maintained, while adding
-this new functionality.
-
-And once you have convinced me, i will probably ask you to post the
-changes to the BMC mailing list, and ask for a few board vendors to
-test the patches with old DT blobs, current DT blobs and updated DT
-blobs.
-
-And this is why i think fixing the issue in the bootloader is
-better. It is much easier to convince a reviewer the changes are
-backwards compatible.
-
-	Andrew
 
