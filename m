@@ -1,88 +1,64 @@
-Return-Path: <linux-aspeed+bounces-3616-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3617-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE57FFCB61D
-	for <linux-aspeed@archiver.kernel.org>; Fri,  6 Mar 2026 16:13:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E33BFC9EE4
+	for <linux-aspeed@archiver.kernel.org>; Sat,  7 Mar 2026 10:46:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fSBJz2DZsz3bfV;
-	Sat, 07 Mar 2026 03:13:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772813587;
-	cv=none; b=kpLxja+B2fBGFMCtV5McC7pIkiRsJ0VsNyWn6erJi6lhMCE9Yu/qsxANyWNSYzTCd+3X52Z4jPDwxUJ36pJpXQgE3uIYd2kNFW0BfMenI0SkU+pI+QprjLiCadHXEywZAY9HwE18wNCY6R4Fd3ArGpe5oA3BkBx0m+cSpWFZEq3LPIaOYjvn717Id3UKinzhVZujbpiBVFGMGYEenhzE4uQG37NzEbiF2S0dbH2ZWMCQSgLY5x2k2P1FF4x7tBkS4+KaaR5VdsMdUZdsjpCSGhs0AwN7TzifXuZJK1p1885mfjoVtckV/1MMLuZMiZmpyjXJQFIu+i6nfCQLahr3HA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fSg163WLHz2xjQ;
+	Sat, 07 Mar 2026 21:46:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1772880362;
+	cv=none; b=BjVwPWa3BLTMWSHauTs6tpIS/miE9VEOoIQPYCQIUepXY+WqXcIPJRUbZ/qhuQT+pJWMIRIR7yRDqiLF2CsMsx3QekAIH9FU23bcuWTYiNYxpo8p4eRgiMKA7CPLI5V7NZd0Pzc5EH2Ye3TKgofmGJR0yavMgHnmCK+Kl7/bVypsA0YSVGLBCLOhxQPnRYR8v4Hsr/2MNHwiCFgX6hBjYdyeWLt1FYEirHMMehpzOSqNzR0a7aB+emYnD7+8RTVy7cvBouLouEUerD8aO07SaZZ5A+yU0hhiEZ/Lr4e0y0wx1MNKJOb7jHuB+BgqaA9Irs3ekSqJRUtxJFUToFc5Ug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1772813587; c=relaxed/relaxed;
-	bh=2ExyNVSWsZEiPhZCTeAKx/MrxZrOY+AoCmCT2YcRTRo=;
+	t=1772880362; c=relaxed/relaxed;
+	bh=SXuyckBYLtwIY7dFkWyl9sWSGd1W5P+XTpcE5D1/nWs=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n2bX3R3/aOWfZplHy5gT/FecZWKDwjtQyzVSufrK0p+DiHOds7gX1L3Jx5jjERQyHTYkA1q1yZojou90KIpoRD0KyiExvxainT96lkvRQ1hpEZ+LoJajV/tk/R3bgPyTMCSQN/3m/hSUBRTYkD6+CopUZGyu0jcyjdOMrP4HCXsVMQfQ9UKE0YdX1JLduwzASXvqqQdW2lAxF338A4p1gSEgoVsT0Va9cObn/B+DtHANfD+x2rK+5Kow0hy4fyL66PoV7Kkg0yrwPKWRXwRWOrn1agsuHjkupaUNYeSH7mKWz417gUVmJm1HXweZKN2USft+sl/Ee3+1H3vHe3a9sg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jQP6ifg9; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	 Content-Type:Content-Disposition:In-Reply-To; b=hhOEtbc+y+zRZVoSdkZKomMdG/2939g3IO1p2qmJYoRT2UdUl8NLiQ+i/lpzlEORcarG+4w1pA0NtqdT+RZjSjP3xBCN7hPF3GGjx5kPKGQHBsJY2F33RtYqa1fczY0KUEom/x1ULch9bHP3O13x/FtZ5Jet0pO7xlf7iJijhaLN8R2shVxZp8jM7vFuTGeL/Feon3/IsqyTarwTl71XIXYSPxkd7Ky4L6Qyf9zZrK9RffLs9HSvWyO70Nm7oWigIdiGROphe5e2NtNAgzHqvu1H9khO0U8y8eOMI/+CHVtb7vt6t1OCtkywU0P7Ox11iomdqrk5Eli9G0wAUi4hsQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=u6nmCR95; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jQP6ifg9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=u6nmCR95;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::132a; helo=mail-dy1-x132a.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x132a.google.com (mail-dy1-x132a.google.com [IPv6:2607:f8b0:4864:20::132a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSBJy3pddz30T9
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 07 Mar 2026 03:13:06 +1100 (AEDT)
-Received: by mail-dy1-x132a.google.com with SMTP id 5a478bee46e88-2be19f05d7dso805883eec.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 06 Mar 2026 08:13:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1772813584; x=1773418384; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2ExyNVSWsZEiPhZCTeAKx/MrxZrOY+AoCmCT2YcRTRo=;
-        b=jQP6ifg9LjeCJTLYD8hkddakNgFYqeoTC3yjp5f+htqVWbEMyyCy46pIS80LY+J/Ii
-         2dSp9REqwmOKIf0cCUb2LdycNqcgm4HTjqPF6cZNqxpMafnHnEtaZ9N10PtAe6FW9Wxo
-         6Clrpt9RFmbINxtmnaYNAIh2fSY+wntetaR8D29W+TB8jTeAM2VyzcXW1YRsnctp1jDk
-         TVQKGwNOopMLaeiKODMMFro2cyY8Nemhv8mKrL2FXMRm4YNylU3c7Ik21lV+REPMBVrM
-         IaLc/orDlzlU1/eHfFCFv3fLailPc6fbmLunxmvsbuHidqFaVZXWV/qXNM6qCwGmbDIA
-         CPnQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1772813584; x=1773418384;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=2ExyNVSWsZEiPhZCTeAKx/MrxZrOY+AoCmCT2YcRTRo=;
-        b=XVDROUWeE587hMIOPwsPrKGlD2HTUv3LvMhq+tZiwta2SQcrWYddiCXcImU20GPuFm
-         /6fG1FI4riKcQAg0SoOySTWPafYZ1eSH+EOLeOQdzR0bJKrvg2ogEUsk211dhguhS/O0
-         iX4vmiZLN7sVMx4g1J+Mi9rvejL8UK+qSCo+eOaD6LlNz9Bqv3xXewzLX3jCiBBUnyO5
-         4kYFZtN+2ukIteAyqXeKzXxm265cwqMGgiE3hGFYpCU3//mg83AeE0DYPcsbeZdDdBKU
-         QGrNG192nx9jEOJ3kYyNlxPMV1/on7ahtsPEnfIkkdzjPRRDp53kAmUQ1/izFHaI0Va7
-         p/eA==
-X-Forwarded-Encrypted: i=1; AJvYcCUg7jZ4tvqr9/RTqalQRoLFwBCWk0r+i97b4MpTryuTAqn8zgQbYciwNKCrf554fD/ZjV8vCKHwl7W2xAI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwOrEVn6qSMZpCQZ1qLr58xRMEGsk3A6A3SvI+NB+stV4/TgqHy
-	X6C9/x81tSUhgQ1LXnSE5ZOqGEzqFUB5nbVSp2O8Y2XHtqIA/444RRYB
-X-Gm-Gg: ATEYQzxzqHgWGyZ5DC7IcVV1BmsnsvsbRW5r0/XZwyzLzsHbn+3BwcruYjMu9eD8Iee
-	AL/xuvyjFs058PTr2yh/CPcvUsLN7ysYyaOPXfaCBjqs3sGxSzxtwiOny/stu3XDksU4V2ElzFN
-	ShValDCoXSg8v3bubASM9sWM1hvmi6YTTgUPjtxwtEiXWbrsMRRtcnrecD2NFbI+x9rY9fedXTQ
-	omXv8pywKDKJToDX5EqK6e2S8WkZa1L7jf+pdKTsaY5BUALEBlq+n41UQzkZkxB8+E+W/XBkzBb
-	zHJ5t5ppMb3bhtsXVzFeuLZXYngskYLvgbtcHlgMO1HTsypUmod4IeuWM37GCGCVq1iUn7AHA9e
-	N6yyqEFMp/PQbrZt6yjNzxkhuwNhsMc1ncWrRxmLbpPJC4TE1DNmswHoX5RwpwiF6qqKeufgjK1
-	utvetgw1UwKl9xVFu92oSjWgE0kEbQEBZf8CoM
-X-Received: by 2002:a05:7300:320a:b0:2b7:fdb6:ccf2 with SMTP id 5a478bee46e88-2be4de99574mr1150793eec.13.1772813584166;
-        Fri, 06 Mar 2026 08:13:04 -0800 (PST)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2be4f94823esm1578036eec.20.2026.03.06.08.13.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Mar 2026 08:13:03 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Fri, 6 Mar 2026 08:13:02 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fSg150Svvz2xdL;
+	Sat, 07 Mar 2026 21:46:00 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 2497A60018;
+	Sat,  7 Mar 2026 10:45:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4530EC19422;
+	Sat,  7 Mar 2026 10:45:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1772880356;
+	bh=DdRhW/Ebu6ObLgaVXVQOgiAe0HAEyztDCaZQo72MRmk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=u6nmCR95KNIU0YfUVfVzt1d+1ZQjl5pVhYcgMjKgohKJHpjb9WFjWanAK5qtZ7ZqG
+	 JAUCPGRvJuleUn82VWHgAFg25omEtmz2BBpK1AxLe1h7sK6TmygsY7SwES1hREY7YC
+	 EhDXMJTNqC7EHd1VfYve4FtCGkvANhJJbYaF6l8e65/eXeklpF/g67ZV795i4Z0N/2
+	 /oDO3aDgR3xgB169FQGWRnywm7yMlf3DBOkRlJM+ju3C/aDnbqNPWtdv01onOZOvxM
+	 dHmoze+vlwLGbnUOmvZJTs6a2Qa82+xqt6/Wpb03E9M05nfNKe80zePYqQlH2m7TK3
+	 TzosQHpKI+YSw==
+Date: Sat, 7 Mar 2026 11:45:54 +0100
+From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	linux-hwmon@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hwmon: (aspeed-g6-pwm-tach): fix driver data handling in
- probe/remove
-Message-ID: <e6c06c88-d2cd-4501-8a15-b89ba5a36e5f@roeck-us.net>
-References: <20260306-pwm_fixes-v1-1-e8ede6fbaf47@aspeedtech.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+	Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Linus Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, 
+	Ryan Chen <ryan_chen@aspeedtech.com>, Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	openbmc@lists.ozlabs.org, linux-gpio@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: Re: [PATCH v4 1/3] dt-bindings: mfd: aspeed,ast2x00-scu: Support
+ AST2700 SoC0 pinctrl
+Message-ID: <20260307-dexterous-resolute-camel-cbae39@quoll>
+References: <20260306-upstream_pinctrl-v4-0-ad4e8ab8b489@aspeedtech.com>
+ <20260306-upstream_pinctrl-v4-1-ad4e8ab8b489@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -96,65 +72,29 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260306-pwm_fixes-v1-1-e8ede6fbaf47@aspeedtech.com>
+In-Reply-To: <20260306-upstream_pinctrl-v4-1-ad4e8ab8b489@aspeedtech.com>
 
-On Fri, Mar 06, 2026 at 02:44:31PM +0800, Billy Tsai wrote:
-> Ensure proper association of driver data by setting and retrieving
-> the platform device's driver data during probe and remove.
+On Fri, Mar 06, 2026 at 08:40:25PM +0800, Billy Tsai wrote:
+> The AST2700 SoC integrates two interconnected SoC instances, each
+> managed by its own System Control Unit (SCU).
 > 
-> Fixes: 7e1449cd15d1 ("hwmon: (aspeed-g6-pwm-tacho): Support for ASPEED g6 PWM/Fan tach")
+> Allow the AST2700 SoC0 pin controller to be described as a child
+> node of the SCU by extending the compatible strings accepted by
+> the SCU binding.
+> 
+> There are no functional changes to the SCU binding beyond permitting
+> the AST2700 SoC0 pinctrl compatible string.
+> 
 > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 > ---
->  drivers/hwmon/aspeed-g6-pwm-tach.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/hwmon/aspeed-g6-pwm-tach.c b/drivers/hwmon/aspeed-g6-pwm-tach.c
-> index 44e1ecba205d..0c03d272279a 100644
-> --- a/drivers/hwmon/aspeed-g6-pwm-tach.c
-> +++ b/drivers/hwmon/aspeed-g6-pwm-tach.c
-> @@ -490,6 +490,7 @@ static int aspeed_pwm_tach_probe(struct platform_device *pdev)
->  	if (IS_ERR(chip))
->  		return PTR_ERR(chip);
->  
-> +	platform_set_drvdata(pdev, chip);
->  	pwmchip_set_drvdata(chip, priv);
->  	chip->ops = &aspeed_pwm_ops;
->  
-> @@ -519,7 +520,8 @@ static int aspeed_pwm_tach_probe(struct platform_device *pdev)
->  
->  static void aspeed_pwm_tach_remove(struct platform_device *pdev)
->  {
-> -	struct aspeed_pwm_tach_data *priv = platform_get_drvdata(pdev);
-> +	struct pwm_chip *chip = platform_get_drvdata(pdev);
-> +	struct aspeed_pwm_tach_data *priv = aspeed_pwm_chip_to_data(chip);
->  
->  	reset_control_assert(priv->reset);
+>  Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml | 1 +
+>  1 file changed, 1 insertion(+)
 
-AI review has the same (and more) concerns. Here is what it has to say:
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
 
-Does asserting the reset here place the hardware into reset while the sysfs
-interfaces are still active?
+Best regards,
+Krzysztof
 
-Since probe uses devm_pwmchip_add() and
-devm_hwmon_device_register_with_info(), those devices are unregistered
-during devres cleanup, which happens after this remove function returns. If
-userspace accesses the devices before devres cleanup finishes, it could
-access an IP block that is in reset and cause a system hang.
-
-Also, since probe already registers a devres action
-(devm_add_action_or_reset()) to call aspeed_pwm_tach_reset_assert(),
-this explicit assert appears to be redundant. Can the remove function be
-dropped entirely?
-
-This isn't a bug, but probe calls of_platform_populate() without a
-corresponding of_platform_depopulate(). Using
-devm_of_platform_populate() in probe would fix the leak and allow
-deleting this remove function.
-
-I think all those points are valid.
-
-Thanks,
-Guenter
 
