@@ -1,80 +1,79 @@
-Return-Path: <linux-aspeed+bounces-3641-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3640-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2414FD88FF
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20DC8FCC9DA
 	for <linux-aspeed@archiver.kernel.org>; Wed, 11 Mar 2026 06:21:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fW0yS6RHrz2xTh;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fW0yS2wxtz3c97;
 	Wed, 11 Mar 2026 17:21:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52f"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773210112;
-	cv=none; b=FTavOHRguJ+v8KqLImFWujbTnT4AZjsmjH6L8HQon44Fk0pWn9k/rQcmzGVKz/RpjLInri6TNBmZ+OrRmWB9+y2jOJjqRT77jIQHLvgzOON0M2wM/ItU2PD0D3LfvhZRsnlkQUKJUWxz5Ggxefe+GYm1lz8IjD2PN5XZnjN0peV8F/q8vGTHo9y9t5vjNkFxkY5O3+uVylU/WBKK8TjX6QhFhDjhz/Vn0iOeWXpEZ3cj5f5HWip4D+wIuaHNu/9v3cAzey05I1y9o4wClx/SN5pkrTknoZhlDRqOWRRlXEvN49/YA6g2Gx4H2iqSXsJCeU/WeS6xnkNMMCOOCbPqKg==
+	cv=none; b=IPkS6BTjfbvdZd+tmhHql54CYNyJhyVQDHpg5cyVs/3RoGRZZb9GLAUyPV3Jf1giENlrI2fjxsO3mdHjDs9IKDjgGtPqFZW4gZX6BGay+2tUQuQuW27+qg7/Gsg3ynfBhV1cngAPDhMzIqCinlU+haDCCI5nNMZH+YsiQ7o5P2SOYc2Y60iEj/KFMzP+pufGv+uLG8+M25PQXLqH6xpc59/stNX2z3D3HRfT11neUIyxwT0P3Ynn8U/zsuedJ1SOUv1IHirFk7Jc4cqCsIh1xTDxFKxiQgCF1p2gRmFmfMs9Ehh5FLDEd9xgjRaYprwHOZWu1QDosuwGxcvpwi1n3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1773210112; c=relaxed/relaxed;
-	bh=CAxjuWc6K1jt8cRne9eiJroow903OnF7+g9JiBxwTFk=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=e56SIbYeSLPinXmk0onqsbg0HNtLb15yfuY4PcYLKilRQnux0Eo67QsXQuIvRE9tNmrRtEDbO/Tas+gexC6wsxI/5Vdy4Nu++D8a9syfvfaI5i8tHrvil2Vw/hdL2nLEYFmHm4c7rG48mL/q9kUIlrp4/qCf4u0akawTcVIHYNxLo5JOlXo+neyRibWJ3vF0V9Eb5Bxg4Mn2IsAwK4GReQRtqoD08/ZaD3f11zDkDUTPb3s+p053kio0Q93FxWYKhO17wt8NXbQ4NtykWyZKil2aaqVlkXAyvH/LWWlNLED/docI7ENfCNvd+LXw8RKQdMdM0BJ3f5MiQ3K8PGgYMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PTrlKbrj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	bh=aPRAl8XBEAVPedtuLZozkH/4zHuUY/9G55Jcjy2Q4hs=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=MV8twRm2EINAo6O5y3o0hmT0K2REy6uMyPv+GPtFZcb7l5b6cr2KylFq2hU8Mi7fYVTeTglpK48GDi0UiLzo0Ka712+M7u92mVzeCyFXhVDndKwuck/sT1xqvWPc55pEz2ANvMjPkU0V58xB6rEAbEd5uvDUEzNt+VhBmN/7Ad3B5v4bKvt6bopfapd5DNZ9o0ea5zEsB/+ObmPo/rJehdi2Q7afYfu0r9DzieSBrYMxXUVaBB4uTXrsuBqgOIXAP6iRyv1uy3/u8E/V4lx0WT3aw9poEF+6Mnaahd8SX9v5TcUQCExyNrAloW+7QMsiUDgTpdi1kBRAGdJ5gU52lA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gamQdT1E; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PTrlKbrj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gamQdT1E;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52f; helo=mail-pg1-x52f.google.com; envelope-from=potin.lai.pt@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com [IPv6:2607:f8b0:4864:20::52f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW0yS24n5z30hP
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Mar 2026 17:21:52 +1100 (AEDT)
-Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-359832fc558so8289049a91.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Mar 2026 23:21:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fW0yR24pKz2xTh
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 11 Mar 2026 17:21:50 +1100 (AEDT)
+Received: by mail-pg1-x52f.google.com with SMTP id 41be03b00d2f7-c73bd024a0dso1055778a12.1
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 10 Mar 2026 23:21:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1773210110; x=1773814910; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=CAxjuWc6K1jt8cRne9eiJroow903OnF7+g9JiBxwTFk=;
-        b=PTrlKbrjRCYtb2kbwrSVNp5R+3s/0xEdM1i/IDJOfaM7WsffA8hM0lQ6rdfklS8fGS
-         y9x8QAZGnHO+wPGWGl+DVbZQzdtcnSvxd3L6RsD8rUYfmtpcFOs36hIEQ//cYVXKbSt5
-         bSXgV5/rFAh2wnNnP4g9SOvkOH9kXCOqVqIk6KOhH/n5ajHg4euue0L6J9TNJIACOdej
-         erh2+nE0RKXJdGA++y0qgBpX/nPbm5+UC4U+avjlpDp7PEZFimlLbQAYO4cUbPqrox2V
-         Y82BzwTJPIYnK31gT0Pxg6QHboPjrbmkwVQVILMUgRbuMmbN2Stfw8JeLHYLgHHRr6RX
-         +FtQ==
+        d=gmail.com; s=20230601; t=1773210108; x=1773814908; darn=lists.ozlabs.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=aPRAl8XBEAVPedtuLZozkH/4zHuUY/9G55Jcjy2Q4hs=;
+        b=gamQdT1EBKWx9H+aQq+YRaOZ/wijutAQrdIpp7pGqoR2lMimfLtPQDEU2791Nxw8mG
+         VHpgiAc44jmBDcO2KslrB349KLcfNG+Gk596SUz2PLgSbizhUmmgXCXUd52mzLakBwcA
+         wqeaxFKLHGUfrXydJ9RD+duOHDZoYeCM0kaPO2fkG/hjC4ZJ0w/5TWNT8iV8ZsB82soU
+         G93oQ0dlsbinXUfYSvykqAmOXzjHtjgkW+JxA7z8IieIfwDA+u77pZBK5C09qVS/s/SC
+         VrOW/JHZ4kRpeHOxY2Nh10oDHYN8N+S3ZlWrof6BN7x5W3xDxc5O3hzmHt9OzzfXXTGp
+         K/kA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1773210110; x=1773814910;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=CAxjuWc6K1jt8cRne9eiJroow903OnF7+g9JiBxwTFk=;
-        b=OsRnl5HdPgfWdu8WLnrlN8VZZmoaYinMUxbcZuzKMNeNV5Cp3H2sGca8hbW+E/KM+n
-         JFapW0e2T6u3oXKef68Nt5SzuWVfWCMHxUmVtF6mnnWw4g1AdeIK3x18ZlVPX70O85vj
-         Ex8yAPWey3mPvqwKymGsuR3uMv4LckeKKVGK/s7NHn2yYuhoXbRxWOi9hWN92MRSeDAB
-         Ozrcz2Ewx1eYeDVizMpQrMIjposefVh+XyuDu6mqDOX8AdudsoavLXbgTJIfPQ/A92al
-         yJi2FRuTcdZXqW4RtKj0vaQVI4/Lozp4Y+W5F+ws3WmQw4hUkvhQHadII0YpZXt/edjN
-         sekw==
-X-Forwarded-Encrypted: i=1; AJvYcCU6e/6eloJVi+PgmRydlAX8Asd2snGmG42Jb2NR/aQbYRWDhn5GZeKtOJvnMQ2OvIN7SqIN7+AI03glgZs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzM9zoVPEJOADlbdP/Z6Mi+0ZPv8VxEG8uobv5rO3sy9mM7KEkM
-	P6NX21Tv7OZekXCUH051iMJRoF4PHSF3zAN+6saKxDbulfMprfemJKDw
-X-Gm-Gg: ATEYQzzz+uCPBVgaHLv3TKMrkf2ttMxwrxNDMZWEgQTMSfqJDba8dG0U9bDLJ3mDtGU
-	3FL91rttDMNNKccHgeMfIW6A/0JUeuA9YjIKjjs9MZLPEoH4JwxgwlD6ySV1maF69bd2W1MEjg7
-	RZd9oYhn/4m9QDlBRjP31eB1Ic0wq3mr53+xjDCDHG04mcUV+J0tqS+8u88vhoyr4knwvtjREZG
-	xyd+IevdUAGotcT/eG5cZeHMGWdPLVJLR6MUREJ4B16m9N8dOJpX99k2XC75Jz/Nb+mFlEsSgiV
-	zoqkXwEqx8yp9VdO9wnyBgQZBuZ11WDlAwMKeI9dZWjO8CcIGJg4kHcmTitOzvdFH0Y5RhonHpT
-	BuXir5EFqToX0pVd59bjMfX8zbkKvXMUd5+R6KwCOm7pWfDVu7difEYkIurVVeItTH65BYF0bDq
-	xawCDFJcwQgOGJHvPuTDd/Gmv+T6T1nQHwk7achEcqtlDRHB4UW9C8DlyXWLeHpza9e4h0b//OX
-	10WbQPWcN0feg==
-X-Received: by 2002:a17:903:298b:b0:2ad:cf11:5048 with SMTP id d9443c01a7336-2aeae7c7d39mr17260585ad.22.1773210110459;
-        Tue, 10 Mar 2026 23:21:50 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1773210108; x=1773814908;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=aPRAl8XBEAVPedtuLZozkH/4zHuUY/9G55Jcjy2Q4hs=;
+        b=L0ePCxDxptO5rSL7XV56RTQhQOqtE4qy1W6FlR5vIdyko03YYBHjnHUqhrNfO88CXq
+         X0RCpI7bBV1iwBHjFbnbEaKMjG/NROjw9VjEEmZb+lbPUBLtoYc+sjY3ScrWe2V+K/WG
+         3DF6V3w9GKcvbOCd7s5Y+6/Qt/UHJkEqGqxkmAM0Gx0DH+uQ4PxDuPQHtb/I4OsGkdoF
+         awD5op52pHccuY8VOuZSpn+nVGQBhShKwoeGdJ7dNyp+n79eysC1HTnYX3ulfOiN0wii
+         8T9uSSXJ2yW4swtzdTOsbIuTq/v5Ccpaq9wId+Gc8uMvqdMFPXakmOcjvVr1mwsG+p2e
+         MZrA==
+X-Forwarded-Encrypted: i=1; AJvYcCXPLPw+R3Rsq4DgeGI0ZNbj9IJo9QleRg2TRoSPu2/y0cZhE6Zw4otikRpx36AnPTlaYlUuIkFZpq69+I4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyHbitX6Vz96H2SdRvIobl5epCWwwdHNdsHJXJ/Ywg+XCSwJ1B7
+	dQoaDEGyQUbq1HajvyldEp1nqPFs93zmP6TZ4qHM6WQCMw6Dh2uHMGnw
+X-Gm-Gg: ATEYQzxN7OB4aSbmuTmjgEK+dGuE8FB0CjaeJz7go4kKDiEuJe9ZMXYEqU54dLfx4g+
+	DqQp+kzVwV54mGeCGIDxJlwcwfOkpd/p89S5DRtlxWs6MDk9R0V+zmwy591O3PvtPFEEuWvsZ83
+	88MMh4dpjuLkRnrNflNP80PH8AZ+CztQlyMxteC94AIsstCNYZ/enUeZokIGsR7pb1vd0wDpzJ4
+	kwKemfZdWbF8KyZO07ZpW+8z43g0B/mGH/ae6HVJNTx19DIIPCpZKJxttKgZ/YMZTloWdAz3mg7
+	hPCMmW2fQ7zz6VZoPBT2QH+3vzRCNElrQC//z34btd5sFhEYvlxef5tdJ6VQxoDJPmarkR3pK80
+	3FdtFXY9TgADaS/feWwZvBTbfgOc4oYv3dIcOrD+KfuNwMbVa8iW5d1h9Byycut/3+O0XJnfNRk
+	LcSGRG3s0buFJwZ3GVYtOccXiHEax6DFaKqihK7mhiQ36r4t1+qPU73iZqHldvqDNLOBlK1Tx1U
+	2I=
+X-Received: by 2002:a05:6a21:b90:b0:398:870f:d7b2 with SMTP id adf61e73a8af0-398c60e5943mr1266713637.33.1773210107749;
+        Tue, 10 Mar 2026 23:21:47 -0700 (PDT)
 Received: from localhost.localdomain (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c73cdfa9acbsm1008019a12.32.2026.03.10.23.21.48
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-c73cdfa9acbsm1008019a12.32.2026.03.10.23.21.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Mar 2026 23:21:50 -0700 (PDT)
+        Tue, 10 Mar 2026 23:21:47 -0700 (PDT)
 From: Potin Lai <potin.lai.pt@gmail.com>
-Date: Wed, 11 Mar 2026 14:19:28 +0800
-Subject: [PATCH v3 1/2] dt-bindings: arm: aspeed: add Meta SanMiguel BMC
+Subject: [PATCH v3 0/2] Add Meta (Facebook) SanMiguel BMC (AST2620)
+Date: Wed, 11 Mar 2026 14:19:27 +0800
+Message-Id: <20260311-sanmiguel_init_dts-v3-0-2b4d1ab7a8a1@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -90,9 +89,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20260311-sanmiguel_init_dts-v3-1-2b4d1ab7a8a1@gmail.com>
-References: <20260311-sanmiguel_init_dts-v3-0-2b4d1ab7a8a1@gmail.com>
-In-Reply-To: <20260311-sanmiguel_init_dts-v3-0-2b4d1ab7a8a1@gmail.com>
+X-B4-Tracking: v=1; b=H4sIAHAJsWkC/33NwQ6CMAyA4VchOzszWkHw5HsYQ8Y2oQlsZsNFQ
+ 3h3BycOxkuTv0m/ziwYTyawSzYzbyIFcjYFHjKmemk7w0mnZiCgFGnwIO1I3csMDVmaGj0Ffq6
+ VbhFVIXTB0uHTmwe9N/R2T91TmJz/bD9ivm7/cjHngishAKU55VVdX7tR0nBUbmQrF2FP4E8CE
+ lHKoqxAIbRY7YllWb5b1+Ru9wAAAA==
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
  Andrew Jeffery <andrew@codeconstruct.com.au>, 
@@ -103,36 +103,69 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  Potin Lai <potin.lai@quantatw.com>, Potin Lai <potin.lai.pt@gmail.com>, 
  Conor Dooley <conor.dooley@microchip.com>
 X-Mailer: b4 0.12.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773210105; l=894;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773210105; l=2198;
  i=potin.lai.pt@gmail.com; s=20240724; h=from:subject:message-id;
- bh=505A4j1K+3BVyfKFAUJFkb0POt+oWwmpy0RpscQYCVE=;
- b=A2uKouFUmFPpIc+1d2JM6DuRLNpKNSsTbf5qhXW5G0z3TWQLHVqz2DyRpNDVzyOfvo536LvZ5
- DPEacuxk38KDBVA2zulneYlS2HN3XfaCIiHMNfEzeRIiVOxEUaJ+RNR
+ bh=Axc+CcnQnnfpiP5A9auA1FuvVMCpTICZ4JkiYPK7KGI=;
+ b=AeS7rOHZELrxiBxvNyIsIKUOn+ZlPw6IOgK9gSv2u6Yil5P3iZUUoLV/vi4Yt/hjpiAducidT
+ Ng5ObpGxUZwCQnBvBtvuUNWczv30czDnT5UwPYM3E3D8BuXjFkklacB
 X-Developer-Key: i=potin.lai.pt@gmail.com; a=ed25519;
  pk=6Z4H4V4fJwLteH/WzIXSsx6TkuY5FOcBBP+4OflJ5gM=
 
-Add Meta (Facebook) SanMiguel BMC board compatible.
+Add Linux device tree entries for Meta (Facebook) SanMiguel specific
+devices connected to the AST2620 BMC SoC.
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
 Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
 ---
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml | 1 +
- 1 file changed, 1 insertion(+)
+Changes in v3:
+- Update the model name to "Facebook SanMiguel BMC".
+- Remove CP2112 and downstream IOEXP nodes as the upstream driver
+  is not yet available.
+- Remove the following EEPROM nodes until the bus numbers and
+  addresses are confirmed:
+  - 3-0051: HMC FRU EEPROM
+  - 3-0052: HPM0 FRU EEPROM
+  - 3-0053: HPM1 FRU EEPROM
+- Change the compatible property of the following EEPROM nodes
+  from 24c02 to 24c128:
+  - 5-0050: SMM FRU EEPROM
+  - 9-0050: PDB FRU EEPROM
+  - 13-0055: SMM EXT FRU EEPROM
+- Fix the smm_temp node address typo (0x4e -> 0x48).
+- Remove nodes that no longer exist in the latest board design:
+  - 19-006f: RTC (nct3018y)
+  - 9-0075: IO expander (pca9555)
+- Update linenames to match the reference design:
+  - B0_M0_AIC_USB_EN-O -> B0_M0_CPU_L0_RST_IND_L-O
+  - B0_M0_BRD_ID_2-I -> B0_M0_BMC_TO_GPU_MCU_I2C_EN-O
+  - B1_M0_AIC_USB_EN-O -> B1_M0_CPU_L0_RST_IND_L-O
+  - B1_M0_BRD_ID_2-I -> B1_M0_BMC_TO_GPU_MCU_I2C_EN-O
+  - IOX_GPIO_P16_TP -> USB2_BMC_HUB2_RST_L-O
+  - I2C_PDB_ALERT_L-I -> X86_TPM_RST_SEL_L-O
+- Remove unexpected or unsupported properties from SSIF and IOEXP
+  nodes.
+- Change all status values from "ok" to "okay" for consistency.
+- Link to v2: https://lore.kernel.org/r/20260203-sanmiguel_init_dts-v2-0-6a5682c32b38@gmail.com
 
-diff --git a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-index 9298c1a75dd1..6c84e6c80978 100644
---- a/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-+++ b/Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml
-@@ -91,6 +91,7 @@ properties:
-               - facebook,greatlakes-bmc
-               - facebook,harma-bmc
-               - facebook,minerva-cmc
-+              - facebook,sanmiguel-bmc
-               - facebook,santabarbara-bmc
-               - facebook,yosemite4-bmc
-               - facebook,yosemite5-bmc
+Changes in v2:
+- change mac0 phy-mode to rgmii-id
+- remove max-speed attribute from mac0
+- Link to v1: https://lore.kernel.org/r/20260202-sanmiguel_init_dts-v1-0-c0023ae41899@gmail.com
 
+---
+Potin Lai (2):
+      dt-bindings: arm: aspeed: add Meta SanMiguel BMC
+      ARM: dts: aspeed: Add Meta SanMiguel BMC
+
+ .../devicetree/bindings/arm/aspeed/aspeed.yaml     |   1 +
+ arch/arm/boot/dts/aspeed/Makefile                  |   1 +
+ .../dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts   | 634 +++++++++++++++++++++
+ 3 files changed, 636 insertions(+)
+---
+base-commit: 24d479d26b25bce5faea3ddd9fa8f3a6c3129ea7
+change-id: 20260202-sanmiguel_init_dts-79cdb33c50d5
+
+Best regards,
 -- 
-2.31.1
+Potin Lai <potin.lai.pt@gmail.com>
 
 
