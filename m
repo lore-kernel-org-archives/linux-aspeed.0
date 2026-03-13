@@ -1,29 +1,30 @@
-Return-Path: <linux-aspeed+bounces-3655-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3656-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06825105F787
-	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Mar 2026 10:08:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9C65105F78B
+	for <linux-aspeed@archiver.kernel.org>; Fri, 13 Mar 2026 10:08:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fXKv016nCz3cJk;
-	Fri, 13 Mar 2026 21:08:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fXKv12qggz3cGf;
+	Fri, 13 Mar 2026 21:08:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773396508;
-	cv=none; b=OreYc8bx/FWd6zYHyJZQzRWCWVLVU1sL8z1ot3jdhxARlx3vsXmZjRlS1O6UAJ0KfV6v226lnG/i+dYkUy6KFHrZ+l428Rz85y+RE3RKyZHZglZecUcGSBK5PV8M5hSH+8riE2fBdziiIKwaJotMsPpi/x9f//5XxHcQmPmpHN4p9rjzFPkccylkWrqwaMFZ/y+AaNEkBB3caY6s2OJfFDHxXGXRsZU3mqLOPKJCtTcQ/FKnaX/XnhmahjAX669jfhUlfdXE+B+FQC7zs3lhFvlAKgC/NOMmPoJzmMUYRVE/OfgRkz7QxRHDY4VzYSahBr9yP+u64ASn3W0+YJOymg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773396509;
+	cv=none; b=MoXZ2nToCuCLgshcVj7JbSzdD+Vb9kqe9tf3qAyeKkcaM/HzhDM6Q3EcZPsJK6NEpSUPyzrx9qLo4oJyqgVWYe7UdFaAEZYcqfhlZnfu9jLNCCzDaytA13iXey6/61Mw5XtkqLHI/QrE6u116oQIefhxg8YpBlzdL+nwAu+hjl5bqAZ+6CEL6uI0XC6wkIROZtg4ukLfCQ5Ad8CxlEy4GurlMUDDzBnSrchxJc0M5oz3ZMFL+8GY59w1NImLjvr0wfGozx6okTCN4kJpon4T+lHYao33JzzZ4fwro/rP2GWxWlUxsgoCkpuzj33CPnjCYAXbEtY5DDnsOUH+oFOh3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773396508; c=relaxed/relaxed;
-	bh=p/yfsVGqBSlh/KpcWWFFe7HwV9EjPFyV9HQe5IbEftw=;
-	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=lcrKD9TFcYYDqgNboppdFaYdkeSw8XRITEnG7Rpz2TgidJnqiqSV9SQGbvqbI0OCkAfaKTXZCYUXd+AeBwXHRYNKC699Ilb/ZNh+C9KyW5niEYj+MnVVFastOGOQIy4DO7nyc/IxAEKYdHHTd0WlLj3/OwvDQM0FMVlkG/qxYNe0AYW0Lk2ueJtwrBxTJTbRd0EiNLErIp/5N91sHCJ9L7t0zhzM2+n/7UCmoLFvYrLMu9ANG6R63KdcH6dZFkaFvVYWiJ/9gc33AzrbYpTWvDUycg2rz/gZzYQXPyOQWSzRimm21EdWWhFYwt/ziFS2ZtabRnUd8IT4eHhZ+CjvYA==
+	t=1773396509; c=relaxed/relaxed;
+	bh=3am9h0UreIAmfBcg5OY6/nPf9X32cvawrvLxpyxPi3Y=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
+	 In-Reply-To:To:CC; b=HUsROgLk8k8YMDr5PCpMhmdjeFHE4SzIMW8qqEFkLdrpGYAbCFHH/fdf892F+yqdv20ntFsZIPgUsxsESD3m0A2UiN55X/A4bZTYOhPa1CjjbwJvDyGVrm3Wv/Y4Iv8Gnf5J1p0WdGaFDIojkYZvsiNkNTdu6xlWU/YerfHupNu0rMX2UL8Yc7+M2lpTp+GnNobWC+UCyFvmfyXUxhlqZLuNGujqXv+afDLM9NCnffqT3DCHx6dydfAjEm86+wNRnnSskesmC0QdIPydFmra6MqrvcdWq35FUfNZWvF6RspUCxn435AUMqFPZJiOoPLDljgWn5E0bkLpycGQLq9H0A==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=yh_chung@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=yh_chung@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fXKty75DGz3cGf;
-	Fri, 13 Mar 2026 21:08:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fXKv02R4Qz3cK4;
+	Fri, 13 Mar 2026 21:08:28 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 13 Mar
@@ -32,9 +33,8 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Fri, 13 Mar 2026 18:08:12 +0800
 From: aspeedyh <yh_chung@aspeedtech.com>
-Subject: [PATCH 0/7] soc: aspeed: Add AST2600 eSPI controller support
-Date: Fri, 13 Mar 2026 18:07:35 +0800
-Message-ID: <20260313-upstream_espi-v1-0-9504428e1f43@aspeedtech.com>
+Date: Fri, 13 Mar 2026 18:07:36 +0800
+Subject: [PATCH 1/7] dt-bindings: soc: aspeed: Add AST2600 eSPI controller
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -50,10 +50,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAOjhs2kC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyDHUUlJIzE
- vPSU3UzU4B8JSMDIzMDY0Nj3dKC4pKi1MTc+NTigkzdFMu01EQzsxRDc3MjJaCegqLUtMwKsHn
- RsbW1AP7qydNfAAAA
-X-Change-ID: 20260313-upstream_espi-d9fea66d1772
+Message-ID: <20260313-upstream_espi-v1-1-9504428e1f43@aspeedtech.com>
+References: <20260313-upstream_espi-v1-0-9504428e1f43@aspeedtech.com>
+In-Reply-To: <20260313-upstream_espi-v1-0-9504428e1f43@aspeedtech.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
 	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, "Andrew
  Jeffery" <andrew@codeconstruct.com.au>, Ryan Chen <ryan_chen@aspeedtech.com>,
@@ -63,67 +62,109 @@ CC: <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<openbmc@lists.ozlabs.org>, <maciej.lawniczak@intel.com>, aspeedyh
 	<yh_chung@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773396491; l=2464;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773396491; l=2633;
  i=yh_chung@aspeedtech.com; s=20260313; h=from:subject:message-id;
- bh=dv5zwPulTbWutjwEBbvd8aN2CQwO1vLki17npHgF3/4=;
- b=nUOuJPbhuALmHWWELdAretyV2JAWTCsPDyW/E3eLvLC97y+ASQ1g235rMs0BGU4fJxvyKdVgL
- cwCz7v+X4mJCXLF8vRruR+wjYb9b/KSTnmlsNy2EvAUjaSWkG6Uk8LW
+ bh=cX0+TYSUBKoylJRqFstuVfh4bOO8RZJolgiew1xGVtM=;
+ b=PUEJ+M2Nits91wx+TswvF6gJSlfKAGjDKkzDIcVwArjw8jrWaV+Qx8qHXzgwlBTNIAeAVoX78
+ 8knw1gDRx/oA4BXT+fpRLDOVbo/5ZHo24B5cj88KAVBN4vOp/TH3apZ
 X-Developer-Key: i=yh_chung@aspeedtech.com; a=ed25519;
  pk=o71dz0J8lpN+v0f3Mk4gT9PfVngADPC1Pex4aK6VigM=
 
-This series adds initial support for the eSPI controller found on ASPEED
-AST2600 BMC SoCs.
+Introduce the device-tree bindings for the Enhanced Serial
+Peripheral Interface (eSPI) controller found on AST2600
+BMC SoCs.
 
-The series introduces a eSPI controller framework for ASPEED SoCs under
-drivers/soc/aspeed/, adds AST2600-specific controller support for
-peripheral and flash channels, defines the corresponding devicetree 
-binding, and adds the AST2600 eSPI controller node to the SoC dtsi.
-
-The driver is intended to support host-BMC communication over the BMC-side
-eSPI slave controller present on AST2600 systems.
-
-Patch summary:
-1. dt-bindings: soc: aspeed: Add AST2600 eSPI controller
-2. soc: aspeed: Introduce core eSPI controller support
-3. soc: aspeed: Add AST2600 peripheral channel port I/O support
-4. soc: aspeed: Add eSPI TAFS backend support
-5. soc: aspeed: Add espi flash channel support
-6. soc: aspeed: Add sysfs controls for flash LUN selection
-7. arm: dts: aspeed: Add eSPI node for AST2600
-
-This series has been tested on AST2600 platform with Intel's host eSPI
-controller.
+The controller operates as the BMC-side eSPI slave and provides the
+peripheral, virtual wire, out-of-band, and flash channels used for
+host-BMC communication.
 
 Signed-off-by: aspeedyh <yh_chung@aspeedtech.com>
 ---
-aspeedyh (7):
-      dt-bindings: soc: aspeed: Add AST2600 eSPI controller
-      soc: aspeed: Introduce core eSPI controller support
-      soc: aspeed: Add AST2600 peripheral channel port I/O support
-      soc: aspeed: Add eSPI TAFS backend support
-      soc: aspeed: Add eSPI flash channel support
-      soc: aspeed: Add sysfs controls for flash backend selection
-      arm: dts: aspeed: Add eSPI node for AST2600
+ .../bindings/soc/aspeed/aspeed,ast2600-espi.yaml   | 74 ++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
 
- .../bindings/soc/aspeed/aspeed,ast2600-espi.yaml   |  74 +++
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi            |  11 +
- drivers/soc/aspeed/Kconfig                         |   7 +
- drivers/soc/aspeed/Makefile                        |   1 +
- drivers/soc/aspeed/espi/Makefile                   |   1 +
- drivers/soc/aspeed/espi/aspeed-espi-comm.h         |  62 +++
- drivers/soc/aspeed/espi/aspeed-espi.c              | 618 +++++++++++++++++++++
- drivers/soc/aspeed/espi/aspeed-espi.h              |  63 +++
- drivers/soc/aspeed/espi/ast2600-espi.c             | 304 ++++++++++
- drivers/soc/aspeed/espi/ast2600-espi.h             | 302 ++++++++++
- drivers/soc/aspeed/espi/espi_storage.c             | 322 +++++++++++
- drivers/soc/aspeed/espi/espi_storage.h             |  32 ++
- 12 files changed, 1797 insertions(+)
----
-base-commit: 0257f64bdac7fdca30fa3cae0df8b9ecbec7733a
-change-id: 20260313-upstream_espi-d9fea66d1772
+diff --git a/Documentation/devicetree/bindings/soc/aspeed/aspeed,ast2600-espi.yaml b/Documentation/devicetree/bindings/soc/aspeed/aspeed,ast2600-espi.yaml
+new file mode 100644
+index 000000000000..e22a10111138
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/aspeed/aspeed,ast2600-espi.yaml
+@@ -0,0 +1,74 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++# Copyright (c) 2026 Aspeed Technology Inc.
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/aspeed/aspeed,ast2600-espi.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ASPEED AST2600 eSPI Controller
++
++maintainers:
++  - Yun-Hsuan Chung <yh_chung@aspeedtech.com>
++  - Ryan Chen <ryan_chen@aspeedtech.com>
++
++description: |
++  The ASPEED AST2600 BMC SoC provides an Enhanced Serial Peripheral
++  Interface (eSPI) controller used for host-BMC communication.
++
++  The controller supports the eSPI channels used for peripheral,
++  virtual wire, out-of-band, and flash communication.
++
++properties:
++  compatible:
++    const: aspeed,ast2600-espi
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++    description:
++      Interrupt from the GIC for the eSPI controller.
++
++  clocks:
++    maxItems: 1
++
++  resets:
++    maxItems: 1
++
++  pinctrl-names:
++    const: default
++
++  pinctrl-0:
++    maxItems: 1
++
++  aspeed,flash-dma-mode:
++    type: boolean
++    description:
++      Enable DMA support for eSPI flash channel
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - clocks
++  - resets
++  - pinctrl-names
++  - pinctrl-0
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    #include <dt-bindings/clock/aspeed-clock.h>
++    espi: espi@1e6ee000 {
++        compatible = "aspeed,ast2600-espi";
++        reg = <0x1e6ee000 0x1000>;
++        interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
++        clocks = <&syscon ASPEED_CLK_GATE_ESPICLK>;
++        resets = <&syscon 57>;
++        pinctrl-names = "default";
++        pinctrl-0 = <&pinctrl_espi_default>;
++        aspeed,flash-dma-mode;
++    };
 
-Best regards,
 -- 
-aspeedyh <yh_chung@aspeedtech.com>
+2.34.1
 
 
