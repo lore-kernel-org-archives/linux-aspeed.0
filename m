@@ -1,76 +1,58 @@
-Return-Path: <linux-aspeed+bounces-3693-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3694-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19A37F506D9
-	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Mar 2026 14:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40691F53D73
+	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Mar 2026 16:47:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fZHTv5fjrz2xlm;
-	Tue, 17 Mar 2026 01:26:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773671219;
-	cv=none; b=cB45J/MbbP3qNSj/rP34v3n/UAAxUyjU7FauYuZNUH4IZtMHFAVYGylzGsNJYC3MZogjCoyaBvTt7VqvP6Fns4ONoZRgPfAej2MVdY6F7V8YiZDxn+fPTRJfePojOYCGUomYCYgiHYLzL01SDc+0PQyfj5QwE3xi+mo2A38O987tPdVkRPiY2gFvYEiQY0xcp9DhoKRjgpXAptb6eQAnJI3RG0Vmc6JTY2SRMtui0NI0L9Sqosrss3Z3PhMH9ZRbh8kTMHxyRWsLHEU/bQvJe7cCFV+Rx3BZxV1UsjY/q3aE0Nh2clFMOMbAh9Gq0btnDdNEwI12s8sB2UENPvm/aw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fZLcC6MwHz2ygh;
+	Tue, 17 Mar 2026 03:47:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773679659;
+	cv=none; b=dWzSELEoqZd4vHXZZB0zrn8A4dyMC5Cd4WfuSE7yHEU4mOqjF8229ahfZSGe0yOaPSyh4BPD9N1AdI+fMTx8Ukx2hrdbhN5eX0fy+7sATVChL5YuQNWwKcPVY3/V/+85iNTBQRZJQX+3mIiSjl9RR/9xeqQjPsW+N5cjbeleLBuIts9BioKqSsRmQff4/3HtXHeF8xkbpTdMDvt7eaFjuMOkYhcaKGzFknZhcQ8XXFYOTxu7w1/v4OHFc1mKSUp2wY8nAvRria6OyNBpqSCBT6g3Jr1YUZ4O76095+v7JbUfeW3At9ysiDKfIJYM1y50DMRKIPAxfLigllWw82PaGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773671219; c=relaxed/relaxed;
-	bh=lxJ4lZ8qpN0azXDhDuYNMBFlk26kc4wHsRqoUGPLHbo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=B9DlHfK/L31KYk5ICSqwZC1CYvYal5DYa2m8ITdoyVYKafjVbdj01SRfYJIZnWxZUDOK7Io7gGE8jYJbzRDLAtnouyYMh/GlRgb9EaxP8Tuk42JDinWtQKozez46tNS2MgSq31nZGwfYNu8EfYY3429FCuopfajfOdrI1Rpy4KuU6EVdc4lSG+EiGaBg91kPIkNtpqGMfc39N4RE9e4zwR2n+3qvg+wp918E20Kuff8ufywKmMkbIEzW2VJW82el3KT7WkI7FnRABjrN0KaPyJHTTbfcf8ekNvXGoov5QP3UOjmQXfE+uJ0NwoXgVAtSvIN5joWiA2iYqg3gEYIsLw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nRZ0irxM; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1773679659; c=relaxed/relaxed;
+	bh=KWa+RXyopymTRjjpFJkMzMT8GIqPd4802R8XJ+/wxvI=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=i0j6Ye8nbJRcMRd/N4vjq0hGuKK1ABTfzbPXzOTLatzTsqwCX3q+9um6M0fchjEuAF9TbTCrp9UlcBzFhS/YyunwNTkbrtIhUQ2J14h67kj1ecC1F00n2nV1UKYpqaxNIzPHdaBvNCjb8muV+nDiMBvh9o5uTMDDhOl9vVZNeCL0J99wTgZRavLWjaJc4otIST/cOxQMJt3uNuiWyLmbWeGcRFFlAoqvllqoSq3K7ujZt8fwARU2XoeEiG4Rf+MlC8eZvfuYppys2aKEgs2A+WmsbAPQePeUc/O9IYhj4oUjH7ghNoUP05RyTl+32k4H1Byfz2d9Cbg4dAERQirugA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cGtekfTq; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nRZ0irxM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cGtekfTq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZHTt6RWkz2xS3
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 17 Mar 2026 01:26:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773671219; x=1805207219;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=FHZKMW2URFGAFnuWPY2dSlQRkpSj1pWYiDSSZoc4g/A=;
-  b=nRZ0irxML49znrLNSTo7ZcIm8x+TWu2STyJdkBV2ctJVq9O2qFdGEFje
-   pudazJH7d8gG1/IZcEki8mgymZg2VQPZt3i58fNYs6I9TsYuZkT9OHlRv
-   33i1udPKmWRdvuY5jhpIQ3IlDCgeasUf87eNXsyDRrMIjQU3opciK2U5i
-   LYtkN6aYOlLoNzZCmdeAh7+U78TWzbk0+BfA5FDJrPBVtqpFH0G0J59ZK
-   B+qyTKHHRhes7dTN9rK8QP25iYsXJ6hgEgYPReXfSF92hZHUxT1ERmkxV
-   tkeADxl6a/k1QT+2Rcl+z/HCuYjVfv8VxyPh7II6wL2BeZsJ8zueV/QJI
-   w==;
-X-CSE-ConnectionGUID: AxB0btK/QbaXhRPzZZUzTQ==
-X-CSE-MsgGUID: xT/VVPa5QGanLJHFO9JVxg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11731"; a="86039939"
-X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
-   d="scan'208";a="86039939"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Mar 2026 07:26:57 -0700
-X-CSE-ConnectionGUID: tsI2Z1KxQnWT9RmUCOp0KA==
-X-CSE-MsgGUID: F04AREtNTA2z0GTK803eTA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,124,1770624000"; 
-   d="scan'208";a="216439404"
-Received: from vpanait-mobl.ger.corp.intel.com (HELO localhost) ([10.245.244.237])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Mar 2026 07:26:54 -0700
-Date: Mon, 16 Mar 2026 16:26:51 +0200
-From: Andy Shevchenko <andriy.shevchenko@intel.com>
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: Jonathan Cameron <jic23@kernel.org>,
-	David Lechner <dlechner@baylibre.com>,
-	Nuno =?iso-8859-1?Q?S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	morris_mao@aspeedtech.com
-Subject: Re: [PATCH v2 3/3] iio: adc: aspeed: Reserve battery sensing channel
- for on-demand use
-Message-ID: <abgTKzfiDPFQJPVo@ashevche-desk.local>
-References: <20260316-adc-v2-0-21475a217b09@aspeedtech.com>
- <20260316-adc-v2-3-21475a217b09@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fZLcC0Bg8z2yZc
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 17 Mar 2026 03:47:38 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 6B0A94441E
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Mar 2026 16:47:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 496D8C2BCB2
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Mar 2026 16:47:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1773679656;
+	bh=+rAbjFpJLF5ELTGsyzXHo5dgEzatb5tWHpqXy6BTmYc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=cGtekfTqFvVrF7VJ1xDN/03QTDPDcdo5LNi8MIeHSIezK4Gd2z+GQ94TdThe3wfdg
+	 6+jwBMmOqzF85kgS9jF7LvwgP5JGWXJpkAzraz3vFcajQZUHBvO0WRYzQJE7J0Ytmi
+	 Gwi/li0g/v/vcXP34ZAq++FsOnJ7YYiJJNUFiQULiaw3n4kJ58eE6KrMSVjMGnsO4u
+	 IMN7zeBsIcQrt2UTsOQo2nDc2fI+SGolMG21oQW9QYbqop+gZh52CvuNSngMbBymF3
+	 pYqZPEns6Yy1LnHWMLVS9x1ZnrWuY6XLupN9bxQWg7FscMFBB3zIghh1qubhnfJmuf
+	 WBpxVo36e6R+A==
+Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-b96f02b4329so860724466b.2
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 16 Mar 2026 09:47:36 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCWRfuyTn8wYTqxsexV49rV2br+PgePfBy1vGXutgYUp2EjkVynDCOp6OZKvsktmbKRvalJ0ElhIOTJrEPI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YylJICcvxNQtY0aO0AerOKPO4NGFAXYmn2sZ0iBVM8mP852K1tO
+	jYw6Sad11FBClTZ33Z/n+J6Hhwty3daXi/XAHDVKlRaFk4y86yMsYsThiq9/QXVrtuzd0rWdiMN
+	OqGXgc/hvWjgd/pLzQdWDLy4s3TNtHg==
+X-Received: by 2002:a17:907:708:b0:b8a:f2cb:8088 with SMTP id
+ a640c23a62f3a-b9765392113mr794224266b.33.1773679654788; Mon, 16 Mar 2026
+ 09:47:34 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -84,39 +66,101 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260316-adc-v2-3-21475a217b09@aspeedtech.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
- krs, Bertel Jungin Aukio 5, 02600 Espoo
+References: <20260309-upstream_i2c-v26-0-5fedcff8ffe8@aspeedtech.com>
+ <20260309-upstream_i2c-v26-2-5fedcff8ffe8@aspeedtech.com> <20260313232125.GA3618633-robh@kernel.org>
+ <TY2PPF5CB9A1BE6A19D439C675AF5028C13F242A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+ <7ae8222bf6abd83a3c2ac976f54a2edbe4e9727a.camel@codeconstruct.com.au>
+In-Reply-To: <7ae8222bf6abd83a3c2ac976f54a2edbe4e9727a.camel@codeconstruct.com.au>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 16 Mar 2026 11:47:21 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKQp=HyA90rQ2Hzu148k63k5-qrGLH6sEHXNcjAu3QSwg@mail.gmail.com>
+X-Gm-Features: AaiRm51ex9uUeaeovsj_EfQkcC7S4igdlkgu0QdNDXmYleGKXTFGbzYmU6uj8IQ
+Message-ID: <CAL_JsqKQp=HyA90rQ2Hzu148k63k5-qrGLH6sEHXNcjAu3QSwg@mail.gmail.com>
+Subject: Re: [PATCH v26 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
+ global-regs and transfer-mode properties
+To: Jeremy Kerr <jk@codeconstruct.com.au>
+Cc: Ryan Chen <ryan_chen@aspeedtech.com>, 
+	"andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>, Andi Shyti <andi.shyti@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, 
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, Philipp Zabel <p.zabel@pengutronix.de>, 
+	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, 
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, 
+	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 16, 2026 at 11:00:48AM +0800, Billy Tsai wrote:
-> For controllers with battery sensing capability (AST2600/AST2700), the
-> last channel uses a different circuit design optimized for battery
-> voltage measurement. This channel should not be enabled by default
-> along with other channels to avoid potential interference and power
-> efficiency issues.
-> This ensures optimal power efficiency for normal ADC operations while
-> maintaining full functionality when battery sensing is needed.
+On Sun, Mar 15, 2026 at 8:50=E2=80=AFPM Jeremy Kerr <jk@codeconstruct.com.a=
+u> wrote:
+>
+> Hi Ryan & Rob,
+>
+> > > > +  aspeed,transfer-mode:
+> > > > +    description: |
+> > > > +      ASPEED ast2600 platform equipped with 16 I2C controllers eac=
+h i2c controller
+> > > > +      have 1 byte transfer buffer(byte mode), 32 bytes buffer(buff=
+er mode), and
+> > > > +      share a DMA engine.
+> > > > +      Select I2C transfer mode for this controller. Supported valu=
+es are:
+> > > > +        - "byte": Use 1 byte for i2c transmit (1-byte buffer).
+> > > > +        - "buffer": Use buffer (32-byte buffer) for i2c transmit. =
+(default)
+> > > > +                    Better performance then byte mode.
+> > >
+> > > Good, I like worse performance so I can use byte mode.
+> > Thanks your review.
+> > Will remove performance statement.
+>
+> I don't think that really addresses Rob's point there.
+>
+> The selection of mode is somewhat a driver implementation decision (and
+> so would not belong in a DT binding) - *except* that there are
+> considerations around the use of hardware DMA channels, as covered in
+> earlier review.
 
-...
+Am I supposed to go read the prior 25 versions?
 
-> +			/*
-> +			 * After enable a new channel need to wait some time for adc stable
+> [My understanding is that the mode needs to be defined here to select
+> which i2c devices have a DMA channel allocated to them. I also
+> think that byte mode may be useful in some scenarios, but that
+> consideration certainly does not belong in the DT binding spec]
 
-ADC
+But this is selecting DMA for the bus, not specific devices. I would
+think the decision would be dynamic based on some xfer size. Certainly
+if the xfer is less than the buffer size (32bytes), then there is no
+advantage of DMA.
 
-> +			 * Experiment result is 1ms.
-> +			 */
-> +			mdelay(1);
+Or do you mean some instances of the I2C controllers have DMA and some
+do not? If so, then ...
 
-Why atomic? If not required, use fsleep(). Otherwise explain.
+> So, how about we refine this to *just* the hardware-specific component:
+> whether a DMA channel is allocated. A driver implementation can then
+> select the appropriate mode (dma, byte or buffer), depending on
+> implementation-specific details.
+>
+> In that case, we would just have a boolean property, like:
+>
+>     aspeed,i2c-dma-enabled;
 
-> +		}
+... yes, this is fine.
 
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+>
+> - to signify that this controller may use a DMA channel. The choice of
+> actual mode is left up to the driver implementation.
+>
+> Rob, would that suit better?
+>
+> This way, we don't have ambiguity on "buffer" default vs. absent
+> property, and we're no longer specifying actual driver behaviour in the
+> DT.
+>
+> Cheers,
+>
+>
+> Jeremy
 
