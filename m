@@ -1,81 +1,74 @@
-Return-Path: <linux-aspeed+bounces-3675-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3676-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D24D10854A6
-	for <linux-aspeed@archiver.kernel.org>; Sat, 14 Mar 2026 20:39:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D329CF30296
+	for <linux-aspeed@archiver.kernel.org>; Mon, 16 Mar 2026 01:55:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fYCrc63QFz2xlm;
-	Sun, 15 Mar 2026 07:39:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773520768;
-	cv=none; b=iRO9ujUvdRhdLHZm2lI/Ty10mTJCDEhFy632ybEOO/C+pvSALXpIn3FVzWez9ejOnont/G546mAOxTjpfyFHJPB2pSY3bLHZ5r/wOffqaKiqkJ9LG9L+dqH86nO12zyFa0pQo6JT7p0K9Y4bBsgel/JC98LbwDCq0VrMjrK8DYryy6CMjJVstfv3PWQqDV0upJ8Nj4NFSuBlS/Qxg3P09jQfmCjxmGyPZOBnfwqzSbX6/sDU4pgL9HrxfLD19Ne7OUGfqsJqBPuwZSgVZTjV5XZsSw1G2ouRzd1ue2ca2iIwvfkkUg3jdqnfeRZo15rWK5vn4MTsTq40yRCyYFwkbg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fYypW3Wprz2xpn;
+	Mon, 16 Mar 2026 12:55:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773626115;
+	cv=none; b=ek0a6UoLJvGSNulO+ut3k2XsxKoyTlcwiO08xGCqVqyo9gFygYI92u68m6ZN4SW1yYOlE7p5Ax4Fvp7d3rtv5KwGjdFIQCceTMG/BS6jM01AvzWV+gSq/MvF85jFGacMC4HvlvLiBSmDRMPKF092HCAq32m/uXkHIARSBLElPeW37CX/bFXCL0tTQvoHYoPgh+6I736kO0j1jM1SbdYtnY3Txtuxfz//vBuZGhDaHyCxNHXJeBJjLRX4bfBEXrqNIMWHmj3CcMiWm2okPWly/ulvrLPCmJnl0W0as346X6KB62vRtpUnhJ4zDcLlUHsaasbNhR8fYF8yTqHU5EQY+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773520768; c=relaxed/relaxed;
-	bh=Qqp8I8J7zCnhDRW64bOPtwztlJzc65B4nZ/a1CzOFAg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=njELeCxZCr+KnjdwDJaHwQXEVMj26LqoiL5nUlXd4ziJS923nhxuajoEu9EVE3+RlpnOB3lXjvLkku1m4djrWQOj9dQhsu3BYSqU8itaURygrffvWOuqfXzl3iVci40uduHIJ51iGvTgXzgseqir5cJ1CH3d0xl5rTDyqeTcwAiNQZbx+czKWQ/RaOp7kVax0V+bC+zmilWw40f2ziZpAmfg0bK7ZEgTObBxtaMZJWurLr3rbYVfKI8iBIAl1nhd7TpxQFObXe5iNb6cJyeiBTEIXlTRfTDV2XrFTmQOX0MotbhCO77oft6gQ1W5hrPG8TpDVtYb3CTl3zHfg5R4LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eWXT5mGf; dkim-atps=neutral; spf=pass (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1773626115; c=relaxed/relaxed;
+	bh=nkGznBF1XyO8DVSgDpTBwSZfSOT93qCEm7hJnIBqTf8=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=Zh4Tm+PPFHNhHhVX5tHRHuHUsso95XQlsrw87CG8SM7dvzUJ6UPYidTmON0PPVvJ4BVO2eWKWWFX5rIFv0wzf6ldbY9ff4q4v9rHN5ZXhiw0F8GHtmC17KrxVyBSNyomkSgbLFG4D4peXAfSQMzXwn51sB6gxrZ8ouXsUrAmvpFRz7vp8KLfUyPg9W08jrb0gJTM6c9iJqVSMSdak8ovT24zhGXeEGKCB5/T3W8G6U9pRvViPdfz0V00aFIOqLjgwaubCyZssw3jldVCEBILAIAEBOiw+Gx+aqMDTwx3vYHIvJeLW0GYjPW00zG4KVd43qKv0BLXFHKNGlL4HbRFWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=c4ExRsyn; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eWXT5mGf;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=c4ExRsyn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org)
+X-Greylist: delayed 322 seconds by postgrey-1.37 at boromir; Mon, 16 Mar 2026 12:55:13 AEDT
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fYCrY54g1z2xdV;
-	Sun, 15 Mar 2026 07:39:24 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773520767; x=1805056767;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=AukoqsMcYsnDKt5+d2e638BLLQ4ybjY4dyDeaqoO5S4=;
-  b=eWXT5mGfENnX0XR8puDpmnJBSv0gnAMtSPMhpuW2wnM/lwdps2RnRbpo
-   V5wquZNLa01n9EVc8wCJCB2mD+Tu0PVqmugR0xWLYUGp63pyezUA5X5AC
-   1w5n0Yygktx3FzD/vVShkp8J6KZBmcvsg5kalepQH8POvnuFJ3nLBlCv0
-   DP7qjOc2ZJ4gUHZYxju/VlolELLFuNs14L35G26/8K+cxdZojB/fnm7z4
-   0CknRrIBcJBc3yAAmCHSnMBGjR4O9w+R8ubevVoSLfdFiwnMXG2BItIFt
-   T6/IJt0A4X4oaYQPSvkYS+qj6FXX9dDQ3/B6/hNqY1OapWvEkK3xIKcEq
-   Q==;
-X-CSE-ConnectionGUID: CZ4s5PkUQc+XpK4fAAkaIg==
-X-CSE-MsgGUID: ZOd31PQPS6OPIZFHDK5eyg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11729"; a="85214892"
-X-IronPort-AV: E=Sophos;i="6.23,119,1770624000"; 
-   d="scan'208";a="85214892"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Mar 2026 13:39:22 -0700
-X-CSE-ConnectionGUID: /Zma5jHUTamC/jFSOEsqDQ==
-X-CSE-MsgGUID: jgQOkDZJRUW7aIRqQu3piw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,119,1770624000"; 
-   d="scan'208";a="217835982"
-Received: from lkp-server01.sh.intel.com (HELO 418530b1a366) ([10.239.97.150])
-  by fmviesa010.fm.intel.com with ESMTP; 14 Mar 2026 13:39:18 -0700
-Received: from kbuild by 418530b1a366 with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w1VlS-000000005ip-3yYv;
-	Sat, 14 Mar 2026 20:39:14 +0000
-Date: Sun, 15 Mar 2026 04:39:00 +0800
-From: kernel test robot <lkp@intel.com>
-To: Ryan Chen <ryan_chen@aspeedtech.com>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Ryan Chen <ryanchen.aspeed@gmail.com>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>
-Cc: oe-kbuild-all@lists.linux.dev, linux-aspeed@lists.ozlabs.org,
-	openbmc@lists.ozlabs.org, linux-mmc@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] mmc: sdhci-of-aspeed: Add ast2700 support
-Message-ID: <202603150439.FM8mt7EG-lkp@intel.com>
-References: <20260313-sdhci-v1-2-91cea19c8a67@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fYypT4ZzMz2xlP;
+	Mon, 16 Mar 2026 12:55:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1773625789;
+	bh=nkGznBF1XyO8DVSgDpTBwSZfSOT93qCEm7hJnIBqTf8=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=c4ExRsynMm40V9We4mPTyAQ1gMSRmWj67Whu9oyw2qfM5dhrnt1Za/xhR24MZzEjE
+	 wE6BS33UEf+oWRBXfIrfXIgaLjxZCscKQEyaW2ILSaH7sVj/3S5aKwXOZOX/JdAGtK
+	 oL1ErnHTMy6VKZbjzRCFZ4/PEBSFNTHSJ5/U87wbIKJ43/0QVIQhMCotzD0Pnj1rh5
+	 OFkJHP1MuIe3Mn6su+WhadLr+OpA0579MY9xO+u9yHWRsEqrsQpNOI9twi3DvWA4mH
+	 uCLYz46YLZXeYU6Y/sVdaFd9g9ec13XAyajn+VC3M3M70j03sOHZQlydpTRGRW/KT3
+	 ot8IedAXEoYaQ==
+Received: from pecola.lan (unknown [159.196.93.152])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 74B1960929;
+	Mon, 16 Mar 2026 09:49:46 +0800 (AWST)
+Message-ID: <7ae8222bf6abd83a3c2ac976f54a2edbe4e9727a.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v26 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
+ global-regs and transfer-mode properties
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Rob Herring <robh@kernel.org>
+Cc: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+  Andi Shyti <andi.shyti@kernel.org>, Krzysztof Kozlowski
+ <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+ <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>,  Philipp Zabel
+ <p.zabel@pengutronix.de>, "linux-i2c@vger.kernel.org"
+ <linux-i2c@vger.kernel.org>,  "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+ <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+ <openbmc@lists.ozlabs.org>
+Date: Mon, 16 Mar 2026 09:49:45 +0800
+In-Reply-To: <TY2PPF5CB9A1BE6A19D439C675AF5028C13F242A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+References: <20260309-upstream_i2c-v26-0-5fedcff8ffe8@aspeedtech.com>
+	 <20260309-upstream_i2c-v26-2-5fedcff8ffe8@aspeedtech.com>
+	 <20260313232125.GA3618633-robh@kernel.org>
+	 <TY2PPF5CB9A1BE6A19D439C675AF5028C13F242A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2+deb12u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,109 +82,62 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260313-sdhci-v1-2-91cea19c8a67@aspeedtech.com>
 
-Hi Ryan,
+Hi Ryan & Rob,
 
-kernel test robot noticed the following build errors:
+> > > +=C2=A0 aspeed,transfer-mode:
+> > > +=C2=A0=C2=A0=C2=A0 description: |
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ASPEED ast2600 platform equipped with=
+ 16 I2C controllers each i2c controller
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 have 1 byte transfer buffer(byte mode=
+), 32 bytes buffer(buffer mode), and
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 share a DMA engine.
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Select I2C transfer mode for this con=
+troller. Supported values are:
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - "byte": Use 1 byte for =
+i2c transmit (1-byte buffer).
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 - "buffer": Use buffer (3=
+2-byte buffer) for i2c transmit. (default)
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Better performance then by=
+te mode.
+> >=20
+> > Good, I like worse performance so I can use byte mode.
+> Thanks your review.
+> Will remove performance statement.
 
-[auto build test ERROR on 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f]
+I don't think that really addresses Rob's point there.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-mmc-sdhci-of-aspeed-Add-ast2700-support/20260314-132323
-base:   6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
-patch link:    https://lore.kernel.org/r/20260313-sdhci-v1-2-91cea19c8a67%40aspeedtech.com
-patch subject: [PATCH 2/2] mmc: sdhci-of-aspeed: Add ast2700 support
-config: m68k-allmodconfig (https://download.01.org/0day-ci/archive/20260315/202603150439.FM8mt7EG-lkp@intel.com/config)
-compiler: m68k-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260315/202603150439.FM8mt7EG-lkp@intel.com/reproduce)
+The selection of mode is somewhat a driver implementation decision (and
+so would not belong in a DT binding) - *except* that there are
+considerations around the use of hardware DMA channels, as covered in
+earlier review.
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202603150439.FM8mt7EG-lkp@intel.com/
+[My understanding is that the mode needs to be defined here to select
+which i2c devices have a DMA channel allocated to them. I also
+think that byte mode may be useful in some scenarios, but that
+consideration certainly does not belong in the DT binding spec]
 
-All errors (new ones prefixed by >>):
+So, how about we refine this to *just* the hardware-specific component:
+whether a DMA channel is allocated. A driver implementation can then
+select the appropriate mode (dma, byte or buffer), depending on
+implementation-specific details.
 
-   drivers/mmc/host/sdhci-of-aspeed.c: In function 'aspeed_sdc_probe':
->> drivers/mmc/host/sdhci-of-aspeed.c:533:17: error: implicit declaration of function 'reset_control_get_optional_exclusive' [-Wimplicit-function-declaration]
-     533 |         reset = reset_control_get_optional_exclusive(&pdev->dev, NULL);
-         |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> drivers/mmc/host/sdhci-of-aspeed.c:533:15: error: assignment to 'struct reset_control *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
-     533 |         reset = reset_control_get_optional_exclusive(&pdev->dev, NULL);
-         |               ^
->> drivers/mmc/host/sdhci-of-aspeed.c:537:15: error: implicit declaration of function 'reset_control_deassert' [-Wimplicit-function-declaration]
-     537 |         ret = reset_control_deassert(sdc->rst);
-         |               ^~~~~~~~~~~~~~~~~~~~~~
->> drivers/mmc/host/sdhci-of-aspeed.c:537:41: error: 'struct aspeed_sdc' has no member named 'rst'
-     537 |         ret = reset_control_deassert(sdc->rst);
-         |                                         ^~
+In that case, we would just have a boolean property, like:
+
+    aspeed,i2c-dma-enabled;
+
+- to signify that this controller may use a DMA channel. The choice of
+actual mode is left up to the driver implementation.
+
+Rob, would that suit better?
+
+This way, we don't have ambiguity on "buffer" default vs. absent
+property, and we're no longer specifying actual driver behaviour in the
+DT.
+
+Cheers,
 
 
-vim +/reset_control_get_optional_exclusive +533 drivers/mmc/host/sdhci-of-aspeed.c
-
-   520	
-   521	{
-   522		struct device_node *parent, *child;
-   523		struct reset_control *reset;
-   524		struct aspeed_sdc *sdc;
-   525		int ret;
-   526	
-   527		sdc = devm_kzalloc(&pdev->dev, sizeof(*sdc), GFP_KERNEL);
-   528		if (!sdc)
-   529			return -ENOMEM;
-   530	
-   531		spin_lock_init(&sdc->lock);
-   532	
- > 533		reset = reset_control_get_optional_exclusive(&pdev->dev, NULL);
-   534		if (IS_ERR(reset))
-   535			return dev_err_probe(&pdev->dev, PTR_ERR(reset),
-   536					     "unable to acquire reset\n");
- > 537		ret = reset_control_deassert(sdc->rst);
-   538		if (ret)
-   539			return dev_err_probe(&pdev->dev, ret,
-   540					     "reset deassert failed\n");
-   541	
-   542		sdc->clk = devm_clk_get(&pdev->dev, NULL);
-   543		if (IS_ERR(sdc->clk))
-   544			return PTR_ERR(sdc->clk);
-   545	
-   546		ret = clk_prepare_enable(sdc->clk);
-   547		if (ret) {
-   548			dev_err(&pdev->dev, "Unable to enable SDCLK\n");
-   549			return ret;
-   550		}
-   551	
-   552		sdc->regs = devm_platform_get_and_ioremap_resource(pdev, 0, &sdc->res);
-   553		if (IS_ERR(sdc->regs)) {
-   554			ret = PTR_ERR(sdc->regs);
-   555			goto err_clk;
-   556		}
-   557	
-   558		dev_set_drvdata(&pdev->dev, sdc);
-   559	
-   560		parent = pdev->dev.of_node;
-   561		for_each_available_child_of_node(parent, child) {
-   562			struct platform_device *cpdev;
-   563	
-   564			cpdev = of_platform_device_create(child, NULL, &pdev->dev);
-   565			if (!cpdev) {
-   566				of_node_put(child);
-   567				ret = -ENODEV;
-   568				goto err_clk;
-   569			}
-   570		}
-   571	
-   572		return 0;
-   573	
-   574	err_clk:
-   575		clk_disable_unprepare(sdc->clk);
-   576		return ret;
-   577	}
-   578	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+Jeremy
 
