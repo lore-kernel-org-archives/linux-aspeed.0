@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-3725-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3724-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81B59109317B
-	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 05:47:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BD3B109317A
+	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 05:47:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcWm712Wqz2yYy;
-	Fri, 20 Mar 2026 16:47:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcWm60YT6z2yYJ;
+	Fri, 20 Mar 2026 16:47:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773985623;
-	cv=none; b=mbpcFkvQkFOfAJB0Lxlu8ouEi6V8ySLIdAQL7TRuUiGGnkeie5nJDJq7lS5sKnSEzQFZvNzMKAQMpr9irHlpfz50x+MaXbCPn43UxWmMwFp1KoVrBAydJysgTeUaHoik1QosnDK0P10lk92AnWW5EDQJsw1lEb092W64chRUmr1qGchJjmKs1JOENcB7kfCDy4lw0Xg6BcxSKbMXKum27XPaTPnjCX4kFSPzAtC8X4pOt2y/efTmOATOW2AmahKa/3GnAgTh+0yJ1oECdLnt1WsK37d3sMPJZWvDnqM0ZliLSKE3CVQzFn/E61Hq7o7cSo+jU1zy9n2pu4ysQY9kZw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773985622;
+	cv=none; b=k18aGIlzfJM15/U/UwDTy0CbPF+6q/9b19Ax7fB1XKNhlv3HSmhjl8xVMlkwkOo0SvDLmQCp0ckMCI1P+1odHkC0LcAqD2ozBDU0EA3f8hIMYMUwsto0ODUReNDJwC357hinXiInORNVXkpRuhShsFxORGzZA9L17hbbJd7wVGs7KD3lo6t3EqzK9NSSDbgnTe7jATaAk3F2a6PgUPozglNF8ntUB3UnDld55gPKBv6LgIUs7Z/angiXAiTVk9Z/erG593AecB/+114HBdzhG8am6OKVzHOCZFzQt81gLyKmIoL1jtPFwtT00dCl5xiTPt3Q9WKmObF9h4b1vQMG/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773985623; c=relaxed/relaxed;
-	bh=SvSTDyofL5iioxfNCLKmnhWMhtnqQgsSITgCmDBkZh8=;
+	t=1773985622; c=relaxed/relaxed;
+	bh=5b+AvpbAhrlw+l0BVotlT16dih7xoXzrmNNvcHP2DhY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=ll8bZKcQ91D9XzKAc9noVGXTI8H32jmdPkdc+gT323T0dSN8mBwhWqoRgKVYrlF1cprKsCp931+IFWpRUQU+885FfY4QBcT8f4mxixblF/IPq/u0/zNwBX3U2WA3uxAW0I77Q/iQYmsVp/0tMesEM+TrwxP20whVwDIQ0lVNw/PfUJfGm84cAU7EEgNQHfjPq5UVOW9yW7KVyFcfSxpAMwHYOvAkmfcpESbeHpw9CRSECY/BvVZz8ziE7YuveUOwWlI9BdaMf4akz5Nm27vCazWkwQDoqOkeJH1ZYZFEZiIvgrl0LB6tnurLFYys7cqzgxYyN7MSZRIXIvdwLNjEiA==
+	 In-Reply-To:To:CC; b=Xt2rJJV1jFycYuFRKvtk2f+vwIsRVk5fFK8MSgpwlfix38ULkJFGyKTfmaohJOFNbgHRKqxwxohmm0a+bv+zBIUGgkI5hd/Cy+i8HKJcuAatOUgJb5nlv6iXBp+C+05R0CY+fe/ZjnQto8yNtCCZqr8YDFSKabn2g4d3Mk2wPFHO4nHLKOPES5ujhBt2NcLdjHKRqAS9Rwbz/kB64FjAv33JfjN2UR3zejM4eTmiCIE5xwywpCJpyBr6vNtZoiA6s2y1gC9y2duwb+haKqV7Sxr3w3F/2oAeLcLT/GFMeZJrXf/2aQXfwD86HhHcmWHuW5zI3mrXzpW324iPqGgzvQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcWm628hRz2yWK
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 16:47:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcWm520fRz2yWK
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 16:47:01 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 20 Mar
@@ -33,9 +33,9 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Fri, 20 Mar 2026 13:46:40 +0800
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 20 Mar 2026 13:46:37 +0800
-Subject: [PATCH v3 3/4] iio: adc: aspeed: Replace mdelay() with fsleep()
- for ADC stabilization delay
+Date: Fri, 20 Mar 2026 13:46:36 +0800
+Subject: [PATCH v3 2/4] iio: adc: Enable multiple consecutive channels
+ based on model data
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -51,7 +51,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20260320-adc-v3-3-bc0eac04ef7c@aspeedtech.com>
+Message-ID: <20260320-adc-v3-2-bc0eac04ef7c@aspeedtech.com>
 References: <20260320-adc-v3-0-bc0eac04ef7c@aspeedtech.com>
 In-Reply-To: <20260320-adc-v3-0-bc0eac04ef7c@aspeedtech.com>
 To: Jonathan Cameron <jic23@kernel.org>, David Lechner
@@ -60,58 +60,64 @@ To: Jonathan Cameron <jic23@kernel.org>, David Lechner
 	<andrew@codeconstruct.com.au>
 CC: <linux-iio@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<morris_mao@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>, "Andy
- Shevchenko" <andriy.shevchenko@linux.intel.com>
+	<morris_mao@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773985600; l=1623;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1773985600; l=1731;
  i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
- bh=nns6L1IWBrZoZF9du3xsZHyx3aa79UG/Vd6Iwrl6+E4=;
- b=Qc5vqncqRGLGuLM3Fsty10mqFKuRhZ1K7YvVPDSfqOOI7GdSgN9c7iYBIUjuu+r/PXnsiWOSN
- xvgaZ6SBLT/B4iMZs8MNxA6NU+aeBkM4p6HjYbiLcTYDEzWDGEZyaYw
+ bh=NmmhJK7uvUVre1uvvr5Vjz5lKqP/DkupFhrPhytp+BM=;
+ b=gjpKlIm9OA6WHPNLApb+1XgFzo7WUdGq9UT4iOA2UGLsak9TbZYPWpTilmInbAtps5oQztHh0
+ 5xUT1/v5ZAlDgV06+pcVwoPjla6BPWGia5EpXe9BoSVfqmeYFm13uVZ
 X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
  pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
-The ADC stabilization delays in compensation mode and battery sensing
-mode do not require atomic context. Using mdelay() here results in
-unnecessary busy waiting.
+Add helpers to generate channel masks and enable multiple ADC channels
+according to the device model's channel count.
 
-Replace mdelay(1) with fsleep(1000) to allow the scheduler to run other
-tasks while waiting for the ADC to stabilize.
-
-Also fix a minor typo in the comment ("adc" -> "ADC").
-
-Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
 ---
- drivers/iio/adc/aspeed_adc.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/iio/adc/aspeed_adc.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index 3ff24474f394..a1a6296d3003 100644
+index 8eebaa3dc534..3ff24474f394 100644
 --- a/drivers/iio/adc/aspeed_adc.c
 +++ b/drivers/iio/adc/aspeed_adc.c
-@@ -259,7 +259,7 @@ static int aspeed_adc_compensation(struct iio_dev *indio_dev)
- 	 * After enable compensating sensing mode need to wait some time for ADC stable
- 	 * Experiment result is 1ms.
- 	 */
--	mdelay(1);
-+	fsleep(1000);
+@@ -123,6 +123,24 @@ struct aspeed_adc_data {
+ 	struct adc_gain		battery_mode_gain;
+ };
  
- 	for (index = 0; index < 16; index++) {
- 		/*
-@@ -314,10 +314,10 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 				       ASPEED_ADC_BAT_SENSING_ENABLE,
- 			       data->base + ASPEED_REG_ENGINE_CONTROL);
- 			/*
--			 * After enable battery sensing mode need to wait some time for adc stable
-+			 * After enable battery sensing mode need to wait some time for ADC stable
- 			 * Experiment result is 1ms.
- 			 */
--			mdelay(1);
-+			fsleep(1000);
- 			*val = readw(data->base + chan->address);
- 			*val = (*val * data->battery_mode_gain.mult) /
- 			       data->battery_mode_gain.div;
++/*
++ * Enable multiple consecutive channels starting from channel 0.
++ * This creates a bitmask for channels 0 to (num_channels - 1).
++ * For example: num_channels=3 creates mask 0x0007 (channels 0,1,2)
++ */
++static inline u32 aspeed_adc_channels_mask(unsigned int num_channels)
++{
++	if (num_channels > 16)
++		return GENMASK(15, 0);
++
++	return BIT(num_channels) - 1;
++}
++
++static inline unsigned int aspeed_adc_get_active_channels(const struct aspeed_adc_data *data)
++{
++	return data->model_data->num_channels;
++}
++
+ #define ASPEED_CHAN(_idx, _data_reg_addr) {			\
+ 	.type = IIO_VOLTAGE,					\
+ 	.indexed = 1,						\
+@@ -612,7 +630,9 @@ static int aspeed_adc_probe(struct platform_device *pdev)
+ 	/* Start all channels in normal mode. */
+ 	adc_engine_control_reg_val =
+ 		readl(data->base + ASPEED_REG_ENGINE_CONTROL);
+-	adc_engine_control_reg_val |= ASPEED_ADC_CTRL_CHANNEL;
++	FIELD_MODIFY(ASPEED_ADC_CTRL_CHANNEL, &adc_engine_control_reg_val,
++		     aspeed_adc_channels_mask(aspeed_adc_get_active_channels(data)));
++
+ 	writel(adc_engine_control_reg_val,
+ 	       data->base + ASPEED_REG_ENGINE_CONTROL);
+ 
 
 -- 
 2.34.1
