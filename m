@@ -1,62 +1,62 @@
-Return-Path: <linux-aspeed+bounces-3730-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3731-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E37C108B8ED
-	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 10:31:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A064108B8ED
+	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 10:33:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcf4n5dyzz2yYY;
-	Fri, 20 Mar 2026 21:31:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774002713;
-	cv=none; b=nsSnR7yzqojkJXXbrg2+o7Ye/sxdp8v0/7LtHMKygzJnBrXIG2XjIDsJX/EvsiD/gd4r9++rnxCmT3sxHCvNEpfn71B8vouNl7zfAdR4skAG08Ceatb6iz6rtmjdgROyYtGwj4NSoP+QGTTPONu0wbCX6ThFYUP/lN6aXhKKxhuxaHg5X2TzenL9uCnyZAdXtioVYSE/S182EXXBhlzc0Dp51N0MZG1ZjjoOQeCr05w7SsuqbdillfvMmSvmsgIwJImaFTL6FFEI51WY332f3blHGBWWIa4Rdr7qUOmkv8ACqM7MM0Mej9ZM8HIRibkS5LeEp6HmUkObqSx6+JXWlw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcf6s5ScBz2yYY;
+	Fri, 20 Mar 2026 21:33:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774002821;
+	cv=none; b=ZuT6ftC982EXm/RdiT9IG3jKlFYhA7Z/wogwGRNjtz3q7JyHA7il9hje2L35Tn8R38hMBZs1dz4NtSwT9QeZVfuq7nQvirRtAxjwTlc5dSdFn02u7pEvfwdInY1Bu5do4TlAyS7uuvqZbZi1bbyj55ztic8dVgpCyS7C6gRgTg4rKXn/mQMoh/PmetdKBCV5k+7rToTm1VeP0xX5jxdwVyU8s1pUV2RT9Fna5kHctWTWdIJvSRTYXF5yhlHjdNAhfbZfKZ0cV2wNAzU1rXuptnVBXvYZqFH3fNQZM5USV1w6rfK6CAkfDti69k96JKyvmr9gBWSPZ7d9ryzVSMJwcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774002713; c=relaxed/relaxed;
-	bh=+QqAXd2vpQ8qISDA9ynM6KZSRW1nNUGkKU4X69DBcWc=;
+	t=1774002821; c=relaxed/relaxed;
+	bh=qsI+2W7F3CfaJSOjQ36WDkdbEuej6AfQp4Tx6/klAiY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fTVzvdjJ7MECE/2Jp0lCjeK+Z7+UeWykiouhGvO2fPWRF5vcpYYCXBg4LueoABjfNQZX6HPzXl6o5Kc791Z1LlWQV/2t8o+2MZx+/CxIUvnELHMSKJtS5Ai5ZJpA8y/DpNduyIU/rLZVYtwI4iNCGhAKljKHuOl3WdiyIzrh2TuyJDHZfxa8D3C+jWgpU3Z21OeaCn2LxQtJePC5pvsFMJdj+DZYYQDslXhuCgpQ8i00LphvU7FVjEid1qdyFo46vjWticiMN7GYGOha7mUdbvfOrsyBaGcWRiSLyqgzcdSXbJdNZfZudUvKk5mCj0ZAy6YkZjT0VVS3CNb6M4Rcgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HVXztChU; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=lu3ORt/Qb24gL2Gbv79bPZayxFGZlualDj2S5w17rMjPyQ1y7bJaxoB/4aRD+vu4VCVPAJUYZZ+CMzo54F8m+XKglHO/h04DOM/eJ3GP1avDHnycMrq1QnmRqh5snJIB+lIjJKSUC5/2FtzA/Y3QDq0ZZUAPxNwRGHLjmfK9PA+hqY98BmL5hdM7bl2XPmcFIATWjC5KXEC6qI0y7/vDiwVFQayRqZaxy8cNfo7v/SZdBtTuRT2vHYoBh3OTJ+H497ksMAZfmP+GsQBvIi+oQaAdLkJZazi4xd1x6citMHXEPzp9a4GAqkrP7ToE/VmYRBKtXgpI7/o1Is3hYaXWGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZI+CxqZ7; dkim-atps=neutral; spf=pass (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HVXztChU;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZI+CxqZ7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.12; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcf4k6Ngxz2yWK
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 21:31:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcf6r5r9hz2yWK
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 21:33:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774002711; x=1805538711;
+  t=1774002821; x=1805538821;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=FuyuF6cs3y/UPu3j5OaECQ1GK3ebCt60+TAC0A5pjBI=;
-  b=HVXztChUfY22DxM9zvrdhZ7Af3CiCJJ+X7qXAEsLhrblBsmqrp9CM3tF
-   UfVStnuQ0OkUQ4mbfL+TaS8hw3CuG5W/UUR77Ip+EUz8DvY4Cn6Q5i/pE
-   7YIKpOipt3ldyj0WRgqoNsZD+BIYKGIbIWOqCOXR5FBgKuPhkIJdyV3QT
-   JfcfIAVxO8ZWlHAQyZgKieCGBZRBiToGbP4VLSofdvW/NW0liQmgYuxKh
-   yBk77CENjn3OlGuQvOIWKdYZp86mfSBAZ0VkTDhsmKT4pnL5iyg6jSsBd
-   JgHV9QgthkZdxyLCC3pWZd3IJahBr87dcbBk7f8a6ujxbajggJzf3LID9
-   A==;
-X-CSE-ConnectionGUID: JWvhb0DDTLSwAuaGzeDsEg==
-X-CSE-MsgGUID: pmtXLZJvSVyHIMbpEd1+aw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="74266032"
+  bh=LSQf6TghFoqm6GEMOdcWK6utgEtFgdJISULngartkrk=;
+  b=ZI+CxqZ7KmskwpQRaBfRcJ/eq0RV7ui+1rSiFFzhAUuR5wF4RzwYHNQx
+   QmuURx7dqmwlQR/GBlDYXLel1YyQ7IH/LUkpKeH4hPjJ90x7rOAJG1dzf
+   CFOb+4cP++Q1pH6bHDqnDbDqTwPxlZcLyk+54C9sdTQdH5C3J/4+b9MEX
+   sWxIQwVuXyg1mHEoTu1Huof5DC1P81Bdu42lrQIeCuH6VsiwF2jgQPPhC
+   G4L9YWWhnWlPN1dWTJULnTXK6ZwNTIpLwlVzpANtINpdg9KfPuYB8sl8M
+   wZnw3F4ABi1yyjsXMsDiok2ChPBFM9FueDKxY26FxSQIuqhxCZYBO94dV
+   w==;
+X-CSE-ConnectionGUID: EB6kmHP1Twu/QeVcSCt6LQ==
+X-CSE-MsgGUID: yITbSGCXTHCkOorDdoz81Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="78989477"
 X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="74266032"
-Received: from fmviesa006.fm.intel.com ([10.60.135.146])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:31:47 -0700
-X-CSE-ConnectionGUID: cEr5vsElS/SoNYs1tc2rkw==
-X-CSE-MsgGUID: mbnQAE46S0y+yWubfuve9A==
+   d="scan'208";a="78989477"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:33:38 -0700
+X-CSE-ConnectionGUID: FEilcUbeSraVdBth6Vgygw==
+X-CSE-MsgGUID: 5JXG02puThGdgHPVUyvk/w==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="218618516"
+   d="scan'208";a="222340475"
 Received: from egrumbac-mobl6.ger.corp.intel.com (HELO localhost) ([10.245.245.40])
-  by fmviesa006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:31:43 -0700
-Date: Fri, 20 Mar 2026 12:31:41 +0200
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Mar 2026 03:33:35 -0700
+Date: Fri, 20 Mar 2026 12:33:32 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
 To: Billy Tsai <billy_tsai@aspeedtech.com>
 Cc: Jonathan Cameron <jic23@kernel.org>,
 	David Lechner <dlechner@baylibre.com>,
@@ -66,11 +66,11 @@ Cc: Jonathan Cameron <jic23@kernel.org>,
 	linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
 	morris_mao@aspeedtech.com
-Subject: Re: [PATCH v3 3/4] iio: adc: aspeed: Replace mdelay() with fsleep()
- for ADC stabilization delay
-Message-ID: <ab0iDUp6t2LuGlAA@ashevche-desk.local>
+Subject: Re: [PATCH v3 4/4] iio: adc: aspeed: Reserve battery sensing channel
+ for on-demand use
+Message-ID: <ab0ifBMNuY4BwqA5@ashevche-desk.local>
 References: <20260320-adc-v3-0-bc0eac04ef7c@aspeedtech.com>
- <20260320-adc-v3-3-bc0eac04ef7c@aspeedtech.com>
+ <20260320-adc-v3-4-bc0eac04ef7c@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -86,23 +86,32 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260320-adc-v3-3-bc0eac04ef7c@aspeedtech.com>
+In-Reply-To: <20260320-adc-v3-4-bc0eac04ef7c@aspeedtech.com>
 Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
  krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Fri, Mar 20, 2026 at 01:46:37PM +0800, Billy Tsai wrote:
-> The ADC stabilization delays in compensation mode and battery sensing
-> mode do not require atomic context. Using mdelay() here results in
-> unnecessary busy waiting.
-> 
-> Replace mdelay(1) with fsleep(1000) to allow the scheduler to run other
-> tasks while waiting for the ADC to stabilize.
-> 
-> Also fix a minor typo in the comment ("adc" -> "ADC").
+On Fri, Mar 20, 2026 at 01:46:38PM +0800, Billy Tsai wrote:
+> For controllers with battery sensing capability (AST2600/AST2700), the
+> last channel uses a different circuit design optimized for battery
+> voltage measurement. This channel should not be enabled by default
+> along with other channels to avoid potential interference and power
+> efficiency issues.
+> This ensures optimal power efficiency for normal ADC operations while
+> maintaining full functionality when battery sensing is needed.
 
-> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-I haven't suggested the idea, I only suggested to use fsleep() for the purpose.
+...
+
+> +			/*
+> +			 * After enable a new channel need to wait some time for ADC stable
+
+Missed period at the end. And you probably wanted to say
+"...for ADC to stabilize."
+
+> +			 * Experiment result is 1ms.
+> +			 */
+> +			fsleep(1000);
+> +		}
 
 -- 
 With Best Regards,
