@@ -1,41 +1,140 @@
-Return-Path: <linux-aspeed+bounces-3726-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3727-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DB211093179
-	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 05:47:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8CBB109317D
+	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 07:15:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcWm810mHz2yZ6;
-	Fri, 20 Mar 2026 16:47:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773985624;
-	cv=none; b=BBSqJUTaVKEgApFpAV6IZy3PerBfQ5j2BvqLIe3jqsJ+EchwP/ZyQfd8sg5E8Wuh2sCQu0Ja6NEaKJCOMyfb5gRY3sW3N8KHl2IHSEGe8tyDl218s7rHHPByv5DR4w799PXg/b3mOmx0BJ/FgF1OIrjCZmQqYgcpNSd7Rncxrb9mUkhtQemw9vb0sCir/yx/Mj9JKaxL49H9aCXoqC7C1ecOdhg+BYfDCajZ8w69wCpJetydpA2z2fYoOoiVWhL6PZPtZRT+zpH+Up6jBsc9F2Ad1x4qHU3HnZqtgz/fUAj7A9LT6Xlvfq/54F3OxrgtnrE7meb+LjEzYuQOWdQn3Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773985624; c=relaxed/relaxed;
-	bh=/77siN4XvlP7psojX88EZkW/Muy1TQhKbaSr1khUiHU=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=PhZcl0pEQB1STAlTa6jZtHMwrX6gw/8vC7jsc7zQDlJSn6AIW29XuWirj+ZI5VhTgSOB9dSGI8Zae/qj2E/5TsPI6G21qwzxu/OPRfmGD0l6LaPbZBH6ZbzOCX8hYmNQhtGzSTE64zXArEpWV0qY4kBzbrogA4XC0Fxv9Tj1V4WN0zLn+ZCQgN8momCvaRJ50NgXqRiGDsgQP8eTxWR4UDRso3mDtWDFWSJEltgcmHY9qqUFa21ygyd/iJb+zAvnJ1+v/GTDAVNOHeN4kYeKVot8xbdLVY8PPv2te8cgh2wsJThCJzqdG8WeRq1MpKgzc4eBfSPC+4eD9mzIOSKoJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcYkC3zNJz2yYY;
+	Fri, 20 Mar 2026 18:15:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773990931;
+	cv=pass; b=h2pGAPpVfeH0TvoOV5pMaUk0rNbLB5d6HmdQPlTNM1X10eqmxPMOo5EZfyc8z2fi06tDX6o8ukw9VUP++WYMGB7EsHUuhhDtLHzalt6YT7UpiqkfjpBKDFj5ptWHqhrosGVBj5xAdFKHCIvrnyYgN8+WdTG/PcocQdhx01b2PJ+oXoHsXh+qZ2n9bhNf8kyQpFvFz1ltZxQJYmh7RSIvCwZ35w/654D1TZx11ArPCR4Fq1nhWy7/ZUXPdD2vzyslVMC4Nujcx8U0UY9QGyFI80y7JvqGrfm3+DwwuRFOnFE161EsbuClH2Ch+MEGH6hTZhmgW4KyUuOhXHEp8By8kg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773990931; c=relaxed/relaxed;
+	bh=RFYhT+op7r1uuVGfqk/L96fvzJnE+/lErmqGUzlnw3A=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=YMmcGxYia0Ukkq72aKvz/8k5FVhQQZ66zz2y6ppFamz4Q0egFHGCovuh1Biyt/Cs5eRVjz5U5vU3utTGRCxKdu1RDI9dQ3XD4XXsKUBTY5UlQxunPtr/y4770OESAk8WpQjI0DdioAmGB13sZT0pIp+z/DkjReHjb9W96bkxlJm7DFo0L8QXX0G+kZvuQeg768d40e8/bZIYP2q79n1tR5Gj60+o6tEjqsIgcNl2Z16LmzUrcsZpiJNEvA0Ma6OEqsrzwklpBhlImNspWKgHQLk5IztFcX8yfYV8HeewhhltoBHQwiUqN1dAnvTZwLaCE+X5U6PdqutBj/Oz6bp8nw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=d1YFm8mH; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=d1YFm8mH;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcWm72V7Hz2yWK
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 16:47:03 +1100 (AEDT)
-Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Fri, 20 Mar
- 2026 13:46:40 +0800
-Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
- (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
- Transport; Fri, 20 Mar 2026 13:46:40 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcYkB0Dsfz2yWK;
+	Fri, 20 Mar 2026 18:15:28 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=yev4y3jMHc1fF5uHZ1JuJXdtH9IxN19l5TRQt1NtzXjXKE5LV5raChDsHo3iKj+6a0M/PZa7ShcT5sRhlxJLdKS4zWpybcFSUnXX9VbPEtbuCBoYBjgC+6DRTsytw5jsyfTTRr1F4go/vP0GjGGMRdS5Ssm03o376lT8HjuPPuba1gx7cxURo3hXLnazDgpuiZVPm8vflOAjz9VxjXUAM0jqAJ0tNsEYiIv6cRy++e8VuAcaCEMZ4FyD44v7dg3SeevwVpvWHK43kQvSYInnIWbmqwTmgWJztDmbEhR+giNovXXFGHWobN2jrNn1878iFSj8S/VbUpUxz5ewczLvXA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=RFYhT+op7r1uuVGfqk/L96fvzJnE+/lErmqGUzlnw3A=;
+ b=gY8PIHLA+MTNtOtqi8nOrIRgtxKJiFpXQqe7A4Jed5rGegZZ6o0fILFdnUdMyJ+nTN18OG4kdQYvaf7v0Aq0BBrpGroTNoM+9eqp4JpLJMqoUnAlg/NjJqYLgyDzMdWuDrrM6+bpP6jJfzUDCTrK5DAGhPpQ3qVTBWlnghcmZQgh9cVgp94oZAYAHjrMGrj4iIK+XrQ7JiIzXQgvB+qJI4ilr+VDtfElAb1bYMkf+W0O97HhN0nTZ3RYX1RU9LO0oBQoikPz6uMTKOAb4k/nr9dTsHY/rQhkUGy2bjhjODw9nxlJ33zknSlafow5HpiUDHXrfe0DU63as2+snMoZMg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=RFYhT+op7r1uuVGfqk/L96fvzJnE+/lErmqGUzlnw3A=;
+ b=d1YFm8mHnpAgs4lOfVdTxGEGOV6U33fsYhCwEkcXf49AQfjOkZYs/MlVt+HaBpVm5SkVN2E/V/KRTtegXh34i94VMSRM/yx9oREzm+iJiIEtAeWrwLvUjK33Uq+xYXtuyidR2JvsSaYh3fAItfRqgkeUiYKvkmLB5mIrubDWtDtg2SL+VQSUttBSOc86wBeoDDYO+aXu75MY0PLBZUwjV05yVLquTmFhB1CDIzCNyCM20Apii8l9n7KCwAw2zTQ4VBcghJeaMSjmkAxtxIXYbMb7T7ZsO/4XpHsbb0hRZhXbwNwRiLZvVcJ7YzLo99+9fLvZKrWXqsgmkePwQ2L+4A==
+Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
+ by SI3PR06MB8684.apcprd06.prod.outlook.com (2603:1096:4:2a6::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.23; Fri, 20 Mar
+ 2026 07:15:00 +0000
+Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
+ ([fe80::92af:c9d9:8779:d19]) by OSQPR06MB7252.apcprd06.prod.outlook.com
+ ([fe80::92af:c9d9:8779:d19%4]) with mapi id 15.20.9700.022; Fri, 20 Mar 2026
+ 07:15:00 +0000
 From: Billy Tsai <billy_tsai@aspeedtech.com>
-Date: Fri, 20 Mar 2026 13:46:38 +0800
-Subject: [PATCH v3 4/4] iio: adc: aspeed: Reserve battery sensing channel
- for on-demand use
+To: Krzysztof Kozlowski <krzk@kernel.org>
+CC: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
+ Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Linus
+ Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Ryan Chen
+	<ryan_chen@aspeedtech.com>, Andrew Jeffery <andrew@aj.id.au>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
+	<linux-gpio@vger.kernel.org>, "linux-clk@vger.kernel.org"
+	<linux-clk@vger.kernel.org>
+Subject: Re: [PATCH v4 2/3] dt-bindings: pinctrl: Add
+ aspeed,ast2700-soc0-pinctrl
+Thread-Topic: [PATCH v4 2/3] dt-bindings: pinctrl: Add
+ aspeed,ast2700-soc0-pinctrl
+Thread-Index: AQHcrWasfLNWtX5/y0SkB1cDA4lWiLWi5wYAgAkqVmqACwRrwg==
+Date: Fri, 20 Mar 2026 07:15:00 +0000
+Message-ID:
+ <OSQPR06MB72522FADFC47F158B5E27AFE8B4CA@OSQPR06MB7252.apcprd06.prod.outlook.com>
+References: <20260306-upstream_pinctrl-v4-0-ad4e8ab8b489@aspeedtech.com>
+ <20260306-upstream_pinctrl-v4-2-ad4e8ab8b489@aspeedtech.com>
+ <20260307-weightless-quirky-spoonbill-dacd89@quoll>
+ <OSQPR06MB72521BCD9B380D43E3E3590D8B45A@OSQPR06MB7252.apcprd06.prod.outlook.com>
+In-Reply-To:
+ <OSQPR06MB72521BCD9B380D43E3E3590D8B45A@OSQPR06MB7252.apcprd06.prod.outlook.com>
+Accept-Language: en-US, zh-TW
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|SI3PR06MB8684:EE_
+x-ms-office365-filtering-correlation-id: 796fcd23-c4bf-4bcf-f8f5-08de8650666b
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|366016|7416014|376014|18002099003|22082099003|56012099003|38070700021;
+x-microsoft-antispam-message-info:
+ RxEz/qbO0Q07TvyYLX50DCy78iQx2pnhB8cJf21eym/x1qWda4UzUSNpAK0WvzScCia6KKv7SiZO+lrl+fAhGBm8jCUNDyfgiOmt1Hn700uNgByjQfk8My+SUAhonHAj/vU3eB+5vCfZKX3Bq3Ykn6OfVJPSuMlAF7O3WdBT6FXS4v3LuKG94Pf35OMiqMBtJD42ZBV/oaHHKOunJWPwxoLbbxLm2g+jacEe2P/Jp6V7R/RueQ2r+4VpVocB7RQB4EYqSMOAwICJxsvd9I6QY4q7NFKrUGe5q+iM2a/E1sIAoNNT8DMYRv7R2F6r82kHzLdiFYanRWFcH5AxbGwV//2mMivavGmpRYz4/nLAIBx4j5MP1rlDcFeyZb99OLXM9+DqOsns0wtTrqNSz/Haolo88Le9/4D+kOngYhrBuFZk9LjK6fIaKd1S60YI+9Lx8U8eWLYa18eDbuB8y/ZO+eOcWhspqL9bg8lqgl2tHBMp/KiYHCeM6BSOF2i0XPPFafwc4B+KriJnka9kl3ajZnm4EPHg9ir9uQrKR4wbNEE/a4obSb7BSmvg2bDEbAEsk6hTITOzxmv5sufIdu9kULHzBNuUsVMEEX/gMiVgDQGj5EAnSxcBXPgiPatZHFV3y9OoQpwinA7HVoO3oy/5CzTJ5h34fQLGCcat7RXqAGyosfLnQc+oPZqKU9SWrQz5GGbIBQC3Oo0qlNRf55qFwoq/ROAqxFKC0MP3HdPWVd5Bs4icxFzNpvBunhL8To+l2QwEg9FfwMNu2EnYxDj6YI3x3X1nfubSv1hvmlNirGI=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(18002099003)(22082099003)(56012099003)(38070700021);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?iso-8859-1?Q?HMByKg4jmUEpImdh0yjAdg7aKuEz2Prxg5wTXg3gUvWYH75iQj1wfgL4cA?=
+ =?iso-8859-1?Q?7VhT6S6tVUffhTONgoCu2IkUi7OfaCRGdJf4+UPHw3zP803bkOki0NgMDl?=
+ =?iso-8859-1?Q?ddbnZf3kicr9UWl7B+L5l+YGTFvqOUN7RjMw6TJGyX1Xsi9kTMX2p0OsaY?=
+ =?iso-8859-1?Q?NqE/QU6iSCsYeOzzDHvsApzH0GUFmMFXBbLJsip9C6kd1vcC31HTBCtBzW?=
+ =?iso-8859-1?Q?MQXxLiinztWXaj7sMF99mmrqK3I2eDvH7++QpTo7UyLvH5x28gbhJpPlOi?=
+ =?iso-8859-1?Q?JalDl572KwlF7uzVFR9JrdGPxo1cPug9xYVvzLfzFfqjgVtcJD1CY0UA86?=
+ =?iso-8859-1?Q?SM6iNjVL19+66QEEr39cN7365Lg8YIHbRXQ/2KEp3HwgyKKggMwnTkrOGT?=
+ =?iso-8859-1?Q?b4noDY7Q5Mgg2ksqCBQdB1RJCa4HiRAaIyloskkYzCy7kXfOVQbgiTBIxX?=
+ =?iso-8859-1?Q?N9KMhiRqrxklNQqFpZzGwBNBUmLayYYpA5eiRqcd0sidA9Vdxlvqk2Ewsv?=
+ =?iso-8859-1?Q?uYHF6/VehMPsbrS6WMjQCqA9jy7IQtMhPWplt7fY+TWrKfdYUNRCdG+Yxm?=
+ =?iso-8859-1?Q?6ntcrdH1Bu2PgqDCnyDnLuV0EZVjlWtO8qpmzgrFMnA8vybXAjf313UqIs?=
+ =?iso-8859-1?Q?WXSTM0w6zLjKOcvyKmBlpvEoz+ptTrDbXmGDBkOrwbeJ0ZfgF5SRB8hKRz?=
+ =?iso-8859-1?Q?DbvVsqJMgb73zTibmc5N4wrPI1UjxinlVELXYrTNzURjKMCSmuKchLBZN/?=
+ =?iso-8859-1?Q?nxt1ICGcpxnpL0EdHfVAGGPm/CQ0ix67G/FhT1wJeaOXr8T1Oa4J244cGq?=
+ =?iso-8859-1?Q?jbeAVMYRpJ5DPD/e8jSXE868dsO/SLZukR1/RYxOM6jqkQ8bIned/JZsU0?=
+ =?iso-8859-1?Q?1tRLNOXf3Bbp3eVgkHUVOrn4vDMUwxzb1odaHQQbG99LVBoZGSY5SP/sbT?=
+ =?iso-8859-1?Q?8QCbEaCJiY6byElpFTQt5tS+bST2PxpeoKJ24VFXwdJDsQhu9lg+U+AITv?=
+ =?iso-8859-1?Q?GSuYQJIMchXUgT85B2oSVH9VjJdrw+m0m+X46LtNJzyhHp2XmDJ4r8aR2b?=
+ =?iso-8859-1?Q?7waZDZY93SVVUK5YtvuxE0cvHhvhcgTdQCHT7AN4kryBkR4ySTMls1CSd0?=
+ =?iso-8859-1?Q?kJ/Mx4tJbQGtHl4ohr1c+LcofyG/BVPrkVBz+FgWUDsI6spCtMiHxDwyTo?=
+ =?iso-8859-1?Q?wBQaqgfIdWN8chjdJS9kitcr68vQSHzSqvODE1ZrPyO4YO1mrCzF0ULi0U?=
+ =?iso-8859-1?Q?IMqRLv1n+5/oAgMEbaEIBWpdEOHbbgPEpdIs4+YMgDG3iNf4RfXSrxl2hh?=
+ =?iso-8859-1?Q?qJ55P1psFJ0tmqAjlE4HnYf7QW2g7GZXoMByQKO9U0+8JWuTgt60CSNHrD?=
+ =?iso-8859-1?Q?rOHNH1QI5q4ZYPB2bjVSTiv/aNteke9bFOrE3T4Gr9jJqVajjC47JTeGup?=
+ =?iso-8859-1?Q?aQ91i8Jzw75cDH67v7IpdnY+zSUWepRNsVBk37iAmmFB3xpevZXOmDPX8P?=
+ =?iso-8859-1?Q?57rd7lkL6uAbcpDVVAdS47ijxDFsYCI0tGgEge17CilnubrMcHdtu6CBJR?=
+ =?iso-8859-1?Q?1XpmVYoCxkSr2f/DqzNTe1DFeV8wm4wKfTU1rFg9myKzcTUGQr7sBf4Bxl?=
+ =?iso-8859-1?Q?fGRqW/zdPcJIaZ2T1Gjsz2usFvP9Qb1fRifQMnGXTyhantSMjeczfcOomw?=
+ =?iso-8859-1?Q?AxTfzJs7K8ph5cZa9IFnXU0DB7p+fNvWOvbfkR6CTE0cnCSwy+HcoZnd6N?=
+ =?iso-8859-1?Q?JyUN4wTWLwh2a6kAVoKvKaTBjin6y5EoxhsvqlS+8ZoPiMlgba528iEXhf?=
+ =?iso-8859-1?Q?qeBnNFMplQ=3D=3D?=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -49,104 +148,210 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-ID: <20260320-adc-v3-4-bc0eac04ef7c@aspeedtech.com>
-References: <20260320-adc-v3-0-bc0eac04ef7c@aspeedtech.com>
-In-Reply-To: <20260320-adc-v3-0-bc0eac04ef7c@aspeedtech.com>
-To: Jonathan Cameron <jic23@kernel.org>, David Lechner
-	<dlechner@baylibre.com>, =?utf-8?q?Nuno_S=C3=A1?= <nuno.sa@analog.com>, "Andy
- Shevchenko" <andy@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>
-CC: <linux-iio@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-aspeed@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<morris_mao@aspeedtech.com>, Billy Tsai <billy_tsai@aspeedtech.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1773985600; l=3092;
- i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
- bh=/PC/NyBFthLGN9cW7uymrG04TM1B2jgffJp1BtJPzvk=;
- b=RB0NDy13+uaIk/DhgVlJNMyfDOujB1yWJsODg/DzzJixBX0EPQO4bj3PrRMZ6FyO9JwEA9sjk
- oZj077hCYySDDdpXtifv5kTKDBB2UvkJ3EWbmhtBLqw2kADoQ7YRzNB
-X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
- pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 796fcd23-c4bf-4bcf-f8f5-08de8650666b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Mar 2026 07:15:00.6909
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: SLu8g6XYOrbY/yEI/6b22UGmDakFO6ZRFtBvovZdieXmCsSqlVgWsVU39MEuFXGTmC7GqDLxn6CypX+SYEsy+mkLG4sfogKTx15APSwIY6Y=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SI3PR06MB8684
 
-For controllers with battery sensing capability (AST2600/AST2700), the
-last channel uses a different circuit design optimized for battery
-voltage measurement. This channel should not be enabled by default
-along with other channels to avoid potential interference and power
-efficiency issues.
-This ensures optimal power efficiency for normal ADC operations while
-maintaining full functionality when battery sensing is needed.
-
-Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
----
- drivers/iio/adc/aspeed_adc.c | 34 +++++++++++++++++++++++++++++-----
- 1 file changed, 29 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/iio/adc/aspeed_adc.c b/drivers/iio/adc/aspeed_adc.c
-index a1a6296d3003..b3dee172adbf 100644
---- a/drivers/iio/adc/aspeed_adc.c
-+++ b/drivers/iio/adc/aspeed_adc.c
-@@ -138,6 +138,13 @@ static inline u32 aspeed_adc_channels_mask(unsigned int num_channels)
- 
- static inline unsigned int aspeed_adc_get_active_channels(const struct aspeed_adc_data *data)
- {
-+	/*
-+	 * For controllers with battery sensing capability, the last channel
-+	 * is reserved for battery sensing and should not be included in
-+	 * normal channel operations.
-+	 */
-+	if (data->model_data->bat_sense_sup)
-+		return data->model_data->num_channels - 1;
- 	return data->model_data->num_channels;
- }
- 
-@@ -305,9 +312,26 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 
- 	switch (mask) {
- 	case IIO_CHAN_INFO_RAW:
-+		adc_engine_control_reg_val = readl(data->base + ASPEED_REG_ENGINE_CONTROL);
-+		/*
-+		 * For battery sensing capable controllers, we need to enable
-+		 * the specific channel before reading. This is required because
-+		 * the battery channel may not be enabled by default.
-+		 */
-+		if (data->model_data->bat_sense_sup &&
-+		    chan->channel == ASPEED_ADC_BATTERY_CHANNEL) {
-+			u32 ctrl_reg = adc_engine_control_reg_val & ~ASPEED_ADC_CTRL_CHANNEL;
-+
-+			ctrl_reg |= ASPEED_ADC_CTRL_CHANNEL_ENABLE(chan->channel);
-+			writel(ctrl_reg, data->base + ASPEED_REG_ENGINE_CONTROL);
-+			/*
-+			 * After enable a new channel need to wait some time for ADC stable
-+			 * Experiment result is 1ms.
-+			 */
-+			fsleep(1000);
-+		}
-+
- 		if (data->battery_sensing && chan->channel == ASPEED_ADC_BATTERY_CHANNEL) {
--			adc_engine_control_reg_val =
--				readl(data->base + ASPEED_REG_ENGINE_CONTROL);
- 			writel(adc_engine_control_reg_val |
- 				       FIELD_PREP(ASPEED_ADC_CH7_MODE,
- 						  ASPEED_ADC_CH7_BAT) |
-@@ -321,11 +345,11 @@ static int aspeed_adc_read_raw(struct iio_dev *indio_dev,
- 			*val = readw(data->base + chan->address);
- 			*val = (*val * data->battery_mode_gain.mult) /
- 			       data->battery_mode_gain.div;
--			/* Restore control register value */
--			writel(adc_engine_control_reg_val,
--			       data->base + ASPEED_REG_ENGINE_CONTROL);
- 		} else
- 			*val = readw(data->base + chan->address);
-+		/* Restore control register value */
-+		writel(adc_engine_control_reg_val,
-+				data->base + ASPEED_REG_ENGINE_CONTROL);
- 		return IIO_VAL_INT;
- 
- 	case IIO_CHAN_INFO_OFFSET:
-
--- 
-2.34.1
-
+...=0A=
+=0A=
+> What remains unclear is how best to model the secondary and tertiary=0A=
+> service processor control blocks (SSP/TSP) and the PCI control region.=0A=
+> The SSP and TSP controls consume reserved memory regions used to=0A=
+> configure the processors' address spaces, while the PCI control region=0A=
+> contains the VGA scratch registers used to communicate host display=0A=
+> ownership.=0A=
+=0A=
+> The p2a and smp-ram features are supported on earlier generations=0A=
+> but are not present on AST2700, and should be disabled in the binding=0A=
+> for the AST2700 as you suggested.=0A=
+=0A=
+Hi Krzysztof,=0A=
+=0A=
+Following up on my previous email, I've reworked the AST2700 SCU0=0A=
+binding to better reflect the hardware capabilities and address the=0A=
+issues discussed.=0A=
+=0A=
+In particular:=0A=
+- Restrict p2a-control and smp-memram for AST2700, as these features=0A=
+  are not present.=0A=
+- Add SSP/TSP address mapping support using memory-region and=0A=
+  memory-region-names.=0A=
+- Rework the example so it reflects the AST2700 SCU0 layout and validates=
+=0A=
+  against the binding schema.=0A=
+=0A=
+I wanted to share the current binding update for feedback.=0A=
+=0A=
+Below is the current SCU0 binding diff:=0A=
+=0A=
+diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml =
+b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml=0A=
+index a87f31fce019..86e560876cf2 100644=0A=
+--- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml=0A=
++++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml=0A=
+@@ -46,6 +46,9 @@ properties:=0A=
+   '#reset-cells':=0A=
+     const: 1=0A=
+ =0A=
++  memory-region: true=0A=
++  memory-region-names: true=0A=
++=0A=
+ patternProperties:=0A=
+   '^p2a-control@[0-9a-f]+$':=0A=
+     description: >=0A=
+@@ -87,6 +90,7 @@ patternProperties:=0A=
+             - aspeed,ast2400-pinctrl=0A=
+             - aspeed,ast2500-pinctrl=0A=
+             - aspeed,ast2600-pinctrl=0A=
++            - aspeed,ast2700-soc0-pinctrl=0A=
+ =0A=
+     required:=0A=
+       - compatible=0A=
+@@ -156,6 +160,42 @@ required:=0A=
+   - '#clock-cells'=0A=
+   - '#reset-cells'=0A=
+ =0A=
++allOf:=0A=
++  - if:=0A=
++      properties:=0A=
++        compatible:=0A=
++          contains:=0A=
++            anyOf:=0A=
++              - const: aspeed,ast2700-scu0=0A=
++              - const: aspeed,ast2700-scu1=0A=
++    then:=0A=
++      patternProperties:=0A=
++        '^p2a-control@[0-9a-f]+$': false=0A=
++        '^smp-memram@[0-9a-f]+$': false=0A=
++=0A=
++  - if:=0A=
++      properties:=0A=
++        compatible:=0A=
++          contains:=0A=
++            const: aspeed,ast2700-scu0=0A=
++    then:=0A=
++      properties:=0A=
++        memory-region:=0A=
++          items:=0A=
++            - description: Region mapped through the first SSP address win=
+dow.=0A=
++            - description: Region mapped through the second SSP address wi=
+ndow.=0A=
++            - description: Region mapped through the TSP address window.=
+=0A=
++=0A=
++        memory-region-names:=0A=
++          items:=0A=
++            - const: ssp-0=0A=
++            - const: ssp-1=0A=
++            - const: tsp=0A=
++    else:=0A=
++      properties:=0A=
++        memory-region: false=0A=
++        memory-region-names: false=0A=
++=0A=
+ additionalProperties: false=0A=
+ =0A=
+ examples:=0A=
+@@ -180,4 +220,81 @@ examples:=0A=
+             reg =3D <0x7c 0x4>, <0x150 0x8>;=0A=
+         };=0A=
+     };=0A=
++=0A=
++  - |=0A=
++    / {=0A=
++        #address-cells =3D <2>;=0A=
++        #size-cells =3D <2>;=0A=
++=0A=
++        reserved-memory {=0A=
++            #address-cells =3D <2>;=0A=
++            #size-cells =3D <2>;=0A=
++            ranges;=0A=
++=0A=
++            ssp_region_0: memory@90000000 {=0A=
++                reg =3D <0x4 0x00000000 0x0 0x01000000>;=0A=
++                no-map;=0A=
++            };=0A=
++=0A=
++            ssp_region_1: memory@91000000 {=0A=
++                reg =3D <0x4 0x01000000 0x0 0x01000000>;=0A=
++                no-map;=0A=
++            };=0A=
++=0A=
++            tsp_region: memory@92000000 {=0A=
++                reg =3D <0x4 0x02000000 0x0 0x01000000>;=0A=
++                no-map;=0A=
++            };=0A=
++        };=0A=
++=0A=
++        bus {=0A=
++            #address-cells =3D <2>;=0A=
++            #size-cells =3D <2>;=0A=
++=0A=
++            syscon@12c02000 {=0A=
++                compatible =3D "aspeed,ast2700-scu0", "syscon", "simple-mf=
+d";=0A=
++                reg =3D <0 0x12c02000 0 0x1000>;=0A=
++                ranges =3D <0x0 0x0 0x12c02000 0x1000>;=0A=
++                #address-cells =3D <1>;=0A=
++                #size-cells =3D <1>;=0A=
++                #clock-cells =3D <1>;=0A=
++                #reset-cells =3D <1>;=0A=
++=0A=
++                memory-region =3D <&ssp_region_0>, <&ssp_region_1>,=0A=
++                                <&tsp_region>;=0A=
++                memory-region-names =3D "ssp-0", "ssp-1", "tsp";=0A=
++=0A=
++                silicon-id@0 {=0A=
++                    compatible =3D "aspeed,ast2700-silicon-id", "aspeed,si=
+licon-id";=0A=
++                    reg =3D <0x0 0x4>;=0A=
++                };=0A=
++=0A=
++                interrupt-controller@1b0 {=0A=
++                    compatible =3D "aspeed,ast2700-scu-ic0";=0A=
++                    reg =3D <0x1b0 0x4>;=0A=
++                    #interrupt-cells =3D <1>;=0A=
++                    interrupts-extended =3D <&intc0 97>;=0A=
++                    interrupt-controller;=0A=
++                };=0A=
++=0A=
++                interrupt-controller@1e0 {=0A=
++                    compatible =3D "aspeed,ast2700-scu-ic1";=0A=
++                    reg =3D <0x1e0 0x4>;=0A=
++                    #interrupt-cells =3D <1>;=0A=
++                    interrupts-extended =3D <&intc0 98>;=0A=
++                    interrupt-controller;=0A=
++                };=0A=
++=0A=
++                pinctrl@400 {=0A=
++                    compatible =3D "aspeed,ast2700-soc0-pinctrl";=0A=
++                    reg =3D <0x400 0x318>;=0A=
++                    emmc-state {=0A=
++                        function =3D "EMMC";=0A=
++                        groups =3D "EMMCG1";=0A=
++                    };=0A=
++                };=0A=
++            };=0A=
++        };=0A=
++    };=0A=
++=0A=
+ ...=0A=
+=0A=
+One additional question regarding the example: Since the AST2700 SCU0=0A=
+node is not significantly different from previous generations and the=0A=
+example mostly uses standard properties, do you think keeping this=0A=
+additional example is useful, or would you prefer to keep the binding=0A=
+minimal?=0A=
+=0A=
+Thanks=0A=
+Billy Tsai=0A=
 
