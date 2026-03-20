@@ -1,134 +1,80 @@
-Return-Path: <linux-aspeed+bounces-3720-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3721-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63DD51093170
-	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 03:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DF6D1093179
+	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 04:21:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcSzT6yPpz2xly;
-	Fri, 20 Mar 2026 14:41:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773978101;
-	cv=pass; b=lNl0V3oGWdDybJC1XXdX3GY0CONQXpwmBoL1YMy2PmpAQ3ARufl9iOpj7tZnqYRT98Sgki8RKtGIQNJlAxcySYky1++or/fAtpMPEpIfk0tVT0EWT1YvLIxqLbDbuVVue+I5TAs9K+Gn4MFCa0m8nFkimKli9ZLgKTMxzYag3gOCqqOPH1LGRuR/HO+Vn50vxhkpdV2logqQo4HR3IH2Q834S8J8eL98AT98Lb4Fkv/83q2ooEoQfskOXPgSJZbinr9xi2zW9etuNRn+3UWTcVWIiPoE/Uu6y/6Px0FXyzhFU7u3SaK5qj0TzqQg35r0dsvh6qKgKhWtPky7NZPNgg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773978101; c=relaxed/relaxed;
-	bh=ufqC42t8O7CwcnzDpis8UqpicTXbDg+GqJ2y/7660ts=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=kgJ51fjV9bdr9/r+pkrFo8ndeLWbvqvY9pkODJRkp+bTttkenEwixPHi1L8bmLqRSk4e31wQnBSxAkzGArqijzOZ2NWGlDL/mcV0O8Xvl1DZISy0sB6eE3lTHYuSWhXP/Qu1RA0HOG2NvMPuPzVViY4YNgWMllsTHgLwa9KLNgpw6+mYxzX9dL8jUaVsKg2xCfyTYqI7O+fchPKATehskJ7t9b3V9EGekQlEjS347p58KnxpVbCZbYeL2de152tY/yenbVfaZjGnMZEkRpCUaBtaU5WrLlT8oX5EMYwfDT0dYPkup3mpZjjXGycIYAYnrGdbGsegoaGgpTuZdvH/hA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=b9Yi4SK8; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcTrz1yKkz2xm5;
+	Fri, 20 Mar 2026 15:21:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773980467;
+	cv=none; b=hiUItNaj5zKzWRnU/ECENh7O/mL47EnGQWk5MKLKDBTRXBEPVJjhhV/ZPTB9RlyZltkO/CJsANsWEGY1onsBrwteSNXd7hi1NrtA6UnUetOqb7VivND0+UYlh+sEQ2BdHDLnmRGrXeYBL64Wu/6Oz3UXPgYAh+NrxGChCgedCTpaOPG2ylQvXG0VXEyDJOP6/k6h9SMjJRNblK60kXnbHzpeQYBMg85CzafqQ+n8SZRuYoFBVgBFh4LFEUfRY0xA1kiJT+ihdg76SzuavVrSdEfqzyu8JepwnNAiz4hYIN9aTZ7tkYXF3CFWqmKxfjuYcwsatm/bg484wo5QJL1eKQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773980467; c=relaxed/relaxed;
+	bh=NJMOvmuyxnPDgD6UKl/Wo25LJql6LgrNjqbSF6tqdFA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HvpFHbeXYuHsutpoOZnWQfcLFdHuOnA7Sn4Ds2GIWuxyAUdJeNGR8kIDt3Qw2py/PuzeD20DRxTTHIcM/8E8UaL7A74XuECH0hco0vY0aXPZTFWyW/tZQmmmfWDG+X0pk9wvSrbyPbbbz6ZyjRcux7uZOTbbMncbKVqPZ63FEn2IqidryrLGcc8AIfkitm+exTFdEqx0XSZhRWfMLY1JMy0v85YbjXEkqDq2KD7MLVfnv+LgxOP8FlkXUQuY2Ne9ONJLvTmOJVbohwMyGEHJXCc3eoq23ITsrdkaJ+z1ABQ9OPRKIeL+q1BM6MH6zR4zeLi3qGBjCd1RCDhY8TQNpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WNG0Q9tN; dkim-atps=neutral; spf=pass (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=b9Yi4SK8;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WNG0Q9tN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcSzT1V71z2xN2
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 14:41:40 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=lBva7NuRlnnZpW75X9JQo7Mb+25xrxzvwcu/mlUWJfF4/kPrX+U3P4wq9JO8s9EOfBQR5Xzl5MAb9OI0ulYpPbBuodLUkUTtktr+ShA/C6nSubzsfvTNHhp2ymJpjbD78eQzJ7PdQUVuW6UVrZAp5QtTsUxsNPwYac3d3eqxIIpPDT+sqW0TxugbgBws8X+Lz7bhAZGkGOxyYCrz/i72NSbS09UK4naqViRoWVbDyDg53uruJOVz1c5KP5tRH/TAlQIENc0NZOQw7B47sClV231cOHj2Uxd+KDDNYOkj1qZbxjRiHdMN7hzCItsNb2yVCKGPo0Dz+tRfAxqfSTpdhA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ufqC42t8O7CwcnzDpis8UqpicTXbDg+GqJ2y/7660ts=;
- b=dYHhU6tiGLvLWo/d+EYQi8300fgqNbrhLTkbfGli+VMrgIM/RBvpi4TAzGm6VcQuwOgBH4C9RGY1h1I9iHHRvMo1ikpc7QDjYybULqmHOeaVq7cpxSD9/UvEcKgGO8dv9Hol+o/DQ1apa8forI7MTTJsifylL6IHhaqa8GpkmJTl556r5IfZtbDaK+YTYKDxu58rdjxeVf4oMb4pI3Bd7892CPzoCn1aJTTQOHC9B5nV5zsdYfEV8pprZnhfbtjKZzozE/MOs74dycXTYgS0kiWHuwrqWKfRErwe9kurtX+WNVe/HQOIO9WIZCQYyaX1pCporUHsN++jlfJilX6j2A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ufqC42t8O7CwcnzDpis8UqpicTXbDg+GqJ2y/7660ts=;
- b=b9Yi4SK8Gz95FH0oY1nlXjIiL4mpHXXny3fKd2aqz2Cukp/Ug/3H5ROwiPCXqJShZRaWmHsfxCaev4/oLsPI40yayPn/TkG+Hlfo/4tEyGSkNeC4QQo0HqOT6+0hbQ3UdrA1wpAsmJjMciSuZ+oZ6RsUEdbhly0seI1Icz7oWGnnFUPmRL1Vho8lGNrkLPSidy7thrf6Kj/NkxH32RM2BZppPVGI5q6YsgVFSd8EMRsYDT6tgsDjiI21fNjwj3NYzfUOHijVfSt4LEgFpYxVwnlkTAVgT8cYvIeQphLUmavRQm6AZ34ZToWVPuMq9/4vepl3yzbinmBtd9ATWt0LQQ==
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
- by SEZPR06MB6871.apcprd06.prod.outlook.com (2603:1096:101:197::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Fri, 20 Mar
- 2026 03:41:17 +0000
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19]) by OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19%4]) with mapi id 15.20.9700.022; Fri, 20 Mar 2026
- 03:41:17 +0000
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-CC: Jonathan Cameron <jic23@kernel.org>, David Lechner
-	<dlechner@baylibre.com>, =?Windows-1252?Q?Nuno_S=E1?= <nuno.sa@analog.com>,
-	Andy Shevchenko <andy@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
- Jeffery <andrew@codeconstruct.com.au>, "linux-iio@vger.kernel.org"
-	<linux-iio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, Morris Mao <morris_mao@aspeedtech.com>
-Subject: Re: [PATCH v2 3/3] iio: adc: aspeed: Reserve battery sensing channel
- for on-demand use
-Thread-Topic: [PATCH v2 3/3] iio: adc: aspeed: Reserve battery sensing channel
- for on-demand use
-Thread-Index: AQHctPEbhVwnR3N2p0WLf7VfGNH5G7WxN/mAgAWSry4=
-Date: Fri, 20 Mar 2026 03:41:17 +0000
-Message-ID:
- <OSQPR06MB7252EB6B6933E2925EA51FF48B4CA@OSQPR06MB7252.apcprd06.prod.outlook.com>
-References: <20260316-adc-v2-0-21475a217b09@aspeedtech.com>
- <20260316-adc-v2-3-21475a217b09@aspeedtech.com>
- <abgTKzfiDPFQJPVo@ashevche-desk.local>
-In-Reply-To: <abgTKzfiDPFQJPVo@ashevche-desk.local>
-Accept-Language: en-US, zh-TW
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|SEZPR06MB6871:EE_
-x-ms-office365-filtering-correlation-id: b1066ac0-0fb0-49e4-09af-08de86328af3
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|7416014|376014|38070700021|56012099003|18002099003|22082099003;
-x-microsoft-antispam-message-info:
- hM2ZeG7g8EomTyZnS934SSa1I4QcS7q7hqZFSvFQM3TWUqjsOa6MiUzyLV5ZqdV/pqyxdfYfgWQbr/ckjrKrXj4QWjOLVGTzRrKMOKEg34xISupqO1S9xWQVXDlgzEVXgcXiaS5Tt0esZHyPLiQCyQIbrdJOtMaV5Rxy/8LrC26Hgu2SXthCB1Cv3E3f1WlCD1C4EiNgGPR3VTGO71aOSkHe63YCofAIJevEv3LvmLvJyUx1RGUA5q0SzYdUkd2f+k9d4QLcaSmh7DEtLMfH+6tmFBoYdule+j1f6gyKWL/NVR6mWVldSvyLyLBp8nqegn+lRY/0LLujE03r+68AD9E/BpfxoUtAicETSaHOsQE3gmw87CuFAk+VDdohwISZTlWCzYs3HJRI0LE480mnMXV9/h9ApTytGT2ekQ6w+gMsNrWuyuZU5OuxvR3NAHCDh0OTXv0mfqaHJ64gH5HenHmpLkDgvq4sftAKfG73NgMhCjtB3RdnSzI+J8akFv+YVlK+ntly3ql2mqiPo9Ivo+Wwjt/94E9JeMHC5Fjl4orf7UpQrGZXILunbzDcXvi7fOeNxh2ArkpbfvFlmk+r3+NNn9rzr4yqeJRnDpCB/K18Yi4yJpes0V+W6mT7WAa7T7C34myWOBEu76uUSajnnm5KJBqbFNCfAb1rSIhVA7mVqRLINO7qr00HFgQ1g9HGluTg1UQovYZdkx81eTb4zUn6jaNRt0c5Psin75jjhY3l2iuJ5IHYH0z5xB8fkhwDd3rD1+J7D8Dgf92nnwLShkeJDSmqV547hok3on3+svY=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(38070700021)(56012099003)(18002099003)(22082099003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?Windows-1252?Q?LMegXT7qcvEpRSVWkqcmfiCUber3QplJlHbiB7/Zd1mKIhPQapUNRo6a?=
- =?Windows-1252?Q?uyKeg3pVnsP/xusJPYuJrxfDpBn1S+CpBo0foKJQMeQi8tLZ5OfjdNK7?=
- =?Windows-1252?Q?H8CImAaWcSIE1/4TwUtLTIClsOtIKUyLeYKhQ+DOXDvDqQyWA3Asv2ik?=
- =?Windows-1252?Q?bbUUX2fCRSOBSEfrOX2tCJ22zO5JfBVIXuFoVNlZH13sv7qqMueHyT/Z?=
- =?Windows-1252?Q?Mqh1FVFN2w81kbYlGBzXYstpQVpTU1OYxtQRZ51TOcw2Xg7j2kjj2uQp?=
- =?Windows-1252?Q?Duz8rT0+sAHpSLqe1fsS/5RFAtOfmMrbJUyeWvpAPzy78mi6urvbXwXA?=
- =?Windows-1252?Q?5PqmM9SzyT8Es19J9krUibAG1Iy+iuk5Q6dnMM8f7TH60vuhBIcjuF4c?=
- =?Windows-1252?Q?ea/HXp5rpdPEV9RM8kkM/QfRy2DgbcLLYPbEnLifH9aId8/tb62I658q?=
- =?Windows-1252?Q?OHeWQ61AciGI95fJeNVIAoxFWnKKUt7zC2i0HsDkt6Pb4ngFPgPJXcWa?=
- =?Windows-1252?Q?mOPxnBbYieC2ARtvnlGGOQxhvfG30mh6/oRFAmRU+R4aJHlMcnVttPWq?=
- =?Windows-1252?Q?QjARJ6YnI6qhkhNd9SZelayT4Ekt2wSQXRC1P86a5Sj3u0YI27NCsVe+?=
- =?Windows-1252?Q?10WkWgBwQcSFKDTcjheyWqTs/4YKXmQRB7E/E+oP5sRRCnYkR1CqSxiS?=
- =?Windows-1252?Q?AvM1jy+CN4fpz3ZAX5AkG8NEl6lqWVJMkIUfzjX9fgMinafiY+8pnrVW?=
- =?Windows-1252?Q?3fqvoXyg8WbjfIhuyO4Bc82aLezfih66DsfQq+lNUGDasx5j5QtRsM8b?=
- =?Windows-1252?Q?6add5gz9KM0ZruJsyeot1f7BKwajbTRU4JUqNyof1i/2DciEZJqvwVyJ?=
- =?Windows-1252?Q?cWVyiRkR66/6LrJbB7BFwAFkhw+fFCfjxs8EKJGpNjQR3gjeV/leMAce?=
- =?Windows-1252?Q?O/SfK0nMoeLpLTdKYkLmMEJm5XRJMcFNqaAHWJtIGFpcFydIAOlbd3c2?=
- =?Windows-1252?Q?IawBC0AcyxwaMhaOgO5gHz+GhPtoejfqHMZnT2p2V+WFNTkTDXt9SA3r?=
- =?Windows-1252?Q?IEv7fs8FY2F0er5QDOCQsGCg6ULbPMcB6re2iMhi7CYZzPG6rsQ8lD25?=
- =?Windows-1252?Q?MAlrzBmEtkrLmA/7AWVR1rvenlLJnTsrrF7HSWb8Ih1Z6lmIQufSVGU+?=
- =?Windows-1252?Q?dbIkQaSon83hD8EInCp3DHuEwOyiKQtOoVDQrNZKYckAb65CvSbQVPGL?=
- =?Windows-1252?Q?4OdijCL9u8Cyt02nUpDmZcYUoPaSb7kAIqqohWVbVrYfzNQ0p55KkUe2?=
- =?Windows-1252?Q?mcFFtVQaIgkr+sB64n/aULwRwS21DM+TQMgKB0I1DPgJb1zmLQPKxfMJ?=
- =?Windows-1252?Q?6hZXMAolwuosn8Q9/9d1+An6jpYqldOPyLsxAJGNTTwR9lb/cs2eaCj7?=
- =?Windows-1252?Q?fb9SG7WXBHcjGBSo2VAsWi1ayL2FFKrkQzbbbDuGeN/Ev1oj35GVZvPO?=
- =?Windows-1252?Q?yPUWbZl93xPYPOFQNCC2Ek5eUiQT89pN7Nz68mbKnQfecHPDZQf06Epd?=
- =?Windows-1252?Q?ej2pWNQRBH1jd22GhbGVfekIwc+SgFoWYnEp75/i1ZTgZ/YAUgykFuha?=
- =?Windows-1252?Q?jrc7NxGoakTj9XG3lF3a79iXearyVCTpKocN8GYbqW2jPQWnotQ7wPS/?=
- =?Windows-1252?Q?2UnxbP4EsPRhhHBpvtNQ+8UfllQDjLYcceT93mTc4nWb8wqOqrI7Oa9t?=
- =?Windows-1252?Q?I6SYlWtrG0Z0G6k0M6ijapLZLk9n+T83FuvggO/mYqZtee2JbFSdsuIU?=
- =?Windows-1252?Q?6wuKfXDhzLyUjQr1Jzxt6gs4WYy39mb98hWFdDsHMksUymBm+GAnFPGL?=
- =?Windows-1252?Q?n7b2EX1ngk200g=3D=3D?=
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcTrs0ctqz2xm3;
+	Fri, 20 Mar 2026 15:20:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1773980461; x=1805516461;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=OHnX7uZBV92R01nqYlUueQh+SwiiSpGawFPFVc+X9Ac=;
+  b=WNG0Q9tNEI9GeOmoHyH7yn3z0gBNT/8e5+CbA2C7RD+ZlB+vdRvkMXDf
+   dEIAcMUlsffmQ3NIePVSzPvP/u7KdoWUZIiZgQ2QDIE6+o9OOki6Fkc/d
+   emKLPrtGXssj9QCYBGeIRCDU1JQGPCUZ98QwV36T5yJ2btvG9Er6mTh73
+   rKUUu5ohjrbYRqsNaPZItveuJ7A6uIrWftvaeLmP3VUVMXN/KcoFOw0Po
+   SvC5HdGKKLThkf7X6aFQQBr46V8wt3qLxtC2sq+tW9SE3l1pWYWfUP2e8
+   UxqBqfitU2wHWfj2T3SzDCIDrkx5MbjEXiIpZYcYqyCTu9qQqpY9j6IgV
+   w==;
+X-CSE-ConnectionGUID: QB1v7JO6Q/ik/uYkGYfZJA==
+X-CSE-MsgGUID: oTC5VwwJTXS74GH1T5EQUg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="77670265"
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="77670265"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2026 21:20:56 -0700
+X-CSE-ConnectionGUID: f2vicg65TU+omWmZ32VWkg==
+X-CSE-MsgGUID: Kgb03j0VRrWGSeCxQZ27jw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
+   d="scan'208";a="220549657"
+Received: from lkp-server02.sh.intel.com (HELO a51c2a36b9df) ([10.239.97.151])
+  by fmviesa008.fm.intel.com with ESMTP; 19 Mar 2026 21:20:53 -0700
+Received: from kbuild by a51c2a36b9df with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1w3RLn-000000001wf-2k5k;
+	Fri, 20 Mar 2026 04:20:45 +0000
+Date: Fri, 20 Mar 2026 12:19:52 +0800
+From: kernel test robot <lkp@intel.com>
+To: aspeedyh <yh_chung@aspeedtech.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Philipp Zabel <p.zabel@pengutronix.de>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	openbmc@lists.ozlabs.org, maciej.lawniczak@intel.com,
+	aspeedyh <yh_chung@aspeedtech.com>
+Subject: Re: [PATCH 5/7] soc: aspeed: Add eSPI flash channel support
+Message-ID: <202603201234.n0spXcAN-lkp@intel.com>
+References: <20260313-upstream_espi-v1-5-9504428e1f43@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -142,59 +88,142 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b1066ac0-0fb0-49e4-09af-08de86328af3
-X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Mar 2026 03:41:17.0230
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: DIL8j0FTx9JnoNjygP6EECFm+USD/dWNh/Wtk1MjzQLM6zv6ARuZY0jSSlds5RkPvx+wK4GCc5yZQ1TVNDH/vFuTT/Wwr3lz2aq7ATr7NRM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB6871
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260313-upstream_espi-v1-5-9504428e1f43@aspeedtech.com>
 
-=0A=
-On Mon, Mar 16, 2026 at 11:00:48AM +0800, Billy Tsai wrote:=0A=
-> > For controllers with battery sensing capability (AST2600/AST2700), the=
-=0A=
-> > last channel uses a different circuit design optimized for battery=0A=
-> > voltage measurement. This channel should not be enabled by default=0A=
-> > along with other channels to avoid potential interference and power=0A=
-> > efficiency issues.=0A=
-> > This ensures optimal power efficiency for normal ADC operations while=
-=0A=
-> > maintaining full functionality when battery sensing is needed.=0A=
-=0A=
->...=0A=
-=0A=
-> > +                     /*=0A=
-> > +                      * After enable a new channel need to wait some t=
-ime for adc stable=0A=
-=0A=
-> ADC=0A=
-=0A=
-Got it.=0A=
-=0A=
-> > +                      * Experiment result is 1ms.=0A=
-> > +                      */=0A=
-> > +                     mdelay(1);=0A=
-=0A=
-> Why atomic? If not required, use fsleep(). Otherwise explain.=0A=
-=0A=
-Good point.=0A=
-=0A=
-This path is sleepable, so mdelay() is not required. I=92ll switch it to=0A=
-fsleep(1000) in v2.=0A=
-=0A=
-I=92ll also take a look at other mdelay() users in the driver and clean the=
-m=0A=
-up in a separate patch if appropriate.=0A=
-=0A=
-> > +             }=0A=
-=0A=
-Thanks=0A=
-=0A=
-Billy Tsai=0A=
-=0A=
+Hi aspeedyh,
+
+kernel test robot noticed the following build errors:
+
+[auto build test ERROR on 0257f64bdac7fdca30fa3cae0df8b9ecbec7733a]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/aspeedyh/dt-bindings-soc-aspeed-Add-AST2600-eSPI-controller/20260315-101647
+base:   0257f64bdac7fdca30fa3cae0df8b9ecbec7733a
+patch link:    https://lore.kernel.org/r/20260313-upstream_espi-v1-5-9504428e1f43%40aspeedtech.com
+patch subject: [PATCH 5/7] soc: aspeed: Add eSPI flash channel support
+config: riscv-allyesconfig (https://download.01.org/0day-ci/archive/20260320/202603201234.n0spXcAN-lkp@intel.com/config)
+compiler: clang version 16.0.6 (https://github.com/llvm/llvm-project 7cbf1a2591520c2491aa35339f227775f4d3adf6)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260320/202603201234.n0spXcAN-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202603201234.n0spXcAN-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+>> drivers/soc/aspeed/espi/ast2600-espi.c:137:9: error: call to undeclared function 'FIELD_PREP'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+           reg |= FIELD_PREP(ESPI_CTRL_FLASH_TAFS_MODE, flash->tafs.mode);
+                  ^
+   drivers/soc/aspeed/espi/ast2600-espi.c:172:28: warning: variable 'flash' set but not used [-Wunused-but-set-variable]
+           struct aspeed_espi_flash *flash;
+                                     ^
+>> drivers/soc/aspeed/espi/ast2600-espi.c:194:13: error: call to undeclared function 'FIELD_GET'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+           hdr->cyc = FIELD_GET(ESPI_FLASH_RX_CTRL_CYC, reg);
+                      ^
+   drivers/soc/aspeed/espi/ast2600-espi.c:243:8: error: call to undeclared function 'FIELD_PREP'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+           reg = FIELD_PREP(ESPI_FLASH_TX_CTRL_CYC, cyc) |
+                 ^
+   1 warning and 3 errors generated.
+
+
+vim +/FIELD_PREP +137 drivers/soc/aspeed/espi/ast2600-espi.c
+
+   111	
+   112	static void ast2600_espi_flash_reset(struct aspeed_espi *espi)
+   113	{
+   114		struct aspeed_espi_flash *flash;
+   115		u32 reg;
+   116	
+   117		flash = &espi->flash;
+   118	
+   119		writel(ESPI_INT_EN_FLASH, espi->regs + ESPI_INT_EN_CLR);
+   120		writel(ESPI_INT_STS_FLASH, espi->regs + ESPI_INT_STS);
+   121	
+   122		reg = readl(espi->regs + ESPI_CTRL);
+   123		reg &= ~(ESPI_CTRL_FLASH_TX_SW_RST
+   124			 | ESPI_CTRL_FLASH_RX_SW_RST
+   125			 | ESPI_CTRL_FLASH_TX_DMA_EN
+   126			 | ESPI_CTRL_FLASH_RX_DMA_EN
+   127			 | ESPI_CTRL_FLASH_SW_RDY);
+   128		writel(reg, espi->regs + ESPI_CTRL);
+   129	
+   130		udelay(1);
+   131	
+   132		reg |= (ESPI_CTRL_FLASH_TX_SW_RST | ESPI_CTRL_FLASH_RX_SW_RST);
+   133		writel(reg, espi->regs + ESPI_CTRL);
+   134	
+   135		flash->tafs.mode = TAFS_MODE_SW;
+   136		reg = readl(espi->regs + ESPI_CTRL) & ~ESPI_CTRL_FLASH_TAFS_MODE;
+ > 137		reg |= FIELD_PREP(ESPI_CTRL_FLASH_TAFS_MODE, flash->tafs.mode);
+   138		writel(reg, espi->regs + ESPI_CTRL);
+   139	
+   140		if (flash->dma.enable) {
+   141			writel(flash->dma.tx_addr, espi->regs + ESPI_FLASH_TX_DMA);
+   142			writel(flash->dma.rx_addr, espi->regs + ESPI_FLASH_RX_DMA);
+   143	
+   144			reg = readl(espi->regs + ESPI_CTRL)
+   145			      | ESPI_CTRL_FLASH_TX_DMA_EN
+   146			      | ESPI_CTRL_FLASH_RX_DMA_EN;
+   147			writel(reg, espi->regs + ESPI_CTRL);
+   148		}
+   149	
+   150		writel(ESPI_INT_EN_FLASH_RX_CMPLT, espi->regs + ESPI_INT_EN);
+   151	
+   152		reg = readl(espi->regs + ESPI_CTRL) | ESPI_CTRL_FLASH_SW_RDY;
+   153		writel(reg, espi->regs + ESPI_CTRL);
+   154	}
+   155	
+   156	int ast2600_espi_flash_probe(struct aspeed_espi *espi)
+   157	{
+   158		u32 regs;
+   159	
+   160		regs = readl(espi->regs + ESPI_STS);
+   161		if (regs & (ESPI_STS_FLASH_TX_BUSY | ESPI_STS_FLASH_RX_BUSY)) {
+   162			dev_warn(espi->dev, "eSPI flash channel is busy, deferring...\n");
+   163			return -EPROBE_DEFER;
+   164		}
+   165	
+   166		ast2600_espi_flash_reset(espi);
+   167		return 0;
+   168	}
+   169	
+   170	int ast2600_espi_flash_remove(struct aspeed_espi *espi)
+   171	{
+   172		struct aspeed_espi_flash *flash;
+   173		u32 reg;
+   174	
+   175		flash = &espi->flash;
+   176	
+   177		writel(ESPI_INT_EN_FLASH, espi->regs + ESPI_INT_EN_CLR);
+   178	
+   179		reg = readl(espi->regs + ESPI_CTRL);
+   180		reg &= ~(ESPI_CTRL_FLASH_TX_DMA_EN
+   181			 | ESPI_CTRL_FLASH_RX_DMA_EN
+   182			 | ESPI_CTRL_FLASH_SW_RDY);
+   183		writel(reg, espi->regs + ESPI_CTRL);
+   184	
+   185		return 0;
+   186	}
+   187	
+   188	int ast2600_espi_flash_get_hdr(struct aspeed_espi *espi,
+   189				       struct espi_comm_hdr *hdr)
+   190	{
+   191		u32 reg, len;
+   192	
+   193		reg = readl(espi->regs + ESPI_FLASH_RX_CTRL);
+ > 194		hdr->cyc = FIELD_GET(ESPI_FLASH_RX_CTRL_CYC, reg);
+   195		hdr->tag = FIELD_GET(ESPI_FLASH_RX_CTRL_TAG, reg);
+   196		len = FIELD_GET(ESPI_FLASH_RX_CTRL_LEN, reg);
+   197		hdr->len_h = (len >> 8) & 0xff;
+   198		hdr->len_l = len & 0xff;
+   199	
+   200		return 0;
+   201	}
+   202	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
