@@ -1,79 +1,134 @@
-Return-Path: <linux-aspeed+bounces-3718-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3719-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FF2E1093168
-	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 01:21:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5F831093170
+	for <linux-aspeed@archiver.kernel.org>; Fri, 20 Mar 2026 03:33:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fcPsr6mNNz2xly;
-	Fri, 20 Mar 2026 12:21:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773969696;
-	cv=none; b=C+f+kHDnrNASk3956NC6Clcvyd2o/Z+G/c7CjeRJ7kX6CesPsciOqp9pgkKaqAeaBZxhPAayFVzVSjvFGmDbhqlOrhriTsqLpNJewYm3/IqSRK0zKM0daGTKS8R4plecKVdA8To5YZHTm2s8iC5sQinqDgtl7YzCE9Trsk67Pe781sPM90NS3A7LIRV8dxRGM8XnFTbFsVKNs2zbQFwlsOrFx/9dSQBskkfcNazM1CbdjQ6q+GjuehYHzSjnEqcO3TbmcJWPD8i+IQk0avgJcYipAkmi0TvJpFUjcc6fb3YkVPpArWQASDZIUx2UIv9EbSCrwISu71uI+tt/J0Rt3g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1773969696; c=relaxed/relaxed;
-	bh=bAmWcdCiH9lLtnS2U2ZUpEOewOgNAFdw+r99r/h58FU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DuYhO6kiSekseQsZ7lQbi5zKhGSRs/nOvYQOgjhIRPhx/yXu73V6sv4rQ4R4gvNDLe3+AM95/whRdWDDCHyzjdECaJK/UnhvEd9rtLU2uqo4WD4z/NrUAqtcyFYVk7GRRGu+c0rQcdvERx+CsT69HXv/iDdZbWDZnUsZl5HTZNp/5TBhGwc6/ryWD7/UBfH0I+yXmEnlEh5sGRHMdz17UsKIjFq1xak9SG+1AGFeuFrz9UlSkzZHQqsfRiOYW/mWSG76md7+5EOznzb6JXiJraRMXY9vcnNTW3jADAO1I5GGh2g7o4r6Es6SCo8xatwHeUqWZyMhla5cN1y0ljXtNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ltPru5vb; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fcSp91KLsz2xly;
+	Fri, 20 Mar 2026 14:33:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1773977617;
+	cv=pass; b=BFKnM8tTPusdiS77/ZxUwWY3oOGi4yFznJ2xFSFelOijQEI4ec0bSdfI69rmGZQL+di/3HYGTEuyHPFJD14/OdJp/4DqxGDfecWnZP8G4hdQgB+YuNE3aqcpbr3RCzq7XQFJWeK2q3xMFRAZMriX/CBwBrIwBOooSu5WwOPdX8KMwIVfckksgYN0kwxfuIXTII8W7oT/TSFL4hT2IOysSSlF5gYwoUed0zR8mmyzMov5isTbxDH2X8D/vn95r0kp3xbCxcEeJTAnddMonPG1B7w+0x1yYcFHgY/Hc1CnoCNhxLu1WcI/WZoCQTd5Xj1Gg/0k5jbmLCKlB0ZrZRyTJg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1773977617; c=relaxed/relaxed;
+	bh=7CkcfJrv4N8MX1mKNBxtQfkHCUW1PvIv43Zu2mrHQxU=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=bk7kuavwaPm+gj8Kg/TKkYkL7Ih0BHzBmIYZXpzklpLz+4nvcsnsIKADYos97RxwhBMRDRW6DhGzkoAVp3g98naqdf1pT6T0eDqvSeedQNABXmZapwzejKjEPf5v9+N3p/AB7YI4Mf2STyz8k4y87suSUVfh9dyk5SK+wDa895Lui1IFkymhBCKZzBjO36OMouTB3cLClFHwkbZsWqzXpoyJkCQpIAOoHiCKLBH7i+D/5AKWjEjRiSIbNVylNiwnId6lTyQGSsZ1Dro8o6DD+X7qr6ck4jWhhHIH1AyBoAw7T8TT+q/huDct/lgfdjukSrIq5fNbGcLgiMabKsVOww==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=OyVDiIbv; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ltPru5vb;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=OyVDiIbv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcPsn0xypz2xN2;
-	Fri, 20 Mar 2026 12:21:31 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1773969694; x=1805505694;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=XfTGDv25Z3qgeprzxEF26+kpxwk1t5LiUTyWdHyppS0=;
-  b=ltPru5vbNfurGqNhPwDGx5GvlxJjRf5i18qUKM1+PPude2J7N0PXccwx
-   9nt4P7EYjqf1cfc174o4SGKEB9IuB1bpHUTCf0pfaU+iVF+L0v1TgjQwa
-   4MmHHUtbT38DXdL02XcPEQCpCvP6V0BOOqhCeSNZTcjlgzfSlV8bgGzxi
-   5brNPPR6KL8NWj1JOuKWlA8JtFjUJOT9AYEZWzsbJaU+McQLvNzJIAZK0
-   R+BFfT9mnbT70HTn5HJ6S2QBnQJW2BJ+fdmx2f8DHoN/2HGUWkRfKWWMN
-   EvP5hZlwck/N00yDPcKXIzl/zblC45ysa7hJlieLopdqedRVapddFPvg1
-   w==;
-X-CSE-ConnectionGUID: hzei3EutSMWFJjV9f4UW9w==
-X-CSE-MsgGUID: x2tUwTfTQUSiFnyuxLaH1A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11734"; a="75239491"
-X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="75239491"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Mar 2026 18:21:29 -0700
-X-CSE-ConnectionGUID: FcsPf0prRRq0/qxuc/nEAw==
-X-CSE-MsgGUID: clM0ws1ASKSMHzES+rX23A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,130,1770624000"; 
-   d="scan'208";a="227614597"
-Received: from lkp-server02.sh.intel.com (HELO a51c2a36b9df) ([10.239.97.151])
-  by orviesa004.jf.intel.com with ESMTP; 19 Mar 2026 18:21:25 -0700
-Received: from kbuild by a51c2a36b9df with local (Exim 4.98.2)
-	(envelope-from <lkp@intel.com>)
-	id 1w3OUi-000000001qC-3MVc;
-	Fri, 20 Mar 2026 01:18:54 +0000
-Date: Fri, 20 Mar 2026 09:17:14 +0800
-From: kernel test robot <lkp@intel.com>
-To: aspeedyh <yh_chung@aspeedtech.com>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>
-Cc: oe-kbuild-all@lists.linux.dev, devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org,
-	maciej.lawniczak@intel.com, aspeedyh <yh_chung@aspeedtech.com>
-Subject: Re: [PATCH 5/7] soc: aspeed: Add eSPI flash channel support
-Message-ID: <202603200904.M00MLkjz-lkp@intel.com>
-References: <20260313-upstream_espi-v1-5-9504428e1f43@aspeedtech.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fcSp63Znxz2xN2
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 20 Mar 2026 14:33:33 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=LNeX8xnU4Kf6ZV++AWZu06XZdb0NHVlY8lhFJInYc7q3SdiIPMQ6IEwPWBfDgSQ3OVhLutj+LnLuDbzAXuw3Vv0EoKI6t2ztwMr9Pvu3ieUHeHxrkDxWd/r/3jDVpqAbbHBZG6XUUworDfrvVOnUB9C1u6Yx5qWuneghVAmdDnglnnbBoYMRI4o9FrsS7ngY5gnOGq1d55QsgQ5hsYerHVcQyO8XGkJF6vwOGIqZQPToyK6BSX+cBUn9ydwL+8de0CX2vYAxOuxr7Yf8UJ9vriUtA5Hu6AJtpFOBdpnWH3+r1MmgdHyRZrm8SiUicqPdzWATjkRDSoKHcHSICGN4ZQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=7CkcfJrv4N8MX1mKNBxtQfkHCUW1PvIv43Zu2mrHQxU=;
+ b=kJXfnDciW7DcCJ/eOZ8IgDtj3Wi0g1y7QmI0zZ96ARs3PeeAunaxjGESb5qaWBuuzntTl40MpQC5aJDM2o05PhuWo4ok2sPr5VwLJtVTtDMtxBkMBYlk0NqbuUq7drWXexY+lYqepGQEF1Hq/b2FpCvQrhccpK2QwaZJ1dvhAhe9Ymd9a6nGQDOg5pYekXcReV9UeMYZafJ5OH3fnHWSLz/iDMenhKQKaYv7/JHD6h0EAPx+mFNEXtyl2/fFyGVxwpJTgSvFm/FukXWTmGyY+W7O26/wPlZIdwWfuhSqfg1EikwPa+7tzkXvtqkDP0rVTFrPOcK7nNk6oWoE15hVCw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=7CkcfJrv4N8MX1mKNBxtQfkHCUW1PvIv43Zu2mrHQxU=;
+ b=OyVDiIbv4ifRsYyxvSQE1oR7nUgdFSCL0z1rz57/fX30oKrtP/1BNCdmBQ7vDneFA80N6TG3Lk09+Hbg+mc4Cu27Xf2EHI11WSWkWY8BHYi+j2SFbVSSPJzL34bVVcXBSffAb18G5MgYZQaR2pKJYtwNUnCrfPV550ir7WJnRu/6s+RCwDCUmonBzcxgr2/+Iuf8zDopK9dWErNwcdja6t+SVzGlzWP6xyNTVl90K7a7s8hr2X52mc6oJcQ3SnYhpwnVRsM+8/EU24y5+NY70Hwgoaz4mprd60YLl4jtU5iLmxnW3SMxWdvBdktg+ONZmL251xvVntgivsz4TKAobw==
+Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
+ by JH0PR06MB6438.apcprd06.prod.outlook.com (2603:1096:990:2c::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9723.19; Fri, 20 Mar
+ 2026 03:33:04 +0000
+Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
+ ([fe80::92af:c9d9:8779:d19]) by OSQPR06MB7252.apcprd06.prod.outlook.com
+ ([fe80::92af:c9d9:8779:d19%4]) with mapi id 15.20.9700.022; Fri, 20 Mar 2026
+ 03:33:03 +0000
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
+CC: Jonathan Cameron <jic23@kernel.org>, David Lechner
+	<dlechner@baylibre.com>, =?Windows-1252?Q?Nuno_S=E1?= <nuno.sa@analog.com>,
+	Andy Shevchenko <andy@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew
+ Jeffery <andrew@codeconstruct.com.au>, "linux-iio@vger.kernel.org"
+	<linux-iio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, Morris Mao <morris_mao@aspeedtech.com>
+Subject: Re: [PATCH v2 2/3] iio: adc: Enable multiple consecutive channels
+ based on model data
+Thread-Topic: [PATCH v2 2/3] iio: adc: Enable multiple consecutive channels
+ based on model data
+Thread-Index: AQHctPEbKhISDEZTck+9P/6F6B0ZCbWxN5QAgAWOuz8=
+Date: Fri, 20 Mar 2026 03:33:03 +0000
+Message-ID:
+ <OSQPR06MB725298E227B8A563B95D66378B4CA@OSQPR06MB7252.apcprd06.prod.outlook.com>
+References: <20260316-adc-v2-0-21475a217b09@aspeedtech.com>
+ <20260316-adc-v2-2-21475a217b09@aspeedtech.com>
+ <abgS1lOoEO1RTe9X@ashevche-desk.local>
+In-Reply-To: <abgS1lOoEO1RTe9X@ashevche-desk.local>
+Accept-Language: en-US, zh-TW
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+msip_labels:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|JH0PR06MB6438:EE_
+x-ms-office365-filtering-correlation-id: 04ce9ce0-89c2-4c39-01ff-08de863164c0
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|1800799024|366016|7416014|376014|38070700021|22082099003|18002099003|56012099003;
+x-microsoft-antispam-message-info:
+ y8Gf2lJTFnZU0LZR5tVk8rBRElji00QUVvVIFWsI1pjvLETFyegzcuNDxctlR7Ey3iopbNiV+5osYkdqAzxCzYBPQ0Noj0j+59vM+1T1RVu+EltdSKR7UOtrWoU+KItFJ9N0GKyFg30cBmGL7WRqaju+9s8h7bdft9i/AUcMBVqy6BihxlA7WcwJ1EAv/SSlh21EwE0f/zuxZqnK2qa6VlTBMExl2Kt3covynVNbkBYLX0byC7x95VHdA9pu6AJwita/iWUn/n0m08PNB9VIIH7LXpBOxUU84SI+9sRheRVwDEnl54oNAOLJvjfLUzUnCqiW3WUKPd0AUgKhoIxfaKDkQlJ/US1GuCgBmjRZOgPJZtNdjyVwBw2VJEqNEHjx48RtSEPEWBzEOTeoFeEBoXOrYNuMg6rr3g4TQH16IlY9ck9389IHa3Q29WAPYPvgCkIH/8qjiJMIpfMMzAzfiRaRpwkCFDeplD1TWY67y24yH9bCJVxQ239g4mp+CU/j4IWrop4A3tqxBU4JfLQBt+adMAQpPT3srP6lLtxiqT0SuQvyXGIPUlvIiDQwPxcVhtDgzEV3GlvdbcNSYfW3pQkRytPDdz5H28MgyPRNZyfFkzZFddGh6qV5ydwUjNVL6Nqn7nN5oiv8rxPtxE7tYE0C+cczOD6QD4RThVeFFJFBiZQMw1IVKftnKxoEK0ab1xb2OwLQcs9VVbrT+lx9XbesjAMx84PELKA/lNv3KRiVbkYCWlKxMxd5RO0LgA9UIA4Jjyd4CU/9PorD5rY9sjXqWCZfiEMMC3ozb4JQeJM=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(38070700021)(22082099003)(18002099003)(56012099003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?Windows-1252?Q?4WUgMOM0R/eov04AOPiPFYJLK1looi36I6kW6AahGfbA52YG556MJq0f?=
+ =?Windows-1252?Q?qSm98CRGxJ298oucY3GkrLJMPlgtFYm0mC9S44Ao2hT3qX78sNld3rjs?=
+ =?Windows-1252?Q?ECE1X1iMX/GUJd9cHj3pIlP5Hm0ffSTB0UgYtztaO/VTne/wif9TG2m9?=
+ =?Windows-1252?Q?RJlG095Lu96Qi+aII/Uo0J2lSBJtt0Oj3D5ZweYIiGPisUBIy+FU+WRw?=
+ =?Windows-1252?Q?4gf1G42mK/ApzXjvfSSzoPzevzWudcwa9iLhNsq5NmTijbEJ3R9cS1mR?=
+ =?Windows-1252?Q?PtdOL9hJZ8J54/Sm+UvXopKK9b8lWh0Fk3ehbhicBKj2QLYkbKYl0rkd?=
+ =?Windows-1252?Q?oqbwA7k6fDAXj4PJVxqh/VWAI4z8kM5UqfqMiLHMCzqnUYFXXvB2I6UA?=
+ =?Windows-1252?Q?alJfY/X0zGFkBtXVweS6pAyhfi2cdVBFy5W1C6WaEpJp3snTbROrWfyc?=
+ =?Windows-1252?Q?zOYNnSdZekMCgxFQrOJsr9SmSdlk7HBqr2h+ZYyxn6VLINNtVadM/4gc?=
+ =?Windows-1252?Q?c0MsT0JqLArfLGCZ8kTQNdADSAHCmp7ZxD7P7yzfTCWGR4tRB0BUr2pa?=
+ =?Windows-1252?Q?0y08VSV+38o2GZZSjZZuMR8I6NbangQeuL6Gpz1/It4zO6IsLwkBI1QF?=
+ =?Windows-1252?Q?A365+ummIqD20jGdiCkxuQlIASmpIKARyXlALnMZRIYoB8zR3R0v+uHk?=
+ =?Windows-1252?Q?R8J4t7zmFN7k0fvk2L8uv+0NMXsxFEIG05xG26sMQsNSIKVvlNV7D+Fn?=
+ =?Windows-1252?Q?LzuQa4ZyiTo87VK9F0zIwEbXxtPCzrf5XPu3i117UlZM+xRW3FBTGmiz?=
+ =?Windows-1252?Q?YuU5UjKAyyDjisn6Pj/L47jId4BtVduK8rpqqoSEkY+e3G54IZbWvmZs?=
+ =?Windows-1252?Q?WPrVNyVZ94tY7eYsrAst7z4Xpd6tyCB/clA0PO9+BIEfaBC9IFNIS0rq?=
+ =?Windows-1252?Q?qR6jKTdjzSg6ozLSLkuONHtvX8UUs6vx9drakWyPMUd/SJQOSGSKG7ww?=
+ =?Windows-1252?Q?EzQokELUlU2AxIp4hXAtgZ+ohwmavqPIDCEPZCVUlq7oLDTvTTm4OP46?=
+ =?Windows-1252?Q?bbwJoLF2pI1oJgjqf4mVw9BqqmLN5PneK8kVd/BywKrUDQS7bLASMI1H?=
+ =?Windows-1252?Q?hPtjgzcEkAAfeG5tUzPBZjeKUdIfIOwOupe3l+tWVddzSs5h2pBZa29f?=
+ =?Windows-1252?Q?npEYytm1+nuLYQU/VKVZbmLTj44GqiQm6krh+LbC2L//BBkuWaZepFan?=
+ =?Windows-1252?Q?C9cU5fTV77ErV5ItE3TeV6kf6iyJBcbyC+Rvs9ZklZfE5cYPFu38wzma?=
+ =?Windows-1252?Q?KzQ8D8vrpjk13MMVr/61MNhSUtC69n/+tqwcNBV+QIg9heY1IQBOEieL?=
+ =?Windows-1252?Q?9jVnz/bIqwjBpokTDIAquIw87rGm32j+w/36HAdc5BvXOBkIhAeLrXPr?=
+ =?Windows-1252?Q?Uyz5eCx200R2f1GDPwzDzUxmNFusTlYOOcqup/8maBOXLnZUGcPPZGwt?=
+ =?Windows-1252?Q?uLiODICtXcao5+N4aidisz/ltYvrzdd8OFV3bivKCoam1yR1FKMDzkn4?=
+ =?Windows-1252?Q?WEei326TVScLv/pzoduot5Wf7g2+UYv68vvieh6GzW0m8oVauoIOPkoD?=
+ =?Windows-1252?Q?hMxcIktXXmp6xmnA2FlVdLIS7hQ6EXVZpDHEhnNgqFlDpheKEbt30ETj?=
+ =?Windows-1252?Q?da51XIYNEboxJqyfqjOvlZce0Zgriva41fDxpF8IPyW821vbovnpI0JJ?=
+ =?Windows-1252?Q?UfR4lCV0n+ir9UaKPlasQQj0mmnMJqUAxrUXOppfb+5+Vi04NZIToLyE?=
+ =?Windows-1252?Q?vVkJhTdAhdYDqQ7O4pLLGls+3i6PiH8f5jRZwyiiUSPoAWywr0Ov1uB/?=
+ =?Windows-1252?Q?GNp8MRAeP4Bygw=3D=3D?=
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -87,141 +142,103 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20260313-upstream_espi-v1-5-9504428e1f43@aspeedtech.com>
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 04ce9ce0-89c2-4c39-01ff-08de863164c0
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Mar 2026 03:33:03.4103
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: hn+ByMwdpHiUIQ4Ven954y2aOZWLHuFiWfda/YnV+OcnGqlFoDscMF9o6Jdym0snzyo609hf/12ReUHSgkzQhC8eQYqagN7OVNfJ/0c7FV8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB6438
 
-Hi aspeedyh,
-
-kernel test robot noticed the following build errors:
-
-[auto build test ERROR on 0257f64bdac7fdca30fa3cae0df8b9ecbec7733a]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/aspeedyh/dt-bindings-soc-aspeed-Add-AST2600-eSPI-controller/20260315-101647
-base:   0257f64bdac7fdca30fa3cae0df8b9ecbec7733a
-patch link:    https://lore.kernel.org/r/20260313-upstream_espi-v1-5-9504428e1f43%40aspeedtech.com
-patch subject: [PATCH 5/7] soc: aspeed: Add eSPI flash channel support
-config: m68k-allyesconfig (https://download.01.org/0day-ci/archive/20260320/202603200904.M00MLkjz-lkp@intel.com/config)
-compiler: m68k-linux-gcc (GCC) 15.2.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260320/202603200904.M00MLkjz-lkp@intel.com/reproduce)
-
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202603200904.M00MLkjz-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   drivers/soc/aspeed/espi/ast2600-espi.c: In function 'ast2600_espi_flash_reset':
->> drivers/soc/aspeed/espi/ast2600-espi.c:137:16: error: implicit declaration of function 'FIELD_PREP' [-Wimplicit-function-declaration]
-     137 |         reg |= FIELD_PREP(ESPI_CTRL_FLASH_TAFS_MODE, flash->tafs.mode);
-         |                ^~~~~~~~~~
-   drivers/soc/aspeed/espi/ast2600-espi.c: In function 'ast2600_espi_flash_remove':
-   drivers/soc/aspeed/espi/ast2600-espi.c:172:35: warning: variable 'flash' set but not used [-Wunused-but-set-variable]
-     172 |         struct aspeed_espi_flash *flash;
-         |                                   ^~~~~
-   drivers/soc/aspeed/espi/ast2600-espi.c: In function 'ast2600_espi_flash_get_hdr':
->> drivers/soc/aspeed/espi/ast2600-espi.c:194:20: error: implicit declaration of function 'FIELD_GET' [-Wimplicit-function-declaration]
-     194 |         hdr->cyc = FIELD_GET(ESPI_FLASH_RX_CTRL_CYC, reg);
-         |                    ^~~~~~~~~
-
-
-vim +/FIELD_PREP +137 drivers/soc/aspeed/espi/ast2600-espi.c
-
-   111	
-   112	static void ast2600_espi_flash_reset(struct aspeed_espi *espi)
-   113	{
-   114		struct aspeed_espi_flash *flash;
-   115		u32 reg;
-   116	
-   117		flash = &espi->flash;
-   118	
-   119		writel(ESPI_INT_EN_FLASH, espi->regs + ESPI_INT_EN_CLR);
-   120		writel(ESPI_INT_STS_FLASH, espi->regs + ESPI_INT_STS);
-   121	
-   122		reg = readl(espi->regs + ESPI_CTRL);
-   123		reg &= ~(ESPI_CTRL_FLASH_TX_SW_RST
-   124			 | ESPI_CTRL_FLASH_RX_SW_RST
-   125			 | ESPI_CTRL_FLASH_TX_DMA_EN
-   126			 | ESPI_CTRL_FLASH_RX_DMA_EN
-   127			 | ESPI_CTRL_FLASH_SW_RDY);
-   128		writel(reg, espi->regs + ESPI_CTRL);
-   129	
-   130		udelay(1);
-   131	
-   132		reg |= (ESPI_CTRL_FLASH_TX_SW_RST | ESPI_CTRL_FLASH_RX_SW_RST);
-   133		writel(reg, espi->regs + ESPI_CTRL);
-   134	
-   135		flash->tafs.mode = TAFS_MODE_SW;
-   136		reg = readl(espi->regs + ESPI_CTRL) & ~ESPI_CTRL_FLASH_TAFS_MODE;
- > 137		reg |= FIELD_PREP(ESPI_CTRL_FLASH_TAFS_MODE, flash->tafs.mode);
-   138		writel(reg, espi->regs + ESPI_CTRL);
-   139	
-   140		if (flash->dma.enable) {
-   141			writel(flash->dma.tx_addr, espi->regs + ESPI_FLASH_TX_DMA);
-   142			writel(flash->dma.rx_addr, espi->regs + ESPI_FLASH_RX_DMA);
-   143	
-   144			reg = readl(espi->regs + ESPI_CTRL)
-   145			      | ESPI_CTRL_FLASH_TX_DMA_EN
-   146			      | ESPI_CTRL_FLASH_RX_DMA_EN;
-   147			writel(reg, espi->regs + ESPI_CTRL);
-   148		}
-   149	
-   150		writel(ESPI_INT_EN_FLASH_RX_CMPLT, espi->regs + ESPI_INT_EN);
-   151	
-   152		reg = readl(espi->regs + ESPI_CTRL) | ESPI_CTRL_FLASH_SW_RDY;
-   153		writel(reg, espi->regs + ESPI_CTRL);
-   154	}
-   155	
-   156	int ast2600_espi_flash_probe(struct aspeed_espi *espi)
-   157	{
-   158		u32 regs;
-   159	
-   160		regs = readl(espi->regs + ESPI_STS);
-   161		if (regs & (ESPI_STS_FLASH_TX_BUSY | ESPI_STS_FLASH_RX_BUSY)) {
-   162			dev_warn(espi->dev, "eSPI flash channel is busy, deferring...\n");
-   163			return -EPROBE_DEFER;
-   164		}
-   165	
-   166		ast2600_espi_flash_reset(espi);
-   167		return 0;
-   168	}
-   169	
-   170	int ast2600_espi_flash_remove(struct aspeed_espi *espi)
-   171	{
-   172		struct aspeed_espi_flash *flash;
-   173		u32 reg;
-   174	
-   175		flash = &espi->flash;
-   176	
-   177		writel(ESPI_INT_EN_FLASH, espi->regs + ESPI_INT_EN_CLR);
-   178	
-   179		reg = readl(espi->regs + ESPI_CTRL);
-   180		reg &= ~(ESPI_CTRL_FLASH_TX_DMA_EN
-   181			 | ESPI_CTRL_FLASH_RX_DMA_EN
-   182			 | ESPI_CTRL_FLASH_SW_RDY);
-   183		writel(reg, espi->regs + ESPI_CTRL);
-   184	
-   185		return 0;
-   186	}
-   187	
-   188	int ast2600_espi_flash_get_hdr(struct aspeed_espi *espi,
-   189				       struct espi_comm_hdr *hdr)
-   190	{
-   191		u32 reg, len;
-   192	
-   193		reg = readl(espi->regs + ESPI_FLASH_RX_CTRL);
- > 194		hdr->cyc = FIELD_GET(ESPI_FLASH_RX_CTRL_CYC, reg);
-   195		hdr->tag = FIELD_GET(ESPI_FLASH_RX_CTRL_TAG, reg);
-   196		len = FIELD_GET(ESPI_FLASH_RX_CTRL_LEN, reg);
-   197		hdr->len_h = (len >> 8) & 0xff;
-   198		hdr->len_l = len & 0xff;
-   199	
-   200		return 0;
-   201	}
-   202	
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+On Mon, Mar 16, 2026 at 11:00:47AM +0800, Billy Tsai wrote:=0A=
+> > Add helpers to generate channel masks and enable multiple ADC channels=
+=0A=
+> > according to the device model's channel count.=0A=
+=0A=
+> ...=0A=
+=0A=
+> > +=0A=
+=0A=
+> (1)=0A=
+=0A=
+> > +/*=0A=
+> > + * Enable multiple consecutive channels starting from channel 0.=0A=
+> > + * This creates a bitmask for channels 0 to (num_channels - 1).=0A=
+> > + * For example: num_channels=3D3 creates mask 0x0007 (channels 0,1,2)=
+=0A=
+> > + */=0A=
+> > +static inline u32 aspeed_adc_channels_mask(unsigned int num_channels)=
+=0A=
+> > +{=0A=
+> > +     if (num_channels =3D=3D 0)=0A=
+> > +             return 0;=0A=
+=0A=
+> > +     if (num_channels >=3D 16)=0A=
+> > +             return GENMASK(15, 0);=0A=
+> > +     return GENMASK(num_channels - 1, 0);=0A=
+=0A=
+> This entire function can be folded into=0A=
+> =0A=
+>         return BIT(min(num_channels, 16U)) - 1;=0A=
+> =0A=
+> Or=0A=
+> =0A=
+>         if (num_channels > 16)=0A=
+>                 return GENMASK(15, 0);=0A=
+> =0A=
+>         return BIT(num_channels) - 1;=0A=
+=0A=
+Got it. I will replace it to later one.=0A=
+=0A=
+=0A=
+> > +}=0A=
+=0A=
+> > +/*=0A=
+> > + * Helper function to enable multiple channels in the control register=
+=0A=
+> > + */=0A=
+> > +static inline u32 aspeed_adc_enable_channels(unsigned int num_channels=
+)=0A=
+> > +{=0A=
+> > +     return FIELD_PREP(ASPEED_ADC_CTRL_CHANNEL, aspeed_adc_channels_ma=
+sk(num_channels));=0A=
+> > +}=0A=
+=0A=
+> > +=0A=
+=0A=
+> One of these (see 1 above) new blank lines should be rather added in the =
+previous patch.=0A=
+=0A=
+Good catch, I=92ll avoid this blank lines problem.=0A=
+=0A=
+> >  /* Battery sensing is typically on the last channel */=0A=
+> >  #define ASPEED_ADC_BATTERY_CHANNEL           7=0A=
+=0A=
+...=0A=
+=0A=
+> >       /* Start all channels in normal mode. */=0A=
+> > -     adc_engine_control_reg_val =3D=0A=
+> > -             readl(data->base + ASPEED_REG_ENGINE_CONTROL);=0A=
+> > -     adc_engine_control_reg_val |=3D ASPEED_ADC_CTRL_CHANNEL;=0A=
+> > +     adc_engine_control_reg_val =3D readl(data->base + ASPEED_REG_ENGI=
+NE_CONTROL);=0A=
+=0A=
+> > +     adc_engine_control_reg_val |=3D=0A=
+> > +             aspeed_adc_enable_channels(aspeed_adc_get_active_channels=
+(data));=0A=
+=0A=
+> Why not FIELD_MODIFY()?=0A=
+=0A=
+Use FIELD_MODIFY() for the channel field update is more better.=0A=
+=0A=
+> >       writel(adc_engine_control_reg_val,=0A=
+> >              data->base + ASPEED_REG_ENGINE_CONTROL);=0A=
+=0A=
+Thanks=0A=
+=0A=
+Billy Tsai=
 
