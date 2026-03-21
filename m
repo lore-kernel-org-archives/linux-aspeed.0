@@ -1,65 +1,65 @@
-Return-Path: <linux-aspeed+bounces-3732-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3733-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CC841094486
-	for <linux-aspeed@archiver.kernel.org>; Sat, 21 Mar 2026 15:50:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54F831094489
+	for <linux-aspeed@archiver.kernel.org>; Sat, 21 Mar 2026 15:51:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fdP5S595Vz2yds;
-	Sun, 22 Mar 2026 02:50:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774108204;
-	cv=none; b=auBJhBRqTZ8QPk7NDXnQTNovBhTrlQZ8GXE/weux/v2HuLOolSKuW5y9WnGNdp1HqUgIswOpDaic64HK/C8LwTwe9zRQxT48vOrRc3Iy3JoTe16Qgb1MT9jclrnmRiVS3RwqUBNC9VI0xuxRTCIPZO10KagpKXJmyY5z5bu+dRm0yxlmCQVWtDTdtQvSzHgzI5bPK6LYp5cLAkGILIH02krCHVcd1fIa8Iy3jdQs5AN2T06j39COLSxp5sGfs+V/h3604DXM+q7mxPoEm/hEKiLo9Bjei0UCaJ5rwCx0/YKB8coyo8n1b6F4GJ4WzTsl0ug9Nd07HA3h9tFOUFW4ZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fdP7J6Hcsz2yfs;
+	Sun, 22 Mar 2026 02:51:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774108300;
+	cv=none; b=QKVT/AyK4wOGQvSwyPvgZVlEgT8GWAMLkjIPf78HZ5tBmYizfTaLrat0Ex2ZL/nufstFSuVmHXcGb2gc9gKJYNfKXK26ZWwUwgyXjFSqgifp6QDE92yTIzLexlzAhbcjP4vxI0SP/rFzMw79Y51ZXkKE7lz0TwcSk70G2hnsp5SW9TNIaKOdO50bM4JtkjfDiGUZNpfvwNAPPQ0APK67HjDzLvyz5WKMG7lq2Arl3F6HSJtAE8jLkYNYhqcQmJ1SWPiLElLN7lgpLX0AFRZfFu6bgUHigblrpqqRlTnq0Dj9FS5h+EJ+YqgqFh9vZGuPzpi/PnFuIMn0Ga4UOQNxRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774108204; c=relaxed/relaxed;
-	bh=BztVlr52jyDB/PMooczhe78cc61qz4qlqThyVP3NYvo=;
+	t=1774108300; c=relaxed/relaxed;
+	bh=sG4XhuqDJEdIQMND5WpkEc5bLbq0ERYW/OUxAG8RzSw=;
 	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=RzpPy/kyVqLJKZHS9T236ItqVu9odcNrZ3qW8E/PDnMSFlyMJFWo60QoAmQZWohQgEL/M1puG/JeuAhctb5cCRQdu4aUsrvCqIAm6Fz9QEyNlFOJpCwzCl8sOUsNCQB8qHP+FdmfWEDVOxfWj+vV4MBw8AOLzZI06wVLYjP2R+XQpPxHKTrAQu44PVCd2aF5JrnzeKfjVcJjcmdNb0QY1i3J2Ww6KQduRhJO7dt+i111kXDYhsBXj6c/eFXp3D7JWgdRc6pGaFuQ2r8KZxuqvuRUKkHgc5P7nvRiHFZoIjexd+uvWYwq90BCUqqP0tEOHe/ePa4fUMGoGLjNdHN88Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e9dAXYUD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version:Content-Type; b=HvudB9po0lrOv9oCJRSjpHybMutFKzKiAn1lBOGFfYtHYxj/TdA+zuDWrF9f3IfZzyXiGvU0RPyu1PQSDZta6wW7UbDT9052vGQPJzoE3m5TwbUhHow5ozLAiRlRc54Nje+3h5/V9j4vu4YABk15nuWIjJ4BCs5tfAywln/Sg5LxUJauDlRI2TU1lur40443px/oBgNYN1lg46SzfPt00N6uGtf2x/WEwklvVNrDU4/0VX2k43VeDyPbPAy1hj8AuE1n5yV+SSqjedGEwwHkAuDWxS6m6PwvuLZPYIMiZV2g8vZ2AMzQKO1PKjp0tgA6W7DFoUDEptnZtVOz+fDw8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S615ZWhJ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e9dAXYUD;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S615ZWhJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jic23@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fdP5S09d7z2yZN
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 22 Mar 2026 02:50:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fdP7J1rL5z2yfl
+	for <linux-aspeed@lists.ozlabs.org>; Sun, 22 Mar 2026 02:51:40 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 16AAE442F7;
-	Sat, 21 Mar 2026 15:50:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49918C19421;
-	Sat, 21 Mar 2026 15:49:56 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4F1EA60097;
+	Sat, 21 Mar 2026 15:51:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C045C19421;
+	Sat, 21 Mar 2026 15:51:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774108200;
-	bh=kbn1WK1P0CLV3g9NxTzimggMcG6TtSf4XHKsAXdiH8c=;
+	s=k20201202; t=1774108297;
+	bh=iJK6gXRLy8snWp9xWdLSHDh/M81apV4w9OBDnP6so3c=;
 	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=e9dAXYUDAsN9v4x1AadURqYSlSWa9Y7mxzZIDz25fB/CvA9Fyj7XD1b8lCM9cyKMb
-	 F9rKRu8DkNZUirh+lv4LOJ/xxoxthjOn0mXZRo49DpIcI7mldLM7DvvygCk8RztYhv
-	 d3Koaq1whNjtTUgG2lFGA6rfl0j3AqAiIQlxwwZeM2itrO1aQEDY6rdQayBSLFY4jV
-	 KdQ+p/bWaAKz5+B1wT6Oz/LcZIZlM+DgBADkf6carn+i0Ct0isAYEjuwIxZYfTnf7C
-	 +juQM6z2gUQ+iqOOkPzxxjzQnqohMQvNin2+WXg7FyqqK5FABtdD8feGRyz7b+oEYL
-	 f89WoEbIKQ/Zw==
-Date: Sat, 21 Mar 2026 15:49:51 +0000
+	b=S615ZWhJmxbdpU+bgacRtU8dgRb16UnPmsyiRB3L6XZW+D+RcW/f/dzvmE92oVsXX
+	 do7A2ayfRyx3Gx2wPKf31th8IWvMlFRWxVAhgzm8t2cYvWYEg1Pe5kQZVY3Sfd4Iuq
+	 9fwlxfE9ycpiUsNH2c4xej/TemgNxyF+fctZdo35/e8YaGAbKOCobDHUymeNrfykPc
+	 SJ5ZD23GsrUVCNhXe7K1tVkg7HrXSmETfmXQWi1eTU/ZLBxoSLPYxPjQH5iAZjT/JC
+	 mAHEQOoLvWi07QJYHamGlARrG2vRz6P0MP6FVjMLXL68o8a+fiJGHB3t7n5nChdg4o
+	 6RHej1iQmb4dg==
+Date: Sat, 21 Mar 2026 15:51:27 +0000
 From: Jonathan Cameron <jic23@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@intel.com>
 Cc: Billy Tsai <billy_tsai@aspeedtech.com>, David Lechner
  <dlechner@baylibre.com>, Nuno =?UTF-8?B?U8Oh?= <nuno.sa@analog.com>, Andy
  Shevchenko <andy@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
  <andrew@codeconstruct.com.au>, linux-iio@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, morris_mao@aspeedtech.com
-Subject: Re: [PATCH v3 3/4] iio: adc: aspeed: Replace mdelay() with fsleep()
- for ADC stabilization delay
-Message-ID: <20260321154951.632ef7d9@jic23-huawei>
-In-Reply-To: <ab0iDUp6t2LuGlAA@ashevche-desk.local>
+Subject: Re: [PATCH v3 4/4] iio: adc: aspeed: Reserve battery sensing
+ channel for on-demand use
+Message-ID: <20260321155127.3e63fa47@jic23-huawei>
+In-Reply-To: <ab0ifBMNuY4BwqA5@ashevche-desk.local>
 References: <20260320-adc-v3-0-bc0eac04ef7c@aspeedtech.com>
-	<20260320-adc-v3-3-bc0eac04ef7c@aspeedtech.com>
-	<ab0iDUp6t2LuGlAA@ashevche-desk.local>
+	<20260320-adc-v3-4-bc0eac04ef7c@aspeedtech.com>
+	<ab0ifBMNuY4BwqA5@ashevche-desk.local>
 X-Mailer: Claws Mail 4.4.0 (GTK 3.24.51; x86_64-pc-linux-gnu)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -77,26 +77,39 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
-On Fri, 20 Mar 2026 12:31:41 +0200
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
+On Fri, 20 Mar 2026 12:33:32 +0200
+Andy Shevchenko <andriy.shevchenko@intel.com> wrote:
 
-> On Fri, Mar 20, 2026 at 01:46:37PM +0800, Billy Tsai wrote:
-> > The ADC stabilization delays in compensation mode and battery sensing
-> > mode do not require atomic context. Using mdelay() here results in
-> > unnecessary busy waiting.
-> > 
-> > Replace mdelay(1) with fsleep(1000) to allow the scheduler to run other
-> > tasks while waiting for the ADC to stabilize.
-> > 
-> > Also fix a minor typo in the comment ("adc" -> "ADC").  
+> On Fri, Mar 20, 2026 at 01:46:38PM +0800, Billy Tsai wrote:
+> > For controllers with battery sensing capability (AST2600/AST2700), the
+> > last channel uses a different circuit design optimized for battery
+> > voltage measurement. This channel should not be enabled by default
+> > along with other channels to avoid potential interference and power
+> > efficiency issues.
+> > This ensures optimal power efficiency for normal ADC operations while
+> > maintaining full functionality when battery sensing is needed.  
 > 
-> > Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>  
 > 
-> I haven't suggested the idea, I only suggested to use fsleep() for the purpose.
-Dropped the tag.
+> ...
+> 
+> > +			/*
+> > +			 * After enable a new channel need to wait some time for ADC stable  
+> 
+> Missed period at the end. And you probably wanted to say
+> "...for ADC to stabilize."
+Tweaked and tidied up line wrap.
 
+Series applied to the togreg branch of iio.git.
 
+thanks,
 
+Jonathan
+
+> 
+> > +			 * Experiment result is 1ms.
+> > +			 */
+> > +			fsleep(1000);
+> > +		}  
 > 
 
 
