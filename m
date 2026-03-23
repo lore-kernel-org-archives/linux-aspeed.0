@@ -1,86 +1,40 @@
-Return-Path: <linux-aspeed+bounces-3735-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3736-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 207ECD58CB0
-	for <linux-aspeed@archiver.kernel.org>; Sun, 22 Mar 2026 23:02:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6223D58CBE
+	for <linux-aspeed@archiver.kernel.org>; Mon, 23 Mar 2026 02:07:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ffBf20Bwbz2ySW;
-	Mon, 23 Mar 2026 10:02:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::334"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774220553;
-	cv=none; b=bNvo+11Bk9TmG93VQ2BSZNQ1IA0zNHUTtQyB4geU3bPJX59HzvGVPe3Xhox67Hb703tkR4/E3KvlPWijdSPHijCwMLYV0iQsNycFXK+QyOWDJgm4TN84q6OB3U57c9yaLTUsChLB6m+RPRcrmMcYurL5SQjum+lgLE7XOUF1A6X1KA+Mz1C48S7fx/cF5IKrT4el9WFb/Afsu4up46otu7qB3Aim2apkJPlgiyfFoTkNnL/WlaN3+ZMEOMWwGPyFV/ge29KegHxR0rGCJ+BxmyIoffUL5fwnEwPq1GJdMub9iR29hLkR1EH+maPU4ehYqkIzVuGOtWW4ldrLQQXnXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ffGlN0d0Mz2ySb;
+	Mon, 23 Mar 2026 13:07:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774231647;
+	cv=none; b=j5OyO+LTje5tz83MLnzT8N8IGrTHlOLoBnQUJ6+KBQVn+R1K5i29RtGben8vZnuAcByNLPNHxp95PXW9gFSny8irXSPpX6eKRkl35xDc5QYQfs1mqyfmXtiLdzS6au/6mHH6WkGBuouEWu5r+gPTR0hyAMKP2g4eGAB8IyzPbc6ntDbZPYwy+N4vG3He+qwo7pu8jZb0Yxlw4xvkdw51l1NZ3bNg3iTyXJVHVMxgO5YPr8JqMSXIdmVEdyA+zhpcPTEArRWCyX+xd+qeEyayoj+7WNGz/MEBNFFsMumVefpX6vKxl7jzFrX1p0DvkunfKebDJvqycFWHAHyAcZn1sQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774220553; c=relaxed/relaxed;
-	bh=kU0acvfqOp1dQM/3PUz94K3T5EGGl6FMD6BKWt5VIr0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YC3ESIAwcjwmZLp4G2t7P5o9HTDnL7BLMBfYweTH+/FL2dwthzjzzky+7l8/KpSlNjd+Io8tIOM0+JcicbUnDcs6QgH03TI60ttYQBXa1nczPBdLfkJuyjiJlRQdbsjCLzkH4vXkZGFaRMOiDB81R1oisLlVJm0gAoGHGz9gWD4hzyfWdvkVEsyXiSqqhhtXUfbiOk5q3QUces+p8Ckc9i6Jm5tjnEAa9NoMmoirLPTVx4dgN7wepUS6otEp8aqiylfV2PtmTc6VX/ZBLxl8UR2gi6K/blZQsAisHNGUntKVUJJHsrd1mjirQJufoEvLlYBB16M84gWNCr4E2SdKiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=G4NuTnrW; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=G4NuTnrW;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::334; helo=mail-wm1-x334.google.com; envelope-from=julianbraha@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1774231647; c=relaxed/relaxed;
+	bh=NkhJEyh5Uzq0uhuV70a6McEFwh3uW6CX6wqiiT27roA=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=bPFzfZ8GRKFreAG4ZyvFmWDtzCMsuiW5jRcLAOzrTCr3Yixln1+4Em6cwAvZQRJvl5Z5xsQ0m8ogC8gDEFFsvqc+G8meIA6EaZqK8EjsB68rRTpV6S3mAP8R7xqSTJrn7+sDAcXj6SKgjztd9CUuBuAMDDTpqf3JCjqAHFLNDVNCk+RFsbKXxkZR5vS+ErJ1gBWQEVymo72DLf+O49nU33PPBIYlFoRcqpglq9bNeavZqUq5ROX4H9bttJOol0NiLUieE/QsPUKVbLvfuJzTyMzvAB1keP2tXpM4oxRO4Zsu6iCdvzfOyl/QqYJFTgpl+n67+javSR+RenuS5/RxBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffBf03RJ3z2xQ1
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 23 Mar 2026 10:02:31 +1100 (AEDT)
-Received: by mail-wm1-x334.google.com with SMTP id 5b1f17b1804b1-48558d6ef83so20835925e9.3
-        for <linux-aspeed@lists.ozlabs.org>; Sun, 22 Mar 2026 16:02:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1774220547; x=1774825347; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:from:to:cc:subject:date:message-id:reply-to;
-        bh=kU0acvfqOp1dQM/3PUz94K3T5EGGl6FMD6BKWt5VIr0=;
-        b=G4NuTnrWr7FuUk6KH7ZSBu/83xrxeOCnGNiZc0EiTJZKVB/iRu5bGgVoUBV1kSphi4
-         QZEYIX5Mriapk/l0+PuJ4qpmlRiUSsnSA3onimTJdIYqNIR0z+plE92rmU1W61ZtpWcg
-         D2wxtkmWv9IKUx7t80aDgUpURA7VZDjQJNcKXFFoI+Yn1r4xZSgMBm59xWwvbKfT9MfE
-         QHMOOSjKzc0ZZ/RQEIICqEPz1xqpUc2E9v4gQmzsLfMw1cjPGRdy/oiPS/PKzdFu0wFr
-         W8kqJ91+ekC/kPlZYdaP47k7D4sNqEwJjkUCH1qqB9xrHyIi2ALU67a5rvsTYk5BiHJZ
-         +XHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1774220547; x=1774825347;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:sender:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kU0acvfqOp1dQM/3PUz94K3T5EGGl6FMD6BKWt5VIr0=;
-        b=USRHsFD5FG+OtVtLz2DN57/Y0ybnBpJBKS3ArJTdW9fcCMPURC/HOEFxaJPkJeEudF
-         7hnuy30NA+lyK8BTI/hbmfx8ij/FZ/a+LsI6vElcE+HWA/sN8ULv4sbHYiMN6rQX24z4
-         M21qblggK8ozq9CdI5HqM5RevjC7JsfptWNlE6XAfSSUoHeBkDJ7WK+OAcUGn9+HfGEB
-         NnY47P0slnFJwRKNBNI0VDYgAEQs735mzMK2iQL14uZ9K+4OVV5RPdG++YSnr2Zs/dTh
-         WSoU68fHlnsB3zvTZYCcjosOynRRygBF/rJb+uAqeJ+Wp4S/hJOaFz6eceMYWO3w04ew
-         pzXA==
-X-Forwarded-Encrypted: i=1; AJvYcCVEX1TWbh5RmFtbUyLuKh4XP3WMqDBjVmpv8bb0CG8ilVPO/0M+9Fl0+n0c/naQqOlPujmM/QPj+SjJmOI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwWsMKaivQym4DlHGy4ktsTrWEj2mGHBBIqumYGsQ983Zufn1Jg
-	YgiFfDS1/OE7K2eZPfHN+GXauO6IP+jyePqJxA2ugsAv/5zef0ppASAd
-X-Gm-Gg: ATEYQzwDTsXDT4SnxR2qbtTMkmOqbYJjfY/XozUIBGdMcaIeuIxjqfq5UU65oQ6J6o+
-	lRZVb9/0XJ97mY9plIyf4Jbhoy96mRRa7ZraHf5eNh50p8DjPCNwPOn4dJrpCvjUpgpAqNvSoQv
-	3j5oMrsFgNk/CqkJqI0BGFrQu93fNqnx0HJaB0vi2PYQYKeOgaojwllel1A1ogSIKoW7fiS411w
-	QaN8d6Q1Dl1ntCpLvJzEpEH6cUDdU3lc0OdCTQEBL5Ku0HhvctGnk2A5qK93tr2rrBaoeEHTw7I
-	lHQHN/OV5AvkpvRaTDR7kvhOfXYPF8PLtsOorn28yPNF9vaedFWiTORTip3CkhHz9pFdhKE8Lyq
-	Ueq56Rkd2AlR3/LEYCrMH3miEFFMKXJYUZTapVSvJ2DdIZoir8xDoYLWUKa3fQ4PfAmjfoQ736z
-	cd6qRWXqWQPkNh1bmtBp7avXpWfrll/9cU9DZcLy7clRbc7vni9VsegkA=
-X-Received: by 2002:a05:600c:4705:b0:485:3a86:6392 with SMTP id 5b1f17b1804b1-486fee0d816mr141768745e9.20.1774220547399;
-        Sun, 22 Mar 2026 16:02:27 -0700 (PDT)
-Received: from nixos-office (195-23-151-163.net.novis.pt. [195.23.151.163])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-486fc4d90f4sm325617155e9.1.2026.03.22.16.02.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Mar 2026 16:02:26 -0700 (PDT)
-Sender: Julian Braha <julian.braha@gmail.com>
-From: Julian Braha <julianbraha@gmail.com>
-To: joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Julian Braha <julianbraha@gmail.com>
-Subject: [PATCH] soc: aspeed: cleanup dead default for ASPEED_SOCINFO
-Date: Sun, 22 Mar 2026 23:02:23 +0000
-Message-ID: <20260322230223.1393885-1-julianbraha@gmail.com>
-X-Mailer: git-send-email 2.51.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ffGlL641Bz2xd6;
+	Mon, 23 Mar 2026 13:07:25 +1100 (AEDT)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Mon, 23 Mar
+ 2026 10:07:07 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Mon, 23 Mar 2026 10:07:07 +0800
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+Subject: [PATCH v3 0/2] Add AST2700 support for aspeed sdhci
+Date: Mon, 23 Mar 2026 10:07:06 +0800
+Message-ID: <20260323-sdhci-v3-0-93555b8f6411@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -94,31 +48,62 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAEqgwGkC/2WMQQrCMBBFr1JmbSSTQGpceQ9xkSZTMwvbkpSgl
+ N7dtCCILt/nv7dApsSU4dwskKhw5nGooA8N+OiGOwkOlUFJZaRGLXKInoUyNmi0fegCQf1OiXp
+ +7p3rrXLkPI/ptWcLbutvoaCQwqInh9afnGkvLk9EYSYfj358wJYp6lttP6qqqrYd9tJoabD7U
+ 9d1fQPxWzSv2gAAAA==
+X-Change-ID: 20260313-sdhci-269d319fdbde
+To: Andrew Jeffery <andrew@codeconstruct.com.au>, Ulf Hansson
+	<ulf.hansson@linaro.org>, Rob Herring <robh@kernel.org>, Krzysztof Kozlowski
+	<krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	<joel@jms.id.au>, Ryan Chen <ryanchen.aspeed@gmail.com>, Adrian Hunter
+	<adrian.hunter@intel.com>, Philipp Zabel <p.zabel@pengutronix.de>
+CC: Andrew Jeffery <andrew@aj.id.au>, <linux-aspeed@lists.ozlabs.org>,
+	<openbmc@lists.ozlabs.org>, <linux-mmc@vger.kernel.org>,
+	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774231627; l=1190;
+ i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
+ bh=uo2bg2NUBtc2eG09kK4x0w8IEuMmJWwOMwtRMs1f0gw=;
+ b=DOxpUJhUWPvZiZnyDHwvUlKbEHWZ0XJsLkgoCaw4ZSon8wUAM+MOZJN6bpCF2VGLLUD6Fo0EB
+ 1PAoHFwvhWfC00P66r4r+mBQXAlOCRsZE8HrwDEFMHSi2939qpxPv4e
+X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
+ pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-The same kconfig 'default' statement appears twice for ASPEED_SOCINFO,
-which is unnecessary.
+This series add aspeed sdhci support for AST2700. The AST2700 sdhci
+requires an reset. This series updates the binding and driver to
+support reset requirements.
 
-This dead code was found by kconfirm, a static analysis tool for Kconfig.
-
-Signed-off-by: Julian Braha <julianbraha@gmail.com>
+Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
- drivers/soc/aspeed/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+Changes in v3:
+- 1/2 Add items list const for ast2700 ast2600 compatible
+- 1/2 Move if/then/else block after required: (per example-schema)
+- Link to v2: https://lore.kernel.org/r/20260317-sdhci-v2-0-39b1f063061b@aspeedtech.com
 
-diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
-index f579ee0b5afa..63a656449a1a 100644
---- a/drivers/soc/aspeed/Kconfig
-+++ b/drivers/soc/aspeed/Kconfig
-@@ -46,7 +46,6 @@ config ASPEED_P2A_CTRL
- 
- config ASPEED_SOCINFO
- 	bool "ASPEED SoC Information driver"
--	default ARCH_ASPEED
- 	select SOC_BUS
- 	default ARCH_ASPEED
- 	help
+Changes in v2:
+- 1/2 use items for ast2700 compatible.
+- 2/2 use devm_reset_control_get_optional_exclusive_deasserted for
+  reset.
+- Link to v1: https://lore.kernel.org/r/20260313-sdhci-v1-0-91cea19c8a67@aspeedtech.com
+
+---
+Ryan Chen (2):
+      dt-bindings: mmc: sdhci-of-aspeed: Add AST2700 compatible
+      mmc: sdhci-of-aspeed: Handle optional controller reset
+
+ .../devicetree/bindings/mmc/aspeed,sdhci.yaml      | 41 +++++++++++++++++-----
+ drivers/mmc/host/sdhci-of-aspeed.c                 |  6 ++++
+ 2 files changed, 39 insertions(+), 8 deletions(-)
+---
+base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
+change-id: 20260313-sdhci-269d319fdbde
+
+Best regards,
 -- 
-2.51.2
+Ryan Chen <ryan_chen@aspeedtech.com>
 
 
