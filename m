@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-3746-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3747-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78FD6F532C0
-	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Mar 2026 01:59:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A27B6F532C0
+	for <linux-aspeed@archiver.kernel.org>; Tue, 24 Mar 2026 01:59:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fftWM3Rz0z2yTQ;
-	Tue, 24 Mar 2026 12:59:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fftWN3nW2z2yks;
+	Tue, 24 Mar 2026 12:59:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774317551;
-	cv=none; b=I5efRJHD0xAoTM8Ahb1bVmP5YFLDsnYA2KJmKlgZRsV7rM6uJ5ZXQXFmO31tRLhzmO2UI0LRoe+TrEA/HHNqjbrYB6Ygk/2jJtDecfG6fUZQ48PqJ02fnpzs/na+CLtrCz3aH0sNmEO9j/xhi0sX42bnjTond92k6Uz/V3P/5T9rXVRGoFxs+ewbVDG63Rse0f0xL+aNOHhCQbkD4bAhpN2IiXIn8YW0Pn0BZAiRf0NHW8cI2Jl1BTQUjVCrbKwaZy+q0j/aWPQ1FLILRrvcuk5N6WjRZ2YdSP9GbStEdK0gUmsXQSu4RlkzByvO1UyDal1UBEI8NjuRP4w0B5bDCw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774317552;
+	cv=none; b=gUJNW+ffYujb0wSG7CysIT/XZm6P7HOON+umRCxDbNVcuYkUJh0h89lrS1wxCTPDFywX/Eyu+ke5k6D+VXfj/Ek3tB3kaOqCwmz+o43Vu7EWsjcPvGEvJX4oh6SKaX3G3emNqctm4rMH9rvWVj0RkyBbr4XNSMDn+cAjPudPzbv4T71jvjQZCIcNI95YYvlRWAoEsx5oXUNkVjvGoMgQUELWtPtwEThL9rcJQM+xh63J27uXWPmgzor1iEInFuXIEJfoWWT/IFKj/i4wU6X6sHe3mRFwL0jglKojG1oV46woC5EF1xnm0Ke8JripwAs0QRH24Izos1UlIe3JYgD5dQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774317551; c=relaxed/relaxed;
-	bh=vO8RHUpHDrY0vPh2yTFBSaWy2AgB5euBFQWy92djx48=;
+	t=1774317552; c=relaxed/relaxed;
+	bh=YyM5rRNjcVV3czh5+aRe7NOC3Lwt/0jnRpSysakwEY8=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=GQyUOdMnjtbipP8VYMS6W32puqxWbDMNYMuYfWRZFLsodJAXo12gPvggJMx2wxqy584k+Bit1AP0YBYRYMGc+GYR/0d05CXx4Iy9Wr9j5eIB8nHh3EpbpxRCJjGTv/i3SQsQUDNOG4/52lJlKa/ufw8y0VQVziM5K1RXshFeccTbLsf1fi5xu3ObDesCOPrYeyA1AIAqwJpU1gYiwqYvUMW9/qOYhScCX6OTuL5rP/FBnwJ/RBaXsD+Wjzxz5e6yieII8lvta8MbqdN1gi7YMCs8dh7iCQkIvz4l0fg1bL2LyVZkyTfZmuYSu84u44vUnS4jM2hXeTN1FsxugAK0kA==
+	 In-Reply-To:To:CC; b=N2rRrWmJ3IFSVdAahIeXw4PbnYJQae4vZ7wkLhthwgazIVryAuG+b30mjD5pDtAwORN8nuKsHOPj8pJmea58BRSBAz2LWcrFR4Cy0G1SLR4t3eIOL330q360HcNkEjxo1K6/UqRv53WyyQ8Jfi0xahLTKPjmBH92j7Afuol0KJT4hBfrBA5eBlcHcpI8kZLXDu/iBAF5anxbcPlC7koyOxF+DqHRrlnyTv9xyBjzNqlMLeU+oN0BPB7i/5znypN0SKi2gQ3OfqHElOtLlYcBbdH2zLw3ww9tq9gD6rFPVcooUVHxGO1Nnr4vOX2ikEw3l/tbdStknERM7eAAi5Tsag==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fftWL4lZTz2yj1;
-	Tue, 24 Mar 2026 12:59:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fftWM4kDhz2yk6;
+	Tue, 24 Mar 2026 12:59:11 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 24 Mar
@@ -33,9 +33,9 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Tue, 24 Mar 2026 09:58:50 +0800
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Tue, 24 Mar 2026 09:58:49 +0800
-Subject: [PATCH v4 1/2] dt-bindings: mmc: sdhci-of-aspeed: Add AST2700
- compatible
+Date: Tue, 24 Mar 2026 09:58:50 +0800
+Subject: [PATCH v4 2/2] mmc: sdhci-of-aspeed: Handle optional controller
+ reset
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -51,7 +51,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20260324-sdhci-v4-1-c8c2060ccb5c@aspeedtech.com>
+Message-ID: <20260324-sdhci-v4-2-c8c2060ccb5c@aspeedtech.com>
 References: <20260324-sdhci-v4-0-c8c2060ccb5c@aspeedtech.com>
 In-Reply-To: <20260324-sdhci-v4-0-c8c2060ccb5c@aspeedtech.com>
 To: Andrew Jeffery <andrew@codeconstruct.com.au>, Ulf Hansson
@@ -62,108 +62,67 @@ To: Andrew Jeffery <andrew@codeconstruct.com.au>, Ulf Hansson
 CC: Andrew Jeffery <andrew@aj.id.au>, <linux-aspeed@lists.ozlabs.org>,
 	<openbmc@lists.ozlabs.org>, <linux-mmc@vger.kernel.org>,
 	<devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+	<linux-kernel@vger.kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1774317530; l=2595;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774317530; l=1827;
  i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=ZR+85VvCpC5m0e0QbMD/12gDOgXWD3wC6lCYYqmGJ+Q=;
- b=BB04lkHYHRQ7uG/4q6WQYc1QkJ7KkNyD5olofxQaL3Bor+a7Mrq+gGGfyHaYOP7345MtBNP28
- aZ3f5YB6I9SDoMgQEr2MWMcRLtRNwm1+eEUjXjfYKPANz+0ZvdT62++
+ bh=yTcAx3NAX05a2PPdk/ad8cZuE2IR4g+b9LdPiaLiA/A=;
+ b=MrgtEjbFQCFNWXmMIdrLZxoiBifWfguS1h4SY1cutKwXP3miq5WzhUXtZrjM6Bmi03aNYkmWg
+ Av7r8hBQHHkChhAr4t/wfNJvImB/FeLmU2szrgd/v+1n0jxaabx+eTE
 X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
  pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-AST2700 SDHCI controller is fully compatible with AST2600.
+Get the optional reset line for the ASPEED SD controller during probe by
+using devm_reset_control_get_optional_exclusive_deasserted().
 
-However, it is necessary to take the AST2700 SD controller out of
-reset, so require the 'resets' property.
+This allows platforms such as AST2700, which require the SD controller
+to be taken out of reset before use, to work with the existing driver.
 
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Acked-by: Adrian Hunter <adrian.hunter@intel.com>
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 ---
-Changes in v3:
-- Add items list const for ast2700 ast2600 compatible
-- Move if/then/else block after required: (per example-schema)
+Changes in v4:
+- rebase git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git
+  next branch fix the conflit.
 Changes in v2:
-- add missing blank line
-- modify ast2700 compatible items const
+- use devm_reset_control_get_optional_exclusive_deasserted replace
+  reset_control_get_optional_exclusive.
+- add include reset.h
 ---
- .../devicetree/bindings/mmc/aspeed,sdhci.yaml      | 41 +++++++++++++++++-----
- 1 file changed, 33 insertions(+), 8 deletions(-)
+ drivers/mmc/host/sdhci-of-aspeed.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-index d24950ccea95..e4a9c2810893 100644
---- a/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-+++ b/Documentation/devicetree/bindings/mmc/aspeed,sdhci.yaml
-@@ -22,10 +22,15 @@ description: |+
+diff --git a/drivers/mmc/host/sdhci-of-aspeed.c b/drivers/mmc/host/sdhci-of-aspeed.c
+index 4296def69436..f5d973783cbe 100644
+--- a/drivers/mmc/host/sdhci-of-aspeed.c
++++ b/drivers/mmc/host/sdhci-of-aspeed.c
+@@ -13,6 +13,7 @@
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
++#include <linux/reset.h>
+ #include <linux/spinlock.h>
  
- properties:
-   compatible:
--    enum:
--      - aspeed,ast2400-sd-controller
--      - aspeed,ast2500-sd-controller
--      - aspeed,ast2600-sd-controller
-+    oneOf:
-+      - enum:
-+          - aspeed,ast2400-sd-controller
-+          - aspeed,ast2500-sd-controller
-+          - aspeed,ast2600-sd-controller
-+      - items:
-+          - const: aspeed,ast2700-sd-controller
-+          - const: aspeed,ast2600-sd-controller
-+
-   reg:
-     maxItems: 1
-     description: Common configuration registers
-@@ -38,6 +43,9 @@ properties:
-     maxItems: 1
-     description: The SD/SDIO controller clock gate
+ #include "sdhci-pltfm.h"
+@@ -519,6 +520,7 @@ static struct platform_driver aspeed_sdhci_driver = {
+ static int aspeed_sdc_probe(struct platform_device *pdev)
  
-+  resets:
-+    maxItems: 1
-+
- patternProperties:
-   "^sdhci@[0-9a-f]+$":
-     type: object
-@@ -46,10 +54,15 @@ patternProperties:
+ {
++	struct reset_control *reset;
+ 	struct device_node *parent;
+ 	struct aspeed_sdc *sdc;
+ 	int ret;
+@@ -529,6 +531,10 @@ static int aspeed_sdc_probe(struct platform_device *pdev)
  
-     properties:
-       compatible:
--        enum:
--          - aspeed,ast2400-sdhci
--          - aspeed,ast2500-sdhci
--          - aspeed,ast2600-sdhci
-+        oneOf:
-+          - enum:
-+              - aspeed,ast2400-sdhci
-+              - aspeed,ast2500-sdhci
-+              - aspeed,ast2600-sdhci
-+          - items:
-+              - const: aspeed,ast2700-sdhci
-+              - const: aspeed,ast2600-sdhci
-+
-       reg:
-         maxItems: 1
-         description: The SDHCI registers
-@@ -78,6 +91,18 @@ required:
-   - ranges
-   - clocks
+ 	spin_lock_init(&sdc->lock);
  
-+if:
-+  properties:
-+    compatible:
-+      contains:
-+        const: aspeed,ast2700-sd-controller
-+then:
-+  required:
-+    - resets
-+else:
-+  properties:
-+    resets: false
++	reset = devm_reset_control_get_optional_exclusive_deasserted(&pdev->dev, NULL);
++	if (IS_ERR(reset))
++		return dev_err_probe(&pdev->dev, PTR_ERR(reset), "unable to acquire reset\n");
 +
- examples:
-   - |
-     #include <dt-bindings/clock/aspeed-clock.h>
+ 	sdc->clk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(sdc->clk))
+ 		return PTR_ERR(sdc->clk);
 
 -- 
 2.34.1
