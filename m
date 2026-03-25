@@ -1,74 +1,92 @@
-Return-Path: <linux-aspeed+bounces-3764-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3765-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A924FFEA838
-	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Mar 2026 09:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D7D8FEA808
+	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Mar 2026 10:31:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgh8w2b76z2xPL;
-	Wed, 25 Mar 2026 20:16:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774430160;
-	cv=none; b=P3Lwbu9Pkbwo1fKHwSY5qTpBp8CAqh497iuD3+4VBQCrEYwZxNotjCluSHJfMIqnhqyBYn/RGKvUxdRj4v9gp8+F8Nb/Xq4hX+Xe76r8HXzusoPGwYoyrcOfn+dbq9TRx9Iwlv0u5DrccUF3jWdRcQ5Y8OstpqRSr9yJ7vE0AMa+bM5It+RJ+2ckJ8UzfK6qVXB2+0h7zLlC6Bzm/HjFjj1Vd3DEqGkfipT+VLFyFv7bNC/irDXz3+C2KFZ1QtEr0bTAb6YMzNlPolnG7wZnyFtTa6R+7aNubCVusjzDPi17QptmJ7/AQTenYtpW7DTTZ7CbO4WRn+/zllmKPpnWcA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgjqt31sHz2xS3;
+	Wed, 25 Mar 2026 21:31:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.150
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774434682;
+	cv=none; b=P9ulopGce6YdnfqDHzjP+UXYE8cd1IKdvpTpS5HeuOtxnCMQDRTMFBN04U9j54w8MYQibm+u1+vDvQKXW+RWcq5KI+QYfqN/alvOXcnaWA0mOuRIFavA9Nr20LOAvOpBIt/f1+nq5dsTW2WwAXzo0DjfeV34zxpM805MlV7cI68/pUNcfEF7tNugAmpuScAQYJXUNjq2D8ZyZkiKRco0f0V3sRoxm9v1KwBo0pG5E6Glb2SA90WaKCwC+wR7FKgD5GqBQBDp8+I/q6Mna2e9C9vfpGXqO9RVs/+qaKGTowqs0+U4NUjAadszA2MnOaKFVHCxt7rUapCQo2grrFi4AA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774430160; c=relaxed/relaxed;
-	bh=gK91G0Kh3+mdj3OrhSUyPB44TdtMO6pJoTRl9mo39qQ=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Npk8lb9fwMo6VBG/nnVvyNlIMgYhoFBfzRUokcpmgwSxkwKvpXcUUZtUxyqcCb72/py4eUQacj2Q7GtbEXRATFG5ZPlzPqSKdTdPxd6ZlrN9Zt0ptQ3GryiL4h1rVxqgFYO7cksdfljuzL1ES7sxy+oj2VDpAfPi89AI660Xj0I4PhnjKcMcia2HLTmlVP29pTbuVGTWo3xrnb4UeAcdZc6KwpYExSGkTRjd3x5UFTPT0ZTWnJJh7KoFy2tMUBH5v0rG5cAaT+MS1TKtlwdmq9jUOTH69urrE7bzcC2wI+qQGgxB+Mi+iYmvgoX/3S7lGsMZd+iXxiwffaL8ZZNphw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ZnphFnjB; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1774434682; c=relaxed/relaxed;
+	bh=nOZsBL95nAhweeH92Dp+s8gwCED82gOoXWW4sho0wpc=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=lO7jkJjv+bPm2nSoP6VyNF/sdDNkGkxmAUIGHbYdS0kwHfbdmOmMRWCVlTnA0LJzViQ4EoHq2LpgTvWGVYs+qfxqo/U5kK51wYng1NTgkFXpGFJllPiYVYio2mv1a2ArDfz7+8u/5XVf23m15VZrLWe3WxM9orlmkpcCUuRyuIM/5FJQWoPx9VBede707IGsjLxz/W+JE0sRb1JDMBnFIotE06Ja6S5T3fLirWqCUwz+guSxwSeRSbX55iPXDzX1lEdbJQ0CF99zQLilJx81JGzW2VwWdC5Zl49sOHMjp9ovQB6e1rjitlvXuvEH3wlIP4QnkoK+S6CctXobtHH7WA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=U55CSvfC; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=McxXC8B1; dkim-atps=neutral; spf=pass (client-ip=103.168.172.150; helo=fout-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ZnphFnjB;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=U55CSvfC;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=McxXC8B1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=103.168.172.150; helo=fout-a7-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+Received: from fout-a7-smtp.messagingengine.com (fout-a7-smtp.messagingengine.com [103.168.172.150])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgh8t5Q8Tz2xMt;
-	Wed, 25 Mar 2026 20:15:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1774430157;
-	bh=gK91G0Kh3+mdj3OrhSUyPB44TdtMO6pJoTRl9mo39qQ=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=ZnphFnjBKvQXgZewq1BcRIyvVp/KbXTSwy5zs660K1Q/BPNeFqfRZfvVEdKoK67iR
-	 OVB8Y5kuoKvgaLyJk0RFnEfYhPhmM5xSgFwWqE1TQfZ4A8Q5LHrsPY6L3C4c+y0StC
-	 OEkHNOg8VK9kjYfrF6V0ZUlbncIGBOaC+LfLuQHDTj3IvZtyI9FzdhjcbzZW6Wq7Wh
-	 13E+wFO/y6QXMrBDMmSuEOtMAhnAcwCycyfzTWRKxalbbA2FES4fnkF+y9troHKI2j
-	 dt7XWyY2nv5lSC77qVcjwQtL3Wz5wItkd8JRLeHrf/KKGBum3zbKOG2EP+L8cZhcCQ
-	 2mYJfLdMxno2w==
-Received: from pecola.lan (unknown [159.196.93.152])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 7D3296452E;
-	Wed, 25 Mar 2026 17:15:54 +0800 (AWST)
-Message-ID: <28eee6d05ed1e1814f09ec907d56798a279f226d.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v27 3/4] i2c: ast2600: Add controller driver for AST2600
- new register set
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-To: Ryan Chen <ryan_chen@aspeedtech.com>,
- "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
- Andi Shyti <andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
- <andrew@codeconstruct.com.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,  Philipp Zabel <p.zabel@pengutronix.de>
-Cc: "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, 
-	"devicetree@vger.kernel.org"
-	 <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	 <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	 <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	 <linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	 <openbmc@lists.ozlabs.org>
-Date: Wed, 25 Mar 2026 17:15:54 +0800
-In-Reply-To: <TY2PPF5CB9A1BE6D451E8AFDBA03B81AFB4F249A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-References: <20260324-upstream_i2c-v27-0-f19b511c8c28@aspeedtech.com>
-	 <20260324-upstream_i2c-v27-3-f19b511c8c28@aspeedtech.com>
-	 <db921d6b820a13d59d0ffb0ab042dc6c8c11897f.camel@codeconstruct.com.au>
-	 <TY2PPF5CB9A1BE6D451E8AFDBA03B81AFB4F249A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-User-Agent: Evolution 3.46.4-2+deb12u1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgjqq0J4nz2xMY;
+	Wed, 25 Mar 2026 21:31:18 +1100 (AEDT)
+Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
+	by mailfout.phl.internal (Postfix) with ESMTP id 8E576EC007A;
+	Wed, 25 Mar 2026 06:31:15 -0400 (EDT)
+Received: from phl-imap-02 ([10.202.2.81])
+  by phl-compute-04.internal (MEProxy); Wed, 25 Mar 2026 06:31:15 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm1; t=1774434675;
+	 x=1774521075; bh=nOZsBL95nAhweeH92Dp+s8gwCED82gOoXWW4sho0wpc=; b=
+	U55CSvfC6XY4xAzmu3d81QOxz+teYemQsdjYqgshmirhrKBPvbfJyiHI6KY/gfak
+	HRdwOjYxac9Od/IQgZbvh0aaRuZzfxPAe5OxwHaINgqGug+9L+RjTvIMP9MBWn0L
+	wWEvCS0oPtA5FSo++BIb3cSTCj1sFI3Kh7K71LHr7ozp/Xw6be6l5mCgVGHf68LA
+	bU7bHBRuSmMeXmpkvH5Qv44aoJTZdNl5C9MHsAgtB7KzKClRr2n/15GnlTdcMA3n
+	bZDoR33vkAtk65Qf0E9xq6VYkgY7DVcdR6Sfg3rfNO42RwFRgfRWEDkrM/zWP4Oz
+	f9kMiuakxhbkFwkEkffIrA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1774434675; x=
+	1774521075; bh=nOZsBL95nAhweeH92Dp+s8gwCED82gOoXWW4sho0wpc=; b=M
+	cxXC8B1pZ4XhHJEJRe6XbyGjh5qfn6+y1LoL5Zmhwm2Y2jWtK8ayNKsvSFBCD2Re
+	NhkOHVLHBHxrpm5WCn11HFvu99IhHgQ4uPn5hjGJSyacBJJfB1hdX0Wtnr5jdLHp
+	On+wES7TE+DDq9bxMFXwVGk1ovH4zPNk+VyIuvMshKQCAadEzKka6Pwam0EmOcgW
+	nTum7nJRXz/s/2LS9cy8GefACy4FNdAzxhVjf1J5RS+2Kt5Ymp8HOpWZDJeLYb+O
+	lByrJ2s2FoIEkhHdUNqhaA8MNG9HHtbphZwrzO3RMafyrGItU3I4E7PjZ9oMZ/+2
+	Qvxzg12o+uEqz9yQgeSgg==
+X-ME-Sender: <xms:cbnDabo1UFdJwpbrxA42Igr1OKxwCPdt4VhsZBItEEyf9yxfS18raQ>
+    <xme:cbnDaQfQcuzSkpGf8E-FKYeOWogdqddxOVyoXVs2eFjgWS_IVR7fE6vW3qWs5dJ8_
+    rzfJCQKyY_G6pye56t7F_i82T1HZ4IScR4zEBArsqaLjhVelaidYw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdefvdegvdefucetufdoteggodetrf
+    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
+    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
+    gurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdejnecuhfhrohhmpedftehrnhgu
+    uceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrthhtvg
+    hrnhepkedvuefhiedtueeijeevtdeiieejfeelvefffeelkeeiteejffdvkefgteeuhffg
+    necuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpedtne
+    curfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgt
+    phhtthhopeduiedpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtoheprhihrghnpggthh
+    gvnhesrghsphgvvgguthgvtghhrdgtohhmpdhrtghpthhtohephihhpggthhhunhhgsegr
+    shhpvggvughtvggthhdrtghomhdprhgtphhtthhopegrnhgurhgvfiestghouggvtghonh
+    hsthhruhgtthdrtghomhdrrghupdhrtghpthhtohepmhgrtghivghjrdhlrgifnhhitgii
+    rghksehinhhtvghlrdgtohhmpdhrtghpthhtohepjhhovghlsehjmhhsrdhiugdrrghupd
+    hrtghpthhtohepsghrohhonhhivgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheptgho
+    nhhorhdoughtsehkvghrnhgvlhdrohhrghdprhgtphhtthhopegtohhnohhrsehkvghrnh
+    gvlhdrohhrghdprhgtphhtthhopehkrhiikhdoughtsehkvghrnhgvlhdrohhrgh
+X-ME-Proxy: <xmx:cbnDaX2k39X3tB1eVoZdsH3a2rR-Kfzg45viTlUTMzx7dJPQRugnYQ>
+    <xmx:cbnDaSAWglBxqkW5Xfz_eloOAf5tS0s_icOs_dbVJxcvcEulqbkhaQ>
+    <xmx:cbnDaeDHpQ8mB2dETY6HX5RcLgaDNdeI7a7RDo5qbXI8rWyT7TBQiQ>
+    <xmx:cbnDaTMzT0ABjv5WXH6o-HY8dXRNkmkey-a9FMsPaGZJ94atmHtC6w>
+    <xmx:c7nDacnB8ldaU7195uwNYbGFDkaHpRwFU3uW6h3AmpoWapnIxKblE41i>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id BFFF9700065; Wed, 25 Mar 2026 06:31:13 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -82,86 +100,153 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-ThreadId: A224H4bSXjB-
+Date: Wed, 25 Mar 2026 11:30:53 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: aspeedyh <yh_chung@aspeedtech.com>,
+ "Andrew Jeffery" <andrew@codeconstruct.com.au>,
+ "Conor Dooley" <conor@kernel.org>
+Cc: "Rob Herring" <robh@kernel.org>,
+ "Krzysztof Kozlowski" <krzk+dt@kernel.org>,
+ "Conor Dooley" <conor+dt@kernel.org>, "Joel Stanley" <joel@jms.id.au>,
+ "Ryan Chen" <ryan_chen@aspeedtech.com>,
+ "Philipp Zabel" <p.zabel@pengutronix.de>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+ "maciej.lawniczak@intel.com" <maciej.lawniczak@intel.com>,
+ "Mark Brown" <broonie@kernel.org>
+Message-Id: <14870d17-2471-4522-b8b5-03cb9002a4f7@app.fastmail.com>
+In-Reply-To: 
+ <KL1PR0601MB4276B5BE3B96C18E3A66AD709049A@KL1PR0601MB4276.apcprd06.prod.outlook.com>
+References: <20260313-upstream_espi-v1-0-9504428e1f43@aspeedtech.com>
+ <20260313-energy-casket-ca8adc1f1fd1@spud>
+ <23909400-4e7f-49c9-a982-14036372af98@app.fastmail.com>
+ <c3b28ee92fa46700887d0c68b23045b2418358a7.camel@codeconstruct.com.au>
+ <KL1PR0601MB4276ED93723F0B1F42349AD89041A@KL1PR0601MB4276.apcprd06.prod.outlook.com>
+ <0f7f0f96-a918-47d5-a0bd-bbde494c8fed@app.fastmail.com>
+ <KL1PR0601MB4276B5BE3B96C18E3A66AD709049A@KL1PR0601MB4276.apcprd06.prod.outlook.com>
+Subject: Re: [PATCH 0/7] soc: aspeed: Add AST2600 eSPI controller support
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-SGkgUnlhbiwKCj4gPiBJIHdvdWxkIHN1Z2dlc3Qgc2VwYXJhdGluZyB0aGUgc3RyaW5nIHBhcnNp
-bmcgZnJvbSB0aGUgImlzIHRoZSBtb2RlIGF2YWlsYWJsZSIKPiA+IGxvZ2ljLCBtb3JlIG9uIHRo
-YXQgYmVsb3cuCj4gPiAKPiBJIHdpbGwgc2VwYXJhdGUgd2l0aCBmb2xsb3dpbmcuCj4gwqAKPiBz
-dGF0aWMgaW50IGFzdDI2MDBfaTJjX3hmZXJfbW9kZV9wYXJzZShjb25zdCBjaGFyICpidWYsIGVu
-dW0geGZlcl9tb2RlICptb2RlKQo+IHsKPiDCoMKgwqAgaWYgKHN5c2ZzX3N0cmVxKGJ1ZiwgImJ5
-dGUiKSnCoMKgIHsgKm1vZGUgPSBCWVRFX01PREU7IHJldHVybiAwOyB9Cj4gwqDCoMKgIGlmIChz
-eXNmc19zdHJlcShidWYsICJidWZmZXIiKSkgeyAqbW9kZSA9IEJVRkZfTU9ERTsgcmV0dXJuIDA7
-IH0KPiDCoMKgwqAgaWYgKHN5c2ZzX3N0cmVxKGJ1ZiwgImRtYSIpKcKgwqDCoCB7ICptb2RlID0g
-RE1BX01PREU7wqAgcmV0dXJuIDA7IH0KPiDCoMKgwqAgcmV0dXJuIC1FSU5WQUw7Cj4gfQoKT0ss
-IGJ1dCB3aXRoIGtlcm5lbC1zdHlsZSBmb3JtYXR0aW5nLgoKPiAKPiBzdGF0aWMgaW50IGFzdDI2
-MDBfaTJjX3hmZXJfbW9kZV9jaGVjayhzdHJ1Y3QgYXN0MjYwMF9pMmNfYnVzICppMmNfYnVzLAo+
-IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqAgZW51bSB4ZmVyX21vZGUgbW9kZSkKPiB7Cj4gwqDCoMKgIGlm
-IChtb2RlID09IEJVRkZfTU9ERSAmJiAhaTJjX2J1cy0+YnVmX2Jhc2UpCj4gwqDCoMKgwqDCoMKg
-wqAgcmV0dXJuIC1FSU5WQUw7Cj4gwqDCoMKgIGlmIChtb2RlID09IERNQV9NT0RFICYmICFpMmNf
-YnVzLT5kbWFfYXZhaWxhYmxlKQo+IMKgwqDCoMKgwqDCoMKgIHJldHVybiAtRUlOVkFMOwo+IMKg
-wqDCoCByZXR1cm4gMDsKPiB9Cj4gCj4gPiA+ICsKPiA+ID4gK3N0YXRpYyBjb25zdCBjaGFyICph
-c3QyNjAwX2kyY194ZmVyX21vZGVfbmFtZShlbnVtIHhmZXJfbW9kZSBtb2RlKSB7Cj4gPiA+ICvC
-oMKgwqDCoMKgwqDCoHN3aXRjaCAobW9kZSkgewo+ID4gPiArwqDCoMKgwqDCoMKgwqBjYXNlIEJZ
-VEVfTU9ERToKPiA+ID4gK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJldHVybiAiYnl0
-ZSI7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoGNhc2UgRE1BX01PREU6Cj4gPiA+ICvCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gImRtYSI7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoGNh
-c2UgQlVGRl9NT0RFOgo+ID4gPiArwqDCoMKgwqDCoMKgwqBkZWZhdWx0Ogo+ID4gPiArwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcmV0dXJuICJidWZmZXIiOwo+ID4gPiArwqDCoMKgwqDC
-oMKgwqB9Cj4gPiA+ICt9Cj4gPiA+ICsKPiA+ID4gK3N0YXRpYyBzc2l6ZV90IHhmZXJfbW9kZV9z
-aG93KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0Cj4gPiA+ICtkZXZpY2VfYXR0cmlidXRlICph
-dHRyLCBjaGFyICpidWYpIHsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgc3RydWN0IGFzdDI2MDBfaTJj
-X2J1cyAqaTJjX2J1cyA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOwo+ID4gPiArCj4gPiA+ICvCoMKg
-wqDCoMKgwqDCoHJldHVybiBzeXNmc19lbWl0KGJ1ZiwgIiVzXG4iLAo+ID4gPiArYXN0MjYwMF9p
-MmNfeGZlcl9tb2RlX25hbWUoaTJjX2J1cy0+bW9kZSkpOwo+ID4gPiArfQo+ID4gPiArCj4gPiA+
-ICtzdGF0aWMgc3NpemVfdCB4ZmVyX21vZGVfc3RvcmUoc3RydWN0IGRldmljZSAqZGV2LAo+ID4g
-PiArwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoCBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwKPiA+ID4gK8KgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgY29uc3QgY2hhciAq
-YnVmLCBzaXplX3QgY291bnQpCj4gPiB7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoHN0cnVjdCBhc3Qy
-NjAwX2kyY19idXMgKmkyY19idXMgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsKPiA+ID4gK8KgwqDC
-oMKgwqDCoMKgZW51bSB4ZmVyX21vZGUgbW9kZTsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgaW50IHJl
-dDsKPiA+ID4gKwo+ID4gPiArwqDCoMKgwqDCoMKgwqByZXQgPSBhc3QyNjAwX2kyY194ZmVyX21v
-ZGVfcGFyc2UoaTJjX2J1cywgYnVmLCAmbW9kZSk7Cj4gPiA+ICvCoMKgwqDCoMKgwqDCoGlmIChy
-ZXQpCj4gPiA+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gcmV0Owo+ID4g
-PiArCj4gPiA+ICvCoMKgwqDCoMKgwqDCoGkyY19sb2NrX2J1cygmaTJjX2J1cy0+YWRhcCwgSTJD
-X0xPQ0tfUk9PVF9BREFQVEVSKTsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgYXN0MjYwMF9pMmNfc2V0
-X3hmZXJfbW9kZShpMmNfYnVzLCBtb2RlKTsKPiA+ID4gK8KgwqDCoMKgwqDCoMKgaTJjX3VubG9j
-a19idXMoJmkyY19idXMtPmFkYXAsIEkyQ19MT0NLX1JPT1RfQURBUFRFUik7Cj4gPiA+ICsKPiA+
-ID4gK8KgwqDCoMKgwqDCoMKgcmV0dXJuIGNvdW50Owo+ID4gPiArfQo+ID4gPiArCj4gPiA+ICtz
-dGF0aWMgREVWSUNFX0FUVFJfUlcoeGZlcl9tb2RlKTsKPiA+IAo+ID4gVGhpcyB3aWxsIG5lZWQg
-c3lzZnMgQUJJIGRvY3VtZW50YXRpb24uCj4gCj4gU2luY2UgaXQgaXMgaW4gc3lzZnMgL3N5cy9i
-dXMvcGxhdGZvcm0vZHJpdmVycy9pMmNfYXN0MjYwMAo+IFNvIEkgYWRkIERvY3VtZW50YXRpb24v
-QUJJL3Rlc3Rpbmcvc3lzZnMtYnVzLXBsYXRmb3JtLWRyaXZlcnMtaTJjLWFzdDI2MDAgCj4gYW0g
-SSByaWdodD8KCkkgd291bGQgc3VnZ2VzdCBEb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2Zz
-LWRyaXZlci1hc3QyNjAwLWkyYwoKPiAKPiBXaGF0OsKgwqDCoMKgwqDCoMKgwqDCoMKgwqAvc3lz
-L2J1cy9wbGF0Zm9ybS9kcml2ZXJzL2kyYy1hc3QyNjAwLy4uLi94ZmVyX21vZGUKPiBEYXRlOsKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqBNYXJjaCAyMDI2Cj4gS2VybmVsVmVyc2lvbjrCoMKgNi54CgpL
-ZXJuZWxWZXJzaW9uIGlzIG9wdGlvbmFsLCBidXQgaWYgeW91IGluY2x1ZGUgaXQsIGl0IHdvdWxk
-IGJlIDcueC4KCj4gQ29udGFjdDrCoMKgwqDCoMKgwqDCoMKgUnlhbiBDaGVuIDxyeWFuX2NoZW5A
-YXNwZWVkdGVjaC5jb20+Cj4gRGVzY3JpcHRpb246CgpLZWVwIHRoZSBmaXJzdCBsaW5lIG9mIHRo
-ZSBkZXNjcmlwdGlvbiBvbiB0aGUgc2FtZSBsaW5lLgoKPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoFNob3dzIG9yIHNldHMgdGhlIHRyYW5zZmVyIG1vZGUgZm9yIHRoZSBBU1BFRUQg
-QVNUMjYwMCBJMkMKPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGNvbnRyb2xsZXIu
-IFZhbGlkIHZhbHVlcyBhcmU6Cj4gCj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAt
-ICJieXRlIjrCoMKgIFByb2dyYW1tZWQgSS9PLCBvbmUgYnl0ZSBhdCBhIHRpbWUuCj4gwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAtICJidWZmZXIiOiBQcm9ncmFtbWVkIEkvTyB1c2lu
-ZyB0aGUgaGFyZHdhcmUgRklGTyBidWZmZXIuCj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqAtICJkbWEiOsKgwqDCoCBETUEgdHJhbnNmZXIgKG9ubHkgYXZhaWxhYmxlIGlmIGFzcGVl
-ZCxlbmFibGUtZG1hCj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgIGlzIHNldCBpbiB0aGUgZGV2aWNlIHRyZWUpLgoKRGVjb3VwbGUgdGhpcyBm
-cm9tIHRoZSBkZXZpY2UgdHJlZSBjb25maWd1cmF0aW9uIG1lY2hhbmlzbToKCiDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoC0gImRtYSI6wqDCoMKgIERNQSB0cmFuc2ZlciAoaWYgRE1B
-IGlzIGF2YWlsYWJsZSBmb3IgdGhpcwogICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRy
-b2xsZXIpCgo+IGkyY19idXMtPmJ1Zl9iYXNlID0gZGV2bV9wbGF0Zm9ybV9nZXRfYW5kX2lvcmVt
-YXBfcmVzb3VyY2UocGRldiwgMSwgJnJlcyk7Cj4gaWYgKCFJU19FUlIoaTJjX2J1cy0+YnVmX2Jh
-c2UpKQo+IMKgwqDCoCBpMmNfYnVzLT5idWZfc2l6ZSA9IHJlc291cmNlX3NpemUocmVzKSAvIDI7
-Cj4gZWxzZQo+IMKgwqDCoCBpMmNfYnVzLT5idWZfYmFzZSA9IE5VTEw7CgpJIHdvdWxkIHN1Z2dl
-c3QgYSB0ZW1wb3JhcnksIHNvIHRoZXJlJ3Mgbm8gY2hhbmNlIHRoYXQgZnV0dXJlIGNoYW5nZXMK
-Y291bGQgc2VlIGFuIEVSUl9QVFIgdmFsdWUgaW4gaTJjX2J1cy0+YnVmX2Jhc2U6CgogICAgYnVm
-X2Jhc2UgPSBkZXZtX3BsYXRmb3JtX2dldF9hbmRfaW9yZW1hcF9yZXNvdXJjZShwZGV2LCAxLCAm
-cmVzKTsKICAgIGlmICghSVNfRVJSKGJ1Zl9iYXNlKSkgewogICAgICAgIGkyY19idXMtPmJ1Zl9i
-YXNlID0gYnVmX2Jhc2UKICAgIMKgwqDCoCBpMmNfYnVzLT5idWZfc2l6ZSA9IHJlc291cmNlX3Np
-emUocmVzKSAvIDI7CiAgICB9CgphbmQgeW91IGhhdmUga3phbGxvYygpZWQsIHNvIG5vIG5lZWQg
-Zm9yIHRoZSBOVUxMIGluaXQgaW4gdGhlIGVycm9yIHBhdGguCgpDaGVlcnMsCgoKSmVyZW15Cg==
+On Wed, Mar 25, 2026, at 09:41, YH Chung wrote:
+>> On Tue, Mar 17, 2026, at 09:14, YH Chung wrote:
+>> From reading the old comments that Andrew linked to at
+>>=20
+>> https://lore.kernel.org/linux-aspeed/HK0PR06MB377924CFCBFE9BD40E1C4A5=
+D91
+>> D49@HK0PR06MB3779.apcprd06.prod.outlook.com/
+>>=20
+>> I understand that the SoC has a "hardware mode" in which eSPI is
+>> directly implemented by redirecting upper-level eSPI transactions into
+>> functional blocks of the chip, while the software mode behaves like
+>> a regular SPI endpoint controller and your driver implements the
+>> same interfaces in a mix of kernel and userspace components. Can you
+>> confirm that this is a correct understanding of what the hardware
+>> does, or where I misunderstand parts?
+>
+> Broadly yes, except that the AST2600 does not operate in a single glob=
+al
+> "hardware mode" or "software mode". Instead, some backends in the eSPI=
+ target
+> controller support per-function HW/SW mode selection.
+>
+> Depending on that function-specific setting, the controller either for=
+wards a
+> received transaction directly to the corresponding hardware block or t=
+raps it
+> for software handling instead.
+>
+> This mechanism exists because some backend blocks include their own ha=
+rdware
+> filtering, but not all request types could be validated generically in
+> hardware. For example, the LPC bridge can reject illegal requests. In =
+some
+> cases, blindly forwarding host requests to the target block would also=
+ have
+> security implications.
+>
+> The channel/backend mapping on AST2600 can be summarized as:
+>
+> eSPI
+> =E2=94=9C=E2=94=80=E2=94=80 Peripheral
+> =E2=94=82 =E2=94=9C=E2=94=80=E2=94=80 Memory (HW mode only)
+> =E2=94=82 =E2=94=94=E2=94=80=E2=94=80 LPC bridge (HW mode only)
+> =E2=94=9C=E2=94=80=E2=94=80 Virtual Wire
+> =E2=94=82 =E2=94=94=E2=94=80=E2=94=80 GPIO (HW/SW mode selection)
+> =E2=94=9C=E2=94=80=E2=94=80 Out-of-Band (SW mode only)
+> =E2=94=94=E2=94=80=E2=94=80 Flash
+>    =E2=94=94=E2=94=80=E2=94=80 Storage controller (HW/SW mode selectio=
+n)
+>
+> From the link thread, what Jeremy mentioned is the GPIO HW/SW mode for=
+ CH1,
+> which determines whether the host can directly control the correspondi=
+ng BMC
+> GPIO output, or whether BMC software can inspect and decide whether to=
+ act on
+> that request.
+>
+> Another example is the Target Attached Flash Sharing (TAFS) defined by=
+ the
+> eSPI specification that allows BMC to share its storage with the host.
+>
+> In hardware mode, the eSPI Target Device controller routes the request
+> directly to a predefined storage controller on AST2600.
+> In software mode, it raises an interrupt and lets software handle the
+> transaction instead.
+>
+> So I would not describe the AST2600 eSPI block as being globally in ei=
+ther
+> "hardware mode" or "software mode".
+> That choice is made per backend function, and some backend functions d=
+o not
+> implement such a switch at all.
 
+I see, thanks for the detailed explanation! Two follow-up questions:
+
+- For the HW-mode-only peripherals (memory, LPC), is there any
+  driver interaction at all for setting it up, or is this completely
+  transparent to Linux running on the BMC?
+
+- For the other devices running in SW mode, is the interface that the
+  driver sees abstract in the sense that the same low-level code
+  is shared for all of them, or are these still separate functional
+  blocks that each need their own register-level interface?
+
+>> For the higher-level interfaces (flash, gpio, ...), I don't think
+>> there is any consensus yet about how this should be done, but again
+>> I think this won't be drivers/soc but instead something more
+>> generic.
+>
+> For the flash-related interface, would it make sense to follow the
+> configuration model used by the USB gadget mass-storage function, and =
+expose
+> the backing storage selection through configfs?=20
+>
+> For the attributes, perhaps the only backing storage object and read-o=
+nly
+> flag would be required in our case.
+>
+> For the Virtual Wire GPIO, we think GPIO subsystem may be leveraged he=
+re,
+> though some corner cases may not map cleanly to a typical GPIO control=
+ler
+> model.
+>
+> For the Out-of-band channel, since the eSPI spec models it for tunnele=
+d SMBus
+> packets, we may want to integrate it with the kernel's MCTP stack if t=
+hat is
+> a suitable fit.
+
+These all seem to be viable options, but I still think we should
+focus on agreeing on a design for the low-level hardware interface
+and whether this can or should be abstracted between SoC vendor
+specific drivers before trying to solve the user interface side.
+
+      Arnd
 
