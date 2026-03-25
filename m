@@ -1,65 +1,65 @@
-Return-Path: <linux-aspeed+bounces-3766-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3767-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64D2B103A9A6
-	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Mar 2026 10:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90B08103A9A7
+	for <linux-aspeed@archiver.kernel.org>; Wed, 25 Mar 2026 11:21:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fgkDt5XDWz2xcB;
-	Wed, 25 Mar 2026 21:49:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774435774;
-	cv=none; b=CskEFMA1MP2OX8yHpCPChVly0IAQr7fIKjExCBUIDbUDjbcmF0U+eNEVDB9LEM65sfBM6u6FeLWKbfqRK6Az0MZf41Dpzy7ynSPxEcncMb6VpJ7GZkOKyXYUmQjC+MWcIh0VAGKLcclyxOkbWj0logJ/rzPsKXKbwmuLzg9jerL1gtJFPHH/YobggKQg1LLcCM68WOGAwu32lcKC9fo87qAAJoV3kz2qcay1T8U5FwRlwhZpJu6PF9AgvQT3UogqFA+YDLnxU1EGshnXQ+TnmBB7Pb1hpIQve6rB9n9udby0m4RHymbV1JscxsA/+NRW6z8napqt+Bh8vfTg+TwPtQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fgkx71n2Rz2xSX;
+	Wed, 25 Mar 2026 22:20:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774437659;
+	cv=none; b=cMTP9BFCo1wxcS4r5zFJp5JHlru0pVBEhVujMaWXDfcHzvKM5kBvBc5mM9WixcN3U2YJtHTilW29Mq6ucEvb+LYMIxk1wwohktuxdmtfOn2Vbxk463Sfajd2Ow6I5DN3+JDxn9mFcoL7tZ8833APzWT9Wd4pB4tBGIcQi3/oZGXc7TEVodP0zzlYkz/3gkV5dw3JVTHYZ+2NtswaIagFX8UBXqvo4IimZM/vCBGYL40ADK6/BWHGzZq1aJv/HbLtMf8EYaUgxi6c3eGIyo5owrixrc5MQy8OPy7mDJ6WTkhqK5aH1zCX0Ekrw7G03YFD3Fd6Y03r64T9rabxPgFLJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774435774; c=relaxed/relaxed;
-	bh=NM8JSFaEyEeCholdV5PCFvNGSWlHCai+7Rdls4nOTWk=;
+	t=1774437659; c=relaxed/relaxed;
+	bh=AAZwoz6zJrlCvSg5nIwe/xNEemY6Jvq8kD+By9rF1Ys=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LWnj0l9DdBptqp/OTWJSua+EAFrDrFAH3HBMS4hUd2asfNs7ws7BmOJAEqjFW4K0Vi3AqGDFQXZCLITv4jGZVgO0TOYyqbtHVd4xr8zyYjJxZITtLaR5xxxgILiBCaUkaGgdYtoP+CP7Yxg8Bv7xMlo9SvfdyrZ/xs31gkUu7Dou6DUmArw957I7sW2lh+/2epSkLjVJ8zfRCNd/aN22duHgfiKtj5T4b0xx99X+Fxq178Sd2XaophopBE7Q6JSXhO8vbmmRcLZrQIijFzVZVZlL6dm8XWy3apML/M29Ys5pcIZCVq9zqM/FxF2iYO+/jt5E8+hSd2c74bMKPkk7UA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ItY7VPdH; dkim-atps=neutral; spf=pass (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=CDAajPheJMWhDOAsqkqU230Sd5bVb+tstYKwMyphiq2v9/Z5cORolbeJbeDXrLm8Z0n0+wXqNt9PN6yH4VV/7SZTh9NMWO0Ax0zvSUnr0aN1t2BzHG7tFrpjnKO+oO6mvqoJe97RqaB0atuqRieQVC1XMhC1uzbr0Xfh8pe/UKK4pM2685oYt0V0ZSdjE0OaSkky9WMwgFVzgoABvHNacC1zcJNy88hauUdS1sLgXdHsp5NE9DovUOv9OWQG0/Tnzx7bTjI3HIlsr4pMo86DLlFUrgURFPCpS9FSFOticLpzREbo+C6eM9TNm5eEsOel5mSVt+vkZqw4v8e3nDS3hQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AWiqudD1; dkim-atps=neutral; spf=temperror (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ItY7VPdH;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AWiqudD1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.mailfrom=intel.com (client-ip=192.198.163.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgkDq3pGgz2xS3;
-	Wed, 25 Mar 2026 21:49:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fgkx40Zv3z2xPL;
+	Wed, 25 Mar 2026 22:20:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1774435772; x=1805971772;
+  t=1774437656; x=1805973656;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=Y4rM1iLTl82BhRRs5Nx7wm1CXx7QRUPDPGxS9HlKH1E=;
-  b=ItY7VPdHu+Og9ENKVihM6X9t7FEBAfXfM4SKejlVmmDpts49b0vKkD4x
-   tTaZl94QKn4swBIvF1NgAfZctadizMv8R8gAFT5EwdPcex/vl27TW8OtB
-   HENckD61d5VA+ov5nvkSckXcohzqSwmI92wYYrmq5AeTJ0aRqd87qjkVy
-   vKg+2ftB8ZggtSWABpIwUbzEGMYqct9bnf97LxiYObbIO7ktpdOMerrI/
-   m2XqxPMd3EDgKoi0uHcu/hwBmpktWiCxNShjZSR8Rak/F2NItfeTPe7JD
-   YuRVIWS7VlcKm7H0YgCBvmKEMBHHAP7YHvdX4mCXiulihbvVQJeI6L6ri
-   w==;
-X-CSE-ConnectionGUID: Q1CwPsWvTQa1ffWCzhBB8A==
-X-CSE-MsgGUID: G1ONRYpRQi27UK4Ruj+SSw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="79325156"
+  bh=TVTcQb5blXw3BEZG0IaidyohTKbDsy4QnSKmj9ruqUo=;
+  b=AWiqudD1IBg7oq4LAEEEwg70WVO5jINrcaL/R+soPgZCcn967o0lw0Q9
+   VvYlXdCD0568CRhsQbef5Pd8K+QBIMh3vTGv1UKaIOfgPfD1B/hwW02Eu
+   TpKrSb4gDEAVDsegSoIcI9bUFhkB7ZMC1AvmwJUteLOoRsDYbkLhgvJtf
+   TZOb1tNyxFKMw2E0J4CN413BvrSh2tzpvItZJdNyQ2lf+oAsfNEB5wfsq
+   1ChLQ7T96CjgZPkI1Rf3fwkfa5OT6F7rvKU1RIW3W50oIjJXANRBtNfn/
+   qRFqcPOgQVM5JAaL4+75JXLIgK9g9Co2xLuEfhIxLDoA+KmUcp/YG2wh4
+   Q==;
+X-CSE-ConnectionGUID: y6KZ76xrQJuOOo05cBwNeg==
+X-CSE-MsgGUID: y7JetStKRcKFSaLnBHPJZQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11739"; a="78069424"
 X-IronPort-AV: E=Sophos;i="6.23,140,1770624000"; 
-   d="scan'208";a="79325156"
-Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2026 03:49:26 -0700
-X-CSE-ConnectionGUID: 7OsIQRFCTLuqPlybnrUTfg==
-X-CSE-MsgGUID: nOQqZgnMTDyMoRJF43rx7g==
+   d="scan'208";a="78069424"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Mar 2026 04:20:31 -0700
+X-CSE-ConnectionGUID: gUUN8aQtQuOki9WyooG9HA==
+X-CSE-MsgGUID: KF6uE9rERyaXq4YCDcDQEQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.23,140,1770624000"; 
-   d="scan'208";a="224905102"
+   d="scan'208";a="226294612"
 Received: from lkp-server01.sh.intel.com (HELO 3905d212be1b) ([10.239.97.150])
-  by orviesa007.jf.intel.com with ESMTP; 25 Mar 2026 03:49:21 -0700
+  by fmviesa004.fm.intel.com with ESMTP; 25 Mar 2026 04:20:27 -0700
 Received: from kbuild by 3905d212be1b with local (Exim 4.98.2)
 	(envelope-from <lkp@intel.com>)
-	id 1w5Lna-000000006f7-2Nd7;
-	Wed, 25 Mar 2026 10:49:18 +0000
-Date: Wed, 25 Mar 2026 18:48:49 +0800
+	id 1w5MHg-000000006jB-0AT4;
+	Wed, 25 Mar 2026 11:20:24 +0000
+Date: Wed, 25 Mar 2026 19:20:12 +0800
 From: kernel test robot <lkp@intel.com>
 To: Ryan Chen <ryan_chen@aspeedtech.com>, jk@codeconstruct.com.au,
 	andriy.shevchenko@linux.intel.com,
@@ -70,13 +70,14 @@ To: Ryan Chen <ryan_chen@aspeedtech.com>, jk@codeconstruct.com.au,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 	Rayn Chen <rayn_chen@aspeedtech.com>,
 	Philipp Zabel <p.zabel@pengutronix.de>
-Cc: oe-kbuild-all@lists.linux.dev, linux-i2c@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	openbmc@lists.ozlabs.org, Ryan Chen <ryan_chen@aspeedtech.com>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	linux-i2c@vger.kernel.org, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org,
+	Ryan Chen <ryan_chen@aspeedtech.com>
 Subject: Re: [PATCH v27 3/4] i2c: ast2600: Add controller driver for AST2600
  new register set
-Message-ID: <202603251835.KJc3nKCn-lkp@intel.com>
+Message-ID: <202603251922.TFJuUipj-lkp@intel.com>
 References: <20260324-upstream_i2c-v27-3-f19b511c8c28@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
@@ -105,23 +106,25 @@ url:    https://github.com/intel-lab-lkp/linux/commits/Ryan-Chen/dt-bindings-i2c
 base:   6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
 patch link:    https://lore.kernel.org/r/20260324-upstream_i2c-v27-3-f19b511c8c28%40aspeedtech.com
 patch subject: [PATCH v27 3/4] i2c: ast2600: Add controller driver for AST2600 new register set
-config: sparc-randconfig-r073-20260325 (https://download.01.org/0day-ci/archive/20260325/202603251835.KJc3nKCn-lkp@intel.com/config)
-compiler: sparc-linux-gcc (GCC) 8.5.0
-smatch: v0.5.0-9004-gb810ac53
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260325/202603251835.KJc3nKCn-lkp@intel.com/reproduce)
+config: i386-buildonly-randconfig-003-20260325 (https://download.01.org/0day-ci/archive/20260325/202603251922.TFJuUipj-lkp@intel.com/config)
+compiler: clang version 20.1.8 (https://github.com/llvm/llvm-project 87f0227cb60147a26a1eeb4fb06e3b505e9c7261)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20260325/202603251922.TFJuUipj-lkp@intel.com/reproduce)
 
 If you fix the issue in a separate patch/commit (i.e. not just a new version of
 the same patch/commit), kindly add following tags
 | Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202603251835.KJc3nKCn-lkp@intel.com/
+| Closes: https://lore.kernel.org/oe-kbuild-all/202603251922.TFJuUipj-lkp@intel.com/
 
 All errors (new ones prefixed by >>):
 
-   drivers/i2c/busses/i2c-ast2600.c: In function 'ast2600_i2c_probe':
->> drivers/i2c/busses/i2c-ast2600.c:955:15: error: 'struct ast2600_i2c_bus' has no member named 'dma_abailable'; did you mean 'dma_available'?
-     if (i2c_bus->dma_abailable)
-                  ^~~~~~~~~~~~~
-                  dma_available
+>> drivers/i2c/busses/i2c-ast2600.c:955:15: error: no member named 'dma_abailable' in 'struct ast2600_i2c_bus'; did you mean 'dma_available'?
+     955 |         if (i2c_bus->dma_abailable)
+         |                      ^~~~~~~~~~~~~
+         |                      dma_available
+   drivers/i2c/busses/i2c-ast2600.c:271:9: note: 'dma_available' declared here
+     271 |         bool                    dma_available;
+         |                                 ^
+   1 error generated.
 
 
 vim +955 drivers/i2c/busses/i2c-ast2600.c
