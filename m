@@ -1,61 +1,62 @@
-Return-Path: <linux-aspeed+bounces-3784-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3785-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EEC3109E54B
-	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:33:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F8E7109E54B
+	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:43:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDWN5tCPz2yS4;
-	Thu, 26 Mar 2026 17:33:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDl10p3mz2yS4;
+	Thu, 26 Mar 2026 17:43:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506832;
-	cv=none; b=Zn8mjOfXH+4V/pQoAvMp4ORT9bk5EkhDLJf+uVSieKzn7vxxW2BpKUSezIv9Xni+0WpyXTU7NOhPvTN8INU/osy4IupHt0poXIggoC2IMp254OBdeW3OZaSduQKbB7JX7Jk3xv9Dbbz/RdRUf7KLnVKeUh3F+jsGlOuNL+G1OWsb552mFHxeUyyd2f15JbYDZjw4v6TX8kTuUNbPRq8iVoLpS80XDaauP55rsxFjFDOgTlfSW6NkF/bgY6wZWgN0cHG9exPbMtJitl0VD8UqSXAkMVl2wDmwKUJ70560dyFf6xjFUVNmvbpPNrVxzy53uH20ZZSqo/u33kgcMiDd1A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774507436;
+	cv=none; b=JJKodPNrRNhLRHt4U7YRWqjxdYtAxrhZrv5UhXo96tFv5cE5mwOJdkoDdoSx8b9U0gWh+ezcGJi46LAidOn+IvdtyYKwXSXR4lGuWFTFN019ZyrdBVsVU7PGxtSaSy/sUIbP+4e4vt48Meeo784pACQKbg+FH54acZHJmpwMaluRLiqqiJxZmdQACO8WJNMnGGqaZ2NJrGCGt2j6xaC4c9r5tDPUSHmFuwrCfodz3WsqcNPDQe2EIn4bVnNQtaYek21qpQ/zzgIhBTpV6jsl6rKpC36lTur0jbcdm9tTx8kJqYY6LwM1gweFGZFj9B7I6EPRaVw2hvidv7p8g/W97Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774506832; c=relaxed/relaxed;
-	bh=om8C4xRL4G5OJYvxqnzGtRDXoa6aYun3rB72EV+Md+Q=;
+	t=1774507436; c=relaxed/relaxed;
+	bh=vOXu1h7wNBU0MwKwR9KWxa8v2aRV0Z0aQ49i9AHsRjA=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Zqi/PySJ/o4XCPL96/kSKPpWBO7hc7UHhciSyRv4L/G+WMYEwGWZKIeA/HNTPIGdq4eISVF1AwLxxkGFfqO7aoBHN38osFuU+z5+TjHoZAHDpryAJ5SlSSo558OK7eGasj1gwOwn0B7ll3hp2k6NawopJ3Yb+KrAtgGox0CbYQvMVgJxPsZnRMX4KIJDW67tiBLxOaB5yshDaMXmL8X9vz16CIreU5Y8pVUv7uhj5IitWX9D4Ntc4Tb9Ghdds+lbQT5vvTe8+j0QBgktkDEjsvLmtR7NikCXb8/Brb44wAG748F6WoivX92pkSmXqUC0T+HJe6GZpldFAI87Ps5mBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=RVchZcSx; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=Pcckbkf0/OfD9z5N76zgHvdIXYEkAix0fBn2rJW8IcduhQ4Xw1Nl9UsFB1ZtYE57AS1ymzGKgqxHdeUwjYgB3BA9rjR4vz77WnSAv1itNZN+re3eSVrhvXn72/T6w9S9+Kh3tLE04DxJvUv47lDotntFw12GdXYjEdLPYehidzwTKd8+cF9yDhm1ekOFgn3Be1bJ3Oi7gTTpUL8oKJ9esZOjK9sH0ZoVORyaqiPsrdgDD5My75ejieY8MIuqytIqusoaEIGyMVD93EUwHUF7pCJsjQLTvpCMdWacxY9ACJg1txh81mkWbmeHvz8yN+Z03nuxw2+7n6MyRfQzoxdYRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Bf9/ogWG; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=RVchZcSx;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Bf9/ogWG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDWN00zwz2xS5
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:33:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDl00Wvqz2xS5
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:43:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1774506830;
-	bh=om8C4xRL4G5OJYvxqnzGtRDXoa6aYun3rB72EV+Md+Q=;
+	d=codeconstruct.com.au; s=2022a; t=1774507435;
+	bh=vOXu1h7wNBU0MwKwR9KWxa8v2aRV0Z0aQ49i9AHsRjA=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=RVchZcSxXPFdsmnvH4AnQkN2+1gupNkeRKHB4UHoEkEzw6Fy9/wccbzesTahCb74v
-	 fFVTp01572MGe129MFl9h0qdwaG8L8FM57vgieBVBIQ3OfjyDj1PM0EcXma98VM1Es
-	 6sSVHur16IsQVaJahX3t+3cTBeWUleQWGaEZyM7jN/9Q/ubIr+TdApYHdwJKKNEBHp
-	 rss334e0TEB5gA+Insa7bE/hIDbhw7M2kqr0cvGCPORbmRBwVa0Erx3+VEkYP0BVrf
-	 96Rm1Na7Zy9HCT43XSST04jQzJcJjvr9kU45Z5dLezfk9MgjCVSlALzF/Ln2hInT7w
-	 6M0alBAbbVcDQ==
+	b=Bf9/ogWGTOWi9NWWT9MjUL9Xb1gjCktDc22xDsaivLJwvaS7q8h5C23xkT/LuqKDP
+	 zNantjz4ge2Q6oLy8byxuFDXcu/NCMtwp4sAargNiSXUILCWq24o5O1afnUOF2tz9g
+	 4Eb2KvSzTpfv6o6z+ft7X7JK6I0Cnx6pElqB+66gZJ4QkVZcG7FsmBQ+El9evKu9vd
+	 z9F6EoHHNrxdBxTfVf8XLOwmRtbYtX4fl3ZoTChx7FgNE+TG4I+qC7b8Fur1FBNv9E
+	 R42CYgLOWyulFYM1cwKjq2Jw2NLAsxRmtW0/pfR+9z9sLcYRPyRoUJQGqoTyOXt87a
+	 PBtgDQ3v6mJVw==
 Received: from [192.168.68.115] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id CF6326597C;
-	Thu, 26 Mar 2026 14:33:49 +0800 (AWST)
-Message-ID: <0f98ee4fcc662e80160026208b18e655eeb50ad1.camel@codeconstruct.com.au>
-Subject: Re: [PATCH] ARM: dts: aspeed: anacapa: Add eeprom device node
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B68C46597C;
+	Thu, 26 Mar 2026 14:43:54 +0800 (AWST)
+Message-ID: <47adfd499195738bd5539c4e438af5dc1ae75559.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 2/3] ARM: dts: aspeed: anacapa: update SGPIO mappings
+ for DFT integration
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Colin Huang <u8813345@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
-  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- devicetree@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, 	linux-kernel@vger.kernel.org,
- colin.huang2@amd.com
-Date: Thu, 26 Mar 2026 17:03:49 +1030
-In-Reply-To: <CAPBH0A9oatx7U2+3dvGVgonHEm+yq5TFM9mTcdStau2Lk1XytA@mail.gmail.com>
-References: <20260302-add-new-eeprom-node-v1-1-2bcf87bc22e4@gmail.com>
-	 <fd932aa3f0cae64f40c3b207657032e7bf61066a.camel@codeconstruct.com.au>
-	 <CAPBH0A9oatx7U2+3dvGVgonHEm+yq5TFM9mTcdStau2Lk1XytA@mail.gmail.com>
+To: Colin Huang <u8813345@gmail.com>, Rob Herring <robh@kernel.org>, 
+ Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
+	 <joel@jms.id.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+	Colin.Huang2@amd.com, Carl.Lee@amd.com, Peter.Shen@amd.com
+Date: Thu, 26 Mar 2026 17:13:54 +1030
+In-Reply-To: <20260310-anacapa-dts-sgpio-v3-2-12d9b7f1202e@gmail.com>
+References: <20260310-anacapa-dts-sgpio-v3-0-12d9b7f1202e@gmail.com>
+	 <20260310-anacapa-dts-sgpio-v3-2-12d9b7f1202e@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -73,34 +74,100 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-On Fri, 2026-03-06 at 14:06 +0800, Colin Huang wrote:
-> Hi Andrew,
->=20
-> Thanks for the feedback.
->=20
-> In our case the only functional difference between DCSCM rev=E2=80=AFB/C =
-and
-> rev=E2=80=AFD is the EEPROM I=C2=B2C address change (0x50 =E2=86=92 0x51)=
-.
-> Other than this, the hardware is identical and all device-tree
-> described components share the same wiring and behaviour.
->=20
-> Maintaining two separate devicetrees for a single=E2=80=91byte address sh=
-ift
-> doesn=E2=80=99t scale well for us.=20
+Hi Colin,
 
-I disagree that there's a problem of scale. The kernel's dts files are
-processed with the C pre-processor - you can #include one file from
-another. .dtsi files work this way, and as a related example, we
-maintain two devicetrees for the AST2600 EVB where -A1 had some minor
-differences in the regulator configuration:
+On Tue, 2026-03-10 at 17:49 +0800, Colin Huang wrote:
+> Update SGPIOM0 GPIO line names and signal mappings to align with the
+> latest DFT (Design For Tooling) integration requirements.
+>=20
+> This change reworks SGPIO input/output assignments, replaces legacy
+> or reserved placeholders, and updates signal naming to match the
+> definitions provided by the CPLD on 2026-03-03.=C2=A0
+>=20
 
- * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts?h=3Dv7.0-rc5
- * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
-arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dts?h=3Dv7.0-rc5
+I feel this statement isn't super helpful, but no matter.
 
-See also my response to Kevin Tung earlier:
+> The update improves
+> signal clarity and correctness across leakage detection, presence,
+> fault, power-good, and debug-related GPIOs.
+
+I prefer you drop this assessment.
+
+>=20
+> Signed-off-by: Colin Huang <u8813345@gmail.com>
+> ---
+> =C2=A0.../dts/aspeed/aspeed-bmc-facebook-anacapa.dts=C2=A0=C2=A0=C2=A0=C2=
+=A0 | 143 ++++++++++++---------
+> =C2=A01 file changed, 83 insertions(+), 60 deletions(-)
+>=20
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/a=
+rch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+> index 3e297abc5ba4..85b7e027daef 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+> @@ -862,89 +862,106 @@ &sgpiom0 {
+> =C2=A0	ngpios =3D <128>;
+> =C2=A0	bus-frequency =3D <2000000>;
+> =C2=A0	gpio-line-names =3D
+> -	/*in - out - in - out */
+> +	/*in - out */
+> =C2=A0	/* A0-A7 line 0-15 */
+> -	"", "FM_CPU0_SYS_RESET_N", "", "CPU0_KBRST_N",
+> -	"", "FM_CPU0_PROCHOT_trigger_N", "", "FM_CLR_CMOS_R_P0",
+> -	"", "Force_I3C_SEL", "", "SYSTEM_Force_Run_AC_Cycle",
+> -	"", "", "", "",
+> +	"L_FNIC_FLT", "FM_CPU0_SYS_RESET_N",
+> +	"L_BNIC0_FLT", "CPU0_KBRST_N",
+> +	"L_BNIC1_FLT", "FM_CPU0_PROCHOT_trigger_N",
+> +	"L_BNIC2_FLT", "FM_CLR_CMOS_R_P0",
+> +	"L_BNIC3_FLT", "Force_I3C_SEL",
+> +	"L_RTM_SW_FLT", "SYSTEM_Force_Run_AC_Cycle",
+> +	"", "",
+> +	"", "",
+> =C2=A0
+> =C2=A0	/* B0-B7 line 16-31 */
+> =C2=A0	"Channel0_leakage_EAM3", "FM_CPU_FPGA_JTAG_MUX_SEL",
+> =C2=A0	"Channel1_leakage_EAM0", "FM_SCM_JTAG_MUX_SEL",
+> =C2=A0	"Channel2_leakage_Manifold1", "FM_BRIDGE_JTAG_MUX_SEL",
+> =C2=A0	"Channel3_leakage", "FM_CPU0_NMI_SYNC_FLOOD_N",
+> -	"Channel4_leakage_Manifold2", "",
+> -	"Channel5_leakage_EAM1", "",
+> -	"Channel6_leakage_CPU_DIMM", "",
+> -	"Channel7_leakage_EAM2", "",
+> +	"Channel4_leakage_Manifold2", "BMC_AINIC0_WP_R2_L",
+> +	"Channel5_leakage_EAM1", "BMC_AINIC1_WP_R2_L",
+> +	"Channel6_leakage_CPU_DIMM", "CPLD_BUF_R_AGPIO330",
+> +	"Channel7_leakage_EAM2", "CPLD_BUF_R_AGPIO331",
+> =C2=A0
+> =C2=A0	/* C0-C7 line 32-47 */
+> -	"RSVD_RMC_GPIO3", "", "LEAK_DETECT_RMC_N", "",
+> -	"", "", "", "",
+> -	"", "", "", "",
+> -	"", "", "", "",
+> +	"RSVD_RMC_GPIO3", "RTM_MUX_L",
+> +	"LEAK_DETECT_RMC_N", "RTM_MUX_R",
+> +	"HDR_P0_NMI_BTN_BUF_R_N", "FPGA_JTAG_SCM_DBREQ_N",
+> +	"No_Leak_Sensor_flag", "whdt_sel",
+> +	"", "",
+> +	"", "",
+> +	"", "",
+> +	"", "",
+> =C2=A0
+> =C2=A0	/* D0-D7 line 48-63 */
+> -	"PWRGD_PDB_EAMHSC0_CPLD_PG_R", "",
+> -	"PWRGD_PDB_EAMHSC1_CPLD_PG_R", "",
+> -	"PWRGD_PDB_EAMHSC2_CPLD_PG_R", "",
+> -	"PWRGD_PDB_EAMHSC3_CPLD_PG_R", "",
+> -	"AMC_BRD_PRSNT_CPLD_L", "", "", "",
+> -	"", "", "", "",
+> +	"PWRGD_CHAD_CPU0_FPGA", "",
+> +	"PWRGD_CHEH_CPU0_FPGA", "",
+> +	"PWRGD_CHIL_CPU0_FPGA", "",
+> +	"PWRGD_CHMP_CPU0_FPGA", "",
+> +	"AMC_BRD_PRSNT_CPLD_L", "",
+
+Can you discuss this patch in the context of my other replies to both
+yourself and Kevin?
 
 https://lore.kernel.org/all/d7794f74b26bbc1ee0a70e39c5671acc018f80eb.camel@=
 codeconstruct.com.au/
