@@ -1,61 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3783-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3784-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E94D109E557
-	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:25:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EEC3109E54B
+	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:33:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDKr6cyQz2xlM;
-	Thu, 26 Mar 2026 17:25:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDWN5tCPz2yS4;
+	Thu, 26 Mar 2026 17:33:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506336;
-	cv=none; b=ZqiOgl9QVmiiIlxOejHOWr9bpDRnXgGdW3P/WKQKTXDF/fN8YldcE5aeFLrlWhzAI8GUzPIq5RU9JpTSKy0zP9xNn8EW1/vunvrCOgKBVn4TB88T/LnllTkJe+h0vk5E5tjBxYlKohyyWw3V9pl6IIoSC/G7lvYCXD7NeuMLGiBMLQm8JvjfAEueJVRcSJk7I0TA/NXoXR+c8xv6iznEMwT7wElhrH6Yts7Mogo5LAF6vmMT6TlvhuhcZ5ImzlAna+wZPQv0kAyhI3IrYsbp33uyW8m/VZVCNhdNAK7ot/F2/3Jnh6a1dHUFf/7d42duewjYAsInQDoOa7lxmZvfyg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506832;
+	cv=none; b=Zn8mjOfXH+4V/pQoAvMp4ORT9bk5EkhDLJf+uVSieKzn7vxxW2BpKUSezIv9Xni+0WpyXTU7NOhPvTN8INU/osy4IupHt0poXIggoC2IMp254OBdeW3OZaSduQKbB7JX7Jk3xv9Dbbz/RdRUf7KLnVKeUh3F+jsGlOuNL+G1OWsb552mFHxeUyyd2f15JbYDZjw4v6TX8kTuUNbPRq8iVoLpS80XDaauP55rsxFjFDOgTlfSW6NkF/bgY6wZWgN0cHG9exPbMtJitl0VD8UqSXAkMVl2wDmwKUJ70560dyFf6xjFUVNmvbpPNrVxzy53uH20ZZSqo/u33kgcMiDd1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774506336; c=relaxed/relaxed;
-	bh=qyl2tRm9hwQuxiJfS+7z0mBBb4tN3hi0dNEI5cPRQeU=;
+	t=1774506832; c=relaxed/relaxed;
+	bh=om8C4xRL4G5OJYvxqnzGtRDXoa6aYun3rB72EV+Md+Q=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=L/B/2j69VTxRiPS6m6wF1zgNOm80Lwui8axii7RDthW8SDfyz+q924drdmBl70jR+W0QoBf+4xTMLtJRyDBO80ThYd9+h3do3l28KPK20rV4Rb+N1Akua5SO5OPKdWTNBetGr4QDBUhvgmwbLlMzYyTKUQ/rYrnRlkxOoVHV0pL5Hsn+Orn6es1mEHY76UVHd7wnZIisrZ8yfchzK+I6KtlfP8iT9n3jfkeuePgn3x5UJ0rWzsRdU1R+wV2S0ONrBeNwzm7oSn3+2fdJMmZxJBBwWBjmwLt6deyDmaGiVO5toXoCECcVaOTWH6azdAMUmh7oYAMwG8/8PtAeQK+z5Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=m2F1VRLu; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=Zqi/PySJ/o4XCPL96/kSKPpWBO7hc7UHhciSyRv4L/G+WMYEwGWZKIeA/HNTPIGdq4eISVF1AwLxxkGFfqO7aoBHN38osFuU+z5+TjHoZAHDpryAJ5SlSSo558OK7eGasj1gwOwn0B7ll3hp2k6NawopJ3Yb+KrAtgGox0CbYQvMVgJxPsZnRMX4KIJDW67tiBLxOaB5yshDaMXmL8X9vz16CIreU5Y8pVUv7uhj5IitWX9D4Ntc4Tb9Ghdds+lbQT5vvTe8+j0QBgktkDEjsvLmtR7NikCXb8/Brb44wAG748F6WoivX92pkSmXqUC0T+HJe6GZpldFAI87Ps5mBA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=RVchZcSx; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=m2F1VRLu;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=RVchZcSx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDKr1gJMz2xd6
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:25:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDWN00zwz2xS5
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:33:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1774506335;
-	bh=qyl2tRm9hwQuxiJfS+7z0mBBb4tN3hi0dNEI5cPRQeU=;
+	d=codeconstruct.com.au; s=2022a; t=1774506830;
+	bh=om8C4xRL4G5OJYvxqnzGtRDXoa6aYun3rB72EV+Md+Q=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=m2F1VRLu/z3h8YIiv7trbgAiAAm6P5Qmqlm2K8m0WMAkklBjdOHKK2qH+3jKOg808
-	 87SnMIqU08U0frdGWu0lwmFPUhoe/efmKqSOtLbUtzQkqL3r8jrjZv1lPf+wLPqoFl
-	 l+7v57m9JyoPSY8k0pua4Gz3vbWGjN92YBBw7Y8V6jqjNilu/9b5AJsLFetf3X3qqq
-	 ABSANVeY/39ywVNSZb/QZxqE8zKty2pJ7Kxb03mXUy9sDhCND2xX8nw6cmQZgesXBz
-	 zstN6KwZaLRvPieyfHtF7oQvWXP+3exgqvkPZAXUKgGuUVdMkQ21H2VoxdXfukWxqA
-	 KunTFnm1d75WQ==
+	b=RVchZcSxXPFdsmnvH4AnQkN2+1gupNkeRKHB4UHoEkEzw6Fy9/wccbzesTahCb74v
+	 fFVTp01572MGe129MFl9h0qdwaG8L8FM57vgieBVBIQ3OfjyDj1PM0EcXma98VM1Es
+	 6sSVHur16IsQVaJahX3t+3cTBeWUleQWGaEZyM7jN/9Q/ubIr+TdApYHdwJKKNEBHp
+	 rss334e0TEB5gA+Insa7bE/hIDbhw7M2kqr0cvGCPORbmRBwVa0Erx3+VEkYP0BVrf
+	 96Rm1Na7Zy9HCT43XSST04jQzJcJjvr9kU45Z5dLezfk9MgjCVSlALzF/Ln2hInT7w
+	 6M0alBAbbVcDQ==
 Received: from [192.168.68.115] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 1AF006597C;
-	Thu, 26 Mar 2026 14:25:35 +0800 (AWST)
-Message-ID: <eacfdc8637a7e59457c3c7d29e1044426d5c7f75.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v2] ARM: dts: aspeed: anacapa: Add eeprom device node
- for NFC adaptor board
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id CF6326597C;
+	Thu, 26 Mar 2026 14:33:49 +0800 (AWST)
+Message-ID: <0f98ee4fcc662e80160026208b18e655eeb50ad1.camel@codeconstruct.com.au>
+Subject: Re: [PATCH] ARM: dts: aspeed: anacapa: Add eeprom device node
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: carl.lee@amd.com
+To: Colin Huang <u8813345@gmail.com>
 Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
   Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
  devicetree@vger.kernel.org, 	linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, 	linux-kernel@vger.kernel.org,
- peter.shen@amd.com, colin.huang2@amd.com
-Date: Thu, 26 Mar 2026 16:55:34 +1030
-In-Reply-To: <20260309-arm-dts-aspeed-anacapa-add-eeprom-device-v2-1-91c7dde4b79d@amd.com>
-References: 
-	<20260309-arm-dts-aspeed-anacapa-add-eeprom-device-v2-1-91c7dde4b79d@amd.com>
+ colin.huang2@amd.com
+Date: Thu, 26 Mar 2026 17:03:49 +1030
+In-Reply-To: <CAPBH0A9oatx7U2+3dvGVgonHEm+yq5TFM9mTcdStau2Lk1XytA@mail.gmail.com>
+References: <20260302-add-new-eeprom-node-v1-1-2bcf87bc22e4@gmail.com>
+	 <fd932aa3f0cae64f40c3b207657032e7bf61066a.camel@codeconstruct.com.au>
+	 <CAPBH0A9oatx7U2+3dvGVgonHEm+yq5TFM9mTcdStau2Lk1XytA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -73,68 +73,37 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi Carl,
-
-Sorry for the delayed in review.
-
-On Mon, 2026-03-09 at 11:46 +0800, Carl Lee via B4 Relay wrote:
-> From: Carl Lee <carl.lee@amd.com>
+On Fri, 2026-03-06 at 14:06 +0800, Colin Huang wrote:
+> Hi Andrew,
 >=20
-> Add eeprom device node for NFC adaptor board FRU.
+> Thanks for the feedback.
 >=20
-> Signed-off-by: Carl Lee <carl.lee@amd.com>
-> ---
-> Add eeprom device nodes used to store FRU data for the PRoT
-> module and NFC adapter board on Anacapa platform.
-
-This patch note seems inaccurate for the purpose of v2?
-
-Doesn't matter too much in this instance, but should be fixed for any
-subsequent revision. Which, speaking of ...
-
-> ---
-> Changes in v2:
-> - Remove PRoT module eeprom commit since it is already included in anothe=
-r series under review.
-> - Only include NFC adapter board eeprom node.
-> - Link to v1: https://lore.kernel.org/r/20260309-arm-dts-aspeed-anacapa-a=
-dd-eeprom-device-v1-0-45092310e0e6@amd.com
-> ---
-> =C2=A0arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts | 5 +++++
-> =C2=A01 file changed, 5 insertions(+)
+> In our case the only functional difference between DCSCM rev=E2=80=AFB/C =
+and
+> rev=E2=80=AFD is the EEPROM I=C2=B2C address change (0x50 =E2=86=92 0x51)=
+.
+> Other than this, the hardware is identical and all device-tree
+> described components share the same wiring and behaviour.
 >=20
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/a=
-rch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-> index 2cb7bd128d24..69c41532fdfb 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-> @@ -815,6 +815,11 @@ i2c13mux0ch7: i2c@7 {
-> =C2=A0			#address-cells =3D <1>;
-> =C2=A0			#size-cells =3D <0>;
-> =C2=A0
-> +			eeprom@50 {
-> +				compatible =3D "atmel,24c128";
-> +				reg =3D <0x50>;
-> +			};
-> +
-> =C2=A0			nfc@28 {
+> Maintaining two separate devicetrees for a single=E2=80=91byte address sh=
+ift
+> doesn=E2=80=99t scale well for us.=20
 
-... these nodes are out of order.
+I disagree that there's a problem of scale. The kernel's dts files are
+processed with the C pre-processor - you can #include one file from
+another. .dtsi files work this way, and as a related example, we
+maintain two devicetrees for the AST2600 EVB where -A1 had some minor
+differences in the regulator configuration:
 
-Can you please order them by ascending unit address, as per the DTS
-coding style?
+ * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
+arch/arm/boot/dts/aspeed/aspeed-ast2600-evb.dts?h=3Dv7.0-rc5
+ * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/=
+arch/arm/boot/dts/aspeed/aspeed-ast2600-evb-a1.dts?h=3Dv7.0-rc5
 
-https://docs.kernel.org/devicetree/bindings/dts-coding-style.html#order-of-=
-nodes
+See also my response to Kevin Tung earlier:
+
+https://lore.kernel.org/all/d7794f74b26bbc1ee0a70e39c5671acc018f80eb.camel@=
+codeconstruct.com.au/
 
 Andrew
-
-> =C2=A0				compatible =3D "nxp,nxp-nci-i2c";
-> =C2=A0				reg =3D <0x28>;
->=20
-> ---
-> base-commit: a0ae2a256046c0c5d3778d1a194ff2e171f16e5f
-> change-id: 20260309-arm-dts-aspeed-anacapa-add-eeprom-device-a1aabe06a35b
->=20
-> Best regards,
 
