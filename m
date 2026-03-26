@@ -1,62 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3785-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3786-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F8E7109E54B
-	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F633109E558
+	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:47:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDl10p3mz2yS4;
-	Thu, 26 Mar 2026 17:43:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDqH6s2Cz2yS4;
+	Thu, 26 Mar 2026 17:47:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774507436;
-	cv=none; b=JJKodPNrRNhLRHt4U7YRWqjxdYtAxrhZrv5UhXo96tFv5cE5mwOJdkoDdoSx8b9U0gWh+ezcGJi46LAidOn+IvdtyYKwXSXR4lGuWFTFN019ZyrdBVsVU7PGxtSaSy/sUIbP+4e4vt48Meeo784pACQKbg+FH54acZHJmpwMaluRLiqqiJxZmdQACO8WJNMnGGqaZ2NJrGCGt2j6xaC4c9r5tDPUSHmFuwrCfodz3WsqcNPDQe2EIn4bVnNQtaYek21qpQ/zzgIhBTpV6jsl6rKpC36lTur0jbcdm9tTx8kJqYY6LwM1gweFGZFj9B7I6EPRaVw2hvidv7p8g/W97Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774507659;
+	cv=none; b=V9Oq86u9z/ftBXFFZ1hrP9MKIKoMLBpajay3N9/9unAjOQ7DtVQ3Kzb4nM8oC47GeWR2riZRIpTxXS/zFQ+qOH8oNcXFyz55jIxPpZR2CnJn29Xz13LtyrrBxfKk4jUVnz9+98eu69bgg3TXmSPAOphDZVWzn80gJA5zdLo3cTzB8Z8n0X0raBhBiBG7hiQaNl18kXOmyEqlZxvjk+ja/6puP4DsbDTkwZEJoRDYF4uqn36WPRM3pf9iwxka5B3scXR2/9nGvv44c5rUwksl38rI47QTdjnCk4uwEbXYSZxHREkv7+J0UwKU+X0XBeC9kv3LNyomncu+0O8RuAgmgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774507436; c=relaxed/relaxed;
-	bh=vOXu1h7wNBU0MwKwR9KWxa8v2aRV0Z0aQ49i9AHsRjA=;
+	t=1774507659; c=relaxed/relaxed;
+	bh=uuO89bXipoojZ5oWacJBzynhJDJvNYok686rks33Smk=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=Pcckbkf0/OfD9z5N76zgHvdIXYEkAix0fBn2rJW8IcduhQ4Xw1Nl9UsFB1ZtYE57AS1ymzGKgqxHdeUwjYgB3BA9rjR4vz77WnSAv1itNZN+re3eSVrhvXn72/T6w9S9+Kh3tLE04DxJvUv47lDotntFw12GdXYjEdLPYehidzwTKd8+cF9yDhm1ekOFgn3Be1bJ3Oi7gTTpUL8oKJ9esZOjK9sH0ZoVORyaqiPsrdgDD5My75ejieY8MIuqytIqusoaEIGyMVD93EUwHUF7pCJsjQLTvpCMdWacxY9ACJg1txh81mkWbmeHvz8yN+Z03nuxw2+7n6MyRfQzoxdYRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Bf9/ogWG; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=b3EFtKYgi+x1A65C2ALs0wafLmJ5EFMQDW9e6WZMWTt51aJFtYAieM0cJqtjow0YSMSC3C96+bcSqoauVjBsyCgGSzHfBWPVZOg5sCr5awzcsbp4ehil23F94WqhOL4cyrJ5WI0qttgjvZstb2Dvv3nx5xGKgkpYNlz9bOtNCm1Az+sfmFShp7xpyjKbvfbz5W6aoq3YdxBQculkSJYvnw4ac3in+EfXiLaMq2sW0r3ypjoCNBp7ocvnOOOEtqW8nglh1FWyFvSPo3yeeR0vb08AfTMVXs0112ANZRmliS2SduqxA1lvkjc6GVc/x3q4+S6OvAsIqR+ZmqvG67VAyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=fffD0qEu; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Bf9/ogWG;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=fffD0qEu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDl00Wvqz2xS5
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:43:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDqH3dGHz2xS5
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:47:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1774507435;
-	bh=vOXu1h7wNBU0MwKwR9KWxa8v2aRV0Z0aQ49i9AHsRjA=;
+	d=codeconstruct.com.au; s=2022a; t=1774507658;
+	bh=uuO89bXipoojZ5oWacJBzynhJDJvNYok686rks33Smk=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=Bf9/ogWGTOWi9NWWT9MjUL9Xb1gjCktDc22xDsaivLJwvaS7q8h5C23xkT/LuqKDP
-	 zNantjz4ge2Q6oLy8byxuFDXcu/NCMtwp4sAargNiSXUILCWq24o5O1afnUOF2tz9g
-	 4Eb2KvSzTpfv6o6z+ft7X7JK6I0Cnx6pElqB+66gZJ4QkVZcG7FsmBQ+El9evKu9vd
-	 z9F6EoHHNrxdBxTfVf8XLOwmRtbYtX4fl3ZoTChx7FgNE+TG4I+qC7b8Fur1FBNv9E
-	 R42CYgLOWyulFYM1cwKjq2Jw2NLAsxRmtW0/pfR+9z9sLcYRPyRoUJQGqoTyOXt87a
-	 PBtgDQ3v6mJVw==
+	b=fffD0qEuIDRqpi3IHyTr1aG2sgjzLTaVV/UVnCDIyZWhOuB7eKGFM/IbMty8f1BcA
+	 WxjANSn/Wubl97tUOZ7iF4u2fp2jci6qESwk21xqNHtXV1jjTcb5GjE+0+HNzYo5re
+	 WcYlzN0gK08wg0l/1hZpaX4AxJIMgvqDl0xYLYDbL/0ueBuR9ykaosOS/whUWyqCuC
+	 gG8bX0VYwm6mmMfgH32Rl9UEGH0oBK2jDbAj5UE5RTJxeXyQnmxumvh6jIyRdeJNJ9
+	 mbKrv0yvPsxztFkwOmHiMoplqOtepCX4m5HVeMflE+4JtJMqcIVYFzmjf558OvQp7w
+	 77ZMuKGa+oyrQ==
 Received: from [192.168.68.115] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id B68C46597C;
-	Thu, 26 Mar 2026 14:43:54 +0800 (AWST)
-Message-ID: <47adfd499195738bd5539c4e438af5dc1ae75559.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v3 2/3] ARM: dts: aspeed: anacapa: update SGPIO mappings
- for DFT integration
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 21ABA6597C;
+	Thu, 26 Mar 2026 14:47:38 +0800 (AWST)
+Message-ID: <8e93868a7f15596f1ee2b758d1743b51d6491486.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 0/2] Add Meta (Facebook) SanMiguel BMC (AST2620)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Colin Huang <u8813345@gmail.com>, Rob Herring <robh@kernel.org>, 
+To: Potin Lai <potin.lai.pt@gmail.com>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski
 	 <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel Stanley
-	 <joel@jms.id.au>
+	 <joel@jms.id.au>, Patrick Williams <patrick@stwcx.xyz>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	Colin.Huang2@amd.com, Carl.Lee@amd.com, Peter.Shen@amd.com
-Date: Thu, 26 Mar 2026 17:13:54 +1030
-In-Reply-To: <20260310-anacapa-dts-sgpio-v3-2-12d9b7f1202e@gmail.com>
-References: <20260310-anacapa-dts-sgpio-v3-0-12d9b7f1202e@gmail.com>
-	 <20260310-anacapa-dts-sgpio-v3-2-12d9b7f1202e@gmail.com>
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Cosmo Chou
+	 <cosmo.chou@quantatw.com>, Mike Hsieh <Mike_Hsieh@quantatw.com>, Potin Lai
+	 <potin.lai@quantatw.com>, Conor Dooley <conor.dooley@microchip.com>
+Date: Thu, 26 Mar 2026 17:17:37 +1030
+In-Reply-To: <20260311-sanmiguel_init_dts-v3-0-2b4d1ab7a8a1@gmail.com>
+References: <20260311-sanmiguel_init_dts-v3-0-2b4d1ab7a8a1@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -74,103 +73,52 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hi Colin,
+Hi Potin,
 
-On Tue, 2026-03-10 at 17:49 +0800, Colin Huang wrote:
-> Update SGPIOM0 GPIO line names and signal mappings to align with the
-> latest DFT (Design For Tooling) integration requirements.
+On Wed, 2026-03-11 at 14:19 +0800, Potin Lai wrote:
+> Add Linux device tree entries for Meta (Facebook) SanMiguel specific
+> devices connected to the AST2620 BMC SoC.
 >=20
-> This change reworks SGPIO input/output assignments, replaces legacy
-> or reserved placeholders, and updates signal naming to match the
-> definitions provided by the CPLD on 2026-03-03.=C2=A0
->=20
-
-I feel this statement isn't super helpful, but no matter.
-
-> The update improves
-> signal clarity and correctness across leakage detection, presence,
-> fault, power-good, and debug-related GPIOs.
-
-I prefer you drop this assessment.
-
->=20
-> Signed-off-by: Colin Huang <u8813345@gmail.com>
+> Signed-off-by: Potin Lai <potin.lai.pt@gmail.com>
 > ---
-> =C2=A0.../dts/aspeed/aspeed-bmc-facebook-anacapa.dts=C2=A0=C2=A0=C2=A0=C2=
-=A0 | 143 ++++++++++++---------
-> =C2=A01 file changed, 83 insertions(+), 60 deletions(-)
->=20
-> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/a=
-rch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-> index 3e297abc5ba4..85b7e027daef 100644
-> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-> @@ -862,89 +862,106 @@ &sgpiom0 {
-> =C2=A0	ngpios =3D <128>;
-> =C2=A0	bus-frequency =3D <2000000>;
-> =C2=A0	gpio-line-names =3D
-> -	/*in - out - in - out */
-> +	/*in - out */
-> =C2=A0	/* A0-A7 line 0-15 */
-> -	"", "FM_CPU0_SYS_RESET_N", "", "CPU0_KBRST_N",
-> -	"", "FM_CPU0_PROCHOT_trigger_N", "", "FM_CLR_CMOS_R_P0",
-> -	"", "Force_I3C_SEL", "", "SYSTEM_Force_Run_AC_Cycle",
-> -	"", "", "", "",
-> +	"L_FNIC_FLT", "FM_CPU0_SYS_RESET_N",
-> +	"L_BNIC0_FLT", "CPU0_KBRST_N",
-> +	"L_BNIC1_FLT", "FM_CPU0_PROCHOT_trigger_N",
-> +	"L_BNIC2_FLT", "FM_CLR_CMOS_R_P0",
-> +	"L_BNIC3_FLT", "Force_I3C_SEL",
-> +	"L_RTM_SW_FLT", "SYSTEM_Force_Run_AC_Cycle",
-> +	"", "",
-> +	"", "",
-> =C2=A0
-> =C2=A0	/* B0-B7 line 16-31 */
-> =C2=A0	"Channel0_leakage_EAM3", "FM_CPU_FPGA_JTAG_MUX_SEL",
-> =C2=A0	"Channel1_leakage_EAM0", "FM_SCM_JTAG_MUX_SEL",
-> =C2=A0	"Channel2_leakage_Manifold1", "FM_BRIDGE_JTAG_MUX_SEL",
-> =C2=A0	"Channel3_leakage", "FM_CPU0_NMI_SYNC_FLOOD_N",
-> -	"Channel4_leakage_Manifold2", "",
-> -	"Channel5_leakage_EAM1", "",
-> -	"Channel6_leakage_CPU_DIMM", "",
-> -	"Channel7_leakage_EAM2", "",
-> +	"Channel4_leakage_Manifold2", "BMC_AINIC0_WP_R2_L",
-> +	"Channel5_leakage_EAM1", "BMC_AINIC1_WP_R2_L",
-> +	"Channel6_leakage_CPU_DIMM", "CPLD_BUF_R_AGPIO330",
-> +	"Channel7_leakage_EAM2", "CPLD_BUF_R_AGPIO331",
-> =C2=A0
-> =C2=A0	/* C0-C7 line 32-47 */
-> -	"RSVD_RMC_GPIO3", "", "LEAK_DETECT_RMC_N", "",
-> -	"", "", "", "",
-> -	"", "", "", "",
-> -	"", "", "", "",
-> +	"RSVD_RMC_GPIO3", "RTM_MUX_L",
-> +	"LEAK_DETECT_RMC_N", "RTM_MUX_R",
-> +	"HDR_P0_NMI_BTN_BUF_R_N", "FPGA_JTAG_SCM_DBREQ_N",
-> +	"No_Leak_Sensor_flag", "whdt_sel",
-> +	"", "",
-> +	"", "",
-> +	"", "",
-> +	"", "",
-> =C2=A0
-> =C2=A0	/* D0-D7 line 48-63 */
-> -	"PWRGD_PDB_EAMHSC0_CPLD_PG_R", "",
-> -	"PWRGD_PDB_EAMHSC1_CPLD_PG_R", "",
-> -	"PWRGD_PDB_EAMHSC2_CPLD_PG_R", "",
-> -	"PWRGD_PDB_EAMHSC3_CPLD_PG_R", "",
-> -	"AMC_BRD_PRSNT_CPLD_L", "", "", "",
-> -	"", "", "", "",
-> +	"PWRGD_CHAD_CPU0_FPGA", "",
-> +	"PWRGD_CHEH_CPU0_FPGA", "",
-> +	"PWRGD_CHIL_CPU0_FPGA", "",
-> +	"PWRGD_CHMP_CPU0_FPGA", "",
-> +	"AMC_BRD_PRSNT_CPLD_L", "",
+> Changes in v3:
+> - Update the model name to "Facebook SanMiguel BMC".
+> - Remove CP2112 and downstream IOEXP nodes as the upstream driver
+> =C2=A0 is not yet available.
+> - Remove the following EEPROM nodes until the bus numbers and
+> =C2=A0 addresses are confirmed:
+> =C2=A0 - 3-0051: HMC FRU EEPROM
+> =C2=A0 - 3-0052: HPM0 FRU EEPROM
+> =C2=A0 - 3-0053: HPM1 FRU EEPROM
+> - Change the compatible property of the following EEPROM nodes
+> =C2=A0 from 24c02 to 24c128:
+> =C2=A0 - 5-0050: SMM FRU EEPROM
+> =C2=A0 - 9-0050: PDB FRU EEPROM
+> =C2=A0 - 13-0055: SMM EXT FRU EEPROM
+> - Fix the smm_temp node address typo (0x4e -> 0x48).
+> - Remove nodes that no longer exist in the latest board design:
+> =C2=A0 - 19-006f: RTC (nct3018y)
+> =C2=A0 - 9-0075: IO expander (pca9555)
+> - Update linenames to match the reference design:
+> =C2=A0 - B0_M0_AIC_USB_EN-O -> B0_M0_CPU_L0_RST_IND_L-O
+> =C2=A0 - B0_M0_BRD_ID_2-I -> B0_M0_BMC_TO_GPU_MCU_I2C_EN-O
+> =C2=A0 - B1_M0_AIC_USB_EN-O -> B1_M0_CPU_L0_RST_IND_L-O
+> =C2=A0 - B1_M0_BRD_ID_2-I -> B1_M0_BMC_TO_GPU_MCU_I2C_EN-O
+> =C2=A0 - IOX_GPIO_P16_TP -> USB2_BMC_HUB2_RST_L-O
+> =C2=A0 - I2C_PDB_ALERT_L-I -> X86_TPM_RST_SEL_L-O
+> - Remove unexpected or unsupported properties from SSIF and IOEXP
+> =C2=A0 nodes.
+> - Change all status values from "ok" to "okay" for consistency.
+> - Link to v2: https://lore.kernel.org/r/20260203-sanmiguel_init_dts-v2-0-=
+6a5682c32b38@gmail.com
 
-Can you discuss this patch in the context of my other replies to both
-yourself and Kevin?
+Can you please discuss these proposed changes in the context of my
+reply to Kevin below?
 
 https://lore.kernel.org/all/d7794f74b26bbc1ee0a70e39c5671acc018f80eb.camel@=
 codeconstruct.com.au/
+
+Thanks,
 
 Andrew
 
