@@ -1,53 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3773-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3774-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11933109E542
-	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 03:09:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FA2F109E54B
+	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 05:27:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fh8031r1Nz2xlM;
-	Thu, 26 Mar 2026 14:09:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhC3F4Ww2z2xlM;
+	Thu, 26 Mar 2026 16:27:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774494595;
-	cv=none; b=LHFMG51fB5WpFyjW4dl4LpW9JxmUWt9GG2VxAquhkSb0fuB74pr8kWoD9asB5waM27VrIEwzW3Mc7epX20fzqxRgDESqbmoQHWsx3Y7dzl5cAvuOdMc1+tp/miRUfWzyGlVc+WrRykObj3XZFtSSpSbkGJwRuGYVnncEXCoHnCdbejHHh5lniH3XNmzWiBXiIi8MjHLHOWfofI9qeDBMZBLFFkv0wE2dptew1VQuFxy5I8lIwMTdRTuNoZ95dWVqKyXyr5lWuIr58Qfg1HBBorsC4Z8n4F+tOB3JjI1NTGu9QbhmBz0ZbXFNSgl+dYJJxGW5WpN4M2cEMDVqflYiqQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774502873;
+	cv=none; b=KR8OjpPUu9EOGZi4Q9aN2XLrwzPxGgY7L1wWiWCCc90c+N1xv65cK5qYFY00QtQ04qrK722MNC5R4OwZVLmI3kPC1xqoGCVah6rBs1pqY0JEUKq0RTSxgXrMkNVUP3Y0U3oP/z5PC3nJPPia4jJ3bYxscWiIhyrStFIrUXqp9uc96Y+IWyP4nUj/2RljaV5y8fe0Ajnu7/gX9aJJkWh3IJb/MqAai0Cp5WvJD2SaVz6F5Q33EqrRiUcFEt2Nx/R6czl/AuZWEFo9zNPp/MISz9OdgJIcSy04ha0a7h6AiXueOs/Z7aGJVpWuH4PTwG6yvcKuA5WIhf0mg9DHtirZ0g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774494595; c=relaxed/relaxed;
-	bh=zeUGGTYgyK94YprNuLur3t1PD0YGNWfrDQg8S912Lhw=;
-	h=Message-ID:Subject:From:To:Cc:Date:Content-Type:MIME-Version; b=MZT3lROVWiFPVVybrqG+syHks4hXjOqSTPQQGMxUjsd2c0BHeIGLXprq3DQmQenSMLhaN43T3BHoW9+FOG37JYjxx8FGvyJ31CgYK0YOr3GDx7Sf+4k0w7s9pEF0l/M9dzGGr5WWOrgwaefEE7Bm1G1VxxO4iCRxa9oqjt1/bKtiokBSDrWqfUKUNRp0n8GK1VG2nsOPR+SODtVmrnpwfJarcHwADCsGImzk/YucJQlK5E97bgwOE92G/KgWOB0Lgt3/GUcZ6vx76rbDKifO0zLbjoqRncM9O0Ko/7g4hBXUEfFjcpy1A/G2U994b2QJmbjBH4jms8r5DNf6EYkOlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=h9tzlO7H; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1774502873; c=relaxed/relaxed;
+	bh=gPXVxe4ANUtFdLLKPWp11SGeawgPJ2lvQwnd9v54erw=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=DzeRY/rphquVmwd7yyMa24r3C2uKqlNe1RnXJGg9h9TC04W+0+ooi83NYvCViQkNOuJTRS9bXOgtz0aulcvdONVrA/cR7FnWYZFrPPf+WmaXzHWFAhJD0Aj/lTeDi2o7OYdWAX7GfKZNur0BQhe9SisHnOw8NaUs2/++vVeVQnT9isZPmivr+bAyuWYHmEzDrNbVJRfivAiqmr0kyxS6iQ75jn+Syuv6XRvRBp/RnPP21LF71N8pdpPsBggFDu2yjB7NY4r+zl6lehfKVdXqJi6cBOt0VShas7Q9gzHWatBSs72JPELvuax6NzHvSZvlxm49wcgdPq33qpX5/uIjQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kT+04YXP; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=h9tzlO7H;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=kT+04YXP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fh8020z8pz2xcB
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 14:09:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhC3D3ZB1z2xcB
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 16:27:52 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1774494593;
-	bh=zeUGGTYgyK94YprNuLur3t1PD0YGNWfrDQg8S912Lhw=;
-	h=Subject:From:To:Cc:Date;
-	b=h9tzlO7HVgpr7TKHSJj2CHl/BXQSp9jqI2Idzj2KXDfaP9GRr3XW/JDYKM0u5cwD/
-	 rAA0ZCHXMqJykP5jihSrlPCB+p2DRCPC2is/7Nt3BEEEiG8iaNUhw0VzzhQUb+ybuL
-	 YgrBjRkV3afc/awiiW+4sMx4JNX+oy44V0aHCI6f0cjMDjzbge+L+hymQFLVRASKX1
-	 tjbspCnVMe5sjoc4ax7V7pDunlpEiV1mJ1uDDs8n5xIfThKsMYqfpJrU3JJVQ2i/Uf
-	 l+D3SScdqg9BWOnhEfN5usNLs3nxOjJNn3OVJOdUYt2p/iKeWTWc8Hbs4hvgCcTZX0
-	 TXl6HbAEMfkZA==
+	d=codeconstruct.com.au; s=2022a; t=1774502870;
+	bh=gPXVxe4ANUtFdLLKPWp11SGeawgPJ2lvQwnd9v54erw=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=kT+04YXPlRKFDvvUziOIQfXuDkgCsfS1eFgzZe2KSyxC6HjrP+oewnY7kk/IeO87i
+	 flJF3N4C3PU9B+v9RoNy1sVeBzI0ENkwIC4B5Y9J4JUqmLARnkNv6xUUd6Pke/HFIn
+	 FuIm7IS7I3o2dPQ8klFgikDcu3THMaj3oCFDZiLYOtufO0y4UAG5KeU3ia8+a2LTbw
+	 E2EcVsqdP2cr5Uo2pBbkHMOaGrwJT6Tk7toeyE542RnA8D9+VJUrlKejklkHBQv0hj
+	 BmUnf853E9alMZBLe8xHC8I+bmGNlju+ZBKac7X1JejtjYkUu16M8jVMIeK2oaUczu
+	 Hf4RwvlxMta/g==
 Received: from [192.168.68.115] (unknown [180.150.112.60])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5929E645CA;
-	Thu, 26 Mar 2026 11:09:53 +0800 (AWST)
-Message-ID: <df8ef5ea7b9e254658934c18de20fd9805a82d74.camel@codeconstruct.com.au>
-Subject: [GIT PULL] aspeed: first batch of devicetree changes for v7.1
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id AAF4065AE0;
+	Thu, 26 Mar 2026 13:27:49 +0800 (AWST)
+Message-ID: <7867c2bb2d3fa023d0a201ff1ca24d69916fb2cc.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v3 1/2] dt-bindings: clock: ast2600: Add reset
+ definition for video
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: soc <soc@lists.linux.dev>
-Cc: linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, Joel Stanley <joel@jms.id.au>
-Date: Thu, 26 Mar 2026 13:39:52 +1030
+To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@kernel.org>
+Cc: Haiyue Wang <haiyuewa@163.com>, devicetree@vger.kernel.org, 
+	linux-aspeed@lists.ozlabs.org, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, "open
+ list:COMMON CLK FRAMEWORK"	 <linux-clk@vger.kernel.org>, open list
+ <linux-kernel@vger.kernel.org>
+Date: Thu, 26 Mar 2026 15:57:48 +1030
+In-Reply-To: <20260302011651.94682-1-haiyuewa@163.com>
+References: <20260302011651.94682-1-haiyuewa@163.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -65,78 +73,48 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 
-Hello SoC maintainers,
+Hi Michael, Stephen,
 
-Here's the first batch of ASPEED devicetree changes for v7.1.
+On Mon, 2026-03-02 at 09:15 +0800, Haiyue Wang wrote:
+> Add ASPEED_RESET_VIDEO reset definition to the ast2600-clock binding
+> header. It is required for proper reset control of the video on the
+> AST2600 SoC for aspeed-video driver.
+>=20
+> Signed-off-by: Haiyue Wang <haiyuewa@163.com>
+> ---
+> v3:
+> =C2=A0 - Drop 'Fixes:' tag in header file patch.
+> v2: https://lore.kernel.org/all/20260227151602.829-1-haiyuewa@163.com/
+> =C2=A0 - Fix checkpatch.pl warning, and send dt-bindings as single patch =
+as
+> =C2=A0=C2=A0=C2=A0 the submitting-patches guide.
+> v1: https://lore.kernel.org/all/20260227123837.70079-1-haiyuewa@163.com/
+> ---
+> =C2=A0include/dt-bindings/clock/ast2600-clock.h | 1 +
+> =C2=A01 file changed, 1 insertion(+)
+>=20
+> diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindi=
+ngs/clock/ast2600-clock.h
+> index f60fff261130..7b9b80c38a8b 100644
+> --- a/include/dt-bindings/clock/ast2600-clock.h
+> +++ b/include/dt-bindings/clock/ast2600-clock.h
+> @@ -124,6 +124,7 @@
+> =C2=A0#define ASPEED_RESET_PCIE_RC_OEN	18
+> =C2=A0#define ASPEED_RESET_MAC2		12
+> =C2=A0#define ASPEED_RESET_MAC1		11
+> +#define ASPEED_RESET_VIDEO		6
+> =C2=A0#define ASPEED_RESET_PCI_DP		5
+> =C2=A0#define ASPEED_RESET_HACE		4
+> =C2=A0#define ASPEED_RESET_AHB		1
 
-Please pull.
 
-Cheers,
+If you would like to take this change I can apply 2/2 later when it
+makes sense to do so:
+
+Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
+
+Otherwise, I'm happy to take both through the aspeed/arm/dt branch in
+the bmc tree with your ack on this one.
 
 Andrew
-
-The following changes since commit 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f=
-:
-
-  Linux 7.0-rc1 (2026-02-22 13:18:59 -0800)
-
-are available in the Git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git tags/aspeed=
--7.1-devicetree-0
-
-for you to fetch changes up to 76b4ec8efdc3887cdbf730da2e55881fc1a18770:
-
-  ARM: dts: aspeed: anacapa: Add retimer EEPROMs (2026-02-23 12:02:22 +1030=
-)
-
-----------------------------------------------------------------
-aspeed: first batch of devicetree changes for v7.1
-
-New platforms:
-
-- Asus Kommando IPMI card
-- Asrock Paul IPMI card
-
-Updated platforms:
-
-- Anacapa (Meta): NFC and EEPROMs
-- MSX4 (Nvidia): 128M layout for the alternate boot flash
-
-----------------------------------------------------------------
-Anirudh Srinivasan (4):
-      dt-bindings: arm: aspeed: Add Asus Kommando IPMI card
-      ARM: dts: aspeed: Add Asus Kommando IPMI card
-      dt-bindings: arm: aspeed: Add Asrock Paul IPMI card
-      ARM: dts: aspeed: Add Asrock Paul IPMI card
-
-Carl Lee (1):
-      ARM: dts: aspeed: anacapa: add NFC device
-
-Dirk Chen (1):
-      ARM: dts: aspeed: anacapa: Add retimer EEPROMs
-
-Marc Olberding (1):
-      ARM: dts: aspeed: Add 128M alt flash layout to NVIDIA MSX4
-
- Documentation/devicetree/bindings/arm/aspeed/aspeed.yaml        |   2 ++
- arch/arm/boot/dts/aspeed/Makefile                               |   2 ++
- arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-paul-ipmi-card.dts   | 131 ++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-++++++++
- arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts | 117 ++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts        |  22 ++++=
-+++++++++++
- arch/arm/boot/dts/aspeed/aspeed-bmc-nvidia-msx4-bmc.dts         |   1 +
- arch/arm/boot/dts/aspeed/openbmc-flash-layout-128-alt.dtsi      |  32 ++++=
-++++++++++++++++++
- 7 files changed, 307 insertions(+)
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asrock-paul-ipmi-ca=
-rd.dts
- create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-=
-card.dts
- create mode 100644 arch/arm/boot/dts/aspeed/openbmc-flash-layout-128-alt.d=
-tsi
-
 
