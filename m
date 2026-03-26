@@ -1,30 +1,30 @@
-Return-Path: <linux-aspeed+bounces-3781-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3782-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB5B109E55A
-	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:20:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B3A8109E54B
+	for <linux-aspeed@archiver.kernel.org>; Thu, 26 Mar 2026 06:20:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDCh01vhz2yS4;
-	Thu, 26 Mar 2026 17:20:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fhDCj0D3Yz2yTH;
+	Thu, 26 Mar 2026 17:20:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506015;
-	cv=none; b=F5iK652HirXIbDboN0Uni2MTu/2hjmnZ6Y9ov2cOZiS6RUzpbqO6Lqj0sCa79jJTzh6Hzg4n20fhpu7f7/2gq09NADCqYJsbVujOMw9UYyhKkQBwVcY2Z3gkhEY/H8lGegc2tHXQCJZgOxfkwiNquWPy2Oul3Jnu0dbgTwcxS6Cwdq5FNj9UAD97tOI6knSFVxrvEmDLyp6gSRUcfYGqvrO420zNi2CNpwhTqacH1uTCeBh2I0408RFK1ypiXOw2r43uQ4ul5VHPClmnXcaOzKNNFck028Bk92TL3tAPBi4ba6kiZdGmOuGOj2qzfAqul4Xz8PwHMEUU0/0GGElwZg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774506016;
+	cv=none; b=F7aCx6cpWkQcEy+TgRxQ6I1rujC4/3lZAzSYL2MrGXMFhDsOtITt1dTYJg5/1hLxsn9C2ZUh41E1RtLXhQWErCgh+j/s2GkxL5/29m9dFuTEosmwjVnQqB70WnB7WB8ETViM5FnJhukDerKkSGvO+bkWbNHtlcrmqIi7YZIJBXp8Lar+AAQl8PF5zE8jMWcnSfwlySP9yTzksmiTOB89zMJCDChU2gIgXESpSoVJCDno0h0rGJTisFhEt1vr9zgvWqAUQU/Q5y5nqmUV5J4ZQ4iFd0riIng+yyDqHg7aa8xzNU1p92OLUG1UNWMnNGq6E8K5/UWeVuFZQIo9O2oqhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774506015; c=relaxed/relaxed;
-	bh=6kHcHEpkSNeWqVxxL2+mkHZIwxCBGOknwxKDp7hpBjQ=;
+	t=1774506016; c=relaxed/relaxed;
+	bh=D+c1qdcTxTsOTTYgUvUzO1k2tuphITL/5mx7UqECEuI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-ID:References:
-	 In-Reply-To:To:CC; b=fYsbfj8c6Hhxz9/Q9NUdN8Z0p4UETe3Hje5jQxpyyjBlhYHItMNPjtbTkJc6f+YPUPi41gBAXnLmPPlbYfuf+Jiu+O/HnD2A1YVZtNNeS35Q8tn9TBf+/Jsqimh1hMskKicwIIbjYnB52LnGVhsGq5N/FgzbWUlTXSt0T5zUW5+0wvdsSaAQUi1jVQ81ulo17bgZb3oXUI3sCUcQsC+NLJzjbnoIxr4DZMjLZH7VXZyc9izWnzkKgeuJM/z56OA6Eemq/HGU/OmSUtAls/Bw0V7W5ghJqYQLoStn/gOvu/lvd+9T28bfbxPvVWA4tw+Wg+Yk2WFx5yWrgoqISSRw8w==
+	 In-Reply-To:To:CC; b=aRr+b/opIIzWpgHB5F8OXsge5HbRd9B3rXUBXbHsvcZ+MApJffdEk1xPCEHVk8oxWBmIwM2jxtV2my3+roEW0ZSPxo+rB4c56aCwSUdhWc56feMdbL2Ci0O9zRWtgPf2sWx+DRcedAb8PwYgqsqPrVSQEhuquwbfMsZ8X7BZWAL9L/C6yJVu5NxqQaiNcw6ildWiJAAmjKIOhY/hX1jmfxoAXcm8Q5/njU9oKf8Hhu+7xnH8W/Y/QZIa47MLTC4ExHQ5TTcgQJ09u272gCxMcqAmzvpmexiBgUbW0Aca+GugfK80S+zt0LEkYuRIPM98T12aggeNXVsOUafcr0KkDw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeed.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
 Received: from TWMBX01.aspeed.com (mail.aspeedtech.com [211.20.114.72])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDCf4vFLz2xd6
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:20:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhDCh1YN8z2xd6
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 26 Mar 2026 17:20:16 +1100 (AEDT)
 Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Thu, 26 Mar
@@ -33,9 +33,8 @@ Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
  (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
  Transport; Thu, 26 Mar 2026 14:19:50 +0800
 From: Ryan Chen <ryan_chen@aspeedtech.com>
-Date: Thu, 26 Mar 2026 14:19:52 +0800
-Subject: [PATCH v3 3/4] irqchip/ast2700-intc: Add KUnit tests for route
- resolution
+Date: Thu, 26 Mar 2026 14:19:53 +0800
+Subject: [PATCH v3 4/4] irqchip/aspeed-intc: Remove AST2700-A0 support
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -51,7 +50,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <20260326-irqchip-v3-3-366739f57acf@aspeedtech.com>
+Message-ID: <20260326-irqchip-v3-4-366739f57acf@aspeedtech.com>
 References: <20260326-irqchip-v3-0-366739f57acf@aspeedtech.com>
 In-Reply-To: <20260326-irqchip-v3-0-366739f57acf@aspeedtech.com>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -64,559 +63,192 @@ CC: <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
 	<linux-riscv@lists.infradead.org>, Ryan Chen <ryan_chen@aspeedtech.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1774505990; l=14664;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774505990; l=5800;
  i=ryan_chen@aspeedtech.com; s=20251126; h=from:subject:message-id;
- bh=1YBW+EL7AuGWoFCRjiSMhAL5FE0T35y9CH+HP9XNVFg=;
- b=Y9wLsicB7XByheJooZF5sf87VithLdAJgl7EGCcJiIy3pOiWhmdCuzuZ0fUXDsy62bYrSuwtA
- mM8eRbeAL2lCa9C9RcxuBhs6xwQNZqEm/HAQrncD0JqY4NLaw/Ucnvu
+ bh=dDHK26Pv3om1nVVi9t4wNhYIZIKE7ffity4S2AcBKdE=;
+ b=a2LIRMfXKomh6waSLwNLx6F2dZ7sgFn/YDi/hbGuAXv7USC+g/es12mIQBD90HMv8I794aidD
+ IDd8TVO6gP/Dqq+Ygw38WvtbA9wmEqv70V0pMDemv0+IGtz5c/wRUQU
 X-Developer-Key: i=ryan_chen@aspeedtech.com; a=ed25519;
  pk=Xe73xY6tcnkuRjjbVAB/oU30KdB3FvG4nuJuILj7ZVc=
 
-Add a KUnit suite for aspeed_intc0_resolve_route().
+The existing AST2700 interrupt controller driver
+("aspeed,ast2700-intc-ic") was written against the A0 pre-production
+design.
 
-Cover invalid arguments, invalid domain/range data, connected and
-disconnected mappings, and malformed upstream range cases.
+From A1 onwards (retained in the A2 production silicon), the interrupt
+fabric was re-architected: interrupt routing is programmable and
+interrupt outputs can be directed to multiple upstream controllers
+(PSP GIC, Secondary Service Processor (SSP) NVIC, Tertiary Service
+Processor (TSP) NVIC, and Boot MCU interrupt controller). This design
+requires route resolution and a controller hierarchy model which the
+A0 driver cannot represent.
+
+Remove driver support for A0 in favour of the driver for the A2
+production design.
 
 Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
-
 ---
-Changes in v2:
-- add line break before include "irq-ast2700.h"
-- remove pointless newline.
-- rename arm_gicv3_fwnode_read_string_array to
-  gicv3_fwnode_read_string_array
-- add .kunitconfig file
----
- drivers/irqchip/.kunitconfig             |   5 +
- drivers/irqchip/Kconfig                  |  11 +
- drivers/irqchip/Makefile                 |   1 +
- drivers/irqchip/irq-ast2700-intc0-test.c | 473 +++++++++++++++++++++++++++++++
- 4 files changed, 490 insertions(+)
+ drivers/irqchip/Makefile          |   1 -
+ drivers/irqchip/irq-aspeed-intc.c | 139 --------------------------------------
+ 2 files changed, 140 deletions(-)
 
-diff --git a/drivers/irqchip/.kunitconfig b/drivers/irqchip/.kunitconfig
-new file mode 100644
-index 000000000000..00a12703f635
---- /dev/null
-+++ b/drivers/irqchip/.kunitconfig
-@@ -0,0 +1,5 @@
-+CONFIG_KUNIT=y
-+CONFIG_OF=y
-+CONFIG_COMPILE_TEST=y
-+CONFIG_ASPEED_AST2700_INTC=y
-+CONFIG_ASPEED_AST2700_INTC_TEST=y
-diff --git a/drivers/irqchip/Kconfig b/drivers/irqchip/Kconfig
-index 0156fee89b2c..143af3f30a4b 100644
---- a/drivers/irqchip/Kconfig
-+++ b/drivers/irqchip/Kconfig
-@@ -122,6 +122,17 @@ config ASPEED_AST2700_INTC
- 
- 	  If unsure, say N.
- 
-+config ASPEED_AST2700_INTC_TEST
-+	bool "Tests for the ASPEED AST2700 Interrupt Controller"
-+	depends on ASPEED_AST2700_INTC && KUNIT=y
-+	default KUNIT_ALL_TESTS
-+	help
-+	  Enable KUnit tests for AST2700 INTC route resolution.
-+	  The tests exercise error handling and route selection paths.
-+	  This option is intended for test builds.
-+
-+	  If unsure, say N.
-+
- config ATMEL_AIC_IRQ
- 	bool
- 	select GENERIC_IRQ_CHIP
 diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 62790663f982..ac04a4b97797 100644
+index ac04a4b97797..3d02441b3ee6 100644
 --- a/drivers/irqchip/Makefile
 +++ b/drivers/irqchip/Makefile
-@@ -90,6 +90,7 @@ obj-$(CONFIG_MVEBU_SEI)			+= irq-mvebu-sei.o
- obj-$(CONFIG_LS_EXTIRQ)			+= irq-ls-extirq.o
- obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
+@@ -92,7 +92,6 @@ obj-$(CONFIG_LS_SCFG_MSI)		+= irq-ls-scfg-msi.o
  obj-$(CONFIG_ASPEED_AST2700_INTC)	+= irq-ast2700.o irq-ast2700-intc0.o irq-ast2700-intc1.o
-+obj-$(CONFIG_ASPEED_AST2700_INTC_TEST)	+= irq-ast2700-intc0-test.o
+ obj-$(CONFIG_ASPEED_AST2700_INTC_TEST)	+= irq-ast2700-intc0-test.o
  obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-vic.o irq-aspeed-i2c-ic.o irq-aspeed-scu-ic.o
- obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-intc.o
+-obj-$(CONFIG_ARCH_ASPEED)		+= irq-aspeed-intc.o
  obj-$(CONFIG_STM32MP_EXTI)		+= irq-stm32mp-exti.o
-diff --git a/drivers/irqchip/irq-ast2700-intc0-test.c b/drivers/irqchip/irq-ast2700-intc0-test.c
-new file mode 100644
-index 000000000000..2aa00df72c04
---- /dev/null
-+++ b/drivers/irqchip/irq-ast2700-intc0-test.c
-@@ -0,0 +1,473 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ *  Copyright (C) 2026 Code Construct
-+ */
-+#include <kunit/test.h>
-+
-+#include "irq-ast2700.h"
-+
-+static void aspeed_intc0_resolve_route_bad_args(struct kunit *test)
-+{
-+	static const struct aspeed_intc_interrupt_range c1ranges[] = { 0 };
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	const struct irq_domain c0domain = { 0 };
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(NULL, 0, c1outs, 0, c1ranges, NULL);
-+	KUNIT_EXPECT_EQ(test, rc, -EINVAL);
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, 0, c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_EQ(test, rc, -ENOENT);
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					0, c1ranges, &resolved);
-+	KUNIT_EXPECT_EQ(test, rc, -ENOENT);
-+}
-+
-+static int gicv3_fwnode_read_string_array(const struct fwnode_handle *fwnode,
-+					  const char *propname, const char **val, size_t nval)
-+{
-+	if (!propname)
-+		return -EINVAL;
-+
-+	if (!val)
-+		return 1;
-+
-+	if (WARN_ON(nval != 1))
-+		return -EOVERFLOW;
-+
-+	*val = "arm,gic-v3";
-+	return 1;
-+}
-+
-+static const struct fwnode_operations arm_gicv3_fwnode_ops = {
-+	.property_read_string_array = gicv3_fwnode_read_string_array,
-+};
-+
-+static void aspeed_intc_resolve_route_invalid_c0domain(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &arm_gicv3_fwnode_ops },
-+	};
-+	const struct irq_domain c0domain = { .fwnode = &intc0_node.fwnode };
-+	static const struct aspeed_intc_interrupt_range c1ranges[] = { 0 };
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_NE(test, rc, 0);
-+}
-+
-+static int
-+aspeed_intc0_fwnode_read_string_array(const struct fwnode_handle *fwnode_handle,
-+				      const char *propname, const char **val,
-+				      size_t nval)
-+{
-+	if (!propname)
-+		return -EINVAL;
-+
-+	if (!val)
-+		return 1;
-+
-+	if (WARN_ON(nval != 1))
-+		return -EOVERFLOW;
-+
-+	*val = "aspeed,ast2700-intc0";
-+	return nval;
-+}
-+
-+static const struct fwnode_operations intc0_fwnode_ops = {
-+	.property_read_string_array = aspeed_intc0_fwnode_read_string_array,
-+};
-+
-+static void
-+aspeed_intc0_resolve_route_c1i1o1c0i1o1_connected(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 128 }
-+			}
-+		}
-+	};
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 128,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = { 0 },
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = { .ranges = intc0_ranges, .nranges = ARRAY_SIZE(intc0_ranges), }
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_EQ(test, rc, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.start, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.count, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.upstream.param[0], 128);
-+}
-+
-+static void
-+aspeed_intc0_resolve_route_c1i1o1c0i1o1_disconnected(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 128 }
-+			}
-+		}
-+	};
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 129,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = { 0 },
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = {
-+			.ranges = intc0_ranges,
-+			.nranges = ARRAY_SIZE(intc0_ranges),
-+		}
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_NE(test, rc, 0);
-+}
-+
-+static void aspeed_intc0_resolve_route_c1i1o1mc0i1o1(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 480 }
-+			}
-+		}
-+	};
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 192,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = { 0 },
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = {
-+			.ranges = intc0_ranges,
-+			.nranges = ARRAY_SIZE(intc0_ranges),
-+		}
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_EQ(test, rc, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.start, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.count, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.upstream.param[0], 480);
-+}
-+
-+static void aspeed_intc0_resolve_route_c1i2o2mc0i1o1(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 480 }
-+			}
-+		},
-+		{
-+			.start = 1,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 510 }
-+			}
-+		}
-+	};
-+	static const u32 c1outs[] = { 1 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 208,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = { 0 },
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = {
-+			.ranges = intc0_ranges,
-+			.nranges = ARRAY_SIZE(intc0_ranges),
-+		}
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_EQ(test, rc, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.start, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.count, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.upstream.param[0], 510);
-+}
-+
-+static void aspeed_intc0_resolve_route_c1i1o1mc0i2o1(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 510 }
-+			}
-+		},
-+	};
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 192,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = {0},
-+			}
-+		},
-+		{
-+			.start = 208,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = {0},
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = {
-+			.ranges = intc0_ranges,
-+			.nranges = ARRAY_SIZE(intc0_ranges),
-+		}
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_EQ(test, rc, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.start, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.count, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.upstream.param[0], 510);
-+}
-+
-+static void aspeed_intc0_resolve_route_c1i1o2mc0i1o1_invalid(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 1,
-+				.param = { 480 }
-+			}
-+		}
-+	};
-+	static const u32 c1outs[] = {
-+		AST2700_INTC_INVALID_ROUTE, 0
-+	};
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 192,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = { 0 },
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = {
-+			.ranges = intc0_ranges,
-+			.nranges = ARRAY_SIZE(intc0_ranges),
-+		}
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_EQ(test, rc, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.start, 0);
-+	KUNIT_EXPECT_EQ(test, resolved.count, 1);
-+	KUNIT_EXPECT_EQ(test, resolved.upstream.param[0], 480);
-+}
-+
-+static void
-+aspeed_intc0_resolve_route_c1i1o1mc0i1o1_bad_range_upstream(struct kunit *test)
-+{
-+	struct device_node intc0_node = {
-+		.fwnode = { .ops = &intc0_fwnode_ops },
-+	};
-+	struct aspeed_intc_interrupt_range c1ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 1,
-+			.upstream = {
-+				.fwnode = &intc0_node.fwnode,
-+				.param_count = 0,
-+				.param = { 0 }
-+			}
-+		}
-+	};
-+	static const u32 c1outs[] = { 0 };
-+	struct aspeed_intc_interrupt_range resolved;
-+	struct aspeed_intc_interrupt_range intc0_ranges[] = {
-+		{
-+			.start = 0,
-+			.count = 0,
-+			.upstream = {
-+				.fwnode = NULL,
-+				.param_count = 0,
-+				.param = { 0 },
-+			}
-+		}
-+	};
-+	struct aspeed_intc0 intc0 = {
-+		.ranges = {
-+			.ranges = intc0_ranges,
-+			.nranges = ARRAY_SIZE(intc0_ranges),
-+		}
-+	};
-+	const struct irq_domain c0domain = {
-+		.host_data = &intc0,
-+		.fwnode = &intc0_node.fwnode
-+	};
-+	int rc;
-+
-+	rc = aspeed_intc0_resolve_route(&c0domain, ARRAY_SIZE(c1outs), c1outs,
-+					ARRAY_SIZE(c1ranges), c1ranges,
-+					&resolved);
-+	KUNIT_EXPECT_NE(test, rc, 0);
-+}
-+
-+static struct kunit_case ast2700_intc0_test_cases[] = {
-+	KUNIT_CASE(aspeed_intc0_resolve_route_bad_args),
-+	KUNIT_CASE(aspeed_intc_resolve_route_invalid_c0domain),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i1o1c0i1o1_connected),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i1o1c0i1o1_disconnected),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i1o1mc0i1o1),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i2o2mc0i1o1),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i1o1mc0i2o1),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i1o2mc0i1o1_invalid),
-+	KUNIT_CASE(aspeed_intc0_resolve_route_c1i1o1mc0i1o1_bad_range_upstream),
-+	{},
-+};
-+
-+static struct kunit_suite ast2700_intc0_test_suite = {
-+	.name = "ast2700-intc0",
-+	.test_cases = ast2700_intc0_test_cases,
-+};
-+
-+kunit_test_suite(ast2700_intc0_test_suite);
-+
-+MODULE_LICENSE("GPL");
+ obj-$(CONFIG_STM32_EXTI) 		+= irq-stm32-exti.o
+ obj-$(CONFIG_QCOM_IRQ_COMBINER)		+= qcom-irq-combiner.o
+diff --git a/drivers/irqchip/irq-aspeed-intc.c b/drivers/irqchip/irq-aspeed-intc.c
+deleted file mode 100644
+index 4fb0dd8349da..000000000000
+--- a/drivers/irqchip/irq-aspeed-intc.c
++++ /dev/null
+@@ -1,139 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- *  Aspeed Interrupt Controller.
+- *
+- *  Copyright (C) 2023 ASPEED Technology Inc.
+- */
+-
+-#include <linux/bitops.h>
+-#include <linux/irq.h>
+-#include <linux/irqchip.h>
+-#include <linux/irqchip/chained_irq.h>
+-#include <linux/irqdomain.h>
+-#include <linux/of_address.h>
+-#include <linux/of_irq.h>
+-#include <linux/io.h>
+-#include <linux/spinlock.h>
+-
+-#define INTC_INT_ENABLE_REG	0x00
+-#define INTC_INT_STATUS_REG	0x04
+-#define INTC_IRQS_PER_WORD	32
+-
+-struct aspeed_intc_ic {
+-	void __iomem		*base;
+-	raw_spinlock_t		gic_lock;
+-	raw_spinlock_t		intc_lock;
+-	struct irq_domain	*irq_domain;
+-};
+-
+-static void aspeed_intc_ic_irq_handler(struct irq_desc *desc)
+-{
+-	struct aspeed_intc_ic *intc_ic = irq_desc_get_handler_data(desc);
+-	struct irq_chip *chip = irq_desc_get_chip(desc);
+-
+-	chained_irq_enter(chip, desc);
+-
+-	scoped_guard(raw_spinlock, &intc_ic->gic_lock) {
+-		unsigned long bit, status;
+-
+-		status = readl(intc_ic->base + INTC_INT_STATUS_REG);
+-		for_each_set_bit(bit, &status, INTC_IRQS_PER_WORD) {
+-			generic_handle_domain_irq(intc_ic->irq_domain, bit);
+-			writel(BIT(bit), intc_ic->base + INTC_INT_STATUS_REG);
+-		}
+-	}
+-
+-	chained_irq_exit(chip, desc);
+-}
+-
+-static void aspeed_intc_irq_mask(struct irq_data *data)
+-{
+-	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
+-	unsigned int mask = readl(intc_ic->base + INTC_INT_ENABLE_REG) & ~BIT(data->hwirq);
+-
+-	guard(raw_spinlock)(&intc_ic->intc_lock);
+-	writel(mask, intc_ic->base + INTC_INT_ENABLE_REG);
+-}
+-
+-static void aspeed_intc_irq_unmask(struct irq_data *data)
+-{
+-	struct aspeed_intc_ic *intc_ic = irq_data_get_irq_chip_data(data);
+-	unsigned int unmask = readl(intc_ic->base + INTC_INT_ENABLE_REG) | BIT(data->hwirq);
+-
+-	guard(raw_spinlock)(&intc_ic->intc_lock);
+-	writel(unmask, intc_ic->base + INTC_INT_ENABLE_REG);
+-}
+-
+-static struct irq_chip aspeed_intc_chip = {
+-	.name			= "ASPEED INTC",
+-	.irq_mask		= aspeed_intc_irq_mask,
+-	.irq_unmask		= aspeed_intc_irq_unmask,
+-};
+-
+-static int aspeed_intc_ic_map_irq_domain(struct irq_domain *domain, unsigned int irq,
+-					 irq_hw_number_t hwirq)
+-{
+-	irq_set_chip_and_handler(irq, &aspeed_intc_chip, handle_level_irq);
+-	irq_set_chip_data(irq, domain->host_data);
+-
+-	return 0;
+-}
+-
+-static const struct irq_domain_ops aspeed_intc_ic_irq_domain_ops = {
+-	.map = aspeed_intc_ic_map_irq_domain,
+-};
+-
+-static int __init aspeed_intc_ic_of_init(struct device_node *node,
+-					 struct device_node *parent)
+-{
+-	struct aspeed_intc_ic *intc_ic;
+-	int irq, i, ret = 0;
+-
+-	intc_ic = kzalloc_obj(*intc_ic);
+-	if (!intc_ic)
+-		return -ENOMEM;
+-
+-	intc_ic->base = of_iomap(node, 0);
+-	if (!intc_ic->base) {
+-		pr_err("Failed to iomap intc_ic base\n");
+-		ret = -ENOMEM;
+-		goto err_free_ic;
+-	}
+-	writel(0xffffffff, intc_ic->base + INTC_INT_STATUS_REG);
+-	writel(0x0, intc_ic->base + INTC_INT_ENABLE_REG);
+-
+-	intc_ic->irq_domain = irq_domain_create_linear(of_fwnode_handle(node), INTC_IRQS_PER_WORD,
+-						    &aspeed_intc_ic_irq_domain_ops, intc_ic);
+-	if (!intc_ic->irq_domain) {
+-		ret = -ENOMEM;
+-		goto err_iounmap;
+-	}
+-
+-	raw_spin_lock_init(&intc_ic->gic_lock);
+-	raw_spin_lock_init(&intc_ic->intc_lock);
+-
+-	/* Check all the irq numbers valid. If not, unmaps all the base and frees the data. */
+-	for (i = 0; i < of_irq_count(node); i++) {
+-		irq = irq_of_parse_and_map(node, i);
+-		if (!irq) {
+-			pr_err("Failed to get irq number\n");
+-			ret = -EINVAL;
+-			goto err_iounmap;
+-		}
+-	}
+-
+-	for (i = 0; i < of_irq_count(node); i++) {
+-		irq = irq_of_parse_and_map(node, i);
+-		irq_set_chained_handler_and_data(irq, aspeed_intc_ic_irq_handler, intc_ic);
+-	}
+-
+-	return 0;
+-
+-err_iounmap:
+-	iounmap(intc_ic->base);
+-err_free_ic:
+-	kfree(intc_ic);
+-	return ret;
+-}
+-
+-IRQCHIP_DECLARE(ast2700_intc_ic, "aspeed,ast2700-intc-ic", aspeed_intc_ic_of_init);
 
 -- 
 2.34.1
