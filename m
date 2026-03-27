@@ -1,66 +1,54 @@
-Return-Path: <linux-aspeed+bounces-3793-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3794-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED18710F3DC0
-	for <linux-aspeed@archiver.kernel.org>; Sat, 28 Mar 2026 01:31:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 016B510F3DC1
+	for <linux-aspeed@archiver.kernel.org>; Sat, 28 Mar 2026 01:31:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fjKjC2cWRz2yhD;
-	Sat, 28 Mar 2026 12:31:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.171.202.116
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774604018;
-	cv=none; b=KdJ+MRbFFbwFf/E9Leya6Zwq5CkYJOVTNIEkYss/Izj/gGkt0mzwIeE/FZadrO6r2JMj0Abx83pDNvxSAUeCQbnzwayLMHtHSC9PDWdyWOJL+vjLoODgULIMvQv9mtuvoKIYcMR0f/LLOjV7drnKeikbylRRPsPt54HXws2OCUkzZNgR8kTj66M5VF8Lt9vWFGiteFoPr09HVu/QQmQmCnBfTYyKwlIB8p0kWpsCXYJ/3ekeHSz8C3O3avcUZDrKDv39jGqHePpuT/GzB3Zrp9V4RQhrnVqzKmN9xMuPTSkxuQZx6DPCk7WyfHsUqQrxvCv/GE3EXJEB4o1Z9kI5Sw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fjKjF1p0lz2yhZ;
+	Sat, 28 Mar 2026 12:31:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774594767;
+	cv=none; b=UBizqCB3J8+SruV82fESOY/w6WsEXWpazPRBvNrxiB1R/lQuXsb6aVPQsRJB2f5tIAVA7YHQrFNRbSclt0hi3IhYm08iD6C4cQxOUUhrOglaO9VhLqRVSdNtURtubizgYu5K2Kg9p3eXYKOlzB710G5p8RAsH2pLqSHitMJj55vFb+2db9AiT71cGL2kpKPtDaM931+B07jKrxD4fKfeVgoxnqmuHPVDuYyaJTrFT3/v/gmtcLEzTlUu3IVghPmFjV3goJrzveoCmT1148H6+dROim9QwXX7jo3WE5EYBaYMOpn3Af2he0tbIsgSBR+j3U+PSDxNDzZQbgb6a2Gh8A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774604018; c=relaxed/relaxed;
-	bh=uX0ZkDshfrjUuQd8q4yz2ndynx0ogljmjvdsdmFxGS0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=HpS+zqVb1Hty7mppw3GBCWWGDOSt7+3soydKbNmXflkq9tRrLHZa8ih8UvDyeq4blc3bZlts97KIqHY397musxrlM3250Z48PY1qjU4X2P6byrmN+Z1OXgbA4jtTItTDX44SYqSlGfvg4DxdjCviKMC3oDam5gHi76U+1/0asgA7/rlHBEle6VGGU2sUzwWedmFEYB0LRwNYtQdkHxKsDSLzEGMRXiTwOBUda/QP3ngMM0BBbZ4/ZBmLaA7NZfrh3nt5oie/94H6dijVbSkPfmnmXJxB7cHeOhJW97koLBrEiFYbWn8AYNGG+BSo43TVuircmbQCo2qwor9DRhO/EA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=xSWvcl8I; dkim-atps=neutral; spf=pass (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=paul.louvel@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1774594767; c=relaxed/relaxed;
+	bh=tXMwiY4jfkntgcj70RB19+Q8su/PxmKSW+o9I8NPDTk=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=IWp987tncdmXygHzvRUYjWJpjmvlf6jiZM3YM5crDk+jBobnZbqto+feGrJ+33P0/7uEivRj75+XuHMUTtapw3VS9+/TbJxyrVt5Bt2SCkNlL2UvWyqg3+Op09w5ebPLzfdwI8qi31fscNYcNmjEIPvhhoWG+w2eH2xjtSJtsWLQ4FW5dPzwgJN7wAdJnepZrhfUdTWDID3apH+1bf0igzL40Y3rnyNNOl+Q/I0hEsM6gxH+gAc+4xpjvZgkIF99AbSYsVWY53bCK1W+0tZGD87zrRq/Vj9xDKmg/P2xcFGXpgMIyTV3KmRg8hT/h814MleZBmCOxRrTexW7XGFd/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rUIMEOJR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+andy.chung.amd.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=xSWvcl8I;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rUIMEOJR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=paul.louvel@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 524 seconds by postgrey-1.37 at boromir; Fri, 27 Mar 2026 20:33:36 AEDT
-Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=devnull+andy.chung.amd.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhwSJ05g3z2xC3
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 27 Mar 2026 20:33:34 +1100 (AEDT)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-04.galae.net (Postfix) with ESMTPS id 8F54BC406B4;
-	Fri, 27 Mar 2026 09:25:13 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id EBE7960230;
-	Fri, 27 Mar 2026 09:24:44 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id C40C210450F33;
-	Fri, 27 Mar 2026 10:24:38 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1774603484; h=from:subject:date:message-id:to:cc:mime-version:
-	 content-transfer-encoding; bh=uX0ZkDshfrjUuQd8q4yz2ndynx0ogljmjvdsdmFxGS0=;
-	b=xSWvcl8Isbuq0d92ng8BHqR2A3YD/pHQymygkKgvTGzvpJ/9TUPBQ5jualNb6iSeS3B/5i
-	+57n2WSDTy/VWyaeVK08FOZkJNuKikPRGIapifgdHbDCJ9ZVFrsduV9/fUrJANVTpnRhrx
-	2ld29wYDZxahiOPJwVtWp8hdCr5cDNzBt/sfpvNU57UZAp3f0cKeGC0wxuEhl6/8F/JBN5
-	nxf5oYT+3UZw0LCt+nwOAmrVcAk20MBawzmq2bBImMdMoN4/plhIY/2oA6nx1SxCpCOKRi
-	PDQ/77dJF6F5/n3wOy/p0eR4hlX9LJIZNRVgRSGfYVLDb+B37c4uG8wyb//msQ==
-From: Paul Louvel <paul.louvel@bootlin.com>
-To: Neal Liu <neal_liu@aspeedtech.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-	Paul Louvel <paul.louvel@bootlin.com>,
-	linux-aspeed@lists.ozlabs.org,
-	linux-crypto@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] crypto: aspeed/hash: Use memcpy_from_sglist() in aspeed_ahash_dma_prepare()
-Date: Fri, 27 Mar 2026 10:24:18 +0100
-Message-ID: <20260327092418.10476-1-paul.louvel@bootlin.com>
-X-Mailer: git-send-email 2.53.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fhs2Q2Bmfz30Vh
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 27 Mar 2026 17:59:26 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id C9AE66132F;
+	Fri, 27 Mar 2026 06:59:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 71901C19423;
+	Fri, 27 Mar 2026 06:59:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1774594762;
+	bh=+uYAGgoOPo8bLq2pJEoGgnHWXNq5+Y92SxzPmrm3lx0=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=rUIMEOJRSYCB7RucQGG4PaxxD/Gxp+WS5WI2qbdgQUR2Tezsv5UaPTu5Sccjew3BX
+	 /STHbYE7fN8R2g8rR/pcnMiqRXxf2EEhaqdzOyCCgBt2XP7lxC+8yh/N1f9oXGJr/5
+	 dscnBFVUJrH1CyUTBjLG0OqxI+Vgs/9eEgtVn0zoxpDmQ8MBd+9Q9FCB2GE4cyIPlt
+	 HERoddZgvkEx2+vGkrdfTxBaIFLj7XQ+k8K6tGE1mFvY1E/fGMwDNqDZwX7hLh7n+o
+	 qLemUUVgm38RIIn76yV/h9dcnjRaXAmDvvjzhhORqyMhSDW6LXLWIosxV7zJJ7/4Xy
+	 S+yHbeaC+gZvw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6098610BA435;
+	Fri, 27 Mar 2026 06:59:22 +0000 (UTC)
+From: Andy Chung via B4 Relay <devnull+Andy.Chung.amd.com@kernel.org>
+Date: Fri, 27 Mar 2026 14:59:16 +0800
+Subject: [PATCH] ARM: dts: aspeed: anacapa: Enable MCTP and FRU for NIC
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -74,36 +62,202 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260327-dts_enable_nic_mctp-v1-1-5b5c05f4442c@amd.com>
+X-B4-Tracking: v=1; b=H4sIAMMqxmkC/yXMQQrCMBBG4auUWRtoU5KAVxEJSfqrIxpLJopQe
+ ndTu/wW7y0kKAyhY7dQwYeFX7lhOHSUbiFfoXhqJt1r24/aqamKRw7xAZ85+Weqs8JognHWxMF
+ ZauVccOHv/3o675Z3vCPVbUXr+gP88bJ9dwAAAA==
+X-Change-ID: 20260327-dts_enable_nic_mctp-e35a5765b176
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Andy Chung <andy.chung@amd.com>, Andy Chung <Andy.Chung@amd.com>
+X-Mailer: b4 0.15.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1774594761; l=3825;
+ i=Andy.Chung@amd.com; s=20260327; h=from:subject:message-id;
+ bh=nPjZUWkxYiROesPBYSRnJtyY+ooYKRCOwqAAXx0E5II=;
+ b=426Yu7gf6eNtDB2/x526jYc4Z1JqYnU4txLYevBKxAhEn8zHWmwRTqtXFJAuEiVW5EmT0Xyud
+ qS5QpdP/rNHDPpoqYK3BCbkLuAfO8zBi5AI7c0GwHoMl+hQ/Ps7C6nE
+X-Developer-Key: i=Andy.Chung@amd.com; a=ed25519;
+ pk=X2gaHRnhU2q5hvMjkC6xmIcC03vKNvHY9CQRdsj9ecM=
+X-Endpoint-Received: by B4 Relay for Andy.Chung@amd.com/20260327 with
+ auth_id=696
+X-Original-From: Andy Chung <Andy.Chung@amd.com>
+Reply-To: Andy.Chung@amd.com
 
-Replace scatterwalk_map_and_copy() with memcpy_from_sglist() in
-aspeed_ahash_dma_prepare(). The latter provides a simpler interface
-without requiring a direction parameter, making the code easier to
-read and less error-prone.
+From: Andy Chung <Andy.Chung@amd.com>
 
-No functional change intended.
+Add the mctp-controller property to enable frontend NIC management
+via PLDM over MCTP.
+Also add EEPROM device for NIC FRU.
 
-Signed-off-by: Paul Louvel <paul.louvel@bootlin.com>
+Signed-off-by: Andy Chung <Andy.Chung@amd.com>
 ---
- drivers/crypto/aspeed/aspeed-hace-hash.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Add the mctp-controller property to enable frontend NIC management
+via PLDM over MCTP.
+Also add EEPROM device for NIC FRU.
+---
+ .../dts/aspeed/aspeed-bmc-facebook-anacapa.dts     | 67 +++++++++++++++++++++-
+ 1 file changed, 65 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/crypto/aspeed/aspeed-hace-hash.c b/drivers/crypto/aspeed/aspeed-hace-hash.c
-index f8f37c9d5f3c..6f0d03cfbefc 100644
---- a/drivers/crypto/aspeed/aspeed-hace-hash.c
-+++ b/drivers/crypto/aspeed/aspeed-hace-hash.c
-@@ -182,8 +182,7 @@ static int aspeed_ahash_dma_prepare(struct aspeed_hace_dev *hace_dev)
- 			final = true;
- 	} else
- 		length -= remain;
--	scatterwalk_map_and_copy(hash_engine->ahash_src_addr, rctx->src_sg,
--				 rctx->offset, length, 0);
-+	memcpy_from_sglist(hash_engine->ahash_src_addr, rctx->src_sg, rctx->offset, length);
- 	aspeed_ahash_update_counter(rctx, length);
- 	if (final)
- 		length += aspeed_ahash_fill_padding(
--- 
-2.53.0
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+index 221af858cb6b..138b081be049 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+@@ -584,38 +584,67 @@ eeprom@56 {
+ // R Bridge Board
+ &i2c10 {
+ 	status = "okay";
++	multi-master;
++	mctp@10 {
++		compatible = "mctp-i2c-controller";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++	};
+ 
+ 	i2c-mux@71 {
+ 		compatible = "nxp,pca9548";
+ 		reg = <0x71>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		i2c-mux-idle-disconnect;
+ 
+ 		i2c10mux0ch0: i2c@0 {
+ 			reg = <0>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
+ 		};
+ 		i2c10mux0ch1: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c10mux0ch2: i2c@2 {
+ 			reg = <2>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c10mux0ch3: i2c@3 {
+ 			reg = <3>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c10mux0ch4: i2c@4 {
+ 			reg = <4>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c10mux0ch5: i2c@5 {
+ 			reg = <5>;
+@@ -661,38 +690,72 @@ i2c10mux0ch7: i2c@7 {
+ // L Bridge Board
+ &i2c11 {
+ 	status = "okay";
++	multi-master;
++	mctp@10 {
++		compatible = "mctp-i2c-controller";
++		reg = <(0x10 | I2C_OWN_SLAVE_ADDRESS)>;
++	};
+ 
+ 	i2c-mux@71 {
+ 		compatible = "nxp,pca9548";
+ 		reg = <0x71>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+-		i2c-mux-idle-disconnect;
+ 
+ 		i2c11mux0ch0: i2c@0 {
+ 			reg = <0>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// FE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c11mux0ch1: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c11mux0ch2: i2c@2 {
+ 			reg = <2>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c11mux0ch3: i2c@3 {
+ 			reg = <3>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c11mux0ch4: i2c@4 {
+ 			reg = <4>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++			mctp-controller;
++			// BE NIC FRU
++			eeprom@50 {
++				compatible = "atmel,24c32";
++				reg = <0x50>;
++			};
+ 		};
+ 		i2c11mux0ch5: i2c@5 {
+ 			reg = <5>;
+
+---
+base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
+change-id: 20260327-dts_enable_nic_mctp-e35a5765b176
+
+Best regards,
+--  
+Andy Chung <Andy.Chung@amd.com>
+
 
 
