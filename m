@@ -1,77 +1,91 @@
-Return-Path: <linux-aspeed+bounces-3821-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3822-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36BC410F9308
-	for <linux-aspeed@archiver.kernel.org>; Tue, 31 Mar 2026 23:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9B6610F9309
+	for <linux-aspeed@archiver.kernel.org>; Tue, 31 Mar 2026 23:21:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flkXN5YXxz2yVT;
-	Wed, 01 Apr 2026 10:16:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774941449;
-	cv=none; b=FmbONbuqaXynAri4cD2RijHcLiy8qZjbcAstazW12d7Ac9jEu2DEoougAMAufCPukwFT5fdouWtvkp+/eiAnTqlD2J2BIqK4wVr9i43vISvLmrW6WQcv0sZYLKOkKxq3HP1HTTva8OdMgm5N2Xm+pvIq3+k9Qz5yxeomYGWR60EZDqNj6rodHvajFHaDtPYC/ZbTSKJb5DXSzi/GT2PDrVgUop8qEEZ5x1xYGJm6wi86kGByfF0T0FyDpty/KgimLpIsKqq1Ew8jqphboDHMLdD0sl2BjZTOiR7fSwwLwre1Vq4oOkV1QUJaXizmwr4WDZf5GLnHA0juKakrwwJtRg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flkdw3fnTz2yVt;
+	Wed, 01 Apr 2026 10:21:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774958994;
+	cv=none; b=c5NhF/5v33RZ/Fh5c5ZkvgZat/DDtDxT0MmIyWGKclS6WaojRZ87txN5eTMVHs46gmrgIM9nU8P160ph2Y3VFrcdAU95C+Dz3x1Unz1ntETCBwR+kTqoolAlvMQXRAZlsPphoxfCVs3s+3apur8u3m4BHB0rFWsTYdQckAB0nWY1hCiJ0wClgJPFgstIuSmCyRFCsWH3uqKnH+QmbRo97pAlCAJ+1EfvXpw600qqclTxYOYdMYtfACOUlytV44ycA5ZyB90QV9pZOGOGoYGG7kMADo5e/j/nhwknqESjcCopI2K5jpv0cJ6Fp9ssoNPQquOygye1YHKYLPmc4HTh7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774941449; c=relaxed/relaxed;
-	bh=qkbimkF7HoXE/Jf1vzsZkAfNbNEc1Y65ZFXjx0QhOzM=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=ILIb7EZy01+8bXdD9MM4qcitFyhpnZy416u1JZ+832+vXuhQTjkstK4aoR1IEGDKWr1go5U7LoKVFLenxIFdJpOcpP/23aZKwsxYnQp7hkqcS1H9Dj00QNvb0pqaPfXrFvekSAuc+r0Fu2+D5lGAwsZ9khv1s5jKgUJ7HzJmNSynMzTdZSeMGLr5WVfwKHqt1g0QKfkne+3u22JHaW5c5z84iadGASz4a5lHbCWqeepkMWsJ3TQ3bDlI3ciEBqHAmpz+YVF3Rlka0PI105+9NqicRwp79nO+mS0W1KShVKZuXOSOq0C3HUIwwHiDHY9qbr5OciTIDm769TG9voFRWg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=NISHE6MX; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
+	t=1774958994; c=relaxed/relaxed;
+	bh=YJsN9xOorEStaNzhqVyskGIBPrVNwL+4GmqbmijKTAk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LHv6OCjMA5zkHmf0ahSnE/nnfMwYi9yd48qnTDBq+bIXdiokmaLTbrN2XFmK+BOUo1L9dPADDPDbbcmjHG2pBPBOZ3/NmQVshLYsrItXY0Rrv6ybiHPh0tXDM9T7LOkxZarK1lOWgxQ5WhM48GNV43N/6qy6CcFI7DjEdZYYoa69BOGAJMiEVQaUOcB5YdGKtClEThq6C5joMBCe/DGQWYV7w2jeH7C38H8wcDPQEyv2DDPPpmuTJl+x9PRJbe83A5cP+WyJf6JjYDkvf0acAC9XusP5LE7aWM//n8Dci4JOpAJEc6IRojED3CxF7RU4YBaT0AXm7i5mH4h0p8cUNg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q/JWp//x; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=d486250@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=NISHE6MX;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=q/JWp//x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org)
-Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=d486250@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flKFP0Xfcz2ybQ;
-	Tue, 31 Mar 2026 18:17:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flRkn20Ctz2xSb
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 31 Mar 2026 23:09:52 +1100 (AEDT)
+Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2b2503753efso18561175ad.0
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 31 Mar 2026 05:09:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1774941448;
-	bh=qkbimkF7HoXE/Jf1vzsZkAfNbNEc1Y65ZFXjx0QhOzM=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=NISHE6MXoK8tfRV9S8pt+leeucFZ70wxemyKXKi9pRF+a6WzkAGIquNAVMhKf2cnG
-	 YN5MOUGglqn76zKkmoH/lrTvgp8y8TAQJXrZIOd3X/VQwwzBZWwBnHnDKY54P56KGx
-	 XcB6sQ8EvgaaZQZkMHg5IsZzaH4wlCvxsA87d9poVrwV3A8tkMtbM4j6rgTVkkVLdi
-	 TNjJawi4Hvre/DNptnvZk6d650ymJ9y+B5x7pjivv+j2W/GEJ6aEu2cemVW7T2VGaX
-	 WTpk7L2R3bDnuaKMlcpG8Ff9O4/81GyOFLTUht1LMBFiTKMMjYE7AOQxcDFQzKDG2D
-	 8CH2GwMt2fcoA==
-Received: from [192.168.72.167] (210-10-213-150.per.static-ipl.aapt.com.au [210.10.213.150])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 3163E6002E;
-	Tue, 31 Mar 2026 15:17:28 +0800 (AWST)
-Message-ID: <72517fcf99a7453841ee75243dc54e735c10238f.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v28 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
- global-regs and enable-dma properties
-From: Jeremy Kerr <jk@codeconstruct.com.au>
-To: Ryan Chen <ryan_chen@aspeedtech.com>, Krzysztof Kozlowski
- <krzk@kernel.org>
-Cc: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
-  Andi Shyti <andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
- <andrew@codeconstruct.com.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Philipp Zabel <p.zabel@pengutronix.de>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
- <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
- <openbmc@lists.ozlabs.org>
-Date: Tue, 31 Mar 2026 15:17:28 +0800
-In-Reply-To: <TY2PPF5CB9A1BE6EA5BABE55EB8A7003D22F253A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-References: <20260330-upstream_i2c-v28-0-17bdae39c5cb@aspeedtech.com>
-	 <20260330-upstream_i2c-v28-2-17bdae39c5cb@aspeedtech.com>
-	 <20260331-fanatic-certain-bustard-fb13bc@quoll>
-	 <TY2PPF5CB9A1BE6F267C60EEC34B6A75400F253A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-	 <09cbc12bea5707f794e139ea1bfafac82c2d2c12.camel@codeconstruct.com.au>
-	 <TY2PPF5CB9A1BE6EA5BABE55EB8A7003D22F253A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4-2+deb12u1 
+        d=gmail.com; s=20251104; t=1774958989; x=1775563789; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YJsN9xOorEStaNzhqVyskGIBPrVNwL+4GmqbmijKTAk=;
+        b=q/JWp//xivD4ZAKFQOP5msyZM8j5+R7W4vl4QhB3CHXd8aIdodvcTVITpGJXyDGZBH
+         8l6ea7ZTkJd/aE3MuvAhg05cF2nOiHIM40VtlbrLpkcgNDXUqHAGDDffmSpDZpN0YJxz
+         VkC7lEeUUq+13kvlIUMP7MmT8qkfxx5fkQ5wr+01KlIRUvIj+VxHojWRJkQsCLDeSCSc
+         +3Ez2FhzSp/bF6F1+lMoNiPCInskLF3O7NIXF2SVEQnJq9PBd5aU/PFDindjGNHhkjsP
+         EsmRh9cdZehrrE4wtzhcgzxAjCd2wWKqqVpI+k/iIPPqanZ6ZhaNFC6TOIwGVP8/S0vI
+         SY1w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1774958989; x=1775563789;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=YJsN9xOorEStaNzhqVyskGIBPrVNwL+4GmqbmijKTAk=;
+        b=C1EZHh5vcENPaSKuc2EHD7r710sJ0jtA4RpwTXxtUT6Nln82yWc2LWFn+lCHW72Qi0
+         Z2sky9x8e5qZ3p+Z1mfQbMZBZmnLGHnpcggzW5tumiYhlk+Ubrznu0HDR+5tox3qYmLM
+         tG1RUPfxVN4cUvu7ySKCx4gxtmbYiqw0aheRZxY/yCPN+gYKSHNnOPza6WWAQ1ezRpyw
+         mQ0wBOefFogzldMaskHD4T7hOWqNPc3VJCvzFvN+C8H/ecCLqbrFiTpC3tyAdob2YkHa
+         jbDJ8UwNjc59CEFyflLHhlRpWOUjnb1hLa+ciIZg09cde3je4a2Y1MNAdvDnvO0OVg1R
+         7Jmw==
+X-Forwarded-Encrypted: i=1; AJvYcCUaqeZjc7hSbPmwLTE5DnbXCgAi9hdpthCzewbsCKPhPWcql6Nh4kwICJR2mxtIl8QVAnUXBlDNDM6R8tM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyDNtn+3mqHREpIQAQ0sTylcpH2Y410dHD+eqrch03I22OCQtW2
+	HUiwLZ1uAMD2mW3M2FVdtkCUxBZu+jSb+oCNg8SIgLzZivxvrniIxN0E
+X-Gm-Gg: ATEYQzxjjLEcDtZbKtmHhaF44awevip684l0MmGoK6XI1bAgd/Iou3JHxmiq0slertc
+	+GDN9OvHsXQ0YEFoNNtYeo9PgHQ7RnQ8dgdeHL23kkP4nB0J80d3gJ1GQ+Xl3ZXtVa5aMZ29lpd
+	/ZAbXxD47y4W2JyDXG0mUQar5iOAfzZMVvBRyMHuZQydiRx4UkFStQam3lbjrrqkwV+Vo3zaK1L
+	rGBnTVftJioYVYFl2ooCdFV2Z7pmDsA4kEV4wijKybDG4nKgcccqOCzoueYJMZ/SJsqbBefJI2W
+	nBineuMHxUG0a2a/xv0H81GYTLyLhWpiTxWrIshXEyT0yLMO2dMZwVHxroYflbuSM+drbjOtYXn
+	veJqO4R/PgKhd3u3Ja2LBqXe/DQbHUtgBKrFRAOltr3H4ilX20QetmUf9ya2nBbDOGa+6r1Q4Zj
+	E72Mj9MzTsySTjVWt+5yfwj730YdOSEu+2vP8dfG4h1b1A+D8TD/khTn85iJwVQe70z3GAigOOF
+	yBnBaz9HK8OyLy3lByoYg==
+X-Received: by 2002:a17:902:e846:b0:2b2:490c:411e with SMTP id d9443c01a7336-2b2490c53c4mr108364095ad.6.1774958989240;
+        Tue, 31 Mar 2026 05:09:49 -0700 (PDT)
+Received: from bu9-daniel.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b242642c5asm109350915ad.7.2026.03.31.05.09.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Mar 2026 05:09:48 -0700 (PDT)
+From: Daniel Hsu <d486250@gmail.com>
+X-Google-Original-From: Daniel Hsu <Daniel-Hsu@quantatw.com>
+To: andrew@codeconstruct.com.au
+Cc: robh@kernel.org,
+	krzk+dt@kernel.org,
+	conor+dt@kernel.org,
+	joel@jms.id.au,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Daniel Hsu <Daniel-Hsu@quantatw.com>
+Subject: [PATCH v2] ARM: dts: aspeed: yosemite5: Add MP5998 power monitor
+Date: Tue, 31 Mar 2026 20:07:34 +0800
+Message-ID: <20260331120734.39260-1-Daniel-Hsu@quantatw.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,32 +99,37 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-Hi Ryan,
+Add an MP5998 power monitor used to monitor the power consumption
+of the Paddle_P12V_HSC rail on the Yosemite5 paddle board.
 
-> > Sounds reasonable, but before you do so, how are you planning to manage=
- the
-> > allocation of DMA channels across multiple i2c peripherals?
-> >=20
-> The AST2600 I2C hardware has only one can use DMA at a time.
-> To avoid the complexity of managing DMA channel contention,
-> I plan to use buffer mode by default for all controllers, which still pro=
-vides
-> better performance than byte mode without requiring DMA channel allocatio=
-n.
+[v2]
+- Describe the purpose of the power monitor
+- Remove software/driver related description
 
-OK, but your wording there ("by default") implies that DMA is still
-selectable for one controller peripheral. In which case: you still have
-the problem of managing DMA channel contention, but now it's at runtime
-instead.
+Signed-off-by: Daniel Hsu <Daniel-Hsu@quantatw.com>
+---
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-So my question still stands: how are you planning to enforce that DMA is
-only enabled for one controller?
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
+index 2486981f3d6b..6287f80d70d9 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-yosemite5.dts
+@@ -422,6 +422,11 @@ power-sensor@45 {
+ 		shunt-resistor = <1000>;
+ 	};
+ 
++	power-monitor@46 {
++		compatible = "mps,mp5998";
++		reg = <0x46>;
++	};
++
+ 	power-monitor@47 {
+ 		compatible = "ti,tps25990";
+ 		reg = <0x47>;
+-- 
+2.53.0
 
-Or are you planning to disable I2C DMA entirely on AST2600?
-
-Cheers,
-
-
-Jeremy
 
