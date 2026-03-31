@@ -1,55 +1,75 @@
-Return-Path: <linux-aspeed+bounces-3824-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3825-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2086E10F930A
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9AFA10F930F
 	for <linux-aspeed@archiver.kernel.org>; Tue, 31 Mar 2026 23:26:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4flklh544dz2yVt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4flklh5fflz2yYY;
 	Wed, 01 Apr 2026 10:26:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774944156;
-	cv=none; b=ao5VNFX318wlBB86SJnAe0jXlP9bbuNvReKFijeersy88/+dAYKloo6Lhq1X790dgVEhkNSBIB3UApX8HPHEqMejpvLALH5TE7TnqXI6NUNqCzOcSUjXvCGdDWjjgaagTtIQ/wPbtYaLFBs4OY3uOXKLdx7vgKRRlmDPivG1+MMLx1wq6SkFvFQqbmdLKXRkULh09WkI7kU78nybGy2jZHDRwwKX1HbL5XgiYHxFQj8PbQQdUhlVPD26O915d1FVetJ304pH08/P4T3VHh3PZIZQD7GVJcddKDEtaRSk6VxVpKpEoSgeRSjA4vupxCz4jcGCWGoYXQw33nbU7ACItA==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1774940448;
+	cv=none; b=aT+x9z/UJAiNZPfjaPR4TDDrHyDYMOlilNFRE4kdmhJ7l6erR1IBbA4YXHOG3Og+fsRe001aX8DnBhFsWEWASrAdsw43/LW4RdC5aacsfqaVwFmObzUT8HPY7+Wh9KZnxDGYB6sk5IeU4oVPkgpFtkXlZ9Gavok+EYDq/bC+2woN53VgKLk0zgK9oJ2mgfsz6wVdoN/UOclO9iGG+8cDzdntyAN8pxq4BnLx57bFl7LEIM6Cgbv6/kZMjAmSHZnxvwUxHjIn0h4MsewzhxuvW6dRwO4lafcEIGO/rhy0AwXRt1BELIM7b7w3NBFkKvFI4JNwhbLhgXZ/OP/JTCS6aw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1774944156; c=relaxed/relaxed;
-	bh=4+Rajdgs98gDiyqfvDa5F4qhl4LCm3l64nsMUlhxgzQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=YCvB8AkGeFvHidOpyDQikTe2FpZKI7mK/Vj5mpUj1oGrWvzuUSDEYtiiAxmgKABv3FqDmYF9a0HTj7ONMpwbZWkgovqZXWiF0cgJfyhoJonYDXBayOPuCdwrkivgqUmh4lFZCx0MRsEq6YEikBK9fPpNxCOEZYxJgs1Ro3ZCIgWCSzbNiJDX6Zei4eQs9ZH4M/+zQ76Qap9mzhqpgHXQze/4ljltfHlFqZvcEfcbTcfmZ8wWqQ1I5fUKH2tj1323QrcznzY9fagwodXKWcM+UJoerD3oGaQoLKJlypl6sXJ2/Tyma3i/DJbl+R2Wxg+2SC1TR93VP++qFBhsMYVgxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jCKeezCV; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+carl.lee.amd.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1774940448; c=relaxed/relaxed;
+	bh=RTmsuImCn3CtzefM7fomAbHA5I/f+UtO2YDEaei1OTI=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=HaJBWcUh0+b3e//In0Rk8Knjs3yOA4H4GxPZAwkqY8unax0nh/jbsJuqfwDfMDAsBOEkI6TgdKjHQhPP+jtPRgjMhm4Pzq8asbHRxUr2+cW6lT9elvLr5YMnviBbArO3QTXA6fgx4McnOK7SQefhCnhvbpVKEROG37p2JVkitAcIUk6oobNhRNUFqY1FzreEWz75tv8rb+sW4ElxEFs/cwYHbpBCZ0YKwwNixY5MVyc5NuqG7M0cx3X3LHpNID7wsg82tSoQF+5xNnx13CGf5CSTOpSamhYcofm+w6ONtrFpX/a7iJ3X0bW2aORHEBZ+7s88gG2ilQbLqGLOyNyJGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=QteUuSwe; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jCKeezCV;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=QteUuSwe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=devnull+carl.lee.amd.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=jk@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4flLFR1HG0z2xSb
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 31 Mar 2026 19:02:35 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 53E1C60120;
-	Tue, 31 Mar 2026 08:02:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 01E7CC19423;
-	Tue, 31 Mar 2026 08:02:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1774944152;
-	bh=PHDS2VPVRfSiE1Ru3nMVenx5VOLgrNd57TaF4gFMkw8=;
-	h=From:Date:Subject:To:Cc:Reply-To:From;
-	b=jCKeezCV7gOu8EsUna52MOAbD/vJd6+TOoiXmoWUVdUwQgQlSB6e77O8yhHFpGo6W
-	 98/nqwfP/inkJf+50mikcI3Lj2ivG0kYl7uIbh5s/ETVIqPike6C4VyZzAVbR/cR9R
-	 pg7KSc0lh+bk1z/HMqrA2Yvb6xkzE0WlFEISgQQ3j/Oet7jPC3T77+S3YmQTtpxTLk
-	 C9Hd2y0FrqFuqFcudJcKWmio64F4totGu3+uJIn1fnHOQLMGyO/ilk1ltchMQQpUJs
-	 hl6uqrHroubCY4cZVzGnMbQxmbDfrtYGHwrfLqEFkpFf8O2k7hTnrSCjVy1y/cfm9/
-	 Bas+84KuZ31RQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB251FF60D0;
-	Tue, 31 Mar 2026 08:02:31 +0000 (UTC)
-From: Carl Lee via B4 Relay <devnull+carl.lee.amd.com@kernel.org>
-Date: Tue, 31 Mar 2026 16:02:28 +0800
-Subject: [PATCH v3] ARM: dts: aspeed: anacapa: Add eeprom device node for
- NFC adaptor board
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4flJt72pTBz2xSb;
+	Tue, 31 Mar 2026 18:00:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=codeconstruct.com.au; s=2022a; t=1774940445;
+	bh=RTmsuImCn3CtzefM7fomAbHA5I/f+UtO2YDEaei1OTI=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=QteUuSwewXeKt35dLgpxQsZXo5XcyHBW/48b/IrIeozShAmj9VPjbHWDFcv/7wrMN
+	 EbUx9muoJkfo62g8yHdbEXleSmEM7DvOFC9FI9c4YM4maKbG5CbivJrN7I9CaVCD/F
+	 od6I5UEuh44ELgSAxSMKT4cPTf1mkGetpkyAsp+5QMH5pkKIaJLJD3kudVjLBpwp4y
+	 92WKhncfZ73BaknEFEK/ojuJhc5+qr9ztjoY/aKvdSk1ekZm2uqGCMb7taHI/WOwnj
+	 KNmh+i7o7sjAYUZDtqWcP1Wg2GeKoZkRQZCiCI1Qh/5TjAbI/27q+jqbGF9E06udHO
+	 2daLsjmnVJuqw==
+Received: from [192.168.72.167] (210-10-213-150.per.static-ipl.aapt.com.au [210.10.213.150])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5B5616002E;
+	Tue, 31 Mar 2026 15:00:43 +0800 (AWST)
+Message-ID: <09cbc12bea5707f794e139ea1bfafac82c2d2c12.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v28 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
+ global-regs and enable-dma properties
+From: Jeremy Kerr <jk@codeconstruct.com.au>
+To: Ryan Chen <ryan_chen@aspeedtech.com>, Krzysztof Kozlowski
+ <krzk@kernel.org>
+Cc: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>,
+  Andi Shyti <andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
+ <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@codeconstruct.com.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+ <linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+ <openbmc@lists.ozlabs.org>
+Date: Tue, 31 Mar 2026 15:00:43 +0800
+In-Reply-To: <TY2PPF5CB9A1BE6F267C60EEC34B6A75400F253A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+References: <20260330-upstream_i2c-v28-0-17bdae39c5cb@aspeedtech.com>
+	 <20260330-upstream_i2c-v28-2-17bdae39c5cb@aspeedtech.com>
+	 <20260331-fanatic-certain-bustard-fb13bc@quoll>
+	 <TY2PPF5CB9A1BE6F267C60EEC34B6A75400F253A@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.4-2+deb12u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -63,79 +83,18 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20260331-arm-dts-aspeed-anacapa-add-eeprom-device-v3-1-2bb2226fbb4e@amd.com>
-X-B4-Tracking: v=1; b=H4sIAJN/y2kC/52NOw6DMBAFr4JcZyN/+Mipco8oxeLdBBdgZCMrE
- eLuMTTpKec9aWYViaPnJG7VKiJnn3yYCphLJdyA05vBU2GhpW6lkRYwjkBLAkwzMwFO6HBGQCJ
- gnmMob9E4BlSIPcsWTdOLopsjv/znSD2ehQeflhC/RzmrfT0RyQok1I202ijJkts7jnR1YRR7I
- uuzWg0KrHIdEdd9Z+mv3bbtB6vL7to1AQAA
-X-Change-ID: 20260309-arm-dts-aspeed-anacapa-add-eeprom-device-a1aabe06a35b
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Andrew Jeffery <andrew@codeconstruct.com.au>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
- carl.lee@amd.com, peter.shen@amd.com, colin.huang2@amd.com
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1774944151; l=1502;
- i=carl.lee@amd.com; s=20260203; h=from:subject:message-id;
- bh=tK4ZlqqLdi/4bQSFXDH6JCKjm/zDadASdjOjaR1GT4A=;
- b=SaG/KqMDLIxRikW7LI9c8QOG9XIn/wzre1v8BpnxvZL8oSWTfadp8FR8SP4Lf7sUfnMLULhG0
- NjbP5yWI7GmC0NzJJoaRnpZ72jo1n6xtViWE2VC6hqD6/Q/kYVsRVaK
-X-Developer-Key: i=carl.lee@amd.com; a=ed25519;
- pk=pyq7QaQvoxMg806KVkRwpCbiah+7ncWr4MBpK1AEyjA=
-X-Endpoint-Received: by B4 Relay for carl.lee@amd.com/20260203 with
- auth_id=623
-X-Original-From: Carl Lee <carl.lee@amd.com>
-Reply-To: carl.lee@amd.com
 
-From: Carl Lee <carl.lee@amd.com>
+Hi Ryan,
 
-Add eeprom device node for NFC adaptor board FRU.
+> All AST2600 I2C controller instances have DMA hardware.
+> I will remove the aspeed,enable-dma property and instead expose sysfs
+> attribute in driver to allow users to enable dma/buffer/byte.
 
-Signed-off-by: Carl Lee <carl.lee@amd.com>
----
-Add eeprom device node to store FRU data for NFC adapter
-board on Anacapa platform.
----
-Changes in v3:
-- Fix node ordering to follow ascending unit address
-- Update commit message to match actual changes
-- Link to v2: https://lore.kernel.org/r/20260309-arm-dts-aspeed-anacapa-add-eeprom-device-v2-1-91c7dde4b79d@amd.com
+Sounds reasonable, but before you do so, how are you planning to manage
+the allocation of DMA channels across multiple i2c peripherals?
 
-Changes in v2:
-- Remove PRoT module eeprom commit since it is already included in another series under review.
-- Only include NFC adapter board eeprom node.
-- Link to v1: https://lore.kernel.org/r/20260309-arm-dts-aspeed-anacapa-add-eeprom-device-v1-0-45092310e0e6@amd.com
----
- arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-index 2cb7bd128d24..57fd81e931d6 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
-@@ -824,6 +824,11 @@ nfc@28 {
- 
- 				enable-gpios = <&sgpiom0 241 GPIO_ACTIVE_HIGH>;
- 			};
-+
-+			eeprom@50 {
-+				compatible = "atmel,24c128";
-+				reg = <0x50>;
-+			};
- 		};
- 	};
- };
-
----
-base-commit: a0ae2a256046c0c5d3778d1a194ff2e171f16e5f
-change-id: 20260309-arm-dts-aspeed-anacapa-add-eeprom-device-a1aabe06a35b
-
-Best regards,
--- 
-Carl Lee <carl.lee@amd.com>
+Cheers,
 
 
+Jeremy
 
