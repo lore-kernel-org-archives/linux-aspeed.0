@@ -1,138 +1,165 @@
-Return-Path: <linux-aspeed+bounces-3831-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3832-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FF9BCC6B03
-	for <linux-aspeed@archiver.kernel.org>; Thu,  2 Apr 2026 06:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66CADCC6B3E
+	for <linux-aspeed@archiver.kernel.org>; Fri,  3 Apr 2026 00:51:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fmWlv70F6z2ySk;
-	Thu, 02 Apr 2026 17:14:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775110475;
-	cv=pass; b=I3PydZHH1vrfQzhNT18p9uhApU3lEcD75KCI2lOf8wBJj2JBSXvomoV8j+42BbKtWv3/Rk0Xx2lAAI8EG6Z+jKDCFmAQBgGELM46GplSH/StZ3eCGPWY9VOB+DPMCdlPIy7r76i3C45VChMsbRO6/qSYY8cSg42YQFR7genwT7T7cWM2P37Kicsy6SYW6oslAqHdOUiIfHpWgVB9yuKeXVWqFAKz+pFUCDeeftNFRblxUbcwbp3Ho4opi2tkGO7PhewTIca3n+aGg+e2Pl/LYgXj0e4xSYAwjOIfZMOQOZ2AnQ4Bzj5aj48yFenlncVpgqkqJWhb1A8WbnCmb3gxlg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775110475; c=relaxed/relaxed;
-	bh=tx0kyjNelN7KDGtYZN952VeVRBH7Z5i6av0tphVGyYc=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=iEJGse1tl3kTRrkp2b5PaPLBABWD2vSedj9rAd01k2koAEtCGDrY1BKTd6DQMB7tklnWi33QQgGdmXp5J+zmG9vCfUlu255wss5pgxGlOqcSBYV2BBo/DB4LdvZxiLfV9CPiiudlClIarQEgvtORjvIxgyQN3KqdFuuNrjxY9KqsXAQo0BhT2eV8Njm+ptdqArWltgi5PVqXRb2C43+G5eTA6gTAWo/DM0KYu14j1Egde0Y73GDiKc9p98vZtdNBX0wwbv2Zd9aG1RU05puOfRX2BYnnMMl8WgmqkAbplkd+wuWDdWXBPClb5wrkiLLD0kabPmYZoH35VVzmggON/g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=oiqKI1fV; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fn0Xn0Yf8z2yVv;
+	Fri, 03 Apr 2026 11:51:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::132d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775177497;
+	cv=none; b=luraSPwbXEDc4XCSltd7bk+vzvy6N/vnFYkszbHc/U7vVxIpoqVWDwJUrAR97nJYmi4cRuwVBA1UiBwsBvqjKjw1AHr4xPTIBqWWNI51BRQ12GR0iC8TeH0DJpZCiZDIyXHpYSHjpamjBUAdFmpXIYDGpfU1cY5LEFcAMu6QuyuIRf1ez6CtDzS9IoTH1WsmvL5YmR2aGV190KUhNbV+74dwCpeS76NOXIC2LHuQBeEHCNd6s6GqnZZuOwuC8eoQJTHkdvpii+iaC+GZQbzYU2l+JD4vbQFMHfBd3sEzXQEYahHtMNdgZqBSjASsy8F5E+3zOnmdgEnxjW5HiVWEKw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775177497; c=relaxed/relaxed;
+	bh=Lb2HYWEQxB/om4yhyjxjNip9666HK8Fi8TGkiu9j7VQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=kTLIi09iN3+NyGhMOIg152qTxn852qMoM+8hEpNRGpm+2HS7Mp8c95mD0cDS4dfZvk2fGFsU1Zkf+FmtjZ92IjMeQdNhX7mWvUsYBGKwEKAMfYlWqv2L4Mynlqv7YO8Gll1FfhnRxma/zRIitusHJgGy8MXelfsG5Ec243mzI55OfnrfdjeCmsV1uM7ukD/Soehb7DG9YIJMW98Y+E+NJV6FSZsCuDYELHYvlLvyjWOoz3uUc3YNHaTaE1y4hpzwvcLqrcrVipA8Drc9tocETfgoHab/62MB1jhtix1ylxph+GWOUGiVTyxq14g+qhcHBzo20kiqnSBKKuYvd5bgOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=mJZrq6gJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=oiqKI1fV;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=mJZrq6gJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::132d; helo=mail-dy1-x132d.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x132d.google.com (mail-dy1-x132d.google.com [IPv6:2607:f8b0:4864:20::132d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fmWls3FBgz2xm5;
-	Thu, 02 Apr 2026 17:14:31 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=YVOZzbx6RI9X3YadiDPtzxauST6ybT2bOJS+2/vc0P+s27JgoyR/sJU0t0EIv/yjSMzW5nAfJ8GwgxgFM/l3xkIQtnc/hShzpz8yfhSmRwz+2gMPwvA1ohD60t4Bq3yVg8rtPMj1HU/lm4F0MKN9wJBQQP6IIjq25jvS92u1Qcp27m57IZwZy2M+izLz06ARao+XusCw0RRopzb/EhRhj/kxvndpj7/A0zvA9ozXA8S62JQaKDZsMQgskSwY1n6ISVC2ZKftkFbFF21+aPXqGxTCaZ0zF/XJ3L6kKCUF5h9c57R+tJxiZtS3Hbq9A8eGAYORCesvLfqG52fpJ7mMGQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=tx0kyjNelN7KDGtYZN952VeVRBH7Z5i6av0tphVGyYc=;
- b=DQWnp5Y1ghod0zgpYWOY2n+QA1fd/QCz1/AsyrWCxgzRevtFXvIdToV8C7oOSnZuC/8q7OBDsGtNzapEvAyZQwx1uQHFGd86XDcRCdqtZYJmyeTld0aADQdeZGs6767dxAFVuzU1xY3Se9XCnTxNySvX4hF3JUM++tA5W8EbFhTnROuoPhKoAt+wL1DRFnTNg5j6slcmCcQuaq1o7oYPNm9GtfamoqlaTBFrYT0tfyI4zaA3ldiajVU1tJH8LO6sIdMJj+nyJbVfHM3HsCqsJ5j1nfjTs5MjPceYXJTYRXECYHdLPJaA5HROKOGPkefqwu7LOEfOkGLi0ERs2wQGGw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=tx0kyjNelN7KDGtYZN952VeVRBH7Z5i6av0tphVGyYc=;
- b=oiqKI1fVmJXnbnW+rm4edWQ0GsZFDiXWmBBk2lMqzQ8vevqZ5XUKGW6YS7RjsPfUMPWTxqefbSfJUK9zxEiYn6ic/qU9CG5KoQG32I/3/RL/iHLsC60jlX9T6Bd6cALP2lUyXgRFfzdeK0VMMoeGBx3LODHVwiOF97R7+5nSzG4qskt6j5MbPciSB8XWKTymah/LkEZW5lS0LO3LMc7CFG83l52E7+hi4bUR9euikA9fjb/4vkTliXEQBFNQ0OJYKki4gj3gwN+C8tb3lUjG0zI8+MAmkQyqRWNxP3k/fFugPTvp8aJY79UnfuDJ7LzrDREY4l8ekTnluDKSj/30AQ==
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
- by TYPPR06MB8080.apcprd06.prod.outlook.com (2603:1096:405:315::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.17; Thu, 2 Apr
- 2026 06:14:07 +0000
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19]) by OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19%4]) with mapi id 15.20.9769.015; Thu, 2 Apr 2026
- 06:14:06 +0000
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: Krzysztof Kozlowski <krzk@kernel.org>
-CC: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
- Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Linus
- Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Ryan Chen
-	<ryan_chen@aspeedtech.com>, Andrew Jeffery <andrew@aj.id.au>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
-	<linux-gpio@vger.kernel.org>, "linux-clk@vger.kernel.org"
-	<linux-clk@vger.kernel.org>
-Subject: Re: [PATCH v5 2/3] dt-bindings: mfd: aspeed,ast2x00-scu: Describe
- AST2700 SCU0
-Thread-Topic: [PATCH v5 2/3] dt-bindings: mfd: aspeed,ast2x00-scu: Describe
- AST2700 SCU0
-Thread-Index: AQHcwOBzpo2LGWLrJkiaaIjatlvHtrXJwg2AgAGLixk=
-Date: Thu, 2 Apr 2026 06:14:06 +0000
-Message-ID:
- <OSQPR06MB725204B2FAE543A71AEA52C38B51A@OSQPR06MB7252.apcprd06.prod.outlook.com>
-References: <20260331-upstream_pinctrl-v5-0-8994f59ff367@aspeedtech.com>
- <20260331-upstream_pinctrl-v5-2-8994f59ff367@aspeedtech.com>
- <20260401-adept-zebra-of-bloom-5bb68b@quoll>
-In-Reply-To: <20260401-adept-zebra-of-bloom-5bb68b@quoll>
-Accept-Language: en-US, zh-TW
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|TYPPR06MB8080:EE_
-x-ms-office365-filtering-correlation-id: 9f24fb88-5106-40fb-7429-08de907f0bf8
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|7416014|376014|1800799024|22082099003|18002099003|56012099003|38070700021;
-x-microsoft-antispam-message-info:
- P3p6BHZmcVfP2Hx5G6v/xdZy/1Os2xABbiUQDzFYdNQhjflVrZPmp9SVFbrnW2Unm0OrHj3eMHXnvJT84aCd2HoY6CW4g+w071SyfTkKolva4lw+84faxgUX9SGsZ1I0H1YnCPKHUeDVaz9KnzyzR2rBF/SnSmXoZbLqCkB9h5mx7e7HcXZoqp0fLxTPixckWBDxTw6WLym/oz7gkja3taH11ISvrreuVl4v9ZSqs20uLvnJzc6SQuNJ+8LMGPAHT15e7zZqfYVliNZuPWhXqLpdcu1YCuGLH5Bt5TvAmUtMJGvZkpO0C9mlRWptnlK6EEKeDBR6C9+19CNyp2JwQY3F4V8BUWl0I7SQG9EdROFqHu1rEcj8n3yr56F0oASyAhkDI+3VBkJhD1vKbCf3gfqhrwz5D7MmZzZH1c5prY6fmv8/5p74x15MU09RvKr40BOoUmyieS0dgXIS+qv+2Hk+pa/900YCykfBel6Juu32I6kGIVSJxMluoYOI8U8wDJswZTu9hVldR8ZPPXBlOqMqbg6xpsMiqkwklla+PywE46BFlzW6Idh1yx4u4WKbs4lhaP13inGTnIPSMJREN9v0dqIaXAImR3Vh+cMfrgLWSlnU4tUwCkMftMI7ifvl8pot6Xllb1S2d/aePL5e3ky6pKOHfLkXIKilX/wGjcujKdntOfmVz14ZjAGrfmIaJ9YaTk1qWnz5F5LkZPHzGxXAT+YRRfRKqrRhy1spjG5dL+VP5JYCzus/+U/Cp3rfHoIr0e8M9+wRIl1ive+mgoCz8So4aLlmu7QFo1YShKc=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024)(22082099003)(18002099003)(56012099003)(38070700021);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?0+CtT/eJYnsADx5/M5I2QgYuBHIYOOm47I8lr0o4M6XShqgU7Sd1TmJFXN?=
- =?iso-8859-1?Q?CVz/MEgtjNk8SLGzQGcUJKBBdYBJ3vmc8aFnT15+P7wFpT4rUUREGsrNqu?=
- =?iso-8859-1?Q?Tzp5AZ0wYGx6u0a+GTWRSj4TDKZB6OtlgNmmEnW4lcVUBkftdj8RbZwKLQ?=
- =?iso-8859-1?Q?+pYgiLXlZ2DfscevB7hNaqQ6W9femT26O3veuoFQFL2Cqe3nlDYx/3ZDuf?=
- =?iso-8859-1?Q?n6iVuqd1YeWNunLNVDfnvarMlB4DSoZqaqFFwrnHUSlw5FSR4U2sspnadG?=
- =?iso-8859-1?Q?F5YjOQeAcXCMj/iZMT94YTo7/yI+wG8P2fuvec7xUpQE1eKrKEI3J0DAyf?=
- =?iso-8859-1?Q?ZCE9G76TtfSlOTljqDSu4bPDPTQTiNCtkYwRAjY181kLn3ToMlxt43UnSG?=
- =?iso-8859-1?Q?+m0NAFzGhnepUk7uypdeDt0SnqySEbhDMvFGG0DvUBtqzHwe9LtICQUDt/?=
- =?iso-8859-1?Q?usaVfkLNvyStbidZPu1x82JrIog9GJVLVRZggbTs/x1ukGiCKKJ7uEbbs7?=
- =?iso-8859-1?Q?ezn7JVbs4N7ZlzChB0kxfbBwZd2tl5yr5Y+t4lBTIckiRNIiWyeGn1h+rg?=
- =?iso-8859-1?Q?1Uw/ydWdJYWAEKDP4ILz8LVxN1XxIjFpAsSaBChfqoQKCu39g0O/qjQAjk?=
- =?iso-8859-1?Q?oqeE89Q7JNF4GXLhvF4ofdxnVGuw0lunwVKnItsEZx0b7Xo8J7x9t3Mi7s?=
- =?iso-8859-1?Q?oT1vr0OTZoMz4Eu1hUaoGkapGX/i3VMvc1u01upCaRBoDuoN/sPj912ZYp?=
- =?iso-8859-1?Q?fWcSYT/eHIFcHlpFk72fsYLoJmWs3c9aI6sdlJdoE6fTH4BUuo096SH+be?=
- =?iso-8859-1?Q?loaaKSNkiZ9orICDuN6pZpUZjJWAZ3JC5QhUHwnbSnljDK+Kb76Rao1dTw?=
- =?iso-8859-1?Q?+U9V8Mdlucp4PWHACXhXlNVxBp2q6Qn+5AIOZTfw+ZK5G+jRsFC5yq0Iyp?=
- =?iso-8859-1?Q?uMPD/xWxcH4KgINTR2xV4W3e8FoJvlKW8qCkPph4qC/0euMBcW2FzMyQ1X?=
- =?iso-8859-1?Q?fCiOigorRbt6RYB758IMjUD18k2tf9SrDCPDE0PKiTxttjwkKiEYABvhyr?=
- =?iso-8859-1?Q?hzF45A78ucV+1XuxJtzLVAEZ87l17TMg8IUUsOEtBSNBVKgyk8d7FHKL9X?=
- =?iso-8859-1?Q?e8Cq0dRqvAz1Ab5f0NQuR98QCq5YDFZkqcMI/nLziD8C5L5NdOeYJXSGIu?=
- =?iso-8859-1?Q?KxnQ2Tn7esCgH6rwd6pfsYAw4YBmfKMFK8c1/XHs8eYOZFVWjNfIaWAidf?=
- =?iso-8859-1?Q?nS410bBMDnmhNSp8HtrRfRH0FJXPK2WeXg3TJNberUAMAhcCCZcgo6fPF7?=
- =?iso-8859-1?Q?qdcFkZXlNJRg9ewB5HQDcPWRCJKdYigrL5B4/tI+PtcH+ixTRCeZLLgpc5?=
- =?iso-8859-1?Q?IM9Nw3Ngb2lQ/u+G2z0eQq6qW1OOHfakSxL4+N0Emk5GV8ofJ4K9q6rS7o?=
- =?iso-8859-1?Q?fyFaIOQKzRSV0s4H2Sa+sZle0gf35pXTk/uG8DjwuJldkWnQVdp0FAhJjU?=
- =?iso-8859-1?Q?TT50C2fa7BNtnDFR4Vu/lAqo0uVpBNzTHS472FgVNKG/uK6K6wLiwNkyzT?=
- =?iso-8859-1?Q?xwygRv+6t/e/DIHqroFE1h7uPD4Msjw25hDRJYJWhCbYqOgsmZCzk2NSZz?=
- =?iso-8859-1?Q?cIGHCSATLfzNsskgZS6U3AZVmIjuIyheGqTE8xfdo5h9g0WmBRLxNyzCtS?=
- =?iso-8859-1?Q?0QaQSmU/nxLbCHBzQK4XMLucj7aUhIg68mKAxinDrotvg41Hc1Ev3RNUUV?=
- =?iso-8859-1?Q?vHLTZzYu4uuCnHZX1J0c5uWHOoKDbJBHJn5SQE/DRiBpxpDaazSJU0oKyM?=
- =?iso-8859-1?Q?OZIObV0Ikg=3D=3D?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fn0Xl6dkbz2xQD
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Apr 2026 11:51:34 +1100 (AEDT)
+Received: by mail-dy1-x132d.google.com with SMTP id 5a478bee46e88-2cc1534e026so206282eec.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 02 Apr 2026 17:51:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1775177493; x=1775782293; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Lb2HYWEQxB/om4yhyjxjNip9666HK8Fi8TGkiu9j7VQ=;
+        b=mJZrq6gJ0dZbXN6zpfOZGOnbmleJvjaIenImbgPyz5zlaOm3PyR2LRvkIrjYFf1TLg
+         MA3S+IguAh6LVApq95/9CAdfPuYyI8mep5VjOnTGVgXA8m6Ic1xxya2HngaopTVRH5nK
+         qY4yBM2oPlN4HMMi98/Grmbe1ybdbl62t1vXE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775177493; x=1775782293;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Lb2HYWEQxB/om4yhyjxjNip9666HK8Fi8TGkiu9j7VQ=;
+        b=PTZhi57N3BVu4y+ZygIPn99QEjGEE+Tgmr+HzYyHCrRF1t8YQD9KT3Jvy4C0I2ltyu
+         5l1aPPgfQP8fkYiHA8VZpM6MMzZyNKNTmjboMEhN0NzpFlr3TrFVOOSP6jBraFvAZRfd
+         tYsIr9y6tGKuiXMDm+C5MNQoXkwpo1WIZzsqNOlt8BY0KxJMFGHo0ReMlYLYTv38TXIz
+         J6RqkYYiEMMwoG9n10DS/ZFBknhBwwI7hRMGgcsb+eA2Mt99aJL4l0SOdwoKthD4gh6b
+         Zy/LMGyHhsjK5moh9U/mJfRokp+akFp7FwMZxm34GUnIgNZ5SFKZ4GVEx7NipGeXLdeB
+         6AwA==
+X-Forwarded-Encrypted: i=1; AJvYcCW0PYqdcQgH66lB16FuciuRrJk8B5HK1zf8g0kS39g9gIdU/OFAfkLxIFCdOGz7KPSn4OLvem1ts4Zfops=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyZPhOwaUtRV24Hi/AlhbEQAXHz/wZjhm54pm8zqDlYoOq1HVjY
+	xAjuR9gJfQrGUDyWv88tQzhPELn4WSXPRwUSkXa6kgIxPiGOQgwQqoLvIsf1lDl4Sg==
+X-Gm-Gg: AeBDievbIWok7dZY5z8VKV7Aq60C6EpksqCYPx67GPWsH+42UomSu4kZL0TUWZTfEPu
+	6/OFGDyq+1IN1klUpGSJqV+nDJdadlOHHomFLXGH1N9iiEhfuNz1j2xT/VHgeYatO3w58UKfLTU
+	00HXuJNTKzILcnZi6lNaKvF8ReQllwBS9wpk5x42lEebXDY1USgWMIA4aAKhgNsj5VOfrjVn2A6
+	XH0AZIkc34AyTLz3t/5CEcPdJF7Cz5wnmtCb4kio3FEjrlXGpLvvaROutSXLmiRnslXI6OoeUYM
+	+yEG6q0gi6U7UmqxqkyT03+/zTRCpKPEekkCW2xsSnRL3VdYq5ia2Il5dDAFfJ5BnrrbccbJqXf
+	yUrowqxQoQ9+fA5kyH2R/qx5a7ncWw2lezOxSlOaD5w+tgyecJ+gEXmPrcAECkladUjivDFAgie
+	JsY8zq41KjY3PBFG/JhVWdx2e3ebwO19rI8oYP96KVJl+cTRZnV+oar4FsLUR60U9EDv9zXqTwq
+	Di09FirjI5eOi+P65af8A==
+X-Received: by 2002:a05:693c:3009:b0:2c1:558c:16f7 with SMTP id 5a478bee46e88-2cbf950392cmr655589eec.6.1775177492780;
+        Thu, 02 Apr 2026 17:51:32 -0700 (PDT)
+Received: from dianders.sjc.corp.google.com ([2a00:79e0:2e7c:8:5db3:7542:a530:f43a])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca78df3b84sm3630074eec.5.2026.04.02.17.51.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 02 Apr 2026 17:51:31 -0700 (PDT)
+From: Douglas Anderson <dianders@chromium.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Danilo Krummrich <dakr@kernel.org>,
+	Alan Stern <stern@rowland.harvard.edu>
+Cc: Robin Murphy <robin.murphy@arm.com>,
+	Leon Romanovsky <leon@kernel.org>,
+	Paul Burton <paul.burton@mips.com>,
+	Saravana Kannan <saravanak@kernel.org>,
+	Alexander Lobakin <aleksander.lobakin@intel.com>,
+	Eric Dumazet <edumazet@google.com>,
+	Toshi Kani <toshi.kani@hp.com>,
+	Christoph Hellwig <hch@lst.de>,
+	Alexey Kardashevskiy <aik@ozlabs.ru>,
+	Johan Hovold <johan@kernel.org>,
+	Douglas Anderson <dianders@chromium.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Frank.Li@kernel.org,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	alex@ghiti.fr,
+	alexander.stein@ew.tq-group.com,
+	andre.przywara@arm.com,
+	andrew@codeconstruct.com.au,
+	andrew@lunn.ch,
+	andriy.shevchenko@linux.intel.com,
+	aou@eecs.berkeley.edu,
+	ardb@kernel.org,
+	astewart@tektelic.com,
+	bhelgaas@google.com,
+	brgl@kernel.org,
+	broonie@kernel.org,
+	catalin.marinas@arm.com,
+	chleroy@kernel.org,
+	davem@davemloft.net,
+	david@kernel.org,
+	devicetree@vger.kernel.org,
+	dmaengine@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	gbatra@linux.ibm.com,
+	gregory.clement@bootlin.com,
+	hkallweit1@gmail.com,
+	iommu@lists.linux.dev,
+	jirislaby@kernel.org,
+	joel@jms.id.au,
+	joro@8bytes.org,
+	kees@kernel.org,
+	kevin.brodsky@arm.com,
+	kuba@kernel.org,
+	lenb@kernel.org,
+	lgirdwood@gmail.com,
+	linux-acpi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-cxl@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-pci@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-serial@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-usb@vger.kernel.org,
+	linux@armlinux.org.uk,
+	linuxppc-dev@lists.ozlabs.org,
+	m.szyprowski@samsung.com,
+	maddy@linux.ibm.com,
+	mani@kernel.org,
+	maz@kernel.org,
+	miko.lenczewski@arm.com,
+	mpe@ellerman.id.au,
+	netdev@vger.kernel.org,
+	npiggin@gmail.com,
+	osalvador@suse.de,
+	oupton@kernel.org,
+	pabeni@redhat.com,
+	palmer@dabbelt.com,
+	peter.ujfalusi@gmail.com,
+	peterz@infradead.org,
+	pjw@kernel.org,
+	robh@kernel.org,
+	sebastian.hesselbarth@gmail.com,
+	tglx@kernel.org,
+	tsbogend@alpha.franken.de,
+	vgupta@kernel.org,
+	vkoul@kernel.org,
+	will@kernel.org,
+	willy@infradead.org,
+	yangyicong@hisilicon.com,
+	yeoreum.yun@arm.com
+Subject: [PATCH v3 0/9] driver core: Fix some race conditions
+Date: Thu,  2 Apr 2026 17:49:46 -0700
+Message-ID: <20260403005005.30424-1-dianders@chromium.org>
+X-Mailer: git-send-email 2.53.0.1213.gd9a14994de-goog
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -146,74 +173,122 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9f24fb88-5106-40fb-7429-08de907f0bf8
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Apr 2026 06:14:06.9062
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: PSmbIow9bL8eDe+NVklZZKsbeoOoP78enCkeT2ihUDYRXNgpSPCbnFJk1Zw+ib8cOzLKEadKoCfjohcqMx9G6RFBMbBYfZUwcoMYTh32jt4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYPPR06MB8080
+Content-Transfer-Encoding: 8bit
 
-> > AST2700 consists of two interconnected SoC instances, each with its own=
-=0A=
-> > System Control Unit (SCU). The SCU0 provides pin control, interrupt=0A=
-> > controllers, clocks, resets, and address-space mappings for the=0A=
-> > Secondary and Tertiary Service Processors (SSP and TSP).=0A=
-> >=0A=
-> > Describe the SSP/TSP address mappings using the standard=0A=
-> > memory-region and memory-region-names properties.=0A=
-> >=0A=
-> > Disallow legacy child nodes that are not present on AST2700, including=
-=0A=
-> > p2a-control and smp-memram. The latter is unnecessary as software can=
-=0A=
-> > access the scratch registers via the SCU syscon.=0A=
-> >=0A=
-> > Also allow the AST2700 SoC0 pin controller to be described as a child=
-=0A=
-> > node of the SCU0, and add an example illustrating the SCU0 layout,=0A=
-> > including reserved-memory, interrupt controllers, and pinctrl.=0A=
-> >=0A=
-> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>=0A=
-> > ---=0A=
-> >  .../bindings/mfd/aspeed,ast2x00-scu.yaml           | 117 +++++++++++++=
-++++++++=0A=
-> >  1 file changed, 117 insertions(+)=0A=
-> >=0A=
-> > diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.y=
-aml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml=0A=
-> > index a87f31fce019..86d51389689c 100644=0A=
-> > --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml=0A=
-> > +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml=0A=
-> > @@ -46,6 +46,9 @@ properties:=0A=
-> >    '#reset-cells':=0A=
-> >      const: 1=0A=
-> >=0A=
-> > +  memory-region: true=0A=
-> > +  memory-region-names: true=0A=
-=0A=
-> Missing constraints. From where did you take such syntax (so I can fix=0A=
-> it)?=0A=
-=0A=
-The intention was to constrain these properties conditionally for=0A=
-AST2700 SCU0 as done further down in the patch.=0A=
-=0A=
-I can update the binding so that memory-region and memory-region-names=0A=
-have baseline constraints (e.g. minItems and maxItems), and then refine the=
-m in the=0A=
-conditional branches for AST2700SCU0, AST2700SCU1 and others=0A=
-=0A=
-  memory-region:=0A=
-    minItems: 2=0A=
-    maxItems: 3=0A=
-  memory-region-names:=0A=
-    minItems: 2=0A=
-    maxItems: 3=0A=
-=0A=
-Best regards,=0A=
-Billy Tsai=0A=
+The main goal of this series is to fix the observed bug talked about
+in the first patch ("driver core: Don't let a device probe until it's
+ready"). That patch fixes a problem that has been observed in the real
+world and could land even if the rest of the patches are found
+unacceptable or need to be spun.
+
+That said, during patch review Danilo correctly pointed out that many
+of the bitfield accesses in "struct device" are unsafe. I added a
+bunch of patches in the series to address each one.
+
+Danilo said he's most worried about "can_match", so I put that one
+first. After that, I tried to transition bitfields to flags in reverse
+order to when the bitfield was added.
+
+Even if transitioning from bitfields to flags isn't truly needed for
+correctness, it seems silly (and wasteful of space in struct device)
+to have some in bitfields and some as flags. Thus I didn't spend time
+for each bitfield showing that it's truly needed for correctness.
+
+Transition was done semi manually. Presumably someone skilled at
+coccinelle could do a better job, but I just used sed in a heavy-
+handed manner and then reviewed/fixed the results, undoing anything my
+script got wrong. My terrible/ugly script was:
+
+var=can_match
+caps="${var^^}"
+for f in $(git grep -l "[>\.]${var}[^1-9_a-zA-Z\[]"); do
+  echo $f
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = true/set_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = true/set_bit(DEV_FLAG_${caps}, \&\\1.flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = false/clear_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = false/clear_bit(DEV_FLAG_${caps}, \&\\1.flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = \([^;]*\)/assign_bit(DEV_FLAG_${caps}, \&\\1->flags, \\2)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = \([^;]*\)/assign_bit(DEV_FLAG_${caps}, \&\\1.flags, \\2)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var}\([^1-9_a-zA-Z\[]\)/test_bit(DEV_FLAG_${caps}, \&\\1->flags)\\2/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var}\([^1-9_a-zA-Z\[]\)/test_bit(DEV_FLAG_${caps}, \&\\1.flags)\\2/" "$f"
+done
+
+NOTE: one potentially "controversial" choice I made in some patches
+was to always reserve a flag ID even if a flag is only used under
+certain CONFIG_ settings. This is a change from how things were
+before. Keeping the numbering consistent and allowing easy
+compile-testing of both CONFIG settings seemed worth it, especially
+since it won't take up any extra space until we've added a lot more
+flags.
+
+I only marked the first patch as a "Fix" since it is the only one
+fixing observed problems. Other patches could be considered fixes too
+if folks want.
+
+I tested the first patch in the series backported to kernel 6.6 on the
+Pixel phone that was experiencing the race. I added extra printouts to
+make sure that the problem was hitting / addressed. The rest of the
+patches are tested with allmodconfig with arm32, arm64, ppc, and
+x86. I boot tested on an arm64 Chromebook running mainline.
+
+Changes in v3:
+- Use a new "flags" bitfield
+- Add missing \n in probe error message
+
+Changes in v2:
+- Instead of adjusting the ordering, use "ready_to_probe" flag
+
+Douglas Anderson (9):
+  driver core: Don't let a device probe until it's ready
+  driver core: Replace dev->can_match with DEV_FLAG_CAN_MATCH
+  driver core: Replace dev->dma_iommu with DEV_FLAG_DMA_IOMMU
+  driver core: Replace dev->dma_skip_sync with DEV_FLAG_DMA_SKIP_SYNC
+  driver core: Replace dev->dma_ops_bypass with DEV_FLAG_DMA_OPS_BYPASS
+  driver core: Replace dev->state_synced with DEV_FLAG_STATE_SYNCED
+  driver core: Replace dev->dma_coherent with DEV_FLAG_DMA_COHERENT
+  driver core: Replace dev->of_node_reused with DEV_FLAG_OF_NODE_REUSED
+  driver core: Replace dev->offline + ->offline_disabled with DEV_FLAGs
+
+ arch/arc/mm/dma.c                             |  4 +-
+ arch/arm/mach-highbank/highbank.c             |  2 +-
+ arch/arm/mach-mvebu/coherency.c               |  2 +-
+ arch/arm/mm/dma-mapping-nommu.c               |  4 +-
+ arch/arm/mm/dma-mapping.c                     | 30 +++----
+ arch/arm64/kernel/cpufeature.c                |  2 +-
+ arch/arm64/mm/dma-mapping.c                   |  2 +-
+ arch/mips/mm/dma-noncoherent.c                |  2 +-
+ arch/powerpc/kernel/dma-iommu.c               |  8 +-
+ .../platforms/pseries/hotplug-memory.c        |  4 +-
+ arch/riscv/mm/dma-noncoherent.c               |  2 +-
+ drivers/acpi/scan.c                           |  3 +-
+ drivers/base/core.c                           | 55 +++++++-----
+ drivers/base/cpu.c                            |  4 +-
+ drivers/base/dd.c                             | 28 +++++--
+ drivers/base/memory.c                         |  2 +-
+ drivers/base/pinctrl.c                        |  2 +-
+ drivers/base/platform.c                       |  2 +-
+ drivers/dma/ti/k3-udma-glue.c                 |  6 +-
+ drivers/dma/ti/k3-udma.c                      |  6 +-
+ drivers/iommu/dma-iommu.c                     |  9 +-
+ drivers/iommu/iommu.c                         |  5 +-
+ drivers/net/pcs/pcs-xpcs-plat.c               |  2 +-
+ drivers/of/device.c                           |  6 +-
+ drivers/pci/of.c                              |  2 +-
+ drivers/pci/pwrctrl/core.c                    |  2 +-
+ drivers/regulator/bq257xx-regulator.c         |  2 +-
+ drivers/regulator/rk808-regulator.c           |  2 +-
+ drivers/tty/serial/serial_base_bus.c          |  2 +-
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c      |  2 +-
+ include/linux/device.h                        | 83 ++++++++++---------
+ include/linux/dma-map-ops.h                   |  6 +-
+ include/linux/dma-mapping.h                   |  2 +-
+ include/linux/iommu-dma.h                     |  4 +-
+ kernel/cpu.c                                  |  4 +-
+ kernel/dma/mapping.c                          | 16 ++--
+ mm/hmm.c                                      |  2 +-
+ 37 files changed, 178 insertions(+), 143 deletions(-)
+
+-- 
+2.53.0.1213.gd9a14994de-goog
+
 
