@@ -1,72 +1,74 @@
-Return-Path: <linux-aspeed+bounces-3836-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3837-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E983CE88D74
-	for <linux-aspeed@archiver.kernel.org>; Sat,  4 Apr 2026 00:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24501E88D6D
+	for <linux-aspeed@archiver.kernel.org>; Sat,  4 Apr 2026 00:07:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnbWL2RvVz2yYK;
-	Sat, 04 Apr 2026 11:07:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775261246;
-	cv=none; b=QAN+K4A09FumiWpql4IB7q4At1uYw5ZZhsQaLUbWl5B2PE819oOgUT/dpFJBujED3cANKP9pzSxP9NMRFHuy9LOV0IyrzWo7cUbfEk4W08uLdxbqe0JbEhOX+D8LMvESq6TtzS4EOGyBPR1OIhMa17oUKofajWBMe1cMLPtvtEEQt0V2RNwzYeo3rPoWc2NiIGD8Gq6wmO7Chma1J82UJKAJV1Af1XA3Dfjf73i593TqVDoMXEdohtC+iq/XM1hopcbOFhxm96vX7qK+5zbZkWG/synAsgzvMGXTaVsO1RpZw+TiCTBEGkotVu0GkzxpSNGYHK2dhvjbxyYNSsBF/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnbWh5scJz2ySc;
+	Sat, 04 Apr 2026 11:07:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1330"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775261264;
+	cv=none; b=obNKi3xVr5pTs86mR53LqEJ+khiAA7hQLR3+p9jSKTOY0jCcmafdrvbQBK74UdiI1y3xn1iD4tmZNSm4dnBIRQ9ITLwgByyJSO2DeZ5TTmvKli2XzZ3XxPU+svUrdua1G+ZqEIZwl4HjUkBngZVJKhzW5z9WwhAntbN0ZB9ei+H3UPZNWAEj/0NWzstExrmGxV8QCRshnwhCtiQG7HPzKZ6S5XjnH483v6FrAgCwW5KQQZBoSPmJOtUzUECBGh35TdwWYef3uvvTG4Pp47ccqAaERA5bUQszP+mI5gVg+4GijKxYrcZm236841//npnVliFvOsMI6HFbJAntEwXK/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775261246; c=relaxed/relaxed;
-	bh=KGKsMy9vhlN9yvdnOvYy+R4lmavPYuTzTATeThGwgQc=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QluJOXzZzEyPkIMnxl+ZZMV5OA5QOelwctWl4TicFVb9D+eYGaBmz0pAtjJP1cC7I+vNEXaDwozXmbShF0sJUw5ItPp6rEjbBhY2LYF7gkqfi/bHuSi+glmmTChHGMZI/yyW8SPTo0K0wGj9RERMMNB6eB2KkBZPMezBjXYoFVriYX3sr2xxhdLn9ZCb/bz8mHP/OH9U9BfZL/Ut1nfSznTTgy3FebivnVNotQDB21vC0fOVOiB0o/vxpQyIwvpPkbbtX06kOnAy8egfmi0IQ+kg97hiuplpwUTqBvai2MpV9LZgv5dgdPTzgxjy1Iup+QKWa9iBDU9vcsm61H8wHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DZnv2ZdR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+	t=1775261264; c=relaxed/relaxed;
+	bh=P2v/+uE3FItR13RHlHLOGT8kS+I6Lrtj4w+A1WuT72k=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=O1ihZwBRrMs+d/9zkeUO5an3Y9+8fKf05xD6OEZQUdXUc+0AwSRXxSaNJs5KFI9kWtgig2QAq2NJPNT2+Q3ovKMcvR8QYX3KidK278o4t5HdXRtVUapHKSw2fTsZaeBIb4ERznuC3hV1K68pC6BlwYtOTHHJlGjH6DKOKoXK1C9pGVKoTIhezq7hS4KCIJTgdv7z0tT9YLbXaesi/mVsme94G+of7pvufAJqAAh/646Ymgc07BTcmyNvAdRdHOFa06+xEH8R6KFs/xdKPpd0CkBLT1LCzli/BaaIq+wvDjciuuK9r5w3IizCY86dHpbc9TUyNcwe3XBewfnTB4T1bQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Pj755A1Y; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DZnv2ZdR;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Pj755A1Y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
-Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1330; helo=mail-dy1-x1330.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1330.google.com (mail-dy1-x1330.google.com [IPv6:2607:f8b0:4864:20::1330])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnbWJ1SNVz2yL8
-	for <linux-aspeed@lists.ozlabs.org>; Sat, 04 Apr 2026 11:07:22 +1100 (AEDT)
-Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-2cc4c693d59so2340874eec.1
-        for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Apr 2026 17:07:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnbWh1J84z2yL8
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 04 Apr 2026 11:07:44 +1100 (AEDT)
+Received: by mail-dy1-x1330.google.com with SMTP id 5a478bee46e88-2bd9a485bd6so5530882eec.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Apr 2026 17:07:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1775261240; x=1775866040; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=KGKsMy9vhlN9yvdnOvYy+R4lmavPYuTzTATeThGwgQc=;
-        b=DZnv2ZdRH164l5BuxmKY7VF/u8CYXiJruPgqE5oWkgVQgPXG1AG3KeDWNZpu+Al/hI
-         IB9X8HCA4+3iD4RRjiPq/yel5pgCu0VVMOXEBSZW7oNPxcI5yEh1na/ps3nEoZbwlLTS
-         AQf3890aCnVWqIh2or8sSMRxoTGPIM02N4ouk=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775261240; x=1775866040;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=chromium.org; s=google; t=1775261262; x=1775866062; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=KGKsMy9vhlN9yvdnOvYy+R4lmavPYuTzTATeThGwgQc=;
-        b=b5mAbGyfXfERG4KweLfgJCB/k8zKQyhdYYkcxzIl0k3BDaBqJT1W3Ep7SyO4QPAisS
-         eQ2/okjmsNyzTTKpAGr6iK0CJINxhqgqjRQs6x92Oepp8Av0XN/0cb8+lcX9ZHc2llNp
-         Z5B2nQhdt2nsx1okNM0CP9IBGMKT9ddH1DDbJOl9VbtUJsY+2ko5QUsa2+X4GRMGXl6z
-         ASR0mLDDBzu/WJtaCCtLA9+oTniF/j99FJ6GWMBSML1UBj79pNJXEPd6d4SbO0XbYwr8
-         GgqxoDJX7o2y0843MNU7NNNkRuzgzB37hmed2ZnNiiFeeIz5YV6qF2HS2kJGNSNs1pGP
-         kRJw==
-X-Forwarded-Encrypted: i=1; AJvYcCUldGdfNDCch7ybmDsqkCZA2dkTHXOJowT0IU9H5tLY3xK5nH9NYMuID8rYZjhtQjDx0EGj6LIm3upH8ao=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyIeUpHTLSbBD4sO1L6F4u9+Oai4fzP8nVCM6dmVom6bJGXc2JL
-	6RZUn6dYbKq1/6I9Lp0F0Os7gewgbbxqKPnx6hWx/HfISsQNXsS0efncAswgju33/A==
-X-Gm-Gg: AeBDiesBmDBwhNqD097Izb+7X1EY38MLwPL+RHelBqtHoEM7Y5FYBLtRetA2iYvIIny
-	1b9kqkiwhDg/+TbpxqP2pm4/lQx4xfXKxbF+Ol+hsSYxEEQNIB/LdcC7UIj0oAmQ2cb7aH1LTUp
-	IEKMcapajsn2926gn4D6AHd6TCe1yLEPHYePddb7ash9iahGMXTIytJtXbdlILZJg3AoI3SDuAc
-	/n2mMA4eXNoTliO+voXI9UrIJ8BxMRlmchv4Qnj/tUm55DrCv+LbIrF6+u0RJivWagEpU2EtK6m
-	Jxp5OVhDuEvfHjyQE4m802ZGqURP4pz0PkpQQFnH8DM/EgVWHF7WViPCTE+o7cCt6N9lUdIV/xz
-	McUjSHOppLewojz9FSu0gcsDMXYGNpoHTOcFmvDJLDPbKCTEN2SpApXSaMOeEYyUGJ1fgXEGFXu
-	Alr2NPIy2DHvN8ILlekniVhNz3ffqkxEEoexyRi9bbUC7t3nY1crGLDXJIo9Aoypb0lhzgHpnJl
-	gcbNOBIXLw=
-X-Received: by 2002:a05:7300:5722:b0:2c7:ea98:da0 with SMTP id 5a478bee46e88-2cbfbc8aeb9mr2680118eec.19.1775261240285;
-        Fri, 03 Apr 2026 17:07:20 -0700 (PDT)
+        bh=P2v/+uE3FItR13RHlHLOGT8kS+I6Lrtj4w+A1WuT72k=;
+        b=Pj755A1YcUJ0gMxZF4qE8c7RlkQX2V9u8aYuh2pQAPfCNKHv2D8IsG0rAe2UDH8fn8
+         eE80YE8xDnDisBDOeWODbImtA53oGfjROJV/EOLWLktuy7vNjJnlHvswZVqxP3tkpysY
+         4oUkSmJtKuXcy94vXLaQaZG5RtUc0hWjRSCfo=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775261262; x=1775866062;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=P2v/+uE3FItR13RHlHLOGT8kS+I6Lrtj4w+A1WuT72k=;
+        b=MskCBQzg85nQG+MQqrEd1c7U6d5HUCFbxTUNBLNiPUKLTlhaZzFHfEoyBTlO2HXBcP
+         6b5OMrPnWtVpnufgqHrn5Z2+ANQ6ybWanHVto7TkaqNGcD55CXHlJekpFbc/F5z2Zz9A
+         7Viu7AHikCYOfu/DY/VLbzU8bBlUGQUAn90ZJ9G+Xj4aknSbD6+itODEEEU685N5HS4T
+         qZ0X3OodNThx2fDZ+AjV/bsTOBQ1Bt7oInAz5OHvyCNytbkF9Qe96Go/u38imqTvMUcs
+         XXYBtJCnV8H11ApjQgTlFtCagS7fzBvmWAN1ZbpbSGFOqNLn8bEBGTFQOStXWArEP6TF
+         BZHg==
+X-Forwarded-Encrypted: i=1; AJvYcCUdeAbhHg5CkReJygz7VjGo5EwfTsIM58bYFtHtsxEy8v5kg9THOMFPMAxX58XCESEB+/x7Dvej6eC/11U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzYsksAvBrsI+PDi3rCqDbwmbQzY1VelZ08uxpVbtlLEjnntSLl
+	OsjM68+TpEQpFGBMoCM56LRGcRK5ahHGlg6p/4lYQXkmOjWAD+Y21Q0s07tuiSS3Pg==
+X-Gm-Gg: AeBDieubcVnyAF565m4vW7EMuw451COqK9SS3zqJTcMTaAkBhIfXXxEveN1h0roSYIH
+	ZqtT04lya4FWc7sAeqrAe0WSuLwFZT+12UylU9p8DkIoOgsJsZkl561/AGyAv0jrcXx2/3Ja6Wj
+	wIc9D9Yhu7Cwy+uMfl1ljSI7RfQHH6R18lxaY2GUe1ncoc3RIVNrtkxkZig5monsf0RDquXdpgr
+	FzQuMNF53sXb8BdhsT4cK7APGr22nY3VPclZeraPq4+8cs96zddl5WNBUtj28SIuCjmLxxPuKfn
+	MlQsaB4id9BSO58zh2xRm8kyQAVXnBNbmI6HsaOlkhDD8Qdf84gZGgvf/A1APVWxb8GlIp1DbPf
+	lvW19+Lev4riZ6kcfKc1m5wSp1Ps5I6bGzNI920CR5b0ZvAKvIFZRkR5R8GqSIr4UG86rFCGYsp
+	ZZoMiq2VdkmiJ+qU90dOgPjr0qXHeLLEcV8qH2cdS5elkmK10WRRv2ldpnnMVJ5ibjYwX+gvd5Z
+	6BrAR0TC+4=
+X-Received: by 2002:a05:7300:b54b:b0:2c5:347:e628 with SMTP id 5a478bee46e88-2cbfbf77d5bmr2583156eec.21.1775261262312;
+        Fri, 03 Apr 2026 17:07:42 -0700 (PDT)
 Received: from dianders.sjc.corp.google.com ([2a00:79e0:2e7c:8:a8b6:55b2:3eb6:2c0e])
-        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca79e1d93bsm6520716eec.12.2026.04.03.17.07.16
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca79e1d93bsm6520716eec.12.2026.04.03.17.07.39
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Apr 2026 17:07:19 -0700 (PDT)
+        Fri, 03 Apr 2026 17:07:41 -0700 (PDT)
 From: Douglas Anderson <dianders@chromium.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
@@ -81,82 +83,39 @@ Cc: Saravana Kannan <saravanak@kernel.org>,
 	Alexey Kardashevskiy <aik@ozlabs.ru>,
 	Robin Murphy <robin.murphy@arm.com>,
 	Douglas Anderson <dianders@chromium.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frank.Li@kernel.org,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	alex@ghiti.fr,
+	Mark Brown <broonie@kernel.org>,
 	alexander.stein@ew.tq-group.com,
-	andre.przywara@arm.com,
 	andrew@codeconstruct.com.au,
 	andrew@lunn.ch,
 	andriy.shevchenko@linux.intel.com,
-	aou@eecs.berkeley.edu,
-	ardb@kernel.org,
 	bhelgaas@google.com,
 	brgl@kernel.org,
-	broonie@kernel.org,
-	catalin.marinas@arm.com,
-	chleroy@kernel.org,
 	davem@davemloft.net,
-	david@kernel.org,
 	devicetree@vger.kernel.org,
-	dmaengine@vger.kernel.org,
 	driver-core@lists.linux.dev,
-	gbatra@linux.ibm.com,
-	gregory.clement@bootlin.com,
 	hkallweit1@gmail.com,
-	iommu@lists.linux.dev,
 	jirislaby@kernel.org,
 	joel@jms.id.au,
-	joro@8bytes.org,
 	kees@kernel.org,
-	kevin.brodsky@arm.com,
 	kuba@kernel.org,
-	lenb@kernel.org,
 	lgirdwood@gmail.com,
-	linux-acpi@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org,
-	linux-cxl@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-mips@vger.kernel.org,
-	linux-mm@kvack.org,
 	linux-pci@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
 	linux-serial@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
 	linux-usb@vger.kernel.org,
 	linux@armlinux.org.uk,
-	linuxppc-dev@lists.ozlabs.org,
-	m.szyprowski@samsung.com,
-	maddy@linux.ibm.com,
 	mani@kernel.org,
-	maz@kernel.org,
-	miko.lenczewski@arm.com,
-	mpe@ellerman.id.au,
 	netdev@vger.kernel.org,
-	npiggin@gmail.com,
-	osalvador@suse.de,
-	oupton@kernel.org,
 	pabeni@redhat.com,
-	palmer@dabbelt.com,
-	peter.ujfalusi@gmail.com,
-	peterz@infradead.org,
-	pjw@kernel.org,
-	robh@kernel.org,
-	sebastian.hesselbarth@gmail.com,
-	tglx@kernel.org,
-	tsbogend@alpha.franken.de,
-	vgupta@kernel.org,
-	vkoul@kernel.org,
-	will@kernel.org,
-	willy@infradead.org,
-	yangyicong@hisilicon.com,
-	yeoreum.yun@arm.com
-Subject: [PATCH v4 0/9] driver core: Fix some race conditions
-Date: Fri,  3 Apr 2026 17:04:54 -0700
-Message-ID: <20260404000644.522677-1-dianders@chromium.org>
+	robh@kernel.org
+Subject: [PATCH v4 8/9] driver core: Replace dev->of_node_reused with dev_of_node_reused()
+Date: Fri,  3 Apr 2026 17:05:02 -0700
+Message-ID: <20260403170432.v4.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
 X-Mailer: git-send-email 2.53.0.1213.gd9a14994de-goog
+In-Reply-To: <20260404000644.522677-1-dianders@chromium.org>
+References: <20260404000644.522677-1-dianders@chromium.org>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -172,142 +131,245 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The main goal of this series is to fix the observed bug talked about
-in the first patch ("driver core: Don't let a device probe until it's
-ready"). That patch fixes a problem that has been observed in the real
-world and could land even if the rest of the patches are found
-unacceptable or need to be spun.
+In C, bitfields are not necessarily safe to modify from multiple
+threads without locking. Switch "of_node_reused" over to the "flags"
+field so modifications are safe.
 
-That said, during patch review Danilo correctly pointed out that many
-of the bitfield accesses in "struct device" are unsafe. I added a
-bunch of patches in the series to address each one.
-
-Danilo said he's most worried about "can_match", so I put that one
-first. After that, I tried to transition bitfields to flags in reverse
-order to when the bitfield was added.
-
-Even if transitioning from bitfields to flags isn't truly needed for
-correctness, it seems silly (and wasteful of space in struct device)
-to have some in bitfields and some as flags. Thus I didn't spend time
-for each bitfield showing that it's truly needed for correctness.
-
-Transition was done semi manually. Presumably someone skilled at
-coccinelle could do a better job, but I just used sed in a heavy-
-handed manner and then reviewed/fixed the results, undoing anything my
-script got wrong. My terrible/ugly script was:
-
-var=can_match
-caps="${var^^}"
-for f in $(git grep -l "[>\.]${var}[^1-9_a-zA-Z\[]"); do
-  echo $f
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = true/set_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = true/dev_set_${caps}(\&\\1)/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = false/clear_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = false/dev_clear_${caps}(\&\\1)/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = \([^;]*\)/assign_bit(DEV_FLAG_${caps}, \&\\1->flags, \\2)/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = \([^;]*\)/dev_assign_${caps}(\&\\1, \\2)/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var}\([^1-9_a-zA-Z\[]\)/test_bit(DEV_FLAG_${caps}, \&\\1->flags)\\2/" "$f"
-  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var}\([^1-9_a-zA-Z\[]\)/dev_${caps}(\&\\1)\\2/" "$f"
-done
-
-From v3 to v4, I transitioned to accessor functions with another ugly
-sed script. I had git format the old patches, then transformed them
-with:
-
-for f in *.patch; do
-  echo $f
-  sed -i~ -e "s/test_and_set_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_test_and_set_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/test_and_set_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_test_and_set_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/test_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/test_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/set_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_set_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/set_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_set_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/clear_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_clear_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/clear_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_clear_\\L\\1(\\2)/" "$f"
-  sed -i~ -e "s/assign_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags, \(.*\))/dev_assign_\\L\\1(\\2, \\3)/" "$f"
-  sed -i~ -e "s/assign_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags, \(.*\))/dev_assign_\\L\\1(\\2, \\3)/" "$f"
-done
-
-...and then did a few manual touchups for spacing.
-
-NOTE: one potentially "controversial" choice I made in some patches
-was to always reserve a flag ID even if a flag is only used under
-certain CONFIG_ settings. This is a change from how things were
-before. Keeping the numbering consistent and allowing easy
-compile-testing of both CONFIG settings seemed worth it, especially
-since it won't take up any extra space until we've added a lot more
-flags.
-
-I only marked the first patch as a "Fix" since it is the only one
-fixing observed problems. Other patches could be considered fixes too
-if folks want.
-
-I tested the first patch in the series backported to kernel 6.6 on the
-Pixel phone that was experiencing the race. I added extra printouts to
-make sure that the problem was hitting / addressed. The rest of the
-patches are tested with allmodconfig with arm32, arm64, ppc, and
-x86. I boot tested on an arm64 Chromebook running mainline.
+Cc: Johan Hovold <johan@kernel.org>
+Acked-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
+---
+Not fixing any known bugs; problem is theoretical and found by code
+inspection. Change is done somewhat manually and only lightly tested
+(mostly compile-time tested).
 
 Changes in v4:
 - Use accessor functions for flags
 
 Changes in v3:
-- Use a new "flags" bitfield
-- Add missing \n in probe error message
+- New
 
-Changes in v2:
-- Instead of adjusting the ordering, use "ready_to_probe" flag
+ drivers/base/core.c                      | 2 +-
+ drivers/base/pinctrl.c                   | 2 +-
+ drivers/base/platform.c                  | 2 +-
+ drivers/net/pcs/pcs-xpcs-plat.c          | 2 +-
+ drivers/of/device.c                      | 6 +++---
+ drivers/pci/of.c                         | 2 +-
+ drivers/pci/pwrctrl/core.c               | 2 +-
+ drivers/regulator/bq257xx-regulator.c    | 2 +-
+ drivers/regulator/rk808-regulator.c      | 2 +-
+ drivers/tty/serial/serial_base_bus.c     | 2 +-
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c | 2 +-
+ include/linux/device.h                   | 7 ++++---
+ 12 files changed, 17 insertions(+), 16 deletions(-)
 
-Douglas Anderson (9):
-  driver core: Don't let a device probe until it's ready
-  driver core: Replace dev->can_match with dev_can_match()
-  driver core: Replace dev->dma_iommu with dev_dma_iommu()
-  driver core: Replace dev->dma_skip_sync with dev_dma_skip_sync()
-  driver core: Replace dev->dma_ops_bypass with dev_dma_ops_bypass()
-  driver core: Replace dev->state_synced with dev_state_synced()
-  driver core: Replace dev->dma_coherent with dev_dma_coherent()
-  driver core: Replace dev->of_node_reused with dev_of_node_reused()
-  driver core: Replace dev->offline + ->offline_disabled with accessors
-
- arch/arc/mm/dma.c                             |   4 +-
- arch/arm/mach-highbank/highbank.c             |   2 +-
- arch/arm/mach-mvebu/coherency.c               |   2 +-
- arch/arm/mm/dma-mapping-nommu.c               |   4 +-
- arch/arm/mm/dma-mapping.c                     |  28 ++--
- arch/arm64/kernel/cpufeature.c                |   2 +-
- arch/arm64/mm/dma-mapping.c                   |   2 +-
- arch/mips/mm/dma-noncoherent.c                |   2 +-
- arch/powerpc/kernel/dma-iommu.c               |   8 +-
- .../platforms/pseries/hotplug-memory.c        |   4 +-
- arch/riscv/mm/dma-noncoherent.c               |   2 +-
- drivers/acpi/scan.c                           |   2 +-
- drivers/base/core.c                           |  53 +++++---
- drivers/base/cpu.c                            |   4 +-
- drivers/base/dd.c                             |  28 ++--
- drivers/base/memory.c                         |   2 +-
- drivers/base/pinctrl.c                        |   2 +-
- drivers/base/platform.c                       |   2 +-
- drivers/dma/ti/k3-udma-glue.c                 |   6 +-
- drivers/dma/ti/k3-udma.c                      |   6 +-
- drivers/iommu/dma-iommu.c                     |   9 +-
- drivers/iommu/iommu.c                         |   5 +-
- drivers/net/pcs/pcs-xpcs-plat.c               |   2 +-
- drivers/of/device.c                           |   6 +-
- drivers/pci/of.c                              |   2 +-
- drivers/pci/pwrctrl/core.c                    |   2 +-
- drivers/regulator/bq257xx-regulator.c         |   2 +-
- drivers/regulator/rk808-regulator.c           |   2 +-
- drivers/tty/serial/serial_base_bus.c          |   2 +-
- drivers/usb/gadget/udc/aspeed-vhub/dev.c      |   2 +-
- include/linux/device.h                        | 120 ++++++++++++------
- include/linux/dma-map-ops.h                   |   6 +-
- include/linux/dma-mapping.h                   |   2 +-
- include/linux/iommu-dma.h                     |   3 +-
- kernel/cpu.c                                  |   4 +-
- kernel/dma/mapping.c                          |  12 +-
- mm/hmm.c                                      |   2 +-
- 37 files changed, 206 insertions(+), 142 deletions(-)
-
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 531f02a5469a..f12f3b53b4d0 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -5281,7 +5281,7 @@ void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
+ {
+ 	of_node_put(dev->of_node);
+ 	dev->of_node = of_node_get(dev2->of_node);
+-	dev->of_node_reused = true;
++	dev_set_of_node_reused(dev);
+ }
+ EXPORT_SYMBOL_GPL(device_set_of_node_from_dev);
+ 
+diff --git a/drivers/base/pinctrl.c b/drivers/base/pinctrl.c
+index 6e250272c843..0bbc83231234 100644
+--- a/drivers/base/pinctrl.c
++++ b/drivers/base/pinctrl.c
+@@ -24,7 +24,7 @@ int pinctrl_bind_pins(struct device *dev)
+ {
+ 	int ret;
+ 
+-	if (dev->of_node_reused)
++	if (dev_of_node_reused(dev))
+ 		return 0;
+ 
+ 	dev->pins = devm_kzalloc(dev, sizeof(*(dev->pins)), GFP_KERNEL);
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index d44591d52e36..199e6fb25770 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -856,7 +856,7 @@ struct platform_device *platform_device_register_full(
+ 	pdev->dev.parent = pdevinfo->parent;
+ 	pdev->dev.fwnode = pdevinfo->fwnode;
+ 	pdev->dev.of_node = of_node_get(to_of_node(pdev->dev.fwnode));
+-	pdev->dev.of_node_reused = pdevinfo->of_node_reused;
++	dev_assign_of_node_reused(&pdev->dev, pdevinfo->of_node_reused);
+ 
+ 	if (pdevinfo->dma_mask) {
+ 		pdev->platform_dma_mask = pdevinfo->dma_mask;
+diff --git a/drivers/net/pcs/pcs-xpcs-plat.c b/drivers/net/pcs/pcs-xpcs-plat.c
+index b8c48f9effbf..f4b1b8246ce9 100644
+--- a/drivers/net/pcs/pcs-xpcs-plat.c
++++ b/drivers/net/pcs/pcs-xpcs-plat.c
+@@ -349,7 +349,7 @@ static int xpcs_plat_init_dev(struct dw_xpcs_plat *pxpcs)
+ 	 * up later. Make sure DD-core is aware of the OF-node being re-used.
+ 	 */
+ 	device_set_node(&mdiodev->dev, fwnode_handle_get(dev_fwnode(dev)));
+-	mdiodev->dev.of_node_reused = true;
++	dev_set_of_node_reused(&mdiodev->dev);
+ 
+ 	/* Pass the data further so the DW XPCS driver core could use it */
+ 	mdiodev->dev.platform_data = (void *)device_get_match_data(dev);
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index f7e75e527667..be4e1584e0af 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -26,7 +26,7 @@
+ const struct of_device_id *of_match_device(const struct of_device_id *matches,
+ 					   const struct device *dev)
+ {
+-	if (!matches || !dev->of_node || dev->of_node_reused)
++	if (!matches || !dev->of_node || dev_of_node_reused(dev))
+ 		return NULL;
+ 	return of_match_node(matches, dev->of_node);
+ }
+@@ -192,7 +192,7 @@ ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len)
+ {
+ 	ssize_t sl;
+ 
+-	if (!dev || !dev->of_node || dev->of_node_reused)
++	if (!dev || !dev->of_node || dev_of_node_reused(dev))
+ 		return -ENODEV;
+ 
+ 	sl = of_modalias(dev->of_node, str, len - 2);
+@@ -254,7 +254,7 @@ int of_device_uevent_modalias(const struct device *dev, struct kobj_uevent_env *
+ {
+ 	int sl;
+ 
+-	if ((!dev) || (!dev->of_node) || dev->of_node_reused)
++	if ((!dev) || (!dev->of_node) || dev_of_node_reused(dev))
+ 		return -ENODEV;
+ 
+ 	/* Devicetree modalias is tricky, we add it in 2 steps */
+diff --git a/drivers/pci/of.c b/drivers/pci/of.c
+index 9f8eb5df279e..1f9b669abdb0 100644
+--- a/drivers/pci/of.c
++++ b/drivers/pci/of.c
+@@ -38,7 +38,7 @@ int pci_set_of_node(struct pci_dev *dev)
+ 	struct device *pdev __free(put_device) =
+ 		bus_find_device_by_of_node(&platform_bus_type, node);
+ 	if (pdev)
+-		dev->bus->dev.of_node_reused = true;
++		dev_set_of_node_reused(&dev->bus->dev);
+ 
+ 	device_set_node(&dev->dev, of_fwnode_handle(no_free_ptr(node)));
+ 	return 0;
+diff --git a/drivers/pci/pwrctrl/core.c b/drivers/pci/pwrctrl/core.c
+index 7754baed67f2..72963a92362a 100644
+--- a/drivers/pci/pwrctrl/core.c
++++ b/drivers/pci/pwrctrl/core.c
+@@ -39,7 +39,7 @@ static int pci_pwrctrl_notify(struct notifier_block *nb, unsigned long action,
+ 		 * If we got here then the PCI device is the second after the
+ 		 * power control platform device. Mark its OF node as reused.
+ 		 */
+-		dev->of_node_reused = true;
++		dev_set_of_node_reused(dev);
+ 		break;
+ 	}
+ 
+diff --git a/drivers/regulator/bq257xx-regulator.c b/drivers/regulator/bq257xx-regulator.c
+index dab8f1ab4450..40e0f1a7ae81 100644
+--- a/drivers/regulator/bq257xx-regulator.c
++++ b/drivers/regulator/bq257xx-regulator.c
+@@ -143,7 +143,7 @@ static int bq257xx_regulator_probe(struct platform_device *pdev)
+ 	struct regulator_config cfg = {};
+ 
+ 	pdev->dev.of_node = pdev->dev.parent->of_node;
+-	pdev->dev.of_node_reused = true;
++	dev_set_of_node_reused(&pdev->dev);
+ 
+ 	pdata = devm_kzalloc(&pdev->dev, sizeof(struct bq257xx_reg_data), GFP_KERNEL);
+ 	if (!pdata)
+diff --git a/drivers/regulator/rk808-regulator.c b/drivers/regulator/rk808-regulator.c
+index e66408f23bb6..8297d31cde9f 100644
+--- a/drivers/regulator/rk808-regulator.c
++++ b/drivers/regulator/rk808-regulator.c
+@@ -2115,7 +2115,7 @@ static int rk808_regulator_probe(struct platform_device *pdev)
+ 	int ret, i, nregulators;
+ 
+ 	pdev->dev.of_node = pdev->dev.parent->of_node;
+-	pdev->dev.of_node_reused = true;
++	dev_set_of_node_reused(&pdev->dev);
+ 
+ 	regmap = dev_get_regmap(pdev->dev.parent, NULL);
+ 	if (!regmap)
+diff --git a/drivers/tty/serial/serial_base_bus.c b/drivers/tty/serial/serial_base_bus.c
+index a12935f6b992..5f23284a8778 100644
+--- a/drivers/tty/serial/serial_base_bus.c
++++ b/drivers/tty/serial/serial_base_bus.c
+@@ -74,7 +74,7 @@ static int serial_base_device_init(struct uart_port *port,
+ 	dev->parent = parent_dev;
+ 	dev->bus = &serial_base_bus_type;
+ 	dev->release = release;
+-	dev->of_node_reused = true;
++	dev_set_of_node_reused(dev);
+ 
+ 	device_set_node(dev, fwnode_handle_get(dev_fwnode(parent_dev)));
+ 
+diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+index 2ecd049dacc2..8b9449d16324 100644
+--- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
++++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
+@@ -593,7 +593,7 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
+ 		d->gadget.max_speed = USB_SPEED_HIGH;
+ 	d->gadget.speed = USB_SPEED_UNKNOWN;
+ 	d->gadget.dev.of_node = vhub->pdev->dev.of_node;
+-	d->gadget.dev.of_node_reused = true;
++	dev_set_of_node_reused(&d->gadget.dev);
+ 
+ 	rc = usb_add_gadget_udc(d->port_dev, &d->gadget);
+ 	if (rc != 0)
+diff --git a/include/linux/device.h b/include/linux/device.h
+index fca986cef2ed..8132aab17e04 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -483,6 +483,8 @@ struct device_physical_location {
+  *		driver/bus sync_state() callback.
+  * @DEV_FLAG_DMA_COHERENT: This particular device is dma coherent, even if the
+  *		architecture supports non-coherent devices.
++ * @DEV_FLAG_OF_NODE_REUSED: Set if the device-tree node is shared with an
++ *		ancestor device.
+  */
+ enum struct_device_flags {
+ 	DEV_FLAG_READY_TO_PROBE = 0,
+@@ -492,6 +494,7 @@ enum struct_device_flags {
+ 	DEV_FLAG_DMA_OPS_BYPASS = 4,
+ 	DEV_FLAG_STATE_SYNCED = 5,
+ 	DEV_FLAG_DMA_COHERENT = 6,
++	DEV_FLAG_OF_NODE_REUSED = 7,
+ 
+ 	DEV_FLAG_COUNT
+ };
+@@ -573,8 +576,6 @@ enum struct_device_flags {
+  *
+  * @offline_disabled: If set, the device is permanently online.
+  * @offline:	Set after successful invocation of bus type's .offline().
+- * @of_node_reused: Set if the device-tree node is shared with an ancestor
+- *              device.
+  * @flags:	DEV_FLAG_XXX flags. Use atomic bitfield operations to modify.
+  *
+  * At the lowest level, every device in a Linux system is represented by an
+@@ -681,7 +682,6 @@ struct device {
+ 
+ 	bool			offline_disabled:1;
+ 	bool			offline:1;
+-	bool			of_node_reused:1;
+ 
+ 	DECLARE_BITMAP(flags, DEV_FLAG_COUNT);
+ };
+@@ -715,6 +715,7 @@ __create_dev_flag_accessors(dma_skip_sync, DEV_FLAG_DMA_SKIP_SYNC);
+ __create_dev_flag_accessors(dma_ops_bypass, DEV_FLAG_DMA_OPS_BYPASS);
+ __create_dev_flag_accessors(state_synced, DEV_FLAG_STATE_SYNCED);
+ __create_dev_flag_accessors(dma_coherent, DEV_FLAG_DMA_COHERENT);
++__create_dev_flag_accessors(of_node_reused, DEV_FLAG_OF_NODE_REUSED);
+ 
+ /**
+  * struct device_link - Device link representation.
 -- 
 2.53.0.1213.gd9a14994de-goog
 
