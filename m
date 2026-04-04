@@ -1,81 +1,162 @@
-Return-Path: <linux-aspeed+bounces-3835-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3836-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CFBFE7E37D
-	for <linux-aspeed@archiver.kernel.org>; Fri,  3 Apr 2026 11:56:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E983CE88D74
+	for <linux-aspeed@archiver.kernel.org>; Sat,  4 Apr 2026 00:07:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fnHJ55QTRz2ygT;
-	Fri, 03 Apr 2026 22:56:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775217397;
-	cv=none; b=bTkA0IEa2STmN3891/jeuJDu1q+h04/vypqJqESPA8IpRaQqxXUoC0XXwvrBn8sVm3+r0DcD68yBuolRqPq4RUzIVQDSYGoNoiCD74hJG3HDjaJokrdon3Je7E/LT0mVO4sGFwKzVMH+AjL6IX6ulij9epxrPxfDrbazDgIi+Kn9iLU5tMEOREVtCvJqpGY5QLyLGnNi2RvyV3lHPCSPybz2CGIn5xZjrI5Fo/ipDNUvHxjNp6WaCf7M1+L61Nxx3KoY2fXQoOzCCiMtaYsmutQ7pZir+G1I/Iuq3QCcUxa0pZSjCgc1dSppGFfzXBu74jd+22dmjiBv7uecH2NgYQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fnbWL2RvVz2yYK;
+	Sat, 04 Apr 2026 11:07:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1333"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775261246;
+	cv=none; b=QAN+K4A09FumiWpql4IB7q4At1uYw5ZZhsQaLUbWl5B2PE819oOgUT/dpFJBujED3cANKP9pzSxP9NMRFHuy9LOV0IyrzWo7cUbfEk4W08uLdxbqe0JbEhOX+D8LMvESq6TtzS4EOGyBPR1OIhMa17oUKofajWBMe1cMLPtvtEEQt0V2RNwzYeo3rPoWc2NiIGD8Gq6wmO7Chma1J82UJKAJV1Af1XA3Dfjf73i593TqVDoMXEdohtC+iq/XM1hopcbOFhxm96vX7qK+5zbZkWG/synAsgzvMGXTaVsO1RpZw+TiCTBEGkotVu0GkzxpSNGYHK2dhvjbxyYNSsBF/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775217397; c=relaxed/relaxed;
-	bh=9l7YRnXiJeaUSputbifksPPi0XaXtllvN3GOhiFO6oo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=SCMwaOYtaO6tJs82IW/Vy/bn32MVnmpYB32ZcuvwNa97YRSvPviiDB0MyOCs743nk/yFukmvof4vbNgfESpT+2mPd2hg+BZQPaBHTvkFhiy9RyQzu3Sv0W+Ao9z9BoWnKkfO0y2Yu/J7uqMUO6WhkDwkUfi2YpWNU3NluKMNWBtYhMzu1SsU1iS1hx6quLKESZKjsjR52pS1+hHl7QBWfwP4R/svDVZ5szIkr/cfQhRi8FN8Y7sekHVWwl+2if6i2203zMIIDkClZh5biXWZtoWCY/rsHDH8fLdmTTLXzZd/K0tRA5Ab1MK7AjCL4B3Jmh5H7Tw7Bf34Bvz7WXX7WA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eLufVd3z; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775261246; c=relaxed/relaxed;
+	bh=KGKsMy9vhlN9yvdnOvYy+R4lmavPYuTzTATeThGwgQc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QluJOXzZzEyPkIMnxl+ZZMV5OA5QOelwctWl4TicFVb9D+eYGaBmz0pAtjJP1cC7I+vNEXaDwozXmbShF0sJUw5ItPp6rEjbBhY2LYF7gkqfi/bHuSi+glmmTChHGMZI/yyW8SPTo0K0wGj9RERMMNB6eB2KkBZPMezBjXYoFVriYX3sr2xxhdLn9ZCb/bz8mHP/OH9U9BfZL/Ut1nfSznTTgy3FebivnVNotQDB21vC0fOVOiB0o/vxpQyIwvpPkbbtX06kOnAy8egfmi0IQ+kg97hiuplpwUTqBvai2MpV9LZgv5dgdPTzgxjy1Iup+QKWa9iBDU9vcsm61H8wHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DZnv2ZdR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eLufVd3z;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=DZnv2ZdR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1333; helo=mail-dy1-x1333.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-dy1-x1333.google.com (mail-dy1-x1333.google.com [IPv6:2607:f8b0:4864:20::1333])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnHJ454YSz2yVP
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Apr 2026 22:56:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2AAF760008;
-	Fri,  3 Apr 2026 11:56:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E3A6C4CEF7;
-	Fri,  3 Apr 2026 11:56:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775217393;
-	bh=9l7YRnXiJeaUSputbifksPPi0XaXtllvN3GOhiFO6oo=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=eLufVd3zXy9jubkTC9dwkw2QYzwtvaWjru+m4ZdRkawSNi9+nrDNC6gUO4mGVS6/R
-	 gkBybMRFcG6wp9frSh1UrnRTFmFAIWeWQ6JjhxrMtKfvi/L8jlqp4jSjvl7EXEDDzs
-	 ZtNPjIHE0ChL+R5ThH0m0bg+INk64ahwnxdcJwFR/q6vQTBSBkwaCRWtjZT24m2vTQ
-	 7MxtkfclOy/wmKMdP417H2f+HSQV3sLIh5VH4IlCqqK1iv9HKmpZHIBbN8ejL1uHof
-	 f/augOwXmiWn/yGSuidAzKcnlp7ywm1cPXBOrcNHhnI6tgb8ARqohzJKj7eqgaBFB+
-	 mw/4aiwR3j/hQ==
-Date: Fri, 3 Apr 2026 12:56:24 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Douglas Anderson <dianders@chromium.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fnbWJ1SNVz2yL8
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 04 Apr 2026 11:07:22 +1100 (AEDT)
+Received: by mail-dy1-x1333.google.com with SMTP id 5a478bee46e88-2cc4c693d59so2340874eec.1
+        for <linux-aspeed@lists.ozlabs.org>; Fri, 03 Apr 2026 17:07:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1775261240; x=1775866040; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=KGKsMy9vhlN9yvdnOvYy+R4lmavPYuTzTATeThGwgQc=;
+        b=DZnv2ZdRH164l5BuxmKY7VF/u8CYXiJruPgqE5oWkgVQgPXG1AG3KeDWNZpu+Al/hI
+         IB9X8HCA4+3iD4RRjiPq/yel5pgCu0VVMOXEBSZW7oNPxcI5yEh1na/ps3nEoZbwlLTS
+         AQf3890aCnVWqIh2or8sSMRxoTGPIM02N4ouk=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775261240; x=1775866040;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=KGKsMy9vhlN9yvdnOvYy+R4lmavPYuTzTATeThGwgQc=;
+        b=b5mAbGyfXfERG4KweLfgJCB/k8zKQyhdYYkcxzIl0k3BDaBqJT1W3Ep7SyO4QPAisS
+         eQ2/okjmsNyzTTKpAGr6iK0CJINxhqgqjRQs6x92Oepp8Av0XN/0cb8+lcX9ZHc2llNp
+         Z5B2nQhdt2nsx1okNM0CP9IBGMKT9ddH1DDbJOl9VbtUJsY+2ko5QUsa2+X4GRMGXl6z
+         ASR0mLDDBzu/WJtaCCtLA9+oTniF/j99FJ6GWMBSML1UBj79pNJXEPd6d4SbO0XbYwr8
+         GgqxoDJX7o2y0843MNU7NNNkRuzgzB37hmed2ZnNiiFeeIz5YV6qF2HS2kJGNSNs1pGP
+         kRJw==
+X-Forwarded-Encrypted: i=1; AJvYcCUldGdfNDCch7ybmDsqkCZA2dkTHXOJowT0IU9H5tLY3xK5nH9NYMuID8rYZjhtQjDx0EGj6LIm3upH8ao=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyIeUpHTLSbBD4sO1L6F4u9+Oai4fzP8nVCM6dmVom6bJGXc2JL
+	6RZUn6dYbKq1/6I9Lp0F0Os7gewgbbxqKPnx6hWx/HfISsQNXsS0efncAswgju33/A==
+X-Gm-Gg: AeBDiesBmDBwhNqD097Izb+7X1EY38MLwPL+RHelBqtHoEM7Y5FYBLtRetA2iYvIIny
+	1b9kqkiwhDg/+TbpxqP2pm4/lQx4xfXKxbF+Ol+hsSYxEEQNIB/LdcC7UIj0oAmQ2cb7aH1LTUp
+	IEKMcapajsn2926gn4D6AHd6TCe1yLEPHYePddb7ash9iahGMXTIytJtXbdlILZJg3AoI3SDuAc
+	/n2mMA4eXNoTliO+voXI9UrIJ8BxMRlmchv4Qnj/tUm55DrCv+LbIrF6+u0RJivWagEpU2EtK6m
+	Jxp5OVhDuEvfHjyQE4m802ZGqURP4pz0PkpQQFnH8DM/EgVWHF7WViPCTE+o7cCt6N9lUdIV/xz
+	McUjSHOppLewojz9FSu0gcsDMXYGNpoHTOcFmvDJLDPbKCTEN2SpApXSaMOeEYyUGJ1fgXEGFXu
+	Alr2NPIy2DHvN8ILlekniVhNz3ffqkxEEoexyRi9bbUC7t3nY1crGLDXJIo9Aoypb0lhzgHpnJl
+	gcbNOBIXLw=
+X-Received: by 2002:a05:7300:5722:b0:2c7:ea98:da0 with SMTP id 5a478bee46e88-2cbfbc8aeb9mr2680118eec.19.1775261240285;
+        Fri, 03 Apr 2026 17:07:20 -0700 (PDT)
+Received: from dianders.sjc.corp.google.com ([2a00:79e0:2e7c:8:a8b6:55b2:3eb6:2c0e])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-2ca79e1d93bsm6520716eec.12.2026.04.03.17.07.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Apr 2026 17:07:19 -0700 (PDT)
+From: Douglas Anderson <dianders@chromium.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	"Rafael J . Wysocki" <rafael@kernel.org>,
 	Danilo Krummrich <dakr@kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Leon Romanovsky <leon@kernel.org>,
-	Paul Burton <paul.burton@mips.com>,
-	Saravana Kannan <saravanak@kernel.org>,
-	Alexander Lobakin <aleksander.lobakin@intel.com>,
-	Eric Dumazet <edumazet@google.com>, Toshi Kani <toshi.kani@hp.com>,
+	Alan Stern <stern@rowland.harvard.edu>
+Cc: Saravana Kannan <saravanak@kernel.org>,
 	Christoph Hellwig <hch@lst.de>,
+	Eric Dumazet <edumazet@google.com>,
+	Johan Hovold <johan@kernel.org>,
+	Leon Romanovsky <leon@kernel.org>,
+	Alexander Lobakin <aleksander.lobakin@intel.com>,
 	Alexey Kardashevskiy <aik@ozlabs.ru>,
-	Johan Hovold <johan@kernel.org>, alexander.stein@ew.tq-group.com,
-	andrew@codeconstruct.com.au, andrew@lunn.ch,
-	andriy.shevchenko@linux.intel.com, astewart@tektelic.com,
-	bhelgaas@google.com, brgl@kernel.org, davem@davemloft.net,
-	devicetree@vger.kernel.org, driver-core@lists.linux.dev,
-	hkallweit1@gmail.com, jirislaby@kernel.org, joel@jms.id.au,
-	kees@kernel.org, kuba@kernel.org, lgirdwood@gmail.com,
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-serial@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux@armlinux.org.uk, mani@kernel.org, netdev@vger.kernel.org,
-	pabeni@redhat.com, robh@kernel.org
-Subject: Re: [PATCH v3 8/9] driver core: Replace dev->of_node_reused with
- DEV_FLAG_OF_NODE_REUSED
-Message-ID: <fdbe1d8b-d323-414d-a705-cf2dbafe2fcc@sirena.org.uk>
-References: <20260403005005.30424-1-dianders@chromium.org>
- <20260402174925.v3.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
+	Robin Murphy <robin.murphy@arm.com>,
+	Douglas Anderson <dianders@chromium.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Frank.Li@kernel.org,
+	Jason Gunthorpe <jgg@ziepe.ca>,
+	alex@ghiti.fr,
+	alexander.stein@ew.tq-group.com,
+	andre.przywara@arm.com,
+	andrew@codeconstruct.com.au,
+	andrew@lunn.ch,
+	andriy.shevchenko@linux.intel.com,
+	aou@eecs.berkeley.edu,
+	ardb@kernel.org,
+	bhelgaas@google.com,
+	brgl@kernel.org,
+	broonie@kernel.org,
+	catalin.marinas@arm.com,
+	chleroy@kernel.org,
+	davem@davemloft.net,
+	david@kernel.org,
+	devicetree@vger.kernel.org,
+	dmaengine@vger.kernel.org,
+	driver-core@lists.linux.dev,
+	gbatra@linux.ibm.com,
+	gregory.clement@bootlin.com,
+	hkallweit1@gmail.com,
+	iommu@lists.linux.dev,
+	jirislaby@kernel.org,
+	joel@jms.id.au,
+	joro@8bytes.org,
+	kees@kernel.org,
+	kevin.brodsky@arm.com,
+	kuba@kernel.org,
+	lenb@kernel.org,
+	lgirdwood@gmail.com,
+	linux-acpi@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-cxl@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-pci@vger.kernel.org,
+	linux-riscv@lists.infradead.org,
+	linux-serial@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-usb@vger.kernel.org,
+	linux@armlinux.org.uk,
+	linuxppc-dev@lists.ozlabs.org,
+	m.szyprowski@samsung.com,
+	maddy@linux.ibm.com,
+	mani@kernel.org,
+	maz@kernel.org,
+	miko.lenczewski@arm.com,
+	mpe@ellerman.id.au,
+	netdev@vger.kernel.org,
+	npiggin@gmail.com,
+	osalvador@suse.de,
+	oupton@kernel.org,
+	pabeni@redhat.com,
+	palmer@dabbelt.com,
+	peter.ujfalusi@gmail.com,
+	peterz@infradead.org,
+	pjw@kernel.org,
+	robh@kernel.org,
+	sebastian.hesselbarth@gmail.com,
+	tglx@kernel.org,
+	tsbogend@alpha.franken.de,
+	vgupta@kernel.org,
+	vkoul@kernel.org,
+	will@kernel.org,
+	willy@infradead.org,
+	yangyicong@hisilicon.com,
+	yeoreum.yun@arm.com
+Subject: [PATCH v4 0/9] driver core: Fix some race conditions
+Date: Fri,  3 Apr 2026 17:04:54 -0700
+Message-ID: <20260404000644.522677-1-dianders@chromium.org>
+X-Mailer: git-send-email 2.53.0.1213.gd9a14994de-goog
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -89,38 +170,145 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="7NZIk4CoO0re4Kx0"
-Content-Disposition: inline
-In-Reply-To: <20260402174925.v3.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
-X-Cookie: The Korean War must have been fun.
+Content-Transfer-Encoding: 8bit
 
+The main goal of this series is to fix the observed bug talked about
+in the first patch ("driver core: Don't let a device probe until it's
+ready"). That patch fixes a problem that has been observed in the real
+world and could land even if the rest of the patches are found
+unacceptable or need to be spun.
 
---7NZIk4CoO0re4Kx0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+That said, during patch review Danilo correctly pointed out that many
+of the bitfield accesses in "struct device" are unsafe. I added a
+bunch of patches in the series to address each one.
 
-On Thu, Apr 02, 2026 at 05:49:54PM -0700, Douglas Anderson wrote:
-> In C, bitfields are not necessarily safe to modify from multiple
-> threads without locking. Switch "of_node_reused" over to the "flags"
-> field so modifications are safe.
+Danilo said he's most worried about "can_match", so I put that one
+first. After that, I tried to transition bitfields to flags in reverse
+order to when the bitfield was added.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Even if transitioning from bitfields to flags isn't truly needed for
+correctness, it seems silly (and wasteful of space in struct device)
+to have some in bitfields and some as flags. Thus I didn't spend time
+for each bitfield showing that it's truly needed for correctness.
 
---7NZIk4CoO0re4Kx0
-Content-Type: application/pgp-signature; name="signature.asc"
+Transition was done semi manually. Presumably someone skilled at
+coccinelle could do a better job, but I just used sed in a heavy-
+handed manner and then reviewed/fixed the results, undoing anything my
+script got wrong. My terrible/ugly script was:
 
------BEGIN PGP SIGNATURE-----
+var=can_match
+caps="${var^^}"
+for f in $(git grep -l "[>\.]${var}[^1-9_a-zA-Z\[]"); do
+  echo $f
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = true/set_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = true/dev_set_${caps}(\&\\1)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = false/clear_bit(DEV_FLAG_${caps}, \&\\1->flags)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = false/dev_clear_${caps}(\&\\1)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var} = \([^;]*\)/assign_bit(DEV_FLAG_${caps}, \&\\1->flags, \\2)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var} = \([^;]*\)/dev_assign_${caps}(\&\\1, \\2)/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)->${var}\([^1-9_a-zA-Z\[]\)/test_bit(DEV_FLAG_${caps}, \&\\1->flags)\\2/" "$f"
+  sed -i~ -e "s/\([a-zA-Z_0-9\.>()-][a-zA-Z_0-9\.>()-]*\)\.${var}\([^1-9_a-zA-Z\[]\)/dev_${caps}(\&\\1)\\2/" "$f"
+done
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmnPqucACgkQJNaLcl1U
-h9BRKQf+LiK4wJzBJvOcF8tPspBBv5slh1Rv07RAYfhsMajrfvb91fBup9erBnC7
-uop2lhbeef3E4GYUNM3af2BFUVTr6Q2yQsCgV5p3nED9j4EZmCsCSp3X0Hbcc+S1
-RmxEf3FESw5jl5dAifyRzEtHhqMmQoiJiWHstiX08tmRvb230IM4SoMj9/XTx/hJ
-qZLOPBhvbwfqLgqtzR6YbvKHy+eG/muzoWEC6sNgi5JBsNQEeCY0Dp4nSfxbN1i6
-VGMAgiL64FDOsOQ3BG7hFoQ0OFAsOB2CiaPDKh4qopTzS+avykiGQvxzCn4XfBfo
-8ZM+Nrnu/VYKm5P6K3uIcHF11UpYhg==
-=Rocu
------END PGP SIGNATURE-----
+From v3 to v4, I transitioned to accessor functions with another ugly
+sed script. I had git format the old patches, then transformed them
+with:
 
---7NZIk4CoO0re4Kx0--
+for f in *.patch; do
+  echo $f
+  sed -i~ -e "s/test_and_set_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_test_and_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/test_and_set_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_test_and_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/test_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/test_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/set_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/set_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_set_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/clear_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags)/dev_clear_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/clear_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags)/dev_clear_\\L\\1(\\2)/" "$f"
+  sed -i~ -e "s/assign_bit(DEV_FLAG_\([^,]*\), \&\(.*\)->flags, \(.*\))/dev_assign_\\L\\1(\\2, \\3)/" "$f"
+  sed -i~ -e "s/assign_bit(DEV_FLAG_\([^,]*\), \(.*\)\.flags, \(.*\))/dev_assign_\\L\\1(\\2, \\3)/" "$f"
+done
+
+...and then did a few manual touchups for spacing.
+
+NOTE: one potentially "controversial" choice I made in some patches
+was to always reserve a flag ID even if a flag is only used under
+certain CONFIG_ settings. This is a change from how things were
+before. Keeping the numbering consistent and allowing easy
+compile-testing of both CONFIG settings seemed worth it, especially
+since it won't take up any extra space until we've added a lot more
+flags.
+
+I only marked the first patch as a "Fix" since it is the only one
+fixing observed problems. Other patches could be considered fixes too
+if folks want.
+
+I tested the first patch in the series backported to kernel 6.6 on the
+Pixel phone that was experiencing the race. I added extra printouts to
+make sure that the problem was hitting / addressed. The rest of the
+patches are tested with allmodconfig with arm32, arm64, ppc, and
+x86. I boot tested on an arm64 Chromebook running mainline.
+
+Changes in v4:
+- Use accessor functions for flags
+
+Changes in v3:
+- Use a new "flags" bitfield
+- Add missing \n in probe error message
+
+Changes in v2:
+- Instead of adjusting the ordering, use "ready_to_probe" flag
+
+Douglas Anderson (9):
+  driver core: Don't let a device probe until it's ready
+  driver core: Replace dev->can_match with dev_can_match()
+  driver core: Replace dev->dma_iommu with dev_dma_iommu()
+  driver core: Replace dev->dma_skip_sync with dev_dma_skip_sync()
+  driver core: Replace dev->dma_ops_bypass with dev_dma_ops_bypass()
+  driver core: Replace dev->state_synced with dev_state_synced()
+  driver core: Replace dev->dma_coherent with dev_dma_coherent()
+  driver core: Replace dev->of_node_reused with dev_of_node_reused()
+  driver core: Replace dev->offline + ->offline_disabled with accessors
+
+ arch/arc/mm/dma.c                             |   4 +-
+ arch/arm/mach-highbank/highbank.c             |   2 +-
+ arch/arm/mach-mvebu/coherency.c               |   2 +-
+ arch/arm/mm/dma-mapping-nommu.c               |   4 +-
+ arch/arm/mm/dma-mapping.c                     |  28 ++--
+ arch/arm64/kernel/cpufeature.c                |   2 +-
+ arch/arm64/mm/dma-mapping.c                   |   2 +-
+ arch/mips/mm/dma-noncoherent.c                |   2 +-
+ arch/powerpc/kernel/dma-iommu.c               |   8 +-
+ .../platforms/pseries/hotplug-memory.c        |   4 +-
+ arch/riscv/mm/dma-noncoherent.c               |   2 +-
+ drivers/acpi/scan.c                           |   2 +-
+ drivers/base/core.c                           |  53 +++++---
+ drivers/base/cpu.c                            |   4 +-
+ drivers/base/dd.c                             |  28 ++--
+ drivers/base/memory.c                         |   2 +-
+ drivers/base/pinctrl.c                        |   2 +-
+ drivers/base/platform.c                       |   2 +-
+ drivers/dma/ti/k3-udma-glue.c                 |   6 +-
+ drivers/dma/ti/k3-udma.c                      |   6 +-
+ drivers/iommu/dma-iommu.c                     |   9 +-
+ drivers/iommu/iommu.c                         |   5 +-
+ drivers/net/pcs/pcs-xpcs-plat.c               |   2 +-
+ drivers/of/device.c                           |   6 +-
+ drivers/pci/of.c                              |   2 +-
+ drivers/pci/pwrctrl/core.c                    |   2 +-
+ drivers/regulator/bq257xx-regulator.c         |   2 +-
+ drivers/regulator/rk808-regulator.c           |   2 +-
+ drivers/tty/serial/serial_base_bus.c          |   2 +-
+ drivers/usb/gadget/udc/aspeed-vhub/dev.c      |   2 +-
+ include/linux/device.h                        | 120 ++++++++++++------
+ include/linux/dma-map-ops.h                   |   6 +-
+ include/linux/dma-mapping.h                   |   2 +-
+ include/linux/iommu-dma.h                     |   3 +-
+ kernel/cpu.c                                  |   4 +-
+ kernel/dma/mapping.c                          |  12 +-
+ mm/hmm.c                                      |   2 +-
+ 37 files changed, 206 insertions(+), 142 deletions(-)
+
+-- 
+2.53.0.1213.gd9a14994de-goog
+
 
