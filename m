@@ -1,49 +1,89 @@
-Return-Path: <linux-aspeed+bounces-3842-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3843-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74F7CFB5173
-	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Apr 2026 00:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FE42FB5175
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Apr 2026 00:02:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fqRFT4TJhz2ygp;
-	Tue, 07 Apr 2026 10:01:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775390574;
-	cv=none; b=RZj/G41RXjw2g9+WHq81U0yk4/nH1MI2KldzjM8gxUKgLfaWBsIbmWooh5Ke3twFB2lcgk4SRtUDhG3tVBF25PJMa+Zvgt10FR4sjmoUnjK5RTpBNzNwGHLzHlCqHls4R6s041EAJtS6FL7AJxlyuKXsBday3UkWS/e8+ERLfLlvbPgKOu9AkEqQZZAJG/oOkrP8t1C3DTItj4F/uNdYuxX/z3ib9/0CmD1PD2eIlu+vAcx+iUrtBuTTLZhAltmg9TfbiB1cBQ+HSKMMK0OqsCw+LMRwLYk7mxzlnr0dNgp7jTiZLgtVPiUau6SJn9GZJ3AQzUzIhvU7YW5f58Cuig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fqRFk43xcz2yjx;
+	Tue, 07 Apr 2026 10:02:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775400522;
+	cv=none; b=UhcQeRfY6snOubGL4o+zK4w2tOy0GXUd/MfemK+cXv6BkZs+Av/1/9Fb6MGRMaOBnUqm3QQb7mMDQ5AwEMNlm7QvOAbq6QfTfdZNomftAxhh24vnZiHcy6pnid/6AeKD/OLeumy5r3Xxz1+UR4fwgUwLuAmbVHSgSNMrgSyzySp/k0bhh7yUFeS/bdTXTusSjf9WwjXOtRQei/kwVYf68aUkYBWseYHYE2MG87t2QFqie2DpIDyUytjvbp3SWq/xJ7cpML4XFA/WuA7/IL8TpSnDeorcAJtDnASe+RJbIaUtsHLsn1Fcrc0WuNZMnItkvKtGYTatRL+xhxhePsjHXA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775390574; c=relaxed/relaxed;
-	bh=VwXIPBbp0EIzPNtpB2Kh8OUpJCymQVJw7CRWHLQnyH0=;
-	h=Mime-Version:Content-Type:Date:Message-Id:Subject:Cc:To:From:
-	 References:In-Reply-To; b=DCUlC3XlN9UQbsFvbqjZVHtuSgQNvQE30SXynPQY0ImTNraj+UUGMI+YSPOQQQTVH3WWOJFb9lDQdHUTqbZmBSiIU+CK+E2Il3lTErhig5SNmMo6Exqd6cO3kUUb4yEMMZVIjc/knHOlSmtpRI2AMbSeCY0+l2ardCiwoe1gE8/Yc/SoYu7qC0iTkvE4LLP73U+gjIaxJhI3jkldXVbnSiOlarAASlNv6z6A+pqxo0ALrwdjVD3utYE7OuevA2vBaeGsyngmnPYMJNbCGaqf2JoNsZPYA4M6fK8cX1QQJFyUC9C2fDGHdWVoF/lDkB98eTV9tCtL5cqZRRJBoHNDdw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qQwwCeNj; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775400522; c=relaxed/relaxed;
+	bh=YWxgN07OZVOqO1Bvp7LxV7r6cRwAlkUDH9yP+maR0zM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ihaODfQytOMamdYrtd+ZdXO5ujMdpsJlqa9NqkDpwfQq2Fe+z3v041AXUsXSO/v8TrqIKvctCd4I19gCci5zdeDltTCywtW9aW0jSUn+zIE40lgRwQxtayKZ4xrRXlEbUTBJm5uHxlqv38k8j/18htncQMDoanD+dRdsvSSM0L5gOY0zhGaOwGO6WkzIm/xxKA0nY6WDQl6iVrFMlOSprndh/GfEAjtsewn6x56ne+cw5w1uoCK4lYWfchxeduiUcIrD+oz8kiE00oDd3QmHV3KG4Lan8oD7haY9+dBQowkLxnFDnlKxX/sZgFLcBAF0G4D5INzboPBUUaFoY8qP3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gapp.nthu.edu.tw; dkim=pass (2048-bit key; unprotected) header.d=gapp-nthu-edu-tw.20251104.gappssmtp.com header.i=@gapp-nthu-edu-tw.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=pfau+jcq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=ku.loong@gapp.nthu.edu.tw; receiver=lists.ozlabs.org) smtp.mailfrom=gapp.nthu.edu.tw
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gapp.nthu.edu.tw
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qQwwCeNj;
+	dkim=pass (2048-bit key; unprotected) header.d=gapp-nthu-edu-tw.20251104.gappssmtp.com header.i=@gapp-nthu-edu-tw.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=pfau+jcq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=dakr@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gapp.nthu.edu.tw (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=ku.loong@gapp.nthu.edu.tw; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fpWLP3T1cz2ySV;
-	Sun, 05 Apr 2026 22:02:53 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E0569436C8;
-	Sun,  5 Apr 2026 12:02:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17E64C19424;
-	Sun,  5 Apr 2026 12:02:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775390569;
-	bh=VwXIPBbp0EIzPNtpB2Kh8OUpJCymQVJw7CRWHLQnyH0=;
-	h=Date:Subject:Cc:To:From:References:In-Reply-To:From;
-	b=qQwwCeNj+saJT57yAG47jboL8X78w4/j6WpBJ1RZ4sp8PWbMz7XsL9EDbWtj55Eiv
-	 28aGEHxX84zqCSRKzt5WxDYhK2mKne18FSkXEYY++OZ6+IBYaBKFZkA86MS9bLh9Oc
-	 BYyORiDakrz6RnLk4LVZHvUx8P1LQpa7pCp8fHnA1nA9F6ZvrAlepEALLMXhhTHNG5
-	 7JaVWay0RJB3NcEhdmqtS8VF3DnUGPXm4QkCgawXIaUT/QfRxlFCiXeEIfDZt6r6xg
-	 I3uj6fM0ROLbqxk5+qZJNhPISl9Q1iNQvp6vF94UFTOtVMPHy01bKsqbxAmGzThrrM
-	 mtqWeRGNpMg3w==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fpb1g3XzYz2xSG
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 06 Apr 2026 00:48:37 +1000 (AEST)
+Received: by mail-pj1-x102c.google.com with SMTP id 98e67ed59e1d1-35d9923eec5so1883390a91.2
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 05 Apr 2026 07:48:37 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gapp-nthu-edu-tw.20251104.gappssmtp.com; s=20251104; t=1775400515; x=1776005315; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YWxgN07OZVOqO1Bvp7LxV7r6cRwAlkUDH9yP+maR0zM=;
+        b=pfau+jcqT9i94rlnsMgAlci1fDKZUdW3E21uH+0pSJRIxOYVQAvH7woidMDvhu4Y4C
+         zeaN9F8sOFGK6vuYY1G/s6ILVpUlQKmPfiYbVzy561glittikWmHAZuFGdc64k2JKYXB
+         51hpwsCg5LVfLxCjKb7VVpai0dsnDslZvwmBveqsKaXgyS94WRgvYbhYOwRPoWktGqsk
+         icm3IHtIeqhnoaX9h6THKKPoVxuHB/d6uAZqKzMQZeuQHE6y1CNVgC2It5Gn3hSPX+tI
+         AIs3+hhuXZ0LowWNYmmVQ+YL+JHSVOxE3YOHValpARn6jYxH2uZxwATPbyDSm/AtqJLp
+         JGrw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775400515; x=1776005315;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=YWxgN07OZVOqO1Bvp7LxV7r6cRwAlkUDH9yP+maR0zM=;
+        b=ksYEJA2JHj4MRZi+n4Xkz5g4dwA0H9wgTSBWyxk6NO8V2U2uCN5P1/WmInkbLlp7C9
+         XDX9fT/abUsfyaTFLEfGLybLvRAtRo0ds7Pbdrk1SZFG+5Tr3V7lT1y9S0g546PpSkQo
+         9wwmEoFa0wqx3vHxF4zUVzwmvIsTDpwcEPewhpMJ0q7Q7bKEj/+vpOJN8UYWbLIA4nmh
+         4c+e305zl6Rj+zLoSW77dAooLJzn3BwDLfCVw+w3UeFvNFoSns508/EQgpY+Jt9YEZXs
+         NKZ/xgOOjBfJy0wx7TjPOfj/reDrZmdicp6Cyjgb8JuLuvpTM7FLaca2z312QSvewdVL
+         +WDQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUDMiYJMwQPQk2kCt3Id6yCbM78Dk3OrxNnIkrrFPX3FdiQrbRCPn75asbqesM9x5V+01pVKXfFADJ7RbQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxzZaj8mLpPpyxBCG5E3LcO7cooiCWaZGRg3hVRTpYlXU2z1L5L
+	5qOqdbLmG5sRSdwDS78V5g2DN2p77T3xGMkYtaAAiwiBAIZLgYwJUU2HypGQSLeQsTU=
+X-Gm-Gg: AeBDieugA4MqaXk077PdvTTCTUAj5O4NeHYapzFAaxnARj/xIZToafVnaLaImD+Kuw0
+	uUZBz5LOQlMRT4Mjei95ai9nvHH60QmU1ZZdMY8O7JF/ihoD51iy56gS4IMJd6/jnCAh+2js+N8
+	IMRhDxJffdI11clye5YNM6Bq5QTnb/8PqF3HW9aPXq5N5AIQDD8MXC3TNrTLvcMTvF5xOWdfLjb
+	FMPVAO5kySY3fZ7P2aS0CaAtrj9dB46LzeEhhOefLrrx+FszhA23rrLiz+xLwq1MoQPJttjSJR1
+	N8xv+9+WDa+TDtNqF8Jv0qka8HNNmDc1Xjeal/mv1/6cy4CNnipHfZBkQQ/j7KwoUIn50scmb5X
+	tc9DYZYgUMiNsE497KhOnwj1G78ZEvt9P5PiL4wYqi3YNVHA91Yi7jEUG8zLGTYr2cG5oFhGuEx
+	I0NI3YZui2kjMb0gV9iHZXnWt4pno3FoJtYFwI6HA4Q4vpaoCRSKkIhpXqMmUBUw1KBArgmc9dh
+	7RNHzT8IuiUPN0c7f5NKCdAh83FgC0eUWmQdSvDlk3jT/+SKQ==
+X-Received: by 2002:a17:90b:3c0c:b0:35d:ac4d:3cb6 with SMTP id 98e67ed59e1d1-35de68417eamr8177597a91.5.1775400515423;
+        Sun, 05 Apr 2026 07:48:35 -0700 (PDT)
+Received: from tomato-cultivator-HP-ZBook-15-G6.. (2001-b400-e3d8-86cb-6841-8517-e166-bc96.emome-ip6.hinet.net. [2001:b400:e3d8:86cb:6841:8517:e166:bc96])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35dbe9709b8sm15357742a91.16.2026.04.05.07.48.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 05 Apr 2026 07:48:35 -0700 (PDT)
+From: Chen Jung Ku <ku.loong@gapp.nthu.edu.tw>
+To: linusw@kernel.org,
+	brgl@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au
+Cc: linux-gpio@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Chen Jung Ku <ku.loong@gapp.nthu.edu.tw>
+Subject: [PATCH] gpio: aspeed: fix unsigned long int declaration
+Date: Sun,  5 Apr 2026 22:48:03 +0800
+Message-ID: <20260405144803.31358-1-ku.loong@gapp.nthu.edu.tw>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -56,60 +96,32 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
   <mailto:linux-aspeed+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 05 Apr 2026 14:02:33 +0200
-Message-Id: <DHL7FCNQ20PA.2K03T8MNSO9TT@kernel.org>
-Subject: Re: [PATCH v4 0/9] driver core: Fix some race conditions
-Cc: "Douglas Anderson" <dianders@chromium.org>, "Rafael J . Wysocki"
- <rafael@kernel.org>, "Alan Stern" <stern@rowland.harvard.edu>, "Saravana
- Kannan" <saravanak@kernel.org>, "Christoph Hellwig" <hch@lst.de>, "Eric
- Dumazet" <edumazet@google.com>, "Johan Hovold" <johan@kernel.org>, "Leon
- Romanovsky" <leon@kernel.org>, "Alexander Lobakin"
- <aleksander.lobakin@intel.com>, "Alexey Kardashevskiy" <aik@ozlabs.ru>,
- "Robin Murphy" <robin.murphy@arm.com>, "Andrew Morton"
- <akpm@linux-foundation.org>, <Frank.Li@kernel.org>, "Jason Gunthorpe"
- <jgg@ziepe.ca>, <alex@ghiti.fr>, <alexander.stein@ew.tq-group.com>,
- <andre.przywara@arm.com>, <andrew@codeconstruct.com.au>, <andrew@lunn.ch>,
- <andriy.shevchenko@linux.intel.com>, <aou@eecs.berkeley.edu>,
- <ardb@kernel.org>, <bhelgaas@google.com>, <brgl@kernel.org>,
- <broonie@kernel.org>, <catalin.marinas@arm.com>, <chleroy@kernel.org>,
- <davem@davemloft.net>, <david@kernel.org>, <devicetree@vger.kernel.org>,
- <dmaengine@vger.kernel.org>, <driver-core@lists.linux.dev>,
- <gbatra@linux.ibm.com>, <gregory.clement@bootlin.com>,
- <hkallweit1@gmail.com>, <iommu@lists.linux.dev>, <jirislaby@kernel.org>,
- <joel@jms.id.au>, <joro@8bytes.org>, <kees@kernel.org>,
- <kevin.brodsky@arm.com>, <kuba@kernel.org>, <lenb@kernel.org>,
- <lgirdwood@gmail.com>, <linux-acpi@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
- <linux-cxl@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-mips@vger.kernel.org>, <linux-mm@kvack.org>,
- <linux-pci@vger.kernel.org>, <linux-riscv@lists.infradead.org>,
- <linux-serial@vger.kernel.org>, <linux-snps-arc@lists.infradead.org>,
- <linux-usb@vger.kernel.org>, <linux@armlinux.org.uk>,
- <linuxppc-dev@lists.ozlabs.org>, <m.szyprowski@samsung.com>,
- <maddy@linux.ibm.com>, <mani@kernel.org>, <maz@kernel.org>,
- <miko.lenczewski@arm.com>, <mpe@ellerman.id.au>, <netdev@vger.kernel.org>,
- <npiggin@gmail.com>, <osalvador@suse.de>, <oupton@kernel.org>,
- <pabeni@redhat.com>, <palmer@dabbelt.com>, <peter.ujfalusi@gmail.com>,
- <peterz@infradead.org>, <pjw@kernel.org>, <robh@kernel.org>,
- <sebastian.hesselbarth@gmail.com>, <tglx@kernel.org>,
- <tsbogend@alpha.franken.de>, <vgupta@kernel.org>, <vkoul@kernel.org>,
- <will@kernel.org>, <willy@infradead.org>, <yangyicong@hisilicon.com>,
- <yeoreum.yun@arm.com>
-To: "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>
-From: "Danilo Krummrich" <dakr@kernel.org>
-References: <20260404000644.522677-1-dianders@chromium.org>
- <2026040539-sponge-publisher-2b42@gregkh>
-In-Reply-To: <2026040539-sponge-publisher-2b42@gregkh>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-On Sun Apr 5, 2026 at 7:27 AM CEST, Greg Kroah-Hartman wrote:
-> Anyway, this looks great, unless there are any objections, other than
-> the "needs to be undefined", which a follow-on patch can handle, I'll
-> queue them up next week for 7.1-rc1.
+Replace "unsigned long int" with "unsigned long"
+to follow Linux kernel coding style.
+No functional change intended.
 
-Sounds good, for the series:
+Signed-off-by: Chen Jung Ku <ku.loong@gapp.nthu.edu.tw>
+---
+ drivers/gpio/gpio-aspeed.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reviewed-by: Danilo Krummrich <dakr@kernel.org>
+diff --git a/drivers/gpio/gpio-aspeed.c b/drivers/gpio/gpio-aspeed.c
+index 9115e56a1626..e6af7f3fba5e 100644
+--- a/drivers/gpio/gpio-aspeed.c
++++ b/drivers/gpio/gpio-aspeed.c
+@@ -655,7 +655,7 @@ static void aspeed_init_irq_valid_mask(struct gpio_chip *gc,
+ 
+ 	while (!is_bank_props_sentinel(props)) {
+ 		unsigned int offset;
+-		const unsigned long int input = props->input;
++		const unsigned long input = props->input;
+ 
+ 		/* Pretty crummy approach, but similar to GPIO core */
+ 		for_each_clear_bit(offset, &input, 32) {
+-- 
+2.43.0
+
 
