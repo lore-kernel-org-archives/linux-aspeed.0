@@ -1,72 +1,91 @@
-Return-Path: <linux-aspeed+bounces-3856-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3859-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D57D8105D98A
-	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Apr 2026 23:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ECFA105D98E
+	for <linux-aspeed@archiver.kernel.org>; Tue,  7 Apr 2026 23:21:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fr2J60sl8z2ySW;
-	Wed, 08 Apr 2026 09:21:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775546860;
-	cv=none; b=Q0g4lEcz7JNSjCRwN84OpSPY9/j2SY9nGDKFsNavdJQDdGX5VAJ7wzA0hHr4NQBMYSfMKtopdIytV9PWADajmPYrQGpEtACmMsSbfnsStJh1tXit9tFVC1oAcSjBo84TY0oCyZFIBsT5s2bDtpPubqq1sXt9xisJZqGYA5MUnZIBSBa4sPg6p5ZAp5chtlDhqxZiIDgi+l7kutmMSMiFYxGBBbNNaun4wmxEVms9MMAIysdavEpaVLKNxucGNnSNyxpARPLT4GJFwlrDdQEjnP2gE1zjdcJz5WsbZ1qXnz9lFBpcO+tU/jjysDNx1g2o6cEvFqIMbnZfRMtxo2mERQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fr2J76B0jz2ydq;
+	Wed, 08 Apr 2026 09:21:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1033"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775549879;
+	cv=none; b=CgOo6Z57Ns5z654tB/pbp3YdRcjByt1pA6ZTK72wgTvTKr4X1FY/m7QRXazUeNU5ARApvA5Xb+YHaHw1D26+JkpiwZfpY0j8AshZNhN3RGAunYJlSLTYxj5sVkHVCAm3XWZGoWJ+nF8/lCxuyj/vvK0RHR7WPGWJvZsniNfPbVP2oPBJ5CkBVsu4E14SpKDIG1euYdLZJew571JhhKgZIxrZGcaPsyNyt9+6LoxneEGlWC3nrR6NxTJyQEbkHNecGy9IWrYhi8CVW2IbwrlF69Q/TvFU8p+6wE6rqfsERCSkUMOHPaxi96eV3XAlYeGXdGD5Rn6PHSV1Gia80SBYqg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775546860; c=relaxed/relaxed;
-	bh=kT01Kxko0Mdfvco+cwdX7xfZEHOufw2OA9hulGs7J8w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TYfMyUKw+MvUd2hlpho7WyyFnABMlrooyBJ3wXJd/9KhAKHORdh0yw3pivSIlpkiqN9gq+RCudxMv5H0Nys2s4B+3mpAQ9ETJqLWtmz9lrVCrtBMxrSoR50cxPxm8t3tqJ8xQZAyxqb1YaktbUc85+HkscI7a/+3bXpyzL+0LZlCucq3fg5a1aFjwz0LUV+cyfESEg2Qd9BiwjWmKrKyuEydEZ372b03NisjLPd5dUjQkpZ+PGIOoj3RjWsUGYjsBq1CHM4DHJFQbaSHGz013t+l3X+KJFE8Em4A4PjC/MhJ89FvuGNwokVjNAzZImPuWCzke7dPN5+1VXstg+uQYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m30OgZ4+; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775549879; c=relaxed/relaxed;
+	bh=gpY4U27Y71SwDzYx6NrKHrnXl79ZOYWYmPRAEotSW3Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DGP7tOeA2hpwYuYo/17EcM9pImT4Nua6VQ6Fn3Y4eFGuEVpJ0EovtR4A8v7v6HqBqQvKn7x6naMWZWD/TNSbdwmE5uLX2Xha+oUNFKUSRFVnMmftYOt+PJZt1FNQYEflZ5QAtAMGg7IxIO1QA2OHuc80+xNSdESHT1EIL5+q1jNxCY+sDfwfSKiAwc1YmGMCXDZytSHcb4ffmRnZ/SBKCl5jsAE44d0ggDhPhSNecC79kMmCJQ5XCzYX1cQfwAc6FSbylROeMwxGLqH0Hg3WFsWcHc3g50NYv/l9mfG9q3HSiG49J9Drez7Dbkq9UQd15OhkBdWfytx5Ke6PABgFJw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=roFlvvLe; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m30OgZ4+;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=roFlvvLe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=mani@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqd7v1WWnz2ySS
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Apr 2026 17:27:39 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7B29360126;
-	Tue,  7 Apr 2026 07:27:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F639C116C6;
-	Tue,  7 Apr 2026 07:27:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775546856;
-	bh=Ke+4cfFIuUyaAYRB85WlhtaSzn9Vsqf7eLubNm2wrC8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=m30OgZ4+3p1ReP/oAexgtmU1wpHtdCwMpqLsPQ1M0sfld/z/FFzZXpYDh4e3fybYj
-	 /pxqvDO1Tk2YWl7SwXOzZpmgZPuybaqhOnBhM2OusK35qXxa6nPe47jMcbyPObRx9A
-	 LIBBR24hxE+0GEJyrHG5Mor7C5RciZv0K1Y119quGDDpBWRKWuWFCrZtXtkdQBW4P/
-	 0NSGF1V4uZmeRTPBIIxtlEIQSD1QF0mJS+7VB4QuEvtYAR4nRExM1YEGb6Y1NIFanM
-	 5dyrIFv4Z+WGfhdSU+6/pMy8q4brJ4lkLN1g/LKq88orVqzymK08dPIflO6p1CiWaw
-	 stDhRXnwwdSEw==
-Date: Tue, 7 Apr 2026 12:57:19 +0530
-From: Manivannan Sadhasivam <mani@kernel.org>
-To: Douglas Anderson <dianders@chromium.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	"Rafael J . Wysocki" <rafael@kernel.org>, Danilo Krummrich <dakr@kernel.org>, 
-	Alan Stern <stern@rowland.harvard.edu>, Alexey Kardashevskiy <aik@ozlabs.ru>, 
-	Johan Hovold <johan@kernel.org>, Eric Dumazet <edumazet@google.com>, 
-	Leon Romanovsky <leon@kernel.org>, Christoph Hellwig <hch@lst.de>, 
-	Robin Murphy <robin.murphy@arm.com>, maz@kernel.org, Alexander Lobakin <aleksander.lobakin@intel.com>, 
-	Saravana Kannan <saravanak@kernel.org>, Mark Brown <broonie@kernel.org>, alexander.stein@ew.tq-group.com, 
-	andrew@codeconstruct.com.au, andrew@lunn.ch, andriy.shevchenko@linux.intel.com, 
-	astewart@tektelic.com, bhelgaas@google.com, brgl@kernel.org, davem@davemloft.net, 
-	devicetree@vger.kernel.org, driver-core@lists.linux.dev, hkallweit1@gmail.com, 
-	jirislaby@kernel.org, joel@jms.id.au, kees@kernel.org, kuba@kernel.org, 
-	lgirdwood@gmail.com, linux-arm-kernel@lists.infradead.org, 
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
-	linux-serial@vger.kernel.org, linux-usb@vger.kernel.org, linux@armlinux.org.uk, 
-	netdev@vger.kernel.org, pabeni@redhat.com, robh@kernel.org
-Subject: Re: [PATCH v5 8/9] driver core: Replace dev->of_node_reused with
- dev_of_node_reused()
-Message-ID: <xoo5ymm44t66hr5ti2apl3u7mmenbic66gi7siiiwxtdgn6bhh@hvfzixit53pf>
-References: <20260406232444.3117516-1-dianders@chromium.org>
- <20260406162231.v5.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fqfFy0L9Mz2yh4
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Apr 2026 18:17:57 +1000 (AEST)
+Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-35c124d2613so2730740a91.2
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 07 Apr 2026 01:17:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775549874; x=1776154674; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=gpY4U27Y71SwDzYx6NrKHrnXl79ZOYWYmPRAEotSW3Y=;
+        b=roFlvvLe3LuBZmYs/D+K6Z0/M9ubP1+sAQolGJGO8bOeDSGOL9KLklG3qXcPke4Xje
+         GDQBhUYT6Ftk7tQexdqZTZEpUC/mK1O1OCQbSPafiL+B3xJTh0WF3Xd7sX3ed177RBBZ
+         vrrzzJx94zSeDc5dPjOmIbI+OiauINQDN93u11u/BTNWjZOSHcnmFz9mBCAGw4BL62lY
+         he+emZxR4ZewdkuAx+zLxWPBC18HMKf+BD5yiO1E6PrEYCqiUz2/nEq2Z/CfzFpyyNHh
+         cH/W+O9wSlVJDQwn3sSr3eXk/gLl4I5CuMILBYhjc8CNEePoXst4WbzSD7+AQ7uAo7Ev
+         emTQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775549874; x=1776154674;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=gpY4U27Y71SwDzYx6NrKHrnXl79ZOYWYmPRAEotSW3Y=;
+        b=sGpOQk00jkRrOR29L/YcXDatGDHFKiWtRiNk/VfWQGDdbBT+TimDaBHQDHRSkuLLG2
+         EKKdViUPBZPZgiZr1isPtIgrWnuxjuHcynjwiWyi2K34SBNR6/YtfMH48loY1fKtnG1e
+         Fn/h6nMTIqNA6AlDTVg8eVemFb3uu8SRl9nYwqZVSQesyYUTmfbluD8RQnQKiaWD+qVs
+         jbBoIKpO/h7Y/PbJWXkOBg6e4kSRDfdv1Z6zvEflhFUGkyTq9Ru+x7ur43F7Q8yxfq/f
+         yesB3mwGnUgI0TbfzC+kXA4KQNjPUbVqHUMscITEokkE7ulOKvR0pOWMO0duTCvZQQIk
+         QsWg==
+X-Forwarded-Encrypted: i=1; AJvYcCUUKZJNlx/l0w8Uj2Np24+mSZ2t8si5SqkKIiC+IXdLu/eFXTQMq/11KaL0nSXXLqzIwdnnGs+hJsxCRkw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxzs9GBE8AEOhZuLrL4DewTxYCVnp7RPCTqsv6Z2t1jOxyBvR/F
+	yYbr8Zl3Q8mvqonFkNopSt+xmQB4ZSQc7iynfR35w8Aaxg7RRnyol6KU
+X-Gm-Gg: AeBDievlj6lO/xcTp31zLZWrhFApaZNEZ2s/DDF9hoOqINiQONA4fh0EeSUCB53+ax9
+	gVOVOGuAeuFUa5xJca1kCz2cbHse1S3AsH6IpHI6ZagZIwGuS5O+YwAFSkzMDzqvJqnXJ+evCi5
+	3qe6VXzCTjRS7ytRl62JqhOxzjq0uzzpPXLPFM/1R1TVBJ1r0bjVo0JsUVXJEi4YpcksIxfa0ws
+	9CZHrOr8RJLGk7pBDBNyrDV+PZ6SJ8CncFCZjLJ3PeY2u/+5cxqMzP5VjziuCLYw21L9v28ZnGq
+	QukRZ7/4D2oPNSIQwXBw4/SeY6TXQDCjjJ4oFQOlGajqriSOYnqSXZyAVuHZZqF7aQBabSCJfOy
+	d0qPpzHYIb+R0/Z+LBOb4Pgq8wu14f1kZYpfngvDHRIjuX/dz09o2CNqVSXa709GM5WouR4PCSm
+	+45wWPOHD4PJO9sbnt/0a2T2X4DdhewMLXStheRnFBOscRzczod3PUmpMjWCebc1Jxu0XQVW2p7
+	FvzziluwzfO
+X-Received: by 2002:a17:90b:2b4b:b0:34c:fe7e:84fe with SMTP id 98e67ed59e1d1-35de69aec1bmr15940483a91.28.1775549874412;
+        Tue, 07 Apr 2026 01:17:54 -0700 (PDT)
+Received: from pk-pc.dhcpserver.bu9bmc.local (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-35de6a2325bsm4592889a91.12.2026.04.07.01.17.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Apr 2026 01:17:54 -0700 (PDT)
+From: "P.K. Lee" <pkleequanta@gmail.com>
+To: robh+dt@kernel.org,
+	krzysztof.kozlowski+dt@linaro.org,
+	conor+dt@kernel.org,
+	joel@jms.id.au,
+	andrew@codeconstruct.com.au,
+	devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Jason-Hsu@quantatw.com,
+	p.k.lee@quantatw.com
+Subject: [PATCH v13 0/2] Add Meta (Facebook) Ventura BMC (AST2600)
+Date: Tue,  7 Apr 2026 16:16:58 +0800
+Message-ID: <20260407081700.2658011-1-pkleequanta@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -80,264 +99,95 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260406162231.v5.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
 
-On Mon, Apr 06, 2026 at 04:23:01PM -0700, Douglas Anderson wrote:
-> In C, bitfields are not necessarily safe to modify from multiple
-> threads without locking. Switch "of_node_reused" over to the "flags"
-> field so modifications are safe.
-> 
-> Cc: Johan Hovold <johan@kernel.org>
-> Acked-by: Mark Brown <broonie@kernel.org>
-> Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
-> Reviewed-by: Danilo Krummrich <dakr@kernel.org>
-> Signed-off-by: Douglas Anderson <dianders@chromium.org>
+Add Linux device tree entry related to Meta (Facebook) Ventura specific
+devices connected to the BMC (AST2600) SoC. The purpose of Ventura is to
+detect liquid leakage from all compute trays, switch trays and rack
+sensors within the rack, log the events, and take necessary actions
+accordingly.
 
-Acked-by: Manivannan Sadhasivam <mani@kernel.org> # PCI_PWRCTRL
+---
+v1:
+    1. Create ventura dts file.
+    2. Add commit msg.
+    3. Use format-patch to generate patch.
+    4. Add subject prefixes matching the subsystem.
+---
+v2:
+    1. Modify email content.
+---
+v3:
+    1. Add mail list.
+---
+v4:
+    1. Apply git send-email --thread option.
+    2. Sort nodes in the dts alphanumerically.
+---
+v5:
+    1. Run scripts/checkpatch.pl and fix reported warnings.
+    2. Remove unnecessary 88E6393X CONFIG FRU.
+---
+v6:
+    1. Add a new stage for the DTS change.
+    2. Run scripts/checkpatch.pl and fix reported error.
+    3. Fix the issue in a separate patch.
+---
+v7:
+    1. Fix broken indentation in the device tree file.
+    2. Sort nodes alphabetically, then by address if equal.
+    3. Rename fan sensor nodes from 'hwmon' to 'fan-controller'.
+---
+v8:
+    1. This patch series has significant changes compared to
+       previous versions, and quite some time has passed since the last
+       submission.Therefore, previously received Acked-by/Reviewed-by/Tested-by
+       tags are not included in this version.
+       If needed, tags can be added again after review of thisnew version.
+---
+v9:
+    1. Reordered the node sequence under i2c5.
+    2. Added a description of the platform's intended use to the commit
+       messages.
+    3. Added 3 GPIO expanders to i2c10 and defined the necessary GPIO
+       line names.
+---
+v10:
+    1. Added IRQ support in GPIO expanders under i2c10 to handle edge-triggered
+       events.
+    2. Reordered the nodes.
+---
+v11:
+    1. Modified the position for i2c3mux0ch6 and i2c3mux0ch7.
+---
+v12:
+    1. Added a GPIO expander at address 0x11 on i2c10, and assign an SGPIO pin
+       as the IRQ for it.
+    2. Fixed the "failed to match any schema with compatible" issues.
+    3. Reorder the nodes in alphabetically.
+---
+v13:
+    1. Add two GPIO expanders (0x16 and 0x17) to i2c10 and assign two SGPIO
+       pins as IRQs.
+    2. Move the RPU_READY_SPARE_PLD_R and RPU_2_READY_PLD_R pins from
+       SGPIO to the GPIO expander (0x10).
+    3. Add all tray PWREN pins to the GPIO expanders (0x16, 0x17 and 0x1b).
+    4. Add explanatory comments for "unmanaged mode" under &mac3 and
+       "intentionally left empty" under &mdio.
 
-- Mani
+P.K. Lee (2):
+  dt-bindings: arm: aspeed: add Meta Ventura board
+  arm: dts: aspeed: ventura: add Meta Ventura BMC
 
-> ---
-> Not fixing any known bugs; problem is theoretical and found by code
-> inspection. Change is done somewhat manually and only lightly tested
-> (mostly compile-time tested).
-> 
-> (no changes since v4)
-> 
-> Changes in v4:
-> - Use accessor functions for flags
-> 
-> Changes in v3:
-> - New
-> 
->  drivers/base/core.c                      | 2 +-
->  drivers/base/pinctrl.c                   | 2 +-
->  drivers/base/platform.c                  | 2 +-
->  drivers/net/pcs/pcs-xpcs-plat.c          | 2 +-
->  drivers/of/device.c                      | 6 +++---
->  drivers/pci/of.c                         | 2 +-
->  drivers/pci/pwrctrl/core.c               | 2 +-
->  drivers/regulator/bq257xx-regulator.c    | 2 +-
->  drivers/regulator/rk808-regulator.c      | 2 +-
->  drivers/tty/serial/serial_base_bus.c     | 2 +-
->  drivers/usb/gadget/udc/aspeed-vhub/dev.c | 2 +-
->  include/linux/device.h                   | 7 ++++---
->  12 files changed, 17 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 8a83d7c93361..30825bf83234 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -5283,7 +5283,7 @@ void device_set_of_node_from_dev(struct device *dev, const struct device *dev2)
->  {
->  	of_node_put(dev->of_node);
->  	dev->of_node = of_node_get(dev2->of_node);
-> -	dev->of_node_reused = true;
-> +	dev_set_of_node_reused(dev);
->  }
->  EXPORT_SYMBOL_GPL(device_set_of_node_from_dev);
->  
-> diff --git a/drivers/base/pinctrl.c b/drivers/base/pinctrl.c
-> index 6e250272c843..0bbc83231234 100644
-> --- a/drivers/base/pinctrl.c
-> +++ b/drivers/base/pinctrl.c
-> @@ -24,7 +24,7 @@ int pinctrl_bind_pins(struct device *dev)
->  {
->  	int ret;
->  
-> -	if (dev->of_node_reused)
-> +	if (dev_of_node_reused(dev))
->  		return 0;
->  
->  	dev->pins = devm_kzalloc(dev, sizeof(*(dev->pins)), GFP_KERNEL);
-> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> index d44591d52e36..199e6fb25770 100644
-> --- a/drivers/base/platform.c
-> +++ b/drivers/base/platform.c
-> @@ -856,7 +856,7 @@ struct platform_device *platform_device_register_full(
->  	pdev->dev.parent = pdevinfo->parent;
->  	pdev->dev.fwnode = pdevinfo->fwnode;
->  	pdev->dev.of_node = of_node_get(to_of_node(pdev->dev.fwnode));
-> -	pdev->dev.of_node_reused = pdevinfo->of_node_reused;
-> +	dev_assign_of_node_reused(&pdev->dev, pdevinfo->of_node_reused);
->  
->  	if (pdevinfo->dma_mask) {
->  		pdev->platform_dma_mask = pdevinfo->dma_mask;
-> diff --git a/drivers/net/pcs/pcs-xpcs-plat.c b/drivers/net/pcs/pcs-xpcs-plat.c
-> index b8c48f9effbf..f4b1b8246ce9 100644
-> --- a/drivers/net/pcs/pcs-xpcs-plat.c
-> +++ b/drivers/net/pcs/pcs-xpcs-plat.c
-> @@ -349,7 +349,7 @@ static int xpcs_plat_init_dev(struct dw_xpcs_plat *pxpcs)
->  	 * up later. Make sure DD-core is aware of the OF-node being re-used.
->  	 */
->  	device_set_node(&mdiodev->dev, fwnode_handle_get(dev_fwnode(dev)));
-> -	mdiodev->dev.of_node_reused = true;
-> +	dev_set_of_node_reused(&mdiodev->dev);
->  
->  	/* Pass the data further so the DW XPCS driver core could use it */
->  	mdiodev->dev.platform_data = (void *)device_get_match_data(dev);
-> diff --git a/drivers/of/device.c b/drivers/of/device.c
-> index f7e75e527667..be4e1584e0af 100644
-> --- a/drivers/of/device.c
-> +++ b/drivers/of/device.c
-> @@ -26,7 +26,7 @@
->  const struct of_device_id *of_match_device(const struct of_device_id *matches,
->  					   const struct device *dev)
->  {
-> -	if (!matches || !dev->of_node || dev->of_node_reused)
-> +	if (!matches || !dev->of_node || dev_of_node_reused(dev))
->  		return NULL;
->  	return of_match_node(matches, dev->of_node);
->  }
-> @@ -192,7 +192,7 @@ ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len)
->  {
->  	ssize_t sl;
->  
-> -	if (!dev || !dev->of_node || dev->of_node_reused)
-> +	if (!dev || !dev->of_node || dev_of_node_reused(dev))
->  		return -ENODEV;
->  
->  	sl = of_modalias(dev->of_node, str, len - 2);
-> @@ -254,7 +254,7 @@ int of_device_uevent_modalias(const struct device *dev, struct kobj_uevent_env *
->  {
->  	int sl;
->  
-> -	if ((!dev) || (!dev->of_node) || dev->of_node_reused)
-> +	if ((!dev) || (!dev->of_node) || dev_of_node_reused(dev))
->  		return -ENODEV;
->  
->  	/* Devicetree modalias is tricky, we add it in 2 steps */
-> diff --git a/drivers/pci/of.c b/drivers/pci/of.c
-> index 9f8eb5df279e..1f9b669abdb0 100644
-> --- a/drivers/pci/of.c
-> +++ b/drivers/pci/of.c
-> @@ -38,7 +38,7 @@ int pci_set_of_node(struct pci_dev *dev)
->  	struct device *pdev __free(put_device) =
->  		bus_find_device_by_of_node(&platform_bus_type, node);
->  	if (pdev)
-> -		dev->bus->dev.of_node_reused = true;
-> +		dev_set_of_node_reused(&dev->bus->dev);
->  
->  	device_set_node(&dev->dev, of_fwnode_handle(no_free_ptr(node)));
->  	return 0;
-> diff --git a/drivers/pci/pwrctrl/core.c b/drivers/pci/pwrctrl/core.c
-> index 7754baed67f2..72963a92362a 100644
-> --- a/drivers/pci/pwrctrl/core.c
-> +++ b/drivers/pci/pwrctrl/core.c
-> @@ -39,7 +39,7 @@ static int pci_pwrctrl_notify(struct notifier_block *nb, unsigned long action,
->  		 * If we got here then the PCI device is the second after the
->  		 * power control platform device. Mark its OF node as reused.
->  		 */
-> -		dev->of_node_reused = true;
-> +		dev_set_of_node_reused(dev);
->  		break;
->  	}
->  
-> diff --git a/drivers/regulator/bq257xx-regulator.c b/drivers/regulator/bq257xx-regulator.c
-> index dab8f1ab4450..40e0f1a7ae81 100644
-> --- a/drivers/regulator/bq257xx-regulator.c
-> +++ b/drivers/regulator/bq257xx-regulator.c
-> @@ -143,7 +143,7 @@ static int bq257xx_regulator_probe(struct platform_device *pdev)
->  	struct regulator_config cfg = {};
->  
->  	pdev->dev.of_node = pdev->dev.parent->of_node;
-> -	pdev->dev.of_node_reused = true;
-> +	dev_set_of_node_reused(&pdev->dev);
->  
->  	pdata = devm_kzalloc(&pdev->dev, sizeof(struct bq257xx_reg_data), GFP_KERNEL);
->  	if (!pdata)
-> diff --git a/drivers/regulator/rk808-regulator.c b/drivers/regulator/rk808-regulator.c
-> index e66408f23bb6..8297d31cde9f 100644
-> --- a/drivers/regulator/rk808-regulator.c
-> +++ b/drivers/regulator/rk808-regulator.c
-> @@ -2115,7 +2115,7 @@ static int rk808_regulator_probe(struct platform_device *pdev)
->  	int ret, i, nregulators;
->  
->  	pdev->dev.of_node = pdev->dev.parent->of_node;
-> -	pdev->dev.of_node_reused = true;
-> +	dev_set_of_node_reused(&pdev->dev);
->  
->  	regmap = dev_get_regmap(pdev->dev.parent, NULL);
->  	if (!regmap)
-> diff --git a/drivers/tty/serial/serial_base_bus.c b/drivers/tty/serial/serial_base_bus.c
-> index a12935f6b992..5f23284a8778 100644
-> --- a/drivers/tty/serial/serial_base_bus.c
-> +++ b/drivers/tty/serial/serial_base_bus.c
-> @@ -74,7 +74,7 @@ static int serial_base_device_init(struct uart_port *port,
->  	dev->parent = parent_dev;
->  	dev->bus = &serial_base_bus_type;
->  	dev->release = release;
-> -	dev->of_node_reused = true;
-> +	dev_set_of_node_reused(dev);
->  
->  	device_set_node(dev, fwnode_handle_get(dev_fwnode(parent_dev)));
->  
-> diff --git a/drivers/usb/gadget/udc/aspeed-vhub/dev.c b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> index 2ecd049dacc2..8b9449d16324 100644
-> --- a/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> +++ b/drivers/usb/gadget/udc/aspeed-vhub/dev.c
-> @@ -593,7 +593,7 @@ int ast_vhub_init_dev(struct ast_vhub *vhub, unsigned int idx)
->  		d->gadget.max_speed = USB_SPEED_HIGH;
->  	d->gadget.speed = USB_SPEED_UNKNOWN;
->  	d->gadget.dev.of_node = vhub->pdev->dev.of_node;
-> -	d->gadget.dev.of_node_reused = true;
-> +	dev_set_of_node_reused(&d->gadget.dev);
->  
->  	rc = usb_add_gadget_udc(d->port_dev, &d->gadget);
->  	if (rc != 0)
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 5b0fb6ad4c72..a79865a212e9 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -483,6 +483,8 @@ struct device_physical_location {
->   *		driver/bus sync_state() callback.
->   * @DEV_FLAG_DMA_COHERENT: This particular device is dma coherent, even if the
->   *		architecture supports non-coherent devices.
-> + * @DEV_FLAG_OF_NODE_REUSED: Set if the device-tree node is shared with an
-> + *		ancestor device.
->   */
->  enum struct_device_flags {
->  	DEV_FLAG_READY_TO_PROBE = 0,
-> @@ -492,6 +494,7 @@ enum struct_device_flags {
->  	DEV_FLAG_DMA_OPS_BYPASS = 4,
->  	DEV_FLAG_STATE_SYNCED = 5,
->  	DEV_FLAG_DMA_COHERENT = 6,
-> +	DEV_FLAG_OF_NODE_REUSED = 7,
->  
->  	DEV_FLAG_COUNT
->  };
-> @@ -573,8 +576,6 @@ enum struct_device_flags {
->   *
->   * @offline_disabled: If set, the device is permanently online.
->   * @offline:	Set after successful invocation of bus type's .offline().
-> - * @of_node_reused: Set if the device-tree node is shared with an ancestor
-> - *              device.
->   * @flags:	DEV_FLAG_XXX flags. Use atomic bitfield operations to modify.
->   *
->   * At the lowest level, every device in a Linux system is represented by an
-> @@ -681,7 +682,6 @@ struct device {
->  
->  	bool			offline_disabled:1;
->  	bool			offline:1;
-> -	bool			of_node_reused:1;
->  
->  	DECLARE_BITMAP(flags, DEV_FLAG_COUNT);
->  };
-> @@ -715,6 +715,7 @@ __create_dev_flag_accessors(dma_skip_sync, DEV_FLAG_DMA_SKIP_SYNC);
->  __create_dev_flag_accessors(dma_ops_bypass, DEV_FLAG_DMA_OPS_BYPASS);
->  __create_dev_flag_accessors(state_synced, DEV_FLAG_STATE_SYNCED);
->  __create_dev_flag_accessors(dma_coherent, DEV_FLAG_DMA_COHERENT);
-> +__create_dev_flag_accessors(of_node_reused, DEV_FLAG_OF_NODE_REUSED);
->  
->  #undef __create_dev_flag_accessors
->  
-> -- 
-> 2.53.0.1213.gd9a14994de-goog
-> 
+ .../bindings/arm/aspeed/aspeed.yaml           |    1 +
+ arch/arm/boot/dts/aspeed/Makefile             |    1 +
+ .../aspeed/aspeed-bmc-facebook-ventura.dts    | 1636 +++++++++++++++++
+ 3 files changed, 1638 insertions(+)
+ create mode 100644 arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-ventura.dts
 
+base-commit: e11fa6b1ff6c27c808d17e479bd7d5582e772062
+branch: dev-6.6
 -- 
-மணிவண்ணன் சதாசிவம்
+2.43.0
+
 
