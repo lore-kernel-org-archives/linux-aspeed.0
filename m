@@ -1,74 +1,52 @@
-Return-Path: <linux-aspeed+bounces-3870-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3871-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AC5E1073CB6
-	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 13:31:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0683310FC446
+	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 21:35:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frP925jntz2yVP;
-	Wed, 08 Apr 2026 23:31:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775655078;
-	cv=none; b=JkK0w20IQqsKU0czDBWTJEwzWsG6Tcww8UA2iUNp2DmAouIYel4VU0O3Yvx6t3PtKpV818M9wBoaoLlwDHRnjpQY1SvXjx6YRQkFAT1xHnxSL0CW/7VRkkItKNnb7vTuHgyTheRtiJia7x2Md3Tlgf70hxJj4vfzTT7rIkY/mTaN3ZUjmtlKJuBMNJRbDynEGDEbR7mr4i4teBuA/FSTTuh8WcaYV1w7PbGQRnaUc6P5i90m5JwAlzRPSO/U+IhP5EsOU7ZiYy2+6iQQs3e3pBMsSDtsThIpVLbekL+22Sh+pP/Ph0qfsLUo8FGeoWAflw1CRj4JStfNoN1TANoRxA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frbvc2Bdpz2ySV;
+	Thu, 09 Apr 2026 07:35:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775684124;
+	cv=none; b=mwDo7WYyfzpyztjVYAcTWz26VFjM40fFS8F3h2exQOVcYukMRU1XCUmsehT9eEHQNLDOZ79l9lF/kjtEZ7MWn+7gfPV34FE4ifWB2T2g5OkhnRBHy3+A+xIVpzJ71jguD274GwUOQ3JGYfggTmm2QsL2bfoKIMKPWISvnGzL5r1TTKMXG97Ftmu/V707Mq/h4Jow+ENQBAY7xoNM/B0E3cu/NXVKx7hJqWP7umfIFBQvTobFTgjr8bjkUQQF96jwuzdSTHBnGQoIse34OvCDa1dd6p8PgXWBAONniQs3m8Uq+yTN1w9shpcKxDgEVGe/1JrLVswWI7O04LXmyCRP4w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775655078; c=relaxed/relaxed;
-	bh=H6LbHcTTP9FZbItc1diImmtUZwjMhLQ4smYNl2k6uQo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mSvnEkXzMWOkLzzLDs4QoCr2sPS2aXmGkOfju8uXgiI06ILPbXDGEaurjCuw0+l9Raa2rfpoN5hOr9H5dD8omgAMOwgFlyZH2bRMhJd1+7UzyZxuT9SrMnqckhV/4BBWKu6zXBn7XoCsXtVv9m2BmaGaMKr1dhDPP+Rj+o/4fUBDC6c3JMBNTu3oqfKyhgmseNmohTv7UWevEcHWhEMJgDFeUpDe/ugQmYOkyByUMuTX5AGYno2VUw4BdEpL1PlGIlzP6WuP7KtyHEEtgXo7xCP6UzqfBIRK3k3bsfTVrg/4pQGtT823RLDtuR7rD06x49il3QmSoYyP2OoWofaBIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rtN7MGYB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1775684124; c=relaxed/relaxed;
+	bh=y/ZDmJFMf0pTjChgKNi4aVpSQoennJ1xMK8FbYsVCis=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=mEcC0EgwtDyJz5ZcV6T9D01yRhE8JBPaBiNf84pKTCMl0Nvg5fJ/ZEVXGs8TvLFJR+Bm4g/wObOHU8rBAdXtBwH/Jlg3PbJUiHDaj9l5nMfGl5xxBxd/LHUFamzu2Vp4Ken1b5fatpbC1BKLNLFDhWlgZhNuyxYietI7I52DxxLA3mAWVngGGKS2O7CNRWCEsRbedfSV3soT9L7XOtd/92wgkNgsCL/+J9SjlHGNQc3XW5je9tdgnobR04eCjWe15DJceSZnfS9p/erugZuusxSBZdfnIAj41CicHGK1P3mBWNFQcZbQIxbmtFmXmaK2ASBdJXPLR1r2AN9fFDQnmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c8Lz1avG; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rtN7MGYB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c8Lz1avG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frP920GDYz2xc8;
-	Wed, 08 Apr 2026 23:31:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frbvb0NP5z2yC9
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Apr 2026 07:35:22 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7E3194452C;
-	Wed,  8 Apr 2026 13:31:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F7A3C2BC9E;
-	Wed,  8 Apr 2026 13:31:16 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 35E0B600AD;
+	Wed,  8 Apr 2026 21:35:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 921BCC19421;
+	Wed,  8 Apr 2026 21:35:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775655076;
-	bh=sqUO8WthhJzcAvxM38OAUGehd9oMK+15WBmzaWNn1p0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=rtN7MGYBrPtoBdayEGA8Bnd5JDJvLqhc+pJsd5pw0aUN5CcVQ2NLuFngCfmnH5qv0
-	 iefrYkl1O+7pu18psbX3QN8D4M0iDwlJ3909aUSS3aPVNKUtF8YAB06ZiNj+G57h7X
-	 EUDkawGKS+itWyQRGJCn2GDmU1bBZhnRusnH+GDjHj0JvVBlCS7LJMSfU+zpH2Vsc+
-	 nZlsRiPeyTA9ygmbXB5NjRNzIRCxFmhRDmrZd6yAzzu87c5hIJ5tF2SooEn+uLHLD3
-	 tfvz6+2KrpaupePD8ZBHGDPh7tHbtppsgqO6U7k05O8cKHBGKlZdzds0DfddJ35sX0
-	 1M1uXixj4VREA==
-Date: Wed, 8 Apr 2026 08:31:14 -0500
-From: Rob Herring <robh@kernel.org>
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Lee Jones <lee@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Andrew Jeffery <andrew@aj.id.au>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>
-Subject: Re: [PATCH v5 2/3] dt-bindings: mfd: aspeed,ast2x00-scu: Describe
- AST2700 SCU0
-Message-ID: <20260408133114.GA1938858-robh@kernel.org>
-References: <20260331-upstream_pinctrl-v5-0-8994f59ff367@aspeedtech.com>
- <20260331-upstream_pinctrl-v5-2-8994f59ff367@aspeedtech.com>
- <20260401-adept-zebra-of-bloom-5bb68b@quoll>
- <OSQPR06MB725204B2FAE543A71AEA52C38B51A@OSQPR06MB7252.apcprd06.prod.outlook.com>
+	s=k20201202; t=1775684119;
+	bh=U5m8hCve0SToPzGN57qTzQp7oW2CDN8d/H/F/Gwr1gk=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=c8Lz1avGo9y/3VwFqk+vg4C2dwokvPKM2kRCkByp3XrW7RZDSnYhczOJwfkn5J17L
+	 fZPiEDIAb2KROGCWUAncAdHDC37/G9H+3r/bDVJyxxMaT0qqLf9fZmz7PzP1madm3h
+	 Y/XJsLkf6KaJAK845zD1MKfM7MnRVciZJENhnfgD+0aaBr6QVYJIPfrZ9LDk9WaW2B
+	 +LWfNPwjYgAEpol/ft2FMPoaAZFaqgynKvrqrPgXPkS7Upr4LNOd5/CxKqPUIP1kjq
+	 xxCp7IN2bqWWAIAFgZJG98ZioTl6cU/Y9ZeSVkPWh7bnLWcoHLjT/nFmSJvbuIQ6z4
+	 dYmBPC/7/qxqQ==
+Date: Wed, 08 Apr 2026 16:35:17 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -82,63 +60,67 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OSQPR06MB725204B2FAE543A71AEA52C38B51A@OSQPR06MB7252.apcprd06.prod.outlook.com>
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Andrew Jeffery <andrew@codeconstruct.com.au>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ linux-arm-kernel@lists.infradead.org, Frank Li <Frank.Li@nxp.com>, 
+ Conor Dooley <conor+dt@kernel.org>, linux-i3c@lists.infradead.org, 
+ Maciej Lawniczak <maciej.lawniczak@intel.com>, 
+ Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+ linux-aspeed@lists.ozlabs.org, devicetree@vger.kernel.org
+To: Dawid Glazik <dawid.glazik@linux.intel.com>
+In-Reply-To: <7f55458097ef651b4fc46650254afd3fa7b87348.1775679285.git.dawid.glazik@linux.intel.com>
+References: <cover.1775679285.git.dawid.glazik@linux.intel.com>
+ <7f55458097ef651b4fc46650254afd3fa7b87348.1775679285.git.dawid.glazik@linux.intel.com>
+Message-Id: <177568411772.3278896.3414957895375606965.robh@kernel.org>
+Subject: Re: [PATCH v3 3/3] dt-bindings: i3c: Add AST2600 I3C global
+ registers
 
-On Thu, Apr 02, 2026 at 06:14:06AM +0000, Billy Tsai wrote:
-> > > AST2700 consists of two interconnected SoC instances, each with its own
-> > > System Control Unit (SCU). The SCU0 provides pin control, interrupt
-> > > controllers, clocks, resets, and address-space mappings for the
-> > > Secondary and Tertiary Service Processors (SSP and TSP).
-> > >
-> > > Describe the SSP/TSP address mappings using the standard
-> > > memory-region and memory-region-names properties.
-> > >
-> > > Disallow legacy child nodes that are not present on AST2700, including
-> > > p2a-control and smp-memram. The latter is unnecessary as software can
-> > > access the scratch registers via the SCU syscon.
-> > >
-> > > Also allow the AST2700 SoC0 pin controller to be described as a child
-> > > node of the SCU0, and add an example illustrating the SCU0 layout,
-> > > including reserved-memory, interrupt controllers, and pinctrl.
-> > >
-> > > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
-> > > ---
-> > >  .../bindings/mfd/aspeed,ast2x00-scu.yaml           | 117 +++++++++++++++++++++
-> > >  1 file changed, 117 insertions(+)
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> > > index a87f31fce019..86d51389689c 100644
-> > > --- a/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> > > +++ b/Documentation/devicetree/bindings/mfd/aspeed,ast2x00-scu.yaml
-> > > @@ -46,6 +46,9 @@ properties:
-> > >    '#reset-cells':
-> > >      const: 1
-> > >
-> > > +  memory-region: true
-> > > +  memory-region-names: true
-> 
-> > Missing constraints. From where did you take such syntax (so I can fix
-> > it)?
-> 
-> The intention was to constrain these properties conditionally for
-> AST2700 SCU0 as done further down in the patch.
-> 
-> I can update the binding so that memory-region and memory-region-names
-> have baseline constraints (e.g. minItems and maxItems), and then refine them in the
-> conditional branches for AST2700SCU0, AST2700SCU1 and others
-> 
->   memory-region:
->     minItems: 2
->     maxItems: 3
->   memory-region-names:
->     minItems: 2
->     maxItems: 3
 
-As of this patch, you don't need that. You can just define the regions 
-and names at the top-level. And the conditional schema only needs to 
-disallow them for the appropriate case.
+On Wed, 08 Apr 2026 22:34:35 +0200, Dawid Glazik wrote:
+> Introduce the device-tree bindings for I3C global registers found on
+> AST2600 SoCs.
+> 
+> Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
+> ---
+> I wasn't sure if I should add newline at the end of the
+> file or not so I took
+> https://github.com/torvalds/linux/tree/master/Documentation/devicetree/bindings/i3c
+> as an example.
+> ---
+>  .../i3c/aspeed,ast2600-i3c-global.yaml        | 55 +++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml
+> 
 
-Rob
+My bot found errors running 'make dt_binding_check' on your patch:
+
+yamllint warnings/errors:
+./Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml:55:4: [error] no new line character at the end of file (new-line-at-end-of-file)
+
+dtschema/dtc warnings/errors:
+Lexical error: Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.example.dts:27.35-55 Unexpected 'ASPEED_RESET_I3C_DMA'
+FATAL ERROR: Syntax error parsing input tree
+make[2]: *** [scripts/Makefile.dtbs:140: Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.example.dtb] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1597: dt_binding_check] Error 2
+make: *** [Makefile:248: __sub-make] Error 2
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.kernel.org/project/devicetree/patch/7f55458097ef651b4fc46650254afd3fa7b87348.1775679285.git.dawid.glazik@linux.intel.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
+
 
