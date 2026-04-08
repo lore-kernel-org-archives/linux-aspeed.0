@@ -1,51 +1,61 @@
-Return-Path: <linux-aspeed+bounces-3868-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3869-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3BA6FD5F99
-	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 09:00:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D1BC1073CA8
+	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 12:34:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frH8r4cjsz2yDk;
-	Wed, 08 Apr 2026 19:00:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775638844;
-	cv=none; b=ZXVmQ7b0SDmAQxagM5GJ6QTNA3Rx1BMtgJ8qJo+McmjD7pDiI5ZMWAShzZbB3JirKjvizL5UypuOhW/TF/My9WtReQ75xj+CJhQWS0SHvU5Ukee/DFz5mElan41j+cSVVIPApftuuy4rCF5GtL/W91C8LhFVtvgCjQpVVeGM6Jywcb39iIyGiS2GQglElC97awies3Y+9GRK59/H13TYrjUn/XktGQz++4o10Im/AwqFPey43jsFpzKyRYuEwVpsN4p6d8KeWJQJsc3sdxzDXpZguqWqE7+3GLsfr6I7mixr87cfYp8KxfgYVbX4ggjLv+Qn1qxKHQpDGBg80+eSgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frMw16tzLz2yDk;
+	Wed, 08 Apr 2026 22:34:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775651697;
+	cv=none; b=lgiQ6O9stLClspovSajL5NPcKYCrehCzSyadvOFCyX52c6s7VoeB7YC2GgsTPEB5xeeQfEuOgfIM/nDGD4QZt344s3OuNbI9Uu9fEHyt6szzyKVG5yUESqzVyVeYxEiTJq/5zMD/g5rObwiPAXV1I6Lpy7y9OLy6gb3ecsN4lTsRre2QPpmwwxvfvFMQ9rVZO6yxN37qCyRNOphMsHcw8eRvhhy9Nbn2SMA/OdMPEM6ookvUP3m6n+uSV016udh4ljzTFu9fBamkzawbL6DeiI528YSz9VF1HN0H0nzVUS8MACNg84+teEw1I+GzGSXAFGw1ad7lpHc1V3gAqGgyJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775638844; c=relaxed/relaxed;
-	bh=iGwZH8QSYbxOy/qiuXEzu6h3kS5Xj3Ev+uHZHotITMw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RpIPNtwtOM5eLhQHHOf4zqp6R7maqHy9lJy+H5S8svl+xbW31tf2zyOEQqCVnGnm3TaMHItA3KDgF/6FrtabopKH5/gkOE7eodhoy62Y0BbQPHip3QIVdbTPIhuGgc2543G49ii0PVpvn5hOg9XDnfpaxqEPKJ+P9FyFY/D4edxsqRzzGscnnMv76dkZxkhrLbxyqF3iPXbQtJBhXyZA14/Ei5Awp3OGbXx96ZwkcnwCIl/EoojYGHJJKpBCuKb5/GSOK5qK6khoBZTNliratzAI2qMPg6trrnQUZnb9BIxdV7gONJtejuD7BjSsEMklBECZmzcNsb8ubyIdlvDVpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ssSFP4gP; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1775651697; c=relaxed/relaxed;
+	bh=UZm0OMiCYQ+7g0KMOOJaEeMtCB1NoXIae3H5HwDH82U=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Yz2Bq0XB37rIuRMz1kzoWD8RWWfx5ByNgRVxCLXeQGq5oaWFZe+UKEt9tiLcEaQ9KH6UnaIxLIBvgIbKOSu3Fjh3oKgHCkcITr5g5SqpSjZPF44EJC6VYnoEirC68rHpnkGAM0Xq8sppDb+x+XuCCAgsn/xsKeNjr0miJSqYXp4NCokzyG5v4AcnbDsHjHdunp5lSo07wyvMuRCOnXSMXBY8AKnKjhFZr/oTgqNFLn0YDCu7NlYMC8l9jI74ly41EsHco6nI5/xgNfJccMSDNYRuyZfusKaeUgPX148tpbM8y04L5FNDdGNf8khcJg5G4J5e/P0tSmHg+5yK8koEvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=lUcQs91s; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ssSFP4gP;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=lUcQs91s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frH8q50XFz2xc8
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Apr 2026 19:00:43 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 730B4600AD;
-	Wed,  8 Apr 2026 09:00:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 993F8C19424;
-	Wed,  8 Apr 2026 09:00:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1775638841;
-	bh=l1+7235F6VMVziv6Huk49C0hGrw65Zdp9sbwGEUqVbE=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ssSFP4gP30aYOXqa6jnYbFbJFkIKzWP6gFLQF3rvF5y83mJm8DJbP4d+WuOiU2mVQ
-	 RzAmWIRaDrek5yHX96QONnXdreXD9rBxfkCWsSrK2I9XZ5jNSYChTx5TxW3fD9I5gw
-	 BPBYRzL0nKNh5jUYjLtbcOOzE8BSB29ZVzcIBlkBE1+hm3jzR7LcONnD0JE+Y/jo7N
-	 0hdACRS4L3jbf2F98PrgeH9wZrxupOfe3IqM/8p//lQKhYkXZ/7bzQwPvqWh3J5Kwy
-	 UlHF/Y4Dn5q2gu5tpYTaReQrnEC8r06CzIUEMzEEzbaLjj9TPs9opQxM5Sy35cbRPl
-	 bnxKXHllAOoKw==
-Message-ID: <dfe798b5-6db9-4b8a-8246-ff607f5241cc@kernel.org>
-Date: Wed, 8 Apr 2026 11:00:35 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frMvz5HkLz2yC9
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Apr 2026 22:34:55 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+	bh=UZm0OMiCYQ+7g0KMOOJaEeMtCB1NoXIae3H5HwDH82U=; b=lUcQs91sIVusfR1u89Stz05ODI
+	AMhxret+/edGus9rBRyTcLUGXHf1+j7vips6AbSB6HSPe9HBw1p0HiJ6vLRsEXaM20P3nzGqQFLn7
+	Efio5MaldMKsoTnJqx0IzS6klKtDGHTB874frDoDMPk7FfEAj85BYwcWdzltEDxPDzEM=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1wAS7A-00FHkV-QP; Wed, 08 Apr 2026 14:34:36 +0200
+Date: Wed, 8 Apr 2026 14:34:36 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: "P.K. Lee" <pkleequanta@gmail.com>
+Cc: robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org,
+	conor+dt@kernel.org, joel@jms.id.au, andrew@codeconstruct.com.au,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Jason-Hsu@quantatw.com, p.k.lee@quantatw.com
+Subject: Re: [PATCH v12 2/2] arm: dts: aspeed: ventura: add Meta Ventura BMC
+Message-ID: <e7a1588d-b4d4-4aa7-ba94-da3e2591d49c@lunn.ch>
+References: <20260226055521.1655243-1-pkleequanta@gmail.com>
+ <20260226055521.1655243-3-pkleequanta@gmail.com>
+ <258747f4-9da5-44da-8eb9-24f8a8cbff3a@lunn.ch>
+ <CAK8yEODCyYxkggU+7=xzWFcXP6RMTpNbHyYRHZhahX7=b6reqA@mail.gmail.com>
+ <435616b8-8d4c-4814-8f21-d667755473f1@lunn.ch>
+ <CAK8yEOAYC0iApNHBApt+xu1Fz=+N1wX0XrLGOPzmeRq=OjWnhg@mail.gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -59,86 +69,34 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/3] ARM: dts: aspeed: anacapa: add EVT1 devicetree and
- point wrapper to it
-To: Colin Huang <u8813345@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, colin.huang2@amd.com
-References: <20260407-anacapa-devlop-phase-devicetree-v1-0-97b96367cac3@gmail.com>
- <20260407-anacapa-devlop-phase-devicetree-v1-2-97b96367cac3@gmail.com>
- <20260408-glorious-vehement-robin-b6def3@quoll>
- <CAPBH0A-ER9-_KpknyOKTmS2sBk-xv0c016y9WsLOvZ8CjSiwCw@mail.gmail.com>
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Content-Language: en-US
-Autocrypt: addr=krzk@kernel.org; keydata=
- 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 a/A=
-In-Reply-To: <CAPBH0A-ER9-_KpknyOKTmS2sBk-xv0c016y9WsLOvZ8CjSiwCw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAK8yEOAYC0iApNHBApt+xu1Fz=+N1wX0XrLGOPzmeRq=OjWnhg@mail.gmail.com>
 
-On 08/04/2026 10:52, Colin Huang wrote:
-> Hi Krzysztof,
->    Thanks for reply.
+> > > > If there are no devices on the bus, why enable it?
+> > >
+> > > We intentionally enable it so user-space tools can access the switch
+> > > registers. I have added a comment in v13 to clarify this.
+> >
+> > Why would user space want to access the switch registers for an
+> > unmanaged switch? It sounds like you are using Marvells SDK in
+> > userspace to manage the switch, rather than using DSA.
+> >
+> 
+> We do have a custom user-space daemon that configures the switch
+> registers for our specific use case. Should I remove the &mdio0 node
+> if it is only enabled and has no other configuration in the upstream
+> device tree?
 
-Do not top post.
+Please just be truthful that you have a user space driver, so need the
+bus enabled.
 
->    Could you let me know  what kind test I need to run?
->    Following is what I do before send.
->    * I build this dts with linux 6.6.x
+I also guess you have some other kernel code that allows you to
+actually use the bus from user space? The typical ethernet IOCTL
+handler does not work for you, since you don't have an ethernet device
+using this bus. Such code is unlikely to be accepted into mainline. We
+don't like user space drivers when there is a perfectly good kernel
+driver for this switch.
 
-v6.6? That's like 2.5 years ago.
-
-No, you must work on recent kernel.
-
->    * run "b4 prep --check"
-
-Google - how to validate DTS in Linux kernel
-
-Best regards,
-Krzysztof
+	Andrew
 
