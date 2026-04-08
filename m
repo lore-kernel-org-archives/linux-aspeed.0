@@ -1,77 +1,92 @@
-Return-Path: <linux-aspeed+bounces-3875-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3876-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E770710FC456
-	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 22:55:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E51C710FC45F
+	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 22:55:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frdgV3CQNz2xlM;
-	Thu, 09 Apr 2026 08:55:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775677304;
-	cv=none; b=cWX8PG05962m4HuLjlMHO/mABPwwiVGPBfLHKjeRTXXfBH+HZcu4L78GXxJBbhgc5AvirhmIMazIaz6ykPf6uyPt1StepyGk/bERaVxRN0Ik8s+M+IOreO6JU2r8XY0MO0Cmrn4EmvKVfXV+QFCfGHz42YAdsE1hmLi7ilkKQapGS9pifVyEahxbsQym1703hpoalm4jgIBeya6A68Qra3rUJDaVQS/8hYiY2HKaW8JWxzZAbaa1kEIS8vVq6oJUY7lmxO/eqtvRBSSj9pGORYDQv+T8SePLS+FGgEshOQX51ZrWRbeL5s4tb34JePvAlPoJiyA496MeceARbPx3vg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775677304; c=relaxed/relaxed;
-	bh=9wv0AWcHgu06bDFm+BUwIIlJ6phYQwKz8lXRSI36ll0=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VKHnAqIsXqPS+IX8Qyz9YY/b9vLhYyNcL91PTkMU0pFIMEtICjPsRYF7Y4RUycUGtXAkewLsm5xTZm8dEddmt5Z0muY/5tC+VWG2mcMz9fYk+Zu65yHmmXFmDFad6gFPeYZ+DLH4LJv8D/rOBrlYIw3BJCKHqtIRn4nhahem+SNABFCgxrOOrmOWqvSf43tdC91PJ0kusMKmPbaN+3HFvqsFWV7cB8eQWwzwlnk29JyeHERcCJfpOKaEhPaEzPrGjnmP2cXMbsBxhKzl0EKvwJWgASNs4pDeot3KrlisXhd0X7O0d36s87lxIIAFBZlsnwM11CagWNe7bNNeOaLOUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=buGWf4dU; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frdgd2k8Qz2xb3;
+	Thu, 09 Apr 2026 08:55:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::32d" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775642783;
+	cv=pass; b=PmBgY0aRoylb4DKnvqwS+IMT+UYnUm3IWmpi6U/x1/46iWc3wEVah2eE5oEE+obvgpFYeiyrla7DDTnXI1u8bkTfyIXVY0po8PbcGk/KTj4Qc68ciSObrgwQX3aRcXeCCCdqC1Rui6CIzCBXTYTS2w7SmJRe/2zDVdAmKzs3QnyLX2e8CKuIi7JwpxPico3BePzqzYwJpi7nkCNtCTEZaeuGudiScuLZnWyVNX/d8a/4kYRWZLDw4TReUobExAOAf74sYk1K1hYhxvFOUs7ZPeGknrKB1CVNkD23s+aYxQOWxgGSQy0LydQNOmE1LDmjWWmavZo1oAmAjkUYNLjBEQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775642783; c=relaxed/relaxed;
+	bh=vcyUmIQWBRIN2bVxClZ8Li2ITCNwZ/GpA68S4b0OhXA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=RbJsReplHyJk/bqL+I0INNKKt2/lUX2cFlJSFBl+eUFj0hk87bBZyM9U9Nctq1HLlgTO6iKKBM6XfnxrgQlimj8udS2gUguLe7U3XwP3R9CZp41kaCzTmv3ArBJbN3sU2mJ1AshkGNHsA8nhia696V6Xtw9NOMO2BO5dayemaj4z+wekMKbz6tK05kKg3fL1Hi4gr5/DwVHLgaF7wet32kR1/FGUXnCUUm1JJPiPubvGK+j8No8DN3MN+fpeQjuqT/K8UDxed3s5rG16ZXqb6ob1APrjnoim6dwrUqD5XuOTRd9TQ8Nr9TAq/F6buYt4WULXa1kfbcsofMlGN0H5zQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=n2mAp/2k; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::32d; helo=mail-ot1-x32d.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=buGWf4dU;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=n2mAp/2k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::32d; helo=mail-ot1-x32d.google.com; envelope-from=pkleequanta@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com [IPv6:2607:f8b0:4864:20::32d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frYNM6MvPz2yC9
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Apr 2026 05:41:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1775677300; x=1807213300;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=m2f0MgviSe4n7FamZwL8P5PBCKEndEE+/KV0B5nZuDg=;
-  b=buGWf4dU2dNb+Dy7I1zu1RFj9jGAvyYuA81lDHqYA9mrnQP5he0gaLNg
-   J2Ar4dyKCjjaO8MFpVGqdm9v+ROKu67hLaDiP3bqAs2trCTqmhLbL+tcu
-   GTDnXrWxrgL5pGKdN83esIRK927aGL6j6uA1FVTpcsmuE6d5rjEwK4o2U
-   vYrYaIqGJj06TdkPlKxbi5dFtAn30r533ELu/+Uk36nfWBVrybzpzmNXg
-   zFaK6fgRxWUobRhxouthf0Q3U6+UQtjjxSn6xhAKF7ewBgPcFGLx4NUUR
-   fLjXBOcBkgNld7NAn1yXUMP5OmuCUlKI8H0djkN1hFbR0zugCsNpRHoOX
-   g==;
-X-CSE-ConnectionGUID: bwMU6PK9QfmLfNznj/AV0A==
-X-CSE-MsgGUID: vGjyyGfaSp6n6wxxFMn4Zg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11753"; a="88056885"
-X-IronPort-AV: E=Sophos;i="6.23,168,1770624000"; 
-   d="scan'208";a="88056885"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2026 12:41:34 -0700
-X-CSE-ConnectionGUID: XAD6QAc2SwKwIrhvqhfXHg==
-X-CSE-MsgGUID: 8wH8aIgPT6WijufKP3yuHw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,168,1770624000"; 
-   d="scan'208";a="222053320"
-Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2026 12:41:30 -0700
-From: Dawid Glazik <dawid.glazik@linux.intel.com>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	linux-aspeed@lists.ozlabs.org
-Cc: linux-i3c@lists.infradead.org,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	Frank Li <Frank.Li@nxp.com>,
-	Dawid Glazik <dawid.glazik@linux.intel.com>,
-	Maciej Lawniczak <maciej.lawniczak@intel.com>
-Subject: [PATCH v3 0/3] ARM: dts: aspeed-g6: add AST2600 I3C nodes and bindings
-Date: Wed,  8 Apr 2026 22:34:32 +0200
-Message-ID: <cover.1775679285.git.dawid.glazik@linux.intel.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frJcY4sZ9z2yC9
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Apr 2026 20:06:21 +1000 (AEST)
+Received: by mail-ot1-x32d.google.com with SMTP id 46e09a7af769-7dbce74e537so3316990a34.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Apr 2026 03:06:20 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1775642778; cv=none;
+        d=google.com; s=arc-20240605;
+        b=XJqhbeUgZIux5fFeBdJdlfium92+6V8bVePYvKDat9DtRfkBjHw8bubAUtGqVAKdi2
+         7Oe1BtpaCAH+OLGWA0M/Bw1fOU0GGC4ZuYS6T71DNKXAwUFKc/gnuisaYYS+riUenE46
+         bn7NezQZm5etguooo2MK5S+bUWhm+y5TorNHNpslSWbK8E347zEsNqHcJ3ZHA3oeuzkl
+         Qw5jpR2h3eOfrVApkARn1Lmyg0ExW7EZBUF7bygAiZ0mBtNz0kL+FycFh73DKr7CpSlP
+         y0/+4VXQkQA7FgkToaATwCOUosfoo9li8qj3GWR2GTkN77m+SUDmpu8y5WgJNtyp15sf
+         +S0Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:dkim-signature;
+        bh=vcyUmIQWBRIN2bVxClZ8Li2ITCNwZ/GpA68S4b0OhXA=;
+        fh=ozeMQFr31W/YjnGsFnqPPCcZrou0rKkBQ3YSAjgyOWo=;
+        b=HcCPMLsVYPvYWvTaS3JBQ3RkNQSksq0Qgt4DiS5MC7xKqHQ4BCFUYDrVW6jRpvbfeF
+         reZpjMfM/eu+rYCDlVsNECTokz0uLqCljoxqEzI61xQjPnwgHrQ1tj8JashczRlGvC+i
+         /gu6+WJJisrZs4uk7HPQ5NIXlBZYpRqcz7zq+WMV851gF9NSNvo4eUyTnkHCmpGJbWXO
+         3PVHkmTDpCgXO7FgW2twLQr6FOm5iTcwWtnyj5Ood9ERUwA6Yoekb/RnzoBYqntSZJJc
+         oKx62SmAg/BvGFfIyKE/Tm9zMTqYWx5BfUV3UtdHGXB1ggZG2HHMZtnleXwBaH9nJEgI
+         QRkg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1775642778; x=1776247578; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=vcyUmIQWBRIN2bVxClZ8Li2ITCNwZ/GpA68S4b0OhXA=;
+        b=n2mAp/2k2tBWTMwIO18nYHpqS3VTQ1YOT2qcw5u2z+puNRGxkgvpqXTwxtZ//hkbQM
+         TQl9StxvgjFe+5+sSkBsWMUwJ0B8Sh+XcYh1TAwMg0mnrHgVBVIJQpuqVgQ4yJa5A7y/
+         8Y5WkMt5SyQLPIc72JwUJN6obUuXQwMA1Kdgni+dhwfljAW3DE6ZqRSEGavwChGWZpmP
+         QzZajDJRI2Y2sXd9ma3qPixXakFsvubrZXelP9k4NpRPzXuXqXgxF8Aingiv+iWWzUNb
+         cOrYF+bVnOrwiD3NMfFHuoS7CAraK31bwJqvhLmQ41Aq0KHM7Sc3/QIirkCBe5Nq3GNf
+         ltIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1775642778; x=1776247578;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vcyUmIQWBRIN2bVxClZ8Li2ITCNwZ/GpA68S4b0OhXA=;
+        b=HrI2UwLQy+VnoZJTM1w1lrq0mJdQm6QU8aNZELKbRi1u3IO4MXn+7ggaJF3yBp9Zf2
+         w87kTWw5nweJ4kWZNAOZHsFo+s7eMmzYttNv4Yr9tVeZQWCzA3wmeX1+JvorV4O74YkT
+         kDZYXNjAuvz3wo1sNNs3XsWyr4Mv0XN4GcXnYXL4bY/sTvezFehv6fDiU4mEi/g43GIs
+         xMlkNaGd5flUenyMKXPtmCkB31xvrNGEuzNe6ILrwlfEI1bb1o7eUVG1GpbMA9rdDPIO
+         SOxhmbrhOoVEgysntQWREMrjYRsV5GRabSekx3c3ECAow+dutnqGoVp0P5EnfeqfdTaF
+         p8rg==
+X-Forwarded-Encrypted: i=1; AJvYcCWk2zZXaC8KygXYPWrckdz3cxCdWq+HRNZd3DjbcNgsHEvG/uNUhcL49DBpxkf3Z+cip5eXHCg+irNkto8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwtdsqcH/iKINFvq7u9spXmu8mdDADMWCy58Dr6vVOgwlWzp09M
+	pfvI+eU/5mCJ+Z38cIVg6WUHrsGMfa9TSDhbt7jngqvySDS26bzHEjnmQs2dgXG5k8inceyKePN
+	O3r7J24YRMeCACGQjVL5c+pRT8VELEAw=
+X-Gm-Gg: AeBDiesWr18cOOR/X7lcjNn751iQUhbstMZyVKNtvujB6iLdkVthSxzc1FbMt3Zm6MA
+	oxsz2iHamxoy0/b5+Lr6kmEXNsf/v+5qTnoy5lSEEqA53c3t/0CZTXzMIfw6oKYnh+l6/BSxoE7
+	8OwZ0f2zeq/Hvg295SfLveD4dbwnDvHzLLAGH+UNNzbrKaHXKCBYGh1b5h7rdU8ul0Van+P+yDK
+	bMJ2qdnEDpqVXWxvyvzQ4XBTp4MU7IzZENYFAJzO2uXWhr2Xj+/gB/BQOsy/9fbtjXGp8N52fjN
+	PNzyE36fSosZFHDEjUA=
+X-Received: by 2002:a05:6820:4c81:b0:689:dfc8:5e39 with SMTP id
+ 006d021491bc7-689dfd7aa8emr204810eaf.43.1775642778479; Wed, 08 Apr 2026
+ 03:06:18 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -85,35 +100,71 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
-Content-Transfer-Encoding: 8bit
+References: <20260226055521.1655243-1-pkleequanta@gmail.com>
+ <20260226055521.1655243-3-pkleequanta@gmail.com> <258747f4-9da5-44da-8eb9-24f8a8cbff3a@lunn.ch>
+ <CAK8yEODCyYxkggU+7=xzWFcXP6RMTpNbHyYRHZhahX7=b6reqA@mail.gmail.com> <435616b8-8d4c-4814-8f21-d667755473f1@lunn.ch>
+In-Reply-To: <435616b8-8d4c-4814-8f21-d667755473f1@lunn.ch>
+From: "P.K. Lee" <pkleequanta@gmail.com>
+Date: Wed, 8 Apr 2026 18:06:07 +0800
+X-Gm-Features: AQROBzCq50vj9APjUGuuVNzjUTGEAXBg2-1gD7Ml450ww7_QTh7MwqGYJLjBzS8
+Message-ID: <CAK8yEOAYC0iApNHBApt+xu1Fz=+N1wX0XrLGOPzmeRq=OjWnhg@mail.gmail.com>
+Subject: Re: [PATCH v12 2/2] arm: dts: aspeed: ventura: add Meta Ventura BMC
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: robh+dt@kernel.org, krzysztof.kozlowski+dt@linaro.org, conor+dt@kernel.org, 
+	joel@jms.id.au, andrew@codeconstruct.com.au, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, Jason-Hsu@quantatw.com, p.k.lee@quantatw.com
+Content-Type: text/plain; charset="UTF-8"
 
-This series reworks and resubmits AST2600 I3C DTS updates that were
-originally posted in 2024, but stalled without further upstream
-progress.[1] The series was rebased onto the current tree and merge
-conflicts were resolved.
+> > > > +&mac3 {
+> > > > +     status = "okay";
+> > > > +     phy-mode = "rmii";
+> > > > +     pinctrl-names = "default";
+> > > > +     pinctrl-0 = <&pinctrl_rmii4_default>;
+> > > > +     fixed-link {
+> > > > +             speed = <100>;
+> > > > +             full-duplex;
+> > > > +     };
+> > >
+> > > What is on the other end of this fixed link?
+> >
+> > The other end of this fixed link is the CPU port of a Marvell 88E6393X
+> > switch. We are using this switch in unmanaged mode rather than using
+> > the DSA subsystem. Therefore, we use a fixed-link to force the mac3 to
+> > 100Mbps full-duplex RMII to match the CPU port configuration.
+>
+> You are mixing up terms. The 88E6393X does not have a dedicated port
+> for connecting to the host CPU. Any port can be connected to the host,
+> using DSA tags. And all the ports are 1G or faster, so it seems odd to
+> limit it to 100Mbps. There is something consider a CPU port, but that
+> connects the internal Z80 CPU to the switch fabric.
+>
 
-The patches first move i2c nodes under the APB simple-bus for layout
-consistency, then add AST2600 I3C controller nodes in aspeed-g6.dtsi
-and finally add the missing dt-binding for AST2600 I3C global
-registers. Jeremy agreed in a separate email thread that I can continue
-this series under my authorship.
+I apologize for the confusing terminology. I meant the port 0 of the
+88E6393X is connected to the AST2600 mac3. Regarding the 100Mbps RMII
+limitation, this is a strict hardware design constraint on our
+specific board.
 
-Link: https://lore.kernel.org/all/9d8c03d742fa9767f30e23d75ddf0baf4296c88e.1714647917.git.jk@codeconstruct.com.au/
+> > > > +};
+> > > > +
+> > > > +&mdio0 {
+> > > > +     status = "okay";
+> > > > +};
+> > >
+> > > If there are no devices on the bus, why enable it?
+> >
+> > We intentionally enable it so user-space tools can access the switch
+> > registers. I have added a comment in v13 to clarify this.
+>
+> Why would user space want to access the switch registers for an
+> unmanaged switch? It sounds like you are using Marvells SDK in
+> userspace to manage the switch, rather than using DSA.
+>
 
-Dawid Glazik (3):
-  ARM: dts: aspeed-g6: move i2c controllers directly into apb node
-  ARM: dts: aspeed-g6: Add nodes for i3c controllers
-  dt-bindings: i3c: Add AST2600 I3C global registers
+We do have a custom user-space daemon that configures the switch
+registers for our specific use case. Should I remove the &mdio0 node
+if it is only enabled and has no other configuration in the upstream
+device tree?
 
- .../i3c/aspeed,ast2600-i3c-global.yaml        |  55 ++
- arch/arm/boot/dts/aspeed/aspeed-g6.dtsi       | 549 ++++++++++--------
- 2 files changed, 377 insertions(+), 227 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml
-
-
-base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
--- 
-2.43.0
-
+P.K. Lee
 
