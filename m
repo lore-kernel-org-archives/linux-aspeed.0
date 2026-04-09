@@ -1,93 +1,62 @@
-Return-Path: <linux-aspeed+bounces-3877-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3878-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E680C10FC456
-	for <linux-aspeed@archiver.kernel.org>; Wed,  8 Apr 2026 22:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6400CE9DE5B
+	for <linux-aspeed@archiver.kernel.org>; Thu,  9 Apr 2026 07:28:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4frdgk3j0Gz2xjQ;
-	Thu, 09 Apr 2026 08:55:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::a2e" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775638362;
-	cv=pass; b=DxiiYvFt+B52kElLs3HETfkcylfJzvwCo78ldzOS5mnmGCcQb3zLfksB3SeP1/Z+Knv5KnxAZY4MroWD9icnlW/CEiGLpH+7xjoEonlD7xGJWpPnjX9B3xauAAgPSCFxrx/oOS4xCSwirN4ly2GH0T4sML00xlM5uvsPlxv5UmwgbtVbJY1Ls5o0U9F+SQsDD+uHgrUlra9KTJxu/7QVD5jBxRh8PtcCGha6D2xPL03egKNNtc1yXAq2+AImYxvn117awiuC/5j6rvLxwC+YhyEatGyndtPyPUH1nYm94/IlZaiEu1OzlNOEJBQGgMMNsbgB4u6oW+qjBygjzyFG1A==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1775638362; c=relaxed/relaxed;
-	bh=I2wUntJq6mMuHKrvX5Pc4RcmIMae/ycm7tp/NWMwrwE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hkIcqfmEfo1XWEEoIL8aItBKDQWhgUnEzIhcuegEHoYKW2Epv6bv2WG1XTqeePO9anj4zfUII3PLgmCt038CVkbNXV7jhCCJD4VzrHkQ1/95dGYMWo8k1ABmIS2yIFjDFjnAnaoZJnrpoVsADpFaetl9uccO2SJx1ewpXVEnflecD+i3vT8marBpBJxO8IMipRfjMOa3CzpZ6vbmPIbTVMaadVw2+SFtgzOfDGvqI1QdX+eCmb5DXq29eDSWzQD85/HWsy3HU1ujOhlRmogA4TRNpKiwHZ2fHAtoCsMEEV+I8nT7/Whdm58qzPuUEbBgVM2YqIfiMpc/v+H7C1M//w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iVp0uIHN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::a2e; helo=mail-vk1-xa2e.google.com; envelope-from=u8813345@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4frs3q0dYPz2ySj;
+	Thu, 09 Apr 2026 17:28:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1775719702;
+	cv=none; b=SsPKaLZ6PwncIKr4QOAMyyyJ9VQ62Ju9Fh+6J+VpMC+rmdbq6NIiJjxb6MhZ8zs+opJ0H5zLH5eZVU0akaJBC8ceBp3m/I8vLd/d4biN+rfD+EW3hBVl5Hw9a89VkRuWKlWyeFcIROU3brrU26WxYTEhqENZIeSixyVMBvk2n35WH7b5vollU7BMee8Ejc7eqBGZnDbfFp2FcngOCzLqNHnvl1qOsUkkbHN/ZNDE5tHb/jWU4qCFeUREA0O+hbAcrHGQXcTfjyphu4I2klwoQN5PqZc66BB9QnsZV6+tfDOZhgLw4qU1e0kGOPbW9zqs8Dg/dRPjFrlRuCprH50FLw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1775719702; c=relaxed/relaxed;
+	bh=613UmsT+jTo54xaDw1cFmp5OdRZv/pKg1pFcm53tXes=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=YHa2egxUhrN6OGn/zKglgI4E0P6o0tTLKAxzZeUI8d8O4/TIfh0f+uj8wMDqJCRZZPqTyFORLk75VlDI3XNNxHQB1gtxUuh2aiUJJrKWDcjNNJ8/w7eeUnkzlPdSQtXl/C31mTPtQu2ftyiedT+RDayqT6IQxVbiCzBGW+UhdcU9yopetuAHInOMI9LtQaPbY61udx8BWL212u582iGz2nicZd7oHS9CUh4nWjHTJPl5WQtoXiGHsiBzgTLgTLn7Uu2dU86HYPa16BdFy1XUZKoUsohiORx7xEAl5QsBlB7OCsgvS2H7TM1HEMSw/heJe6BnROviqQgp1/AoE7blPg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FloQYJ2c; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=iVp0uIHN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FloQYJ2c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::a2e; helo=mail-vk1-xa2e.google.com; envelope-from=u8813345@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vk1-xa2e.google.com (mail-vk1-xa2e.google.com [IPv6:2607:f8b0:4864:20::a2e])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4frGzX6s61z2xm5
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Apr 2026 18:52:39 +1000 (AEST)
-Received: by mail-vk1-xa2e.google.com with SMTP id 71dfb90a1353d-56d8a5f0e44so639256e0c.1
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 08 Apr 2026 01:52:39 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1775638356; cv=none;
-        d=google.com; s=arc-20240605;
-        b=NCJX+VNzTDrON/2lo0GZami+H1BFNkcHmsrNoxZpd7XLTyo6jCouJp/RjV+RcH6XPr
-         kWjULpbCBtNgLERDzJsX3jKys5zO1x/foSHbywz15/3yK0J/wvYKD6o7hoBhVo7zCuW5
-         xsoodZOQ4HcjBjSedOW6/HYuMobtgEo7sRbw7w3bsBRLndgUa7kC+uOGjMLUZwKUNTHk
-         5OaPzE6iC7qaJVZ1Pc+7+BJlqIJ8acVc0Dg0LEpguOrc8Dn6XAGxzJ0TEyF7EyzZelR+
-         64rHMyLdzhuCkgH/0cbtYN82BjY104F2+8Jr1A38vnE/DuCETnbfnAADRq74Xh7mbPKu
-         faOQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=I2wUntJq6mMuHKrvX5Pc4RcmIMae/ycm7tp/NWMwrwE=;
-        fh=blAfRr3R8/pFhO/8BqwhK6JX23h1CNU3mOuq0hdO9zo=;
-        b=Kf/kAxzreso9itYlLmKdqNdSFm49wJFYBp1lk6Q2TMZJ+hn+Pe3uBqwPI7GEcJ7wX6
-         UEkr6pZudUg7S2gzEqTB7GroyEoTvbpWNkG+3e1OJzQ5HvwQn5O70HaEx/R+wpLsjWxI
-         n5zqXhVCW42yJjwfmzGnb/xedKgQXaFkCZ4JTpxZAVrcbeO2iwBKr90ykKGxKkHjdcnl
-         xhFxAkAbhILSbY+s1Na9lxFH2WSia0KEtt2zouOHA4kWO9C16hONaOo/B3DHPYemywM5
-         1//rmsIsA5ZWBej6AlQk6+Gy02Og+yFRXdeJ1Fbx1efAlnqMthvE3VWRZ3aPuDNSg5Rf
-         njUg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1775638356; x=1776243156; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=I2wUntJq6mMuHKrvX5Pc4RcmIMae/ycm7tp/NWMwrwE=;
-        b=iVp0uIHNquLTBlzg7Y/wEep1xNR5QLnb8KImRf6GyL/6Wyn4lT+5DYxdiX6WaE9A5F
-         zq36dCmD84XooNDBAH6k6IPZBn8GlF2dOlmrMiWHH1p1VZJIPI7h02+I1HOw2kdsMXOx
-         UL15H0F2YSHneW/gTn/reZEIsJReyQyWnoP0+dQ5oyVNkOJkMKvfeEcY/At57tDiozHt
-         nXCHsJfsaJLxFjfTQ5j2x/JQr8VL5qT0W2PB8CJB1kKqcezBm++CyzFnfT8c2Peo23X1
-         VBcS6068O740m91O1d3hGOMhuNBJaJdHxvbOO64Z8EuGIWs4LCta3SqI5kocWJZCnSOx
-         gCBg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1775638356; x=1776243156;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=I2wUntJq6mMuHKrvX5Pc4RcmIMae/ycm7tp/NWMwrwE=;
-        b=FkMz6CKSb2ujlC9uiwaM5L8Lg3GfQXJ3Jt9+/KiX+vvrnJLQuEVm6nDWd/jkw2uAK1
-         vXYWB0DVLIEvCjjTdUGJakNpTVbiRes4PmHHMzg/9r/++aLSdsX/aQsJdo8yU1aU9Nyc
-         FqQ97GTNGX0qIj+YnHcUMqB6mnLerUrpT4UP0CEUXiq1YrL4qMhPiDnznOjlV2tkAv/H
-         fVijcWBjkbw/ajzS+btrw7tA6okVy8rHxjPQhcABbEnuvA6ZR6Z3GDRRsFUw63LpiKh6
-         tT2m9Gi81U8m7mNfNeR8Lcb45mDq0fxiD20vHrfDuMm404k5S0FnLZAPy4CqRAd9tC3X
-         NLbw==
-X-Forwarded-Encrypted: i=1; AJvYcCUnshUyzeCR59POMNYQKJ1Doinci5KrtLIZnE1b/Y1yw4PY2VrqUS3ritZfFDjlWTOnExfVcX8Ndj4EGmE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx+w0Qyb4pOWt4o7D+Uel89APlVqZPfLII0ZFu63mt6ZIQ4Tlch
-	0p3EkM8AzdFzA/NNsLBDmsY05uiQGB1zcqG1J+tcGPXvWf9ckpkc95EDvlZpbBHXdnh6m+b8CeF
-	ZS2m6xxHYiShxDbezZ9KBsAEUfuwIVBM=
-X-Gm-Gg: AeBDieslnRKbYFLVFYd/pDItl0x64OgllMcgMn3CaK4v7V3Y899mw92pXEXTpg/O3ai
-	c5VSMF8kdiGlsQclIjsuCSDnEFNjSszMI8zYRq8n5StDQcQsPuIh1/h9xfWogo4ZTWZZsOixc+0
-	5ybL6CqoTZ77pg9ld1J6fguk4V5bpcCAOW3LLtxVuAL8u7wt4NjRt+LoPHCz2Cfz5YtCPtDKI0J
-	vxEHt+jpH44vGAmc8stg2uv+fSR1Q6nAvQFMxd4WA7vFAql112owVawdc8OrjeTW3XCgdC9Fncq
-	04fLOwif3Q==
-X-Received: by 2002:a05:6122:6d0e:b0:56e:e652:2c10 with SMTP id
- 71dfb90a1353d-56ee6524f13mr4595571e0c.4.1775638356381; Wed, 08 Apr 2026
- 01:52:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4frs3p0ZXcz2xTh
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 09 Apr 2026 17:28:22 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id C837144186;
+	Thu,  9 Apr 2026 07:28:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B795C4CEF7;
+	Thu,  9 Apr 2026 07:28:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1775719699;
+	bh=wGp8rio3+O1LigJl7XJ1TouzLqDBv3x6HJpnWI0/Ifg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=FloQYJ2c5SgdHHvn1NdU1cHQSeYqeBynECzDyAjAy4b8FuIRjOkBM61yBgn4oUO3Y
+	 knFq4qkQ0jAh/fq362EBXQ0nOWCgPyzxNwhnGsStS1gamecAmV6RB8QW+THelaMIrR
+	 brnznsxZ1n1LZxCs48N2fZ/PTWmsEVBN5s1ebZNIKH0tZ2nh3DKN0myG4THk15I32t
+	 qQiTrEYS5ZlrcJCzE1FcMDfby2vKslWs0GbHHanWLLXyq2bR4xEQzLOLr2MsaCNPLp
+	 cG7Aowyj1makyC//P3Cwy+gQiCeRbeg3An5LVouCxbVbxuLrUnBXkimPNOcWkN2w/Z
+	 D8O0+qZIPG7dg==
+Date: Thu, 9 Apr 2026 09:28:17 +0200
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Dawid Glazik <dawid.glazik@linux.intel.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, linux-aspeed@lists.ozlabs.org, linux-i3c@lists.infradead.org, 
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	Frank Li <Frank.Li@nxp.com>, Maciej Lawniczak <maciej.lawniczak@intel.com>
+Subject: Re: [PATCH v3 3/3] dt-bindings: i3c: Add AST2600 I3C global registers
+Message-ID: <20260409-beneficial-sociable-tamarin-dbcaeb@quoll>
+References: <cover.1775679285.git.dawid.glazik@linux.intel.com>
+ <7f55458097ef651b4fc46650254afd3fa7b87348.1775679285.git.dawid.glazik@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,79 +70,112 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260407-anacapa-devlop-phase-devicetree-v1-0-97b96367cac3@gmail.com>
- <20260407-anacapa-devlop-phase-devicetree-v1-2-97b96367cac3@gmail.com> <20260408-glorious-vehement-robin-b6def3@quoll>
-In-Reply-To: <20260408-glorious-vehement-robin-b6def3@quoll>
-From: Colin Huang <u8813345@gmail.com>
-Date: Wed, 8 Apr 2026 16:52:25 +0800
-X-Gm-Features: AQROBzABPSvPPBL8e_J-mw47skeWFz5_1Z95SvdlAeCuqOkW0mY25cXhSnCT2fI
-Message-ID: <CAPBH0A-ER9-_KpknyOKTmS2sBk-xv0c016y9WsLOvZ8CjSiwCw@mail.gmail.com>
-Subject: Re: [PATCH 2/3] ARM: dts: aspeed: anacapa: add EVT1 devicetree and
- point wrapper to it
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
-	Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org, colin.huang2@amd.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7f55458097ef651b4fc46650254afd3fa7b87348.1775679285.git.dawid.glazik@linux.intel.com>
 
-Hi Krzysztof,
-   Thanks for reply.
-   Could you let me know  what kind test I need to run?
-   Following is what I do before send.
-   * I build this dts with linux 6.6.x
-   * run "b4 prep --check"
+On Wed, Apr 08, 2026 at 10:34:35PM +0200, Dawid Glazik wrote:
+> Introduce the device-tree bindings for I3C global registers found on
+> AST2600 SoCs.
+> 
+> Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
+> ---
+> I wasn't sure if I should add newline at the end of the
+> file or not so I took
+> https://github.com/torvalds/linux/tree/master/Documentation/devicetree/bindings/i3c
+> as an example.
 
-BR,
-Colin Huang
+Answer is: you cannot have patch warnings.
 
-Krzysztof Kozlowski <krzk@kernel.org> =E6=96=BC 2026=E5=B9=B44=E6=9C=888=E6=
-=97=A5=E9=80=B1=E4=B8=89 =E4=B8=8B=E5=8D=883:52=E5=AF=AB=E9=81=93=EF=BC=9A
->
-> On Tue, Apr 07, 2026 at 09:54:33PM +0800, Colin Huang wrote:
-> > This change introduces a development-phase devicetree for the
-> > Facebook Anacapa BMC EVT1 hardware revision and updates the Anacapa
-> > wrapper DTS to reference it.
-> >
-> > A dedicated EVT1 DTS is added for revision-specific hardware while
-> > keeping a single, Anacapa entrypoint used by the build and deployment
-> > flow. The top-level aspeed-bmc-facebook-anacapa.dts
-> >
-> > Signed-off-by: Colin Huang <u8813345@gmail.com>
-> > ---
-> >  .../aspeed/aspeed-bmc-facebook-anacapa-evt1.dts    | 1069 ++++++++++++=
-++++++++
-> >  .../dts/aspeed/aspeed-bmc-facebook-anacapa.dts     | 1064 +-----------=
--------
-> >  2 files changed, 1070 insertions(+), 1063 deletions(-)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt1.=
-dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt1.dts
-> > new file mode 100644
-> > index 000000000000..a29b7fa1155b
-> > --- /dev/null
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa-evt1.dts
-> > @@ -0,0 +1,1069 @@
-> > +// SPDX-License-Identifier: GPL-2.0-or-later
-> > +
-> > +/dts-v1/;
-> > +#include "aspeed-g6.dtsi"
-> > +#include <dt-bindings/gpio/aspeed-gpio.h>
-> > +#include <dt-bindings/i2c/i2c.h>
-> > +
-> > +/ {
-> > +     model =3D "Facebook Anacapa BMC";
-> > +     compatible =3D "facebook,anacapa-bmc-evt1",
-> > +                  "facebook,anacapa-bmc",
-> > +                  "aspeed,ast2600";
->
-> Test your DTS before you send, not after. Your binding clearly said
-> something else.
->
->
-> Best regards,
-> Krzysztof
->
+Documentation/devicetree/bindings/i3c does not have patch warning, does
+it?
+
+> ---
+>  .../i3c/aspeed,ast2600-i3c-global.yaml        | 55 +++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml b/Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml
+> new file mode 100644
+> index 000000000000..edecc18796a9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/i3c/aspeed,ast2600-i3c-global.yaml
+> @@ -0,0 +1,55 @@
+> +# SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/i3c/aspeed,ast2600-i3c-global.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: ASPEED AST2600 I3C Global Registers
+> +
+> +description: |
+> +  The AST2600 SoC provides a shared I3C global register block used by all
+> +  I3C controller instances. This block contains per-instance global
+
+Why are you adding syscon to I3C controllers? Only I3C controllers go
+to i3c directory.
+
+syscons go soc.
+
+
+
+> +  configuration fields, including controller instance ID and SDA pull-up
+> +  configuration.
+> +  Each I3C controller references this syscon node through the
+> +  aspeed,global-regs property.
+> +
+> +maintainers:
+> +  - Dawid Glazik <dawid.glazik@linux.intel.com>
+> +
+> +allOf:
+> +  - $ref: /schemas/mfd/syscon-common.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    items:
+> +      - const: aspeed,ast2600-i3c-global
+> +      - const: syscon
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  resets:
+> +    maxItems: 1
+> +
+
+I do not see any differences against syscon.yaml binding. Why do you
+need separate file? Look first how other platforms do it.
+
+> +required:
+> +  - compatible
+> +  - reg
+> +
+> +unevaluatedProperties: false
+> +
+> +examples:
+> +  - |
+> +    bus@1e7a0000 {
+> +        compatible = "simple-bus";
+> +        #address-cells = <1>;
+> +        #size-cells = <1>;
+> +        ranges = <0 0x1e7a0000 0x8000>;
+
+Drop entire node, not needed.
+
+> +
+> +        i3c-global@0 {
+> +            compatible = "aspeed,ast2600-i3c-global", "syscon";
+> +            reg = <0x0 0x1000>;
+> +            resets = <&syscon ASPEED_RESET_I3C_DMA>;
+> +        };
+> +    };
+> +...
+> \ No newline at end of file
+
+Patch warning.
+
+Best regards,
+Krzysztof
+
 
