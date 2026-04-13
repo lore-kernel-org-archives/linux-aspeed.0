@@ -1,91 +1,97 @@
-Return-Path: <linux-aspeed+bounces-3916-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3917-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2496F433CD
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Apr 2026 00:01:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 535BCF433D0
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Apr 2026 00:02:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwyqB5T5cz303F;
-	Thu, 16 Apr 2026 10:01:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.75.126.72
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776072718;
-	cv=none; b=EbNpgzAr6ML0ohdvF/P9UrTjoONqW+bYkRkVmCFpcCd7NU4HwUK/UP2l5s3sbtCCeWBVuk/j3W5SrOCfaxaNDS/YdUJJavJRt4YQ/MaNzavdLQ9wrL9nM5xM4H0YTqZ1Ty/eDe3D9slhkZoIl754wKugC18Sc6J9vSWCil3NNpKPgnSI2f8JkSi3k5kdCg5ExW2/exMXwwnuA8IAYH+LOnRp7ppSKVDw0GzNMvR8FU8bzqzICWZUjo/rBsMQrI9FYXJUKbUTIHxzlwn8JQeUZiHvcVRV7hsXghHJyMfA8syq0EcJO2y4RhCXJHAvI1d7905V9QdQgci806shLgb1uA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwyqD3Ms9z3069;
+	Thu, 16 Apr 2026 10:01:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776088685;
+	cv=none; b=mI+ZEgzjfORzG/f0jWcGONwCewx/5gBgj5DCm0K56dTze7D6MBih8ymO4R2JU+lThKT1p2rs15/v4bnwWKA0dROJ+9Za7RmCDTYuNmV9cyHMaXc1pc8Igkwh/eFHOs7sBSExnpFyKyMbkydjCSMzbe6iPW28ZSo8yoW2HKi5zYyaiLgRRd6wBDqyKOeF604E/zRuHcr78+mTEsFxzbkdPt6a82UUN3V+kFx7ar1voHdJyojuKZ96cPitAelDVR1YIxolbhpPmDS1u/VkwrcX69rR9OEG536L4wmsDKh3B8k2S3XcT29rE8+fLlib3JXNt7s6dCZnaUyGM8G086AOBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776072718; c=relaxed/relaxed;
-	bh=LyTRrutYnATzApAeFIWft4RRx7gSZRf923LkUajEI58=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=cxf4MzEpyOmCaVZNJjdVbPyrhkWcTRsGOkM9VmotfJ1HnS4iKXG3OZrU1gvKde/ohQU9TCYXJ3CttkNoyHMLWA+4xOEOBdmTqtHyglYQr8y/2dc4TDSBqoG56vS1yLJfjuR+wyUaysydYxNImKhHd+0xYSa4uQQPTYJ8G2gwq5TeUXfhvP8k+n96LdXaLbpP6H2Utk+XQidxsEATzhKfjQbLsBxh8/wLrLyN07CLEYmHvV5PlJvYOxLB08UGT2yIcWb9eeEpBk63/aSezPjnMLn+50OPNlIwiw4gfJ58tgiE+/PwRQaQhlZ9bfB9aepoxVtC9og3JhKJaRZR/R3GGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=realtek.com; dkim=pass (2048-bit key; unprotected) header.d=realtek.com header.i=@realtek.com header.a=rsa-sha256 header.s=dkim header.b=QUOwRZ03; dkim-atps=neutral; spf=pass (client-ip=211.75.126.72; helo=rtits2.realtek.com.tw; envelope-from=eleanor.lin@realtek.com; receiver=lists.ozlabs.org) smtp.mailfrom=realtek.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=realtek.com
+	t=1776088685; c=relaxed/relaxed;
+	bh=S1Jred93a8Ywwo0WVeyu+LfFpcjBGBo395/UHFn8LPw=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=FUUw7e2Um5fKPRtptKs/qKr433161aCLOuqrG/6iB9bpliYDJbJv7NIDsfMMWaZ9uUWVXMUn7qMjdpHw3WNRpinJlDFsTXud+fQ0EXyYL/MF82qig1c56KcdOWcGp+VPG1H8goF8LLi4iwMNydryShKX6DUCyVH1PxehE6sTy0EHqXCp0QJxV9x72oGTQp6K4L1W0absdCr+/UZXqG2AKnvCQnNUNFz4wnhU325mFsU2/loPsFRABxQBRv+bDlF/XVTnKBCS0nbB1NTPNW2TR7+ljrP8kqZmb5L8Cs3u1uhG0rBK5zrH3RGf6tunNt6FVxCCLZ4AgWpSJ5GpH7VfhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=f0y7QCAc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=eleanor15x@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=realtek.com header.i=@realtek.com header.a=rsa-sha256 header.s=dkim header.b=QUOwRZ03;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=f0y7QCAc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=realtek.com (client-ip=211.75.126.72; helo=rtits2.realtek.com.tw; envelope-from=eleanor.lin@realtek.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 340 seconds by postgrey-1.37 at boromir; Mon, 13 Apr 2026 19:31:55 AEST
-Received: from rtits2.realtek.com.tw (rtits2.realtek.com [211.75.126.72])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=eleanor15x@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvMcW4XHKz2yjV;
-	Mon, 13 Apr 2026 19:31:55 +1000 (AEST)
-X-SpamFilter-By: ArmorX SpamTrap 5.80 with qID 63D9ND4z83976123, This message is accepted by code: ctloc85258
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=realtek.com; s=dkim;
-	t=1776072193; bh=LyTRrutYnATzApAeFIWft4RRx7gSZRf923LkUajEI58=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:MIME-Version;
-	b=QUOwRZ03s5JS1wgUz5eQ7+cw0w7zUStWcsVSVzMw5mnwen6pHeIyiVQ8pi5NdXGFb
-	 B24djn7qgmar6G18riwNisBfCLvaLOotjWEsHRrrYfCWRS0AZOR3bOBcEDbukNrGqf
-	 Osr1gZzLTfDlpNpLI/F+nA+HwzwTDsQjv2pGmOAAY1FU47amqCbkFDTXpqYtdoqw5q
-	 tpoYLUYM1LmrgYjUotV3BkcVj0nuLMhJa8H3T+z81vbs4omCn5W+LRKLG5um0cbgUy
-	 vw5BKPdO8n+nwjoWVJrhF+OCk1K9s3JlJEHTRok1E8cBX7FI2qulm8TfqmVMTIOYuL
-	 wIAAE0nAROopg==
-Received: from mail.realtek.com (rtkexhmbs02.realtek.com.tw[172.21.6.41])
-	by rtits2.realtek.com.tw (8.15.2/3.26/5.94) with ESMTPS id 63D9ND4z83976123
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 13 Apr 2026 17:23:13 +0800
-Received: from RTKEXHMBS06.realtek.com.tw (10.21.1.56) by
- RTKEXHMBS02.realtek.com.tw (172.21.6.41) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1748.10; Mon, 13 Apr 2026 17:23:13 +0800
-Received: from RTKEXHMBS06.realtek.com.tw ([fe80::ed72:3015:2840:4458]) by
- RTKEXHMBS06.realtek.com.tw ([fe80::ed72:3015:2840:4458%10]) with mapi id
- 15.02.1748.010; Mon, 13 Apr 2026 17:23:13 +0800
-From: =?utf-8?B?WXUtQ2h1biBMaW4gW+ael+elkOWQm10=?= <eleanor.lin@realtek.com>
-To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-        Linus Walleij
-	<linusw@kernel.org>,
-        =?utf-8?B?QW5kcmVhcyBGw6RyYmVy?= <afaerber@suse.de>
-CC: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Andrew Jeffery
-	<andrew@codeconstruct.com.au>,
-        "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>,
-        "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>,
-        "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>,
-        Joel Stanley <joel@jms.id.au>,
-        "linux-realtek-soc@lists.infradead.org"
-	<linux-realtek-soc@lists.infradead.org>,
-        =?utf-8?B?SmFtZXMgVGFpIFvmiLTlv5fls7Bd?= <james.tai@realtek.com>
-Subject: RE: [PATCH 4/4] ARM: realtek: MAINTAINERS: Include pin controller
- drivers
-Thread-Topic: [PATCH 4/4] ARM: realtek: MAINTAINERS: Include pin controller
- drivers
-Thread-Index: AQHcyOquo2WiRIDaMEumOWsAJK/C+LXctDBA
-Date: Mon, 13 Apr 2026 09:23:13 +0000
-Message-ID: <45866135c8a54e1d98cac51932ca8e1a@realtek.com>
-References: <20260410-pinctrl-testing-v1-0-6f708c855867@oss.qualcomm.com>
- <20260410-pinctrl-testing-v1-4-6f708c855867@oss.qualcomm.com>
-In-Reply-To: <20260410-pinctrl-testing-v1-4-6f708c855867@oss.qualcomm.com>
-Accept-Language: zh-TW, en-US
-Content-Language: zh-TW
-x-originating-ip: [172.21.6.42]
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvTWc1HTWz2yS9
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Apr 2026 23:58:03 +1000 (AEST)
+Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2b299b3c739so18732245ad.3
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Apr 2026 06:58:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776088682; x=1776693482; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=S1Jred93a8Ywwo0WVeyu+LfFpcjBGBo395/UHFn8LPw=;
+        b=f0y7QCAcuogF7XEGGowMkDLQFwlTxrsMov163niREpnWN6N/UVUgkniyqIob0TJuv/
+         BEukSLQ3KHZZ1WTAmRl3kX1RvG1c8AHZApb/xNNwv7d2JDm2JHQGHTLvT9LQ9U1ClGaW
+         c89lUi44XDdtmRl6zksZREl7Nm4XaR1nL/+iKSJPoVtsEhYo8XyPqKB6PPQcSfgo/rfY
+         cG+quaZyJOHfxHzrxWFozQDcYikOs2JTufpPWIhAJEEJ6lYaDCPWDD/nUyTx4PJUEGqg
+         Q7WfcVGki8rbeon4MEgNHb0CPkoBX2YQZh6WmcNoSHTGa8WGhOB3IAMaY3kH0j9CYRWS
+         0OIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776088682; x=1776693482;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=S1Jred93a8Ywwo0WVeyu+LfFpcjBGBo395/UHFn8LPw=;
+        b=Ybnbcz0j9Lof16QVgonXRa1CumnlAowgSGBDN2GInQRKdLUewzxEU68TFxRZeuxJAM
+         msflFZfjkpKF7D6ZEuWbKV/nt5AmWfC02U4E+RSJP073Dx78IeiyxGYQlzVt9FpqpEjS
+         PLEHqTCAcKV8f6j/A11IswIUoKFApwdSPQ5pVaCGXdZQWpXuaJyvXhr2Xu/PDylSE8pT
+         J6tsqC2ojSjeA+fYjDrExs2d58fpXJPMrlhW8Wmd77rxwKvulyAMXTjqq2s/a3kQ1gb/
+         h5/bdpvMxUO7sRoeRHXzfVFlooGlL4aY3pETg6hykT7uzCdOM/fwsvyyTLYmdM5ude6H
+         7g7A==
+X-Forwarded-Encrypted: i=1; AFNElJ9Prss/IyCDGYpC4gCGiDJfo311nLS2VlPE2F5Zixd/edVDZ2krMeqbYv/2SKO5Hk9pegmtIKNeZLBdvR0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx5+IGgATJu58tSeVYrsXEwZ9BYqLzi2d/nsz6Rz5Y7g3crxT97
+	GSE+xdbz4Qz3RiWPBfWQrcp3GjWvwCe6UGT15Muol9waCrGQFmdnJYe9dZlJzQ==
+X-Gm-Gg: AeBDiesZ44s8Ox9/jdK9F3+n/8fOA3HG/Zz8wmk4tUz9F2i/NenVFedlmPmtWNau0t6
+	v3m56H7B8NdmDWCHCbldt5cklvoDhSBoNX3dOZWtInvwdCm/6b4RxS5a5JCYCtvj6gYcdo8ZL55
+	9gkzvrcu/gun7ngY52UvYksRUQUmeBbbjXqDZ90H/Fe22g3nN4shVjSza0KVri40ZPdySgA7+0T
+	9NIV9GuTCYjVX7KQRSeMD9aTMlN9qb4TGMhYdH1j9WQpMdWW2JvIXwhZLuL42Pnp4OJjUkKtNvh
+	Tcm8aIS3sy2IRi/qfaMksC1L8NnqK5hWEag3K4YN2DJYVGGgYfjrZnbDuh9Et1GddTjWK+XRSCA
+	NUtn8YdIkwRo6l/DRCdzW4Y7HHhdcvIhbEfYL1W1lmTBgkh1sQphdRIdtzbiFg5UxXm5lYpLALt
+	gzUHmU92nU6l/Ztsr6CRnBu6MMhYuv7LnQl2csh2d4Jss+nrEtftWxMTj2Zq4cp4OU0CW+a9nU3
+	IMrzwYd74DZnA==
+X-Received: by 2002:a17:903:284:b0:2b2:5822:7a70 with SMTP id d9443c01a7336-2b2d5a63d4dmr133027285ad.38.1776088681795;
+        Mon, 13 Apr 2026 06:58:01 -0700 (PDT)
+Received: from localhost.localdomain (61-230-3-9.dynamic-ip.hinet.net. [61.230.3.9])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2b2d4f36351sm113068545ad.69.2026.04.13.06.57.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Apr 2026 06:58:01 -0700 (PDT)
+From: Yu-Chun Lin <eleanor15x@gmail.com>
+To: krzysztof.kozlowski@oss.qualcomm.com
+Cc: afaerber@suse.de,
+	andrew@codeconstruct.com.au,
+	eleanor.lin@realtek.com,
+	james.tai@realtek.com,
+	joel@jms.id.au,
+	linusw@kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-realtek-soc@lists.infradead.org,
+	openbmc@lists.ozlabs.org
+Subject: Re: [PATCH 4/4] ARM: realtek: MAINTAINERS: Include pin controller drivers
+Date: Mon, 13 Apr 2026 21:57:56 +0800
+Message-Id: <20260413135756.8796-1-eleanor15x@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <e483acb6-af9d-4bc4-9aa6-c4841ff0a8dc@oss.qualcomm.com>
+References: <e483acb6-af9d-4bc4-9aa6-c4841ff0a8dc@oss.qualcomm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -99,24 +105,54 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-PiBObyBkZWRpY2F0ZWQgbWFpbnRhaW5lcnMgYXJlIHNob3duIGZvciBSZWFsdGVrIFNvQyBwaW4g
-Y29udHJvbGxlcnMsIGV4Y2VwdA0KPiBwaW5jdHJsIHN1YnN5c3RlbSBtYWludGFpbmVyLCB3aGlj
-aCBtZWFucyByZWR1Y2VkIHJldmlldyBhbmQgaW1wcmVzc2lvbiBvZg0KPiBhYmFuZG9uZWQgZHJp
-dmVycy4gIFBpbiBjb250cm9sbGVyIGRyaXZlcnMgYXJlIGVzc2VudGlhbCBwYXJ0IG9mIGFuIFNv
-Qywgc28gaW4NCj4gY2FzZSBvZiBsYWNrIG9mIGRlZGljYXRlZCBlbnRyeSBhdCBsZWFzdCBjb3Zl
-ciBpdCBieSB0aGUgU29DIHBsYXRmb3JtDQo+IG1haW50YWluZXJzLg0KPiANCj4gU2lnbmVkLW9m
-Zi1ieTogS3J6eXN6dG9mIEtvemxvd3NraSA8a3J6eXN6dG9mLmtvemxvd3NraUBvc3MucXVhbGNv
-bW0uY29tPg0KPiANCj4gLS0tDQo+IA0KPiBUaGlzIHBhdGNoIHNob3VsZCBnbyB2aWEgUmVhbHRl
-ayBTb0MgbWFpbnRhaW5lcnMsIG5vdCBwaW5jdHJsLg0KPiAtLS0NCj4gIE1BSU5UQUlORVJTIHwg
-MSArDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKykNCj4gDQo+IGRpZmYgLS1naXQg
-YS9NQUlOVEFJTkVSUyBiL01BSU5UQUlORVJTDQo+IGluZGV4IDEwZDEyYjUxYjFmNi4uMzc0Y2U1
-NWU0ZmI2IDEwMDY0NA0KPiAtLS0gYS9NQUlOVEFJTkVSUw0KPiArKysgYi9NQUlOVEFJTkVSUw0K
-PiBAQCAtMzM3Myw2ICszMzczLDcgQEAgRjoNCj4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL2FybS9yZWFsdGVrLnlhbWwNCj4gIEY6ICAgICBhcmNoL2FybS9ib290L2R0cy9yZWFs
-dGVrLw0KPiAgRjogICAgIGFyY2gvYXJtL21hY2gtcmVhbHRlay8NCj4gIEY6ICAgICBhcmNoL2Fy
-bTY0L2Jvb3QvZHRzL3JlYWx0ZWsvDQo+ICtGOiAgICAgZHJpdmVycy9waW5jdHJsL3JlYWx0ZWsv
-DQo+IA0KPiAgQVJNL1JJU0MtVi9SRU5FU0FTIEFSQ0hJVEVDVFVSRQ0KPiAgTTogICAgIEdlZXJ0
-IFV5dHRlcmhvZXZlbiA8Z2VlcnQrcmVuZXNhc0BnbGlkZXIuYmU+DQo+IA0KPiAtLQ0KPiAyLjUx
-LjANCg0KQWNrZWQtYnk6IFl1LUNodW4gTGluIDxlbGVhbm9yLmxpbkByZWFsdGVrLmNvbT4NCg==
+> On 13/04/2026 11:23, Yu-Chun Lin [林祐君] wrote:
+>>> No dedicated maintainers are shown for Realtek SoC pin controllers, except
+>>> pinctrl subsystem maintainer, which means reduced review and impression of
+>>> abandoned drivers.  Pin controller drivers are essential part of an SoC, so in
+>>> case of lack of dedicated entry at least cover it by the SoC platform
+>>> maintainers.
+>>>
+>>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+>>>
+>>> ---
+>>>
+>>> This patch should go via Realtek SoC maintainers, not pinctrl.
+>>> ---
+>>>  MAINTAINERS | 1 +
+>>>  1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/MAINTAINERS b/MAINTAINERS
+>>> index 10d12b51b1f6..374ce55e4fb6 100644
+>>> --- a/MAINTAINERS
+>>> +++ b/MAINTAINERS
+>>> @@ -3373,6 +3373,7 @@ F:
+>>> Documentation/devicetree/bindings/arm/realtek.yaml
+>>>  F:     arch/arm/boot/dts/realtek/
+>>>  F:     arch/arm/mach-realtek/
+>>>  F:     arch/arm64/boot/dts/realtek/
+>>> +F:     drivers/pinctrl/realtek/
+>>>
+>>>  ARM/RISC-V/RENESAS ARCHITECTURE
+>>>  M:     Geert Uytterhoeven <geert+renesas@glider.be>
+>>>
+>>> --
+>>> 2.51.0
+>> 
+>> Acked-by: Yu-Chun Lin <eleanor.lin@realtek.com>
+>
+> So James will pick it up?
+>
+> Best regards,
+> Krzysztof
+
+Sorry for the confusion. I'll pick up this patch and include it in a series
+along with the maintainer updates and other DTS changes. I plan to submit
+the series to soc@ during the v7.1-rc1 to v7.1-rc5 window.
+
+Best regards,
+Yu-Chun
+
 
