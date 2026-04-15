@@ -1,68 +1,79 @@
-Return-Path: <linux-aspeed+bounces-3907-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3908-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55682F43832
-	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Apr 2026 15:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBDE5F433CE
+	for <linux-aspeed@archiver.kernel.org>; Wed, 15 Apr 2026 22:11:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwlDV0Gvrz2yvh;
-	Thu, 16 Apr 2026 01:19:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776266361;
-	cv=none; b=CTQi1/F5yjQKw0Tz5h/H4niUvyIouK2fedpwCAStD7b9YaDv5DAkzNo0kgJ5fPHbLyZQe8k58pl4coNhIzU/KzTQDbZR+68rMo+KVMXP4sPjzLNL5DySEdOELAuVLsQLLddAfdAK8GWewApUSCaMC2Oa5HRIn7w3r/JFSdhvtPj079fh/V6X4q2gPGoV5hdvdLSAa0lv0srNokxpPo8VXLW7HKNglQAifzMkXIT8mdZqcjo5PMrSTmx4v6nzAMwSzWaf0AN3FVshFgRA6u3nmZl0NGxZFjC/MMWTFbyz6TTiTuydDeN79EI3PQODCyPYDqP9CPt2pwo/D3FPlJFn4g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fwwMX3XZNz2xlK;
+	Thu, 16 Apr 2026 08:11:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776291064;
+	cv=none; b=ekJx3HL0n7YJU+cDWvhQomLb0JJy/sW+pZgFnOzTZCt07jxo5BesqhSbMoE9QMwsBfvyHgmjOs+wSEnvO7w6wiDZBRrHo381pV2Mkx4CdU7wwEJx4o1cj8euh5gNNORkSGew0VifyeawAkQP6oCZaEpGKQHVNGHdwEfd25bcvjrv4RFORVFPTaWN2tsj/mPpnQhKNSXuJnFYXddBlrriKp2GYY8eVsMIsPslACa4mYOIGwjLG2DrG6kJY5IQhdz4XOrufE6MIre5IbtJX/MRVkZ3oiHmqp4xN49sIcZI/vrLDj0UXfbEM9JNYWvdal+3k8PwVzYxR8I/ylSYdo4+MA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776266361; c=relaxed/relaxed;
-	bh=Dee28jZnToSIv/2KhtAbQI/WuccJs8QoILf+fdpRKPQ=;
+	t=1776291064; c=relaxed/relaxed;
+	bh=BZdrZIkOSqbzGAWUiUFdmBRnxHfqO64E/VC6vDSmexI=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=R3FSWgZ6ZhISbX7V7J8/7HD3sc1UqpexzZy1A62qiWXGp9A6avE5We9zvX+L2ceFIjc75PSUXK3/UZsXm6AIqU08f8IVv92BAqX2u8Vg4i/9y/OEskP8CV9Sw8uV5VaE6GpynqRjFs4iWQCWWEAyN+e5+e5bN3bf3Rod9G9xv3ChxYyjdL2TxcZntX3aaGbTjNcUEvknL1liurTEgQ6fpVst4cflARYEA7G1vqBYfPByt6pJPXWxzEY+7VaKfqHhSGM8aP1yeaddfAOhQ/pb0eIds29UXvk1di1MpHfUfZprE6n48IskqU3aASApg50uAdYqZIEGVhGnlJ8ELUHj0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bS4AIlrT; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Om/5mtS4rIFmObUXdfqo0rNw4tNf4cBiTo46XjQW1WfJTJC4AmavCrfW+OVIlpfDveor8UgPryqeNTGUFGkuPz9T9GTITe+Ik8BDk8xp+aqf12I9hwRCh9jlXDX1OKu6v7Dv5Uql44tWKqgDOVfiGm4lAcUpMdGuDTydI5G6eQyjnx0bi+Ju3brOq3mBfzOI7LPkuN3GUGYbsvzS56JxXMRTybNVqtmLOs9KZSUFsvUWd4NgqxRzh1pZFjwqNm1tfHILB5LlfXw41YFF/44XBRVAT8mNwZuAkfmolP5s/CfSkMmlOKKJak11Bov0I5n7Nw2hjsIVltg9teUrYgIbfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p0G82jNv; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bS4AIlrT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=p0G82jNv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwlDT15cFz2yvG;
-	Thu, 16 Apr 2026 01:19:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fwwMW2NPvz2xc8
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 16 Apr 2026 08:11:03 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D1ABA440B9;
-	Wed, 15 Apr 2026 15:19:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E8CEC19424;
-	Wed, 15 Apr 2026 15:19:15 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 33D90415F6;
+	Wed, 15 Apr 2026 22:11:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9759C2BCB3;
+	Wed, 15 Apr 2026 22:11:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776266358;
-	bh=C2CEKkmCH9aV17LYLLM5/3fFEfH0fiYdFqoFdPLbCN4=;
+	s=k20201202; t=1776291061;
+	bh=4MjkOgWu+H/4IbKFLTcEqaA80AYv/7LFnNzAZ1Q9/eY=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bS4AIlrTVya99sPUUaSqchJnoC6rYci6Xzps/4CQD2kUYYTmQDqXTctvL4FGXcCzN
-	 X2IMTtcMBZa1NoBprs5sXGpMnltuGHDSD9onfKIKmRwOLCKIhTrX4VGTkJ9y1Ewjr7
-	 jwJXWgWa9sfdD+xI8InH8vG3rho7h10owTtFx/8RPxFFImdgU6Z4lo3RgaPRSMg3S+
-	 48jQ4ZE2kL+PI+CEk2JqSXD5+PZ5Rz97yOjVAPANdEA567ruWCca51wpQmDpWBvV9T
-	 BEZ0NLRsjjZ0M1/L1Wqjr6NkZDOPzQiKBhADFn+WcQoQpOQ+zMpqCsbbTFDQTQ8p1x
-	 6OP7bi0P8k8gg==
-Date: Wed, 15 Apr 2026 16:19:13 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Ryan Chen <ryan_chen@aspeedtech.com>
-Cc: jk@codeconstruct.com.au, andriy.shevchenko@linux.intel.com,
-	Andi Shyti <andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Rayn Chen <rayn_chen@aspeedtech.com>,
-	Philipp Zabel <p.zabel@pengutronix.de>, linux-i2c@vger.kernel.org,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	openbmc@lists.ozlabs.org
-Subject: Re: [PATCH v29 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
- global-regs properties
-Message-ID: <20260415-unrushed-collected-562130070d8b@spud>
-References: <20260415-upstream_i2c-v29-0-317c1a905ae1@aspeedtech.com>
- <20260415-upstream_i2c-v29-2-317c1a905ae1@aspeedtech.com>
+	b=p0G82jNvv+WdUrzCg0FXEUgFE67KoF8lsRoHLR1Eixg/LXzBOmBt72ny96ygZ1Yh7
+	 5pjtAjRmscQPZ3vzTHEJVK2X3F5iY9VBGqR24yPawyJQ/gAIlyZBVqDlxU6RxtLQOu
+	 GIOuEzZ4IIVyp1JVp1Bd0caHsANeP3Y9FjSY0dKokZFCp73u2B9/2SZh9VaeNP9dKw
+	 bDqy1aSrrHxSChU/DDEkPqQ/9mXmyBZFULTx7CeyP1LoiLkGahr6y7zWTmj5JAf+iF
+	 LSKM2823g0Z3h0jTPv9V+xvD6mu4GBgiebxCOKq/m8zV5ubcEy7dHDB71HDaXfInaG
+	 zk3lxaVX52GYQ==
+Date: Wed, 15 Apr 2026 17:10:59 -0500
+From: "Rob Herring (Arm)" <robh@kernel.org>
+To: Douglas Anderson <dianders@chromium.org>
+Cc: astewart@tektelic.com, linux-arm-kernel@lists.infradead.org,
+	Mark Brown <broonie@kernel.org>, bhelgaas@google.com,
+	maz@kernel.org, linux@armlinux.org.uk, kees@kernel.org,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Saravana Kannan <saravanak@kernel.org>, netdev@vger.kernel.org,
+	linux-serial@vger.kernel.org, davem@davemloft.net, andrew@lunn.ch,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, brgl@kernel.org,
+	jirislaby@kernel.org, mani@kernel.org,
+	Johan Hovold <johan@kernel.org>, linux-aspeed@lists.ozlabs.org,
+	linux-pci@vger.kernel.org, kuba@kernel.org,
+	Alexander Lobakin <aleksander.lobakin@intel.com>,
+	Leon Romanovsky <leon@kernel.org>,
+	andriy.shevchenko@linux.intel.com,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Alexey Kardashevskiy <aik@ozlabs.ru>, lgirdwood@gmail.com,
+	andrew@codeconstruct.com.au, hkallweit1@gmail.com,
+	linux-kernel@vger.kernel.org, Danilo Krummrich <dakr@kernel.org>,
+	Eric Dumazet <edumazet@google.com>, linux-usb@vger.kernel.org,
+	alexander.stein@ew.tq-group.com,
+	Robin Murphy <robin.murphy@arm.com>, pabeni@redhat.com,
+	devicetree@vger.kernel.org, driver-core@lists.linux.dev,
+	joel@jms.id.au, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH v5 8/9] driver core: Replace dev->of_node_reused with
+ dev_of_node_reused()
+Message-ID: <177629105858.764226.5689083905556313606.robh@kernel.org>
+References: <20260406232444.3117516-1-dianders@chromium.org>
+ <20260406162231.v5.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -76,88 +87,49 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="k6I7hnG3lmH5OCNw"
-Content-Disposition: inline
-In-Reply-To: <20260415-upstream_i2c-v29-2-317c1a905ae1@aspeedtech.com>
-
-
---k6I7hnG3lmH5OCNw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20260406162231.v5.8.I806b8636cd3724f6cd1f5e199318ab8694472d90@changeid>
 
-On Wed, Apr 15, 2026 at 01:14:03PM +0800, Ryan Chen wrote:
-> Add the aspeed,global-regs phandle to reference the AST2600 global
-> registers syscon node, containing the SoC-common I2C register set.
->=20
-> These properties apply only to the AST2600 binding. Legacy DTs remain
-> unchanged.
->=20
-> Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
 
-I hate to do it to you on v29, but can you please explain what this
-"soc-common i2c register set" actually is/does in your commit message.
-The patch seems fine, so with that
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-pw-bot: not-applicable
-
+On Mon, 06 Apr 2026 16:23:01 -0700, Douglas Anderson wrote:
+> In C, bitfields are not necessarily safe to modify from multiple
+> threads without locking. Switch "of_node_reused" over to the "flags"
+> field so modifications are safe.
+> 
+> Cc: Johan Hovold <johan@kernel.org>
+> Acked-by: Mark Brown <broonie@kernel.org>
+> Reviewed-by: Rafael J. Wysocki (Intel) <rafael@kernel.org>
+> Reviewed-by: Danilo Krummrich <dakr@kernel.org>
+> Signed-off-by: Douglas Anderson <dianders@chromium.org>
 > ---
-> Changes in v29:
-> - remove aspeed,enable-dma properties.
->=20
-> Changes in v28:
-> - update commit message correspond with aspeed,enable-dma.
-> - remove aspeed,transfer-mode and add aspeed,enable-dma property and
->   description.
-> - Fix aspeed,enable-dma description to reflect hardware capability rather
->   than software behavior
->=20
-> Changes in v27:
-> - change aspeed,transfer-mode to aspeed,enable-dma.
-> ---
->  Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml | 7 +++++++
->  1 file changed, 7 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yam=
-l b/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
-> index de2c359037da..0c769efb76a5 100644
-> --- a/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
-> +++ b/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
-> @@ -37,6 +37,12 @@ properties:
->    resets:
->      maxItems: 1
-> =20
-> +  aspeed,global-regs:
-> +    $ref: /schemas/types.yaml#/definitions/phandle
-> +    description:
-> +      Phandle reference to the i2c global syscon node, containing the
-> +      SoC-common i2c register set.
-> +
->  required:
->    - reg
->    - compatible
-> @@ -59,4 +65,5 @@ examples:
->          resets =3D <&syscon ASPEED_RESET_I2C>;
->          clock-frequency =3D <100000>;
->          interrupts =3D <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
-> +        aspeed,global-regs =3D <&i2c_global>;
->      };
->=20
-> --=20
-> 2.34.1
->=20
+> Not fixing any known bugs; problem is theoretical and found by code
+> inspection. Change is done somewhat manually and only lightly tested
+> (mostly compile-time tested).
+> 
+> (no changes since v4)
+> 
+> Changes in v4:
+> - Use accessor functions for flags
+> 
+> Changes in v3:
+> - New
+> 
+>  drivers/base/core.c                      | 2 +-
+>  drivers/base/pinctrl.c                   | 2 +-
+>  drivers/base/platform.c                  | 2 +-
+>  drivers/net/pcs/pcs-xpcs-plat.c          | 2 +-
+>  drivers/of/device.c                      | 6 +++---
+>  drivers/pci/of.c                         | 2 +-
+>  drivers/pci/pwrctrl/core.c               | 2 +-
+>  drivers/regulator/bq257xx-regulator.c    | 2 +-
+>  drivers/regulator/rk808-regulator.c      | 2 +-
+>  drivers/tty/serial/serial_base_bus.c     | 2 +-
+>  drivers/usb/gadget/udc/aspeed-vhub/dev.c | 2 +-
+>  include/linux/device.h                   | 7 ++++---
+>  12 files changed, 17 insertions(+), 16 deletions(-)
+> 
 
---k6I7hnG3lmH5OCNw
-Content-Type: application/pgp-signature; name="signature.asc"
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCad+scQAKCRB4tDGHoIJi
-0kJHAQCCIue29Y53DEXwYeyc7bzKCGyQ41fURdeMFKTMRVm7uAD9FboLEsQkGSoy
-RW+T31SM4kdnSSbuJvWj/tlGvWC9xQ8=
-=8TWM
------END PGP SIGNATURE-----
-
---k6I7hnG3lmH5OCNw--
 
