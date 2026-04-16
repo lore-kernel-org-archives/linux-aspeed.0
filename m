@@ -1,99 +1,137 @@
-Return-Path: <linux-aspeed+bounces-3918-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3919-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AE3F433D0
-	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Apr 2026 00:11:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAD06F433D5
+	for <linux-aspeed@archiver.kernel.org>; Thu, 16 Apr 2026 01:38:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fwz271zNsz2yrT;
-	Thu, 16 Apr 2026 10:11:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776078837;
-	cv=none; b=UpPCJp5tFV0p4nWLIw3SCir9MP2mcc+UPjB056eRrenzuTGecibJWSq9JAPEC/iZN5uYv+BAH3gxEXpLiHyBfERZKGH8wXo6GR4STV1+C1i+FWNMiLGneASOnVr18OaBYPolBx0dWiN6TMyWzhox4JY0V33YwhqfkvBJnZen2iCzdI22b0YsyIu3hLwX3yJVESj59zMnrlPNhHDTHwR2JrPe8/6PJ/OzDwu1hCbhEaGVgD60sDnwTcunTMsby7qzjlrGiAE4GLrh3dOUZuxb5LghmpD+EigXSo8bvKyT/So0upUyEWy610nB3M8EwFz2nYgjYI2hDSMlRHVTRpmlkw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776078837; c=relaxed/relaxed;
-	bh=tMGTprsrYzJtBsOHJOoosmNqvDj+crbOe7chA++pxYk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HLLUlZUbIucOm3eaOp9oFJVurkSC2UDQX9g1FKhoHv32oRL7QFEZ2dpiCts0vAaJakNqpCtAH09Drm7z8TofYxxPgiHFdMKhix1PhGCSzT6Z37OfmUpPZsoK7Xk3qNXgDLOfUSNHYVAOJccmwOIegD1rH1jImtdXXs6LK7tWngQ6y1/tbON9hHkvdoKzrvcLATOs3NgVbJLUVJixkReAJazxao3E0SkR0nPm4JJszd21UwMhdpVLQ49XdG7Ui9vz0Pluv4j/n+pUq0oEp90w/NNZ7lRuLoXNrUomq9xwSBv4XDu1ehPgSBWn2LDv8+JJt+fCzO5eQJJDvirRJUK6yg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FttCNoqP; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=OVttm54F; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fx0yw3nryz2yrZ;
+	Thu, 16 Apr 2026 11:38:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776303512;
+	cv=pass; b=e0GPQkarImt95+z9doNruxfI11Sn/+fKqoscu8zqkNCLStsKdUV111OsW79itdjsZI/f7w4IueZudzKMGM7SFM1sryUuL6284uh22qSeEZ+VoBiAlavW7+574M9WugMLtYNDayLS/PCtHDSZ5iuDS5CLsIGFBsD460+lGSKNluKgYYFMTXCQmkwWDQh6PqKDcV9qkrEgJpntxd0XQu0Vm4LJyVgDMGl6H7kJnYkOB51QaKDcI/4wBSXo/ciOzPp035Xu5YVvu71jk7x0tNbc0GdBlSzaBWqK6psKj2oo92r5lt7mOsnq7OO5+8D+wCDwht84g5CcGc1l8OOlsz7wWA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1776303512; c=relaxed/relaxed;
+	bh=xAwrcgiO10DZta9fhQhFWkMAy96vTIhE6EY8hzJ+tfs=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=fI3tzg6h17w7CUfyDnKzMJEw3nknCja21lQBWQh1+sXEb5+kc1cmYqVxDtTf4AeIviS9R4hvfI/V9sUibFLL+TP4uEycXJR+VobOv5jGv50z7W3rCnjKRj2gEbjmvIV4LhZt85RfG4FNLSVMBZ0DCXsy2o5ppY5CUydlpTgsGu9EGXDyPZZnCsZYvjQPbUgypTCtfBi1mcm5/xL+6jiwDXxJnYS8KLejbLa9vLj+/PAa3MFytBedPKpNnlzuTOQ3DYBiFIfmCW7qU/aYHgv8csy/zm1AhX+Z465vfaPvn6CHkjaYd1ixfhsRtZEbFEA/3mSgLbSRBF4ffI0gW/CFCA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=hTNhTC86; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FttCNoqP;
-	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=OVttm54F;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=hTNhTC86;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=ryan_chen@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fvPtD3DZkz2yrt
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Apr 2026 21:13:54 +1000 (AEST)
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63D7ttUX3974426
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Apr 2026 11:13:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	tMGTprsrYzJtBsOHJOoosmNqvDj+crbOe7chA++pxYk=; b=FttCNoqPV+itb35Z
-	mfcL5AAIq/LCY7Xw+bBnFRY4EnbcWYDp8Q3RhW4YV35rOVVtqW0Reis3uGp20w2w
-	VH/Z6/KxxNknEH7Yv3q61qZJja5PQSVhTWF9zwa7cuxiEwUXRJD1DiwJwUEGFVot
-	XnmlNoFWRybWWzetHoaNGYa3NJnIfrXii/itUj3Nn+LAGiSwSqXD3NEYjb/rNFPr
-	/nyGYjII2m0fGyz72hjl8bSUfyDvd8zZUkdJEAgEKMPOLx/sdUA7yDVAxQAup+nD
-	+lhX5I5IlDrXwhpkleRuI736mAje9K4ri/nKPX9DGI4bCpf2YsBfeKtd2rLD16bN
-	mQdzEg==
-Received: from mail-qt1-f200.google.com (mail-qt1-f200.google.com [209.85.160.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4dfjbpcq7c-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Apr 2026 11:13:53 +0000 (GMT)
-Received: by mail-qt1-f200.google.com with SMTP id d75a77b69052e-50d9d52ad9aso28616571cf.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 13 Apr 2026 04:13:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1776078832; x=1776683632; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:from:to:cc:subject:date:message-id:reply-to;
-        bh=tMGTprsrYzJtBsOHJOoosmNqvDj+crbOe7chA++pxYk=;
-        b=OVttm54FBMnQ/FqA7Nm6x/qbiNOFCq+0ewb9J30vq7sEydRPItFZLlJ+0xE8wplIZj
-         qnmogoHTQvNexyf1xldCGzja/ZneYNolXY6i2AK1w4OSFVjfaMKoCDWohZe86uqDaGvD
-         bhDIH4Rv8AqgXMrwrQHEO7Lg0Y0ZUV4KjlROXR3Zt/4Wfg1KYo8UYIWno2yhWrYGYWhd
-         gDLtIQIBBJpg/00ORUQesEHA7wEj3JxUWw/ggFOJ58nPPXKDai2zd/CHciFI1n4zE8mT
-         GRu7GlBBfRVZk3nTWVnYyUf489JjIK7skVvXMjdvuuM+fYCgwX/2uVZnFEkcDXl05bH1
-         AlSQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776078832; x=1776683632;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tMGTprsrYzJtBsOHJOoosmNqvDj+crbOe7chA++pxYk=;
-        b=Hkwt7IjFZZg6O6iA/DRHKNcG/iMEa+bFI1iLZ6RpDv2bXiNSKfAlWhAELYFzx7tjbJ
-         +0IxWWCrMt7sYB8ZTCeK5C9P9qU3+KUgiUSg4m4Pqah+kn4BPxzgBZyVlIhnxE+0CmF6
-         cQetGtigiOFqBPb/5gj/WKxu7YpSghvziGbFm8i+A2ovyw8prunCOyp0YIAKQeVcn4TH
-         Xr8UrsuGLw08yneZ576XPaCHLe/3W089JipqOzaI2F+gzeuxzXVResY159rAHttpHHHW
-         7sWFQpEh4AoyAqI75DUFTxBluhv0Jgun9V+jmGnxPDTQTBPkrF4Kb7WPYLzqRZRwDVjk
-         TIaA==
-X-Forwarded-Encrypted: i=1; AFNElJ9hFjK/QQVcK4S5bjE44gXXEAPrDiB/KDr3HARE5j/aVSUScYSfbdO133fp/gzYPStr3yrncDSHddOASEI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzkMeJ7dZCU/kupw4VEBuwEEqqoe/qDKOITSmIK3CpFk9RlVT6i
-	KG1AARJnlRYblwS7x4+jlYmaRIT3iJHMoetaE/9hAyySA2bNQCJ6ayEg6H09rw312UE1HK+sR3+
-	QoH5B1eJT78OPuF+cFocxPQO1oExQilKAzsZpEjkN79kt4PyWN4GyY33BGGwplysy0nbs
-X-Gm-Gg: AeBDiesqkDv69PuLn/7N2onelZyWTtcP2HxvgR8/YmOrTgypES0gOnZuFnLUSTuQMFS
-	mYWo7xixLJbfE2V6bUWDAm7ldPMcqDwTMCRQ4o7OIx7u1C+bc4cFEq7XJQMWahuRRgh7ehTugnt
-	/xemCXQ4VQbWq+PMl9QQcm14WvE+YwDB+s1iMAfTUiULFtQnhAAadZD5jdqLQNQ0zmEiONsTNdf
-	GKQwB8W6PzOSjvL7VxwCuoztAZ4bm2ZhNG+gQPPg0VJvZv32GTE60L2YbQfj8198PO1trMgYc2Y
-	ly4f4G8ALI99Y6CCkH0uuuzU7FWh1QTiL9S70a+jSY5H6z6jEEvUr0VPmRIcJCAkd+CGSpNkv+Z
-	8WoiYijrzH5OF0qEHctNsTFqpIZH0MFZZd+rFQgNKqEAcXDmC
-X-Received: by 2002:a05:622a:a916:b0:50d:7f66:dca with SMTP id d75a77b69052e-50dd5baab7amr157673011cf.33.1776078831904;
-        Mon, 13 Apr 2026 04:13:51 -0700 (PDT)
-X-Received: by 2002:a05:622a:a916:b0:50d:7f66:dca with SMTP id d75a77b69052e-50dd5baab7amr157672681cf.33.1776078831464;
-        Mon, 13 Apr 2026 04:13:51 -0700 (PDT)
-Received: from [192.168.1.29] ([178.197.219.94])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-43d6ffd3880sm16502298f8f.7.2026.04.13.04.13.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Apr 2026 04:13:50 -0700 (PDT)
-Message-ID: <e483acb6-af9d-4bc4-9aa6-c4841ff0a8dc@oss.qualcomm.com>
-Date: Mon, 13 Apr 2026 13:13:49 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fx0ys4QbBz2xTh;
+	Thu, 16 Apr 2026 11:38:29 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=hzo5ShSkhnvq+TO97UCpyZUZlv4+gXwj07U2TaE+SWtWJCQ12no10Rwvqx3PZER1lPs0ycgYy05zDGkUy1rPyYQFmkabgvHcBAXp+1YiHpOEpIuuk0TMFHFvcAFAnzfbjQZT5Nj8i89yjRzNcz1OJjaCw9A0qCEAGDh8GJcba0pOMp6ZWU6XYzc3qz3Dn+ToK/COqJMhcIfEHOTSlHyEW5IoR2+RP+JDgAJZWp3vqXRSiBaaPUCWMcYJW7vV5qsUkCkowRwSod7Wac3Bz93lq7thUddztWXjueD4c/g4dPQczNncU080n5Heen1QISdrxg9GWLxTnWUrWDckeVtGNA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xAwrcgiO10DZta9fhQhFWkMAy96vTIhE6EY8hzJ+tfs=;
+ b=PrAM4WUwUr0Gis0Zw0GGFiTIr1YM1YbCG6zEz8FJKJCTnBU6/i4iyVrgWId+/4C5c0S1GcGbINWcO2RAh0HXdnjxANBuQyf04GaZhcbmnzLoEy7QjYWaKfDjCL7jPym62S9IMGd+3OCWLmDiws/fXYUbSbtpMCXg7MuFlLu7SGgPPyCBUOwg9+X/QZ11ra/qZaMZ8LrWVOjC+6V1UC5rPUIrXiJkNVD1E8HX/mOkUM7W6lWS0x+7XQMkd0Z2zSJIrFOYKzI3lc6B2GryRiE1xSO0crGY63yjfIyVu7hQX2hsg98spd4sJebr4QdwPeO8nAaJQ55J1CIUwSPBy2m7kw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=xAwrcgiO10DZta9fhQhFWkMAy96vTIhE6EY8hzJ+tfs=;
+ b=hTNhTC86PWEnWUzByUUKOiVC9AdUtbFJcDYz8p628OlLZj9suETFS9q3F6wY/KWMdfyNK4tuaV23q5QgsHNp0Q4qOosiTJzur9SjfnCCNVWFBL7Vu/Uwy1IaJC1EBolBoGKll6gfJ1vD8kxmLKCsf/YJgkNSB7i3plJgCZ+vUOpvAzp8AAa4LSbLV/19PwoKI/vatOB0tUTTAx8sPhEF5iifPXJNdmwscP4gO5GAPkocxB/E+pgY06UrMYrUgxRuo5Aw/qRX1MJfRITcqMHjoDvFYgqi9wt5NI86ZGVPbcTZdhOdXSyWRKQcFOqzIxzYxOVJ2m9HIEhAvmdpAFtwJw==
+Received: from TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com (2603:1096:408::791)
+ by TYZPR06MB6995.apcprd06.prod.outlook.com (2603:1096:405:3b::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9769.48; Thu, 16 Apr
+ 2026 01:38:01 +0000
+Received: from TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com
+ ([fe80::8c70:cb01:78fb:d9c0]) by TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com
+ ([fe80::8c70:cb01:78fb:d9c0%6]) with mapi id 15.20.9769.046; Thu, 16 Apr 2026
+ 01:38:01 +0000
+From: Ryan Chen <ryan_chen@aspeedtech.com>
+To: Conor Dooley <conor@kernel.org>
+CC: "jk@codeconstruct.com.au" <jk@codeconstruct.com.au>,
+	"andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>, Andi
+ Shyti <andi.shyti@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
+ Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
+ Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, Rayn Chen
+	<rayn_chen@aspeedtech.com>, Philipp Zabel <p.zabel@pengutronix.de>,
+	"linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
+	<openbmc@lists.ozlabs.org>
+Subject: RE: [PATCH v29 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
+ global-regs properties
+Thread-Topic: [PATCH v29 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add
+ global-regs properties
+Thread-Index: AQHczJaxkaOKREqTYE6dA5SIQp13i7XgPUGAgACq5GA=
+Date: Thu, 16 Apr 2026 01:38:01 +0000
+Message-ID:
+ <TY2PPF5CB9A1BE6FC06FB69A7CD16147CECF2232@TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com>
+References: <20260415-upstream_i2c-v29-0-317c1a905ae1@aspeedtech.com>
+ <20260415-upstream_i2c-v29-2-317c1a905ae1@aspeedtech.com>
+ <20260415-unrushed-collected-562130070d8b@spud>
+In-Reply-To: <20260415-unrushed-collected-562130070d8b@spud>
+Accept-Language: zh-TW, en-US
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TY2PPF5CB9A1BE6:EE_|TYZPR06MB6995:EE_
+x-ms-office365-filtering-correlation-id: 875f47c7-cd7c-4746-6083-08de9b58cc2b
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|376014|7416014|1800799024|56012099003|22082099003|18002099003|38070700021;
+x-microsoft-antispam-message-info:
+ Qt9pdbE9girxJoiZrS0rGzev/fusM0FEjwUunorjEMSjvTKkFvZOU2wDfsFEn6WaoaC7AhG2geGcxCOp1jsMU2SH00lNI/zJcpey46NGHQVJ+7AeJ4jpGFMpy4x8XWM4gx1QJd+ywHdJZr8ON7pcag3uKjhb5vHO5HMsPFGrywRg0EcWUUwLa1G6CsfgBmXiF/e9s1bSAbztBQJaxFwAn/faTRb/4gs5TfudSWhzkjVJznracW6KMYjN/8qkW6yg5emS0ZROFsV/7siOXuSc94FArSs6i6j1jQjugW0sHX+QBSn69QGB0rx+KGOn68xCMdTqLGgJIz+F7AZKmFLh7hwwY7KwEUjsBeKY696cKv75qUSEeDKl8HkNq4xAdsmcNLMwjBwbBMS9coufbi9Sh4eYpU0zs0sx9BfObEoZsVgY8rXAP/OzFLSMyHDhJLYvzzqWwazOK/k0QDhbubHOXieWnV4nrr5yH4vZnapSo1dacwQpP2pMA2gU0360QBjAI0/M9ImO80QcuL4sFumOms2IJ7YikIdncRR7i970C11nBpXpR9HKgPMV0g71B7Cyz5LHxikDKuhtfCYL+E0pZZGusYNujPuPwloBknR+V5+JL5TxLse+DXUDu+SfLTtvsoKK70Pf24nXLNritZB/w4vyjRU/eWKErJthSHbM1omS4ya+lev89ab0pvauOrXYxkjsRL280uQJKb0FyaE9KMpDNV2gd8ocLkpEt/uHvaMaTNkH6sKoS1JTzLiTgFG68FTF6OY4FA+i3U+P4gGoHKStG/FUN0ClO1YcEowcQAw=
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(56012099003)(22082099003)(18002099003)(38070700021);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?us-ascii?Q?lKcb8SHiuPoYAg3ZVj9mEDY+VFxhfIjr14iqANk/ArD/Ceyxi5emwA87e3B/?=
+ =?us-ascii?Q?jkAGLahhUgLGSpP+mPwWNDRNnXI+y//6P3AvOCIXty/yd+rvMnmnuPIQYP8d?=
+ =?us-ascii?Q?NikIqeQYH1J5jwNXFPB4UYwSb1oCESOx0/xA/zHX+iIbN9x6NPJh2/V6HLog?=
+ =?us-ascii?Q?YBjAZ30BHhsE1+lCy5LEmQYshZ+utKU6ynDBOQZqPEtEMmscRM5+/gVLxmIy?=
+ =?us-ascii?Q?QNC6xVYwuLCFfCO0AuNidvKOduiq+5IWQyAeNSs8SO5LzK0dYJEu9/b8SEQw?=
+ =?us-ascii?Q?fnw/YXlznBendBJjmU4QKyOwhx7P/G2X8N2yXaau3NyPpeXK4nGqrk4kcSiB?=
+ =?us-ascii?Q?9Kev+hgr5V52ZRHpaj7FzXpHT6kfl58Fi7A+/wpsVOOahv7YMfapDzRwqarH?=
+ =?us-ascii?Q?mqQEW1wyxwq3R/pyx0rlS9YmtkBRHkdxkhN9Egyul4uo6iKrUwq064KJI7z2?=
+ =?us-ascii?Q?EN2Y6pGp0TM77LT6CD+Qe++3v+yqOAnwWUbhwtetpejzVl2yizmwQAj1/tkB?=
+ =?us-ascii?Q?He6O/YWmPcVsAlUmaWARwKKEfM8SdAygjCp0nF2PjRXb03WgO5y3zcyvhARn?=
+ =?us-ascii?Q?UQOgfK+STb0QlyEcy9CLzXlcvRotb1DX2ENo3biUCKQwdh4oJorJUPPlbEyZ?=
+ =?us-ascii?Q?aXgubw5ZkL7vRXZf/ShRzkxNwV2n0TzjQbKnWjw99aez5GLXm2ksEMHsxG2L?=
+ =?us-ascii?Q?Ks3ysbcpYY+zv7Jko4JGw8pwaFkmuM/4UK1GqUni6lQwqxqK8SIOm76F9gtq?=
+ =?us-ascii?Q?rngMwCAbhlTYzzY68T8Q0LfG1OImMAZzC5k4ynub1KdljE+06taHNtMJE/O7?=
+ =?us-ascii?Q?TM14tpDOR6c5seKljuFcsvBmTLQKBdFMHgb2NMq7mHfgmhXOaRzZBp5hXhhH?=
+ =?us-ascii?Q?+XIxNqCQxfqYuOHBNhxhV6nORQ9acB/CmVong+UFOYPmvkoJIhf54RIqOZni?=
+ =?us-ascii?Q?fjIEisxvbMqAqVQqWKw6tqw7jg8S75tqT62b00f02zNrTbdJSvKbyFEbztW7?=
+ =?us-ascii?Q?ljS5UVks5jmmN5O11IytvTEdDeGe/IhUAf+KOhgsRMgyCZ2xPG9bB1Yu2SY7?=
+ =?us-ascii?Q?pJ0eekH776/HJpM2bSuWxgunO8eINkCrnKyInturwmZUzEOX6o0WOkE5HrSw?=
+ =?us-ascii?Q?3RqImrRgLaW/XOPhANcCoz0aVQlHjS/m7jZjfFxQ7UH7cxLxV5MJfGIsl36Y?=
+ =?us-ascii?Q?xHp78ln9dFUSqkMZogSx00WgTJGX70R5bJVmwugq1UgU7Cn8OeE7zkhdU/L5?=
+ =?us-ascii?Q?xKNRYKxfZhphJd/t4Ea76Yd+U1sQMfh+7oWkf4Is2rnOHmJdx2O+09Yc2uW2?=
+ =?us-ascii?Q?65V3yO5bPknb+/kvNaOWVchbabibJ5jhSJFf0zYBF4mwbTvI64wgpJq/kIYy?=
+ =?us-ascii?Q?BratQAdoUB7MA/LBl5wu9vK0edYhnABDR+aH7R2US0nWFtUelAgJAJICT4vc?=
+ =?us-ascii?Q?4LNZQy2uzTEPh7WoyFOHmTwYf0JEUMtEWcT/GcWWdsRYdXzHpn5+K1BEg4W+?=
+ =?us-ascii?Q?wB0enWKNfDNXu5b359c39AQAUZeBURIbYyIL6jKxBt4Ju0WvPHaO9ErXI5D5?=
+ =?us-ascii?Q?aLOnoJNetDqK744XDWSKZtpNn4La1MfxqN/3nHjVwDk3Debbd7dTtpEHnm9Q?=
+ =?us-ascii?Q?JX+ab3pidcYTCiTovk/HXMQoaJRq8cbk2CI40HyRuam78sPt+pSnWFKe3bhF?=
+ =?us-ascii?Q?jav5gL7IslC6Kr4/GVKMuqxpZH7WgMNWQsP7Mn1nRxgZBmrmxuoT6jKCGHYl?=
+ =?us-ascii?Q?34irAT6wMA=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -107,138 +145,90 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 4/4] ARM: realtek: MAINTAINERS: Include pin controller
- drivers
-To: =?UTF-8?B?WXUtQ2h1biBMaW4gW+ael+elkOWQm10=?= <eleanor.lin@realtek.com>,
-        Linus Walleij <linusw@kernel.org>,
-        =?UTF-8?Q?Andreas_F=C3=A4rber?=
- <afaerber@suse.de>
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Andrew Jeffery <andrew@codeconstruct.com.au>,
-        "linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-        "openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-        "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
-        Joel Stanley <joel@jms.id.au>,
-        "linux-realtek-soc@lists.infradead.org"
- <linux-realtek-soc@lists.infradead.org>,
-        =?UTF-8?B?SmFtZXMgVGFpIFvmiLTlv5fls7Bd?= <james.tai@realtek.com>
-References: <20260410-pinctrl-testing-v1-0-6f708c855867@oss.qualcomm.com>
- <20260410-pinctrl-testing-v1-4-6f708c855867@oss.qualcomm.com>
- <45866135c8a54e1d98cac51932ca8e1a@realtek.com>
-From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Content-Language: en-US
-Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
- 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
- cwzYbmi/Et7T2+47PN9NZAOyb771QoVr8A==
-In-Reply-To: <45866135c8a54e1d98cac51932ca8e1a@realtek.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Authority-Analysis: v=2.4 cv=PuijqQM3 c=1 sm=1 tr=0 ts=69dccff1 cx=c_pps
- a=JbAStetqSzwMeJznSMzCyw==:117 a=gOEeR9iKwsj33Yj5oN/cWg==:17
- a=IkcTkHD0fZMA:10 a=A5OVakUREuEA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=EUspDBNiAAAA:8 a=n9Sqmae0AAAA:8 a=c4pGgGm1PQYjHLslJMsA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=uxP6HrT_eTzRwkO_Te1X:22 a=UmAUUZEt6-oIqEbegvw9:22
-X-Proofpoint-ORIG-GUID: M06ulAW7Jz72ORswycWzhaJicrrjW7zv
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDEzMDExMCBTYWx0ZWRfX5TINaojOiPld
- MiWSCVmrWpOi2zKeZFqQIDTrlr0SX6B0GJJ5IeXwoCoNQx5sqr9diKlxA76jj8G3TlZ0sj0XuVc
- 0U3naH2RiisVeJpxoxavbGb5Vme5UdqNQvxt53cEhRnrl9gU3jOa9TLgqj/GZGn4Kw6t/B39Gr5
- WwpgO6EV1ZiNrQLT0cYjbaFftPmJQ2Y2o1JOenpuRqpQIJ5kvB40SZYK192xivYxz/5lD43ph7z
- L1uw7uyMiD58vmaLgBQOccMFWPjRvAA/+DD6tHPjFuGUmxDcDj0tbfrjVyGz9mxh3R5VTS3PzRV
- hYaaqFJsrUrZAtcCgkR3rqDjB2nDofaSdSZkAAQzCtRBzgIMUHoh1oa9DmXXmQpti02jLl0fP2q
- UIIfHORlg2nMW0vQ4mjqIfDGwJyddfskG75U+cw33FpTnqQgxDhsx/PVMwOGheI9qOm57Hm6C7q
- 4EGBSEQDw3gTZdSVbkg==
-X-Proofpoint-GUID: M06ulAW7Jz72ORswycWzhaJicrrjW7zv
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
- definitions=2026-04-13_03,2026-04-13_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 lowpriorityscore=0 suspectscore=0 spamscore=0 phishscore=0
- malwarescore=0 clxscore=1015 impostorscore=0 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2604010000 definitions=main-2604130110
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TY2PPF5CB9A1BE6.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 875f47c7-cd7c-4746-6083-08de9b58cc2b
+X-MS-Exchange-CrossTenant-originalarrivaltime: 16 Apr 2026 01:38:01.7662
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: HwP1SfYatdEIWmSE73Nc9LlPm/iWmELXgyzztyUdISHGpEXNeg1PPJZJ34yoWynl2GC1uPQtacZ0f+e+eeUpFzlSPBjde3fl4DSrcE7tbjo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TYZPR06MB6995
 
-On 13/04/2026 11:23, Yu-Chun Lin [林祐君] wrote:
->> No dedicated maintainers are shown for Realtek SoC pin controllers, except
->> pinctrl subsystem maintainer, which means reduced review and impression of
->> abandoned drivers.  Pin controller drivers are essential part of an SoC, so in
->> case of lack of dedicated entry at least cover it by the SoC platform
->> maintainers.
->>
->> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
->>
->> ---
->>
->> This patch should go via Realtek SoC maintainers, not pinctrl.
->> ---
->>  MAINTAINERS | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index 10d12b51b1f6..374ce55e4fb6 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -3373,6 +3373,7 @@ F:
->> Documentation/devicetree/bindings/arm/realtek.yaml
->>  F:     arch/arm/boot/dts/realtek/
->>  F:     arch/arm/mach-realtek/
->>  F:     arch/arm64/boot/dts/realtek/
->> +F:     drivers/pinctrl/realtek/
->>
->>  ARM/RISC-V/RENESAS ARCHITECTURE
->>  M:     Geert Uytterhoeven <geert+renesas@glider.be>
->>
->> --
->> 2.51.0
-> 
-> Acked-by: Yu-Chun Lin <eleanor.lin@realtek.com>
+> Subject: Re: [PATCH v29 2/4] dt-bindings: i2c: ast2600-i2c.yaml: Add glob=
+al-regs
+> properties
+>=20
+> On Wed, Apr 15, 2026 at 01:14:03PM +0800, Ryan Chen wrote:
+> > Add the aspeed,global-regs phandle to reference the AST2600 global
+> > registers syscon node, containing the SoC-common I2C register set.
+> >
+> > These properties apply only to the AST2600 binding. Legacy DTs remain
+> > unchanged.
+> >
+> > Signed-off-by: Ryan Chen <ryan_chen@aspeedtech.com>
+>=20
+> I hate to do it to you on v29, but can you please explain what this
+> "soc-common i2c register set" actually is/does in your commit message.
 
-So James will pick it up?
+Thanks your review.
+The common means this global register is common register have common
+register control used by all i2c bus.
+Such like register layout mode (new vs. legacy) and shared base clock divid=
+ers.
 
-Best regards,
-Krzysztof
+> The patch seems fine, so with that
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> pw-bot: not-applicable
+>=20
+> > ---
+> > Changes in v29:
+> > - remove aspeed,enable-dma properties.
+> >
+> > Changes in v28:
+> > - update commit message correspond with aspeed,enable-dma.
+> > - remove aspeed,transfer-mode and add aspeed,enable-dma property and
+> >   description.
+> > - Fix aspeed,enable-dma description to reflect hardware capability rath=
+er
+> >   than software behavior
+> >
+> > Changes in v27:
+> > - change aspeed,transfer-mode to aspeed,enable-dma.
+> > ---
+> >  Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml | 7
+> > +++++++
+> >  1 file changed, 7 insertions(+)
+> >
+> > diff --git
+> > a/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
+> > b/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
+> > index de2c359037da..0c769efb76a5 100644
+> > --- a/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
+> > +++ b/Documentation/devicetree/bindings/i2c/aspeed,ast2600-i2c.yaml
+> > @@ -37,6 +37,12 @@ properties:
+> >    resets:
+> >      maxItems: 1
+> >
+> > +  aspeed,global-regs:
+> > +    $ref: /schemas/types.yaml#/definitions/phandle
+> > +    description:
+> > +      Phandle reference to the i2c global syscon node, containing the
+> > +      SoC-common i2c register set.
+> > +
+> >  required:
+> >    - reg
+> >    - compatible
+> > @@ -59,4 +65,5 @@ examples:
+> >          resets =3D <&syscon ASPEED_RESET_I2C>;
+> >          clock-frequency =3D <100000>;
+> >          interrupts =3D <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
+> > +        aspeed,global-regs =3D <&i2c_global>;
+> >      };
+> >
+> > --
+> > 2.34.1
+> >
 
