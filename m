@@ -1,140 +1,93 @@
-Return-Path: <linux-aspeed+bounces-3930-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3931-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36A82F36C39
-	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Apr 2026 07:23:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF37AF36C41
+	for <linux-aspeed@archiver.kernel.org>; Mon, 20 Apr 2026 07:41:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4fzcR44NQvz2ynn;
-	Mon, 20 Apr 2026 17:23:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::5" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776669808;
-	cv=pass; b=Pb0lNHnDhNPe2ctFO8YE++PD8DCu5x/O8JXngLD0+ZqE38NX3lTkPwgq0M3dpbH6OzJu7IloKnFl9NRWq9QvHY2dOdTnsuead+b68mNDt2MEnWvRBSSAVCrwaNpLP6vMeJkkBAW8H0Ly+Y7S6LscFoZ3k/WNtBJT6XwzK2jIV9y7385Ac96CZBiA7Di7QyPJDYEWi6wE32Oq4HJhUpo/ZnJ3zuip6OuLX2cWna21NJoGr77yhWJm2lMUa8yONtNiAcW/Y8SZYiODMmmpkDf7HRDJGgUefEWqODIlrT7BSN6Y2aCKswiBOdiJDQXzYJGBsXej3BJ31qhJo0wYVNfLWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4fzcql2mRZz2yqT;
+	Mon, 20 Apr 2026 17:41:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::e32" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776663707;
+	cv=pass; b=hCV6Jf0pmRJc1Cpjp69yq0nd5WBzHhTsdAc0SUm+qhtxmKoibcs3p8lcWsG7tFX1fqUQQSwejkv18qkV6E6aWKgV4+wOy8mb6cJWHXO0Or0NfY0GpTpOGQXicHHbtF7w67tyHHgzZHpjNrgLVPg9hkZJtMorREd5Fdz18fQBOb6xnBmpi26hn0dNKkkrQuj8CImG6TdYWMZcw590FlW/wN0tbhQ8/T29zUMWCL0/I9UBbUtbBFmGqNqx94fRW4Y2vC69sq6XWRIyJgHg3cZ7l46rt3AroiWFwkg1yvO0JKi7RCsrObgJpgbQlhH4qWulUpslKc6zAeXReKmmuo3dMA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776669808; c=relaxed/relaxed;
-	bh=lA1SS64rK86AA89yR52Qj5t6mBiiFO6Jj0e5xY7n8N0=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=gfrGDeuFg5dkZ5RPecbem0U7R6unvAulIXS4rIyJiyZdvzhqi9Y089pObhmrVwXD0bZjz8c19CbDxXVAzGt3xnsdY9gGnkK75B1RKCU/63OiltICiY18ceMa+gV+DgAREqfkGdAh2hViBQwTBZGs8DPIR/i8aH1UnY8owN86z0cDKVke4sLRdI1qiJOiti1tQaD7Y52Kw0WWrzDYFjqQwE7AtLlhAIb1kMb4iiMpOI+8ibbpSwY0TVVJ5pa/1M4jibFT5SZee72ubDOlWULxBV3oNBK0sBLYsE8A2J+6kRC2hMQkQrl9tYMHCbitsMlw8eHYvRRq0kBHRWkXm9gUqg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=YRca/6tn; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	t=1776663707; c=relaxed/relaxed;
+	bh=CN0rXWBmzkEFgIqLEHhOXPBNQ+jcsnyYPEtLHAwW1Bs=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DrMVt5CJriQSHWXdLAjTQocYt6RXet12RlEjRhI81p97IrIFcUoRGQMI4wMFLFf+ZhzczVhGnb4CwtDpUTySIQ6EF8CPNpV7/2Rt1LXi/braGHQRkgTgKPJQDrk3i5MzKtTZk0UqHcYrHSys0ueesnl98UhcuBGddoY1PJIyH3aUXuQmn2gxdJrGMcvTmCrbFMYjMg34YHmwAE5Ad4/aKp0IVhZSO/LhtGoAkEB2ZVAyvSzvvSrEik51fEyTqpe6wzOJ1SkmNKAPSsJMV5B7oaudXdNNPd7N3CI8KkchHplQzxEvhFgDuvDIC8eM6NpOQC4b3qlYT+xOLacbQrjWLQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VOGN933N; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::e32; helo=mail-vs1-xe32.google.com; envelope-from=u8813345@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=YRca/6tn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=VOGN933N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c405::5; helo=typpr03cu001.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from TYPPR03CU001.outbound.protection.outlook.com (mail-japaneastazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::e32; helo=mail-vs1-xe32.google.com; envelope-from=u8813345@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-vs1-xe32.google.com (mail-vs1-xe32.google.com [IPv6:2607:f8b0:4864:20::e32])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzcR20q8bz2ynZ;
-	Mon, 20 Apr 2026 17:23:25 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=uf2B2mlLI69k791S4B+v6JJbifgydOhWLPkmWHDnqUJ3qrFvNEZr+TYWrj+Gu4VBj27Ol0CutytFhk2+IREETyOiRoAcmYnBvk0eurDIpdmJwGzMnjUoivf6+igteT1gZ9H04Iq60S4kVw7pmc2Og8hbYBzQpDr3pJaIBi64LqyRktReGwQDcNYCX4ucRZ7vjpqCVHB0kljlleFnwVngoq7Z87/HBL7j5jyyafXHYuezx8/mI5QLcgRAxFu3nnLT1zLnAg+NybHJQpWWmTc3Cku03vcSP8Y+geSiQt4szkCj2KAZg1EQneL0QLxZAQZW1dnbexwqUzkVvXk23ZhCZQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lA1SS64rK86AA89yR52Qj5t6mBiiFO6Jj0e5xY7n8N0=;
- b=oA+EYx+L3HhzPOvKDypr6ks8d3lPAWcHrBLZJxBFApV6Ctt+4KbMqwI8BlGTx4qugTZObAm6eWYU1GvbwFN1ztJx5GO5d80fg+sInr4sJekgSQIu6L4Zyp63yLlz68bbuBmm+nXXQFVa30A47lZVk2mDYdOhbSzkXHHnIg4bdXqEMR9HDANN4wyvcUE2lrEqg6cPcOAdHZ/M4OaQfYdoHTKS8nuHUiJ3clGUS+QA9Atr/i2cCWISCzh1eDUZVHA3m7euQHMBDUw5utEB7bgIHgeA3L4fA7yRNHctW05nKm3/ks4cB24VLEnojtJV3IK3M5Wz2sQzV94sfWznoU9COQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lA1SS64rK86AA89yR52Qj5t6mBiiFO6Jj0e5xY7n8N0=;
- b=YRca/6tnySxc8Ztg/S5QP8Z4dZNQPw9GwtP7oRa8Z9cBp9YVGqhVgcroSGMmTIYZC6Yd7CTpqxA+oUGJdkiwSELuXOqjhCVoAcyWt72ZVNaGGw6tFpMX08ROjdLE4850SqR9N7Snvl0UP45LzTm9RYqbJoRXLEU8NEaZcTg1MOe7b8ColUQWcDv9CSdsdqL5UnK9QCf2dLEQNWoXExOH2cR2V5jKZga8kdL3C482U/ltQ2KfU0EVEJaMJWB6OP+ruAFXI5AG59PRbYuNmqvS7PiEs3L6OA+RMHHsuLSk12umK4UbHM0LfxGrqha0mWFcxQ9p0YoTrVOOk+/X7hF9eA==
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
- by SEYPR06MB7044.apcprd06.prod.outlook.com (2603:1096:101:1db::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9818.32; Mon, 20 Apr
- 2026 07:22:57 +0000
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19]) by OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19%4]) with mapi id 15.20.9818.031; Mon, 20 Apr 2026
- 07:22:57 +0000
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: Conor Dooley <conor@kernel.org>
-CC: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Joel
- Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@codeconstruct.com.au>, Linus
- Walleij <linusw@kernel.org>, Bartosz Golaszewski <brgl@kernel.org>, Ryan Chen
-	<ryan_chen@aspeedtech.com>, Andrew Jeffery <andrew@aj.id.au>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
-	<linux-gpio@vger.kernel.org>, "linux-clk@vger.kernel.org"
-	<linux-clk@vger.kernel.org>
-Subject: Re: [PATCH v7 1/3] dt-bindings: pinctrl: Add
- aspeed,ast2700-soc0-pinctrl
-Thread-Topic: [PATCH v7 1/3] dt-bindings: pinctrl: Add
- aspeed,ast2700-soc0-pinctrl
-Thread-Index: AQHczXLoc0DWafBAUU23YFhFi4LfGrXh15uAgACsm2SAAOlSgIAEIoHU
-Date: Mon, 20 Apr 2026 07:22:57 +0000
-Message-ID:
- <OSQPR06MB7252BD7967D2567AD6DA7A1D8B2F2@OSQPR06MB7252.apcprd06.prod.outlook.com>
-References: <20260416-upstream_pinctrl-v7-0-d72762253163@aspeedtech.com>
- <20260416-upstream_pinctrl-v7-1-d72762253163@aspeedtech.com>
- <20260416-brutishly-saga-ba7168a4cd14@spud>
- <OSQPR06MB7252EB0C2A1A3313DE49406B8B202@OSQPR06MB7252.apcprd06.prod.outlook.com>
- <20260417-anemia-borrower-fb90ac02b417@spud>
-In-Reply-To: <20260417-anemia-borrower-fb90ac02b417@spud>
-Accept-Language: en-US, zh-TW
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|SEYPR06MB7044:EE_
-x-ms-office365-filtering-correlation-id: 5d998068-2d00-4c47-66a0-08de9eada53b
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|7416014|1800799024|376014|38070700021|56012099003|22082099003|18002099003;
-x-microsoft-antispam-message-info:
- QQ95Nrz8QBMlWRnZXGg7uhrakBwQzm9aSixPUo0aFsLDSXYSt51wzfu2UQQe0Ks/NSQZrQBjMbJ2ezibtlXz1TnIPdvMw1xRsrnByXCmJf9dWCjpj3zl7c8k0d9kvZhLrUkP6NttmL3y1CpJQO+12hkp6uhJsbc/MZT9qDM1YOXttZnwJApmFePjSYswI3c45KXsBlMcsZI5jz9EXMKMKpYUGLOvV8ng4ftbvTEr2b58ZhhjPCsN0+O91oTiEBV8GPlACGV7Zgwv7fKbB9RI8Qy5kt05YZ/bfz92juYVSMGMI5eRG21Q1gQb2nS80blm+7a+ZGwnw25FPtfAE8pzKnz8JDBp9BwQfHzR6QgZAe+RUUgyFys9o3WUqS8vO2UZb8jX1WC1hPtPEOUyii1ysmCqeaSdjw64Z2GFVVR4o1SRn9DFSjL3bIRe/1RFccfahUUb4bHXxsktj5x59iVKk51hK9cjXyTAJ+ehMe81TppTL6yJLDE6y+W1QmUnEbKq9EP0YiCNc6qvC+WEqi7YRfbV0LeVX0cRJ9lEO/4cZ6a/qTSJ7RnHBbi0ONq0xQazUbabuFTmxv1OGYCRYl5Qiw9hWu6gA66RC8D6bykZoPz6v+U3cL8+CijDOlF+oH3SWW6BShLfO6/WF1AZxVqGzJUtZgSM28SnlbgN3u2SsgdZX5QJ18Yzgo/xKBsSYnc6GQ7FQr+E72WsnitdV4gTHnqt9IMaGi7HRwxhf3jJoj/Prtb3kN0A3uOgFl4FiyggNN/LuZiTp6hjusQ7g4bF2KWGyJJPFxxH303ym2SBanM=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(1800799024)(376014)(38070700021)(56012099003)(22082099003)(18002099003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?0iYjePFxEZciiBquxEDqSzZu6z2k07UkvkcswDz7Ab8B8L1xIFHG9Ar0nL?=
- =?iso-8859-1?Q?pH4z5F/SygKQExNjn37qG3XEHEw9BR6tF56LqqGbnj40+ML+QSFTsCQxcH?=
- =?iso-8859-1?Q?75zhCHp+WniQU4BR4Pr80BkhWLPSZz3uzc0mURdWMvLgUS6Ihxg8ecM4FZ?=
- =?iso-8859-1?Q?aUeydy15VCE5oO0rX5DYehbMh/ALq2Vkj2PSCMPRdjDs/zS+2WJ0EtUUED?=
- =?iso-8859-1?Q?RjpcKd/O2wV2ZcLK06+7MEIoFGuqPJ+OddTdeR8JI4P3z+Q/84tY+PEQzP?=
- =?iso-8859-1?Q?jexVZNq419p8/4DAzmA0deRNJJcHx0urY/NiNbK0iPULjsijl+qh7AZBeE?=
- =?iso-8859-1?Q?uh48nfbqPSRBtym9Rz69fByQkkSwvuiOrKeRYkBoyia/d4d+hSpSc8PLVH?=
- =?iso-8859-1?Q?Wky3rfPBSRZkopr7axovJGIB2PzQzdS28mEoKetNVMzuf2LoAZfVAq5+fD?=
- =?iso-8859-1?Q?LdDJH/92Uh1XBUIMB26J/KjbY0nHnHKE9+gjh6CnftrAE3PTl7RxwjNKHd?=
- =?iso-8859-1?Q?kHjKrrk83L0vtEkbBX6UeOPiFCAXeH2HhR8585yL6FjM8y2n8jTJXdLRIH?=
- =?iso-8859-1?Q?TyzOvf6qoLKj0Ysuhjub6iAPAySozV9FI74Q3pKHCP6QIJp9FwcEdWNJ9D?=
- =?iso-8859-1?Q?4puw89qrK+irs6oitk2j7Rz+YAN/ugDbpzbxAEd3b5BimxnHVYcPoUAY8M?=
- =?iso-8859-1?Q?Ms7YnlQGR2jjQq2lTxTHV18CWxr4u0g8pGMPU9kDZme69hx3jcE/KiWId2?=
- =?iso-8859-1?Q?Io4SdB62xrXVSQGBeJpxinbrgleqCRxi7kbqqt0h0Gf2SRA3E/HY0ZY/pw?=
- =?iso-8859-1?Q?EKAtLp9Tx+udxmSu6W97e/YmQ6pEnm+LhgOO/0A2URXRFVj+peHgP9rw3y?=
- =?iso-8859-1?Q?Hm0MNopmcgS1jrtGPvtq93Nn4cG+pZsJDKNl7EWNMQ5v4UvMDMGYmbJ3Ns?=
- =?iso-8859-1?Q?Jjwpg2VgDwI0Td/cu0pRH0jh+otjOCPvpcPSBc8DNYQ2a/n69cjZH9lTF2?=
- =?iso-8859-1?Q?L6T6uCe0x3nMFF0SDCK7EU7omH8tV+TF1nou8NqDaKhYRiYTvPwM0beUo1?=
- =?iso-8859-1?Q?3fddnozvhnaIvhUV4qV7gHzzkuCfXemqhXhOXkJlpfWK7AXWZSsa5PpNLm?=
- =?iso-8859-1?Q?vwol5gIIE5JcqioTvQQwYR+SLMNVRiC8oOSiZ3Yy4VzEKCZYgRdPYkGo+a?=
- =?iso-8859-1?Q?sqU9XwJkjpFmNM+Sq6mnWVZ0PYbDMqi1vvugmbdAkphFmoKWlanTCSNPCU?=
- =?iso-8859-1?Q?ztuUeVY4eq0eBBaVSVAlnkMVziHhnmEhCSgkC/0XWuGwDJtuIghbmrb7Sl?=
- =?iso-8859-1?Q?cVGbK11gloLrX9TuB/JoZtaC0yTrs+P39CO6f/zirepKAuqlZRek/4uluz?=
- =?iso-8859-1?Q?fYYg4Q+Wk0ANwJMVI7VPO2xBfnOfabAPrE4I2lps0LFXXGo6frL6QDMkj4?=
- =?iso-8859-1?Q?6nxOIPzY8eg9g+9vKNZemXyUevzaD7upmyjDvIe5MGGQxPcMZHBUCkO2yi?=
- =?iso-8859-1?Q?QT90DoqP4TFZ4ce5CyyqyAssyGguhopZ7jlGcMgfwXH7w+72KAv5DNqXHH?=
- =?iso-8859-1?Q?VEyy3eOfHTWWJDKWOEnjJZCqzSiwfmbDfwFE3N8Af9rQQDWw679IJLDp+f?=
- =?iso-8859-1?Q?PIB4O7H3aI7IZalMxQpQz/CenZGSdDJbUwNVq0KA4cXzBV3IkjOo3fo9R6?=
- =?iso-8859-1?Q?+1wZlhmnJ1r+nBAmQkXiE9E0a2IQI6AwdSRBEBfluKpmEQIXxr2K6N3zQU?=
- =?iso-8859-1?Q?5i4y7qr41zHjocsnqscDrD5+lAIdVNU1qB/N7ZGbIViVaCqriplAlp7fLE?=
- =?iso-8859-1?Q?QxWCvR7APQ=3D=3D?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4fzZ9k3NXyz2xnl
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 20 Apr 2026 15:41:46 +1000 (AEST)
+Received: by mail-vs1-xe32.google.com with SMTP id ada2fe7eead31-60fa5eb3ee1so822213137.2
+        for <linux-aspeed@lists.ozlabs.org>; Sun, 19 Apr 2026 22:41:46 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1776663702; cv=none;
+        d=google.com; s=arc-20240605;
+        b=D1jGF97SQ5ij4Zm+bRCKAjct1o8SjumUJvqUd1D5k34ALTD1VXco5WPv9ObPVGf+5P
+         MfPNkYJiYmvMd557HqoQWmrqZTem69tLOnF0demfAkp7wO6DFszq+gy8GigAuvQiwneU
+         s14k5Z2iGyk+u3mdUGbiP04XFlOZlQu6sWH8C+9mcYeEQQYpAAQidcpmBSv0dYaKQFsW
+         7JZcbkWXmGxI2Y/5sNW9kSdmkJaaUzWkkH6Tm8vKsz5mqi8iPTlMBhYTR6EXt8YcxqlE
+         0s0KEB1/cEIoJk/98CJznVLPYwIWv01B7BTdu0oyr/0JHeDFXaKtt3OJYaOyHHNIDwWX
+         tG9A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=CN0rXWBmzkEFgIqLEHhOXPBNQ+jcsnyYPEtLHAwW1Bs=;
+        fh=8vvHbVTAI9O2I/6P7varmRh5R8BwHQJdW8jGxGboc4I=;
+        b=CkfWIFPNl/RJ9yduTfdw6Ok+t96EjCIE+YOVp9QCe8+HVWHW4wn+zAcRGG18iWXac1
+         SeXrIqP+cEjiMRGuyDldw10sWrOklWZhg4wKNBhc0Nn90m3+bU2kg4pTO0eKqaOu0Ajt
+         yVWpjVkn5Wm7wMH3MH/Lw97mXYR4dsE0iFO5lN3qEsw6Qyeh+fzJDKRgFNq8HKizRE5C
+         pZSzyF0Wotbb/+JRaudkxJmkZrfMj6malwyq9bZuUUsegCGOUXjRr8tYT0zo+H9gq45D
+         +xrNiptSXFnWsVQs/hwYbOJjJkr48ot8yWJjHtDGs6IQWMZgryB26yrFKLsZhVksEGeD
+         kLEg==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776663702; x=1777268502; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=CN0rXWBmzkEFgIqLEHhOXPBNQ+jcsnyYPEtLHAwW1Bs=;
+        b=VOGN933N+6aZACwN6bZ2LTRIuLGR/os9RbaSu5E7pigme40EbAzOG/KuXYwGLDy1pl
+         6PeZy3HpwNSl/i7/nBeEauz/ByWHPQ/umYzVctIIyZJzg/LH8U5NU3+EULSCPoo2srBm
+         ZKgNhSxAgwEbq2hH8JQztcTQo1ibS7UrE0KzIEuW0gd02sVLdMDCFAj617+Jro/hliOW
+         yISUp/jZNPKpxzgf8WS69Y8v/V0qloyGibY4nxqspGnRi9pTq06zXcLgSnb5PfZQivdw
+         RKDXqhrzV3/hsT7go/HW4qnSsphexkHIuTSzoW5DFO3lMnmnKAt43bSgOgnTYHlXTO0U
+         OmGg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776663702; x=1777268502;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=CN0rXWBmzkEFgIqLEHhOXPBNQ+jcsnyYPEtLHAwW1Bs=;
+        b=Q0reBQya84lASkzZh8oPSwTZEL+Q9fwb+6hNQDCyEAUURm5mNxpHPhX2BHBDY3fWiy
+         cyKRes6TmuIVINWb+8I0UaDfe1vIt6HPwZ2wo2bg9EGFYC7UhotF0PoBnfdlaU9WSCzI
+         S3Wogu2V6UduFn3fsXk4RT88J0AAil9WXo8Dvklj/1HmiRYN/x7DXtwgCvhobTeyMd9L
+         mAYi/SHmju79VFYiBoVEWA/r7SmUoDNMF+HgWRrhZPip13S0XC1T1eST0ZvYOaX29v9h
+         gttKabkR42Z6bZ0H+y2vY4whkqQ8UovD1fs5m0HmEM7BjTPnmtPeJXXWTIIEv+Ewb305
+         ivlg==
+X-Forwarded-Encrypted: i=1; AFNElJ/3awvdr+yd01o19DgYY2jzs9zwpG6/aBUd2+cYNfMXWzasJzlvm9mR0k7hQDV+2w5oeOtruhTc1nvDt7M=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz/+jL1kqX/E68x2A/ltrp3qbip2K5EoHYSLLX/1nT98SjlMvX2
+	VT/5zhOibQ2V9Jj8qWPop6OYD5ztZWyi0ws3G36irf3brwqWm+GzFmvoF7Hy47qZnC0Uz3YzqVT
+	5AwYtidiVwlv5JBhLo7H0TeS5pBHrFdU=
+X-Gm-Gg: AeBDietb5y5Se4yIPVY77K/XZTiLB77uIlqqWMPFh5Fq2wMXx7FgUeIVuTpxPcsMy/Z
+	Q10T8rX0ngs1mJmWuTevEYrylAAPOn6BQrtn16LPIcdmRwORqF9qQvTEtoASrxcXVdBmRryG3Xo
+	Tm6aAAT3SEM5SBT4KUuZQRdTUHucqJ761gId0VyW3pU/0Qzj46t6vX0LV/K2kkn1ksr6MdxiIQk
+	NhJKb/WSp0e/sV66bwd/Afgzp92Ssu60S2E0JLoPPR9PqrrDO3plFp7Y/IKt9upyKw8YYGfA8cG
+	5OVd02RB0Toyq9ueQIW2cmE9jcI=
+X-Received: by 2002:a05:6102:1591:b0:607:9443:b2ee with SMTP id
+ ada2fe7eead31-616f73ff3e9mr4135707137.15.1776663702601; Sun, 19 Apr 2026
+ 22:41:42 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -148,190 +101,40 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5d998068-2d00-4c47-66a0-08de9eada53b
-X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Apr 2026 07:22:57.1828
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 4l5JLVY7glv4+hkSBCK9waNvf1O2t60RwmdBYYa+0BO26eBGwz23Uk3/Ehu2LAYOIKjHBqMBc5KVi9yeflbdO8ogzrrmfoqaOWid5kyXEKk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEYPR06MB7044
+References: <20260409-anacapa-devlop-phase-devicetree-v2-0-68f328671653@gmail.com>
+ <20260409-anacapa-devlop-phase-devicetree-v2-1-68f328671653@gmail.com> <20260409-foster-stability-f77b38c6f7a0@spud>
+In-Reply-To: <20260409-foster-stability-f77b38c6f7a0@spud>
+From: Colin Huang <u8813345@gmail.com>
+Date: Mon, 20 Apr 2026 13:41:30 +0800
+X-Gm-Features: AQROBzCiKd51EWmBsMq2VuVFATQ6pDOW-cn9wWzru-4S9PgURyPGAf8ahBr1njk
+Message-ID: <CAPBH0A_K39218+=QHJuEY+SbFk-nCnM=Z8RQMdHBK7SkCj2QtQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] dt-bindings: arm: aspeed: add Anacapa EVT1 EVT2 board
+To: Conor Dooley <conor@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+	Andrew Jeffery <andrew@codeconstruct.com.au>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, colin.huang2@amd.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> > > > +=A0=A0=A0 properties:=0A=
-> > > > +=A0=A0=A0=A0=A0 function:=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0 enum:=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - EMMC=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGDDR=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGM0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGPCIEA=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGPCIEB=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGPSP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGSSP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGTSP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGUSB3A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAGUSB3B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - PCIERC0PERST=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - PCIERC1PERST=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - TSPRSTN=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - UFSCLKI=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AD0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AD1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AHP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AHPD0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AXH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AXH2B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AXHD1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AXHP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AXHP2B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AXHPD1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BD0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BD1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BHP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BHPD0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BXH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BXH2A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BXHD1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BXHP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BXHP2A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BXHPD1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AXH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AXH2B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AXHD=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AXHP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AXHP2B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AXHPD=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BXH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BXH2A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BXHD=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BXHP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BXHP2A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BXHPD=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - VB=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - VGADDC=0A=
-> > > > +=0A=
-> > > > +=A0=A0=A0=A0=A0 groups:=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0 enum:=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - EMMCCDN=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - EMMCG1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - EMMCG4=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - EMMCG8=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - EMMCWPN=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - JTAG0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - PCIERC0PERST=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - PCIERC1PERST=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - TSPRSTN=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - UFSCLKI=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AAP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2ABP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2ADAP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2AHAP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BAP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BBP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BDBP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BH=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB2BHBP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3A=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3AAP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3ABP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3B=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BAP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - USB3BBP=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - VB0=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - VB1=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - VGADDC=0A=
-> > > > +=A0=A0=A0=A0=A0 pins:=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0 enum:=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AB13=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AB14=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AC13=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AC14=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AD13=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AD14=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AE13=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AE14=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AE15=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AF13=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AF14=0A=
-> > > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0 - AF15=0A=
-=0A=
-> > > Why do you have groups and pins?=0A=
-> > > Is it valid in your device to have groups and pins in the same node?=
-=0A=
-=0A=
-> > The intent is to support both group-based mux selection and=0A=
-> > configuration, as well as per-pin configuration.=0A=
-=0A=
-> > In our hardware:=0A=
-> > - `function` + `groups` are used for pinmux selection.=0A=
-> > - `pins` is used for per-pin configuration (e.g. drive strength,=0A=
-> >=A0=A0 bias settings).=0A=
-> > - `groups` may also be used for group-level configuration.=0A=
-=0A=
-> > As a result, both `groups` and `pins` may appear in the same node,=0A=
-> > but they serve different purposes and do not conflict:=0A=
-> > - `groups` selects the mux function and may apply configuration to=0A=
-> >=A0=A0 the entire group.=0A=
-> > - `pins` allows overriding or specifying configuration for individual=
-=0A=
-> >=A0=A0 pins.=0A=
-=0A=
-> > In most cases, only one of them is needed, but both are allowed when=0A=
-> > both group-level and per-pin configuration are required.=0A=
-=0A=
-> To be honest, that sounds like your groups are not sufficiently=0A=
-> granular and should be reduced such that you can use them for pin=0A=
-> settings.=0A=
-=0A=
-The intent was to keep the binding flexible, but in practice the mixed=0A=
-use of `groups` and `pins` in the same node is not expected to be used.=0A=
-=0A=
-Given that, I agree this flexibility is unnecessary and makes the=0A=
-binding semantics less clear. I'll rework the binding to make the=0A=
-expected usage explicit rather than allowing combinations that do not=0A=
-correspond to a real use case.=0A=
-=0A=
-In particular, I'll split the constraints as follows:=0A=
-=0A=
-- For pinmux, the presence of `function` will require `groups`, and=0A=
-  `pins` will not be allowed. This reflects the hardware design, where=0A=
-  the groups are defined by the pins affected by a given mux expression=0A=
-=0A=
-- For pin configuration, exactly one of `groups` or `pins` will be=0A=
-  required (using oneOf), so that configuration is applied either at=0A=
-  group level or per-pin, but not both.=0A=
-=0A=
-=0A=
-- if:=0A=
-    required:=0A=
-      - function=0A=
-  then:=0A=
-    required:=0A=
-      - groups=0A=
-    not:=0A=
-      required:=0A=
-        - pins=0A=
-  else:=0A=
-    oneOf:=0A=
-      - required:=0A=
-          - groups=0A=
-        not:=0A=
-          required:=0A=
-            - pins=0A=
-      - required:=0A=
-          - pins=0A=
-        not:=0A=
-          required:=0A=
-            - groups=0A=
-Does this match what you had in mind?=0A=
-=0A=
-Thanks=0A=
-Billy Tsai=
+Conor Dooley <conor@kernel.org> =E6=96=BC 2026=E5=B9=B44=E6=9C=889=E6=97=A5=
+=E9=80=B1=E5=9B=9B =E4=B8=8B=E5=8D=8811:36=E5=AF=AB=E9=81=93=EF=BC=9A
+>
+> On Thu, Apr 09, 2026 at 07:40:26PM +0800, Colin Huang wrote:
+> > Document Anacapa BMC EVT1 and EVT2 compatibles.
+> >
+> > Signed-off-by: Colin Huang <u8813345@gmail.com>
+>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> pw-bot: not-applicable
+
+Hi
+  Could anyone let me know, what is my next step which I need to do?
+  I can't find the changed in for-next branch of
+https://git.kernel.org/pub/scm/linux/kernel/git/bmc/linux.git .
+  Thanks.
+
+Regard,
+Colin Huang
 
