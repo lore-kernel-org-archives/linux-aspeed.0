@@ -1,93 +1,78 @@
-Return-Path: <linux-aspeed+bounces-3938-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3939-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62C26F8FA74
-	for <linux-aspeed@archiver.kernel.org>; Tue, 21 Apr 2026 13:03:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35BE8F94CA1
+	for <linux-aspeed@archiver.kernel.org>; Tue, 21 Apr 2026 17:57:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g0MxQ0bKbz2ySW;
-	Tue, 21 Apr 2026 23:03:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::536"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776776634;
-	cv=none; b=TPKQloN3LT7KJwFQbhyicNowwPYeEPWcrBFbCU+23dxCl39P1ekyH1tLXH1auNJLW6tjiCIBl8uJwqg4ioZl/gHEfDoeScYft2EXnwaz0zhFBdFfhfLgZFUpT4cOn2aDy2RC4gtePb7ExUfo+6j/VG618QasRr4mk/vXqrzJy5PHWQKpOyKxdylR2OM9L4Z4UCcOTJkWZdWLDjfj0Fw9PcLmMH76WCn7aPnESmeGPKwl9d1Iuj7Hyyafdizpmgr2IXhDezXT39aGgqo1iM4VET9x9WX+m0VgvqpNFQt+UhOxMGqnIe3YTEGLRm4UqKKygGOxasAQmuXuXVKMIn9efA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g0VS85026z30Kg;
+	Wed, 22 Apr 2026 03:57:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776794248;
+	cv=none; b=bzP71221NK0s6wcQ3V99FpJpurjyjw6Km9z0OGgiFugYXuvRaJl0ZhazaSL7eNnesbklnoZba/msmvEbcYOess6RjAeJhjr8snWissuaPRX/2g3K6ZaUh7UjpS7PaizLp9PzoQ45MHS4LWTAxF3dm2iwOBZyFwSRkVAxzmhTWsS/tvbGU4Sst22RIUNg9bhJQF5PN9Cr9pp5aN93A+pKQ7g0h+cMSv36nXEIJtnEXqQP/0tz68Ymq+fg48mqgiBc3nKQ+4tuIrPAguZH+Px9z0KfGHjMxm3MRmNkKyOmTnQc8iyP9KW5/qN8HoyCJpm4BwKFYeNDIzv0DUM2HTcsEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776776634; c=relaxed/relaxed;
-	bh=maE5jQDJwsycLww5UnLtB8sLxR1IdmgJ/9+EbDBJAp4=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=E/Wo+TPZMsUxpz4/dkcA3rC8Oz9DLDDuewNC7fA7wmZSRvUuFx6GRawKqVasbY9KfQ3IV7zbjo3kWC2UtkY1WoRTkUpM5LltWBjCz2+UW0kYHOyvvDrH/Ua0TmWCpCBI3R+7CE3OQjeBonVPO/1yfQKBMjRViMovXRCkDKuBNwBRxmtTdy2EhhL5FDOIWOYdDjwt5n15vYimQt4qj8b3iDHmZOHCnwSV3by2jlj0dNRIYXIgTxF1FkArIYCWbeAWg4sTxvl7waa1mMmULNX6R15nbuFi6OSjaEwkRNZn+cBtwGjTsAXtRvueRpi19iVvHLM+31sRiik7iLSkUqKcBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=h54UGOtj; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1776794248; c=relaxed/relaxed;
+	bh=dzRGwExDvSn0USCPgmwZ9kLflNT4n4wMtNTWealPhJY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nDCeRWNQ7iPMsADOmKYdo/cZnCqqoxlMMKEcdLAVqhn1wkq4a1O8mirCDzUPSLaSONdvnyxD24BfgFrm8Bbd7IEorMpH/KnlQGz4V6sFmsaqfjHV036p0petKJQrxdCEQ4qLpDFMHEa2X5ysuu66l6gJa/b3jMciSLB2EjtyzjCP+g3TXf3i9oqNJQ9aKvzCqYWZ5e2CYnLN1+dzWd5cWIvqKmnaxClhHY2QEOXcjNqKdwdmyfSf4n55pZhNGgGf4CEZ0SFSsd3aJW2sHtMoe4URtlVllhNFD2kg09ILfH5FwZf7HiYOEwjWT2qAXswohyp2sh32QbTQfU44vh86vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dgfqeyUi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=h54UGOtj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dgfqeyUi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::536; helo=mail-pg1-x536.google.com; envelope-from=fredchen.openbmc@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x536.google.com (mail-pg1-x536.google.com [IPv6:2607:f8b0:4864:20::536])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0MxP2CwTz2xQB
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 21 Apr 2026 23:03:53 +1000 (AEST)
-Received: by mail-pg1-x536.google.com with SMTP id 41be03b00d2f7-c795f096fa5so1689567a12.3
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 21 Apr 2026 06:03:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776776631; x=1777381431; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=maE5jQDJwsycLww5UnLtB8sLxR1IdmgJ/9+EbDBJAp4=;
-        b=h54UGOtjwLe8b1Qj0PMPb94fk1MNDaR+RyY/7+I9erz29YCBsXyPLG5g8BaQlfxYzs
-         bQDIunKHVVS0O5DXsxJIxKYktNsbjwub6rAlMGXLYUuRaRXADa9Q0fi2wtdjPR00uN2k
-         pF2BRJtOTpT3SeJU6uJeInGvgbjeFLMrJZyNCYewCDqvFpl4UpXaKQ8TKHd5YrxcSV6g
-         iK37IfutSxRn4UcVq8jrZuZ664CHMEt9fzVZ+vE2HRqPG1jx0UwMQ8thUAHjTkCXFSsq
-         B/6npOXMYBx8pI2FOaGzAi9kvEfi++CczVqmhk4EtdHnSEkMlWptxxIZ0+t4Qde/Mn/j
-         g0Cg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776776631; x=1777381431;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=maE5jQDJwsycLww5UnLtB8sLxR1IdmgJ/9+EbDBJAp4=;
-        b=iu/FX9idttaCDxfb7sFq1GaOLvMlmSHgbPZ+vDbsMUmoJ/OuvyZNWwz1gK4VZC0TS5
-         KPiWg9dHLGxmGMcZT0x0Dsz9QQcqOsivUqedOp/cRHADZ301ZxSQ0GMUseNIIh6Vo78I
-         XJ/xmMUuZOV8Mro6a0eFj4BB9D82wOHXD4/2ABS8lDh6YRKOykuPP1XiS5mmbh+p1ARe
-         Blxbw2M1D2+LSaEESiWZJolMhVbSM+y0SJrH/5Co5kHA1ZOLl/MPweZfmWdj6KEIcDmh
-         dvFjYTUbPsAzAv1625VC4iNKKNfGDqg3Ef+4ly409OmI9cmlmZeXtvCuaOXRSYPxIKig
-         GyMw==
-X-Forwarded-Encrypted: i=1; AFNElJ/N/kHdy/diUKYWIYpxkj1XBw5UgYFOeBNx69MnZWkiveOUYa6uV8OY6J3df9vClK058p4c8ea3rLkJdX0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzWhdb7ThQqxC55uVCBMdCMiZ2pAMo/ftYhqaJkeSAyipEIkm5F
-	WkWVKTbu+GjdLsIed1R0ZihG78OvAtwmNwTRNFixEni5BSxkW+r3PSiu
-X-Gm-Gg: AeBDietkyFIciFpPAKehLlzJqXQvoUr2Hcz11Ms6zbZmfsO3qrr+4Lnnszkp5Iqxj1I
-	xltZuN4pW+Bo7Vv/3D6SMBE/IeFOT7nmpZuPD+FL7V5Vo7es0Y56DxBjkUhBlvEvgSR6EUs/ARK
-	pqkXOLpEGC7TRl7QmH8K1vvnBJpE0vmePsIxS5lWZ+Jdi2BXFmm0yFXad/i5B3dHIu4Yj4TeXiJ
-	yMiBQvtU3hkJfo2/kjcWbmpyOUwynSywes3gH4RqhSKiaq8IT9Q/I4k750DSMzkbn1X/WQrEj1F
-	2uHk6ZUn8tNpoi4dxMOrG8iaVHUw1pSoAJPqsRbFE4mGJ89XUVRp5WHaV4zDpoy0GAd7APN228n
-	NZDvOzLk08fjNeDCnIXezHE/bWe4qQrJDWyPEDh8PSJRPjSxY3lHEVqF/OZIUl4Z1FNnDvOXNCP
-	LWjdPVAg7XG99l/W9COSkybrgrz1pQgIz7wo2cNgwW3FZDJPM+w9IAy9t8BVGFOzd8seEpBsP4D
-	UwhPcHWbhnXJX3QsYtz++8=
-X-Received: by 2002:a05:6a20:9146:b0:3a2:dbaa:82ee with SMTP id adf61e73a8af0-3a2dbaa8538mr5955384637.9.1776776631018;
-        Tue, 21 Apr 2026 06:03:51 -0700 (PDT)
-Received: from fred-System-Product-Name (61-220-246-151.hinet-ip.hinet.net. [61.220.246.151])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-82f8e981a0asm14456484b3a.3.2026.04.21.06.03.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Apr 2026 06:03:50 -0700 (PDT)
-From: Fred Chen <fredchen.openbmc@gmail.com>
-To: Rob Herring <robh@kernel.org>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g0VS74BLSz30Jy;
+	Wed, 22 Apr 2026 03:57:27 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 61B32418C4;
+	Tue, 21 Apr 2026 17:57:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE4EEC2BCB0;
+	Tue, 21 Apr 2026 17:57:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1776794245;
+	bh=xPXf7LTENtfyjseOPX2ZzZFz4nnRhDy+MLhipzCmuqg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=dgfqeyUiTJMOTd4FOP1xIgVEHIDDgHn26SLXHbyk2+09VFA/8aAuxEVwgfeDGCkUZ
+	 Md+qmpTZmx21oSG82v6jjqSBIZk7nN+npw4mFcIy3sPor4SbI91HpVyIz5E3COfpmR
+	 p97rSJ63+NqXvUwGmn1kUaw2q+d6Lu6cfGhanCVp7CtsR9sysh5BLa9hXcghjfwd1s
+	 awKC4R6prDKFylGAbMBYlU23Fa7ku2Ze4u1gHMEaelP4QHjjtsmy6Mp/10uIRzkLg2
+	 NQ8wTHO4szxiTvoFNJ0a0oDDGrW1ZnskidMTOmURswFQbe0gRE4764mvrs6LbKmJkM
+	 QeRs1EtC4HN6w==
+Date: Tue, 21 Apr 2026 18:57:19 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Billy Tsai <billy_tsai@aspeedtech.com>
+Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
 	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/1] ARM: dts: aspeed: santabarbara: Add system monitoring GPIOs
-Date: Tue, 21 Apr 2026 21:03:41 +0800
-Message-ID: <20260421130344.2751662-2-fredchen.openbmc@gmail.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260421130344.2751662-1-fredchen.openbmc@gmail.com>
-References: <20260421130344.2751662-1-fredchen.openbmc@gmail.com>
+	Linus Walleij <linusw@kernel.org>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Andrew Jeffery <andrew@aj.id.au>,
+	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
+	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>
+Subject: Re: [PATCH v7 1/3] dt-bindings: pinctrl: Add
+ aspeed,ast2700-soc0-pinctrl
+Message-ID: <20260421-valid-expanse-ae6b5a9289f2@spud>
+References: <20260416-upstream_pinctrl-v7-0-d72762253163@aspeedtech.com>
+ <20260416-upstream_pinctrl-v7-1-d72762253163@aspeedtech.com>
+ <20260416-brutishly-saga-ba7168a4cd14@spud>
+ <OSQPR06MB7252EB0C2A1A3313DE49406B8B202@OSQPR06MB7252.apcprd06.prod.outlook.com>
+ <20260417-anemia-borrower-fb90ac02b417@spud>
+ <OSQPR06MB7252BD7967D2567AD6DA7A1D8B2F2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+ <20260420-footprint-both-967ccd6c120c@spud>
+ <OSQPR06MB725251546BFEB158F9AA1C4D8B2C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,181 +86,251 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="e/yrNYrOHY6xz2Ct"
+Content-Disposition: inline
+In-Reply-To: <OSQPR06MB725251546BFEB158F9AA1C4D8B2C2@OSQPR06MB7252.apcprd06.prod.outlook.com>
 
-Add several GPIO expanders to the Santabarbara platform, with ioexp0
-(0x20) configured to aggregate interrupt signals from downstream
-expanders to optimize sideband pin usage.
 
-The new GPIO nodes provide support for:
-- NIC1-4 power good monitoring, reset control, and fault detection
-- Switch PEX power good signals and hardware SKU/Revision IDs
-- Cable presence detection and selection for four SPI flashes
-- System power fault alert via SGPIO and E1S GPIO expander interrupt
+--e/yrNYrOHY6xz2Ct
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Fred Chen <fredchen.openbmc@gmail.com>
----
- .../aspeed-bmc-facebook-santabarbara.dts      | 125 +++++++++++++++++-
- 1 file changed, 124 insertions(+), 1 deletion(-)
+Billy, Linus,
 
-diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-index 0a3e2e241063..2a822e38f091 100644
---- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-+++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-santabarbara.dts
-@@ -616,6 +616,8 @@ gpio@74 {
- 				reg = <0x74>;
- 				gpio-controller;
- 				#gpio-cells = <2>;
-+				interrupt-parent = <&sgpiom0>;
-+				interrupts = <146 IRQ_TYPE_LEVEL_LOW>;
- 				gpio-line-names =
- 					"P12V_E1S_ADC_ALERT","BUFF0_100M_LOSB_PLD",
- 					"E1S_BP_SKU_ID0","E1S_BP_SKU_ID1",
-@@ -1335,6 +1337,112 @@ eeprom@50 {
- &i2c12 {
- 	status = "okay";
- 
-+	ioexp0: gpio@20 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x20>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+		interrupt-parent = <&sgpiom0>;
-+		interrupts = <148 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"IOEXP_21h_INT_N","IOEXP_22h_INT_N",
-+			"IOEXP_23h_INT_N","IOEXP_24h_INT_N",
-+			"IOEXP_25h_INT_N","IOEXP_26h_INT_N",
-+			"IOEXP_27h_INT_N","SWB_PWR_FAULT_N",
-+			"","","","",
-+			"","","","";
-+	};
-+
-+	gpio@21 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x21>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&ioexp0>;
-+		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"PDB_PRSNT_J1_N","PDB_PRSNT_J2_N",
-+			"PRSNT_NIC1_N","PRSNT_NIC2_N",
-+			"PRSNT_NIC3_N","PRSNT_NIC4_N",
-+			"","",
-+			"CBL_PRSNT_MCIO_0_N","CBL_PRSNT_MCIO_1_N",
-+			"CBL_PRSNT_MCIO_2_N","CBL_PRSNT_MCIO_3_N",
-+			"","","","";
-+	};
-+
-+	gpio@22 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x22>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&ioexp0>;
-+		interrupts = <1 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"SWB_PWRGD_P3V3_AUX","SWB_PWRGD_P1V8_PEX",
-+			"SWB_PWRGD_P1V8_AUX","SWB_PWRGD_P5V",
-+			"SWB_PWRGD_P1V5_PEX","SWB_PWRGD_P1V2_PEX",
-+			"SWB_PWRGD_P0V895_PEX","SWB_PWRGD_P0V81_PEX_0",
-+			"SWB_PWRGD_P0V81_PEX_1","SWB_PWRGD_P0V81_REFCLK",
-+			"SWB_PWRGD_MODULE","",
-+			"","","","";
-+	};
-+
-+	gpio@24 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x24>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&ioexp0>;
-+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"RST_PERST_NIC1_N","RST_PERST_NIC2_N",
-+			"RST_PERST_NIC3_N","RST_PERST_NIC4_N",
-+			"RST_PERST_MCIO_0_N","RST_PERST_MCIO_1_N",
-+			"RST_PERST_MCIO_2_N","RST_PERST_MCIO_3_N",
-+			"FM_P3V3_NIC1_FAULT_N","FM_P3V3_NIC2_FAULT_N",
-+			"FM_P3V3_NIC3_FAULT_N","FM_P3V3_NIC4_FAULT_N",
-+			"PWRGD_P12V_NIC1","PWRGD_P12V_NIC2",
-+			"PWRGD_P12V_NIC3","PWRGD_P12V_NIC4";
-+	};
-+
-+	gpio@25 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x25>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&ioexp0>;
-+		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"NIC1_MAIN_R_PWR_EN","NIC2_MAIN_R_PWR_EN",
-+			"NIC3_MAIN_R_PWR_EN","NIC4_MAIN_R_PWR_EN",
-+			"FM_PLD_NIC1_AUX_PWR_EN","FM_PLD_NIC2_AUX_PWR_EN",
-+			"FM_PLD_NIC3_AUX_PWR_EN","FM_PLD_NIC4_AUX_PWR_EN",
-+			"PWRGD_NIC1","PWRGD_NIC2",
-+			"PWRGD_NIC3","PWRGD_NIC4",
-+			"PWRGD_P3V3_NIC1","PWRGD_P3V3_NIC2",
-+			"PWRGD_P3V3_NIC3","PWRGD_P3V3_NIC4";
-+	};
-+
-+	gpio@26 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x26>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		interrupt-parent = <&ioexp0>;
-+		interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
-+		gpio-line-names =
-+			"SWB_SKU_ID_0","SWB_SKU_ID_1",
-+			"SWB_SKU_ID_2","SWB_SKU_ID_3",
-+			"SWB_REV_ID_0","SWB_REV_ID_1",
-+			"SWB_REV_ID_2","",
-+			"RST_PLD_PEX_PERST_N","CPLD_MB_PWR_EN",
-+			"RST_PERST_SWB_R_N","SWB_LEAK_DETECT",
-+			"PEX_SYS_ERR_FPGA","PRSNT_SWB_LEAK_CABLE_N",
-+			"","";
-+	};
-+
- 	gpio@27 {
- 		compatible = "nxp,pca9555";
- 		reg = <0x27>;
-@@ -1349,6 +1457,21 @@ gpio@27 {
- 			"SPI_MUX_SEL","","","";
- 	};
- 
-+	gpio@28 {
-+		compatible = "nxp,pca9555";
-+		reg = <0x28>;
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+		gpio-line-names =
-+			"SCO_UART_MUX_SEL0","SCO_UART_MUX_SEL1",
-+			"SPI_PROG_PL12_SEL","SPI_PROG_PL34_SEL",
-+			"","","","",
-+			"I3C_HUB_3_MUX_SEL_PLD","",
-+			"SPI_PROG_PL12_EN_N","SPI_PROG_PL34_EN_N",
-+			"SCO1_SPI_SEL","SCO2_SPI_SEL",
-+			"SCO3_SPI_SEL","SCO4_SPI_SEL";
-+	};
-+
- 	// SWB FRU
- 	eeprom@52 {
- 		compatible = "atmel,24c64";
-@@ -1776,7 +1899,7 @@ &sgpiom0 {
- 	"MB_SKU_ID_1","PASSWORD_CLEAR",
- 	"MB_SKU_ID_2","",
- 	"MB_SKU_ID_3","",
--	"","BIOS_DEBUG_MODE",
-+	"SYS_PWR_FAULT_ALERT","BIOS_DEBUG_MODE",
- 	/*H0-H3 line 112-119*/
- 	"FM_IOEXP_U538_INT_N","",
- 	"FM_IOEXP_U539_INT_N","FM_MODULE_PWR_EN_N_1B",
--- 
-2.52.0
+On Tue, Apr 21, 2026 at 06:15:44AM +0000, Billy Tsai wrote:
+> > > > > > > +    properties:
+> > > > > > > +      function:
+> > > > > > > +        enum:
+> > > > > > > +          - EMMC
+> > > > > > > +          - JTAGDDR
+> > > > > > > +          - JTAGM0
+> > > > > > > +          - JTAGPCIEA
+> > > > > > > +          - JTAGPCIEB
+> > > > > > > +          - JTAGPSP
+> > > > > > > +          - JTAGSSP
+> > > > > > > +          - JTAGTSP
+> > > > > > > +          - JTAGUSB3A
+> > > > > > > +          - JTAGUSB3B
+> > > > > > > +          - PCIERC0PERST
+> > > > > > > +          - PCIERC1PERST
+> > > > > > > +          - TSPRSTN
+> > > > > > > +          - UFSCLKI
+> > > > > > > +          - USB2AD0
+> > > > > > > +          - USB2AD1
+> > > > > > > +          - USB2AH
+> > > > > > > +          - USB2AHP
+> > > > > > > +          - USB2AHPD0
+> > > > > > > +          - USB2AXH
+> > > > > > > +          - USB2AXH2B
+> > > > > > > +          - USB2AXHD1
+> > > > > > > +          - USB2AXHP
+> > > > > > > +          - USB2AXHP2B
+> > > > > > > +          - USB2AXHPD1
+> > > > > > > +          - USB2BD0
+> > > > > > > +          - USB2BD1
+> > > > > > > +          - USB2BH
+> > > > > > > +          - USB2BHP
+> > > > > > > +          - USB2BHPD0
+> > > > > > > +          - USB2BXH
+> > > > > > > +          - USB2BXH2A
+> > > > > > > +          - USB2BXHD1
+> > > > > > > +          - USB2BXHP
+> > > > > > > +          - USB2BXHP2A
+> > > > > > > +          - USB2BXHPD1
+> > > > > > > +          - USB3AXH
+> > > > > > > +          - USB3AXH2B
+> > > > > > > +          - USB3AXHD
+> > > > > > > +          - USB3AXHP
+> > > > > > > +          - USB3AXHP2B
+> > > > > > > +          - USB3AXHPD
+> > > > > > > +          - USB3BXH
+> > > > > > > +          - USB3BXH2A
+> > > > > > > +          - USB3BXHD
+> > > > > > > +          - USB3BXHP
+> > > > > > > +          - USB3BXHP2A
+> > > > > > > +          - USB3BXHPD
+> > > > > > > +          - VB
+> > > > > > > +          - VGADDC
+> > > > > > > +
+> > > > > > > +      groups:
+> > > > > > > +        enum:
+> > > > > > > +          - EMMCCDN
+> > > > > > > +          - EMMCG1
+> > > > > > > +          - EMMCG4
+> > > > > > > +          - EMMCG8
+> > > > > > > +          - EMMCWPN
+> > > > > > > +          - JTAG0
+> > > > > > > +          - PCIERC0PERST
+> > > > > > > +          - PCIERC1PERST
+> > > > > > > +          - TSPRSTN
+> > > > > > > +          - UFSCLKI
+> > > > > > > +          - USB2A
+> > > > > > > +          - USB2AAP
+> > > > > > > +          - USB2ABP
+> > > > > > > +          - USB2ADAP
+> > > > > > > +          - USB2AH
+> > > > > > > +          - USB2AHAP
+> > > > > > > +          - USB2B
+> > > > > > > +          - USB2BAP
+> > > > > > > +          - USB2BBP
+> > > > > > > +          - USB2BDBP
+> > > > > > > +          - USB2BH
+> > > > > > > +          - USB2BHBP
+> > > > > > > +          - USB3A
+> > > > > > > +          - USB3AAP
+> > > > > > > +          - USB3ABP
+> > > > > > > +          - USB3B
+> > > > > > > +          - USB3BAP
+> > > > > > > +          - USB3BBP
+> > > > > > > +          - VB0
+> > > > > > > +          - VB1
+> > > > > > > +          - VGADDC
+> > > > > > > +      pins:
+> > > > > > > +        enum:
+> > > > > > > +          - AB13
+> > > > > > > +          - AB14
+> > > > > > > +          - AC13
+> > > > > > > +          - AC14
+> > > > > > > +          - AD13
+> > > > > > > +          - AD14
+> > > > > > > +          - AE13
+> > > > > > > +          - AE14
+> > > > > > > +          - AE15
+> > > > > > > +          - AF13
+> > > > > > > +          - AF14
+> > > > > > > +          - AF15
+>=20
+> > > > > > Why do you have groups and pins?
+> > > > > > Is it valid in your device to have groups and pins in the same =
+node?
+>=20
+> > > > > The intent is to support both group-based mux selection and
+> > > > > configuration, as well as per-pin configuration.
+>=20
+> > > > > In our hardware:
+> > > > > - `function` + `groups` are used for pinmux selection.
+> > > > > - `pins` is used for per-pin configuration (e.g. drive strength,
+> > > > >   bias settings).
+> > > > > - `groups` may also be used for group-level configuration.
+>=20
+> > > > > As a result, both `groups` and `pins` may appear in the same node,
+> > > > > but they serve different purposes and do not conflict:
+> > > > > - `groups` selects the mux function and may apply configuration to
+> > > > >   the entire group.
+> > > > > - `pins` allows overriding or specifying configuration for indivi=
+dual
+> > > > >   pins.
+>=20
+> > > > > In most cases, only one of them is needed, but both are allowed w=
+hen
+> > > > > both group-level and per-pin configuration are required.
+>=20
+> > > > To be honest, that sounds like your groups are not sufficiently
+> > > > granular and should be reduced such that you can use them for pin
+> > > > settings.
+>=20
+> > > The intent was to keep the binding flexible, but in practice the mixed
+> > > use of `groups` and `pins` in the same node is not expected to be use=
+d.
+> > >=20
+> > > Given that, I agree this flexibility is unnecessary and makes the
+> > > binding semantics less clear. I'll rework the binding to make the
+> > > expected usage explicit rather than allowing combinations that do not
+> > > correspond to a real use case.
+> > >=20
+> > > In particular, I'll split the constraints as follows:
+> > >=20
+> > > - For pinmux, the presence of `function` will require `groups`, and
+> > >   `pins` will not be allowed. This reflects the hardware design, where
+> > >   the groups are defined by the pins affected by a given mux expressi=
+on
+> > >=20
+> > > - For pin configuration, exactly one of `groups` or `pins` will be
+> > >   required (using oneOf), so that configuration is applied either at
+> > >   group level or per-pin, but not both.
+> > >=20
+> > >=20
+> > > - if:
+> > >     required:
+> > >       - function
+> > >   then:
+> > >     required:
+> > >       - groups
+> > >     not:
+> > >       required:
+> > >         - pins
+> > >   else:
+> > >     oneOf:
+> > >       - required:
+> > >           - groups
+> > >         not:
+> > >           required:
+> > >             - pins
+> > >       - required:
+> > >           - pins
+> > >         not:
+> > >           required:
+> > >             - groups
+> > > Does this match what you had in mind?
+>=20
+> > It's an improvement I think, but I am wondering why you cannot do
+> > without pins entirely and apply pinconf stuff at the group level?
+> > Of course that may not be possible with the current groups, but if you
+> > made the groups more granular, would it be possible?
+>=20
+> Within a given group, it is not always the case that all pins share the
+> same configuration requirements (e.g. drive strength or bias settings),
+> so applying pinconf purely at the group level would be too restrictive.
 
+Right. That's pretty normal.
+
+> Making the groups more granular to match all possible configuration
+> combinations would not reflect the actual mux granularity and would
+> significantly increase the number of groups.
+
+>=20
+> For example, we have encountered a timing issue due to the PCB layout,
+> where only the eMMC clock pin requires a different drive strength:
+>=20
+>   # The EMMCG4 group includes pins AC14, AE15, AD14, AE14, AF14, AB13
+>   # AC14: clock
+>   # AE15: command
+>   # AD14=E2=80=93AB13: data
+>=20
+>   pinconf_emmc_clk: emmc-clk-pinconf {
+>       pins =3D "AC14";
+>       drive-strength =3D <8>;
+>   };
+>=20
+> In this case, applying pin configuration at the group level would affect
+> all pins in the group, which is not desirable. Allowing per-pin
+> configuration via `pins` is therefore necessary.
+>=20
+> For this reason, `groups` is used for mux selection, while `pins` is
+> required to express per-pin configuration where needed.
+
+Right, yeah, I figured your objection to it was because of how
+annoyingly small it would make the groups. I suppose the alternative is
+going without groups and always using pins.
+Having groups and pins seems really suboptimal to me, but there are
+some other bindings where this is done. Linus, what is your take on
+nodes supporting both? I'm biased towards having a more straightforward
+binding but if you think this mix makes sense then I'll defer to your
+vastly greater experience with these devices.
+
+
+--e/yrNYrOHY6xz2Ct
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaee6fwAKCRB4tDGHoIJi
+0noaAP9jYP09SYhW2PHzSVQFFiUEdcOsiFAlMGJHXxpV2+SxZgEAzvMeVc+SrBA4
+Ker/dZO9rTEAMa9/23liJlGnUhKVJQA=
+=BQ+S
+-----END PGP SIGNATURE-----
+
+--e/yrNYrOHY6xz2Ct--
 
