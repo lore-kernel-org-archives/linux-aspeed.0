@@ -1,76 +1,88 @@
-Return-Path: <linux-aspeed+bounces-3952-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3953-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77B23FDEE38
-	for <linux-aspeed@archiver.kernel.org>; Thu, 23 Apr 2026 17:44:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85EE0FDEE58
+	for <linux-aspeed@archiver.kernel.org>; Fri, 24 Apr 2026 01:02:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1k4H60lsz2yFm;
-	Fri, 24 Apr 2026 03:44:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776966271;
-	cv=none; b=nwij3zKhZTCZ0whxedGUAyaSe8/dHFTTGHu/QN6NoABXKHDyFHGJ+ZeulYpwOGDP/bC6kw+3HIv8baaEfxyKUTSGKHMbQ+r5015RA2atmc/5qCrDjaqzv13u+6MNbPMhjaSXkWayjljXlrdjSKkb7xCHixOhZbxzrY+d9yudLjtalBPoPI8YqzIUr+0+r+CReOiX+bWdV55zcRNbCvJg1RBX5Wxm88snQAka2RUaVZpFzZ0BEYQf1UTl6FLDuEhD6ZhnZsXuNM207lel1ELUMxLj4ptB+Ch2oYDJ47lSRXIG1gbrOcPKSxUhgtsc8rIBb3G5jisGdwp0dWMhoic+VA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g1vny06pBz2ydQ;
+	Fri, 24 Apr 2026 11:02:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1034"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776972079;
+	cv=none; b=f8tRqFtYNrXgf/6HMm4iStbPcm2qUZ1z71pG4yE5XL3EbTP8oe9M+AGodV0U/l5nu5sIuCLgfyYnYg+EcAUw5gH/xXrOTcSVfJvgFJ+KUwxyAK8fE6bn9LMSukQVmLVHttKGb6SsxzuYOeyRCNJKJbq99F4bPu4y3m9ehfuhLBx2b7ecluXSHnRMEQQ9mFVvgolkz+REran75zzMWxyGywBQ+bgNCnMqw5QNUCSSv7OKBatskfa+H2Err6MhSarh1DFJVGP2Y14Qjl8mRi+/3S4ImwMGzNs/N5gAa52T5eF9la1D0I2N20hpElMIpbeYv69J7ppO2boErKQFwqdtNA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776966271; c=relaxed/relaxed;
-	bh=pN1bHXTr1LlOb/G1azX3CC1+rwLeWTb7QNVStx+Ul2g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mD9P2Uv4vkTeyMqVIUoS/4qEFFJRuZOABkjk4KG1iAffuzf7akvQt1UAb4IsEyAFZj7mVI3EuXt6xlI1W56NDX/xmvwIEPIS4CYU0bT2ErmHn2WKUw79GTXVjN4nbP4Fc+dG7pgF3tayALK1nzieoc0YTsmAUClUBKwX0DxI/LoRLYPSFGZOMIyBfsw+deYROzCOgK82UhUZV3bmmtpeWu9dUqW8DoB317eAdXoW7sOEjF7Ouq6ZEszo7s5ewdMqXeZiHzLGD6B7MXWXmmJ2ex2i8wUBafIZklxwEfK1MjEirU3SmfvjA4WOKIkX+ZiWz8UyiB1RtA7wrYU6BGl42A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aBu8iRtF; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1776972079; c=relaxed/relaxed;
+	bh=FD+mnSjT2GzzjnT7c/+m0+ys37kefIgr9Jgnl09Emew=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VxVwvLIiz9QhAXVQWU5w9+VmUSN2D3Y0Qyxi8PbOgJEE5RcB34CA2D+zEoBQK4+t5DofwFl544Y2GTC0tGKURVD62/us+DCuZtu3UlXFrJcRhI7inx5MwzgTKliUyWNb2tAYhuLPY12k0sZRg+elGsbijFrSpgL7fMOnUCeRmFqaTqmokkbkuPKxk3Bf1U0mlWedYZdJj5YgyZ4lY3ONY7/IaxiCkeb4oXhE0Z0C0q1tt6Wvtsl+FKrtnlUdGz88IDojWRnfp2goT0mkC4Uf2fW28TZtXy6wac2i7J3lqDG+aDLsE1juSJxSKNFTMNlMbDyJ7y/N/h4yl8hbEYfM0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CJ5mWRUT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aBu8iRtF;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=CJ5mWRUT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1k4G4N6Cz2xlt;
-	Fri, 24 Apr 2026 03:44:30 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 5119760139;
-	Thu, 23 Apr 2026 17:44:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B558DC2BCAF;
-	Thu, 23 Apr 2026 17:44:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1776966268;
-	bh=Ca6918fcOAXDM3mevQIr9UFJydEQNXb86m/+edpbIC8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=aBu8iRtFL+Ml28WAMlWVSTzNQysPYMICkXs8iHwEl66fo33PA83dxwmevXPQQ+8r+
-	 03oNzphPXfEn2JbEdywqHe7tIQBtSWk2smDoiP5qJEz4T9SIQJTUmfhl4b9SQHt5je
-	 ZOwt4sdI6EeBvPuh2YSRd1/7Nzc0ld+fSTlcJlo/M6Q/KKZVTJ9Yb0rkFLeCpYg3vq
-	 RUXInthqnG+cSRYc7ZytRSXcRZSrWI99++7ZWujhmzXACHfFkIte2jw04JlDIc58OZ
-	 +EYO0HeTnSkElit8Iw3fYHtGMH0IddZ9VlxfAChsS1CaEM59XvTguRxlE6Em7hXYYF
-	 Onb3Y/C9LQ6gA==
-Date: Thu, 23 Apr 2026 18:44:22 +0100
-From: Conor Dooley <conor@kernel.org>
-To: Billy Tsai <billy_tsai@aspeedtech.com>
-Cc: Lee Jones <lee@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Linus Walleij <linusw@kernel.org>,
-	Bartosz Golaszewski <brgl@kernel.org>,
-	Ryan Chen <ryan_chen@aspeedtech.com>,
-	Andrew Jeffery <andrew@aj.id.au>,
-	"devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
-	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"openbmc@lists.ozlabs.org" <openbmc@lists.ozlabs.org>,
-	"linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-	"linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>
-Subject: Re: [PATCH v7 1/3] dt-bindings: pinctrl: Add
- aspeed,ast2700-soc0-pinctrl
-Message-ID: <20260423-clever-swooned-a06907e9101e@spud>
-References: <20260416-upstream_pinctrl-v7-0-d72762253163@aspeedtech.com>
- <20260416-upstream_pinctrl-v7-1-d72762253163@aspeedtech.com>
- <20260416-brutishly-saga-ba7168a4cd14@spud>
- <OSQPR06MB7252EB0C2A1A3313DE49406B8B202@OSQPR06MB7252.apcprd06.prod.outlook.com>
- <20260417-anemia-borrower-fb90ac02b417@spud>
- <OSQPR06MB7252BD7967D2567AD6DA7A1D8B2F2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1mCy4PQrz2yFm
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 24 Apr 2026 05:21:17 +1000 (AEST)
+Received: by mail-pj1-x1034.google.com with SMTP id 98e67ed59e1d1-35d99031e4eso4979501a91.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Apr 2026 12:21:17 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1776972076; x=1777576876; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=FD+mnSjT2GzzjnT7c/+m0+ys37kefIgr9Jgnl09Emew=;
+        b=CJ5mWRUTSTe0vaN2tnq5y4c6xnD0frWE0N20yU8JVSYc3lFcI+mHOs4WSA1ZaStr3H
+         1FHIj2jj2rT19JSq6hxOH3e13YQdJu+KRY8pJCmLBKpKqpyiXM/BBot9nXzdvMXvehLi
+         FPSRp4H4Usa8jTa/4+qGRf3d9yViiRt17kHw9R8rQDcxqh8Wii1llQBq5rcmPA8Q0c8N
+         2Mzw48NuXQDh19eMWRmLhKoHwulqqy9iHx5vRwtRtZJw1WsWM3zdG/Olx/gzMCnKd2la
+         55XTDh4cEXgokySd2uRmMCxa1QAELvtVVynjgAm9Q3tpthmmfaNHp+KLHpM3cWZi4apK
+         DWvw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1776972076; x=1777576876;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=FD+mnSjT2GzzjnT7c/+m0+ys37kefIgr9Jgnl09Emew=;
+        b=QSK0tPk98vVz0B8N8GB2CEgpLDYSB69fZAHN//IOGsOQLsoeeNiciaXNsUzsglrTwB
+         VdN7B1a80tovqxiXsvmAR9xALizRMdDKjXnlWYg1xJVfN9HgHzNpJVso8Eu9ykH3wrlh
+         IHXqvbviIDGM0HLnwH9vFHTMlWVZThSwPThbJnbImjlvBQ3K0ncri+pTZd5yn/SSlkzJ
+         L5MhvDL/y4mBtOHKAM6SCiL+a6vZ4v63DFy9pGhtT93D2F/yi5M9bhyD5ABIlfxFwQc0
+         rTB4BTy/A9m8q5UrByJpR8cLEMyfFOR1vuo536xNEzBOmg17vn7qclCSrysJD2+9HU9u
+         zpDA==
+X-Forwarded-Encrypted: i=1; AFNElJ/YyuoRU7KVD/fv83MBBBMboyoa6a+s6YOHjzuHQ5KKDTRZoHwtQ9zCZMuIJHqBayV5hXXosYtbjRW+AVo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxxBYELSFGcUyRzH1YN6DbLEbj8DpWi1yWk9sAatS4x5i07yKX0
+	6TFT6bRyfj+6n3Ao3kXHT96y6/SHZCwixRRTjEzCJ9mdlPeYYmL1zw1b
+X-Gm-Gg: AeBDiesLd7vDWdA2U/4mai/LXu4aO2mzwaPUujP5qa7FN7D7RH/iaaJDOyAk6jvo4rr
+	JcFroz5jmI1G9MJlP7qInYrFlJcWkIG5ygv6lr0pMJSE4lcdi7ydB2ld8mINJTnhvWJapQ8EJC3
+	F3MjD7km/5VoU7IcCkgBniAomJLgcmsqoDPOdAEXRoVWAEGFCLpJNIAaIZ+tzZb6PXJhCArsS/f
+	B4b6BkrCLIR7+AsTrpbCPkgWmfsQmzcJllu+cqACvX/h8gEiRj981vyv4cn93ykCJrD+uE0n5kO
+	uvvlNjWaoEnQTf71X6tWBba2+k0JObd57Fsy5kCVs8suUIafAOne3NjsYUdhDRJ1oFFqHmMjoaB
+	ng72RIOTq79NfaE/KLjnJ1qh4N4CNBXfHIquC3unMPd50fePyhnyXAo7bRadW9jLNSNk2Z/ItIK
+	eromdrzn4cZ9TyofCE5pqhdf5SS+dk9Mp+VkOu2SMMT9jF3KRmbtW18UwsD260XCwDXKNJXulEG
+	/+obw==
+X-Received: by 2002:a17:90b:2892:b0:35e:5ae3:2993 with SMTP id 98e67ed59e1d1-36140462ae6mr27327818a91.15.1776972075908;
+        Thu, 23 Apr 2026 12:21:15 -0700 (PDT)
+Received: from LAPTOP-97G9G880.bbrouter ([106.51.151.135])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-36141898ebasm21101867a91.7.2026.04.23.12.21.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Apr 2026 12:21:15 -0700 (PDT)
+From: root <karthiproffesional@gmail.com>
+X-Google-Original-From: root <root@LAPTOP-97G9G880.localdomain>
+To: joel@jms.id.au,
+	andrew@codeconstruct.com.au
+Cc: jdelvare@suse.de,
+	linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Karthikeyan KS <karthiproffesional@gmail.com>,
+	stable@vger.kernel.org
+Subject: [PATCH] soc: aspeed: lpc-snoop: Fix usercopy overflow in snoop_file_read
+Date: Thu, 23 Apr 2026 19:20:45 +0000
+Message-ID: <20260423192045.5729-1-root@LAPTOP-97G9G880.localdomain>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -84,83 +96,45 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="JAt2RGrDeiha8/Di"
-Content-Disposition: inline
-In-Reply-To: <OSQPR06MB7252BD7967D2567AD6DA7A1D8B2F2@OSQPR06MB7252.apcprd06.prod.outlook.com>
+Content-Transfer-Encoding: 8bit
+
+From: Karthikeyan KS <karthiproffesional@gmail.com>
+
+snoop_file_read() passes the userspace count directly to
+kfifo_to_user() without clamping. The kfifo backing buffer is
+2048 bytes (SNOOP_FIFO_SIZE), allocated from kmalloc-2k slab.
+A read larger than 2048 bytes triggers a BUG under
+CONFIG_HARDENED_USERCOPY:
+
+  kernel BUG at mm/usercopy.c:99!
+
+Reproducer:
+  hexdump /dev/aspeed-lpc-snoop0
+
+Fix by clamping count to SNOOP_FIFO_SIZE before the copy.
+
+Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc chardev")
+Cc: stable@vger.kernel.org
+Signed-off-by: Karthikeyan KS <karthiproffesional@gmail.com>
+---
+ drivers/soc/aspeed/aspeed-lpc-snoop.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+index b03310c0830d..5b59e826cc68 100644
+--- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
++++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
+@@ -125,6 +125,7 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
+        if (ret == -ERESTARTSYS)
+            return -EINTR;
+    }
++   count = min(count, (size_t)SNOOP_FIFO_SIZE);
+    ret = kfifo_to_user(&chan->fifo, buffer, count, &copied);
+    if (ret)
+        return ret;
+-- 
+2.34.1
 
 
---JAt2RGrDeiha8/Di
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 20, 2026 at 07:22:57AM +0000, Billy Tsai wrote:
-> In particular, I'll split the constraints as follows:
->=20
-> - For pinmux, the presence of `function` will require `groups`, and
->   `pins` will not be allowed. This reflects the hardware design, where
->   the groups are defined by the pins affected by a given mux expression
->=20
-> - For pin configuration, exactly one of `groups` or `pins` will be
->   required (using oneOf), so that configuration is applied either at
->   group level or per-pin, but not both.
->=20
->=20
-> - if:
->     required:
->       - function
->   then:
->     required:
->       - groups
->     not:
->       required:
->         - pins
-
->   else:
-
-I think this is a separate section under an allOf, rather than an else.
-You can also simplify the condition above to just be
-- if:
-    required:
-      - function
-  then:
-    required:
-      - groups
-since the node will then always be tested against what you have below
-
->     oneOf:
->       - required:
->           - groups
->         not:
->           required:
->             - pins
->       - required:
->           - pins
->         not:
->           required:
->             - groups
-
-I think this here simplifies to
-oneOf:
-  - required:
-     - groups
-  - required:
-     - pins
-
-You'd also need to note that pin level config settings should take
-precedence over group level ones.
-
---JAt2RGrDeiha8/Di
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaepadgAKCRB4tDGHoIJi
-0iGUAQCSvZRjl2it7AaROKHK0Bp704DuQXDbJXJ0D6NcO6IYSQD/TPXLQsCR9Y10
-jtbhzr6qfBOMLqlIhuZTFyJ2Xq5jBAw=
-=i4l7
------END PGP SIGNATURE-----
-
---JAt2RGrDeiha8/Di--
 
