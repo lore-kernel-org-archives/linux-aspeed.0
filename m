@@ -1,89 +1,80 @@
-Return-Path: <linux-aspeed+bounces-3954-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3955-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ECA9FDEE28
-	for <linux-aspeed@archiver.kernel.org>; Fri, 24 Apr 2026 01:02:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4BC8FF885C
+	for <linux-aspeed@archiver.kernel.org>; Sat, 25 Apr 2026 06:21:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g1vny3BTkz2ybQ;
-	Fri, 24 Apr 2026 11:02:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a00:1450:4864:20::22d" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1776970837;
-	cv=pass; b=Uenh9DSFQLv5zYpJKqEmC2ZgEAztZRFQQSEwtyDgCgYJRzvg/OzIqcBRVXmCJebBVm1doZFIUsPwmi7OwMpyIyYtUAnn7fgQAO8B09urPUWAqFPD77DtCjIEWC8dQw7+NGnMC+bXmAo1/9xYyCL82/VrJ3wUGXrqZlW0gfwjM4UiYH74rVAsKaKUWtzyPuRBym2atTv01Xs0+Etgfv3kEtYMdtSCoymXd71UrICBHirBRgdIwAuZZIYiFeXN26plhpu9CgohSUPqPLlr9umRieXHGxXFU8Lcs7BhPPpXK57wwnmZqGDb6BokJosL7ad9Ob4EMVsxpWcE9FtF5yHKzA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1776970837; c=relaxed/relaxed;
-	bh=iaSZGDSTIt1t0vqnrwKkzM3vMPJqVoykTgkWKgeHifU=;
-	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=OUbOMVAnGJWSq/4HxrDsQC3OMunYR4fYL3TSGv4gymSQBehwWHWsZXTY9qdk0/O2NPD/ad8WF5WqulQQg+VcHtZecRYgV424O5wsNTKVoTbvrDHLQulwSVqArChhsrTHB56yGthftUvtCFuYwGSQ6BI3J4anUsmANyIphVsv1KzWFsDiB96UGeMqXkuezG00Bt8j3luNpxeGEkENlxClJ8ZbZQf5XzxQZ+hYb4CnUFi+yRPBMMbchyY/vRQPVag88dunLCQmJRp+zipozkTDyMOmPsfDwewq2z0Hie5YagrOZmasYWhgqXMW+8tepA2fJnT7k1mneL6ddePiDzYyog==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZKeimGo0; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g2fq92ytNz2ydj;
+	Sat, 25 Apr 2026 16:21:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777058505;
+	cv=none; b=HTZh4Bn5Y0UoJKY90BNeGc6R6+RVaCR3NC3eklMrhh2omyk74+QV5R2nOr52fu2sqsHtK7Ds/Qu+xoulmn6y3Bbrxm4aRTaX9kEiZOyH+9mgzlH4KCdX3wfRc52nas/MBd1no3EJPpIBCFVztn5M0/biMMz+WxNbkd9xGBjwQ7Ih5PYBb8qjwdVYiUNiDsEZFV+h57rWpje/PsGkjQ9wzjDZ+Ai0AnBABSaxpw4MtPY68e/aAgSbmuOzNfPFKYeexHCCA2B/nvuO5Xsy7H7R08N7rqwMty8HECbbLVFK9wS350owQXUHHbakmT5R6I2L5TlNaImJwx9TYab8Y9SZMA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777058505; c=relaxed/relaxed;
+	bh=D5UPxw3T48FJ/vk7uItxWIhxvBUTqVp74nlh/1zpits=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=jeMxZQ3AajPjjH6WJt82C3uPJMjWF8IEZ7jrbb9AfzLcHcxZN+ihK1gOfKrf+0DLTN3pbows0X0weeab3e35V2Fhzd2yHnASTaEgSNKbTcBYsm1t+ZMSq5LePgdv4RUt0BrNuVlkIgNHFS4NWhmui3uMfB98XiNg/ZfW+tI1RHMD5egTXvRsJW6GBNmPZicKb+QBPjeS4UHeLQV6DU3QSfVZF23/J2sGPxRRNjaBvQVCMNVbKmjtk5oilwiHzoE5XjMJZBJujOWsgzjY8wsdPoK22jOUmpJLyVJwHAkTuNGawdQeLjoYnXVazmtyHdZcER+Ssn902mAZ4WTzoVMEzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CbRl8ZqZ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=ZKeimGo0;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CbRl8ZqZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g1lm40Xnlz2xSB
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 24 Apr 2026 05:00:35 +1000 (AEST)
-Received: by mail-lj1-x22d.google.com with SMTP id 38308e7fff4ca-38e7d983f50so78937591fa.1
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 23 Apr 2026 12:00:35 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1776970828; cv=none;
-        d=google.com; s=arc-20240605;
-        b=XiwpZp6JjiqzQrn8G9MOSBCF1OQWqxzfQ7RNCcvTJGL/kitJHRRhr24uubntzOJSoc
-         LIl5odRLS7OIf7ExenQzcctdvzDJswBpMCFv0KeNP5eH4H/Y45yJBkTYM4QqF++6mw+j
-         YUzXnN7Ts1FFy4AiV3EjWvYHMo/0U7gtSutqVf0fHVlg+AU3Vn0q41vKht71qHtf0Qbi
-         2e7r0U1qltHWy+wpOagMB+RSJWV0LcKSupEXVtFs3exI4EQ4eHUTKXr4QQG8oTFblmZn
-         YcR3aL9A31WWIqxgzi0kmMBY8zQLmL7WD+eM31xJRNbTI3d5JyYrNBIyv9OtJ/lo3Hus
-         vyGQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:mime-version:dkim-signature;
-        bh=iaSZGDSTIt1t0vqnrwKkzM3vMPJqVoykTgkWKgeHifU=;
-        fh=OfYKBNJpNTfJ7uHCjlUb3MEzh/4PPOOIoyT6ItS5CWA=;
-        b=RgqfBeTci9J+8mVsDmKQl/2cCaOI6m4lNf/nNA0udLGoWZy2GuVgXSOUPRwWekJo2j
-         U2Bqx6168b0Lfu87l1bbtaRFG3zTrT5EFmKhMTm5mbsJ9QaXzlBBLAaWQW5HBs8c7aYg
-         qi011DK2OwkUHhzuMoOcIXw8oj2I4k1z6pknJMHTB3/RInimtP//BisE/fap2/zZmlhG
-         bpgR5YNbtqRkfb1Tyq0byN//wvL9uarkEKbfzrj9eDOt0DNLLOcBlAydWNm04EYy5pi1
-         JE7gpuVhJPMcWuaPj+UbtECdq0mzUaozLm4MKbXwFP5cCuX/eUT+cmuXI3i53n+aJ4O+
-         gMbg==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1776970828; x=1777575628; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=iaSZGDSTIt1t0vqnrwKkzM3vMPJqVoykTgkWKgeHifU=;
-        b=ZKeimGo0NpsM0LNtu6JhXoJ5+nWjIiTnTARuN2KAz0cspnVNNUxBPaJJ+tZ6RhGQz+
-         O97GFm41VSCzeA7l1rE/VFlG6d2ttbBX6vLTGXJKk1d9q1rND57oa19BoIHG2RF74rIV
-         quYVKxlQBYTPhTyIWYUJO+G9N/ypNCvu9gyJob0OHgM0BSBq5HG0B377zODC0SK5+0bY
-         r2Uu2p+yizp3NvYza2OQFu44V79YuxITW1kP1lfvPhGrto2ZONzkjRhuS/TRD9tqceTf
-         hkGiaM0XDjGnQiWqPTDsbPxDmigjyxcm5lqvBO6Y0VH30RQiSBhTM3+zLS/X+NEsXceg
-         9izg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1776970828; x=1777575628;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=iaSZGDSTIt1t0vqnrwKkzM3vMPJqVoykTgkWKgeHifU=;
-        b=rrMB2vPI/6P+nzAEqyrtn35J+CdiKp6vnW0pgY2y+eBBV8I0CGbq6IBA6pNsA6EzUZ
-         DBqiO905f3U6OSuB7/aPNVUVHZnjP8mrtJMLZitG07BdOpwg+SmzdXz/SxfYqOfVXPgF
-         69B3ijjDKW0wbg7EYcIArKQEzwBTReP97qtqLqmP8bS2pDYR24FBw1XL2pghBsNgIxsr
-         c28RFt7g+n0WCocRvWQ/JJGiqxyS1UYI4n7aQeH2KBCa5Kir2tfpmiQquVPrlYip4mZU
-         Qpvn4zqMxl0WyrxLKso4uxVlY7xbtkJjECLe9PbjzuCEwfQRvjqyb0+xkfAlUpDfscIl
-         EcDA==
-X-Forwarded-Encrypted: i=1; AFNElJ9pocYmEqRQNrsMOxasq+tj0DQKsGi05M3ZmFjEjZ75N83OJkbkXeHy6WhYpygRyKW+fNhypVA/j+xgGtk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzO2DEtTqlQ7+tDK4wY7CsWM99kuy8BbzRTJ34K2bSgLfxk/51T
-	OFQ+VOxeILUQBAPgLYMmQaGJAaxfbJjEf9xrz4YFkN418mmRhiUniyerYvNkuk2np8YYX9EXMdI
-	eeyXYuTwKAoXh+xXzlS7uiJT4cX1b4IE=
-X-Gm-Gg: AeBDietCK3o3TDSQLfk49jwZQo4BqdM8Ui2b2cjYkvuzu8ZnSYmwZSRq1hgzShezoEa
-	ZYRb8QD3WX1lExuG9Zlai8kfyoDUJFVUQRLWMj7sbGArVzMUZVMBt3fV8HWDhOYEYA3DeNgLhG6
-	SRk2x8Rr6v4spznuQutQxF5UVEkQVTjM8kU8aQ+4xK3vI3jFkxgh87WSYYOy5raW6vjEcDuX01B
-	rJK7C/5pmg9wTvpV++yluTs+KFrs5ExKJ3mTwtrtFqKwQf7ZIG3S630i9rS9hY/tiWfQ643EctT
-	EuBZOv+ibZs2hogBy0peNy9poWEPxe8Rw620pTHV5cpb/SrwvQ==
-X-Received: by 2002:a05:6512:3b8d:b0:5a4:19f3:f2bf with SMTP id
- 2adb3069b0e04-5a419f3f386mr8816464e87.24.1776970827228; Thu, 23 Apr 2026
- 12:00:27 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g2NB02rsMz2xTh
+	for <linux-aspeed@lists.ozlabs.org>; Sat, 25 Apr 2026 05:21:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1777058504; x=1808594504;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=i6qFgr4BdGt7bca1DzWlDakJS74x3G3JFyTvjzdSAes=;
+  b=CbRl8ZqZszFLZgGkz0F8Qa36JbOqOFkii5YXF0WDkFkSiSakxyfdilzl
+   FLOHeesU77dVn1wb+Z6WkNCzCLbpFImydN39ZvBsKtJJ2d+b1aDogONqP
+   9ajAgxMl4IOqUOTDTSa0YBlJS+iImWC1vsjHBdvYwp6tEnHe9jp4xW6n9
+   u/2SqUGuSZMlDQ8gP9H1OidPjstqVdBgsiFMgHIazaRAaQNKEV3LnG1mI
+   uBctbnHf8Frd7EDKMr+6F9hVZZURLmzYYfU7+f5bLjrnPs3yLrRFl7Iae
+   ICESxV9j9dmxi3BeVtBnDp2EUIhX9Nqrk2SBEVEFU75IArKeT+CXaDWcO
+   A==;
+X-CSE-ConnectionGUID: kHSxGfbZTTGRgAyWI71iRg==
+X-CSE-MsgGUID: yRQxi5DqR2Kn0OS8o8zFXw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11766"; a="77208296"
+X-IronPort-AV: E=Sophos;i="6.23,197,1770624000"; 
+   d="scan'208";a="77208296"
+Received: from orviesa006.jf.intel.com ([10.64.159.146])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Apr 2026 12:21:43 -0700
+X-CSE-ConnectionGUID: Vwc3PpAlRdeK88HXvq8J4w==
+X-CSE-MsgGUID: 8rWdw2j+R3ypnvJ12arYeA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.23,197,1770624000"; 
+   d="scan'208";a="232040512"
+Received: from gklab-103a-129.igk.intel.com ([10.91.103.129])
+  by orviesa006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Apr 2026 12:21:40 -0700
+From: Dawid Glazik <dawid.glazik@linux.intel.com>
+To: Lee Jones <lee@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	linux-aspeed@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	dawid.glazik@linux.intel.com,
+	maciej.lawniczak@intel.com,
+	Jeremy Kerr <jk@codeconstruct.com.au>
+Subject: [PATCH v4 3/3] ARM: dts: aspeed-g6: Add nodes for i3c controllers
+Date: Fri, 24 Apr 2026 22:21:01 +0200
+Message-ID: <7a94a5f4cf84c11c7fba7485e666ecbaddfbe5cf.1777058942.git.dawid.glazik@linux.intel.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <cover.1777058942.git.dawid.glazik@linux.intel.com>
+References: <cover.1777058942.git.dawid.glazik@linux.intel.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -97,116 +88,132 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: karthikeyan K S <karthiproffesional@gmail.com>
-Date: Fri, 24 Apr 2026 00:30:11 +0530
-X-Gm-Features: AQROBzAACTNKgczWUdLDKoK0N8p6t9ZSbvUCg1HXPCRwXkUzT9c4U3H7ST8sp-U
-Message-ID: <CAP_JKPter_ggMMvUY=pDZyZupSQb5KWGVPeig41Uw2wBDXepMg@mail.gmail.com>
-Subject: [PATCH] soc: aspeed: lpc-snoop: Fix usercopy overflow in snoop_file_read
-To: joel@jms.id.au, andrew@codeconstruct.com.au
-Cc: jdelvare@suse.de, linux-aspeed@lists.ozlabs.org, 
-	linux-kernel@vger.kernel.org
-Content-Type: multipart/alternative; boundary="000000000000eee9cc06502542fe"
+Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
+Content-Transfer-Encoding: 8bit
 
---000000000000eee9cc06502542fe
-Content-Type: text/plain; charset="UTF-8"
+Add the i3c controller devices to the ast2600 g6 common dts. We add all
+6 busses to the common g6 definition, but leave disabled through the
+status property, to be enabled per-platform.
 
-From c50ff07baf2032ca12133775c61c50a38e8a2029 Mon Sep 17 00:00:00 2001
-From: Karthikeyan KS <karthiproffesional@gmail.com>
-Date: Thu, 23 Apr 2026 21:26:08 +0300
-Subject: [PATCH] soc: aspeed: lpc-snoop: Fix usercopy overflow in
- snoop_file_read
-
-snoop_file_read() passes the userspace count directly to
-kfifo_to_user() without clamping. The kfifo backing buffer is
-2048 bytes (SNOOP_FIFO_SIZE), allocated from kmalloc-2k slab.
-A read larger than 2048 bytes triggers a BUG under
-CONFIG_HARDENED_USERCOPY:
-
-  kernel BUG at mm/usercopy.c:99!
-
-Reproducer:
-  hexdump /dev/aspeed-lpc-snoop0
-
-Fix by clamping count to SNOOP_FIFO_SIZE before the copy.
-
-Fixes: 3772e5da4454 ("drivers/misc: Aspeed LPC snoop output using misc
-chardev")
-Cc: stable@vger.kernel.org
-Signed-off-by: Karthikeyan KS <karthiproffesional@gmail.com>
+Suggested-by: Jeremy Kerr <jk@codeconstruct.com.au>
+Signed-off-by: Dawid Glazik <dawid.glazik@linux.intel.com>
 ---
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 1 +
- 1 file changed, 1 insertion(+)
+v4:
+ - removed i3c aliases
+ - renamed i3c-global node name to generic: syscon
+v3:
+ - add i3c aliases
+ - rebase on top of latest tree and solve conflicts
+ - as agreed with Jeremy off-list, he said I can take authorship of this going forward
+v2:
+ - use inline bus representation, without the i3c: label
+---
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi | 91 +++++++++++++++++++++++++
+ 1 file changed, 91 insertions(+)
 
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index b03310c0830d..5b59e826cc68 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -125,6 +125,7 @@ static ssize_t snoop_file_read(struct file *file, char
-__user *buffer,
-        if (ret == -ERESTARTSYS)
-            return -EINTR;
-    }
-+   count = min(count, (size_t)SNOOP_FIFO_SIZE);
-    ret = kfifo_to_user(&chan->fifo, buffer, count, &copied);
-    if (ret)
-        return ret;
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+index f5641128614f..51a6a4157f1b 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
++++ b/arch/arm/boot/dts/aspeed/aspeed-g6.dtsi
+@@ -1066,6 +1066,97 @@ i2c15: i2c@800 {
+ 				};
+ 			};
+ 
++			bus@1e7a0000 {
++				compatible = "simple-bus";
++				#address-cells = <1>;
++				#size-cells = <1>;
++				ranges = <0 0x1e7a0000 0x8000>;
++
++				i3c_global: syscon@0 {
++					compatible = "aspeed,ast2600-i3c-global", "syscon";
++					reg = <0x0 0x1000>;
++					resets = <&syscon ASPEED_RESET_I3C_DMA>;
++				};
++
++				i3c0: i3c@2000 {
++					compatible = "aspeed,ast2600-i3c";
++					reg = <0x2000 0x1000>;
++					#address-cells = <3>;
++					#size-cells = <0>;
++					clocks = <&syscon ASPEED_CLK_GATE_I3C0CLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_i3c1_default>;
++					interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
++					aspeed,global-regs = <&i3c_global 0>;
++					status = "disabled";
++				};
++
++				i3c1: i3c@3000 {
++					compatible = "aspeed,ast2600-i3c";
++					reg = <0x3000 0x1000>;
++					#address-cells = <3>;
++					#size-cells = <0>;
++					clocks = <&syscon ASPEED_CLK_GATE_I3C1CLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_i3c2_default>;
++					interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
++					aspeed,global-regs = <&i3c_global 1>;
++					status = "disabled";
++				};
++
++				i3c2: i3c@4000 {
++					compatible = "aspeed,ast2600-i3c";
++					reg = <0x4000 0x1000>;
++					#address-cells = <3>;
++					#size-cells = <0>;
++					clocks = <&syscon ASPEED_CLK_GATE_I3C2CLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_i3c3_default>;
++					interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
++					aspeed,global-regs = <&i3c_global 2>;
++					status = "disabled";
++				};
++
++				i3c3: i3c@5000 {
++					compatible = "aspeed,ast2600-i3c";
++					reg = <0x5000 0x1000>;
++					#address-cells = <3>;
++					#size-cells = <0>;
++					clocks = <&syscon ASPEED_CLK_GATE_I3C3CLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_i3c4_default>;
++					interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
++					aspeed,global-regs = <&i3c_global 3>;
++					status = "disabled";
++				};
++
++				i3c4: i3c@6000 {
++					compatible = "aspeed,ast2600-i3c";
++					reg = <0x6000 0x1000>;
++					#address-cells = <3>;
++					#size-cells = <0>;
++					clocks = <&syscon ASPEED_CLK_GATE_I3C4CLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_i3c5_default>;
++					interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
++					aspeed,global-regs = <&i3c_global 4>;
++					status = "disabled";
++				};
++
++				i3c5: i3c@7000 {
++					compatible = "aspeed,ast2600-i3c";
++					reg = <0x7000 0x1000>;
++					#address-cells = <3>;
++					#size-cells = <0>;
++					clocks = <&syscon ASPEED_CLK_GATE_I3C5CLK>;
++					pinctrl-names = "default";
++					pinctrl-0 = <&pinctrl_i3c6_default>;
++					interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
++					aspeed,global-regs = <&i3c_global 5>;
++					status = "disabled";
++				};
++			};
++
+ 			fsim0: fsi@1e79b000 {
+ 				#interrupt-cells = <1>;
+ 				compatible = "aspeed,ast2600-fsi-master";
 -- 
-2.34.1
+2.43.0
 
---000000000000eee9cc06502542fe
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><div style=3D"margin:0px;min-width:0px;pa=
-dding:0px 0px 20px;width:auto;font-family:&quot;Google Sans&quot;,Roboto,Ro=
-botoDraft,Helvetica,Arial,sans-serif;font-size:medium"><div><div id=3D"m_-6=
-80033585644009664gmail-:ou" style=3D"direction:ltr;margin:8px 0px 0px;paddi=
-ng:0px;font-size:0.875rem;overflow-x:hidden"><div id=3D"m_-6800335856440096=
-64gmail-:pb" style=3D"direction:ltr;font-style:normal;font-variant:normal;f=
-ont-size-adjust:none;font-kerning:auto;font-feature-settings:normal;font-st=
-retch:normal;font-size:small;line-height:1.5;font-family:Arial,Helvetica,sa=
-ns-serif;overflow:auto hidden"><div id=3D"m_-680033585644009664gmail-avWBGd=
--83"><div dir=3D"ltr"><div style=3D"color:rgb(187,190,191);background-color=
-:rgb(18,19,20);font-family:Consolas,&quot;Courier New&quot;,monospace;font-=
-size:14px;line-height:19px;white-space:pre-wrap"><div>From c50ff07baf2032ca=
-12133775c61c50a38e8a2029 Mon Sep 17 00:00:00 2001</div><div>From: Karthikey=
-an KS &lt;<a href=3D"mailto:karthiproffesional@gmail.com" target=3D"_blank"=
->karthiproffesional@gmail.com</a>&gt;</div><div>Date: Thu, 23 Apr 2026 21:2=
-6:08 +0300</div><div>Subject: [PATCH] soc: aspeed: lpc-snoop: Fix usercopy =
-overflow in</div><div>=C2=A0snoop_file_read</div><br><div>snoop_file_read()=
- passes the userspace count directly to</div><div>kfifo_to_user() without c=
-lamping. The kfifo backing buffer is</div><div>2048 bytes (SNOOP_FIFO_SIZE)=
-, allocated from kmalloc-2k slab.</div><div>A read larger than 2048 bytes t=
-riggers a BUG under</div><div>CONFIG_HARDENED_USERCOPY:</div><br><div>=C2=
-=A0 kernel BUG at mm/usercopy.c:99!</div><br><div>Reproducer:</div><div>=C2=
-=A0 hexdump /dev/aspeed-lpc-snoop0</div><br><div>Fix by clamping count to S=
-NOOP_FIFO_SIZE before the copy.</div><br><div>Fixes: 3772e5da4454 (&quot;dr=
-ivers/misc: Aspeed LPC snoop output using misc chardev&quot;)</div><div>Cc:=
- <a href=3D"mailto:stable@vger.kernel.org" target=3D"_blank">stable@vger.ke=
-rnel.org</a></div><div>Signed-off-by: Karthikeyan KS &lt;<a href=3D"mailto:=
-karthiproffesional@gmail.com" target=3D"_blank">karthiproffesional@gmail.co=
-m</a>&gt;</div><div><span style=3D"color:rgb(121,192,255);font-weight:bold"=
->---</span></div><div>=C2=A0drivers/soc/aspeed/aspeed-lpc-snoop.c | 1 +</di=
-v><div>=C2=A01 file changed, 1 insertion(+)</div><br><div><span style=3D"co=
-lor:rgb(121,192,255)">diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/=
-drivers/soc/aspeed/aspeed-lpc-snoop.c</span></div><div>index b03310c0830d..=
-5b59e826cc68 100644</div><div><span style=3D"color:rgb(255,161,152)">--- a/=
-drivers/soc/aspeed/aspeed-lpc-snoop.c</span></div><div><span style=3D"color=
-:rgb(126,231,135)">+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c</span></div>=
-<div><span style=3D"color:rgb(210,168,255);font-weight:bold">@@ -125,6 +125=
-,7 @@</span> static ssize_t snoop_file_read(struct file *file, char __user =
-*buffer,</div><div>=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ret =3D=3D -ERESTARTSYS)=
-</div><div>=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return -EINTR;</div><d=
-iv>=C2=A0 =C2=A0 }</div><div><span style=3D"color:rgb(126,231,135)">+ =C2=
-=A0 count =3D min(count, (size_t)SNOOP_FIFO_SIZE);</span></div><div>=C2=A0 =
-=C2=A0 ret =3D kfifo_to_user(&amp;chan-&gt;fifo, buffer, count, &amp;copied=
-);</div><div>=C2=A0 =C2=A0 if (ret)</div><div>=C2=A0 =C2=A0 =C2=A0 =C2=A0 r=
-eturn ret;</div><div><span style=3D"color:rgb(255,161,152)">-- </span></div=
-><div>2.34.1</div><div></div><div><br><br></div></div></div><div></div></di=
-v></div></div><div id=3D"m_-680033585644009664gmail-avWBGd-84" style=3D"cle=
-ar:both"></div></div></div><br></div>
-</div>
-
---000000000000eee9cc06502542fe--
 
