@@ -1,135 +1,58 @@
-Return-Path: <linux-aspeed+bounces-3975-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3976-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B577FF8867
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Apr 2026 09:44:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5488CFF8867
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Apr 2026 12:58:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5C825vp7z2ySW;
-	Wed, 29 Apr 2026 19:44:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c406::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777455890;
-	cv=pass; b=mtqImybN2pmDKOO5I4/HjuaLIIsjJPlR0KBGO18teoFngceD8b0aRUH6VlsN4ActSrVAfLuUq1MT6qUeZAHXnhOF66mh3xkQr1GH1zegCW6TYwFiah5ZCvX7MymofeR5l/Net+EjAFuEuz/yRm43RsANY7myQ5y7VP7juJ2rmRfb3g+sE8wUCLKHjdc+MvURYkcns3yU3tO81X22jaU7rngyXINwSp2GdbuQNkwXqhYmJgjUcVJO+l4QZqVsGu/s78o7KoGZFWig8LLec7x4DPyMDoD0hPoQwXcMtbkV/2XvVaaNMF8tUDkCevWr6ASP8uxSJjRP+MYJyUdw9SyD0Q==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777455890; c=relaxed/relaxed;
-	bh=hgxvdLNq9Z4K/e7DEauf3NhDc703JvGu6mrz9dAX+DY=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=iVrnYNdEiIVXC6XgYcvQmZAijuM94TIh/r1gv8RoYAwmGCOLGejSlD30Usd8y6mHIVGpXAE4fE0q5KFC6aPP8gnM/lG2yWwrXKPJtorVw1MKttEkjD+O3sK6lWpXPWv4aMcemDppFhfuvTGDyXxHSBPHwTgOylTXZA7k22GGrxobqfqMeEFzyG1cwDJdpBOH5ZcLrFpJO3boUzw9503EzxdZ7HJnWruLGf9gC59UNklbS5DB9rXhZM0wtoNvnYvwNslm8NKvhY2ZwSbXEdXZ1yqtgWv+NhSkfr+eqJnfgX1nkE1y9CMGZfT4EQrn7HH+S1lc3Bm9ntDjXMTwzy19RQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=nVlmTDRH; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5HR10C69z2yVL;
+	Wed, 29 Apr 2026 22:58:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777467484;
+	cv=none; b=O9xNwmu6iX9SEtxvfudtYmaTaGvRzGaF6ku/uKEfaM2I6AJFSAUZLb0v1ThE2uWOEWE+foD/3pkuPibiyOXT5rplz/N06cWZnv2t8Ccf0DZknUfvg6TwMxv1420W3fnDAkzvSjJD7x8NqnJEEnB8hXYVxW12KWGyEJqHQ8MHArrw8+RAtCjG7xn/D7KWVOMpoOtWXgmYMs18bWgyqbHmtCoYEjw2f3wx55iWU9cZX78rVcWL81n3YbW8J3zBOg413G7Bb58u3VsV11c/JSJWOaja+cDGHzGYX7uRcUXxJ2517oZ9Y3m07Mb7EHt+p8tqLikFbO7s6Kmqtq+bKDDcYw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777467484; c=relaxed/relaxed;
+	bh=Ct2pD6eOtO9PvBCttFPIKGh9xJAlja9V7gGV1f2aOrs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=S1oEXpoSRdbRpIxwuBxgklYP5xvyaDEgyBdeURbSftGKj9A5bkVawaNR1l1KjZRUpFN9oqLzlDUDH2LfSuwOUQwHDcbTgZaTtjYaRdeh/J4hYXlwXVK+dnV9/7M1uCzDdhWGgDD/qi0CSpEUDSHvdp1PijOCDP84qZrLtV5+8cATW2/xKHAZXteCbyJI38QwSyZJjkUKmPze6oY8oopJ8H8QG3NFLqoOLY8KoS7KJ5O12uHnU8nHW35x6g/9dOhsCq/+XTzKQWKtPhL9Ot0DNoBFyosvRPYwodGbZD5npUZmJSrpkpsSQb0yAjY8DyCB3uCXTnEJR44XJrtNzEM55w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Eh15RP9p; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=nVlmTDRH;
+	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=Eh15RP9p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c406::3; helo=os8pr02cu002.outbound.protection.outlook.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
-Received: from OS8PR02CU002.outbound.protection.outlook.com (mail-japanwestazlp170120003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c406::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5C803LKfz2xSB;
-	Wed, 29 Apr 2026 19:44:47 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pyR3pECar9/VXOaafyNMSErDimfP/N0YR5/YiTahWbprSDE8nlDNcZbGecVb5PtApifvwlMcIgPMjOuQz7xpKcDQNld5QRlY2/gnmADfHNMwP+qiolE7BgFlut+THFV2E0dJjhIcVn1gDyPhgV/2EJwsy13qkLPq3XmXrdQQN8XWaiHpAr1VSRVAfmJs9acek3EZR64xPUffNZlkcs/ZbLdtdehxipGxsBfQoqkJktT7PHzuAN10U3FTU+gTp+GKSy4CuhIZ7IE5aiNX3GnHV3mSaoPWCPBgKuH2sxmdAf2JRWOKhRdmVZTJapEXI3brNkNccH5ccnO2CuD/vSGSXg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hgxvdLNq9Z4K/e7DEauf3NhDc703JvGu6mrz9dAX+DY=;
- b=yUwkBPzSoLX6DH9FTi+TVC4ZWUfWxKnBSt+vORH5vQ3fQH4cJbGejkNgopIuOydqWuU1hjMTJcBCbhG6T0TQrNIN6ph8Z3ZJHvclpYvUnC0fE/fxQ2ZiKEY362AIfq8fayz2cO1Qjt7jFkgcIhSV8jG/vhTW6k3x7xf9DDPi8iZgPePN0H9Zua7oUudGg674XdKihRA45oCPxuImM0k4e0olH8fkt6drf7UfI/ue32H6c5hEFBoZ6/V55dLOaR9OthVhjD4RJJ8LR7pR8WWK3Gop1XZFJ7z3dxiVBG2BcjHiyxFZyhKpTBjDtXAKt6MMq/nolPotAmowsvELkJsfLQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
- header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hgxvdLNq9Z4K/e7DEauf3NhDc703JvGu6mrz9dAX+DY=;
- b=nVlmTDRH4nJZrWfs04Gixg0TGfnH2B/1r9JsYAPdX5Jvtndw//pPSXeR6PW7Xre8ZNRkSbA/A/UW3RrOzzvgMUIHbPN/286Zh4/NeDApxmoADO0FRJyNFkE4EnqW+DOnHwP0DCmxszNkNY3qbtGPmDfERGZVk8ZKBWy11xrpbcmC2mKv0SqD/F5x8olp+SR1P7Y2Bb0S8iM8OhcCrnKgSgmTHaN0bZ45yHvIRgR8TKYoULWT/ZzIRTBizIgspiQr+LBl7PVoG1uyqqghJ1LOJZ5E69duTHVQbO9Jc0CcjiTR0h58Hxf5hi0MK43sJ4v/d40acR3SaMEmNA4hi5l+nA==
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com (2603:1096:604:29c::6)
- by PUZPR06MB5588.apcprd06.prod.outlook.com (2603:1096:301:ef::8) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.18; Wed, 29 Apr
- 2026 09:44:22 +0000
-Received: from OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19]) by OSQPR06MB7252.apcprd06.prod.outlook.com
- ([fe80::92af:c9d9:8779:d19%4]) with mapi id 15.20.9870.016; Wed, 29 Apr 2026
- 09:44:22 +0000
-From: Billy Tsai <billy_tsai@aspeedtech.com>
-To: Stephen Boyd <sboyd@kernel.org>, Andrew Jeffery
-	<andrew@codeconstruct.com.au>, Bartosz Golaszewski <brgl@kernel.org>, Conor
- Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Krzysztof
- Kozlowski <krzk+dt@kernel.org>, Lee Jones <lee@kernel.org>, Linus Walleij
-	<linusw@kernel.org>, Rob Herring <robh@kernel.org>, Ryan Chen
-	<ryan_chen@aspeedtech.com>
-CC: Andrew Jeffery <andrew@aj.id.au>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, "linux-gpio@vger.kernel.org"
-	<linux-gpio@vger.kernel.org>, "linux-clk@vger.kernel.org"
-	<linux-clk@vger.kernel.org>
-Subject: Re: [PATCH v8 0/3] pinctrl: aspeed: Add AST2700 SoC0 support
-Thread-Topic: [PATCH v8 0/3] pinctrl: aspeed: Add AST2700 SoC0 support
-Thread-Index: AQHc1vUMkrNoLamkbkSyXt0W9ccsybX1SNUAgACBiqc=
-Date: Wed, 29 Apr 2026 09:44:22 +0000
-Message-ID:
- <OSQPR06MB7252D2B3558B5714887600ED8B342@OSQPR06MB7252.apcprd06.prod.outlook.com>
-References: <20260428-upstream_pinctrl-v8-0-eb8ef9ab0498@aspeedtech.com>
- <177742778029.5403.7247019083523002317@localhost.localdomain>
-In-Reply-To: <177742778029.5403.7247019083523002317@localhost.localdomain>
-Accept-Language: en-US, zh-TW
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-msip_labels:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=aspeedtech.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: OSQPR06MB7252:EE_|PUZPR06MB5588:EE_
-x-ms-office365-filtering-correlation-id: 1827c2f6-1993-42ec-a227-08dea5d3e479
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|1800799024|376014|7416014|366016|18002099003|22082099003|38070700021|921020|56012099003;
-x-microsoft-antispam-message-info:
- szaGG2+tGVi4k3gJuNzy6KKxPuR7o+tuASQ5R85+kQ0uDc03cX6Tv/FowuV4eNt3f60mFEOakCBP/tVf9tUBbBbcvkMY8a+fB5rOCzQDOtBgsIIVUYhUU/rdlMDp+BMC6d52N22lTbblfF3oFb18tXrjgHNW5LHsp4Zfvts/CBNEFiYX9eFcgsyopDY3Zi+tDKBLQam/m44Yp3qun3YfORjbiCs6VCjCd8sp6xGlaozCDNQ37JWghDY17Atsvw+RdR7Igipg7YIZuO6vCeFMLSq1yjzsYnNQ1LkCUczX2inGM8O9kd88/eqOE5rm3EDtBqLICes7RlTEqNQ//7ngOBwd6VzfNzd0w8Hedg0x78af8qOXSnP8HBGKGVoa4Ff1O1E1OhSPZTfjnn94fmgqmXDmbLseWSNR99DNQHKyPCf+LdmT4baqWNTrrX16FvHBJQMOmzDQQ6fKomdg/VfY/dmcqvMRwXOBISQ0ANwFjPS0cilL1g4j8n+hCmUvU6McCsN/YIPqBxwMcyXSEdPS93tsUkU2/AJ9svZ9X7A5GLCXNxKyaXw5z4n0BSjF/8IkV6MN5o+1qnqKURUJ+/QAgvfvFRLZpVLndjPOzb+ob5z9b3L3zpxO9ECd/0u/SBniyR7pTSlWRpXiHTpmUc+ibD7PgYIiEgMe25pmpNe1m5OFEEra37aBlOIxuEm+qZkFDVMED6KSuzykSRUaNVOZY2AZugA8rMWsx1DfsIGzzJUBaLkKcXSMcXwTbrT25gSvJZnbl8gsfv6NBP+fsJcfc5RErostwQY0/RPxqc8wpSTuhGk0GnjuiIpjEiLxoOnC
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:OSQPR06MB7252.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016)(18002099003)(22082099003)(38070700021)(921020)(56012099003);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?iso-8859-1?Q?KPwNKiwzgNdy5tenHGylz/8pzbmr2OwdV5PvEC7TqU+UZZ9hPp9pJO9CDJ?=
- =?iso-8859-1?Q?WoWp1WiFrublL1QUQz9OA0npHwQ0z69zXFIUzaXByWCCdM/sQMtf80wBXZ?=
- =?iso-8859-1?Q?/LMuNqJrPk44J629ENmNbObDWgFY+EHw0MbGLtVa5w4wx3pWmsGUCrk89y?=
- =?iso-8859-1?Q?To7dNpfX0n5a4EgP/8Srb/2tIu3+CyjI04wDUjZAGcPuziZJUNBmZuXkKN?=
- =?iso-8859-1?Q?o7rJ9S4HQa7sdmjde3xRR5tclBc+WAufTmNIVWqFxzPdI7i3bK4BADj4Xo?=
- =?iso-8859-1?Q?IehQsHfKpbcVnfZakA2i2XLMUDK4gfR567qS5w8BnCktyo2qFApSP8s7ee?=
- =?iso-8859-1?Q?pbYfrJnf+jjDrFVoCEI+r3RQwVm5wKEexd7dCniFOaEhdwmKm5lJs4H9XN?=
- =?iso-8859-1?Q?CSC0/qf4bwg5hfa/cRHX9vY86S1sSPtgJnYE1ba45SAOFQgFXurNOqOKKv?=
- =?iso-8859-1?Q?hR8DEF/lMmVVOpcoMSr7gOOopuh0F/10MCJVGqXMAVRdPCyV0C952Q1JVr?=
- =?iso-8859-1?Q?QE6f4+HNfgXyuyxEzW/YXc8VfWgjl/+WeTkp4BPHQko5NVu3gvw5z5o3nR?=
- =?iso-8859-1?Q?QmRS0sXq4Wl/WVzBzZbjqqb26ZnCE9N4UpQgpeJqZPa/R62n4oUvEk/GTP?=
- =?iso-8859-1?Q?K7J9Ltn3TmgNcVF7HYotOsZMttp6eSP6BZHHGlxLYcYeC/n2reSIcV66qc?=
- =?iso-8859-1?Q?ZUInSOMoBTIJK/FPUsZlrzXMFv7lcOJo5QJn1zZGh2OsU1CyHa3BES1vvK?=
- =?iso-8859-1?Q?Gi9AnyKH6Z/zz24NyIVgrHWFaQN88uonDnx6jA9Olz5gi7YnNNSq2tmicO?=
- =?iso-8859-1?Q?byjETgNDvIxfvxctS9VTE+zVP2DBlmjd/aIJK55LlRaUCIblotZWBgBaMF?=
- =?iso-8859-1?Q?td19lOdsJSHYZZ04PYzfKQqX3glTfapoyDe8vreFl7Wm6x2I1a2zlx1hcr?=
- =?iso-8859-1?Q?5jOXsae80IWxG5VlxVfyY8QP+qP+kx8xxdJs7UcdeOOeEqR56OaCvFu0z6?=
- =?iso-8859-1?Q?AXaqZbZ2wMWmh04tOOr2VjaYckOuzhdUTTzLwZ3wHDW7gnBpEpKLs5P26e?=
- =?iso-8859-1?Q?BMRbKqhUrvdxEGMi1sggrfRDz/Lnr9+Of5/Fn3rkZ6mRXkjhYsjvX74cvK?=
- =?iso-8859-1?Q?MbWj5FPEJ5TxCqI4lGnfX2GxexSPrb/PxmwPXvHf8qNH2/Hhrfa01f+B1Z?=
- =?iso-8859-1?Q?K8sJbnrH7xqOKkerpLOcyU4TjG/KOU7A2TUPl85KCBLqa7RXBMrNjbDqST?=
- =?iso-8859-1?Q?/IPVwKGKF1onTIzZfLY04omERzRjlTQ9TfuJX2K7DctrX8RIIEnwQSp1A5?=
- =?iso-8859-1?Q?eVCChB1g8EexzPBpt4TMwsTXmbKeHWuDLjcZeLpscKF9snWuxUQYAC+DIp?=
- =?iso-8859-1?Q?t788EB/W3VpbQFSKPj7im7S7a/jKDvaIDf3t3oVkFCCJ7ciFh8BLWg/jSS?=
- =?iso-8859-1?Q?VNGzVr5RSBHkND5adsWBHEWdrKdG6UgDnAf6DfWhoi9y8VZEjggOVRokgh?=
- =?iso-8859-1?Q?IacPmn71H1YTesDND9I0TQ/VAToJpLvia5wy+Ekbs8O/mI5gI7jVH40Fco?=
- =?iso-8859-1?Q?qX5R6AaZx3rIzQEzCcxrsYhTb4LYTWEDhuWUUcuyUXG44ztwmLsjanlEoj?=
- =?iso-8859-1?Q?nmuTGcVQGp665YzFGeY9N2v5wxmqah++6avscriTWD/UCO63auOnzSa7u3?=
- =?iso-8859-1?Q?c8i159H/mzBr3a5+/jI0ykvhUvu5SiW2a8aLYd45d7ZoEQBbAZ2kgsqX9k?=
- =?iso-8859-1?Q?D0Owqz2EXfQk3FPYhkAZkzeTUffQxO3vVfXOjYUGZcbn6isizMur63QDWi?=
- =?iso-8859-1?Q?rmM+ewbPig=3D=3D?=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5HQy5ztgz2y7M
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Apr 2026 22:58:02 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
+	s=20171124; h=In-Reply-To:Content-Transfer-Encoding:Content-Disposition:
+	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:
+	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Content-Disposition:
+	In-Reply-To:References; bh=Ct2pD6eOtO9PvBCttFPIKGh9xJAlja9V7gGV1f2aOrs=; b=Eh
+	15RP9pympRHZWMV4ZiZ+hYbVC+2zSKdb2Fo+blTeh3gBRi02zqnB5/XAN2JY4+IXjsMGqgsz6wG+m
+	AkTo/K3gDwGhBezNzd7Lv9b127mY62fXIfxrWus2CE0zY/M72XfUMFL9/uf/TQmKMGM2yvzhXtHEv
+	KfxUTbe69yOWqxQ=;
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+	(envelope-from <andrew@lunn.ch>)
+	id 1wI4UI-000X6s-3c; Wed, 29 Apr 2026 14:57:58 +0200
+Date: Wed, 29 Apr 2026 14:57:58 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Jacky Chou <jacky_chou@aspeedtech.com>
+Cc: Ender Hsieh <andhsieh@nvidia.com>,
+	"linux-aspeed@lists.ozlabs.org" <linux-aspeed@lists.ozlabs.org>,
+	Marc Olberding <molberding@nvidia.com>
+Subject: Re: =?utf-8?B?5Zue6KaGOiBOVkwzMiBCTUMgZW5h?=
+ =?utf-8?B?YmxlbWVudCDigJQ=?= offering help on ftgmac100 work
+Message-ID: <eac09481-0ba1-4ac2-ad8c-d859822ff0d5@lunn.ch>
+References: <SEYPR06MB513489D0B8F5BC77258EA1FF9D372@SEYPR06MB5134.apcprd06.prod.outlook.com>
+ <20260428151416.1700609-1-andhsieh@nvidia.com>
+ <SEYPR06MB5134EAEAB53E80B69F73131B9D342@SEYPR06MB5134.apcprd06.prod.outlook.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -143,44 +66,91 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-OriginatorOrg: aspeedtech.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: OSQPR06MB7252.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 1827c2f6-1993-42ec-a227-08dea5d3e479
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Apr 2026 09:44:22.2966
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: d9lgqfvG1PYjI3Ve6PHfIBGz9OZ6F8ZblS14SQhaljfcXLTLuKw5s9L6wcMUUFPQqiQP92jltu+LqK0drmhfPkWqL4vpHSNPg3kh8EvdTTY=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PUZPR06MB5588
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <SEYPR06MB5134EAEAB53E80B69F73131B9D342@SEYPR06MB5134.apcprd06.prod.outlook.com>
 
-> > AST2700 is composed of two interconnected SoC instances, each providing=
-=0A=
-> > its own pin control hardware. This series introduces bindings describin=
-g=0A=
-> > the AST2700 pinctrl architecture and adds pinctrl driver support for th=
-e=0A=
-> > SoC0 instance.=0A=
-> >=0A=
-> > The bindings document the AST2700 dual-SoC design and follow common=0A=
-> > pinctrl conventions, while the SoC0 driver implementation builds upon=
-=0A=
-> > the existing ASPEED pinctrl infrastructure.=0A=
-> >=0A=
-> > ---=0A=
-=0A=
-> Why is this being Cc'ed to linux-clk? I'm hoping it's a manual typo and=
-=0A=
-> not some sort of misconfiguration in ./scripts/get_maintainer.pl,=0A=
-> please?=0A=
-=0A=
-This was automatically added by b4 prep --auto-to-cc. According to the=0A=
-output of ./scripts/get_maintainer.pl for the patch `[PATCH 2/3]=0A=
-dt-bindings: mfd: aspeed,ast2x00-scu: Describe AST2700 SCU0`,=0A=
-linux-clk@vger.kernel.org is included in the Cc list.=0A=
-=0A=
-Thanks=0A=
-=0A=
-Billy Tsai=0A=
+On Wed, Apr 29, 2026 at 02:08:51AM +0000, Jacky Chou wrote:
+> Hi Ender,
+> 
+> We stopped to submit the RGMII delay configuration in ftgmac100 driver, please
+> adjust the correct RGMII delay and configure in bootloader.
+> 
+> Currently, we suggest the PHY side to enable TX and RX internal delay, which
+> means the phy-mode is set to 'rgmii-id' to tell the PHY driver to enable both
+> delay to its PHY device.
+
+Please don't top post. It makes it harder to make the emails
+understandable.
+
+> Thanks for the update on the AST2700 ftgmac100 plans.
+> 
+> A bit of context from our side: we're working on the OpenBMC upstream
+> effort for nvl32 (the AST2600-based msx4 platform Marc Olberding
+> upstreamed in commit f28674fab34f). To get host networking working on
+> our test platform we currently carry a local kernel patch in the
+> OpenBMC layer that re-adds the mac0/mdio3/ethphy3 nodes, but holding
+> it there long-term goes against upstream-first principles and the
+> Gerrit reviewer has flagged it.
+> 
+> Given AST2600 ftgmac100 work is sequenced after the AST2700 series,
+> do you have any suggestions on how we could resolve this using
+> upstream resources — e.g. an interim path that's acceptable to the
+> community while we wait for the proper driver fix? Any pointer on
+> the right shape (RFC PATCH, openbmc/linux backport, something else)
+> would help us a lot.
+
+Hi Ender
+
+The problem about getting stuff upstream is phy-mode. If you don't
+have the PCB adding the delays, you need to use phy-mode='rmgii-id'.
+Which is the typical design.
+
+The root cause of the problem is actually the bootloader. It enables
+the delays in the MAC. The Linux MAC driver leaves them untouched, but
+it also passed the phy-mode direct to the PHY, not taking into account
+that the MAC has added delays.
+
+The quick and easy fix for getting patches merged into Mainline Linux
+is to patch the bootloader. Stop it enabling delays in the MAC. You
+can then use the correct phy-mode. If you go this way, place make it
+clear in the commit message you have modified the bootloader.
+
+The more complex way to solve this is to make the Linux MAC driver
+look at how the bootloader has configured the delays, compare it
+against phy-mode, and decide what to do. I've not thought through all
+the combinations but something like:
+
+* If the bootloader MAC configuration is not adding delays, do
+  nothing. (This covers what i just suggested)
+
+* If the bootloader MAC configuration is adding delays, and phy-mode
+  == 'rmgii', turn off the delays and pass phy-mode=rgmii-id to the PHY
+  (This covers any DT blobs which got passed me and merged)
+  
+* If the bootloader MAC configuration is adding delays, and phy-mode
+  == 'rmgii-id', turn off the delays and pass phy-mode=rgmii-id to the
+  PHY (This covers how it should be)
+
+What makes it more complex is that delays are not simple on/off, but a
+range of values. If the PCB is badly designed you sometimes need small
+delays to compensate. So rather than having a delay of 2ns, it might
+be 2.1ns. Or it might be 0.1ns. If it is 2.1ns, when you turn it off,
+you need to set the MAC to actually add 0.1ns delay. And you need to
+consider 0.1ns as not adding delays, and keep the 0.1ns. And if the
+delay is actually 1.8ns, it gets even more interesting, because i
+doubt the hardware can add a delay of -0.2ns, so you should actually
+leave the MAC delay alone, and pass phy-mode = rgmii to the PHY so it
+does not add delays as well.
+
+If you decide you want to make changes to the MAC driver, do it, post
+patches, and they will get reviewed. And given the number of dts files
+i've stopped getting merged, it should not be hard to find others to
+do testing for you, and you might end up with a crate of beer/box of
+wine from other openBMC users.
+
+     Andrew
+
+
 
