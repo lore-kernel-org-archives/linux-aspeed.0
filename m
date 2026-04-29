@@ -1,157 +1,146 @@
-Return-Path: <linux-aspeed+bounces-3991-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3992-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4068FF8875
-	for <linux-aspeed@archiver.kernel.org>; Thu, 30 Apr 2026 00:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BDB3FF8875
+	for <linux-aspeed@archiver.kernel.org>; Thu, 30 Apr 2026 00:16:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5ZSc4kbvz2yqs;
-	Thu, 30 Apr 2026 10:15:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=192.198.163.16
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777471523;
-	cv=fail; b=OD7xV4dF+l1KnZ8GCKAAGlGuzcuXA4yQSwG6t0Y1KYcw/K3U11ecPeTUMEV1p+8K6B4hA2/+gWUOOG9kUmOYXbfhk4KDjvjIauAPtyVEW0KYMqXeQJ/hXCfUKfmEa7DPtb/C/+wzXE0kPPusVcMkqhsr1gvCu1ez1mhGrxXWAkj7TZe74p2/jZlxUUKlhpZo8qBbtCr7gNSYU/MYOuIDpLKvkgyoeUGE9fFbNuBFCzbxiPaAhgmnAFvRiT0VBvkjjWp2kOW84rDJpsmfr2JvcDBGU4TcFhU/zyVv9GN4uxL1boehxYVoo7Pq5su790tmCOOX6zSLq7Nj5Nsb/Xsoqg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777471523; c=relaxed/relaxed;
-	bh=0lMxF9yhFuCOWUx3jbXky2CfzDvxrPHncg6LrnDWXDs=;
-	h=From:To:CC:Subject:Date:Message-ID:Content-Type:MIME-Version; b=m5ha0UsHj4JErAXPcbgDQZle3dzHb2pXhq7Kg6io1Q1MZBuzf8qL1nSyqbvnuCoT2IhjntwvVs9YiMIugm6gwNhO2RPMtn2APgmeldqL4sJrIbcc3CVDcASBoDOLRRt5viF4wIJPD1a1gZn6ob+whniIbPN/OHY8UUgxX2vWazJjA84gCuDlFOdTdhLlKxuM6ahw8yOTjLvQM2mSsVKf5hrTfJsIyhpscFH0ByExmQGJa9pzBetmFZAEXsgQd0H8F6tQjUKhrDKH5HtHl6Z02G4ibg/5xdj/EpSGSPc7EW0yivH2dr8JCsbg5UUGpk+3k+sQwyW1VePU8bolu/8o0g==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJtUWslv; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=oleksandr.shulzhenko@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5ZSg1w9sz2yk6;
+	Thu, 30 Apr 2026 10:15:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777479302;
+	cv=none; b=fDWeBGeFn156KtyAYHk4u8XcSA0lh3GrhpTGpe811ccyD60XdhG4bz+23Re1YvKGPC8WYrsgUQyO/RpSSuXRMGOlGe6/WLyg4w9wOg/m0j6W/0oTlN7hburKkTiGS8LrfMeWLTdktUbraxbBZCS4KIUbBO4OXIQATYaE6ERNad88KuYx3Xm0xirwj2JPUoag+bKsGU80Kyie4a++IiFJiEXV+Mir21gqQklvyaT87DwQ4wMgOIyWQai0t8mpZ5AkzRkytLCVI9rEQHbcoNMS7af2N5TxuRlC1hFJU9TViChRYBD2H/UMCwxRoKnGAIzuGxMPjEpm4dvGlnQAwssqtw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1777479302; c=relaxed/relaxed;
+	bh=5X6EWdy6gq/TxQgL9gfFBe5KbMSDagX2IixukijnMmo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=TH+sEB+WkDfxHRP96h1oS4N0lrENz5n7R+H2cNqh8R1RoHVQFO+witYemrZOFKTAqg9E8jjUldG7yZFaNTx6u/VINgXx6L2kmsqwTcui6Tzt1cclMJED7hnesxDviFEEPgDHbljl7VD34ndUdualk1hIFJ02YaF567w3UESd1k52RjErm+Z4qiQfqDaJaHx2QbU9PX9SiRlw4dViob4Rw96SaKOR4dG1Hdj2uR7nWEe9ARJnsYzFLsAmoIhxNyNLTfiNgJ24UDIP7Qf6qcdVqyrBsrytL42oZsIuOJKWux2+La1HM2un5ryf3FQNjcJgBLHIE/xdchGKYgeEYl46lQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FvQWoVWE; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Y6FBnaxv; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=daniel.lezcano@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eJtUWslv;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FvQWoVWE;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=Y6FBnaxv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=oleksandr.shulzhenko@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=daniel.lezcano@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5JwZ1lxJz2ySf;
-	Thu, 30 Apr 2026 00:05:15 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1777471519; x=1809007519;
-  h=from:to:cc:subject:date:message-id:mime-version;
-  bh=7qUCteMeRbjP8ZSRtDp1YZdlHVxF/+4Krp9exwA7zUA=;
-  b=eJtUWslvvla2+HIv58By4QlRvlfaeNsS4aoWTeAv+IyCbokfbemhUJVB
-   8jIVOvM+bplsJniYbjQmnzqi+qJtxEJcfVFhq11MbBe/iE+GiDUlJ0tcB
-   tpq1Cf9+akROhiZSPmKWP/oozP4P5sUgLS4o9pDrnJ5WcBrdvqFOQEd9c
-   in47dNogdepbzEnUI6WaJeBnGAF2SCKW0kqBojreGzZRyNSNIuUwFRlLj
-   OWl9oAmVkYOlJOWig39JZIuuAzD7UeeJWh8oEOC/3pbpBy6TqHjWmnLhG
-   3v3D0wGI8vDvMgfR8zJTEkzZd+yF34xWnslUOpTF/D09XIInbz+JU1LIm
-   w==;
-X-CSE-ConnectionGUID: s+y/GVB3TqW47UrTTcK81w==
-X-CSE-MsgGUID: G4CmBknWSqKWXqMhtKET/w==
-X-IronPort-AV: E=McAfee;i="6800,10657,11771"; a="65929857"
-X-IronPort-AV: E=Sophos;i="6.23,206,1770624000"; 
-   d="scan'208,217";a="65929857"
-Received: from orviesa004.jf.intel.com ([10.64.159.144])
-  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 07:05:10 -0700
-X-CSE-ConnectionGUID: 6SieK2vtSRK3wgL78HNfTw==
-X-CSE-MsgGUID: qCboto/0QI2iJiVjtK1B0g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,206,1770624000"; 
-   d="scan'208,217";a="238602891"
-Received: from fmsmsx901.amr.corp.intel.com ([10.18.126.90])
-  by orviesa004.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Apr 2026 07:05:10 -0700
-Received: from FMSMSX902.amr.corp.intel.com (10.18.126.91) by
- fmsmsx901.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Wed, 29 Apr 2026 07:05:09 -0700
-Received: from fmsedg902.ED.cps.intel.com (10.1.192.144) by
- FMSMSX902.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37 via Frontend Transport; Wed, 29 Apr 2026 07:05:09 -0700
-Received: from SN4PR2101CU001.outbound.protection.outlook.com (40.93.195.1) by
- edgegateway.intel.com (192.55.55.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.2562.37; Wed, 29 Apr 2026 07:05:08 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=knMlk4uy+o5JPcM7vskluXkLyy5PrForetvke9cXEHWt6h6A5DoLOu7TPSqz6pRAaU//18w0eJd1og3JBfhdgFajS/HqZGB8rvfmWJkSvHBgVSqtH8QLHYD361A+euz9nylxkMiZrXgOjDy7ZC/wNUWNCYjyiyEcgCDzw/qD/tkrzpqzZLEcuH/wS4ylEQ933GfJZtdCplCya/taVqGt7GtU3Nz0mELpCenopbRhGdTEoAHEAPRnYNAMAUqs+ImPRENxPcT02+Fq4CRPc6FP24fhWfCfcY9yr9NKlocVxEYB2hr0aLBctjWsuUT99fT9TuoLJMbgp1wSu1Z3mn+ftQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=x6IfZABs3ZAQoS9r/qJwvqXW6BQ0EmUxWInnZvobg98=;
- b=iATBBYCubxQ4ukQeIjqRgUzsomguqyoUNTZWHE1Zz4hX5UjUMP3Sz1/TgKhDhL1/C2AOqoYgcsYMGSIac1t+vKZSNZKAq6nLmogi+moFjgDuJGGEZp8u5Pc+uh0ASZ3sbCXLqo5jgd3m6Bt8Qvw/1YN0QKYHl/kygzjDMzXFeq260XYw7IyelrgmHL4rJejlO0s1j1UoDIosmpv9ba89ELcZUedynjqEDWQ96Uw3C0zNB0Z/KcIc3hKz2lIvkNzXBuM3aRbxvDfA3nS+mjcWNokoZhweWulv6a5BpBlBGHXKxBEoCxSiBm/3IML1tFZxdcXtSCrInENneeXffeSlmQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA1PR11MB8152.namprd11.prod.outlook.com (2603:10b6:208:446::8)
- by PH8PR11MB6564.namprd11.prod.outlook.com (2603:10b6:510:1c3::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9870.20; Wed, 29 Apr
- 2026 14:05:04 +0000
-Received: from IA1PR11MB8152.namprd11.prod.outlook.com
- ([fe80::4895:dd55:dbe9:73bf]) by IA1PR11MB8152.namprd11.prod.outlook.com
- ([fe80::4895:dd55:dbe9:73bf%4]) with mapi id 15.20.9870.020; Wed, 29 Apr 2026
- 14:05:04 +0000
-From: "Shulzhenko, Oleksandr" <oleksandr.shulzhenko@intel.com>
-To: "yh_chung@aspeedtech.com" <yh_chung@aspeedtech.com>
-CC: "andrew@codeconstruct.com.au" <andrew@codeconstruct.com.au>,
-	"conor+dt@kernel.org" <conor+dt@kernel.org>, "devicetree@vger.kernel.org"
-	<devicetree@vger.kernel.org>, "joel@jms.id.au" <joel@jms.id.au>,
-	"krzk+dt@kernel.org" <krzk+dt@kernel.org>,
-	"linux-arm-kernel@lists.infradead.org"
-	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
-	<linux-aspeed@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "Lawniczak, Maciej"
-	<maciej.lawniczak@intel.com>, "openbmc@lists.ozlabs.org"
-	<openbmc@lists.ozlabs.org>, "p.zabel@pengutronix.de"
-	<p.zabel@pengutronix.de>, "robh@kernel.org" <robh@kernel.org>, "Chen, Ryan"
-	<ryan_chen@aspeedtech.com>
-Subject: Re: [PATCH 2/7] soc: aspeed: Introduce core eSPI controller support
-Thread-Topic: Re: [PATCH 2/7] soc: aspeed: Introduce core eSPI controller
- support
-Thread-Index: AdzX4O5gznii2OlWTEOwzGmIksiJdw==
-Date: Wed, 29 Apr 2026 14:05:04 +0000
-Message-ID: <IA1PR11MB8152D824BEBEBDD4668F97EC99342@IA1PR11MB8152.namprd11.prod.outlook.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA1PR11MB8152:EE_|PH8PR11MB6564:EE_
-x-ms-office365-filtering-correlation-id: be6128c8-7ffc-4d5f-d860-08dea5f84fe9
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024|38070700021|8096899003|56012099003|18002099003;
-x-microsoft-antispam-message-info: xKmZ9LRjLLolgEW7IjUod00Kj2yn1UoZ9cT2nl9SlShnqBrJbbmJS4N/yhqWcUmTQvl/p1338EAU14Fzc9CtGQNSdnUGvept9GAZ9PMqrU7ymOG9bcBmDdiNOS02hUcV1+wrGf/3CTetDw/YhPKLoVEfx34tG09Wvxj2AFFc5wQQvBuyBI0P5xE6pjnkhp7Mqy/9OtM3RLgpmSVVZKHPEnmR4WRNbkAgeJem6U9FKnsz2tN9cTGeF1rX1e3/wlkIDN0MimT6iZK+PW83tKoRdMwYmqFCL1Ctl6l0e6IDlvFsQJdnQ0lu1BdfdpiIRna+7+XuWLVdJmxpzSq5N+PdTltLbbrQX6G/HqgA4x9Tr6gXXW/CrnawHxPBzkgOtIVsTyp7/H0c7f1K7T0YQMYqBPrkLpPoMq8LwLZqzagRJWlkc2ieBYWAem6nPhy3NTdhv2hNo03z0j3DxSkZ/SZQj+nAaKHncuur7AD9xwmDXs3XIe6z2Jh6U4/l2Gv9oYQLqgJPCkRtb7XF0F7R6czfuOYQ24QrmRh0Oe6TWBWsi64RS4NmRQc/JtjyrK7OZwGLO/FHl3ysPKiag98PsSU36H8MWoUKE/bzdygIr1VL/65RqEF4JJYMtPooOlT/elg61IMiEy7BnM7AJZnkVFx9PawlXYJDqHh8hhSj+8oLkRIEgwER+bH8n9VwWCuzIR+8IFcdni1QJPS/hgY2MuOkLIHnWiaWZnoH2mVKBiU3Nb5RjUjJZPBJEVE7cuIKM1ytPQC3e0wBAISHsNgjsn9OakIezuePKC1QXGL5BmMl/88=
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR11MB8152.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024)(38070700021)(8096899003)(56012099003)(18002099003);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?hhuSKhYLoJS+3RiIyGWYJrMIiAbWH/ZmIhW+uolfErv3WdKUsz4CMeGQpDKd?=
- =?us-ascii?Q?X/b5hw57GBJabDkzrATCU3jEjVAFFAyYukB2CgnEd1I2zdbyudXTutN4v1G/?=
- =?us-ascii?Q?fuFaO8thBGi+I9MvoJLaN3SeG4BYfSRC55l6BUvp/2QNdRXYAbhLx0EQbFvX?=
- =?us-ascii?Q?SY0f7Z1wMhcN/lTGQub+xnOWH/3B0GytYSBlP2SyfcYVl6qEumu3vAqrZ6qr?=
- =?us-ascii?Q?mc4kt7fAQ1ly3ttPet+H11u9+paFg/NAVS4dLqg5LesYphXYPaWtq9WS5ix1?=
- =?us-ascii?Q?+hw3tOvjUtE/vRTtFlGGI82WZNVktI7JvWwCMIjrpftByV6fzxAZsD5WjMqB?=
- =?us-ascii?Q?3UDtZuFrcTo71QClaUq4zFI8hCCP1T5jNRv1I7D8oYGUTCAGS47odcXICBX6?=
- =?us-ascii?Q?tFbxvesYUTW34yuaIrZRVFKt893yFwjACFDpj5uRxZo3+SUsQqoVq1VDvDqb?=
- =?us-ascii?Q?vfxf0PEfhxYJ5Zey1DrdI56sjRZt/OwLN0Z/JQ2ExCsSTdkpichdQAaLGOb/?=
- =?us-ascii?Q?ARGSFTk+YHNuzAWi+lOHw9OgMfEKAficbN8tT5C0b7EN2UGjvWh/AvPLOAtP?=
- =?us-ascii?Q?kV93SJyxKfos9jdGsOl6IyJgU3Vv015cp1/KXgIp7Hg41Bd1ksQGzibpHtJp?=
- =?us-ascii?Q?YQkKc6fxIUzeumf9C0zfQ0fl3aUWsjL7DyCE6UqwhCN0mzI0CW5LDgLTaEE2?=
- =?us-ascii?Q?sT0YL/E3IdOfvws1NcZUheiZ4opqzFWo+hzRkNJPlxG7+x0kXN20VIpwWT9V?=
- =?us-ascii?Q?7LMKZwbRxiQ/hVKIP7tzX5Bx77J12XdsvLoPKytqnuNCxulkFqOZFv9zjcGv?=
- =?us-ascii?Q?f15uYWPMk6TiKTjpobo8FVTRI5X60rx9kgX3JSqwuwAXFqqRzkNijcNenfN6?=
- =?us-ascii?Q?OYp4NZquEkb8cT4z7g43psjoHG7lvpMhja7jwXPrCyG5k/JfslovZ01XxjCc?=
- =?us-ascii?Q?1r5gV0BLfj1gqL4b0Qf8h5Lspja5FfBUnvF/52Vd2cS3n+HCkvljxs8QiEjR?=
- =?us-ascii?Q?Gak7O9CLazbKgEHz2iSZK2ig/9KIZioqNIFQWwDJFLmjw/zcICY+QnSB4OPk?=
- =?us-ascii?Q?wQuSSFLxnW9mVAu9sUqB80w8RDMUqb58GF4vKmpWeOPF6NYKPWYI527utybp?=
- =?us-ascii?Q?0tSOjFgJR8GJf6/RUb/6HKBxwKNwvNfI2sQZpidGSplu9RFq7vpEUPJfDoUX?=
- =?us-ascii?Q?als8G1WEg1iYLHqqKPC+rAtnJ381ghCOpSUE5LFxMZQ/bCNCHd+PyO/keZMp?=
- =?us-ascii?Q?c2fOj4W1DzL0GWQkVXkpiYn/X8PTznp7R7yOzRQTIfOp21SLVnlCQkX9vZJH?=
- =?us-ascii?Q?nijXQkvlv09hT7oR/8h3Hzusyk6PidWLp6Mp1vIHpjbAbDDIuBGiqoCRhZBa?=
- =?us-ascii?Q?7s3cb69WE9tI9CVyoYym1KPpp1ZoCp4KR9XTOAI2r9tFbGabn1Hon+sn/JdM?=
- =?us-ascii?Q?ok+SQx9VsZ5MeLlUfyuxPVjs+7L5QdlId442Egernu5NiOmre/L2ztsdce1r?=
- =?us-ascii?Q?V/2ddLZEP5+xLV5UKvqukqRlNkNtSrrET7bOYS41FRoX3nVlCsro0otkE7oo?=
- =?us-ascii?Q?hGWh5lsjZozbk3KqeCaqwfy7Iz3R+2ojVaLWNZNmZYRPxAnZtEjd+EDt2LPz?=
- =?us-ascii?Q?r/ZW5vbpBscGAOIiPEpWfS0yLKUnWZqAd9ioFTZeklvLmHhpv7Plgb6un9KF?=
- =?us-ascii?Q?zaYXCuspdkqJXfG6NI/cLhowc60IlTGQzwu6Z2Wf07JdThY2OCGeoKl/C/+A?=
- =?us-ascii?Q?RCaFV7WYsLBu2pRiRWNMunNngBU5W+Q=3D?=
-Content-Type: multipart/alternative;
-	boundary="_000_IA1PR11MB8152D824BEBEBDD4668F97EC99342IA1PR11MB8152namp_"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5MpD35G7z2ySf
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Apr 2026 02:14:58 +1000 (AEST)
+Received: from pps.filterd (m0279873.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 63TFU2b4963996
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Apr 2026 16:14:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=5X6EWdy6gq/
+	TxQgL9gfFBe5KbMSDagX2IixukijnMmo=; b=FvQWoVWEDz2znEo6zPvKxw1Of6i
+	DWoo+JJ5TZkiMfinl++SZNC3zQLl+mo+AqVxWIxWC0kSgag+FNyvGb5LJouVWHw0
+	HDA77gl6FjFw4To0KVQjXyfTw+Q0H4PQ0Cr/auVEvSG9unlus4cx4WZWeKEOS0jn
+	/gQh9IAjRY6O0OZPSzm+iYm8wIyl/Qkk4qWIqxMjRBPMMbCS3od5IXAo+SbFGpKK
+	VjsFn8nCgr9ni1QGcxUNAAHxvpjYfziwGCoYnpr22XSY3aOpFMxtQPcBM8YiVc0a
+	dZ5XRI0oyvOGXGgCktxLjo05qGlropswOtU/Vim21Sjm8eLB6QL2dg+HcAQ==
+Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com [209.85.221.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4du2m4v98b-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Apr 2026 16:14:54 +0000 (GMT)
+Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-56eecfd79e7so25414443e0c.1
+        for <linux-aspeed@lists.ozlabs.org>; Wed, 29 Apr 2026 09:14:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1777479294; x=1778084094; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=5X6EWdy6gq/TxQgL9gfFBe5KbMSDagX2IixukijnMmo=;
+        b=Y6FBnaxvyQ7qmjcpL+ibPSHMax/MS7PlNVPuI6BDwQV4j6ES2UJy0/i/s2a51Um/kP
+         w5ivpOTbP6msr1uLqoIFJEq/SWUDLlpvujfn31VsKSuTNrEhul8d9U3vDtvCAtiO0SDi
+         cWREf9SW4Cwjcgx/8jjp30HFYLxc3ILxsjVdDbsPQJ6R5EuzyWrmJh0Tz9i5BLtyakBj
+         mwZZemY/TzsAjOcHwEF//GwwoTVAAmI1Y074+5j+57f3hyS6qacXKOPsOWLaw1kB/l2w
+         wGGBMwo+HssHdLhrVIArm6UuGOHoTHpbIYPtYzgKW4S3cWUQ6fzUECBDqU6JzwAgwr/4
+         Lo5A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1777479294; x=1778084094;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=5X6EWdy6gq/TxQgL9gfFBe5KbMSDagX2IixukijnMmo=;
+        b=OAzKM8Y0r4QyuoVrbCspN4n/FroitU3c4mKXk9AVdL4ORJ2lO9aXEnORnlsOaCLAn5
+         9K6pb0Stv2ASchVvuKEGS4gPbkH+AGx2TkfFyzFFGAiK98BFfgGCDwe/6lcBbuRq/mW/
+         FT4rJ2HacuhLGUXDT0fjrPM9T1MSOFGBud6UA1q+I9kiPgbznu0E6Vl++E6Id6cd35e8
+         A3QN4myoUHCIt8Qpn6XQ3ZxufuOBjehN3uYVUtDfQKViB/a5vU+YFIndljjdqlJAXJLh
+         Inf+wkUxrRInYPtiGYLJXBwC6ME3+Kqy9HLgoYETEYrZZtW9wy0q+TkHIDA/+2Dq+h/C
+         I1lQ==
+X-Forwarded-Encrypted: i=1; AFNElJ8WQZ6e+2QcL4t3azQsSEul7rsbCTGjzIcD9f8xrly0FaKj20h1BdZF8ScJctfGx8nZ9coYjWGNxkzb2Ak=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzShLd+Ro3Om+iN51tNEeyyBPQoKsGdrXb066pBu4JoeTnZ3fzO
+	fLpKFXgIlcU5JRCvjPlclf6uc97WTxE0yq5/nRIBZsqwYWArYFU9+/t9HKIKAlF2Th6zT5JxJ1J
+	XgGKZcwTmIAED2Anm5rHV05C3C3dsfTweYhNXAUdpBssrwQ7VINBOKzf17uk+8WJ3SUYc
+X-Gm-Gg: AeBDieutCYueGNuRV5+25ohAx1UfYdVRVhV36xonGQU0/94GJT+qe9dwyYngjeqoWHU
+	fSPclecGgyIuIxy+w7FO3lrrynbrWvgYVGTdVh9p9A3X/R3tT2Eg0wO6810yn0yiIJMCdJbDRJu
+	z58uQiq/T9v5vwZrEydnM12DcZcUcmJc2+WSXsZu5NoWnk1uHa7JoXOLTGGjsplvUfL9D2gS9J2
+	EMb67jJ1sGB2yAdo+QtvT0w2p06eIFbGLvKaNmB4eC0fy576buxLLqishOAahsm4kg7E/tZcso2
+	dYzE9gYk/WAtZ6K2zVUGVERTSfSwnM7mQPXykBHQGTClqKCPJdR+1Jj9f1jVZN+GBLa8NhyUdL4
+	BT/pW3AeYzohLIAzPPL9uIE/KJfbF+t1OOro/wKJIS5n04gRcgWRYDFIafyLa
+X-Received: by 2002:a05:6122:d91:b0:56b:7023:1393 with SMTP id 71dfb90a1353d-573b35fc098mr2556154e0c.11.1777479293848;
+        Wed, 29 Apr 2026 09:14:53 -0700 (PDT)
+X-Received: by 2002:a05:6122:d91:b0:56b:7023:1393 with SMTP id 71dfb90a1353d-573b35fc098mr2556050e0c.11.1777479293244;
+        Wed, 29 Apr 2026 09:14:53 -0700 (PDT)
+Received: from mai.box.freepro.com ([2a05:6e02:1041:c10:ae20:597c:99b8:d161])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-48a81ed659dsm2438525e9.2.2026.04.29.09.14.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Apr 2026 09:14:52 -0700 (PDT)
+From: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
+To: rafael@kernel.org, daniel.lezcano@kernel.org
+Cc: gaurav.kohli@oss.qualcomm.com, Zhang Rui <rui.zhang@intel.com>,
+        Lukasz Luba <lukasz.luba@arm.com>, Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>,
+        Lucas Stach <l.stach@pengutronix.de>,
+        Russell King <linux+etnaviv@armlinux.org.uk>,
+        Christian Gmeiner <christian.gmeiner@gmail.com>,
+        David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+        Guenter Roeck <linux@roeck-us.net>, Joel Stanley <joel@jms.id.au>,
+        Andrew Jeffery <andrew@codeconstruct.com.au>,
+        =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>,
+        Benson Leung <bleung@chromium.org>,
+        =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+        Avi Fishman <avifishman70@gmail.com>,
+        Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>,
+        Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>,
+        Benjamin Fair <benjaminfair@google.com>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Bjorn Andersson <andersson@kernel.org>,
+        Konrad Dybcio <konradybcio@kernel.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Neil Armstrong <neil.armstrong@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+        Bill Wendling <morbo@google.com>,
+        Justin Stitt <justinstitt@google.com>, Ingo Molnar <mingo@kernel.org>,
+        Thomas Gleixner <tglx@kernel.org>,
+        "Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+        Mikko Perttunen <mperttunen@nvidia.com>,
+        Svyatoslav Ryhel <clamor95@gmail.com>,
+        linux-arm-kernel@lists.infradead.org (moderated list:ARM/ASPEED MACHINE SUPPORT),
+        linux-aspeed@lists.ozlabs.org (moderated list:ARM/ASPEED MACHINE SUPPORT),
+        openbmc@lists.ozlabs.org (moderated list:ARM/NUVOTON NPCM ARCHITECTURE),
+        linux-tegra@vger.kernel.org (open list:TEGRA ARCHITECTURE SUPPORT),
+        linux-arm-msm@vger.kernel.org (open list:ARM/QUALCOMM MAILING LIST),
+        linux-amlogic@lists.infradead.org (open list:KHADAS MCU MFD DRIVER),
+        llvm@lists.linux.dev (open list:CLANG/LLVM BUILD SUPPORT)
+Subject: [PATCH v3 07/11] thermal/of: Rename the devm_thermal_of_cooling_device_register() function
+Date: Wed, 29 Apr 2026 18:14:20 +0200
+Message-ID: <20260429161430.3802970-8-daniel.lezcano@oss.qualcomm.com>
+X-Mailer: git-send-email 2.43.0
+In-Reply-To: <20260429161430.3802970-1-daniel.lezcano@oss.qualcomm.com>
+References: <20260429161430.3802970-1-daniel.lezcano@oss.qualcomm.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -165,590 +154,368 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Exchange-RoutingPolicyChecked: iBbdoo6rYD7meZzfJhIyFlDRgTa+cSHbu4BKAFgcNPZMBjpuSVED5hkxL/LXJXnsoG29zSU6vxoH6NbND7pOxN+zDCHMSG8BXjo+XU3GbzpdmjO/+yAblxnvPCAeZxVLoF+6PZFboOEsptIGlNpBMjOagylhoh6XIzGnDIYjMin5dskeQa7dFa66Zc1yIcGlssKWkav1DVTPg0/R0ExXu2oL6IXbW7yuZj5GBp4z2qr/sHe/jQAgH0AEfzCMpi885+Eg0ggkatMrzumyhFz+8QKacKqmzvakSw3ucskAdndEHSGe0DbFVb/91FKcfA975juhcRGK5vc1rQGkrvAKeA==
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA1PR11MB8152.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: be6128c8-7ffc-4d5f-d860-08dea5f84fe9
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Apr 2026 14:05:04.3535
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: wNvLW19uSRT0z0HrHiSpSt2cUi6bbMlCsTD//08bhmd3xJ9VQMdrhpWW/1jkhuyWPXCVzX/A6aWiAMDiA0y3Ru6whawLE9wq0oy9hpmAZFA=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB6564
-X-OriginatorOrg: intel.com
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwNDI5MDE2MiBTYWx0ZWRfX1YRvRYuN1GrB
+ rY+0xU/kw7lxl3xyvDWFBSJ4RrV7zN+KuJNqy0m052daWSrYuH1t8m4nxWD84Vd7FYDMCMMfSDw
+ ksnb7+OaahS0ltxJDTBobC7yl2yde9rYutvZiYou+tVmXNucrAqu3FUYAtN8dhYik8WO/kpVZdi
+ 9XBP/eU3MWNX706uIq6VKi0imrYSBukOO+xzWc6zLg3ZQguBgk17WJjkLs7IxeY4l2OB/Fc5Cpv
+ PSre9uj4RrvR7Bt4NdeFXRFBGPV9YpBlcJUM5v2D5tzxtclpbyyFBrSlOlEgU+rdTDY/XHVIyt9
+ Y9IIty7D7rnffW1ppr2R9hQqDYS3JDbtCk3T/LjpNNHqRzXsIU5RSFyuNKcT2iU8XG8+wr/6LZW
+ QbqKZpVnmWtu9PReCrGxzRjwZVHuntw724x4lTBHI6RssXFwPlEv8zQCLap2tsWCsAlpW1Xq9pC
+ nxZX8V1yUfLvYj9OffQ==
+X-Proofpoint-GUID: RxR792coDMntW4jNM5QYjXhbyAz0UH8-
+X-Authority-Analysis: v=2.4 cv=MuFiLWae c=1 sm=1 tr=0 ts=69f22e7e cx=c_pps
+ a=1Os3MKEOqt8YzSjcPV0cFA==:117 a=xqWC_Br6kY4A:10 a=A5OVakUREuEA:10
+ a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
+ a=rJkE3RaqiGZ5pbrm-msn:22 a=EUspDBNiAAAA:8 a=YYchOvpREA9nlnY3_CYA:9
+ a=hhpmQAJR8DioWGSBphRh:22
+X-Proofpoint-ORIG-GUID: RxR792coDMntW4jNM5QYjXhbyAz0UH8-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1143,Hydra:6.1.51,FMLib:17.12.100.49
+ definitions=2026-04-29_01,2026-04-28_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 clxscore=1015 phishscore=0 impostorscore=0 adultscore=0
+ priorityscore=1501 malwarescore=0 suspectscore=0 lowpriorityscore=0
+ spamscore=0 classifier=typeunknown authscore=0 authtc= authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.22.0-2604200000
+ definitions=main-2604290162
 
---_000_IA1PR11MB8152D824BEBEBDD4668F97EC99342IA1PR11MB8152namp_
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+The cooling devices can be composed with a cooling device controller
+and a set of cooling devices attached to it. Until now, the DT
+bindings were described using a node for the cooling device controller
+and child nodes for all the cooling devices.
 
-Subject: Re: [PATCH 2/7] soc: aspeed: Introduce core eSPI controller support
+Recently, a new set of cooling devices were proposed with the same
+bindings. Those were rejected because DT maintainers do not want this
+format anymore. In place, a cooling device will be created with an
+id. Whatever its meaning, the thermal OF will bind a thermal zone and
+a cooling device by checking the device node pointer + the id are
+matching the cooling map with the cooling device.
 
-Add core eSPI controller support and common code for ASPEED SoCs. The
-eSPI engine is a slave device in BMC to communicate with the Host over
-the eSPI interface.
+Actually this approach is consistent with the thermal which are also
+registered with a device and an id.
 
-The initial support includes basic eSPI driver probe/remove operations,
-and provides operators for ASPEED SoCs to implement their own eSPI slave
-device drivers that are different among SoC models.
+In order to do a distinction between the old binding with child nodes
+and the incoming new binding, let's rename the registering function
+with a self-explanatory name.
 
-Signed-off-by: aspeedyh yh_chung@aspeedtech.com<mailto:yh_chung@aspeedtech.=
-com>
+Rename the functions:
+	devm_thermal_of_cooling_device_register() -> devm_thermal_of_child_cooling_device_register()
+
+Used the command:
+
+     	 find . -type f -name '*.[ch]' -exec \
+	 sed -i 's/devm_thermal_of_cooling_device_register/\
+	 devm_thermal_of_child_cooling_device_register/g' {} \;
+
+Did not used clang-format-diff because it does not indent correctly
+and checkpatch complained. Manually reindented to make checkpatch
+happy
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@oss.qualcomm.com>
 ---
-[...]
-diff --git a/drivers/soc/aspeed/espi/aspeed-espi.c b/drivers/soc/aspeed/esp=
-i/aspeed-espi.c
-new file mode 100644
-index 000000000000..15d58b38bbe4
---- /dev/null
-+++ b/drivers/soc/aspeed/espi/aspeed-espi.c
-@@ -0,0 +1,143 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Unified Aspeed eSPI driver framework for different generation SoCs
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/reset.h>
-+
-+#include "aspeed-espi.h"
-+
-+struct aspeed_espi_ops {
-+       void (*espi_pre_init)(struct aspeed_espi *espi);
-+       void (*espi_post_init)(struct aspeed_espi *espi);
-+       void (*espi_deinit)(struct aspeed_espi *espi);
-+       irqreturn_t (*espi_isr)(int irq, void *espi);
-+};
-+
-+static const struct of_device_id aspeed_espi_of_matches[] =3D {
-+       { }
-+};
-+MODULE_DEVICE_TABLE(of, aspeed_espi_of_matches);
-+
-+static int aspeed_espi_probe(struct platform_device *pdev)
-+{
-+       const struct of_device_id *match;
-+       struct aspeed_espi *espi;
-+       struct resource *res;
-+       struct device *dev;
-+       int rc;
-+
-+       dev =3D &pdev->dev;
-+       espi =3D devm_kzalloc(dev, sizeof(*espi), GFP_KERNEL);
-+       if (!espi)
-+               return -ENOMEM;
-+
-+       espi->dev =3D dev;
-+       match =3D of_match_device(aspeed_espi_of_matches, dev);
-+       if (!match)
-+               return -ENODEV;
-+
-+       espi->pdev =3D pdev;
-+       espi->ops =3D match->data;
-+       if (!espi->ops || !espi->ops->espi_isr)
-+               return -EINVAL;
-+
-+       res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+       if (!res) {
-+               dev_err(dev, "cannot get resource\n");
-+               return -ENODEV;
-+       }
-+
-+       espi->regs =3D devm_ioremap_resource(dev, res);
-+       if (IS_ERR(espi->regs)) {
-+               dev_err(dev, "cannot map registers\n");
-+               return PTR_ERR(espi->regs);
-+       }
-+
-+       espi->irq =3D platform_get_irq(pdev, 0);
-+       if (espi->irq < 0) {
-+               dev_err(dev, "cannot get IRQ number\n");
-+               return espi->irq;
-+       }
-+
-+       espi->rst =3D devm_reset_control_get_optional(dev, NULL);
-+       if (IS_ERR(espi->rst)) {
-+               dev_err(dev, "cannot get reset control\n");
-+               return PTR_ERR(espi->rst);
-+       }
-+
-+       espi->clk =3D devm_clk_get(dev, NULL);
-+       if (IS_ERR(espi->clk)) {
-+               dev_err(dev, "cannot get clock control\n");
-+               return PTR_ERR(espi->clk);
-+       }
-+
-+       rc =3D clk_prepare_enable(espi->clk);
-+       if (rc) {
-+               dev_err(dev, "cannot enable clocks\n");
-+               return rc;
-+       }
-> +
-> +     if (espi->ops->espi_pre_init)
-> +             espi->ops->espi_pre_init(espi);
-is there a chance ops are unitialized? In any place you do this check
-+
-+       rc =3D devm_request_irq(dev, espi->irq, espi->ops->espi_isr, 0,
-+                             dev_name(dev), espi);
-+       if (rc) {
-+               dev_err(dev, "cannot request IRQ\n");
-+               goto err_deinit;
-+       }
-+
-+       if (espi->ops->espi_post_init)
-+               espi->ops->espi_post_init(espi);
-+
-+       platform_set_drvdata(pdev, espi);
-+
-+       dev_info(dev, "module loaded\n");
-+
-+       return 0;
-+
-+err_deinit:
-+       if (espi->ops->espi_deinit)
-+               espi->ops->espi_deinit(espi);
-+       clk_disable_unprepare(espi->clk);
-+
-+       return rc;
-+}
-+
-> +static void aspeed_espi_remove(struct platform_device *pdev)
-> +{
-> +     struct aspeed_espi *espi;
-> +
-> +     espi =3D platform_get_drvdata(pdev);
-> +
-> +     if (!espi)
-> +             return;
-espi pointer is unlikely to be null here, I suggest removing the NULL check
-+
-+       if (espi->ops->espi_deinit)
-+               espi->ops->espi_deinit(espi);
-+
-+       clk_disable_unprepare(espi->clk);
-+}
-+
-+static struct platform_driver aspeed_espi_driver =3D {
-+       .driver =3D {
-+               .name =3D "aspeed-espi",
-+               .of_match_table =3D aspeed_espi_of_matches,
-+       },
-+       .probe =3D aspeed_espi_probe,
-+       .remove =3D aspeed_espi_remove,
-+};
-+
-+module_platform_driver(aspeed_espi_driver);
-+
-+MODULE_AUTHOR("Aspeed Technology Inc.");
-+MODULE_DESCRIPTION("Aspeed eSPI controller");
-+MODULE_LICENSE("GPL");
-[...]
+ drivers/hwmon/amc6821.c                  |  2 +-
+ drivers/hwmon/aspeed-pwm-tacho.c         |  5 +++--
+ drivers/hwmon/emc2305.c                  |  6 +++---
+ drivers/hwmon/gpio-fan.c                 |  6 ++++--
+ drivers/hwmon/max6650.c                  |  6 +++---
+ drivers/hwmon/npcm750-pwm-fan.c          |  6 ++++--
+ drivers/hwmon/pwm-fan.c                  |  5 +++--
+ drivers/hwmon/qnap-mcu-hwmon.c           |  6 +++---
+ drivers/hwmon/tc654.c                    |  5 +++--
+ drivers/memory/tegra/tegra210-emc-core.c |  4 ++--
+ drivers/soc/qcom/qcom_aoss.c             |  2 +-
+ drivers/thermal/khadas_mcu_fan.c         |  7 ++++---
+ drivers/thermal/tegra/soctherm.c         |  6 +++---
+ drivers/thermal/thermal_of.c             | 15 +++++++++------
+ include/linux/thermal.h                  | 16 ++++++++--------
+ 15 files changed, 54 insertions(+), 43 deletions(-)
 
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydz=
-ial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-31=
-6 | Kapital zakladowy 200.000 PLN.
-Spolka oswiadcza, ze posiada status duzego przedsiebiorcy w rozumieniu usta=
-wy z dnia 8 marca 2013 r. o przeciwdzialaniu nadmiernym opoznieniom w trans=
-akcjach handlowych.
-
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata=
- i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wi=
-adomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiek=
-olwiek przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the s=
-ole use of the intended recipient(s). If you are not the intended recipient=
-, please contact the sender and delete all copies; any review or distributi=
-on by others is strictly prohibited.
-
---_000_IA1PR11MB8152D824BEBEBDD4668F97EC99342IA1PR11MB8152namp_
-Content-Type: text/html; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
-osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
-//www.w3.org/TR/REC-html40">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii">
-<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
-<style><!--
-/* Font Definitions */
-@font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:Aptos;}
-/* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	font-size:12.0pt;
-	font-family:"Aptos",sans-serif;
-	mso-ligatures:standardcontextual;}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:#467886;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Aptos",sans-serif;
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page WordSection1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.WordSection1
-	{page:WordSection1;}
---></style><!--[if gte mso 9]><xml>
-<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
-<o:shapelayout v:ext=3D"edit">
-<o:idmap v:ext=3D"edit" data=3D"1" />
-</o:shapelayout></xml><![endif]-->
-</head>
-<body lang=3D"EN-US" link=3D"#467886" vlink=3D"#96607D" style=3D"word-wrap:=
-break-word">
-<div class=3D"WordSection1">
-<p class=3D"MsoNormal">Subject: Re: [PATCH 2/7] soc: aspeed: Introduce core=
- eSPI controller support<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Add core eSPI controller support and common code for=
- ASPEED SoCs. The<o:p></o:p></p>
-<p class=3D"MsoNormal">eSPI engine is a slave device in BMC to communicate =
-with the Host over<o:p></o:p></p>
-<p class=3D"MsoNormal">the eSPI interface.<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">The initial support includes basic eSPI driver probe=
-/remove operations,<o:p></o:p></p>
-<p class=3D"MsoNormal">and provides operators for ASPEED SoCs to implement =
-their own eSPI slave<o:p></o:p></p>
-<p class=3D"MsoNormal">device drivers that are different among SoC models.<=
-o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Signed-off-by: aspeedyh <a href=3D"mailto:yh_chung@a=
-speedtech.com">
-yh_chung@aspeedtech.com</a><o:p></o:p></p>
-<p class=3D"MsoNormal">---<o:p></o:p></p>
-<p class=3D"MsoNormal">[...]<o:p></o:p></p>
-<p class=3D"MsoNormal">diff --git a/drivers/soc/aspeed/espi/aspeed-espi.c b=
-/drivers/soc/aspeed/espi/aspeed-espi.c<o:p></o:p></p>
-<p class=3D"MsoNormal">new file mode 100644<o:p></o:p></p>
-<p class=3D"MsoNormal">index 000000000000..15d58b38bbe4<o:p></o:p></p>
-<p class=3D"MsoNormal">--- /dev/null<o:p></o:p></p>
-<p class=3D"MsoNormal">+++ b/drivers/soc/aspeed/espi/aspeed-espi.c<o:p></o:=
-p></p>
-<p class=3D"MsoNormal">@@ -0,0 +1,143 @@<o:p></o:p></p>
-<p class=3D"MsoNormal">+// SPDX-License-Identifier: GPL-2.0+<o:p></o:p></p>
-<p class=3D"MsoNormal">+/*<o:p></o:p></p>
-<p class=3D"MsoNormal">+ * Unified Aspeed eSPI driver framework for differe=
-nt generation SoCs<o:p></o:p></p>
-<p class=3D"MsoNormal">+ */<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/clk.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/dma-mapping.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/interrupt.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/module.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/of_device.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/of.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &lt;linux/platform_device.h&gt;<o:p></o:p>=
-</p>
-<p class=3D"MsoNormal">+#include &lt;linux/reset.h&gt;<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+#include &quot;aspeed-espi.h&quot;<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+struct aspeed_espi_ops {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void (*espi_pr=
-e_init)(struct aspeed_espi *espi);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void (*espi_po=
-st_init)(struct aspeed_espi *espi);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void (*espi_de=
-init)(struct aspeed_espi *espi);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; irqreturn_t (*=
-espi_isr)(int irq, void *espi);<o:p></o:p></p>
-<p class=3D"MsoNormal">+};<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+static const struct of_device_id aspeed_espi_of_mat=
-ches[] =3D {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { }<o:p></o:p>=
-</p>
-<p class=3D"MsoNormal">+};<o:p></o:p></p>
-<p class=3D"MsoNormal">+MODULE_DEVICE_TABLE(of, aspeed_espi_of_matches);<o:=
-p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+static int aspeed_espi_probe(struct platform_device=
- *pdev)<o:p></o:p></p>
-<p class=3D"MsoNormal">+{<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; const struct o=
-f_device_id *match;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct aspeed_=
-espi *espi;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct resourc=
-e *res;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; struct device =
-*dev;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int rc;<o:p></=
-o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev =3D &amp;p=
-dev-&gt;dev;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi =3D devm_=
-kzalloc(dev, sizeof(*espi), GFP_KERNEL);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (!espi)<o:p=
-></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -ENOMEM;<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;dev =
-=3D dev;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; match =3D of_m=
-atch_device(aspeed_espi_of_matches, dev);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (!match)<o:=
-p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -ENODEV;<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;pdev =
-=3D pdev;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;ops =
-=3D match-&gt;data;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (!espi-&gt;=
-ops || !espi-&gt;ops-&gt;espi_isr)<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -EINVAL;<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; res =3D platfo=
-rm_get_resource(pdev, IORESOURCE_MEM, 0);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (!res) {<o:=
-p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot get resource\n&=
-quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -ENODEV;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;regs =
-=3D devm_ioremap_resource(dev, res);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (IS_ERR(esp=
-i-&gt;regs)) {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot map registers\n=
-&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return PTR_ERR(espi-&gt;regs);<o:p></o:p>=
-</p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;irq =
-=3D platform_get_irq(pdev, 0);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (espi-&gt;i=
-rq &lt; 0) {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot get IRQ number\=
-n&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return espi-&gt;irq;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;rst =
-=3D devm_reset_control_get_optional(dev, NULL);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (IS_ERR(esp=
-i-&gt;rst)) {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot get reset contr=
-ol\n&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return PTR_ERR(espi-&gt;rst);<o:p></o:p><=
-/p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;clk =
-=3D devm_clk_get(dev, NULL);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (IS_ERR(esp=
-i-&gt;clk)) {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot get clock contr=
-ol\n&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return PTR_ERR(espi-&gt;clk);<o:p></o:p><=
-/p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rc =3D clk_pre=
-pare_enable(espi-&gt;clk);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (rc) {<o:p>=
-</o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot enable clocks\n=
-&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return rc;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">&gt; +<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +&nbsp;&nbsp;&nbsp;&nbsp; if (espi-&gt;ops-&gt;=
-espi_pre_init)<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;ops-&gt;espi_pre_init(espi);<o:p></o:p>=
-</p>
-<p class=3D"MsoNormal">is there a chance ops are unitialized? In any place =
-you do this check<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rc =3D devm_re=
-quest_irq(dev, espi-&gt;irq, espi-&gt;ops-&gt;espi_isr, 0,<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_name(dev), espi);<o:p></o:p>=
-</p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (rc) {<o:p>=
-</o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_err(dev, &quot;cannot request IRQ\n&q=
-uot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; goto err_deinit;<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<o:p></o:p></=
-p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (espi-&gt;o=
-ps-&gt;espi_post_init)<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;ops-&gt;espi_post_init(espi);<o:=
-p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; platform_set_d=
-rvdata(pdev, espi);<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dev_info(dev, =
-&quot;module loaded\n&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 0;<o:p>=
-</o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+err_deinit:<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (espi-&gt;o=
-ps-&gt;espi_deinit)<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;ops-&gt;espi_deinit(espi);<o:p><=
-/o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clk_disable_un=
-prepare(espi-&gt;clk);<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return rc;<o:p=
-></o:p></p>
-<p class=3D"MsoNormal">+}<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +static void aspeed_espi_remove(struct platform=
-_device *pdev)<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +{<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +&nbsp;&nbsp;&nbsp;&nbsp; struct aspeed_espi *e=
-spi;<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +&nbsp;&nbsp;&nbsp;&nbsp; espi =3D platform_get=
-_drvdata(pdev);<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +<o:p></o:p></p>
-<p class=3D"MsoNormal">&gt; +&nbsp;&nbsp;&nbsp;&nbsp; if (!espi)<o:p></o:p>=
-</p>
-<p class=3D"MsoNormal">&gt; +&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;&nbsp;&nbsp;&nbsp;&nbsp; return;<o:p></o:p></p>
-<p class=3D"MsoNormal">espi pointer is unlikely to be null here, I suggest =
-removing the NULL check<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (espi-&gt;o=
-ps-&gt;espi_deinit)<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; espi-&gt;ops-&gt;espi_deinit(espi);<o:p><=
-/o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clk_disable_un=
-prepare(espi-&gt;clk);<o:p></o:p></p>
-<p class=3D"MsoNormal">+}<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+static struct platform_driver aspeed_espi_driver =
-=3D {<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .driver =3D {<=
-o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .name =3D &quot;aspeed-espi&quot;,<o:p></=
-o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .of_match_table =3D aspeed_espi_of_matche=
-s,<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; },<o:p></o:p><=
-/p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .probe =3D asp=
-eed_espi_probe,<o:p></o:p></p>
-<p class=3D"MsoNormal">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .remove =3D as=
-peed_espi_remove,<o:p></o:p></p>
-<p class=3D"MsoNormal">+};<o:p></o:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+module_platform_driver(aspeed_espi_driver);<o:p></o=
-:p></p>
-<p class=3D"MsoNormal">+<o:p></o:p></p>
-<p class=3D"MsoNormal">+MODULE_AUTHOR(&quot;Aspeed Technology Inc.&quot;);<=
-o:p></o:p></p>
-<p class=3D"MsoNormal">+MODULE_DESCRIPTION(&quot;Aspeed eSPI controller&quo=
-t;);<o:p></o:p></p>
-<p class=3D"MsoNormal">+MODULE_LICENSE(&quot;GPL&quot;);<o:p></o:p></p>
-<p class=3D"MsoNormal">[...]<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-</div>
-<p>
-    <hr/>
-    <strong style=3D"line-height: 11.25pt;">
-        <span style=3D"font-size: 9pt; color: #595959;">
-            <span style=3D"font-family: 'Arial Narrow', sans-serif;">Intel =
-Technology Poland sp. z o.o.<br>
-            </span>
-        </span>
-    </strong>
-    <span style=3D"color:#595959; font-family: 'Arial Narrow', sans-serif; =
-font-size: 9pt; line-height: 11.25pt;">
-        ul. S&#322;owackiego 173 | 80-298 Gda&#324;sk | S&#261;d Rejonowy G=
-da&#324;sk P&#243;&#322;noc | VII Wydzia&#322; Gospodarczy Krajowego Rejest=
-ru S&#261;dowego - KRS 101882 | NIP 957-07-52-316 | Kapita&#322; zak&#322;a=
-dowy 200.000 PLN.<br/>
-              Sp&#243;&#322;ka o&#347;wiadcza, &#380;e posiada status du&#3=
-80;ego przedsi&#281;biorcy w rozumieniu ustawy z dnia 8 marca 2013 r. o prz=
-eciwdzia&#322;aniu nadmiernym op&#243;&#378;nieniom w transakcjach handlowy=
-ch.
-    </span>
-</p>
-<p>
-    <span style=3D"font-size:8.0pt;  font-family:'Arial Narrow',sans-serif;=
- mso-fareast-font-family: 'Times New Roman';mso-bidi-font-family:Arial; col=
-or:#595959; mso-ansi-language:EN-US; mso-fareast-language:EN-US; mso-bidi-l=
-anguage: PL-PL">
-        Ta wiadomo&#347;&#263; wraz z za&#322;&#261;cznikami jest przeznacz=
-ona dla okre&#347;lonego adresata i mo&#380;e zawiera&#263; informacje pouf=
-ne. W razie przypadkowego otrzymania tej wiadomo&#347;ci, prosimy o powiado=
-mienie nadawcy oraz trwa&#322;e jej usuni&#281;cie; jakiekolwiek przegl&#26=
-1;danie lub rozpowszechnianie jest zabronione.<br>
-        This e-mail and any attachments may contain confidential material f=
-or the sole use of the intended recipient(s). If you are not the intended r=
-ecipient, please contact the sender and delete all copies; any review or di=
-stribution by others is strictly prohibited.
-    </span>
-</p>
-<p class=3D"MsoNormal"><o:p></o:p></p>
-</body>
-</html>
-
---_000_IA1PR11MB8152D824BEBEBDD4668F97EC99342IA1PR11MB8152namp_--
+diff --git a/drivers/hwmon/amc6821.c b/drivers/hwmon/amc6821.c
+index d5f864b360b0..8e5926b06070 100644
+--- a/drivers/hwmon/amc6821.c
++++ b/drivers/hwmon/amc6821.c
+@@ -1076,7 +1076,7 @@ static int amc6821_probe(struct i2c_client *client)
+ 				     "Failed to initialize hwmon\n");
+ 
+ 	if (IS_ENABLED(CONFIG_THERMAL) && fan_np && data->fan_cooling_levels)
+-		return PTR_ERR_OR_ZERO(devm_thermal_of_cooling_device_register(dev,
++		return PTR_ERR_OR_ZERO(devm_thermal_of_child_cooling_device_register(dev,
+ 			fan_np, client->name, data, &amc6821_cooling_ops));
+ 
+ 	return 0;
+diff --git a/drivers/hwmon/aspeed-pwm-tacho.c b/drivers/hwmon/aspeed-pwm-tacho.c
+index aa159bf158a3..1c5945d4ba37 100644
+--- a/drivers/hwmon/aspeed-pwm-tacho.c
++++ b/drivers/hwmon/aspeed-pwm-tacho.c
+@@ -841,8 +841,9 @@ static int aspeed_create_pwm_cooling(struct device *dev,
+ 	}
+ 	snprintf(cdev->name, MAX_CDEV_NAME_LEN, "%pOFn%d", child, pwm_port);
+ 
+-	cdev->tcdev = devm_thermal_of_cooling_device_register(dev, child,
+-					cdev->name, cdev, &aspeed_pwm_cool_ops);
++	cdev->tcdev = devm_thermal_of_child_cooling_device_register(dev, child,
++								    cdev->name, cdev,
++								    &aspeed_pwm_cool_ops);
+ 	if (IS_ERR(cdev->tcdev))
+ 		return PTR_ERR(cdev->tcdev);
+ 
+diff --git a/drivers/hwmon/emc2305.c b/drivers/hwmon/emc2305.c
+index 64b213e1451e..2505e9fac499 100644
+--- a/drivers/hwmon/emc2305.c
++++ b/drivers/hwmon/emc2305.c
+@@ -309,9 +309,9 @@ static int emc2305_set_single_tz(struct device *dev, struct device_node *fan_nod
+ 	pwm = data->pwm_min[cdev_idx];
+ 
+ 	data->cdev_data[cdev_idx].cdev =
+-		devm_thermal_of_cooling_device_register(dev, fan_node,
+-							emc2305_fan_name[idx], data,
+-							&emc2305_cooling_ops);
++		devm_thermal_of_child_cooling_device_register(dev, fan_node,
++							      emc2305_fan_name[idx], data,
++							      &emc2305_cooling_ops);
+ 
+ 	if (IS_ERR(data->cdev_data[cdev_idx].cdev)) {
+ 		dev_err(dev, "Failed to register cooling device %s\n", emc2305_fan_name[idx]);
+diff --git a/drivers/hwmon/gpio-fan.c b/drivers/hwmon/gpio-fan.c
+index a8892ced1e54..084828e1e281 100644
+--- a/drivers/hwmon/gpio-fan.c
++++ b/drivers/hwmon/gpio-fan.c
+@@ -592,8 +592,10 @@ static int gpio_fan_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* Optional cooling device register for Device tree platforms */
+-	fan_data->cdev = devm_thermal_of_cooling_device_register(dev, np,
+-				"gpio-fan", fan_data, &gpio_fan_cool_ops);
++	fan_data->cdev = devm_thermal_of_child_cooling_device_register(dev, np,
++								       "gpio-fan",
++								       fan_data,
++								       &gpio_fan_cool_ops);
+ 
+ 	dev_info(dev, "GPIO fan initialized\n");
+ 
+diff --git a/drivers/hwmon/max6650.c b/drivers/hwmon/max6650.c
+index 9649c6611d5f..a50b1b0f1f48 100644
+--- a/drivers/hwmon/max6650.c
++++ b/drivers/hwmon/max6650.c
+@@ -793,9 +793,9 @@ static int max6650_probe(struct i2c_client *client)
+ 		return err;
+ 
+ 	if (IS_ENABLED(CONFIG_THERMAL)) {
+-		cooling_dev = devm_thermal_of_cooling_device_register(dev,
+-						dev->of_node, client->name,
+-						data, &max6650_cooling_ops);
++		cooling_dev = devm_thermal_of_child_cooling_device_register(dev, dev->of_node,
++									    client->name, data,
++									    &max6650_cooling_ops);
+ 		if (IS_ERR(cooling_dev)) {
+ 			dev_warn(dev, "thermal cooling device register failed: %ld\n",
+ 				 PTR_ERR(cooling_dev));
+diff --git a/drivers/hwmon/npcm750-pwm-fan.c b/drivers/hwmon/npcm750-pwm-fan.c
+index c8f5e695fb6d..aea0b8659f5f 100644
+--- a/drivers/hwmon/npcm750-pwm-fan.c
++++ b/drivers/hwmon/npcm750-pwm-fan.c
+@@ -857,8 +857,10 @@ static int npcm7xx_create_pwm_cooling(struct device *dev,
+ 	snprintf(cdev->name, THERMAL_NAME_LENGTH, "%pOFn%d", child,
+ 		 pwm_port);
+ 
+-	cdev->tcdev = devm_thermal_of_cooling_device_register(dev, child,
+-				cdev->name, cdev, &npcm7xx_pwm_cool_ops);
++	cdev->tcdev = devm_thermal_of_child_cooling_device_register(dev, child,
++								    cdev->name,
++								    cdev,
++								    &npcm7xx_pwm_cool_ops);
+ 	if (IS_ERR(cdev->tcdev))
+ 		return PTR_ERR(cdev->tcdev);
+ 
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 37269db2de84..e6a567d58579 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -685,8 +685,9 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 
+ 	ctx->pwm_fan_state = ctx->pwm_fan_max_state;
+ 	if (IS_ENABLED(CONFIG_THERMAL)) {
+-		cdev = devm_thermal_of_cooling_device_register(dev,
+-			dev->of_node, "pwm-fan", ctx, &pwm_fan_cooling_ops);
++		cdev = devm_thermal_of_child_cooling_device_register(dev, dev->of_node,
++								     "pwm-fan", ctx,
++								     &pwm_fan_cooling_ops);
+ 		if (IS_ERR(cdev)) {
+ 			ret = PTR_ERR(cdev);
+ 			dev_err(dev,
+diff --git a/drivers/hwmon/qnap-mcu-hwmon.c b/drivers/hwmon/qnap-mcu-hwmon.c
+index e86e64c4d391..c1c1e9d6f340 100644
+--- a/drivers/hwmon/qnap-mcu-hwmon.c
++++ b/drivers/hwmon/qnap-mcu-hwmon.c
+@@ -337,9 +337,9 @@ static int qnap_mcu_hwmon_probe(struct platform_device *pdev)
+ 	 * levels and only succeed with either no or correct cooling levels.
+ 	 */
+ 	if (IS_ENABLED(CONFIG_THERMAL) && hwm->fan_cooling_levels) {
+-		cdev = devm_thermal_of_cooling_device_register(dev,
+-					to_of_node(hwm->fan_node), "qnap-mcu-hwmon",
+-					hwm, &qnap_mcu_hwmon_cooling_ops);
++		cdev = devm_thermal_of_child_cooling_device_register(dev, to_of_node(hwm->fan_node),
++								     "qnap-mcu-hwmon", hwm,
++								     &qnap_mcu_hwmon_cooling_ops);
+ 		if (IS_ERR(cdev))
+ 			return dev_err_probe(dev, PTR_ERR(cdev),
+ 				"Failed to register qnap-mcu-hwmon as cooling device\n");
+diff --git a/drivers/hwmon/tc654.c b/drivers/hwmon/tc654.c
+index 39fe5836f237..ba18b442b81e 100644
+--- a/drivers/hwmon/tc654.c
++++ b/drivers/hwmon/tc654.c
+@@ -541,8 +541,9 @@ static int tc654_probe(struct i2c_client *client)
+ 	if (IS_ENABLED(CONFIG_THERMAL)) {
+ 		struct thermal_cooling_device *cdev;
+ 
+-		cdev = devm_thermal_of_cooling_device_register(dev, dev->of_node, client->name,
+-							       hwmon_dev, &tc654_fan_cool_ops);
++		cdev = devm_thermal_of_child_cooling_device_register(dev, dev->of_node,
++								     client->name, hwmon_dev,
++								     &tc654_fan_cool_ops);
+ 		return PTR_ERR_OR_ZERO(cdev);
+ 	}
+ 
+diff --git a/drivers/memory/tegra/tegra210-emc-core.c b/drivers/memory/tegra/tegra210-emc-core.c
+index e96ca4157d48..065ae8bc2830 100644
+--- a/drivers/memory/tegra/tegra210-emc-core.c
++++ b/drivers/memory/tegra/tegra210-emc-core.c
+@@ -1966,8 +1966,8 @@ static int tegra210_emc_probe(struct platform_device *pdev)
+ 
+ 	tegra210_emc_debugfs_init(emc);
+ 
+-	cd = devm_thermal_of_cooling_device_register(emc->dev, np, "emc", emc,
+-						     &tegra210_emc_cd_ops);
++	cd = devm_thermal_of_child_cooling_device_register(emc->dev, np, "emc", emc,
++							   &tegra210_emc_cd_ops);
+ 	if (IS_ERR(cd)) {
+ 		err = PTR_ERR(cd);
+ 		dev_err(emc->dev, "failed to register cooling device: %d\n",
+diff --git a/drivers/soc/qcom/qcom_aoss.c b/drivers/soc/qcom/qcom_aoss.c
+index a543ab9bee6c..742f571200fa 100644
+--- a/drivers/soc/qcom/qcom_aoss.c
++++ b/drivers/soc/qcom/qcom_aoss.c
+@@ -381,7 +381,7 @@ static int qmp_cooling_device_add(struct qmp *qmp,
+ 	qmp_cdev->qmp = qmp;
+ 	qmp_cdev->state = !qmp_cdev_max_state;
+ 	qmp_cdev->name = cdev_name;
+-	qmp_cdev->cdev = devm_thermal_of_cooling_device_register
++	qmp_cdev->cdev = devm_thermal_of_child_cooling_device_register
+ 				(qmp->dev, node,
+ 				cdev_name,
+ 				qmp_cdev, &qmp_cooling_device_ops);
+diff --git a/drivers/thermal/khadas_mcu_fan.c b/drivers/thermal/khadas_mcu_fan.c
+index d35e5313bea4..21b3d0a71bd0 100644
+--- a/drivers/thermal/khadas_mcu_fan.c
++++ b/drivers/thermal/khadas_mcu_fan.c
+@@ -90,9 +90,10 @@ static int khadas_mcu_fan_probe(struct platform_device *pdev)
+ 	ctx->mcu = mcu;
+ 	platform_set_drvdata(pdev, ctx);
+ 
+-	cdev = devm_thermal_of_cooling_device_register(dev->parent,
+-			dev->parent->of_node, "khadas-mcu-fan", ctx,
+-			&khadas_mcu_fan_cooling_ops);
++	cdev = devm_thermal_of_child_cooling_device_register(dev->parent,
++							     dev->parent->of_node,
++							     "khadas-mcu-fan", ctx,
++							     &khadas_mcu_fan_cooling_ops);
+ 	if (IS_ERR(cdev)) {
+ 		ret = PTR_ERR(cdev);
+ 		dev_err(dev, "Failed to register khadas-mcu-fan as cooling device: %d\n",
+diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+index 6a56638c98f1..d8e988a0d43e 100644
+--- a/drivers/thermal/tegra/soctherm.c
++++ b/drivers/thermal/tegra/soctherm.c
+@@ -1707,9 +1707,9 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+ 			stc->init = true;
+ 		} else {
+ 
+-			tcd = devm_thermal_of_cooling_device_register(dev, np_stcc,
+-								      (char *)name, ts,
+-								      &throt_cooling_ops);
++			tcd = devm_thermal_of_child_cooling_device_register(dev, np_stcc,
++									    (char *)name, ts,
++									    &throt_cooling_ops);
+ 			if (IS_ERR_OR_NULL(tcd)) {
+ 				dev_err(dev,
+ 					"throttle-cfg: %s: failed to register cooling device\n",
+diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
+index ba6f246ddef0..cf60ac64db54 100644
+--- a/drivers/thermal/thermal_of.c
++++ b/drivers/thermal/thermal_of.c
+@@ -557,7 +557,7 @@ static void thermal_of_cooling_device_release(void *data)
+ }
+ 
+ /**
+- * devm_thermal_of_cooling_device_register() - register an OF thermal cooling
++ * devm_thermal_of_child_cooling_device_register() - register an OF thermal cooling
+  *					       device
+  * @dev:	a valid struct device pointer of a sensor device.
+  * @np:		a pointer to a device tree node.
+@@ -570,14 +570,17 @@ static void thermal_of_cooling_device_release(void *data)
+  * to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
+  * to all the thermal zone devices registered at the same time.
+  *
++ * This function should be used when a cooling controller has child
++ * nodes which are referenced in the thermal zone cooling map.
++ *
+  * Return: a pointer to the created struct thermal_cooling_device or an
+  * ERR_PTR. Caller must check return value with IS_ERR*() helpers.
+  */
+ struct thermal_cooling_device *
+-devm_thermal_of_cooling_device_register(struct device *dev,
+-					struct device_node *np,
+-					const char *type, void *devdata,
+-					const struct thermal_cooling_device_ops *ops)
++devm_thermal_of_child_cooling_device_register(struct device *dev,
++					      struct device_node *np,
++					      const char *type, void *devdata,
++					      const struct thermal_cooling_device_ops *ops)
+ {
+ 	struct thermal_cooling_device *cdev;
+ 	int ret;
+@@ -592,4 +595,4 @@ devm_thermal_of_cooling_device_register(struct device *dev,
+ 
+ 	return cdev;
+ }
+-EXPORT_SYMBOL_GPL(devm_thermal_of_cooling_device_register);
++EXPORT_SYMBOL_GPL(devm_thermal_of_child_cooling_device_register);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f207ca6b63ae..e39bec84b2b6 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -205,10 +205,10 @@ thermal_of_cooling_device_register(struct device_node *np, const char *type, voi
+ 				   const struct thermal_cooling_device_ops *ops);
+ 
+ struct thermal_cooling_device *
+-devm_thermal_of_cooling_device_register(struct device *dev,
+-					struct device_node *np,
+-					const char *type, void *devdata,
+-					const struct thermal_cooling_device_ops *ops);
++devm_thermal_of_child_cooling_device_register(struct device *dev,
++					      struct device_node *np,
++					      const char *type, void *devdata,
++					      const struct thermal_cooling_device_ops *ops);
+ #else
+ 
+ static inline
+@@ -232,10 +232,10 @@ thermal_of_cooling_device_register(struct device_node *np,
+ }
+ 
+ static inline struct thermal_cooling_device *
+-devm_thermal_of_cooling_device_register(struct device *dev,
+-					struct device_node *np,
+-					const char *type, void *devdata,
+-					const struct thermal_cooling_device_ops *ops)
++devm_thermal_of_child_cooling_device_register(struct device *dev,
++					      struct device_node *np,
++					      const char *type, void *devdata,
++					      const struct thermal_cooling_device_ops *ops)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+-- 
+2.43.0
 
 
