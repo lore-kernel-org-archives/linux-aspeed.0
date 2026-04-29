@@ -1,54 +1,55 @@
-Return-Path: <linux-aspeed+bounces-3987-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3988-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8ECCCCFA13
-	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Apr 2026 18:07:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45676FF887E
+	for <linux-aspeed@archiver.kernel.org>; Wed, 29 Apr 2026 18:07:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g5QHS6qMSz2yjp;
-	Thu, 30 Apr 2026 04:07:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g5QHW1pNLz2yr0;
+	Thu, 30 Apr 2026 04:07:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777486020;
-	cv=none; b=hjeeQtgWbhr0WmnIGQaWgDkXmeB8kHoZRWTVeVAAzbcB/OGawKFZJ6aJNLCK8CuT0ovBy/KuD4TlVjteOq8EQe3a9jwtVaq8bQEQNMs13OAi765ZBLv5z7kInuFxTqeNDKlRZLl55dG+bbb6xd5yg/fWlInCfh9lD8XO0Fo+QhlO3F1tXweKpvSTIynIkqTV8TtwiIO2CbLizaopXiNB02THlBsPiV6yo0Cf71ZPWg3+ZfimHDLX23fGzhQiFbTaA3VdLW7b09hRrFx5EC93GkFC0ICxgd0A8gNDO98eXs4fV4AwqBsbU8X50oU8wuf6bh9lIHYxC9AoMBADeAHUQQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777486023;
+	cv=none; b=VVVK/25mVX8DW87DBS10Pl1It5zWDKOdkiMk2d64Eh5i7tLVn5Oj4cl6nLzKgVxYIhVgqOFJVQVYtCHZWI8BHznCiLhlgbgVNqWoWt+xqdCM18J6Q+qzuVzoj4XjxQoCU+9117FLOEsnDcDFSumKGo9EPGmuGjJTFoN8pO9C+sFDsrzD3Tb1vXSn00IjO2vV/5rjHC+CJEzZ22kECGgfTiPxF7b8r/G9TwvaZL3eiTRPTD6NkHoiQOn0CJUcwf/QJNPN97pqvf/yViVrK67DatxvsbAf4KDvsfavZNAMK5Q5ICG90R5HfbeHpgbW3YtGsycFz0vJSwwvv53rQcBOCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777486020; c=relaxed/relaxed;
-	bh=0Vum2Qfx5+SoYzasekNBMQ+YiKVnGlZJ3ij44o9Xlgc=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=cqxIHn3jQqqNGJUUUVOrzVSsn4YV7wl29PdGBDIfpXKMElP+wC996OfgopUl4e1E9v2NEvNB0vXeDaCeU33PhlSPwbKoC88p7ZAShBlyGW36WDnnP+nOPMbcWUpPjS8xEXvOTZdRRc8kFcc6IVa7w+c8ilWzipFGmlUL++U9ZdRFaO0H8Kqrfm6/ctigHrieUVOF5ZrvSA3DCKVPTcpM58TqKM21dh4hCQeNQ4I9ah7WCr5cNj8DZwHUrL7OopsepfciYtQ5Vcbt38Cq86ga5AY4N2sYS4uESG0Zxdy5GmMqblJso2zMesItapG43DWxnnZKqKyW9Bzrxsl+dquuOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=Wg4UW4g2; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	t=1777486023; c=relaxed/relaxed;
+	bh=5tIkRnE1ORjoj4u0h1eWmFg73tjo03bMRc5hBjhSYqM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=n34AuCYCfaavJX2nHCMM26Skg6ROWkEwJYO62XPnytxRL7BwtRbknLd32kFAtclvoZuXDTlGGe4NQv714KyFe6TJK/tI5HG5PG/Fb1euku4VF8fu98tTMPpEHc5UYHmnDSbgr42ebTT4NUDkl8eFggWTR5A6dbPGV+wpifxQMfz6nhWnmrBbA/+ubSdZCgHiExheDMsX8GuGaskBfRyDMQvuJ91C25Z8ITVZGictowb5ym5PXNr9cUwHSww0CC1bAF1Nz5oy5wtuCjoEGU+46U6MSLIoSAtpIGk09QBmoTlajzJJ86RLjd2NuQwrO37tYJViXK3UfZl2m+EhVNuyaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=Vmb/o8DH; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=Wg4UW4g2;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=Vmb/o8DH;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=miquel.raynal@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 556 seconds by postgrey-1.37 at boromir; Thu, 30 Apr 2026 04:06:58 AEST
 Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5QHQ0FbBz2ySc;
-	Thu, 30 Apr 2026 04:06:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5QHQ4WL8z2yqP
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Apr 2026 04:06:58 +1000 (AEST)
 Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 6CDB74E42B57;
-	Wed, 29 Apr 2026 17:57:35 +0000 (UTC)
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 35F694E42B73;
+	Wed, 29 Apr 2026 17:58:14 +0000 (UTC)
 Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 1FD8C5FD43;
-	Wed, 29 Apr 2026 17:57:35 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 430B71072B158;
-	Wed, 29 Apr 2026 19:57:20 +0200 (CEST)
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 09E735FD43;
+	Wed, 29 Apr 2026 17:58:14 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 1A14B1072B175;
+	Wed, 29 Apr 2026 19:58:07 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1777485452; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding; bh=0Vum2Qfx5+SoYzasekNBMQ+YiKVnGlZJ3ij44o9Xlgc=;
-	b=Wg4UW4g2WGpQe+FXph6tsBHWFD0BECvRL8NLGhZLbAiM0dLXtALl0yBqIrD+0Lawp02qRd
-	L/DUtmJwUhFvT/7i6dVkrYjSR0i2aqxl97NpsmKlJePMUStXMKAKuFLrdElmd6uDrZQMrW
-	DN2MVcdBKW/CmE3V63+VSy0oolOIh9vMJaN/cxw17hZkc97U0ZfuUAPZ4yGanlQWOoatGq
-	qp6FDwvx+tvn2k6kj4NlTu0PZO5c6zF2pim5Qlv9CB37AYmDKTUNUAVKAIQsbmXwa4RuM/
-	89ov9iKbcYD//Z7K/Ck/zA6aLDSk0p904Hc5ZMnNQ2ekegrqYQiQ3Q5SeoRwvw==
+	t=1777485491; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=5tIkRnE1ORjoj4u0h1eWmFg73tjo03bMRc5hBjhSYqM=;
+	b=Vmb/o8DHri8qfjlDxdgxVCmz1cOiWo5fai2OHnEYLHyIsyVdpDTgWD44JJKYBik+Bop6+W
+	qO/mPLDC2HvVPtzzFzJzmO0zmj8Ud0q8Cl6mkOzfLIV5t4BqhYfAOS/P4cCduBkSpSOfmM
+	5M8eLmzfXkqP4D5NBRKhvhmcWtsq9c1mg0MVwung6UnlsGwZeb4fsNZ/pNVgjm2S/Vrlqz
+	cQsoBDbxgbA6MAC7jdwUUgJJZj7f2xsTfwFvpawEIDwOwqd6ZhkIt1k16aESiXmhdrWfdA
+	Wg5O+8KVvlIUYgrSqKw5HE7tXplaioeNXtYi4yXBgQzvAFVe4lpxohvMt0C13A==
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 00/11] mtd: spinand: Winbond continuous read support
-Date: Wed, 29 Apr 2026 19:56:37 +0200
-Message-Id: <20260429-winbond-v6-18-rc1-cont-read-v3-0-0f38b3c229ad@bootlin.com>
+Date: Wed, 29 Apr 2026 19:56:46 +0200
+Subject: [PATCH v3 09/11] mtd: spinand: winbond: Create a helper to write
+ the HS bit
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -63,12 +64,10 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIAAAAAAAC/33NSw6CMBSF4a2Qjr2mLy7gyH0YB/ShNNHWtKRqC
- Hu3kDBxwPA/g+9MJNnobCKnaiLRZpdc8CXEoSJ66P3dgjOlCae8ZpxKeDuvgjeQEVgLUTPQwY8
- QbW8AUTYdM0ZxFKQIr2hv7rPql2vpwaUxxO96ltmybm6962YGFChTWrYomG7EWYUwPpw/6vAki
- 5z5piEVHPc1XjSUwtiu6bHt/7R5nn8RUI1yFgEAAA==
-X-Change-ID: 20251204-winbond-v6-18-rc1-cont-read-664791ddb263
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260429-winbond-v6-18-rc1-cont-read-v3-9-0f38b3c229ad@bootlin.com>
+References: <20260429-winbond-v6-18-rc1-cont-read-v3-0-0f38b3c229ad@bootlin.com>
+In-Reply-To: <20260429-winbond-v6-18-rc1-cont-read-v3-0-0f38b3c229ad@bootlin.com>
 To: Mark Brown <broonie@kernel.org>, Richard Weinberger <richard@nod.at>, 
  Vignesh Raghavendra <vigneshr@ti.com>, Michael Walle <mwalle@kernel.org>, 
  Miquel Raynal <miquel.raynal@bootlin.com>, 
@@ -93,181 +92,74 @@ Cc: Pratyush Yadav <pratyush@kernel.org>,
 X-Mailer: b4 0.14.3
 X-Last-TLS-Session-Version: TLSv1.3
 
-Hello,
+Updating the HS bit is not complex but implies reading, setting/clearing
+a bit and writing. Clean a bit this section by moving this logic in its
+own helper.
 
-TLDR: I dropped v2 from my tree due to build issues with SPI
-controllers which I forgot about due to my testing configuration being
-minimal. This is just a respin of the same series, fixing the spi
-controller drivers which I initially missed.
-
-SPI NAND continuous read support has already been added a few releases
-ago, but only Macronix chips were benefiting from this support. Winbond
-chips also have a continuous read feature, which is slightly more
-complex to use in the scope of the Linux kernel, because they these
-chips expect a different read from cache operation once in continuous
-mode.
-
-In order to be more flexible, this series changes the logic behind
-dirmaps. Direct mappings used to be very static, not flexible. I am
-proposing to change this and turn them in to slightly more dynamic
-interfaces, where for instance we can:
-- Enable/disable the correction (was previously handled by creating yet
-  another pair of direct mappings per target).
-- Select one or another variant for the cache operations.
-
-I propose to name the variants available in a direct mapping "primary"
-and "secondary", and let the upper layer (SPI NOR or SPI NAND) point to
-the one that needs to be used for the operation. Controller drivers
-should not really care about this change, expect the fact that they
-should not keep a static representation of the template on their
-side. Because of that, I am creating a capability boolean to flag
-drivers that support this capability (the flag is ignored in the
-nodirmap case).
-
-This series is now sent as v2 following a former RFC (link below).
-
-Here is a benchmark with the faster Winbond chip I have, W35N02JW on a
-TI AM62a7 LP SK featuring the Cadence QSPI controller, clocked at
-25MHz. Speed gain for a 10-page read is about +32% in octal SDR mode,
-+47% for a 10-page read in octal DTR mode and up to +83% for a entire
-block read!
-
-    1S-8S-8S, no continuous read:
-
-       64 page read speed is 15058 KiB/s
-
-    1S-8S-8S, with continuous reads:
-
-       1 page read speed is 15058 KiB/s
-       2 page read speed is 15058 KiB/s
-       3 page read speed is 16800 KiB/s
-       4 page read speed is 17066 KiB/s
-       5 page read speed is 18461 KiB/s
-       6 page read speed is 18461 KiB/s
-       7 page read speed is 19384 KiB/s
-       8 page read speed is 19692 KiB/s
-       9 page read speed is 19384 KiB/s
-       10 page read speed is 20000 KiB/s
-       11 page read speed is 20000 KiB/s
-       12 page read speed is 20000 KiB/s
-       13 page read speed is 20800 KiB/s
-       14 page read speed is 20363 KiB/s
-       15 page read speed is 20000 KiB/s
-       16 page read speed is 19692 KiB/s
-       32 page read speed is 19692 KiB/s
-       64 page read speed is 19692 KiB/s
-
-    8D-8D-8D, no continuous read:
-
-       64 page read speed is 23272 KiB/s
-
-    8D-8D-8D, with continuous read:
-
-       1 page read speed is 23272 KiB/s
-       2 page read speed is 23272 KiB/s
-       3 page read speed is 28000 KiB/s
-       4 page read speed is 32000 KiB/s
-       5 page read speed is 34285 KiB/s
-       6 page read speed is 34285 KiB/s
-       7 page read speed is 36000 KiB/s
-       8 page read speed is 36571 KiB/s
-       9 page read speed is 36000 KiB/s
-       10 page read speed is 34285 KiB/s
-       11 page read speed is 36666 KiB/s
-       12 page read speed is 40000 KiB/s
-       13 page read speed is 41600 KiB/s
-       14 page read speed is 37333 KiB/s
-       15 page read speed is 40000 KiB/s
-       16 page read speed is 36571 KiB/s
-       32 page read speed is 42666 KiB/s
-       64 page read speed is 42666 KiB/s
-
-On the Nuvoton platform, the speed gain is real, even though it is less
-impressive:
-
-       1 page read speed is 1802 KiB/s
-       2 page read speed is 1882 KiB/s
-       3 page read speed is 1938 KiB/s
-       4 page read speed is 1939 KiB/s
-       5 page read speed is 1935 KiB/s
-       6 page read speed is 1967 KiB/s
-       7 page read speed is 1968 KiB/s
-       8 page read speed is 1969 KiB/s
-       9 page read speed is 1968 KiB/s
-       10 page read speed is 2000 KiB/s
-       11 page read speed is 2000 KiB/s
-       12 page read speed is 2000 KiB/s
-       13 page read speed is 2000 KiB/s
-       14 page read speed is 2000 KiB/s
-       15 page read speed is 2000 KiB/s
-       16 page read speed is 2000 KiB/s
-       32 page read speed is 2000 KiB/s
-       64 page read speed is 2000 KiB/s
-
-Thanks!
-Miquèl
-
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
-Changes in v3:
-- The API change in spi-mem has been applied to all SPI controller drivers
-  (fixing build failures on drivers I was not building in my test
-  config).
-  That is the only change.
-- Link to v2: https://lore.kernel.org/r/20260326-winbond-v6-18-rc1-cont-read-v2-0-643de97a68a3@bootlin.com
+ drivers/mtd/nand/spi/winbond.c | 34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
 
-Changes in v2:
-- Rebased on v7.0-rc1.
-- Collected tags.
-- I manually tested the integrity of the data by manually disabling all
-  possible variants one after the other using a 2 page read scenario. All
-  worked except the fastest 8D-8D-8D variant (the first one in the list)
-  which triggered the CS deassert issue on the Cadence controller. This
-  issue is orthogonal to this patchset, a follow-up series will be sent
-  to disable continuous reads on this controller.
-- All continuous read variants for the W25NxxJW chips have been tested
-  on the MA35D1 platform (which lead to several fixes) and the
-  W35NxxJW chips have been tested on TI AM62a7 LP SK.
-- Several changes have been operated in the core to stabilize the
-  feature when a secondary op is used.
-- A couple of helpers have been created to cleanup the winbond.c driver.
-- Link to v1: https://lore.kernel.org/r/20251205-winbond-v6-18-rc1-cont-read-v1-0-01bc48631c73@bootlin.com
+diff --git a/drivers/mtd/nand/spi/winbond.c b/drivers/mtd/nand/spi/winbond.c
+index 6c11f59a9f8d..b30a343a6672 100644
+--- a/drivers/mtd/nand/spi/winbond.c
++++ b/drivers/mtd/nand/spi/winbond.c
+@@ -404,13 +404,28 @@ static int w25w35nxxjw_ecc_get_status(struct spinand_device *spinand, u8 status)
+ 	return -EINVAL;
+ }
+ 
++static int w25n0xjw_set_sr4_hs(struct spinand_device *spinand, bool enable)
++{
++	int ret;
++	u8 sr4;
++
++	ret = spinand_read_reg_op(spinand, W25N0XJW_SR4, &sr4);
++	if (ret)
++		return ret;
++
++	if (enable)
++		sr4 |= W25N0XJW_SR4_HS;
++	else
++		sr4 &= ~W25N0XJW_SR4_HS;
++
++	return spinand_write_reg_op(spinand, W25N0XJW_SR4, sr4);
++}
++
+ static int w25n0xjw_hs_cfg(struct spinand_device *spinand,
+ 			   enum spinand_bus_interface iface)
+ {
+ 	const struct spi_mem_op *op;
+ 	bool hs;
+-	u8 sr4;
+-	int ret;
+ 
+ 	if (iface != SSDR)
+ 		return -EOPNOTSUPP;
+@@ -429,20 +444,7 @@ static int w25n0xjw_hs_cfg(struct spinand_device *spinand,
+ 	else
+ 		hs = true;
+ 
+-	ret = spinand_read_reg_op(spinand, W25N0XJW_SR4, &sr4);
+-	if (ret)
+-		return ret;
+-
+-	if (hs)
+-		sr4 |= W25N0XJW_SR4_HS;
+-	else
+-		sr4 &= ~W25N0XJW_SR4_HS;
+-
+-	ret = spinand_write_reg_op(spinand, W25N0XJW_SR4, sr4);
+-	if (ret)
+-		return ret;
+-
+-	return 0;
++	return w25n0xjw_set_sr4_hs(spinand, hs);
+ }
+ 
+ static int w35n0xjw_write_vcr(struct spinand_device *spinand, u8 reg, u8 val)
 
----
-Miquel Raynal (11):
-      mtd: spinand: Drop a too strong limitation
-      mtd: spinand: Expose spinand_op_is_odtr()
-      mtd: spinand: Drop ECC dirmaps
-      spi: spi-mem: Transform the read operation template
-      spi: spi-mem: Create a secondary read operation
-      mtd: spinand: Use secondary ops for continuous reads
-      mtd: spinand: winbond: Ensure chips are ordered by density
-      mtd: spinand: winbond: Add support for continuous reads on W35NxxJW
-      mtd: spinand: winbond: Create a helper to write the HS bit
-      mtd: spinand: winbond: Create a helper to detect the need for the HS bit
-      mtd: spinand: winbond: Add support for continuous reads on W25NxxJW
-
- drivers/mtd/nand/spi/core.c    | 135 ++++++++++++------
- drivers/mtd/nand/spi/winbond.c | 317 ++++++++++++++++++++++++++++++++---------
- drivers/mtd/spi-nor/core.c     |  22 +--
- drivers/spi/spi-airoha-snfi.c  |   6 +-
- drivers/spi/spi-aspeed-smc.c   |   4 +-
- drivers/spi/spi-intel.c        |   6 +-
- drivers/spi/spi-mem.c          |  32 ++++-
- drivers/spi/spi-mxic.c         |  18 +--
- drivers/spi/spi-npcm-fiu.c     |  16 +--
- drivers/spi/spi-rpc-if.c       |   8 +-
- drivers/spi/spi-stm32-ospi.c   |   6 +-
- drivers/spi/spi-stm32-qspi.c   |   6 +-
- drivers/spi/spi-wpcm-fiu.c     |   2 +-
- include/linux/mtd/spinand.h    |  16 ++-
- include/linux/spi/spi-mem.h    |   8 +-
- 15 files changed, 435 insertions(+), 167 deletions(-)
----
-base-commit: 1e0fe839f8c4bade7b9dc358fb8eef5b2f43af49
-change-id: 20251204-winbond-v6-18-rc1-cont-read-664791ddb263
-
-Best regards,
 -- 
-Miquel Raynal <miquel.raynal@bootlin.com>
+2.53.0
 
 
