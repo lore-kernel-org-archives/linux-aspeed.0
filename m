@@ -1,89 +1,55 @@
-Return-Path: <linux-aspeed+bounces-3993-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-3994-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41E13CD13DE
-	for <linux-aspeed@archiver.kernel.org>; Fri,  1 May 2026 00:02:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C027CD13DE
+	for <linux-aspeed@archiver.kernel.org>; Fri,  1 May 2026 00:02:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4g6B6l5gwTz2xll;
-	Fri, 01 May 2026 10:02:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777585500;
-	cv=none; b=BzzD7ewmuQcuxK36t3Glt43d9+rxgmQ7pSRNxVXjbUqnnnNwe3tf1DjJKnHShTzCUrLlJQK/3EpQu7WEPfpp5v7TX0/b80ucVeog2hvtyi4UrqdT8ok/+92jNYReXARfHS2yWMWS/4Khqz9nV1hT60+2YcjvJWnq/gutizySmPl8VA7Qy+5YYWlbVT4aj9Hc7y8GXYYKvFAurPxIZdXjc+7l7g4ySuouIZ+7/ol0SGQc7Wnlo2n/nzk9s2l1q0/GU9EWsMXKhmyj1qWRFut2fiX8rt88+N2LNVBIbhoHJfKEu1hWytRhzdgLJOxSdQbeNwRc2162gUZYHRojCXFW4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4g6B7Q1Lhbz2xll;
+	Fri, 01 May 2026 10:02:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1777527951;
+	cv=none; b=BWHqD2qXrHNp4rscZ9KiBQcVSx622vkOwWqxUHk6o3E3kc+ShdbX8q683h5CWOR9+OjejQhrtb/3OL4BTAUdPlLutLCv+7TSLGutxLmTiKnAFSu0LvoHygWyOXWof/pOI+Fv3k6sKzWyX6gAKzPC4zFuUQbZdjsYmxW3J7+187RAxdG0WYjiA2qnYy/FzgVJJKtJjBlzxTXOnJ2ltZMZBfaoLtP9BGERxuSJEmZ+YMjRF6sy9SpKkeeFve3yM2SfLulm6AGAmCwXmgfNcmFCVMkYgvUzfROgwQXE7JZg1c1PbAh6dIyq1P/19iZqkDP9cDigC0pL4eHCtTlJzLeHZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1777585500; c=relaxed/relaxed;
-	bh=bQCwDq3sQ26sd63X6ePOXo1fZCw68NQUIbjTHLE+tbU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lK0yvwsQJiu/6BbyJqQWXiqgXk+DCdsW+9ghifnU2mF7r/VqDtMw2T9ZI3Yb9iY+73x0S0ifDrwN3l/x9MleYCpDuFF3jNcfKP6ZLbDAJ2Qjfiike+1qgOreIGv3QDTUssD5IaIj4cbUiUrLIpZ+oTkEWIMdPoo6KCdPuS1u7HOn/VISZcv5jmpf0rAUp9NwPq04wL2b6b5W9u52G8OOSylNNMGRSbBMFgWGtCQ7AEtEJCpIrFXbmmTYLI4QkNx9yKfkficD4ADYEN1qlAuvvSWem5mNxYDsvPNvzq/xuhjCfymtMyjJpmGCEmclgP8OJAZ7EEycMggpA0LAB0YBjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gapp.nthu.edu.tw; dkim=pass (2048-bit key; unprotected) header.d=gapp-nthu-edu-tw.20251104.gappssmtp.com header.i=@gapp-nthu-edu-tw.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=LFkNyQrv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=ku.loong@gapp.nthu.edu.tw; receiver=lists.ozlabs.org) smtp.mailfrom=gapp.nthu.edu.tw
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gapp.nthu.edu.tw
+	t=1777527951; c=relaxed/relaxed;
+	bh=v46Ws/xOIgw8gSDlJIUPyTMQ4uJtu1hJ8VMz+R6vOkM=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=WZjHj11fkn+Fxl+gVo83mOVIiqm9yz5HDCv0jVjzI6vzmiaXeLzf7oacAg5P6/HbxxpHUGu+Xij7x3AgOPDqD1G8I6ANfyn/JnHtAbc3vLRfc6LKsabNy06gYHjqOIoh8iSxn6/dhOmjcD8leId9kRcsjaaDMTzZTS8AH1iWej3P8rojy2F/OfoEvV1BEpsPEMWbSAwYVx0sg4hlSsuzSIVmVe8ul7u5c0+oTjcc76lg0kbEgem5pT0S4qi7wtrf+Lv6p2vzTEuVpqGhUZ7+wda2gXlIc8uTrZPrsciR/WDo8vNJwAIYOSJMzHCaiHha3K63VJ4LjTrIDhZcaEY/BA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r3ViC7bH; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+rex.fu.amd.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gapp-nthu-edu-tw.20251104.gappssmtp.com header.i=@gapp-nthu-edu-tw.20251104.gappssmtp.com header.a=rsa-sha256 header.s=20251104 header.b=LFkNyQrv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r3ViC7bH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gapp.nthu.edu.tw (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=ku.loong@gapp.nthu.edu.tw; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+rex.fu.amd.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4g674T5ztRz2xlL
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 01 May 2026 07:44:56 +1000 (AEST)
-Received: by mail-pf1-x42c.google.com with SMTP id d2e1a72fcca58-82faf871346so907194b3a.0
-        for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Apr 2026 14:44:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gapp-nthu-edu-tw.20251104.gappssmtp.com; s=20251104; t=1777585493; x=1778190293; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=bQCwDq3sQ26sd63X6ePOXo1fZCw68NQUIbjTHLE+tbU=;
-        b=LFkNyQrvLZBkcoiVEdbEpLSa4hjWfcyUkhiYCnZLWA7EqV7zLbeQ6dInPsP8oCEYY7
-         htg07OoZYMyLmgaGQDU/VOx2LJRZ5A9a6e7MMQ7rcDOEeopGu9Abbny5sck1v90brZeE
-         GPiylfvzZffIJ6UGqq8D6NVLcuMKOrpitGz04qD1LVpBapXP20ISjxmEzclUleZqgNQ5
-         2xjYkMzPLZcI2jmpc/HhLZdIkSXyqRKOiZBQOvC5wJzxRpxHkT2lCENuNuVFeJ9uNaMl
-         QxhAQedcX0jRBXgiajqov94fklTpkl9MPwSZ5OKaAOVCML92bWc2M5Cplv3PnRbx01jP
-         z7tw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1777585493; x=1778190293;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=bQCwDq3sQ26sd63X6ePOXo1fZCw68NQUIbjTHLE+tbU=;
-        b=kU0TToCHe4yuukXTDwUJlB5rLq4vRh1SROY6boTwd8kC7Mx5TL8P4UP9b5tLEVsQL6
-         HbmtmwviNksMRAgFFbU/J6A6Exatv2u8j0++Ad7qZsjKb9IxxYGGFTIdsxEhLawgnbVp
-         lpEJ5+Aqn6ilOHW+MjrkKKoo/S5FNmI0xUwBwIcld5Z+7KH/TbPaCUzYzYpYdae84xSe
-         r8Kq8Ki0f+WCWeM3b2A+7WsTcbg5HvffWKDoe4mp01aUVj5zlxFWe7JEb4DvdXp8QmR0
-         WrPu2zug9wfl9M5J7FCy5ja7j+HPQbJhPxB8lXpm/jjKQGNDSfGG21seBQ0p+Yo3oQbQ
-         b8zg==
-X-Forwarded-Encrypted: i=1; AFNElJ8RC2f4bUcB49fqnXQrIYzkhlKI92eduy78we2+l+T12CKrShmcutOTgoSWCPmpP3WvSJyc8xUqtLSRXAY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YydwLDvYfRtEuMI1ku2gSbflmBtN3o43Z55u8InRbxuGOSX/ZZe
-	YV4VUXf0t+cbRmOAl4GYdSNVziJehZGCHRaz43vD27EAu4Zr2vS3Ui0Yneg35oZXw50=
-X-Gm-Gg: AeBDiesoAn6NXtoINacl3o/8FxIv7HboH65L2rQkGi4DX+N297yQiXuw5HeZk/THBvY
-	fl8QDrCutF6gYHYJAmaKJQu8dB+RoPL9Ni4BNh0PYBsN3xVjCCAEgDhhWZGCjtJTaQFBGk9Ip9P
-	huaXJa1Ybf48a9Afta7TBz0nl8YHEAK/y4mGdhU0o1Sp6sF4YH+IkCAJUNcQl6cnmaZolCyiDh1
-	uzevEAGLjlCynr46MBkdjqIXBjY9M5+2sa8WRade+gjAH0N9u6H1NRikgyS2Ai8IEEIim1tBXuT
-	OlM2DIg2UUyGroYexAnsH/SktkfgrD2YenPla+mFUGblz4zWywhbhaNFZGIIXM1ga5AHJw4lxX1
-	lOboVfzSimPOwYDJOPDOfOlJImFd8jWiGe6VkBIToLsxsX/LXp7eUTKAzPtEba2ONo5kuhReiI0
-	AKL2lFGWGqfkQ/5QnVzvi3wxbpovzHF012N9sEJvl7CtA4piW7EIJlF8RFZxcYtZIJ8mTQAeV9s
-	1aDvT7P4notlSMsk3olgfoQxPy/p+exIyaGzm0Q534ckyXFj2K+ULku5A1OV71XVTk+D3mGXx4=
-X-Received: by 2002:a05:6a00:3e02:b0:82f:8a29:e3e0 with SMTP id d2e1a72fcca58-834fdc670d2mr5521973b3a.42.1777585492724;
-        Thu, 30 Apr 2026 14:44:52 -0700 (PDT)
-Received: from tomato-cultivator-HP-ZBook-15-G6.. (2001-b400-e3d4-7301-ab51-ca4d-694a-59f2.emome-ip6.hinet.net. [2001:b400:e3d4:7301:ab51:ca4d:694a:59f2])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-83515b864c7sm640774b3a.59.2026.04.30.14.44.48
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Apr 2026 14:44:52 -0700 (PDT)
-From: Chen Jung Ku <ku.loong@gapp.nthu.edu.tw>
-To: eajames@linux.ibm.com,
-	joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: ninad@linux.ibm.com,
-	linux-fsi@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Chen Jung Ku <ku.loong@gapp.nthu.edu.tw>
-Subject: [PATCH] fsi: aspeed: convert cfam_reset to DEVICE_ATTR_WO()
-Date: Fri,  1 May 2026 05:43:27 +0800
-Message-ID: <20260430214327.17099-1-ku.loong@gapp.nthu.edu.tw>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4g5jnp5YFGz2xMY
+	for <linux-aspeed@lists.ozlabs.org>; Thu, 30 Apr 2026 15:45:50 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7AB20405DF;
+	Thu, 30 Apr 2026 05:45:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 59C40C2BCB8;
+	Thu, 30 Apr 2026 05:45:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1777527948;
+	bh=/tkgJeqOmmrJzR3XxdwYwLro87tsKaNd19RouarTTO8=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=r3ViC7bHBo9vMLgWRlcm7dJWyLccD4DRD5a+PsvyS4nO3o0FiaJZix6dZ/FOPw8ho
+	 tUxT3Hxfv0YgQa8Jt19t5Tn2eBX4DbYCkon7RXKwbE6j1+pX0Udf6eh2UHBWJJZ8wt
+	 b5Z/IztnygykkV3Usd6898AC8PzhXYaUZCR24RRDiwcE3+afSlNq+xeTbqgjdJlMJG
+	 iiTuYOTLLF1S1cv74OvpDdn2SqsodGr8oqPADn/fgb35wbFx1Ya/MKSmWBx31FgNE4
+	 LSdEWZH9FHyysPBKdhwONZByHWLFO2zfvN3BxM1mKDDNQsuDf5XKzeNcQTGzVgXNRJ
+	 Qw9GS0ZJb54uw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47279CD1297;
+	Thu, 30 Apr 2026 05:45:48 +0000 (UTC)
+From: Rex Fu via B4 Relay <devnull+Rex.Fu.amd.com@kernel.org>
+Date: Thu, 30 Apr 2026 13:44:28 +0800
+Subject: [PATCH] ARM: dts: aspeed: anacapa: name EDSFF and thermtrip SGPIO
+ lines
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -97,32 +63,88 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260430-anacapa-sgpio-edsff-thermtrip-v1-1-2fd5e72435d0@amd.com>
+X-B4-Tracking: v=1; b=H4sIADvs8mkC/yXMwQrCMAwA0F8ZORvoqgzxV8RD2qVbBLuSVBHG/
+ n2dHt/lrWCswga3bgXlj5gsuaE/dRBnyhOjjM3gnR/c5eyQMkUqhDYVWZBHSwnrzPqqKgUpBu+
+ vIQ19YGhHUU7y/f33x9/2Dk+O9Uhh23ZG96kXgQAAAA==
+X-Change-ID: 20260430-anacapa-sgpio-edsff-thermtrip-acb228bf61be
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Rex Fu <Rex.Fu@amd.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1777527924; l=1868;
+ i=Rex.Fu@amd.com; s=20260417; h=from:subject:message-id;
+ bh=FKvzsI9xHFmGcGo9UHVCAjhAhv7ytsitasP4Y5ub01A=;
+ b=GPiFDR+/ibGE0NwGTxGFGmQdcKyr+YrgZyfg43LrcwIi2ZH7TGSoZmO77kXGMks/g4aHs7xEr
+ 73Dk+5T4CraD5T71ecP2h9D4jP6C68jM1Nj8r/ozRB7Hvh1j+k7MeL/
+X-Developer-Key: i=Rex.Fu@amd.com; a=ed25519;
+ pk=26ECoh24fxrbXDKgA4hCmgg0xjQ+IxU97kXb46ovwgc=
+X-Endpoint-Received: by B4 Relay for Rex.Fu@amd.com/20260417 with
+ auth_id=738
+X-Original-From: Rex Fu <Rex.Fu@amd.com>
+Reply-To: Rex.Fu@amd.com
 
-Replace manual DEVICE_ATTR() definition with DEVICE_ATTR_WO()
-for the write-only cfam_reset attribute.
+From: Rex Fu <Rex.Fu@amd.com>
 
-No functional change.
+Name the Anacapa SGPIO lines used for EDSFF power-good and thermtrip
+assertion signals.
 
-Signed-off-by: Chen Jung Ku <ku.loong@gapp.nthu.edu.tw>
+The affected lines replace legacy or unused CPU-related names with the
+platform signal names used by userspace monitoring.
+
+Signed-off-by: Rex Fu <Rex.Fu@amd.com>
 ---
- drivers/fsi/fsi-master-aspeed.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/fsi/fsi-master-aspeed.c b/drivers/fsi/fsi-master-aspeed.c
-index aa1380cdff33..3b4a0e821c08 100644
---- a/drivers/fsi/fsi-master-aspeed.c
-+++ b/drivers/fsi/fsi-master-aspeed.c
-@@ -462,7 +462,7 @@ static ssize_t cfam_reset_store(struct device *dev, struct device_attribute *att
- 	return count;
- }
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+index 2cb7bd128d24..fe960bb7bc27 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+@@ -912,7 +912,7 @@ &sgpiom0 {
+ 	"PWRGD_PVDDIO_P0", "",
+ 	"PWRGD_PVDDIO_MEM_S3_P0", "",
+ 	"PWRGD_CHMP_CPU0_FPGA", "",
+-	"PWRGD_CHIL_CPU0_FPGA", "",
++	"HPM_EDSFF_PG", "",
+ 	"PWRGD_CHEH_CPU0_FPGA", "",
+ 	"PWRGD_CHAD_CPU0_FPGA", "FM_BMC_READY_PLD",
+ 	"", "",
+@@ -957,8 +957,8 @@ &sgpiom0 {
+ 	"PDB_ALERT_R_N", "",
  
--static DEVICE_ATTR(cfam_reset, 0200, NULL, cfam_reset_store);
-+static DEVICE_ATTR_WO(cfam_reset);
+ 	/* L0-L7 line 176-191 */
+-	"CPU0_SP7R1", "", "CPU0_SP7R2", "",
+-	"CPU0_SP7R3", "", "CPU0_SP7R4", "",
++	"L_EDSFF2_PG", "", "L_EDSFF3_PG", "",
++	"R_EDSFF2_PG", "", "R_EDSFF3_PG", "",
+ 	"CPU0_CORETYPE0", "", "CPU0_CORETYPE1", "",
+ 	"CPU0_CORETYPE2", "", "FM_BIOS_POST_CMPLT_R_N", "",
  
- static int setup_cfam_reset(struct fsi_master_aspeed *aspeed)
- {
--- 
-2.43.0
+@@ -984,8 +984,8 @@ &sgpiom0 {
+ 	"HPM_PWR_FAIL", "Port80_b0",
+ 	"FM_DIMM_IP_FAIL", "Port80_b1",
+ 	"FM_DIMM_AH_FAIL", "Port80_b2",
+-	"HPM_AMC_THERMTRIP_R_L", "Port80_b3",
+-	"FM_CPU0_THERMTRIP_N", "Port80_b4",
++	"AMC_THERMTRIP_ASSERT", "Port80_b3",
++	"CPU_THERMTRIP_ASSERT", "Port80_b4",
+ 	"PVDDCR_SOC_P0_OCP_L", "Port80_b5",
+ 	"CPLD_SGPIO_RDY", "Port80_b6",
+ 	"", "Port80_b7",
+
+---
+base-commit: 9974969c14031a097d6b45bcb7a06bb4aa525c40
+change-id: 20260430-anacapa-sgpio-edsff-thermtrip-acb228bf61be
+
+Best regards,
+--  
+Rex Fu <Rex.Fu@amd.com>
+
 
 
