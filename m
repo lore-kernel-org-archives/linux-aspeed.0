@@ -1,58 +1,61 @@
-Return-Path: <linux-aspeed+bounces-4071-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4072-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 427C8CD4F50
-	for <linux-aspeed@archiver.kernel.org>; Mon, 18 May 2026 13:21:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30272CD4F4A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 18 May 2026 14:02:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJz3G64Ggz2xpn;
-	Mon, 18 May 2026 23:21:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJzyc5wsmz2y7Y;
+	Tue, 19 May 2026 00:02:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779110490;
-	cv=none; b=Quyj+sOe62bjo6C80RXhzUxdFPRSNNe3FDItyAoXA9a7tTXWnTZnpr/3/V4p+yYl8iZCsk+yAS82+V1uD0ddCH9BLI9E1pKzbuoRib7MkRUaav2EaM4h75LiymKFbxwekAuVftLBGXOu4CE9FbHvvy9olK/BX0s+musYIBlxKhW7o6Yr3UHZjoBkUjYuB0FnjyqGdMtz2GJWitRYE0NGPsR2ZkRyuwSD3i7ryD+vzRCQ8E6EP/TbTzIVRGjrPOohWkfgVn5f0GrgSp2WNXEV1OzQMW5DSmJtMjY9Z2GQII7Ng0Yetz4rmrN5Fh5wnkdp1O56U1pZ6Zjk2/Eztgx3ZQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779112952;
+	cv=none; b=LaHVVPrnmWdwAmgZ7QQWxzkEOvJVWBMKTkrbpBJv3YwEexsPL8rIAOEdhyESOYjnL5/zVFWPFha2Hdqr+rD0hDgMB+NUBOzIvlwsatDumssrckZvyrw8P50q6IZUAFIeceHhys76/FfJS/O4pqS7guUyHxElbJbpl4+34GQjaQ4nYBRmnXDf7Pg/dhAQ0JMWgi0+zcSNHZHb41DAwybtemHsnsRG72MERM5QOnm0KmNpv19iVe0X3uJHYf84wd4H5CD8qfQUr3ic7Ycv9F5wEJq4OeEPDfDSLkv5/2selanwPfYeZR6yb/9fyIIjoY8bN64tSCnQGWxRfkqP4GS3Fw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779110490; c=relaxed/relaxed;
-	bh=JXZoMwG6Tq2zUsTH+zIYCTcolUhrlhhkb8dDKfwVMps=;
+	t=1779112952; c=relaxed/relaxed;
+	bh=Nefc8G0NeaGyb3UUQULb64nwG2lmumgk5OzS0zMOeq0=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=XTGjyAIykr9zDfTDxphMMMHDN/R4EiXZHj4BWrKt0ZL7UMbrBI3iA3CnSLtL7Uey3KSlYAzTFazcp85fDXMM72r9dTGxQmHTdu26pHX988sWj4mblaXIIb3YW9T4FNiRtHNZfSIfX2NHvryzUT1vZ6YAJX4/xYuBWdsge60eaj5JN8qnaLCV/Xt1DGFK1QzclI5qzMz4aUg6dA5Jeelf2ozuS8YZtP0DCcsBKpqR01xVogGMPUFfgnpOuT/xl14Dw7ay2ORUC2fFINmuJMNKKXumCs6nEUNpNR5cXcwoGVRw/r64786FVTlZU0CLHLU0kEs2kLTb38m5taX6jhXjnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hDEFirza; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 MIME-Version:Content-Type; b=BV6RP5EUtRT4PfvrfoN2+CrdDDXPHTOqsgEPGrnS/hUv4ek/bkabKMlRA6e87qvHGAWdWHcQoPZ/6+KhB3KdMluNgWQMUmtXuvBOqk2+DgR0/QJfZ/St1QcO8QZNUEU1mJ8SYIiFRL77OZCSP07a1GwsEcpLLHT9vJx3W4ACe9EEyQTVVOfBKvbDXfX4cf7Vx/8cPPSZPxKwoV9oh5dxeB3o8Ze7IJtr4gXVOAYOkZSsrsPsEM7Qsgwac8TEaNuk/6Voae9fNcdq3i23Cl611OQbgR7MCKIfRxrv04SDbXpMwi54YvO9lfLLPZkYu/YtJzNRFLAbmkhtbpr0nX6PvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ZWaKw0M8; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=hDEFirza;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=ZWaKw0M8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJz3F5bddz2xRw
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 18 May 2026 23:21:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJzyc0CW6z2xrC
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 00:02:31 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1779110489;
-	bh=JXZoMwG6Tq2zUsTH+zIYCTcolUhrlhhkb8dDKfwVMps=;
+	d=codeconstruct.com.au; s=2022a; t=1779112950;
+	bh=Nefc8G0NeaGyb3UUQULb64nwG2lmumgk5OzS0zMOeq0=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date;
-	b=hDEFirza8m1RgJJ4fITtD4O7v1mJn+kDX0+ykhsSsA8bV4Q2G+obJXnrUaVCKq8AE
-	 nIVrZnfWz2AZmAfI4Z96nKjDqyQmwbfoms/EgqD56fjJSyFdbZL4vUIEgO3HVqORhS
-	 S5GwBwtIuYOliiIxO4z8nqzImblYdw51yKu8HjMtPSX3+JCoSSD4MQ9wofcqDVnnU7
-	 yyApWLNJTlifGccheD6149zegNNnlEe2kIQyDU0u3h3Y3/9fchxnT6zCKgsJj9FYEY
-	 9TtpgH2P4ETam1xkCp/96FtEDQEpLI0/WftJEZ1KaanxqnKc35u/Uo31/HFT8n8GKx
-	 txrAj+nJwh9Sw==
+	b=ZWaKw0M8IW1TXPTTsI7HUNxZSISrzmkTLNJukBj40iCHyHYVdd7+OD4OIFEAzJgQi
+	 M4izzl9RdIWTpSNmXU2HIRyJZd9Tyu84ONGnmB2jZrtlDPM8X/qVWbG53+dI95fvli
+	 F/wol8eBioyTpGdWye8EYvva64DQiZ8sDiPMJnJpYNjJjYoCJ5N6DGKvMk5pdqGFnX
+	 NL5uUDbP5H5UsdOhO1/QcgQsV2Ew5gbqu+DwFmOmmHJHjVZTEWjwJbW+RgLsylZkhy
+	 EIFOVJag9WLUG0gekQ1k0RySJRIiGSKsEWFmHatrcdej7DIKRUByRex+pZfSQV9b2i
+	 M35kL3oTaPnlQ==
 Received: from [127.0.1.1] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id A52726025D;
-	Mon, 18 May 2026 21:21:28 +0800 (AWST)
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 7BCC56025D;
+	Mon, 18 May 2026 22:02:29 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
- Billy Tsai <billy_tsai@aspeedtech.com>
+ Patrick Williams <patrick@stwcx.xyz>, Potin Lai <potin.lai.pt@gmail.com>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20260326-g6-dtsi-v1-1-348e7a0661c2@aspeedtech.com>
-References: <20260326-g6-dtsi-v1-1-348e7a0661c2@aspeedtech.com>
-Subject: Re: [PATCH] ARM: dts: aspeed: g6: Add PWM/Tach controller node
-Message-Id: <177911048854.1942419.17635653553206157832.b4-ty@b4>
-Date: Mon, 18 May 2026 22:51:28 +0930
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Cosmo Chou <cosmo.chou@quantatw.com>, Mike Hsieh <Mike_Hsieh@quantatw.com>, 
+ Potin Lai <potin.lai@quantatw.com>, 
+ Conor Dooley <conor.dooley@microchip.com>, Andrew Lunn <andrew@lunn.ch>
+In-Reply-To: <20260323-sanmiguel_init_dts-v4-0-caaa48a7f7be@gmail.com>
+References: <20260323-sanmiguel_init_dts-v4-0-caaa48a7f7be@gmail.com>
+Subject: Re: [PATCH v4 0/2] Add Meta (Facebook) SanMiguel BMC (AST2620)
+Message-Id: <177911294941.2210651.9798336892963650465.b4-ty@b4>
+Date: Mon, 18 May 2026 23:32:29 +0930
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,15 +73,9 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.15.2
 
-On Thu, 26 Mar 2026 18:29:22 +0800, Billy Tsai wrote:
-> Introduce a device tree node for the AST2600 PWM/Tach controller.
-> Describe register range, clock, reset, and cell configuration.
-> Set status to "disabled" by default.
-> 
-> Prepares for enabling PWM and tachometer support on platforms
-> utilizing this SoC.
-> 
-> [...]
+On Mon, 23 Mar 2026 20:41:04 +0800, Potin Lai wrote:
+> Add Linux device tree entries for Meta (Facebook) SanMiguel specific
+> devices connected to the AST2620 BMC SoC.
 
 Thanks, I've applied this to the BMC tree.
 
