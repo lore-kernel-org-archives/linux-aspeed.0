@@ -1,92 +1,55 @@
-Return-Path: <linux-aspeed+bounces-4076-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4077-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17365CD4F4A
-	for <linux-aspeed@archiver.kernel.org>; Mon, 18 May 2026 23:51:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 734C4CD4F4A
+	for <linux-aspeed@archiver.kernel.org>; Mon, 18 May 2026 23:52:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKF2K0dcxz2yRG;
-	Tue, 19 May 2026 09:51:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b12a" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779128164;
-	cv=pass; b=Y6/fk+NWmTKaMB7UqDz6Vy/M80/4uNS3GzJa+Zb+jGgciFtvUXriNz2zvbDFFspBepq7cejNOoGUgDlji2c7qsjtw8I2WaPuXYFOXdfNdI+Wc83QUwz+aqQ6v5JPIgEfvmvTNi1XTCckxsPd/Fa2lbvnZZKnZDWFDezMDsOFc4zlmBLLFkqNqGsQrV4QBphrcQBIg42z2qIkPppnwRWpZvBhbk1OzAGOhILndNF9GPUzumgIOJES5U8/ya0oLHhrGwnvXXXt/DltYIDTykyyKfd9NyCpx9FHsDKm5fZWB6b7H/uWo7guZXO/6hsJxSlWh2n9AJoqoLSWby9eJ2rOdA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779128164; c=relaxed/relaxed;
-	bh=pmFnTQUJEBfvGMlAcK3/VbLVmpdj7K5UAInNPmwJs08=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=XmqP4FX4W8tqhdKSa9H8MDk+iw5RG8O+iCzT+Z5FlRpcSwyFYnS+958MdmFFQXoraYnyY99skfNaRtCzK0LqFBPIbsayk2HEYyehy5elsrATsBUitjn8naZuSxh33R7ZUg7MSTdXPTgEErtC+oY0hv05Rhs0p5f70LTk6UOsQciq11rKlWWT9Dgnckmxd2CvwsM58PGeF+IdaW7+3I+EXPzUoWxu3h9nh1jB0EjT+C1dQCAaH/roxF4A4xjGWJ2GZIxaOdRTybGa58bLo2jMuEbbw3wuDf8zrN5ZPVPO6oKcZA3DaJK4IQM1kcVhVC60tJDUrfqYpfCMdZrCB6KN1w==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oH/+1yR8; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12a; helo=mail-yx1-xb12a.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKF2L6s2cz3bqV;
+	Tue, 19 May 2026 09:51:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779098992;
+	cv=none; b=kVYrshkC1VNPZ7k2kRd6g6OvKy46JzAC2sklHEEfRBR2ucmZRbeTG1QK/ffiI+0Q5iOlxLU9zZkCxD3EX5MOvYK43UoRTWgWagAky74iiUOmSmony3CVRFnVZm7c9aiqVHOloVgVQA9IiFjFfnx2JpKY3SUSf+o8ejQCfWr2Oi073gBA1gTqprwrSib924lRRXZYQK7bEzL3BQgu5TZsDNCzkIxiUCrEDgtIhVW2OKZkksaDAI1A7YkY4hKZItdpU9u2RXWoto+pO+roJ1D6v4WZYBG+iOy9CSoXCIUwvfK1bJ93OMVfblorSbjHAIO0/3MjMww0SVLQj/w1iBB3jg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779098992; c=relaxed/relaxed;
+	bh=6YOePkzpKdtcaeSkD2ei9bKN6cTmuB9GBSIuGfGIbww=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=kCKGWH/50tzrARsXwbXGI6bCu1fiKsXIXhtS60TklRBcGbTTRG+f5R9OTrj9oztycF0rdLKnCwI4unFmclz2d6ucE/txYGJf99vlvk8qu1Ti3z2jdHOPdJHVrrenQEIjFmAX/QZg072++j+7nf7uSp+/ozx2yBBeT9p/ZgyfjSCcCN6FMDa3W/fAodYQ17uzWT9HPh6w+UkjboD8FMaEeI0RYGNzBsH2Nb6N1cts6gzPFqDR6ZIFhlBAeR5GI5zXh93MBmLoa2ftqkOvivY7B+CHbqDbxmR/vZTr5DhJEO8zro0mehhYOcnPGi+KN3QbBTvejHMKMlLLeC/l+OP84w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nAy4SXup; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+rex.fu.amd.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=oH/+1yR8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nAy4SXup;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12a; helo=mail-yx1-xb12a.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12a.google.com (mail-yx1-xb12a.google.com [IPv6:2607:f8b0:4864:20::b12a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+rex.fu.amd.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gK5b65DYvz2xpn
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 04:16:02 +1000 (AEST)
-Received: by mail-yx1-xb12a.google.com with SMTP id 956f58d0204a3-654672a6d68so2682491d50.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 18 May 2026 11:16:02 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779128160; cv=none;
-        d=google.com; s=arc-20240605;
-        b=YTq+Pl8oitt57QW9gyz/7RxNcJ2HSqAVW8pp19aFRaqc6lV9ZlZMyZnjB0ptA2LvNq
-         9F7ZfHZknRonT+2Sm2gaDeXRCiyUxFnt5Lh9WYSK8cr8n4xnjDwjPEI1mj+I+quU4Kcm
-         tL+2ROMn+8MPTG+rW2RDDdCNZ9GmJc4iCa/Z/TwzJltUAZH2nXOH52+hTguuBS6o10Kl
-         JYmC3VPhQr00O1peU1mda4/wKtND5kNXg1nUyjxlnFVhSFZWt74PggJw2hmx4UmntVJM
-         B5diYXxI7f3A453UP0GgHi/HVcj1ZIt4uiamJstt4P52f7JcgWi8TxvaUnzBuoXn8xoy
-         Fc1w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:dkim-signature;
-        bh=pmFnTQUJEBfvGMlAcK3/VbLVmpdj7K5UAInNPmwJs08=;
-        fh=gZYiAgf2Tv9A43rQpLX4VukvU3NWGTGDB2T/JnkAWl0=;
-        b=ARdy5evJkAQdxwh4ohgrsbcyTOcm4NRa530PRdX/L+1MDXLe0/WWSwaDBHp+9REWjm
-         5cek/M2GMUS6a9ZkxV8TUoYcKmCm6bqXAbbU4kSoIetm/2FDtDee8meDBs7tR3tptm5q
-         vcCSdK47U5lLdGLjneN626guhDWRsYxmYb8NIVelA5wIO+sW9bdMxjH/5AkDFGthKDGf
-         yvaZqIJrqrjuUiUFMwMyMul4ELX5MswUfbVPJIpSVzTRvnuzwffSc/teB1OEYIwaks5O
-         wO9RYS+abZnfJ68izHzB5mWhxkHQGvYPvoDQb9wlHpsyzL+DIDrVV+ctXCdpiwxfDW5U
-         /o+A==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779128160; x=1779732960; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=pmFnTQUJEBfvGMlAcK3/VbLVmpdj7K5UAInNPmwJs08=;
-        b=oH/+1yR8ikzMPqwiHPb5FcsvQNXyKmLKzBqeIPhqIXrKrchCsVwNPj/Ym/OrsbwaxH
-         MR/gkgKWOU/PWfVboHbjrFVxuGX0gQlkeXQ/No0tH1vwDDrOnZ+0Fjma1THPbGkvphpV
-         0RjUwBfA0+AXMr7mQf8eu0EuIbu9PkKFgu03tdCOg/rMngEJyLpxdWeTuT3EuBOxAD63
-         O0EfKaiTYmRVEi/bgJNR/0dTGPwigSrvnvtaXbIBc8muAaBmln8o4KiVhCj4fi/pdV/W
-         2lT/VwDv3NcMb4Cnw5qvBwgGcLIo9/rGGDIdU68mluvK+cPpwJe57PTlcX/G3OJKCFhC
-         bqkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779128160; x=1779732960;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pmFnTQUJEBfvGMlAcK3/VbLVmpdj7K5UAInNPmwJs08=;
-        b=l833kCHqxAaAeFcRWVCI1v1Pbtxxq9/Y/xSjF+pD/0UQDMKEzlZMUigNnnbCbVvHRG
-         b9Wub14sPv37XbrgnMOyoMPuNMAAkSqWZKRJAHy0SyNEzv0ymCMNStSXPWUpHfKV6a+q
-         Pdqtn1EeZ7smSlZ+d2JlQcRXzajwoDzbLCC1Wo2oUbaPjd+k/OAt1fShvibD1zmorMRX
-         6MPhocwhytSgV691k5tFxRww8T20eWDRPHVmyPYMVr+aJULuG0+vMv7ma+myEhcB4sfy
-         u5d5xhzN5GAmqhX4n7KkFpRemWWqDFA2wJI104tuuUbCOm3lRwfGlcizwP0Rd2AB+VJf
-         NtDw==
-X-Forwarded-Encrypted: i=1; AFNElJ9mGfrjdCo1u/488qpsM4qI5khgRDcpoW7NcWNKcmfM7WXxbX4v3quot7DnI8B7sZ0kH50dY2yvmkDpbow=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzbVZoSYrjYM7FdTbLvFWAjmIy8JzxRzKD/b5XhijBi5NLD9Ngf
-	f5RRzAvkkkVM2r198h5CJ5wXuOqmN0jwHL0QTK6El3tQ0TZwYnj9PE/AEM5KHs5muj68UJU8fE8
-	aXpssiV2INkub3b2T20mkAuGyf6T0GN8=
-X-Gm-Gg: Acq92OGgrPNPt3L2i+8JgUD8WK4Dg6p099dI56X+LA67adfoMWJr2i07zfCBGmlG8ej
-	cKNY6hec2fXGXhJDxVPR4yVcIN4e+0c3MN5ppnPNBowDud0x2dIrG98pNmuvm+TLguXDhxxmWlD
-	fR5AXKRvapm91AEjKxx23BBHhr7WsRml0S0Qkt0Kr2xr9fF2l95wI32ZJJ9dzi0vBv/17zRn0cz
-	diD1XnBJrSzcwZeId1vrambZ2uLJUt1L4Pn7tL2UTuOFj2ZO56DOrXYf634sX5vIjiDYAX5rXyw
-	31jYmy33
-X-Received: by 2002:a05:690e:1301:b0:65e:28f3:4a5a with SMTP id
- 956f58d0204a3-65e28f3509fmr15152238d50.37.1779128159777; Mon, 18 May 2026
- 11:15:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJtp73p8hz2yDs
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 18 May 2026 20:09:51 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id CC00F43E18;
+	Mon, 18 May 2026 10:09:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A7E31C2BCC6;
+	Mon, 18 May 2026 10:09:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1779098989;
+	bh=u56jg7DlcON9+DXGEF4UUjo0mA99ELeWFFq/Ike9RM8=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=nAy4SXupexX5Yd/Jh65iRzTGGKibrwsVMx4Do553FwQOWDk8pNtcdeQiEYw/M1y1R
+	 2SOnNZtpy+5SgAR/UTPBE4m8hjVxGSdEUbt8WvJSeb8B1yYuFNRDAlglFqHBHRvNvW
+	 LJhMVt2nhI0SjNrBzmKBkv6E755upD6Yg+qxgyzaAuDuWiAD3NQL9/iqv1/z5yDSCg
+	 C4UPn298sXtznWOIpRevUfjk7j7bJ1BmpnEdD5QP4JwDMCfqnHEvF4jy4pM0WuR4EY
+	 vIQF/SIgRVbgrx2BqHCyHOeS9ws85RQFblwxJOdRTp5yJ2n1iRZo1rT/CCT0j7jJZL
+	 CeVlWEg1KkpwQ==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 965C3CD4F54;
+	Mon, 18 May 2026 10:09:49 +0000 (UTC)
+From: Rex Fu via B4 Relay <devnull+Rex.Fu.amd.com@kernel.org>
+Date: Mon, 18 May 2026 18:00:40 +0800
+Subject: [PATCH v2] ARM: dts: aspeed: anacapa: correct SGPIO names for
+ monitoring
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -100,113 +63,155 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260518033440.17569-1-prasanth.padarthi10@gmail.com>
- <20260518033440.17569-3-prasanth.padarthi10@gmail.com> <ddb781dd-e117-4f9a-a5a3-94c192d8c2ef@lunn.ch>
- <CAMFFDGg++xLX+DzTnKVZRdbs=_3SrNfDydezRQgRjCBU5R3-KQ@mail.gmail.com>
-In-Reply-To: <CAMFFDGg++xLX+DzTnKVZRdbs=_3SrNfDydezRQgRjCBU5R3-KQ@mail.gmail.com>
-From: Prasanth <prasanth.padarthi10@gmail.com>
-Date: Mon, 18 May 2026 23:45:48 +0530
-X-Gm-Features: AVHnY4LQzv2FiwHUhuNMKFFnaG37RaaFKQln7w4GleJGhC4Dsjf6HG5KpO6VTss
-Message-ID: <CAMFFDGgFBs2y47draLM1B6Gm5a1y-LDQ318dsxM47J5_nFJ6Kg@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: joel@jms.id.au, andrew@codeconstruct.com.au, robh@kernel.org, 
-	krzk+dt@kernel.org, conor+dt@kernel.org, andrew+netdev@lunn.ch, 
-	devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org
-Content-Type: multipart/alternative; boundary="000000000000f9375a06521b8d3f"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20260518-anacapa-sgpio-edsff-thermtrip-v2-1-e43b1847b2dc@amd.com>
+X-B4-Tracking: v=1; b=H4sIAEfjCmoC/42OSwrCMBRFt1Iy9kmSfhRH7kM6yOelfUKbkMSgl
+ O7dtm7A4YHDuXdhCSNhYrdqYRELJfLzBvJUMTOqeUAguzGTXHa8qTmoWRkVFKQhkAe0yTnII8Y
+ pRwqgjJbyql0nNLKtESI6eh/9R//j9NJPNHmP7sZIKfv4OQ4UsXv/bhUBAqSzLV5kU7eW39Vkz
+ 8ZPrF/X9QvqpmBx2gAAAA==
+X-Change-ID: 20260430-anacapa-sgpio-edsff-thermtrip-acb228bf61be
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Rex Fu <Rex.Fu@amd.com>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779098465; l=4551;
+ i=Rex.Fu@amd.com; s=20260417; h=from:subject:message-id;
+ bh=R6pEDyauTB50Fmhvxn0QsYGtV2og2/4FKpGrDbJds/8=;
+ b=RC64u2ytJ72iyOUFotIilIIvQnQwyvi5OfqMn3hKP+rzzxF8q2th+T0U1TtU6hXd+NbgacbZ0
+ kRDPXrW5GeECk58Ywm1UgI3Pjx7idCfONhNhX9W2thRQSbad/63mm9J
+X-Developer-Key: i=Rex.Fu@amd.com; a=ed25519;
+ pk=26ECoh24fxrbXDKgA4hCmgg0xjQ+IxU97kXb46ovwgc=
+X-Endpoint-Received: by B4 Relay for Rex.Fu@amd.com/20260417 with
+ auth_id=738
+X-Original-From: Rex Fu <Rex.Fu@amd.com>
+Reply-To: Rex.Fu@amd.com
 
---000000000000f9375a06521b8d3f
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: Rex Fu <Rex.Fu@amd.com>
 
-Hi Andrew,
+Update several Anacapa SGPIO line names to match the existing platform
+hardware design and the signal names consumed by userspace monitoring.
 
-Understood. I will not rely only on the vendor DTB value for this.
+The previous names did not match the actual Anacapa SGPIO usage. Some
+lines were named as CPU or CPU power-good signals, but they are wired and
+used on Anacapa for EDSFF presence, EDSFF power-good, boot EDSFF
+presence, and thermal-trip assertion monitoring.
 
-For the next revision, I will drop rgmii-rxid and use the conservative rgmi=
-i
-setting unless I can provide board-level evidence that the required RGMII
-delay is added by the PCB/PHY configuration.
+Correct the mappings as follows:
 
-I am arranging hardware validation for this board, and I will update the
-Ethernet node only with evidence from the board/manual/logs.
+  PWRGD_PVDDCR_SOC_P0     -> L_PRSNT_EDSFF0_N
+  PWRGD_PVDDIO_P0         -> L_PRSNT_EDSFF1_N
+  PWRGD_PVDDIO_MEM_S3_P0  -> R_PRSNT_EDSFF2_N
+  PWRGD_CHMP_CPU0_FPGA    -> R_PRSNT_EDSFF3_N
+  PWRGD_CHIL_CPU0_FPGA    -> HPM_EDSFF_PG
+  EAM2_CPU_MOD_PWR_GD_R   -> PRSNT_EDSFF_BOOT_N
+  CPU0_SP7R1              -> L_EDSFF0_PG
+  CPU0_SP7R2              -> L_EDSFF1_PG
+  CPU0_SP7R3              -> R_EDSFF2_PG
+  CPU0_SP7R4              -> R_EDSFF3_PG
+  HPM_AMC_THERMTRIP_R_L   -> AMC_THERMTRIP_ASSERT
+  FM_CPU0_THERMTRIP_N     -> CPU_THERMTRIP_ASSERT
 
-Thanks,
-Prasanth
+The left-side EDSFF slots are numbered as EDSFF0 and EDSFF1 to match
+the platform slot numbering used by userspace. The thermtrip names are
+also updated to describe the asserted condition monitored by userspace
+instead of the raw active-low signal names.
+
+This is a naming correction for the existing Anacapa hardware design.
+There is no new board revision or underlying hardware change involved.
+
+Signed-off-by: Rex Fu <Rex.Fu@amd.com>
+---
+Update the Anacapa SGPIO line names to match the existing hardware
+design and the platform signal names used by userspace monitoring.
+
+The v2 commit message now explains why changing these userspace-visible
+GPIO line names is appropriate and lists the exact old-to-new mappings.
+---
+Changes in v2:
+- Reworked the commit message to explain why these userspace-visible
+  GPIO line names are changed.
+- Listed the exact old-to-new SGPIO line name mappings.
+- Clarified that this is a naming correction for the existing hardware
+  design and not a board revision or hardware change.
+- Link to v1: https://patch.msgid.link/20260430-anacapa-sgpio-edsff-thermtrip-v1-1-2fd5e72435d0@amd.com
+
+To: Rob Herring <robh@kernel.org>
+To: Krzysztof Kozlowski <krzk+dt@kernel.org>
+To: Conor Dooley <conor+dt@kernel.org>
+To: Joel Stanley <joel@jms.id.au>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: devicetree@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-aspeed@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+---
+ .../boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts  | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+index 2cb7bd128d24..e898bc11e6f5 100644
+--- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
++++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-anacapa.dts
+@@ -908,11 +908,11 @@ &sgpiom0 {
+ 	"", "", "", "",
+ 
+ 	/* G0-G7 line 96-111 */
+-	"PWRGD_PVDDCR_SOC_P0", "",
+-	"PWRGD_PVDDIO_P0", "",
+-	"PWRGD_PVDDIO_MEM_S3_P0", "",
+-	"PWRGD_CHMP_CPU0_FPGA", "",
+-	"PWRGD_CHIL_CPU0_FPGA", "",
++	"L_PRSNT_EDSFF0_N", "",
++	"L_PRSNT_EDSFF1_N", "",
++	"R_PRSNT_EDSFF2_N", "",
++	"R_PRSNT_EDSFF3_N", "",
++	"HPM_EDSFF_PG", "",
+ 	"PWRGD_CHEH_CPU0_FPGA", "",
+ 	"PWRGD_CHAD_CPU0_FPGA", "FM_BMC_READY_PLD",
+ 	"", "",
+@@ -934,7 +934,7 @@ &sgpiom0 {
+ 	"EAM3_BRD_PRSNT_R_L", "",
+ 	"EAM0_CPU_MOD_PWR_GD_R", "",
+ 	"EAM1_CPU_MOD_PWR_GD_R", "",
+-	"EAM2_CPU_MOD_PWR_GD_R", "",
++	"PRSNT_EDSFF_BOOT_N", "",
+ 	"EAM3_CPU_MOD_PWR_GD_R", "",
+ 
+ 	/* J0-J7 line 144-159 */
+@@ -957,8 +957,8 @@ &sgpiom0 {
+ 	"PDB_ALERT_R_N", "",
+ 
+ 	/* L0-L7 line 176-191 */
+-	"CPU0_SP7R1", "", "CPU0_SP7R2", "",
+-	"CPU0_SP7R3", "", "CPU0_SP7R4", "",
++	"L_EDSFF0_PG", "", "L_EDSFF1_PG", "",
++	"R_EDSFF2_PG", "", "R_EDSFF3_PG", "",
+ 	"CPU0_CORETYPE0", "", "CPU0_CORETYPE1", "",
+ 	"CPU0_CORETYPE2", "", "FM_BIOS_POST_CMPLT_R_N", "",
+ 
+@@ -984,8 +984,8 @@ &sgpiom0 {
+ 	"HPM_PWR_FAIL", "Port80_b0",
+ 	"FM_DIMM_IP_FAIL", "Port80_b1",
+ 	"FM_DIMM_AH_FAIL", "Port80_b2",
+-	"HPM_AMC_THERMTRIP_R_L", "Port80_b3",
+-	"FM_CPU0_THERMTRIP_N", "Port80_b4",
++	"AMC_THERMTRIP_ASSERT", "Port80_b3",
++	"CPU_THERMTRIP_ASSERT", "Port80_b4",
+ 	"PVDDCR_SOC_P0_OCP_L", "Port80_b5",
+ 	"CPLD_SGPIO_RDY", "Port80_b6",
+ 	"", "Port80_b7",
+
+---
+base-commit: 9974969c14031a097d6b45bcb7a06bb4aa525c40
+change-id: 20260430-anacapa-sgpio-edsff-thermtrip-acb228bf61be
+
+Best regards,
+--  
+Rex Fu <Rex.Fu@amd.com>
 
 
-On Mon, May 18, 2026 at 5:52=E2=80=AFPM Prasanth <prasanth.padarthi10@gmail=
-.com>
-wrote:
-
-> Hi Andrew,
->
-> Understood. I will not rely only on the vendor DTB value for this.
->
-> For the next revision, I will drop rgmii-rxid and use the conservative
-> rgmii setting unless I can provide board-level evidence that the required
-> RGMII delay is added by the PCB/PHY configuration.
->
-> I am arranging hardware validation for this board, and I will update the
-> Ethernet node only with evidence from the board/manual/logs.
->
-> Thanks,
-> Prasanth
->
-> On Mon, 18 May, 2026, 5:42=E2=80=AFpm Andrew Lunn, <andrew@lunn.ch> wrote=
-:
->
->> > +&mac0 {
->> > +     status =3D "okay";
->> > +     phy-mode =3D "rgmii-rxid";
->>
->> It does not matter if this is what the vendor does, it is still wrong,
->> unless you can show the PCB is adding the delay.
->>
->>    Andrew
->>
->
-
---000000000000f9375a06521b8d3f
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"auto"><p>Hi Andrew,</p><p>Understood. I will n=
-ot rely only on the vendor DTB value for this.</p><p>For the next revision,=
- I will drop <code dir=3D"ltr">rgmii-rxid</code> and use the conservative <=
-code dir=3D"ltr">rgmii</code> setting unless I can provide board-level evid=
-ence that the required RGMII delay is added by the PCB/PHY configuration.</=
-p><p>I
- am arranging hardware validation for this board, and I will update the=20
-Ethernet node only with evidence from the board/manual/logs.</p><p>Thanks,<=
-br>Prasanth</p></div><br></div><br><div class=3D"gmail_quote gmail_quote_co=
-ntainer"><div dir=3D"ltr" class=3D"gmail_attr">On Mon, May 18, 2026 at 5:52=
-=E2=80=AFPM Prasanth &lt;<a href=3D"mailto:prasanth.padarthi10@gmail.com">p=
-rasanth.padarthi10@gmail.com</a>&gt; wrote:<br></div><blockquote class=3D"g=
-mail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204=
-,204,204);padding-left:1ex"><div dir=3D"auto"><p>Hi Andrew,</p><p>Understoo=
-d. I will not rely only on the vendor DTB value for this.</p><p>For the nex=
-t revision, I will drop <code dir=3D"ltr">rgmii-rxid</code> and use the con=
-servative <code dir=3D"ltr">rgmii</code> setting unless I can provide board=
--level evidence that the required RGMII delay is added by the PCB/PHY confi=
-guration.</p><p>I am arranging hardware validation for this board, and I wi=
-ll update the Ethernet node only with evidence from the board/manual/logs.<=
-/p><p>Thanks,<br>Prasanth</p></div><br><div class=3D"gmail_quote"><div dir=
-=3D"ltr" class=3D"gmail_attr">On Mon, 18 May, 2026, 5:42=E2=80=AFpm Andrew =
-Lunn, &lt;<a href=3D"mailto:andrew@lunn.ch" rel=3D"noreferrer" target=3D"_b=
-lank">andrew@lunn.ch</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quo=
-te" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204=
-);padding-left:1ex">&gt; +&amp;mac0 {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0status =3D &quot;okay&quot;;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0phy-mode =3D &quot;rgmii-rxid&quot;;<br>
-<br>
-It does not matter if this is what the vendor does, it is still wrong,<br>
-unless you can show the PCB is adding the delay.<br>
-<br>
-=C2=A0 =C2=A0Andrew<br>
-</blockquote></div>
-</blockquote></div>
-
---000000000000f9375a06521b8d3f--
 
