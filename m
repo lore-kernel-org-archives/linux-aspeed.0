@@ -1,64 +1,60 @@
-Return-Path: <linux-aspeed+bounces-4047-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4048-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16B38CD4F3C
-	for <linux-aspeed@archiver.kernel.org>; Mon, 18 May 2026 05:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7DF9CD4F3C
+	for <linux-aspeed@archiver.kernel.org>; Mon, 18 May 2026 05:12:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gJlzM5jbmz2xRw;
-	Mon, 18 May 2026 15:02:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gJmCP3kCfz2xRw;
+	Mon, 18 May 2026 15:12:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779080543;
-	cv=none; b=QrERn6Yc3RxWfuZbcPFZtK4QsKFzZ8TOw8e7dC/KNIkYPgVoGKkKMbuTV9q19NHXvurHkUTHJ3hyCt2hapiCFWIJr9vD0mureYqAzohnKakxr/YIP+4F2mdCOf998mjKRpD4RotnGqBsbAD6WzJqC+88Iy6r0oBccFcYVA1LNMzR7NC7xK6rRo+54ZgmhUjVz8Cs5ovND4TYfEAKVnUdZt+dLALhT9inyBrGy2btx18VC4HiON0cD9bEUH5butR1HQhqoQLcd1P5J7TweREmk6YySfMJbtxVTywlheGawoH+0NgKf6RZ1/Q6D4Bp1YjCcI01VENL7/+LglDUFuuB6w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779081169;
+	cv=none; b=MA6AeRNsYvzQyiaVUmKY9z2HWbGIbapkQnynkWH61B5u7vajPTfcl90poHLphV8hUvqMctrY3MBJIMXkB7jnoG5+mBrbV0K/6v3nZcisZAOAF5oNQ6C9GHA19mNdvtQDX7/FHpAz9JuK3Vxn4BzX1N4czZjB/fEOXba0t0InzzDTBeo5wX5cP7QCK0MM989EY7Aa3DRtubHrwy2rJOhgsk/6JPr2rSXHv4p8aqWCtsgnhwF1+RTcsoEj5la+OCVpX56FTPWMb/6iUmyy/AjtMxY1G1Imp+qi2kLxjmY1YeOYWfZH84YDj+HrVEs3bs6ovQBhwoOaBtNM6pm00oMfaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779080543; c=relaxed/relaxed;
-	bh=MiGtwoPUHm2LKcxW6fZx/3aamAm5XYlTqpOjgktt4wc=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=cFMzxyGYh/XVRCm4m9Bxw1rUjCD+gh9DgGm3qQVzIJALMUDlTK8nW7hnHqlUfAqnMOXwCJdPIlraZOCEYRblb2rAnk7wQJEqP9oPV0gWPzfZs49PyZ7xq+lKdWBu9eOAqPRv/sgpSXJPMOe40+sKPooJgOXWT/jN8aDe4wwkDWA7C/KfZVU4quX1h6fH20b4q2oNRB+ThgPxRn0okhwdJ80dtvYI8rnVKPikarPPRG+f6FMiewAkmpY7m2k71mcIKD9yUxRICiTm4WV1/yNrS9penL2UXZNhrPooO1T4hkXS/LJR+c8+c0bt8ibp88QYEUvPdIXpUIzNH6eMsShqkw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=V537ku1D; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	t=1779081169; c=relaxed/relaxed;
+	bh=i2PykgTZ59OqLYyaVj3A9+ycwaibzO5zZ0kF4EM5pJA=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=OuaCfVP+20MwyQ3RLzp5BXMOEzpnm236vTrH4PVK3db4aFKb1DWn780UIeeoQZ+ho7MtJi7R+6hh+xwD8Ul6o751G3I1Zi0sYIqGVsaaPUVHWUekOjO7hHkkkz34JgKIoaRfIMcSTpSrcndUI1M/0iRtxfWwl9PDoYXBvTLYAU9T18AXX7eMC4myUYrglFr8cBJ09klI3KOux0/S+BhpCDf4UEMfZjbeC9niohr7El8KJpK5VQOZyKPzyQHnRIPsvL3HwaBQiGCOkhhVgVJ9o0PQpHbZbktQXBnNv3yI4LF75cimrNmJGdSo9FiPopY/6IY+eFBmx00rHcUab4TQWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aPKfRaxl; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=V537ku1D;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=aPKfRaxl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJlzM0pysz2xPb
-	for <linux-aspeed@lists.ozlabs.org>; Mon, 18 May 2026 15:02:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gJmCN4rRyz2xPb
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 18 May 2026 15:12:48 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1779080541;
-	bh=MiGtwoPUHm2LKcxW6fZx/3aamAm5XYlTqpOjgktt4wc=;
-	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=V537ku1DUKlUnpyvBfXQTRmZtwO0M9khnjhFoZkwPTTuzgNGZqasZSPR5Te2AfLL8
-	 ItvG8QguMR+XGSAv6MWwz3a0bet/9Lp/HiNboJXGR/8CJ80lkx3QfL3epnsseycq8S
-	 0h/zIuGQjFnu8hhGLLhBePg9654iI5vzrPDdYjeRcyX06qP/srM8ht6XAnce+hZAAY
-	 Z6xFiVbkR9MFSXnPOsYGwZ2UvL3Nu5uKIvmgXcSTkKsm88+hWVyef070efjPirRHbb
-	 XWHGtVvqACFfk4jEQW17pzudzceTavrZNNDrg8d/AtrJ0kpi/Ka7eqeQgBnaeLz2ab
-	 cUPr/h6oqO78g==
-Received: from [192.168.68.117] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id A23266025D;
-	Mon, 18 May 2026 13:02:19 +0800 (AWST)
-Message-ID: <23203c124a158536c272d1bffb2657a0d713f8ce.camel@codeconstruct.com.au>
-Subject: Re: [PATCH v4 0/3] ARM: dts: aspeed-g6: add AST2600 I3C nodes and
- bindings
+	d=codeconstruct.com.au; s=2022a; t=1779081168;
+	bh=i2PykgTZ59OqLYyaVj3A9+ycwaibzO5zZ0kF4EM5pJA=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date;
+	b=aPKfRaxlpjRjX1lxwyOR0yHKYT3GuwmduyuUMuIz4evV85Lhyye6c/jHOGUCIdNvB
+	 S5xtRrhGTLc5RP9pZSglxjsFBOPgX3ieP658Ou3ACBnx3XTLEhi7vRzYtNdUxh1jdd
+	 kiCOuVgYeX8VSaa4gw3E7ayvZX/tSsblwiYJLdTckSrGK+HNVPXYVJO6usfs3MkjZV
+	 ojMBo3aCxP9DfhGbNf4LAtgcZsy9ckbl6CdtoSY43nftGwYvVtirenIYoGO6GdO3s8
+	 MokfjlSrD/lpiqfqLxhwqQe02ke9lSoyIK9FhXefC5zhcPSpWJhchdVLbG9MKNNbGA
+	 oSII5YKFtnUgA==
+Received: from [127.0.1.1] (unknown [180.150.112.11])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 97F586025D;
+	Mon, 18 May 2026 13:12:47 +0800 (AWST)
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
-To: Dawid Glazik <dawid.glazik@linux.intel.com>, Lee Jones <lee@kernel.org>,
-  Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>,  Joel Stanley <joel@jms.id.au>,
- linux-aspeed@lists.ozlabs.org
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, 
+ Colin Huang <u8813345@gmail.com>
 Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, maciej.lawniczak@intel.com
-Date: Mon, 18 May 2026 14:32:19 +0930
-In-Reply-To: <15956b70-c6c2-4e3d-8f15-471a274d6e2d@linux.intel.com>
-References: <cover.1777058942.git.dawid.glazik@linux.intel.com>
-	 <15956b70-c6c2-4e3d-8f15-471a274d6e2d@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2-0+deb13u1 
+ linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ colin.huang2@amd.com
+In-Reply-To: <20260511-add-jtag-trst-pin-v1-1-b0be2f7b2da5@gmail.com>
+References: <20260511-add-jtag-trst-pin-v1-1-b0be2f7b2da5@gmail.com>
+Subject: Re: [PATCH] ARM: dts: aspeed: anacapa: add JTAG CPLD TRST pin to
+ SGPIO map
+Message-Id: <177908116750.1269230.16667761190075154399.b4-ty@b4>
+Date: Mon, 18 May 2026 14:42:47 +0930
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -72,62 +68,23 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.15.2
 
-Hi Dawid,
+On Mon, 11 May 2026 17:47:56 +0800, Colin Huang wrote:
+> Add JTAG_CPLD_TRST_R_N to the sgpiom0 pin name table on
+> Facebook Anacapa BMC.
+> 
+> This exposes the CPLD JTAG TRST signal through SGPIO,
+> allowing proper JTAG reset control during debug.
+> 
+> 
+> [...]
 
-On Mon, 2026-05-11 at 16:14 +0200, Dawid Glazik wrote:
-> On 4/24/2026 10:20 PM, Dawid Glazik wrote:
-> > This series reworks and resubmits AST2600 I3C DTS updates that were
-> > originally posted in 2024, but stalled without further upstream
-> > progress.[1] The series was rebased onto the current tree and merge
-> > conflicts were resolved.
-> >=20
-> > The patches first move I2C controller nodes under the APB simple-bus
-> > for layout consistency, then document aspeed,ast2600-i3c-global in
-> > the syscon binding, and finally add AST2600 I3C controller nodes in
-> > aspeed-g6.dtsi.
-> >=20
-> > Jeremy agreed in a separate email thread that I can continue this
-> > series under my authorship.
-> >=20
-> > Link: https://lore.kernel.org/all/9d8c03d742fa9767f30e23d75ddf0baf4296c=
-88e.1714647917.git.jk@codeconstruct.com.au/
-> >=20
-> > Dawid Glazik (3):
-> > =C2=A0=C2=A0 ARM: dts: aspeed-g6: move i2c controllers directly into ap=
-b node
-> > =C2=A0=C2=A0 dt-bindings: mfd: syscon: add aspeed,ast2600-i3c-global co=
-mpatible
-> > =C2=A0=C2=A0 ARM: dts: aspeed-g6: Add nodes for i3c controllers
-> >=20
-> > =C2=A0 .../devicetree/bindings/mfd/syscon.yaml=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 |=C2=A0=C2=A0 2 +
-> > =C2=A0 arch/arm/boot/dts/aspeed/aspeed-g6.dtsi=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0 | 543 ++++++++++--------
-> > =C2=A0 2 files changed, 318 insertions(+), 227 deletions(-)
-> >=20
-> >=20
-> > base-commit: 6de23f81a5e08be8fbf5e8d7e9febc72a5b5f27f
->=20
-> Hi all,
->=20
-> Gentle ping for this series:
-> https://lore.kernel.org/all/cover.1777058942.git.dawid.glazik@linux.intel=
-.com/#t
->=20
-> I received Reviewed-by from Krzysztof Kozlowski (thank you).
-> Could I please get feedback/ack from maintainers on the remaining parts,
-> especially ASPEED DTS?
->=20
-> If preferred, I can respin/rebase the series.
->=20
+Thanks, I've applied this to the BMC tree.
 
-Sorry for the delay.
+-- 
+Andrew Jeffery <andrew@codeconstruct.com.au>
 
-Given Krzysztof's R-b tag for patch 2 I've applied 3 (along with 1) to
-the BMC tree. Patch 2 should be picked up by Lee through the MFD tree.
-
-Cheers,
-
-Andrew
 
