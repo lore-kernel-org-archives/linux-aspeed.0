@@ -1,62 +1,94 @@
-Return-Path: <linux-aspeed+bounces-4098-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4099-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 565C4CD4F5B
-	for <linux-aspeed@archiver.kernel.org>; Tue, 19 May 2026 20:26:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D17D5CD4F5B
+	for <linux-aspeed@archiver.kernel.org>; Tue, 19 May 2026 20:27:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKmRh0R1gz2xwH;
-	Wed, 20 May 2026 06:26:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779178799;
-	cv=none; b=Wbsjsi+Riyp/W26Ss133Bys1r5OOH0tvm58QDchGWUlXyTlNMYA2ZY4DB8nvIUo2dICgCMAOGWR9TYK+Ml2N6vRRej52ES6s17zu9ltGrqZQ/fo5WIf94NI6lkva2k6GHbHBHJIDTIBCjtYPiESjkjcSluwJqMSLfHFJEy6xwGBuF8JbWOZ7jcpo5gfN3rViXkXlyIaaAvdUbMzo9IGv2FMzIt6rhf3B9cD5u7IG7W43rz+X0HFD7+w2BXzrg3WU7tWUWXtVTqWrMwMg/MRwtCc7aq/x+J1tRlIXvuPKYUOMaOUVXcNs2pV6bQftBv1VPGixPw5dkW1D6xsw0CMcqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKmRx3z7Tz2yD6;
+	Wed, 20 May 2026 06:27:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::529"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779177744;
+	cv=none; b=MAEfaIRqmQ+54rEC0cE5iVSlmJdpjK+8lKhhPHYbPP2t2yCdc43+r/jio/CC3Z83HL1jx73yciP+3uziCwKp95dseQKWd04WIJxZdmLuhBfd6zlM142IibRmi9qejxV/vfPfbesLi3u/ak44xUF9E9q12L24gm+/VU7MuWocf/2JYuLEhYPRNQMoS7cBRGRxTWVW6KF/sg3khRdEpZlUvu9g7IWnuijaps96HdYc/RDp2Q4aLgDRRpXMDQ8lByxnbdfhMoX8beIx0GfZPehl3+bXvgyX3oT0fzL4KJUvjafkq2cDI5LlQ7baPN83Rbabf/EqXX0zbkSOGzNb1jIlmg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779178799; c=relaxed/relaxed;
-	bh=zeEyivkOKMiA9Q1LCcEUSrlkL6r0K7vpJgifgOOUXs8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=BQCvJqVgn291JdF2ivBjiddef1eZpYiSseZ3ZpH8oWUa+jawy2KcVWgwZEkahSKFs+GWek8qwJo6vrj7I/ltlk9FoGoSbAq+KsAyZQdWVsP56PniDwbm+wECmmgOMeCfrWpprQ7ownFXRPqzVlpk+i9w+A9Q1fBch8+zWGOBOwXyG318ZvgFA4HyDsNCGTsjKIfXH6FFnVkwEK7CYy/i18ll/9z3x3tAvfM6cDjtjia5Dqo4rFowvCuTwTdd7hiQ9aJnNf+qakjYxl8599gsO39aiUlB5UblB2joDoki7QSksSpGS9uZEZFpL8XWTtTuMvxa9DUB1C9Edz30ZVhdnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=i0cj+/fw; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1779177744; c=relaxed/relaxed;
+	bh=p+hlBWVPQXy43hiRxqKhCnwnHHiHzFjw8+7rkTfE8vA=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=VK5TwL2BTnFCtORK9FAHeUfYQkXM77M8bh9XV6HH0XuELvR8ckDZSiwdNu25tUYbaW8C7r22WNXxdS+1fcXOCByEigN0DszybYiE7knUUsU/wWanTIfGPUsFUWocnfE2m178QpLxJfL/FQycy1L7uv1ojgV+NyzSWQH+x5Xk543eIeTGNe6vO6ZGXjbHkAHDrHkM9+pSqqf7Cu06CUfkl/IMWuNkf6PGKUvcWuV449vDufUwCatdJjcB2dJ/inFLP75OvFRmAsEahdYmqyzYDsmTW1ILE8s0jGBWH5eaxWpUg0fyGwldOdx0R0fIEn5N/t6GrSaj0jWfKNNbkA3rUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Pt937n9G; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=maoyixie.tju@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=i0cj+/fw;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=Pt937n9G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=dawid.glazik@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=maoyixie.tju@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKSJr5TFYz2xSG
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 18:19:54 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1779178797; x=1810714797;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=JfhAILNls4w2wXgWnGBbGRweRyrl7ebw7UAo4Oa5uio=;
-  b=i0cj+/fwkDFZCZAGVXSFrSCFgfE6vHLhVyKztzdZYGIUbD6H3r1r5l4T
-   4tz+F1Gw4efHnz3St1wdU+uJkCUxX/JuOxmsgm41/UHiucZqYg4E+YGj7
-   DTnl6M785dxVTyX8wbLYw6vFibwoDiZiFCOvWsUY45zZFFOxd1T+M0qRa
-   X1u3k9WiYhQa0WOvn+Pruv3DJ5iaIE00TD4sKWIqf+wMIMgKSvwMkHXWf
-   VHWs8RcUg8VkAVNkUuBtx4hV2fZ8do0ZRxlipMuNTLV19wUHYhDLoR26K
-   +X8/hFWUp90ePsBHi/9j9CJCOfWgTfvp0FAU4yQf7JxRoHdSK+A5tcCzB
-   A==;
-X-CSE-ConnectionGUID: Lf8U76M1QXe8FBDoR0GViw==
-X-CSE-MsgGUID: B2oDeKA1R06A+FZ08M5p3g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11790"; a="79193767"
-X-IronPort-AV: E=Sophos;i="6.23,243,1770624000"; 
-   d="scan'208";a="79193767"
-Received: from orviesa010.jf.intel.com ([10.64.159.150])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2026 01:19:51 -0700
-X-CSE-ConnectionGUID: dszkr6AhSwGwtndes+ihNQ==
-X-CSE-MsgGUID: FMbhInoVSOSua/h+sMvgXg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.23,243,1770624000"; 
-   d="scan'208";a="238873185"
-Received: from unknown (HELO [10.102.88.45]) ([10.102.88.45])
-  by orviesa010-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 May 2026 01:19:48 -0700
-Message-ID: <62d6af80-62f1-4b74-b4e7-3311d319f56b@linux.intel.com>
-Date: Tue, 19 May 2026 10:19:45 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKRwb11Wsz2xSG
+	for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 18:02:22 +1000 (AEST)
+Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-c8095d7d75bso1159557a12.1
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 01:02:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1779177740; x=1779782540; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=p+hlBWVPQXy43hiRxqKhCnwnHHiHzFjw8+7rkTfE8vA=;
+        b=Pt937n9GvlDfu7Rfd71pTS1O6iDx1AmIGpf9tWNaUfHWSj37R0/4vSnoktL1dmOfBs
+         UGvemCEDdnhDLKeQRpsn6wNQY6O+bkj05iR05IyqYwYRdnIxOzZtLfJjQvAgo7LKm46I
+         WJ28ATgX/tdqUiktlECa8AT3fqdJ8+S11ob1+USbDKGl2Lwv7ykSpyImMOP8Ule7KOke
+         puCNBRxVrjjJwPsiMpd+zeodThnZ/6wUl24AkJyX63VCMAoR3KTGFsUr2avnP5+Z0AJR
+         UDIQEsSVmm9BX9mRuftGPzMdiAHH9KEsUd343WRFYrN7IOy8RYgr4DkLwKA3dFjcOik8
+         N44w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20251104; t=1779177740; x=1779782540;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=p+hlBWVPQXy43hiRxqKhCnwnHHiHzFjw8+7rkTfE8vA=;
+        b=cufbC83U3oxiIHU1+CzH66yTUBv4FN4ytuMLmymXIqLpf9OB9GkT3eFbx6Tp9b6Hpn
+         XE+N1SbLQmdkPZPBhpYyoYvSRlXYpbSh1VY3wVBzs8YfHb4aJsNn5gjTSjMMKVNA+3bV
+         SuYmD7zIhpILBAworhwi5qzWcsN4n422eHtexJGzxjuQgvIIZgJi8WgyZZY8z+hd6Mit
+         86qZiwtg3EW5wY6KgSSU94EEYac0ELj6HmFUYjhUlGkv7nsbsYYhzWiypqVAxkL1QVGe
+         0X80SATnPhU8WwTRTyIazdM8qAIcwhRQkpt3n9QwFjF3OaZEh4pkxlJrvI/f4w/0d6Di
+         cYIw==
+X-Forwarded-Encrypted: i=1; AFNElJ8xX5D86bNPsaWagEbqQ4Ab6YNeRUEIqqs3jwjNqS0sWfVVUhJ+ym2kE4dVxrOJA99bktabeXakDwHBbKQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy8HvI+tjIYbr59DG2lV5llzv9aCEotIxdm9Ab+sbFiwUG/tJgO
+	SnygRSL8ThUqdv5FhJjYlWBpHDel5PDWS3UTVSK2oonU91OhSSRH4d/K
+X-Gm-Gg: Acq92OEyqCb+jRFCISyC0vUAntTHBwAPkdobotMb4svedP+mNB3PMAGhNykVR3SI/zW
+	I3HoemY8rUrE3xTim2Plzvnf9F2xwNJhA4E8rFe32QMEnnkT0cyOrf9n2hrgMCqQ29MOWoN+Tie
+	eRUzgIPRFjUP4pgjzzH4Xav0mYcmHiWB3U/R/Ecxaiqleo0kglokuIz4zERIsGbJj4/jSt3rPUP
+	qdzCALR/W2Q+FF5krpDL6rAU/VozRTjJuVp9OpQMI99QDs8fqpvG8yCXYxwuTnDjEBuPzqeNa8Q
+	eaAWNKn9IWqoSDQD7hbl9LsLZ5eNOKG0ixCV4+dRmcNQPbsQrS9Bl9ehfiqS4DiDVn2Qj+Bmr2J
+	+2KK69RZ6XLhIVMZXp/frZALPt8KQ9YtX1oDX4ZHgvB4eNGolMg8ruCbw1r/UbcuebAW7HtL02m
+	egMAG5TJbiKxDx0IgsDALDRxeeFVtELRKwVVvXTt4XkiR8PXbN
+X-Received: by 2002:a17:902:7206:b0:2b7:aa20:3c61 with SMTP id d9443c01a7336-2bd7e8cb16bmr129248565ad.33.1779177739786;
+        Tue, 19 May 2026 01:02:19 -0700 (PDT)
+Received: from csl-conti-dell7858.ntu.edu.sg ([155.69.195.57])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5d0f8efesm181857735ad.55.2026.05.19.01.02.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 May 2026 01:02:18 -0700 (PDT)
+From: Maoyi Xie <maoyixie.tju@gmail.com>
+To: Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Neal Liu <neal_liu@aspeedtech.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@aj.id.au>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	linux-aspeed@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] usb: gadget: aspeed_udc: avoid past-the-end iterator in dequeue
+Date: Tue, 19 May 2026 16:02:13 +0800
+Message-Id: <20260519080213.1932516-1-maoyixie.tju@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260518073403.1285339-1-maoyi.xie@ntu.edu.sg>
+References: <20260518073403.1285339-1-maoyi.xie@ntu.edu.sg>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -70,40 +102,73 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 0/3] ARM: dts: aspeed-g6: add AST2600 I3C nodes and
- bindings
-To: Andrew Jeffery <andrew@codeconstruct.com.au>, Lee Jones <lee@kernel.org>,
- Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
- linux-aspeed@lists.ozlabs.org
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, maciej.lawniczak@intel.com
-References: <cover.1777058942.git.dawid.glazik@linux.intel.com>
- <15956b70-c6c2-4e3d-8f15-471a274d6e2d@linux.intel.com>
- <23203c124a158536c272d1bffb2657a0d713f8ce.camel@codeconstruct.com.au>
-Content-Language: en-US
-From: Dawid Glazik <dawid.glazik@linux.intel.com>
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
- Gdansk - KRS 101882 - NIP 957-07-52-316
-In-Reply-To: <23203c124a158536c272d1bffb2657a0d713f8ce.camel@codeconstruct.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On 5/18/2026 7:02 AM, Andrew Jeffery wrote:
-> 
-> Sorry for the delay.
-> 
-> Given Krzysztof's R-b tag for patch 2 I've applied 3 (along with 1) to
-> the BMC tree. Patch 2 should be picked up by Lee through the MFD tree.
-> 
-> Cheers,
-> 
-> Andrew
+ast_udc_ep_dequeue() declares the loop cursor `req` outside the
+list_for_each_entry(). After the loop it tests `&req->req != _req`
+to decide whether the request was found. If the queue holds no
+match, `req` is past-the-end. It then aliases
+container_of(&ep->queue, struct ast_udc_request, queue) via offset
+cancellation. Whether that synthetic address equals `_req` depends
+on heap layout. The function can return 0 without dequeueing
+anything.
 
-Hi Andrew,
+Walk the list with a separate `iter`. Set `req` only when a
+request matches. After the loop, `req` is NULL if nothing
+matched.
 
-Great news! Thank you.
+Suggested-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Maoyi Xie <maoyixie.tju@gmail.com>
+---
+v2: Switch the loop body to Alan Stern's shape: test inside
+    the if, assign `req`, break. Same behaviour as v1.
+v1: https://lore.kernel.org/linux-usb/20260518073403.1285339-1-maoyi.xie@ntu.edu.sg/
 
-Dawid
+ drivers/usb/gadget/udc/aspeed_udc.c | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+--- a/drivers/usb/gadget/udc/aspeed_udc.c	2026-05-19 15:29:28.690931576 +0800
++++ b/drivers/usb/gadget/udc/aspeed_udc.c	2026-05-19 15:29:59.482953528 +0800
+@@ -692,26 +692,30 @@
+ {
+ 	struct ast_udc_ep *ep = to_ast_ep(_ep);
+ 	struct ast_udc_dev *udc = ep->udc;
+-	struct ast_udc_request *req;
++	struct ast_udc_request *req = NULL, *iter;
+ 	unsigned long flags;
+ 	int rc = 0;
+ 
+ 	spin_lock_irqsave(&udc->lock, flags);
+ 
+ 	/* make sure it's actually queued on this endpoint */
+-	list_for_each_entry(req, &ep->queue, queue) {
+-		if (&req->req == _req) {
+-			list_del_init(&req->queue);
+-			ast_udc_done(ep, req, -ESHUTDOWN);
+-			_req->status = -ECONNRESET;
++	list_for_each_entry(iter, &ep->queue, queue) {
++		if (&iter->req == _req) {
++			req = iter;
+ 			break;
+ 		}
+ 	}
+ 
+-	/* dequeue request not found */
+-	if (&req->req != _req)
++	if (!req) {
+ 		rc = -EINVAL;
++		goto out;
++	}
++
++	list_del_init(&req->queue);
++	ast_udc_done(ep, req, -ESHUTDOWN);
++	_req->status = -ECONNRESET;
+ 
++out:
+ 	spin_unlock_irqrestore(&udc->lock, flags);
+ 
+ 	return rc;
+
+-- 
+2.34.1
 
