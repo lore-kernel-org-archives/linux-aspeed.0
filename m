@@ -1,52 +1,40 @@
-Return-Path: <linux-aspeed+bounces-4087-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4088-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22B39CD4851
-	for <linux-aspeed@archiver.kernel.org>; Tue, 19 May 2026 05:25:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0954CD4F57
+	for <linux-aspeed@archiver.kernel.org>; Tue, 19 May 2026 10:38:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKNR05q1sz2yFK;
-	Tue, 19 May 2026 15:25:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=51.210.94.140
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779168300;
-	cv=none; b=ExLhbBa4isT7K0U/ugn+PXTzi+S7Uo7cKaOHPjNujnxZbAVAejP2CLNgnnvjFZdTav9D0ocRgQy88Ffi8baBcANfpCfLWRipVcPor7awvnZHL/O0HhdyQ4WHxWU5C5x9eZD5wzu6ZqlTGJpfK7CbtSVaRVdMLtmAgIt8jXDArFOw9u09+xQ/7YkykV34+12h/FQ46I59IieOh//8/aOO3WlqeMcnmY3GevkiT/cIhjj/5e0/TrJjMfeL50naebOMYmslkDdowZPw5rnB7E528GzUUN5jmpJksxnSjjlpASXqRdvphcck/dyGsPZ5mtFobPY25u4JY4APuimsyLjYAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKWNw6xK1z2xwH;
+	Tue, 19 May 2026 20:38:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=211.20.114.72
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779187120;
+	cv=none; b=kq8sR5wHJTZLKVO78l44wBMXFDHQPC0InNvZrKoB4TQ6p1c2sVZVuxpwidMgOI/oon1L4Az4bD0lbm1dHM+Fx5yVDIrknJdMsFjBhFH7aL1v9fAUj8vZjz8kA2tSSoqJMLbPH4/q3CMh4YknmzcsrxQDV6rShphLgu65JovRWRLFbSos/Dik0SF6fVsO26nvLIIuG40NBjgpNF6/58xrU7mFJDokyIMsxe5Ws11vgAT9xkZLehafMe6syxK/yz0Dxz8DtuXRj/h+FlDcj8liddCwfGBz1Ynn8bWAVnY2LwJfLF3C7JKP71ImY6m+EK5pF1L7o+BCZQvJRCbI0fTTAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779168300; c=relaxed/relaxed;
-	bh=XwOWnEeHG/j1dIISjUBQ3VGZjEvKu/Ve2bPF/FUDvjA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nX13RbZz0OaS1oPV0WttyJeHpS8X28DAVVCiU60eIfOBMf1/dx6GWtJUq2Z0fTNibWDYk5IQvsKAuoWfVSm9Z1XobymnmaxbYZRMiR16O9t8mBNujJY+uZzces3K2iOEuQtenKcMF82hUA38lPjgLd2UzZRyKlKFA990msh3dyLj8AOTPV6CQ66XMHjM/ADZx7iP9jjrr2fQiumZcAv3iQQwOJNMIJ5X0G5f079oj+FBEm2FtUgh8zfjdR1/oS3GoFvxESvQTKby22Xlad/OwBk2kavut6qMrV+wjyDuuVuKuNwsHap/rQed22qJaOtHH+kQ2ostcDcMbbsa3Ut3Nw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org; dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=UFOP7Az2; dkim-atps=neutral; spf=pass (client-ip=51.210.94.140; helo=smtpout1.mo534.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org) smtp.mailfrom=kaod.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kaod.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kaod.org header.i=@kaod.org header.a=rsa-sha256 header.s=ovhmo393970-selector1 header.b=UFOP7Az2;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=51.210.94.140; helo=smtpout1.mo534.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=lists.ozlabs.org)
-Received: from smtpout1.mo534.mail-out.ovh.net (smtpout1.mo534.mail-out.ovh.net [51.210.94.140])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	t=1779187120; c=relaxed/relaxed;
+	bh=FWtkLp/R5WFv80whuUO7KL0k05VJ7QqBO/vDoN3VrT0=;
+	h=From:Subject:Date:Message-ID:MIME-Version:Content-Type:To:CC; b=EosXEXRv3uFOSPdxEBJz4PDVE/849rth7SBwbtSSAryo1qX+6hENsnpCq5I0Tu82n012dUSj0RA3MsfDIbF7+r0fNj4Rdc3yUlBSyCDljHIE0jtxsECLsojQFEfpDVwN9BBAqQCy5ZQa79cMFlLk0/edI0LCE84UCDcCxaHnB3Ib134xjgTcAugipR5W6DhCnF3+JoFlGHQPrN8mnwdCBvaWWfhapZ9A8rN3Iihcp4u+lAQhVGaq32HZ+AFAESuA5LVRh1NxBJu2UhBcO8B1RglCsYGbMnoJqkmQPJq/shjW9kGYkoxv7zpY9TEhQDI9zND9sXCUwj6t7w4XDGyKRQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; spf=pass (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=211.20.114.72; helo=twmbx01.aspeedtech.com; envelope-from=billy_tsai@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from twmbx01.aspeedtech.com (mail.aspeedtech.com [211.20.114.72])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKNQz6N9Sz2yCM
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 15:24:58 +1000 (AEST)
-Received: from director1.derp.mail-out.ovh.net (director1.derp.mail-out.ovh.net [51.68.80.175])
-	by mo534.mail-out.ovh.net (Postfix) with ESMTPS id 4gKNQv4ZXsz60B8;
-	Tue, 19 May 2026 05:24:55 +0000 (UTC)
-Received: from director1.derp.mail-out.ovh.net (director1.derp.mail-out.ovh.net. [127.0.0.1])
-        by director1.derp.mail-out.ovh.net (inspect_sender_mail_agent) with SMTP
-        for <BMC-SW@aspeedtech.com>; Tue, 19 May 2026 05:24:55 +0000 (UTC)
-Received: from mta3.priv.ovhmail-u2.ea.mail.ovh.net (unknown [10.110.43.211])
-	by director1.derp.mail-out.ovh.net (Postfix) with ESMTPS id 4gKNQv2J6Rz5vLW;
-	Tue, 19 May 2026 05:24:55 +0000 (UTC)
-Received: from kaod.org (unknown [10.1.6.6])
-	(Authenticated sender: clg@kaod.org)
-	by mta3.priv.ovhmail-u2.ea.mail.ovh.net (Postfix) with ESMTPSA id BAE3312E3B55;
-	Tue, 19 May 2026 05:24:53 +0000 (UTC)
-Authentication-Results:garm.ovh; auth=pass (GARM-111S0054c8bd1e3-d3ef-4284-ba4e-ebb5c026c5fa,
-                    A1C5BDF50025601E7F63D663DE463AD2E6007479) smtp.auth=clg@kaod.org
-X-OVh-ClientIp:82.64.250.170
-Message-ID: <5d16a357-9acf-468b-bbca-0d615f50a8b0@kaod.org>
-Date: Tue, 19 May 2026 07:24:53 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKWNv4d7dz2xqv;
+	Tue, 19 May 2026 20:38:38 +1000 (AEST)
+Received: from TWMBX01.aspeed.com (192.168.0.62) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1748.10; Tue, 19 May
+ 2026 18:38:20 +0800
+Received: from [127.0.1.1] (192.168.10.13) by TWMBX01.aspeed.com
+ (192.168.0.62) with Microsoft SMTP Server id 15.2.1748.10 via Frontend
+ Transport; Tue, 19 May 2026 18:38:20 +0800
+From: Billy Tsai <billy_tsai@aspeedtech.com>
+Subject: [PATCH v4 0/3] pinctrl: aspeed: Add AST2700 SoC1 support
+Date: Tue, 19 May 2026 18:38:11 +0800
+Message-ID: <20260519-pinctrl-single-bit-v4-0-5fe568a8ffde@aspeedtech.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -60,129 +48,144 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] spi: aspeed: Replace VLA parameter with flat pointer in
- calibration helper
-To: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, broonie@kernel.org,
- joel@jms.id.au, andrew@codeconstruct.com.au, linux-aspeed@lists.ozlabs.org,
- openbmc@lists.ozlabs.org, linux-spi@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- BMC-SW@aspeedtech.com
-Cc: kernel test robot <lkp@intel.com>
-References: <20260518095708.2502537-1-chin-ting_kuo@aspeedtech.com>
- <20260518095708.2502537-3-chin-ting_kuo@aspeedtech.com>
-Content-Language: en-US, fr
-From: =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
-Autocrypt: addr=clg@kaod.org; keydata=
- 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
-In-Reply-To: <20260518095708.2502537-3-chin-ting_kuo@aspeedtech.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-x-ovh-tracer-id: 17593030472268033226
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: 0
-X-VR-SPAMCAUSE: dmFkZTE0iObQoePV2K1IhH/lNEfSblAOLwfgQuw3JoEnub5SozOtHYNazyv8nWJMCS9ATMcFGMTsyXaylTALoaNU765TsL1CA5M+JDrRdxbzWTERzO0GvgTfErFfsPFjmyGyvKtoi2sQKhyjk/3C6wk7rCMj9xft6HrUApWYeszRGEQxd49e8KdKWcQYqpUaAt/Plu4YtmK05kQh/EnFSVTwYzYZGyQyatwGRTjocDouBqYutoRycMSived2vCDkWh3UGftJ1HRoFqqq8YCrFwlx0kVJrdDSJcNZQHMTsgQzekmABOXgRbu2ZYwZKJfCsXvne3D+c3bMSXMSCOJTlPtJe2imD08vnxf4Uw7bPTw7XZOPZVOTHUD0yAbSk7GRDYH+qzAKV+CmWEVgu7df+EQMv8m+jhY9r0Dl1b2ABYbLZ1ViIu2vQmCQaw+pIUkLB3chSVb+BaceC7uKdJ/SwbCvlfD89qIfv1y/3RXt8f5EVPgfjUQ8Wxi3U7ZuuwD+Pp9zQPhRzSTxymqITYDfjWQCrYUDqEXZSv0rRt7SSARWIaPJywkmI18mIak/zAdh1sW0eTkaNunk0waDzJ5C4lMB2BxMR/tIvlhAk3W9+4hvHexGFX7Fp98b5cYpi4sVVTjGHDQM6lRxJjOfTMTuvQtBU4wrXRdcK86DGZEzhQjc5AG1Ag
-DKIM-Signature: a=rsa-sha256; bh=XwOWnEeHG/j1dIISjUBQ3VGZjEvKu/Ve2bPF/FUDvjA=;
- c=relaxed/relaxed; d=kaod.org; h=From; s=ovhmo393970-selector1;
- t=1779168295; v=1;
- b=UFOP7Az2HvV97XOHN24hXTEOXwcKw638Dahvu5kW2FGeAFxhhH9jciWpTpx1pOtKPt6tC9P3
- L0fMrUfMz+g05Mcvz8Ex+CHCSxLKYgw04BkyVlVvX24MYk8DsG/Eq0u5ndFNfAkNSsgVFqPxWEv
- kKLVLfuQWDggX52WYVFvNPe7+/2XDBBE3jH+xzVMbRSCFzyz+giwxUNMNq1UCEGESTmA+GgX/Ts
- /yngGTRZ6zvG0NJIjaAaIjrcIP9yWU0hp38FWiDH1PlPbOXoSdZyc7CA4PKf9QzCrTTP++Pk9pS
- tl2JcBbIthflsZaXYXtGKTToZHGxFuUCg7qtcXprRDjOg==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAJQ9DGoC/23NTQqDMBCG4atI1k3JTPztqvcoXcQ40QGrkoi0F
+ O/eVCgu6vL9YJ55i0CeKYhL8haeFg48DjHSUyJsZ4aWJDexBSrMFQLIiQc7+14GHtqeZM2zbAy
+ CdliirTIRDydPjp8bervH7jjMo39tPxb4rj9OH3ELSCVtrhy6ulTk6qsJE1Ezk+3OdnyIr7ng7
+ miVHzoYnaKqoLTO1HkKh47enQyyQ0dHh6qiMakGBJX+Oeu6fgAMHxhKSQEAAA==
+X-Change-ID: 20260211-pinctrl-single-bit-da213f282c95
+To: Linus Walleij <linusw@kernel.org>, Tony Lindgren <tony@atomide.com>, "Rob
+ Herring" <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, "Conor
+ Dooley" <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	<andrew@codeconstruct.com.au>, Bartosz Golaszewski <brgl@kernel.org>, "Lee
+ Jones" <lee@kernel.org>, Ryan Chen <ryan_chen@aspeedtech.com>
+CC: <patrickw3@meta.com>, <linux-gpio@vger.kernel.org>,
+	<devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
+	<BMC-SW@aspeedtech.com>, <openbmc@lists.ozlabs.org>, Andrew Jeffery
+	<andrew@aj.id.au>, <linux-clk@vger.kernel.org>, Billy Tsai
+	<billy_tsai@aspeedtech.com>, Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1779187100; l=5847;
+ i=billy_tsai@aspeedtech.com; s=20251118; h=from:subject:message-id;
+ bh=L1iLfDQrZwxvnw6/O3AJV6ahyxO2sv21yD4ZkfxrN4k=;
+ b=yZ+Y7S6UBimAwm6wBTS+wu7ylZooUUWR9axObgWXnkPI/Jy4ScwWNWwQ/oxN2gtcn+HpJoFaY
+ ms+njnXKTm3CoP/9uIqxvjO8JBWuxqkTALyd4RU0IwVRomo0NoCI+tE
+X-Developer-Key: i=billy_tsai@aspeedtech.com; a=ed25519;
+ pk=/A8qvgZ6CPfnwKgT6/+k+nvXOkN477MshEGJvVdzeeQ=
 
-On 5/18/26 11:57, Chin-Ting Kuo wrote:
-> aspeed_spi_ast2600_optimized_timing() declared its buffer argument as a
-> variable-length array parameter (u8 buf[rows][cols]), which causes a
-> sparse warning. Replace the VLA parameter with a plain u8 * and compute
-> the 2-D index manually. The corresponding call site is also updated.
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202605180441.uD3toFRJ-lkp@intel.com/
-> Signed-off-by: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
-> ---
->   drivers/spi/spi-aspeed-smc.c | 7 +++----
->   1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/spi/spi-aspeed-smc.c b/drivers/spi/spi-aspeed-smc.c
-> index 808659a1f460..c5275700de3d 100644
-> --- a/drivers/spi/spi-aspeed-smc.c
-> +++ b/drivers/spi/spi-aspeed-smc.c
-> @@ -1467,8 +1467,7 @@ static int aspeed_spi_do_calibration(struct aspeed_spi_chip *chip)
->    * must contains the highest number of consecutive "pass"
->    * results and not span across multiple rows.
->    */
-> -static u32 aspeed_spi_ast2600_optimized_timing(u32 rows, u32 cols,
-> -					       u8 buf[rows][cols])
-> +static u32 aspeed_spi_ast2600_optimized_timing(u32 rows, u32 cols, u8 *buf)
->   {
->   	int r = 0, c = 0;
->   	int max = 0;
-> @@ -1478,7 +1477,7 @@ static u32 aspeed_spi_ast2600_optimized_timing(u32 rows, u32 cols,
->   		for (j = 0; j < cols;) {
->   			int k = j;
->   
-> -			while (k < cols && buf[i][k])
-> +			while (k < cols && buf[i * cols + k])
->   				k++;
->   
->   			if (k - j > max) {
-> @@ -1541,7 +1540,7 @@ static int aspeed_spi_ast2600_calibrate(struct aspeed_spi_chip *chip, u32 hdiv,
->   		}
->   	}
->   
-> -	calib_point = aspeed_spi_ast2600_optimized_timing(6, 17, calib_res);
-> +	calib_point = aspeed_spi_ast2600_optimized_timing(6, 17, &calib_res[0][0]);
->   	/* No good setting for this frequency */
->   	if (calib_point == 0)
->   		return -1;
+Legacy ASPEED pin controllers have historically not had a coherent
+register interface. Control fields often had no consistent mapping to
+individual pins, and configuring a function frequently required
+coordinating multiple control bits across several registers. As a
+result, the existing ASPEED pinctrl drivers rely on complex macro
+infrastructure to describe the dependencies between pins, functions,
+and register fields.
 
+The pin controller for SoC1 in the AST2700 breaks from this legacy
+design.
 
+For SoC1, each pin maps directly to a dedicated function field in the
+SCU register space that determines the active mux function for that
+pin. This results in a much more regular register layout compared to
+previous generations.
 
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
+While the behaviour is conceptually similar to pinctrl-single, the
+register layout and configuration model differ enough that reusing
+pinctrl-single directly is not practical. Therefore this driver is
+implemented as a SoC-specific pinctrl driver using static data tables
+to describe the register layout.
 
-Thanks,
+The binding reuses the standard pinmux and generic pin configuration
+schemas and does not introduce any custom Devicetree properties.
 
-C.
+Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+---
+Changes in v4:
+- Fix SGMII0 mux register: SGMII0's control bit is at SCU47C[0],
+  outside the contiguous pin-indexed MUX register range. Handle it as
+  a special case in set_mux (analogous to PCIERC2_PERST) using
+  field.mask = 0x1 to avoid clobbering adjacent bits in SCU47C.
+- Use devm_pinctrl_register_and_init() and pinctrl_enable(): populate
+  all groups and functions before enabling the controller, closing the
+  race window where a consumer could observe zero groups/functions.
+- pin_config_get: return -EINVAL when BIAS_DISABLE is not active; return
+  -ENOTSUPP for BIAS_PULL_UP and BIAS_PULL_DOWN because the hardware
+  has a single 1-bit enable/disable field per pin and pull direction
+  cannot be read back from the register.
+- Probe: preserve const qualification in the pinctrl_generic_add_group()
+  pin array cast.
+- Binding: retain additionalProperties: false for the state-node schema.
+  The state-node properties block re-declares the four pincfg properties
+  the hardware supports (bias-disable, bias-pull-up, bias-pull-down,
+  drive-strength) and intentionally rejects all others.
+  unevaluatedProperties: false was suggested as an alternative, but that
+  would permit the full set of pincfg-node.yaml properties
+  (input-schmitt-enable, slew-rate, etc.) even though the hardware does
+  not support them. additionalProperties: false is the correct mechanism
+  when the goal is to restrict the accepted properties to a known subset.
+- Link to v3: https://lore.kernel.org/r/20260515-pinctrl-single-bit-v3-0-e97da4312104@aspeedtech.com
+
+Changes in v3:
+- Added pin configuration group support for AST2700 SoC1 by
+  implementing `pin_config_group_get()` and `pin_config_group_set()`.
+- Restricted AST2700 SoC1 `drive-strength` settings to the supported
+  4/8/12/16 mA values in the pinctrl driver.
+- Convert kernel-doc comment for aspeed_g7_soc1_drv_map to a regular
+  comment to avoid kernel-doc warning reported by kernel test robot.
+- Update the AST2700 SoC1 pinctrl binding to describe the `reg`
+  property and require it.
+- Allow standard pinconf properties in pin state nodes.
+- Add a binding example for the AST2700 SoC1 pinctrl node.
+- Add state-node description, function+groups dependency constraint,
+  and oneOf groups/pins constraint to the binding, matching the SoC0
+  binding style.
+- Add pins enum (212 entries) to the binding to cover all physical pins
+  that support per-pin configuration.
+- Add UART modem-line signals as independent functions/groups:
+  NCTS0/1/5/6, NDCD0/1/5/6, NDSR0/1/5/6, NDTR0/1/5/6,
+  NRI0/1/5/6, NRTS0/1/5/6; remove those pins from UART0/1/5/6 groups.
+- Add LTPI_PS_I2C0/1/2/3 functions/groups for I2C-over-LTPI;
+  extend I2C0/1/2/3 functions with the new LTPI groups.
+- Fix typo: rename RMII0RCKO/RMII1RCKO to RMII0RCLKO/RMII1RCLKO.
+- Fix wrong index: rename DSGPM1 to DSGPM0.
+- Kconfig: use "Aspeed G7 SoC1 pin control" to match neighbouring entries.
+- pin_config_get: fix BIAS_DISABLE readback (val=!val must be skipped
+  for BIAS_DISABLE since hardware bit=1 means pull disabled).
+- set_mux: remove dead null check on grp; propagate regmap_update_bits()
+  return value.
+- gpio_request_enable: propagate regmap_update_bits() return value.
+- Link to v2: https://lore.kernel.org/r/20260306-pinctrl-single-bit-v2-0-79918cfab641@aspeedtech.com
+
+Changes in v2:
+- Updated the series title to focus on AST2700 SoC1 support.
+- Reworked implementation to use static SoC-specific layout tables
+  instead of a generic packed-field model.
+- Dropped the generic "pinctrl-packed" driver approach.
+- Removed custom Devicetree properties.
+- Updated binding to reuse standard pinmux and generic pin
+  configuration schemas.
+- Link to v1: https://lore.kernel.org/r/20260213-pinctrl-single-bit-v1-0-c60f2fb80efb@aspeedtech.com
+
+---
+Billy Tsai (3):
+      dt-bindings: mfd: aspeed,ast2x00-scu: Support AST2700 SoC1 pinctrl
+      dt-bindings: pinctrl: Add aspeed,ast2700-soc1-pinctrl
+      pinctrl: aspeed: Add AST2700 SoC1 support
+
+ .../bindings/mfd/aspeed,ast2x00-scu.yaml           |    1 +
+ .../pinctrl/aspeed,ast2700-soc1-pinctrl.yaml       |  760 +++++++++
+ drivers/pinctrl/aspeed/Kconfig                     |   14 +
+ drivers/pinctrl/aspeed/Makefile                    |    1 +
+ drivers/pinctrl/aspeed/pinctrl-aspeed-g7-soc1.c    | 1754 ++++++++++++++++++++
+ 5 files changed, 2530 insertions(+)
+---
+base-commit: e532a5a81d0db872acd2c0a92d2639580ca3da44
+change-id: 20260211-pinctrl-single-bit-da213f282c95
+
+Best regards,
+-- 
+Billy Tsai <billy_tsai@aspeedtech.com>
 
 
