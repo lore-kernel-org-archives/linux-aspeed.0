@@ -1,65 +1,68 @@
-Return-Path: <linux-aspeed+bounces-4107-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4108-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 741BCCD4F3C
-	for <linux-aspeed@archiver.kernel.org>; Wed, 20 May 2026 10:10:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82F1ECD4F3D
+	for <linux-aspeed@archiver.kernel.org>; Wed, 20 May 2026 14:43:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gL6kK15wMz2xrC;
-	Wed, 20 May 2026 20:10:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779271849;
-	cv=none; b=l8tj3sTd1Z8pVqcjTnfnBiuuwIa3FPno9cDUYo74Dbw4fwxOjtLhi62aMpguQiWwuChfKgU0Kg81wa5gJm/WlKxOqqOPqrJsO0w/9pl61pBeNFGxFqhNVABuf6VVaibKM/QK+jTtYMq8BuQyMuNaT5GS1+MH5kvqq1ZDD3nz7z+YzV2/x1wqVmkMv14mUc3wJ2reo80BJMJeSuUdtE/tdn9vH0+vC09Vi5fxKQdDqxLWRQLyFdkmO8tTp3IZKrTIZJSn+p14hytWtPUjEsEz4Oo85a/Mg/O6jX+gk9aWmMp74eCYKe7ygYpwe+uvcabDf7+abPuq9ZTs6THaEhk9cw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gLDn50qkbz2xrC;
+	Thu, 21 May 2026 00:43:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779288216;
+	cv=none; b=B16SGnqmjcf5/AETq0k/9CuBG9STz03BAqbP4f3c3xpGczIplWkdza6Xcad03ssmhj8K/yarMAExXxzmHY1HV94vUrJmIM+wO4zx5w9BswKwU48qtCVLlLYBlqE5ni3P18Kj2D/seJ/Qg0PQ+Bkxf7NU1BmUnM2T2/LdiIqmQfL9OzKOVi0LjNnRaKwkvezs5+JPlEEVDPIQ2Y53IOmLa2wi/y2dwlF77q2VzlnqX3FL6yY/8CezMhSbkQt/zePCqWre/ZJSmefTnPWIR9gTS+4ro922fM/+qF2T14YQZGUcPTO3uNz/Kb4Hhl8Rji4zzU5tcTDUR67CfiFXJsGGAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779271849; c=relaxed/relaxed;
-	bh=8/Nk4vPQPh0CW8IIxSh5GD9J7BcZmYtjb7vHxo1Fj6A=;
+	t=1779288216; c=relaxed/relaxed;
+	bh=dQbuftW1Dswfh8UjRtvt8jMWgNKtgGpobxc7mm/y8M8=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QWBvdtxkR+SZM0mHEtz6HS0Y5E4p1MqDPjjnWNYJqhK+CUw7frPhcIsvDJodNjA6PpmLW0fXfZhwmG3wAG/JDZpSjHBFPbkOHFGJqJAM6xPqCXBCEdVO3YRogiqR1KkvSTy9tOEw+Fe4RWp20nDwIcovtt5aOoypkpZrdo8OiGcQCjuG39dIk7dvMEUKLp8qAkE885n9EGA/ZUpA7w/KxKQNRUlo8Nf7Eltugrt/qNyTlH9kgARUTSpfPNIFQ89795eQ96cGYNWNA0qfugytJYz1yyTZaaMLaocGk70ZN1AselZ0FbDELi+Xu85p86FbM9frd2PMxx2abxLwjdqa6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kqzyR9ia; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=H4vbZicch4ZaVJxcowY6Md37IzHeAQWMZyDWwJHZ2appb/I0GZeoJWc+7eBiJ3Ax7a/LxEIQNC8OIXTeRXhKii4aXxHc/Uw0MJFAo/xHRXTIDtJld5IMhokexE/n4Esco8nBhkcAEtkiV2Krp+Bb8LaZQ+W2pyos6HkUklg+59aKbwO3mzBf+DZtH26p8TQPJNDKRJmWp2n+XA4SxfzAc7EnNGAhrrHtLrcbdKtMhP/Z5YDrcj9io7dc9TVTxYMvXhzqrxAIGD4ecLTqhhWTigWjQOCM70pH8lZX5wmt5iHfNa2RB2jXS8/Wz268cEq3RRPouDTYtIC3IyshUf8moA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MEYFAo/s; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=lee@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=kqzyR9ia;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=MEYFAo/s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=lee@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gL6kJ2YzBz2xfB;
-	Wed, 20 May 2026 20:10:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLDn40WFFz2xqn;
+	Thu, 21 May 2026 00:43:35 +1000 (AEST)
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	by sea.source.kernel.org (Postfix) with ESMTP id 758504346E;
-	Wed, 20 May 2026 10:10:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04BAF1F000E9;
-	Wed, 20 May 2026 10:10:43 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0EF0F40DCC;
+	Wed, 20 May 2026 14:43:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43DE61F00893;
+	Wed, 20 May 2026 14:43:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1779271846;
-	bh=8/Nk4vPQPh0CW8IIxSh5GD9J7BcZmYtjb7vHxo1Fj6A=;
+	s=k20260515; t=1779288212;
+	bh=dQbuftW1Dswfh8UjRtvt8jMWgNKtgGpobxc7mm/y8M8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=kqzyR9iarPoVRPZapZy1o91ByBc5CmJZZ1xpTdT2vRSRwBSf0TtB18tSB+Uh8mKRM
-	 /mVD4QHz6XlazB8ms3CjXQ8yxVtPzWCFwWYKDxag41kPFbhMAU8kiBSuPK7h8x7lA7
-	 fTW3cWzof75A2x4RXGR79xVMK5FI6CoejoTSEfj/Mc3Plp0PWM7amSzapYHEmgS0Qg
-	 pAotSBhZ4lT4RQPE4oc//Rhb4qOg8YWjjY7oRmDlq3kQ5z5nh/fS2UDyCi3jPncf5K
-	 BJ44bQaRUg3as4vSafa8HLa3Wqed5w7ptmPTeTirZFz2b/WpLc2kVGMk+sbhLwizUK
-	 ANXHF1UvN+a0w==
-Date: Wed, 20 May 2026 11:10:41 +0100
-From: Mark Brown <broonie@kernel.org>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>, clg@kaod.org,
-	joel@jms.id.au, andrew@codeconstruct.com.au,
-	linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
-	linux-spi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, BMC-SW@aspeedtech.com,
-	kernel test robot <lkp@intel.com>
-Subject: Re: [PATCH] spi: aspeed: Replace VLA parameter with flat pointer in
- calibration helper
-Message-ID: <b629d6bb-fb17-4c17-9a79-d96d39ed0d0b@sirena.org.uk>
-References: <20260518095708.2502537-1-chin-ting_kuo@aspeedtech.com>
- <20260518095708.2502537-3-chin-ting_kuo@aspeedtech.com>
- <659a6593-0223-4a26-830b-1390326b84e5@sirena.org.uk>
- <20260519181348.777f7dc5@pumpkin>
+	b=MEYFAo/sifgemFgE3i2c/qG0t36EfY4Vm8VA6haQyEKuAPOKWhwYAvREwF30EcIJ+
+	 idMTk38KIuZ7UmRhX+7E4W94DWidnrTjobRmZVjvFtR739eHNPepO0YSa3z7LTCIEs
+	 EYg5JEAqiduiOsJ//BLw58uKmr7rOk8ELb4QbsnM3nYDfcdEdnORaid5pl2iBg9uVV
+	 vFp1JA07vMb2hpQgqfHIUjpq3C3CZrKTF1zPE0sHjuyaTi9fDOZ/cKT6Aj1lVk37OR
+	 Rs8BoDIFlxaSenFjEnsmQcofS8cRMab87wKT/ix8M5OmV/RX4u8tLOeDk/okJc+6C4
+	 xuRPeJx8L88/g==
+Date: Wed, 20 May 2026 15:43:26 +0100
+From: Lee Jones <lee@kernel.org>
+To: Linus Walleij <linusw@kernel.org>
+Cc: Billy Tsai <billy_tsai@aspeedtech.com>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	Bartosz Golaszewski <brgl@kernel.org>,
+	Ryan Chen <ryan_chen@aspeedtech.com>,
+	Andrew Jeffery <andrew@aj.id.au>, devicetree@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org, openbmc@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org, linux-clk@vger.kernel.org
+Subject: Re: [PATCH v9 2/3] dt-bindings: mfd: aspeed,ast2x00-scu: Describe
+ AST2700 SCU0
+Message-ID: <20260520144326.GE2767592@google.com>
+References: <20260506-upstream_pinctrl-v9-0-0636e22343ad@aspeedtech.com>
+ <20260506-upstream_pinctrl-v9-2-0636e22343ad@aspeedtech.com>
+ <CAD++jL=3p9BvDgaot3=emM4Zn5jU-ZAUKtB4UwT1HzDiyzKq4Q@mail.gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,50 +76,41 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="KmowL/JuPoFq42Ku"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20260519181348.777f7dc5@pumpkin>
-X-Cookie: Natural laws have no pity.
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAD++jL=3p9BvDgaot3=emM4Zn5jU-ZAUKtB4UwT1HzDiyzKq4Q@mail.gmail.com>
 
+On Mon, 11 May 2026, Linus Walleij wrote:
 
---KmowL/JuPoFq42Ku
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Wed, May 6, 2026 at 10:07 AM Billy Tsai <billy_tsai@aspeedtech.com> wrote:
+> 
+> > AST2700 consists of two interconnected SoC instances, each with its own
+> > System Control Unit (SCU). The SCU0 provides pin control, interrupt
+> > controllers, clocks, resets, and address-space mappings for the
+> > Secondary and Tertiary Service Processors (SSP and TSP).
+> >
+> > Describe the SSP/TSP address mappings using the standard
+> > memory-region and memory-region-names properties.
+> >
+> > Disallow legacy child nodes that are not present on AST2700, including
+> > p2a-control and smp-memram. The latter is unnecessary as software can
+> > access the scratch registers via the SCU syscon.
+> >
+> > Also allow the AST2700 SoC0 pin controller to be described as a child
+> > node of the SCU0, and add an example illustrating the SCU0 layout,
+> > including reserved-memory, interrupt controllers, and pinctrl.
+> >
+> > Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+> > Signed-off-by: Billy Tsai <billy_tsai@aspeedtech.com>
+> 
+> This is an MFD patch in the middle of a pinctrl series, I think Lee
+> should apply this.
+> FWIW:
+> Acked-by: Linus Walleij <linusw@kernel.org>
 
-On Tue, May 19, 2026 at 06:13:48PM +0100, David Laight wrote:
-> Mark Brown <broonie@kernel.org> wrote:
-> > On Mon, May 18, 2026 at 05:57:08PM +0800, Chin-Ting Kuo wrote:
+Already applied v8.
 
-> > > -			while (k < cols && buf[i][k])
-> > > +			while (k < cols && buf[i * cols + k]) =20
-
-> > This really needs () to make it clear what's going on; the precedence is
-> > well defined but not everyone is going to know that off the top of their
-> > head.
-
-> Come on, it's multiply and add - everyone is going to get that right.
-
-No, I have to stop and think.  It's not just "what is the rule" it's
-also "is that the same rule whoever wrote the code thought there was" -
-implicit precedence is the sort of thing that flags up as an alarm bell
-when scanning through code.
-
---KmowL/JuPoFq42Ku
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmoNiKAACgkQJNaLcl1U
-h9BIxQf9HkMWU0/J36NRwMFjRutEI7x1P5sg8Sloy12eLKK6LBY1hzsPKyZ4ZaIw
-vVtbThixSNpcSL6oBndIVKdvWoWyYT/o3x2bfTnzKHbdKT5Ok9heXD6aSc/f1ck4
-k0Xp0kN9MptpXrEEVBr15nBjhkUOOyFVnlsFotYE9TBzhGWBWxJrQrK1w+eBYu6r
-MEd0mR0/FfuUwFm27aMR6Ur33GRUPs/pVN5/2ndfNGwtIXrjKICYIQ5/lJyONp+5
-nCIorPasL6Yywp5B6+p492omJxkuUpkq3EhWhwowOwTD/zlpnglzkNyVuIp3E3Wf
-jyCptDj/7h3ujYiwLZ80EgTAcxFF4A==
-=pk4f
------END PGP SIGNATURE-----
-
---KmowL/JuPoFq42Ku--
+-- 
+Lee Jones
 
