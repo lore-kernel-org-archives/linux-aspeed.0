@@ -1,93 +1,64 @@
-Return-Path: <linux-aspeed+bounces-4105-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4106-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 682B4CD4F54
-	for <linux-aspeed@archiver.kernel.org>; Tue, 19 May 2026 20:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C081FCD4F5B
+	for <linux-aspeed@archiver.kernel.org>; Wed, 20 May 2026 02:01:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gKmTn1D7dz2yQH;
-	Wed, 20 May 2026 06:28:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::b135" arc.chain=google.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779157834;
-	cv=pass; b=hpqWWk+xjOLw/SyBofkU1WeEJ/glKN3P6R8A7JMw4hB5wTpuNX6yKOqyqFljp2tlGiYWMx0yccIKA6RcAFQJuTpj/46wvv+XEfXzHivuvkA6bPwUziRFaB5aKIn5mo4x0Oc5Hv4WbFgptR5aSeDo1eRzSjcu5fAl5evKaPx8kU9BAR7tR7LOqVSFRZZV47KF520TpBoUQM/h+3dEwvYKmUf6lSO7naHsEW5aEBpb+stmX9jMGijxIS2WFDNj+g/FE/E3/yBGLP6PAA3XbZjiRHZo1Esr9l0KOA40pr8xuvqgiJi6Qoz1QMo4FcsN3wm8uYsMm7F3BEo8L6dU1pF2dA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779157834; c=relaxed/relaxed;
-	bh=VdLnXWkJlod6GBXC4HreIgrL/kJTqIvIXNwxAsiN18E=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=WOLRqyQWh9nS5aa91VQsoKlE5NebYpFKmv1pjbC0hcCBlmf97f5eVorcvMy44X0Cz+1U+gZP8HxDtAJszE2VoMSa3RqfDSMHILCMe4RRSmw5JTsC6hq/13qlud6QejSHE2gLl4fa/KMiTBT/RxP9a5AYisAyid+1DpvkxIEzfFYEKkTWOL6chWSkD3+gtnuvSqD6VP7nTUv6YqyapvWTIsBmOyJmh6hTfv2Hnq+Y8WPdVzydxOGybfDvO/vtmX+Qe6g1y5khsYOSRwYGJ/OykMK64eiSPmHLYLtE0+WCZxMTfinKn/j9sIALLW3QIxumNUWjWsWUjTnTWX9YeHG+Jg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J8pwwCYd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gKvsY0ZFFz2xy3;
+	Wed, 20 May 2026 12:01:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779242481;
+	cv=none; b=RidijxDw9TwE30QfARBz7a3btYTuD4bDqmqMh8LKQv6xH3AWw1kC1rT9HGx3UWEK2uX5f3i2/5FARYc3BTnbQr6RC34C75kUKXitwoZ/Z2JEuYBmkjTMJbomdBbS5j18LFF05PxGGBhAcOqFwAr/4nDSs6yx22UO/vHYIv/tQnwKz/dQeCAhXVB5+lP8e7aouIH6G6WcAbipd4juSt4smRyN6KPb5zwqKuvuuGqDnts2UJKVuuR5tKh3l6QFfNuyFblOkpwzgj76q1eixPlJCQrl48chPe45Hd1HE7n+YBKV3x/mQJaVDF/nIYf12bWoTXXByYkI0/LI9wIYOH7Q4Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779242481; c=relaxed/relaxed;
+	bh=Kk4mDuk1bqlhfjj6bz2g4hB4FwIz7h/oUwNv9idu2CE=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=LfUWu/fwO6znJNrkYzGxqgaKlij/s2nBMRy6QO53uIQgLDPsLrprBNTqSHtolYca5JTCm/CdSPLYfUoUvXJXIkBkkyGlw2ro7+E0UZCWxAhGkOhYh5+1R2MeFgREscawPj7LATvi96CdZKaQOyAoPpHv2n3JlNjAn6HwrS/8qChozHBo1cCBzC2ASlLZbwYqyJHReVQFUKASSav3XeL8iuUGITKOVLqEUSZ/o4gsq9GpO7o/9r8E6IeIz2cYvrxZtDYcSurioLAWOmxNkZ0sZIcOj/iYVDD/GawgmhJancG2Pxeco6lDKmUvfazNe6zakCMB21aJPuSuy6RsQ0R7jA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=WbV/MPMu; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J8pwwCYd;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=WbV/MPMu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b135; helo=mail-yx1-xb135.google.com; envelope-from=prasanth.padarthi10@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb135.google.com (mail-yx1-xb135.google.com [IPv6:2607:f8b0:4864:20::b135])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKJYj2PqJz2xwH
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 19 May 2026 12:30:32 +1000 (AEST)
-Received: by mail-yx1-xb135.google.com with SMTP id 956f58d0204a3-65c477a3278so3191100d50.3
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 18 May 2026 19:30:32 -0700 (PDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1779157829; cv=none;
-        d=google.com; s=arc-20240605;
-        b=TqBIr2Njpe8R9jlRmTinTEVTseMh7XdAD9Ex98yJD9uc6nUBe5xBysVcbs/3l7Cig3
-         tu20wpZ3GhiAF23cRpflazCQrOasU9P3DjiB7iob2XyioNy3AAB7Pb7xC9AxYMGhbA8m
-         8gbhP2ssw2Dxyu28prMXn8c1p5tK2ZQMkvX8NRxODzdbiYPOU0r4/Q5PQlKFlKOz5ygf
-         YeLPZ8hIu0hmzkhD2/0pytqijL/mTdpKzVl7+EdlFmj1EzyljmteZqjaBjB7sYvDY/qN
-         z87a+BMP0bb8PsfUe7Gb/iCJaR5gUCb3oJ1aFldaTMzU555CAYSlAtgV2BtXbfAHEzVw
-         NHqw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=VdLnXWkJlod6GBXC4HreIgrL/kJTqIvIXNwxAsiN18E=;
-        fh=wL764Z+frFKPV673VbzvttfW4fNO1TkWrWDgjwBpgUI=;
-        b=Vqf8S2ZcqyisxjIXcP5MYp16MuW3Pkxc5f5pHL+kypiWJA641M21ZOQZVr6vdJrNSI
-         Sl6XlL5NVcxtSHdYY9IgLzWIDEHDN2Owi9H1M8gwoI55w8g+brcXC7OnTiCnIq6SMMNP
-         05sgqxQxTi7iygd1CqZJ0gVB6j5FzKdNu7Zo5kYLXWFgtd0oAqWbiyqnlF+vR2c35N7b
-         lE2QSRzCuCCpM5l61k7iFst2xxuZt3sCP0wnAbpomo9POJs/zPmL/H5C2gvbym2EgKtk
-         dACmKzG2+dSwG0gkXM1SbPHQqsXWjSY+ex0N+3S3fSjQj7Z/+JRqZ6PmaRlJzIUSXzEE
-         jcTw==;
-        darn=lists.ozlabs.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gKvsW5lw4z2xrC
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 20 May 2026 12:01:19 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779157829; x=1779762629; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=VdLnXWkJlod6GBXC4HreIgrL/kJTqIvIXNwxAsiN18E=;
-        b=J8pwwCYdUn6JySg8k0M3ZBXHSs5zQDZ19IWEP2wMT3qyLkY3G0U6e+PP8N+20vjGTD
-         rR6s1My2xt+v+eDGqWR++34cJirBqHYXzwm3fM/3w39w4qaM4Hqa5EGlNnYKWhi/w/Bs
-         npAi+iMVeUw5oxXEmlJ4FaBZ+242fIY59mRoU8hvGGkL8o3ZrBj1/ZocurD+MXQ0hyvq
-         oYWeiO86fqfynqd4RDi+/AIyfIzceFIE2f0vOKaVbH4VhdNDBYjXme7GFz/2L/MHI+LD
-         tl44bLgeLaSECzUxzBiVWbMUrEwg0YFZ2ZLJm24rabVB+rWi9qZ4goCk7qWFLT5+EEnc
-         lSGw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779157829; x=1779762629;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=VdLnXWkJlod6GBXC4HreIgrL/kJTqIvIXNwxAsiN18E=;
-        b=JvkjDiy0O6YBHmxpIObTxrKT8T8tGYyHN6Cb1P5zafaFFvAKDZl4V63Ss4SJEzDaOY
-         laH5ekCAbAdh6sPeMs2e/g+Aaob+KBldTlruDi5irBQ82e9FSrE+NkWAuW63UrZLabVm
-         nhlRG+YqasTPlsv3cFfvqS8XWpJLHsX721zFSySdO/OGa77yRUkfc0znE2ngS403QHiE
-         1xOITFaxWxzX1EFpl8ZGsBBTO0XwA5ZcUB9jJEMI78OMhSBmOFOKqyZ/qOcP2wQeUt45
-         YaAEhHX1Wge2AKpNGDFAm9oZ7Da8FyUT7gUd+V6XYSZyD5ZAT38TbR0S0b1KrRfO4S69
-         cmaQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/6UPnvjTjV+ShLcY7JE9aeVmTS2WR5ULtCGsvtqoOru7FVJQ4hV89E8tGtjESPIJOEvJRxTgbot+6EHd0=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YymzOrni/KI3yioXQisOe9YeMx+5Avt9WCGQI+687xP9AqfZJXq
-	hegykypWOHnGTQ8u+G1dNMhbcMbwQFWhYyLui2HilXeKGyTOiEopC00N5dPdcnXz2qk3x4GSFML
-	d3OOVR5MRsdlZiYO9CcbffKAa2qFA5p4=
-X-Gm-Gg: Acq92OFepf5yUtzk4pmpPT42Ot3rP+tDGc5Z3spor4MaEWdAOgKNMSFK51Jd6YwmRpy
-	Jk0UjvDnEz5038YWhiFjveo0xIDAQLyDJdlK6yNNOadc/hoj3bqrtWKj1sc0ccUu0tAr0VtR7I9
-	jWNiV2rKY8C2DxpCd3ysQ7JBnSAGcODEKOyjcnoYSutaO1hksXZbpXP+BDH0ktfAoJGJux8yb1f
-	H6wn0jrjMC/YNGgJG5+f1PtfG/KeQknYrthMG35tGuh8JtGU4J2SSogKQ/zAaSbSbVXUbQX/b4x
-	FjfZADeQ
-X-Received: by 2002:a53:acc3:0:20b0:64e:a9a1:fdb9 with SMTP id
- 956f58d0204a3-65e227fa1cemr14329495d50.34.1779157829471; Mon, 18 May 2026
- 19:30:29 -0700 (PDT)
+	d=codeconstruct.com.au; s=2022a; t=1779242477;
+	bh=Kk4mDuk1bqlhfjj6bz2g4hB4FwIz7h/oUwNv9idu2CE=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=WbV/MPMu3iCPoNjBN3QV8ZCBkgGN2jzbkZVfURuYvvWn4JYuZzyGcIvLS/Oavp/+O
+	 WxVthfEBocwEJU2xR1pHF8QC635aFAqYGaL3oJd9CspI/+qhXbnds75YwkQp+8ENVh
+	 UcOulj9Q2V8epYCcVHwuP8XBNlSzWWOV8bFKajrWGL4/OQge2oHyfuxTA159Ue5+dc
+	 VS3IRjjLQyFfkN8W94o1y78M/FiLxPFxisfKcxPLBvN/JL2/T7vvZBImjOQaur7Gd+
+	 jPv7vMbTQtrYSEva4R0DfDq1ky7PZkMRSJBXdP32HFRjs3ynRsLwgUNQFqH319NEDu
+	 H8wSd7RkWgOdw==
+Received: from [192.168.68.117] (unknown [180.150.112.11])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id AC7A260263;
+	Wed, 20 May 2026 10:01:14 +0800 (AWST)
+Message-ID: <eeadb3378066f18cf36469adfc3a70be3ad7b787.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v2] usb: gadget: aspeed_udc: avoid past-the-end iterator
+ in dequeue
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Maoyi Xie <maoyixie.tju@gmail.com>, Neal Liu <neal_liu@aspeedtech.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt
+	 <benh@kernel.crashing.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+	 <andrew@aj.id.au>, Alan Stern <stern@rowland.harvard.edu>, 
+	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
+	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Wed, 20 May 2026 11:31:14 +0930
+In-Reply-To: <20260519080213.1932516-1-maoyixie.tju@gmail.com>
+References: <20260518073403.1285339-1-maoyi.xie@ntu.edu.sg>
+	 <20260519080213.1932516-1-maoyixie.tju@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,46 +72,117 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20260518033440.17569-1-prasanth.padarthi10@gmail.com>
- <20260518033440.17569-3-prasanth.padarthi10@gmail.com> <ddb781dd-e117-4f9a-a5a3-94c192d8c2ef@lunn.ch>
-In-Reply-To: <ddb781dd-e117-4f9a-a5a3-94c192d8c2ef@lunn.ch>
-From: Prasanth <prasanth.padarthi10@gmail.com>
-Date: Tue, 19 May 2026 08:00:18 +0530
-X-Gm-Features: AVHnY4JaeDtUFpVTlb85c0qbNvo1Pm4Tax_KEyAn6qJ236xPn2YUFjmk-qtw3Ac
-Message-ID: <CAMFFDGjg-ZscFf8g_6=rkCeZ6L7M+hEsBnD76Lb+sGaStWQ7ug@mail.gmail.com>
-Subject: Re: [PATCH v3 2/2] ARM: dts: aspeed: Add ASRock Rack B650D4U BMC
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: joel@jms.id.au, andrew@codeconstruct.com.au, robh@kernel.org, 
-	krzk+dt@kernel.org, conor+dt@kernel.org, andrew+netdev@lunn.ch, 
-	devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
+On Tue, 2026-05-19 at 16:02 +0800, Maoyi Xie wrote:
+> ast_udc_ep_dequeue() declares the loop cursor `req` outside the
+> list_for_each_entry(). After the loop it tests `&req->req !=3D _req`
+> to decide whether the request was found. If the queue holds no
+> match, `req` is past-the-end. It then aliases
+> container_of(&ep->queue, struct ast_udc_request, queue) via offset
+> cancellation. Whether that synthetic address equals `_req` depends
+> on heap layout. The function can return 0 without dequeueing
+> anything.
+>=20
+> Walk the list with a separate `iter`. Set `req` only when a
+> request matches. After the loop, `req` is NULL if nothing
+> matched.
+>=20
+> Suggested-by: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Maoyi Xie <maoyixie.tju@gmail.com>
+> ---
+> v2: Switch the loop body to Alan Stern's shape: test inside
+> =C2=A0=C2=A0=C2=A0 the if, assign `req`, break. Same behaviour as v1.
+> v1: https://lore.kernel.org/linux-usb/20260518073403.1285339-1-maoyi.xie@=
+ntu.edu.sg/
+>=20
+> =C2=A0drivers/usb/gadget/udc/aspeed_udc.c | 20 ++++++++++++--------
+> =C2=A01 file changed, 12 insertions(+), 8 deletions(-)
+>=20
+> --- a/drivers/usb/gadget/udc/aspeed_udc.c	2026-05-19 15:29:28.690931576 +=
+0800
+> +++ b/drivers/usb/gadget/udc/aspeed_udc.c	2026-05-19 15:29:59.482953528 +=
+0800
+> @@ -692,26 +692,30 @@
+> =C2=A0{
+> =C2=A0	struct ast_udc_ep *ep =3D to_ast_ep(_ep);
+> =C2=A0	struct ast_udc_dev *udc =3D ep->udc;
+> -	struct ast_udc_request *req;
+> +	struct ast_udc_request *req =3D NULL, *iter;
+> =C2=A0	unsigned long flags;
+> =C2=A0	int rc =3D 0;
+> =C2=A0
+> =C2=A0	spin_lock_irqsave(&udc->lock, flags);
+> =C2=A0
+> =C2=A0	/* make sure it's actually queued on this endpoint */
+> -	list_for_each_entry(req, &ep->queue, queue) {
+> -		if (&req->req =3D=3D _req) {
+> -			list_del_init(&req->queue);
+> -			ast_udc_done(ep, req, -ESHUTDOWN);
+> -			_req->status =3D -ECONNRESET;
+> +	list_for_each_entry(iter, &ep->queue, queue) {
+> +		if (&iter->req =3D=3D _req) {
+> +			req =3D iter;
+> =C2=A0			break;
+> =C2=A0		}
+> =C2=A0	}
+> =C2=A0
+> -	/* dequeue request not found */
+> -	if (&req->req !=3D _req)
+> +	if (!req) {
+> =C2=A0		rc =3D -EINVAL;
+> +		goto out;
+> +	}
+> +
+> +	list_del_init(&req->queue);
+> +	ast_udc_done(ep, req, -ESHUTDOWN);
+> +	_req->status =3D -ECONNRESET;
+> =C2=A0
+> +out:
+> =C2=A0	spin_unlock_irqrestore(&udc->lock, flags);
+> =C2=A0
+> =C2=A0	return rc;
 
-Understood. I will not rely only on the vendor DTB value for this.
+This is a bit of a bikeshed comment and doesn't solve making the code
+similar to other cases, however: Golfing the diff a bit, perhaps we can
+start from the assumption that there isn't a match, and require the
+search disprove that. Then we don't have to test whether we saw
+something after-the-fact, and we avoid the goto as proposed above.
 
-For the next revision, I will drop rgmii-rxid and use the conservative
-rgmii setting unless I can provide board-level evidence that the
-required RGMII delay is added by the PCB/PHY configuration.
+Untested:
 
-I am arranging hardware validation for this board, and I will update
-the Ethernet node only with evidence from the board/manual/logs.
-
-Thanks,
-Prasanth
-
-
-
-On Mon, May 18, 2026 at 5:42=E2=80=AFPM Andrew Lunn <andrew@lunn.ch> wrote:
->
-> > +&mac0 {
-> > +     status =3D "okay";
-> > +     phy-mode =3D "rgmii-rxid";
->
-> It does not matter if this is what the vendor does, it is still wrong,
-> unless you can show the PCB is adding the delay.
->
->    Andrew
+   diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/ud=
+c/aspeed_udc.c
+   index 7fc6696b7694..75f9c831b21a 100644
+   --- a/drivers/usb/gadget/udc/aspeed_udc.c
+   +++ b/drivers/usb/gadget/udc/aspeed_udc.c
+   @@ -694,7 +694,7 @@ static int ast_udc_ep_dequeue(struct usb_ep *_ep, st=
+ruct usb_request *_req)
+           struct ast_udc_dev *udc =3D ep->udc;
+           struct ast_udc_request *req;
+           unsigned long flags;
+   -       int rc =3D 0;
+   +       int rc =3D -EINVAL;
+  =20
+           spin_lock_irqsave(&udc->lock, flags);
+  =20
+   @@ -704,14 +704,11 @@ static int ast_udc_ep_dequeue(struct usb_ep *_ep, =
+struct usb_request *_req)
+                           list_del_init(&req->queue);
+                           ast_udc_done(ep, req, -ESHUTDOWN);
+                           _req->status =3D -ECONNRESET;
+   +                       rc =3D 0;
+                           break;
+                   }
+           }
+  =20
+   -       /* dequeue request not found */
+   -       if (&req->req !=3D _req)
+   -               rc =3D -EINVAL;
+   -
+           spin_unlock_irqrestore(&udc->lock, flags);
+  =20
+           return rc;
+  =20
+  =20
+  =20
 
