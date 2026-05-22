@@ -1,60 +1,142 @@
-Return-Path: <linux-aspeed+bounces-4119-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4120-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C985CCD5BB0
-	for <linux-aspeed@archiver.kernel.org>; Fri, 22 May 2026 13:27:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0C67CD5BB3
+	for <linux-aspeed@archiver.kernel.org>; Fri, 22 May 2026 15:49:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gMR0K2LYfz3bnx;
-	Fri, 22 May 2026 23:27:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779456449;
-	cv=none; b=nnBvqTlpPv81tUVLTvwI7+clE6xc8q4pvJxEF5wJ7POyBPpGUFzpdrjY59qRzGK/aBW23MW5m+e0k8thOpEx6JarRxrNo5xHk4DsguKl+YVbsQs0OJJoMkDR0dOWTtq4inDNFbVrWTHKgE1tywlBbFyIXnc6HsHHURxtUJc9U4fwZPYWJ9b/BJvejJUIynnXy9Lix7DDE6LyXY/AA/88Owu6MtgW/4xFy+k6oRBTmEnm6Ou0ZSHP9a0vHIuXMxsX6uWTvR34cXMifYd32rGAVhUNySKGTUcydQGNlNXmXJ2L5ZGW5bX5AdodYzNkb39mAL1aHusFDUlm5ShC1YNFHA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779456449; c=relaxed/relaxed;
-	bh=B27jTI/Q5d9ahPjBVpzy9cPRWGSbXJiqn0fKYgn90Gw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dFH3w5IDtk4qSCTO5FbMnVPV8aMx/mODuG51DHfHeyYdwMB1plbo7JEbaRVRDN3f8YIglHwtniS1SnVImUo3zdxnkI0+UDdw+xsYGUze7pBhHdr52nUFakFZWP66+voJotHk7PC7RMa0hfCqm3EJN6mRZFXz75LFFA6TNmuzJIjnf17vMrhnJ48KBVOfHcIk1tRY9MLpfoiId50QbxlqT9iH6ocTpWZYfs6nhJeUmWobbYq5a52GEBFxx1Q3zekIG3xujOepElA5GsA2SNa4+0AZw97VTNjx1jnqk2U+exQU9dg1ZVGBZBKgSHPb1nMLJ2B7rKRukr9WLXVAo3qoew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=BU5YJw0e; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMV7w2YSJz2xSN;
+	Sat, 23 May 2026 01:49:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c40f::6" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779464956;
+	cv=pass; b=doZbCfp+0NQaH440wwGiGJyRl5q6wP5c+5Hfy+ebo3Hbffh1MY4Ax5/rceyRvgUjuymMoZluKTY2mkKpRbvHA8arWcwjF4of076baAu1DYcTw7HFuHGWeD8e4M8mU2dQ+C+ntfvSncq7BpNN/SPmiOyLQ/Rmu57/e+EOHfJ82bzQC01RwnL3OYCW5BQFQyMn12EGczdJ4z9MLd7EmYIFVOyvlDM1RHuK8BkUSqlglGydtdgV4f1QZL/CXFh8QdWpCilJcAAGPkAygfRa7zNyZnKkDhcdT4LJI5UVaKmjBJVprrGocaor7RH/4WFl1cxbV+8XbgHpi1wB6LxGYwOX3g==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779464956; c=relaxed/relaxed;
+	bh=9n70oWzTvg3S+jvmEMrbGpNqlDIdzdwjuovZWn4u1j8=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=LzfHKCeBUXpmTqlypa+psTGeOPeiWdPb+nwUlirSynbtthQVUa2YP/S+bAfixZoX6sx1yswiOvtQh7+XuTNg1YqQJcCvaebZnUNv2BbfXKMGfmvzURVql4GKOr3c0IRY6N+PovCFkTo87PDuZmWalRDmLYcRnPyx2S+LLRbJv7GRviwxFQOcUNXuWoE9tF1KllOliMFIPwcElMzzYsnxPLaXFyH3dswp1PpPTJYjofB1YdotGPsgTCq40qW4C/DZn5VCYppEFaA0sKEFByvGTaH5QqamC3JH3k16y/m/XEIucos0CU7kGrkfvvFbctvdbu67rVK/lgH9NoUN8VTUjA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com; dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=A9MkLbd3; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org) smtp.mailfrom=aspeedtech.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=aspeedtech.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=BU5YJw0e;
+	dkim=pass (2048-bit key; unprotected) header.d=aspeedtech.com header.i=@aspeedtech.com header.a=rsa-sha256 header.s=selector1 header.b=A9MkLbd3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aspeedtech.com (client-ip=2a01:111:f403:c40f::6; helo=seypr02cu001.outbound.protection.outlook.com; envelope-from=chin-ting_kuo@aspeedtech.com; receiver=lists.ozlabs.org)
+Received: from SEYPR02CU001.outbound.protection.outlook.com (mail-koreacentralazlp170130006.outbound.protection.outlook.com [IPv6:2a01:111:f403:c40f::6])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMR0H0cRTz2yRM
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 22 May 2026 23:27:26 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Transfer-Encoding:Content-Disposition:
-	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:From:
-	Sender:Reply-To:Subject:Date:Message-ID:To:Cc:MIME-Version:Content-Type:
-	Content-Transfer-Encoding:Content-ID:Content-Description:Content-Disposition:
-	In-Reply-To:References; bh=B27jTI/Q5d9ahPjBVpzy9cPRWGSbXJiqn0fKYgn90Gw=; b=BU
-	5YJw0e+XWmNZ0vQxuvcesgoTNCR8EzxmheZvbut60r4DRcdatB4ErSYAj3Jz4DxlkuSZlkTED5AG5
-	hARFJnnksoKbtLc4ql6Wqlu95tuiwhU8e/AszIyq3q8NNTcKQpPXKM1yfPbkvgHLPA9wRIQfRZdLW
-	SfOeKqUJ6cu3b38=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1wQOdK-004AQI-3E; Fri, 22 May 2026 14:05:42 +0200
-Date: Fri, 22 May 2026 14:05:42 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Anirudh Srinivasan <anirudhsriniv@gmail.com>
-Cc: Andrew Jeffery <andrew@codeconstruct.com.au>,
-	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	Rob Herring <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Joel Stanley <joel@jms.id.au>
-Subject: Re: [PATCH v2] ARM: dts: aspeed: Enable networking for Asus Kommando
- IPMI Card
-Message-ID: <d8c7d7c9-6f2f-4d3f-95d4-877e8504a1b6@lunn.ch>
-References: <20260331-asus-kommando-networking-v2-1-f7d72ae5d40d@gmail.com>
- <CAJ13v3RtV+_P_ShfrM5vH+neT0cB6t5yAbqGiiw7S7Y8qpVY=Q@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMV7s05lVz2xK4;
+	Sat, 23 May 2026 01:49:12 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=xRDdmCx7R37N+pZE/JuWijRunM2IrYoBaqIppifJUyxRijxFpc6hHAKzUGXaeXqUOEgvXs11pirdCxi6upx8llN8XU9POVVOLoa/NoFGTNMCqWzxow6G1rTdTEXClVrlo8ay8kzUwq/voRcHD4i38YJXPAR9sZMiK+v7HyRZrnigpz/2jV2DNnZHLtlZ9r7qIR1D8C2OS73bB1PIKtkQgqCe8FCwklttlTPGr8fsN1vArKyA254b0pqpQ/LacGOABFxsU+SlUvxHoLrRGEU5QBBoO5Fyf/C+uW79h/zs5TEaR8vD83SGHghdKQ/MGk2buYjIF/DdcZ4aL084t2AyAQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=9n70oWzTvg3S+jvmEMrbGpNqlDIdzdwjuovZWn4u1j8=;
+ b=GGVcwKta3I+ApOPvuQcA4dZ4+KWBvc1oVhX1NsWCugDosMmtNy179wVbehPIWoQ+NpfWH0APi8XrlvfljjBVwrprdNco5qr7IrcK+iXkXYlQuMJg/kTtsGhjKgxD2nQ2byAE3bAowTjius3Gn1iyOhhNXin6DvZTUii1bQDIRWdGQEHPtA8n9aYEkTRrJK1ntCMWd2p5mJMBHyIzD+pB2RFwMBLM250zvh9yzdiaktKyqg8rS2AiGZ8IwZlBZ24D+Ffj3cjnIgWRPIaU3BkbaKui0IpZ/+Jr1Ev/IuiORe2X1jlKKpC3Yk3+HcsCOuKZrFXrjAh3UbdVABt0OAyt8w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=aspeedtech.com; dmarc=pass action=none
+ header.from=aspeedtech.com; dkim=pass header.d=aspeedtech.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=aspeedtech.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=9n70oWzTvg3S+jvmEMrbGpNqlDIdzdwjuovZWn4u1j8=;
+ b=A9MkLbd3aLMObKDvpO4/nj6WP4hQOTpwKSGmP/WrbMi0GSLkZCmIr/ifBlin0VYjS/WviP7D06RXvZdGdjGAXO3JhHVS4kIRl3D0/ZBx/+0s63zb9uPwxnn8xvq4settBv4/aogwkuM2udmi2QdxW5Ok+l8NLrQMXQWO6XHQcgM/vA4JYYaMAblsSw2ctDmHtl/2NO6IwGFpAS+6PsYMuUBHU+5l4t57ooZQErDSOr4SU9RvOGenPuLhMJwHXMBU7ZVjsYBRgak2TtjQeddb+ULk6qddEFdPI3OKZOpJJ9JijICTSzS4bLsN19lrbAIMNfdp0f4TgqceEMIy2eyCNA==
+Received: from TYZPR06MB5203.apcprd06.prod.outlook.com (2603:1096:400:1f9::9)
+ by SEZPR06MB7077.apcprd06.prod.outlook.com (2603:1096:101:1f4::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.21.48.14; Fri, 22 May
+ 2026 15:48:42 +0000
+Received: from TYZPR06MB5203.apcprd06.prod.outlook.com
+ ([fe80::e25a:ec7b:633d:7489]) by TYZPR06MB5203.apcprd06.prod.outlook.com
+ ([fe80::e25a:ec7b:633d:7489%3]) with mapi id 15.21.0048.016; Fri, 22 May 2026
+ 15:48:42 +0000
+From: Chin-Ting Kuo <chin-ting_kuo@aspeedtech.com>
+To: David Laight <david.laight.linux@gmail.com>
+CC: "clg@kaod.org" <clg@kaod.org>, "broonie@kernel.org" <broonie@kernel.org>,
+	"joel@jms.id.au" <joel@jms.id.au>, "andrew@codeconstruct.com.au"
+	<andrew@codeconstruct.com.au>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "openbmc@lists.ozlabs.org"
+	<openbmc@lists.ozlabs.org>, "linux-spi@vger.kernel.org"
+	<linux-spi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, BMC-SW <BMC-SW@aspeedtech.com>, kernel test
+ robot <lkp@intel.com>
+Subject: RE: [PATCH v2 2/2] spi: aspeed: Replace VLA parameter with flat
+ pointer in calibration helper
+Thread-Topic: [PATCH v2 2/2] spi: aspeed: Replace VLA parameter with flat
+ pointer in calibration helper
+Thread-Index: AQHc6brpYFW37WKeUEyzbCcAit0oebYZs+SAgAB8Z5A=
+Date: Fri, 22 May 2026 15:48:41 +0000
+Message-ID:
+ <TYZPR06MB5203714C130A2794585272A7B20F2@TYZPR06MB5203.apcprd06.prod.outlook.com>
+References: <20260522071621.102507-1-chin-ting_kuo@aspeedtech.com>
+	<20260522071621.102507-3-chin-ting_kuo@aspeedtech.com>
+ <20260522091915.65dde4ad@pumpkin>
+In-Reply-To: <20260522091915.65dde4ad@pumpkin>
+Accept-Language: en-US, zh-TW
+Content-Language: zh-TW
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=aspeedtech.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TYZPR06MB5203:EE_|SEZPR06MB7077:EE_
+x-ms-office365-filtering-correlation-id: 786862b3-0b00-40c8-6394-08deb8199981
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam:
+ BCL:0;ARA:13230040|366016|376014|7416014|1800799024|18002099003|22082099003|38070700021|56012099003|4143699003;
+x-microsoft-antispam-message-info:
+ uLvtKNHoE3jwv8VEEWI/iy8riUuoVR7jDNji2zagD7ABX9iBc+/ei7g5ONY4oHqOdnDwq0aCpS0z+uRACGiWnX9wWgX7xMolk/WWVlbgF12Yl7fcykBcFRZwiNRYQf034M7X+zxWVutLMpCmzVPrlFl21FJfQfG2VSApng46OLzYhESweMvf3orFiBWThW1dxXUVTsOK4sdyZ2n5MsUtRYc/sxS5ZBKfZ9l+YOSes9QbU9y5W6BL6qKJFdbRM627+sHJq+oP3nwSnYQeEPKaW6pRb9nSV4gzzkF3/8ZggTS96vWPOw+22DrVC2QoomraTDZN0U9q1Sh1jDS+japrTsbIHy56j1+22gZJinTbP7+RI4yaitBPBUTuWgbcv1Jt6eK7zzrIbZhDheGUT4YDcp4WQmTGwCjcIy2UWPhlAzDnxj4CLIdPhZgso/TcX4bfcVrcDiCSQmCzz2E2cwKCa10hFyum3dRBJnRomggHA0TiVIdxNz2FlPgQ9Q91gl2M/k3/aA0nmwtzcfljbVeOEIniW2RYQLU7tQMbaOh4eQvZ03W3cgSkw+ykLRCzRUGXtif32hBAEZbmgE0Gvgs93Eq3/bo5kGbKoo+0DM233tIDmUxHsVLaDSMpBpkBnaKVjSDAyLj+Ci7cKyiCfwiR2JpV0x+Ev3smBc+5SIWt9JrowqvP5aAeTUyODvdKiQ5kDf5DR/UZBunKOCI3fF+Jjo4Oyr1HGAhmZ8GGkRisTu5e3X0zXAhBvXtoCbGnnR5r
+x-forefront-antispam-report:
+ CIP:255.255.255.255;CTRY:;LANG:zh-tw;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYZPR06MB5203.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(18002099003)(22082099003)(38070700021)(56012099003)(4143699003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:
+ =?utf-8?B?enlOYy9XeWhHZkU4QnE3bnBHT2IwQmxRTW8xajJQdHhlOUVObzFFV3Z5SVRv?=
+ =?utf-8?B?QUJmWlVGcjNwUGJjM1UySy9GYVN2YXo4MjlwRS9LWDJENVpSTHlKRnZ1MUJi?=
+ =?utf-8?B?QlU0Sk00TjRtMUpUR0IxeE9kTnYweXhtR2FFcjJsSFQxOC9XellONkw0bkZp?=
+ =?utf-8?B?REI0Smtrcmx0RlArNm12Y3V4eCtORkdEeGhKMDBPZ1NGbGNaeVhqU2NpeG1n?=
+ =?utf-8?B?b2xlMUZxRUNldFRIWm5vNWd5WjVwR1NMM3liV1FXYUpZZ0lpUk02MkpEVWEr?=
+ =?utf-8?B?VHNjMmYzZTBFNkpQekZTR2Q4QWxBaVN1MzRQRS9YV0hUQ2ZPUW82SmdId3Nl?=
+ =?utf-8?B?RXRHZUo5NFRiWGdaUUplWUNpWWc3UVZsSkZ2ZVFJL1ZJQU1CbTJSUTNhRXQ1?=
+ =?utf-8?B?dXU3d3JmUU9zRGhLUUFXUjNvQU9ma1FuYktPSkVKQkhXdm90Y2t5Wkd4eUlZ?=
+ =?utf-8?B?bDdUVHVhVmpPQVRqS0pWLzRoTzNkd2swNnRkdGhadmlhQ0VrQ092WWxwbjVi?=
+ =?utf-8?B?UHltZkQyL0FCZ0NEUGQ2UUFMMjRMM2J4c0ttTDlPVjdQcUh1YXFoY2ZXNjha?=
+ =?utf-8?B?YVF6cnhKZ3NkSXFIMGhiTUtqcjQ5c1ZhMTk2MWpUaURhZVgzajM3d1dKdWww?=
+ =?utf-8?B?SEdzRUhzdUpJaUI0ckM2eHNpVjhHdnBGdjRNMGgrVm0reXcrcVByZWhBaWZs?=
+ =?utf-8?B?bVJKNk5yMnFnckZtWkRPbndaRC8xdXZYQnB5Z2VZMWJaQS9sRHpLUUdWOHFM?=
+ =?utf-8?B?NjdvcU1kcGt4dXFOZTBMY2R3K0NQa2pZeUlhTWVZLzFQUG4yUXdIbE4wSnVF?=
+ =?utf-8?B?aDdGSzhENDF6NDQ5NUN4UU9LaU4yWTJvaU9SdmNnMUdzSWphVGhPUDZNYm5W?=
+ =?utf-8?B?MllTamYvejFoQjNXMTJVRDdHcmliSG9iQ01ESG9iSGlzTytoZXQ0b1dJS25t?=
+ =?utf-8?B?b1FHS25CSnZ6RVFoKzZTTFBKZ1FBREZiL3BSclZLK0NnN0RFYU1saGhEWTRS?=
+ =?utf-8?B?S2c3WTNUS0JCWmJvUWN3bVRFSGFhS0JGUU9mZkpWNSswbEJOVmIvRFEwY3FH?=
+ =?utf-8?B?MjB3aWQ3RWRha0JNVE51aHJMT2duZ1dzb21oNnN0eFhTVmxwL1pLV1FrM2k5?=
+ =?utf-8?B?eU56S0c0Y0JuZndBR2UrTXRpZjBTNkdIVE9tNVBLZll1RG4weGM5MXNVMlJQ?=
+ =?utf-8?B?N2Jkb0k3YWVmWGUxYXI3dHM0Rm8rdGptNTJTQmxHN0Ftb2U0MHlrdmhYaXpa?=
+ =?utf-8?B?bWZKWGpYVWdiR1BuS1BpUFMwcTBhaG94ZFZWN3BmRDlyZndPWWdaeGZHaVEr?=
+ =?utf-8?B?N3NXdnRkSnc1Z043WGgrSFJpaXZRUjdYRzJNY3N4TWJBOCtGQ2xYekVQMWN3?=
+ =?utf-8?B?eEVsUGEwYm44Wk5DWk5JS3Y5eHZ4VUJZZVZOUTdNZXgxSGhxRmVleHhTZkRG?=
+ =?utf-8?B?dGU3L1VlWnpGWDlWbkpyOVBxeWtSMnA2YXdLZlFTeEQ3Ri91MDBnaWNON2dW?=
+ =?utf-8?B?dThDVGgwaHJDK0dlb1VZYkdRS3NXcnhPdHl1N1FKdGIrM0hHTXJIN01IQXVI?=
+ =?utf-8?B?dW5WQVpMRnFCcDkrUjhxR2RCbVlueEt4K1FBUzBUSWhJUFVMUVV3cC9qMkd5?=
+ =?utf-8?B?VDhsOFJsaTJSR3QzK1hBVDdaUVJXamM5NHdjbWpKUkVvMTRBL3h1WGdmNU8x?=
+ =?utf-8?B?VjdkWk1XY2xkNHRjcWFrMnZ6S084Vkx5T3lrbm52eEdaVU1tT3EvdVdpdm5v?=
+ =?utf-8?B?dVAzdTRtS0YzSnBwUXJGUXhLMEVYckdrM1ROWFp1ZUVubzNDQ1FyMVJWSjA0?=
+ =?utf-8?B?b2M0anJVNVdYRzVmV2g2TXl3ejFrMk1FcTRsdVVobENSQlY2dkdrZEFoZDlm?=
+ =?utf-8?B?RG5CSE5FWGk1dXF5MHlRZlpFNVQvcHl0dXd1QUF2WUZNb2o0NWhvR1l6NXd0?=
+ =?utf-8?B?WDFXbHhIYWNHVU9uNTkxaE1uWDR3RGxBTnFGWGF5QWp2R0w4V1k3UjhadGxH?=
+ =?utf-8?B?dm9hdS80WXJtUTRLdjIweXRKQjlINGkyMG5kRzdjWE10Z3pjWklJREJYdy9N?=
+ =?utf-8?B?b1V0Qk1BVjRudDJkSjF0Rk9pcmVLMkpsZmwyVERXTVJaQ3ZYN2k3NDdiZnBs?=
+ =?utf-8?B?blBaK1Y1WkxXeDdTYnBBT2N2aFFoOEw4c1c5UWJLNGVIenI0Sk5PSFA3M0lX?=
+ =?utf-8?B?VndaUkIvOWJWS3YyYWpMb2lOL2RIZVdRQ010UlFlSVB4UUVmMlJnbDZYRmVk?=
+ =?utf-8?B?WTFwN2JEY0tqMXRENmI0djJGMkVKNzNOWjlWenlUalFQNmQ5bW02RkN4NU1x?=
+ =?utf-8?B?bWYzMHAvZjlLUWFLNmZxbmpFRVBNYm5ET2RFVldDR3dsTDhTd0FncVcxbHc0?=
+ =?utf-8?Q?tI/CLKzDh2r87Sgs=3D?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -68,104 +150,51 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJ13v3RtV+_P_ShfrM5vH+neT0cB6t5yAbqGiiw7S7Y8qpVY=Q@mail.gmail.com>
+X-Exchange-RoutingPolicyChecked:
+	j+dYUHtVfTQWNaKRqIdGqdB4H63DpYDe5O/JOQkKhdC4wdWCs1enjVcwkP8ZyMJ2RsnUlxFK17QjAz+BR0uOi8UxLnu+eI5ytTUyFaisC6/8QQhvUFTN/aWdzgAutYQeQXax6lnr3/JAcUeIhY1m2hUbglKka8Z4WAc64JT1VCmlTGk0YMsTYjmZdoaEmaiPNttEp9IurCfGh89eamZWILHR32v+KDtfuAVLLxt1r+KealyDHhK6ZB2JEtgj0e0iJsL18uszThPu7G7v5Aw8Dj3gQ4mRMdJMALeNCsZDcVU6i3GWpRxrjATTRPsH9jFSyFZhzlte1b4odVhZo/Qrjw==
+X-OriginatorOrg: aspeedtech.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TYZPR06MB5203.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 786862b3-0b00-40c8-6394-08deb8199981
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 May 2026 15:48:42.1658
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 43d4aa98-e35b-4575-8939-080e90d5a249
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 772++hfCaEaiNOWSGIkZZfQCYl81XvX7GwaRPOdZ8LgV6HbhKmsCZriiA0z+xm3WV7QH8VDl5o35UB/o3IkrZuzu2vXAkDzyYzt4I73Jqts=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SEZPR06MB7077
 
-On Thu, May 21, 2026 at 10:49:24PM -0500, Anirudh Srinivasan wrote:
-> Hi Andrew,
-> 
-> On Tue, Mar 31, 2026 at 9:18 AM Anirudh Srinivasan
-> <anirudhsriniv@gmail.com> wrote:
-> >
-> > Adds the DT nodes needed for ethernet support for Asus Kommando, with
-> > phy mode set to rgmii-id.
-> >
-> > When this DT was originally added, the phy mode was set to rgmii (which
-> > was incorrect). It was suggested to remove networking support from the
-> > DT till the Aspeed networking driver was patched so that the correct phy
-> > mode could be used.
-> >
-> > The discussion in [1] mentions that u-boot was inserting clk delays that
-> > weren't needed, which resulted in needing to set the phy mode in linux
-> > to rgmii incorrectly. The solution suggested there was to patch u-boot to
-> > no longer insert these clk delays and use rgmii-id as the phy mode for
-> > any future DTs added to linux.
-> >
-> > This DT was tested (on the OpenBMC u-boot fork [2]) with a u-boot DT
-> > modified to insert clk delays of 0 (instead of patching u-boot itself).
-> > [3] adds a u-boot DT for this device (without networking) and describes
-> > how to patch it to add networking support. If this patched DT is used,
-> > then networking works with rgmii-id phy mode in both u-boot and linux.
-> >
-> > [1] https://lore.kernel.org/linux-aspeed/ef88bb50-9f2c-458d-a7e5-dc5ecb9c777a@lunn.ch/
-> > [2] https://github.com/openbmc/u-boot/tree/v2019.04-aspeed-openbmc
-> > [3] https://lore.kernel.org/openbmc/20260328-asus-kommando-v2-1-2a656f8cd314@gmail.com/
-> >
-> > Signed-off-by: Anirudh Srinivasan <anirudhsriniv@gmail.com>
-> > ---
-> > This patch is based off aspeed/arm/dt from bmc tree
-> > ---
-> > Changes in v2:
-> > - Commit message now mentions that the u-boot tested against is the
-> >   openbmc u-boot fork
-> > - Link to v1: https://lore.kernel.org/r/20260328-asus-kommando-networking-v1-1-66d308b88536@gmail.com
-> > ---
-> >  .../dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts  | 18 ++++++++++++++++++
-> >  1 file changed, 18 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
-> > index ab7ad320067c1ddc0fea9ac386fd488c8ef28184..e0f7d92efa18ccbad2c336236c3b9d01b7de1bba 100644
-> > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
-> > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
-> > @@ -107,6 +107,24 @@ &gpio1 {
-> >         /*18E0 32*/ "","","","","","","","";
-> >  };
-> >
-> > +&mac2 {
-> > +       status = "okay";
-> > +
-> > +       phy-mode = "rgmii-id";
-> > +       phy-handle = <&ethphy2>;
-> > +       pinctrl-names = "default";
-> > +       pinctrl-0 = <&pinctrl_rgmii3_default>;
-> > +};
-> > +
-> > +&mdio2 {
-> > +       status = "okay";
-> > +
-> > +       ethphy2: ethernet-phy@0 {
-> > +               compatible = "ethernet-phy-ieee802.3-c22";
-> > +               reg = <0>;
-> > +       };
-> > +};
-> > +
-> >  &vhub {
-> >         status = "okay";
-> >  };
-> >
-> > ---
-> > base-commit: 76b4ec8efdc3887cdbf730da2e55881fc1a18770
-> > change-id: 20260328-asus-kommando-networking-5c0612aa6b8c
-> >
-> > Best regards,
-> > --
-> > Anirudh Srinivasan <anirudhsriniv@gmail.com>
-> >
-> 
-> While we're figuring out what to do with u-boot, what are your
-> thoughts on getting this patch in so that the kernel DTS changes
-> needed for networking land in this cycle?
-> 
-> The current commit message might become somewhat outdated if the
-> u-boot patch changes though, so not sure if that's okay.
-
-The commit message explains "Why?", which is what is important. So it
-should not matter if it becomes outdated. And the DT is correct, no
-matter how the issue is solved.
-
-So i'm O.K. with this.
-
-   Andrew
+SGkgRGF2aWQsDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGF2aWQg
+TGFpZ2h0IDxkYXZpZC5sYWlnaHQubGludXhAZ21haWwuY29tPg0KPiBTZW50OiBGcmlkYXksIE1h
+eSAyMiwgMjAyNiA0OjE5IFBNDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMi8yXSBzcGk6IGFz
+cGVlZDogUmVwbGFjZSBWTEEgcGFyYW1ldGVyIHdpdGggZmxhdA0KPiBwb2ludGVyIGluIGNhbGli
+cmF0aW9uIGhlbHBlcg0KPiANCj4gT24gRnJpLCAyMiBNYXkgMjAyNiAxNToxNjoyMSArMDgwMA0K
+PiBDaGluLVRpbmcgS3VvIDxjaGluLXRpbmdfa3VvQGFzcGVlZHRlY2guY29tPiB3cm90ZToNCj4g
+DQo+ID4gYXNwZWVkX3NwaV9hc3QyNjAwX29wdGltaXplZF90aW1pbmcoKSBkZWNsYXJlZCBpdHMg
+YnVmZmVyIGFyZ3VtZW50IGFzDQo+ID4gYSB2YXJpYWJsZS1sZW5ndGggYXJyYXkgcGFyYW1ldGVy
+ICh1OCBidWZbcm93c11bY29sc10pLCB3aGljaCBjYXVzZXMgYQ0KPiA+IHNwYXJzZSB3YXJuaW5n
+LiBSZXBsYWNlIHRoZSBWTEEgcGFyYW1ldGVyIHdpdGggYSBwbGFpbiB1OCAqIGFuZA0KPiA+IGNv
+bXB1dGUgdGhlIDItRCBpbmRleCBtYW51YWxseS4gVGhlIGNvcnJlc3BvbmRpbmcgY2FsbCBzaXRl
+IGlzIGFsc28gdXBkYXRlZC4NCj4gDQo+IFRoaXMgY29kZSBpcyBhbGwgYSBiaXQgaG9ycmlkLg0K
+PiBUaGUgNiBhbmQgMTcgKHdoaWNoIGFyZSBhbHNvIHVzZWQgaW4gdGhlIGFycmF5IGRlY2xhcmF0
+aW9uKSBoYXZlIHRvIG1hdGNoIHRoZQ0KPiBUSU1JTkdfREVMQVlfSENZQ0xFX01BWCBhbmQgVElN
+SU5HX0RFTEFZX0lOUFVUX01BWCB2YWx1ZXMgdXNlZA0KPiBmb3IgdGhlIGxvb3BzLg0KPiANCg0K
+VGhlIG1hZ2ljIG51bWJlcnMgNiBhbmQgMTcgY2FuIGJlIGRlcml2ZWQgZnJvbQ0KVElNSU5HX0RF
+TEFZX0hDWUNMRV9NQVggYW5kIFRJTUlOR19ERUxBWV9JTlBVVF9NQVguIEhvd2V2ZXIsIHRoaXMg
+aXMNCmEgcHJlLWV4aXN0aW5nIGlzc3VlIHVucmVsYXRlZCB0byB0aGUgY3VycmVudCBwYXRjaC4g
+V2lsbCBhZGRyZXNzIGl0IGluIGEgc2VwYXJhdGUNCmNsZWFudXAgcGF0Y2ggc2VyaWVzIGluIHRo
+ZSBmdXR1cmUuDQoNCj4gSW4gYW55IGNhc2UgdGhlIGNvZGUgd291bGQgYmUgbW9yZSBvYnZpb3Vz
+IGlmIHRoZSAncnVuIGxlbmd0aCcgb2YgdGVzdCBwYXNzZXMNCj4gd2FzIGNvdW50ZWQgZHVyaW5n
+IHRoZSBpbml0aWFsIGxvb3AuDQo+IExvb2tzIGxpa2UgaXQgd2FudHMgYXQgbGVhc3QgNCBvbmVz
+LCBhZnRlciB5b3UndmUgZ290IHRoYXQgbWFueSAoYW5kIGEgZmFpbCkgdGhlcmUNCj4gaXMgbGl0
+dGxlIHBvaW50IGNvbnRpbnVpbmcgdGhlIGRlbGF5IGxvb3AgZm9yIHRoYXQgaGN5Y2xlLg0KPg0K
+DQpUaGUgaW50ZW50IGlzIHRvIGZpbmQgdGhlIGNlbnRlciBvZiB0aGUgbG9uZ2VzdCBjb25zZWN1
+dGl2ZSBwYXNzIHdpbmRvdyBhY3Jvc3MNCmFsbCBoY3ljbGUvZGVsYXkgY29tYmluYXRpb25zLCBu
+b3QganVzdCB0aGUgZmlyc3Qgd2luZG93IHdpdGggNCBwYXNzZXMuDQpUaGUgdGhyZXNob2xkIG9m
+IDQgaXMgdGhlIG1pbmltdW0gdG9sZXJhYmxlIHdpbmRvdyBzaXplIGRlcml2ZWQgZnJvbQ0KZW1w
+aXJpY2FsIHJlc3VsdHMsIG5vdCBhbiBlYXJseSBleGl0IGhpbnQuIEJlc2lkZXMsIHJlY29yZGlu
+ZyBhbGwgcmVzdWx0cyBpbg0KYSAyLUQgYXJyYXkgYWxzbyBrZWVwcyB0aGUgZGF0YSBjb2xsZWN0
+aW9uIGFuZCB0aGUgYW5hbHlzaXMgY2xlYW5seSBzZXBhcmF0ZWQsDQp3aGljaCBtYWtlcyB0aGUg
+Y2FsaWJyYXRpb24gbG9naWMgZWFzaWVyIHRvIGZvbGxvdyBhbmQgdGVzdCBpbmRlcGVuZGVudGx5
+Lg0KDQoNCkNoaW4tVGluZw0K
 
