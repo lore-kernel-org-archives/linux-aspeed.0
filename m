@@ -1,94 +1,93 @@
-Return-Path: <linux-aspeed+bounces-4114-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4115-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 239FDCD5BAB
-	for <linux-aspeed@archiver.kernel.org>; Thu, 21 May 2026 23:35:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E453CD4F5B
+	for <linux-aspeed@archiver.kernel.org>; Fri, 22 May 2026 03:49:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gM4X14tppz2xwH;
-	Fri, 22 May 2026 09:35:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::633"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779346478;
-	cv=none; b=kbSogRNLF1RR1VfCibd+Qd8Le2QYM1O00FMjLxMfVPk8aYgQAFBO8BcULFCmmdaSq4zHe125Rrpeiq5HvVaBVMKsWZKUJ8/FqXh+40+ZsFl27mBo7+qgMyAJrxsT4MHaq2ycmji2QtsBihpRiyIK9UqUWncKx0bOEavAyfx5eMOMYrtzt460lFKgZPfuKgrNQPIOu5RaRPOj+uZg06pdPlr12NBxhM4Q6/TDRpHdseNEmVdsTDpZdqLkTGgTC4fAw0mc4PMIl7dBec0wKNVcLDTt2+2X5UK6hLjdy9XGMhA4AKV4Jj234n52ZzeTrotVCDcBY1Bd8GRz5MzH3JiviA==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779346478; c=relaxed/relaxed;
-	bh=AaciwSm1L46TIODxCA9aHpcFSHmqvrXKCz/1wzRVFx0=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=gRTtSvfSy4S/rt1q6vefqcgte3L4zR4Kz+WuH209i2WmVcJtab0RpZE+vL6+LW+y1EAehru3ZYTiLp51MlzSs7f1xugY+6vwT7jRw+EPAl99HOVFxf0ZB22AvpSTCJSxPSTOQtRIrpbw2ZcXqYQDm8y8nfY8gr20F7oW3gK7Jlzx+iQNWVwbXnSnCY5tqnhhaMVpAxusT4SV/KuBty6IEvpHmTRl11OacMrNB9pn3BPNI0Nv2d9Ieoj/nsdTu3qWXoMXs6dVd2zaYA4RiiEh85dQaLWEifrolveFKBwjsgNAzP0OOUr1kPgvYbYhaysU1kbktBMYxM/FANsyqoe79w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FKaQyTYg; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=maoyixie.tju@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gMB9f6B90z2xpn;
+	Fri, 22 May 2026 13:49:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2607:f8b0:4864:20::1233" arc.chain=google.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779421782;
+	cv=pass; b=Hzz2mg45bJRmeY3HTuKtvIXQ86cB5mIgqnZZb4q2Z4VbhRx+OQXicrI6qA5PmrjcZTEyWG/mGC+pdAb4dNYmK/8aqLe2bQkE4s4iYhP7HF1b2j5rJZLHArxv6DTx39tNqAf3nJ7SUYpO5kwLKZWdzZOzm4RjpkL3gT6wR1aEGcp7OVB9B5XN2IfekQj+Xm+d8h+7RtkvPEtoyxklIpiLFXdXvXTBhTnz/ul+BTMW2h5zrrgVvMnG9ev8eFTMZlyERLZ921751pzuqQVdJfokpJKktUBP4Pj3FHWwsU0jc1x821nUxyX0oa0LV+h2TYk+G7zVZpi61hCPe9d5tRLzQA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1779421782; c=relaxed/relaxed;
+	bh=+qT5BbvAf0970jGpHLlqJ9wvkmx5X5Z5+OFS5PTjFcE=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=jh3uMtG7YggmHEB6nfEGnEoyh2xon5Dku2L9D4RNXWNzbP9OZNZSbnVusNW5viF2v9ka2M9FAdGep2Rub7svFYzMDWoZXE1L2KiFmAdSNvRD5KZfRfYIXw85yq6WoeC+bAvI+qQeBFL63Sm6JgH9f/yK1FyjtFw6AfHZtzZRYhtHCsWFwPXCUyWZbqTr9tMnM8EyxgIsoAvDEizGoQQTE3e8mlWOPqGHK5q6dUEfEu2Th0mx9ebHMa1V2u54yf7dj1YKvBH5ttn5xsE3zZ+Z70GggLe5K1RZkIm7m/EwKaT4hvDLcrCvhiXMBuKBGB8Q6t/HZZpQwV1DIKlcxu7ECA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WdGTjB83; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1233; helo=mail-dl1-x1233.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=FKaQyTYg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=WdGTjB83;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=maoyixie.tju@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1233; helo=mail-dl1-x1233.google.com; envelope-from=anirudhsriniv@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-dl1-x1233.google.com (mail-dl1-x1233.google.com [IPv6:2607:f8b0:4864:20::1233])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gLfKS5cqJz2xGY
-	for <linux-aspeed@lists.ozlabs.org>; Thu, 21 May 2026 16:54:36 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id d9443c01a7336-2bd9c3b550aso39179665ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Wed, 20 May 2026 23:54:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gMB9d2scTz2xSN
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 22 May 2026 13:49:40 +1000 (AEST)
+Received: by mail-dl1-x1233.google.com with SMTP id a92af1059eb24-1357c851a48so8489170c88.1
+        for <linux-aspeed@lists.ozlabs.org>; Thu, 21 May 2026 20:49:40 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1779421777; cv=none;
+        d=google.com; s=arc-20240605;
+        b=Ks0/XR6OtAGiVtrGBJBRvHle1hx0EwBcVRI9Yyc99rqO+BEqFUbEJDhNLpCYfQpRLJ
+         4u4nClRGMRehFU0sEBO3WM1f6hrubmpAiQ04JwLUYgP9kNArtpscOMjGq0wKIrOKg0da
+         kkjqlgizqZFYSk/16OowtiG9nUi1SwS7NFsCNzeBBWxiEhjoH9N46VU4XcDmHr1UCkH3
+         V38swtrMPVgejCmbpz3z67kgu//T7YJ2LpGE/05UehtQvM3uvU/dS4rpCmZEWIUER64E
+         4Id62beztPs1ZPuwI5nKVkkDtJfdizJJdelaLbWtMtZsqj9x6gbrJsvS2sO1c7LwpK6F
+         du0g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:dkim-signature;
+        bh=+qT5BbvAf0970jGpHLlqJ9wvkmx5X5Z5+OFS5PTjFcE=;
+        fh=m1NEvMXQxgp80CaVez9158w0XsxuSk2WlfXWoc+LjOQ=;
+        b=UtyXK/wMvDBNTzacrf2w2CwqFPtXj+Nh94l0Mc3LGQKODW7EDA7d+yGKzE8Gmg0m2J
+         yDVvtq2vJA3XhfQxa0Ypi1woYA/evVM8XwEArDhQba+WIQKIWF8SkeFfWes698Gc4qHK
+         X2qWOjHVgIL/8HLhxuIOM1BL+EmlpjNIjs5ksurXGVrYboKItL5umn1erfI6wEAYRC+w
+         GzNddsSwKJOm36t4yvdCR8hHzQN/J1pZ1jk5PoRJ7sbALCjHFcBnFogH8uyAclQLlb36
+         E2ut5OG3xg5SiT+jr1VuTXLeCu4O5SBRL4P+ZH9NYnGNP7XLqcQBGky+cShmGVxYyZvD
+         kWXA==;
+        darn=lists.ozlabs.org
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779346474; x=1779951274; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=gmail.com; s=20251104; t=1779421777; x=1780026577; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=AaciwSm1L46TIODxCA9aHpcFSHmqvrXKCz/1wzRVFx0=;
-        b=FKaQyTYgbdTf3X4TR2nhJmwVEUK9ru9VIjz9NGrzmlCa8fx7/QqRg59pPjBdMyFtMP
-         7T/w7/epS/6KQlTYtzyBubYRuq8hmF05UqCyMe8Pc5a2a15KFsbJVr13RuVtkt4hpCfW
-         XzQi7rETiIst9/UaGN8T9yp/4bBjRCNXqqyFjN+U0Uog1FZ2lZiy0WKqDvVm5mYxS+Js
-         kyOSTx3ZeEYdMMkTQQ0Wkc8c06y1Mw9/jIFiacLef6xNkCygNTliHE5FHIVnU4rT2UC3
-         Q/0cbOtQGv9DBlVkSXb2m2lXb3sKN9A8x2K6I/9yep+F2NBPC+kj+mZaAkc4zzgQgsPS
-         flEg==
+        bh=+qT5BbvAf0970jGpHLlqJ9wvkmx5X5Z5+OFS5PTjFcE=;
+        b=WdGTjB83fDnA/CZKx6Atx0b5j9AoODMopHmIjnT+njlPuw4pOHztEWauX9j7uweEls
+         Fr6mAyKhNl+ZAeYAhQzXq6Ej6xDcdt85H1lwh2FUMBvv+YLFUXkzT8EcMJWYkjc9Y5FG
+         X4YC1GRsuqdf+TkW7QfdnktPeULEN8YkbQ6W7sW4GncmShrEEkrrrKg1GjooN1bLNyuL
+         9Ghg6JB9eXKnzd2saEgCRc0CI+e0JhOR2GwgRGteY0dtvrXzP2xYqUhtceNPmojh+v2U
+         VfZ/pR52qhZUjOzIcAF5caQiZE4+U3Rv3SSuYrkQkUSgY2al59G+qcRjAXDrHR6iMEwU
+         zK5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779346474; x=1779951274;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+        d=1e100.net; s=20251104; t=1779421777; x=1780026577;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
          :to:cc:subject:date:message-id:reply-to;
-        bh=AaciwSm1L46TIODxCA9aHpcFSHmqvrXKCz/1wzRVFx0=;
-        b=E0N/bt5QR9jYBk3l3ObKzTvPzCmo+OO2OaOZZ862oUbMVtycaXpueOnregFpjuHdyb
-         MPgYMmR8Y8Ovt2phPgmL6exAhPrW0abqaR+Uiqap6Vc/e3s50LBYSWSdJCB0zUzmZxX/
-         odf0h9dJJlRpQ7DF+jP82LXG8aLnixNbDSzW+ryNXPcomqpJrR4KcBZPLWUBQ5phMu5y
-         7HTTjjRTpGMaO8VlZEVSfxwsvnAJHwuTIM6A55rSrGWCSmCpXezTDqZ7oPiY0dFb1xKT
-         0r4JtzJBKQUB5NCgBuLbULQ+P1JKeqyMVS3Swq6uN21k2m1YN9WS/xJnWXpPhsMkhj1h
-         QCqg==
-X-Forwarded-Encrypted: i=1; AFNElJ8UOFwYHcTkxYpXmbn479cFqiWmjVriPN11yq3nkVET/NsH6O3wxJZQ7O/05uioc2V6j/dV0e6HBq8IHqE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwEErRjbEMfU/EL2PhirU1VVycjn2wiBQZFBLmuIDj0Qd7+1f/y
-	5iu/ID49snIE1qOiX6ep2OtlGnkUOiePivcVmUF/tHubc+oaNyXMiMLb
-X-Gm-Gg: Acq92OG3etAAAPRCDGuyl9pQReuweQGkfrqlWOd4Nc9x7kZMEEt8HpeVf6AZxnUQkaZ
-	V3QB8OsvlEm3YFAM/6eK6UKqMfDGLSAw0qNK8YtvRU0ZR/nWWukNf028kgBFMr2TVzNz4Mg5ZIt
-	Da/Z8O/qhtz/x8R+L7znVyD8s1X0hBfSfoENZ1f8qc32rMBEah7plBx/YVzLRrMMdMCWHUJUYL6
-	pJ8hAKL9yRChMpaecXGHfoNtTyukf+4V2T6nbB4AuREHOByuTWq1XcwgZW2nbK9JqIPnnObCu7z
-	stLCn5GPZ2NKUI9b+UVfm+rcg8XghMiCQYQ3ypZRTK98ODo1KzI55tcRit3xcjB1xRpYFx74qU8
-	FD1941ya3nTICJM8eT2so3d+G7K/FrtMrJMde38nNpU7V4yl3kmvnZVOVTfp1sNC4fenxwkrl1A
-	fTA+hnjpXSwloUlANKO4zS6Mz6yTx17WOXLVzru8HCNdM6II+9
-X-Received: by 2002:a17:902:e750:b0:2bc:8ebd:af76 with SMTP id d9443c01a7336-2bea2fb709dmr15581365ad.0.1779346473759;
-        Wed, 20 May 2026 23:54:33 -0700 (PDT)
-Received: from csl-conti-dell7858.ntu.edu.sg ([155.69.195.57])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2bd5d0fd384sm241757715ad.65.2026.05.20.23.54.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 May 2026 23:54:33 -0700 (PDT)
-From: Maoyi Xie <maoyixie.tju@gmail.com>
-To: Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Neal Liu <neal_liu@aspeedtech.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Joel Stanley <joel@jms.id.au>,
-	Andrew Lunn <andrew@lunn.ch>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	linux-aspeed@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v3] usb: gadget: aspeed_udc: avoid past-the-end iterator in dequeue
-Date: Thu, 21 May 2026 14:54:28 +0800
-Message-Id: <20260521065428.3261238-1-maoyixie.tju@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20260519080213.1932516-1-maoyixie.tju@gmail.com>
-References: <20260519080213.1932516-1-maoyixie.tju@gmail.com>
+        bh=+qT5BbvAf0970jGpHLlqJ9wvkmx5X5Z5+OFS5PTjFcE=;
+        b=cZ7xzCeA0VgMJ2tjMewgNiRfC8Xeg5Mwkep/8Ti2LWX3s92/Sxj81FvpCXW/S2KX6G
+         hcGhED8pWITBBz441Vfungqh//IJWKf1bgSBHo96bEs5ZZms+D9NXLoT2k7a5iZDz0wh
+         xW0vA2SHfVEIiGs/5CKbWH8hSxI4TsFd7WRHEDYtVDTQbOYPQT93zsIIHDdi4BBuNcw8
+         tf8s4+LD3SzZA36g2FRAge4EdcuMNbF2vCVU8aCYMQ4MbakthFWH8szHR1bX11ZsmH8O
+         zNvonjgqMItj3MUWUdpduryqflJVDp9vCnq9FQXCuHx+1qoa2WXmE67ncchss0oocNN3
+         eH0g==
+X-Forwarded-Encrypted: i=1; AFNElJ+fkVI2ePqMhOOkE2v23TG7p4vMlFmcXAbDWGbIONQ0wcTgg9j3KNiUXn+4+1TrCsikPnGXqUwKU8f0W18=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzA9NxvJYS62t0BFHDFbMDdpKgwT9zQqixX0WiZSbO9rvdDfDHR
+	8x3W2O+Su6H5nWqwTDmdA0wIveuSUb1yIpyGZWwdSgkyYbg8nhg3llxN4UhagGvL5ZcG9uMTVwI
+	QxHGMth15wQNNiY7GuEzbZYimyS1q3IM=
+X-Gm-Gg: Acq92OHzutA2EWLRVEPlrRTEHY72trqUsxWmZFuBHo84t7IXelmtuRNydVl73lY2k5/
+	S5zKG/xN6uH1dLIXHCCBbmr/gW2AhkHW9OGBrgAJyisHtbC9A7Pk51agXunDPBsQQ5zDuayIwTq
+	KHpaogUahfDch0jEYyR58+KJfisSMFV2q4Bo0xx7gtqE4Hk/b4TJlb1oItQQFkMSZ60o4ylKx/n
+	xq874Dh+cp4Z2QQXQX6YwY8/kZ+kHSLBarHapYQFpt+XZHAyG/lEFgLTELP/q8vDCupSgw5C4Wz
+	e2bMeMlVPpdM5ebeyNm+QKubcyVQuonNhjehpkEt
+X-Received: by 2002:a05:7022:4a4:b0:135:2640:70cc with SMTP id
+ a92af1059eb24-1365f6fe0d9mr845587c88.5.1779421777083; Thu, 21 May 2026
+ 20:49:37 -0700 (PDT)
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -102,65 +101,117 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20260331-asus-kommando-networking-v2-1-f7d72ae5d40d@gmail.com>
+In-Reply-To: <20260331-asus-kommando-networking-v2-1-f7d72ae5d40d@gmail.com>
+From: Anirudh Srinivasan <anirudhsriniv@gmail.com>
+Date: Thu, 21 May 2026 22:49:24 -0500
+X-Gm-Features: AVHnY4Ka54_MLKGXewXkQbTwbb4nAvWDr8M9psv1cc8wtCfvwYFbBij8bhm-Seo
+Message-ID: <CAJ13v3RtV+_P_ShfrM5vH+neT0cB6t5yAbqGiiw7S7Y8qpVY=Q@mail.gmail.com>
+Subject: Re: [PATCH v2] ARM: dts: aspeed: Enable networking for Asus Kommando
+ IPMI Card
+To: Andrew Jeffery <andrew@codeconstruct.com.au>
+Cc: Andrew Lunn <andrew@lunn.ch>, devicetree@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-aspeed@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>, 
+	Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Joel Stanley <joel@jms.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-ast_udc_ep_dequeue() declares the loop cursor `req` outside the
-list_for_each_entry(). After the loop it tests `&req->req != _req`
-to decide whether the request was found. If the queue holds no
-match, `req` is past-the-end. It then aliases
-container_of(&ep->queue, struct ast_udc_request, queue) via offset
-cancellation. Whether that synthetic address equals `_req` depends
-on heap layout. The function can return 0 without dequeueing
-anything.
+Hi Andrew,
 
-Default `rc` to -EINVAL and set it to 0 only inside the match
-branch. `req` is no longer read after the loop, so the past-the-end
-dereference goes away. No extra cursor variable or post-loop test
-is needed.
+On Tue, Mar 31, 2026 at 9:18=E2=80=AFAM Anirudh Srinivasan
+<anirudhsriniv@gmail.com> wrote:
+>
+> Adds the DT nodes needed for ethernet support for Asus Kommando, with
+> phy mode set to rgmii-id.
+>
+> When this DT was originally added, the phy mode was set to rgmii (which
+> was incorrect). It was suggested to remove networking support from the
+> DT till the Aspeed networking driver was patched so that the correct phy
+> mode could be used.
+>
+> The discussion in [1] mentions that u-boot was inserting clk delays that
+> weren't needed, which resulted in needing to set the phy mode in linux
+> to rgmii incorrectly. The solution suggested there was to patch u-boot to
+> no longer insert these clk delays and use rgmii-id as the phy mode for
+> any future DTs added to linux.
+>
+> This DT was tested (on the OpenBMC u-boot fork [2]) with a u-boot DT
+> modified to insert clk delays of 0 (instead of patching u-boot itself).
+> [3] adds a u-boot DT for this device (without networking) and describes
+> how to patch it to add networking support. If this patched DT is used,
+> then networking works with rgmii-id phy mode in both u-boot and linux.
+>
+> [1] https://lore.kernel.org/linux-aspeed/ef88bb50-9f2c-458d-a7e5-dc5ecb9c=
+777a@lunn.ch/
+> [2] https://github.com/openbmc/u-boot/tree/v2019.04-aspeed-openbmc
+> [3] https://lore.kernel.org/openbmc/20260328-asus-kommando-v2-1-2a656f8cd=
+314@gmail.com/
+>
+> Signed-off-by: Anirudh Srinivasan <anirudhsriniv@gmail.com>
+> ---
+> This patch is based off aspeed/arm/dt from bmc tree
+> ---
+> Changes in v2:
+> - Commit message now mentions that the u-boot tested against is the
+>   openbmc u-boot fork
+> - Link to v1: https://lore.kernel.org/r/20260328-asus-kommando-networking=
+-v1-1-66d308b88536@gmail.com
+> ---
+>  .../dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts  | 18 ++++++++++++=
+++++++
+>  1 file changed, 18 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.=
+dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
+> index ab7ad320067c1ddc0fea9ac386fd488c8ef28184..e0f7d92efa18ccbad2c336236=
+c3b9d01b7de1bba 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
+> @@ -107,6 +107,24 @@ &gpio1 {
+>         /*18E0 32*/ "","","","","","","","";
+>  };
+>
+> +&mac2 {
+> +       status =3D "okay";
+> +
+> +       phy-mode =3D "rgmii-id";
+> +       phy-handle =3D <&ethphy2>;
+> +       pinctrl-names =3D "default";
+> +       pinctrl-0 =3D <&pinctrl_rgmii3_default>;
+> +};
+> +
+> +&mdio2 {
+> +       status =3D "okay";
+> +
+> +       ethphy2: ethernet-phy@0 {
+> +               compatible =3D "ethernet-phy-ieee802.3-c22";
+> +               reg =3D <0>;
+> +       };
+> +};
+> +
+>  &vhub {
+>         status =3D "okay";
+>  };
+>
+> ---
+> base-commit: 76b4ec8efdc3887cdbf730da2e55881fc1a18770
+> change-id: 20260328-asus-kommando-networking-5c0612aa6b8c
+>
+> Best regards,
+> --
+> Anirudh Srinivasan <anirudhsriniv@gmail.com>
+>
 
-Suggested-by: Alan Stern <stern@rowland.harvard.edu>
-Suggested-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-Signed-off-by: Maoyi Xie <maoyixie.tju@gmail.com>
----
-v3: Switch to Andrew Jeffery's shape: default rc to -EINVAL, set
-    rc=0 inside the match branch, drop the post-loop check. Smaller
-    diff, no extra cursor variable, no goto. Same semantic fix as v2.
-v2: https://lore.kernel.org/linux-usb/20260519080213.1932516-1-maoyixie.tju@gmail.com/
-v1: https://lore.kernel.org/linux-usb/20260518073403.1285339-1-maoyi.xie@ntu.edu.sg/
+While we're figuring out what to do with u-boot, what are your
+thoughts on getting this patch in so that the kernel DTS changes
+needed for networking land in this cycle?
 
- drivers/usb/gadget/udc/aspeed_udc.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+The current commit message might become somewhat outdated if the
+u-boot patch changes though, so not sure if that's okay.
 
-diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
-index 7fc6696b7694..75f9c831b21a 100644
---- a/drivers/usb/gadget/udc/aspeed_udc.c
-+++ b/drivers/usb/gadget/udc/aspeed_udc.c
-@@ -694,7 +694,7 @@ static int ast_udc_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
- 	struct ast_udc_dev *udc = ep->udc;
- 	struct ast_udc_request *req;
- 	unsigned long flags;
--	int rc = 0;
-+	int rc = -EINVAL;
- 
- 	spin_lock_irqsave(&udc->lock, flags);
- 
-@@ -704,14 +704,11 @@ static int ast_udc_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
- 			list_del_init(&req->queue);
- 			ast_udc_done(ep, req, -ESHUTDOWN);
- 			_req->status = -ECONNRESET;
-+			rc = 0;
- 			break;
- 		}
- 	}
- 
--	/* dequeue request not found */
--	if (&req->req != _req)
--		rc = -EINVAL;
--
- 	spin_unlock_irqrestore(&udc->lock, flags);
- 
- 	return rc;
--- 
-2.34.1
 
+--
+Regards
+Anirudh Srinivasan
 
