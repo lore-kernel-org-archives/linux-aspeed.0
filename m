@@ -1,91 +1,65 @@
-Return-Path: <linux-aspeed+bounces-4127-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4128-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76C42CD4F54
-	for <linux-aspeed@archiver.kernel.org>; Mon, 25 May 2026 00:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 512CFCD5BAB
+	for <linux-aspeed@archiver.kernel.org>; Mon, 25 May 2026 01:25:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gNxPd5218z2yFP;
-	Mon, 25 May 2026 10:21:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::632"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779557746;
-	cv=none; b=Z7vcACSJOI63JRj7vbBOkGjnMXPixzy4AeqC/Sfj9Q7HdNoLQbGV1CqjZZzXqAoW6h/pyFg1ZTHy2v7vRMUAkRPS0+E9EgDkFG9FmWAP4J9zmja2ExeHGHx8iAO1P+Yjd7BoYq2EkSrMWF6M0ODrRGHOqmkwd+gW7egB812a1FpaYV6yVs5kvz6Zq//MCo0CbJ5nDxZG2EMBQao3LsoJKMiIYyh2SLqTjv11WrDnmzlJECeh6hnaRmzDGsE/7f7laZ4vA1eJFzn97HSBSGe+fs+Voa2S1kZId/R9uLKYM6hz9VN6cEEh7u4KKvqWVbUJbVNFhmVE0Fn5vdHPTcr61A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gNyqc2ymrz2yFP;
+	Mon, 25 May 2026 11:25:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779672316;
+	cv=none; b=bwcqqTRjzMs/sWRtptcW+2vcozPr+v3Ky8tTB7ma9EOuZT8X9saphX2drU4gU4h8hG7SY4T232ArsL4ANGG7ucEdmUaD51+YfJ4+S74KYfc3Fqq4fq+8gak60jL9+rhrc+0kQmiKYZcinAL3Kx+PFs98CATmazCKi2wtFpYp1DLONV/+4+qBLo7BftMyW/odRmCTbub6f25gKWj+WZ6LMTOoqk0DLbCe25v6O25uKtl8bc+XRGiqihMnzQ30C+1LYMP03tUL1HMR6jXkG8LLOPyhrheFV1Ut8uy/XvYa1S4uzUrb46ImB/ju3WmywVm7/2cN1gbjPlUxaRFdEzCU5A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779557746; c=relaxed/relaxed;
-	bh=EUG8MR7r/McYpSjFacnbdSLvEz+8pngd+Q3ZhhzQ5E0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OL4lEwD9xwoccVDwwmDCzykByvdxPJj1D89sSfAa8c9hS/3ibIjb9EbDgFZUIA3mzkYQQALl4RbVv4likLn2k3qAQg7tnUQz1noWZzUw9ynDgK+ThZQAqKXswDsVnRAz82aneC1cl21s2kM+m1fFnK12KRbOWG7ssHsTB+A26XGyJQ/A5b5vkHm/5DejsWhtZxzIpoeG4lgWNAkFkwViLBw144VzrzAzsxPGJM74UJz9Jd545EDTtzqC2hr0aIf9Vv1xtVGemVDeSGoEhF/wsn7W+2W4J8m9eIvG++e/bMxtMeiabM8rgWqJZFpdYePDsjDxw1n2X7BaQTSrUARWkg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J+uyDwrc; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1779672316; c=relaxed/relaxed;
+	bh=EOngXcy4azYbeJnIGGVTceQl/NqW4hHU6sQbR3V0fVQ=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=j+zxKmD3yt+teZIr+Vq1oeWwbLgKgnYwM1hcU7pHomNdUv5/u+DMGdcgDJwb5qOk2NYjQ/OBj3OirB9twcN1oNoi+1vblMACTCNk5TBXmkAzsi52aZsa17pk3uJOfWEIIeuHUVDK/yMfatW1a7HJTZDt508ecq0oA/tw2xg8AuOocXGZzKMso2Cun4tiR6yJ7d4RAWPR+hfMA5bPR2Yn4oLcGpBqLVfvE3s03tsy6nElHy9OMNMOWsoL6EsUVTL9OEKRImuEwYqJMbhJzCoaKRJmIteIXl8VgnhAo8a8R/ao0nWPtKHhklQoFMMVhAi42L685X2lp2bEP2N7EoSJVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=JffiABGH; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=J+uyDwrc;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=JffiABGH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=karthiproffesional@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
+Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gN8SH58RGz2xfR
-	for <linux-aspeed@lists.ozlabs.org>; Sun, 24 May 2026 03:35:42 +1000 (AEST)
-Received: by mail-pl1-x632.google.com with SMTP id d9443c01a7336-2ba21d32776so61363925ad.2
-        for <linux-aspeed@lists.ozlabs.org>; Sat, 23 May 2026 10:35:42 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gNyqZ7585z2xfB
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 25 May 2026 11:25:14 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20251104; t=1779557739; x=1780162539; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=EUG8MR7r/McYpSjFacnbdSLvEz+8pngd+Q3ZhhzQ5E0=;
-        b=J+uyDwrcpWLfmDyJVMosTFj016YzjyUzkXi6gflLv3/0cMbMLvBEhQitTh/HTcX8C1
-         cT7UMoFOS0Hjz1zf7uauHBtgAijzUomH3bhJ71PX8G4Ev8Ko7cvSR5fTZgJPhwCc1FBI
-         mHc0VTSMraXb49g3/iapg7VUYBpzUt6SRK9Emkaz57ouRQVsPMEMMoqyTcvlrr5WXJ05
-         hIEa8OgTxIDmIsNAPh8uDndGDg1SKyQs6vasZpDXuCZOsar27EyfEzDq/Woh6AUO44Gg
-         IQvOIPR73Tb8nQiaSVl+amxU2Lb6kUICdFj5ZxvpqrAghMSo8B9PmfejnNgLXErjkCZS
-         iOfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1779557739; x=1780162539;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=EUG8MR7r/McYpSjFacnbdSLvEz+8pngd+Q3ZhhzQ5E0=;
-        b=CjYiQ1HWN7s1dWN8kcaL9AmjYV91jGRV9i6JjSJjmqP3JHHehKzEUdYoUDKW1xEFER
-         gq4HdgE84Q84QXGocCiF5pgkWfAD74zUD4fkAcjc3ASwnz4/bMknNDtmrDgiuCe/T/po
-         J52L5rzr6t5/5DiVyuT2AqmFprVY5sJOZkPbytxyTMoP+N0HwOsXQWp3P7+wB4dvYX04
-         fu9H4kPVgZLfeWi3cGpw8OTJoB2e1Y+o+eKKZxrkIKJeQKQKx9hbLPQl5fpg2SoqOgIP
-         2fkcHgl/Y470jvNbbdWfiSoK/1ya8vt36NpWRnzHaetTZEDyvfeprDOCosyC8TqcaGJi
-         Bjsg==
-X-Forwarded-Encrypted: i=1; AFNElJ9cwaRXwyFSouLH8MsdaWrYjoKfo9khsTler5sMqF7zg3d0a4k5F445/uy+RlG6gLcDteDYR/ZWlWRj7ag=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy7tkT+uShNvCSbfgCbDm0D5xdq+FlsjdvtxJbLmluqOkd/fCDp
-	sVHSPDNE+D1yiZDqVt2/WNvzNTV5SRFn7EnF5hqVgJOdI1PPTYwXCeSU
-X-Gm-Gg: Acq92OHLmP36RA2hKYHlzfBcNcFwgxLZMMbIS79NC9ijet9SBr7mzMCQNPQClII/7DJ
-	xmjkjo3Cudd9qKqbcIftmxiVXDv6nu8CgpivBY1XXQgIoWXbHpbps6VBggGnmWypHqDTnqp2Gia
-	t9Uky0Pr4gI8ZmUvVZjmf791WNURxGavRyRzTgIsvCKGcLVmjjjoVqYInjJ7A6Y54d0cslSlB0A
-	dAoouCarhRTdpV9o5dbbEPqeos1xKQwLFIp2bWAce1ItOeqcoSvIdeNBwjbeqJiWqXhEOkbUN7Y
-	QF6Wr6NqGxqbx9Oq9xtFdmYh0WpRPeR7djF/V8mty8v/pc9G3ch2XMzhLmoBBtH+Y4GFrZBTyvg
-	9xVlEOkKVx30oTF8nVhZzrO0StUmgQ8qtqYOc4Tnud+sm0CEGgZNCcm5yhfQbN5Pz+W4iSN716o
-	6tlj81jWGHeQGtktR4EWXtJxE0PaLpsSHtr9SdWPoe3p5731cvAPPm6223DhmMhOD8QvA=
-X-Received: by 2002:a17:902:ccca:b0:2bd:a413:6b07 with SMTP id d9443c01a7336-2beb031ad32mr88357095ad.8.1779557738940;
-        Sat, 23 May 2026 10:35:38 -0700 (PDT)
-Received: from LAPTOP-97G9G880.domain.name ([106.222.202.195])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2beb58dba7bsm48481345ad.66.2026.05.23.10.35.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 23 May 2026 10:35:38 -0700 (PDT)
-From: Karthikeyan KS <karthiproffesional@gmail.com>
-To: joel@jms.id.au,
-	andrew@aj.id.au
-Cc: andrew@codeconstruct.com.au,
-	jdelvare@suse.de,
-	linux-arm-kernel@lists.infradead.org,
-	linux-aspeed@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Karthikeyan KS <karthiproffesional@gmail.com>
-Subject: [PATCH v2] soc: aspeed: lpc-snoop: Fix usercopy overflow in snoop_file_read
-Date: Sat, 23 May 2026 17:35:24 +0000
-Message-ID: <20260523173528.427889-1-karthiproffesional@gmail.com>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <c3d474a1ec807e686c0b7ac70cc75f86898aee99.camel@codeconstruct.com.au>
-References: <c3d474a1ec807e686c0b7ac70cc75f86898aee99.camel@codeconstruct.com.au>
+	d=codeconstruct.com.au; s=2022a; t=1779672313;
+	bh=EOngXcy4azYbeJnIGGVTceQl/NqW4hHU6sQbR3V0fVQ=;
+	h=Subject:From:To:Cc:Date:In-Reply-To:References;
+	b=JffiABGHYUUHJpRcyq52r58EKKZFnFNOItdblZO26LvoMu6Z1WgbnOWWe98KB9xT/
+	 bKMFBaNjgUWO++o3Gn9EFyjUzwsXdXWqHbGcuix0hrx1Xv+arE4nLF7sCJ1sqTJKFG
+	 /nLBKqh2IyFzs3DI1zYUXBg3NDsur/c/BDp8TNDDY6OWEKwt0YKhegt0UDB3QwIqGv
+	 0dU/ReOxRsH4ImflO2/rX87zzUoPK9y2pP5FLbY+Lu4IxM0dAcGXMIkysgf0zN+8BH
+	 ujNT3YpaSY35yasBunE671nwNQefM3HaZ2MoN/9SQpTDdweUe191b7re7LOYTVEFUy
+	 pVvXa4PDxStiw==
+Received: from [192.168.68.117] (unknown [180.150.112.11])
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 5671B60007;
+	Mon, 25 May 2026 09:25:10 +0800 (AWST)
+Message-ID: <5e5db092fbf80b88a95d38b3d0b655baac22c711.camel@codeconstruct.com.au>
+Subject: Re: [PATCH v2] ARM: dts: aspeed: Enable networking for Asus
+ Kommando IPMI Card
+From: Andrew Jeffery <andrew@codeconstruct.com.au>
+To: Andrew Lunn <andrew@lunn.ch>, Anirudh Srinivasan
+ <anirudhsriniv@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Rob Herring
+	 <robh@kernel.org>, Conor Dooley <conor+dt@kernel.org>, Krzysztof Kozlowski
+	 <krzk+dt@kernel.org>, Joel Stanley <joel@jms.id.au>
+Date: Mon, 25 May 2026 10:55:09 +0930
+In-Reply-To: <d8c7d7c9-6f2f-4d3f-95d4-877e8504a1b6@lunn.ch>
+References: <20260331-asus-kommando-networking-v2-1-f7d72ae5d40d@gmail.com>
+	 <CAJ13v3RtV+_P_ShfrM5vH+neT0cB6t5yAbqGiiw7S7Y8qpVY=Q@mail.gmail.com>
+	 <d8c7d7c9-6f2f-4d3f-95d4-877e8504a1b6@lunn.ch>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-0+deb13u1 
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -99,200 +73,127 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-put_fifo_with_discard() violates kfifo's single-producer/single-consumer
-lock-free contract by calling both kfifo_skip() (consumer op: out++) and
-kfifo_put() (producer op: in++) from the IRQ handler context.
-kfifo_skip() increments 'out' without a memory barrier, while
-kfifo_put() increments 'in' with smp_wmb(). On ARM (weakly ordered), a
-concurrent reader on another CPU can observe the new 'in' but a stale
-'out', causing (in - out) to exceed the buffer size.
+On Fri, 2026-05-22 at 14:05 +0200, Andrew Lunn wrote:
+> On Thu, May 21, 2026 at 10:49:24PM -0500, Anirudh Srinivasan wrote:
+> > Hi Andrew,
+> >=20
+> > On Tue, Mar 31, 2026 at 9:18=E2=80=AFAM Anirudh Srinivasan
+> > <anirudhsriniv@gmail.com> wrote:
+> > >=20
+> > > Adds the DT nodes needed for ethernet support for Asus Kommando, with
+> > > phy mode set to rgmii-id.
+> > >=20
+> > > When this DT was originally added, the phy mode was set to rgmii (whi=
+ch
+> > > was incorrect). It was suggested to remove networking support from th=
+e
+> > > DT till the Aspeed networking driver was patched so that the correct =
+phy
+> > > mode could be used.
+> > >=20
+> > > The discussion in [1] mentions that u-boot was inserting clk delays t=
+hat
+> > > weren't needed, which resulted in needing to set the phy mode in linu=
+x
+> > > to rgmii incorrectly. The solution suggested there was to patch u-boo=
+t to
+> > > no longer insert these clk delays and use rgmii-id as the phy mode fo=
+r
+> > > any future DTs added to linux.
+> > >=20
+> > > This DT was tested (on the OpenBMC u-boot fork [2]) with a u-boot DT
+> > > modified to insert clk delays of 0 (instead of patching u-boot itself=
+).
+> > > [3] adds a u-boot DT for this device (without networking) and describ=
+es
+> > > how to patch it to add networking support. If this patched DT is used=
+,
+> > > then networking works with rgmii-id phy mode in both u-boot and linux=
+.
+> > >=20
+> > > [1] https://lore.kernel.org/linux-aspeed/ef88bb50-9f2c-458d-a7e5-dc5e=
+cb9c777a@lunn.ch/
+> > > [2] https://github.com/openbmc/u-boot/tree/v2019.04-aspeed-openbmc
+> > > [3] https://lore.kernel.org/openbmc/20260328-asus-kommando-v2-1-2a656=
+f8cd314@gmail.com/
+> > >=20
+> > > Signed-off-by: Anirudh Srinivasan <anirudhsriniv@gmail.com>
+> > > ---
+> > > This patch is based off aspeed/arm/dt from bmc tree
+> > > ---
+> > > Changes in v2:
+> > > - Commit message now mentions that the u-boot tested against is the
+> > > =C2=A0 openbmc u-boot fork
+> > > - Link to v1: https://lore.kernel.org/r/20260328-asus-kommando-networ=
+king-v1-1-66d308b88536@gmail.com
+> > > ---
+> > > =C2=A0.../dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts=C2=A0 | 1=
+8 ++++++++++++++++++
+> > > =C2=A01 file changed, 18 insertions(+)
+> > >=20
+> > > diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-c=
+ard.dts b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
+> > > index ab7ad320067c1ddc0fea9ac386fd488c8ef28184..e0f7d92efa18ccbad2c33=
+6236c3b9d01b7de1bba 100644
+> > > --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
+> > > +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-asus-kommando-ipmi-card.dts
+> > > @@ -107,6 +107,24 @@ &gpio1 {
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 /*18E0 32*/ "","","","",""=
+,"","","";
+> > > =C2=A0};
+> > >=20
+> > > +&mac2 {
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 status =3D "okay";
+> > > +
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 phy-mode =3D "rgmii-id";
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 phy-handle =3D <&ethphy2>;
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pinctrl-names =3D "default";
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 pinctrl-0 =3D <&pinctrl_rgmii3_=
+default>;
+> > > +};
+> > > +
+> > > +&mdio2 {
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 status =3D "okay";
+> > > +
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 ethphy2: ethernet-phy@0 {
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0 compatible =3D "ethernet-phy-ieee802.3-c22";
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0 reg =3D <0>;
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 };
+> > > +};
+> > > +
+> > > =C2=A0&vhub {
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 status =3D "okay";
+> > > =C2=A0};
+> > >=20
+> > > ---
+> > > base-commit: 76b4ec8efdc3887cdbf730da2e55881fc1a18770
+> > > change-id: 20260328-asus-kommando-networking-5c0612aa6b8c
+> > >=20
+> > > Best regards,
+> > > --
+> > > Anirudh Srinivasan <anirudhsriniv@gmail.com>
+> > >=20
+> >=20
+> > While we're figuring out what to do with u-boot, what are your
+> > thoughts on getting this patch in so that the kernel DTS changes
+> > needed for networking land in this cycle?
+> >=20
+> > The current commit message might become somewhat outdated if the
+> > u-boot patch changes though, so not sure if that's okay.
+>=20
+> The commit message explains "Why?", which is what is important. So it
+> should not matter if it becomes outdated. And the DT is correct, no
+> matter how the issue is solved.
 
-__kfifo_to_user() clamps the copy length to (in - out), but since that
-value is already corrupted by the race, the clamp is ineffective. The
-subsequent kfifo_copy_to_user() ring-buffer split produces a second
-chunk exceeding the 2048-byte kmalloc-2k slab object, triggering:
+Yeah, this was my thought too, so I intend to apply it.
 
-  Backtrace:
-[    2.972611] usercopy: Kernel memory exposure attempt detected from SLUB object 'kmalloc-2k' (offset 0, size 2049)!
-[    2.974191] ------------[ cut here ]------------
-[    2.974677] kernel BUG at mm/usercopy.c:99!
-[    2.975068] Internal error: Oops - BUG: 0 [#1] SMP ARM
-[    2.975755] Modules linked in: post_injector(O)
-[    2.976668] CPU: 0 PID: 1 Comm: init Tainted: G           O      5.15.178 #4
-[    2.977316] Hardware name: Generic DT based system
-[    2.977848] PC is at usercopy_abort+0x80/0xa8
-[    2.978931] LR is at vprintk_emit+0xf0/0x230
-[    2.979296] pc : [<8095c3a0>]    lr : [<8017cb2c>]    psr: 60000153
-[    2.979781] sp : 810e3dc8  ip : 810e3d38  fp : 810e3dec
-[    2.980192] r10: 00000003  r9 : 811ea801  r8 : 811ea800
-[    2.980616] r7 : 00000001  r6 : 00000801  r5 : 00000801  r4 : 00000000
-[    2.981104] r3 : 00000000  r2 : 00000000  r1 : 00000000  r0 : 00000066
-[    2.981712] Flags: nZCv  IRQs on  FIQs off  Mode SVC_32  ISA ARM  Segment none
-[    2.982363] Control: 00c5387d  Table: 81a64008  DAC: 00000051
-[    2.982881] Register r0 information: non-paged memory
-[    2.983662] Register r1 information: NULL pointer
-[    2.984074] Register r2 information: NULL pointer
-[    2.984474] Register r3 information: NULL pointer
-[    2.984879] Register r4 information: NULL pointer
-[    2.985279] Register r5 information: non-paged memory
-[    2.985704] Register r6 information: non-paged memory
-[    2.986118] Register r7 information: non-paged memory
-[    2.986553] Register r8 information: slab kmalloc-2k start 811ea800 pointer offset 0 size 2048
-[    2.987789] Register r9 information: slab kmalloc-2k start 811ea800 pointer offset 1 size 2048
-[    2.988541] Register r10 information: non-paged memory
-[    2.988971] Register r11 information: non-slab/vmalloc memory
-[    2.989511] Register r12 information: non-slab/vmalloc memory
-[    2.990064] Process init (pid: 1, stack limit = 0x041252af)
-[    2.990631] Stack: (0x810e3dc8 to 0x810e4000)
-[    2.991119] 3dc0:                   80c2ceb4 80c29fd4 80c1f6d4 00000000 00000801 811ea801
-[    2.992044] 3de0: 810e3e1c 810e3df0 802e3a94 8095c32c 00000801 801168b0 811ea800 811ea800
-[    2.992707] 3e00: 00000801 00000001 811eb001 00000001 810e3e44 810e3e20 802e8774 802e3978
-[    2.993336] 3e20: 810e3e44 810e3e30 00000801 00001000 7edc2593 811ea800 810e3e6c 810e3e48
-[    2.993971] 3e40: 804dedf0 802e8604 811d584c 00001000 810e3e98 7edc1d94 00001000 810e2000
-[    2.994734] 3e60: 810e3e94 810e3e70 804def50 804ded54 810e3e98 804d3f28 00000000 811d586c
-[    2.995377] 3e80: 810e3e98 00000001 810e3ed4 810e3e98 80579a58 804def0c 810e3f34 810e3ea8
-[    2.996024] 3ea0: 80282c74 80282744 00000000 37f2b80b ffffe000 819a2cc0 810e3f68 00000001
-[    2.996684] 3ec0: 805799a8 00001000 810e3f64 810e3ed8 802ee040 805799b4 00000003 1cd5b000
-[    2.997310] 3ee0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    2.997987] 3f00: 801002c4 37f2b80b 810e2000 810e2000 810e3fb0 00000000 801002c4 80314ce0
-[    2.998678] 3f20: 00000000 00000003 014fc580 00001000 7edc1d94 37f2b80b 810e2000 819a2cc0
-[    2.999268] 3f40: 819a2cc0 00000000 00000000 801002c4 810e2000 00000003 810e3f94 810e3f68
-[    3.000024] 3f60: 802ee740 802edf90 00000000 00000000 00000800 37f2b80b 00000003 014fc580
-[    3.000688] 3f80: 00006f2c 00000003 810e3fa4 810e3f98 802ee7e4 802ee6dc 00000000 810e3fa8
-[    3.001364] 3fa0: 80100080 802ee7d8 00000003 014fc580 00000003 7edc1d94 00001000 00000000
-[    3.002389] 3fc0: 00000003 014fc580 00006f2c 00000003 7edc2f10 00000000 00000001 00000000
-[    3.003042] 3fe0: 000000ac 7edc1d18 0002c174 0002c190 60000150 00000003 00000000 00000000
-[    3.003773] Backtrace:
-[    3.004236] [<8095c320>] (usercopy_abort) from [<802e3a94>] (__check_heap_object+0x128/0x150)
-[    3.005187] [<802e396c>] (__check_heap_object) from [<802e8774>] (__check_object_size+0x17c/0x1e0)
-[    3.005996]  r8:00000001 r7:811eb001 r6:00000001 r5:00000801 r4:811ea800
-[    3.006555] [<802e85f8>] (__check_object_size) from [<804dedf0>] (kfifo_copy_to_user+0xa8/0x1b8)
-[    3.007290]  r7:811ea800 r6:7edc2593 r5:00001000 r4:00000801
-[    3.007766] [<804ded48>] (kfifo_copy_to_user) from [<804def50>] (__kfifo_to_user+0x50/0x70)
-[    3.008418]  r9:810e2000 r8:00001000 r7:7edc1d94 r6:810e3e98 r5:00001000 r4:811d584c
-[    3.009031] [<804def00>] (__kfifo_to_user) from [<80579a58>] (snoop_file_read+0xb0/0xf8)
-[    3.009683]  r6:00000001 r5:810e3e98 r4:811d586c
-[    3.010055] [<805799a8>] (snoop_file_read) from [<802ee040>] (vfs_read+0xbc/0x328)
-[    3.010686]  r8:00001000 r7:805799a8 r6:00000001 r5:810e3f68 r4:819a2cc0
-[    3.011182] [<802edf84>] (vfs_read) from [<802ee740>] (ksys_read+0x70/0xfc)
-[    3.011762]  r10:00000003 r9:810e2000 r8:801002c4 r7:00000000 r6:00000000 r5:819a2cc0
-[    3.012451]  r4:819a2cc0
-[    3.012677] [<802ee6d0>] (ksys_read) from [<802ee7e4>] (sys_read+0x18/0x1c)
-[    3.013261]  r7:00000003 r6:00006f2c r5:014fc580 r4:00000003
-[    3.013724] [<802ee7cc>] (sys_read) from [<80100080>] (ret_fast_syscall+0x0/0x48)
-[    3.014330] Exception stack(0x810e3fa8 to 0x810e3ff0)
-[    3.014767] 3fa0:                   00000003 014fc580 00000003 7edc1d94 00001000 00000000
-[    3.015379] 3fc0: 00000003 014fc580 00006f2c 00000003 7edc2f10 00000000 00000001 00000000
-[    3.016030] 3fe0: 000000ac 7edc1d18 0002c174 0002c190
-[    3.016641] Code: e1cd40fc e58dc000 e59f0024 ebfff741 (e7f001f2)
-[    3.017733] ---[ end trace d9f7e472f48076c9 ]---
-[    3.018380] Kernel panic - not syncing: Fatal exception
-[    3.019190] ---[ end Kernel panic - not syncing: Fatal exception ]---
+>=20
+> So i'm O.K. with this.
 
+Thanks
 
-This is reproducible on AST2500 BMC (dual-core ARM Cortex-A7) when
-BIOS floods POST codes while userspace concurrently reads
-/dev/aspeed-lpc-snoop0.
-
-Fix by:
-
-1. Clamping 'count' to SNOOP_FIFO_SIZE in snoop_file_read() so that
-   copy_to_user() can never exceed the slab object boundary regardless
-   of kfifo pointer state.
-
-2. Protecting the kfifo_skip() + kfifo_put() sequence in
-   put_fifo_with_discard() and the kfifo_to_user() call in
-   snoop_file_read() with a spinlock, ensuring pointer updates are
-   atomic with respect to concurrent access and restoring the
-   single-writer invariant for each pointer.
-
-   put_fifo_with_discard() is only called from hardirq context where
-   interrupts are already disabled, so plain spin_lock/spin_unlock is
-   used. snoop_file_read() runs in process context and must use
-   spin_lock_irqsave to prevent deadlock with the IRQ handler.
-
-Signed-off-by: Karthikeyan KS <karthiproffesional@gmail.com>
----
-Andrew,
-
-You're right — __kfifo_to_user() clamps to (in - out). The issue is
-that (in - out) itself is corrupted by a race in put_fifo_with_discard().
-
-The function calls kfifo_skip() (out++) then kfifo_put() (in++) without
-synchronization. On SMP ARM, the reader observes fresh 'in' (barrier in
-kfifo_put) but stale 'out' (no barrier in kfifo_skip), making (in - out)
-exceed the buffer size. The clamp then passes through the corrupted value.
-
-Reproduced on QEMU ast2500-evb by injecting POST codes and simulating
-the race outcome. Also observed intermittently on physical dual-core
-AST2600 under heavy POST code traffic.
-
-Changes since v1:
-- Root cause identified as SMP race, not missing read-side clamp
-- Added spinlock to put_fifo_with_discard() and snoop_file_read()
-- spin_lock() in IRQ context, spin_lock_irqsave() in process context
-- Retained count clamp as defense in depth
-
- drivers/soc/aspeed/aspeed-lpc-snoop.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/soc/aspeed/aspeed-lpc-snoop.c b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-index eceeaf8..d084492 100644
---- a/drivers/soc/aspeed/aspeed-lpc-snoop.c
-+++ b/drivers/soc/aspeed/aspeed-lpc-snoop.c
-@@ -60,6 +60,7 @@ struct aspeed_lpc_snoop_model_data {
- 
- struct aspeed_lpc_snoop_channel {
- 	struct kfifo		fifo;
-+	spinlock_t		lock;
- 	wait_queue_head_t	wq;
- 	struct miscdevice	miscdev;
- };
-@@ -83,8 +84,11 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
- {
- 	struct aspeed_lpc_snoop_channel *chan = snoop_file_to_chan(file);
- 	unsigned int copied;
-+	unsigned long flags;
- 	int ret = 0;
- 
-+	count = min_t(size_t, count, SNOOP_FIFO_SIZE);
-+
- 	if (kfifo_is_empty(&chan->fifo)) {
- 		if (file->f_flags & O_NONBLOCK)
- 			return -EAGAIN;
-@@ -93,7 +97,11 @@ static ssize_t snoop_file_read(struct file *file, char __user *buffer,
- 		if (ret == -ERESTARTSYS)
- 			return -EINTR;
- 	}
-+
-+	spin_lock_irqsave(&chan->lock, flags);
- 	ret = kfifo_to_user(&chan->fifo, buffer, count, &copied);
-+	spin_unlock_irqrestore(&chan->lock, flags);
-+
- 	if (ret)
- 		return ret;
- 
-@@ -121,9 +129,11 @@ static void put_fifo_with_discard(struct aspeed_lpc_snoop_channel *chan, u8 val)
- {
- 	if (!kfifo_initialized(&chan->fifo))
- 		return;
-+	spin_lock(&chan->lock);
- 	if (kfifo_is_full(&chan->fifo))
- 		kfifo_skip(&chan->fifo);
- 	kfifo_put(&chan->fifo, val);
-+	spin_unlock(&chan->lock);
- 	wake_up_interruptible(&chan->wq);
- }
- 
-@@ -192,6 +202,7 @@ static int aspeed_lpc_enable_snoop(struct aspeed_lpc_snoop *lpc_snoop,
- 		of_device_get_match_data(dev);
- 
- 	init_waitqueue_head(&lpc_snoop->chan[channel].wq);
-+	spin_lock_init(&lpc_snoop->chan[channel].lock);
- 	/* Create FIFO datastructure */
- 	rc = kfifo_alloc(&lpc_snoop->chan[channel].fifo,
- 			 SNOOP_FIFO_SIZE, GFP_KERNEL);
+Andrew
 
