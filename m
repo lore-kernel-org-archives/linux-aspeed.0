@@ -1,50 +1,50 @@
-Return-Path: <linux-aspeed+bounces-4137-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4138-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CEB7CD5BDE
-	for <linux-aspeed@archiver.kernel.org>; Wed, 27 May 2026 03:19:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C16FCD5BDE
+	for <linux-aspeed@archiver.kernel.org>; Wed, 27 May 2026 03:21:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gQFGq11wTz2yTH;
-	Wed, 27 May 2026 13:19:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gQFK66gDJz2yTH;
+	Wed, 27 May 2026 13:21:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.29.241.158
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779851987;
-	cv=none; b=mKhhqz3ZxJgtl1OQ8JqP8duyGMhMUyDAnrJeD+I4Rprw1z5xUNAAMHbRhj0WSgPir7sLjaRX2lwrdGuQKPVomQe4wk3ArRNM/hkWCH25yyPllhYcV8WktYX03R4/oNqoXMNMx7emlZV5cveTurQQo/eNQv5A+DZwdOAzHZBLSlmvzWar7CL0XsrWbys3SkNfK4GZQnRCy2/HMZbZYsSxbAAZhOoGRTnK5SgPkq/PNXGJVi/Emlw0GEyabYvsJmrYY2AMQ9uHh2fY++2C8yFaMscbv7rtleX2Pw1o2mXwETLzSnCP8pSiB697ydLQ0dEu/MQDsf/4EQpja6MNZ88m9A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1779852106;
+	cv=none; b=Xm7UeoYzyTNeYjZ9vH3xCXkV+3w7El+V/Prd6NUZF4g2Fw8mEZ6mEXvW4tkGQI5wuTOvDaIUqi6ieRd0zx0WZrhMPk5/hP9Rbz0VvV0up8h8pQJ2WpD8Ypom4MlSeOx9h8qgqKGBwBawGbkpuktXdxLipMoLpYlPQH0FaWLQ3oql6f8/81ETXyq0IRIhzbl4u4Z5/5mvKg4A+n/1JTjxV4s3xa0vQ4a7uBhCeVHyjuL2jb9N49d54CtnDjBnhZaZJIOdnHGFVAsvNenCCfQb0gU6kWAgNaC8NGQr755sUF3qQX5Vt37qFEOTjsb2wzsx8F8dxDzWfHCZwJw9f2v/vg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1779851987; c=relaxed/relaxed;
-	bh=RS3tEt0ZcmVbPx/5QD48l1DIJzlT1nMDifXpMkbDJ1Y=;
+	t=1779852106; c=relaxed/relaxed;
+	bh=Xzua1hygqM8RuAqAAV48+yyYvIAPfnUqYZRu2TfQ+q8=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=OGEFGegxX0oRZTI5cSZeOcOJXG7mIvmNg9RdNWjPVN4PnKiUpxwaQhxGliJQ379IiAqXA5OPs27iY97D2dnkBearSMhWAMQl5xgfnUGrzYiVbtAsEf/r2hIjCvPFGhYZA+4FmyYzobgcFwH2YpsxjcE6IdJ9k26feLqVn1dn9Ur35AyHtrKn4fwoupkbiBzreX1TM6s3CvvA/jSQlzatTYSOFGPNJ/i2ZFLUOjVzvuxJ89ePaZ+yTfdlssGzvP3Liaj5fW1IK0M1AXzod2UT+dgqVBjG3/xD1lrx9mDzG91WpEBbKgb1ogDgdAwsJHpiDsLJl5MmdrA85hVBLifsTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=APLx//61; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
+	 Content-Type:MIME-Version; b=RHfJarqsmWpjzEhZUGQjPZHmuCQV5L8yUkn/kSchRVnXbFzdH2tJG8dPIRbWuvBgyOunti4zlOkXH7ytsyD4bpJ/CioMZfH6gjbUNaR38XlkBuW/zgVMqxpslNsq4RWCWLKYIo/TU61n/Wlm9FTLkLxK4UWHy9EqOxUUDMERfo+ok0QG9NjcXTwZhxgLrYDT9k1Fg+A1duKocZjuytpa2TWE8qKfY090JaVKixwS32zRNWNCZX13HlUNhKIoGaa2q0L3QxxqRxSOLH4gJVBECRBIvX5PL5Zky21ItvfkwYKCWjnONxsJHiwwzpppEMp9Xmn//VLbeVwpafiaePWzxg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au; dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Pz8x7EVm; dkim-atps=neutral; spf=pass (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=codeconstruct.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=APLx//61;
+	dkim=pass (2048-bit key; unprotected) header.d=codeconstruct.com.au header.i=@codeconstruct.com.au header.a=rsa-sha256 header.s=2022a header.b=Pz8x7EVm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=codeconstruct.com.au (client-ip=203.29.241.158; helo=codeconstruct.com.au; envelope-from=andrew@codeconstruct.com.au; receiver=lists.ozlabs.org)
 Received: from codeconstruct.com.au (pi.codeconstruct.com.au [203.29.241.158])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQFGp3MgDz2xtC
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 27 May 2026 13:19:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gQFK622b2z2xtC
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 27 May 2026 13:21:46 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=codeconstruct.com.au; s=2022a; t=1779851985;
-	bh=RS3tEt0ZcmVbPx/5QD48l1DIJzlT1nMDifXpMkbDJ1Y=;
+	d=codeconstruct.com.au; s=2022a; t=1779852105;
+	bh=Xzua1hygqM8RuAqAAV48+yyYvIAPfnUqYZRu2TfQ+q8=;
 	h=Subject:From:To:Cc:Date:In-Reply-To:References;
-	b=APLx//61j60ZOooYHs9WVkywLOkinvyZktLXiy4xpewiu2D6IRWK3Wia4FMcaTNXB
-	 VI+e3htamPSpVAx/jBzoDnDD7ieUDk1tN0OsmdNLt8jGlsrgO1DFmGDlleqCB6R/kU
-	 rtsRe9aMpwVxvdo5ytugqpJQNv8fFvsOPcKn4o29dJqMTFKLZ1PEYuO19Tw3Nvs4wA
-	 ZiyG7EUje5pUp690jx8IoJdcF162YOxL/2Ur3D+Ch9gQqPX/1jsaA9fJ3nUrqQgxnD
-	 TvD55DvvahqpvmWl/Kw/ZQqnVLejllAn6Mg49Z6dTZm5jqLgQ+oJcUi7Le0dQoqZhR
-	 rcnHZdEuTocpA==
+	b=Pz8x7EVmIcrBA2iTj1Djxy+Fbwc0BvS+azjCJJSL0HLnUGZMgut3ibADjcHzAPjMP
+	 WTdYKnCv3Bp1sMmMl9mUZ5yoYR9JuvNETEyzGfRE578L1VhH2O2Zuq53V+eZ5npK7K
+	 8oMoNDRqp9BmRhvZQtvVzIGRri9cWOa9YBiaKzgme/4wQVw86KsvSoVOx/i8qSs6ja
+	 7LrQkvjn1sob4m0XV8aSkE3Qw8BbExXl5U9rscxvM22uE4RbcBVOpBgBMmcDCje8E/
+	 NWmXoFHfA1OE/aHYJHVqgL9j4T6j8N3+tUaXCNjhk3UPTYmQl/5ic4KVFY2GcoLyjr
+	 vx34ADFD5+E3g==
 Received: from [192.168.68.117] (unknown [180.150.112.11])
-	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 7588D6001B;
-	Wed, 27 May 2026 11:19:45 +0800 (AWST)
-Message-ID: <1a6ee5e082756931f1c15677ad3f5ba0fa5bbb6a.camel@codeconstruct.com.au>
-Subject: Re: [PATCH 1/2] ARM: dts: aspeed: sanmiguel: Add IOEXP interrupt
- pin settings
+	by mail.codeconstruct.com.au (Postfix) with ESMTPSA id 140216001B;
+	Wed, 27 May 2026 11:21:45 +0800 (AWST)
+Message-ID: <a25ff66bee5a2047296eb239c10a7ccafc6d0b30.camel@codeconstruct.com.au>
+Subject: Re: [PATCH 2/2] ARM: dts: aspeed: sanmiguel: Fix the CPU_CHIPTHROT
+ linename
 From: Andrew Jeffery <andrew@codeconstruct.com.au>
 To: Potin Lai <potin.lai.pt@gmail.com>, Rob Herring <robh@kernel.org>, 
  Krzysztof Kozlowski
@@ -54,11 +54,11 @@ Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
 	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org, Cosmo Chou
 	 <cosmo.chou@quantatw.com>, Mike Hsieh <Mike_Hsieh@quantatw.com>, Potin Lai
 	 <potin.lai@quantatw.com>
-Date: Wed, 27 May 2026 12:49:45 +0930
-In-Reply-To: <20260523-potin-update-sanmiguel-dts-20260522-v1-1-169f5fceb5f9@quantatw.com>
+Date: Wed, 27 May 2026 12:51:44 +0930
+In-Reply-To: <20260523-potin-update-sanmiguel-dts-20260522-v1-2-169f5fceb5f9@quantatw.com>
 References: 
 	<20260523-potin-update-sanmiguel-dts-20260522-v1-0-169f5fceb5f9@quantatw.com>
-	 <20260523-potin-update-sanmiguel-dts-20260522-v1-1-169f5fceb5f9@quantatw.com>
+	 <20260523-potin-update-sanmiguel-dts-20260522-v1-2-169f5fceb5f9@quantatw.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.2-0+deb13u1 
@@ -79,36 +79,46 @@ MIME-Version: 1.0
 Hi Potin,
 
 On Sat, 2026-05-23 at 10:28 +0800, Potin Lai wrote:
-> Kernel dmesg reports IRQ #44 being disabled due to unhandled
-> interrupts from multiple PCA953x IO expanders:
+> Fix the GPIO linenames for CPU_CHIPTHROT signals.
 >=20
-> ```
-> [ 447.047861] irq 44: nobody cared (try booting with the "irqpoll" option=
-)
-> [ 447.063124] handlers:
-> [ 447.068176] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.087268] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.106344] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.125421] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.144513] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.163587] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.182663] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.201756] [<2ab869ad>] irq_default_primary_handler threaded [<b8adc31=
-0>] pca953x_irq_handler
-> [ 447.220837] Disabling IRQ #44
-> ```
+> The signals were incorrectly marked as output ("-O") while they are
+> actually input signals ("-I").
+>=20
+> - B0_M0_CPU_CHIPTHROT_L-O -> B0_M0_CPU_CHIPTHROT_L-I
+> - B1_M0_CPU_CHIPTHROT_L-O -> B1_M0_CPU_CHIPTHROT_L-I
 
-I've applied this, but in the future can you please rather indent log
-snippets rather than use markdown code-block fences?
-
-Cheers,
+I dropped this list when applying the patch because it's evident from
+the diff.
 
 Andrew
+
+>=20
+> Signed-off-by: Potin Lai <potin.lai@quantatw.com>
+> ---
+> =C2=A0arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts | 4 ++--
+> =C2=A01 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts b=
+/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
+> index 61dbef45f8b0..d7ed497d7227 100644
+> --- a/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
+> +++ b/arch/arm/boot/dts/aspeed/aspeed-bmc-facebook-sanmiguel.dts
+> @@ -224,7 +224,7 @@ hpm0_ioexp_20: gpio@20 {
+> =C2=A0			"B0_M0_LEAK_DETECT_ALERT_L-I",
+> =C2=A0			"B0_M0_RUN_POWER_EN-O",
+> =C2=A0			"B0_M0_RUN_POWER_PG-I",
+> -			"B0_M0_CPU_CHIPTHROT_L-O",
+> +			"B0_M0_CPU_CHIPTHROT_L-I",
+> =C2=A0			"B0_M0_SHDN_REQ_L-O",
+> =C2=A0			"B0_M0_CPU_SHDN_OK_L-I",
+> =C2=A0			"B0_M0_CPLD_READY-I",
+> @@ -398,7 +398,7 @@ hpm1_ioexp_20: gpio@20 {
+> =C2=A0			"B1_M0_LEAK_DETECT_ALERT_L-I",
+> =C2=A0			"B1_M0_RUN_POWER_EN-O",
+> =C2=A0			"B1_M0_RUN_POWER_PG-I",
+> -			"B1_M0_CPU_CHIPTHROT_L-O",
+> +			"B1_M0_CPU_CHIPTHROT_L-I",
+> =C2=A0			"B1_M0_SHDN_REQ_L-O",
+> =C2=A0			"B1_M0_CPU_SHDN_OK_L-I",
+> =C2=A0			"B1_M0_CPLD_READY-I",
 
