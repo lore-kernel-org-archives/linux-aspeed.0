@@ -1,56 +1,63 @@
-Return-Path: <linux-aspeed+bounces-4155-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4156-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A525CD6E57
-	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Jun 2026 15:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47397CD6E64
+	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Jun 2026 16:20:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVFdN0Xfmz2xLm;
-	Wed, 03 Jun 2026 01:49:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780415383;
-	cv=none; b=ArP1hXqlTFeYmT4oejp5+uKyZb0zC7ST4yKg/+DA/jnolYIcVh8YDG2bDlimBJ9iv10a3VxuRU28D7Vs2K9fTmeoR61tcrCCt+tYESnYJOqusYNi6ttXUjW77SWiekcynzzOerY1V4SIzNRaUJPBp+kQ29AIepJp7TpgBGjKHvlNRqCvAduULW0twWVqp4BGPw3zTbpyQynOuxYgjmAuS5YTYNm3CjAIsNy7nn8L8zM/Xw1Kv3EyHi6TcDkiCXTqE+Yr8FY6rKThr+qboDG9NotYYGYoqIIAEuve4p+YiyTIpfOpH5EcR2EtPgIzZYjjMf4aPFcCUP5FiVI8yrETzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVGJp6Zjzz2yFK;
+	Wed, 03 Jun 2026 02:20:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780417226;
+	cv=none; b=nHJQpO26V4cTg8lJazxYgbC4ZxupkqU11XiAuFpDoPP8K/bPt4VXCI/YGAg+mH14piiTRD8RM4nHUPmXJngAp+DljikOYLmzhPmOe2aTM43XHP2qq7vJquCZdrwIYj1U4WlbrvPCWKTvbRhe+ciCeXpRGvyTykJQ/T1fwVTRZzaziupAve3CpWY1Solrc/JBxz0Usx1V/QOegeYfF6rL5aXRxHsmCMrKHkQGIeIN1ZcBNDZUm/xorpRlL5GkhimRzSBqynMyTifgzss9+jsScEHtWOgRTPp48D/LsNZcNzO3d3TDLDB/jRVIHp5C5fnRIu6ikc8FRFmVA4YnqenGQg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780415383; c=relaxed/relaxed;
-	bh=CmLAuu1dz6ogdVEDsfDy7WMXAGwx2zeUtPl8MqWKjew=;
+	t=1780417226; c=relaxed/relaxed;
+	bh=0k5yjZl4vRmofziFWi9oG66Z9lvqiWvEA4ZQGqJDIvw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iP6Yeu+bYMqYpASTWvzDJsfLdG5CbRNSEx4Rk+/A9bJZA2f03fl/ZMdXEeumJ71UsHs729sV0Dl2dPPt4pbfaKEZSCVrIaCilCFK1Uh7Xbwskj5sKE3jo1+8O22IeSwkAWuCQCeQkvSD8pJwEtV1AJ4ZIKc8Vuh7Kgl6DECDFw55qZa+9P4NMidCj6WQ8tH3Lvd6KZsmOS4q3ESIPMk48sBKup5CdOgFVHGr96FY5/S5DcPGFC7hza3NPE0dUMeCno0kLZMtwJdROrSwsza2a4qTpdtbGetsbhk+zyiWX4UXbb/evPA/jDRjZZap8ZUdOibGBHe899GunxoPOa8fAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=WrLns3aT; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	 Content-Type:Content-Disposition:In-Reply-To; b=UeYe4kRfaL/b2loWnXd7ttJIBysVVy/Qe2lbk31arHF2TZCO/AfV4Wd+rxIrhXKJLrBUNNgFrLUXNB/URO6+OJq0GicFlTtyIJwuuj5MltNByZwDyV6tyThZw8eWf0a5xya8S2qocxMdJcRD5iEDyrkiCWANW5NJFqOaNGtVWb7qLG4yfk4sM00miMtxdyMZ0CZxoy6pcri3ehVY3XkLNbpR0ZihYdvVXlkrkiGVY7jJRkpzQIw/DOFaMCyYyfM1YiwcIATeUQ+Kk4A1CCu+3bIQ8NYOuge6q1TemRx2uQr4SBV7IgbAcnHNto9sxqauWm0PMhKz30PQb8g7Hur03w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hJIT0ssx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=WrLns3aT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=hJIT0ssx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVFdL4Ltlz2xKh
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Jun 2026 01:49:41 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=CmLAuu1dz6ogdVEDsfDy7WMXAGwx2zeUtPl8MqWKjew=; b=WrLns3aTSv1A8CkS/ZsErx+m2T
-	btyk4KwUw0bTBCE3txgNbpurvS8Rx5Zvv7uaw3V22TgDMjvpUQzKzpXcBt2yuubLv4wWdX1eaVwWb
-	o2BAzHi7Aa+xXUZQ6+y1YYiH23GFrhcn8sa6uX3f5e9quGJCWZt68UVqJtuozvQku5X0=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1wURMp-005iUd-91; Tue, 02 Jun 2026 17:49:23 +0200
-Date: Tue, 2 Jun 2026 17:49:23 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: =?iso-8859-1?Q?Gr=E9goire?= Layet <gregoire.layet@9elements.com>
-Cc: joel@jms.id.au, andrew@codeconstruct.com.au, jacky_chou@aspeedtech.com,
-	yh_chung@aspeedtech.com, ninad@linux.ibm.com,
-	linux-aspeed@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 2/2] soc: aspeed: add host-side PCIe BMC device driver
-Message-ID: <ecc3bd49-829f-49b8-b3b1-4f16363ea5b9@lunn.ch>
-References: <cover.1780409151.git.gregoire.layet@9elements.com>
- <a8e1396af1b6db38bab13383c6ba303e8427aefc.1780409151.git.gregoire.layet@9elements.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVGJn6XtLz2xy3
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Jun 2026 02:20:25 +1000 (AEST)
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	by sea.source.kernel.org (Postfix) with ESMTP id 9D54A402CF;
+	Tue,  2 Jun 2026 16:20:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 661911F00893;
+	Tue,  2 Jun 2026 16:20:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1780417223;
+	bh=0k5yjZl4vRmofziFWi9oG66Z9lvqiWvEA4ZQGqJDIvw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To;
+	b=hJIT0ssx97ERW0yGHGdcAT7Onyw2jRu3dp6/o7krwbw88WSv6suDGkCjttC1oDfsY
+	 aSQigl1oNaNO2XtrFypJjWpzeyx9yWJbPf4I0urwcRMwUlMHmB1furYutcp9B9RRtN
+	 g1OVtUn2jaT7a2LH8r2jVudjwwGLbPKZuPN32RgADkEl418D6BpCv0CD3cuFvSjUY1
+	 UN9cmu2E5srnx/Twd7c1B2ZWVHke/iyUkf5XxXYOO26yFtXI4spd8q+ROi4Iz7rz/x
+	 3XCAbB12R3EfmL/z9wfv9YNlNyt5uYoSNMUajVXFpP6GoUfY5AaAAs28YkFXBRgpr8
+	 RjWX5shckYo+Q==
+Date: Tue, 2 Jun 2026 17:20:19 +0100
+From: Conor Dooley <conor@kernel.org>
+To: u8813345@gmail.com
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
+	devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-aspeed@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	colin.huang2@amd.com
+Subject: Re: [PATCH v3 1/9] dt-bindings: arm: aspeed: add Anacapa EVT1 EVT2
+ DVT board
+Message-ID: <20260602-cupping-cahoots-40da41ef0f67@spud>
+References: <20260602-anacapa-devlop-phase-devicetree-v3-0-7c93c5df8d9b@gmail.com>
+ <20260602-anacapa-devlop-phase-devicetree-v3-1-7c93c5df8d9b@gmail.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -64,43 +71,29 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="PLx3EfovJTpILGs4"
+Content-Disposition: inline
+In-Reply-To: <20260602-anacapa-devlop-phase-devicetree-v3-1-7c93c5df8d9b@gmail.com>
+
+
+--PLx3EfovJTpILGs4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a8e1396af1b6db38bab13383c6ba303e8427aefc.1780409151.git.gregoire.layet@9elements.com>
 
-> +static int aspeed_pci_bmc_device_setup_vuart(struct pci_dev *pdev)
-> +{
-> +	struct aspeed_pci_bmc_dev *pci_bmc_dev = pci_get_drvdata(pdev);
-> +	struct device *dev = &pdev->dev;
-> +	u16 vuart_ioport;
-> +	int ret, i;
-> +
-> +	for (i = 0; i < VUART_MAX_PARMS; i++) {
-> +		/* Assign the line to non-exist device */
-> +		pci_bmc_dev->uart_line[i] = -ENOENT;
-> +		vuart_ioport = 0x3F8 - (i * 0x100);
-> +		pci_bmc_dev->uart[i].port.flags =
-> +			UPF_SKIP_TEST | UPF_BOOT_AUTOCONF | UPF_SHARE_IRQ;
-> +		pci_bmc_dev->uart[i].port.uartclk = 115200 * 16;
-> +		pci_bmc_dev->uart[i].port.irq = pci_irq_vector(
-> +			pdev, pci_bmc_dev->msi_idx_table[VUART0_MSI + i]);
-> +		pci_bmc_dev->uart[i].port.dev = dev;
-> +		pci_bmc_dev->uart[i].port.iotype = UPIO_MEM32;
-> +		pci_bmc_dev->uart[i].port.iobase = 0;
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+pw-bot: not-applicable
 
-How virtual is this? Is this directly accessing the hardware via
-shared memory? Or is there software on the BMC which traps these
-reads/writes and responds?
+--PLx3EfovJTpILGs4
+Content-Type: application/pgp-signature; name="signature.asc"
 
-But first we need to decide if this is the correct architecture. The
-alternative is rpmsg or virtio. There is already tty/rpmsg_tty.c. A
-gpio driver over rpmsg is on the way. I2C has been discussed. There
-are plenty of virtio drivers, console, i2c, spi, gpio. virtio has
-higher performance, but also requires more memory. rpmsg is more
-suited to slower devices where memory is tight.
+-----BEGIN PGP SIGNATURE-----
 
-Either of these seem like a better way to expose resources of the BMC
-to the host.
+iHQEABYKAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCah8CwwAKCRB4tDGHoIJi
+0s1kAP0VxPsI2ai9KcE8KjyAxQu6KSL/RYgc7cxhHgVC0P+rzQD2POXKO6YSEjEE
+5WfTAe4ILcmjizB2Ac+SEFo7f85KAg==
+=cSj8
+-----END PGP SIGNATURE-----
 
-       Andrew
+--PLx3EfovJTpILGs4--
 
