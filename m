@@ -1,76 +1,74 @@
-Return-Path: <linux-aspeed+bounces-4165-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4164-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F5A0CD6E57
-	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Jun 2026 23:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3E00CD6E5D
+	for <linux-aspeed@archiver.kernel.org>; Tue,  2 Jun 2026 23:52:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gVSL26w38z3bqM;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gVSL26pMjz3bpx;
 	Wed, 03 Jun 2026 09:52:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780411711;
-	cv=none; b=cSJjMLQ69MFTCh3iXcy/VCESdps+9NnDNNGu1LedCeb4os0yPGA7F521mOwueEZS9LO+9yBLDiyscADIHIW3JsfGDOC8RwwCp7dv6DUtlB23/RZIIVOt+Cx0WiMhd7C6X2xnDUQp1ZZUiAYed7r5ZTBjKL0QAFRCGmX1tc4/mjMMu5xqL5xdu8BPvA0XEU/9wZSWnVqlpqchDdyubPK+FM+kL27vV+WTxlLn973S+Vr2fthir1fM/MZKQE0mpJJljVQHVKJ8qMm/D2hXBq+2uE/QZOw0EA2gRBzOCnyHndVLqKMjYo89NBFn8UXLUdzg8HNQmB6SyHD1N03va4gGzA==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780411671;
+	cv=none; b=dU9hua+gft7OgIZXXsk8zj8SWkj94wNxrzUykWOG0vePWNMevOZRlsdz8kYVm6vYh4NOBrYNC3jXC05xIuLxU/qZLa+Eni1XYovjEM8ym+WjKNuSpBkBBgf7XsA4Lxw9ngyRFMPdUslXi9pHIo05TISX61js6a407ILy6J6yIM+b+RY6x9uICq88xiQYI22i6NqTUD61gB6v1nhlSP1SZ7w8STXqgoEQrjJloLSfL9REHhpK+LYui1m61ZxJZYobxh5//fHRzap24qum+vA/QptPD1mIZtK2fwVRq66g83Soyt1GFr3hwrjiJWGjRRYQo5Z3ZGiXbTb1xbpFtbISow==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780411711; c=relaxed/relaxed;
-	bh=850xZSGatl2MZGDDCuD84AxCq40+igB4pW8/OpsSSW8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QeFhERwyyzq6ttumo57QKWq7+fBkixb7L9Hjgy7gozEqBsOT4TG4hX5+/GpQS5gBf5Pxul9pWyWFgS+eE/nxR1Yinx6BkdUa8DMSfPfr9k41IX1yr/kxNH/zlk/Cnm8+gy8y4nWJbMkAmnIzxiuOqn9I/tBKWUEV+Nad69fRNWQcQDTJn9/pbSNfOznd98zQ2ibj9Xs1/JcAiK8R/KtNczk6lABuKn+NSLaZlWbVjPYFe0tsQ21ydPPlvqqOEJdbwmDzBEOhQ49QF5u5iBUo/hHrXiL4lxztWJC/GHBC45mENCwN6E0IdxrJrLjQJcV2P7byKgxYhSuIGyVm8dCXWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=HgW9aOLD; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
+	t=1780411671; c=relaxed/relaxed;
+	bh=Ay/T29lNqSdhRuo/GjV4Eg5RyU5tQbtLVXOjgzh0PCM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Z//QdKeDyRW4V+keMyRRR1zY8mh/VfqnNO4Ufg7oQkEByIf41RaItIQZc9nJADaC56bY0cjE0UnqN6yd/OpQw06bbDV8Lf1JRpGuk2H1nUL61En5iya92OI20qRXbxXZecnNnYE7Z2nRUOaCXL9lEvLscogn7Y6yAnqUwr7BK5tEzVYmi8BzPFezczaclFe9hQUcwfZ6RBl9MXaI16qZp/BtCxWmVJFk5MU52DpvkLWuHyF4hQzkr8JwVIUDAb440r0N/NC7ch/xsxHzOPBO9iqRP8Nm5xu5WtREDHOKavLne8PAjX4LhM8IoeU3N7RSQsG7mw9cU6MFPOBkQyKw9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=W1TH8Erl; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=HgW9aOLD;
+	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=W1TH8Erl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVDGj4T0Cz2xLk
-	for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Jun 2026 00:48:29 +1000 (AEST)
-Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4908b92904fso62577235e9.0
-        for <linux-aspeed@lists.ozlabs.org>; Tue, 02 Jun 2026 07:48:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gVDFx2JFQz2xLk
+	for <linux-aspeed@lists.ozlabs.org>; Wed, 03 Jun 2026 00:47:48 +1000 (AEST)
+Received: by mail-wm1-x32e.google.com with SMTP id 5b1f17b1804b1-49050bfe053so84808865e9.3
+        for <linux-aspeed@lists.ozlabs.org>; Tue, 02 Jun 2026 07:47:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1780411706; x=1781016506; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=850xZSGatl2MZGDDCuD84AxCq40+igB4pW8/OpsSSW8=;
-        b=HgW9aOLDxa75FMnmMJjxf+4nnUnWelRf1CGD8APbBcO+ASnbyVMoZViAi5I/Kbhio8
-         8CRcOK/iCYxb84ZXkMxLBBw27ApPhVXU5SUtap2KY7h/ao2vRFh7U13jaZH1+NEV8wjg
-         c4Mb8qpsbql+igpVfdRPqTibQORva0i71d7Sd3H4rfF04LV5vAWQ7USqh5R9PLI0Byps
-         s8hN4cQYlbv0wiYhQnp88D1r8Di/fZwnTTQiFQGwPnardpBQ9dRPABWtrNL/pj7WKvZ2
-         MBLd4+PYKLWPbInK/tiExbLsno5FY3Ic42hQ9pntVMF+PgZx1nYp+LpaOcbGJoLd6WsR
-         cIcA==
+        d=9elements.com; s=google; t=1780411666; x=1781016466; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Ay/T29lNqSdhRuo/GjV4Eg5RyU5tQbtLVXOjgzh0PCM=;
+        b=W1TH8Erl6WwYv7RrWBIqq/Ika58xV3NhjOZLMSLO6wHaei9Q15h1wqWxPFdRHz5bkc
+         3junKGnU8HPE2wO5y8mBu1MqZtzpAJxzOBmiNRfo3/ngfrcaLcC35OZ7kcTf5kFEOs83
+         njj2Kdjws/7zxbhshKeOIrKVkgvAwCVCq+RCb6UG6l2PBfVnW1SAxj8NB4qx8OeiHjfm
+         BXE2g+NytzQan64kqSKYabAihFvkZB/jKVwGutr6rM1a2Y3cEhDPJMUfUBlymplTy8F2
+         xEJ2EWBQQ7d9ctGlkYxqSm2zr1unGDM1Cb3jmHQpus/ZKFy876LSuR2HoWaE7u3ZuQRI
+         /ceA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780411706; x=1781016506;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=850xZSGatl2MZGDDCuD84AxCq40+igB4pW8/OpsSSW8=;
-        b=rn759I+S9g0DYRkjOM43Pmr84TMNFOfq6jFVLphPu6CUF5hYezBE92hXgTRQXzlbM6
-         rcy00E/yD3yl4Te+MkZud+PcvfuUgpDrJJmaUbV2mc00E0jNB2ZDx0fXX8IOeojIoFxj
-         0C9rmZ1mqeyY8BVn5DCFA5WlCfpYqpObb5rEWcKa+Wj9YU2pJpbEffKEIySfid70VGWq
-         oHjfP0hZmiGnF6STfMlIxHUuo4wrtqiykijJvCafpC9/2X++xb3xwEnauxhtkGdUaldY
-         4qASes5wWZqKOXbcLDJ4ebPizHyrAo6pfiflnYTnEBfqqpi7vsHeVKmTBDYhGbAZJfQC
-         uPBQ==
-X-Forwarded-Encrypted: i=1; AFNElJ/aGtIsVjyu7lg6WM8UqpDQP+bDVqh1zOq01xymEtrp/T8bwFBjNtmrrGIKyepfYGI5hICq37X5HD/axAo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy466HDZAK+wf6p1cTnCLExcupIq7pT/G2Ft57yViUVqvClOpq6
-	vX3+Qv0Y9lMRVk7tQFZp8ZCI23rL40bQEsQkGwR1fByWoIP7ioLjZma/vuOVa+a4jzA=
-X-Gm-Gg: Acq92OELkq0qwELsd98M9eXYrCS4q8sY+oPiHP4ZqMjmqqpZS8a5LcHERgjqp6Fgx+d
-	jEiaAchXSRpGjXuAY4ox3GC8swnNb6lTQzy850FH5/+x8ZGjgBMq1i4Jl51tliymINMYytZIIxP
-	w0qfSpGRSHLI5v2rEoiNTOJjlzYNipncM9QFynJQay4I97lzpWppDTi55Oqdmn2elpFBLF+YOxv
-	xM4RQHzBVVPTzidnn47/YPm5WOThWZ3pVRq7vQB6zGKyAvWCvJjpgrkryQmQDKHVkqYwX7VsOs6
-	TWwxOFmDGAD1jEkGrh2RNr8n6W04L2a694FTHGNAOUIgT8/v+NEXEcknJaJDAYIYJe4Gwhq9zO5
-	uaaJ8JsXeqWkznPJnvVwFeCem3dOIkLNnWo3DH4aED60k8uyx2JKSHAH49F92ZAh52Ai0mvkSoD
-	uQoqht3vTa4e58fdt8c08SxQr3XX3QbvOYvflcJnw976ymp2uY5Um/ifd1QGXd
-X-Received: by 2002:a05:600c:3495:b0:48a:7676:30bc with SMTP id 5b1f17b1804b1-490b5081cc2mr968605e9.14.1780411705853;
-        Tue, 02 Jun 2026 07:48:25 -0700 (PDT)
+        d=1e100.net; s=20251104; t=1780411666; x=1781016466;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Ay/T29lNqSdhRuo/GjV4Eg5RyU5tQbtLVXOjgzh0PCM=;
+        b=ju4w6yFybr4ZAObn5fSOaQFzgEiSM+lBoNKgbbmtfpNQykK7DeCUl2PEnuavJQvStS
+         AT62ilNbaL73okfkzTVoC4CV1rwttWIeOXROOsivgDE6CCo4fG2uiWPc82GsiIZVXiLw
+         +P2pCxxTPCqZ4yyG2IPobkyM/KcvSqa6ihhCIERaJvRsHO7Lk/46ymZO2g/N9wrjf29L
+         3yeeYI3NEcYNlcLW5HKfPFKBPJkCKsfVUl0NG6Xs1G3lSuwWPPo38FgXsZsZcuMNucDn
+         o0+JBJVr2qoM+QMW7nXDQxT2BvHFjV55an7yBUlrHMEr74tFRsKcAcixLi751NCJWzLd
+         DHMA==
+X-Forwarded-Encrypted: i=1; AFNElJ9vuuybpW2j0cXAgpisRQqB41jK1ufwet/L35656tKy/O5grIaF9Wxy0ygGTkeDqE+3Npx4O+aL5nIZqag=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxbGAmhaAzcPbjOCedIVL3kwsb3SkfwtnsrjZEYfwzB3f3mLc92
+	zfH+yVEcToS7iHjAvUaI6h94mgd/9OLJA2oLJqYEgrDp6aOuC3oDYgW9KpU2OAXYuM0=
+X-Gm-Gg: Acq92OGEufv5tyUKqGmfUuiKZh2aDbHdfUUxXepzTxYNQZEoa8Wl6LKFCBHyn6DfPj6
+	qCMG4zORlIbFY02n9lW5ubpGpxhD5ck61UpzymoQZDrc6mUjkz1UMjel01O/ArpAtqQTd+j19lT
+	in6SoJAjfuYp30oWmEsxYzGzMegRGH2y+yTkLPe/DhNnwcZXxEYBZ+38UXurTGyMRmCF0Ahht5G
+	d7b2yTNzLjWrQVVjsM4UnA1I5kHBc8wHgGHDT0rzX9D3dulBYSdg3VwEzs+gWXTiLZpViEFgRcU
+	LZiZMFFJjQMJYcQi8Knv7O6QQ5EjQA+RGZZjippfBcvqIB5tTZ8wHSfr3tFbpQKME/xlp6eXlSt
+	77+3Wzbqbkc8Ruux2Nw6M6e7f2N9gnscyEk6YgvXO9Sj+YRvbjGAxVk3XiG77cGKLHxY/wgdtKI
+	glh/zLxBPIi9sTaMupCfY2m0BhasPjyDXu14m7NdP2qvQ4cRGJo7/uWlDB1Wik
+X-Received: by 2002:a05:600c:8b32:b0:48a:563c:c8c5 with SMTP id 5b1f17b1804b1-490b5054fccmr908545e9.8.1780411665445;
+        Tue, 02 Jun 2026 07:47:45 -0700 (PDT)
 Received: from gregwork.sec.9e.network ([188.111.3.154])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490b0e88fdesm74881395e9.14.2026.06.02.07.48.25
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-490b0e88fdesm74881395e9.14.2026.06.02.07.47.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Jun 2026 07:48:25 -0700 (PDT)
+        Tue, 02 Jun 2026 07:47:45 -0700 (PDT)
 From: =?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
 To: joel@jms.id.au,
 	andrew@codeconstruct.com.au
@@ -81,12 +79,10 @@ Cc: jacky_chou@aspeedtech.com,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	=?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
-Subject: [PATCH v1 1/2] soc: aspeed: add BMC-side PCIe BMC device driver
-Date: Tue,  2 Jun 2026 16:42:43 +0200
-Message-ID: <4011e55ed57bdb87d04a49a26dfdc43af4799bac.1780409151.git.gregoire.layet@9elements.com>
+Subject: [PATCH v1 0/2] soc: aspeed: Add BMC and host driver for PCIe BMC device
+Date: Tue,  2 Jun 2026 16:42:42 +0200
+Message-ID: <cover.1780409151.git.gregoire.layet@9elements.com>
 X-Mailer: git-send-email 2.51.2
-In-Reply-To: <cover.1780409151.git.gregoire.layet@9elements.com>
-References: <cover.1780409151.git.gregoire.layet@9elements.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -103,760 +99,73 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Taken from ASPEED 6.18 Kernel SDK
+This series upstreams the PCIe BMC device driver from the ASPEED kernel SDK (branch master-v6.18)  [1].
+There are two drivers: a BMC-side driver and a host-side driver.
+Together they enable host<->BMC communication via PCIe. 
+This includes : shared memory, doorbell interrupt communication and two VUARTs.
 
-Add support for PCIe communication BMC<->host.
-This add BMC side driver.
+This driver can be used on AST2600/AST2700 based PCIe extension cards, such as Asus IPMI Kommando Card.
+The virtual UART support can be used for Serial over LAN.
+The shared memory can be claimed by userspace programs.
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-Signed-off-by: aspeedyh <yh_chung@aspeedtech.com>
-Signed-off-by: Grégoire Layet <gregoire.layet@9elements.com>
-Tested-by: Grégoire Layet <gregoire.layet@9elements.com>
----
- drivers/soc/aspeed/Kconfig          |   9 +
- drivers/soc/aspeed/Makefile         |   1 +
- drivers/soc/aspeed/aspeed-bmc-dev.c | 701 ++++++++++++++++++++++++++++
- 3 files changed, 711 insertions(+)
+Tested on :
+BMC :
+- Asus IPMI Kommando Card R1.01, AST2600 A3.
+- OpenBMC
+Host:
+- Linux kernel v7.0.0
+
+I tested VUART communication with interrupt.
+No driver modifications were required.
+
+Not tested on AST2700.
+
+Provenance:
+
+I did zero modifications to the ASPEED code, this is only an upstream patch.
+The driver files match the ASPEED SDK tree at :
+  drivers/soc/aspeed/aspeed-bmc-dev.c
+    1815546a54f5f89bc9d3bd8f5658f0a573927509 [2]
+    "soc: aspeed: remove MMBI implement in host bmc dev"
+
+  drivers/soc/aspeed/aspeed-host-bmc-dev.c
+    7217e3c872166d56389a97e1b81996f73a3e76d5 [3]
+    "soc: aspeed: remove iounmap"
+
+The driver code build cleanly against Linux 7.0 without any modification.
+No fix were required. 
+I built both the BMC side and Host side with KCFLAGS=-W and no warning apperead.
+Original authors are credited via Signed-off-by in the individual patches.
+
+checkpatch.pl --strict reports 1 warning for BMC side driver
+and 2 warnings for host side driver. 
+These are unchanged to keep zero diff against the ASPEED SDK tree.
+I can clean them in a v2 if needed.
+
+The host side driver had a submission from Ninad Palsule : 
+"soc/aspeed: Add host side BMC device driver" in August 2023 [4].
+This submission stalled and did not make it into the mainline kernel.
+Since then, the host drivers have changed a lot on the ASPEED SDK. 
+I decided not to base this patch on Ninad's one 
+but rather to simply upstream the new host driver from ASPEED.
+
+[1]: https://github.com/AspeedTech-BMC/linux/tree/aspeed-master-v6.18/drivers/soc/aspeed
+[2]: https://github.com/AspeedTech-BMC/linux/commit/1815546a54f5f89bc9d3bd8f5658f0a573927509
+[3]: https://github.com/AspeedTech-BMC/linux/commit/7217e3c872166d56389a97e1b81996f73a3e76d5
+[4]: https://lore.kernel.org/linux-aspeed/20230821183525.3427144-1-ninad@linux.ibm.com/
+
+Grégoire Layet (2):
+  soc: aspeed: add BMC-side PCIe BMC device driver
+  soc: aspeed: add host-side PCIe BMC device driver
+
+ drivers/soc/aspeed/Kconfig               |  22 +
+ drivers/soc/aspeed/Makefile              |   2 +
+ drivers/soc/aspeed/aspeed-bmc-dev.c      | 701 +++++++++++++++++++++++
+ drivers/soc/aspeed/aspeed-host-bmc-dev.c | 664 +++++++++++++++++++++
+ 4 files changed, 1389 insertions(+)
  create mode 100644 drivers/soc/aspeed/aspeed-bmc-dev.c
+ create mode 100644 drivers/soc/aspeed/aspeed-host-bmc-dev.c
 
-diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
-index f579ee0b5afa..341728df07b3 100644
---- a/drivers/soc/aspeed/Kconfig
-+++ b/drivers/soc/aspeed/Kconfig
-@@ -4,6 +4,15 @@ if ARCH_ASPEED || COMPILE_TEST
- 
- menu "ASPEED SoC drivers"
- 
-+config ASPEED_BMC_DEV
-+	tristate "ASPEED BMC Device"
-+	default n
-+	help
-+	  Enable support for the ASPEED AST2600/AST2700 BMC Device.
-+	  This exposes the BMC to the host over PCIe,
-+	  providing a shared-memory BAR, host-to-BMC and BMC-to-host
-+	  message queues with doorbell interrupts and PCIe-to-LPC bridge.
-+
- config ASPEED_LPC_CTRL
- 	tristate "ASPEED LPC firmware cycle control"
- 	select REGMAP
-diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
-index b35d74592964..fab0d247df66 100644
---- a/drivers/soc/aspeed/Makefile
-+++ b/drivers/soc/aspeed/Makefile
-@@ -1,4 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_ASPEED_BMC_DEV)		+= aspeed-bmc-dev.o
- obj-$(CONFIG_ASPEED_LPC_CTRL)		+= aspeed-lpc-ctrl.o
- obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
- obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
-diff --git a/drivers/soc/aspeed/aspeed-bmc-dev.c b/drivers/soc/aspeed/aspeed-bmc-dev.c
-new file mode 100644
-index 000000000000..06005fa41d2a
---- /dev/null
-+++ b/drivers/soc/aspeed/aspeed-bmc-dev.c
-@@ -0,0 +1,701 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright (C) ASPEED Technology Inc.
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_reserved_mem.h>
-+#include <linux/platform_device.h>
-+
-+#include <linux/wait.h>
-+#include <linux/workqueue.h>
-+
-+#include <linux/regmap.h>
-+#include <linux/interrupt.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/miscdevice.h>
-+
-+#define SCU_TRIGGER_MSI
-+
-+/* AST2600 SCU */
-+#define ASPEED_SCU04			0x04
-+#define AST2600A3_SCU04				0x05030303
-+#define ASPEED_SCUC20			0xC20
-+#define ASPEED_SCUC24			0xC24
-+#define MSI_ROUTING_MASK			GENMASK(11, 10)
-+#define PCIDEV1_INTX_MSI_HOST2BMC_EN		BIT(18)
-+#define MSI_ROUTING_PCIe2LPC_PCIDEV0		(0x1 << 10)
-+#define MSI_ROUTING_PCIe2LPC_PCIDEV1		(0x2 << 10)
-+/* AST2700 SCU */
-+#define SCU0_REVISION_ID		0x0
-+#define REVISION_ID				GENMASK(23, 16)
-+#define SCU0_PCIE_CONF_CTRL		0x970
-+/* Host2BMC */
-+#define ASPEED_BMC_MEM_BAR			0xF10
-+#define  PCIE2PCI_MEM_BAR_ENABLE		BIT(1)
-+#define  HOST2BMC_MEM_BAR_ENABLE		BIT(0)
-+#define ASPEED_BMC_MEM_BAR_REMAP	0xF18
-+
-+#define ASPEED_BMC_SHADOW_CTRL		0xF50
-+#define  READ_ONLY_MASK				BIT(31)
-+#define  MASK_BAR1					BIT(2)
-+#define  MASK_BAR0					BIT(1)
-+#define  SHADOW_CFG					BIT(0)
-+
-+#define ASPEED_BMC_HOST2BMC_Q1		0xA000
-+#define ASPEED_BMC_HOST2BMC_Q2		0xA010
-+#define ASPEED_BMC_BMC2HOST_Q1		0xA020
-+#define ASPEED_BMC_BMC2HOST_Q2		0xA030
-+#define ASPEED_BMC_BMC2HOST_STS		0xA040
-+#define	 BMC2HOST_INT_STS_DOORBELL		BIT(31)
-+#define	 BMC2HOST_ENABLE_INTB			BIT(30)
-+#define	 BMC2HOST_Q1_FULL				BIT(27)
-+#define	 BMC2HOST_Q1_EMPTY				BIT(26)
-+#define	 BMC2HOST_Q2_FULL				BIT(25)
-+#define	 BMC2HOST_Q2_EMPTY				BIT(24)
-+#define	 BMC2HOST_Q1_FULL_UNMASK		BIT(23)
-+#define	 BMC2HOST_Q1_EMPTY_UNMASK		BIT(22)
-+#define	 BMC2HOST_Q2_FULL_UNMASK		BIT(21)
-+#define	 BMC2HOST_Q2_EMPTY_UNMASK		BIT(20)
-+
-+#define ASPEED_BMC_HOST2BMC_STS		0xA044
-+#define	 HOST2BMC_INT_STS_DOORBELL		BIT(31)
-+#define	 HOST2BMC_ENABLE_INTB			BIT(30)
-+#define	 HOST2BMC_Q1_FULL				BIT(27)
-+#define	 HOST2BMC_Q1_EMPTY				BIT(26)
-+#define	 HOST2BMC_Q2_FULL				BIT(25)
-+#define	 HOST2BMC_Q2_EMPTY				BIT(24)
-+#define	 HOST2BMC_Q1_FULL_UNMASK		BIT(23)
-+#define	 HOST2BMC_Q1_EMPTY_UNMASK		BIT(22)
-+#define	 HOST2BMC_Q2_FULL_UNMASK		BIT(21)
-+#define	 HOST2BMC_Q2_EMPTY_UNMASK		BIT(20)
-+
-+#define ASPEED_SCU_PCIE_CONF_CTRL	0xC20
-+#define  SCU_PCIE_CONF_BMC_DEV_EN			 BIT(8)
-+#define  SCU_PCIE_CONF_BMC_DEV_EN_MMIO		 BIT(9)
-+#define  SCU_PCIE_CONF_BMC_DEV_EN_MSI		 BIT(11)
-+#define  SCU_PCIE_CONF_BMC_DEV_EN_IRQ		 BIT(13)
-+#define  SCU_PCIE_CONF_BMC_DEV_EN_DMA		 BIT(14)
-+#define  SCU_PCIE_CONF_BMC_DEV_EN_E2L		 BIT(15)
-+#define  SCU_PCIE_CONF_BMC_DEV_EN_LPC_DECODE BIT(21)
-+
-+#define ASPEED_SCU_BMC_DEV_CLASS	0xC68
-+
-+#define ASPEED_QUEUE_NUM 2
-+enum queue_index {
-+	QUEUE1 = 0,
-+	QUEUE2,
-+};
-+
-+struct aspeed_platform {
-+	int (*init)(struct platform_device *pdev);
-+	ssize_t (*queue_rx)(struct file *filp, struct kobject *kobj,
-+			    const struct bin_attribute *attr, char *buf, loff_t off, size_t count);
-+	ssize_t (*queue_tx)(struct file *filp, struct kobject *kobj,
-+			    const struct bin_attribute *attr, char *buf, loff_t off, size_t count);
-+};
-+
-+struct aspeed_queue_message {
-+	/* Queue waiters for idle engine */
-+	wait_queue_head_t tx_wait;
-+	wait_queue_head_t rx_wait;
-+	struct kernfs_node *kn;
-+	struct bin_attribute bin;
-+	int index;
-+	struct aspeed_bmc_device *bmc_device;
-+};
-+
-+struct aspeed_bmc_device {
-+	unsigned char *host2bmc_base_virt;
-+	struct device *dev;
-+	struct miscdevice miscdev;
-+	int id;
-+	void __iomem *reg_base;
-+	dma_addr_t bmc_mem_phy;
-+	phys_addr_t bmc_mem_size;
-+	void *bmc_mem_cpu;
-+
-+	int pcie2lpc;
-+	int irq;
-+
-+	struct aspeed_queue_message queue[ASPEED_QUEUE_NUM];
-+
-+	const struct aspeed_platform *platform;
-+
-+	/* AST2700 */
-+	struct regmap *device;
-+	struct regmap *e2m;
-+
-+	struct regmap *scu;
-+	int pcie_irq;
-+};
-+
-+static struct aspeed_bmc_device *file_aspeed_bmc_device(struct file *file)
-+{
-+	return container_of(file->private_data, struct aspeed_bmc_device,
-+			miscdev);
-+}
-+
-+static int aspeed_bmc_device_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	struct aspeed_bmc_device *bmc_device = file_aspeed_bmc_device(file);
-+	unsigned long vsize = vma->vm_end - vma->vm_start;
-+
-+	if (vsize > bmc_device->bmc_mem_size)
-+		return -EINVAL;
-+
-+	return dma_mmap_coherent(bmc_device->dev, vma,
-+				 bmc_device->bmc_mem_cpu,
-+				 bmc_device->bmc_mem_phy,
-+				 bmc_device->bmc_mem_size);
-+
-+}
-+
-+static const struct file_operations aspeed_bmc_device_fops = {
-+	.owner		= THIS_MODULE,
-+	.mmap		= aspeed_bmc_device_mmap,
-+};
-+
-+static ssize_t aspeed_ast2600_queue_rx(struct file *filp, struct kobject *kobj,
-+				       const struct bin_attribute *attr, char *buf, loff_t off,
-+				       size_t count)
-+{
-+	struct aspeed_queue_message *queue = attr->private;
-+	struct aspeed_bmc_device *bmc_device = queue->bmc_device;
-+	int index = queue->index;
-+	u32 *data = (u32 *)buf;
-+	u32 scu_id;
-+	int ret;
-+
-+	ret = wait_event_interruptible(queue->rx_wait,
-+				       !(readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS) &
-+				       ((index == QUEUE1) ? HOST2BMC_Q1_EMPTY : HOST2BMC_Q2_EMPTY)));
-+	if (ret)
-+		return -EINTR;
-+
-+	data[0] = readl(bmc_device->reg_base +
-+			((index == QUEUE1) ? ASPEED_BMC_HOST2BMC_Q1 : ASPEED_BMC_HOST2BMC_Q2));
-+
-+	regmap_read(bmc_device->scu, ASPEED_SCU04, &scu_id);
-+	if (scu_id == AST2600A3_SCU04) {
-+		writel(BMC2HOST_INT_STS_DOORBELL | BMC2HOST_ENABLE_INTB,
-+		       bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS);
-+	} else {
-+		//A0 : BIT(12) A1 : BIT(15)
-+		regmap_update_bits(bmc_device->scu, 0x560, BIT(15), BIT(15));
-+		regmap_update_bits(bmc_device->scu, 0x560, BIT(15), 0);
-+	}
-+
-+	return sizeof(u32);
-+}
-+
-+static ssize_t aspeed_ast2600_queue_tx(struct file *filp, struct kobject *kobj,
-+				       const struct bin_attribute *attr, char *buf, loff_t off,
-+				       size_t count)
-+{
-+	struct aspeed_queue_message *queue = attr->private;
-+	struct aspeed_bmc_device *bmc_device = queue->bmc_device;
-+	int index = queue->index;
-+	u32 tx_buff;
-+	u32 scu_id;
-+	int ret;
-+
-+	if (count != sizeof(u32))
-+		return -EINVAL;
-+
-+	ret = wait_event_interruptible(queue->tx_wait,
-+				       !(readl(bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS) &
-+				       ((index == QUEUE1) ? BMC2HOST_Q1_FULL : BMC2HOST_Q2_FULL)));
-+	if (ret)
-+		return -EINTR;
-+
-+	memcpy(&tx_buff, buf, 4);
-+	writel(tx_buff, bmc_device->reg_base + ((index == QUEUE1) ? ASPEED_BMC_BMC2HOST_Q1 :
-+								    ASPEED_BMC_BMC2HOST_Q2));
-+
-+	/* trigger to host
-+	 * Only After AST2600A3 support DoorBell MSI
-+	 */
-+	regmap_read(bmc_device->scu, ASPEED_SCU04, &scu_id);
-+	if (scu_id == AST2600A3_SCU04) {
-+		writel(BMC2HOST_INT_STS_DOORBELL | BMC2HOST_ENABLE_INTB,
-+		       bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS);
-+	} else {
-+		//A0 : BIT(12) A1 : BIT(15)
-+		regmap_update_bits(bmc_device->scu, 0x560, BIT(15), BIT(15));
-+		regmap_update_bits(bmc_device->scu, 0x560, BIT(15), 0);
-+	}
-+
-+	return sizeof(u32);
-+}
-+
-+static ssize_t aspeed_ast2700_queue_rx(struct file *filp, struct kobject *kobj,
-+				       const struct bin_attribute *attr, char *buf, loff_t off,
-+				       size_t count)
-+{
-+	struct aspeed_queue_message *queue = attr->private;
-+	struct aspeed_bmc_device *bmc_device = queue->bmc_device;
-+	int index = queue->index;
-+	u32 *data = (u32 *)buf;
-+	int ret;
-+
-+	ret = wait_event_interruptible(queue->rx_wait,
-+				       !(readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS) &
-+				       ((index == QUEUE1) ? HOST2BMC_Q1_EMPTY : HOST2BMC_Q2_EMPTY)));
-+	if (ret)
-+		return -EINTR;
-+
-+	data[0] = readl(bmc_device->reg_base +
-+			((index == QUEUE1) ? ASPEED_BMC_HOST2BMC_Q1 : ASPEED_BMC_HOST2BMC_Q2));
-+
-+	writel(BMC2HOST_INT_STS_DOORBELL | BMC2HOST_ENABLE_INTB,
-+	       bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS);
-+
-+	return sizeof(u32);
-+}
-+
-+static ssize_t aspeed_ast2700_queue_tx(struct file *filp, struct kobject *kobj,
-+				       const struct bin_attribute *attr, char *buf, loff_t off,
-+				       size_t count)
-+{
-+	struct aspeed_queue_message *queue = attr->private;
-+	struct aspeed_bmc_device *bmc_device = queue->bmc_device;
-+	int index = queue->index;
-+	u32 tx_buff;
-+	int ret;
-+
-+	if (count != sizeof(u32))
-+		return -EINVAL;
-+
-+	ret = wait_event_interruptible(queue->tx_wait,
-+				       !(readl(bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS) &
-+				       ((index == QUEUE1) ? BMC2HOST_Q1_FULL : BMC2HOST_Q2_FULL)));
-+	if (ret)
-+		return -EINTR;
-+
-+	memcpy(&tx_buff, buf, 4);
-+	writel(tx_buff, bmc_device->reg_base + ((index == QUEUE1) ? ASPEED_BMC_BMC2HOST_Q1 :
-+								    ASPEED_BMC_BMC2HOST_Q2));
-+
-+	writel(BMC2HOST_INT_STS_DOORBELL | BMC2HOST_ENABLE_INTB,
-+	       bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS);
-+
-+	return sizeof(u32);
-+}
-+
-+/* AST2600 */
-+static irqreturn_t aspeed_bmc_dev_pcie_isr(int irq, void *dev_id)
-+{
-+	struct aspeed_bmc_device *bmc_device = dev_id;
-+
-+	while (!(readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS) & HOST2BMC_Q1_EMPTY))
-+		readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_Q1);
-+
-+	while (!(readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS) & HOST2BMC_Q2_EMPTY))
-+		readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_Q2);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t aspeed_bmc_dev_isr(int irq, void *dev_id)
-+{
-+	struct aspeed_bmc_device *bmc_device = dev_id;
-+	u32 host2bmc_q_sts = readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS);
-+
-+	if (host2bmc_q_sts & HOST2BMC_INT_STS_DOORBELL)
-+		writel(HOST2BMC_INT_STS_DOORBELL, bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS);
-+
-+	if (host2bmc_q_sts & HOST2BMC_ENABLE_INTB)
-+		writel(HOST2BMC_ENABLE_INTB, bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS);
-+
-+	if (host2bmc_q_sts & HOST2BMC_Q1_FULL)
-+		dev_info(bmc_device->dev, "Q1 Full\n");
-+
-+	if (host2bmc_q_sts & HOST2BMC_Q2_FULL)
-+		dev_info(bmc_device->dev, "Q2 Full\n");
-+
-+	if (!(readl(bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS) & BMC2HOST_Q1_FULL))
-+		wake_up_interruptible(&bmc_device->queue[QUEUE1].tx_wait);
-+
-+	if (!(readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS) & HOST2BMC_Q1_EMPTY))
-+		wake_up_interruptible(&bmc_device->queue[QUEUE1].rx_wait);
-+
-+	if (!(readl(bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS) & BMC2HOST_Q2_FULL))
-+		wake_up_interruptible(&bmc_device->queue[QUEUE2].tx_wait);
-+
-+	if (!(readl(bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS) & HOST2BMC_Q2_EMPTY))
-+		wake_up_interruptible(&bmc_device->queue[QUEUE2].rx_wait);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int aspeed_ast2600_init(struct platform_device *pdev)
-+{
-+	struct aspeed_bmc_device *bmc_device = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	u32 pcie_config_ctl = SCU_PCIE_CONF_BMC_DEV_EN_IRQ |
-+			      SCU_PCIE_CONF_BMC_DEV_EN_MMIO | SCU_PCIE_CONF_BMC_DEV_EN;
-+	u32 scu_id;
-+
-+	bmc_device->scu = syscon_regmap_lookup_by_phandle(dev->of_node, "aspeed,scu");
-+	if (IS_ERR(bmc_device->scu)) {
-+		dev_err(&pdev->dev, "failed to find SCU regmap\n");
-+		return PTR_ERR(bmc_device->scu);
-+	}
-+
-+	if (bmc_device->pcie2lpc)
-+		pcie_config_ctl |= SCU_PCIE_CONF_BMC_DEV_EN_E2L |
-+				   SCU_PCIE_CONF_BMC_DEV_EN_LPC_DECODE;
-+
-+	regmap_update_bits(bmc_device->scu, ASPEED_SCU_PCIE_CONF_CTRL,
-+			   pcie_config_ctl, pcie_config_ctl);
-+
-+	/* update class code to others as it is a MFD device */
-+	regmap_write(bmc_device->scu, ASPEED_SCU_BMC_DEV_CLASS, 0xff000000);
-+
-+#ifdef SCU_TRIGGER_MSI
-+	//SCUC24[17]: Enable PCI device 1 INTx/MSI from SCU560[15]. Will be added in next version
-+	regmap_update_bits(bmc_device->scu, ASPEED_SCUC20, BIT(11) | BIT(14), BIT(11) | BIT(14));
-+
-+	regmap_read(bmc_device->scu, ASPEED_SCU04, &scu_id);
-+	if (scu_id == AST2600A3_SCU04)
-+		regmap_update_bits(bmc_device->scu, ASPEED_SCUC24,
-+				   PCIDEV1_INTX_MSI_HOST2BMC_EN | MSI_ROUTING_MASK,
-+				   PCIDEV1_INTX_MSI_HOST2BMC_EN | MSI_ROUTING_PCIe2LPC_PCIDEV1);
-+	else
-+		regmap_update_bits(bmc_device->scu, ASPEED_SCUC24,
-+				   BIT(17) | BIT(14) | BIT(11), BIT(17) | BIT(14) | BIT(11));
-+#else
-+	//SCUC24[18]: Enable PCI device 1 INTx/MSI from Host-to-BMC controller.
-+	regmap_update_bits(bmc_device->scu, 0xc24, BIT(18) | BIT(14), BIT(18) | BIT(14));
-+#endif
-+
-+	writel((~(bmc_device->bmc_mem_size - 1) & 0xFFFFFFFF) | HOST2BMC_MEM_BAR_ENABLE,
-+	       bmc_device->reg_base + ASPEED_BMC_MEM_BAR);
-+	writel(bmc_device->bmc_mem_phy, bmc_device->reg_base + ASPEED_BMC_MEM_BAR_REMAP);
-+
-+	//Setting BMC to Host Q register
-+	writel(BMC2HOST_Q2_FULL_UNMASK | BMC2HOST_Q1_FULL_UNMASK | BMC2HOST_ENABLE_INTB,
-+	       bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS);
-+	writel(HOST2BMC_Q2_FULL_UNMASK |  HOST2BMC_Q1_FULL_UNMASK | HOST2BMC_ENABLE_INTB,
-+	       bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS);
-+
-+	return 0;
-+}
-+
-+static int aspeed_ast2700_init(struct platform_device *pdev)
-+{
-+	struct aspeed_bmc_device *bmc_device = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	u32 pcie_config_ctl;
-+	u32 scu_id;
-+	int i;
-+
-+	bmc_device->device = syscon_regmap_lookup_by_phandle(dev->of_node, "aspeed,device");
-+	if (IS_ERR(bmc_device->device)) {
-+		dev_err(&pdev->dev, "failed to find device regmap\n");
-+		return PTR_ERR(bmc_device->device);
-+	}
-+
-+	bmc_device->e2m = syscon_regmap_lookup_by_phandle(dev->of_node, "aspeed,e2m");
-+	if (IS_ERR(bmc_device->e2m)) {
-+		dev_err(&pdev->dev, "failed to find e2m regmap\n");
-+		return PTR_ERR(bmc_device->e2m);
-+	}
-+
-+	bmc_device->scu = syscon_regmap_lookup_by_phandle(dev->of_node, "aspeed,scu");
-+	if (IS_ERR(bmc_device->scu)) {
-+		dev_err(&pdev->dev, "failed to find SCU regmap\n");
-+		return PTR_ERR(bmc_device->scu);
-+	}
-+
-+	if (bmc_device->pcie2lpc) {
-+		pcie_config_ctl = SCU_PCIE_CONF_BMC_DEV_EN_E2L |
-+				  SCU_PCIE_CONF_BMC_DEV_EN_LPC_DECODE;
-+		regmap_update_bits(bmc_device->scu, SCU0_PCIE_CONF_CTRL,
-+				   pcie_config_ctl, pcie_config_ctl);
-+	}
-+
-+	/* update class code to others as it is a MFD device */
-+	regmap_write(bmc_device->device, 0x18, 0xff000027);
-+
-+	/* MSI */
-+	regmap_update_bits(bmc_device->device, 0x74, GENMASK(7, 4), BIT(7) | (5 << 4));
-+	/* EnPCIaMSI:BIT(25), EnPCIaIntA:BIT(17), EnPCIaMst:BIT(9), EnPCIaDev:BIT(1) */
-+	regmap_read(bmc_device->scu, SCU0_REVISION_ID, &scu_id);
-+	if (scu_id & REVISION_ID)
-+		regmap_update_bits(bmc_device->device, 0x70,
-+				   BIT(25) | BIT(17) | BIT(9) | BIT(1),
-+				   BIT(25) | BIT(17) | BIT(9) | BIT(1));
-+	else
-+		/* Disable MSI[bit25] in ast2700A0 int only */
-+		regmap_update_bits(bmc_device->device, 0x70,
-+				   BIT(17) | BIT(9) | BIT(1),
-+				   BIT(25) | BIT(17) | BIT(9) | BIT(1));
-+
-+	/* bar size check for 4k align */
-+	for (i = 1; i < 16; i++) {
-+		if ((bmc_device->bmc_mem_size / 4096) == (1 << (i - 1)))
-+			break;
-+	}
-+	if (i == 16) {
-+		i = 0;
-+		dev_warn(bmc_device->dev,
-+			 "Bar size not align for 4K : %dK\n", (u32)bmc_device->bmc_mem_size / 1024);
-+	}
-+
-+	/*
-+	 * BAR assign in scu
-+	 * ((bar_mem / 4k) << 8) | per_size
-+	 */
-+	regmap_write(bmc_device->device, 0x1c, ((bmc_device->bmc_mem_phy) >> 4) | i);
-+
-+	if (bmc_device->id == 0)
-+		/* Node 0 Bar 0 */
-+		regmap_write(bmc_device->e2m, 0x108, ((bmc_device->bmc_mem_phy) >> 4) | i);
-+	else
-+		/* Node 1 Bar 0 */
-+		regmap_write(bmc_device->e2m, 0x128, ((bmc_device->bmc_mem_phy) >> 4) | i);
-+
-+	/* Setting BMC to Host Q register */
-+	writel(BMC2HOST_Q2_FULL_UNMASK | BMC2HOST_Q1_FULL_UNMASK | BMC2HOST_ENABLE_INTB,
-+	       bmc_device->reg_base + ASPEED_BMC_BMC2HOST_STS);
-+	writel(HOST2BMC_Q2_FULL_UNMASK | HOST2BMC_Q1_FULL_UNMASK | HOST2BMC_ENABLE_INTB,
-+	       bmc_device->reg_base + ASPEED_BMC_HOST2BMC_STS);
-+
-+	return 0;
-+}
-+
-+static int aspeed_bmc_device_setup_queue(struct platform_device *pdev)
-+{
-+	struct aspeed_bmc_device *bmc_device = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	int ret, i;
-+
-+	for (i = 0; i < ASPEED_QUEUE_NUM; i++) {
-+		struct aspeed_queue_message *queue = &bmc_device->queue[i];
-+
-+		init_waitqueue_head(&queue->tx_wait);
-+		init_waitqueue_head(&queue->rx_wait);
-+
-+		sysfs_bin_attr_init(&queue->bin);
-+
-+		/* Queue name index starts from 1 */
-+		queue->bin.attr.name =
-+			devm_kasprintf(dev, GFP_KERNEL, "bmc-dev-queue%d", (i + 1));
-+		queue->bin.attr.mode = 0600;
-+		queue->bin.read = bmc_device->platform->queue_rx;
-+		queue->bin.write = bmc_device->platform->queue_tx;
-+		queue->bin.size = 4;
-+		queue->bin.private = queue;
-+
-+		ret = sysfs_create_bin_file(&pdev->dev.kobj, &queue->bin);
-+		if (ret) {
-+			dev_err(dev, "error for bin%d file\n", i);
-+			return ret;
-+		}
-+
-+		queue->kn = kernfs_find_and_get(dev->kobj.sd, queue->bin.attr.name);
-+		if (!queue->kn) {
-+			sysfs_remove_bin_file(&dev->kobj, &queue->bin);
-+			return ret;
-+		}
-+
-+		queue->index = i;
-+		queue->bmc_device = bmc_device;
-+	}
-+
-+	return 0;
-+}
-+
-+static int aspeed_bmc_device_setup_memory_mapping(struct platform_device *pdev)
-+{
-+	struct aspeed_bmc_device *bmc_device = platform_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	int ret;
-+
-+	bmc_device->miscdev.minor = MISC_DYNAMIC_MINOR;
-+	bmc_device->miscdev.name = devm_kasprintf(dev, GFP_KERNEL, "bmc-device%d", bmc_device->id);
-+	bmc_device->miscdev.fops = &aspeed_bmc_device_fops;
-+	bmc_device->miscdev.parent = dev;
-+	ret = misc_register(&bmc_device->miscdev);
-+	if (ret) {
-+		dev_err(dev, "Unable to register device\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct aspeed_platform ast2600_plaform = {
-+	.init = aspeed_ast2600_init,
-+	.queue_rx = aspeed_ast2600_queue_rx,
-+	.queue_tx = aspeed_ast2600_queue_tx
-+};
-+
-+static struct aspeed_platform ast2700_plaform = {
-+	.init = aspeed_ast2700_init,
-+	.queue_rx = aspeed_ast2700_queue_rx,
-+	.queue_tx = aspeed_ast2700_queue_tx
-+};
-+
-+static const struct of_device_id aspeed_bmc_device_of_matches[] = {
-+	{ .compatible = "aspeed,ast2600-bmc-device", .data = &ast2600_plaform },
-+	{ .compatible = "aspeed,ast2700-bmc-device", .data = &ast2700_plaform },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, aspeed_bmc_device_of_matches);
-+
-+static int aspeed_bmc_device_probe(struct platform_device *pdev)
-+{
-+	struct aspeed_bmc_device *bmc_device;
-+	struct device *dev = &pdev->dev;
-+	struct resource res;
-+	const void *md = of_device_get_match_data(dev);
-+	struct device_node *np;
-+	int ret = 0, i;
-+
-+	if (!md)
-+		return -ENODEV;
-+
-+	bmc_device = devm_kzalloc(&pdev->dev, sizeof(struct aspeed_bmc_device), GFP_KERNEL);
-+	if (!bmc_device)
-+		return -ENOMEM;
-+	dev_set_drvdata(dev, bmc_device);
-+
-+	bmc_device->platform = md;
-+
-+	bmc_device->id = of_alias_get_id(dev->of_node, "bmcdev");
-+	if (bmc_device->id < 0)
-+		bmc_device->id = 0;
-+
-+	bmc_device->dev = dev;
-+	bmc_device->reg_base = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(bmc_device->reg_base))
-+		return PTR_ERR(bmc_device->reg_base);
-+
-+	ret = of_reserved_mem_device_init(dev);
-+	if (ret) {
-+		dev_err(dev, "of_reserved_mem_device_init failed: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
-+	if (ret) {
-+		dev_err(dev, "cannot set 64-bits DMA mask\n");
-+		return ret;
-+	}
-+
-+	np = of_parse_phandle(dev->of_node, "memory-region", 0);
-+	if (!np || of_address_to_resource(np, 0, &res)) {
-+		dev_err(dev, "Failed to find memory-region.\n");
-+		return -ENOMEM;
-+	}
-+
-+	of_node_put(np);
-+
-+	bmc_device->bmc_mem_size = resource_size(&res);
-+	bmc_device->bmc_mem_cpu = dmam_alloc_coherent(dev, bmc_device->bmc_mem_size,
-+						      &bmc_device->bmc_mem_phy, GFP_KERNEL);
-+	if (!bmc_device->bmc_mem_cpu) {
-+		dev_err(dev, "Failed to allocate BMC memory.\n");
-+		return -ENOMEM;
-+	}
-+
-+	bmc_device->irq = platform_get_irq(pdev, 0);
-+	if (bmc_device->irq < 0) {
-+		dev_err(&pdev->dev, "platform get of irq[=%d] failed!\n", bmc_device->irq);
-+		return bmc_device->irq;
-+	}
-+
-+	ret = devm_request_irq(&pdev->dev, bmc_device->irq, aspeed_bmc_dev_isr, 0,
-+			       dev_name(&pdev->dev), bmc_device);
-+	if (ret) {
-+		dev_err(dev, "aspeed bmc device Unable to get IRQ");
-+		return ret;
-+	}
-+
-+	ret = aspeed_bmc_device_setup_queue(pdev);
-+	if (ret) {
-+		dev_err(dev, "Cannot setup queue message");
-+		goto out;
-+	}
-+
-+	ret = aspeed_bmc_device_setup_memory_mapping(pdev);
-+	if (ret) {
-+		dev_err(dev, "Cannot setup memory mapping misc");
-+		goto out_free_queue;
-+	}
-+
-+	if (of_property_read_bool(dev->of_node, "pcie2lpc"))
-+		bmc_device->pcie2lpc = 1;
-+
-+	ret = bmc_device->platform->init(pdev);
-+	if (ret) {
-+		dev_err(dev, "Initialize bmc device failed\n");
-+		goto out_free_misc;
-+	}
-+
-+	bmc_device->pcie_irq =  platform_get_irq(pdev, 1);
-+	if (bmc_device->pcie_irq < 0) {
-+		dev_warn(&pdev->dev,
-+			 "platform get of pcie irq[=%d] failed!\n", bmc_device->pcie_irq);
-+	} else {
-+		ret = devm_request_irq(&pdev->dev, bmc_device->pcie_irq,
-+				       aspeed_bmc_dev_pcie_isr, IRQF_SHARED,
-+				       dev_name(&pdev->dev), bmc_device);
-+		if (ret < 0) {
-+			dev_warn(dev, "Failed to request PCI-E IRQ %d.\n", ret);
-+			bmc_device->pcie_irq = -1;
-+		}
-+	}
-+
-+	dev_info(dev, "aspeed bmc device: driver successfully loaded.\n");
-+
-+	return 0;
-+
-+out_free_misc:
-+	misc_deregister(&bmc_device->miscdev);
-+out_free_queue:
-+	for (i = 0; i < ASPEED_QUEUE_NUM; i++)
-+		sysfs_remove_bin_file(&pdev->dev.kobj, &bmc_device->queue[i].bin);
-+out:
-+	dev_warn(dev, "aspeed bmc device: driver init failed (ret=%d)!\n", ret);
-+	return ret;
-+}
-+
-+static void aspeed_bmc_device_remove(struct platform_device *pdev)
-+{
-+	struct aspeed_bmc_device *bmc_device = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < ASPEED_QUEUE_NUM; i++)
-+		sysfs_remove_bin_file(&pdev->dev.kobj, &bmc_device->queue[i].bin);
-+	misc_deregister(&bmc_device->miscdev);
-+	devm_free_irq(&pdev->dev, bmc_device->irq, bmc_device);
-+	devm_free_irq(&pdev->dev, bmc_device->pcie_irq, bmc_device);
-+
-+	devm_kfree(&pdev->dev, bmc_device);
-+}
-+
-+static struct platform_driver aspeed_bmc_device_driver = {
-+	.probe		= aspeed_bmc_device_probe,
-+	.remove		= aspeed_bmc_device_remove,
-+	.driver		= {
-+		.name	= KBUILD_MODNAME,
-+		.of_match_table = aspeed_bmc_device_of_matches,
-+	},
-+};
-+
-+module_platform_driver(aspeed_bmc_device_driver);
-+
-+MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-+MODULE_DESCRIPTION("ASPEED BMC DEVICE Driver");
-+MODULE_LICENSE("GPL");
-\ No newline at end of file
 -- 
 2.51.2
 
