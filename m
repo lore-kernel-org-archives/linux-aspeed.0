@@ -1,64 +1,52 @@
-Return-Path: <linux-aspeed+bounces-4190-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4191-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D29ACD8C88
-	for <linux-aspeed@archiver.kernel.org>; Sat,  6 Jun 2026 02:42:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DC30CD8C8C
+	for <linux-aspeed@archiver.kernel.org>; Sat,  6 Jun 2026 02:42:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gXMyv6NYlz2xll;
-	Sat, 06 Jun 2026 12:42:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.2
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780639228;
-	cv=none; b=YiH4C4MQswFPW7VDUGXoSVzh7RaKU5PtdFXVPeCT1FiSQfxFqX+ePqx1RWDat7RWSR1tLzaBa1+A+xqc1Ml5yXQ2lKh0XtY4vXzJe3o394HXE77uMsnVLBdhxjLWfvZx7cUQO4/oDx6ZovCQySLjnJIan0dCtxcc3WbAYaRLr/Sy3hpjHHd9KA/ApmAmoiIqAnBQzQcD0Pf4glmsWNTDOXlRS5C3lMkH171YaAy4UkSVQnNXssz0i35zhGMjFtu+rQ411WXjboHgE5Dw2q1QV7IGpHzp3ba+LFgzpKpvdCtjS3ezMsTE0akhfpe7CGIz4F8jhRea3Qk1bj+GFfRw6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gXMyy31fZz2xM7;
+	Sat, 06 Jun 2026 12:42:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780639188;
+	cv=none; b=iyoFacqEzdUYjex1d85KQ/sTCCjV9x82GCGYzTVXDj7kGgovG0jEAsgdXwhiqOSU+UQFteKG/Io9O/2oqQATJyq3HTxEfa2yxgIceypF9W+X3Mpu3AK/ZYTLWUiD0xabNirpR6s8bth70ucrn067noJpS0VQSf9N19VjiOZiAlwBdtCArSNSm2AM7TNK14Hsu4JviLs+RtufBuTL21hQHklT06n8cTWcWo4wb+EZWq9zDUfk2mrwVnhFAdASKI5ZxCASCSIno48GMWUe1ufJXbWkY1YLlzWgYPsrDb6E7gh8IyvdbVelsdEWfLhPYV2I+zsCyKBvI37HebllkbF09w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780639228; c=relaxed/relaxed;
-	bh=PDUZXrIzs23JoehD5N023YX+ro7W1xlvqrfxPyG/NLs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EXzKaR3Y5FJUgt+k/5WRpgrH5548EL1HPn6atCXN1/kX7Xpteeylf5EEuBGmI8Nd7Y7eCPWMebiGJBvYjz3cIpTZcuTc5CUQuUzrPpVfCgX8PG3ItMab1GcKzosMEaP523SrGI1QZ16hk6HH4r5/AlSLA/A29ECd09WYm+kB+6eVbtVmcy5HWaURfyGdouVR64a5smxVKDs0D9+BsViLUrST49Ow+54xzvH9hgw/TSY9duqCpg/RQ8ItvJ7xymFY8/QiMewtl1BNetH6PpbNTRt6koMJfIRNFAevsA96WVjYa5820CoKav7ESgCqdq59yBA6B16wg8h83HQEsrQTHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=SZUhbrby; dkim-atps=neutral; spf=pass (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+	t=1780639188; c=relaxed/relaxed;
+	bh=ZHgu+JGrqQgPjnjWztMAItH0/+Es2yqtkSf5YhCP5lY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oQvN1LGO9i4OjQlwSH3YidhQLF3DcBcyC3E+73LGIpdeF8CWVf2BQdsDJHXeZS6JX7LSG3Go2tO9dLzaeajk1W5+pmExU1fP/rT9zvW7SrKOWtL5rZZYht/FzGXZnFxLafpBW6HH9OuSEzlm5E1UTbNhZEaV3N8318RuC4p3ix6pX5e9Xm8/B7XKxdD9EFIB2TcpfwFbaeZ3rJ/BQBBKC6gRqdOhvPZFTwSwVsFa/x5g12ZhOTwSKa4Ed8kwns+D6NEg7WI5uygOaXP1s+EzgQuu6a36mcCjFuc97Xr+aFCT8MkPklZL2rH9Hd7RUoM3X7IHURB1MRj1wa6HHjgKIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=ScIhBV1w; dkim-atps=neutral; spf=pass (client-ip=220.197.31.4; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=SZUhbrby;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=ScIhBV1w;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 151 seconds by postgrey-1.37 at boromir; Fri, 05 Jun 2026 16:00:26 AEST
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.4; helo=m16.mail.163.com; envelope-from=haiyuewa@163.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 137 seconds by postgrey-1.37 at boromir; Fri, 05 Jun 2026 15:59:45 AEST
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWrQ250Qrz2xHK
-	for <linux-aspeed@lists.ozlabs.org>; Fri, 05 Jun 2026 16:00:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gWrPF1y1Sz2xHK
+	for <linux-aspeed@lists.ozlabs.org>; Fri, 05 Jun 2026 15:59:43 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=PD
-	UZXrIzs23JoehD5N023YX+ro7W1xlvqrfxPyG/NLs=; b=SZUhbrbysNNhLEi6un
-	XRberLyoxv1V9Ma77zm/tBGWjQQ24d99P/P1blqLHzlbvdi2iqHQni10x8AFwnYV
-	0LoeK26gim/ww1xC8dXBAvPqTPokYF4SvmdK9qlv3MI9IgNXKFk1XDRvSZOhCZKa
-	kh37LS3J5KcLQahYxF5QqwyI4=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=ZH
+	gu+JGrqQgPjnjWztMAItH0/+Es2yqtkSf5YhCP5lY=; b=ScIhBV1wn6Wd2Y2nj5
+	32IxZhtDYc9xy9z/x19InoZJT13v7EHUXSYZ7OMRSAut/F4Jc2GCpAmY8KaC3lWQ
+	1H1H/3WU5FjaduQUJUI5umsvo9eNhNrH2+dQUYNofQS+uKFsZ5DblOhtuQzLo2hw
+	lWQ1efhWNAIzYJDiEFDPrttAI=
 Received: from haiyue-pc.localdomain (unknown [])
-	by gzsmtp1 (Coremail) with SMTP id PCgvCgAXkGE7ZSJqxsLwAQ--.65168S3;
-	Fri, 05 Jun 2026 13:57:17 +0800 (CST)
+	by gzsmtp1 (Coremail) with SMTP id PCgvCgAXkGE7ZSJqxsLwAQ--.65168S2;
+	Fri, 05 Jun 2026 13:57:16 +0800 (CST)
 From: Haiyue Wang <haiyuewa@163.com>
 To: linux-clk@vger.kernel.org,
 	devicetree@vger.kernel.org,
 	linux-aspeed@lists.ozlabs.org
-Cc: Haiyue Wang <haiyuewa@163.com>,
-	Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>,
-	Andrew Jeffery <andrew@codeconstruct.com.au>,
-	Stephen Boyd <sboyd@kernel.org>,
-	Michael Turquette <mturquette@baylibre.com>,
-	Brian Masney <bmasney@redhat.com>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v4 1/2] dt-bindings: clock: ast2600: Add reset definition for video
-Date: Fri,  5 Jun 2026 13:52:42 +0800
-Message-ID: <20260605055712.118501-2-haiyuewa@163.com>
+Cc: Haiyue Wang <haiyuewa@163.com>
+Subject: [PATCH v4 0/2] Fix aspeed-video driver load failure
+Date: Fri,  5 Jun 2026 13:52:41 +0800
+Message-ID: <20260605055712.118501-1-haiyuewa@163.com>
 X-Mailer: git-send-email 2.54.0
-In-Reply-To: <20260605055712.118501-1-haiyuewa@163.com>
-References: <20260605055712.118501-1-haiyuewa@163.com>
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -73,38 +61,33 @@ List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PCgvCgAXkGE7ZSJqxsLwAQ--.65168S3
-X-Coremail-Antispam: 1Uf129KBjvdXoWrKr4rWr1kur17tr4kZF1DJrb_yoWDCFg_Ca
-	s7Zw4DXr1fZr93KFsxAF4DJ3yFk348JFySqr90vw1akFZYyrn8AFZ8XrsFq3WrGanayF97
-	AF95Ww1fZrs7GjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7xREJ3vUUUUUU==
+X-CM-TRANSID:PCgvCgAXkGE7ZSJqxsLwAQ--.65168S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7Xw1fZw4xXr4UKw1rCFykKrg_yoW3KFXE9w
+	1xGwn5JrykAFWj9F1F9F4qywn8KryYkrn5Aryjqry7ua4ayr90gFZ7Gas3Xw1UWa97AFs0
+	ya15WwsxZrn0gjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRK-eOJUUUUU==
 X-Originating-IP: [116.233.237.18]
-X-CM-SenderInfo: 5kdl53xhzdqiywtou0bp/xtbC8B2L9moiZT2zuwAA3I
+X-CM-SenderInfo: 5kdl53xhzdqiywtou0bp/xtbC7xyL9moiZTyazAAA3J
 
-Add ASPEED_RESET_VIDEO reset definition to the ast2600-clock binding
-header. It is required for proper reset control of the video on the
-AST2600 SoC for aspeed-video driver.
+v4:
+  - No code change, re-send with cover letter for more than one patch
+v3: https://lore.kernel.org/all/20260302011651.94682-1-haiyuewa@163.com/ 
+  - Drop 'Fixes:' tag in header file patch.
+v2: https://lore.kernel.org/all/20260227151602.829-1-haiyuewa@163.com/
+  - Fix checkpatch.pl warning, and send dt-bindings as single patch as
+    the submitting-patches guide.
+v1: https://lore.kernel.org/all/20260227123837.70079-1-haiyuewa@163.com/
 
-Signed-off-by: Haiyue Wang <haiyuewa@163.com>
-Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
-Reviewed-by: Andrew Jeffery <andrew@codeconstruct.com.au>
-Acked-by: Stephen Boyd <sboyd@kernel.org>
----
+Haiyue Wang (2):
+  dt-bindings: clock: ast2600: Add reset definition for video
+  ARM: dts: aspeed: add 'resets' to video node
+
+ arch/arm/boot/dts/aspeed/aspeed-g4.dtsi   | 1 +
+ arch/arm/boot/dts/aspeed/aspeed-g5.dtsi   | 1 +
+ arch/arm/boot/dts/aspeed/aspeed-g6.dtsi   | 1 +
  include/dt-bindings/clock/ast2600-clock.h | 1 +
- 1 file changed, 1 insertion(+)
+ 4 files changed, 4 insertions(+)
 
-diff --git a/include/dt-bindings/clock/ast2600-clock.h b/include/dt-bindings/clock/ast2600-clock.h
-index f60fff261130..7b9b80c38a8b 100644
---- a/include/dt-bindings/clock/ast2600-clock.h
-+++ b/include/dt-bindings/clock/ast2600-clock.h
-@@ -124,6 +124,7 @@
- #define ASPEED_RESET_PCIE_RC_OEN	18
- #define ASPEED_RESET_MAC2		12
- #define ASPEED_RESET_MAC1		11
-+#define ASPEED_RESET_VIDEO		6
- #define ASPEED_RESET_PCI_DP		5
- #define ASPEED_RESET_HACE		4
- #define ASPEED_RESET_AHB		1
 -- 
 2.54.0
 
