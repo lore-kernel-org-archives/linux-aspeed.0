@@ -1,93 +1,88 @@
-Return-Path: <linux-aspeed+bounces-4199-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linux-aspeed+bounces-4200-linux-aspeed=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CAC2CD6E79
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8536CCD8CAC
 	for <linux-aspeed@archiver.kernel.org>; Mon,  8 Jun 2026 23:51:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4gZ8255zdmz2yRM;
-	Tue, 09 Jun 2026 09:51:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::431"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780930470;
-	cv=none; b=K334ZFkrQyCLDI87n52YDbCKbyvtZ2yF49ZESK66ZoOvLEpNELaG5wt9U0T2jKZcfesoJNtIY9OahkVoSv8lTq42vVVL7Wk5wKu4T28WdgfGrCU7lJy3g8wzGdc4V5B0r0/ZI3+aZgEi3cFBklXzzzq5V1GXfiIjNF91pUjRiaqaM5mN3Hx3dHTvNYuEk5r8wbZ1ImaVQ1IicFSpEIXw5Vseh1KTBXNqlqOCXrI4Hvi5twj5rS1A10HOkQQ1GrW4VFfexOeyzwJO/2l/Ror+HES6gmKaXNNTu0/knTzGhticdoj/7I1qhHso3F5gC7wxa+S947adxJuKGzUL08VsGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4gZ8260DdKz2xJT;
+	Tue, 09 Jun 2026 09:51:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::630"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1780906809;
+	cv=none; b=gQPEi2izCTcz0f718ukIP/0H3u15xDhIXyR9SB0/ygwrX1JkQiw+wtA4DR6OQoVBfLe364rGQltG4a5H9bK+KoE8c3QfUlA3TETtMV4UDtuOciNu55tY8poTp+3vGEueR5DmQ9kBb0/yO28Zfmbdo5yxZA3Ey4JoVGLngry+UTAaA+zRTw9PBRgGlL6VWh9+ur88ugKcRKh05FwbiRO01e9x58U1TAjYzh4XLHtOdDsF6Pu99+XrLIVf6fVomfE+MJtruTbgEEOzXT6ihh5/a5Aa1AgfegWBQwETRp6Kp+bxKJ72G4Wso0+TbRqJot+uBUM63e9vUGU7VfJ9RRSIOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1780930470; c=relaxed/relaxed;
-	bh=oSKKlCPm41pvMUdMrmydhlLiUs0iGWjoDgYMRyPMrdw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Mdpc1Cz6Z6A3GbQJ0568vAWGU8yRds7zzOEc4lwtMTAcjYQLHNorwbtWhV5glE34URos5kQy52k9dCYTyfkkt5SA0UBzTLihpY82SAHnCGjAG55x+fFuiIB8HVyOR3R2GaOjhD+PCLKYgKd2gg/l2YJxZx1Dw6SbRu42eIyeNJaoN/1I5Ak0c+nXKqxumbrXEFSVYlXgt88xU032Snhj9VlJKYIKeNQz+yKSEdgPL0SDBXQmKou1zwhgbAzIk5kV6Wmv0gG96q7pITGT+iGnl/oQiBdfdLNbyRCIW5NW/2bmZwn1iOgrUAVG9O1dB0ZCAn6xvsnx5n8zwpSaGhJsXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com; dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=KwmMFkkt; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org) smtp.mailfrom=9elements.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=9elements.com
+	t=1780906809; c=relaxed/relaxed;
+	bh=QaxSxNePW62N/aLYNU2ICZZcrY71w9JpJK96h4Ml418=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Y5smtTn8u1/kojvq+kEVPlznhadmSLj1dsth0PhSYmQDaCBEQ5WAX0D2BhzJ/OEeXLpF9Pf7YqZKnXFpcecmFHylLCR+zey88Tw+/+/PR0lXNVucGjNzbTr5/QTaJO1vuCMU4y1DKC/FIny4Kurm+LN7nlvuwvdRWFMczqrowWN9+O7Te760g7O50xmyDUxYAwsNH6YavBPLT3tjXxQNkEqIyftoFooA+cHbAJYgHqbEypXTRiDklFtCvhjOEa7ZhnTwXv6mn9YfRnJyCDuV/otDF+B3W0ulKfXFWRdTkqiXpcaiCJFzigKMp57vSI6arqebUqo5MHJEKsjdxF+nrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jW958x5Z; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=ruoyuw560@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=9elements.com header.i=@9elements.com header.a=rsa-sha256 header.s=google header.b=KwmMFkkt;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20251104 header.b=jW958x5Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=9elements.com (client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com; envelope-from=gregoire.layet@9elements.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=ruoyuw560@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYw6s61xhz3bsQ
-	for <linux-aspeed@lists.ozlabs.org>; Tue, 09 Jun 2026 00:54:29 +1000 (AEST)
-Received: by mail-wr1-x431.google.com with SMTP id ffacd0b85a97d-45ef5146b56so3442691f8f.0
-        for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Jun 2026 07:54:29 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4gYlMr5fqVz2xWP
+	for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Jun 2026 18:20:07 +1000 (AEST)
+Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-2c0bd02d97eso46736395ad.2
+        for <linux-aspeed@lists.ozlabs.org>; Mon, 08 Jun 2026 01:20:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=9elements.com; s=google; t=1780930467; x=1781535267; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=oSKKlCPm41pvMUdMrmydhlLiUs0iGWjoDgYMRyPMrdw=;
-        b=KwmMFkktxkp8Q4gQSH64Au8NnW+G0ohrJTRbt4IVT0S/GN21RKuMw7M6M7VasmiV0i
-         7ydz9Xfg+kiszjTRPOY5tFYxyuzg2BBLQpk3m8cFlthDym46CrJQL7TSh5D4YBtZlj0D
-         6sgPa1w8EFJPtrQcXwO/DOvgUkJJAMuaT7Bo0HBUAZfHVmqnsY3hzWG8aW17rXA+sOmA
-         uQsULxdSnFIRzWUG2nko1UcHQS3nAOCpBctF7lbBI3c+0ncaenWKyLY8GZ5thoELUgh4
-         XfS+gmeQRfN1ffmFsXPSRH6Pa0XZkeqUnyE7EEkwfPR1DZcDpf3/2HkOPu0tQasAPlBh
-         yLhA==
+        d=gmail.com; s=20251104; t=1780906805; x=1781511605; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=QaxSxNePW62N/aLYNU2ICZZcrY71w9JpJK96h4Ml418=;
+        b=jW958x5Z3/vRnqzT5tnySyiKL/qd+jC8w4xmQRfha/+PvqfYFmh9CdYczZs/AwZ2eB
+         V9Um/3dqg0KB/q0Jqi2mWRaNDXdOhrXs1GkDWXaJL4I6yic49C/yaMk7KhJaEKkgmyyv
+         iqH31cnu04cBhME73Xq+xz3mwSh4g3N2I2Coau90z9eGH2fmyRacWV4TwhYl4+IdIcbp
+         5VfC8LpVwSRv/SWgtIrPt0s8/O2cDCL++NouaahlUk3VxBC8y29pPV5X/20kLIJTdNI2
+         GZ0rK/QWAoVrN7bRrXa7CssqzRjy53v1hjGnljcdSVnO3qHE93pWRTAl9p5oPcwfJF5+
+         BY6Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20251104; t=1780930467; x=1781535267;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=oSKKlCPm41pvMUdMrmydhlLiUs0iGWjoDgYMRyPMrdw=;
-        b=NVQkfP+ekr3VfLZIJtNLImw/roz/VL9pS04HnDrjEBfw35TGzldShvsEtvr/efpeSG
-         so6bDGmRRyP7hG6RvSvggAKAcx8xjQTinfVvtSKCBC7HIRRWFxlYE4tVYchvT7FXdeWQ
-         WEh4t040hRKAdT4m5WwD3L37N5r3/fpJ+AQUyWxoPlkiSD1s7Y2/U1dg9+SX7llr68aD
-         7CpaqWBjOfXH1yRt0O4XjR1I/jrL6ZuvMkeh2qnczjk/EVEGuppVmzItZjy04dJ20/7G
-         j1ed85ndcOQMYvrFqs3fS7lF/5fnwONOmmbiggnJKrT1/C9O47l4oauCr7UI/KMFRnL0
-         nHiw==
-X-Forwarded-Encrypted: i=1; AFNElJ8bL+bsJi3lIPIKp8KSZaufnUzQmx2B9WR/ZaPZvh6c6fam3aH/q2g1YIxTsSgIaViogmG/LWc8g4WQTjc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz2uxUfHnwYdq8ZlnEEUgwSPaXvKBPfAKro20xYt6vf24RKKfpg
-	dzsxiVUalaS+jCZ/sE6zOA78S16goNboLtP3uDZVE18iuPozHfgDqySOrAAi4R75TAk=
-X-Gm-Gg: Acq92OFrML/EKce9q401Bb3a13D55WFMyNtv4P6r0FqzqEa9vwNiSkyvrF2ZtCmxdVV
-	lyqUMj/Xa2PC6ntFLHpZn6tGi7S9f4qVWHvIfX5FTJNzgMhPlCvd/LVRdfY9m4ec+zL6rQl78zj
-	izC/Ruq+CEleiS1z+gWX7kB+MakQJ26Ga73W4pNEtBQKRLGUl1qYHD1XQEYv9HkrsZoeFN/0kOi
-	p3km7404g1kGLBDtV86Bsrcbe6rmvw1wfnn4rKWq0/MLvBV9LSYkURgYLSypZM/Mk6/g+l/eEtv
-	02H9Mvc9/ToW/Ka8PEYQ9pGFtMKo9DQ6aRXktVz6oq6ulTr9MfVp8ZhaGrOMSUJVIKmMROPPU8j
-	cZ2y+H2d7VDv1XdAVSrxePiG508GoGT+GPZufNyva8m7USQMHj7eCx4BPN2UvDnGbJDXmLdlLuq
-	UtzUrq2PxLSqQd//4xQIMyWtXYrdpm7HuoNPGRMml6DZa+JbGYOfvEHlSMVUoc
-X-Received: by 2002:a05:6000:4024:b0:45e:f7ae:d599 with SMTP id ffacd0b85a97d-46032dbeb2emr22113309f8f.25.1780930466854;
-        Mon, 08 Jun 2026 07:54:26 -0700 (PDT)
-Received: from gregwork.sec.9e.network ([188.111.3.154])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4601f360bd6sm56927851f8f.36.2026.06.08.07.54.26
+        d=1e100.net; s=20251104; t=1780906805; x=1781511605;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=QaxSxNePW62N/aLYNU2ICZZcrY71w9JpJK96h4Ml418=;
+        b=H0YCJ/snX3DFqjmxYKyJfes1+zptyIFFTHSaAExLgnaPE5HpbRutGuAzSfSA2BFMoF
+         2EAwifh/BEDN+EoK3BAxQoY+swVyN1Yym1TABzHTh+eD3f3+YG2m3Wn7Gs89gJIVCbTN
+         ojtZPeB6jd8cZsrXV0zGsGLkmIAg2WofL3ahZSddUPqWzutnlaN/Y+/p6zAVVpE4oXlR
+         IITURAmlgwB4S3Mvcibkc/+YuPj6XzchQiCaiBwfvWznnn9jl+wbLDRur/d9IxGeg/kr
+         K56BOIy6RZKWi/dsSHRjOHU3/KjQ+vtfUbGy0RN0/JpY0naQRugD3ygqbpadsvh/jAmo
+         huAQ==
+X-Forwarded-Encrypted: i=1; AFNElJ+z3ME17/dgtIG50OF0LxWdI1EZpF2fbeIVVqB83f8eQr/dRLMmJvZIZQimRdRvrxhTOQVijqDUYaahKPY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyyq+BV2JOgeEKaIMd2siNXx72QE/Wayfv9YD3JTj8B+lhtCfL4
+	LTmF9pqxHvTh3XRFp1db3usjqZmKJNrw9E4L7phwmOJPQ24zn1kpiDKe
+X-Gm-Gg: Acq92OEkQ2FV5bwog0rPM/snnr62DmSyZKe4ds3KvNQFr/N1O3z28C+V0fa+0oo/7g9
+	KushAFa2zY4KyOxw8E8A3ukgXhc41t9hLGlMzYgUaTUtFy6209X67KdsMj8wgjXwPeYU75K3+fy
+	2sgg8XU8sLkvCAZanLJAC1bJbaOrWnuGXPrZMkzuDV0XhLGg5jNsxY6AIHv7RnrHumXCQ74lAru
+	O3fCnv1RP7sgR1uL2GZjMxJP/pLiGDLyUm5Ro4BYZ46ji0ZKitLaCmgn/1V75qyL2lxHBxBMKK4
+	Vy3lbfkd9JFP780zZBh2k1ByyjDtMOz2LQ9yyyCDYqN8cbqdUl+3kwYpMzsw62aw8RjkVY/0VhN
+	3dcPlJ9m7kU8/lCDKd1YO5bIGBi+TAsNS8SicrQVBRZchOidiHDBRwrZQnGh00GT2aqCUkcvbGl
+	rW3kCHe8LP+A5E0w+ZLcFulkDFgoNIIn4pCIW7eYAGapcfXKxSVdLu
+X-Received: by 2002:a17:903:3c48:b0:2c0:eee2:fc40 with SMTP id d9443c01a7336-2c1e80cede0mr162261145ad.3.1780906804922;
+        Mon, 08 Jun 2026 01:20:04 -0700 (PDT)
+Received: from haichao.tail057a43.ts.net ([2001:da8:e000:1206:9a2:954d:67fe:d9c2])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2c164fa3a5fsm183050945ad.36.2026.06.08.01.20.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 08 Jun 2026 07:54:26 -0700 (PDT)
-From: =?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
-To: joel@jms.id.au,
-	andrew@codeconstruct.com.au
-Cc: andrew@lunn.ch,
-	jacky_chou@aspeedtech.com,
-	yh_chung@aspeedtech.com,
-	ninad@linux.ibm.com,
+        Mon, 08 Jun 2026 01:20:04 -0700 (PDT)
+From: Ruoyu Wang <ruoyuw560@gmail.com>
+To: Neal Liu <neal_liu@aspeedtech.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Joel Stanley <joel@jms.id.au>,
+	Andrew Jeffery <andrew@codeconstruct.com.au>,
 	linux-aspeed@lists.ozlabs.org,
+	linux-usb@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	=?UTF-8?q?Gr=C3=A9goire=20Layet?= <gregoire.layet@9elements.com>
-Subject: [PATCH v2 2/2] soc: aspeed: add host-side PCIe BMC device driver
-Date: Mon,  8 Jun 2026 14:51:23 +0000
-Message-ID: <13d18d25f53e0a084a8c17219804b305d4667c6b.1780929570.git.gregoire.layet@9elements.com>
-X-Mailer: git-send-email 2.51.2
-In-Reply-To: <cover.1780929570.git.gregoire.layet@9elements.com>
-References: <cover.1780929570.git.gregoire.layet@9elements.com>
+	Ruoyu Wang <ruoyuw560@gmail.com>
+Subject: [PATCH] usb: gadget: aspeed_udc: check endpoint DMA allocation
+Date: Mon,  8 Jun 2026 16:19:48 +0800
+Message-ID: <20260608081948.3-1-ruoyuw560@gmail.com>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linux-aspeed@lists.ozlabs.org
 List-Id: <linux-aspeed.lists.ozlabs.org>
 List-Help: <mailto:linux-aspeed+help@lists.ozlabs.org>
@@ -101,311 +96,153 @@ List-Subscribe: <mailto:linux-aspeed+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linux-aspeed+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Taken from ASPEED 6.18 Kernel SDK
+ast_udc_probe() allocates a coherent DMA buffer used as the backing store
+for endpoint buffers. ast_udc_init_ep() derives per-endpoint buffer
+pointers from udc->ep0_buf, so a failed allocation is dereferenced during
+probe.
 
-Add support for VUART over PCIe between BMC and host.
-This add host side driver.
+Check the allocation before endpoint setup. The existing probe error path
+called ast_udc_remove(), which unregisters the gadget unconditionally and
+is not safe before usb_add_gadget_udc() succeeds. Add a local cleanup
+helper for probe failures so pre-registration failures only unwind the
+resources that were actually initialized.
 
-Signed-off-by: Jacky Chou <jacky_chou@aspeedtech.com>
-Signed-off-by: aspeedyh <yh_chung@aspeedtech.com>
-Signed-off-by: Grégoire Layet <gregoire.layet@9elements.com>
-Tested-by: Grégoire Layet <gregoire.layet@9elements.com>
+This was found by a local static analysis checker for unchecked allocator
+returns while scanning Linux 6.16. The change was checked by applying it
+to current mainline and by running checkpatch. I do not have access to
+Aspeed UDC hardware, so no runtime testing was performed.
+
+Fixes: 055276c13205 ("usb: gadget: add Aspeed ast2600 udc driver")
+Signed-off-by: Ruoyu Wang <ruoyuw560@gmail.com>
 ---
- drivers/soc/aspeed/Kconfig               |   8 +
- drivers/soc/aspeed/Makefile              |   1 +
- drivers/soc/aspeed/aspeed-host-bmc-dev.c | 249 +++++++++++++++++++++++
- 3 files changed, 258 insertions(+)
- create mode 100644 drivers/soc/aspeed/aspeed-host-bmc-dev.c
+Note: a 2022 patch attempted to add only a NULL check for this
+allocation:
+https://lore.kernel.org/all/20221213025120.23149-1-jiasheng@iscas.ac.cn/
 
-diff --git a/drivers/soc/aspeed/Kconfig b/drivers/soc/aspeed/Kconfig
-index 3e1fcf3c3268..5deefb64e8c7 100644
---- a/drivers/soc/aspeed/Kconfig
-+++ b/drivers/soc/aspeed/Kconfig
-@@ -11,6 +11,14 @@ config ASPEED_BMC_DEV
- 	  Enable support for the ASPEED AST2600 BMC Device.
- 	  This exposes the PCIe-to-LPC bridge of the BMC to the host over PCIe.
+This version also fixes the probe unwind path so the clock is disabled
+on allocation failure and usb_del_gadget_udc() is not called before the
+gadget has been registered.
+
+diff --git a/drivers/usb/gadget/udc/aspeed_udc.c b/drivers/usb/gadget/udc/aspeed_udc.c
+index 7fc6696b7..809a7d5b7 100644
+--- a/drivers/usb/gadget/udc/aspeed_udc.c
++++ b/drivers/usb/gadget/udc/aspeed_udc.c
+@@ -1434,11 +1434,34 @@ static void ast_udc_init_hw(struct ast_udc_dev *udc)
+ 	ast_udc_write(udc, 0, AST_UDC_EP0_CTRL);
+ }
  
-+config ASPEED_HOST_BMC_DEV
-+	tristate "ASPEED Host BMC Device"
-+	depends on PCI
-+	depends on SERIAL_8250
-+	help
-+	  Enable support for the ASPEED AST2600 BMC Device on the Host.
-+	  This configure the PCIe and setup two 8250 compatible VUART ports.
-+
- config ASPEED_LPC_CTRL
- 	tristate "ASPEED LPC firmware cycle control"
- 	select REGMAP
-diff --git a/drivers/soc/aspeed/Makefile b/drivers/soc/aspeed/Makefile
-index fab0d247df66..3fd3f6d8d36e 100644
---- a/drivers/soc/aspeed/Makefile
-+++ b/drivers/soc/aspeed/Makefile
-@@ -1,5 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
- obj-$(CONFIG_ASPEED_BMC_DEV)		+= aspeed-bmc-dev.o
-+obj-$(CONFIG_ASPEED_HOST_BMC_DEV)	+= aspeed-host-bmc-dev.o
- obj-$(CONFIG_ASPEED_LPC_CTRL)		+= aspeed-lpc-ctrl.o
- obj-$(CONFIG_ASPEED_LPC_SNOOP)		+= aspeed-lpc-snoop.o
- obj-$(CONFIG_ASPEED_UART_ROUTING)	+= aspeed-uart-routing.o
-diff --git a/drivers/soc/aspeed/aspeed-host-bmc-dev.c b/drivers/soc/aspeed/aspeed-host-bmc-dev.c
-new file mode 100644
-index 000000000000..7cb52a770fb6
---- /dev/null
-+++ b/drivers/soc/aspeed/aspeed-host-bmc-dev.c
-@@ -0,0 +1,249 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+// Copyright (C) ASPEED Technology Inc.
-+
-+#include <linux/init.h>
-+#include <linux/version.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/pci.h>
-+#include <linux/serial_core.h>
-+#include <linux/serial_8250.h>
-+
-+static DEFINE_IDA(bmc_device_ida);
-+
-+#define VUART_MAX_PARMS	2
-+#define MAX_MSI_NUM		8
-+#define BMC_MULTI_MSI	32
-+
-+#define DRIVER_NAME "aspeed-host-bmc-dev"
-+
-+enum aspeed_platform_id {
-+	ASPEED,
-+};
-+
-+enum msi_index {
-+	VUART0_MSI,
-+	VUART1_MSI,
-+};
-+
-+/* Match msi_index */
-+static int ast2600_msi_idx_table[MAX_MSI_NUM] = { 16, 15 };
-+
-+struct aspeed_platform {
-+	int (*setup)(struct pci_dev *pdev);
-+};
-+
-+struct aspeed_pci_bmc_dev {
-+	struct device *dev;
-+	struct aspeed_platform *platform;
-+	kernel_ulong_t driver_data;
-+	int id;
-+
-+	unsigned long message_bar_base;
-+	unsigned long message_bar_size;
-+	void __iomem *msg_bar_reg;
-+
-+	struct uart_8250_port uart[VUART_MAX_PARMS];
-+	int uart_line[VUART_MAX_PARMS];
-+
-+	/* Interrupt
-+	 * The index of array is using to enum msi_index
-+	 */
-+	int *msi_idx_table;
-+};
-+
-+static void aspeed_pci_setup_irq_resource(struct pci_dev *pdev)
++static void ast_udc_cleanup(struct platform_device *pdev)
 +{
-+	struct aspeed_pci_bmc_dev *pci_bmc_dev = pci_get_drvdata(pdev);
++	struct ast_udc_dev *udc = platform_get_drvdata(pdev);
++	unsigned long flags;
++	u32 ctrl;
 +
-+	/* Assign static msi index table by platform */
-+	pci_bmc_dev->msi_idx_table = ast2600_msi_idx_table;
++	spin_lock_irqsave(&udc->lock, flags);
 +
-+	if (pci_alloc_irq_vectors(pdev, 1, BMC_MULTI_MSI, PCI_IRQ_INTX | PCI_IRQ_MSI) <= 1)
-+		/* Set all msi index to the first vector */
-+		memset(pci_bmc_dev->msi_idx_table, 0, sizeof(int) * MAX_MSI_NUM);
++	/* Disable upstream port connection */
++	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
++	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
++
++	clk_disable_unprepare(udc->clk);
++
++	spin_unlock_irqrestore(&udc->lock, flags);
++
++	if (udc->ep0_buf)
++		dma_free_coherent(&pdev->dev,
++				  AST_UDC_EP_DMA_SIZE * AST_UDC_NUM_ENDPOINTS,
++				  udc->ep0_buf,
++				  udc->ep0_buf_dma);
++
++	udc->ep0_buf = NULL;
 +}
 +
-+static int aspeed_pci_bmc_device_setup_vuart(struct pci_dev *pdev)
-+{
-+	struct aspeed_pci_bmc_dev *pci_bmc_dev = pci_get_drvdata(pdev);
-+	struct device *dev = &pdev->dev;
-+	u16 vuart_ioport;
-+	int ret, i;
-+
-+	for (i = 0; i < VUART_MAX_PARMS; i++) {
-+		/* Assign the line to non-exist device */
-+		pci_bmc_dev->uart_line[i] = -ENOENT;
-+		vuart_ioport = 0x3F8 - (i * 0x100);
-+		pci_bmc_dev->uart[i].port.flags = UPF_SKIP_TEST | UPF_BOOT_AUTOCONF | UPF_SHARE_IRQ;
-+		pci_bmc_dev->uart[i].port.uartclk = 115200 * 16;
-+		pci_bmc_dev->uart[i].port.irq =
-+			pci_irq_vector(pdev, pci_bmc_dev->msi_idx_table[VUART0_MSI + i]);
-+		pci_bmc_dev->uart[i].port.dev = dev;
-+		pci_bmc_dev->uart[i].port.iotype = UPIO_MEM32;
-+		pci_bmc_dev->uart[i].port.iobase = 0;
-+		pci_bmc_dev->uart[i].port.mapbase =
-+			pci_bmc_dev->message_bar_base + (vuart_ioport << 2);
-+		pci_bmc_dev->uart[i].port.membase = 0;
-+		pci_bmc_dev->uart[i].port.type = PORT_16550A;
-+		pci_bmc_dev->uart[i].port.flags |= (UPF_IOREMAP | UPF_FIXED_PORT | UPF_FIXED_TYPE);
-+		pci_bmc_dev->uart[i].port.regshift = 2;
-+		ret = serial8250_register_8250_port(&pci_bmc_dev->uart[i]);
-+		if (ret < 0) {
-+			dev_err_probe(dev, ret, "Can't setup PCIe VUART\n");
-+			return ret;
-+		}
-+		pci_bmc_dev->uart_line[i] = ret;
+ static void ast_udc_remove(struct platform_device *pdev)
+ {
+ 	struct ast_udc_dev *udc = platform_get_drvdata(pdev);
+-	unsigned long flags;
+-	u32 ctrl;
+ 
+ 	usb_del_gadget_udc(&udc->gadget);
+ 	if (udc->driver) {
+@@ -1453,23 +1476,7 @@ static void ast_udc_remove(struct platform_device *pdev)
+ 		return;
+ 	}
+ 
+-	spin_lock_irqsave(&udc->lock, flags);
+-
+-	/* Disable upstream port connection */
+-	ctrl = ast_udc_read(udc, AST_UDC_FUNC_CTRL) & ~USB_UPSTREAM_EN;
+-	ast_udc_write(udc, ctrl, AST_UDC_FUNC_CTRL);
+-
+-	clk_disable_unprepare(udc->clk);
+-
+-	spin_unlock_irqrestore(&udc->lock, flags);
+-
+-	if (udc->ep0_buf)
+-		dma_free_coherent(&pdev->dev,
+-				  AST_UDC_EP_DMA_SIZE * AST_UDC_NUM_ENDPOINTS,
+-				  udc->ep0_buf,
+-				  udc->ep0_buf_dma);
+-
+-	udc->ep0_buf = NULL;
++	ast_udc_cleanup(pdev);
+ }
+ 
+ static int ast_udc_probe(struct platform_device *pdev)
+@@ -1523,6 +1530,10 @@ static int ast_udc_probe(struct platform_device *pdev)
+ 					  AST_UDC_EP_DMA_SIZE *
+ 					  AST_UDC_NUM_ENDPOINTS,
+ 					  &udc->ep0_buf_dma, GFP_KERNEL);
++	if (!udc->ep0_buf) {
++		rc = -ENOMEM;
++		goto err_disable_clk;
 +	}
-+	return 0;
-+}
-+
-+static void aspeed_pci_host_bmc_device_release_vuart(struct pci_dev *pdev)
-+{
-+	struct aspeed_pci_bmc_dev *pci_bmc_dev = pci_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < VUART_MAX_PARMS; i++) {
-+		if (pci_bmc_dev->uart_line[i] >= 0)
-+			serial8250_unregister_port(pci_bmc_dev->uart_line[i]);
-+	}
-+}
-+
-+static int aspeed_pci_host_setup(struct pci_dev *pdev)
-+{
-+	struct aspeed_pci_bmc_dev *pci_bmc_dev = pci_get_drvdata(pdev);
-+	int rc = 0;
-+
-+	/* Get Message BAR */
-+	pci_bmc_dev->message_bar_base = pci_resource_start(pdev, 1);
-+	pci_bmc_dev->message_bar_size = pci_resource_len(pdev, 1);
-+	pci_bmc_dev->msg_bar_reg = pci_ioremap_bar(pdev, 1);
-+	if (!pci_bmc_dev->msg_bar_reg)
-+		return -ENOMEM;
-+
-+	if (pdev->revision < 0x27) {
-+		/* AST2600 ERRTA40: dummy read */
-+		(void)__raw_readl((void __iomem *)pci_bmc_dev->msg_bar_reg);
-+	} else {
-+		/* AST2700 not supported */
-+		pr_err("AST2700 detected but not supported");
-+		goto out_free0;
-+	}
-+
-+	rc = aspeed_pci_bmc_device_setup_vuart(pdev);
-+	if (rc) {
-+		pr_err("Cannot setup Virtual UART");
-+		goto out_free0;
-+	}
-+
-+	return 0;
-+
-+out_free0:
-+	pci_iounmap(pdev, pci_bmc_dev->msg_bar_reg);
-+
-+	return rc;
-+}
-+
-+static struct aspeed_platform aspeed_pcie_host[] = {
-+	{ .setup = aspeed_pci_host_setup },
-+	{ 0 }
-+};
-+
-+static int aspeed_pci_host_bmc_device_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-+{
-+	struct aspeed_pci_bmc_dev *pci_bmc_dev;
-+	int rc = 0;
-+
-+	pr_info("ASPEED BMC PCI ID %04x:%04x, IRQ=%u\n", pdev->vendor, pdev->device, pdev->irq);
-+
-+	pci_bmc_dev = devm_kzalloc(&pdev->dev, sizeof(*pci_bmc_dev), GFP_KERNEL);
-+	if (!pci_bmc_dev)
-+		return -ENOMEM;
-+
-+	/* Get platform id */
-+	pci_bmc_dev->driver_data = ent->driver_data;
-+	pci_bmc_dev->platform = &aspeed_pcie_host[ent->driver_data];
-+
-+	pci_bmc_dev->id = ida_alloc(&bmc_device_ida, GFP_KERNEL);
-+	if (pci_bmc_dev->id < 0)
-+		return pci_bmc_dev->id;
-+
-+	rc = pci_enable_device(pdev);
-+	if (rc) {
-+		dev_err(&pdev->dev, "pci_enable_device() returned error %d\n", rc);
-+		return rc;
-+	}
-+
-+	pci_set_master(pdev);
-+	pci_set_drvdata(pdev, pci_bmc_dev);
-+
-+	/* Prepare IRQ resource */
-+	aspeed_pci_setup_irq_resource(pdev);
-+
-+	/* Setup BMC PCI device */
-+	rc = pci_bmc_dev->platform->setup(pdev);
-+	if (rc) {
-+		dev_err(&pdev->dev, "ASPEED PCIe Host device returned error %d\n", rc);
-+		pci_free_irq_vectors(pdev);
-+		pci_disable_device(pdev);
-+		return rc;
-+	}
-+
-+	return 0;
-+}
-+
-+static void aspeed_pci_host_bmc_device_remove(struct pci_dev *pdev)
-+{
-+	struct aspeed_pci_bmc_dev *pci_bmc_dev = pci_get_drvdata(pdev);
-+
-+	if (pci_bmc_dev->driver_data == ASPEED)
-+		aspeed_pci_host_bmc_device_release_vuart(pdev);
-+
-+	ida_free(&bmc_device_ida, pci_bmc_dev->id);
-+
-+	pci_iounmap(pdev, pci_bmc_dev->msg_bar_reg);
-+
-+	pci_free_irq_vectors(pdev);
-+	pci_disable_device(pdev);
-+}
-+
-+/**
-+ * This table holds the list of (VendorID,DeviceID) supported by this driver
-+ *
-+ */
-+static struct pci_device_id aspeed_host_bmc_dev_pci_ids[] = {
-+	/* ASPEED BMC Device */
-+	{ PCI_DEVICE(0x1A03, 0x2402), .class = 0xFF0000, .class_mask = 0xFFFF00,
-+	  .driver_data = ASPEED },
-+	{
-+		0,
-+	}
-+};
-+
-+MODULE_DEVICE_TABLE(pci, aspeed_host_bmc_dev_pci_ids);
-+
-+static struct pci_driver aspeed_host_bmc_dev_driver = {
-+	.name		= DRIVER_NAME,
-+	.id_table	= aspeed_host_bmc_dev_pci_ids,
-+	.probe		= aspeed_pci_host_bmc_device_probe,
-+	.remove		= aspeed_pci_host_bmc_device_remove,
-+};
-+
-+static int __init aspeed_host_bmc_device_init(void)
-+{
-+	return pci_register_driver(&aspeed_host_bmc_dev_driver);
-+}
-+
-+static void aspeed_host_bmc_device_exit(void)
-+{
-+	/* unregister pci driver */
-+	pci_unregister_driver(&aspeed_host_bmc_dev_driver);
-+}
-+
-+late_initcall(aspeed_host_bmc_device_init);
-+module_exit(aspeed_host_bmc_device_exit);
-+
-+MODULE_AUTHOR("Ryan Chen <ryan_chen@aspeedtech.com>");
-+MODULE_DESCRIPTION("ASPEED Host BMC DEVICE Driver");
-+MODULE_LICENSE("GPL");
--- 
-2.51.2
+ 
+ 	udc->gadget.speed = USB_SPEED_UNKNOWN;
+ 	udc->gadget.max_speed = USB_SPEED_HIGH;
+@@ -1553,20 +1564,20 @@ static int ast_udc_probe(struct platform_device *pdev)
+ 	udc->irq = platform_get_irq(pdev, 0);
+ 	if (udc->irq < 0) {
+ 		rc = udc->irq;
+-		goto err;
++		goto err_cleanup;
+ 	}
+ 
+ 	rc = devm_request_irq(&pdev->dev, udc->irq, ast_udc_isr, 0,
+ 			      KBUILD_MODNAME, udc);
+ 	if (rc) {
+ 		dev_err(&pdev->dev, "Failed to request interrupt\n");
+-		goto err;
++		goto err_cleanup;
+ 	}
+ 
+ 	rc = usb_add_gadget_udc(&pdev->dev, &udc->gadget);
+ 	if (rc) {
+ 		dev_err(&pdev->dev, "Failed to add gadget udc\n");
+-		goto err;
++		goto err_cleanup;
+ 	}
+ 
+ 	dev_info(&pdev->dev, "Initialized udc in USB%s mode\n",
+@@ -1574,9 +1585,14 @@ static int ast_udc_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_disable_clk:
++	clk_disable_unprepare(udc->clk);
++	goto err;
++err_cleanup:
++	ast_udc_cleanup(pdev);
++	goto err;
+ err:
+ 	dev_err(&pdev->dev, "Failed to udc probe, rc:0x%x\n", rc);
+-	ast_udc_remove(pdev);
+ 
+ 	return rc;
+ }
 
+-- 
+2.51.0
 
